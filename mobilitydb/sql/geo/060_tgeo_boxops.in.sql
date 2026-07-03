@@ -121,23 +121,23 @@ CREATE FUNCTION splitEachNStboxes(tgeography, integer)
  * Contains
  *****************************************************************************/
 
-CREATE FUNCTION temporal_contains(tstzspan, tgeometry)
+CREATE FUNCTION contains(tstzspan, tgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_contains(tgeometry, tstzspan)
+CREATE FUNCTION contains(tgeometry, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
-  PROCEDURE = temporal_contains,
+  PROCEDURE = contains,
   LEFTARG = tstzspan, RIGHTARG = tgeometry,
   COMMUTATOR = <@,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR @> (
-  PROCEDURE = temporal_contains,
+  PROCEDURE = contains,
   LEFTARG = tgeometry, RIGHTARG = tstzspan,
   COMMUTATOR = <@,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
@@ -145,23 +145,23 @@ CREATE OPERATOR @> (
 
 /*****************************************************************************/
 
-CREATE FUNCTION temporal_contains(tstzspan, tgeography)
+CREATE FUNCTION contains(tstzspan, tgeography)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_contains(tgeography, tstzspan)
+CREATE FUNCTION contains(tgeography, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
-  PROCEDURE = temporal_contains,
+  PROCEDURE = contains,
   LEFTARG = tstzspan, RIGHTARG = tgeography,
   COMMUTATOR = <@,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR @> (
-  PROCEDURE = temporal_contains,
+  PROCEDURE = contains,
   LEFTARG = tgeography, RIGHTARG = tstzspan,
   COMMUTATOR = <@,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
@@ -169,33 +169,33 @@ CREATE OPERATOR @> (
 
 /*****************************************************************************/
 
-CREATE FUNCTION temporal_contains(stbox, tgeometry)
+CREATE FUNCTION contains(stbox, tgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_stbox_tspatial'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_contains(tgeometry, stbox)
+CREATE FUNCTION contains(tgeometry, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_tspatial_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_contains(tgeometry, tgeometry)
+CREATE FUNCTION contains(tgeometry, tgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_tspatial_tspatial'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
-  PROCEDURE = temporal_contains,
+  PROCEDURE = contains,
   LEFTARG = stbox, RIGHTARG = tgeometry,
   COMMUTATOR = <@,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR @> (
-  PROCEDURE = temporal_contains,
+  PROCEDURE = contains,
   LEFTARG = tgeometry, RIGHTARG = stbox,
   COMMUTATOR = <@,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR @> (
-  PROCEDURE = temporal_contains,
+  PROCEDURE = contains,
   LEFTARG = tgeometry, RIGHTARG = tgeometry,
   COMMUTATOR = <@,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
@@ -203,33 +203,33 @@ CREATE OPERATOR @> (
 
 /*****************************************************************************/
 
-CREATE FUNCTION temporal_contains(stbox, tgeography)
+CREATE FUNCTION contains(stbox, tgeography)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_stbox_tspatial'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_contains(tgeography, stbox)
+CREATE FUNCTION contains(tgeography, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_tspatial_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_contains(tgeography, tgeography)
+CREATE FUNCTION contains(tgeography, tgeography)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_tspatial_tspatial'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
-  PROCEDURE = temporal_contains,
+  PROCEDURE = contains,
   LEFTARG = stbox, RIGHTARG = tgeography,
   COMMUTATOR = <@,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR @> (
-  PROCEDURE = temporal_contains,
+  PROCEDURE = contains,
   LEFTARG = tgeography, RIGHTARG = stbox,
   COMMUTATOR = <@,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR @> (
-  PROCEDURE = temporal_contains,
+  PROCEDURE = contains,
   LEFTARG = tgeography, RIGHTARG = tgeography,
   COMMUTATOR = <@,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
@@ -239,23 +239,23 @@ CREATE OPERATOR @> (
  * Contained
  *****************************************************************************/
 
-CREATE FUNCTION temporal_contained(tstzspan, tgeometry)
+CREATE FUNCTION contained(tstzspan, tgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_contained(tgeometry, tstzspan)
+CREATE FUNCTION contained(tgeometry, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
-  PROCEDURE = temporal_contained,
+  PROCEDURE = contained,
   LEFTARG = tstzspan, RIGHTARG = tgeometry,
   COMMUTATOR = @>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR <@ (
-  PROCEDURE = temporal_contained,
+  PROCEDURE = contained,
   LEFTARG = tgeometry, RIGHTARG = tstzspan,
   COMMUTATOR = @>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
@@ -263,33 +263,33 @@ CREATE OPERATOR <@ (
 
 /*****************************************************************************/
 
-CREATE FUNCTION temporal_contained(stbox, tgeometry)
+CREATE FUNCTION contained(stbox, tgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_stbox_tspatial'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_contained(tgeometry, stbox)
+CREATE FUNCTION contained(tgeometry, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_tspatial_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_contained(tgeometry, tgeometry)
+CREATE FUNCTION contained(tgeometry, tgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_tspatial_tspatial'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
-  PROCEDURE = temporal_contained,
+  PROCEDURE = contained,
   LEFTARG = stbox, RIGHTARG = tgeometry,
   COMMUTATOR = @>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR <@ (
-  PROCEDURE = temporal_contained,
+  PROCEDURE = contained,
   LEFTARG = tgeometry, RIGHTARG = stbox,
   COMMUTATOR = @>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR <@ (
-  PROCEDURE = temporal_contained,
+  PROCEDURE = contained,
   LEFTARG = tgeometry, RIGHTARG = tgeometry,
   COMMUTATOR = @>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
@@ -297,23 +297,23 @@ CREATE OPERATOR <@ (
 
 /*****************************************************************************/
 
-CREATE FUNCTION temporal_contained(tstzspan, tgeography)
+CREATE FUNCTION contained(tstzspan, tgeography)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_contained(tgeography, tstzspan)
+CREATE FUNCTION contained(tgeography, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
-  PROCEDURE = temporal_contained,
+  PROCEDURE = contained,
   LEFTARG = tstzspan, RIGHTARG = tgeography,
   COMMUTATOR = @>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR <@ (
-  PROCEDURE = temporal_contained,
+  PROCEDURE = contained,
   LEFTARG = tgeography, RIGHTARG = tstzspan,
   COMMUTATOR = @>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
@@ -321,33 +321,33 @@ CREATE OPERATOR <@ (
 
 /*****************************************************************************/
 
-CREATE FUNCTION temporal_contained(stbox, tgeography)
+CREATE FUNCTION contained(stbox, tgeography)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_stbox_tspatial'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_contained(tgeography, stbox)
+CREATE FUNCTION contained(tgeography, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_tspatial_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_contained(tgeography, tgeography)
+CREATE FUNCTION contained(tgeography, tgeography)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_tspatial_tspatial'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
-  PROCEDURE = temporal_contained,
+  PROCEDURE = contained,
   LEFTARG = stbox, RIGHTARG = tgeography,
   COMMUTATOR = @>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR <@ (
-  PROCEDURE = temporal_contained,
+  PROCEDURE = contained,
   LEFTARG = tgeography, RIGHTARG = stbox,
   COMMUTATOR = @>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR <@ (
-  PROCEDURE = temporal_contained,
+  PROCEDURE = contained,
   LEFTARG = tgeography, RIGHTARG = tgeography,
   COMMUTATOR = @>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
@@ -357,23 +357,23 @@ CREATE OPERATOR <@ (
  * Overlaps
  *****************************************************************************/
 
-CREATE FUNCTION temporal_overlaps(tstzspan, tgeometry)
+CREATE FUNCTION overlaps(tstzspan, tgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_overlaps(tgeometry, tstzspan)
+CREATE FUNCTION overlaps(tgeometry, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
-  PROCEDURE = temporal_overlaps,
+  PROCEDURE = overlaps,
   LEFTARG = tstzspan, RIGHTARG = tgeometry,
   COMMUTATOR = &&,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR && (
-  PROCEDURE = temporal_overlaps,
+  PROCEDURE = overlaps,
   LEFTARG = tgeometry, RIGHTARG = tstzspan,
   COMMUTATOR = &&,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
@@ -381,33 +381,33 @@ CREATE OPERATOR && (
 
 /*****************************************************************************/
 
-CREATE FUNCTION temporal_overlaps(stbox, tgeometry)
+CREATE FUNCTION overlaps(stbox, tgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_stbox_tspatial'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_overlaps(tgeometry, stbox)
+CREATE FUNCTION overlaps(tgeometry, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_tspatial_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_overlaps(tgeometry, tgeometry)
+CREATE FUNCTION overlaps(tgeometry, tgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_tspatial_tspatial'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
-  PROCEDURE = temporal_overlaps,
+  PROCEDURE = overlaps,
   LEFTARG = stbox, RIGHTARG = tgeometry,
   COMMUTATOR = &&,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR && (
-  PROCEDURE = temporal_overlaps,
+  PROCEDURE = overlaps,
   LEFTARG = tgeometry, RIGHTARG = stbox,
   COMMUTATOR = &&,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR && (
-  PROCEDURE = temporal_overlaps,
+  PROCEDURE = overlaps,
   LEFTARG = tgeometry, RIGHTARG = tgeometry,
   COMMUTATOR = &&,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
@@ -415,23 +415,23 @@ CREATE OPERATOR && (
 
 /*****************************************************************************/
 
-CREATE FUNCTION temporal_overlaps(tstzspan, tgeography)
+CREATE FUNCTION overlaps(tstzspan, tgeography)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_overlaps(tgeography, tstzspan)
+CREATE FUNCTION overlaps(tgeography, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
-  PROCEDURE = temporal_overlaps,
+  PROCEDURE = overlaps,
   LEFTARG = tstzspan, RIGHTARG = tgeography,
   COMMUTATOR = &&,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR && (
-  PROCEDURE = temporal_overlaps,
+  PROCEDURE = overlaps,
   LEFTARG = tgeography, RIGHTARG = tstzspan,
   COMMUTATOR = &&,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
@@ -439,33 +439,33 @@ CREATE OPERATOR && (
 
 /*****************************************************************************/
 
-CREATE FUNCTION temporal_overlaps(stbox, tgeography)
+CREATE FUNCTION overlaps(stbox, tgeography)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_stbox_tspatial'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_overlaps(tgeography, stbox)
+CREATE FUNCTION overlaps(tgeography, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_tspatial_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_overlaps(tgeography, tgeography)
+CREATE FUNCTION overlaps(tgeography, tgeography)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_tspatial_tspatial'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
-  PROCEDURE = temporal_overlaps,
+  PROCEDURE = overlaps,
   LEFTARG = stbox, RIGHTARG = tgeography,
   COMMUTATOR = &&,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR && (
-  PROCEDURE = temporal_overlaps,
+  PROCEDURE = overlaps,
   LEFTARG = tgeography, RIGHTARG = stbox,
   COMMUTATOR = &&,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR && (
-  PROCEDURE = temporal_overlaps,
+  PROCEDURE = overlaps,
   LEFTARG = tgeography, RIGHTARG = tgeography,
   COMMUTATOR = &&,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
@@ -475,23 +475,23 @@ CREATE OPERATOR && (
  * Same
  *****************************************************************************/
 
-CREATE FUNCTION temporal_same(tstzspan, tgeometry)
+CREATE FUNCTION same(tstzspan, tgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_same(tgeometry, tstzspan)
+CREATE FUNCTION same(tgeometry, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ~= (
-  PROCEDURE = temporal_same,
+  PROCEDURE = same,
   LEFTARG = tstzspan, RIGHTARG = tgeometry,
   COMMUTATOR = ~=,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR ~= (
-  PROCEDURE = temporal_same,
+  PROCEDURE = same,
   LEFTARG = tgeometry, RIGHTARG = tstzspan,
   COMMUTATOR = ~=,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
@@ -499,33 +499,33 @@ CREATE OPERATOR ~= (
 
 /*****************************************************************************/
 
-CREATE FUNCTION temporal_same(stbox, tgeometry)
+CREATE FUNCTION same(stbox, tgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_stbox_tspatial'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_same(tgeometry, stbox)
+CREATE FUNCTION same(tgeometry, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_tspatial_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_same(tgeometry, tgeometry)
+CREATE FUNCTION same(tgeometry, tgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_tspatial_tspatial'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ~= (
-  PROCEDURE = temporal_same,
+  PROCEDURE = same,
   LEFTARG = stbox, RIGHTARG = tgeometry,
   COMMUTATOR = ~=,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR ~= (
-  PROCEDURE = temporal_same,
+  PROCEDURE = same,
   LEFTARG = tgeometry, RIGHTARG = stbox,
   COMMUTATOR = ~=,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR ~= (
-  PROCEDURE = temporal_same,
+  PROCEDURE = same,
   LEFTARG = tgeometry, RIGHTARG = tgeometry,
   COMMUTATOR = ~=,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
@@ -533,23 +533,23 @@ CREATE OPERATOR ~= (
 
 /*****************************************************************************/
 
-CREATE FUNCTION temporal_same(tstzspan, tgeography)
+CREATE FUNCTION same(tstzspan, tgeography)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_same(tgeography, tstzspan)
+CREATE FUNCTION same(tgeography, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ~= (
-  PROCEDURE = temporal_same,
+  PROCEDURE = same,
   LEFTARG = tstzspan, RIGHTARG = tgeography,
   COMMUTATOR = ~=,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR ~= (
-  PROCEDURE = temporal_same,
+  PROCEDURE = same,
   LEFTARG = tgeography, RIGHTARG = tstzspan,
   COMMUTATOR = ~=,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
@@ -557,33 +557,33 @@ CREATE OPERATOR ~= (
 
 /*****************************************************************************/
 
-CREATE FUNCTION temporal_same(stbox, tgeography)
+CREATE FUNCTION same(stbox, tgeography)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_stbox_tspatial'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_same(tgeography, stbox)
+CREATE FUNCTION same(tgeography, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_tspatial_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_same(tgeography, tgeography)
+CREATE FUNCTION same(tgeography, tgeography)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_tspatial_tspatial'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ~= (
-  PROCEDURE = temporal_same,
+  PROCEDURE = same,
   LEFTARG = stbox, RIGHTARG = tgeography,
   COMMUTATOR = ~=,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR ~= (
-  PROCEDURE = temporal_same,
+  PROCEDURE = same,
   LEFTARG = tgeography, RIGHTARG = stbox,
   COMMUTATOR = ~=,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR ~= (
-  PROCEDURE = temporal_same,
+  PROCEDURE = same,
   LEFTARG = tgeography, RIGHTARG = tgeography,
   COMMUTATOR = ~=,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
@@ -593,23 +593,23 @@ CREATE OPERATOR ~= (
  * Adjacent
  *****************************************************************************/
 
-CREATE FUNCTION temporal_adjacent(tstzspan, tgeometry)
+CREATE FUNCTION adjacent(tstzspan, tgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_adjacent(tgeometry, tstzspan)
+CREATE FUNCTION adjacent(tgeometry, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR -|- (
-  PROCEDURE = temporal_adjacent,
+  PROCEDURE = adjacent,
   LEFTARG = tstzspan, RIGHTARG = tgeometry,
   COMMUTATOR = -|-,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR -|- (
-  PROCEDURE = temporal_adjacent,
+  PROCEDURE = adjacent,
   LEFTARG = tgeometry, RIGHTARG = tstzspan,
   COMMUTATOR = -|-,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
@@ -617,33 +617,33 @@ CREATE OPERATOR -|- (
 
 /*****************************************************************************/
 
-CREATE FUNCTION temporal_adjacent(stbox, tgeometry)
+CREATE FUNCTION adjacent(stbox, tgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_stbox_tspatial'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_adjacent(tgeometry, stbox)
+CREATE FUNCTION adjacent(tgeometry, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_tspatial_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_adjacent(tgeometry, tgeometry)
+CREATE FUNCTION adjacent(tgeometry, tgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_tspatial_tspatial'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR -|- (
-  PROCEDURE = temporal_adjacent,
+  PROCEDURE = adjacent,
   LEFTARG = stbox, RIGHTARG = tgeometry,
   COMMUTATOR = -|-,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR -|- (
-  PROCEDURE = temporal_adjacent,
+  PROCEDURE = adjacent,
   LEFTARG = tgeometry, RIGHTARG = stbox,
   COMMUTATOR = -|-,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR -|- (
-  PROCEDURE = temporal_adjacent,
+  PROCEDURE = adjacent,
   LEFTARG = tgeometry, RIGHTARG = tgeometry,
   COMMUTATOR = -|-,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
@@ -651,23 +651,23 @@ CREATE OPERATOR -|- (
 
 /*****************************************************************************/
 
-CREATE FUNCTION temporal_adjacent(tstzspan, tgeography)
+CREATE FUNCTION adjacent(tstzspan, tgeography)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_tstzspan_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_adjacent(tgeography, tstzspan)
+CREATE FUNCTION adjacent(tgeography, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_temporal_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR -|- (
-  PROCEDURE = temporal_adjacent,
+  PROCEDURE = adjacent,
   LEFTARG = tstzspan, RIGHTARG = tgeography,
   COMMUTATOR = -|-,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR -|- (
-  PROCEDURE = temporal_adjacent,
+  PROCEDURE = adjacent,
   LEFTARG = tgeography, RIGHTARG = tstzspan,
   COMMUTATOR = -|-,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
@@ -675,33 +675,33 @@ CREATE OPERATOR -|- (
 
 /*****************************************************************************/
 
-CREATE FUNCTION temporal_adjacent(stbox, tgeography)
+CREATE FUNCTION adjacent(stbox, tgeography)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_stbox_tspatial'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_adjacent(tgeography, stbox)
+CREATE FUNCTION adjacent(tgeography, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_tspatial_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_adjacent(tgeography, tgeography)
+CREATE FUNCTION adjacent(tgeography, tgeography)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_tspatial_tspatial'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR -|- (
-  PROCEDURE = temporal_adjacent,
+  PROCEDURE = adjacent,
   LEFTARG = stbox, RIGHTARG = tgeography,
   COMMUTATOR = -|-,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR -|- (
-  PROCEDURE = temporal_adjacent,
+  PROCEDURE = adjacent,
   LEFTARG = tgeography, RIGHTARG = stbox,
   COMMUTATOR = -|-,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR -|- (
-  PROCEDURE = temporal_adjacent,
+  PROCEDURE = adjacent,
   LEFTARG = tgeography, RIGHTARG = tgeography,
   COMMUTATOR = -|-,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
