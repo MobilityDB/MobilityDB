@@ -96,10 +96,14 @@ SYM_RE = re.compile(r"'MODULE_PATHNAME',\s*'([A-Za-z0-9_]+)'")
 
 # Numeric prefix per subdir: sorts AFTER that group's type/operator defs
 # under the top-level list(SORT) (aliases depend only on argument types).
-GROUP_PREFIX = {"temporal": "048", "geo": "079", "npoint": "399",
-                "pose": "198", "rgeo": "199", "cbuffer": "299",
-                "json": "218", "h3": "298", "quadbin": "398",
-                "pointcloud": "447"}
+# cbuffer/npoint/h3/quadbin are absent: their posops file (from the inherited
+# posops template) names its positional backing functions with the bare portable
+# name directly, so the proc == name guard in the emit loop skips them and they
+# need no alias file. The families below still carry hand-written or base-type
+# posops backed by prefixed names, so they keep a generated alias file.
+GROUP_PREFIX = {"temporal": "048", "geo": "079",
+                "pose": "198", "rgeo": "199",
+                "json": "218", "pointcloud": "447"}
 
 HEADER = (
     "/*****************************************************************************\n"
