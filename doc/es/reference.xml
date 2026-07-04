@@ -1328,7 +1328,7 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="ttype_similarityDistance"><varname>hausdorffDistance</varname>, <varname>frechetDistance</varname>, <varname>dynTimeWarpDistance</varname></link>: Devuelve la distancia de Hausdorff discreta, la distancia de Fréchet discreta o la distancia de distorsión de tiempo dinámica (Dynamic Time Warp) entre dos valores temporales</para>
+					<para><link linkend="ttype_similarityDistance"><varname>hausdorffDistance</varname>, <varname>frechetDistance</varname>, <varname>dynTimeWarpDistance</varname>, <varname>averageHausdorffDistance</varname>, <varname>lcssDistance</varname></link>: Devuelve la distancia de Hausdorff discreta, la distancia de Fréchet discreta, la distancia de distorsión de tiempo dinámica (Dynamic Time Warp), la distancia de Hausdorff promedio o la distancia de subsecuencia común más larga (Longest Common SubSequence o LCSS) entre dos valores temporales</para>
 				</listitem>
 
 				<listitem>
