@@ -116,12 +116,10 @@ typedef enum
   T_TGEOMETRY      = 60,  /**< temporal geometry type */
   T_TGEOGRAPHY     = 61,  /**< temporal geography type */
   T_TRGEOMETRY     = 62,  /**< temporal rigid geometry type */
-#if JSON
   T_JSONB          = 63,  /**< base type for PostgreSQL jsonb */
   T_JSONPATH       = 64,  /**< base type for PostgreSQL jsonpath */
   T_JSONBSET       = 65,  /**< static set of JSONB values */
   T_TJSONB         = 66,  /**< temporal JSONB value */
-#endif /* JSON */
   T_TBIGINT        = 67,  /**< temporal big integer type */
   T_H3INDEX        = 68,  /**< static H3 cell index type (uint64) */
   T_H3INDEXSET     = 69,  /**< h3index set type */
