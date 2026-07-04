@@ -470,7 +470,7 @@ nad_tpointseq_tpointseq_sync(const TSequence *seq1, const TSequence *seq2,
   MeosType temptype = seq1->temptype;
   TInstant *inst1 = (TInstant *) TSEQUENCE_INST_N(seq1, 0);
   TInstant *inst2 = (TInstant *) TSEQUENCE_INST_N(seq2, 0);
-  TInstant *prev1 = NULL, *prev2 = NULL; /* make compiler quiet */
+  const TInstant *prev1 = NULL, *prev2 = NULL; /* make compiler quiet */
   TimestampTz lower = DatumGetTimestampTz(inter->lower);
   TimestampTz upper = DatumGetTimestampTz(inter->upper);
   int i = 0, j = 0, ninsts = 0, nfree = 0;
