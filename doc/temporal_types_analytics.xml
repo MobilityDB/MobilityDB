@@ -189,11 +189,16 @@ SELECT asText(tprecision(tgeompoint '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-
 				<indexterm significance="normal"><primary><varname>hausdorffDistance</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>frechetDistance</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>dynTimeWarpDistance</varname></primary></indexterm>
-				<para>Return the discrete <ulink url="https://en.wikipedia.org/wiki/Hausdorff_distance">Hausdorff distance</ulink>, the discrete <ulink url="https://en.wikipedia.org/wiki/Fr%C3%A9chet_distance">Fréchet distance</ulink>, or the <ulink url="https://en.wikipedia.org/wiki/Dynamic_time_warping">Dynamic Time Warp</ulink> (DTW) distance between two temporal values &Z_support; &geography_support;
+				<indexterm significance="normal"><primary><varname>averageHausdorffDistance</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>lcssDistance</varname></primary></indexterm>
+				<para>Return the discrete <ulink url="https://en.wikipedia.org/wiki/Hausdorff_distance">Hausdorff distance</ulink>, the discrete <ulink url="https://en.wikipedia.org/wiki/Fr%C3%A9chet_distance">Fréchet distance</ulink>, the <ulink url="https://en.wikipedia.org/wiki/Dynamic_time_warping">Dynamic Time Warp</ulink> (DTW) distance, the average Hausdorff distance, or the <ulink url="https://en.wikipedia.org/wiki/Longest_common_subsequence">Longest Common SubSequence</ulink> (LCSS) distance between two temporal values &Z_support; &geography_support;
 </para>
 				<para><varname>hausdorffDistance({tnumber, tgeo}, {tnumber, tgeo}) → float</varname></para>
 				<para><varname>frechetDistance({tnumber, tgeo}, {tnumber, tgeo}) → float</varname></para>
 				<para><varname>dynTimeWarpDistance({tnumber, tgeo}, {tnumber, tgeo}) → float</varname></para>
+				<para><varname>averageHausdorffDistance({tnumber, tgeo}, {tnumber, tgeo}) → float</varname></para>
+				<para><varname>lcssDistance({tnumber, tgeo}, {tnumber, tgeo}, float) → float</varname></para>
+				<para>The <varname>lcssDistance</varname> function requires an additional parameter that specifies the distance threshold under which two values are considered to match.</para>
 				<para>These functions have a linear space complexity since only two rows of the distance matrix are allocated in memory. Nevertheless, their time complexity is quadratic in the number of instants of the temporal values. Therefore, the functions require considerable time for temporal values with large number of instants.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT hausdorffDistance(tfloat '[1@2001-01-01, 3@2001-01-03, 1@2001-01-06]',
@@ -224,6 +229,26 @@ SELECT round(dynTimeWarpDistance(tgeompoint '[Point(1 1)@2001-01-01,
   tgeompoint '[Point(1.1 1.1)@2001-01-01, Point(2.5 2.5)@2001-01-02,
   Point(4 4)@2001-01-03, Point(3 3)@2001-01-04, Point(1.5 2)@2001-01-05]')::numeric, 6);
 -- 3.380776
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT round(averageHausdorffDistance(tfloat '[1@2001-01-01, 3@2001-01-03, 1@2001-01-06]',
+ tfloat '[1@2001-01-01, 1.5@2001-01-02, 2.5@2001-01-03, 1.5@2001-01-04, 1.5@2001-01-05]')::numeric, 6);
+-- 0.283333
+SELECT round(averageHausdorffDistance(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03,
+  Point(1 1)@2001-01-05]', tgeompoint '[Point(1.1 1.1)@2001-01-01,
+  Point(2.5 2.5)@2001-01-02, Point(4 4)@2001-01-03, Point(3 3)@2001-01-04,
+  Point(1.5 2)@2001-01-05]')::numeric, 6);
+-- 0.385218
+</programlisting>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT lcssDistance(tfloat '[1@2001-01-01, 3@2001-01-03, 1@2001-01-06]',
+ tfloat '[1@2001-01-01, 1.5@2001-01-02, 2.5@2001-01-03, 1.5@2001-01-04, 1.5@2001-01-05]', 1.0);
+-- 3
+SELECT round(lcssDistance(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03,
+  Point(1 1)@2001-01-05]', tgeompoint '[Point(1.1 1.1)@2001-01-01,
+  Point(2.5 2.5)@2001-01-02, Point(4 4)@2001-01-03, Point(3 3)@2001-01-04,
+  Point(1.5 2)@2001-01-05]', 1.0)::numeric, 6);
+-- 2.000000
 </programlisting>
 			</listitem>
 
