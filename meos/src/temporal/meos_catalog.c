@@ -1185,11 +1185,7 @@ inline bool
 talphanum_type(MeosType type)
 {
   return (type == T_TBOOL || type == T_TFLOAT || type == T_TINT ||
-    type == T_TTEXT || type == T_TBIGINT
-// #if JSON
-    // || type == T_TJSONB
-// #endif
-    );
+    type == T_TTEXT || type == T_TJSONB || type == T_TBIGINT);
 }
 
 /**
