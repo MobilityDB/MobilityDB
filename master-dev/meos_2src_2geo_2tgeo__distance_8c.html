@@ -85,6 +85,8 @@ $(function() {
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="tgeo__distance_8h_source.html">geo/tgeo_distance.h</a>&quot;</code><br />
 <code>#include &lt;assert.h&gt;</code><br />
+<code>#include &lt;postgres.h&gt;</code><br />
+<code>#include &lt;utils/timestamp.h&gt;</code><br />
 <code>#include &lt;lwgeodetic_tree.h&gt;</code><br />
 <code>#include &lt;measures.h&gt;</code><br />
 <code>#include &lt;measures3d.h&gt;</code><br />
@@ -93,7 +95,9 @@ $(function() {
 <code>#include &lt;<a class="el" href="meos__internal__geo_8h_source.html">meos_internal_geo.h</a>&gt;</code><br />
 <code>#include &quot;<a class="el" href="lifting_8h_source.html">temporal/lifting.h</a>&quot;</code><br />
 <code>#include &quot;temporal/tinstant.h&quot;</code><br />
+<code>#include &quot;<a class="el" href="temporal__restrict_8h_source.html">temporal/temporal_restrict.h</a>&quot;</code><br />
 <code>#include &quot;temporal/tsequence.h&quot;</code><br />
+<code>#include &quot;temporal/type_util.h&quot;</code><br />
 <code>#include &quot;<a class="el" href="postgis__funcs_8h_source.html">geo/postgis_funcs.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="tgeo_8h_source.html">geo/tgeo.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="tgeo__spatialfuncs_8h_source.html">geo/tgeo_spatialfuncs.h</a>&quot;</code><br />
@@ -140,6 +144,15 @@ Functions</h2></td></tr>
 <tr class="memitem:gad2499d04ef50094bc749052ee584f57c"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__geo__distance_gad2499d04ef50094bc749052ee584f57c.html#gad2499d04ef50094bc749052ee584f57c">nad_tgeo_tgeo</a> (const <a class="el" href="structTemporal.html">Temporal</a> *temp1, const <a class="el" href="structTemporal.html">Temporal</a> *temp2)</td></tr>
 <tr class="memdesc:gad2499d04ef50094bc749052ee584f57c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the nearest approach distance between two temporal geos.  <a href="group__meos__geo__distance_gad2499d04ef50094bc749052ee584f57c.html#gad2499d04ef50094bc749052ee584f57c">More...</a><br /></td></tr>
 <tr class="separator:gad2499d04ef50094bc749052ee584f57c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af4ae5d80094101c0a835e26646ac961c"><td class="memItemLeft" align="right" valign="top">static double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2geo_2tgeo__distance_8c_af4ae5d80094101c0a835e26646ac961c.html#af4ae5d80094101c0a835e26646ac961c">nad_tpoint_tpoint_sync</a> (const <a class="el" href="structTemporal.html">Temporal</a> *temp1, const <a class="el" href="structTemporal.html">Temporal</a> *temp2, <a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a> *tmin)</td></tr>
+<tr class="memdesc:af4ae5d80094101c0a835e26646ac961c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the minimum time-synchronous distance between two linear temporal points and the timestamp achieving it.  <a href="meos_2src_2geo_2tgeo__distance_8c_af4ae5d80094101c0a835e26646ac961c.html#af4ae5d80094101c0a835e26646ac961c">More...</a><br /></td></tr>
+<tr class="separator:af4ae5d80094101c0a835e26646ac961c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acfe5c5ff2768c79356eaef32c1585b6f"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2geo_2tgeo__distance_8c_acfe5c5ff2768c79356eaef32c1585b6f.html#acfe5c5ff2768c79356eaef32c1585b6f">nad_tpoint_tpoint_sync_applies</a> (const <a class="el" href="structTemporal.html">Temporal</a> *temp1, const <a class="el" href="structTemporal.html">Temporal</a> *temp2)</td></tr>
+<tr class="memdesc:acfe5c5ff2768c79356eaef32c1585b6f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if the time-synchronous nearest-approach running-minimum fast path applies to two temporal geos.  <a href="meos_2src_2geo_2tgeo__distance_8c_acfe5c5ff2768c79356eaef32c1585b6f.html#acfe5c5ff2768c79356eaef32c1585b6f">More...</a><br /></td></tr>
+<tr class="separator:acfe5c5ff2768c79356eaef32c1585b6f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6a046bcd8b0acde43cc9143a0473882c"><td class="memItemLeft" align="right" valign="top">static double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2geo_2tgeo__distance_8c_a6a046bcd8b0acde43cc9143a0473882c.html#a6a046bcd8b0acde43cc9143a0473882c">nad_tpointseq_tpointseq_sync</a> (const <a class="el" href="structTSequence.html">TSequence</a> *seq1, const <a class="el" href="structTSequence.html">TSequence</a> *seq2, const <a class="el" href="structSpan.html">Span</a> *inter, <a class="el" href="meos__internal_8h_ab1980f05b1867926cafa7e8f5eb87769.html#ab1980f05b1867926cafa7e8f5eb87769">datum_func2</a> func, double curmin, <a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a> *tmin)</td></tr>
+<tr class="memdesc:a6a046bcd8b0acde43cc9143a0473882c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the minimum time-synchronous distance over the overlapping period of two linear temporal point sequences, updating the running minimum.  <a href="meos_2src_2geo_2tgeo__distance_8c_a6a046bcd8b0acde43cc9143a0473882c.html#a6a046bcd8b0acde43cc9143a0473882c">More...</a><br /></td></tr>
+<tr class="separator:a6a046bcd8b0acde43cc9143a0473882c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaee747786a54087bcc8924f32b2d4287c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTInstant.html">TInstant</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__geo__distance_gaee747786a54087bcc8924f32b2d4287c.html#gaee747786a54087bcc8924f32b2d4287c">nai_tgeo_geo</a> (const <a class="el" href="structTemporal.html">Temporal</a> *temp, const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *gs)</td></tr>
 <tr class="memdesc:gaee747786a54087bcc8924f32b2d4287c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the nearest approach instant between a temporal geo and a geometry/geography.  <a href="group__meos__geo__distance_gaee747786a54087bcc8924f32b2d4287c.html#gaee747786a54087bcc8924f32b2d4287c">More...</a><br /></td></tr>
 <tr class="separator:gaee747786a54087bcc8924f32b2d4287c"><td class="memSeparator" colspan="2">&#160;</td></tr>
