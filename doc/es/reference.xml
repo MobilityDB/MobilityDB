@@ -1332,7 +1332,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttype_similarityPath"><varname>frechetDistancePath</varname>, <varname>dynTimeWarpDistance</varname></link>: Devuelve las parejas de correspondencia entre dos valores temporales con respecto a la distancia de Fréchet discreta o a la distancia de distorsión de tiempo dinámica (Dynamic Time Warp)</para>
+					<para><link linkend="ttype_similarityPath"><varname>frechetDistancePath</varname>, <varname>dynTimeWarpPath</varname></link>: Devuelve las parejas de correspondencia entre dos valores temporales con respecto a la distancia de Fréchet discreta o a la distancia de distorsión de tiempo dinámica (Dynamic Time Warp)</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
