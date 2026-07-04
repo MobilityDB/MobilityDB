@@ -474,7 +474,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="stbox"><varname>stboxX, stboxZ, stboxT, stboxXT, stboxZY, geodstboxZ, geodstboxT, geodstboxZT</varname></link>: Constructor para <varname>stbox</varname></para>
+					<para><link linkend="stbox"><varname>stboxX, stboxZ, stboxT, stboxXT, stboxZT, geodstboxZ, geodstboxT, geodstboxZT</varname></link>: Constructor para <varname>stbox</varname></para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1201,11 +1201,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tgeo_atStbox"><varname>atStbox</varname>, <varname>minuStbox</varname></link>: Restringir a (al complemento de) un <varname>stbox</varname></para>
+					<para><link linkend="tgeo_atStbox"><varname>atStbox</varname>, <varname>minusStbox</varname></link>: Restringir a (al complemento de) un <varname>stbox</varname></para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tgeo_atElevation"><varname>atElevation</varname>, <varname>minuElevation</varname></link>: Restringir a (al complemento de) un rango de altitud</para>
+					<para><link linkend="tgeo_atElevation"><varname>atElevation</varname>, <varname>minusElevation</varname></link>: Restringir a (al complemento de) un rango de altitud</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1798,7 +1798,7 @@
 				<title>Conversiones de tipo</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="npoint_geometry"><varname>npoint::geometry</varname>, <varname>nsegment::geometry</varname>, <varname>geometry::npoint</varname>, <varname>geometry::nsegmnt</varname></link>: Convertir entre un punto o un segmento de red y una geometría</para>
+						<para><link linkend="npoint_geometry"><varname>npoint::geometry</varname>, <varname>nsegment::geometry</varname>, <varname>geometry::npoint</varname>, <varname>geometry::nsegment</varname></link>: Convertir entre un punto o un segmento de red y una geometría</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
