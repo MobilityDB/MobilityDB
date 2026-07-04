@@ -1187,6 +1187,9 @@
 				<listitem>
 					<para><link linkend="tgeo_atStbox"><varname>atStbox</varname>, <varname>minusStbox</varname></link>: Restrict to (the complement of) an <varname>stbox</varname></para>
 				</listitem>
+				<listitem>
+					<para><link linkend="tgeo_atElevation"><varname>atElevation</varname>, <varname>minusElevation</varname></link>: Restrict to (the complement of) an elevation range</para>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 
