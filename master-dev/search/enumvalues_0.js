@@ -16,5 +16,6 @@ var searchData=
   ['alwayslt_5fop_13',['ALWAYSLT_OP',['../meos_2include_2temporal_2meos__catalog_8h_a0ef7795f6a16f1de1410c140102870db.html#a0ef7795f6a16f1de1410c140102870dba4778f8593140d31958cef75d73bc087d',1,'meos_catalog.h']]],
   ['alwaysne_5fop_14',['ALWAYSNE_OP',['../meos_2include_2temporal_2meos__catalog_8h_a0ef7795f6a16f1de1410c140102870db.html#a0ef7795f6a16f1de1410c140102870dbaf5f205b84443a272f34b196dd158ae82',1,'meos_catalog.h']]],
   ['anytempsubtype_15',['ANYTEMPSUBTYPE',['../meos_8h_aa2bf13c44256043c322e235fd55b00c6.html#aa2bf13c44256043c322e235fd55b00c6a65b6d82c3517045c5a806dbbb3d51cbb',1,'meos.h']]],
-  ['atouches_5fidx_16',['ATOUCHES_IDX',['../temporal__supportfn_8c_ad5071cfb49a32468d806562e0fdc9f0e.html#ad5071cfb49a32468d806562e0fdc9f0ea11bf444cda170ec5992c8ec63d19ed86',1,'temporal_supportfn.c']]]
+  ['atouches_5fidx_16',['ATOUCHES_IDX',['../temporal__supportfn_8c_ad5071cfb49a32468d806562e0fdc9f0e.html#ad5071cfb49a32468d806562e0fdc9f0ea11bf444cda170ec5992c8ec63d19ed86',1,'temporal_supportfn.c']]],
+  ['averagehausdorff_17',['AVERAGEHAUSDORFF',['../temporal__analytics_8h_a95466ee804101bbc942485fdc27bc615.html#a95466ee804101bbc942485fdc27bc615addcae390717c884a9caa2d9634869af0',1,'temporal_analytics.h']]]
 ];
