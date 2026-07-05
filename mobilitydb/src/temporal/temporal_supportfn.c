@@ -238,6 +238,9 @@ makeExpandExpr(Node *arg, Node *radiusarg, Oid argoid, Oid retoid,
 #if NPOINT
       || argtype == T_TNPOINT
 #endif /* NPOINT */
+#if POSE
+      || argtype == T_TPOSE
+#endif /* POSE */
       )
     funcname = "expandspace";
   else
@@ -282,6 +285,9 @@ makeBboxExpr(Node *arg, Oid argoid, Oid retoid, Oid callingfunc)
 #if NPOINT
       || argtype == T_NPOINT || argtype == T_TNPOINT
 #endif /* NPOINT */
+#if POSE
+      || argtype == T_TPOSE
+#endif /* POSE */
       )
     funcname = "stbox";
   else
@@ -492,6 +498,9 @@ Temporal_supportfn(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
 #if NPOINT
           || righttype == T_NPOINT || righttype == T_TNPOINT
 #endif /* NPOINT */
+#if POSE
+          || righttype == T_TPOSE
+#endif /* POSE */
           )
         exproid = meostype_oid(T_STBOX);
       else

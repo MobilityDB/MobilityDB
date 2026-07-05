@@ -134,16 +134,19 @@ CREATE FUNCTION aDisjoint(tpose, tpose)
 
 CREATE FUNCTION eIntersects(geometry, tpose)
   RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE AS
-  $$ SELECT @extschema@.eIntersects($1, $2::@extschema@.tgeompoint::@extschema@.tgeometry) $$;
+  AS 'MODULE_PATHNAME', 'Eintersects_geo_tpose'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION eIntersects(tpose, geometry)
   RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE AS
-  $$ SELECT @extschema@.eIntersects($1::@extschema@.tgeompoint::@extschema@.tgeometry, $2) $$;
+  AS 'MODULE_PATHNAME', 'Eintersects_tpose_geo'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION eIntersects(tpose, tpose)
   RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE AS
-  $$ SELECT @extschema@.eIntersects($1::@extschema@.tgeompoint::@extschema@.tgeometry, $2::@extschema@.tgeompoint::@extschema@.tgeometry) $$;
+  AS 'MODULE_PATHNAME', 'Eintersects_tpose_tpose'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
 
@@ -198,16 +201,19 @@ CREATE FUNCTION aTouches(tpose, tpose)
 
 CREATE FUNCTION eDwithin(geometry, tpose, dist float)
   RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE AS
-  $$ SELECT @extschema@.eDwithin($1, $2::@extschema@.tgeompoint::@extschema@.tgeometry, $3) $$;
+  AS 'MODULE_PATHNAME', 'Edwithin_geo_tpose'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION eDwithin(tpose, geometry, dist float)
   RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE AS
-  $$ SELECT @extschema@.eDwithin($1::@extschema@.tgeompoint::@extschema@.tgeometry, $2, $3) $$;
+  AS 'MODULE_PATHNAME', 'Edwithin_tpose_geo'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION eDwithin(tpose, tpose, dist float)
   RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE AS
-  $$ SELECT @extschema@.eDwithin($1::@extschema@.tgeompoint::@extschema@.tgeometry, $2::@extschema@.tgeompoint::@extschema@.tgeometry, $3) $$;
+  AS 'MODULE_PATHNAME', 'Edwithin_tpose_tpose'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
 
