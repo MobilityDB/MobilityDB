@@ -4,4 +4,5 @@ add_library(pg_pose OBJECT
   tpose_compops.c
   tpose_distance.c
   tpose_spatialfuncs.c
+  tpose_spatialrels.c
   )
