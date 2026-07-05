@@ -398,7 +398,9 @@ extern "C" Datum pcpatch_from_pcd(PG_FUNCTION_ARGS)
         const pcl::PCLPointField* f_intensity = findField("intensity");
         const pcl::PCLPointField* f_rgb       = findField("rgb");
 
-        auto readFloat = [](const pcl::PCLPointField* f, const uint8_t* row) -> float {
+        auto readFloat = [&cloud2](const pcl::PCLPointField* f, const uint8_t* row) -> float {
+            if (f->offset + sizeof(float) > cloud2.point_step)
+                throw std::runtime_error("PCLPointField offset out of row buffer bounds");
             float v;
             std::memcpy(&v, row + f->offset, sizeof(float));
             return v;
