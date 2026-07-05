@@ -138,14 +138,17 @@ CREATE FUNCTION aDisjoint(trgeometry, trgeometry)
 CREATE FUNCTION eIntersects(geometry, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Eintersects_geo_trgeometry'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION eIntersects(trgeometry, geometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Eintersects_trgeometry_geo'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION eIntersects(trgeometry, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Eintersects_trgeometry_trgeometry'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
@@ -202,14 +205,17 @@ CREATE FUNCTION aTouches(trgeometry, trgeometry)
 CREATE FUNCTION eDwithin(geometry, trgeometry, dist float)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Edwithin_geo_trgeometry'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION eDwithin(trgeometry, geometry, dist float)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Edwithin_trgeometry_geo'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION eDwithin(trgeometry, trgeometry, dist float)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Edwithin_trgeometry_trgeometry'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
