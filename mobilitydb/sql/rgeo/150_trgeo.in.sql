@@ -230,6 +230,11 @@ CREATE FUNCTION stbox(trgeometry)
 
 CREATE CAST (trgeometry AS stbox) WITH FUNCTION stbox(trgeometry);
 
+CREATE FUNCTION expandSpace(trgeometry, float)
+  RETURNS stbox
+  AS 'SELECT @extschema@.expandSpace($1::stbox, $2)'
+  LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT;
+
 CREATE FUNCTION geometry(trgeometry)
   RETURNS geometry
   AS 'MODULE_PATHNAME', 'Trgeometry_to_geom'
