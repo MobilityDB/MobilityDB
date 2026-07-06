@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['radius_0',['radius',['../structSPHEROID_a2ec41241699a094e4f98928220c045c7.html#a2ec41241699a094e4f98928220c045c7',1,'SPHEROID::radius()'],['../structCircle_a5a0212ba705f57d762bd6b202e3d10ed.html#a5a0212ba705f57d762bd6b202e3d10ed',1,'Circle::radius()'],['../structCbuffer_a121a38c66ff48003c153580ace3679be.html#a121a38c66ff48003c153580ace3679be',1,'Cbuffer::radius()']]],
+  ['radius_0',['radius',['../structSPHEROID_a2ec41241699a094e4f98928220c045c7.html#a2ec41241699a094e4f98928220c045c7',1,'SPHEROID::radius()'],['../structCircle_a5a0212ba705f57d762bd6b202e3d10ed.html#a5a0212ba705f57d762bd6b202e3d10ed',1,'Circle::radius()'],['../structEdge_aa855ab4dcc07efe8b2ba807bcd8ed978.html#aa855ab4dcc07efe8b2ba807bcd8ed978',1,'Edge::radius()'],['../structCbuffer_a121a38c66ff48003c153580ace3679be.html#a121a38c66ff48003c153580ace3679be',1,'Cbuffer::radius()']]],
   ['range_1',['range',['../structConsiderSplitContext_ab3ac677738b07b65c855008d7fa67595.html#ab3ac677738b07b65c855008d7fa67595',1,'ConsiderSplitContext']]],
   ['ratio_2',['ratio',['../structConsiderSplitContext_a6ce66465b595c8b1f134356c6c34241c.html#a6ce66465b595c8b1f134356c6c34241c',1,'ConsiderSplitContext']]],
   ['ref_5fwkt_3',['ref_wkt',['../structtrip__t_ad74b01c205696f6272b0e4c60c4620b0.html#ad74b01c205696f6272b0e4c60c4620b0',1,'trip_t']]],
@@ -9,9 +9,9 @@ var searchData=
   ['resnull_6',['resnull',['../structLiftedFunctionInfo_a9b767da432f07bc6aea53674dc36676c.html#a9b767da432f07bc6aea53674dc36676c',1,'LiftedFunctionInfo']]],
   ['restype_7',['restype',['../structLiftedFunctionInfo_a0216e3e3ef33715f461c6dec33c7a039.html#a0216e3e3ef33715f461c6dec33c7a039',1,'LiftedFunctionInfo']]],
   ['rid_8',['rid',['../structNpoint_a0560de3edeea8503ecadb1f5038e60af.html#a0560de3edeea8503ecadb1f5038e60af',1,'Npoint::rid()'],['../structNsegment_a95f22aa9e6246931d2eca7534ff2a2d7.html#a95f22aa9e6246931d2eca7534ff2a2d7',1,'Nsegment::rid()']]],
-  ['right_9',['right',['../structTboxNode_ad320507fdac0871fecc5ad762e4cdbfe.html#ad320507fdac0871fecc5ad762e4cdbfe',1,'TboxNode']]],
+  ['right_9',['right',['../structSpanNode_a7d50dd13b4e824e4303bd48d3a1790e9.html#a7d50dd13b4e824e4303bd48d3a1790e9',1,'SpanNode']]],
   ['right_10',['RIGHT',['../tgeo__restrict_8c_a088fe0153a918af361dc8f4e775d020e.html#a088fe0153a918af361dc8f4e775d020e',1,'tgeo_restrict.c']]],
-  ['right_11',['right',['../structSpanNode_a7d50dd13b4e824e4303bd48d3a1790e9.html#a7d50dd13b4e824e4303bd48d3a1790e9',1,'SpanNode::right()'],['../structSTboxNode_ac05a610d1803f84878426220ea77f535.html#ac05a610d1803f84878426220ea77f535',1,'STboxNode::right()']]],
+  ['right_11',['right',['../structTboxNode_ad320507fdac0871fecc5ad762e4cdbfe.html#ad320507fdac0871fecc5ad762e4cdbfe',1,'TboxNode::right()'],['../structSTboxNode_ac05a610d1803f84878426220ea77f535.html#ac05a610d1803f84878426220ea77f535',1,'STboxNode::right()']]],
   ['right_5flower_12',['right_lower',['../structConsiderSplitContext_a162416d9eb39cd01736aa3ae1d46ac23.html#a162416d9eb39cd01736aa3ae1d46ac23',1,'ConsiderSplitContext']]],
   ['rightlower_13',['rightLower',['../structConsiderSplitContext_a429305c1628a73ce14433a3ff20bc673.html#a429305c1628a73ce14433a3ff20bc673',1,'ConsiderSplitContext']]],
   ['rings_14',['rings',['../structLWPOLY_a2b0a8b89f0af409f4bd4527255bc1bbf.html#a2b0a8b89f0af409f4bd4527255bc1bbf',1,'LWPOLY::rings()'],['../structLWCURVEPOLY_a7697b8eddb636d429009fd5f84b95089.html#a7697b8eddb636d429009fd5f84b95089',1,'LWCURVEPOLY::rings()']]],
