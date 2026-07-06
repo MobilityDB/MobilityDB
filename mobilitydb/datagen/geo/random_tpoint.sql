@@ -725,6 +725,52 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
+ * @brief Generate a random geometric circular string
+ * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
+ * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
+ * @param[in] maxdelta Maximum difference between two consecutive coordinate values
+ * @param[in] minarcs, maxarcs Inclusive bounds of the number of circular arcs
+ * @param[in] srid SRID of the coordinates
+ */
+DROP FUNCTION IF EXISTS random_geom_circularstring;
+CREATE FUNCTION random_geom_circularstring(lowx float, highx float, lowy float,
+  highy float, maxdelta float, minarcs int, maxarcs int, srid int DEFAULT 0)
+  RETURNS geometry AS $$
+DECLARE
+  narcs int;
+  points geometry[];
+  wkt text;
+BEGIN
+  IF minarcs > maxarcs THEN
+    RAISE EXCEPTION 'minarcs must be less than or equal to maxarcs: %, %',
+      minarcs, maxarcs;
+  END IF;
+  narcs = random_int(minarcs, maxarcs);
+  /* A circular string with n arcs is defined by 2 * n + 1 points */
+  points = random_geom_point_array(lowx, highx, lowy, highy, maxdelta,
+    2 * narcs + 1, 2 * narcs + 1, srid);
+  SELECT 'CIRCULARSTRING(' ||
+    string_agg(st_x(p) || ' ' || st_y(p), ',' ORDER BY ord) || ')'
+  INTO wkt
+  FROM unnest(points) WITH ORDINALITY AS t(p, ord);
+  RETURN ST_GeomFromText(wkt, srid);
+END;
+$$ LANGUAGE PLPGSQL STRICT;
+
+/*
+SELECT k, st_asEWKT(random_geom_circularstring(-100, 100, -100, 100, 10, 1, 5)) AS g
+FROM generate_series(1, 15) AS k;
+
+SELECT k, st_asEWKT(random_geom_circularstring(-100, 100, -100, 100, 10, 1, 5, 3812)) AS g
+FROM generate_series(1, 15) AS k;
+
+SELECT distinct geometrytype(random_geom_circularstring(-100, 100, -100, 100, 10, 1, 5)) AS g
+FROM generate_series(1, 15) AS k;
+*/
+
+-------------------------------------------------------------------------------
+
+/**
  * @brief Generate a random 3D geometric linestring
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates

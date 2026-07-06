@@ -68,6 +68,20 @@ SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset
   9900
 (1 row)
 
+SELECT COUNT(*) FROM tbl_geom_circularstring, tbl_tgeompoint
+  WHERE tDisjoint(g, temp) IS NOT NULL;
+ count 
+-------
+  9900
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom_circularstring
+  WHERE tDisjoint(temp, g) IS NOT NULL;
+ count 
+-------
+  9900
+(1 row)
+
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint
   WHERE tDisjoint(g, temp) ?= true <> eDisjoint(g, temp);
  count 
@@ -133,6 +147,20 @@ SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seq
 
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset
   WHERE tIntersects(g, ss) IS NOT NULL;
+ count 
+-------
+  9900
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geom_circularstring, tbl_tgeompoint
+  WHERE tIntersects(g, temp) IS NOT NULL;
+ count 
+-------
+  9900
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom_circularstring
+  WHERE tIntersects(temp, g) IS NOT NULL;
  count 
 -------
   9900

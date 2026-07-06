@@ -216,6 +216,17 @@ SELECT 1 AS k, geography 'multipolygon Z empty' AS g UNION
 SELECT k, random_geog_multipolygon3D(-10, 32, 35, 72, 0, 1000, 10, 5, 10, 5, 10)
 FROM generate_series(2, size) k;
 
+DROP TABLE IF EXISTS tbl_geom_circularstring;
+CREATE TABLE tbl_geom_circularstring AS
+SELECT 1 AS k, geometry 'circularstring empty' AS g UNION
+SELECT k, random_geom_circularstring(0, 100, 0, 100, 10, 1, 5)
+FROM generate_series(2, size) k;
+
+/* Circular strings are kept in their own table and intentionally NOT added to
+ * tbl_geom below: only the temporal spatial relationships tIntersects and
+ * tDisjoint compute circular arcs natively, so a circular string is exercised
+ * only by those tests, not by the spatial functions/relationships/distance
+ * tests that also read tbl_geom. */
 DROP TABLE IF EXISTS tbl_geom;
 CREATE TABLE tbl_geom (
   k serial PRIMARY KEY,
