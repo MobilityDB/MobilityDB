@@ -224,6 +224,11 @@ extern Temporal *tgeoseq_restrict_stbox(const TSequence *seq, const STBox *box, 
 extern TSequenceSet *tgeoseqset_restrict_geom(const TSequenceSet *ss, const GSERIALIZED *gs, bool atfunc);
 extern TSequenceSet *tgeoseqset_restrict_stbox(const TSequenceSet *ss, const STBox *box, bool border_inc, bool atfunc);
 
+/* Native temporal-point geometry-clip engine */
+
+extern Temporal *tpoint_linear_inter_geom(const Temporal *temp, const GSERIALIZED *gs, bool clip);
+extern Temporal *tpoint_linear_restrict_geom(const Temporal *temp, const GSERIALIZED *gs, bool atfunc);
+
 /*****************************************************************************/
 
 /* Traditional comparison functions */
