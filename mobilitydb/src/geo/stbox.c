@@ -926,8 +926,8 @@ PGDLLEXPORT Datum Stbox_perimeter(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_perimeter);
 /**
  * @ingroup mobilitydb_geo_box_accessor
- * @brief Return the area of a spatiotemporal box
- * @sqlfn area()
+ * @brief Return the perimeter of a spatiotemporal box
+ * @sqlfn perimeter()
  */
 Datum
 Stbox_perimeter(PG_FUNCTION_ARGS)
