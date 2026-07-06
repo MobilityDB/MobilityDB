@@ -77,7 +77,8 @@ typedef enum
   EDGE_POINT = 0,
   EDGE_LINE,
   EDGE_POLY,
-  EDGE_ARC
+  EDGE_ARC,
+  EDGE_POLYARC
 } EdgeType;
 
 /**
@@ -387,6 +388,59 @@ point_in_polygon(double x, double y, Edge **edges, int nedges)
   {
     const Edge *restrict e = edges[i];
 
+    /* Only polygon boundary edges bound a region. Point, line, and standalone
+     * (1D) arc edges are ignored by the even-odd containment test */
+    if (e->etype == EDGE_POLYARC)
+    {
+      /* Boundary check */
+      if (point_on_arc(x, y, e))
+        return 1;
+      /* Cast a ray towards +x. The horizontal line at height y meets the
+       * supporting circle at cx +/- sqrt(r^2 - (y - cy)^2); flip the parity
+       * for each crossing that lies strictly to the right of the point and
+       * within the arc's angular span. A ray that only grazes the circle
+       * tangentially (h2 ~ 0) does not cross the boundary */
+      const double dyc = y - e->cy;
+      const double h2 = e->radius * e->radius - dyc * dyc;
+      if (h2 <= FP_TOLERANCE)
+        continue;
+      const double h = sqrt(h2);
+      const double xhit[2] = {e->cx - h, e->cx + h};
+      /* Forward traversal direction of the arc in the angle parameter */
+      const double s = e->ccw ? 1.0 : -1.0;
+      for (int k = 0; k < 2; k++)
+      {
+        const double xi = xhit[k];
+        if (xi <= x)
+          continue;
+        const double phi = atan2(dyc, xi - e->cx);
+        if (! arc_contains_angle(e, phi))
+          continue;
+        /* Half-open ownership, mirroring the straight-edge
+         * (y1 > y) != (y2 > y) rule below: a crossing shared with a
+         * neighbouring edge (a ring junction lying exactly on the ray) must be
+         * counted once. A crossing at an arc endpoint is owned by this edge
+         * only if the arc's interior rises above the ray there; an interior
+         * crossing is always transversal and always counted */
+        const bool at_ep0 = fabs(xi - e->x1) < FP_TOLERANCE &&
+          fabs(y - e->y1) < FP_TOLERANCE;
+        const bool at_ep1 = fabs(xi - e->x2) < FP_TOLERANCE &&
+          fabs(y - e->y2) < FP_TOLERANCE;
+        if (at_ep0 || at_ep1)
+        {
+          const double theta_e = at_ep0 ? e->theta0 : e->theta1;
+          const double dtheta_in = at_ep0 ? s : -s;
+          if (dtheta_in * cos(theta_e) <= 0)
+            continue;
+        }
+        inside ^= 1;
+      }
+      continue;
+    }
+
+    if (e->etype != EDGE_POLY)
+      continue;
+
     const double dx  = e->dx;
     const double dy  = e->dy;
     const double x1  = e->x1;
@@ -638,11 +692,14 @@ intervals_from_polygons(const POINT2D *a, const POINT2D *b, Edge **edges,
   const double rx = bx - ax;
   const double ry = by - ay;
 
-  /* Check whether any polygon edges exist using the full edge array */
+  /* Check whether any polygon boundary edges exist using the full edge array.
+   * A curve polygon contributes straight (EDGE_POLY) and arc (EDGE_POLYARC)
+   * boundary edges */
   bool has_polys = false;
   for (int i = 0; i < all_nedges; i++)
   {
-    if (all_edges[i]->etype == EDGE_POLY)
+    EdgeType et = all_edges[i]->etype;
+    if (et == EDGE_POLY || et == EDGE_POLYARC)
     {
       has_polys = true;
       break;
@@ -656,8 +713,8 @@ intervals_from_polygons(const POINT2D *a, const POINT2D *b, Edge **edges,
   for (int i = 0; i < nedges; i++)
   {
     Edge *e = edges[i];
-    /* Iterate only for the polygon edges */
-    if (e->etype != EDGE_POLY)
+    /* Iterate only for the polygon boundary edges (straight or arc) */
+    if (e->etype != EDGE_POLY && e->etype != EDGE_POLYARC)
       continue;
 
     /* Bounding box filter */
@@ -665,14 +722,26 @@ intervals_from_polygons(const POINT2D *a, const POINT2D *b, Edge **edges,
         e->ymax < seg_ymin || e->ymin > seg_ymax)
       continue;
 
-    /* Compute the intersection */
-    IntersectResult r = linesegm_intersect(ax, ay, rx, ry,
-      e->x1, e->y1, e->x2, e->y2);
-    if (r.type == INTERSECT_POINT)
+    if (e->etype == EDGE_POLY)
     {
-      double t = r.t0;
-      if (t >= -FP_TOLERANCE && t <= 1.0 + FP_TOLERANCE)
-        meos_array_add(events, &t);
+      /* Compute the crossing with the straight boundary segment */
+      IntersectResult r = linesegm_intersect(ax, ay, rx, ry,
+        e->x1, e->y1, e->x2, e->y2);
+      if (r.type == INTERSECT_POINT)
+      {
+        double t = r.t0;
+        if (t >= -FP_TOLERANCE && t <= 1.0 + FP_TOLERANCE)
+          meos_array_add(events, &t);
+      }
+    }
+    else
+    {
+      /* Compute the crossings with the arc boundary edge (at most two) */
+      double t[2];
+      int n = arcsegm_intersect(ax, ay, rx, ry, e, t);
+      for (int k = 0; k < n; k++)
+        if (t[k] >= -FP_TOLERANCE && t[k] <= 1.0 + FP_TOLERANCE)
+          meos_array_add(events, &t[k]);
     }
   }
 
@@ -1075,7 +1144,7 @@ extract_triangle(const LWTRIANGLE *tri, MeosArray *edges)
  */
 static void
 emit_arc_edge(const POINT4D *pa, const POINT4D *pb, const POINT4D *pc,
-  MeosArray *edges)
+  MeosArray *edges, EdgeType line_etype, EdgeType arc_etype)
 {
   double ax = pa->x, ay = pa->y;
   double bx = pb->x, by = pb->y;
@@ -1096,7 +1165,7 @@ emit_arc_edge(const POINT4D *pa, const POINT4D *pb, const POINT4D *pc,
       e.ymin = FP_MIN(e.y1, e.y2); e.ymax = FP_MAX(e.y1, e.y2);
       e.dx = e.x2 - e.x1; e.dy = e.y2 - e.y1;
       e.length = e.dx * e.dx + e.dy * e.dy;
-      e.etype = EDGE_LINE;
+      e.etype = line_etype;
       meos_array_add(edges, &e);
     }
     return;
@@ -1117,9 +1186,35 @@ emit_arc_edge(const POINT4D *pa, const POINT4D *pb, const POINT4D *pc,
   /* Traversal orientation from the signed area of (start, mid, end) */
   e.ccw = ((bx - ax) * (cy - ay) - (by - ay) * (cx - ax)) > 0;
   e.dx = e.dy = e.length = 0;
-  e.etype = EDGE_ARC;
+  e.etype = arc_etype;
   arc_set_bbox(&e);
   meos_array_add(edges, &e);
+  return;
+}
+
+/**
+ * @brief Add to the dynamic array in the last argument the arc edges obtained
+ * from a circular string, emitting them with the given line/arc edge types
+ * @details Straight components (collinear point triples) are emitted with
+ * @p line_etype and genuine arcs with @p arc_etype. A standalone circular
+ * string uses the 1D types (#EDGE_LINE / #EDGE_ARC); a circular string that
+ * bounds a curve polygon ring uses the region types (#EDGE_POLY /
+ * #EDGE_POLYARC)
+ */
+static void
+emit_circstring_edges(const LWCIRCSTRING *circ, MeosArray *edges,
+  EdgeType line_etype, EdgeType arc_etype)
+{
+  const POINTARRAY *pa = circ->points;
+  int np = (int) pa->npoints;
+  for (int i = 0; i + 2 < np; i += 2)
+  {
+    POINT4D pa4, pb4, pc4;
+    (void) getPoint4d_p(pa, i, &pa4);
+    (void) getPoint4d_p(pa, i + 1, &pb4);
+    (void) getPoint4d_p(pa, i + 2, &pc4);
+    emit_arc_edge(&pa4, &pb4, &pc4, edges, line_etype, arc_etype);
+  }
   return;
 }
 
@@ -1130,16 +1225,61 @@ emit_arc_edge(const POINT4D *pa, const POINT4D *pb, const POINT4D *pc,
 static void
 extract_circstring(const LWCIRCSTRING *circ, MeosArray *edges)
 {
-  const POINTARRAY *pa = circ->points;
-  int np = (int) pa->npoints;
-  for (int i = 0; i + 2 < np; i += 2)
+  emit_circstring_edges(circ, edges, EDGE_LINE, EDGE_ARC);
+  return;
+}
+
+/**
+ * @brief Add to the dynamic array in the last argument the region-boundary
+ * edges obtained from a ring of a curve polygon
+ * @details A ring is a line string, a circular string, or a compound curve
+ * chaining both. Every edge is emitted with polygon (region) semantics
+ * (#EDGE_POLY / #EDGE_POLYARC) so that the even-odd containment test in
+ * #point_in_polygon treats it as a boundary rather than a 1D feature
+ */
+static void
+extract_curvepoly_ring(const LWGEOM *ring, MeosArray *edges)
+{
+  switch (ring->type)
   {
-    POINT4D pa4, pb4, pc4;
-    (void) getPoint4d_p(pa, i, &pa4);
-    (void) getPoint4d_p(pa, i + 1, &pb4);
-    (void) getPoint4d_p(pa, i + 2, &pc4);
-    emit_arc_edge(&pa4, &pb4, &pc4, edges);
+    case LINETYPE:
+      emit_ring_edges(((const LWLINE *) ring)->points, edges, EDGE_POLY);
+      break;
+
+    case CIRCSTRINGTYPE:
+      emit_circstring_edges((const LWCIRCSTRING *) ring, edges, EDGE_POLY,
+        EDGE_POLYARC);
+      break;
+
+    /* A compound curve is a chain of line strings and circular strings; it
+     * shares the collection memory layout, so its components are processed as
+     * ring pieces in the same way */
+    case COMPOUNDTYPE:
+    {
+      const LWCOLLECTION *col = (const LWCOLLECTION *) ring;
+      for (int i = 0; i < (int) col->ngeoms; i++)
+        extract_curvepoly_ring(col->geoms[i], edges);
+      break;
+    }
+
+    /* Unsupported ring type */
+    default:
+      meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+        "Unsupported curve polygon ring type");
+      break;
   }
+  return;
+}
+
+/**
+ * @brief Add to the dynamic array in the last argument the edges obtained
+ * from a curve polygon
+ */
+static void
+extract_curvepoly(const LWCURVEPOLY *cp, MeosArray *edges)
+{
+  for (int r = 0; r < (int) cp->nrings; r++)
+    extract_curvepoly_ring(cp->rings[r], edges);
   return;
 }
 
@@ -1198,6 +1338,10 @@ geom_extract_edges_iter(const LWGEOM *geom, MeosArray *edges)
       extract_circstring((const LWCIRCSTRING *) geom, edges);
       break;
 
+    case CURVEPOLYTYPE:
+      extract_curvepoly((const LWCURVEPOLY *) geom, edges);
+      break;
+
     /* Unsupported type */
     default:
       meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
@@ -1248,6 +1392,21 @@ geom_clip_supported(const LWGEOM *geom)
       for (uint32_t i = 0; i < col->ngeoms; i++)
         if (! geom_clip_supported(col->geoms[i]))
           return false;
+      return true;
+    }
+    case CURVEPOLYTYPE:
+    {
+      /* Mirrors the ring dispatch of #extract_curvepoly_ring: a ring must be a
+       * line string, a circular string, or a compound curve of those */
+      const LWCURVEPOLY *cp = (const LWCURVEPOLY *) geom;
+      for (uint32_t r = 0; r < cp->nrings; r++)
+      {
+        uint8_t rt = cp->rings[r]->type;
+        if (rt != LINETYPE && rt != CIRCSTRINGTYPE && rt != COMPOUNDTYPE)
+          return false;
+        if (rt == COMPOUNDTYPE && ! geom_clip_supported(cp->rings[r]))
+          return false;
+      }
       return true;
     }
     default:
