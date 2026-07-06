@@ -223,6 +223,18 @@ SELECT tDisjoint(geometry 'CompoundCurve(CircularString(5 0, 4 3, 0 5), (0 5, -3
  {[t@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST], (t@Mon Jan 03 00:00:00 2000 PST, t@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
+SELECT tDisjoint(tgeompoint '[Point(0 0)@2000-01-01, Point(6 8)@2000-01-05]', geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))');
+                                                              tdisjoint                                                               
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST], (t@Mon Jan 03 00:00:00 2000 PST, t@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tDisjoint(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tgeompoint '[Point(0 0)@2000-01-01, Point(6 8)@2000-01-05]');
+                                                              tdisjoint                                                               
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST], (t@Mon Jan 03 00:00:00 2000 PST, t@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
 SELECT tDisjoint(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Point empty');
  tdisjoint 
 -----------
@@ -442,6 +454,36 @@ SELECT tIntersects(geometry 'CompoundCurve(CircularString(5 0, 4 3, 0 5), (0 5, 
                                                              tintersects                                                              
 --------------------------------------------------------------------------------------------------------------------------------------
  {[f@Sat Jan 01 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST], (f@Mon Jan 03 00:00:00 2000 PST, f@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tIntersects(tgeompoint '[Point(0 0)@2000-01-01, Point(6 8)@2000-01-05]', geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))');
+                                                             tintersects                                                              
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[t@Sat Jan 01 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST], (f@Mon Jan 03 00:00:00 2000 PST, f@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tIntersects(tgeompoint '[Point(-6 -8)@2000-01-01, Point(6 8)@2000-01-05]', geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))');
+                                                                             tintersects                                                                              
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, t@Sun Jan 02 00:00:00 2000 PST, t@Tue Jan 04 00:00:00 2000 PST], (f@Tue Jan 04 00:00:00 2000 PST, f@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tIntersects(tgeompoint '[Point(0 -2)@2000-01-01, Point(0 8)@2000-01-05]', geometry 'CurvePolygon(CompoundCurve(CircularString(5 0, 0 5, -5 0), (-5 0, 5 0)))');
+                                                                                    tintersects                                                                                     
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, t@Sat Jan 01 19:12:00 2000 PST, t@Mon Jan 03 19:11:59.999999 2000 PST], (f@Mon Jan 03 19:11:59.999999 2000 PST, f@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tIntersects(tgeompoint '[Point(-6 0)@2000-01-01, Point(6 0)@2000-01-05]', geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0), CircularString(2 0, 0 2, -2 0, 0 -2, 2 0))');
+                                                                                                                              tintersects                                                                                                                               
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, t@Sat Jan 01 08:00:00 2000 PST, t@Sun Jan 02 08:00:00 2000 PST], (f@Sun Jan 02 08:00:00 2000 PST, t@Mon Jan 03 16:00:00 2000 PST, t@Tue Jan 04 16:00:00 2000 PST], (f@Tue Jan 04 16:00:00 2000 PST, f@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tIntersects(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tgeompoint '[Point(0 0)@2000-01-01, Point(6 8)@2000-01-05]');
+                                                             tintersects                                                              
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[t@Sat Jan 01 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST], (f@Mon Jan 03 00:00:00 2000 PST, f@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
 SELECT tIntersects(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Point empty');
