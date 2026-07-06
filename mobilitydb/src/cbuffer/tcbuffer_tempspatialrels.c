@@ -526,7 +526,7 @@ PG_FUNCTION_INFO_V1(Tdwithin_geo_tcbuffer);
  * @ingroup mobilitydb_cbuffer_rel_temp
  * @brief Return a temporal boolean that states whether a geometry and a
  * temporal circular buffer are within a distance
- * @sqlfn tTouches()
+ * @sqlfn tDwithin()
  */
 Datum
 Tdwithin_geo_tcbuffer(PG_FUNCTION_ARGS)
@@ -540,7 +540,7 @@ PG_FUNCTION_INFO_V1(Tdwithin_tcbuffer_geo);
  * @ingroup mobilitydb_cbuffer_rel_temp
  * @brief Return a temporal boolean that states whether a temporal circular
  * buffer and a geometry are within a distance
- * @sqlfn tTouches()
+ * @sqlfn tDwithin()
  */
 Datum
 Tdwithin_tcbuffer_geo(PG_FUNCTION_ARGS)

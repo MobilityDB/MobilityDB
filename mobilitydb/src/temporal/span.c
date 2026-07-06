@@ -535,7 +535,7 @@ PG_FUNCTION_INFO_V1(Span_upper_inc);
 /**
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return true if the upper bound of a span is inclusive
- * @sqlfn lower_inc()
+ * @sqlfn upperInc()
  */
 Datum
 Span_upper_inc(PG_FUNCTION_ARGS)
