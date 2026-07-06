@@ -40,6 +40,7 @@
 /* PostgreSQL */
 #include "postgres.h"
 #include <utils/float.h>
+#include <utils/timestamp.h>
 /* PostGIS */
 #include "liblwgeom.h"
 #include "liblwgeom_internal.h"
@@ -66,7 +67,7 @@
 static MEOS_TLS MeosArray *events = NULL;
 static MEOS_TLS MeosArray *intervals = NULL;
 static MEOS_TLS MeosArray *periods = NULL;
-static MEOS_TLS int *rtree_results = NULL;
+static MEOS_TLS MeosArray *rtree_results = NULL;
 
 /**
  * @brief Enumeration defining the edge types 
@@ -609,11 +610,11 @@ tpointinst_clip_edges(const TInstant *inst, Edge **edges, int nedges,
     stbox_set(true, false, false, srid, a->x, a->x, a->y, a->y, 0, 0, NULL,
       &query);
     /* Query the R-tree */
-    int cand_nedges = rtree_search(rtree, RTREE_OVERLAPS, &query, &rtree_results);
+    int cand_nedges = rtree_search(rtree, RTREE_OVERLAPS, &query, rtree_results);
 
     /* Convert the result of an R-tree look up into an edge pointer array */
     for (int j = 0; j < cand_nedges; j++)
-      cand_edges[j] = edges[rtree_results[j]];
+      cand_edges[j] = edges[*(int *) meos_array_get(rtree_results, j)];
     sel_edges = cand_edges;
     sel_nedges = cand_nedges;
   }
@@ -686,11 +687,11 @@ tpointseq_clip_edges(const TSequence *seq, Edge **edges, int nedges,
         FP_MAX(a->x, b->x), FP_MIN(a->y, b->y), FP_MAX(a->y, b->y),
         0, 0, NULL, &query);
       /* Query the R-tree */
-      int cand_nedges = rtree_search(rtree, RTREE_OVERLAPS, &query, &rtree_results);
+      int cand_nedges = rtree_search(rtree, RTREE_OVERLAPS, &query, rtree_results);
 
       /* Convert the result of an R-tree look up into an edge pointer array */
       for (int j = 0; j < cand_nedges; j++)
-        cand_edges[j] = edges[rtree_results[j]];
+        cand_edges[j] = edges[*(int *) meos_array_get(rtree_results, j)];
       sel_edges = cand_edges;
       sel_nedges = cand_nedges;
     }
@@ -1047,8 +1048,8 @@ tpoint_linear_inter_geom(const Temporal *temp, const GSERIALIZED *gs,
       rtree_free(rtree); 
       return NULL;
     }
-    /* Array of integer pointers for storing the results of an R-tree search */
-    rtree_results = palloc(sizeof(int) * edges->count);
+    /* Array for collecting the ids resulting from an R-tree search */
+    rtree_results = meos_array_create(sizeof(int));
     if (! rtree_results)
     {
       meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
@@ -1126,12 +1127,12 @@ tpoint_linear_inter_geom(const Temporal *temp, const GSERIALIZED *gs,
 cleanup_return:
   if (edges->count > RTREE_MIN_NUMBER_ELEMS)
   {
-    rtree_free(rtree); pfree(cand_edges); pfree(rtree_results);
+    rtree_free(rtree); pfree(cand_edges); meos_array_destroy(rtree_results);
   }
-  meos_array_destroy(events, false);
-  meos_array_destroy(intervals, false);
-  meos_array_destroy(periods, false);
-  meos_array_destroy(edges, false); pfree(edge_ptrs);
+  meos_array_destroy(events);
+  meos_array_destroy(intervals);
+  meos_array_destroy(periods);
+  meos_array_destroy(edges); pfree(edge_ptrs);
   return result;  
 }
 

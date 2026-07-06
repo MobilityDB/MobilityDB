@@ -14,6 +14,7 @@ set(GEO_SOURCES
   tgeo_tile.c
   geo_poly_clip.c
   tpoint_datagen.c
+  tpoint_geom_clip.c
   tpoint_spatialfuncs.c
   tspatial.c
   tspatial_parser.c
