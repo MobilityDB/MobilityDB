@@ -530,6 +530,27 @@ tinterrel_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter)
     return result;
   }
 
+  /* Native fast path for a temporal geometry point with linear interpolation
+   * over a non-curved geometry, avoiding the GEOS ST_Intersection call.
+   * Instantaneous values and curved geometries (which the native clip does not
+   * support) fall through to the general path below. */
+  if (temp->temptype == T_TGEOMPOINT && temp->subtype != TINSTANT &&
+      MEOS_FLAGS_GET_INTERP(temp->flags) == LINEAR)
+  {
+    LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
+    bool curved = (lwgeom_has_arc(lwgeom) == LW_TRUE);
+    lwgeom_free(lwgeom);
+    if (! curved)
+    {
+      Temporal *res = tpoint_linear_inter_geom(temp, gs, false);
+      if (tinter)
+        return res;
+      Temporal *result = tnot_tbool(res);
+      pfree(res);
+      return result;
+    }
+  }
+
   /* 3D only if both arguments are 3D */
   datum_func2 func = MEOS_FLAGS_GET_Z(temp->flags) && FLAGS_GET_Z(gs->gflags) ?
       &datum_geom_intersects3d : &datum_geom_intersects2d;
