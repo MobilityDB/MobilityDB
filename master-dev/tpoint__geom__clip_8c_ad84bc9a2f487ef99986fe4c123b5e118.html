@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: rtree_results</title>
+<title>MobilityDB: extract_curvepoly</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -90,7 +90,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a1bba1400df82eba21733f940ff1f520d.html#a1bba1400df82eba21733f940ff1f520d">emit_ring_edges</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_abcb605f8fc9357124c34daa34d0f7490.html#abcb605f8fc9357124c34daa34d0f7490">events</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_af01b7c2279797a9424028f945264851b.html#af01b7c2279797a9424028f945264851b">extract_circstring</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_ad84bc9a2f487ef99986fe4c123b5e118.html#ad84bc9a2f487ef99986fe4c123b5e118">extract_curvepoly</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="tpoint__geom__clip_8c_ad84bc9a2f487ef99986fe4c123b5e118.html#ad84bc9a2f487ef99986fe4c123b5e118">extract_curvepoly</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_ad1a7068888333781f3ecbaafe3ca72ba.html#ad1a7068888333781f3ecbaafe3ca72ba">extract_curvepoly_ring</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_af5c4b1398f0a760e2da20d48b9b2104a.html#af5c4b1398f0a760e2da20d48b9b2104a">extract_line</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a2ece32e75a2c100c944369f8eac303ad.html#a2ece32e75a2c100c944369f8eac303ad">extract_mline</a></td></tr>
@@ -116,7 +116,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_ab6bad4700989bcefb8a992dcbb387fb2.html#ab6bad4700989bcefb8a992dcbb387fb2">point_on_arc</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_aa2f4628979203441083bd84d2c0994b0.html#aa2f4628979203441083bd84d2c0994b0">point_on_segment</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_abc1554629b609538e5923536e313ca91.html#abc1554629b609538e5923536e313ca91">RTREE_MIN_NUMBER_ELEMS</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="tpoint__geom__clip_8c_a1641bd3a1bc3520a3b1c82ca53d32952.html#a1641bd3a1bc3520a3b1c82ca53d32952">rtree_results</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a1641bd3a1bc3520a3b1c82ca53d32952.html#a1641bd3a1bc3520a3b1c82ca53d32952">rtree_results</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_ae3cdddc206cf6af95d65640cccaca6ae.html#ae3cdddc206cf6af95d65640cccaca6ae">tpoint_linear_inter_geom</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a2e5c31431abef5680ea455d38975ed2e.html#a2e5c31431abef5680ea455d38975ed2e">tpoint_linear_restrict_geom</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a0f3d99b9320d02e291a13a79edc237c3.html#a0f3d99b9320d02e291a13a79edc237c3">tpointinst_clip_edges</a></td></tr>
@@ -125,8 +125,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a1641bd3a1bc3520a3b1c82ca53d32952" name="a1641bd3a1bc3520a3b1c82ca53d32952"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1641bd3a1bc3520a3b1c82ca53d32952">&#9670;&#160;</a></span>rtree_results</h2>
+<a id="ad84bc9a2f487ef99986fe4c123b5e118" name="ad84bc9a2f487ef99986fe4c123b5e118"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad84bc9a2f487ef99986fe4c123b5e118">&#9670;&#160;</a></span>extract_curvepoly()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -135,7 +135,21 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="meos__tls_8h_a4f938531e64b0b1babd66b9a29301ff6.html#a4f938531e64b0b1babd66b9a29301ff6">MEOS_TLS</a> <a class="el" href="structMeosArray.html">MeosArray</a>* rtree_results = NULL</td>
+          <td class="memname">static void extract_curvepoly </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structLWCURVEPOLY.html">LWCURVEPOLY</a> *&#160;</td>
+          <td class="paramname"><em>cp</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structMeosArray.html">MeosArray</a> *&#160;</td>
+          <td class="paramname"><em>edges</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
   </td>
@@ -144,6 +158,8 @@ $(function() {
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>Add to the dynamic array in the last argument the edges obtained from a curve polygon. </p>
 
 </div>
 </div>

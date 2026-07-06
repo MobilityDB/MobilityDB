@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: emit_arc_edge</title>
+<title>MobilityDB: extract_curvepoly_ring</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -85,10 +85,13 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a8432e7a27960bfe3c706b0e688d3dc8a.html#a8432e7a27960bfe3c706b0e688d3dc8a">arcsegm_intersect</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_aee48f2fb02ef50956538ed682b63a586.html#aee48f2fb02ef50956538ed682b63a586">build_edge_rtree</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a424a64da753a3cd5e96ab8d0553a04c4.html#a424a64da753a3cd5e96ab8d0553a04c4">EdgeType</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="tpoint__geom__clip_8c_aef5a52cc69f7a8b0d460b893885f19b8.html#aef5a52cc69f7a8b0d460b893885f19b8">emit_arc_edge</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a8b153be1d6bf278ec85cce03530cf150.html#a8b153be1d6bf278ec85cce03530cf150">emit_arc_edge</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_ab2d554e085623d3d60d593a2097b77b9.html#ab2d554e085623d3d60d593a2097b77b9">emit_circstring_edges</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a1bba1400df82eba21733f940ff1f520d.html#a1bba1400df82eba21733f940ff1f520d">emit_ring_edges</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_abcb605f8fc9357124c34daa34d0f7490.html#abcb605f8fc9357124c34daa34d0f7490">events</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_af01b7c2279797a9424028f945264851b.html#af01b7c2279797a9424028f945264851b">extract_circstring</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_ad84bc9a2f487ef99986fe4c123b5e118.html#ad84bc9a2f487ef99986fe4c123b5e118">extract_curvepoly</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="tpoint__geom__clip_8c_ad1a7068888333781f3ecbaafe3ca72ba.html#ad1a7068888333781f3ecbaafe3ca72ba">extract_curvepoly_ring</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_af5c4b1398f0a760e2da20d48b9b2104a.html#af5c4b1398f0a760e2da20d48b9b2104a">extract_line</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a2ece32e75a2c100c944369f8eac303ad.html#a2ece32e75a2c100c944369f8eac303ad">extract_mline</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a467a8d12c2283a1ae2f999156409e245.html#a467a8d12c2283a1ae2f999156409e245">extract_mpoint</a></td></tr>
@@ -122,8 +125,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="aef5a52cc69f7a8b0d460b893885f19b8" name="aef5a52cc69f7a8b0d460b893885f19b8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aef5a52cc69f7a8b0d460b893885f19b8">&#9670;&#160;</a></span>emit_arc_edge()</h2>
+<a id="ad1a7068888333781f3ecbaafe3ca72ba" name="ad1a7068888333781f3ecbaafe3ca72ba"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad1a7068888333781f3ecbaafe3ca72ba">&#9670;&#160;</a></span>extract_curvepoly_ring()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -132,22 +135,10 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static void emit_arc_edge </td>
+          <td class="memname">static void extract_curvepoly_ring </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structPOINT4D.html">POINT4D</a> *&#160;</td>
-          <td class="paramname"><em>pa</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const <a class="el" href="structPOINT4D.html">POINT4D</a> *&#160;</td>
-          <td class="paramname"><em>pb</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const <a class="el" href="structPOINT4D.html">POINT4D</a> *&#160;</td>
-          <td class="paramname"><em>pc</em>, </td>
+          <td class="paramtype">const <a class="el" href="structLWGEOM.html">LWGEOM</a> *&#160;</td>
+          <td class="paramname"><em>ring</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -168,8 +159,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Add to the dynamic array in the last argument the edge obtained from three consecutive points of a circular string. </p>
-<p >The three points are the start, an intermediate point, and the end of the arc. Three collinear points degenerate to straight segments and are emitted as line edges </p>
+<p>Add to the dynamic array in the last argument the region-boundary edges obtained from a ring of a curve polygon. </p>
+<p >A ring is a line string, a circular string, or a compound curve chaining both. Every edge is emitted with polygon (region) semantics (<a class="el" href="tpoint__geom__clip_8c_a424a64da753a3cd5e96ab8d0553a04c4.html#a424a64da753a3cd5e96ab8d0553a04c4ac2b75c0f82c27bc927678c4a521652d5">EDGE_POLY</a> / <a class="el" href="tpoint__geom__clip_8c_a424a64da753a3cd5e96ab8d0553a04c4.html#a424a64da753a3cd5e96ab8d0553a04c4ada7c8777dd6a22e43ecbd871a3a15636">EDGE_POLYARC</a>) so that the even-odd containment test in <a class="el" href="tpoint__geom__clip_8c_ab0d0c8c8988796d63e4053c2cf44cdd0.html#ab0d0c8c8988796d63e4053c2cf44cdd0" title="Return true if a point is located in a polygon.">point_in_polygon</a> treats it as a boundary rather than a 1D feature </p>
 
 </div>
 </div>
