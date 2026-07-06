@@ -1215,6 +1215,42 @@ geom_extract_edges(const LWGEOM *geom)
 }
 
 /**
+ * @brief Return true if a geometry is composed solely of the types the clip
+ * engine can extract into edges
+ * @details Mirrors the type dispatch of #geom_extract_edges_iter. Geometries
+ * containing any other type (compound and curved polygons, TIN, polyhedral
+ * surfaces, ...) are not supported and must be handled by the caller
+ */
+bool
+geom_clip_supported(const LWGEOM *geom)
+{
+  if (! geom)
+    return false;
+  switch (geom->type)
+  {
+    case POINTTYPE:
+    case MULTIPOINTTYPE:
+    case LINETYPE:
+    case MULTILINETYPE:
+    case POLYGONTYPE:
+    case MULTIPOLYGONTYPE:
+    case TRIANGLETYPE:
+    case CIRCSTRINGTYPE:
+      return true;
+    case COLLECTIONTYPE:
+    {
+      const LWCOLLECTION *col = (const LWCOLLECTION *) geom;
+      for (uint32_t i = 0; i < col->ngeoms; i++)
+        if (! geom_clip_supported(col->geoms[i]))
+          return false;
+      return true;
+    }
+    default:
+      return false;
+  }
+}
+
+/**
  * @brief Build an R-tree from edges
  */
 static RTree *

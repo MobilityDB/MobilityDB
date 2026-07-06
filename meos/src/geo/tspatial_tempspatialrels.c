@@ -531,16 +531,16 @@ tinterrel_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter)
   }
 
   /* Native fast path for a temporal geometry point with linear interpolation
-   * over a non-curved geometry, avoiding the GEOS ST_Intersection call.
-   * Instantaneous values and curved geometries (which the native clip does not
-   * support) fall through to the general path below. */
+   * over a geometry the clip engine supports, avoiding the GEOS
+   * ST_Intersection call. Instantaneous values and geometries with types the
+   * clip does not handle fall through to the general path below. */
   if (temp->temptype == T_TGEOMPOINT && temp->subtype != TINSTANT &&
       MEOS_FLAGS_GET_INTERP(temp->flags) == LINEAR)
   {
     LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
-    bool curved = (lwgeom_has_arc(lwgeom) == LW_TRUE);
+    bool supported = geom_clip_supported(lwgeom);
     lwgeom_free(lwgeom);
-    if (! curved)
+    if (supported)
     {
       Temporal *res = tpoint_linear_inter_geom(temp, gs, false);
       if (tinter)
