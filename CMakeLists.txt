@@ -97,7 +97,13 @@ else()
   add_definitions(-DMEOS=0)
 endif()
 
-# Options for including the various optional types
+# Options for including the various optional types.
+# ALL is a single switch that enables every optional family at once, so present
+# and future families are all built without enumerating each -D<FAMILY>=ON (the
+# same convention as the documentation build's LANG_ALL). Families that need an
+# external library (H3 requires libh3, POINTCLOUD requires pgpointcloud) still
+# require that library on the build path when ALL=ON.
+option(ALL "Set ON|OFF (default=OFF) to include all the optional families" OFF)
 option(CBUFFER "Set ON|OFF (default=OFF) to include circular buffers" OFF)
 option(H3 "Set ON|OFF (default=OFF) to include the temporal H3 index type (th3index). Requires libh3 on the build path." OFF)
 option(JSON "Set ON|OFF (default=ON) to include json types" ON)
@@ -115,6 +121,16 @@ option(ARROW "Set ON|OFF (default=OFF) to include the Apache Arrow C Data Interf
 # Option for sampling PostGIS raster bands along trajectories.
 # Requires the postgis_raster extension (ships with postgresql-N-postgis-3).
 option(RASTER "Set ON|OFF (default=OFF) to include PostGIS raster sampling operators" OFF)
+
+# SIBLING-FROM doc/CMakeLists.txt (LANG_ALL): enable every optional family when
+# ALL is set. A new family must be added to this list, the same maintenance model
+# as adding a language to the documentation build's PROJECT_SUPPORTED_LANGUAGES.
+# POSE precedes RGEO because RGEO depends on it.
+if(ALL)
+  foreach(_family CBUFFER H3 JSON NPOINT POINTCLOUD POSE RGEO QUADBIN ARROW RASTER)
+    set(${_family} ON CACHE BOOL "Enabled by ALL=ON" FORCE)
+  endforeach()
+endif()
 
 # The JSON types are derived from PostgreSQL 18 and require a PostgreSQL 18
 # server. For the MobilityDB extension, detect the server version and disable
