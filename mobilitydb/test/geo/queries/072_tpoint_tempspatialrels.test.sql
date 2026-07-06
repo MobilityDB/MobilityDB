@@ -88,6 +88,10 @@ SELECT tDisjoint(tgeompoint '[Point(1 1)@2000-01-01, Point(0 0)@2000-01-04)', ge
 SELECT tDisjoint(tgeompoint '[Point(0 0)@2000-01-01, Point(6 8)@2000-01-05]', geometry 'CircularString(5 0, 4 3, 0 5)');
 SELECT tDisjoint(geometry 'CircularString(5 0, 4 3, 0 5)', tgeompoint '[Point(0 0)@2000-01-01, Point(6 8)@2000-01-05]');
 
+-- Compound curve (circular arc followed by a line segment)
+SELECT tDisjoint(tgeompoint '[Point(0 0)@2000-01-01, Point(6 8)@2000-01-05]', geometry 'CompoundCurve(CircularString(5 0, 4 3, 0 5), (0 5, -3 5))');
+SELECT tDisjoint(geometry 'CompoundCurve(CircularString(5 0, 4 3, 0 5), (0 5, -3 5))', tgeompoint '[Point(0 0)@2000-01-01, Point(6 8)@2000-01-05]');
+
 SELECT tDisjoint(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Point empty');
 SELECT tDisjoint(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geometry 'Point empty');
 SELECT tDisjoint(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geometry 'Point empty');
@@ -139,6 +143,12 @@ SELECT tIntersects(tgeompoint '[Point(0 0)@2000-01-01, Point(6 8)@2000-01-05]', 
 SELECT tIntersects(tgeompoint '[Point(-6 -8)@2000-01-01, Point(6 8)@2000-01-05]', geometry 'CircularString(5 0, 4 3, 0 5)');
 SELECT tIntersects(tgeompoint '[Point(0 0)@2000-01-01, Point(0 4)@2000-01-05]', geometry 'CircularString(5 0, 4 3, 0 5)');
 SELECT tIntersects(geometry 'CircularString(5 0, 4 3, 0 5)', tgeompoint '[Point(0 0)@2000-01-01, Point(6 8)@2000-01-05]');
+
+-- Compound curve (circular arc followed by a line segment): crossing the arc part
+SELECT tIntersects(tgeompoint '[Point(0 0)@2000-01-01, Point(6 8)@2000-01-05]', geometry 'CompoundCurve(CircularString(5 0, 4 3, 0 5), (0 5, -3 5))');
+-- crossing the line part only
+SELECT tIntersects(tgeompoint '[Point(-2 0)@2000-01-01, Point(-2 8)@2000-01-05]', geometry 'CompoundCurve(CircularString(5 0, 4 3, 0 5), (0 5, -3 5))');
+SELECT tIntersects(geometry 'CompoundCurve(CircularString(5 0, 4 3, 0 5), (0 5, -3 5))', tgeompoint '[Point(0 0)@2000-01-01, Point(6 8)@2000-01-05]');
 
 SELECT tIntersects(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Point empty');
 SELECT tIntersects(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geometry 'Point empty');

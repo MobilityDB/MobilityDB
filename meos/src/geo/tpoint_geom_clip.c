@@ -1182,6 +1182,10 @@ geom_extract_edges_iter(const LWGEOM *geom, MeosArray *edges)
       extract_triangle((const LWTRIANGLE *) geom, edges);
       break;
 
+    /* A compound curve is a chain of line strings and circular strings; it
+     * shares the collection memory layout, so its components are extracted in
+     * the same way */
+    case COMPOUNDTYPE:
     case COLLECTIONTYPE:
     {
       const LWCOLLECTION *col = (const LWCOLLECTION *) geom;
@@ -1218,8 +1222,8 @@ geom_extract_edges(const LWGEOM *geom)
  * @brief Return true if a geometry is composed solely of the types the clip
  * engine can extract into edges
  * @details Mirrors the type dispatch of #geom_extract_edges_iter. Geometries
- * containing any other type (compound and curved polygons, TIN, polyhedral
- * surfaces, ...) are not supported and must be handled by the caller
+ * containing any other type (curved polygons, TIN, polyhedral surfaces, ...)
+ * are not supported and must be handled by the caller
  */
 bool
 geom_clip_supported(const LWGEOM *geom)
@@ -1237,6 +1241,7 @@ geom_clip_supported(const LWGEOM *geom)
     case TRIANGLETYPE:
     case CIRCSTRINGTYPE:
       return true;
+    case COMPOUNDTYPE:
     case COLLECTIONTYPE:
     {
       const LWCOLLECTION *col = (const LWCOLLECTION *) geom;
