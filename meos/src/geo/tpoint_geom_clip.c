@@ -76,7 +76,8 @@ typedef enum
 {
   EDGE_POINT = 0,
   EDGE_LINE,
-  EDGE_POLY
+  EDGE_POLY,
+  EDGE_ARC
 } EdgeType;
 
 /**
@@ -87,6 +88,9 @@ typedef struct
   double x1, y1, x2, y2;         /**< Coordinates of the start/end 2D points */
   double xmin, ymin, xmax, ymax; /**< Precomputed bounding box of the edge */
   double dx, dy, length;         /**< Precomputed dx, dy, and length */
+  double cx, cy, radius;         /**< Arc center and radius (EDGE_ARC only) */
+  double theta0, theta1;         /**< Arc start/end angles (EDGE_ARC only) */
+  bool ccw;                      /**< Arc traversed counterclockwise (EDGE_ARC) */
   EdgeType etype;                /**< Edge type */
 } Edge;
 
@@ -202,6 +206,131 @@ linesegm_intersect(double ax, double ay, double rx, double ry,
   res.type = INTERSECT_POINT;
   res.t0 = t;
   return res;
+}
+
+/*****************************************************************************
+ * Circular arc intersection
+ *****************************************************************************/
+
+/**
+ * @brief Normalize an angle into the range [0, 2*pi)
+ */
+static inline double
+angle_normalize(double a)
+{
+  double r = fmod(a, 2 * M_PI);
+  if (r < 0)
+    r += 2 * M_PI;
+  return r;
+}
+
+/**
+ * @brief Return true if an angle lies within the angular span of an arc edge
+ * @details The span is traversed from #theta0 to #theta1, counterclockwise
+ * when #ccw is true and clockwise otherwise
+ */
+static bool
+arc_contains_angle(const Edge *e, double phi)
+{
+  double sweep = e->ccw ?
+    angle_normalize(e->theta1 - e->theta0) :
+    angle_normalize(e->theta0 - e->theta1);
+  double off = e->ccw ?
+    angle_normalize(phi - e->theta0) :
+    angle_normalize(e->theta0 - phi);
+  return off <= sweep + FP_TOLERANCE;
+}
+
+/**
+ * @brief Set the bounding box of an arc edge
+ * @details The box spans the two endpoints plus any of the four cardinal
+ * extreme points of the circle that fall within the arc's angular span
+ */
+static void
+arc_set_bbox(Edge *e)
+{
+  double xmin = FP_MIN(e->x1, e->x2), xmax = FP_MAX(e->x1, e->x2);
+  double ymin = FP_MIN(e->y1, e->y2), ymax = FP_MAX(e->y1, e->y2);
+  const double ang[4] = {0.0, M_PI_2, M_PI, -M_PI_2};
+  const double ex[4] = {e->cx + e->radius, e->cx, e->cx - e->radius, e->cx};
+  const double ey[4] = {e->cy, e->cy + e->radius, e->cy, e->cy - e->radius};
+  for (int k = 0; k < 4; k++)
+    if (arc_contains_angle(e, ang[k]))
+    {
+      if (ex[k] < xmin) xmin = ex[k];
+      if (ex[k] > xmax) xmax = ex[k];
+      if (ey[k] < ymin) ymin = ey[k];
+      if (ey[k] > ymax) ymax = ey[k];
+    }
+  e->xmin = xmin; e->xmax = xmax; e->ymin = ymin; e->ymax = ymax;
+  return;
+}
+
+/**
+ * @brief Return true if a point is located on an arc edge
+ */
+static bool
+point_on_arc(double px, double py, const Edge *e)
+{
+  double d = hypot(px - e->cx, py - e->cy);
+  if (fabs(d - e->radius) > FP_TOLERANCE)
+    return false;
+  return arc_contains_angle(e, atan2(py - e->cy, px - e->cx));
+}
+
+/**
+ * @brief Return the trajectory parameters at which a trajectory segment
+ * intersects an arc edge
+ * @details Solves |A + t*R - C|^2 = r^2 for the trajectory parameter t in
+ * [0,1], keeping only the roots whose point lies within the arc's angular
+ * span. A straight segment meets a circle in at most two points, so the
+ * result is never an overlap
+ * @param[in] ax,ay Coordinates of the start of the trajectory segment
+ * @param[in] rx,ry Vector of the trajectory segment
+ * @param[in] e Arc edge
+ * @param[out] out Accepted trajectory parameters, ordered as found
+ * @return Number of accepted parameters (0, 1, or 2)
+ */
+static int
+arcsegm_intersect(double ax, double ay, double rx, double ry, const Edge *e,
+  double out[2])
+{
+  double aa = rx * rx + ry * ry;
+  /* Degenerate (zero-length) trajectory segment */
+  if (aa < FP_TOLERANCE)
+    return 0;
+
+  double wx = ax - e->cx, wy = ay - e->cy;
+  double bb = 2 * (wx * rx + wy * ry);
+  double cc = wx * wx + wy * wy - e->radius * e->radius;
+  double disc = bb * bb - 4 * aa * cc;
+  /* No real root */
+  if (disc < -FP_TOLERANCE)
+    return 0;
+  if (disc < 0)
+    disc = 0;
+
+  double sq = sqrt(disc);
+  double roots[2];
+  int nroots = 0;
+  roots[nroots++] = (-bb - sq) / (2 * aa);
+  /* Distinct second root only when the line is not tangent */
+  if (sq > FP_TOLERANCE)
+    roots[nroots++] = (-bb + sq) / (2 * aa);
+
+  int n = 0;
+  for (int k = 0; k < nroots; k++)
+  {
+    double t = roots[k];
+    if (t < -FP_TOLERANCE || t > 1 + FP_TOLERANCE)
+      continue;
+    if (t < 0) t = 0;
+    if (t > 1) t = 1;
+    double px = ax + t * rx, py = ay + t * ry;
+    if (arc_contains_angle(e, atan2(py - e->cy, px - e->cx)))
+      out[n++] = t;
+  }
+  return n;
 }
 
 /*****************************************************************************
@@ -425,6 +554,53 @@ intervals_from_lines(const POINT2D *a, const POINT2D *b, Edge **edges,
 }
 
 /**
+ * @brief Compute the intersection intervals of a trajectory segment with an
+ * array of arc edges
+ */
+static void
+intervals_from_arcs(const POINT2D *a, const POINT2D *b, Edge **edges,
+  int nedges)
+{
+  assert(a); assert(b); assert(edges); assert(nedges >= 0);
+
+  const double ax = a->x, ay = a->y;
+  const double bx = b->x, by = b->y;
+  /* Segment bounding box */
+  const double seg_xmin = FP_MIN(ax, bx);
+  const double seg_xmax = FP_MAX(ax, bx);
+  const double seg_ymin = FP_MIN(ay, by);
+  const double seg_ymax = FP_MAX(ay, by);
+  /* Segment vector */
+  const double rx = bx - ax;
+  const double ry = by - ay;
+
+  Span in;
+  /* Iterate through the arc edges */
+  for (int i = 0; i < nedges; i++)
+  {
+    const Edge *e = edges[i];
+    if (e->etype != EDGE_ARC)
+      continue;
+
+    /* Bounding box filter */
+    if (e->xmax < seg_xmin || e->xmin > seg_xmax ||
+        e->ymax < seg_ymin || e->ymin > seg_ymax)
+      continue;
+
+    /* Compute the intersection: at most two point crossings */
+    double t[2];
+    int n = arcsegm_intersect(ax, ay, rx, ry, e, t);
+    for (int k = 0; k < n; k++)
+    {
+      span_set(Float8GetDatum(t[k]), Float8GetDatum(t[k]), true, true,
+        T_FLOAT8, T_FLOATSPAN, &in);
+      meos_array_add(intervals, &in);
+    }
+  }
+  return;
+}
+
+/**
  * @brief Comparison function for sorting float8 values
  */
 static int
@@ -571,6 +747,11 @@ point_inter_points_lines(const POINT2D *a, Edge **edges, int nedges)
       if (point_on_segment(ax, ay, e->x1, e->y1, e->x2, e->y2))
         return true;
     }
+    else if (e->etype == EDGE_ARC)
+    {
+      if (point_on_arc(ax, ay, e))
+        return true;
+    }
   }
   return false;
 }
@@ -701,6 +882,7 @@ tpointseq_clip_edges(const TSequence *seq, Edge **edges, int nedges,
     /* Compute the intervals for the points, lines, and polygon edges */
     intervals_from_points(a, b, sel_edges, sel_nedges);
     intervals_from_lines(a, b, sel_edges, sel_nedges);
+    intervals_from_arcs(a, b, sel_edges, sel_nedges);
     intervals_from_polygons(a, b, sel_edges, sel_nedges, edges, nedges);
     if (intervals->count == 0)
       goto next_segment;
@@ -885,6 +1067,83 @@ extract_triangle(const LWTRIANGLE *tri, MeosArray *edges)
 }
 
 /**
+ * @brief Add to the dynamic array in the last argument the edge obtained from
+ * three consecutive points of a circular string
+ * @details The three points are the start, an intermediate point, and the end
+ * of the arc. Three collinear points degenerate to straight segments and are
+ * emitted as line edges
+ */
+static void
+emit_arc_edge(const POINT4D *pa, const POINT4D *pb, const POINT4D *pc,
+  MeosArray *edges)
+{
+  double ax = pa->x, ay = pa->y;
+  double bx = pb->x, by = pb->y;
+  double cx = pc->x, cy = pc->y;
+  /* Twice the signed area of the triangle; zero when the points are collinear */
+  double d = 2 * (ax * (by - cy) + bx * (cy - ay) + cx * (ay - by));
+
+  /* Collinear points: emit straight line edges */
+  if (fabs(d) < FP_TOLERANCE)
+  {
+    const double px[3] = {ax, bx, cx}, py[3] = {ay, by, cy};
+    for (int i = 0; i < 2; i++)
+    {
+      Edge e;
+      e.x1 = px[i]; e.y1 = py[i];
+      e.x2 = px[i + 1]; e.y2 = py[i + 1];
+      e.xmin = FP_MIN(e.x1, e.x2); e.xmax = FP_MAX(e.x1, e.x2);
+      e.ymin = FP_MIN(e.y1, e.y2); e.ymax = FP_MAX(e.y1, e.y2);
+      e.dx = e.x2 - e.x1; e.dy = e.y2 - e.y1;
+      e.length = e.dx * e.dx + e.dy * e.dy;
+      e.etype = EDGE_LINE;
+      meos_array_add(edges, &e);
+    }
+    return;
+  }
+
+  double a2 = ax * ax + ay * ay;
+  double b2 = bx * bx + by * by;
+  double c2 = cx * cx + cy * cy;
+  Edge e;
+  /* Circumcenter of the three points */
+  e.cx = (a2 * (by - cy) + b2 * (cy - ay) + c2 * (ay - by)) / d;
+  e.cy = (a2 * (cx - bx) + b2 * (ax - cx) + c2 * (bx - ax)) / d;
+  e.radius = hypot(ax - e.cx, ay - e.cy);
+  e.x1 = ax; e.y1 = ay;
+  e.x2 = cx; e.y2 = cy;
+  e.theta0 = atan2(ay - e.cy, ax - e.cx);
+  e.theta1 = atan2(cy - e.cy, cx - e.cx);
+  /* Traversal orientation from the signed area of (start, mid, end) */
+  e.ccw = ((bx - ax) * (cy - ay) - (by - ay) * (cx - ax)) > 0;
+  e.dx = e.dy = e.length = 0;
+  e.etype = EDGE_ARC;
+  arc_set_bbox(&e);
+  meos_array_add(edges, &e);
+  return;
+}
+
+/**
+ * @brief Add to the dynamic array in the last argument the arc edges obtained
+ * from a circular string
+ */
+static void
+extract_circstring(const LWCIRCSTRING *circ, MeosArray *edges)
+{
+  const POINTARRAY *pa = circ->points;
+  int np = (int) pa->npoints;
+  for (int i = 0; i + 2 < np; i += 2)
+  {
+    POINT4D pa4, pb4, pc4;
+    (void) getPoint4d_p(pa, i, &pa4);
+    (void) getPoint4d_p(pa, i + 1, &pb4);
+    (void) getPoint4d_p(pa, i + 2, &pc4);
+    emit_arc_edge(&pa4, &pb4, &pc4, edges);
+  }
+  return;
+}
+
+/**
  * @brief Return the edges of a geometry in a dynamic array (iterator)
  */
 static void
@@ -930,6 +1189,10 @@ geom_extract_edges_iter(const LWGEOM *geom, MeosArray *edges)
         geom_extract_edges_iter(col->geoms[i], edges);
       break;
     }
+
+    case CIRCSTRINGTYPE:
+      extract_circstring((const LWCIRCSTRING *) geom, edges);
+      break;
 
     /* Unsupported type */
     default:
