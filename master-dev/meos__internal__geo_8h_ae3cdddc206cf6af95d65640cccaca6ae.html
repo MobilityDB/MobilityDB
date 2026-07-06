@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: geos_get_context</title>
+<title>MobilityDB: tpoint_linear_inter_geom</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -87,7 +87,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__box__conversion_ga6b8f6cf34c6d4bc929093104b8bf9a20.html#ga6b8f6cf34c6d4bc929093104b8bf9a20">gbox_set_stbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__box__conversion_gadbd47beea3e84164ebdf0fa8b3f4c877.html#gadbd47beea3e84164ebdf0fa8b3f4c877">geo_set_stbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__box__conversion_gad878da2a45af8ef35cf6a8107a891262.html#gad878da2a45af8ef35cf6a8107a891262">geoarr_set_stbox</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos__internal__geo_8h_a5bd829496d92923aae21dfe22a841695.html#a5bd829496d92923aae21dfe22a841695">geos_get_context</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos__internal__geo_8h_a5bd829496d92923aae21dfe22a841695.html#a5bd829496d92923aae21dfe22a841695">geos_get_context</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos__internal__geo_8h_ab03427db3697727a1db6443bd70f411d.html#ab03427db3697727a1db6443bd70f411d">GS_POINT_PTR</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos__internal__geo_8h_abc7f996f4ff58f62a0c691998310fa02.html#abc7f996f4ff58f62a0c691998310fa02">GSERIALIZED_POINT2D_P</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos__internal__geo_8h_a16e70e0cc2ea02ea4776977b31e68225.html#a16e70e0cc2ea02ea4776977b31e68225">GSERIALIZED_POINT3DZ_P</a></td></tr>
@@ -149,7 +149,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__bbox_ga60ab602e902e8876b511c4904191751d.html#ga60ab602e902e8876b511c4904191751d">tgeoseqset_split_n_stboxes</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__bbox_ga637daf40fe2aeb01a40222587d7a67c9.html#ga637daf40fe2aeb01a40222587d7a67c9">tgeoseqset_stboxes</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__accessor_ga71a6a07594fe5a2f96a8909d7b200985.html#ga71a6a07594fe5a2f96a8909d7b200985">tpoint_get_coord</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos__internal__geo_8h_ae3cdddc206cf6af95d65640cccaca6ae.html#ae3cdddc206cf6af95d65640cccaca6ae">tpoint_linear_inter_geom</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos__internal__geo_8h_ae3cdddc206cf6af95d65640cccaca6ae.html#ae3cdddc206cf6af95d65640cccaca6ae">tpoint_linear_inter_geom</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos__internal__geo_8h_a2e5c31431abef5680ea455d38975ed2e.html#a2e5c31431abef5680ea455d38975ed2e">tpoint_linear_restrict_geom</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__accessor_ga9aadb6663cabb3b1aed96834c287cd99.html#ga9aadb6663cabb3b1aed96834c287cd99">tpointseq_azimuth</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__accessor_ga053efbb3455b72108c6aaaf99c5457a2.html#ga053efbb3455b72108c6aaaf99c5457a2">tpointseq_cumulative_length</a></td></tr>
@@ -178,23 +178,41 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a5bd829496d92923aae21dfe22a841695" name="a5bd829496d92923aae21dfe22a841695"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5bd829496d92923aae21dfe22a841695">&#9670;&#160;</a></span>geos_get_context()</h2>
+<a id="ae3cdddc206cf6af95d65640cccaca6ae" name="ae3cdddc206cf6af95d65640cccaca6ae"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae3cdddc206cf6af95d65640cccaca6ae">&#9670;&#160;</a></span>tpoint_linear_inter_geom()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">GEOSContextHandle_t geos_get_context </td>
+          <td class="memname"><a class="el" href="structTemporal.html">Temporal</a> * tpoint_linear_inter_geom </td>
           <td>(</td>
-          <td class="paramtype">void&#160;</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
+          <td class="paramname"><em>temp</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
+          <td class="paramname"><em>gs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>clip</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Return the per-thread GEOS context handle. </p>
+<p>Return the temporal intersection/intersects of a temporal geometric point with linear interpolation and a 2D geometry. </p>
+<p >The temporal geometric point may be in 2D or 3D and the Z dimension is also computed </p><dl class="section note"><dt>Note</dt><dd>For performance reasons we avoid the call to ST_Intersection which delegates the computation to GEOS </dd></dl>
+<dl class="section pre"><dt>Precondition</dt><dd>The arguments have the same SRID, the geometry is 2D and is not empty. This is verified in <a class="el" href="group__meos__internal__geo__restrict_gabc8ab7a0d4f69e9343bd50304d34fefb.html#gabc8ab7a0d4f69e9343bd50304d34fefb" title="Return a temporal geo restricted to (the complement of) a geometry.">tgeo_restrict_geom</a> </dd></dl>
 
 </div>
 </div>
