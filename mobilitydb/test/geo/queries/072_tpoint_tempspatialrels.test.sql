@@ -84,6 +84,10 @@ SELECT tDisjoint(tgeompoint '[Point(0 1)@2000-01-01, Point(2 1)@2000-01-04]', ge
 SELECT tDisjoint(tgeompoint '[Point(0 0)@2000-01-01, Point(1 1)@2000-01-04)', geometry 'Linestring(1 1,2 1)');
 SELECT tDisjoint(tgeompoint '[Point(1 1)@2000-01-01, Point(0 0)@2000-01-04)', geometry 'Linestring(0 0,1 1)');
 
+-- Circular arc geometry
+SELECT tDisjoint(tgeompoint '[Point(0 0)@2000-01-01, Point(6 8)@2000-01-05]', geometry 'CircularString(5 0, 4 3, 0 5)');
+SELECT tDisjoint(geometry 'CircularString(5 0, 4 3, 0 5)', tgeompoint '[Point(0 0)@2000-01-01, Point(6 8)@2000-01-05]');
+
 SELECT tDisjoint(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Point empty');
 SELECT tDisjoint(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geometry 'Point empty');
 SELECT tDisjoint(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geometry 'Point empty');
@@ -129,6 +133,12 @@ SELECT tIntersects(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, P
 SELECT tIntersects(tgeompoint '[Point(0 1)@2000-01-01, Point(2 1)@2000-01-04]', geometry 'Linestring(1 0,1 1,2 1,2 0)');
 SELECT tIntersects(tgeompoint '[Point(0 0)@2000-01-01, Point(1 1)@2000-01-04)', geometry 'Linestring(1 1,2 1)');
 SELECT tIntersects(tgeompoint '[Point(1 1)@2000-01-01, Point(0 0)@2000-01-04)', geometry 'Linestring(0 0,1 1)');
+
+-- Circular arc geometry
+SELECT tIntersects(tgeompoint '[Point(0 0)@2000-01-01, Point(6 8)@2000-01-05]', geometry 'CircularString(5 0, 4 3, 0 5)');
+SELECT tIntersects(tgeompoint '[Point(-6 -8)@2000-01-01, Point(6 8)@2000-01-05]', geometry 'CircularString(5 0, 4 3, 0 5)');
+SELECT tIntersects(tgeompoint '[Point(0 0)@2000-01-01, Point(0 4)@2000-01-05]', geometry 'CircularString(5 0, 4 3, 0 5)');
+SELECT tIntersects(geometry 'CircularString(5 0, 4 3, 0 5)', tgeompoint '[Point(0 0)@2000-01-01, Point(6 8)@2000-01-05]');
 
 SELECT tIntersects(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Point empty');
 SELECT tIntersects(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geometry 'Point empty');

@@ -228,6 +228,7 @@ extern TSequenceSet *tgeoseqset_restrict_stbox(const TSequenceSet *ss, const STB
 
 extern Temporal *tpoint_linear_inter_geom(const Temporal *temp, const GSERIALIZED *gs, bool clip);
 extern Temporal *tpoint_linear_restrict_geom(const Temporal *temp, const GSERIALIZED *gs, bool atfunc);
+extern bool geom_clip_supported(const LWGEOM *geom);
 
 /*****************************************************************************/
 
