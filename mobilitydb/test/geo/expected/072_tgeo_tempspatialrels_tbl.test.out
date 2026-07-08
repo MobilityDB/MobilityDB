@@ -1,13 +1,13 @@
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry WHERE tContains(g, temp) IS NOT NULL;
  count 
 -------
-  9400
+ 15400
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry, tbl_geometry WHERE tContains(temp, g) IS NOT NULL;
  count 
 -------
-  9400
+ 15400
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2 WHERE tContains(t1.temp, t2.temp) IS NOT NULL;
@@ -19,19 +19,19 @@ SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2 WHERE tContains(t1.temp,
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry WHERE tContains(g, temp) ?= true <> eContains(g, temp);
  count 
 -------
-   656
+   831
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry WHERE tCovers(g, temp) IS NOT NULL;
  count 
 -------
-  9400
+ 15400
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry, tbl_geometry WHERE tCovers(temp, g) IS NOT NULL;
  count 
 -------
-  9400
+ 15400
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2 WHERE tCovers(t1.temp, t2.temp) IS NOT NULL;
@@ -49,13 +49,13 @@ SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry WHERE tCovers(g, temp) ?= true 
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry WHERE tDisjoint(g, temp) IS NOT NULL;
  count 
 -------
-  9400
+ 15400
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry, tbl_geometry WHERE tDisjoint(temp, g) IS NOT NULL;
  count 
 -------
-  9400
+ 15400
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2 WHERE tDisjoint(t1.temp, t2.temp) IS NOT NULL;
@@ -93,19 +93,19 @@ SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry WHERE tIntersects(g, temp) IS NOT NULL;
  count 
 -------
-  9400
+ 15400
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry, tbl_geometry WHERE tIntersects(temp, g) IS NOT NULL;
  count 
 -------
-  9400
+ 15400
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry, tbl_geometry WHERE tIntersects(temp, g) ?= true <> eDisjoint(temp, g);
  count 
 -------
-  8244
+ 13886
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry WHERE tIntersects(g, temp) ?= true <> eIntersects(g, temp);
@@ -137,13 +137,13 @@ SELECT COUNT(*) FROM tbl_tgeometry3D t1, tbl_tgeometry3D t2
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry WHERE tTouches(g, temp) IS NOT NULL;
  count 
 -------
-  9400
+ 15400
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry, tbl_geometry WHERE tTouches(temp, g) IS NOT NULL;
  count 
 -------
-  9400
+ 15400
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2 WHERE tTouches(t1.temp, t2.temp) IS NOT NULL;
@@ -167,13 +167,13 @@ SELECT COUNT(*) FROM tbl_tgeometry, tbl_geometry WHERE tTouches(temp, g) ?= true
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry WHERE tDwithin(g, temp, 10) IS NOT NULL;
  count 
 -------
-  9400
+ 15400
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry, tbl_geometry WHERE tDwithin(temp, g, 10) IS NOT NULL;
  count 
 -------
-  9400
+ 15400
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2 WHERE tDwithin(t1.temp, t2.temp, 10) IS NOT NULL;
