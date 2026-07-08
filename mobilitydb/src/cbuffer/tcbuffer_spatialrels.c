@@ -336,8 +336,8 @@ PG_FUNCTION_INFO_V1(Ecovers_tcbuffer_tcbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_rel_ever
  * @brief Return true if a temporal circular buffer and a circular buffer 
- * ever touch
- * @sqlfn eTouches()
+ * ever cover
+ * @sqlfn eCovers()
  */
 inline Datum
 Ecovers_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
@@ -351,8 +351,8 @@ PG_FUNCTION_INFO_V1(Acovers_tcbuffer_tcbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_rel_ever
  * @brief Return true if a temporal circular buffer and a circular buffer 
- * always touch
- * @sqlfn aTouches()
+ * always cover
+ * @sqlfn aCovers()
  */
 inline Datum
 Acovers_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)

@@ -600,7 +600,7 @@ PG_FUNCTION_INFO_V1(Numspan_expand);
  * @ingroup mobilitydb_setspan_transf
  * @brief Return a number span with its bounds expanded or shrinded by a value
  * @note This function is also used for `datespan`
- * @sqlfn shift()
+ * @sqlfn expand()
  */
 Datum
 Numspan_expand(PG_FUNCTION_ARGS)
