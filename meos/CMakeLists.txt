@@ -239,6 +239,12 @@ target_link_libraries(${MEOS_LIB_NAME} ${GSL_CBLAS_LIBRARY})
 if(H3)
   target_link_libraries(${MEOS_LIB_NAME} ${H3_LIBRARY})
 endif()
+if(RASTER)
+  # The raster OBJECT library decodes raster files through GDAL; its link
+  # requirements do not propagate through $<TARGET_OBJECTS:raster>, so GDAL is
+  # linked into the MEOS library here (mirroring the H3 and pointcloud blocks).
+  target_link_libraries(${MEOS_LIB_NAME} ${GDAL_LIBRARY})
+endif()
 
 # Link the application to pgtypes and postgis
 target_link_libraries(${MEOS_LIB_NAME} pgtypes)

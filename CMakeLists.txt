@@ -442,11 +442,9 @@ endif()
 # Configure PostGIS with optional dependencies
 #----------------------------------------------
 
-find_package(GDAL QUIET)
-if(GDAL_FOUND)
-  message(STATUS "GDAL version '${GDAL_VERSION}' found")
-else()
-  message(STATUS "GDAL not found")
+if(RASTER)
+  find_package(GDAL REQUIRED)
+  message(STATUS "GDAL version '${GDAL_VERSION}' found (required by RASTER)")
 endif()
 
 find_package(LibXml2)

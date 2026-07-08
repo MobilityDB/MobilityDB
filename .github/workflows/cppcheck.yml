@@ -57,6 +57,7 @@ jobs:
             cppcheck \
             libgeos-dev \
             libproj-dev \
+            libgdal-dev \
             libjson-c-dev \
             libgsl-dev \
             libh3-dev \
