@@ -393,9 +393,9 @@ PGDLLEXPORT Datum Tcbuffer_at_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tcbuffer_at_stbox);
 /**
  * @ingroup mobilitydb_geo_restrict
- * @brief Return a temporal circular buffer restricted to a circular buffer
+ * @brief Return a temporal circular buffer restricted to a spatiotemporal box
  * @note Only 2D is supported
- * @sqlfn atValue()
+ * @sqlfn atStbox()
  */
 inline Datum
 Tcbuffer_at_stbox(PG_FUNCTION_ARGS)
