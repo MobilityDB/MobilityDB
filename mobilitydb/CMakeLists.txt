@@ -261,6 +261,11 @@ target_link_libraries(${MOBILITYDB_LIB_NAME} ${PROJ_LIBRARIES})
 if(H3)
   target_link_libraries(${MOBILITYDB_LIB_NAME} ${H3_LIBRARY})
 endif()
+if(RASTER)
+  # The raster objects decode raster files through GDAL; link it here since the
+  # requirement does not propagate through $<TARGET_OBJECTS:pg_raster>.
+  target_link_libraries(${MOBILITYDB_LIB_NAME} ${GDAL_LIBRARY})
+endif()
 target_link_libraries(${MOBILITYDB_LIB_NAME} ${GSL_LIBRARY})
 target_link_libraries(${MOBILITYDB_LIB_NAME} ${GSL_CBLAS_LIBRARY})
 if(POINTCLOUD)
