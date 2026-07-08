@@ -66,8 +66,10 @@ extern text *cstring_to_text(const char *s);
 #include <meos.h>
 #include <meos_internal.h>    /* temporal_insts_p, tsequence_make_free */
 #include <meos_raster.h>      /* MeosPixType, raster_tile_value_quadbin */
+#include "raster/raquet.h"    /* Raquet, PG_GETARG_RAQUET_P, raquet_pixtype_size */
 #include "temporal/tinstant.h"
 #include "temporal/tsequence.h"
+#include "temporal/type_util.h" /* bstring2bytea */
 /* MEOS raster kernel */
 #include "raster/raster_quadbin.h"
 /* MobilityDB */
@@ -270,6 +272,144 @@ Raster_tile_value_quadbin(PG_FUNCTION_ARGS)
 
   PG_FREE_IF_COPY(traj, 7);
 
+  if (result == NULL)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * Raquet type: input/output, constructor, and typed sampling
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Raquet_in(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raquet_in);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a Raquet tile from its HexWKB representation
+ * @sqlfn raquet_in()
+ */
+Datum
+Raquet_in(PG_FUNCTION_ARGS)
+{
+  const char *str = PG_GETARG_CSTRING(0);
+  PG_RETURN_RAQUET_P(raquet_in(str));
+}
+
+PGDLLEXPORT Datum Raquet_out(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raquet_out);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the HexWKB representation of a Raquet tile
+ * @sqlfn raquet_out()
+ */
+Datum
+Raquet_out(PG_FUNCTION_ARGS)
+{
+  Raquet *rq = PG_GETARG_RAQUET_P(0);
+  char *result = raquet_out(rq);
+  PG_FREE_IF_COPY(rq, 0);
+  PG_RETURN_CSTRING(result);
+}
+
+PGDLLEXPORT Datum Raquet_recv(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raquet_recv);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a Raquet tile from its Well-Known Binary (WKB) representation
+ * @sqlfn raquet_recv()
+ */
+Datum
+Raquet_recv(PG_FUNCTION_ARGS)
+{
+  StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
+  Raquet *result = raquet_from_wkb((uint8_t *) buf->data, buf->len);
+  /* Set cursor to the end of buffer (so the backend is happy) */
+  buf->cursor = buf->len;
+  PG_RETURN_RAQUET_P(result);
+}
+
+PGDLLEXPORT Datum Raquet_send(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raquet_send);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the Well-Known Binary (WKB) representation of a Raquet tile
+ * @sqlfn raquet_send()
+ */
+Datum
+Raquet_send(PG_FUNCTION_ARGS)
+{
+  Raquet *rq = PG_GETARG_RAQUET_P(0);
+  size_t wkb_size;
+  uint8_t *wkb = raquet_as_wkb(rq, (uint8_t) WKB_NDR, &wkb_size);
+  bytea *result = bstring2bytea(wkb, wkb_size);
+  pfree(wkb);
+  PG_FREE_IF_COPY(rq, 0);
+  PG_RETURN_BYTEA_P(result);
+}
+
+PGDLLEXPORT Datum Raquet_constructor(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raquet_constructor);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Construct a Raquet tile from a QUADBIN cell, dimensions, a pixel type
+ * name and a row-major packed pixel array
+ * @param[in] pixels   Row-major pixel bytes (bytea)
+ * @param[in] width    Tile width in pixels
+ * @param[in] height   Tile height in pixels
+ * @param[in] quadbin  CARTO QUADBIN cell (bigint)
+ * @param[in] pixtype  Pixel type name: UINT8 | INT16 | INT32 | FLOAT32 | FLOAT64
+ * @param[in] nodata   Nodata sentinel value (NULL disables nodata filtering)
+ * @sqlfn raquet()
+ */
+Datum
+Raquet_constructor(PG_FUNCTION_ARGS)
+{
+  /* Non-strict: the nodata argument (5) may be NULL to disable nodata */
+  if (PG_ARGISNULL(0) || PG_ARGISNULL(1) || PG_ARGISNULL(2) ||
+      PG_ARGISNULL(3) || PG_ARGISNULL(4))
+    PG_RETURN_NULL();
+  bytea      *pxbytea   = PG_GETARG_BYTEA_PP(0);
+  int32       width     = PG_GETARG_INT32(1);
+  int32       height    = PG_GETARG_INT32(2);
+  int64       quadbin   = PG_GETARG_INT64(3);
+  text       *pixtype_t = PG_GETARG_TEXT_PP(4);
+  bool        has_nd    = ! PG_ARGISNULL(5);
+  float8      nodata    = has_nd ? PG_GETARG_FLOAT8(5) : 0.0;
+  MeosPixType pixtype   = text_to_pixtype(pixtype_t);
+
+  if (width <= 0 || height <= 0)
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+      errmsg("The width and height of a raquet tile must be positive")));
+  size_t need = (size_t) width * height * raquet_pixtype_size(pixtype);
+  if ((size_t) VARSIZE_ANY_EXHDR(pxbytea) < need)
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+      errmsg("The pixel array has %zu bytes but %zu are required for a "
+        "%d x %d tile", (size_t) VARSIZE_ANY_EXHDR(pxbytea), need, width,
+        height)));
+
+  const uint8_t *pixels = (const uint8_t *) VARDATA_ANY(pxbytea);
+  Raquet *result = raquet_make((uint64) quadbin, (uint16_t) width,
+    (uint16_t) height, pixtype, nodata, has_nd, pixels);
+  PG_RETURN_RAQUET_P(result);
+}
+
+PGDLLEXPORT Datum Raster_tile_value(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_tile_value);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Sample a Raquet tile along a tgeompoint trajectory
+ * @param[in] rq    Raquet tile
+ * @param[in] traj  Trajectory (tgeompoint)
+ * @sqlfn raster_tile_value()
+ */
+Datum
+Raster_tile_value(PG_FUNCTION_ARGS)
+{
+  Raquet   *rq   = PG_GETARG_RAQUET_P(0);
+  Temporal *traj = PG_GETARG_TEMPORAL_P(1);
+  Temporal *result = raster_tile_value(rq, traj);
+  PG_FREE_IF_COPY(rq, 0);
+  PG_FREE_IF_COPY(traj, 1);
   if (result == NULL)
     PG_RETURN_NULL();
   PG_RETURN_POINTER(result);

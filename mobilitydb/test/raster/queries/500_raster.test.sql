@@ -256,3 +256,41 @@ SELECT raster_tile_value_quadbin(
   0.0, false,
   tgeompointFromText('SRID=4326;{Point(45.0 75.0)@2024-01-01 00:00:00+00, Point(135.0 75.0)@2024-01-02 00:00:00+00, Point(45.0 10.0)@2024-01-03 00:00:00+00, Point(-45.0 75.0)@2024-01-04 00:00:00+00}')
 )::text AS result;
+
+-------------------------------------------------------------------------------
+-- raquet type: construction, WKB round-trip, and typed sampling
+-------------------------------------------------------------------------------
+
+-- The typed raster_tile_value(raquet, tgeompoint) yields the same result as the
+-- untyped raster_tile_value_quadbin(bytea, ...) path on the same 2×2 chip.
+WITH t AS (
+  SELECT tgeompointFromText('SRID=4326;{Point(45.0 75.0)@2024-01-01 00:00:00+00, Point(135.0 75.0)@2024-01-02 00:00:00+00, Point(45.0 10.0)@2024-01-03 00:00:00+00, Point(-45.0 75.0)@2024-01-04 00:00:00+00}') AS traj
+)
+SELECT raster_tile_value(
+         raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'UINT8'), traj)::text
+     = raster_tile_value_quadbin(
+         '\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'UINT8', 0.0, false, traj)::text
+       AS typed_equals_untyped
+FROM t;
+
+-- The HexWKB text representation round-trips through the raquet type's input
+-- and output functions (raquet::text uses raquet_out, text::raquet uses
+-- raquet_in).
+SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'UINT8')::text::raquet::text
+     = raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'UINT8')::text
+       AS hexwkb_roundtrip_ok;
+
+-- The constructor rejects a pixel array too small for the given dimensions.
+SELECT raquet('\x0102'::bytea, 2, 2, 5193776270265024512::bigint, 'UINT8');
+
+-- A raquet large enough to be TOASTed (64 x 64 UINT8 = 4096 pixel bytes) must
+-- survive a store-and-read-back cycle: reading the stored value detoasts it, so
+-- its HexWKB output equals that of the same tile constructed inline.
+CREATE TEMP TABLE raquet_toast (rq raquet);
+INSERT INTO raquet_toast
+  VALUES (raquet(decode(repeat('01', 4096), 'hex'), 64, 64,
+    5193776270265024512::bigint, 'UINT8'));
+SELECT (SELECT rq FROM raquet_toast)::text
+     = raquet(decode(repeat('01', 4096), 'hex'), 64, 64,
+         5193776270265024512::bigint, 'UINT8')::text
+       AS toasted_roundtrip_ok;

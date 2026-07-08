@@ -44,4 +44,11 @@ extern PGDLLEXPORT Datum Raster_value(PG_FUNCTION_ARGS);
 extern PGDLLEXPORT Datum Raster_tile_value_quadbin(PG_FUNCTION_ARGS);
 extern PGDLLEXPORT Datum Trajectory_quadbins(PG_FUNCTION_ARGS);
 
+extern PGDLLEXPORT Datum Raquet_in(PG_FUNCTION_ARGS);
+extern PGDLLEXPORT Datum Raquet_out(PG_FUNCTION_ARGS);
+extern PGDLLEXPORT Datum Raquet_recv(PG_FUNCTION_ARGS);
+extern PGDLLEXPORT Datum Raquet_send(PG_FUNCTION_ARGS);
+extern PGDLLEXPORT Datum Raquet_constructor(PG_FUNCTION_ARGS);
+extern PGDLLEXPORT Datum Raster_tile_value(PG_FUNCTION_ARGS);
+
 #endif /* TEMPORAL_RASTER_H */

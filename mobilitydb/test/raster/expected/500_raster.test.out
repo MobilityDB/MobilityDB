@@ -219,3 +219,42 @@ SELECT raster_tile_value_quadbin(
  {1@2024-01-01 00:00:00+00, 2@2024-01-02 00:00:00+00, 3@2024-01-03 00:00:00+00}
 (1 row)
 
+WITH t AS (
+  SELECT tgeompointFromText('SRID=4326;{Point(45.0 75.0)@2024-01-01 00:00:00+00, Point(135.0 75.0)@2024-01-02 00:00:00+00, Point(45.0 10.0)@2024-01-03 00:00:00+00, Point(-45.0 75.0)@2024-01-04 00:00:00+00}') AS traj
+)
+SELECT raster_tile_value(
+         raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'UINT8'), traj)::text
+     = raster_tile_value_quadbin(
+         '\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'UINT8', 0.0, false, traj)::text
+       AS typed_equals_untyped
+FROM t;
+ typed_equals_untyped 
+----------------------
+ t
+(1 row)
+
+SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'UINT8')::text::raquet::text
+     = raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'UINT8')::text
+       AS hexwkb_roundtrip_ok;
+ hexwkb_roundtrip_ok 
+---------------------
+ t
+(1 row)
+
+SELECT raquet('\x0102'::bytea, 2, 2, 5193776270265024512::bigint, 'UINT8');
+ERROR:  The pixel array has 2 bytes but 4 are required for a 2 x 2 tile
+CREATE TEMP TABLE raquet_toast (rq raquet);
+CREATE TABLE
+INSERT INTO raquet_toast
+  VALUES (raquet(decode(repeat('01', 4096), 'hex'), 64, 64,
+    5193776270265024512::bigint, 'UINT8'));
+INSERT 0 1
+SELECT (SELECT rq FROM raquet_toast)::text
+     = raquet(decode(repeat('01', 4096), 'hex'), 64, 64,
+         5193776270265024512::bigint, 'UINT8')::text
+       AS toasted_roundtrip_ok;
+ toasted_roundtrip_ok 
+----------------------
+ t
+(1 row)
+
