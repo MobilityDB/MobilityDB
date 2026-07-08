@@ -101,3 +101,24 @@ subtypes:
     bin:   146
     category: tspatial
     files: [indexes]
+
+# ---------------------------------------------------------------------------
+# Box-type axis (C boxops generator). The bounding-box topological operator
+# wrappers (overlaps/contains/contained/same/adjacent) are per BOX TYPE, not
+# per family: one stbox implementation serves every tspatial family, one tbox
+# serves the tnumbers, tstzspan the temporal-only types, tpcbox the pointcloud.
+# The generator emits the region between the GENERATED-BOXOPS markers in `file`.
+# `reference: true` = self-regen must reproduce the committed region byte-for-byte.
+boxtypes:
+  - box:       stbox
+    tside:     tspatial
+    boxc:      STBox
+    getarg:    PG_GETARG_STBOX_P
+    dispbox:   boxop_tspatial_stbox
+    disptt:    boxop_tspatial_tspatial
+    ingroup:   mobilitydb_geo_bbox_topo
+    boxdesc:   spatiotemporal box
+    boxdescpl: spatiotemporal boxes
+    valdesc:   spatiotemporal value
+    file:      mobilitydb/src/geo/tgeo_boxops.c
+    reference: true

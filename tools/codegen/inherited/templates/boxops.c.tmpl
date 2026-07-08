@@ -1,0 +1,300 @@
+/*****************************************************************************
+ * Generic box functions
+ *****************************************************************************/
+
+/**
+ * @brief Generic bounding box function for a {BOXDESC} and a {VALDESC}
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Bounding box function
+ */
+Datum
+Boxop_{BOX}_{TSIDE}(FunctionCallInfo fcinfo,
+  bool (*func)(const {BOXC} *, const {BOXC} *))
+{
+  {BOXC} *box = {GETARG}(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
+  bool result = {DISPBOX}(temp, box, func, INVERT);
+  PG_FREE_IF_COPY(temp, 1);
+  PG_RETURN_BOOL(result);
+}
+
+/**
+ * @brief Generic bounding box function for a {VALDESC} and a
+ * {BOXDESC}
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Bounding box function
+ */
+Datum
+Boxop_{TSIDE}_{BOX}(FunctionCallInfo fcinfo,
+  bool (*func)(const {BOXC} *, const {BOXC} *))
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  {BOXC} *box = {GETARG}(1);
+  bool result = {DISPBOX}(temp, box, func, INVERT_NO);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_BOOL(result);
+}
+
+/**
+ * @brief Generic topological function for two {VALDESC}s
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Bounding box function
+ */
+Datum
+Boxop_{TSIDE}_{TSIDE}(FunctionCallInfo fcinfo,
+  bool (*func)(const {BOXC} *, const {BOXC} *))
+{
+  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
+  bool result = {DISPTT}(temp1, temp2, func);
+  PG_FREE_IF_COPY(temp1, 0);
+  PG_FREE_IF_COPY(temp2, 1);
+  PG_RETURN_BOOL(result);
+}
+
+/*****************************************************************************
+ * overlaps
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Overlaps_{BOX}_{TSIDE}(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overlaps_{BOX}_{TSIDE});
+/**
+ * @ingroup {INGROUP}
+ * @brief Return true if a {BOXDESC} and the {BOXDESC} of a
+ * {VALDESC} overlap
+ * @sqlfn overlaps_bbox()
+ * @sqlop @p &&
+ */
+inline Datum
+Overlaps_{BOX}_{TSIDE}(PG_FUNCTION_ARGS)
+{
+  return Boxop_{BOX}_{TSIDE}(fcinfo, &overlaps_{BOX}_{BOX});
+}
+
+PGDLLEXPORT Datum Overlaps_{TSIDE}_{BOX}(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overlaps_{TSIDE}_{BOX});
+/**
+ * @ingroup {INGROUP}
+ * @brief Return true if the {BOXDESC} of a {VALDESC} and
+ * a {BOXDESC} overlap
+ * @sqlfn overlaps_bbox()
+ * @sqlop @p &&
+ */
+inline Datum
+Overlaps_{TSIDE}_{BOX}(PG_FUNCTION_ARGS)
+{
+  return Boxop_{TSIDE}_{BOX}(fcinfo, &overlaps_{BOX}_{BOX});
+}
+
+PGDLLEXPORT Datum Overlaps_{TSIDE}_{TSIDE}(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overlaps_{TSIDE}_{TSIDE});
+/**
+ * @ingroup {INGROUP}
+ * @brief Return true if the {BOXDESCPL} of two {VALDESC}s
+ * overlap
+ * @sqlfn overlaps_bbox()
+ * @sqlop @p &&
+ */
+inline Datum
+Overlaps_{TSIDE}_{TSIDE}(PG_FUNCTION_ARGS)
+{
+  return Boxop_{TSIDE}_{TSIDE}(fcinfo, &overlaps_{BOX}_{BOX});
+}
+
+/*****************************************************************************
+ * contains
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Contains_{BOX}_{TSIDE}(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Contains_{BOX}_{TSIDE});
+/**
+ * @ingroup {INGROUP}
+ * @brief Return true if a {BOXDESC} contains the one of a
+ * {VALDESC}
+ * @sqlfn contains_bbox()
+ * @sqlop @p @>
+ */
+inline Datum
+Contains_{BOX}_{TSIDE}(PG_FUNCTION_ARGS)
+{
+  return Boxop_{BOX}_{TSIDE}(fcinfo, &contains_{BOX}_{BOX});
+}
+
+PGDLLEXPORT Datum Contains_{TSIDE}_{BOX}(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Contains_{TSIDE}_{BOX});
+/**
+ * @ingroup {INGROUP}
+ * @brief Return true if the {BOXDESC} of a {VALDESC}
+ * contains a {BOXDESC}
+ * @sqlfn contains_bbox()
+ * @sqlop @p @>
+ */
+inline Datum
+Contains_{TSIDE}_{BOX}(PG_FUNCTION_ARGS)
+{
+  return Boxop_{TSIDE}_{BOX}(fcinfo, &contains_{BOX}_{BOX});
+}
+
+PGDLLEXPORT Datum Contains_{TSIDE}_{TSIDE}(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Contains_{TSIDE}_{TSIDE});
+/**
+ * @ingroup {INGROUP}
+ * @brief Return true if the {BOXDESC} of the first {VALDESC}
+ * contains the one of the second {VALDESC}
+ * @sqlfn contains_bbox()
+ * @sqlop @p @>
+ */
+inline Datum
+Contains_{TSIDE}_{TSIDE}(PG_FUNCTION_ARGS)
+{
+  return Boxop_{TSIDE}_{TSIDE}(fcinfo, &contains_{BOX}_{BOX});
+}
+
+/*****************************************************************************
+ * contained
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Contained_{BOX}_{TSIDE}(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Contained_{BOX}_{TSIDE});
+/**
+ * @ingroup {INGROUP}
+ * @brief Return true if a {BOXDESC} is contained in the
+ * {BOXDESC} of a {VALDESC}
+ * @sqlfn contained_bbox()
+ * @sqlop @p <@
+ */
+inline Datum
+Contained_{BOX}_{TSIDE}(PG_FUNCTION_ARGS)
+{
+  return Boxop_{BOX}_{TSIDE}(fcinfo, &contained_{BOX}_{BOX});
+}
+
+PGDLLEXPORT Datum Contained_{TSIDE}_{BOX}(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Contained_{TSIDE}_{BOX});
+/**
+ * @ingroup {INGROUP}
+ * @brief Return true if the {BOXDESC} of a {VALDESC} is
+ * contained in the {BOXDESC}
+ * @sqlfn contained_bbox()
+ * @sqlop @p <@
+ */
+inline Datum
+Contained_{TSIDE}_{BOX}(PG_FUNCTION_ARGS)
+{
+  return Boxop_{TSIDE}_{BOX}(fcinfo, &contained_{BOX}_{BOX});
+}
+
+PGDLLEXPORT Datum Contained_{TSIDE}_{TSIDE}(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Contained_{TSIDE}_{TSIDE});
+/**
+ * @ingroup {INGROUP}
+ * @brief Return true if the {BOXDESC} of the first {VALDESC}
+ * is contained in the one of the second {VALDESC}
+ * @sqlfn contained_bbox()
+ * @sqlop @p <@
+ */
+inline Datum
+Contained_{TSIDE}_{TSIDE}(PG_FUNCTION_ARGS)
+{
+  return Boxop_{TSIDE}_{TSIDE}(fcinfo, &contained_{BOX}_{BOX});
+}
+
+/*****************************************************************************
+ * same
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Same_{BOX}_{TSIDE}(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Same_{BOX}_{TSIDE});
+/**
+ * @ingroup {INGROUP}
+ * @brief Return true if a {BOXDESC} and the {BOXDESC} of a
+ * {VALDESC} are equal in the common dimensions
+ * @sqlfn same_bbox()
+ * @sqlop @p ~=
+ */
+inline Datum
+Same_{BOX}_{TSIDE}(PG_FUNCTION_ARGS)
+{
+  return Boxop_{BOX}_{TSIDE}(fcinfo, &same_{BOX}_{BOX});
+}
+
+PGDLLEXPORT Datum Same_{TSIDE}_{BOX}(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Same_{TSIDE}_{BOX});
+/**
+ * @ingroup {INGROUP}
+ * @brief Return true if the {BOXDESC} of a {VALDESC} and
+ * a {BOXDESC} are equal in the common dimensions
+ * @sqlfn same_bbox()
+ * @sqlop @p ~=
+ */
+inline Datum
+Same_{TSIDE}_{BOX}(PG_FUNCTION_ARGS)
+{
+  return Boxop_{TSIDE}_{BOX}(fcinfo, &same_{BOX}_{BOX});
+}
+
+PGDLLEXPORT Datum Same_{TSIDE}_{TSIDE}(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Same_{TSIDE}_{TSIDE});
+/**
+ * @ingroup {INGROUP}
+ * @brief Return true if the {BOXDESCPL} of two {VALDESC}s
+ * are equal in the common dimensions
+ * @sqlfn same_bbox()
+ * @sqlop @p ~=
+ */
+inline Datum
+Same_{TSIDE}_{TSIDE}(PG_FUNCTION_ARGS)
+{
+  return Boxop_{TSIDE}_{TSIDE}(fcinfo, &same_{BOX}_{BOX});
+}
+
+/*****************************************************************************
+ * adjacent
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Adjacent_{BOX}_{TSIDE}(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Adjacent_{BOX}_{TSIDE});
+/**
+ * @ingroup {INGROUP}
+ * @brief Return true if a {BOXDESC} and the {BOXDESC} of a
+ * {VALDESC} are adjacent
+ * @sqlfn adjacent_bbox()
+ * @sqlop @p -|-
+ */
+inline Datum
+Adjacent_{BOX}_{TSIDE}(PG_FUNCTION_ARGS)
+{
+  return Boxop_{BOX}_{TSIDE}(fcinfo, &adjacent_{BOX}_{BOX});
+}
+
+PGDLLEXPORT Datum Adjacent_{TSIDE}_{BOX}(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Adjacent_{TSIDE}_{BOX});
+/**
+ * @ingroup {INGROUP}
+ * @brief Return true if the {BOXDESC} of a {VALDESC}
+ * and a {BOXDESC} are adjacent
+ * @sqlfn adjacent_bbox()
+ * @sqlop @p -|-
+ */
+inline Datum
+Adjacent_{TSIDE}_{BOX}(PG_FUNCTION_ARGS)
+{
+  return Boxop_{TSIDE}_{BOX}(fcinfo, &adjacent_{BOX}_{BOX});
+}
+
+PGDLLEXPORT Datum Adjacent_{TSIDE}_{TSIDE}(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Adjacent_{TSIDE}_{TSIDE});
+/**
+ * @ingroup {INGROUP}
+ * @brief Return true if the {BOXDESCPL} of two {VALDESC}s
+ * are adjacent
+ * @sqlfn adjacent_bbox()
+ * @sqlop @p -|-
+ */
+inline Datum
+Adjacent_{TSIDE}_{TSIDE}(PG_FUNCTION_ARGS)
+{
+  return Boxop_{TSIDE}_{TSIDE}(fcinfo, &adjacent_{BOX}_{BOX});
+}
+
+/*****************************************************************************/

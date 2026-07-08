@@ -196,13 +196,14 @@ Geo_split_each_n_stboxes(PG_FUNCTION_ARGS)
   PG_RETURN_ARRAYTYPE_P(result);
 }
 
+/* GENERATED-BOXOPS-BEGIN — tools/codegen/inherited/generate.py from templates/boxops.c.tmpl; DO NOT EDIT BY HAND;
+ * edit the template + manifest.yaml (boxtypes) and re-run. */
 /*****************************************************************************
  * Generic box functions
  *****************************************************************************/
 
 /**
- * @brief Generic bounding box function for a spatiotemporal box and a temporal
- * point
+ * @brief Generic bounding box function for a spatiotemporal box and a spatiotemporal value
  * @param[in] fcinfo Catalog information about the external function
  * @param[in] func Bounding box function
  */
@@ -289,8 +290,8 @@ PGDLLEXPORT Datum Overlaps_tspatial_tspatial(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overlaps_tspatial_tspatial);
 /**
  * @ingroup mobilitydb_geo_bbox_topo
- * @brief Return true if the spatiotemporal boxes of two spatiotemporal
- * values overlap
+ * @brief Return true if the spatiotemporal boxes of two spatiotemporal values
+ * overlap
  * @sqlfn overlaps_bbox()
  * @sqlop @p &&
  */
@@ -308,8 +309,8 @@ PGDLLEXPORT Datum Contains_stbox_tspatial(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contains_stbox_tspatial);
 /**
  * @ingroup mobilitydb_geo_bbox_topo
- * @brief Return true if a spatiotemporal box contains the one of a temporal
- * point
+ * @brief Return true if a spatiotemporal box contains the one of a
+ * spatiotemporal value
  * @sqlfn contains_bbox()
  * @sqlop @p @>
  */
@@ -338,8 +339,8 @@ PGDLLEXPORT Datum Contains_tspatial_tspatial(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contains_tspatial_tspatial);
 /**
  * @ingroup mobilitydb_geo_bbox_topo
- * @brief Return true if the spatiotemporal box of the first spatiotemporal
- * value contains the one of the second spatiotemporal value
+ * @brief Return true if the spatiotemporal box of the first spatiotemporal value
+ * contains the one of the second spatiotemporal value
  * @sqlfn contains_bbox()
  * @sqlop @p @>
  */
@@ -387,8 +388,8 @@ PGDLLEXPORT Datum Contained_tspatial_tspatial(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contained_tspatial_tspatial);
 /**
  * @ingroup mobilitydb_geo_bbox_topo
- * @brief Return true if the spatiotemporal box of the first spatiotemporal
- * value is contained in the one of the second spatiotemporal value
+ * @brief Return true if the spatiotemporal box of the first spatiotemporal value
+ * is contained in the one of the second spatiotemporal value
  * @sqlfn contained_bbox()
  * @sqlop @p <@
  */
@@ -436,8 +437,8 @@ PGDLLEXPORT Datum Same_tspatial_tspatial(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Same_tspatial_tspatial);
 /**
  * @ingroup mobilitydb_geo_bbox_topo
- * @brief Return true if the spatiotemporal boxes of two spatiotemporal
- * values are equal in the common dimensions
+ * @brief Return true if the spatiotemporal boxes of two spatiotemporal values
+ * are equal in the common dimensions
  * @sqlfn same_bbox()
  * @sqlop @p ~=
  */
@@ -485,8 +486,8 @@ PGDLLEXPORT Datum Adjacent_tspatial_tspatial(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Adjacent_tspatial_tspatial);
 /**
  * @ingroup mobilitydb_geo_bbox_topo
- * @brief Return true if the spatiotemporal boxes of two spatiotemporal
- * values are adjacent
+ * @brief Return true if the spatiotemporal boxes of two spatiotemporal values
+ * are adjacent
  * @sqlfn adjacent_bbox()
  * @sqlop @p -|-
  */
@@ -497,3 +498,4 @@ Adjacent_tspatial_tspatial(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************/
+/* GENERATED-BOXOPS-END */
