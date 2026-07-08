@@ -228,6 +228,12 @@ SELECT 1 AS k, geometry 'compoundcurve empty' AS g UNION
 SELECT k, random_geom_compoundcurve(0, 100, 0, 100, 10, 1, 5)
 FROM generate_series(2, size) k;
 
+DROP TABLE IF EXISTS tbl_geom_curvepolygon;
+CREATE TABLE tbl_geom_curvepolygon AS
+SELECT 1 AS k, geometry 'curvepolygon empty' AS g UNION
+SELECT k, random_geom_curvepolygon(0, 100, 0, 100, 10, 2, 5)
+FROM generate_series(2, size) k;
+
 DROP TABLE IF EXISTS tbl_geom;
 CREATE TABLE tbl_geom (
   k serial PRIMARY KEY,
@@ -240,7 +246,8 @@ INSERT INTO tbl_geom(g)
 (SELECT g FROM tbl_geom_multilinestring ORDER BY k LIMIT (size * 0.2)) UNION ALL
 (SELECT g FROM tbl_geom_multipolygon ORDER BY k LIMIT (size * 0.2)) UNION ALL
 (SELECT g FROM tbl_geom_circularstring ORDER BY k LIMIT (size * 0.2)) UNION ALL
-(SELECT g FROM tbl_geom_compoundcurve ORDER BY k LIMIT (size * 0.2));
+(SELECT g FROM tbl_geom_compoundcurve ORDER BY k LIMIT (size * 0.2)) UNION ALL
+(SELECT g FROM tbl_geom_curvepolygon ORDER BY k LIMIT (size * 0.2));
 
 DROP TABLE IF EXISTS tbl_geom3D;
 CREATE TABLE tbl_geom3D (

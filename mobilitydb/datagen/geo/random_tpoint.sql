@@ -811,6 +811,70 @@ FROM generate_series(1, 15) AS k;
 -------------------------------------------------------------------------------
 
 /**
+ * @brief Generate a random 2D geometric curve polygon without holes bounded by
+ * a closed circular string
+ * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
+ * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
+ * @param[in] maxdelta Maximum difference between two consecutive coordinate values
+ * @param[in] minarcs, maxarcs Inclusive bounds of the number of arcs
+ * @param[in] srid SRID of the coordinates
+ */
+DROP FUNCTION IF EXISTS random_geom_curvepolygon;
+CREATE FUNCTION random_geom_curvepolygon(lowx float, highx float, lowy float,
+  highy float, maxdelta float, minarcs int, maxarcs int, srid int DEFAULT 0)
+  RETURNS geometry AS $$
+DECLARE
+  narcs int;
+  npoints int;
+  cx float;
+  cy float;
+  r float;
+  xs float[];
+  ys float[];
+  wkt text;
+BEGIN
+  IF minarcs < 2 THEN
+    RAISE EXCEPTION 'A curve polygon requires at least 2 arcs';
+  END IF;
+  IF minarcs > maxarcs THEN
+    RAISE EXCEPTION 'minarcs must be less than or equal to maxarcs: %, %',
+      minarcs, maxarcs;
+  END IF;
+  narcs = random_int(minarcs, maxarcs);
+  /* A curve polygon bounded by a closed circular string of n arcs is defined by
+   * 2 * n points plus the closing point equal to the first one. The points are
+   * placed on a circle in increasing angular order so that the ring is simple
+   * (a random walk would frequently self-intersect, yielding invalid polygons) */
+  npoints = 2 * narcs;
+  r = random_float(maxdelta, 2 * maxdelta);
+  cx = random_float(lowx + r, highx - r);
+  cy = random_float(lowy + r, highy - r);
+  SELECT array_agg(cx + r * cos(2 * pi() * i / npoints) ORDER BY i),
+         array_agg(cy + r * sin(2 * pi() * i / npoints) ORDER BY i)
+  INTO xs, ys
+  FROM generate_series(0, npoints - 1) AS i;
+  SELECT string_agg(xs[i] || ' ' || ys[i], ',' ORDER BY i)
+  INTO wkt
+  FROM generate_series(1, npoints) AS i;
+  RETURN ST_GeomFromText('CURVEPOLYGON(CIRCULARSTRING(' || wkt || ',' ||
+    xs[1] || ' ' || ys[1] || '))', srid);
+END;
+$$ LANGUAGE PLPGSQL STRICT;
+
+/*
+SELECT k, st_asEWKT(random_geom_curvepolygon(-100, 100, -100, 100, 10, 2, 5)) AS g
+FROM generate_series(1, 15) AS k;
+
+SELECT k, st_asEWKT(random_geom_curvepolygon(-100, 100, -100, 100, 10, 2, 5, 3812)) AS g
+FROM generate_series(1, 15) AS k;
+
+SELECT distinct geometrytype(random_geom_curvepolygon(-100, 100, -100, 100, 10, 2, 5)) AS g
+FROM generate_series(1, 15) AS k;
+*/
+
+-------------------------------------------------------------------------------
+
+/**
  * @brief Generate a random 3D geometric linestring
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
