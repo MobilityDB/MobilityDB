@@ -51,3 +51,11 @@ jobs:
         uses: actions/checkout@v4
       - name: Check @csqlfn derivation links
         run: python3 tools/scripts/check_csqlfn.py --gaps
+
+  spatialrel_orthogonality_check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Check spatial-relationship (geo x tgeo) grid completeness
+        run: python3 tools/scripts/check_spatialrel_orthogonality.py
