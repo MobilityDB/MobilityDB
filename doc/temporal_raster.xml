@@ -135,6 +135,35 @@ JOIN sst_raquet r
   ON r.quadbin = ANY(trajectory_quadbins(t.trip4326, 6));
 </programlisting>
 			</listitem>
+
+			<listitem xml:id="raquet">
+				<indexterm significance="normal"><primary><varname>raquet</varname></primary></indexterm>
+				<para>Construct a Raquet raster tile from its pixel bytes, dimensions, QUADBIN cell and pixel type</para>
+				<para><varname>raquet(bytea,integer,integer,bigint,text,float8) → raquet</varname></para>
+				<para>Packages a row-major single-band <varname>pixels</varname> array of <varname>width</varname> × <varname>height</varname> pixels of type <varname>pixtype</varname> (one of <varname>UINT8</varname>, <varname>INT16</varname>, <varname>INT32</varname>, <varname>FLOAT32</varname>, or <varname>FLOAT64</varname>), georeferenced by the <varname>quadbin</varname> cell, into a single self-describing <varname>raquet</varname> value. The <varname>nodata</varname> argument is optional; when omitted (<varname>NULL</varname>) the tile carries no nodata sentinel. An error is raised when the <varname>pixels</varname> array is smaller than <varname>width</varname> × <varname>height</varname> × the pixel size. A <varname>raquet</varname> is a GDAL-free, variable-length value with a portable Hex-WKB text and binary representation, distinct from and coexisting with the PostGIS <varname>raster</varname> type used by <link linkend="raster_value"><varname>raster_value</varname></link>.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- Package the loose tile columns of a Raquet table into raquet values
+SELECT raquet(band_data, width, height, quadbin, 'FLOAT32', nodata) AS tile
+FROM elevation_raquet;
+
+-- A 2 x 2 UINT8 tile with no nodata
+SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'UINT8');
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="raster_tile_value">
+				<indexterm significance="normal"><primary><varname>raster_tile_value</varname></primary></indexterm>
+				<para>Sample a <varname>raquet</varname> raster tile along a trajectory</para>
+				<para><varname>raster_tile_value(raquet,tgeompoint) → tfloat</varname></para>
+				<para>Evaluates the tile at each instant of <varname>traj</varname> (SRID 4326), returning the sampled pixel values as a <varname>tfloat</varname>. This is the typed equivalent of <link linkend="raster_tile_value_quadbin"><varname>raster_tile_value_quadbin</varname></link>: the dimensions, QUADBIN cell, pixel type and nodata handling are taken from the <varname>raquet</varname> value instead of from separate arguments. Returns <varname>NULL</varname> when no instant falls inside the tile or survives nodata filtering.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- Sample pre-packaged raquet tiles along ship trajectories
+SELECT t.tripid, raster_tile_value(r.tile, t.trip4326)
+FROM trips t
+JOIN elevation_tiles r
+  ON r.quadbin = ANY(trajectory_quadbins(t.trip4326, 8));
+</programlisting>
+			</listitem>
 		</itemizedlist>
 	</sect1>
 

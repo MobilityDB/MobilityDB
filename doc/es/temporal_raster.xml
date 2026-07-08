@@ -133,6 +133,35 @@ JOIN sst_raquet r
   ON r.quadbin = ANY(trajectory_quadbins(t.trip4326, 6));
 </programlisting>
 			</listitem>
+
+			<listitem xml:id="raquet">
+				<indexterm significance="normal"><primary><varname>raquet</varname></primary></indexterm>
+				<para>Construir una tesela ráster Raquet a partir de sus bytes de píxeles, dimensiones, celda QUADBIN y tipo de píxel</para>
+				<para><varname>raquet(bytea,integer,integer,bigint,text,float8) → raquet</varname></para>
+				<para>Empaqueta un arreglo de píxeles <varname>pixels</varname> de banda única en orden de fila mayor de <varname>width</varname> × <varname>height</varname> píxeles de tipo <varname>pixtype</varname> (uno de <varname>UINT8</varname>, <varname>INT16</varname>, <varname>INT32</varname>, <varname>FLOAT32</varname> o <varname>FLOAT64</varname>), georreferenciado por la celda <varname>quadbin</varname>, en un único valor <varname>raquet</varname> autodescriptivo. El argumento <varname>nodata</varname> es opcional; cuando se omite (<varname>NULL</varname>) la tesela no lleva valor centinela de nodata. Se genera un error cuando el arreglo <varname>pixels</varname> es menor que <varname>width</varname> × <varname>height</varname> × el tamaño del píxel. Un <varname>raquet</varname> es un valor de longitud variable, libre de GDAL, con una representación portátil en texto Hex-WKB y binaria, distinto de y coexistente con el tipo <varname>raster</varname> de PostGIS usado por <link linkend="raster_value"><varname>raster_value</varname></link>.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- Empaquetar las columnas sueltas de una tabla Raquet en valores raquet
+SELECT raquet(band_data, width, height, quadbin, 'FLOAT32', nodata) AS tile
+FROM elevation_raquet;
+
+-- Una tesela UINT8 de 2 x 2 sin nodata
+SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'UINT8');
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="raster_tile_value">
+				<indexterm significance="normal"><primary><varname>raster_tile_value</varname></primary></indexterm>
+				<para>Muestrear una tesela ráster <varname>raquet</varname> a lo largo de una trayectoria</para>
+				<para><varname>raster_tile_value(raquet,tgeompoint) → tfloat</varname></para>
+				<para>Evalúa la tesela en cada instante de <varname>traj</varname> (SRID 4326), devolviendo los valores de píxel muestreados como un <varname>tfloat</varname>. Es el equivalente tipado de <link linkend="raster_tile_value_quadbin"><varname>raster_tile_value_quadbin</varname></link>: las dimensiones, la celda QUADBIN, el tipo de píxel y el tratamiento de nodata se toman del valor <varname>raquet</varname> en lugar de argumentos separados. Devuelve <varname>NULL</varname> cuando ningún instante cae dentro de la tesela o sobrevive al filtrado de nodata.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- Muestrear teselas raquet preempaquetadas a lo largo de trayectorias de barcos
+SELECT t.tripid, raster_tile_value(r.tile, t.trip4326)
+FROM trips t
+JOIN elevation_tiles r
+  ON r.quadbin = ANY(trajectory_quadbins(t.trip4326, 8));
+</programlisting>
+			</listitem>
 		</itemizedlist>
 	</sect1>
 

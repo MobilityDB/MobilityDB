@@ -3709,6 +3709,14 @@
 				<listitem>
 					<para><link linkend="raster_tile_value_quadbin"><varname>raster_tile_value_quadbin</varname></link>: Sample a Raquet raster chip along a trajectory using a QUADBIN cell for georeferencing</para>
 				</listitem>
+
+				<listitem>
+					<para><link linkend="raquet"><varname>raquet</varname></link>: Construct a Raquet raster tile from its pixel bytes, dimensions, QUADBIN cell and pixel type</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="raster_tile_value"><varname>raster_tile_value</varname></link>: Sample a Raquet raster tile along a trajectory</para>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 

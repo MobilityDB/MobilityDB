@@ -3731,6 +3731,14 @@
 				<listitem>
 					<para><link linkend="raster_tile_value_quadbin"><varname>raster_tile_value_quadbin</varname></link>: Muestrear un chip ráster de Raquet a lo largo de una trayectoria usando una celda QUADBIN para la georreferenciación</para>
 				</listitem>
+
+				<listitem>
+					<para><link linkend="raquet"><varname>raquet</varname></link>: Construir una tesela ráster Raquet a partir de sus bytes de píxeles, dimensiones, celda QUADBIN y tipo de píxel</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="raster_tile_value"><varname>raster_tile_value</varname></link>: Muestrear una tesela ráster raquet a lo largo de una trayectoria</para>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 
