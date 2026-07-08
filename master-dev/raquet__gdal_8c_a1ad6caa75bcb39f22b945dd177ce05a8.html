@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: meos/src/npoint/CMakeLists.txt File Reference</title>
+<title>MobilityDB: gdal_to_pixtype</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -68,18 +68,64 @@ $(function() {
 </div>
 </div>
 
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_0fff62ca9c7e6b49d869dbbeba2dc9ed.html">meos</a></li><li class="navelem"><a class="el" href="dir_0a74bb77045191a48e06cf40aa0b9f46.html">src</a></li><li class="navelem"><a class="el" href="dir_adabb0f6d47e29a63ecfbcfe91d4a89b.html">raster</a></li><li class="navelem"><a class="el" href="raquet__gdal_8c.html">raquet_gdal.c</a></li>  </ul>
+</div>
 </div><!-- top -->
-<div class="header">
-  <div class="summary">
-<a href="#func-members">Functions</a>  </div>
-  <div class="headertitle"><div class="title">meos/src/npoint/CMakeLists.txt File Reference</div></div>
-</div><!--header-->
 <div class="contents">
-<table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
-Functions</h2></td></tr>
-<tr class="memitem:ade7b0724eca885f0a7812e1729938a75"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2npoint_2CMakeLists_8txt_ade7b0724eca885f0a7812e1729938a75.html#ade7b0724eca885f0a7812e1729938a75">set</a> (NPOINT_SOURCES npoint.c tnpoint.c tnpoint_aggfuncs.c tnpoint_boxops.c tnpoint_compops.c tnpoint_distance.c tnpoint_routeops.c tnpoint_spatialfuncs.c) <a class="el" href="meos_2src_2pointcloud_2CMakeLists_8txt_ae568e9eec6a8ddebf7509f96f3f7ca9b.html#ae568e9eec6a8ddebf7509f96f3f7ca9b">if</a>(1) list(APPEND NPOINT_SOURCES npointset_meos.c ways_meos.c) <a class="el" href="mobilitydb_2test_2h3_2CMakeLists_8txt_af8c208b3f3ae2baf6171045623508a4a.html#af8c208b3f3ae2baf6171045623508a4a">else</a>() list(APPEND NPOINT_SOURCES ways.c) <a class="el" href="meos_2CMakeLists_8txt_af72cd33d066d8ed5dc90614a0f26be37.html#af72cd33d066d8ed5dc90614a0f26be37">endif</a>() <a class="el" href="meos_2src_2raster_2CMakeLists_8txt_a132599c6b71daabc5ee63b534e1b5f63.html#a132599c6b71daabc5ee63b534e1b5f63">add_library</a>(npoint OBJECT $</td></tr>
-<tr class="separator:ade7b0724eca885f0a7812e1729938a75"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<table cellspacing="0" cellpadding="0" border="0">
+  <tr>
+   <td valign="top">
+      <div class="navtab">
+        <table>
+          <tr><td class="navtabHL"><a class="navtab" href="raquet__gdal_8c_a1ad6caa75bcb39f22b945dd177ce05a8.html#a1ad6caa75bcb39f22b945dd177ce05a8">gdal_to_pixtype</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="raquet__gdal_8c_adbb297bae58b06d3ebba66b7c5a10f86.html#adbb297bae58b06d3ebba66b7c5a10f86">raquet_read</a></td></tr>
+        </table>
+      </div>
+   </td>
+   <td valign="top" class="mempage">
+<a id="a1ad6caa75bcb39f22b945dd177ce05a8" name="a1ad6caa75bcb39f22b945dd177ce05a8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1ad6caa75bcb39f22b945dd177ce05a8">&#9670;&#160;</a></span>gdal_to_pixtype()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static bool gdal_to_pixtype </td>
+          <td>(</td>
+          <td class="paramtype">GDALDataType&#160;</td>
+          <td class="paramname"><em>dt</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="meos__raster_8h_ab4899fb599b17f4121bb9a377d9dd040.html#ab4899fb599b17f4121bb9a377d9dd040">MeosPixType</a> *&#160;</td>
+          <td class="paramname"><em>pixtype</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Map a GDAL data type to the corresponding <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> pixel type. </p>
+<dl class="section return"><dt>Returns</dt><dd>true on success; on failure sets a MEOS error and returns false </dd></dl>
+
+</div>
+</div>
+    </td>
+  </tr>
 </table>
 </div><!-- contents -->
 <!-- start footer part -->

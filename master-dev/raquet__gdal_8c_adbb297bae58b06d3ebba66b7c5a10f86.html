@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: add_library</title>
+<title>MobilityDB: raquet_read</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="meos_2src_2raster_2CMakeLists_8txt.html">CMakeLists.txt</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_0fff62ca9c7e6b49d869dbbeba2dc9ed.html">meos</a></li><li class="navelem"><a class="el" href="dir_0a74bb77045191a48e06cf40aa0b9f46.html">src</a></li><li class="navelem"><a class="el" href="dir_adabb0f6d47e29a63ecfbcfe91d4a89b.html">raster</a></li><li class="navelem"><a class="el" href="raquet__gdal_8c.html">raquet_gdal.c</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,26 +79,46 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2raster_2CMakeLists_8txt_a9fd1e6ba09e8fab3391bfa289d7dc3b1.html#a9fd1e6ba09e8fab3391bfa289d7dc3b1">add_library</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="raquet__gdal_8c_a1ad6caa75bcb39f22b945dd177ce05a8.html#a1ad6caa75bcb39f22b945dd177ce05a8">gdal_to_pixtype</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="raquet__gdal_8c_adbb297bae58b06d3ebba66b7c5a10f86.html#adbb297bae58b06d3ebba66b7c5a10f86">raquet_read</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a9fd1e6ba09e8fab3391bfa289d7dc3b1" name="a9fd1e6ba09e8fab3391bfa289d7dc3b1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9fd1e6ba09e8fab3391bfa289d7dc3b1">&#9670;&#160;</a></span>add_library()</h2>
+<a id="adbb297bae58b06d3ebba66b7c5a10f86" name="adbb297bae58b06d3ebba66b7c5a10f86"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adbb297bae58b06d3ebba66b7c5a10f86">&#9670;&#160;</a></span>raquet_read()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">add_library </td>
+          <td class="memname"><a class="el" href="structRaquet.html">Raquet</a> * raquet_read </td>
           <td>(</td>
-          <td class="paramtype">raster OBJECT raster_quadbin.c raquet.&#160;</td>
-          <td class="paramname"><em>c</em></td><td>)</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>path</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_abc0f5bc07737e498f287334775dff2b6.html#abc0f5bc07737e498f287334775dff2b6">uint64</a>&#160;</td>
+          <td class="paramname"><em>quadbin</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Return a <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> tile read from a raster file via GDAL. </p>
+<p >GDAL decodes the file (any format it supports) and the first raster band is packed row-major into a <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> chip identified by <code>quadbin</code>. The band data type must be one of Byte / Int16 / Int32 / Float32 / Float64; the band nodata value (if any) is carried into the tile. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">path</td><td>Path to a GDAL-readable raster file </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">quadbin</td><td>CARTO QUADBIN cell identifying the Web-Mercator tile </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
