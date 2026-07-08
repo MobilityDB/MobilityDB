@@ -12,9 +12,9 @@ SET(LOCAL_FILES
   158_trgeo_tile
   160_trgeo_similarity
   161_trgeo_distance
-  161_trgeo_vclip
   162_trgeo_indexes
   163_trgeo_geom_clip
+  164_trgeo_vclip
   )
 
 foreach (f ${LOCAL_FILES})
