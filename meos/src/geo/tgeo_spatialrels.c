@@ -1630,6 +1630,40 @@ ea_dwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
       return 0;
   }
 
+  /* Native GEOS-free fast path for a temporal geometry point with linear
+   * interpolation against a non-point geometry the clip engine supports
+   * (planar, 2D, strictly positive distance). Compute the native temporal
+   * within Boolean once and project it to the ever/always quantifier. Using the
+   * same #tpoint_linear_dwithin_geom as #tdwithin_tgeo_geo makes the ever/always
+   * projections consistent with the temporal result by construction. This kills
+   * both the EVER GEOS trajectory dwithin and the ALWAYS geom_buffer + covers
+   * approximation. A zero distance is left on the existing paths because the
+   * ever/always intersects and disjoint relationships are defined in terms of
+   * ea_dwithin(., ., 0.0); the POINT-vs-POINT and unsupported cases also fall
+   * through to the paths below. */
+  if (dist > 0.0 && temp->temptype == T_TGEOMPOINT &&
+      temp->subtype != TINSTANT &&
+      MEOS_FLAGS_GET_INTERP(temp->flags) == LINEAR &&
+      ! MEOS_FLAGS_GET_GEODETIC(temp->flags) &&
+      ! MEOS_FLAGS_GET_Z(temp->flags) && ! FLAGS_GET_Z(gs->gflags) &&
+      gserialized_get_type(gs) != POINTTYPE)
+  {
+    LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
+    bool supported = geom_clip_supported(lwgeom);
+    lwgeom_free(lwgeom);
+    if (supported)
+    {
+      Temporal *dw = tpoint_linear_dwithin_geom(temp, gs, dist);
+      /* Use the extension-safe base comparators (the tbool-specific
+       * ever_eq_tbool_bool / always_eq_tbool_bool wrappers live in a
+       * MEOS-only *_meos.c and are absent from the PostgreSQL extension) */
+      int result = ever ? ever_eq_temporal_base(dw, BoolGetDatum(true)) :
+        always_eq_temporal_base(dw, BoolGetDatum(true));
+      pfree(dw);
+      return result;
+    }
+  }
+
   /* EVER */
   if (ever)
   {
