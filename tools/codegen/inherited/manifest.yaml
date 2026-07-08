@@ -122,3 +122,16 @@ boxtypes:
     valdesc:   spatiotemporal value
     file:      mobilitydb/src/geo/tgeo_boxops.c
     reference: true
+
+  - box:       tpcbox
+    tside:     tpointcloud
+    boxc:      TPCBox
+    getarg:    PG_GETARG_TPCBOX_P
+    dispbox:   boxop_tpointcloud_tpcbox
+    disptt:    boxop_tpointcloud_tpointcloud
+    ingroup:   mobilitydb_pointcloud_temp
+    boxdesc:   tpcbox
+    boxdescpl: tpcboxes
+    valdesc:   temporal pointcloud value
+    file:      mobilitydb/src/pointcloud/tpc_boxops.c
+    reference: true
