@@ -816,6 +816,59 @@ geom_perimeter(const GSERIALIZED *gs)
 }
 
 /**
+ * @brief Return the boundary of a compound curve, that is, its two end points,
+ * or an empty multipoint if the curve is closed
+ * @details The embedded PostGIS @p lwgeom_boundary does not handle
+ * @p COMPOUNDTYPE (it errors on it), while it does handle circular strings; the
+ * boundary is computed here from the first point of the first component and the
+ * last point of the last component, mirroring the linestring/circularstring case
+ */
+static LWGEOM *
+lwcompound_boundary(const LWGEOM *geom)
+{
+  int32_t srid = lwgeom_get_srid(geom);
+  uint8_t hasz = lwgeom_has_z(geom);
+  uint8_t hasm = lwgeom_has_m(geom);
+  if (lwgeom_is_closed(geom) || lwgeom_is_empty(geom))
+    return (LWGEOM *) lwmpoint_construct_empty(srid, hasz, hasm);
+  /* A compound curve is a chain of (circular) lines sharing their end points */
+  const LWCOLLECTION *col = (const LWCOLLECTION *) geom;
+  const LWLINE *first = (const LWLINE *) col->geoms[0];
+  const LWLINE *last = (const LWLINE *) col->geoms[col->ngeoms - 1];
+  LWMPOINT *result = lwmpoint_construct_empty(srid, hasz, hasm);
+  POINT4D pt;
+  getPoint4d_p(first->points, 0, &pt);
+  lwmpoint_add_lwpoint(result, lwpoint_make(srid, hasz, hasm, &pt));
+  getPoint4d_p(last->points, last->points->npoints - 1, &pt);
+  lwmpoint_add_lwpoint(result, lwpoint_make(srid, hasz, hasm, &pt));
+  return (LWGEOM *) result;
+}
+
+/**
+ * @brief Return the boundary of a multisurface, that is, the union of the
+ * boundaries of its member surfaces
+ * @details The embedded PostGIS @p lwgeom_boundary does not handle
+ * @p MULTISURFACETYPE (it errors on it), while it does handle its member curve
+ * polygons; the boundaries of the members are collected and homogenized,
+ * mirroring the multipolygon case
+ */
+static LWGEOM *
+lwmsurface_boundary(const LWGEOM *geom)
+{
+  int32_t srid = lwgeom_get_srid(geom);
+  uint8_t hasz = lwgeom_has_z(geom);
+  uint8_t hasm = lwgeom_has_m(geom);
+  const LWCOLLECTION *col = (const LWCOLLECTION *) geom;
+  LWCOLLECTION *result =
+    lwcollection_construct_empty(COLLECTIONTYPE, srid, hasz, hasm);
+  for (uint32_t i = 0; i < col->ngeoms; i++)
+    result = lwcollection_add_lwgeom(result, lwgeom_boundary(col->geoms[i]));
+  LWGEOM *lwout = lwgeom_homogenize((LWGEOM *) result);
+  lwgeom_free((LWGEOM *) result);
+  return lwout;
+}
+
+/**
  * @ingroup meos_geo_base_spatial
  * @brief Return the boundary of a geometry
  * @param[in] gs Geometry
@@ -827,7 +880,15 @@ geom_boundary(const GSERIALIZED *gs)
   assert(gs);
   /* Empty.Boundary() == Empty, but of other dimension, so can't shortcut */
   LWGEOM *geom = lwgeom_from_gserialized(gs);
-  LWGEOM *lwresult = lwgeom_boundary(geom);
+  /* The embedded PostGIS lwgeom_boundary does not support compound curves or
+   * multisurfaces; compute their boundary natively */
+  LWGEOM *lwresult;
+  if (geom->type == COMPOUNDTYPE)
+    lwresult = lwcompound_boundary(geom);
+  else if (geom->type == MULTISURFACETYPE)
+    lwresult = lwmsurface_boundary(geom);
+  else
+    lwresult = lwgeom_boundary(geom);
   if (! lwresult)
   {
     lwgeom_free(geom);

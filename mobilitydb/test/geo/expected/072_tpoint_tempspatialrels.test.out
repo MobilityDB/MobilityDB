@@ -749,6 +749,24 @@ SELECT tTouches(geometry 'Linestring(1 1,2 2)', tgeompoint '[Point(1 1)@2000-01-
  {[t@Sat Jan 01 00:00:00 2000 PST], (f@Sat Jan 01 00:00:00 2000 PST, t@Sun Jan 02 00:00:00 2000 PST]}
 (1 row)
 
+SELECT tTouches(geometry 'CompoundCurve(CircularString(1 1,2 2,3 1),(3 1,4 0))', tgeompoint '[Point(0 0)@2000-01-01, Point(4 4)@2000-01-04]');
+                                                               ttouches                                                               
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, t@Sat Jan 01 18:00:00 2000 PST], (f@Sat Jan 01 18:00:00 2000 PST, f@Tue Jan 04 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tTouches(tgeompoint '[Point(0 0)@2000-01-01, Point(4 4)@2000-01-04]', geometry 'CompoundCurve(CircularString(1 1,2 2,3 1),(3 1,4 0))');
+                                                               ttouches                                                               
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, t@Sat Jan 01 18:00:00 2000 PST], (f@Sat Jan 01 18:00:00 2000 PST, f@Tue Jan 04 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tTouches(geometry 'MultiSurface(((1 1,3 1,3 3,1 3,1 1)),CurvePolygon(CircularString(5 5,6 6,7 5,6 4,5 5)))', tgeompoint '[Point(0 0)@2000-01-01, Point(4 4)@2000-01-04]');
+                                                                                                ttouches                                                                                                
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, t@Sat Jan 01 18:00:00 2000 PST], (f@Sat Jan 01 18:00:00 2000 PST, t@Mon Jan 03 06:00:00 2000 PST], (f@Mon Jan 03 06:00:00 2000 PST, f@Tue Jan 04 00:00:00 2000 PST]}
+(1 row)
+
 /* Errors */
 SELECT tTouches(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 ERROR:  Operation on mixed SRID
