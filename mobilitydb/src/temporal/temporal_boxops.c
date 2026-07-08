@@ -403,7 +403,7 @@ PG_FUNCTION_INFO_V1(Same_tstzspan_temporal);
 inline Datum
 Same_tstzspan_temporal(PG_FUNCTION_ARGS)
 {
-  return Boxop_tstzspan_temporal(fcinfo, &span_eq);
+  return Boxop_tstzspan_temporal(fcinfo, &same_span_span);
 }
 
 PGDLLEXPORT Datum Same_temporal_tstzspan(PG_FUNCTION_ARGS);
@@ -418,7 +418,7 @@ PG_FUNCTION_INFO_V1(Same_temporal_tstzspan);
 inline Datum
 Same_temporal_tstzspan(PG_FUNCTION_ARGS)
 {
-  return Boxop_temporal_tstzspan(fcinfo, &span_eq);
+  return Boxop_temporal_tstzspan(fcinfo, &same_span_span);
 }
 
 PGDLLEXPORT Datum Same_temporal_temporal(PG_FUNCTION_ARGS);
@@ -432,7 +432,7 @@ PG_FUNCTION_INFO_V1(Same_temporal_temporal);
 inline Datum
 Same_temporal_temporal(PG_FUNCTION_ARGS)
 {
-  return Boxop_temporal_temporal(fcinfo, &span_eq);
+  return Boxop_temporal_temporal(fcinfo, &same_span_span);
 }
 
 /*****************************************************************************/
@@ -816,7 +816,7 @@ PG_FUNCTION_INFO_V1(Same_numspan_tnumber);
 inline Datum
 Same_numspan_tnumber(PG_FUNCTION_ARGS)
 {
-  return Boxop_numspan_tnumber(fcinfo, &span_eq);
+  return Boxop_numspan_tnumber(fcinfo, &same_span_span);
 }
 
 PGDLLEXPORT Datum Same_tnumber_numspan(PG_FUNCTION_ARGS);
@@ -831,7 +831,7 @@ PG_FUNCTION_INFO_V1(Same_tnumber_numspan);
 inline Datum
 Same_tnumber_numspan(PG_FUNCTION_ARGS)
 {
-  return Boxop_tnumber_numspan(fcinfo, &span_eq);
+  return Boxop_tnumber_numspan(fcinfo, &same_span_span);
 }
 
 PGDLLEXPORT Datum Same_tbox_tnumber(PG_FUNCTION_ARGS);
