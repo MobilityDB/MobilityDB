@@ -1535,12 +1535,30 @@ tdwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return NULL;
 
-  /* For a temporal point against a non-point geometry, route through
-   * tIntersects on a polygonal d-expanded buffer of gs. This mirrors the
+  /* For a temporal point against a non-point geometry, prefer the native
+   * GEOS-free within engine when the temporal geometry point has linear
+   * interpolation, is planar and 2D, and the geometry is one the clip engine
+   * supports (this includes curved geometries handled by the arc kernel).
+   * The native path solves the per-segment within-distance sub-intervals in
+   * closed form, mirroring the merged temporal circular-buffer engine
+   * specialized to a moving point. Otherwise (temporal geographies, step or
+   * discrete interpolation, 3D, TIN/polyhedral or other unsupported types)
+   * route through tIntersects on a polygonal d-expanded buffer of gs, the
    * polygonal approximation that the always-quantifier branch of
-   * ea_dwithin_tgeo_geo already uses internally via geom_buffer. */
+   * ea_dwithin_tgeo_geo also uses internally via geom_buffer. */
   if (tpoint_type(temp->temptype) && gserialized_get_type(gs) != POINTTYPE)
   {
+    if (temp->temptype == T_TGEOMPOINT && temp->subtype != TINSTANT &&
+        MEOS_FLAGS_GET_INTERP(temp->flags) == LINEAR &&
+        ! MEOS_FLAGS_GET_GEODETIC(temp->flags) &&
+        ! MEOS_FLAGS_GET_Z(temp->flags) && ! FLAGS_GET_Z(gs->gflags))
+    {
+      LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
+      bool supported = geom_clip_supported(lwgeom);
+      lwgeom_free(lwgeom);
+      if (supported)
+        return tpoint_linear_dwithin_geom(temp, gs, dist);
+    }
     GSERIALIZED *buffer = geom_buffer(gs, dist, "");
     Temporal *result = tinterrel_tgeo_geo(temp, buffer, TINTERSECTS);
     pfree(buffer);

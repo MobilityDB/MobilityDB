@@ -495,7 +495,7 @@ intervals_from_points(const POINT2D *a, const POINT2D *b, Edge **edges,
   /* Iterate through the points */
   for (int i = 0; i < nedges; i++)
   {
-    Edge *e = edges[i]; 
+    const Edge *e = edges[i]; 
     /* Iterate only for the points */
     if (e->etype != EDGE_POINT)
       continue;
@@ -549,7 +549,7 @@ intervals_from_lines(const POINT2D *a, const POINT2D *b, Edge **edges,
   /* Iterate through the lines */
   for (int i = 0; i < nedges; i++)
   {
-    Edge *e = edges[i];
+    const Edge *e = edges[i];
     /* Iterate only for the line edges */
     if (e->etype != EDGE_LINE)
       continue;
@@ -585,7 +585,7 @@ intervals_from_lines(const POINT2D *a, const POINT2D *b, Edge **edges,
     double my = (ay + by) * 0.5;
     for (int i = 0; i < nedges; i++)
     {
-      Edge *e = edges[i];
+      const Edge *e = edges[i];
       /* Iterate only for the lines edges */
       if (e->etype != EDGE_LINE)
         continue;
@@ -712,7 +712,7 @@ intervals_from_polygons(const POINT2D *a, const POINT2D *b, Edge **edges,
   /* Collect all intersection parameters from the (possibly filtered) edges */
   for (int i = 0; i < nedges; i++)
   {
-    Edge *e = edges[i];
+    const Edge *e = edges[i];
     /* Iterate only for the polygon boundary edges (straight or arc) */
     if (e->etype != EDGE_POLY && e->etype != EDGE_POLYARC)
       continue;
@@ -805,7 +805,7 @@ point_inter_points_lines(const POINT2D *a, Edge **edges, int nedges)
   /* Iterate only through the point and linear edges */
   for (int i = 0; i < nedges; i++)
   {
-    Edge *e = edges[i];
+    const Edge *e = edges[i];
     if (e->etype == EDGE_POINT)
     {
       if (fabs(e->x1 - ax) < FP_TOLERANCE && fabs(e->y1 - ay) < FP_TOLERANCE)
@@ -841,7 +841,7 @@ point_inter_points_lines(const POINT2D *a, Edge **edges, int nedges)
  */
 static void
 tpointinst_clip_edges(const TInstant *inst, Edge **edges, int nedges,
-  RTree *rtree, Edge **cand_edges)
+  const RTree *rtree, Edge **cand_edges)
 {
   assert(inst); assert(edges); assert(nedges > 0);
   assert(inst->temptype == T_TGEOMPOINT);
@@ -900,7 +900,7 @@ tpointinst_clip_edges(const TInstant *inst, Edge **edges, int nedges,
  */
 static void
 tpointseq_clip_edges(const TSequence *seq, Edge **edges, int nedges,
-  RTree *rtree, Edge **cand_edges)
+  const RTree *rtree, Edge **cand_edges)
 {
   assert(seq); assert(edges); assert(nedges > 0);
   assert(seq->temptype == T_TGEOMPOINT);
@@ -1607,8 +1607,567 @@ cleanup_return:
   return result;  
 }
 
+/*****************************************************************************
+ * Within-distance (tDwithin / ever-always dwithin) native engine
+ *
+ * Distance-threshold sibling of the exact intersection engine above. The
+ * within region of a geometry at distance @p dist is its Minkowski sum with a
+ * closed disc of radius @p dist: a capsule around each segment, a disc around
+ * each point, an annular sector around each arc, and the filled polygon
+ * dilated by @p dist. For each moving-point segment the candidate boundary
+ * crossing times are solved in closed form per edge (the roots of
+ * dist(seg(t), edge) = dist), then each sub-interval is classified by the
+ * exact interior-aware unit distance at its midpoint. This mirrors the
+ * within-roots + midpoint-classification spanset assembler of the merged
+ * temporal circular-buffer engine (tcbuffer_distance.c) specialized to a
+ * moving point, i.e. a moving disc with radius r(t) = 0.
+ *
+ * A zero distance is exactly the temporal intersects relationship and is
+ * delegated to #tpoint_linear_inter_geom so that tDwithin(., ., 0) is
+ * bit-identical to tIntersects (including isolated contact instants, which are
+ * measure-zero and therefore dropped by the positive-distance midpoint
+ * classification, exactly as in the temporal circular-buffer engine).
+ *****************************************************************************/
+
 /**
- * @brief Return a temporal geometric point with linear interpolation 
+ * @brief Return the squared distance from a point to a segment
+ */
+static double
+point_seg_dist2(double px, double py, double x1, double y1, double x2,
+  double y2)
+{
+  const double ux = x2 - x1, uy = y2 - y1;
+  const double l2 = ux * ux + uy * uy;
+  if (l2 < FP_TOLERANCE)
+  {
+    const double dx = px - x1, dy = py - y1;
+    return dx * dx + dy * dy;
+  }
+  double s = ((px - x1) * ux + (py - y1) * uy) / l2;
+  if (s < 0.0) s = 0.0; else if (s > 1.0) s = 1.0;
+  const double qx = x1 + s * ux, qy = y1 + s * uy;
+  const double dx = px - qx, dy = py - qy;
+  return dx * dx + dy * dy;
+}
+
+/**
+ * @brief Return the squared distance from a point to an arc edge
+ * @details When the point projects within the arc's angular span the distance
+ * is the difference to the supporting circle, otherwise it is the distance to
+ * the nearer arc endpoint
+ */
+static double
+point_arc_dist2(double px, double py, const Edge *e)
+{
+  const double dxc = px - e->cx, dyc = py - e->cy;
+  const double dc = hypot(dxc, dyc);
+  if (arc_contains_angle(e, atan2(dyc, dxc)))
+  {
+    const double dd = dc - e->radius;
+    return dd * dd;
+  }
+  const double d0x = px - e->x1, d0y = py - e->y1;
+  const double d1x = px - e->x2, d1y = py - e->y2;
+  const double d0 = d0x * d0x + d0y * d0y;
+  const double d1 = d1x * d1x + d1y * d1y;
+  return FP_MIN(d0, d1);
+}
+
+/**
+ * @brief Return the squared distance from a point to a single edge
+ */
+static double
+point_edge_dist2(double px, double py, const Edge *e)
+{
+  switch (e->etype)
+  {
+    case EDGE_POINT:
+    {
+      const double dx = px - e->x1, dy = py - e->y1;
+      return dx * dx + dy * dy;
+    }
+    case EDGE_LINE:
+    case EDGE_POLY:
+      return point_seg_dist2(px, py, e->x1, e->y1, e->x2, e->y2);
+    default: /* EDGE_ARC / EDGE_POLYARC */
+      return point_arc_dist2(px, py, e);
+  }
+}
+
+/**
+ * @brief Return true if a point is within @p dist of the geometry, taking the
+ * polygon interior into account (a point inside a polygon is at distance 0)
+ */
+static bool
+point_geom_within(double px, double py, Edge **edges, int nedges, double dist)
+{
+  const double d2 = dist * dist;
+  for (int i = 0; i < nedges; i++)
+    if (point_edge_dist2(px, py, edges[i]) <= d2 + FP_TOLERANCE)
+      return true;
+  return point_in_polygon(px, py, edges, nedges) ? true : false;
+}
+
+/**
+ * @brief Append a candidate crossing time to the event array if it lies in
+ * [0,1] (clamping tiny out-of-range values to the endpoints)
+ */
+static void
+add_within_root(double t, MeosArray *ev)
+{
+  if (t > -FP_TOLERANCE && t < 1.0 + FP_TOLERANCE)
+  {
+    if (t < 0.0) t = 0.0; else if (t > 1.0) t = 1.0;
+    meos_array_add(ev, &t);
+  }
+}
+
+/**
+ * @brief Append the [0,1] roots of the quadratic @p A t^2 + @p B t + @p C to
+ * the event array
+ */
+static void
+add_within_quad_roots(double A, double B, double C, MeosArray *ev)
+{
+  if (fabs(A) < FP_TOLERANCE)
+  {
+    if (fabs(B) > FP_TOLERANCE)
+      add_within_root(-C / B, ev);
+    return;
+  }
+  const double disc = B * B - 4.0 * A * C;
+  if (disc < 0.0)
+    return;
+  const double sq = sqrt(disc);
+  add_within_root((-B - sq) / (2.0 * A), ev);
+  add_within_root((-B + sq) / (2.0 * A), ev);
+}
+
+/**
+ * @brief Append to @p ev the trajectory-segment times at which the moving
+ * point crosses the distance-@p dist boundary of one edge
+ * @details The boundary of the edge's within region is composed of: for a
+ * point, the disc of radius @p dist; for a segment, the two endpoint caps and
+ * the two parallel offset lines; for an arc, the inner/outer offset circles
+ * and the two endpoint caps. The candidate set is a superset (offset lines are
+ * infinite, offset circles ignore the angular span); spurious candidates are
+ * filtered out by the exact midpoint distance classification
+ */
+static void
+within_roots_from_edge(double ax, double ay, double rx, double ry,
+  const Edge *e, double dist, MeosArray *ev)
+{
+  const double A = rx * rx + ry * ry;
+  const double d2 = dist * dist;
+  switch (e->etype)
+  {
+    case EDGE_POINT:
+    {
+      const double wx = ax - e->x1, wy = ay - e->y1;
+      add_within_quad_roots(A, 2.0 * (wx * rx + wy * ry),
+        wx * wx + wy * wy - d2, ev);
+      return;
+    }
+    case EDGE_LINE:
+    case EDGE_POLY:
+    {
+      /* Endpoint caps: discs of radius dist around each segment endpoint */
+      const double w0x = ax - e->x1, w0y = ay - e->y1;
+      add_within_quad_roots(A, 2.0 * (w0x * rx + w0y * ry),
+        w0x * w0x + w0y * w0y - d2, ev);
+      const double w1x = ax - e->x2, w1y = ay - e->y2;
+      add_within_quad_roots(A, 2.0 * (w1x * rx + w1y * ry),
+        w1x * w1x + w1y * w1y - d2, ev);
+      /* Parallel offset lines at distance dist on both sides. The signed
+       * perpendicular distance is (k0 + t k1) / sqrt(l2) */
+      const double ux = e->x2 - e->x1, uy = e->y2 - e->y1;
+      const double l2 = ux * ux + uy * uy;
+      if (l2 > FP_TOLERANCE)
+      {
+        const double k0 = w0x * uy - w0y * ux;
+        const double k1 = rx * uy - ry * ux;
+        if (fabs(k1) > FP_TOLERANCE)
+        {
+          const double off = dist * sqrt(l2);
+          add_within_root((off - k0) / k1, ev);
+          add_within_root((-off - k0) / k1, ev);
+        }
+      }
+      return;
+    }
+    default: /* EDGE_ARC / EDGE_POLYARC */
+    {
+      const double wx = ax - e->cx, wy = ay - e->cy;
+      const double B = 2.0 * (wx * rx + wy * ry);
+      const double C0 = wx * wx + wy * wy;
+      const double ro = e->radius + dist;
+      add_within_quad_roots(A, B, C0 - ro * ro, ev);
+      const double ri = e->radius - dist;
+      if (ri > 0.0)
+        add_within_quad_roots(A, B, C0 - ri * ri, ev);
+      /* Endpoint caps: discs of radius dist around each arc endpoint */
+      const double e0x = ax - e->x1, e0y = ay - e->y1;
+      add_within_quad_roots(A, 2.0 * (e0x * rx + e0y * ry),
+        e0x * e0x + e0y * e0y - d2, ev);
+      const double e1x = ax - e->x2, e1y = ay - e->y2;
+      add_within_quad_roots(A, 2.0 * (e1x * rx + e1y * ry),
+        e1x * e1x + e1y * e1y - d2, ev);
+      return;
+    }
+  }
+}
+
+/**
+ * @brief Collect into the interval array the [0,1] sub-intervals of one
+ * trajectory segment along which the moving point is within @p dist of the
+ * geometry
+ * @param[in] a,b Endpoints of the trajectory segment
+ * @param[in] sel_edges,sel_nedges Edges to gather crossing candidates from
+ * (possibly R-tree filtered)
+ * @param[in] all_edges,all_nedges Full edge array, used for the interior-aware
+ * midpoint classification (the polygon ray-cast needs every edge)
+ * @param[in] dist Distance threshold
+ */
+static void
+intervals_within_edges(const POINT2D *a, const POINT2D *b, Edge **sel_edges,
+  int sel_nedges, Edge **all_edges, int all_nedges, double dist)
+{
+  events->count = 0;
+  const double ax = a->x, ay = a->y;
+  const double rx = b->x - ax, ry = b->y - ay;
+  const double seg_xmin = FP_MIN(a->x, b->x), seg_xmax = FP_MAX(a->x, b->x);
+  const double seg_ymin = FP_MIN(a->y, b->y), seg_ymax = FP_MAX(a->y, b->y);
+
+  /* Gather boundary crossing candidates from the (filtered) edges */
+  for (int i = 0; i < sel_nedges; i++)
+  {
+    const Edge *e = sel_edges[i];
+    /* Bounding-box filter expanded by dist: the moving point may be within
+     * dist of an edge whose own box does not overlap the segment box */
+    if (e->xmax + dist < seg_xmin || e->xmin - dist > seg_xmax ||
+        e->ymax + dist < seg_ymin || e->ymin - dist > seg_ymax)
+      continue;
+    within_roots_from_edge(ax, ay, rx, ry, e, dist, events);
+  }
+  /* Add the segment endpoints */
+  double t0 = 0.0, t1 = 1.0;
+  meos_array_add(events, &t0);
+  meos_array_add(events, &t1);
+
+  /* Sort and deduplicate the candidates */
+  qsort(events->elems, events->count, sizeof(double), float8_qsort_cmp);
+  int newcount = 0;
+  double *ev = (double *) events->elems;
+  for (int i = 0; i < (int) events->count; i++)
+    if (i == 0 || fabs(ev[i] - ev[newcount - 1]) > FP_TOLERANCE)
+      ev[newcount++] = ev[i];
+  events->count = newcount;
+
+  /* Keep each sub-interval whose midpoint is within dist of the geometry */
+  for (int i = 0; i < (int) events->count - 1; i++)
+  {
+    const double ta = ev[i], tb = ev[i + 1];
+    if (tb - ta <= FP_TOLERANCE)
+      continue;
+    const double tm = 0.5 * (ta + tb);
+    const double x = ax + tm * rx, y = ay + tm * ry;
+    if (point_geom_within(x, y, all_edges, all_nedges, dist))
+    {
+      Span in;
+      span_set(Float8GetDatum(ta), Float8GetDatum(tb), true, true,
+        T_FLOAT8, T_FLOATSPAN, &in);
+      meos_array_add(intervals, &in);
+    }
+  }
+
+  /* Isolated within instants: a trajectory that only grazes the distance
+   * boundary tangentially touches the within region at a single time (a double
+   * root, where the distance equals dist exactly) which the midpoint test
+   * above cannot see. Emit a degenerate interval for each candidate time that
+   * is within dist (inclusive). The span normalization absorbs the ones that
+   * coincide with an interval endpoint, leaving only the genuine isolated
+   * touches. This is what keeps the distance-inclusive semantics exact and, at
+   * a zero distance, matches the isolated contact points of the intersection
+   * engine (which the zero-distance path delegates to anyway). */
+  for (int i = 0; i < (int) events->count; i++)
+  {
+    const double t = ev[i];
+    const double x = ax + t * rx, y = ay + t * ry;
+    if (point_geom_within(x, y, all_edges, all_nedges, dist))
+    {
+      Span in;
+      span_set(Float8GetDatum(t), Float8GetDatum(t), true, true,
+        T_FLOAT8, T_FLOATSPAN, &in);
+      meos_array_add(intervals, &in);
+    }
+  }
+  return;
+}
+
+/**
+ * @brief Add the within-distance instantaneous period of a temporal instant
+ * point to the period array
+ */
+static void
+tpointinst_dwithin_edges(const TInstant *inst, Edge **edges, int nedges,
+  double dist)
+{
+  assert(inst); assert(edges); assert(nedges > 0);
+  assert(inst->temptype == T_TGEOMPOINT);
+  const POINT2D *a = DATUM_POINT2D_P(tinstant_value_p(inst));
+  if (! point_geom_within(a->x, a->y, edges, nedges, dist))
+    return;
+  Span s;
+  span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),
+    true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &s);
+  meos_array_add(periods, &s);
+  return;
+}
+
+/**
+ * @brief Add to the period array the sub-periods of a temporal sequence point
+ * with linear interpolation during which it is within @p dist of a geometry
+ */
+static void
+tpointseq_dwithin_edges(const TSequence *seq, Edge **edges, int nedges,
+  const RTree *rtree, Edge **cand_edges, double dist)
+{
+  assert(seq); assert(edges); assert(nedges > 0);
+  assert(seq->temptype == T_TGEOMPOINT);
+  assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
+
+  /* Singleton sequence */
+  if (seq->count == 1)
+    return tpointinst_dwithin_edges(TSEQUENCE_INST_N(seq, 0), edges, nedges,
+      dist);
+
+  bool use_index = (rtree != NULL && cand_edges != NULL);
+  int32_t srid = tspatial_srid((Temporal *) seq);
+  const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
+  const POINT2D *a = DATUM_POINT2D_P(tinstant_value_p(inst1));
+  bool lower_inc = seq->period.lower_inc;
+  Edge **sel_edges = edges;
+  int sel_nedges = nedges;
+  /* Loop for each segment */
+  for (int i = 1; i < seq->count; i++)
+  {
+    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
+    const POINT2D *b = DATUM_POINT2D_P(tinstant_value_p(inst2));
+    bool upper_inc = (i < seq->count - 1) ? false : seq->period.upper_inc;
+
+    /* Filter the edges by an R-tree, expanding the query box by dist */
+    if (use_index)
+    {
+      STBox query;
+      stbox_set(true, false, false, srid, FP_MIN(a->x, b->x) - dist,
+        FP_MAX(a->x, b->x) + dist, FP_MIN(a->y, b->y) - dist,
+        FP_MAX(a->y, b->y) + dist, 0, 0, NULL, &query);
+      int cand_nedges = rtree_search(rtree, RTREE_OVERLAPS, &query,
+        rtree_results);
+      for (int j = 0; j < cand_nedges; j++)
+        cand_edges[j] = edges[*(int *) meos_array_get(rtree_results, j)];
+      sel_edges = cand_edges;
+      sel_nedges = cand_nedges;
+    }
+
+    /* Reset and compute the within intervals for this segment */
+    intervals->count = 0;
+    intervals_within_edges(a, b, sel_edges, sel_nedges, edges, nedges, dist);
+    if (intervals->count == 0)
+      goto next_segment;
+
+    /* Normalize the intervals (sort: the midpoint intervals and the isolated
+     * within points are appended in two separate passes, not globally sorted) */
+    int count;
+    Span *intervarr = NULL;
+    if (intervals->count > 1)
+      intervarr = spanarr_normalize(intervals->elems, intervals->count,
+        ORDER, &count);
+    else
+    {
+      intervarr = intervals->elems;
+      count = 1;
+    }
+
+    /* Generate the periods from the float spans taking into account exclusive
+     * temporal bounds */
+    double duration = (double) (inst2->t - inst1->t);
+    for (int j = 0; j < count; j++)
+    {
+      Span s;
+      double lower = DatumGetFloat8(intervarr[j].lower);
+      double upper = DatumGetFloat8(intervarr[j].upper);
+      if (fabs(upper - lower) < FP_TOLERANCE)
+      {
+        /* Remove within points on exclusive lower and upper bounds */
+        if (! lower_inc && fabs(lower) < FP_TOLERANCE &&
+            fabs(upper) < FP_TOLERANCE)
+          continue;
+        if (! upper_inc && fabs(lower - 1.0) < FP_TOLERANCE &&
+            fabs(upper - 1.0) < FP_TOLERANCE)
+          continue;
+        TimestampTz t = (lower == 0.0) ?
+          inst1->t : inst1->t + (TimestampTz) (duration * lower);
+        span_set(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true, true,
+          T_TIMESTAMPTZ, T_TSTZSPAN, &s);
+        meos_array_add(periods, &s);
+      }
+      else
+      {
+        TimestampTz t1 = (lower == 0.0) ?
+          inst1->t : inst1->t + (TimestampTz) (duration * lower);
+        TimestampTz t2 = (upper == 1.0) ?
+          inst2->t : inst1->t + (TimestampTz) (duration * upper);
+        span_set(TimestampTzGetDatum(t1), TimestampTzGetDatum(t2), true, true,
+          T_TIMESTAMPTZ, T_TSTZSPAN, &s);
+        meos_array_add(periods, &s);
+      }
+    }
+
+next_segment:
+    if (intervarr && intervals->count > 1)
+      pfree(intervarr);
+    inst1 = inst2;
+    a = b;
+  }
+  return;
+}
+
+/**
+ * @ingroup meos_internal_geo
+ * @brief Return a temporal Boolean that states whether a temporal geometric
+ * point with linear interpolation is within a distance of a 2D geometry
+ * @details Native GEOS-free counterpart of the polygonal-buffer approximation:
+ * for a zero distance it is exactly #tpoint_linear_inter_geom (tIntersects),
+ * otherwise it solves the per-segment within-distance sub-intervals in closed
+ * form. The result is a temporal Boolean defined over the whole time of the
+ * temporal point
+ * @pre The arguments have the same SRID, are 2D and planar, and the geometry
+ * is not empty and is supported by the clip engine. This is verified by the
+ * caller
+ */
+Temporal *
+tpoint_linear_dwithin_geom(const Temporal *temp, const GSERIALIZED *gs,
+  double dist)
+{
+  assert(temp); assert(gs); assert(temp->temptype == T_TGEOMPOINT);
+  assert(MEOS_FLAGS_LINEAR_INTERP(temp->flags));
+  assert(temp->subtype != TINSTANT);
+  assert(! MEOS_FLAGS_GET_GEODETIC(temp->flags));
+  assert(! gserialized_is_empty(gs));
+
+  /* A zero distance is exactly the temporal intersects relationship */
+  if (dist <= 0.0)
+    return tpoint_linear_inter_geom(temp, gs, false);
+
+  /* Bounding box test: the geometry box expanded by dist must overlap the
+   * temporal point box, otherwise the relationship is false throughout */
+  STBox box1, box2;
+  tspatial_set_stbox(temp, &box1);
+  geo_set_stbox(gs, &box2);
+  STBox *box2e = stbox_expand_space(&box2, dist);
+  bool overlap = overlaps_stbox_stbox(&box1, box2e);
+  pfree(box2e);
+  if (! overlap)
+  {
+    SpanSet *ss = temporal_time(temp);
+    Temporal *result = (Temporal *) tsequenceset_from_base_tstzspanset(
+      BoolGetDatum(false), T_TBOOL, ss, STEP);
+    pfree(ss);
+    return result;
+  }
+
+  /* Extract the edges */
+  LWGEOM *geom = lwgeom_from_gserialized(gs);
+  MeosArray *edges = geom_extract_edges(geom);
+  lwgeom_free(geom);
+  Edge **edge_ptrs = palloc(sizeof(Edge *) * edges->count);
+  for (int i = 0; i < (int) edges->count; i++)
+    edge_ptrs[i] = (Edge *) meos_array_get(edges, i);
+
+  /* Optional R-tree index for many-edge geometries */
+  RTree *rtree = NULL;
+  Edge **cand_edges = NULL;
+  if (edges->count > RTREE_MIN_NUMBER_ELEMS)
+  {
+    int32_t srid = tspatial_srid(temp);
+    rtree = build_edge_rtree(edges->elems, edges->count, srid);
+    if (! rtree)
+    {
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "Error when creating R-tree");
+      return NULL;
+    }
+    cand_edges = palloc(sizeof(Edge *) * edges->count);
+    rtree_results = meos_array_create(sizeof(int));
+  }
+
+  /* Initialize the static global arrays accumulating the results */
+  events = meos_array_create(sizeof(double));
+  intervals = meos_array_create(sizeof(Span));
+  periods = meos_array_create(sizeof(Span));
+
+  /* Collect the within-distance periods */
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TSEQUENCE:
+      tpointseq_dwithin_edges((TSequence *) temp, edge_ptrs, edges->count,
+        rtree, cand_edges, dist);
+      break;
+    default: /* TSEQUENCESET */
+    {
+      TSequenceSet *ss = (TSequenceSet *) temp;
+      for (int i = 0; i < ss->count; i++)
+        tpointseq_dwithin_edges(TSEQUENCESET_SEQ_N(ss, i), edge_ptrs,
+          edges->count, rtree, cand_edges, dist);
+    }
+  }
+
+  /* Assemble the temporal Boolean over the whole time of the temporal point */
+  Temporal *result;
+  if (periods->count == 0)
+  {
+    SpanSet *ss = temporal_time(temp);
+    result = (Temporal *) tsequenceset_from_base_tstzspanset(
+      BoolGetDatum(false), T_TBOOL, ss, STEP);
+    pfree(ss);
+  }
+  else
+  {
+    SpanSet *ss = spanset_make_exp(periods->elems, periods->count,
+      periods->count, NORMALIZE, ORDER);
+    SpanSet *ss1 = temporal_time(temp);
+    Temporal *temp1 = (Temporal *) tsequenceset_from_base_tstzspanset(
+      BoolGetDatum(false), T_TBOOL, ss1, STEP);
+    Temporal *temp2 = temporal_restrict_tstzspanset(temp1, ss, REST_MINUS);
+    if (temp2)
+    {
+      Temporal *temp3 = (Temporal *) tsequenceset_from_base_tstzspanset(
+        BoolGetDatum(true), T_TBOOL, ss, STEP);
+      result = temporal_merge(temp2, temp3);
+      pfree(temp2); pfree(temp3);
+    }
+    else
+      result = (Temporal *) tsequenceset_from_base_tstzspanset(
+        BoolGetDatum(true), T_TBOOL, ss1, STEP);
+    pfree(ss1); pfree(temp1); pfree(ss);
+  }
+
+  /* Clean up and return */
+  if (edges->count > RTREE_MIN_NUMBER_ELEMS)
+  {
+    rtree_free(rtree); pfree(cand_edges); meos_array_destroy(rtree_results);
+  }
+  meos_array_destroy(events);
+  meos_array_destroy(intervals);
+  meos_array_destroy(periods);
+  meos_array_destroy(edges); pfree(edge_ptrs);
+  return result;
+}
+
+/**
+ * @brief Return a temporal geometric point with linear interpolation
  * restricted to a 2D geometry
  * @details The temporal point may be 2D or 3D and the Z dimension is also
  * computed
