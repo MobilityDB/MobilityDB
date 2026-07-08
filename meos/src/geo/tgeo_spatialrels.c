@@ -1037,6 +1037,34 @@ adisjoint_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   return ea_disjoint_tgeo_geo(temp, gs, ALWAYS);
 }
+
+/**
+ * @ingroup meos_geo_rel_ever
+ * @brief Return 1 if a geometry and a temporal geometry are ever disjoint,
+ * 0 if not, and -1 on error or if the geometry is empty
+ * @param[in] temp Temporal geo
+ * @param[in] gs Geometry
+ * @csqlfn #Edisjoint_geo_tgeo()
+ */
+inline int
+edisjoint_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
+{
+  return edisjoint_tgeo_geo(temp, gs);
+}
+
+/**
+ * @ingroup meos_geo_rel_ever
+ * @brief Return 1 if a geometry and a temporal geometry are always disjoint,
+ * 0 if not, and -1 on error or if the geometry is empty
+ * @param[in] temp Temporal geo
+ * @param[in] gs Geometry
+ * @csqlfn #Adisjoint_geo_tgeo()
+ */
+inline int
+adisjoint_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
+{
+  return adisjoint_tgeo_geo(temp, gs);
+}
 #endif /* MEOS */
 
 /*****************************************************************************/
@@ -1173,6 +1201,34 @@ inline int
 aintersects_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   return ea_intersects_tgeo_geo(temp, gs, ALWAYS);
+}
+
+/**
+ * @ingroup meos_geo_rel_ever
+ * @brief Return 1 if a geometry and a temporal geometry ever intersect,
+ * 0 if not, and -1 on error or if the geometry is empty
+ * @param[in] temp Temporal geo
+ * @param[in] gs Geometry
+ * @csqlfn #Eintersects_geo_tgeo()
+ */
+inline int
+eintersects_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
+{
+  return eintersects_tgeo_geo(temp, gs);
+}
+
+/**
+ * @ingroup meos_geo_rel_ever
+ * @brief Return 1 if a geometry and a temporal geometry always intersect,
+ * 0 if not, and -1 on error or if the geometry is empty
+ * @param[in] temp Temporal geo
+ * @param[in] gs Geometry
+ * @csqlfn #Aintersects_geo_tgeo()
+ */
+inline int
+aintersects_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
+{
+  return aintersects_tgeo_geo(temp, gs);
 }
 #endif /* MEOS */
 
@@ -1403,6 +1459,34 @@ atouches_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   return ea_touches_tgeo_geo(temp, gs, ALWAYS);
 }
+
+/**
+ * @ingroup meos_geo_rel_ever
+ * @brief Return 1 if a geometry and a temporal geometry ever touch, 0 if not,
+ * and -1 on error or if the geometry is empty
+ * @param[in] temp Temporal geo
+ * @param[in] gs Geometry
+ * @csqlfn #Etouches_geo_tgeo()
+ */
+int
+etouches_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
+{
+  return etouches_tgeo_geo(temp, gs);
+}
+
+/**
+ * @ingroup meos_geo_rel_ever
+ * @brief Return 1 if a geometry and a temporal geometry always touch, 0 if not,
+ * and -1 on error or if the geometry is empty
+ * @param[in] temp Temporal geo
+ * @param[in] gs Geometry
+ * @csqlfn #Atouches_geo_tgeo()
+ */
+int
+atouches_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
+{
+  return atouches_tgeo_geo(temp, gs);
+}
 #endif /* MEOS */
 
 /*****************************************************************************/
@@ -1591,6 +1675,36 @@ int
 adwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
 {
   return ea_dwithin_tgeo_geo(temp, gs, dist, ALWAYS);
+}
+
+/**
+ * @ingroup meos_geo_rel_ever
+ * @brief Return 1 if a geometry and a temporal geo are ever within the
+ * given distance, 0 if not, -1 on error or if the geometry is empty
+ * @param[in] temp Temporal geo
+ * @param[in] gs Geometry
+ * @param[in] dist Distance
+ * @csqlfn #Edwithin_geo_tgeo()
+ */
+int
+edwithin_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, double dist)
+{
+  return edwithin_tgeo_geo(temp, gs, dist);
+}
+
+/**
+ * @ingroup meos_geo_rel_ever
+ * @brief Return 1 if a geometry and a temporal geo are always within a
+ * distance, 0 if not, -1 on error or if the geometry is empty
+ * @param[in] temp Temporal geo
+ * @param[in] gs Geometry
+ * @param[in] dist Distance
+ * @csqlfn #Adwithin_geo_tgeo()
+ */
+int
+adwithin_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, double dist)
+{
+  return adwithin_tgeo_geo(temp, gs, dist);
 }
 #endif /* MEOS */
 

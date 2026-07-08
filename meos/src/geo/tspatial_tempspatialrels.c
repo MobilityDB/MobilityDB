@@ -1558,6 +1558,15 @@ tdwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
     Float8GetDatum(dist), func, tpfn);
 }
 
+/**
+ * @ingroup meos_geo_rel_temp
+ * @brief Return a temporal Boolean that states whether a temporal geo and a
+ * geometry are within a distance
+ * @param[in] temp Temporal geo
+ * @param[in] gs Geometry
+ * @param[in] dist Distance
+ * @csqlfn #Tdwithin_geo_tgeo()
+ */
 Temporal *
 tdwithin_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, double dist)
 {
