@@ -58,11 +58,18 @@
 #include "pointcloud/tpcbox.h"          /* PG_GETARG_TPCBOX_P */
 #include "temporal/temporal.h"
 
+/* GENERATED-BOXOPS-BEGIN — tools/codegen/inherited/generate.py from templates/boxops.c.tmpl; DO NOT EDIT BY HAND;
+ * edit the template + manifest.yaml (boxtypes) and re-run. */
 /*****************************************************************************
- * Generic dispatchers
+ * Generic box functions
  *****************************************************************************/
 
-static Datum
+/**
+ * @brief Generic bounding box function for a tpcbox and a temporal pointcloud value
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Bounding box function
+ */
+Datum
 Boxop_tpcbox_tpointcloud(FunctionCallInfo fcinfo,
   bool (*func)(const TPCBox *, const TPCBox *))
 {
@@ -73,7 +80,13 @@ Boxop_tpcbox_tpointcloud(FunctionCallInfo fcinfo,
   PG_RETURN_BOOL(result);
 }
 
-static Datum
+/**
+ * @brief Generic bounding box function for a temporal pointcloud value and a
+ * tpcbox
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Bounding box function
+ */
+Datum
 Boxop_tpointcloud_tpcbox(FunctionCallInfo fcinfo,
   bool (*func)(const TPCBox *, const TPCBox *))
 {
@@ -84,7 +97,12 @@ Boxop_tpointcloud_tpcbox(FunctionCallInfo fcinfo,
   PG_RETURN_BOOL(result);
 }
 
-static Datum
+/**
+ * @brief Generic topological function for two temporal pointcloud values
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] func Bounding box function
+ */
+Datum
 Boxop_tpointcloud_tpointcloud(FunctionCallInfo fcinfo,
   bool (*func)(const TPCBox *, const TPCBox *))
 {
@@ -97,12 +115,252 @@ Boxop_tpointcloud_tpointcloud(FunctionCallInfo fcinfo,
 }
 
 /*****************************************************************************
- * Per-operator wrappers
- *
- * Two PG-exposed functions per (operator, direction) pair — one
- * static dispatch line each. Macros would obscure the @ingroup tags
- * Doxygen needs, so we expand them by hand.
+ * overlaps
  *****************************************************************************/
+
+PGDLLEXPORT Datum Overlaps_tpcbox_tpointcloud(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overlaps_tpcbox_tpointcloud);
+/**
+ * @ingroup mobilitydb_pointcloud_temp
+ * @brief Return true if a tpcbox and the tpcbox of a
+ * temporal pointcloud value overlap
+ * @sqlfn overlaps_bbox()
+ * @sqlop @p &&
+ */
+inline Datum
+Overlaps_tpcbox_tpointcloud(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpcbox_tpointcloud(fcinfo, &overlaps_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum Overlaps_tpointcloud_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overlaps_tpointcloud_tpcbox);
+/**
+ * @ingroup mobilitydb_pointcloud_temp
+ * @brief Return true if the tpcbox of a temporal pointcloud value and
+ * a tpcbox overlap
+ * @sqlfn overlaps_bbox()
+ * @sqlop @p &&
+ */
+inline Datum
+Overlaps_tpointcloud_tpcbox(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpointcloud_tpcbox(fcinfo, &overlaps_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum Overlaps_tpointcloud_tpointcloud(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overlaps_tpointcloud_tpointcloud);
+/**
+ * @ingroup mobilitydb_pointcloud_temp
+ * @brief Return true if the tpcboxes of two temporal pointcloud values
+ * overlap
+ * @sqlfn overlaps_bbox()
+ * @sqlop @p &&
+ */
+inline Datum
+Overlaps_tpointcloud_tpointcloud(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpointcloud_tpointcloud(fcinfo, &overlaps_tpcbox_tpcbox);
+}
+
+/*****************************************************************************
+ * contains
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Contains_tpcbox_tpointcloud(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Contains_tpcbox_tpointcloud);
+/**
+ * @ingroup mobilitydb_pointcloud_temp
+ * @brief Return true if a tpcbox contains the one of a
+ * temporal pointcloud value
+ * @sqlfn contains_bbox()
+ * @sqlop @p @>
+ */
+inline Datum
+Contains_tpcbox_tpointcloud(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpcbox_tpointcloud(fcinfo, &contains_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum Contains_tpointcloud_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Contains_tpointcloud_tpcbox);
+/**
+ * @ingroup mobilitydb_pointcloud_temp
+ * @brief Return true if the tpcbox of a temporal pointcloud value
+ * contains a tpcbox
+ * @sqlfn contains_bbox()
+ * @sqlop @p @>
+ */
+inline Datum
+Contains_tpointcloud_tpcbox(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpointcloud_tpcbox(fcinfo, &contains_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum Contains_tpointcloud_tpointcloud(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Contains_tpointcloud_tpointcloud);
+/**
+ * @ingroup mobilitydb_pointcloud_temp
+ * @brief Return true if the tpcbox of the first temporal pointcloud value
+ * contains the one of the second temporal pointcloud value
+ * @sqlfn contains_bbox()
+ * @sqlop @p @>
+ */
+inline Datum
+Contains_tpointcloud_tpointcloud(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpointcloud_tpointcloud(fcinfo, &contains_tpcbox_tpcbox);
+}
+
+/*****************************************************************************
+ * contained
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Contained_tpcbox_tpointcloud(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Contained_tpcbox_tpointcloud);
+/**
+ * @ingroup mobilitydb_pointcloud_temp
+ * @brief Return true if a tpcbox is contained in the
+ * tpcbox of a temporal pointcloud value
+ * @sqlfn contained_bbox()
+ * @sqlop @p <@
+ */
+inline Datum
+Contained_tpcbox_tpointcloud(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpcbox_tpointcloud(fcinfo, &contained_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum Contained_tpointcloud_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Contained_tpointcloud_tpcbox);
+/**
+ * @ingroup mobilitydb_pointcloud_temp
+ * @brief Return true if the tpcbox of a temporal pointcloud value is
+ * contained in the tpcbox
+ * @sqlfn contained_bbox()
+ * @sqlop @p <@
+ */
+inline Datum
+Contained_tpointcloud_tpcbox(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpointcloud_tpcbox(fcinfo, &contained_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum Contained_tpointcloud_tpointcloud(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Contained_tpointcloud_tpointcloud);
+/**
+ * @ingroup mobilitydb_pointcloud_temp
+ * @brief Return true if the tpcbox of the first temporal pointcloud value
+ * is contained in the one of the second temporal pointcloud value
+ * @sqlfn contained_bbox()
+ * @sqlop @p <@
+ */
+inline Datum
+Contained_tpointcloud_tpointcloud(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpointcloud_tpointcloud(fcinfo, &contained_tpcbox_tpcbox);
+}
+
+/*****************************************************************************
+ * same
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Same_tpcbox_tpointcloud(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Same_tpcbox_tpointcloud);
+/**
+ * @ingroup mobilitydb_pointcloud_temp
+ * @brief Return true if a tpcbox and the tpcbox of a
+ * temporal pointcloud value are equal in the common dimensions
+ * @sqlfn same_bbox()
+ * @sqlop @p ~=
+ */
+inline Datum
+Same_tpcbox_tpointcloud(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpcbox_tpointcloud(fcinfo, &same_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum Same_tpointcloud_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Same_tpointcloud_tpcbox);
+/**
+ * @ingroup mobilitydb_pointcloud_temp
+ * @brief Return true if the tpcbox of a temporal pointcloud value and
+ * a tpcbox are equal in the common dimensions
+ * @sqlfn same_bbox()
+ * @sqlop @p ~=
+ */
+inline Datum
+Same_tpointcloud_tpcbox(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpointcloud_tpcbox(fcinfo, &same_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum Same_tpointcloud_tpointcloud(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Same_tpointcloud_tpointcloud);
+/**
+ * @ingroup mobilitydb_pointcloud_temp
+ * @brief Return true if the tpcboxes of two temporal pointcloud values
+ * are equal in the common dimensions
+ * @sqlfn same_bbox()
+ * @sqlop @p ~=
+ */
+inline Datum
+Same_tpointcloud_tpointcloud(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpointcloud_tpointcloud(fcinfo, &same_tpcbox_tpcbox);
+}
+
+/*****************************************************************************
+ * adjacent
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Adjacent_tpcbox_tpointcloud(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Adjacent_tpcbox_tpointcloud);
+/**
+ * @ingroup mobilitydb_pointcloud_temp
+ * @brief Return true if a tpcbox and the tpcbox of a
+ * temporal pointcloud value are adjacent
+ * @sqlfn adjacent_bbox()
+ * @sqlop @p -|-
+ */
+inline Datum
+Adjacent_tpcbox_tpointcloud(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpcbox_tpointcloud(fcinfo, &adjacent_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum Adjacent_tpointcloud_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Adjacent_tpointcloud_tpcbox);
+/**
+ * @ingroup mobilitydb_pointcloud_temp
+ * @brief Return true if the tpcbox of a temporal pointcloud value
+ * and a tpcbox are adjacent
+ * @sqlfn adjacent_bbox()
+ * @sqlop @p -|-
+ */
+inline Datum
+Adjacent_tpointcloud_tpcbox(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpointcloud_tpcbox(fcinfo, &adjacent_tpcbox_tpcbox);
+}
+
+PGDLLEXPORT Datum Adjacent_tpointcloud_tpointcloud(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Adjacent_tpointcloud_tpointcloud);
+/**
+ * @ingroup mobilitydb_pointcloud_temp
+ * @brief Return true if the tpcboxes of two temporal pointcloud values
+ * are adjacent
+ * @sqlfn adjacent_bbox()
+ * @sqlop @p -|-
+ */
+inline Datum
+Adjacent_tpointcloud_tpointcloud(PG_FUNCTION_ARGS)
+{
+  return Boxop_tpointcloud_tpointcloud(fcinfo, &adjacent_tpcbox_tpcbox);
+}
+
+/*****************************************************************************/
+/* GENERATED-BOXOPS-END */
 
 #define DEFINE_BOXOP3(opname, primitive)                                       \
 PGDLLEXPORT Datum opname##_tpcbox_tpointcloud(PG_FUNCTION_ARGS);               \
@@ -127,46 +385,6 @@ opname##_tpointcloud_tpointcloud(PG_FUNCTION_ARGS)                             \
   return Boxop_tpointcloud_tpointcloud(fcinfo, &primitive);                    \
 }
 
-/**
- * @ingroup mobilitydb_pointcloud_temp
- * @brief Bounding-box overlap (`&&`) between a tpcbox and a temporal
- *   pgPointCloud value, or between two such values.
- * @sqlfn overlaps_bbox()
- * @sqlop @p &&
- */
-DEFINE_BOXOP3(Overlaps, overlaps_tpcbox_tpcbox)
-
-/**
- * @ingroup mobilitydb_pointcloud_temp
- * @brief Bounding-box contains (`\@>`).
- * @sqlfn contains_bbox()
- * @sqlop @p \@>
- */
-DEFINE_BOXOP3(Contains, contains_tpcbox_tpcbox)
-
-/**
- * @ingroup mobilitydb_pointcloud_temp
- * @brief Bounding-box contained (`<\@`).
- * @sqlfn contained_bbox()
- * @sqlop @p <\@
- */
-DEFINE_BOXOP3(Contained, contained_tpcbox_tpcbox)
-
-/**
- * @ingroup mobilitydb_pointcloud_temp
- * @brief Bounding-box equality (`~=`).
- * @sqlfn same_bbox()
- * @sqlop @p ~=
- */
-DEFINE_BOXOP3(Same, same_tpcbox_tpcbox)
-
-/**
- * @ingroup mobilitydb_pointcloud_temp
- * @brief Bounding-box adjacency (`-|-`).
- * @sqlfn adjacent_bbox()
- * @sqlop @p -|-
- */
-DEFINE_BOXOP3(Adjacent, adjacent_tpcbox_tpcbox)
 
 /*****************************************************************************
  * Position operators — strictly left / right / below / above / front /
