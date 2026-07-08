@@ -241,6 +241,12 @@ SELECT tTouches(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Poin
 
 SELECT tTouches(geometry 'Linestring(1 1,2 2)', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]');
 
+-- Coverage of curved types whose boundary the embedded PostGIS lwgeom_boundary
+-- does not compute: compound curves (boundary = end points) and multisurfaces
+SELECT tTouches(geometry 'CompoundCurve(CircularString(1 1,2 2,3 1),(3 1,4 0))', tgeompoint '[Point(0 0)@2000-01-01, Point(4 4)@2000-01-04]');
+SELECT tTouches(tgeompoint '[Point(0 0)@2000-01-01, Point(4 4)@2000-01-04]', geometry 'CompoundCurve(CircularString(1 1,2 2,3 1),(3 1,4 0))');
+SELECT tTouches(geometry 'MultiSurface(((1 1,3 1,3 3,1 3,1 1)),CurvePolygon(CircularString(5 5,6 6,7 5,6 4,5 5)))', tgeompoint '[Point(0 0)@2000-01-01, Point(4 4)@2000-01-04]');
+
 /* Errors */
 SELECT tTouches(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 SELECT tTouches(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');

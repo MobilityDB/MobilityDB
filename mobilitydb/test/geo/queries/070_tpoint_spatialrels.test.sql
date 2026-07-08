@@ -293,6 +293,11 @@ SELECT eTouches(tgeompoint '[Point(0 0)@2000-01-01, Point(3 3)@2000-01-04]', geo
 SELECT eTouches(tgeompoint '[Point(0 0)@2000-01-01, Point(3 3)@2000-01-04]', geometry 'CurvePolygon((1 1,2 2,3 1,2 0,1 1))');
 -- Notice that the boundary of a closed linear or circular string is empty !
 SELECT eTouches(tgeompoint '[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02]', geometry 'CircularString(1 1,2 2,3 1,2 0,1 1)');
+-- The boundary of a compound curve is its two end points, or empty if closed
+SELECT eTouches(tgeompoint '[Point(0 0)@2000-01-01, Point(3 3)@2000-01-04]', geometry 'CompoundCurve(CircularString(1 1,2 2,3 1),(3 1,4 0))');
+SELECT eTouches(tgeompoint '[Point(0 0)@2000-01-01, Point(3 3)@2000-01-04]', geometry 'CompoundCurve(CircularString(1 1,2 2,3 1),(3 1,1 1))');
+-- The boundary of a multisurface is the union of the boundaries of its surfaces
+SELECT eTouches(tgeompoint '[Point(0 0)@2000-01-01, Point(3 3)@2000-01-04]', geometry 'MultiSurface(((1 1,3 1,3 3,1 3,1 1)),CurvePolygon(CircularString(5 5,6 6,7 5,6 4,5 5)))');
 
 /* Errors */
 SELECT eTouches(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
