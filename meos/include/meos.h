@@ -766,6 +766,7 @@ extern bool overlaps_span_span(const Span *s1, const Span *s2);
 extern bool overlaps_span_spanset(const Span *s, const SpanSet *ss);
 extern bool overlaps_spanset_span(const SpanSet *ss, const Span *s);
 extern bool overlaps_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2);
+extern bool same_span_span(const Span *s1, const Span *s2);
 
 /*****************************************************************************/
 

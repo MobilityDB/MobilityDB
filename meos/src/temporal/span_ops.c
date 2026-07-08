@@ -292,6 +292,26 @@ adjacent_span_span(const Span *s1, const Span *s2)
 }
 
 /*****************************************************************************
+ * Same
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if two spans are equal in the common dimensions
+ * @param[in] s1,s2 Spans
+ */
+bool
+same_span_span(const Span *s1, const Span *s2)
+{
+  /* A span is a single dimension, so `same` (`~=`) reduces to span equality.
+   * This is the base case of the bounding-box `same` family (#same_tbox_tbox(),
+   * #same_stbox_stbox()), letting the temporal/span bounding-box wrappers
+   * dispatch on `~=` uniformly instead of borrowing the equality (`=`)
+   * function #span_eq(). */
+  return span_eq(s1, s2);
+}
+
+/*****************************************************************************
  * Left of
  *****************************************************************************/
 
