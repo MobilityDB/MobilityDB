@@ -86,7 +86,7 @@ SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom t
 WHERE NearestApproachInstant(temp, g) IS NOT NULL;
  count 
 -------
- 11300
+ 13200
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
@@ -142,7 +142,7 @@ SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom t
 WHERE NearestApproachDistance(temp, g) IS NOT NULL;
  count 
 -------
- 11300
+ 13200
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
@@ -198,7 +198,7 @@ SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom t
 WHERE g |=| temp IS NOT NULL;
  count 
 -------
- 11300
+ 13200
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
@@ -254,7 +254,7 @@ SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom t
 WHERE shortestLine(g, temp) IS NOT NULL;
  count 
 -------
- 11300
+ 13200
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
