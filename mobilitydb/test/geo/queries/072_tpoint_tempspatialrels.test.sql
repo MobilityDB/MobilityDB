@@ -96,6 +96,14 @@ SELECT tDisjoint(geometry 'CompoundCurve(CircularString(5 0, 4 3, 0 5), (0 5, -3
 SELECT tDisjoint(tgeompoint '[Point(0 0)@2000-01-01, Point(6 8)@2000-01-05]', geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))');
 SELECT tDisjoint(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tgeompoint '[Point(0 0)@2000-01-01, Point(6 8)@2000-01-05]');
 
+-- Multicurve (heterogeneous collection of a circular string and a line string)
+SELECT tDisjoint(tgeompoint '[Point(0 0)@2000-01-01, Point(6 8)@2000-01-05]', geometry 'MultiCurve(CircularString(5 0, 4 3, 0 5), (0 5, -3 5))');
+SELECT tDisjoint(geometry 'MultiCurve(CircularString(5 0, 4 3, 0 5), (0 5, -3 5))', tgeompoint '[Point(0 0)@2000-01-01, Point(6 8)@2000-01-05]');
+
+-- Multisurface (collection of a curve polygon)
+SELECT tDisjoint(tgeompoint '[Point(0 0)@2000-01-01, Point(6 8)@2000-01-05]', geometry 'MultiSurface(CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0)))');
+SELECT tDisjoint(geometry 'MultiSurface(CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0)))', tgeompoint '[Point(0 0)@2000-01-01, Point(6 8)@2000-01-05]');
+
 SELECT tDisjoint(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Point empty');
 SELECT tDisjoint(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geometry 'Point empty');
 SELECT tDisjoint(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geometry 'Point empty');
@@ -163,6 +171,18 @@ SELECT tIntersects(tgeompoint '[Point(0 -2)@2000-01-01, Point(0 8)@2000-01-05]',
 -- Curve polygon with a circular hole: two inside segments across the annulus
 SELECT tIntersects(tgeompoint '[Point(-6 0)@2000-01-01, Point(6 0)@2000-01-05]', geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0), CircularString(2 0, 0 2, -2 0, 0 -2, 2 0))');
 SELECT tIntersects(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tgeompoint '[Point(0 0)@2000-01-01, Point(6 8)@2000-01-05]');
+
+-- Multicurve (circular string + line string): crossing the arc component
+SELECT tIntersects(tgeompoint '[Point(0 0)@2000-01-01, Point(6 8)@2000-01-05]', geometry 'MultiCurve(CircularString(5 0, 4 3, 0 5), (0 5, -3 5))');
+-- crossing the line component only
+SELECT tIntersects(tgeompoint '[Point(-2 0)@2000-01-01, Point(-2 8)@2000-01-05]', geometry 'MultiCurve(CircularString(5 0, 4 3, 0 5), (0 5, -3 5))');
+SELECT tIntersects(geometry 'MultiCurve(CircularString(5 0, 4 3, 0 5), (0 5, -3 5))', tgeompoint '[Point(0 0)@2000-01-01, Point(6 8)@2000-01-05]');
+
+-- Multisurface with a curve polygon (disk): starting inside and exiting through the arc
+SELECT tIntersects(tgeompoint '[Point(0 0)@2000-01-01, Point(6 8)@2000-01-05]', geometry 'MultiSurface(CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0)))');
+-- Multisurface combining a straight polygon and a curve polygon (disjoint regions the trajectory crosses in turn)
+SELECT tIntersects(tgeompoint '[Point(0 0)@2000-01-01, Point(6 8)@2000-01-05]', geometry 'MultiSurface(Polygon((2 5, 6 5, 6 9, 2 9, 2 5)), CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0)))');
+SELECT tIntersects(geometry 'MultiSurface(CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0)))', tgeompoint '[Point(0 0)@2000-01-01, Point(6 8)@2000-01-05]');
 
 SELECT tIntersects(tgeompoint 'Point(1 1)@2000-01-01', geometry 'Point empty');
 SELECT tIntersects(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geometry 'Point empty');

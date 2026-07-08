@@ -1322,10 +1322,13 @@ geom_extract_edges_iter(const LWGEOM *geom, MeosArray *edges)
       extract_triangle((const LWTRIANGLE *) geom, edges);
       break;
 
-    /* A compound curve is a chain of line strings and circular strings; it
-     * shares the collection memory layout, so its components are extracted in
-     * the same way */
+    /* A compound curve (chain of line/circular strings), a multicurve
+     * (collection of line/circular/compound curves) and a multisurface
+     * (collection of polygons/curve polygons) all share the collection memory
+     * layout, so their components are extracted the same way as a collection */
     case COMPOUNDTYPE:
+    case MULTICURVETYPE:
+    case MULTISURFACETYPE:
     case COLLECTIONTYPE:
     {
       const LWCOLLECTION *col = (const LWCOLLECTION *) geom;
@@ -1386,8 +1389,13 @@ geom_clip_supported(const LWGEOM *geom)
     case CIRCSTRINGTYPE:
       return true;
     case COMPOUNDTYPE:
+    case MULTICURVETYPE:
+    case MULTISURFACETYPE:
     case COLLECTIONTYPE:
     {
+      /* A multicurve/multisurface is supported when every component is: its
+       * components are line/circular/compound curves and polygons/curve
+       * polygons, each validated by the recursive call */
       const LWCOLLECTION *col = (const LWCOLLECTION *) geom;
       for (uint32_t i = 0; i < col->ngeoms; i++)
         if (! geom_clip_supported(col->geoms[i]))
