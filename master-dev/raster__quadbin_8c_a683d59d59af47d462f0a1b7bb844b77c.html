@@ -127,14 +127,14 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return the unique QUADBIN cells at <code>zoom</code> covered by a trajectory. </p>
-<p >Suitable for use as the WHERE-clause argument when joining against a Raquet table:</p>
+<p >Suitable for use as the WHERE-clause argument when joining against a <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> table:</p>
 <div class="fragment"><div class="line"><span class="keyword">SELECT</span> raster_tile_value_quadbin(band_data, <span class="stringliteral">256</span>, <span class="stringliteral">256</span>, quadbin, ...)</div>
 <div class="line"><span class="keyword">FROM</span>   elevation_raquet</div>
 <div class="line"><span class="keyword">WHERE</span>  quadbin = <span class="keyword">ANY</span>(trajectory_quadbins(traj, <span class="stringliteral">8</span>));</div>
 </div><!-- fragment --><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">traj</td><td>Input tgeompoint trajectory (SRID 4326) </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">zoom</td><td>Raquet zoom level (0–15) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">zoom</td><td><a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> zoom level (0–15) </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">count</td><td>Number of distinct cells returned </td></tr>
   </table>
   </dd>

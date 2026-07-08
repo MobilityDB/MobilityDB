@@ -82,7 +82,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>MEOS kernel for sampling Raquet raster chips along tgeompoint trajectories.  
+<p>MEOS kernel for sampling <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> raster chips along tgeompoint trajectories.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;math.h&gt;</code><br />
 <code>#include &lt;stdint.h&gt;</code><br />
@@ -114,7 +114,7 @@ Functions</h2></td></tr>
 <tr class="memdesc:ab487a6d1b9612e80d66911faadab4f73"><td class="mdescLeft">&#160;</td><td class="mdescRight">Morton-decode a QUADBIN cell into Web-Mercator tile coordinates.  <a href="raster__quadbin_8c_ab487a6d1b9612e80d66911faadab4f73.html#ab487a6d1b9612e80d66911faadab4f73">More...</a><br /></td></tr>
 <tr class="separator:ab487a6d1b9612e80d66911faadab4f73"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a07eac8c18e7c6ac0b6e3d37f58ae221a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTemporal.html">Temporal</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="raster__quadbin_8c_a07eac8c18e7c6ac0b6e3d37f58ae221a.html#a07eac8c18e7c6ac0b6e3d37f58ae221a">raster_tile_value_quadbin</a> (const uint8_t *pixels, uint16_t width, uint16_t height, <a class="el" href="postgres__ext__defs_8in_8h_abc0f5bc07737e498f287334775dff2b6.html#abc0f5bc07737e498f287334775dff2b6">uint64</a> quadbin, <a class="el" href="meos__raster_8h_ab4899fb599b17f4121bb9a377d9dd040.html#ab4899fb599b17f4121bb9a377d9dd040">MeosPixType</a> pixtype, double nodata, bool has_nodata, const <a class="el" href="structTemporal.html">Temporal</a> *traj)</td></tr>
-<tr class="memdesc:a07eac8c18e7c6ac0b6e3d37f58ae221a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sample a Raquet raster chip along a tgeompoint trajectory.  <a href="raster__quadbin_8c_a07eac8c18e7c6ac0b6e3d37f58ae221a.html#a07eac8c18e7c6ac0b6e3d37f58ae221a">More...</a><br /></td></tr>
+<tr class="memdesc:a07eac8c18e7c6ac0b6e3d37f58ae221a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sample a <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> raster chip along a tgeompoint trajectory.  <a href="raster__quadbin_8c_a07eac8c18e7c6ac0b6e3d37f58ae221a.html#a07eac8c18e7c6ac0b6e3d37f58ae221a">More...</a><br /></td></tr>
 <tr class="separator:a07eac8c18e7c6ac0b6e3d37f58ae221a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a350a0dfc3c17faea6b581fb9caa7bdf5"><td class="memItemLeft" align="right" valign="top">static double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="raster__quadbin_8c_a350a0dfc3c17faea6b581fb9caa7bdf5.html#a350a0dfc3c17faea6b581fb9caa7bdf5">read_pixel</a> (const uint8_t *pixels, int col, int row, int width, <a class="el" href="meos__raster_8h_ab4899fb599b17f4121bb9a377d9dd040.html#ab4899fb599b17f4121bb9a377d9dd040">MeosPixType</a> pixtype)</td></tr>
 <tr class="memdesc:a350a0dfc3c17faea6b581fb9caa7bdf5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read a single pixel value at (col, row) from a row-major byte array.  <a href="raster__quadbin_8c_a350a0dfc3c17faea6b581fb9caa7bdf5.html#a350a0dfc3c17faea6b581fb9caa7bdf5">More...</a><br /></td></tr>
@@ -132,8 +132,8 @@ Variables</h2></td></tr>
 <tr class="separator:ad725d11a00acb27fc15251e1c7b46bd0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >MEOS kernel for sampling Raquet raster chips along tgeompoint trajectories. </p>
-<p >Each Raquet tile is identified by a CARTO QUADBIN cell (uint64) whose Morton-encoded x/y/z coordinates define the Web-Mercator bounding box and pixel grid without any external metadata. The pixel-to-coordinate mapping uses the standard slippy-tile Mercator transform:</p>
+<div class="textblock"><p >MEOS kernel for sampling <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> raster chips along tgeompoint trajectories. </p>
+<p >Each <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> tile is identified by a CARTO QUADBIN cell (uint64) whose Morton-encoded x/y/z coordinates define the Web-Mercator bounding box and pixel grid without any external metadata. The pixel-to-coordinate mapping uses the standard slippy-tile Mercator transform:</p>
 <p >col = floor((lon − xmin) / (xmax − xmin) × width) row = floor((top_merc − merc(lat)) / (top_merc − bot_merc) × height)</p>
 <p >where merc(lat) = ln(tan(π/4 + lat·π/360)) in radians.</p>
 <p >The implementation is self-contained (no tquadbin PR dependency): the QUADBIN Morton decode and bbox math are inlined from the same slippy-tile formulas used in <a class="el" href="meos_2src_2quadbin_2quadbin_8c.html" title="First-party implementation of the CARTO quadbin cell algebra.">meos/src/quadbin/quadbin.c</a> so both share identical numerical behaviour. </p>
