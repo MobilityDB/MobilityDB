@@ -54,6 +54,58 @@
  */
 
 /******************************************************************************
+ * raquet type: a GDAL-free, self-describing Web-Mercator raster tile
+ * identified by a QUADBIN cell and carrying a row-major packed pixel array
+ ******************************************************************************/
+
+CREATE TYPE raquet;
+
+CREATE FUNCTION raquet_in(cstring)
+  RETURNS raquet
+  AS 'MODULE_PATHNAME', 'Raquet_in'
+  LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION raquet_out(raquet)
+  RETURNS cstring
+  AS 'MODULE_PATHNAME', 'Raquet_out'
+  LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION raquet_recv(internal)
+  RETURNS raquet
+  AS 'MODULE_PATHNAME', 'Raquet_recv'
+  LANGUAGE C IMMUTABLE STRICT;
+
+CREATE FUNCTION raquet_send(raquet)
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Raquet_send'
+  LANGUAGE C IMMUTABLE STRICT;
+
+CREATE TYPE raquet (
+  internallength = variable,
+  input = raquet_in,
+  output = raquet_out,
+  receive = raquet_recv,
+  send = raquet_send,
+  storage = extended,
+  alignment = double
+);
+
+/******************************************************************************
+ * raquet constructor
+ ******************************************************************************/
+
+CREATE FUNCTION raquet(
+    pixels  bytea,
+    width   integer,
+    height  integer,
+    quadbin bigint,
+    pixtype text,
+    nodata  float8 DEFAULT NULL
+) RETURNS raquet
+  AS 'MODULE_PATHNAME', 'Raquet_constructor'
+  LANGUAGE C IMMUTABLE;
+
+/******************************************************************************
  * raster_value
  *****************************************************************************/
 
@@ -103,6 +155,24 @@ CREATE OR REPLACE FUNCTION raster_tile_value_quadbin(
     traj       tgeompoint
 ) RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Raster_tile_value_quadbin'
+  LANGUAGE C STRICT;
+
+/******************************************************************************
+ * raster_tile_value
+ *****************************************************************************/
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Sample a raquet raster tile at the instants of a trajectory
+ * @param[in] rast Raquet tile
+ * @param[in] traj Trajectory
+ * @csqlfn #Raster_tile_value()
+ */
+CREATE FUNCTION raster_tile_value(
+    rast raquet,
+    traj tgeompoint
+) RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Raster_tile_value'
   LANGUAGE C STRICT;
 
 /******************************************************************************
