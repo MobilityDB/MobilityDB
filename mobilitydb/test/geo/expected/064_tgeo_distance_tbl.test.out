@@ -86,7 +86,7 @@ SELECT COUNT(*) FROM tbl_tgeometry, tbl_geometry t
 WHERE NearestApproachInstant(temp, g) IS NOT NULL;
  count 
 -------
-  9400
+ 15400
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2
@@ -142,7 +142,7 @@ SELECT COUNT(*) FROM tbl_tgeometry, tbl_geometry t
 WHERE NearestApproachDistance(temp, g) IS NOT NULL;
  count 
 -------
-  9400
+ 15400
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2
@@ -198,7 +198,7 @@ SELECT COUNT(*) FROM tbl_tgeometry, tbl_geometry t
 WHERE g |=| temp IS NOT NULL;
  count 
 -------
-  9400
+ 15400
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2
@@ -254,7 +254,7 @@ SELECT COUNT(*) FROM tbl_tgeometry, tbl_geometry t
 WHERE shortestLine(g, temp) IS NOT NULL;
  count 
 -------
-  9400
+ 15400
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2

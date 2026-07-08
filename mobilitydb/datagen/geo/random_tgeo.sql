@@ -34,8 +34,8 @@
 -------------------------------------------------------------------------------
 
 /**
- * @brief Generate a random geometry which can be (currently) a point, a 
- * linestring or a polygon
+ * @brief Generate a random geometry which can be a point, a linestring, a
+ * multipoint, a circular string, a compound curve or a curve polygon
  * @param[in] lowx, highx Inclusive bounds of the range for the x coordinates
  * @param[in] lowy, highy Inclusive bounds of the range for the y coordinates
  * @param[in] srid Optional SRID
@@ -47,13 +47,19 @@ CREATE FUNCTION random_geometry(lowx float, highx float, lowy float,
 DECLARE
   i int;
 BEGIN
-  i = random_int(1, 3);
+  i = random_int(1, 6);
   IF i = 1 THEN
     RETURN random_geom_point(lowx, highx, lowy, highy, srid);
   ELSIF i = 2 THEN
     RETURN random_geom_linestring(lowx, highx, lowy, highy, 10, 2, 2, srid);
-  ELSE -- i = 0 
+  ELSIF i = 3 THEN
     RETURN random_geom_multipoint(lowx, highx, lowy, highy, 10, 2, 2, srid);
+  ELSIF i = 4 THEN
+    RETURN random_geom_circularstring(lowx, highx, lowy, highy, 10, 1, 5, srid);
+  ELSIF i = 5 THEN
+    RETURN random_geom_compoundcurve(lowx, highx, lowy, highy, 10, 1, 5, srid);
+  ELSE -- i = 6
+    RETURN random_geom_curvepolygon(lowx, highx, lowy, highy, 10, 2, 5, srid);
   END IF;
 END;
 $$ LANGUAGE PLPGSQL STRICT;
