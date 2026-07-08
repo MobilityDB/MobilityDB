@@ -60,6 +60,9 @@
 #if CBUFFER
   #include "cbuffer/cbuffer.h"
 #endif
+#if RASTER
+  #include "raster/raquet.h"
+#endif
 #if JSON
   #include <utils/jsonb.h>
 #endif
@@ -170,6 +173,10 @@ basetype_out(Datum value, MeosType type, int maxdd)
 #if CBUFFER
     case T_CBUFFER:
       return cbuffer_out(DatumGetCbufferP(value), maxdd);
+#endif
+#if RASTER
+    case T_RAQUET:
+      return raquet_out(DatumGetRaquetP(value));
 #endif
 #if JSON
     case T_JSONB:
@@ -1219,6 +1226,27 @@ cbuffer_to_wkb_size(const Cbuffer *cb, uint8_t variant, bool component)
 }
 #endif /* CBUFFER */
 
+#if RASTER
+/**
+ * @brief Return the size in bytes of a Raquet raster tile in the Well-Known
+ * Binary (WKB) representation
+ */
+static size_t
+raquet_to_wkb_size(const Raquet *rq, bool component)
+{
+  size_t size = 0;
+  if (! component)
+    /* Endian flag */
+    size += MEOS_WKB_BYTE_SIZE;
+  /* quadbin + pixtype + width + height + has_nodata flag + nodata */
+  size += MEOS_WKB_INT8_SIZE + MEOS_WKB_BYTE_SIZE + MEOS_WKB_INT4_SIZE * 2 +
+    MEOS_WKB_BYTE_SIZE + MEOS_WKB_DOUBLE_SIZE;
+  /* Row-major packed pixel bytes */
+  size += raquet_pixels_size(rq);
+  return size;
+}
+#endif /* RASTER */
+
 #if JSON
 /**
  * @brief Return the size in bytes of a JSONB value in the Well-Known
@@ -1650,6 +1678,10 @@ datum_to_wkb_size(Datum value, MeosType type, uint8_t variant)
   if (type == T_CBUFFER)
     return cbuffer_to_wkb_size(DatumGetCbufferP(value), variant, false);
 #endif /* CBUFFER */
+#if RASTER
+  if (type == T_RAQUET)
+    return raquet_to_wkb_size(DatumGetRaquetP(value), false);
+#endif /* RASTER */
 #if JSON
   if (type == T_JSONB)
     return jsonb_to_wkb_size(DatumGetJsonbP(value), variant);
@@ -1944,6 +1976,34 @@ cbuffer_to_wkb_buf(const Cbuffer *cb, uint8_t *buf, uint8_t variant,
   return buf;
 }
 #endif /* CBUFFER */
+
+#if RASTER
+/**
+ * @brief Write into the buffer a Raquet raster tile in the Well-Known Binary
+ * (WKB) representation
+ */
+static uint8_t *
+raquet_to_wkb_buf(const Raquet *rq, uint8_t *buf, uint8_t variant,
+  bool component)
+{
+  if (! component)
+    /* Write the endian flag (byte) */
+    buf = endian_to_wkb_buf(buf, variant);
+  /* Write the tile header */
+  buf = int64_to_wkb_buf((int64) rq->quadbin, buf, variant);
+  uint8_t pixtype = rq->pixtype;
+  buf = bytes_to_wkb_buf(&pixtype, MEOS_WKB_BYTE_SIZE, buf, variant);
+  buf = int32_to_wkb_buf((int) rq->width, buf, variant);
+  buf = int32_to_wkb_buf((int) rq->height, buf, variant);
+  uint8_t has_nodata = rq->has_nodata ? 1 : 0;
+  buf = bytes_to_wkb_buf(&has_nodata, MEOS_WKB_BYTE_SIZE, buf, variant);
+  buf = double_to_wkb_buf(rq->nodata, buf, variant);
+  /* Write the row-major packed pixel bytes */
+  buf = bytes_to_wkb_buf((uint8_t *) rq->pixels, raquet_pixels_size(rq), buf,
+    variant);
+  return buf;
+}
+#endif /* RASTER */
 
 #if JSON
 /**
@@ -2846,6 +2906,10 @@ datum_to_wkb_buf(Datum value, MeosType type, uint8_t *buf, uint8_t variant)
   else if (type == T_CBUFFER)
     buf = cbuffer_to_wkb_buf(DatumGetCbufferP(value), buf, variant, false);
 #endif /* CBUFFER */
+#if RASTER
+  else if (type == T_RAQUET)
+    buf = raquet_to_wkb_buf(DatumGetRaquetP(value), buf, variant, false);
+#endif /* RASTER */
 #if JSON
   else if (type == T_JSONB)
     buf = jsonb_to_wkb_buf(DatumGetJsonbP(value), buf, variant);

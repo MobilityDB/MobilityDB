@@ -64,9 +64,44 @@ typedef enum
   MEOS_PT_FLOAT64 = 4,   /**< 64-bit IEEE double      */
 } MeosPixType;
 
+/* Opaque structure to represent a Raquet raster tile */
+
+typedef struct Raquet Raquet;
+
+/* Input and output functions for Raquet tiles */
+
+extern Raquet *raquet_in(const char *str);
+extern char *raquet_out(const Raquet *rq);
+extern Raquet *raquet_from_wkb(const uint8_t *wkb, size_t size);
+extern Raquet *raquet_from_hexwkb(const char *hexwkb);
+extern uint8_t *raquet_as_wkb(const Raquet *rq, uint8_t variant, size_t *size_out);
+extern char *raquet_as_hexwkb(const Raquet *rq, uint8_t variant, size_t *size_out);
+
+/* Constructor functions for Raquet tiles */
+
+extern Raquet *raquet_make(uint64 quadbin, uint16_t width, uint16_t height,
+  MeosPixType pixtype, double nodata, bool has_nodata, const uint8_t *pixels);
+extern Raquet *raquet_copy(const Raquet *rq);
+
+/* Accessor functions for Raquet tiles */
+
+extern uint64 raquet_quadbin(const Raquet *rq);
+extern int raquet_width(const Raquet *rq);
+extern int raquet_height(const Raquet *rq);
+extern double raquet_nodata(const Raquet *rq);
+
+/* Comparison functions for Raquet tiles */
+
+extern int raquet_cmp(const Raquet *rq1, const Raquet *rq2);
+extern bool raquet_eq(const Raquet *rq1, const Raquet *rq2);
+
+/* Sampling functions */
+
 extern Temporal *raster_tile_value_quadbin(const uint8_t *pixels,
   uint16_t width, uint16_t height, uint64 quadbin, MeosPixType pixtype,
   double nodata, bool has_nodata, const Temporal *traj);
+
+extern Temporal *raster_tile_value(const Raquet *rq, const Temporal *traj);
 
 extern uint64 *trajectory_quadbins(const Temporal *traj, uint32_t zoom,
   int *count);

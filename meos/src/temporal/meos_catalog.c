@@ -166,6 +166,7 @@ static const char *MEOS_TYPE_NAMES[] =
   [T_PCPATCHSET] = "pcpatchset",
   [T_TPCPATCH] = "tpcpatch",
   [T_TPCBOX] = "tpcbox",
+  [T_RAQUET] = "raquet",
 };
 
 /**
