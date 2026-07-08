@@ -134,6 +134,7 @@ typedef enum
   T_PCPATCHSET     = 78,  /**< pgpointcloud patch set type */
   T_TPCPATCH       = 79,  /**< temporal pgpointcloud patch type */
   T_TPCBOX         = 80,  /**< temporal pgpointcloud bounding box type */
+  T_RAQUET         = 81,  /**< Raquet raster tile type (GDAL-free QUADBIN chip) */
   NUM_MEOS_TYPES          /* Dummy value that determines the size of the
                            * lookup array MeosType -> Oid */
 } MeosType;

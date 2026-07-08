@@ -81,6 +81,9 @@
   #include <meos_rgeo.h>
   #include "rgeo/trgeo.h"
 #endif
+#if RASTER
+  #include <meos_raster.h>
+#endif
 
 #include <utils/jsonb.h>
 #include <utils/numeric.h>
@@ -1752,6 +1755,46 @@ cbuffer_from_wkb_state(meos_wkb_parse_state *s, bool component)
 }
 #endif /* CBUFFER */
 
+#if RASTER
+/**
+ * @brief Read a Raquet raster tile and advance the parse state forward
+ * @details The endian flag has already been consumed in
+ * #type_from_wkb_state. What remains are the tile header fields followed by
+ * the row-major packed pixel bytes, whose length is derived from the width,
+ * height and pixel type.
+ */
+Datum
+raquet_from_wkb_state(meos_wkb_parse_state *s)
+{
+  uint64 quadbin = (uint64) int64_from_wkb_state(s);
+  uint8_t pixtype = byte_from_wkb_state(s);
+  uint16_t width = (uint16_t) int32_from_wkb_state(s);
+  uint16_t height = (uint16_t) int32_from_wkb_state(s);
+  bool has_nodata = (bool) byte_from_wkb_state(s);
+  double nodata = double_from_wkb_state(s);
+  size_t pixsize;
+  switch (pixtype)
+  {
+    case MEOS_PT_UINT8:   pixsize = 1; break;
+    case MEOS_PT_INT16:   pixsize = 2; break;
+    case MEOS_PT_INT32:   pixsize = 4; break;
+    case MEOS_PT_FLOAT32: pixsize = 4; break;
+    case MEOS_PT_FLOAT64: pixsize = 8; break;
+    default:
+      meos_error(ERROR, MEOS_ERR_WKB_INPUT,
+        "Unknown raquet pixel type in WKB: %u", pixtype);
+      return (Datum) 0;
+  }
+  size_t npixels = (size_t) width * height * pixsize;
+  /* Check that there is enough data to read the pixel payload */
+  wkb_parse_state_check(s, npixels);
+  Raquet *result = raquet_make(quadbin, width, height, (MeosPixType) pixtype,
+    nodata, has_nodata, s->pos);
+  s->pos += npixels;
+  return PointerGetDatum(result);
+}
+#endif /* RASTER */
+
 #if JSON
 /**
  * @brief Read a JSONB value and advance the parse state forward
@@ -2578,6 +2621,10 @@ type_from_wkb(const uint8_t *wkb, size_t size, MeosType type)
   if (type == T_CBUFFER)
     return PointerGetDatum(cbuffer_from_wkb_state(&s, false));
 #endif /* CBUFFER */
+#if RASTER
+  if (type == T_RAQUET)
+    return raquet_from_wkb_state(&s);
+#endif /* RASTER */
 #if JSON
   if (type == T_JSONB)
     return PointerGetDatum(jsonb_from_wkb_state(&s));
