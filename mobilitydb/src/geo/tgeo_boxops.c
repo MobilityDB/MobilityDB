@@ -196,7 +196,7 @@ Geo_split_each_n_stboxes(PG_FUNCTION_ARGS)
   PG_RETURN_ARRAYTYPE_P(result);
 }
 
-/* GENERATED-BOXOPS-BEGIN — tools/codegen/inherited/generate.py from templates/boxops.c.tmpl; DO NOT EDIT BY HAND;
+/* GENERATED-BOXOPS-BEGIN stbox — tools/codegen/inherited/generate.py from templates/boxops.c.tmpl; DO NOT EDIT BY HAND;
  * edit the template + manifest.yaml (boxtypes) and re-run. */
 /*****************************************************************************
  * Generic box functions
@@ -498,4 +498,4 @@ Adjacent_tspatial_tspatial(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************/
-/* GENERATED-BOXOPS-END */
+/* GENERATED-BOXOPS-END stbox */
