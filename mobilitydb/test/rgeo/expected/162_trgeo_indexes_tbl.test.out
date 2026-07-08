@@ -7,6 +7,7 @@ DROP INDEX IF EXISTS tbl_trgeometry2d_quadtree_idx;
 NOTICE:  index "tbl_trgeometry2d_quadtree_idx" does not exist, skipping
 DROP INDEX
 DROP INDEX IF EXISTS tbl_trgeometry2d_kdtree_idx;
+NOTICE:  index "tbl_trgeometry2d_kdtree_idx" does not exist, skipping
 DROP INDEX
 CREATE INDEX tbl_trgeometry2d_rtree_idx ON tbl_trgeometry2d USING GIST(temp);
 CREATE INDEX
