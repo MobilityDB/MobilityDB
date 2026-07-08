@@ -70,32 +70,88 @@ def render(behaviour: str, sub: dict) -> str:
 # (stbox/tbox/tstzspan/tpcbox) into the region between these markers, which live
 # inside a hand-written .c file that also holds non-generated helpers (trajectory
 # tiling, NAD, ...). Only the marked region is owned by the generator.
-BOXOPS_BEGIN = ("/* GENERATED-BOXOPS-BEGIN — tools/codegen/inherited/generate.py "
-                "from templates/boxops.c.tmpl; DO NOT EDIT BY HAND;\n"
-                " * edit the template + manifest.yaml (boxtypes) and re-run. */\n")
-BOXOPS_END = "/* GENERATED-BOXOPS-END */\n"
-_BOXOPS_KEYS = ("box", "tside", "boxc", "getarg", "dispbox", "disptt",
-                "ingroup", "boxdesc", "boxdescpl", "valdesc")
+def _boxops_markers(box: str):
+    """BEGIN/END markers keyed by box type, so one file can host several
+    generated regions (temporal_boxops.c holds both tstzspan and tbox)."""
+    begin = (f"/* GENERATED-BOXOPS-BEGIN {box} — tools/codegen/inherited/generate.py "
+             "from templates/boxops.c.tmpl; DO NOT EDIT BY HAND;\n"
+             " * edit the template + manifest.yaml (boxtypes) and re-run. */\n")
+    return begin, f"/* GENERATED-BOXOPS-END {box} */\n"
+# The template defines one implementation per OP (overlaps/contains/contained/
+# same/adjacent) as three "direction kinds", reused across every box type:
+#   0 = box-first    Boxop_{BOX}_{TSIDE}   dispatch {DISPBOX}  (INVERT)
+#   1 = tside-first  Boxop_{TSIDE}_{BOX}   dispatch {DISPBOX}  (INVERT_NO)
+#   2 = tside-tside  Boxop_{TSIDE}_{TSIDE} dispatch {DISPTT}
+# A box type is a LIST of directions. A plain box (stbox/tpcbox/tstzspan) has the
+# three template directions. A composite box (tbox) whose value dimension is a
+# span<T> prepends a `valspan` sub-block — its 2 box-directions (numspan_tnumber,
+# tnumber_numspan) dispatch on span primitives — before its own 3 box-directions.
+# This is the single generation mechanism for {tstzspan, stbox, tpcbox, tbox, …}.
+
+
+def _boxops_blocks():
+    """boxops.c.tmpl split on blank lines: [header], 3 dispatchers (kinds 0/1/2),
+    then per op [banner, wrap0, wrap1, wrap2], [trailer]. Roundtrips exactly."""
+    blocks = (TEMPLATES / "boxops.c.tmpl").read_text().split("\n\n")
+    header, trailer = blocks[0], blocks[-1]
+    dispatch = blocks[1:4]
+    ops = [(blocks[4 + i * 4], blocks[5 + i * 4:8 + i * 4]) for i in range(5)]
+    return header, dispatch, ops, trailer
+
+
+def _boxops_directions(bt: dict) -> list:
+    """Ordered directions for a box type: an optional value-span sub-block (kinds
+    0,1 on span primitives) followed by the box's own 3 directions (kinds 0,1,2)."""
+    dirs = []
+    vs = bt.get("valspan")
+    if vs:
+        dirs += [{**vs, "kind": k} for k in (0, 1)]
+    dirs += [{**bt, "kind": k} for k in (0, 1, 2)]
+    return dirs
+
+
+def _boxops_sub(fragment: str, d: dict, bt: dict) -> str:
+    """Substitute the per-direction tokens into one template block. {PRIM} is the
+    box name for a self-contained box (overlaps_stbox_stbox) but differs for a
+    span<T> instance (overlaps_span_span for tstzspan/numspan) — defaults to box."""
+    vals = {
+        "BOX": d["box"], "BOXC": d["boxc"], "GETARG": d["getarg"],
+        "PRIM": d.get("prim", d["box"]),
+        "DISPBOX": d.get("dispbox", ""), "DISPTT": d.get("disptt", bt.get("disptt", "")),
+        "BOXDESC": d.get("boxdesc", bt["boxdesc"]),
+        "BOXDESCPL": d.get("boxdescpl", bt["boxdescpl"]),
+        "TSIDE": bt["tside"], "VALDESC": bt["valdesc"], "INGROUP": bt["ingroup"],
+    }
+    for k, v in vals.items():
+        fragment = fragment.replace("{" + k + "}", v)
+    return fragment
 
 
 def render_boxops(bt: dict) -> str:
-    body = (TEMPLATES / "boxops.c.tmpl").read_text()
-    for k in _BOXOPS_KEYS:
-        body = body.replace("{" + k.upper() + "}", bt[k])
-    return body
+    header, dispatch, ops, trailer = _boxops_blocks()
+    dirs = _boxops_directions(bt)
+    out = [header]
+    out += [_boxops_sub(dispatch[d["kind"]], d, bt) for d in dirs]
+    for banner, wraps in ops:
+        out.append(banner)
+        out += [_boxops_sub(wraps[d["kind"]], d, bt) for d in dirs]
+    out.append(trailer)
+    return "\n\n".join(out)
 
 
-def splice_boxops(filetext: str, rendered: str) -> str:
-    """Replace the text strictly between the BEGIN/END markers with `rendered`."""
-    b = filetext.index(BOXOPS_BEGIN) + len(BOXOPS_BEGIN)
-    e = filetext.index(BOXOPS_END)
+def splice_boxops(filetext: str, box: str, rendered: str) -> str:
+    """Replace the text strictly between the box's BEGIN/END markers with `rendered`."""
+    begin, end = _boxops_markers(box)
+    b = filetext.index(begin) + len(begin)
+    e = filetext.index(end)
     return filetext[:b] + rendered + filetext[e:]
 
 
-def extract_boxops(filetext: str) -> str:
-    """Return the current text between the BEGIN/END markers (for --validate)."""
-    b = filetext.index(BOXOPS_BEGIN) + len(BOXOPS_BEGIN)
-    e = filetext.index(BOXOPS_END)
+def extract_boxops(filetext: str, box: str) -> str:
+    """Return the current text between the box's BEGIN/END markers (for --validate)."""
+    begin, end = _boxops_markers(box)
+    b = filetext.index(begin) + len(begin)
+    e = filetext.index(end)
     return filetext[b:e]
 
 
@@ -161,7 +217,7 @@ def main() -> int:
                 continue
             p = ROOT / bt["file"]
             gen = render_boxops(bt)
-            cur = extract_boxops(p.read_text()) if p.exists() else ""
+            cur = extract_boxops(p.read_text(), bt["box"]) if p.exists() else ""
             same = gen == cur
             ok = ok and same
             print(f"[{'OK ' if same else 'DIFF'}] self-regen boxops {bt['box']} "
@@ -196,7 +252,7 @@ def main() -> int:
         if args.check:
             print(f"would splice boxops {bt['box']} -> {bt['file']}")
             continue
-        p.write_text(splice_boxops(p.read_text(), render_boxops(bt)))
+        p.write_text(splice_boxops(p.read_text(), bt["box"], render_boxops(bt)))
         print(f"spliced boxops {bt['box']} -> {bt['file']}")
     return 0
 

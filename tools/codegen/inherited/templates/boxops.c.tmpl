@@ -68,7 +68,7 @@ PG_FUNCTION_INFO_V1(Overlaps_{BOX}_{TSIDE});
 inline Datum
 Overlaps_{BOX}_{TSIDE}(PG_FUNCTION_ARGS)
 {
-  return Boxop_{BOX}_{TSIDE}(fcinfo, &overlaps_{BOX}_{BOX});
+  return Boxop_{BOX}_{TSIDE}(fcinfo, &overlaps_{PRIM}_{PRIM});
 }
 
 PGDLLEXPORT Datum Overlaps_{TSIDE}_{BOX}(PG_FUNCTION_ARGS);
@@ -83,7 +83,7 @@ PG_FUNCTION_INFO_V1(Overlaps_{TSIDE}_{BOX});
 inline Datum
 Overlaps_{TSIDE}_{BOX}(PG_FUNCTION_ARGS)
 {
-  return Boxop_{TSIDE}_{BOX}(fcinfo, &overlaps_{BOX}_{BOX});
+  return Boxop_{TSIDE}_{BOX}(fcinfo, &overlaps_{PRIM}_{PRIM});
 }
 
 PGDLLEXPORT Datum Overlaps_{TSIDE}_{TSIDE}(PG_FUNCTION_ARGS);
@@ -98,7 +98,7 @@ PG_FUNCTION_INFO_V1(Overlaps_{TSIDE}_{TSIDE});
 inline Datum
 Overlaps_{TSIDE}_{TSIDE}(PG_FUNCTION_ARGS)
 {
-  return Boxop_{TSIDE}_{TSIDE}(fcinfo, &overlaps_{BOX}_{BOX});
+  return Boxop_{TSIDE}_{TSIDE}(fcinfo, &overlaps_{PRIM}_{PRIM});
 }
 
 /*****************************************************************************
@@ -117,7 +117,7 @@ PG_FUNCTION_INFO_V1(Contains_{BOX}_{TSIDE});
 inline Datum
 Contains_{BOX}_{TSIDE}(PG_FUNCTION_ARGS)
 {
-  return Boxop_{BOX}_{TSIDE}(fcinfo, &contains_{BOX}_{BOX});
+  return Boxop_{BOX}_{TSIDE}(fcinfo, &contains_{PRIM}_{PRIM});
 }
 
 PGDLLEXPORT Datum Contains_{TSIDE}_{BOX}(PG_FUNCTION_ARGS);
@@ -132,7 +132,7 @@ PG_FUNCTION_INFO_V1(Contains_{TSIDE}_{BOX});
 inline Datum
 Contains_{TSIDE}_{BOX}(PG_FUNCTION_ARGS)
 {
-  return Boxop_{TSIDE}_{BOX}(fcinfo, &contains_{BOX}_{BOX});
+  return Boxop_{TSIDE}_{BOX}(fcinfo, &contains_{PRIM}_{PRIM});
 }
 
 PGDLLEXPORT Datum Contains_{TSIDE}_{TSIDE}(PG_FUNCTION_ARGS);
@@ -147,7 +147,7 @@ PG_FUNCTION_INFO_V1(Contains_{TSIDE}_{TSIDE});
 inline Datum
 Contains_{TSIDE}_{TSIDE}(PG_FUNCTION_ARGS)
 {
-  return Boxop_{TSIDE}_{TSIDE}(fcinfo, &contains_{BOX}_{BOX});
+  return Boxop_{TSIDE}_{TSIDE}(fcinfo, &contains_{PRIM}_{PRIM});
 }
 
 /*****************************************************************************
@@ -166,7 +166,7 @@ PG_FUNCTION_INFO_V1(Contained_{BOX}_{TSIDE});
 inline Datum
 Contained_{BOX}_{TSIDE}(PG_FUNCTION_ARGS)
 {
-  return Boxop_{BOX}_{TSIDE}(fcinfo, &contained_{BOX}_{BOX});
+  return Boxop_{BOX}_{TSIDE}(fcinfo, &contained_{PRIM}_{PRIM});
 }
 
 PGDLLEXPORT Datum Contained_{TSIDE}_{BOX}(PG_FUNCTION_ARGS);
@@ -181,7 +181,7 @@ PG_FUNCTION_INFO_V1(Contained_{TSIDE}_{BOX});
 inline Datum
 Contained_{TSIDE}_{BOX}(PG_FUNCTION_ARGS)
 {
-  return Boxop_{TSIDE}_{BOX}(fcinfo, &contained_{BOX}_{BOX});
+  return Boxop_{TSIDE}_{BOX}(fcinfo, &contained_{PRIM}_{PRIM});
 }
 
 PGDLLEXPORT Datum Contained_{TSIDE}_{TSIDE}(PG_FUNCTION_ARGS);
@@ -196,7 +196,7 @@ PG_FUNCTION_INFO_V1(Contained_{TSIDE}_{TSIDE});
 inline Datum
 Contained_{TSIDE}_{TSIDE}(PG_FUNCTION_ARGS)
 {
-  return Boxop_{TSIDE}_{TSIDE}(fcinfo, &contained_{BOX}_{BOX});
+  return Boxop_{TSIDE}_{TSIDE}(fcinfo, &contained_{PRIM}_{PRIM});
 }
 
 /*****************************************************************************
@@ -215,7 +215,7 @@ PG_FUNCTION_INFO_V1(Same_{BOX}_{TSIDE});
 inline Datum
 Same_{BOX}_{TSIDE}(PG_FUNCTION_ARGS)
 {
-  return Boxop_{BOX}_{TSIDE}(fcinfo, &same_{BOX}_{BOX});
+  return Boxop_{BOX}_{TSIDE}(fcinfo, &same_{PRIM}_{PRIM});
 }
 
 PGDLLEXPORT Datum Same_{TSIDE}_{BOX}(PG_FUNCTION_ARGS);
@@ -230,7 +230,7 @@ PG_FUNCTION_INFO_V1(Same_{TSIDE}_{BOX});
 inline Datum
 Same_{TSIDE}_{BOX}(PG_FUNCTION_ARGS)
 {
-  return Boxop_{TSIDE}_{BOX}(fcinfo, &same_{BOX}_{BOX});
+  return Boxop_{TSIDE}_{BOX}(fcinfo, &same_{PRIM}_{PRIM});
 }
 
 PGDLLEXPORT Datum Same_{TSIDE}_{TSIDE}(PG_FUNCTION_ARGS);
@@ -245,7 +245,7 @@ PG_FUNCTION_INFO_V1(Same_{TSIDE}_{TSIDE});
 inline Datum
 Same_{TSIDE}_{TSIDE}(PG_FUNCTION_ARGS)
 {
-  return Boxop_{TSIDE}_{TSIDE}(fcinfo, &same_{BOX}_{BOX});
+  return Boxop_{TSIDE}_{TSIDE}(fcinfo, &same_{PRIM}_{PRIM});
 }
 
 /*****************************************************************************
@@ -264,7 +264,7 @@ PG_FUNCTION_INFO_V1(Adjacent_{BOX}_{TSIDE});
 inline Datum
 Adjacent_{BOX}_{TSIDE}(PG_FUNCTION_ARGS)
 {
-  return Boxop_{BOX}_{TSIDE}(fcinfo, &adjacent_{BOX}_{BOX});
+  return Boxop_{BOX}_{TSIDE}(fcinfo, &adjacent_{PRIM}_{PRIM});
 }
 
 PGDLLEXPORT Datum Adjacent_{TSIDE}_{BOX}(PG_FUNCTION_ARGS);
@@ -279,7 +279,7 @@ PG_FUNCTION_INFO_V1(Adjacent_{TSIDE}_{BOX});
 inline Datum
 Adjacent_{TSIDE}_{BOX}(PG_FUNCTION_ARGS)
 {
-  return Boxop_{TSIDE}_{BOX}(fcinfo, &adjacent_{BOX}_{BOX});
+  return Boxop_{TSIDE}_{BOX}(fcinfo, &adjacent_{PRIM}_{PRIM});
 }
 
 PGDLLEXPORT Datum Adjacent_{TSIDE}_{TSIDE}(PG_FUNCTION_ARGS);
@@ -294,7 +294,7 @@ PG_FUNCTION_INFO_V1(Adjacent_{TSIDE}_{TSIDE});
 inline Datum
 Adjacent_{TSIDE}_{TSIDE}(PG_FUNCTION_ARGS)
 {
-  return Boxop_{TSIDE}_{TSIDE}(fcinfo, &adjacent_{BOX}_{BOX});
+  return Boxop_{TSIDE}_{TSIDE}(fcinfo, &adjacent_{PRIM}_{PRIM});
 }
 
 /*****************************************************************************/

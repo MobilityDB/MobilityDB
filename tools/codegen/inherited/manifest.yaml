@@ -135,3 +135,47 @@ boxtypes:
     valdesc:   temporal pointcloud value
     file:      mobilitydb/src/pointcloud/tpc_boxops.c
     reference: true
+
+  # tstzspan: the box IS a span<timestamptz>, so the primitives are the generic
+  # span operators (overlaps_span_span, ...) via prim: span. Serves every
+  # temporal-only type (the time-span bounding box).
+  - box:       tstzspan
+    tside:     temporal
+    prim:      span
+    boxc:      Span
+    getarg:    PG_GETARG_SPAN_P
+    dispbox:   boxop_temporal_tstzspan
+    disptt:    boxop_temporal_temporal
+    ingroup:   mobilitydb_temporal_bbox_topo
+    boxdesc:   timestamptz span
+    boxdescpl: timestamptz spans
+    valdesc:   temporal value
+    file:      mobilitydb/src/temporal/temporal_boxops.c
+    reference: true
+
+  # tbox: a COMPOSITE box (value span × time). Its own directions dispatch on the
+  # tbox primitives (overlaps_tbox_tbox, ...); the `valspan` sub-block adds the
+  # value-dimension directions (numspan_tnumber, tnumber_numspan) which dispatch on
+  # the generic span primitives (overlaps_span_span, ...) via prim: span — the
+  # span<T> value dimension of the tnumber. Shares temporal_boxops.c with tstzspan.
+  - box:       tbox
+    tside:     tnumber
+    prim:      tbox
+    boxc:      TBox
+    getarg:    PG_GETARG_TBOX_P
+    dispbox:   boxop_tnumber_tbox
+    disptt:    boxop_tnumber_tnumber
+    ingroup:   mobilitydb_temporal_bbox_topo
+    boxdesc:   temporal box
+    boxdescpl: temporal boxes
+    valdesc:   temporal number
+    file:      mobilitydb/src/temporal/temporal_boxops.c
+    reference: true
+    valspan:
+      box:       numspan
+      prim:      span
+      boxc:      Span
+      getarg:    PG_GETARG_SPAN_P
+      dispbox:   boxop_tnumber_numspan
+      boxdesc:   number span
+      boxdescpl: number spans

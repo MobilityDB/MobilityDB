@@ -58,7 +58,7 @@
 #include "pointcloud/tpcbox.h"          /* PG_GETARG_TPCBOX_P */
 #include "temporal/temporal.h"
 
-/* GENERATED-BOXOPS-BEGIN — tools/codegen/inherited/generate.py from templates/boxops.c.tmpl; DO NOT EDIT BY HAND;
+/* GENERATED-BOXOPS-BEGIN tpcbox — tools/codegen/inherited/generate.py from templates/boxops.c.tmpl; DO NOT EDIT BY HAND;
  * edit the template + manifest.yaml (boxtypes) and re-run. */
 /*****************************************************************************
  * Generic box functions
@@ -360,7 +360,7 @@ Adjacent_tpointcloud_tpointcloud(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************/
-/* GENERATED-BOXOPS-END */
+/* GENERATED-BOXOPS-END tpcbox */
 
 #define DEFINE_BOXOP3(opname, primitive)                                       \
 PGDLLEXPORT Datum opname##_tpcbox_tpointcloud(PG_FUNCTION_ARGS);               \
