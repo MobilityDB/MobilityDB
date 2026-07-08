@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: contains_span_bigint</title>
+<title>MobilityDB: same_span_span</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -121,7 +121,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__setspan__topo_ga5008a13bbba186532a3c194d7ebb4193.html#ga5008a13bbba186532a3c194d7ebb4193">contains_set_set</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__setspan__topo_gad96a5b959f9ea6d206019d9cf8f32831.html#gad96a5b959f9ea6d206019d9cf8f32831">contains_set_text</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__setspan__topo_ga72c4bffa6f0201a7ab26d7e3d47b6059.html#ga72c4bffa6f0201a7ab26d7e3d47b6059">contains_set_timestamptz</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__setspan__topo_gade4734a046989b039f87e21105a26b0c.html#gade4734a046989b039f87e21105a26b0c">contains_span_bigint</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__setspan__topo_gade4734a046989b039f87e21105a26b0c.html#gade4734a046989b039f87e21105a26b0c">contains_span_bigint</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__setspan__topo_gafd899961887db60c833571dbaec33354.html#gafd899961887db60c833571dbaec33354">contains_span_date</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__setspan__topo_ga65c9165dda39847dac3069ae601bcdc9.html#ga65c9165dda39847dac3069ae601bcdc9">contains_span_float</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__setspan__topo_ga32291a3796d73ad335b8981e8b297522.html#ga32291a3796d73ad335b8981e8b297522">contains_span_int</a></td></tr>
@@ -140,28 +140,28 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__setspan__topo_ga733853e35799fb0bcf7be8df344b92b0.html#ga733853e35799fb0bcf7be8df344b92b0">overlaps_span_spanset</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__setspan__topo_ga1879f1e1826c251b35e36d9cfc1d92b8.html#ga1879f1e1826c251b35e36d9cfc1d92b8">overlaps_spanset_span</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__setspan__topo_ga792f1259d6d56cf87f430440619b01a4.html#ga792f1259d6d56cf87f430440619b01a4">overlaps_spanset_spanset</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__setspan__topo_ga0630be582ef46b7d1564a993659a66ff.html#ga0630be582ef46b7d1564a993659a66ff">same_span_span</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__setspan__topo_ga0630be582ef46b7d1564a993659a66ff.html#ga0630be582ef46b7d1564a993659a66ff">same_span_span</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="gade4734a046989b039f87e21105a26b0c" name="gade4734a046989b039f87e21105a26b0c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gade4734a046989b039f87e21105a26b0c">&#9670;&#160;</a></span>contains_span_bigint()</h2>
+<a id="ga0630be582ef46b7d1564a993659a66ff" name="ga0630be582ef46b7d1564a993659a66ff"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga0630be582ef46b7d1564a993659a66ff">&#9670;&#160;</a></span>same_span_span()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool contains_span_bigint </td>
+          <td class="memname">bool same_span_span </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structSpan.html">Span</a> *&#160;</td>
-          <td class="paramname"><em>s</em>, </td>
+          <td class="paramname"><em>s1</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a7cde0074dfd288f2d70c0e035dacb28a.html#a7cde0074dfd288f2d70c0e035dacb28a">int64</a>&#160;</td>
-          <td class="paramname"><em>i</em>&#160;</td>
+          <td class="paramtype">const <a class="el" href="structSpan.html">Span</a> *&#160;</td>
+          <td class="paramname"><em>s2</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -171,11 +171,10 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return true if a span contains a big integer. </p>
+<p>Return true if two spans are equal in the common dimensions. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">s</td><td><a class="el" href="structSpan.html" title="Structure to represent spans (a.k.a.">Span</a> </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">i</td><td>Value @csqlfn <a class="el" href="group__mobilitydb__setspan__topo_gaa1975d8eca86634617878d689f8c14d5.html#gaa1975d8eca86634617878d689f8c14d5" title="Return true if a span contains a value @sqlfn contains()">Contains_span_value()</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">s1,s2</td><td>Spans </td></tr>
   </table>
   </dd>
 </dl>
