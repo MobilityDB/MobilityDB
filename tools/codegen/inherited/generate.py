@@ -65,6 +65,40 @@ def render(behaviour: str, sub: dict) -> str:
     return BANNER.format(tmpl=f"{behaviour}.sql.tmpl") + body
 
 
+# --- C boxops (box-type axis) --------------------------------------------
+# The bounding-box topological operator wrappers are generated per BOX TYPE
+# (stbox/tbox/tstzspan/tpcbox) into the region between these markers, which live
+# inside a hand-written .c file that also holds non-generated helpers (trajectory
+# tiling, NAD, ...). Only the marked region is owned by the generator.
+BOXOPS_BEGIN = ("/* GENERATED-BOXOPS-BEGIN — tools/codegen/inherited/generate.py "
+                "from templates/boxops.c.tmpl; DO NOT EDIT BY HAND;\n"
+                " * edit the template + manifest.yaml (boxtypes) and re-run. */\n")
+BOXOPS_END = "/* GENERATED-BOXOPS-END */\n"
+_BOXOPS_KEYS = ("box", "tside", "boxc", "getarg", "dispbox", "disptt",
+                "ingroup", "boxdesc", "boxdescpl", "valdesc")
+
+
+def render_boxops(bt: dict) -> str:
+    body = (TEMPLATES / "boxops.c.tmpl").read_text()
+    for k in _BOXOPS_KEYS:
+        body = body.replace("{" + k.upper() + "}", bt[k])
+    return body
+
+
+def splice_boxops(filetext: str, rendered: str) -> str:
+    """Replace the text strictly between the BEGIN/END markers with `rendered`."""
+    b = filetext.index(BOXOPS_BEGIN) + len(BOXOPS_BEGIN)
+    e = filetext.index(BOXOPS_END)
+    return filetext[:b] + rendered + filetext[e:]
+
+
+def extract_boxops(filetext: str) -> str:
+    """Return the current text between the BEGIN/END markers (for --validate)."""
+    b = filetext.index(BOXOPS_BEGIN) + len(BOXOPS_BEGIN)
+    e = filetext.index(BOXOPS_END)
+    return filetext[b:e]
+
+
 def target_path(behaviour: str, sub: dict, positions: dict) -> pathlib.Path:
     num = sub["bin"] + positions[behaviour]
     # The SQL family directory defaults to the base type name (quadbin, cbuffer),
@@ -122,6 +156,25 @@ def main() -> int:
                             break
                     if len(g) != len(c):
                         print(f"     line count gen={len(g)} cur={len(c)}")
+        for bt in mf.get("boxtypes", []):
+            if not bt.get("reference"):
+                continue
+            p = ROOT / bt["file"]
+            gen = render_boxops(bt)
+            cur = extract_boxops(p.read_text()) if p.exists() else ""
+            same = gen == cur
+            ok = ok and same
+            print(f"[{'OK ' if same else 'DIFF'}] self-regen boxops {bt['box']} "
+                  f"-> {pathlib.Path(bt['file'])}")
+            if not same:
+                g, c = gen.splitlines(), cur.splitlines()
+                for n, (a, b) in enumerate(zip(g, c), 1):
+                    if a != b:
+                        print(f"     first diff line {n}:\n       gen: {a!r}\n"
+                              f"       cur: {b!r}")
+                        break
+                if len(g) != len(c):
+                    print(f"     line count gen={len(g)} cur={len(c)}")
         return 0 if ok else 1
 
     for sub in subs:
@@ -135,6 +188,16 @@ def main() -> int:
             p.parent.mkdir(parents=True, exist_ok=True)
             p.write_text(render(beh, sub))
             print(f"wrote {p.relative_to(ROOT)}")
+
+    for bt in mf.get("boxtypes", []):
+        if bt.get("reference"):
+            continue
+        p = ROOT / bt["file"]
+        if args.check:
+            print(f"would splice boxops {bt['box']} -> {bt['file']}")
+            continue
+        p.write_text(splice_boxops(p.read_text(), render_boxops(bt)))
+        print(f"spliced boxops {bt['box']} -> {bt['file']}")
     return 0
 
 
