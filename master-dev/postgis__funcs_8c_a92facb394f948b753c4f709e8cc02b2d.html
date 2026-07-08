@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: GEOS2POSTGIS</title>
+<title>MobilityDB: lwmsurface_boundary</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -173,7 +173,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__spatial_ga3e227f98f45314e22860b20b114a33d2.html#ga3e227f98f45314e22860b20b114a33d2">geom_unary_union</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__constructor_ga70f41c2b0c59ed7b54cf74e18ddf8618.html#ga70f41c2b0c59ed7b54cf74e18ddf8618">geompoint_make2d</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__constructor_ga541f6e90094246c581ee2faac5a1b13c.html#ga541f6e90094246c581ee2faac5a1b13c">geompoint_make3dz</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="postgis__funcs_8c_a0cf408979b0df0f98f08476d9a8c7a1b.html#a0cf408979b0df0f98f08476d9a8c7a1b">GEOS2POSTGIS</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a0cf408979b0df0f98f08476d9a8c7a1b.html#a0cf408979b0df0f98f08476d9a8c7a1b">GEOS2POSTGIS</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a3f843cd1e601e302898a34cfd7ec40ce.html#a3f843cd1e601e302898a34cfd7ec40ce">gs_is_planar_polygonal</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a2ade9b89fcbff53e1fc14a20dcbca128.html#a2ade9b89fcbff53e1fc14a20dcbca128">gserialized_is_point</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a5e32921f0eabf36201d8c711d8149f89.html#a5e32921f0eabf36201d8c711d8149f89">gserialized_is_poly</a></td></tr>
@@ -191,7 +191,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_ad37ab51f91ddf4417c9775fe0b0a5bb4.html#ad37ab51f91ddf4417c9775fe0b0a5bb4">lwgeom_line_interpolate_point</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a301b43eccd82ef3de08cf89af77b78b4.html#a301b43eccd82ef3de08cf89af77b78b4">lwgeom_mec</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a0cfa5b315fec2b75ae6637031a5ca03b.html#a0cfa5b315fec2b75ae6637031a5ca03b">lwgeom_mec_supported_type</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a92facb394f948b753c4f709e8cc02b2d.html#a92facb394f948b753c4f709e8cc02b2d">lwmsurface_boundary</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="postgis__funcs_8c_a92facb394f948b753c4f709e8cc02b2d.html#a92facb394f948b753c4f709e8cc02b2d">lwmsurface_boundary</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a3547f02bc4ce55e1e6d8d43626036369.html#a3547f02bc4ce55e1e6d8d43626036369">MAX_LEN_BOX3D</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a3444e9732902eede17476a05b72d2fd5.html#a3444e9732902eede17476a05b72d2fd5">MAX_LEN_GBOX</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a0dfb1180be7c1bff9c1a434ee68fd678.html#a0dfb1180be7c1bff9c1a434ee68fd678">mec_circle2</a></td></tr>
@@ -210,33 +210,32 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a0cf408979b0df0f98f08476d9a8c7a1b" name="a0cf408979b0df0f98f08476d9a8c7a1b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0cf408979b0df0f98f08476d9a8c7a1b">&#9670;&#160;</a></span>GEOS2POSTGIS()</h2>
+<a id="a92facb394f948b753c4f709e8cc02b2d" name="a92facb394f948b753c4f709e8cc02b2d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a92facb394f948b753c4f709e8cc02b2d">&#9670;&#160;</a></span>lwmsurface_boundary()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> * GEOS2POSTGIS </td>
+          <td class="memname">static <a class="el" href="structLWGEOM.html">LWGEOM</a> * lwmsurface_boundary </td>
           <td>(</td>
-          <td class="paramtype">GEOSGeom&#160;</td>
-          <td class="paramname"><em>geom</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramtype">const <a class="el" href="structLWGEOM.html">LWGEOM</a> *&#160;</td>
+          <td class="paramname"><em>geom</em></td><td>)</td>
           <td></td>
-          <td class="paramtype">char&#160;</td>
-          <td class="paramname"><em>want3d</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-<p>Tranform a GEOS geometry to a PostGIS one. </p>
+<p>Return the boundary of a multisurface, that is, the union of the boundaries of its member surfaces. </p>
+<p >The embedded PostGIS <code>lwgeom_boundary</code> does not handle <code>MULTISURFACETYPE</code> (it errors on it), while it does handle its member curve polygons; the boundaries of the members are collected and homogenized, mirroring the multipolygon case </p>
 
 </div>
 </div>
