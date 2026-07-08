@@ -768,6 +768,46 @@ SELECT distinct geometrytype(random_geom_circularstring(-100, 100, -100, 100, 10
 FROM generate_series(1, 15) AS k;
 */
 
+DROP FUNCTION IF EXISTS random_geom_compoundcurve;
+CREATE FUNCTION random_geom_compoundcurve(lowx float, highx float, lowy float,
+  highy float, maxdelta float, minarcs int, maxarcs int, srid int DEFAULT 0)
+  RETURNS geometry AS $$
+DECLARE
+  narcs int;
+  npoints int;
+  points geometry[];
+  wkt text;
+BEGIN
+  IF minarcs > maxarcs THEN
+    RAISE EXCEPTION 'minarcs must be less than or equal to maxarcs: %, %',
+      minarcs, maxarcs;
+  END IF;
+  narcs = random_int(minarcs, maxarcs);
+  /* A compound curve joins a circular string of n arcs (2 * n + 1 points) to a
+   * trailing line segment sharing the last arc point (1 additional point) */
+  npoints = 2 * narcs + 1;
+  points = random_geom_point_array(lowx, highx, lowy, highy, maxdelta,
+    npoints + 1, npoints + 1, srid);
+  SELECT string_agg(st_x(p) || ' ' || st_y(p), ',' ORDER BY ord)
+  INTO wkt
+  FROM unnest(points[1:npoints]) WITH ORDINALITY AS t(p, ord);
+  RETURN ST_GeomFromText('COMPOUNDCURVE(CIRCULARSTRING(' || wkt || '),(' ||
+    st_x(points[npoints]) || ' ' || st_y(points[npoints]) || ',' ||
+    st_x(points[npoints + 1]) || ' ' || st_y(points[npoints + 1]) || '))', srid);
+END;
+$$ LANGUAGE PLPGSQL STRICT;
+
+/*
+SELECT k, st_asEWKT(random_geom_compoundcurve(-100, 100, -100, 100, 10, 1, 5)) AS g
+FROM generate_series(1, 15) AS k;
+
+SELECT k, st_asEWKT(random_geom_compoundcurve(-100, 100, -100, 100, 10, 1, 5, 3812)) AS g
+FROM generate_series(1, 15) AS k;
+
+SELECT distinct geometrytype(random_geom_compoundcurve(-100, 100, -100, 100, 10, 1, 5)) AS g
+FROM generate_series(1, 15) AS k;
+*/
+
 -------------------------------------------------------------------------------
 
 /**
