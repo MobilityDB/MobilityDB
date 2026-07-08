@@ -1,14 +1,14 @@
 SET(LOCAL_FILES
-  200_jsonbset
-  201_jsonbset_jsonfuncs
-  202_tjsonb
-  204_tjsonb_jsonfuncs
-  206_tjsonb_op
-  208_tjsonb_compops
-  210_tjsonb_topops
-  212_tjsonb_posops
-  214_tjsonb_aggfuncs
-  216_tjsonb_indexes
+  450_jsonbset
+  451_jsonbset_jsonfuncs
+  452_tjsonb
+  454_tjsonb_jsonfuncs
+  456_tjsonb_op
+  458_tjsonb_compops
+  460_tjsonb_topops
+  462_tjsonb_posops
+  464_tjsonb_aggfuncs
+  466_tjsonb_indexes
   )
 
 foreach (f ${LOCAL_FILES})
