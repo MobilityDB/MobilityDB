@@ -142,6 +142,10 @@ SELECT tIntersects(geometry 'CircularString(5 0, 4 3, 0 5)', tcbuffer '[Cbuffer(
 SELECT tIntersects(tcbuffer '[Cbuffer(Point(4 3),2.5)@2000-01-01, Cbuffer(Point(8 6),2.5)@2000-01-03]', geometry 'CircularString(5 0, 4 3, 0 5)');
 -- Off-span: the disc meets the full circle but not the arc (angular gating)
 SELECT tIntersects(geometry 'CircularString(5 0, 4 3, 0 5)', tcbuffer '[Cbuffer(Point(5 -3),0.5)@2000-01-01, Cbuffer(Point(5 -1),0.5)@2000-01-03]');
+-- Compound curve (arc chained to a line): the arc component drives the same
+-- result as the arc-only case, and the line component is walked too
+SELECT tIntersects(geometry 'CompoundCurve(CircularString(5 0, 4 3, 0 5),(0 5, -4 5))', tcbuffer '[Cbuffer(Point(8 6),2.5)@2000-01-01, Cbuffer(Point(4 3),2.5)@2000-01-03]');
+SELECT tIntersects(geometry 'CompoundCurve(CircularString(5 0, 4 3, 0 5),(0 5, -4 5))', tcbuffer '[Cbuffer(Point(-2 8),0.5)@2000-01-01, Cbuffer(Point(-2 4),0.5)@2000-01-03]');
 
 -- Coverage
 SELECT tIntersects(tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(1 1),0.5)@2000-01-03}', tcbuffer 'Cbuffer(Point(2 2),0.5)@2000-01-02');

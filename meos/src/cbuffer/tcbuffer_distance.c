@@ -790,6 +790,13 @@ tcbuffer_geo_segs(const LWGEOM *lw, bool allow_arc, TcbSeg **arr, int *cap,
     case MULTIPOINTTYPE:
     case MULTILINETYPE:
     case MULTIPOLYGONTYPE:
+    /* A compound curve chains line strings and circular strings, and a multi
+     * curve groups line/circular/compound components; both share the
+     * collection memory layout, so their components are decomposed
+     * recursively. Circular-arc components resolve through the CIRCSTRINGTYPE
+     * case above, which gates on @p allow_arc. */
+    case COMPOUNDTYPE:
+    case MULTICURVETYPE:
     case COLLECTIONTYPE:
     {
       const LWCOLLECTION *c = lwgeom_as_lwcollection(lw);
