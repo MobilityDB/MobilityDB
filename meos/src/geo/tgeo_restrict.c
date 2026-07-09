@@ -2102,6 +2102,22 @@ tgeo_restrict_geom(const Temporal *temp, const GSERIALIZED *gs,
   if (! overlaps_stbox_stbox(&box1, &box2))
     return atfunc ? NULL : temporal_copy(temp);
 
+  /* Native GEOS-free fast path for a temporal geometry point with linear
+   * interpolation over a geometry the clip engine supports, avoiding the GEOS
+   * ST_Intersection call. Instantaneous values, step/discrete interpolation,
+   * geodetic points, non-point temporal geos, and geometries with types the
+   * clip does not handle fall through to the general path below. */
+  if (temp->temptype == T_TGEOMPOINT && temp->subtype != TINSTANT &&
+      ! MEOS_FLAGS_GET_GEODETIC(temp->flags) &&
+      MEOS_FLAGS_GET_INTERP(temp->flags) == LINEAR)
+  {
+    LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
+    bool supported = geom_clip_supported(lwgeom);
+    lwgeom_free(lwgeom);
+    if (supported)
+      return tpoint_linear_restrict_geom(temp, gs, atfunc);
+  }
+
   /* Restrict to atStbox prior to do atGeom to improve efficiency */
   interpType interp = MEOS_FLAGS_GET_INTERP(temp->flags);
   Temporal *temp1;
