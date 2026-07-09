@@ -35,29 +35,32 @@
  * the raster-format decode (as it owns geometry decode via PostGIS/GEOS),
  * rather than delegating it to an external tool. GDAL opens any of its
  * supported raster formats, and the first band is packed row-major into the
- * ::T_RAQUET value identified by the supplied CARTO QUADBIN cell. The rest of
- * the family (serialization in `raquet.c`, sampling in `raster_quadbin.c`)
- * stays GDAL-free.
+ * ::T_RAQUET value identified by a CARTO QUADBIN cell. The rest of the family
+ * (serialization in `raquet.c`, sampling in `raster_quadbin.c`) stays GDAL-free.
  *
  * The caller supplies the @p quadbin that identifies the Web-Mercator tile the
- * raster represents, so the decode reads pixels, type and nodata from the band
- * without interpreting the dataset geotransform or SRS.
+ * raster represents; passing 0 instead derives it from the dataset EPSG:3857
+ * geotransform and spatial reference (the raster must be a single Web-Mercator
+ * QUADBIN tile).
  */
 
 #include "raster/raquet.h"
 
 /* C */
 #include <stdint.h>
+#include <string.h>
 /* GDAL */
 #include <gdal.h>
 #include <cpl_error.h>
 #include <cpl_vsi.h>
+#include <ogr_srs_api.h>
 /* PostgreSQL */
 #include <postgres.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "temporal/temporal.h"
+#include "raster/raster_quadbin.h"
 
 /**
  * @brief Map a GDAL data type to the corresponding Raquet pixel type
@@ -82,10 +85,50 @@ gdal_to_pixtype(GDALDataType dt, MeosPixType *pixtype)
 }
 
 /**
+ * @brief Derive the QUADBIN cell of a raster tile from an open GDAL dataset's
+ * EPSG:3857 geotransform and spatial reference
+ * @details The dataset must carry an EPSG:3857 (Web-Mercator) spatial reference
+ * and an axis-aligned (north-up) geotransform describing a single QUADBIN tile;
+ * a missing/rotated geotransform or a non-Web-Mercator reference is an error.
+ * @return true on success; on failure sets a MEOS error and returns false
+ */
+static bool
+derive_quadbin(GDALDatasetH ds, uint64 *quadbin, const char *label)
+{
+  double gt[6];
+  if (GDALGetGeoTransform(ds, gt) != CE_None)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Raster has no geotransform; cannot derive its QUADBIN cell: %s", label);
+    return false;
+  }
+  if (gt[2] != 0.0 || gt[4] != 0.0)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Raster geotransform is rotated; cannot derive its QUADBIN cell: %s",
+      label);
+    return false;
+  }
+  OGRSpatialReferenceH srs = GDALGetSpatialRef(ds);
+  const char *code = srs ? OSRGetAuthorityCode(srs, NULL) : NULL;
+  if (! code || strcmp(code, "3857") != 0)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Raster is not in EPSG:3857 (Web-Mercator); cannot derive its QUADBIN "
+      "cell: %s", label);
+    return false;
+  }
+  return raster_quadbin_from_bounds(gt[0], gt[3], gt[1], gt[5],
+    GDALGetRasterXSize(ds), GDALGetRasterYSize(ds), quadbin);
+}
+
+/**
  * @brief Pack the first band of an open GDAL dataset into a Raquet tile
  * @details The band data type must be one of Byte / Int16 / Int32 / Float32 /
- * Float64; the band nodata value (if any) is carried into the tile. The caller
- * owns @p ds and closes it; @p label names the source in error messages.
+ * Float64; the band nodata value (if any) is carried into the tile. When
+ * @p quadbin is 0 the tile identifier is derived from the dataset
+ * georeferencing. The caller owns @p ds and closes it; @p label names the
+ * source in error messages.
  */
 static Raquet *
 raquet_from_gdal_dataset(GDALDatasetH ds, uint64 quadbin, const char *label)
@@ -107,6 +150,11 @@ raquet_from_gdal_dataset(GDALDatasetH ds, uint64 quadbin, const char *label)
       xsize, ysize, (unsigned) UINT16_MAX);
     goto cleanup;
   }
+
+  /* A zero quadbin requests deriving the tile identifier from the dataset
+   * geotransform and spatial reference */
+  if (quadbin == 0 && ! derive_quadbin(ds, &quadbin, label))
+    goto cleanup;
 
   GDALRasterBandH band = GDALGetRasterBand(ds, 1);
   GDALDataType dt = GDALGetRasterDataType(band);
@@ -143,7 +191,8 @@ cleanup:
  * @details GDAL decodes the file (any format it supports) and the first raster
  * band is packed row-major into a Raquet chip identified by @p quadbin.
  * @param[in] path Path to a GDAL-readable raster file
- * @param[in] quadbin CARTO QUADBIN cell identifying the Web-Mercator tile
+ * @param[in] quadbin CARTO QUADBIN cell identifying the Web-Mercator tile, or 0
+ * to derive it from the raster geotransform and EPSG:3857 spatial reference
  */
 Raquet *
 raquet_read(const char *path, uint64 quadbin)
@@ -172,7 +221,8 @@ raquet_read(const char *path, uint64 quadbin)
  * access is required.
  * @param[in] data Raster file bytes (any GDAL-supported format)
  * @param[in] size Number of bytes in @p data
- * @param[in] quadbin CARTO QUADBIN cell identifying the Web-Mercator tile
+ * @param[in] quadbin CARTO QUADBIN cell identifying the Web-Mercator tile, or 0
+ * to derive it from the raster geotransform and EPSG:3857 spatial reference
  */
 Raquet *
 raquet_read_bytes(const uint8_t *data, size_t size, uint64 quadbin)

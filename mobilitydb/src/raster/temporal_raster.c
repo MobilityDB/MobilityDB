@@ -402,17 +402,22 @@ PG_FUNCTION_INFO_V1(Raquet_read);
  * and decoded through GDAL's `/vsimem/` virtual filesystem, so no server-side
  * file access is required.
  * @param[in] rasterfile Raster file bytes (bytea)
- * @param[in] quadbin CARTO QUADBIN cell (bigint)
+ * @param[in] quadbin CARTO QUADBIN cell (bigint), or NULL to derive it from the
+ * raster geotransform and EPSG:3857 spatial reference
  * @sqlfn raquet_read()
  */
 Datum
 Raquet_read(PG_FUNCTION_ARGS)
 {
+  if (PG_ARGISNULL(0))
+    PG_RETURN_NULL();
   bytea *rasterfile = PG_GETARG_BYTEA_PP(0);
-  int64  quadbin    = PG_GETARG_INT64(1);
+  /* A NULL quadbin requests deriving the tile identifier from the raster
+   * geotransform; raquet_read_bytes treats 0 as that request */
+  uint64 quadbin = PG_ARGISNULL(1) ? 0 : (uint64) PG_GETARG_INT64(1);
   const uint8_t *data = (const uint8_t *) VARDATA_ANY(rasterfile);
   size_t size = VARSIZE_ANY_EXHDR(rasterfile);
-  Raquet *result = raquet_read_bytes(data, size, (uint64) quadbin);
+  Raquet *result = raquet_read_bytes(data, size, quadbin);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_RAQUET_P(result);
