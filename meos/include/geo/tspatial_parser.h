@@ -48,6 +48,8 @@ extern bool spatial_parse_elem(const char **str, MeosType temptype, char delim,
   int *temp_srid, Datum *result);
 extern bool geo_parse(const char **str, MeosType basetype, char delim, 
   int *srid, GSERIALIZED **result);
+extern STBox *stbox_parse_dims(const char **str, bool geodetic, int32_t srid,
+  const char *type_str);
 extern STBox *stbox_parse(const char **str);
 extern Temporal *tpoint_parse(const char **str, MeosType temptype);
 

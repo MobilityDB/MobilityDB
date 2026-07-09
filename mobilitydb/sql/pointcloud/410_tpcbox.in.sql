@@ -36,8 +36,9 @@
  * silently merge. Most work goes through per-type wrappers in
  * `mobilitydb/src/pointcloud/tpcbox.c`.
  *
- * Input is the byte-image hex form emitted by @c Tpcbox_out /
- * @c Tpcbox_send.
+ * The text form mirrors that of `stbox` inside a `TPCBOX(...)` wrapper with the
+ * `pcid` as the last component, e.g. `TPCBOX(X((0,0),(10,10)), 1)`. Binary
+ * interchange uses @c Tpcbox_recv / @c Tpcbox_send.
  */
 
 /******************************************************************************
