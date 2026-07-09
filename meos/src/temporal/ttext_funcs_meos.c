@@ -122,7 +122,7 @@ ttext_upper(const Temporal *temp)
  * @ingroup meos_temporal_text
  * @brief Return a temporal text transformed to initcap
  * @param[in] temp Temporal value
- * @csqlfn #Ttext_lower()
+ * @csqlfn #Ttext_initcap()
  */
 Temporal *
 ttext_initcap(const Temporal *temp)
