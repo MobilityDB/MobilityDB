@@ -58,7 +58,7 @@
 extern size_t temporal_bbox_size(MeosType tempype);
 extern void tinstant_set_bbox(const TInstant *inst, void *bbox);
 extern void tinstarr_set_bbox(TInstant **instants, int count,
-  bool lower_inc, bool upper_inc, interpType interp, void *bbox);
+  bool lower_inc, bool upper_inc, interpType interp, void *box);
 extern void tsequence_compute_bbox(TSequence *seq);
 extern void tseqarr_compute_bbox(TSequence **sequences, int count, void *bbox);
 extern void tsequenceset_compute_bbox(TSequenceSet *ss);

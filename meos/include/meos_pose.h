@@ -100,7 +100,7 @@ typedef struct Pose Pose;
 /* Input and output functions */
 
 extern char *pose_as_ewkt(const Pose *pose, int maxdd);
-extern char *pose_as_hexwkb(const Pose *pose, uint8_t variant, size_t *size);
+extern char *pose_as_hexwkb(const Pose *pose, uint8_t variant, size_t *size_out);
 extern char *pose_as_text(const Pose *pose, int maxdd);
 extern uint8_t *pose_as_wkb(const Pose *pose, uint8_t variant, size_t *size_out);
 extern Pose *pose_from_wkb(const uint8_t *wkb, size_t size);

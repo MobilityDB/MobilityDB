@@ -3157,7 +3157,7 @@ bearing_point_point(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
  * @brief Return the temporal bearing between a temporal point and a point
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
- * @param[out] invert True when the result should be inverted
+ * @param[in] invert True when the result should be inverted
  * @return On empty geometry or on error return NULL
  * @csqlfn #Bearing_tpoint_point()
  */

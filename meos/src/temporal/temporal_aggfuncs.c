@@ -279,7 +279,7 @@ temporal_skiplist_elempos(const SkipList *list, Span *s, int cur)
  */
 int
 temporal_skiplist_common(SkipList *list, void **values, int count,
-  int *lower, int *upper, int update[SKIPLIST_MAXLEVEL])
+  int *lower, int *upper, int *update)
 {
   /* Temporal aggregation cannot mix instants and sequences */
   Temporal *temp1 = (Temporal *) skiplist_headval(list);

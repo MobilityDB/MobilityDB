@@ -1615,7 +1615,7 @@ temporal_compact(const Temporal *temp)
  * @brief Return a temporal sequence (set) that keepsg only the last n instants
  * or sequences
  * @param[in] temp Temporal value
- * @param[out] count Number of instants or sequences kept
+ * @param[in] count Number of instants or sequences kept
  */
 void
 temporal_restart(Temporal *temp, int count)

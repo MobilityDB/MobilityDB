@@ -120,22 +120,22 @@ extern GSERIALIZED *point_round(const GSERIALIZED *gs, int maxdd);
 
 /* Constructor functions for box types */
 
-extern void stbox_set(bool hasx, bool hasz, bool geodetic, int32 srid, double xmin, double xmax, double ymin, double ymax, double zmin, double zmax, const Span *s, STBox *box);
+extern void stbox_set(bool hasx, bool hasz, bool geodetic, int32 srid, double xmin, double xmax, double ymin, double ymax, double zmin, double zmax, const Span *s, STBox *result);
 
 /*****************************************************************************/
 
 /* Conversion functions for box types */
 
 extern void gbox_set_stbox(const GBOX *box, int32_t srid, STBox *result);
-extern bool geo_set_stbox(const GSERIALIZED *gs, STBox *box);
-extern void geoarr_set_stbox(const Datum *values, int count, STBox *box);
-extern bool spatial_set_stbox(Datum d, MeosType basetype, STBox *box);
-extern void spatialset_set_stbox(const Set *set, STBox *box);
-extern void stbox_set_box3d(const STBox *box, BOX3D *box3d);
-extern void stbox_set_gbox(const STBox *box, GBOX *gbox);
-extern void tstzset_set_stbox(const Set *s, STBox *box);
-extern void tstzspan_set_stbox(const Span *s, STBox *box);
-extern void tstzspanset_set_stbox(const SpanSet *s, STBox *box);
+extern bool geo_set_stbox(const GSERIALIZED *gs, STBox *result);
+extern void geoarr_set_stbox(const Datum *values, int count, STBox *result);
+extern bool spatial_set_stbox(Datum d, MeosType basetype, STBox *result);
+extern void spatialset_set_stbox(const Set *set, STBox *result);
+extern void stbox_set_box3d(const STBox *box, BOX3D *result);
+extern void stbox_set_gbox(const STBox *box, GBOX *result);
+extern void tstzset_set_stbox(const Set *s, STBox *result);
+extern void tstzspan_set_stbox(const Span *s, STBox *result);
+extern void tstzspanset_set_stbox(const SpanSet *s, STBox *result);
 
 /*****************************************************************************/
 
@@ -205,7 +205,7 @@ extern TSequenceSet *tgeometryseqset_in(const char *str);
 
 /* Bounding box functions */
 
-extern void tspatial_set_stbox(const Temporal *temp, STBox *box);
+extern void tspatial_set_stbox(const Temporal *temp, STBox *result);
 extern void tgeoinst_set_stbox(const TInstant *inst, STBox *box);
 extern void tspatialseq_set_stbox(const TSequence *seq, STBox *box);
 extern void tspatialseqset_set_stbox(const TSequenceSet *ss, STBox *box);

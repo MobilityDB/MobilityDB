@@ -1120,7 +1120,7 @@ extern Span *tstzspanset_bins(const SpanSet *ss, const Interval *duration, Times
  * Input and output functions for box types
  *****************************************************************************/
 
-extern char *tbox_as_hexwkb(const TBox *box, uint8_t variant, size_t *size);
+extern char *tbox_as_hexwkb(const TBox *box, uint8_t variant, size_t *size_out);
 extern uint8_t *tbox_as_wkb(const TBox *box, uint8_t variant, size_t *size_out);
 extern TBox *tbox_from_hexwkb(const char *hexwkb);
 extern TBox *tbox_from_wkb(const uint8_t *wkb, size_t size);
@@ -1933,7 +1933,7 @@ extern Temporal *temporal_ext_kalman_filter(const Temporal *temp, double gate,
 /* Tile functions for temporal types */
 
 extern Span *temporal_time_bins(const Temporal *temp, const Interval *duration, TimestampTz origin, int *count);
-extern Temporal **temporal_time_split(const Temporal *temp, const Interval *duration, TimestampTz torigin, TimestampTz **time_bins, int *count);
+extern Temporal **temporal_time_split(const Temporal *temp, const Interval *duration, TimestampTz torigin, TimestampTz **bins, int *count);
 extern TBox *tfloat_time_boxes(const Temporal *temp, const Interval *duration, TimestampTz torigin, int *count);
 extern Span *tfloat_value_bins(const Temporal *temp, double vsize, double vorigin, int *count);
 extern TBox *tfloat_value_boxes(const Temporal *temp, double vsize, double vorigin, int *count);

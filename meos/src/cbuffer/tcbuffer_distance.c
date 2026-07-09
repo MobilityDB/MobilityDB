@@ -222,7 +222,7 @@ tcbuffer_cbuffer_distance_turnpt(Datum start, Datum end, Datum value,
  * @details These are the turning points when computing the temporal distance.
  * @param[in] start1,end1 Circular buffers defining the first segment
  * @param[in] start2,end2 Circular buffers the second segment
- * @param[out] lower,upper Timestamps defining the segments
+ * @param[in] lower,upper Timestamps defining the segments
  * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
  * @pre The segments are not constant.
  */
