@@ -104,6 +104,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a538787b7ace17776e266a71896827bce.html#a538787b7ace17776e266a71896827bce">tcbuffer_arc_set_bbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_aec6b476b19f23d49b143b2c9cc0cd989.html#aec6b476b19f23d49b143b2c9cc0cd989">tcbuffer_build_buckets</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a459fea86e8cf06713463c25ebceba203.html#a459fea86e8cf06713463c25ebceba203">tcbuffer_cbuffer_distance_turnpt</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_af823f98b97166e80c31fc1c39ad8cecf.html#af823f98b97166e80c31fc1c39ad8cecf">tcbuffer_closest_on_arc</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_aad03370a9eb9dee5b1257a5494bb72d5.html#aad03370a9eb9dee5b1257a5494bb72d5">tcbuffer_closest_on_edge</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a25267d48ab536f5cdb9ab6415f955e1e.html#a25267d48ab536f5cdb9ab6415f955e1e">tcbuffer_disc_within_ctx</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_ad917dcd03fa59893390a04e4fa31b49c.html#ad917dcd03fa59893390a04e4fa31b49c">tcbuffer_double_cmp</a></td></tr>
@@ -120,6 +121,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a53c67f1ea5ad13bb06d4d9a402ca6dfe.html#a53c67f1ea5ad13bb06d4d9a402ca6dfe">tcbuffer_pt_in_polys</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_aa9887cbca5cecb79b27422136b473296.html#aa9887cbca5cecb79b27422136b473296">tcbuffer_pt_in_polys_g</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_ae2e4a0d6e17ce04beb430eae4a779e04.html#ae2e4a0d6e17ce04beb430eae4a779e04">tcbuffer_region_within_roots</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a0f6bbc23e6f84ad40380bb9f71a4ebcd.html#a0f6bbc23e6f84ad40380bb9f71a4ebcd">tcbuffer_seg_arc_dt</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_acc15b19275474449c5739851e2c9f06e.html#acc15b19275474449c5739851e2c9f06e">tcbuffer_seg_arc_mindist</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a64de2ea71d290fcd6d88510ef5e6692d.html#a64de2ea71d290fcd6d88510ef5e6692d">tcbuffer_seg_arc_within_roots</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a0cc27d9b87dc8effca5da98888b1ebb1.html#a0cc27d9b87dc8effca5da98888b1ebb1">tcbuffer_seg_edge_dt</a></td></tr>
@@ -176,8 +178,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>GEOS-free shortest line between a temporal circular buffer and a geometry. </p>
-<p >Returns NULL when the analytic path does not apply (curved or unsupported geometry, or a polygon-contained centre), so the caller can fall back to the exact traversed-area shortest line. </p>
+<p>GEOS-free shortest line between a temporal circular buffer and a geometry, arc-exact for circular-arc input. </p>
+<p >Returns NULL when the analytic path does not apply (an unsupported geometry type), so the caller can fall back to the exact traversed-area shortest line. </p>
 
 </div>
 </div>
