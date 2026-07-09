@@ -3737,6 +3737,10 @@
 				</listitem>
 
 				<listitem>
+					<para><link linkend="raquet_read"><varname>raquet_read</varname></link>: Decodificar un archivo ráster en memoria en una tesela ráster Raquet mediante GDAL</para>
+				</listitem>
+
+				<listitem>
 					<para><link linkend="raster_tile_value"><varname>raster_tile_value</varname></link>: Muestrear una tesela ráster raquet a lo largo de una trayectoria</para>
 				</listitem>
 			</itemizedlist>

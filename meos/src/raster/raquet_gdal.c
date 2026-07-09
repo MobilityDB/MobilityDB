@@ -51,6 +51,7 @@
 /* GDAL */
 #include <gdal.h>
 #include <cpl_error.h>
+#include <cpl_vsi.h>
 /* PostgreSQL */
 #include <postgres.h>
 /* MEOS */
@@ -81,29 +82,14 @@ gdal_to_pixtype(GDALDataType dt, MeosPixType *pixtype)
 }
 
 /**
- * @ingroup meos_raster_base_constructor
- * @brief Return a Raquet tile read from a raster file via GDAL
- * @details GDAL decodes the file (any format it supports) and the first raster
- * band is packed row-major into a Raquet chip identified by @p quadbin. The
- * band data type must be one of Byte / Int16 / Int32 / Float32 / Float64; the
- * band nodata value (if any) is carried into the tile.
- * @param[in] path Path to a GDAL-readable raster file
- * @param[in] quadbin CARTO QUADBIN cell identifying the Web-Mercator tile
+ * @brief Pack the first band of an open GDAL dataset into a Raquet tile
+ * @details The band data type must be one of Byte / Int16 / Int32 / Float32 /
+ * Float64; the band nodata value (if any) is carried into the tile. The caller
+ * owns @p ds and closes it; @p label names the source in error messages.
  */
-Raquet *
-raquet_read(const char *path, uint64 quadbin)
+static Raquet *
+raquet_from_gdal_dataset(GDALDatasetH ds, uint64 quadbin, const char *label)
 {
-  VALIDATE_NOT_NULL(path, NULL);
-
-  GDALAllRegister();
-  GDALDatasetH ds = GDALOpen(path, GA_ReadOnly);
-  if (! ds)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Cannot open raster file for raquet ingest: %s", path);
-    return NULL;
-  }
-
   Raquet *result = NULL;
   uint8_t *buf = NULL;
   int xsize = GDALGetRasterXSize(ds);
@@ -111,7 +97,7 @@ raquet_read(const char *path, uint64 quadbin)
   if (GDALGetRasterCount(ds) < 1)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Raster file has no bands: %s", path);
+      "Raster has no bands for raquet ingest: %s", label);
     goto cleanup;
   }
   if (xsize <= 0 || ysize <= 0 || xsize > UINT16_MAX || ysize > UINT16_MAX)
@@ -138,7 +124,7 @@ raquet_read(const char *path, uint64 quadbin)
       dt, 0, 0) != CE_None)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "GDAL failed to read raster band for raquet ingest: %s", path);
+      "GDAL failed to read raster band for raquet ingest: %s", label);
     goto cleanup;
   }
 
@@ -148,7 +134,78 @@ raquet_read(const char *path, uint64 quadbin)
 cleanup:
   if (buf)
     pfree(buf);
+  return result;
+}
+
+/**
+ * @ingroup meos_raster_base_constructor
+ * @brief Return a Raquet tile read from a raster file via GDAL
+ * @details GDAL decodes the file (any format it supports) and the first raster
+ * band is packed row-major into a Raquet chip identified by @p quadbin.
+ * @param[in] path Path to a GDAL-readable raster file
+ * @param[in] quadbin CARTO QUADBIN cell identifying the Web-Mercator tile
+ */
+Raquet *
+raquet_read(const char *path, uint64 quadbin)
+{
+  VALIDATE_NOT_NULL(path, NULL);
+
+  GDALAllRegister();
+  GDALDatasetH ds = GDALOpen(path, GA_ReadOnly);
+  if (! ds)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Cannot open raster file for raquet ingest: %s", path);
+    return NULL;
+  }
+  Raquet *result = raquet_from_gdal_dataset(ds, quadbin, path);
   GDALClose(ds);
+  return result;
+}
+
+/**
+ * @ingroup meos_raster_base_constructor
+ * @brief Return a Raquet tile decoded from an in-memory raster file via GDAL
+ * @details Identical to #raquet_read but the raster file is supplied as a byte
+ * buffer (e.g. a `bytea`) rather than a filesystem path. The bytes are exposed
+ * to GDAL through its `/vsimem/` virtual filesystem, so no server-side file
+ * access is required.
+ * @param[in] data Raster file bytes (any GDAL-supported format)
+ * @param[in] size Number of bytes in @p data
+ * @param[in] quadbin CARTO QUADBIN cell identifying the Web-Mercator tile
+ */
+Raquet *
+raquet_read_bytes(const uint8_t *data, size_t size, uint64 quadbin)
+{
+  VALIDATE_NOT_NULL(data, NULL);
+
+  GDALAllRegister();
+  /* Expose the buffer to GDAL via /vsimem/. The path is made unique by the
+   * buffer address so concurrent calls never collide; ownership stays with the
+   * caller (bTakeOwnership = FALSE) and the buffer outlives the dataset. */
+  char vpath[64];
+  snprintf(vpath, sizeof(vpath), "/vsimem/raquet_%p", (const void *) data);
+  VSILFILE *vf = VSIFileFromMemBuffer(vpath, (GByte *) (uintptr_t) data,
+    (vsi_l_offset) size, FALSE);
+  if (! vf)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Cannot expose the in-memory raster to GDAL for raquet ingest");
+    return NULL;
+  }
+  VSIFCloseL(vf);
+
+  GDALDatasetH ds = GDALOpen(vpath, GA_ReadOnly);
+  if (! ds)
+  {
+    VSIUnlink(vpath);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "GDAL cannot decode the in-memory raster for raquet ingest");
+    return NULL;
+  }
+  Raquet *result = raquet_from_gdal_dataset(ds, quadbin, "in-memory raster");
+  GDALClose(ds);
+  VSIUnlink(vpath);
   return result;
 }
 

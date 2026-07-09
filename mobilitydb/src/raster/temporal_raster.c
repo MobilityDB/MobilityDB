@@ -393,6 +393,31 @@ Raquet_constructor(PG_FUNCTION_ARGS)
   PG_RETURN_RAQUET_P(result);
 }
 
+PGDLLEXPORT Datum Raquet_read(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raquet_read);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a Raquet tile decoded from an in-memory raster file via GDAL
+ * @details The raster file is supplied as bytes in any GDAL-supported format
+ * and decoded through GDAL's `/vsimem/` virtual filesystem, so no server-side
+ * file access is required.
+ * @param[in] rasterfile Raster file bytes (bytea)
+ * @param[in] quadbin CARTO QUADBIN cell (bigint)
+ * @sqlfn raquet_read()
+ */
+Datum
+Raquet_read(PG_FUNCTION_ARGS)
+{
+  bytea *rasterfile = PG_GETARG_BYTEA_PP(0);
+  int64  quadbin    = PG_GETARG_INT64(1);
+  const uint8_t *data = (const uint8_t *) VARDATA_ANY(rasterfile);
+  size_t size = VARSIZE_ANY_EXHDR(rasterfile);
+  Raquet *result = raquet_read_bytes(data, size, (uint64) quadbin);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_RAQUET_P(result);
+}
+
 PGDLLEXPORT Datum Raster_tile_value(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Raster_tile_value);
 /**
