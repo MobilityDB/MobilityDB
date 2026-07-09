@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: tcbuffer_geo_segs</title>
+<title>MobilityDB: tcbuffer_segs_add_arc</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -110,7 +110,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a9d94f9b1e16026aeac0008b451f2eb6e.html#a9d94f9b1e16026aeac0008b451f2eb6e">tcbuffer_geo_ctx_free</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a179613ffde5ec2db04c640b18e5e801a.html#a179613ffde5ec2db04c640b18e5e801a">tcbuffer_geo_ctx_make</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a139c284858558b492c241797b9b4a86b.html#a139c284858558b492c241797b9b4a86b">tcbuffer_geo_ctx_nsegs</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a3b7351f22674624a8c346d5cb6dced36.html#a3b7351f22674624a8c346d5cb6dced36">tcbuffer_geo_segs</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a3b7351f22674624a8c346d5cb6dced36.html#a3b7351f22674624a8c346d5cb6dced36">tcbuffer_geo_segs</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a77df35bc616ff53b626cd84cfa149111.html#a77df35bc616ff53b626cd84cfa149111">tcbuffer_geo_shortestline_analytic</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a114cb1ac3101ea95c4d565fd7a32af51.html#a114cb1ac3101ea95c4d565fd7a32af51">tcbuffer_minfun</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a70ce980837d1e59e87a91de49eea97aa.html#a70ce980837d1e59e87a91de49eea97aa">tcbuffer_minfun_w</a></td></tr>
@@ -125,7 +125,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a0cc27d9b87dc8effca5da98888b1ebb1.html#a0cc27d9b87dc8effca5da98888b1ebb1">tcbuffer_seg_edge_dt</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a2bb31aa01cea24b07e99aeec53613596.html#a2bb31aa01cea24b07e99aeec53613596">tcbuffer_seg_edge_mindist</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a1f5360be236bd88f01837408e1237533.html#a1f5360be236bd88f01837408e1237533">tcbuffer_seg_edge_within_roots</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a6575c7f1d7180d7c205e216880985023.html#a6575c7f1d7180d7c205e216880985023">tcbuffer_segs_add_arc</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a6575c7f1d7180d7c205e216880985023.html#a6575c7f1d7180d7c205e216880985023">tcbuffer_segs_add_arc</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a7fcbc7ed356bdc1d45473ea5b6558d06.html#a7fcbc7ed356bdc1d45473ea5b6558d06">tcbuffer_segs_add_circstring</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_aaf88d9048916f5a7b8410f5a416a76b2.html#aaf88d9048916f5a7b8410f5a416a76b2">tcbuffer_segs_add_curvepoly_ring</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_ac5eb96d949ef39b07da68c6b0e2998e4.html#ac5eb96d949ef39b07da68c6b0e2998e4">tcbuffer_segs_add_ptarray</a></td></tr>
@@ -142,8 +142,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a3b7351f22674624a8c346d5cb6dced36" name="a3b7351f22674624a8c346d5cb6dced36"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3b7351f22674624a8c346d5cb6dced36">&#9670;&#160;</a></span>tcbuffer_geo_segs()</h2>
+<a id="a6575c7f1d7180d7c205e216880985023" name="a6575c7f1d7180d7c205e216880985023"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6575c7f1d7180d7c205e216880985023">&#9670;&#160;</a></span>tcbuffer_segs_add_arc()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -152,16 +152,46 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static bool tcbuffer_geo_segs </td>
+          <td class="memname">static void tcbuffer_segs_add_arc </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structLWGEOM.html">LWGEOM</a> *&#160;</td>
-          <td class="paramname"><em>lw</em>, </td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>ax</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>ay</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>bx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>by</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>cx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>cy</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>allow_arc</em>, </td>
+          <td class="paramname"><em>is_poly</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -179,13 +209,7 @@ $(function() {
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int *&#160;</td>
-          <td class="paramname"><em>cnt</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool *&#160;</td>
-          <td class="paramname"><em>has_poly</em>&#160;</td>
+          <td class="paramname"><em>cnt</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -200,8 +224,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Recursively collect the boundary segments of a geometry. </p>
-<p >Returns false for a curved type that cannot be decomposed exactly (the caller then falls back to the exact traversed-area path). </p>
+<p>Append one arc edge, defined by three consecutive points of a circular string (start, any interior point, end), to the segment array. </p>
+<p >Collinear triples degenerate to two straight segments. Mirrors the exact circumcentre construction of the native clip engine (<a class="el" href="tpoint__geom__clip_8c.html">tpoint_geom_clip.c</a>). </p>
 
 </div>
 </div>

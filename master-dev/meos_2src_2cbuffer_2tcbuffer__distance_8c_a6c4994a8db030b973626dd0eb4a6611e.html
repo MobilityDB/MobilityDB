@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: tcbuffer_geo_segs</title>
+<title>MobilityDB: tcbuffer_poly_seg_raycross</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -110,13 +110,13 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a9d94f9b1e16026aeac0008b451f2eb6e.html#a9d94f9b1e16026aeac0008b451f2eb6e">tcbuffer_geo_ctx_free</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a179613ffde5ec2db04c640b18e5e801a.html#a179613ffde5ec2db04c640b18e5e801a">tcbuffer_geo_ctx_make</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a139c284858558b492c241797b9b4a86b.html#a139c284858558b492c241797b9b4a86b">tcbuffer_geo_ctx_nsegs</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a3b7351f22674624a8c346d5cb6dced36.html#a3b7351f22674624a8c346d5cb6dced36">tcbuffer_geo_segs</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a3b7351f22674624a8c346d5cb6dced36.html#a3b7351f22674624a8c346d5cb6dced36">tcbuffer_geo_segs</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a77df35bc616ff53b626cd84cfa149111.html#a77df35bc616ff53b626cd84cfa149111">tcbuffer_geo_shortestline_analytic</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a114cb1ac3101ea95c4d565fd7a32af51.html#a114cb1ac3101ea95c4d565fd7a32af51">tcbuffer_minfun</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a70ce980837d1e59e87a91de49eea97aa.html#a70ce980837d1e59e87a91de49eea97aa">tcbuffer_minfun_w</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a14a180d4c2cec24c8e33908258c55493.html#a14a180d4c2cec24c8e33908258c55493">tcbuffer_morton_cmp</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a576c7152e2696730535a8ebbbe34db0a.html#a576c7152e2696730535a8ebbbe34db0a">tcbuffer_morton_part</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a6c4994a8db030b973626dd0eb4a6611e.html#a6c4994a8db030b973626dd0eb4a6611e">tcbuffer_poly_seg_raycross</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a6c4994a8db030b973626dd0eb4a6611e.html#a6c4994a8db030b973626dd0eb4a6611e">tcbuffer_poly_seg_raycross</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a53c67f1ea5ad13bb06d4d9a402ca6dfe.html#a53c67f1ea5ad13bb06d4d9a402ca6dfe">tcbuffer_pt_in_polys</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_aa9887cbca5cecb79b27422136b473296.html#aa9887cbca5cecb79b27422136b473296">tcbuffer_pt_in_polys_g</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_ae2e4a0d6e17ce04beb430eae4a779e04.html#ae2e4a0d6e17ce04beb430eae4a779e04">tcbuffer_region_within_roots</a></td></tr>
@@ -142,8 +142,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a3b7351f22674624a8c346d5cb6dced36" name="a3b7351f22674624a8c346d5cb6dced36"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3b7351f22674624a8c346d5cb6dced36">&#9670;&#160;</a></span>tcbuffer_geo_segs()</h2>
+<a id="a6c4994a8db030b973626dd0eb4a6611e" name="a6c4994a8db030b973626dd0eb4a6611e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6c4994a8db030b973626dd0eb4a6611e">&#9670;&#160;</a></span>tcbuffer_poly_seg_raycross()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -152,40 +152,28 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static bool tcbuffer_geo_segs </td>
+          <td class="memname">static void tcbuffer_poly_seg_raycross </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structLWGEOM.html">LWGEOM</a> *&#160;</td>
-          <td class="paramname"><em>lw</em>, </td>
+          <td class="paramtype">const <a class="el" href="structTcbSeg.html">TcbSeg</a> *&#160;</td>
+          <td class="paramname"><em>s</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>allow_arc</em>, </td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="structTcbSeg.html">TcbSeg</a> **&#160;</td>
-          <td class="paramname"><em>arr</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int *&#160;</td>
-          <td class="paramname"><em>cap</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int *&#160;</td>
-          <td class="paramname"><em>cnt</em>, </td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>y</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">bool *&#160;</td>
-          <td class="paramname"><em>has_poly</em>&#160;</td>
+          <td class="paramname"><em>inside</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -200,8 +188,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Recursively collect the boundary segments of a geometry. </p>
-<p >Returns false for a curved type that cannot be decomposed exactly (the caller then falls back to the exact traversed-area path). </p>
+<p>Ray-casting test: true if (x,y) is inside any polygon ring among the segments (even-odd rule over the polygon-ring segments only) </p>
+<p >Apply the rightward-ray crossings of one polygon-boundary segment to the even-odd accumulator <code>inside</code>. A straight edge contributes at most one crossing; a circular arc contributes the crossings of the horizontal line y with its supporting circle that fall within the arc's angular span. Point, line, and standalone (1D) arc edges (not <code>is_poly</code>) contribute nothing. </p>
 
 </div>
 </div>
