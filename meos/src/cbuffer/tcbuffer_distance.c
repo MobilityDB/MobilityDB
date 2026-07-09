@@ -1242,6 +1242,93 @@ tcbuffer_seg_edge_dt(double cx1, double cy1, double cx2, double cy2, double r1,
 }
 
 /**
+ * @brief Like #tcbuffer_seg_arc_mindist but also returns the argument t that
+ * attains the minimum (mirrors #tcbuffer_seg_edge_dt for arc edges)
+ */
+static double
+tcbuffer_seg_arc_dt(double cx1, double cy1, double cx2, double cy2, double r1,
+  double r2, const TcbSeg *e, double *out_t)
+{
+  const double dcx = cx2 - cx1, dcy = cy2 - cy1;
+  const double dr = r2 - r1;
+  const double px = e->acx, py = e->acy, R = e->arad;
+  const double A = dcx * dcx + dcy * dcy;
+  const double B = 2.0 * ((cx1 - px) * dcx + (cy1 - py) * dcy);
+  const double C = (cx1 - px) * (cx1 - px) + (cy1 - py) * (cy1 - py);
+
+  double cand[8];
+  int nc = 0;
+  cand[nc++] = 0.0;
+  cand[nc++] = 1.0;
+  /* Circle crossings Q(t) = R^2 */
+  {
+    double c0 = C - R * R;
+    if (fabs(A) > 1e-18)
+    {
+      double disc = B * B - 4.0 * A * c0;
+      if (disc >= 0.0)
+      {
+        double sd = sqrt(disc);
+        cand[nc++] = (-B + sd) / (2.0 * A);
+        cand[nc++] = (-B - sd) / (2.0 * A);
+      }
+    }
+    else if (fabs(B) > 1e-18)
+      cand[nc++] = -c0 / B;
+  }
+  /* Vertex of Q (closest approach to the centre) */
+  if (fabs(A) > 1e-18)
+    cand[nc++] = -B / (2.0 * A);
+  /* Stationary points of | sqrt(Q) - R | - r(t): (Q')^2 = 4 dr^2 Q */
+  {
+    double a2 = A * (A - dr * dr);
+    double a1 = B * (A - dr * dr);
+    double a0 = 0.25 * B * B - C * dr * dr;
+    if (fabs(a2) > 1e-18)
+    {
+      double disc = a1 * a1 - 4.0 * a2 * a0;
+      if (disc >= 0.0)
+      {
+        double sd = sqrt(disc);
+        cand[nc++] = (-a1 + sd) / (2.0 * a2);
+        cand[nc++] = (-a1 - sd) / (2.0 * a2);
+      }
+    }
+    else if (fabs(a1) > 1e-18)
+      cand[nc++] = -a0 / a1;
+  }
+
+  double best = DBL_MAX, bt = 0.0;
+  /* On-span candidates: exact distance to the arc's circle, angle-gated */
+  for (int i = 0; i < nc; i++)
+  {
+    double t = cand[i];
+    if (t < 0.0) t = 0.0;
+    if (t > 1.0) t = 1.0;
+    double q = A * t * t + B * t + C;
+    if (q < 0.0) q = 0.0;
+    double cpx = cx1 + dcx * t, cpy = cy1 + dcy * t;
+    if (! tcbuffer_arc_contains_angle(e, atan2(cpy - py, cpx - px)))
+      continue;
+    double f = fabs(sqrt(q) - R) - (r1 + dr * t);
+    if (f < best) { best = f; bt = t; }
+  }
+  /* Off-span regions are nearest to an arc endpoint */
+  for (int ep = 0; ep < 2; ep++)
+  {
+    double ex = ep == 0 ? e->x1 : e->x2;
+    double ey = ep == 0 ? e->y1 : e->y2;
+    double Be = 2.0 * ((cx1 - ex) * dcx + (cy1 - ey) * dcy);
+    double Ce = (cx1 - ex) * (cx1 - ex) + (cy1 - ey) * (cy1 - ey);
+    double rt;
+    double m = tcbuffer_minfun_w(A, Be, Ce, r1, dr, 0.0, 1.0, &rt);
+    if (m < best) { best = m; bt = rt; }
+  }
+  *out_t = bt;
+  return best;
+}
+
+/**
  * @brief Witness of the nearest approach: the point @p (px,py) on the
  * swept-capsule boundary and @p (qx,qy) on the geometry
  */
@@ -1267,6 +1354,29 @@ tcbuffer_closest_on_edge(double px, double py, const TcbSeg *e, double *qx,
   if (s > 1.0) s = 1.0;
   *qx = e->x1 + s * ux;
   *qy = e->y1 + s * uy;
+}
+
+/**
+ * @brief Closest point on arc edge @p e to (px,py): the projection onto the
+ * supporting circle when its angle lies in the arc span, otherwise the nearer
+ * arc endpoint
+ */
+static void
+tcbuffer_closest_on_arc(double px, double py, const TcbSeg *e, double *qx,
+  double *qy)
+{
+  double vx = px - e->acx, vy = py - e->acy;
+  double vl = hypot(vx, vy);
+  if (vl > 1e-12 && tcbuffer_arc_contains_angle(e, atan2(vy, vx)))
+  {
+    *qx = e->acx + vx * (e->arad / vl);
+    *qy = e->acy + vy * (e->arad / vl);
+    return;
+  }
+  double d1 = (px - e->x1) * (px - e->x1) + (py - e->y1) * (py - e->y1);
+  double d2 = (px - e->x2) * (px - e->x2) + (py - e->y2) * (py - e->y2);
+  if (d1 <= d2) { *qx = e->x1; *qy = e->y1; }
+  else { *qx = e->x2; *qy = e->y2; }
 }
 
 /**
@@ -1309,14 +1419,19 @@ tcbuffer_sl_unit(double cx1, double cy1, double r1, double cx2, double cy2,
         continue;
     }
     double t;
-    double m = tcbuffer_seg_edge_dt(cx1, cy1, cx2, cy2, r1, r2, e, &t);
+    double m = e->is_arc ?
+      tcbuffer_seg_arc_dt(cx1, cy1, cx2, cy2, r1, r2, e, &t) :
+      tcbuffer_seg_edge_dt(cx1, cy1, cx2, cy2, r1, r2, e, &t);
     if (! w->set || m < w->d)
     {
       double ccx = cx1 + (cx2 - cx1) * t;
       double ccy = cy1 + (cy2 - cy1) * t;
       double rr = r1 + (r2 - r1) * t;
       double qx, qy;
-      tcbuffer_closest_on_edge(ccx, ccy, e, &qx, &qy);
+      if (e->is_arc)
+        tcbuffer_closest_on_arc(ccx, ccy, e, &qx, &qy);
+      else
+        tcbuffer_closest_on_edge(ccx, ccy, e, &qx, &qy);
       double vx = qx - ccx, vy = qy - ccy;
       double vl = sqrt(vx * vx + vy * vy);
       double pxp, pyp;
@@ -1372,9 +1487,9 @@ tcbuffer_sl_seq(const TSequence *seq, const TcbSeg *segs, int n, bool has_poly,
 
 /**
  * @brief GEOS-free shortest line between a temporal circular buffer and a
- * geometry. Returns NULL when the analytic path does not apply (curved or
- * unsupported geometry, or a polygon-contained centre), so the caller can
- * fall back to the exact traversed-area shortest line.
+ * geometry, arc-exact for circular-arc input. Returns NULL when the analytic
+ * path does not apply (an unsupported geometry type), so the caller can fall
+ * back to the exact traversed-area shortest line.
  */
 static GSERIALIZED *
 tcbuffer_geo_shortestline_analytic(const Temporal *temp,
@@ -1384,7 +1499,7 @@ tcbuffer_geo_shortestline_analytic(const Temporal *temp,
   TcbSeg *segs = NULL;
   int cap = 0, n = 0;
   bool has_poly = false;
-  bool ok = tcbuffer_geo_segs(lw, false, &segs, &cap, &n, &has_poly);
+  bool ok = tcbuffer_geo_segs(lw, true, &segs, &cap, &n, &has_poly);
   lwgeom_free(lw);
   if (! ok || n == 0)
   {

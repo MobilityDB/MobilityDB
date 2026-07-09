@@ -579,6 +579,24 @@ SELECT round(ST_Length(shortestLine(tcbuffer 'Interp=Step;[Cbuffer(Point(0 0), 1
  3.324555
 (1 row)
 
+SELECT round(ST_Length(shortestLine(tcbuffer 'Cbuffer(Point(3 8), 1)@2000-01-01', geometry 'CircularString(5 0, 0 5, -5 0)'))::numeric, 6);
+  round   
+----------
+ 2.544004
+(1 row)
+
+SELECT round(ST_Length(shortestLine(tcbuffer 'Cbuffer(Point(0 0), 1)@2000-01-01', geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))'))::numeric, 6);
+  round   
+----------
+ 0.000000
+(1 row)
+
+SELECT round(ST_Length(shortestLine(tcbuffer 'Cbuffer(Point(4 4), 0.3)@2000-01-01', geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))'))::numeric, 6);
+  round   
+----------
+ 0.356854
+(1 row)
+
 SELECT round(ST_Length(shortestLine(tcbuffer '{[Cbuffer(Point(0 0), 1)@2000-01-01, Cbuffer(Point(4 0), 1)@2000-01-02], [Cbuffer(Point(20 20), 2)@2000-01-03, Cbuffer(Point(25 20), 1)@2000-01-04]}', geometry 'Polygon((-5 -5,-5 15,15 15,15 -5,-5 -5),(0 0,4 0,4 4,0 4,0 0))'))::numeric, 6);
   round   
 ----------
