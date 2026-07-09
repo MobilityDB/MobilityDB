@@ -687,7 +687,7 @@ tcbuffer_arc_set_bbox(TcbSeg *e)
  */
 static void
 tcbuffer_segs_add_arc(double ax, double ay, double bx, double by, double cx,
-  double cy, TcbSeg **arr, int *cap, int *cnt)
+  double cy, bool is_poly, TcbSeg **arr, int *cap, int *cnt)
 {
   if (*cnt + 2 > *cap)
   {
@@ -711,7 +711,7 @@ tcbuffer_segs_add_arc(double ax, double ay, double bx, double by, double cx,
       s->x1 = p1x; s->y1 = p1y; s->x2 = p2x; s->y2 = p2y;
       s->xmin = fmin(p1x, p2x); s->xmax = fmax(p1x, p2x);
       s->ymin = fmin(p1y, p2y); s->ymax = fmax(p1y, p2y);
-      s->is_poly = false; s->is_arc = false;
+      s->is_poly = is_poly; s->is_arc = false;
     }
     return;
   }
@@ -724,7 +724,7 @@ tcbuffer_segs_add_arc(double ax, double ay, double bx, double by, double cx,
   s->at0 = atan2(ay - s->acy, ax - s->acx);
   s->at1 = atan2(cy - s->acy, cx - s->acx);
   s->accw = ((bx - ax) * (cy - ay) - (by - ay) * (cx - ax)) > 0.0;
-  s->is_poly = false; s->is_arc = true;
+  s->is_poly = is_poly; s->is_arc = true;
   tcbuffer_arc_set_bbox(s);
 }
 
@@ -733,8 +733,8 @@ tcbuffer_segs_add_arc(double ax, double ay, double bx, double by, double cx,
  * groups) to the segment array
  */
 static void
-tcbuffer_segs_add_circstring(const LWCIRCSTRING *circ, TcbSeg **arr, int *cap,
-  int *cnt)
+tcbuffer_segs_add_circstring(const LWCIRCSTRING *circ, bool is_poly,
+  TcbSeg **arr, int *cap, int *cnt)
 {
   const POINTARRAY *pa = circ->points;
   int np = (int) pa->npoints;
@@ -743,7 +743,44 @@ tcbuffer_segs_add_circstring(const LWCIRCSTRING *circ, TcbSeg **arr, int *cap,
     const POINT2D *a = getPoint2d_cp(pa, i);
     const POINT2D *b = getPoint2d_cp(pa, i + 1);
     const POINT2D *c = getPoint2d_cp(pa, i + 2);
-    tcbuffer_segs_add_arc(a->x, a->y, b->x, b->y, c->x, c->y, arr, cap, cnt);
+    tcbuffer_segs_add_arc(a->x, a->y, b->x, b->y, c->x, c->y, is_poly, arr, cap,
+      cnt);
+  }
+}
+
+/**
+ * @brief Append the boundary segments of a curve polygon ring (a line string,
+ * a circular string, or a compound curve chaining both) with polygon (region)
+ * semantics. Returns false when an arc ring is present but the caller does not
+ * consume arc edges (@p allow_arc is false), so the exact path is used.
+ */
+static bool
+tcbuffer_segs_add_curvepoly_ring(const LWGEOM *ring, bool allow_arc,
+  TcbSeg **arr, int *cap, int *cnt)
+{
+  switch (ring->type)
+  {
+    case LINETYPE:
+      tcbuffer_segs_add_ptarray(lwgeom_as_lwline(ring)->points, true, arr, cap,
+        cnt);
+      return true;
+    case CIRCSTRINGTYPE:
+      if (! allow_arc)
+        return false;
+      tcbuffer_segs_add_circstring(lwgeom_as_lwcircstring(ring), true, arr, cap,
+        cnt);
+      return true;
+    case COMPOUNDTYPE:
+    {
+      const LWCOLLECTION *c = lwgeom_as_lwcollection(ring);
+      for (uint32_t i = 0; i < c->ngeoms; i++)
+        if (! tcbuffer_segs_add_curvepoly_ring(c->geoms[i], allow_arc, arr, cap,
+              cnt))
+          return false;
+      return true;
+    }
+    default:
+      return false;
   }
 }
 
@@ -767,7 +804,8 @@ tcbuffer_geo_segs(const LWGEOM *lw, bool allow_arc, TcbSeg **arr, int *cap,
        * nearest-approach distance). Otherwise fall back to the exact path. */
       if (! allow_arc)
         return false;
-      tcbuffer_segs_add_circstring(lwgeom_as_lwcircstring(lw), arr, cap, cnt);
+      tcbuffer_segs_add_circstring(lwgeom_as_lwcircstring(lw), false, arr, cap,
+        cnt);
       return true;
     case LINETYPE:
       tcbuffer_segs_add_ptarray(lwgeom_as_lwline(lw)->points, false, arr, cap,
@@ -787,16 +825,33 @@ tcbuffer_geo_segs(const LWGEOM *lw, bool allow_arc, TcbSeg **arr, int *cap,
         *has_poly = true;
       return true;
     }
+    case CURVEPOLYTYPE:
+    {
+      /* A curve polygon is bounded by rings that are line strings, circular
+       * strings, or compound curves. Decompose each ring with polygon (region)
+       * semantics so the arc-aware even-odd test in #tcbuffer_pt_in_polys
+       * treats it as a boundary. */
+      const LWCURVEPOLY *cp = lwgeom_as_lwcurvepoly(lw);
+      for (uint32_t i = 0; i < cp->nrings; i++)
+        if (! tcbuffer_segs_add_curvepoly_ring(cp->rings[i], allow_arc, arr,
+              cap, cnt))
+          return false;
+      if (cp->nrings > 0)
+        *has_poly = true;
+      return true;
+    }
     case MULTIPOINTTYPE:
     case MULTILINETYPE:
     case MULTIPOLYGONTYPE:
-    /* A compound curve chains line strings and circular strings, and a multi
-     * curve groups line/circular/compound components; both share the
-     * collection memory layout, so their components are decomposed
-     * recursively. Circular-arc components resolve through the CIRCSTRINGTYPE
-     * case above, which gates on @p allow_arc. */
+    /* A compound curve chains line strings and circular strings, a multi curve
+     * groups line/circular/compound components, and a multi surface groups
+     * curve polygons; all share the collection memory layout, so their
+     * components are decomposed recursively. Circular-arc components resolve
+     * through the CIRCSTRINGTYPE / CURVEPOLYTYPE cases, which gate on
+     * @p allow_arc. */
     case COMPOUNDTYPE:
     case MULTICURVETYPE:
+    case MULTISURFACETYPE:
     case COLLECTIONTYPE:
     {
       const LWCOLLECTION *c = lwgeom_as_lwcollection(lw);
@@ -815,23 +870,71 @@ tcbuffer_geo_segs(const LWGEOM *lw, bool allow_arc, TcbSeg **arr, int *cap,
  * @brief Ray-casting test: true if (x,y) is inside any polygon ring among
  * the segments (even-odd rule over the polygon-ring segments only)
  */
+/**
+ * @brief Apply the rightward-ray crossings of one polygon-boundary segment to
+ * the even-odd accumulator @p inside. A straight edge contributes at most one
+ * crossing; a circular arc contributes the crossings of the horizontal line
+ * y with its supporting circle that fall within the arc's angular span. Point,
+ * line, and standalone (1D) arc edges (not @p is_poly) contribute nothing.
+ */
+static void
+tcbuffer_poly_seg_raycross(const TcbSeg *s, double x, double y, bool *inside)
+{
+  if (! s->is_poly)
+    return;
+  if (s->is_arc)
+  {
+    /* The horizontal line at height y meets the supporting circle at
+     * acx +/- sqrt(arad^2 - (y - acy)^2). Flip the parity for each crossing
+     * strictly to the right of x that lies within the arc's angular span; a
+     * ray that only grazes the circle tangentially does not cross. */
+    const double dyc = y - s->acy;
+    const double h2 = s->arad * s->arad - dyc * dyc;
+    if (h2 <= 1e-12)
+      return;
+    const double h = sqrt(h2);
+    const double xhit[2] = {s->acx - h, s->acx + h};
+    /* Forward traversal direction of the arc in the angle parameter */
+    const double sdir = s->accw ? 1.0 : -1.0;
+    for (int k = 0; k < 2; k++)
+    {
+      const double xi = xhit[k];
+      if (xi <= x)
+        continue;
+      if (! tcbuffer_arc_contains_angle(s, atan2(dyc, xi - s->acx)))
+        continue;
+      /* Half-open ownership, mirroring the straight-edge rule: a crossing at an
+       * arc endpoint (a ring junction on the ray) is owned by this edge only if
+       * the arc interior rises above the ray there; an interior crossing is
+       * always transversal and always counted. */
+      const bool at_ep0 = fabs(xi - s->x1) < 1e-12 && fabs(y - s->y1) < 1e-12;
+      const bool at_ep1 = fabs(xi - s->x2) < 1e-12 && fabs(y - s->y2) < 1e-12;
+      if (at_ep0 || at_ep1)
+      {
+        const double theta_e = at_ep0 ? s->at0 : s->at1;
+        const double dtheta_in = at_ep0 ? sdir : -sdir;
+        if (dtheta_in * cos(theta_e) <= 0)
+          continue;
+      }
+      *inside = ! *inside;
+    }
+    return;
+  }
+  double y1 = s->y1, y2 = s->y2;
+  if ((y1 > y) != (y2 > y))
+  {
+    double xint = s->x1 + (y - y1) / (y2 - y1) * (s->x2 - s->x1);
+    if (x < xint)
+      *inside = ! *inside;
+  }
+}
+
 static bool
 tcbuffer_pt_in_polys(double x, double y, const TcbSeg *segs, int n)
 {
   bool inside = false;
   for (int i = 0; i < n; i++)
-  {
-    if (! segs[i].is_poly)
-      continue;
-    double y1 = segs[i].y1, y2 = segs[i].y2;
-    if ((y1 > y) != (y2 > y))
-    {
-      double xint = segs[i].x1 +
-        (y - y1) / (y2 - y1) * (segs[i].x2 - segs[i].x1);
-      if (x < xint)
-        inside = ! inside;
-    }
-  }
+    tcbuffer_poly_seg_raycross(&segs[i], x, y, &inside);
   return inside;
 }
 
@@ -1447,16 +1550,7 @@ tcbuffer_pt_in_polys_g(double x, double y, const TcbGeom *g)
     int e = bk->start + bk->n;
     for (int i = bk->start; i < e; i++)
     {
-      const TcbSeg *s = &g->segs[i];
-      if (! s->is_poly)
-        continue;
-      double y1 = s->y1, y2 = s->y2;
-      if ((y1 > y) != (y2 > y))
-      {
-        double xint = s->x1 + (y - y1) / (y2 - y1) * (s->x2 - s->x1);
-        if (x < xint)
-          inside = ! inside;
-      }
+      tcbuffer_poly_seg_raycross(&g->segs[i], x, y, &inside);
     }
   }
   return inside;

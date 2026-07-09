@@ -189,6 +189,12 @@ SELECT round(tcbuffer '[Cbuffer(Point(0 8), 1)@2000-01-01, Cbuffer(Point(0 5), 1
 SELECT round(tcbuffer 'Cbuffer(Point(3 8), 1)@2000-01-01' |=| geometry 'CompoundCurve(CircularString(5 0, 0 5, -5 0),(-5 0, -5 -8))', 6);
 SELECT round(tcbuffer 'Cbuffer(Point(-8 -4), 1)@2000-01-01' |=| geometry 'CompoundCurve(CircularString(5 0, 0 5, -5 0),(-5 0, -5 -8))', 6);
 SELECT round(tcbuffer 'Cbuffer(Point(8 6), 1)@2000-01-01' |=| geometry 'MultiCurve((6 6, 10 10),CircularString(5 0, 0 5, -5 0))', 6);
+-- Curve polygon (arc ring, a disk of radius 5 at the origin): a centre inside
+-- the arc ring gives distance 0 (arc-aware interior ray cast), and an outside
+-- centre measures to the arc boundary exactly (non-vertex, unreachable by
+-- stroking)
+SELECT round(tcbuffer 'Cbuffer(Point(0 0), 1)@2000-01-01' |=| geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', 6);
+SELECT round(tcbuffer 'Cbuffer(Point(4 4), 0.3)@2000-01-01' |=| geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', 6);
 SELECT round(geometry 'Polygon((5 5,5 8,8 8,8 5,5 5))' |=| tcbuffer 'Cbuffer(Point(0 0), 1)@2000-01-01', 6);
 SELECT round(tcbuffer '[Cbuffer(Point(0 0), 1)@2000-01-01, Cbuffer(Point(10 0), 2)@2000-01-02, Cbuffer(Point(10 10), 1)@2000-01-03]' |=| geometry 'Polygon((20 20,20 24,24 24,24 20,20 20))', 6);
 SELECT round(tcbuffer '[Cbuffer(Point(0 0), 1)@2000-01-01, Cbuffer(Point(10 0), 2)@2000-01-02, Cbuffer(Point(10 10), 1)@2000-01-03]' |=| geometry 'Linestring(20 -5,20 20)', 6);
