@@ -34,11 +34,13 @@ SELECT round(tgeompoint '[Point(1 1)@2000-01-02, Point(2 2)@2000-01-03)' <-> tge
 SELECT round(tgeompoint '{[Point(1 1)@2000-01-02, Point(2 2)@2000-01-03)}' <-> tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-03, Point(2 2)@2000-01-04}', 6);
 SELECT round(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02),(Point(1 1)@2000-01-03, Point(2 2)@2000-01-04]}' <-> tgeompoint '(Point(1 1)@2000-01-02, Point(2 2)@2000-01-03)', 6);
 SELECT round(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02),(Point(1 1)@2000-01-03, Point(2 2)@2000-01-04]}' <-> tgeompoint '{(Point(1 1)@2000-01-02, Point(2 2)@2000-01-03)}', 6);
-/* Errors */
+/* Distance to a non-point geometry is computed natively for a temporal
+ * geometry point with linear interpolation */
 SELECT round(geometry 'Linestring(1 1,2 2)' <-> tgeompoint '[Point(1 1)@2000-01-01, Point(3 3)@2000-01-03]', 6);
+SELECT round(tgeompoint '[Point(1 1)@2000-01-01, Point(3 3)@2000-01-03]' <-> geometry 'Linestring(1 1,2 2)', 6);
+/* Errors */
 SELECT round(geometry 'srid=5676;Point(2 2)' <-> tgeompoint '[Point(1 1)@2000-01-01, Point(3 3)@2000-01-03]', 6);
 SELECT round(geometry 'Point(2 2 2)' <-> tgeompoint '[Point(1 1)@2000-01-01, Point(3 3)@2000-01-03]', 6);
-SELECT round(tgeompoint '[Point(1 1)@2000-01-01, Point(3 3)@2000-01-03]' <-> geometry 'Linestring(1 1,2 2)', 6);
 SELECT round(tgeompoint '[Point(1 1)@2000-01-01, Point(3 3)@2000-01-03]' <-> geometry 'srid=5676;Point(2 2)', 6);
 SELECT round(tgeompoint '[Point(1 1)@2000-01-01, Point(3 3)@2000-01-03]' <-> geometry 'Point(2 2 2)', 6);
 SELECT round(tgeompoint 'SRID=5676;[Point(1 1)@2000-01-01, Point(3 3)@2000-01-03]' <-> tgeompoint '[Point(1 1)@2000-01-01, Point(3 3)@2000-01-03]', 6);

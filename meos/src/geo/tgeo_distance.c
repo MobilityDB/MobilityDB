@@ -389,8 +389,28 @@ tdistance_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
   if (! ensure_same_srid(tspatial_srid(temp), gserialized_get_srid(gs)) ||
       ! ensure_same_dimensionality_tspatial_geo(temp, gs) ||
       ! ensure_same_geodetic_tspatial_geo(temp, gs) ||
-      (tpoint_type(temp->temptype) && ! ensure_point_type(gs)) ||
       gserialized_is_empty(gs))
+    return NULL;
+
+  /* Native GEOS-free branch: the temporal distance between a temporal
+   * geometric point with linear interpolation and a non-point clip-supported
+   * planar 2D geometry (including curves) is computed exactly, lifting the
+   * point-operand-only restriction below. Temporal geographies, step/discrete
+   * interpolation, 3D and non-clip-supported geometries keep the generic
+   * lifting path */
+  if (temp->temptype == T_TGEOMPOINT && temp->subtype != TINSTANT &&
+      MEOS_FLAGS_LINEAR_INTERP(temp->flags) &&
+      ! MEOS_FLAGS_GET_Z(temp->flags))
+  {
+    LWGEOM *geom = lwgeom_from_gserialized(gs);
+    bool native = geom->type != POINTTYPE && geom_clip_supported(geom);
+    lwgeom_free(geom);
+    if (native)
+      return tpoint_linear_distance_geom(temp, gs);
+  }
+
+  /* Only point geometries are accepted by the generic lifting path */
+  if (tpoint_type(temp->temptype) && ! ensure_point_type(gs))
     return NULL;
 
   LiftedFunctionInfo lfinfo;
