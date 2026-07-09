@@ -46,4 +46,7 @@ extern Temporal *raster_tile_value_quadbin(const uint8_t *pixels,
 extern uint64 *trajectory_quadbins(const Temporal *traj, uint32_t zoom,
   int *count);
 
+extern bool raster_quadbin_from_bounds(double origin_x, double origin_y,
+  double pixel_w, double pixel_h, int xsize, int ysize, uint64 *result);
+
 #endif /* __RASTER_QUADBIN_H__ */

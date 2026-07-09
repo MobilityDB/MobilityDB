@@ -109,15 +109,16 @@ CREATE FUNCTION raquet(
  * @ingroup mobilitydb_raster
  * @brief Return a Raquet tile decoded from an in-memory raster file via GDAL
  * @param[in] rasterfile Raster file bytes in any GDAL-supported format
- * @param[in] quadbin CARTO QUADBIN cell
+ * @param[in] quadbin CARTO QUADBIN cell, or NULL to derive it from the raster
+ * geotransform and EPSG:3857 spatial reference
  * @csqlfn #Raquet_read()
  */
 CREATE FUNCTION raquet_read(
     rasterfile bytea,
-    quadbin    bigint
+    quadbin    bigint DEFAULT NULL
 ) RETURNS raquet
   AS 'MODULE_PATHNAME', 'Raquet_read'
-  LANGUAGE C IMMUTABLE STRICT;
+  LANGUAGE C IMMUTABLE;
 
 /******************************************************************************
  * raster_value

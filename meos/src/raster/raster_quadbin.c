@@ -75,6 +75,11 @@
 #define QB_FOOTER  UINT64_C(0x000FFFFFFFFFFFFF)
 #define QB_MODE    (UINT64_C(1) << 59)   /* spatial mode bit */
 
+/* Half-extent of the EPSG:3857 (Web-Mercator) plane in metres: pi * 6378137
+ * (the WGS-84 semi-major axis). The world spans [-QB_MERC_MAX, +QB_MERC_MAX]
+ * on both axes; QUADBIN tile (x, y, z) covers 2*QB_MERC_MAX / 2^z metres. */
+#define QB_MERC_MAX  20037508.342789244
+
 static const uint64_t QB_B[6] = {
   UINT64_C(0x5555555555555555), UINT64_C(0x3333333333333333),
   UINT64_C(0x0F0F0F0F0F0F0F0F), UINT64_C(0x00FF00FF00FF00FF),
@@ -155,6 +160,78 @@ qb_bbox(uint32_t tx, uint32_t ty, uint32_t tz,
   *bot_merc = M_PI * (1.0 - 2.0 * (double)(ty + 1)  / n);
   *ymax = 180.0 / M_PI * atan(sinh(*top_merc));
   *ymin = 180.0 / M_PI * atan(sinh(*bot_merc));
+}
+
+/**
+ * @brief Derive the QUADBIN cell of a Web-Mercator raster tile from its
+ * EPSG:3857 georeferencing.
+ *
+ * A Raquet tile is a single QUADBIN cell of the Web-Mercator tile pyramid, so
+ * its EPSG:3857 origin and pixel resolution determine the cell exactly. The
+ * pixel extent gives the zoom (a tile of zoom @p z spans 2*QB_MERC_MAX / 2^z
+ * metres); the top-left origin gives the tile column and row. The raster must
+ * be a single axis-aligned Web-Mercator tile: a non-square extent, an extent
+ * that is not a power-of-two fraction of the world, or an origin off the tile
+ * grid are rejected (mixing georeferencing that is not a QUADBIN tile is an
+ * error, not a value to coerce).
+ *
+ * @param[in] origin_x,origin_y Top-left corner of the raster in EPSG:3857 metres
+ * @param[in] pixel_w Pixel width in metres (west-east resolution, > 0)
+ * @param[in] pixel_h Pixel height in metres (north-south resolution, may be < 0)
+ * @param[in] xsize,ysize Raster dimensions in pixels
+ * @param[out] result Derived QUADBIN cell
+ * @return true on success; on failure sets a MEOS error and returns false
+ */
+bool
+raster_quadbin_from_bounds(double origin_x, double origin_y, double pixel_w,
+  double pixel_h, int xsize, int ysize, uint64 *result)
+{
+  double ext_x = (double) xsize * pixel_w;
+  double ext_y = (double) ysize * fabs(pixel_h);
+  if (ext_x <= 0.0 || ext_y <= 0.0)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Raster has a non-positive extent; cannot derive its QUADBIN cell");
+    return false;
+  }
+  /* A QUADBIN tile is square */
+  if (fabs(ext_x - ext_y) > 1e-6 * ext_x)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Raster is not a square Web-Mercator tile; cannot derive its QUADBIN cell");
+    return false;
+  }
+  /* Zoom z: the tile extent is 2*QB_MERC_MAX / 2^z metres */
+  double world = 2.0 * QB_MERC_MAX;
+  double zf = log2(world / ext_x);
+  long z = lround(zf);
+  if (fabs(zf - (double) z) > 1e-6 || z < 0 || z > 26)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Raster extent does not match a QUADBIN zoom level");
+    return false;
+  }
+  /* Exact tile side at this zoom, and the tile column/row from the origin */
+  double side = world / (double) (UINT64_C(1) << z);
+  double txf = (origin_x + QB_MERC_MAX) / side;
+  double tyf = (QB_MERC_MAX - origin_y) / side;
+  long tx = lround(txf);
+  long ty = lround(tyf);
+  if (fabs(txf - (double) tx) > 1e-6 || fabs(tyf - (double) ty) > 1e-6)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Raster origin is not aligned to the QUADBIN tile grid");
+    return false;
+  }
+  long ntiles = (long) (UINT64_C(1) << z);
+  if (tx < 0 || tx >= ntiles || ty < 0 || ty >= ntiles)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Raster origin is outside the Web-Mercator tile grid");
+    return false;
+  }
+  *result = xyz_to_qb((uint32_t) tx, (uint32_t) ty, (uint32_t) z);
+  return true;
 }
 
 /*****************************************************************************
