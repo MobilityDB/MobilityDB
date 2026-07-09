@@ -807,8 +807,8 @@ stbox_time_tiles(const STBox *bounds, const Interval *duration,
  * @param[in] duration Size of the time dimension as an interval
  * @param[in] sorigin Origin for the space dimension, may be `NULL`
  * @param[in] torigin Origin for the time dimension, may be `NULL`
- * @param[out] hasx True when spliting by space
- * @param[out] hast True when spliting by time
+ * @param[in] hasx True when spliting by space
+ * @param[in] hast True when spliting by time
  */
 STBox *
 stbox_space_time_tile(const GSERIALIZED *point, TimestampTz t,

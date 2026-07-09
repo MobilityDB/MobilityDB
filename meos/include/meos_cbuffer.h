@@ -101,7 +101,7 @@ typedef struct Cbuffer Cbuffer;
 /* Input and output functions */
 
 extern char *cbuffer_as_ewkt(const Cbuffer *cb, int maxdd);
-extern char *cbuffer_as_hexwkb(const Cbuffer *cb, uint8_t variant, size_t *size);
+extern char *cbuffer_as_hexwkb(const Cbuffer *cb, uint8_t variant, size_t *size_out);
 extern char *cbuffer_as_text(const Cbuffer *cb, int maxdd);
 extern uint8_t *cbuffer_as_wkb(const Cbuffer *cb, uint8_t variant, size_t *size_out);
 extern Cbuffer *cbuffer_from_hexwkb(const char *hexwkb);

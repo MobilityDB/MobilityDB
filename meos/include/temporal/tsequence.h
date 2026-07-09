@@ -141,7 +141,7 @@ extern TSequenceSet *tstepseq_to_linear(const TSequence *seq);
 /* Accessor functions */
 
 extern int tsequence_segments_iter(const TSequence *seq, TSequence **result);
-extern int tsequence_timestamps_iter(const TSequence *seq, TimestampTz *result);
+extern int tsequence_timestamps_iter(const TSequence *seq, TimestampTz *times);
 
 /* Local Aggregate Functions */
 

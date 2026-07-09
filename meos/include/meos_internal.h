@@ -1144,7 +1144,7 @@ extern Datum tinstant_value_p(const TInstant *inst);
 extern Datum tinstant_value(const TInstant *inst);
 extern bool tinstant_value_at_timestamptz(const TInstant *inst, TimestampTz t, Datum *result);
 extern Datum *tinstant_values_p(const TInstant *inst, int *count);
-extern void tnumber_set_span(const Temporal *temp, Span *span);
+extern void tnumber_set_span(const Temporal *temp, Span *s);
 extern SpanSet *tnumberinst_valuespans(const TInstant *inst);
 extern double tnumberseq_avg_val(const TSequence *seq);
 extern SpanSet *tnumberseq_valuespans(const TSequence *seq);

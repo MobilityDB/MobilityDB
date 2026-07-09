@@ -60,7 +60,7 @@ extern Datum datum_sum_double4(Datum l, Datum r);
 /* Specific skiplist functions for temporal aggregations */
 
 extern int temporal_skiplist_common(SkipList *list, void **values, int count,
-  int *lower, int *upper, int update[SKIPLIST_MAXLEVEL]);
+  int *lower, int *upper, int *update);
 extern void **temporal_skiplist_merge(void **spliced, int spliced_count,
   void **values, int count, datum_func2 func, bool crossings, int *newcount,
   void ***tofree, int *nfree);

@@ -500,7 +500,7 @@ extern Set *spatialset_transform_pipeline(const Set *s, const char *pipelinestr,
 
 /* Input/output functions */
 
-extern char *stbox_as_hexwkb(const STBox *box, uint8_t variant, size_t *size);
+extern char *stbox_as_hexwkb(const STBox *box, uint8_t variant, size_t *size_out);
 extern uint8_t *stbox_as_wkb(const STBox *box, uint8_t variant, size_t *size_out);
 extern STBox *stbox_from_hexwkb(const char *hexwkb);
 extern STBox *stbox_from_wkb(const uint8_t *wkb, size_t size);
