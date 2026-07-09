@@ -1582,16 +1582,17 @@ ea_dwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return -1;
 
-  /* For geodetic coordinates the planar `spatialrel_tgeo_geo`
-   * trajectory and the planar `geom_buffer` + `covers` machinery below
-   * are not applicable. Use the lifted temporal-base helper
-   * `eafunc_temporal_base` with the geodetic-aware `geo_dwithin_fn_geo`
-   * selector (which returns `datum_geog_dwithin` for geodetic input);
-   * this mirrors `ea_dwithin_tgeo_tgeo` for the temporal-base case and
-   * stays inside extension-safe lifting machinery (no `*_meos.c`
-   * dependency). Same architectural pattern as `tdistance_tgeo_geo`
-   * for the geo argument. */
-  if (MEOS_FLAGS_GET_GEODETIC(temp->flags))
+  /* For geodetic coordinates the planar `geom_buffer` + `covers` machinery
+   * (the ALWAYS branch below) is not applicable. The EVER case is exactly
+   * "the trajectory ever comes within `dist` of the geo", i.e. the minimum
+   * geodesic distance between the trajectory and the geo is <= dist, which the
+   * trajectory-based `spatialrel_tgeo_geo` EVER path below computes: its
+   * `geo_dwithin_fn_geo` selector returns `datum_geog_dwithin` for geodetic
+   * input, and `datum_geog_dwithin` measures the true geodesic distance to the
+   * trajectory linestring, so a segment that enters the geo with both endpoints
+   * outside is detected. The ALWAYS case uses the lifted temporal-base helper
+   * `eafunc_temporal_base`, which for geodetic samples instants. */
+  if (MEOS_FLAGS_GET_GEODETIC(temp->flags) && ! ever)
   {
     LiftedFunctionInfo lfinfo;
     memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
