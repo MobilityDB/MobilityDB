@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: MeosPixType</title>
+<title>MobilityDB: raquet_read_bytes</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -79,7 +79,7 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtabHL"><a class="navtab" href="meos__raster_8h_ab4899fb599b17f4121bb9a377d9dd040.html#ab4899fb599b17f4121bb9a377d9dd040">MeosPixType</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos__raster_8h_ab4899fb599b17f4121bb9a377d9dd040.html#ab4899fb599b17f4121bb9a377d9dd040">MeosPixType</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos__raster_8h_a82bc18d6228bd1c7229a47fd763cd791.html#a82bc18d6228bd1c7229a47fd763cd791">Raquet</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos__raster_8h_a9e953cb1db5f8340ca864740dc1f9716.html#a9e953cb1db5f8340ca864740dc1f9716">raquet_as_hexwkb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos__raster_8h_ae6b108a0bd074be1d08652e05a8abb1d.html#ae6b108a0bd074be1d08652e05a8abb1d">raquet_as_wkb</a></td></tr>
@@ -95,7 +95,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos__raster_8h_ac203849245423dc1db6a22f7086eeb9f.html#ac203849245423dc1db6a22f7086eeb9f">raquet_out</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos__raster_8h_ab184fc345bab3f91cd572b95ae94feb7.html#ab184fc345bab3f91cd572b95ae94feb7">raquet_quadbin</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos__raster_8h_adbb297bae58b06d3ebba66b7c5a10f86.html#adbb297bae58b06d3ebba66b7c5a10f86">raquet_read</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos__raster_8h_a8148a95b3bfb66a65ce6628ba5858c33.html#a8148a95b3bfb66a65ce6628ba5858c33">raquet_read_bytes</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos__raster_8h_a8148a95b3bfb66a65ce6628ba5858c33.html#a8148a95b3bfb66a65ce6628ba5858c33">raquet_read_bytes</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos__raster_8h_ad1d550458722f56daf1b8a64ec557062.html#ad1d550458722f56daf1b8a64ec557062">raquet_width</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos__raster_8h_a16634159f682ebe7cc3d8cbc819d6393.html#a16634159f682ebe7cc3d8cbc819d6393">raster_tile_value</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos__raster_8h_a07eac8c18e7c6ac0b6e3d37f58ae221a.html#a07eac8c18e7c6ac0b6e3d37f58ae221a">raster_tile_value_quadbin</a></td></tr>
@@ -104,37 +104,47 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ab4899fb599b17f4121bb9a377d9dd040" name="ab4899fb599b17f4121bb9a377d9dd040"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab4899fb599b17f4121bb9a377d9dd040">&#9670;&#160;</a></span>MeosPixType</h2>
+<a id="a8148a95b3bfb66a65ce6628ba5858c33" name="a8148a95b3bfb66a65ce6628ba5858c33"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8148a95b3bfb66a65ce6628ba5858c33">&#9670;&#160;</a></span>raquet_read_bytes()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">enum <a class="el" href="meos__raster_8h_ab4899fb599b17f4121bb9a377d9dd040.html#ab4899fb599b17f4121bb9a377d9dd040">MeosPixType</a></td>
+          <td class="memname"><a class="el" href="structRaquet.html">Raquet</a> * raquet_read_bytes </td>
+          <td>(</td>
+          <td class="paramtype">const uint8_t *&#160;</td>
+          <td class="paramname"><em>data</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>size</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_abc0f5bc07737e498f287334775dff2b6.html#abc0f5bc07737e498f287334775dff2b6">uint64</a>&#160;</td>
+          <td class="paramname"><em>quadbin</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Pixel data type for raster chip sampling. </p>
-<p >Values are assigned to be compatible with the corresponding PostGIS rt_pixtype codes where they overlap. </p>
-<table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="ab4899fb599b17f4121bb9a377d9dd040a70464f92213043b481bb96b966b33548" name="ab4899fb599b17f4121bb9a377d9dd040a70464f92213043b481bb96b966b33548"></a>MEOS_PT_UINT8&#160;</td><td class="fielddoc"><p >Unsigned 8-bit integer <br  />
- </p>
-</td></tr>
-<tr><td class="fieldname"><a id="ab4899fb599b17f4121bb9a377d9dd040a19809b3b5e09e5712a58341e46f24bd5" name="ab4899fb599b17f4121bb9a377d9dd040a19809b3b5e09e5712a58341e46f24bd5"></a>MEOS_PT_INT16&#160;</td><td class="fielddoc"><p >Signed 16-bit integer <br  />
- </p>
-</td></tr>
-<tr><td class="fieldname"><a id="ab4899fb599b17f4121bb9a377d9dd040aa0078c8d46fda8ec5d934978517744de" name="ab4899fb599b17f4121bb9a377d9dd040aa0078c8d46fda8ec5d934978517744de"></a>MEOS_PT_INT32&#160;</td><td class="fielddoc"><p >Signed 32-bit integer <br  />
- </p>
-</td></tr>
-<tr><td class="fieldname"><a id="ab4899fb599b17f4121bb9a377d9dd040a672c64e7d7f370eed95fe72880799ed6" name="ab4899fb599b17f4121bb9a377d9dd040a672c64e7d7f370eed95fe72880799ed6"></a>MEOS_PT_FLOAT32&#160;</td><td class="fielddoc"><p >32-bit IEEE float <br  />
- </p>
-</td></tr>
-<tr><td class="fieldname"><a id="ab4899fb599b17f4121bb9a377d9dd040a6636e9ae52b78030e5bcedbc35b377d9" name="ab4899fb599b17f4121bb9a377d9dd040a6636e9ae52b78030e5bcedbc35b377d9"></a>MEOS_PT_FLOAT64&#160;</td><td class="fielddoc"><p >64-bit IEEE double <br  />
- </p>
-</td></tr>
-</table>
+<p>Return a <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> tile decoded from an in-memory raster file via GDAL. </p>
+<p >Identical to <a class="el" href="raquet__gdal_8c_adbb297bae58b06d3ebba66b7c5a10f86.html#adbb297bae58b06d3ebba66b7c5a10f86" title="Return a Raquet tile read from a raster file via GDAL.">raquet_read</a> but the raster file is supplied as a byte buffer (e.g. a <code>bytea</code>) rather than a filesystem path. The bytes are exposed to GDAL through its <code>/vsimem/</code> virtual filesystem, so no server-side file access is required. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">data</td><td>Raster file bytes (any GDAL-supported format) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">size</td><td>Number of bytes in <code>data</code> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">quadbin</td><td>CARTO QUADBIN cell identifying the Web-Mercator tile </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: raquet_read</title>
+<title>MobilityDB: raquet_from_gdal_dataset</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -80,30 +80,39 @@ $(function() {
       <div class="navtab">
         <table>
           <tr><td class="navtab"><a class="navtab" href="raquet__gdal_8c_a1ad6caa75bcb39f22b945dd177ce05a8.html#a1ad6caa75bcb39f22b945dd177ce05a8">gdal_to_pixtype</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="raquet__gdal_8c_a967b7a4376341c79890092cd50a8162f.html#a967b7a4376341c79890092cd50a8162f">raquet_from_gdal_dataset</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="raquet__gdal_8c_adbb297bae58b06d3ebba66b7c5a10f86.html#adbb297bae58b06d3ebba66b7c5a10f86">raquet_read</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="raquet__gdal_8c_a967b7a4376341c79890092cd50a8162f.html#a967b7a4376341c79890092cd50a8162f">raquet_from_gdal_dataset</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="raquet__gdal_8c_adbb297bae58b06d3ebba66b7c5a10f86.html#adbb297bae58b06d3ebba66b7c5a10f86">raquet_read</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raquet__gdal_8c_a8148a95b3bfb66a65ce6628ba5858c33.html#a8148a95b3bfb66a65ce6628ba5858c33">raquet_read_bytes</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="adbb297bae58b06d3ebba66b7c5a10f86" name="adbb297bae58b06d3ebba66b7c5a10f86"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#adbb297bae58b06d3ebba66b7c5a10f86">&#9670;&#160;</a></span>raquet_read()</h2>
+<a id="a967b7a4376341c79890092cd50a8162f" name="a967b7a4376341c79890092cd50a8162f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a967b7a4376341c79890092cd50a8162f">&#9670;&#160;</a></span>raquet_from_gdal_dataset()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structRaquet.html">Raquet</a> * raquet_read </td>
+          <td class="memname">static <a class="el" href="structRaquet.html">Raquet</a> * raquet_from_gdal_dataset </td>
           <td>(</td>
-          <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>path</em>, </td>
+          <td class="paramtype">GDALDatasetH&#160;</td>
+          <td class="paramname"><em>ds</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_abc0f5bc07737e498f287334775dff2b6.html#abc0f5bc07737e498f287334775dff2b6">uint64</a>&#160;</td>
-          <td class="paramname"><em>quadbin</em>&#160;</td>
+          <td class="paramname"><em>quadbin</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>label</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -111,16 +120,15 @@ $(function() {
           <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-<p>Return a <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> tile read from a raster file via GDAL. </p>
-<p >GDAL decodes the file (any format it supports) and the first raster band is packed row-major into a <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> chip identified by <code>quadbin</code>. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">path</td><td>Path to a GDAL-readable raster file </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">quadbin</td><td>CARTO QUADBIN cell identifying the Web-Mercator tile </td></tr>
-  </table>
-  </dd>
-</dl>
+<p>Pack the first band of an open GDAL dataset into a <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> tile. </p>
+<p >The band data type must be one of Byte / Int16 / Int32 / Float32 / Float64; the band nodata value (if any) is carried into the tile. The caller owns <code>ds</code> and closes it; <code>label</code> names the source in error messages. </p>
 
 </div>
 </div>
