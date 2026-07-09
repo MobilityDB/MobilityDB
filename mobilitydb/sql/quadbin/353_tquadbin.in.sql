@@ -189,25 +189,15 @@ CREATE FUNCTION tquadbinInst(tquadbin)
   AS 'MODULE_PATHNAME', 'Temporal_to_tinstant'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- The function is not strict
-CREATE FUNCTION tquadbinSeq(tquadbin, text)
+CREATE FUNCTION tquadbinSeq(tquadbin, text DEFAULT NULL)
   RETURNS tquadbin
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 -- The function is not strict
-CREATE FUNCTION tquadbinSeq(tquadbin)
-  RETURNS tquadbin
-  AS 'SELECT @extschema@.tquadbinSeq($1, NULL)'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
--- The function is not strict
-CREATE FUNCTION tquadbinSeqSet(tquadbin, text)
+CREATE FUNCTION tquadbinSeqSet(tquadbin, text DEFAULT NULL)
   RETURNS tquadbin
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequenceset'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
--- The function is not strict
-CREATE FUNCTION tquadbinSeqSet(tquadbin)
-  RETURNS tquadbin
-  AS 'SELECT @extschema@.tquadbinSeqSet($1, NULL)'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION setInterp(tquadbin, text)
   RETURNS tquadbin

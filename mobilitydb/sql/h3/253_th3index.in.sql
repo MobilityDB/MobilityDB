@@ -229,25 +229,15 @@ CREATE FUNCTION th3indexInst(th3index)
   AS 'MODULE_PATHNAME', 'Temporal_to_tinstant'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- The function is not strict
-CREATE FUNCTION th3indexSeq(th3index, text)
+CREATE FUNCTION th3indexSeq(th3index, text DEFAULT NULL)
   RETURNS th3index
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 -- The function is not strict
-CREATE FUNCTION th3indexSeq(th3index)
-  RETURNS th3index
-  AS 'SELECT @extschema@.th3indexSeq($1, NULL)'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
--- The function is not strict
-CREATE FUNCTION th3indexSeqSet(th3index, text)
+CREATE FUNCTION th3indexSeqSet(th3index, text DEFAULT NULL)
   RETURNS th3index
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequenceset'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
--- The function is not strict
-CREATE FUNCTION th3indexSeqSet(th3index)
-  RETURNS th3index
-  AS 'SELECT @extschema@.th3indexSeqSet($1, NULL)'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION setInterp(th3index, text)
   RETURNS th3index
