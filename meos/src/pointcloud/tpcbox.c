@@ -62,7 +62,9 @@
 #include <meos_pointcloud.h>
 #include <pgtypes.h>
 #include "temporal/span.h"
+#include "temporal/type_parser.h"
 #include "temporal/type_util.h"
+#include "geo/tspatial_parser.h"
 #include "pointcloud/pcpatch.h"
 
 /* Buffer size for input/output of TPCBox text form */
@@ -123,11 +125,11 @@ ensure_same_srid_tpcbox(const TPCBox *box1, const TPCBox *box2)
  * @brief Return the text representation of a TPCBox.
  * @details Examples (commas optional inside the parenthesised groups):
  * @code
- * TPCBOX X((10, 20), (30, 40)) PCID=1
- * TPCBOX Z((10, 20, 30), (40, 50, 60)) PCID=1 SRID=4326
- * TPCBOX XT(((10, 20), (30, 40)), [2024-01-01, 2024-01-02]) PCID=1
- * TPCBOX T([2024-01-01, 2024-01-02]) PCID=1
- * GEODTPCBOX ZT(((10, 20, 30), (40, 50, 60)), [2024-01-01, 2024-01-02]) PCID=1
+ * TPCBOX(X((10, 20), (30, 40)), 1)
+ * SRID=4326;TPCBOX(Z((10, 20, 30), (40, 50, 60)), 1)
+ * TPCBOX(XT(((10, 20), (30, 40)), [2024-01-01, 2024-01-02]), 1)
+ * TPCBOX(T([2024-01-01, 2024-01-02]), 1)
+ * GEODTPCBOX(ZT(((10, 20, 30), (40, 50, 60)), [2024-01-01, 2024-01-02]), 1)
  * @endcode
  * @csqlfn #Tpcbox_out()
  */
@@ -135,63 +137,182 @@ char *
 tpcbox_out(const TPCBox *box, int maxdd)
 {
   VALIDATE_TPCBOX(box, NULL);
+  if (! ensure_not_negative(maxdd))
+    return NULL;
+
+  char *xmin = NULL, *xmax = NULL, *ymin = NULL, *ymax = NULL, *zmin = NULL,
+    *zmax = NULL, *period = NULL;
   bool hasx = MEOS_FLAGS_GET_X(box->flags);
   bool hasz = MEOS_FLAGS_GET_Z(box->flags);
   bool hast = MEOS_FLAGS_GET_T(box->flags);
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(box->flags);
 
-  char *buf = palloc(TPCBOX_MAXLEN);
-  char *p = buf;
-  p += snprintf(p, TPCBOX_MAXLEN - (p - buf), "%sTPCBOX ",
-    geodetic ? "GEOD" : "");
-  if (hasx && hast)
-    p += snprintf(p, TPCBOX_MAXLEN - (p - buf), "%sT", hasz ? "Z" : "X");
-  else if (hasx)
-    p += snprintf(p, TPCBOX_MAXLEN - (p - buf), "%s", hasz ? "Z" : "X");
+  char *str = palloc(TPCBOX_MAXLEN);
+  /* SRID is emitted as a prefix, matching the sibling (GEOD)STBOX text form */
+  char srid[18];
+  if (hasx && box->srid > 0)
+    snprintf(srid, sizeof(srid), "SRID=%d;", box->srid);
   else
-    p += snprintf(p, TPCBOX_MAXLEN - (p - buf), "T");
+    srid[0] = '\0';
+  const char *boxtype = geodetic ? "GEODTPCBOX" : "TPCBOX";
+  if (hast)
+    period = span_out(&box->period, maxdd);
+
+  if (hasx && hast)
+  {
+    xmin = float8_out(box->xmin, maxdd);
+    xmax = float8_out(box->xmax, maxdd);
+    ymin = float8_out(box->ymin, maxdd);
+    ymax = float8_out(box->ymax, maxdd);
+    if (hasz)
+    {
+      zmin = float8_out(box->zmin, maxdd);
+      zmax = float8_out(box->zmax, maxdd);
+      snprintf(str, TPCBOX_MAXLEN,
+        "%s%s(ZT(((%s,%s,%s),(%s,%s,%s)),%s), %u)",
+        srid, boxtype, xmin, ymin, zmin, xmax, ymax, zmax, period, box->pcid);
+    }
+    else
+      snprintf(str, TPCBOX_MAXLEN, "%s%s(XT(((%s,%s),(%s,%s)),%s), %u)",
+        srid, boxtype, xmin, ymin, xmax, ymax, period, box->pcid);
+  }
+  else if (hasx)
+  {
+    xmin = float8_out(box->xmin, maxdd);
+    xmax = float8_out(box->xmax, maxdd);
+    ymin = float8_out(box->ymin, maxdd);
+    ymax = float8_out(box->ymax, maxdd);
+    if (hasz)
+    {
+      zmin = float8_out(box->zmin, maxdd);
+      zmax = float8_out(box->zmax, maxdd);
+      snprintf(str, TPCBOX_MAXLEN, "%s%s(Z((%s,%s,%s),(%s,%s,%s)), %u)",
+        srid, boxtype, xmin, ymin, zmin, xmax, ymax, zmax, box->pcid);
+    }
+    else
+      snprintf(str, TPCBOX_MAXLEN, "%s%s(X((%s,%s),(%s,%s)), %u)",
+        srid, boxtype, xmin, ymin, xmax, ymax, box->pcid);
+  }
+  else /* hast */
+    snprintf(str, TPCBOX_MAXLEN, "%s%s(T(%s), %u)", srid, boxtype, period,
+      box->pcid);
 
   if (hasx)
   {
-    if (hast) *p++ = '(';
-    *p++ = '(';
+    pfree(xmin); pfree(xmax); pfree(ymin); pfree(ymax);
     if (hasz)
-      p += snprintf(p, TPCBOX_MAXLEN - (p - buf), "%.*g, %.*g, %.*g",
-        maxdd, box->xmin, maxdd, box->ymin, maxdd, box->zmin);
-    else
-      p += snprintf(p, TPCBOX_MAXLEN - (p - buf), "%.*g, %.*g",
-        maxdd, box->xmin, maxdd, box->ymin);
-    p += snprintf(p, TPCBOX_MAXLEN - (p - buf), "), (");
-    if (hasz)
-      p += snprintf(p, TPCBOX_MAXLEN - (p - buf), "%.*g, %.*g, %.*g",
-        maxdd, box->xmax, maxdd, box->ymax, maxdd, box->zmax);
-    else
-      p += snprintf(p, TPCBOX_MAXLEN - (p - buf), "%.*g, %.*g",
-        maxdd, box->xmax, maxdd, box->ymax);
-    *p++ = ')';
-    if (hast) *p++ = ',';
+    {
+      pfree(zmin); pfree(zmax);
+    }
   }
   if (hast)
+    pfree(period);
+  return str;
+}
+
+/**
+ * @brief Parse a TPCBox from its Well-Known Text (WKT) representation
+ * @details Mirrors #stbox_parse: an optional `SRID=` prefix, then the
+ * `(GEOD)TPCBOX` keyword wrapping — in parentheses — the box body shared with
+ * STBox (parsed by #stbox_parse_dims) and the `pcid` as a final component.
+ * Round-trips with #tpcbox_out.
+ */
+TPCBox *
+tpcbox_parse(const char **str)
+{
+  const char *type_str = meostype_name(T_TPCBOX);
+  /* Get the SRID if it is given */
+  int32_t srid;
+  bool hassrid = srid_parse(str, &srid);
+  bool geodetic = false;
+  /* Determine whether the box is geodetic or not */
+  if (pg_strncasecmp(*str, "TPCBOX", 6) == 0)
   {
-    char *period_str = span_out(&box->period, maxdd);
-    p += snprintf(p, TPCBOX_MAXLEN - (p - buf), "%s", period_str);
-    pfree(period_str);
-    if (hasx) *p++ = ')';
+    *str += 6;
+    p_whitespace(str);
   }
-  p += snprintf(p, TPCBOX_MAXLEN - (p - buf), " PCID=%u", box->pcid);
-  if (box->srid != 0)
-    p += snprintf(p, TPCBOX_MAXLEN - (p - buf), " SRID=%d", box->srid);
-  *p = '\0';
-  return buf;
+  else if (pg_strncasecmp(*str, "GEODTPCBOX", 10) == 0)
+  {
+    *str += 10;
+    geodetic = true;
+    p_whitespace(str);
+    if (! hassrid)
+      srid = WGS84_SRID;
+  }
+  else
+  {
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+      "Could not parse %s value: Missing prefix (GEOD)TPCBOX", type_str);
+    return NULL;
+  }
+
+  /* Opening parenthesis of the composite value */
+  p_whitespace(str);
+  if (! ensure_oparen(str, type_str))
+    return NULL;
+
+  /* Parse the box body shared with STBox */
+  p_whitespace(str);
+  STBox *box = stbox_parse_dims(str, geodetic, srid, type_str);
+  if (! box)
+    return NULL;
+
+  /* Comma before the PCID component */
+  p_whitespace(str);
+  if (! p_comma(str))
+  {
+    pfree(box);
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+      "Could not parse %s value: Missing comma before PCID", type_str);
+    return NULL;
+  }
+  /* Parse the PCID */
+  p_whitespace(str);
+  if (! (**str >= '0' && **str <= '9'))
+  {
+    pfree(box);
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+      "Could not parse %s value: Invalid PCID", type_str);
+    return NULL;
+  }
+  uint32_t pcid = 0;
+  while (**str >= '0' && **str <= '9')
+  {
+    pcid = pcid * 10 + (uint32_t) (**str - '0');
+    *str += 1;
+  }
+
+  /* Closing parenthesis of the composite value */
+  p_whitespace(str);
+  if (! ensure_cparen(str, type_str))
+  {
+    pfree(box);
+    return NULL;
+  }
+
+  /* Ensure there is no more input */
+  if (! ensure_end_input(str, type_str))
+  {
+    pfree(box);
+    return NULL;
+  }
+
+  bool hasx = MEOS_FLAGS_GET_X(box->flags);
+  bool hasz = MEOS_FLAGS_GET_Z(box->flags);
+  bool hast = MEOS_FLAGS_GET_T(box->flags);
+  TPCBox *result = tpcbox_make(hasx, hasz, hast, geodetic, box->srid, pcid,
+    box->xmin, box->xmax, box->ymin, box->ymax, box->zmin, box->zmax,
+    hast ? &box->period : NULL);
+  pfree(box);
+  return result;
 }
 
 /**
  * @ingroup meos_pointcloud_box_inout
- * @brief Return a TPCBox from its text representation.
- * @note Accepts the hex form produced by @c send(): the raw byte-image
- *   of a TPCBox struct encoded as ASCII hex.  Adequate for
- *   round-tripping through PG @c recv / @c send, which is what
- *   SQL @c CREATE TYPE exercises.
+ * @brief Return a TPCBox from its Well-Known Text (WKT) representation
+ * @details Round-trips with #tpcbox_out, matching the `(GEOD)STBOX` text form
+ * of the sibling STBox plus a trailing `PCID`. Binary interchange goes through
+ * @c recv / @c send.
  * @csqlfn #Tpcbox_in()
  */
 TPCBox *
@@ -202,38 +323,7 @@ tpcbox_in(const char *str)
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "Null input string");
     return NULL;
   }
-  size_t len = strlen(str);
-  /* Skip leading whitespace */
-  const char *p = str;
-  while (*p == ' ' || *p == '\t' || *p == '\n' || *p == '\r') p++;
-  len = strlen(p);
-  if (len != 2 * sizeof(TPCBox))
-  {
-    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
-      "TPCBox hex input must be %zu chars (got %zu)",
-      2 * sizeof(TPCBox), len);
-    return NULL;
-  }
-  TPCBox *result = palloc0(sizeof(TPCBox));
-  for (size_t i = 0; i < sizeof(TPCBox); i++)
-  {
-    char hi = p[i * 2], lo = p[i * 2 + 1];
-    int hv = (hi >= '0' && hi <= '9') ? hi - '0' :
-             (hi >= 'a' && hi <= 'f') ? hi - 'a' + 10 :
-             (hi >= 'A' && hi <= 'F') ? hi - 'A' + 10 : -1;
-    int lv = (lo >= '0' && lo <= '9') ? lo - '0' :
-             (lo >= 'a' && lo <= 'f') ? lo - 'a' + 10 :
-             (lo >= 'A' && lo <= 'F') ? lo - 'A' + 10 : -1;
-    if (hv < 0 || lv < 0)
-    {
-      pfree(result);
-      meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
-        "TPCBox input contains non-hex character");
-      return NULL;
-    }
-    ((uint8_t *) result)[i] = (uint8_t) ((hv << 4) | lv);
-  }
-  return result;
+  return tpcbox_parse(&str);
 }
 
 /*****************************************************************************

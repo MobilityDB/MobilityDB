@@ -33,7 +33,7 @@
  *
  * Fixed-size struct (no varlena), so @c recv / @c send simply shuttle the
  * bytes through. @c in / @c out delegate to MEOS-layer @c tpcbox_in /
- * @c tpcbox_out, which accept the hex byte-image form.
+ * @c tpcbox_out, which read and write the WKT text form.
  */
 
 /* PostgreSQL */

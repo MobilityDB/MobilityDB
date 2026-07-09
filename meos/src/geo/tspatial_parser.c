@@ -83,41 +83,25 @@ srid_parse(const char **str, int *srid)
 }
 
 /**
- * @brief Parse a spatiotemporal box from the buffer
+ * @brief Parse the dimension and coordinate part of a spatiotemporal box from
+ * the buffer, after the `(GEOD)STBOX` prefix and any SRID have already been
+ * consumed
+ * @details Shared by the STBox and TPCBox text parsers. Does NOT enforce
+ * end-of-input, so a caller may parse a trailing suffix (e.g. the TPCBox
+ * `PCID`) after the box body.
+ * @param[in] str Input string
+ * @param[in] geodetic True for a geodetic box
+ * @param[in] srid SRID of the box
+ * @param[in] type_str Type name used in error messages
  */
 STBox *
-stbox_parse(const char **str)
+stbox_parse_dims(const char **str, bool geodetic, int32_t srid,
+  const char *type_str)
 {
   /* make compiler quiet */
   double xmin = 0, xmax = 0, ymin = 0, ymax = 0, zmin = 0, zmax = 0;
   Span period;
-  bool hasx = false, hasz = false, hast = false, geodetic = false;
-  const char *type_str = meostype_name(T_STBOX);
-
-  /* Get the SRID if it is given */
-  int32_t srid;
-  bool hassrid = srid_parse(str, &srid);
-
-  /* Determine whether the box is geodetic or not */
-  if (pg_strncasecmp(*str, "STBOX", 5) == 0)
-  {
-    *str += 5;
-    p_whitespace(str);
-  }
-  else if (pg_strncasecmp(*str, "GEODSTBOX", 9) == 0)
-  {
-    *str += 9;
-    geodetic = true;
-    p_whitespace(str);
-    if (! hassrid)
-      srid = WGS84_SRID;
-  }
-  else
-  {
-    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
-      "Could not parse %s value: Missing prefix (GEOD)STBOX", type_str);
-    return NULL;
-  }
+  bool hasx = false, hasz = false, hast = false;
 
   /* Determine whether the box has X, Z, and/or T dimensions */
   if (pg_strncasecmp(*str, "ZT", 2) == 0)
@@ -250,12 +234,51 @@ stbox_parse(const char **str)
       return NULL;
   }
 
-  /* Ensure there is no more input */
-  if (! ensure_end_input(str, type_str))
-    return NULL;
-
   return stbox_make(hasx, hasz, geodetic, srid, xmin, xmax, ymin, ymax, zmin,
     zmax, hast ? &period : NULL);
+}
+
+/**
+ * @brief Parse a spatiotemporal box from the buffer
+ */
+STBox *
+stbox_parse(const char **str)
+{
+  const char *type_str = meostype_name(T_STBOX);
+  /* Get the SRID if it is given */
+  int32_t srid;
+  bool hassrid = srid_parse(str, &srid);
+  bool geodetic = false;
+  /* Determine whether the box is geodetic or not */
+  if (pg_strncasecmp(*str, "STBOX", 5) == 0)
+  {
+    *str += 5;
+    p_whitespace(str);
+  }
+  else if (pg_strncasecmp(*str, "GEODSTBOX", 9) == 0)
+  {
+    *str += 9;
+    geodetic = true;
+    p_whitespace(str);
+    if (! hassrid)
+      srid = WGS84_SRID;
+  }
+  else
+  {
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+      "Could not parse %s value: Missing prefix (GEOD)STBOX", type_str);
+    return NULL;
+  }
+  STBox *box = stbox_parse_dims(str, geodetic, srid, type_str);
+  if (! box)
+    return NULL;
+  /* Ensure there is no more input */
+  if (! ensure_end_input(str, type_str))
+  {
+    pfree(box);
+    return NULL;
+  }
+  return box;
 }
 
 /*****************************************************************************/
