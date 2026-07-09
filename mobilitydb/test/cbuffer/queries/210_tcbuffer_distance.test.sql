@@ -183,6 +183,12 @@ SELECT round(tcbuffer 'Cbuffer(Point(3 8), 1)@2000-01-01' |=| geometry 'Circular
 SELECT round(tcbuffer 'Cbuffer(Point(0 -10), 1)@2000-01-01' |=| geometry 'CircularString(5 0, 0 5, -5 0)', 6);
 SELECT round(tcbuffer 'Cbuffer(Point(0 0), 5)@2000-01-01' |=| geometry 'CircularString(5 0, 0 5, -5 0)', 6);
 SELECT round(tcbuffer '[Cbuffer(Point(0 8), 1)@2000-01-01, Cbuffer(Point(0 5), 1)@2000-01-02]' |=| geometry 'CircularString(5 0, 0 5, -5 0)', 6);
+-- Compound curve (arc chained to a line) and multi curve: the arc components are
+-- decomposed arc-exactly (a value matching the arc-only case proves native, not
+-- GEOS stroking), and the line components are walked too (line nearer than arc)
+SELECT round(tcbuffer 'Cbuffer(Point(3 8), 1)@2000-01-01' |=| geometry 'CompoundCurve(CircularString(5 0, 0 5, -5 0),(-5 0, -5 -8))', 6);
+SELECT round(tcbuffer 'Cbuffer(Point(-8 -4), 1)@2000-01-01' |=| geometry 'CompoundCurve(CircularString(5 0, 0 5, -5 0),(-5 0, -5 -8))', 6);
+SELECT round(tcbuffer 'Cbuffer(Point(8 6), 1)@2000-01-01' |=| geometry 'MultiCurve((6 6, 10 10),CircularString(5 0, 0 5, -5 0))', 6);
 SELECT round(geometry 'Polygon((5 5,5 8,8 8,8 5,5 5))' |=| tcbuffer 'Cbuffer(Point(0 0), 1)@2000-01-01', 6);
 SELECT round(tcbuffer '[Cbuffer(Point(0 0), 1)@2000-01-01, Cbuffer(Point(10 0), 2)@2000-01-02, Cbuffer(Point(10 10), 1)@2000-01-03]' |=| geometry 'Polygon((20 20,20 24,24 24,24 20,20 20))', 6);
 SELECT round(tcbuffer '[Cbuffer(Point(0 0), 1)@2000-01-01, Cbuffer(Point(10 0), 2)@2000-01-02, Cbuffer(Point(10 10), 1)@2000-01-03]' |=| geometry 'Linestring(20 -5,20 20)', 6);
