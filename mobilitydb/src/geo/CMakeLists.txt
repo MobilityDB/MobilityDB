@@ -25,4 +25,9 @@ add_library(pg_geo OBJECT
 if(POINTCLOUD)
   target_include_directories(pg_geo PRIVATE
     ${CMAKE_SOURCE_DIR}/pointcloud-pg/lib)
+  # tgeo.c includes pc_api.h, which includes the generated pc_config.h. That
+  # header is produced when the pointcloud module builds the vendored subtree
+  # (autotools). Depend on the pointcloud target so pc_config.h exists before
+  # tgeo.c compiles, instead of racing it under a parallel build.
+  add_dependencies(pg_geo pointcloud)
 endif()
