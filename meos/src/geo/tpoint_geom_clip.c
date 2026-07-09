@@ -2467,7 +2467,14 @@ tpoint_linear_restrict_geom(const Temporal *temp, const GSERIALIZED *gs,
 
   /* If "minus" restriction, compute the complement wrt time */
   if (! result_at)
-    return temporal_copy(temp);
+    /* Nothing intersects the geometry, so the result is the whole value. Return
+     * it in the same container the partial-minus path below produces (a
+     * continuous sequence yields a sequence set) so that minusGeometry is
+     * container-consistent with tgeo_restrict_geom whether or not the geometry
+     * is met. */
+    return (temp->subtype == TSEQUENCE) ?
+      (Temporal *) tsequence_to_tsequenceset((const TSequence *) temp) :
+      temporal_copy(temp);
 
   SpanSet *ss = temporal_time(result_at);
   Temporal *result = temporal_restrict_tstzspanset(temp, ss, atfunc);
