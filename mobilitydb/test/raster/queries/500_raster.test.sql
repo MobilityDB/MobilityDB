@@ -294,3 +294,20 @@ SELECT (SELECT rq FROM raquet_toast)::text
      = raquet(decode(repeat('01', 4096), 'hex'), 64, 64,
          5193776270265024512::bigint, 'UINT8')::text
        AS toasted_roundtrip_ok;
+
+-------------------------------------------------------------------------------
+-- raquet_read: GDAL ingest of an in-memory raster file (bytea)
+-------------------------------------------------------------------------------
+
+-- raquet_read decodes through GDAL, whose drivers PostGIS disables by default
+-- (postgis.gdal_enabled_drivers); enable them for the in-memory ingest.
+SET postgis.gdal_enabled_drivers = 'ENABLE_ALL';
+
+-- GDAL decodes a 2 x 2 UINT8 GeoTIFF supplied as bytea (through its /vsimem/
+-- virtual filesystem) into the same raquet tile that the constructor builds
+-- from the identical row-major pixel bytes 01 02 03 04.
+SELECT raquet_read(
+         decode('49492a00080000000b000001030001000000020000000101030001000000020000000201030001000000080000000301030001000000010000000601030001000000010000001101040001000000920000001501030001000000010000001601030001000000020000001701040001000000040000001c01030001000000010000005301030001000000010000000000000001020304', 'hex'),
+         5193776270265024512::bigint)::text
+     = raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'UINT8')::text
+       AS gdal_ingest_equals_constructor;

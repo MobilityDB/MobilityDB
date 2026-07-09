@@ -151,6 +151,18 @@ SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'UINT8');
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="raquet_read">
+				<indexterm significance="normal"><primary><varname>raquet_read</varname></primary></indexterm>
+				<para>Decode an in-memory raster file into a Raquet raster tile via GDAL</para>
+				<para><varname>raquet_read(bytea,bigint) → raquet</varname></para>
+				<para>Reads the bytes of <varname>rasterfile</varname> — a raster in any format GDAL supports (GeoTIFF, PNG, …) — through GDAL's <varname>/vsimem/</varname> virtual filesystem, and packs its first band, row-major, into a single self-describing <varname>raquet</varname> value georeferenced by the <varname>quadbin</varname> cell. The band data type must be one of <varname>Byte</varname>, <varname>Int16</varname>, <varname>Int32</varname>, <varname>Float32</varname>, or <varname>Float64</varname>; the band nodata value, when set, is carried into the tile. Because the file is supplied as bytes, no server-side file access is required. GDAL performs the decode, so the raster's format driver must be permitted by PostGIS's <varname>postgis.gdal_enabled_drivers</varname> setting (which disables all drivers by default); enable it with, for example, <varname>SET postgis.gdal_enabled_drivers = 'ENABLE_ALL'</varname>. This is the ingest counterpart of the <link linkend="raquet"><varname>raquet</varname></link> constructor, which builds a tile from already-decoded pixel bytes.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- Decode a GeoTIFF stored in a bytea column into a raquet tile
+SELECT raquet_read(file_bytes, quadbin) AS tile
+FROM elevation_files;
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="raster_tile_value">
 				<indexterm significance="normal"><primary><varname>raster_tile_value</varname></primary></indexterm>
 				<para>Sample a <varname>raquet</varname> raster tile along a trajectory</para>

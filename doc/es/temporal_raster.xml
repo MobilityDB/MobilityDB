@@ -149,6 +149,18 @@ SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'UINT8');
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="raquet_read">
+				<indexterm significance="normal"><primary><varname>raquet_read</varname></primary></indexterm>
+				<para>Decodificar un archivo ráster en memoria en una tesela ráster Raquet mediante GDAL</para>
+				<para><varname>raquet_read(bytea,bigint) → raquet</varname></para>
+				<para>Lee los bytes de <varname>rasterfile</varname> — un ráster en cualquier formato compatible con GDAL (GeoTIFF, PNG, …) — a través del sistema de archivos virtual <varname>/vsimem/</varname> de GDAL, y empaqueta su primera banda, en orden de fila mayor, en un único valor <varname>raquet</varname> autodescriptivo georreferenciado por la celda <varname>quadbin</varname>. El tipo de datos de la banda debe ser uno de <varname>Byte</varname>, <varname>Int16</varname>, <varname>Int32</varname>, <varname>Float32</varname> o <varname>Float64</varname>; el valor de nodata de la banda, cuando está definido, se traslada a la tesela. Como el archivo se suministra como bytes, no se requiere acceso a archivos del lado del servidor. GDAL realiza la decodificación, por lo que el controlador de formato del ráster debe estar permitido por la configuración <varname>postgis.gdal_enabled_drivers</varname> de PostGIS (que deshabilita todos los controladores de forma predeterminada); habilítelo con, por ejemplo, <varname>SET postgis.gdal_enabled_drivers = 'ENABLE_ALL'</varname>. Esta es la contraparte de ingesta del constructor <link linkend="raquet"><varname>raquet</varname></link>, que construye una tesela a partir de bytes de píxeles ya decodificados.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- Decodificar un GeoTIFF almacenado en una columna bytea en una tesela raquet
+SELECT raquet_read(file_bytes, quadbin) AS tile
+FROM elevation_files;
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="raster_tile_value">
 				<indexterm significance="normal"><primary><varname>raster_tile_value</varname></primary></indexterm>
 				<para>Muestrear una tesela ráster <varname>raquet</varname> a lo largo de una trayectoria</para>

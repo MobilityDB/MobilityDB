@@ -3715,6 +3715,10 @@
 				</listitem>
 
 				<listitem>
+					<para><link linkend="raquet_read"><varname>raquet_read</varname></link>: Decode an in-memory raster file into a Raquet raster tile via GDAL</para>
+				</listitem>
+
+				<listitem>
 					<para><link linkend="raster_tile_value"><varname>raster_tile_value</varname></link>: Sample a Raquet raster tile along a trajectory</para>
 				</listitem>
 			</itemizedlist>
