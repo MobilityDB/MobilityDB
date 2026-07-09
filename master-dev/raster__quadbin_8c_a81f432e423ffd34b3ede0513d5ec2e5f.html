@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: xyz_to_qb</title>
+<title>MobilityDB: QB_MERC_MAX</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -84,60 +84,29 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="raster__quadbin_8c_a0a7b5b0cd2cd1d1bdad1ef53c2e3ce80.html#a0a7b5b0cd2cd1d1bdad1ef53c2e3ce80">qb_bbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raster__quadbin_8c_a35d115e76acf2ead0cc8456e5d69490e.html#a35d115e76acf2ead0cc8456e5d69490e">QB_FOOTER</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raster__quadbin_8c_a94cace6f35f2cf73face822859381245.html#a94cace6f35f2cf73face822859381245">QB_HEADER</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="raster__quadbin_8c_a81f432e423ffd34b3ede0513d5ec2e5f.html#a81f432e423ffd34b3ede0513d5ec2e5f">QB_MERC_MAX</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="raster__quadbin_8c_a81f432e423ffd34b3ede0513d5ec2e5f.html#a81f432e423ffd34b3ede0513d5ec2e5f">QB_MERC_MAX</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raster__quadbin_8c_a8329eb29d4f926aa190799267a359470.html#a8329eb29d4f926aa190799267a359470">QB_MODE</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raster__quadbin_8c_ab487a6d1b9612e80d66911faadab4f73.html#ab487a6d1b9612e80d66911faadab4f73">qb_to_xyz</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raster__quadbin_8c_afbee819387dc775b1c13d7fdb565504c.html#afbee819387dc775b1c13d7fdb565504c">raster_quadbin_from_bounds</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raster__quadbin_8c_a07eac8c18e7c6ac0b6e3d37f58ae221a.html#a07eac8c18e7c6ac0b6e3d37f58ae221a">raster_tile_value_quadbin</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raster__quadbin_8c_a350a0dfc3c17faea6b581fb9caa7bdf5.html#a350a0dfc3c17faea6b581fb9caa7bdf5">read_pixel</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raster__quadbin_8c_a683d59d59af47d462f0a1b7bb844b77c.html#a683d59d59af47d462f0a1b7bb844b77c">trajectory_quadbins</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="raster__quadbin_8c_aa85a5b017219744ba535ed557c1c2173.html#aa85a5b017219744ba535ed557c1c2173">xyz_to_qb</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="raster__quadbin_8c_aa85a5b017219744ba535ed557c1c2173.html#aa85a5b017219744ba535ed557c1c2173">xyz_to_qb</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="aa85a5b017219744ba535ed557c1c2173" name="aa85a5b017219744ba535ed557c1c2173"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa85a5b017219744ba535ed557c1c2173">&#9670;&#160;</a></span>xyz_to_qb()</h2>
+<a id="a81f432e423ffd34b3ede0513d5ec2e5f" name="a81f432e423ffd34b3ede0513d5ec2e5f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a81f432e423ffd34b3ede0513d5ec2e5f">&#9670;&#160;</a></span>QB_MERC_MAX</h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static uint64_t xyz_to_qb </td>
-          <td>(</td>
-          <td class="paramtype">uint32_t&#160;</td>
-          <td class="paramname"><em>tx</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">uint32_t&#160;</td>
-          <td class="paramname"><em>ty</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">uint32_t&#160;</td>
-          <td class="paramname"><em>tz</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
+          <td class="memname">#define QB_MERC_MAX&#160;&#160;&#160;20037508.342789244</td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
-
-<p>Morton-encode tile (x, y, z) into a QUADBIN cell. </p>
-<p >Canonical spread_bits algorithm matching CARTO quadbin-js quadbinTileToCell: scale to 2^26 grid, spread left (shifts 16→8→4→2→1), interleave x/y. </p>
 
 </div>
 </div>

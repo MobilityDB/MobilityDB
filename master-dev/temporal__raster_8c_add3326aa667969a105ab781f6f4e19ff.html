@@ -120,7 +120,7 @@ $(function() {
 <p >The raster file is supplied as bytes in any GDAL-supported format and decoded through GDAL's <code>/vsimem/</code> virtual filesystem, so no server-side file access is required. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">rasterfile</td><td>Raster file bytes (bytea) </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">quadbin</td><td>CARTO QUADBIN cell (bigint) @sqlfn <a class="el" href="meos__raster_8h_adbb297bae58b06d3ebba66b7c5a10f86.html#adbb297bae58b06d3ebba66b7c5a10f86" title="Return a Raquet tile read from a raster file via GDAL.">raquet_read()</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">quadbin</td><td>CARTO QUADBIN cell (bigint), or NULL to derive it from the raster geotransform and EPSG:3857 spatial reference @sqlfn <a class="el" href="meos__raster_8h_adbb297bae58b06d3ebba66b7c5a10f86.html#adbb297bae58b06d3ebba66b7c5a10f86" title="Return a Raquet tile read from a raster file via GDAL.">raquet_read()</a> </td></tr>
   </table>
   </dd>
 </dl>

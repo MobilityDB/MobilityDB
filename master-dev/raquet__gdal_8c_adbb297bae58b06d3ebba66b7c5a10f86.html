@@ -79,6 +79,7 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
+          <tr><td class="navtab"><a class="navtab" href="raquet__gdal_8c_ac39227a30ae3a48e67a0ff4219b4cec9.html#ac39227a30ae3a48e67a0ff4219b4cec9">derive_quadbin</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raquet__gdal_8c_a1ad6caa75bcb39f22b945dd177ce05a8.html#a1ad6caa75bcb39f22b945dd177ce05a8">gdal_to_pixtype</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raquet__gdal_8c_a967b7a4376341c79890092cd50a8162f.html#a967b7a4376341c79890092cd50a8162f">raquet_from_gdal_dataset</a></td></tr>
           <tr><td class="navtabHL"><a class="navtab" href="raquet__gdal_8c_adbb297bae58b06d3ebba66b7c5a10f86.html#adbb297bae58b06d3ebba66b7c5a10f86">raquet_read</a></td></tr>
@@ -117,7 +118,7 @@ $(function() {
 <p >GDAL decodes the file (any format it supports) and the first raster band is packed row-major into a <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> chip identified by <code>quadbin</code>. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">path</td><td>Path to a GDAL-readable raster file </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">quadbin</td><td>CARTO QUADBIN cell identifying the Web-Mercator tile </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">quadbin</td><td>CARTO QUADBIN cell identifying the Web-Mercator tile, or 0 to derive it from the raster geotransform and EPSG:3857 spatial reference </td></tr>
   </table>
   </dd>
 </dl>

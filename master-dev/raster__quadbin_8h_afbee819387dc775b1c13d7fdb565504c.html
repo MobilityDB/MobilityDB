@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: raster_tile_value_quadbin</title>
+<title>MobilityDB: raster_quadbin_from_bounds</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -79,66 +79,60 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="raster__quadbin_8h_afbee819387dc775b1c13d7fdb565504c.html#afbee819387dc775b1c13d7fdb565504c">raster_quadbin_from_bounds</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="raster__quadbin_8h_a07eac8c18e7c6ac0b6e3d37f58ae221a.html#a07eac8c18e7c6ac0b6e3d37f58ae221a">raster_tile_value_quadbin</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="raster__quadbin_8h_afbee819387dc775b1c13d7fdb565504c.html#afbee819387dc775b1c13d7fdb565504c">raster_quadbin_from_bounds</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="raster__quadbin_8h_a07eac8c18e7c6ac0b6e3d37f58ae221a.html#a07eac8c18e7c6ac0b6e3d37f58ae221a">raster_tile_value_quadbin</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raster__quadbin_8h_a683d59d59af47d462f0a1b7bb844b77c.html#a683d59d59af47d462f0a1b7bb844b77c">trajectory_quadbins</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a07eac8c18e7c6ac0b6e3d37f58ae221a" name="a07eac8c18e7c6ac0b6e3d37f58ae221a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a07eac8c18e7c6ac0b6e3d37f58ae221a">&#9670;&#160;</a></span>raster_tile_value_quadbin()</h2>
+<a id="afbee819387dc775b1c13d7fdb565504c" name="afbee819387dc775b1c13d7fdb565504c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afbee819387dc775b1c13d7fdb565504c">&#9670;&#160;</a></span>raster_quadbin_from_bounds()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structTemporal.html">Temporal</a> * raster_tile_value_quadbin </td>
+          <td class="memname">bool raster_quadbin_from_bounds </td>
           <td>(</td>
-          <td class="paramtype">const uint8_t *&#160;</td>
-          <td class="paramname"><em>pixels</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">uint16_t&#160;</td>
-          <td class="paramname"><em>width</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">uint16_t&#160;</td>
-          <td class="paramname"><em>height</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_abc0f5bc07737e498f287334775dff2b6.html#abc0f5bc07737e498f287334775dff2b6">uint64</a>&#160;</td>
-          <td class="paramname"><em>quadbin</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="meos__raster_8h_ab4899fb599b17f4121bb9a377d9dd040.html#ab4899fb599b17f4121bb9a377d9dd040">MeosPixType</a>&#160;</td>
-          <td class="paramname"><em>pixtype</em>, </td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>origin_x</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>nodata</em>, </td>
+          <td class="paramname"><em>origin_y</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>has_nodata</em>, </td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>pixel_w</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
-          <td class="paramname"><em>traj</em>&#160;</td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>pixel_h</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>xsize</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ysize</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_abc0f5bc07737e498f287334775dff2b6.html#abc0f5bc07737e498f287334775dff2b6">uint64</a> *&#160;</td>
+          <td class="paramname"><em>result</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -148,22 +142,19 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Sample a <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> raster chip along a tgeompoint trajectory. </p>
-<p >The chip is identified by its QUADBIN cell, which encodes the Web-Mercator tile coordinates and thus the full georeferencing without any separate metadata. Instants outside the tile extent or on nodata pixels are silently dropped; NULL is returned when no instants survive.</p>
+<p>Derive the QUADBIN cell of a Web-Mercator raster tile from its EPSG:3857 georeferencing. </p>
+<p >A <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> tile is a single QUADBIN cell of the Web-Mercator tile pyramid, so its EPSG:3857 origin and pixel resolution determine the cell exactly. The pixel extent gives the zoom (a tile of zoom <code>z</code> spans 2*QB_MERC_MAX / 2^z metres); the top-left origin gives the tile column and row. The raster must be a single axis-aligned Web-Mercator tile: a non-square extent, an extent that is not a power-of-two fraction of the world, or an origin off the tile grid are rejected (mixing georeferencing that is not a QUADBIN tile is an error, not a value to coerce).</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">pixels</td><td>Row-major pixel bytes (all bands interleaved or single-band depending on the <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> producer) </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">width</td><td>Tile width in pixels (typically 256) </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">height</td><td>Tile height in pixels (typically 256) </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">quadbin</td><td>CARTO QUADBIN cell identifier (uint64) </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">pixtype</td><td>Pixel data type </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">nodata</td><td>Nodata sentinel value </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">has_nodata</td><td>Whether nodata filtering is active </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">traj</td><td>Input tgeompoint trajectory (SRID 4326) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">origin_x,origin_y</td><td>Top-left corner of the raster in EPSG:3857 metres </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">pixel_w</td><td>Pixel width in metres (west-east resolution, &gt; 0) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">pixel_h</td><td>Pixel height in metres (north-south resolution, may be &lt; 0) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xsize,ysize</td><td>Raster dimensions in pixels </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">result</td><td>Derived QUADBIN cell </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>tfloat instant set, or NULL </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>true on success; on failure sets a MEOS error and returns false </dd></dl>
 
 </div>
 </div>

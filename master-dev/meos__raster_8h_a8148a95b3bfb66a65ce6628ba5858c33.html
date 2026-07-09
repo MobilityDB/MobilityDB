@@ -141,7 +141,7 @@ $(function() {
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">data</td><td>Raster file bytes (any GDAL-supported format) </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">size</td><td>Number of bytes in <code>data</code> </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">quadbin</td><td>CARTO QUADBIN cell identifying the Web-Mercator tile </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">quadbin</td><td>CARTO QUADBIN cell identifying the Web-Mercator tile, or 0 to derive it from the raster geotransform and EPSG:3857 spatial reference </td></tr>
   </table>
   </dd>
 </dl>

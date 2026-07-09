@@ -134,7 +134,7 @@ $(function() {
 <p >GDAL decodes the file (any format it supports) and the first raster band is packed row-major into a <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> chip identified by <code>quadbin</code>. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">path</td><td>Path to a GDAL-readable raster file </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">quadbin</td><td>CARTO QUADBIN cell identifying the Web-Mercator tile </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">quadbin</td><td>CARTO QUADBIN cell identifying the Web-Mercator tile, or 0 to derive it from the raster geotransform and EPSG:3857 spatial reference </td></tr>
   </table>
   </dd>
 </dl>
