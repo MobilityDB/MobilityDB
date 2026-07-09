@@ -408,6 +408,24 @@ SELECT tIntersects(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(
  {[t@Sat Jan 01 00:00:00 2000 PST, t@Sat Jan 01 12:00:00 2000 PST], (f@Sat Jan 01 12:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST]}
 (1 row)
 
+SELECT tIntersects(geometry 'CircularString(5 0, 4 3, 0 5)', tcbuffer '[Cbuffer(Point(8 6),2.5)@2000-01-01, Cbuffer(Point(4 3),2.5)@2000-01-03]');
+                                            tintersects                                             
+----------------------------------------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, t@Sun Jan 02 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tIntersects(tcbuffer '[Cbuffer(Point(4 3),2.5)@2000-01-01, Cbuffer(Point(8 6),2.5)@2000-01-03]', geometry 'CircularString(5 0, 4 3, 0 5)');
+                                                             tintersects                                                              
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[t@Sat Jan 01 00:00:00 2000 PST, t@Sun Jan 02 00:00:00 2000 PST], (f@Sun Jan 02 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tIntersects(geometry 'CircularString(5 0, 4 3, 0 5)', tcbuffer '[Cbuffer(Point(5 -3),0.5)@2000-01-01, Cbuffer(Point(5 -1),0.5)@2000-01-03]');
+                           tintersects                            
+------------------------------------------------------------------
+ [f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
 SELECT tIntersects(tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(1 1),0.5)@2000-01-03}', tcbuffer 'Cbuffer(Point(2 2),0.5)@2000-01-02');
  tintersects 
 -------------
@@ -900,6 +918,24 @@ SELECT tDwithin(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', geometry 'Linestr
             tdwithin            
 --------------------------------
  t@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT tDwithin(geometry 'CircularString(5 0, 4 3, 0 5)', tcbuffer '[Cbuffer(Point(8 6),0.5)@2000-01-01, Cbuffer(Point(4 3),0.5)@2000-01-03]', 2);
+                                              tdwithin                                              
+----------------------------------------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, t@Sun Jan 02 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tDwithin(geometry 'CircularString(5 0, 4 3, 0 5)', tcbuffer '[Cbuffer(Point(10 0),0.5)@2000-01-01, Cbuffer(Point(10 0),4.5)@2000-01-03]', 2.5);
+                                              tdwithin                                              
+----------------------------------------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, t@Sun Jan 02 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tDwithin(geometry 'CircularString(5 0, 4 3, 0 5)', tcbuffer '[Cbuffer(Point(5 -3),0.5)@2000-01-01, Cbuffer(Point(5 -1),0.5)@2000-01-03]', 0.3);
+                             tdwithin                             
+------------------------------------------------------------------
+ [f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]
 (1 row)
 
 /* Errors */

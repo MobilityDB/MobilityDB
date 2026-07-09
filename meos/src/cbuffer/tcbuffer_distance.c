@@ -1651,7 +1651,7 @@ tcbuffer_geo_ctx_make(const GSERIALIZED *gs)
   TcbSeg *segs = NULL;
   int cap = 0, n = 0;
   bool has_poly = false;
-  bool ok = tcbuffer_geo_segs(lw, false, &segs, &cap, &n, &has_poly);
+  bool ok = tcbuffer_geo_segs(lw, true, &segs, &cap, &n, &has_poly);
   lwgeom_free(lw);
   if (! ok || n == 0)
   {
@@ -1818,6 +1818,43 @@ tcbuffer_seg_edge_within_roots(double cx1, double cy1, double cx2, double cy2,
 }
 
 /**
+ * @brief Append the within-distance crossing times of one moving disc segment
+ * against one circular-arc edge, the temporal analogue of the on-span circle /
+ * off-span endpoint split of #tcbuffer_seg_arc_mindist
+ * @details On the arc's angular span the distance to the disc is
+ * | sqrt(Q(t)) - R | - r(t); setting it equal to @p dist gives
+ * sqrt(Q) = R + r(t) + dist (disc outside the circle) or
+ * sqrt(Q) = R - r(t) - dist (disc inside), each a region-crossing quadratic with
+ * the arc radius folded into R0. Off the span the nearest arc point is an
+ * endpoint, so the two endpoint region crossings are added as well. The result
+ * is a superset of the true crossings; each candidate sub-interval is then
+ * classified exactly by the arc-aware unit distance (#tcbuffer_unit_nad), so
+ * roots from the squared equation or the wrong angular regime are harmless.
+ */
+static void
+tcbuffer_seg_arc_within_roots(double cx1, double cy1, double cx2, double cy2,
+  double r1, double r2, const TcbSeg *e, double dist, double *cand, int *nc)
+{
+  const double dcx = cx2 - cx1, dcy = cy2 - cy1, dr = r2 - r1;
+  const double px = e->acx, py = e->acy, R = e->arad;
+  const double A = dcx * dcx + dcy * dcy;
+  const double B = 2.0 * ((cx1 - px) * dcx + (cy1 - py) * dcy);
+  const double C = (cx1 - px) * (cx1 - px) + (cy1 - py) * (cy1 - py);
+  /* On-span circle crossings: sqrt(Q) = R + r(t) + dist and R - r(t) - dist */
+  tcbuffer_region_within_roots(A, B, C, R + r1 + dist, dr, 0.0, 1.0, cand, nc);
+  tcbuffer_region_within_roots(A, B, C, R - r1 - dist, -dr, 0.0, 1.0, cand, nc);
+  /* Off-span regions are nearest to an arc endpoint: their region crossings */
+  for (int ep = 0; ep < 2; ep++)
+  {
+    double ex = ep == 0 ? e->x1 : e->x2;
+    double ey = ep == 0 ? e->y1 : e->y2;
+    double Be = 2.0 * ((cx1 - ex) * dcx + (cy1 - ey) * dcy);
+    double Ce = (cx1 - ex) * (cx1 - ex) + (cy1 - ey) * (cy1 - ey);
+    tcbuffer_region_within_roots(A, Be, Ce, r1 + dist, dr, 0.0, 1.0, cand, nc);
+  }
+}
+
+/**
  * @brief Comparator for sorting the candidate crossing times
  */
 static int
@@ -1842,14 +1879,21 @@ tcbufferseg_within_ctx(const Cbuffer *cb1, const Cbuffer *cb2, double dist,
   const POINT2D *p2 = GSERIALIZED_POINT2D_P(cbuffer_point_p(cb2));
   double cx1 = p1->x, cy1 = p1->y, r1 = cb1->radius;
   double cx2 = p2->x, cy2 = p2->y, r2 = cb2->radius;
-  int ncap = 2 + 4 * ctx->g.n;
+  int ncap = 2 + 8 * ctx->g.n;
   double *cand = palloc(sizeof(double) * ncap);
   int nc = 0;
   cand[nc++] = 0.0;
   cand[nc++] = 1.0;
   for (int k = 0; k < ctx->g.n; k++)
-    tcbuffer_seg_edge_within_roots(cx1, cy1, cx2, cy2, r1, r2, &ctx->g.segs[k],
-      dist, cand, &nc);
+  {
+    const TcbSeg *ed = &ctx->g.segs[k];
+    if (ed->is_arc)
+      tcbuffer_seg_arc_within_roots(cx1, cy1, cx2, cy2, r1, r2, ed, dist, cand,
+        &nc);
+    else
+      tcbuffer_seg_edge_within_roots(cx1, cy1, cx2, cy2, r1, r2, ed, dist, cand,
+        &nc);
+  }
   qsort(cand, nc, sizeof(double), tcbuffer_double_cmp);
   int m = 0;
   for (int i = 0; i < nc; i++)
