@@ -80,17 +80,6 @@ jobs:
           echo "H3_INCLUDE_DIR=$(dirname "$H3_INC")" >> $GITHUB_ENV
           echo "H3_LIBRARY=$H3_LIB" >> $GITHUB_ENV
 
-      - name: Build pgPointCloud from source (for libpc.a)
-        # The POINTCLOUD build links the vendored pgPointCloud static library
-        # (pointcloud-pg/lib/libpc.a, produced as a side-effect of its own
-        # autotools build); build it here so cmake can find it.
-        run: |
-          cd pointcloud-pg
-          ./autogen.sh
-          ./configure --with-pgconfig=/usr/lib/postgresql/17/bin/pg_config
-          make -j "$(nproc)"
-          ls -la lib/libpc.a
-
       - name: Configure (generate compile_commands.json)
         run: |
           mkdir build

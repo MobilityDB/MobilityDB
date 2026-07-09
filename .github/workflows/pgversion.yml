@@ -116,24 +116,14 @@ jobs:
           echo "H3_INCLUDE_DIR=$(dirname "$H3_INC")" >> $GITHUB_ENV
           echo "H3_LIBRARY=$H3_LIB" >> $GITHUB_ENV
 
-      - name: Build pgPointCloud from source (for libpc.a)
+      - name: Install pgPointCloud build dependencies
         if: matrix.coverage == '1'
+        # meos/src/pointcloud/CMakeLists.txt builds the vendored pgPointCloud
+        # static libpc.a as a by-product of the CMake build; it needs the
+        # autotools plus libxml2/zlib development files.
         run: |
-          # MobilityDB's POINTCLOUD=ON build links against pgPointCloud's
-          # static lib (pointcloud-pg/lib/libpc.a, produced as a side-
-          # effect of the pgPointCloud build) but does not redistribute
-          # the .so. So build the vendored pgPointCloud here just to
-          # harvest the libpc.a that meos/src/pointcloud/CMakeLists.txt
-          # links against.
           sudo apt-get -y install autoconf automake libtool \
             libxml2-dev zlib1g-dev
-          cd pointcloud-pg
-          ./autogen.sh
-          ./configure \
-            --with-pgconfig=/usr/lib/postgresql/${{ matrix.psql }}/bin/pg_config
-          make -j$(nproc)
-          # Sanity: libpc.a must land where MobilityDB's CMake will look.
-          ls -la lib/libpc.a
 
       - name: Configure for gcc
         run: |
