@@ -229,50 +229,30 @@ CREATE FUNCTION tgeometryInst(tgeometry)
   AS 'MODULE_PATHNAME', 'Temporal_to_tinstant'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- The function is not strict
-CREATE FUNCTION tgeometrySeq(tgeometry, text)
+CREATE FUNCTION tgeometrySeq(tgeometry, text DEFAULT NULL)
   RETURNS tgeometry
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 -- The function is not strict
-CREATE FUNCTION tgeometrySeq(tgeometry)
-  RETURNS tgeometry
-  AS 'SELECT @extschema@.tgeometrySeq($1, NULL)'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
--- The function is not strict
-CREATE FUNCTION tgeometrySeqSet(tgeometry, text)
+CREATE FUNCTION tgeometrySeqSet(tgeometry, text DEFAULT NULL)
   RETURNS tgeometry
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequenceset'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
--- The function is not strict
-CREATE FUNCTION tgeometrySeqSet(tgeometry)
-  RETURNS tgeometry
-  AS 'SELECT @extschema@.tgeometrySeqSet($1, NULL)'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION tgeographyInst(tgeography)
   RETURNS tgeography
   AS 'MODULE_PATHNAME', 'Temporal_to_tinstant'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- The function is not strict
-CREATE FUNCTION tgeographySeq(tgeography, text)
+CREATE FUNCTION tgeographySeq(tgeography, text DEFAULT NULL)
   RETURNS tgeography
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 -- The function is not strict
-CREATE FUNCTION tgeographySeq(tgeography)
-  RETURNS tgeography
-  AS 'SELECT @extschema@.tgeographySeq($1, NULL)'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
--- The function is not strict
-CREATE FUNCTION tgeographySeqSet(tgeography, text)
+CREATE FUNCTION tgeographySeqSet(tgeography, text DEFAULT NULL)
   RETURNS tgeography
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequenceset'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
--- The function is not strict
-CREATE FUNCTION tgeographySeqSet(tgeography)
-  RETURNS tgeography
-  AS 'SELECT @extschema@.tgeographySeqSet($1, NULL)'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION setInterp(tgeometry, text)
   RETURNS tgeometry

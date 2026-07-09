@@ -221,50 +221,30 @@ CREATE FUNCTION tgeompointInst(tgeompoint)
   AS 'MODULE_PATHNAME', 'Temporal_to_tinstant'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- The function is not strict
-CREATE FUNCTION tgeompointSeq(tgeompoint, text)
+CREATE FUNCTION tgeompointSeq(tgeompoint, text DEFAULT NULL)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 -- The function is not strict
-CREATE FUNCTION tgeompointSeq(tgeompoint)
-  RETURNS tgeompoint
-  AS 'SELECT @extschema@.tgeompointSeq($1, NULL)'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
--- The function is not strict
-CREATE FUNCTION tgeompointSeqSet(tgeompoint, text)
+CREATE FUNCTION tgeompointSeqSet(tgeompoint, text DEFAULT NULL)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequenceset'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
--- The function is not strict
-CREATE FUNCTION tgeompointSeqSet(tgeompoint)
-  RETURNS tgeompoint
-  AS 'SELECT @extschema@.tgeompointSeqSet($1, NULL)'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION tgeogpointInst(tgeogpoint)
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'Temporal_to_tinstant'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- The function is not strict
-CREATE FUNCTION tgeogpointSeq(tgeogpoint, text)
+CREATE FUNCTION tgeogpointSeq(tgeogpoint, text DEFAULT NULL)
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 -- The function is not strict
-CREATE FUNCTION tgeogpointSeq(tgeogpoint)
-  RETURNS tgeogpoint
-  AS 'SELECT @extschema@.tgeogpointSeq($1, NULL)'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
--- The function is not strict
-CREATE FUNCTION tgeogpointSeqSet(tgeogpoint, text)
+CREATE FUNCTION tgeogpointSeqSet(tgeogpoint, text DEFAULT NULL)
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequenceset'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
--- The function is not strict
-CREATE FUNCTION tgeogpointSeqSet(tgeogpoint)
-  RETURNS tgeogpoint
-  AS 'SELECT @extschema@.tgeogpointSeqSet($1, NULL)'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION setInterp(tgeompoint, text)
   RETURNS tgeompoint

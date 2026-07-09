@@ -190,25 +190,15 @@ CREATE FUNCTION tnpointInst(tnpoint)
   AS 'MODULE_PATHNAME', 'Temporal_to_tinstant'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- The function is not strict
-CREATE FUNCTION tnpointSeq(tnpoint, text)
+CREATE FUNCTION tnpointSeq(tnpoint, text DEFAULT NULL)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 -- The function is not strict
-CREATE FUNCTION tnpointSeq(tnpoint)
-  RETURNS tnpoint
-  AS 'SELECT @extschema@.tnpointSeq($1, NULL)'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
--- The function is not strict
-CREATE FUNCTION tnpointSeqSet(tnpoint, text)
+CREATE FUNCTION tnpointSeqSet(tnpoint, text DEFAULT NULL)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Temporal_to_tsequenceset'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
--- The function is not strict
-CREATE FUNCTION tnpointSeqSet(tnpoint)
-  RETURNS tnpoint
-  AS 'SELECT @extschema@.tnpointSeqSet($1, NULL)'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION setInterp(tnpoint, text)
   RETURNS tnpoint

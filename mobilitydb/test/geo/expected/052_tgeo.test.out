@@ -1285,7 +1285,6 @@ SELECT asEWKT(setInterp(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-0
 ERROR:  Cannot transform input value to a temporal discrete sequence
 SELECT asEWKT(tgeometrySeq(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'));
 ERROR:  Cannot transform input value to a temporal sequence
-CONTEXT:  SQL function "tgeometryseq" statement 1
 SELECT asEWKT(tgeographyInst(tgeography 'Point(1.5 1.5)@2000-01-01'));
                         asewkt                         
 -------------------------------------------------------
@@ -1353,7 +1352,6 @@ SELECT asEWKT(setInterp(tgeography '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@
 ERROR:  Cannot transform input value to a temporal discrete sequence
 SELECT asEWKT(tgeographySeq(tgeography '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'));
 ERROR:  Cannot transform input value to a temporal sequence
-CONTEXT:  SQL function "tgeographyseq" statement 1
 SELECT asText(appendInstant(tgeometry 'Point(1 1)@2000-01-01', tgeometry 'Point(1 1)@2000-01-02'));
                                        astext                                       
 ------------------------------------------------------------------------------------
