@@ -588,6 +588,14 @@ typedef struct
   double x1, y1, x2, y2;
   double xmin, ymin, xmax, ymax;
   bool is_poly;
+  /* Circular-arc edge (from a CIRCULARSTRING): when @p is_arc is true the edge
+   * is the arc of the circle centred at (@p acx, @p acy) with radius @p arad,
+   * from angle @p at0 to @p at1 traversed counterclockwise when @p accw. The
+   * endpoints (x1,y1)/(x2,y2) are the arc start/end; the bounding box already
+   * accounts for the arc bulge (cardinal extremes within the angular span). */
+  bool is_arc;
+  double acx, acy, arad, at0, at1;
+  bool accw;
 } TcbSeg;
 
 /**
@@ -618,6 +626,124 @@ tcbuffer_segs_add_ptarray(const POINTARRAY *pa, bool is_poly, TcbSeg **arr,
     s->xmin = fmin(a->x, b->x); s->xmax = fmax(a->x, b->x);
     s->ymin = fmin(a->y, b->y); s->ymax = fmax(a->y, b->y);
     s->is_poly = is_poly;
+    s->is_arc = false;
+  }
+}
+
+/**
+ * @brief Normalise an angle to [0, 2*pi)
+ */
+static double
+tcbuffer_angle_norm(double a)
+{
+  double r = fmod(a, 2.0 * M_PI);
+  if (r < 0.0)
+    r += 2.0 * M_PI;
+  return r;
+}
+
+/**
+ * @brief True if the angle @p phi lies within the arc's angular span
+ */
+static bool
+tcbuffer_arc_contains_angle(const TcbSeg *e, double phi)
+{
+  double sweep = e->accw ?
+    tcbuffer_angle_norm(e->at1 - e->at0) : tcbuffer_angle_norm(e->at0 - e->at1);
+  double off = e->accw ?
+    tcbuffer_angle_norm(phi - e->at0) : tcbuffer_angle_norm(e->at0 - phi);
+  return off <= sweep + 1e-12;
+}
+
+/**
+ * @brief Set an arc edge's bounding box: the chord endpoints extended with any
+ * cardinal-direction circle extreme (0, pi/2, pi, -pi/2) that lies within the
+ * arc's angular span, so the bucket hierarchy never prunes away the arc bulge
+ */
+static void
+tcbuffer_arc_set_bbox(TcbSeg *e)
+{
+  double xmin = fmin(e->x1, e->x2), xmax = fmax(e->x1, e->x2);
+  double ymin = fmin(e->y1, e->y2), ymax = fmax(e->y1, e->y2);
+  const double ang[4] = {0.0, M_PI_2, M_PI, -M_PI_2};
+  const double ex[4] = {e->acx + e->arad, e->acx, e->acx - e->arad, e->acx};
+  const double ey[4] = {e->acy, e->acy + e->arad, e->acy, e->acy - e->arad};
+  for (int k = 0; k < 4; k++)
+    if (tcbuffer_arc_contains_angle(e, ang[k]))
+    {
+      if (ex[k] < xmin) xmin = ex[k];
+      if (ex[k] > xmax) xmax = ex[k];
+      if (ey[k] < ymin) ymin = ey[k];
+      if (ey[k] > ymax) ymax = ey[k];
+    }
+  e->xmin = xmin; e->xmax = xmax; e->ymin = ymin; e->ymax = ymax;
+}
+
+/**
+ * @brief Append one arc edge, defined by three consecutive points of a
+ * circular string (start, any interior point, end), to the segment array.
+ * Collinear triples degenerate to two straight segments. Mirrors the exact
+ * circumcentre construction of the native clip engine (@ref tpoint_geom_clip.c).
+ */
+static void
+tcbuffer_segs_add_arc(double ax, double ay, double bx, double by, double cx,
+  double cy, TcbSeg **arr, int *cap, int *cnt)
+{
+  if (*cnt + 2 > *cap)
+  {
+    int newcap = (*cap == 0) ? 64 : *cap * 2;
+    while (*cnt + 2 > newcap)
+      newcap *= 2;
+    *arr = (*arr == NULL) ? palloc(sizeof(TcbSeg) * newcap) :
+      repalloc(*arr, sizeof(TcbSeg) * newcap);
+    *cap = newcap;
+  }
+  /* Twice the signed area of triangle ABC; zero => collinear */
+  double d = 2.0 * (ax * (by - cy) + bx * (cy - ay) + cx * (ay - by));
+  if (fabs(d) < 1e-12)
+  {
+    /* Collinear: two straight segments A->B, B->C */
+    for (int seg = 0; seg < 2; seg++)
+    {
+      double p1x = seg == 0 ? ax : bx, p1y = seg == 0 ? ay : by;
+      double p2x = seg == 0 ? bx : cx, p2y = seg == 0 ? by : cy;
+      TcbSeg *s = &(*arr)[(*cnt)++];
+      s->x1 = p1x; s->y1 = p1y; s->x2 = p2x; s->y2 = p2y;
+      s->xmin = fmin(p1x, p2x); s->xmax = fmax(p1x, p2x);
+      s->ymin = fmin(p1y, p2y); s->ymax = fmax(p1y, p2y);
+      s->is_poly = false; s->is_arc = false;
+    }
+    return;
+  }
+  double a2 = ax * ax + ay * ay, b2 = bx * bx + by * by, c2 = cx * cx + cy * cy;
+  TcbSeg *s = &(*arr)[(*cnt)++];
+  s->acx = (a2 * (by - cy) + b2 * (cy - ay) + c2 * (ay - by)) / d;
+  s->acy = (a2 * (cx - bx) + b2 * (ax - cx) + c2 * (bx - ax)) / d;
+  s->arad = hypot(ax - s->acx, ay - s->acy);
+  s->x1 = ax; s->y1 = ay; s->x2 = cx; s->y2 = cy;
+  s->at0 = atan2(ay - s->acy, ax - s->acx);
+  s->at1 = atan2(cy - s->acy, cx - s->acx);
+  s->accw = ((bx - ax) * (cy - ay) - (by - ay) * (cx - ax)) > 0.0;
+  s->is_poly = false; s->is_arc = true;
+  tcbuffer_arc_set_bbox(s);
+}
+
+/**
+ * @brief Append the arc edges of a circular string (walked in three-point
+ * groups) to the segment array
+ */
+static void
+tcbuffer_segs_add_circstring(const LWCIRCSTRING *circ, TcbSeg **arr, int *cap,
+  int *cnt)
+{
+  const POINTARRAY *pa = circ->points;
+  int np = (int) pa->npoints;
+  for (int i = 0; i + 2 < np; i += 2)
+  {
+    const POINT2D *a = getPoint2d_cp(pa, i);
+    const POINT2D *b = getPoint2d_cp(pa, i + 1);
+    const POINT2D *c = getPoint2d_cp(pa, i + 2);
+    tcbuffer_segs_add_arc(a->x, a->y, b->x, b->y, c->x, c->y, arr, cap, cnt);
   }
 }
 
@@ -627,14 +753,21 @@ tcbuffer_segs_add_ptarray(const POINTARRAY *pa, bool is_poly, TcbSeg **arr,
  * then falls back to the exact traversed-area path).
  */
 static bool
-tcbuffer_geo_segs(const LWGEOM *lw, TcbSeg **arr, int *cap, int *cnt,
-  bool *has_poly)
+tcbuffer_geo_segs(const LWGEOM *lw, bool allow_arc, TcbSeg **arr, int *cap,
+  int *cnt, bool *has_poly)
 {
   switch (lw->type)
   {
     case POINTTYPE:
       tcbuffer_segs_add_ptarray(lwgeom_as_lwpoint(lw)->point, false, arr, cap,
         cnt);
+      return true;
+    case CIRCSTRINGTYPE:
+      /* Arc-exact decomposition, only where the caller consumes arc edges (the
+       * nearest-approach distance). Otherwise fall back to the exact path. */
+      if (! allow_arc)
+        return false;
+      tcbuffer_segs_add_circstring(lwgeom_as_lwcircstring(lw), arr, cap, cnt);
       return true;
     case LINETYPE:
       tcbuffer_segs_add_ptarray(lwgeom_as_lwline(lw)->points, false, arr, cap,
@@ -661,7 +794,7 @@ tcbuffer_geo_segs(const LWGEOM *lw, TcbSeg **arr, int *cap, int *cnt,
     {
       const LWCOLLECTION *c = lwgeom_as_lwcollection(lw);
       for (uint32_t i = 0; i < c->ngeoms; i++)
-        if (! tcbuffer_geo_segs(c->geoms[i], arr, cap, cnt, has_poly))
+        if (! tcbuffer_geo_segs(c->geoms[i], allow_arc, arr, cap, cnt, has_poly))
           return false;
       return true;
     }
@@ -768,6 +901,105 @@ tcbuffer_seg_edge_mindist(double cx1, double cy1, double cx2, double cy2,
       C = k0 * k0 / l2;
     }
     double m = tcbuffer_minfun(A, B, C, r1, dr, lo, hi);
+    if (m < best) best = m;
+  }
+  return best;
+}
+
+/**
+ * @brief Minimum of [ dist(c(t), arc) - r(t) ] for t in [0,1], where the centre
+ * moves from (cx1,cy1) to (cx2,cy2) and the radius from r1 to r2, and @p e is a
+ * circular-arc edge.
+ * @details Let Q(t) = |c(t) - centre|^2 = A t^2 + B t + C. Where the foot angle
+ * phi(t) lies within the arc's angular span the distance to the arc is
+ * | sqrt(Q(t)) - R |, so the distance to the moving disc is
+ * | sqrt(Q(t)) - R | - r(t); its minimisers over t are the interval endpoints,
+ * the circle crossings sqrt(Q)=R (kinks of the absolute value), and the
+ * stationary points, whose squared equation (Q')^2 = 4 dr^2 Q is independent of
+ * the sign branch and of R (identical to #tcbuffer_minfun). Where phi(t) is
+ * outside the span the nearest arc point is an endpoint, covered by the two
+ * endpoint point-distance minimisations. Taking the minimum over the angle-gated
+ * on-span candidates and the two endpoint candidates is exact.
+ */
+static double
+tcbuffer_seg_arc_mindist(double cx1, double cy1, double cx2, double cy2,
+  double r1, double r2, const TcbSeg *e)
+{
+  const double dcx = cx2 - cx1, dcy = cy2 - cy1;
+  const double dr = r2 - r1;
+  const double px = e->acx, py = e->acy, R = e->arad;
+  const double A = dcx * dcx + dcy * dcy;
+  const double B = 2.0 * ((cx1 - px) * dcx + (cy1 - py) * dcy);
+  const double C = (cx1 - px) * (cx1 - px) + (cy1 - py) * (cy1 - py);
+
+  double cand[8];
+  int nc = 0;
+  cand[nc++] = 0.0;
+  cand[nc++] = 1.0;
+  /* Circle crossings Q(t) = R^2 */
+  {
+    double c0 = C - R * R;
+    if (fabs(A) > 1e-18)
+    {
+      double disc = B * B - 4.0 * A * c0;
+      if (disc >= 0.0)
+      {
+        double sd = sqrt(disc);
+        cand[nc++] = (-B + sd) / (2.0 * A);
+        cand[nc++] = (-B - sd) / (2.0 * A);
+      }
+    }
+    else if (fabs(B) > 1e-18)
+      cand[nc++] = -c0 / B;
+  }
+  /* Vertex of Q (closest approach to the centre) */
+  if (fabs(A) > 1e-18)
+    cand[nc++] = -B / (2.0 * A);
+  /* Stationary points of | sqrt(Q) - R | - r(t): (Q')^2 = 4 dr^2 Q */
+  {
+    double a2 = A * (A - dr * dr);
+    double a1 = B * (A - dr * dr);
+    double a0 = 0.25 * B * B - C * dr * dr;
+    if (fabs(a2) > 1e-18)
+    {
+      double disc = a1 * a1 - 4.0 * a2 * a0;
+      if (disc >= 0.0)
+      {
+        double sd = sqrt(disc);
+        cand[nc++] = (-a1 + sd) / (2.0 * a2);
+        cand[nc++] = (-a1 - sd) / (2.0 * a2);
+      }
+    }
+    else if (fabs(a1) > 1e-18)
+      cand[nc++] = -a0 / a1;
+  }
+
+  double best = DBL_MAX;
+  /* On-span candidates: exact distance to the arc's circle, angle-gated */
+  for (int i = 0; i < nc; i++)
+  {
+    double t = cand[i];
+    if (t < 0.0) t = 0.0;
+    if (t > 1.0) t = 1.0;
+    double q = A * t * t + B * t + C;
+    if (q < 0.0) q = 0.0;
+    double cpx = cx1 + dcx * t, cpy = cy1 + dcy * t;
+    if (! tcbuffer_arc_contains_angle(e, atan2(cpy - py, cpx - px)))
+      continue;
+    double f = fabs(sqrt(q) - R) - (r1 + dr * t);
+    if (f < best) best = f;
+  }
+  /* Off-span regions are nearest to an arc endpoint: two point-distance
+   * minimisations over the whole [0,1] (never under-estimate the true arc
+   * distance, and equal it where an endpoint is the nearest arc point) */
+  for (int ep = 0; ep < 2; ep++)
+  {
+    double ex = ep == 0 ? e->x1 : e->x2;
+    double ey = ep == 0 ? e->y1 : e->y2;
+    double Ae = A;
+    double Be = 2.0 * ((cx1 - ex) * dcx + (cy1 - ey) * dcy);
+    double Ce = (cx1 - ex) * (cx1 - ex) + (cy1 - ey) * (cy1 - ey);
+    double m = tcbuffer_minfun(Ae, Be, Ce, r1, dr, 0.0, 1.0);
     if (m < best) best = m;
   }
   return best;
@@ -1042,7 +1274,7 @@ tcbuffer_geo_shortestline_analytic(const Temporal *temp,
   TcbSeg *segs = NULL;
   int cap = 0, n = 0;
   bool has_poly = false;
-  bool ok = tcbuffer_geo_segs(lw, &segs, &cap, &n, &has_poly);
+  bool ok = tcbuffer_geo_segs(lw, false, &segs, &cap, &n, &has_poly);
   lwgeom_free(lw);
   if (! ok || n == 0)
   {
@@ -1279,7 +1511,9 @@ tcbuffer_unit_nad(double cx1, double cy1, double r1, double cx2, double cy2,
         if (dx * dx + dy * dy >= (*best) * (*best))
           continue;
       }
-      double m = tcbuffer_seg_edge_mindist(cx1, cy1, cx2, cy2, r1, r2, ed);
+      double m = ed->is_arc ?
+        tcbuffer_seg_arc_mindist(cx1, cy1, cx2, cy2, r1, r2, ed) :
+        tcbuffer_seg_edge_mindist(cx1, cy1, cx2, cy2, r1, r2, ed);
       if (m < *best) *best = m;
     }
   }
@@ -1329,7 +1563,7 @@ nad_tcbuffer_geo_analytic(const Temporal *temp, const GSERIALIZED *gs)
   TcbSeg *segs = NULL;
   int cap = 0, n = 0;
   bool has_poly = false;
-  bool ok = tcbuffer_geo_segs(lw, &segs, &cap, &n, &has_poly);
+  bool ok = tcbuffer_geo_segs(lw, true, &segs, &cap, &n, &has_poly);
   lwgeom_free(lw);
 
   /* Curved / unsupported geometry, or no segments: fall back to the exact
@@ -1417,7 +1651,7 @@ tcbuffer_geo_ctx_make(const GSERIALIZED *gs)
   TcbSeg *segs = NULL;
   int cap = 0, n = 0;
   bool has_poly = false;
-  bool ok = tcbuffer_geo_segs(lw, &segs, &cap, &n, &has_poly);
+  bool ok = tcbuffer_geo_segs(lw, false, &segs, &cap, &n, &has_poly);
   lwgeom_free(lw);
   if (! ok || n == 0)
   {

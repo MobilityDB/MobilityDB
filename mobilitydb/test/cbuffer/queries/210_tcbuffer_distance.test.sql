@@ -176,6 +176,13 @@ SELECT round(tcbuffer 'Cbuffer(Point(0 0), 1)@2000-01-01' |=| geometry 'Polygon(
 SELECT round(tcbuffer 'Cbuffer(Point(0 0), 1)@2000-01-01' |=| geometry 'Polygon((-10 -10,-10 10,10 10,10 -10,-10 -10))', 6);
 SELECT round(tcbuffer 'Cbuffer(Point(0 0), 1)@2000-01-01' |=| geometry 'Linestring(4 -3,4 6)', 6);
 SELECT round(tcbuffer 'Cbuffer(Point(0 0), 1)@2000-01-01' |=| geometry 'Circularstring(5 0,7 2,9 0)', 6);
+-- Circular-arc input: on-span bulge, non-vertex arc interior (discriminates native
+-- arc-exact from GEOS stroking), off-span endpoint, inside-circle, and moving
+SELECT round(tcbuffer 'Cbuffer(Point(0 8), 1)@2000-01-01' |=| geometry 'CircularString(5 0, 0 5, -5 0)', 6);
+SELECT round(tcbuffer 'Cbuffer(Point(3 8), 1)@2000-01-01' |=| geometry 'CircularString(5 0, 0 5, -5 0)', 6);
+SELECT round(tcbuffer 'Cbuffer(Point(0 -10), 1)@2000-01-01' |=| geometry 'CircularString(5 0, 0 5, -5 0)', 6);
+SELECT round(tcbuffer 'Cbuffer(Point(0 0), 5)@2000-01-01' |=| geometry 'CircularString(5 0, 0 5, -5 0)', 6);
+SELECT round(tcbuffer '[Cbuffer(Point(0 8), 1)@2000-01-01, Cbuffer(Point(0 5), 1)@2000-01-02]' |=| geometry 'CircularString(5 0, 0 5, -5 0)', 6);
 SELECT round(geometry 'Polygon((5 5,5 8,8 8,8 5,5 5))' |=| tcbuffer 'Cbuffer(Point(0 0), 1)@2000-01-01', 6);
 SELECT round(tcbuffer '[Cbuffer(Point(0 0), 1)@2000-01-01, Cbuffer(Point(10 0), 2)@2000-01-02, Cbuffer(Point(10 10), 1)@2000-01-03]' |=| geometry 'Polygon((20 20,20 24,24 24,24 20,20 20))', 6);
 SELECT round(tcbuffer '[Cbuffer(Point(0 0), 1)@2000-01-01, Cbuffer(Point(10 0), 2)@2000-01-02, Cbuffer(Point(10 10), 1)@2000-01-03]' |=| geometry 'Linestring(20 -5,20 20)', 6);
