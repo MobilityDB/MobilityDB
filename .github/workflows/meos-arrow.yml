@@ -189,19 +189,6 @@ jobs:
           python3 -m pip install --upgrade pip
           python3 -m pip install pyarrow duckdb
 
-      # MEOS's POINTCLOUD=ON build links pgPointCloud's static libpc.a,
-      # produced as a side-effect of the upstream autotools build. The
-      # source is vendored at pointcloud-pg/; run its autotools build to
-      # harvest libpc.a.
-      - name: Build pgPointCloud from source (for libpc.a)
-        run: |
-          cd pointcloud-pg
-          ./autogen.sh
-          ./configure \
-            --with-pgconfig=/usr/lib/postgresql/17/bin/pg_config
-          make -j $(nproc)
-          ls -la lib/libpc.a
-
       # Build MEOS over the FULL temporal base type surface the per-type
       # Arrow conformance covers: scalars + geo points are always on;
       # -DCBUFFER -DPOSE -DRGEO -DNPOINT add the decomposed extended
@@ -218,7 +205,8 @@ jobs:
             -DCBUFFER=on -DPOSE=on -DRGEO=on -DNPOINT=on \
             -DH3=on -DH3_INCLUDE_DIR="$H3_INCLUDE_DIR" \
             -DH3_LIBRARY="$H3_LIBRARY" \
-            -DPOINTCLOUD=on -DQUADBIN=on -DARROW=on ..
+            -DPOINTCLOUD=on -DQUADBIN=on -DARROW=on \
+            -DPOSTGRESQL_PG_CONFIG=/usr/lib/postgresql/17/bin/pg_config ..
           make -j $(nproc)
           sudo make install
 

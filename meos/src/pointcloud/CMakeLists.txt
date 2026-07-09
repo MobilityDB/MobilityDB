@@ -107,20 +107,39 @@ if(POINTCLOUD)
   # pgpointcloud does not ship a standalone shared library —
   # `pointcloud-1.2.so` is the PostgreSQL extension, not a linkable
   # libpointcloud.so. Instead we link against the static `libpc.a`
-  # built as a by-product of the upstream autotools build. The user
-  # must have run `./configure && make` inside `pointcloud-pg/` at
-  # least once for this file to exist.
+  # built as a by-product of the upstream autotools build.
   set(POINTCLOUD_LIBPC
     ${CMAKE_SOURCE_DIR}/pointcloud-pg/lib/libpc.a)
   set(POINTCLOUD_LIBLAZPERF
     ${CMAKE_SOURCE_DIR}/pointcloud-pg/lib/liblazperf.a)
+
+  # Build libpc.a from the vendored subtree as a by-product of the CMake build
+  # instead of requiring a manual `./autogen.sh && ./configure && make` first,
+  # so POINTCLOUD=ON works on a clean checkout and CI needs no dedicated step —
+  # the same way H3 (libh3) and GDAL resolve automatically. The autotools build
+  # needs autoconf/automake/libtool and libxml2/zlib development files.
   if(NOT EXISTS ${POINTCLOUD_LIBPC})
-    message(FATAL_ERROR
-      "POINTCLOUD=ON but ${POINTCLOUD_LIBPC} not found. "
-      "Run `cd pointcloud-pg && ./autogen.sh && ./configure "
-      "--with-pgconfig=\$(pg_config-path) [--with-lazperf=DIR] && "
-      "make` first — libpc.a is built as a side-effect and is "
-      "needed at MobilityDB link time.")
+    set(_pc_pgconfig ${POSTGRESQL_PG_CONFIG})
+    if(NOT _pc_pgconfig)
+      find_program(_pc_pgconfig NAMES pg_config)
+    endif()
+    if(NOT _pc_pgconfig)
+      # Not resolvable at configure time (e.g. a configure-only analysis build
+      # with no PG on PATH); fall back to the PATH lookup done when the build
+      # actually runs the command. Pass -DPOSTGRESQL_PG_CONFIG for an explicit
+      # path when pg_config is not on PATH at build time.
+      set(_pc_pgconfig pg_config)
+    endif()
+    add_custom_command(
+      OUTPUT ${POINTCLOUD_LIBPC}
+      COMMAND ./autogen.sh
+      COMMAND ./configure --with-pgconfig=${_pc_pgconfig}
+      COMMAND make
+      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/pointcloud-pg
+      COMMENT "Building vendored pgPointCloud static libpc.a (${_pc_pgconfig})"
+      VERBATIM)
+    add_custom_target(pointcloud_libpc DEPENDS ${POINTCLOUD_LIBPC})
+    add_dependencies(pointcloud pointcloud_libpc)
   endif()
 
   # When the pgPointCloud subtree was configured --with-lazperf=DIR,
