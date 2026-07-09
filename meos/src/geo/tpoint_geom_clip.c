@@ -2166,6 +2166,284 @@ tpoint_linear_dwithin_geom(const Temporal *temp, const GSERIALIZED *gs,
   return result;
 }
 
+/*****************************************************************************
+ * Temporal distance (tDistance) native engine
+ *
+ * Distance-value sibling of the within-distance engine above. It produces the
+ * temporal float distance from a moving point to a whole (possibly curved) 2D
+ * geometry, lifting the point-operand-only restriction of the generic lifting
+ * path (whose per-segment turning-point function can only represent the
+ * distance to a single static point, i.e. at most one interior extremum).
+ *
+ * For each trajectory segment the distance to the geometry is the pointwise
+ * minimum, over all edges, of the exact point-to-edge distance. Its turning
+ * points are the union of the per-edge critical times: the perpendicular-foot
+ * and endpoint-closest-approach times of a straight edge, the radial extremum
+ * and angular-sector crossing times of an arc edge, and the region-boundary
+ * times where the nearest feature of an edge changes. At every such time the
+ * exact distance to the whole geometry is emitted as a temporal float instant,
+ * with linear interpolation in between, exactly as the point-to-point temporal
+ * distance samples its analytic turning points. The global minimum of the
+ * distance over a segment is min over edges of the per-edge minimum over the
+ * segment (the two minimisations commute), so emitting every per-edge extremum
+ * makes minValue exact.
+ *****************************************************************************/
+
+/**
+ * @brief Return the exact distance from a point to the whole geometry, taking
+ * the polygon interior into account (a point inside a filled polygon is at
+ * distance zero)
+ */
+static double
+point_geom_dist(double px, double py, Edge **edges, int nedges)
+{
+  double best = point_edge_dist2(px, py, edges[0]);
+  for (int i = 1; i < nedges; i++)
+  {
+    const double d2 = point_edge_dist2(px, py, edges[i]);
+    if (d2 < best)
+      best = d2;
+  }
+  /* On (or numerically on) the boundary: distance is zero */
+  if (best <= FP_TOLERANCE)
+    return 0.0;
+  /* Strictly inside a filled polygon: distance is zero. The horizontal-ray
+   * even-odd test of #point_in_polygon miscounts when the query height aligns
+   * exactly with a vertex or an arc junction, which the turning-point sampler
+   * can hit deterministically. Take the majority vote of the test at the point
+   * and at two tiny vertical nudges that move the ray off any aligned junction;
+   * the nudge is far below any real feature size so a strictly interior or
+   * strictly exterior point is unaffected */
+  const double eps = 1e-9 * FP_MAX(1.0, fabs(py));
+  int inside = point_in_polygon(px, py, edges, nedges) +
+    point_in_polygon(px, py + eps, edges, nedges) +
+    point_in_polygon(px, py - eps, edges, nedges);
+  return (inside >= 2) ? 0.0 : sqrt(best);
+}
+
+/**
+ * @brief Append to the event array the [0,1] trajectory-segment critical times
+ * of the distance from the moving point to one edge
+ * @details The candidates are the local extrema and nearest-feature switch
+ * times of the exact point-to-edge distance: for a point the single closest
+ * approach; for a straight edge the perpendicular-foot time, the two
+ * endpoint-closest-approach times, and the two foot-parameter region
+ * boundaries; for an arc edge the radial extremum, the supporting-circle
+ * crossings (where the distance reaches its zero minimum), the two
+ * endpoint-closest approaches, and the two angular-sector boundary crossings.
+ * Spurious candidates are harmless because the distance value emitted at each
+ * time is the exact distance to the whole geometry
+ */
+static void
+distance_cands_from_edge(double ax, double ay, double rx, double ry,
+  const Edge *e, MeosArray *ev)
+{
+  const double A = rx * rx + ry * ry;
+  /* Constant (zero-length) trajectory segment: no interior turning point */
+  if (A < FP_TOLERANCE)
+    return;
+  switch (e->etype)
+  {
+    case EDGE_POINT:
+    {
+      const double wx = ax - e->x1, wy = ay - e->y1;
+      add_within_root(-(wx * rx + wy * ry) / A, ev);
+      return;
+    }
+    case EDGE_LINE:
+    case EDGE_POLY:
+    {
+      const double w0x = ax - e->x1, w0y = ay - e->y1;
+      const double w1x = ax - e->x2, w1y = ay - e->y2;
+      /* Closest approach to each segment endpoint */
+      add_within_root(-(w0x * rx + w0y * ry) / A, ev);
+      add_within_root(-(w1x * rx + w1y * ry) / A, ev);
+      const double ux = e->x2 - e->x1, uy = e->y2 - e->y1;
+      const double l2 = ux * ux + uy * uy;
+      if (l2 > FP_TOLERANCE)
+      {
+        /* Perpendicular-foot time (moving point on the supporting line) */
+        const double k1 = rx * uy - ry * ux;
+        if (fabs(k1) > FP_TOLERANCE)
+          add_within_root(-(w0x * uy - w0y * ux) / k1, ev);
+        /* Foot-parameter region boundaries (s = 0 and s = 1) */
+        const double ru = rx * ux + ry * uy;
+        if (fabs(ru) > FP_TOLERANCE)
+        {
+          const double w0u = w0x * ux + w0y * uy;
+          add_within_root(-w0u / ru, ev);
+          add_within_root((l2 - w0u) / ru, ev);
+        }
+      }
+      return;
+    }
+    default: /* EDGE_ARC / EDGE_POLYARC */
+    {
+      const double wx = ax - e->cx, wy = ay - e->cy;
+      /* Radial extremum: the time at which || P(t) - center || is stationary
+       * (the distance-to-arc minimum when the segment stays on one side of the
+       * supporting circle) */
+      add_within_root(-(wx * rx + wy * ry) / A, ev);
+      /* Supporting-circle crossings, where the distance to the arc reaches its
+       * zero minimum (a kink not seen by the radial extremum): the roots of
+       * || P(t) - center ||^2 = radius^2 */
+      add_within_quad_roots(A, 2.0 * (wx * rx + wy * ry),
+        wx * wx + wy * wy - e->radius * e->radius, ev);
+      /* Closest approach to each arc endpoint */
+      const double w0x = ax - e->x1, w0y = ay - e->y1;
+      const double w1x = ax - e->x2, w1y = ay - e->y2;
+      add_within_root(-(w0x * rx + w0y * ry) / A, ev);
+      add_within_root(-(w1x * rx + w1y * ry) / A, ev);
+      /* Angular-sector boundary crossings (rays from the center through the
+       * arc endpoints) */
+      const double d0x = e->x1 - e->cx, d0y = e->y1 - e->cy;
+      const double den0 = rx * d0y - ry * d0x;
+      if (fabs(den0) > FP_TOLERANCE)
+        add_within_root(-(wx * d0y - wy * d0x) / den0, ev);
+      const double d1x = e->x2 - e->cx, d1y = e->y2 - e->cy;
+      const double den1 = rx * d1y - ry * d1x;
+      if (fabs(den1) > FP_TOLERANCE)
+        add_within_root(-(wx * d1y - wy * d1x) / den1, ev);
+      return;
+    }
+  }
+}
+
+/**
+ * @brief Return the temporal float distance of one temporal sequence point
+ * with linear interpolation to a geometry given as an edge array
+ */
+static TSequence *
+tpointseq_distance_geom(const TSequence *seq, Edge **edges, int nedges)
+{
+  assert(seq); assert(edges); assert(nedges > 0);
+  assert(seq->temptype == T_TGEOMPOINT);
+  assert(MEOS_FLAGS_LINEAR_INTERP(seq->flags));
+
+  /* Singleton sequence */
+  if (seq->count == 1)
+  {
+    const TInstant *inst = TSEQUENCE_INST_N(seq, 0);
+    const POINT2D *p = DATUM_POINT2D_P(tinstant_value_p(inst));
+    double d = point_geom_dist(p->x, p->y, edges, nedges);
+    TInstant *resinst = tinstant_make(Float8GetDatum(d), T_TFLOAT, inst->t);
+    TSequence *res = tsequence_make(&resinst, 1, true, true, LINEAR, NORMALIZE);
+    pfree(resinst);
+    return res;
+  }
+
+  /* Upper bound on the number of result instants: the two endpoints of every
+   * segment plus up to six interior turning points per edge and per segment */
+  int maxinsts = 1 + (seq->count - 1) * (nedges * 6 + 3);
+  TInstant **instants = palloc(sizeof(TInstant *) * maxinsts);
+  int ninsts = 0;
+  const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
+  const POINT2D *a = DATUM_POINT2D_P(tinstant_value_p(inst1));
+  instants[ninsts++] = tinstant_make(
+    Float8GetDatum(point_geom_dist(a->x, a->y, edges, nedges)), T_TFLOAT,
+    inst1->t);
+  /* Loop for each segment */
+  for (int i = 1; i < seq->count; i++)
+  {
+    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
+    const POINT2D *b = DATUM_POINT2D_P(tinstant_value_p(inst2));
+    const double ax = a->x, ay = a->y, rx = b->x - ax, ry = b->y - ay;
+
+    /* Gather the interior turning points of the distance to every edge */
+    events->count = 0;
+    for (int j = 0; j < nedges; j++)
+      distance_cands_from_edge(ax, ay, rx, ry, edges[j], events);
+
+    /* Sort the candidate parameters and emit an instant for each interior one
+     * with the exact distance to the whole geometry */
+    qsort(events->elems, events->count, sizeof(double), float8_qsort_cmp);
+    const double *ev = (double *) events->elems;
+    const double duration = (double) (inst2->t - inst1->t);
+    TimestampTz prevt = inst1->t;
+    for (int k = 0; k < (int) events->count; k++)
+    {
+      const double p = ev[k];
+      if (p <= FP_TOLERANCE || p >= 1.0 - FP_TOLERANCE)
+        continue;
+      if (k > 0 && fabs(p - ev[k - 1]) < FP_TOLERANCE)
+        continue;
+      TimestampTz t = inst1->t + (TimestampTz) (duration * p);
+      /* Keep the instants strictly increasing and off the segment endpoints */
+      if (t <= prevt || t >= inst2->t)
+        continue;
+      const double x = ax + p * rx, y = ay + p * ry;
+      instants[ninsts++] = tinstant_make(
+        Float8GetDatum(point_geom_dist(x, y, edges, nedges)), T_TFLOAT, t);
+      prevt = t;
+    }
+    /* End instant of the segment */
+    instants[ninsts++] = tinstant_make(
+      Float8GetDatum(point_geom_dist(b->x, b->y, edges, nedges)), T_TFLOAT,
+      inst2->t);
+    inst1 = inst2;
+    a = b;
+  }
+
+  return tsequence_make_free(instants, ninsts, seq->period.lower_inc,
+    seq->period.upper_inc, LINEAR, NORMALIZE);
+}
+
+/**
+ * @ingroup meos_internal_geo
+ * @brief Return the temporal float distance between a temporal geometric point
+ * with linear interpolation and a 2D geometry
+ * @details Native GEOS-free counterpart of the generic distance lifting for a
+ * non-point geometry operand: the distance to a multi-edge or curved target
+ * has an arbitrary number of turning points per segment which the point-only
+ * base turning-point function cannot represent. The result is a temporal float
+ * with linear interpolation whose values at the analytic turning points and at
+ * the trajectory instants are the exact distance to the geometry
+ * @pre The arguments have the same SRID, are 2D and planar, and the geometry
+ * is not empty and is supported by the clip engine. This is verified by the
+ * caller
+ */
+Temporal *
+tpoint_linear_distance_geom(const Temporal *temp, const GSERIALIZED *gs)
+{
+  assert(temp); assert(gs); assert(temp->temptype == T_TGEOMPOINT);
+  assert(MEOS_FLAGS_LINEAR_INTERP(temp->flags));
+  assert(temp->subtype != TINSTANT);
+  assert(! MEOS_FLAGS_GET_GEODETIC(temp->flags));
+  assert(! gserialized_is_empty(gs));
+
+  /* Extract the edges */
+  LWGEOM *geom = lwgeom_from_gserialized(gs);
+  MeosArray *edges = geom_extract_edges(geom);
+  lwgeom_free(geom);
+  Edge **edge_ptrs = palloc(sizeof(Edge *) * edges->count);
+  for (int i = 0; i < (int) edges->count; i++)
+    edge_ptrs[i] = (Edge *) meos_array_get(edges, i);
+
+  /* Static array accumulating the per-segment candidate turning times */
+  events = meos_array_create(sizeof(double));
+
+  Temporal *result;
+  assert(temptype_subtype(temp->subtype));
+  if (temp->subtype == TSEQUENCE)
+    result = (Temporal *) tpointseq_distance_geom((TSequence *) temp,
+      edge_ptrs, edges->count);
+  else /* TSEQUENCESET */
+  {
+    const TSequenceSet *ss = (TSequenceSet *) temp;
+    TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
+    for (int i = 0; i < ss->count; i++)
+      sequences[i] = tpointseq_distance_geom(TSEQUENCESET_SEQ_N(ss, i),
+        edge_ptrs, edges->count);
+    result = (Temporal *) tsequenceset_make_free(sequences, ss->count,
+      NORMALIZE);
+  }
+
+  /* Clean up and return */
+  meos_array_destroy(events);
+  meos_array_destroy(edges); pfree(edge_ptrs);
+  return result;
+}
+
 /**
  * @brief Return a temporal geometric point with linear interpolation
  * restricted to a 2D geometry

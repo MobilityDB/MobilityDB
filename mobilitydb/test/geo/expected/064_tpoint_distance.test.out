@@ -22,15 +22,25 @@ SELECT round(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02),(Point(
  
 (1 row)
 
-/* Errors */
+/* Distance to a non-point geometry is computed natively for a temporal
+ * geometry point with linear interpolation */
 SELECT round(geometry 'Linestring(1 1,2 2)' <-> tgeompoint '[Point(1 1)@2000-01-01, Point(3 3)@2000-01-03]', 6);
-ERROR:  Only point geometries accepted
+                                                  round                                                  
+---------------------------------------------------------------------------------------------------------
+ [0@Sat Jan 01 00:00:00 2000 PST, 0@Sun Jan 02 00:00:00 2000 PST, 1.414214@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT round(tgeompoint '[Point(1 1)@2000-01-01, Point(3 3)@2000-01-03]' <-> geometry 'Linestring(1 1,2 2)', 6);
+                                                  round                                                  
+---------------------------------------------------------------------------------------------------------
+ [0@Sat Jan 01 00:00:00 2000 PST, 0@Sun Jan 02 00:00:00 2000 PST, 1.414214@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+/* Errors */
 SELECT round(geometry 'srid=5676;Point(2 2)' <-> tgeompoint '[Point(1 1)@2000-01-01, Point(3 3)@2000-01-03]', 6);
 ERROR:  Operation on mixed SRID
 SELECT round(geometry 'Point(2 2 2)' <-> tgeompoint '[Point(1 1)@2000-01-01, Point(3 3)@2000-01-03]', 6);
 ERROR:  Operation on mixed 2D/3D dimensions
-SELECT round(tgeompoint '[Point(1 1)@2000-01-01, Point(3 3)@2000-01-03]' <-> geometry 'Linestring(1 1,2 2)', 6);
-ERROR:  Only point geometries accepted
 SELECT round(tgeompoint '[Point(1 1)@2000-01-01, Point(3 3)@2000-01-03]' <-> geometry 'srid=5676;Point(2 2)', 6);
 ERROR:  Operation on mixed SRID
 SELECT round(tgeompoint '[Point(1 1)@2000-01-01, Point(3 3)@2000-01-03]' <-> geometry 'Point(2 2 2)', 6);
