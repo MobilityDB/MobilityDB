@@ -729,22 +729,32 @@ tcontains_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
   /* Temporal point case */
   if (tpoint_type(temp->temptype))
   {
-    Temporal *inter = tinterrel_tspatial_base(temp, PointerGetDatum(gs),
-      TINTERSECTS, &datum_geom_intersects2d);
+    /* A geometry contains a moving point when the point lies in the open
+     * interior of the geometry, that is, it intersects the (closed) geometry
+     * but not its boundary. Both intersections route through the native
+     * GEOS-free arc-clip engine for a temporal geometry point with linear
+     * interpolation over a clip-supported (possibly curved) geometry, and fall
+     * back to the general path otherwise (see #tinterrel_tgeo_geo). */
+    Temporal *inter = tinterrel_tgeo_geo(temp, gs, TINTERSECTS);
+    if (! inter)
+      return NULL;
     GSERIALIZED *gsbound = geom_boundary(gs);
-    if (! gserialized_is_empty(gsbound))
+    if (gsbound && ! gserialized_is_empty(gsbound))
     {
-      Temporal *inter_bound = tinterrel_tspatial_base(temp,
-        PointerGetDatum(gsbound), TINTERSECTS,
-        &datum_geom_intersects2d);
-        if (! inter_bound)
-          return NULL;
+      Temporal *inter_bound = tinterrel_tgeo_geo(temp, gsbound, TINTERSECTS);
+      if (! inter_bound)
+      {
+        pfree(gsbound);
+        return inter;
+      }
       Temporal *not_inter_bound = tnot_tbool(inter_bound);
       result = boolop_tbool_tbool(inter, not_inter_bound, &datum_and);
-      pfree(inter); pfree(gsbound); pfree(inter_bound); pfree(not_inter_bound);
+      pfree(inter); pfree(inter_bound); pfree(not_inter_bound);
     }
     else
       result = inter;
+    if (gsbound)
+      pfree(gsbound);
   }
   else
   /* Temporal geometry case */
@@ -818,6 +828,22 @@ tcontains_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 Temporal *
 tcovers_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
 {
+  VALIDATE_TSPATIAL(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
+  /* Temporal point case: a geometry covers a moving point when the point lies
+   * in the closed geometry (interior together with boundary), which is exactly
+   * the temporal intersects relationship. This routes through the native
+   * GEOS-free arc-clip engine for a temporal geometry point with linear
+   * interpolation over a clip-supported (possibly curved) geometry, and falls
+   * back to the general path otherwise (see #tinterrel_tgeo_geo), keeping
+   * `tCovers` consistent with `tIntersects` and `~ tDisjoint`. */
+  if (tpoint_type(temp->temptype))
+  {
+    if (! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
+        ! ensure_not_geodetic_geo(gs) || ! ensure_has_not_Z_geo(gs) ||
+        ! ensure_has_not_Z(temp->temptype, temp->flags))
+      return NULL;
+    return tinterrel_tgeo_geo(temp, gs, TINTERSECTS);
+  }
   return tspatialrel_tgeo_geo(temp, gs, (varfunc) datum_geom_covers,
     INVERT);
 }
@@ -983,15 +1009,20 @@ ttouches_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
   /* Temporal point case */
   if (tpoint_type(temp->temptype))
   {
+    /* A moving point touches a geometry when the point lies on the boundary of
+     * the geometry. The boundary intersection routes through the native
+     * GEOS-free arc-clip engine for a temporal geometry point with linear
+     * interpolation over a clip-supported (possibly curved) boundary, and falls
+     * back to the general path otherwise (see #tinterrel_tgeo_geo). When the
+     * geometry has an empty boundary (a point or multipoint) the result is
+     * false. */
     GSERIALIZED *gsbound = geom_boundary(gs);
-    if (! gserialized_is_empty(gsbound))
-    {
-      result = tinterrel_tspatial_base(temp, PointerGetDatum(gsbound),
-        TINTERSECTS, &datum_geom_intersects2d);
-    }
+    if (gsbound && ! gserialized_is_empty(gsbound))
+      result = tinterrel_tgeo_geo(temp, gsbound, TINTERSECTS);
     else
       result = temporal_from_base_temp(BoolGetDatum(false), T_TBOOL, temp);
-    pfree(gsbound);
+    if (gsbound)
+      pfree(gsbound);
   }
   /* Temporal geometry, temporal cbuffer case */
   else
