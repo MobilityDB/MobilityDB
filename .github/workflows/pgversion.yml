@@ -165,9 +165,40 @@ jobs:
           # Excluding MEOS-specific and other miscellaneous files
           lcov --capture --directory . --include "*/meos/*" --include "*/mobilitydb/*" --exclude "*/pgtypes/*" --exclude "*/postgis/*" --exclude "*/clipper2/*" --exclude "*/geo_constructors.c" --exclude "*/tpoint_datagen.c" --output-file=lcov.info
 
-      - name: Coveralls
+      # The coverage report is uploaded to the external coveralls.io service.
+      # A transient server error there (a 5xx / timeout) is retried with backoff
+      # so a temporary outage self-heals and the report is not lost. The earlier
+      # attempts are non-fatal; the final attempt is fatal, so a persistent
+      # failure still fails the build instead of being silently bypassed.
+      - name: Coveralls (attempt 1)
+        id: coveralls_attempt_1
         if: matrix.coverage == '1'
-        uses: coverallsapp/github-action@master
+        continue-on-error: true
+        uses: coverallsapp/github-action@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path-to-lcov: "./build/lcov.info"
+
+      - name: Wait before Coveralls retry 1
+        if: matrix.coverage == '1' && steps.coveralls_attempt_1.outcome == 'failure'
+        run: sleep 15
+
+      - name: Coveralls (attempt 2)
+        id: coveralls_attempt_2
+        if: matrix.coverage == '1' && steps.coveralls_attempt_1.outcome == 'failure'
+        continue-on-error: true
+        uses: coverallsapp/github-action@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path-to-lcov: "./build/lcov.info"
+
+      - name: Wait before Coveralls retry 2
+        if: matrix.coverage == '1' && steps.coveralls_attempt_1.outcome == 'failure' && steps.coveralls_attempt_2.outcome == 'failure'
+        run: sleep 45
+
+      - name: Coveralls (final attempt)
+        if: matrix.coverage == '1' && steps.coveralls_attempt_1.outcome == 'failure' && steps.coveralls_attempt_2.outcome == 'failure'
+        uses: coverallsapp/github-action@v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path-to-lcov: "./build/lcov.info"
