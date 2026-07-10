@@ -428,11 +428,7 @@ SELECT eTouches(tcbuffer '[Cbuffer(Point(0 0),0.5)@2000-01-01, Cbuffer(Point(1 1
   ((0 0 0, 0 1 0, 1 1 0, 1 0 0, 0 0 0)), ((0 0 0, 1 0 0, 1 0 1, 0 0 1, 0 0 0)),
   ((1 1 0, 1 1 1, 1 0 1, 1 0 0, 1 1 0)),
   ((0 1 0, 0 1 1, 1 1 1, 1 1 0, 0 1 0)), ((0 0 1, 1 0 1, 1 1 1, 0 1 1, 0 0 1)) )');
- etouches 
-----------
- f
-(1 row)
-
+ERROR:  The geometry cannot have Z dimension
 SELECT eDwithin(geometry 'Linestring(1 1,2 2)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', 2);
  edwithin 
 ----------
