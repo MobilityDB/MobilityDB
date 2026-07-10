@@ -881,9 +881,19 @@ tcbufferseq_ever_disjoint_native(const TSequence *seq, const void *ctx)
         return true;
     return false;
   }
-  /* Step and linear: build the exact intersecting sub-periods (the same set the
-   * temporal relationship uses) and test full coverage of the sequence period.
-   */
+  /* Step and linear: a vertex whose disc is already disjoint decides the
+   * ever-disjoint result immediately, without building the intersecting
+   * sub-periods. This is the common case for a buffer that spends most of its
+   * life away from the geometry, and reuses the same instant test as the
+   * discrete branch. */
+  for (int i = 0; i < seq->count; i++)
+    if (! tcbuffer_disc_within_ctx(
+        DatumGetCbufferP(tinstant_value_p(TSEQUENCE_INST_N(seq, i))), 0.0,
+        ctx))
+      return true;
+  /* Every vertex intersects; a disjoint gap can still open inside a segment for
+   * a non-convex geometry, so build the exact intersecting sub-periods (the same
+   * set the temporal relationship uses) and test full coverage of the period. */
   SpanSet *ss = (interp == STEP) ?
     tcbufferseq_step_within_spanset(seq, ctx) :
     tcbufferseq_linear_within_spanset(seq, ctx);
