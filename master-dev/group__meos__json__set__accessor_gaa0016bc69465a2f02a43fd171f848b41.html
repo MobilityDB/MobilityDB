@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: set_spans</title>
+<title>MobilityDB: jsonbset_values</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="group__meos__setspan__bbox__split.html">Split functions</a></li>  </ul>
+<li class="navelem"><a class="el" href="group__meos__json__set__accessor.html">Accessor functions</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,40 +79,49 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__setspan__bbox__split_gae13e155d5b0e2fb6c893cf61d916baba.html#gae13e155d5b0e2fb6c893cf61d916baba">set_spans</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__setspan__bbox__split_ga18d8d087f94d3f3e720b9aff41b008b7.html#ga18d8d087f94d3f3e720b9aff41b008b7">set_split_each_n_spans</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__setspan__bbox__split_ga6c225f216a7daccf94dd8e70f71f3256.html#ga6c225f216a7daccf94dd8e70f71f3256">set_split_n_spans</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__setspan__bbox__split_ga3a42fb32e2d39487676e3798c048fdd9.html#ga3a42fb32e2d39487676e3798c048fdd9">spanset_spans</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__setspan__bbox__split_gadae79e1c5539d05dd3a28c459259d059.html#gadae79e1c5539d05dd3a28c459259d059">spanset_split_each_n_spans</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__setspan__bbox__split_gad706dd2ec809778e1448a69c5d6965fb.html#gad706dd2ec809778e1448a69c5d6965fb">spanset_split_n_spans</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__json__set__accessor_ga86e7a04666d7418e6d2d9e157cb0bf64.html#ga86e7a04666d7418e6d2d9e157cb0bf64">jsonbset_end_value</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__json__set__accessor_ga2c1b6761fbc8df2ac8890b958c0a9e0a.html#ga2c1b6761fbc8df2ac8890b958c0a9e0a">jsonbset_start_value</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__json__set__accessor_gadf7d24e085a1e39a22ac1462e577b65b.html#gadf7d24e085a1e39a22ac1462e577b65b">jsonbset_value_n</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__json__set__accessor_gaa0016bc69465a2f02a43fd171f848b41.html#gaa0016bc69465a2f02a43fd171f848b41">jsonbset_values</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="gae13e155d5b0e2fb6c893cf61d916baba" name="gae13e155d5b0e2fb6c893cf61d916baba"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gae13e155d5b0e2fb6c893cf61d916baba">&#9670;&#160;</a></span>set_spans()</h2>
+<a id="gaa0016bc69465a2f02a43fd171f848b41" name="gaa0016bc69465a2f02a43fd171f848b41"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaa0016bc69465a2f02a43fd171f848b41">&#9670;&#160;</a></span>jsonbset_values()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structSpan.html">Span</a> * set_spans </td>
+          <td class="memname">Jsonb ** jsonbset_values </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structSet.html">Set</a> *&#160;</td>
-          <td class="paramname"><em>s</em></td><td>)</td>
+          <td class="paramname"><em>s</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">int *&#160;</td>
+          <td class="paramname"><em>count</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Return an array of spans from the values of a set. </p>
+<p>Return an array of copies of the values of a JSONB set. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">s</td><td><a class="el" href="structSet.html" title="Structure to represent sets of values.">Set</a> </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">count</td><td>Number of elements in the output array </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>On error return <code>NULL</code> @csqlfn <a class="el" href="group__mobilitydb__setspan__conversion_ga1d21b56539771ec61de63eec376d34eb.html#ga1d21b56539771ec61de63eec376d34eb" title="Return an array of spans from the elements of a set @sqlfn spans()">Set_spans()</a> </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>On error return <code>NULL</code> @csqlfn <a class="el" href="group__mobilitydb__setspan__accessor_ga7cd96bd65f2f43c04de1bd4db1d6854a.html#ga7cd96bd65f2f43c04de1bd4db1d6854a" title="Return the array of values of a set @sqlfn getValues()">Set_values()</a> </dd></dl>
 
 </div>
 </div>

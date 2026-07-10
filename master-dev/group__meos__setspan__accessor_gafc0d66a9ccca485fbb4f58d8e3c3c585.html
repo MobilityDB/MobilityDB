@@ -136,7 +136,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__setspan__accessor_gaa776f0f35203a345ffa0561433559c09.html#gaa776f0f35203a345ffa0561433559c09">spanset_num_spans</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__setspan__accessor_ga0af0716e20691991e21f87ecfe17f336.html#ga0af0716e20691991e21f87ecfe17f336">spanset_span</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__setspan__accessor_ga57f53673c4159c8e7cde07fe90c6e72c.html#ga57f53673c4159c8e7cde07fe90c6e72c">spanset_span_n</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__setspan__accessor_ga5f158e779c386ace1f4895c0e715d002.html#ga5f158e779c386ace1f4895c0e715d002">spanset_spanarr</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__setspan__accessor_gafc0d66a9ccca485fbb4f58d8e3c3c585.html#gafc0d66a9ccca485fbb4f58d8e3c3c585">spanset_spanarr</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__setspan__accessor_ga342ee5dc48761312dd140530a1ff913a.html#ga342ee5dc48761312dd140530a1ff913a">spanset_start_span</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__setspan__accessor_ga29ac040fba54edca83de0e77389a459e.html#ga29ac040fba54edca83de0e77389a459e">spanset_upper_inc</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__setspan__accessor_ga080d8d8f6dbf89166c195d24812939b7.html#ga080d8d8f6dbf89166c195d24812939b7">textset_end_value</a></td></tr>
@@ -162,8 +162,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga5f158e779c386ace1f4895c0e715d002" name="ga5f158e779c386ace1f4895c0e715d002"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga5f158e779c386ace1f4895c0e715d002">&#9670;&#160;</a></span>spanset_spanarr()</h2>
+<a id="gafc0d66a9ccca485fbb4f58d8e3c3c585" name="gafc0d66a9ccca485fbb4f58d8e3c3c585"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gafc0d66a9ccca485fbb4f58d8e3c3c585">&#9670;&#160;</a></span>spanset_spanarr()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -172,8 +172,18 @@ $(function() {
           <td class="memname"><a class="el" href="structSpan.html">Span</a> ** spanset_spanarr </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structSpanSet.html">SpanSet</a> *&#160;</td>
-          <td class="paramname"><em>ss</em></td><td>)</td>
+          <td class="paramname"><em>ss</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">int *&#160;</td>
+          <td class="paramname"><em>count</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -182,6 +192,7 @@ $(function() {
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">ss</td><td><a class="el" href="structSpan.html" title="Structure to represent spans (a.k.a.">Span</a> set </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">count</td><td>Number of elements in the output array </td></tr>
   </table>
   </dd>
 </dl>
