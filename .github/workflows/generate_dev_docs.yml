@@ -42,6 +42,13 @@ jobs:
     name: Deploy documentation
     runs-on: ubuntu-latest
     needs: build
+    # Serialize gh-pages deploys across both doc workflows: each merge to
+    # master triggers a doc build, and two concurrent runs pushing to the
+    # shared gh-pages branch make the loser fail non-fast-forward. A common
+    # concurrency group makes the deploy jobs run one at a time.
+    concurrency:
+      group: gh-pages-deploy
+      cancel-in-progress: false
 
     steps:
       # checkout the gh-pages branch
