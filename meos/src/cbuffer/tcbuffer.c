@@ -73,12 +73,18 @@ ensure_valid_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
  * @brief Ensure the validity of a temporal circular buffer and a geometry
  * @param[in] temp Temporal value
  * @param[in] gs Geometry
+ * @note A circular buffer is 2D and planar by construction (#cbuffer_make
+ * rejects geodetic, Z and M input), so the geometry must likewise be 2D and
+ * planar. Centralizing these constraints here keeps every temporal
+ * circular-buffer/geometry operation consistent and makes switching the
+ * supported dimensionality a single-place change.
  */
 bool
 ensure_valid_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   VALIDATE_TCBUFFER(temp, false); VALIDATE_NOT_NULL(gs, false);
-  if (! ensure_same_srid(tspatial_srid(temp), gserialized_get_srid(gs)))
+  if (! ensure_same_srid(tspatial_srid(temp), gserialized_get_srid(gs)) ||
+      ! ensure_not_geodetic_geo(gs) || ! ensure_has_not_Z_geo(gs))
     return false;
   return true;
 }

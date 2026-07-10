@@ -80,9 +80,9 @@ tspatialrel_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
   bool invert, datum_func2 func)
 {
   VALIDATE_TCBUFFER(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs) ||
-      ! ensure_not_geodetic_geo(gs) || ! ensure_has_not_Z_geo(gs))
+  /* Ensure the validity of the arguments (the 2D/planar constraint is
+   * centralized in ensure_valid_tcbuffer_geo) */
+  if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
 
   Cbuffer *cb = geom_to_cbuffer(gs);
