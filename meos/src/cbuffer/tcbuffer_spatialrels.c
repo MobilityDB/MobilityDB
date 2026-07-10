@@ -56,6 +56,7 @@
 #include "cbuffer/tcbuffer.h"
 #include "cbuffer/tcbuffer_boxops.h"
 #include "cbuffer/tcbuffer_spatialfuncs.h"
+#include "cbuffer/tcbuffer_tempspatialrels.h"
 #include <meos_cbuffer.h>
 
 /*****************************************************************************
@@ -968,16 +969,18 @@ ea_disjoint_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
 {
   /* The always semantics reduce exactly to the native nearest-approach
    * distance: aDisjoint(temp, gs) ⟺ ¬eIntersects(temp, gs) ⟺
-   * min_t dist(disk(t), gs) > 0. The ever semantics (∃t disjoint) do not
-   * reduce to a single running minimum, so they stay on the traversed-area
-   * path. */
+   * min_t dist(disk(t), gs) > 0. The ever semantics are computed from the
+   * native coverage of the intersecting sub-periods: eDisjoint(temp, gs) ⟺
+   * ∃t disk(t) ∩ gs = ∅. Both avoid GEOS; curved or unsupported geometry falls
+   * back to the exact traversed-area path. */
+  VALIDATE_TCBUFFER(temp, -1); VALIDATE_NOT_NULL(gs, -1);
+  if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
+    return -1;
   if (! ever)
-  {
-    VALIDATE_TCBUFFER(temp, -1); VALIDATE_NOT_NULL(gs, -1);
-    if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
-      return -1;
     return nad_tcbuffer_geo(temp, gs) > 0.0 ? 1 : 0;
-  }
+  int native = edisjoint_tcbuffer_geo_native(temp, gs);
+  if (native >= 0)
+    return native;
   return ea_spatialrel_tcbuffer_geo(temp, gs, (Datum) NULL,
     (varfunc) &datum_geom_disjoint2d, 2, ever, INVERT_NO);
 }
@@ -1169,18 +1172,20 @@ int
 ea_intersects_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
   bool ever)
 {
-  /* The ever semantics reduce exactly to the native nearest-approach
-   * distance: eIntersects(temp, gs) ⟺ min_t dist(disk(t), gs) ≤ 0. This
-   * avoids linearizing the round buffer through GEOS. The always semantics
-   * (∀t intersects) do not reduce to a single running minimum, so they stay
-   * on the traversed-area path. */
+  /* The ever semantics reduce exactly to the native nearest-approach distance:
+   * eIntersects(temp, gs) ⟺ min_t dist(disk(t), gs) ≤ 0. The always semantics
+   * are the complement of ever disjoint: aIntersects(temp, gs) ⟺
+   * ¬eDisjoint(temp, gs), computed from the native coverage of the intersecting
+   * sub-periods. Both avoid linearizing the round buffer through GEOS; curved
+   * or unsupported geometry falls back to the exact traversed-area path. */
+  VALIDATE_TCBUFFER(temp, -1); VALIDATE_NOT_NULL(gs, -1);
+  if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
+    return -1;
   if (ever)
-  {
-    VALIDATE_TCBUFFER(temp, -1); VALIDATE_NOT_NULL(gs, -1);
-    if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
-      return -1;
     return nad_tcbuffer_geo(temp, gs) <= 0.0 ? 1 : 0;
-  }
+  int native = edisjoint_tcbuffer_geo_native(temp, gs);
+  if (native >= 0)
+    return native == 1 ? 0 : 1;
   return ea_spatialrel_tcbuffer_geo(temp, gs, (Datum) NULL,
     (varfunc) &datum_geom_intersects2d, 2, ever, INVERT_NO);
 }
