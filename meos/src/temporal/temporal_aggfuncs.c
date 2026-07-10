@@ -531,8 +531,7 @@ tsequence_tagg_iter(const TSequence *seq1, const TSequence *seq2,
     /* Normalization */
     int count;
     TSequence **normseqs = tseqarr_normalize(sequences, 2, &count);
-    for (int i = 0; i < count; i++)
-      result[i] = normseqs[i];
+    memcpy(result, normseqs, sizeof(TSequence *) * count);
     pfree(normseqs);
     return count;
   }
@@ -652,8 +651,7 @@ tsequence_tagg_iter(const TSequence *seq1, const TSequence *seq2,
   }
   int count;
   TSequence **normseqs = tseqarr_normalize(sequences, nseqs, &count);
-  for (int i = 0; i < count; i++)
-    result[i] = normseqs[i];
+  memcpy(result, normseqs, sizeof(TSequence *) * count);
   pfree(normseqs);
   for (int i = 0; i < nseqs; i++)
     pfree(sequences[i]);

@@ -299,11 +299,8 @@ tposeseq_make(const TSequence *seq1, const TSequence *seq2)
   /* General case */
   TInstant **instants = palloc(sizeof(TInstant *) * seq1->count);
   for (int i = 0; i < seq1->count; i++)
-  {
-    inst1 = TSEQUENCE_INST_N(seq1, i);
-    inst2 = TSEQUENCE_INST_N(seq2, i);
-    instants[i] = tgeompoint_tfloat_to_tposeinst(inst1, inst2);
-  }
+    instants[i] = tgeompoint_tfloat_to_tposeinst(TSEQUENCE_INST_N(seq1, i),
+      TSEQUENCE_INST_N(seq2, i));
   TSequence *result = tsequence_make(instants, seq1->count,
     seq1->period.lower_inc, seq1->period.upper_inc, interp, NORMALIZE);
   return result;
@@ -337,11 +334,8 @@ tposeseqset_make(const TSequenceSet *ss1, const TSequenceSet *ss2)
   /* General case */
   TSequence **sequences = palloc(sizeof(TSequence *) * ss1->count);
   for (int i = 0; i < ss1->count; i++)
-  {
-    seq1 = TSEQUENCESET_SEQ_N(ss1, i);
-    seq2 = TSEQUENCESET_SEQ_N(ss2, i);
-    sequences[i] = tposeseq_make(seq1, seq2);
-  }
+    sequences[i] = tposeseq_make(TSEQUENCESET_SEQ_N(ss1, i),
+      TSEQUENCESET_SEQ_N(ss2, i));
   TSequenceSet *result = tsequenceset_make(sequences, ss1->count, NORMALIZE);
   return result;
 }
