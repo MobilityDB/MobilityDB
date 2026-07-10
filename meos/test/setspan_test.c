@@ -1120,7 +1120,7 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
   free(ispan_result); free(char_result);
 
   /* Span **spanset_spanarr(const SpanSet *ss); */
-  ispanarray_result = spanset_spanarr(ispanset1);
+  ispanarray_result = spanset_spanarr(ispanset1, &count);
   printf("spanset_spanarr(%s): {", ispanset1_out);
   for (int i = 0; i < ispanset1->count; i++)
   {
@@ -1636,7 +1636,7 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
   /* Split functions */
 
   /* Span *set_spans(const Set *s); */
-  ispanvector_result = set_spans(iset1);
+  ispanvector_result = set_spans(iset1, &count);
   printf("set_spans(%s): {", iset1_out);
   for (int i = 0; i < iset1->count; i++)
   {
@@ -1681,7 +1681,7 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
   free(ispanvector_result);
 
   /* Span *spanset_spans(const SpanSet *ss); */
-  ispanvector_result = spanset_spans(ispanset1);
+  ispanvector_result = spanset_spans(ispanset1, &count);
   printf("spanset_spans(%s, &count): {", ispanset1_out);
   for (int i = 0; i < ispanset1->count; i++)
   {

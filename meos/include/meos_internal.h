@@ -857,7 +857,7 @@ extern Datum *set_vals(const Set *s);
 extern Datum *set_values(const Set *s, int *count);
 extern Datum spanset_lower(const SpanSet *ss);
 extern int spanset_mem_size(const SpanSet *ss);
-extern const Span **spanset_sps(const SpanSet *ss);
+extern const Span **spanset_sps(const SpanSet *ss, int *count);
 extern Datum spanset_upper(const SpanSet *ss);
 
 /*****************************************************************************/

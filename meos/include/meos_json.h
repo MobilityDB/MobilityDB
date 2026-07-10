@@ -239,7 +239,7 @@ extern Set *jsonb_to_set(const Jsonb *jb);
 extern Jsonb *jsonbset_end_value(const Set *s);
 extern Jsonb *jsonbset_start_value(const Set *s);
 extern bool jsonbset_value_n(const Set *s, int n, Jsonb **result);
-extern Jsonb **jsonbset_values(const Set *s);
+extern Jsonb **jsonbset_values(const Set *s, int *count);
 
 /* JSON operations */
 

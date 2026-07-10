@@ -194,17 +194,19 @@ jsonbset_value_n(const Set *s, int n, Jsonb **result)
  * @ingroup meos_json_set_accessor
  * @brief Return an array of copies of the values of a JSONB set
  * @param[in] s Set
+ * @param[out] count Number of elements in the output array
  * @return On error return @p NULL
  * @csqlfn #Set_values()
  */
 Jsonb **
-jsonbset_values(const Set *s)
+jsonbset_values(const Set *s, int *count)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_JSONBSET(s, NULL);
+  VALIDATE_JSONBSET(s, NULL); VALIDATE_NOT_NULL(count, NULL);
   Jsonb **result = palloc(sizeof(Jsonb *) * s->count);
   for (int i = 0; i < s->count; i++)
     result[i] = DatumGetJsonbP(datum_copy(SET_VAL_N(s, i), s->basetype));
+  *count = s->count;
   return result;
 }
 

@@ -238,7 +238,7 @@ extern Set *pcpoint_to_set(const Pcpoint *pt);
 extern Pcpoint *pcpointset_start_value(const Set *s);
 extern Pcpoint *pcpointset_end_value(const Set *s);
 extern bool pcpointset_value_n(const Set *s, int n, Pcpoint **result);
-extern Pcpoint **pcpointset_values(const Set *s);
+extern Pcpoint **pcpointset_values(const Set *s, int *count);
 
 /* Set operations */
 
@@ -277,7 +277,7 @@ extern Set *pcpatch_to_set(const Pcpatch *pa);
 extern Pcpatch *pcpatchset_start_value(const Set *s);
 extern Pcpatch *pcpatchset_end_value(const Set *s);
 extern bool pcpatchset_value_n(const Set *s, int n, Pcpatch **result);
-extern Pcpatch **pcpatchset_values(const Set *s);
+extern Pcpatch **pcpatchset_values(const Set *s, int *count);
 
 /* Set operations */
 

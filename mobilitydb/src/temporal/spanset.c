@@ -1040,8 +1040,9 @@ Datum
 Spanset_spans(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  Span *spans = spanset_spans(ss);
-  ArrayType *result = spanarr_to_array(spans, ss->count);
+  int count;
+  Span *spans = spanset_spans(ss, &count);
+  ArrayType *result = spanarr_to_array(spans, count);
   pfree(spans);
   PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_ARRAYTYPE_P(result);
