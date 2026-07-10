@@ -36,6 +36,38 @@ SELECT ST_AsText(traversedArea(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01'));
 SELECT ST_AsText(traversedArea(tcbuffer '[Cbuffer(Point(1 1),0.3)@2000-01-01, Cbuffer(Point(1 1),0.5)@2000-01-02]'));
 
 -------------------------------------------------------------------------------
+-- Restriction to a geometry (atGeometry / minusGeometry)
+-- The restriction is by the circular disk footprint, not the centre path: the
+-- buffer meets the geometry when the moving disk intersects it.
+-------------------------------------------------------------------------------
+
+SELECT atGeometry(NULL::tcbuffer, geometry 'Point(1 1)');
+SELECT minusGeometry(NULL::tcbuffer, geometry 'Point(1 1)');
+SELECT atGeometry(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', NULL::geometry);
+
+-- Instant: the disk covers the geometry -> unchanged; disjoint -> NULL
+SELECT asText(atGeometry(tcbuffer 'Cbuffer(Point(1 1),1)@2000-01-01', geometry 'Point(1.5 1)'));
+SELECT atGeometry(tcbuffer 'Cbuffer(Point(1 1),1)@2000-01-01', geometry 'Point(5 5)');
+
+-- Sequence: a box lies ABOVE the centre path (y in [0.5,1.5]); the centre (y=0)
+-- never enters it but the radius-1 disk does, so the disk-footprint restriction
+-- is non-empty where a centre-only restriction would be empty
+SELECT getTime(atGeometry(
+  tcbuffer '[Cbuffer(Point(0 0),1)@2000-01-01, Cbuffer(Point(4 0),1)@2000-01-05]',
+  geometry 'Polygon((1.5 0.5,2.5 0.5,2.5 1.5,1.5 1.5,1.5 0.5))'));
+SELECT getTime(minusGeometry(
+  tcbuffer '[Cbuffer(Point(0 0),1)@2000-01-01, Cbuffer(Point(4 0),1)@2000-01-05]',
+  geometry 'Polygon((1.5 0.5,2.5 0.5,2.5 1.5,1.5 1.5,1.5 0.5))'));
+
+-- Disjoint over the whole sequence -> at NULL, minus unchanged
+SELECT atGeometry(
+  tcbuffer '[Cbuffer(Point(0 0),1)@2000-01-01, Cbuffer(Point(4 0),1)@2000-01-05]',
+  geometry 'Point(2 50)');
+SELECT getTime(minusGeometry(
+  tcbuffer '[Cbuffer(Point(0 0),1)@2000-01-01, Cbuffer(Point(4 0),1)@2000-01-05]',
+  geometry 'Point(2 50)'));
+
+-------------------------------------------------------------------------------
 -- Centroid
 -------------------------------------------------------------------------------
 

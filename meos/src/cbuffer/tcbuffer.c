@@ -46,8 +46,10 @@
 #include "temporal/tnumber_mathfuncs.h"
 #include "temporal/type_util.h"
 #include "geo/tgeo_spatialfuncs.h"
+#include "geo/tgeo_tempspatialrels.h"
 #include "geo/tspatial_parser.h"
 #include "cbuffer/cbuffer.h"
+#include "cbuffer/tcbuffer_tempspatialrels.h"
 
 /*****************************************************************************
  * Validity functions
@@ -1338,16 +1340,20 @@ tcbuffer_restrict_geom(const Temporal *temp, const GSERIALIZED *gs, bool
   if (! overlaps_stbox_stbox(&box1, &box2))
     return atfunc ? NULL : temporal_copy(temp);
 
-  Temporal *tpoint = tcbuffer_to_tgeompoint(temp);
-  Temporal *tfloat = tcbuffer_to_tfloat(temp);
-  Temporal *tpoint_rest = tgeo_restrict_geom(tpoint, gs, atfunc);
-  Temporal *result = NULL;
-  if (tpoint_rest)
-  {
-    result = tcbuffer_make(tpoint_rest, tfloat);
-    pfree(tpoint_rest);
-  }
-  pfree(tpoint); pfree(tfloat); 
+  /* Restrict by the circular disk footprint, not the centre trajectory: the
+   * buffer meets the geometry exactly when the moving disk intersects it. That
+   * is the true time of the (arc-exact, GEOS-free) temporal intersects
+   * relationship, so the geometry restriction reduces to restricting the
+   * buffer to that time (`at`) or its complement (`minus`) */
+  Temporal *tinter = tinterrel_tcbuffer_geo(temp, gs, TINTERSECTS);
+  if (! tinter)
+    return atfunc ? NULL : temporal_copy(temp);
+  SpanSet *ss = tbool_when_true(tinter);
+  pfree(tinter);
+  if (! ss)
+    return atfunc ? NULL : temporal_copy(temp);
+  Temporal *result = temporal_restrict_tstzspanset(temp, ss, atfunc);
+  pfree(ss);
   return result;
 }
 
