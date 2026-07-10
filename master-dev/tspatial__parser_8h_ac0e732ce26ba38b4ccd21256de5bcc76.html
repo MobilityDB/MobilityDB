@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: spatial_parse_elem</title>
+<title>MobilityDB: stbox_parse_dims</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -80,10 +80,10 @@ $(function() {
       <div class="navtab">
         <table>
           <tr><td class="navtab"><a class="navtab" href="tspatial__parser_8h_a326949fa330cf6e14fdc438e21a14c24.html#a326949fa330cf6e14fdc438e21a14c24">geo_parse</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="tspatial__parser_8h_ac7523faeabfaa6a42aeea4a686d325cb.html#ac7523faeabfaa6a42aeea4a686d325cb">spatial_parse_elem</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tspatial__parser_8h_ac7523faeabfaa6a42aeea4a686d325cb.html#ac7523faeabfaa6a42aeea4a686d325cb">spatial_parse_elem</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tspatial__parser_8h_a5d15c48b47ec0fcc67d8d030d39a80bc.html#a5d15c48b47ec0fcc67d8d030d39a80bc">srid_parse</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tspatial__parser_8h_a09d1b9067863b96c22171ecbb59cdbc6.html#a09d1b9067863b96c22171ecbb59cdbc6">stbox_parse</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="tspatial__parser_8h_ac0e732ce26ba38b4ccd21256de5bcc76.html#ac0e732ce26ba38b4ccd21256de5bcc76">stbox_parse_dims</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="tspatial__parser_8h_ac0e732ce26ba38b4ccd21256de5bcc76.html#ac0e732ce26ba38b4ccd21256de5bcc76">stbox_parse_dims</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tspatial__parser_8h_ac7b87814ffc9eaff218c5ab877acb1f3.html#ac7b87814ffc9eaff218c5ab877acb1f3">tpoint_parse</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tspatial__parser_8h_a9d8ca51dee4fdfef684d334e8c692f83.html#a9d8ca51dee4fdfef684d334e8c692f83">tspatial_parse</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tspatial__parser_8h_a1d6fa058d289a1f5e248adcc2a8204a2.html#a1d6fa058d289a1f5e248adcc2a8204a2">tspatialinst_parse</a></td></tr>
@@ -94,14 +94,14 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ac7523faeabfaa6a42aeea4a686d325cb" name="ac7523faeabfaa6a42aeea4a686d325cb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac7523faeabfaa6a42aeea4a686d325cb">&#9670;&#160;</a></span>spatial_parse_elem()</h2>
+<a id="ac0e732ce26ba38b4ccd21256de5bcc76" name="ac0e732ce26ba38b4ccd21256de5bcc76"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac0e732ce26ba38b4ccd21256de5bcc76">&#9670;&#160;</a></span>stbox_parse_dims()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool spatial_parse_elem </td>
+          <td class="memname"><a class="el" href="structSTBox.html">STBox</a> * stbox_parse_dims </td>
           <td>(</td>
           <td class="paramtype">const char **&#160;</td>
           <td class="paramname"><em>str</em>, </td>
@@ -109,26 +109,20 @@ $(function() {
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a05df1d1fd2c829ee784b125ed34e8401.html#a05df1d1fd2c829ee784b125ed34e8401">MeosType</a>&#160;</td>
-          <td class="paramname"><em>temptype</em>, </td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>geodetic</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">char&#160;</td>
-          <td class="paramname"><em>delim</em>, </td>
+          <td class="paramtype">int32_t&#160;</td>
+          <td class="paramname"><em>srid</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int *&#160;</td>
-          <td class="paramname"><em>temp_srid</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> *&#160;</td>
-          <td class="paramname"><em>result</em>&#160;</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>type_str</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -138,14 +132,13 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Parse a spatial base value from the input buffer. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p>Parse the dimension and coordinate part of a spatiotemporal box from the buffer, after the <code>(GEOD)STBOX</code> prefix and any SRID have already been consumed. </p>
+<p >Shared by the <a class="el" href="structSTBox.html" title="Structure to represent spatiotemporal boxes.">STBox</a> and <a class="el" href="structTPCBox.html" title="Bounding box for pgpointcloud temporal types.">TPCBox</a> text parsers. Does NOT enforce end-of-input, so a caller may parse a trailing suffix (e.g. the <a class="el" href="structTPCBox.html" title="Bounding box for pgpointcloud temporal types.">TPCBox</a> <code>PCID</code>) after the box body. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">str</td><td>Input string </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">temptype</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> type </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">delim</td><td>Delimiter character </td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">temp_srid</td><td>SRID of the result. If it is SRID_UNKNOWN, it may take the value from the base value if it is not SRID_UNKNOWN. </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">result</td><td>New spatial base value, may be NULL </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">geodetic</td><td>True for a geodetic box </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">srid</td><td>SRID of the box </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">type_str</td><td>Type name used in error messages </td></tr>
   </table>
   </dd>
 </dl>

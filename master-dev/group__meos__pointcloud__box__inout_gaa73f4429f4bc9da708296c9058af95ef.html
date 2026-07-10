@@ -112,11 +112,11 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return the text representation of a <a class="el" href="structTPCBox.html" title="Bounding box for pgpointcloud temporal types.">TPCBox</a>. </p>
-<p >Examples (commas optional inside the parenthesised groups): </p><div class="fragment"><div class="line">TPCBOX X((10, 20), (30, 40)) PCID=1</div>
-<div class="line">TPCBOX Z((10, 20, 30), (40, 50, 60)) PCID=1 SRID=4326</div>
-<div class="line">TPCBOX XT(((10, 20), (30, 40)), [2024-01-01, 2024-01-02]) PCID=1</div>
-<div class="line">TPCBOX T([2024-01-01, 2024-01-02]) PCID=1</div>
-<div class="line">GEODTPCBOX ZT(((10, 20, 30), (40, 50, 60)), [2024-01-01, 2024-01-02]) PCID=1</div>
+<p >Examples (commas optional inside the parenthesised groups): </p><div class="fragment"><div class="line">TPCBOX(X((10, 20), (30, 40)), 1)</div>
+<div class="line">SRID=4326;TPCBOX(Z((10, 20, 30), (40, 50, 60)), 1)</div>
+<div class="line">TPCBOX(XT(((10, 20), (30, 40)), [2024-01-01, 2024-01-02]), 1)</div>
+<div class="line">TPCBOX(T([2024-01-01, 2024-01-02]), 1)</div>
+<div class="line">GEODTPCBOX(ZT(((10, 20, 30), (40, 50, 60)), [2024-01-01, 2024-01-02]), 1)</div>
 </div><!-- fragment --><p> @csqlfn <a class="el" href="group__mobilitydb__pointcloud__box__inout_ga538572587616ecfae5eef7cfd6869bad.html#ga538572587616ecfae5eef7cfd6869bad" title="Return the hex-encoded text representation of a TPCBox @sqlfn tpcbox_out()">Tpcbox_out()</a> </p>
 
 </div>

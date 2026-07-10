@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: Tpcbox_in</title>
+<title>MobilityDB: tpcbox_parse</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="group__mobilitydb__pointcloud__box__inout.html">Input and output functions</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_0fff62ca9c7e6b49d869dbbeba2dc9ed.html">meos</a></li><li class="navelem"><a class="el" href="dir_87ff05107218c94eb54c7d49f556ada2.html">include</a></li><li class="navelem"><a class="el" href="dir_a669c031cc25e2f0d23eb0dcc76fe0bb.html">pointcloud</a></li><li class="navelem"><a class="el" href="tpcbox_8h.html">tpcbox.h</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,31 +79,33 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtabHL"><a class="navtab" href="group__mobilitydb__pointcloud__box__inout_gaa84ec624d020d58596a4a897a7b72b31.html#gaa84ec624d020d58596a4a897a7b72b31">Tpcbox_in</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pointcloud__box__inout_ga538572587616ecfae5eef7cfd6869bad.html#ga538572587616ecfae5eef7cfd6869bad">Tpcbox_out</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pointcloud__box__inout_ga866365f4f56919089858e20a92d6baad.html#ga866365f4f56919089858e20a92d6baad">Tpcbox_recv</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pointcloud__box__inout_ga2968ccb91bd9e2a1f04fbe0f992b17b9.html#ga2968ccb91bd9e2a1f04fbe0f992b17b9">Tpcbox_send</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tpcbox_8h_aadfa535ac4950078ef45b0c9de489dac.html#aadfa535ac4950078ef45b0c9de489dac">DatumGetTpcboxP</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tpcbox_8h_aa82b0fb87e18ea7310e4646ee903d639.html#aa82b0fb87e18ea7310e4646ee903d639">PG_GETARG_TPCBOX_P</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tpcbox_8h_a494b91461e35068e6d7875af1f795a91.html#a494b91461e35068e6d7875af1f795a91">PG_RETURN_TPCBOX_P</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="tpcbox_8h_a05c6b716e8139cb9dddc8281b3272f72.html#a05c6b716e8139cb9dddc8281b3272f72">tpcbox_parse</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tpcbox_8h_aa024033ef76a5f1a147f888303bd5b22.html#aa024033ef76a5f1a147f888303bd5b22">TpcboxPGetDatum</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="gaa84ec624d020d58596a4a897a7b72b31" name="gaa84ec624d020d58596a4a897a7b72b31"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gaa84ec624d020d58596a4a897a7b72b31">&#9670;&#160;</a></span>Tpcbox_in()</h2>
+<a id="a05c6b716e8139cb9dddc8281b3272f72" name="a05c6b716e8139cb9dddc8281b3272f72"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a05c6b716e8139cb9dddc8281b3272f72">&#9670;&#160;</a></span>tpcbox_parse()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> Tpcbox_in </td>
+          <td class="memname"><a class="el" href="structTPCBox.html">TPCBox</a> * tpcbox_parse </td>
           <td>(</td>
-          <td class="paramtype">PG_FUNCTION_ARGS&#160;</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype">const char **&#160;</td>
+          <td class="paramname"><em>str</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Return a <a class="el" href="structTPCBox.html" title="Bounding box for pgpointcloud temporal types.">TPCBox</a> from its hex-encoded text representation @sqlfn <a class="el" href="group__meos__pointcloud__box__inout_ga887106aae0eb12af7955b3d779af422c.html#ga887106aae0eb12af7955b3d779af422c" title="Return a TPCBox from its Well-Known Text (WKT) representation.">tpcbox_in()</a> </p>
+<p>Parse a <a class="el" href="structTPCBox.html" title="Bounding box for pgpointcloud temporal types.">TPCBox</a> from its Well-Known Text (WKT) representation. </p>
+<p >Mirrors <a class="el" href="tspatial__parser_8h_a09d1b9067863b96c22171ecbb59cdbc6.html#a09d1b9067863b96c22171ecbb59cdbc6" title="Parse a spatiotemporal box from the buffer.">stbox_parse</a>: an optional <code>SRID=</code> prefix, then the <code>(GEOD)TPCBOX</code> keyword wrapping — in parentheses — the box body shared with <a class="el" href="structSTBox.html" title="Structure to represent spatiotemporal boxes.">STBox</a> (parsed by <a class="el" href="tspatial__parser_8h_ac0e732ce26ba38b4ccd21256de5bcc76.html#ac0e732ce26ba38b4ccd21256de5bcc76" title="Parse the dimension and coordinate part of a spatiotemporal box from the buffer, after the (GEOD)STBO...">stbox_parse_dims</a>) and the <code>pcid</code> as a final component. Round-trips with <a class="el" href="group__meos__pointcloud__box__inout_gaa73f4429f4bc9da708296c9058af95ef.html#gaa73f4429f4bc9da708296c9058af95ef" title="Return the text representation of a TPCBox.">tpcbox_out</a>. </p>
 
 </div>
 </div>
