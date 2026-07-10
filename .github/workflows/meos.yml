@@ -81,6 +81,11 @@ jobs:
           ./tgeometry_smoketest
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o json_test json_test.c -L/usr/local/lib -lmeos
           ./json_test
+          # The tjsonb test program is generated from the installed headers
+          # (gen_smoketest.py introspects meos_json.h) so it tracks the current
+          # API. Regenerate and compile it here; the JSON family is built and
+          # installed above.
+          python3 ../../tools/codegen/gen_smoketest/gen_smoketest.py tjsonb
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o tjsonb_smoketest tjsonb_smoketest.c -L/usr/local/lib -lmeos -lm
           ./tjsonb_smoketest
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o numeric_test numeric_test.c -L/usr/local/lib -lmeos
