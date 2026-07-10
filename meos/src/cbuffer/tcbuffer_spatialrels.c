@@ -531,8 +531,7 @@ ea_spatialrel_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
  * @param[in] gs Geometry
  * @param[in] temp Temporal circular buffer
  * @param[in] ever True for the ever semantics, false for the always semantics
- * @csqlfn #Acontains_geo_tcbuffer()
- * @note The function is not supported for the `ever` semantics
+ * @csqlfn #Econtains_geo_tcbuffer(), #Acontains_geo_tcbuffer()
  */
 int
 ea_contains_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp,
@@ -723,8 +722,7 @@ acontains_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
  * @param[in] gs Geometry
  * @param[in] temp Temporal circular buffer
  * @param[in] ever True for the ever semantics, false for the always semantics
- * @note The function is not supported for the `ever` semantics
- * @csqlfn #Acovers_geo_tcbuffer()
+ * @csqlfn #Ecovers_geo_tcbuffer(), #Acovers_geo_tcbuffer()
  */
 int
 ea_covers_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp, bool ever)
@@ -961,7 +959,7 @@ acovers_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp Temporal circular buffer
  * @param[in] gs Geometry
  * @param[in] ever True for the ever semantics, false for the always semantics
- * @csqlfn #Edisjoint_tcbuffer_geo()
+ * @csqlfn #Edisjoint_tcbuffer_geo(), #Adisjoint_tcbuffer_geo()
  */
 int
 ea_disjoint_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
@@ -992,7 +990,7 @@ ea_disjoint_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
  * @param[in] temp Temporal circular buffer
  * @param[in] gs Geometry
  * @param[in] ever True for the ever semantics, false for the always semantics
- * @csqlfn #Edisjoint_tcbuffer_geo()
+ * @csqlfn #Edisjoint_geo_tcbuffer(), #Adisjoint_geo_tcbuffer()
  */
 int
 ea_disjoint_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp,
@@ -1069,7 +1067,7 @@ ea_disjoint_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
  * @param[in] temp Temporal circular buffer
  * @param[in] cb Circular buffer
  * @param[in] ever True for the ever semantics, false for the always semantics
- * @csqlfn #Edisjoint_tcbuffer_cbuffer() #Adisjoint_tcbuffer_cbuffer()
+ * @csqlfn #Edisjoint_cbuffer_tcbuffer(), #Adisjoint_cbuffer_tcbuffer()
  */
 int
 ea_disjoint_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp,
@@ -1116,7 +1114,7 @@ adisjoint_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
  * intersect in time
  * @param[in] temp1,temp2 Temporal circular buffers
  * @param[in] ever True for the ever semantics, false for the always semantics
- * @csqlfn #Edisjoint_tcbuffer_tcbuffer()
+ * @csqlfn #Edisjoint_tcbuffer_tcbuffer(), #Adisjoint_tcbuffer_tcbuffer()
  */
 int
 ea_disjoint_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
@@ -1166,7 +1164,7 @@ adisjoint_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp Temporal circular buffer
  * @param[in] gs Geometry
  * @param[in] ever True for the ever semantics, false for the always semantics
- * @csqlfn #Eintersects_tcbuffer_geo()
+ * @csqlfn #Eintersects_tcbuffer_geo(), #Aintersects_tcbuffer_geo()
  */
 int
 ea_intersects_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
@@ -1197,7 +1195,7 @@ ea_intersects_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
  * @param[in] gs Geometry
  * @param[in] temp Temporal circular buffer
  * @param[in] ever True for the ever semantics, false for the always semantics
- * @csqlfn #Eintersects_tcbuffer_geo()
+ * @csqlfn #Eintersects_geo_tcbuffer(), #Aintersects_geo_tcbuffer()
  */
 int
 ea_intersects_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp,
@@ -1244,7 +1242,7 @@ aintersects_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @param[in] temp Temporal circular buffer
  * @param[in] cb Circular buffer
  * @param[in] ever True for the ever semantics, false for the always semantics
- * @csqlfn #Eintersects_tcbuffer_cbuffer()
+ * @csqlfn #Eintersects_tcbuffer_cbuffer(), #Aintersects_tcbuffer_cbuffer()
  */
 int
 ea_intersects_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
@@ -1277,7 +1275,7 @@ ea_intersects_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
  * @param[in] temp Temporal circular buffer
  * @param[in] cb Circular buffer
  * @param[in] ever True for the ever semantics, false for the always semantics
- * @csqlfn #Eintersects_tcbuffer_cbuffer()
+ * @csqlfn #Eintersects_cbuffer_tcbuffer(), #Aintersects_cbuffer_tcbuffer()
  */
 int
 ea_intersects_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp,
@@ -1324,7 +1322,7 @@ aintersects_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
  * one, 0 if not, and -1 on error
  * @param[in] temp1,temp2 Temporal circular buffers
  * @param[in] ever True for the ever semantics, false for the always semantics
- * @csqlfn #Eintersects_tcbuffer_tcbuffer()
+ * @csqlfn #Eintersects_tcbuffer_tcbuffer(), #Aintersects_tcbuffer_tcbuffer()
  */
 int
 ea_intersects_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
@@ -1400,7 +1398,7 @@ ea_touches_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
  * @param[in] temp Temporal circular buffer
  * @param[in] gs Geometry
  * @param[in] ever True for the ever semantics, false for the always semantics
- * @csqlfn #Etouches_tcbuffer_geo()
+ * @csqlfn #Etouches_geo_tcbuffer(), #Atouches_geo_tcbuffer()
  */
 int
 ea_touches_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp, bool ever)
@@ -1462,7 +1460,7 @@ ea_touches_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
  * @param[in] temp Temporal circular buffer
  * @param[in] cb Circular buffer
  * @param[in] ever True for the ever semantics, false for the always semantics
- * @csqlfn #Etouches_tcbuffer_cbuffer() #Atouches_tcbuffer_cbuffer()
+ * @csqlfn #Etouches_cbuffer_tcbuffer(), #Atouches_cbuffer_tcbuffer()
  */
 int
 ea_touches_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp, bool ever)
@@ -1506,7 +1504,7 @@ atouches_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
  * one, 0 if not, and -1 on error
  * @param[in] temp1,temp2 Temporal circular buffers
  * @param[in] ever True for the ever semantics, false for the always semantics
- * @csqlfn #Etouches_tcbuffer_tcbuffer()
+ * @csqlfn #Etouches_tcbuffer_tcbuffer(), #Atouches_tcbuffer_tcbuffer()
  */
 int
 ea_touches_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
