@@ -249,7 +249,21 @@ datum_eq(Datum l, Datum r, MeosType type)
     case T_DOUBLE4:
       return double4_eq(DatumGetDouble4P(l), DatumGetDouble4P(r));
     case T_GEOMETRY:
-      return geo_equals(DatumGetGserializedP(l), DatumGetGserializedP(r));
+    {
+      GSERIALIZED *gs1 = DatumGetGserializedP(l);
+      GSERIALIZED *gs2 = DatumGetGserializedP(r);
+      /* Fast path: equality of two points reduces to exact coordinate
+       * equality, avoiding a conversion to GEOS. This keeps GEOS out of the
+       * temporal-distance hot path, where the lifting turning-point loop tests
+       * segment constancy via datum_eq. Uses the exact point equality
+       * (datum_point_eq, not the FP-tolerant _same) to preserve the exact
+       * semantics of geo_equals */
+      if (gserialized_get_type(gs1) == POINTTYPE &&
+          gserialized_get_type(gs2) == POINTTYPE)
+        return datum_point_eq(l, r);
+      else
+        return geo_equals(gs1, gs2);
+    }
     case T_GEOGRAPHY:
     {
       GSERIALIZED *gs1 = DatumGetGserializedP(l);
