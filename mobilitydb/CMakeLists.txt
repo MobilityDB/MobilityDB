@@ -282,7 +282,7 @@ if(POINTCLOUD)
   # comes first in link order (here: liblwgeom wins, which is fine
   # because MobilityDB only calls the wrapper through that path).
   target_link_libraries(${MOBILITYDB_LIB_NAME}
-    ${CMAKE_SOURCE_DIR}/pointcloud-pg/lib/libpc.a xml2 z)
+    pointcloud_libpc)
   # If the pgPointCloud subtree was built --with-lazperf=DIR, the
   # shim's pgsql_compat.c references lazperf_(un)compress_from_*compressed.
   # Pull in liblazperf.a (and stdc++ for its C++ base) when present.

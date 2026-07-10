@@ -116,6 +116,8 @@ jobs:
             --suppress='*:pgtypes/*' \
             --suppress='*:*/clipper2/*' \
             --suppress='*:clipper2/*' \
+            --suppress='*:*/pointcloud-pg/*' \
+            --suppress='*:pointcloud-pg/*' \
             --suppress='missingIncludeSystem' \
             --suppress='unmatchedSuppression' \
             --library=cppcheck-mobilitydb.cfg \
@@ -245,7 +247,7 @@ jobs:
           # slips the suppress glob. Cppcheck sometimes reports paths
           # by basename (especially flex/bison-generated files), so we
           # also match a list of vendored basenames.
-          VENDORED = ("postgres/", "postgis/", "pgtypes/", "h3-pg/")
+          VENDORED = ("postgres/", "postgis/", "pgtypes/", "h3-pg/", "pointcloud-pg/")
           VENDORED_BASENAMES = (
               # liblwgeom flex/bison-generated parsers
               "lwin_wkt_lex.c", "lwin_wkt_lex.l",
