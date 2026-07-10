@@ -2150,6 +2150,122 @@ tcbufferseg_within_ctx(const Cbuffer *cb1, const Cbuffer *cb2, double dist,
 }
 
 /*****************************************************************************
+ * Touches contact instants (GEOS-free)
+ *
+ * A disk touches a geometry when their boundaries meet while their interiors
+ * stay disjoint (the DE-9IM touches predicate). For a disk of centre c and
+ * radius r this is exactly
+ *   sg(c, r) := min_edge [ dist(c, edge) - r ] == 0  AND  c is not inside a
+ *   polygon of the geometry,
+ * where the minimum runs over the geometry boundary edges with the SIGNED
+ * per-edge distance (negative when the disk crosses that edge). The signed
+ * minimum, unlike the within test's #tcbuffer_unit_nad (which clamps interior
+ * overlap to 0), separates a tangential contact (sg == 0) from an interior
+ * penetration where a nearer edge drives the minimum negative (sg < 0); the
+ * point-in-polygon guard rejects a boundary contact reached from inside a
+ * polygon, whose interiors overlap. These are contact INSTANTS, so unlike the
+ * within sub-periods an isolated tangency is preserved.
+ *****************************************************************************/
+
+/** @brief Tolerance on the signed boundary distance for a contact instant */
+#define TCBUFFER_TOUCH_EPS 1e-9
+
+/**
+ * @brief Signed nearest boundary distance of a stationary disk: the minimum
+ * over the geometry boundary edges of dist(centre, edge) - radius, without the
+ * interior-overlap clamp of #tcbuffer_unit_nad, and set @p inside to whether the
+ * centre lies strictly inside a polygon of the geometry
+ */
+static double
+tcbuffer_disc_signed_boundary(double cx, double cy, double r,
+  const TcbGeom *g, bool *inside)
+{
+  *inside = g->has_poly && tcbuffer_pt_in_polys_g(cx, cy, g);
+  double best = DBL_MAX;
+  for (int k = 0; k < g->n; k++)
+  {
+    const TcbSeg *ed = &g->segs[k];
+    double m = ed->is_arc ?
+      tcbuffer_seg_arc_mindist(cx, cy, cx, cy, r, r, ed) :
+      tcbuffer_seg_edge_mindist(cx, cy, cx, cy, r, r, ed);
+    if (m < best) best = m;
+  }
+  return best;
+}
+
+/**
+ * @brief Return true if a stationary circular buffer touches the geometry, i.e.
+ * its boundary meets the geometry boundary with disjoint interiors (the signed
+ * boundary distance vanishes and the centre is not inside a polygon)
+ */
+bool
+tcbuffer_disc_touch_ctx(const Cbuffer *cb, const void *ctxv)
+{
+  const TcbGeoCtx *ctx = (const TcbGeoCtx *) ctxv;
+  const POINT2D *p = GSERIALIZED_POINT2D_P(cbuffer_point_p(cb));
+  bool inside;
+  double sg = tcbuffer_disc_signed_boundary(p->x, p->y, cb->radius, &ctx->g,
+    &inside);
+  return (! inside) && fabs(sg) <= TCBUFFER_TOUCH_EPS;
+}
+
+/**
+ * @brief Append to @p outt the normalized times in (0,1) at which a linearly
+ * moving disk touches the geometry
+ * @details The candidate crossing times are the same region roots the within
+ * kernel uses (#tcbuffer_seg_edge_within_roots / #tcbuffer_seg_arc_within_roots
+ * at distance 0, where dist(centre, edge) == radius). Each is kept only when the
+ * exact signed boundary distance vanishes there — a genuine tangential contact,
+ * not an interior penetration where a nearer edge makes the signed minimum
+ * negative, nor a spurious root of the squared equation where it stays
+ * positive — and the centre is not inside a polygon. Returns the number of
+ * contact times written (at most @p maxout)
+ */
+int
+tcbufferseg_touch_roots(const Cbuffer *cb1, const Cbuffer *cb2,
+  const void *ctxv, double *outt, int maxout)
+{
+  const TcbGeoCtx *ctx = (const TcbGeoCtx *) ctxv;
+  const POINT2D *p1 = GSERIALIZED_POINT2D_P(cbuffer_point_p(cb1));
+  const POINT2D *p2 = GSERIALIZED_POINT2D_P(cbuffer_point_p(cb2));
+  double cx1 = p1->x, cy1 = p1->y, r1 = cb1->radius;
+  double cx2 = p2->x, cy2 = p2->y, r2 = cb2->radius;
+  int ncap = 8 * ctx->g.n + 2;
+  double *cand = palloc(sizeof(double) * ncap);
+  int nc = 0;
+  for (int k = 0; k < ctx->g.n; k++)
+  {
+    const TcbSeg *ed = &ctx->g.segs[k];
+    if (ed->is_arc)
+      tcbuffer_seg_arc_within_roots(cx1, cy1, cx2, cy2, r1, r2, ed, 0.0, cand,
+        &nc);
+    else
+      tcbuffer_seg_edge_within_roots(cx1, cy1, cx2, cy2, r1, r2, ed, 0.0, cand,
+        &nc);
+  }
+  qsort(cand, nc, sizeof(double), tcbuffer_double_cmp);
+  int nout = 0;
+  double last = -1.0;
+  for (int i = 0; i < nc && nout < maxout; i++)
+  {
+    double t = cand[i];
+    if (t <= 0.0 || t >= 1.0 || (nout > 0 && t - last <= 1e-12))
+      continue;
+    double cx = cx1 + (cx2 - cx1) * t, cy = cy1 + (cy2 - cy1) * t;
+    double r = r1 + (r2 - r1) * t;
+    bool inside;
+    double sg = tcbuffer_disc_signed_boundary(cx, cy, r, &ctx->g, &inside);
+    if (! inside && fabs(sg) <= TCBUFFER_TOUCH_EPS)
+    {
+      outt[nout++] = t;
+      last = t;
+    }
+  }
+  pfree(cand);
+  return nout;
+}
+
+/*****************************************************************************
  * Nearest approach distance (NAD)
  *****************************************************************************/
 

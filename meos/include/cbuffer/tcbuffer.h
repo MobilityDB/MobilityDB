@@ -81,6 +81,9 @@ extern bool tcbuffer_disc_within_ctx(const Cbuffer *cb, double dist,
   const void *ctx);
 extern int tcbufferseg_within_ctx(const Cbuffer *cb1, const Cbuffer *cb2,
   double dist, const void *ctx, double *outlo, double *outhi, int maxout);
+extern bool tcbuffer_disc_touch_ctx(const Cbuffer *cb, const void *ctx);
+extern int tcbufferseg_touch_roots(const Cbuffer *cb1, const Cbuffer *cb2,
+  const void *ctx, double *outt, int maxout);
 
 /*****************************************************************************/
 

@@ -687,13 +687,13 @@ PGDLLEXPORT Datum Atouches_geo_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Atouches_geo_tcbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_rel_ever
- * @brief Return true if a geometry and a temporal circular buffer ever touch
+ * @brief Return true if a geometry and a temporal circular buffer always touch
  * @sqlfn aTouches()
  */
 inline Datum
 Atouches_geo_tcbuffer(PG_FUNCTION_ARGS)
 {
-  return EA_spatialrel_geo_tspatial(fcinfo, &ea_touches_geo_tcbuffer, EVER);
+  return EA_spatialrel_geo_tspatial(fcinfo, &ea_touches_geo_tcbuffer, ALWAYS);
 }
 
 PGDLLEXPORT Datum Etouches_tcbuffer_geo(PG_FUNCTION_ARGS);
