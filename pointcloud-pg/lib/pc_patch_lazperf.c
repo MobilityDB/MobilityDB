@@ -37,7 +37,7 @@ pc_patch_lazperf_from_uncompressed(const PCPATCH_UNCOMPRESSED *pa)
 #ifndef HAVE_LAZPERF
   pcerror("%s: lazperf support is not enabled", __func__);
   return NULL;
-#endif
+#else
 
   PCPATCH_LAZPERF *palaz = NULL;
   uint8_t *compressed;
@@ -67,6 +67,7 @@ pc_patch_lazperf_from_uncompressed(const PCPATCH_UNCOMPRESSED *pa)
     pcerror("%s: LAZ compressionf failed", __func__);
 
   return palaz;
+#endif
 }
 
 PCPOINTLIST *pc_pointlist_from_lazperf(const PCPATCH_LAZPERF *palaz)
@@ -85,7 +86,7 @@ pc_patch_uncompressed_from_lazperf(const PCPATCH_LAZPERF *palaz)
 #ifndef HAVE_LAZPERF
   pcerror("%s: lazperf support is not enabled", __func__);
   return NULL;
-#endif
+#else
 
   PCPATCH_UNCOMPRESSED *pcu = NULL;
   uint8_t *decompressed;
@@ -118,6 +119,7 @@ pc_patch_uncompressed_from_lazperf(const PCPATCH_LAZPERF *palaz)
     pcerror("%s: lazperf uncompression failed", __func__);
 
   return pcu;
+#endif
 }
 
 char *pc_patch_lazperf_to_string(const PCPATCH_LAZPERF *pa)

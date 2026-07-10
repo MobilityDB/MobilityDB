@@ -20,7 +20,9 @@ extern CU_SuiteInfo schema_suite;
 extern CU_SuiteInfo patch_suite;
 extern CU_SuiteInfo point_suite;
 extern CU_SuiteInfo bytes_suite;
+#ifdef HAVE_LAZPERF
 extern CU_SuiteInfo lazperf_suite;
+#endif
 extern CU_SuiteInfo sort_suite;
 extern CU_SuiteInfo util_suite;
 
@@ -48,7 +50,11 @@ int main(int argc, char *argv[])
 {
   /* ADD YOUR SUITE HERE (2 of 2) */
   CU_SuiteInfo suites[] = {schema_suite, patch_suite,       point_suite,
-                           bytes_suite,  lazperf_suite,     sort_suite,
+                           bytes_suite,
+#ifdef HAVE_LAZPERF
+                           lazperf_suite,
+#endif
+                           sort_suite,
                            util_suite,   CU_SUITE_INFO_NULL};
 
   int index;
