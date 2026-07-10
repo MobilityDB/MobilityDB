@@ -78,21 +78,38 @@ if(POINTCLOUD)
   add_library(pointcloud OBJECT ${POINTCLOUD_SRCS})
 
   # Fill in pgpointcloud's `pc_config.h.in` template. Upstream expects
-  # `./autogen.sh && ./configure` to produce this file; we fill in
-  # minimal values via configure_file so the subtree headers compile
-  # without running upstream's autotools.
+  # `./autogen.sh && ./configure` to produce this file; we fill in minimal
+  # values here so the subtree headers compile without running upstream's
+  # autotools. Write it into the subtree's own lib/ dir — the same location
+  # `./configure` used — so EVERY consumer resolves it via the `#include
+  # "pc_config.h"` inside pc_api.h: the MEOS pointcloud shim, the libpc core
+  # below, AND the PG-extension targets pg_geo / pg_pointcloud (which put
+  # pointcloud-pg/lib on their include path but not this module's binary
+  # dir). Writing it at configure time — before any target builds — also
+  # removes the parallel-build race that the add_dependencies(pg_geo
+  # pointcloud) / add_dependencies(pg_pointcloud pointcloud) edges guarded
+  # against back when the file was produced mid-build by autotools. The file
+  # is git-ignored by the pgPointCloud subtree, like the autotools output.
   set(POINTCLOUD_VERSION "1.2.5")
   set(LIBXML2_VERSION "")
   set(PGSQL_VERSION "")
-  set(HAVE_LAZPERF 0)
-  set(HAVE_CUNIT 0)
   set(PROJECT_SOURCE_DIR_STR "${CMAKE_SOURCE_DIR}/pointcloud-pg")
-  file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/pc_config.h
+  # HAVE_LAZPERF and HAVE_CUNIT are autoconf feature toggles the subtree
+  # tests with #ifdef / #ifndef, so a disabled flag must be *undefined*, not
+  # defined to 0: `#define HAVE_LAZPERF 0` still satisfies #ifdef HAVE_LAZPERF,
+  # so pc_patch_lazperf.c compiles its lazperf_(un)compress_from_(un)compressed
+  # adapter calls — symbols liblazperf.a does not provide when LazPerf is off,
+  # producing an `undefined symbol` at .so load. Emit the exact
+  # `/* #undef HAVE_LAZPERF */` form ./configure writes when disabled. LazPerf
+  # stays off by default (matching the main repo); its vendored adapter needs
+  # the external laz-perf library. The PC_NONE and PC_DIMENSIONAL schemes,
+  # built into libpc, are unaffected.
+  file(WRITE ${CMAKE_SOURCE_DIR}/pointcloud-pg/lib/pc_config.h
     "#define POINTCLOUD_VERSION \"${POINTCLOUD_VERSION}\"\n"
     "#define LIBXML2_VERSION \"${LIBXML2_VERSION}\"\n"
     "#define PGSQL_VERSION \"${PGSQL_VERSION}\"\n"
-    "#define HAVE_LAZPERF ${HAVE_LAZPERF}\n"
-    "#define HAVE_CUNIT ${HAVE_CUNIT}\n"
+    "/* #undef HAVE_LAZPERF */\n"
+    "/* #undef HAVE_CUNIT */\n"
     "#define PROJECT_SOURCE_DIR \"${PROJECT_SOURCE_DIR_STR}\"\n"
   )
 
@@ -106,48 +123,47 @@ if(POINTCLOUD)
 
   # pgpointcloud does not ship a standalone shared library —
   # `pointcloud-1.2.so` is the PostgreSQL extension, not a linkable
-  # libpointcloud.so. Instead we link against the static `libpc.a`
-  # built as a by-product of the upstream autotools build.
-  set(POINTCLOUD_LIBPC
-    ${CMAKE_SOURCE_DIR}/pointcloud-pg/lib/libpc.a)
+  # libpointcloud.so. We instead build its *core* library, libpc,
+  # directly from the vendored `pointcloud-pg/lib/` C sources as a CMake
+  # static library.
+  #
+  # Historically libpc.a was produced by running the subtree's autotools
+  # (`./autogen.sh && ./configure --with-pgconfig=… && make`). That
+  # `./configure` demands a live pg_config even though the core library it
+  # produces links only libxml2 + zlib and contains no PostgreSQL code — the
+  # pg_config requirement is an artifact of pgPointCloud's monolithic
+  # PG-extension build system (its ./configure also configures the pgsql/
+  # extension half), not a real dependency of lib/. That coupling made
+  # POINTCLOUD the one MEOS family that could not build without a PostgreSQL
+  # install, so it could not be built in a PG-less / cross-arch environment
+  # (e.g. the DuckDB extension's vcpkg containers). Compiling lib/ directly
+  # removes the coupling: POINTCLOUD now builds anywhere with just libxml2 +
+  # zlib (already MEOS dependencies), the same way H3 (libh3) and GDAL resolve.
   set(POINTCLOUD_LIBLAZPERF
     ${CMAKE_SOURCE_DIR}/pointcloud-pg/lib/liblazperf.a)
 
-  # Build libpc.a from the vendored subtree as a by-product of the CMake build
-  # instead of requiring a manual `./autogen.sh && ./configure && make` first,
-  # so POINTCLOUD=ON works on a clean checkout and CI needs no dedicated step —
-  # the same way H3 (libh3) and GDAL resolve automatically. The autotools build
-  # needs autoconf/automake/libtool and libxml2/zlib development files.
-  if(NOT EXISTS ${POINTCLOUD_LIBPC})
-    set(_pc_pgconfig ${POSTGRESQL_PG_CONFIG})
-    if(NOT _pc_pgconfig)
-      find_program(_pc_pgconfig NAMES pg_config)
-    endif()
-    if(NOT _pc_pgconfig)
-      # Not resolvable at configure time (e.g. a configure-only analysis build
-      # with no PG on PATH); fall back to the PATH lookup done when the build
-      # actually runs the command. Pass -DPOSTGRESQL_PG_CONFIG for an explicit
-      # path when pg_config is not on PATH at build time.
-      set(_pc_pgconfig pg_config)
-    endif()
-    add_custom_command(
-      OUTPUT ${POINTCLOUD_LIBPC}
-      COMMAND ./autogen.sh
-      COMMAND ./configure --with-pgconfig=${_pc_pgconfig}
-      COMMAND make
-      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/pointcloud-pg
-      COMMENT "Building vendored pgPointCloud static libpc.a (${_pc_pgconfig})"
-      VERBATIM)
-    add_custom_target(pointcloud_libpc DEPENDS ${POINTCLOUD_LIBPC})
-    add_dependencies(pointcloud pointcloud_libpc)
-  endif()
+  find_package(LibXml2 REQUIRED)
+  find_package(ZLIB REQUIRED)
+  set(POINTCLOUD_LIBPC_SRCS
+    pc_bytes.c pc_dimstats.c pc_filter.c pc_mem.c pc_patch.c
+    pc_patch_dimensional.c pc_patch_uncompressed.c pc_patch_lazperf.c
+    pc_point.c pc_pointlist.c pc_schema.c pc_sort.c pc_stats.c pc_util.c
+    pc_val.c stringbuffer.c hashtable.c)
+  list(TRANSFORM POINTCLOUD_LIBPC_SRCS
+    PREPEND ${CMAKE_SOURCE_DIR}/pointcloud-pg/lib/)
+  add_library(pointcloud_libpc STATIC ${POINTCLOUD_LIBPC_SRCS})
+  set_target_properties(pointcloud_libpc PROPERTIES
+    POSITION_INDEPENDENT_CODE ON OUTPUT_NAME pc)
+  target_include_directories(pointcloud_libpc PRIVATE
+    ${CMAKE_SOURCE_DIR}/pointcloud-pg/lib)   # holds sources + generated pc_config.h
+  target_link_libraries(pointcloud_libpc PUBLIC LibXml2::LibXml2 ZLIB::ZLIB)
 
-  # When the pgPointCloud subtree was configured --with-lazperf=DIR,
-  # liblazperf.a exists alongside libpc.a and the shim's pgsql_compat.c
-  # references lazperf_(un)compress_from_(un)compressed. Link it
-  # whenever it's present so the lazperf decoder branch resolves
-  # without forcing the user to know which configure flag was used.
-  set(POINTCLOUD_LINK_LIBS ${POINTCLOUD_LIBPC} xml2 z)
+  # Link the core into the MEOS-layer pointcloud shim. lazperf (the PC_LAZPERF
+  # / `laz` scheme) stays optional: pc_patch_lazperf.c is compiled into libpc
+  # but its lazperf_(un)compress_from_(un)compressed calls resolve only when the
+  # subtree was built --with-lazperf (liblazperf.a present, linked here). The
+  # PC_NONE and PC_DIMENSIONAL schemes are built into libpc and always work.
+  set(POINTCLOUD_LINK_LIBS pointcloud_libpc)
   if(EXISTS ${POINTCLOUD_LIBLAZPERF})
     list(APPEND POINTCLOUD_LINK_LIBS ${POINTCLOUD_LIBLAZPERF})
   endif()
