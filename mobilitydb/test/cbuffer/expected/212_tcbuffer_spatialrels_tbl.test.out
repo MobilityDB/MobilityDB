@@ -205,7 +205,7 @@ SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE aIntersects(t1.temp,
 SELECT COUNT(*) FROM tbl_geometry, tbl_tcbuffer WHERE eTouches(g, temp);
  count 
 -------
-     0
+  4542
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geometry, tbl_tcbuffer WHERE aTouches(g, temp);
@@ -217,7 +217,7 @@ SELECT COUNT(*) FROM tbl_geometry, tbl_tcbuffer WHERE aTouches(g, temp);
 SELECT COUNT(*) FROM tbl_tcbuffer, tbl_geometry WHERE eTouches(temp, g);
  count 
 -------
-     0
+  4542
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tcbuffer, tbl_geometry WHERE aTouches(temp, g);

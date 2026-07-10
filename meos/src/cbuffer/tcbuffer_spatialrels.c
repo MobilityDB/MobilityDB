@@ -1387,6 +1387,13 @@ ea_touches_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
    * many-vertex disk for which the analytic distance is not a win. */
   if (nad_tcbuffer_geo(temp, gs) > 1e-6)
     return 0;
+  /* Native GEOS-free path for non-curved geometry: eTouches/aTouches derive
+   * from the exact boundary-contact instants, consistent with
+   * ever/always(tTouches). Curved or unsupported geometry keeps the
+   * traversed-area path. */
+  int native = eatouches_tcbuffer_geo_native(temp, gs, ever);
+  if (native >= 0)
+    return native;
   return ea_spatialrel_tcbuffer_geo(temp, gs, (Datum) NULL,
     (varfunc) &datum_geom_touches, 2, ever, INVERT_NO);
 }

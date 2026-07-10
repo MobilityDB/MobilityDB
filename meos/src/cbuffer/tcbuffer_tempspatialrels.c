@@ -1386,8 +1386,336 @@ tintersects_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 }
 
 /*****************************************************************************
- * Temporal touches
+ * Temporal touches (GEOS-free)
+ *
+ * A moving disk touches a geometry at the INSTANTS where its boundary meets the
+ * geometry boundary with disjoint interiors (#tcbuffer_disc_touch_ctx /
+ * #tcbufferseg_touch_roots). For linear interpolation these are isolated contact
+ * instants; for step interpolation the constant disk touches over a whole
+ * sub-period. The temporal touches Boolean is thus true exactly on the contact
+ * set and false elsewhere, the moving-disk analogue of the temporal-point
+ * boundary approach ttouches(tpoint, geo) = tintersects(tpoint, boundary(geo)).
+ * Curved or unsupported geometry (no context) keeps the traversed-area GEOS
+ * path.
  *****************************************************************************/
+
+/**
+ * @brief Union the degenerate instant span [t, t] into @p ss (a contact instant)
+ */
+static SpanSet *
+tcbuffer_touch_union_instant(SpanSet *ss, TimestampTz t)
+{
+  Span *sp = span_make(TimestampTzGetDatum(t), TimestampTzGetDatum(t), true,
+    true, T_TIMESTAMPTZ);
+  SpanSet *res;
+  if (! ss)
+    res = span_to_spanset(sp);
+  else
+  {
+    res = union_spanset_span(ss, sp);
+    pfree(ss);
+  }
+  pfree(sp);
+  return res;
+}
+
+/**
+ * @brief Native temporal touches Boolean for a temporal circular buffer instant
+ */
+static Temporal *
+ttouches_tcbufferinst_geo_native(const TInstant *inst, const void *ctx)
+{
+  bool touch = tcbuffer_disc_touch_ctx(DatumGetCbufferP(tinstant_value_p(inst)),
+    ctx);
+  return (Temporal *) tinstant_make(BoolGetDatum(touch), T_TBOOL, inst->t);
+}
+
+/**
+ * @brief Native temporal touches Boolean for a discrete temporal circular
+ * buffer sequence (true at the touching instants, false at the others)
+ */
+static Temporal *
+ttouches_tcbufferseq_disc_geo_native(const TSequence *seq, const void *ctx)
+{
+  Set *s = NULL;
+  for (int i = 0; i < seq->count; i++)
+  {
+    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
+    if (tcbuffer_disc_touch_ctx(DatumGetCbufferP(tinstant_value_p(inst)), ctx))
+    {
+      if (! s)
+        s = value_set(TimestampTzGetDatum(inst->t), T_TIMESTAMPTZ);
+      else
+      {
+        Set *s1 = union_set_value(s, TimestampTzGetDatum(inst->t));
+        pfree(s);
+        s = s1;
+      }
+    }
+  }
+  if (! s)
+    return (Temporal *) tsequence_from_base_temp(BoolGetDatum(false), T_TBOOL,
+      seq);
+  TSequence *res_true = tsequence_from_base_tstzset(BoolGetDatum(true), T_TBOOL,
+    s);
+  int count;
+  TimestampTz *times = tsequence_timestamps(seq, &count);
+  Datum *datumarr = palloc(sizeof(Datum) * count);
+  for (int i = 0; i < count; i++)
+    datumarr[i] = TimestampTzGetDatum(times[i]);
+  pfree(times);
+  Set *s_time = set_make_free(datumarr, count, T_TIMESTAMPTZ, ORDER);
+  Set *s_minus = minus_set_set(s_time, s);
+  Temporal *result;
+  if (s_minus)
+  {
+    TSequence *res_false = tsequence_from_base_tstzset(BoolGetDatum(false),
+      T_TBOOL, s_minus);
+    result = tsequence_merge(res_true, res_false);
+    pfree(res_true); pfree(s_minus); pfree(res_false);
+  }
+  else
+    result = (Temporal *) res_true;
+  pfree(s); pfree(s_time);
+  return result;
+}
+
+/**
+ * @brief Return the spanset of sub-periods during which a step- or
+ * linear-interpolated temporal circular buffer sequence touches the geometry
+ * (NULL if it never touches): the touching sub-periods for step interpolation,
+ * the isolated contact instants for linear
+ */
+static SpanSet *
+tcbufferseq_touch_spanset(const TSequence *seq, const void *ctx)
+{
+  SpanSet *ss = NULL;
+  if (MEOS_FLAGS_GET_INTERP(seq->flags) == STEP)
+  {
+    bool lower_inc = seq->period.lower_inc;
+    for (int i = 0; i < seq->count; i++)
+    {
+      const TInstant *inst = TSEQUENCE_INST_N(seq, i);
+      if (! tcbuffer_disc_touch_ctx(DatumGetCbufferP(tinstant_value_p(inst)),
+          ctx))
+        continue;
+      const TInstant *next = (i < seq->count - 1) ?
+        TSEQUENCE_INST_N(seq, i + 1) : inst;
+      bool upper_inc = (i == seq->count - 1) ? false : seq->period.upper_inc;
+      TimestampTz mint = inst->t, maxt = next->t;
+      /* The last instant (next == inst) degenerates to a point */
+      if (mint == maxt)
+      {
+        if (i == 0 ? lower_inc : true)
+          ss = tcbuffer_touch_union_instant(ss, mint);
+        continue;
+      }
+      bool lower_inc1 = (i == 0) ? lower_inc : true;
+      Span *sp = span_make(TimestampTzGetDatum(mint), TimestampTzGetDatum(maxt),
+        lower_inc1, upper_inc, T_TIMESTAMPTZ);
+      if (! ss)
+        ss = span_to_spanset(sp);
+      else
+      {
+        SpanSet *s1 = union_spanset_span(ss, sp);
+        pfree(ss);
+        ss = s1;
+      }
+      pfree(sp);
+    }
+    return ss;
+  }
+  /* Linear: contact instants at the sequence instants and at each segment's
+   * interior touch roots */
+  for (int i = 0; i < seq->count; i++)
+  {
+    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
+    if (tcbuffer_disc_touch_ctx(DatumGetCbufferP(tinstant_value_p(inst)), ctx))
+      ss = tcbuffer_touch_union_instant(ss, inst->t);
+  }
+  int maxo = tcbuffer_geo_ctx_nsegs(ctx) + 2;
+  double *rt = palloc(sizeof(double) * maxo);
+  const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
+  for (int i = 1; i < seq->count; i++)
+  {
+    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
+    double dur = (double) (inst2->t - inst1->t);
+    int nr = tcbufferseg_touch_roots(DatumGetCbufferP(tinstant_value_p(inst1)),
+      DatumGetCbufferP(tinstant_value_p(inst2)), ctx, rt, maxo);
+    for (int j = 0; j < nr; j++)
+    {
+      TimestampTz t = inst1->t + (TimestampTz) llround(rt[j] * dur);
+      if (t <= inst1->t || t >= inst2->t)
+        continue;
+      ss = tcbuffer_touch_union_instant(ss, t);
+    }
+    inst1 = inst2;
+  }
+  pfree(rt);
+  return ss;
+}
+
+/**
+ * @brief Native temporal touches Boolean for a step- or linear-interpolated
+ * temporal circular buffer sequence
+ */
+static Temporal *
+ttouches_tcbufferseq_geo_native(const TSequence *seq, const void *ctx)
+{
+  if (seq->count == 1)
+    return ttouches_tcbufferinst_geo_native(TSEQUENCE_INST_N(seq, 0), ctx);
+  if (MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE)
+    return ttouches_tcbufferseq_disc_geo_native(seq, ctx);
+  SpanSet *ss = tcbufferseq_touch_spanset(seq, ctx);
+  Temporal *result = tinterrel_tcbufferseq_from_spanset(seq, ss, true);
+  if (ss)
+    pfree(ss);
+  return result;
+}
+
+/**
+ * @brief Native temporal touches Boolean for a temporal circular buffer
+ * sequence set
+ */
+static Temporal *
+ttouches_tcbufferseqset_geo_native(const TSequenceSet *ss, const void *ctx)
+{
+  if (ss->count == 1)
+    return ttouches_tcbufferseq_geo_native(TSEQUENCESET_SEQ_N(ss, 0), ctx);
+  Temporal **res_seq = palloc(sizeof(Temporal *) * ss->count);
+  int count = 0;
+  for (int i = 0; i < ss->count; i++)
+  {
+    Temporal *res = ttouches_tcbufferseq_geo_native(TSEQUENCESET_SEQ_N(ss, i),
+      ctx);
+    if (res)
+      res_seq[count++] = res;
+  }
+  if (! count)
+  {
+    pfree(res_seq);
+    return (Temporal *) tsequenceset_from_base_temp(BoolGetDatum(false),
+      T_TBOOL, ss);
+  }
+  Temporal *result;
+  if (count == 1)
+  {
+    result = res_seq[0];
+    pfree(res_seq);
+    return result;
+  }
+  result = temporal_merge_array(res_seq, count);
+  pfree_array((void *) res_seq, count);
+  return result;
+}
+
+/*****************************************************************************
+ * Ever/always touches (GEOS-free)
+ *
+ * eTouches and aTouches derive from the same contact set as the temporal
+ * touches Boolean, so they are exactly consistent with ever/always(tTouches).
+ * eTouches scans the instants and segment contact roots with early exit on the
+ * first contact; aTouches tests whether the contact sub-periods cover the whole
+ * definition time (true only in degenerate always-tangent configurations).
+ * Curved or unsupported geometry (no context) returns -1 so the caller keeps
+ * the traversed-area path.
+ *****************************************************************************/
+
+/**
+ * @brief Return true if a temporal circular buffer sequence ever touches the
+ * geometry, scanning the instants and (for linear interpolation) the per-segment
+ * contact roots with early exit
+ */
+static bool
+tcbufferseq_ever_touches_native(const TSequence *seq, const void *ctx)
+{
+  for (int i = 0; i < seq->count; i++)
+    if (tcbuffer_disc_touch_ctx(
+        DatumGetCbufferP(tinstant_value_p(TSEQUENCE_INST_N(seq, i))), ctx))
+      return true;
+  /* For discrete and step interpolation a contact can only occur at an instant
+   * (the disk is constant over each step), already covered above */
+  if (seq->count == 1 || ! MEOS_FLAGS_LINEAR_INTERP(seq->flags))
+    return false;
+  int maxo = tcbuffer_geo_ctx_nsegs(ctx) + 2;
+  double *rt = palloc(sizeof(double) * maxo);
+  const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
+  bool found = false;
+  for (int i = 1; i < seq->count && ! found; i++)
+  {
+    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
+    if (tcbufferseg_touch_roots(DatumGetCbufferP(tinstant_value_p(inst1)),
+        DatumGetCbufferP(tinstant_value_p(inst2)), ctx, rt, maxo) > 0)
+      found = true;
+    inst1 = inst2;
+  }
+  pfree(rt);
+  return found;
+}
+
+/**
+ * @brief Return true if a temporal circular buffer sequence always touches the
+ * geometry, that is, the contact sub-periods cover the whole sequence period
+ */
+static bool
+tcbufferseq_always_touches_native(const TSequence *seq, const void *ctx)
+{
+  if (seq->count == 1 || MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE)
+  {
+    for (int i = 0; i < seq->count; i++)
+      if (! tcbuffer_disc_touch_ctx(
+          DatumGetCbufferP(tinstant_value_p(TSEQUENCE_INST_N(seq, i))), ctx))
+        return false;
+    return true;
+  }
+  SpanSet *ss = tcbufferseq_touch_spanset(seq, ctx);
+  bool covered = (ss != NULL) && contains_spanset_span(ss, &seq->period);
+  if (ss)
+    pfree(ss);
+  return covered;
+}
+
+/**
+ * @ingroup meos_internal_cbuffer_rel_ever
+ * @brief Return 1 if a temporal circular buffer ever/always touches a geometry,
+ * 0 if not, and -1 for curved or unsupported geometry (the caller then uses the
+ * traversed-area path)
+ * @param[in] temp Temporal circular buffer
+ * @param[in] gs Geometry
+ * @param[in] ever True for the ever semantics, false for the always semantics
+ */
+int
+eatouches_tcbuffer_geo_native(const Temporal *temp, const GSERIALIZED *gs,
+  bool ever)
+{
+  void *ctx = tcbuffer_geo_ctx_make(gs);
+  if (! ctx)
+    return -1;
+  int result;
+  assert(temptype_subtype(temp->subtype));
+  if (temp->subtype == TINSTANT)
+    result = tcbuffer_disc_touch_ctx(
+      DatumGetCbufferP(tinstant_value_p((TInstant *) temp)), ctx) ? 1 : 0;
+  else if (temp->subtype == TSEQUENCE)
+    result = (ever ?
+      tcbufferseq_ever_touches_native((TSequence *) temp, ctx) :
+      tcbufferseq_always_touches_native((TSequence *) temp, ctx)) ? 1 : 0;
+  else /* TSEQUENCESET */
+  {
+    const TSequenceSet *ss = (TSequenceSet *) temp;
+    result = ever ? 0 : 1;
+    for (int i = 0; i < ss->count; i++)
+    {
+      bool r = ever ?
+        tcbufferseq_ever_touches_native(TSEQUENCESET_SEQ_N(ss, i), ctx) :
+        tcbufferseq_always_touches_native(TSEQUENCESET_SEQ_N(ss, i), ctx);
+      if (ever && r) { result = 1; break; }
+      if (! ever && ! r) { result = 0; break; }
+    }
+  }
+  tcbuffer_geo_ctx_free(ctx);
+  return result;
+}
 
 /**
  * @ingroup meos_cbuffer_rel_temp
@@ -1400,8 +1728,32 @@ tintersects_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 Temporal *
 ttouches_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  return tspatialrel_tcbuffer_geo(temp, gs, INVERT_NO,
-    &datum_cbuffer_touches);
+  VALIDATE_TCBUFFER(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
+  if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
+    return NULL;
+
+  /* Native GEOS-free path for non-curved geometry: the moving-disk boundary
+   * contact instants. Curved or unsupported geometry keeps the traversed-area
+   * path. */
+  void *ctx = tcbuffer_geo_ctx_make(gs);
+  if (! ctx)
+    return tspatialrel_tcbuffer_geo(temp, gs, INVERT_NO, &datum_cbuffer_touches);
+
+  Temporal *result = NULL;
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      result = ttouches_tcbufferinst_geo_native((TInstant *) temp, ctx);
+      break;
+    case TSEQUENCE:
+      result = ttouches_tcbufferseq_geo_native((TSequence *) temp, ctx);
+      break;
+    default: /* TSEQUENCESET */
+      result = ttouches_tcbufferseqset_geo_native((TSequenceSet *) temp, ctx);
+  }
+  tcbuffer_geo_ctx_free(ctx);
+  return result;
 }
 
 /**
