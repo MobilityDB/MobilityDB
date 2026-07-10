@@ -661,11 +661,14 @@ tinterrel_tcbufferseq_from_spanset(const TSequence *seq, const SpanSet *ss,
 }
 
 /**
- * @brief Native version of #tinterrel_tcbufferseq_step_geom
+ * @brief Return the spanset of sub-periods during which a step-interpolated
+ * temporal circular buffer sequence intersects (is within distance 0 of) the
+ * geometry (NULL if it never intersects)
+ * @note Shared by the temporal-relationship tbool builder and the ever/always
+ * coverage projection
  */
-static Temporal *
-tinterrel_tcbufferseq_step_geo_native(const TSequence *seq, bool tinter,
-  const void *ctx)
+static SpanSet *
+tcbufferseq_step_within_spanset(const TSequence *seq, const void *ctx)
 {
   SpanSet *ss = NULL;
   bool lower_inc = seq->period.lower_inc;
@@ -705,6 +708,17 @@ tinterrel_tcbufferseq_step_geo_native(const TSequence *seq, bool tinter,
     }
     pfree(sp);
   }
+  return ss;
+}
+
+/**
+ * @brief Native version of #tinterrel_tcbufferseq_step_geom
+ */
+static Temporal *
+tinterrel_tcbufferseq_step_geo_native(const TSequence *seq, bool tinter,
+  const void *ctx)
+{
+  SpanSet *ss = tcbufferseq_step_within_spanset(seq, ctx);
   Temporal *result = tinterrel_tcbufferseq_from_spanset(seq, ss, tinter);
   if (ss)
     pfree(ss);
@@ -712,11 +726,14 @@ tinterrel_tcbufferseq_step_geo_native(const TSequence *seq, bool tinter,
 }
 
 /**
- * @brief Native version of #tinterrel_tcbufferseq_linear_geom
+ * @brief Return the spanset of sub-periods during which a linear temporal
+ * circular buffer sequence intersects (is within distance 0 of) the geometry,
+ * from the exact swept-capsule kernel (NULL if it never intersects)
+ * @note Shared by the temporal-relationship tbool builder and the
+ * ever/always coverage projection, so both use the identical crossing kernel
  */
-static Temporal *
-tinterrel_tcbufferseq_linear_geo_native(const TSequence *seq, bool tinter,
-  const void *ctx)
+static SpanSet *
+tcbufferseq_linear_within_spanset(const TSequence *seq, const void *ctx)
 {
   int maxo = tcbuffer_geo_ctx_nsegs(ctx) + 2;
   double *rlo = palloc(sizeof(double) * maxo);
@@ -756,6 +773,17 @@ tinterrel_tcbufferseq_linear_geo_native(const TSequence *seq, bool tinter,
     inst1 = inst2;
   }
   pfree(rlo); pfree(rhi);
+  return ss;
+}
+
+/**
+ * @brief Native version of #tinterrel_tcbufferseq_linear_geom
+ */
+static Temporal *
+tinterrel_tcbufferseq_linear_geo_native(const TSequence *seq, bool tinter,
+  const void *ctx)
+{
+  SpanSet *ss = tcbufferseq_linear_within_spanset(seq, ctx);
   Temporal *result = tinterrel_tcbufferseq_from_spanset(seq, ss, tinter);
   if (ss)
     pfree(ss);
@@ -813,6 +841,90 @@ tinterrel_tcbufferseqset_geo_native(const TSequenceSet *ss, bool tinter,
   }
   result = temporal_merge_array(res_seq, count);
   pfree_array((void *) res_seq, count);
+  return result;
+}
+
+/*****************************************************************************
+ * Ever/always intersects and disjoint (GEOS-free)
+ *
+ * aIntersects and eDisjoint are the two ever/always intersection predicates
+ * that do NOT reduce to the nearest-approach running minimum used by
+ * eIntersects/aDisjoint. Instead of materializing the temporal intersects
+ * Boolean and projecting it, they scan the same exact within-distance-0
+ * sub-period set as the temporal relationship and test whether it COVERS the
+ * whole definition time, with early exit on the first uncovered (disjoint)
+ * instant or sequence:
+ *   eDisjoint(temp, gs) ⟺ ∃t disk(t) ∩ gs = ∅ ⟺ the intersecting sub-periods
+ *     do not cover the definition time;
+ *   aIntersects(temp, gs) ⟺ ¬eDisjoint(temp, gs).
+ * Curved or unsupported geometry (no context) returns -1 so the caller keeps
+ * the exact traversed-area path.
+ *****************************************************************************/
+
+/**
+ * @brief Return true if a temporal circular buffer sequence is ever disjoint
+ * from the geometry, that is, the intersecting sub-periods do not cover the
+ * whole sequence period
+ */
+static bool
+tcbufferseq_ever_disjoint_native(const TSequence *seq, const void *ctx)
+{
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  /* Discrete and single-instant sequences are defined only at their instants;
+   * an instant is disjoint when its disc is not within the geometry. */
+  if (seq->count == 1 || interp == DISCRETE)
+  {
+    for (int i = 0; i < seq->count; i++)
+      if (! tcbuffer_disc_within_ctx(
+          DatumGetCbufferP(tinstant_value_p(TSEQUENCE_INST_N(seq, i))), 0.0,
+          ctx))
+        return true;
+    return false;
+  }
+  /* Step and linear: build the exact intersecting sub-periods (the same set the
+   * temporal relationship uses) and test full coverage of the sequence period.
+   */
+  SpanSet *ss = (interp == STEP) ?
+    tcbufferseq_step_within_spanset(seq, ctx) :
+    tcbufferseq_linear_within_spanset(seq, ctx);
+  bool covered = (ss != NULL) && contains_spanset_span(ss, &seq->period);
+  if (ss)
+    pfree(ss);
+  return ! covered;
+}
+
+/**
+ * @ingroup meos_internal_cbuffer_rel_ever
+ * @brief Return 1 if a temporal circular buffer is ever disjoint from a
+ * geometry, 0 if it always intersects, and -1 for curved or unsupported
+ * geometry (the caller then uses the traversed-area path)
+ * @param[in] temp Temporal circular buffer
+ * @param[in] gs Geometry
+ */
+int
+edisjoint_tcbuffer_geo_native(const Temporal *temp, const GSERIALIZED *gs)
+{
+  void *ctx = tcbuffer_geo_ctx_make(gs);
+  if (! ctx)
+    return -1;
+  int result = 0;
+  assert(temptype_subtype(temp->subtype));
+  if (temp->subtype == TINSTANT)
+    result = tcbuffer_disc_within_ctx(
+      DatumGetCbufferP(tinstant_value_p((TInstant *) temp)), 0.0, ctx) ? 0 : 1;
+  else if (temp->subtype == TSEQUENCE)
+    result = tcbufferseq_ever_disjoint_native((TSequence *) temp, ctx) ? 1 : 0;
+  else /* TSEQUENCESET */
+  {
+    const TSequenceSet *ss = (TSequenceSet *) temp;
+    for (int i = 0; i < ss->count; i++)
+      if (tcbufferseq_ever_disjoint_native(TSEQUENCESET_SEQ_N(ss, i), ctx))
+      {
+        result = 1;
+        break;
+      }
+  }
+  tcbuffer_geo_ctx_free(ctx);
   return result;
 }
 
