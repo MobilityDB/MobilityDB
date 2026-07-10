@@ -592,7 +592,7 @@ extern bool spanset_lower_inc(const SpanSet *ss);
 extern int spanset_num_spans(const SpanSet *ss);
 extern Span *spanset_span(const SpanSet *ss);
 extern Span *spanset_span_n(const SpanSet *ss, int i);
-extern Span **spanset_spanarr(const SpanSet *ss);
+extern Span **spanset_spanarr(const SpanSet *ss, int *count);
 extern Span *spanset_start_span(const SpanSet *ss);
 extern bool spanset_upper_inc(const SpanSet *ss);
 extern text *textset_end_value(const Set *s);
@@ -696,10 +696,10 @@ extern bool spanset_ne(const SpanSet *ss1, const SpanSet *ss2);
 
 /* Split functions */
 
-extern Span *set_spans(const Set *s);
+extern Span *set_spans(const Set *s, int *count);
 extern Span *set_split_each_n_spans(const Set *s, int elems_per_span, int *count);
 extern Span *set_split_n_spans(const Set *s, int span_count, int *count);
-extern Span *spanset_spans(const SpanSet *ss);
+extern Span *spanset_spans(const SpanSet *ss, int *count);
 extern Span *spanset_split_each_n_spans(const SpanSet *ss, int elems_per_span, int *count);
 extern Span *spanset_split_n_spans(const SpanSet *ss, int span_count, int *count);
 

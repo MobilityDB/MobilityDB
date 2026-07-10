@@ -294,8 +294,9 @@ Datum
 Set_spans(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
-  Span *spans = set_spans(s);
-  ArrayType *result = spanarr_to_array(spans, s->count);
+  int count;
+  Span *spans = set_spans(s, &count);
+  ArrayType *result = spanarr_to_array(spans, count);
   pfree(spans);
   PG_FREE_IF_COPY(s, 0);
   PG_RETURN_ARRAYTYPE_P(result);

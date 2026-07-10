@@ -234,17 +234,19 @@ pcpointset_value_n(const Set *s, int n, Pcpoint **result)
  * @ingroup meos_pointcloud_set_accessor
  * @brief Return an array of copies of the values of a pcpoint set
  * @param[in] s Set
+ * @param[out] count Number of elements in the output array
  * @return On error return @p NULL
  * @csqlfn #Set_values()
  */
 Pcpoint **
-pcpointset_values(const Set *s)
+pcpointset_values(const Set *s, int *count)
 {
-  VALIDATE_PCPOINTSET(s, NULL);
+  VALIDATE_PCPOINTSET(s, NULL); VALIDATE_NOT_NULL(count, NULL);
   Pcpoint **result = palloc(sizeof(Pcpoint *) * s->count);
   for (int i = 0; i < s->count; i++)
     result[i] = (Pcpoint *) DatumGetPointer(datum_copy(SET_VAL_N(s, i),
       s->basetype));
+  *count = s->count;
   return result;
 }
 
@@ -495,17 +497,19 @@ pcpatchset_value_n(const Set *s, int n, Pcpatch **result)
  * @ingroup meos_pointcloud_set_accessor
  * @brief Return an array of copies of the values of a pcpatch set
  * @param[in] s Set
+ * @param[out] count Number of elements in the output array
  * @return On error return @p NULL
  * @csqlfn #Set_values()
  */
 Pcpatch **
-pcpatchset_values(const Set *s)
+pcpatchset_values(const Set *s, int *count)
 {
-  VALIDATE_PCPATCHSET(s, NULL);
+  VALIDATE_PCPATCHSET(s, NULL); VALIDATE_NOT_NULL(count, NULL);
   Pcpatch **result = palloc(sizeof(Pcpatch *) * s->count);
   for (int i = 0; i < s->count; i++)
     result[i] = (Pcpatch *) DatumGetPointer(datum_copy(SET_VAL_N(s, i),
       s->basetype));
+  *count = s->count;
   return result;
 }
 
