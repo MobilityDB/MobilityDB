@@ -974,6 +974,16 @@ ea_disjoint_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
   VALIDATE_TCBUFFER(temp, -1); VALIDATE_NOT_NULL(gs, -1);
   if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
+  /* Bounding box test: a moving disk whose radius-aware bounding box is
+   * disjoint from the geometry never reaches it, so it is disjoint at every
+   * instant. This makes both the ever and the always quantifier true, and is a
+   * constant-time reject that avoids the analytic nearest-approach distance and
+   * the native coverage scan below for far-away pairs in a spatial join. */
+  STBox box1, box2;
+  tspatial_set_stbox(temp, &box1);
+  geo_set_stbox(gs, &box2);
+  if (! overlaps_stbox_stbox(&box1, &box2))
+    return 1;
   if (! ever)
     return nad_tcbuffer_geo(temp, gs) > 0.0 ? 1 : 0;
   int native = edisjoint_tcbuffer_geo_native(temp, gs);
@@ -1179,6 +1189,15 @@ ea_intersects_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
   VALIDATE_TCBUFFER(temp, -1); VALIDATE_NOT_NULL(gs, -1);
   if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
+  /* Bounding box test: a moving disk whose radius-aware bounding box is
+   * disjoint from the geometry never reaches it, so it neither ever nor always
+   * intersects. This is a constant-time reject that avoids the analytic
+   * nearest-approach distance below for far-away pairs in a spatial join. */
+  STBox box1, box2;
+  tspatial_set_stbox(temp, &box1);
+  geo_set_stbox(gs, &box2);
+  if (! overlaps_stbox_stbox(&box1, &box2))
+    return 0;
   if (ever)
     return nad_tcbuffer_geo(temp, gs) <= 0.0 ? 1 : 0;
   int native = edisjoint_tcbuffer_geo_native(temp, gs);
@@ -1581,6 +1600,20 @@ ea_dwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
   if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return -1;
+  /* Bounding box test: if the moving disk's radius-aware bounding box does not
+   * overlap the geometry's box expanded by the distance, every instant is
+   * farther than the distance, so the buffer is neither ever nor always within
+   * it. A constant-time reject that avoids the analytic nearest-approach
+   * distance below for far-away pairs in a spatial join. The tcbuffer is planar
+   * by construction, so no geodetic branch is needed. */
+  STBox box_temp, box_geo;
+  tspatial_set_stbox(temp, &box_temp);
+  geo_set_stbox(gs, &box_geo);
+  STBox *box_geo_exp = stbox_expand_space(&box_geo, dist);
+  bool pass = overlaps_stbox_stbox(&box_temp, box_geo_exp);
+  pfree(box_geo_exp);
+  if (! pass)
+    return 0;
   /* The ever semantics reduce exactly to the native nearest-approach
    * distance: eDwithin(temp, gs, d) ⟺ min_t dist(disk(t), gs) ≤ d. This
    * avoids linearizing the round buffer through GEOS. The always semantics
