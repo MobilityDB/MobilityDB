@@ -57,6 +57,9 @@ SELECT COUNT(*) FROM tbl_cbuffer, tbl_tcbuffer WHERE aCovers(cb, temp);
 SELECT COUNT(*) FROM tbl_tcbuffer, tbl_cbuffer WHERE eCovers(temp, cb);
 SELECT COUNT(*) FROM tbl_tcbuffer, tbl_cbuffer WHERE aCovers(temp, cb);
 
+SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE eCovers(t1.temp, t2.temp);
+SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE aCovers(t1.temp, t2.temp);
+
 -------------------------------------------------------------------------------
 -- eDisjoint, aDisjoint
 -------------------------------------------------------------------------------
@@ -110,6 +113,9 @@ SELECT COUNT(*) FROM tbl_cbuffer, tbl_tcbuffer WHERE aTouches(cb, temp);
 
 SELECT COUNT(*) FROM tbl_tcbuffer, tbl_cbuffer WHERE eTouches(temp, cb);
 SELECT COUNT(*) FROM tbl_tcbuffer, tbl_cbuffer WHERE aTouches(temp, cb);
+
+SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE eTouches(t1.temp, t2.temp);
+SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE aTouches(t1.temp, t2.temp);
 
 -------------------------------------------------------------------------------
 -- eDwithin, aDwithin

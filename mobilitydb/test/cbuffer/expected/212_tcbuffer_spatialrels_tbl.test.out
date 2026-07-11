@@ -82,6 +82,18 @@ SELECT COUNT(*) FROM tbl_tcbuffer, tbl_cbuffer WHERE aCovers(temp, cb);
      9
 (1 row)
 
+SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE eCovers(t1.temp, t2.temp);
+ count 
+-------
+    92
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE aCovers(t1.temp, t2.temp);
+ count 
+-------
+    54
+(1 row)
+
 SELECT COUNT(*) FROM tbl_geometry, tbl_tcbuffer WHERE eDisjoint(g, temp);
  count 
 -------
@@ -245,6 +257,18 @@ SELECT COUNT(*) FROM tbl_tcbuffer, tbl_cbuffer WHERE eTouches(temp, cb);
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tcbuffer, tbl_cbuffer WHERE aTouches(temp, cb);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE eTouches(t1.temp, t2.temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE aTouches(t1.temp, t2.temp);
  count 
 -------
      0
