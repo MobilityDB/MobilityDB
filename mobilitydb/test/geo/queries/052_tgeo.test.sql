@@ -1030,69 +1030,69 @@ SELECT tgeography 'Point(1 1)@2000-01-01' %= geography 'Point(1 1 1)';
 -- Restriction functions
 -------------------------------------------------------------------------------
 
-SELECT asText(atValues(tgeometry 'Point(1 1)@2000-01-01', ST_Point(1,1)));
-SELECT asText(atValues(tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', ST_Point(1,1)));
-SELECT asText(atValues(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', ST_Point(1,1)));
-SELECT asText(atValues(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', ST_Point(1,1)));
-SELECT asText(atValues(tgeography 'Point(1.5 1.5)@2000-01-01', ST_Point(1.5,1.5)));
-SELECT asText(atValues(tgeography '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', ST_Point(1.5,1.5)));
-SELECT asText(atValues(tgeography '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', ST_Point(1.5,1.5)));
-SELECT asText(atValues(tgeography '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', ST_Point(1.5,1.5)));
+SELECT asText(atValue(tgeometry 'Point(1 1)@2000-01-01', ST_Point(1,1)));
+SELECT asText(atValue(tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', ST_Point(1,1)));
+SELECT asText(atValue(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', ST_Point(1,1)));
+SELECT asText(atValue(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', ST_Point(1,1)));
+SELECT asText(atValue(tgeography 'Point(1.5 1.5)@2000-01-01', ST_Point(1.5,1.5)));
+SELECT asText(atValue(tgeography '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', ST_Point(1.5,1.5)));
+SELECT asText(atValue(tgeography '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', ST_Point(1.5,1.5)));
+SELECT asText(atValue(tgeography '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', ST_Point(1.5,1.5)));
 
-SELECT asText(atValues(tgeometry 'Point(1 1)@2000-01-01', geometry 'Point empty'));
-SELECT asText(atValues(tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geometry 'Point empty'));
-SELECT asText(atValues(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geometry 'Point empty'));
-SELECT asText(atValues(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geometry 'Point empty'));
-SELECT asText(atValues(tgeography 'Point(1 1)@2000-01-01', geography 'Point empty'));
-SELECT asText(atValues(tgeography '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geography 'Point empty'));
-SELECT asText(atValues(tgeography '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geography 'Point empty'));
-SELECT asText(atValues(tgeography '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geography 'Point empty'));
-
-/* Roundoff errors */
-SELECT asText(atValues(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', ST_MakePoint(1.0 - 1e-16, 1.0 - 1e-16)));
-SELECT asText(atValues(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', ST_MakePoint(1.0 - 1e-17, 1.0 - 1e-17)));
-SELECT asText(atValues(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', ST_MakePoint(1.0 + 1e-16, 1.0 + 1e-16)));
-
-SELECT asText(atValues(tgeometry 'Point(1 1)@2000-01-01', geometry 'Linestring(1 1,2 2)'));
-SELECT asText(atValues(tgeography 'Point(1 1)@2000-01-01', geography 'Linestring(1 1,2 2)'));
-
-/* Errors */
-SELECT atValues(tgeometry 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
-SELECT atValues(tgeometry 'Point(1 1)@2000-01-01', geometry 'Point(1 1 1)');
-SELECT atValues(tgeography 'Point(1 1)@2000-01-01', geography 'SRID=4283;Point(1 1)');
-SELECT atValues(tgeography 'Point(1 1)@2000-01-01', geography 'Point(1 1 1)');
-
-SELECT asText(minusValues(tgeometry 'Point(1 1)@2000-01-01', ST_Point(1,1)));
-SELECT asText(minusValues(tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', ST_Point(1,1)));
-SELECT asText(minusValues(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', ST_Point(1,1)));
-SELECT asText(minusValues(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', ST_Point(1,1)));
-SELECT asText(minusValues(tgeography 'Point(1.5 1.5)@2000-01-01', ST_Point(1.5,1.5)));
-SELECT asText(minusValues(tgeography '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', ST_Point(1.5,1.5)));
-SELECT asText(minusValues(tgeography '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', ST_Point(1.5,1.5)));
-SELECT asText(minusValues(tgeography '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', ST_Point(1.5,1.5)));
-
-SELECT asText(minusValues(tgeometry 'Point(1 1)@2000-01-01', geometry 'Point empty'));
-SELECT asText(minusValues(tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geometry 'Point empty'));
-SELECT asText(minusValues(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geometry 'Point empty'));
-SELECT asText(minusValues(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geometry 'Point empty'));
-SELECT asText(minusValues(tgeography 'Point(1 1)@2000-01-01', geography 'Point empty'));
-SELECT asText(minusValues(tgeography '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geography 'Point empty'));
-SELECT asText(minusValues(tgeography '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geography 'Point empty'));
-SELECT asText(minusValues(tgeography '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geography 'Point empty'));
+SELECT asText(atValue(tgeometry 'Point(1 1)@2000-01-01', geometry 'Point empty'));
+SELECT asText(atValue(tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geometry 'Point empty'));
+SELECT asText(atValue(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geometry 'Point empty'));
+SELECT asText(atValue(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geometry 'Point empty'));
+SELECT asText(atValue(tgeography 'Point(1 1)@2000-01-01', geography 'Point empty'));
+SELECT asText(atValue(tgeography '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geography 'Point empty'));
+SELECT asText(atValue(tgeography '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geography 'Point empty'));
+SELECT asText(atValue(tgeography '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geography 'Point empty'));
 
 /* Roundoff errors */
-SELECT asText(minusValues(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', ST_MakePoint(1.0 - 1e-16, 1.0 - 1e-16)));
-SELECT asText(minusValues(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', ST_MakePoint(1.0 - 1e-17, 1.0 - 1e-17)));
-SELECT asText(minusValues(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', ST_MakePoint(1.0 + 1e-16, 1.0 + 1e-16)));
+SELECT asText(atValue(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', ST_MakePoint(1.0 - 1e-16, 1.0 - 1e-16)));
+SELECT asText(atValue(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', ST_MakePoint(1.0 - 1e-17, 1.0 - 1e-17)));
+SELECT asText(atValue(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', ST_MakePoint(1.0 + 1e-16, 1.0 + 1e-16)));
 
-SELECT asText(minusValues(tgeometry 'Point(1 1)@2000-01-01', geometry 'Linestring(1 1,2 2)'));
-SELECT asText(minusValues(tgeography 'Point(1 1)@2000-01-01', geography 'Linestring(1 1,2 2)'));
+SELECT asText(atValue(tgeometry 'Point(1 1)@2000-01-01', geometry 'Linestring(1 1,2 2)'));
+SELECT asText(atValue(tgeography 'Point(1 1)@2000-01-01', geography 'Linestring(1 1,2 2)'));
 
 /* Errors */
-SELECT minusValues(tgeometry 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
-SELECT minusValues(tgeometry 'Point(1 1)@2000-01-01', geometry 'Point(1 1 1)');
-SELECT minusValues(tgeography 'Point(1 1)@2000-01-01', geography 'SRID=4283;Point(1 1)');
-SELECT minusValues(tgeography 'Point(1 1)@2000-01-01', geography 'Point(1 1 1)');
+SELECT atValue(tgeometry 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
+SELECT atValue(tgeometry 'Point(1 1)@2000-01-01', geometry 'Point(1 1 1)');
+SELECT atValue(tgeography 'Point(1 1)@2000-01-01', geography 'SRID=4283;Point(1 1)');
+SELECT atValue(tgeography 'Point(1 1)@2000-01-01', geography 'Point(1 1 1)');
+
+SELECT asText(minusValue(tgeometry 'Point(1 1)@2000-01-01', ST_Point(1,1)));
+SELECT asText(minusValue(tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', ST_Point(1,1)));
+SELECT asText(minusValue(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', ST_Point(1,1)));
+SELECT asText(minusValue(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', ST_Point(1,1)));
+SELECT asText(minusValue(tgeography 'Point(1.5 1.5)@2000-01-01', ST_Point(1.5,1.5)));
+SELECT asText(minusValue(tgeography '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}', ST_Point(1.5,1.5)));
+SELECT asText(minusValue(tgeography '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]', ST_Point(1.5,1.5)));
+SELECT asText(minusValue(tgeography '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}', ST_Point(1.5,1.5)));
+
+SELECT asText(minusValue(tgeometry 'Point(1 1)@2000-01-01', geometry 'Point empty'));
+SELECT asText(minusValue(tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geometry 'Point empty'));
+SELECT asText(minusValue(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geometry 'Point empty'));
+SELECT asText(minusValue(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geometry 'Point empty'));
+SELECT asText(minusValue(tgeography 'Point(1 1)@2000-01-01', geography 'Point empty'));
+SELECT asText(minusValue(tgeography '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geography 'Point empty'));
+SELECT asText(minusValue(tgeography '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geography 'Point empty'));
+SELECT asText(minusValue(tgeography '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geography 'Point empty'));
+
+/* Roundoff errors */
+SELECT asText(minusValue(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', ST_MakePoint(1.0 - 1e-16, 1.0 - 1e-16)));
+SELECT asText(minusValue(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', ST_MakePoint(1.0 - 1e-17, 1.0 - 1e-17)));
+SELECT asText(minusValue(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]', ST_MakePoint(1.0 + 1e-16, 1.0 + 1e-16)));
+
+SELECT asText(minusValue(tgeometry 'Point(1 1)@2000-01-01', geometry 'Linestring(1 1,2 2)'));
+SELECT asText(minusValue(tgeography 'Point(1 1)@2000-01-01', geography 'Linestring(1 1,2 2)'));
+
+/* Errors */
+SELECT minusValue(tgeometry 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
+SELECT minusValue(tgeometry 'Point(1 1)@2000-01-01', geometry 'Point(1 1 1)');
+SELECT minusValue(tgeography 'Point(1 1)@2000-01-01', geography 'SRID=4283;Point(1 1)');
+SELECT minusValue(tgeography 'Point(1 1)@2000-01-01', geography 'Point(1 1 1)');
 
 SELECT asText(atValues(tgeometry 'Point(1 1)@2000-01-01', geomset '{"Point(1 1)"}'));
 SELECT asText(atValues(tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', geomset '{"Point(1 1)"}'));

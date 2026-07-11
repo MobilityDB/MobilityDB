@@ -450,12 +450,12 @@ CREATE FUNCTION unnest(tnpoint)
  * Restriction functions
  ******************************************************************************/
 
-CREATE FUNCTION atValues(tnpoint, npoint)
+CREATE FUNCTION atValue(tnpoint, npoint)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Tnpoint_at_npoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION minusValues(tnpoint, npoint)
+CREATE FUNCTION minusValue(tnpoint, npoint)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Tnpoint_minus_npoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

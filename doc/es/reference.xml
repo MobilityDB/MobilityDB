@@ -858,7 +858,7 @@
 			<title>Restricciones</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="ttype_atValues"><varname>atValues</varname>, <varname>minusValues</varname></link>: Restringir a (al complemento de) un conjunto de valores</para>
+					<para><link linkend="ttype_atValues"><varname>atValue</varname>, <varname>minusValue</varname>, <varname>atValues</varname>, <varname>minusValues</varname></link>: Restringir a (al complemento de) un valor o un conjunto de valores</para>
 				</listitem>
 
 				<listitem>
@@ -1690,7 +1690,7 @@
 				<title>Restricciones</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpose_atValues"><varname>atValues</varname>, <varname>minusValues</varname></link>: Restringe a (el complemento de) un conjunto de valores</para>
+						<para><link linkend="tpose_atValues"><varname>atValue</varname>, <varname>minusValue</varname>, <varname>atValues</varname>, <varname>minusValues</varname></link>: Restringe a (el complemento de) un valor o un conjunto de valores</para>
 					</listitem>
 
 					<listitem>
@@ -1944,7 +1944,7 @@
 				<title>Restricciones</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tnpoint_atValues"><varname>atValues</varname>, <varname>minusValues</varname></link>: Restringir a (al complemento de) un valor</para>
+						<para><link linkend="tnpoint_atValues"><varname>atValue</varname>, <varname>minusValue</varname>, <varname>atValues</varname>, <varname>minusValues</varname></link>: Restringir a (al complemento de) un valor o un conjunto de valores</para>
 					</listitem>
 
 					<listitem>
@@ -2236,7 +2236,7 @@
 				<title>Restricciones</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tcbuffer_atValues"><varname>atValues</varname>, <varname>minusValue</varname></link>: Restringe a (el complemento de) un conjunto de valores</para>
+						<para><link linkend="tcbuffer_atValues"><varname>atValue</varname>, <varname>minusValue</varname>, <varname>atValues</varname>, <varname>minusValues</varname></link>: Restringe a (el complemento de) un valor o un conjunto de valores</para>
 					</listitem>
 
 					<listitem>
@@ -2764,7 +2764,7 @@
 		<title>Restricciones</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="tjsonb_atValues"><varname>atValues</varname>, <varname>minusValue</varname></link>: Restringir a (al complemento de) un conjunto de valores</para>
+					<para><link linkend="tjsonb_atValues"><varname>atValue</varname>, <varname>minusValue</varname>, <varname>atValues</varname>, <varname>minusValues</varname></link>: Restringir a (al complemento de) un valor o un conjunto de valores</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

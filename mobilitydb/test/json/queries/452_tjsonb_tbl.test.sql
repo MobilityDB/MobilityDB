@@ -185,7 +185,7 @@ SELECT COUNT(*) FROM tbl_tjsonb WHERE temp %= startValue(temp);
 -- Restriction functions
 ------------------------------------------------------------------------------
 
-SELECT COUNT(*) FROM tbl_tjsonb, tbl_jsonb WHERE temp != merge(atValues(temp, jb), minusValues(temp, jb));
+SELECT COUNT(*) FROM tbl_tjsonb, tbl_jsonb WHERE temp != merge(atValue(temp, jb), minusValue(temp, jb));
 
 SELECT COUNT(*) FROM tbl_tjsonb, (
   SELECT set(array_agg(jb)) AS s FROM tbl_jsonb WHERE jb IS NOT NULL) tmp

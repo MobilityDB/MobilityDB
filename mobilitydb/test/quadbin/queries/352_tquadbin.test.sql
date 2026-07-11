@@ -168,8 +168,8 @@ SELECT (rec).value, (rec).time FROM
 -------------------------------------------------------------------------------
 -- Restrictions
 -------------------------------------------------------------------------------
-SELECT atValues(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02, 480fffffffffffff@2001-01-03]', quadbin '480fffffffffffff');
-SELECT minusValues(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02, 480fffffffffffff@2001-01-03]', quadbin '480fffffffffffff');
+SELECT atValue(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02, 480fffffffffffff@2001-01-03]', quadbin '480fffffffffffff');
+SELECT minusValue(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02, 480fffffffffffff@2001-01-03]', quadbin '480fffffffffffff');
 SELECT atValues(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02, 48a6227affffffff@2001-01-03}', set(ARRAY[quadbin '480fffffffffffff', quadbin '48a6227affffffff']));
 SELECT atTime(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-03]', timestamptz '2001-01-02');
 SELECT minusTime(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-03]', timestamptz '2001-01-02');

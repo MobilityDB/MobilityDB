@@ -408,12 +408,12 @@ CREATE FUNCTION tsample(tjsonb, duration interval,
  * Restriction functions
  *****************************************************************************/
 
-CREATE FUNCTION atValues(tjsonb, jsonb)
+CREATE FUNCTION atValue(tjsonb, jsonb)
   RETURNS tjsonb
   AS 'MODULE_PATHNAME', 'Temporal_at_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION minusValues(tjsonb, jsonb)
+CREATE FUNCTION minusValue(tjsonb, jsonb)
   RETURNS tjsonb
   AS 'MODULE_PATHNAME', 'Temporal_minus_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

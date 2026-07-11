@@ -204,7 +204,7 @@ PG_FUNCTION_INFO_V1(Tnpoint_at_npoint);
 /**
  * @ingroup mobilitydb_npoint_restrict
  * @brief Return a temporal value restricted to a base value
- * @sqlfn atValues()
+ * @sqlfn atValue()
  */
 Datum
 Tnpoint_at_npoint(PG_FUNCTION_ARGS)
@@ -217,7 +217,7 @@ PG_FUNCTION_INFO_V1(Tnpoint_minus_npoint);
 /**
  * @ingroup mobilitydb_npoint_restrict
  * @brief Return a temporal value restricted to the complement of a base value
- * @sqlfn minusValues()
+ * @sqlfn minusValue()
  */
 Datum
 Tnpoint_minus_npoint(PG_FUNCTION_ARGS)

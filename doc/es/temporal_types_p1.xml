@@ -176,7 +176,7 @@ FROM temperature;
 -- 2001 | 22.5
 
 -- Restricción a un valor
-SELECT DeptNo, atValues(NoEmps, 10)
+SELECT DeptNo, atValue(NoEmps, 10)
 FROM Department;
 -- 10 | [10@2001-01-01, 10@2001-04-01)
 -- 20 | 
@@ -215,7 +215,7 @@ FROM Trips;
 -- 20 | POINT(1 1)
 
 -- Restricción a un valor
-SELECT CarId, asText(atValues(Trip, geometry 'Point(2 0)'))
+SELECT CarId, asText(atValue(Trip, geometry 'Point(2 0)'))
 FROM Trips;
 -- 10 | {"[POINT(2 0)@2001-01-01 08:10:00+00]"}
 -- 20 |

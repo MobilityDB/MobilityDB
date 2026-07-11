@@ -8088,449 +8088,449 @@ SELECT segmentMaxDuration(tfloat '1.5@2000-01-01', '1 day');
 ERROR:  Input must be a temporal sequence (set) with continuous interpolation
 SELECT segmentMaxDuration(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', '1 day');
 ERROR:  Input must be a temporal sequence (set) with continuous interpolation
-SELECT atValues(tbool 't@2000-01-01', true);
-            atvalues            
+SELECT atValue(tbool 't@2000-01-01', true);
+            atvalue             
 --------------------------------
  t@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
-SELECT atValues(tbool '{t@2000-01-01}', true);
-             atvalues             
+SELECT atValue(tbool '{t@2000-01-01}', true);
+             atvalue              
 ----------------------------------
  {t@Sat Jan 01 00:00:00 2000 PST}
 (1 row)
 
-SELECT atValues(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', true);
-                             atvalues                             
+SELECT atValue(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', true);
+                             atvalue                              
 ------------------------------------------------------------------
  {t@Sat Jan 01 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST}
 (1 row)
 
-SELECT atValues(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', true);
-                                               atvalues                                               
+SELECT atValue(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', true);
+                                               atvalue                                                
 ------------------------------------------------------------------------------------------------------
  {[t@Sat Jan 01 00:00:00 2000 PST, t@Sun Jan 02 00:00:00 2000 PST), [t@Mon Jan 03 00:00:00 2000 PST]}
 (1 row)
 
-SELECT atValues(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', true);
-                                                                                atvalues                                                                                
+SELECT atValue(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', true);
+                                                                                atvalue                                                                                 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {[t@Sat Jan 01 00:00:00 2000 PST, t@Sun Jan 02 00:00:00 2000 PST), [t@Mon Jan 03 00:00:00 2000 PST], [t@Tue Jan 04 00:00:00 2000 PST, t@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
-SELECT atValues(tint '1@2000-01-01', 1);
-            atvalues            
+SELECT atValue(tint '1@2000-01-01', 1);
+            atvalue             
 --------------------------------
  1@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
-SELECT atValues(tint '{1@2000-01-01}', 1);
-             atvalues             
+SELECT atValue(tint '{1@2000-01-01}', 1);
+             atvalue              
 ----------------------------------
  {1@Sat Jan 01 00:00:00 2000 PST}
 (1 row)
 
-SELECT atValues(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', 1);
-                             atvalues                             
+SELECT atValue(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', 1);
+                             atvalue                              
 ------------------------------------------------------------------
  {1@Sat Jan 01 00:00:00 2000 PST, 1@Mon Jan 03 00:00:00 2000 PST}
 (1 row)
 
-SELECT atValues(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', 1);
-                                               atvalues                                               
+SELECT atValue(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', 1);
+                                               atvalue                                                
 ------------------------------------------------------------------------------------------------------
  {[1@Sat Jan 01 00:00:00 2000 PST, 1@Sun Jan 02 00:00:00 2000 PST), [1@Mon Jan 03 00:00:00 2000 PST]}
 (1 row)
 
-SELECT atValues(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', 1);
-                                               atvalues                                               
+SELECT atValue(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', 1);
+                                               atvalue                                                
 ------------------------------------------------------------------------------------------------------
  {[1@Sat Jan 01 00:00:00 2000 PST, 1@Sun Jan 02 00:00:00 2000 PST), [1@Mon Jan 03 00:00:00 2000 PST]}
 (1 row)
 
-SELECT atValues(tbigint '1@2000-01-01', 1);
-            atvalues            
+SELECT atValue(tbigint '1@2000-01-01', 1);
+            atvalue             
 --------------------------------
  1@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
-SELECT atValues(tbigint '{1@2000-01-01}', 1);
-             atvalues             
+SELECT atValue(tbigint '{1@2000-01-01}', 1);
+             atvalue              
 ----------------------------------
  {1@Sat Jan 01 00:00:00 2000 PST}
 (1 row)
 
-SELECT atValues(tbigint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', 1);
-                             atvalues                             
+SELECT atValue(tbigint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', 1);
+                             atvalue                              
 ------------------------------------------------------------------
  {1@Sat Jan 01 00:00:00 2000 PST, 1@Mon Jan 03 00:00:00 2000 PST}
 (1 row)
 
-SELECT atValues(tbigint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', 1);
-                                               atvalues                                               
+SELECT atValue(tbigint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', 1);
+                                               atvalue                                                
 ------------------------------------------------------------------------------------------------------
  {[1@Sat Jan 01 00:00:00 2000 PST, 1@Sun Jan 02 00:00:00 2000 PST), [1@Mon Jan 03 00:00:00 2000 PST]}
 (1 row)
 
-SELECT atValues(tbigint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', 1);
-                                               atvalues                                               
+SELECT atValue(tbigint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', 1);
+                                               atvalue                                                
 ------------------------------------------------------------------------------------------------------
  {[1@Sat Jan 01 00:00:00 2000 PST, 1@Sun Jan 02 00:00:00 2000 PST), [1@Mon Jan 03 00:00:00 2000 PST]}
 (1 row)
 
-SELECT atValues(tfloat '1.5@2000-01-01', 1.5);
-             atvalues             
+SELECT atValue(tfloat '1.5@2000-01-01', 1.5);
+             atvalue              
 ----------------------------------
  1.5@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
-SELECT atValues(tfloat '{1.5@2000-01-01}', 1.5);
-              atvalues              
+SELECT atValue(tfloat '{1.5@2000-01-01}', 1.5);
+              atvalue               
 ------------------------------------
  {1.5@Sat Jan 01 00:00:00 2000 PST}
 (1 row)
 
-SELECT atValues(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', 1.5);
-                               atvalues                               
+SELECT atValue(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', 1.5);
+                               atvalue                                
 ----------------------------------------------------------------------
  {1.5@Sat Jan 01 00:00:00 2000 PST, 1.5@Mon Jan 03 00:00:00 2000 PST}
 (1 row)
 
-SELECT atValues(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', 2);
-                               atvalues                               
+SELECT atValue(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', 2);
+                               atvalue                                
 ----------------------------------------------------------------------
  {[2@Sat Jan 01 12:00:00 2000 PST], [2@Sun Jan 02 12:00:00 2000 PST]}
 (1 row)
 
-SELECT atValues(tfloat 'Interp=Step;[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', 2);
- atvalues 
-----------
+SELECT atValue(tfloat 'Interp=Step;[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', 2);
+ atvalue 
+---------
  
 (1 row)
 
-SELECT atValues(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', 2);
-                               atvalues                               
+SELECT atValue(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', 2);
+                               atvalue                                
 ----------------------------------------------------------------------
  {[2@Sat Jan 01 12:00:00 2000 PST], [2@Sun Jan 02 12:00:00 2000 PST]}
 (1 row)
 
-SELECT atValues(tfloat 'Interp=Step;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', 2);
- atvalues 
-----------
+SELECT atValue(tfloat 'Interp=Step;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', 2);
+ atvalue 
+---------
  
 (1 row)
 
-SELECT atValues(ttext 'AAA@2000-01-01', 'AAA');
-              atvalues              
+SELECT atValue(ttext 'AAA@2000-01-01', 'AAA');
+              atvalue               
 ------------------------------------
  "AAA"@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
-SELECT atValues(ttext '{AAA@2000-01-01}', 'AAA');
-               atvalues               
+SELECT atValue(ttext '{AAA@2000-01-01}', 'AAA');
+               atvalue                
 --------------------------------------
  {"AAA"@Sat Jan 01 00:00:00 2000 PST}
 (1 row)
 
-SELECT atValues(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', 'AAA');
-                                 atvalues                                 
+SELECT atValue(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', 'AAA');
+                                 atvalue                                  
 --------------------------------------------------------------------------
  {"AAA"@Sat Jan 01 00:00:00 2000 PST, "AAA"@Mon Jan 03 00:00:00 2000 PST}
 (1 row)
 
-SELECT atValues(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', 'AAA');
-                                                     atvalues                                                     
+SELECT atValue(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', 'AAA');
+                                                     atvalue                                                      
 ------------------------------------------------------------------------------------------------------------------
  {["AAA"@Sat Jan 01 00:00:00 2000 PST, "AAA"@Sun Jan 02 00:00:00 2000 PST), ["AAA"@Mon Jan 03 00:00:00 2000 PST]}
 (1 row)
 
-SELECT atValues(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', 'AAA');
-                                                     atvalues                                                     
+SELECT atValue(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', 'AAA');
+                                                     atvalue                                                      
 ------------------------------------------------------------------------------------------------------------------
  {["AAA"@Sat Jan 01 00:00:00 2000 PST, "AAA"@Sun Jan 02 00:00:00 2000 PST), ["AAA"@Mon Jan 03 00:00:00 2000 PST]}
 (1 row)
 
 /* Roundoff errors */
-SELECT atValues(tfloat '[1@2000-01-01, 2@2000-01-02]', 1 - 1e-16);
- atvalues 
-----------
+SELECT atValue(tfloat '[1@2000-01-01, 2@2000-01-02]', 1 - 1e-16);
+ atvalue 
+---------
  
 (1 row)
 
-SELECT atValues(tfloat '[1@2000-01-01, 2@2000-01-02]', 1 - 1e-17);
-              atvalues              
+SELECT atValue(tfloat '[1@2000-01-01, 2@2000-01-02]', 1 - 1e-17);
+              atvalue               
 ------------------------------------
  {[1@Sat Jan 01 00:00:00 2000 PST]}
 (1 row)
 
-SELECT atValues(tfloat '[1@2000-01-01, 2@2000-01-02]', 1 + 1e-16);
-              atvalues              
+SELECT atValue(tfloat '[1@2000-01-01, 2@2000-01-02]', 1 + 1e-16);
+              atvalue               
 ------------------------------------
  {[1@Sat Jan 01 00:00:00 2000 PST]}
 (1 row)
 
-SELECT atValues(tfloat '[1@2000-01-01, 2@2000-01-02]', 2 - 1e-16);
-              atvalues              
+SELECT atValue(tfloat '[1@2000-01-01, 2@2000-01-02]', 2 - 1e-16);
+              atvalue               
 ------------------------------------
  {[2@Sun Jan 02 00:00:00 2000 PST]}
 (1 row)
 
-SELECT atValues(tfloat '[1@2000-01-01, 2@2000-01-02]', 2 + 1e-16);
-              atvalues              
+SELECT atValue(tfloat '[1@2000-01-01, 2@2000-01-02]', 2 + 1e-16);
+              atvalue               
 ------------------------------------
  {[2@Sun Jan 02 00:00:00 2000 PST]}
 (1 row)
 
-SELECT minusValues(tbool 't@2000-01-01', true);
- minusvalues 
--------------
+SELECT minusValue(tbool 't@2000-01-01', true);
+ minusvalue 
+------------
  
 (1 row)
 
-SELECT minusValues(tbool '{t@2000-01-01}', true);
- minusvalues 
--------------
+SELECT minusValue(tbool '{t@2000-01-01}', true);
+ minusvalue 
+------------
  
 (1 row)
 
-SELECT minusValues(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', true);
-           minusvalues            
+SELECT minusValue(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', true);
+            minusvalue            
 ----------------------------------
  {f@Sun Jan 02 00:00:00 2000 PST}
 (1 row)
 
-SELECT minusValues(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', true);
-                            minusvalues                             
+SELECT minusValue(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]', true);
+                             minusvalue                             
 --------------------------------------------------------------------
  {[f@Sun Jan 02 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST)}
 (1 row)
 
-SELECT minusValues(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', true);
-                            minusvalues                             
+SELECT minusValue(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', true);
+                             minusvalue                             
 --------------------------------------------------------------------
  {[f@Sun Jan 02 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST)}
 (1 row)
 
-SELECT minusValues(tint '1@2000-01-01', 1);
- minusvalues 
--------------
+SELECT minusValue(tint '1@2000-01-01', 1);
+ minusvalue 
+------------
  
 (1 row)
 
-SELECT minusValues(tint '{1@2000-01-01}', 1);
- minusvalues 
--------------
+SELECT minusValue(tint '{1@2000-01-01}', 1);
+ minusvalue 
+------------
  
 (1 row)
 
-SELECT minusValues(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', 1);
-           minusvalues            
+SELECT minusValue(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', 1);
+            minusvalue            
 ----------------------------------
  {2@Sun Jan 02 00:00:00 2000 PST}
 (1 row)
 
-SELECT minusValues(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', 1);
-                            minusvalues                             
+SELECT minusValue(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', 1);
+                             minusvalue                             
 --------------------------------------------------------------------
  {[2@Sun Jan 02 00:00:00 2000 PST, 2@Mon Jan 03 00:00:00 2000 PST)}
 (1 row)
 
-SELECT minusValues(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', 1);
-                                                             minusvalues                                                              
+SELECT minusValue(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', 1);
+                                                              minusvalue                                                              
 --------------------------------------------------------------------------------------------------------------------------------------
  {[2@Sun Jan 02 00:00:00 2000 PST, 2@Mon Jan 03 00:00:00 2000 PST), [3@Tue Jan 04 00:00:00 2000 PST, 3@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
-SELECT minusValues(tbigint '1@2000-01-01', 1);
- minusvalues 
--------------
+SELECT minusValue(tbigint '1@2000-01-01', 1);
+ minusvalue 
+------------
  
 (1 row)
 
-SELECT minusValues(tbigint '{1@2000-01-01}', 1);
- minusvalues 
--------------
+SELECT minusValue(tbigint '{1@2000-01-01}', 1);
+ minusvalue 
+------------
  
 (1 row)
 
-SELECT minusValues(tbigint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', 1);
-           minusvalues            
+SELECT minusValue(tbigint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', 1);
+            minusvalue            
 ----------------------------------
  {2@Sun Jan 02 00:00:00 2000 PST}
 (1 row)
 
-SELECT minusValues(tbigint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', 1);
-                            minusvalues                             
+SELECT minusValue(tbigint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', 1);
+                             minusvalue                             
 --------------------------------------------------------------------
  {[2@Sun Jan 02 00:00:00 2000 PST, 2@Mon Jan 03 00:00:00 2000 PST)}
 (1 row)
 
-SELECT minusValues(tbigint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', 1);
-                                                             minusvalues                                                              
+SELECT minusValue(tbigint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}', 1);
+                                                              minusvalue                                                              
 --------------------------------------------------------------------------------------------------------------------------------------
  {[2@Sun Jan 02 00:00:00 2000 PST, 2@Mon Jan 03 00:00:00 2000 PST), [3@Tue Jan 04 00:00:00 2000 PST, 3@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
-SELECT minusValues(tfloat '1.5@2000-01-01', 1.5);
- minusvalues 
--------------
+SELECT minusValue(tfloat '1.5@2000-01-01', 1.5);
+ minusvalue 
+------------
  
 (1 row)
 
-SELECT minusValues(tfloat '{1.5@2000-01-01}', 1.5);
- minusvalues 
--------------
+SELECT minusValue(tfloat '{1.5@2000-01-01}', 1.5);
+ minusvalue 
+------------
  
 (1 row)
 
-SELECT minusValues(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', 1.5);
-            minusvalues             
+SELECT minusValue(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}', 1.5);
+             minusvalue             
 ------------------------------------
  {2.5@Sun Jan 02 00:00:00 2000 PST}
 (1 row)
 
-SELECT minusValues(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', 1.5);
-                                               minusvalues                                                
+SELECT minusValue(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', 1.5);
+                                                minusvalue                                                
 ----------------------------------------------------------------------------------------------------------
  {(1.5@Sat Jan 01 00:00:00 2000 PST, 2.5@Sun Jan 02 00:00:00 2000 PST, 1.5@Mon Jan 03 00:00:00 2000 PST)}
 (1 row)
 
-SELECT minusValues(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', 2);
-                                                                                                                 minusvalues                                                                                                                  
+SELECT minusValue(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', 2);
+                                                                                                                  minusvalue                                                                                                                  
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {[1.5@Sat Jan 01 00:00:00 2000 PST, 2@Sat Jan 01 12:00:00 2000 PST), (2@Sat Jan 01 12:00:00 2000 PST, 2.5@Sun Jan 02 00:00:00 2000 PST, 2@Sun Jan 02 12:00:00 2000 PST), (2@Sun Jan 02 12:00:00 2000 PST, 1.5@Mon Jan 03 00:00:00 2000 PST]}
 (1 row)
 
-SELECT minusValues(tfloat 'Interp=Step;[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', 2);
-                                                     minusvalues                                                      
+SELECT minusValue(tfloat 'Interp=Step;[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', 2);
+                                                      minusvalue                                                      
 ----------------------------------------------------------------------------------------------------------------------
  Interp=Step;{[1.5@Sat Jan 01 00:00:00 2000 PST, 2.5@Sun Jan 02 00:00:00 2000 PST, 1.5@Mon Jan 03 00:00:00 2000 PST]}
 (1 row)
 
-SELECT minusValues(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', 1.5);
-                                                                                  minusvalues                                                                                   
+SELECT minusValue(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', 1.5);
+                                                                                   minusvalue                                                                                   
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {(1.5@Sat Jan 01 00:00:00 2000 PST, 2.5@Sun Jan 02 00:00:00 2000 PST, 1.5@Mon Jan 03 00:00:00 2000 PST), [3.5@Tue Jan 04 00:00:00 2000 PST, 3.5@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
-SELECT minusValues(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', 2);
-                                                                                                                                                    minusvalues                                                                                                                                                     
+SELECT minusValue(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', 2);
+                                                                                                                                                     minusvalue                                                                                                                                                     
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {[1.5@Sat Jan 01 00:00:00 2000 PST, 2@Sat Jan 01 12:00:00 2000 PST), (2@Sat Jan 01 12:00:00 2000 PST, 2.5@Sun Jan 02 00:00:00 2000 PST, 2@Sun Jan 02 12:00:00 2000 PST), (2@Sun Jan 02 12:00:00 2000 PST, 1.5@Mon Jan 03 00:00:00 2000 PST], [3.5@Tue Jan 04 00:00:00 2000 PST, 3.5@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
-SELECT minusValues(tfloat 'Interp=Step;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', 2);
-                                                                                        minusvalues                                                                                         
+SELECT minusValue(tfloat 'Interp=Step;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', 2);
+                                                                                         minusvalue                                                                                         
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  Interp=Step;{[1.5@Sat Jan 01 00:00:00 2000 PST, 2.5@Sun Jan 02 00:00:00 2000 PST, 1.5@Mon Jan 03 00:00:00 2000 PST], [3.5@Tue Jan 04 00:00:00 2000 PST, 3.5@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
-SELECT minusValues(ttext 'AAA@2000-01-01', 'AAA');
- minusvalues 
--------------
+SELECT minusValue(ttext 'AAA@2000-01-01', 'AAA');
+ minusvalue 
+------------
  
 (1 row)
 
-SELECT minusValues(ttext '{AAA@2000-01-01}', 'AAA');
- minusvalues 
--------------
+SELECT minusValue(ttext '{AAA@2000-01-01}', 'AAA');
+ minusvalue 
+------------
  
 (1 row)
 
-SELECT minusValues(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', 'AAA');
-             minusvalues              
+SELECT minusValue(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}', 'AAA');
+              minusvalue              
 --------------------------------------
  {"BBB"@Sun Jan 02 00:00:00 2000 PST}
 (1 row)
 
-SELECT minusValues(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', 'AAA');
-                                minusvalues                                 
+SELECT minusValue(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', 'AAA');
+                                 minusvalue                                 
 ----------------------------------------------------------------------------
  {["BBB"@Sun Jan 02 00:00:00 2000 PST, "BBB"@Mon Jan 03 00:00:00 2000 PST)}
 (1 row)
 
-SELECT minusValues(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', 'AAA');
-                                                                     minusvalues                                                                      
+SELECT minusValue(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', 'AAA');
+                                                                      minusvalue                                                                      
 ------------------------------------------------------------------------------------------------------------------------------------------------------
  {["BBB"@Sun Jan 02 00:00:00 2000 PST, "BBB"@Mon Jan 03 00:00:00 2000 PST), ["CCC"@Tue Jan 04 00:00:00 2000 PST, "CCC"@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
-SELECT minusValues(tbool '{[t@2000-01-01, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', true);
- minusvalues 
--------------
+SELECT minusValue(tbool '{[t@2000-01-01, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}', true);
+ minusvalue 
+------------
  
 (1 row)
 
-SELECT minusValues(tint '{[1@2000-01-01, 1@2000-01-03],[1@2000-01-04, 1@2000-01-05]}', 1);
- minusvalues 
--------------
+SELECT minusValue(tint '{[1@2000-01-01, 1@2000-01-03],[1@2000-01-04, 1@2000-01-05]}', 1);
+ minusvalue 
+------------
  
 (1 row)
 
-SELECT minusValues(tbigint '{[1@2000-01-01, 1@2000-01-03],[1@2000-01-04, 1@2000-01-05]}', 1);
- minusvalues 
--------------
+SELECT minusValue(tbigint '{[1@2000-01-01, 1@2000-01-03],[1@2000-01-04, 1@2000-01-05]}', 1);
+ minusvalue 
+------------
  
 (1 row)
 
-SELECT minusValues(tfloat '[1@2000-01-01, 1@2000-01-02, 3@2000-01-03]', 2);
-                                                                             minusvalues                                                                              
+SELECT minusValue(tfloat '[1@2000-01-01, 1@2000-01-02, 3@2000-01-03]', 2);
+                                                                              minusvalue                                                                              
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {[1@Sat Jan 01 00:00:00 2000 PST, 1@Sun Jan 02 00:00:00 2000 PST, 2@Sun Jan 02 12:00:00 2000 PST), (2@Sun Jan 02 12:00:00 2000 PST, 3@Mon Jan 03 00:00:00 2000 PST]}
 (1 row)
 
-SELECT minusValues(tfloat '{[1.5@2000-01-01, 1.5@2000-01-03],[1.5@2000-01-04, 1.5@2000-01-05]}', 1.5);
- minusvalues 
--------------
+SELECT minusValue(tfloat '{[1.5@2000-01-01, 1.5@2000-01-03],[1.5@2000-01-04, 1.5@2000-01-05]}', 1.5);
+ minusvalue 
+------------
  
 (1 row)
 
-SELECT minusValues(ttext '{[AA@2000-01-01, AA@2000-01-03],[AA@2000-01-04, AA@2000-01-05]}', text 'AA');
- minusvalues 
--------------
+SELECT minusValue(ttext '{[AA@2000-01-01, AA@2000-01-03],[AA@2000-01-04, AA@2000-01-05]}', text 'AA');
+ minusvalue 
+------------
  
 (1 row)
 
 /* Roundoff errors */
-SELECT minusValues(tfloat '[1@2000-01-01, 2@2000-01-02]', 1 - 1e-16);
-                            minusvalues                             
+SELECT minusValue(tfloat '[1@2000-01-01, 2@2000-01-02]', 1 - 1e-16);
+                             minusvalue                             
 --------------------------------------------------------------------
  {[1@Sat Jan 01 00:00:00 2000 PST, 2@Sun Jan 02 00:00:00 2000 PST]}
 (1 row)
 
-SELECT minusValues(tfloat '[1@2000-01-01, 2@2000-01-02]', 1 - 1e-17);
-                            minusvalues                             
+SELECT minusValue(tfloat '[1@2000-01-01, 2@2000-01-02]', 1 - 1e-17);
+                             minusvalue                             
 --------------------------------------------------------------------
  {(1@Sat Jan 01 00:00:00 2000 PST, 2@Sun Jan 02 00:00:00 2000 PST]}
 (1 row)
 
-SELECT minusValues(tfloat '[1@2000-01-01, 2@2000-01-02]', 1 + 1e-12);
-                            minusvalues                             
+SELECT minusValue(tfloat '[1@2000-01-01, 2@2000-01-02]', 1 + 1e-12);
+                             minusvalue                             
 --------------------------------------------------------------------
  {[1@Sat Jan 01 00:00:00 2000 PST, 2@Sun Jan 02 00:00:00 2000 PST]}
 (1 row)
 
-SELECT minusValues(tfloat '(1@2000-01-01, 2@2000-01-02]', 1 + 1e-12);
-                            minusvalues                             
+SELECT minusValue(tfloat '(1@2000-01-01, 2@2000-01-02]', 1 + 1e-12);
+                             minusvalue                             
 --------------------------------------------------------------------
  {(1@Sat Jan 01 00:00:00 2000 PST, 2@Sun Jan 02 00:00:00 2000 PST]}
 (1 row)
 
-SELECT round(minusValues(tfloat '[1@2000-01-01, 2@2000-01-02)', 2 - 1e-15), 12);
+SELECT round(minusValue(tfloat '[1@2000-01-01, 2@2000-01-02)', 2 - 1e-15), 12);
                                round                                
 --------------------------------------------------------------------
  {[1@Sat Jan 01 00:00:00 2000 PST, 2@Sun Jan 02 00:00:00 2000 PST)}
 (1 row)
 
-SELECT minusValues(tfloat '[1@2000-01-01, 2@2000-01-02]', 2 + 1e-16);
-                            minusvalues                             
+SELECT minusValue(tfloat '[1@2000-01-01, 2@2000-01-02]', 2 + 1e-16);
+                             minusvalue                             
 --------------------------------------------------------------------
  {[1@Sat Jan 01 00:00:00 2000 PST, 2@Sun Jan 02 00:00:00 2000 PST)}
 (1 row)
 
 WITH values(v) AS (SELECT unnest(ARRAY[1 - 1e-17, 1 + 1e-12, 2 - 1e-15, 2 + 1e-16])),
   temp(t) AS (SELECT tfloat '[1@2000-01-01, 2@2000-01-02]')
-SELECT DISTINCT t = merge(atValues(t,v), minusValues(t,v)) FROM temp, values;
+SELECT DISTINCT t = merge(atValue(t,v), minusValue(t,v)) FROM temp, values;
  ?column? 
 ----------
  t

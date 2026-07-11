@@ -2126,25 +2126,25 @@ SELECT COUNT(*) FROM tbl_ttext, tbl_timestamptz WHERE valueAtTimestamp(temp, t) 
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tbool WHERE temp != merge(atValues(temp, true), minusValues(temp, true));
+SELECT COUNT(*) FROM tbl_tbool WHERE temp != merge(atValue(temp, true), minusValue(temp, true));
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp != merge(atValues(temp, i), minusValues(temp, i));
+SELECT COUNT(*) FROM tbl_tint, tbl_int WHERE temp != merge(atValue(temp, i), minusValue(temp, i));
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp != merge(atValues(temp, f), minusValues(temp, f));
+SELECT COUNT(*) FROM tbl_tfloat, tbl_float WHERE temp != merge(atValue(temp, f), minusValue(temp, f));
  count 
 -------
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_ttext, tbl_text WHERE temp != merge(atValues(temp, t), minusValues(temp, t));
+SELECT COUNT(*) FROM tbl_ttext, tbl_text WHERE temp != merge(atValue(temp, t), minusValue(temp, t));
  count 
 -------
      0

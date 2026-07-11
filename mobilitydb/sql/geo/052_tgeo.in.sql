@@ -626,20 +626,20 @@ CREATE FUNCTION unnest(tgeography)
  * Restriction Functions
  *****************************************************************************/
 
-CREATE FUNCTION atValues(tgeometry, geometry)
+CREATE FUNCTION atValue(tgeometry, geometry)
   RETURNS tgeometry
   AS 'MODULE_PATHNAME', 'Temporal_at_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION atValues(tgeography, geography)
+CREATE FUNCTION atValue(tgeography, geography)
   RETURNS tgeography
   AS 'MODULE_PATHNAME', 'Temporal_at_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION minusValues(tgeometry, geometry)
+CREATE FUNCTION minusValue(tgeometry, geometry)
   RETURNS tgeometry
   AS 'MODULE_PATHNAME', 'Temporal_minus_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION minusValues(tgeography, geography)
+CREATE FUNCTION minusValue(tgeography, geography)
   RETURNS tgeography
   AS 'MODULE_PATHNAME', 'Temporal_minus_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

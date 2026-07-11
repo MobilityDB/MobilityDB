@@ -1007,16 +1007,20 @@ SELECT asText(mergeAgg(inst)) FROM temp;
 		<title>Restricciones</title>
 		<itemizedlist>
 			<listitem xml:id="tpose_atValues">
+				<indexterm significance="normal"><primary><varname>atValue</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>minusValue</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>atValues</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>minusValues</varname></primary></indexterm>
-				<para>TODO Restringir al (complemento de) un conjunto de valores</para>
-				<para><varname>atValues(tpose,values) → tpose</varname></para>
-				<para><varname>minusValues(tpose,values) → tpose</varname></para>
+				<para>Restringir al (complemento de) un valor o un conjunto de valores</para>
+				<para><varname>atValue(tpose,value) → tpose</varname></para>
+				<para><varname>minusValue(tpose,value) → tpose</varname></para>
+				<para><varname>atValues(tpose,valueset) → tpose</varname></para>
+				<para><varname>minusValues(tpose,valueset) → tpose</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT atValues(tpose '[Pose(Point(2 2), 0.3)@2001-01-01, 
+SELECT atValue(tpose '[Pose(Point(2 2), 0.3)@2001-01-01,
   Pose(Point(2 2), 0.7)@2001-01-03]', 'Pose(Point(2 2), 0.5)');
 -- {[Pose(Point(2 2),0.5)@2001-01-02]}
-SELECT minusValues(tpose '[Pose(Point(2 2), 0.3)@2001-01-01, 
+SELECT minusValue(tpose '[Pose(Point(2 2), 0.3)@2001-01-01,
   Pose(Point(2 2), 0.7)@2001-01-03]', 'Pose(Point(2 2), 0.5)');
 /* {[Pose(Point(2 2),0.3)@2001-01-01, Pose(Point(2 2),0.5)@2001-01-02),
    (Pose(Point(2 2),0.5)@2001-01-02, Pose(Point(2 2),0.7)@2001-01-03]} */
