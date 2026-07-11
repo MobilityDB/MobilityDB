@@ -957,7 +957,7 @@ ecovers_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 int
 acovers_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 {
-  return ea_covers_tcbuffer_tcbuffer(temp1, temp2, EVER);
+  return ea_covers_tcbuffer_tcbuffer(temp1, temp2, ALWAYS);
 }
 
 /*****************************************************************************
@@ -1621,7 +1621,7 @@ etouches_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 int
 atouches_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 {
-  return ea_touches_tcbuffer_tcbuffer(temp1, temp2, EVER);
+  return ea_touches_tcbuffer_tcbuffer(temp1, temp2, ALWAYS);
 }
 
 /*****************************************************************************
