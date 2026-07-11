@@ -1086,6 +1086,13 @@ tspatialrel_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
  * Temporal contains
  *****************************************************************************/
 
+/* Native GEOS-free temporal contains (@p strict true) / covers (@p strict
+ * false) of a moving disk by a geometry, defined with the touch machinery
+ * below; returns NULL for curved or unsupported geometry so the caller keeps
+ * the per-instant lifting path */
+static Temporal *tcontains_geo_tcbuffer_native(const Temporal *temp,
+  const GSERIALIZED *gs, bool strict);
+
 /**
  * @ingroup meos_cbuffer_rel_temp
  * @brief Return a temporal Boolean that states whether a geometry contains a
@@ -1097,6 +1104,9 @@ tspatialrel_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
 Temporal *
 tcontains_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp)
 {
+  Temporal *res = tcontains_geo_tcbuffer_native(temp, gs, true);
+  if (res)
+    return res;
   return tspatialrel_tcbuffer_geo(temp, gs, INVERT,
     &datum_cbuffer_contains);
 }
@@ -1184,6 +1194,9 @@ tcontains_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 Temporal *
 tcovers_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp)
 {
+  Temporal *res = tcontains_geo_tcbuffer_native(temp, gs, false);
+  if (res)
+    return res;
   return tspatialrel_tcbuffer_geo(temp, gs, INVERT,
     &datum_cbuffer_covers);
 }
@@ -1620,6 +1633,303 @@ ttouches_tcbufferseqset_geo_native(const TSequenceSet *ss, const void *ctx)
 }
 
 /*****************************************************************************
+ * Temporal contains and covers (GEOS-free)
+ *
+ * A geometry contains (@p strict) or covers a moving disk on the sub-periods
+ * where the disk centre lies in a polygon of the geometry and the disk clears
+ * its boundary: strictly (contains, signed clearance sg > 0) or up to tangency
+ * (covers, sg >= 0). The value changes only where sg crosses 0, the same
+ * segment roots the touch predicate uses; between consecutive roots the disk
+ * stays clear of the boundary so the relation is constant and decided by the
+ * interior test at a sample point. A geometry with no polygonal component
+ * cannot contain a positive-radius disk, which the point-in-polygon guard makes
+ * false. Curved or unsupported geometry (no context) keeps the lifting path.
+ *****************************************************************************/
+
+/**
+ * @brief Native temporal contains/covers Boolean for a temporal circular buffer
+ * instant
+ */
+static Temporal *
+tcontains_tcbufferinst_geo_native(const TInstant *inst, const void *ctx,
+  bool strict)
+{
+  bool c = tcbuffer_disc_contains_ctx(DatumGetCbufferP(tinstant_value_p(inst)),
+    ctx, strict);
+  return (Temporal *) tinstant_make(BoolGetDatum(c), T_TBOOL, inst->t);
+}
+
+/**
+ * @brief Native temporal contains/covers Boolean for a discrete temporal
+ * circular buffer sequence
+ */
+static Temporal *
+tcontains_tcbufferseq_disc_geo_native(const TSequence *seq, const void *ctx,
+  bool strict)
+{
+  Set *s = NULL;
+  for (int i = 0; i < seq->count; i++)
+  {
+    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
+    if (tcbuffer_disc_contains_ctx(DatumGetCbufferP(tinstant_value_p(inst)),
+        ctx, strict))
+    {
+      if (! s)
+        s = value_set(TimestampTzGetDatum(inst->t), T_TIMESTAMPTZ);
+      else
+      {
+        Set *s1 = union_set_value(s, TimestampTzGetDatum(inst->t));
+        pfree(s);
+        s = s1;
+      }
+    }
+  }
+  if (! s)
+    return (Temporal *) tsequence_from_base_temp(BoolGetDatum(false), T_TBOOL,
+      seq);
+  TSequence *res_true = tsequence_from_base_tstzset(BoolGetDatum(true), T_TBOOL,
+    s);
+  int count;
+  TimestampTz *times = tsequence_timestamps(seq, &count);
+  Datum *datumarr = palloc(sizeof(Datum) * count);
+  for (int i = 0; i < count; i++)
+    datumarr[i] = TimestampTzGetDatum(times[i]);
+  pfree(times);
+  Set *s_time = set_make_free(datumarr, count, T_TIMESTAMPTZ, ORDER);
+  Set *s_minus = minus_set_set(s_time, s);
+  Temporal *result;
+  if (s_minus)
+  {
+    TSequence *res_false = tsequence_from_base_tstzset(BoolGetDatum(false),
+      T_TBOOL, s_minus);
+    result = tsequence_merge(res_true, res_false);
+    pfree(res_true); pfree(s_minus); pfree(res_false);
+  }
+  else
+    result = (Temporal *) res_true;
+  pfree(s); pfree(s_time);
+  return result;
+}
+
+/**
+ * @brief Return the spanset of sub-periods during which the geometry contains
+ * (@p strict) or covers a step- or linear-interpolated temporal circular buffer
+ * sequence (NULL if never)
+ */
+static SpanSet *
+tcbufferseq_contains_spanset(const TSequence *seq, const void *ctx, bool strict)
+{
+  SpanSet *ss = NULL;
+  if (MEOS_FLAGS_GET_INTERP(seq->flags) == STEP)
+  {
+    bool lower_inc = seq->period.lower_inc;
+    for (int i = 0; i < seq->count; i++)
+    {
+      const TInstant *inst = TSEQUENCE_INST_N(seq, i);
+      if (! tcbuffer_disc_contains_ctx(
+          DatumGetCbufferP(tinstant_value_p(inst)), ctx, strict))
+        continue;
+      const TInstant *next = (i < seq->count - 1) ?
+        TSEQUENCE_INST_N(seq, i + 1) : inst;
+      bool upper_inc = (i == seq->count - 1) ? false : seq->period.upper_inc;
+      TimestampTz mint = inst->t, maxt = next->t;
+      if (mint == maxt)
+      {
+        if (i == 0 ? lower_inc : true)
+          ss = tcbuffer_touch_union_instant(ss, mint);
+        continue;
+      }
+      bool lower_inc1 = (i == 0) ? lower_inc : true;
+      Span *sp = span_make(TimestampTzGetDatum(mint), TimestampTzGetDatum(maxt),
+        lower_inc1, upper_inc, T_TIMESTAMPTZ);
+      if (! ss)
+        ss = span_to_spanset(sp);
+      else
+      {
+        SpanSet *s1 = union_spanset_span(ss, sp);
+        pfree(ss);
+        ss = s1;
+      }
+      pfree(sp);
+    }
+    return ss;
+  }
+  /* Linear: the relation is constant between consecutive sg = 0 (touch) roots.
+   * Union each vertex/root instant where it holds and each open sub-interval
+   * whose interpolated midpoint satisfies it; the spanset union normalizes the
+   * endpoint inclusivity, preserving an isolated tangency (covers) or a grazing
+   * hole (contains). */
+  int maxo = tcbuffer_geo_ctx_nsegs(ctx) + 2;
+  double *rt = palloc(sizeof(double) * maxo);
+  const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
+  if (seq->period.lower_inc && tcbuffer_disc_contains_ctx(
+      DatumGetCbufferP(tinstant_value_p(inst1)), ctx, strict))
+    ss = tcbuffer_touch_union_instant(ss, inst1->t);
+  for (int i = 1; i < seq->count; i++)
+  {
+    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
+    const Cbuffer *cb1 = DatumGetCbufferP(tinstant_value_p(inst1));
+    const Cbuffer *cb2 = DatumGetCbufferP(tinstant_value_p(inst2));
+    double dur = (double) (inst2->t - inst1->t);
+    int nr = tcbufferseg_touch_roots(cb1, cb2, ctx, rt, maxo);
+    /* Sort the roots ascending (insertion sort; nr is small) */
+    for (int a = 1; a < nr; a++)
+    {
+      double v = rt[a];
+      int b = a - 1;
+      while (b >= 0 && rt[b] > v) { rt[b + 1] = rt[b]; b--; }
+      rt[b + 1] = v;
+    }
+    double prev = 0.0;
+    for (int j = 0; j <= nr; j++)
+    {
+      double hi = (j < nr) ? rt[j] : 1.0;
+      if (hi < prev)
+        hi = prev;
+      if (hi > prev)
+      {
+        Cbuffer *cbm = cbuffersegm_interpolate(cb1, cb2,
+          (long double) (0.5 * (prev + hi)));
+        bool in = tcbuffer_disc_contains_ctx(cbm, ctx, strict);
+        pfree(cbm);
+        if (in)
+        {
+          TimestampTz mint = inst1->t + (TimestampTz) llround(prev * dur);
+          TimestampTz maxt = inst1->t + (TimestampTz) llround(hi * dur);
+          if (mint < inst1->t) mint = inst1->t;
+          if (maxt > inst2->t) maxt = inst2->t;
+          if (maxt > mint)
+          {
+            Span *sp = span_make(TimestampTzGetDatum(mint),
+              TimestampTzGetDatum(maxt), false, false, T_TIMESTAMPTZ);
+            if (! ss)
+              ss = span_to_spanset(sp);
+            else
+            {
+              SpanSet *s1 = union_spanset_span(ss, sp);
+              pfree(ss);
+              ss = s1;
+            }
+            pfree(sp);
+          }
+        }
+      }
+      if (j < nr && rt[j] > 0.0 && rt[j] < 1.0)
+      {
+        TimestampTz t = inst1->t + (TimestampTz) llround(rt[j] * dur);
+        if (t > inst1->t && t < inst2->t)
+        {
+          Cbuffer *cbr = cbuffersegm_interpolate(cb1, cb2, (long double) rt[j]);
+          bool inr = tcbuffer_disc_contains_ctx(cbr, ctx, strict);
+          pfree(cbr);
+          if (inr)
+            ss = tcbuffer_touch_union_instant(ss, t);
+        }
+      }
+      prev = hi;
+    }
+    bool inc2 = (i < seq->count - 1) ? true : seq->period.upper_inc;
+    if (inc2 && tcbuffer_disc_contains_ctx(cb2, ctx, strict))
+      ss = tcbuffer_touch_union_instant(ss, inst2->t);
+    inst1 = inst2;
+  }
+  pfree(rt);
+  return ss;
+}
+
+/**
+ * @brief Native temporal contains/covers Boolean for a step- or
+ * linear-interpolated temporal circular buffer sequence
+ */
+static Temporal *
+tcontains_tcbufferseq_geo_native(const TSequence *seq, const void *ctx,
+  bool strict)
+{
+  if (seq->count == 1)
+    return tcontains_tcbufferinst_geo_native(TSEQUENCE_INST_N(seq, 0), ctx,
+      strict);
+  if (MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE)
+    return tcontains_tcbufferseq_disc_geo_native(seq, ctx, strict);
+  SpanSet *ss = tcbufferseq_contains_spanset(seq, ctx, strict);
+  Temporal *result = tinterrel_tcbufferseq_from_spanset(seq, ss, true);
+  if (ss)
+    pfree(ss);
+  return result;
+}
+
+/**
+ * @brief Native temporal contains/covers Boolean for a temporal circular buffer
+ * sequence set
+ */
+static Temporal *
+tcontains_tcbufferseqset_geo_native(const TSequenceSet *ss, const void *ctx,
+  bool strict)
+{
+  if (ss->count == 1)
+    return tcontains_tcbufferseq_geo_native(TSEQUENCESET_SEQ_N(ss, 0), ctx,
+      strict);
+  Temporal **res_seq = palloc(sizeof(Temporal *) * ss->count);
+  int count = 0;
+  for (int i = 0; i < ss->count; i++)
+  {
+    Temporal *res = tcontains_tcbufferseq_geo_native(TSEQUENCESET_SEQ_N(ss, i),
+      ctx, strict);
+    if (res)
+      res_seq[count++] = res;
+  }
+  if (! count)
+  {
+    pfree(res_seq);
+    return (Temporal *) tsequenceset_from_base_temp(BoolGetDatum(false),
+      T_TBOOL, ss);
+  }
+  Temporal *result;
+  if (count == 1)
+  {
+    result = res_seq[0];
+    pfree(res_seq);
+    return result;
+  }
+  result = temporal_merge_array(res_seq, count);
+  pfree_array((void *) res_seq, count);
+  return result;
+}
+
+/**
+ * @brief Native GEOS-free temporal contains/covers of a moving disk by a
+ * geometry (NULL for curved or unsupported geometry so the caller falls back)
+ */
+static Temporal *
+tcontains_geo_tcbuffer_native(const Temporal *temp, const GSERIALIZED *gs,
+  bool strict)
+{
+  VALIDATE_TCBUFFER(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
+  if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
+    return NULL;
+  void *ctx = tcbuffer_geo_ctx_make(gs);
+  if (! ctx)
+    return NULL;
+  Temporal *result = NULL;
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      result = tcontains_tcbufferinst_geo_native((TInstant *) temp, ctx,
+        strict);
+      break;
+    case TSEQUENCE:
+      result = tcontains_tcbufferseq_geo_native((TSequence *) temp, ctx,
+        strict);
+      break;
+    default: /* TSEQUENCESET */
+      result = tcontains_tcbufferseqset_geo_native((TSequenceSet *) temp, ctx,
+        strict);
+  }
+  tcbuffer_geo_ctx_free(ctx);
+  return result;
+}
+
+/*****************************************************************************
  * Ever/always touches (GEOS-free)
  *
  * eTouches and aTouches derive from the same contact set as the temporal
@@ -1719,6 +2029,163 @@ eatouches_tcbuffer_geo_native(const Temporal *temp, const GSERIALIZED *gs,
       bool r = ever ?
         tcbufferseq_ever_touches_native(TSEQUENCESET_SEQ_N(ss, i), ctx) :
         tcbufferseq_always_touches_native(TSEQUENCESET_SEQ_N(ss, i), ctx);
+      if (ever && r) { result = 1; break; }
+      if (! ever && ! r) { result = 0; break; }
+    }
+  }
+  tcbuffer_geo_ctx_free(ctx);
+  return result;
+}
+
+/*****************************************************************************
+ * Ever/always contains and covers (GEOS-free)
+ *
+ * eContains/aContains (and the covers variants) derive from the same
+ * interior/clearance test as the temporal contains Boolean, so they are exactly
+ * consistent with ever/always(tContains). eContains scans the instants and the
+ * per-segment sub-intervals with early exit on the first that holds; aContains
+ * tests whether the holding sub-periods cover the whole definition time.
+ *****************************************************************************/
+
+/**
+ * @brief Return true if the geometry ever contains (@p strict) or covers a
+ * temporal circular buffer sequence, scanning the instants and (for linear
+ * interpolation) the per-segment sub-intervals with early exit
+ */
+static bool
+tcbufferseq_ever_contains_native(const TSequence *seq, const void *ctx,
+  bool strict)
+{
+  bool linear = MEOS_FLAGS_LINEAR_INTERP(seq->flags);
+  for (int i = 0; i < seq->count; i++)
+  {
+    /* For linear interpolation a boundary instant excluded by the period
+     * inclusivity is not part of the value; for step it governs a sub-period,
+     * so it is always considered. This keeps the scan consistent with the
+     * temporal contains Boolean the spanset builder produces. */
+    if (linear && i == 0 && ! seq->period.lower_inc)
+      continue;
+    if (linear && i == seq->count - 1 && ! seq->period.upper_inc)
+      continue;
+    if (tcbuffer_disc_contains_ctx(
+        DatumGetCbufferP(tinstant_value_p(TSEQUENCE_INST_N(seq, i))), ctx,
+        strict))
+      return true;
+  }
+  if (seq->count == 1 || ! linear)
+    return false;
+  int maxo = tcbuffer_geo_ctx_nsegs(ctx) + 2;
+  double *rt = palloc(sizeof(double) * maxo);
+  const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
+  bool found = false;
+  for (int i = 1; i < seq->count && ! found; i++)
+  {
+    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
+    const Cbuffer *cb1 = DatumGetCbufferP(tinstant_value_p(inst1));
+    const Cbuffer *cb2 = DatumGetCbufferP(tinstant_value_p(inst2));
+    int nr = tcbufferseg_touch_roots(cb1, cb2, ctx, rt, maxo);
+    for (int a = 1; a < nr; a++)
+    {
+      double v = rt[a];
+      int b = a - 1;
+      while (b >= 0 && rt[b] > v) { rt[b + 1] = rt[b]; b--; }
+      rt[b + 1] = v;
+    }
+    double prev = 0.0;
+    for (int j = 0; j <= nr && ! found; j++)
+    {
+      double hi = (j < nr) ? rt[j] : 1.0;
+      if (hi < prev)
+        hi = prev;
+      if (hi > prev)
+      {
+        Cbuffer *cbm = cbuffersegm_interpolate(cb1, cb2,
+          (long double) (0.5 * (prev + hi)));
+        if (tcbuffer_disc_contains_ctx(cbm, ctx, strict))
+          found = true;
+        pfree(cbm);
+      }
+      /* An interior root instant (sg = 0) contributes for covers, where a disk
+       * tangent to the boundary from inside is an isolated holding instant */
+      if (j < nr && rt[j] > 0.0 && rt[j] < 1.0)
+      {
+        Cbuffer *cbr = cbuffersegm_interpolate(cb1, cb2, (long double) rt[j]);
+        if (tcbuffer_disc_contains_ctx(cbr, ctx, strict))
+          found = true;
+        pfree(cbr);
+      }
+      prev = hi;
+    }
+    inst1 = inst2;
+  }
+  pfree(rt);
+  return found;
+}
+
+/**
+ * @brief Return true if the geometry always contains (@p strict) or covers a
+ * temporal circular buffer sequence, that is, the holding sub-periods cover the
+ * whole sequence period
+ */
+static bool
+tcbufferseq_always_contains_native(const TSequence *seq, const void *ctx,
+  bool strict)
+{
+  if (seq->count == 1 || MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE)
+  {
+    for (int i = 0; i < seq->count; i++)
+      if (! tcbuffer_disc_contains_ctx(
+          DatumGetCbufferP(tinstant_value_p(TSEQUENCE_INST_N(seq, i))), ctx,
+          strict))
+        return false;
+    return true;
+  }
+  SpanSet *ss = tcbufferseq_contains_spanset(seq, ctx, strict);
+  bool covered = (ss != NULL) && contains_spanset_span(ss, &seq->period);
+  if (ss)
+    pfree(ss);
+  return covered;
+}
+
+/**
+ * @ingroup meos_internal_cbuffer_rel_ever
+ * @brief Return 1 if a geometry ever/always contains (@p strict) or covers a
+ * temporal circular buffer, 0 if not, and -1 for curved or unsupported geometry
+ * (the caller then uses the traversed-area path)
+ * @param[in] temp Temporal circular buffer
+ * @param[in] gs Geometry
+ * @param[in] ever True for the ever semantics, false for the always semantics
+ * @param[in] strict True for contains, false for covers
+ */
+int
+eacontains_tcbuffer_geo_native(const Temporal *temp, const GSERIALIZED *gs,
+  bool ever, bool strict)
+{
+  void *ctx = tcbuffer_geo_ctx_make(gs);
+  if (! ctx)
+    return -1;
+  int result;
+  assert(temptype_subtype(temp->subtype));
+  if (temp->subtype == TINSTANT)
+    result = tcbuffer_disc_contains_ctx(
+      DatumGetCbufferP(tinstant_value_p((TInstant *) temp)), ctx, strict) ?
+      1 : 0;
+  else if (temp->subtype == TSEQUENCE)
+    result = (ever ?
+      tcbufferseq_ever_contains_native((TSequence *) temp, ctx, strict) :
+      tcbufferseq_always_contains_native((TSequence *) temp, ctx, strict)) ?
+      1 : 0;
+  else /* TSEQUENCESET */
+  {
+    const TSequenceSet *ss = (TSequenceSet *) temp;
+    result = ever ? 0 : 1;
+    for (int i = 0; i < ss->count; i++)
+    {
+      bool r = ever ?
+        tcbufferseq_ever_contains_native(TSEQUENCESET_SEQ_N(ss, i), ctx,
+          strict) :
+        tcbufferseq_always_contains_native(TSEQUENCESET_SEQ_N(ss, i), ctx,
+          strict);
       if (ever && r) { result = 1; break; }
       if (! ever && ! r) { result = 0; break; }
     }

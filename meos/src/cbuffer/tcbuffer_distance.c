@@ -2210,6 +2210,34 @@ tcbuffer_disc_touch_ctx(const Cbuffer *cb, const void *ctxv)
 }
 
 /**
+ * @brief Return true if the geometry contains (@p strict) or covers
+ * (not @p strict) a stationary circular buffer
+ * @details A geometry contains a disk when the disk lies in the open interior,
+ * and covers it when the disk lies in the closed region (tangency to the
+ * boundary allowed). For a disk of centre @p c and radius @p r this is exactly
+ *   c is strictly inside a polygon of the geometry  AND  sg(c, r) > 0 (contains)
+ *   resp.  sg(c, r) >= 0   (covers),
+ * where @p sg is the signed nearest boundary distance min_edge[dist(c, edge)-r]:
+ * strictly positive means the whole disk clears the boundary, zero means it is
+ * tangent to it, negative means it crosses to the exterior. The point-in-polygon
+ * guard makes the relation false for a disk in a hole, outside the geometry, or
+ * against a geometry with no polygonal (2D) component, which cannot contain a
+ * positive-radius disk. This is the moving-disk analogue of the temporal point
+ * containment rule generalized to a positive radius.
+ */
+bool
+tcbuffer_disc_contains_ctx(const Cbuffer *cb, const void *ctxv, bool strict)
+{
+  const TcbGeoCtx *ctx = (const TcbGeoCtx *) ctxv;
+  const POINT2D *p = GSERIALIZED_POINT2D_P(cbuffer_point_p(cb));
+  bool inside;
+  double sg = tcbuffer_disc_signed_boundary(p->x, p->y, cb->radius, &ctx->g,
+    &inside);
+  return inside &&
+    (strict ? sg > TCBUFFER_TOUCH_EPS : sg >= - TCBUFFER_TOUCH_EPS);
+}
+
+/**
  * @brief Append to @p outt the normalized times in (0,1) at which a linearly
  * moving disk touches the geometry
  * @details The candidate crossing times are the same region roots the within

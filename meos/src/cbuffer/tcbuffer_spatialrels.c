@@ -537,6 +537,12 @@ int
 ea_contains_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp,
   bool ever)
 {
+  /* Native GEOS-free running ever/always contains, exactly consistent with the
+   * temporal contains; curved or unsupported geometry keeps the traversed-area
+   * path. */
+  int native = eacontains_tcbuffer_geo_native(temp, gs, ever, true);
+  if (native >= 0)
+    return native;
   return ea_spatialrel_tcbuffer_geo(temp, gs, (Datum) NULL,
       (varfunc) &datum_geom_contains, 2, ever, INVERT);
 }
@@ -727,6 +733,12 @@ acontains_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
 int
 ea_covers_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp, bool ever)
 {
+  /* Native GEOS-free running ever/always covers (contains up to boundary
+   * tangency), exactly consistent with the temporal covers; curved or
+   * unsupported geometry keeps the traversed-area path. */
+  int native = eacontains_tcbuffer_geo_native(temp, gs, ever, false);
+  if (native >= 0)
+    return native;
   return ea_spatialrel_tcbuffer_geo(temp, gs, (Datum) NULL,
       (varfunc) &datum_geom_covers, 2, ever, INVERT);
 }
