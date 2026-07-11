@@ -36,11 +36,6 @@ SELECT th3index(SequenceSet) '{[831c02fffffffff@2001-01-01, 831c00fffffffff@2001
 -- ERROR: el tipo temporal (Instant) no coincide con el tipo de columna (Sequence)
 SELECT th3index(Sequence) '831c02fffffffff@2001-01-01';
 </programlisting>
-		<para>La función <varname>arrowRoundtrip</varname> convierte un índice H3 temporal a la interfaz Arrow C Data Interface y lo reconstruye, devolviendo un valor igual a la entrada.</para>
-		<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT arrowRoundtrip(th3index '831c02fffffffff@2001-01-01');
--- 831c02fffffffff@2001-01-01
-</programlisting>
 		<para>Las funciones <varname>asText</varname>, <varname>asBinary</varname> y <varname>asHexWKB</varname> serializan un valor <varname>th3index</varname>, y <varname>th3indexFromBinary</varname> y <varname>th3indexFromHexWKB</varname> lo reconstruyen. La forma hexadecimal WKB permite que una columna de índice H3 temporal se transfiera de ida y vuelta mediante un <varname>COPY</varname> basado en texto.</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asHexWKB(th3index '831c02fffffffff@2001-01-01');

@@ -3468,9 +3468,6 @@
 					<listitem>
 						<para><link linkend="tpcpoint_tgeompoint"><varname>tpcpoint::tgeompoint</varname></link>: Cast a tpcpoint to a temporal geometry point</para>
 					</listitem>
-					<listitem>
-						<para><link linkend="tpcpoint_arrowRoundtrip"><varname>arrowRoundtrip</varname></link>: Convert a tpcpoint to the Arrow C Data Interface and back</para>
-					</listitem>
 				</itemizedlist>
 			</sect3>
 
@@ -3562,14 +3559,6 @@
 				</itemizedlist>
 			</sect3>
 
-			<sect3>
-				<title>Conversions</title>
-				<itemizedlist>
-					<listitem>
-						<para><link linkend="tpcpatch_arrowRoundtrip"><varname>arrowRoundtrip</varname></link>: Convert a tpcpatch to the Arrow C Data Interface and back</para>
-					</listitem>
-				</itemizedlist>
-			</sect3>
 
 			<sect3>
 				<title>Restrictions</title>

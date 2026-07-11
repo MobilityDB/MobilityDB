@@ -670,17 +670,6 @@ SELECT ST_AsText(startValue(tpcpoint(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]),
 </programlisting>
 				</listitem>
 
-				<listitem xml:id="tpcpoint_arrowRoundtrip">
-					<indexterm significance="normal"><primary><varname>arrowRoundtrip</varname></primary></indexterm>
-					<para>Convertir un punto de nube de puntos temporal a la interfaz Arrow C Data Interface y de vuelta, devolviendo el valor reconstruido</para>
-					<para><varname>arrowRoundtrip(tpcpoint) → tpcpoint</varname></para>
-					<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT arrowRoundtrip(tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]),
-  '2024-01-01'::timestamptz)) = tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]),
-  '2024-01-01'::timestamptz);
--- t
-</programlisting>
-				</listitem>
 			</itemizedlist>
 		</sect2>
 
@@ -899,23 +888,6 @@ SELECT t, point FROM points(tpcpatch(
 			<para>Véase <xref linkend="tpcpatch_perpoint_roadmap" /> para conocer los límites de estos accesores y qué está y qué no está disponible a nivel de granularidad por punto.</para>
 		</sect2>
 
-		<sect2 xml:id="tpcpatch_conversions">
-			<title>Conversiones</title>
-			<itemizedlist>
-				<listitem xml:id="tpcpatch_arrowRoundtrip">
-					<indexterm significance="normal"><primary><varname>arrowRoundtrip</varname></primary></indexterm>
-					<para>Convertir un parche de nube de puntos temporal a la interfaz Arrow C Data Interface y de vuelta, devolviendo el valor reconstruido</para>
-					<para><varname>arrowRoundtrip(tpcpatch) → tpcpatch</varname></para>
-					<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT arrowRoundtrip(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0,
-  1.0]), PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0])]), '2024-01-01'::timestamptz)) =
-  tpcpatch(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]),
-  PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0])]), '2024-01-01'::timestamptz);
--- t
-</programlisting>
-				</listitem>
-			</itemizedlist>
-		</sect2>
 
 		<sect2 xml:id="tpcpatch_restrictions">
 			<title>Restricciones</title>
