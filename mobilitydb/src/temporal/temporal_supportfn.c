@@ -216,45 +216,63 @@ opFamilyAmOid(Oid opfamilyoid)
  * expand function, so lookup the function Oid using the function name and
  * type number.
  */
+static FuncExpr *makeBboxExpr(Node *arg, Oid argoid, Oid retoid,
+  Oid callingfunc);
+
 static FuncExpr *
 makeExpandExpr(Node *arg, Node *radiusarg, Oid argoid, Oid retoid,
   Oid callingfunc)
 {
-  const Oid radiusoid = FLOAT8OID;
-  const Oid funcargs[2] = {argoid, radiusoid};
   const bool noError = true;
   List *nspfunc;
   Oid funcoid;
 
   /* Expand function must be in same namespace as the caller */
   char *nspname = get_namespace_name(get_func_namespace(callingfunc));
-  char *funcname = NULL; /* make compiler quiet */
+
+  /* Cast the operand to its bounding box, reusing the uniform per-family
+   * dispatch of makeBboxExpr. That dispatch already covers every temporal,
+   * numeric, and spatial type -- including the scalar base types such as
+   * cbuffer and npoint via their `stbox` cast -- so no per-type expand function
+   * is needed and new families are handled without touching this file. If the
+   * operand is already a bounding box, use it as is. */
   MeosType argtype = oid_meostype(argoid);
-  if (argtype == T_GEOMETRY || argtype == T_GEOGRAPHY || argtype == T_STBOX ||
-      argtype == T_TGEOMPOINT || argtype == T_TGEOGPOINT
-#if CBUFFER
-      || argtype == T_TCBUFFER
-#endif /* CBUFFER */
-#if NPOINT
-      || argtype == T_TNPOINT
-#endif /* NPOINT */
-#if POSE
-      || argtype == T_TPOSE
-#endif /* POSE */
-#if RGEO
-      || argtype == T_TRGEOMETRY
-#endif /* RGEO */
-      )
+  Node *boxarg = bbox_type(argtype) ? arg :
+    (Node *) makeBboxExpr(arg, argoid, retoid, callingfunc);
+
+  /* Expand the bounding box in the dimension of its family: an stbox is
+   * expanded in space, a tbox in value, a span in time. The box type is the
+   * authoritative return type and the radius type comes from the actual
+   * argument, so the same code serves every family.
+   *
+   * WARNING -- this expand-and-overlap rewrite is a sound index PREFILTER only
+   * because it is attached exclusively to FIXED-THRESHOLD predicates (the
+   * IndexableFunction entries carrying expand_arg: eDwithin/aDwithin) and the
+   * planner keeps the exact predicate as a recheck Filter. It must NEVER be
+   * wired to a function returning an exact DISTANCE VALUE with no threshold
+   * (nearestApproachDistance / minDistance / |=|): a fixed bbox cannot prune an
+   * exact nearest-approach -- it would drop the pair whose closest partner
+   * lies just outside the box (the documented minDistance bbox-prune dead
+   * end). For scalar spatial operands the box is radius-aware
+   * (expandspace(stbox(cbuffer),d)), so the prefilter is exact for the
+   * threshold. */
+  MeosType boxtype = oid_meostype(retoid);
+  char *funcname;
+  if (boxtype == T_STBOX)
     funcname = "expandspace";
+  else if (boxtype == T_TBOX)
+    funcname = "expandvalue";
   else
-    elog(ERROR, "Unknown expand function for type %d", argoid);
+    funcname = "expand";
+  const Oid radiusoid = exprType(radiusarg);
+  const Oid funcargs[2] = {retoid, radiusoid};
   nspfunc = list_make2(makeString(nspname), makeString(funcname));
   funcoid = LookupFuncName(nspfunc, 2, funcargs, noError);
   if (funcoid == InvalidOid)
     elog(ERROR, "unable to lookup '%s(Oid[%u], Oid[%u])'", funcname,
-      argoid, radiusoid);
+      retoid, radiusoid);
 
-  return makeFuncExpr(funcoid, retoid, list_make2(arg, radiusarg),
+  return makeFuncExpr(funcoid, retoid, list_make2(boxarg, radiusarg),
     InvalidOid, InvalidOid, COERCE_EXPLICIT_CALL);
 }
 
