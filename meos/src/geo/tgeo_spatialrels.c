@@ -772,7 +772,7 @@ acontains_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
  * for detailed explanations about the difference between both functions.
  */
 int
-ea_covers_tgeo_geo_int(const Temporal *temp, const GSERIALIZED *gs, bool ever,
+ea_covers_tgeo_geo_common(const Temporal *temp, const GSERIALIZED *gs, bool ever,
   bool invert)
 {
   VALIDATE_TGEO(temp, -1); VALIDATE_NOT_NULL(gs, -1);
@@ -798,7 +798,7 @@ ea_covers_tgeo_geo_int(const Temporal *temp, const GSERIALIZED *gs, bool ever,
 inline int
 ea_covers_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
 {
-  return ea_covers_tgeo_geo_int(temp, gs, ever, INVERT);
+  return ea_covers_tgeo_geo_common(temp, gs, ever, INVERT);
 }
 
 /**
@@ -809,7 +809,7 @@ ea_covers_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
 inline int
 ea_covers_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 {
-  return ea_covers_tgeo_geo_int(temp, gs, ever, INVERT_NO);
+  return ea_covers_tgeo_geo_common(temp, gs, ever, INVERT_NO);
 }
 
 #if MEOS
@@ -824,7 +824,7 @@ ea_covers_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 int
 ecovers_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
 {
-  return ea_covers_tgeo_geo_int(temp, gs, EVER, INVERT);
+  return ea_covers_tgeo_geo_common(temp, gs, EVER, INVERT);
 }
 
 /**
@@ -838,7 +838,7 @@ ecovers_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
 int
 acovers_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
 {
-  return ea_covers_tgeo_geo_int(temp, gs, ALWAYS, INVERT);
+  return ea_covers_tgeo_geo_common(temp, gs, ALWAYS, INVERT);
 }
 
 /**
@@ -852,7 +852,7 @@ acovers_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
 int
 ecovers_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  return ea_covers_tgeo_geo_int(temp, gs, EVER, INVERT_NO);
+  return ea_covers_tgeo_geo_common(temp, gs, EVER, INVERT_NO);
 }
 
 /**
@@ -866,7 +866,7 @@ ecovers_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 int
 acovers_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  return ea_covers_tgeo_geo_int(temp, gs, ALWAYS, INVERT_NO);
+  return ea_covers_tgeo_geo_common(temp, gs, ALWAYS, INVERT_NO);
 }
 #endif /* MEOS */
 
