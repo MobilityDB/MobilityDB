@@ -1380,6 +1380,15 @@ ea_touches_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
   VALIDATE_TCBUFFER(temp, -1); VALIDATE_NOT_NULL(gs, -1);
   if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
+  /* Bounding box test: a moving disk whose radius-aware bounding box is
+   * disjoint from the geometry never reaches it, so it cannot touch. This is a
+   * constant-time reject that avoids the analytic nearest-approach distance
+   * below for the common case of far-away pairs in a spatial join. */
+  STBox box1, box2;
+  tspatial_set_stbox(temp, &box1);
+  geo_set_stbox(gs, &box2);
+  if (! overlaps_stbox_stbox(&box1, &box2))
+    return 0;
   /* Touch requires the temporal value and the geometry to be at distance
    * zero; a strictly positive exact nearest-approach distance means they
    * are disjoint, so they cannot touch under either quantifier. This is
