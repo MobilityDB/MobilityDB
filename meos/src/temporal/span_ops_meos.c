@@ -269,6 +269,81 @@ adjacent_span_timestamptz(const Span *s, TimestampTz t)
   return adjacent_span_value(s, TimestampTzGetDatum(t));
 }
 
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if an integer is adjacent to a span
+ * @param[in] i Value
+ * @param[in] s Span
+ * @csqlfn #Adjacent_value_span()
+ */
+bool
+adjacent_int_span(int i, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_INTSPAN(s, false);
+  return adjacent_span_value(s, Int32GetDatum(i));
+}
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a big integer is adjacent to a span
+ * @param[in] i Value
+ * @param[in] s Span
+ * @csqlfn #Adjacent_value_span()
+ */
+bool
+adjacent_bigint_span(int64 i, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_BIGINTSPAN(s, false);
+  return adjacent_span_value(s, Int64GetDatum(i));
+}
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a float is adjacent to a span
+ * @param[in] d Value
+ * @param[in] s Span
+ * @csqlfn #Adjacent_value_span()
+ */
+bool
+adjacent_float_span(double d, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_FLOATSPAN(s, false);
+  return adjacent_span_value(s, Float8GetDatum(d));
+}
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a date is adjacent to a span
+ * @param[in] d Value
+ * @param[in] s Span
+ * @csqlfn #Adjacent_value_span()
+ */
+bool
+adjacent_date_span(DateADT d, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_DATESPAN(s, false);
+  return adjacent_span_value(s, DateADTGetDatum(d));
+}
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a timestamp is adjacent to a span
+ * @param[in] t Value
+ * @param[in] s Span
+ * @csqlfn #Adjacent_value_span()
+ */
+bool
+adjacent_timestamptz_span(TimestampTz t, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSPAN(s, false);
+  return adjacent_span_value(s, TimestampTzGetDatum(t));
+}
+
 /*****************************************************************************
  * Left of
  *****************************************************************************/
