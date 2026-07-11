@@ -321,7 +321,7 @@ left_float_spanset(double d, const SpanSet *ss)
  * @brief Return true if a date is before a span set
  * @param[in] d Value
  * @param[in] ss Span set
- * @csqlfn #Left_value_spanset()
+ * @csqlfn #Before_value_spanset()
  */
 bool
 before_date_spanset(DateADT d, const SpanSet *ss)
@@ -336,7 +336,7 @@ before_date_spanset(DateADT d, const SpanSet *ss)
  * @brief Return true if a timestamptz is before a span set
  * @param[in] t Value
  * @param[in] ss Span set
- * @csqlfn #Left_value_spanset()
+ * @csqlfn #Before_value_spanset()
  */
 bool
 before_timestamptz_spanset(TimestampTz t, const SpanSet *ss)
@@ -398,7 +398,7 @@ left_spanset_float(const SpanSet *ss, double d)
  * @brief Return true if a span set is before a date
  * @param[in] ss Span set
  * @param[in] d Value
- * @csqlfn #Left_spanset_value()
+ * @csqlfn #Before_spanset_value()
  */
 bool
 before_spanset_date(const SpanSet *ss, DateADT d)
@@ -413,7 +413,7 @@ before_spanset_date(const SpanSet *ss, DateADT d)
  * @brief Return true if a span set is before a timestamptz
  * @param[in] ss Span set
  * @param[in] t Value
- * @csqlfn #Left_spanset_value()
+ * @csqlfn #Before_spanset_value()
  */
 bool
 before_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
@@ -471,7 +471,7 @@ right_float_spanset(double d, const SpanSet *ss)
  * @brief Return true if a date is after a span set
  * @param[in] d Value
  * @param[in] ss Span set
- * @csqlfn #Right_value_spanset()
+ * @csqlfn #After_value_spanset()
  */
 bool
 after_date_spanset(DateADT d, const SpanSet *ss)
@@ -484,7 +484,7 @@ after_date_spanset(DateADT d, const SpanSet *ss)
  * @brief Return true if a timestamptz is after a span set
  * @param[in] t Value
  * @param[in] ss Span set
- * @csqlfn #Right_value_spanset()
+ * @csqlfn #After_value_spanset()
  */
 bool
 after_timestamptz_spanset(TimestampTz t, const SpanSet *ss)
@@ -538,7 +538,7 @@ right_spanset_float(const SpanSet *ss, double d)
  * @brief Return true if a span set is after a date
  * @param[in] ss Span set
  * @param[in] d Value
- * @csqlfn #Right_spanset_value()
+ * @csqlfn #After_spanset_value()
  */
 bool
 after_spanset_date(const SpanSet *ss, DateADT d)
@@ -551,7 +551,7 @@ after_spanset_date(const SpanSet *ss, DateADT d)
  * @brief Return true if a span set is after a timestamptz
  * @param[in] ss Span set
  * @param[in] t Value
- * @csqlfn #Right_spanset_value()
+ * @csqlfn #After_spanset_value()
  */
 bool
 after_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
@@ -614,7 +614,7 @@ overleft_spanset_float(const SpanSet *ss, double d)
  * @brief Return true if a span set is not after a date
  * @param[in] ss Span set
  * @param[in] d Value
- * @csqlfn #Overleft_spanset_value()
+ * @csqlfn #Overbefore_spanset_value()
  */
 bool
 overbefore_spanset_date(const SpanSet *ss, DateADT d)
@@ -629,7 +629,7 @@ overbefore_spanset_date(const SpanSet *ss, DateADT d)
  * @brief Return true if a span set is not after a timestamptz
  * @param[in] ss Span set
  * @param[in] t Value
- * @csqlfn #Overleft_spanset_value()
+ * @csqlfn #Overbefore_spanset_value()
  */
 bool
 overbefore_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
@@ -692,7 +692,7 @@ overleft_float_spanset(double d, const SpanSet *ss)
  * @brief Return true if a date is not after a span set.
  * @param[in] d Value
  * @param[in] ss Span set
- * @csqlfn #Overleft_value_spanset()
+ * @csqlfn #Overbefore_value_spanset()
  */
 bool
 overbefore_date_spanset(DateADT d, const SpanSet *ss)
@@ -707,7 +707,7 @@ overbefore_date_spanset(DateADT d, const SpanSet *ss)
  * @brief Return true if a timestamptz is not after a span set
  * @param[in] t Value
  * @param[in] ss Span set
- * @csqlfn #Overleft_value_spanset()
+ * @csqlfn #Overbefore_value_spanset()
  */
 bool
 overbefore_timestamptz_spanset(TimestampTz t, const SpanSet *ss)
@@ -771,7 +771,7 @@ overright_float_spanset(double d, const SpanSet *ss)
  * @brief Return true if a date is not before a span set
  * @param[in] d Value
  * @param[in] ss Span set
- * @csqlfn #Overright_value_spanset()
+ * @csqlfn #Overafter_value_spanset()
  */
 bool
 overafter_date_spanset(DateADT d, const SpanSet *ss)
@@ -786,7 +786,7 @@ overafter_date_spanset(DateADT d, const SpanSet *ss)
  * @brief Return true if a timestamptz is not before a span set
  * @param[in] t Value
  * @param[in] ss Span set
- * @csqlfn #Overright_value_spanset()
+ * @csqlfn #Overafter_value_spanset()
  */
 bool
 overafter_timestamptz_spanset(TimestampTz t, const SpanSet *ss)
@@ -848,7 +848,7 @@ overright_spanset_float(const SpanSet *ss, double d)
  * @brief Return true if a span set is before a date
  * @param[in] ss Span set
  * @param[in] d Value
- * @csqlfn #Overright_spanset_value()
+ * @csqlfn #Overafter_spanset_value()
  */
 bool
 overafter_spanset_date(const SpanSet *ss, DateADT d)
@@ -863,7 +863,7 @@ overafter_spanset_date(const SpanSet *ss, DateADT d)
  * @brief Return true if a span set is before a timestamptz
  * @param[in] ss Span set
  * @param[in] t Value
- * @csqlfn #Overright_spanset_value()
+ * @csqlfn #Overafter_spanset_value()
  */
 bool
 overafter_spanset_timestamptz(const SpanSet *ss, TimestampTz t)

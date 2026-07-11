@@ -801,23 +801,23 @@ CREATE OPERATOR << (
 
 CREATE FUNCTION before(date, datespanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Left_value_spanset'
+  AS 'MODULE_PATHNAME', 'Before_value_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION before(datespan, datespanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Left_span_spanset'
+  AS 'MODULE_PATHNAME', 'Before_span_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION before(datespanset, date)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Left_spanset_value'
+  AS 'MODULE_PATHNAME', 'Before_spanset_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION before(datespanset, datespan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Left_spanset_span'
+  AS 'MODULE_PATHNAME', 'Before_spanset_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION before(datespanset, datespanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Left_spanset_spanset'
+  AS 'MODULE_PATHNAME', 'Before_spanset_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -853,23 +853,23 @@ CREATE OPERATOR <<# (
 
 CREATE FUNCTION before(timestamptz, tstzspanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Left_value_spanset'
+  AS 'MODULE_PATHNAME', 'Before_value_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION before(tstzspan, tstzspanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Left_span_spanset'
+  AS 'MODULE_PATHNAME', 'Before_span_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION before(tstzspanset, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Left_spanset_value'
+  AS 'MODULE_PATHNAME', 'Before_spanset_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION before(tstzspanset, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Left_spanset_span'
+  AS 'MODULE_PATHNAME', 'Before_spanset_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION before(tstzspanset, tstzspanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Left_spanset_spanset'
+  AS 'MODULE_PATHNAME', 'Before_spanset_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -1063,23 +1063,23 @@ CREATE OPERATOR >> (
 
 CREATE FUNCTION after(date, datespanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Right_value_spanset'
+  AS 'MODULE_PATHNAME', 'After_value_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION after(datespan, datespanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Right_span_spanset'
+  AS 'MODULE_PATHNAME', 'After_span_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION after(datespanset, date)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Right_spanset_value'
+  AS 'MODULE_PATHNAME', 'After_spanset_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION after(datespanset, datespan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Right_spanset_span'
+  AS 'MODULE_PATHNAME', 'After_spanset_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION after(datespanset, datespanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Right_spanset_spanset'
+  AS 'MODULE_PATHNAME', 'After_spanset_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #>> (
@@ -1115,23 +1115,23 @@ CREATE OPERATOR #>> (
 
 CREATE FUNCTION after(timestamptz, tstzspanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Right_value_spanset'
+  AS 'MODULE_PATHNAME', 'After_value_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION after(tstzspan, tstzspanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Right_span_spanset'
+  AS 'MODULE_PATHNAME', 'After_span_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION after(tstzspanset, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Right_spanset_value'
+  AS 'MODULE_PATHNAME', 'After_spanset_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION after(tstzspanset, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Right_spanset_span'
+  AS 'MODULE_PATHNAME', 'After_spanset_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION after(tstzspanset, tstzspanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Right_spanset_spanset'
+  AS 'MODULE_PATHNAME', 'After_spanset_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #>> (
@@ -1310,23 +1310,23 @@ CREATE OPERATOR &< (
 
 CREATE FUNCTION overbefore(date, datespanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overleft_value_spanset'
+  AS 'MODULE_PATHNAME', 'Overbefore_value_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overbefore(datespan, datespanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overleft_span_spanset'
+  AS 'MODULE_PATHNAME', 'Overbefore_span_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overbefore(datespanset, date)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overleft_spanset_value'
+  AS 'MODULE_PATHNAME', 'Overbefore_spanset_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overbefore(datespanset, datespan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overleft_spanset_span'
+  AS 'MODULE_PATHNAME', 'Overbefore_spanset_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overbefore(datespanset, datespanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overleft_spanset_spanset'
+  AS 'MODULE_PATHNAME', 'Overbefore_spanset_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR &<# (
@@ -1357,23 +1357,23 @@ CREATE OPERATOR &<# (
 
 CREATE FUNCTION overbefore(timestamptz, tstzspanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overleft_value_spanset'
+  AS 'MODULE_PATHNAME', 'Overbefore_value_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overbefore(tstzspan, tstzspanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overleft_span_spanset'
+  AS 'MODULE_PATHNAME', 'Overbefore_span_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overbefore(tstzspanset, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overleft_spanset_value'
+  AS 'MODULE_PATHNAME', 'Overbefore_spanset_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overbefore(tstzspanset, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overleft_spanset_span'
+  AS 'MODULE_PATHNAME', 'Overbefore_spanset_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overbefore(tstzspanset, tstzspanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overleft_spanset_spanset'
+  AS 'MODULE_PATHNAME', 'Overbefore_spanset_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR &<# (
@@ -1547,23 +1547,23 @@ CREATE OPERATOR &> (
 
 CREATE FUNCTION overafter(date, datespanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overright_value_spanset'
+  AS 'MODULE_PATHNAME', 'Overafter_value_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overafter(datespan, datespanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overright_span_spanset'
+  AS 'MODULE_PATHNAME', 'Overafter_span_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overafter(datespanset, date)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overright_spanset_value'
+  AS 'MODULE_PATHNAME', 'Overafter_spanset_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overafter(datespanset, datespan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overright_spanset_span'
+  AS 'MODULE_PATHNAME', 'Overafter_spanset_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overafter(datespanset, datespanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overright_spanset_spanset'
+  AS 'MODULE_PATHNAME', 'Overafter_spanset_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #&> (
@@ -1594,23 +1594,23 @@ CREATE OPERATOR #&> (
 
 CREATE FUNCTION overafter(timestamptz, tstzspanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overright_value_spanset'
+  AS 'MODULE_PATHNAME', 'Overafter_value_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overafter(tstzspan, tstzspanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overright_span_spanset'
+  AS 'MODULE_PATHNAME', 'Overafter_span_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overafter(tstzspanset, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overright_spanset_value'
+  AS 'MODULE_PATHNAME', 'Overafter_spanset_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overafter(tstzspanset, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overright_spanset_span'
+  AS 'MODULE_PATHNAME', 'Overafter_spanset_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overafter(tstzspanset, tstzspanset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overright_spanset_spanset'
+  AS 'MODULE_PATHNAME', 'Overafter_spanset_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #&> (

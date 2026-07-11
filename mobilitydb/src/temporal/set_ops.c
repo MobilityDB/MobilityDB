@@ -619,3 +619,206 @@ Distance_set_set(PG_FUNCTION_ARGS)
 }
 
 /******************************************************************************/
+
+/*****************************************************************************
+ * Time-axis names for the relative position operators
+ *
+ * A 1-D span/set is ordered on a single axis, so its "before/after" (time)
+ * relation is the same bound comparison as its "left/right" (value) relation
+ * and reuses the value wrapper's code.  Each time-axis SQL name nonetheless
+ * needs its OWN wrapper carrying the matching @sqlfn/@sqlop, so the catalog
+ * (which maps one wrapper -> one SQL name) resolves before/after rather than
+ * folding them onto left/right.
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Before_set_set(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Before_set_set);
+/**
+ * @ingroup mobilitydb_setspan_pos
+ * @brief Return true if the first set is before the second one
+ * @sqlfn before()
+ * @sqlop @p <<#
+ * @note Time-axis name for the same 1-D bound comparison as #Left_set_set; a distinct
+ * wrapper so the SQL name/operator resolve correctly in the generated catalog.
+ */
+Datum
+Before_set_set(PG_FUNCTION_ARGS)
+{
+  return Left_set_set(fcinfo);
+}
+
+PGDLLEXPORT Datum After_set_set(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(After_set_set);
+/**
+ * @ingroup mobilitydb_setspan_pos
+ * @brief Return true if the first set is after the second one
+ * @sqlfn after()
+ * @sqlop @p #>>
+ * @note Time-axis name for the same 1-D bound comparison as #Right_set_set; a distinct
+ * wrapper so the SQL name/operator resolve correctly in the generated catalog.
+ */
+Datum
+After_set_set(PG_FUNCTION_ARGS)
+{
+  return Right_set_set(fcinfo);
+}
+
+PGDLLEXPORT Datum Overbefore_set_set(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overbefore_set_set);
+/**
+ * @ingroup mobilitydb_setspan_pos
+ * @brief Return true if the first set is not after the second one
+ * @sqlfn overbefore()
+ * @sqlop @p &<#
+ * @note Time-axis name for the same 1-D bound comparison as #Overleft_set_set; a distinct
+ * wrapper so the SQL name/operator resolve correctly in the generated catalog.
+ */
+Datum
+Overbefore_set_set(PG_FUNCTION_ARGS)
+{
+  return Overleft_set_set(fcinfo);
+}
+
+PGDLLEXPORT Datum Overafter_set_set(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overafter_set_set);
+/**
+ * @ingroup mobilitydb_setspan_pos
+ * @brief Return true if the first set is not before the second one
+ * @sqlfn overafter()
+ * @sqlop @p #&>
+ * @note Time-axis name for the same 1-D bound comparison as #Overright_set_set; a distinct
+ * wrapper so the SQL name/operator resolve correctly in the generated catalog.
+ */
+Datum
+Overafter_set_set(PG_FUNCTION_ARGS)
+{
+  return Overright_set_set(fcinfo);
+}
+
+PGDLLEXPORT Datum Before_set_value(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Before_set_value);
+/**
+ * @ingroup mobilitydb_setspan_pos
+ * @brief Return true if a set is before a value
+ * @sqlfn before()
+ * @sqlop @p <<#
+ * @note Time-axis name for the same 1-D bound comparison as #Left_set_value; a distinct
+ * wrapper so the SQL name/operator resolve correctly in the generated catalog.
+ */
+Datum
+Before_set_value(PG_FUNCTION_ARGS)
+{
+  return Left_set_value(fcinfo);
+}
+
+PGDLLEXPORT Datum After_set_value(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(After_set_value);
+/**
+ * @ingroup mobilitydb_setspan_pos
+ * @brief Return true if a set is after a value
+ * @sqlfn after()
+ * @sqlop @p #>>
+ * @note Time-axis name for the same 1-D bound comparison as #Right_set_value; a distinct
+ * wrapper so the SQL name/operator resolve correctly in the generated catalog.
+ */
+Datum
+After_set_value(PG_FUNCTION_ARGS)
+{
+  return Right_set_value(fcinfo);
+}
+
+PGDLLEXPORT Datum Overbefore_set_value(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overbefore_set_value);
+/**
+ * @ingroup mobilitydb_setspan_pos
+ * @brief Return true if a set is not after a value
+ * @sqlfn overbefore()
+ * @sqlop @p &<#
+ * @note Time-axis name for the same 1-D bound comparison as #Overleft_set_value; a distinct
+ * wrapper so the SQL name/operator resolve correctly in the generated catalog.
+ */
+Datum
+Overbefore_set_value(PG_FUNCTION_ARGS)
+{
+  return Overleft_set_value(fcinfo);
+}
+
+PGDLLEXPORT Datum Overafter_set_value(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overafter_set_value);
+/**
+ * @ingroup mobilitydb_setspan_pos
+ * @brief Return true if a set is not before a value
+ * @sqlfn overafter()
+ * @sqlop @p #&>
+ * @note Time-axis name for the same 1-D bound comparison as #Overright_set_value; a distinct
+ * wrapper so the SQL name/operator resolve correctly in the generated catalog.
+ */
+Datum
+Overafter_set_value(PG_FUNCTION_ARGS)
+{
+  return Overright_set_value(fcinfo);
+}
+
+PGDLLEXPORT Datum Before_value_set(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Before_value_set);
+/**
+ * @ingroup mobilitydb_setspan_pos
+ * @brief Return true if a value is before a set
+ * @sqlfn before()
+ * @sqlop @p <<#
+ * @note Time-axis name for the same 1-D bound comparison as #Left_value_set; a distinct
+ * wrapper so the SQL name/operator resolve correctly in the generated catalog.
+ */
+Datum
+Before_value_set(PG_FUNCTION_ARGS)
+{
+  return Left_value_set(fcinfo);
+}
+
+PGDLLEXPORT Datum After_value_set(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(After_value_set);
+/**
+ * @ingroup mobilitydb_setspan_pos
+ * @brief Return true if a value is after a set
+ * @sqlfn after()
+ * @sqlop @p #>>
+ * @note Time-axis name for the same 1-D bound comparison as #Right_value_set; a distinct
+ * wrapper so the SQL name/operator resolve correctly in the generated catalog.
+ */
+Datum
+After_value_set(PG_FUNCTION_ARGS)
+{
+  return Right_value_set(fcinfo);
+}
+
+PGDLLEXPORT Datum Overbefore_value_set(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overbefore_value_set);
+/**
+ * @ingroup mobilitydb_setspan_pos
+ * @brief Return true if a value is not after a set
+ * @sqlfn overbefore()
+ * @sqlop @p &<#
+ * @note Time-axis name for the same 1-D bound comparison as #Overleft_value_set; a distinct
+ * wrapper so the SQL name/operator resolve correctly in the generated catalog.
+ */
+Datum
+Overbefore_value_set(PG_FUNCTION_ARGS)
+{
+  return Overleft_value_set(fcinfo);
+}
+
+PGDLLEXPORT Datum Overafter_value_set(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overafter_value_set);
+/**
+ * @ingroup mobilitydb_setspan_pos
+ * @brief Return true if a value is not before a set
+ * @sqlfn overafter()
+ * @sqlop @p #&>
+ * @note Time-axis name for the same 1-D bound comparison as #Overright_value_set; a distinct
+ * wrapper so the SQL name/operator resolve correctly in the generated catalog.
+ */
+Datum
+Overafter_value_set(PG_FUNCTION_ARGS)
+{
+  return Overright_value_set(fcinfo);
+}

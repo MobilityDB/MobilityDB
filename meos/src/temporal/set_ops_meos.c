@@ -303,7 +303,7 @@ left_text_set(const text *txt, const Set *s)
  * @brief Return true if a date is before a set
  * @param[in] d Value
  * @param[in] s Set
- * @csqlfn #Left_value_set()
+ * @csqlfn #Before_value_set()
  */
 bool
 before_date_set(DateADT d, const Set *s)
@@ -318,7 +318,7 @@ before_date_set(DateADT d, const Set *s)
  * @brief Return true if a timestamptz is before a set
  * @param[in] t Value
  * @param[in] s Set
- * @csqlfn #Left_value_set()
+ * @csqlfn #Before_value_set()
  */
 bool
 before_timestamptz_set(TimestampTz t, const Set *s)
@@ -396,7 +396,7 @@ left_set_text(const Set *s, text *txt)
  * @brief Return true if a set is before a date
  * @param[in] s Set
  * @param[in] d Value
- * @csqlfn #Left_set_value()
+ * @csqlfn #Before_set_value()
  */
 bool
 before_set_date(const Set *s, DateADT d)
@@ -411,7 +411,7 @@ before_set_date(const Set *s, DateADT d)
  * @brief Return true if a set is before a timestamptz
  * @param[in] s Set
  * @param[in] t Value
- * @csqlfn #Left_set_value()
+ * @csqlfn #Before_set_value()
  */
 bool
 before_set_timestamptz(const Set *s, TimestampTz t)
@@ -491,7 +491,7 @@ right_text_set(const text *txt, const Set *s)
  * @brief Return true if a date is after a set
  * @param[in] d Value
  * @param[in] s Set
- * @csqlfn #Right_value_set()
+ * @csqlfn #After_value_set()
  */
 bool
 after_date_set(DateADT d, const Set *s)
@@ -505,7 +505,7 @@ after_date_set(DateADT d, const Set *s)
  * @brief Return true if a timestamptz is after a set
  * @param[in] t Value
  * @param[in] s Set
- * @csqlfn #Right_value_set()
+ * @csqlfn #After_value_set()
  */
 bool
 after_timestamptz_set(TimestampTz t, const Set *s)
@@ -583,7 +583,7 @@ right_set_text(const Set *s, text *txt)
  * @brief Return true if a set is after a date
  * @param[in] s Set
  * @param[in] d Value
- * @csqlfn #Right_set_value()
+ * @csqlfn #After_set_value()
  */
 bool
 after_set_date(const Set *s, DateADT d)
@@ -598,7 +598,7 @@ after_set_date(const Set *s, DateADT d)
  * @brief Return true if a set is after a timestamptz
  * @param[in] s Set
  * @param[in] t Value
- * @csqlfn #Right_set_value()
+ * @csqlfn #After_set_value()
  */
 bool
 after_set_timestamptz(const Set *s, TimestampTz t)
@@ -678,7 +678,7 @@ overleft_text_set(const text *txt, const Set *s)
  * @brief Return true if a date is not after a set
  * @param[in] d Value
  * @param[in] s Set
- * @csqlfn #Overleft_value_set()
+ * @csqlfn #Overbefore_value_set()
  */
 bool
 overbefore_date_set(DateADT d, const Set *s)
@@ -691,7 +691,7 @@ overbefore_date_set(DateADT d, const Set *s)
 /**
  * @ingroup meos_setspan_pos
  * @brief Return true if a timestamptz is not after a set
- * @csqlfn #Overleft_value_set()
+ * @csqlfn #Overbefore_value_set()
  * @param[in] t Value
  * @param[in] s Set
  */
@@ -771,7 +771,7 @@ overleft_set_text(const Set *s, text *txt)
  * @brief Return true if a set is not after a date
  * @param[in] s Set
  * @param[in] d Value
- * @csqlfn #Overleft_set_value()
+ * @csqlfn #Overbefore_set_value()
  */
 bool
 overbefore_set_date(const Set *s, DateADT d)
@@ -786,7 +786,7 @@ overbefore_set_date(const Set *s, DateADT d)
  * @brief Return true if a set is not after a timestamptz
  * @param[in] s Set
  * @param[in] t Value
- * @csqlfn #Overleft_set_value()
+ * @csqlfn #Overbefore_set_value()
  */
 bool
 overbefore_set_timestamptz(const Set *s, TimestampTz t)
@@ -866,7 +866,7 @@ overright_text_set(const text *txt, const Set *s)
  * @brief Return true if a date is not before a set
  * @param[in] d Value
  * @param[in] s Set
- * @csqlfn #Overright_value_set()
+ * @csqlfn #Overafter_value_set()
  */
 bool
 overafter_date_set(DateADT d, const Set *s)
@@ -881,7 +881,7 @@ overafter_date_set(DateADT d, const Set *s)
  * @brief Return true if a timestamptz is not before a set
  * @param[in] t Value
  * @param[in] s Set
- * @csqlfn #Overright_value_set()
+ * @csqlfn #Overafter_value_set()
  */
 bool
 overafter_timestamptz_set(TimestampTz t, const Set *s)
@@ -959,7 +959,7 @@ overright_set_text(const Set *s, text *txt)
  * @brief Return true if a set is not before a date
  * @param[in] s Set
  * @param[in] d Value
- * @csqlfn #Overright_set_value()
+ * @csqlfn #Overafter_set_value()
  */
 bool
 overafter_set_date(const Set *s, DateADT d)
@@ -974,7 +974,7 @@ overafter_set_date(const Set *s, DateADT d)
  * @brief Return true if a set is not before a timestamptz
  * @param[in] s Set
  * @param[in] t Value
- * @csqlfn #Overright_set_value()
+ * @csqlfn #Overafter_set_value()
  */
 bool
 overafter_set_timestamptz(const Set *s, TimestampTz t)
