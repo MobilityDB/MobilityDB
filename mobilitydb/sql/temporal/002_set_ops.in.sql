@@ -36,119 +36,119 @@
  * Operators
  ******************************************************************************/
 
-CREATE FUNCTION set_contains(intset, integer)
+CREATE FUNCTION contains(intset, integer)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_contains(intset, intset)
+CREATE FUNCTION contains(intset, intset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_contains(bigintset, bigint)
+CREATE FUNCTION contains(bigintset, bigint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_contains(bigintset, bigintset)
+CREATE FUNCTION contains(bigintset, bigintset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_contains(floatset, float)
+CREATE FUNCTION contains(floatset, float)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_contains(floatset, floatset)
+CREATE FUNCTION contains(floatset, floatset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_contains(textset, text)
+CREATE FUNCTION contains(textset, text)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_contains(textset, textset)
+CREATE FUNCTION contains(textset, textset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_contains(dateset, date)
+CREATE FUNCTION contains(dateset, date)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_contains(dateset, dateset)
+CREATE FUNCTION contains(dateset, dateset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_contains(tstzset, timestamptz)
+CREATE FUNCTION contains(tstzset, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_contains(tstzset, tstzset)
+CREATE FUNCTION contains(tstzset, tstzset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
-  PROCEDURE = set_contains,
+  PROCEDURE = contains,
   LEFTARG = intset, RIGHTARG = integer,
   COMMUTATOR = <@,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR @> (
-  PROCEDURE = set_contains,
+  PROCEDURE = contains,
   LEFTARG = intset, RIGHTARG = intset,
   COMMUTATOR = <@,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR @> (
-  PROCEDURE = set_contains,
+  PROCEDURE = contains,
   LEFTARG = bigintset, RIGHTARG = bigint,
   COMMUTATOR = <@,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR @> (
-  PROCEDURE = set_contains,
+  PROCEDURE = contains,
   LEFTARG = bigintset, RIGHTARG = bigintset,
   COMMUTATOR = <@,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR @> (
-  PROCEDURE = set_contains,
+  PROCEDURE = contains,
   LEFTARG = floatset, RIGHTARG = float,
   COMMUTATOR = <@,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR @> (
-  PROCEDURE = set_contains,
+  PROCEDURE = contains,
   LEFTARG = floatset, RIGHTARG = floatset,
   COMMUTATOR = <@,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR @> (
-  PROCEDURE = set_contains,
+  PROCEDURE = contains,
   LEFTARG = textset, RIGHTARG = text,
   COMMUTATOR = <@
 );
 CREATE OPERATOR @> (
-  PROCEDURE = set_contains,
+  PROCEDURE = contains,
   LEFTARG = textset, RIGHTARG = textset,
   COMMUTATOR = <@
 );
 CREATE OPERATOR @> (
-  PROCEDURE = set_contains,
+  PROCEDURE = contains,
   LEFTARG = dateset, RIGHTARG = date,
   COMMUTATOR = <@
 );
 CREATE OPERATOR @> (
-  PROCEDURE = set_contains,
+  PROCEDURE = contains,
   LEFTARG = dateset, RIGHTARG = dateset,
   COMMUTATOR = <@
 );
 CREATE OPERATOR @> (
-  PROCEDURE = set_contains,
+  PROCEDURE = contains,
   LEFTARG = tstzset, RIGHTARG = timestamptz,
   COMMUTATOR = <@,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR @> (
-  PROCEDURE = set_contains,
+  PROCEDURE = contains,
   LEFTARG = tstzset, RIGHTARG = tstzset,
   COMMUTATOR = <@,
   RESTRICT = span_sel, JOIN = span_joinsel
@@ -156,119 +156,119 @@ CREATE OPERATOR @> (
 
 /******************************************************************************/
 
-CREATE FUNCTION set_contained(integer, intset)
+CREATE FUNCTION contained(integer, intset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_contained(intset, intset)
+CREATE FUNCTION contained(intset, intset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_contained(bigint, bigintset)
+CREATE FUNCTION contained(bigint, bigintset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_contained(bigintset, bigintset)
+CREATE FUNCTION contained(bigintset, bigintset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_contained(float, floatset)
+CREATE FUNCTION contained(float, floatset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_contained(floatset, floatset)
+CREATE FUNCTION contained(floatset, floatset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_contained(text, textset)
+CREATE FUNCTION contained(text, textset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_contained(textset, textset)
+CREATE FUNCTION contained(textset, textset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_contained(date, dateset)
+CREATE FUNCTION contained(date, dateset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_contained(dateset, dateset)
+CREATE FUNCTION contained(dateset, dateset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_contained(timestamptz, tstzset)
+CREATE FUNCTION contained(timestamptz, tstzset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_contained(tstzset, tstzset)
+CREATE FUNCTION contained(tstzset, tstzset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
-  PROCEDURE = set_contained,
+  PROCEDURE = contained,
   LEFTARG = integer, RIGHTARG = intset,
   COMMUTATOR = @>,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <@ (
-  PROCEDURE = set_contained,
+  PROCEDURE = contained,
   LEFTARG = intset, RIGHTARG = intset,
   COMMUTATOR = @>,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <@ (
-  PROCEDURE = set_contained,
+  PROCEDURE = contained,
   LEFTARG = bigint, RIGHTARG = bigintset,
   COMMUTATOR = @>,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <@ (
-  PROCEDURE = set_contained,
+  PROCEDURE = contained,
   LEFTARG = bigintset, RIGHTARG = bigintset,
   COMMUTATOR = @>,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <@ (
-  PROCEDURE = set_contained,
+  PROCEDURE = contained,
   LEFTARG = float, RIGHTARG = floatset,
   COMMUTATOR = @>,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <@ (
-  PROCEDURE = set_contained,
+  PROCEDURE = contained,
   LEFTARG = floatset, RIGHTARG = floatset,
   COMMUTATOR = @>,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <@ (
-  PROCEDURE = set_contained,
+  PROCEDURE = contained,
   LEFTARG = text, RIGHTARG = textset,
   COMMUTATOR = @>
 );
 CREATE OPERATOR <@ (
-  PROCEDURE = set_contained,
+  PROCEDURE = contained,
   LEFTARG = textset, RIGHTARG = textset,
   COMMUTATOR = @>
 );
 CREATE OPERATOR <@ (
-  PROCEDURE = set_contained,
+  PROCEDURE = contained,
   LEFTARG = date, RIGHTARG = dateset,
   COMMUTATOR = @>
 );
 CREATE OPERATOR <@ (
-  PROCEDURE = set_contained,
+  PROCEDURE = contained,
   LEFTARG = dateset, RIGHTARG = dateset,
   COMMUTATOR = @>
 );
 CREATE OPERATOR <@ (
-  PROCEDURE = set_contained,
+  PROCEDURE = contained,
   LEFTARG = timestamptz, RIGHTARG = tstzset,
   COMMUTATOR = @>,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <@ (
-  PROCEDURE = set_contained,
+  PROCEDURE = contained,
   LEFTARG = tstzset, RIGHTARG = tstzset,
   COMMUTATOR = @>,
   RESTRICT = span_sel, JOIN = span_joinsel
@@ -276,61 +276,61 @@ CREATE OPERATOR <@ (
 
 /******************************************************************************/
 
-CREATE FUNCTION set_overlaps(intset, intset)
+CREATE FUNCTION overlaps(intset, intset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_overlaps(bigintset, bigintset)
+CREATE FUNCTION overlaps(bigintset, bigintset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_overlaps(floatset, floatset)
+CREATE FUNCTION overlaps(floatset, floatset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_overlaps(textset, textset)
+CREATE FUNCTION overlaps(textset, textset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_overlaps(dateset, dateset)
+CREATE FUNCTION overlaps(dateset, dateset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_overlaps(tstzset, tstzset)
+CREATE FUNCTION overlaps(tstzset, tstzset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
-  PROCEDURE = set_overlaps,
+  PROCEDURE = overlaps,
   LEFTARG = intset, RIGHTARG = intset,
   COMMUTATOR = &&,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR && (
-  PROCEDURE = set_overlaps,
+  PROCEDURE = overlaps,
   LEFTARG = bigintset, RIGHTARG = bigintset,
   COMMUTATOR = &&,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR && (
-  PROCEDURE = set_overlaps,
+  PROCEDURE = overlaps,
   LEFTARG = floatset, RIGHTARG = floatset,
   COMMUTATOR = &&,
   RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR && (
-  PROCEDURE = set_overlaps,
+  PROCEDURE = overlaps,
   LEFTARG = textset, RIGHTARG = textset,
   COMMUTATOR = &&
 );
 CREATE OPERATOR && (
-  PROCEDURE = set_overlaps,
+  PROCEDURE = overlaps,
   LEFTARG = dateset, RIGHTARG = dateset,
   COMMUTATOR = &&
 );
 CREATE OPERATOR && (
-  PROCEDURE = set_overlaps,
+  PROCEDURE = overlaps,
   LEFTARG = tstzset, RIGHTARG = tstzset,
   COMMUTATOR = &&,
   RESTRICT = span_sel, JOIN = span_joinsel
