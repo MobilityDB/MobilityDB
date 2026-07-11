@@ -1758,6 +1758,43 @@ ea_dwithin_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return -1;
 
+  /* Time-overlap test: mirror the generic function's contract of returning -1
+   * when the two temporal circular buffers do not share time. */
+  Span s1, s2;
+  temporal_set_tstzspan(temp1, &s1);
+  temporal_set_tstzspan(temp2, &s2);
+  if (! overlaps_span_span(&s1, &s2))
+    return -1;
+  /* Bounding box test with distance expansion: the buffers share time, so if
+   * the first's radius-aware box does not overlap the second's box expanded by
+   * the distance, every common instant is farther than the distance and the
+   * pair is neither ever nor always within it. Constant-time reject mirroring
+   * ea_dwithin_tcbuffer_geo for the two-temporal case; it avoids the
+   * per-segment turning-point distance below for far-away pairs in a spatial
+   * join. The tcbuffer is planar by construction, so no geodetic branch is
+   * needed.
+   *
+   * WARNING -- this reject is exact ONLY because dwithin is a FIXED-THRESHOLD
+   * predicate. The stbox of a (temporal) circular buffer is radius-aware (it
+   * bounds every disk over all instants, e.g. Cbuffer(Point(0 0),10) has box
+   * X((-10,-10),(10,10))), and a subset is never closer than its bounding box,
+   * so box-distance > d proves disk-distance > d at every common instant.
+   * DO NOT copy this reject to a function that returns an exact DISTANCE VALUE
+   * with no fixed threshold (nearestApproachDistance / minDistance / |=|): a
+   * bbox prune there wrongly drops the pair whose nearest approach lies just
+   * outside the box (the documented minDistance bbox-prune dead end). Verify
+   * equivalence as index-on == index-off (the exact predicate rechecks), NEVER
+   * against `nad <= d`: nad uses a different distance convention for circular
+   * buffers and is NOT the oracle for eDwithin. */
+  STBox box1, box2;
+  tspatial_set_stbox(temp1, &box1);
+  tspatial_set_stbox(temp2, &box2);
+  STBox *box2_exp = stbox_expand_space(&box2, dist);
+  bool pass = overlaps_stbox_stbox(&box1, box2_exp);
+  pfree(box2_exp);
+  if (! pass)
+    return 0;
+
   /* Fill the lifted structure */
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
