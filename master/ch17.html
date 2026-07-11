@@ -9,7 +9,4 @@ SELECT tquadbin(Instant) '480fffffffffffff@2001-01-01';
 SELECT tquadbin(SequenceSet) '{[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02]}';
 -- ERROR: temporal type (Instant) does not match column type (Sequence)
 SELECT tquadbin(Sequence) '480fffffffffffff@2001-01-01';
-</pre><p>The function <code class="varname">arrowRoundtrip</code> converts a temporal QUADBIN index to the Arrow C Data Interface and reconstructs it, returning a value equal to the input.</p><pre class="programlisting">
-SELECT arrowRoundtrip(tquadbin '480fffffffffffff@2001-01-01');
--- 480fffffffffffff@2001-01-01
 </pre></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch16s17.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ch17s02.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Operational notes </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Conversions</td></tr></table></div></body></html>
