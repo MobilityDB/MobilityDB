@@ -75,8 +75,7 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
-<a href="#define-members">Macros</a> &#124;
-<a href="#func-members">Functions</a>  </div>
+<a href="#define-members">Macros</a>  </div>
   <div class="headertitle"><div class="title">h3index.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
@@ -87,6 +86,7 @@ $(function() {
 <code>#include &lt;stdint.h&gt;</code><br />
 <code>#include &lt;postgres.h&gt;</code><br />
 <code>#include &lt;h3api.h&gt;</code><br />
+<code>#include &lt;<a class="el" href="meos__h3_8h_source.html">meos_h3.h</a>&gt;</code><br />
 </div>
 <p><a href="h3index_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -96,39 +96,6 @@ Macros</h2></td></tr>
 <tr class="separator:ab020b03773398ec61e416b988ac27ff8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a31cbe6bea3979c7f0aa264b8caffe8e1"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="h3index_8h_a31cbe6bea3979c7f0aa264b8caffe8e1.html#a31cbe6bea3979c7f0aa264b8caffe8e1">H3IndexGetDatum</a>(X)&#160;&#160;&#160;Int64GetDatum((<a class="el" href="postgres__ext__defs_8in_8h_a7cde0074dfd288f2d70c0e035dacb28a.html#a7cde0074dfd288f2d70c0e035dacb28a">int64</a>) (X))</td></tr>
 <tr class="separator:a31cbe6bea3979c7f0aa264b8caffe8e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
-Functions</h2></td></tr>
-<tr class="memitem:ga75dcc204632891729b669fbce2e72e22"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__h3__base__comp_ga75dcc204632891729b669fbce2e72e22.html#ga75dcc204632891729b669fbce2e72e22">h3index_cmp</a> (H3Index a, H3Index b)</td></tr>
-<tr class="memdesc:ga75dcc204632891729b669fbce2e72e22"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return -1 / 0 / 1 depending on whether the first h3index is less than, equal to, or greater than the second @csqlfn <a class="el" href="group__mobilitydb__h3__base__comp_gae416b945381ebe5cf7ac9c86676808b9.html#gae416b945381ebe5cf7ac9c86676808b9" title="Return the btree-style comparison of two h3index values (-1 / 0 / +1)">H3index_cmp()</a>  <a href="group__meos__h3__base__comp_ga75dcc204632891729b669fbce2e72e22.html#ga75dcc204632891729b669fbce2e72e22">More...</a><br /></td></tr>
-<tr class="separator:ga75dcc204632891729b669fbce2e72e22"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga67eaceb3328261bb1bbd3a76b8cb9817"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__h3__base__comp_ga67eaceb3328261bb1bbd3a76b8cb9817.html#ga67eaceb3328261bb1bbd3a76b8cb9817">h3index_eq</a> (H3Index a, H3Index b)</td></tr>
-<tr class="memdesc:ga67eaceb3328261bb1bbd3a76b8cb9817"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if two h3index values are equal @csqlfn <a class="el" href="group__mobilitydb__h3__base__comp_gac54ee6ccd6823d4c14bc047cdc197094.html#gac54ee6ccd6823d4c14bc047cdc197094" title="Return true if two h3index values are equal.">H3index_eq()</a>  <a href="group__meos__h3__base__comp_ga67eaceb3328261bb1bbd3a76b8cb9817.html#ga67eaceb3328261bb1bbd3a76b8cb9817">More...</a><br /></td></tr>
-<tr class="separator:ga67eaceb3328261bb1bbd3a76b8cb9817"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga8fc0a72846a232d9d58369b66e244d7c"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__h3__base__comp_ga8fc0a72846a232d9d58369b66e244d7c.html#ga8fc0a72846a232d9d58369b66e244d7c">h3index_ge</a> (H3Index a, H3Index b)</td></tr>
-<tr class="memdesc:ga8fc0a72846a232d9d58369b66e244d7c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if the first h3index is greater than or equal to the second @csqlfn <a class="el" href="group__mobilitydb__h3__base__comp_ga7804266b4a06962e302591ab4e91692b.html#ga7804266b4a06962e302591ab4e91692b" title="Return true if the first h3index is greater than or equal to the second.">H3index_ge()</a>  <a href="group__meos__h3__base__comp_ga8fc0a72846a232d9d58369b66e244d7c.html#ga8fc0a72846a232d9d58369b66e244d7c">More...</a><br /></td></tr>
-<tr class="separator:ga8fc0a72846a232d9d58369b66e244d7c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga81000dafaec6be7f47b410ce0b32d23d"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__h3__base__comp_ga81000dafaec6be7f47b410ce0b32d23d.html#ga81000dafaec6be7f47b410ce0b32d23d">h3index_gt</a> (H3Index a, H3Index b)</td></tr>
-<tr class="memdesc:ga81000dafaec6be7f47b410ce0b32d23d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if the first h3index is greater than the second @csqlfn <a class="el" href="group__mobilitydb__h3__base__comp_ga93fb5a4a9a764037a38bb3d9e4e0f7d8.html#ga93fb5a4a9a764037a38bb3d9e4e0f7d8" title="Return true if the first h3index is greater than the second.">H3index_gt()</a>  <a href="group__meos__h3__base__comp_ga81000dafaec6be7f47b410ce0b32d23d.html#ga81000dafaec6be7f47b410ce0b32d23d">More...</a><br /></td></tr>
-<tr class="separator:ga81000dafaec6be7f47b410ce0b32d23d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga1f68818fd92ecc2b54663907998c26b6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a1134b580f8da4de94ca6b1de4d37975e.html#a1134b580f8da4de94ca6b1de4d37975e">uint32</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__h3__base__accessor_ga1f68818fd92ecc2b54663907998c26b6.html#ga1f68818fd92ecc2b54663907998c26b6">h3index_hash</a> (H3Index cell)</td></tr>
-<tr class="memdesc:ga1f68818fd92ecc2b54663907998c26b6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the 32-bit hash value of an h3index — matches the result <code>hashint8</code> would produce on the same bit pattern, which is what the SQL hash opclass was previously delegating to.  <a href="group__meos__h3__base__accessor_ga1f68818fd92ecc2b54663907998c26b6.html#ga1f68818fd92ecc2b54663907998c26b6">More...</a><br /></td></tr>
-<tr class="separator:ga1f68818fd92ecc2b54663907998c26b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga3b15359c0027101fcc928a865849287f"><td class="memItemLeft" align="right" valign="top">H3Index&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__h3__base__inout_ga3b15359c0027101fcc928a865849287f.html#ga3b15359c0027101fcc928a865849287f">h3index_in</a> (const char *str)</td></tr>
-<tr class="memdesc:ga3b15359c0027101fcc928a865849287f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parse a string into an H3Index.  <a href="group__meos__h3__base__inout_ga3b15359c0027101fcc928a865849287f.html#ga3b15359c0027101fcc928a865849287f">More...</a><br /></td></tr>
-<tr class="separator:ga3b15359c0027101fcc928a865849287f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gab6324c65f314c1919eeaaacfc56f7b8d"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__h3__base__comp_gab6324c65f314c1919eeaaacfc56f7b8d.html#gab6324c65f314c1919eeaaacfc56f7b8d">h3index_le</a> (H3Index a, H3Index b)</td></tr>
-<tr class="memdesc:gab6324c65f314c1919eeaaacfc56f7b8d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if the first h3index is less than or equal to the second @csqlfn <a class="el" href="group__mobilitydb__h3__base__comp_ga4008ccec5e6d33d25d702e87e58da6a2.html#ga4008ccec5e6d33d25d702e87e58da6a2" title="Return true if the first h3index is less than or equal to the second.">H3index_le()</a>  <a href="group__meos__h3__base__comp_gab6324c65f314c1919eeaaacfc56f7b8d.html#gab6324c65f314c1919eeaaacfc56f7b8d">More...</a><br /></td></tr>
-<tr class="separator:gab6324c65f314c1919eeaaacfc56f7b8d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga346136c5188ee7a386a1b8aaae4cddc4"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__h3__base__comp_ga346136c5188ee7a386a1b8aaae4cddc4.html#ga346136c5188ee7a386a1b8aaae4cddc4">h3index_lt</a> (H3Index a, H3Index b)</td></tr>
-<tr class="memdesc:ga346136c5188ee7a386a1b8aaae4cddc4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if the first h3index is less than the second @csqlfn <a class="el" href="group__mobilitydb__h3__base__comp_ga8c0a5e3ac8d2fc56e08e2b4808d772cd.html#ga8c0a5e3ac8d2fc56e08e2b4808d772cd" title="Return true if the first h3index is less than the second.">H3index_lt()</a>  <a href="group__meos__h3__base__comp_ga346136c5188ee7a386a1b8aaae4cddc4.html#ga346136c5188ee7a386a1b8aaae4cddc4">More...</a><br /></td></tr>
-<tr class="separator:ga346136c5188ee7a386a1b8aaae4cddc4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga1583751e16ec807b9197dd77f52689cf"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__h3__base__comp_ga1583751e16ec807b9197dd77f52689cf.html#ga1583751e16ec807b9197dd77f52689cf">h3index_ne</a> (H3Index a, H3Index b)</td></tr>
-<tr class="memdesc:ga1583751e16ec807b9197dd77f52689cf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if two h3index values are not equal @csqlfn <a class="el" href="group__mobilitydb__h3__base__comp_ga97802efe897710122fd04388f2b48480.html#ga97802efe897710122fd04388f2b48480" title="Return true if two h3index values are not equal.">H3index_ne()</a>  <a href="group__meos__h3__base__comp_ga1583751e16ec807b9197dd77f52689cf.html#ga1583751e16ec807b9197dd77f52689cf">More...</a><br /></td></tr>
-<tr class="separator:ga1583751e16ec807b9197dd77f52689cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gaf268613fe7be59074d86086233369bd4"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__h3__base__inout_gaf268613fe7be59074d86086233369bd4.html#gaf268613fe7be59074d86086233369bd4">h3index_out</a> (H3Index cell)</td></tr>
-<tr class="memdesc:gaf268613fe7be59074d86086233369bd4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Format an H3Index into its canonical hex string (lowercase, no "0x" prefix, no leading zeros — matches h3-pg's output).  <a href="group__meos__h3__base__inout_gaf268613fe7be59074d86086233369bd4.html#gaf268613fe7be59074d86086233369bd4">More...</a><br /></td></tr>
-<tr class="separator:gaf268613fe7be59074d86086233369bd4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >Internal helpers for the static <code>h3index</code> SQL type. </p>
