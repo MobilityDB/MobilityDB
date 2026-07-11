@@ -117,13 +117,6 @@ extern int cbuffer_intersects(const Cbuffer *cb1, const Cbuffer *cb2);
 extern int cbuffer_dwithin(const Cbuffer *cb1, const Cbuffer *cb2, double dist);
 extern int cbuffer_touches(const Cbuffer *cb1, const Cbuffer *cb2);
 
-extern int contains_cbuffer_cbuffer(const Cbuffer *cb1, const Cbuffer *cb2);
-extern int covers_cbuffer_cbuffer(const Cbuffer *cb1, const Cbuffer *cb2);
-extern int disjoint_cbuffer_cbuffer(const Cbuffer *cb1, const Cbuffer *cb2);
-extern int intersects_cbuffer_cbuffer(const Cbuffer *cb1, const Cbuffer *cb2);
-extern int dwithin_cbuffer_cbuffer(const Cbuffer *cb1, const Cbuffer *cb2, double dist);
-extern int touches_cbuffer_cbuffer(const Cbuffer *cb1, const Cbuffer *cb2);
-
 extern Datum datum_cbuffer_contains(Datum cb1, Datum cb2);
 extern Datum datum_cbuffer_covers(Datum cb1, Datum cb2);
 extern Datum datum_cbuffer_disjoint(Datum cb1, Datum cb2);

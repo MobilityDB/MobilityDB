@@ -52,6 +52,8 @@
 /* PostgreSQL — for Datum / Int64GetDatum / DatumGetInt64 */
 #include <postgres.h>
 #include <h3api.h>
+/* MEOS — public h3index declarations (I/O, comparison, hashing) */
+#include <meos_h3.h>
 
 /*****************************************************************************
  * Datum packing
@@ -63,46 +65,5 @@
 
 #define DatumGetH3Index(X)   ((H3Index) DatumGetInt64(X))
 #define H3IndexGetDatum(X)   Int64GetDatum((int64) (X))
-
-/*****************************************************************************
- * Parsing / formatting
- *****************************************************************************/
-
-/**
- * Parse a string into an H3Index. Accepts:
- *   * a decimal integer literal (e.g. "590464338553208831"),
- *   * a hex string with no prefix (e.g. "8a2a1072b59ffff"), the
- *     canonical h3-pg form,
- *   * a hex string with the "0x" prefix (e.g. "0x8a2a1072b59ffff").
- *
- * Returns the parsed cell on success. Raises `meos_error(ERROR, …)`
- * on malformed input or on a value that does not encode a valid H3
- * cell (libh3's `isValidCell`).
- */
-extern H3Index h3index_in(const char *str);
-
-/**
- * Format an H3Index into its canonical hex string (lowercase, no
- * "0x" prefix, no leading zeros — matches h3-pg's output). The
- * caller owns the returned `palloc`'d C string.
- */
-extern char *h3index_out(H3Index cell);
-
-/*****************************************************************************
- * Comparison / ordering / hashing
- *
- * H3 cell identifiers are uint64; ordering and equality fall through
- * to plain int64 bit-compare — they carry no geographic meaning but
- * are required for btree indexing, ORDER BY, GROUP BY, DISTINCT, etc.
- *****************************************************************************/
-
-extern bool h3index_eq(H3Index a, H3Index b);
-extern bool h3index_ne(H3Index a, H3Index b);
-extern bool h3index_lt(H3Index a, H3Index b);
-extern bool h3index_le(H3Index a, H3Index b);
-extern bool h3index_gt(H3Index a, H3Index b);
-extern bool h3index_ge(H3Index a, H3Index b);
-extern int h3index_cmp(H3Index a, H3Index b);
-extern uint32 h3index_hash(H3Index cell);
 
 #endif /* __H3INDEX_H__ */

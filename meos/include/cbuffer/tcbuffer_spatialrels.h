@@ -99,10 +99,6 @@ extern int ea_touches_tcbuffer_tcbuffer(const Temporal *temp1,
 
 extern int ea_dwithin_tcbuffer_tcbuffer(const Temporal *temp1,
   const Temporal *temp2, double dist, bool ever);
-extern int edwithin_tcbuffer_tcbuffer(const Temporal *temp1,
-  const Temporal *temp2, double dist);
-extern int adwithin_tcbuffer_tcbuffer(const Temporal *temp1, 
-  const Temporal *temp2, double dist);
 
 /*****************************************************************************/
 
