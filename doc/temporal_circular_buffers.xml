@@ -706,6 +706,7 @@ SELECT asText(centroid(tcbuffer '[Cbuffer(Point(1 1), 0.5)@2001-01-01,
 				<indexterm significance="normal"><primary><varname>convexHull</varname></primary></indexterm>
 				<para>Return the convex hull of the area traversed by the temporal circular buffer</para>
 				<para><varname>convexHull(tcbuffer) → geometry</varname></para>
+				<para>The convex hull is computed on the linearized traversed area: the circular arcs bounding the swept region are first stroked into straight segments and the hull is then computed with GEOS. The result is therefore a linear <varname>POLYGON</varname> that approximates the circular boundary, not a curved <varname>CURVEDPOLYGON</varname>. Use <varname>traversedArea</varname> to obtain the exact curved swept region.</para>
 			</listitem>
 		</itemizedlist>
 	</sect1>
