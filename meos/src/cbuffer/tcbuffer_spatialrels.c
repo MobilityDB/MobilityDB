@@ -1664,11 +1664,21 @@ ea_dwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
     return 0;
   /* The ever semantics reduce exactly to the native nearest-approach
    * distance: eDwithin(temp, gs, d) ⟺ min_t dist(disk(t), gs) ≤ d. This
-   * avoids linearizing the round buffer through GEOS. The always semantics
-   * (∀t within d) do not reduce to a single running minimum, so they stay on
-   * the traversed-area path. */
+   * avoids linearizing the round buffer through GEOS. */
   if (ever)
     return nad_tcbuffer_geo(temp, gs) <= dist ? 1 : 0;
+  /* The always semantics reduce to native coverage: being within d of the
+   * geometry is the same as intersecting it once the disk radius is grown by d
+   * (dist(disk, gs) ≤ d ⟺ dist(disk⊕d, gs) ≤ 0), so aDwithin(temp, gs, d) ⟺
+   * the buffer expanded by d always intersects the geometry ⟺ it is never
+   * disjoint from it. Reuse the GEOS-free ever-disjoint coverage kernel on the
+   * expanded buffer; curved or unsupported geometry returns -1 and keeps the
+   * traversed-area path below. */
+  Temporal *temp_exp = tcbuffer_expand(temp, dist);
+  int native = edisjoint_tcbuffer_geo_native(temp_exp, gs);
+  pfree(temp_exp);
+  if (native >= 0)
+    return native == 0 ? 1 : 0;
   return ea_spatialrel_tcbuffer_geo(temp, gs, Float8GetDatum(dist),
     (varfunc) &datum_geom_dwithin2d, 3, ever, invert);
 }
@@ -1750,25 +1760,13 @@ adwithin_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
   if (! ensure_valid_tcbuffer_cbuffer(temp, cb) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return -1;
-  /* Bbox prefilter: short-circuit the expensive geom_buffer call when
-   * temp's bbox is clearly outside the static cbuffer's d-expanded
-   * bbox. Mirrors the sibling tgeo prefilter pattern. tcbuffer is
-   * planar by construction (cbuffer_make rejects geodetic input
-   * points and tcbuffer_make requires tgeompoint, not tgeogpoint),
-   * so no geodetic branch is needed here. */
-  STBox box_temp, box_cb;
-  tspatial_set_stbox(temp, &box_temp);
-  cbuffer_set_stbox(cb, &box_cb);
-  STBox *box_cb_exp = stbox_expand_space(&box_cb, dist);
-  bool pass = overlaps_stbox_stbox(&box_temp, box_cb_exp);
-  pfree(box_cb_exp);
-  if (! pass)
-    return 0;
-  GSERIALIZED *trav = cbuffer_to_geom(cb);
-  GSERIALIZED *buffer = geom_buffer(trav, dist, "");
-  int result = ea_spatialrel_tcbuffer_geo(temp, buffer, (Datum) NULL,
-    (varfunc) &datum_geom_covers, 2, ALWAYS, INVERT_NO);
-  pfree(trav); pfree(buffer);
+  /* A static circular buffer is a degenerate constant temporal circular
+   * buffer. Promote it and route through the native (GEOS-free) temporal
+   * circular buffer dwithin engine, mirroring the ever variant; that engine
+   * carries its own radius-aware bounding-box and time-overlap prefilter. */
+  Temporal *ctemp = tcbuffer_from_base_temp(cb, temp);
+  int result = ea_dwithin_tcbuffer_tcbuffer(temp, ctemp, dist, ALWAYS);
+  pfree(ctemp);
   return result;
 }
 

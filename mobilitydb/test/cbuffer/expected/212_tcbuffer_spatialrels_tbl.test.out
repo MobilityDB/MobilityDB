@@ -259,7 +259,7 @@ SELECT COUNT(*) FROM tbl_geometry, tbl_tcbuffer WHERE eDwithin(g, temp, 10);
 SELECT COUNT(*) FROM tbl_geometry, tbl_tcbuffer WHERE aDwithin(g, temp, 10);
  count 
 -------
-   614
+   311
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tcbuffer, tbl_geometry WHERE eDwithin(temp, g, 10);
@@ -271,7 +271,7 @@ SELECT COUNT(*) FROM tbl_tcbuffer, tbl_geometry WHERE eDwithin(temp, g, 10);
 SELECT COUNT(*) FROM tbl_tcbuffer, tbl_geometry WHERE aDwithin(temp, g, 10);
  count 
 -------
-   614
+   311
 (1 row)
 
 SELECT COUNT(*) FROM tbl_cbuffer, tbl_tcbuffer WHERE eDwithin(cb, temp, 10);
@@ -283,7 +283,7 @@ SELECT COUNT(*) FROM tbl_cbuffer, tbl_tcbuffer WHERE eDwithin(cb, temp, 10);
 SELECT COUNT(*) FROM tbl_cbuffer, tbl_tcbuffer WHERE aDwithin(cb, temp, 10);
  count 
 -------
-     0
+   134
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tcbuffer, tbl_cbuffer WHERE eDwithin(temp, cb, 10);
@@ -295,7 +295,7 @@ SELECT COUNT(*) FROM tbl_tcbuffer, tbl_cbuffer WHERE eDwithin(temp, cb, 10);
 SELECT COUNT(*) FROM tbl_tcbuffer, tbl_cbuffer WHERE aDwithin(temp, cb, 10);
  count 
 -------
-     0
+   134
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE eDwithin(t1.temp, t2.temp, 10);
@@ -325,13 +325,13 @@ SELECT COUNT(*) FROM tbl_cbuffer, tbl_tcbuffer_seqset WHERE eDwithin(cb, ss, 10)
 SELECT COUNT(*) FROM tbl_cbuffer, tbl_tcbuffer_seq WHERE aDwithin(cb, seq, 10);
  count 
 -------
-     0
+    57
 (1 row)
 
 SELECT COUNT(*) FROM tbl_cbuffer, tbl_tcbuffer_seqset WHERE aDwithin(cb, ss, 10);
  count 
 -------
-     0
+     2
 (1 row)
 
 SELECT COUNT(*) FROM tbl_cbuffer, tbl_tcbuffer_seq WHERE eDwithin(seq, cb, 10);
@@ -349,13 +349,13 @@ SELECT COUNT(*) FROM tbl_cbuffer, tbl_tcbuffer_seqset WHERE eDwithin(ss, cb, 10)
 SELECT COUNT(*) FROM tbl_cbuffer, tbl_tcbuffer_seq WHERE aDwithin(seq, cb, 10);
  count 
 -------
-     0
+    57
 (1 row)
 
 SELECT COUNT(*) FROM tbl_cbuffer, tbl_tcbuffer_seqset WHERE aDwithin(ss, cb, 10);
  count 
 -------
-     0
+     2
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tcbuffer_seq t1, tbl_tcbuffer t2 WHERE eDwithin(t1.seq, t2.temp, 10);
