@@ -50,6 +50,8 @@ extern int edisjoint_tcbuffer_geo_native(const Temporal *temp,
   const GSERIALIZED *gs);
 extern int eatouches_tcbuffer_geo_native(const Temporal *temp,
   const GSERIALIZED *gs, bool ever);
+extern int eacontains_tcbuffer_geo_native(const Temporal *temp,
+  const GSERIALIZED *gs, bool ever, bool strict);
 // extern Temporal *tinterrel_tcbuffer_tcbuffer(const Temporal *temp1,
 //   const Temporal *temp2, bool tinter);
 
