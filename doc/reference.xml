@@ -841,7 +841,7 @@
 			<title>Restrictions</title>
 			<itemizedlist>
 			<listitem>
-					<para><link linkend="type_atValues"><varname>atValues</varname>, <varname>minusValues</varname></link>: Restrict to (the complement of) a set of values</para>
+					<para><link linkend="type_atValues"><varname>atValue</varname>, <varname>minusValue</varname>, <varname>atValues</varname>, <varname>minusValues</varname></link>: Restrict to (the complement of) a value or a set of values</para>
 				</listitem>
 
 				<listitem>
@@ -1676,7 +1676,7 @@
 				<title>Restrictions</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpose_atValues"><varname>atValues</varname>, <varname>minusValues</varname></link>: Restrict to (the complement of) a set of values</para>
+						<para><link linkend="tpose_atValues"><varname>atValue</varname>, <varname>minusValue</varname>, <varname>atValues</varname>, <varname>minusValues</varname></link>: Restrict to (the complement of) a value or a set of values</para>
 					</listitem>
 
 					<listitem>
@@ -1932,7 +1932,7 @@
 				<title>Restrictions</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tnpoint_atValues"><varname>atValues</varname>, <varname>minusValues</varname></link>: Restrict to (the complement of) a set of values</para>
+						<para><link linkend="tnpoint_atValues"><varname>atValue</varname>, <varname>minusValue</varname>, <varname>atValues</varname>, <varname>minusValues</varname></link>: Restrict to (the complement of) a value or a set of values</para>
 					</listitem>
 
 					<listitem>
@@ -2214,7 +2214,7 @@
 				<title>Restrictions</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tcbuffer_atValues"><varname>atValues</varname>, <varname>minusValue</varname></link>: Restrict to (the complement of) a set of values</para>
+						<para><link linkend="tcbuffer_atValues"><varname>atValue</varname>, <varname>minusValue</varname>, <varname>atValues</varname>, <varname>minusValues</varname></link>: Restrict to (the complement of) a value or a set of values</para>
 					</listitem>
 
 					<listitem>
@@ -2742,7 +2742,7 @@
 		<title>Restrictions</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="tjsonb_atValues"><varname>atValues</varname>, <varname>minusValue</varname></link>: Restrict to (the complement of) a set of values</para>
+					<para><link linkend="tjsonb_atValues"><varname>atValue</varname>, <varname>minusValue</varname>, <varname>atValues</varname>, <varname>minusValues</varname></link>: Restrict to (the complement of) a value or a set of values</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

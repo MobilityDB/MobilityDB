@@ -509,12 +509,12 @@ CREATE FUNCTION shiftScaleTime(tpose, interval, interval)
  * Restriction Functions
  *****************************************************************************/
 
-CREATE FUNCTION atValues(tpose, pose)
+CREATE FUNCTION atValue(tpose, pose)
   RETURNS tpose
   AS 'MODULE_PATHNAME', 'Temporal_at_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION minusValues(tpose, pose)
+CREATE FUNCTION minusValue(tpose, pose)
   RETURNS tpose
   AS 'MODULE_PATHNAME', 'Temporal_minus_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

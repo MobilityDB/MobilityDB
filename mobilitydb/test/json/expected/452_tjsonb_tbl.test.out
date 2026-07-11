@@ -392,7 +392,7 @@ SELECT COUNT(*) FROM tbl_tjsonb WHERE temp %= startValue(temp);
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tjsonb, tbl_jsonb WHERE temp != merge(atValues(temp, jb), minusValues(temp, jb));
+SELECT COUNT(*) FROM tbl_tjsonb, tbl_jsonb WHERE temp != merge(atValue(temp, jb), minusValue(temp, jb));
  count 
 -------
      0

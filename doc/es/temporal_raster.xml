@@ -62,8 +62,8 @@ FROM trips, elevation_raster;
 -- Trips that crossed terrain above 200 m
 SELECT tripid
 FROM trips, elevation_raster
-WHERE atValues(raster_value(elev, trip4326),
-               floatspan '[200, 9999]') IS NOT NULL;
+WHERE atSpan(raster_value(elev, trip4326),
+             floatspan '[200, 9999]') IS NOT NULL;
 </programlisting>
 			</listitem>
 		</itemizedlist>

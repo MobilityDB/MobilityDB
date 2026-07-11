@@ -345,14 +345,14 @@ SELECT (rec).value, (rec).time FROM
  48427fffffffffff | {[Tue Jan 02 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST]}
 (2 rows)
 
-SELECT atValues(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02, 480fffffffffffff@2001-01-03]', quadbin '480fffffffffffff');
-                                                                     atvalues                                                                      
+SELECT atValue(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02, 480fffffffffffff@2001-01-03]', quadbin '480fffffffffffff');
+                                                                      atvalue                                                                      
 ---------------------------------------------------------------------------------------------------------------------------------------------------
  {[480fffffffffffff@Mon Jan 01 00:00:00 2001 PST, 480fffffffffffff@Tue Jan 02 00:00:00 2001 PST), [480fffffffffffff@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
-SELECT minusValues(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02, 480fffffffffffff@2001-01-03]', quadbin '480fffffffffffff');
-                                           minusvalues                                            
+SELECT minusValue(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02, 480fffffffffffff@2001-01-03]', quadbin '480fffffffffffff');
+                                            minusvalue                                            
 --------------------------------------------------------------------------------------------------
  {[48427fffffffffff@Tue Jan 02 00:00:00 2001 PST, 48427fffffffffff@Wed Jan 03 00:00:00 2001 PST)}
 (1 row)

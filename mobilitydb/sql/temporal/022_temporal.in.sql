@@ -1628,44 +1628,44 @@ CREATE FUNCTION merge(ttext[])
  * Restriction functions
  *****************************************************************************/
 
-CREATE FUNCTION atValues(tbool, boolean)
+CREATE FUNCTION atValue(tbool, boolean)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Temporal_at_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION atValues(tint, integer)
+CREATE FUNCTION atValue(tint, integer)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Temporal_at_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION atValues(tbigint, bigint)
+CREATE FUNCTION atValue(tbigint, bigint)
   RETURNS tbigint
   AS 'MODULE_PATHNAME', 'Temporal_at_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION atValues(tfloat, float)
+CREATE FUNCTION atValue(tfloat, float)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Temporal_at_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION atValues(ttext, text)
+CREATE FUNCTION atValue(ttext, text)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Temporal_at_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION minusValues(tbool, boolean)
+CREATE FUNCTION minusValue(tbool, boolean)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Temporal_minus_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION minusValues(tint, integer)
+CREATE FUNCTION minusValue(tint, integer)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Temporal_minus_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION minusValues(tbigint, bigint)
+CREATE FUNCTION minusValue(tbigint, bigint)
   RETURNS tbigint
   AS 'MODULE_PATHNAME', 'Temporal_minus_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION minusValues(tfloat, float)
+CREATE FUNCTION minusValue(tfloat, float)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Temporal_minus_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION minusValues(ttext, text)
+CREATE FUNCTION minusValue(ttext, text)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Temporal_minus_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

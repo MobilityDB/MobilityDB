@@ -417,11 +417,11 @@ CREATE FUNCTION unnest(th3index)
  * Restriction functions
  ******************************************************************************/
 
-CREATE FUNCTION atValues(th3index, h3index)
+CREATE FUNCTION atValue(th3index, h3index)
   RETURNS th3index
   AS 'MODULE_PATHNAME', 'Temporal_at_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION minusValues(th3index, h3index)
+CREATE FUNCTION minusValue(th3index, h3index)
   RETURNS th3index
   AS 'MODULE_PATHNAME', 'Temporal_minus_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

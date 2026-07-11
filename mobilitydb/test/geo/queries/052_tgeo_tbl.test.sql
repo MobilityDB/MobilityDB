@@ -362,10 +362,10 @@ SELECT COUNT(*) FROM tbl_tgeography3D WHERE temp %= startValue(temp);
 -- Restriction functions
 ------------------------------------------------------------------------------
 
-SELECT COUNT(*) FROM tbl_tgeometry, tbl_geometry WHERE temp != merge(atValues(temp, g), minusValues(temp, g));
-SELECT COUNT(*) FROM tbl_tgeography, tbl_geography WHERE temp != merge(atValues(temp, g), minusValues(temp, g));
-SELECT COUNT(*) FROM tbl_tgeometry3D, tbl_geometry3D WHERE temp != merge(atValues(temp, g), minusValues(temp, g));
-SELECT COUNT(*) FROM tbl_tgeography3D, tbl_geography3D WHERE temp != merge(atValues(temp, g), minusValues(temp, g));
+SELECT COUNT(*) FROM tbl_tgeometry, tbl_geometry WHERE temp != merge(atValue(temp, g), minusValue(temp, g));
+SELECT COUNT(*) FROM tbl_tgeography, tbl_geography WHERE temp != merge(atValue(temp, g), minusValue(temp, g));
+SELECT COUNT(*) FROM tbl_tgeometry3D, tbl_geometry3D WHERE temp != merge(atValue(temp, g), minusValue(temp, g));
+SELECT COUNT(*) FROM tbl_tgeography3D, tbl_geography3D WHERE temp != merge(atValue(temp, g), minusValue(temp, g));
 
 SELECT COUNT(*) FROM tbl_tgeometry, (
   SELECT set(array_agg(g)) AS s FROM tbl_geometry WHERE g IS NOT NULL AND NOT ST_IsEmpty(g)) tmp

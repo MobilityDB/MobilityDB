@@ -322,15 +322,15 @@ SELECT timestamps(tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1
 -- Restriction Functions
 -------------------------------------------------------------------------------
 
-SELECT atValues(tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01', jsonb '{"geom": "Point(1 1)"}');
-SELECT atValues(tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}', jsonb '{"geom": "Point(1 1)"}');
-SELECT atValues(tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]', jsonb '{"geom": "Point(1 1)"}');
-SELECT atValues(tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03], [{"geom": "Point(2 2)"}@2000-01-04, {"geom": "Point(2 2)"}@2000-01-05]}', jsonb '{"geom": "Point(1 1)"}');
+SELECT atValue(tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01', jsonb '{"geom": "Point(1 1)"}');
+SELECT atValue(tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}', jsonb '{"geom": "Point(1 1)"}');
+SELECT atValue(tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]', jsonb '{"geom": "Point(1 1)"}');
+SELECT atValue(tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03], [{"geom": "Point(2 2)"}@2000-01-04, {"geom": "Point(2 2)"}@2000-01-05]}', jsonb '{"geom": "Point(1 1)"}');
 
-SELECT minusValues(tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01', jsonb '{"geom": "Point(1 1)"}');
-SELECT minusValues(tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}', jsonb '{"geom": "Point(1 1)"}');
-SELECT minusValues(tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]', jsonb '{"geom": "Point(1 1)"}');
-SELECT minusValues(tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03], [{"geom": "Point(2 2)"}@2000-01-04, {"geom": "Point(2 2)"}@2000-01-05]}', jsonb '{"geom": "Point(1 1)"}');
+SELECT minusValue(tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01', jsonb '{"geom": "Point(1 1)"}');
+SELECT minusValue(tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}', jsonb '{"geom": "Point(1 1)"}');
+SELECT minusValue(tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]', jsonb '{"geom": "Point(1 1)"}');
+SELECT minusValue(tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03], [{"geom": "Point(2 2)"}@2000-01-04, {"geom": "Point(2 2)"}@2000-01-05]}', jsonb '{"geom": "Point(1 1)"}');
 
 SELECT atValues(tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01', jsonbset '{"{\"geom\": \"Point(1 1)\"}"}');
 SELECT atValues(tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}', jsonbset '{"{\"geom\": \"Point(1 1)\"}"}');

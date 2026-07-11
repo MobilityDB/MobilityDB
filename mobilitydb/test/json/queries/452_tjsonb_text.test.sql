@@ -322,15 +322,15 @@ SELECT timestamps(ttext '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 
 -- Restriction Functions
 -------------------------------------------------------------------------------
 
-SELECT atValues(ttext '"{\"geom\": \"Point(1 1)\"}"@2000-01-01', text '{"geom": "Point(1 1)"}');
-SELECT atValues(ttext '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}', text '{"geom": "Point(1 1)"}');
-SELECT atValues(ttext '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]', text '{"geom": "Point(1 1)"}');
-SELECT atValues(ttext '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03], [{"geom": "Point(2 2)"}@2000-01-04, {"geom": "Point(2 2)"}@2000-01-05]}', text '{"geom": "Point(1 1)"}');
+SELECT atValue(ttext '"{\"geom\": \"Point(1 1)\"}"@2000-01-01', text '{"geom": "Point(1 1)"}');
+SELECT atValue(ttext '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}', text '{"geom": "Point(1 1)"}');
+SELECT atValue(ttext '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]', text '{"geom": "Point(1 1)"}');
+SELECT atValue(ttext '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03], [{"geom": "Point(2 2)"}@2000-01-04, {"geom": "Point(2 2)"}@2000-01-05]}', text '{"geom": "Point(1 1)"}');
 
-SELECT minusValues(ttext '"{\"geom\": \"Point(1 1)\"}"@2000-01-01', text '{"geom": "Point(1 1)"}');
-SELECT minusValues(ttext '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}', text '{"geom": "Point(1 1)"}');
-SELECT minusValues(ttext '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]', text '{"geom": "Point(1 1)"}');
-SELECT minusValues(ttext '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03], [{"geom": "Point(2 2)"}@2000-01-04, {"geom": "Point(2 2)"}@2000-01-05]}', text '{"geom": "Point(1 1)"}');
+SELECT minusValue(ttext '"{\"geom\": \"Point(1 1)\"}"@2000-01-01', text '{"geom": "Point(1 1)"}');
+SELECT minusValue(ttext '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}', text '{"geom": "Point(1 1)"}');
+SELECT minusValue(ttext '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]', text '{"geom": "Point(1 1)"}');
+SELECT minusValue(ttext '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03], [{"geom": "Point(2 2)"}@2000-01-04, {"geom": "Point(2 2)"}@2000-01-05]}', text '{"geom": "Point(1 1)"}');
 
 SELECT atValues(ttext '"{\"geom\": \"Point(1 1)\"}"@2000-01-01', textset '{"{\"geom\": \"Point(1 1)\"}"}');
 SELECT atValues(ttext '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}', textset '{"{\"geom\": \"Point(1 1)\"}"}');

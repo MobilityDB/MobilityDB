@@ -1120,50 +1120,50 @@ SELECT timestamps(tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1
  {"Sat Jan 01 00:00:00 2000 PST","Mon Jan 03 00:00:00 2000 PST","Tue Jan 04 00:00:00 2000 PST","Wed Jan 05 00:00:00 2000 PST"}
 (1 row)
 
-SELECT atValues(tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01', jsonb '{"geom": "Point(1 1)"}');
-                         atvalues                          
+SELECT atValue(tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01', jsonb '{"geom": "Point(1 1)"}');
+                          atvalue                          
 -----------------------------------------------------------
  "{\"geom\": \"Point(1 1)\"}"@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
-SELECT atValues(tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}', jsonb '{"geom": "Point(1 1)"}');
-                                                                                     atvalues                                                                                      
+SELECT atValue(tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}', jsonb '{"geom": "Point(1 1)"}');
+                                                                                      atvalue                                                                                      
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  {"{\"geom\": \"Point(1 1)\"}"@Sat Jan 01 00:00:00 2000 PST, "{\"geom\": \"Point(1 1)\"}"@Sun Jan 02 00:00:00 2000 PST, "{\"geom\": \"Point(1 1)\"}"@Mon Jan 03 00:00:00 2000 PST}
 (1 row)
 
-SELECT atValues(tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]', jsonb '{"geom": "Point(1 1)"}');
-                                                         atvalues                                                         
+SELECT atValue(tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]', jsonb '{"geom": "Point(1 1)"}');
+                                                         atvalue                                                          
 --------------------------------------------------------------------------------------------------------------------------
  {["{\"geom\": \"Point(1 1)\"}"@Sat Jan 01 00:00:00 2000 PST, "{\"geom\": \"Point(1 1)\"}"@Mon Jan 03 00:00:00 2000 PST]}
 (1 row)
 
-SELECT atValues(tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03], [{"geom": "Point(2 2)"}@2000-01-04, {"geom": "Point(2 2)"}@2000-01-05]}', jsonb '{"geom": "Point(1 1)"}');
-                                                         atvalues                                                         
+SELECT atValue(tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03], [{"geom": "Point(2 2)"}@2000-01-04, {"geom": "Point(2 2)"}@2000-01-05]}', jsonb '{"geom": "Point(1 1)"}');
+                                                         atvalue                                                          
 --------------------------------------------------------------------------------------------------------------------------
  {["{\"geom\": \"Point(1 1)\"}"@Sat Jan 01 00:00:00 2000 PST, "{\"geom\": \"Point(1 1)\"}"@Mon Jan 03 00:00:00 2000 PST]}
 (1 row)
 
-SELECT minusValues(tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01', jsonb '{"geom": "Point(1 1)"}');
- minusvalues 
--------------
+SELECT minusValue(tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01', jsonb '{"geom": "Point(1 1)"}');
+ minusvalue 
+------------
  
 (1 row)
 
-SELECT minusValues(tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}', jsonb '{"geom": "Point(1 1)"}');
- minusvalues 
--------------
+SELECT minusValue(tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}', jsonb '{"geom": "Point(1 1)"}');
+ minusvalue 
+------------
  
 (1 row)
 
-SELECT minusValues(tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]', jsonb '{"geom": "Point(1 1)"}');
- minusvalues 
--------------
+SELECT minusValue(tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]', jsonb '{"geom": "Point(1 1)"}');
+ minusvalue 
+------------
  
 (1 row)
 
-SELECT minusValues(tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03], [{"geom": "Point(2 2)"}@2000-01-04, {"geom": "Point(2 2)"}@2000-01-05]}', jsonb '{"geom": "Point(1 1)"}');
-                                                       minusvalues                                                        
+SELECT minusValue(tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03], [{"geom": "Point(2 2)"}@2000-01-04, {"geom": "Point(2 2)"}@2000-01-05]}', jsonb '{"geom": "Point(1 1)"}');
+                                                        minusvalue                                                        
 --------------------------------------------------------------------------------------------------------------------------
  {["{\"geom\": \"Point(2 2)\"}"@Tue Jan 04 00:00:00 2000 PST, "{\"geom\": \"Point(2 2)\"}"@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)

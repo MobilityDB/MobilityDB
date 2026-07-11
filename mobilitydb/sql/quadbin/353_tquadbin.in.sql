@@ -377,11 +377,11 @@ CREATE FUNCTION unnest(tquadbin)
  * Restriction functions
  ******************************************************************************/
 
-CREATE FUNCTION atValues(tquadbin, quadbin)
+CREATE FUNCTION atValue(tquadbin, quadbin)
   RETURNS tquadbin
   AS 'MODULE_PATHNAME', 'Temporal_at_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION minusValues(tquadbin, quadbin)
+CREATE FUNCTION minusValue(tquadbin, quadbin)
   RETURNS tquadbin
   AS 'MODULE_PATHNAME', 'Temporal_minus_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
