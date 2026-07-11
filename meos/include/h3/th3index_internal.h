@@ -61,6 +61,7 @@
 #include <h3api.h>
 #include <liblwgeom.h>
 #include <meos.h>
+#include <meos_h3.h>  /* public h3 geometry-conversion declarations */
 
 /*****************************************************************************
  * Shared metrics enum
@@ -83,8 +84,6 @@ typedef enum
  *****************************************************************************/
 
 /* Point / polygon conversions — bodies in th3index_latlng.c. */
-extern H3Index h3_gs_point_to_cell(const GSERIALIZED *point,
-  int32 resolution);
 extern GSERIALIZED *h3_cell_to_gs_point(H3Index cell);
 extern GSERIALIZED *h3_cell_to_gs_boundary(H3Index cell);
 

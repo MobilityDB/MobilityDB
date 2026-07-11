@@ -57,6 +57,7 @@
 #include <h3api.h>
 /* MEOS */
 #include <meos.h>  /* Set typedef */
+#include <meos_h3.h>  /* public h3 cell-set declarations */
 #include "temporal/meos_catalog.h"
 
 /*****************************************************************************
@@ -66,12 +67,6 @@
  * owns the return. NULL is returned on libh3 failure after raising
  * a `meos_error`.
  *****************************************************************************/
-
-/**
- * Return all cells within `k` grid steps of `origin` (including
- * `origin` itself at k=0).
- */
-extern Set *h3_grid_disk(H3Index origin, int k);
 
 /**
  * Return all cells at exactly `k` grid steps from `origin`.
@@ -84,24 +79,6 @@ extern Set *h3_grid_ring(H3Index origin, int k);
  * Fails on non-comparable resolutions or paths crossing pentagons.
  */
 extern Set *h3_grid_path_cells(H3Index start, H3Index end);
-
-/**
- * Return all children of `origin` at resolution `childRes`.
- */
-extern Set *h3_cell_to_children(H3Index origin, int childRes);
-
-/**
- * Return the compacted representation of `cells` (finer cells
- * merged up into parents where the full hexagonal set of siblings
- * is present).
- */
-extern Set *h3_compact_cells(const Set *cells);
-
-/**
- * Return the uncompacted representation of `cells` at resolution
- * `res` (fails if any input is finer than `res`).
- */
-extern Set *h3_uncompact_cells(const Set *cells, int res);
 
 /**
  * Return all outgoing directed edges of `origin` (up to 6;

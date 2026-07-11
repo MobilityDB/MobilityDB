@@ -70,14 +70,33 @@
  *****************************************************************************/
 
 /* Input and output */
+
+/**
+ * Parse a string into an H3Index. Accepts a decimal integer literal,
+ * a bare hex string (the canonical h3-pg form), or a hex string with
+ * a "0x" prefix. Returns the parsed cell on success; raises
+ * `meos_error(ERROR, ...)` on malformed input or on a value that does
+ * not encode a valid H3 cell (libh3's `isValidCell`).
+ */
 extern H3Index h3index_in(const char *str);
+
+/**
+ * Format an H3Index into its canonical hex string (lowercase, no
+ * "0x" prefix, no leading zeros, matching h3-pg's output). The caller
+ * owns the returned `palloc`'d C string.
+ */
 extern char *h3index_out(H3Index cell);
 extern H3Index h3index_from_wkb(const uint8_t *wkb, size_t size);
 extern H3Index h3index_from_hexwkb(const char *hexwkb);
 extern uint8_t *h3index_as_wkb(H3Index cell, uint8_t variant, size_t *size_out);
 extern char *h3index_as_hexwkb(H3Index cell, uint8_t variant, size_t *size_out);
 
-/* Comparisons */
+/*
+ * Comparison / ordering / hashing. H3 cell identifiers are uint64;
+ * ordering and equality fall through to plain int64 bit-compare. They
+ * carry no geographic meaning but are required for btree indexing,
+ * ORDER BY, GROUP BY, DISTINCT, etc.
+ */
 extern bool h3index_eq(H3Index a, H3Index b);
 extern bool h3index_ne(H3Index a, H3Index b);
 extern bool h3index_lt(H3Index a, H3Index b);
@@ -87,10 +106,22 @@ extern bool h3index_ge(H3Index a, H3Index b);
 extern int h3index_cmp(H3Index a, H3Index b);
 extern uint32 h3index_hash(H3Index cell);
 
-/* Cell operations */
+/* Cell operations. Each returns a heap-allocated `Set *` owned by the
+ * caller; NULL on libh3 failure after raising a `meos_error`. */
+
+/** Return all cells within `k` grid steps of `origin` (including
+ * `origin` itself at k=0). */
 extern Set *h3_grid_disk(H3Index origin, int k);
+
+/** Return all children of `origin` at resolution `childRes`. */
 extern Set *h3_cell_to_children(H3Index origin, int childRes);
+
+/** Return the compacted representation of `cells` (finer cells merged
+ * up into parents where the full hexagonal set of siblings is present). */
 extern Set *h3_compact_cells(const Set *cells);
+
+/** Return the uncompacted representation of `cells` at resolution `res`
+ * (fails if any input is finer than `res`). */
 extern Set *h3_uncompact_cells(const Set *cells, int res);
 
 /*****************************************************************************

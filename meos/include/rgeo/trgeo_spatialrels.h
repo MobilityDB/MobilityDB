@@ -39,6 +39,7 @@
 #include <postgres.h>
 /* PostGIS */
 #include <liblwgeom.h>
+#include <meos_rgeo.h>  /* public trgeometry spatial-relationship declarations */
 /* MEOS */
 #include "temporal/temporal.h"
 #include "pose/pose.h"
@@ -86,8 +87,6 @@ extern int ea_touches_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp,
   bool ever);
 extern int ea_touches_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
   bool ever);
-extern int etouches_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs);
-extern int atouches_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern int ea_touches_trgeo_trgeo(const Temporal *temp1,
   const Temporal *temp2, bool ever);
 
