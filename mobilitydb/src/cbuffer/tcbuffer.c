@@ -408,8 +408,9 @@ PG_FUNCTION_INFO_V1(Tcbuffer_minus_stbox);
 /**
  * @ingroup mobilitydb_geo_restrict
  * @brief Return a temporal circular buffer restricted to the complement of a
- * circular buffer
- * @sqlfn minusValue()
+ * spatiotemporal box
+ * @note Only 2D is supported
+ * @sqlfn minusStbox()
  */
 inline Datum
 Tcbuffer_minus_stbox(PG_FUNCTION_ARGS)

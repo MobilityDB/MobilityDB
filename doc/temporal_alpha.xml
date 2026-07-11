@@ -285,7 +285,7 @@ SELECT minusTbox(tfloat '[1@2001-01-01, 4@2001-01-04)',
 WITH temp(temp, box) AS (
   SELECT tfloat '[1@2001-01-01, 4@2001-01-04)',
     tbox 'TBOXFLOAT XT((1,2),[2001-01-03, 2001-01-04])' )
-SELECT minusValues(minusTime(temp, box::tstzspan), box::floatspan) FROM temp;
+SELECT minusSpan(minusTime(temp, box::tstzspan), box::floatspan) FROM temp;
 -- {[1@2001-01-01], [2@2001-01-02, 3@2001-01-03)}
 </programlisting>
 			</listitem>
