@@ -705,6 +705,7 @@ SELECT asText(centroid(tcbuffer '[Cbuffer(Point(1 1), 0.5)@2001-01-01,
 				<indexterm significance="normal"><primary><varname>convexHull</varname></primary></indexterm>
 				<para>Devuelve la envolvente convexa del área atravesada por el búfer circular temporal</para>
 				<para><varname>convexHull(tcbuffer) → geometry</varname></para>
+				<para>La envolvente convexa se calcula sobre el área atravesada linealizada: los arcos circulares que delimitan la región barrida se convierten primero en segmentos rectos y la envolvente se calcula luego con GEOS. Por lo tanto, el resultado es un <varname>POLYGON</varname> lineal que aproxima el contorno circular, no un <varname>CURVEDPOLYGON</varname> curvo. Utilice <varname>traversedArea</varname> para obtener la región barrida curva exacta.</para>
 			</listitem>
 		</itemizedlist>
 	</sect1>
