@@ -1704,54 +1704,54 @@ CREATE FUNCTION minusValues(ttext, textset)
   AS 'MODULE_PATHNAME', 'Temporal_minus_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION atValues(tint, intspan)
+CREATE FUNCTION atSpan(tint, intspan)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Tnumber_at_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION atValues(tbigint, bigintspan)
+CREATE FUNCTION atSpan(tbigint, bigintspan)
   RETURNS tbigint
   AS 'MODULE_PATHNAME', 'Tnumber_at_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION atValues(tfloat, floatspan)
+CREATE FUNCTION atSpan(tfloat, floatspan)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tnumber_at_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION minusValues(tint, intspan)
+CREATE FUNCTION minusSpan(tint, intspan)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Tnumber_minus_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION minusValues(tbigint, bigintspan)
+CREATE FUNCTION minusSpan(tbigint, bigintspan)
   RETURNS tbigint
   AS 'MODULE_PATHNAME', 'Tnumber_minus_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION minusValues(tfloat, floatspan)
+CREATE FUNCTION minusSpan(tfloat, floatspan)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tnumber_minus_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION atValues(tint, intspanset)
+CREATE FUNCTION atSpanset(tint, intspanset)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Tnumber_at_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION atValues(tbigint, bigintspanset)
+CREATE FUNCTION atSpanset(tbigint, bigintspanset)
   RETURNS tbigint
   AS 'MODULE_PATHNAME', 'Tnumber_at_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION atValues(tfloat, floatspanset)
+CREATE FUNCTION atSpanset(tfloat, floatspanset)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tnumber_at_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION minusValues(tint, intspanset)
+CREATE FUNCTION minusSpanset(tint, intspanset)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Tnumber_minus_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION minusValues(tbigint, bigintspanset)
+CREATE FUNCTION minusSpanset(tbigint, bigintspanset)
   RETURNS tbigint
   AS 'MODULE_PATHNAME', 'Tnumber_minus_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION minusValues(tfloat, floatspanset)
+CREATE FUNCTION minusSpanset(tfloat, floatspanset)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tnumber_minus_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

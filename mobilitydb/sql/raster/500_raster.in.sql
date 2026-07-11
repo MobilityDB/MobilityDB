@@ -229,7 +229,7 @@ CREATE OR REPLACE FUNCTION atRasterValue(
     vspan floatspan,
     band  integer DEFAULT 1
 ) RETURNS tgeompoint AS $$
-  SELECT atTime($1, getTime(atValues(v, $3)))
+  SELECT atTime($1, getTime(atSpan(v, $3)))
   FROM (SELECT raster_value($2, $1, $4) AS v) t
 $$ LANGUAGE SQL STRICT;
 
@@ -253,7 +253,7 @@ CREATE OR REPLACE FUNCTION minusRasterValue(
     vspan floatspan,
     band  integer DEFAULT 1
 ) RETURNS tgeompoint AS $$
-  SELECT atTime($1, getTime(minusValues(v, $3)))
+  SELECT atTime($1, getTime(minusSpan(v, $3)))
   FROM (SELECT raster_value($2, $1, $4) AS v) t
 $$ LANGUAGE SQL STRICT;
 
@@ -277,7 +277,7 @@ CREATE OR REPLACE FUNCTION eRasterValue(
     vspan floatspan,
     band  integer DEFAULT 1
 ) RETURNS boolean AS $$
-  SELECT atValues(raster_value($1, $2, $4), $3) IS NOT NULL
+  SELECT atSpan(raster_value($1, $2, $4), $3) IS NOT NULL
 $$ LANGUAGE SQL STRICT;
 
 /******************************************************************************
@@ -300,6 +300,6 @@ CREATE OR REPLACE FUNCTION aRasterValue(
     vspan floatspan,
     band  integer DEFAULT 1
 ) RETURNS boolean AS $$
-  SELECT v IS NOT NULL AND minusValues(v, $3) IS NULL
+  SELECT v IS NOT NULL AND minusSpan(v, $3) IS NULL
   FROM (SELECT raster_value($1, $2, $4) AS v) t
 $$ LANGUAGE SQL STRICT;
