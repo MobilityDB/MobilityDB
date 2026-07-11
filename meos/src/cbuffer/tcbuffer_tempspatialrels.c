@@ -1742,6 +1742,14 @@ ttouches_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
   if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
 
+  /* Bounding box test: a moving disk whose radius-aware bounding box is
+   * disjoint from the geometry never reaches it, so it never touches */
+  STBox box1, box2;
+  tspatial_set_stbox(temp, &box1);
+  geo_set_stbox(gs, &box2);
+  if (! overlaps_stbox_stbox(&box1, &box2))
+    return temporal_from_base_temp(BoolGetDatum(false), T_TBOOL, temp);
+
   /* Native GEOS-free path for non-curved geometry: the moving-disk boundary
    * contact instants. Curved or unsupported geometry keeps the traversed-area
    * path. */
