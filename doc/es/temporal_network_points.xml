@@ -399,15 +399,6 @@ SELECT tgeompoint '[POINT(23.057077727326 28.7666335767956)@2001-01-01,
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="tnpoint_arrowRoundtrip">
-				<indexterm significance="normal"><primary><varname>arrowRoundtrip</varname></primary></indexterm>
-				<para>Convierte un punto de red temporal a la interfaz Arrow C Data Interface y de vuelta, devolviendo el valor reconstruido</para>
-				<para><varname>arrowRoundtrip(tnpoint) → tnpoint</varname></para>
-				<programlisting language="sql" xml:space="preserve">
-SELECT arrowRoundtrip(tnpoint 'Npoint(1, 0.5)@2001-01-01');
--- NPoint(1,0.5)@2001-01-01
-</programlisting>
-			</listitem>
 		</itemizedlist>
 	</sect1>
 

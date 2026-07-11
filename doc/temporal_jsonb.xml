@@ -560,15 +560,6 @@ SELECT tjsonbFromMFJSON('{"type": "MovingJSON", "interpolation": "Step",
    {"Position": "Point(2 2)"}@2001-01-01 13:00:00+01] */
 </programlisting>
 			</listitem>
-			<listitem xml:id="tjsonb_arrowRoundtrip">
-				<indexterm significance="normal"><primary><varname>arrowRoundtrip</varname></primary></indexterm>
-				<para>Convert a temporal JSONB value to the Arrow C Data Interface and back, returning the reconstructed value</para>
-				<para><varname>arrowRoundtrip(tjsonb) → tjsonb</varname></para>
-				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT arrowRoundtrip(tjsonb '1@2001-01-01');
-/* "1"@2001-01-01 */
-</programlisting>
-			</listitem>
 		</itemizedlist>
 	</sect1>
 

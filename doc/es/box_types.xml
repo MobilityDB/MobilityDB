@@ -125,17 +125,6 @@ SELECT stboxFromHexWKB(
 </programlisting>
 				</listitem>
 
-				<listitem xml:id="box_arrowRoundtrip">
-					<indexterm significance="normal"><primary><varname>arrowRoundtrip</varname></primary></indexterm>
-					<para>Convierte una caja temporal o espaciotemporal a la interfaz Arrow C Data Interface y de vuelta, devolviendo el valor reconstruido</para>
-					<para><varname>arrowRoundtrip(box) → box</varname></para>
-					<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT arrowRoundtrip(tbox 'TBOXFLOAT XT([1.5,9.75],[2000-01-01,2000-12-31))');
--- TBOXFLOAT XT([1.5, 9.75],[2000-01-01,2000-12-31))
-SELECT arrowRoundtrip(stbox 'SRID=4326;STBOX XT(((1,1),(5,5)),[2000-01-01,2000-01-05])');
--- SRID=4326;STBOX XT(((1,1),(5,5)),[2000-01-01,2000-01-05])
-</programlisting>
-				</listitem>
 			</itemizedlist>
 	</sect1>
 

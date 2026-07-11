@@ -690,16 +690,6 @@ SELECT asHexEWKB(tpose 'SRID=3812;Pose(Point(1 2),1)@2001-01-01');
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="tpose_arrowRoundtrip">
-				<indexterm significance="normal"><primary><varname>arrowRoundtrip</varname></primary></indexterm>
-				<para>Convierte una pose temporal a la interfaz Arrow C Data y de vuelta, devolviendo el valor reconstruido</para>
-				<para><varname>arrowRoundtrip(tpose) → tpose</varname></para>
-				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT arrowRoundtrip(tpose 'Pose(Point(1 2),1)@2001-01-01');
--- Pose(POINT(1 2),1)@2001-01-01
-</programlisting>
-			</listitem>
-
 			<listitem xml:id="tposeFromText">
 				<indexterm significance="normal"><primary><varname>tposeFromText</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tposeFromEWKT</varname></primary></indexterm>
