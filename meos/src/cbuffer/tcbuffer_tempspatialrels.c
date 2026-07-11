@@ -1906,6 +1906,17 @@ tcontains_geo_tcbuffer_native(const Temporal *temp, const GSERIALIZED *gs,
   VALIDATE_TCBUFFER(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
   if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
+
+  /* Bounding box test: a moving disk whose radius-aware bounding box is
+   * disjoint from the geometry is never inside it, so it never contains/covers.
+   * This constant-time reject avoids the per-segment clearance kernel on the
+   * common non-overlapping case (e.g. a spatial join over disjoint extents) */
+  STBox box1, box2;
+  tspatial_set_stbox(temp, &box1);
+  geo_set_stbox(gs, &box2);
+  if (! overlaps_stbox_stbox(&box1, &box2))
+    return temporal_from_base_temp(BoolGetDatum(false), T_TBOOL, temp);
+
   void *ctx = tcbuffer_geo_ctx_make(gs);
   if (! ctx)
     return NULL;
@@ -2161,6 +2172,20 @@ int
 eacontains_tcbuffer_geo_native(const Temporal *temp, const GSERIALIZED *gs,
   bool ever, bool strict)
 {
+  if (gserialized_is_empty(gs))
+    return -1;
+
+  /* Bounding box test: a moving disk whose radius-aware bounding box is
+   * disjoint from the geometry is never inside it, so it never contains/covers
+   * at any instant. This constant-time reject avoids the per-segment clearance
+   * scan on the common non-overlapping case (e.g. a spatial join over disjoint
+   * extents), giving 0 for both the ever and always semantics */
+  STBox box1, box2;
+  tspatial_set_stbox(temp, &box1);
+  geo_set_stbox(gs, &box2);
+  if (! overlaps_stbox_stbox(&box1, &box2))
+    return 0;
+
   void *ctx = tcbuffer_geo_ctx_make(gs);
   if (! ctx)
     return -1;
