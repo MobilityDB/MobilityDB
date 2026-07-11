@@ -641,3 +641,206 @@ Distance_span_span(PG_FUNCTION_ARGS)
 }
 
 /******************************************************************************/
+
+/*****************************************************************************
+ * Time-axis names for the relative position operators
+ *
+ * A 1-D span/set is ordered on a single axis, so its "before/after" (time)
+ * relation is the same bound comparison as its "left/right" (value) relation
+ * and reuses the value wrapper's code.  Each time-axis SQL name nonetheless
+ * needs its OWN wrapper carrying the matching @sqlfn/@sqlop, so the catalog
+ * (which maps one wrapper -> one SQL name) resolves before/after rather than
+ * folding them onto left/right.
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Before_span_span(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Before_span_span);
+/**
+ * @ingroup mobilitydb_setspan_pos
+ * @brief Return true if the first span is before the second one
+ * @sqlfn before()
+ * @sqlop @p <<#
+ * @note Time-axis name for the same 1-D bound comparison as #Left_span_span; a distinct
+ * wrapper so the SQL name/operator resolve correctly in the generated catalog.
+ */
+Datum
+Before_span_span(PG_FUNCTION_ARGS)
+{
+  return Left_span_span(fcinfo);
+}
+
+PGDLLEXPORT Datum After_span_span(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(After_span_span);
+/**
+ * @ingroup mobilitydb_setspan_pos
+ * @brief Return true if the first span is after the second one
+ * @sqlfn after()
+ * @sqlop @p #>>
+ * @note Time-axis name for the same 1-D bound comparison as #Right_span_span; a distinct
+ * wrapper so the SQL name/operator resolve correctly in the generated catalog.
+ */
+Datum
+After_span_span(PG_FUNCTION_ARGS)
+{
+  return Right_span_span(fcinfo);
+}
+
+PGDLLEXPORT Datum Overbefore_span_span(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overbefore_span_span);
+/**
+ * @ingroup mobilitydb_setspan_pos
+ * @brief Return true if the first span is not after the second one
+ * @sqlfn overbefore()
+ * @sqlop @p &<#
+ * @note Time-axis name for the same 1-D bound comparison as #Overleft_span_span; a distinct
+ * wrapper so the SQL name/operator resolve correctly in the generated catalog.
+ */
+Datum
+Overbefore_span_span(PG_FUNCTION_ARGS)
+{
+  return Overleft_span_span(fcinfo);
+}
+
+PGDLLEXPORT Datum Overafter_span_span(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overafter_span_span);
+/**
+ * @ingroup mobilitydb_setspan_pos
+ * @brief Return true if the first span is not before the second one
+ * @sqlfn overafter()
+ * @sqlop @p #&>
+ * @note Time-axis name for the same 1-D bound comparison as #Overright_span_span; a distinct
+ * wrapper so the SQL name/operator resolve correctly in the generated catalog.
+ */
+Datum
+Overafter_span_span(PG_FUNCTION_ARGS)
+{
+  return Overright_span_span(fcinfo);
+}
+
+PGDLLEXPORT Datum Before_span_value(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Before_span_value);
+/**
+ * @ingroup mobilitydb_setspan_pos
+ * @brief Return true if a span is before a value
+ * @sqlfn before()
+ * @sqlop @p <<#
+ * @note Time-axis name for the same 1-D bound comparison as #Left_span_value; a distinct
+ * wrapper so the SQL name/operator resolve correctly in the generated catalog.
+ */
+Datum
+Before_span_value(PG_FUNCTION_ARGS)
+{
+  return Left_span_value(fcinfo);
+}
+
+PGDLLEXPORT Datum After_span_value(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(After_span_value);
+/**
+ * @ingroup mobilitydb_setspan_pos
+ * @brief Return true if a span is after a value
+ * @sqlfn after()
+ * @sqlop @p #>>
+ * @note Time-axis name for the same 1-D bound comparison as #Right_span_value; a distinct
+ * wrapper so the SQL name/operator resolve correctly in the generated catalog.
+ */
+Datum
+After_span_value(PG_FUNCTION_ARGS)
+{
+  return Right_span_value(fcinfo);
+}
+
+PGDLLEXPORT Datum Overbefore_span_value(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overbefore_span_value);
+/**
+ * @ingroup mobilitydb_setspan_pos
+ * @brief Return true if a span is not after a value
+ * @sqlfn overbefore()
+ * @sqlop @p &<#
+ * @note Time-axis name for the same 1-D bound comparison as #Overleft_span_value; a distinct
+ * wrapper so the SQL name/operator resolve correctly in the generated catalog.
+ */
+Datum
+Overbefore_span_value(PG_FUNCTION_ARGS)
+{
+  return Overleft_span_value(fcinfo);
+}
+
+PGDLLEXPORT Datum Overafter_span_value(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overafter_span_value);
+/**
+ * @ingroup mobilitydb_setspan_pos
+ * @brief Return true if a span is not before a value
+ * @sqlfn overafter()
+ * @sqlop @p #&>
+ * @note Time-axis name for the same 1-D bound comparison as #Overright_span_value; a distinct
+ * wrapper so the SQL name/operator resolve correctly in the generated catalog.
+ */
+Datum
+Overafter_span_value(PG_FUNCTION_ARGS)
+{
+  return Overright_span_value(fcinfo);
+}
+
+PGDLLEXPORT Datum Before_value_span(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Before_value_span);
+/**
+ * @ingroup mobilitydb_setspan_pos
+ * @brief Return true if a value is before a span
+ * @sqlfn before()
+ * @sqlop @p <<#
+ * @note Time-axis name for the same 1-D bound comparison as #Left_value_span; a distinct
+ * wrapper so the SQL name/operator resolve correctly in the generated catalog.
+ */
+Datum
+Before_value_span(PG_FUNCTION_ARGS)
+{
+  return Left_value_span(fcinfo);
+}
+
+PGDLLEXPORT Datum After_value_span(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(After_value_span);
+/**
+ * @ingroup mobilitydb_setspan_pos
+ * @brief Return true if a value is after a span
+ * @sqlfn after()
+ * @sqlop @p #>>
+ * @note Time-axis name for the same 1-D bound comparison as #Right_value_span; a distinct
+ * wrapper so the SQL name/operator resolve correctly in the generated catalog.
+ */
+Datum
+After_value_span(PG_FUNCTION_ARGS)
+{
+  return Right_value_span(fcinfo);
+}
+
+PGDLLEXPORT Datum Overbefore_value_span(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overbefore_value_span);
+/**
+ * @ingroup mobilitydb_setspan_pos
+ * @brief Return true if a value is not after a span
+ * @sqlfn overbefore()
+ * @sqlop @p &<#
+ * @note Time-axis name for the same 1-D bound comparison as #Overleft_value_span; a distinct
+ * wrapper so the SQL name/operator resolve correctly in the generated catalog.
+ */
+Datum
+Overbefore_value_span(PG_FUNCTION_ARGS)
+{
+  return Overleft_value_span(fcinfo);
+}
+
+PGDLLEXPORT Datum Overafter_value_span(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overafter_value_span);
+/**
+ * @ingroup mobilitydb_setspan_pos
+ * @brief Return true if a value is not before a span
+ * @sqlfn overafter()
+ * @sqlop @p #&>
+ * @note Time-axis name for the same 1-D bound comparison as #Overright_value_span; a distinct
+ * wrapper so the SQL name/operator resolve correctly in the generated catalog.
+ */
+Datum
+Overafter_value_span(PG_FUNCTION_ARGS)
+{
+  return Overright_value_span(fcinfo);
+}

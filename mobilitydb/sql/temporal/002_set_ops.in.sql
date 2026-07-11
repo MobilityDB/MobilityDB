@@ -388,27 +388,27 @@ CREATE FUNCTION left(textset, textset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION before(date, dateset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Left_value_set'
+  AS 'MODULE_PATHNAME', 'Before_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION before(dateset, date)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Left_set_value'
+  AS 'MODULE_PATHNAME', 'Before_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION before(dateset, dateset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Left_set_set'
+  AS 'MODULE_PATHNAME', 'Before_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION before(timestamptz, tstzset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Left_value_set'
+  AS 'MODULE_PATHNAME', 'Before_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION before(tstzset, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Left_set_value'
+  AS 'MODULE_PATHNAME', 'Before_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION before(tstzset, tstzset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Left_set_set'
+  AS 'MODULE_PATHNAME', 'Before_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -566,27 +566,27 @@ CREATE FUNCTION right(textset, textset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION after(date, dateset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Right_value_set'
+  AS 'MODULE_PATHNAME', 'After_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION after(dateset, date)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Right_set_value'
+  AS 'MODULE_PATHNAME', 'After_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION after(dateset, dateset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Right_set_set'
+  AS 'MODULE_PATHNAME', 'After_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION after(timestamptz, tstzset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Right_value_set'
+  AS 'MODULE_PATHNAME', 'After_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION after(tstzset, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Right_set_value'
+  AS 'MODULE_PATHNAME', 'After_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION after(tstzset, tstzset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Right_set_set'
+  AS 'MODULE_PATHNAME', 'After_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR >> (
@@ -744,27 +744,27 @@ CREATE FUNCTION overleft(textset, textset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overbefore(date, dateset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overleft_value_set'
+  AS 'MODULE_PATHNAME', 'Overbefore_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overbefore(dateset, date)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overleft_set_value'
+  AS 'MODULE_PATHNAME', 'Overbefore_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overbefore(dateset, dateset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overleft_set_set'
+  AS 'MODULE_PATHNAME', 'Overbefore_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overbefore(timestamptz, tstzset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overleft_value_set'
+  AS 'MODULE_PATHNAME', 'Overbefore_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overbefore(tstzset, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overleft_set_value'
+  AS 'MODULE_PATHNAME', 'Overbefore_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overbefore(tstzset, tstzset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overleft_set_set'
+  AS 'MODULE_PATHNAME', 'Overbefore_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR &< (
@@ -907,27 +907,27 @@ CREATE FUNCTION overright(textset, textset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overafter(date, dateset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overright_value_set'
+  AS 'MODULE_PATHNAME', 'Overafter_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overafter(dateset, date)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overright_set_value'
+  AS 'MODULE_PATHNAME', 'Overafter_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overafter(dateset, dateset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overright_set_set'
+  AS 'MODULE_PATHNAME', 'Overafter_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overafter(timestamptz, tstzset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overright_value_set'
+  AS 'MODULE_PATHNAME', 'Overafter_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overafter(tstzset, timestamptz)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overright_set_value'
+  AS 'MODULE_PATHNAME', 'Overafter_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overafter(tstzset, tstzset)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overright_set_set'
+  AS 'MODULE_PATHNAME', 'Overafter_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR &> (

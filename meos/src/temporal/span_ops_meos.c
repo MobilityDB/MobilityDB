@@ -323,7 +323,7 @@ left_float_span(double d, const Span *s)
  * @brief Return true if a date is before a span
  * @param[in] d Value
  * @param[in] s Span
- * @csqlfn #Left_value_span()
+ * @csqlfn #Before_value_span()
  */
 bool
 before_date_span(DateADT d, const Span *s)
@@ -338,7 +338,7 @@ before_date_span(DateADT d, const Span *s)
  * @brief Return true if a timestamptz is before a span
  * @param[in] t Value
  * @param[in] s Span
- * @csqlfn #Left_value_span()
+ * @csqlfn #Before_value_span()
  */
 bool
 before_timestamptz_span(TimestampTz t, const Span *s)
@@ -400,7 +400,7 @@ left_span_float(const Span *s, double d)
  * @brief Return true if a span is before a date
  * @param[in] s Span
  * @param[in] d Value
- * @csqlfn #Left_span_value()
+ * @csqlfn #Before_span_value()
  */
 bool
 before_span_date(const Span *s, DateADT d)
@@ -414,7 +414,7 @@ before_span_date(const Span *s, DateADT d)
  * @brief Return true if a span is before a timestamptz
  * @param[in] s Span
  * @param[in] t Value
- * @csqlfn #Left_span_value()
+ * @csqlfn #Before_span_value()
  */
 bool
 before_span_timestamptz(const Span *s, TimestampTz t)
@@ -478,7 +478,7 @@ right_float_span(double d, const Span *s)
  * @brief Return true if a date is after a span
  * @param[in] d Value
  * @param[in] s Span
- * @csqlfn #Right_value_span()
+ * @csqlfn #After_value_span()
  */
 bool
 after_date_span(DateADT d, const Span *s)
@@ -493,7 +493,7 @@ after_date_span(DateADT d, const Span *s)
  * @brief Return true if a timestamptz is after a span
  * @param[in] t Value
  * @param[in] s Span
- * @csqlfn #Right_value_span()
+ * @csqlfn #After_value_span()
  */
 bool
 after_timestamptz_span(TimestampTz t, const Span *s)
@@ -555,7 +555,7 @@ right_span_float(const Span *s, double d)
  * @brief Return true if a span is after a date
  * @param[in] s Span
  * @param[in] d Value
- * @csqlfn #Right_span_value()
+ * @csqlfn #After_span_value()
  */
 bool
 after_span_date(const Span *s, DateADT d)
@@ -570,7 +570,7 @@ after_span_date(const Span *s, DateADT d)
  * @brief Return true if a span is after a timestamptz
  * @param[in] s Span
  * @param[in] t Value
- * @csqlfn #Right_span_value()
+ * @csqlfn #After_span_value()
  */
 bool
 after_span_timestamptz(const Span *s, TimestampTz t)
@@ -634,7 +634,7 @@ overleft_float_span(double d, const Span *s)
  * @brief Return true if a date is not after a span
  * @param[in] d Value
  * @param[in] s Span
- * @csqlfn #Overleft_value_span()
+ * @csqlfn #Overbefore_value_span()
  */
 bool
 overbefore_date_span(DateADT d, const Span *s)
@@ -649,7 +649,7 @@ overbefore_date_span(DateADT d, const Span *s)
  * @brief Return true if a timestamptz is not after a span
  * @param[in] t Value
  * @param[in] s Span
- * @csqlfn #Overleft_value_span()
+ * @csqlfn #Overbefore_value_span()
  */
 bool
 overbefore_timestamptz_span(TimestampTz t, const Span *s)
@@ -711,7 +711,7 @@ overleft_span_float(const Span *s, double d)
  * @brief Return true if a span is not after a date
  * @param[in] s Span
  * @param[in] d Value
- * @csqlfn #Overleft_span_value()
+ * @csqlfn #Overbefore_span_value()
  */
 bool
 overbefore_span_date(const Span *s, DateADT d)
@@ -726,7 +726,7 @@ overbefore_span_date(const Span *s, DateADT d)
  * @brief Return true if a span is not after a timestamptz
  * @param[in] s Span
  * @param[in] t Value
- * @csqlfn #Overleft_span_value()
+ * @csqlfn #Overbefore_span_value()
  */
 bool
 overbefore_span_timestamptz(const Span *s, TimestampTz t)
@@ -790,7 +790,7 @@ overright_float_span(double d, const Span *s)
  * @brief Return true if a date is not before a span
  * @param[in] d Value
  * @param[in] s Span
- * @csqlfn #Overright_value_span()
+ * @csqlfn #Overafter_value_span()
  */
 bool
 overafter_date_span(DateADT d, const Span *s)
@@ -805,7 +805,7 @@ overafter_date_span(DateADT d, const Span *s)
  * @brief Return true if a timestamptz is not before a span
  * @param[in] t Value
  * @param[in] s Span
- * @csqlfn #Overright_value_span()
+ * @csqlfn #Overafter_value_span()
  */
 bool
 overafter_timestamptz_span(TimestampTz t, const Span *s)
@@ -867,7 +867,7 @@ overright_span_float(const Span *s, double d)
  * @brief Return true if a span is not before a date
  * @param[in] s Span
  * @param[in] d Value
- * @csqlfn #Overright_span_value()
+ * @csqlfn #Overafter_span_value()
  */
 bool
 overafter_span_date(const Span *s, DateADT d)
@@ -882,7 +882,7 @@ overafter_span_date(const Span *s, DateADT d)
  * @brief Return true if a span is not before a timestamptz
  * @param[in] s Span
  * @param[in] t Value
- * @csqlfn #Overright_span_value()
+ * @csqlfn #Overafter_span_value()
  */
 bool
 overafter_span_timestamptz(const Span *s, TimestampTz t)
