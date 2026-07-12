@@ -2,7 +2,7 @@
 CREATE EXTENSION mobilitydb CASCADE;
 -- NOTICE:  installing required extension "postgis"
 -- NOTICE:  installing required extension "postgis_raster"
-</pre><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="raster_sampling_operator"></a>Operador de Muestreo</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="raster_value"></a><a class="indexterm" name="id14685"></a><p>Muestrear una banda de ráster en cada instante de una trayectoria</p><p><code class="varname">raster_value(raster,tgeompoint,band integer DEFAULT 1) → tfloat</code></p><p>Evalúa el píxel de la <code class="varname">band</code> en cada instante de <code class="varname">traj</code> usando muestreo bilineal-vecino más próximo (<code class="varname">ST_Value</code> con <code class="varname">resample=false</code>). Devuelve un <code class="varname">tfloat</code> de conjunto de instantes cuyos valores se redondean a cuatro decimales. Devuelve <code class="varname">NULL</code> cuando ningún instante se interseca con el ráster.</p><pre class="programlisting">
+</pre><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="raster_sampling_operator"></a>Operador de Muestreo</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="raster_value"></a><a class="indexterm" name="id14735"></a><p>Muestrear una banda de ráster en cada instante de una trayectoria</p><p><code class="varname">raster_value(raster,tgeompoint,band integer DEFAULT 1) → tfloat</code></p><p>Evalúa el píxel de la <code class="varname">band</code> en cada instante de <code class="varname">traj</code> usando muestreo bilineal-vecino más próximo (<code class="varname">ST_Value</code> con <code class="varname">resample=false</code>). Devuelve un <code class="varname">tfloat</code> de conjunto de instantes cuyos valores se redondean a cuatro decimales. Devuelve <code class="varname">NULL</code> cuando ningún instante se interseca con el ráster.</p><pre class="programlisting">
 -- Build a 3×3 synthetic elevation raster (SRID 4326, 1° pixels)
 WITH rast AS (
   SELECT ST_SetValues(
@@ -31,6 +31,6 @@ FROM trips, elevation_raster;
 -- Trips that crossed terrain above 200 m
 SELECT tripid
 FROM trips, elevation_raster
-WHERE atValues(raster_value(elev, trip4326),
-               floatspan '[200, 9999]') IS NOT NULL;
+WHERE atSpan(raster_value(elev, trip4326),
+             floatspan '[200, 9999]') IS NOT NULL;
 </pre></li></ul></div></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch18s13.html">Anterior</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ch19s02.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Advertencias </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Muestreo Raquet / QUADBIN</td></tr></table></div></body></html>

@@ -1,5 +1,5 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Restrictions</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.3 User's Manual"><link rel="up" href="ch05.html" title="Chapter 5. Temporal Types (Part 2)"><link rel="prev" href="ch05.html" title="Chapter 5. Temporal Types (Part 2)"><link rel="next" href="ch05s03.html" title="Bounding Box Operators"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Restrictions</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch05.html">Prev</a> </td><th width="60%" align="center">Chapter 5. Temporal Types (Part 2)</th><td width="20%" align="right"> <a accesskey="n" href="ch05s03.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ttype_restrictions"></a>Restrictions</h2></div></div></div><p>There are three complementary sets of restriction functions. The first set functions restricts the temporal value with respect to a value or a time extent. Examples are <code class="varname">atValues</code> or <code class="varname">atTime</code>. The second set functions restricts the temporal value with respect to the <span class="emphasis"><em>complement</em></span> of a value or a time extent. Examples are <code class="varname">minusValues</code> or <code class="varname">minusTime</code>.  Finally, the third set functions restricts the temporal value before or after a timestamptz. Examples are <code class="varname">beforeTimestamp</code> or <code class="varname">afterTimestamp</code>.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="type_atValues"></a><a class="indexterm" name="id4658"></a><a class="indexterm" name="id4661"></a><p>Restrict to (the complement of) a set of values, or, for a temporal number, a span or a span set of values</p><p><code class="varname">atValues(ttype,values) → ttype</code></p><p><code class="varname">minusValues(ttype,values) → ttype</code></p><p><code class="varname">atSpan(tnumber,span) → tnumber</code></p><p><code class="varname">minusSpan(tnumber,span) → tnumber</code></p><p><code class="varname">atSpanset(tnumber,spanset) → tnumber</code></p><p><code class="varname">minusSpanset(tnumber,spanset) → tnumber</code></p><pre class="programlisting">
-SELECT atValues(tint '[1@2001-01-01, 1@2001-01-15)', 1);
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Restrictions</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.3 User's Manual"><link rel="up" href="ch05.html" title="Chapter 5. Temporal Types (Part 2)"><link rel="prev" href="ch05.html" title="Chapter 5. Temporal Types (Part 2)"><link rel="next" href="ch05s03.html" title="Bounding Box Operators"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Restrictions</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch05.html">Prev</a> </td><th width="60%" align="center">Chapter 5. Temporal Types (Part 2)</th><td width="20%" align="right"> <a accesskey="n" href="ch05s03.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ttype_restrictions"></a>Restrictions</h2></div></div></div><p>There are three complementary sets of restriction functions. The first set functions restricts the temporal value with respect to a value or a time extent. Examples are <code class="varname">atValues</code> or <code class="varname">atTime</code>. The second set functions restricts the temporal value with respect to the <span class="emphasis"><em>complement</em></span> of a value or a time extent. Examples are <code class="varname">minusValues</code> or <code class="varname">minusTime</code>.  Finally, the third set functions restricts the temporal value before or after a timestamptz. Examples are <code class="varname">beforeTimestamp</code> or <code class="varname">afterTimestamp</code>.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="type_atValues"></a><a class="indexterm" name="id4658"></a><a class="indexterm" name="id4661"></a><a class="indexterm" name="id4664"></a><a class="indexterm" name="id4667"></a><p>Restrict to (the complement of) a value or a set of values, or, for a temporal number, a span or a span set of values</p><p><code class="varname">atValue(ttype,value) → ttype</code></p><p><code class="varname">minusValue(ttype,value) → ttype</code></p><p><code class="varname">atValues(ttype,valueset) → ttype</code></p><p><code class="varname">minusValues(ttype,valueset) → ttype</code></p><p><code class="varname">atSpan(tnumber,span) → tnumber</code></p><p><code class="varname">minusSpan(tnumber,span) → tnumber</code></p><p><code class="varname">atSpanset(tnumber,spanset) → tnumber</code></p><p><code class="varname">minusSpanset(tnumber,spanset) → tnumber</code></p><pre class="programlisting">
+SELECT atValue(tint '[1@2001-01-01, 1@2001-01-15)', 1);
 -- [1@2001-01-01, 1@2001-01-15)
 SELECT atValues(tfloat '[1@2001-01-01, 4@2001-01-4)', floatset '{1, 3, 5}');
 -- {[1@2001-01-01], [3@2001-01-03]}
@@ -8,17 +8,17 @@ SELECT atSpan(tfloat '[1@2001-01-01, 4@2001-01-4)', floatspan '[1,3]');
 SELECT atSpanset(tfloat '[1@2001-01-01, 5@2001-01-05)',
   floatspanset '{[1,2], [3,4]}');
 -- {[1@2001-01-01, 2@2001-01-02],[3@2001-01-03, 4@2001-01-04]}
-SELECT asText(atValues(tgeompoint '[Point(0 0 0)@2001-01-01, Point(2 2 2)@2001-01-03)',
+SELECT asText(atValue(tgeompoint '[Point(0 0 0)@2001-01-01, Point(2 2 2)@2001-01-03)',
   geometry 'Point(1 1 1)'));
 -- {[POINT Z (1 1 1)@2001-01-02]}
 SELECT asText(atValues(tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-03)',
   geomset '{"Point(0 0)", "Point(1 1)"}'));
 -- {[POINT(0 0)@2001-01-01], [POINT(1 1)@2001-01-02]}
-SELECT asText(atValues(tgeometry '[Point(0 0)@2001-01-01, Linestring(0 0,2 2)@2001-01-02, 
+SELECT asText(atValue(tgeometry '[Point(0 0)@2001-01-01, Linestring(0 0,2 2)@2001-01-02,
   Linestring(0 0,2 2)@2001-01-03]', geometry 'Linestring(0 0,2 2)'));
 -- {[LINESTRING(0 0,2 2)@2001-01-02, LINESTRING(0 0,2 2)@2001-01-03]}
 </pre><pre class="programlisting">
-SELECT minusValues(tint '[1@2001-01-01, 2@2001-01-02, 2@2001-01-03)', 1);
+SELECT minusValue(tint '[1@2001-01-01, 2@2001-01-02, 2@2001-01-03)', 1);
 -- {[2@2001-01-02, 2@2001-01-03)}
 SELECT minusValues(tfloat '[1@2001-01-01, 4@2001-01-4)', floatset '{2, 3}');
 /* {[1@2001-01-01, 2@2001-01-02), (2@2001-01-02, 3@2001-01-03),
@@ -28,7 +28,7 @@ SELECT minusSpan(tfloat '[1@2001-01-01, 4@2001-01-4)', floatspan '[2,3]');
 SELECT minusSpanset(tfloat '[1@2001-01-01, 5@2001-01-05)',
   floatspanset '{[1,2], [3,4]}');
 -- {(2@2001-01-02, 3@2001-01-03), (4@2001-01-04, 5@2001-01-05)}
-SELECT asText(minusValues(tgeompoint '[Point(0 0 0)@2001-01-01, Point(2 2 2)@2001-01-03)',
+SELECT asText(minusValue(tgeompoint '[Point(0 0 0)@2001-01-01, Point(2 2 2)@2001-01-03)',
   geometry 'Point(1 1 1)'));
 /* {[POINT Z (0 0 0)@2001-01-01, POINT Z (1 1 1)@2001-01-02),
    (POINT Z (1 1 1)@2001-01-02, POINT Z (2 2 2)@2001-01-03)} */
@@ -37,10 +37,10 @@ SELECT asText(minusValues(tgeompoint '[Point(0 0 0)@2001-01-01, Point(3 3 3)@200
 /* {[POINT Z (0 0 0)@2001-01-01, POINT Z (1 1 1)@2001-01-02),
    (POINT Z (1 1 1)@2001-01-02, POINT Z (2 2 2)@2001-01-03),
   (POINT Z (2 2 2)@2001-01-03, POINT Z (3 3 3)@2001-01-04)} */
-SELECT asText(minusValues(tgeometry '[Point(0 0)@2001-01-01, Linestring(0 0,2 2)@2001-01-02, 
+SELECT asText(minusValue(tgeometry '[Point(0 0)@2001-01-01, Linestring(0 0,2 2)@2001-01-02,
   Linestring(0 0,2 2)@2001-01-03]', geometry 'Linestring(0 0,2 2)'));
 --  {[POINT(0 0)@2001-01-01, POINT(0 0)@2001-01-02)}
-</pre></li><li class="listitem"><a name="type_atTime"></a><a class="indexterm" name="id4680"></a><a class="indexterm" name="id4683"></a><p>Restrict to (the complement of) a time value</p><p><code class="varname">atTime(ttype,times) → ttype</code></p><p><code class="varname">minusTime(ttype,times) → ttype</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="type_atTime"></a><a class="indexterm" name="id4690"></a><a class="indexterm" name="id4693"></a><p>Restrict to (the complement of) a time value</p><p><code class="varname">atTime(ttype,times) → ttype</code></p><p><code class="varname">minusTime(ttype,times) → ttype</code></p><pre class="programlisting">
 SELECT atTime(tfloat '[1@2001-01-01, 5@2001-01-05)', timestamptz '2001-01-02');
 -- 2@2001-01-02
 SELECT atTime(tbigint '[1@2001-01-01, 1@2001-01-15)',
@@ -66,7 +66,7 @@ SELECT minusTime(tint '[1@2001-01-01, 1@2001-01-15)',
   tstzspanset '{[2001-01-02, 2001-01-03), [2001-01-04, 2001-01-05)}');
 /* {[1@2001-01-01, 1@2001-01-02), [1@2001-01-03, 1@2001-01-04),
    [1@2001-01-05, 1@2001-01-15)} */
-</pre></li><li class="listitem"><a name="beforeTimestamp"></a><a class="indexterm" name="id4694"></a><a class="indexterm" name="id4697"></a><p>Keep the instants of a temporal value that are before/after or equal a timestamp</p><p><code class="varname">beforeTimestamp(ttype,timestamptz,strict bool=TRUE) → ttype</code></p><p><code class="varname">afterTimestamp(ttype,timestamptz,strict bool=TRUE) → ttype</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="beforeTimestamp"></a><a class="indexterm" name="id4704"></a><a class="indexterm" name="id4707"></a><p>Keep the instants of a temporal value that are before/after or equal a timestamp</p><p><code class="varname">beforeTimestamp(ttype,timestamptz,strict bool=TRUE) → ttype</code></p><p><code class="varname">afterTimestamp(ttype,timestamptz,strict bool=TRUE) → ttype</code></p><pre class="programlisting">
 SELECT beforeTimestamp(tint '[1@2001-01-01, 1@2001-01-03]', timestamptz '2001-01-02');
 -- [1@2001-01-01, 1@2001-01-02)
 SELECT beforeTimestamp(tint '[1@2001-01-01, 1@2001-01-03]', timestamptz '2001-01-01');
