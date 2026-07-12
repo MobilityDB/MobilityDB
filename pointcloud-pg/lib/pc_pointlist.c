@@ -26,7 +26,7 @@ PCPOINTLIST *pc_pointlist_make(uint32_t npoints)
 void pc_pointlist_free(PCPOINTLIST *pl)
 {
   int i;
-  for (i = 0; i < pl->npoints; i++)
+  for (i = 0; i < (int) (pl->npoints); i++)
   {
     pc_point_free(pl->points[i]);
   }
@@ -100,7 +100,7 @@ PCPOINTLIST *pc_pointlist_from_uncompressed(const PCPATCH_UNCOMPRESSED *patch)
   uint32_t npoints = patch->npoints;
 
   pl = pc_pointlist_make(npoints);
-  for (i = 0; i < npoints; i++)
+  for (i = 0; i < (int) npoints; i++)
   {
     pc_pointlist_add_point(
         pl, pc_point_from_data(patch->schema, patch->data + i * pt_size));

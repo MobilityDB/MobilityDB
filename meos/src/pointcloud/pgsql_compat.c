@@ -468,7 +468,7 @@ pc_patch_dimensional_deserialize(const SERIALIZED_PATCH *serpatch,
   memset(patch->bytes, 0, ndims * sizeof(PCBYTES));
   buf = serpatch->data + stats_size;
 
-  for (i = 0; i < ndims; i++)
+  for (i = 0; i < (int) ndims; i++)
   {
     PCBYTES *pcb = &(patch->bytes[i]);
     PCDIMENSION *dim = schema->dims[i];

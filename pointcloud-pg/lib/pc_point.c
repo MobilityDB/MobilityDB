@@ -181,7 +181,7 @@ char *pc_point_to_string(const PCPOINT *pt)
   int i;
 
   stringbuffer_aprintf(sb, "{\"pcid\":%d,\"pt\":[", pt->schema->pcid);
-  for (i = 0; i < pt->schema->ndims; i++)
+  for (i = 0; i < (int) (pt->schema->ndims); i++)
   {
     double d;
     if (!pc_point_get_double_by_index(pt, i, &d))
@@ -225,7 +225,7 @@ PCPOINT *pc_point_from_double_array(const PCSCHEMA *s, double *array,
   pt->schema = s;
   pt->readonly = PC_FALSE;
 
-  for (i = 0; i < stride; i++)
+  for (i = 0; i < (int) stride; i++)
   {
     if (PC_FAILURE == pc_point_set_double_by_index(pt, i, array[offset + i]))
     {
@@ -386,7 +386,7 @@ double *pc_point_to_double_array(const PCPOINT *p)
   int i;
   double *a = (double *)pcalloc(p->schema->ndims * sizeof(double));
 
-  for (i = 0; i < p->schema->ndims; ++i)
+  for (i = 0; i < (int) (p->schema->ndims); ++i)
   {
     pc_point_get_double_by_index(p, i, &(a[i]));
   }

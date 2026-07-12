@@ -95,42 +95,42 @@ spatialrel_trgeo_trav_geo(const Temporal *temp, const GSERIALIZED *gs,
 
 /*****************************************************************************/
 
-/**
- * @brief Generic spatial relationship for the traversed area of a temporal
- * rigid geometry and a geometry
- * @param[in] temp Temporal rigid geometry
- * @param[in] gs Geometry
- * @param[in] param Parameter
- * @param[in] func PostGIS function to be called
- * @param[in] numparam Number of parameters of the functions
- * @param[in] invert True if the arguments should be inverted
- * @return On error return -1
- */
-static int
-spatialrel_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
-  Datum param, varfunc func, int numparam, bool invert)
-{
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
-    return -1;
+// /**
+ // * @brief Generic spatial relationship for the traversed area of a temporal
+ // * rigid geometry and a geometry
+ // * @param[in] temp Temporal rigid geometry
+ // * @param[in] gs Geometry
+ // * @param[in] param Parameter
+ // * @param[in] func PostGIS function to be called
+ // * @param[in] numparam Number of parameters of the functions
+ // * @param[in] invert True if the arguments should be inverted
+ // * @return On error return -1
+ // */
+// static int
+// spatialrel_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
+  // Datum param, varfunc func, int numparam, bool invert)
+// {
+  // /* Ensure the validity of the arguments */
+  // if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
+    // return -1;
 
-  assert(numparam == 2 || numparam == 3);
-  Datum dgeo = PointerGetDatum(gs);
-  Datum dtrav = PointerGetDatum(trgeometry_traversed_area(temp, UNARY_UNION_NO));
-  Datum result;
-  if (numparam == 2)
-  {
-    datum_func2 func2 = (datum_func2) func;
-    result = invert ? func2(dgeo, dtrav) : func2(dtrav, dtrav);
-  }
-  else /* numparam == 3 */
-  {
-    datum_func3 func3 = (datum_func3) func;
-    result = invert ? func3(dgeo, dtrav, param) : func3(dtrav, dgeo, param);
-  }
-  pfree(DatumGetPointer(dtrav));
-  return result ? 1 : 0;
-}
+  // assert(numparam == 2 || numparam == 3);
+  // Datum dgeo = PointerGetDatum(gs);
+  // Datum dtrav = PointerGetDatum(trgeometry_traversed_area(temp, UNARY_UNION_NO));
+  // Datum result;
+  // if (numparam == 2)
+  // {
+    // datum_func2 func2 = (datum_func2) func;
+    // result = invert ? func2(dgeo, dtrav) : func2(dtrav, dtrav);
+  // }
+  // else /* numparam == 3 */
+  // {
+    // datum_func3 func3 = (datum_func3) func;
+    // result = invert ? func3(dgeo, dtrav, param) : func3(dtrav, dgeo, param);
+  // }
+  // pfree(DatumGetPointer(dtrav));
+  // return result ? 1 : 0;
+// }
 
 /*****************************************************************************
  * Ever/always contains

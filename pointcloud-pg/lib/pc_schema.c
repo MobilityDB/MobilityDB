@@ -178,7 +178,7 @@ static void pc_schema_calculate_byteoffsets(PCSCHEMA *pcs)
 {
   int i;
   size_t byteoffset = 0;
-  for (i = 0; i < pcs->ndims; i++)
+  for (i = 0; i < (int) pcs->ndims; i++)
   {
     if (pcs->dims[i])
     {
@@ -205,7 +205,7 @@ PCSCHEMA *pc_schema_clone(const PCSCHEMA *s)
   pcs->pcid = s->pcid;
   pcs->srid = s->srid;
   pcs->compression = s->compression;
-  for (i = 0; i < pcs->ndims; i++)
+  for (i = 0; i < (int) pcs->ndims; i++)
   {
     if (s->dims[i])
     {
@@ -225,7 +225,7 @@ void pc_schema_free(PCSCHEMA *pcs)
 {
   int i;
 
-  for (i = 0; i < pcs->ndims; i++)
+  for (i = 0; i < (int) pcs->ndims; i++)
   {
     if (pcs->dims[i])
     {
@@ -261,7 +261,7 @@ char *pc_schema_to_json(const PCSCHEMA *pcs)
 
     stringbuffer_append(sb, "\"dims\" : [\n");
 
-    for (i = 0; i < pcs->ndims; i++)
+    for (i = 0; i < (int) pcs->ndims; i++)
     {
       if (pcs->dims[i])
       {
@@ -299,7 +299,7 @@ char *pc_schema_to_json(const PCSCHEMA *pcs)
 void pc_schema_check_xyzm(PCSCHEMA *s)
 {
   int i;
-  for (i = 0; i < s->ndims; i++)
+  for (i = 0; i < (int) s->ndims; i++)
   {
     char *dimname = s->dims[i]->name;
     if (!dimname)
@@ -462,7 +462,7 @@ PCSCHEMA *pc_schema_from_xml(const char *xml_str)
         d->size = pc_interpretation_size(d->interpretation);
 
         /* Store the dimension in the schema */
-        if (d->position >= ndims)
+        if ((int) d->position >= ndims)
         {
           pcwarn("schema dimension states position \"%d\", but "
                  "number of XML "
@@ -571,7 +571,7 @@ uint32_t pc_schema_is_valid(const PCSCHEMA *s)
     return PC_FALSE;
   }
 
-  for (i = 0; i < s->ndims; i++)
+  for (i = 0; i < (int) s->ndims; i++)
   {
     if (!s->dims[i])
     {

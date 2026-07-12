@@ -156,6 +156,7 @@ PCPATCH *pc_patch_compress(const PCPATCH *patch, void *userdata)
     {
       pcerror("%s: unknown patch compression type %d", __func__,
               patch_compression);
+      return NULL;
     }
   }
   case PC_NONE:
@@ -180,6 +181,7 @@ PCPATCH *pc_patch_compress(const PCPATCH *patch, void *userdata)
     {
       pcerror("%s: unknown patch compression type %d", __func__,
               patch_compression);
+      return NULL;
     }
   }
   case PC_LAZPERF:
@@ -188,7 +190,7 @@ PCPATCH *pc_patch_compress(const PCPATCH *patch, void *userdata)
     {
       PCPATCH_LAZPERF *pgc =
           pc_patch_lazperf_from_uncompressed((PCPATCH_UNCOMPRESSED *)patch);
-      if (!pgc)
+      if (! pgc)
         pcerror("%s: lazperf compression failed", __func__);
       return (PCPATCH *)pgc;
     }
@@ -209,12 +211,14 @@ PCPATCH *pc_patch_compress(const PCPATCH *patch, void *userdata)
     {
       pcerror("%s: unknown patch compression type %d", __func__,
               patch_compression);
+      return NULL;
     }
   }
   default:
   {
     pcerror("%s: unknown schema compression type %d", __func__,
             schema_compression);
+    return NULL;
   }
   }
 
@@ -462,7 +466,7 @@ PCPATCH *pc_patch_range(const PCPATCH *pa, int first, int count)
   if (first < 0 || count <= 0)
     return NULL;
 
-  if (count == pa->npoints)
+  if (count == (int) pa->npoints)
     return (PCPATCH *)pa;
 
   paout = pc_patch_uncompressed_make(pa->schema, count);
@@ -513,7 +517,7 @@ PCPOINT *pc_patch_pointn(const PCPATCH *patch, int n)
     n = patch->npoints + n; // negative indices count a backward
   else
     --n; // 1-based => 0-based indexing
-  if (n < 0 || n >= patch->npoints)
+  if (n < 0 || n >= (int) patch->npoints)
     return NULL;
 
   switch (patch->type)
@@ -589,7 +593,7 @@ PCPATCH *pc_patch_set_schema(PCPATCH *patch, const PCSCHEMA *new_schema,
   opt.readonly = PC_TRUE;
   npt.readonly = PC_TRUE;
 
-  opt.data = ((PCPATCH_UNCOMPRESSED *)pain)->data;
+  opt.data = ((PCPATCH_UNCOMPRESSED *) pain)->data;
   npt.data = paout->data;
 
   for (i = 0; i < patch->npoints; i++)
@@ -690,7 +694,7 @@ PCPATCH *pc_patch_transform(const PCPATCH *patch, const PCSCHEMA *new_schema,
   // be used
   for (i = 0; i < patch->npoints; i++)
   {
-    for (j = 0; j < new_schema->ndims; j++)
+    for (j = 0; (int) (j < new_schema->ndims); j++)
     {
       // pc_point_get_double returns immediately w/o changing val if the
       // dimension it is passed is NULL

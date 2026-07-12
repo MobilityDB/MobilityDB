@@ -99,7 +99,7 @@ pc_patch_uncompressed_filter(const PCPATCH_UNCOMPRESSED *pu,
 
   assert(map->npoints == pu->npoints);
 
-  while (i < pu->npoints)
+  while (i < (int) (pu->npoints))
   {
     if (pc_bitmap_get(map, i))
     {
@@ -148,7 +148,7 @@ pc_patch_dimensional_filter(const PCPATCH_DIMENSIONAL *pdl, const PCBITMAP *map)
   fpdl->stats = pc_stats_clone(pdl->stats);
   fpdl->npoints = map->nset;
 
-  for (i = 0; i < pdl->schema->ndims; i++)
+  for (i = 0; i < (int) (pdl->schema->ndims); i++)
   {
     PCDIMENSION *dim;
     PCDOUBLESTAT stats;
