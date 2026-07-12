@@ -31,14 +31,14 @@ pc_patch_uncompressed_to_stringbuffer(const PCPATCH_UNCOMPRESSED *patch,
 
   pl = pc_pointlist_from_uncompressed(patch);
   stringbuffer_aprintf(sb, "{\"pcid\":%d,\"pts\":[", patch->schema->pcid);
-  for (i = 0; i < pl->npoints; i++)
+  for (i = 0; i < (int) (pl->npoints); i++)
   {
     PCPOINT *pt = pc_pointlist_get_point(pl, i);
     if (i)
       stringbuffer_append(sb, ",[");
     else
       stringbuffer_append(sb, "[");
-    for (j = 0; j < pt->schema->ndims; j++)
+    for (j = 0; j < (int) (pt->schema->ndims); j++)
     {
       double d;
       if (!pc_point_get_double_by_index(pt, j, &d))
@@ -202,7 +202,7 @@ int pc_patch_uncompressed_compute_extent(PCPATCH_UNCOMPRESSED *patch)
 
   /* Calculate bounds */
   pc_bounds_init(&b);
-  for (i = 0; i < patch->npoints; i++)
+  for (i = 0; i < (int) (patch->npoints); i++)
   {
     /* Just push the data buffer forward by one point at a time */
     pt->data = patch->data + i * patch->schema->size;
@@ -305,7 +305,7 @@ pc_patch_uncompressed_from_pointlist(const PCPOINTLIST *pl)
   pch->schema = s;
   pch->npoints = 0;
 
-  for (i = 0; i < numpts; i++)
+  for (i = 0; i < (int) numpts; i++)
   {
     pt = pc_pointlist_get_point(pl, i);
     if (pt)
@@ -368,7 +368,7 @@ pc_patch_uncompressed_from_dimensional(const PCPATCH_DIMENSIONAL *pdl)
 
   for (i = 0; i < npoints; i++)
   {
-    for (j = 0; j < schema->ndims; j++)
+    for (j = 0; j < (int) schema->ndims; j++)
     {
       PCDIMENSION *dim = pc_schema_get_dimension(schema, j);
       uint8_t *in = pdl_uncompressed->bytes[j].bytes + dim->size * i;

@@ -141,7 +141,7 @@ uint32_t pc_bytes_run_count(const PCBYTES *pcb)
   size_t size = pc_interpretation_size(pcb->interpretation);
   uint32_t runcount = 1;
 
-  for (i = 1; i < pcb->npoints; i++)
+  for (i = 1; i < (int) (pcb->npoints); i++)
   {
     ptr0 = pcb->bytes + (i - 1) * size;
     ptr1 = pcb->bytes + i * size;
@@ -179,11 +179,11 @@ pc_bytes_run_length_encode(const PCBYTES pcb)
   /* First run starts at the start! */
   runstart = pcb.bytes;
 
-  for (i = 1; i <= pcb.npoints; i++)
+  for (i = 1; i <= (int) (pcb.npoints); i++)
   {
     bytesptr = pcb.bytes + i * size;
     /* Run continues... */
-    if (i < pcb.npoints && runlength < 255 &&
+    if (i < (int) (pcb.npoints) && runlength < 255 &&
         memcmp(runstart, bytesptr, size) == 0)
     {
       runlength++;
@@ -304,7 +304,7 @@ static PCBYTES pc_bytes_run_length_flip_endian(PCBYTES pcb)
   {
 
     /* Swap the bytes in a way that makes sense for this word size */
-    for (n = 0; n < size / 2; n++)
+    for (n = 0; n < (int) size / 2; n++)
     {
       tmp = bytes_ptr[n];
       bytes_ptr[n] = bytes_ptr[size - n - 1];
@@ -329,7 +329,7 @@ uint8_t pc_bytes_sigbits_count_8(const PCBYTES *pcb, uint32_t *nsigbits)
   uint32_t commonbits = nbits;
   int i;
 
-  for (i = 0; i < pcb->npoints; i++)
+  for (i = 0; i < (int) (pcb->npoints); i++)
   {
     elem_and &= bytes[i];
     elem_or |= bytes[i];
@@ -356,7 +356,7 @@ uint16_t pc_bytes_sigbits_count_16(const PCBYTES *pcb, uint32_t *nsigbits)
   uint32_t commonbits = nbits;
   int i;
 
-  for (i = 0; i < pcb->npoints; i++)
+  for (i = 0; i < (int) (pcb->npoints); i++)
   {
     elem_and &= bytes[i];
     elem_or |= bytes[i];
@@ -383,7 +383,7 @@ uint32_t pc_bytes_sigbits_count_32(const PCBYTES *pcb, uint32_t *nsigbits)
   uint32_t commonbits = nbits;
   int i;
 
-  for (i = 0; i < pcb->npoints; i++)
+  for (i = 0; i < (int) (pcb->npoints); i++)
   {
     elem_and &= bytes[i];
     elem_or |= bytes[i];
@@ -410,7 +410,7 @@ uint64_t pc_bytes_sigbits_count_64(const PCBYTES *pcb, uint32_t *nsigbits)
   uint32_t commonbits = nbits;
   int i;
 
-  for (i = 0; i < pcb->npoints; i++)
+  for (i = 0; i < (int) (pcb->npoints); i++)
   {
     elem_and &= bytes[i];
     elem_or |= bytes[i];
@@ -504,7 +504,7 @@ pc_bytes_sigbits_encode_8(const PCBYTES pcb, uint8_t commonvalue,
     return pcbout;
   }
 
-  for (i = 0; i < pcb.npoints; i++)
+  for (i = 0; i < (int) (pcb.npoints); i++)
   {
     uint8_t val = bytes[i];
     /* Clear off common parts */
@@ -600,7 +600,7 @@ pc_bytes_sigbits_encode_16(const PCBYTES pcb, uint16_t commonvalue,
     return pcbout;
   }
 
-  for (i = 0; i < pcb.npoints; i++)
+  for (i = 0; i < (int) (pcb.npoints); i++)
   {
     uint16_t val = bytes[i];
     /* Clear off common parts */
@@ -695,7 +695,7 @@ pc_bytes_sigbits_encode_32(const PCBYTES pcb, uint32_t commonvalue,
     return pcbout;
   }
 
-  for (i = 0; i < pcb.npoints; i++)
+  for (i = 0; i < (int) (pcb.npoints); i++)
   {
     uint32_t val = bytes[i];
     /* Clear off common parts */
@@ -790,7 +790,7 @@ pc_bytes_sigbits_encode_64(const PCBYTES pcb, uint64_t commonvalue,
     return pcbout;
   }
 
-  for (i = 0; i < pcb.npoints; i++)
+  for (i = 0; i < (int) (pcb.npoints); i++)
   {
     uint64_t val = bytes[i];
     /* Clear off common parts */
@@ -895,7 +895,7 @@ static PCBYTES pc_bytes_sigbits_flip_endian(const PCBYTES pcb)
 
   /* We only need to flip the first two words, */
   /* which are the common bit count and common bits word */
-  for (n = 0; n < size / 2; n++)
+  for (n = 0; n < (int) (size / 2); n++)
   {
     /* Flip bit count */
     tmp1 = b1[n];
@@ -933,7 +933,7 @@ pc_bytes_sigbits_decode_8(const PCBYTES pcb)
   /* Mask for just the unique parts */
   mask = (0xFF >> (bit - nbits));
 
-  for (i = 0; i < pcb.npoints; i++)
+  for (i = 0; i < (int) (pcb.npoints); i++)
   {
     int shift = bit - nbits;
     uint8_t val = *bytes_ptr;
@@ -1000,7 +1000,7 @@ pc_bytes_sigbits_decode_16(const PCBYTES pcb)
   /* Calculate mask */
   mask = (0xFFFF >> (bit - nbits));
 
-  for (i = 0; i < pcb.npoints; i++)
+  for (i = 0; i < (int) (pcb.npoints); i++)
   {
     int shift = bit - nbits;
     uint16_t val = *bytes_ptr;
@@ -1065,7 +1065,7 @@ pc_bytes_sigbits_decode_32(const PCBYTES pcb)
   /* Calculate mask */
   mask = (0xFFFFFFFF >> (bit - nbits));
 
-  for (i = 0; i < pcb.npoints; i++)
+  for (i = 0; i < (int) (pcb.npoints); i++)
   {
     int shift = bit - nbits;
     uint32_t val = *bytes_ptr;
@@ -1131,7 +1131,7 @@ pc_bytes_sigbits_decode_64(const PCBYTES pcb)
   /* Calculate mask */
   mask = (0xFFFFFFFFFFFFFFFF >> (bit - nbits));
 
-  for (i = 0; i < pcb.npoints; i++)
+  for (i = 0; i < (int) (pcb.npoints); i++)
   {
     int shift = bit - nbits;
     uint64_t val = *bytes_ptr;
@@ -1381,7 +1381,7 @@ static int pc_bytes_uncompressed_minmax(const PCBYTES *pcb, double *min,
   double mn = FLT_MAX;
   double mx = -1 * FLT_MAX;
   double sm = 0.0;
-  for (i = 0; i < pcb->npoints; i++)
+  for (i = 0; i < (int) (pcb->npoints); i++)
   {
     d = pc_double_from_ptr(pcb->bytes + i * element_size, pcb->interpretation);
     if (d < mn)
@@ -1483,7 +1483,7 @@ static PCBYTES pc_bytes_uncompressed_filter(const PCBYTES *pcb,
   uint8_t *buf = pcb->bytes;
   uint8_t *fbuf = fpcb.bytes;
 
-  while (i < pcb->npoints)
+  while (i < (int) (pcb->npoints))
   {
     /* This entry is flagged to copy, so... */
     if (pc_bitmap_get(map, i))
@@ -1650,7 +1650,7 @@ static PCBITMAP *pc_bytes_uncompressed_bitmap(const PCBYTES *pcb,
   int element_size = pc_interpretation_size(pcb->interpretation);
   uint8_t *buf = pcb->bytes;
 
-  while (i < pcb->npoints)
+  while (i < (int) (pcb->npoints))
   {
     d = pc_double_from_ptr(buf, pcb->interpretation);
     pc_bitmap_filter(map, filter, i, d, val1, val2);

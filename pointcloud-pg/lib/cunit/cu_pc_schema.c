@@ -127,7 +127,7 @@ static void test_dimension_byteoffsets()
   int prev_size;
   int pc_size;
 
-  for (i = 0; i < schema->ndims; i++)
+  for (i = 0; i < (int) (schema->ndims); i++)
   {
     d = pc_schema_get_dimension(schema, i);
     // printf("d=%d name='%s' size=%d byteoffset=%d\n", i, d->name, d->size,

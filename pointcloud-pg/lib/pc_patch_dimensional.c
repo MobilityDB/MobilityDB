@@ -43,7 +43,7 @@ size_t pc_patch_dimensional_serialized_size(const PCPATCH_DIMENSIONAL *patch)
   PCPATCH_DIMENSIONAL *p = (PCPATCH_DIMENSIONAL *)patch;
   int i;
   size_t size = 0;
-  for (i = 0; i < p->schema->ndims; i++)
+  for (i = 0; i < (int) (p->schema->ndims); i++)
   {
     size += pc_bytes_serialized_size(&(p->bytes[i]));
   }
@@ -171,7 +171,7 @@ void pc_patch_dimensional_free(PCPATCH_DIMENSIONAL *pdl)
 
   if (pdl->bytes)
   {
-    for (i = 0; i < pdl->schema->ndims; i++)
+    for (i = 0; i < (int) (pdl->schema->ndims); i++)
       pc_bytes_free(pdl->bytes[i]);
 
     pcfree(pdl->bytes);

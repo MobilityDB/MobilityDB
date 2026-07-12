@@ -114,7 +114,7 @@ static PCSTATS *pc_stats_new_from_dstats(const PCSCHEMA *schema,
   int i;
   PCSTATS *stats = pc_stats_new(schema);
 
-  for (i = 0; i < schema->ndims; i++)
+  for (i = 0; i < (int) (schema->ndims); i++)
   {
     pc_point_set_double(&(stats->min), schema->dims[i], dstats->dims[i].min);
     pc_point_set_double(&(stats->max), schema->dims[i], dstats->dims[i].max);
@@ -162,9 +162,9 @@ int pc_patch_uncompressed_compute_stats(PCPATCH_UNCOMPRESSED *pa)
   /* We know npoints right away */
   dstats->npoints = pa->npoints;
 
-  for (i = 0; i < pa->npoints; i++)
+  for (i = 0; i < (int) pa->npoints; i++)
   {
-    for (j = 0; j < schema->ndims; j++)
+    for (j = 0; j < (int) schema->ndims; j++)
     {
       pc_point_get_double(&pt, schema->dims[j], &val);
       /* Check minimum */

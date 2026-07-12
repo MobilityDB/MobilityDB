@@ -55,7 +55,7 @@ uint8_t *pc_bytes_from_hexbytes(const char *hexbuf, size_t hexsize)
   if (!buf)
     pcerror("Unable to allocate memory buffer.");
 
-  for (i = 0; i < hexsize / 2; i++)
+  for (i = 0; i < (int) (hexsize / 2); i++)
   {
     h1 = hex2char[(int)hexbuf[2 * i]];
     h2 = hex2char[(int)hexbuf[2 * i + 1]];
@@ -77,7 +77,7 @@ char *pc_hexbytes_from_bytes(const uint8_t *bytebuf, size_t bytesize)
       pcalloc(2 * bytesize + 1); /* 2 chars per byte + null terminator */
   int i;
   buf[2 * bytesize] = '\0';
-  for (i = 0; i < bytesize; i++)
+  for (i = 0; i < (int) bytesize; i++)
   {
     /* Top four bits to 0-F */
     buf[2 * i] = hexchr[bytebuf[i] >> 4];
@@ -223,14 +223,14 @@ uint8_t *uncompressed_bytes_flip_endian(const uint8_t *bytebuf,
 
   memcpy(buf, bytebuf, bufsize);
 
-  for (i = 0; i < npoints; i++)
+  for (i = 0; i < (int) npoints; i++)
   {
-    for (j = 0; j < schema->ndims; j++)
+    for (j = 0; j < (int) schema->ndims; j++)
     {
       PCDIMENSION *dimension = schema->dims[j];
       uint8_t *ptr = buf + i * schema->size + dimension->byteoffset;
 
-      for (k = 0; k < ((dimension->size) / 2); k++)
+      for (k = 0; k < (int) ((dimension->size) / 2); k++)
       {
         int l = dimension->size - k - 1;
         uint8_t tmp = ptr[k];
