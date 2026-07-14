@@ -91,7 +91,7 @@ jobs:
                 -DCMAKE_BUILD_TYPE=Release \
                 -DMEOS=on \
                 -DCBUFFER=on -DNPOINT=on -DPOSE=on -DRGEO=on -DQUADBIN=on \
-                -DARROW=on -DRASTER=on -DPOINTCLOUD=on \
+                -DRASTER=on -DPOINTCLOUD=on \
                 -DH3=on -DH3_INCLUDE_DIR="$H3_INCLUDE_DIR" -DH3_LIBRARY="$H3_LIBRARY" ..
 
       - name: Run cppcheck (XML output - universally supported)
