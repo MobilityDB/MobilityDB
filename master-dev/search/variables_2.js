@@ -10,14 +10,11 @@ var searchData=
   ['afac_7',['afac',['../structAFFINE_a8c5795e1c3efdd3baa8b8698c245b229.html#a8c5795e1c3efdd3baa8b8698c245b229',1,'AFFINE']]],
   ['arad_8',['arad',['../structTcbSeg_a810efb795412a278f9fab0111255c9a0.html#a810efb795412a278f9fab0111255c9a0',1,'TcbSeg']]],
   ['argtype_9',['argtype',['../structLiftedFunctionInfo_ab12b24200762a4bec3b00c72bee67883.html#ab12b24200762a4bec3b00c72bee67883',1,'LiftedFunctionInfo']]],
-  ['arr_10',['arr',['../structtdist__array_a5e3d1dd568198b36fdca416745e426bd.html#a5e3d1dd568198b36fdca416745e426bd',1,'tdist_array::arr()'],['../structcfp__array_a67ea7ce4f16361cb53bf6854d8162b66.html#a67ea7ce4f16361cb53bf6854d8162b66',1,'cfp_array::arr()']]],
-  ['arrow_11',['ARROW',['../mobilitydb_2test_2rgeo_2CMakeLists_8txt_a00cd74cc679a29ce048f5191cd7ab138.html#a00cd74cc679a29ce048f5191cd7ab138',1,'ARROW():&#160;CMakeLists.txt'],['../mobilitydb_2test_2quadbin_2CMakeLists_8txt_a00cd74cc679a29ce048f5191cd7ab138.html#a00cd74cc679a29ce048f5191cd7ab138',1,'ARROW():&#160;CMakeLists.txt'],['../mobilitydb_2test_2cbuffer_2CMakeLists_8txt_a00cd74cc679a29ce048f5191cd7ab138.html#a00cd74cc679a29ce048f5191cd7ab138',1,'ARROW():&#160;CMakeLists.txt'],['../mobilitydb_2test_2h3_2CMakeLists_8txt_a00cd74cc679a29ce048f5191cd7ab138.html#a00cd74cc679a29ce048f5191cd7ab138',1,'ARROW():&#160;CMakeLists.txt'],['../mobilitydb_2test_2npoint_2CMakeLists_8txt_a00cd74cc679a29ce048f5191cd7ab138.html#a00cd74cc679a29ce048f5191cd7ab138',1,'ARROW():&#160;CMakeLists.txt'],['../mobilitydb_2test_2pose_2CMakeLists_8txt_a00cd74cc679a29ce048f5191cd7ab138.html#a00cd74cc679a29ce048f5191cd7ab138',1,'ARROW():&#160;CMakeLists.txt']]],
-  ['arrow_5farray_5fsize_12',['ARROW_ARRAY_SIZE',['../namespacetemporal__arrow__parquet__bridge_aadd25859f0f660447fc0c2d6579e5779.html#aadd25859f0f660447fc0c2d6579e5779',1,'temporal_arrow_parquet_bridge']]],
-  ['arrow_5fschema_5fsize_13',['ARROW_SCHEMA_SIZE',['../namespacetemporal__arrow__parquet__bridge_a2a21fd06b624a21498b7fac7a1d3d910.html#a2a21fd06b624a21498b7fac7a1d3d910',1,'temporal_arrow_parquet_bridge']]],
-  ['at0_14',['at0',['../structTcbSeg_ad26b3835f145ae54fcc3267ce28ad67f.html#ad26b3835f145ae54fcc3267ce28ad67f',1,'TcbSeg']]],
-  ['at1_15',['at1',['../structTcbSeg_abaa677a082f529a6c5a79f7ac800750b.html#abaa677a082f529a6c5a79f7ac800750b',1,'TcbSeg']]],
-  ['auth_5fname_16',['auth_name',['../structspatial__ref__sys__record_afcfa1280ade0ad7deabe6e07c40ade53.html#afcfa1280ade0ad7deabe6e07c40ade53',1,'spatial_ref_sys_record']]],
-  ['auth_5fsrid_17',['auth_srid',['../structspatial__ref__sys__record_ae6d292653d8650ea73773ea6af11ddde.html#ae6d292653d8650ea73773ea6af11ddde',1,'spatial_ref_sys_record']]],
-  ['authtext_18',['authtext',['../structPjStrs_a48986b8e4b0149dd8090156e6906273f.html#a48986b8e4b0149dd8090156e6906273f',1,'PjStrs']]],
-  ['awgs_19',['awgs',['../projection__gk_8c_a31b4e919b8046103adb763536eea8c8d.html#a31b4e919b8046103adb763536eea8c8d',1,'projection_gk.c']]]
+  ['arr_10',['arr',['../structcfp__array_a67ea7ce4f16361cb53bf6854d8162b66.html#a67ea7ce4f16361cb53bf6854d8162b66',1,'cfp_array::arr()'],['../structtdist__array_a5e3d1dd568198b36fdca416745e426bd.html#a5e3d1dd568198b36fdca416745e426bd',1,'tdist_array::arr()']]],
+  ['at0_11',['at0',['../structTcbSeg_ad26b3835f145ae54fcc3267ce28ad67f.html#ad26b3835f145ae54fcc3267ce28ad67f',1,'TcbSeg']]],
+  ['at1_12',['at1',['../structTcbSeg_abaa677a082f529a6c5a79f7ac800750b.html#abaa677a082f529a6c5a79f7ac800750b',1,'TcbSeg']]],
+  ['auth_5fname_13',['auth_name',['../structspatial__ref__sys__record_afcfa1280ade0ad7deabe6e07c40ade53.html#afcfa1280ade0ad7deabe6e07c40ade53',1,'spatial_ref_sys_record']]],
+  ['auth_5fsrid_14',['auth_srid',['../structspatial__ref__sys__record_ae6d292653d8650ea73773ea6af11ddde.html#ae6d292653d8650ea73773ea6af11ddde',1,'spatial_ref_sys_record']]],
+  ['authtext_15',['authtext',['../structPjStrs_a48986b8e4b0149dd8090156e6906273f.html#a48986b8e4b0149dd8090156e6906273f',1,'PjStrs']]],
+  ['awgs_16',['awgs',['../projection__gk_8c_a31b4e919b8046103adb763536eea8c8d.html#a31b4e919b8046103adb763536eea8c8d',1,'projection_gk.c']]]
 ];

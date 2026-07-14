@@ -25,12 +25,6 @@
 var menudata={children:[
 {text:"Main Page",url:"index.html"},
 {text:"Modules",url:"modules.html"},
-{text:"Namespaces",url:"namespaces.html",children:[
-{text:"Namespace List",url:"namespaces.html"},
-{text:"Namespace Members",url:"namespacemembers.html",children:[
-{text:"All",url:"namespacemembers.html"},
-{text:"Functions",url:"namespacemembers_func.html"},
-{text:"Variables",url:"namespacemembers_vars.html"}]}]},
 {text:"Data Structures",url:"annotated.html",children:[
 {text:"Data Structures",url:"annotated.html"},
 {text:"Data Structure Index",url:"classes.html"},
@@ -159,7 +153,6 @@ var menudata={children:[
 {text:"g",url:"globals_vars.html#index_g"},
 {text:"h",url:"globals_vars.html#index_h"},
 {text:"i",url:"globals_vars.html#index_i"},
-{text:"k",url:"globals_vars.html#index_k"},
 {text:"l",url:"globals_vars.html#index_l"},
 {text:"m",url:"globals_vars.html#index_m"},
 {text:"n",url:"globals_vars.html#index_n"},
@@ -206,7 +199,6 @@ var menudata={children:[
 {text:"g",url:"globals_eval_g.html#index_g"},
 {text:"h",url:"globals_eval_h.html#index_h"},
 {text:"i",url:"globals_eval_i.html#index_i"},
-{text:"k",url:"globals_eval_k.html#index_k"},
 {text:"l",url:"globals_eval_l.html#index_l"},
 {text:"m",url:"globals_eval_m.html#index_m"},
 {text:"n",url:"globals_eval_n.html#index_n"},
