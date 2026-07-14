@@ -1318,11 +1318,10 @@ ea_touches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
     return -1;
 
   /* Bounding box test */
-  STBox *box1 = tspatial_to_stbox(temp);
-  STBox *box2 = geo_stbox(gs);
-  bool over = overlaps_stbox_stbox(box1, box2);
-  pfree(box1); pfree(box2);
-  if (! over)
+  STBox box1, box2;
+  tspatial_set_stbox(temp, &box1);
+  geo_set_stbox(gs, &box2);
+  if (! overlaps_stbox_stbox(&box1, &box2))
     return 0;
 
   /* EVER */
@@ -1420,11 +1419,10 @@ ea_touches_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
     return -1;
 
   /* Bounding box test */
-  STBox *box1 = tspatial_to_stbox(temp);
-  STBox *box2 = geo_stbox(gs);
-  bool over = overlaps_stbox_stbox(box1, box2);
-  pfree(box1); pfree(box2);
-  if (! over)
+  STBox box1, box2;
+  tspatial_set_stbox(temp, &box1);
+  geo_set_stbox(gs, &box2);
+  if (! overlaps_stbox_stbox(&box1, &box2))
     return 0;
 
   return ea_spatialrel_tspatial_geo(temp, gs, &datum_geom_touches, ever,
@@ -1518,11 +1516,10 @@ ea_touches_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
     return -1;
 
   /* Bounding box test */
-  STBox *box1 = tspatial_to_stbox(temp1);
-  STBox *box2 = tspatial_to_stbox(temp2);
-  bool over = overlaps_stbox_stbox(box1, box2);
-  pfree(box1); pfree(box2);
-  if (! over)
+  STBox box1, box2;
+  tspatial_set_stbox(temp1, &box1);
+  tspatial_set_stbox(temp2, &box2);
+  if (! overlaps_stbox_stbox(&box1, &box2))
     return 0;
 
   return ea_spatialrel_tspatial_tspatial(temp1, temp2, &datum_geom_touches,
@@ -1620,13 +1617,14 @@ ea_dwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
    * inputs since the bbox is in degrees while dist is in metres. */
   if (! MEOS_FLAGS_GET_GEODETIC(temp->flags))
   {
-    STBox *box_temp = tspatial_to_stbox(temp);
-    STBox *box_geom = geo_stbox(gs);
-    STBox *box_geom_exp = stbox_expand_space(box_geom, dist);
+    STBox box_temp, box_geom;
+    tspatial_set_stbox(temp, &box_temp);
+    geo_set_stbox(gs, &box_geom);
+    STBox *box_geom_exp = stbox_expand_space(&box_geom, dist);
     bool pass = ever
-      ? overlaps_stbox_stbox(box_geom_exp, box_temp)
-      : contains_stbox_stbox(box_geom_exp, box_temp);
-    pfree(box_temp); pfree(box_geom); pfree(box_geom_exp);
+      ? overlaps_stbox_stbox(box_geom_exp, &box_temp)
+      : contains_stbox_stbox(box_geom_exp, &box_temp);
+    pfree(box_geom_exp);
     if (! pass)
       return 0;
   }
