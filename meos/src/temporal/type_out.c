@@ -60,14 +60,12 @@
 #if CBUFFER
   #include "cbuffer/cbuffer.h"
 #endif
-#if RASTER
-  #include "raster/raquet.h"
+#if H3
+  #include <h3api.h>
+  #include "h3/h3index.h"
 #endif
 #if JSON
   #include <utils/jsonb.h>
-#endif
-#if QUADBIN
-  #include <meos_quadbin.h>
 #endif
 #if NPOINT
   #include "npoint/tnpoint.h"
@@ -80,12 +78,14 @@
 #if POSE
   #include "pose/pose.h"
 #endif
+#if QUADBIN
+  #include <meos_quadbin.h>
+#endif
+#if RASTER
+  #include "raster/raquet.h"
+#endif
 #if RGEO
   #include "rgeo/trgeo_all.h"
-#endif
-#if H3
-  #include <h3api.h>
-  #include "h3/h3index.h"
 #endif
 
 #include <utils/jsonb.h>
@@ -136,14 +136,6 @@ basetype_out(Datum value, MeosType type, int maxdd)
       return int32_out(DatumGetInt32(value));
     case T_INT8:
       return int64_out(DatumGetInt64(value));
-#if H3
-    case T_H3INDEX:
-      return h3index_out((H3Index) DatumGetInt64(value));
-#endif
-#if QUADBIN
-    case T_QUADBIN:
-      return quadbin_index_to_string((Quadbin) DatumGetInt64(value));
-#endif
     case T_FLOAT8:
       return float8_out(DatumGetFloat8(value), maxdd);
     case T_TEXT:
@@ -174,9 +166,9 @@ basetype_out(Datum value, MeosType type, int maxdd)
     case T_CBUFFER:
       return cbuffer_out(DatumGetCbufferP(value), maxdd);
 #endif
-#if RASTER
-    case T_RAQUET:
-      return raquet_out(DatumGetRaquetP(value));
+#if H3
+    case T_H3INDEX:
+      return h3index_out((H3Index) DatumGetInt64(value));
 #endif
 #if JSON
     case T_JSONB:
@@ -195,6 +187,14 @@ basetype_out(Datum value, MeosType type, int maxdd)
 #if POSE || RGEO
     case T_POSE:
       return pose_out(DatumGetPoseP(value), maxdd);
+#endif
+#if QUADBIN
+    case T_QUADBIN:
+      return quadbin_index_to_string((Quadbin) DatumGetInt64(value));
+#endif
+#if RASTER
+    case T_RAQUET:
+      return raquet_out(DatumGetRaquetP(value));
 #endif
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
@@ -260,6 +260,34 @@ text_as_mfjson_sb(stringbuffer_t *sb, const text *txt)
   return;
 }
 
+#if CBUFFER
+/**
+ * @brief Write into the buffer a circular buffer in the MF-JSON
+ * representation
+ * @details Circular buffers are always planar 2D: a `point` member (an
+ * `[x, y]` coordinate array, as for a temporal point) and a numeric
+ * `radius` member, e.g. `{"point":[1,2],"radius":3}`. The member names
+ * mirror the @p point and @p radius accessors. There is no Z/geodetic
+ * handling as for poses.
+ */
+static void
+cbuffer_as_mfjson_sb(stringbuffer_t *sb, const Cbuffer *cb, int precision)
+{
+  assert(precision <= OUT_MAX_DOUBLE_PRECISION);
+  GSERIALIZED *gs = cbuffer_point(cb);
+  const POINT2D *pt = GSERIALIZED_POINT2D_P(gs);
+  stringbuffer_append_len(sb, "{\"point\":[", 10);
+  stringbuffer_append_double(sb, pt->x, precision);
+  stringbuffer_append_char(sb, ',');
+  stringbuffer_append_double(sb, pt->y, precision);
+  stringbuffer_append_len(sb, "],\"radius\":", 11);
+  stringbuffer_append_double(sb, cbuffer_radius(cb), precision);
+  stringbuffer_append_char(sb, '}');
+  pfree(gs);
+  return;
+}
+#endif /* CBUFFER */
+
 #if JSON
 /**
  * @brief Write into the buffer a JSONB value in the MF-JSON representation
@@ -318,7 +346,7 @@ coordinates_as_mfjson_sb(stringbuffer_t *sb, const TInstant *inst, int precision
  * with INT64_FORMAT to avoid loss of precision in the JSON payload.
  */
 static void
-npoint_as_json_sb(stringbuffer_t *sb, const Npoint *np, int precision)
+npoint_as_mfjson_sb(stringbuffer_t *sb, const Npoint *np, int precision)
 {
   assert(precision <= OUT_MAX_DOUBLE_PRECISION);
   stringbuffer_aprintf(sb, "{\"route\":" INT64_FORMAT ",\"position\":", np->rid);
@@ -430,34 +458,6 @@ stringbuffer_append_char(sb, '}');
 }
 #endif /* POSE */
 
-#if CBUFFER
-/**
- * @brief Write into the buffer a circular buffer in the MF-JSON
- * representation
- * @details Circular buffers are always planar 2D: a `point` member (an
- * `[x, y]` coordinate array, as for a temporal point) and a numeric
- * `radius` member, e.g. `{"point":[1,2],"radius":3}`. The member names
- * mirror the @p point and @p radius accessors. There is no Z/geodetic
- * handling as for poses.
- */
-static void
-cbuffer_as_json_sb(stringbuffer_t *sb, const Cbuffer *cb, int precision)
-{
-  assert(precision <= OUT_MAX_DOUBLE_PRECISION);
-  GSERIALIZED *gs = cbuffer_point(cb);
-  const POINT2D *pt = GSERIALIZED_POINT2D_P(gs);
-  stringbuffer_append_len(sb, "{\"point\":[", 10);
-  stringbuffer_append_double(sb, pt->x, precision);
-  stringbuffer_append_char(sb, ',');
-  stringbuffer_append_double(sb, pt->y, precision);
-  stringbuffer_append_len(sb, "],\"radius\":", 11);
-  stringbuffer_append_double(sb, cbuffer_radius(cb), precision);
-  stringbuffer_append_char(sb, '}');
-  pfree(gs);
-  return;
-}
-#endif /* CBUFFER */
-
 /**
  * @brief Write into the buffer a base value in the MF-JSON representation
  */
@@ -475,7 +475,9 @@ temporal_base_as_mfjson_sb(stringbuffer_t *sb, Datum value, MeosType temptype,
       int32_as_mfjson_sb(sb, DatumGetInt32(value));
       break;
     case T_TBIGINT:
+#if H3
     case T_TH3INDEX:
+#endif
       int64_as_mfjson_sb(sb, DatumGetInt64(value));
       break;
     case T_TFLOAT:
@@ -653,20 +655,28 @@ bbox_as_mfjson_sb(stringbuffer_t *sb, MeosType temptype, const bboxunion *box,
       tstzspan_as_mfjson_sb(sb, (Span *) box);
       break;
     case T_TBIGINT:
-    case T_TH3INDEX:
     case T_TINT:
     case T_TFLOAT:
+#if H3
+    case T_TH3INDEX:
+#endif
       tbox_as_mfjson_sb(sb, (TBox *) box, precision);
       break;
     case T_TGEOMPOINT:
     case T_TGEOGPOINT:
     case T_TGEOMETRY:
     case T_TGEOGRAPHY:
-    case T_TPOSE:
-    case T_TRGEOMETRY:
+#if CBUFFER
     case T_TCBUFFER:
+#endif
 #if NPOINT
     case T_TNPOINT:
+#endif
+#if POSE
+    case T_TPOSE:
+#endif
+#if RGEO
+    case T_TRGEOMETRY:
 #endif
       stbox_as_mfjson_sb(sb, (STBox *) box, precision);
       break;
@@ -703,9 +713,6 @@ temptype_as_mfjson_sb(stringbuffer_t *sb, MeosType temptype)
     case T_TBIGINT:
       stringbuffer_append_len(sb, "{\"type\":\"MovingBigInteger\",", 27);
       break;
-    case T_TH3INDEX:
-      stringbuffer_append_len(sb, "{\"type\":\"MovingH3Index\",", 24);
-      break;
     case T_TFLOAT:
       stringbuffer_append_len(sb, "{\"type\":\"MovingFloat\",", 22);
       break;
@@ -720,25 +727,19 @@ temptype_as_mfjson_sb(stringbuffer_t *sb, MeosType temptype)
     case T_TGEOGRAPHY:
       stringbuffer_append_len(sb, "{\"type\":\"MovingGeometry\",", 25);
       break;
-#if JSON
-    case T_TJSONB:
-      stringbuffer_append_len(sb, "{\"type\":\"MovingJsonb\",", 22);
-      break;
-#endif
-#if POSE
-    case T_TPOSE:
-      stringbuffer_append_len(sb, "{\"type\":\"MovingPose\",", 21);
-      break;
-#endif
-#if RGEO
-    case T_TRGEOMETRY:
-      stringbuffer_append_len(sb, "{\"type\":\"MovingRigidGeometry\",", 30);
-      break;
-#endif
-
 #if CBUFFER
     case T_TCBUFFER:
       stringbuffer_append_len(sb, "{\"type\":\"MovingCircularBuffer\",", 31);
+      break;
+#endif
+#if H3
+    case T_TH3INDEX:
+      stringbuffer_append_len(sb, "{\"type\":\"MovingH3Index\",", 24);
+      break;
+#endif
+#if JSON
+    case T_TJSONB:
+      stringbuffer_append_len(sb, "{\"type\":\"MovingJsonb\",", 22);
       break;
 #endif
 #if NPOINT
@@ -752,6 +753,16 @@ temptype_as_mfjson_sb(stringbuffer_t *sb, MeosType temptype)
       break;
     case T_TPCPATCH:
       stringbuffer_append_len(sb, "{\"type\":\"MovingPCPatch\",", 24);
+      break;
+#endif
+#if POSE
+    case T_TPOSE:
+      stringbuffer_append_len(sb, "{\"type\":\"MovingPose\",", 21);
+      break;
+#endif
+#if RGEO
+    case T_TRGEOMETRY:
+      stringbuffer_append_len(sb, "{\"type\":\"MovingRigidGeometry\",", 30);
       break;
 #endif
     default: /* Error! */
@@ -799,6 +810,32 @@ tinstant_as_mfjson_sb(stringbuffer_t *sb, const TInstant *inst,
     stringbuffer_aprintf(sb, "\"values\":[%s", str);
     pfree(str);
   }
+#if CBUFFER
+  else if (inst->temptype == T_TCBUFFER)
+  {
+    stringbuffer_append_len(sb, "\"values\":[", 10);
+    cbuffer_as_mfjson_sb(sb, DatumGetCbufferP(tinstant_value_p(inst)), precision);
+  }
+#endif /* CBUFFER */
+#if NPOINT
+  else if (inst->temptype == T_TNPOINT)
+  {
+    stringbuffer_append_len(sb, "\"values\":[", 10);
+    npoint_as_mfjson_sb(sb, DatumGetNpointP(tinstant_value_p(inst)), precision);
+  }
+#endif /* NPOINT */
+#if POINTCLOUD
+  else if (inst->temptype == T_TPCPOINT)
+  {
+    stringbuffer_append_len(sb, "\"coordinates\":[", 15);
+    tpcpoint_coordinates_as_mfjson_sb(sb, inst, precision);
+  }
+  else if (inst->temptype == T_TPCPATCH)
+  {
+    stringbuffer_append_len(sb, "\"values\":[", 10);
+    tpcpatch_as_mfjson_sb(sb, inst, precision);
+  }
+#endif /* POINTCLOUD */
 #if POSE
   else if (inst->temptype == T_TPOSE)
   {
@@ -819,33 +856,6 @@ tinstant_as_mfjson_sb(stringbuffer_t *sb, const TInstant *inst,
     pose_as_json_sb(sb, DatumGetPoseP(tinstant_value_p(inst)), precision);
   }
 #endif /* RGEO */
-
-#if CBUFFER
-  else if (inst->temptype == T_TCBUFFER)
-  {
-    stringbuffer_append_len(sb, "\"values\":[", 10);
-    cbuffer_as_json_sb(sb, DatumGetCbufferP(tinstant_value_p(inst)), precision);
-  }
-#endif /* CBUFFER */
-#if NPOINT
-  else if (inst->temptype == T_TNPOINT)
-  {
-    stringbuffer_append_len(sb, "\"values\":[", 10);
-    npoint_as_json_sb(sb, DatumGetNpointP(tinstant_value_p(inst)), precision);
-  }
-#endif /* NPOINT */
-#if POINTCLOUD
-  else if (inst->temptype == T_TPCPOINT)
-  {
-    stringbuffer_append_len(sb, "\"coordinates\":[", 15);
-    tpcpoint_coordinates_as_mfjson_sb(sb, inst, precision);
-  }
-  else if (inst->temptype == T_TPCPATCH)
-  {
-    stringbuffer_append_len(sb, "\"values\":[", 10);
-    tpcpatch_as_mfjson_sb(sb, inst, precision);
-  }
-#endif /* POINTCLOUD */
   else
   {
     stringbuffer_append_len(sb, "\"values\":[", 10);
@@ -884,6 +894,10 @@ tsequence_as_mfjson_sb(stringbuffer_t *sb, const TSequence *seq,
   }
   if (tpoint_type(seq->temptype))
     stringbuffer_append_len(sb, "\"coordinates\":[", 15);
+#if POINTCLOUD
+  else if (seq->temptype == T_TPCPOINT)
+    stringbuffer_append_len(sb, "\"coordinates\":[", 15);
+#endif /* POINTCLOUD */
 #if RGEO
   else if (seq->temptype == T_TRGEOMETRY)
   {
@@ -893,10 +907,6 @@ tsequence_as_mfjson_sb(stringbuffer_t *sb, const TSequence *seq,
     stringbuffer_aprintf(sb, "%s,\"values\":[", str);
   }
 #endif /* RGEO */
-#if POINTCLOUD
-  else if (seq->temptype == T_TPCPOINT)
-    stringbuffer_append_len(sb, "\"coordinates\":[", 15);
-#endif
   else
     stringbuffer_append_len(sb, "\"values\":[", 10);
   const TInstant *inst;
@@ -915,6 +925,24 @@ tsequence_as_mfjson_sb(stringbuffer_t *sb, const TSequence *seq,
       stringbuffer_aprintf(sb, "%s", str);
       pfree(str);
     }
+#if CBUFFER
+    else if (inst->temptype == T_TCBUFFER)
+    {
+      cbuffer_as_mfjson_sb(sb, DatumGetCbufferP(tinstant_value_p(inst)), precision);
+    }
+#endif /* CBUFFER */
+#if NPOINT
+    else if (inst->temptype == T_TNPOINT)
+    {
+      npoint_as_mfjson_sb(sb, DatumGetNpointP(tinstant_value_p(inst)), precision);
+    }
+#endif /* NPOINT */
+#if POINTCLOUD
+    else if (inst->temptype == T_TPCPOINT)
+      tpcpoint_coordinates_as_mfjson_sb(sb, inst, precision);
+    else if (inst->temptype == T_TPCPATCH)
+      tpcpatch_as_mfjson_sb(sb, inst, precision);
+#endif /* POINTCLOUD */
 #if POSE
     else if (inst->temptype == T_TPOSE)
     {
@@ -930,24 +958,6 @@ tsequence_as_mfjson_sb(stringbuffer_t *sb, const TSequence *seq,
     }
 #endif /* RGEO */
 
-#if CBUFFER
-    else if (inst->temptype == T_TCBUFFER)
-    {
-      cbuffer_as_json_sb(sb, DatumGetCbufferP(tinstant_value_p(inst)), precision);
-    }
-#endif /* CBUFFER */
-#if NPOINT
-    else if (inst->temptype == T_TNPOINT)
-    {
-      npoint_as_json_sb(sb, DatumGetNpointP(tinstant_value_p(inst)), precision);
-    }
-#endif /* NPOINT */
-#if POINTCLOUD
-    else if (inst->temptype == T_TPCPOINT)
-      tpcpoint_coordinates_as_mfjson_sb(sb, inst, precision);
-    else if (inst->temptype == T_TPCPATCH)
-      tpcpatch_as_mfjson_sb(sb, inst, precision);
-#endif /* POINTCLOUD */
     else
     {
       success = temporal_base_as_mfjson_sb(sb, tinstant_value_p(inst),
@@ -1052,13 +1062,13 @@ tsequenceset_as_mfjson_sb(stringbuffer_t *sb, const TSequenceSet *ss,
 #if CBUFFER
       else if (inst->temptype == T_TCBUFFER)
       {
-        cbuffer_as_json_sb(sb, DatumGetCbufferP(tinstant_value_p(inst)), precision);
+        cbuffer_as_mfjson_sb(sb, DatumGetCbufferP(tinstant_value_p(inst)), precision);
       }
 #endif /* CBUFFER */
 #if NPOINT
       else if (inst->temptype == T_TNPOINT)
       {
-        npoint_as_json_sb(sb, DatumGetNpointP(tinstant_value_p(inst)), precision);
+        npoint_as_mfjson_sb(sb, DatumGetNpointP(tinstant_value_p(inst)), precision);
       }
 #endif /* NPOINT */
 #if POINTCLOUD
@@ -1391,6 +1401,11 @@ base_to_wkb_size(Datum value, MeosType basetype, uint8_t variant)
     case T_CBUFFER:
       return cbuffer_to_wkb_size(DatumGetCbufferP(value), variant, true);
 #endif /* CBUFFER */
+#if H3
+    case T_H3INDEX:
+      /* h3index is a uint64 cell id, wire-format identical to int8. */
+      return MEOS_WKB_INT8_SIZE;
+#endif /* H3 */
 #if JSON
     case T_JSONB:
       return jsonb_to_wkb_size(DatumGetJsonbP(value), true);
@@ -1403,16 +1418,6 @@ base_to_wkb_size(Datum value, MeosType basetype, uint8_t variant)
     case T_POSE:
       return pose_to_wkb_size(DatumGetPoseP(value), variant, true);
 #endif /* POSE || RGEO */
-#if H3
-    case T_H3INDEX:
-      /* h3index is a uint64 cell id, wire-format identical to int8. */
-      return MEOS_WKB_INT8_SIZE;
-#endif /* H3 */
-#if QUADBIN
-    case T_QUADBIN:
-      /* quadbin is a uint64 cell id, wire-format identical to int8. */
-      return MEOS_WKB_INT8_SIZE;
-#endif /* QUADBIN */
 #if POINTCLOUD
     case T_PCPOINT:
       return pcpoint_to_wkb_size((const Pcpoint *) DatumGetPointer(value),
@@ -1421,6 +1426,11 @@ base_to_wkb_size(Datum value, MeosType basetype, uint8_t variant)
       return pcpatch_to_wkb_size((const Pcpatch *) DatumGetPointer(value),
         variant);
 #endif /* POINTCLOUD */
+#if QUADBIN
+    case T_QUADBIN:
+      /* quadbin is a uint64 cell id, wire-format identical to int8. */
+      return MEOS_WKB_INT8_SIZE;
+#endif /* QUADBIN */
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_MFJSON_OUTPUT,
         "Unknown temporal base type in WKB output: %s",
@@ -1678,10 +1688,10 @@ datum_to_wkb_size(Datum value, MeosType type, uint8_t variant)
   if (type == T_CBUFFER)
     return cbuffer_to_wkb_size(DatumGetCbufferP(value), variant, false);
 #endif /* CBUFFER */
-#if RASTER
-  if (type == T_RAQUET)
-    return raquet_to_wkb_size(DatumGetRaquetP(value), false);
-#endif /* RASTER */
+#if H3
+  if (type == T_H3INDEX)
+    return h3index_to_wkb_size(variant);
+#endif /* H3 */
 #if JSON
   if (type == T_JSONB)
     return jsonb_to_wkb_size(DatumGetJsonbP(value), variant);
@@ -1690,14 +1700,14 @@ datum_to_wkb_size(Datum value, MeosType type, uint8_t variant)
   if (type == T_NPOINT)
     return npoint_to_wkb_size(DatumGetNpointP(value), variant, false);
 #endif /* NPOINT */
-#if H3
-  if (type == T_H3INDEX)
-    return h3index_to_wkb_size(variant);
-#endif /* H3 */
 #if POSE || RGEO
   if (type == T_POSE)
     return pose_to_wkb_size(DatumGetPoseP(value), variant, false);
 #endif /* POSE || RGEO */
+#if RASTER
+  if (type == T_RAQUET)
+    return raquet_to_wkb_size(DatumGetRaquetP(value), false);
+#endif /* RASTER */
   if (temporal_type(type))
     return temporal_to_wkb_size((Temporal *) DatumGetPointer(value), variant);
   /* Error! */
@@ -1977,33 +1987,33 @@ cbuffer_to_wkb_buf(const Cbuffer *cb, uint8_t *buf, uint8_t variant,
 }
 #endif /* CBUFFER */
 
-#if RASTER
+#if H3
 /**
- * @brief Write into the buffer a Raquet raster tile in the Well-Known Binary
- * (WKB) representation
+ * @brief Write into the buffer an h3index in the Well-Known Binary (WKB)
+ * representation
+ * @details endian flag, SRID flag, optional SRID (WGS84, extended variant
+ * only), then the cell id (int8). The SRID flag bit is set only when the SRID
+ * is actually written — matching the npoint/pose readers (and unlike the
+ * unconditional cbuffer flag).
  */
 static uint8_t *
-raquet_to_wkb_buf(const Raquet *rq, uint8_t *buf, uint8_t variant,
-  bool component)
+h3index_to_wkb_buf(Datum value, uint8_t *buf, uint8_t variant)
 {
-  if (! component)
-    /* Write the endian flag (byte) */
-    buf = endian_to_wkb_buf(buf, variant);
-  /* Write the tile header */
-  buf = int64_to_wkb_buf((int64) rq->quadbin, buf, variant);
-  uint8_t pixtype = rq->pixtype;
-  buf = bytes_to_wkb_buf(&pixtype, MEOS_WKB_BYTE_SIZE, buf, variant);
-  buf = int32_to_wkb_buf((int) rq->width, buf, variant);
-  buf = int32_to_wkb_buf((int) rq->height, buf, variant);
-  uint8_t has_nodata = rq->has_nodata ? 1 : 0;
-  buf = bytes_to_wkb_buf(&has_nodata, MEOS_WKB_BYTE_SIZE, buf, variant);
-  buf = double_to_wkb_buf(rq->nodata, buf, variant);
-  /* Write the row-major packed pixel bytes */
-  buf = bytes_to_wkb_buf((uint8_t *) rq->pixels, raquet_pixels_size(rq), buf,
-    variant);
+  /* Write the endian flag (byte) */
+  buf = endian_to_wkb_buf(buf, variant);
+  /* Write the SRID flag, set only when the SRID will follow */
+  int32_t srid = SRID_DEFAULT;
+  uint8_t wkb_flags = spatial_wkb_needs_srid(srid, variant) ?
+    (uint8_t) MEOS_WKB_SRIDFLAG : 0;
+  buf = uint8_to_wkb_buf(wkb_flags, buf, variant);
+  /* Write the SRID (extended/EWKB variant only) */
+  if (spatial_wkb_needs_srid(srid, variant))
+    buf = int32_to_wkb_buf(srid, buf, variant);
+  /* Write the cell id, wire-format identical to int8 */
+  buf = int64_to_wkb_buf((int64) DatumGetInt64(value), buf, variant);
   return buf;
 }
-#endif /* RASTER */
+#endif /* H3 */
 
 #if JSON
 /**
@@ -2026,6 +2036,7 @@ jsonb_to_wkb_buf(const Jsonb *jb, uint8_t *buf, uint8_t variant)
   return buf;
 }
 #endif /* JSON */
+
 #if NPOINT
 /**
  * @brief Write into the buffer the flag of a network point in the Well-Known
@@ -2128,34 +2139,6 @@ pose_to_wkb_buf(const Pose *pose, uint8_t *buf, uint8_t variant,
 }
 #endif /* POSE */
 
-#if H3
-/**
- * @brief Write into the buffer an h3index in the Well-Known Binary (WKB)
- * representation
- * @details endian flag, SRID flag, optional SRID (WGS84, extended variant
- * only), then the cell id (int8). The SRID flag bit is set only when the SRID
- * is actually written — matching the npoint/pose readers (and unlike the
- * unconditional cbuffer flag).
- */
-static uint8_t *
-h3index_to_wkb_buf(Datum value, uint8_t *buf, uint8_t variant)
-{
-  /* Write the endian flag (byte) */
-  buf = endian_to_wkb_buf(buf, variant);
-  /* Write the SRID flag, set only when the SRID will follow */
-  int32_t srid = SRID_DEFAULT;
-  uint8_t wkb_flags = spatial_wkb_needs_srid(srid, variant) ?
-    (uint8_t) MEOS_WKB_SRIDFLAG : 0;
-  buf = uint8_to_wkb_buf(wkb_flags, buf, variant);
-  /* Write the SRID (extended/EWKB variant only) */
-  if (spatial_wkb_needs_srid(srid, variant))
-    buf = int32_to_wkb_buf(srid, buf, variant);
-  /* Write the cell id, wire-format identical to int8 */
-  buf = int64_to_wkb_buf((int64) DatumGetInt64(value), buf, variant);
-  return buf;
-}
-#endif /* H3 */
-
 #if POINTCLOUD
 /**
  * @brief Emit @p body_len bytes from @p src into @p buf, hex-encoding when
@@ -2205,6 +2188,34 @@ pcpatch_to_wkb_buf(const Pcpatch *pa, uint8_t *buf, uint8_t variant)
 }
 #endif /* POINTCLOUD */
 
+#if RASTER
+/**
+ * @brief Write into the buffer a Raquet raster tile in the Well-Known Binary
+ * (WKB) representation
+ */
+static uint8_t *
+raquet_to_wkb_buf(const Raquet *rq, uint8_t *buf, uint8_t variant,
+  bool component)
+{
+  if (! component)
+    /* Write the endian flag (byte) */
+    buf = endian_to_wkb_buf(buf, variant);
+  /* Write the tile header */
+  buf = int64_to_wkb_buf((int64) rq->quadbin, buf, variant);
+  uint8_t pixtype = rq->pixtype;
+  buf = bytes_to_wkb_buf(&pixtype, MEOS_WKB_BYTE_SIZE, buf, variant);
+  buf = int32_to_wkb_buf((int) rq->width, buf, variant);
+  buf = int32_to_wkb_buf((int) rq->height, buf, variant);
+  uint8_t has_nodata = rq->has_nodata ? 1 : 0;
+  buf = bytes_to_wkb_buf(&has_nodata, MEOS_WKB_BYTE_SIZE, buf, variant);
+  buf = double_to_wkb_buf(rq->nodata, buf, variant);
+  /* Write the row-major packed pixel bytes */
+  buf = bytes_to_wkb_buf((uint8_t *) rq->pixels, raquet_pixels_size(rq), buf,
+    variant);
+  return buf;
+}
+#endif /* RASTER */
+
 /**
  * @brief Write into the buffer a temporal instant in the Well-Known Binary
  * (WKB) representation
@@ -2248,6 +2259,12 @@ base_to_wkb_buf(Datum value, MeosType basetype, uint8_t *buf,
       buf = cbuffer_to_wkb_buf(DatumGetCbufferP(value), buf, variant, true);
       break;
 #endif /* CBUFFER */
+#if H3
+    case T_H3INDEX:
+      /* h3index is a uint64 cell id; wire it as int8. */
+      buf = int64_to_wkb_buf((int64) DatumGetInt64(value), buf, variant);
+      break;
+#endif /* H3 */
 #if JSON
     case T_JSONB:
       buf = jsonb_to_wkb_buf(DatumGetJsonbP(value), buf, variant);
@@ -2263,12 +2280,6 @@ base_to_wkb_buf(Datum value, MeosType basetype, uint8_t *buf,
       buf = pose_to_wkb_buf(DatumGetPoseP(value), buf, variant, true);
       break;
 #endif /* POSE || RGEO */
-#if H3
-    case T_H3INDEX:
-      /* h3index is a uint64 cell id; wire it as int8. */
-      buf = int64_to_wkb_buf((int64) DatumGetInt64(value), buf, variant);
-      break;
-#endif /* H3 */
 #if QUADBIN
     case T_QUADBIN:
       /* quadbin is a uint64 cell id; wire it as int8. */
@@ -2906,10 +2917,10 @@ datum_to_wkb_buf(Datum value, MeosType type, uint8_t *buf, uint8_t variant)
   else if (type == T_CBUFFER)
     buf = cbuffer_to_wkb_buf(DatumGetCbufferP(value), buf, variant, false);
 #endif /* CBUFFER */
-#if RASTER
-  else if (type == T_RAQUET)
-    buf = raquet_to_wkb_buf(DatumGetRaquetP(value), buf, variant, false);
-#endif /* RASTER */
+#if H3
+  else if (type == T_H3INDEX)
+    buf = h3index_to_wkb_buf(value, buf, variant);
+#endif /* H3 */
 #if JSON
   else if (type == T_JSONB)
     buf = jsonb_to_wkb_buf(DatumGetJsonbP(value), buf, variant);
@@ -2919,14 +2930,14 @@ datum_to_wkb_buf(Datum value, MeosType type, uint8_t *buf, uint8_t variant)
     buf = npoint_to_wkb_buf(DatumGetNpointP(value), buf, variant,
       false);
 #endif /* NPOINT */
-#if H3
-  else if (type == T_H3INDEX)
-    buf = h3index_to_wkb_buf(value, buf, variant);
-#endif /* H3 */
 #if POSE || RGEO
   else if (type == T_POSE)
     buf = pose_to_wkb_buf(DatumGetPoseP(value), buf, variant, false);
 #endif /* POSE || RGEO */
+#if RASTER
+  else if (type == T_RAQUET)
+    buf = raquet_to_wkb_buf(DatumGetRaquetP(value), buf, variant, false);
+#endif /* RASTER */
   else if (temporal_type(type))
     buf = temporal_to_wkb_buf((Temporal *) DatumGetPointer(value), buf,
       variant);
