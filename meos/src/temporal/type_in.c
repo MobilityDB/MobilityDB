@@ -175,26 +175,6 @@ basetype_in(const char *str, MeosType type, bool end UNUSED, Datum *result)
       *result = Int64GetDatum(i);
       return true;
     }
-#if H3
-    case T_H3INDEX:
-    {
-      H3Index cell = h3index_in(str);
-      if (cell == (H3Index) 0)
-        return false;
-      *result = Int64GetDatum((int64) cell);
-      return true;
-    }
-#endif
-#if QUADBIN
-    case T_QUADBIN:
-    {
-      Quadbin cell = quadbin_parse(str);
-      if (cell == (Quadbin) 0)
-        return false;
-      *result = Int64GetDatum((int64) cell);
-      return true;
-    }
-#endif
     case T_FLOAT8:
     {
       double d = float8_in(str);
@@ -234,6 +214,16 @@ basetype_in(const char *str, MeosType type, bool end UNUSED, Datum *result)
       if (! cb)
         return false;
       *result = PointerGetDatum(cb);
+      return true;
+    }
+#endif
+#if H3
+    case T_H3INDEX:
+    {
+      H3Index cell = h3index_in(str);
+      if (cell == (H3Index) 0)
+        return false;
+      *result = Int64GetDatum((int64) cell);
       return true;
     }
 #endif
@@ -282,6 +272,16 @@ basetype_in(const char *str, MeosType type, bool end UNUSED, Datum *result)
       if (! pose)
         return false;
       *result = PointerGetDatum(pose);
+      return true;
+    }
+#endif
+#if QUADBIN
+    case T_QUADBIN:
+    {
+      Quadbin cell = quadbin_parse(str);
+      if (cell == (Quadbin) 0)
+        return false;
+      *result = Int64GetDatum((int64) cell);
       return true;
     }
 #endif
@@ -443,7 +443,9 @@ parse_mfjson_values(json_object *mfjson, MeosType temptype, int *count)
         values[i] = Int32GetDatum(json_object_get_int(jvalue));
         break;
       case T_TBIGINT:
+#if H3
       case T_TH3INDEX:
+#endif
         if (json_object_get_type(jvalue) != json_type_int)
         {
           meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
@@ -593,41 +595,158 @@ parse_mfjson_geos(json_object *mfjson, int32_t srid, bool geodetic, int *count)
   return values;
 }
 
-#if RGEO
+#if CBUFFER
 /**
- * @brief Return a reference geometry of a temporal rigid geometry from its
- * MF-JSON representation
+ * @brief Return a circular buffer from its MF-JSON representation
+ * @details A circular buffer value is a JSON object with a `point` member
+ * (a planar 2D `[x, y]` coordinate array, as for a temporal point) and a
+ * numeric `radius` member, e.g. `{"point":[1,2],"radius":3}`. The member
+ * names mirror the @p point and @p radius accessors. Circular buffers are
+ * always planar 2D, so there is no Z/geodetic handling as for poses.
  */
-static GSERIALIZED *
-parse_mfjson_ref_geo(json_object *mfjson, int32_t srid, bool geodetic)
+static Cbuffer *
+parse_mfjson_cbuffer(json_object *mfjson, int32_t srid)
 {
-  json_object *mfjsonTmp = mfjson;
-  json_object *geo_json = NULL;
-  geo_json = findMemberByName(mfjsonTmp, "geometry");
-  if (geo_json == NULL)
+  assert(mfjson);
+  json_object *point = findMemberByName(mfjson, "point");
+  if (point == NULL)
   {
     meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
-      "Unable to find 'geometry' in MFJSON string");
+      "Unable to find 'point' in MFJSON string");
     return NULL;
   }
-  int hasz = LW_FALSE;
-  LWGEOM *geo = parse_geojson(geo_json, &hasz);
-  if (! geo)
-    return NULL;
-  if (! hasz)
+  json_object *radius = findMemberByName(mfjson, "radius");
+  if (radius == NULL)
   {
-    LWGEOM *tmp = lwgeom_force_2d(geo);
-    lwgeom_free(geo);
-    geo = tmp;
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "Unable to find 'radius' in MFJSON string");
+    return NULL;
   }
-  lwgeom_add_bbox(geo);
-  lwgeom_set_srid(geo, srid);
-  lwgeom_set_geodetic(geo, geodetic);
-  GSERIALIZED *result = geo_serialize(geo);
-  lwgeom_free(geo);
+  Datum ptdatum = parse_mfjson_coord(point, srid, false);
+  if (! ptdatum)
+    return NULL;
+  GSERIALIZED *gs = DatumGetGserializedP(ptdatum);
+  Cbuffer *result = cbuffer_make(gs, json_object_get_double(radius));
+  pfree(gs);
   return result;
 }
-#endif /* RGEO */
+
+/**
+ * @brief Return an array of circular buffers from its MF-JSON values
+ */
+static Datum *
+parse_mfjson_cbuffers(json_object *mfjson, int32_t srid, int *count)
+{
+  json_object *mfjsonTmp = mfjson;
+  json_object *values_json = findMemberByName(mfjsonTmp, "values");
+  if (values_json == NULL)
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "Unable to find 'values' in MFJSON string");
+    return NULL;
+  }
+  if (json_object_get_type(values_json) != json_type_array)
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "Invalid 'values' array in MFJSON string");
+    return NULL;
+  }
+  int nvalues = (int) json_object_array_length(values_json);
+  if (nvalues < 1)
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "Invalid value of 'values' array in MFJSON string");
+    return NULL;
+  }
+  Datum *values = palloc(sizeof(Datum) * nvalues);
+  for (int i = 0; i < nvalues; ++i)
+  {
+    json_object *cb = json_object_array_get_idx(values_json, i);
+    values[i] = PointerGetDatum(parse_mfjson_cbuffer(cb, srid));
+  }
+  *count = nvalues;
+  return values;
+}
+#endif /* CBUFFER */
+
+/*****************************************************************************/
+
+#if NPOINT
+/**
+ * @brief Return a network point from its MF-JSON value
+ *
+ * The expected payload shape (matching the asMFJSON output side) is
+ * @code {"route":<route>,"position":<position>} @endcode.  The position
+ * must be in [0, 1] and the route id must be present in the loaded ways
+ * cache; both are validated by @c npoint_make.  The @p srid argument is
+ * ignored: a network point inherits its SRID from its route, so the
+ * caller-supplied SRID has no effect on the resulting Npoint.
+ */
+static Npoint *
+parse_mfjson_npoint(json_object *mfjson, int32_t srid __attribute__((unused)))
+{
+  assert(mfjson);
+  /* Get the route id */
+  json_object *rid_json = findMemberByName(mfjson, "route");
+  if (rid_json == NULL)
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "Unable to find 'route' in MFJSON string");
+    return NULL;
+  }
+  int64 rid = (int64) json_object_get_int64(rid_json);
+
+  /* Get the position */
+  json_object *pos_json = findMemberByName(mfjson, "position");
+  if (pos_json == NULL)
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "Unable to find 'position' in MFJSON string");
+    return NULL;
+  }
+  double pos = json_object_get_double(pos_json);
+
+  /* npoint_make validates route registration and pos in [0, 1] */
+  return npoint_make(rid, pos);
+}
+
+/**
+ * @brief Return an array of network points from its MF-JSON values
+ */
+static Datum *
+parse_mfjson_npoints(json_object *mfjson, int32_t srid, int *count)
+{
+  json_object *values_json = findMemberByName(mfjson, "values");
+  if (values_json == NULL)
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "Unable to find 'values' in MFJSON string");
+    return NULL;
+  }
+  if (json_object_get_type(values_json) != json_type_array)
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "Invalid 'values' array in MFJSON string");
+    return NULL;
+  }
+  int nnpoints = (int) json_object_array_length(values_json);
+  if (nnpoints < 1)
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "Invalid value of 'values' array in MFJSON string");
+    return NULL;
+  }
+
+  Datum *values = palloc(sizeof(Datum) * nnpoints);
+  for (int i = 0; i < nnpoints; ++i)
+  {
+    json_object *np = json_object_array_get_idx(values_json, i);
+    values[i] = PointerGetDatum(parse_mfjson_npoint(np, srid));
+  }
+  *count = nnpoints;
+  return values;
+}
+#endif /* NPOINT */
 
 /*****************************************************************************/
 
@@ -784,158 +903,43 @@ parse_mfjson_poses(json_object *mfjson, int32_t srid, int *count)
 }
 #endif /* POSE */
 
-#if NPOINT
-/**
- * @brief Return a network point from its MF-JSON value
- *
- * The expected payload shape (matching the asMFJSON output side) is
- * @code {"route":<route>,"position":<position>} @endcode.  The position
- * must be in [0, 1] and the route id must be present in the loaded ways
- * cache; both are validated by @c npoint_make.  The @p srid argument is
- * ignored: a network point inherits its SRID from its route, so the
- * caller-supplied SRID has no effect on the resulting Npoint.
- */
-static Npoint *
-parse_mfjson_npoint(json_object *mfjson, int32_t srid __attribute__((unused)))
-{
-  assert(mfjson);
-  /* Get the route id */
-  json_object *rid_json = findMemberByName(mfjson, "route");
-  if (rid_json == NULL)
-  {
-    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
-      "Unable to find 'route' in MFJSON string");
-    return NULL;
-  }
-  int64 rid = (int64) json_object_get_int64(rid_json);
-
-  /* Get the position */
-  json_object *pos_json = findMemberByName(mfjson, "position");
-  if (pos_json == NULL)
-  {
-    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
-      "Unable to find 'position' in MFJSON string");
-    return NULL;
-  }
-  double pos = json_object_get_double(pos_json);
-
-  /* npoint_make validates route registration and pos in [0, 1] */
-  return npoint_make(rid, pos);
-}
-
-/**
- * @brief Return an array of network points from its MF-JSON values
- */
-static Datum *
-parse_mfjson_npoints(json_object *mfjson, int32_t srid, int *count)
-{
-  json_object *values_json = findMemberByName(mfjson, "values");
-  if (values_json == NULL)
-  {
-    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
-      "Unable to find 'values' in MFJSON string");
-    return NULL;
-  }
-  if (json_object_get_type(values_json) != json_type_array)
-  {
-    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
-      "Invalid 'values' array in MFJSON string");
-    return NULL;
-  }
-  int nnpoints = (int) json_object_array_length(values_json);
-  if (nnpoints < 1)
-  {
-    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
-      "Invalid value of 'values' array in MFJSON string");
-    return NULL;
-  }
-
-  Datum *values = palloc(sizeof(Datum) * nnpoints);
-  for (int i = 0; i < nnpoints; ++i)
-  {
-    json_object *np = json_object_array_get_idx(values_json, i);
-    values[i] = PointerGetDatum(parse_mfjson_npoint(np, srid));
-  }
-  *count = nnpoints;
-  return values;
-}
-#endif /* NPOINT */
-
 /*****************************************************************************/
 
-#if CBUFFER
+#if RGEO
 /**
- * @brief Return a circular buffer from its MF-JSON representation
- * @details A circular buffer value is a JSON object with a `point` member
- * (a planar 2D `[x, y]` coordinate array, as for a temporal point) and a
- * numeric `radius` member, e.g. `{"point":[1,2],"radius":3}`. The member
- * names mirror the @p point and @p radius accessors. Circular buffers are
- * always planar 2D, so there is no Z/geodetic handling as for poses.
+ * @brief Return a reference geometry of a temporal rigid geometry from its
+ * MF-JSON representation
  */
-static Cbuffer *
-parse_mfjson_cbuffer(json_object *mfjson, int32_t srid)
-{
-  assert(mfjson);
-  json_object *point = findMemberByName(mfjson, "point");
-  if (point == NULL)
-  {
-    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
-      "Unable to find 'point' in MFJSON string");
-    return NULL;
-  }
-  json_object *radius = findMemberByName(mfjson, "radius");
-  if (radius == NULL)
-  {
-    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
-      "Unable to find 'radius' in MFJSON string");
-    return NULL;
-  }
-  Datum ptdatum = parse_mfjson_coord(point, srid, false);
-  if (! ptdatum)
-    return NULL;
-  GSERIALIZED *gs = DatumGetGserializedP(ptdatum);
-  Cbuffer *result = cbuffer_make(gs, json_object_get_double(radius));
-  pfree(gs);
-  return result;
-}
-
-/**
- * @brief Return an array of circular buffers from its MF-JSON values
- */
-static Datum *
-parse_mfjson_cbuffers(json_object *mfjson, int32_t srid, int *count)
+static GSERIALIZED *
+parse_mfjson_ref_geo(json_object *mfjson, int32_t srid, bool geodetic)
 {
   json_object *mfjsonTmp = mfjson;
-  json_object *values_json = findMemberByName(mfjsonTmp, "values");
-  if (values_json == NULL)
+  json_object *geo_json = NULL;
+  geo_json = findMemberByName(mfjsonTmp, "geometry");
+  if (geo_json == NULL)
   {
     meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
-      "Unable to find 'values' in MFJSON string");
+      "Unable to find 'geometry' in MFJSON string");
     return NULL;
   }
-  if (json_object_get_type(values_json) != json_type_array)
-  {
-    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
-      "Invalid 'values' array in MFJSON string");
+  int hasz = LW_FALSE;
+  LWGEOM *geo = parse_geojson(geo_json, &hasz);
+  if (! geo)
     return NULL;
-  }
-  int nvalues = (int) json_object_array_length(values_json);
-  if (nvalues < 1)
+  if (! hasz)
   {
-    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
-      "Invalid value of 'values' array in MFJSON string");
-    return NULL;
+    LWGEOM *tmp = lwgeom_force_2d(geo);
+    lwgeom_free(geo);
+    geo = tmp;
   }
-  Datum *values = palloc(sizeof(Datum) * nvalues);
-  for (int i = 0; i < nvalues; ++i)
-  {
-    json_object *cb = json_object_array_get_idx(values_json, i);
-    values[i] = PointerGetDatum(parse_mfjson_cbuffer(cb, srid));
-  }
-  *count = nvalues;
-  return values;
+  lwgeom_add_bbox(geo);
+  lwgeom_set_srid(geo, srid);
+  lwgeom_set_geodetic(geo, geodetic);
+  GSERIALIZED *result = geo_serialize(geo);
+  lwgeom_free(geo);
+  return result;
 }
-#endif /* CBUFFER */
+#endif /* RGEO */
 
 /*****************************************************************************/
 
@@ -1015,18 +1019,10 @@ tinstant_from_mfjson(json_object *mfjson, bool spatial, int32_t srid,
       values = parse_mfjson_points(mfjson, srid, geodetic, &nvalues);
     else if (tgeo_type(temptype))
       values = parse_mfjson_geos(mfjson, srid, geodetic, &nvalues);
-#if POSE || RGEO
-    else if (temptype == T_TPOSE || temptype == T_TRGEOMETRY)
-      values = parse_mfjson_poses(mfjson, srid, &nvalues);
-#endif /* POSE */
 #if CBUFFER
     else if (temptype == T_TCBUFFER)
       values = parse_mfjson_cbuffers(mfjson, srid, &nvalues);
 #endif /* CBUFFER */
-#if NPOINT
-    else if (temptype == T_TNPOINT)
-      values = parse_mfjson_npoints(mfjson, srid, &nvalues);
-#endif /* NPOINT */
 #if H3
     /* h3index is a scalar (int8) cell id carried with a geodetic bbox: the
      * crs/SRID is parsed as for a spatial type, but the 'values' array holds
@@ -1035,6 +1031,14 @@ tinstant_from_mfjson(json_object *mfjson, bool spatial, int32_t srid,
     else if (temptype == T_TH3INDEX)
       values = parse_mfjson_values(mfjson, temptype, &nvalues);
 #endif /* H3 */
+#if NPOINT
+    else if (temptype == T_TNPOINT)
+      values = parse_mfjson_npoints(mfjson, srid, &nvalues);
+#endif /* NPOINT */
+#if POSE || RGEO
+    else if (temptype == T_TPOSE || temptype == T_TRGEOMETRY)
+      values = parse_mfjson_poses(mfjson, srid, &nvalues);
+#endif /* POSE */
     else
     {
       meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
@@ -1078,18 +1082,10 @@ tinstarr_from_mfjson(json_object *mfjson, bool isgeo, int32_t srid,
       values = parse_mfjson_points(mfjson, srid, geodetic, &nvalues);
     else if (tgeo_type(temptype))
       values = parse_mfjson_geos(mfjson, srid, geodetic, &nvalues);
-#if POSE || RGEO
-    else if (temptype == T_TPOSE || temptype == T_TRGEOMETRY)
-      values = parse_mfjson_poses(mfjson, srid, &nvalues);
-#endif /* RGEO */
 #if CBUFFER
     else if (temptype == T_TCBUFFER)
       values = parse_mfjson_cbuffers(mfjson, srid, &nvalues);
 #endif /* CBUFFER */
-#if NPOINT
-    else if (temptype == T_TNPOINT)
-      values = parse_mfjson_npoints(mfjson, srid, &nvalues);
-#endif /* NPOINT */
 #if H3
     /* h3index is a scalar (int8) cell id carried with a geodetic bbox: the
      * crs/SRID is parsed as for a spatial type, but the 'values' array holds
@@ -1098,6 +1094,14 @@ tinstarr_from_mfjson(json_object *mfjson, bool isgeo, int32_t srid,
     else if (temptype == T_TH3INDEX)
       values = parse_mfjson_values(mfjson, temptype, &nvalues);
 #endif /* H3 */
+#if NPOINT
+    else if (temptype == T_TNPOINT)
+      values = parse_mfjson_npoints(mfjson, srid, &nvalues);
+#endif /* NPOINT */
+#if POSE || RGEO
+    else if (temptype == T_TPOSE || temptype == T_TRGEOMETRY)
+      values = parse_mfjson_poses(mfjson, srid, &nvalues);
+#endif /* RGEO */
    else
     {
       meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
@@ -1234,25 +1238,29 @@ ensure_temptype_mfjson(const char *typestr)
       strcmp(typestr, "MovingFloat") != 0 &&
       strcmp(typestr, "MovingText") != 0 &&
       strcmp(typestr, "MovingPoint") != 0 &&
-      strcmp(typestr, "MovingGeometry") != 0  &&
-      strcmp(typestr, "MovingPose") != 0 &&
-      strcmp(typestr, "MovingRigidGeometry") != 0
+      strcmp(typestr, "MovingGeometry") != 0
 #if CBUFFER
       && strcmp(typestr, "MovingCircularBuffer") != 0
 #endif /* CBUFFER */
-#if NPOINT
-      && strcmp(typestr, "MovingNetworkPoint") != 0
-#endif /* NPOINT */
 #if H3
       && strcmp(typestr, "MovingH3Index") != 0
 #endif /* H3 */
 #if JSON
       && strcmp(typestr, "MovingJSON") != 0
 #endif /* JSON */
+#if NPOINT
+      && strcmp(typestr, "MovingNetworkPoint") != 0
+#endif /* NPOINT */
 #if POINTCLOUD
       && strcmp(typestr, "MovingPCPoint") != 0
       && strcmp(typestr, "MovingPCPatch") != 0
 #endif /* POINTCLOUD */
+#if POSE
+      && strcmp(typestr, "MovingPose") != 0
+#endif /* POSE */
+#if RGEO
+      && strcmp(typestr, "MovingRigidGeometry") != 0
+#endif /* RGEO */
       )
   {
     meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
@@ -1318,18 +1326,10 @@ temporal_from_mfjson(const char *mfjson, MeosType temptype)
     jtemptype = T_TINT;
   else if (strcmp(typestr, "MovingBigInteger") == 0)
     jtemptype = T_TBIGINT;
-#if H3
-  else if (strcmp(typestr, "MovingH3Index") == 0)
-    jtemptype = T_TH3INDEX;
-#endif
   else if (strcmp(typestr, "MovingFloat") == 0)
     jtemptype = T_TFLOAT;
   else if (strcmp(typestr, "MovingText") == 0)
     jtemptype = T_TTEXT;
-#if JSON
-  else if (strcmp(typestr, "MovingJSON") == 0)
-    jtemptype = T_TJSONB;
-#endif /* JSON */
   else if (strcmp(typestr, "MovingPoint") == 0)
   {
     if (temptype == T_TGEOGPOINT)
@@ -1344,27 +1344,36 @@ temporal_from_mfjson(const char *mfjson, MeosType temptype)
     else /* Default to T_TGEOMETRY */
       jtemptype = T_TGEOMETRY;
   }
-  else if (strcmp(typestr, "MovingPose") == 0)
-    jtemptype = T_TPOSE;
-  else if (strcmp(typestr, "MovingRigidGeometry") == 0)
-    jtemptype = T_TRGEOMETRY;
-#if NPOINT
-  else if (strcmp(typestr, "MovingNetworkPoint") == 0)
-    jtemptype = T_TNPOINT;
-#endif /* NPOINT */
-
 #if CBUFFER
   else if (strcmp(typestr, "MovingCircularBuffer") == 0)
     jtemptype = T_TCBUFFER;
 #endif /* CBUFFER */
-
+#if H3
+  else if (strcmp(typestr, "MovingH3Index") == 0)
+    jtemptype = T_TH3INDEX;
+#endif /* H3 */
+#if JSON
+  else if (strcmp(typestr, "MovingJSON") == 0)
+    jtemptype = T_TJSONB;
+#endif /* JSON */
+#if NPOINT
+  else if (strcmp(typestr, "MovingNetworkPoint") == 0)
+    jtemptype = T_TNPOINT;
+#endif /* NPOINT */
 #if POINTCLOUD
   else if (strcmp(typestr, "MovingPCPoint") == 0)
     jtemptype = T_TPCPOINT;
   else if (strcmp(typestr, "MovingPCPatch") == 0)
     jtemptype = T_TPCPATCH;
 #endif /* POINTCLOUD */
-
+#if POSE
+  else if (strcmp(typestr, "MovingPose") == 0)
+    jtemptype = T_TPOSE;
+#endif /* POSE */
+#if RGEO
+  else if (strcmp(typestr, "MovingRigidGeometry") == 0)
+    jtemptype = T_TRGEOMETRY;
+#endif /* RGEO */
   if (temptype != T_UNKNOWN && jtemptype != temptype)
   {
     meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
@@ -1755,45 +1764,33 @@ cbuffer_from_wkb_state(meos_wkb_parse_state *s, bool component)
 }
 #endif /* CBUFFER */
 
-#if RASTER
+#if H3
 /**
- * @brief Read a Raquet raster tile and advance the parse state forward
- * @details The endian flag has already been consumed in
- * #type_from_wkb_state. What remains are the tile header fields followed by
- * the row-major packed pixel bytes, whose length is derived from the width,
- * height and pixel type.
+ * @brief Read an h3index and advance the parse state forward
+ * @details The endian flag was consumed by #type_from_wkb. Consume the SRID
+ * flag and the optional SRID — which, if present, must be WGS84 (EPSG:4326),
+ * an h3 cell being inherently geographic — then read the cell id (int8).
  */
-Datum
-raquet_from_wkb_state(meos_wkb_parse_state *s)
+static Datum
+h3index_from_wkb_state(meos_wkb_parse_state *s)
 {
-  uint64 quadbin = (uint64) int64_from_wkb_state(s);
-  uint8_t pixtype = byte_from_wkb_state(s);
-  uint16_t width = (uint16_t) int32_from_wkb_state(s);
-  uint16_t height = (uint16_t) int32_from_wkb_state(s);
-  bool has_nodata = (bool) byte_from_wkb_state(s);
-  double nodata = double_from_wkb_state(s);
-  size_t pixsize;
-  switch (pixtype)
+  /* Read the flags; consume the SRID only when it is present */
+  uint8_t wkb_flags = byte_from_wkb_state(s);
+  if (wkb_flags & MEOS_WKB_SRIDFLAG)
   {
-    case MEOS_PT_UINT8:   pixsize = 1; break;
-    case MEOS_PT_INT16:   pixsize = 2; break;
-    case MEOS_PT_INT32:   pixsize = 4; break;
-    case MEOS_PT_FLOAT32: pixsize = 4; break;
-    case MEOS_PT_FLOAT64: pixsize = 8; break;
-    default:
+    int32_t srid = int32_from_wkb_state(s);
+    if (srid != SRID_DEFAULT)
+    {
       meos_error(ERROR, MEOS_ERR_WKB_INPUT,
-        "Unknown raquet pixel type in WKB: %u", pixtype);
+        "Only SRID %d (WGS84) is accepted for an h3index, received %d",
+        SRID_DEFAULT, srid);
       return (Datum) 0;
+    }
   }
-  size_t npixels = (size_t) width * height * pixsize;
-  /* Check that there is enough data to read the pixel payload */
-  wkb_parse_state_check(s, npixels);
-  Raquet *result = raquet_make(quadbin, width, height, (MeosPixType) pixtype,
-    nodata, has_nodata, s->pos);
-  s->pos += npixels;
-  return PointerGetDatum(result);
+  /* Read the cell id, wire-format identical to int8 */
+  return Int64GetDatum(int64_from_wkb_state(s));
 }
-#endif /* RASTER */
+#endif /* H3 */
 
 #if JSON
 /**
@@ -1822,6 +1819,7 @@ jsonb_from_wkb_state(meos_wkb_parse_state *s)
   return jb;
 }
 #endif /* JSON */
+
 #if NPOINT
 /**
  * @brief Return the state flags initialized with a byte flag read from the
@@ -1868,34 +1866,6 @@ npoint_from_wkb_state(meos_wkb_parse_state *s)
   return result;
 }
 #endif /* NPOINT */
-
-#if H3
-/**
- * @brief Read an h3index and advance the parse state forward
- * @details The endian flag was consumed by #type_from_wkb. Consume the SRID
- * flag and the optional SRID — which, if present, must be WGS84 (EPSG:4326),
- * an h3 cell being inherently geographic — then read the cell id (int8).
- */
-static Datum
-h3index_from_wkb_state(meos_wkb_parse_state *s)
-{
-  /* Read the flags; consume the SRID only when it is present */
-  uint8_t wkb_flags = byte_from_wkb_state(s);
-  if (wkb_flags & MEOS_WKB_SRIDFLAG)
-  {
-    int32_t srid = int32_from_wkb_state(s);
-    if (srid != SRID_DEFAULT)
-    {
-      meos_error(ERROR, MEOS_ERR_WKB_INPUT,
-        "Only SRID %d (WGS84) is accepted for an h3index, received %d",
-        SRID_DEFAULT, srid);
-      return (Datum) 0;
-    }
-  }
-  /* Read the cell id, wire-format identical to int8 */
-  return Int64GetDatum(int64_from_wkb_state(s));
-}
-#endif /* H3 */
 
 #if POSE || RGEO
 /**
@@ -1956,6 +1926,46 @@ pose_from_wkb_state(meos_wkb_parse_state *s)
 }
 #endif /* POSE */
 
+#if RASTER
+/**
+ * @brief Read a Raquet raster tile and advance the parse state forward
+ * @details The endian flag has already been consumed in
+ * #type_from_wkb_state. What remains are the tile header fields followed by
+ * the row-major packed pixel bytes, whose length is derived from the width,
+ * height and pixel type.
+ */
+Datum
+raquet_from_wkb_state(meos_wkb_parse_state *s)
+{
+  uint64 quadbin = (uint64) int64_from_wkb_state(s);
+  uint8_t pixtype = byte_from_wkb_state(s);
+  uint16_t width = (uint16_t) int32_from_wkb_state(s);
+  uint16_t height = (uint16_t) int32_from_wkb_state(s);
+  bool has_nodata = (bool) byte_from_wkb_state(s);
+  double nodata = double_from_wkb_state(s);
+  size_t pixsize;
+  switch (pixtype)
+  {
+    case MEOS_PT_UINT8:   pixsize = 1; break;
+    case MEOS_PT_INT16:   pixsize = 2; break;
+    case MEOS_PT_INT32:   pixsize = 4; break;
+    case MEOS_PT_FLOAT32: pixsize = 4; break;
+    case MEOS_PT_FLOAT64: pixsize = 8; break;
+    default:
+      meos_error(ERROR, MEOS_ERR_WKB_INPUT,
+        "Unknown raquet pixel type in WKB: %u", pixtype);
+      return (Datum) 0;
+  }
+  size_t npixels = (size_t) width * height * pixsize;
+  /* Check that there is enough data to read the pixel payload */
+  wkb_parse_state_check(s, npixels);
+  Raquet *result = raquet_make(quadbin, width, height, (MeosPixType) pixtype,
+    nodata, has_nodata, s->pos);
+  s->pos += npixels;
+  return PointerGetDatum(result);
+}
+#endif /* RASTER */
+
 /*****************************************************************************/
 
 /**
@@ -1987,6 +1997,11 @@ base_from_wkb_state(meos_wkb_parse_state *s)
     case T_CBUFFER:
       return PointerGetDatum(cbuffer_from_wkb_state(s, true));
 #endif /* NPOINT */
+#if H3
+    case T_H3INDEX:
+      /* h3index is a uint64 cell id, wire-format identical to int8. */
+      return Int64GetDatum(int64_from_wkb_state(s));
+#endif /* H3 */
 #if JSON
     case T_JSONB:
       return PointerGetDatum(jsonb_from_wkb_state(s));
@@ -1999,11 +2014,6 @@ base_from_wkb_state(meos_wkb_parse_state *s)
     case T_POSE:
       return PointerGetDatum(pose_from_wkb_state(s));
 #endif /* POSE */
-#if H3
-    case T_H3INDEX:
-      /* h3index is a uint64 cell id, wire-format identical to int8. */
-      return Int64GetDatum(int64_from_wkb_state(s));
-#endif /* H3 */
 #if QUADBIN
     case T_QUADBIN:
       /* quadbin is a uint64 cell id, wire-format identical to int8. */
@@ -2621,10 +2631,10 @@ type_from_wkb(const uint8_t *wkb, size_t size, MeosType type)
   if (type == T_CBUFFER)
     return PointerGetDatum(cbuffer_from_wkb_state(&s, false));
 #endif /* CBUFFER */
-#if RASTER
-  if (type == T_RAQUET)
-    return raquet_from_wkb_state(&s);
-#endif /* RASTER */
+#if H3
+  if (type == T_H3INDEX)
+    return h3index_from_wkb_state(&s);
+#endif /* H3 */
 #if JSON
   if (type == T_JSONB)
     return PointerGetDatum(jsonb_from_wkb_state(&s));
@@ -2633,14 +2643,14 @@ type_from_wkb(const uint8_t *wkb, size_t size, MeosType type)
   if (type == T_NPOINT)
     return PointerGetDatum(npoint_from_wkb_state(&s));
 #endif /* NPOINT */
-#if H3
-  if (type == T_H3INDEX)
-    return h3index_from_wkb_state(&s);
-#endif /* H3 */
 #if POSE || RGEO
   if (type == T_POSE)
     return PointerGetDatum(pose_from_wkb_state(&s));
 #endif /* POSE */
+#if RASTER
+  if (type == T_RAQUET)
+    return raquet_from_wkb_state(&s);
+#endif /* RASTER */
   if (temporal_type(type))
     return PointerGetDatum(temporal_from_wkb_state(&s));
   /* Error! */
