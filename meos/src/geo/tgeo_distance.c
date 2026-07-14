@@ -1571,10 +1571,10 @@ mindistance_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
   /* Pre-compute STBoxes for every input.  Each tspatial_to_stbox is a
    * cheap aggregate over the temporal value, amortised across all pairs
    * involving that input. */
-  STBox **bb1 = palloc(count1 * sizeof(STBox *));
-  STBox **bb2 = palloc(count2 * sizeof(STBox *));
-  for (int i = 0; i < count1; i++) bb1[i] = tspatial_to_stbox(arr1[i]);
-  for (int j = 0; j < count2; j++) bb2[j] = tspatial_to_stbox(arr2[j]);
+  STBox *bb1 = palloc(count1 * sizeof(STBox));
+  STBox *bb2 = palloc(count2 * sizeof(STBox));
+  for (int i = 0; i < count1; i++) tspatial_set_stbox(arr1[i], &bb1[i]);
+  for (int j = 0; j < count2; j++) tspatial_set_stbox(arr2[j], &bb2[j]);
 
   /* Materialise all candidate pairs with their bbox-distance lower bound */
   int npairs = count1 * count2;
@@ -1589,7 +1589,7 @@ mindistance_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
        * distance, so for geodetic inputs every pair gets a zero lower bound,
        * disabling the ordering short-circuit so that all pairs are tested */
       pairs[k].bd = MEOS_FLAGS_GET_GEODETIC(arr1[0]->flags) ? 0.0 :
-        stbox_spatial_distance(bb1[i], bb2[j]);
+        stbox_spatial_distance(&bb1[i], &bb2[j]);
       k++;
     }
   qsort(pairs, npairs, sizeof(TgeoarrPair), tgeoarr_pair_cmp);
@@ -1661,12 +1661,10 @@ mindistance_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
   /* Cleanup */
   for (int i = 0; i < count1; i++)
   {
-    pfree(bb1[i]);
     if (traj1[i] != NULL) pfree(traj1[i]);
   }
   for (int j = 0; j < count2; j++)
   {
-    pfree(bb2[j]);
     if (traj2[j] != NULL) pfree(traj2[j]);
   }
   pfree(bb1); pfree(bb2); pfree(traj1); pfree(traj2); pfree(pairs);

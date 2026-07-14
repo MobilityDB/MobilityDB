@@ -444,6 +444,10 @@ tspatial_set_stbox(const Temporal *temp, STBox *result)
       else if (temp->temptype == T_TCBUFFER)
         tcbufferinst_set_stbox((TInstant *) temp, result);
 #endif
+#if H3
+      else if (temp->temptype == T_TH3INDEX)
+        th3indexinst_set_stbox((TInstant *) temp, result);
+#endif
 #if NPOINT
       else if (temp->temptype == T_TNPOINT)
         tnpointinst_set_stbox((TInstant *) temp, result);
@@ -452,18 +456,14 @@ tspatial_set_stbox(const Temporal *temp, STBox *result)
       else if (temp->temptype == T_TPOSE)
         tposeinst_set_stbox((TInstant *) temp, result);
 #endif
+#if QUADBIN
+      else if (temp->temptype == T_TQUADBIN)
+        tquadbininst_set_stbox((TInstant *) temp, result);
+#endif
 #if RGEO
       else if (temp->temptype == T_TRGEOMETRY)
         trgeoinst_set_stbox(trgeoinst_geom_p((TInstant *) temp),
           (TInstant *) temp, result);
-#endif
-#if H3
-      else if (temp->temptype == T_TH3INDEX)
-        th3indexinst_set_stbox((TInstant *) temp, result);
-#endif
-#if QUADBIN
-      else if (temp->temptype == T_TQUADBIN)
-        tquadbininst_set_stbox((TInstant *) temp, result);
 #endif
       else
         meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
