@@ -171,14 +171,32 @@ def _spatialrels_markers(family: str):
     return begin, f"/* GENERATED-SPATIALRELS-END {family} */\n"
 
 
-# The three ever/always directions in file order: PG dispatcher + the (subject,
-# object) noun phrases of the @brief. Each direction emits an EVER then ALWAYS
-# wrapper.
+# The three ever/always directions in file order: (dir token, PG dispatcher).
+# Each direction emits an EVER then ALWAYS wrapper; the @brief noun phrase is
+# per-predicate (transitive "X contains Y" vs symmetric "X and Y are disjoint"),
+# so it comes from the manifest `briefs` map, not from a shared subject/object.
 _SR_DIRECTIONS = [
-    ("geo_tgeo",  "EA_spatialrel_geo_tspatial",      "a geometry",          "a temporal geometry"),
-    ("tgeo_geo",  "EA_spatialrel_tspatial_geo",      "a temporal geometry", "a geometry"),
-    ("tgeo_tgeo", "EA_spatialrel_tspatial_tspatial", "a temporal geometry", "another one"),
+    ("geo_tgeo",  "EA_spatialrel_geo_tspatial"),
+    ("tgeo_geo",  "EA_spatialrel_tspatial_geo"),
+    ("tgeo_tgeo", "EA_spatialrel_tspatial_tspatial"),
 ]
+
+
+def _wrap_brief(text: str, width: int = 80) -> str:
+    """Greedy word-wrap a @brief string to the 80-column house style. The first
+    line carries the ` * @brief ` prefix, continuation lines ` * `; returns the
+    text to substitute for {BRIEF} (continuation lines already prefixed)."""
+    first, cont = " * @brief ", " * "
+    lines, cur, prefix = [], "", first
+    for w in text.split(" "):
+        cand = w if not cur else cur + " " + w
+        if len(prefix) + len(cand) <= width:
+            cur = cand
+        else:
+            lines.append(cur)
+            cur, prefix = w, cont
+    lines.append(cur)
+    return lines[0] + "".join("\n" + cont + l for l in lines[1:])
 
 
 def render_spatialrels(fam: dict) -> str:
@@ -189,11 +207,13 @@ def render_spatialrels(fam: dict) -> str:
     out = []
     for pred in fam["predicates"]:
         out.append(banner_t.replace("{BANNER}", pred["banner"]))
-        for direc, disp, subj, obj in _SR_DIRECTIONS:
+        for direc, disp in _SR_DIRECTIONS:
             for ea, word, low in (("E", "ever", "e"), ("A", "always", "a")):
+                brief = _wrap_brief(
+                    "Return true if " + pred["briefs"][direc].replace("{word}", word))
                 sub = {
                     "FN": f"{ea}{pred['rel']}_{direc}",
-                    "BRIEF": f"Return true if {subj} {word} {pred['verb3']} {obj}",
+                    "BRIEF": brief,
                     "SQLFN": f"{low}{pred['Rel']}",
                     "DISP": disp,
                     "MEOS": f"ea_{pred['rel']}_{direc}",

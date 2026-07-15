@@ -196,5 +196,36 @@ spatialrel_families:
     file:      mobilitydb/src/geo/tgeo_spatialrels.c
     reference: true
     predicates:
-      - {rel: contains, Rel: Contains, verb3: contains, banner: "Ever/always contains"}
-      - {rel: covers,   Rel: Covers,   verb3: covers,   banner: "Ever covers"}
+      - rel: contains
+        Rel: Contains
+        banner: "Ever/always contains"
+        briefs:
+          geo_tgeo:  "a geometry {word} contains a temporal geometry"
+          tgeo_geo:  "a temporal geometry {word} contains a geometry"
+          tgeo_tgeo: "a temporal geometry {word} contains another one"
+      - rel: covers
+        Rel: Covers
+        banner: "Ever covers"
+        briefs:
+          geo_tgeo:  "a geometry {word} covers a temporal geometry"
+          tgeo_geo:  "a temporal geometry {word} covers a geometry"
+          tgeo_tgeo: "a temporal geometry {word} covers another one"
+
+  - family:    geo_ea_disjoint_intersects
+    file:      mobilitydb/src/geo/tgeo_spatialrels.c
+    reference: true
+    predicates:
+      - rel: disjoint
+        Rel: Disjoint
+        banner: "Ever disjoint (for both geometry and geography)"
+        briefs:
+          geo_tgeo:  "a geometry/geography and a temporal geometry are {word} disjoint"
+          tgeo_geo:  "a temporal geometry and a geometry/geography are {word} disjoint"
+          tgeo_tgeo: "two temporal geometries are {word} disjoint"
+      - rel: intersects
+        Rel: Intersects
+        banner: "Ever intersects (for both geometry and geography)"
+        briefs:
+          geo_tgeo:  "a geometry/geography and a temporal geometry {word} intersect"
+          tgeo_geo:  "a temporal geometry and a geometry/geography {word} intersect"
+          tgeo_tgeo: "two temporal geometries {word} intersect"
