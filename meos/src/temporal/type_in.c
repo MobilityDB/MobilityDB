@@ -2028,7 +2028,7 @@ base_from_wkb_state(meos_wkb_parse_state *s)
 #if CBUFFER
     case T_CBUFFER:
       return PointerGetDatum(cbuffer_from_wkb_state(s, true));
-#endif /* NPOINT */
+#endif /* CBUFFER */
 #if H3
     case T_H3INDEX:
       /* h3index is a uint64 cell id, wire-format identical to int8. */
@@ -2042,6 +2042,11 @@ base_from_wkb_state(meos_wkb_parse_state *s)
     case T_NPOINT:
       return PointerGetDatum(npoint_from_wkb_state(s));
 #endif /* NPOINT */
+#if POINTCLOUD
+    case T_PCPOINT:
+    case T_PCPATCH:
+      return PointerGetDatum(pcvarlena_from_wkb_state(s));
+#endif /* POINTCLOUD */
 #if POSE || RGEO
     case T_POSE:
       return PointerGetDatum(pose_from_wkb_state(s));
@@ -2051,11 +2056,6 @@ base_from_wkb_state(meos_wkb_parse_state *s)
       /* quadbin is a uint64 cell id, wire-format identical to int8. */
       return Int64GetDatum(int64_from_wkb_state(s));
 #endif /* QUADBIN */
-#if POINTCLOUD
-    case T_PCPOINT:
-    case T_PCPATCH:
-      return PointerGetDatum(pcvarlena_from_wkb_state(s));
-#endif /* POINTCLOUD */
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_WKB_INPUT,
         "Unknown base type in WKB string: %s", meostype_name(s->basetype));
