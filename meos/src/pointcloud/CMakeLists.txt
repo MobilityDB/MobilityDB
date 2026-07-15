@@ -157,6 +157,10 @@ if(POINTCLOUD)
   target_include_directories(pointcloud_libpc PRIVATE
     ${CMAKE_SOURCE_DIR}/pointcloud-pg/lib)   # holds sources + generated pc_config.h
   target_link_libraries(pointcloud_libpc PUBLIC LibXml2::LibXml2 ZLIB::ZLIB)
+  # Vendored upstream pgPointCloud sources that MobilityDB does not maintain or
+  # lint; suppress their compiler warnings on this target only, as done for the
+  # other vendored libraries (liblwgeom, ryu, libpgcommon).
+  target_compile_options(pointcloud_libpc PRIVATE "-w")
 
   # Link the core into the MEOS-layer pointcloud shim. lazperf (the PC_LAZPERF
   # / `laz` scheme) stays optional: pc_patch_lazperf.c is compiled into libpc
