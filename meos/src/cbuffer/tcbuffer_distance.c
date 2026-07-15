@@ -1380,9 +1380,11 @@ typedef struct
 } TcbufferGeomBucket;
 
 /**
- * @brief Geometry context for the nearest-approach kernel: the boundary
- * segments (Morton-ordered), a bucket bounding-volume hierarchy over them, the
- * overall bounding box, and whether any polygon ring is present
+ * @brief Geometry context over the boundary segments and its overall bounding
+ * box, with whether any polygon ring is present. Exactly one spatial index is
+ * built: the unbounded nearest-approach kernels (nad/shortestLine/nai) use the
+ * Morton bucket hierarchy @p bks; the fixed-reach relationship kernels
+ * (within/touches/contains/covers) use the generic R-tree @p rtree.
  */
 typedef struct
 {
@@ -1390,8 +1392,9 @@ typedef struct
   int n;
   bool has_poly;
   double xmin, ymin, xmax, ymax; /**< Overall geometry bounding box */
-  const TcbufferGeomBucket *bks;
+  const TcbufferGeomBucket *bks; /**< Morton bucket BVH (nad path), or NULL */
   int nbk;
+  RTree *rtree;                  /**< Generic R-tree (relationship path), or NULL */
 } TcbufferGeom;
 
 /** @brief A segment's Morton (Z-order) key paired with its index, for sorting.
@@ -1485,14 +1488,37 @@ tcbuffer_geom_build_buckets(TcbufferGeomEdge *segs, int n, double gxmin, double 
 }
 
 /**
- * @brief Ray-casting interior test over the bucket hierarchy: a bucket can hold
- * an edge crossing the rightward horizontal ray from (x,y) only if y is inside
- * its y-range and its xmax reaches x, so far buckets are skipped wholesale
+ * @brief Per-operation scratch buffer for the R-tree candidate ids in the
+ * relationship kernels. It is created together with the R-tree in
+ * #tcbuffer_geo_ctx_make and destroyed together with it in
+ * #tcbuffer_geo_ctx_free, so it lives exactly as long as the geometry context
+ * (the same create-with-rtree / destroy-with-rtree lifetime as rtree_results in
+ * tpoint_geom_clip.c). MEOS_TLS keeps concurrent threads from sharing it.
+ */
+static MEOS_TLS MeosArray *tcbuffer_pip_results = NULL;
+
+/**
+ * @brief Ray-casting interior test. Over the R-tree (relationship path) the
+ * candidates are the edges overlapping the rightward ray box [x, xmax] x [y, y];
+ * over the bucket hierarchy (nad path) a bucket holds a crossing edge only when y
+ * is inside its y-range and its xmax reaches x, so distant buckets are skipped
+ * wholesale. Both yield the same crossing edges, and the even-odd parity is
+ * order-independent, so the result matches.
  */
 static bool
 tcbuffer_geom_point_inside(double x, double y, const TcbufferGeom *g)
 {
   bool inside = false;
+  if (g->rtree)
+  {
+    STBox query;
+    stbox_set(true, false, false, 0, x, g->xmax, y, y, 0, 0, NULL, &query);
+    int nc = rtree_search(g->rtree, RTREE_OVERLAPS, &query, tcbuffer_pip_results);
+    for (int j = 0; j < nc; j++)
+      tcbuffer_poly_seg_raycross(
+        &g->segs[*(int *) meos_array_get(tcbuffer_pip_results, j)], x, y, &inside);
+    return inside;
+  }
   for (int b = 0; b < g->nbk; b++)
   {
     const TcbufferGeomBucket *bk = &g->bks[b];
@@ -1572,6 +1598,47 @@ tcbuffersegm_nad(double cx1, double cy1, double r1, double cx2, double cy2,
 }
 
 /**
+ * @brief Return true if a stationary disc (centre @p cx,@p cy, radius @p r) is
+ * within @p dist of the geometry
+ * @details Byte-identical to the boolean `nad(stationary disc) <= dist`: the
+ * disc is within @p dist iff its centre lies inside a polygon ring or some
+ * boundary edge is within @p dist. Unlike the running-minimum kernel this is a
+ * bounded existence test — the reach is the fixed threshold @p dist, so an edge
+ * whose box is farther than @p dist cannot qualify and is pruned. Because the
+ * per-edge distance uses the same arc/edge kernels, "min over edges <= dist" and
+ * "some edge <= dist" agree, so the visit order and pruning do not affect the
+ * result.
+ */
+static bool
+tcbuffer_disc_within_dist(double cx, double cy, double r, double dist,
+  const TcbufferGeom *g)
+{
+  if (g->has_poly && tcbuffer_geom_point_inside(cx, cy, g))
+    return true;
+  double sxmin = cx - r, sxmax = cx + r, symin = cy - r, symax = cy + r;
+  double dist2 = dist * dist;
+  STBox query;
+  stbox_set(true, false, false, 0, sxmin - dist, sxmax + dist, symin - dist,
+    symax + dist, 0, 0, NULL, &query);
+  int nc = rtree_search(g->rtree, RTREE_OVERLAPS, &query, tcbuffer_pip_results);
+  for (int j = 0; j < nc; j++)
+  {
+    const TcbufferGeomEdge *ed =
+      &g->segs[*(int *) meos_array_get(tcbuffer_pip_results, j)];
+    double edx = fmax(fmax(ed->xmin - sxmax, sxmin - ed->xmax), 0.0);
+    double edy = fmax(fmax(ed->ymin - symax, symin - ed->ymax), 0.0);
+    if (edx * edx + edy * edy > dist2)
+      continue;
+    double m = ed->is_arc ?
+      tcbuffersegm_arc_mindist(cx, cy, cx, cy, r, r, ed) :
+      tcbuffersegm_edge_mindist(cx, cy, cx, cy, r, r, ed);
+    if (m <= dist)
+      return true;
+  }
+  return false;
+}
+
+/**
  * @brief Update the running minimum with one temporal circular buffer
  * sequence (linear interpolation walks consecutive segments; discrete or
  * step interpolation treats each instant as a stationary disk)
@@ -1643,7 +1710,8 @@ nad_tcbuffer_geo_analytic(const Temporal *temp, const GSERIALIZED *gs)
    * segs along a Morton curve) and assemble the geometry context */
   int nbk = 0;
   TcbufferGeomBucket *bks = tcbuffer_geom_build_buckets(segs, n, gxmin, gymin, gxmax, gymax, &nbk);
-  TcbufferGeom g = { segs, n, has_poly, gxmin, gymin, gxmax, gymax, bks, nbk };
+  TcbufferGeom g = { segs, n, has_poly, gxmin, gymin, gxmax, gymax, bks, nbk,
+    NULL };
 
   double best = DBL_MAX;
   assert(temptype_subtype(temp->subtype));
@@ -1839,7 +1907,8 @@ shortestline_tcbuffer_geo_analytic(const Temporal *temp, const GSERIALIZED *gs)
   int nbk = 0;
   TcbufferGeomBucket *bks = tcbuffer_geom_build_buckets(segs, n, gxmin, gymin,
     gxmax, gymax, &nbk);
-  TcbufferGeom g = { segs, n, has_poly, gxmin, gymin, gxmax, gymax, bks, nbk };
+  TcbufferGeom g = { segs, n, has_poly, gxmin, gymin, gxmax, gymax, bks, nbk,
+    NULL };
 
   DistWitness w;
   w.d = DBL_MAX; w.set = false;
@@ -1899,9 +1968,27 @@ shortestline_tcbuffer_geo_analytic(const Temporal *temp, const GSERIALIZED *gs)
 typedef struct
 {
   TcbufferGeomEdge *segs;
-  TcbufferGeomBucket *bks;
   TcbufferGeom g;
 } TcbufferGeoCtx;
+
+/**
+ * @brief Build a generic R-tree over the edge bounding boxes for the fixed-reach
+ * relationship kernels; the index boxes use SRID 0 so a query needs no geometry
+ * SRID
+ */
+static RTree *
+tcbuffer_geom_build_rtree(const TcbufferGeomEdge *segs, int n)
+{
+  RTree *rt = rtree_create_stbox();
+  for (int k = 0; k < n; k++)
+  {
+    STBox box;
+    stbox_set(true, false, false, 0, segs[k].xmin, segs[k].xmax, segs[k].ymin,
+      segs[k].ymax, 0, 0, NULL, &box);
+    rtree_insert(rt, &box, k);
+  }
+  return rt;
+}
 
 /**
  * @brief Build the reusable geometry context for the native within kernel, or
@@ -1930,14 +2017,13 @@ tcbuffer_geo_ctx_make(const GSERIALIZED *gs)
     if (segs[k].xmax > gxmax) gxmax = segs[k].xmax;
     if (segs[k].ymax > gymax) gymax = segs[k].ymax;
   }
-  int nbk = 0;
-  TcbufferGeomBucket *bks = tcbuffer_geom_build_buckets(segs, n, gxmin, gymin, gxmax, gymax,
-    &nbk);
   TcbufferGeoCtx *ctx = palloc(sizeof(TcbufferGeoCtx));
   ctx->segs = segs;
-  ctx->bks = bks;
-  ctx->g = (TcbufferGeom) { segs, n, has_poly, gxmin, gymin, gxmax, gymax, bks,
-    nbk };
+  ctx->g = (TcbufferGeom) { segs, n, has_poly, gxmin, gymin, gxmax, gymax, NULL,
+    0, tcbuffer_geom_build_rtree(segs, n) };
+  /* Scratch buffer for the R-tree candidate ids, created with the R-tree and
+   * freed with it in #tcbuffer_geo_ctx_free (see tcbuffer_pip_results). */
+  tcbuffer_pip_results = meos_array_create(sizeof(int));
   return ctx;
 }
 
@@ -1950,7 +2036,12 @@ tcbuffer_geo_ctx_free(void *ctx)
   if (! ctx)
     return;
   TcbufferGeoCtx *c = (TcbufferGeoCtx *) ctx;
-  pfree(c->bks);
+  rtree_free(c->g.rtree);
+  if (tcbuffer_pip_results)
+  {
+    meos_array_destroy(tcbuffer_pip_results);
+    tcbuffer_pip_results = NULL;
+  }
   pfree(c->segs);
   pfree(c);
 }
@@ -1974,10 +2065,7 @@ tcbuffer_disc_within_ctx(const Cbuffer *cb, double dist, const void *ctxv)
 {
   const TcbufferGeoCtx *ctx = (const TcbufferGeoCtx *) ctxv;
   const POINT2D *p = GSERIALIZED_POINT2D_P(cbuffer_point_p(cb));
-  double best = DBL_MAX;
-  tcbuffersegm_nad(p->x, p->y, cb->radius, p->x, p->y, cb->radius, &ctx->g,
-    &best);
-  return best <= dist;
+  return tcbuffer_disc_within_dist(p->x, p->y, cb->radius, dist, &ctx->g);
 }
 
 /**
@@ -2148,39 +2236,36 @@ tcbufferseg_within_ctx(const Cbuffer *cb1, const Cbuffer *cb2, double dist,
   int nc = 0;
   cand[nc++] = 0.0;
   cand[nc++] = 1.0;
-  /* Bucket bounding-volume hierarchy: a within root needs
-   * dist(centre(t), edge) - radius(t) == dist at some t, and the moving centre
-   * stays inside its box, so an edge whose box is farther than dist + max(r1,r2)
-   * from that box keeps that quantity strictly above dist and yields no root.
-   * Skip whole buckets (and, within a bucket, edges) beyond that reach so the
-   * root search visits only the boundary near the swept disk; the candidate set
-   * is identical to the flat scan. */
+  /* A within root needs dist(centre(t), edge) - radius(t) == dist at some t, and
+   * the moving centre stays inside its box, so an edge whose box is farther than
+   * dist + max(r1,r2) from that box keeps that quantity strictly above dist and
+   * yields no root. Query the R-tree with the swept box grown by that reach so
+   * the root search visits only the boundary near the swept disk; the per-edge
+   * prune keeps the candidate set identical to the flat scan, and the roots are
+   * sorted afterwards so the visit order does not matter. */
   double cxmin = fmin(cx1, cx2), cxmax = fmax(cx1, cx2);
   double cymin = fmin(cy1, cy2), cymax = fmax(cy1, cy2);
   double reach = dist + fmax(r1, r2);
   double reach2 = reach * reach;
-  for (int b = 0; b < ctx->g.nbk; b++)
+  STBox query;
+  stbox_set(true, false, false, 0, cxmin - reach, cxmax + reach, cymin - reach,
+    cymax + reach, 0, 0, NULL, &query);
+  int ncand = rtree_search(ctx->g.rtree, RTREE_OVERLAPS, &query,
+    tcbuffer_pip_results);
+  for (int j = 0; j < ncand; j++)
   {
-    const TcbufferGeomBucket *bk = &ctx->g.bks[b];
-    double bdx = fmax(fmax(bk->xmin - cxmax, cxmin - bk->xmax), 0.0);
-    double bdy = fmax(fmax(bk->ymin - cymax, cymin - bk->ymax), 0.0);
-    if (bdx * bdx + bdy * bdy > reach2)
+    const TcbufferGeomEdge *ed =
+      &ctx->g.segs[*(int *) meos_array_get(tcbuffer_pip_results, j)];
+    double edx = fmax(fmax(ed->xmin - cxmax, cxmin - ed->xmax), 0.0);
+    double edy = fmax(fmax(ed->ymin - cymax, cymin - ed->ymax), 0.0);
+    if (edx * edx + edy * edy > reach2)
       continue;
-    int elast = bk->start + bk->n;
-    for (int k = bk->start; k < elast; k++)
-    {
-      const TcbufferGeomEdge *ed = &ctx->g.segs[k];
-      double edx = fmax(fmax(ed->xmin - cxmax, cxmin - ed->xmax), 0.0);
-      double edy = fmax(fmax(ed->ymin - cymax, cymin - ed->ymax), 0.0);
-      if (edx * edx + edy * edy > reach2)
-        continue;
-      if (ed->is_arc)
-        tcbuffersegm_arc_within_roots(cx1, cy1, cx2, cy2, r1, r2, ed, dist, cand,
-          &nc);
-      else
-        tcbuffersegm_edge_within_roots(cx1, cy1, cx2, cy2, r1, r2, ed, dist, cand,
-          &nc);
-    }
+    if (ed->is_arc)
+      tcbuffersegm_arc_within_roots(cx1, cy1, cx2, cy2, r1, r2, ed, dist, cand,
+        &nc);
+    else
+      tcbuffersegm_edge_within_roots(cx1, cy1, cx2, cy2, r1, r2, ed, dist, cand,
+        &nc);
   }
   qsort(cand, nc, sizeof(double), tcbuffer_double_cmp);
   int m = 0;
@@ -2194,9 +2279,7 @@ tcbufferseg_within_ctx(const Cbuffer *cb1, const Cbuffer *cb2, double dist,
     double tm = 0.5 * (cand[k] + cand[k + 1]);
     double cx = cx1 + (cx2 - cx1) * tm, cy = cy1 + (cy2 - cy1) * tm;
     double r = r1 + (r2 - r1) * tm;
-    double best = DBL_MAX;
-    tcbuffersegm_nad(cx, cy, r, cx, cy, r, &ctx->g, &best);
-    if (best <= dist)
+    if (tcbuffer_disc_within_dist(cx, cy, r, dist, &ctx->g))
     {
       int ks = k;
       k++;
@@ -2205,9 +2288,7 @@ tcbufferseg_within_ctx(const Cbuffer *cb1, const Cbuffer *cb2, double dist,
         double tm2 = 0.5 * (cand[k] + cand[k + 1]);
         double cx_2 = cx1 + (cx2 - cx1) * tm2, cy_2 = cy1 + (cy2 - cy1) * tm2;
         double r_2 = r1 + (r2 - r1) * tm2;
-        double best2 = DBL_MAX;
-        tcbuffersegm_nad(cx_2, cy_2, r_2, cx_2, cy_2, r_2, &ctx->g, &best2);
-        if (best2 <= dist) k++;
+        if (tcbuffer_disc_within_dist(cx_2, cy_2, r_2, dist, &ctx->g)) k++;
         else break;
       }
       outlo[nout] = cand[ks];
@@ -2254,41 +2335,31 @@ tcbuffer_disc_signed_boundary(double cx, double cy, double r,
 {
   *inside = g->has_poly && tcbuffer_geom_point_inside(cx, cy, g);
   double best = DBL_MAX;
-  /* Bucket bounding-volume hierarchy: an edge inside a bucket has signed
-   * boundary distance dist(centre, edge) - r at least dist(centre, bucket box)
-   * - r, so once that lower bound reaches the running minimum the whole bucket
-   * (and, within a bucket, the per-edge box) cannot improve it and is skipped.
-   * The test dist(box) - r >= best is written as dist(box) >= best + r and kept
-   * squared to avoid a square root; when best + r <= 0 no edge can beat best
-   * (the minimum possible signed distance is -r) so the bucket is skipped too. */
-  for (int b = 0; b < g->nbk; b++)
+  /* Every caller only tests the signed boundary distance sg = dist(centre,edge)
+   * - r against the +/-eps contact band, so only edges within r + eps of the
+   * centre can change a decision. Bound the scan to that reach: when the true
+   * minimum is <= eps the closest edge lies within reach so `best` equals the
+   * global minimum exactly; otherwise `best` stays > eps (or DBL_MAX), which the
+   * callers treat identically to any other value above the band. This is a fixed
+   * reach box query, result-identical to the full running-minimum scan. */
+  double reach = r + TCBUFFER_TOUCH_EPS;
+  double reach2 = reach * reach;
+  STBox query;
+  stbox_set(true, false, false, 0, cx - reach, cx + reach, cy - reach,
+    cy + reach, 0, 0, NULL, &query);
+  int nc = rtree_search(g->rtree, RTREE_OVERLAPS, &query, tcbuffer_pip_results);
+  for (int j = 0; j < nc; j++)
   {
-    const TcbufferGeomBucket *bk = &g->bks[b];
-    if (best != DBL_MAX)
-    {
-      double thr = best + r;
-      double dx = fmax(fmax(bk->xmin - cx, cx - bk->xmax), 0.0);
-      double dy = fmax(fmax(bk->ymin - cy, cy - bk->ymax), 0.0);
-      if (thr <= 0.0 || dx * dx + dy * dy >= thr * thr)
-        continue;
-    }
-    int elast = bk->start + bk->n;
-    for (int k = bk->start; k < elast; k++)
-    {
-      const TcbufferGeomEdge *ed = &g->segs[k];
-      if (best != DBL_MAX)
-      {
-        double thr = best + r;
-        double dx = fmax(fmax(ed->xmin - cx, cx - ed->xmax), 0.0);
-        double dy = fmax(fmax(ed->ymin - cy, cy - ed->ymax), 0.0);
-        if (thr <= 0.0 || dx * dx + dy * dy >= thr * thr)
-          continue;
-      }
-      double m = ed->is_arc ?
-        tcbuffersegm_arc_mindist(cx, cy, cx, cy, r, r, ed) :
-        tcbuffersegm_edge_mindist(cx, cy, cx, cy, r, r, ed);
-      if (m < best) best = m;
-    }
+    const TcbufferGeomEdge *ed =
+      &g->segs[*(int *) meos_array_get(tcbuffer_pip_results, j)];
+    double edx = fmax(fmax(ed->xmin - cx, cx - ed->xmax), 0.0);
+    double edy = fmax(fmax(ed->ymin - cy, cy - ed->ymax), 0.0);
+    if (edx * edx + edy * edy > reach2)
+      continue;
+    double m = ed->is_arc ?
+      tcbuffersegm_arc_mindist(cx, cy, cx, cy, r, r, ed) :
+      tcbuffersegm_edge_mindist(cx, cy, cx, cy, r, r, ed);
+    if (m < best) best = m;
   }
   return best;
 }
@@ -2363,34 +2434,32 @@ tcbufferseg_touch_roots(const Cbuffer *cb1, const Cbuffer *cb2,
   int nc = 0;
   /* The moving centre stays inside its box, so an edge farther than the larger
    * radius from that box is farther than the disk radius at every time and can
-   * contribute no contact time. Bucket bounding-volume hierarchy: skip whole
-   * buckets (and, within a bucket, edges) whose box is beyond that reach, so the
-   * root search visits only the boundary near the swept disk. */
+   * contribute no contact time. Query the R-tree with the swept box grown by
+   * that reach so the root search visits only the boundary near the swept disk;
+   * the per-edge prune keeps the candidate set identical to the flat scan. */
   double cxmin = fmin(cx1, cx2), cxmax = fmax(cx1, cx2);
   double cymin = fmin(cy1, cy2), cymax = fmax(cy1, cy2);
   double rmax = fmax(r1, r2);
-  for (int b = 0; b < ctx->g.nbk; b++)
+  double rmax2 = rmax * rmax;
+  STBox query;
+  stbox_set(true, false, false, 0, cxmin - rmax, cxmax + rmax, cymin - rmax,
+    cymax + rmax, 0, 0, NULL, &query);
+  int ncand = rtree_search(ctx->g.rtree, RTREE_OVERLAPS, &query,
+    tcbuffer_pip_results);
+  for (int j = 0; j < ncand; j++)
   {
-    const TcbufferGeomBucket *bk = &ctx->g.bks[b];
-    double bdx = fmax(fmax(bk->xmin - cxmax, cxmin - bk->xmax), 0.0);
-    double bdy = fmax(fmax(bk->ymin - cymax, cymin - bk->ymax), 0.0);
-    if (bdx * bdx + bdy * bdy > rmax * rmax)
+    const TcbufferGeomEdge *ed =
+      &ctx->g.segs[*(int *) meos_array_get(tcbuffer_pip_results, j)];
+    double edx = fmax(fmax(ed->xmin - cxmax, cxmin - ed->xmax), 0.0);
+    double edy = fmax(fmax(ed->ymin - cymax, cymin - ed->ymax), 0.0);
+    if (edx * edx + edy * edy > rmax2)
       continue;
-    int elast = bk->start + bk->n;
-    for (int k = bk->start; k < elast; k++)
-    {
-      const TcbufferGeomEdge *ed = &ctx->g.segs[k];
-      double edx = fmax(fmax(ed->xmin - cxmax, cxmin - ed->xmax), 0.0);
-      double edy = fmax(fmax(ed->ymin - cymax, cymin - ed->ymax), 0.0);
-      if (edx * edx + edy * edy > rmax * rmax)
-        continue;
-      if (ed->is_arc)
-        tcbuffersegm_arc_within_roots(cx1, cy1, cx2, cy2, r1, r2, ed, 0.0, cand,
-          &nc);
-      else
-        tcbuffersegm_edge_within_roots(cx1, cy1, cx2, cy2, r1, r2, ed, 0.0, cand,
-          &nc);
-    }
+    if (ed->is_arc)
+      tcbuffersegm_arc_within_roots(cx1, cy1, cx2, cy2, r1, r2, ed, 0.0, cand,
+        &nc);
+    else
+      tcbuffersegm_edge_within_roots(cx1, cy1, cx2, cy2, r1, r2, ed, 0.0, cand,
+        &nc);
   }
   qsort(cand, nc, sizeof(double), tcbuffer_double_cmp);
   int nout = 0;
