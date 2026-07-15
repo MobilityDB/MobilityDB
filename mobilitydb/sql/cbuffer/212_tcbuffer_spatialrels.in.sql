@@ -207,12 +207,12 @@ CREATE FUNCTION aDisjoint(tcbuffer, tcbuffer)
  * eIntersects, aIntersects
  *****************************************************************************/
 
-CREATE FUNCTION eintersects(cbuffer, tcbuffer)
+CREATE FUNCTION eIntersects(cbuffer, tcbuffer)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Eintersects_cbuffer_tcbuffer'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION eintersects(tcbuffer, cbuffer)
+CREATE FUNCTION eIntersects(tcbuffer, cbuffer)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Eintersects_tcbuffer_cbuffer'
   SUPPORT tspatial_supportfn
