@@ -165,6 +165,8 @@ EA_dwithin_tspatial_geo(FunctionCallInfo fcinfo,
   PG_RETURN_INT32(result);
 }
 
+/* GENERATED-SPATIALRELS-BEGIN geo_ea_contains_covers — tools/codegen/inherited/generate.py from templates/spatialrels.c.tmpl;
+ * DO NOT EDIT BY HAND; edit the template + manifest.yaml (spatialrel_families) and re-run. */
 /*****************************************************************************
  * Ever/always contains
  *****************************************************************************/
@@ -328,6 +330,7 @@ Acovers_tgeo_tgeo(PG_FUNCTION_ARGS)
 {
   return EA_spatialrel_tspatial_tspatial(fcinfo, &ea_covers_tgeo_tgeo, ALWAYS);
 }
+/* GENERATED-SPATIALRELS-END geo_ea_contains_covers */
 
 /*****************************************************************************
  * Ever disjoint (for both geometry and geography)
