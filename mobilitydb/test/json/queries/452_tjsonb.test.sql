@@ -90,6 +90,15 @@ SELECT tjsonbFromHexWKB(asHexWKB(tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"
 -- SELECT tjsonbFromHexWKB(asHexWKB(tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03], [{"geom": "Point(2 2)"}@2000-01-04, {"geom": "Point(2 2)"}@2000-01-05]}', 'XDR'));
 
 -------------------------------------------------------------------------------
+-- Input/output in MF-JSON representation
+-------------------------------------------------------------------------------
+
+SELECT tjsonbFromMFJSON(asMFJSON(tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01'));
+SELECT tjsonbFromMFJSON(asMFJSON(tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}'));
+SELECT tjsonbFromMFJSON(asMFJSON(tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]'));
+SELECT tjsonbFromMFJSON(asMFJSON(tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03], [{"geom": "Point(2 2)"}@2000-01-04, {"geom": "Point(2 2)"}@2000-01-05]}'));
+
+-------------------------------------------------------------------------------
 -- Constructors
 -------------------------------------------------------------------------------
 

@@ -553,7 +553,7 @@ SELECT tjsonbFromHexWKB(asHexWKB(
 				<para>Input from the Moving Features JSON (MF-JSON) representation</para>
 				<para><varname>tjsonbFromMFJSON(text) → tjsonb</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tjsonbFromMFJSON('{"type": "MovingJSON", "interpolation": "Step",
+SELECT tjsonbFromMFJSON('{"type": "MovingJsonb", "interpolation": "Step",
   "values": [{"Position": "Point(1 1)"}, {"Position": "Point(2 2)"}],
   "datetimes": ["2001-01-01T10:00:00Z","2001-01-01T12:00:00Z"]}');
 /* [{"Position": "Point(1 1)"}@2001-01-01 11:00:00+01,

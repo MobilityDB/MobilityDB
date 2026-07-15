@@ -1271,7 +1271,7 @@ ensure_temptype_mfjson(const char *typestr)
       && strcmp(typestr, "MovingH3Index") != 0
 #endif /* H3 */
 #if JSON
-      && strcmp(typestr, "MovingJSON") != 0
+      && strcmp(typestr, "MovingJsonb") != 0
 #endif /* JSON */
 #if NPOINT
       && strcmp(typestr, "MovingNetworkPoint") != 0
@@ -1381,7 +1381,7 @@ temporal_from_mfjson(const char *mfjson, MeosType temptype)
     jtemptype = T_TH3INDEX;
 #endif /* H3 */
 #if JSON
-  else if (strcmp(typestr, "MovingJSON") == 0)
+  else if (strcmp(typestr, "MovingJsonb") == 0)
     jtemptype = T_TJSONB;
 #endif /* JSON */
 #if NPOINT
