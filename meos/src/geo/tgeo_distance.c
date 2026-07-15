@@ -715,6 +715,319 @@ nai_tgeoseqset_step_geo(const TSequenceSet *ss, const LWGEOM *geo)
   return tinstant_copy(inst);
 }
 
+/*****************************************************************************
+ * Nearest approach instant between a temporal point with linear interpolation
+ * and a planar (multi)polygon
+ *
+ * The generic iterator below computes, for every segment of the trajectory,
+ * the liblwgeom line-to-polygon distance (@ref lw_dist2d_recursive), which
+ * walks all the edges of the polygon on each segment.  For a trajectory of s
+ * segments and a polygon of n edges this is O(s * n), and each edge visit is
+ * the (relatively expensive) @ref lw_dist2d_seg_seg kernel.
+ *
+ * The functions in this section reproduce the same computation but (a)
+ * decompose the polygon once instead of on every segment, (b) skip whole
+ * component polygons, rings and individual edges whose bounding box is farther
+ * than the current best distance, and (c) skip the point-in-ring winding test
+ * when the query point is outside the ring box.  Pruned edges are strictly
+ * farther than the running best, so they can never improve the (strict-less)
+ * @ref lw_dist2d_seg_seg minimum; surviving edges are evaluated with the same
+ * primitive in the same ring order, so the resulting nearest approach point
+ * (and therefore the timestamp) is the same as the generic path.
+ *****************************************************************************/
+
+/** @brief One ring of a decomposed polygon with its bounding box */
+typedef struct
+{
+  const POINTARRAY *pa;           /**< Ring vertices (closed) */
+  double xmin, xmax, ymin, ymax;  /**< Ring bounding box */
+} NaiRing;
+
+/** @brief One component polygon (outer ring followed by holes) */
+typedef struct
+{
+  NaiRing *rings;                 /**< Outer ring at index 0, holes after */
+  uint32_t nrings;
+} NaiPoly;
+
+/** @brief A decomposed planar (multi)polygon */
+typedef struct
+{
+  NaiPoly *polys;                 /**< Component polygons */
+  uint32_t npolys;
+} NaiGeom;
+
+/**
+ * @brief Initialize a ring from a point array, computing its bounding box
+ */
+static void
+nai_ring_init(NaiRing *r, const POINTARRAY *pa)
+{
+  r->pa = pa;
+  double xmin = DBL_MAX, xmax = -DBL_MAX, ymin = DBL_MAX, ymax = -DBL_MAX;
+  for (uint32_t i = 0; i < pa->npoints; i++)
+  {
+    const POINT2D *p = getPoint2d_cp(pa, i);
+    if (p->x < xmin) xmin = p->x;
+    if (p->x > xmax) xmax = p->x;
+    if (p->y < ymin) ymin = p->y;
+    if (p->y > ymax) ymax = p->y;
+  }
+  r->xmin = xmin; r->xmax = xmax; r->ymin = ymin; r->ymax = ymax;
+}
+
+/**
+ * @brief Initialize a component polygon, return false if it has no rings
+ */
+static bool
+nai_poly_init(NaiPoly *np, const LWPOLY *poly)
+{
+  if (poly->nrings == 0)
+    return false;
+  np->nrings = poly->nrings;
+  np->rings = palloc(sizeof(NaiRing) * poly->nrings);
+  for (uint32_t i = 0; i < poly->nrings; i++)
+    nai_ring_init(&np->rings[i], poly->rings[i]);
+  return true;
+}
+
+/**
+ * @brief Decompose a planar polygon or multipolygon, return NULL if the
+ * geometry is not a planar (multi)polygon that the fast path handles
+ */
+static NaiGeom *
+nai_geom_build(const LWGEOM *geo)
+{
+  if (FLAGS_GET_GEODETIC(geo->flags) || FLAGS_GET_Z(geo->flags))
+    return NULL;
+  NaiGeom *g = palloc(sizeof(NaiGeom));
+  if (geo->type == POLYGONTYPE)
+  {
+    g->npolys = 1;
+    g->polys = palloc(sizeof(NaiPoly));
+    if (! nai_poly_init(&g->polys[0], lwgeom_as_lwpoly(geo)))
+    {
+      pfree(g->polys);
+      pfree(g);
+      return NULL;
+    }
+  }
+  else if (geo->type == MULTIPOLYGONTYPE)
+  {
+    const LWCOLLECTION *c = lwgeom_as_lwcollection(geo);
+    if (c->ngeoms == 0)
+    {
+      pfree(g);
+      return NULL;
+    }
+    g->npolys = c->ngeoms;
+    g->polys = palloc(sizeof(NaiPoly) * c->ngeoms);
+    for (uint32_t i = 0; i < c->ngeoms; i++)
+    {
+      if (c->geoms[i]->type != POLYGONTYPE ||
+          ! nai_poly_init(&g->polys[i], lwgeom_as_lwpoly(c->geoms[i])))
+      {
+        for (uint32_t j = 0; j < i; j++)
+          pfree(g->polys[j].rings);
+        pfree(g->polys);
+        pfree(g);
+        return NULL;
+      }
+    }
+  }
+  else
+  {
+    pfree(g);
+    return NULL;
+  }
+  return g;
+}
+
+/**
+ * @brief Free a polygon decomposition
+ */
+static void
+nai_geom_free(NaiGeom *g)
+{
+  for (uint32_t i = 0; i < g->npolys; i++)
+    pfree(g->polys[i].rings);
+  pfree(g->polys);
+  pfree(g);
+}
+
+/**
+ * @brief Slack applied to the squared bounding-box distance prune.
+ * @details The box distance is an exact lower bound of the edge distance, so
+ * an edge farther than the current best can never improve the (strict-less)
+ * minimum.  Rounding in the box distance can nonetheless overshoot by a few
+ * units in the last place; the relative slack keeps an edge that lies within
+ * rounding of the best distance, so that the same edges as the generic path
+ * are evaluated at a near tie.  Edges meaningfully farther than the best are
+ * still pruned.
+ */
+#define NAI_PRUNE_SLACK 1.0e-9
+
+/**
+ * @brief Accumulate into @p dl the minimum distance between the segment
+ * [A, B] and the edges of a ring, skipping edges whose bounding box is farther
+ * than the current best (mirrors @ref lw_dist2d_ptarray_ptarray in DIST_MIN)
+ */
+static void
+nai_ring_scan(const POINT2D *A, const POINT2D *B, const NaiRing *ring,
+  DISTPTS *dl, double sxmin, double sxmax, double symin, double symax)
+{
+  double best = dl->distance;
+  double gx = ring->xmin - sxmax; gx = (sxmin - ring->xmax > gx) ? sxmin - ring->xmax : gx;
+  double gy = ring->ymin - symax; gy = (symin - ring->ymax > gy) ? symin - ring->ymax : gy;
+  if (gx < 0.0) gx = 0.0;
+  if (gy < 0.0) gy = 0.0;
+  if (gx * gx + gy * gy > best * best * (1.0 + NAI_PRUNE_SLACK))
+    return;
+  const POINTARRAY *pa = ring->pa;
+  const POINT2D *C = getPoint2d_cp(pa, 0);
+  for (uint32_t u = 1; u < pa->npoints; u++)
+  {
+    const POINT2D *D = getPoint2d_cp(pa, u);
+    double exmin = (C->x < D->x) ? C->x : D->x, exmax = (C->x > D->x) ? C->x : D->x;
+    double eymin = (C->y < D->y) ? C->y : D->y, eymax = (C->y > D->y) ? C->y : D->y;
+    double dx = exmin - sxmax; dx = (sxmin - exmax > dx) ? sxmin - exmax : dx;
+    double dy = eymin - symax; dy = (symin - eymax > dy) ? symin - eymax : dy;
+    if (dx < 0.0) dx = 0.0;
+    if (dy < 0.0) dy = 0.0;
+    best = dl->distance;
+    if (dx * dx + dy * dy <= best * best * (1.0 + NAI_PRUNE_SLACK))
+    {
+      dl->twisted = 1;
+      lw_dist2d_seg_seg(A, B, C, D, dl);
+      if (dl->distance <= dl->tolerance)
+        return;
+    }
+    C = D;
+  }
+}
+
+/**
+ * @brief Accumulate into @p dl the minimum distance between the segment
+ * [A, B] and a component polygon (mirrors @ref lw_dist2d_line_poly in DIST_MIN,
+ * the inside/outside test is keyed on the first point @p A as in liblwgeom)
+ */
+static void
+nai_line_poly_scan(const POINT2D *A, const POINT2D *B, const NaiPoly *poly,
+  DISTPTS *dl, double sxmin, double sxmax, double symin, double symax)
+{
+  const POINT2D *pt = A;
+  const NaiRing *r0 = &poly->rings[0];
+  int cont0 = LW_OUTSIDE;
+  if (pt->x >= r0->xmin && pt->x <= r0->xmax &&
+      pt->y >= r0->ymin && pt->y <= r0->ymax)
+    cont0 = ptarray_contains_point(r0->pa, pt);
+  /* First point outside the outer ring: distance to the outer ring only */
+  if (cont0 == LW_OUTSIDE)
+  {
+    nai_ring_scan(A, B, r0, dl, sxmin, sxmax, symin, symax);
+    return;
+  }
+  /* Inside/on the outer ring: distance to the holes */
+  for (uint32_t i = 1; i < poly->nrings; i++)
+  {
+    nai_ring_scan(A, B, &poly->rings[i], dl, sxmin, sxmax, symin, symax);
+    if (dl->distance <= dl->tolerance)
+      return;
+  }
+  /* First point inside a hole: the distance is the minimum ring distance */
+  for (uint32_t i = 1; i < poly->nrings; i++)
+    if (ptarray_contains_point(poly->rings[i].pa, pt) != LW_OUTSIDE)
+      return;
+  /* First point inside the polygon */
+  dl->distance = 0.0;
+  dl->p1 = *pt;
+  dl->p2 = *pt;
+}
+
+static double nai_tpointsegm_linear_geo1(const TInstant *inst1,
+  const TInstant *inst2, const LWGEOM *geo, TimestampTz *t);
+
+/**
+ * @brief Relative slack that keeps a segment as a candidate when its
+ * bounding-box distance estimate is within rounding of the running best.
+ * @details The bounding-box scan reproduces the liblwgeom line-to-polygon
+ * distance only up to a few units in the last place, so a segment whose exact
+ * distance is a hair below the running best can produce an estimate that is a
+ * hair above it.  A segment is kept as a candidate when its estimate is within
+ * this relative slack of the best distance; the estimate seeds the box prune
+ * with twice the slack so a candidate ring is never pruned.  Segments that
+ * clear the slack cannot improve the minimum and are skipped.
+ */
+#define NAI_TIE_SLACK 1.0e-9
+
+/**
+ * @brief Return the minimum distance between a temporal point sequence with
+ * linear interpolation and a decomposed planar (multi)polygon, and the
+ * timestamp of the nearest approach instant (fast path of
+ * @ref nai_tpointseq_linear_geo_iter)
+ * @details The bounding-box scan is a fast filter that selects the few
+ * segments close enough to improve the running minimum; the distance and the
+ * timestamp of a selected segment are computed with @ref
+ * nai_tpointsegm_linear_geo1, so the result is identical to the generic path.
+ * @param[in] seq Temporal point
+ * @param[in] geo Geometry
+ * @param[in] g Decomposition of @p geo
+ * @param[in] mindist Running minimum distance, or DBL_MAX at the beginning
+ * @param[out] t Timestamp
+ */
+static double
+nai_tpointseq_linear_poly_iter(const TSequence *seq, const LWGEOM *geo,
+  const NaiGeom *g, double mindist, TimestampTz *t)
+{
+  const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
+
+  if (seq->count == 1)
+  {
+    /* Instantaneous sequence: use the generic point-to-geometry distance */
+    Datum value1 = tinstant_value_p(inst1);
+    LWGEOM *point = lwgeom_from_gserialized(DatumGetGserializedP(value1));
+    double dist = lw_distance_fraction(point, geo, DIST_MIN, NULL);
+    lwgeom_free(point);
+    if (dist < mindist)
+    {
+      mindist = dist;
+      *t = inst1->t;
+    }
+    return mindist;
+  }
+
+  for (int i = 0; i < seq->count - 1; i++)
+  {
+    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i + 1);
+    const POINT2D *A = DATUM_POINT2D_P(tinstant_value_p(inst1));
+    const POINT2D *B = DATUM_POINT2D_P(tinstant_value_p(inst2));
+    /* Bounding-box distance estimate of the segment to the polygon */
+    DISTPTS dl;
+    lw_dist2d_distpts_init(&dl, DIST_MIN);
+    if (mindist != DBL_MAX)
+      dl.distance = mindist * (1.0 + 2.0 * NAI_TIE_SLACK);
+    double sxmin = (A->x < B->x) ? A->x : B->x, sxmax = (A->x > B->x) ? A->x : B->x;
+    double symin = (A->y < B->y) ? A->y : B->y, symax = (A->y > B->y) ? A->y : B->y;
+    for (uint32_t k = 0; k < g->npolys && dl.distance > 0.0; k++)
+      nai_line_poly_scan(A, B, &g->polys[k], &dl, sxmin, sxmax, symin, symax);
+    /* Compute the exact distance and timestamp only for a close-enough segment */
+    if (mindist == DBL_MAX || dl.distance < mindist * (1.0 + NAI_TIE_SLACK))
+    {
+      TimestampTz t1;
+      double dist = nai_tpointsegm_linear_geo1(inst1, inst2, geo, &t1);
+      if (dist < mindist)
+      {
+        mindist = dist;
+        *t = t1;
+      }
+    }
+    if (mindist == 0.0)
+      break;
+    inst1 = inst2;
+  }
+  return mindist;
+}
+
 /*****************************************************************************/
 
 /**
@@ -818,10 +1131,14 @@ nai_tpointseq_linear_geo_iter(const TSequence *seq, const LWGEOM *geo,
  * point with linear interpolation and a geometry (iterator function)
  */
 static TInstant *
-nai_tpointseq_linear_geo(const TSequence *seq, const LWGEOM *geo)
+nai_tpointseq_linear_geo(const TSequence *seq, const LWGEOM *geo,
+  const NaiGeom *g)
 {
   TimestampTz t;
-  nai_tpointseq_linear_geo_iter(seq, geo, DBL_MAX, &t);
+  if (g)
+    nai_tpointseq_linear_poly_iter(seq, geo, g, DBL_MAX, &t);
+  else
+    nai_tpointseq_linear_geo_iter(seq, geo, DBL_MAX, &t);
   /* The closest point may be at an exclusive bound */
   Datum value;
   tsequence_value_at_timestamptz(seq, t, false, &value);
@@ -833,15 +1150,19 @@ nai_tpointseq_linear_geo(const TSequence *seq, const LWGEOM *geo)
  * point with linear interpolation and a geometry
  */
 static TInstant *
-nai_tpointseqset_linear_geo(const TSequenceSet *ss, const LWGEOM *geo)
+nai_tpointseqset_linear_geo(const TSequenceSet *ss, const LWGEOM *geo,
+  const NaiGeom *g)
 {
   TimestampTz t = 0; /* make compiler quiet */
   double mindist = DBL_MAX;
   for (int i = 0; i < ss->count; i++)
   {
     TimestampTz t1;
-    double dist = nai_tpointseq_linear_geo_iter(TSEQUENCESET_SEQ_N(ss, i), geo,
-      mindist, &t1);
+    double dist = g ?
+      nai_tpointseq_linear_poly_iter(TSEQUENCESET_SEQ_N(ss, i), geo, g,
+        mindist, &t1) :
+      nai_tpointseq_linear_geo_iter(TSEQUENCESET_SEQ_N(ss, i), geo,
+        mindist, &t1);
     if (dist < mindist)
     {
       mindist = dist;
@@ -878,6 +1199,10 @@ nai_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
     return NULL;
 
   LWGEOM *geo = lwgeom_from_gserialized(gs);
+  /* Decomposition of a planar (multi)polygon for the fast point path */
+  NaiGeom *g = (tpoint_type(temp->temptype) &&
+    MEOS_FLAGS_LINEAR_INTERP(temp->flags) && temp->subtype != TINSTANT) ?
+    nai_geom_build(geo) : NULL;
   TInstant *result;
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
@@ -887,14 +1212,16 @@ nai_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
       break;
     case TSEQUENCE:
       result = MEOS_FLAGS_LINEAR_INTERP(temp->flags) ?
-        nai_tpointseq_linear_geo((TSequence *) temp, geo) :
+        nai_tpointseq_linear_geo((TSequence *) temp, geo, g) :
         nai_tgeoseq_discstep_geo((TSequence *) temp, geo);
       break;
     default: /* TSEQUENCESET */
       result = MEOS_FLAGS_LINEAR_INTERP(temp->flags) ?
-        nai_tpointseqset_linear_geo((TSequenceSet *) temp, geo) :
+        nai_tpointseqset_linear_geo((TSequenceSet *) temp, geo, g) :
         nai_tgeoseqset_step_geo((TSequenceSet *) temp, geo);
   }
+  if (g)
+    nai_geom_free(g);
   lwgeom_free(geo);
   return result;
 }
