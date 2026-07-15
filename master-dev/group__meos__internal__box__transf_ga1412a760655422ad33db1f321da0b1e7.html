@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: stbox_expand</title>
+<title>MobilityDB: stbox_expand_space_set</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -79,8 +79,8 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__internal__box__transf_ga0157bdfb41bee86307d79fa4a0f2b204.html#ga0157bdfb41bee86307d79fa4a0f2b204">stbox_expand</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__internal__box__transf_ga1412a760655422ad33db1f321da0b1e7.html#ga1412a760655422ad33db1f321da0b1e7">stbox_expand_space_set</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__internal__box__transf_ga0157bdfb41bee86307d79fa4a0f2b204.html#ga0157bdfb41bee86307d79fa4a0f2b204">stbox_expand</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__internal__box__transf_ga1412a760655422ad33db1f321da0b1e7.html#ga1412a760655422ad33db1f321da0b1e7">stbox_expand_space_set</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__box__transf_ga3d6cb48eb37b243747e6fe1adb0077bb.html#ga3d6cb48eb37b243747e6fe1adb0077bb">stbox_round_set</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__box__transf_ga73a6c1a6486a699f1e231df9016b7a8e.html#ga73a6c1a6486a699f1e231df9016b7a8e">tbox_expand</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__box__transf_ga5c1997a0bb1ccd916f2f7c66a97bdf4a.html#ga5c1997a0bb1ccd916f2f7c66a97bdf4a">tbox_expand_value</a></td></tr>
@@ -89,23 +89,29 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga0157bdfb41bee86307d79fa4a0f2b204" name="ga0157bdfb41bee86307d79fa4a0f2b204"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga0157bdfb41bee86307d79fa4a0f2b204">&#9670;&#160;</a></span>stbox_expand()</h2>
+<a id="ga1412a760655422ad33db1f321da0b1e7" name="ga1412a760655422ad33db1f321da0b1e7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga1412a760655422ad33db1f321da0b1e7">&#9670;&#160;</a></span>stbox_expand_space_set()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void stbox_expand </td>
+          <td class="memname">bool stbox_expand_space_set </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structSTBox.html">STBox</a> *&#160;</td>
-          <td class="paramname"><em>box1</em>, </td>
+          <td class="paramname"><em>box</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>d</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype"><a class="el" href="structSTBox.html">STBox</a> *&#160;</td>
-          <td class="paramname"><em>box2</em>&#160;</td>
+          <td class="paramname"><em>result</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -115,14 +121,16 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the second spatiotemporal box expanded with the first one. </p>
+<p><a class="el" href="structSet.html" title="Structure to represent sets of values.">Set</a> a spatiotemporal box to another one with the space bounds expanded/decreased by a double. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">box1,box2</td><td>Spatiotemporal boxes </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">box</td><td>Spatiotemporal box </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">d</td><td>Value for expanding </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">result</td><td>Spatiotemporal box </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section pre"><dt>Precondition</dt><dd>No tests are made concerning the SRID, dimensionality, etc. This should be ensured by the calling function. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>On error return false </dd></dl>
 
 </div>
 </div>
