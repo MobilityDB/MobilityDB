@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: tcbuffer_poly_seg_raycross</title>
+<title>MobilityDB: tcbuffer_geom_build_rtree</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -114,7 +114,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a5791a601999ab37b8bc62ba269184c5e.html#a5791a601999ab37b8bc62ba269184c5e">tcbuffer_geom_arc_contains_angle</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a94b63577ab0a0d3cce408642b6670182.html#a94b63577ab0a0d3cce408642b6670182">tcbuffer_geom_arc_set_bbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a7fdf268210accc0f08faf2288a82c626.html#a7fdf268210accc0f08faf2288a82c626">tcbuffer_geom_build_buckets</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a90c81a4afcc53253d9a20c47af2fc412.html#a90c81a4afcc53253d9a20c47af2fc412">tcbuffer_geom_build_rtree</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a90c81a4afcc53253d9a20c47af2fc412.html#a90c81a4afcc53253d9a20c47af2fc412">tcbuffer_geom_build_rtree</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a155d11742c3dd85bcd914d9248176e49.html#a155d11742c3dd85bcd914d9248176e49">tcbuffer_geom_closest_on_arc</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_abeed96fef8d5b7ca07f1497cf339620d.html#abeed96fef8d5b7ca07f1497cf339620d">tcbuffer_geom_closest_on_edge</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a6d471b57c34e01e2c9235dde40e5ee61.html#a6d471b57c34e01e2c9235dde40e5ee61">tcbuffer_geom_edges</a></td></tr>
@@ -125,7 +125,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a114cb1ac3101ea95c4d565fd7a32af51.html#a114cb1ac3101ea95c4d565fd7a32af51">tcbuffer_minfun</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a70ce980837d1e59e87a91de49eea97aa.html#a70ce980837d1e59e87a91de49eea97aa">tcbuffer_minfun_w</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a97d1e2b3eb68defae3013fa396e304fb.html#a97d1e2b3eb68defae3013fa396e304fb">tcbuffer_pip_results</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_acd00afcfc30f876f16da7ef2d6b981a9.html#acd00afcfc30f876f16da7ef2d6b981a9">tcbuffer_poly_seg_raycross</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_acd00afcfc30f876f16da7ef2d6b981a9.html#acd00afcfc30f876f16da7ef2d6b981a9">tcbuffer_poly_seg_raycross</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_ae2e4a0d6e17ce04beb430eae4a779e04.html#ae2e4a0d6e17ce04beb430eae4a779e04">tcbuffer_region_within_roots</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_adf86c78713f31b045737fe00edb9de1a.html#adf86c78713f31b045737fe00edb9de1a">tcbuffer_segs_add_arc</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_aa1116b359a23ebfd9e3d7cbaf7b71cb6.html#aa1116b359a23ebfd9e3d7cbaf7b71cb6">tcbuffer_segs_add_circstring</a></td></tr>
@@ -151,8 +151,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="acd00afcfc30f876f16da7ef2d6b981a9" name="acd00afcfc30f876f16da7ef2d6b981a9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acd00afcfc30f876f16da7ef2d6b981a9">&#9670;&#160;</a></span>tcbuffer_poly_seg_raycross()</h2>
+<a id="a90c81a4afcc53253d9a20c47af2fc412" name="a90c81a4afcc53253d9a20c47af2fc412"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a90c81a4afcc53253d9a20c47af2fc412">&#9670;&#160;</a></span>tcbuffer_geom_build_rtree()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -161,28 +161,16 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static void tcbuffer_poly_seg_raycross </td>
+          <td class="memname">static <a class="el" href="structRTree.html">RTree</a> * tcbuffer_geom_build_rtree </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structTcbufferGeomEdge.html">TcbufferGeomEdge</a> *&#160;</td>
-          <td class="paramname"><em>s</em>, </td>
+          <td class="paramname"><em>segs</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>x</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>y</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool *&#160;</td>
-          <td class="paramname"><em>inside</em>&#160;</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>n</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -197,8 +185,7 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Ray-casting test: true if (x,y) is inside any polygon ring among the segments (even-odd rule over the polygon-ring segments only) </p>
-<p >Apply the rightward-ray crossings of one polygon-boundary segment to the even-odd accumulator <code>inside</code>. A straight edge contributes at most one crossing; a circular arc contributes the crossings of the horizontal line y with its supporting circle that fall within the arc's angular span. Point, line, and standalone (1D) arc edges (not <code>is_poly</code>) contribute nothing. </p>
+<p>Build a generic R-tree over the edge bounding boxes for the fixed-reach relationship kernels; the index boxes use SRID 0 so a query needs no geometry SRID. </p>
 
 </div>
 </div>
