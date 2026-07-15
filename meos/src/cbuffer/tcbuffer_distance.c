@@ -2148,15 +2148,39 @@ tcbufferseg_within_ctx(const Cbuffer *cb1, const Cbuffer *cb2, double dist,
   int nc = 0;
   cand[nc++] = 0.0;
   cand[nc++] = 1.0;
-  for (int k = 0; k < ctx->g.n; k++)
+  /* Bucket bounding-volume hierarchy: a within root needs
+   * dist(centre(t), edge) - radius(t) == dist at some t, and the moving centre
+   * stays inside its box, so an edge whose box is farther than dist + max(r1,r2)
+   * from that box keeps that quantity strictly above dist and yields no root.
+   * Skip whole buckets (and, within a bucket, edges) beyond that reach so the
+   * root search visits only the boundary near the swept disk; the candidate set
+   * is identical to the flat scan. */
+  double cxmin = fmin(cx1, cx2), cxmax = fmax(cx1, cx2);
+  double cymin = fmin(cy1, cy2), cymax = fmax(cy1, cy2);
+  double reach = dist + fmax(r1, r2);
+  double reach2 = reach * reach;
+  for (int b = 0; b < ctx->g.nbk; b++)
   {
-    const TcbufferGeomEdge *ed = &ctx->g.segs[k];
-    if (ed->is_arc)
-      tcbuffersegm_arc_within_roots(cx1, cy1, cx2, cy2, r1, r2, ed, dist, cand,
-        &nc);
-    else
-      tcbuffersegm_edge_within_roots(cx1, cy1, cx2, cy2, r1, r2, ed, dist, cand,
-        &nc);
+    const TcbufferGeomBucket *bk = &ctx->g.bks[b];
+    double bdx = fmax(fmax(bk->xmin - cxmax, cxmin - bk->xmax), 0.0);
+    double bdy = fmax(fmax(bk->ymin - cymax, cymin - bk->ymax), 0.0);
+    if (bdx * bdx + bdy * bdy > reach2)
+      continue;
+    int elast = bk->start + bk->n;
+    for (int k = bk->start; k < elast; k++)
+    {
+      const TcbufferGeomEdge *ed = &ctx->g.segs[k];
+      double edx = fmax(fmax(ed->xmin - cxmax, cxmin - ed->xmax), 0.0);
+      double edy = fmax(fmax(ed->ymin - cymax, cymin - ed->ymax), 0.0);
+      if (edx * edx + edy * edy > reach2)
+        continue;
+      if (ed->is_arc)
+        tcbuffersegm_arc_within_roots(cx1, cy1, cx2, cy2, r1, r2, ed, dist, cand,
+          &nc);
+      else
+        tcbuffersegm_edge_within_roots(cx1, cy1, cx2, cy2, r1, r2, ed, dist, cand,
+          &nc);
+    }
   }
   qsort(cand, nc, sizeof(double), tcbuffer_double_cmp);
   int m = 0;
