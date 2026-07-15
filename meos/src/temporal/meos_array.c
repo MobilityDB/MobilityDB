@@ -102,7 +102,14 @@ meos_array_create(int elem_size)
   else
   {
     array->varlength = false;
-    array->elem_size = MAXALIGN(elem_size);
+    /* Use the requested element size directly as the slot stride. sizeof(T) is
+     * always a multiple of the type's alignment and the base buffer is
+     * MAXALIGN'd, so every slot stays properly aligned. Rounding the element
+     * size up with MAXALIGN instead would inflate a sub-MAXALIGN element (e.g.
+     * sizeof(int) 4 -> 8); meos_array_add would then memcpy that many bytes
+     * from a caller value only elem_size bytes wide -- an out-of-bounds read
+     * (e.g. the int ids collected in temporal_rtree.c node_search). */
+    array->elem_size = (size_t) elem_size;
   }
   array->elems = palloc0(array->elem_size * array->capacity);
   return array;
