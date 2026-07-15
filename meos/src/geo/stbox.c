@@ -1532,6 +1532,44 @@ stbox_get_space(const STBox *box)
 }
 
 /**
+ * @ingroup meos_internal_box_transf
+ * @brief Set a spatiotemporal box to another one with the space bounds
+ * expanded/decreased by a double
+ * @param[in] box Spatiotemporal box
+ * @param[in] d Value for expanding
+ * @param[out] result Spatiotemporal box
+ * @return On error return false
+ */
+bool
+stbox_expand_space_set(const STBox *box, double d, STBox *result)
+{
+  assert(box); assert(result);
+  if (! ensure_has_X(T_STBOX, box->flags))
+    return false;
+  /* When the value is negative, ensure that its absolute value is less than
+   * the size of all spatial dimensions */
+  bool hasz = MEOS_FLAGS_GET_Z(box->flags) ||
+    MEOS_FLAGS_GET_GEODETIC(box->flags);
+  if (d < 0 && (
+       fabs(d) >= (box->xmax - box->xmin) ||
+       fabs(d) >= (box->ymax - box->ymin) ||
+       (hasz && (fabs(d) >= (box->zmax - box->zmin)))))
+    return false;
+
+  memcpy(result, box, sizeof(STBox));
+  result->xmin -= d;
+  result->ymin -= d;
+  result->xmax += d;
+  result->ymax += d;
+  if (hasz)
+  {
+    result->zmin -= d;
+    result->zmax += d;
+  }
+  return true;
+}
+
+/**
  * @ingroup meos_geo_box_transf
  * @brief Return a spatiotemporal box with the space bounds expanded/decreased
  * by a double
@@ -1543,28 +1581,12 @@ STBox *
 stbox_expand_space(const STBox *box, double d)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(box, NULL); 
-  if (! ensure_has_X(T_STBOX, box->flags))
-    return NULL;
-  /* When the value is negative, ensure that its absolute value is less than
-   * the size of all spatial dimensions */ 
-  bool hasz = MEOS_FLAGS_GET_Z(box->flags) ||
-    MEOS_FLAGS_GET_GEODETIC(box->flags);
-  if (d < 0 && (
-       fabs(d) >= (box->xmax - box->xmin) ||
-       fabs(d) >= (box->ymax - box->ymin) ||
-       (hasz && (fabs(d) >= (box->zmax - box->zmin)))))
-    return NULL;
-
-  STBox *result = stbox_copy(box);
-  result->xmin -= d;
-  result->ymin -= d;
-  result->xmax += d;
-  result->ymax += d;
-  if (hasz)
+  VALIDATE_NOT_NULL(box, NULL);
+  STBox *result = palloc(sizeof(STBox));
+  if (! stbox_expand_space_set(box, d, result))
   {
-    result->zmin -= d;
-    result->zmax += d;
+    pfree(result);
+    return NULL;
   }
   return result;
 }

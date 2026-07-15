@@ -1617,14 +1617,13 @@ ea_dwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
    * inputs since the bbox is in degrees while dist is in metres. */
   if (! MEOS_FLAGS_GET_GEODETIC(temp->flags))
   {
-    STBox box_temp, box_geom;
+    STBox box_temp, box_geom, box_geom_exp;
     tspatial_set_stbox(temp, &box_temp);
     geo_set_stbox(gs, &box_geom);
-    STBox *box_geom_exp = stbox_expand_space(&box_geom, dist);
+    stbox_expand_space_set(&box_geom, dist, &box_geom_exp);
     bool pass = ever
-      ? overlaps_stbox_stbox(box_geom_exp, &box_temp)
-      : contains_stbox_stbox(box_geom_exp, &box_temp);
-    pfree(box_geom_exp);
+      ? overlaps_stbox_stbox(&box_geom_exp, &box_temp)
+      : contains_stbox_stbox(&box_geom_exp, &box_temp);
     if (! pass)
       return 0;
   }
