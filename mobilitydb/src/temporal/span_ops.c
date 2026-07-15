@@ -405,7 +405,7 @@ PG_FUNCTION_INFO_V1(Union_value_span);
 /**
  * @ingroup mobilitydb_setspan_set
  * @brief Return the union of a value and a span
- * @sqlfn time_union()
+ * @sqlfn spanUnion()
  * @sqlop @p +
  */
 Datum
@@ -421,7 +421,7 @@ PG_FUNCTION_INFO_V1(Union_span_value);
 /**
  * @ingroup mobilitydb_setspan_set
  * @brief Return the union of a span and a value
- * @sqlfn time_union()
+ * @sqlfn spanUnion()
  * @sqlop @p +
  */
 Datum
@@ -437,7 +437,7 @@ PG_FUNCTION_INFO_V1(Union_span_span);
 /**
  * @ingroup mobilitydb_setspan_set
  * @brief Return the union of two spans
- * @sqlfn time_union()
+ * @sqlfn spanUnion()
  * @sqlop @p +
  */
 Datum
