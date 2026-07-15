@@ -3090,10 +3090,10 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
   printf("union_bigint_set(%ld, %s): %s\n", int64_in1, bset1_out, char_result);
   free(bset_result); free(char_result);
 
-  /* SpanSet *union_bigint_spanspan1, int64 i); */
-  bspanset_result = union_bigint_span(bspan1, int64_in1);
+  /* SpanSet *union_bigint_span(int64 i, const Span *s); */
+  bspanset_result = union_bigint_span(int64_in1, bspan1);
   char_result = bigintspanset_out(bspanset_result);
-  printf("union_bigint_span(%s, %ld): %s\n", bspan1_out, int64_in1, char_result);
+  printf("union_bigint_span(%ld, %s): %s\n", int64_in1, bspan1_out, char_result);
   free(bspanset_result); free(char_result);
 
   /* SpanSet *union_bigint_spanset(int64 i, SpanSet *ss); */
@@ -3108,10 +3108,10 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
   printf("union_date_set(%s, %s): %s\n", date1_out, dset1_out, char_result);
   free(dset_result); free(char_result);
 
-  /* SpanSet *union_date_spanspan1, DateADT d); */
-  dspanset_result = union_date_span(dspan1, date1);
+  /* SpanSet *union_date_span(DateADT d, const Span *s); */
+  dspanset_result = union_date_span(date1, dspan1);
   char_result = datespanset_out(dspanset_result);
-  printf("union_date_span(%s, %s): %s\n", dspan1_out, date1_out, char_result);
+  printf("union_date_span(%s, %s): %s\n", date1_out, dspan1_out, char_result);
   free(dspanset_result); free(char_result);
 
   /* SpanSet *union_date_spanset(DateADT d, SpanSet *ss); */
@@ -3126,10 +3126,10 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
   printf("union_float_set(%lf, %s): %s\n", float8_in1, fset1_out, char_result);
   free(fset_result); free(char_result);
 
-  /* SpanSet *union_float_span(const Span *s, double d); */
-  fspanset_result = union_float_span(fspan1, float8_in1);
+  /* SpanSet *union_float_span(double d, const Span *s); */
+  fspanset_result = union_float_span(float8_in1, fspan1);
   char_result = floatspanset_out(fspanset_result, 6);
-  printf("union_float_span(%s, %lf): %s\n", fspan1_out, float8_in1, char_result);
+  printf("union_float_span(%lf, %s): %s\n", float8_in1, fspan1_out, char_result);
   free(fspanset_result); free(char_result);
 
   /* SpanSet *union_float_spanset(double d, SpanSet *ss); */
