@@ -81,5 +81,13 @@ add_library(liblwgeom OBJECT
   varint.c
   )
 
-# set_property(TARGET liblwgeom PROPERTY C_VISIBILITY_PRESET hidden)
-# set_property(TARGET liblwgeom PROPERTY POSITION_INDEPENDENT_CODE ON)
+# Hide the vendored liblwgeom symbols (ptarray_construct_empty, rtalloc, ...)
+# from the shared library's dynamic table. Several of these names are also
+# exported by librttopo.so, which PostgreSQL co-loads with PostGIS. Without
+# hiding, ELF global symbol interposition can bind our internal liblwgeom calls
+# to librttopo's copy (whose allocator context is uninitialized on this path),
+# crashing the backend. Hiding makes both the extension and the standalone MEOS
+# library (and every binding built from it) resolve their own handler-equipped
+# liblwgeom. Established by #447, must not be disabled.
+set_property(TARGET liblwgeom PROPERTY C_VISIBILITY_PRESET hidden)
+set_property(TARGET liblwgeom PROPERTY POSITION_INDEPENDENT_CODE ON)

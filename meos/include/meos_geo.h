@@ -325,7 +325,6 @@ typedef enum
 
 /* Input and output functions */
 
-extern BOX3D *box3d_from_gbox(const GBOX *box);
 extern BOX3D *box3d_make(double xmin, double xmax, double ymin, double ymax,
   double zmin, double zmax, int32_t srid);
 extern BOX3D *box3d_in(const char *str);
