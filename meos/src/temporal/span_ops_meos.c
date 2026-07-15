@@ -1022,7 +1022,7 @@ union_span_bigint(const Span *s, int64 i)
  * @csqlfn #Union_value_span()
  */
 SpanSet *
-union_bigint_span(const Span *s, int64 i)
+union_bigint_span(int64 i, const Span *s)
 {
   return union_span_bigint(s, i);
 }
@@ -1050,7 +1050,7 @@ union_span_float(const Span *s, double d)
  * @csqlfn #Union_value_span()
  */
 SpanSet *
-union_float_span(const Span *s, double d)
+union_float_span(double d, const Span *s)
 {
   return union_span_float(s, d);
 }
@@ -1078,7 +1078,7 @@ union_span_date(const Span *s, DateADT d)
  * @csqlfn #Union_value_span()
  */
 SpanSet *
-union_date_span(const Span *s, DateADT d)
+union_date_span(DateADT d, const Span *s)
 {
   return union_span_date(s, d);
 }
