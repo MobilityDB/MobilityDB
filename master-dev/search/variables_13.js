@@ -14,7 +14,7 @@ var searchData=
   ['right_11',['right',['../structTboxNode_ad320507fdac0871fecc5ad762e4cdbfe.html#ad320507fdac0871fecc5ad762e4cdbfe',1,'TboxNode::right()'],['../structSTboxNode_ac05a610d1803f84878426220ea77f535.html#ac05a610d1803f84878426220ea77f535',1,'STboxNode::right()']]],
   ['right_5flower_12',['right_lower',['../structConsiderSplitContext_a162416d9eb39cd01736aa3ae1d46ac23.html#a162416d9eb39cd01736aa3ae1d46ac23',1,'ConsiderSplitContext']]],
   ['rightlower_13',['rightLower',['../structConsiderSplitContext_a429305c1628a73ce14433a3ff20bc673.html#a429305c1628a73ce14433a3ff20bc673',1,'ConsiderSplitContext']]],
-  ['rings_14',['rings',['../structLWPOLY_a2b0a8b89f0af409f4bd4527255bc1bbf.html#a2b0a8b89f0af409f4bd4527255bc1bbf',1,'LWPOLY::rings()'],['../structLWCURVEPOLY_a7697b8eddb636d429009fd5f84b95089.html#a7697b8eddb636d429009fd5f84b95089',1,'LWCURVEPOLY::rings()']]],
+  ['rings_14',['rings',['../structLWPOLY_a2b0a8b89f0af409f4bd4527255bc1bbf.html#a2b0a8b89f0af409f4bd4527255bc1bbf',1,'LWPOLY::rings()'],['../structLWCURVEPOLY_a7697b8eddb636d429009fd5f84b95089.html#a7697b8eddb636d429009fd5f84b95089',1,'LWCURVEPOLY::rings()'],['../structNaiPoly_a1496beaf115046a86f33c502072466b9.html#a1496beaf115046a86f33c502072466b9',1,'NaiPoly::rings()']]],
   ['root_15',['root',['../structRTree_af63bc9816508ff62fba78dc67f0b5fd7.html#af63bc9816508ff62fba78dc67f0b5fd7',1,'RTree']]],
   ['rotx_16',['rotx',['../projection__gk_8c_a48691d48226a83de51fef2037fd39bf2.html#a48691d48226a83de51fef2037fd39bf2',1,'projection_gk.c']]],
   ['roty_17',['roty',['../projection__gk_8c_af2d270424ed9bf1a5fab2accf380e966.html#af2d270424ed9bf1a5fab2accf380e966',1,'projection_gk.c']]],
