@@ -171,15 +171,20 @@ def _spatialrels_markers(family: str):
     return begin, f"/* GENERATED-SPATIALRELS-END {family} */\n"
 
 
-# The three ever/always directions in file order: (dir token, PG dispatcher).
-# Each direction emits an EVER then ALWAYS wrapper; the @brief noun phrase is
-# per-predicate (transitive "X contains Y" vs symmetric "X and Y are disjoint"),
-# so it comes from the manifest `briefs` map, not from a shared subject/object.
-_SR_DIRECTIONS = [
-    ("geo_tgeo",  "EA_spatialrel_geo_tspatial"),
-    ("tgeo_geo",  "EA_spatialrel_tspatial_geo"),
-    ("tgeo_tgeo", "EA_spatialrel_tspatial_tspatial"),
-]
+# The three ever/always directions in file order and the generic PG dispatcher
+# each maps to. Each direction emits an EVER then ALWAYS wrapper; the @brief noun
+# phrase is per-predicate (transitive "X contains Y" vs symmetric "X and Y are
+# disjoint"), so it comes from the manifest `briefs` map, not a shared subj/obj.
+# A predicate may restrict itself to a subset of directions (`directions:`), swap
+# the dispatcher (`disp:`, e.g. dwithin's EA_dwithin_* which carries a distance),
+# and pin one MEOS kernel across both arg orders (`meos_fixed:`, dwithin's
+# ea_dwithin_tgeo_geo) — every other predicate uses the defaults below.
+_SR_ORDER = ["geo_tgeo", "tgeo_geo", "tgeo_tgeo"]
+_SR_DISP = {
+    "geo_tgeo":  "EA_spatialrel_geo_tspatial",
+    "tgeo_geo":  "EA_spatialrel_tspatial_geo",
+    "tgeo_tgeo": "EA_spatialrel_tspatial_tspatial",
+}
 
 
 def _wrap_brief(text: str, width: int = 80) -> str:
@@ -207,7 +212,11 @@ def render_spatialrels(fam: dict) -> str:
     out = []
     for pred in fam["predicates"]:
         out.append(banner_t.replace("{BANNER}", pred["banner"]))
-        for direc, disp in _SR_DIRECTIONS:
+        disp_over = pred.get("disp", {})
+        meos_fixed = pred.get("meos_fixed")
+        for direc in pred.get("directions", _SR_ORDER):
+            disp = disp_over.get(direc, _SR_DISP[direc])
+            meos = meos_fixed or f"ea_{pred['rel']}_{direc}"
             for ea, word, low in (("E", "ever", "e"), ("A", "always", "a")):
                 brief = _wrap_brief(
                     "Return true if " + pred["briefs"][direc].replace("{word}", word))
@@ -216,7 +225,7 @@ def render_spatialrels(fam: dict) -> str:
                     "BRIEF": brief,
                     "SQLFN": f"{low}{pred['Rel']}",
                     "DISP": disp,
-                    "MEOS": f"ea_{pred['rel']}_{direc}",
+                    "MEOS": meos,
                     "EA": "EVER" if ea == "E" else "ALWAYS",
                 }
                 frag = block_t
