@@ -829,7 +829,7 @@ tcbuffer_geom_edges(const LWGEOM *lw, bool allow_arc, TcbufferGeomEdge **arr, in
     {
       /* A curve polygon is bounded by rings that are line strings, circular
        * strings, or compound curves. Decompose each ring with polygon (region)
-       * semantics so the arc-aware even-odd test in #tcbuffer_geom_edges_point_inside
+       * semantics so the arc-aware even-odd test in #tcbuffer_geom_point_inside
        * treats it as a boundary. */
       const LWCURVEPOLY *cp = lwgeom_as_lwcurvepoly(lw);
       for (uint32_t i = 0; i < cp->nrings; i++)
@@ -927,15 +927,6 @@ tcbuffer_poly_seg_raycross(const TcbufferGeomEdge *s, double x, double y, bool *
     if (x < xint)
       *inside = ! *inside;
   }
-}
-
-static bool
-tcbuffer_geom_edges_point_inside(double x, double y, const TcbufferGeomEdge *segs, int n)
-{
-  bool inside = false;
-  for (int i = 0; i < n; i++)
-    tcbuffer_poly_seg_raycross(&segs[i], x, y, &inside);
-  return inside;
 }
 
 /**
@@ -1380,171 +1371,6 @@ tcbuffer_geom_closest_on_arc(double px, double py, const TcbufferGeomEdge *e, do
 }
 
 /**
- * @brief Update the witness with one swept-capsule unit
- */
-static void
-tcbuffersegm_shortestline(double cx1, double cy1, double r1, double cx2, double cy2,
-  double r2, const TcbufferGeomEdge *segs, int n, bool has_poly, DistWitness *w)
-{
-  if (w->set && w->d <= 0.0)
-    return;
-  /* A centre inside a polygon means the swept region overlaps it: the
-   * shortest line is a zero-length line at that interior point (mirrors
-   * the nearest-approach interior short-circuit) */
-  if (has_poly)
-  {
-    bool in1 = tcbuffer_geom_edges_point_inside(cx1, cy1, segs, n);
-    bool in2 = (cx2 == cx1 && cy2 == cy1) ? in1 :
-      tcbuffer_geom_edges_point_inside(cx2, cy2, segs, n);
-    if (in1 || in2)
-    {
-      double ix = in1 ? cx1 : cx2, iy = in1 ? cy1 : cy2;
-      w->d = 0.0; w->px = ix; w->py = iy; w->qx = ix; w->qy = iy;
-      w->set = true;
-      return;
-    }
-  }
-  double sxmin = fmin(cx1 - r1, cx2 - r2);
-  double sxmax = fmax(cx1 + r1, cx2 + r2);
-  double symin = fmin(cy1 - r1, cy2 - r2);
-  double symax = fmax(cy1 + r1, cy2 + r2);
-  for (int k = 0; k < n; k++)
-  {
-    const TcbufferGeomEdge *e = &segs[k];
-    if (w->set)
-    {
-      double dx = fmax(fmax(e->xmin - sxmax, sxmin - e->xmax), 0.0);
-      double dy = fmax(fmax(e->ymin - symax, symin - e->ymax), 0.0);
-      if (dx * dx + dy * dy >= w->d * w->d)
-        continue;
-    }
-    double t;
-    double m = e->is_arc ?
-      tcbuffersegm_arc_dt(cx1, cy1, cx2, cy2, r1, r2, e, &t) :
-      tcbuffersegm_edge_dt(cx1, cy1, cx2, cy2, r1, r2, e, &t);
-    if (! w->set || m < w->d)
-    {
-      double ccx = cx1 + (cx2 - cx1) * t;
-      double ccy = cy1 + (cy2 - cy1) * t;
-      double rr = r1 + (r2 - r1) * t;
-      double qx, qy;
-      if (e->is_arc)
-        tcbuffer_geom_closest_on_arc(ccx, ccy, e, &qx, &qy);
-      else
-        tcbuffer_geom_closest_on_edge(ccx, ccy, e, &qx, &qy);
-      double vx = qx - ccx, vy = qy - ccy;
-      double vl = sqrt(vx * vx + vy * vy);
-      double pxp, pyp;
-      if (vl <= 1e-12 || m <= 0.0)
-      {
-        /* Overlap or centre on the edge: degenerate line at the contact */
-        pxp = qx; pyp = qy;
-      }
-      else
-      {
-        pxp = ccx + vx * (rr / vl);
-        pyp = ccy + vy * (rr / vl);
-      }
-      w->d = m; w->px = pxp; w->py = pyp; w->qx = qx; w->qy = qy;
-      w->set = true;
-    }
-  }
-}
-
-/**
- * @brief Update the witness with one temporal circular buffer sequence
- */
-static void
-tcbufferseq_shortestline(const TSequence *seq, const TcbufferGeomEdge *segs, int n, bool has_poly,
-  DistWitness *w)
-{
-  bool linear = MEOS_FLAGS_LINEAR_INTERP(seq->flags);
-  if (seq->count == 1 || ! linear)
-  {
-    for (int i = 0; i < seq->count && ! (w->set && w->d <= 0.0); i++)
-    {
-      const Cbuffer *c = DatumGetCbufferP(
-        tinstant_value_p(TSEQUENCE_INST_N(seq, i)));
-      const POINT2D *p = GSERIALIZED_POINT2D_P(cbuffer_point_p(c));
-      tcbuffersegm_shortestline(p->x, p->y, c->radius, p->x, p->y, c->radius, segs, n,
-        has_poly, w);
-    }
-    return;
-  }
-  const TInstant *i1 = TSEQUENCE_INST_N(seq, 0);
-  for (int i = 1; i < seq->count && ! (w->set && w->d <= 0.0); i++)
-  {
-    const TInstant *i2 = TSEQUENCE_INST_N(seq, i);
-    const Cbuffer *c1 = DatumGetCbufferP(tinstant_value_p(i1));
-    const Cbuffer *c2 = DatumGetCbufferP(tinstant_value_p(i2));
-    const POINT2D *p1 = GSERIALIZED_POINT2D_P(cbuffer_point_p(c1));
-    const POINT2D *p2 = GSERIALIZED_POINT2D_P(cbuffer_point_p(c2));
-    tcbuffersegm_shortestline(p1->x, p1->y, c1->radius, p2->x, p2->y, c2->radius, segs,
-      n, has_poly, w);
-    i1 = i2;
-  }
-}
-
-/**
- * @brief GEOS-free shortest line between a temporal circular buffer and a
- * geometry, arc-exact for circular-arc input. Returns NULL when the analytic
- * path does not apply (an unsupported geometry type), so the caller can fall
- * back to the exact traversed-area shortest line.
- */
-static GSERIALIZED *
-shortestline_tcbuffer_geo_analytic(const Temporal *temp,
-  const GSERIALIZED *gs)
-{
-  LWGEOM *lw = lwgeom_from_gserialized(gs);
-  TcbufferGeomEdge *segs = NULL;
-  int cap = 0, n = 0;
-  bool has_poly = false;
-  bool ok = tcbuffer_geom_edges(lw, true, &segs, &cap, &n, &has_poly);
-  lwgeom_free(lw);
-  if (! ok || n == 0)
-  {
-    if (segs) pfree(segs);
-    return NULL;
-  }
-
-  DistWitness w;
-  w.d = DBL_MAX; w.set = false;
-  w.px = w.py = w.qx = w.qy = 0.0;
-  assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT)
-  {
-    const Cbuffer *c = DatumGetCbufferP(tinstant_value_p((TInstant *) temp));
-    const POINT2D *p = GSERIALIZED_POINT2D_P(cbuffer_point_p(c));
-    tcbuffersegm_shortestline(p->x, p->y, c->radius, p->x, p->y, c->radius, segs, n,
-      has_poly, &w);
-  }
-  else if (temp->subtype == TSEQUENCE)
-    tcbufferseq_shortestline((TSequence *) temp, segs, n, has_poly, &w);
-  else
-  {
-    const TSequenceSet *ss = (TSequenceSet *) temp;
-    for (int i = 0; i < ss->count && ! (w.set && w.d <= 0.0); i++)
-      tcbufferseq_shortestline(TSEQUENCESET_SEQ_N(ss, i), segs, n, has_poly, &w);
-  }
-  pfree(segs);
-  if (! w.set)
-    return NULL;
-
-  int32_t srid = gserialized_get_srid(gs);
-  POINTARRAY *pa = ptarray_construct(0, 0, 2);
-  POINT4D p4;
-  p4.z = 0.0; p4.m = 0.0;
-  p4.x = w.px; p4.y = w.py;
-  ptarray_set_point4d(pa, 0, &p4);
-  p4.x = w.qx; p4.y = w.qy;
-  ptarray_set_point4d(pa, 1, &p4);
-  LWLINE *ln = lwline_construct(srid, NULL, pa);
-  GSERIALIZED *line = geo_serialize(lwline_as_lwgeom(ln));
-  lwline_free(ln);
-  return line;
-}
-
-/**
  * @brief A spatially-local group of consecutive segments with its bounding box
  */
 typedef struct
@@ -1829,6 +1655,218 @@ nad_tcbuffer_geo_analytic(const Temporal *temp, const GSERIALIZED *gs)
   pfree(bks);
   pfree(segs);
   return best < 0.0 ? 0.0 : best;
+}
+
+/**
+ * @brief Update the witness with one swept-capsule unit against the geometry,
+ * pruned by the bucket bounding-volume hierarchy (the centre moves from c1 to
+ * c2 with radius r1 to r2; a stationary disk has c1 == c2)
+ */
+static void
+tcbuffersegm_shortestline(double cx1, double cy1, double r1, double cx2,
+  double cy2, double r2, const TcbufferGeom *g, DistWitness *w)
+{
+  if (w->set && w->d <= 0.0)
+    return;
+  double sxmin = fmin(cx1 - r1, cx2 - r2);
+  double sxmax = fmax(cx1 + r1, cx2 + r2);
+  double symin = fmin(cy1 - r1, cy2 - r2);
+  double symax = fmax(cy1 + r1, cy2 + r2);
+  /* Coarse branch-and-bound prune: the swept bounding box to geometry bounding
+   * box distance is a lower bound on this unit's nearest approach, so once it
+   * reaches the running witness distance no edge can improve the shortest line.
+   * A unit whose centre is inside a polygon overlaps the geometry box (zero
+   * lower bound), so it is never wrongly pruned. */
+  if (w->set)
+  {
+    double dgx = fmax(fmax(g->xmin - sxmax, sxmin - g->xmax), 0.0);
+    double dgy = fmax(fmax(g->ymin - symax, symin - g->ymax), 0.0);
+    if (dgx * dgx + dgy * dgy >= w->d * w->d)
+      return;
+  }
+  /* A centre inside a polygon means the swept region overlaps it: the shortest
+   * line is a zero-length line at that interior point (mirrors the
+   * nearest-approach interior short-circuit) */
+  if (g->has_poly)
+  {
+    bool in1 = tcbuffer_geom_point_inside(cx1, cy1, g);
+    bool in2 = (cx2 == cx1 && cy2 == cy1) ? in1 :
+      tcbuffer_geom_point_inside(cx2, cy2, g);
+    if (in1 || in2)
+    {
+      double ix = in1 ? cx1 : cx2, iy = in1 ? cy1 : cy2;
+      w->d = 0.0; w->px = ix; w->py = iy; w->qx = ix; w->qy = iy;
+      w->set = true;
+      return;
+    }
+  }
+  /* Bucket bounding-volume hierarchy: skip whole buckets of edges that are
+   * farther than the running witness distance, then the per-edge prune within
+   * a bucket */
+  for (int b = 0; b < g->nbk; b++)
+  {
+    const TcbufferGeomBucket *bk = &g->bks[b];
+    if (w->set)
+    {
+      double dx = fmax(fmax(bk->xmin - sxmax, sxmin - bk->xmax), 0.0);
+      double dy = fmax(fmax(bk->ymin - symax, symin - bk->ymax), 0.0);
+      if (dx * dx + dy * dy >= w->d * w->d)
+        continue;
+    }
+    int elast = bk->start + bk->n;
+    for (int k = bk->start; k < elast; k++)
+    {
+      const TcbufferGeomEdge *e = &g->segs[k];
+      if (w->set)
+      {
+        double dx = fmax(fmax(e->xmin - sxmax, sxmin - e->xmax), 0.0);
+        double dy = fmax(fmax(e->ymin - symax, symin - e->ymax), 0.0);
+        if (dx * dx + dy * dy >= w->d * w->d)
+          continue;
+      }
+      double t;
+      double m = e->is_arc ?
+        tcbuffersegm_arc_dt(cx1, cy1, cx2, cy2, r1, r2, e, &t) :
+        tcbuffersegm_edge_dt(cx1, cy1, cx2, cy2, r1, r2, e, &t);
+      if (! w->set || m < w->d)
+      {
+        double ccx = cx1 + (cx2 - cx1) * t;
+        double ccy = cy1 + (cy2 - cy1) * t;
+        double rr = r1 + (r2 - r1) * t;
+        double qx, qy;
+        if (e->is_arc)
+          tcbuffer_geom_closest_on_arc(ccx, ccy, e, &qx, &qy);
+        else
+          tcbuffer_geom_closest_on_edge(ccx, ccy, e, &qx, &qy);
+        double vx = qx - ccx, vy = qy - ccy;
+        double vl = sqrt(vx * vx + vy * vy);
+        double pxp, pyp;
+        if (vl <= 1e-12 || m <= 0.0)
+        {
+          /* Overlap or centre on the edge: degenerate line at the contact */
+          pxp = qx; pyp = qy;
+        }
+        else
+        {
+          pxp = ccx + vx * (rr / vl);
+          pyp = ccy + vy * (rr / vl);
+        }
+        w->d = m; w->px = pxp; w->py = pyp; w->qx = qx; w->qy = qy;
+        w->set = true;
+      }
+    }
+  }
+}
+
+/**
+ * @brief Update the witness with one temporal circular buffer sequence
+ */
+static void
+tcbufferseq_shortestline(const TSequence *seq, const TcbufferGeom *g,
+  DistWitness *w)
+{
+  bool linear = MEOS_FLAGS_LINEAR_INTERP(seq->flags);
+  if (seq->count == 1 || ! linear)
+  {
+    for (int i = 0; i < seq->count && ! (w->set && w->d <= 0.0); i++)
+    {
+      const Cbuffer *c = DatumGetCbufferP(
+        tinstant_value_p(TSEQUENCE_INST_N(seq, i)));
+      const POINT2D *p = GSERIALIZED_POINT2D_P(cbuffer_point_p(c));
+      tcbuffersegm_shortestline(p->x, p->y, c->radius, p->x, p->y, c->radius,
+        g, w);
+    }
+    return;
+  }
+  const TInstant *i1 = TSEQUENCE_INST_N(seq, 0);
+  for (int i = 1; i < seq->count && ! (w->set && w->d <= 0.0); i++)
+  {
+    const TInstant *i2 = TSEQUENCE_INST_N(seq, i);
+    const Cbuffer *c1 = DatumGetCbufferP(tinstant_value_p(i1));
+    const Cbuffer *c2 = DatumGetCbufferP(tinstant_value_p(i2));
+    const POINT2D *p1 = GSERIALIZED_POINT2D_P(cbuffer_point_p(c1));
+    const POINT2D *p2 = GSERIALIZED_POINT2D_P(cbuffer_point_p(c2));
+    tcbuffersegm_shortestline(p1->x, p1->y, c1->radius, p2->x, p2->y,
+      c2->radius, g, w);
+    i1 = i2;
+  }
+}
+
+/**
+ * @brief GEOS-free shortest line between a temporal circular buffer and a
+ * geometry, arc-exact for circular-arc input. Returns NULL when the analytic
+ * path does not apply (an unsupported geometry type), so the caller can fall
+ * back to the exact traversed-area shortest line.
+ */
+static GSERIALIZED *
+shortestline_tcbuffer_geo_analytic(const Temporal *temp, const GSERIALIZED *gs)
+{
+  LWGEOM *lw = lwgeom_from_gserialized(gs);
+  TcbufferGeomEdge *segs = NULL;
+  int cap = 0, n = 0;
+  bool has_poly = false;
+  bool ok = tcbuffer_geom_edges(lw, true, &segs, &cap, &n, &has_poly);
+  lwgeom_free(lw);
+  if (! ok || n == 0)
+  {
+    if (segs) pfree(segs);
+    return NULL;
+  }
+
+  /* Overall bounding box of the geometry (union of the edge bounding boxes) */
+  double gxmin = DBL_MAX, gymin = DBL_MAX, gxmax = -DBL_MAX, gymax = -DBL_MAX;
+  for (int k = 0; k < n; k++)
+  {
+    if (segs[k].xmin < gxmin) gxmin = segs[k].xmin;
+    if (segs[k].ymin < gymin) gymin = segs[k].ymin;
+    if (segs[k].xmax > gxmax) gxmax = segs[k].xmax;
+    if (segs[k].ymax > gymax) gymax = segs[k].ymax;
+  }
+
+  /* Build the bucket bounding-volume hierarchy over the segments (reorders segs
+   * along a Morton curve) and assemble the geometry context, shared with the
+   * nearest-approach kernel */
+  int nbk = 0;
+  TcbufferGeomBucket *bks = tcbuffer_geom_build_buckets(segs, n, gxmin, gymin,
+    gxmax, gymax, &nbk);
+  TcbufferGeom g = { segs, n, has_poly, gxmin, gymin, gxmax, gymax, bks, nbk };
+
+  DistWitness w;
+  w.d = DBL_MAX; w.set = false;
+  w.px = w.py = w.qx = w.qy = 0.0;
+  assert(temptype_subtype(temp->subtype));
+  if (temp->subtype == TINSTANT)
+  {
+    const Cbuffer *c = DatumGetCbufferP(tinstant_value_p((TInstant *) temp));
+    const POINT2D *p = GSERIALIZED_POINT2D_P(cbuffer_point_p(c));
+    tcbuffersegm_shortestline(p->x, p->y, c->radius, p->x, p->y, c->radius,
+      &g, &w);
+  }
+  else if (temp->subtype == TSEQUENCE)
+    tcbufferseq_shortestline((TSequence *) temp, &g, &w);
+  else
+  {
+    const TSequenceSet *ss = (TSequenceSet *) temp;
+    for (int i = 0; i < ss->count && ! (w.set && w.d <= 0.0); i++)
+      tcbufferseq_shortestline(TSEQUENCESET_SEQ_N(ss, i), &g, &w);
+  }
+  pfree(bks);
+  pfree(segs);
+  if (! w.set)
+    return NULL;
+
+  int32_t srid = gserialized_get_srid(gs);
+  POINTARRAY *pa = ptarray_construct(0, 0, 2);
+  POINT4D p4;
+  p4.z = 0.0; p4.m = 0.0;
+  p4.x = w.px; p4.y = w.py;
+  ptarray_set_point4d(pa, 0, &p4);
+  p4.x = w.qx; p4.y = w.qy;
+  ptarray_set_point4d(pa, 1, &p4);
+  LWLINE *ln = lwline_construct(srid, NULL, pa);
+  GSERIALIZED *line = geo_serialize(lwline_as_lwgeom(ln));
+  lwline_free(ln);
+  return line;
 }
 
 /*****************************************************************************
