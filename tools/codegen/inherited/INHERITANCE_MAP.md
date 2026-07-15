@@ -8,7 +8,7 @@
 > The ordering authority is the **doc XML `<sect1>` structure** — the reference
 > manual chapters are the contract for *which* behaviours are inherited and in
 > *what order*. This document is a working draft to revise together; every claim
-> below is cited to live source (master `13ad7b9d3`, verified this pass).
+> below cites live source (master `13ad7b9d3`).
 
 ---
 
@@ -40,10 +40,9 @@ Temporal<T>              temporal_type      = ALL temporal types            (cat
 
 - `tcbuffer`/`tnpoint`/`tpose`/`trgeometry` inherit `Temporal<T>` + `TSpatial<T>`
   but **not** the `TGeo<T>`/`TPoint<T>`-only surface.
-- **`Tcell<T>`** (`tcellindex_type`, prefix `tcellindex_`) is now a real abstract
-  class factored via the `DggsCellOps` descriptor (§5a) — supersedes the older
-  "emergent, un-named" reading. Its cell families are **discrete**: they drop the
-  continuous inherited aspects (distance, tempspatialrels).
+- **`Tcell<T>`** (`tcellindex_type`, prefix `tcellindex_`) is a real abstract class
+  factored via the `DggsCellOps` descriptor (§5a). Its cell families are **discrete**:
+  they drop the continuous inherited aspects (distance, tempspatialrels).
 - **RASTER** (`raquet`, `meos_catalog.h:137`) is a *base value type* (a raster tile),
   **not temporal** — no `traster` exists, so it has no `Temporal<T>` class. Out of
   this hierarchy until a temporal raster type is defined.
@@ -138,7 +137,7 @@ kernel wiring, currently: `geo_ea_contains_covers`, `geo_ea_disjoint_intersects`
 `TNumber<T>` (**tint / tbigint / tfloat**) and the talpha types (**tbool / ttext /
 tjsonb**) are **not family folders** — their whole surface lives in
 `mobilitydb/sql/temporal/` and is the **hand-written reference** the generator
-templates were derived from (the number-side analogue of `geo/` for TSpatial). They
+templates derive from (the number-side analogue of `geo/` for TSpatial). They
 are **not in the generator's `subtypes:` list**, so their SQL is not re-emitted; only
 the **C boxops regions** inside their source files are generated. TNumber ops are
 documented inline in `temporal_types_p1/p2` (no separate number chapter).
@@ -172,7 +171,7 @@ finite-subset representations of the value/time domains that the restriction sur
 
 ### 4b. Aggregation / Indexing / Analytics chapters (also `Temporal<T>`-inherited)
 
-Two more reference chapters carry inherited surface (verified live):
+Two more reference chapters carry inherited surface:
 
 | chapter → `<sect1>` | prefix | generated? | notes |
 |---|---|---|---|
@@ -211,10 +210,10 @@ The generic inherited Tcell API (`tcellindex.h:139-145`):
 `tcellindex_get_resolution` · `is_valid_cell` · `cell_to_parent` · `cell_to_point` ·
 `cell_to_boundary` · `cell_area`.
 
-| aspect | state (verified live) |
+| aspect | state |
 |---|---|
 | C implementation | **unified once** via `DggsCellOps` — the `Tcell` C surface is effectively "generated" (single generic body, per-DGGS descriptor) |
-| catalog predicate `tcellindex_type()` | **quadbin only** (`#if QUADBIN → T_TQUADBIN`, `tcellindex.c:63`). **th3index is NOT wired** — it predates the machinery and still uses its own libh3 surface |
+| catalog predicate `tcellindex_type()` | **quadbin only** (`#if QUADBIN → T_TQUADBIN`, `tcellindex.c:63`). **th3index is NOT wired** — it uses its own libh3 surface |
 | descriptor registered | `quadbin_cellops` (`meos/src/quadbin/tquadbin_ops.c:132`) — **no `h3_cellops`** |
 | SQL wrappers (cellResolution/isValidCell/cellToParent/cellToPoint/cellToBoundary/cellArea) | **per-family HAND** in the `spatialfuncs` slot: h3 `255_th3index_spatialfuncs`, quadbin `355_tquadbin_spatialfuncs`; names are family-prefixed (`th3CellToBoundary` / `tquadbin…`) |
 | cell→boundary hook | the key inherited hook: `spatialrels.sql.tmpl` cast-delegates via `<fam>CellToBoundary($n)::tgeometry` (`manifest.yaml` `boundary_fn`) — this IS generated (§6, h3 262 / quadbin 362) |
@@ -226,7 +225,7 @@ generated from a `tcellindex` template instead of hand-written twice.
 
 ## 6. Per-family gap — every inherited `.in.sql` file, generated vs hand
 
-Each cell = the live file number (`mobilitydb/sql/<fam>/`, verified). **Bold** = the
+Each cell = the live file number (`mobilitydb/sql/<fam>/`). **Bold** = the
 file is emitted by the generator today (in that subtype's `manifest.yaml` `files:`);
 plain = the file exists but is still hand-maintained.
 
@@ -255,7 +254,7 @@ Reading the table:
   (memory `spatialrel-wrapper-surface-is-inherited-generate-it`: "NEXT = roll to
   cbuffer/rgeo/pose").
 - The **geo/tpoint/tgeo** family SQL surfaces are not in the `subtypes:` list at all
-  (geo is the hand-written reference layout the generator was derived from).
+  (geo is the hand-written reference layout the generator derives from).
 
 ## 7. The gap (roadmap, most-mechanical first)
 
@@ -307,7 +306,7 @@ Notes:
   cbuffer, npoint, pose, rgeo]` — it does **not** list h3/quadbin/pointcloud, so those
   are *declared* deferrals. But **TBigint / TJsonb** belong to in-scope families
   (number / alpha) and are silent omissions → genuine curation defects.
-- The model's own correction **OM-M7 is now stale**: it states `tpcpoint`/`tpcpatch`
+- The model's own correction **OM-M7 is stale**: it states `tpcpoint`/`tpcpatch`
   are "absent from master MEOS (0 hits)", but live master **has** them
   (`meos_catalog.c:164/167` + `tpointcloud_temptype()` predicate). The curated lattice
   lags the live catalog.
