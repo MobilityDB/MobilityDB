@@ -836,6 +836,7 @@ extern int atouches_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp);
 extern int atouches_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern int atouches_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
 extern int atouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern int atouches_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp);
 extern int econtains_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp);
 extern int econtains_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern int econtains_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
@@ -855,6 +856,7 @@ extern int etouches_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp);
 extern int etouches_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern int etouches_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2);
 extern int etouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern int etouches_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp);
 
 /* Spatiotemporal relationships */
 
