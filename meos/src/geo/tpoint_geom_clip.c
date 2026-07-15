@@ -2062,12 +2062,11 @@ tpoint_linear_dwithin_geom(const Temporal *temp, const GSERIALIZED *gs,
 
   /* Bounding box test: the geometry box expanded by dist must overlap the
    * temporal point box, otherwise the relationship is false throughout */
-  STBox box1, box2;
+  STBox box1, box2, box2e;
   tspatial_set_stbox(temp, &box1);
   geo_set_stbox(gs, &box2);
-  STBox *box2e = stbox_expand_space(&box2, dist);
-  bool overlap = overlaps_stbox_stbox(&box1, box2e);
-  pfree(box2e);
+  stbox_expand_space_set(&box2, dist, &box2e);
+  bool overlap = overlaps_stbox_stbox(&box1, &box2e);
   if (! overlap)
   {
     SpanSet *ss = temporal_time(temp);

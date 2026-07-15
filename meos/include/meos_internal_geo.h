@@ -142,6 +142,7 @@ extern void tstzspanset_set_stbox(const SpanSet *s, STBox *result);
 /* Transformation functions for box types */
 
 extern void stbox_expand(const STBox *box1, STBox *box2);
+extern bool stbox_expand_space_set(const STBox *box, double d, STBox *result);
 
 /*****************************************************************************/
 

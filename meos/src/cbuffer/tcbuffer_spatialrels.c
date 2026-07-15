@@ -1654,12 +1654,11 @@ ea_dwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
    * it. A constant-time reject that avoids the analytic nearest-approach
    * distance below for far-away pairs in a spatial join. The tcbuffer is planar
    * by construction, so no geodetic branch is needed. */
-  STBox box_temp, box_geo;
+  STBox box_temp, box_geo, box_geo_exp;
   tspatial_set_stbox(temp, &box_temp);
   geo_set_stbox(gs, &box_geo);
-  STBox *box_geo_exp = stbox_expand_space(&box_geo, dist);
-  bool pass = overlaps_stbox_stbox(&box_temp, box_geo_exp);
-  pfree(box_geo_exp);
+  stbox_expand_space_set(&box_geo, dist, &box_geo_exp);
+  bool pass = overlaps_stbox_stbox(&box_temp, &box_geo_exp);
   if (! pass)
     return 0;
   /* The ever semantics reduce exactly to the native nearest-approach
@@ -1820,12 +1819,11 @@ ea_dwithin_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
    * equivalence as index-on == index-off (the exact predicate rechecks), NEVER
    * against `nad <= d`: nad uses a different distance convention for circular
    * buffers and is NOT the oracle for eDwithin. */
-  STBox box1, box2;
+  STBox box1, box2, box2_exp;
   tspatial_set_stbox(temp1, &box1);
   tspatial_set_stbox(temp2, &box2);
-  STBox *box2_exp = stbox_expand_space(&box2, dist);
-  bool pass = overlaps_stbox_stbox(&box1, box2_exp);
-  pfree(box2_exp);
+  stbox_expand_space_set(&box2, dist, &box2_exp);
+  bool pass = overlaps_stbox_stbox(&box1, &box2_exp);
   if (! pass)
     return 0;
 
