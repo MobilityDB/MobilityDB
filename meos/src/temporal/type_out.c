@@ -1055,21 +1055,6 @@ tsequenceset_as_mfjson_sb(stringbuffer_t *sb, const TSequenceSet *ss,
         stringbuffer_aprintf(sb, "%s", str);      
         // pfree(str);
       }
-#if POSE
-      else if (inst->temptype == T_TPOSE)
-      {
-        /* Do not repeat the crs for the composing geometries */
-        pose_as_json_sb(sb, DatumGetPoseP(tinstant_value_p(inst)), precision);
-      }
-#endif /* POSE */
-#if RGEO
-      else if (inst->temptype == T_TRGEOMETRY)
-      {
-        /* Do not repeat the crs of the reference geometry for the instants */
-        pose_as_json_sb(sb, DatumGetPoseP(tinstant_value_p(inst)), precision);
-      }
-#endif /* RGEO */
-
 #if CBUFFER
       else if (inst->temptype == T_TCBUFFER)
       {
@@ -1088,6 +1073,20 @@ tsequenceset_as_mfjson_sb(stringbuffer_t *sb, const TSequenceSet *ss,
       else if (inst->temptype == T_TPCPATCH)
         tpcpatch_as_mfjson_sb(sb, inst, precision);
 #endif /* POINTCLOUD */
+#if POSE
+      else if (inst->temptype == T_TPOSE)
+      {
+        /* Do not repeat the crs for the composing geometries */
+        pose_as_json_sb(sb, DatumGetPoseP(tinstant_value_p(inst)), precision);
+      }
+#endif /* POSE */
+#if RGEO
+      else if (inst->temptype == T_TRGEOMETRY)
+      {
+        /* Do not repeat the crs of the reference geometry for the instants */
+        pose_as_json_sb(sb, DatumGetPoseP(tinstant_value_p(inst)), precision);
+      }
+#endif /* RGEO */
       else
       {
         success = temporal_base_as_mfjson_sb(sb, tinstant_value_p(inst),
@@ -1425,10 +1424,6 @@ base_to_wkb_size(Datum value, MeosType basetype, uint8_t variant)
     case T_NPOINT:
       return npoint_to_wkb_size(DatumGetNpointP(value), variant, true);
 #endif /* NPOINT */
-#if POSE || RGEO
-    case T_POSE:
-      return pose_to_wkb_size(DatumGetPoseP(value), variant, true);
-#endif /* POSE || RGEO */
 #if POINTCLOUD
     case T_PCPOINT:
       return pcpoint_to_wkb_size((const Pcpoint *) DatumGetPointer(value),
@@ -1437,6 +1432,10 @@ base_to_wkb_size(Datum value, MeosType basetype, uint8_t variant)
       return pcpatch_to_wkb_size((const Pcpatch *) DatumGetPointer(value),
         variant);
 #endif /* POINTCLOUD */
+#if POSE || RGEO
+    case T_POSE:
+      return pose_to_wkb_size(DatumGetPoseP(value), variant, true);
+#endif /* POSE || RGEO */
 #if QUADBIN
     case T_QUADBIN:
       /* quadbin is a uint64 cell id, wire-format identical to int8. */
@@ -2286,6 +2285,16 @@ base_to_wkb_buf(Datum value, MeosType basetype, uint8_t *buf,
       buf = npoint_to_wkb_buf(DatumGetNpointP(value), buf, variant, true);
       break;
 #endif /* NPOINT */
+#if POINTCLOUD
+    case T_PCPOINT:
+      buf = pcpoint_to_wkb_buf((const Pcpoint *) DatumGetPointer(value),
+        buf, variant);
+      break;
+    case T_PCPATCH:
+      buf = pcpatch_to_wkb_buf((const Pcpatch *) DatumGetPointer(value),
+        buf, variant);
+      break;
+#endif /* POINTCLOUD */
 #if POSE || RGEO
     case T_POSE:
       buf = pose_to_wkb_buf(DatumGetPoseP(value), buf, variant, true);
@@ -2297,16 +2306,6 @@ base_to_wkb_buf(Datum value, MeosType basetype, uint8_t *buf,
       buf = int64_to_wkb_buf((int64) DatumGetInt64(value), buf, variant);
       break;
 #endif /* QUADBIN */
-#if POINTCLOUD
-    case T_PCPOINT:
-      buf = pcpoint_to_wkb_buf((const Pcpoint *) DatumGetPointer(value),
-        buf, variant);
-      break;
-    case T_PCPATCH:
-      buf = pcpatch_to_wkb_buf((const Pcpatch *) DatumGetPointer(value),
-        buf, variant);
-      break;
-#endif /* POINTCLOUD */
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_WKB_OUTPUT,
         "Unknown basetype in WKB output: %s", meostype_name(basetype));
