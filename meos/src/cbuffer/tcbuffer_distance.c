@@ -1394,11 +1394,13 @@ typedef struct
   int nbk;
 } TcbufferGeom;
 
-/** @brief A segment paired with its Morton (Z-order) key, for sorting */
+/** @brief A segment's Morton (Z-order) key paired with its index, for sorting.
+ * Sorting these lightweight handles rather than the ~128-byte edge payloads
+ * keeps qsort from swapping whole edges. */
 typedef struct
 {
   uint32_t key;
-  TcbufferGeomEdge seg;
+  int idx;
 } TcbufferGeomSortItem;
 
 /** @brief Spread the low 16 bits of @p v with one zero bit between each */
@@ -1444,11 +1446,19 @@ tcbuffer_geom_build_buckets(TcbufferGeomEdge *segs, int n, double gxmin, double 
     uint32_t ix = (uint32_t) ((cx - gxmin) * sx);
     uint32_t iy = (uint32_t) ((cy - gymin) * sy);
     items[i].key = tcbuffer_geom_morton_part(ix) | (tcbuffer_geom_morton_part(iy) << 1);
-    items[i].seg = segs[i];
+    items[i].idx = i;
   }
   qsort(items, n, sizeof(TcbufferGeomSortItem), tcbuffer_geom_morton_cmp);
+  /* Apply the resulting permutation to the segments through one scratch pass.
+   * Sorting the lightweight key/index handles above (rather than the segments
+   * themselves) keeps qsort from copying the ~128-byte edge payloads on every
+   * swap, which dominated the bucket build for large polygons. */
+  TcbufferGeomEdge *sorted = palloc(sizeof(TcbufferGeomEdge) * n);
   for (int i = 0; i < n; i++)
-    segs[i] = items[i].seg;
+    sorted[i] = segs[items[i].idx];
+  for (int i = 0; i < n; i++)
+    segs[i] = sorted[i];
+  pfree(sorted);
   pfree(items);
 
   int bsize = (int) ceil(sqrt((double) n));
