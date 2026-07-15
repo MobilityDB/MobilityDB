@@ -683,6 +683,8 @@ Atouches_tgeo_tgeo(PG_FUNCTION_ARGS)
   return EA_spatialrel_tspatial_tspatial(fcinfo, &ea_touches_tgeo_tgeo, ALWAYS);
 }
 
+/* GENERATED-SPATIALRELS-BEGIN geo_ea_dwithin — tools/codegen/inherited/generate.py from templates/spatialrels.c.tmpl;
+ * DO NOT EDIT BY HAND; edit the template + manifest.yaml (spatialrel_families) and re-run. */
 /*****************************************************************************
  * Ever/always dwithin (for both geometry and geography)
  * The function only accepts points and not arbitrary geometries/geographies
@@ -734,7 +736,7 @@ PGDLLEXPORT Datum Adwithin_tgeo_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Adwithin_tgeo_geo);
 /**
  * @ingroup mobilitydb_geo_rel_ever
- * @brief Return true if a temporal geometry and a geometry/geography are ever
+ * @brief Return true if a temporal geometry and a geometry/geography are always
  * within a distance
  * @sqlfn aDwithin()
  */
@@ -743,6 +745,7 @@ Adwithin_tgeo_geo(PG_FUNCTION_ARGS)
 {
   return EA_dwithin_tspatial_geo(fcinfo, &ea_dwithin_tgeo_geo, ALWAYS);
 }
+/* GENERATED-SPATIALRELS-END geo_ea_dwithin */
 
 /**
  * @brief Return true if two temporal geometries are even/always within a distance
