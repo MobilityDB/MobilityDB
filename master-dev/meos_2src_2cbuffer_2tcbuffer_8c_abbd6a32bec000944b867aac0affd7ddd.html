@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: ensure_valid_tcbuffer_geo</title>
+<title>MobilityDB: tcbufferinst_expand</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -80,7 +80,7 @@ $(function() {
       <div class="navtab">
         <table>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer_8c_a4241f992c007d12379cc08aef72875f7.html#a4241f992c007d12379cc08aef72875f7">ensure_valid_tcbuffer_cbuffer</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer_8c_ad7c565c0a59ee5af55ef6e836eccc6c0.html#ad7c565c0a59ee5af55ef6e836eccc6c0">ensure_valid_tcbuffer_geo</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer_8c_ad7c565c0a59ee5af55ef6e836eccc6c0.html#ad7c565c0a59ee5af55ef6e836eccc6c0">ensure_valid_tcbuffer_geo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer_8c_a3188519cb1583a50b0144c0839f25428.html#a3188519cb1583a50b0144c0839f25428">ensure_valid_tcbuffer_stbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer_8c_a8e624ea69e2812a74775bf96ba457e29.html#a8e624ea69e2812a74775bf96ba457e29">ensure_valid_tcbuffer_tcbuffer</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__cbuffer__restrict_gab3f3a22c3bbb97d7a0e727ef66d1667d.html#gab3f3a22c3bbb97d7a0e727ef66d1667d">tcbuffer_at_cbuffer</a></td></tr>
@@ -107,7 +107,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__cbuffer__accessor_ga75be9fff9d4684f28982e39a6a25d69b.html#ga75be9fff9d4684f28982e39a6a25d69b">tcbuffer_value_at_timestamptz</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__cbuffer__accessor_gab94b8474b4347945bc99866551cb2446.html#gab94b8474b4347945bc99866551cb2446">tcbuffer_value_n</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__cbuffer__accessor_ga5925116c0b0121b8bea66b9749f1e217.html#ga5925116c0b0121b8bea66b9749f1e217">tcbuffer_values</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer_8c_abbd6a32bec000944b867aac0affd7ddd.html#abbd6a32bec000944b867aac0affd7ddd">tcbufferinst_expand</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer_8c_abbd6a32bec000944b867aac0affd7ddd.html#abbd6a32bec000944b867aac0affd7ddd">tcbufferinst_expand</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__cbuffer__inout_ga9f026e3310aa2d74be3854c935d61988.html#ga9f026e3310aa2d74be3854c935d61988">tcbufferinst_in</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__cbuffer__constructor_ga678a464355d59df98679faf5b4078f24.html#ga678a464355d59df98679faf5b4078f24">tcbufferinst_make</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer_8c_a2330247267a5a24e9a43b416deef75fc.html#a2330247267a5a24e9a43b416deef75fc">tcbufferinst_members</a></td></tr>
@@ -143,23 +143,26 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ad7c565c0a59ee5af55ef6e836eccc6c0" name="ad7c565c0a59ee5af55ef6e836eccc6c0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad7c565c0a59ee5af55ef6e836eccc6c0">&#9670;&#160;</a></span>ensure_valid_tcbuffer_geo()</h2>
+<a id="abbd6a32bec000944b867aac0affd7ddd" name="abbd6a32bec000944b867aac0affd7ddd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abbd6a32bec000944b867aac0affd7ddd">&#9670;&#160;</a></span>tcbufferinst_expand()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">bool ensure_valid_tcbuffer_geo </td>
+          <td class="memname">static <a class="el" href="structTInstant.html">TInstant</a> * tcbufferinst_expand </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
-          <td class="paramname"><em>temp</em>, </td>
+          <td class="paramtype">const <a class="el" href="structTInstant.html">TInstant</a> *&#160;</td>
+          <td class="paramname"><em>inst</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
-          <td class="paramname"><em>gs</em>&#160;</td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>dist</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -167,17 +170,14 @@ $(function() {
           <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-<p>Ensure the validity of a temporal circular buffer and a geometry. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> value </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">gs</td><td>Geometry </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section note"><dt>Note</dt><dd>A circular buffer is 2D and planar by construction (<a class="el" href="group__meos__cbuffer__base__constructor_ga85ec6bf900f60bc0fa121a82e25797da.html#ga85ec6bf900f60bc0fa121a82e25797da" title="Construct a circular buffer from a point and a radius.">cbuffer_make</a> rejects geodetic, Z and M input), so the geometry must likewise be 2D and planar. Centralizing these constraints here keeps every temporal circular-buffer/geometry operation consistent and makes switching the supported dimensionality a single-place change. </dd></dl>
+<p>Return a temporal circular buffer instant with the radius expanded by a distance. </p>
 
 </div>
 </div>
