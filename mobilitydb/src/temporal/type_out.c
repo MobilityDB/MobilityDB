@@ -205,18 +205,8 @@ Temporal_as_mfjson(PG_FUNCTION_ARGS)
 static uint8_t
 get_endian_variant(const text *txt)
 {
-  uint8_t variant = 0;
   char *endian = text_to_cstring(txt);
-  /* When the endian is not given the default value is an empty text */
-  if (strlen(endian) == 0)
-    ;
-  else if (pg_strncasecmp(endian, "ndr", 3) != 0 &&
-      pg_strncasecmp(endian, "xdr", 3) != 0)
-    elog(ERROR, "Invalid value for endian flag");
-  else if (pg_strncasecmp(endian, "ndr", 3) == 0)
-    variant = variant | (uint8_t) WKB_NDR;
-  else /* txt = XDR */
-    variant = variant | (uint8_t) WKB_XDR;
+  uint8_t variant = wkb_variant_from_endian(endian);
   pfree(endian);
   return variant;
 }

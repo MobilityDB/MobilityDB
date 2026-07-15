@@ -1262,6 +1262,7 @@ extern char *tbool_out(const Temporal *temp);
 extern char *temporal_as_hexwkb(const Temporal *temp, uint8_t variant, size_t *size_out);
 extern char *temporal_as_mfjson(const Temporal *temp, bool with_bbox, int flags, int precision, const char *srs);
 extern uint8_t *temporal_as_wkb(const Temporal *temp, uint8_t variant, size_t *size_out);
+extern uint8_t wkb_variant_from_endian(const char *endian);
 extern Temporal *temporal_from_hexwkb(const char *hexwkb);
 extern Temporal *temporal_from_wkb(const uint8_t *wkb, size_t size);
 extern Temporal *tfloat_from_mfjson(const char *str);
