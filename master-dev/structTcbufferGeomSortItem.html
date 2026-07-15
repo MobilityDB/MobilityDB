@@ -76,18 +76,19 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>A segment paired with its Morton (Z-order) key, for sorting.  
+<p>A segment's Morton (Z-order) key paired with its index, for sorting.  
  <a href="structTcbufferGeomSortItem.html#details">More...</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Data Fields</h2></td></tr>
+<tr class="memitem:a85b00bb7779be0f03e693bcddcd93941"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTcbufferGeomSortItem_a85b00bb7779be0f03e693bcddcd93941.html#a85b00bb7779be0f03e693bcddcd93941">idx</a></td></tr>
+<tr class="separator:a85b00bb7779be0f03e693bcddcd93941"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0a7dead3f07b4890ca1912c0c7117583"><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTcbufferGeomSortItem_a0a7dead3f07b4890ca1912c0c7117583.html#a0a7dead3f07b4890ca1912c0c7117583">key</a></td></tr>
 <tr class="separator:a0a7dead3f07b4890ca1912c0c7117583"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a84519a7ceaa33fc027bd111d34c487c5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTcbufferGeomEdge.html">TcbufferGeomEdge</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTcbufferGeomSortItem_a84519a7ceaa33fc027bd111d34c487c5.html#a84519a7ceaa33fc027bd111d34c487c5">seg</a></td></tr>
-<tr class="separator:a84519a7ceaa33fc027bd111d34c487c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >A segment paired with its Morton (Z-order) key, for sorting. </p>
+<div class="textblock"><p >A segment's Morton (Z-order) key paired with its index, for sorting. </p>
+<p >Sorting these lightweight handles rather than the ~128-byte edge payloads keeps qsort from swapping whole edges. </p>
 </div><hr/>The documentation for this struct was generated from the following file:<ul>
 <li>meos/src/cbuffer/<a class="el" href="meos_2src_2cbuffer_2tcbuffer__distance_8c.html">tcbuffer_distance.c</a></li>
 </ul>
