@@ -596,14 +596,14 @@ typedef struct
   bool is_arc;
   double acx, acy, arad, at0, at1;
   bool accw;
-} TcbSeg;
+} TcbufferGeomEdge;
 
 /**
  * @brief Append the segments of a point array to the segment array, growing
  * it as needed. A single-point array contributes one degenerate segment.
  */
 static void
-tcbuffer_segs_add_ptarray(const POINTARRAY *pa, bool is_poly, TcbSeg **arr,
+tcbuffer_geom_edges_add_ptarray(const POINTARRAY *pa, bool is_poly, TcbufferGeomEdge **arr,
   int *cap, int *cnt)
 {
   if (! pa || pa->npoints == 0)
@@ -617,11 +617,11 @@ tcbuffer_segs_add_ptarray(const POINTARRAY *pa, bool is_poly, TcbSeg **arr,
     if (*cnt == *cap)
     {
       int newcap = (*cap == 0) ? 64 : *cap * 2;
-      *arr = (*arr == NULL) ? palloc(sizeof(TcbSeg) * newcap) :
-        repalloc(*arr, sizeof(TcbSeg) * newcap);
+      *arr = (*arr == NULL) ? palloc(sizeof(TcbufferGeomEdge) * newcap) :
+        repalloc(*arr, sizeof(TcbufferGeomEdge) * newcap);
       *cap = newcap;
     }
-    TcbSeg *s = &(*arr)[(*cnt)++];
+    TcbufferGeomEdge *s = &(*arr)[(*cnt)++];
     s->x1 = a->x; s->y1 = a->y; s->x2 = b->x; s->y2 = b->y;
     s->xmin = fmin(a->x, b->x); s->xmax = fmax(a->x, b->x);
     s->ymin = fmin(a->y, b->y); s->ymax = fmax(a->y, b->y);
@@ -646,7 +646,7 @@ tcbuffer_angle_norm(double a)
  * @brief True if the angle @p phi lies within the arc's angular span
  */
 static bool
-tcbuffer_arc_contains_angle(const TcbSeg *e, double phi)
+tcbuffer_geom_arc_contains_angle(const TcbufferGeomEdge *e, double phi)
 {
   double sweep = e->accw ?
     tcbuffer_angle_norm(e->at1 - e->at0) : tcbuffer_angle_norm(e->at0 - e->at1);
@@ -661,7 +661,7 @@ tcbuffer_arc_contains_angle(const TcbSeg *e, double phi)
  * arc's angular span, so the bucket hierarchy never prunes away the arc bulge
  */
 static void
-tcbuffer_arc_set_bbox(TcbSeg *e)
+tcbuffer_geom_arc_set_bbox(TcbufferGeomEdge *e)
 {
   double xmin = fmin(e->x1, e->x2), xmax = fmax(e->x1, e->x2);
   double ymin = fmin(e->y1, e->y2), ymax = fmax(e->y1, e->y2);
@@ -669,7 +669,7 @@ tcbuffer_arc_set_bbox(TcbSeg *e)
   const double ex[4] = {e->acx + e->arad, e->acx, e->acx - e->arad, e->acx};
   const double ey[4] = {e->acy, e->acy + e->arad, e->acy, e->acy - e->arad};
   for (int k = 0; k < 4; k++)
-    if (tcbuffer_arc_contains_angle(e, ang[k]))
+    if (tcbuffer_geom_arc_contains_angle(e, ang[k]))
     {
       if (ex[k] < xmin) xmin = ex[k];
       if (ex[k] > xmax) xmax = ex[k];
@@ -687,15 +687,15 @@ tcbuffer_arc_set_bbox(TcbSeg *e)
  */
 static void
 tcbuffer_segs_add_arc(double ax, double ay, double bx, double by, double cx,
-  double cy, bool is_poly, TcbSeg **arr, int *cap, int *cnt)
+  double cy, bool is_poly, TcbufferGeomEdge **arr, int *cap, int *cnt)
 {
   if (*cnt + 2 > *cap)
   {
     int newcap = (*cap == 0) ? 64 : *cap * 2;
     while (*cnt + 2 > newcap)
       newcap *= 2;
-    *arr = (*arr == NULL) ? palloc(sizeof(TcbSeg) * newcap) :
-      repalloc(*arr, sizeof(TcbSeg) * newcap);
+    *arr = (*arr == NULL) ? palloc(sizeof(TcbufferGeomEdge) * newcap) :
+      repalloc(*arr, sizeof(TcbufferGeomEdge) * newcap);
     *cap = newcap;
   }
   /* Twice the signed area of triangle ABC; zero => collinear */
@@ -707,7 +707,7 @@ tcbuffer_segs_add_arc(double ax, double ay, double bx, double by, double cx,
     {
       double p1x = seg == 0 ? ax : bx, p1y = seg == 0 ? ay : by;
       double p2x = seg == 0 ? bx : cx, p2y = seg == 0 ? by : cy;
-      TcbSeg *s = &(*arr)[(*cnt)++];
+      TcbufferGeomEdge *s = &(*arr)[(*cnt)++];
       s->x1 = p1x; s->y1 = p1y; s->x2 = p2x; s->y2 = p2y;
       s->xmin = fmin(p1x, p2x); s->xmax = fmax(p1x, p2x);
       s->ymin = fmin(p1y, p2y); s->ymax = fmax(p1y, p2y);
@@ -716,7 +716,7 @@ tcbuffer_segs_add_arc(double ax, double ay, double bx, double by, double cx,
     return;
   }
   double a2 = ax * ax + ay * ay, b2 = bx * bx + by * by, c2 = cx * cx + cy * cy;
-  TcbSeg *s = &(*arr)[(*cnt)++];
+  TcbufferGeomEdge *s = &(*arr)[(*cnt)++];
   s->acx = (a2 * (by - cy) + b2 * (cy - ay) + c2 * (ay - by)) / d;
   s->acy = (a2 * (cx - bx) + b2 * (ax - cx) + c2 * (bx - ax)) / d;
   s->arad = hypot(ax - s->acx, ay - s->acy);
@@ -725,7 +725,7 @@ tcbuffer_segs_add_arc(double ax, double ay, double bx, double by, double cx,
   s->at1 = atan2(cy - s->acy, cx - s->acx);
   s->accw = ((bx - ax) * (cy - ay) - (by - ay) * (cx - ax)) > 0.0;
   s->is_poly = is_poly; s->is_arc = true;
-  tcbuffer_arc_set_bbox(s);
+  tcbuffer_geom_arc_set_bbox(s);
 }
 
 /**
@@ -734,7 +734,7 @@ tcbuffer_segs_add_arc(double ax, double ay, double bx, double by, double cx,
  */
 static void
 tcbuffer_segs_add_circstring(const LWCIRCSTRING *circ, bool is_poly,
-  TcbSeg **arr, int *cap, int *cnt)
+  TcbufferGeomEdge **arr, int *cap, int *cnt)
 {
   const POINTARRAY *pa = circ->points;
   int np = (int) pa->npoints;
@@ -756,12 +756,12 @@ tcbuffer_segs_add_circstring(const LWCIRCSTRING *circ, bool is_poly,
  */
 static bool
 tcbuffer_segs_add_curvepoly_ring(const LWGEOM *ring, bool allow_arc,
-  TcbSeg **arr, int *cap, int *cnt)
+  TcbufferGeomEdge **arr, int *cap, int *cnt)
 {
   switch (ring->type)
   {
     case LINETYPE:
-      tcbuffer_segs_add_ptarray(lwgeom_as_lwline(ring)->points, true, arr, cap,
+      tcbuffer_geom_edges_add_ptarray(lwgeom_as_lwline(ring)->points, true, arr, cap,
         cnt);
       return true;
     case CIRCSTRINGTYPE:
@@ -790,13 +790,13 @@ tcbuffer_segs_add_curvepoly_ring(const LWGEOM *ring, bool allow_arc,
  * then falls back to the exact traversed-area path).
  */
 static bool
-tcbuffer_geo_segs(const LWGEOM *lw, bool allow_arc, TcbSeg **arr, int *cap,
+tcbuffer_geom_edges(const LWGEOM *lw, bool allow_arc, TcbufferGeomEdge **arr, int *cap,
   int *cnt, bool *has_poly)
 {
   switch (lw->type)
   {
     case POINTTYPE:
-      tcbuffer_segs_add_ptarray(lwgeom_as_lwpoint(lw)->point, false, arr, cap,
+      tcbuffer_geom_edges_add_ptarray(lwgeom_as_lwpoint(lw)->point, false, arr, cap,
         cnt);
       return true;
     case CIRCSTRINGTYPE:
@@ -808,11 +808,11 @@ tcbuffer_geo_segs(const LWGEOM *lw, bool allow_arc, TcbSeg **arr, int *cap,
         cnt);
       return true;
     case LINETYPE:
-      tcbuffer_segs_add_ptarray(lwgeom_as_lwline(lw)->points, false, arr, cap,
+      tcbuffer_geom_edges_add_ptarray(lwgeom_as_lwline(lw)->points, false, arr, cap,
         cnt);
       return true;
     case TRIANGLETYPE:
-      tcbuffer_segs_add_ptarray(lwgeom_as_lwtriangle(lw)->points, true, arr,
+      tcbuffer_geom_edges_add_ptarray(lwgeom_as_lwtriangle(lw)->points, true, arr,
         cap, cnt);
       *has_poly = true;
       return true;
@@ -820,7 +820,7 @@ tcbuffer_geo_segs(const LWGEOM *lw, bool allow_arc, TcbSeg **arr, int *cap,
     {
       const LWPOLY *p = lwgeom_as_lwpoly(lw);
       for (uint32_t i = 0; i < p->nrings; i++)
-        tcbuffer_segs_add_ptarray(p->rings[i], true, arr, cap, cnt);
+        tcbuffer_geom_edges_add_ptarray(p->rings[i], true, arr, cap, cnt);
       if (p->nrings > 0)
         *has_poly = true;
       return true;
@@ -829,7 +829,7 @@ tcbuffer_geo_segs(const LWGEOM *lw, bool allow_arc, TcbSeg **arr, int *cap,
     {
       /* A curve polygon is bounded by rings that are line strings, circular
        * strings, or compound curves. Decompose each ring with polygon (region)
-       * semantics so the arc-aware even-odd test in #tcbuffer_pt_in_polys
+       * semantics so the arc-aware even-odd test in #tcbuffer_geom_edges_point_inside
        * treats it as a boundary. */
       const LWCURVEPOLY *cp = lwgeom_as_lwcurvepoly(lw);
       for (uint32_t i = 0; i < cp->nrings; i++)
@@ -856,7 +856,7 @@ tcbuffer_geo_segs(const LWGEOM *lw, bool allow_arc, TcbSeg **arr, int *cap,
     {
       const LWCOLLECTION *c = lwgeom_as_lwcollection(lw);
       for (uint32_t i = 0; i < c->ngeoms; i++)
-        if (! tcbuffer_geo_segs(c->geoms[i], allow_arc, arr, cap, cnt, has_poly))
+        if (! tcbuffer_geom_edges(c->geoms[i], allow_arc, arr, cap, cnt, has_poly))
           return false;
       return true;
     }
@@ -878,7 +878,7 @@ tcbuffer_geo_segs(const LWGEOM *lw, bool allow_arc, TcbSeg **arr, int *cap,
  * line, and standalone (1D) arc edges (not @p is_poly) contribute nothing.
  */
 static void
-tcbuffer_poly_seg_raycross(const TcbSeg *s, double x, double y, bool *inside)
+tcbuffer_poly_seg_raycross(const TcbufferGeomEdge *s, double x, double y, bool *inside)
 {
   if (! s->is_poly)
     return;
@@ -901,7 +901,7 @@ tcbuffer_poly_seg_raycross(const TcbSeg *s, double x, double y, bool *inside)
       const double xi = xhit[k];
       if (xi <= x)
         continue;
-      if (! tcbuffer_arc_contains_angle(s, atan2(dyc, xi - s->acx)))
+      if (! tcbuffer_geom_arc_contains_angle(s, atan2(dyc, xi - s->acx)))
         continue;
       /* Half-open ownership, mirroring the straight-edge rule: a crossing at an
        * arc endpoint (a ring junction on the ray) is owned by this edge only if
@@ -930,7 +930,7 @@ tcbuffer_poly_seg_raycross(const TcbSeg *s, double x, double y, bool *inside)
 }
 
 static bool
-tcbuffer_pt_in_polys(double x, double y, const TcbSeg *segs, int n)
+tcbuffer_geom_edges_point_inside(double x, double y, const TcbufferGeomEdge *segs, int n)
 {
   bool inside = false;
   for (int i = 0; i < n; i++)
@@ -943,8 +943,8 @@ tcbuffer_pt_in_polys(double x, double y, const TcbSeg *segs, int n)
  * centre moves from (cx1,cy1) to (cx2,cy2) and the radius from r1 to r2
  */
 static double
-tcbuffer_seg_edge_mindist(double cx1, double cy1, double cx2, double cy2,
-  double r1, double r2, const TcbSeg *e)
+tcbuffersegm_edge_mindist(double cx1, double cy1, double cx2, double cy2,
+  double r1, double r2, const TcbufferGeomEdge *e)
 {
   const double dcx = cx2 - cx1, dcy = cy2 - cy1;
   const double dr = r2 - r1;
@@ -1032,8 +1032,8 @@ tcbuffer_seg_edge_mindist(double cx1, double cy1, double cx2, double cy2,
  * on-span candidates and the two endpoint candidates is exact.
  */
 static double
-tcbuffer_seg_arc_mindist(double cx1, double cy1, double cx2, double cy2,
-  double r1, double r2, const TcbSeg *e)
+tcbuffersegm_arc_mindist(double cx1, double cy1, double cx2, double cy2,
+  double r1, double r2, const TcbufferGeomEdge *e)
 {
   const double dcx = cx2 - cx1, dcy = cy2 - cy1;
   const double dr = r2 - r1;
@@ -1094,7 +1094,7 @@ tcbuffer_seg_arc_mindist(double cx1, double cy1, double cx2, double cy2,
     double q = A * t * t + B * t + C;
     if (q < 0.0) q = 0.0;
     double cpx = cx1 + dcx * t, cpy = cy1 + dcy * t;
-    if (! tcbuffer_arc_contains_angle(e, atan2(cpy - py, cpx - px)))
+    if (! tcbuffer_geom_arc_contains_angle(e, atan2(cpy - py, cpx - px)))
       continue;
     double f = fabs(sqrt(q) - R) - (r1 + dr * t);
     if (f < best) best = f;
@@ -1172,11 +1172,11 @@ tcbuffer_minfun_w(double A, double B, double C, double R0, double DR, double lo,
 
 /**
  * @brief Minimum of [ dist(c(t), edge) - r(t) ] for t in [0,1] together
- * with the argument t that attains it (mirrors #tcbuffer_seg_edge_mindist)
+ * with the argument t that attains it (mirrors #tcbuffersegm_edge_mindist)
  */
 static double
-tcbuffer_seg_edge_dt(double cx1, double cy1, double cx2, double cy2, double r1,
-  double r2, const TcbSeg *e, double *out_t)
+tcbuffersegm_edge_dt(double cx1, double cy1, double cx2, double cy2, double r1,
+  double r2, const TcbufferGeomEdge *e, double *out_t)
 {
   const double dcx = cx2 - cx1, dcy = cy2 - cy1;
   const double dr = r2 - r1;
@@ -1242,12 +1242,12 @@ tcbuffer_seg_edge_dt(double cx1, double cy1, double cx2, double cy2, double r1,
 }
 
 /**
- * @brief Like #tcbuffer_seg_arc_mindist but also returns the argument t that
- * attains the minimum (mirrors #tcbuffer_seg_edge_dt for arc edges)
+ * @brief Like #tcbuffersegm_arc_mindist but also returns the argument t that
+ * attains the minimum (mirrors #tcbuffersegm_edge_dt for arc edges)
  */
 static double
-tcbuffer_seg_arc_dt(double cx1, double cy1, double cx2, double cy2, double r1,
-  double r2, const TcbSeg *e, double *out_t)
+tcbuffersegm_arc_dt(double cx1, double cy1, double cx2, double cy2, double r1,
+  double r2, const TcbufferGeomEdge *e, double *out_t)
 {
   const double dcx = cx2 - cx1, dcy = cy2 - cy1;
   const double dr = r2 - r1;
@@ -1308,7 +1308,7 @@ tcbuffer_seg_arc_dt(double cx1, double cy1, double cx2, double cy2, double r1,
     double q = A * t * t + B * t + C;
     if (q < 0.0) q = 0.0;
     double cpx = cx1 + dcx * t, cpy = cy1 + dcy * t;
-    if (! tcbuffer_arc_contains_angle(e, atan2(cpy - py, cpx - px)))
+    if (! tcbuffer_geom_arc_contains_angle(e, atan2(cpy - py, cpx - px)))
       continue;
     double f = fabs(sqrt(q) - R) - (r1 + dr * t);
     if (f < best) { best = f; bt = t; }
@@ -1337,13 +1337,13 @@ typedef struct
   double d;
   double px, py, qx, qy;
   bool set;
-} TcbWitness;
+} DistWitness;
 
 /**
  * @brief Closest point on edge @p e to (px,py)
  */
 static void
-tcbuffer_closest_on_edge(double px, double py, const TcbSeg *e, double *qx,
+tcbuffer_geom_closest_on_edge(double px, double py, const TcbufferGeomEdge *e, double *qx,
   double *qy)
 {
   double ux = e->x2 - e->x1, uy = e->y2 - e->y1;
@@ -1362,12 +1362,12 @@ tcbuffer_closest_on_edge(double px, double py, const TcbSeg *e, double *qx,
  * arc endpoint
  */
 static void
-tcbuffer_closest_on_arc(double px, double py, const TcbSeg *e, double *qx,
+tcbuffer_geom_closest_on_arc(double px, double py, const TcbufferGeomEdge *e, double *qx,
   double *qy)
 {
   double vx = px - e->acx, vy = py - e->acy;
   double vl = hypot(vx, vy);
-  if (vl > 1e-12 && tcbuffer_arc_contains_angle(e, atan2(vy, vx)))
+  if (vl > 1e-12 && tcbuffer_geom_arc_contains_angle(e, atan2(vy, vx)))
   {
     *qx = e->acx + vx * (e->arad / vl);
     *qy = e->acy + vy * (e->arad / vl);
@@ -1383,8 +1383,8 @@ tcbuffer_closest_on_arc(double px, double py, const TcbSeg *e, double *qx,
  * @brief Update the witness with one swept-capsule unit
  */
 static void
-tcbuffer_sl_unit(double cx1, double cy1, double r1, double cx2, double cy2,
-  double r2, const TcbSeg *segs, int n, bool has_poly, TcbWitness *w)
+tcbuffersegm_shortestline(double cx1, double cy1, double r1, double cx2, double cy2,
+  double r2, const TcbufferGeomEdge *segs, int n, bool has_poly, DistWitness *w)
 {
   if (w->set && w->d <= 0.0)
     return;
@@ -1393,9 +1393,9 @@ tcbuffer_sl_unit(double cx1, double cy1, double r1, double cx2, double cy2,
    * the nearest-approach interior short-circuit) */
   if (has_poly)
   {
-    bool in1 = tcbuffer_pt_in_polys(cx1, cy1, segs, n);
+    bool in1 = tcbuffer_geom_edges_point_inside(cx1, cy1, segs, n);
     bool in2 = (cx2 == cx1 && cy2 == cy1) ? in1 :
-      tcbuffer_pt_in_polys(cx2, cy2, segs, n);
+      tcbuffer_geom_edges_point_inside(cx2, cy2, segs, n);
     if (in1 || in2)
     {
       double ix = in1 ? cx1 : cx2, iy = in1 ? cy1 : cy2;
@@ -1410,7 +1410,7 @@ tcbuffer_sl_unit(double cx1, double cy1, double r1, double cx2, double cy2,
   double symax = fmax(cy1 + r1, cy2 + r2);
   for (int k = 0; k < n; k++)
   {
-    const TcbSeg *e = &segs[k];
+    const TcbufferGeomEdge *e = &segs[k];
     if (w->set)
     {
       double dx = fmax(fmax(e->xmin - sxmax, sxmin - e->xmax), 0.0);
@@ -1420,8 +1420,8 @@ tcbuffer_sl_unit(double cx1, double cy1, double r1, double cx2, double cy2,
     }
     double t;
     double m = e->is_arc ?
-      tcbuffer_seg_arc_dt(cx1, cy1, cx2, cy2, r1, r2, e, &t) :
-      tcbuffer_seg_edge_dt(cx1, cy1, cx2, cy2, r1, r2, e, &t);
+      tcbuffersegm_arc_dt(cx1, cy1, cx2, cy2, r1, r2, e, &t) :
+      tcbuffersegm_edge_dt(cx1, cy1, cx2, cy2, r1, r2, e, &t);
     if (! w->set || m < w->d)
     {
       double ccx = cx1 + (cx2 - cx1) * t;
@@ -1429,9 +1429,9 @@ tcbuffer_sl_unit(double cx1, double cy1, double r1, double cx2, double cy2,
       double rr = r1 + (r2 - r1) * t;
       double qx, qy;
       if (e->is_arc)
-        tcbuffer_closest_on_arc(ccx, ccy, e, &qx, &qy);
+        tcbuffer_geom_closest_on_arc(ccx, ccy, e, &qx, &qy);
       else
-        tcbuffer_closest_on_edge(ccx, ccy, e, &qx, &qy);
+        tcbuffer_geom_closest_on_edge(ccx, ccy, e, &qx, &qy);
       double vx = qx - ccx, vy = qy - ccy;
       double vl = sqrt(vx * vx + vy * vy);
       double pxp, pyp;
@@ -1455,8 +1455,8 @@ tcbuffer_sl_unit(double cx1, double cy1, double r1, double cx2, double cy2,
  * @brief Update the witness with one temporal circular buffer sequence
  */
 static void
-tcbuffer_sl_seq(const TSequence *seq, const TcbSeg *segs, int n, bool has_poly,
-  TcbWitness *w)
+tcbufferseq_shortestline(const TSequence *seq, const TcbufferGeomEdge *segs, int n, bool has_poly,
+  DistWitness *w)
 {
   bool linear = MEOS_FLAGS_LINEAR_INTERP(seq->flags);
   if (seq->count == 1 || ! linear)
@@ -1466,7 +1466,7 @@ tcbuffer_sl_seq(const TSequence *seq, const TcbSeg *segs, int n, bool has_poly,
       const Cbuffer *c = DatumGetCbufferP(
         tinstant_value_p(TSEQUENCE_INST_N(seq, i)));
       const POINT2D *p = GSERIALIZED_POINT2D_P(cbuffer_point_p(c));
-      tcbuffer_sl_unit(p->x, p->y, c->radius, p->x, p->y, c->radius, segs, n,
+      tcbuffersegm_shortestline(p->x, p->y, c->radius, p->x, p->y, c->radius, segs, n,
         has_poly, w);
     }
     return;
@@ -1479,7 +1479,7 @@ tcbuffer_sl_seq(const TSequence *seq, const TcbSeg *segs, int n, bool has_poly,
     const Cbuffer *c2 = DatumGetCbufferP(tinstant_value_p(i2));
     const POINT2D *p1 = GSERIALIZED_POINT2D_P(cbuffer_point_p(c1));
     const POINT2D *p2 = GSERIALIZED_POINT2D_P(cbuffer_point_p(c2));
-    tcbuffer_sl_unit(p1->x, p1->y, c1->radius, p2->x, p2->y, c2->radius, segs,
+    tcbuffersegm_shortestline(p1->x, p1->y, c1->radius, p2->x, p2->y, c2->radius, segs,
       n, has_poly, w);
     i1 = i2;
   }
@@ -1492,14 +1492,14 @@ tcbuffer_sl_seq(const TSequence *seq, const TcbSeg *segs, int n, bool has_poly,
  * back to the exact traversed-area shortest line.
  */
 static GSERIALIZED *
-tcbuffer_geo_shortestline_analytic(const Temporal *temp,
+shortestline_tcbuffer_geo_analytic(const Temporal *temp,
   const GSERIALIZED *gs)
 {
   LWGEOM *lw = lwgeom_from_gserialized(gs);
-  TcbSeg *segs = NULL;
+  TcbufferGeomEdge *segs = NULL;
   int cap = 0, n = 0;
   bool has_poly = false;
-  bool ok = tcbuffer_geo_segs(lw, true, &segs, &cap, &n, &has_poly);
+  bool ok = tcbuffer_geom_edges(lw, true, &segs, &cap, &n, &has_poly);
   lwgeom_free(lw);
   if (! ok || n == 0)
   {
@@ -1507,7 +1507,7 @@ tcbuffer_geo_shortestline_analytic(const Temporal *temp,
     return NULL;
   }
 
-  TcbWitness w;
+  DistWitness w;
   w.d = DBL_MAX; w.set = false;
   w.px = w.py = w.qx = w.qy = 0.0;
   assert(temptype_subtype(temp->subtype));
@@ -1515,16 +1515,16 @@ tcbuffer_geo_shortestline_analytic(const Temporal *temp,
   {
     const Cbuffer *c = DatumGetCbufferP(tinstant_value_p((TInstant *) temp));
     const POINT2D *p = GSERIALIZED_POINT2D_P(cbuffer_point_p(c));
-    tcbuffer_sl_unit(p->x, p->y, c->radius, p->x, p->y, c->radius, segs, n,
+    tcbuffersegm_shortestline(p->x, p->y, c->radius, p->x, p->y, c->radius, segs, n,
       has_poly, &w);
   }
   else if (temp->subtype == TSEQUENCE)
-    tcbuffer_sl_seq((TSequence *) temp, segs, n, has_poly, &w);
+    tcbufferseq_shortestline((TSequence *) temp, segs, n, has_poly, &w);
   else
   {
     const TSequenceSet *ss = (TSequenceSet *) temp;
     for (int i = 0; i < ss->count && ! (w.set && w.d <= 0.0); i++)
-      tcbuffer_sl_seq(TSEQUENCESET_SEQ_N(ss, i), segs, n, has_poly, &w);
+      tcbufferseq_shortestline(TSEQUENCESET_SEQ_N(ss, i), segs, n, has_poly, &w);
   }
   pfree(segs);
   if (! w.set)
@@ -1551,7 +1551,7 @@ typedef struct
 {
   int start, n;                  /**< Range [start, start+n) in the segments */
   double xmin, ymin, xmax, ymax; /**< Bounding box of the bucket */
-} TcbBucket;
+} TcbufferGeomBucket;
 
 /**
  * @brief Geometry context for the nearest-approach kernel: the boundary
@@ -1560,24 +1560,24 @@ typedef struct
  */
 typedef struct
 {
-  const TcbSeg *segs;
+  const TcbufferGeomEdge *segs;
   int n;
   bool has_poly;
   double xmin, ymin, xmax, ymax; /**< Overall geometry bounding box */
-  const TcbBucket *bks;
+  const TcbufferGeomBucket *bks;
   int nbk;
-} TcbGeom;
+} TcbufferGeom;
 
 /** @brief A segment paired with its Morton (Z-order) key, for sorting */
 typedef struct
 {
   uint32_t key;
-  TcbSeg seg;
-} TcbSortItem;
+  TcbufferGeomEdge seg;
+} TcbufferGeomSortItem;
 
 /** @brief Spread the low 16 bits of @p v with one zero bit between each */
 static uint32_t
-tcbuffer_morton_part(uint32_t v)
+tcbuffer_geom_morton_part(uint32_t v)
 {
   v &= 0x0000ffff;
   v = (v | (v << 8)) & 0x00ff00ff;
@@ -1587,12 +1587,12 @@ tcbuffer_morton_part(uint32_t v)
   return v;
 }
 
-/** @brief Order TcbSortItem by Morton key */
+/** @brief Order TcbufferGeomSortItem by Morton key */
 static int
-tcbuffer_morton_cmp(const void *a, const void *b)
+tcbuffer_geom_morton_cmp(const void *a, const void *b)
 {
-  uint32_t ka = ((const TcbSortItem *) a)->key;
-  uint32_t kb = ((const TcbSortItem *) b)->key;
+  uint32_t ka = ((const TcbufferGeomSortItem *) a)->key;
+  uint32_t kb = ((const TcbufferGeomSortItem *) b)->key;
   return (ka > kb) - (ka < kb);
 }
 
@@ -1604,23 +1604,23 @@ tcbuffer_morton_cmp(const void *a, const void *b)
  * roughly O(sqrt(edges) + matches) — the geometry's overall bounding box is too
  * coarse for large coastal polygons, but the bucket boxes are tight.
  */
-static TcbBucket *
-tcbuffer_build_buckets(TcbSeg *segs, int n, double gxmin, double gymin,
+static TcbufferGeomBucket *
+tcbuffer_geom_build_buckets(TcbufferGeomEdge *segs, int n, double gxmin, double gymin,
   double gxmax, double gymax, int *nbk_out)
 {
   double sx = (gxmax > gxmin) ? 65535.0 / (gxmax - gxmin) : 0.0;
   double sy = (gymax > gymin) ? 65535.0 / (gymax - gymin) : 0.0;
-  TcbSortItem *items = palloc(sizeof(TcbSortItem) * n);
+  TcbufferGeomSortItem *items = palloc(sizeof(TcbufferGeomSortItem) * n);
   for (int i = 0; i < n; i++)
   {
     double cx = 0.5 * (segs[i].xmin + segs[i].xmax);
     double cy = 0.5 * (segs[i].ymin + segs[i].ymax);
     uint32_t ix = (uint32_t) ((cx - gxmin) * sx);
     uint32_t iy = (uint32_t) ((cy - gymin) * sy);
-    items[i].key = tcbuffer_morton_part(ix) | (tcbuffer_morton_part(iy) << 1);
+    items[i].key = tcbuffer_geom_morton_part(ix) | (tcbuffer_geom_morton_part(iy) << 1);
     items[i].seg = segs[i];
   }
-  qsort(items, n, sizeof(TcbSortItem), tcbuffer_morton_cmp);
+  qsort(items, n, sizeof(TcbufferGeomSortItem), tcbuffer_geom_morton_cmp);
   for (int i = 0; i < n; i++)
     segs[i] = items[i].seg;
   pfree(items);
@@ -1628,7 +1628,7 @@ tcbuffer_build_buckets(TcbSeg *segs, int n, double gxmin, double gymin,
   int bsize = (int) ceil(sqrt((double) n));
   if (bsize < 1) bsize = 1;
   int nbk = (n + bsize - 1) / bsize;
-  TcbBucket *bks = palloc(sizeof(TcbBucket) * nbk);
+  TcbufferGeomBucket *bks = palloc(sizeof(TcbufferGeomBucket) * nbk);
   for (int b = 0; b < nbk; b++)
   {
     int s = b * bsize, e = s + bsize;
@@ -1654,12 +1654,12 @@ tcbuffer_build_buckets(TcbSeg *segs, int n, double gxmin, double gymin,
  * its y-range and its xmax reaches x, so far buckets are skipped wholesale
  */
 static bool
-tcbuffer_pt_in_polys_g(double x, double y, const TcbGeom *g)
+tcbuffer_geom_point_inside(double x, double y, const TcbufferGeom *g)
 {
   bool inside = false;
   for (int b = 0; b < g->nbk; b++)
   {
-    const TcbBucket *bk = &g->bks[b];
+    const TcbufferGeomBucket *bk = &g->bks[b];
     if (y < bk->ymin || y > bk->ymax || bk->xmax < x)
       continue;
     int e = bk->start + bk->n;
@@ -1676,8 +1676,8 @@ tcbuffer_pt_in_polys_g(double x, double y, const TcbGeom *g)
  * moves from c1 to c2 with radius r1 to r2; a stationary disk has c1 == c2)
  */
 static void
-tcbuffer_unit_nad(double cx1, double cy1, double r1, double cx2, double cy2,
-  double r2, const TcbGeom *g, double *best)
+tcbuffersegm_nad(double cx1, double cy1, double r1, double cx2, double cy2,
+  double r2, const TcbufferGeom *g, double *best)
 {
   double sxmin = fmin(cx1 - r1, cx2 - r2);
   double sxmax = fmax(cx1 + r1, cx2 + r2);
@@ -1699,7 +1699,7 @@ tcbuffer_unit_nad(double cx1, double cy1, double r1, double cx2, double cy2,
       return;
   }
   if (g->has_poly &&
-      (tcbuffer_pt_in_polys_g(cx1, cy1, g) || tcbuffer_pt_in_polys_g(cx2, cy2, g)))
+      (tcbuffer_geom_point_inside(cx1, cy1, g) || tcbuffer_geom_point_inside(cx2, cy2, g)))
   {
     *best = 0.0;
     return;
@@ -1708,7 +1708,7 @@ tcbuffer_unit_nad(double cx1, double cy1, double r1, double cx2, double cy2,
    * farther than the running minimum, then the per-edge prune within a bucket */
   for (int b = 0; b < g->nbk && *best > 0.0; b++)
   {
-    const TcbBucket *bk = &g->bks[b];
+    const TcbufferGeomBucket *bk = &g->bks[b];
     if (*best != DBL_MAX)
     {
       double dx = fmax(fmax(bk->xmin - sxmax, sxmin - bk->xmax), 0.0);
@@ -1719,7 +1719,7 @@ tcbuffer_unit_nad(double cx1, double cy1, double r1, double cx2, double cy2,
     int e = bk->start + bk->n;
     for (int k = bk->start; k < e && *best > 0.0; k++)
     {
-      const TcbSeg *ed = &g->segs[k];
+      const TcbufferGeomEdge *ed = &g->segs[k];
       if (*best != DBL_MAX)
       {
         double dx = fmax(fmax(ed->xmin - sxmax, sxmin - ed->xmax), 0.0);
@@ -1728,8 +1728,8 @@ tcbuffer_unit_nad(double cx1, double cy1, double r1, double cx2, double cy2,
           continue;
       }
       double m = ed->is_arc ?
-        tcbuffer_seg_arc_mindist(cx1, cy1, cx2, cy2, r1, r2, ed) :
-        tcbuffer_seg_edge_mindist(cx1, cy1, cx2, cy2, r1, r2, ed);
+        tcbuffersegm_arc_mindist(cx1, cy1, cx2, cy2, r1, r2, ed) :
+        tcbuffersegm_edge_mindist(cx1, cy1, cx2, cy2, r1, r2, ed);
       if (m < *best) *best = m;
     }
   }
@@ -1741,7 +1741,7 @@ tcbuffer_unit_nad(double cx1, double cy1, double r1, double cx2, double cy2,
  * step interpolation treats each instant as a stationary disk)
  */
 static void
-tcbuffer_seq_nad(const TSequence *seq, const TcbGeom *g, double *best)
+tcbufferseq_nad(const TSequence *seq, const TcbufferGeom *g, double *best)
 {
   bool linear = MEOS_FLAGS_LINEAR_INTERP(seq->flags);
   if (seq->count == 1 || ! linear)
@@ -1751,7 +1751,7 @@ tcbuffer_seq_nad(const TSequence *seq, const TcbGeom *g, double *best)
       const Cbuffer *c = DatumGetCbufferP(
         tinstant_value_p(TSEQUENCE_INST_N(seq, i)));
       const POINT2D *p = GSERIALIZED_POINT2D_P(cbuffer_point_p(c));
-      tcbuffer_unit_nad(p->x, p->y, c->radius, p->x, p->y, c->radius, g, best);
+      tcbuffersegm_nad(p->x, p->y, c->radius, p->x, p->y, c->radius, g, best);
     }
     return;
   }
@@ -1763,7 +1763,7 @@ tcbuffer_seq_nad(const TSequence *seq, const TcbGeom *g, double *best)
     const Cbuffer *c2 = DatumGetCbufferP(tinstant_value_p(i2));
     const POINT2D *p1 = GSERIALIZED_POINT2D_P(cbuffer_point_p(c1));
     const POINT2D *p2 = GSERIALIZED_POINT2D_P(cbuffer_point_p(c2));
-    tcbuffer_unit_nad(p1->x, p1->y, c1->radius, p2->x, p2->y, c2->radius, g, best);
+    tcbuffersegm_nad(p1->x, p1->y, c1->radius, p2->x, p2->y, c2->radius, g, best);
     i1 = i2;
   }
 }
@@ -1776,10 +1776,10 @@ static double
 nad_tcbuffer_geo_analytic(const Temporal *temp, const GSERIALIZED *gs)
 {
   LWGEOM *lw = lwgeom_from_gserialized(gs);
-  TcbSeg *segs = NULL;
+  TcbufferGeomEdge *segs = NULL;
   int cap = 0, n = 0;
   bool has_poly = false;
-  bool ok = tcbuffer_geo_segs(lw, true, &segs, &cap, &n, &has_poly);
+  bool ok = tcbuffer_geom_edges(lw, true, &segs, &cap, &n, &has_poly);
   lwgeom_free(lw);
 
   /* Curved / unsupported geometry, or no segments: fall back to the exact
@@ -1806,8 +1806,8 @@ nad_tcbuffer_geo_analytic(const Temporal *temp, const GSERIALIZED *gs)
   /* Build the bucket bounding-volume hierarchy over the segments (reorders
    * segs along a Morton curve) and assemble the geometry context */
   int nbk = 0;
-  TcbBucket *bks = tcbuffer_build_buckets(segs, n, gxmin, gymin, gxmax, gymax, &nbk);
-  TcbGeom g = { segs, n, has_poly, gxmin, gymin, gxmax, gymax, bks, nbk };
+  TcbufferGeomBucket *bks = tcbuffer_geom_build_buckets(segs, n, gxmin, gymin, gxmax, gymax, &nbk);
+  TcbufferGeom g = { segs, n, has_poly, gxmin, gymin, gxmax, gymax, bks, nbk };
 
   double best = DBL_MAX;
   assert(temptype_subtype(temp->subtype));
@@ -1815,15 +1815,15 @@ nad_tcbuffer_geo_analytic(const Temporal *temp, const GSERIALIZED *gs)
   {
     const Cbuffer *c = DatumGetCbufferP(tinstant_value_p((TInstant *) temp));
     const POINT2D *p = GSERIALIZED_POINT2D_P(cbuffer_point_p(c));
-    tcbuffer_unit_nad(p->x, p->y, c->radius, p->x, p->y, c->radius, &g, &best);
+    tcbuffersegm_nad(p->x, p->y, c->radius, p->x, p->y, c->radius, &g, &best);
   }
   else if (temp->subtype == TSEQUENCE)
-    tcbuffer_seq_nad((TSequence *) temp, &g, &best);
+    tcbufferseq_nad((TSequence *) temp, &g, &best);
   else /* TSEQUENCESET */
   {
     const TSequenceSet *ss = (TSequenceSet *) temp;
     for (int i = 0; i < ss->count && best > 0.0; i++)
-      tcbuffer_seq_nad(TSEQUENCESET_SEQ_N(ss, i), &g, &best);
+      tcbufferseq_nad(TSEQUENCESET_SEQ_N(ss, i), &g, &best);
   }
 
   pfree(bks);
@@ -1850,10 +1850,10 @@ nad_tcbuffer_geo_analytic(const Temporal *temp, const GSERIALIZED *gs)
  */
 typedef struct
 {
-  TcbSeg *segs;
-  TcbBucket *bks;
-  TcbGeom g;
-} TcbGeoCtx;
+  TcbufferGeomEdge *segs;
+  TcbufferGeomBucket *bks;
+  TcbufferGeom g;
+} TcbufferGeoCtx;
 
 /**
  * @brief Build the reusable geometry context for the native within kernel, or
@@ -1864,10 +1864,10 @@ void *
 tcbuffer_geo_ctx_make(const GSERIALIZED *gs)
 {
   LWGEOM *lw = lwgeom_from_gserialized(gs);
-  TcbSeg *segs = NULL;
+  TcbufferGeomEdge *segs = NULL;
   int cap = 0, n = 0;
   bool has_poly = false;
-  bool ok = tcbuffer_geo_segs(lw, true, &segs, &cap, &n, &has_poly);
+  bool ok = tcbuffer_geom_edges(lw, true, &segs, &cap, &n, &has_poly);
   lwgeom_free(lw);
   if (! ok || n == 0)
   {
@@ -1883,12 +1883,12 @@ tcbuffer_geo_ctx_make(const GSERIALIZED *gs)
     if (segs[k].ymax > gymax) gymax = segs[k].ymax;
   }
   int nbk = 0;
-  TcbBucket *bks = tcbuffer_build_buckets(segs, n, gxmin, gymin, gxmax, gymax,
+  TcbufferGeomBucket *bks = tcbuffer_geom_build_buckets(segs, n, gxmin, gymin, gxmax, gymax,
     &nbk);
-  TcbGeoCtx *ctx = palloc(sizeof(TcbGeoCtx));
+  TcbufferGeoCtx *ctx = palloc(sizeof(TcbufferGeoCtx));
   ctx->segs = segs;
   ctx->bks = bks;
-  ctx->g = (TcbGeom) { segs, n, has_poly, gxmin, gymin, gxmax, gymax, bks,
+  ctx->g = (TcbufferGeom) { segs, n, has_poly, gxmin, gymin, gxmax, gymax, bks,
     nbk };
   return ctx;
 }
@@ -1901,7 +1901,7 @@ tcbuffer_geo_ctx_free(void *ctx)
 {
   if (! ctx)
     return;
-  TcbGeoCtx *c = (TcbGeoCtx *) ctx;
+  TcbufferGeoCtx *c = (TcbufferGeoCtx *) ctx;
   pfree(c->bks);
   pfree(c->segs);
   pfree(c);
@@ -1914,7 +1914,7 @@ tcbuffer_geo_ctx_free(void *ctx)
 int
 tcbuffer_geo_ctx_nsegs(const void *ctxv)
 {
-  return ((const TcbGeoCtx *) ctxv)->g.n;
+  return ((const TcbufferGeoCtx *) ctxv)->g.n;
 }
 
 /**
@@ -1924,10 +1924,10 @@ tcbuffer_geo_ctx_nsegs(const void *ctxv)
 bool
 tcbuffer_disc_within_ctx(const Cbuffer *cb, double dist, const void *ctxv)
 {
-  const TcbGeoCtx *ctx = (const TcbGeoCtx *) ctxv;
+  const TcbufferGeoCtx *ctx = (const TcbufferGeoCtx *) ctxv;
   const POINT2D *p = GSERIALIZED_POINT2D_P(cbuffer_point_p(cb));
   double best = DBL_MAX;
-  tcbuffer_unit_nad(p->x, p->y, cb->radius, p->x, p->y, cb->radius, &ctx->g,
+  tcbuffersegm_nad(p->x, p->y, cb->radius, p->x, p->y, cb->radius, &ctx->g,
     &best);
   return best <= dist;
 }
@@ -1969,11 +1969,11 @@ tcbuffer_region_within_roots(double A, double B, double C, double R0,
 /**
  * @brief Append the within-distance crossing times of one moving disc segment
  * against one geometry edge, mirroring the perpendicular/endpoint region split
- * of #tcbuffer_seg_edge_mindist
+ * of #tcbuffersegm_edge_mindist
  */
 static void
-tcbuffer_seg_edge_within_roots(double cx1, double cy1, double cx2, double cy2,
-  double r1, double r2, const TcbSeg *e, double dist, double *cand, int *nc)
+tcbuffersegm_edge_within_roots(double cx1, double cy1, double cx2, double cy2,
+  double r1, double r2, const TcbufferGeomEdge *e, double dist, double *cand, int *nc)
 {
   const double dcx = cx2 - cx1, dcy = cy2 - cy1, dr = r2 - r1, R0 = r1 + dist;
   const double ax = e->x1, ay = e->y1, bx = e->x2, by = e->y2;
@@ -2036,7 +2036,7 @@ tcbuffer_seg_edge_within_roots(double cx1, double cy1, double cx2, double cy2,
 /**
  * @brief Append the within-distance crossing times of one moving disc segment
  * against one circular-arc edge, the temporal analogue of the on-span circle /
- * off-span endpoint split of #tcbuffer_seg_arc_mindist
+ * off-span endpoint split of #tcbuffersegm_arc_mindist
  * @details On the arc's angular span the distance to the disc is
  * | sqrt(Q(t)) - R | - r(t); setting it equal to @p dist gives
  * sqrt(Q) = R + r(t) + dist (disc outside the circle) or
@@ -2044,12 +2044,12 @@ tcbuffer_seg_edge_within_roots(double cx1, double cy1, double cx2, double cy2,
  * the arc radius folded into R0. Off the span the nearest arc point is an
  * endpoint, so the two endpoint region crossings are added as well. The result
  * is a superset of the true crossings; each candidate sub-interval is then
- * classified exactly by the arc-aware unit distance (#tcbuffer_unit_nad), so
+ * classified exactly by the arc-aware unit distance (#tcbuffersegm_nad), so
  * roots from the squared equation or the wrong angular regime are harmless.
  */
 static void
-tcbuffer_seg_arc_within_roots(double cx1, double cy1, double cx2, double cy2,
-  double r1, double r2, const TcbSeg *e, double dist, double *cand, int *nc)
+tcbuffersegm_arc_within_roots(double cx1, double cy1, double cx2, double cy2,
+  double r1, double r2, const TcbufferGeomEdge *e, double dist, double *cand, int *nc)
 {
   const double dcx = cx2 - cx1, dcy = cy2 - cy1, dr = r2 - r1;
   const double px = e->acx, py = e->acy, R = e->arad;
@@ -2090,7 +2090,7 @@ int
 tcbufferseg_within_ctx(const Cbuffer *cb1, const Cbuffer *cb2, double dist,
   const void *ctxv, double *outlo, double *outhi, int maxout)
 {
-  const TcbGeoCtx *ctx = (const TcbGeoCtx *) ctxv;
+  const TcbufferGeoCtx *ctx = (const TcbufferGeoCtx *) ctxv;
   const POINT2D *p1 = GSERIALIZED_POINT2D_P(cbuffer_point_p(cb1));
   const POINT2D *p2 = GSERIALIZED_POINT2D_P(cbuffer_point_p(cb2));
   double cx1 = p1->x, cy1 = p1->y, r1 = cb1->radius;
@@ -2102,12 +2102,12 @@ tcbufferseg_within_ctx(const Cbuffer *cb1, const Cbuffer *cb2, double dist,
   cand[nc++] = 1.0;
   for (int k = 0; k < ctx->g.n; k++)
   {
-    const TcbSeg *ed = &ctx->g.segs[k];
+    const TcbufferGeomEdge *ed = &ctx->g.segs[k];
     if (ed->is_arc)
-      tcbuffer_seg_arc_within_roots(cx1, cy1, cx2, cy2, r1, r2, ed, dist, cand,
+      tcbuffersegm_arc_within_roots(cx1, cy1, cx2, cy2, r1, r2, ed, dist, cand,
         &nc);
     else
-      tcbuffer_seg_edge_within_roots(cx1, cy1, cx2, cy2, r1, r2, ed, dist, cand,
+      tcbuffersegm_edge_within_roots(cx1, cy1, cx2, cy2, r1, r2, ed, dist, cand,
         &nc);
   }
   qsort(cand, nc, sizeof(double), tcbuffer_double_cmp);
@@ -2123,7 +2123,7 @@ tcbufferseg_within_ctx(const Cbuffer *cb1, const Cbuffer *cb2, double dist,
     double cx = cx1 + (cx2 - cx1) * tm, cy = cy1 + (cy2 - cy1) * tm;
     double r = r1 + (r2 - r1) * tm;
     double best = DBL_MAX;
-    tcbuffer_unit_nad(cx, cy, r, cx, cy, r, &ctx->g, &best);
+    tcbuffersegm_nad(cx, cy, r, cx, cy, r, &ctx->g, &best);
     if (best <= dist)
     {
       int ks = k;
@@ -2134,7 +2134,7 @@ tcbufferseg_within_ctx(const Cbuffer *cb1, const Cbuffer *cb2, double dist,
         double cx_2 = cx1 + (cx2 - cx1) * tm2, cy_2 = cy1 + (cy2 - cy1) * tm2;
         double r_2 = r1 + (r2 - r1) * tm2;
         double best2 = DBL_MAX;
-        tcbuffer_unit_nad(cx_2, cy_2, r_2, cx_2, cy_2, r_2, &ctx->g, &best2);
+        tcbuffersegm_nad(cx_2, cy_2, r_2, cx_2, cy_2, r_2, &ctx->g, &best2);
         if (best2 <= dist) k++;
         else break;
       }
@@ -2159,7 +2159,7 @@ tcbufferseg_within_ctx(const Cbuffer *cb1, const Cbuffer *cb2, double dist,
  *   polygon of the geometry,
  * where the minimum runs over the geometry boundary edges with the SIGNED
  * per-edge distance (negative when the disk crosses that edge). The signed
- * minimum, unlike the within test's #tcbuffer_unit_nad (which clamps interior
+ * minimum, unlike the within test's #tcbuffersegm_nad (which clamps interior
  * overlap to 0), separates a tangential contact (sg == 0) from an interior
  * penetration where a nearer edge drives the minimum negative (sg < 0); the
  * point-in-polygon guard rejects a boundary contact reached from inside a
@@ -2173,21 +2173,21 @@ tcbufferseg_within_ctx(const Cbuffer *cb1, const Cbuffer *cb2, double dist,
 /**
  * @brief Signed nearest boundary distance of a stationary disk: the minimum
  * over the geometry boundary edges of dist(centre, edge) - radius, without the
- * interior-overlap clamp of #tcbuffer_unit_nad, and set @p inside to whether the
+ * interior-overlap clamp of #tcbuffersegm_nad, and set @p inside to whether the
  * centre lies strictly inside a polygon of the geometry
  */
 static double
 tcbuffer_disc_signed_boundary(double cx, double cy, double r,
-  const TcbGeom *g, bool *inside)
+  const TcbufferGeom *g, bool *inside)
 {
-  *inside = g->has_poly && tcbuffer_pt_in_polys_g(cx, cy, g);
+  *inside = g->has_poly && tcbuffer_geom_point_inside(cx, cy, g);
   double best = DBL_MAX;
   for (int k = 0; k < g->n; k++)
   {
-    const TcbSeg *ed = &g->segs[k];
+    const TcbufferGeomEdge *ed = &g->segs[k];
     double m = ed->is_arc ?
-      tcbuffer_seg_arc_mindist(cx, cy, cx, cy, r, r, ed) :
-      tcbuffer_seg_edge_mindist(cx, cy, cx, cy, r, r, ed);
+      tcbuffersegm_arc_mindist(cx, cy, cx, cy, r, r, ed) :
+      tcbuffersegm_edge_mindist(cx, cy, cx, cy, r, r, ed);
     if (m < best) best = m;
   }
   return best;
@@ -2201,7 +2201,7 @@ tcbuffer_disc_signed_boundary(double cx, double cy, double r,
 bool
 tcbuffer_disc_touch_ctx(const Cbuffer *cb, const void *ctxv)
 {
-  const TcbGeoCtx *ctx = (const TcbGeoCtx *) ctxv;
+  const TcbufferGeoCtx *ctx = (const TcbufferGeoCtx *) ctxv;
   const POINT2D *p = GSERIALIZED_POINT2D_P(cbuffer_point_p(cb));
   bool inside;
   double sg = tcbuffer_disc_signed_boundary(p->x, p->y, cb->radius, &ctx->g,
@@ -2228,7 +2228,7 @@ tcbuffer_disc_touch_ctx(const Cbuffer *cb, const void *ctxv)
 bool
 tcbuffer_disc_contains_ctx(const Cbuffer *cb, const void *ctxv, bool strict)
 {
-  const TcbGeoCtx *ctx = (const TcbGeoCtx *) ctxv;
+  const TcbufferGeoCtx *ctx = (const TcbufferGeoCtx *) ctxv;
   const POINT2D *p = GSERIALIZED_POINT2D_P(cbuffer_point_p(cb));
   bool inside;
   double sg = tcbuffer_disc_signed_boundary(p->x, p->y, cb->radius, &ctx->g,
@@ -2241,7 +2241,7 @@ tcbuffer_disc_contains_ctx(const Cbuffer *cb, const void *ctxv, bool strict)
  * @brief Append to @p outt the normalized times in (0,1) at which a linearly
  * moving disk touches the geometry
  * @details The candidate crossing times are the same region roots the within
- * kernel uses (#tcbuffer_seg_edge_within_roots / #tcbuffer_seg_arc_within_roots
+ * kernel uses (#tcbuffersegm_edge_within_roots / #tcbuffersegm_arc_within_roots
  * at distance 0, where dist(centre, edge) == radius). Each is kept only when the
  * exact signed boundary distance vanishes there — a genuine tangential contact,
  * not an interior penetration where a nearer edge makes the signed minimum
@@ -2253,7 +2253,7 @@ int
 tcbufferseg_touch_roots(const Cbuffer *cb1, const Cbuffer *cb2,
   const void *ctxv, double *outt, int maxout)
 {
-  const TcbGeoCtx *ctx = (const TcbGeoCtx *) ctxv;
+  const TcbufferGeoCtx *ctx = (const TcbufferGeoCtx *) ctxv;
   const POINT2D *p1 = GSERIALIZED_POINT2D_P(cbuffer_point_p(cb1));
   const POINT2D *p2 = GSERIALIZED_POINT2D_P(cbuffer_point_p(cb2));
   double cx1 = p1->x, cy1 = p1->y, r1 = cb1->radius;
@@ -2263,12 +2263,12 @@ tcbufferseg_touch_roots(const Cbuffer *cb1, const Cbuffer *cb2,
   int nc = 0;
   for (int k = 0; k < ctx->g.n; k++)
   {
-    const TcbSeg *ed = &ctx->g.segs[k];
+    const TcbufferGeomEdge *ed = &ctx->g.segs[k];
     if (ed->is_arc)
-      tcbuffer_seg_arc_within_roots(cx1, cy1, cx2, cy2, r1, r2, ed, 0.0, cand,
+      tcbuffersegm_arc_within_roots(cx1, cy1, cx2, cy2, r1, r2, ed, 0.0, cand,
         &nc);
     else
-      tcbuffer_seg_edge_within_roots(cx1, cy1, cx2, cy2, r1, r2, ed, 0.0, cand,
+      tcbuffersegm_edge_within_roots(cx1, cy1, cx2, cy2, r1, r2, ed, 0.0, cand,
         &nc);
   }
   qsort(cand, nc, sizeof(double), tcbuffer_double_cmp);
@@ -2856,7 +2856,7 @@ shortestline_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
   if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
 
-  GSERIALIZED *result = tcbuffer_geo_shortestline_analytic(temp, gs);
+  GSERIALIZED *result = shortestline_tcbuffer_geo_analytic(temp, gs);
   if (result)
     return result;
   /* Curved or unsupported geometry: exact traversed-area shortest line */
