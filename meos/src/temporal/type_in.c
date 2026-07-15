@@ -456,6 +456,9 @@ parse_mfjson_values(json_object *mfjson, MeosType temptype, int *count)
 #if H3
       case T_TH3INDEX:
 #endif
+#if QUADBIN
+      case T_TQUADBIN:
+#endif
         if (json_object_get_type(jvalue) != json_type_int)
         {
           meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
@@ -1049,6 +1052,12 @@ tinstant_from_mfjson(json_object *mfjson, bool spatial, int32_t srid,
     else if (temptype == T_TPOSE || temptype == T_TRGEOMETRY)
       values = parse_mfjson_poses(mfjson, srid, &nvalues);
 #endif /* POSE */
+#if QUADBIN
+    /* quadbin, like h3index, is a scalar cell id carried with a bbox: the
+     * 'values' array holds plain cell ids parsed as base values */
+    else if (temptype == T_TQUADBIN)
+      values = parse_mfjson_values(mfjson, temptype, &nvalues);
+#endif /* QUADBIN */
     else
     {
       meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
@@ -1112,6 +1121,12 @@ tinstarr_from_mfjson(json_object *mfjson, bool isgeo, int32_t srid,
     else if (temptype == T_TPOSE || temptype == T_TRGEOMETRY)
       values = parse_mfjson_poses(mfjson, srid, &nvalues);
 #endif /* RGEO */
+#if QUADBIN
+    /* quadbin, like h3index, is a scalar cell id carried with a bbox: the
+     * 'values' array holds plain cell ids parsed as base values */
+    else if (temptype == T_TQUADBIN)
+      values = parse_mfjson_values(mfjson, temptype, &nvalues);
+#endif /* QUADBIN */
    else
     {
       meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
@@ -1268,6 +1283,9 @@ ensure_temptype_mfjson(const char *typestr)
 #if POSE
       && strcmp(typestr, "MovingPose") != 0
 #endif /* POSE */
+#if QUADBIN
+      && strcmp(typestr, "MovingQuadbin") != 0
+#endif /* QUADBIN */
 #if RGEO
       && strcmp(typestr, "MovingRigidGeometry") != 0
 #endif /* RGEO */
@@ -1380,6 +1398,10 @@ temporal_from_mfjson(const char *mfjson, MeosType temptype)
   else if (strcmp(typestr, "MovingPose") == 0)
     jtemptype = T_TPOSE;
 #endif /* POSE */
+#if QUADBIN
+  else if (strcmp(typestr, "MovingQuadbin") == 0)
+    jtemptype = T_TQUADBIN;
+#endif /* QUADBIN */
 #if RGEO
   else if (strcmp(typestr, "MovingRigidGeometry") == 0)
     jtemptype = T_TRGEOMETRY;

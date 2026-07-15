@@ -478,6 +478,9 @@ temporal_base_as_mfjson_sb(stringbuffer_t *sb, Datum value, MeosType temptype,
 #if H3
     case T_TH3INDEX:
 #endif
+#if QUADBIN
+    case T_TQUADBIN:
+#endif
       int64_as_mfjson_sb(sb, DatumGetInt64(value));
       break;
     case T_TFLOAT:
@@ -660,6 +663,9 @@ bbox_as_mfjson_sb(stringbuffer_t *sb, MeosType temptype, const bboxunion *box,
 #if H3
     case T_TH3INDEX:
 #endif
+#if QUADBIN
+    case T_TQUADBIN:
+#endif
       tbox_as_mfjson_sb(sb, (TBox *) box, precision);
       break;
     case T_TGEOMPOINT:
@@ -758,6 +764,11 @@ temptype_as_mfjson_sb(stringbuffer_t *sb, MeosType temptype)
 #if POSE
     case T_TPOSE:
       stringbuffer_append_len(sb, "{\"type\":\"MovingPose\",", 21);
+      break;
+#endif
+#if QUADBIN
+    case T_TQUADBIN:
+      stringbuffer_append_len(sb, "{\"type\":\"MovingQuadbin\",", 24);
       break;
 #endif
 #if RGEO
