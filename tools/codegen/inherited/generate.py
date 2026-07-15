@@ -58,8 +58,13 @@ def render(behaviour: str, sub: dict) -> str:
     # the pg-h3 name temporalized by a bare `t` prefix (h3CellToBoundary ->
     # th3CellToBoundary, NOT th3indexCellToBoundary) - overrides it via `boundary_fn`.
     boundary = sub.get("boundary_fn", sub["temp"] + "CellToBoundary")
+    # Capitalized base = the C-symbol stem for the scalar base::stbox cast
+    # (Cbuffer_to_stbox, Pose_to_stbox, Npoint_to_stbox — all base.capitalize()).
+    # Families whose C symbol does not follow that rule override it via `cbase`.
+    cbase = sub.get("cbase", sub["base"].capitalize())
     body = (tmpl.replace("{TEMP}", sub["temp"])
                 .replace("{BASE}", sub["base"])
+                .replace("{CBASE}", cbase)
                 .replace("{BRIEF}", sub["brief"])
                 .replace("{BOUNDARY}", boundary))
     return BANNER.format(tmpl=f"{behaviour}.sql.tmpl") + body

@@ -39,17 +39,17 @@
 -- @IF scalar_stbox_cast
 CREATE FUNCTION stbox({BASE})
   RETURNS stbox
-  AS 'MODULE_PATHNAME', 'Cbuffer_to_stbox'
+  AS 'MODULE_PATHNAME', '{CBASE}_to_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION stbox({BASE}, timestamptz)
   RETURNS stbox
-  AS 'MODULE_PATHNAME', 'Cbuffer_timestamptz_to_stbox'
+  AS 'MODULE_PATHNAME', '{CBASE}_timestamptz_to_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION stbox({BASE}, tstzspan)
   RETURNS stbox
-  AS 'MODULE_PATHNAME', 'Cbuffer_tstzspan_to_stbox'
+  AS 'MODULE_PATHNAME', '{CBASE}_tstzspan_to_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- @ENDIF
 
