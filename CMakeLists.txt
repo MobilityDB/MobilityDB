@@ -116,8 +116,6 @@ CMAKE_DEPENDENT_OPTION(RGEO "Set ON|OFF (default=OFF) to include rigid geometrie
 # first-party in meos/src/quadbin/ (libm only), so no find_library /
 # vendored subtree is needed.
 option(QUADBIN "Set ON|OFF (default=OFF) to include the temporal QUADBIN index type (tquadbin)" OFF)
-option(ARROW "Set ON|OFF (default=OFF) to include the Apache Arrow C Data Interface export" OFF)
-
 # Option for sampling PostGIS raster bands along trajectories.
 # Requires the postgis_raster extension (ships with postgresql-N-postgis-3).
 option(RASTER "Set ON|OFF (default=OFF) to include PostGIS raster sampling operators" OFF)
@@ -127,7 +125,7 @@ option(RASTER "Set ON|OFF (default=OFF) to include PostGIS raster sampling opera
 # as adding a language to the documentation build's PROJECT_SUPPORTED_LANGUAGES.
 # POSE precedes RGEO because RGEO depends on it.
 if(ALL)
-  foreach(_family CBUFFER H3 JSON NPOINT POINTCLOUD POSE RGEO QUADBIN ARROW RASTER)
+  foreach(_family CBUFFER H3 JSON NPOINT POINTCLOUD POSE RGEO QUADBIN RASTER)
     set(${_family} ON CACHE BOOL "Enabled by ALL=ON" FORCE)
   endforeach()
 endif()
@@ -208,13 +206,6 @@ if(RGEO)
 else()
   message(STATUS "Excluding rigid geometries")
   add_definitions(-DRGEO=0)
-endif()
-if(ARROW)
-  message(STATUS "Including Apache Arrow C Data Interface export")
-  add_definitions(-DARROW=1)
-else()
-  message(STATUS "Excluding Apache Arrow C Data Interface export")
-  add_definitions(-DARROW=0)
 endif()
 
 # Build the 'requires =' clause for the generated mobilitydb.control file
@@ -431,12 +422,6 @@ find_package(GSL REQUIRED)
 include_directories(SYSTEM ${GSL_INCLUDE_DIRS})
 message(STATUS "GSL_VERSION: ${GSL_VERSION}")
 add_definitions(-DGSL_VERSION_STRING="${GSL_VERSION}")
-
-# Apache Arrow C Data Interface (vendored, header-only; no libarrow link).
-# Set at the top level so both the MEOS and the MobilityDB builds find it.
-if(ARROW)
-  include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/arrow")
-endif()
 
 #----------------------------------------------
 # Configure PostGIS with optional dependencies
