@@ -2028,7 +2028,7 @@ stbox_within_dist_space(const STBox *box1, const STBox *box2, double dist)
  */
 static bool
 tgeoarr_tgeoarr_init(const Temporal **arr1, int count1, const Temporal **arr2,
-  int count2, STBox ***bb1, STBox ***bb2)
+  int count2, STBox **bb1, STBox **bb2)
 {
   if (count1 <= 0 || count2 <= 0)
     return false;
@@ -2048,10 +2048,10 @@ tgeoarr_tgeoarr_init(const Temporal **arr1, int count1, const Temporal **arr2,
         ! ensure_same_dimensionality(arr2[j]->flags, flags) ||
         ! ensure_same_geodetic(arr2[j]->flags, flags))
       return false;
-  STBox **boxes1 = palloc(count1 * sizeof(STBox *));
-  STBox **boxes2 = palloc(count2 * sizeof(STBox *));
-  for (int i = 0; i < count1; i++) boxes1[i] = tspatial_to_stbox(arr1[i]);
-  for (int j = 0; j < count2; j++) boxes2[j] = tspatial_to_stbox(arr2[j]);
+  STBox *boxes1 = palloc(count1 * sizeof(STBox));
+  STBox *boxes2 = palloc(count2 * sizeof(STBox));
+  for (int i = 0; i < count1; i++) tspatial_set_stbox(arr1[i], &boxes1[i]);
+  for (int j = 0; j < count2; j++) tspatial_set_stbox(arr2[j], &boxes2[j]);
   *bb1 = boxes1; *bb2 = boxes2;
   return true;
 }
@@ -2092,7 +2092,7 @@ static int *
 setset_ea_pairs(const Temporal **arr1, int count1, const Temporal **arr2,
   int count2, double dist, SetSetEAPred pred, int *count)
 {
-  STBox **bb1, **bb2;
+  STBox *bb1, *bb2;
   if (! tgeoarr_tgeoarr_init(arr1, count1, arr2, count2, &bb1, &bb2))
     return NULL;
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(arr1[0]->flags);
@@ -2104,20 +2104,20 @@ setset_ea_pairs(const Temporal **arr1, int count1, const Temporal **arr2,
     for (int j = 0; j < count2; j++)
     {
       /* No common time → the scalar predicate is false or undefined */
-      if (! overlaps_span_span(&bb1[i]->period, &bb2[j]->period))
+      if (! overlaps_span_span(&bb1[i].period, &bb2[j].period))
         continue;
       if (! geodetic)
       {
-        if (is_dwithin && ! stbox_within_dist_space(bb1[i], bb2[j], dist))
+        if (is_dwithin && ! stbox_within_dist_space(&bb1[i], &bb2[j], dist))
           continue;
-        else if (is_disjoint && ! stbox_overlaps_space(bb1[i], bb2[j]))
+        else if (is_disjoint && ! stbox_overlaps_space(&bb1[i], &bb2[j]))
         {
           /* Spatially disjoint while overlapping on time → disjoint */
           result[2 * nres] = i; result[2 * nres + 1] = j; nres++;
           continue;
         }
         else if (! is_dwithin && ! is_disjoint &&
-          ! stbox_overlaps_space(bb1[i], bb2[j]))
+          ! stbox_overlaps_space(&bb1[i], &bb2[j]))
           continue;
       }
       int r;
@@ -2149,8 +2149,6 @@ setset_ea_pairs(const Temporal **arr1, int count1, const Temporal **arr2,
         result[2 * nres] = i; result[2 * nres + 1] = j; nres++;
       }
     }
-  for (int i = 0; i < count1; i++) pfree(bb1[i]);
-  for (int j = 0; j < count2; j++) pfree(bb2[j]);
   pfree(bb1); pfree(bb2);
   *count = nres;
   if (nres == 0) { pfree(result); return NULL; }
@@ -2178,7 +2176,7 @@ static int *
 setset_t_pairs(const Temporal **arr1, int count1, const Temporal **arr2,
   int count2, double dist, SetSetTPred pred, int *count, SpanSet ***periods)
 {
-  STBox **bb1, **bb2;
+  STBox *bb1, *bb2;
   if (! tgeoarr_tgeoarr_init(arr1, count1, arr2, count2, &bb1, &bb2))
     return NULL;
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(arr1[0]->flags);
@@ -2188,15 +2186,15 @@ setset_t_pairs(const Temporal **arr1, int count1, const Temporal **arr2,
   for (int i = 0; i < count1; i++)
     for (int j = 0; j < count2; j++)
     {
-      if (! overlaps_span_span(&bb1[i]->period, &bb2[j]->period))
+      if (! overlaps_span_span(&bb1[i].period, &bb2[j].period))
         continue;
       if (! geodetic)
       {
         if (pred == SS_TDWITHIN &&
-            ! stbox_within_dist_space(bb1[i], bb2[j], dist))
+            ! stbox_within_dist_space(&bb1[i], &bb2[j], dist))
           continue;
         else if ((pred == SS_TINTERSECTS || pred == SS_TTOUCHES) &&
-          ! stbox_overlaps_space(bb1[i], bb2[j]))
+          ! stbox_overlaps_space(&bb1[i], &bb2[j]))
           continue;
       }
       Temporal *t;
@@ -2220,8 +2218,6 @@ setset_t_pairs(const Temporal **arr1, int count1, const Temporal **arr2,
       result[2 * nres] = i; result[2 * nres + 1] = j;
       ss[nres] = when; nres++;
     }
-  for (int i = 0; i < count1; i++) pfree(bb1[i]);
-  for (int j = 0; j < count2; j++) pfree(bb2[j]);
   pfree(bb1); pfree(bb2);
   *count = nres;
   if (nres == 0) { pfree(result); pfree(ss); return NULL; }
