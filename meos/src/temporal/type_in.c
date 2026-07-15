@@ -285,6 +285,16 @@ basetype_in(const char *str, MeosType type, bool end UNUSED, Datum *result)
       return true;
     }
 #endif
+#if RASTER
+    case T_RAQUET:
+    {
+      Raquet *rq = raquet_in(str);
+      if (! rq)
+        return false;
+      *result = PointerGetDatum(rq);
+      return true;
+    }
+#endif
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
         "Unknown input function for type: %s", meostype_name(type));
