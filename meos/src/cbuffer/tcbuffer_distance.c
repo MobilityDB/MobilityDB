@@ -2220,13 +2220,41 @@ tcbuffer_disc_signed_boundary(double cx, double cy, double r,
 {
   *inside = g->has_poly && tcbuffer_geom_point_inside(cx, cy, g);
   double best = DBL_MAX;
-  for (int k = 0; k < g->n; k++)
+  /* Bucket bounding-volume hierarchy: an edge inside a bucket has signed
+   * boundary distance dist(centre, edge) - r at least dist(centre, bucket box)
+   * - r, so once that lower bound reaches the running minimum the whole bucket
+   * (and, within a bucket, the per-edge box) cannot improve it and is skipped.
+   * The test dist(box) - r >= best is written as dist(box) >= best + r and kept
+   * squared to avoid a square root; when best + r <= 0 no edge can beat best
+   * (the minimum possible signed distance is -r) so the bucket is skipped too. */
+  for (int b = 0; b < g->nbk; b++)
   {
-    const TcbufferGeomEdge *ed = &g->segs[k];
-    double m = ed->is_arc ?
-      tcbuffersegm_arc_mindist(cx, cy, cx, cy, r, r, ed) :
-      tcbuffersegm_edge_mindist(cx, cy, cx, cy, r, r, ed);
-    if (m < best) best = m;
+    const TcbufferGeomBucket *bk = &g->bks[b];
+    if (best != DBL_MAX)
+    {
+      double thr = best + r;
+      double dx = fmax(fmax(bk->xmin - cx, cx - bk->xmax), 0.0);
+      double dy = fmax(fmax(bk->ymin - cy, cy - bk->ymax), 0.0);
+      if (thr <= 0.0 || dx * dx + dy * dy >= thr * thr)
+        continue;
+    }
+    int elast = bk->start + bk->n;
+    for (int k = bk->start; k < elast; k++)
+    {
+      const TcbufferGeomEdge *ed = &g->segs[k];
+      if (best != DBL_MAX)
+      {
+        double thr = best + r;
+        double dx = fmax(fmax(ed->xmin - cx, cx - ed->xmax), 0.0);
+        double dy = fmax(fmax(ed->ymin - cy, cy - ed->ymax), 0.0);
+        if (thr <= 0.0 || dx * dx + dy * dy >= thr * thr)
+          continue;
+      }
+      double m = ed->is_arc ?
+        tcbuffersegm_arc_mindist(cx, cy, cx, cy, r, r, ed) :
+        tcbuffersegm_edge_mindist(cx, cy, cx, cy, r, r, ed);
+      if (m < best) best = m;
+    }
   }
   return best;
 }
@@ -2299,15 +2327,36 @@ tcbufferseg_touch_roots(const Cbuffer *cb1, const Cbuffer *cb2,
   int ncap = 8 * ctx->g.n + 2;
   double *cand = palloc(sizeof(double) * ncap);
   int nc = 0;
-  for (int k = 0; k < ctx->g.n; k++)
+  /* The moving centre stays inside its box, so an edge farther than the larger
+   * radius from that box is farther than the disk radius at every time and can
+   * contribute no contact time. Bucket bounding-volume hierarchy: skip whole
+   * buckets (and, within a bucket, edges) whose box is beyond that reach, so the
+   * root search visits only the boundary near the swept disk. */
+  double cxmin = fmin(cx1, cx2), cxmax = fmax(cx1, cx2);
+  double cymin = fmin(cy1, cy2), cymax = fmax(cy1, cy2);
+  double rmax = fmax(r1, r2);
+  for (int b = 0; b < ctx->g.nbk; b++)
   {
-    const TcbufferGeomEdge *ed = &ctx->g.segs[k];
-    if (ed->is_arc)
-      tcbuffersegm_arc_within_roots(cx1, cy1, cx2, cy2, r1, r2, ed, 0.0, cand,
-        &nc);
-    else
-      tcbuffersegm_edge_within_roots(cx1, cy1, cx2, cy2, r1, r2, ed, 0.0, cand,
-        &nc);
+    const TcbufferGeomBucket *bk = &ctx->g.bks[b];
+    double bdx = fmax(fmax(bk->xmin - cxmax, cxmin - bk->xmax), 0.0);
+    double bdy = fmax(fmax(bk->ymin - cymax, cymin - bk->ymax), 0.0);
+    if (bdx * bdx + bdy * bdy > rmax * rmax)
+      continue;
+    int elast = bk->start + bk->n;
+    for (int k = bk->start; k < elast; k++)
+    {
+      const TcbufferGeomEdge *ed = &ctx->g.segs[k];
+      double edx = fmax(fmax(ed->xmin - cxmax, cxmin - ed->xmax), 0.0);
+      double edy = fmax(fmax(ed->ymin - cymax, cymin - ed->ymax), 0.0);
+      if (edx * edx + edy * edy > rmax * rmax)
+        continue;
+      if (ed->is_arc)
+        tcbuffersegm_arc_within_roots(cx1, cy1, cx2, cy2, r1, r2, ed, 0.0, cand,
+          &nc);
+      else
+        tcbuffersegm_edge_within_roots(cx1, cy1, cx2, cy2, r1, r2, ed, 0.0, cand,
+          &nc);
+    }
   }
   qsort(cand, nc, sizeof(double), tcbuffer_double_cmp);
   int nout = 0;
