@@ -1,20 +1,21 @@
 # No Postgres version dependant files
 
+# 168_trgeo_aggfuncs has no build entry upstream and is not built; left unchanged here.
 SET(LOCAL_FILES
   150_trgeo
-  152_trgeo_compops
-  153_trgeo_spatialfuncs
-  154_trgeo_spatialrels
-  155_trgeo_tempspatialrels
-  156_trgeo_topops
-  166_trgeo_boxops
-  157_trgeo_posops
+  154_trgeo_compops
+  156_trgeo_spatialfuncs
   158_trgeo_tile
-  160_trgeo_similarity
-  161_trgeo_distance
-  162_trgeo_indexes
-  163_trgeo_geom_clip
-  164_trgeo_vclip
+  160_trgeo_boxops
+  161_trgeo_topops
+  162_trgeo_posops
+  164_trgeo_distance
+  166_trgeo_similarity
+  170_trgeo_spatialrels
+  172_trgeo_tempspatialrels
+  173_trgeo_indexes
+  175_trgeo_geom_clip
+  176_trgeo_vclip
   )
 
 foreach (f ${LOCAL_FILES})
