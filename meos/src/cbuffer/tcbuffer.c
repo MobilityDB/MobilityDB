@@ -1174,24 +1174,73 @@ tcbuffer_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
  *****************************************************************************/
 
 /**
+ * @brief Return a temporal circular buffer instant with the radius expanded by
+ * a distance
+ */
+static TInstant *
+tcbufferinst_expand(const TInstant *inst, double dist)
+{
+  assert(inst); assert(inst->temptype == T_TCBUFFER);
+  const Cbuffer *cb = DatumGetCbufferP(tinstant_value_p(inst));
+  Cbuffer *result = cbuffer_make(cbuffer_point_p(cb), cbuffer_radius(cb) + dist);
+  return tinstant_make_free(PointerGetDatum(result), T_TCBUFFER, inst->t);
+}
+
+/**
+ * @brief Return a temporal circular buffer sequence with the radius expanded by
+ * a distance
+ */
+static TSequence *
+tcbufferseq_expand(const TSequence *seq, double dist)
+{
+  assert(seq); assert(seq->temptype == T_TCBUFFER);
+  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  for (int i = 0; i < seq->count; i++)
+    instants[i] = tcbufferinst_expand(TSEQUENCE_INST_N(seq, i), dist);
+  return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
+    seq->period.upper_inc, MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE_NO);
+}
+
+/**
+ * @brief Return a temporal circular buffer sequence set with the radius
+ * expanded by a distance
+ */
+static TSequenceSet *
+tcbufferseqset_expand(const TSequenceSet *ss, double dist)
+{
+  assert(ss); assert(ss->temptype == T_TCBUFFER);
+  TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
+  for (int i = 0; i < ss->count; i++)
+    sequences[i] = tcbufferseq_expand(TSEQUENCESET_SEQ_N(ss, i), dist);
+  return tsequenceset_make_free(sequences, ss->count, NORMALIZE_NO);
+}
+
+/**
  * @ingroup meos_cbuffer_transf
  * @brief Return a temporal circular buffer with the radius expanded by a
  * distance
  * @param[in] temp Temporal value
  * @param[in] dist Distance
  * @csqlfn #Tcbuffer_expand()
+ * @note The radius of each instant is expanded in a single pass, sourcing the
+ * point and radius directly from each circular buffer, which is equivalent to
+ * decomposing the value into its temporal point and temporal float radius,
+ * adding the distance to the radius, and recomposing the circular buffer
  */
 Temporal *
 tcbuffer_expand(const Temporal *temp, double dist)
 {
   assert(temp); assert(temp->temptype == T_TCBUFFER);
-  Temporal *tpoint = tcbuffer_to_tgeompoint(temp);
-  Temporal *tfloat = tcbuffer_to_tfloat(temp);
-  Temporal *tfloat_exp = arithop_tnumber_number(tfloat, Float8GetDatum(dist),
-    ADD, &datum_add, INVERT_NO);
-  Temporal *result = tcbuffer_make(tpoint, tfloat_exp);
-  pfree(tpoint); pfree(tfloat); pfree(tfloat_exp);
-  return result;
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      return (Temporal *) tcbufferinst_expand((TInstant *) temp, dist);
+    case TSEQUENCE:
+      return (Temporal *) tcbufferseq_expand((TSequence *) temp, dist);
+    default: /* TSEQUENCESET */
+      return (Temporal *) tcbufferseqset_expand((TSequenceSet *) temp, dist);
+  }
 }
 
 /*****************************************************************************
