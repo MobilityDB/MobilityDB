@@ -113,6 +113,8 @@ SELECT COUNT(*) FROM tbl_jsonbset t1, tbl_jsonbset t2 WHERE t1.s >= t2.s;
 
 SELECT MAX(set_hash(s)) FROM tbl_jsonbset;
 
+SELECT MAX(set_hash_extended(s, 1)) FROM tbl_jsonbset;
+
 -------------------------------------------------------------------------------
 -- Aggregation functions
 

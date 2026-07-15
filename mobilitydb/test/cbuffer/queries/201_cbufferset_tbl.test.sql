@@ -97,6 +97,8 @@ SELECT COUNT(*) FROM tbl_cbufferset t1, tbl_cbufferset t2 WHERE t1.s >= t2.s;
 
 SELECT MAX(set_hash(s)) FROM tbl_cbufferset;
 
+SELECT MAX(set_hash_extended(s, 1)) FROM tbl_cbufferset;
+
 -------------------------------------------------------------------------------
 -- Aggregation functions
 

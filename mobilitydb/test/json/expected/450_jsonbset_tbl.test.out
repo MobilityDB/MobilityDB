@@ -223,6 +223,12 @@ SELECT MAX(set_hash(s)) FROM tbl_jsonbset;
  2107504745
 (1 row)
 
+SELECT MAX(set_hash_extended(s, 1)) FROM tbl_jsonbset;
+         max         
+---------------------
+ 9209195217540800445
+(1 row)
+
 SELECT numValues(setUnion(jb)) FROM tbl_jsonb;
  numvalues 
 -----------
