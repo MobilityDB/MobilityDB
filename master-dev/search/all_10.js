@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['n_0',['n',['../structTcbBucket_ac7312ceed1205c87e907841cda2682aa.html#ac7312ceed1205c87e907841cda2682aa',1,'TcbBucket::n()'],['../structTcbGeom_ae831ce36a56ab71119fba9fd1f3f4c2d.html#ae831ce36a56ab71119fba9fd1f3f4c2d',1,'TcbGeom::n()'],['../structTpcpatchPointsState_acc3c456811ea146c046e1771575beeef.html#acc3c456811ea146c046e1771575beeef',1,'TpcpatchPointsState::n()']]],
+  ['n_0',['n',['../structTcbufferGeomBucket_a171f703cb1fcf8d2aecb27665d0ecafc.html#a171f703cb1fcf8d2aecb27665d0ecafc',1,'TcbufferGeomBucket::n()'],['../structTcbufferGeom_a7b96268f8c2c3050ce2b7db515044cda.html#a7b96268f8c2c3050ce2b7db515044cda',1,'TcbufferGeom::n()'],['../structTpcpatchPointsState_acc3c456811ea146c046e1771575beeef.html#acc3c456811ea146c046e1771575beeef',1,'TpcpatchPointsState::n()']]],
   ['n_5ffree_1',['n_free',['../allocator__test_8c_a29d9718621d0aa5a45a3bac854b5f96a.html#a29d9718621d0aa5a45a3bac854b5f96a',1,'allocator_test.c']]],
   ['n_5finst_2',['n_inst',['../structtrip__t_a7d7a43dd96dcc61522618315b2711a54.html#a7d7a43dd96dcc61522618315b2711a54',1,'trip_t::n_inst()'],['../structtrip__record_a13260e63673e014ea9d0f5afaefe73a9.html#a13260e63673e014ea9d0f5afaefe73a9',1,'trip_record::n_inst()']]],
   ['n_5fmalloc_3',['n_malloc',['../allocator__test_8c_a418d1c914bf60d962a691a62692fab82.html#a418d1c914bf60d962a691a62692fab82',1,'allocator_test.c']]],
@@ -147,7 +147,7 @@ var searchData=
   ['namestrcmp_144',['namestrcmp',['../mobilitydb_2src_2temporal_2meos__catalog_8c_a69abbf281e160ede6aa5ecb8fa95ffdc.html#a69abbf281e160ede6aa5ecb8fa95ffdc',1,'meos_catalog.c']]],
   ['nargs_145',['nargs',['../structIndexableFunction_a7a9ba75a3a983d0b2f80195326e3f96b.html#a7a9ba75a3a983d0b2f80195326e3f96b',1,'IndexableFunction']]],
   ['nbins_146',['nbins',['../structSpanBinState_a349567708657738c8931649bc0e35b50.html#a349567708657738c8931649bc0e35b50',1,'SpanBinState']]],
-  ['nbk_147',['nbk',['../structTcbGeom_a965827d86d7a1296fd4fb249b20ba401.html#a965827d86d7a1296fd4fb249b20ba401',1,'TcbGeom']]],
+  ['nbk_147',['nbk',['../structTcbufferGeom_aa0570170ca8bf2bbbc29dab45d3a2a12.html#aa0570170ca8bf2bbbc29dab45d3a2a12',1,'TcbufferGeom']]],
   ['nd_5fbox_148',['ND_BOX',['../tspatial__analyze_8h_af815388cbbe239a2be56c40e5b39a266.html#af815388cbbe239a2be56c40e5b39a266',1,'tspatial_analyze.h']]],
   ['nd_5fbox_5fabove_149',['nd_box_above',['../tspatial__selfuncs_8c_aab83fadb639ccbee52ba517c27432b31.html#aab83fadb639ccbee52ba517c27432b31',1,'tspatial_selfuncs.c']]],
   ['nd_5fbox_5farray_5fdistribution_150',['nd_box_array_distribution',['../tspatial__analyze_8c_af8cd90740ab490d4310a730b4e1b565f.html#af8cd90740ab490d4310a730b4e1b565f',1,'tspatial_analyze.c']]],

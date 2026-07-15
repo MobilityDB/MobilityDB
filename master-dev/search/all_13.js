@@ -88,6 +88,6 @@ var searchData=
   ['quotes_85',['QUOTES',['../meos_2include_2temporal_2temporal_8h_a0b774c43dc372a11f6376da0bbca0510.html#a0b774c43dc372a11f6376da0bbca0510',1,'temporal.h']]],
   ['quotes_5fescape_86',['QUOTES_ESCAPE',['../meos_2include_2temporal_2temporal_8h_a2ec5a075021553fcd4e4a423c8494cfa.html#a2ec5a075021553fcd4e4a423c8494cfa',1,'temporal.h']]],
   ['quotes_5fno_87',['QUOTES_NO',['../meos_2include_2temporal_2temporal_8h_aac2d640b6224cb5c245d49b19d0f0961.html#aac2d640b6224cb5c245d49b19d0f0961',1,'temporal.h']]],
-  ['qx_88',['qx',['../structTcbWitness_ab349f1e0bac5e40a45763d5875fa6e0e.html#ab349f1e0bac5e40a45763d5875fa6e0e',1,'TcbWitness']]],
-  ['qy_89',['qy',['../structTcbWitness_a1317e3466e4b31c9a345a26a9cecc957.html#a1317e3466e4b31c9a345a26a9cecc957',1,'TcbWitness']]]
+  ['qx_88',['qx',['../structDistWitness_a38e9c51bf1eeb9e95222595002420f36.html#a38e9c51bf1eeb9e95222595002420f36',1,'DistWitness']]],
+  ['qy_89',['qy',['../structDistWitness_a9000f234ab0c3770b68e5105bd4969c4.html#a9000f234ab0c3770b68e5105bd4969c4',1,'DistWitness']]]
 ];

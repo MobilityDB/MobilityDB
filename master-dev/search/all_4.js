@@ -175,7 +175,7 @@ var searchData=
   ['bitmatrix_5fget_172',['bitmatrix_get',['../meos_2src_2geo_2tgeo__tile_8c_a8f8fb937cd78b6a675b6fc09816651de.html#a8f8fb937cd78b6a675b6fc09816651de',1,'tgeo_tile.c']]],
   ['bitmatrix_5fmake_173',['bitmatrix_make',['../meos_2src_2geo_2tgeo__tile_8c_a0df054ec0543db80a4df8c675b365831.html#a0df054ec0543db80a4df8c675b365831',1,'bitmatrix_make(const int *count, int ndims):&#160;tgeo_tile.c'],['../tgeo__tile_8h_a0df054ec0543db80a4df8c675b365831.html#a0df054ec0543db80a4df8c675b365831',1,'bitmatrix_make(const int *count, int ndims):&#160;tgeo_tile.c']]],
   ['bitmatrix_5fset_5fcell_174',['bitmatrix_set_cell',['../meos_2src_2geo_2tgeo__tile_8c_aadb76c7fbcc158642b37e470509eab63.html#aadb76c7fbcc158642b37e470509eab63',1,'tgeo_tile.c']]],
-  ['bks_175',['bks',['../structTcbGeom_a3498c08917b9d803ee2a72e4da9fde98.html#a3498c08917b9d803ee2a72e4da9fde98',1,'TcbGeom::bks()'],['../structTcbGeoCtx_a89396863ece8cba3d9d800d31975cbf8.html#a89396863ece8cba3d9d800d31975cbf8',1,'TcbGeoCtx::bks()']]],
+  ['bks_175',['bks',['../structTcbufferGeom_a3c2e0f138a6cdcecfdc478c56e76dd99.html#a3c2e0f138a6cdcecfdc478c56e76dd99',1,'TcbufferGeom::bks()'],['../structTcbufferGeoCtx_a586b030648bf48f7b5b1ff556c4b729e.html#a586b030648bf48f7b5b1ff556c4b729e',1,'TcbufferGeoCtx::bks()']]],
   ['blrauenberg_176',['BLRauenberg',['../projection__gk_8c_afcee8ed89ae5624fe77149655549fa23.html#afcee8ed89ae5624fe77149655549fa23',1,'projection_gk.c']]],
   ['bm_177',['bm',['../structSTboxGridState_a28bff399f8d06e682b52b3fed83c6ea3.html#a28bff399f8d06e682b52b3fed83c6ea3',1,'STboxGridState']]],
   ['bool_5fas_5fmfjson_5fsb_178',['bool_as_mfjson_sb',['../meos_2src_2temporal_2type__out_8c_a337a7eae2a6f2d5ee8cf9de5185d0597.html#a337a7eae2a6f2d5ee8cf9de5185d0597',1,'type_out.c']]],

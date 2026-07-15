@@ -115,7 +115,7 @@ var searchData=
   ['h3unit_112',['H3Unit',['../th3index__internal_8h_a42163dde6d2a853976e074583263b4fe.html#a42163dde6d2a853976e074583263b4fe',1,'th3index_internal.h']]],
   ['has_5fm_113',['has_m',['../structwkb__parse__state_a251d9d5dda4e1edeb26a3b272de01373.html#a251d9d5dda4e1edeb26a3b272de01373',1,'wkb_parse_state']]],
   ['has_5fnodata_114',['has_nodata',['../structRaquet_a337b2e723e68954960e8963687ea7ac5.html#a337b2e723e68954960e8963687ea7ac5',1,'Raquet']]],
-  ['has_5fpoly_115',['has_poly',['../structTcbGeom_ae9485e801e020e7ee4def91546271764.html#ae9485e801e020e7ee4def91546271764',1,'TcbGeom']]],
+  ['has_5fpoly_115',['has_poly',['../structTcbufferGeom_a35637705e0c02a84f76d82b82a183c01.html#a35637705e0c02a84f76d82b82a183c01',1,'TcbufferGeom']]],
   ['has_5fsrid_116',['has_srid',['../structmeos__wkb__parse__state_aea6f2f74948f64e4102c7a977cf58851.html#aea6f2f74948f64e4102c7a977cf58851',1,'meos_wkb_parse_state::has_srid()'],['../structwkb__parse__state_a6c260a8a91ed5126819955c0babe12ae.html#a6c260a8a91ed5126819955c0babe12ae',1,'wkb_parse_state::has_srid()']]],
   ['has_5fz_117',['has_z',['../structwkb__parse__state_a0089d14289f64fbbc403829daee85424.html#a0089d14289f64fbbc403829daee85424',1,'wkb_parse_state']]],
   ['hash_118',['hash',['../structTemporalAnalyzeExtraData_a398c8f74f4dd4d6c8f79f7b0eabfe057.html#a398c8f74f4dd4d6c8f79f7b0eabfe057',1,'TemporalAnalyzeExtraData']]],

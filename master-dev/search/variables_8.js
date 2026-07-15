@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['g_0',['g',['../structTcbGeoCtx_a27b2f8adfaa37aba5c92cfcb9023e961.html#a27b2f8adfaa37aba5c92cfcb9023e961',1,'TcbGeoCtx::g()'],['../unionbboxunion_af46ccf7bf2379c6381815ff985eb8f5e.html#af46ccf7bf2379c6381815ff985eb8f5e',1,'bboxunion::g()']]],
+  ['g_0',['g',['../structTcbufferGeoCtx_a8f6bbab608a75cccb141b6b2973df361.html#a8f6bbab608a75cccb141b6b2973df361',1,'TcbufferGeoCtx::g()'],['../unionbboxunion_af46ccf7bf2379c6381815ff985eb8f5e.html#af46ccf7bf2379c6381815ff985eb8f5e',1,'bboxunion::g()']]],
   ['geo_5fbuffer_1',['geo_buffer',['../06__berlinmod__clip_8c_aa25810adb02f7f99beed22d8d9c8aeb1.html#aa25810adb02f7f99beed22d8d9c8aeb1',1,'06_berlinmod_clip.c']]],
   ['geodetic_2',['geodetic',['../structmeos__wkb__parse__state_a5a3db12bf4bc2528ab515b62b8bf04a3.html#a5a3db12bf4bc2528ab515b62b8bf04a3',1,'meos_wkb_parse_state']]],
   ['geom_3',['geom',['../structregion__record_a101765beb1b0b07108bcc5021c0c91bb.html#a101765beb1b0b07108bcc5021c0c91bb',1,'region_record::geom()'],['../structMvtGeom_add68a9a74b7fff9b5e23e5a6716aefb0.html#add68a9a74b7fff9b5e23e5a6716aefb0',1,'MvtGeom::geom()'],['../structcommune__record_a0fc879bf6ed6834088f23e77ab8e8b9f.html#a0fc879bf6ed6834088f23e77ab8e8b9f',1,'commune_record::geom()']]],

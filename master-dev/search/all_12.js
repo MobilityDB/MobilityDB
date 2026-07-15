@@ -453,8 +453,8 @@ var searchData=
   ['pts_450',['pts',['../structTpcpatchPointsState_a714247f92da3ea5fe2c783609c9d17f4.html#a714247f92da3ea5fe2c783609c9d17f4',1,'TpcpatchPointsState']]],
   ['push_5fevent_451',['push_event',['../meos_2src_2rgeo_2trgeo__geom__clip_8c_a9e6804730d5a2c582420b3e69995257b.html#a9e6804730d5a2c582420b3e69995257b',1,'trgeo_geom_clip.c']]],
   ['push_5finstant_452',['PUSH_INSTANT',['../meos_2src_2h3_2th3index__latlng_8c_a7671fae2a23d8a92d7865af83fb2d1c2.html#a7671fae2a23d8a92d7865af83fb2d1c2',1,'th3index_latlng.c']]],
-  ['px_453',['px',['../structTcbWitness_a22321252d048846ac308f031dde5e688.html#a22321252d048846ac308f031dde5e688',1,'TcbWitness']]],
+  ['px_453',['px',['../structDistWitness_add83688b12dac82c591b2235ef3499f3.html#add83688b12dac82c591b2235ef3499f3',1,'DistWitness']]],
   ['px_5flocal_454',['px_local',['../structEndpointEdgeState_a91b860be04aea7ac9d5cd5c65173183e.html#a91b860be04aea7ac9d5cd5c65173183e',1,'EndpointEdgeState']]],
-  ['py_455',['py',['../structTcbWitness_a3f57be83b38aa2917703763d6088b330.html#a3f57be83b38aa2917703763d6088b330',1,'TcbWitness']]],
+  ['py_455',['py',['../structDistWitness_a66078b0bed2c0b2d349762051a71a900.html#a66078b0bed2c0b2d349762051a71a900',1,'DistWitness']]],
   ['py_5flocal_456',['py_local',['../structEndpointEdgeState_ab85ece499ccf297e32b7be5c877399e5.html#ab85ece499ccf297e32b7be5c877399e5',1,'EndpointEdgeState']]]
 ];

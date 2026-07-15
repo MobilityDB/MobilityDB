@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['g_0',['g',['../structTcbGeoCtx_a27b2f8adfaa37aba5c92cfcb9023e961.html#a27b2f8adfaa37aba5c92cfcb9023e961',1,'TcbGeoCtx::g()'],['../unionbboxunion_af46ccf7bf2379c6381815ff985eb8f5e.html#af46ccf7bf2379c6381815ff985eb8f5e',1,'bboxunion::g()']]],
+  ['g_0',['g',['../structTcbufferGeoCtx_a8f6bbab608a75cccb141b6b2973df361.html#a8f6bbab608a75cccb141b6b2973df361',1,'TcbufferGeoCtx::g()'],['../unionbboxunion_af46ccf7bf2379c6381815ff985eb8f5e.html#af46ccf7bf2379c6381815ff985eb8f5e',1,'bboxunion::g()']]],
   ['gbox_1',['GBOX',['../structGBOX.html',1,'']]],
   ['gbox_5fin_2',['gbox_in',['../group__meos__geo__base__inout_ga271a5a7161444390c12e4d4b089c7783.html#ga271a5a7161444390c12e4d4b089c7783',1,'gbox_in(const char *str):&#160;postgis_funcs.c'],['../group__meos__geo__base__inout_ga271a5a7161444390c12e4d4b089c7783.html#ga271a5a7161444390c12e4d4b089c7783',1,'gbox_in(const char *str):&#160;postgis_funcs.c']]],
   ['gbox_5finit_5fpoint2d_3',['gbox_init_point2d',['../tpoint__spatialfuncs_8c_ade4c1c4b3dd506a52e2286d3c0a4703a.html#ade4c1c4b3dd506a52e2286d3c0a4703a',1,'tpoint_spatialfuncs.c']]],

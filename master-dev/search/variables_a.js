@@ -15,8 +15,8 @@ var searchData=
   ['intervalstyle_12',['IntervalStyle',['../meos_8c_abc75cb539277c7cfa814b8755690cb1d.html#abc75cb539277c7cfa814b8755690cb1d',1,'meos.c']]],
   ['invalid_5fgeoms_13',['invalid_geoms',['../parse__test_8c_a7ab19e7eceff96b867031b1b49c81cf2.html#a7ab19e7eceff96b867031b1b49c81cf2',1,'parse_test.c']]],
   ['invert_14',['invert',['../structLiftedFunctionInfo_af63eedf967d20fcf7557af1de580f1ba.html#af63eedf967d20fcf7557af1de580f1ba',1,'LiftedFunctionInfo']]],
-  ['is_5farc_15',['is_arc',['../structTcbSeg_ae52f446d61b90e562b1661adfe0da0a0.html#ae52f446d61b90e562b1661adfe0da0a0',1,'TcbSeg']]],
-  ['is_5fpoly_16',['is_poly',['../structTcbSeg_ab140d0ac8c89c0a84e2173fef6f700b6.html#ab140d0ac8c89c0a84e2173fef6f700b6',1,'TcbSeg']]],
+  ['is_5farc_15',['is_arc',['../structTcbufferGeomEdge_adc0b7efa3e6944dc4b2bfd89c073722e.html#adc0b7efa3e6944dc4b2bfd89c073722e',1,'TcbufferGeomEdge']]],
+  ['is_5fpoly_16',['is_poly',['../structTcbufferGeomEdge_a5d3506e70d90ee3ff1452e1a7fd71dc2.html#a5d3506e70d90ee3ff1452e1a7fd71dc2',1,'TcbufferGeomEdge']]],
   ['is_5fvalid_5fcell_17',['is_valid_cell',['../structDggsCellOps_ac9faeb2e965811eb12c134e002f21f46.html#ac9faeb2e965811eb12c134e002f21f46',1,'DggsCellOps']]],
   ['iters_18',['iters',['../structworker__arg_a213c8664685dd0777b0396a423b62952.html#a213c8664685dd0777b0396a423b62952',1,'worker_arg']]]
 ];

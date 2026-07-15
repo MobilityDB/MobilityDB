@@ -15,7 +15,7 @@ var searchData=
   ['bd_12',['bd',['../structTgeoarrPair_a1fee3c3a71562837a64145a613e64e4d.html#a1fee3c3a71562837a64145a613e64e4d',1,'TgeoarrPair']]],
   ['bfac_13',['bfac',['../structAFFINE_a57ad0d85a7707e8209ad2f96c37269ee.html#a57ad0d85a7707e8209ad2f96c37269ee',1,'AFFINE']]],
   ['bins_14',['bins',['../structSpaceSplit_ab8bea97af4eea4b3c790f6297c13c006.html#ab8bea97af4eea4b3c790f6297c13c006',1,'SpaceSplit']]],
-  ['bks_15',['bks',['../structTcbGeom_a3498c08917b9d803ee2a72e4da9fde98.html#a3498c08917b9d803ee2a72e4da9fde98',1,'TcbGeom::bks()'],['../structTcbGeoCtx_a89396863ece8cba3d9d800d31975cbf8.html#a89396863ece8cba3d9d800d31975cbf8',1,'TcbGeoCtx::bks()']]],
+  ['bks_15',['bks',['../structTcbufferGeom_a3c2e0f138a6cdcecfdc478c56e76dd99.html#a3c2e0f138a6cdcecfdc478c56e76dd99',1,'TcbufferGeom::bks()'],['../structTcbufferGeoCtx_a586b030648bf48f7b5b1ff556c4b729e.html#a586b030648bf48f7b5b1ff556c4b729e',1,'TcbufferGeoCtx::bks()']]],
   ['bm_16',['bm',['../structSTboxGridState_a28bff399f8d06e682b52b3fed83c6ea3.html#a28bff399f8d06e682b52b3fed83c6ea3',1,'STboxGridState']]],
   ['border_5finc_17',['border_inc',['../structPcpointInTpcboxArgs_aa13ca093933b696c5639a82d2107b250.html#aa13ca093933b696c5639a82d2107b250',1,'PcpointInTpcboxArgs']]],
   ['bottom_18',['BOTTOM',['../tgeo__restrict_8c_a95369c5b8afe2eec95c1dd3e1bdb9f58.html#a95369c5b8afe2eec95c1dd3e1bdb9f58',1,'tgeo_restrict.c']]],
