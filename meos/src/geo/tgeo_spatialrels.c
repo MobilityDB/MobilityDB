@@ -1389,6 +1389,34 @@ atouches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   return ea_touches_tpoint_geo(temp, gs, ALWAYS);
 }
+
+/**
+ * @ingroup meos_geo_rel_ever
+ * @brief Return 1 if a geometry and a temporal point ever touch, 0 if not,
+ * and -1 on error or if the geometry is empty
+ * @param[in] gs Geometry
+ * @param[in] temp Temporal point
+ * @csqlfn #Etouches_geo_tpoint()
+ */
+int
+etouches_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp)
+{
+  return etouches_tpoint_geo(temp, gs);
+}
+
+/**
+ * @ingroup meos_geo_rel_ever
+ * @brief Return 1 if a geometry and a temporal point always touch, 0 if not,
+ * and -1 on error or if the geometry is empty
+ * @param[in] gs Geometry
+ * @param[in] temp Temporal point
+ * @csqlfn #Atouches_geo_tpoint()
+ */
+int
+atouches_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp)
+{
+  return atouches_tpoint_geo(temp, gs);
+}
 #endif /* MEOS */
 
 /*****************************************************************************/
