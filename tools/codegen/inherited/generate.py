@@ -155,6 +155,73 @@ def extract_boxops(filetext: str, box: str) -> str:
     return filetext[b:e]
 
 
+# --- C spatialrels (predicate axis) --------------------------------------
+# The ever/always PG wrapper surface (E<Rel>/A<Rel>_<dir> + @sqlfn) is generated
+# per FAMILY into the region between the GENERATED-SPATIALRELS markers of a
+# hand-written .c file (mirroring boxops). Each predicate contributes a section
+# banner + one wrapper block per (direction, quantifier); every block just
+# dispatches to the hand-written MEOS ea_<rel>_<dir> kernel with EVER/ALWAYS, so
+# the whole surface is 100% mechanical from (predicate, quantifier, direction) —
+# which makes a missing overload or a wrong-direction/quantifier tag impossible.
+def _spatialrels_markers(family: str):
+    begin = (f"/* GENERATED-SPATIALRELS-BEGIN {family} — "
+             "tools/codegen/inherited/generate.py from templates/spatialrels.c.tmpl;\n"
+             " * DO NOT EDIT BY HAND; edit the template + manifest.yaml "
+             "(spatialrel_families) and re-run. */\n")
+    return begin, f"/* GENERATED-SPATIALRELS-END {family} */\n"
+
+
+# The three ever/always directions in file order: PG dispatcher + the (subject,
+# object) noun phrases of the @brief. Each direction emits an EVER then ALWAYS
+# wrapper.
+_SR_DIRECTIONS = [
+    ("geo_tgeo",  "EA_spatialrel_geo_tspatial",      "a geometry",          "a temporal geometry"),
+    ("tgeo_geo",  "EA_spatialrel_tspatial_geo",      "a temporal geometry", "a geometry"),
+    ("tgeo_tgeo", "EA_spatialrel_tspatial_tspatial", "a temporal geometry", "another one"),
+]
+
+
+def render_spatialrels(fam: dict) -> str:
+    """Render the ever/always PG wrapper region for one family: per predicate a
+    banner + 6 wrapper blocks (3 directions x ever/always). Roundtrips exactly."""
+    banner_t, block_t = (TEMPLATES / "spatialrels.c.tmpl").read_text().split("\n\n")
+    block_t = block_t.rstrip("\n")
+    out = []
+    for pred in fam["predicates"]:
+        out.append(banner_t.replace("{BANNER}", pred["banner"]))
+        for direc, disp, subj, obj in _SR_DIRECTIONS:
+            for ea, word, low in (("E", "ever", "e"), ("A", "always", "a")):
+                sub = {
+                    "FN": f"{ea}{pred['rel']}_{direc}",
+                    "BRIEF": f"Return true if {subj} {word} {pred['verb3']} {obj}",
+                    "SQLFN": f"{low}{pred['Rel']}",
+                    "DISP": disp,
+                    "MEOS": f"ea_{pred['rel']}_{direc}",
+                    "EA": "EVER" if ea == "E" else "ALWAYS",
+                }
+                frag = block_t
+                for k, v in sub.items():
+                    frag = frag.replace("{" + k + "}", v)
+                out.append(frag)
+    # Trailing newline so the region ends "}\n" before the END marker line
+    # (mirrors the boxops convention where the region content ends with "\n").
+    return "\n\n".join(out) + "\n"
+
+
+def splice_spatialrels(filetext: str, family: str, rendered: str) -> str:
+    begin, end = _spatialrels_markers(family)
+    b = filetext.index(begin) + len(begin)
+    e = filetext.index(end)
+    return filetext[:b] + rendered + filetext[e:]
+
+
+def extract_spatialrels(filetext: str, family: str) -> str:
+    begin, end = _spatialrels_markers(family)
+    b = filetext.index(begin) + len(begin)
+    e = filetext.index(end)
+    return filetext[b:e]
+
+
 def target_path(behaviour: str, sub: dict, positions: dict) -> pathlib.Path:
     num = sub["bin"] + positions[behaviour]
     # The SQL family directory defaults to the base type name (quadbin, cbuffer),
@@ -231,6 +298,25 @@ def main() -> int:
                         break
                 if len(g) != len(c):
                     print(f"     line count gen={len(g)} cur={len(c)}")
+        for fam in mf.get("spatialrel_families", []):
+            if not fam.get("reference"):
+                continue
+            p = ROOT / fam["file"]
+            gen = render_spatialrels(fam)
+            cur = extract_spatialrels(p.read_text(), fam["family"]) if p.exists() else ""
+            same = gen == cur
+            ok = ok and same
+            print(f"[{'OK ' if same else 'DIFF'}] self-regen spatialrels {fam['family']} "
+                  f"-> {pathlib.Path(fam['file'])}")
+            if not same:
+                g, c = gen.splitlines(), cur.splitlines()
+                for n, (a, b) in enumerate(zip(g, c), 1):
+                    if a != b:
+                        print(f"     first diff line {n}:\n       gen: {a!r}\n"
+                              f"       cur: {b!r}")
+                        break
+                if len(g) != len(c):
+                    print(f"     line count gen={len(g)} cur={len(c)}")
         return 0 if ok else 1
 
     for sub in subs:
@@ -254,6 +340,17 @@ def main() -> int:
             continue
         p.write_text(splice_boxops(p.read_text(), bt["box"], render_boxops(bt)))
         print(f"spliced boxops {bt['box']} -> {bt['file']}")
+
+    for fam in mf.get("spatialrel_families", []):
+        if fam.get("reference"):
+            continue
+        p = ROOT / fam["file"]
+        if args.check:
+            print(f"would splice spatialrels {fam['family']} -> {fam['file']}")
+            continue
+        p.write_text(splice_spatialrels(p.read_text(), fam["family"],
+                                        render_spatialrels(fam)))
+        print(f"spliced spatialrels {fam['family']} -> {fam['file']}")
     return 0
 
 

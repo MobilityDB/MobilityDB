@@ -179,3 +179,22 @@ boxtypes:
       dispbox:   boxop_tnumber_numspan
       boxdesc:   number span
       boxdescpl: number spans
+
+# ---------------------------------------------------------------------------
+# Spatial-relationship axis (C spatialrels generator, PG side). The ever/always
+# PG wrapper surface (E<Rel>/A<Rel>_<dir> + @sqlfn) is 100% mechanical from
+# (predicate, quantifier, direction): each wrapper just dispatches to the MEOS
+# ea_<rel>_<dir> kernel with EVER/ALWAYS. The generator emits the region between
+# the GENERATED-SPATIALRELS markers in `file`, per predicate, leaving the
+# hand-written native kernels (in meos/src) and the irregular tail (touches
+# geo/tpoint directions, dwithin_tgeo_tgeo, the array *Pairs surface) untouched.
+# `reference: true` = self-regen must reproduce the committed region byte-for-byte.
+# Each predicate carries its section banner + the tokens used to derive the
+# wrapper name (Rel), the SQL name (sqlfn base) and the @brief verb (verb3).
+spatialrel_families:
+  - family:    geo_ea_contains_covers
+    file:      mobilitydb/src/geo/tgeo_spatialrels.c
+    reference: true
+    predicates:
+      - {rel: contains, Rel: Contains, verb3: contains, banner: "Ever/always contains"}
+      - {rel: covers,   Rel: Covers,   verb3: covers,   banner: "Ever covers"}
