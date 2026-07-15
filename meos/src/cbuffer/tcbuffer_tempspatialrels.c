@@ -568,10 +568,10 @@ tinterrel_tcbufferseqset_geom(const TSequenceSet *ss, const GSERIALIZED *gs,
  */
 static Temporal *
 tinterrel_tcbufferinst_geo_native(const TInstant *inst, bool tinter,
-  const void *ctx)
+  double dist, const void *ctx)
 {
   bool within = tcbuffer_disc_within_ctx(
-    DatumGetCbufferP(tinstant_value_p(inst)), 0.0, ctx);
+    DatumGetCbufferP(tinstant_value_p(inst)), dist, ctx);
   Datum d = (within == tinter) ? BoolGetDatum(true) : BoolGetDatum(false);
   return (Temporal *) tinstant_make(d, T_TBOOL, inst->t);
 }
@@ -581,13 +581,13 @@ tinterrel_tcbufferinst_geo_native(const TInstant *inst, bool tinter,
  */
 static Temporal *
 tinterrel_tcbufferseq_disc_geo_native(const TSequence *seq, bool tinter,
-  const void *ctx)
+  double dist, const void *ctx)
 {
   Set *s = NULL;
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-    if (tcbuffer_disc_within_ctx(DatumGetCbufferP(tinstant_value_p(inst)), 0.0,
+    if (tcbuffer_disc_within_ctx(DatumGetCbufferP(tinstant_value_p(inst)), dist,
         ctx))
     {
       if (! s)
@@ -668,7 +668,8 @@ tinterrel_tcbufferseq_from_spanset(const TSequence *seq, const SpanSet *ss,
  * coverage projection
  */
 static SpanSet *
-tcbufferseq_step_within_spanset(const TSequence *seq, const void *ctx)
+tcbufferseq_step_within_spanset(const TSequence *seq, double dist,
+  const void *ctx)
 {
   SpanSet *ss = NULL;
   bool lower_inc = seq->period.lower_inc;
@@ -679,7 +680,7 @@ tcbufferseq_step_within_spanset(const TSequence *seq, const void *ctx)
       TSEQUENCE_INST_N(seq, i + 1) : inst;
     bool upper_inc = (i == seq->count - 1) ? false : seq->period.upper_inc;
     if (! tcbuffer_disc_within_ctx(DatumGetCbufferP(tinstant_value_p(inst)),
-        0.0, ctx))
+        dist, ctx))
       continue;
     /* The step value is constant over [inst, next), so the span is exactly
      * [inst->t, next->t); mint/maxt equal the segment endpoints, hence the
@@ -716,9 +717,9 @@ tcbufferseq_step_within_spanset(const TSequence *seq, const void *ctx)
  */
 static Temporal *
 tinterrel_tcbufferseq_step_geo_native(const TSequence *seq, bool tinter,
-  const void *ctx)
+  double dist, const void *ctx)
 {
-  SpanSet *ss = tcbufferseq_step_within_spanset(seq, ctx);
+  SpanSet *ss = tcbufferseq_step_within_spanset(seq, dist, ctx);
   Temporal *result = tinterrel_tcbufferseq_from_spanset(seq, ss, tinter);
   if (ss)
     pfree(ss);
@@ -733,7 +734,8 @@ tinterrel_tcbufferseq_step_geo_native(const TSequence *seq, bool tinter,
  * ever/always coverage projection, so both use the identical crossing kernel
  */
 static SpanSet *
-tcbufferseq_linear_within_spanset(const TSequence *seq, const void *ctx)
+tcbufferseq_linear_within_spanset(const TSequence *seq, double dist,
+  const void *ctx)
 {
   int maxo = tcbuffer_geo_ctx_nsegs(ctx) + 2;
   double *rlo = palloc(sizeof(double) * maxo);
@@ -747,7 +749,7 @@ tcbufferseq_linear_within_spanset(const TSequence *seq, const void *ctx)
     bool upper_inc = seq->period.upper_inc;
     double dur = (double) (inst2->t - inst1->t);
     int nr = tcbufferseg_within_ctx(DatumGetCbufferP(tinstant_value_p(inst1)),
-      DatumGetCbufferP(tinstant_value_p(inst2)), 0.0, ctx, rlo, rhi, maxo);
+      DatumGetCbufferP(tinstant_value_p(inst2)), dist, ctx, rlo, rhi, maxo);
     for (int j = 0; j < nr; j++)
     {
       TimestampTz mint = inst1->t + (TimestampTz) llround(rlo[j] * dur);
@@ -781,9 +783,9 @@ tcbufferseq_linear_within_spanset(const TSequence *seq, const void *ctx)
  */
 static Temporal *
 tinterrel_tcbufferseq_linear_geo_native(const TSequence *seq, bool tinter,
-  const void *ctx)
+  double dist, const void *ctx)
 {
-  SpanSet *ss = tcbufferseq_linear_within_spanset(seq, ctx);
+  SpanSet *ss = tcbufferseq_linear_within_spanset(seq, dist, ctx);
   Temporal *result = tinterrel_tcbufferseq_from_spanset(seq, ss, tinter);
   if (ss)
     pfree(ss);
@@ -795,16 +797,16 @@ tinterrel_tcbufferseq_linear_geo_native(const TSequence *seq, bool tinter,
  */
 static Temporal *
 tinterrel_tcbufferseq_geo_native(const TSequence *seq, bool tinter,
-  const void *ctx)
+  double dist, const void *ctx)
 {
   if (seq->count == 1)
     return tinterrel_tcbufferinst_geo_native(TSEQUENCE_INST_N(seq, 0), tinter,
-      ctx);
+      dist, ctx);
   if (MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE)
-    return tinterrel_tcbufferseq_disc_geo_native(seq, tinter, ctx);
+    return tinterrel_tcbufferseq_disc_geo_native(seq, tinter, dist, ctx);
   if (MEOS_FLAGS_GET_INTERP(seq->flags) == STEP)
-    return tinterrel_tcbufferseq_step_geo_native(seq, tinter, ctx);
-  return tinterrel_tcbufferseq_linear_geo_native(seq, tinter, ctx);
+    return tinterrel_tcbufferseq_step_geo_native(seq, tinter, dist, ctx);
+  return tinterrel_tcbufferseq_linear_geo_native(seq, tinter, dist, ctx);
 }
 
 /**
@@ -812,17 +814,17 @@ tinterrel_tcbufferseq_geo_native(const TSequence *seq, bool tinter,
  */
 static Temporal *
 tinterrel_tcbufferseqset_geo_native(const TSequenceSet *ss, bool tinter,
-  const void *ctx)
+  double dist, const void *ctx)
 {
   if (ss->count == 1)
     return tinterrel_tcbufferseq_geo_native(TSEQUENCESET_SEQ_N(ss, 0), tinter,
-      ctx);
+      dist, ctx);
   Temporal **res_seq = palloc(sizeof(Temporal *) * ss->count);
   int count = 0;
   for (int i = 0; i < ss->count; i++)
   {
     Temporal *res = tinterrel_tcbufferseq_geo_native(TSEQUENCESET_SEQ_N(ss, i),
-      tinter, ctx);
+      tinter, dist, ctx);
     if (res)
       res_seq[count++] = res;
   }
@@ -895,8 +897,8 @@ tcbufferseq_ever_disjoint_native(const TSequence *seq, const void *ctx)
    * a non-convex geometry, so build the exact intersecting sub-periods (the same
    * set the temporal relationship uses) and test full coverage of the period. */
   SpanSet *ss = (interp == STEP) ?
-    tcbufferseq_step_within_spanset(seq, ctx) :
-    tcbufferseq_linear_within_spanset(seq, ctx);
+    tcbufferseq_step_within_spanset(seq, 0.0, ctx) :
+    tcbufferseq_linear_within_spanset(seq, 0.0, ctx);
   bool covered = (ss != NULL) && contains_spanset_span(ss, &seq->period);
   if (ss)
     pfree(ss);
@@ -940,23 +942,34 @@ edisjoint_tcbuffer_geo_native(const Temporal *temp, const GSERIALIZED *gs)
 
 /**
  * @brief Return a temporal Boolean that states whether a temporal circular
- * buffer and a geometry intersect or are disjoint
+ * buffer expanded by a distance and a geometry intersect or are disjoint
  * @param[in] temp Temporal circular buffer
  * @param[in] gs Geometry
  * @param[in] tinter True when computing `tintersects`, false for `tdisjoint`
+ * @param[in] dist Distance by which the circular buffer is expanded, used to
+ * back `tdwithin`; zero for `tintersects` and `tdisjoint`
+ * @details The distance is threaded to the native within kernels, which fold
+ * it into the disc radius, avoiding a separate radius-expansion pass. For
+ * curved geometry, which has no native kernel, the radius is expanded and the
+ * traversed-area path is used
  */
-Temporal *
-tinterrel_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
-  bool tinter)
+static Temporal *
+tinterrel_tcbuffer_geo_dist(const Temporal *temp, const GSERIALIZED *gs,
+  bool tinter, double dist)
 {
   VALIDATE_TCBUFFER(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
 
-  /* Bounding box test */
-  STBox box1, box2;
+  /* Bounding box test, expanding the temporal box by the distance */
+  STBox box1, box1_exp, box2;
   tspatial_set_stbox(temp, &box1);
+  if (dist > 0.0)
+  {
+    stbox_expand_space_set(&box1, dist, &box1_exp);
+    box1 = box1_exp;
+  }
   /* Non-empty geometries have a bounding box */
   geo_set_stbox(gs, &box2);
   if (! overlaps_stbox_stbox(&box1, &box2))
@@ -977,32 +990,51 @@ tinterrel_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
     {
       case TINSTANT:
         result = tinterrel_tcbufferinst_geo_native((TInstant *) temp, tinter,
-          ctx);
+          dist, ctx);
         break;
       case TSEQUENCE:
         result = tinterrel_tcbufferseq_geo_native((TSequence *) temp, tinter,
-          ctx);
+          dist, ctx);
         break;
       default: /* TSEQUENCESET */
         result = tinterrel_tcbufferseqset_geo_native((TSequenceSet *) temp,
-          tinter, ctx);
+          tinter, dist, ctx);
     }
     tcbuffer_geo_ctx_free(ctx);
     return result;
   }
+  /* Curved or unsupported geometry: expand the radius by the distance (a no-op
+   * for a zero distance) and fall back to the traversed-area path */
+  const Temporal *tw = (dist > 0.0) ? tcbuffer_expand(temp, dist) : temp;
   switch (temp->subtype)
   {
     case TINSTANT:
-      result = tinterrel_tcbufferinst_geom((TInstant *) temp, gs, tinter);
+      result = tinterrel_tcbufferinst_geom((TInstant *) tw, gs, tinter);
       break;
     case TSEQUENCE:
-      result = tinterrel_tcbufferseq_geom((TSequence *) temp, gs, tinter);
+      result = tinterrel_tcbufferseq_geom((TSequence *) tw, gs, tinter);
       break;
     default: /* TSEQUENCESET */
-      result = tinterrel_tcbufferseqset_geom((TSequenceSet *) temp, gs,
+      result = tinterrel_tcbufferseqset_geom((TSequenceSet *) tw, gs,
         tinter);
   }
+  if (tw != temp)
+    pfree((Temporal *) tw);
   return result;
+}
+
+/**
+ * @brief Return a temporal Boolean that states whether a temporal circular
+ * buffer and a geometry intersect or are disjoint
+ * @param[in] temp Temporal circular buffer
+ * @param[in] gs Geometry
+ * @param[in] tinter True when computing `tintersects`, false for `tdisjoint`
+ */
+Temporal *
+tinterrel_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
+  bool tinter)
+{
+  return tinterrel_tcbuffer_geo_dist(temp, gs, tinter, 0.0);
 }
 
 /*****************************************************************************/
@@ -2347,10 +2379,7 @@ tdwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return NULL;
 
-  Temporal *temp_exp = tcbuffer_expand(temp, dist);
-  Temporal *result = tinterrel_tcbuffer_geo(temp_exp, gs, TINTERSECTS);
-  pfree(temp_exp);
-  return result;
+  return tinterrel_tcbuffer_geo_dist(temp, gs, TINTERSECTS, dist);
 }
 
 /**
