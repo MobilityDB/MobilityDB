@@ -224,6 +224,7 @@ spanset_append_spanset(SpanSet *ss1, const SpanSet *ss2, bool expand)
  * @code
  * state = span_union_transfn(state, span);
  * @endcode
+ * @csqlaggfn #spanUnionTransition()
  */
 SpanSet *
 span_union_transfn(SpanSet *state, const Span *s)
@@ -255,6 +256,7 @@ span_union_transfn(SpanSet *state, const Span *s)
  * state = spanset_union_transfn(state, spanset);
  * @endcode
  * @csqlfn #Spanset_union_transfn()
+ * @csqlaggfn #spansetUnionTransition()
  */
 SpanSet *
 spanset_union_transfn(SpanSet *state, const SpanSet *ss)
@@ -279,8 +281,9 @@ spanset_union_transfn(SpanSet *state, const SpanSet *ss)
 
 /**
  * @ingroup meos_setspan_agg
- * @brief Transition function for set aggregate of values
+ * @brief Final function for span and span set union aggregate
  * @param[in] state Current aggregate state, may be `NULL`
+ * @csqlaggfn #spanUnionFinal(), #spansetUnionFinal()
  */
 SpanSet *
 spanset_union_finalfn(SpanSet *state)
