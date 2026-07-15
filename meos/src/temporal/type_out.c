@@ -3059,6 +3059,31 @@ datum_as_hexwkb(Datum value, MeosType type, uint8_t variant, size_t *size)
     variant | (uint8_t) WKB_EXTENDED | (uint8_t) WKB_HEX, size);
 }
 
+/**
+ * @ingroup meos_temporal_inout
+ * @brief Return the WKB output variant flag corresponding to an endian
+ * encoding string
+ * @details The result can be combined (with a bitwise OR) with the other WKB
+ * variant flags and passed to the @p *_as_wkb / @p *_as_hexwkb functions, so a
+ * caller can select the byte order from a textual value.
+ * @param[in] endian Endian encoding: an empty string (machine endianness),
+ * `"ndr"` (little-endian) or `"xdr"` (big-endian)
+ * @return On error return 0
+ */
+uint8_t
+wkb_variant_from_endian(const char *endian)
+{
+  if (! endian || strlen(endian) == 0)
+    return 0;
+  if (pg_strncasecmp(endian, "ndr", 3) == 0)
+    return (uint8_t) WKB_NDR;
+  if (pg_strncasecmp(endian, "xdr", 3) == 0)
+    return (uint8_t) WKB_XDR;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "Invalid value for endian flag");
+  return 0;
+}
+
 /*****************************************************************************
  * WKB and HexWKB output functions for set, span, and span set types
  *****************************************************************************/
