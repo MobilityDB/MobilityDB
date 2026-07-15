@@ -600,6 +600,14 @@ datum_hash_extended(Datum d, MeosType type, uint64 seed)
     // case T_GEOMETRY:
     // case T_GEOGRAPHY:
       // return gserialized_hash_extended(DatumGetGserializedP(d), seed);
+#if CBUFFER
+    case T_CBUFFER:
+      return cbuffer_hash_extended(DatumGetCbufferP(d), seed);
+#endif
+#if JSON
+    case T_JSONB:
+      return pg_jsonb_hash_extended(DatumGetJsonbP(d), seed);
+#endif /* JSON */
 #if NPOINT
     case T_NPOINT:
       return npoint_hash_extended(DatumGetNpointP(d), seed);

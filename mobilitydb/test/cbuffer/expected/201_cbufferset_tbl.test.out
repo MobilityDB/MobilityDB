@@ -145,6 +145,12 @@ SELECT MAX(set_hash(s)) FROM tbl_cbufferset;
  2108338657
 (1 row)
 
+SELECT MAX(set_hash_extended(s, 1)) FROM tbl_cbufferset;
+         max         
+---------------------
+ 8841573282622179135
+(1 row)
+
 SELECT numValues(setUnion(cb)) FROM tbl_cbuffer;
  numvalues 
 -----------
