@@ -117,7 +117,7 @@ CREATE FUNCTION _edisjoint(geometry, tgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Edisjoint_geo_tgeo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION edisjoint(geometry, tgeometry)
+CREATE FUNCTION eDisjoint(geometry, tgeometry)
   RETURNS boolean
   AS 'SELECT NOT(stbox($1) OPERATOR(@extschema@.&&) $2) OR @extschema@._edisjoint($1,$2)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
@@ -126,7 +126,7 @@ CREATE FUNCTION _edisjoint(tgeometry, geometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Edisjoint_tgeo_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION edisjoint(tgeometry, geometry)
+CREATE FUNCTION eDisjoint(tgeometry, geometry)
   RETURNS boolean
   AS 'SELECT NOT($1 OPERATOR(@extschema@.&&) stbox($2)) OR @extschema@._edisjoint($1,$2)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
@@ -135,7 +135,7 @@ CREATE FUNCTION _edisjoint(tgeometry, tgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Edisjoint_tgeo_tgeo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION edisjoint(tgeometry, tgeometry)
+CREATE FUNCTION eDisjoint(tgeometry, tgeometry)
   RETURNS boolean
   AS 'SELECT NOT($1 OPERATOR(@extschema@.&&) $2) OR @extschema@._edisjoint($1,$2)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
