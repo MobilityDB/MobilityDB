@@ -263,9 +263,9 @@ def extract_spatialrels(filetext: str, family: str) -> str:
 # (numInstants..segments) is {TEMP}-only — every wrapper is a pure CREATE FUNCTION
 # over a generic Temporal_* symbol whose signature is independent of the base value
 # type; the `value` run (startValue/endValue/valueN/valueAtTimestamp) carries the
-# {BASE}-typed value signature; the `collection` accessor (getValues) returns the
-# {BASESET} value-collection type. getValue interleaves above the collection
-# accessor and stays hand-written until its own block lands.
+# {BASE}-typed value signature (as does the `getvalue` accessor, which sits
+# isolated above the collection accessor); the `collection` accessor (getValues)
+# returns the {BASESET} value-collection type.
 def accessor_blocks(fam: dict) -> list:
     """The accessor regions this family hosts. Defaults to the single T-agnostic
     `core` run (numInstants..segments). A family may declare extra blocks via

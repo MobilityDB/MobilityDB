@@ -276,11 +276,15 @@ CREATE FUNCTION memSize(tcbuffer)
   AS 'MODULE_PATHNAME', 'Temporal_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- GENERATED-ACCESSORS-GETVALUE-BEGIN cbuffer — tools/codegen/inherited/generate.py from templates/accessors_getvalue.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.yaml (accessor_families) and re-run.
+
 -- value is a reserved word in SQL
 CREATE FUNCTION getValue(tcbuffer)
   RETURNS cbuffer
   AS 'MODULE_PATHNAME', 'Tinstant_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- GENERATED-ACCESSORS-GETVALUE-END cbuffer
 
 -- timestamp is a reserved word in SQL
 CREATE FUNCTION getTimestamp(tcbuffer)
