@@ -40,7 +40,7 @@
  *****************************************************************************/
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return an int16 number from its string representation
  * @note Derived from PostgreSQL function @p int2in()
  */
@@ -51,7 +51,7 @@ int16_in(const char *str)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return the string representation of an int16 number
  * @note Derived from PostgreSQL function @p int2out()
  */
@@ -99,7 +99,7 @@ int32_out(int32 num)
  */
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Convert an int16 number into an int32 number
  * @note Derived from PostgreSQL function @p i2toi4()
  */
@@ -110,7 +110,7 @@ int16_to_int32(int16 num)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Convert an int32 number into an int16 number
  * @note Derived from PostgreSQL function @p i4toi2()
  */
@@ -127,7 +127,7 @@ int32_to_int16(int32 num)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int
  * @brief Convert an int32 number into a boolean value
  * @note Derived from PostgreSQL function @p int4bool()
  */
@@ -141,7 +141,7 @@ int32_to_bool(int32 num)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int
  * @brief Convert a boolean value into an int32 number
  * @note Derived from PostgreSQL function @p boolint4()
  */
@@ -238,7 +238,7 @@ ge_int32_int32(int32 num1, int32 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return true if two int16 numbers are equal
  * @note Derived from PostgreSQL function @p int2eq()
  */
@@ -249,7 +249,7 @@ eq_int16_int16(int16 num1, int16 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return true if two int16 numbers are not equal
  * @note Derived from PostgreSQL function @p int2ne()
  */
@@ -260,7 +260,7 @@ ne_int16_int16(int16 num1, int16 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return true if the first int16 number is less than the second one
  * @note Derived from PostgreSQL function @p int2lt()
  */
@@ -271,7 +271,7 @@ lt_int16_int16(int16 num1, int16 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return true if the first int16 number is less than or equal to the
  * second one
  * @note Derived from PostgreSQL function @p int2le()
@@ -283,7 +283,7 @@ le_int16_int16(int16 num1, int16 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return true if the first int16 number is greater than the second one
  * @note Derived from PostgreSQL function @p int2gt()
  */
@@ -294,7 +294,7 @@ gt_int16_int16(int16 num1, int16 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return true if the first int16 number is greater than or equal to the
  * second one
  * @note Derived from PostgreSQL function @p int2ge()
@@ -306,7 +306,7 @@ ge_int16_int16(int16 num1, int16 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return true if an int16 number and an int32 number are equal
  * @note Derived from PostgreSQL function @p int24eq()
  */
@@ -317,7 +317,7 @@ eq_int16_int32(int16 num1, int32 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return true if an int16 number and an int32 number are not equal
  * @note Derived from PostgreSQL function @p int24ne()
  */
@@ -328,7 +328,7 @@ ne_int16_int32(int16 num1, int32 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return true if an int16 number is less than an int32 number
  * @note Derived from PostgreSQL function @p int24lt()
  */
@@ -339,7 +339,7 @@ lt_int16_int32(int16 num1, int32 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return true if an int16 number is less than or equal to an int32
  * number
  * @note Derived from PostgreSQL function @p int24le()
@@ -351,7 +351,7 @@ le_int16_int32(int16 num1, int32 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return true if an int16 number is greater than an int32 number
  * @note Derived from PostgreSQL function @p int24gt()
  */
@@ -362,7 +362,7 @@ gt_int16_int32(int16 num1, int32 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return true if an int16 number is greater than or equal to an int32
  * number
  * @note Derived from PostgreSQL function @p int24ge()
@@ -374,7 +374,7 @@ ge_int16_int32(int16 num1, int32 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return true if an int32 number and an int16 number are equal
  * @note Derived from PostgreSQL function @p int42eq()
  */
@@ -385,7 +385,7 @@ eq_int32_int16(int32 num1, int16 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return true if an int32 number and an int16 number are not equal
  * @note Derived from PostgreSQL function @p int42ne()
  */
@@ -396,7 +396,7 @@ ne_int32_int16(int32 num1, int16 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return true if an int32 number is less than an int16 number
  * @note Derived from PostgreSQL function @p int42lt()
  */
@@ -407,7 +407,7 @@ lt_int32_int16(int32 num1, int16 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return true if an int32 number is less than or equal to an int16
  * number
  * @note Derived from PostgreSQL function @p int42le()
@@ -419,7 +419,7 @@ le_int32_int16(int32 num1, int16 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return true if an int32 number is greater than an int16 number
  * @note Derived from PostgreSQL function @p int42gt()
  */
@@ -430,7 +430,7 @@ gt_int32_int16(int32 num1, int16 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return true if an int32 number is less than or equal to an int16
  * number
  * @note Derived from PostgreSQL function @p int42ge()
@@ -452,7 +452,7 @@ ge_int32_int16(int32 num1, int16 num2)
  */
  
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int
  * @brief Return the unary minus of an int32 number
  * @note Derived from PostgreSQL function @p int4um()
  */
@@ -469,7 +469,7 @@ int32_uminus(int32 num)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int
  * @brief Return the unary plus of an int32 number
  * @note Derived from PostgreSQL function @p int4up()
  */
@@ -579,7 +579,7 @@ div_int32_int32(int32 num1, int32 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int
  * @brief Return an int32 number incremented by one
  * @note Derived from PostgreSQL function @p int4inc()
  */
@@ -598,7 +598,7 @@ int32_inc(int32 num)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return the unary minus of an int16 number
  * @note Derived from PostgreSQL function @p int2um()
  */
@@ -615,7 +615,7 @@ int16_uminus(int16 num)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return the unary plus of an int16 number
  * @note Derived from PostgreSQL function @p int2up()
  */
@@ -626,7 +626,7 @@ int16_uplus(int16 num)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return the addition of two int16 numbers
  * @note Derived from PostgreSQL function @p int2pl()
  */
@@ -645,7 +645,7 @@ add_int16_int16(int16 num1, int16 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return the subtraction of two int16 numbers
  * @note Derived from PostgreSQL function @p int2mi()
  */
@@ -664,7 +664,7 @@ minus_int16_int16(int16 num1, int16 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return the multiplication of two int16 numbers
  * @note Derived from PostgreSQL function @p int2mul()
  */
@@ -684,7 +684,7 @@ mul_int16_int16(int16 num1, int16 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return the division of two int16 numbers
  * @note Derived from PostgreSQL function @p int2div()
  */
@@ -726,7 +726,7 @@ div_int16_int16(int16 num1, int16 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return the addition of an int16 and an int32 numbers
  * @note Derived from PostgreSQL function @p int24pl()
  */
@@ -745,7 +745,7 @@ add_int16_int32(int16 num1, int32 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return the subtraction of an int16 and an int32 numbers
  * @note Derived from PostgreSQL function @p int24mi()
  */
@@ -764,7 +764,7 @@ minus_int16_int32(int16 num1, int32 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return the multiplication of an int16 and an int32 numbers
  * @note Derived from PostgreSQL function @p int24mul()
  */
@@ -783,7 +783,7 @@ mul_int16_int32(int16 num1, int32 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return the division of an int16 and an int32 numbers
  * @note Derived from PostgreSQL function @p int24div()
  */
@@ -802,7 +802,7 @@ div_int16_int32(int16 num1, int32 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return the addition of an int32 and an int16 numbers
  * @note Derived from PostgreSQL function @p int42pl()
  */
@@ -821,7 +821,7 @@ add_int32_int16(int32 num1, int16 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return the subtraction of an int32 and an int16 numbers
  * @note Derived from PostgreSQL function @p int42mi()
  */
@@ -840,7 +840,7 @@ minus_int32_int16(int32 num1, int16 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return the multiplication of an int32 and an int16 numbers
  * @note Derived from PostgreSQL function @p int42mul()
  */
@@ -859,7 +859,7 @@ mul_int32_int16(int32 num1, int16 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return the division of an int32 and an int16 numbers
  * @note Derived from PostgreSQL function @p int42div()
  */
@@ -901,7 +901,7 @@ div_int32_int16(int32 num1, int16 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int
  * @brief Return the modulo of two int32 numbers
  * @note Derived from PostgreSQL function @p int4mod()
  */
@@ -929,7 +929,7 @@ int32_mod(int32 num1, int32 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return the modulo of two int16 numbers
  * @note Derived from PostgreSQL function @p int2mod()
  */
@@ -978,7 +978,7 @@ int32_abs(int32 num)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return the absolute value of an int16 number
  * @note Derived from PostgreSQL function @p int2abs()
  */
@@ -1075,7 +1075,7 @@ int4gcd_internal(int32 num1, int32 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int
  * @brief Return the greatest common denominator of two int32 numbers
  * @note Derived from PostgreSQL function @p int4gcd()
  */
@@ -1087,7 +1087,7 @@ int32_gcd(int32 num1, int32 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int
  * @brief Return the least common multiple of two int32 numbers
  * @note Derived from PostgreSQL function @p int4lcm()
  */
@@ -1131,7 +1131,7 @@ int32_lcm(int32 num1, int32 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return the larger of two int16 numbers
  * @note Derived from PostgreSQL function @p int2larger()
  */
@@ -1142,7 +1142,7 @@ int16_larger(int16 num1, int16 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return the smaller of two int16 numbers
  * @note Derived from PostgreSQL function @p int2smaller()
  */
@@ -1153,7 +1153,7 @@ int16_smaller(int16 num1, int16 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int
  * @brief Return the larger of two int32 numbers
  * @note Derived from PostgreSQL function @p int4larger()
  */
@@ -1164,7 +1164,7 @@ int32_larger(int32 num1, int32 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int
  * @brief Return the smaller of two int32 numbers
  * @note Derived from PostgreSQL function @p int4smaller()
  */
@@ -1186,7 +1186,7 @@ int32_smaller(int32 num1, int32 num2)
  */
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int
  * @brief Return the binary and of two int32 numbers
  * @note Derived from PostgreSQL function @p int4and()
  */
@@ -1197,7 +1197,7 @@ int32_and(int32 num1, int32 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int
  * @brief Return the binary or of two int32 numbers
  * @note Derived from PostgreSQL function @p int4or()
  */
@@ -1208,7 +1208,7 @@ int32_or(int32 num1, int32 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int
  * @brief Return the binary xor of two int32 numbers
  * @note Derived from PostgreSQL function @p int4xor()
  */
@@ -1219,7 +1219,7 @@ int32_xor(int32 num1, int32 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int
  * @brief Return the first int32 number shifted to the left by the second one
  * @note Derived from PostgreSQL function @p int4shl()
  */
@@ -1230,7 +1230,7 @@ int32_shl(int32 num1, int32 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int
  * @brief Return the first int32 number shifted to the right by the second one
  * @note Derived from PostgreSQL function @p int4shr()
  */
@@ -1241,7 +1241,7 @@ int32_shr(int32 num1, int32 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int
  * @brief Return the binary not of a int32 number
  * @note Derived from PostgreSQL function @p int4not()
  */
@@ -1252,7 +1252,7 @@ int32_not(int32 num)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return the binary and of two int16 numbers
  * @note Derived from PostgreSQL function @p int2and()
  */
@@ -1263,7 +1263,7 @@ int16_and(int16 num1, int16 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return the binary or of two int16 numbers
  * @note Derived from PostgreSQL function @p int2or()
  */
@@ -1274,7 +1274,7 @@ int16_or(int16 num1, int16 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return the binary xor of two int16 numbers
  * @note Derived from PostgreSQL function @p int2xor()
  */
@@ -1285,7 +1285,7 @@ int16_xor(int16 num1, int16 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return the binary not of an int16 number
  * @note Derived from PostgreSQL function @p int2not()
  */
@@ -1296,7 +1296,7 @@ int16_not(int16 num)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return the first int16 number shifted to the left by the second one
  * @note Derived from PostgreSQL function @p int2shl()
  */
@@ -1307,7 +1307,7 @@ int16_shl(int16 num1, int32 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return the first int16 number shifted to the right by the second one
  * @note Derived from PostgreSQL function @p int2shr()
  */

@@ -68,6 +68,42 @@
  * @defgroup meos_internal_rgeo Functions for temporal rigid geometries
  * @ingroup meos_internal
  * @brief Functions for temporal rigid geometries
+ *
+ * @defgroup meos_internal_base Functions for base and time types
+ * @ingroup meos_internal
+ * @brief Functions for base and time types
+ *
+ *   @defgroup meos_internal_int Functions for the integer type
+ *   @ingroup meos_internal_base
+ *   @brief Functions for the integer type
+ *
+ *   @defgroup meos_internal_int16 Functions for the small integer type
+ *   @ingroup meos_internal_base
+ *   @brief Functions for the small integer type
+ *
+ *   @defgroup meos_internal_bigint Functions for the big integer type
+ *   @ingroup meos_internal_base
+ *   @brief Functions for the big integer type
+ *
+ *   @defgroup meos_internal_float Functions for the float type
+ *   @ingroup meos_internal_base
+ *   @brief Functions for the float type
+ *
+ *   @defgroup meos_internal_float4 Functions for the real type
+ *   @ingroup meos_internal_base
+ *   @brief Functions for the real type
+ *
+ *   @defgroup meos_internal_numeric Functions for the numeric type
+ *   @ingroup meos_internal_base
+ *   @brief Functions for the numeric type
+ *
+ *   @defgroup meos_internal_char Functions for the char type
+ *   @ingroup meos_internal_base
+ *   @brief Functions for the char type
+ *
+ *   @defgroup meos_internal_text Functions for the text type
+ *   @ingroup meos_internal_base
+ *   @brief Functions for the text type
  */
 
 /*****************************************************************************/
