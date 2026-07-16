@@ -32,7 +32,7 @@ CREATE FUNCTION getTimestamp({TEMP})
 -- values is a reserved word in SQL
 CREATE FUNCTION getValues({TEMP})
   RETURNS {BASESET}
-  AS 'MODULE_PATHNAME', 'Temporal_valueset'
+  AS 'MODULE_PATHNAME', '{GVSYM}'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- time is a reserved word in SQL

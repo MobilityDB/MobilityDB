@@ -275,17 +275,122 @@ def _accessors_markers(family: str):
 
 
 def render_accessors(fam: dict) -> str:
-    """Render the accessor region for one family: the generic template with
-    {TEMP}/{BASE}/{BASESET} substituted, wrapped in the blank lines that separate
-    it from the surrounding markers (leading blank after BEGIN, trailing "\\n"
-    before END). Roundtrips byte-for-byte against the committed reference region.
-    {BASESET} is substituted before {BASE} to document the intent (the latter is
-    not a substring of the former)."""
-    body = (TEMPLATES / "accessors.sql.tmpl").read_text().strip("\n")
-    body = (body.replace("{TEMP}", fam["temp"])
-                .replace("{BASESET}", fam.get("baseset", ""))
-                .replace("{BASE}", fam.get("base", "")))
-    return "\n" + body + "\n"
+    """Render the accessor region for one family from its per-base-type `types`
+    table. ONE renderer serves every family: a spatial subtype is a single-element
+    `types` (one function per accessor, and — carrying no numeric/orderable flag —
+    none of the gated TNumber accessors), the base Temporal<T> is all five base
+    types. An old {temp/base/baseset} family is normalized to a one-element table,
+    so this reproduces the merged subtype regions byte-for-byte. Groups are emitted
+    accessor-outer / type-inner and separated by one blank line; the gated accessors
+    slot in at their canonical positions for the types that carry them."""
+    types = fam.get("types") or [{"temp": fam["temp"],
+                                  "base": fam.get("base", ""),
+                                  "baseset": fam.get("baseset", "")}]
+    pools = {"numeric": [t for t in types if t.get("numeric")],
+             "orderable": [t for t in types if t.get("orderable")]}
+    groups = []
+    for comment, fns, name in _accessor_blocks((TEMPLATES / "accessors.sql.tmpl").read_text()):
+        groups.append(_render_group(comment, fns, types))
+        for gname in _GATED_AFTER.get(name, []):
+            groups.append(_render_group("", _GATED[gname], pools[_GATED_PRESENCE[gname]]))
+    return "\n" + "\n\n".join(g for g in groups if g) + "\n"
+
+
+# --- SQL accessors: base Temporal<T> multi-base-type mode ----------------
+# The base type file (022_temporal) declares the SAME accessor surface, but for
+# EVERY base type (tbool/tint/tbigint/tfloat/ttext) in one region, grouped
+# accessor-outer / type-inner (all types' getValue, then all types' getTimestamp,
+# ...). It also carries the TNumber/orderable-only accessors that the spatial
+# subtypes lack: valueSet (the discrete value set, numeric only), minValue/maxValue
+# (orderable), avgValue (numeric) and minInstant/maxInstant (orderable). These are
+# emitted from the same canonical order as the shared template, with the gated
+# accessors slotted at their canonical positions (valueSet with the value-collection
+# group after getValues; the value/instant reductions after valueN, before
+# valueAtTimestamp — doc/temporal_alpha.xml `talpha_accessors`). A `temporal` family
+# in the manifest carries `types:` (a per-base-type token table) instead of the
+# single {TEMP}/{BASE}/{BASESET}, which selects this multi-type renderer.
+#
+# The gated fragments are NOT in the shared subtype template (the spatial families
+# have none of them), so they live here as literal blocks with their own tokens:
+# {VSET} = the discrete value-set type (intset/bigintset/floatset). getValue/
+# startValue/endValue/valueN/valueAtTimestamp/minValue/maxValue all return {BASE};
+# avgValue returns float; minInstant/maxInstant return {TEMP}.
+_GATED = {
+    "valueSet": ("CREATE FUNCTION valueSet({TEMP})\n"
+                 "  RETURNS {VSET}\n"
+                 "  AS 'MODULE_PATHNAME', 'Temporal_valueset'\n"
+                 "  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"),
+    "minValue": ("CREATE FUNCTION minValue({TEMP})\n"
+                 "  RETURNS {BASE}\n"
+                 "  AS 'MODULE_PATHNAME', 'Temporal_min_value'\n"
+                 "  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"),
+    "maxValue": ("CREATE FUNCTION maxValue({TEMP})\n"
+                 "  RETURNS {BASE}\n"
+                 "  AS 'MODULE_PATHNAME', 'Temporal_max_value'\n"
+                 "  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"),
+    "avgValue": ("CREATE FUNCTION avgValue({TEMP})\n"
+                 "  RETURNS float\n"
+                 "  AS 'MODULE_PATHNAME', 'Tnumber_avg_value'\n"
+                 "  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"),
+    "minInstant": ("CREATE FUNCTION minInstant({TEMP})\n"
+                   "  RETURNS {TEMP}\n"
+                   "  AS 'MODULE_PATHNAME', 'Temporal_min_instant'\n"
+                   "  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"),
+    "maxInstant": ("CREATE FUNCTION maxInstant({TEMP})\n"
+                   "  RETURNS {TEMP}\n"
+                   "  AS 'MODULE_PATHNAME', 'Temporal_max_instant'\n"
+                   "  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"),
+}
+# Which base types carry each gated accessor: `numeric` = tint/tbigint/tfloat
+# (a type entry sets numeric: true), `orderable` = those + ttext (orderable: true).
+_GATED_PRESENCE = {
+    "valueSet": "numeric", "avgValue": "numeric",
+    "minValue": "orderable", "maxValue": "orderable",
+    "minInstant": "orderable", "maxInstant": "orderable",
+}
+# Gated accessors inserted AFTER the named common accessor's group, in order.
+_GATED_AFTER = {
+    "getValues": ["valueSet"],
+    "valueN": ["minValue", "maxValue", "avgValue", "minInstant", "maxInstant"],
+}
+
+
+def _accessor_blocks(template_text: str):
+    """Split the shared template into ordered groups. Each group is
+    (lead_comment, fn_text, first_fn_name): the leading ``-- ...`` comment lines
+    (emitted once per group) and the CREATE FUNCTION body/bodies (one, or the
+    tempSubtype+tempBasetype pair) that repeat per base type."""
+    groups = []
+    for blk in template_text.strip("\n").split("\n\n"):
+        lines = blk.split("\n")
+        comment = "\n".join(l for l in lines if l.startswith("--"))
+        fns = "\n".join(l for l in lines if not l.startswith("--"))
+        name = next((l.split("(")[0].removeprefix("CREATE FUNCTION ").strip()
+                     for l in lines if l.startswith("CREATE FUNCTION")), "")
+        groups.append((comment, fns, name))
+    return groups
+
+
+def _sub_type(text: str, t: dict) -> str:
+    """Substitute one base type's tokens into a group/fragment body. {VSET} first
+    (it is only present in valueSet), then {BASESET}, then {BASE}, then {TEMP}.
+    {GVSYM} is the getValues C symbol: Temporal_valueset by default, but the value
+    domain of a number is a spanset, so a numeric type overrides it (Tnumber_valuespans)."""
+    return (text.replace("{VSET}", t.get("valueset", ""))
+                .replace("{GVSYM}", t.get("gvsym", "Temporal_valueset"))
+                .replace("{BASESET}", t.get("baseset", ""))
+                .replace("{BASE}", t["base"])
+                .replace("{TEMP}", t["temp"]))
+
+
+def _render_group(comment: str, fns: str, types: list) -> str:
+    """One canonical accessor group emitted for each applicable base type, the
+    lead comment printed once (house style: no blank line between the per-type
+    functions within a group)."""
+    if not types:
+        return ""
+    body = "\n".join(_sub_type(fns, t) for t in types)
+    return (comment + "\n" + body) if comment else body
 
 
 def splice_accessors(filetext: str, family: str, rendered: str) -> str:
