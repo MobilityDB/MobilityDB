@@ -81,6 +81,9 @@ extern char *trgeometry_out(const Temporal *temp);
  *****************************************************************************/
 
 extern TInstant *trgeometryinst_make(const GSERIALIZED *geom, const Pose *pose, TimestampTz t);
+extern TSequence *trgeometryseq_make(const GSERIALIZED *geom, TInstant **instants, int count, bool lower_inc, bool upper_inc, interpType interp, bool normalize);
+extern TSequenceSet *trgeometryseqset_make(const GSERIALIZED *geom, TSequence **sequences, int count, bool normalize);
+extern TSequenceSet *trgeometryseqset_make_gaps(const GSERIALIZED *geom, TInstant **instants, int count, interpType interp, const Interval *maxt, double maxdist);
 extern Temporal *geo_tpose_to_trgeometry(const GSERIALIZED *gs, const Temporal *temp);
 
 /*****************************************************************************

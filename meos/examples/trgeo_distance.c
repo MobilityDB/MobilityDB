@@ -65,8 +65,8 @@
  * (max 64 ships, max 5000 instants per ship). The defaults are 8 ships and
  * 500 instants per ship; both can be overridden on the command line.
  *
- * The program is intentionally short (single C file, only public MEOS API
- * + one extern for `trgeoseq_make`) so that the canonical pipeline
+ * The program is intentionally short (single C file, only public MEOS API)
+ * so that the canonical pipeline
  *
  *      AIS CSV → trgeometry trips → trgeo/trgeo distance → closest approach
  *
@@ -89,12 +89,6 @@
 #include <meos.h>
 #include <meos_geo.h>
 #include <meos_rgeo.h>
-
-/* The trgeometry-specific sequence constructor lives in
- * `meos/include/rgeo/trgeo_seq.h`, which pulls in `postgres.h`. We declare
- * the symbol directly so the tutorial stays in pure MEOS-public-API land. */
-extern TSequence *trgeoseq_make(const GSERIALIZED *geom, TInstant **instants,
-  int count, bool lower_inc, bool upper_inc, interpType interp, bool normalize);
 
 #define CSV_PATH "/home/esteban/src/MobilityDB/meos/examples/data/aisdk-2026-02-26.csv"
 #define MAX_LINE 1024
@@ -326,7 +320,7 @@ main(int argc, char **argv)
     GSERIALIZED *refgeom = geom_in(ref_with_srid, -1);
     /* The trgeometry-specific constructor wires the per-sequence
      * reference-geometry pointer (the generic tsequence_make does not). */
-    trips[i].trgeo = (Temporal *) trgeoseq_make(refgeom, trips[i].insts,
+    trips[i].trgeo = (Temporal *) trgeometryseq_make(refgeom, trips[i].insts,
       trips[i].n_inst, true, true, LINEAR, true);
     free(refgeom);
     fprintf(stderr,

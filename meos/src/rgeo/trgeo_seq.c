@@ -40,6 +40,7 @@
 #include <utils/timestamp.h>
 /* MEOS */
 #include <meos_internal.h>
+#include <meos_rgeo.h>
 #include "temporal/temporal.h"
 #include "temporal/tsequence.h"
 #include "temporal/type_util.h"
@@ -279,7 +280,7 @@ trgeoseq_make_exp(const GSERIALIZED *geom, TInstant **instants,
  * @param[in] normalize True if the resulting value should be normalized
  */
 inline TSequence *
-trgeoseq_make(const GSERIALIZED *geom, TInstant **instants, int count,
+trgeometryseq_make(const GSERIALIZED *geom, TInstant **instants, int count,
   bool lower_inc, bool upper_inc, interpType interp, bool normalize)
 {
   return trgeoseq_make_exp(geom, instants, count, count, lower_inc, upper_inc,
@@ -355,7 +356,7 @@ TSequence *
 trgeoinst_to_tsequence(const TInstant *inst, interpType interp)
 {
   assert(inst);
-  return trgeoseq_make(trgeoinst_geom_p(inst), (TInstant **) &inst, 1, true,
+  return trgeometryseq_make(trgeoinst_geom_p(inst), (TInstant **) &inst, 1, true,
     true, interp, NORMALIZE_NO);
 }
 

@@ -120,7 +120,7 @@ trgeoseq_disc_parse(const char **str, MeosType temptype, int *temp_srid,
   TInstant **instants = palloc(sizeof(TInstant *) * array->count);
   for (int i = 0; i < (int) array->count; i++)
     instants[i] = (TInstant *) meos_array_get(array, i);
-  result = trgeoseq_make(geom, instants, array->count, true, true,
+  result = trgeometryseq_make(geom, instants, array->count, true, true,
     DISCRETE, NORMALIZE_NO);
   pfree(instants);
 
@@ -190,7 +190,7 @@ trgeoseq_cont_parse(const char **str, MeosType temptype, interpType interp,
     instants[i] = (TInstant *) meos_array_get(array, i);
   p_cbracket(str);
   p_cparen(str);
-  result = trgeoseq_make(geom, instants, array->count, lower_inc,
+  result = trgeometryseq_make(geom, instants, array->count, lower_inc,
     upper_inc, interp, NORMALIZE);
   pfree(instants);
 
@@ -240,7 +240,7 @@ trgeoseqset_parse(const char **str, MeosType temptype, interpType interp,
   for (int i = 0; i < (int) array->count; i++)
     sequences[i] = (TSequence *) meos_array_get(array, i);
   p_cbrace(str);
-  result = trgeoseqset_make(geom, sequences, array->count, NORMALIZE);
+  result = trgeometryseqset_make(geom, sequences, array->count, NORMALIZE);
   pfree(sequences);
 
 error:

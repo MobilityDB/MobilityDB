@@ -60,8 +60,6 @@ extern TSequence *trgeoseq_make1(const GSERIALIZED *geom, TInstant **instants,
   int count, bool lower_inc, bool upper_inc, interpType interp, bool normalize);
 extern TSequence *trgeoseq_make_exp(const GSERIALIZED *geom, TInstant **instants,
   int count, int maxcount, bool lower_inc, bool upper_inc, interpType interp, bool normalize);
-extern TSequence *trgeoseq_make(const GSERIALIZED *geom, TInstant **instants,
-  int count, bool lower_inc, bool upper_inc, interpType interp, bool normalize);
 extern TSequence *trgeoseq_make_free_exp(const GSERIALIZED *geom, TInstant **instants,
   int count, int maxcount, bool lower_inc, bool upper_inc, interpType interp, bool normalize);
 extern TSequence *trgeoseq_make_free(const GSERIALIZED *geom, TInstant **instants,
