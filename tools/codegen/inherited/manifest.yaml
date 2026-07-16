@@ -273,13 +273,14 @@ accessor_families:
     # The accessor surface splits into region-in-file blocks. `core` = the
     # T-agnostic run numInstants..segments ({TEMP}-only). `value` = the scalar
     # value run startValue/endValue/valueN/valueAtTimestamp, whose signatures
-    # return the {BASE} value type. `collection` = getValues, returning the
-    # {BASESET} value-collection type. getValue is a value accessor too but sits
-    # isolated above the getValues collection accessor, so it stays hand-written
-    # until its own block lands.
+    # return the {BASE} value type. `getvalue` = the getValue accessor (also
+    # {BASE}), which sits isolated above the getValues collection accessor.
+    # `collection` = getValues, returning the {BASESET} value-collection type.
     blocks:
       - kind:     core
         template: accessors.sql.tmpl
+      - kind:     getvalue
+        template: accessors_getvalue.sql.tmpl
       - kind:     value
         template: accessors_value.sql.tmpl
       - kind:     collection
