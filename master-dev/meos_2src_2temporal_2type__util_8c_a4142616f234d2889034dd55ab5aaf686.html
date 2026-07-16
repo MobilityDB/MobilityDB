@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: stringarr_to_string</title>
+<title>MobilityDB: bstring2bytea</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -79,7 +79,7 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__util_8c_a4142616f234d2889034dd55ab5aaf686.html#a4142616f234d2889034dd55ab5aaf686">bstring2bytea</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2temporal_2type__util_8c_a4142616f234d2889034dd55ab5aaf686.html#a4142616f234d2889034dd55ab5aaf686">bstring2bytea</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__util_8c_a680a596c4c863a39f2381ab47913bb70.html#a680a596c4c863a39f2381ab47913bb70">datum2_eq</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__util_8c_a0e7caa981433bf3bdfa7dd76a6801767.html#a0e7caa981433bf3bdfa7dd76a6801767">datum2_ge</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__util_8c_abce21616c8570c8065e3d790db370516.html#abce21616c8570c8065e3d790db370516">datum2_gt</a></td></tr>
@@ -113,7 +113,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__util_8c_a9c6dbcb3fb25773d04678b0dadca6967.html#a9c6dbcb3fb25773d04678b0dadca6967">spanarr_sort</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__util_8c_a874accea9dc06bd406f1151bde335460.html#a874accea9dc06bd406f1151bde335460">string_escape</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__util_8c_a2bdcb8db4ea736b72c2556178ecb4939.html#a2bdcb8db4ea736b72c2556178ecb4939">string_unescape</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2temporal_2type__util_8c_ac2a339092d36af96458248f85c175566.html#ac2a339092d36af96458248f85c175566">stringarr_to_string</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__util_8c_ac2a339092d36af96458248f85c175566.html#ac2a339092d36af96458248f85c175566">stringarr_to_string</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__util_8c_aa0b147a27234f41c80e2a8aa51116599.html#aa0b147a27234f41c80e2a8aa51116599">timestamptz_sort_cmp</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__util_8c_a5cdfce554fcdb21a0104ab0a0a8726b0.html#a5cdfce554fcdb21a0104ab0a0a8726b0">tinstant_sort_cmp</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__util_8c_affcba7123e3fc93241b0dc7488739a84.html#affcba7123e3fc93241b0dc7488739a84">tinstarr_remove_duplicates</a></td></tr>
@@ -126,53 +126,23 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ac2a339092d36af96458248f85c175566" name="ac2a339092d36af96458248f85c175566"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac2a339092d36af96458248f85c175566">&#9670;&#160;</a></span>stringarr_to_string()</h2>
+<a id="a4142616f234d2889034dd55ab5aaf686" name="a4142616f234d2889034dd55ab5aaf686"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4142616f234d2889034dd55ab5aaf686">&#9670;&#160;</a></span>bstring2bytea()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">char * stringarr_to_string </td>
+          <td class="memname"><a class="el" href="postgres__ext__defs_8in_8h_a2cc5cbcf2c2e5aa357e819fb8390cdb0.html#a2cc5cbcf2c2e5aa357e819fb8390cdb0">bytea</a> * bstring2bytea </td>
           <td>(</td>
-          <td class="paramtype">char **&#160;</td>
-          <td class="paramname"><em>strings</em>, </td>
+          <td class="paramtype">const uint8_t *&#160;</td>
+          <td class="paramname"><em>wkb</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>count</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">char *&#160;</td>
-          <td class="paramname"><em>prefix</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">char&#160;</td>
-          <td class="paramname"><em>open</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">char&#160;</td>
-          <td class="paramname"><em>close</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>quotes</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>spaces</em>&#160;</td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>size</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -182,21 +152,7 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the string resulting from assembling an array of strings. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">strings</td><td>Array of strings to ouput </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">count</td><td>Number of elements in the input array </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">prefix</td><td>Prefix to add to the string (e.g., for interpolation) </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">open,close</td><td>Starting/ending character (e.g., '{' and '}') </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">quotes</td><td>True when elements should be enclosed into quotes </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">spaces</td><td>True when elements should be separated by spaces </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section note"><dt>Note</dt><dd>The function frees the memory of the input strings after finishing. </dd>
-<dd>
-The functin is derived from the PostgreSQL array_out() function </dd></dl>
+<p>Convert a C binary string into a bytea. </p>
 
 </div>
 </div>
