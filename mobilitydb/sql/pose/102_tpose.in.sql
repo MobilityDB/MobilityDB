@@ -287,6 +287,9 @@ CREATE FUNCTION angularSpeed(tpose)
 /******************************************************************************/
 -- Accessors for all temporal types
 
+-- GENERATED-ACCESSORS-BEGIN pose — tools/codegen/inherited/generate.py from templates/accessors.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.yaml (accessor_families) and re-run.
+
 CREATE FUNCTION tempSubtype(tpose)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_subtype'
@@ -444,6 +447,7 @@ CREATE FUNCTION segments(tpose)
   RETURNS tpose[]
   AS 'MODULE_PATHNAME', 'Temporal_segments'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- GENERATED-ACCESSORS-END pose
 
 /******************************************************************************
  * Transformation functions
