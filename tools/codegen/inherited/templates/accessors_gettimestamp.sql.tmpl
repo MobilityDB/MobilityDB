@@ -1,0 +1,5 @@
+-- timestamp is a reserved word in SQL
+CREATE FUNCTION getTimestamp({TEMP})
+  RETURNS timestamptz
+  AS 'MODULE_PATHNAME', 'Tinstant_timestamptz'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

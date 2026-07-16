@@ -257,6 +257,9 @@ CREATE FUNCTION radius(tcbuffer)
 /*****************************************************************************/
 -- Accessors for all temporal types
 
+-- GENERATED-ACCESSORS-HEAD-BEGIN cbuffer — tools/codegen/inherited/generate.py from templates/accessors_head.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.yaml (accessor_families) and re-run.
+
 CREATE FUNCTION tempSubtype(tcbuffer)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_subtype'
@@ -275,6 +278,7 @@ CREATE FUNCTION memSize(tcbuffer)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- GENERATED-ACCESSORS-HEAD-END cbuffer
 
 -- GENERATED-ACCESSORS-GETVALUE-BEGIN cbuffer — tools/codegen/inherited/generate.py from templates/accessors_getvalue.sql.tmpl;
 -- DO NOT EDIT BY HAND; edit the template + manifest.yaml (accessor_families) and re-run.
@@ -286,11 +290,15 @@ CREATE FUNCTION getValue(tcbuffer)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- GENERATED-ACCESSORS-GETVALUE-END cbuffer
 
+-- GENERATED-ACCESSORS-GETTIMESTAMP-BEGIN cbuffer — tools/codegen/inherited/generate.py from templates/accessors_gettimestamp.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.yaml (accessor_families) and re-run.
+
 -- timestamp is a reserved word in SQL
 CREATE FUNCTION getTimestamp(tcbuffer)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'Tinstant_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- GENERATED-ACCESSORS-GETTIMESTAMP-END cbuffer
 
 -- GENERATED-ACCESSORS-COLLECTION-BEGIN cbuffer — tools/codegen/inherited/generate.py from templates/accessors_collection.sql.tmpl;
 -- DO NOT EDIT BY HAND; edit the template + manifest.yaml (accessor_families) and re-run.
@@ -302,11 +310,15 @@ CREATE FUNCTION getValues(tcbuffer)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- GENERATED-ACCESSORS-COLLECTION-END cbuffer
 
+-- GENERATED-ACCESSORS-GETTIME-BEGIN cbuffer — tools/codegen/inherited/generate.py from templates/accessors_gettime.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.yaml (accessor_families) and re-run.
+
 -- time is a reserved word in SQL
 CREATE FUNCTION getTime(tcbuffer)
   RETURNS tstzspanset
   AS 'MODULE_PATHNAME', 'Temporal_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- GENERATED-ACCESSORS-GETTIME-END cbuffer
 
 -- GENERATED-ACCESSORS-VALUE-BEGIN cbuffer — tools/codegen/inherited/generate.py from templates/accessors_value.sql.tmpl;
 -- DO NOT EDIT BY HAND; edit the template + manifest.yaml (accessor_families) and re-run.
@@ -332,6 +344,9 @@ CREATE FUNCTION valueAtTimestamp(tcbuffer, timestamptz)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- GENERATED-ACCESSORS-VALUE-END cbuffer
 
+-- GENERATED-ACCESSORS-BOUNDS-BEGIN cbuffer — tools/codegen/inherited/generate.py from templates/accessors_bounds.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.yaml (accessor_families) and re-run.
+
 CREATE FUNCTION duration(tcbuffer, boundspan boolean DEFAULT FALSE)
   RETURNS interval
   AS 'MODULE_PATHNAME', 'Temporal_duration'
@@ -346,6 +361,7 @@ CREATE FUNCTION upperInc(tcbuffer)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Temporal_upper_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- GENERATED-ACCESSORS-BOUNDS-END cbuffer
 
 -- GENERATED-ACCESSORS-BEGIN cbuffer — tools/codegen/inherited/generate.py from templates/accessors.sql.tmpl;
 -- DO NOT EDIT BY HAND; edit the template + manifest.yaml (accessor_families) and re-run.
