@@ -334,6 +334,61 @@ arcsegm_intersect(double ax, double ay, double rx, double ry, const Edge *e,
   return n;
 }
 
+/**
+ * @brief Return true if two circular arc edges intersect
+ * @details The supporting circles of two arcs meet on their radical line at
+ * `a = (d^2 + r1^2 - r2^2) / (2 d)` from the first centre, at a half-chord
+ * `h = sqrt(r1^2 - a^2)` off the centre line, giving at most two candidate
+ * points; a candidate is a genuine arc intersection only when it lies within
+ * the angular span of both arcs, tested with #arc_contains_angle. Concentric
+ * arcs of equal radius lie on the same circle: they meet iff their angular
+ * spans share an endpoint.
+ */
+static bool
+arcarc_intersect(const Edge *e1, const Edge *e2)
+{
+  double dx = e2->cx - e1->cx, dy = e2->cy - e1->cy;
+  double d = hypot(dx, dy);
+  double r1 = e1->radius, r2 = e2->radius;
+
+  /* Concentric supporting circles */
+  if (d < FP_TOLERANCE)
+  {
+    if (fabs(r1 - r2) > FP_TOLERANCE)
+      return false;
+    /* Same circle: the arcs meet iff their spans share an endpoint angle */
+    return arc_contains_angle(e2, e1->theta0) ||
+      arc_contains_angle(e2, e1->theta1) ||
+      arc_contains_angle(e1, e2->theta0) ||
+      arc_contains_angle(e1, e2->theta1);
+  }
+  /* Circles too far apart or one strictly inside the other */
+  if (d > r1 + r2 + FP_TOLERANCE || d < fabs(r1 - r2) - FP_TOLERANCE)
+    return false;
+
+  double a = (d * d + r1 * r1 - r2 * r2) / (2 * d);
+  double h2 = r1 * r1 - a * a;
+  if (h2 < 0)
+    h2 = 0;
+  double h = sqrt(h2);
+  double ux = dx / d, uy = dy / d;         /* Unit vector from c1 to c2 */
+  double mx = e1->cx + a * ux, my = e1->cy + a * uy; /* Foot on the centre line */
+
+  /* Candidate points m +/- h * perp(u), tested against both arcs' spans */
+  for (int k = 0; k < 2; k++)
+  {
+    double px = mx + (k ? h : -h) * (-uy);
+    double py = my + (k ? h : -h) * ux;
+    if (arc_contains_angle(e1, atan2(py - e1->cy, px - e1->cx)) &&
+        arc_contains_angle(e2, atan2(py - e2->cy, px - e2->cx)))
+      return true;
+    /* A tangency has a single candidate point */
+    if (h < FP_TOLERANCE)
+      break;
+  }
+  return false;
+}
+
 /*****************************************************************************
  * Compute the intervals in [0,1] resulting from the intersection of a
  * trajectory segment and an array of edges obtained from a (collection of)
@@ -1052,6 +1107,10 @@ emit_ring_edges(const POINTARRAY *pa, MeosArray *edges, EdgeType etype)
 static void
 extract_point(const LWPOINT *pt, MeosArray *edges)
 {
+  /* An empty point (e.g. a component of a multipoint or the boundary of a
+   * closed trajectory) has no vertex to read; it contributes no edge. */
+  if (! pt->point || pt->point->npoints < 1)
+    return;
   POINT4D p;
   (void) getPoint4d_p(pt->point, 0, &p);
   Edge e;
@@ -1289,7 +1348,10 @@ extract_curvepoly(const LWCURVEPOLY *cp, MeosArray *edges)
 static void
 geom_extract_edges_iter(const LWGEOM *geom, MeosArray *edges)
 {
-  if (! geom)
+  /* Skip empty (sub-)geometries: an empty component contributes no edges, and
+   * extracting one would read vertex 0 of an empty point array. This covers
+   * empty parts nested inside a multi-geometry or collection too. */
+  if (! geom || lwgeom_is_empty(geom))
     return;
 
   switch (geom->type)
@@ -1442,6 +1504,170 @@ build_edge_rtree(const Edge *edges, int nedges, int32_t srid)
 }
 
 /*****************************************************************************/
+
+/**
+ * @brief Return true if two geometry edges intersect
+ * @details Dispatches on the edge-type pair, reusing the straight-segment
+ * (#linesegm_intersect), segment/arc (#arcsegm_intersect), and arc/arc
+ * (#arcarc_intersect) primitives. A point edge (#EDGE_POINT) has no extent,
+ * so it meets another edge iff it lies on it.
+ */
+static bool
+edge_intersect(const Edge *e1, const Edge *e2)
+{
+  /* Bounding-box reject */
+  if (e1->xmax < e2->xmin - FP_TOLERANCE || e2->xmax < e1->xmin - FP_TOLERANCE ||
+      e1->ymax < e2->ymin - FP_TOLERANCE || e2->ymax < e1->ymin - FP_TOLERANCE)
+    return false;
+
+  bool arc1 = (e1->etype == EDGE_ARC || e1->etype == EDGE_POLYARC);
+  bool arc2 = (e2->etype == EDGE_ARC || e2->etype == EDGE_POLYARC);
+
+  /* A point edge meets another edge only by lying on it */
+  if (e1->etype == EDGE_POINT && e2->etype == EDGE_POINT)
+    return fabs(e1->x1 - e2->x1) < FP_TOLERANCE &&
+      fabs(e1->y1 - e2->y1) < FP_TOLERANCE;
+  if (e1->etype == EDGE_POINT)
+    return arc2 ? point_on_arc(e1->x1, e1->y1, e2) :
+      point_on_segment(e1->x1, e1->y1, e2->x1, e2->y1, e2->x2, e2->y2);
+  if (e2->etype == EDGE_POINT)
+    return arc1 ? point_on_arc(e2->x1, e2->y1, e1) :
+      point_on_segment(e2->x1, e2->y1, e1->x1, e1->y1, e1->x2, e1->y2);
+
+  /* Arc/arc, segment/arc, or segment/segment */
+  if (arc1 && arc2)
+    return arcarc_intersect(e1, e2);
+  if (arc1)
+  {
+    double out[2];
+    return arcsegm_intersect(e2->x1, e2->y1, e2->dx, e2->dy, e1, out) > 0;
+  }
+  if (arc2)
+  {
+    double out[2];
+    return arcsegm_intersect(e1->x1, e1->y1, e1->dx, e1->dy, e2, out) > 0;
+  }
+  IntersectResult r = linesegm_intersect(e1->x1, e1->y1, e1->dx, e1->dy,
+    e2->x1, e2->y1, e2->x2, e2->y2);
+  return r.type != INTERSECT_NONE;
+}
+
+/**
+ * @brief Return true if the edge array contains a polygon (area) edge
+ */
+static bool
+edges_have_area(Edge **edges, int nedges)
+{
+  for (int i = 0; i < nedges; i++)
+    if (edges[i]->etype == EDGE_POLY || edges[i]->etype == EDGE_POLYARC)
+      return true;
+  return false;
+}
+
+/**
+ * @brief Return true if two 2D geometries intersect, computed natively
+ * @details The portable, GEOS-free counterpart of PostGIS `ST_Intersects` for
+ * the geometry types the clip engine extracts into edges: two geometries meet
+ * when a boundary edge of one crosses a boundary edge of the other, or when a
+ * vertex of one lies inside the polygonal interior of the other. Points,
+ * (multi)lines, (multi)polygons with holes, triangles, circular strings,
+ * curve polygons, and collections of these are supported. The candidate edge
+ * pairs are pruned with an R-tree over the second edge set, mirroring
+ * #tpoint_linear_inter_geom.
+ * @pre The arguments have the same SRID
+ */
+bool
+geo_intersects2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
+{
+  assert(gs1); assert(gs2);
+  /* An empty geometry intersects nothing, matching PostGIS ST_Intersects.
+   * Callers such as the touches predicates pass the (possibly empty) boundary
+   * of a geometry or trajectory, so the leaf must tolerate empty input. */
+  if (gserialized_is_empty(gs1) || gserialized_is_empty(gs2))
+    return false;
+  /* Bounding box test */
+  STBox box1, box2;
+  geo_set_stbox(gs1, &box1);
+  geo_set_stbox(gs2, &box2);
+  if (! overlaps_stbox_stbox(&box1, &box2))
+    return false;
+
+  /* Extract the edges of both geometries */
+  LWGEOM *lw1 = lwgeom_from_gserialized(gs1);
+  LWGEOM *lw2 = lwgeom_from_gserialized(gs2);
+  MeosArray *edges1 = geom_extract_edges(lw1);
+  MeosArray *edges2 = geom_extract_edges(lw2);
+  lwgeom_free(lw1); lwgeom_free(lw2);
+  int n1 = (int) edges1->count, n2 = (int) edges2->count;
+  Edge **ptr1 = palloc(sizeof(Edge *) * n1);
+  Edge **ptr2 = palloc(sizeof(Edge *) * n2);
+  for (int i = 0; i < n1; i++)
+    ptr1[i] = (Edge *) meos_array_get(edges1, i);
+  for (int i = 0; i < n2; i++)
+    ptr2[i] = (Edge *) meos_array_get(edges2, i);
+
+  bool result = false;
+
+  /* Build an R-tree over the second edge set when it is large enough to
+   * amortise the construction, mirroring #tpoint_linear_inter_geom */
+  int32_t srid2 = gserialized_get_srid(gs2);
+  RTree *rtree = NULL;
+  Edge **cand = NULL;
+  if (n2 > RTREE_MIN_NUMBER_ELEMS)
+  {
+    rtree = build_edge_rtree(edges2->elems, n2, srid2);
+    cand = palloc(sizeof(Edge *) * n2);
+    rtree_results = meos_array_create(sizeof(int));
+  }
+
+  /* Phase 1: a boundary edge of gs1 crosses a boundary edge of gs2 */
+  for (int i = 0; i < n1 && ! result; i++)
+  {
+    const Edge *e1 = ptr1[i];
+    if (rtree)
+    {
+      STBox query;
+      stbox_set(true, false, false, srid2, e1->xmin, e1->xmax, e1->ymin,
+        e1->ymax, 0, 0, NULL, &query);
+      int nc = rtree_search(rtree, RTREE_OVERLAPS, &query, rtree_results);
+      for (int j = 0; j < nc; j++)
+        cand[j] = ptr2[*(int *) meos_array_get(rtree_results, j)];
+      for (int j = 0; j < nc && ! result; j++)
+        if (edge_intersect(e1, cand[j]))
+          result = true;
+    }
+    else
+    {
+      for (int j = 0; j < n2 && ! result; j++)
+        if (edge_intersect(e1, ptr2[j]))
+          result = true;
+    }
+  }
+
+  /* Phase 2: containment -- a vertex of one geometry inside the other's
+   * polygonal interior (only meaningful when the other has area) */
+  if (! result && edges_have_area(ptr2, n2))
+    for (int i = 0; i < n1 && ! result; i++)
+      if (point_in_polygon(ptr1[i]->x1, ptr1[i]->y1, ptr2, n2))
+        result = true;
+  if (! result && edges_have_area(ptr1, n1))
+    for (int i = 0; i < n2 && ! result; i++)
+      if (point_in_polygon(ptr2[i]->x1, ptr2[i]->y1, ptr1, n1))
+        result = true;
+
+  /* Clean up */
+  if (rtree)
+  {
+    rtree_free(rtree);
+    pfree(cand);
+    meos_array_destroy(rtree_results);
+  }
+  meos_array_destroy(edges1);
+  meos_array_destroy(edges2);
+  pfree(ptr1);
+  pfree(ptr2);
+  return result;
+}
 
 /**
  * @brief Return the temporal intersection/intersects of a temporal  geometric
