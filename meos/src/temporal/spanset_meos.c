@@ -418,6 +418,21 @@ tstzspanset_lower(const SpanSet *ss)
   return TimestampTzGetDatum(ss->elems[0].lower);
 }
 
+/**
+ * @ingroup meos_setspan_accessor
+ * @brief Return the lower bound of a date span set
+ * @param[in] ss Span set
+ * @return On error return DATEVAL_NOEND
+ * @csqlfn #Spanset_lower()
+ */
+DateADT
+datespanset_lower(const SpanSet *ss)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_DATESPANSET(ss, DATEVAL_NOEND);
+  return DatumGetDateADT(ss->elems[0].lower);
+}
+
 /*****************************************************************************/
 
 /**
@@ -478,6 +493,21 @@ tstzspanset_upper(const SpanSet *ss)
   /* Ensure the validity of the arguments */
   VALIDATE_TSTZSPANSET(ss, DT_NOEND);
   return TimestampTzGetDatum(ss->elems[ss->count - 1].upper);
+}
+
+/**
+ * @ingroup meos_setspan_accessor
+ * @brief Return the upper bound of a date span set
+ * @param[in] ss Span set
+ * @return On error return DATEVAL_NOEND
+ * @csqlfn #Spanset_upper()
+ */
+DateADT
+datespanset_upper(const SpanSet *ss)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_DATESPANSET(ss, DATEVAL_NOEND);
+  return DatumGetDateADT(ss->elems[ss->count - 1].upper);
 }
 
 /*****************************************************************************/
