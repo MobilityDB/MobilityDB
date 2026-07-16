@@ -430,6 +430,9 @@ tdistance_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
  * Nearest approach instant (NAI)
  *****************************************************************************/
 
+static bool nai_tcbuffer_geo_analytic(const Temporal *temp,
+  const GSERIALIZED *gs, TimestampTz *result);
+
 /**
  * @ingroup meos_cbuffer_dist
  * @brief Return the nearest approach instant of the temporal circular buffer
@@ -445,10 +448,21 @@ nai_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
   if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
 
+  /* The instant of minimum swept-capsule distance, so the value at the instant
+   * is the nearest-approach distance. We do not build the instant from a
+   * closest point to avoid roundoff errors: the closest point may be at an
+   * exclusive bound. */
+  TimestampTz t;
+  if (nai_tcbuffer_geo_analytic(temp, gs, &t))
+  {
+    Datum value;
+    temporal_value_at_timestamptz(temp, t, false, &value);
+    return tinstant_make_free(value, temp->temptype, t);
+  }
+
+  /* Curved or otherwise unsupported geometry: fall back to the centreline */
   Temporal *tpoint = tcbuffer_to_tgeompoint(temp);
   TInstant *resultgeom = nai_tgeo_geo(tpoint, gs);
-  /* We do not call the function tgeompointinst_tcbufferinst to avoid
-   * roundoff errors. The closest point may be at an exclusive bound. */
   Datum value;
   temporal_value_at_timestamptz(temp, resultgeom->t, false, &value);
   TInstant *result = tinstant_make_free(value, temp->temptype, resultgeom->t);
@@ -1946,6 +1960,218 @@ shortestline_tcbuffer_geo_analytic(const Temporal *temp, const GSERIALIZED *gs)
   GSERIALIZED *line = geo_serialize(lwline_as_lwgeom(ln));
   lwline_free(ln);
   return line;
+}
+
+/*****************************************************************************
+ * GEOS-free analytic nearest approach instant between a temporal circular
+ * buffer and a geometry
+ *
+ * The nearest approach instant is the time attaining the minimum swept-capsule
+ * distance, so it reuses the same per-segment analytic minimum as the
+ * nearest-approach value: each moving-disc unit yields the parametric fraction
+ * where it comes closest to the geometry, and the running witness keeps the
+ * earliest timestamp attaining the overall minimum. Because it minimises the
+ * same disc-to-geometry distance as #nad_tcbuffer_geo_analytic, the value at
+ * the returned instant is exactly the nearest-approach distance (the centreline
+ * delegation instead minimises the centre-to-geometry distance, which differs
+ * when the radius varies).
+ *****************************************************************************/
+
+/**
+ * @brief Running witness for the nearest approach instant: the minimum
+ * swept-capsule distance and the timestamp attaining it
+ */
+typedef struct
+{
+  double d;        /**< signed minimum disc-to-geometry distance (< 0: overlap) */
+  TimestampTz t;   /**< timestamp attaining the minimum */
+  bool set;        /**< whether a candidate has been recorded */
+} NaiWitness;
+
+/**
+ * @brief Update the witness with one swept-capsule unit against the geometry,
+ * pruned by the bucket bounding-volume hierarchy (the centre moves from c1 to
+ * c2 with radius r1 to r2 over the time span t1 to t2; a stationary disc has
+ * c1 == c2 and t1 == t2), mirroring #tcbuffersegm_shortestline
+ */
+static void
+tcbuffersegm_nai(double cx1, double cy1, double r1, TimestampTz t1, double cx2,
+  double cy2, double r2, TimestampTz t2, const TcbufferGeom *g, NaiWitness *w)
+{
+  if (w->set && w->d <= 0.0)
+    return;
+  double sxmin = fmin(cx1 - r1, cx2 - r2);
+  double sxmax = fmax(cx1 + r1, cx2 + r2);
+  double symin = fmin(cy1 - r1, cy2 - r2);
+  double symax = fmax(cy1 + r1, cy2 + r2);
+  /* Coarse branch-and-bound prune: the swept bounding box to geometry bounding
+   * box distance is a lower bound on this unit's nearest approach, so once it
+   * reaches the running witness distance no edge can improve it */
+  if (w->set)
+  {
+    double dgx = fmax(fmax(g->xmin - sxmax, sxmin - g->xmax), 0.0);
+    double dgy = fmax(fmax(g->ymin - symax, symin - g->ymax), 0.0);
+    if (dgx * dgx + dgy * dgy >= w->d * w->d)
+      return;
+  }
+  /* A centre inside a polygon means the swept region overlaps it: the nearest
+   * approach distance is zero, recorded at the earliest inside endpoint */
+  if (g->has_poly)
+  {
+    bool in1 = tcbuffer_geom_point_inside(cx1, cy1, g);
+    bool in2 = (cx2 == cx1 && cy2 == cy1) ? in1 :
+      tcbuffer_geom_point_inside(cx2, cy2, g);
+    if (in1 || in2)
+    {
+      w->d = 0.0; w->t = in1 ? t1 : t2; w->set = true;
+      return;
+    }
+  }
+  /* Bucket bounding-volume hierarchy: skip whole buckets of edges that are
+   * farther than the running witness distance, then the per-edge prune */
+  for (int b = 0; b < g->nbk; b++)
+  {
+    const TcbufferGeomBucket *bk = &g->bks[b];
+    if (w->set)
+    {
+      double dx = fmax(fmax(bk->xmin - sxmax, sxmin - bk->xmax), 0.0);
+      double dy = fmax(fmax(bk->ymin - symax, symin - bk->ymax), 0.0);
+      if (dx * dx + dy * dy >= w->d * w->d)
+        continue;
+    }
+    int elast = bk->start + bk->n;
+    for (int k = bk->start; k < elast; k++)
+    {
+      const TcbufferGeomEdge *e = &g->segs[k];
+      if (w->set)
+      {
+        double dx = fmax(fmax(e->xmin - sxmax, sxmin - e->xmax), 0.0);
+        double dy = fmax(fmax(e->ymin - symax, symin - e->ymax), 0.0);
+        if (dx * dx + dy * dy >= w->d * w->d)
+          continue;
+      }
+      double tf;
+      double m = e->is_arc ?
+        tcbuffersegm_arc_dt(cx1, cy1, cx2, cy2, r1, r2, e, &tf) :
+        tcbuffersegm_edge_dt(cx1, cy1, cx2, cy2, r1, r2, e, &tf);
+      /* Strict improvement keeps the earliest timestamp among equal minima
+       * (the units are visited in time order) */
+      if (! w->set || m < w->d)
+      {
+        if (tf < 0.0) tf = 0.0; else if (tf > 1.0) tf = 1.0;
+        w->d = m;
+        w->t = t1 + (TimestampTz) ((double) (t2 - t1) * tf);
+        w->set = true;
+        /* Overlap: the distance cannot drop below zero, so stop refining */
+        if (m <= 0.0)
+          return;
+      }
+    }
+  }
+}
+
+/**
+ * @brief Update the witness with one temporal circular buffer sequence,
+ * mirroring #tcbufferseq_shortestline
+ */
+static void
+tcbufferseq_nai(const TSequence *seq, const TcbufferGeom *g, NaiWitness *w)
+{
+  bool linear = MEOS_FLAGS_LINEAR_INTERP(seq->flags);
+  if (seq->count == 1 || ! linear)
+  {
+    for (int i = 0; i < seq->count && ! (w->set && w->d <= 0.0); i++)
+    {
+      const TInstant *inst = TSEQUENCE_INST_N(seq, i);
+      const Cbuffer *c = DatumGetCbufferP(tinstant_value_p(inst));
+      const POINT2D *p = GSERIALIZED_POINT2D_P(cbuffer_point_p(c));
+      tcbuffersegm_nai(p->x, p->y, c->radius, inst->t, p->x, p->y, c->radius,
+        inst->t, g, w);
+    }
+    return;
+  }
+  const TInstant *i1 = TSEQUENCE_INST_N(seq, 0);
+  for (int i = 1; i < seq->count && ! (w->set && w->d <= 0.0); i++)
+  {
+    const TInstant *i2 = TSEQUENCE_INST_N(seq, i);
+    const Cbuffer *c1 = DatumGetCbufferP(tinstant_value_p(i1));
+    const Cbuffer *c2 = DatumGetCbufferP(tinstant_value_p(i2));
+    const POINT2D *p1 = GSERIALIZED_POINT2D_P(cbuffer_point_p(c1));
+    const POINT2D *p2 = GSERIALIZED_POINT2D_P(cbuffer_point_p(c2));
+    tcbuffersegm_nai(p1->x, p1->y, c1->radius, i1->t, p2->x, p2->y, c2->radius,
+      i2->t, g, w);
+    i1 = i2;
+  }
+}
+
+/**
+ * @brief GEOS-free nearest approach instant between a temporal circular buffer
+ * and a geometry
+ * @details Returns the timestamp attaining the minimum swept-capsule distance
+ * in @p result. Returns false when the analytic path does not apply (an
+ * unsupported geometry type) so the caller can fall back to the centreline
+ * delegation.
+ */
+static bool
+nai_tcbuffer_geo_analytic(const Temporal *temp, const GSERIALIZED *gs,
+  TimestampTz *result)
+{
+  LWGEOM *lw = lwgeom_from_gserialized(gs);
+  TcbufferGeomEdge *segs = NULL;
+  int cap = 0, n = 0;
+  bool has_poly = false;
+  bool ok = tcbuffer_geom_edges(lw, true, &segs, &cap, &n, &has_poly);
+  lwgeom_free(lw);
+  if (! ok || n == 0)
+  {
+    if (segs) pfree(segs);
+    return false;
+  }
+
+  /* Overall bounding box of the geometry (union of the edge bounding boxes) */
+  double gxmin = DBL_MAX, gymin = DBL_MAX, gxmax = -DBL_MAX, gymax = -DBL_MAX;
+  for (int k = 0; k < n; k++)
+  {
+    if (segs[k].xmin < gxmin) gxmin = segs[k].xmin;
+    if (segs[k].ymin < gymin) gymin = segs[k].ymin;
+    if (segs[k].xmax > gxmax) gxmax = segs[k].xmax;
+    if (segs[k].ymax > gymax) gymax = segs[k].ymax;
+  }
+
+  /* Build the bucket bounding-volume hierarchy over the segments (reorders segs
+   * along a Morton curve) and assemble the geometry context, shared with the
+   * nearest-approach kernel */
+  int nbk = 0;
+  TcbufferGeomBucket *bks = tcbuffer_geom_build_buckets(segs, n, gxmin, gymin,
+    gxmax, gymax, &nbk);
+  TcbufferGeom g = { segs, n, has_poly, gxmin, gymin, gxmax, gymax, bks, nbk,
+    NULL };
+
+  NaiWitness w;
+  w.d = DBL_MAX; w.t = 0; w.set = false;
+  assert(temptype_subtype(temp->subtype));
+  if (temp->subtype == TINSTANT)
+  {
+    const TInstant *inst = (TInstant *) temp;
+    const Cbuffer *c = DatumGetCbufferP(tinstant_value_p(inst));
+    const POINT2D *p = GSERIALIZED_POINT2D_P(cbuffer_point_p(c));
+    tcbuffersegm_nai(p->x, p->y, c->radius, inst->t, p->x, p->y, c->radius,
+      inst->t, &g, &w);
+  }
+  else if (temp->subtype == TSEQUENCE)
+    tcbufferseq_nai((TSequence *) temp, &g, &w);
+  else
+  {
+    const TSequenceSet *ss = (TSequenceSet *) temp;
+    for (int i = 0; i < ss->count && ! (w.set && w.d <= 0.0); i++)
+      tcbufferseq_nai(TSEQUENCESET_SEQ_N(ss, i), &g, &w);
+  }
+  pfree(bks);
+  pfree(segs);
+  if (! w.set)
+    return false;
+  *result = w.t;
+  return true;
 }
 
 /*****************************************************************************
