@@ -13,9 +13,9 @@ set(COMMON_SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/wchar.c
   )
 
-# fe_memutils.c and stringinfo.c duplicate symbols from libpostgres on Windows.
-# Only compile them outside the Windows-extension build.
-if(NOT PGTYPES_EXT_WIN32)
+# fe_memutils.c and stringinfo.c duplicate symbols the backend already exports.
+# Only compile them outside the Windows/macOS extension build.
+if(NOT PGTYPES_EXT_NO_BACKEND_DUPS)
   list(APPEND COMMON_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/fe_memutils.c
     ${CMAKE_CURRENT_SOURCE_DIR}/stringinfo.c

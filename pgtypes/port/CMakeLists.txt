@@ -13,9 +13,9 @@ if(NOT HAS_STRLCPY)
   list(APPEND PORT_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/strlcpy.c)
 endif()
 
-# pgstrcasecmp.c and snprintf.c duplicate symbols from libpostgres on Windows.
-# Only compile them outside the Windows-extension build.
-if(NOT PGTYPES_EXT_WIN32)
+# pgstrcasecmp.c and snprintf.c duplicate symbols the backend already exports.
+# Only compile them outside the Windows/macOS extension build.
+if(NOT PGTYPES_EXT_NO_BACKEND_DUPS)
   list(APPEND PORT_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/pgstrcasecmp.c
     ${CMAKE_CURRENT_SOURCE_DIR}/snprintf.c
