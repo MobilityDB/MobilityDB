@@ -257,7 +257,11 @@ def extract_spatialrels(filetext: str, family: str) -> str:
 
 
 def target_path(behaviour: str, sub: dict, positions: dict) -> pathlib.Path:
-    num = sub["bin"] + positions[behaviour]
+    # The within-50-bin offset defaults to the shared `positions` map (the tight
+    # cbuffer-anchored layout); a family on the tgeo-aligned layout overrides a
+    # behaviour's offset via a per-subtype `positions` map (rgeo: indexes at +23).
+    pos = {**positions, **sub.get("positions", {})}
+    num = sub["bin"] + pos[behaviour]
     # The SQL family directory defaults to the base type name (quadbin, cbuffer),
     # but a family whose directory differs from its base type (h3: dir `h3`, base
     # `h3index`) overrides it with an explicit `fam`.

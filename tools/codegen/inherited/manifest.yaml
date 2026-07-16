@@ -98,8 +98,12 @@ subtypes:
     fam:   rgeo
     stem:  trgeo
     brief: "temporal rigid geometries"
-    bin:   146
+    bin:   150
     category: tspatial
+    # rgeo follows the tgeo-aligned layout, where the combined index file sits at
+    # the gist offset (+23 -> 173) rather than the tight scheme's +16.
+    positions:
+      indexes: 23
     files: [indexes]
 
 # ---------------------------------------------------------------------------
