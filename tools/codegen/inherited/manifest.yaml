@@ -254,3 +254,17 @@ spatialrel_families:
         briefs:
           geo_tgeo:  "a geometry/geography and a temporal geometry are {word} within a distance"
           tgeo_geo:  "a temporal geometry and a geometry/geography are {word} within a distance"
+
+# ---------------------------------------------------------------------------
+# Accessor axis (SQL, per-family, region-in-file). The Temporal<T> accessor
+# surface lives INLINE in each family's type file. The T-agnostic run
+# (numInstants..segments) is pure CREATE FUNCTION wiring to generic Temporal_*
+# symbols whose signatures do not depend on the base value type, so it is
+# {TEMP}-only. The generator emits the region between the GENERATED-ACCESSORS
+# markers in `file`. `reference: true` = self-regen must reproduce the committed
+# region byte-for-byte.
+accessor_families:
+  - family:    cbuffer
+    temp:      tcbuffer
+    file:      mobilitydb/sql/cbuffer/202_tcbuffer.in.sql
+    reference: true
