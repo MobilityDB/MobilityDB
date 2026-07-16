@@ -292,3 +292,9 @@ accessor_families:
     reference: true
     types:
       - {temp: tnpoint, base: npoint, baseset: npointset}
+
+  - family:    pose
+    file:      mobilitydb/sql/pose/102_tpose.in.sql
+    reference: true
+    types:
+      - {temp: tpose, base: pose, baseset: poseset}
