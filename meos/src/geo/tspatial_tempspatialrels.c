@@ -553,7 +553,7 @@ tinterrel_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter)
 
   /* 3D only if both arguments are 3D */
   datum_func2 func = MEOS_FLAGS_GET_Z(temp->flags) && FLAGS_GET_Z(gs->gflags) ?
-      &datum_geom_intersects3d : &datum_geom_intersects2d;
+      &datum_geom_intersects3d : &datum_geo_intersects2d;
   return tinterrel_tspatial_base(temp, PointerGetDatum(gs), tinter, func);
 }
 

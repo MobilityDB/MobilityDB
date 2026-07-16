@@ -47,6 +47,8 @@
 extern Datum datum_geom_contains(Datum geom1, Datum geom2);
 extern Datum datum_geom_covers(Datum geom1, Datum geom2);
 extern Datum datum_geom_disjoint2d(Datum geom1, Datum geom2);
+extern Datum datum_geo_disjoint2d(Datum geom1, Datum geom2);
+extern Datum datum_geo_intersects2d(Datum geom1, Datum geom2);
 extern Datum datum_geom_disjoint3d(Datum geom1, Datum geom2);
 extern Datum datum_geog_disjoint(Datum geog1, Datum geog2);
 extern Datum datum_geom_intersects2d(Datum geom1, Datum geom2);

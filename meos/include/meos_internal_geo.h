@@ -227,6 +227,7 @@ extern TSequenceSet *tgeoseqset_restrict_stbox(const TSequenceSet *ss, const STB
 
 /* Native temporal-point geometry-clip engine */
 
+extern bool geo_intersects2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern Temporal *tpoint_linear_inter_geom(const Temporal *temp, const GSERIALIZED *gs, bool clip);
 extern Temporal *tpoint_linear_dwithin_geom(const Temporal *temp, const GSERIALIZED *gs, double dist);
 extern Temporal *tpoint_linear_distance_geom(const Temporal *temp, const GSERIALIZED *gs);

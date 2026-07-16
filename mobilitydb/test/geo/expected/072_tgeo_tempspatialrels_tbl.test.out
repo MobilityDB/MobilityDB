@@ -105,7 +105,7 @@ SELECT COUNT(*) FROM tbl_tgeometry, tbl_geometry WHERE tIntersects(temp, g) IS N
 SELECT COUNT(*) FROM tbl_tgeometry, tbl_geometry WHERE tIntersects(temp, g) ?= true <> eDisjoint(temp, g);
  count 
 -------
- 13886
+ 13887
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry WHERE tIntersects(g, temp) ?= true <> eIntersects(g, temp);

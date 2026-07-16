@@ -193,13 +193,13 @@ SELECT COUNT(*) FROM tbl_tgeography3D t1, tbl_tgeography3D t2 WHERE aDisjoint(t1
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry WHERE eIntersects(g, temp);
  count 
 -------
-  1606
+  1605
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry, tbl_geometry WHERE eIntersects(temp, g);
  count 
 -------
-  1606
+  1605
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry t2 WHERE eIntersects(t1.temp, t2.temp);

@@ -96,6 +96,17 @@ datum_geom_disjoint2d(Datum geom1, Datum geom2)
 }
 
 /**
+ * @brief Return a Datum true if two geometries are disjoint in 2D, computed
+ * natively without GEOS
+ */
+Datum
+datum_geo_disjoint2d(Datum geom1, Datum geom2)
+{
+  return BoolGetDatum(! geo_intersects2d(DatumGetGserializedP(geom1),
+    DatumGetGserializedP(geom2)));
+}
+
+/**
  * @brief Return a Datum true if two geometries are disjoint in 3D
  */
 Datum
@@ -129,6 +140,17 @@ datum_geom_intersects2d(Datum geom1, Datum geom2)
 {
   return BoolGetDatum(geom_spatialrel(DatumGetGserializedP(geom1),
     DatumGetGserializedP(geom2), INTERSECTS));
+}
+
+/**
+ * @brief Return a Datum true if two geometries intersect in 2D, computed
+ * natively without GEOS
+ */
+Datum
+datum_geo_intersects2d(Datum geom1, Datum geom2)
+{
+  return BoolGetDatum(geo_intersects2d(DatumGetGserializedP(geom1),
+    DatumGetGserializedP(geom2)));
 }
 
 /**
@@ -221,7 +243,7 @@ geo_disjoint_fn(int16 flags1, int16 flags2)
   else
     /* 3D only if both arguments are 3D */
     return MEOS_FLAGS_GET_Z(flags1) && MEOS_FLAGS_GET_Z(flags2) ?
-      &datum_geom_disjoint3d : &datum_geom_disjoint2d;
+      &datum_geom_disjoint3d : &datum_geo_disjoint2d;
 }
 
 /**
@@ -236,7 +258,7 @@ geo_disjoint_fn_geo(int16 flags1, uint8_t flags2)
   else
     /* 3D only if both arguments are 3D */
     return MEOS_FLAGS_GET_Z(flags1) && FLAGS_GET_Z(flags2) ?
-      &datum_geom_disjoint3d : &datum_geom_disjoint2d;
+      &datum_geom_disjoint3d : &datum_geo_disjoint2d;
 }
 
 /**
@@ -251,7 +273,7 @@ geo_intersects_fn(int16 flags1, int16 flags2)
   else
     /* 3D only if both arguments are 3D */
     return MEOS_FLAGS_GET_Z(flags1) && MEOS_FLAGS_GET_Z(flags2) ?
-      &datum_geom_intersects3d : &datum_geom_intersects2d;
+      &datum_geom_intersects3d : &datum_geo_intersects2d;
 }
 
 /**
@@ -266,7 +288,7 @@ geo_intersects_fn_geo(int16 flags1, uint8_t flags2)
   else
     /* 3D only if both arguments are 3D */
     return MEOS_FLAGS_GET_Z(flags1) && FLAGS_GET_Z(flags2) ?
-      &datum_geom_intersects3d : &datum_geom_intersects2d;
+      &datum_geom_intersects3d : &datum_geo_intersects2d;
 }
 
 /**
