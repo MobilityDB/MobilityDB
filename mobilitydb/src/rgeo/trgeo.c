@@ -300,7 +300,7 @@ Trgeometry_seq_constructor(PG_FUNCTION_ARGS)
   ensure_not_empty_array(array);
   int count;
   TInstant **instants = (TInstant **) temparr_extract(array, &count);
-  Temporal *result = (Temporal *) trgeoseq_make(trgeoinst_geom_p(instants[0]),
+  Temporal *result = (Temporal *) trgeometryseq_make(trgeoinst_geom_p(instants[0]),
     instants, count, lower_inc, upper_inc, interp,
     NORMALIZE);
   pfree(instants);
@@ -323,7 +323,7 @@ Trgeometry_seqset_constructor(PG_FUNCTION_ARGS)
   ensure_not_empty_array(array);
   int count;
   TSequence **sequences = (TSequence **) temparr_extract(array, &count);
-  Temporal *result = (Temporal *) trgeoseqset_make(
+  Temporal *result = (Temporal *) trgeometryseqset_make(
     trgeoseq_geom_p(sequences[0]), sequences, count, NORMALIZE);
   pfree(sequences);
   PG_FREE_IF_COPY(array, 0);
@@ -368,7 +368,7 @@ Trgeometry_seqset_constructor_gaps(PG_FUNCTION_ARGS)
   /* Extract the array of instants */
   int count;
   TInstant **instants = (TInstant **) temparr_extract(array, &count);
-  TSequenceSet *result = trgeoseqset_make_gaps(trgeoinst_geom_p(instants[0]),
+  TSequenceSet *result = trgeometryseqset_make_gaps(trgeoinst_geom_p(instants[0]),
     instants, count, interp, maxt, maxdist);
   pfree(instants);
   PG_FREE_IF_COPY(array, 0);
