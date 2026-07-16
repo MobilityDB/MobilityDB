@@ -272,3 +272,10 @@ accessor_families:
     baseset:   cbufferset
     file:      mobilitydb/sql/cbuffer/202_tcbuffer.in.sql
     reference: true
+
+  - family:    npoint
+    temp:      tnpoint
+    base:      npoint
+    baseset:   npointset
+    file:      mobilitydb/sql/npoint/302_tnpoint.in.sql
+    reference: true

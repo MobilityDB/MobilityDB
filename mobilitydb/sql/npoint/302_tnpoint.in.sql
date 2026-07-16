@@ -245,6 +245,29 @@ CREATE FUNCTION merge(tnpoint[])
  * Accessor functions
  ******************************************************************************/
 
+-- Specific accessors for temporal network points
+
+CREATE FUNCTION positions(tnpoint)
+  RETURNS nsegment[]
+  AS 'MODULE_PATHNAME', 'Tnpoint_positions'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION route(tnpoint)
+  RETURNS bigint
+  AS 'MODULE_PATHNAME', 'Tnpoint_route'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION routes(tnpoint)
+  RETURNS bigintset
+  AS 'MODULE_PATHNAME', 'Tnpoint_routes'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************/
+-- Accessors for all temporal types
+
+-- GENERATED-ACCESSORS-BEGIN npoint — tools/codegen/inherited/generate.py from templates/accessors.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.yaml (accessor_families) and re-run.
+
 CREATE FUNCTION tempSubtype(tnpoint)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_subtype'
@@ -270,37 +293,22 @@ CREATE FUNCTION getValue(tnpoint)
   AS 'MODULE_PATHNAME', 'Tinstant_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- timestamp is a reserved word in SQL
+CREATE FUNCTION getTimestamp(tnpoint)
+  RETURNS timestamptz
+  AS 'MODULE_PATHNAME', 'Tinstant_timestamptz'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 -- values is a reserved word in SQL
 CREATE FUNCTION getValues(tnpoint)
   RETURNS npointset
   AS 'MODULE_PATHNAME', 'Temporal_valueset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION positions(tnpoint)
-  RETURNS nsegment[]
-  AS 'MODULE_PATHNAME', 'Tnpoint_positions'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION route(tnpoint)
-  RETURNS bigint
-  AS 'MODULE_PATHNAME', 'Tnpoint_route'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION routes(tnpoint)
-  RETURNS bigintset
-  AS 'MODULE_PATHNAME', 'Tnpoint_routes'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 -- time is a reserved word in SQL
 CREATE FUNCTION getTime(tnpoint)
   RETURNS tstzspanset
   AS 'MODULE_PATHNAME', 'Temporal_time'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
--- timestamp is a reserved word in SQL
-CREATE FUNCTION getTimestamp(tnpoint)
-  RETURNS timestamptz
-  AS 'MODULE_PATHNAME', 'Tinstant_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION startValue(tnpoint)
@@ -316,6 +324,11 @@ CREATE FUNCTION endValue(tnpoint)
 CREATE FUNCTION valueN(tnpoint, int)
   RETURNS npoint
   AS 'MODULE_PATHNAME', 'Temporal_value_n'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION valueAtTimestamp(tnpoint, timestamptz)
+  RETURNS npoint
+  AS 'MODULE_PATHNAME', 'Temporal_value_at_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION duration(tnpoint, boundspan boolean DEFAULT FALSE)
@@ -412,6 +425,7 @@ CREATE FUNCTION segments(tnpoint)
   RETURNS tnpoint[]
   AS 'MODULE_PATHNAME', 'Temporal_segments'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- GENERATED-ACCESSORS-END npoint
 
 /*****************************************************************************
  * Transformation functions
@@ -478,11 +492,6 @@ CREATE FUNCTION atTime(tnpoint, timestamptz)
 CREATE FUNCTION minusTime(tnpoint, timestamptz)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Temporal_minus_timestamptz'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION valueAtTimestamp(tnpoint, timestamptz)
-  RETURNS npoint
-  AS 'MODULE_PATHNAME', 'Temporal_value_at_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION atTime(tnpoint, tstzset)
