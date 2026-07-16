@@ -266,16 +266,29 @@ spatialrel_families:
 # markers in `file`. `reference: true` = self-regen must reproduce the committed
 # region byte-for-byte.
 accessor_families:
+  # The base Temporal<T> file declares the accessor surface for EVERY base type;
+  # `types:` (per-base-type tokens) selects the multi-base-type renderer, which also
+  # emits the TNumber/orderable-only accessors (valueSet/minValue/maxValue/avgValue/
+  # minInstant/maxInstant) gated by the `numeric`/`orderable` flags. baseset = the
+  # getValues return (a spanset for numbers), valueset = the discrete valueSet return.
+  - family:    temporal
+    file:      mobilitydb/sql/temporal/022_temporal.in.sql
+    reference: true
+    types:
+      - {temp: tbool,   base: boolean, baseset: "boolean[]"}
+      - {temp: tint,    base: integer, baseset: intspanset,    valueset: intset,    gvsym: Tnumber_valuespans, numeric: true, orderable: true}
+      - {temp: tbigint, base: bigint,  baseset: bigintspanset, valueset: bigintset, gvsym: Tnumber_valuespans, numeric: true, orderable: true}
+      - {temp: tfloat,  base: float,   baseset: floatspanset,  valueset: floatset,  gvsym: Tnumber_valuespans, numeric: true, orderable: true}
+      - {temp: ttext,   base: text,    baseset: textset,       orderable: true}
+
   - family:    cbuffer
-    temp:      tcbuffer
-    base:      cbuffer
-    baseset:   cbufferset
     file:      mobilitydb/sql/cbuffer/202_tcbuffer.in.sql
     reference: true
+    types:
+      - {temp: tcbuffer, base: cbuffer, baseset: cbufferset}
 
   - family:    npoint
-    temp:      tnpoint
-    base:      npoint
-    baseset:   npointset
     file:      mobilitydb/sql/npoint/302_tnpoint.in.sql
     reference: true
+    types:
+      - {temp: tnpoint, base: npoint, baseset: npointset}
