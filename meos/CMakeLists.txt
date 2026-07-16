@@ -249,13 +249,14 @@ if(POINTCLOUD)
   # block in mobilitydb/CMakeLists.txt. See
   # meos/src/pointcloud/CMakeLists.txt for where libpc.a is located.
   #
-  # libpc.a bundles its own stringbuffer.c (same upstream origin as
-  # PostGIS's liblwgeom/stringbuffer.c, both descend from the same tree
-  # of utility code). That duplication is benign — the two definitions
-  # are near-identical and either one serves correctly — but the linker
-  # rejects it by default. --allow-multiple-definition picks whichever
-  # comes first in link order (here: liblwgeom wins, which is fine
-  # because MEOS only calls the wrapper through that path).
+  # libpc.a and PostGIS's liblwgeom both once defined stringbuffer.c's symbols
+  # (shared upstream origin). That duplication needed a GNU-ld-only
+  # --allow-multiple-definition hack that Apple ld64 rejects; it is now resolved
+  # at the source level (meos/src/pointcloud/CMakeLists.txt drops libpc's
+  # stringbuffer.c and supplies the two symbols PostGIS does not export via
+  # pc_stringbuffer_shim.c), so the link carries one definition of every symbol
+  # and needs no such flag — which is what lets the -DALL build link under Apple
+  # ld64, not just GNU ld.
   target_link_libraries(${MEOS_LIB_NAME}
     pointcloud_libpc)
   # If the pgPointCloud subtree was built --with-lazperf=DIR, the
@@ -264,10 +265,6 @@ if(POINTCLOUD)
   if(EXISTS ${CMAKE_SOURCE_DIR}/pointcloud-pg/lib/liblazperf.a)
     target_link_libraries(${MEOS_LIB_NAME}
       ${CMAKE_SOURCE_DIR}/pointcloud-pg/lib/liblazperf.a stdc++)
-  endif()
-  if(UNIX AND NOT APPLE)
-    target_link_options(${MEOS_LIB_NAME} PRIVATE
-      "LINKER:--allow-multiple-definition")
   endif()
 endif()
 
