@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: tcbufferseq_nad</title>
+<title>MobilityDB: tcbufferseq_nai</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -144,8 +144,8 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_ab658c6b49ba83cfd80b68b0d207ebea3.html#ab658c6b49ba83cfd80b68b0d207ebea3">tcbuffersegm_nad</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_abc27b3e31b1eb4ccd9c48abb277eb8b0.html#abc27b3e31b1eb4ccd9c48abb277eb8b0">tcbuffersegm_nai</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_ae59811031fb34d9149a64854344763e6.html#ae59811031fb34d9149a64854344763e6">tcbuffersegm_shortestline</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a66043425dbe92fdc05210f992f315dd7.html#a66043425dbe92fdc05210f992f315dd7">tcbufferseq_nad</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_add6e4ad2656b9e9b9d7f05820f74c87f.html#add6e4ad2656b9e9b9d7f05820f74c87f">tcbufferseq_nai</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a66043425dbe92fdc05210f992f315dd7.html#a66043425dbe92fdc05210f992f315dd7">tcbufferseq_nad</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_add6e4ad2656b9e9b9d7f05820f74c87f.html#add6e4ad2656b9e9b9d7f05820f74c87f">tcbufferseq_nai</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a943dc5abe7d966df171042490e695e63.html#a943dc5abe7d966df171042490e695e63">tcbufferseq_shortestline</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__cbuffer__dist_gaa71971787eef52a340de2bd2b673655e.html#gaa71971787eef52a340de2bd2b673655e">tdistance_tcbuffer_cbuffer</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__cbuffer__dist_ga671bd076c9e657dfb3195478619b4201.html#ga671bd076c9e657dfb3195478619b4201">tdistance_tcbuffer_geo</a></td></tr>
@@ -154,8 +154,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a66043425dbe92fdc05210f992f315dd7" name="a66043425dbe92fdc05210f992f315dd7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a66043425dbe92fdc05210f992f315dd7">&#9670;&#160;</a></span>tcbufferseq_nad()</h2>
+<a id="add6e4ad2656b9e9b9d7f05820f74c87f" name="add6e4ad2656b9e9b9d7f05820f74c87f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#add6e4ad2656b9e9b9d7f05820f74c87f">&#9670;&#160;</a></span>tcbufferseq_nai()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -164,7 +164,7 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static void tcbufferseq_nad </td>
+          <td class="memname">static void tcbufferseq_nai </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structTSequence.html">TSequence</a> *&#160;</td>
           <td class="paramname"><em>seq</em>, </td>
@@ -178,8 +178,8 @@ $(function() {
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double *&#160;</td>
-          <td class="paramname"><em>best</em>&#160;</td>
+          <td class="paramtype"><a class="el" href="structNaiWitness.html">NaiWitness</a> *&#160;</td>
+          <td class="paramname"><em>w</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -194,7 +194,7 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Update the running minimum with one temporal circular buffer sequence (linear interpolation walks consecutive segments; discrete or step interpolation treats each instant as a stationary disk) </p>
+<p>Update the witness with one temporal circular buffer sequence, mirroring <a class="el" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a943dc5abe7d966df171042490e695e63.html#a943dc5abe7d966df171042490e695e63" title="Update the witness with one temporal circular buffer sequence.">tcbufferseq_shortestline</a>. </p>
 
 </div>
 </div>
