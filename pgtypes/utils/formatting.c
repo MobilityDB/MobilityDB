@@ -6029,7 +6029,7 @@ do { \
 } while (0)
 
 /**
- * @ingroup meos_base_date
+ * @ingroup meos_internal_numeric
  * @brief Convert a text representing a numeric to a numeric
  * @note Derived from PostgreSQL function @p numeric_to_number()
  */
@@ -6068,7 +6068,7 @@ pg_numeric_to_number(text *txt, text *fmt)
 }
 
 /**
- * @ingroup meos_base_date
+ * @ingroup meos_internal_numeric
  * @brief Return a date from the arguments
  * @note Derived from PostgreSQL function @p numeric_to_char()
  */
@@ -6181,7 +6181,7 @@ numeric_to_char(Numeric value, text *fmt)
 }
 
 /**
- * @ingroup meos_base_date
+ * @ingroup meos_internal_int
  * @brief Return a date from the arguments
  * @note Derived from PostgreSQL function @p int4_to_char()
  */
@@ -6267,7 +6267,7 @@ int4_to_char(int32 value, text *fmt)
 }
 
 /**
- * @ingroup meos_base_date
+ * @ingroup meos_internal_bigint
  * @brief Return a date from the arguments
  * @note Derived from PostgreSQL function @p int8_to_char()
  */
@@ -6371,7 +6371,7 @@ int8_to_char(int64 value, text *fmt)
 }
 
 /**
- * @ingroup meos_base_date
+ * @ingroup meos_internal_float4
  * @brief Return a date from the arguments
  * @note Derived from PostgreSQL function @p float4_to_char()
  */
@@ -6483,7 +6483,7 @@ float4_to_char(float4 value, text *fmt)
 }
 
 /**
- * @ingroup meos_base_date
+ * @ingroup meos_internal_float
  * @brief Return a date from the arguments
  * @note Derived from PostgreSQL function @p float8_to_char()
  */

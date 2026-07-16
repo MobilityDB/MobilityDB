@@ -297,7 +297,7 @@ pg_float4in_internal(char *num, char **endptr_p, const char *type_name,
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float4
  * @brief Return a float4 number from its string representation
  * @note Derived from PostgreSQL function @p float4in()
  */
@@ -308,7 +308,7 @@ float4_in(const char *num)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float4
  * @brief Return the string representation of a float4 number
  * @note Derived from PostgreSQL function @p float4out()
  */
@@ -604,7 +604,7 @@ float8out_internal(double num)
 }
 
 /**
- * @ingroup meos_base_types
+ * @ingroup meos_base_float
  * @brief Return the string representation of a float8 number
  * @details This function uses the PostGIS function lwprint_double to print an
  * ordinate value using at most **maxdd** number of decimal digits. The actual 
@@ -631,7 +631,7 @@ float8_out(double num, int maxdd)
  */
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float4
  * @brief Return the absolute value of a float4 number
  * @note Derived from PostgreSQL function @p float8abs()
  */
@@ -642,7 +642,7 @@ float4_abs(float4 num)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float4
  * @brief Return the unary minus of a float4 number
  * @note Derived from PostgreSQL function @p float8um()
  */
@@ -653,7 +653,7 @@ float4_um(float4 num)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float4
  * @brief Return the unary plus of a float4 number
  * @note Derived from PostgreSQL function @p float8up()
  */
@@ -664,7 +664,7 @@ float4_up(float4 num)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float4
  * @brief Return the larger of two float4 numbers
  * @note Derived from PostgreSQL function @p float8larger()
  */
@@ -680,7 +680,7 @@ float4_larger(float4 num1, float4 num2)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float4
  * @brief Return the smaller of two float4 numbers
  * @note Derived from PostgreSQL function @p float8smaller()
  */
@@ -713,7 +713,7 @@ float8_abs(float8 num)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Return the unary minus of a float8 number
  * @note Derived from PostgreSQL function @p float8um()
  */
@@ -724,7 +724,7 @@ float8_um(float8 num)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Return the unary plus a float8 number
  * @note Derived from PostgreSQL function @p float8up()
  */
@@ -735,7 +735,7 @@ float8_up(float8 num)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Return the larger of two float8 numbers
  * @note Derived from PostgreSQL function @p float8larger()
  */
@@ -751,7 +751,7 @@ float8_larger(float8 num1, float8 num2)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Return the smaller of two float8 numbers
  * @note Derived from PostgreSQL function @p float8smaller()
  */
@@ -780,7 +780,7 @@ float8_smaller(float8 num1, float8 num2)
  */
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float4
  * @brief Return the addition of two float4 numbers
  * @note Derived from PostgreSQL function @p float4pl()
  */
@@ -791,7 +791,7 @@ add_float4_float4(float4 num1, float4 num2)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float4
  * @brief Return the subtraction of two float4 numbers
  * @note Derived from PostgreSQL function @p float4mi()
  */
@@ -802,7 +802,7 @@ minus_float4_float4(float4 num1, float4 num2)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float4
  * @brief Return the multiplication of two float4 numbers
  * @note Derived from PostgreSQL function @p float4mul()
  */
@@ -813,7 +813,7 @@ mul_float4_float4(float4 num1, float4 num2)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float4
  * @brief Return the division of two float4 numbers
  * @note Derived from PostgreSQL function @p float4div()
  */
@@ -885,7 +885,7 @@ div_float8_float8(float8 num1, float8 num2)
  */
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float4
  * @brief Return -1, 0, or 1 depending on whether the first float4 number is
  * less than, equal, or greater than the second one
  * @note Derived from PostgreSQL function @p float4_cmp_internal
@@ -908,7 +908,7 @@ pg_float4_cmp(float4 num1, float4 num2)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float4
  * @brief Return true if a float4 number is equal to another one
  * @note Derived from PostgreSQL function @p float4eq()
  */
@@ -919,7 +919,7 @@ eq_float4_float4(float4 num1, float4 num2)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float4
  * @brief Return true if a float4 number is not equal to another one
  * @note Derived from PostgreSQL function @p float4ne()
  */
@@ -930,7 +930,7 @@ ne_float4_float4(float4 num1, float4 num2)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float4
  * @brief Return true if a float4 number is less than another one
  * @note Derived from PostgreSQL function @p float4lt()
  */
@@ -941,7 +941,7 @@ lt_float4_float4(float4 num1, float4 num2)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float4
  * @brief Return true if a float4 number is less than or equal to another one
  * @note Derived from PostgreSQL function @p float4le()
  */
@@ -952,7 +952,7 @@ le_float4_float4(float4 num1, float4 num2)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float4
  * @brief Return true if a float4 number is greater than another one
  * @note Derived from PostgreSQL function @p float4gt()
  */
@@ -963,7 +963,7 @@ gt_float4_float4(float4 num1, float4 num2)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float4
  * @brief Return true if a float4 number is greater than or equal to another one
  * @note Derived from PostgreSQL function @p float4ge()
  */
@@ -1073,7 +1073,7 @@ ge_float8_float8(float8 num1, float8 num2)
  */
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Convert a float4 number into a float8 number
  * @note Derived from PostgreSQL function @p ftod()
  */
@@ -1084,7 +1084,7 @@ float4_to_float8(float4 num)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Convert a float8 number into a float4 number
  * @note Derived from PostgreSQL function @p dtof()
  */
@@ -1108,7 +1108,7 @@ float8_to_float4(float8 num)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_int
  * @brief Convert a float8 number into an int32 number
  * @note Derived from PostgreSQL function @p dtoi4()
  */
@@ -1134,7 +1134,7 @@ float8_to_int32(float8 num)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_int16
  * @brief Convert a float8 number into an int16 number
  * @note Derived from PostgreSQL function @p dtoi2()
  */
@@ -1160,7 +1160,7 @@ float8_to_int16(float8 num)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_int
  * @brief Convert an int32 number into a float8 number
  * @note Derived from PostgreSQL function @p i4tod()
  */
@@ -1171,7 +1171,7 @@ int32_to_float8(int32 num)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_int16
  * @brief Convert an int16 number into a float8 number
  * @note Derived from PostgreSQL function @p i2tod()
  */
@@ -1182,7 +1182,7 @@ int16_to_float8(int16 num)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_int
  * @brief Convert a float4 number into an int32 number
  * @note Derived from PostgreSQL function @p ftoi4()
  */
@@ -1208,7 +1208,7 @@ float4_to_int32(float4 num)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_int16
  * @brief Convert a float4 number into an int16 number
  * @note Derived from PostgreSQL function @p ftoi2()
  */
@@ -1234,7 +1234,7 @@ float4_to_int16(float4 num)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_int
  * @brief Convert an int32 number into a float4 number
  * @note Derived from PostgreSQL function @p i4tof()
  */
@@ -1245,7 +1245,7 @@ int32_to_float4(int32 num)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_int16
  * @brief Convert an int16 number into a float4 number
  * @note Derived from PostgreSQL function @p i2tof()
  */
@@ -1263,7 +1263,7 @@ int16_to_float4(int16 num)
  */
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Round a float8 number to the nearest integer
  * @note PostgreSQL function: @p dround()
  */
@@ -1274,7 +1274,7 @@ float8_rint(float8 num)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Return a float number rounded to a given number of decimal places
  * @note MEOS function
  */
@@ -1320,7 +1320,7 @@ float8_floor(float8 num)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Return -1 if a float8 number is less than 0, 0 if it is equal to 0,
  * and 1 if it is greater than zero
  * @note PostgreSQL function: @p dsign()
@@ -1339,7 +1339,7 @@ float8_sign(float8 num)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Return the truncation-towards-zero of a float8 number
  * @details If num1 >= 0 return the greatest integer less than or equal to num1,
  * if num1 < 0  return the least integer greater than or equal to num1
@@ -1357,7 +1357,7 @@ float8_trunc(float8 num)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Return the square root of a float8 number
  * @note PostgreSQL function: @p dsqrt()
  */
@@ -1388,7 +1388,7 @@ float8_sqrt(float8 num)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Return the cube root of a float8 number
  * @note PostgreSQL function: @p dcbrt()
  */
@@ -1412,7 +1412,7 @@ float8_cbrt(float8 num)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Return the first float8 number powered to the second one
  * @note PostgreSQL function: @p dpow()
  */
@@ -1735,7 +1735,7 @@ float8_log10(float8 num)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Return the arccos of a float8 number (radians)
  * @note PostgreSQL function: @p dacos()
  */
@@ -1768,7 +1768,7 @@ float8_acos(float8 num)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Return the arcsin of a float8 number (radians)
  * @note PostgreSQL function: @p dasin()
  */
@@ -1803,7 +1803,7 @@ float8_asin(float8 num)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Return the arctan of a double (radians)
  * @note PostgreSQL function: @p datan()
  */
@@ -1831,7 +1831,7 @@ float8_atan(float8 num)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Return the arctan of two float8 numbers (radians)
  * @note PostgreSQL function: @p datan2d()
  */
@@ -1904,7 +1904,7 @@ float8_cos(float8 num)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Return the cotangent of a float8 number (radians)
  * @return On error return @p DBL_MAX
  * @note PostgreSQL function: @p dcot()
@@ -2098,7 +2098,7 @@ acosd_q1(double x)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Return the arccos of a float8 number (degrees)
  * @note Derived from PostgreSQL function @p dacosd()
  */
@@ -2139,7 +2139,7 @@ float8_acosd(float8 num)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Return the arcsin of a float8 number (degrees)
  * @note Derived from PostgreSQL function @p dasind()
  */
@@ -2180,7 +2180,7 @@ float8_asind(float8 num)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Return the arctan of a float8 number (degrees)
  * @note Derived from PostgreSQL function @p datand()
  */
@@ -2211,7 +2211,7 @@ float8_atand(float8 num)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Return the arctan of two float8 numbers (degrees)
  * @note Derived from PostgreSQL function @p atan2d()
  */
@@ -2307,7 +2307,7 @@ cosd_q1(double x)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Return the cosine of a float8 number (degrees)
  * @note Derived from PostgreSQL function @p dcosd()
  */
@@ -2364,7 +2364,7 @@ float8_cosd(float8 num)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Return the cotangent of a float8 number (degrees)
  * @note Derived from PostgreSQL function @p dcotd()
  */
@@ -2427,7 +2427,7 @@ float8_cotd(float8 num)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Return the sine of a float8 number (degrees)
  * @note Derived from PostgreSQL function @p dsind()
  */
@@ -2483,7 +2483,7 @@ float8_sind(float8 num)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Return the tangent of a float8 number (degrees)
  * @note Derived from PostgreSQL function @p dtand()
  */
@@ -2552,7 +2552,7 @@ float8_degrees(float8 num)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Return the constant PI
  * @note Derived from PostgreSQL function @p dpi()
  */
@@ -2576,7 +2576,7 @@ float8_radians(float8 num)
 /* ========== HYPERBOLIC FUNCTIONS ========== */
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Return the hyperbolic sine of a float8 number
  * @note Derived from PostgreSQL function @p dsinh()
  */
@@ -2601,7 +2601,7 @@ float8_sinh(float8 num)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Return the hyperbolic cosine of a float8 number
  * @note Derived from PostgreSQL function @p dcosh()
  */
@@ -2626,7 +2626,7 @@ float8_cosh(float8 num)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Return the hyperbolic tangent of a float8 number
  * @note Derived from PostgreSQL function @p dtanh()
  */
@@ -2647,7 +2647,7 @@ float8_tanh(float8 num)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Return the inverse hyperbolic sine of a float8 number
  * @note Derived from PostgreSQL function @p dasinh()
  */
@@ -2662,7 +2662,7 @@ float8_asinh(float8 num)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Return the inverse hyperbolic cosine of a float8 number
  * @note Derived from PostgreSQL function @p dacosh()
  */
@@ -2686,7 +2686,7 @@ float8_acosh(float8 num)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Return the inverse hyperbolic tangent of a float8 number
  * @note Derived from PostgreSQL function @p datanh()
  */
@@ -2723,7 +2723,7 @@ float8_atanh(float8 num)
 /* ========== GAMMA FUNCTIONS ========== */
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Return the gamma function of a float8 number
  * @note Derived from PostgreSQL function @p dgamma()
  */
@@ -2787,7 +2787,7 @@ float8_gamma(float8 num)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Return the natural logarithm of absolute value of gamma of a float8
  * number
  * @note Derived from PostgreSQL function @p dlgamma()
@@ -2832,7 +2832,7 @@ float8_lgamma(float8 num)
  */
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Return the addition of a float4 number and a float8 number
  * @note Derived from PostgreSQL function @p float48pl()
  */
@@ -2843,7 +2843,7 @@ add_float4_float8(float4 num1, float8 num2)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Return the subtraction of a float4 number and a float8 number
  * @note Derived from PostgreSQL function @p float48mi()
  */
@@ -2854,7 +2854,7 @@ minus_float4_float8(float4 num1, float8 num2)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Return the multiplication of a float4 number and a float8 number
  * @note Derived from PostgreSQL function @p float48mul()
  */
@@ -2865,7 +2865,7 @@ mul_float4_float8(float4 num1, float8 num2)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Return the division of a float4 number and a float8 number
  * @note Derived from PostgreSQL function @p float48div()
  */
@@ -2883,7 +2883,7 @@ div_float4_float8(float4 num1, float8 num2)
  */
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Return the addition of a float8 number and a float4 number
  * @note Derived from PostgreSQL function @p float84pl()
  */
@@ -2894,7 +2894,7 @@ add_float8_float4(float8 num1, float4 num2)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Return the subtraction of a float8 number and a float4 number
  * @note Derived from PostgreSQL function @p float84mi()
  */
@@ -2905,7 +2905,7 @@ minus_float8_float4(float8 num1, float4 num2)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Return the multiplication of a float8 number and a float4 number
  * @note Derived from PostgreSQL function @p float84mul()
  */
@@ -2916,7 +2916,7 @@ mul_float8_float4(float8 num1, float4 num2)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Return the division of a float8 number and a float4 number
  * @note Derived from PostgreSQL function @p float84div()
  */
@@ -2937,7 +2937,7 @@ div_float8_float4(float8 num1, float4 num2)
  */
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Return true if a float4 number is equal to a float8 number
  * @note Derived from PostgreSQL function @p float48eq()
  */
@@ -2948,7 +2948,7 @@ eq_float4_float8(float4 num1, float8 num2)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Return true if a float4 number is not equal to a float8 number
  * @note Derived from PostgreSQL function @p float48ne()
  */
@@ -2959,7 +2959,7 @@ ne_float4_float8(float4 num1, float8 num2)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Return true if a float4 number is less than a float8 number
  * @note Derived from PostgreSQL function @p float48lt()
  */
@@ -2970,7 +2970,7 @@ lt_float4_float8(float4 num1, float8 num2)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Return true if a float4 number is less than or equal to a float8
  * number
  * @note Derived from PostgreSQL function @p float48le()
@@ -2982,7 +2982,7 @@ le_float4_float8(float4 num1, float8 num2)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Return true if a float4 number is greater than a float8 number
  * @note Derived from PostgreSQL function @p float48gt()
  */
@@ -2993,7 +2993,7 @@ gt_float4_float8(float4 num1, float8 num2)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Return true if a float4 number is greater than or equal to a float8
  * number
  * @note Derived from PostgreSQL function @p float48ge()
@@ -3009,7 +3009,7 @@ ge_float4_float8(float4 num1, float8 num2)
  */
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Return true if a float8 number is equal to a float4 number
  * @note Derived from PostgreSQL function @p float84eq()
  */
@@ -3020,7 +3020,7 @@ eq_float8_float4(float8 num1, float4 num2)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Return true if a float8 number is not equal to a float4 number
  * @note Derived from PostgreSQL function @p float84ne()
  */
@@ -3031,7 +3031,7 @@ ne_float8_float4(float8 num1, float4 num2)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Return true if a float8 number is less than a float4 number
  * @note Derived from PostgreSQL function @p float84lt()
  */
@@ -3042,7 +3042,7 @@ lt_float8_float4(float8 num1, float4 num2)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Return true if a float8 number is less than or equal to a float4
  * number
  * @note Derived from PostgreSQL function @p float84le()
@@ -3054,7 +3054,7 @@ le_float8_float4(float8 num1, float4 num2)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Return true if a float8 number is greater than a float4 number
  * @note Derived from PostgreSQL function @p float84gt()
  */
@@ -3065,7 +3065,7 @@ gt_float8_float4(float8 num1, float4 num2)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Return true if a float8 number is greater than or equal to a float4
  * number
  * @note Derived from PostgreSQL function @p float84ge()
@@ -3077,7 +3077,7 @@ ge_float8_float4(float8 num1, float4 num2)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float
  * @brief Return the number of the bucket in which a float8 value falls in a
  * histogram having count equal-width buckets spanning the range low to high
  * @details Implements the float8 version of the width_bucket() function

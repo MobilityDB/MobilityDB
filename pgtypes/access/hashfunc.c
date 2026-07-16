@@ -43,7 +43,7 @@
  */
 
 /**
- * @ingroup meos_base_text
+ * @ingroup meos_internal_char
  * @brief Return the 32-bit hash of a character
  * @note Derived from PostgreSQL function @p hashchar()
  */
@@ -55,7 +55,7 @@ char_hash(char c)
 }
 
 /**
- * @ingroup meos_base_text
+ * @ingroup meos_internal_char
  * @brief Return the 64-bit hash of a character using a seed
  * @note Derived from PostgreSQL function @p hashchar()
  */
@@ -66,7 +66,7 @@ char_hash_extended(char c, uint64 seed)
 }
 
 /**
- * @ingroup meos_base_integer
+ * @ingroup meos_internal_int16
  * @brief Return the 32-bit hash of an int16
  * @note Derived from PostgreSQL function @p hashint2()
  */
@@ -77,7 +77,7 @@ int16_hash(int16 val)
 }
 
 /**
- * @ingroup meos_base_integer
+ * @ingroup meos_internal_int16
  * @brief Return the 64-bit hash of an int16 using a seed
  * @note Derived from PostgreSQL function @p hashint2extended()
  */
@@ -88,7 +88,7 @@ int16_hash_extended(int16 val, uint64 seed)
 }
 
 /**
- * @ingroup meos_base_integer
+ * @ingroup meos_base_int
  * @brief Return the 32-bit hash of an int32
  * @note Derived from PostgreSQL function @p hashint4()
  */
@@ -99,7 +99,7 @@ int32_hash(int32 val)
 }
 
 /**
- * @ingroup meos_base_integer
+ * @ingroup meos_base_int
  * @brief Return the 64-bit hash of an int32 using a seed
  * @note Derived from PostgreSQL function @p hashint4extended()
  */
@@ -110,7 +110,7 @@ int32_hash_extended(int32 val, uint64 seed)
 }
 
 /**
- * @ingroup meos_base_integer
+ * @ingroup meos_base_int
  * @brief Return the 32-bit hash of an int64
  * @note Derived from PostgreSQL function @p hashint8()
  */
@@ -132,7 +132,7 @@ int64_hash(int64 val)
 }
 
 /**
- * @ingroup meos_base_integer
+ * @ingroup meos_base_int
  * @brief Return the 64-bit hash of an int64 using a seed
  * @note Derived from PostgreSQL function @p hashint8extended()
  */
@@ -147,7 +147,7 @@ int64_hash_extended(int64 val, uint64 seed)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float4
  * @brief Return the 32-bit hash of a float4
  * @note Derived from PostgreSQL function @p hashfloat4()
  */
@@ -185,7 +185,7 @@ float4_hash(float4 num)
 }
 
 /**
- * @ingroup meos_base_float
+ * @ingroup meos_internal_float4
  * @brief Return the 64-bit hash of a float4 using a seed
  * @note Derived from PostgreSQL function @p hashfloat4extended()
  */

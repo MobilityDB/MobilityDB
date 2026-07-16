@@ -186,7 +186,7 @@ pg_cstring_to_text(const char *str)
 }
 
 /**
- * @ingroup meos_base_text
+ * @ingroup meos_internal_text
  * @brief Convert a text into a C string
  * @param[in] txt Text
  * @note Function taken from PostGIS file @p lwgeom_in_geojson.c
@@ -270,7 +270,7 @@ text_out(const text *txt)
 }
 
 /**
- * @ingroup meos_base_text
+ * @ingroup meos_internal_text
  * @brief Copy a text value
  * @param[in] txt Text
  */
@@ -299,7 +299,7 @@ bytea_copy(const bytea *ba)
 /* ========== PUBLIC ROUTINES ========== */
 
 /**
- * @ingroup meos_base_text
+ * @ingroup meos_internal_text
  * @brief Return the logical length of a text value (which is less than the
  * VARSIZE of the text)
  * @note Derived from PostgreSQL function @p textlen()
@@ -333,7 +333,7 @@ text_length(const text *txt)
 }
 
 /**
- * @ingroup meos_base_text
+ * @ingroup meos_internal_text
  * @brief Return the logical length of a text value (which is less than the
  * VARSIZE of the text)
  * @note Derived from PostgreSQL function @p textoctetlen()
@@ -345,7 +345,7 @@ text_octetlen(const text *txt)
 }
 
 /**
- * @ingroup meos_base_text
+ * @ingroup meos_internal_text
  * @brief Concatenate two text values
  * @note Derived from PostgreSQL function @p textcat()
  */
@@ -679,7 +679,7 @@ text_substring(const text *txt, int32 start, int32 length,
 }
 
 /**
- * @ingroup meos_base_text
+ * @ingroup meos_internal_text
  * @brief Return a substring starting at the specified position
  * @param[in] txt String
  * @param[in] start Starting position (one-based)
@@ -704,7 +704,7 @@ pg_text_substr(const text *txt, int32 start, int32 length)
 }
 
 /**
- * @ingroup meos_base_text
+ * @ingroup meos_internal_text
  * @brief Return a substring starting at the specified position
  * @note Derived from PostgreSQL function @p text_substr_no_len()
  */
@@ -722,7 +722,7 @@ pg_text_substr_no_len(const text *txt, int32 start)
 }
 
 /**
- * @ingroup meos_base_text
+ * @ingroup meos_internal_text
  * @brief Replace a specified substring of the first string with the second one
  * @details The SQL standard defines OVERLAY() in terms of substring and
  * concatenation. This code is a direct implementation of what the standard says.
@@ -759,7 +759,7 @@ text_overlay(const text *txt1, const text *txt2, int from, int count)
 }
 
 /**
- * @ingroup meos_base_text
+ * @ingroup meos_internal_text
  * @brief Replace a specified substring of the first string with the second one
  * @note Derived from PostgreSQL function @p textoverlay_no_len()
  */
@@ -814,7 +814,7 @@ text_position(const text *txt1, const text *txt2, Oid collid)
 }
 
 /**
- * @ingroup meos_base_text
+ * @ingroup meos_internal_text
  * @brief Return the position of the specified substring
  * @brief Implements the SQL POSITION() function.
  * Ref: A Guide To The SQL Standard, Date & Darwen, 1997
@@ -1403,7 +1403,7 @@ pg_text_ge(const text *txt1, const text *txt2)
 }
 
 /**
- * @ingroup meos_base_text
+ * @ingroup meos_internal_text
  * @brief Return true if the first text starts with the second one
  * @note Derived from PostgreSQL function @p text_starts_with()
  */
@@ -1444,7 +1444,7 @@ pg_text_starts_with(const text *txt1, const text *txt2)
 }
 
 /**
- * @ingroup meos_base_text
+ * @ingroup meos_internal_text
  * @brief Return the larger from two texts
  * @note Derived from PostgreSQL function @p text_larger()
  */
@@ -1463,7 +1463,7 @@ pg_text_larger(const text *txt1, const text *txt2)
 }
 
 /**
- * @ingroup meos_base_text
+ * @ingroup meos_internal_text
  * @brief Return the smaller from two texts
  * @note Derived from PostgreSQL function @p text_smaller()
  */
@@ -1589,7 +1589,7 @@ appendStringInfoText(StringInfo str, const text *t)
 }
 
 /**
- * @ingroup meos_base_text
+ * @ingroup meos_internal_text
  * @brief Return all occurrences of 'old_sub_str' in 'orig_str'
  * with 'new_sub_str' to form 'new_str'
  * @details Return 'orig_str' if 'old_sub_str' == '' or 'orig_str' == ''
@@ -1924,7 +1924,7 @@ replace_text_regexp(text *src_text, text *pattern_text, text *replace_text,
 }
 
 /**
- * @ingroup meos_base_text
+ * @ingroup meos_internal_text
  * @brief Split string on delimiter and return the n-th item (1-based), 
  * negative counts from end
  * @note Derived from PostgreSQL function @p split_part()
@@ -2079,7 +2079,7 @@ convert_to_base(uint64 value, int base)
 }
 
 /**
- * @ingroup meos_base_text
+ * @ingroup meos_internal_int
  * @brief Convert an int32 to a string containing a base-2 (binary)
  * representation of the number
  * @note Derived from PostgreSQL function @p to_bin32()
@@ -2092,7 +2092,7 @@ int32_to_bin(int32 num)
 }
 
 /**
- * @ingroup meos_base_text
+ * @ingroup meos_internal_bigint
  * @brief Convert an int64 to a string containing a base-2 (binary)
  * representation of the number
  * @note Derived from PostgreSQL function @p to_bin64()
@@ -2105,7 +2105,7 @@ int64_to_bin(int64 num)
 }
 
 /**
- * @ingroup meos_base_text
+ * @ingroup meos_internal_int
  * @brief Convert an int32 to a string containing a base-8 (oct)
  * representation of the number
  * @note Derived from PostgreSQL function @p to_oct32()
@@ -2118,7 +2118,7 @@ int32_to_oct(int32 num)
 }
 
 /**
- * @ingroup meos_base_text
+ * @ingroup meos_internal_bigint
  * @brief Convert an int64 to a string containing a base-8 (oct) 
  * representation of the number
  * @note Derived from PostgreSQL function @p to_oct64()
@@ -2131,7 +2131,7 @@ int64_to_oct(int64 num)
 }
 
 /**
- * @ingroup meos_base_text
+ * @ingroup meos_internal_int
  * @brief Convert an int32 to a string containing a base-16 (hex) 
  * representation of the number
  * @note Derived from PostgreSQL function @p to_hex32()
@@ -2144,7 +2144,7 @@ int32_to_hex(int32 num)
 }
 
 /**
- * @ingroup meos_base_text
+ * @ingroup meos_internal_bigint
  * @brief Convert an int64 to a string containing a base-16 (hex) 
  * representation of the number
  * @note Derived from PostgreSQL function @p to_hex64()
@@ -2204,7 +2204,7 @@ textarr_to_text(text **textarr, int count, const char *sep,
 }
 
 /**
- * @ingroup meos_base_text
+ * @ingroup meos_internal_text
  * @brief Concatenate all arguments
  * @note Derived from PostgreSQL function @p text_concat()
  */
@@ -2222,7 +2222,7 @@ pg_text_concat(text **textarr, int count)
 }
 
 /**
- * @ingroup meos_base_text
+ * @ingroup meos_internal_text
  * @brief Concatenate all but first argument value with separators. The first
  * parameter is used as the separator.
  * @note Derived from PostgreSQL function @p text_concat_ws()
@@ -2245,7 +2245,7 @@ pg_text_concat_ws(text **textarr, int count, const text *sep)
 }
 
 /**
- * @ingroup meos_base_text
+ * @ingroup meos_internal_text
  * @brief Return the first n characters in the string. When n is negative, 
  * return all but the last |n| characters.
  * @note Derived from PostgreSQL function @p text_left()
@@ -2273,7 +2273,7 @@ pg_text_left(const text *txt, int n)
 }
 
 /**
- * @ingroup meos_base_text
+ * @ingroup meos_internal_text
  * @brief Return  the last n characters in the string. When n is negative,
  * return all but first |n| characters.
  * @note Derived from PostgreSQL function @p text_right()
@@ -2299,7 +2299,7 @@ pg_text_right(const text *txt, int n)
 }
 
 /**
- * @ingroup meos_base_text
+ * @ingroup meos_internal_text
  * @brief Return a text reversed
  * @note Derived from PostgreSQL function @p text_reverse()
  */
@@ -2354,7 +2354,7 @@ pg_text_reverse(const text *txt)
 
 #if 0 /* NOT USED */
 /**
- * @ingroup meos_base_text
+ * @ingroup meos_internal_text
  * @brief Returns a formatted string
  * @note Derived from PostgreSQL function @p text_format()
  */
@@ -2813,7 +2813,7 @@ unicode_norm_form_from_string(const char *formstr)
 }
 
 /**
- * @ingroup meos_base_text
+ * @ingroup meos_internal_text
  * @brief Returns version of Unicode used by Postgres in "major.minor" format 
  * (the same format as the Unicode version reported by ICU)
  * @details The third component ("update version") never involves additions to
@@ -2835,7 +2835,7 @@ pg_unicode_version(void)
 }
 
 /**
- * @ingroup meos_base_text
+ * @ingroup meos_internal_text
  * @brief Returns version of Unicode used by ICU, if enabled; otherwise NULL
  * @note Derived from PostgreSQL function @p icu_unicode_version()
  */
@@ -2857,7 +2857,7 @@ pg_icu_unicode_version(void)
 }
 
 /**
- * @ingroup meos_base_text
+ * @ingroup meos_internal_text
  * @brief Return true if a text contains only assigned Unicode code points
  * @details Requires that the encoding is UTF-8
  * @note Derived from PostgreSQL function @p unicode_assigned()
@@ -2894,7 +2894,7 @@ pg_unicode_assigned(const text *txt)
 }
 
 /**
- * @ingroup meos_base_text
+ * @ingroup meos_internal_text
  * @brief Return a Unicode text normalized
  * @note Derived from PostgreSQL function @p unicode_normalize_func()
  */
@@ -2949,7 +2949,7 @@ pg_unicode_normalize_func(const text *txt, const text *fmt)
 }
 
 /**
- * @ingroup meos_base_text
+ * @ingroup meos_internal_text
  * @brief Return true if a text is in the specified Unicode normalization form
  * @details This is done by converting the string to the specified normal form 
  * and then comparing that to the original string.  To speed that up, we also 
@@ -3047,7 +3047,7 @@ hexval_n(const char *instr, size_t n)
 }
 
 /**
- * @ingroup meos_base_text
+ * @ingroup meos_internal_text
  * @brief Return a text where the Unicode escape sequences are replaced by
  * Unicode characters
  * @note Derived from PostgreSQL function @p unistr()

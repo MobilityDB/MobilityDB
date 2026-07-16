@@ -278,7 +278,7 @@ ge_int32_int64(int32 num1, int64 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return true if an int64 number is equal to an int16 number
  * @note Derived from PostgreSQL function @p int82eq()
  */
@@ -289,7 +289,7 @@ eq_int64_int16(int64 num1, int16 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return true if an int64 number is not equal to an int16 number
  * @note Derived from PostgreSQL function @p int82ne()
  */
@@ -300,7 +300,7 @@ ne_int64_int16(int64 num1, int16 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return true if an int64 number is less than an int16 number
  * @note Derived from PostgreSQL function @p int82lt()
  */
@@ -311,7 +311,7 @@ lt_int64_int16(int64 num1, int16 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return true if an int64 number is greater than an int16 number
  * @note Derived from PostgreSQL function @p int82gt()
  */
@@ -322,7 +322,7 @@ gt_int64_int16(int64 num1, int16 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return true if an int64 number is less than or equal to an int16
  * number
  * @note Derived from PostgreSQL function @p int82le()
@@ -334,7 +334,7 @@ le_int64_int16(int64 num1, int16 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return true if an int64 number is greater than or equal to an int16
  * number
  * @note Derived from PostgreSQL function @p int82ge()
@@ -346,7 +346,7 @@ ge_int64_int16(int64 num1, int16 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return true if an int16 number is equal to an int64 number
  * @note Derived from PostgreSQL function @p int28eq()
  */
@@ -357,7 +357,7 @@ eq_int16_int64(int16 num1, int64 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return true if an int16 number is not equal to an int64 number
  * @note Derived from PostgreSQL function @p int28ne()
  */
@@ -368,7 +368,7 @@ ne_int16_int64(int16 num1, int64 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return true if an int16 number is less than an int64 number
  * @note Derived from PostgreSQL function @p int28lt()
  */
@@ -379,7 +379,7 @@ lt_int16_int64(int16 num1, int64 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return true if an int16 number is greater than an int64 number
  * @note Derived from PostgreSQL function @p int28gt()
  */
@@ -390,7 +390,7 @@ gt_int16_int64(int16 num1, int64 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return true if an int16 number is less than or equal to an int64
  * number
  * @note Derived from PostgreSQL function @p int28le()
@@ -402,7 +402,7 @@ le_int16_int64(int16 num1, int64 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return true if an int16 number is greater than or equal to an int64
  * number
  * @note Derived from PostgreSQL function @p int28ge()
@@ -418,7 +418,7 @@ ge_int16_int64(int16 num1, int64 num2)
  *---------------------------------------------------------*/
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_bigint
  * @brief Return the unary minus of an int64 number
  * @note Derived from PostgreSQL function @p int8um()
  */
@@ -437,7 +437,7 @@ int64_uminus(int64 num)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_bigint
  * @brief Return the unary plus of an int64 number
  * @note Derived from PostgreSQL function @p int8up()
  */
@@ -558,7 +558,7 @@ int64_abs(int64 num)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_bigint
  * @brief Return the modulo of two int64 numbers
  * @note Derived from PostgreSQL function @p int8mod()
  */
@@ -664,7 +664,7 @@ int8gcd_internal(int64 num1, int64 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_bigint
  * @brief Return the greatest common denominator of an int64 number
  * @note Derived from PostgreSQL function @p int8gcd()
  */
@@ -675,7 +675,7 @@ int64_gcd(int64 num1, int64 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_bigint
  * @brief Return the least common multiple of an int64 number
  * @note Derived from PostgreSQL function @p int8lcm()
  */
@@ -719,7 +719,7 @@ int64_lcm(int64 num1, int64 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_bigint
  * @brief Return an int64 number incremented by one
  * @note Derived from PostgreSQL function @p int8inc()
  */
@@ -737,7 +737,7 @@ int64_inc(int64 num)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_bigint
  * @brief Return an int64 number decremented by one
  * @note Derived from PostgreSQL function @p int8dec()
  */
@@ -755,7 +755,7 @@ int64_dec(int64 num)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_bigint
  * @brief Return the larger of two int64 numbers
  * @note Derived from PostgreSQL function @p int8larger()
  */
@@ -766,7 +766,7 @@ int64_larger(int64 num1, int64 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_bigint
  * @brief Return the smaller of two int64 numbers
  * @note Derived from PostgreSQL function @p int8smaller()
  */
@@ -777,7 +777,7 @@ int64_smaller(int64 num1, int64 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int
  * @brief Return the addition of an int64 number and an int32 number
  * @note Derived from PostgreSQL function @p int84pl()
  */
@@ -795,7 +795,7 @@ add_int64_int32(int64 num1, int32 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int
  * @brief Return the subtraction of an int64 number and an int32 number
  * @note Derived from PostgreSQL function @p int84mi()
  */
@@ -813,7 +813,7 @@ minus_int64_int32(int64 num1, int32 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int
  * @brief Return the multiplication of an int64 number and an int32 number
  * @note Derived from PostgreSQL function @p int84mul()
  */
@@ -831,7 +831,7 @@ mul_int64_int32(int64 num1, int32 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int
  * @brief Return the division of an int64 number and an int32 number
  * @note Derived from PostgreSQL function @p int84div()
  */
@@ -869,7 +869,7 @@ div_int64_int32(int64 num1, int32 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int
  * @brief Return the addition of an int32 number and an int64 number
  * @note Derived from PostgreSQL function @p int48pl()
  */
@@ -887,7 +887,7 @@ add_int32_int64(int32 num1, int64 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int
  * @brief Return the subtraction of an int32 number and an int64 number
  * @note Derived from PostgreSQL function @p int48mi()
  */
@@ -905,7 +905,7 @@ minus_int32_int64(int32 num1, int64 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int
  * @brief Return the multiplication of an int32 number and an int64 number
  * @note Derived from PostgreSQL function @p int48mul()
  */
@@ -923,7 +923,7 @@ mul_int32_int64(int32 num1, int64 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int
  * @brief Return the division of an int32 number and an int64 number
  * @note Derived from PostgreSQL function @p int48div()
  */
@@ -942,7 +942,7 @@ div_int32_int64(int32 num1, int64 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return the addition of an int64 number and an int16 number
  * @note Derived from PostgreSQL function @p int82pl()
  */
@@ -960,7 +960,7 @@ add_int64_int16(int64 num1, int16 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return the subtraction of an int64 number and an int16 number
  * @note Derived from PostgreSQL function @p int82mi()
  */
@@ -978,7 +978,7 @@ minus_int64_int16(int64 num1, int16 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return the multiplication of an int64 number and an int16 number
  * @note Derived from PostgreSQL function @p int82mul()
  */
@@ -996,7 +996,7 @@ mul_int64_int16(int64 num1, int16 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return the division of an int64 number and an int16 number
  * @note Derived from PostgreSQL function @p int82div()
  */
@@ -1033,7 +1033,7 @@ div_int64_int16(int64 num1, int16 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return the addition of an int16 number and an int64 number
  * @note Derived from PostgreSQL function @p int28pl()
  */
@@ -1051,7 +1051,7 @@ add_int16_int64(int16 num1, int64 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return the subraction of an int16 number and an int64 number
  * @note Derived from PostgreSQL function @p int28mi()
  */
@@ -1069,7 +1069,7 @@ minus_int16_int64(int16 num1, int64 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return the multiplication of an int16 number and an int64 number
  * @note Derived from PostgreSQL function @p int28mul()
  */
@@ -1087,7 +1087,7 @@ mul_int16_int64(int16 num1, int64 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Return the division of an int16 number and an int64 number
  * @note Derived from PostgreSQL function @p int28div()
  */
@@ -1115,7 +1115,7 @@ div_int16_int64(int16 num1, int64 num2)
  */
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_bigint
  * @brief Return the binary and of two int64 numbers
  * @note Derived from PostgreSQL function @p int8and()
  */
@@ -1126,7 +1126,7 @@ int64_and(int64 num1, int64 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_bigint
  * @brief Return the binary or of two int64 numbers
  * @note Derived from PostgreSQL function @p int8or()
  */
@@ -1137,7 +1137,7 @@ int64_or(int64 num1, int64 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_bigint
  * @brief Return the binary xor of two int64 numbers
  * @note Derived from PostgreSQL function @p int8xor()
  */
@@ -1148,7 +1148,7 @@ int64_xor(int64 num1, int64 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_bigint
  * @brief Return the binary not of an int64 number
  * @note Derived from PostgreSQL function @p int8not()
  */
@@ -1159,7 +1159,7 @@ int64_not(int64 num)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_bigint
  * @brief Return an int64 number shifted to the left by another one
  * @note Derived from PostgreSQL function @p int8shl()
  */
@@ -1170,7 +1170,7 @@ int64_shl(int64 num1, int32 num2)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_bigint
  * @brief Return an int64 number shifted to the right by another one
  * @note Derived from PostgreSQL function @p int8shr()
  */
@@ -1185,7 +1185,7 @@ int64_shr(int64 num1, int32 num2)
  *---------------------------------------------------------*/
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int
  * @brief Convert an int32 number into an int64 number
  * @note Derived from PostgreSQL function @p int48()
  */
@@ -1196,7 +1196,7 @@ int32_to_int64(int32 num)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int
  * @brief Convert an int64 number into an int32 number
  * @note Derived from PostgreSQL function @p int84()
  */
@@ -1213,7 +1213,7 @@ int64_to_int32(int64 num)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Convert a int16 number into an int64 number
  * @note Derived from PostgreSQL function @p int28()
  */
@@ -1224,7 +1224,7 @@ int16_to_int64(int16 num)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_int16
  * @brief Convert an int64 number into an int16 number
  * @note Derived from PostgreSQL function @p int82()
  */
@@ -1241,7 +1241,7 @@ int64_to_int16(int64 num)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_bigint
  * @brief Convert an int64 number into a float4 number
  * @note Derived from PostgreSQL function @p i8tod()
  */
@@ -1253,7 +1253,7 @@ int64_to_float8(int64 num)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_bigint
  * @brief Convert a float8 number into an int64 number
  * @note Derived from PostgreSQL function @p dtoi8()
  */
@@ -1277,7 +1277,7 @@ float8_to_int64(float8 num)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_bigint
  * @brief Convert an int64 number into a float4 number
  * @note Derived from PostgreSQL function @p i8tof()
  */
@@ -1288,7 +1288,7 @@ int64_to_float4(int64 num)
 }
 
 /**
- * @ingroup meos_base_int
+ * @ingroup meos_internal_bigint
  * @brief Convert a float4 number into an int64 number
  * @note Derived from PostgreSQL function @p ftoi8()
  */

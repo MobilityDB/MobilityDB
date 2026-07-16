@@ -531,7 +531,7 @@ static void compute_bucket(Numeric operand, Numeric bound1, Numeric bound2,
 /*****************************************************************************/
 
 /**
- * @ingroup meos_base_numeric
+ * @ingroup meos_internal_numeric
  * @brief Return a numeric value from its string representation
  * @param[in] str String
  * @param[in] typmod Typmod
@@ -711,7 +711,7 @@ invalid_syntax:
 }
 
 /**
- * @ingroup meos_base_numeric
+ * @ingroup meos_internal_numeric
  * @brief Return the string representation a numeric value
  * @note Derived from PostgreSQL function @p numeric_out()
  */
@@ -750,7 +750,7 @@ pg_numeric_out(Numeric num)
 }
 
 /**
- * @ingroup meos_base_numeric
+ * @ingroup meos_internal_numeric
  * @brief Return a copy of a temporal value
  * @param[in] num Temporal value
  */
@@ -989,7 +989,7 @@ numeric_normalize(Numeric num)
 }
 
 /**
- * @ingroup meos_base_numeric
+ * @ingroup meos_internal_numeric
  * @brief Return a numeric value with the given precision and scale
  * @note Derived from PostgreSQL function @p numeric()
  */
@@ -1147,7 +1147,7 @@ pg_numeric_typmodout(int32 typmod)
  */
 
 /**
- * @ingroup meos_base_numeric
+ * @ingroup meos_internal_numeric
  * @brief Return the absolute value of a numeric value
  * @note Derived from PostgreSQL function @p numeric_abs()
  */
@@ -1182,7 +1182,7 @@ pg_numeric_abs(Numeric num)
 }
 
 /**
- * @ingroup meos_base_numeric
+ * @ingroup meos_internal_numeric
  * @brief Return the unary plus of a numeric value
  * @note Derived from PostgreSQL function @p numeric_uplus()
  */
@@ -1200,7 +1200,7 @@ pg_numeric_uplus(Numeric num)
 }
 
 /**
- * @ingroup meos_base_numeric
+ * @ingroup meos_internal_numeric
  * @brief Return the unary minus of a numeric value
  * @note Derived from PostgreSQL function @p numeric_uminus()
  */
@@ -1278,7 +1278,7 @@ numeric_sign_internal(Numeric num)
 }
 
 /**
- * @ingroup meos_base_numeric
+ * @ingroup meos_internal_numeric
  * @brief Return  -1 if the numeric value is less than 0, 0 if it is equal
  * to 0, and 1 if it is greater than zero
  * @note Derived from PostgreSQL function @p numeric_sign()
@@ -1314,7 +1314,7 @@ pg_numeric_sign(Numeric num)
 }
 
 /**
- * @ingroup meos_base_numeric
+ * @ingroup meos_internal_numeric
  * @brief Round a numeric value to have 'scale' digits after the decimal point
  * @details We allow negative 'scale', implying rounding before the decimal
  * point --- Oracle interprets rounding that way.
@@ -1366,7 +1366,7 @@ pg_numeric_round(Numeric num, int32 scale)
 }
 
 /**
- * @ingroup meos_base_numeric
+ * @ingroup meos_internal_numeric
  * @brief Truncate a value to have 'scale' digits after the decimal point
  * @details We allow negative 'scale', implying a truncation before the decimal
  *  point --- Oracle interprets truncation that way
@@ -1409,7 +1409,7 @@ pg_numeric_trunc(Numeric num, int32 scale)
 }
 
 /**
- * @ingroup meos_base_numeric
+ * @ingroup meos_internal_numeric
  * @brief Return the smallest integer greater than or equal to the argument
  * @note Derived from PostgreSQL function @p numeric_ceil()
  */
@@ -1435,7 +1435,7 @@ pg_numeric_ceil(Numeric num)
 }
 
 /**
- * @ingroup meos_base_numeric
+ * @ingroup meos_internal_numeric
  * @brief Return the largest integer equal to or less than a numeric value
  * @note Derived from PostgreSQL function @p numeric_floor()
  */
@@ -1463,7 +1463,7 @@ pg_numeric_floor(Numeric num)
 }
 
 /**
- * @ingroup meos_base_numeric
+ * @ingroup meos_internal_numeric
  * @brief Return the number of the bucket in which a numeric value falls in a
  * histogram having count equal-width buckets spanning the range low to high
  * @details Implements the numeric version of the width_bucket() function
@@ -1626,7 +1626,7 @@ compute_bucket(Numeric operand, Numeric bound1, Numeric bound2,
  */
  
  /**
- * @ingroup meos_base_numeric
+ * @ingroup meos_internal_numeric
  * @brief Return -1, 0, or 1 depending on whether the first numeric value is
  * less than, equal, or greater than the second one
  * @note Derived from PostgreSQL function @p numeric_cmp()
@@ -1645,7 +1645,7 @@ pg_numeric_cmp(Numeric num1, Numeric num2)
 }
 
  /**
- * @ingroup meos_base_numeric
+ * @ingroup meos_internal_numeric
  * @brief Return true if two numeric values are equal
  * @note Derived from PostgreSQL function @p numeric_eq()
  */
@@ -1663,7 +1663,7 @@ pg_numeric_eq(Numeric num1, Numeric num2)
 }
 
  /**
- * @ingroup meos_base_numeric
+ * @ingroup meos_internal_numeric
  * @brief Return true if two numeric values are not equal
  * @note Derived from PostgreSQL function @p numeric_ne()
  */
@@ -1681,7 +1681,7 @@ pg_numeric_ne(Numeric num1, Numeric num2)
 }
 
  /**
- * @ingroup meos_base_numeric
+ * @ingroup meos_internal_numeric
  * @brief Return true if a numeric value is greater than another one
  * @note Derived from PostgreSQL function @p numeric_gt()
  */
@@ -1699,7 +1699,7 @@ pg_numeric_gt(Numeric num1, Numeric num2)
 }
 
  /**
- * @ingroup meos_base_numeric
+ * @ingroup meos_internal_numeric
  * @brief Return true if a numeric value is greater than or equal to another one
  * @note Derived from PostgreSQL function @p numeric_ge()
  */
@@ -1717,7 +1717,7 @@ pg_numeric_ge(Numeric num1, Numeric num2)
 }
 
  /**
- * @ingroup meos_base_numeric
+ * @ingroup meos_internal_numeric
  * @brief Return true if a numeric value is less than another one
  * @note Derived from PostgreSQL function @p numeric_lt()
  */
@@ -1735,7 +1735,7 @@ pg_numeric_lt(Numeric num1, Numeric num2)
 }
 
  /**
- * @ingroup meos_base_numeric
+ * @ingroup meos_internal_numeric
  * @brief Return true if a numeric value is less than or equal to another one
  * @note Derived from PostgreSQL function @p numeric_le()
  */
@@ -1805,7 +1805,7 @@ cmp_numerics(Numeric num1, Numeric num2)
 }
 
 /**
- * @ingroup meos_base_numeric
+ * @ingroup meos_internal_numeric
  * @brief Return the 32-bit hash value of a numeric value
  * @note Derived from PostgreSQL function @p hash_numeric()
  */
@@ -1879,7 +1879,7 @@ numeric_hash(Numeric num)
 }
 
 /**
- * @ingroup meos_base_numeric
+ * @ingroup meos_internal_numeric
  * @brief Return the 64-bit hash value of a numeric value with a seed
  * @note Derived from PostgreSQL function @p hash_numeric_extended()
  */
@@ -1935,7 +1935,7 @@ numeric_hash_extended(Numeric num, uint64 seed)
  */
 
 /**
- * @ingroup meos_base_numeric
+ * @ingroup meos_internal_numeric
  * @brief Return the addition of two numeric values
  * @note Derived from PostgreSQL function @p numeric_add()
  */
@@ -2001,7 +2001,7 @@ numeric_add_opt_error(Numeric num1, Numeric num2, bool *have_error)
 }
 
 /**
- * @ingroup meos_base_numeric
+ * @ingroup meos_internal_numeric
  * @brief Return the subtraction of two numeric values
  * @note Derived from PostgreSQL function @p numeric_sub()
  */
@@ -2067,7 +2067,7 @@ numeric_sub_opt_error(Numeric num1, Numeric num2, bool *have_error)
 }
 
 /**
- * @ingroup meos_base_numeric
+ * @ingroup meos_internal_numeric
  * @brief Return the product of two numeric values
  * @note Derived from PostgreSQL function @p numeric_mul()
  */
@@ -2182,7 +2182,7 @@ numeric_mul_opt_error(Numeric num1, Numeric num2, bool *have_error)
 }
 
 /**
- * @ingroup meos_base_numeric
+ * @ingroup meos_internal_numeric
  * @brief Return the division of one numeric by another
  * @note Derived from PostgreSQL function @p numeric_div()
  */
@@ -2308,7 +2308,7 @@ numeric_div_opt_error(Numeric num1, Numeric num2, bool *have_error)
 }
 
 /**
- * @ingroup meos_base_numeric
+ * @ingroup meos_internal_numeric
  * @brief Return the division of one numeric by another, truncating the result
  * to an integer
  * @note Derived from PostgreSQL function @p numeric_div_trunc()
@@ -2400,7 +2400,7 @@ pg_numeric_div_trunc(Numeric num1, Numeric num2)
 }
 
 /**
- * @ingroup meos_base_numeric
+ * @ingroup meos_internal_numeric
  * @brief Return modulo of two numeric values
  * @note Derived from PostgreSQL function @p numeric_mod()
  */
@@ -2485,7 +2485,7 @@ numeric_mod_opt_error(Numeric num1, Numeric num2, bool *have_error)
 }
 
 /**
- * @ingroup meos_base_numeric
+ * @ingroup meos_internal_numeric
  * @brief Return a numeric value incremented by one
  * @note Derived from PostgreSQL function @p numeric_inc()
  */
@@ -2523,7 +2523,7 @@ pg_numeric_inc(Numeric num)
 }
 
 /**
- * @ingroup meos_base_numeric
+ * @ingroup meos_internal_numeric
  * @brief Return the smaller of two numeric values
  * @note Derived from PostgreSQL function @p numeric_smaller()
  */
@@ -2548,7 +2548,7 @@ pg_numeric_smaller(Numeric num1, Numeric num2)
 }
 
 /**
- * @ingroup meos_base_numeric
+ * @ingroup meos_internal_numeric
  * @brief Return the larger of two numeric values
  * @note Derived from PostgreSQL function @p numeric_larger()
  */
@@ -2580,7 +2580,7 @@ pg_numeric_larger(Numeric num1, Numeric num2)
  */
 
 /**
- * @ingroup meos_base_numeric
+ * @ingroup meos_internal_numeric
  * @brief Return the greatest common divisor of two numeric values
  * @note Derived from PostgreSQL function @p numeric_gcd()
  */
@@ -2627,7 +2627,7 @@ pg_numeric_gcd(Numeric num1, Numeric num2)
 }
 
 /**
- * @ingroup meos_base_numeric
+ * @ingroup meos_internal_numeric
  * @brief Return the least common multiple of two numeric values
  * @note Derived from PostgreSQL function @p numeric_lcm()
  */
@@ -2691,7 +2691,7 @@ pg_numeric_lcm(Numeric num1, Numeric num2)
 }
 
 /**
- * @ingroup meos_base_numeric
+ * @ingroup meos_internal_numeric
  * @brief Return the factorial of a numeric value
  * @note Derived from PostgreSQL function @p numeric_fac()
  */
@@ -2748,7 +2748,7 @@ pg_numeric_fac(int64 num)
 }
 
 /**
- * @ingroup meos_base_numeric
+ * @ingroup meos_internal_numeric
  * @brief Return the square root of a numeric
  * @note Derived from PostgreSQL function @p numeric_sqrt()
  */
@@ -2827,7 +2827,7 @@ pg_numeric_sqrt(Numeric num)
 }
 
 /**
- * @ingroup meos_base_numeric
+ * @ingroup meos_internal_numeric
  * @brief Return e raised to the power of a numeric value
  * @note Derived from PostgreSQL function @p numeric_exp()
  */
@@ -2899,7 +2899,7 @@ pg_numeric_exp(Numeric num)
 }
 
 /**
- * @ingroup meos_base_numeric
+ * @ingroup meos_internal_numeric
  * @brief Return the natural logarithm of a numeric value
  * @note Derived from PostgreSQL function @p numeric_ln()
  */
@@ -2955,7 +2955,7 @@ pg_numeric_ln(Numeric num)
 }
 
 /**
- * @ingroup meos_base_numeric
+ * @ingroup meos_internal_numeric
  * @brief Return the logarithm of x in a given base
  * @note Derived from PostgreSQL function @p numeric_log()
  */
@@ -3035,7 +3035,7 @@ pg_numeric_log(Numeric num1, Numeric num2)
 }
 
 /**
- * @ingroup meos_base_numeric
+ * @ingroup meos_internal_numeric
  * @brief Raise x to the power of y
  * @note Derived from PostgreSQL function @p numeric_power()
  */
@@ -3223,7 +3223,7 @@ numeric_pow(Numeric num1, Numeric num2)
 }
 
 /**
- * @ingroup meos_base_numeric
+ * @ingroup meos_internal_numeric
  * @brief Returns the scale, i.e., the count of decimal digits in the
  * fractional part
  * @note Derived from PostgreSQL function @p numeric_scale()
@@ -3295,7 +3295,7 @@ get_min_scale(NumericVar *var)
 }
 
 /**
- * @ingroup meos_base_numeric
+ * @ingroup meos_internal_numeric
  * @brief Returns minimum scale required to represent the numeric value without loss
  * @note Derived from PostgreSQL function @p numeric_min_scale()
  */
@@ -3323,7 +3323,7 @@ pg_numeric_min_scale(Numeric num)
 }
 
 /**
- * @ingroup meos_base_numeric
+ * @ingroup meos_internal_numeric
  * @brief Reduce scale of numeric value to represent it without loss
  * @note Derived from PostgreSQL function @p numeric_trim_scale()
  */
@@ -3444,7 +3444,7 @@ int64_div_fast_to_numeric(int64 val1, int log10val2)
  */
 
 /**
- * @ingroup meos_base_numeric
+ * @ingroup meos_internal_bigint
  * @brief Transform an int64 number into a numeric value
  * @note Existing PostgreSQL function
  */
@@ -3509,7 +3509,7 @@ pg_numeric_int8_opt_error(Numeric num, bool *have_error)
 }
 
 /**
- * @ingroup meos_base_numeric
+ * @ingroup meos_internal_bigint
  * @brief Transform a numeric value into an int64 number
  * @note Derived from PostgreSQL function @p numeric_int8()
  */
@@ -3520,7 +3520,7 @@ numeric_to_int64(Numeric num)
 }
 
 /**
- * @ingroup meos_base_numeric
+ * @ingroup meos_internal_int
  * @brief Transform an int32 number into a numeric value
  * @note Existing PostgreSQL function
  */
@@ -3598,7 +3598,7 @@ pg_numeric_int4_opt_error(Numeric num, bool *have_error)
 }
 
 /**
- * @ingroup meos_base_numeric
+ * @ingroup meos_internal_int
  * @brief Transform a numeric value into an int32 number
  * @note Derived from PostgreSQL function @p numeric_int4()
  */
@@ -3609,7 +3609,7 @@ numeric_to_int32(Numeric num)
 }
 
 /**
- * @ingroup meos_base_numeric
+ * @ingroup meos_internal_int16
  * @brief Transform an int2 value into a numeric value
  * @note Derived from PostgreSQL function @p numeric_int8()
  */
@@ -3620,7 +3620,7 @@ int16_to_numeric(int16 num)
 }
 
 /**
- * @ingroup meos_base_numeric
+ * @ingroup meos_internal_int16
  * @brief Transform a numeric value into an int2 value
  * @note Derived from PostgreSQL function @p numeric_int2()
  */
@@ -3660,7 +3660,7 @@ numeric_to_int16(Numeric num)
 }
 
 /**
- * @ingroup meos_base_numeric
+ * @ingroup meos_internal_float
  * @brief Transform a float8 value into a numeric value
  * @note Derived from PostgreSQL function @p numeric_float8()
  */
@@ -3692,7 +3692,7 @@ float8_to_numeric(float8 num)
 }
 
 /**
- * @ingroup meos_base_numeric
+ * @ingroup meos_internal_float
  * @brief Transform a numeric value into a float8 value
  * @note Derived from PostgreSQL function @p numeric_float8()
  */
@@ -3742,7 +3742,7 @@ numeric_float8_no_overflow_internal(Numeric num)
 }
 
 /**
- * @ingroup meos_base_numeric
+ * @ingroup meos_internal_float4
  * @brief Transform a float4 value into a numeric value
  * @note Derived from PostgreSQL function @p float4_numeric()
  */
@@ -3772,7 +3772,7 @@ float4_to_numeric(float4 num)
 }
 
 /**
- * @ingroup meos_base_numeric
+ * @ingroup meos_internal_float4
  * @brief Transform a numeric value into a float4 value
  * @note Derived from PostgreSQL function @p numeric_float4()
  */
