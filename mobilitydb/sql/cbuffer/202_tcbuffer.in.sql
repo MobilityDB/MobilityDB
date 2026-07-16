@@ -335,6 +335,9 @@ CREATE FUNCTION upperInc(tcbuffer)
   AS 'MODULE_PATHNAME', 'Temporal_upper_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- GENERATED-ACCESSORS-BEGIN cbuffer — tools/codegen/inherited/generate.py from templates/accessors.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.yaml (accessor_families) and re-run.
+
 CREATE FUNCTION numInstants(tcbuffer)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_num_instants'
@@ -414,6 +417,7 @@ CREATE FUNCTION segments(tcbuffer)
   RETURNS tcbuffer[]
   AS 'MODULE_PATHNAME', 'Temporal_segments'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- GENERATED-ACCESSORS-END cbuffer
 
 /*****************************************************************************
  * Transformation functions

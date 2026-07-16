@@ -256,6 +256,46 @@ def extract_spatialrels(filetext: str, family: str) -> str:
     return filetext[b:e]
 
 
+# --- SQL accessors (per-family, region-in-file) --------------------------
+# The Temporal<T> accessor surface is declared INLINE in each family's type
+# file (052_tgeo, 202_tcbuffer, ...), not a separate numbered file. This region
+# holds the T-agnostic run (numInstants..segments): every wrapper is a pure
+# CREATE FUNCTION over a generic Temporal_* symbol whose signature is independent
+# of the base value type, so the block is {TEMP}-only. The value-shaped accessors
+# (getValue/valueN/getValues/...) interleave above this run and are hand-written
+# outside the markers, as they carry a {BASE}-typed signature.
+def _accessors_markers(family: str):
+    begin = (f"-- GENERATED-ACCESSORS-BEGIN {family} — "
+             "tools/codegen/inherited/generate.py from templates/accessors.sql.tmpl;\n"
+             "-- DO NOT EDIT BY HAND; edit the template + manifest.yaml "
+             "(accessor_families) and re-run.\n")
+    return begin, f"-- GENERATED-ACCESSORS-END {family}\n"
+
+
+def render_accessors(fam: dict) -> str:
+    """Render the T-agnostic accessor region for one family: the template body
+    with {TEMP} substituted, wrapped in the blank lines that separate it from the
+    surrounding markers (leading blank after BEGIN, trailing "\\n" before END).
+    Roundtrips exactly against the committed reference region."""
+    body = (TEMPLATES / "accessors.sql.tmpl").read_text().strip("\n")
+    body = body.replace("{TEMP}", fam["temp"])
+    return "\n" + body + "\n"
+
+
+def splice_accessors(filetext: str, family: str, rendered: str) -> str:
+    begin, end = _accessors_markers(family)
+    b = filetext.index(begin) + len(begin)
+    e = filetext.index(end)
+    return filetext[:b] + rendered + filetext[e:]
+
+
+def extract_accessors(filetext: str, family: str) -> str:
+    begin, end = _accessors_markers(family)
+    b = filetext.index(begin) + len(begin)
+    e = filetext.index(end)
+    return filetext[b:e]
+
+
 def target_path(behaviour: str, sub: dict, positions: dict) -> pathlib.Path:
     # The within-50-bin offset defaults to the shared `positions` map (the tight
     # cbuffer-anchored layout); a family on the tgeo-aligned layout overrides a
@@ -355,6 +395,25 @@ def main() -> int:
                         break
                 if len(g) != len(c):
                     print(f"     line count gen={len(g)} cur={len(c)}")
+        for fam in mf.get("accessor_families", []):
+            if not fam.get("reference"):
+                continue
+            p = ROOT / fam["file"]
+            gen = render_accessors(fam)
+            cur = extract_accessors(p.read_text(), fam["family"]) if p.exists() else ""
+            same = gen == cur
+            ok = ok and same
+            print(f"[{'OK ' if same else 'DIFF'}] self-regen accessors {fam['family']} "
+                  f"-> {pathlib.Path(fam['file'])}")
+            if not same:
+                g, c = gen.splitlines(), cur.splitlines()
+                for n, (a, b) in enumerate(zip(g, c), 1):
+                    if a != b:
+                        print(f"     first diff line {n}:\n       gen: {a!r}\n"
+                              f"       cur: {b!r}")
+                        break
+                if len(g) != len(c):
+                    print(f"     line count gen={len(g)} cur={len(c)}")
         return 0 if ok else 1
 
     for sub in subs:
@@ -389,6 +448,17 @@ def main() -> int:
         p.write_text(splice_spatialrels(p.read_text(), fam["family"],
                                         render_spatialrels(fam)))
         print(f"spliced spatialrels {fam['family']} -> {fam['file']}")
+
+    for fam in mf.get("accessor_families", []):
+        if fam.get("reference"):
+            continue
+        p = ROOT / fam["file"]
+        if args.check:
+            print(f"would splice accessors {fam['family']} -> {fam['file']}")
+            continue
+        p.write_text(splice_accessors(p.read_text(), fam["family"],
+                                      render_accessors(fam)))
+        print(f"spliced accessors {fam['family']} -> {fam['file']}")
     return 0
 
 
