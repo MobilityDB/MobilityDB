@@ -375,9 +375,16 @@ def _sub_type(text: str, t: dict) -> str:
     """Substitute one base type's tokens into a group/fragment body. {VSET} first
     (it is only present in valueSet), then {BASESET}, then {BASE}, then {TEMP}.
     {GVSYM} is the getValues C symbol: Temporal_valueset by default, but the value
-    domain of a number is a spanset, so a numeric type overrides it (Tnumber_valuespans)."""
+    domain of a number is a spanset, so a numeric type overrides it (Tnumber_valuespans).
+    {VALRET}/{VALSYM} are the return type and C-symbol stem of the materialized-value
+    accessors (startValue/endValue/valueN/valueAtTimestamp): {BASE} via Temporal_* by
+    default, but a family whose value is materialized from a companion payload overrides
+    them (trgeometry re-applies the pose to its reference geometry -> geometry via
+    Trgeometry_*), while getValue keeps the raw stored {BASE}."""
     return (text.replace("{VSET}", t.get("valueset", ""))
                 .replace("{GVSYM}", t.get("gvsym", "Temporal_valueset"))
+                .replace("{VALRET}", t.get("valret", t["base"]))
+                .replace("{VALSYM}", t.get("valsym", "Temporal"))
                 .replace("{BASESET}", t.get("baseset", ""))
                 .replace("{BASE}", t["base"])
                 .replace("{TEMP}", t["temp"]))
