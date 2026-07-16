@@ -115,18 +115,17 @@ endif()
 #   * Linux glibc handles this via symbol interposition (RTLD_GLOBAL extension
 #     loading), so we still ship those files there.
 #
-# For the few conflicting functions inside varlena.c / timestamp.c (which also
-# host unique helpers used by MobilityDB), the .c files themselves gate the
-# duplicate bodies with PG_EXT_NO_BACKEND_DUPS.
+# The few conflicting functions inside varlena.c / timestamp.c (which also host
+# unique helpers used by MobilityDB) are instead gated with `#if MEOS`: their
+# clean-named bodies are compiled only into standalone libmeos, and the
+# extension build (MEOS=OFF, all platforms) resolves them against the backend's
+# exported symbols. localtime.c's extension-only meos_ensure_timezone() stub is
+# the one body still keyed on PG_EXT_NO_BACKEND_DUPS.
 if((WIN32 OR APPLE) AND NOT MEOS)
   set(PGTYPES_EXT_NO_BACKEND_DUPS TRUE)
   add_definitions(-DPG_EXT_NO_BACKEND_DUPS=1)
-  # Backwards-compatible aliases (older comments / file names referenced these)
-  set(PGTYPES_EXT_WIN32 TRUE)
-  add_definitions(-DPG_EXT_WIN32_BUILD=1)
 else()
   set(PGTYPES_EXT_NO_BACKEND_DUPS FALSE)
-  set(PGTYPES_EXT_WIN32 FALSE)
 endif()
 
 # Set the location of the directory of the time zone database. macOS may also
