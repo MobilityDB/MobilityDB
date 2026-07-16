@@ -144,13 +144,29 @@ if(POINTCLOUD)
 
   find_package(LibXml2 REQUIRED)
   find_package(ZLIB REQUIRED)
+  # stringbuffer.c is deliberately omitted here — see the pc_stringbuffer_shim.c
+  # note below.
   set(POINTCLOUD_LIBPC_SRCS
     pc_bytes.c pc_dimstats.c pc_filter.c pc_mem.c pc_patch.c
     pc_patch_dimensional.c pc_patch_uncompressed.c pc_patch_lazperf.c
     pc_point.c pc_pointlist.c pc_schema.c pc_sort.c pc_stats.c pc_util.c
-    pc_val.c stringbuffer.c hashtable.c)
+    pc_val.c hashtable.c)
   list(TRANSFORM POINTCLOUD_LIBPC_SRCS
     PREPEND ${CMAKE_SOURCE_DIR}/pointcloud-pg/lib/)
+  # pgPointCloud's stringbuffer.c and PostGIS's liblwgeom/stringbuffer.c descend
+  # from the same upstream utility tree: they define the same stringbuffer
+  # symbols (stringbuffer_aprintf / clear / create / destroy / getstring / …)
+  # over a byte-identical stringbuffer_t layout. Linking both objects duplicates
+  # those symbols — a clash only GNU ld tolerates, via --allow-multiple-definition;
+  # Apple ld64 rejects it outright ("duplicate symbols"), which breaks every
+  # -DALL build on macOS. So libpc drops its stringbuffer.c: PostGIS's copy
+  # resolves the shared symbols (exactly what GNU ld already picks by link
+  # order), and pc_stringbuffer_shim.c supplies the two symbols PostGIS does not
+  # export but libpc needs — stringbuffer_release_string and stringbuffer_append
+  # (PostGIS provides the latter only as a header static-inline). One definition
+  # each, so no linker hack is required on any platform.
+  list(APPEND POINTCLOUD_LIBPC_SRCS
+    ${CMAKE_CURRENT_SOURCE_DIR}/pc_stringbuffer_shim.c)
   add_library(pointcloud_libpc STATIC ${POINTCLOUD_LIBPC_SRCS})
   set_target_properties(pointcloud_libpc PROPERTIES
     POSITION_INDEPENDENT_CODE ON OUTPUT_NAME pc)
