@@ -54,11 +54,1227 @@
 #include "geo/postgis_funcs.h"
 #include "geo/tgeo.h"
 #include "geo/tgeo_spatialfuncs.h"
+#include "geo/stbox.h"
+#include "temporal/temporal_rtree.h"
 
 /* Functions not exported by PostGIS */
 extern double circ_tree_distance_tree_internal(const CIRC_NODE* n1,
   const CIRC_NODE* n2, double threshold, double* min_dist, double* max_dist,
   GEOGRAPHIC_POINT* closest1, GEOGRAPHIC_POINT* closest2);
+
+/*****************************************************************************
+ * GEOS-free analytic distance engine (shared with the tcbuffer family)
+ *
+ * A moving disc (centre c1->c2, radius r1->r2; r may be 0 for a moving
+ * point) is tested against a geometry decomposed into boundary edges. The
+ * nearest-approach kernels (nad/shortestLine/nai) walk a Morton bucket
+ * hierarchy with branch-and-bound; the interior test and relationship
+ * kernels use the generic R-tree. Radii are parameters, so temporal points
+ * (r=0) and temporal circular buffers share one engine.
+ *****************************************************************************/
+
+/**
+ * @brief Minimise f(t) = sqrt(A t^2 + B t + C) - (R0 + DR t) over [lo,hi]
+ * @details Candidates are the interval endpoints and the real roots of the
+ * stationarity equation squared, (A^2 - A DR^2) t^2 + (A B - B DR^2) t +
+ * (B^2/4 - C DR^2) = 0. Spurious roots introduced by squaring only add
+ * larger values, so the minimum over the candidates is exact.
+ */
+static double
+geodist_minfun(double A, double B, double C, double R0, double DR, double lo,
+  double hi)
+{
+  double cand[6];
+  int nc = 0;
+  cand[nc++] = lo;
+  cand[nc++] = hi;
+  double a2 = A * (A - DR * DR);
+  double a1 = B * (A - DR * DR);
+  double a0 = 0.25 * B * B - C * DR * DR;
+  if (fabs(a2) > 1e-18)
+  {
+    double disc = a1 * a1 - 4.0 * a2 * a0;
+    if (disc >= 0.0)
+    {
+      double sd = sqrt(disc);
+      cand[nc++] = (-a1 + sd) / (2.0 * a2);
+      cand[nc++] = (-a1 - sd) / (2.0 * a2);
+    }
+  }
+  else if (fabs(a1) > 1e-18)
+    cand[nc++] = -a0 / a1;
+  /* Vertex of the quadratic under the root. In the perpendicular regime that
+   * quadratic is a perfect square, so the stationarity discriminant above is a
+   * rounding-noise negative and its double root -B/(2A) is dropped; that root
+   * is the instant the moving centre crosses the edge's supporting line (an
+   * exact zero distance, i.e. an overlap), so add it explicitly to never miss
+   * it. */
+  if (fabs(A) > 1e-18)
+    cand[nc++] = -B / (2.0 * A);
+  double best = DBL_MAX;
+  for (int i = 0; i < nc; i++)
+  {
+    double t = cand[i];
+    if (t < lo) t = lo;
+    if (t > hi) t = hi;
+    double q = A * t * t + B * t + C;
+    if (q < 0.0) q = 0.0;
+    double f = sqrt(q) - (R0 + DR * t);
+    if (f < best) best = f;
+  }
+  return best;
+}
+
+/**
+ * @brief Append the segments of a point array to the segment array, growing
+ * it as needed. A single-point array contributes one degenerate segment.
+ */
+static void
+geodist_geom_edges_add_ptarray(const POINTARRAY *pa, bool is_poly, GeoDistEdge **arr,
+  int *cap, int *cnt)
+{
+  if (! pa || pa->npoints == 0)
+    return;
+  uint32_t np = pa->npoints;
+  uint32_t nseg = (np == 1) ? 1 : np - 1;
+  for (uint32_t i = 0; i < nseg; i++)
+  {
+    const POINT2D *a = getPoint2d_cp(pa, i);
+    const POINT2D *b = (np == 1) ? a : getPoint2d_cp(pa, i + 1);
+    if (*cnt == *cap)
+    {
+      int newcap = (*cap == 0) ? 64 : *cap * 2;
+      *arr = (*arr == NULL) ? palloc(sizeof(GeoDistEdge) * newcap) :
+        repalloc(*arr, sizeof(GeoDistEdge) * newcap);
+      *cap = newcap;
+    }
+    GeoDistEdge *s = &(*arr)[(*cnt)++];
+    s->x1 = a->x; s->y1 = a->y; s->x2 = b->x; s->y2 = b->y;
+    s->xmin = fmin(a->x, b->x); s->xmax = fmax(a->x, b->x);
+    s->ymin = fmin(a->y, b->y); s->ymax = fmax(a->y, b->y);
+    s->is_poly = is_poly;
+    s->is_arc = false;
+  }
+}
+
+/**
+ * @brief Normalise an angle to [0, 2*pi)
+ */
+static double
+geodist_angle_norm(double a)
+{
+  double r = fmod(a, 2.0 * M_PI);
+  if (r < 0.0)
+    r += 2.0 * M_PI;
+  return r;
+}
+
+/**
+ * @brief True if the angle @p phi lies within the arc's angular span
+ */
+static bool
+geodist_geom_arc_contains_angle(const GeoDistEdge *e, double phi)
+{
+  double sweep = e->accw ?
+    geodist_angle_norm(e->at1 - e->at0) : geodist_angle_norm(e->at0 - e->at1);
+  double off = e->accw ?
+    geodist_angle_norm(phi - e->at0) : geodist_angle_norm(e->at0 - phi);
+  return off <= sweep + 1e-12;
+}
+
+/**
+ * @brief Set an arc edge's bounding box: the chord endpoints extended with any
+ * cardinal-direction circle extreme (0, pi/2, pi, -pi/2) that lies within the
+ * arc's angular span, so the bucket hierarchy never prunes away the arc bulge
+ */
+static void
+geodist_geom_arc_set_bbox(GeoDistEdge *e)
+{
+  double xmin = fmin(e->x1, e->x2), xmax = fmax(e->x1, e->x2);
+  double ymin = fmin(e->y1, e->y2), ymax = fmax(e->y1, e->y2);
+  const double ang[4] = {0.0, M_PI_2, M_PI, -M_PI_2};
+  const double ex[4] = {e->acx + e->arad, e->acx, e->acx - e->arad, e->acx};
+  const double ey[4] = {e->acy, e->acy + e->arad, e->acy, e->acy - e->arad};
+  for (int k = 0; k < 4; k++)
+    if (geodist_geom_arc_contains_angle(e, ang[k]))
+    {
+      if (ex[k] < xmin) xmin = ex[k];
+      if (ex[k] > xmax) xmax = ex[k];
+      if (ey[k] < ymin) ymin = ey[k];
+      if (ey[k] > ymax) ymax = ey[k];
+    }
+  e->xmin = xmin; e->xmax = xmax; e->ymin = ymin; e->ymax = ymax;
+}
+
+/**
+ * @brief Append one arc edge, defined by three consecutive points of a
+ * circular string (start, any interior point, end), to the segment array.
+ * Collinear triples degenerate to two straight segments. Mirrors the exact
+ * circumcentre construction of the native clip engine (@ref tpoint_geom_clip.c).
+ */
+static void
+geodist_segs_add_arc(double ax, double ay, double bx, double by, double cx,
+  double cy, bool is_poly, GeoDistEdge **arr, int *cap, int *cnt)
+{
+  if (*cnt + 2 > *cap)
+  {
+    int newcap = (*cap == 0) ? 64 : *cap * 2;
+    while (*cnt + 2 > newcap)
+      newcap *= 2;
+    *arr = (*arr == NULL) ? palloc(sizeof(GeoDistEdge) * newcap) :
+      repalloc(*arr, sizeof(GeoDistEdge) * newcap);
+    *cap = newcap;
+  }
+  /* Twice the signed area of triangle ABC; zero => collinear */
+  double d = 2.0 * (ax * (by - cy) + bx * (cy - ay) + cx * (ay - by));
+  if (fabs(d) < 1e-12)
+  {
+    /* Collinear: two straight segments A->B, B->C */
+    for (int seg = 0; seg < 2; seg++)
+    {
+      double p1x = seg == 0 ? ax : bx, p1y = seg == 0 ? ay : by;
+      double p2x = seg == 0 ? bx : cx, p2y = seg == 0 ? by : cy;
+      GeoDistEdge *s = &(*arr)[(*cnt)++];
+      s->x1 = p1x; s->y1 = p1y; s->x2 = p2x; s->y2 = p2y;
+      s->xmin = fmin(p1x, p2x); s->xmax = fmax(p1x, p2x);
+      s->ymin = fmin(p1y, p2y); s->ymax = fmax(p1y, p2y);
+      s->is_poly = is_poly; s->is_arc = false;
+    }
+    return;
+  }
+  double a2 = ax * ax + ay * ay, b2 = bx * bx + by * by, c2 = cx * cx + cy * cy;
+  GeoDistEdge *s = &(*arr)[(*cnt)++];
+  s->acx = (a2 * (by - cy) + b2 * (cy - ay) + c2 * (ay - by)) / d;
+  s->acy = (a2 * (cx - bx) + b2 * (ax - cx) + c2 * (bx - ax)) / d;
+  s->arad = hypot(ax - s->acx, ay - s->acy);
+  s->x1 = ax; s->y1 = ay; s->x2 = cx; s->y2 = cy;
+  s->at0 = atan2(ay - s->acy, ax - s->acx);
+  s->at1 = atan2(cy - s->acy, cx - s->acx);
+  s->accw = ((bx - ax) * (cy - ay) - (by - ay) * (cx - ax)) > 0.0;
+  s->is_poly = is_poly; s->is_arc = true;
+  geodist_geom_arc_set_bbox(s);
+}
+
+/**
+ * @brief Append the arc edges of a circular string (walked in three-point
+ * groups) to the segment array
+ */
+static void
+geodist_segs_add_circstring(const LWCIRCSTRING *circ, bool is_poly,
+  GeoDistEdge **arr, int *cap, int *cnt)
+{
+  const POINTARRAY *pa = circ->points;
+  int np = (int) pa->npoints;
+  for (int i = 0; i + 2 < np; i += 2)
+  {
+    const POINT2D *a = getPoint2d_cp(pa, i);
+    const POINT2D *b = getPoint2d_cp(pa, i + 1);
+    const POINT2D *c = getPoint2d_cp(pa, i + 2);
+    geodist_segs_add_arc(a->x, a->y, b->x, b->y, c->x, c->y, is_poly, arr, cap,
+      cnt);
+  }
+}
+
+/**
+ * @brief Append the boundary segments of a curve polygon ring (a line string,
+ * a circular string, or a compound curve chaining both) with polygon (region)
+ * semantics. Returns false when an arc ring is present but the caller does not
+ * consume arc edges (@p allow_arc is false), so the exact path is used.
+ */
+static bool
+geodist_segs_add_curvepoly_ring(const LWGEOM *ring, bool allow_arc,
+  GeoDistEdge **arr, int *cap, int *cnt)
+{
+  switch (ring->type)
+  {
+    case LINETYPE:
+      geodist_geom_edges_add_ptarray(lwgeom_as_lwline(ring)->points, true, arr, cap,
+        cnt);
+      return true;
+    case CIRCSTRINGTYPE:
+      if (! allow_arc)
+        return false;
+      geodist_segs_add_circstring(lwgeom_as_lwcircstring(ring), true, arr, cap,
+        cnt);
+      return true;
+    case COMPOUNDTYPE:
+    {
+      const LWCOLLECTION *c = lwgeom_as_lwcollection(ring);
+      for (uint32_t i = 0; i < c->ngeoms; i++)
+        if (! geodist_segs_add_curvepoly_ring(c->geoms[i], allow_arc, arr, cap,
+              cnt))
+          return false;
+      return true;
+    }
+    default:
+      return false;
+  }
+}
+
+/**
+ * @brief Recursively collect the boundary segments of a geometry. Returns
+ * false for a curved type that cannot be decomposed exactly (the caller
+ * then falls back to the exact traversed-area path).
+ */
+bool
+geodist_geom_edges(const LWGEOM *lw, bool allow_arc, GeoDistEdge **arr, int *cap,
+  int *cnt, bool *has_poly)
+{
+  switch (lw->type)
+  {
+    case POINTTYPE:
+      geodist_geom_edges_add_ptarray(lwgeom_as_lwpoint(lw)->point, false, arr, cap,
+        cnt);
+      return true;
+    case CIRCSTRINGTYPE:
+      /* Arc-exact decomposition, only where the caller consumes arc edges (the
+       * nearest-approach distance). Otherwise fall back to the exact path. */
+      if (! allow_arc)
+        return false;
+      geodist_segs_add_circstring(lwgeom_as_lwcircstring(lw), false, arr, cap,
+        cnt);
+      return true;
+    case LINETYPE:
+      geodist_geom_edges_add_ptarray(lwgeom_as_lwline(lw)->points, false, arr, cap,
+        cnt);
+      return true;
+    case TRIANGLETYPE:
+      geodist_geom_edges_add_ptarray(lwgeom_as_lwtriangle(lw)->points, true, arr,
+        cap, cnt);
+      *has_poly = true;
+      return true;
+    case POLYGONTYPE:
+    {
+      const LWPOLY *p = lwgeom_as_lwpoly(lw);
+      for (uint32_t i = 0; i < p->nrings; i++)
+        geodist_geom_edges_add_ptarray(p->rings[i], true, arr, cap, cnt);
+      if (p->nrings > 0)
+        *has_poly = true;
+      return true;
+    }
+    case CURVEPOLYTYPE:
+    {
+      /* A curve polygon is bounded by rings that are line strings, circular
+       * strings, or compound curves. Decompose each ring with polygon (region)
+       * semantics so the arc-aware even-odd test in #geodist_geom_point_inside
+       * treats it as a boundary. */
+      const LWCURVEPOLY *cp = lwgeom_as_lwcurvepoly(lw);
+      for (uint32_t i = 0; i < cp->nrings; i++)
+        if (! geodist_segs_add_curvepoly_ring(cp->rings[i], allow_arc, arr,
+              cap, cnt))
+          return false;
+      if (cp->nrings > 0)
+        *has_poly = true;
+      return true;
+    }
+    case MULTIPOINTTYPE:
+    case MULTILINETYPE:
+    case MULTIPOLYGONTYPE:
+    /* A compound curve chains line strings and circular strings, a multi curve
+     * groups line/circular/compound components, and a multi surface groups
+     * curve polygons; all share the collection memory layout, so their
+     * components are decomposed recursively. Circular-arc components resolve
+     * through the CIRCSTRINGTYPE / CURVEPOLYTYPE cases, which gate on
+     * @p allow_arc. */
+    case COMPOUNDTYPE:
+    case MULTICURVETYPE:
+    case MULTISURFACETYPE:
+    case COLLECTIONTYPE:
+    {
+      const LWCOLLECTION *c = lwgeom_as_lwcollection(lw);
+      for (uint32_t i = 0; i < c->ngeoms; i++)
+        if (! geodist_geom_edges(c->geoms[i], allow_arc, arr, cap, cnt, has_poly))
+          return false;
+      return true;
+    }
+    default:
+      /* Curved or unsupported type: let the caller use the exact path */
+      return false;
+  }
+}
+
+/**
+ * @brief Apply the rightward-ray crossings of one polygon-boundary segment to
+ * the even-odd accumulator @p inside. A straight edge contributes at most one
+ * crossing; a circular arc contributes the crossings of the horizontal line
+ * y with its supporting circle that fall within the arc's angular span. Point,
+ * line, and standalone (1D) arc edges (not @p is_poly) contribute nothing.
+ */
+static void
+geodist_poly_seg_raycross(const GeoDistEdge *s, double x, double y, bool *inside)
+{
+  if (! s->is_poly)
+    return;
+  if (s->is_arc)
+  {
+    /* The horizontal line at height y meets the supporting circle at
+     * acx +/- sqrt(arad^2 - (y - acy)^2). Flip the parity for each crossing
+     * strictly to the right of x that lies within the arc's angular span; a
+     * ray that only grazes the circle tangentially does not cross. */
+    const double dyc = y - s->acy;
+    const double h2 = s->arad * s->arad - dyc * dyc;
+    if (h2 <= 1e-12)
+      return;
+    const double h = sqrt(h2);
+    const double xhit[2] = {s->acx - h, s->acx + h};
+    /* Forward traversal direction of the arc in the angle parameter */
+    const double sdir = s->accw ? 1.0 : -1.0;
+    for (int k = 0; k < 2; k++)
+    {
+      const double xi = xhit[k];
+      if (xi <= x)
+        continue;
+      if (! geodist_geom_arc_contains_angle(s, atan2(dyc, xi - s->acx)))
+        continue;
+      /* Half-open ownership, mirroring the straight-edge rule: a crossing at an
+       * arc endpoint (a ring junction on the ray) is owned by this edge only if
+       * the arc interior rises above the ray there; an interior crossing is
+       * always transversal and always counted. */
+      const bool at_ep0 = fabs(xi - s->x1) < 1e-12 && fabs(y - s->y1) < 1e-12;
+      const bool at_ep1 = fabs(xi - s->x2) < 1e-12 && fabs(y - s->y2) < 1e-12;
+      if (at_ep0 || at_ep1)
+      {
+        const double theta_e = at_ep0 ? s->at0 : s->at1;
+        const double dtheta_in = at_ep0 ? sdir : -sdir;
+        if (dtheta_in * cos(theta_e) <= 0)
+          continue;
+      }
+      *inside = ! *inside;
+    }
+    return;
+  }
+  double y1 = s->y1, y2 = s->y2;
+  if ((y1 > y) != (y2 > y))
+  {
+    double xint = s->x1 + (y - y1) / (y2 - y1) * (s->x2 - s->x1);
+    if (x < xint)
+      *inside = ! *inside;
+  }
+}
+
+/**
+ * @brief Minimum of [ dist(c(t), edge) - r(t) ] for t in [0,1], where the
+ * centre moves from (cx1,cy1) to (cx2,cy2) and the radius from r1 to r2
+ */
+double
+geodist_segm_edge_mindist(double cx1, double cy1, double cx2, double cy2,
+  double r1, double r2, const GeoDistEdge *e)
+{
+  const double dcx = cx2 - cx1, dcy = cy2 - cy1;
+  const double dr = r2 - r1;
+  const double ax = e->x1, ay = e->y1, bx = e->x2, by = e->y2;
+  const double ux = bx - ax, uy = by - ay;
+  const double l2 = ux * ux + uy * uy;
+
+  /* Degenerate edge (a point): distance to that point over the whole t */
+  if (l2 <= 1e-24)
+  {
+    double A = dcx * dcx + dcy * dcy;
+    double B = 2.0 * ((cx1 - ax) * dcx + (cy1 - ay) * dcy);
+    double C = (cx1 - ax) * (cx1 - ax) + (cy1 - ay) * (cy1 - ay);
+    return geodist_minfun(A, B, C, r1, dr, 0.0, 1.0);
+  }
+
+  /* Projection parameter s(t) = (s0 + s1 t) / l2, split [0,1] at s=0, s=1 */
+  const double s0 = (cx1 - ax) * ux + (cy1 - ay) * uy;
+  const double s1 = dcx * ux + dcy * uy;
+  double bp[4];
+  int nb = 0;
+  bp[nb++] = 0.0;
+  bp[nb++] = 1.0;
+  if (fabs(s1) > 1e-18)
+  {
+    double ta = -s0 / s1, tb = (l2 - s0) / s1;
+    if (ta > 0.0 && ta < 1.0) bp[nb++] = ta;
+    if (tb > 0.0 && tb < 1.0) bp[nb++] = tb;
+  }
+  /* Sort the (at most 4) breakpoints */
+  for (int i = 0; i < nb; i++)
+    for (int j = i + 1; j < nb; j++)
+      if (bp[j] < bp[i]) { double tmp = bp[i]; bp[i] = bp[j]; bp[j] = tmp; }
+
+  double best = DBL_MAX;
+  for (int k = 0; k + 1 < nb; k++)
+  {
+    double lo = bp[k], hi = bp[k + 1];
+    if (hi - lo < 1e-15) continue;
+    double mt = 0.5 * (lo + hi);
+    double s = (s0 + s1 * mt) / l2;
+    double A, B, C;
+    if (s <= 0.0)
+    {
+      /* Closest to the edge start A */
+      A = dcx * dcx + dcy * dcy;
+      B = 2.0 * ((cx1 - ax) * dcx + (cy1 - ay) * dcy);
+      C = (cx1 - ax) * (cx1 - ax) + (cy1 - ay) * (cy1 - ay);
+    }
+    else if (s >= 1.0)
+    {
+      /* Closest to the edge end B */
+      A = dcx * dcx + dcy * dcy;
+      B = 2.0 * ((cx1 - bx) * dcx + (cy1 - by) * dcy);
+      C = (cx1 - bx) * (cx1 - bx) + (cy1 - by) * (cy1 - by);
+    }
+    else
+    {
+      /* Perpendicular distance: cross(c(t)-A, u) / |u| */
+      double k0 = (cx1 - ax) * uy - (cy1 - ay) * ux;
+      double k1 = dcx * uy - dcy * ux;
+      A = k1 * k1 / l2;
+      B = 2.0 * k0 * k1 / l2;
+      C = k0 * k0 / l2;
+    }
+    double m = geodist_minfun(A, B, C, r1, dr, lo, hi);
+    if (m < best) best = m;
+  }
+  return best;
+}
+
+/**
+ * @brief Minimum of [ dist(c(t), arc) - r(t) ] for t in [0,1], where the centre
+ * moves from (cx1,cy1) to (cx2,cy2) and the radius from r1 to r2, and @p e is a
+ * circular-arc edge.
+ * @details Let Q(t) = |c(t) - centre|^2 = A t^2 + B t + C. Where the foot angle
+ * phi(t) lies within the arc's angular span the distance to the arc is
+ * | sqrt(Q(t)) - R |, so the distance to the moving disc is
+ * | sqrt(Q(t)) - R | - r(t); its minimisers over t are the interval endpoints,
+ * the circle crossings sqrt(Q)=R (kinks of the absolute value), and the
+ * stationary points, whose squared equation (Q')^2 = 4 dr^2 Q is independent of
+ * the sign branch and of R (identical to #geodist_minfun). Where phi(t) is
+ * outside the span the nearest arc point is an endpoint, covered by the two
+ * endpoint point-distance minimisations. Taking the minimum over the angle-gated
+ * on-span candidates and the two endpoint candidates is exact.
+ */
+double
+geodist_segm_arc_mindist(double cx1, double cy1, double cx2, double cy2,
+  double r1, double r2, const GeoDistEdge *e)
+{
+  const double dcx = cx2 - cx1, dcy = cy2 - cy1;
+  const double dr = r2 - r1;
+  const double px = e->acx, py = e->acy, R = e->arad;
+  const double A = dcx * dcx + dcy * dcy;
+  const double B = 2.0 * ((cx1 - px) * dcx + (cy1 - py) * dcy);
+  const double C = (cx1 - px) * (cx1 - px) + (cy1 - py) * (cy1 - py);
+
+  double cand[8];
+  int nc = 0;
+  cand[nc++] = 0.0;
+  cand[nc++] = 1.0;
+  /* Circle crossings Q(t) = R^2 */
+  {
+    double c0 = C - R * R;
+    if (fabs(A) > 1e-18)
+    {
+      double disc = B * B - 4.0 * A * c0;
+      if (disc >= 0.0)
+      {
+        double sd = sqrt(disc);
+        cand[nc++] = (-B + sd) / (2.0 * A);
+        cand[nc++] = (-B - sd) / (2.0 * A);
+      }
+    }
+    else if (fabs(B) > 1e-18)
+      cand[nc++] = -c0 / B;
+  }
+  /* Vertex of Q (closest approach to the centre) */
+  if (fabs(A) > 1e-18)
+    cand[nc++] = -B / (2.0 * A);
+  /* Stationary points of | sqrt(Q) - R | - r(t): (Q')^2 = 4 dr^2 Q */
+  {
+    double a2 = A * (A - dr * dr);
+    double a1 = B * (A - dr * dr);
+    double a0 = 0.25 * B * B - C * dr * dr;
+    if (fabs(a2) > 1e-18)
+    {
+      double disc = a1 * a1 - 4.0 * a2 * a0;
+      if (disc >= 0.0)
+      {
+        double sd = sqrt(disc);
+        cand[nc++] = (-a1 + sd) / (2.0 * a2);
+        cand[nc++] = (-a1 - sd) / (2.0 * a2);
+      }
+    }
+    else if (fabs(a1) > 1e-18)
+      cand[nc++] = -a0 / a1;
+  }
+
+  double best = DBL_MAX;
+  /* On-span candidates: exact distance to the arc's circle, angle-gated */
+  for (int i = 0; i < nc; i++)
+  {
+    double t = cand[i];
+    if (t < 0.0) t = 0.0;
+    if (t > 1.0) t = 1.0;
+    double q = A * t * t + B * t + C;
+    if (q < 0.0) q = 0.0;
+    double cpx = cx1 + dcx * t, cpy = cy1 + dcy * t;
+    if (! geodist_geom_arc_contains_angle(e, atan2(cpy - py, cpx - px)))
+      continue;
+    double f = fabs(sqrt(q) - R) - (r1 + dr * t);
+    if (f < best) best = f;
+  }
+  /* Off-span regions are nearest to an arc endpoint: two point-distance
+   * minimisations over the whole [0,1] (never under-estimate the true arc
+   * distance, and equal it where an endpoint is the nearest arc point) */
+  for (int ep = 0; ep < 2; ep++)
+  {
+    double ex = ep == 0 ? e->x1 : e->x2;
+    double ey = ep == 0 ? e->y1 : e->y2;
+    double Ae = A;
+    double Be = 2.0 * ((cx1 - ex) * dcx + (cy1 - ey) * dcy);
+    double Ce = (cx1 - ex) * (cx1 - ex) + (cy1 - ey) * (cy1 - ey);
+    double m = geodist_minfun(Ae, Be, Ce, r1, dr, 0.0, 1.0);
+    if (m < best) best = m;
+  }
+  return best;
+}
+
+/**
+ * @brief Like #geodist_minfun but also returns the argument that attains the
+ * minimum (clamped into [lo,hi])
+ */
+static double
+geodist_minfun_w(double A, double B, double C, double R0, double DR, double lo,
+  double hi, double *argt)
+{
+  double cand[6];
+  int nc = 0;
+  cand[nc++] = lo;
+  cand[nc++] = hi;
+  double a2 = A * (A - DR * DR);
+  double a1 = B * (A - DR * DR);
+  double a0 = 0.25 * B * B - C * DR * DR;
+  if (fabs(a2) > 1e-18)
+  {
+    double disc = a1 * a1 - 4.0 * a2 * a0;
+    if (disc >= 0.0)
+    {
+      double sd = sqrt(disc);
+      cand[nc++] = (-a1 + sd) / (2.0 * a2);
+      cand[nc++] = (-a1 - sd) / (2.0 * a2);
+    }
+  }
+  else if (fabs(a1) > 1e-18)
+    cand[nc++] = -a0 / a1;
+  /* Vertex of the quadratic under the root; in the perpendicular regime it is a
+   * perfect square whose stationarity double root -B/(2A) rounds out above, so
+   * add it explicitly (the instant the centre crosses the edge line). */
+  if (fabs(A) > 1e-18)
+    cand[nc++] = -B / (2.0 * A);
+  double best = DBL_MAX, bt = lo;
+  for (int i = 0; i < nc; i++)
+  {
+    double t = cand[i];
+    if (t < lo) t = lo;
+    if (t > hi) t = hi;
+    double q = A * t * t + B * t + C;
+    if (q < 0.0) q = 0.0;
+    double f = sqrt(q) - (R0 + DR * t);
+    if (f < best) { best = f; bt = t; }
+  }
+  *argt = bt;
+  return best;
+}
+
+/**
+ * @brief Minimum of [ dist(c(t), edge) - r(t) ] for t in [0,1] together
+ * with the argument t that attains it (mirrors #geodist_segm_edge_mindist)
+ */
+static double
+geodist_segm_edge_dt(double cx1, double cy1, double cx2, double cy2, double r1,
+  double r2, const GeoDistEdge *e, double *out_t)
+{
+  const double dcx = cx2 - cx1, dcy = cy2 - cy1;
+  const double dr = r2 - r1;
+  const double ax = e->x1, ay = e->y1, bx = e->x2, by = e->y2;
+  const double ux = bx - ax, uy = by - ay;
+  const double l2 = ux * ux + uy * uy;
+  if (l2 <= 1e-24)
+  {
+    double A = dcx * dcx + dcy * dcy;
+    double B = 2.0 * ((cx1 - ax) * dcx + (cy1 - ay) * dcy);
+    double C = (cx1 - ax) * (cx1 - ax) + (cy1 - ay) * (cy1 - ay);
+    return geodist_minfun_w(A, B, C, r1, dr, 0.0, 1.0, out_t);
+  }
+  const double s0 = (cx1 - ax) * ux + (cy1 - ay) * uy;
+  const double s1 = dcx * ux + dcy * uy;
+  double bp[4];
+  int nb = 0;
+  bp[nb++] = 0.0;
+  bp[nb++] = 1.0;
+  if (fabs(s1) > 1e-18)
+  {
+    double ta = -s0 / s1, tb = (l2 - s0) / s1;
+    if (ta > 0.0 && ta < 1.0) bp[nb++] = ta;
+    if (tb > 0.0 && tb < 1.0) bp[nb++] = tb;
+  }
+  for (int i = 0; i < nb; i++)
+    for (int j = i + 1; j < nb; j++)
+      if (bp[j] < bp[i]) { double tmp = bp[i]; bp[i] = bp[j]; bp[j] = tmp; }
+  double best = DBL_MAX, bt = 0.0;
+  for (int k = 0; k + 1 < nb; k++)
+  {
+    double lo = bp[k], hi = bp[k + 1];
+    if (hi - lo < 1e-15) continue;
+    double mt = 0.5 * (lo + hi);
+    double s = (s0 + s1 * mt) / l2;
+    double A, B, C;
+    if (s <= 0.0)
+    {
+      A = dcx * dcx + dcy * dcy;
+      B = 2.0 * ((cx1 - ax) * dcx + (cy1 - ay) * dcy);
+      C = (cx1 - ax) * (cx1 - ax) + (cy1 - ay) * (cy1 - ay);
+    }
+    else if (s >= 1.0)
+    {
+      A = dcx * dcx + dcy * dcy;
+      B = 2.0 * ((cx1 - bx) * dcx + (cy1 - by) * dcy);
+      C = (cx1 - bx) * (cx1 - bx) + (cy1 - by) * (cy1 - by);
+    }
+    else
+    {
+      double k0 = (cx1 - ax) * uy - (cy1 - ay) * ux;
+      double k1 = dcx * uy - dcy * ux;
+      A = k1 * k1 / l2;
+      B = 2.0 * k0 * k1 / l2;
+      C = k0 * k0 / l2;
+    }
+    double rt;
+    double m = geodist_minfun_w(A, B, C, r1, dr, lo, hi, &rt);
+    if (m < best) { best = m; bt = rt; }
+  }
+  *out_t = bt;
+  return best;
+}
+
+/**
+ * @brief Like #geodist_segm_arc_mindist but also returns the argument t that
+ * attains the minimum (mirrors #geodist_segm_edge_dt for arc edges)
+ */
+static double
+geodist_segm_arc_dt(double cx1, double cy1, double cx2, double cy2, double r1,
+  double r2, const GeoDistEdge *e, double *out_t)
+{
+  const double dcx = cx2 - cx1, dcy = cy2 - cy1;
+  const double dr = r2 - r1;
+  const double px = e->acx, py = e->acy, R = e->arad;
+  const double A = dcx * dcx + dcy * dcy;
+  const double B = 2.0 * ((cx1 - px) * dcx + (cy1 - py) * dcy);
+  const double C = (cx1 - px) * (cx1 - px) + (cy1 - py) * (cy1 - py);
+
+  double cand[8];
+  int nc = 0;
+  cand[nc++] = 0.0;
+  cand[nc++] = 1.0;
+  /* Circle crossings Q(t) = R^2 */
+  {
+    double c0 = C - R * R;
+    if (fabs(A) > 1e-18)
+    {
+      double disc = B * B - 4.0 * A * c0;
+      if (disc >= 0.0)
+      {
+        double sd = sqrt(disc);
+        cand[nc++] = (-B + sd) / (2.0 * A);
+        cand[nc++] = (-B - sd) / (2.0 * A);
+      }
+    }
+    else if (fabs(B) > 1e-18)
+      cand[nc++] = -c0 / B;
+  }
+  /* Vertex of Q (closest approach to the centre) */
+  if (fabs(A) > 1e-18)
+    cand[nc++] = -B / (2.0 * A);
+  /* Stationary points of | sqrt(Q) - R | - r(t): (Q')^2 = 4 dr^2 Q */
+  {
+    double a2 = A * (A - dr * dr);
+    double a1 = B * (A - dr * dr);
+    double a0 = 0.25 * B * B - C * dr * dr;
+    if (fabs(a2) > 1e-18)
+    {
+      double disc = a1 * a1 - 4.0 * a2 * a0;
+      if (disc >= 0.0)
+      {
+        double sd = sqrt(disc);
+        cand[nc++] = (-a1 + sd) / (2.0 * a2);
+        cand[nc++] = (-a1 - sd) / (2.0 * a2);
+      }
+    }
+    else if (fabs(a1) > 1e-18)
+      cand[nc++] = -a0 / a1;
+  }
+
+  double best = DBL_MAX, bt = 0.0;
+  /* On-span candidates: exact distance to the arc's circle, angle-gated */
+  for (int i = 0; i < nc; i++)
+  {
+    double t = cand[i];
+    if (t < 0.0) t = 0.0;
+    if (t > 1.0) t = 1.0;
+    double q = A * t * t + B * t + C;
+    if (q < 0.0) q = 0.0;
+    double cpx = cx1 + dcx * t, cpy = cy1 + dcy * t;
+    if (! geodist_geom_arc_contains_angle(e, atan2(cpy - py, cpx - px)))
+      continue;
+    double f = fabs(sqrt(q) - R) - (r1 + dr * t);
+    if (f < best) { best = f; bt = t; }
+  }
+  /* Off-span regions are nearest to an arc endpoint */
+  for (int ep = 0; ep < 2; ep++)
+  {
+    double ex = ep == 0 ? e->x1 : e->x2;
+    double ey = ep == 0 ? e->y1 : e->y2;
+    double Be = 2.0 * ((cx1 - ex) * dcx + (cy1 - ey) * dcy);
+    double Ce = (cx1 - ex) * (cx1 - ex) + (cy1 - ey) * (cy1 - ey);
+    double rt;
+    double m = geodist_minfun_w(A, Be, Ce, r1, dr, 0.0, 1.0, &rt);
+    if (m < best) { best = m; bt = rt; }
+  }
+  *out_t = bt;
+  return best;
+}
+
+/**
+ * @brief Closest point on edge @p e to (px,py)
+ */
+static void
+geodist_geom_closest_on_edge(double px, double py, const GeoDistEdge *e, double *qx,
+  double *qy)
+{
+  double ux = e->x2 - e->x1, uy = e->y2 - e->y1;
+  double l2 = ux * ux + uy * uy;
+  if (l2 <= 1e-24) { *qx = e->x1; *qy = e->y1; return; }
+  double s = ((px - e->x1) * ux + (py - e->y1) * uy) / l2;
+  if (s < 0.0) s = 0.0;
+  if (s > 1.0) s = 1.0;
+  *qx = e->x1 + s * ux;
+  *qy = e->y1 + s * uy;
+}
+
+/**
+ * @brief Closest point on arc edge @p e to (px,py): the projection onto the
+ * supporting circle when its angle lies in the arc span, otherwise the nearer
+ * arc endpoint
+ */
+static void
+geodist_geom_closest_on_arc(double px, double py, const GeoDistEdge *e, double *qx,
+  double *qy)
+{
+  double vx = px - e->acx, vy = py - e->acy;
+  double vl = hypot(vx, vy);
+  if (vl > 1e-12 && geodist_geom_arc_contains_angle(e, atan2(vy, vx)))
+  {
+    *qx = e->acx + vx * (e->arad / vl);
+    *qy = e->acy + vy * (e->arad / vl);
+    return;
+  }
+  double d1 = (px - e->x1) * (px - e->x1) + (py - e->y1) * (py - e->y1);
+  double d2 = (px - e->x2) * (px - e->x2) + (py - e->y2) * (py - e->y2);
+  if (d1 <= d2) { *qx = e->x1; *qy = e->y1; }
+  else { *qx = e->x2; *qy = e->y2; }
+}
+
+/** @brief A segment's Morton (Z-order) key paired with its index, for sorting.
+ * Sorting these lightweight handles rather than the ~128-byte edge payloads
+ * keeps qsort from swapping whole edges. */
+typedef struct
+{
+  uint32_t key;
+  int idx;
+} GeoDistSortItem;
+
+/** @brief Spread the low 16 bits of @p v with one zero bit between each */
+static uint32_t
+geodist_geom_morton_part(uint32_t v)
+{
+  v &= 0x0000ffff;
+  v = (v | (v << 8)) & 0x00ff00ff;
+  v = (v | (v << 4)) & 0x0f0f0f0f;
+  v = (v | (v << 2)) & 0x33333333;
+  v = (v | (v << 1)) & 0x55555555;
+  return v;
+}
+
+/** @brief Order GeoDistSortItem by Morton key */
+static int
+geodist_geom_morton_cmp(const void *a, const void *b)
+{
+  uint32_t ka = ((const GeoDistSortItem *) a)->key;
+  uint32_t kb = ((const GeoDistSortItem *) b)->key;
+  return (ka > kb) - (ka < kb);
+}
+
+/**
+ * @brief Reorder the segments along a Morton (Z-order) curve and group them
+ * into ~sqrt(n) spatially-local buckets, each with its bounding box. The
+ * buckets let a swept-capsule unit skip whole groups of edges that are farther
+ * than the running minimum, turning the per-unit edge scan from O(edges) into
+ * roughly O(sqrt(edges) + matches) — the geometry's overall bounding box is too
+ * coarse for large coastal polygons, but the bucket boxes are tight.
+ */
+static GeoDistBucket *
+geodist_geom_build_buckets(GeoDistEdge *segs, int n, double gxmin, double gymin,
+  double gxmax, double gymax, int *nbk_out)
+{
+  double sx = (gxmax > gxmin) ? 65535.0 / (gxmax - gxmin) : 0.0;
+  double sy = (gymax > gymin) ? 65535.0 / (gymax - gymin) : 0.0;
+  GeoDistSortItem *items = palloc(sizeof(GeoDistSortItem) * n);
+  for (int i = 0; i < n; i++)
+  {
+    double cx = 0.5 * (segs[i].xmin + segs[i].xmax);
+    double cy = 0.5 * (segs[i].ymin + segs[i].ymax);
+    uint32_t ix = (uint32_t) ((cx - gxmin) * sx);
+    uint32_t iy = (uint32_t) ((cy - gymin) * sy);
+    items[i].key = geodist_geom_morton_part(ix) | (geodist_geom_morton_part(iy) << 1);
+    items[i].idx = i;
+  }
+  qsort(items, n, sizeof(GeoDistSortItem), geodist_geom_morton_cmp);
+  /* Apply the resulting permutation to the segments through one scratch pass.
+   * Sorting the lightweight key/index handles above (rather than the segments
+   * themselves) keeps qsort from copying the ~128-byte edge payloads on every
+   * swap, which dominated the bucket build for large polygons. */
+  GeoDistEdge *sorted = palloc(sizeof(GeoDistEdge) * n);
+  for (int i = 0; i < n; i++)
+    sorted[i] = segs[items[i].idx];
+  for (int i = 0; i < n; i++)
+    segs[i] = sorted[i];
+  pfree(sorted);
+  pfree(items);
+
+  int bsize = (int) ceil(sqrt((double) n));
+  if (bsize < 1) bsize = 1;
+  int nbk = (n + bsize - 1) / bsize;
+  GeoDistBucket *bks = palloc(sizeof(GeoDistBucket) * nbk);
+  for (int b = 0; b < nbk; b++)
+  {
+    int s = b * bsize, e = s + bsize;
+    if (e > n) e = n;
+    double xmn = DBL_MAX, ymn = DBL_MAX, xmx = -DBL_MAX, ymx = -DBL_MAX;
+    for (int k = s; k < e; k++)
+    {
+      if (segs[k].xmin < xmn) xmn = segs[k].xmin;
+      if (segs[k].ymin < ymn) ymn = segs[k].ymin;
+      if (segs[k].xmax > xmx) xmx = segs[k].xmax;
+      if (segs[k].ymax > ymx) ymx = segs[k].ymax;
+    }
+    bks[b].start = s; bks[b].n = e - s;
+    bks[b].xmin = xmn; bks[b].ymin = ymn; bks[b].xmax = xmx; bks[b].ymax = ymx;
+  }
+  *nbk_out = nbk;
+  return bks;
+}
+
+/**
+ * @brief Per-operation scratch buffer for the R-tree candidate ids in the
+ * relationship kernels. It is created together with the R-tree in
+ * #tcbuffer_geo_ctx_make and destroyed together with it in
+ * #tcbuffer_geo_ctx_free, so it lives exactly as long as the geometry context
+ * (the same create-with-rtree / destroy-with-rtree lifetime as rtree_results in
+ * tpoint_geom_clip.c). MEOS_TLS keeps concurrent threads from sharing it.
+ */
+MEOS_TLS MeosArray *geodist_pip_results = NULL;
+
+/**
+ * @brief Ray-casting interior test. Over the R-tree (relationship path) the
+ * candidates are the edges overlapping the rightward ray box [x, xmax] x [y, y];
+ * over the bucket hierarchy (nad path) a bucket holds a crossing edge only when y
+ * is inside its y-range and its xmax reaches x, so distant buckets are skipped
+ * wholesale. Both yield the same crossing edges, and the even-odd parity is
+ * order-independent, so the result matches.
+ */
+bool
+geodist_geom_point_inside(double x, double y, const GeoDistGeom *g)
+{
+  bool inside = false;
+  if (g->rtree)
+  {
+    STBox query;
+    stbox_set(true, false, false, 0, x, g->xmax, y, y, 0, 0, NULL, &query);
+    int nc = rtree_search(g->rtree, RTREE_OVERLAPS, &query, geodist_pip_results);
+    for (int j = 0; j < nc; j++)
+      geodist_poly_seg_raycross(
+        &g->segs[*(int *) meos_array_get(geodist_pip_results, j)], x, y, &inside);
+    return inside;
+  }
+  for (int b = 0; b < g->nbk; b++)
+  {
+    const GeoDistBucket *bk = &g->bks[b];
+    if (y < bk->ymin || y > bk->ymax || bk->xmax < x)
+      continue;
+    int e = bk->start + bk->n;
+    for (int i = bk->start; i < e; i++)
+    {
+      geodist_poly_seg_raycross(&g->segs[i], x, y, &inside);
+    }
+  }
+  return inside;
+}
+
+/**
+ * @brief Update the running minimum with one swept-capsule unit (the centre
+ * moves from c1 to c2 with radius r1 to r2; a stationary disk has c1 == c2)
+ */
+void
+geodist_segm_nad(double cx1, double cy1, double r1, double cx2, double cy2,
+  double r2, const GeoDistGeom *g, double *best)
+{
+  double sxmin = fmin(cx1 - r1, cx2 - r2);
+  double sxmax = fmax(cx1 + r1, cx2 + r2);
+  double symin = fmin(cy1 - r1, cy2 - r2);
+  double symax = fmax(cy1 + r1, cy2 + r2);
+  /* Coarse branch-and-bound prune: the distance between this unit's swept
+   * bounding box and the geometry's overall bounding box is a lower bound on
+   * the unit's nearest approach (a box contains its geometry, so the box-to-box
+   * distance cannot exceed the geometry-to-capsule distance). If that lower
+   * bound already reaches the running minimum, no edge can improve it, so the
+   * point-in-polygon test and the whole per-edge loop are skipped. A segment
+   * whose centre is inside a polygon overlaps the geometry bounding box, giving
+   * a zero lower bound, so it is never wrongly pruned. */
+  if (*best != DBL_MAX)
+  {
+    double dgx = fmax(fmax(g->xmin - sxmax, sxmin - g->xmax), 0.0);
+    double dgy = fmax(fmax(g->ymin - symax, symin - g->ymax), 0.0);
+    if (dgx * dgx + dgy * dgy >= (*best) * (*best))
+      return;
+  }
+  if (g->has_poly &&
+      (geodist_geom_point_inside(cx1, cy1, g) || geodist_geom_point_inside(cx2, cy2, g)))
+  {
+    *best = 0.0;
+    return;
+  }
+  /* Bucket bounding-volume hierarchy: skip whole buckets of edges that are
+   * farther than the running minimum, then the per-edge prune within a bucket */
+  for (int b = 0; b < g->nbk && *best > 0.0; b++)
+  {
+    const GeoDistBucket *bk = &g->bks[b];
+    if (*best != DBL_MAX)
+    {
+      double dx = fmax(fmax(bk->xmin - sxmax, sxmin - bk->xmax), 0.0);
+      double dy = fmax(fmax(bk->ymin - symax, symin - bk->ymax), 0.0);
+      if (dx * dx + dy * dy >= (*best) * (*best))
+        continue;
+    }
+    int e = bk->start + bk->n;
+    for (int k = bk->start; k < e && *best > 0.0; k++)
+    {
+      const GeoDistEdge *ed = &g->segs[k];
+      if (*best != DBL_MAX)
+      {
+        double dx = fmax(fmax(ed->xmin - sxmax, sxmin - ed->xmax), 0.0);
+        double dy = fmax(fmax(ed->ymin - symax, symin - ed->ymax), 0.0);
+        if (dx * dx + dy * dy >= (*best) * (*best))
+          continue;
+      }
+      double m = ed->is_arc ?
+        geodist_segm_arc_mindist(cx1, cy1, cx2, cy2, r1, r2, ed) :
+        geodist_segm_edge_mindist(cx1, cy1, cx2, cy2, r1, r2, ed);
+      if (m < *best) *best = m;
+    }
+  }
+}
+
+/**
+ * @brief Update the witness with one swept-capsule unit against the geometry,
+ * pruned by the bucket bounding-volume hierarchy (the centre moves from c1 to
+ * c2 with radius r1 to r2; a stationary disk has c1 == c2)
+ */
+void
+geodist_segm_shortestline(double cx1, double cy1, double r1, double cx2,
+  double cy2, double r2, const GeoDistGeom *g, GeoDistShortLine *w)
+{
+  if (w->set && w->d <= 0.0)
+    return;
+  double sxmin = fmin(cx1 - r1, cx2 - r2);
+  double sxmax = fmax(cx1 + r1, cx2 + r2);
+  double symin = fmin(cy1 - r1, cy2 - r2);
+  double symax = fmax(cy1 + r1, cy2 + r2);
+  /* Coarse branch-and-bound prune: the swept bounding box to geometry bounding
+   * box distance is a lower bound on this unit's nearest approach, so once it
+   * reaches the running witness distance no edge can improve the shortest line.
+   * A unit whose centre is inside a polygon overlaps the geometry box (zero
+   * lower bound), so it is never wrongly pruned. */
+  if (w->set)
+  {
+    double dgx = fmax(fmax(g->xmin - sxmax, sxmin - g->xmax), 0.0);
+    double dgy = fmax(fmax(g->ymin - symax, symin - g->ymax), 0.0);
+    if (dgx * dgx + dgy * dgy >= w->d * w->d)
+      return;
+  }
+  /* A centre inside a polygon means the swept region overlaps it: the shortest
+   * line is a zero-length line at that interior point (mirrors the
+   * nearest-approach interior short-circuit) */
+  if (g->has_poly)
+  {
+    bool in1 = geodist_geom_point_inside(cx1, cy1, g);
+    bool in2 = (cx2 == cx1 && cy2 == cy1) ? in1 :
+      geodist_geom_point_inside(cx2, cy2, g);
+    if (in1 || in2)
+    {
+      double ix = in1 ? cx1 : cx2, iy = in1 ? cy1 : cy2;
+      w->d = 0.0; w->px = ix; w->py = iy; w->qx = ix; w->qy = iy;
+      w->set = true;
+      return;
+    }
+  }
+  /* Bucket bounding-volume hierarchy: skip whole buckets of edges that are
+   * farther than the running witness distance, then the per-edge prune within
+   * a bucket */
+  for (int b = 0; b < g->nbk; b++)
+  {
+    const GeoDistBucket *bk = &g->bks[b];
+    if (w->set)
+    {
+      double dx = fmax(fmax(bk->xmin - sxmax, sxmin - bk->xmax), 0.0);
+      double dy = fmax(fmax(bk->ymin - symax, symin - bk->ymax), 0.0);
+      if (dx * dx + dy * dy >= w->d * w->d)
+        continue;
+    }
+    int elast = bk->start + bk->n;
+    for (int k = bk->start; k < elast; k++)
+    {
+      const GeoDistEdge *e = &g->segs[k];
+      if (w->set)
+      {
+        double dx = fmax(fmax(e->xmin - sxmax, sxmin - e->xmax), 0.0);
+        double dy = fmax(fmax(e->ymin - symax, symin - e->ymax), 0.0);
+        if (dx * dx + dy * dy >= w->d * w->d)
+          continue;
+      }
+      double t;
+      double m = e->is_arc ?
+        geodist_segm_arc_dt(cx1, cy1, cx2, cy2, r1, r2, e, &t) :
+        geodist_segm_edge_dt(cx1, cy1, cx2, cy2, r1, r2, e, &t);
+      if (! w->set || m < w->d)
+      {
+        double ccx = cx1 + (cx2 - cx1) * t;
+        double ccy = cy1 + (cy2 - cy1) * t;
+        double rr = r1 + (r2 - r1) * t;
+        double qx, qy;
+        if (e->is_arc)
+          geodist_geom_closest_on_arc(ccx, ccy, e, &qx, &qy);
+        else
+          geodist_geom_closest_on_edge(ccx, ccy, e, &qx, &qy);
+        double vx = qx - ccx, vy = qy - ccy;
+        double vl = sqrt(vx * vx + vy * vy);
+        double pxp, pyp;
+        if (vl <= 1e-12 || m <= 0.0)
+        {
+          /* Overlap or centre on the edge: degenerate line at the contact */
+          pxp = qx; pyp = qy;
+        }
+        else
+        {
+          pxp = ccx + vx * (rr / vl);
+          pyp = ccy + vy * (rr / vl);
+        }
+        w->d = m; w->px = pxp; w->py = pyp; w->qx = qx; w->qy = qy;
+        w->set = true;
+      }
+    }
+  }
+}
+
+/**
+ * @brief Update the witness with one swept-capsule unit against the geometry,
+ * pruned by the bucket bounding-volume hierarchy (the centre moves from c1 to
+ * c2 with radius r1 to r2 over the time span t1 to t2; a stationary disc has
+ * c1 == c2 and t1 == t2), mirroring #geodist_segm_shortestline
+ */
+void
+geodist_segm_nai(double cx1, double cy1, double r1, TimestampTz t1, double cx2,
+  double cy2, double r2, TimestampTz t2, const GeoDistGeom *g, GeoDistNai *w)
+{
+  if (w->set && w->d <= 0.0)
+    return;
+  double sxmin = fmin(cx1 - r1, cx2 - r2);
+  double sxmax = fmax(cx1 + r1, cx2 + r2);
+  double symin = fmin(cy1 - r1, cy2 - r2);
+  double symax = fmax(cy1 + r1, cy2 + r2);
+  /* Coarse branch-and-bound prune: the swept bounding box to geometry bounding
+   * box distance is a lower bound on this unit's nearest approach, so once it
+   * reaches the running witness distance no edge can improve it */
+  if (w->set)
+  {
+    double dgx = fmax(fmax(g->xmin - sxmax, sxmin - g->xmax), 0.0);
+    double dgy = fmax(fmax(g->ymin - symax, symin - g->ymax), 0.0);
+    if (dgx * dgx + dgy * dgy >= w->d * w->d)
+      return;
+  }
+  /* A centre inside a polygon means the swept region overlaps it: the nearest
+   * approach distance is zero, recorded at the earliest inside endpoint */
+  if (g->has_poly)
+  {
+    bool in1 = geodist_geom_point_inside(cx1, cy1, g);
+    bool in2 = (cx2 == cx1 && cy2 == cy1) ? in1 :
+      geodist_geom_point_inside(cx2, cy2, g);
+    if (in1 || in2)
+    {
+      w->d = 0.0; w->t = in1 ? t1 : t2; w->set = true;
+      return;
+    }
+  }
+  /* Bucket bounding-volume hierarchy: skip whole buckets of edges that are
+   * farther than the running witness distance, then the per-edge prune */
+  for (int b = 0; b < g->nbk; b++)
+  {
+    const GeoDistBucket *bk = &g->bks[b];
+    if (w->set)
+    {
+      double dx = fmax(fmax(bk->xmin - sxmax, sxmin - bk->xmax), 0.0);
+      double dy = fmax(fmax(bk->ymin - symax, symin - bk->ymax), 0.0);
+      if (dx * dx + dy * dy >= w->d * w->d)
+        continue;
+    }
+    int elast = bk->start + bk->n;
+    for (int k = bk->start; k < elast; k++)
+    {
+      const GeoDistEdge *e = &g->segs[k];
+      if (w->set)
+      {
+        double dx = fmax(fmax(e->xmin - sxmax, sxmin - e->xmax), 0.0);
+        double dy = fmax(fmax(e->ymin - symax, symin - e->ymax), 0.0);
+        if (dx * dx + dy * dy >= w->d * w->d)
+          continue;
+      }
+      double tf;
+      double m = e->is_arc ?
+        geodist_segm_arc_dt(cx1, cy1, cx2, cy2, r1, r2, e, &tf) :
+        geodist_segm_edge_dt(cx1, cy1, cx2, cy2, r1, r2, e, &tf);
+      /* Strict improvement keeps the earliest timestamp among equal minima
+       * (the units are visited in time order) */
+      if (! w->set || m < w->d)
+      {
+        if (tf < 0.0) tf = 0.0; else if (tf > 1.0) tf = 1.0;
+        w->d = m;
+        w->t = t1 + (TimestampTz) ((double) (t2 - t1) * tf);
+        w->set = true;
+        /* Overlap: the distance cannot drop below zero, so stop refining */
+        if (m <= 0.0)
+          return;
+      }
+    }
+  }
+}
+
+/**
+ * @brief Build a generic R-tree over the edge bounding boxes for the fixed-reach
+ * relationship kernels; the index boxes use SRID 0 so a query needs no geometry
+ * SRID
+ */
+RTree *
+geodist_geom_build_rtree(const GeoDistEdge *segs, int n)
+{
+  RTree *rt = rtree_create_stbox();
+  for (int k = 0; k < n; k++)
+  {
+    STBox box;
+    stbox_set(true, false, false, 0, segs[k].xmin, segs[k].xmax, segs[k].ymin,
+      segs[k].ymax, 0, 0, NULL, &box);
+    rtree_insert(rt, &box, k);
+  }
+  return rt;
+}
 
 /*****************************************************************************
  * Compute the distance between two geometries
@@ -717,318 +1933,8 @@ nai_tgeoseqset_step_geo(const TSequenceSet *ss, const LWGEOM *geo)
 
 /*****************************************************************************
  * Nearest approach instant between a temporal point with linear interpolation
- * and a planar (multi)polygon
- *
- * The generic iterator below computes, for every segment of the trajectory,
- * the liblwgeom line-to-polygon distance (@ref lw_dist2d_recursive), which
- * walks all the edges of the polygon on each segment.  For a trajectory of s
- * segments and a polygon of n edges this is O(s * n), and each edge visit is
- * the (relatively expensive) @ref lw_dist2d_seg_seg kernel.
- *
- * The functions in this section reproduce the same computation but (a)
- * decompose the polygon once instead of on every segment, (b) skip whole
- * component polygons, rings and individual edges whose bounding box is farther
- * than the current best distance, and (c) skip the point-in-ring winding test
- * when the query point is outside the ring box.  Pruned edges are strictly
- * farther than the running best, so they can never improve the (strict-less)
- * @ref lw_dist2d_seg_seg minimum; surviving edges are evaluated with the same
- * primitive in the same ring order, so the resulting nearest approach point
- * (and therefore the timestamp) is the same as the generic path.
+ * and a geometry/geography
  *****************************************************************************/
-
-/** @brief One ring of a decomposed polygon with its bounding box */
-typedef struct
-{
-  const POINTARRAY *pa;           /**< Ring vertices (closed) */
-  double xmin, xmax, ymin, ymax;  /**< Ring bounding box */
-} NaiRing;
-
-/** @brief One component polygon (outer ring followed by holes) */
-typedef struct
-{
-  NaiRing *rings;                 /**< Outer ring at index 0, holes after */
-  uint32_t nrings;
-} NaiPoly;
-
-/** @brief A decomposed planar (multi)polygon */
-typedef struct
-{
-  NaiPoly *polys;                 /**< Component polygons */
-  uint32_t npolys;
-} NaiGeom;
-
-/**
- * @brief Initialize a ring from a point array, computing its bounding box
- */
-static void
-nai_ring_init(NaiRing *r, const POINTARRAY *pa)
-{
-  r->pa = pa;
-  double xmin = DBL_MAX, xmax = -DBL_MAX, ymin = DBL_MAX, ymax = -DBL_MAX;
-  for (uint32_t i = 0; i < pa->npoints; i++)
-  {
-    const POINT2D *p = getPoint2d_cp(pa, i);
-    if (p->x < xmin) xmin = p->x;
-    if (p->x > xmax) xmax = p->x;
-    if (p->y < ymin) ymin = p->y;
-    if (p->y > ymax) ymax = p->y;
-  }
-  r->xmin = xmin; r->xmax = xmax; r->ymin = ymin; r->ymax = ymax;
-}
-
-/**
- * @brief Initialize a component polygon, return false if it has no rings
- */
-static bool
-nai_poly_init(NaiPoly *np, const LWPOLY *poly)
-{
-  if (poly->nrings == 0)
-    return false;
-  np->nrings = poly->nrings;
-  np->rings = palloc(sizeof(NaiRing) * poly->nrings);
-  for (uint32_t i = 0; i < poly->nrings; i++)
-    nai_ring_init(&np->rings[i], poly->rings[i]);
-  return true;
-}
-
-/**
- * @brief Decompose a planar polygon or multipolygon, return NULL if the
- * geometry is not a planar (multi)polygon that the fast path handles
- */
-static NaiGeom *
-nai_geom_build(const LWGEOM *geo)
-{
-  if (FLAGS_GET_GEODETIC(geo->flags) || FLAGS_GET_Z(geo->flags))
-    return NULL;
-  NaiGeom *g = palloc(sizeof(NaiGeom));
-  if (geo->type == POLYGONTYPE)
-  {
-    g->npolys = 1;
-    g->polys = palloc(sizeof(NaiPoly));
-    if (! nai_poly_init(&g->polys[0], lwgeom_as_lwpoly(geo)))
-    {
-      pfree(g->polys);
-      pfree(g);
-      return NULL;
-    }
-  }
-  else if (geo->type == MULTIPOLYGONTYPE)
-  {
-    const LWCOLLECTION *c = lwgeom_as_lwcollection(geo);
-    if (c->ngeoms == 0)
-    {
-      pfree(g);
-      return NULL;
-    }
-    g->npolys = c->ngeoms;
-    g->polys = palloc(sizeof(NaiPoly) * c->ngeoms);
-    for (uint32_t i = 0; i < c->ngeoms; i++)
-    {
-      if (c->geoms[i]->type != POLYGONTYPE ||
-          ! nai_poly_init(&g->polys[i], lwgeom_as_lwpoly(c->geoms[i])))
-      {
-        for (uint32_t j = 0; j < i; j++)
-          pfree(g->polys[j].rings);
-        pfree(g->polys);
-        pfree(g);
-        return NULL;
-      }
-    }
-  }
-  else
-  {
-    pfree(g);
-    return NULL;
-  }
-  return g;
-}
-
-/**
- * @brief Free a polygon decomposition
- */
-static void
-nai_geom_free(NaiGeom *g)
-{
-  for (uint32_t i = 0; i < g->npolys; i++)
-    pfree(g->polys[i].rings);
-  pfree(g->polys);
-  pfree(g);
-}
-
-/**
- * @brief Slack applied to the squared bounding-box distance prune.
- * @details The box distance is an exact lower bound of the edge distance, so
- * an edge farther than the current best can never improve the (strict-less)
- * minimum.  Rounding in the box distance can nonetheless overshoot by a few
- * units in the last place; the relative slack keeps an edge that lies within
- * rounding of the best distance, so that the same edges as the generic path
- * are evaluated at a near tie.  Edges meaningfully farther than the best are
- * still pruned.
- */
-#define NAI_PRUNE_SLACK 1.0e-9
-
-/**
- * @brief Accumulate into @p dl the minimum distance between the segment
- * [A, B] and the edges of a ring, skipping edges whose bounding box is farther
- * than the current best (mirrors @ref lw_dist2d_ptarray_ptarray in DIST_MIN)
- */
-static void
-nai_ring_scan(const POINT2D *A, const POINT2D *B, const NaiRing *ring,
-  DISTPTS *dl, double sxmin, double sxmax, double symin, double symax)
-{
-  double best = dl->distance;
-  double gx = ring->xmin - sxmax; gx = (sxmin - ring->xmax > gx) ? sxmin - ring->xmax : gx;
-  double gy = ring->ymin - symax; gy = (symin - ring->ymax > gy) ? symin - ring->ymax : gy;
-  if (gx < 0.0) gx = 0.0;
-  if (gy < 0.0) gy = 0.0;
-  if (gx * gx + gy * gy > best * best * (1.0 + NAI_PRUNE_SLACK))
-    return;
-  const POINTARRAY *pa = ring->pa;
-  const POINT2D *C = getPoint2d_cp(pa, 0);
-  for (uint32_t u = 1; u < pa->npoints; u++)
-  {
-    const POINT2D *D = getPoint2d_cp(pa, u);
-    double exmin = (C->x < D->x) ? C->x : D->x, exmax = (C->x > D->x) ? C->x : D->x;
-    double eymin = (C->y < D->y) ? C->y : D->y, eymax = (C->y > D->y) ? C->y : D->y;
-    double dx = exmin - sxmax; dx = (sxmin - exmax > dx) ? sxmin - exmax : dx;
-    double dy = eymin - symax; dy = (symin - eymax > dy) ? symin - eymax : dy;
-    if (dx < 0.0) dx = 0.0;
-    if (dy < 0.0) dy = 0.0;
-    best = dl->distance;
-    if (dx * dx + dy * dy <= best * best * (1.0 + NAI_PRUNE_SLACK))
-    {
-      dl->twisted = 1;
-      lw_dist2d_seg_seg(A, B, C, D, dl);
-      if (dl->distance <= dl->tolerance)
-        return;
-    }
-    C = D;
-  }
-}
-
-/**
- * @brief Accumulate into @p dl the minimum distance between the segment
- * [A, B] and a component polygon (mirrors @ref lw_dist2d_line_poly in DIST_MIN,
- * the inside/outside test is keyed on the first point @p A as in liblwgeom)
- */
-static void
-nai_line_poly_scan(const POINT2D *A, const POINT2D *B, const NaiPoly *poly,
-  DISTPTS *dl, double sxmin, double sxmax, double symin, double symax)
-{
-  const POINT2D *pt = A;
-  const NaiRing *r0 = &poly->rings[0];
-  int cont0 = LW_OUTSIDE;
-  if (pt->x >= r0->xmin && pt->x <= r0->xmax &&
-      pt->y >= r0->ymin && pt->y <= r0->ymax)
-    cont0 = ptarray_contains_point(r0->pa, pt);
-  /* First point outside the outer ring: distance to the outer ring only */
-  if (cont0 == LW_OUTSIDE)
-  {
-    nai_ring_scan(A, B, r0, dl, sxmin, sxmax, symin, symax);
-    return;
-  }
-  /* Inside/on the outer ring: distance to the holes */
-  for (uint32_t i = 1; i < poly->nrings; i++)
-  {
-    nai_ring_scan(A, B, &poly->rings[i], dl, sxmin, sxmax, symin, symax);
-    if (dl->distance <= dl->tolerance)
-      return;
-  }
-  /* First point inside a hole: the distance is the minimum ring distance */
-  for (uint32_t i = 1; i < poly->nrings; i++)
-    if (ptarray_contains_point(poly->rings[i].pa, pt) != LW_OUTSIDE)
-      return;
-  /* First point inside the polygon */
-  dl->distance = 0.0;
-  dl->p1 = *pt;
-  dl->p2 = *pt;
-}
-
-static double nai_tpointsegm_linear_geo1(const TInstant *inst1,
-  const TInstant *inst2, const LWGEOM *geo, TimestampTz *t);
-
-/**
- * @brief Relative slack that keeps a segment as a candidate when its
- * bounding-box distance estimate is within rounding of the running best.
- * @details The bounding-box scan reproduces the liblwgeom line-to-polygon
- * distance only up to a few units in the last place, so a segment whose exact
- * distance is a hair below the running best can produce an estimate that is a
- * hair above it.  A segment is kept as a candidate when its estimate is within
- * this relative slack of the best distance; the estimate seeds the box prune
- * with twice the slack so a candidate ring is never pruned.  Segments that
- * clear the slack cannot improve the minimum and are skipped.
- */
-#define NAI_TIE_SLACK 1.0e-9
-
-/**
- * @brief Return the minimum distance between a temporal point sequence with
- * linear interpolation and a decomposed planar (multi)polygon, and the
- * timestamp of the nearest approach instant (fast path of
- * @ref nai_tpointseq_linear_geo_iter)
- * @details The bounding-box scan is a fast filter that selects the few
- * segments close enough to improve the running minimum; the distance and the
- * timestamp of a selected segment are computed with @ref
- * nai_tpointsegm_linear_geo1, so the result is identical to the generic path.
- * @param[in] seq Temporal point
- * @param[in] geo Geometry
- * @param[in] g Decomposition of @p geo
- * @param[in] mindist Running minimum distance, or DBL_MAX at the beginning
- * @param[out] t Timestamp
- */
-static double
-nai_tpointseq_linear_poly_iter(const TSequence *seq, const LWGEOM *geo,
-  const NaiGeom *g, double mindist, TimestampTz *t)
-{
-  const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
-
-  if (seq->count == 1)
-  {
-    /* Instantaneous sequence: use the generic point-to-geometry distance */
-    Datum value1 = tinstant_value_p(inst1);
-    LWGEOM *point = lwgeom_from_gserialized(DatumGetGserializedP(value1));
-    double dist = lw_distance_fraction(point, geo, DIST_MIN, NULL);
-    lwgeom_free(point);
-    if (dist < mindist)
-    {
-      mindist = dist;
-      *t = inst1->t;
-    }
-    return mindist;
-  }
-
-  for (int i = 0; i < seq->count - 1; i++)
-  {
-    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i + 1);
-    const POINT2D *A = DATUM_POINT2D_P(tinstant_value_p(inst1));
-    const POINT2D *B = DATUM_POINT2D_P(tinstant_value_p(inst2));
-    /* Bounding-box distance estimate of the segment to the polygon */
-    DISTPTS dl;
-    lw_dist2d_distpts_init(&dl, DIST_MIN);
-    if (mindist != DBL_MAX)
-      dl.distance = mindist * (1.0 + 2.0 * NAI_TIE_SLACK);
-    double sxmin = (A->x < B->x) ? A->x : B->x, sxmax = (A->x > B->x) ? A->x : B->x;
-    double symin = (A->y < B->y) ? A->y : B->y, symax = (A->y > B->y) ? A->y : B->y;
-    for (uint32_t k = 0; k < g->npolys && dl.distance > 0.0; k++)
-      nai_line_poly_scan(A, B, &g->polys[k], &dl, sxmin, sxmax, symin, symax);
-    /* Compute the exact distance and timestamp only for a close-enough segment */
-    if (mindist == DBL_MAX || dl.distance < mindist * (1.0 + NAI_TIE_SLACK))
-    {
-      TimestampTz t1;
-      double dist = nai_tpointsegm_linear_geo1(inst1, inst2, geo, &t1);
-      if (dist < mindist)
-      {
-        mindist = dist;
-        *t = t1;
-      }
-    }
-    if (mindist == 0.0)
-      break;
-    inst1 = inst2;
-  }
-  return mindist;
-}
-
-/*****************************************************************************/
 
 /**
  * @brief Return the distance and the timestamp of the nearest approach instant
@@ -1131,14 +2037,10 @@ nai_tpointseq_linear_geo_iter(const TSequence *seq, const LWGEOM *geo,
  * point with linear interpolation and a geometry (iterator function)
  */
 static TInstant *
-nai_tpointseq_linear_geo(const TSequence *seq, const LWGEOM *geo,
-  const NaiGeom *g)
+nai_tpointseq_linear_geo(const TSequence *seq, const LWGEOM *geo)
 {
   TimestampTz t;
-  if (g)
-    nai_tpointseq_linear_poly_iter(seq, geo, g, DBL_MAX, &t);
-  else
-    nai_tpointseq_linear_geo_iter(seq, geo, DBL_MAX, &t);
+  nai_tpointseq_linear_geo_iter(seq, geo, DBL_MAX, &t);
   /* The closest point may be at an exclusive bound */
   Datum value;
   tsequence_value_at_timestamptz(seq, t, false, &value);
@@ -1150,19 +2052,15 @@ nai_tpointseq_linear_geo(const TSequence *seq, const LWGEOM *geo,
  * point with linear interpolation and a geometry
  */
 static TInstant *
-nai_tpointseqset_linear_geo(const TSequenceSet *ss, const LWGEOM *geo,
-  const NaiGeom *g)
+nai_tpointseqset_linear_geo(const TSequenceSet *ss, const LWGEOM *geo)
 {
   TimestampTz t = 0; /* make compiler quiet */
   double mindist = DBL_MAX;
   for (int i = 0; i < ss->count; i++)
   {
     TimestampTz t1;
-    double dist = g ?
-      nai_tpointseq_linear_poly_iter(TSEQUENCESET_SEQ_N(ss, i), geo, g,
-        mindist, &t1) :
-      nai_tpointseq_linear_geo_iter(TSEQUENCESET_SEQ_N(ss, i), geo,
-        mindist, &t1);
+    double dist = nai_tpointseq_linear_geo_iter(TSEQUENCESET_SEQ_N(ss, i), geo,
+      mindist, &t1);
     if (dist < mindist)
     {
       mindist = dist;
@@ -1175,6 +2073,276 @@ nai_tpointseqset_linear_geo(const TSequenceSet *ss, const LWGEOM *geo,
   Datum value;
   tsequenceset_value_at_timestamptz(ss, t, false, &value);
   return tinstant_make_free(value, ss->temptype, t);
+}
+
+/*****************************************************************************/
+
+/*****************************************************************************
+ * GEOS-free analytic distance between a temporal point and a geometry
+ *
+ * A planar 2D linear temporal point is a moving disc of radius 0, so its
+ * nearest approach, shortest line and nearest approach instant against a
+ * geometry are computed by the shared engine that backs the temporal circular
+ * buffer distance, at radius 0. Geodetic, 3D, moving (multi)polygons and
+ * geometries the engine cannot decompose fall back to the liblwgeom
+ * trajectory path.
+ *****************************************************************************/
+
+/**
+ * @brief Decompose a geometry into boundary edges and build the Morton bucket
+ * hierarchy for the nearest-approach kernels
+ * @return False when the geometry has no usable edges (curved beyond circular
+ * arcs, or otherwise unsupported), so the caller falls back
+ */
+bool
+geodist_geom_build(const GSERIALIZED *gs, GeoDistGeom *g)
+{
+  LWGEOM *lw = lwgeom_from_gserialized(gs);
+  GeoDistEdge *segs = NULL;
+  int cap = 0, n = 0;
+  bool has_poly = false;
+  bool ok = geodist_geom_edges(lw, true, &segs, &cap, &n, &has_poly);
+  lwgeom_free(lw);
+  if (! ok || n == 0)
+  {
+    if (segs) pfree(segs);
+    return false;
+  }
+  double gxmin = DBL_MAX, gymin = DBL_MAX, gxmax = -DBL_MAX, gymax = -DBL_MAX;
+  for (int k = 0; k < n; k++)
+  {
+    if (segs[k].xmin < gxmin) gxmin = segs[k].xmin;
+    if (segs[k].ymin < gymin) gymin = segs[k].ymin;
+    if (segs[k].xmax > gxmax) gxmax = segs[k].xmax;
+    if (segs[k].ymax > gymax) gymax = segs[k].ymax;
+  }
+  int nbk = 0;
+  GeoDistBucket *bks = geodist_geom_build_buckets(segs, n, gxmin, gymin, gxmax,
+    gymax, &nbk);
+  g->segs = segs; g->n = n; g->has_poly = has_poly;
+  g->xmin = gxmin; g->ymin = gymin; g->xmax = gxmax; g->ymax = gymax;
+  g->bks = bks; g->nbk = nbk; g->rtree = NULL;
+  return true;
+}
+
+/**
+ * @brief Free the segments and bucket hierarchy of a geometry decomposition
+ */
+void
+geodist_geom_free(GeoDistGeom *g)
+{
+  if (g->bks) pfree((void *) g->bks);
+  if (g->segs) pfree((void *) g->segs);
+}
+
+/**
+ * @brief Point of a temporal point instant as a 2D point
+ */
+static const POINT2D *
+tgeoinst_point2d(const TInstant *inst)
+{
+  return GSERIALIZED_POINT2D_P(DatumGetGserializedP(tinstant_value_p(inst)));
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Update the nearest-approach minimum with one temporal point sequence,
+ * feeding each segment as a radius-0 disc
+ */
+static void
+tgeoseq_nad(const TSequence *seq, const GeoDistGeom *g, double *best)
+{
+  bool linear = MEOS_FLAGS_LINEAR_INTERP(seq->flags);
+  if (seq->count == 1 || ! linear)
+  {
+    for (int i = 0; i < seq->count && *best > 0.0; i++)
+    {
+      const POINT2D *p = tgeoinst_point2d(TSEQUENCE_INST_N(seq, i));
+      geodist_segm_nad(p->x, p->y, 0.0, p->x, p->y, 0.0, g, best);
+    }
+    return;
+  }
+  const TInstant *i1 = TSEQUENCE_INST_N(seq, 0);
+  for (int i = 1; i < seq->count && *best > 0.0; i++)
+  {
+    const TInstant *i2 = TSEQUENCE_INST_N(seq, i);
+    const POINT2D *p1 = tgeoinst_point2d(i1);
+    const POINT2D *p2 = tgeoinst_point2d(i2);
+    geodist_segm_nad(p1->x, p1->y, 0.0, p2->x, p2->y, 0.0, g, best);
+    i1 = i2;
+  }
+}
+
+/**
+ * @brief GEOS-free nearest approach distance between a planar temporal point
+ * and a geometry; returns false when the geometry does not decompose
+ */
+static bool
+nad_tgeo_geo_analytic(const Temporal *temp, const GSERIALIZED *gs,
+  double *result)
+{
+  GeoDistGeom g;
+  if (! geodist_geom_build(gs, &g))
+    return false;
+  double best = DBL_MAX;
+  assert(temptype_subtype(temp->subtype));
+  if (temp->subtype == TINSTANT)
+  {
+    const POINT2D *p = tgeoinst_point2d((TInstant *) temp);
+    geodist_segm_nad(p->x, p->y, 0.0, p->x, p->y, 0.0, &g, &best);
+  }
+  else if (temp->subtype == TSEQUENCE)
+    tgeoseq_nad((TSequence *) temp, &g, &best);
+  else
+  {
+    const TSequenceSet *ss = (TSequenceSet *) temp;
+    for (int i = 0; i < ss->count && best > 0.0; i++)
+      tgeoseq_nad(TSEQUENCESET_SEQ_N(ss, i), &g, &best);
+  }
+  geodist_geom_free(&g);
+  *result = best < 0.0 ? 0.0 : best;
+  return true;
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Update the shortest-line witness with one temporal point sequence
+ */
+static void
+tgeoseq_shortestline(const TSequence *seq, const GeoDistGeom *g,
+  GeoDistShortLine *w)
+{
+  bool linear = MEOS_FLAGS_LINEAR_INTERP(seq->flags);
+  if (seq->count == 1 || ! linear)
+  {
+    for (int i = 0; i < seq->count && ! (w->set && w->d <= 0.0); i++)
+    {
+      const POINT2D *p = tgeoinst_point2d(TSEQUENCE_INST_N(seq, i));
+      geodist_segm_shortestline(p->x, p->y, 0.0, p->x, p->y, 0.0, g, w);
+    }
+    return;
+  }
+  const TInstant *i1 = TSEQUENCE_INST_N(seq, 0);
+  for (int i = 1; i < seq->count && ! (w->set && w->d <= 0.0); i++)
+  {
+    const TInstant *i2 = TSEQUENCE_INST_N(seq, i);
+    const POINT2D *p1 = tgeoinst_point2d(i1);
+    const POINT2D *p2 = tgeoinst_point2d(i2);
+    geodist_segm_shortestline(p1->x, p1->y, 0.0, p2->x, p2->y, 0.0, g, w);
+    i1 = i2;
+  }
+}
+
+/**
+ * @brief GEOS-free shortest line between a planar temporal point and a
+ * geometry; returns NULL when the geometry does not decompose
+ */
+static GSERIALIZED *
+shortestline_tgeo_geo_analytic(const Temporal *temp, const GSERIALIZED *gs)
+{
+  GeoDistGeom g;
+  if (! geodist_geom_build(gs, &g))
+    return NULL;
+  GeoDistShortLine w;
+  w.d = DBL_MAX; w.set = false;
+  w.px = w.py = w.qx = w.qy = 0.0;
+  assert(temptype_subtype(temp->subtype));
+  if (temp->subtype == TINSTANT)
+  {
+    const POINT2D *p = tgeoinst_point2d((TInstant *) temp);
+    geodist_segm_shortestline(p->x, p->y, 0.0, p->x, p->y, 0.0, &g, &w);
+  }
+  else if (temp->subtype == TSEQUENCE)
+    tgeoseq_shortestline((TSequence *) temp, &g, &w);
+  else
+  {
+    const TSequenceSet *ss = (TSequenceSet *) temp;
+    for (int i = 0; i < ss->count && ! (w.set && w.d <= 0.0); i++)
+      tgeoseq_shortestline(TSEQUENCESET_SEQ_N(ss, i), &g, &w);
+  }
+  geodist_geom_free(&g);
+  if (! w.set)
+    return NULL;
+  int32_t srid = gserialized_get_srid(gs);
+  POINTARRAY *pa = ptarray_construct(0, 0, 2);
+  POINT4D p4;
+  p4.z = 0.0; p4.m = 0.0;
+  p4.x = w.px; p4.y = w.py;
+  ptarray_set_point4d(pa, 0, &p4);
+  p4.x = w.qx; p4.y = w.qy;
+  ptarray_set_point4d(pa, 1, &p4);
+  LWLINE *ln = lwline_construct(srid, NULL, pa);
+  GSERIALIZED *line = geo_serialize(lwline_as_lwgeom(ln));
+  lwline_free(ln);
+  return line;
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Update the nearest-approach-instant witness with one temporal point
+ * sequence
+ */
+static void
+tgeoseq_nai(const TSequence *seq, const GeoDistGeom *g, GeoDistNai *w)
+{
+  bool linear = MEOS_FLAGS_LINEAR_INTERP(seq->flags);
+  if (seq->count == 1 || ! linear)
+  {
+    for (int i = 0; i < seq->count && ! (w->set && w->d <= 0.0); i++)
+    {
+      const TInstant *inst = TSEQUENCE_INST_N(seq, i);
+      const POINT2D *p = tgeoinst_point2d(inst);
+      geodist_segm_nai(p->x, p->y, 0.0, inst->t, p->x, p->y, 0.0, inst->t, g, w);
+    }
+    return;
+  }
+  const TInstant *i1 = TSEQUENCE_INST_N(seq, 0);
+  for (int i = 1; i < seq->count && ! (w->set && w->d <= 0.0); i++)
+  {
+    const TInstant *i2 = TSEQUENCE_INST_N(seq, i);
+    const POINT2D *p1 = tgeoinst_point2d(i1);
+    const POINT2D *p2 = tgeoinst_point2d(i2);
+    geodist_segm_nai(p1->x, p1->y, 0.0, i1->t, p2->x, p2->y, 0.0, i2->t, g, w);
+    i1 = i2;
+  }
+}
+
+/**
+ * @brief GEOS-free nearest approach instant between a planar temporal point
+ * and a geometry; returns false when the geometry does not decompose
+ */
+static bool
+nai_tgeo_geo_analytic(const Temporal *temp, const GSERIALIZED *gs,
+  TimestampTz *result)
+{
+  GeoDistGeom g;
+  if (! geodist_geom_build(gs, &g))
+    return false;
+  GeoDistNai w;
+  w.d = DBL_MAX; w.t = 0; w.set = false;
+  assert(temptype_subtype(temp->subtype));
+  if (temp->subtype == TINSTANT)
+  {
+    const TInstant *inst = (TInstant *) temp;
+    const POINT2D *p = tgeoinst_point2d(inst);
+    geodist_segm_nai(p->x, p->y, 0.0, inst->t, p->x, p->y, 0.0, inst->t, &g, &w);
+  }
+  else if (temp->subtype == TSEQUENCE)
+    tgeoseq_nai((TSequence *) temp, &g, &w);
+  else
+  {
+    const TSequenceSet *ss = (TSequenceSet *) temp;
+    for (int i = 0; i < ss->count && ! (w.set && w.d <= 0.0); i++)
+      tgeoseq_nai(TSEQUENCESET_SEQ_N(ss, i), &g, &w);
+  }
+  geodist_geom_free(&g);
+  if (! w.set)
+    return false;
+  *result = w.t;
+  return true;
 }
 
 /*****************************************************************************/
@@ -1198,11 +2366,20 @@ nai_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
       gserialized_is_empty(gs))
     return NULL;
 
+  /* Planar 2D temporal point: the GEOS-free analytic engine at radius 0 */
+  if (tpoint_type(temp->temptype) && ! MEOS_FLAGS_GET_GEODETIC(temp->flags) &&
+      ! MEOS_FLAGS_GET_Z(temp->flags))
+  {
+    TimestampTz t;
+    if (nai_tgeo_geo_analytic(temp, gs, &t))
+    {
+      Datum value;
+      temporal_value_at_timestamptz(temp, t, false, &value);
+      return tinstant_make_free(value, temp->temptype, t);
+    }
+  }
+
   LWGEOM *geo = lwgeom_from_gserialized(gs);
-  /* Decomposition of a planar (multi)polygon for the fast point path */
-  NaiGeom *g = (tpoint_type(temp->temptype) &&
-    MEOS_FLAGS_LINEAR_INTERP(temp->flags) && temp->subtype != TINSTANT) ?
-    nai_geom_build(geo) : NULL;
   TInstant *result;
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
@@ -1212,16 +2389,14 @@ nai_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
       break;
     case TSEQUENCE:
       result = MEOS_FLAGS_LINEAR_INTERP(temp->flags) ?
-        nai_tpointseq_linear_geo((TSequence *) temp, geo, g) :
+        nai_tpointseq_linear_geo((TSequence *) temp, geo) :
         nai_tgeoseq_discstep_geo((TSequence *) temp, geo);
       break;
     default: /* TSEQUENCESET */
       result = MEOS_FLAGS_LINEAR_INTERP(temp->flags) ?
-        nai_tpointseqset_linear_geo((TSequenceSet *) temp, geo, g) :
+        nai_tpointseqset_linear_geo((TSequenceSet *) temp, geo) :
         nai_tgeoseqset_step_geo((TSequenceSet *) temp, geo);
   }
-  if (g)
-    nai_geom_free(g);
   lwgeom_free(geo);
   return result;
 }
@@ -1295,6 +2470,16 @@ nad_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
       ! ensure_same_geodetic_tspatial_geo(temp, gs) ||
       gserialized_is_empty(gs))
     return DBL_MAX;
+
+  /* Planar 2D temporal point: the GEOS-free analytic engine at radius 0,
+   * avoiding the trajectory materialisation */
+  if (tpoint_type(temp->temptype) && ! MEOS_FLAGS_GET_GEODETIC(temp->flags) &&
+      ! MEOS_FLAGS_GET_Z(temp->flags))
+  {
+    double result;
+    if (nad_tgeo_geo_analytic(temp, gs, &result))
+      return result;
+  }
 
   datum_func2 func = geo_distance_fn(temp->flags);
   GSERIALIZED *traj = tpoint_type(temp->temptype) ? 
@@ -1501,6 +2686,15 @@ shortestline_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(temp->flags);
   if (geodetic && ! ensure_has_not_Z_geo(gs))
     return NULL;
+
+  /* Planar 2D temporal point: the GEOS-free analytic engine at radius 0 */
+  if (! geodetic && tpoint_type(temp->temptype) &&
+      ! MEOS_FLAGS_GET_Z(temp->flags))
+  {
+    GSERIALIZED *line = shortestline_tgeo_geo_analytic(temp, gs);
+    if (line)
+      return line;
+  }
 
   GSERIALIZED *traj = tpoint_type(temp->temptype) ? 
     tpoint_trajectory(temp, UNARY_UNION_NO) :
