@@ -5,7 +5,6 @@ set(TEMPORAL_SOURCES
   meos.c
   meos_array.c
   meos_catalog.c
-  postgres_types.c
   skiplist.c
   set.c
   set_ops.c
