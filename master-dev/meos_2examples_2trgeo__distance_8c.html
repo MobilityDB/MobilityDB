@@ -125,9 +125,6 @@ Functions</h2></td></tr>
 <tr class="memitem:a4aa189e4f8f41718135fe6bcb2a73573"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2examples_2trgeo__distance_8c_a4aa189e4f8f41718135fe6bcb2a73573.html#a4aa189e4f8f41718135fe6bcb2a73573">parse_ais_timestamp</a> (const char *s, <a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a> *out)</td></tr>
 <tr class="memdesc:a4aa189e4f8f41718135fe6bcb2a73573"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parse an AIS timestamp (<code>DD/MM/YYYY HH:MM:SS</code>) into TimestampTz.  <a href="meos_2examples_2trgeo__distance_8c_a4aa189e4f8f41718135fe6bcb2a73573.html#a4aa189e4f8f41718135fe6bcb2a73573">More...</a><br /></td></tr>
 <tr class="separator:a4aa189e4f8f41718135fe6bcb2a73573"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a71c16157ed01342d43e2f1bba57d13c7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTSequence.html">TSequence</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2examples_2trgeo__distance_8c_a71c16157ed01342d43e2f1bba57d13c7.html#a71c16157ed01342d43e2f1bba57d13c7">trgeoseq_make</a> (const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *geom, <a class="el" href="structTInstant.html">TInstant</a> **instants, int count, bool lower_inc, bool upper_inc, <a class="el" href="meos_8h_ad06cc805fa18b06ac937fd98a9eba0e7.html#ad06cc805fa18b06ac937fd98a9eba0e7">interpType</a> interp, bool normalize)</td></tr>
-<tr class="memdesc:a71c16157ed01342d43e2f1bba57d13c7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct a temporal sequence from an array of temporal instants.  <a href="meos_2examples_2trgeo__distance_8c_a71c16157ed01342d43e2f1bba57d13c7.html#a71c16157ed01342d43e2f1bba57d13c7">More...</a><br /></td></tr>
-<tr class="separator:a71c16157ed01342d43e2f1bba57d13c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >A tutorial program that reads one full day of AIS data from a CSV file provided by the Danish Maritime Authority in <a href="https://web.ais.dk/aisdata/">https://web.ais.dk/aisdata/</a> and constructs for each ship a temporal rigid geometry (<code>trgeometry</code>), where the reference geometry is the pentagon-shaped hull derived from the AIS antenna offsets (A, B, C, D) and the pose path is the projected antenna position plus the heading. </p>
@@ -141,12 +138,8 @@ Functions</h2></td></tr>
 <p >Coordinates are projected from WGS84 (EPSG:4326) to EPSG:25832 (UTM 32N) because the trgeometry pose translation must share the metric system of the hull. Heading (degrees clockwise from N) is converted to pose theta (radians counter-clockwise from +x) by <code>theta = (90° - heading) * π/180</code>.</p>
 <p >Please notice that the <code>data</code> directory DOES NOT contain the input CSV file; download <code>aisdk-2026-02-26.csv</code> from the website above.</p>
 <p >The program assumes that the input file fits the size constraints below (max 64 ships, max 5000 instants per ship). The defaults are 8 ships and 500 instants per ship; both can be overridden on the command line.</p>
-<p >The program is intentionally short (single C file, only public MEOS API</p><ul>
-<li><p class="startli">one extern for <code>trgeoseq_make</code>) so that the canonical pipeline</p>
-<p class="startli">AIS CSV → trgeometry trips → trgeo/trgeo distance → closest approach</p>
-</li>
-</ul>
-<p >fits in one read.</p>
+<p >The program is intentionally short (single C file, only public MEOS API) so that the canonical pipeline </p><pre class="fragment"> AIS CSV → trgeometry trips → trgeo/trgeo distance → closest approach
+</pre><p> fits in one read.</p>
 <p >Build: gcc -Wall -O2 -I/usr/local/include -o trgeo_distance \ trgeo_distance.c -L/usr/local/lib -lmeos -lm</p>
 <p >Run: ./trgeo_distance [max_trips] [max_instants_per_trip] defaults: max_trips = 8, max_instants_per_trip = 500 </p>
 </div></div><!-- contents -->
