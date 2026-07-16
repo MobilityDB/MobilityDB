@@ -1336,7 +1336,12 @@ Temporal_segments(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int count;
+#if RGEO
+  TSequence **segments = (temp->temptype == T_TRGEOMETRY) ?
+    trgeometry_segments(temp, &count) : temporal_segments(temp, &count);
+#else
   TSequence **segments = temporal_segments(temp, &count);
+#endif /* RGEO */
   ArrayType *result = temparr_to_array((Temporal **) segments, count,
     FREE_ALL);
   PG_FREE_IF_COPY(temp, 0);
@@ -1662,7 +1667,14 @@ Temporalarr_round(PG_FUNCTION_ARGS)
   int maxdd = PG_GETARG_INT32(1);
 
   Temporal **temparr = temparr_extract(array, &count);
+#if RGEO
+  Temporal **resarr = palloc(sizeof(Temporal *) * count);
+  for (int i = 0; i < count; i++)
+    resarr[i] = (temparr[i]->temptype == T_TRGEOMETRY) ?
+      trgeometry_round(temparr[i], maxdd) : temporal_round(temparr[i], maxdd);
+#else
   Temporal **resarr = temparr_round(temparr, count, maxdd);
+#endif /* RGEO */
   ArrayType *result = temparr_to_array(resarr, count, FREE_ALL);
   pfree(temparr);
   PG_FREE_IF_COPY(array, 0);
