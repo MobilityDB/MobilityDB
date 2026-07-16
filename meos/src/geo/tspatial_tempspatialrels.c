@@ -844,7 +844,7 @@ tcovers_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
       return NULL;
     return tinterrel_tgeo_geo(temp, gs, TINTERSECTS);
   }
-  return tspatialrel_tgeo_geo(temp, gs, (varfunc) datum_geom_covers,
+  return tspatialrel_tgeo_geo(temp, gs, (varfunc) datum_geo_covers2d,
     INVERT);
 }
 
@@ -863,7 +863,7 @@ tcovers_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
 Temporal *
 tcovers_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  return tspatialrel_tgeo_geo(temp, gs, (varfunc) datum_geom_covers,
+  return tspatialrel_tgeo_geo(temp, gs, (varfunc) datum_geo_covers2d,
     INVERT_NO);
 }
 
@@ -882,7 +882,7 @@ Temporal *
 tcovers_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 {
   return tspatialrel_tgeo_tgeo(temp1, temp2,
-    (varfunc) &datum_geom_covers);
+    (varfunc) &datum_geo_covers2d);
 }
 
 /*****************************************************************************

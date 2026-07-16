@@ -92,6 +92,8 @@ extern GSERIALIZED *GEOS2POSTGIS(GEOSGeom geom, char want3d);
 
 extern bool geom_spatialrel(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   spatialRel rel);
+extern bool meos_point_in_polygon(const GSERIALIZED *gs1,
+  const GSERIALIZED *gs2, spatialRel rel);
 
 /* Functions adapted from lwgeom_lrs.c */
 
