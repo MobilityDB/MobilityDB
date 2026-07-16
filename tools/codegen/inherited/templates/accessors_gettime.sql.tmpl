@@ -1,0 +1,5 @@
+-- time is a reserved word in SQL
+CREATE FUNCTION getTime({TEMP})
+  RETURNS tstzspanset
+  AS 'MODULE_PATHNAME', 'Temporal_time'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

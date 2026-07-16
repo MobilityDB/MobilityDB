@@ -270,18 +270,26 @@ accessor_families:
     baseset:   cbufferset
     file:      mobilitydb/sql/cbuffer/202_tcbuffer.in.sql
     reference: true
-    # The accessor surface splits into region-in-file blocks. `core` = the
-    # T-agnostic run numInstants..segments ({TEMP}-only). `value` = the scalar
-    # value run startValue/endValue/valueN/valueAtTimestamp, whose signatures
-    # return the {BASE} value type. `getvalue` = the getValue accessor (also
-    # {BASE}), which sits isolated above the getValues collection accessor.
-    # `collection` = getValues, returning the {BASESET} value-collection type.
+    # The accessor surface splits into region-in-file blocks, each a contiguous
+    # run bounded by the value-shaped accessors that interleave it. The T-agnostic
+    # runs ({TEMP}-only) are `head` (tempSubtype/tempBasetype/interp/memSize),
+    # `gettimestamp`, `gettime`, `bounds` (duration/lowerInc/upperInc), and `core`
+    # (numInstants..segments). The value-shaped runs are `getvalue` and `value`
+    # (the {BASE} scalar accessors) and `collection` (getValues -> {BASESET}).
     blocks:
-      - kind:     core
-        template: accessors.sql.tmpl
+      - kind:     head
+        template: accessors_head.sql.tmpl
       - kind:     getvalue
         template: accessors_getvalue.sql.tmpl
-      - kind:     value
-        template: accessors_value.sql.tmpl
+      - kind:     gettimestamp
+        template: accessors_gettimestamp.sql.tmpl
       - kind:     collection
         template: accessors_collection.sql.tmpl
+      - kind:     gettime
+        template: accessors_gettime.sql.tmpl
+      - kind:     value
+        template: accessors_value.sql.tmpl
+      - kind:     bounds
+        template: accessors_bounds.sql.tmpl
+      - kind:     core
+        template: accessors.sql.tmpl

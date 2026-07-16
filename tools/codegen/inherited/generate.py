@@ -259,13 +259,15 @@ def extract_spatialrels(filetext: str, family: str) -> str:
 # --- SQL accessors (per-family, region-in-file) --------------------------
 # The Temporal<T> accessor surface is declared INLINE in each family's type
 # file (052_tgeo, 202_tcbuffer, ...), not a separate numbered file, and splits
-# into region-in-file blocks (see accessor_blocks): the `core` run
-# (numInstants..segments) is {TEMP}-only — every wrapper is a pure CREATE FUNCTION
-# over a generic Temporal_* symbol whose signature is independent of the base value
-# type; the `value` run (startValue/endValue/valueN/valueAtTimestamp) carries the
-# {BASE}-typed value signature (as does the `getvalue` accessor, which sits
-# isolated above the collection accessor); the `collection` accessor (getValues)
-# returns the {BASESET} value-collection type.
+# into region-in-file blocks (see accessor_blocks), each a contiguous run bounded
+# by the value-shaped accessors that interleave it. The T-agnostic runs are
+# {TEMP}-only — every wrapper is a pure CREATE FUNCTION over a generic Temporal_*
+# symbol whose signature is independent of the base value type: `head`
+# (tempSubtype/tempBasetype/interp/memSize), `gettimestamp`, `gettime`, `bounds`
+# (duration/lowerInc/upperInc), `core` (numInstants..segments). The value-shaped
+# runs carry the base value type: `value` (startValue/endValue/valueN/
+# valueAtTimestamp) and `getvalue` are {BASE}-typed; the `collection` accessor
+# (getValues) returns the {BASESET} value-collection type.
 def accessor_blocks(fam: dict) -> list:
     """The accessor regions this family hosts. Defaults to the single T-agnostic
     `core` run (numInstants..segments). A family may declare extra blocks via
