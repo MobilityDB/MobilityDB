@@ -256,11 +256,13 @@ spatialrel_families:
           tgeo_geo:  "a temporal geometry and a geometry/geography are {word} within a distance"
 
 # ---------------------------------------------------------------------------
-# Accessor axis (SQL, per-family, region-in-file). The Temporal<T> accessor
-# surface lives INLINE in each family's type file. The T-agnostic run
-# (numInstants..segments) is pure CREATE FUNCTION wiring to generic Temporal_*
-# symbols whose signatures do not depend on the base value type, so it is
-# {TEMP}-only. The generator emits the region between the GENERATED-ACCESSORS
+# Accessor axis (SQL, per-family, region-in-file). The whole Temporal<T> accessor
+# surface (tempSubtype..segments) lives INLINE in each family's type file and
+# follows ONE canonical order for every temporal type — the order of the
+# "Accessors" <sect1> in doc/temporal_types_p1.xml. A single generic template
+# (templates/accessors.sql.tmpl) emits the whole block; the only per-family
+# variation is the tokens `temp` ({TEMP}), `base` ({BASE}) and `baseset`
+# ({BASESET}). The generator emits the region between the GENERATED-ACCESSORS
 # markers in `file`. `reference: true` = self-regen must reproduce the committed
 # region byte-for-byte.
 accessor_families:
@@ -270,26 +272,3 @@ accessor_families:
     baseset:   cbufferset
     file:      mobilitydb/sql/cbuffer/202_tcbuffer.in.sql
     reference: true
-    # The accessor surface splits into region-in-file blocks, each a contiguous
-    # run bounded by the value-shaped accessors that interleave it. The T-agnostic
-    # runs ({TEMP}-only) are `head` (tempSubtype/tempBasetype/interp/memSize),
-    # `gettimestamp`, `gettime`, `bounds` (duration/lowerInc/upperInc), and `core`
-    # (numInstants..segments). The value-shaped runs are `getvalue` and `value`
-    # (the {BASE} scalar accessors) and `collection` (getValues -> {BASESET}).
-    blocks:
-      - kind:     head
-        template: accessors_head.sql.tmpl
-      - kind:     getvalue
-        template: accessors_getvalue.sql.tmpl
-      - kind:     gettimestamp
-        template: accessors_gettimestamp.sql.tmpl
-      - kind:     collection
-        template: accessors_collection.sql.tmpl
-      - kind:     gettime
-        template: accessors_gettime.sql.tmpl
-      - kind:     value
-        template: accessors_value.sql.tmpl
-      - kind:     bounds
-        template: accessors_bounds.sql.tmpl
-      - kind:     core
-        template: accessors.sql.tmpl
