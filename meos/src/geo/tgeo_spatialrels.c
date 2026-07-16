@@ -86,6 +86,17 @@ datum_geom_covers(Datum geom1, Datum geom2)
 }
 
 /**
+ * @brief Return a Datum true if the first geometry covers the second one,
+ * computed natively without GEOS
+ */
+Datum
+datum_geo_covers2d(Datum geom1, Datum geom2)
+{
+  return BoolGetDatum(geo_covers2d(DatumGetGserializedP(geom1),
+    DatumGetGserializedP(geom2)));
+}
+
+/**
  * @brief Return a Datum true if two geometries are disjoint in 2D
  */
 Datum
@@ -805,9 +816,9 @@ ea_covers_tgeo_geo_common(const Temporal *temp, const GSERIALIZED *gs, bool ever
     return -1;
   int result = ever ?
     /* Iterate for each composing geometry */
-    ea_spatialrel_tspatial_geo(temp, gs, &datum_geom_covers, EVER, invert) :
+    ea_spatialrel_tspatial_geo(temp, gs, &datum_geo_covers2d, EVER, invert) :
     /* Compute the result from the traversed area and the geometry */
-    spatialrel_tgeo_geo(temp, gs, (Datum) NULL, (varfunc) &datum_geom_covers,
+    spatialrel_tgeo_geo(temp, gs, (Datum) NULL, (varfunc) &datum_geo_covers2d,
       2, invert, ALWAYS);
   return result ? 1 : 0;
 }
@@ -915,7 +926,7 @@ acovers_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 int
 ea_covers_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
 {
-  return ea_spatialrel_tgeo_tgeo(temp1, temp2, &datum_geom_covers, ever);
+  return ea_spatialrel_tgeo_tgeo(temp1, temp2, &datum_geo_covers2d, ever);
 }
 
 #if MEOS
@@ -997,7 +1008,7 @@ ea_disjoint_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
   /* Temporal point case: "ever disjoint" reduces to "not always covered". */
   if (tpoint_type(temp->temptype))
   {
-    datum_func2 func = &datum_geom_covers;
+    datum_func2 func = &datum_geo_covers2d;
     result = spatialrel_tgeo_geo(temp, gs, (Datum) NULL, (varfunc) func, 2,
       INVERT, ALWAYS);
     return INVERT_RESULT(result);
@@ -1723,7 +1734,7 @@ ea_dwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
   /* ALWAYS */
   GSERIALIZED *buffer = geom_buffer(gs, dist, "");
   int result = spatialrel_tgeo_geo(temp, buffer, (Datum) NULL,
-    (varfunc) &datum_geom_covers, 2, INVERT, ALWAYS);
+    (varfunc) &datum_geo_covers2d, 2, INVERT, ALWAYS);
   pfree(buffer);
   return result;
 }

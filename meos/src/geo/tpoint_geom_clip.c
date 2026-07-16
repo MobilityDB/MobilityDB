@@ -52,6 +52,7 @@
 #include "temporal/temporal_restrict.h"
 #include "geo/tgeo.h"
 #include "geo/tgeo_spatialfuncs.h"
+#include "geo/postgis_funcs.h"
 
 /* Minimum number of edges to use an R-tree index in order to compensate the
  * overhead of the tree construction and destruction */
@@ -1666,6 +1667,244 @@ geo_intersects2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   meos_array_destroy(edges2);
   pfree(ptr1);
   pfree(ptr2);
+  return result;
+}
+
+/*****************************************************************************
+ * Native GEOS-free planar covers predicate
+ *****************************************************************************/
+
+/**
+ * @brief Return true if a point lies in the closure (interior or boundary) of
+ * the geometry whose edges are given
+ * @details A point is in the closure when it lies on any extracted edge -- the
+ * 1D extent of a point/line geometry or the boundary of a polygon -- or, when
+ * the geometry has an areal component, inside its polygonal interior. The
+ * #point_in_polygon test already reports points on a polygon boundary as
+ * inside, so the explicit on-edge scan only adds the lower-dimensional
+ * (point/line/standalone-arc) closure that the even-odd test ignores.
+ */
+static bool
+edges_contain_point(double px, double py, Edge **edges, int nedges,
+  bool has_area)
+{
+  for (int i = 0; i < nedges; i++)
+  {
+    const Edge *e = edges[i];
+    if (e->etype == EDGE_POINT)
+    {
+      if (fabs(px - e->x1) < FP_TOLERANCE && fabs(py - e->y1) < FP_TOLERANCE)
+        return true;
+    }
+    else if (e->etype == EDGE_ARC || e->etype == EDGE_POLYARC)
+    {
+      if (point_on_arc(px, py, e))
+        return true;
+    }
+    else /* EDGE_LINE, EDGE_POLY */
+    {
+      if (point_on_segment(px, py, e->x1, e->y1, e->x2, e->y2))
+        return true;
+    }
+  }
+  if (has_area && point_in_polygon(px, py, edges, nedges))
+    return true;
+  return false;
+}
+
+/**
+ * @brief Return true if a straight edge lies entirely within the closure of
+ * the geometry whose edges are given
+ * @details The edge is split at every crossing with an edge of the covering
+ * geometry, and the midpoint of each resulting sub-segment is tested for
+ * closure membership. An edge whose endpoints are both in the closure can
+ * still leave it between two crossings (through a concavity or a hole), which
+ * this per-sub-segment test detects.
+ */
+static bool
+segment_within_closure(const Edge *e, Edge **aedges, int na, bool has_area)
+{
+  double *ts = palloc(sizeof(double) * (size_t) (2 * na + 2));
+  int nt = 0;
+  ts[nt++] = 0.0;
+  ts[nt++] = 1.0;
+  for (int i = 0; i < na; i++)
+  {
+    const Edge *ea = aedges[i];
+    if (ea->etype == EDGE_ARC || ea->etype == EDGE_POLYARC)
+    {
+      double out[2];
+      int m = arcsegm_intersect(e->x1, e->y1, e->dx, e->dy, ea, out);
+      for (int k = 0; k < m; k++)
+        ts[nt++] = out[k];
+    }
+    else
+    {
+      IntersectResult r = linesegm_intersect(e->x1, e->y1, e->dx, e->dy,
+        ea->x1, ea->y1, ea->x2, ea->y2);
+      if (r.type == INTERSECT_POINT)
+        ts[nt++] = r.t0;
+      else if (r.type == INTERSECT_OVERLAP)
+      {
+        ts[nt++] = r.t0;
+        ts[nt++] = r.t1;
+      }
+    }
+  }
+  qsort(ts, (size_t) nt, sizeof(double), float8_qsort_cmp);
+  bool result = true;
+  for (int i = 0; i < nt - 1 && result; i++)
+  {
+    if (ts[i + 1] - ts[i] < FP_TOLERANCE)
+      continue;
+    double tm = 0.5 * (ts[i] + ts[i + 1]);
+    double mx = e->x1 + tm * e->dx, my = e->y1 + tm * e->dy;
+    if (! edges_contain_point(mx, my, aedges, na, has_area))
+      result = false;
+  }
+  pfree(ts);
+  return result;
+}
+
+/**
+ * @brief Return true if an arc edge lies entirely within the closure of the
+ * geometry whose edges are given
+ * @details The arc is sampled at interior angles across its span; each sample
+ * must lie in the closure. Endpoints are tested by the caller.
+ */
+static bool
+arc_within_closure(const Edge *e, Edge **aedges, int na, bool has_area)
+{
+  const int nsamp = 16;
+  double sweep = e->ccw ? angle_normalize(e->theta1 - e->theta0) :
+    - angle_normalize(e->theta0 - e->theta1);
+  for (int k = 1; k < nsamp; k++)
+  {
+    double phi = e->theta0 + sweep * ((double) k / nsamp);
+    double px = e->cx + e->radius * cos(phi);
+    double py = e->cy + e->radius * sin(phi);
+    if (! edges_contain_point(px, py, aedges, na, has_area))
+      return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Return true if a geometry is a (multi)point
+ */
+static bool
+geo_is_point(const GSERIALIZED *gs)
+{
+  int type = gserialized_get_type(gs);
+  return type == POINTTYPE || type == MULTIPOINTTYPE;
+}
+
+/**
+ * @brief Return true if a geometry is a (multi)polygon
+ */
+static bool
+geo_is_poly(const GSERIALIZED *gs)
+{
+  int type = gserialized_get_type(gs);
+  return type == POLYGONTYPE || type == MULTIPOLYGONTYPE;
+}
+
+/**
+ * @brief Return true if the first 2D geometry covers the second, computed
+ * natively without GEOS
+ * @details Geometry A covers geometry B when every point of B lies in the
+ * closure of A, that is, B has no point in A's exterior (the DE-9IM
+ * `T*****FF*` family). Every vertex of B, and the midpoint of every
+ * sub-segment obtained by splitting each edge of B at its crossings with A,
+ * must lie in A's closure. Supports the geometry types the clip engine
+ * extracts into edges: points, (multi)lines, (multi)polygons with holes,
+ * triangles, circular strings, curve polygons, and collections of these.
+ * The dispatch mirrors #geom_spatialrel: an empty operand and a
+ * (multi)point/(multi)polygon pair are handled by the same native
+ * #meos_point_in_polygon short-circuit, so only the general case replaces the
+ * GEOS covers call.
+ * @pre The arguments have the same SRID
+ */
+bool
+geo_covers2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
+{
+  assert(gs1); assert(gs2);
+  /* An empty geometry covers nothing and is covered by nothing, matching
+   * PostGIS ST_Covers */
+  if (gserialized_is_empty(gs1) || gserialized_is_empty(gs2))
+    return false;
+  /* Covers is reflexive: every non-empty geometry covers itself (it is a subset
+   * of its own closure). Short-circuit byte-identical operands, mirroring
+   * #geo_equals. This is exact and FP-free, hence environment-independent —
+   * unlike the general edge test, whose point-on-boundary classification sits on
+   * a floating-point knife edge for a degenerate self-covering geometry (e.g. an
+   * antimeridian-wrapping H3 cell boundary), where -O2 coverage instrumentation
+   * can flip the result */
+  if (VARSIZE(gs1) == VARSIZE(gs2) && ! memcmp(gs1, gs2, VARSIZE(gs1)))
+    return true;
+  /* Bounding-box reject: covering requires the 2D boxes to overlap. Covers is a
+   * planar (2D) predicate, so the reject must ignore Z; use the same canonical
+   * 2D box overlap #geom_spatialrel applies before delegating to GEOS, rather
+   * than #overlaps_stbox_stbox which compares Z for a 3D/3D pair and would
+   * wrongly reject geometries whose X/Y overlap but whose Z ranges are disjoint */
+  GBOX box1, box2;
+  memset(&box1, 0, sizeof(GBOX));
+  memset(&box2, 0, sizeof(GBOX));
+  if (gserialized_get_gbox_p(gs1, &box1) && gserialized_get_gbox_p(gs2, &box2) &&
+      gbox_overlaps_2d(&box1, &box2) == LW_FALSE)
+    return false;
+  /* A (multi)point/(multi)polygon pair (in either order) is resolved by the
+   * native point-in-polygon test, exactly as #geom_spatialrel does before
+   * delegating to GEOS */
+  if ((geo_is_point(gs1) && geo_is_poly(gs2)) ||
+      (geo_is_poly(gs1) && geo_is_point(gs2)))
+    return meos_point_in_polygon(gs1, gs2, COVERS);
+
+  /* Extract the edges of both geometries */
+  LWGEOM *lw1 = lwgeom_from_gserialized(gs1);
+  LWGEOM *lw2 = lwgeom_from_gserialized(gs2);
+  MeosArray *edges1 = geom_extract_edges(lw1);
+  MeosArray *edges2 = geom_extract_edges(lw2);
+  lwgeom_free(lw1); lwgeom_free(lw2);
+  int na = (int) edges1->count, nb = (int) edges2->count;
+  Edge **aedges = palloc(sizeof(Edge *) * na);
+  Edge **bedges = palloc(sizeof(Edge *) * nb);
+  for (int i = 0; i < na; i++)
+    aedges[i] = (Edge *) meos_array_get(edges1, i);
+  for (int i = 0; i < nb; i++)
+    bedges[i] = (Edge *) meos_array_get(edges2, i);
+  bool has_area = edges_have_area(aedges, na);
+
+  bool result = true;
+  /* Every vertex of B must lie in A's closure */
+  for (int i = 0; i < nb && result; i++)
+  {
+    const Edge *e = bedges[i];
+    if (! edges_contain_point(e->x1, e->y1, aedges, na, has_area))
+      result = false;
+    else if (e->etype != EDGE_POINT &&
+      ! edges_contain_point(e->x2, e->y2, aedges, na, has_area))
+      result = false;
+  }
+  /* Every edge of B must stay within A's closure */
+  for (int i = 0; i < nb && result; i++)
+  {
+    const Edge *e = bedges[i];
+    if (e->etype == EDGE_POINT)
+      continue;
+    if (e->etype == EDGE_ARC || e->etype == EDGE_POLYARC)
+    {
+      if (! arc_within_closure(e, aedges, na, has_area))
+        result = false;
+    }
+    else if (! segment_within_closure(e, aedges, na, has_area))
+      result = false;
+  }
+
+  meos_array_destroy(edges1);
+  meos_array_destroy(edges2);
+  pfree(aedges);
+  pfree(bedges);
   return result;
 }
 

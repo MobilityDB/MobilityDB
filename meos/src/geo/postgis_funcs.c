@@ -1484,7 +1484,7 @@ gserialized_is_poly(const GSERIALIZED* gs)
  * @note This function is based PostGIS function @p pip_short_circuit bypassing
  * the cache
  */
-static bool
+bool
 meos_point_in_polygon(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   spatialRel rel)
 {
