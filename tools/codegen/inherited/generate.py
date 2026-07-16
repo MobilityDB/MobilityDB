@@ -263,8 +263,9 @@ def extract_spatialrels(filetext: str, family: str) -> str:
 # (numInstants..segments) is {TEMP}-only — every wrapper is a pure CREATE FUNCTION
 # over a generic Temporal_* symbol whose signature is independent of the base value
 # type; the `value` run (startValue/endValue/valueN/valueAtTimestamp) carries the
-# {BASE}-typed value signature. getValue and the getValues collection accessor
-# interleave above the value run and stay hand-written until their own blocks land.
+# {BASE}-typed value signature; the `collection` accessor (getValues) returns the
+# {BASESET} value-collection type. getValue interleaves above the collection
+# accessor and stays hand-written until its own block lands.
 def accessor_blocks(fam: dict) -> list:
     """The accessor regions this family hosts. Defaults to the single T-agnostic
     `core` run (numInstants..segments). A family may declare extra blocks via
@@ -286,12 +287,15 @@ def _accessors_markers(family: str, kind: str, template: str):
 
 
 def render_accessors(fam: dict, block: dict) -> str:
-    """Render one accessor region: the block's template with {TEMP} (and {BASE}
-    for value-shaped accessors) substituted, wrapped in the blank lines that
-    separate it from the surrounding markers (leading blank after BEGIN, trailing
-    "\\n" before END). Roundtrips exactly against the committed reference region."""
+    """Render one accessor region: the block's template with {TEMP} (plus {BASE}
+    for the scalar-value run and {BASESET} for the value-collection accessor)
+    substituted, wrapped in the blank lines that separate it from the surrounding
+    markers (leading blank after BEGIN, trailing "\\n" before END). Roundtrips
+    exactly against the committed reference region."""
     body = (TEMPLATES / block["template"]).read_text().strip("\n")
-    body = body.replace("{TEMP}", fam["temp"]).replace("{BASE}", fam.get("base", ""))
+    body = (body.replace("{TEMP}", fam["temp"])
+                .replace("{BASESET}", fam.get("baseset", ""))
+                .replace("{BASE}", fam.get("base", "")))
     return "\n" + body + "\n"
 
 

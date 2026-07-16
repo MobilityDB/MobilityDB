@@ -1,0 +1,5 @@
+-- values is a reserved word in SQL
+CREATE FUNCTION getValues({TEMP})
+  RETURNS {BASESET}
+  AS 'MODULE_PATHNAME', 'Temporal_valueset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
