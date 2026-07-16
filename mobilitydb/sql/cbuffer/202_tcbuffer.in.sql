@@ -300,6 +300,9 @@ CREATE FUNCTION getTime(tcbuffer)
   AS 'MODULE_PATHNAME', 'Temporal_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- GENERATED-ACCESSORS-VALUE-BEGIN cbuffer — tools/codegen/inherited/generate.py from templates/accessors_value.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.yaml (accessor_families) and re-run.
+
 CREATE FUNCTION startValue(tcbuffer)
   RETURNS cbuffer
   AS 'MODULE_PATHNAME', 'Temporal_start_value'
@@ -319,6 +322,7 @@ CREATE FUNCTION valueAtTimestamp(tcbuffer, timestamptz)
   RETURNS cbuffer
   AS 'MODULE_PATHNAME', 'Temporal_value_at_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- GENERATED-ACCESSORS-VALUE-END cbuffer
 
 CREATE FUNCTION duration(tcbuffer, boundspan boolean DEFAULT FALSE)
   RETURNS interval

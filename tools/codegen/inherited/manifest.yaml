@@ -266,5 +266,17 @@ spatialrel_families:
 accessor_families:
   - family:    cbuffer
     temp:      tcbuffer
+    base:      cbuffer
     file:      mobilitydb/sql/cbuffer/202_tcbuffer.in.sql
     reference: true
+    # The accessor surface splits into region-in-file blocks. `core` = the
+    # T-agnostic run numInstants..segments ({TEMP}-only). `value` = the scalar
+    # value run startValue/endValue/valueN/valueAtTimestamp, whose signatures
+    # return the {BASE} value type. getValue is a value accessor too but sits
+    # isolated above the getValues collection accessor, so it stays hand-written
+    # until the value-collection block lands.
+    blocks:
+      - kind:     core
+        template: accessors.sql.tmpl
+      - kind:     value
+        template: accessors_value.sql.tmpl

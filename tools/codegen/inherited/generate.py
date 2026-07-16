@@ -258,39 +258,52 @@ def extract_spatialrels(filetext: str, family: str) -> str:
 
 # --- SQL accessors (per-family, region-in-file) --------------------------
 # The Temporal<T> accessor surface is declared INLINE in each family's type
-# file (052_tgeo, 202_tcbuffer, ...), not a separate numbered file. This region
-# holds the T-agnostic run (numInstants..segments): every wrapper is a pure
-# CREATE FUNCTION over a generic Temporal_* symbol whose signature is independent
-# of the base value type, so the block is {TEMP}-only. The value-shaped accessors
-# (getValue/valueN/getValues/...) interleave above this run and are hand-written
-# outside the markers, as they carry a {BASE}-typed signature.
-def _accessors_markers(family: str):
-    begin = (f"-- GENERATED-ACCESSORS-BEGIN {family} — "
-             "tools/codegen/inherited/generate.py from templates/accessors.sql.tmpl;\n"
+# file (052_tgeo, 202_tcbuffer, ...), not a separate numbered file, and splits
+# into region-in-file blocks (see accessor_blocks): the `core` run
+# (numInstants..segments) is {TEMP}-only — every wrapper is a pure CREATE FUNCTION
+# over a generic Temporal_* symbol whose signature is independent of the base value
+# type; the `value` run (startValue/endValue/valueN/valueAtTimestamp) carries the
+# {BASE}-typed value signature. getValue and the getValues collection accessor
+# interleave above the value run and stay hand-written until their own blocks land.
+def accessor_blocks(fam: dict) -> list:
+    """The accessor regions this family hosts. Defaults to the single T-agnostic
+    `core` run (numInstants..segments). A family may declare extra blocks via
+    `blocks` in the manifest — e.g. the scalar-value run startValue..valueAtTimestamp
+    (kind `value`, {BASE}-typed), which is contiguous in cbuffer but sits below the
+    `getValues` collection accessor, so it is a distinct region from `core`."""
+    return fam.get("blocks", [{"kind": "core", "template": "accessors.sql.tmpl"}])
+
+
+def _accessors_markers(family: str, kind: str, template: str):
+    # `core` keeps the un-infixed marker so the committed reference region is
+    # byte-preserved; extra kinds carry an -UPPER infix (value -> -VALUE).
+    infix = "" if kind == "core" else "-" + kind.upper()
+    begin = (f"-- GENERATED-ACCESSORS{infix}-BEGIN {family} — "
+             f"tools/codegen/inherited/generate.py from templates/{template};\n"
              "-- DO NOT EDIT BY HAND; edit the template + manifest.yaml "
              "(accessor_families) and re-run.\n")
-    return begin, f"-- GENERATED-ACCESSORS-END {family}\n"
+    return begin, f"-- GENERATED-ACCESSORS{infix}-END {family}\n"
 
 
-def render_accessors(fam: dict) -> str:
-    """Render the T-agnostic accessor region for one family: the template body
-    with {TEMP} substituted, wrapped in the blank lines that separate it from the
-    surrounding markers (leading blank after BEGIN, trailing "\\n" before END).
-    Roundtrips exactly against the committed reference region."""
-    body = (TEMPLATES / "accessors.sql.tmpl").read_text().strip("\n")
-    body = body.replace("{TEMP}", fam["temp"])
+def render_accessors(fam: dict, block: dict) -> str:
+    """Render one accessor region: the block's template with {TEMP} (and {BASE}
+    for value-shaped accessors) substituted, wrapped in the blank lines that
+    separate it from the surrounding markers (leading blank after BEGIN, trailing
+    "\\n" before END). Roundtrips exactly against the committed reference region."""
+    body = (TEMPLATES / block["template"]).read_text().strip("\n")
+    body = body.replace("{TEMP}", fam["temp"]).replace("{BASE}", fam.get("base", ""))
     return "\n" + body + "\n"
 
 
-def splice_accessors(filetext: str, family: str, rendered: str) -> str:
-    begin, end = _accessors_markers(family)
+def splice_accessors(filetext: str, family: str, block: dict, rendered: str) -> str:
+    begin, end = _accessors_markers(family, block["kind"], block["template"])
     b = filetext.index(begin) + len(begin)
     e = filetext.index(end)
     return filetext[:b] + rendered + filetext[e:]
 
 
-def extract_accessors(filetext: str, family: str) -> str:
-    begin, end = _accessors_markers(family)
+def extract_accessors(filetext: str, family: str, block: dict) -> str:
+    begin, end = _accessors_markers(family, block["kind"], block["template"])
     b = filetext.index(begin) + len(begin)
     e = filetext.index(end)
     return filetext[b:e]
@@ -399,21 +412,23 @@ def main() -> int:
             if not fam.get("reference"):
                 continue
             p = ROOT / fam["file"]
-            gen = render_accessors(fam)
-            cur = extract_accessors(p.read_text(), fam["family"]) if p.exists() else ""
-            same = gen == cur
-            ok = ok and same
-            print(f"[{'OK ' if same else 'DIFF'}] self-regen accessors {fam['family']} "
-                  f"-> {pathlib.Path(fam['file'])}")
-            if not same:
-                g, c = gen.splitlines(), cur.splitlines()
-                for n, (a, b) in enumerate(zip(g, c), 1):
-                    if a != b:
-                        print(f"     first diff line {n}:\n       gen: {a!r}\n"
-                              f"       cur: {b!r}")
-                        break
-                if len(g) != len(c):
-                    print(f"     line count gen={len(g)} cur={len(c)}")
+            text = p.read_text() if p.exists() else ""
+            for block in accessor_blocks(fam):
+                gen = render_accessors(fam, block)
+                cur = extract_accessors(text, fam["family"], block) if text else ""
+                same = gen == cur
+                ok = ok and same
+                print(f"[{'OK ' if same else 'DIFF'}] self-regen accessors "
+                      f"{fam['family']}/{block['kind']} -> {pathlib.Path(fam['file'])}")
+                if not same:
+                    g, c = gen.splitlines(), cur.splitlines()
+                    for n, (a, b) in enumerate(zip(g, c), 1):
+                        if a != b:
+                            print(f"     first diff line {n}:\n       gen: {a!r}\n"
+                                  f"       cur: {b!r}")
+                            break
+                    if len(g) != len(c):
+                        print(f"     line count gen={len(g)} cur={len(c)}")
         return 0 if ok else 1
 
     for sub in subs:
@@ -456,8 +471,11 @@ def main() -> int:
         if args.check:
             print(f"would splice accessors {fam['family']} -> {fam['file']}")
             continue
-        p.write_text(splice_accessors(p.read_text(), fam["family"],
-                                      render_accessors(fam)))
+        text = p.read_text()
+        for block in accessor_blocks(fam):
+            text = splice_accessors(text, fam["family"], block,
+                                    render_accessors(fam, block))
+        p.write_text(text)
         print(f"spliced accessors {fam['family']} -> {fam['file']}")
     return 0
 
