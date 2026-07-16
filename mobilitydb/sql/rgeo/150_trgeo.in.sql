@@ -245,8 +245,23 @@ CREATE CAST (trgeometry AS geometry) WITH FUNCTION geometry(trgeometry);
 /******************************************************************************
  * Accessor Functions
  ******************************************************************************/
+-- Specific accessors for temporal rigid geometries
+
+CREATE FUNCTION points(trgeometry)
+  RETURNS geomset
+  AS 'MODULE_PATHNAME', 'Trgeometry_points'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION rotation(trgeometry)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Trgeometry_rotation'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************/
+-- Accessors for all temporal types
+
+-- GENERATED-ACCESSORS-BEGIN rgeo — tools/codegen/inherited/generate.py from templates/accessors.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.yaml (accessor_families) and re-run.
 
 CREATE FUNCTION tempSubtype(trgeometry)
   RETURNS text
@@ -263,7 +278,7 @@ CREATE FUNCTION interp(trgeometry)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION memSize(trgeometry)
-  RETURNS int
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -279,7 +294,7 @@ CREATE FUNCTION getTimestamp(trgeometry)
   AS 'MODULE_PATHNAME', 'Tinstant_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- timestamp is a reserved word in SQL
+-- values is a reserved word in SQL
 CREATE FUNCTION getValues(trgeometry)
   RETURNS poseset
   AS 'MODULE_PATHNAME', 'Temporal_valueset'
@@ -304,16 +319,6 @@ CREATE FUNCTION endValue(trgeometry)
 CREATE FUNCTION valueN(trgeometry, int)
   RETURNS geometry
   AS 'MODULE_PATHNAME', 'Trgeometry_value_n'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION points(trgeometry)
-  RETURNS geomset
-  AS 'MODULE_PATHNAME', 'Trgeometry_points'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION rotation(trgeometry)
-  RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Trgeometry_rotation'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION valueAtTimestamp(trgeometry, timestamptz)
@@ -415,6 +420,7 @@ CREATE FUNCTION segments(trgeometry)
   RETURNS trgeometry[]
   AS 'MODULE_PATHNAME', 'Temporal_segments'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- GENERATED-ACCESSORS-END rgeo
 
 /******************************************************************************
  * Transformation functions

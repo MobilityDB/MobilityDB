@@ -298,3 +298,13 @@ accessor_families:
     reference: true
     types:
       - {temp: tpose, base: pose, baseset: poseset}
+
+  # trgeometry stores temporal poses with the reference geometry appended to the
+  # bytestream; getValue/getValues expose the raw pose (base pose / poseset), while
+  # startValue/endValue/valueN/valueAtTimestamp materialize the geometry (valret) by
+  # re-applying the pose to that reference geometry via the Trgeometry_* symbols (valsym).
+  - family:    rgeo
+    file:      mobilitydb/sql/rgeo/150_trgeo.in.sql
+    reference: true
+    types:
+      - {temp: trgeometry, base: pose, baseset: poseset, valret: geometry, valsym: Trgeometry}
