@@ -895,7 +895,7 @@ SELECT rotation(tpose 'SRID=5676;{[Pose(Point(1 1), 0.3)@2001-01-01,
 			<listitem xml:id="tpose_valueAtTimestamp">
 				<indexterm significance="normal"><primary><varname>valueAtTimestamp</varname></primary></indexterm>
 				<para>Devuelve el valor en una marca de tiempo</para>
-				<para><varname>valueAtTimestamp(tpose,timestamptz) → pose</varname></para>
+				<para><varname>valueAtTimestamp(tpose,timestamptz,strict bool=TRUE) → pose</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(valueAtTimestamp(tpose '[Pose(Point(1 1), 0.3)@2001-01-01, 
   Pose(Point(3 3), 0.5)@2001-01-03)', '2001-01-02'));

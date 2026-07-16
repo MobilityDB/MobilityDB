@@ -480,7 +480,7 @@ CREATE FUNCTION minusTime(tnpoint, timestamptz)
   AS 'MODULE_PATHNAME', 'Temporal_minus_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION valueAtTimestamp(tnpoint, timestamptz)
+CREATE FUNCTION valueAtTimestamp(tnpoint, timestamptz, strict bool DEFAULT TRUE)
   RETURNS npoint
   AS 'MODULE_PATHNAME', 'Temporal_value_at_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

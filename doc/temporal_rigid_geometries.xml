@@ -176,7 +176,7 @@ SELECT asText(tgeompoint(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(
 				<para>Return the materialised geometry at the start, end, or a chosen timestamp</para>
 				<para><varname>startValue(trgeometry) → geometry</varname></para>
 				<para><varname>endValue(trgeometry) → geometry</varname></para>
-				<para><varname>valueAtTimestamp(trgeometry, timestamptz) → geometry</varname></para>
+				<para><varname>valueAtTimestamp(trgeometry, timestamptz,strict bool=TRUE) → geometry</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(startValue(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]'));
 -- POLYGON((0 0,1 0,1 1,0 1,0 0))

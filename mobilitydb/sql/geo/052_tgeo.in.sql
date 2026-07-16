@@ -680,11 +680,11 @@ CREATE FUNCTION minusTime(tgeography, timestamptz)
   AS 'MODULE_PATHNAME', 'Temporal_minus_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION valueAtTimestamp(tgeometry, timestamptz)
+CREATE FUNCTION valueAtTimestamp(tgeometry, timestamptz, strict bool DEFAULT TRUE)
   RETURNS geometry
   AS 'MODULE_PATHNAME', 'Temporal_value_at_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION valueAtTimestamp(tgeography, timestamptz)
+CREATE FUNCTION valueAtTimestamp(tgeography, timestamptz, strict bool DEFAULT TRUE)
   RETURNS geography
   AS 'MODULE_PATHNAME', 'Temporal_value_at_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

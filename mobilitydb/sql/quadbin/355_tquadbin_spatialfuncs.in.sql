@@ -70,7 +70,7 @@ CREATE FUNCTION getValues(tquadbin)
   AS 'MODULE_PATHNAME', 'Temporal_valueset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION valueAtTimestamp(tquadbin, timestamptz)
+CREATE FUNCTION valueAtTimestamp(tquadbin, timestamptz, strict bool DEFAULT TRUE)
   RETURNS quadbin
   AS 'MODULE_PATHNAME', 'Temporal_value_at_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

@@ -345,7 +345,7 @@ CREATE FUNCTION valueN(tpose, int)
   AS 'MODULE_PATHNAME', 'Temporal_value_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION valueAtTimestamp(tpose, timestamptz)
+CREATE FUNCTION valueAtTimestamp(tpose, timestamptz, strict bool DEFAULT TRUE)
   RETURNS pose
   AS 'MODULE_PATHNAME', 'Temporal_value_at_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

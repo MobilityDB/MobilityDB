@@ -10426,6 +10426,24 @@ SELECT valueAtTimestamp(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]
  AAA
 (1 row)
 
+SELECT valueAtTimestamp(tfloat '(1.5@2000-01-01, 2.5@2000-01-03]', timestamptz '2000-01-01');
+ valueattimestamp 
+------------------
+                 
+(1 row)
+
+SELECT valueAtTimestamp(tfloat '(1.5@2000-01-01, 2.5@2000-01-03]', timestamptz '2000-01-01', true);
+ valueattimestamp 
+------------------
+                 
+(1 row)
+
+SELECT valueAtTimestamp(tfloat '(1.5@2000-01-01, 2.5@2000-01-03]', timestamptz '2000-01-01', false);
+ valueattimestamp 
+------------------
+              1.5
+(1 row)
+
 SELECT minusTime(tbool 't@2000-01-01', timestamptz '2000-01-01');
  minustime 
 -----------

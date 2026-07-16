@@ -257,7 +257,7 @@ CREATE FUNCTION valueN(tjsonb, integer)
   AS 'MODULE_PATHNAME', 'Temporal_value_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION valueAtTimestamp(tjsonb, timestamptz)
+CREATE FUNCTION valueAtTimestamp(tjsonb, timestamptz, strict bool DEFAULT TRUE)
   RETURNS jsonb
   AS 'MODULE_PATHNAME', 'Temporal_value_at_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

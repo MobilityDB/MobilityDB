@@ -537,7 +537,7 @@ SELECT radius(tcbuffer 'SRID=5676;{Cbuffer(Point(3 3), 0.3)@2001-01-01,
 			<listitem xml:id="tcbuffer_valueAtTimestamp">
 				<indexterm significance="normal"><primary><varname>valueAtTimestamp</varname></primary></indexterm>
 				<para>Return the value at a timestamp</para>
-				<para><varname>valueAtTimestamp(tcbuffer,timestamptz) → cbuffer</varname></para>
+				<para><varname>valueAtTimestamp(tcbuffer,timestamptz,strict bool=TRUE) → cbuffer</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(valueAtTimestamp(tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
   Cbuffer(Point(3 3), 0.5)@2001-01-03)', '2001-01-02'));

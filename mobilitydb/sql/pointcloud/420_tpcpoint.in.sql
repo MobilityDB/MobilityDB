@@ -332,7 +332,7 @@ CREATE CAST (tpcpoint AS tgeompoint) WITH FUNCTION tgeompoint(tpcpoint);
  * Value-at-timestamp / restriction
  ******************************************************************************/
 
-CREATE FUNCTION valueAtTimestamp(tpcpoint, timestamptz)
+CREATE FUNCTION valueAtTimestamp(tpcpoint, timestamptz, strict bool DEFAULT TRUE)
   RETURNS pcpoint
   AS 'MODULE_PATHNAME', 'Temporal_value_at_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

@@ -143,7 +143,7 @@ SELECT getValues(tquadbin
 			<listitem xml:id="tquadbin_valueAtTimestamp">
 				<indexterm significance="normal"><primary><varname>valueAtTimestamp</varname></primary></indexterm>
 				<para>Return the QUADBIN cell identifier at a given timestamp, using step interpolation</para>
-				<para><varname>valueAtTimestamp(tquadbin,timestamptz) → quadbin</varname></para>
+				<para><varname>valueAtTimestamp(tquadbin,timestamptz,strict bool=TRUE) → quadbin</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT valueAtTimestamp(tquadbin
   '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-05]',

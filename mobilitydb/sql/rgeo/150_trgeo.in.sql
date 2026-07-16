@@ -316,7 +316,7 @@ CREATE FUNCTION rotation(trgeometry)
   AS 'MODULE_PATHNAME', 'Trgeometry_rotation'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION valueAtTimestamp(trgeometry, timestamptz)
+CREATE FUNCTION valueAtTimestamp(trgeometry, timestamptz, strict bool DEFAULT TRUE)
   RETURNS geometry
   AS 'MODULE_PATHNAME', 'Trgeometry_value_at_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

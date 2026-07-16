@@ -1892,23 +1892,23 @@ CREATE FUNCTION minusTime(ttext, timestamptz)
   AS 'MODULE_PATHNAME', 'Temporal_minus_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION valueAtTimestamp(tbool, timestamptz)
+CREATE FUNCTION valueAtTimestamp(tbool, timestamptz, strict bool DEFAULT TRUE)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_value_at_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION valueAtTimestamp(tint, timestamptz)
+CREATE FUNCTION valueAtTimestamp(tint, timestamptz, strict bool DEFAULT TRUE)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_value_at_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION valueAtTimestamp(tbigint, timestamptz)
+CREATE FUNCTION valueAtTimestamp(tbigint, timestamptz, strict bool DEFAULT TRUE)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Temporal_value_at_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION valueAtTimestamp(tfloat, timestamptz)
+CREATE FUNCTION valueAtTimestamp(tfloat, timestamptz, strict bool DEFAULT TRUE)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Temporal_value_at_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION valueAtTimestamp(ttext, timestamptz)
+CREATE FUNCTION valueAtTimestamp(ttext, timestamptz, strict bool DEFAULT TRUE)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_value_at_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

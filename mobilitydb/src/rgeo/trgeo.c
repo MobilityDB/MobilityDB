@@ -568,8 +568,9 @@ Trgeometry_value_at_timestamptz(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
+  bool strict = PG_GETARG_BOOL(2);
   Datum result;
-  bool found = trgeo_value_at_timestamptz(temp, t, true, &result);
+  bool found = trgeo_value_at_timestamptz(temp, t, strict, &result);
   PG_FREE_IF_COPY(temp, 0);
   if (! found)
     PG_RETURN_NULL();

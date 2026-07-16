@@ -280,7 +280,7 @@ CREATE FUNCTION numPoints(tpcpatch)
  * Value-at-timestamp / restriction
  ******************************************************************************/
 
-CREATE FUNCTION valueAtTimestamp(tpcpatch, timestamptz)
+CREATE FUNCTION valueAtTimestamp(tpcpatch, timestamptz, strict bool DEFAULT TRUE)
   RETURNS pcpatch
   AS 'MODULE_PATHNAME', 'Temporal_value_at_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

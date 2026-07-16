@@ -2345,6 +2345,11 @@ SELECT valueAtTimestamp(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}'
 SELECT valueAtTimestamp(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]', timestamptz '2000-01-01');
 SELECT valueAtTimestamp(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}', timestamptz '2000-01-01');
 
+-- Optional strict argument: a non-strict lookup returns the value at an exclusive bound
+SELECT valueAtTimestamp(tfloat '(1.5@2000-01-01, 2.5@2000-01-03]', timestamptz '2000-01-01');
+SELECT valueAtTimestamp(tfloat '(1.5@2000-01-01, 2.5@2000-01-03]', timestamptz '2000-01-01', true);
+SELECT valueAtTimestamp(tfloat '(1.5@2000-01-01, 2.5@2000-01-03]', timestamptz '2000-01-01', false);
+
 SELECT minusTime(tbool 't@2000-01-01', timestamptz '2000-01-01');
 SELECT minusTime(tbool '{t@2000-01-01}', timestamptz '2000-01-01');
 SELECT minusTime(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}', timestamptz '2000-01-01');

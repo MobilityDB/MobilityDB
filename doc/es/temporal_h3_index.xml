@@ -159,7 +159,7 @@ SELECT getValues(th3index '831c02fffffffff@2001-01-01');
 			<listitem xml:id="th3_valueAtTimestamp">
 				<indexterm significance="normal"><primary><varname>valueAtTimestamp</varname></primary></indexterm>
 				<para>Devolver el identificador de celda H3 en una marca de tiempo dada, utilizando interpolación de pasos</para>
-				<para><varname>valueAtTimestamp(th3index,timestamptz) → h3index</varname></para>
+				<para><varname>valueAtTimestamp(th3index,timestamptz,strict bool=TRUE) → h3index</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT valueAtTimestamp(th3index
   '[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-05]',

@@ -135,7 +135,7 @@ CREATE FUNCTION getValues(th3index)
   AS 'MODULE_PATHNAME', 'Temporal_valueset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION valueAtTimestamp(th3index, timestamptz)
+CREATE FUNCTION valueAtTimestamp(th3index, timestamptz, strict bool DEFAULT TRUE)
   RETURNS h3index
   AS 'MODULE_PATHNAME', 'Temporal_value_at_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

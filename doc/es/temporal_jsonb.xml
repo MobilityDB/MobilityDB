@@ -703,7 +703,7 @@ SELECT getValues(tjsonb
 			<listitem xml:id="tjsonb_valueAtTimestamp">
 				<indexterm significance="normal"><primary><varname>valueAtTimestamp</varname></primary></indexterm>
 				<para>Devolver el valor en una marca de tiempo</para>
-				<para><varname>valueAtTimestamp(tjsonb,timestamptz) → jsonb</varname></para>
+				<para><varname>valueAtTimestamp(tjsonb,timestamptz,strict bool=TRUE) → jsonb</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT valueAtTimestamp(tjsonb
   '[{"vehicleId": 1, "location": "Point(1 1)"}@2001-01-01,
