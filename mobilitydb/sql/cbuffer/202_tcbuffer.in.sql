@@ -288,11 +288,15 @@ CREATE FUNCTION getTimestamp(tcbuffer)
   AS 'MODULE_PATHNAME', 'Tinstant_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- GENERATED-ACCESSORS-COLLECTION-BEGIN cbuffer — tools/codegen/inherited/generate.py from templates/accessors_collection.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.yaml (accessor_families) and re-run.
+
 -- values is a reserved word in SQL
 CREATE FUNCTION getValues(tcbuffer)
   RETURNS cbufferset
   AS 'MODULE_PATHNAME', 'Temporal_valueset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- GENERATED-ACCESSORS-COLLECTION-END cbuffer
 
 -- time is a reserved word in SQL
 CREATE FUNCTION getTime(tcbuffer)
