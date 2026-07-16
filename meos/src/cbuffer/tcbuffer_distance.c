@@ -2619,13 +2619,13 @@ typedef struct
   float maxx;
   float miny;
   float maxy;
-} CbufSegBox;
+} TcbufferSegBox;
 
 static int
-cbuffersegbox_cmp_minx(const void *a, const void *b)
+tcbuffersegbox_cmp_minx(const void *a, const void *b)
 {
-  float da = ((const CbufSegBox *) a)->minx;
-  float db = ((const CbufSegBox *) b)->minx;
+  float da = ((const TcbufferSegBox *) a)->minx;
+  float db = ((const TcbufferSegBox *) b)->minx;
   return (da < db) ? -1 : (da > db ? 1 : 0);
 }
 
@@ -2848,7 +2848,7 @@ mindist_tcbufferseq_tcbufferseq_threshold(const TSequence *seq1,
    * to single points carrying the instant's radius, handled via the same
    * kernel with degenerate segment (B == A, rB == rA). */
   int n2_segs = seq2->count > 1 ? seq2->count - 1 : 1;
-  CbufSegBox *boxes2 = palloc(n2_segs * sizeof(CbufSegBox));
+  TcbufferSegBox *boxes2 = palloc(n2_segs * sizeof(TcbufferSegBox));
   for (int j = 0; j < n2_segs; j++)
   {
     const Cbuffer *cb_a = DatumGetCbufferP(
@@ -2865,7 +2865,7 @@ mindist_tcbufferseq_tcbufferseq_threshold(const TSequence *seq1,
     boxes2[j].miny = (float) (fmin(pa->y, pb->y) - r_max);
     boxes2[j].maxy = (float) (fmax(pa->y, pb->y) + r_max);
   }
-  qsort(boxes2, n2_segs, sizeof(CbufSegBox), cbuffersegbox_cmp_minx);
+  qsort(boxes2, n2_segs, sizeof(TcbufferSegBox), tcbuffersegbox_cmp_minx);
 
   int n1_segs = seq1->count > 1 ? seq1->count - 1 : 1;
   for (int i = 0; i < n1_segs; i++)
