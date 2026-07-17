@@ -758,6 +758,10 @@
 				</listitem>
 
 				<listitem>
+					<para><link linkend="ttype_timeSpan"><varname>timeSpan</varname></link>: Devuelve el período delimitador en el que se define el valor temporal</para>
+				</listitem>
+
+				<listitem>
 					<para><link linkend="ttype_startValue"><varname>startValue</varname>, <varname>endValue</varname>, <varname>valueN</varname></link>: Devuelve el valor inicial, final o enésimo</para>
 				</listitem>
 

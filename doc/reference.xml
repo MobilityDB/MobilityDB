@@ -737,6 +737,10 @@
 				</listitem>
 
 				<listitem>
+					<para><link linkend="ttype_timeSpan"><varname>timeSpan</varname></link>: Return the bounding period on which the temporal value is defined</para>
+				</listitem>
+
+				<listitem>
 					<para><link linkend="ttype_startValue"><varname>startValue</varname>, <varname>endValue</varname>, <varname>valueN</varname></link>: Return the start, end, or n-th value</para>
 				</listitem>
 

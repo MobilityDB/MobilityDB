@@ -194,13 +194,6 @@ CREATE FUNCTION trgeometry(geometry, tpose)
  * Conversion functions
  ******************************************************************************/
 
-CREATE FUNCTION timeSpan(trgeometry)
-  RETURNS tstzspan
-  AS 'MODULE_PATHNAME', 'Temporal_to_tstzspan'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE CAST (trgeometry AS tstzspan) WITH FUNCTION timeSpan(trgeometry);
-
 CREATE FUNCTION tpose(trgeometry)
   RETURNS tpose
   AS 'MODULE_PATHNAME', 'Trgeometry_to_tpose'
@@ -304,6 +297,12 @@ CREATE FUNCTION getValues(trgeometry)
 CREATE FUNCTION getTime(trgeometry)
   RETURNS tstzspanset
   AS 'MODULE_PATHNAME', 'Temporal_time'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- timeSpan is the bounding period, the tstzspan extent of the temporal value
+CREATE FUNCTION timeSpan(trgeometry)
+  RETURNS tstzspan
+  AS 'MODULE_PATHNAME', 'Temporal_to_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION startValue(trgeometry)
@@ -421,6 +420,9 @@ CREATE FUNCTION segments(trgeometry)
   AS 'MODULE_PATHNAME', 'Temporal_segments'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- GENERATED-ACCESSORS-END rgeo
+
+-- The tstzspan cast is backed by the generated timeSpan accessor.
+CREATE CAST (trgeometry AS tstzspan) WITH FUNCTION timeSpan(trgeometry);
 
 /******************************************************************************
  * Transformation functions

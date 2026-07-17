@@ -170,17 +170,6 @@ CREATE FUNCTION tquadbinSeqSetGaps(tquadbin[], maxt interval DEFAULT NULL)
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 /******************************************************************************
- * Conversions
- ******************************************************************************/
-
-CREATE FUNCTION timeSpan(tquadbin)
-  RETURNS tstzspan
-  AS 'MODULE_PATHNAME', 'Temporal_to_tstzspan'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE CAST (tquadbin AS tstzspan) WITH FUNCTION timeSpan(tquadbin);
-
-/******************************************************************************
  * Transformations
  ******************************************************************************/
 
@@ -295,6 +284,12 @@ CREATE FUNCTION getValues(tquadbin)
 CREATE FUNCTION getTime(tquadbin)
   RETURNS tstzspanset
   AS 'MODULE_PATHNAME', 'Temporal_time'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- timeSpan is the bounding period, the tstzspan extent of the temporal value
+CREATE FUNCTION timeSpan(tquadbin)
+  RETURNS tstzspan
+  AS 'MODULE_PATHNAME', 'Temporal_to_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION startValue(tquadbin)
@@ -412,6 +407,9 @@ CREATE FUNCTION segments(tquadbin)
   AS 'MODULE_PATHNAME', 'Temporal_segments'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- GENERATED-ACCESSORS-END quadbin
+
+-- The tstzspan cast is backed by the generated timeSpan accessor.
+CREATE CAST (tquadbin AS tstzspan) WITH FUNCTION timeSpan(tquadbin);
 
 /******************************************************************************
  * Unnest

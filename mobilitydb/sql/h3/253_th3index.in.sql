@@ -210,17 +210,6 @@ CREATE FUNCTION th3indexSeqSetGaps(th3index[], maxt interval DEFAULT NULL)
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 /******************************************************************************
- * Conversions
- ******************************************************************************/
-
-CREATE FUNCTION timeSpan(th3index)
-  RETURNS tstzspan
-  AS 'MODULE_PATHNAME', 'Temporal_to_tstzspan'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE CAST (th3index AS tstzspan) WITH FUNCTION timeSpan(th3index);
-
-/******************************************************************************
  * Transformations
  ******************************************************************************/
 
@@ -333,6 +322,12 @@ CREATE FUNCTION getValues(th3index)
 CREATE FUNCTION getTime(th3index)
   RETURNS tstzspanset
   AS 'MODULE_PATHNAME', 'Temporal_time'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- timeSpan is the bounding period, the tstzspan extent of the temporal value
+CREATE FUNCTION timeSpan(th3index)
+  RETURNS tstzspan
+  AS 'MODULE_PATHNAME', 'Temporal_to_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION startValue(th3index)
@@ -450,6 +445,9 @@ CREATE FUNCTION segments(th3index)
   AS 'MODULE_PATHNAME', 'Temporal_segments'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- GENERATED-ACCESSORS-END h3
+
+-- The tstzspan cast is backed by the generated timeSpan accessor.
+CREATE CAST (th3index AS tstzspan) WITH FUNCTION timeSpan(th3index);
 
 /******************************************************************************
  * Unnest

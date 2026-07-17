@@ -172,14 +172,9 @@ CREATE FUNCTION tnpoint(tgeompoint)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Tgeompoint_to_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION timeSpan(tnpoint)
-  RETURNS tstzspan
-  AS 'MODULE_PATHNAME', 'Temporal_to_tstzspan'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (tnpoint AS tgeompoint) WITH FUNCTION tgeompoint(tnpoint);
 CREATE CAST (tgeompoint AS tnpoint) WITH FUNCTION tnpoint(tgeompoint);
-CREATE CAST (tnpoint AS tstzspan) WITH FUNCTION timeSpan(tnpoint);
 
 /******************************************************************************
  * Transformation functions
@@ -311,6 +306,12 @@ CREATE FUNCTION getTime(tnpoint)
   AS 'MODULE_PATHNAME', 'Temporal_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- timeSpan is the bounding period, the tstzspan extent of the temporal value
+CREATE FUNCTION timeSpan(tnpoint)
+  RETURNS tstzspan
+  AS 'MODULE_PATHNAME', 'Temporal_to_tstzspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION startValue(tnpoint)
   RETURNS npoint
   AS 'MODULE_PATHNAME', 'Temporal_start_value'
@@ -426,6 +427,9 @@ CREATE FUNCTION segments(tnpoint)
   AS 'MODULE_PATHNAME', 'Temporal_segments'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- GENERATED-ACCESSORS-END npoint
+
+-- The tstzspan cast is backed by the generated timeSpan accessor.
+CREATE CAST (tnpoint AS tstzspan) WITH FUNCTION timeSpan(tnpoint);
 
 /*****************************************************************************
  * Transformation functions
