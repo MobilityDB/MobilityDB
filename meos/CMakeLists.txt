@@ -334,6 +334,9 @@ if(MEOS)
   install(
     FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_tls.h"
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+  install(
+    FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_cellindex.h"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
 
   # Files from ${CMAKE_SOURCE_DIR}
 
