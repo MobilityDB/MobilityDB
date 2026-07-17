@@ -1154,32 +1154,17 @@ ea_disjoint_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   temporal_set_tstzspan(temp2, &s2);
   if (! overlaps_span_span(&s1, &s2))
     return -1;
-  /* Bounding box test -- INVERTED relative to the positive predicates. The
-   * buffers share time, so a non-overlap of the space/time boxes can only be
-   * spatial, and two radius-aware boxes that are spatially apart bound disks
-   * that are disjoint at every common instant, so the pair is both ever and
-   * always disjoint. Constant-time accept that avoids the per-instant lifted
-   * disjoint below for far-away pairs in a spatial join. This is why the
-   * generic dispatcher's bbox test (which returns 0 on non-overlap for the
-   * positive predicates) is bypassed for disjoint.
-   *
-   * WARNING -- the accept returns 1 (true), the OPPOSITE of the intersects /
-   * covers / touches / dwithin rejects that return 0 on a box non-overlap.
-   * The direction is exact only because disjoint is the boolean complement of
-   * intersection over a FIXED (zero) threshold. DO NOT copy this reject/accept
-   * to a function that returns an exact DISTANCE VALUE with no fixed threshold
-   * (nearestApproachDistance / minDistance / |=|): a bbox prune there wrongly
-   * drops the pair whose nearest approach lies just outside the box (the
-   * documented minDistance bbox-prune dead end). Verify equivalence as the
-   * 212/214 pg_regress counts being unchanged, NEVER against `nad`. */
-  STBox box1, box2;
-  tspatial_set_stbox(temp1, &box1);
-  tspatial_set_stbox(temp2, &box2);
-  if (! overlaps_stbox_stbox(&box1, &box2))
-    return 1;
-
-  return ea_spatialrel_tcbuffer_tcbuffer(temp1, temp2,
-    &datum_cbuffer_disjoint, ever, false);
+  /* Disjoint is the boolean complement of intersects with the ever/always
+   * quantifier swapped: aDisjoint = not eIntersects, eDisjoint = not
+   * aIntersects. Delegating to the intersects kernel keeps a single algorithm
+   * (no dedicated disjoint path to maintain), and its bounding-box
+   * short-circuit maps through INVERT_RESULT to the correct disjoint value: a
+   * box non-overlap makes intersects return 0, so disjoint returns 1 (both
+   * radius-aware boxes spatially apart bound disks disjoint at every common
+   * instant). The shared-time (-1) contract is preserved by the span test
+   * above, and INVERT_RESULT(-1) = -1. */
+  return INVERT_RESULT(
+    ea_intersects_tcbuffer_tcbuffer(temp1, temp2, ! ever));
 }
 
 #if MEOS
