@@ -287,11 +287,10 @@ CREATE FUNCTION tsample(th3index, duration interval,
 
 /******************************************************************************
  * Accessor functions
- *
- * The value accessors that return the `h3index` cell (`startValue`,
- * `endValue`, `valueN`, `getValues`, `valueAtTimestamp`) live in
- * `255_th3index_spatialfuncs.in.sql`.
  ******************************************************************************/
+
+-- GENERATED-ACCESSORS-BEGIN h3 — tools/codegen/inherited/generate.py from templates/accessors.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.yaml (accessor_families) and re-run.
 
 CREATE FUNCTION tempSubtype(th3index)
   RETURNS text
@@ -301,36 +300,71 @@ CREATE FUNCTION tempBasetype(th3index)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_basetype_name'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION interp(th3index)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_interp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION memSize(th3index)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- value is a reserved word in SQL
 CREATE FUNCTION getValue(th3index)
   RETURNS h3index
   AS 'MODULE_PATHNAME', 'Tinstant_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- timestamp is a reserved word in SQL
 CREATE FUNCTION getTimestamp(th3index)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'Tinstant_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- values is a reserved word in SQL
+CREATE FUNCTION getValues(th3index)
+  RETURNS h3indexset
+  AS 'MODULE_PATHNAME', 'Temporal_valueset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- time is a reserved word in SQL
 CREATE FUNCTION getTime(th3index)
   RETURNS tstzspanset
   AS 'MODULE_PATHNAME', 'Temporal_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION startValue(th3index)
+  RETURNS h3index
+  AS 'MODULE_PATHNAME', 'Temporal_start_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION endValue(th3index)
+  RETURNS h3index
+  AS 'MODULE_PATHNAME', 'Temporal_end_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION valueN(th3index, int)
+  RETURNS h3index
+  AS 'MODULE_PATHNAME', 'Temporal_value_n'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION valueAtTimestamp(th3index, timestamptz)
+  RETURNS h3index
+  AS 'MODULE_PATHNAME', 'Temporal_value_at_timestamptz'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION duration(th3index, boundspan boolean DEFAULT FALSE)
   RETURNS interval
   AS 'MODULE_PATHNAME', 'Temporal_duration'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION lowerInc(th3index)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Temporal_lower_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION upperInc(th3index)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Temporal_upper_inc'
@@ -340,18 +374,22 @@ CREATE FUNCTION numInstants(th3index)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_num_instants'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION startInstant(th3index)
   RETURNS th3index
   AS 'MODULE_PATHNAME', 'Temporal_start_instant'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION endInstant(th3index)
   RETURNS th3index
   AS 'MODULE_PATHNAME', 'Temporal_end_instant'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION instantN(th3index, integer)
   RETURNS th3index
   AS 'MODULE_PATHNAME', 'Temporal_instant_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION instants(th3index)
   RETURNS th3index[]
   AS 'MODULE_PATHNAME', 'Temporal_instants'
@@ -361,18 +399,22 @@ CREATE FUNCTION numTimestamps(th3index)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_num_timestamps'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION startTimestamp(th3index)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'Temporal_start_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION endTimestamp(th3index)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'Temporal_end_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION timestampN(th3index, integer)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'Temporal_timestamptz_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION timestamps(th3index)
   RETURNS timestamptz[]
   AS 'MODULE_PATHNAME', 'Temporal_timestamps'
@@ -382,26 +424,32 @@ CREATE FUNCTION numSequences(th3index)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_num_sequences'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION startSequence(th3index)
   RETURNS th3index
   AS 'MODULE_PATHNAME', 'Temporal_start_sequence'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION endSequence(th3index)
   RETURNS th3index
   AS 'MODULE_PATHNAME', 'Temporal_end_sequence'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION sequenceN(th3index, integer)
   RETURNS th3index
   AS 'MODULE_PATHNAME', 'Temporal_sequence_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION sequences(th3index)
   RETURNS th3index[]
   AS 'MODULE_PATHNAME', 'Temporal_sequences'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION segments(th3index)
   RETURNS th3index[]
   AS 'MODULE_PATHNAME', 'Temporal_segments'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- GENERATED-ACCESSORS-END h3
 
 /******************************************************************************
  * Unnest

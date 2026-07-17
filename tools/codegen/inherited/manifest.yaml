@@ -320,3 +320,8 @@ accessor_families:
     reference: true
     types:
       - {temp: tquadbin, base: quadbin, baseset: quadbinset}
+  - family:    h3
+    file:      mobilitydb/sql/h3/253_th3index.in.sql
+    reference: true
+    types:
+      - {temp: th3index, base: h3index, baseset: h3indexset}

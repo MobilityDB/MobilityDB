@@ -106,41 +106,6 @@ CREATE CAST (th3index AS tgeompoint)
   WITH FUNCTION th3CellToLatlngTgeompoint(th3index);
 
 /******************************************************************************
- * Value accessors
- *
- * Every declaration routes to the generic `Temporal_*` C symbol — the same
- * pattern tcbuffer and tbigint use. Scalar accessors return `h3index`;
- * `getValues` returns `h3indexset`. Callers who need to pipe a cell into a
- * bigint-taking function must spell out an explicit `::bigint` cast —
- * consistent with the ASSIGNMENT-only cast design.
- ******************************************************************************/
-
-CREATE FUNCTION startValue(th3index)
-  RETURNS h3index
-  AS 'MODULE_PATHNAME', 'Temporal_start_value'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION endValue(th3index)
-  RETURNS h3index
-  AS 'MODULE_PATHNAME', 'Temporal_end_value'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION valueN(th3index, integer)
-  RETURNS h3index
-  AS 'MODULE_PATHNAME', 'Temporal_value_n'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION getValues(th3index)
-  RETURNS h3indexset
-  AS 'MODULE_PATHNAME', 'Temporal_valueset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION valueAtTimestamp(th3index, timestamptz)
-  RETURNS h3index
-  AS 'MODULE_PATHNAME', 'Temporal_value_at_timestamptz'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-/******************************************************************************
  * h3indexset × th3index — ever-equal (sound cell-set prefilter)
  *
  * True when the temporal H3 cell ever equals a cell in the set. Paired with
