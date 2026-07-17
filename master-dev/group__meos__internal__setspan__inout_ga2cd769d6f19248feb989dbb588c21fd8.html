@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: spanset_in</title>
+<title>MobilityDB: meos_typeof_hexwkb</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -79,51 +79,41 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__internal__setspan__inout_ga2cd769d6f19248feb989dbb588c21fd8.html#ga2cd769d6f19248feb989dbb588c21fd8">meos_typeof_hexwkb</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__internal__setspan__inout_ga2cd769d6f19248feb989dbb588c21fd8.html#ga2cd769d6f19248feb989dbb588c21fd8">meos_typeof_hexwkb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__setspan__inout_ga38b07e481435b3678e912f3b2bf84289.html#ga38b07e481435b3678e912f3b2bf84289">set_in</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__setspan__inout_ga1b44c80d40de8f8c8e23e9682ad9d5bf.html#ga1b44c80d40de8f8c8e23e9682ad9d5bf">set_out</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__setspan__inout_ga571be55d5e7e2d704fc47ff854dfd888.html#ga571be55d5e7e2d704fc47ff854dfd888">span_in</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__setspan__inout_gacaf7833fff5b2da68f770870863a1dad.html#gacaf7833fff5b2da68f770870863a1dad">span_out</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__internal__setspan__inout_ga23ad871526e158655acd518ae7e08a3b.html#ga23ad871526e158655acd518ae7e08a3b">spanset_in</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__internal__setspan__inout_ga23ad871526e158655acd518ae7e08a3b.html#ga23ad871526e158655acd518ae7e08a3b">spanset_in</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__setspan__inout_ga319b83f178105319d8c9a3ffe1cb8193.html#ga319b83f178105319d8c9a3ffe1cb8193">spanset_out</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga23ad871526e158655acd518ae7e08a3b" name="ga23ad871526e158655acd518ae7e08a3b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga23ad871526e158655acd518ae7e08a3b">&#9670;&#160;</a></span>spanset_in()</h2>
+<a id="ga2cd769d6f19248feb989dbb588c21fd8" name="ga2cd769d6f19248feb989dbb588c21fd8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga2cd769d6f19248feb989dbb588c21fd8">&#9670;&#160;</a></span>meos_typeof_hexwkb()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structSpanSet.html">SpanSet</a> * spanset_in </td>
+          <td class="memname"><a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a05df1d1fd2c829ee784b125ed34e8401.html#a05df1d1fd2c829ee784b125ed34e8401">MeosType</a> meos_typeof_hexwkb </td>
           <td>(</td>
           <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>str</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramname"><em>hexwkb</em></td><td>)</td>
           <td></td>
-          <td class="paramtype"><a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a05df1d1fd2c829ee784b125ed34e8401.html#a05df1d1fd2c829ee784b125ed34e8401">MeosType</a>&#160;</td>
-          <td class="paramname"><em>spansettype</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Return a span set from its Well-Known Text (WKT) representation. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p>Return the MEOS type tag encoded in the header of a hex-encoded Well-Known Binary (WKB) string, without parsing the whole value. </p>
+<p >Sets, spans, span sets, and temporal values write their concrete <code>MeosType</code> as a 16-bit tag immediately after the endian flag; this function peeks that tag so a caller can dispatch on the concrete type at runtime. <a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> boxes (<code>tbox</code>, <code>stbox</code>) carry no in-band type tag in their WKB header, so they are not supported by this function. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">str</td><td>String </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">spansettype</td><td><a class="el" href="structSpan.html" title="Structure to represent spans (a.k.a.">Span</a> set type @csqlfn <a class="el" href="group__mobilitydb__setspan__inout_ga1ff15ddf18441b8d3ad43ffc80aa9234.html#ga1ff15ddf18441b8d3ad43ffc80aa9234" title="Return a span set from its Well-Known Text (WKT) representation @sqlfn spanset_in()">Spanset_in()</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">hexwkb</td><td>HexWKB string </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section return"><dt>Returns</dt><dd>The concrete <code>MeosType</code>, or <code>T_UNKNOWN</code> when <code>hexwkb</code> is null, shorter than a header, has an invalid endian flag, or encodes a value out of the known type range </dd></dl>
 
 </div>
 </div>
