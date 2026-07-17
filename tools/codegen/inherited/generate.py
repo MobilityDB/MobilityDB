@@ -13,6 +13,7 @@
 from __future__ import annotations
 import argparse
 import pathlib
+import re
 import sys
 
 try:
@@ -414,6 +415,52 @@ def extract_accessors(filetext: str, family: str) -> str:
     return filetext[b:e]
 
 
+def _accessor_names() -> set:
+    """Every SQL function name the generated accessor region can carry: the shared
+    template's functions plus the gated TNumber/orderable reductions. Used to find and
+    remove the pre-existing hand-written definitions when bootstrapping a new family.
+    # BINDING-HEADER-PARSE-OK: reads the SQL accessors.sql.tmpl template (not a C
+    # header), exactly as render_accessors/_accessor_blocks already do; this is the
+    # inherited SQL-region generator, not a catalog-consuming binding."""
+    tmpl = (TEMPLATES / "accessors.sql.tmpl").read_text()
+    return set(re.findall(r"CREATE FUNCTION (\w+)\(", tmpl)) | set(_GATED)
+
+
+def bootstrap_accessors(filetext: str, fam: dict, rendered: str) -> str:
+    """Create the GENERATED-ACCESSORS region for a family that does not have one yet,
+    so adding an accessor family is fully declarative (a manifest entry) with NO
+    hand-placed marker. The region is inserted where the family's FIRST canonical
+    accessor is currently hand-written, and every hand-written definition of a canonical
+    accessor (for the family's temporal type(s), wherever it sits in the file — e.g. a
+    `valueAtTimestamp` parked in a restriction section) is removed so the region is the
+    single source. Idempotent on the next run: the markers now exist, so the normal
+    splice/validate path takes over."""
+    temps = [t["temp"] for t in (fam.get("types") or [{"temp": fam["temp"]}])]
+    names = _accessor_names()
+
+    def block_re(name: str, temp: str):
+        return re.compile(rf"^CREATE FUNCTION {re.escape(name)}\({re.escape(temp)}\b"
+                          rf"[^;]*?LANGUAGE[^;]*;\n", re.S | re.M)
+
+    first = None
+    for name in names:
+        for temp in temps:
+            m = block_re(name, temp).search(filetext)
+            if m and (first is None or m.start() < first):
+                first = m.start()
+    if first is None:
+        raise SystemExit(f"bootstrap accessors {fam['family']}: no canonical accessor "
+                         f"of {temps} found in {fam['file']}")
+    prefix, rest = filetext[:first], filetext[first:]
+    for name in names:
+        for temp in temps:
+            rest = block_re(name, temp).sub("", rest)
+    rest = re.sub(r"\A\n+", "", rest)  # the region supplies its own leading blank line
+    begin, end = _accessors_markers(fam["family"])
+    text = prefix + begin + rendered + end + "\n" + rest
+    return re.sub(r"\n\n\n+", "\n\n", text)  # tidy the blank runs left by the removals
+
+
 def target_path(behaviour: str, sub: dict, positions: dict) -> pathlib.Path:
     # The within-50-bin offset defaults to the shared `positions` map (the tight
     # cbuffer-anchored layout); a family on the tgeo-aligned layout overrides a
@@ -568,14 +615,24 @@ def main() -> int:
         print(f"spliced spatialrels {fam['family']} -> {fam['file']}")
 
     for fam in mf.get("accessor_families", []):
+        p = ROOT / fam["file"]
+        text = p.read_text()
+        begin, _ = _accessors_markers(fam["family"])
+        if begin not in text:
+            # No region yet -> BOOTSTRAP it once from the manifest entry (no hand-placed
+            # marker). After this the markers exist and the reference/splice path owns it.
+            if args.check:
+                print(f"would bootstrap accessors {fam['family']} -> {fam['file']}")
+                continue
+            p.write_text(bootstrap_accessors(text, fam, render_accessors(fam)))
+            print(f"bootstrapped accessors {fam['family']} -> {fam['file']}")
+            continue
         if fam.get("reference"):
             continue
-        p = ROOT / fam["file"]
         if args.check:
             print(f"would splice accessors {fam['family']} -> {fam['file']}")
             continue
-        p.write_text(splice_accessors(p.read_text(), fam["family"],
-                                      render_accessors(fam)))
+        p.write_text(splice_accessors(text, fam["family"], render_accessors(fam)))
         print(f"spliced accessors {fam['family']} -> {fam['file']}")
     return 0
 

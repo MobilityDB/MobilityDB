@@ -48,6 +48,23 @@ SELECT numInstants(:inst1);
 SELECT numInstants(tpcpatchSeq(ARRAY[:inst1, :inst2]));
 
 -------------------------------------------------------------------------------
+-- Inherited Temporal<T> accessors
+-------------------------------------------------------------------------------
+
+SELECT tempBasetype(:inst1);
+SELECT getTimestamp(:inst1);
+SELECT numPoints(tpcpatch(getValue(:inst1), '2024-01-05'::timestamptz));
+SELECT lowerInc(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3]));
+SELECT upperInc(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3]));
+SELECT timestamps(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3]));
+SELECT numSequences(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3]));
+SELECT numInstants(startSequence(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3])));
+SELECT numInstants(endSequence(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3])));
+SELECT numInstants(sequenceN(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3]), 1));
+SELECT array_length(sequences(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3])), 1);
+SELECT array_length(segments(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3])), 1);
+
+-------------------------------------------------------------------------------
 -- numPoints(tpcpatch) — total points across every instant
 -------------------------------------------------------------------------------
 

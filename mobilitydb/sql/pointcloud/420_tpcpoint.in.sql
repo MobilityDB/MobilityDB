@@ -194,6 +194,9 @@ CREATE FUNCTION tpcpointSeqSet(tpcpoint[])
  * Accessors — generic Temporal_* wrappers where possible
  ******************************************************************************/
 
+-- GENERATED-ACCESSORS-BEGIN pointcloud — tools/codegen/inherited/generate.py from templates/accessors.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.yaml (accessor_families) and re-run.
+
 CREATE FUNCTION tempSubtype(tpcpoint)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_subtype'
@@ -213,14 +216,34 @@ CREATE FUNCTION memSize(tpcpoint)
   AS 'MODULE_PATHNAME', 'Temporal_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- value is a reserved word in SQL
 CREATE FUNCTION getValue(tpcpoint)
   RETURNS pcpoint
   AS 'MODULE_PATHNAME', 'Tinstant_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- timestamp is a reserved word in SQL
 CREATE FUNCTION getTimestamp(tpcpoint)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'Tinstant_timestamptz'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- values is a reserved word in SQL
+CREATE FUNCTION getValues(tpcpoint)
+  RETURNS pcpointset
+  AS 'MODULE_PATHNAME', 'Temporal_valueset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- time is a reserved word in SQL
+CREATE FUNCTION getTime(tpcpoint)
+  RETURNS tstzspanset
+  AS 'MODULE_PATHNAME', 'Temporal_time'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- timeSpan is the bounding period, the tstzspan extent of the temporal value
+CREATE FUNCTION timeSpan(tpcpoint)
+  RETURNS tstzspan
+  AS 'MODULE_PATHNAME', 'Temporal_to_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION startValue(tpcpoint)
@@ -233,19 +256,14 @@ CREATE FUNCTION endValue(tpcpoint)
   AS 'MODULE_PATHNAME', 'Temporal_end_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION valueN(tpcpoint, integer)
+CREATE FUNCTION valueN(tpcpoint, int)
   RETURNS pcpoint
   AS 'MODULE_PATHNAME', 'Temporal_value_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION getValues(tpcpoint)
-  RETURNS pcpointset
-  AS 'MODULE_PATHNAME', 'Temporal_valueset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION getTime(tpcpoint)
-  RETURNS tstzspanset
-  AS 'MODULE_PATHNAME', 'Temporal_time'
+CREATE FUNCTION valueAtTimestamp(tpcpoint, timestamptz)
+  RETURNS pcpoint
+  AS 'MODULE_PATHNAME', 'Temporal_value_at_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION duration(tpcpoint, boundspan boolean DEFAULT FALSE)
@@ -253,9 +271,14 @@ CREATE FUNCTION duration(tpcpoint, boundspan boolean DEFAULT FALSE)
   AS 'MODULE_PATHNAME', 'Temporal_duration'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION timeSpan(tpcpoint)
-  RETURNS tstzspan
-  AS 'MODULE_PATHNAME', 'Temporal_to_tstzspan'
+CREATE FUNCTION lowerInc(tpcpoint)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Temporal_lower_inc'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION upperInc(tpcpoint)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Temporal_upper_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION numInstants(tpcpoint)
@@ -283,6 +306,11 @@ CREATE FUNCTION instants(tpcpoint)
   AS 'MODULE_PATHNAME', 'Temporal_instants'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION numTimestamps(tpcpoint)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Temporal_num_timestamps'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION startTimestamp(tpcpoint)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'Temporal_start_timestamptz'
@@ -296,21 +324,6 @@ CREATE FUNCTION endTimestamp(tpcpoint)
 CREATE FUNCTION timestampN(tpcpoint, integer)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'Temporal_timestamptz_n'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION numTimestamps(tpcpoint)
-  RETURNS integer
-  AS 'MODULE_PATHNAME', 'Temporal_num_timestamps'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION lowerInc(tpcpoint)
-  RETURNS bool
-  AS 'MODULE_PATHNAME', 'Temporal_lower_inc'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION upperInc(tpcpoint)
-  RETURNS bool
-  AS 'MODULE_PATHNAME', 'Temporal_upper_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION timestamps(tpcpoint)
@@ -347,6 +360,7 @@ CREATE FUNCTION segments(tpcpoint)
   RETURNS tpcpoint[]
   AS 'MODULE_PATHNAME', 'Temporal_segments'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- GENERATED-ACCESSORS-END pointcloud
 
 -- Type-specific accessor
 CREATE FUNCTION pcid(tpcpoint)
@@ -388,13 +402,8 @@ CREATE FUNCTION tgeompoint(tpcpoint)
 CREATE CAST (tpcpoint AS tgeompoint) WITH FUNCTION tgeompoint(tpcpoint);
 
 /******************************************************************************
- * Value-at-timestamp / restriction
+ * Restrictions
  ******************************************************************************/
-
-CREATE FUNCTION valueAtTimestamp(tpcpoint, timestamptz)
-  RETURNS pcpoint
-  AS 'MODULE_PATHNAME', 'Temporal_value_at_timestamptz'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION atTime(tpcpoint, timestamptz)
   RETURNS tpcpoint
