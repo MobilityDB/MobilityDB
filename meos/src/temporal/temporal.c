@@ -762,22 +762,20 @@ intersection_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 #define MOBDB_VERSION_STR_MAXLEN 256
 /**
  * @ingroup meos_misc
- * @brief Return the version of the MobilityDB extension
- * @csqlfn #Mobilitydb_version()
+ * @brief Return the version of the MEOS library
  */
 char *
-mobilitydb_version(void)
+meos_version(void)
 {
   return MOBILITYDB_VERSION_STRING;
 }
 
 /**
  * @ingroup meos_misc
- * @brief Return the versions of the MobilityDB extension and its dependencies
- * @csqlfn #Mobilitydb_full_version()
+ * @brief Return the versions of the MEOS library and its dependencies
  */
 char *
-mobilitydb_full_version(void)
+meos_full_version(void)
 {
   const char *proj_vers;
 #if POSTGIS_PROJ_VERSION < 61
@@ -797,6 +795,28 @@ mobilitydb_full_version(void)
     GSL_VERSION_STRING);
   result[len] = '\0';
   return result;
+}
+
+/**
+ * @ingroup meos_misc
+ * @brief Return the version of the MobilityDB extension
+ * @csqlfn #Mobilitydb_version()
+ */
+char *
+mobilitydb_version(void)
+{
+  return meos_version();
+}
+
+/**
+ * @ingroup meos_misc
+ * @brief Return the versions of the MobilityDB extension and its dependencies
+ * @csqlfn #Mobilitydb_full_version()
+ */
+char *
+mobilitydb_full_version(void)
+{
+  return meos_full_version();
 }
 
 /*****************************************************************************
