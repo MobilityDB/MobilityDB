@@ -308,3 +308,9 @@ accessor_families:
     reference: true
     types:
       - {temp: trgeometry, base: pose, baseset: poseset, valret: geometry, valsym: Trgeometry}
+
+  - family:    json
+    file:      mobilitydb/sql/json/452_tjsonb.in.sql
+    reference: true
+    types:
+      - {temp: tjsonb, base: jsonb, baseset: jsonbset}
