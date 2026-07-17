@@ -257,6 +257,10 @@ CREATE FUNCTION tempSubtype(tquadbin)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_subtype'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tempBasetype(tquadbin)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Temporal_basetype_name'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION interp(tquadbin)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_interp'

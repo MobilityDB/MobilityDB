@@ -253,6 +253,12 @@ SELECT tempSubtype(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001
  Sequence
 (1 row)
 
+SELECT tempBasetype(tquadbin '480fffffffffffff@2001-01-01');
+ tempbasetype 
+--------------
+ quadbin
+(1 row)
+
 SELECT interp(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02]');
  interp 
 --------

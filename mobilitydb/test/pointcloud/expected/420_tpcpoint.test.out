@@ -18,6 +18,12 @@ SELECT pcid(tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01
     1
 (1 row)
 
+SELECT tempBasetype(tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz));
+ tempbasetype 
+--------------
+ pcpoint
+(1 row)
+
 SELECT numInstants(tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz));
  numinstants 
 -------------

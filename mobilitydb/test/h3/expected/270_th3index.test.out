@@ -349,6 +349,12 @@ SELECT tempSubtype(th3index '{612544986753269759@2001-01-01, 612544986761658367@
  Sequence
 (1 row)
 
+SELECT tempBasetype(th3index '612544986753269759@2001-01-01');
+ tempbasetype 
+--------------
+ h3index
+(1 row)
+
 SELECT interp(th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-02]');
  interp 
 --------
