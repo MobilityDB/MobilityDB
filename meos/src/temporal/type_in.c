@@ -2704,7 +2704,7 @@ type_from_hexwkb(const char *hexwkb, size_t size, MeosType type)
 }
 
 /**
- * @ingroup meos_setspan_inout
+ * @ingroup meos_internal_setspan_inout
  * @brief Return the MEOS type tag encoded in the header of a hex-encoded
  * Well-Known Binary (WKB) string, without parsing the whole value
  * @details Sets, spans, span sets, and temporal values write their concrete
