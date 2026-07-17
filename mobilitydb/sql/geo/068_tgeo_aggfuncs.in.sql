@@ -68,7 +68,7 @@ CREATE FUNCTION tcount_transfn(internal, tgeography)
   AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE AGGREGATE tcount(tgeometry) (
+CREATE AGGREGATE tCount(tgeometry) (
   SFUNC = tcount_transfn,
   STYPE = internal,
   COMBINEFUNC = tcount_combinefn,
@@ -78,7 +78,7 @@ CREATE AGGREGATE tcount(tgeometry) (
   PARALLEL = SAFE
 );
 
-CREATE AGGREGATE tcount(tgeography) (
+CREATE AGGREGATE tCount(tgeography) (
   SFUNC = tcount_transfn,
   STYPE = internal,
   COMBINEFUNC = tcount_combinefn,
@@ -98,7 +98,7 @@ CREATE FUNCTION wcount_transfn(internal, tgeography, interval)
   AS 'MODULE_PATHNAME', 'Temporal_wcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE AGGREGATE wcount(tgeometry, interval) (
+CREATE AGGREGATE wCount(tgeometry, interval) (
   SFUNC = wcount_transfn,
   STYPE = internal,
   COMBINEFUNC = tint_tsum_combinefn,
@@ -107,7 +107,7 @@ CREATE AGGREGATE wcount(tgeometry, interval) (
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
-CREATE AGGREGATE wcount(tgeography, interval) (
+CREATE AGGREGATE wCount(tgeography, interval) (
   SFUNC = wcount_transfn,
   STYPE = internal,
   COMBINEFUNC = tint_tsum_combinefn,

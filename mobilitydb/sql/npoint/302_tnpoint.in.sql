@@ -42,7 +42,7 @@ CREATE FUNCTION tnpoint_in(cstring, oid, integer)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Tnpoint_in'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION Temporal_out(tnpoint)
+CREATE FUNCTION temporal_out(tnpoint)
   RETURNS cstring
   AS 'MODULE_PATHNAME', 'Temporal_out'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

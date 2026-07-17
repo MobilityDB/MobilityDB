@@ -42,7 +42,7 @@ CREATE FUNCTION tcbuffer_in(cstring, oid, integer)
   RETURNS tcbuffer
   AS 'MODULE_PATHNAME', 'Tcbuffer_in'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION Temporal_out(tcbuffer)
+CREATE FUNCTION temporal_out(tcbuffer)
   RETURNS cstring
   AS 'MODULE_PATHNAME', 'Temporal_out'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

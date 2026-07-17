@@ -53,7 +53,7 @@ CREATE FUNCTION wavg_transfn(internal, tint, interval)
   AS 'MODULE_PATHNAME', 'Tnumber_wavg_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE AGGREGATE wmin(tint, interval) (
+CREATE AGGREGATE wMin(tint, interval) (
   SFUNC = tint_wmin_transfn,
   STYPE = internal,
   COMBINEFUNC = tint_tmin_combinefn,
@@ -62,7 +62,7 @@ CREATE AGGREGATE wmin(tint, interval) (
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
-CREATE AGGREGATE wmax(tint, interval) (
+CREATE AGGREGATE wMax(tint, interval) (
   SFUNC = tint_wmax_transfn,
   STYPE = internal,
   COMBINEFUNC = tint_tmax_combinefn,
@@ -71,7 +71,7 @@ CREATE AGGREGATE wmax(tint, interval) (
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
-CREATE AGGREGATE wsum(tint, interval) (
+CREATE AGGREGATE wSum(tint, interval) (
   SFUNC = tint_wsum_transfn,
   STYPE = internal,
   COMBINEFUNC = tint_tsum_combinefn,
@@ -80,7 +80,7 @@ CREATE AGGREGATE wsum(tint, interval) (
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
-CREATE AGGREGATE wcount(tint, interval) (
+CREATE AGGREGATE wCount(tint, interval) (
   SFUNC = wcount_transfn,
   STYPE = internal,
   COMBINEFUNC = tint_tsum_combinefn,
@@ -89,7 +89,7 @@ CREATE AGGREGATE wcount(tint, interval) (
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
-CREATE AGGREGATE wavg(tint, interval) (
+CREATE AGGREGATE wAvg(tint, interval) (
   SFUNC = wavg_transfn,
   STYPE = internal,
   COMBINEFUNC = tavg_combinefn,
@@ -122,7 +122,7 @@ CREATE FUNCTION wavg_transfn(internal, tbigint, interval)
   AS 'MODULE_PATHNAME', 'Tnumber_wavg_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE AGGREGATE wmin(tbigint, interval) (
+CREATE AGGREGATE wMin(tbigint, interval) (
   SFUNC = tbigint_wmin_transfn,
   STYPE = internal,
   COMBINEFUNC = tbigint_tmin_combinefn,
@@ -131,7 +131,7 @@ CREATE AGGREGATE wmin(tbigint, interval) (
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
-CREATE AGGREGATE wmax(tbigint, interval) (
+CREATE AGGREGATE wMax(tbigint, interval) (
   SFUNC = tbigint_wmax_transfn,
   STYPE = internal,
   COMBINEFUNC = tbigint_tmax_combinefn,
@@ -140,7 +140,7 @@ CREATE AGGREGATE wmax(tbigint, interval) (
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
-CREATE AGGREGATE wsum(tbigint, interval) (
+CREATE AGGREGATE wSum(tbigint, interval) (
   SFUNC = tbigint_wsum_transfn,
   STYPE = internal,
   COMBINEFUNC = tbigint_tsum_combinefn,
@@ -149,7 +149,7 @@ CREATE AGGREGATE wsum(tbigint, interval) (
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
-CREATE AGGREGATE wcount(tbigint, interval) (
+CREATE AGGREGATE wCount(tbigint, interval) (
   SFUNC = wcount_transfn,
   STYPE = internal,
   COMBINEFUNC = tbigint_tsum_combinefn,
@@ -158,7 +158,7 @@ CREATE AGGREGATE wcount(tbigint, interval) (
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
-CREATE AGGREGATE wavg(tbigint, interval) (
+CREATE AGGREGATE wAvg(tbigint, interval) (
   SFUNC = wavg_transfn,
   STYPE = internal,
   COMBINEFUNC = tavg_combinefn,
@@ -191,7 +191,7 @@ CREATE FUNCTION wavg_transfn(internal, tfloat, interval)
   AS 'MODULE_PATHNAME', 'Tnumber_wavg_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE AGGREGATE wmin(tfloat, interval) (
+CREATE AGGREGATE wMin(tfloat, interval) (
   SFUNC = tfloat_wmin_transfn,
   STYPE = internal,
   COMBINEFUNC = tfloat_tmin_combinefn,
@@ -200,7 +200,7 @@ CREATE AGGREGATE wmin(tfloat, interval) (
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
-CREATE AGGREGATE wmax(tfloat, interval) (
+CREATE AGGREGATE wMax(tfloat, interval) (
   SFUNC = tfloat_wmax_transfn,
   STYPE = internal,
   COMBINEFUNC = tfloat_tmax_combinefn,
@@ -209,7 +209,7 @@ CREATE AGGREGATE wmax(tfloat, interval) (
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
-CREATE AGGREGATE wsum(tfloat, interval) (
+CREATE AGGREGATE wSum(tfloat, interval) (
   SFUNC = tfloat_wsum_transfn,
   STYPE = internal,
   COMBINEFUNC = tfloat_tsum_combinefn,
@@ -218,7 +218,7 @@ CREATE AGGREGATE wsum(tfloat, interval) (
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
-CREATE AGGREGATE wcount(tfloat, interval) (
+CREATE AGGREGATE wCount(tfloat, interval) (
   SFUNC = wcount_transfn,
   STYPE = internal,
   COMBINEFUNC = tint_tsum_combinefn,
@@ -227,7 +227,7 @@ CREATE AGGREGATE wcount(tfloat, interval) (
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
-CREATE AGGREGATE wavg(tfloat, interval) (
+CREATE AGGREGATE wAvg(tfloat, interval) (
   SFUNC = wavg_transfn,
   STYPE = internal,
   COMBINEFUNC = tavg_combinefn,

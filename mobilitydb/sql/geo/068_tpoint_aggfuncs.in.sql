@@ -68,7 +68,7 @@ CREATE FUNCTION tcount_transfn(internal, tgeogpoint)
   AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE AGGREGATE tcount(tgeompoint) (
+CREATE AGGREGATE tCount(tgeompoint) (
   SFUNC = tcount_transfn,
   STYPE = internal,
   COMBINEFUNC = tcount_combinefn,
@@ -78,7 +78,7 @@ CREATE AGGREGATE tcount(tgeompoint) (
   PARALLEL = SAFE
 );
 
-CREATE AGGREGATE tcount(tgeogpoint) (
+CREATE AGGREGATE tCount(tgeogpoint) (
   SFUNC = tcount_transfn,
   STYPE = internal,
   COMBINEFUNC = tcount_combinefn,
@@ -98,7 +98,7 @@ CREATE FUNCTION wcount_transfn(internal, tgeogpoint, interval)
   AS 'MODULE_PATHNAME', 'Temporal_wcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE AGGREGATE wcount(tgeompoint, interval) (
+CREATE AGGREGATE wCount(tgeompoint, interval) (
   SFUNC = wcount_transfn,
   STYPE = internal,
   COMBINEFUNC = tint_tsum_combinefn,
@@ -107,7 +107,7 @@ CREATE AGGREGATE wcount(tgeompoint, interval) (
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
-CREATE AGGREGATE wcount(tgeogpoint, interval) (
+CREATE AGGREGATE wCount(tgeogpoint, interval) (
   SFUNC = wcount_transfn,
   STYPE = internal,
   COMBINEFUNC = tint_tsum_combinefn,
@@ -131,7 +131,7 @@ CREATE FUNCTION tcentroid_finalfn(internal)
   AS 'MODULE_PATHNAME', 'Tpoint_tcentroid_finalfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE AGGREGATE tcentroid(tgeompoint) (
+CREATE AGGREGATE tCentroid(tgeompoint) (
   SFUNC = tcentroid_transfn,
   STYPE = internal,
   COMBINEFUNC = tcentroid_combinefn,
