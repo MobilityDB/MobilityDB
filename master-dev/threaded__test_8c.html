@@ -105,7 +105,7 @@ Functions</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >Concurrent stress test for MEOS thread-local state (issue #404). </p>
-<p >Each worker thread independently runs the full lifecycle: <a class="el" href="meos_8h_afc68cec9996f8934343c9d9a2174e14b.html#afc68cec9996f8934343c9d9a2174e14b">meos_initialize()</a> → parse a unique WKT temporal point in a hot loop (exercises the per-thread WKT lexer/parser globals + GMT bootstrap) → read-only queries on the parsed value → thread-unique meos_errno round-trip → <a class="el" href="meos_8h_ac16f5666302795068e1735eec3b4123e.html#ac16f5666302795068e1735eec3b4123e">meos_finalize()</a></p>
+<p >Each worker thread independently runs the full lifecycle: <a class="el" href="group__meos__setup_gafc68cec9996f8934343c9d9a2174e14b.html#gafc68cec9996f8934343c9d9a2174e14b" title="Initialize MEOS library.">meos_initialize()</a> → parse a unique WKT temporal point in a hot loop (exercises the per-thread WKT lexer/parser globals + GMT bootstrap) → read-only queries on the parsed value → thread-unique meos_errno round-trip → <a class="el" href="group__meos__setup_gac16f5666302795068e1735eec3b4123e.html#gac16f5666302795068e1735eec3b4123e" title="Free the timezone cache.">meos_finalize()</a></p>
 <p >Verifies:</p><ul>
 <li>meos_initialize/finalize can be called concurrently without racing on shared library state;</li>
 <li>WKT parsing (geometry_in / tgeompoint_in / ...) works concurrently because the lwgeom flex/bison globals are now MEOS_TLS;</li>
