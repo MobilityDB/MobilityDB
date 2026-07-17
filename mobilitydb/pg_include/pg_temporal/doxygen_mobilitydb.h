@@ -81,6 +81,22 @@
  * @brief Functions for static, set, box, and temporal pgpointcloud types
  *   (pcpoint, pcpatch, pcpointset, pcpatchset, tpcbox, tpcpoint, tpcpatch)
  *
+ * @defgroup mobilitydb_json Functions for temporal JSON types
+ * @ingroup mobilitydb_api
+ * @brief Functions for temporal JSON types
+ *
+ * @defgroup mobilitydb_h3 Functions for temporal H3 cell indices
+ * @ingroup mobilitydb_api
+ * @brief Functions for temporal H3 cell indices
+ *
+ * @defgroup mobilitydb_quadbin Functions for temporal CARTO QUADBIN cell indices
+ * @ingroup mobilitydb_api
+ * @brief Functions for temporal CARTO QUADBIN cell indices
+ *
+ * @defgroup mobilitydb_raster Functions for temporal rasters
+ * @ingroup mobilitydb_api
+ * @brief Functions for temporal rasters
+ *
  * @defgroup mobilitydb_misc Miscellaneous functions
  * @ingroup mobilitydb_api
  * @brief Miscellaneous functions
@@ -287,3 +303,13 @@
  */
 
 /*****************************************************************************/
+
+/**
+ * @defgroup mobilitydb_temporal_box_comp Comparison functions
+ * @ingroup mobilitydb_temporal
+ * @brief Comparison functions for temporal boxes
+ *
+ * @defgroup mobilitydb_temporal_jsonb Functions for temporal JSON types
+ * @ingroup mobilitydb_temporal
+ * @brief Functions for temporal JSON types
+ */

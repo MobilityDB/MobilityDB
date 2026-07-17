@@ -130,3 +130,9 @@
  */
 
 /*****************************************************************************/
+
+/**
+ * @defgroup meos_internal_json Functions for temporal JSON types
+ * @ingroup meos_internal
+ * @brief Functions for temporal JSON types
+ */

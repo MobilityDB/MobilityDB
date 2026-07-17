@@ -62,3 +62,45 @@
  */
 
 /*****************************************************************************/
+
+/**
+ * @defgroup meos_rgeo_constructor Constructor functions
+ * @ingroup meos_rgeo
+ * @brief Constructor functions for temporal rigid geometries
+ *
+ * @defgroup meos_rgeo_transf Transformation functions
+ * @ingroup meos_rgeo
+ * @brief Transformation functions for temporal rigid geometries
+ *
+ * @defgroup meos_rgeo_modif Modification functions
+ * @ingroup meos_rgeo
+ * @brief Modification functions for temporal rigid geometries
+ *
+ * @defgroup meos_rgeo_spatialfuncs Spatial functions
+ * @ingroup meos_rgeo
+ * @brief Spatial functions for temporal rigid geometries
+ *
+ * @defgroup meos_rgeo_tile Tile functions
+ * @ingroup meos_rgeo
+ * @brief Tile functions for temporal rigid geometries
+ *
+ * @defgroup meos_rgeo_analytics_similarity Similarity functions
+ * @ingroup meos_rgeo
+ * @brief Similarity functions for temporal rigid geometries
+ *
+ * @defgroup meos_rgeo_bbox Bounding box functions
+ * @ingroup meos_rgeo
+ * @brief Bounding box functions for temporal rigid geometries
+ *
+ *   @defgroup meos_rgeo_bbox_split Split functions
+ *   @ingroup meos_rgeo_bbox
+ *   @brief Split functions for temporal rigid geometries
+ *
+ * @defgroup meos_rgeo_rel Spatial relationship functions
+ * @ingroup meos_rgeo
+ * @brief Spatial relationship functions for temporal rigid geometries
+ *
+ *   @defgroup meos_rgeo_rel_ever Ever/always relationship functions
+ *   @ingroup meos_rgeo_rel
+ *   @brief Ever/always relationship functions for temporal rigid geometries
+ */

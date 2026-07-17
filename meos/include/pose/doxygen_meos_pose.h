@@ -147,3 +147,9 @@
  */
 
 /*****************************************************************************/
+
+/**
+ * @defgroup meos_pose_base_dist Distance functions
+ * @ingroup meos_pose_base
+ * @brief Distance functions for static poses
+ */

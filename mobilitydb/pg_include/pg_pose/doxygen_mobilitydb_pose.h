@@ -148,3 +148,9 @@
 
 /*****************************************************************************/
 
+
+/**
+ * @defgroup mobilitydb_pose_base_geopose OGC GeoPose support
+ * @ingroup mobilitydb_pose_base
+ * @brief Functions implementing the OGC GeoPose v1.0 standard for static poses
+ */

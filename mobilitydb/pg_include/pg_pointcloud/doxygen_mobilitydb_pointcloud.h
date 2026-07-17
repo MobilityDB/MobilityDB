@@ -123,3 +123,9 @@
  */
 
 /*****************************************************************************/
+
+/**
+ * @defgroup mobilitydb_pointcloud_box_conversion Conversion functions
+ * @ingroup mobilitydb_pointcloud_box
+ * @brief Conversion functions for pgpointcloud boxes
+ */

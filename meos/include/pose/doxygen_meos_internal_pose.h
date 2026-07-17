@@ -122,3 +122,9 @@
  */
 
 /*****************************************************************************/
+
+/**
+ * @defgroup meos_internal_pose_dist Distance functions
+ * @ingroup meos_internal_pose
+ * @brief Distance functions for temporal poses
+ */

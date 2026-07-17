@@ -152,3 +152,25 @@
  */
 
 /*****************************************************************************/
+
+/**
+ * @defgroup meos_pointcloud_constructor Constructor functions
+ * @ingroup meos_pointcloud
+ * @brief Constructor functions for temporal pgpointcloud types
+ *
+ * @defgroup meos_pointcloud_dist Distance functions
+ * @ingroup meos_pointcloud
+ * @brief Distance functions for temporal pgpointcloud types
+ *
+ * @defgroup meos_pointcloud_ever Ever and always comparison functions
+ * @ingroup meos_pointcloud
+ * @brief Ever and always comparison functions for temporal pgpointcloud types
+ *
+ * @defgroup meos_internal_pointcloud Functions for temporal pgpointcloud types
+ * @ingroup meos_internal
+ * @brief Functions for temporal pgpointcloud types
+ *
+ *   @defgroup meos_internal_pointcloud_box_setops Set functions
+ *   @ingroup meos_internal_pointcloud
+ *   @brief Set functions for pgpointcloud boxes
+ */
