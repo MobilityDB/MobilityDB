@@ -1330,17 +1330,21 @@ tcbuffer_restrict_stbox(const Temporal *temp, const STBox *box,
   if (! overlaps_stbox_stbox(&box1, box))
     return atfunc ? NULL : temporal_copy(temp);
 
+  /* Restrict the centre trajectory to the box with the same semantics as
+   * before (for both at and minus), then slice the original buffer to the
+   * sub-periods that survive instead of rebuilding it from its point and
+   * radius projections with tcbuffer_make: restricting the temporal circular
+   * buffer to those periods keeps the radius without reconstructing the value,
+   * and interpolates the same point and radius at any box-boundary crossing. */
   Temporal *tpoint = tcbuffer_to_tgeompoint(temp);
-  Temporal *tfloat = tcbuffer_to_tfloat(temp);
   Temporal *tpoint_rest = tgeo_restrict_stbox(tpoint, box, NULL, atfunc);
   pfree(tpoint);
   if (! tpoint_rest)
-  {
-    pfree(tfloat);
     return NULL;
-  }
-  Temporal *result = tcbuffer_make(tpoint_rest, tfloat);
-  pfree(tfloat); pfree(tpoint_rest);
+  SpanSet *ss = temporal_time(tpoint_rest);
+  pfree(tpoint_rest);
+  Temporal *result = temporal_restrict_tstzspanset(temp, ss, REST_AT);
+  pfree(ss);
   return result;
 }
 
