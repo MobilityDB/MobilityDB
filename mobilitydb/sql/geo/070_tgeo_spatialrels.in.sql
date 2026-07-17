@@ -207,23 +207,19 @@ CREATE FUNCTION eDisjoint(tgeography, tgeography)
 CREATE FUNCTION aDisjoint(geometry, tgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adisjoint_geo_tgeo'
-  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION aDisjoint(tgeometry, geometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adisjoint_tgeo_geo'
-  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION aDisjoint(tgeometry, tgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adisjoint_tgeo_tgeo'
-  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION aDisjoint(geography, tgeography)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adisjoint_geo_tgeo'
-  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION aDisjoint(tgeography, geography)
   RETURNS boolean
@@ -232,7 +228,6 @@ CREATE FUNCTION aDisjoint(tgeography, geography)
 CREATE FUNCTION aDisjoint(tgeography, tgeography)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adisjoint_tgeo_tgeo'
-  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
