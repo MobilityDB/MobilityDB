@@ -938,6 +938,7 @@ stbox_get_time_tile(TimestampTz t, const Interval *duration,
  *****************************************************************************/
 
 /**
+ * @ingroup meos_geo_bbox_split
  * @brief Return the spatiotemporal boxes of a temporal point split with
  * respect to a space and possibly a time grid
  * @param[in] temp Temporal point

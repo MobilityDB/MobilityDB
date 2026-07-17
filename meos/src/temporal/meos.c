@@ -529,6 +529,7 @@ check_datestyle(const char **newval, void **extra)
 }
 
 /**
+ * @ingroup meos_setup
  * @brief Set the DateStyle
  */
 bool
@@ -544,6 +545,7 @@ meos_set_datestyle(const char *newval, void *extra)
 }
 
 /**
+ * @ingroup meos_setup
  * @brief Get the DateStyle
  */
 char *
@@ -588,6 +590,7 @@ check_intervalstyle(const char *newval, int *extra)
 }
 
 /**
+ * @ingroup meos_setup
  * @brief Set the IntervalStyle
  */
 bool
@@ -601,6 +604,7 @@ meos_set_intervalstyle(const char *newval, int extra)
 }
 
 /**
+ * @ingroup meos_setup
  * @brief Get the IntervalStyle
  */
 char *
@@ -618,8 +622,9 @@ meos_get_intervalstyle(void)
 
 extern void init_database_collation(void);
 
-/*
- * Initialize MEOS library
+/**
+ * @ingroup meos_setup
+ * @brief Initialize MEOS library
  */
 void
 meos_initialize(void)
@@ -645,8 +650,9 @@ meos_initialize(void)
   return;
 }
 
-/*
- * Free the timezone cache
+/**
+ * @ingroup meos_setup
+ * @brief Free the timezone cache
  */
 void
 meos_finalize(void)

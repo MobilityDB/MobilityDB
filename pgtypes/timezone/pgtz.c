@@ -500,8 +500,9 @@ meos_default_timezone(void)  /* MEOS: probe the OS default zone once, process-wi
   return meos_default_tz_name[0] ? meos_default_tz_name : NULL;
 }
 
-/*
- * Initialize timezone cache
+/**
+ * @ingroup meos_setup
+ * @brief Initialize timezone cache
  */
 void
 meos_initialize_timezone(const char *tz_str)
@@ -541,8 +542,9 @@ meos_ensure_timezone(void)
   return;
 }
 
-/*
- * Free the timezone cache
+/**
+ * @ingroup meos_setup
+ * @brief Free the timezone cache
  */
 void
 meos_finalize_timezone(void)

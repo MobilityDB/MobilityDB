@@ -275,7 +275,7 @@ read_pixel(const uint8_t *pixels, int col, int row, int width,
  *****************************************************************************/
 
 /**
- * @ingroup mobilitydb_raster
+ * @ingroup meos_raster_base_accessor
  * @brief Sample a Raquet raster chip along a tgeompoint trajectory.
  *
  * The chip is identified by its QUADBIN cell, which encodes the Web-Mercator
@@ -361,7 +361,7 @@ raster_tile_value_quadbin(const uint8_t *pixels, uint16_t width,
  *****************************************************************************/
 
 /**
- * @ingroup mobilitydb_raster
+ * @ingroup meos_raster_base_accessor
  * @brief Return the unique QUADBIN cells at @p zoom covered by a trajectory.
  *
  * Suitable for use as the WHERE-clause argument when joining against a Raquet

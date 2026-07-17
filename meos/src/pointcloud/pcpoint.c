@@ -263,6 +263,7 @@ pcpoint_as_hexwkb(const Pcpoint *pt)
  *****************************************************************************/
 
 /**
+ * @ingroup meos_pointcloud_constructor
  * @brief Return a palloc'd copy of a pcpoint
  */
 Pcpoint *

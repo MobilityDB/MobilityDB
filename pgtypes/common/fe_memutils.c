@@ -31,6 +31,10 @@ static meos_malloc_fn  MEOS_MALLOC  = &malloc;
 static meos_realloc_fn MEOS_REALLOC = &realloc;
 static meos_free_fn    MEOS_FREE    = &free;
 
+/**
+ * @ingroup meos_setup
+ * @brief Install the memory allocator hooks used by MEOS
+ */
 void
 meos_initialize_allocator(meos_malloc_fn malloc_fn,
 	meos_realloc_fn realloc_fn, meos_free_fn free_fn)

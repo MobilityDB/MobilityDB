@@ -103,6 +103,7 @@ typedef struct
 char *SPATIAL_REF_SYS_CSV = "/usr/local/share/spatial_ref_sys.csv";
 
 /**
+ * @ingroup meos_setup
  * @brief Set the location of the SPATIAL_REF_SYS_CSV files
  */
 void
@@ -165,6 +166,7 @@ GetMEOSPROJSRSCache()
 }
 
 /**
+ * @ingroup meos_setup
  * @brief Destroy all the malloc'ed PROJ objects stored in the PROJSRSCache
  */
 void
