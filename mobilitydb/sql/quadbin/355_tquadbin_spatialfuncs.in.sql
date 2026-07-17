@@ -47,35 +47,6 @@
  */
 
 /******************************************************************************
- * Value accessors
- ******************************************************************************/
-
-CREATE FUNCTION startValue(tquadbin)
-  RETURNS quadbin
-  AS 'MODULE_PATHNAME', 'Temporal_start_value'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION endValue(tquadbin)
-  RETURNS quadbin
-  AS 'MODULE_PATHNAME', 'Temporal_end_value'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION valueN(tquadbin, integer)
-  RETURNS quadbin
-  AS 'MODULE_PATHNAME', 'Temporal_value_n'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION getValues(tquadbin)
-  RETURNS quadbinset
-  AS 'MODULE_PATHNAME', 'Temporal_valueset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION valueAtTimestamp(tquadbin, timestamptz)
-  RETURNS quadbin
-  AS 'MODULE_PATHNAME', 'Temporal_value_at_timestamptz'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-/******************************************************************************
  * Resolution + validity (unary_scalar lifts)
  ******************************************************************************/
 
