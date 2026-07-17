@@ -2937,7 +2937,7 @@ tpoint_linear_restrict_geom(const Temporal *temp, const GSERIALIZED *gs,
      * container-consistent with tgeo_restrict_geom whether or not the geometry
      * is met. */
     return (temp->subtype == TSEQUENCE) ?
-      (Temporal *) tsequence_to_tsequenceset((const TSequence *) temp) :
+      (Temporal *) tsequence_as_tsequenceset((const TSequence *) temp) :
       temporal_copy(temp);
 
   SpanSet *ss = temporal_time(result_at);

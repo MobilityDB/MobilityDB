@@ -58,7 +58,7 @@ extern TSequenceSet *trgeoseqset_make_free(const GSERIALIZED *geom,
 
 /* Transformation functions */
 
-extern TSequence *trgeoseqset_to_tsequence(const TSequenceSet *ss);
+extern TSequence *trgeoseqset_as_tsequence(const TSequenceSet *ss);
 
 /*****************************************************************************/
 

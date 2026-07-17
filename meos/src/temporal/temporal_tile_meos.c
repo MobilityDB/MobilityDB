@@ -870,7 +870,7 @@ tnumberseq_step_value_split(const TSequence *seq, Datum start_bin,
     bin_value = datum_bin(value, size, start_bin, basetype);
     bin_no = bin_position(bin_value, size, start_bin, basetype);
     seq_no = nseqs[bin_no]++;
-    result[bin_no * numcols + seq_no] = tinstant_to_tsequence(inst1, STEP);
+    result[bin_no * numcols + seq_no] = tinstant_as_tsequence(inst1, STEP);
   }
   pfree_array((void **) tofree, nfree);
   return;
@@ -1072,7 +1072,7 @@ tnumberseq_cont_value_split(const TSequence *seq, Datum start_bin, Datum size,
   {
     TSequenceSet **result = palloc(sizeof(TSequenceSet *));
     Datum *values = palloc(sizeof(Datum));
-    result[0] = tsequence_to_tsequenceset(seq);
+    result[0] = tsequence_as_tsequenceset(seq);
     Datum value = tinstant_value_p(TSEQUENCE_INST_N(seq, 0));
     values[0] = datum_bin(value, size, start_bin, basetype);
     *bins = values;

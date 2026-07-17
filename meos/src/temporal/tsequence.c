@@ -1320,7 +1320,7 @@ tsequence_subseq(const TSequence *seq, int from, int to, bool lower_inc,
  * @csqlfn #Temporal_as_tsequence()
  */
 TSequence *
-tinstant_to_tsequence(const TInstant *inst, interpType interp)
+tinstant_as_tsequence(const TInstant *inst, interpType interp)
 {
   assert(inst);
   return tsequence_make((TInstant **) &inst, 1, true, true, interp,
@@ -1338,7 +1338,7 @@ TSequence *
 tinstant_to_tsequence_free(TInstant *inst, interpType interp)
 {
   assert(inst);
-  TSequence *result = tinstant_to_tsequence((const TInstant *) inst, interp);
+  TSequence *result = tinstant_as_tsequence((const TInstant *) inst, interp);
   pfree(inst);
   return result;
 }
@@ -1370,7 +1370,7 @@ tdiscseq_set_interp(const TSequence *seq, interpType interp)
   for (int i = 0; i < seq->count; i++)
   {
     inst = TSEQUENCE_INST_N(seq, i);
-    sequences[i] = tinstant_to_tsequence(inst, interp);
+    sequences[i] = tinstant_as_tsequence(inst, interp);
   }
   return (Temporal *) tsequenceset_make_free(sequences, seq->count,
     NORMALIZE_NO);
@@ -1389,7 +1389,7 @@ tcontseq_to_discrete(const TSequence *seq)
       "Cannot transform input value to a temporal discrete sequence");
     return NULL;
   }
-  return tinstant_to_tsequence(TSEQUENCE_INST_N(seq, 0), DISCRETE);
+  return tinstant_as_tsequence(TSEQUENCE_INST_N(seq, 0), DISCRETE);
 }
 
 /**
@@ -1469,7 +1469,7 @@ tstepseq_to_linear_iter(const TSequence *seq, TSequence **result)
     value1 = tinstant_value_p(TSEQUENCE_INST_N(seq, seq->count - 2));
     value2 = tinstant_value_p(inst2);
     if (datum_ne(value1, value2, basetype))
-      result[nseqs++] = tinstant_to_tsequence(inst2, LINEAR);
+      result[nseqs++] = tinstant_as_tsequence(inst2, LINEAR);
   }
   return nseqs;
 }
@@ -1979,7 +1979,7 @@ tsequence_segments_iter(const TSequence *seq, TSequence **result)
     inst1 = (TInstant *) TSEQUENCE_INST_N(seq, seq->count - 1);
     inst2 = (TInstant *) TSEQUENCE_INST_N(seq, seq->count - 2);
     if (! datum_eq(tinstant_value_p(inst1), tinstant_value_p(inst2), basetype))
-      result[nseqs++] = tinstant_to_tsequence(inst1, interp);
+      result[nseqs++] = tinstant_as_tsequence(inst1, interp);
   }
   return nseqs;
 }
@@ -2003,7 +2003,7 @@ tsequence_segments(const TSequence *seq, int *count)
     /* Discrete sequence */
     interpType interp = MEOS_FLAGS_GET_CONTINUOUS(seq->flags) ? LINEAR : STEP;
     for (int i = 0; i < seq->count; i++)
-      result[i] = tinstant_to_tsequence(TSEQUENCE_INST_N(seq, i), interp);
+      result[i] = tinstant_as_tsequence(TSEQUENCE_INST_N(seq, i), interp);
     *count = seq->count;
     return result;
   }
@@ -2271,8 +2271,8 @@ synchronize_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
   {
     inst1 = tsequence_at_timestamptz(seq1, inter.lower);
     inst2 = tsequence_at_timestamptz(seq2, inter.lower);
-    *sync1 = tinstant_to_tsequence(inst1, interp1);
-    *sync2 = tinstant_to_tsequence(inst2, interp2);
+    *sync1 = tinstant_as_tsequence(inst1, interp1);
+    *sync2 = tinstant_as_tsequence(inst2, interp2);
     pfree(inst1); pfree(inst2);
     return true;
   }

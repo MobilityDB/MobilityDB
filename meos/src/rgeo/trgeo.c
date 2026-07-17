@@ -956,9 +956,9 @@ trgeometry_as_tinstant(const Temporal *temp)
     case TINSTANT:
       return tinstant_copy((TInstant *) temp);
     case TSEQUENCE:
-      return trgeoseq_to_tinstant((TSequence *) temp);
+      return trgeoseq_as_tinstant((TSequence *) temp);
     default: /* TSEQUENCESET */
-      return trgeoseqset_to_tinstant((TSequenceSet *) temp);
+      return trgeoseqset_as_tinstant((TSequenceSet *) temp);
   }
 }
 

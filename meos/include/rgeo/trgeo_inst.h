@@ -56,8 +56,8 @@ extern TInstant *trgeoinst_make1(const GSERIALIZED *geom, const Pose *pose,
 
 /* Transformation functions */
 
-extern TInstant *trgeoseq_to_tinstant(const TSequence *seq);
-extern TInstant *trgeoseqset_to_tinstant(const TSequenceSet *ts);
+extern TInstant *trgeoseq_as_tinstant(const TSequence *seq);
+extern TInstant *trgeoseqset_as_tinstant(const TSequenceSet *ts);
 
 /*****************************************************************************/
 

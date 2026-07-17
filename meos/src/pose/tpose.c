@@ -291,7 +291,7 @@ tposeseq_make(const TSequence *seq1, const TSequence *seq2)
   if (seq1->count == 1)
   {
     TInstant *inst = tgeompoint_tfloat_to_tposeinst(inst1, inst2);
-    TSequence *result = tinstant_to_tsequence(inst, interp);
+    TSequence *result = tinstant_as_tsequence(inst, interp);
     pfree(inst);
     return result;
   }
@@ -329,7 +329,7 @@ tposeseqset_make(const TSequenceSet *ss1, const TSequenceSet *ss2)
   if (ss1->count == 1)
   {
     TSequence *seq = tposeseq_make(seq1, seq2);
-    TSequenceSet *result = tsequence_to_tsequenceset(seq);
+    TSequenceSet *result = tsequence_as_tsequenceset(seq);
     pfree(seq);
     return result;
   }

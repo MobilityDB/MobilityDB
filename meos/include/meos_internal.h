@@ -1195,9 +1195,9 @@ extern void temporal_restart(Temporal *temp, int count);
 extern TSequence *temporal_tsequence(const Temporal *temp, interpType interp);
 extern TSequenceSet *temporal_tsequenceset(const Temporal *temp, interpType interp);
 extern TInstant *tinstant_shift_time(const TInstant *inst, const Interval *interv);
-extern TSequence *tinstant_to_tsequence(const TInstant *inst, interpType interp);
+extern TSequence *tinstant_as_tsequence(const TInstant *inst, interpType interp);
 extern TSequence *tinstant_to_tsequence_free(TInstant *inst, interpType interp);
-extern TSequenceSet *tinstant_to_tsequenceset(const TInstant *inst, interpType interp);
+extern TSequenceSet *tinstant_as_tsequenceset(const TInstant *inst, interpType interp);
 extern Temporal *tnumber_shift_scale_value(const Temporal *temp, Datum shift, Datum width, bool hasshift, bool haswidth);
 extern TInstant *tnumberinst_shift_value(const TInstant *inst, Datum shift);
 extern TSequence *tnumberseq_shift_scale_value(const TSequence *seq, Datum shift, Datum width, bool hasshift, bool haswidth);
@@ -1206,8 +1206,8 @@ extern void tsequence_restart(TSequence *seq, int count);
 extern Temporal *tsequence_set_interp(const TSequence *seq, interpType interp);
 extern TSequence *tsequence_shift_scale_time(const TSequence *seq, const Interval *shift, const Interval *duration);
 extern TSequence *tsequence_subseq(const TSequence *seq, int from, int to, bool lower_inc, bool upper_inc);
-extern TInstant *tsequence_to_tinstant(const TSequence *seq);
-extern TSequenceSet *tsequence_to_tsequenceset(const TSequence *seq);
+extern TInstant *tsequence_as_tinstant(const TSequence *seq);
+extern TSequenceSet *tsequence_as_tsequenceset(const TSequence *seq);
 extern TSequenceSet *tsequence_to_tsequenceset_free(TSequence *seq);
 extern TSequenceSet *tsequence_to_tsequenceset_interp(const TSequence *seq, interpType interp);
 extern void tsequenceset_restart(TSequenceSet *ss, int count);
@@ -1216,8 +1216,8 @@ extern TSequenceSet *tsequenceset_shift_scale_time(const TSequenceSet *ss, const
 extern TSequence *tsequenceset_to_discrete(const TSequenceSet *ss);
 extern TSequenceSet *tsequenceset_to_linear(const TSequenceSet *ss);
 extern TSequenceSet *tsequenceset_to_step(const TSequenceSet *ss);
-extern TInstant *tsequenceset_to_tinstant(const TSequenceSet *ss);
-extern TSequence *tsequenceset_to_tsequence(const TSequenceSet *ss);
+extern TInstant *tsequenceset_as_tinstant(const TSequenceSet *ss);
+extern TSequence *tsequenceset_as_tsequence(const TSequenceSet *ss);
 
 /*****************************************************************************/
 

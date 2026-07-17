@@ -414,7 +414,7 @@ tinterrel_tspatialseqset_base(const TSequenceSet *ss, Datum base,
         DatumGetGserializedP(base), box, tinter, func);
     TSequence *res = tinterrel_tspatialseq_discstep_base(
       TSEQUENCESET_SEQ_N(ss, 0), base, tinter, func);
-    TSequenceSet *result = tsequence_to_tsequenceset(res);
+    TSequenceSet *result = tsequence_as_tsequenceset(res);
     pfree(res);
     return result;
   }
@@ -1290,7 +1290,7 @@ tdwithin_tlinearseq_tlinearseq_iter(const TSequence *seq1,
       {
         Datum value = func(ev1, ev2, dist);
         tinstant_set(instants[0], value, upper);
-        result[nseqs++] = tinstant_to_tsequence(instants[0], STEP);
+        result[nseqs++] = tinstant_as_tsequence(instants[0], STEP);
       }
     }
     sv1 = ev1;
