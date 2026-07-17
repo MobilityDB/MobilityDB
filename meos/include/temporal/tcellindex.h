@@ -74,6 +74,9 @@
 #include <postgres.h>
 /* MEOS */
 #include <meos.h>
+/* The public generic accessors (tcellindex_get_resolution, …) are declared in
+ * the umbrella header so bindings pick them up from it. */
+#include <meos_cellindex.h>
 #include "temporal/meos_catalog.h"
 
 /*****************************************************************************
@@ -136,12 +139,6 @@ extern const DggsCellOps *dggs_cellops(MeosType temptype);
  * these once and overload on the concrete temporal type.
  *****************************************************************************/
 
-extern Temporal *tcellindex_get_resolution(const Temporal *temp);
-extern Temporal *tcellindex_is_valid_cell(const Temporal *temp);
-extern Temporal *tcellindex_cell_to_parent(const Temporal *temp,
-  int32 resolution);
-extern Temporal *tcellindex_cell_to_point(const Temporal *temp);
-extern Temporal *tcellindex_cell_to_boundary(const Temporal *temp);
-extern Temporal *tcellindex_cell_area(const Temporal *temp);
+/* Declared in the umbrella header <meos_cellindex.h> (included above). */
 
 #endif /* __TCELLINDEX_H__ */
