@@ -534,7 +534,7 @@ tcbufferseq_linear_traversed_area(const TSequence *seq, GSERIALIZED **result)
 }
 
 /**
- * @ingroup meos_cbuffer_spatial_accessor
+ * @ingroup meos_internal_cbuffer_spatial_accessor
  * @brief Return the traversed area of a temporal circular buffer sequence
  * @param[in] seq Temporal circular buffer
  * @param[in] unary_union True when the traversed area is a single geometry
