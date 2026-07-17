@@ -435,11 +435,6 @@ extern void *temporal_bbox_ptr(const Temporal *temp);
 extern bool intersection_temporal_temporal(const Temporal *temp1,
 const Temporal *temp2, SyncMode mode, Temporal **inter1, Temporal **inter2);
 
-/* Version functions */
-
-extern char *mobilitydb_version(void);
-extern char *mobilitydb_full_version(void);
-
 /* Transformations */
 
 extern datum_func2 round_fn(MeosType basetype);

@@ -415,6 +415,15 @@ extern void meos_set_ways_csv(const char* path);
 extern void meos_initialize(void);
 extern void meos_finalize(void);
 
+/*****************************************************************************
+ * Version functions
+ *****************************************************************************/
+
+extern char *meos_version(void);
+extern char *meos_full_version(void);
+extern char *mobilitydb_version(void);
+extern char *mobilitydb_full_version(void);
+
 /*============================================================================
  * Functions for set and span types
   ===========================================================================*/
