@@ -92,25 +92,25 @@ CREATE OPERATOR <-> (
  * Nearest approach instant
  *****************************************************************************/
 
-CREATE FUNCTION NearestApproachInstant(geometry, tnpoint)
+CREATE FUNCTION nearestApproachInstant(geometry, tnpoint)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'NAI_geo_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION NearestApproachInstant(tnpoint, geometry)
+CREATE FUNCTION nearestApproachInstant(tnpoint, geometry)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'NAI_tnpoint_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION NearestApproachInstant(npoint, tnpoint)
+CREATE FUNCTION nearestApproachInstant(npoint, tnpoint)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'NAI_npoint_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION NearestApproachInstant(tnpoint, npoint)
+CREATE FUNCTION nearestApproachInstant(tnpoint, npoint)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'NAI_tnpoint_npoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION NearestApproachInstant(tnpoint, tnpoint)
+CREATE FUNCTION nearestApproachInstant(tnpoint, tnpoint)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'NAI_tnpoint_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -135,11 +135,11 @@ CREATE FUNCTION nearestApproachDistance(tnpoint, stbox)
   RETURNS float
   AS 'MODULE_PATHNAME', 'NAD_tnpoint_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION NearestApproachDistance(npoint, tnpoint)
+CREATE FUNCTION nearestApproachDistance(npoint, tnpoint)
   RETURNS float
   AS 'MODULE_PATHNAME', 'NAD_npoint_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION NearestApproachDistance(tnpoint, npoint)
+CREATE FUNCTION nearestApproachDistance(tnpoint, npoint)
   RETURNS float
   AS 'MODULE_PATHNAME', 'NAD_tnpoint_npoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

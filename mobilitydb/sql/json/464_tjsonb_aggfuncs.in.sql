@@ -56,7 +56,7 @@ CREATE FUNCTION tjsonb_tagg_finalfn(internal)
   AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE AGGREGATE tcount(tjsonb) (
+CREATE AGGREGATE tCount(tjsonb) (
   SFUNC = tcount_transfn,
   STYPE = internal,
   COMBINEFUNC = tcount_combinefn,
@@ -72,7 +72,7 @@ CREATE FUNCTION wcount_transfn(internal, tjsonb, interval)
   AS 'MODULE_PATHNAME', 'Temporal_wcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE AGGREGATE wcount(tjsonb, interval) (
+CREATE AGGREGATE wCount(tjsonb, interval) (
   SFUNC = wcount_transfn,
   STYPE = internal,
   COMBINEFUNC = tint_tsum_combinefn,

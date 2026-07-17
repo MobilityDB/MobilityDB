@@ -141,7 +141,7 @@ CREATE FUNCTION tbigint_tagg_finalfn(internal)
   AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE AGGREGATE tcount(timestamptz) (
+CREATE AGGREGATE tCount(timestamptz) (
   SFUNC = tcount_transfn,
   STYPE = internal,
   COMBINEFUNC = tcount_combinefn,
@@ -151,7 +151,7 @@ CREATE AGGREGATE tcount(timestamptz) (
   PARALLEL = SAFE
 );
 
-CREATE AGGREGATE tcount(tstzset) (
+CREATE AGGREGATE tCount(tstzset) (
   SFUNC = tcount_transfn,
   STYPE = internal,
   COMBINEFUNC = tcount_combinefn,
@@ -161,7 +161,7 @@ CREATE AGGREGATE tcount(tstzset) (
   PARALLEL = SAFE
 );
 
-CREATE AGGREGATE tcount(tstzspan) (
+CREATE AGGREGATE tCount(tstzspan) (
   SFUNC = tcount_transfn,
   STYPE = internal,
   COMBINEFUNC = tcount_combinefn,
@@ -171,7 +171,7 @@ CREATE AGGREGATE tcount(tstzspan) (
   PARALLEL = SAFE
 );
 
-CREATE AGGREGATE tcount(tstzspanset) (
+CREATE AGGREGATE tCount(tstzspanset) (
   SFUNC = tcount_transfn,
   STYPE = internal,
   COMBINEFUNC = tcount_combinefn,
@@ -210,7 +210,7 @@ CREATE FUNCTION tbool_tagg_finalfn(internal)
   AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE AGGREGATE tcount(tbool) (
+CREATE AGGREGATE tCount(tbool) (
   SFUNC = tcount_transfn,
   STYPE = internal,
   COMBINEFUNC = tcount_combinefn,
@@ -220,7 +220,7 @@ CREATE AGGREGATE tcount(tbool) (
   PARALLEL = SAFE
 );
 
-CREATE AGGREGATE tand(tbool) (
+CREATE AGGREGATE tAnd(tbool) (
   SFUNC = tbool_tand_transfn,
   STYPE = internal,
   COMBINEFUNC = tbool_tand_combinefn,
@@ -229,7 +229,7 @@ CREATE AGGREGATE tand(tbool) (
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
-CREATE AGGREGATE tor(tbool) (
+CREATE AGGREGATE tOr(tbool) (
   SFUNC = tbool_tor_transfn,
   STYPE = internal,
   COMBINEFUNC = tbool_tor_combinefn,
@@ -318,7 +318,7 @@ CREATE FUNCTION tavg_finalfn(internal)
   AS 'MODULE_PATHNAME', 'Tnumber_tavg_finalfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE AGGREGATE tcount(tint) (
+CREATE AGGREGATE tCount(tint) (
   SFUNC = tcount_transfn,
   STYPE = internal,
   COMBINEFUNC = tcount_combinefn,
@@ -328,7 +328,7 @@ CREATE AGGREGATE tcount(tint) (
   PARALLEL = SAFE
 );
 
-CREATE AGGREGATE tcount(tbigint) (
+CREATE AGGREGATE tCount(tbigint) (
   SFUNC = tcount_transfn,
   STYPE = internal,
   COMBINEFUNC = tcount_combinefn,
@@ -338,7 +338,7 @@ CREATE AGGREGATE tcount(tbigint) (
   PARALLEL = SAFE
 );
 
-CREATE AGGREGATE tmin(tint) (
+CREATE AGGREGATE tMin(tint) (
   SFUNC = tint_tmin_transfn,
   STYPE = internal,
   COMBINEFUNC = tint_tmin_combinefn,
@@ -349,7 +349,7 @@ CREATE AGGREGATE tmin(tint) (
   PARALLEL = SAFE
 );
 
-CREATE AGGREGATE tminAgg(tint) (
+CREATE AGGREGATE tMinAgg(tint) (
   SFUNC = tint_tmin_transfn,
   STYPE = internal,
   COMBINEFUNC = tint_tmin_combinefn,
@@ -359,7 +359,7 @@ CREATE AGGREGATE tminAgg(tint) (
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
-CREATE AGGREGATE tmax(tint) (
+CREATE AGGREGATE tMax(tint) (
   SFUNC = tint_tmax_transfn,
   STYPE = internal,
   COMBINEFUNC = tint_tmax_combinefn,
@@ -370,7 +370,7 @@ CREATE AGGREGATE tmax(tint) (
   PARALLEL = SAFE
 );
 
-CREATE AGGREGATE tmaxAgg(tint) (
+CREATE AGGREGATE tMaxAgg(tint) (
   SFUNC = tint_tmax_transfn,
   STYPE = internal,
   COMBINEFUNC = tint_tmax_combinefn,
@@ -380,7 +380,7 @@ CREATE AGGREGATE tmaxAgg(tint) (
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
-CREATE AGGREGATE tsum(tint) (
+CREATE AGGREGATE tSum(tint) (
   SFUNC = tint_tsum_transfn,
   STYPE = internal,
   COMBINEFUNC = tint_tsum_combinefn,
@@ -389,7 +389,7 @@ CREATE AGGREGATE tsum(tint) (
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
-CREATE AGGREGATE tavg(tint) (
+CREATE AGGREGATE tAvg(tint) (
   SFUNC = tavg_transfn,
   STYPE = internal,
   COMBINEFUNC = tavg_combinefn,
@@ -399,7 +399,7 @@ CREATE AGGREGATE tavg(tint) (
   PARALLEL = SAFE
 );
 
-CREATE AGGREGATE tmin(tbigint) (
+CREATE AGGREGATE tMin(tbigint) (
   SFUNC = tbigint_tmin_transfn,
   STYPE = internal,
   COMBINEFUNC = tbigint_tmin_combinefn,
@@ -410,7 +410,7 @@ CREATE AGGREGATE tmin(tbigint) (
   PARALLEL = SAFE
 );
 
-CREATE AGGREGATE tminAgg(tbigint) (
+CREATE AGGREGATE tMinAgg(tbigint) (
   SFUNC = tbigint_tmin_transfn,
   STYPE = internal,
   COMBINEFUNC = tbigint_tmin_combinefn,
@@ -420,7 +420,7 @@ CREATE AGGREGATE tminAgg(tbigint) (
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
-CREATE AGGREGATE tmax(tbigint) (
+CREATE AGGREGATE tMax(tbigint) (
   SFUNC = tbigint_tmax_transfn,
   STYPE = internal,
   COMBINEFUNC = tbigint_tmax_combinefn,
@@ -431,7 +431,7 @@ CREATE AGGREGATE tmax(tbigint) (
   PARALLEL = SAFE
 );
 
-CREATE AGGREGATE tmaxAgg(tbigint) (
+CREATE AGGREGATE tMaxAgg(tbigint) (
   SFUNC = tbigint_tmax_transfn,
   STYPE = internal,
   COMBINEFUNC = tbigint_tmax_combinefn,
@@ -441,7 +441,7 @@ CREATE AGGREGATE tmaxAgg(tbigint) (
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
-CREATE AGGREGATE tsum(tbigint) (
+CREATE AGGREGATE tSum(tbigint) (
   SFUNC = tbigint_tsum_transfn,
   STYPE = internal,
   COMBINEFUNC = tbigint_tsum_combinefn,
@@ -450,7 +450,7 @@ CREATE AGGREGATE tsum(tbigint) (
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
-CREATE AGGREGATE tavg(tbigint) (
+CREATE AGGREGATE tAvg(tbigint) (
   SFUNC = tavg_transfn,
   STYPE = internal,
   COMBINEFUNC = tavg_combinefn,
@@ -500,7 +500,7 @@ CREATE FUNCTION tavg_transfn(internal, tfloat)
   AS 'MODULE_PATHNAME', 'Tnumber_tavg_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE AGGREGATE tcount(tfloat) (
+CREATE AGGREGATE tCount(tfloat) (
   SFUNC = tcount_transfn,
   STYPE = internal,
   COMBINEFUNC = tcount_combinefn,
@@ -510,7 +510,7 @@ CREATE AGGREGATE tcount(tfloat) (
   PARALLEL = SAFE
 );
 
-CREATE AGGREGATE tmin(tfloat) (
+CREATE AGGREGATE tMin(tfloat) (
   SFUNC = tfloat_tmin_transfn,
   STYPE = internal,
   COMBINEFUNC = tfloat_tmin_combinefn,
@@ -521,7 +521,7 @@ CREATE AGGREGATE tmin(tfloat) (
   PARALLEL = SAFE
 );
 
-CREATE AGGREGATE tminAgg(tfloat) (
+CREATE AGGREGATE tMinAgg(tfloat) (
   SFUNC = tfloat_tmin_transfn,
   STYPE = internal,
   COMBINEFUNC = tfloat_tmin_combinefn,
@@ -531,7 +531,7 @@ CREATE AGGREGATE tminAgg(tfloat) (
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
-CREATE AGGREGATE tmax(tfloat) (
+CREATE AGGREGATE tMax(tfloat) (
   SFUNC = tfloat_tmax_transfn,
   STYPE = internal,
   COMBINEFUNC = tfloat_tmax_combinefn,
@@ -542,7 +542,7 @@ CREATE AGGREGATE tmax(tfloat) (
   PARALLEL = SAFE
 );
 
-CREATE AGGREGATE tmaxAgg(tfloat) (
+CREATE AGGREGATE tMaxAgg(tfloat) (
   SFUNC = tfloat_tmax_transfn,
   STYPE = internal,
   COMBINEFUNC = tfloat_tmax_combinefn,
@@ -552,7 +552,7 @@ CREATE AGGREGATE tmaxAgg(tfloat) (
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
-CREATE AGGREGATE tsum(tfloat) (
+CREATE AGGREGATE tSum(tfloat) (
   SFUNC = tfloat_tsum_transfn,
   STYPE = internal,
   COMBINEFUNC = tfloat_tsum_combinefn,
@@ -561,7 +561,7 @@ CREATE AGGREGATE tsum(tfloat) (
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
-CREATE AGGREGATE tavg(tfloat) (
+CREATE AGGREGATE tAvg(tfloat) (
   SFUNC = tavg_transfn,
   STYPE = internal,
   COMBINEFUNC = tavg_combinefn,
@@ -600,7 +600,7 @@ CREATE FUNCTION ttext_tagg_finalfn(internal)
   AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE AGGREGATE tcount(ttext) (
+CREATE AGGREGATE tCount(ttext) (
   SFUNC = tcount_transfn,
   STYPE = internal,
   COMBINEFUNC = tcount_combinefn,
@@ -610,7 +610,7 @@ CREATE AGGREGATE tcount(ttext) (
   PARALLEL = SAFE
 );
 
-CREATE AGGREGATE tmin(ttext) (
+CREATE AGGREGATE tMin(ttext) (
   SFUNC = ttext_tmin_transfn,
   STYPE = internal,
   COMBINEFUNC = ttext_tmin_combinefn,
@@ -621,7 +621,7 @@ CREATE AGGREGATE tmin(ttext) (
   PARALLEL = SAFE
 );
 
-CREATE AGGREGATE tminAgg(ttext) (
+CREATE AGGREGATE tMinAgg(ttext) (
   SFUNC = ttext_tmin_transfn,
   STYPE = internal,
   COMBINEFUNC = ttext_tmin_combinefn,
@@ -631,7 +631,7 @@ CREATE AGGREGATE tminAgg(ttext) (
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
-CREATE AGGREGATE tmax(ttext) (
+CREATE AGGREGATE tMax(ttext) (
   SFUNC = ttext_tmax_transfn,
   STYPE = internal,
   COMBINEFUNC = ttext_tmax_combinefn,
@@ -642,7 +642,7 @@ CREATE AGGREGATE tmax(ttext) (
   PARALLEL = SAFE
 );
 
-CREATE AGGREGATE tmaxAgg(ttext) (
+CREATE AGGREGATE tMaxAgg(ttext) (
   SFUNC = ttext_tmax_transfn,
   STYPE = internal,
   COMBINEFUNC = ttext_tmax_combinefn,

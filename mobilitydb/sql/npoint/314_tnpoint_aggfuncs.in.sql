@@ -50,7 +50,7 @@ CREATE FUNCTION tcount_transfn(internal, tnpoint)
   AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE AGGREGATE tcount(tnpoint) (
+CREATE AGGREGATE tCount(tnpoint) (
   SFUNC = tcount_transfn,
   STYPE = internal,
   COMBINEFUNC = tcount_combinefn,
@@ -66,7 +66,7 @@ CREATE FUNCTION wcount_transfn(internal, tnpoint, interval)
   AS 'MODULE_PATHNAME', 'Temporal_wcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE AGGREGATE wcount(tnpoint, interval) (
+CREATE AGGREGATE wCount(tnpoint, interval) (
   SFUNC = wcount_transfn,
   STYPE = internal,
   COMBINEFUNC = tint_tsum_combinefn,
@@ -82,7 +82,7 @@ CREATE FUNCTION tcentroid_transfn(internal, tnpoint)
   AS 'MODULE_PATHNAME', 'Tnpoint_tcentroid_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE AGGREGATE tcentroid(tnpoint) (
+CREATE AGGREGATE tCentroid(tnpoint) (
   SFUNC = tcentroid_transfn,
   STYPE = internal,
   COMBINEFUNC = tcentroid_combinefn,

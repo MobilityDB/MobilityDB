@@ -38,7 +38,7 @@ CREATE FUNCTION tcount_transfn(internal, tpose)
   AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE AGGREGATE tcount(tpose) (
+CREATE AGGREGATE tCount(tpose) (
   SFUNC = tcount_transfn,
   STYPE = internal,
   COMBINEFUNC = tcount_combinefn,
@@ -65,7 +65,7 @@ CREATE FUNCTION wcount_transfn(internal, tpose, interval)
   AS 'MODULE_PATHNAME', 'Temporal_wcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE AGGREGATE wcount(tpose, interval) (
+CREATE AGGREGATE wCount(tpose, interval) (
   SFUNC = wcount_transfn,
   STYPE = internal,
   COMBINEFUNC = tint_tsum_combinefn,

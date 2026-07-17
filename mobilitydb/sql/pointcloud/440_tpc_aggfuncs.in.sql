@@ -69,7 +69,7 @@ CREATE FUNCTION tcount_transfn(internal, tpcpatch)
   AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE AGGREGATE tcount(tpcpoint) (
+CREATE AGGREGATE tCount(tpcpoint) (
   SFUNC = tcount_transfn,
   STYPE = internal,
   COMBINEFUNC = tcount_combinefn,
@@ -79,7 +79,7 @@ CREATE AGGREGATE tcount(tpcpoint) (
   PARALLEL = SAFE
 );
 
-CREATE AGGREGATE tcount(tpcpatch) (
+CREATE AGGREGATE tCount(tpcpatch) (
   SFUNC = tcount_transfn,
   STYPE = internal,
   COMBINEFUNC = tcount_combinefn,
@@ -135,7 +135,7 @@ CREATE FUNCTION wcount_transfn(internal, tpcpatch, interval)
   AS 'MODULE_PATHNAME', 'Temporal_wcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE AGGREGATE wcount(tpcpoint, interval) (
+CREATE AGGREGATE wCount(tpcpoint, interval) (
   SFUNC = wcount_transfn,
   STYPE = internal,
   COMBINEFUNC = tint_tsum_combinefn,
@@ -145,7 +145,7 @@ CREATE AGGREGATE wcount(tpcpoint, interval) (
   PARALLEL = SAFE
 );
 
-CREATE AGGREGATE wcount(tpcpatch, interval) (
+CREATE AGGREGATE wCount(tpcpatch, interval) (
   SFUNC = wcount_transfn,
   STYPE = internal,
   COMBINEFUNC = tint_tsum_combinefn,
