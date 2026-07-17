@@ -1268,8 +1268,9 @@ create_pg_locale(Oid collid)
   return result;
 }
 
-/*
- * Initialize default_locale with database locale settings.
+/**
+ * @ingroup meos_setup
+ * @brief Initialize default_locale with database locale settings.
  */
 void
 meos_initialize_collation(void)
@@ -1293,8 +1294,9 @@ meos_initialize_collation(void)
   return;
 }
 
-/*
- * Free default_locale 
+/**
+ * @ingroup meos_setup
+ * @brief Free default_locale
  */
 void
 meos_finalize_collation(void)

@@ -846,6 +846,7 @@ rtree_create(MeosType bboxtype)
 }
 
 /**
+ * @ingroup meos_misc
  * @brief Creates an RTree index for integer spans
  * @return RTree initialized
  */
@@ -856,6 +857,7 @@ rtree_create_intspan()
 }
 
 /**
+ * @ingroup meos_misc
  * @brief Creates an RTree index for big integer spans
  * @return RTree initialized
  */
@@ -866,6 +868,7 @@ rtree_create_bigintspan()
 }
 
 /**
+ * @ingroup meos_misc
  * @brief Creates an RTree index for float spans
  * @return RTree initialized
  */
@@ -876,6 +879,7 @@ rtree_create_floatspan()
 }
 
 /**
+ * @ingroup meos_misc
  * @brief Creates an RTree index for temporal boxes
  * @return RTree initialized
  */
@@ -886,6 +890,7 @@ rtree_create_datespan()
 }
 
 /**
+ * @ingroup meos_misc
  * @brief Creates an RTree index for temporal boxes
  * @return RTree initialized
  */
@@ -896,6 +901,7 @@ rtree_create_tstzspan()
 }
 
 /**
+ * @ingroup meos_misc
  * @brief Creates an RTree index for temporal boxes
  * @return RTree initialized
  */
@@ -906,6 +912,7 @@ rtree_create_tbox()
 }
 
 /**
+ * @ingroup meos_misc
  * @brief Creates an RTree index for spatiotemporal boxes
  * @return RTree initialized
  */

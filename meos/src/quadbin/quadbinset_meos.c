@@ -83,6 +83,10 @@ quadbinset_from_buffer(Quadbin *cells, int count)
  * @csqlfn #Quadbin_grid_disk()
  *****************************************************************************/
 
+/**
+ * @ingroup meos_quadbin_accessor
+ * @brief Return the set of QUADBIN cells within grid distance k of an origin cell
+ */
 Set *
 quadbin_grid_disk(Quadbin origin, int k)
 {
@@ -102,6 +106,10 @@ quadbin_grid_disk(Quadbin origin, int k)
  * @csqlfn #Quadbin_cell_to_children()
  *****************************************************************************/
 
+/**
+ * @ingroup meos_quadbin_accessor
+ * @brief Return the set of children of a QUADBIN cell at a finer resolution
+ */
 Set *
 quadbin_cell_to_children_set(Quadbin origin, int children_resolution)
 {

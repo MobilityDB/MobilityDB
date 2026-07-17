@@ -335,6 +335,7 @@ jsonbset_set(const Set *set, text **keys, int count, const Jsonb *newjb,
 /*****************************************************************************/
 
 /**
+ * @ingroup meos_json_set_conversion
  * @brief Convert a JSONB set into a alphanumeric set by extracting one key
  * @param[in] set JSONB set
  * @param[in] key Key to extract from the JSONB object

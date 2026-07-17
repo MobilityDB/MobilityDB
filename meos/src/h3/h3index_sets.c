@@ -104,6 +104,11 @@ h3index_set_from_buffer(H3Index *cells, int64_t max)
  * Grid traversal
  *****************************************************************************/
 
+/**
+ * @ingroup meos_h3_traversal
+ * @brief Return the set of H3 cells within grid distance k of an origin cell
+ * @csqlfn #H3_grid_disk()
+ */
 Set *
 h3_grid_disk(H3Index origin, int k)
 {
@@ -191,6 +196,11 @@ h3_grid_path_cells(H3Index start, H3Index end)
  * Hierarchy
  *****************************************************************************/
 
+/**
+ * @ingroup meos_h3_hierarchy
+ * @brief Return the set of children of an H3 cell at a finer resolution
+ * @csqlfn #H3_cell_to_children()
+ */
 Set *
 h3_cell_to_children(H3Index origin, int childRes)
 {
@@ -213,6 +223,11 @@ h3_cell_to_children(H3Index origin, int childRes)
   return h3index_set_from_buffer(cells, max);
 }
 
+/**
+ * @ingroup meos_h3_hierarchy
+ * @brief Return the compacted representation of a set of H3 cells
+ * @csqlfn #H3_compact_cells()
+ */
 Set *
 h3_compact_cells(const Set *cells)
 {
@@ -238,6 +253,11 @@ h3_compact_cells(const Set *cells)
   return h3index_set_from_buffer(out, n);
 }
 
+/**
+ * @ingroup meos_h3_hierarchy
+ * @brief Return the uncompacted set of a set of H3 cells at a given resolution
+ * @csqlfn #H3_uncompact_cells()
+ */
 Set *
 h3_uncompact_cells(const Set *cells, int res)
 {

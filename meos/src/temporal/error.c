@@ -56,6 +56,7 @@
 static MEOS_TLS int MEOS_ERR_NO = 0;
 
 /**
+ * @ingroup meos_misc
  * @brief Read an error number
  */
 int
@@ -66,6 +67,7 @@ meos_errno(void)
 
 #if MEOS
 /**
+ * @ingroup meos_misc
  * @brief Set an error number
  */
 int
@@ -80,6 +82,7 @@ meos_errno_set(int err)
 }
 
 /**
+ * @ingroup meos_misc
  * @brief Set an error number
  * @details Use #meos_errno_restore when the current function succeeds, but the
  * error flag was set on entry, and stored/reset using #meos_errno_reset in
@@ -124,6 +127,10 @@ meos_errno_restore(int err)
  * @endcode
  */
 
+/**
+ * @ingroup meos_misc
+ * @brief Reset the error number to zero and return its previous value
+ */
 int meos_errno_reset(void)
 {
   int last_errno = meos_errno();
@@ -167,8 +174,9 @@ error_handler_errno(int errlevel pg_attribute_unused(), int errcode,
   return;
 }
 
-/*
- * Initialize error handler function
+/**
+ * @ingroup meos_setup
+ * @brief Initialize error handler function
  */
 void
 meos_initialize_error_handler(error_handler_fn err_handler)
@@ -197,6 +205,7 @@ noexit_error_handler(int errlevel __attribute__((__unused__)), int errcode,
 }
 
 /**
+ * @ingroup meos_setup
  * @brief Install the no-exit error handler
  * @details Safe to call from multiple threads -- the underlying atomic
  * store is idempotent and always sets the same function pointer.
@@ -224,6 +233,7 @@ pg_error(int errlevel, const char *errmsg)
 #endif /* ! MEOS */
 
 /**
+ * @ingroup meos_misc
  * @brief Function handling error messages
  *
  * @note Return-or-not contract is *undefined*: depending on the

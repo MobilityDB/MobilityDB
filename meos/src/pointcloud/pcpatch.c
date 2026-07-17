@@ -218,6 +218,7 @@ pcpatch_as_hexwkb(const Pcpatch *pa)
  *****************************************************************************/
 
 /**
+ * @ingroup meos_pointcloud_constructor
  * @brief Return a palloc'd copy of a pcpatch
  */
 Pcpatch *

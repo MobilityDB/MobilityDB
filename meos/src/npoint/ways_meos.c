@@ -159,6 +159,7 @@ GetWaysCache()
 }
 
 /**
+ * @ingroup meos_setup
  * @brief Destroy the ways cache
  */
 void
