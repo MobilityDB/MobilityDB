@@ -49,6 +49,7 @@
 #include "geo/tgeo_tempspatialrels.h"
 #include "geo/tspatial_parser.h"
 #include "cbuffer/cbuffer.h"
+#include "cbuffer/tcbuffer_boxops.h"
 #include "cbuffer/tcbuffer_tempspatialrels.h"
 
 /*****************************************************************************
@@ -1261,6 +1262,17 @@ tcbuffer_restrict_cbuffer(const Temporal *temp, const Cbuffer *cb, bool atfunc)
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_cbuffer(temp, cb))
     return NULL;
+
+  /* Bounding box test: a temporal circular buffer equals a circular buffer
+   * value only at the instants where their positions and radii coincide, so a
+   * non-overlap of the (radius-aware) bounding boxes leaves no matching
+   * instant. Mirrors the geometry and box restrictions. */
+  STBox box1, box2;
+  tspatial_set_stbox(temp, &box1);
+  cbuffer_set_stbox(cb, &box2);
+  if (! overlaps_stbox_stbox(&box1, &box2))
+    return atfunc ? NULL : temporal_copy(temp);
+
   return temporal_restrict_value(temp, PointerGetDatum(cb), atfunc);
 }
 
