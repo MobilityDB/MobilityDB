@@ -213,6 +213,16 @@ CREATE FUNCTION memSize(tpcpoint)
   AS 'MODULE_PATHNAME', 'Temporal_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION getValue(tpcpoint)
+  RETURNS pcpoint
+  AS 'MODULE_PATHNAME', 'Tinstant_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION getTimestamp(tpcpoint)
+  RETURNS timestamptz
+  AS 'MODULE_PATHNAME', 'Tinstant_timestamptz'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION startValue(tpcpoint)
   RETURNS pcpoint
   AS 'MODULE_PATHNAME', 'Temporal_start_value'
@@ -291,6 +301,51 @@ CREATE FUNCTION timestampN(tpcpoint, integer)
 CREATE FUNCTION numTimestamps(tpcpoint)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_num_timestamps'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION lowerInc(tpcpoint)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Temporal_lower_inc'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION upperInc(tpcpoint)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Temporal_upper_inc'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION timestamps(tpcpoint)
+  RETURNS timestamptz[]
+  AS 'MODULE_PATHNAME', 'Temporal_timestamps'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION numSequences(tpcpoint)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Temporal_num_sequences'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION startSequence(tpcpoint)
+  RETURNS tpcpoint
+  AS 'MODULE_PATHNAME', 'Temporal_start_sequence'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION endSequence(tpcpoint)
+  RETURNS tpcpoint
+  AS 'MODULE_PATHNAME', 'Temporal_end_sequence'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION sequenceN(tpcpoint, integer)
+  RETURNS tpcpoint
+  AS 'MODULE_PATHNAME', 'Temporal_sequence_n'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION sequences(tpcpoint)
+  RETURNS tpcpoint[]
+  AS 'MODULE_PATHNAME', 'Temporal_sequences'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION segments(tpcpoint)
+  RETURNS tpcpoint[]
+  AS 'MODULE_PATHNAME', 'Temporal_segments'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- Type-specific accessor
