@@ -322,7 +322,7 @@ trgeoseq_make_free_exp(const GSERIALIZED *geom, TInstant **instants, int count,
 }
 
 /**
- * @ingroup meos_rgeo_constructor
+ * @ingroup meos_internal_rgeo_constructor
  * @brief Construct a temporal sequence from an array of temporal instants
  * and free the array and the instants after the creation
  * @param[in] geom Reference geometry

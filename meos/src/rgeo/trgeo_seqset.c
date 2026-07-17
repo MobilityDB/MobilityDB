@@ -249,7 +249,7 @@ trgeometryseqset_make(const GSERIALIZED *geom, TSequence **sequences, int count,
 }
 
 /**
- * @ingroup meos_rgeo_constructor
+ * @ingroup meos_internal_rgeo_constructor
  * @brief Construct a temporal sequence set from an array of temporal
  * sequences and free the array and the sequences after the creation
  * @param[in] geom Reference geometry

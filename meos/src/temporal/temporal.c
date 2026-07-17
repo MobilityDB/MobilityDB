@@ -2332,7 +2332,7 @@ temporal_min_instant(const Temporal *temp)
 }
 
 /**
- * @ingroup meos_temporal_accessor
+ * @ingroup meos_internal_temporal_accessor
  * @brief Return a copy of the instant with maximum base value of a temporal
  * value
  * @param[in] temp Temporal value
