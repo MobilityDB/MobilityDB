@@ -1658,10 +1658,10 @@ temporal_restart(Temporal *temp, int count)
  * @ingroup meos_temporal_transf
  * @brief Return a temporal value transformed to a temporal instant
  * @param[in] temp Temporal value
- * @csqlfn #Temporal_to_tinstant()
+ * @csqlfn #Temporal_as_tinstant()
  */
 TInstant *
-temporal_to_tinstant(const Temporal *temp)
+temporal_as_tinstant(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL);
@@ -1683,7 +1683,7 @@ temporal_to_tinstant(const Temporal *temp)
  * @brief Return a temporal value transformed to a temporal sequence
  * @param[in] temp Temporal value
  * @param[in] interp Interpolation
- * @csqlfn #Temporal_to_tsequence()
+ * @csqlfn #Temporal_as_tsequence()
  */
 TSequence *
 temporal_tsequence(const Temporal *temp, interpType interp)
@@ -1725,10 +1725,10 @@ temporal_tsequence(const Temporal *temp, interpType interp)
  * @brief Return a temporal value transformed to a temporal sequence
  * @param[in] temp Temporal value
  * @param[in] interp Interpolation
- * @csqlfn #Temporal_to_tsequence()
+ * @csqlfn #Temporal_as_tsequence()
  */
 TSequence *
-temporal_to_tsequence(const Temporal *temp, interpType interp)
+temporal_as_tsequence(const Temporal *temp, interpType interp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL);
@@ -1749,7 +1749,7 @@ temporal_to_tsequence(const Temporal *temp, interpType interp)
  * @brief Return a temporal value transformed to a temporal sequence set
  * @param[in] temp Temporal value
  * @param[in] interp Interpolation
- * @csqlfn #Temporal_to_tsequenceset()
+ * @csqlfn #Temporal_as_tsequenceset()
  */
 TSequenceSet *
 temporal_tsequenceset(const Temporal *temp, interpType interp)
@@ -1785,10 +1785,10 @@ temporal_tsequenceset(const Temporal *temp, interpType interp)
  * @brief Return a temporal value transformed to a temporal sequence set
  * @param[in] temp Temporal value
  * @param[in] interp Interpolation
- * @csqlfn #Temporal_to_tsequenceset()
+ * @csqlfn #Temporal_as_tsequenceset()
  */
 TSequenceSet *
-temporal_to_tsequenceset(const Temporal *temp, interpType interp)
+temporal_as_tsequenceset(const Temporal *temp, interpType interp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL);

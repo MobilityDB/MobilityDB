@@ -498,7 +498,7 @@ tinstant_after_timestamptz(const TInstant *inst, TimestampTz t, bool strict)
  * @ingroup meos_internal_temporal_transf
  * @brief Return a temporal sequence transformed into a temporal instant
  * @param[in] seq Temporal sequence
- * @csqlfn #Temporal_to_tinstant()
+ * @csqlfn #Temporal_as_tinstant()
  */
 TInstant *
 tsequence_to_tinstant(const TSequence *seq)
@@ -517,7 +517,7 @@ tsequence_to_tinstant(const TSequence *seq)
  * @ingroup meos_internal_temporal_transf
  * @brief Return a temporal sequence set transformed into a temporal instant
  * @param[in] ss Temporal sequence set
- * @csqlfn #Temporal_to_tinstant()
+ * @csqlfn #Temporal_as_tinstant()
  */
 TInstant *
 tsequenceset_to_tinstant(const TSequenceSet *ss)

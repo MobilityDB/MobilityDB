@@ -1419,9 +1419,9 @@ extern Temporal *temporal_scale_time(const Temporal *temp, const Interval *durat
 extern Temporal *temporal_set_interp(const Temporal *temp, interpType interp);
 extern Temporal *temporal_shift_scale_time(const Temporal *temp, const Interval *shift, const Interval *duration);
 extern Temporal *temporal_shift_time(const Temporal *temp, const Interval *shift);
-extern TInstant *temporal_to_tinstant(const Temporal *temp);
-extern TSequence *temporal_to_tsequence(const Temporal *temp, interpType interp);
-extern TSequenceSet *temporal_to_tsequenceset(const Temporal *temp, interpType interp);
+extern TInstant *temporal_as_tinstant(const Temporal *temp);
+extern TSequence *temporal_as_tsequence(const Temporal *temp, interpType interp);
+extern TSequenceSet *temporal_as_tsequenceset(const Temporal *temp, interpType interp);
 extern Temporal *tfloat_ceil(const Temporal *temp);
 extern Temporal *tfloat_degrees(const Temporal *temp, bool normalize);
 extern Temporal *tfloat_floor(const Temporal *temp);

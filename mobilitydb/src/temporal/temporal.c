@@ -1681,24 +1681,24 @@ Temporalarr_round(PG_FUNCTION_ARGS)
   PG_RETURN_ARRAYTYPE_P(result);
 }
 
-PGDLLEXPORT Datum Temporal_to_tinstant(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Temporal_to_tinstant);
+PGDLLEXPORT Datum Temporal_as_tinstant(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Temporal_as_tinstant);
 /**
  * @ingroup mobilitydb_temporal_transf
  * @brief Return a temporal value transformed to a temporal instant
  * @sqlfn tintInst(), tfloatInst(), ...
  */
 Datum
-Temporal_to_tinstant(PG_FUNCTION_ARGS)
+Temporal_as_tinstant(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  TInstant *result = temporal_to_tinstant(temp);
+  TInstant *result = temporal_as_tinstant(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TINSTANT_P(result);
 }
 
-PGDLLEXPORT Datum Temporal_to_tsequence(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Temporal_to_tsequence);
+PGDLLEXPORT Datum Temporal_as_tsequence(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Temporal_as_tsequence);
 /**
  * @ingroup mobilitydb_temporal_transf
  * @brief Return a temporal value transformed to a temporal sequence
@@ -1706,7 +1706,7 @@ PG_FUNCTION_INFO_V1(Temporal_to_tsequence);
  * @sqlfn tintSeq(), tfloatSeq(), ...
  */
 Datum
-Temporal_to_tsequence(PG_FUNCTION_ARGS)
+Temporal_as_tsequence(PG_FUNCTION_ARGS)
 {
   if (PG_ARGISNULL(0))
     PG_RETURN_NULL();
@@ -1715,13 +1715,13 @@ Temporal_to_tsequence(PG_FUNCTION_ARGS)
   interpType interp = INTERP_NONE;
   if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
     interp = input_interp_string(fcinfo, 1);
-  TSequence *result = temporal_to_tsequence(temp, interp);
+  TSequence *result = temporal_as_tsequence(temp, interp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TSEQUENCE_P(result);
 }
 
-PGDLLEXPORT Datum Temporal_to_tsequenceset(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Temporal_to_tsequenceset);
+PGDLLEXPORT Datum Temporal_as_tsequenceset(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Temporal_as_tsequenceset);
 /**
  * @ingroup mobilitydb_temporal_transf
  * @brief Return a temporal value transformed to a temporal sequence set
@@ -1729,7 +1729,7 @@ PG_FUNCTION_INFO_V1(Temporal_to_tsequenceset);
  * @sqlfn tintSeqSet(), tfloatSeqSet(), ...
  */
 Datum
-Temporal_to_tsequenceset(PG_FUNCTION_ARGS)
+Temporal_as_tsequenceset(PG_FUNCTION_ARGS)
 {
   if (PG_ARGISNULL(0))
     PG_RETURN_NULL();
@@ -1738,7 +1738,7 @@ Temporal_to_tsequenceset(PG_FUNCTION_ARGS)
   interpType interp = INTERP_NONE;
   if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
     interp = input_interp_string(fcinfo, 1);
-  TSequenceSet *result = temporal_to_tsequenceset(temp, interp);
+  TSequenceSet *result = temporal_as_tsequenceset(temp, interp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TSEQUENCESET_P(result);
 }

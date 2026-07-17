@@ -433,7 +433,7 @@ trgeoseq_to_tsequenceset(const TSequence *seq)
  * @ingroup meos_internal_rgeo_transf
  * @brief Return a temporal sequence transformed into a temporal sequence set
  * @param[in] seq Temporal sequence
- * @csqlfn #Temporal_to_tsequenceset()
+ * @csqlfn #Temporal_as_tsequenceset()
  */
 TSequenceSet *
 trgeoseq_to_tsequenceset_free(TSequence *seq)

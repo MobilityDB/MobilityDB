@@ -1443,7 +1443,7 @@ tsequenceset_restart(TSequenceSet *ss, int count)
  * @brief Return a temporal instant transformed into a temporal sequence set
  * @param[in] inst Temporal instant
  * @param[in] interp Interpolation
- * @csqlfn #Temporal_to_tsequenceset()
+ * @csqlfn #Temporal_as_tsequenceset()
  */
 TSequenceSet *
 tinstant_to_tsequenceset(const TInstant *inst, interpType interp)
@@ -1470,7 +1470,7 @@ tdiscseq_to_tsequenceset(const TSequence *seq, interpType interp)
  * @ingroup meos_internal_temporal_transf
  * @brief Return a temporal sequence transformed into a temporal sequence set
  * @param[in] seq Temporal sequence
- * @csqlfn #Temporal_to_tsequenceset()
+ * @csqlfn #Temporal_as_tsequenceset()
  */
 TSequenceSet *
 tsequence_to_tsequenceset(const TSequence *seq)
@@ -1490,7 +1490,7 @@ tsequence_to_tsequenceset(const TSequence *seq)
  * @ingroup meos_internal_temporal_transf
  * @brief Return a temporal sequence transformed into a temporal sequence set
  * @param[in] seq Temporal sequence
- * @csqlfn #Temporal_to_tsequenceset()
+ * @csqlfn #Temporal_as_tsequenceset()
  */
 TSequenceSet *
 tsequence_to_tsequenceset_free(TSequence *seq)
@@ -1506,7 +1506,7 @@ tsequence_to_tsequenceset_free(TSequence *seq)
  * @brief Return a temporal sequence transformed into a temporal sequence set
  * @param[in] seq Temporal sequence
  * @param[in] interp Interpolation
- * @csqlfn #Temporal_to_tsequenceset()
+ * @csqlfn #Temporal_as_tsequenceset()
  */
 TSequenceSet *
 tsequence_to_tsequenceset_interp(const TSequence *seq, interpType interp)
@@ -1530,7 +1530,7 @@ tsequence_to_tsequenceset_interp(const TSequence *seq, interpType interp)
  * @brief Return a temporal sequence set transformed into a temporal sequence
  * value
  * @param[in] ss Temporal sequence set
- * @csqlfn #Temporal_to_tsequence()
+ * @csqlfn #Temporal_as_tsequence()
  */
 TSequence *
 tsequenceset_to_tsequence(const TSequenceSet *ss)

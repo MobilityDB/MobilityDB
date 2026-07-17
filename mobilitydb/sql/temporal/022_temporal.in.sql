@@ -1309,67 +1309,67 @@ CREATE FUNCTION unnest(ttext)
 
 CREATE FUNCTION tboolInst(tbool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Temporal_to_tinstant'
+  AS 'MODULE_PATHNAME', 'Temporal_as_tinstant'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tintInst(tint)
   RETURNS tint
-  AS 'MODULE_PATHNAME', 'Temporal_to_tinstant'
+  AS 'MODULE_PATHNAME', 'Temporal_as_tinstant'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbigintInst(tbigint)
   RETURNS tbigint
-  AS 'MODULE_PATHNAME', 'Temporal_to_tinstant'
+  AS 'MODULE_PATHNAME', 'Temporal_as_tinstant'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tfloatInst(tfloat)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Temporal_to_tinstant'
+  AS 'MODULE_PATHNAME', 'Temporal_as_tinstant'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ttextInst(ttext)
   RETURNS ttext
-  AS 'MODULE_PATHNAME', 'Temporal_to_tinstant'
+  AS 'MODULE_PATHNAME', 'Temporal_as_tinstant'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- The function is not strict
 CREATE FUNCTION tboolSeq(tbool, text DEFAULT NULL)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
+  AS 'MODULE_PATHNAME', 'Temporal_as_tsequence'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tintSeq(tint, text DEFAULT NULL)
   RETURNS tint
-  AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
+  AS 'MODULE_PATHNAME', 'Temporal_as_tsequence'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tbigintSeq(tbigint, text DEFAULT NULL)
   RETURNS tbigint
-  AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
+  AS 'MODULE_PATHNAME', 'Temporal_as_tsequence'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tfloatSeq(tfloat, text DEFAULT NULL)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
+  AS 'MODULE_PATHNAME', 'Temporal_as_tsequence'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION ttextSeq(ttext, text DEFAULT NULL)
   RETURNS ttext
-  AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
+  AS 'MODULE_PATHNAME', 'Temporal_as_tsequence'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 -- The function is not strict
 CREATE FUNCTION tboolSeqSet(tbool)
   RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Temporal_to_tsequenceset'
+  AS 'MODULE_PATHNAME', 'Temporal_as_tsequenceset'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tintSeqSet(tint)
   RETURNS tint
-  AS 'MODULE_PATHNAME', 'Temporal_to_tsequenceset'
+  AS 'MODULE_PATHNAME', 'Temporal_as_tsequenceset'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tbigintSeqSet(tbigint)
   RETURNS tbigint
-  AS 'MODULE_PATHNAME', 'Temporal_to_tsequenceset'
+  AS 'MODULE_PATHNAME', 'Temporal_as_tsequenceset'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tfloatSeqSet(tfloat, text DEFAULT NULL)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Temporal_to_tsequenceset'
+  AS 'MODULE_PATHNAME', 'Temporal_as_tsequenceset'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION ttextSeqSet(ttext)
   RETURNS ttext
-  AS 'MODULE_PATHNAME', 'Temporal_to_tsequenceset'
+  AS 'MODULE_PATHNAME', 'Temporal_as_tsequenceset'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION setInterp(tbool, text)
