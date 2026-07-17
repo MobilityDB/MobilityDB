@@ -203,9 +203,16 @@ CREATE CAST (ttext AS tjsonb) WITH FUNCTION tjsonb(ttext);
 
 -- Accessors for all temporal types
 
+-- GENERATED-ACCESSORS-BEGIN json — tools/codegen/inherited/generate.py from templates/accessors.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.yaml (accessor_families) and re-run.
+
 CREATE FUNCTION tempSubtype(tjsonb)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_subtype'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tempBasetype(tjsonb)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Temporal_basetype_name'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION interp(tjsonb)
@@ -252,7 +259,7 @@ CREATE FUNCTION endValue(tjsonb)
   AS 'MODULE_PATHNAME', 'Temporal_end_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION valueN(tjsonb, integer)
+CREATE FUNCTION valueN(tjsonb, int)
   RETURNS jsonb
   AS 'MODULE_PATHNAME', 'Temporal_value_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -356,6 +363,7 @@ CREATE FUNCTION segments(tjsonb)
   RETURNS tjsonb[]
   AS 'MODULE_PATHNAME', 'Temporal_segments'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- GENERATED-ACCESSORS-END json
 
 /*****************************************************************************
  * Transformation functions

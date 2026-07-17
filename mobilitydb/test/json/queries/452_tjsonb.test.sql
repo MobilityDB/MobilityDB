@@ -169,6 +169,11 @@ SELECT tempSubtype(tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1
 SELECT tempSubtype(tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]');
 SELECT tempSubtype(tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03], [{"geom": "Point(2 2)"}@2000-01-04, {"geom": "Point(2 2)"}@2000-01-05]}');
 
+SELECT tempBasetype(tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01');
+SELECT tempBasetype(tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}');
+SELECT tempBasetype(tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]');
+SELECT tempBasetype(tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03], [{"geom": "Point(2 2)"}@2000-01-04, {"geom": "Point(2 2)"}@2000-01-05]}');
+
 SELECT memSize(tjsonb '"{\"geom\": \"Point(1 1)\"}"@2000-01-01');
 SELECT memSize(tjsonb '{{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03}');
 SELECT memSize(tjsonb '[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-01-02, {"geom": "Point(1 1)"}@2000-01-03]');
