@@ -146,7 +146,9 @@ extern Temporal *trgeometry_delete_tstzspan(const Temporal *temp, const Span *s,
 extern Temporal *trgeometry_delete_tstzspanset(const Temporal *temp, const SpanSet *ss, bool connect);
 extern Temporal *trgeometry_round(const Temporal *temp, int maxdd);
 extern Temporal *trgeometry_set_interp(const Temporal *temp, interpType interp);
-extern TInstant *trgeometry_to_tinstant(const Temporal *temp);
+extern TInstant *trgeometry_as_tinstant(const Temporal *temp);
+extern TSequence *trgeometry_as_tsequence(const Temporal *temp, const char *interp_str);
+extern TSequenceSet *trgeometry_as_tsequenceset(const Temporal *temp, const char *interp_str);
 
 /*****************************************************************************
  * Restriction functions

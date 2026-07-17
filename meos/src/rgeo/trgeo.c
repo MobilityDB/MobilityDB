@@ -941,10 +941,10 @@ trgeometry_round(const Temporal *temp, int maxdd)
  * @ingroup meos_rgeo_transf
  * @brief Return a temporal rigid geometry transformed to a temporal instant
  * @param[in] temp Temporal rigid geometry
- * @csqlfn #Trgeometry_to_tinstant()
+ * @csqlfn #Trgeometry_as_tinstant()
  */
 TInstant *
-trgeometry_to_tinstant(const Temporal *temp)
+trgeometry_as_tinstant(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
 
@@ -967,10 +967,10 @@ trgeometry_to_tinstant(const Temporal *temp)
  * @brief Return a temporal rigid geometry transformed to a temporal sequence
  * @param[in] temp Temporal rigid geometry
  * @param[in] interp_str Interpolation string, may be NULL
- * @csqlfn #Trgeometry_to_tsequence()
+ * @csqlfn #Trgeometry_as_tsequence()
  */
 TSequence *
-trgeo_to_tsequence(const Temporal *temp, const char *interp_str)
+trgeometry_as_tsequence(const Temporal *temp, const char *interp_str)
 {
   /* Ensure the validity of the arguments */
 
@@ -999,10 +999,10 @@ trgeo_to_tsequence(const Temporal *temp, const char *interp_str)
  * @brief Return a temporal rigid geometry transformed to a temporal sequence set
  * @param[in] temp Temporal rigid geometry
  * @param[in] interp_str Interpolation string, may be @p NULL
- * @csqlfn #Trgeometry_to_tsequenceset()
+ * @csqlfn #Trgeometry_as_tsequenceset()
  */
 TSequenceSet *
-trgeo_to_tsequenceset(const Temporal *temp, const char *interp_str)
+trgeometry_as_tsequenceset(const Temporal *temp, const char *interp_str)
 {
   /* Ensure the validity of the arguments */
 
