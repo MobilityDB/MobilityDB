@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: tcbufferseq_traversed_area</title>
+<title>MobilityDB: trgeoseqset_make_free</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="group__meos__cbuffer__spatial__accessor.html">Spatial accessor functions</a></li>  </ul>
+<li class="navelem"><a class="el" href="group__meos__internal__rgeo__constructor.html">Constructor functions</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,30 +79,45 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__cbuffer__spatial__accessor_ga77464d6383cc622bd19e0deeddec526e.html#ga77464d6383cc622bd19e0deeddec526e">tcbuffer_traversed_area</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__cbuffer__spatial__accessor_ga8efca35339a33eedc65c66bcb5744b0e.html#ga8efca35339a33eedc65c66bcb5744b0e">tcbufferseq_traversed_area</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__cbuffer__spatial__accessor_ga041423a0d13fd7a0fd28898f700977d5.html#ga041423a0d13fd7a0fd28898f700977d5">tcbufferseqset_step_traversed_area</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__internal__rgeo__constructor_ga7c7cba808efa9bb9d4dd96914c023493.html#ga7c7cba808efa9bb9d4dd96914c023493">geo_tposeinst_to_trgeo</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__internal__rgeo__constructor_ga558e63d044c31e87aca4f2c75d28e1d7.html#ga558e63d044c31e87aca4f2c75d28e1d7">geo_tposeseq_to_trgeo</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__internal__rgeo__constructor_ga707d68d3916a5d96500b07c5bbdc3115.html#ga707d68d3916a5d96500b07c5bbdc3115">geo_tposeseqset_to_trgeo</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__internal__rgeo__constructor_ga8fe5a22054eb2563c7ae2996b5c01144.html#ga8fe5a22054eb2563c7ae2996b5c01144">trgeoseq_make_free</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__internal__rgeo__constructor_ga018a5fdd75aca554f6c6bcd601bb10b3.html#ga018a5fdd75aca554f6c6bcd601bb10b3">trgeoseqset_make_exp</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__internal__rgeo__constructor_ga6378758ecedcc3745d81b1478e9452bf.html#ga6378758ecedcc3745d81b1478e9452bf">trgeoseqset_make_free</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga8efca35339a33eedc65c66bcb5744b0e" name="ga8efca35339a33eedc65c66bcb5744b0e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga8efca35339a33eedc65c66bcb5744b0e">&#9670;&#160;</a></span>tcbufferseq_traversed_area()</h2>
+<a id="ga6378758ecedcc3745d81b1478e9452bf" name="ga6378758ecedcc3745d81b1478e9452bf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga6378758ecedcc3745d81b1478e9452bf">&#9670;&#160;</a></span>trgeoseqset_make_free()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> * tcbufferseq_traversed_area </td>
+          <td class="memname"><a class="el" href="structTSequenceSet.html">TSequenceSet</a> * trgeoseqset_make_free </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structTSequence.html">TSequence</a> *&#160;</td>
-          <td class="paramname"><em>seq</em>, </td>
+          <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
+          <td class="paramname"><em>geom</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structTSequence.html">TSequence</a> **&#160;</td>
+          <td class="paramname"><em>sequences</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>count</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>unary_union</em>&#160;</td>
+          <td class="paramname"><em>normalize</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -112,14 +127,18 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the traversed area of a temporal circular buffer sequence. </p>
+<p>Construct a temporal sequence set from an array of temporal sequences and free the array and the sequences after the creation. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">seq</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> circular buffer </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">unary_union</td><td>True when the traversed area is a single geometry obtained by applying spatial union to the geometries of the segments @csqlfn <a class="el" href="group__mobilitydb__cbuffer__accessor_ga85cc8e6104460481eacb1f9fb66e791e.html#ga85cc8e6104460481eacb1f9fb66e791e" title="Return the geometry covered by a temporal circular buffer @sqlfn traversedArea()">Tcbuffer_traversed_area()</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">geom</td><td>Reference geometry </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">sequences</td><td>Array of sequences </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">count</td><td>Number of elements in the array </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">normalize</td><td>True if the resulting value should be normalized </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section note"><dt>Note</dt><dd>Does not free the reference geometry </dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__meos__temporal__constructor_gaa6e36cb47acfb241f8a8293c7e7a5ca0.html#gaa6e36cb47acfb241f8a8293c7e7a5ca0" title="Return a temporal sequence set from an array of temporal sequences.">tsequenceset_make</a> </dd></dl>
 
 </div>
 </div>
