@@ -67,8 +67,8 @@ extern TSequence *trgeoseq_make_free(const GSERIALIZED *geom, TInstant **instant
 
 /* Transformation functions */
 
-extern TSequence *trgeoinst_to_tsequence(const TInstant *inst, interpType interp);
-extern TInstant *trgeoseq_to_tinstant(const TSequence *seq);
+extern TSequence *trgeoinst_as_tsequence(const TInstant *inst, interpType interp);
+extern TInstant *trgeoseq_as_tinstant(const TSequence *seq);
 
 /*****************************************************************************/
 

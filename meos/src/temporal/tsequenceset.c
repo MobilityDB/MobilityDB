@@ -1446,10 +1446,10 @@ tsequenceset_restart(TSequenceSet *ss, int count)
  * @csqlfn #Temporal_as_tsequenceset()
  */
 TSequenceSet *
-tinstant_to_tsequenceset(const TInstant *inst, interpType interp)
+tinstant_as_tsequenceset(const TInstant *inst, interpType interp)
 {
   assert(inst); assert(interp == STEP || interp == LINEAR);
-  return tsequence_to_tsequenceset_free(tinstant_to_tsequence(inst, interp));
+  return tsequence_to_tsequenceset_free(tinstant_as_tsequence(inst, interp));
 }
 
 /**
@@ -1457,12 +1457,12 @@ tinstant_to_tsequenceset(const TInstant *inst, interpType interp)
  * sequence set
  */
 TSequenceSet *
-tdiscseq_to_tsequenceset(const TSequence *seq, interpType interp)
+tdiscseq_as_tsequenceset(const TSequence *seq, interpType interp)
 {
   assert(seq); assert(interp == STEP || interp == LINEAR);
   TSequence **sequences = palloc(sizeof(TSequence *) * seq->count);
   for (int i = 0; i < seq->count; i++)
-    sequences[i] = tinstant_to_tsequence(TSEQUENCE_INST_N(seq, i), interp);
+    sequences[i] = tinstant_as_tsequence(TSEQUENCE_INST_N(seq, i), interp);
   return tsequenceset_make_free(sequences, seq->count, NORMALIZE_NO);
 }
 
@@ -1473,7 +1473,7 @@ tdiscseq_to_tsequenceset(const TSequence *seq, interpType interp)
  * @csqlfn #Temporal_as_tsequenceset()
  */
 TSequenceSet *
-tsequence_to_tsequenceset(const TSequence *seq)
+tsequence_as_tsequenceset(const TSequence *seq)
 {
   assert(seq);
   /* For discrete sequences, each composing instant will be transformed in
@@ -1481,7 +1481,7 @@ tsequence_to_tsequenceset(const TSequence *seq)
   if (MEOS_FLAGS_DISCRETE_INTERP(seq->flags))
   {
     interpType interp = MEOS_FLAGS_GET_CONTINUOUS(seq->flags) ? LINEAR : STEP;
-    return tdiscseq_to_tsequenceset(seq, interp);
+    return tdiscseq_as_tsequenceset(seq, interp);
   }
   return tsequenceset_make((TSequence **) &seq, 1, NORMALIZE_NO);
 }
@@ -1496,7 +1496,7 @@ TSequenceSet *
 tsequence_to_tsequenceset_free(TSequence *seq)
 {
   assert(seq);
-  TSequenceSet *result = tsequence_to_tsequenceset((const TSequence *) seq);
+  TSequenceSet *result = tsequence_as_tsequenceset((const TSequence *) seq);
   pfree(seq);
   return result;
 }
@@ -1533,7 +1533,7 @@ tsequence_to_tsequenceset_interp(const TSequence *seq, interpType interp)
  * @csqlfn #Temporal_as_tsequence()
  */
 TSequence *
-tsequenceset_to_tsequence(const TSequenceSet *ss)
+tsequenceset_as_tsequence(const TSequenceSet *ss)
 {
   assert(ss);
   if (ss->count != 1)

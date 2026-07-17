@@ -1881,7 +1881,7 @@ tfunc_tcontseq_tcontseq(const TSequence *seq1, const TSequence *seq2,
     TSequenceSet *result = tsequenceset_make_free(sequences, nseqs, NORMALIZE);
     if (result->count == 1)
     {
-      Temporal *resultseq = (Temporal *) tsequenceset_to_tsequence(result);
+      Temporal *resultseq = (Temporal *) tsequenceset_as_tsequence(result);
       pfree(result);
       return resultseq;
     }

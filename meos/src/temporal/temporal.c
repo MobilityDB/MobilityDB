@@ -1672,9 +1672,9 @@ temporal_as_tinstant(const Temporal *temp)
     case TINSTANT:
       return tinstant_copy((TInstant *) temp);
     case TSEQUENCE:
-      return tsequence_to_tinstant((TSequence *) temp);
+      return tsequence_as_tinstant((TSequence *) temp);
     default: /* TSEQUENCESET */
-      return tsequenceset_to_tinstant((TSequenceSet *) temp);
+      return tsequenceset_as_tinstant((TSequenceSet *) temp);
   }
 }
 
@@ -1697,7 +1697,7 @@ temporal_tsequence(const Temporal *temp, interpType interp)
   switch (temp->subtype)
   {
     case TINSTANT:
-      return tinstant_to_tsequence((TInstant *) temp, interp);
+      return tinstant_as_tsequence((TInstant *) temp, interp);
     case TSEQUENCE:
     {
       interpType interp1 = MEOS_FLAGS_GET_INTERP(temp->flags);
@@ -1716,7 +1716,7 @@ temporal_tsequence(const Temporal *temp, interpType interp)
       return (TSequence *) tsequence_set_interp((TSequence *) temp, interp);
     }
     default: /* TSEQUENCESET */
-      return tsequenceset_to_tsequence((TSequenceSet *) temp);
+      return tsequenceset_as_tsequence((TSequenceSet *) temp);
   }
 }
 
@@ -1770,7 +1770,7 @@ temporal_tsequenceset(const Temporal *temp, interpType interp)
   switch (temp->subtype)
   {
     case TINSTANT:
-      return tinstant_to_tsequenceset((TInstant *) temp, interp);
+      return tinstant_as_tsequenceset((TInstant *) temp, interp);
     case TSEQUENCE:
       return tsequence_to_tsequenceset_interp((TSequence *) temp, interp);
     default: /* TSEQUENCESET */
@@ -1823,7 +1823,7 @@ temporal_set_interp(const Temporal *temp, interpType interp)
   switch (temp->subtype)
   {
     case TINSTANT:
-      return (Temporal *) tinstant_to_tsequence((TInstant *) temp, interp);
+      return (Temporal *) tinstant_as_tsequence((TInstant *) temp, interp);
     case TSEQUENCE:
       return (Temporal *) tsequence_set_interp((TSequence *) temp, interp);
     default: /* TSEQUENCESET */

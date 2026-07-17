@@ -383,11 +383,11 @@ trgeometryseqset_make_gaps(const GSERIALIZED *geom, TInstant **instants,
  * @param[out] interp Interpolation
  */
 TSequenceSet *
-trgeoinst_to_tsequenceset(const TInstant *inst, interpType interp)
+trgeoinst_as_tsequenceset(const TInstant *inst, interpType interp)
 {
   assert(inst); assert(inst->temptype == T_TRGEOMETRY);
   assert(interp == STEP || interp == LINEAR);
-  TSequenceSet *res = tinstant_to_tsequenceset(inst, interp);
+  TSequenceSet *res = tinstant_as_tsequenceset(inst, interp);
   TSequenceSet *result = geo_tposeseqset_to_trgeo(trgeoinst_geom_p(inst), res);
   pfree(res);
   return result;
@@ -398,13 +398,13 @@ trgeoinst_to_tsequenceset(const TInstant *inst, interpType interp)
  * sequence set
  */
 TSequenceSet *
-trgeodiscseq_to_tsequenceset(const TSequence *seq, interpType interp)
+trgeodiscseq_as_tsequenceset(const TSequence *seq, interpType interp)
 {
   assert(seq); assert(seq->temptype == T_TRGEOMETRY);
   assert(interp == STEP || interp == LINEAR);
   TSequence **sequences = palloc(sizeof(TSequence *) * seq->count);
   for (int i = 0; i < seq->count; i++)
-    sequences[i] = trgeoinst_to_tsequence(TSEQUENCE_INST_N(seq, i), interp);
+    sequences[i] = trgeoinst_as_tsequence(TSEQUENCE_INST_N(seq, i), interp);
   return trgeoseqset_make_free(trgeoseq_geom_p(seq), sequences, seq->count,
     NORMALIZE_NO);
 }
@@ -415,7 +415,7 @@ trgeodiscseq_to_tsequenceset(const TSequence *seq, interpType interp)
  * @param[in] seq Temporal sequence
  */
 TSequenceSet *
-trgeoseq_to_tsequenceset(const TSequence *seq)
+trgeoseq_as_tsequenceset(const TSequence *seq)
 {
   assert(seq); assert(seq->temptype == T_TRGEOMETRY);
   /* For discrete sequences, each composing instant will be transformed in
@@ -423,7 +423,7 @@ trgeoseq_to_tsequenceset(const TSequence *seq)
   if (MEOS_FLAGS_DISCRETE_INTERP(seq->flags))
   {
     interpType interp = MEOS_FLAGS_GET_CONTINUOUS(seq->flags) ? LINEAR : STEP;
-    return trgeodiscseq_to_tsequenceset(seq, interp);
+    return trgeodiscseq_as_tsequenceset(seq, interp);
   }
   return trgeometryseqset_make(trgeoseq_geom_p(seq), (TSequence **) &seq, 1,
     NORMALIZE_NO);
@@ -439,7 +439,7 @@ TSequenceSet *
 trgeoseq_to_tsequenceset_free(TSequence *seq)
 {
   assert(seq); assert(seq->temptype == T_TRGEOMETRY);
-  TSequenceSet *result = trgeoseq_to_tsequenceset((const TSequence *) seq);
+  TSequenceSet *result = trgeoseq_as_tsequenceset((const TSequence *) seq);
   pfree(seq);
   return result;
 }

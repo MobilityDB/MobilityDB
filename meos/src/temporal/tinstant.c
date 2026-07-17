@@ -501,7 +501,7 @@ tinstant_after_timestamptz(const TInstant *inst, TimestampTz t, bool strict)
  * @csqlfn #Temporal_as_tinstant()
  */
 TInstant *
-tsequence_to_tinstant(const TSequence *seq)
+tsequence_as_tinstant(const TSequence *seq)
 {
   assert(seq);
   if (seq->count != 1)
@@ -520,7 +520,7 @@ tsequence_to_tinstant(const TSequence *seq)
  * @csqlfn #Temporal_as_tinstant()
  */
 TInstant *
-tsequenceset_to_tinstant(const TSequenceSet *ss)
+tsequenceset_as_tinstant(const TSequenceSet *ss)
 {
   assert(ss);
   if (ss->totalcount != 1)

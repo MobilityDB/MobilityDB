@@ -500,12 +500,12 @@ temporal_convert_same_subtype(const Temporal *temp1, const Temporal *temp2,
   {
     interpType interp = MEOS_FLAGS_GET_INTERP(new2->flags);
     if (new2->subtype == TSEQUENCE)
-      new = (Temporal *) tinstant_to_tsequence((TInstant *) new1, interp);
+      new = (Temporal *) tinstant_as_tsequence((TInstant *) new1, interp);
     else /* new2->subtype == TSEQUENCESET */
-      new = (Temporal *) tinstant_to_tsequenceset((TInstant *) new1, interp);
+      new = (Temporal *) tinstant_as_tsequenceset((TInstant *) new1, interp);
   }
   else /* new1->subtype == TSEQUENCE && new2->subtype == TSEQUENCESET */
-    new = (Temporal *) tsequence_to_tsequenceset((TSequence *) new1);
+    new = (Temporal *) tsequence_as_tsequenceset((TSequence *) new1);
   if (swap)
   {
     *out1 = (Temporal *) temp1;
@@ -595,14 +595,14 @@ temporalarr_convert_subtype(Temporal **temparr, int count, uint8 subtype,
     else if (subtype1 == TINSTANT)
     {
       if (subtype == TSEQUENCE)
-        result[i] = (Temporal *) tinstant_to_tsequence((TInstant *) temparr[i],
+        result[i] = (Temporal *) tinstant_as_tsequence((TInstant *) temparr[i],
           interp);
       else /* subtype == TSEQUENCESET */
-        result[i] = (Temporal *) tinstant_to_tsequenceset((TInstant *) temparr[i],
+        result[i] = (Temporal *) tinstant_as_tsequenceset((TInstant *) temparr[i],
           interp);
     }
     else /* subtype1 == TSEQUENCE && subtype == TSEQUENCESET */
-      result[i] = (Temporal *) tsequence_to_tsequenceset((TSequence *) temparr[i]);
+      result[i] = (Temporal *) tsequence_as_tsequenceset((TSequence *) temparr[i]);
   }
   return result;
 }
@@ -1696,7 +1696,7 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, double maxdist,
     {
       TSequence *sequences[2];
       sequences[0] = (TSequence *) seq;
-      sequences[1] = tinstant_to_tsequence(inst, LINEAR);
+      sequences[1] = tinstant_as_tsequence(inst, LINEAR);
       TSequenceSet *result = tsequenceset_make(sequences, 2, NORMALIZE_NO);
       pfree(sequences[1]);
       return (Temporal *) result;
@@ -2141,7 +2141,7 @@ temporal_append_tinstant(Temporal *temp, const TInstant *inst,
   {
     case TINSTANT:
     {
-      TSequence *seq = tinstant_to_tsequence((const TInstant *) temp, interp);
+      TSequence *seq = tinstant_as_tsequence((const TInstant *) temp, interp);
       Temporal *result = (Temporal *) tsequence_append_tinstant(seq, inst,
         maxdist, maxt, expand);
       pfree(seq);
@@ -2185,7 +2185,7 @@ temporal_append_tsequence(Temporal *temp, const TSequence *seq, bool expand)
   {
     case TINSTANT:
     {
-      TSequence *seq1 = tinstant_to_tsequence((const TInstant *) temp, interp2);
+      TSequence *seq1 = tinstant_as_tsequence((const TInstant *) temp, interp2);
       Temporal *result = (Temporal *) tsequence_append_tsequence(
         (const TSequence *) seq1, seq, expand);
       pfree(seq1);

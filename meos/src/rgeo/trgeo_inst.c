@@ -213,7 +213,7 @@ trgeometryinst_make(const GSERIALIZED *geom, const Pose *pose, TimestampTz t)
  * @param[in] seq Temporal sequence
  */
 TInstant *
-trgeoseq_to_tinstant(const TSequence *seq)
+trgeoseq_as_tinstant(const TSequence *seq)
 {
   assert(seq);
   if (seq->count != 1)
@@ -233,7 +233,7 @@ trgeoseq_to_tinstant(const TSequence *seq)
  * @param[in] ss Temporal sequence set
  */
 TInstant *
-trgeoseqset_to_tinstant(const TSequenceSet *ss)
+trgeoseqset_as_tinstant(const TSequenceSet *ss)
 {
   assert(ss);
   if (ss->totalcount != 1)

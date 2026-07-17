@@ -353,7 +353,7 @@ trgeoseq_make_free(const GSERIALIZED *geom, TInstant **instants, int count,
  * @param[in] interp Interpolation
  */
 TSequence *
-trgeoinst_to_tsequence(const TInstant *inst, interpType interp)
+trgeoinst_as_tsequence(const TInstant *inst, interpType interp)
 {
   assert(inst);
   return trgeometryseq_make(trgeoinst_geom_p(inst), (TInstant **) &inst, 1, true,
@@ -366,7 +366,7 @@ trgeoinst_to_tsequence(const TInstant *inst, interpType interp)
  * @param[in] ss Temporal sequence set
  */
 TSequence *
-trgeoseqset_to_tsequence(const TSequenceSet *ss)
+trgeoseqset_as_tsequence(const TSequenceSet *ss)
 {
   assert(ss);
   if (ss->totalcount != 1)

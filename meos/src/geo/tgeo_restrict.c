@@ -1043,7 +1043,7 @@ tpointseq_linear_restrict_stbox(const TSequence *seq, const STBox *box,
 
   /* If "minus" restriction, compute the complement wrt time */
   if (! res_at)
-    return tsequence_to_tsequenceset(seq);
+    return tsequence_as_tsequenceset(seq);
 
   SpanSet *ss = tsequenceset_time(res_at);
   TSequenceSet *result = tcontseq_restrict_tstzspanset(seq, ss, atfunc);
@@ -1081,11 +1081,11 @@ tgeoseq_restrict_stbox(const TSequence *seq, const STBox *box,
       return NULL;
     if (tpoint_type(seq->temptype))
       return (interp == DISCRETE) ? (Temporal *) tsequence_copy(seq) :
-          (Temporal *) tsequence_to_tsequenceset(seq);
+          (Temporal *) tsequence_as_tsequenceset(seq);
     else
     {
-      TSequence *res1 = tinstant_to_tsequence(res, interp);
-      TSequenceSet *result = tsequence_to_tsequenceset(res1);
+      TSequence *res1 = tinstant_as_tsequence(res, interp);
+      TSequenceSet *result = tsequence_as_tsequenceset(res1);
       pfree(res); pfree(res1);
       return (Temporal *) result;
     }
@@ -1293,7 +1293,7 @@ tpointseq_at_stbox_segm(const TSequence *seq, const STBox *box,
   {
     if (tpointinst_restrict_stbox_iter(TSEQUENCE_INST_N(seq, 0), box,
         border_inc, REST_AT))
-      return tsequence_to_tsequenceset(seq);
+      return tsequence_as_tsequenceset(seq);
     return NULL;
   }
 
@@ -1639,7 +1639,7 @@ tgeoseq_step_restrict_geom(const TSequence *seq, const GSERIALIZED *gs,
   if (nseqs == 0)
   {
     pfree(sequences);
-    return atfunc ? NULL : tsequence_to_tsequenceset(seq);
+    return atfunc ? NULL : tsequence_as_tsequenceset(seq);
   }
 
   /* Construct the result for "at" restriction */
@@ -1963,7 +1963,7 @@ tpointseq_linear_restrict_geom(const TSequence *seq, const GSERIALIZED *gs,
 
   /* If "minus" restriction, compute the complement wrt time */
   if (! result_at)
-    return tsequence_to_tsequenceset(seq);
+    return tsequence_as_tsequenceset(seq);
 
   SpanSet *ss = tsequenceset_time(result_at);
   TSequenceSet *result = tcontseq_restrict_tstzspanset(seq, ss, atfunc);
@@ -1995,11 +1995,11 @@ tgeoseq_restrict_geom(const TSequence *seq, const GSERIALIZED *gs,
       return NULL;
     if (tpoint_type(seq->temptype))
       return (interp == DISCRETE) ? (Temporal *) tsequence_copy(seq) :
-          (Temporal *) tsequence_to_tsequenceset(seq);
+          (Temporal *) tsequence_as_tsequenceset(seq);
     else
     {
-      TSequence *res1 = tinstant_to_tsequence(res, interp);
-      TSequenceSet *result = tsequence_to_tsequenceset(res1);
+      TSequence *res1 = tinstant_as_tsequence(res, interp);
+      TSequenceSet *result = tsequence_as_tsequenceset(res1);
       pfree(res); pfree(res1);
       return (Temporal *) result;
     }
