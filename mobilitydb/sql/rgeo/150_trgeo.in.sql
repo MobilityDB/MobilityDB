@@ -428,17 +428,17 @@ CREATE FUNCTION segments(trgeometry)
 
 CREATE FUNCTION trgeometryInst(trgeometry)
   RETURNS trgeometry
-  AS 'MODULE_PATHNAME', 'Trgeometry_to_tinstant'
+  AS 'MODULE_PATHNAME', 'Trgeometry_as_tinstant'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- The function is not strict
 CREATE FUNCTION trgeometrySeq(trgeometry, text DEFAULT NULL)
   RETURNS trgeometry
-  AS 'MODULE_PATHNAME', 'Trgeometry_to_tsequence'
+  AS 'MODULE_PATHNAME', 'Trgeometry_as_tsequence'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 -- The function is not strict
 CREATE FUNCTION trgeometrySeqSet(trgeometry, text DEFAULT NULL)
   RETURNS trgeometry
-  AS 'MODULE_PATHNAME', 'Trgeometry_to_tsequenceset'
+  AS 'MODULE_PATHNAME', 'Trgeometry_as_tsequenceset'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION setInterp(trgeometry, text)

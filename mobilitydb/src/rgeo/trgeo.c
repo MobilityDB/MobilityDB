@@ -580,24 +580,24 @@ Trgeometry_value_at_timestamptz(PG_FUNCTION_ARGS)
  * Transformation Functions
  *****************************************************************************/
 
-PGDLLEXPORT Datum Trgeometry_to_tinstant(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Trgeometry_to_tinstant);
+PGDLLEXPORT Datum Trgeometry_as_tinstant(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Trgeometry_as_tinstant);
 /**
  * @ingroup mobilitydb_rgeo_transf
  * @brief Return a temporal rigid geometry transformed into a temporal instant
  * @sqlfn trgeometryInst()
  */
 Datum
-Trgeometry_to_tinstant(PG_FUNCTION_ARGS)
+Trgeometry_as_tinstant(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  TInstant *result = trgeometry_to_tinstant(temp);
+  TInstant *result = trgeometry_as_tinstant(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TINSTANT_P(result);
 }
 
-PGDLLEXPORT Datum Trgeometry_to_tsequence(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Trgeometry_to_tsequence);
+PGDLLEXPORT Datum Trgeometry_as_tsequence(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Trgeometry_as_tsequence);
 /**
  * @ingroup mobilitydb_rgeo_transf
  * @brief Return a temporal rigid geometry transformed into a temporal sequence
@@ -605,7 +605,7 @@ PG_FUNCTION_INFO_V1(Trgeometry_to_tsequence);
  * @sqlfn trgeometrySeq()
  */
 Datum
-Trgeometry_to_tsequence(PG_FUNCTION_ARGS)
+Trgeometry_as_tsequence(PG_FUNCTION_ARGS)
 {
   if (PG_ARGISNULL(0))
     PG_RETURN_NULL();
@@ -617,13 +617,13 @@ Trgeometry_to_tsequence(PG_FUNCTION_ARGS)
     text *interp_txt = PG_GETARG_TEXT_P(1);
     interp_str = text_to_cstring(interp_txt);
   }
-  TSequence *result = trgeo_to_tsequence(temp, interp_str);
+  TSequence *result = trgeometry_as_tsequence(temp, interp_str);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TSEQUENCE_P(result);
 }
 
-PGDLLEXPORT Datum Trgeometry_to_tsequenceset(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Trgeometry_to_tsequenceset);
+PGDLLEXPORT Datum Trgeometry_as_tsequenceset(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Trgeometry_as_tsequenceset);
 /**
  * @ingroup mobilitydb_rgeo_transf
  * @brief Return a temporal rigid geometry transformed into a temporal sequence
@@ -632,7 +632,7 @@ PG_FUNCTION_INFO_V1(Trgeometry_to_tsequenceset);
  * @sqlfn trgeometrySeqSet()
  */
 Datum
-Trgeometry_to_tsequenceset(PG_FUNCTION_ARGS)
+Trgeometry_as_tsequenceset(PG_FUNCTION_ARGS)
 {
   if (PG_ARGISNULL(0))
     PG_RETURN_NULL();
@@ -644,7 +644,7 @@ Trgeometry_to_tsequenceset(PG_FUNCTION_ARGS)
     text *interp_txt = PG_GETARG_TEXT_P(1);
     interp_str = text_to_cstring(interp_txt);
   }
-  TSequenceSet *result = trgeo_to_tsequenceset(temp, interp_str);
+  TSequenceSet *result = trgeometry_as_tsequenceset(temp, interp_str);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TSEQUENCESET_P(result);
 }
