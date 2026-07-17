@@ -222,10 +222,6 @@ CREATE FUNCTION tposeSeqSetGaps(tpose[], maxt interval DEFAULT NULL,
  * Conversions
  ******************************************************************************/
 
-CREATE FUNCTION timeSpan(tpose)
-  RETURNS tstzspan
-  AS 'MODULE_PATHNAME', 'Temporal_to_tstzspan'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tgeompoint(tpose)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Tpose_to_tpoint'
@@ -235,7 +231,6 @@ CREATE FUNCTION tgeogpoint(tpose)
   AS 'MODULE_PATHNAME', 'Tpose_to_tpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE CAST (tpose AS tstzspan) WITH FUNCTION timeSpan(tpose);
 CREATE CAST (tpose AS tgeompoint) WITH FUNCTION tgeompoint(tpose);
 CREATE CAST (tpose AS tgeogpoint) WITH FUNCTION tgeogpoint(tpose);
 
@@ -331,6 +326,12 @@ CREATE FUNCTION getValues(tpose)
 CREATE FUNCTION getTime(tpose)
   RETURNS tstzspanset
   AS 'MODULE_PATHNAME', 'Temporal_time'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- timeSpan is the bounding period, the tstzspan extent of the temporal value
+CREATE FUNCTION timeSpan(tpose)
+  RETURNS tstzspan
+  AS 'MODULE_PATHNAME', 'Temporal_to_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION startValue(tpose)
@@ -448,6 +449,9 @@ CREATE FUNCTION segments(tpose)
   AS 'MODULE_PATHNAME', 'Temporal_segments'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- GENERATED-ACCESSORS-END pose
+
+-- The tstzspan cast is backed by the generated timeSpan accessor.
+CREATE CAST (tpose AS tstzspan) WITH FUNCTION timeSpan(tpose);
 
 /******************************************************************************
  * Transformation functions

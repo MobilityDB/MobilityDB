@@ -211,10 +211,6 @@ CREATE FUNCTION tcbuffer(tgeompoint, tfloat)
  * Conversions
  *****************************************************************************/
 
-CREATE FUNCTION timeSpan(tcbuffer)
-  RETURNS tstzspan
-  AS 'MODULE_PATHNAME', 'Temporal_to_tstzspan'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tgeompoint(tcbuffer)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Tcbuffer_to_tgeompoint'
@@ -233,7 +229,6 @@ CREATE FUNCTION tcbuffer(tgeometry)
   AS 'MODULE_PATHNAME', 'Tgeometry_to_tcbuffer'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE CAST (tcbuffer AS tstzspan) WITH FUNCTION timeSpan(tcbuffer);
 CREATE CAST (tcbuffer AS tgeompoint) WITH FUNCTION tgeompoint(tcbuffer);
 CREATE CAST (tcbuffer AS tfloat) WITH FUNCTION tfloat(tcbuffer);
 CREATE CAST (tgeompoint AS tcbuffer) WITH FUNCTION tcbuffer(tgeompoint);
@@ -301,6 +296,12 @@ CREATE FUNCTION getValues(tcbuffer)
 CREATE FUNCTION getTime(tcbuffer)
   RETURNS tstzspanset
   AS 'MODULE_PATHNAME', 'Temporal_time'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- timeSpan is the bounding period, the tstzspan extent of the temporal value
+CREATE FUNCTION timeSpan(tcbuffer)
+  RETURNS tstzspan
+  AS 'MODULE_PATHNAME', 'Temporal_to_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION startValue(tcbuffer)
@@ -418,6 +419,9 @@ CREATE FUNCTION segments(tcbuffer)
   AS 'MODULE_PATHNAME', 'Temporal_segments'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- GENERATED-ACCESSORS-END cbuffer
+
+-- The tstzspan cast is backed by the generated timeSpan accessor.
+CREATE CAST (tcbuffer AS tstzspan) WITH FUNCTION timeSpan(tcbuffer);
 
 /*****************************************************************************
  * Transformation functions

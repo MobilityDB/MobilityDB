@@ -925,6 +925,18 @@ SELECT getTime(tfloat '{[1@2001-01-01, 1@2001-01-10), [12@2001-01-12, 12@2001-01
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="ttype_timeSpan">
+				<indexterm significance="normal"><primary><varname>timeSpan</varname></primary></indexterm>
+				<para>Return the bounding period on which a temporal value is defined</para>
+				<para><varname>timeSpan(ttype) → tstzspan</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT timeSpan(tfloat '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}');
+-- [2001-01-01, 2001-01-03]
+SELECT timeSpan(tint '[1@2001-01-01, 1@2001-01-15)');
+-- [2001-01-01, 2001-01-15)
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="ttype_startValue">
 				<indexterm significance="normal"><primary><varname>startValue</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>endValue</varname></primary></indexterm>

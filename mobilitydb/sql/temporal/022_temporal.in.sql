@@ -410,27 +410,6 @@ CREATE FUNCTION ttextSeqSetGaps(ttext[], maxt interval DEFAULT NULL)
  * Conversion functions
  ******************************************************************************/
 
-CREATE FUNCTION timeSpan(tbool)
-  RETURNS tstzspan
-  AS 'MODULE_PATHNAME', 'Temporal_to_tstzspan'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION timeSpan(tint)
-  RETURNS tstzspan
-  AS 'MODULE_PATHNAME', 'Temporal_to_tstzspan'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION timeSpan(tbigint)
-  RETURNS tstzspan
-  AS 'MODULE_PATHNAME', 'Temporal_to_tstzspan'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION timeSpan(tfloat)
-  RETURNS tstzspan
-  AS 'MODULE_PATHNAME', 'Temporal_to_tstzspan'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION timeSpan(ttext)
-  RETURNS tstzspan
-  AS 'MODULE_PATHNAME', 'Temporal_to_tstzspan'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 CREATE FUNCTION valueSpan(tint)
   RETURNS intspan
   AS 'MODULE_PATHNAME', 'Tnumber_to_span'
@@ -443,12 +422,6 @@ CREATE FUNCTION valueSpan(tfloat)
   RETURNS floatspan
   AS 'MODULE_PATHNAME', 'Tnumber_to_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE CAST (tbool AS tstzspan) WITH FUNCTION timeSpan(tbool);
-CREATE CAST (tint AS tstzspan) WITH FUNCTION timeSpan(tint);
-CREATE CAST (tbigint AS tstzspan) WITH FUNCTION timeSpan(tbigint);
-CREATE CAST (tfloat AS tstzspan) WITH FUNCTION timeSpan(tfloat);
-CREATE CAST (ttext AS tstzspan) WITH FUNCTION timeSpan(ttext);
 
 CREATE CAST (tint AS intspan) WITH FUNCTION valueSpan(tint);
 CREATE CAST (tbigint AS bigintspan) WITH FUNCTION valueSpan(tbigint);
@@ -698,6 +671,28 @@ CREATE FUNCTION getTime(tfloat)
 CREATE FUNCTION getTime(ttext)
   RETURNS tstzspanset
   AS 'MODULE_PATHNAME', 'Temporal_time'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- timeSpan is the bounding period, the tstzspan extent of the temporal value
+CREATE FUNCTION timeSpan(tbool)
+  RETURNS tstzspan
+  AS 'MODULE_PATHNAME', 'Temporal_to_tstzspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION timeSpan(tint)
+  RETURNS tstzspan
+  AS 'MODULE_PATHNAME', 'Temporal_to_tstzspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION timeSpan(tbigint)
+  RETURNS tstzspan
+  AS 'MODULE_PATHNAME', 'Temporal_to_tstzspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION timeSpan(tfloat)
+  RETURNS tstzspan
+  AS 'MODULE_PATHNAME', 'Temporal_to_tstzspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION timeSpan(ttext)
+  RETURNS tstzspan
+  AS 'MODULE_PATHNAME', 'Temporal_to_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION startValue(tbool)
@@ -1264,6 +1259,13 @@ CREATE FUNCTION segments(ttext)
   AS 'MODULE_PATHNAME', 'Temporal_segments'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- GENERATED-ACCESSORS-END temporal
+
+-- The tstzspan cast is backed by the generated timeSpan accessor.
+CREATE CAST (tbool AS tstzspan) WITH FUNCTION timeSpan(tbool);
+CREATE CAST (tint AS tstzspan) WITH FUNCTION timeSpan(tint);
+CREATE CAST (tbigint AS tstzspan) WITH FUNCTION timeSpan(tbigint);
+CREATE CAST (tfloat AS tstzspan) WITH FUNCTION timeSpan(tfloat);
+CREATE CAST (ttext AS tstzspan) WITH FUNCTION timeSpan(ttext);
 
 /*****************************************************************************
  * Transform a temporal value to a set of records

@@ -178,13 +178,6 @@ CREATE FUNCTION tjsonbSeqSetGaps(tjsonb[], maxt interval DEFAULT NULL)
  * Conversions
  *****************************************************************************/
 
-CREATE FUNCTION timeSpan(tjsonb)
-  RETURNS tstzspan
-  AS 'MODULE_PATHNAME', 'Temporal_to_tstzspan'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE CAST (tjsonb AS tstzspan) WITH FUNCTION timeSpan(tjsonb);
-
 CREATE FUNCTION ttext(tjsonb)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Tjsonb_as_ttext'
@@ -247,6 +240,12 @@ CREATE FUNCTION getValues(tjsonb)
 CREATE FUNCTION getTime(tjsonb)
   RETURNS tstzspanset
   AS 'MODULE_PATHNAME', 'Temporal_time'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- timeSpan is the bounding period, the tstzspan extent of the temporal value
+CREATE FUNCTION timeSpan(tjsonb)
+  RETURNS tstzspan
+  AS 'MODULE_PATHNAME', 'Temporal_to_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION startValue(tjsonb)
@@ -364,6 +363,9 @@ CREATE FUNCTION segments(tjsonb)
   AS 'MODULE_PATHNAME', 'Temporal_segments'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- GENERATED-ACCESSORS-END json
+
+-- The tstzspan cast is backed by the generated timeSpan accessor.
+CREATE CAST (tjsonb AS tstzspan) WITH FUNCTION timeSpan(tjsonb);
 
 /*****************************************************************************
  * Transformation functions

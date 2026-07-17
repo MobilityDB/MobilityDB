@@ -41,6 +41,12 @@ CREATE FUNCTION getTime({TEMP})
   AS 'MODULE_PATHNAME', 'Temporal_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- timeSpan is the bounding period, the tstzspan extent of the temporal value
+CREATE FUNCTION timeSpan({TEMP})
+  RETURNS tstzspan
+  AS 'MODULE_PATHNAME', 'Temporal_to_tstzspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION startValue({TEMP})
   RETURNS {VALRET}
   AS 'MODULE_PATHNAME', '{VALSYM}_start_value'
