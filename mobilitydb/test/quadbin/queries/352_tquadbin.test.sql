@@ -148,6 +148,7 @@ SELECT scaleTime(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-0
 -- Accessors
 -------------------------------------------------------------------------------
 SELECT tempSubtype(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}');
+SELECT tempBasetype(tquadbin '480fffffffffffff@2001-01-01');
 SELECT interp(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02]');
 SELECT memSize(tquadbin '480fffffffffffff@2001-01-01') > 0;
 SELECT getValue(tquadbin '480fffffffffffff@2001-01-01');

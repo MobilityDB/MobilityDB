@@ -53,6 +53,7 @@ SELECT tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2024-01-01'::timestamptz)::text =
 -------------------------------------------------------------------------------
 
 SELECT pcid(:inst1);
+SELECT tempBasetype(:inst1);
 SELECT numInstants(:inst1);
 SELECT numInstants(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]));
 SELECT numInstants(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3], 'discrete'));
