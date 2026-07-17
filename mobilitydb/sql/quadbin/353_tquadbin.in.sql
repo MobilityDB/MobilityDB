@@ -248,10 +248,11 @@ CREATE FUNCTION tsample(tquadbin, duration interval,
 /******************************************************************************
  * Accessor functions
  *
- * The value accessors that return the `quadbin` cell (`startValue`,
- * `endValue`, `valueN`, `getValues`, `valueAtTimestamp`) and the lifted cell
- * operations live in `355_tquadbin_spatialfuncs.in.sql`.
+ * The lifted cell operations live in `355_tquadbin_spatialfuncs.in.sql`.
  ******************************************************************************/
+
+-- GENERATED-ACCESSORS-BEGIN quadbin — tools/codegen/inherited/generate.py from templates/accessors.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.yaml (accessor_families) and re-run.
 
 CREATE FUNCTION tempSubtype(tquadbin)
   RETURNS text
@@ -261,36 +262,71 @@ CREATE FUNCTION tempBasetype(tquadbin)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_basetype_name'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION interp(tquadbin)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_interp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION memSize(tquadbin)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- value is a reserved word in SQL
 CREATE FUNCTION getValue(tquadbin)
   RETURNS quadbin
   AS 'MODULE_PATHNAME', 'Tinstant_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- timestamp is a reserved word in SQL
 CREATE FUNCTION getTimestamp(tquadbin)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'Tinstant_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- values is a reserved word in SQL
+CREATE FUNCTION getValues(tquadbin)
+  RETURNS quadbinset
+  AS 'MODULE_PATHNAME', 'Temporal_valueset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- time is a reserved word in SQL
 CREATE FUNCTION getTime(tquadbin)
   RETURNS tstzspanset
   AS 'MODULE_PATHNAME', 'Temporal_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION startValue(tquadbin)
+  RETURNS quadbin
+  AS 'MODULE_PATHNAME', 'Temporal_start_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION endValue(tquadbin)
+  RETURNS quadbin
+  AS 'MODULE_PATHNAME', 'Temporal_end_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION valueN(tquadbin, int)
+  RETURNS quadbin
+  AS 'MODULE_PATHNAME', 'Temporal_value_n'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION valueAtTimestamp(tquadbin, timestamptz)
+  RETURNS quadbin
+  AS 'MODULE_PATHNAME', 'Temporal_value_at_timestamptz'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION duration(tquadbin, boundspan boolean DEFAULT FALSE)
   RETURNS interval
   AS 'MODULE_PATHNAME', 'Temporal_duration'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION lowerInc(tquadbin)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Temporal_lower_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION upperInc(tquadbin)
   RETURNS bool
   AS 'MODULE_PATHNAME', 'Temporal_upper_inc'
@@ -300,18 +336,22 @@ CREATE FUNCTION numInstants(tquadbin)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_num_instants'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION startInstant(tquadbin)
   RETURNS tquadbin
   AS 'MODULE_PATHNAME', 'Temporal_start_instant'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION endInstant(tquadbin)
   RETURNS tquadbin
   AS 'MODULE_PATHNAME', 'Temporal_end_instant'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION instantN(tquadbin, integer)
   RETURNS tquadbin
   AS 'MODULE_PATHNAME', 'Temporal_instant_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION instants(tquadbin)
   RETURNS tquadbin[]
   AS 'MODULE_PATHNAME', 'Temporal_instants'
@@ -321,18 +361,22 @@ CREATE FUNCTION numTimestamps(tquadbin)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_num_timestamps'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION startTimestamp(tquadbin)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'Temporal_start_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION endTimestamp(tquadbin)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'Temporal_end_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION timestampN(tquadbin, integer)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'Temporal_timestamptz_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION timestamps(tquadbin)
   RETURNS timestamptz[]
   AS 'MODULE_PATHNAME', 'Temporal_timestamps'
@@ -342,26 +386,32 @@ CREATE FUNCTION numSequences(tquadbin)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_num_sequences'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION startSequence(tquadbin)
   RETURNS tquadbin
   AS 'MODULE_PATHNAME', 'Temporal_start_sequence'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION endSequence(tquadbin)
   RETURNS tquadbin
   AS 'MODULE_PATHNAME', 'Temporal_end_sequence'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION sequenceN(tquadbin, integer)
   RETURNS tquadbin
   AS 'MODULE_PATHNAME', 'Temporal_sequence_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION sequences(tquadbin)
   RETURNS tquadbin[]
   AS 'MODULE_PATHNAME', 'Temporal_sequences'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION segments(tquadbin)
   RETURNS tquadbin[]
   AS 'MODULE_PATHNAME', 'Temporal_segments'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- GENERATED-ACCESSORS-END quadbin
 
 /******************************************************************************
  * Unnest
