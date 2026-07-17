@@ -84,6 +84,9 @@ enum TEMPORAL_FUNCTION_IDX
   AINTERSECTS_IDX                = 10,
   ATOUCHES_IDX                   = 11,
   ADWITHIN_IDX                   = 12,
+  /* Covers (appended to keep the existing indexes stable) */
+  ECOVERS_IDX                    = 13,
+  ACOVERS_IDX                    = 14,
 };
 
 static const int16 TNumberStrategies[] =
@@ -110,6 +113,9 @@ static const int16 TSpatialStrategies[] =
   [AINTERSECTS_IDX]               = RTOverlapStrategyNumber,
   [ATOUCHES_IDX]                  = RTOverlapStrategyNumber,
   [ADWITHIN_IDX]                  = RTOverlapStrategyNumber,
+  /* Covers */
+  [ECOVERS_IDX]                   = RTOverlapStrategyNumber,
+  [ACOVERS_IDX]                   = RTOverlapStrategyNumber,
 };
 
 /*
@@ -135,12 +141,14 @@ static const IndexableFunction TSpatialIndexableFunctions[] = {
   {"aeq", ALWAYS_EQ_IDX, 2, 0},
   /* Ever spatial relationships */
   {"econtains", ECONTAINS_IDX, 2, 0},
+  {"ecovers", ECOVERS_IDX, 2, 0},
   {"edisjoint", EDISJOINT_IDX, 2, 0},
   {"eintersects", EINTERSECTS_IDX, 2, 0},
   {"etouches", ETOUCHES_IDX, 2, 0},
   {"edwithin", EDWITHIN_IDX, 3, 3},
   /* Always spatial relationships */
   {"acontains", ACONTAINS_IDX, 2, 0},
+  {"acovers", ACOVERS_IDX, 2, 0},
   {"adisjoint", ADISJOINT_IDX, 2, 0},
   {"aintersects", AINTERSECTS_IDX, 2, 0},
   {"atouches", ATOUCHES_IDX, 2, 0},
