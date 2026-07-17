@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: Trgeometry_to_tsequenceset</title>
+<title>MobilityDB: trgeometry_as_tinstant</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="group__mobilitydb__rgeo__transf.html">Transformation functions</a></li>  </ul>
+<li class="navelem"><a class="el" href="group__meos__rgeo__transf.html">Transformation functions</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,31 +79,38 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__rgeo__transf_ga84d02aa00fe08437abf933f888e9627b.html#ga84d02aa00fe08437abf933f888e9627b">Trgeometry_to_tinstant</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__rgeo__transf_ga485beea8c6b67bb026871e48b1e96e56.html#ga485beea8c6b67bb026871e48b1e96e56">Trgeometry_to_tsequence</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__mobilitydb__rgeo__transf_ga001cfbc6315844aab308183dc76403c5.html#ga001cfbc6315844aab308183dc76403c5">Trgeometry_to_tsequenceset</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__rgeo__transf_gaa97802d526dfa4ef9165293f31038221.html#gaa97802d526dfa4ef9165293f31038221">trgeometry_as_tinstant</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__transf_gabeba5deef4497759378c2cbdd25fe01f.html#gabeba5deef4497759378c2cbdd25fe01f">trgeometry_as_tsequence</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__transf_ga4b7cf2fc1ed8b27d902b85dc6ae4c371.html#ga4b7cf2fc1ed8b27d902b85dc6ae4c371">trgeometry_as_tsequenceset</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__transf_gab93bc7549dcb8121d98906718a6803ae.html#gab93bc7549dcb8121d98906718a6803ae">trgeometry_round</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__transf_ga983aced2e2762066ccc9b756252b9e2f.html#ga983aced2e2762066ccc9b756252b9e2f">trgeometry_set_interp</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga001cfbc6315844aab308183dc76403c5" name="ga001cfbc6315844aab308183dc76403c5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga001cfbc6315844aab308183dc76403c5">&#9670;&#160;</a></span>Trgeometry_to_tsequenceset()</h2>
+<a id="gaa97802d526dfa4ef9165293f31038221" name="gaa97802d526dfa4ef9165293f31038221"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaa97802d526dfa4ef9165293f31038221">&#9670;&#160;</a></span>trgeometry_as_tinstant()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> Trgeometry_to_tsequenceset </td>
+          <td class="memname"><a class="el" href="structTInstant.html">TInstant</a> * trgeometry_as_tinstant </td>
           <td>(</td>
-          <td class="paramtype">PG_FUNCTION_ARGS&#160;</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
+          <td class="paramname"><em>temp</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Return a temporal rigid geometry transformed into a temporal sequence set. </p>
-<dl class="section note"><dt>Note</dt><dd>The SQL function is not strict @sqlfn trgeometrySeqSet() </dd></dl>
+<p>Return a temporal rigid geometry transformed to a temporal instant. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> rigid geometry @csqlfn <a class="el" href="group__mobilitydb__rgeo__transf_ga5477c9c2ffc262b4ee1b2b86f4f061b5.html#ga5477c9c2ffc262b4ee1b2b86f4f061b5" title="Return a temporal rigid geometry transformed into a temporal instant @sqlfn trgeometryInst()">Trgeometry_as_tinstant()</a> </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
