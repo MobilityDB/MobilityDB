@@ -1477,7 +1477,7 @@ tdwithin_tlinearseqset_base(const TSequenceSet *ss, Datum point, Datum dist,
 /*****************************************************************************/
 
 /**
- * @ingroup meos_geo_rel_temp
+ * @ingroup meos_internal_geo_rel_temp
  * @brief Return a temporal Boolean that states whether a spatiotemporal value
  * and a base value are within a distance
  * @param[in] temp Spatiotemporal value
