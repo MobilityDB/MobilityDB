@@ -1,5 +1,9 @@
 var searchData=
 [
-  ['ogc_20geopose_20euler_2dangle_20accessors_0',['OGC GeoPose Euler-angle accessors',['../group__meos__pose__geopose__accessor.html',1,'']]],
-  ['ogc_20geopose_20v1_2e0_20support_1',['OGC GeoPose v1.0 support',['../group__meos__pose__base__geopose.html',1,'']]]
+  ['mathematical_20functions_0',['Mathematical functions',['../group__meos__internal__temporal__math.html',1,'(Global Namespace)'],['../group__meos__temporal__math.html',1,'(Global Namespace)'],['../group__mobilitydb__temporal__math.html',1,'(Global Namespace)']]],
+  ['meos_20library_1',['MEOS library',['../group__meos.html',1,'']]],
+  ['metric_20functions_2',['Metric functions',['../group__meos__h3__metrics.html',1,'(Global Namespace)'],['../group__mobilitydb__h3__metrics.html',1,'(Global Namespace)']]],
+  ['miscellaneous_20functions_3',['Miscellaneous functions',['../group__meos__misc.html',1,'(Global Namespace)'],['../group__mobilitydb__misc.html',1,'(Global Namespace)']]],
+  ['mobilitydb_20api_4',['MobilityDB API',['../group__mobilitydb__api.html',1,'']]],
+  ['modification_20functions_5',['Modification functions',['../group__meos__internal__temporal__modif.html',1,'(Global Namespace)'],['../group__meos__rgeo__modif.html',1,'(Global Namespace)'],['../group__meos__temporal__modif.html',1,'(Global Namespace)'],['../group__mobilitydb__geo__modif.html',1,'(Global Namespace)'],['../group__mobilitydb__temporal__modif.html',1,'(Global Namespace)']]]
 ];
