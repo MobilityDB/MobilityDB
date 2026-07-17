@@ -218,32 +218,32 @@ CREATE CAST (tgeogpoint AS tstzspan) WITH FUNCTION timeSpan(tgeogpoint);
 
 CREATE FUNCTION tgeompointInst(tgeompoint)
   RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'Temporal_to_tinstant'
+  AS 'MODULE_PATHNAME', 'Temporal_as_tinstant'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- The function is not strict
 CREATE FUNCTION tgeompointSeq(tgeompoint, text DEFAULT NULL)
   RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
+  AS 'MODULE_PATHNAME', 'Temporal_as_tsequence'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 -- The function is not strict
 CREATE FUNCTION tgeompointSeqSet(tgeompoint, text DEFAULT NULL)
   RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'Temporal_to_tsequenceset'
+  AS 'MODULE_PATHNAME', 'Temporal_as_tsequenceset'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION tgeogpointInst(tgeogpoint)
   RETURNS tgeogpoint
-  AS 'MODULE_PATHNAME', 'Temporal_to_tinstant'
+  AS 'MODULE_PATHNAME', 'Temporal_as_tinstant'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- The function is not strict
 CREATE FUNCTION tgeogpointSeq(tgeogpoint, text DEFAULT NULL)
   RETURNS tgeogpoint
-  AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
+  AS 'MODULE_PATHNAME', 'Temporal_as_tsequence'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 -- The function is not strict
 CREATE FUNCTION tgeogpointSeqSet(tgeogpoint, text DEFAULT NULL)
   RETURNS tgeogpoint
-  AS 'MODULE_PATHNAME', 'Temporal_to_tsequenceset'
+  AS 'MODULE_PATHNAME', 'Temporal_as_tsequenceset'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION setInterp(tgeompoint, text)

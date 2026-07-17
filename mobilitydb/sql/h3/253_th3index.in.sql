@@ -226,17 +226,17 @@ CREATE CAST (th3index AS tstzspan) WITH FUNCTION timeSpan(th3index);
 
 CREATE FUNCTION th3indexInst(th3index)
   RETURNS th3index
-  AS 'MODULE_PATHNAME', 'Temporal_to_tinstant'
+  AS 'MODULE_PATHNAME', 'Temporal_as_tinstant'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- The function is not strict
 CREATE FUNCTION th3indexSeq(th3index, text DEFAULT NULL)
   RETURNS th3index
-  AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
+  AS 'MODULE_PATHNAME', 'Temporal_as_tsequence'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 -- The function is not strict
 CREATE FUNCTION th3indexSeqSet(th3index, text DEFAULT NULL)
   RETURNS th3index
-  AS 'MODULE_PATHNAME', 'Temporal_to_tsequenceset'
+  AS 'MODULE_PATHNAME', 'Temporal_as_tsequenceset'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION setInterp(th3index, text)

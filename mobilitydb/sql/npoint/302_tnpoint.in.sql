@@ -187,17 +187,17 @@ CREATE CAST (tnpoint AS tstzspan) WITH FUNCTION timeSpan(tnpoint);
 
 CREATE FUNCTION tnpointInst(tnpoint)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'Temporal_to_tinstant'
+  AS 'MODULE_PATHNAME', 'Temporal_as_tinstant'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- The function is not strict
 CREATE FUNCTION tnpointSeq(tnpoint, text DEFAULT NULL)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
+  AS 'MODULE_PATHNAME', 'Temporal_as_tsequence'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 -- The function is not strict
 CREATE FUNCTION tnpointSeqSet(tnpoint, text DEFAULT NULL)
   RETURNS tnpoint
-  AS 'MODULE_PATHNAME', 'Temporal_to_tsequenceset'
+  AS 'MODULE_PATHNAME', 'Temporal_as_tsequenceset'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION setInterp(tnpoint, text)

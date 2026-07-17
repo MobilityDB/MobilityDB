@@ -226,32 +226,32 @@ CREATE CAST (tgeography AS tstzspan) WITH FUNCTION timeSpan(tgeography);
 
 CREATE FUNCTION tgeometryInst(tgeometry)
   RETURNS tgeometry
-  AS 'MODULE_PATHNAME', 'Temporal_to_tinstant'
+  AS 'MODULE_PATHNAME', 'Temporal_as_tinstant'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- The function is not strict
 CREATE FUNCTION tgeometrySeq(tgeometry, text DEFAULT NULL)
   RETURNS tgeometry
-  AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
+  AS 'MODULE_PATHNAME', 'Temporal_as_tsequence'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 -- The function is not strict
 CREATE FUNCTION tgeometrySeqSet(tgeometry, text DEFAULT NULL)
   RETURNS tgeometry
-  AS 'MODULE_PATHNAME', 'Temporal_to_tsequenceset'
+  AS 'MODULE_PATHNAME', 'Temporal_as_tsequenceset'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION tgeographyInst(tgeography)
   RETURNS tgeography
-  AS 'MODULE_PATHNAME', 'Temporal_to_tinstant'
+  AS 'MODULE_PATHNAME', 'Temporal_as_tinstant'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- The function is not strict
 CREATE FUNCTION tgeographySeq(tgeography, text DEFAULT NULL)
   RETURNS tgeography
-  AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
+  AS 'MODULE_PATHNAME', 'Temporal_as_tsequence'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 -- The function is not strict
 CREATE FUNCTION tgeographySeqSet(tgeography, text DEFAULT NULL)
   RETURNS tgeography
-  AS 'MODULE_PATHNAME', 'Temporal_to_tsequenceset'
+  AS 'MODULE_PATHNAME', 'Temporal_as_tsequenceset'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION setInterp(tgeometry, text)

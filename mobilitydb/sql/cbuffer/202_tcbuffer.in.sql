@@ -433,17 +433,17 @@ CREATE FUNCTION expand(tcbuffer, float)
 
 CREATE FUNCTION tcbufferInst(tcbuffer)
   RETURNS tcbuffer
-  AS 'MODULE_PATHNAME', 'Temporal_to_tinstant'
+  AS 'MODULE_PATHNAME', 'Temporal_as_tinstant'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 -- The function is not strict
 CREATE FUNCTION tcbufferSeq(tcbuffer, text DEFAULT NULL)
   RETURNS tcbuffer
-  AS 'MODULE_PATHNAME', 'Temporal_to_tsequence'
+  AS 'MODULE_PATHNAME', 'Temporal_as_tsequence'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 -- The function is not strict
 CREATE FUNCTION tcbufferSeqSet(tcbuffer, text DEFAULT NULL)
   RETURNS tcbuffer
-  AS 'MODULE_PATHNAME', 'Temporal_to_tsequenceset'
+  AS 'MODULE_PATHNAME', 'Temporal_as_tsequenceset'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION setInterp(tcbuffer, text)

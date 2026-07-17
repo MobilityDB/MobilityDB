@@ -1341,22 +1341,22 @@ int main(void)
   printf("temporal_shift_time(%s, %s): %s\n", tfloat1_out, interv1_out, char_result);
   free(tfloat_result); free(char_result);
 
-  /* TInstant *temporal_to_tinstant(const Temporal *temp); */
-  tfloatinst_result = temporal_to_tinstant((Temporal *) tfloatinst1);
+  /* TInstant *temporal_as_tinstant(const Temporal *temp); */
+  tfloatinst_result = temporal_as_tinstant((Temporal *) tfloatinst1);
   char_result = tfloat_out((Temporal *) tfloatinst_result, 6);
-  printf("temporal_to_tinstant(%s): %s\n", tfloat1_out, char_result);
+  printf("temporal_as_tinstant(%s): %s\n", tfloat1_out, char_result);
   free(tfloatinst_result); free(char_result);
 
-  /* TSequence *temporal_to_tsequence(const Temporal *temp, interpType interp); */
-  tfloatseq_result = temporal_to_tsequence((Temporal *) tfloatinst1, LINEAR);
+  /* TSequence *temporal_as_tsequence(const Temporal *temp, interpType interp); */
+  tfloatseq_result = temporal_as_tsequence((Temporal *) tfloatinst1, LINEAR);
   char_result = tfloat_out((Temporal *) tfloatseq_result, 6);
-  printf("temporal_to_tsequence(%s, LINEAR): %s\n", tfloat1_out, char_result);
+  printf("temporal_as_tsequence(%s, LINEAR): %s\n", tfloat1_out, char_result);
   free(tfloatseq_result); free(char_result);
 
-  /* TSequenceSet *temporal_to_tsequenceset(const Temporal *temp, interpType interp); */
-  tfloatseqset_result = temporal_to_tsequenceset(tfloat1, LINEAR);
+  /* TSequenceSet *temporal_as_tsequenceset(const Temporal *temp, interpType interp); */
+  tfloatseqset_result = temporal_as_tsequenceset(tfloat1, LINEAR);
   char_result = tfloat_out((Temporal *) tfloatseqset_result, 6);
-  printf("temporal_to_tsequenceset(%s, LINEAR): %s\n", tfloat1_out, char_result);
+  printf("temporal_as_tsequenceset(%s, LINEAR): %s\n", tfloat1_out, char_result);
   free(tfloatseqset_result); free(char_result);
 
   /* Temporal *tfloat_ceil(const Temporal *temp); */

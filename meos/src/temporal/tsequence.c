@@ -1317,7 +1317,7 @@ tsequence_subseq(const TSequence *seq, int from, int to, bool lower_inc,
  * @brief Return a temporal instant transformed into a temporal sequence
  * @param[in] inst Temporal instant
  * @param[in] interp Interpolation
- * @csqlfn #Temporal_to_tsequence()
+ * @csqlfn #Temporal_as_tsequence()
  */
 TSequence *
 tinstant_to_tsequence(const TInstant *inst, interpType interp)
@@ -1332,7 +1332,7 @@ tinstant_to_tsequence(const TInstant *inst, interpType interp)
  * @brief Return a temporal instant transformed into a temporal sequence
  * @param[in] inst Temporal instant
  * @param[in] interp Interpolation
- * @csqlfn #Temporal_to_tsequence()
+ * @csqlfn #Temporal_as_tsequence()
  */
 TSequence *
 tinstant_to_tsequence_free(TInstant *inst, interpType interp)
