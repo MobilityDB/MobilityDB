@@ -178,82 +178,173 @@ CREATE FUNCTION tpcpatchSeqSet(tpcpatch[])
  * Accessors
  ******************************************************************************/
 
+-- GENERATED-ACCESSORS-BEGIN pointcloud_patch — tools/codegen/inherited/generate.py from templates/accessors.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.yaml (accessor_families) and re-run.
+
 CREATE FUNCTION tempSubtype(tpcpatch)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_subtype'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tempBasetype(tpcpatch)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Temporal_basetype_name'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION interp(tpcpatch)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_interp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION memSize(tpcpatch)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_mem_size'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION startValue(tpcpatch)
+
+-- value is a reserved word in SQL
+CREATE FUNCTION getValue(tpcpatch)
   RETURNS pcpatch
-  AS 'MODULE_PATHNAME', 'Temporal_start_value'
+  AS 'MODULE_PATHNAME', 'Tinstant_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION endValue(tpcpatch)
-  RETURNS pcpatch
-  AS 'MODULE_PATHNAME', 'Temporal_end_value'
+
+-- timestamp is a reserved word in SQL
+CREATE FUNCTION getTimestamp(tpcpatch)
+  RETURNS timestamptz
+  AS 'MODULE_PATHNAME', 'Tinstant_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION valueN(tpcpatch, integer)
-  RETURNS pcpatch
-  AS 'MODULE_PATHNAME', 'Temporal_value_n'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- values is a reserved word in SQL
 CREATE FUNCTION getValues(tpcpatch)
   RETURNS pcpatchset
   AS 'MODULE_PATHNAME', 'Temporal_valueset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- time is a reserved word in SQL
 CREATE FUNCTION getTime(tpcpatch)
   RETURNS tstzspanset
   AS 'MODULE_PATHNAME', 'Temporal_time'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION duration(tpcpatch, boundspan boolean DEFAULT FALSE)
-  RETURNS interval
-  AS 'MODULE_PATHNAME', 'Temporal_duration'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- timeSpan is the bounding period, the tstzspan extent of the temporal value
 CREATE FUNCTION timeSpan(tpcpatch)
   RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Temporal_to_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION startValue(tpcpatch)
+  RETURNS pcpatch
+  AS 'MODULE_PATHNAME', 'Temporal_start_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION endValue(tpcpatch)
+  RETURNS pcpatch
+  AS 'MODULE_PATHNAME', 'Temporal_end_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION valueN(tpcpatch, int)
+  RETURNS pcpatch
+  AS 'MODULE_PATHNAME', 'Temporal_value_n'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION valueAtTimestamp(tpcpatch, timestamptz)
+  RETURNS pcpatch
+  AS 'MODULE_PATHNAME', 'Temporal_value_at_timestamptz'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION duration(tpcpatch, boundspan boolean DEFAULT FALSE)
+  RETURNS interval
+  AS 'MODULE_PATHNAME', 'Temporal_duration'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION lowerInc(tpcpatch)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Temporal_lower_inc'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION upperInc(tpcpatch)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Temporal_upper_inc'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION numInstants(tpcpatch)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_num_instants'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION startInstant(tpcpatch)
   RETURNS tpcpatch
   AS 'MODULE_PATHNAME', 'Temporal_start_instant'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION endInstant(tpcpatch)
   RETURNS tpcpatch
   AS 'MODULE_PATHNAME', 'Temporal_end_instant'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION instantN(tpcpatch, integer)
   RETURNS tpcpatch
   AS 'MODULE_PATHNAME', 'Temporal_instant_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION instants(tpcpatch)
   RETURNS tpcpatch[]
   AS 'MODULE_PATHNAME', 'Temporal_instants'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION startTimestamp(tpcpatch)
-  RETURNS timestamptz
-  AS 'MODULE_PATHNAME', 'Temporal_start_timestamptz'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION endTimestamp(tpcpatch)
-  RETURNS timestamptz
-  AS 'MODULE_PATHNAME', 'Temporal_end_timestamptz'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION timestampN(tpcpatch, integer)
-  RETURNS timestamptz
-  AS 'MODULE_PATHNAME', 'Temporal_timestamptz_n'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION numTimestamps(tpcpatch)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_num_timestamps'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION startTimestamp(tpcpatch)
+  RETURNS timestamptz
+  AS 'MODULE_PATHNAME', 'Temporal_start_timestamptz'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION endTimestamp(tpcpatch)
+  RETURNS timestamptz
+  AS 'MODULE_PATHNAME', 'Temporal_end_timestamptz'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION timestampN(tpcpatch, integer)
+  RETURNS timestamptz
+  AS 'MODULE_PATHNAME', 'Temporal_timestamptz_n'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION timestamps(tpcpatch)
+  RETURNS timestamptz[]
+  AS 'MODULE_PATHNAME', 'Temporal_timestamps'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION numSequences(tpcpatch)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Temporal_num_sequences'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION startSequence(tpcpatch)
+  RETURNS tpcpatch
+  AS 'MODULE_PATHNAME', 'Temporal_start_sequence'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION endSequence(tpcpatch)
+  RETURNS tpcpatch
+  AS 'MODULE_PATHNAME', 'Temporal_end_sequence'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION sequenceN(tpcpatch, integer)
+  RETURNS tpcpatch
+  AS 'MODULE_PATHNAME', 'Temporal_sequence_n'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION sequences(tpcpatch)
+  RETURNS tpcpatch[]
+  AS 'MODULE_PATHNAME', 'Temporal_sequences'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION segments(tpcpatch)
+  RETURNS tpcpatch[]
+  AS 'MODULE_PATHNAME', 'Temporal_segments'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- GENERATED-ACCESSORS-END pointcloud_patch
 
 -- Type-specific
 CREATE FUNCTION pcid(tpcpatch)
@@ -277,13 +368,8 @@ CREATE FUNCTION numPoints(tpcpatch)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
- * Value-at-timestamp / restriction
+ * Restrictions
  ******************************************************************************/
-
-CREATE FUNCTION valueAtTimestamp(tpcpatch, timestamptz)
-  RETURNS pcpatch
-  AS 'MODULE_PATHNAME', 'Temporal_value_at_timestamptz'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION atTime(tpcpatch, timestamptz)
   RETURNS tpcpatch

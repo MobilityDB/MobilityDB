@@ -325,3 +325,13 @@ accessor_families:
     reference: true
     types:
       - {temp: th3index, base: h3index, baseset: h3indexset}
+  - family:    pointcloud
+    file:      mobilitydb/sql/pointcloud/420_tpcpoint.in.sql
+    reference: true
+    types:
+      - {temp: tpcpoint, base: pcpoint, baseset: pcpointset}
+  - family:    pointcloud_patch
+    file:      mobilitydb/sql/pointcloud/430_tpcpatch.in.sql
+    reference: true
+    types:
+      - {temp: tpcpatch, base: pcpatch, baseset: pcpatchset}
