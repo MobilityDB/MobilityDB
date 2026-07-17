@@ -3670,7 +3670,7 @@ temporal_le(const Temporal *temp1, const Temporal *temp2)
  * @brief Return true if the first temporal value is greater than or equal to
  * the second one
  * @param[in] temp1,temp2 Temporal values
- * @csqlfn #Temporal_gt()
+ * @csqlfn #Temporal_ge()
  */
 inline bool
 temporal_ge(const Temporal *temp1, const Temporal *temp2)
@@ -3682,7 +3682,7 @@ temporal_ge(const Temporal *temp1, const Temporal *temp2)
  * @ingroup meos_temporal_comp_trad
  * @brief Return true if the first temporal value is greater than the second one
  * @param[in] temp1,temp2 Temporal values
- * @csqlfn #Temporal_ge()
+ * @csqlfn #Temporal_gt()
  */
 inline bool
 temporal_gt(const Temporal *temp1, const Temporal *temp2)

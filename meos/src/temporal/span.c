@@ -1682,7 +1682,7 @@ span_cmp(const Span *s1, const Span *s2)
 /**
  * @ingroup meos_setspan_comp
  * @brief Return true if the first span is less than the second one
- * @param[in] s1,s2 Sets
+ * @param[in] s1,s2 Spans
  * @csqlfn #Span_lt()
  */
 inline bool
@@ -1694,7 +1694,7 @@ span_lt(const Span *s1, const Span *s2)
 /**
  * @ingroup meos_setspan_comp
  * @brief Return true if the first span is less than or equal to the second one
- * @param[in] s1,s2 Sets
+ * @param[in] s1,s2 Spans
  * @csqlfn #Span_le()
  */
 inline bool
@@ -1707,8 +1707,8 @@ span_le(const Span *s1, const Span *s2)
  * @ingroup meos_setspan_comp
  * @brief Return true if the first span is greater than or equal to the second
  * one
- * @param[in] s1,s2 Sets
- * @csqlfn #Span_gt()
+ * @param[in] s1,s2 Spans
+ * @csqlfn #Span_ge()
  */
 inline bool
 span_ge(const Span *s1, const Span *s2)
@@ -1719,8 +1719,8 @@ span_ge(const Span *s1, const Span *s2)
 /**
  * @ingroup meos_setspan_comp
  * @brief Return true if the first span is greater than the second one
- * @param[in] s1,s2 Sets
- * @csqlfn #Span_ge()
+ * @param[in] s1,s2 Spans
+ * @csqlfn #Span_gt()
  */
 inline bool
 span_gt(const Span *s1, const Span *s2)
