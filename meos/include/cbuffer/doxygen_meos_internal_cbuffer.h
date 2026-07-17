@@ -138,3 +138,17 @@
  */
 
 /*****************************************************************************/
+
+/**
+ * @defgroup meos_internal_cbuffer_base_rel Spatial relationship functions
+ * @ingroup meos_internal_cbuffer_base
+ * @brief Spatial relationship functions for static circular buffers
+ *
+ * @defgroup meos_internal_cbuffer_spatial_accessor Spatial accessor functions
+ * @ingroup meos_internal_cbuffer
+ * @brief Spatial accessor functions for temporal circular buffers
+ *
+ * @defgroup meos_internal_cbuffer_spatial_rel_ever Ever/always relationship functions
+ * @ingroup meos_internal_cbuffer
+ * @brief Ever/always spatial relationship functions for temporal circular buffers
+ */

@@ -134,3 +134,17 @@
  */
 
 /*****************************************************************************/
+
+/**
+ * @defgroup meos_json_json JSON processing functions
+ * @ingroup meos_json
+ * @brief JSON processing functions for temporal JSON
+ *
+ * @defgroup meos_json_set_json JSON processing functions
+ * @ingroup meos_json_set
+ * @brief JSON processing functions for JSON sets
+ *
+ * @defgroup meos_json_base_jsonpath JSON path functions
+ * @ingroup meos_json_base
+ * @brief JSON path functions for static JSON types
+ */

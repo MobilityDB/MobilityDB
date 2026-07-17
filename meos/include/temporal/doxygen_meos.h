@@ -166,9 +166,29 @@
  * @brief Functions for static, set, box, and temporal pgpointcloud types
  *   (pcpoint, pcpatch, pcpointset, pcpatchset, tpcbox, tpcpoint, tpcpatch)
  *
+ * @defgroup meos_h3 Functions for temporal H3 cell indices
+ * @ingroup meos_api
+ * @brief Functions for temporal H3 cell indices
+ *
+ * @defgroup meos_quadbin Functions for temporal CARTO QUADBIN cell indices
+ * @ingroup meos_api
+ * @brief Functions for temporal CARTO QUADBIN cell indices
+ *
+ * @defgroup meos_cellindex Functions for temporal cell indices
+ * @ingroup meos_api
+ * @brief Functions for temporal cell indices common to H3 and QUADBIN
+ *
+ * @defgroup meos_raster Functions for temporal rasters
+ * @ingroup meos_api
+ * @brief Functions for temporal rasters
+ *
  * @defgroup meos_misc Miscellaneous functions
  * @ingroup meos_api
  * @brief Miscellaneous functions
+ *
+ * @defgroup meos_setup Setup functions
+ * @ingroup meos_api
+ * @brief Setup functions
  */
 
 /*****************************************************************************/
@@ -388,3 +408,13 @@
  */
 
 /*****************************************************************************/
+
+/**
+ * @defgroup meos_temporal_box_index Index functions
+ * @ingroup meos_temporal
+ * @brief Index functions for temporal types
+ *
+ * @defgroup meos_temporal_spatial_rel_ever Ever/always spatial relationship functions
+ * @ingroup meos_temporal
+ * @brief Ever/always spatial relationship functions for temporal types
+ */

@@ -154,3 +154,13 @@
  */
 
 /*****************************************************************************/
+
+/**
+ * @defgroup meos_cbuffer_box Box functions
+ * @ingroup meos_cbuffer
+ * @brief Box functions for temporal circular buffers
+ *
+ * @defgroup meos_cbuffer_spatial_accessor Spatial accessor functions
+ * @ingroup meos_cbuffer
+ * @brief Spatial accessor functions for temporal circular buffers
+ */

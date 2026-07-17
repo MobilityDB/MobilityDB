@@ -705,7 +705,7 @@ cbuffer_to_stbox(const Cbuffer *cb)
  *****************************************************************************/
 
 /**
- * @ingroup meos_internal_base_accessor
+ * @ingroup meos_internal_cbuffer_base_accessor
  * @brief Return a pointer to the point of a circular buffer
  * @param[in] cb Circular buffer
  * @csqlfn #Cbuffer_point()

@@ -134,3 +134,13 @@
  */
 
 /*****************************************************************************/
+
+/**
+ * @defgroup meos_npoint_constructor Constructor functions
+ * @ingroup meos_npoint
+ * @brief Constructor functions for temporal network points
+ *
+ * @defgroup meos_npoint_base_bbox Bounding box functions
+ * @ingroup meos_npoint_base
+ * @brief Bounding box functions for static network points
+ */

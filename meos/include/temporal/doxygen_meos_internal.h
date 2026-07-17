@@ -255,3 +255,21 @@
  */
 
 /*****************************************************************************/
+
+/**
+ * @defgroup meos_internal_setspan_bin Bin functions
+ * @ingroup meos_internal_setspan
+ * @brief Bin functions for set and span types
+ *
+ * @defgroup meos_internal_box_accessor Accessor functions
+ * @ingroup meos_internal_box
+ * @brief Accessor functions for temporal boxes
+ *
+ * @defgroup meos_internal_temporal_tile Tile functions
+ * @ingroup meos_internal_temporal
+ * @brief Tile functions for temporal types
+ *
+ * @defgroup meos_internal_temporal_analytics_tile Tile functions
+ * @ingroup meos_internal_temporal
+ * @brief Tile functions for temporal analytics
+ */

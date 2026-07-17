@@ -86,3 +86,9 @@
 
 /*****************************************************************************/
 
+
+/**
+ * @defgroup mobilitydb_json_jsonbset Set functions
+ * @ingroup mobilitydb_json
+ * @brief Set functions for JSON sets
+ */

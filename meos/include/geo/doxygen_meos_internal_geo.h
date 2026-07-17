@@ -234,3 +234,9 @@
  */
 
 /*****************************************************************************/
+
+/**
+ * @defgroup meos_internal_geo_spatial_rel_ever Ever/always relationship functions
+ * @ingroup meos_internal_geo
+ * @brief Ever/always spatial relationship functions for temporal geometries
+ */
