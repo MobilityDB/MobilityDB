@@ -183,6 +183,12 @@ CREATE FUNCTION tint(tjsonb, text, null_handle text DEFAULT 'raise_exception')
   AS 'MODULE_PATHNAME', 'Tjsonb_to_tint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION tbigint(tjsonb, text,
+    null_handle text DEFAULT 'raise_exception')
+  RETURNS tbigint
+  AS 'MODULE_PATHNAME', 'Tjsonb_to_tbigint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION tfloat(tjsonb, text, interp text DEFAULT 'linear',
     null_handle text DEFAULT 'raise_exception')
   RETURNS tfloat

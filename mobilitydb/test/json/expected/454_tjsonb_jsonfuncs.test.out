@@ -392,6 +392,30 @@ SELECT tint(tjsonb '"{\"a\":\"1\", \"b\":2.5}"@2001-01-01', text 'a');
  1@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
+SELECT tbigint(tjsonb '"{\"a\":true, \"b\":2.5}"@2001-01-01', text 'a');
+            tbigint             
+--------------------------------
+ 1@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT tbigint(tjsonb '"{\"a\":1, \"b\":2.5}"@2001-01-01', text 'a');
+            tbigint             
+--------------------------------
+ 1@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT tbigint(tjsonb '"{\"a\":1, \"b\":2.5}"@2001-01-01', text 'b');
+            tbigint             
+--------------------------------
+ 2@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT tbigint(tjsonb '"{\"a\":\"1\", \"b\":2.5}"@2001-01-01', text 'a');
+            tbigint             
+--------------------------------
+ 1@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
 SELECT tfloat(tjsonb '"{\"a\":true, \"b\":2.5}"@2001-01-01', text 'a');
              tfloat             
 --------------------------------

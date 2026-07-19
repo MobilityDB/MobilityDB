@@ -913,22 +913,22 @@ Tjsonb_insert(PG_FUNCTION_ARGS)
 
 /**
  * @brief Convert a temporal JSONB value into a temporal alphanumeric type
- * @sqlfn tjsonb_to_tint()
  */
-Datum
-Tjsonb_to_talphanum(FunctionCallInfo fcinfo, MeosType restype)
+static Datum
+Tjsonb_to_talphanum(FunctionCallInfo fcinfo, MeosType restype, bool hasinterp)
 {
   /* Input arguments */
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   text *key_text = PG_GETARG_TEXT_PP(1);
   char *key = pg_text_to_cstring(key_text);
   interpType interp = temptype_supports_linear(restype) ? LINEAR : STEP;
-  if (restype == T_TFLOAT)
+  int argno = 2;
+  if (hasinterp)
   {
     if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
       interp = input_interp_string(fcinfo, 2);
+    argno++;
   }
-  int argno = (restype == T_TFLOAT) ? 3 : 2;
   /* NULL_JSON_NULL cannot be used for obtaining temporal alphanumeric values */
   nullHandleType null_handle = NULL_RETURN; 
   if (PG_NARGS() > argno && ! PG_ARGISNULL(argno))
@@ -961,7 +961,7 @@ PG_FUNCTION_INFO_V1(Tjsonb_to_tbool);
 Datum
 Tjsonb_to_tbool(PG_FUNCTION_ARGS)
 {
-  return Tjsonb_to_talphanum(fcinfo, T_TBOOL);
+  return Tjsonb_to_talphanum(fcinfo, T_TBOOL, false);
 }
 
 PGDLLEXPORT Datum Tjsonb_to_tint(PG_FUNCTION_ARGS);
@@ -974,7 +974,20 @@ PG_FUNCTION_INFO_V1(Tjsonb_to_tint);
 Datum
 Tjsonb_to_tint(PG_FUNCTION_ARGS)
 {
-  return Tjsonb_to_talphanum(fcinfo, T_TINT);
+  return Tjsonb_to_talphanum(fcinfo, T_TINT, false);
+}
+
+PGDLLEXPORT Datum Tjsonb_to_tbigint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tjsonb_to_tbigint);
+/**
+ * @ingroup mobilitydb_json_json
+ * @brief Convert a temporal JSONB value into a temporal big integer
+ * @sqlfn tbigint()
+ */
+Datum
+Tjsonb_to_tbigint(PG_FUNCTION_ARGS)
+{
+  return Tjsonb_to_talphanum(fcinfo, T_TBIGINT, false);
 }
 
 PGDLLEXPORT Datum Tjsonb_to_tfloat(PG_FUNCTION_ARGS);
@@ -987,7 +1000,7 @@ PG_FUNCTION_INFO_V1(Tjsonb_to_tfloat);
 Datum
 Tjsonb_to_tfloat(PG_FUNCTION_ARGS)
 {
-  return Tjsonb_to_talphanum(fcinfo, T_TFLOAT);
+  return Tjsonb_to_talphanum(fcinfo, T_TFLOAT, true);
 }
 
 PGDLLEXPORT Datum Tjsonb_to_ttext_key(PG_FUNCTION_ARGS);
@@ -1000,7 +1013,7 @@ PG_FUNCTION_INFO_V1(Tjsonb_to_ttext_key);
 Datum
 Tjsonb_to_ttext_key(PG_FUNCTION_ARGS)
 {
-  return Tjsonb_to_talphanum(fcinfo, T_TTEXT);
+  return Tjsonb_to_talphanum(fcinfo, T_TTEXT, false);
 }
 
 /*****************************************************************************/

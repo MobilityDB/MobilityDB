@@ -128,6 +128,12 @@ SELECT tint(tjsonb '"{\"a\":true, \"b\":2.5}"@2001-01-01', text 'a');
 SELECT tint(tjsonb '"{\"a\":1, \"b\":2.5}"@2001-01-01', text 'a');
 SELECT tint(tjsonb '"{\"a\":1, \"b\":2.5}"@2001-01-01', text 'b');
 SELECT tint(tjsonb '"{\"a\":\"1\", \"b\":2.5}"@2001-01-01', text 'a');
+
+SELECT tbigint(tjsonb '"{\"a\":true, \"b\":2.5}"@2001-01-01', text 'a');
+SELECT tbigint(tjsonb '"{\"a\":1, \"b\":2.5}"@2001-01-01', text 'a');
+SELECT tbigint(tjsonb '"{\"a\":1, \"b\":2.5}"@2001-01-01', text 'b');
+SELECT tbigint(tjsonb '"{\"a\":\"1\", \"b\":2.5}"@2001-01-01', text 'a');
+
 SELECT tfloat(tjsonb '"{\"a\":true, \"b\":2.5}"@2001-01-01', text 'a');
 SELECT tfloat(tjsonb '"{\"a\":1, \"b\":2.5}"@2001-01-01', text 'a');
 SELECT tfloat(tjsonb '"{\"a\":1, \"b\":2.5}"@2001-01-01', text 'b');
