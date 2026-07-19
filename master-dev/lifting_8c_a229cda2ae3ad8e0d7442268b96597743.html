@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: tfunc_base</title>
+<title>MobilityDB: lfunc_set</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -105,11 +105,12 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="lifting_8c_a16a1035f91bbb38bf1728b5186565f4f.html#a16a1035f91bbb38bf1728b5186565f4f">eafunc_tsequenceset_tsequenceset</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="lifting_8c_a8dbe7fa30dbdfe3811bb935a7c8e30f2.html#a8dbe7fa30dbdfe3811bb935a7c8e30f2">eafunc_tstepseq_tstepseq</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="lifting_8c_a6062383f8d0ce21baf95117cd172ac3b.html#a6062383f8d0ce21baf95117cd172ac3b">lfinfo_invert_args</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="lifting_8c_afb9c9053a1f45e08c73b1a83b2e4200f.html#afb9c9053a1f45e08c73b1a83b2e4200f">lfunc_base</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="lifting_8c_a229cda2ae3ad8e0d7442268b96597743.html#a229cda2ae3ad8e0d7442268b96597743">lfunc_set</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="lifting_8c_a182f4c8ded55cbbba78d8e763e8a09c5.html#a182f4c8ded55cbbba78d8e763e8a09c5">MEOS_ADAPTIVE_MAX_DEPTH</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="lifting_8c_a867cba3feb0d079a4067ab1c29166ee4.html#a867cba3feb0d079a4067ab1c29166ee4">MEOS_ADAPTIVE_TOL</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="lifting_8c_a3618c0b423d69864e1395aa89eb9849a.html#a3618c0b423d69864e1395aa89eb9849a">tfunc_adaptive_bisect</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="lifting_8c_a1b7752c97787fb625596370e02d77ef9.html#a1b7752c97787fb625596370e02d77ef9">tfunc_adaptive_emit</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="lifting_8c_ae6096ecea7a7b704fe0961e4eb7810dc.html#ae6096ecea7a7b704fe0961e4eb7810dc">tfunc_base</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="lifting_8c_a8ad7e00b5054146a1cc3c833da3a19ee.html#a8ad7e00b5054146a1cc3c833da3a19ee">tfunc_base_base</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="lifting_8c_a2ad798b6aafd78561ebd3c22d7cc94bc.html#a2ad798b6aafd78561ebd3c22d7cc94bc">tfunc_tcontseq_tcontseq</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="lifting_8c_a92ce54a762f9de14d684190969f48fb4.html#a92ce54a762f9de14d684190969f48fb4">tfunc_tcontseq_tcontseq_discfn</a></td></tr>
@@ -150,20 +151,17 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ae6096ecea7a7b704fe0961e4eb7810dc" name="ae6096ecea7a7b704fe0961e4eb7810dc"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae6096ecea7a7b704fe0961e4eb7810dc">&#9670;&#160;</a></span>tfunc_base()</h2>
+<a id="a229cda2ae3ad8e0d7442268b96597743" name="a229cda2ae3ad8e0d7442268b96597743"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a229cda2ae3ad8e0d7442268b96597743">&#9670;&#160;</a></span>lfunc_set()</h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static <a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> tfunc_base </td>
+          <td class="memname"><a class="el" href="structSet.html">Set</a> * lfunc_set </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td>
-          <td class="paramname"><em>value</em>, </td>
+          <td class="paramtype">const <a class="el" href="structSet.html">Set</a> *&#160;</td>
+          <td class="paramname"><em>set</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -177,15 +175,7 @@ $(function() {
           <td></td><td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
-
-<p>Apply the variadic function with the optional arguments to a base value. </p>
-<dl class="section note"><dt>Note</dt><dd>We must cast the function pointer to a fixed-parameter function pointer before calling it. See the note at the beginning of the file. </dd></dl>
 
 </div>
 </div>

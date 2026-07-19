@@ -119,7 +119,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2json_2tjsonb__jsonfuncs_8c_a40eb86584f9a0cbd5f478612a1bd8b02.html#a40eb86584f9a0cbd5f478612a1bd8b02">datum_jsonb_to_alphanum</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2json_2tjsonb__jsonfuncs_8c_a8d1dbedfc51bbb0652208c672a479edb.html#a8d1dbedfc51bbb0652208c672a479edb">datum_jsonb_to_text</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2json_2tjsonb__jsonfuncs_8c_ae5bffde207b060047a79d437b5ff3e91.html#ae5bffde207b060047a79d437b5ff3e91">datum_text_to_jsonb</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2json_2tjsonb__jsonfuncs_8c_a76af4a3c86ca9705106da8f0f6b69e6b.html#a76af4a3c86ca9705106da8f0f6b69e6b">jsonb_to_alphanum</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2json_2tjsonb__jsonfuncs_8c_ad8e9b3808b784b2dfca6bb56eaa16c07.html#ad8e9b3808b784b2dfca6bb56eaa16c07">jsonb_to_alphanum</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2json_2tjsonb__jsonfuncs_8c_acb41d479015a6e5f6d4fbf7e424c5c01.html#acb41d479015a6e5f6d4fbf7e424c5c01">MEOS_NULLHANDLETYPE_NAMES</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__json__json_gaa84c514c05bac5f749a875da390f6540.html#gaa84c514c05bac5f749a875da390f6540">null_handle_type_from_string</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2json_2tjsonb__jsonfuncs_8c_a4481f3d21c5c5658d60ba8a60897cfaa.html#a4481f3d21c5c5658d60ba8a60897cfaa">NULLHANDLING_STR_MAXLEN</a></td></tr>
@@ -147,6 +147,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__json__json_ga5fbf02b1e72fa8398fcfa0610169be64.html#ga5fbf02b1e72fa8398fcfa0610169be64">tjsonb_set</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__json__json_gaba23572115c90f4ac82f7f343014d332.html#gaba23572115c90f4ac82f7f343014d332">tjsonb_strip_nulls</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2json_2tjsonb__jsonfuncs_8c_a5492d31ea3260965c194fc5472ae6ad1.html#a5492d31ea3260965c194fc5472ae6ad1">tjsonb_to_talphanum</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__json__json_gacd678a33ebedbef43eb1770cc759502a.html#gacd678a33ebedbef43eb1770cc759502a">tjsonb_to_tbigint</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__json__json_ga21bf8edafc075b976d579ca3ed597d04.html#ga21bf8edafc075b976d579ca3ed597d04">tjsonb_to_tbool</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__json__json_ga8288fb7dc1e6d94c009db111f685c76b.html#ga8288fb7dc1e6d94c009db111f685c76b">tjsonb_to_tfloat</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__json__json_ga74ba88ca39a3d9f24c905aaedf5f3eb0.html#ga74ba88ca39a3d9f24c905aaedf5f3eb0">tjsonb_to_tint</a></td></tr>
@@ -155,14 +156,17 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a76af4a3c86ca9705106da8f0f6b69e6b" name="a76af4a3c86ca9705106da8f0f6b69e6b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a76af4a3c86ca9705106da8f0f6b69e6b">&#9670;&#160;</a></span>jsonb_to_alphanum()</h2>
+<a id="ad8e9b3808b784b2dfca6bb56eaa16c07" name="ad8e9b3808b784b2dfca6bb56eaa16c07"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad8e9b3808b784b2dfca6bb56eaa16c07">&#9670;&#160;</a></span>jsonb_to_alphanum()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> jsonb_to_alphanum </td>
+          <td class="memname">static <a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> jsonb_to_alphanum </td>
           <td>(</td>
           <td class="paramtype">const Jsonb *&#160;</td>
           <td class="paramname"><em>jb</em>, </td>
@@ -191,6 +195,11 @@ $(function() {
           <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Convert a JSONB value into a base alphanumeric value. </p>
