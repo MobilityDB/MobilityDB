@@ -122,14 +122,15 @@
  *   Datum resvalue;
  *   if (lfinfo->numparam == 0)
  *   {
- *     datum_func1 noParamFunc = (datum_func1)(*lfinfo->func);
- *     resvalue = noParamFunc(temporalinst_value(inst));
+ *     datum_func1 func1 = (datum_func1)(*lfinfo->func);
+ *     resvalue = func1(temporalinst_value(inst));
  *   }
  *   else if (lfinfo->numparam == 1)
  *   {
- *     datum_func2 oneParamFunc = (datum_func2)(*lfinfo->func);
- *     resvalue = oneParamFunc(temporalinst_value(inst), lfinfo->param[0]);
+ *     datum_func2 func2 = (datum_func2)(*lfinfo->func);
+ *     resvalue = func2(temporalinst_value(inst), lfinfo->param[0]);
  *   }
+ *   [...]
  *   else
  *   {
  *     meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
@@ -183,13 +184,6 @@
 #include <meos_internal.h>
 #if JSON
   #include <meos_json.h>
-/* Forward declarations for the JSON null-result lifting functions */
-static Datum lfunc_base(Datum value, LiftedFunctionInfo *lfinfo);
-extern TSequence *lfunc_null_tdiscseq(const TSequence *seq, LiftedFunctionInfo *lfinfo);
-extern int lfunc_null_tcontseq_iter(const TSequence *seq, LiftedFunctionInfo *lfinfo, TSequence **result);
-extern TSequenceSet *lfunc_null_tcontseq(const TSequence *seq, LiftedFunctionInfo *lfinfo);
-extern Temporal *lfunc_null_tsequence(const TSequence *seq, LiftedFunctionInfo *lfinfo);
-extern TSequenceSet *lfunc_null_tsequenceset(const TSequenceSet *ss, LiftedFunctionInfo *lfinfo);
 #endif
 #include "temporal/temporal_restrict.h"
 #include "temporal/tsequence.h"
@@ -197,59 +191,159 @@ extern TSequenceSet *lfunc_null_tsequenceset(const TSequenceSet *ss, LiftedFunct
 #include "temporal/type_util.h"
 #include "geo/tgeo_spatialfuncs.h"
 
+#if JSON
+  /* Forward declarations for the JSON null-result lifting functions */
+  extern Temporal *tfunc_null_tsequence(const TSequence *seq, LiftedFunctionInfo *lfinfo);
+  extern TSequenceSet *tfunc_null_tsequenceset(const TSequenceSet *ss, LiftedFunctionInfo *lfinfo);
+#endif
+
 /*****************************************************************************
- * Functions where the argument is a temporal type.
- * The function is applied to the composing instants.
+ * Functions where the argument is a base type
  *****************************************************************************/
 
 /**
  * @brief Apply the variadic function with the optional arguments to a base
  * value
- * @note We must cast the function pointer to a fixed-parameter function pointer
- * before calling it. See the note at the beginning of the file.
+ * @note We must cast the function pointer to a fixed-parameter function
+ * pointer before calling it. See the note at the beginning of the file.
  */
 static Datum
-tfunc_base(Datum value, LiftedFunctionInfo *lfinfo)
+lfunc_base(Datum value, LiftedFunctionInfo *lfinfo)
 {
   /* Lifted functions may have from 0 to MAX_PARAMS parameters */
   assert(lfinfo->numparam >= 0 && lfinfo->numparam <= MAX_PARAMS);
   if (lfinfo->numparam == 0)
   {
-    datum_func1 noParamFunc = (datum_func1)(*lfinfo->func);
-    return noParamFunc(value);
+    datum_func1 func1 = (datum_func1)(*lfinfo->func);
+    return func1(value);
   }
   else if (lfinfo->numparam == 1)
   {
-    datum_func2 oneParamFunc = (datum_func2)(*lfinfo->func);
-    return oneParamFunc(value, lfinfo->param[0]);
+    datum_func2 func2 = (datum_func2)(*lfinfo->func);
+    return func2(value, lfinfo->param[0]);
   }
 #if JSON
   else if (lfinfo->numparam == 2)
   {
-    datum_func3 func = (datum_func3)(*lfinfo->func);
-    return func(value, lfinfo->param[0], lfinfo->param[1]);
+    datum_func3 func3 = (datum_func3)(*lfinfo->func);
+    return func3(value, lfinfo->param[0], lfinfo->param[1]);
   }
   else if (lfinfo->numparam == 3)
   {
-    datum_func4 func = (datum_func4)(*lfinfo->func);
-    return func(value, lfinfo->param[0], lfinfo->param[1],
+    datum_func4 func4 = (datum_func4)(*lfinfo->func);
+    return func4(value, lfinfo->param[0], lfinfo->param[1],
       lfinfo->param[2]);
   }
   else if (lfinfo->numparam == 4)
   {
-    datum_func5 func = (datum_func5)(*lfinfo->func);
-    return func(value, lfinfo->param[0], lfinfo->param[1], lfinfo->param[2],
+    datum_func5 func5 = (datum_func5)(*lfinfo->func);
+    return func5(value, lfinfo->param[0], lfinfo->param[1], lfinfo->param[2],
       lfinfo->param[3]);
   }
   else if (lfinfo->numparam == 5)
   {
-    datum_func6 func = (datum_func6)(*lfinfo->func);
-    return func(value, lfinfo->param[0], lfinfo->param[1], lfinfo->param[2],
+    datum_func6 func6 = (datum_func6)(*lfinfo->func);
+    return func6(value, lfinfo->param[0], lfinfo->param[1], lfinfo->param[2],
       lfinfo->param[3], lfinfo->param[4]);
   }
 #endif /* JSON */
   return 0;
 }
+
+/*****************************************************************************
+ * Functions where the argument is a set type.
+ * The function is applied to the composing elements.
+ *****************************************************************************/
+
+Set *
+lfunc_set(const Set *set, LiftedFunctionInfo *lfinfo)
+{
+  assert(set); assert(lfinfo); 
+  MeosType basetype = settype_basetype(lfinfo->restype);
+  bool typbyval = basetype_byvalue(basetype);
+  Datum *values = palloc(sizeof(Datum) * set->count);
+  int count = 0;
+  for (int i = 0; i < set->count; i++)
+  {
+    Datum resvalue = lfunc_base(SET_VAL_N(set, i), lfinfo);
+    /* If the function does not return NULL */
+    if (! lfinfo->resnull)
+    {
+      /* A non-byvalue result that is unexpectedly NULL means the lifted
+       * function failed without flagging resnull (e.g. it raised a non-fatal
+       * meos_error and returned NULL); abort cleanly instead of feeding a
+       * NULL element to set_make. */
+      if (! typbyval && ! resvalue)
+      {
+        for (int j = 0; j < count; j++)
+          DATUM_FREE(values[j], basetype);
+        pfree(values);
+        return NULL;
+      }
+      values[count++] = resvalue;
+    }
+    else
+    {
+      /* Check if resulting value is a value error or a NULL pointer */
+      if ((! typbyval && ! resvalue) ||
+          (typbyval && datum_eq(resvalue, lfinfo->reserror, basetype)))
+#if JSON
+      {
+        if (lfinfo->resnull == NULL_JSON_NULL)
+        {
+          const char *str = "null";
+          values[count++] = (lfinfo->restype == T_TEXTSET) ? 
+            PointerGetDatum(text_in(str)) : 
+            PointerGetDatum(pg_jsonb_in(str));
+        }
+        else if (lfinfo->resnull == NULL_DELETE)
+        {
+          /* Nothing to do, ignore the value */
+        }
+        else
+        {
+          if (lfinfo->resnull == NULL_ERROR)
+          {
+            meos_error(ERROR, MEOS_ERR_NULL_RESULT,
+              "The lifted operation returned NULL");
+          }
+          /* For both NULL_ERROR and NULL_RETURN */
+          for (int j = 0; j < count; j++)
+            DATUM_FREE(values[j], basetype);
+          pfree(values);
+          return NULL;
+        }
+      }
+      else
+        values[count++] = resvalue;
+#else
+    return NULL;
+#endif /* JSON */
+    }
+  }
+  /* A path query matching nothing (or every element deleted via NULL_DELETE)
+   * leaves no values; sets must be non-empty, so there is no result. */
+  if (count == 0)
+  {
+    pfree(values);
+    return NULL;
+  }
+  /* set_make_exp copies the element data into the set inline; the per-element
+   * results are freshly computed (owned -- the error paths above DATUM_FREE
+   * them), so free the by-reference ones here. set_make_free would free only
+   * the array, leaking the values. */
+  Set *result = set_make_exp(values, count, count, basetype, ORDER);
+  if (! typbyval)
+    for (int i = 0; i < count; i++)
+      DATUM_FREE(values[i], basetype);
+  pfree(values);
+  return result;
+}
+
+/*****************************************************************************
+ * Functions where the argument is a temporal type.
+ * The function is applied to the composing instants.
+ *****************************************************************************/
 
 /**
  * @brief Apply a lifted function with the optional arguments to a temporal
@@ -260,8 +354,8 @@ tfunc_base(Datum value, LiftedFunctionInfo *lfinfo)
 TInstant *
 tfunc_tinstant(const TInstant *inst, LiftedFunctionInfo *lfinfo)
 {
-#if JSON
   Datum resvalue = lfunc_base(tinstant_value_p(inst), lfinfo);
+#if JSON
   MeosType basetype = temptype_basetype(lfinfo->restype);
   bool typbyval = basetype_byvalue(basetype);
   /* If we must check NULLs, check if the resulting value is an error or a
@@ -275,14 +369,8 @@ tfunc_tinstant(const TInstant *inst, LiftedFunctionInfo *lfinfo)
     resvalue = (lfinfo->restype == T_TTEXT) ?
       PointerGetDatum(pg_json_in(str)) : PointerGetDatum(pg_jsonb_in(str));
   }
-  /* Free the per-instant result after the instant copies it (the non-JSON
-   * branch below does the same via tinstant_make_free) -- otherwise every
-   * lifted jsonb/text per-instant value leaks. */
-  return tinstant_make_free(resvalue, lfinfo->restype, inst->t);
-#else
-  Datum resvalue = tfunc_base(tinstant_value_p(inst), lfinfo);
-  return tinstant_make_free(resvalue, lfinfo->restype, inst->t);
 #endif /* JSON */
+  return tinstant_make_free(resvalue, lfinfo->restype, inst->t);
 }
 
 /*****************************************************************************
@@ -396,7 +484,7 @@ tfunc_adaptive_bisect(Datum value1, Datum value2, TimestampTz t1,
     /* The argument barely moves across [t1, t2], so the lifted chord is a
      * good approximation: emit only the segment endpoint t2 (t1 was emitted
      * by the caller). */
-    tfunc_adaptive_emit(tfunc_base(value2, lfinfo), lfinfo->restype, t2, buf,
+    tfunc_adaptive_emit(lfunc_base(value2, lfinfo), lfinfo->restype, t2, buf,
       buf_n, buf_cap);
     return;
   }
@@ -437,7 +525,7 @@ tfunc_tlinearseq_adaptive(const TSequence *seq, LiftedFunctionInfo *lfinfo)
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
   Datum value1 = tinstant_value_p(inst1);
   /* Emit the first instant */
-  tfunc_adaptive_emit(tfunc_base(value1, lfinfo), lfinfo->restype, inst1->t,
+  tfunc_adaptive_emit(lfunc_base(value1, lfinfo), lfinfo->restype, inst1->t,
     &instants, &ninsts, &buf_cap);
   for (int i = 1; i < seq->count; i++)
   {
@@ -445,7 +533,7 @@ tfunc_tlinearseq_adaptive(const TSequence *seq, LiftedFunctionInfo *lfinfo)
     Datum value2 = tinstant_value_p(inst2);
     if (datum_eq(value1, value2, basetype))
       /* Constant segment: just emit the endpoint */
-      tfunc_adaptive_emit(tfunc_base(value2, lfinfo), lfinfo->restype,
+      tfunc_adaptive_emit(lfunc_base(value2, lfinfo), lfinfo->restype,
         inst2->t, &instants, &ninsts, &buf_cap);
     else
       tfunc_adaptive_bisect(value1, value2, inst1->t, inst2->t,
@@ -471,7 +559,7 @@ tfunc_tlinearseq_adaptive(const TSequence *seq, LiftedFunctionInfo *lfinfo)
 static TSequence *
 tfunc_tlinearseq_turnpt(const TSequence *seq, LiftedFunctionInfo *lfinfo)
 {
-  MeosType basetype    = temptype_basetype(seq->temptype);
+  MeosType basetype = temptype_basetype(seq->temptype);
   MeosType resbasetype = temptype_basetype(lfinfo->restype);
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count * 3);
   int ninsts = 0;
@@ -492,14 +580,14 @@ tfunc_tlinearseq_turnpt(const TSequence *seq, LiftedFunctionInfo *lfinfo)
       {
         Datum tpvalue = tsegment_value_at_timestamptz(value1, value2,
           inst1->temptype, inst1->t, inst2->t, tpt1);
-        Datum res = tfunc_base(tpvalue, lfinfo);
+        Datum res = lfunc_base(tpvalue, lfinfo);
         instants[ninsts++] = tinstant_make(res, lfinfo->restype, tpt1);
         DATUM_FREE(tpvalue, basetype); DATUM_FREE(res, resbasetype);
         if (found > 1)
         {
           tpvalue = tsegment_value_at_timestamptz(value1, value2,
             inst1->temptype, inst1->t, inst2->t, tpt2);
-          res = tfunc_base(tpvalue, lfinfo);
+          res = lfunc_base(tpvalue, lfinfo);
           instants[ninsts++] = tinstant_make(res, lfinfo->restype, tpt2);
           DATUM_FREE(tpvalue, basetype); DATUM_FREE(res, resbasetype);
         }
@@ -538,7 +626,7 @@ tfunc_tlinearseq_set(const TSequence *seq, LiftedFunctionInfo *lfinfo)
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
   Datum value1 = tinstant_value_p(inst1);
   /* Emit the first instant */
-  tfunc_adaptive_emit(tfunc_base(value1, lfinfo), lfinfo->restype, inst1->t,
+  tfunc_adaptive_emit(lfunc_base(value1, lfinfo), lfinfo->restype, inst1->t,
     &instants, &ninsts, &buf_cap);
   for (int i = 1; i < seq->count; i++)
   {
@@ -553,7 +641,7 @@ tfunc_tlinearseq_set(const TSequence *seq, LiftedFunctionInfo *lfinfo)
       {
         Datum tpvalue = tsegment_value_at_timestamptz(value1, value2,
           inst1->temptype, inst1->t, inst2->t, tps[j]);
-        tfunc_adaptive_emit(tfunc_base(tpvalue, lfinfo), lfinfo->restype,
+        tfunc_adaptive_emit(lfunc_base(tpvalue, lfinfo), lfinfo->restype,
           tps[j], &instants, &ninsts, &buf_cap);
         DATUM_FREE(tpvalue, basetype);
       }
@@ -561,7 +649,7 @@ tfunc_tlinearseq_set(const TSequence *seq, LiftedFunctionInfo *lfinfo)
         pfree(tps);
     }
     /* Emit the segment endpoint */
-    tfunc_adaptive_emit(tfunc_base(value2, lfinfo), lfinfo->restype, inst2->t,
+    tfunc_adaptive_emit(lfunc_base(value2, lfinfo), lfinfo->restype, inst2->t,
       &instants, &ninsts, &buf_cap);
     inst1 = inst2;
     value1 = value2;
@@ -625,7 +713,7 @@ tfunc_tsequenceset(const TSequenceSet *ss, LiftedFunctionInfo *lfinfo)
 #if JSON
   /* If the function may return NULL */
   if (lfinfo->resnull)
-    return lfunc_null_tsequenceset(ss, lfinfo);
+    return tfunc_null_tsequenceset(ss, lfinfo);
 #endif /* JSON */
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
@@ -649,7 +737,7 @@ tfunc_temporal(const Temporal *temp, LiftedFunctionInfo *lfinfo)
     case TSEQUENCE:
 #if JSON
       return lfinfo->resnull ?
-        (Temporal *) lfunc_null_tsequence((TSequence *) temp, lfinfo) :
+        (Temporal *) tfunc_null_tsequence((TSequence *) temp, lfinfo) :
         (Temporal *) tfunc_tsequence((TSequence *) temp, lfinfo);
 #else
       return (Temporal *) tfunc_tsequence((TSequence *) temp, lfinfo);
@@ -677,16 +765,15 @@ tfunc_base_base(Datum value1, Datum value2, LiftedFunctionInfo *lfinfo)
   assert(lfinfo->numparam >= 0 && lfinfo->numparam <= MAX_PARAMS);
   if (lfinfo->numparam == 0)
   {
-    datum_func2 noParamFunc = (datum_func2)(*lfinfo->func);
-    return lfinfo->invert ?
-      noParamFunc(value2, value1) : noParamFunc(value1, value2);
+    datum_func2 func2 = (datum_func2)(*lfinfo->func);
+    return lfinfo->invert ? func2(value2, value1) : func2(value1, value2);
   }
   else /* if (lfinfo->numparam == 1) */
   {
-    datum_func3 oneParamFunc = (datum_func3)(*lfinfo->func);
+    datum_func3 func3 = (datum_func3)(*lfinfo->func);
     return lfinfo->invert ?
-      oneParamFunc(value2, value1, lfinfo->param[0]) :
-      oneParamFunc(value1, value2, lfinfo->param[0]);
+      func3(value2, value1, lfinfo->param[0]) :
+      func3(value1, value2, lfinfo->param[0]);
   }
 }
 
@@ -3072,8 +3159,10 @@ eafunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
   }
 }
 
-/*****************************************************************************/
-
+/*****************************************************************************
+ * The following functions are only allowed for JSON since currently it is
+ * the only base type that can produce null values on input
+ *****************************************************************************/
 #if JSON
 /**
  * @brief Apply a lifted function to a temporal sequence with discrete
@@ -3082,7 +3171,7 @@ eafunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
  * @param[in] lfinfo Information about the lifted function
  */
 TSequence *
-lfunc_null_tdiscseq(const TSequence *seq, LiftedFunctionInfo *lfinfo)
+tfunc_null_tdiscseq(const TSequence *seq, LiftedFunctionInfo *lfinfo)
 {
   assert(seq); assert(lfinfo);
   assert(MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE);
@@ -3096,24 +3185,24 @@ lfunc_null_tdiscseq(const TSequence *seq, LiftedFunctionInfo *lfinfo)
       instants[count++] = inst;
     else
     {
-      if (lfinfo->resnull == NULL_ERROR)
-      {
-        meos_error(ERROR, MEOS_ERR_NULL_RESULT,
-          "The lifted operation returned NULL");
-        return NULL;
-      }
-      else if (lfinfo->resnull == NULL_RETURN)
-      {
-        for (int j = 0; j < count; j++)
-          pfree(instants[j]);
-        pfree(instants);
-        return NULL;
-      }
-      else if (lfinfo->resnull == NULL_DELETE)
+      if (lfinfo->resnull == NULL_DELETE)
       {
         /* This option is ONLY allowed for STEP interpolation */
         assert(MEOS_FLAGS_GET_INTERP(seq->flags) == STEP);
         /* Nothing to do, ignore the instant */
+      }
+      else
+      {
+        if (lfinfo->resnull == NULL_ERROR)
+        {
+          meos_error(ERROR, MEOS_ERR_NULL_RESULT,
+            "The lifted operation returned NULL");
+        }
+        /* For both NULL_ERROR and NULL_RETURN */
+        for (int j = 0; j < count; j++)
+          pfree(instants[j]);
+        pfree(instants);
+        return NULL;
       }
     }
   }
@@ -3133,7 +3222,7 @@ lfunc_null_tdiscseq(const TSequence *seq, LiftedFunctionInfo *lfinfo)
  * @note This function is called for each sequence of a temporal sequence set
  */
 int
-lfunc_null_tcontseq_iter(const TSequence *seq, LiftedFunctionInfo *lfinfo,
+tfunc_null_tcontseq_iter(const TSequence *seq, LiftedFunctionInfo *lfinfo,
   TSequence **result)
 {
   assert(seq); assert(lfinfo); assert(result);
@@ -3153,19 +3242,7 @@ lfunc_null_tcontseq_iter(const TSequence *seq, LiftedFunctionInfo *lfinfo,
       instants[ninsts++] = inst1;
     else
     {
-      if (lfinfo->resnull == NULL_ERROR)
-        meos_error(ERROR, MEOS_ERR_NULL_RESULT,
-          "The lifted operation returned NULL");
-      if (lfinfo->resnull == NULL_ERROR || lfinfo->resnull == NULL_RETURN)
-      {
-        for (int j = 0; j < ninsts; j++)
-          pfree(instants[j]);
-        pfree(instants);
-        for (int j = 0; j < nseqs; j++)
-          pfree(result[j]);
-        return 0;
-      }
-      else if (lfinfo->resnull == NULL_DELETE)
+      if (lfinfo->resnull == NULL_DELETE)
       {
         /* This option is ONLY allowed for STEP interpolation */
         assert(MEOS_FLAGS_GET_INTERP(seq->flags) == STEP);
@@ -3180,6 +3257,21 @@ lfunc_null_tcontseq_iter(const TSequence *seq, LiftedFunctionInfo *lfinfo,
             upper_inc, interp, NORMALIZE);
           ninsts = 0;
         }
+      }
+      else 
+      {
+        if (lfinfo->resnull == NULL_ERROR)
+        {
+          meos_error(ERROR, MEOS_ERR_NULL_RESULT,
+            "The lifted operation returned NULL");
+        }
+        /* For both NULL_ERROR and NULL_RETURN */
+        for (int j = 0; j < ninsts; j++)
+          pfree(instants[j]);
+        pfree(instants);
+        for (int j = 0; j < nseqs; j++)
+          pfree(result[j]);
+        return 0;
       }
     }
     lower_inc = true;
@@ -3206,7 +3298,7 @@ lfunc_null_tcontseq_iter(const TSequence *seq, LiftedFunctionInfo *lfinfo,
  * @param[in] lfinfo Information about the lifted function
  */
 TSequenceSet *
-lfunc_null_tcontseq(const TSequence *seq, LiftedFunctionInfo *lfinfo)
+tfunc_null_tcontseq(const TSequence *seq, LiftedFunctionInfo *lfinfo)
 {
   assert(seq); assert(lfinfo);
   assert(MEOS_FLAGS_GET_INTERP(seq->flags) != DISCRETE);
@@ -3217,7 +3309,7 @@ lfunc_null_tcontseq(const TSequence *seq, LiftedFunctionInfo *lfinfo)
       lfinfo->resnull == NULL_DELETE)
     maxseqs = (int) ceil((double) seq->count / 2.0);
   TSequence **sequences = palloc(sizeof(TSequence *) * maxseqs);
-  int count = lfunc_null_tcontseq_iter(seq, lfinfo, sequences);
+  int count = tfunc_null_tcontseq_iter(seq, lfinfo, sequences);
   return tsequenceset_make_free(sequences, count, NORMALIZE);
 }
 
@@ -3227,29 +3319,27 @@ lfunc_null_tcontseq(const TSequence *seq, LiftedFunctionInfo *lfinfo)
  * @param[in] lfinfo Information about the lifted function
  */
 Temporal *
-lfunc_null_tsequence(const TSequence *seq, LiftedFunctionInfo *lfinfo)
+tfunc_null_tsequence(const TSequence *seq, LiftedFunctionInfo *lfinfo)
 {
   assert(seq); assert(lfinfo); assert(lfinfo->resnull);
   /* The function may return NULL */
   return (MEOS_FLAGS_GET_INTERP(seq->flags) == DISCRETE) ?
-    (Temporal *) lfunc_null_tdiscseq(seq, lfinfo) :
-    (Temporal *) lfunc_null_tcontseq(seq, lfinfo);
+    (Temporal *) tfunc_null_tdiscseq(seq, lfinfo) :
+    (Temporal *) tfunc_null_tcontseq(seq, lfinfo);
   }
-#endif /* JSON */
 
-#if JSON
 /**
  * @brief Apply a lifted function to a temporal sequence set
  * @param[in] ss Temporal value
  * @param[in] lfinfo Information about the lifted function
  */
 TSequenceSet *
-lfunc_null_tsequenceset(const TSequenceSet *ss, LiftedFunctionInfo *lfinfo)
+tfunc_null_tsequenceset(const TSequenceSet *ss, LiftedFunctionInfo *lfinfo)
 {
   assert(ss); assert(lfinfo);
   /* Singleton sequence set */
   if (ss->count == 1)
-    return lfunc_null_tcontseq(TSEQUENCESET_SEQ_N(ss, 0), lfinfo);
+    return tfunc_null_tcontseq(TSEQUENCESET_SEQ_N(ss, 0), lfinfo);
 
   /* For step interpolation and NULL_DELETE we need the half of the count */
   int maxseqs = ss->totalcount;
@@ -3260,163 +3350,36 @@ lfunc_null_tsequenceset(const TSequenceSet *ss, LiftedFunctionInfo *lfinfo)
   int nseqs = 0;
   for (int i = 0; i < ss->count; i++)
   {
-    int count = lfunc_null_tcontseq_iter(TSEQUENCESET_SEQ_N(ss, i), lfinfo,
+    int count = tfunc_null_tcontseq_iter(TSEQUENCESET_SEQ_N(ss, i), lfinfo,
       &sequences[nseqs]);
     if (count)
       nseqs += count;
     else
     {
-      if (lfinfo->resnull == NULL_ERROR)
-        meos_error(ERROR, MEOS_ERR_NULL_RESULT,
-          "The lifted operation returned NULL");
-      if (lfinfo->resnull == NULL_ERROR || lfinfo->resnull == NULL_RETURN)
-      {
-        for (int j = 0; j < nseqs; j++)
-          pfree(sequences[j]);
-        pfree(sequences);
-        return NULL;
-      }
-      else if (lfinfo->resnull == NULL_DELETE)
+      if (lfinfo->resnull == NULL_DELETE)
       {
         /* This option is ONLY allowed for STEP interpolation */
         assert(MEOS_FLAGS_GET_INTERP(ss->flags) == STEP);
         /* Ignore the current sequence and continue with the next one */
       }
+      else
+      {
+        if (lfinfo->resnull == NULL_ERROR)
+        {
+          meos_error(ERROR, MEOS_ERR_NULL_RESULT,
+            "The lifted operation returned NULL");
+        }
+        /* For both NULL_ERROR and NULL_RETURN */
+        for (int j = 0; j < nseqs; j++)
+          pfree(sequences[j]);
+        pfree(sequences);
+        return NULL;
+      }
     }
   }
   return tsequenceset_make_free(sequences, nseqs, NORMALIZE);
 }
+
 #endif /* JSON */
 
-#if JSON
-static Datum
-lfunc_base(Datum value, LiftedFunctionInfo *lfinfo)
-{
-  /* Lifted functions may have from 0 to MAX_PARAMS parameters */
-  assert(lfinfo->numparam >= 0 && lfinfo->numparam <= MAX_PARAMS);
-  if (lfinfo->numparam == 0)
-  {
-    datum_func1 func = (datum_func1)(*lfinfo->func);
-    return func(value);
-  }
-  else if (lfinfo->numparam == 1)
-  {
-    datum_func2 func = (datum_func2)(*lfinfo->func);
-    return func(value, lfinfo->param[0]);
-  }
-#if JSON
-  else if (lfinfo->numparam == 2)
-  {
-    datum_func3 func = (datum_func3)(*lfinfo->func);
-    return func(value, lfinfo->param[0], lfinfo->param[1]);
-  }
-  else if (lfinfo->numparam == 3)
-  {
-    datum_func4 func = (datum_func4)(*lfinfo->func);
-    return func(value, lfinfo->param[0], lfinfo->param[1],
-      lfinfo->param[2]);
-  }
-  else if (lfinfo->numparam == 4)
-  {
-    datum_func5 func = (datum_func5)(*lfinfo->func);
-    return func(value, lfinfo->param[0], lfinfo->param[1], lfinfo->param[2],
-      lfinfo->param[3]);
-  }
-  else if (lfinfo->numparam == 5)
-  {
-    datum_func6 func = (datum_func6)(*lfinfo->func);
-    return func(value, lfinfo->param[0], lfinfo->param[1], lfinfo->param[2],
-      lfinfo->param[3], lfinfo->param[4]);
-  }
-#endif /* JSON */
-  /* Should NEVER happen*/
-  meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
-    "Undefined number of arguments for a lifted operation");
-  return (Datum) 0;
-}
-
-Set *
-lfunc_set(const Set *set, LiftedFunctionInfo *lfinfo)
-{
-  assert(set); assert(lfinfo); 
-  MeosType basetype = settype_basetype(lfinfo->restype);
-  bool typbyval = basetype_byvalue(basetype);
-  Datum *values = palloc(sizeof(Datum) * set->count);
-  int count = 0;
-  for (int i = 0; i < set->count; i++)
-  {
-    Datum resvalue = lfunc_base(SET_VAL_N(set, i), lfinfo);
-    /* If the function does not return NULL */
-    if (! lfinfo->resnull)
-    {
-      /* A non-byvalue result that is unexpectedly NULL means the lifted
-       * function failed without flagging resnull (e.g. it raised a non-fatal
-       * meos_error and returned NULL); abort cleanly instead of feeding a
-       * NULL element to set_make. */
-      if (! typbyval && ! resvalue)
-      {
-        for (int j = 0; j < count; j++)
-          DATUM_FREE(values[j], basetype);
-        pfree(values);
-        return NULL;
-      }
-      values[count++] = resvalue;
-    }
-    else
-    {
-      /* Check if resulting value is a value error or a NULL pointer */
-      if ((! typbyval && ! resvalue) ||
-          (typbyval && datum_eq(resvalue, lfinfo->reserror, basetype)))
-#if JSON
-      {
-        if (lfinfo->resnull == NULL_JSON_NULL)
-        {
-          const char *str = "null";
-          values[count++] = (lfinfo->restype == T_TEXTSET) ? 
-            PointerGetDatum(text_in(str)) : 
-            PointerGetDatum(pg_jsonb_in(str));
-        }
-        else if (lfinfo->resnull == NULL_DELETE)
-        {
-          /* Nothing to do, ignore the value */
-        }
-        else
-        {
-          if (lfinfo->resnull == NULL_ERROR)
-          {
-            meos_error(ERROR, MEOS_ERR_NULL_RESULT,
-              "The lifted operation returned NULL");
-          }
-          /* For both NULL_ERROR and NULL_RETURN */
-          for (int j = 0; j < count; j++)
-            DATUM_FREE(values[j], basetype);
-          pfree(values);
-          return NULL;
-        }
-      }
-      else
-        values[count++] = resvalue;
-#else
-    return NULL;
-#endif /* JSON */
-    }
-  }
-  /* A path query matching nothing (or every element deleted via NULL_DELETE)
-   * leaves no values; sets must be non-empty, so there is no result. */
-  if (count == 0)
-  {
-    pfree(values);
-    return NULL;
-  }
-  /* set_make_exp copies the element data into the set inline; the per-element
-   * results are freshly computed (owned -- the error paths above DATUM_FREE
-   * them), so free the by-reference ones here. set_make_free would free only
-   * the array, leaking the values. */
-  Set *result = set_make_exp(values, count, count, basetype, ORDER);
-  if (! typbyval)
-    for (int i = 0; i < count; i++)
-      DATUM_FREE(values[i], basetype);
-  pfree(values);
-  return result;
-}
-#endif /* JSON */
+/*****************************************************************************/
