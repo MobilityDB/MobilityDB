@@ -45,6 +45,7 @@
   #include <meos_pointcloud.h>
 #endif
 #include "temporal/temporal.h"
+#include "temporal/type_util.h"
 #include "temporal/temporal_rtree.h"
 
 /*****************************************************************************
@@ -224,43 +225,100 @@ bbox_contains_tpcbox(const void *box1, const void *box2)
 
 /**
  * @brief Return `true` if the two spans overlap, `false` otherwise
+ * @details An R-tree stores homogeneous boxes -- same span type by
+ * construction -- so the validation of #overlaps_span_span is unnecessary
+ * here and the bounds are compared directly. This callback also serves as the
+ * span-overlap building block of the temporal-box and TPCBox overlap tests
  * @param[in] box1,box2 Spans
  */
 static inline bool
 bbox_overlaps_span(const void *box1, const void *box2)
 {
-  return overlaps_span_span((Span *) box1, (Span *) box2);
+  const Span *s1 = (const Span *) box1;
+  const Span *s2 = (const Span *) box2;
+  int cmp1 = datum_cmp(s1->lower, s2->upper, s1->basetype);
+  int cmp2 = datum_cmp(s2->lower, s1->upper, s1->basetype);
+  return
+    (cmp1 < 0 || (cmp1 == 0 && s1->lower_inc && s2->upper_inc)) &&
+    (cmp2 < 0 || (cmp2 == 0 && s2->lower_inc && s1->upper_inc));
 }
 
 /**
  * @brief Return `true` if the two temporal boxes overlap, `false` otherwise
+ * @details The homogeneous boxes stored in an R-tree share the same value span
+ * type by construction, so the dimension and type validation of
+ * #overlaps_tbox_tbox is unnecessary here and the present axes are compared
+ * directly
  * @param[in] box1,box2 Temporal boxes
  */
 static inline bool
 bbox_overlaps_tbox(const void *box1, const void *box2)
 {
-  return overlaps_tbox_tbox((TBox *) box1, (TBox *) box2);
+  const TBox *b1 = (const TBox *) box1;
+  const TBox *b2 = (const TBox *) box2;
+  if (MEOS_FLAGS_GET_X(b1->flags) && MEOS_FLAGS_GET_X(b2->flags) &&
+      ! bbox_overlaps_span(&b1->span, &b2->span))
+    return false;
+  if (MEOS_FLAGS_GET_T(b1->flags) && MEOS_FLAGS_GET_T(b2->flags) &&
+      ! bbox_overlaps_span(&b1->period, &b2->period))
+    return false;
+  return true;
 }
 
 /**
  * @brief Return `true` if the two spatiotemporal boxes overlap, `false`
  * otherwise
+ * @details An R-tree stores homogeneous boxes -- same SRID, dimensionality and
+ * geodetic flag by construction -- so the SRID and dimension validation of
+ * #overlaps_stbox_stbox is unnecessary here and the axes the boxes carry are
+ * compared directly
  * @param[in] box1,box2 Spatiotemporal boxes
  */
 static inline bool
 bbox_overlaps_stbox(const void *box1, const void *box2)
 {
-  return overlaps_stbox_stbox((STBox *) box1, (STBox *) box2);
+  const STBox *b1 = (const STBox *) box1;
+  const STBox *b2 = (const STBox *) box2;
+  if (MEOS_FLAGS_GET_X(b1->flags) && MEOS_FLAGS_GET_X(b2->flags) && (
+      b1->xmax < b2->xmin || b1->xmin > b2->xmax ||
+      b1->ymax < b2->ymin || b1->ymin > b2->ymax))
+    return false;
+  if (MEOS_FLAGS_GET_Z(b1->flags) && MEOS_FLAGS_GET_Z(b2->flags) &&
+      (b1->zmax < b2->zmin || b1->zmin > b2->zmax))
+    return false;
+  if (MEOS_FLAGS_GET_T(b1->flags) && MEOS_FLAGS_GET_T(b2->flags) && (
+      datum_lt(b1->period.upper, b2->period.lower, T_TIMESTAMPTZ) ||
+      datum_gt(b1->period.lower, b2->period.upper, T_TIMESTAMPTZ)))
+    return false;
+  return true;
 }
 
 #if POINTCLOUD
 /**
- * @brief Return `true` if two TPCBox values overlap.
+ * @brief Return `true` if two TPCBox values overlap, `false` otherwise
+ * @details The homogeneous boxes stored in an R-tree share the same point
+ * cloud schema by construction, so the identifier and dimension validation of
+ * #overlaps_tpcbox_tpcbox is unnecessary here and the present axes are compared
+ * directly
+ * @param[in] box1,box2 TPCBox values
  */
 static inline bool
 bbox_overlaps_tpcbox(const void *box1, const void *box2)
 {
-  return overlaps_tpcbox_tpcbox((TPCBox *) box1, (TPCBox *) box2);
+  const TPCBox *b1 = (const TPCBox *) box1;
+  const TPCBox *b2 = (const TPCBox *) box2;
+  if (MEOS_FLAGS_GET_X(b1->flags) && MEOS_FLAGS_GET_X(b2->flags))
+  {
+    if (b1->xmax < b2->xmin || b2->xmax < b1->xmin) return false;
+    if (b1->ymax < b2->ymin || b2->ymax < b1->ymin) return false;
+    if (MEOS_FLAGS_GET_Z(b1->flags) && MEOS_FLAGS_GET_Z(b2->flags) &&
+        (b1->zmax < b2->zmin || b2->zmax < b1->zmin))
+      return false;
+  }
+  if (MEOS_FLAGS_GET_T(b1->flags) && MEOS_FLAGS_GET_T(b2->flags) &&
+      ! bbox_overlaps_span(&b1->period, &b2->period))
+    return false;
+  return true;
 }
 #endif
 
