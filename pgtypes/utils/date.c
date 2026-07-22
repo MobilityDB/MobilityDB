@@ -77,7 +77,7 @@ anytime_typmod_check(bool istz, int32 typmod)
   {
     meos_error(WARNING, MEOS_ERR_INTERNAL_ERROR,
       "TIME(%d)%s precision reduced to maximum allowed, %d",
-      typmod, (istz ? " WITH TIME ZONE" : ""));
+      typmod, (istz ? " WITH TIME ZONE" : ""), MAX_TIME_PRECISION); /* MEOS */
     typmod = MAX_TIME_PRECISION;
   }
 

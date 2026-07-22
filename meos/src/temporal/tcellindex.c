@@ -60,7 +60,7 @@ extern const DggsCellOps quadbin_cellops;
  * @brief Return true if @p type is a temporal DGGS cell-index type.
  */
 bool
-tcellindex_type(MeosType type)
+tcellindex_type(MeosType type UNUSED)
 {
   return
 #if QUADBIN

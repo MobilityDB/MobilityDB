@@ -1285,7 +1285,7 @@ meos_initialize_collation(void)
     result = create_pg_locale_libc(DEFAULT_COLLATION_OID);
   else
     /* shouldn't happen */
-    PGLOCALE_SUPPORT_ERROR(database_locprovider);
+    PGLOCALE_SUPPORT_ERROR(database_locprovider[0]); /* MEOS */
 
   result->is_default = true;
   if (default_locale != NULL)
