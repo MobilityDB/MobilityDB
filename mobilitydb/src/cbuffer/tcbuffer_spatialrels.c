@@ -39,14 +39,9 @@
  * `eCovers`, `aCovers`, `eDisjoint`, `aDisjoint`, `eIntersects`, 
  * `aIntersects`, `eTouches`, `aTouches`, `eDwithin`, and `aDwithin`.
  *
- * Most of these relationships support the following combination of arguments
- * `({geo, cbuffer, tcbuffer}, {geo, cbuffer, tcbuffer})`.
- * One exception is for the non-symmetric relationships `eContains` and 
- * `eCovers` since there is no efficient algorithm for enabling the
- * combination of arguments `(geo, tcbuffer)`.
- * Another exception is that only `eDisjoint`, `aDisjoint`, `eIntersects`,
- * `aIntersects`, `eDwithin`, and `aDwithin` support the following arguments
- * `(tcbuffer, tcbuffer)`.
+ * All these relationships support the following combinations of arguments
+ * `({geo, cbuffer, tcbuffer}, {geo, cbuffer, tcbuffer})` in which at least one
+ * argument is a temporal circular buffer.
  */
 
 #include "cbuffer/tcbuffer_spatialrels.h"
@@ -101,6 +96,8 @@ EA_spatialrel_tcbuffer_cbuffer(FunctionCallInfo fcinfo,
   PG_RETURN_INT32(result);
 }
 
+/* GENERATED-SPATIALRELS-BEGIN cbuffer_ea_contains_covers — tools/codegen/inherited/generate.py from templates/spatialrels.c.tmpl;
+ * DO NOT EDIT BY HAND; edit the template + manifest.yaml (spatialrel_families) and re-run. */
 /*****************************************************************************
  * Ever/always contains
  *****************************************************************************/
@@ -157,13 +154,12 @@ Acontains_tcbuffer_geo(PG_FUNCTION_ARGS)
   return EA_spatialrel_tspatial_geo(fcinfo, &ea_contains_tcbuffer_geo, ALWAYS);
 }
 
-/*****************************************************************************/
-
 PGDLLEXPORT Datum Econtains_cbuffer_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Econtains_cbuffer_tcbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_rel_ever
- * @brief Return true if a geometry ever contains a temporal circular buffer
+ * @brief Return true if a circular buffer ever contains a temporal circular
+ * buffer
  * @sqlfn eContains()
  */
 inline Datum
@@ -177,7 +173,8 @@ PGDLLEXPORT Datum Acontains_cbuffer_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Acontains_cbuffer_tcbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_rel_ever
- * @brief Return true if a geometry always contains a temporal circular buffer
+ * @brief Return true if a circular buffer always contains a temporal circular
+ * buffer
  * @sqlfn aContains()
  */
 inline Datum
@@ -191,7 +188,8 @@ PGDLLEXPORT Datum Econtains_tcbuffer_cbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Econtains_tcbuffer_cbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_rel_ever
- * @brief Return true if a temporal circular buffer ever contains a geometry
+ * @brief Return true if a temporal circular buffer ever contains a circular
+ * buffer
  * @sqlfn eContains()
  */
 inline Datum
@@ -205,7 +203,8 @@ PGDLLEXPORT Datum Acontains_tcbuffer_cbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Acontains_tcbuffer_cbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_rel_ever
- * @brief Return true if a temporal circular buffer always contains a geometry
+ * @brief Return true if a temporal circular buffer always contains a circular
+ * buffer
  * @sqlfn aContains()
  */
 inline Datum
@@ -214,8 +213,6 @@ Acontains_tcbuffer_cbuffer(PG_FUNCTION_ARGS)
   return EA_spatialrel_tcbuffer_cbuffer(fcinfo, &ea_contains_tcbuffer_cbuffer,
     ALWAYS);
 }
-
-/*****************************************************************************/
 
 PGDLLEXPORT Datum Econtains_tcbuffer_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Econtains_tcbuffer_tcbuffer);
@@ -301,13 +298,12 @@ Acovers_tcbuffer_geo(PG_FUNCTION_ARGS)
   return EA_spatialrel_tspatial_geo(fcinfo, &ea_covers_tcbuffer_geo, ALWAYS);
 }
 
-/*****************************************************************************/
-
 PGDLLEXPORT Datum Ecovers_cbuffer_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Ecovers_cbuffer_tcbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_rel_ever
- * @brief Return true if a geometry ever covers a temporal circular buffer
+ * @brief Return true if a circular buffer ever covers a temporal circular
+ * buffer
  * @sqlfn eCovers()
  */
 inline Datum
@@ -321,7 +317,8 @@ PGDLLEXPORT Datum Acovers_cbuffer_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Acovers_cbuffer_tcbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_rel_ever
- * @brief Return true if a geometry always covers a temporal circular buffer
+ * @brief Return true if a circular buffer always covers a temporal circular
+ * buffer
  * @sqlfn aCovers()
  */
 inline Datum
@@ -335,7 +332,8 @@ PGDLLEXPORT Datum Ecovers_tcbuffer_cbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Ecovers_tcbuffer_cbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_rel_ever
- * @brief Return true if a temporal circular buffer ever covers a geometry
+ * @brief Return true if a temporal circular buffer ever covers a circular
+ * buffer
  * @sqlfn eCovers()
  */
 inline Datum
@@ -349,7 +347,8 @@ PGDLLEXPORT Datum Acovers_tcbuffer_cbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Acovers_tcbuffer_cbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_rel_ever
- * @brief Return true if a temporal circular buffer always covers a geometry
+ * @brief Return true if a temporal circular buffer always covers a circular
+ * buffer
  * @sqlfn aCovers()
  */
 inline Datum
@@ -359,14 +358,11 @@ Acovers_tcbuffer_cbuffer(PG_FUNCTION_ARGS)
     ALWAYS);
 }
 
-/*****************************************************************************/
-
 PGDLLEXPORT Datum Ecovers_tcbuffer_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Ecovers_tcbuffer_tcbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_rel_ever
- * @brief Return true if a temporal circular buffer and a circular buffer 
- * ever cover
+ * @brief Return true if a temporal circular buffer ever covers another one
  * @sqlfn eCovers()
  */
 inline Datum
@@ -380,8 +376,7 @@ PGDLLEXPORT Datum Acovers_tcbuffer_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Acovers_tcbuffer_tcbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_rel_ever
- * @brief Return true if a temporal circular buffer and a circular buffer 
- * always cover
+ * @brief Return true if a temporal circular buffer always covers another one
  * @sqlfn aCovers()
  */
 inline Datum
@@ -390,6 +385,7 @@ Acovers_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
   return EA_spatialrel_tspatial_tspatial(fcinfo, &ea_covers_tcbuffer_tcbuffer,
     ALWAYS);
 }
+/* GENERATED-SPATIALRELS-END cbuffer_ea_contains_covers */
 /*****************************************************************************
  * Ever/always disjoint
  *****************************************************************************/

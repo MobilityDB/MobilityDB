@@ -231,27 +231,41 @@ def _wrap_brief(text: str, width: int = 80) -> str:
 
 def render_spatialrels(fam: dict) -> str:
     """Render the ever/always PG wrapper region for one family: per predicate a
-    banner + 6 wrapper blocks (3 directions x ever/always). Roundtrips exactly."""
+    banner + wrapper blocks (one per direction x ever/always). Roundtrips exactly."""
     banner_t, block_t = (TEMPLATES / "spatialrels.c.tmpl").read_text().split("\n\n")
     block_t = block_t.rstrip("\n")
+    # A family whose type is not tgeo (e.g. tcbuffer) overrides the geo defaults:
+    # its own @ingroup (mobilitydb_<fam>_rel_ever), its own direction order (the
+    # cbuffer 5-direction shape adds the base-value directions), and its own
+    # dispatcher map. contains/covers/... inherit these; a predicate may still
+    # subset the directions or swap one dispatcher.
+    ingroup = fam.get("ingroup", "mobilitydb_geo_rel_ever")
+    order = fam.get("order", _SR_ORDER)
+    disp_map = fam.get("disp", _SR_DISP)
     out = []
     for pred in fam["predicates"]:
         out.append(banner_t.replace("{BANNER}", pred["banner"]))
         disp_over = pred.get("disp", {})
         meos_fixed = pred.get("meos_fixed")
-        for direc in pred.get("directions", _SR_ORDER):
-            disp = disp_over.get(direc, _SR_DISP[direc])
+        for direc in pred.get("directions", order):
+            disp = disp_over.get(direc, disp_map[direc])
             meos = meos_fixed or f"ea_{pred['rel']}_{direc}"
             for ea, word, low in (("E", "ever", "e"), ("A", "always", "a")):
                 brief = _wrap_brief(
                     "Return true if " + pred["briefs"][direc].replace("{word}", word))
+                # The return statement wraps to the 80-column house style when the
+                # dispatcher + kernel names are long (the cbuffer base-value
+                # directions); the geo directions stay on one line unchanged.
+                eaq = "EVER" if ea == "E" else "ALWAYS"
+                ret = f"  return {disp}(fcinfo, &{meos}, {eaq});"
+                if len(ret) > 80:
+                    ret = f"  return {disp}(fcinfo, &{meos},\n    {eaq});"
                 sub = {
                     "FN": f"{ea}{pred['rel']}_{direc}",
                     "BRIEF": brief,
                     "SQLFN": f"{low}{pred['Rel']}",
-                    "DISP": disp,
-                    "MEOS": meos,
-                    "EA": "EVER" if ea == "E" else "ALWAYS",
+                    "RETURN": ret,
+                    "INGROUP": ingroup,
                 }
                 frag = block_t
                 for k, v in sub.items():
