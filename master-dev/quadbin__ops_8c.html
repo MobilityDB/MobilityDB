@@ -86,14 +86,17 @@ $(function() {
 <div class="textblock"><code>#include &lt;postgres.h&gt;</code><br />
 <code>#include &lt;fmgr.h&gt;</code><br />
 <code>#include &lt;utils/array.h&gt;</code><br />
+<code>#include &lt;utils/timestamp.h&gt;</code><br />
 <code>#include &lt;catalog/pg_type_d.h&gt;</code><br />
 <code>#include &lt;liblwgeom.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__geo_8h_source.html">meos_geo.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__quadbin_8h_source.html">meos_quadbin.h</a>&gt;</code><br />
 <code>#include &lt;pgtypes.h&gt;</code><br />
+<code>#include &quot;<a class="el" href="stbox_8h_source.html">geo/stbox.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="tgeo__spatialfuncs_8h_source.html">geo/tgeo_spatialfuncs.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="set_8h_source.html">temporal/set.h</a>&quot;</code><br />
+<code>#include &quot;temporal/span.h&quot;</code><br />
 <code>#include &quot;<a class="el" href="quadbin__meos_8h_source.html">quadbin/quadbin_meos.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="postgis_8h_source.html">pg_geo/postgis.h</a>&quot;</code><br />
 </div><table class="memberdecls">
@@ -145,6 +148,15 @@ Functions</h2></td></tr>
 <tr class="memitem:ga8ae4fc04c0046a06e3a59c7bb729bc9e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__quadbin__conversion_ga8ae4fc04c0046a06e3a59c7bb729bc9e.html#ga8ae4fc04c0046a06e3a59c7bb729bc9e">Quadbin_tile_to_cell</a> (PG_FUNCTION_ARGS)</td></tr>
 <tr class="memdesc:ga8ae4fc04c0046a06e3a59c7bb729bc9e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Build a quadbin cell from slippy-map (x, y, z) tile coordinates @sqlfn quadbinTileToCell()  <a href="group__mobilitydb__quadbin__conversion_ga8ae4fc04c0046a06e3a59c7bb729bc9e.html#ga8ae4fc04c0046a06e3a59c7bb729bc9e">More...</a><br /></td></tr>
 <tr class="separator:ga8ae4fc04c0046a06e3a59c7bb729bc9e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga72df6ed74a1cf2998efb6e8c17595265"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__quadbin__conversion_ga72df6ed74a1cf2998efb6e8c17595265.html#ga72df6ed74a1cf2998efb6e8c17595265">Quadbin_timestamptz_to_stbox</a> (PG_FUNCTION_ARGS)</td></tr>
+<tr class="memdesc:ga72df6ed74a1cf2998efb6e8c17595265"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the spatiotemporal bounding box of a quadbin cell and a timestamptz @sqlfn stbox()  <a href="group__mobilitydb__quadbin__conversion_ga72df6ed74a1cf2998efb6e8c17595265.html#ga72df6ed74a1cf2998efb6e8c17595265">More...</a><br /></td></tr>
+<tr class="separator:ga72df6ed74a1cf2998efb6e8c17595265"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga6e51be33a88534c8c225ac59016e60ac"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__quadbin__conversion_ga6e51be33a88534c8c225ac59016e60ac.html#ga6e51be33a88534c8c225ac59016e60ac">Quadbin_to_stbox</a> (PG_FUNCTION_ARGS)</td></tr>
+<tr class="memdesc:ga6e51be33a88534c8c225ac59016e60ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the spatiotemporal bounding box of a quadbin cell @sqlfn stbox()  <a href="group__mobilitydb__quadbin__conversion_ga6e51be33a88534c8c225ac59016e60ac.html#ga6e51be33a88534c8c225ac59016e60ac">More...</a><br /></td></tr>
+<tr class="separator:ga6e51be33a88534c8c225ac59016e60ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga377ce553d62e1e322e297605429437f2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__quadbin__conversion_ga377ce553d62e1e322e297605429437f2.html#ga377ce553d62e1e322e297605429437f2">Quadbin_tstzspan_to_stbox</a> (PG_FUNCTION_ARGS)</td></tr>
+<tr class="memdesc:ga377ce553d62e1e322e297605429437f2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the spatiotemporal bounding box of a quadbin cell and a timestamptz span @sqlfn stbox()  <a href="group__mobilitydb__quadbin__conversion_ga377ce553d62e1e322e297605429437f2.html#ga377ce553d62e1e322e297605429437f2">More...</a><br /></td></tr>
+<tr class="separator:ga377ce553d62e1e322e297605429437f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >PG V1 wrappers for the static <code>quadbin</code> cell operations. </p>
