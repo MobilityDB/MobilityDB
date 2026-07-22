@@ -63,7 +63,12 @@ def render(behaviour: str, sub: dict) -> str:
     # (Cbuffer_to_stbox, Pose_to_stbox, Npoint_to_stbox — all base.capitalize()).
     # Families whose C symbol does not follow that rule override it via `cbase`.
     cbase = sub.get("cbase", sub["base"].capitalize())
+    # Symbol stem of the base-value comparison C wrappers (Ever_eq_<basesym>_<temp>).
+    # It equals the SQL base type for every family EXCEPT trgeometry, whose base
+    # comparison is against a `geometry` (SQL type) but whose wrapper stem is `geo`.
+    basesym = sub.get("basesym", sub["base"])
     body = (tmpl.replace("{TEMP}", sub["temp"])
+                .replace("{BASESYM}", basesym)
                 .replace("{BASE}", sub["base"])
                 .replace("{CBASE}", cbase)
                 .replace("{BRIEF}", sub["brief"])
