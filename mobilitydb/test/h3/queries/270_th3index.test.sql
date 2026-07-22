@@ -87,6 +87,18 @@ SELECT th3index(Sequence) '622236723497533439@2012-01-01 08:00:00';
 SELECT th3index(Garbage) '622236723497533439@2012-01-01 08:00:00';
 
 -------------------------------------------------------------------------------
+-- WKB / HexWKB round-trips
+-------------------------------------------------------------------------------
+
+SELECT asText(th3indexFromBinary(asBinary(th3index '612544986753269759@2001-01-01')));
+SELECT asText(th3indexFromBinary(asBinary(th3index '{612544986753269759@2001-01-01, 612544986761658367@2001-01-02}')));
+SELECT asText(th3indexFromBinary(asBinary(th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-02]')));
+SELECT asText(th3indexFromBinary(asBinary(th3index '{[612544986753269759@2001-01-01, 612544986761658367@2001-01-02], [612544986753269759@2001-01-03, 612544986753269759@2001-01-04]}')));
+-- Little-endian (NDR)
+SELECT asText(th3indexFromBinary(asBinary(th3index '612544986753269759@2001-01-01', 'NDR')));
+SELECT asText(th3indexFromHexWKB(asHexWKB(th3index '612544986753269759@2001-01-01')));
+
+-------------------------------------------------------------------------------
 -- Assignment casts to/from tbigint
 --
 -- Casts are explicit (AS ASSIGNMENT) and bidirectional. Binary-coercion

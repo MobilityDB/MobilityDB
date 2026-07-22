@@ -1139,8 +1139,8 @@ temporal_basetype(MeosType type)
     type == T_FLOAT8 || type == T_INT4 || type == T_INT8 ||
     type == T_TEXT || type == T_GEOMETRY || type == T_GEOGRAPHY ||
     type == T_NPOINT || type == T_POSE || type == T_CBUFFER ||
-    type == T_JSONB || type == T_QUADBIN || type == T_PCPOINT ||
-    type == T_PCPATCH);
+    type == T_JSONB || type == T_H3INDEX || type == T_QUADBIN ||
+    type == T_PCPOINT || type == T_PCPATCH);
 }
 
 /**
