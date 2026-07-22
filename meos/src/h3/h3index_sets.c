@@ -136,6 +136,12 @@ h3_grid_disk(H3Index origin, int k)
   return h3index_set_from_buffer(cells, max);
 }
 
+/**
+ * @ingroup meos_h3_traversal
+ * @brief Return the set of H3 cells at exactly grid distance k from an origin
+ * cell
+ * @csqlfn #H3_grid_ring()
+ */
 Set *
 h3_grid_ring(H3Index origin, int k)
 {
@@ -170,6 +176,11 @@ h3_grid_ring(H3Index origin, int k)
   return h3index_set_from_buffer(cells, ring);
 }
 
+/**
+ * @ingroup meos_h3_traversal
+ * @brief Return the set of H3 cells on the path from a start to an end cell
+ * @csqlfn #H3_grid_path_cells()
+ */
 Set *
 h3_grid_path_cells(H3Index start, H3Index end)
 {
@@ -296,6 +307,11 @@ h3_uncompact_cells(const Set *cells, int res)
  * Edges and vertexes
  *****************************************************************************/
 
+/**
+ * @ingroup meos_h3_edges
+ * @brief Return the set of directed edges originating from an H3 cell
+ * @csqlfn #H3_origin_to_directed_edges()
+ */
 Set *
 h3_origin_to_directed_edges(H3Index origin)
 {
@@ -311,6 +327,11 @@ h3_origin_to_directed_edges(H3Index origin)
   return h3index_set_from_buffer(edges, 6);
 }
 
+/**
+ * @ingroup meos_h3_vertex
+ * @brief Return the set of vertexes of an H3 cell
+ * @csqlfn #H3_cell_to_vertexes()
+ */
 Set *
 h3_cell_to_vertexes(H3Index cell)
 {
@@ -330,6 +351,11 @@ h3_cell_to_vertexes(H3Index cell)
  * Icosahedron faces
  *****************************************************************************/
 
+/**
+ * @ingroup meos_h3_inspection
+ * @brief Return the set of icosahedron face indexes intersected by an H3 cell
+ * @csqlfn #H3_get_icosahedron_faces()
+ */
 Set *
 h3_get_icosahedron_faces(H3Index cell)
 {

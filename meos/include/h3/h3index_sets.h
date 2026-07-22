@@ -68,33 +68,8 @@
  * a `meos_error`.
  *****************************************************************************/
 
-/**
- * Return all cells at exactly `k` grid steps from `origin`.
- * Fails near pentagons (libh3's unsafe ring).
- */
-extern Set *h3_grid_ring(H3Index origin, int k);
-
-/**
- * Return the cells on the inclusive path from `start` to `end`.
- * Fails on non-comparable resolutions or paths crossing pentagons.
- */
-extern Set *h3_grid_path_cells(H3Index start, H3Index end);
-
-/**
- * Return all outgoing directed edges of `origin` (up to 6;
- * pentagons have 5).
- */
-extern Set *h3_origin_to_directed_edges(H3Index origin);
-
-/**
- * Return all vertexes of `cell` (up to 6; pentagons have 5).
- */
-extern Set *h3_cell_to_vertexes(H3Index cell);
-
-/**
- * Return the icosahedron face indexes intersected by `cell` as
- * an intset. Each face index is in 0..19.
- */
-extern Set *h3_get_icosahedron_faces(H3Index cell);
+/* h3_grid_ring / h3_grid_path_cells / h3_origin_to_directed_edges /
+ * h3_cell_to_vertexes / h3_get_icosahedron_faces are public cell-set
+ * operations declared in the umbrella header meos_h3.h (included above). */
 
 #endif /* __H3INDEX_SETS_H__ */
