@@ -150,7 +150,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return the lon/lat bounding box (xmin, ymin, xmax, ymax) of a cell. </p>
-<p >Out-parameter helper; the geometry projections quadbinCellToBoundary and quadbinCellToBoundingBox are backed by quadbin_cell_to_geom in <a class="el" href="quadbin__geo_8c.html" title="Geometry adapters between a QUADBIN cell and PostGIS geometries.">quadbin_geo.c</a>. </p>
+<p >Out-parameter helper shared by the geometry boundary projection quadbinCellToBoundary (via quadbin_cell_to_geom in <a class="el" href="quadbin__geo_8c.html" title="Geometry adapters between a QUADBIN cell and PostGIS geometries.">quadbin_geo.c</a>) and the stbox(quadbin) cast (via quadbin_set_stbox). </p>
 
 </div>
 </div>
