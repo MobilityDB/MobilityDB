@@ -159,7 +159,7 @@ route_length(int64 rid)
   if (isNull)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Cannot get the length for route %ld", rid);
+      "Cannot get the length for route " INT64_FORMAT, rid);
     return -1.0;
   }
   return result;
@@ -200,7 +200,7 @@ route_geom(int64 rid)
   if (isNull)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Cannot get the geometry for route %ld", rid);
+      "Cannot get the geometry for route " INT64_FORMAT, rid);
     return NULL;
   }
   if (! ensure_not_empty(result))

@@ -202,7 +202,7 @@ trgeoinstarr_compute_bbox(const GSERIALIZED *geom, TInstant **instants,
   }
   else
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "unknown bounding box function for temporal type: %d",
+      "unknown bounding box function for temporal type: %s",
       meostype_name(instants[0]->temptype));
   return;
 }

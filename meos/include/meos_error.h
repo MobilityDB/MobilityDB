@@ -54,7 +54,22 @@ typedef enum
  * call did not return. This makes every callsite safe regardless of
  * which handler an embedder installs.
  */
-extern void meos_error(int errlevel, int errcode, const char *format, ...);
+extern void meos_error(int errlevel, int errcode, const char *format, ...)
+/*
+ * Give meos_error printf-style format checking. In the PostgreSQL-backed
+ * build pg_attribute_printf is available and selects the gnu_printf
+ * archetype (correct on MinGW, where the default printf archetype is MS
+ * semantics). This public header is also consumed standalone, where that
+ * macro may not be in scope, so fall back to the gnu_printf attribute
+ * directly under GCC/Clang, and to nothing on compilers that lack it.
+ */
+#if defined(pg_attribute_printf)
+  pg_attribute_printf(3, 4);
+#elif defined(__GNUC__)
+  __attribute__((format(gnu_printf, 3, 4)));
+#else
+  ;
+#endif
 
 /* Set or read error level */
 
