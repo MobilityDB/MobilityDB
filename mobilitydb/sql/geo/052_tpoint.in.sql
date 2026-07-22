@@ -1030,19 +1030,29 @@ CREATE FUNCTION temporal_hash(tgeompoint)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_hash_extended(tgeompoint, bigint)
+  RETURNS bigint
+  AS 'MODULE_PATHNAME', 'Temporal_hash_extended'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_hash(tgeogpoint)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_hash'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_hash_extended(tgeogpoint, bigint)
+  RETURNS bigint
+  AS 'MODULE_PATHNAME', 'Temporal_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR CLASS tgeompoint_hash_ops
   DEFAULT FOR TYPE tgeompoint USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   temporal_hash(tgeompoint);
+    FUNCTION    1   temporal_hash(tgeompoint),
+    FUNCTION    2   temporal_hash_extended(tgeompoint, bigint);
 CREATE OPERATOR CLASS tgeogpoint_hash_ops
   DEFAULT FOR TYPE tgeogpoint USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   temporal_hash(tgeogpoint);
+    FUNCTION    1   temporal_hash(tgeogpoint),
+    FUNCTION    2   temporal_hash_extended(tgeogpoint, bigint);
 
 /******************************************************************************/
 

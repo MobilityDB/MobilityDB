@@ -686,4 +686,32 @@ tinstant_hash(const TInstant *inst)
   return result;
 }
 
+/**
+ * @ingroup meos_internal_temporal_accessor
+ * @brief Return the 64-bit hash of a temporal instant using a seed
+ * @param[in] inst Temporal instant
+ * @param[in] seed Seed
+ * @return On error return @p LONG_MAX
+ * @csqlfn #Temporal_hash_extended()
+ */
+uint64
+tinstant_hash_extended(const TInstant *inst, uint64 seed)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(inst, LONG_MAX);
+
+  MeosType basetype = temptype_basetype(inst->temptype);
+  /* Apply the hash function to the base type */
+  uint64 value_hash = datum_hash_extended(tinstant_value_p(inst), basetype,
+    seed);
+  /* Apply the hash function to the timestamp */
+  uint64 time_hash = datum_hash_extended(TimestampTzGetDatum(inst->t),
+    T_TIMESTAMPTZ, seed);
+  /* Merge hashes of value and timestamp */
+  uint64 result = value_hash;
+  result = ROTATE_HIGH_AND_LOW_32BITS(result);
+  result ^= time_hash;
+  return result;
+}
+
 /*****************************************************************************/

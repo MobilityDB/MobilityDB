@@ -2732,25 +2732,51 @@ CREATE FUNCTION temporal_hash(ttext)
   AS 'MODULE_PATHNAME', 'Temporal_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION temporal_hash_extended(tbool, bigint)
+  RETURNS bigint
+  AS 'MODULE_PATHNAME', 'Temporal_hash_extended'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_hash_extended(tint, bigint)
+  RETURNS bigint
+  AS 'MODULE_PATHNAME', 'Temporal_hash_extended'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_hash_extended(tbigint, bigint)
+  RETURNS bigint
+  AS 'MODULE_PATHNAME', 'Temporal_hash_extended'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_hash_extended(tfloat, bigint)
+  RETURNS bigint
+  AS 'MODULE_PATHNAME', 'Temporal_hash_extended'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_hash_extended(ttext, bigint)
+  RETURNS bigint
+  AS 'MODULE_PATHNAME', 'Temporal_hash_extended'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE OPERATOR CLASS tbool_hash_ops
   DEFAULT FOR TYPE tbool USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   temporal_hash(tbool);
+    FUNCTION    1   temporal_hash(tbool),
+    FUNCTION    2   temporal_hash_extended(tbool, bigint);
 CREATE OPERATOR CLASS tint_hash_ops
   DEFAULT FOR TYPE tint USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   temporal_hash(tint);
+    FUNCTION    1   temporal_hash(tint),
+    FUNCTION    2   temporal_hash_extended(tint, bigint);
 CREATE OPERATOR CLASS tbigint_hash_ops
   DEFAULT FOR TYPE tbigint USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   temporal_hash(tbigint);
+    FUNCTION    1   temporal_hash(tbigint),
+    FUNCTION    2   temporal_hash_extended(tbigint, bigint);
 CREATE OPERATOR CLASS tfloat_hash_ops
   DEFAULT FOR TYPE tfloat USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   temporal_hash(tfloat);
+    FUNCTION    1   temporal_hash(tfloat),
+    FUNCTION    2   temporal_hash_extended(tfloat, bigint);
 CREATE OPERATOR CLASS ttext_hash_ops
   DEFAULT FOR TYPE ttext USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   temporal_hash(ttext);
+    FUNCTION    1   temporal_hash(ttext),
+    FUNCTION    2   temporal_hash_extended(ttext, bigint);
 
 /******************************************************************************/

@@ -766,10 +766,15 @@ CREATE FUNCTION temporal_hash(tpose)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_hash_extended(tpose, bigint)
+  RETURNS bigint
+  AS 'MODULE_PATHNAME', 'Temporal_hash_extended'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR CLASS tpose_hash_ops
   DEFAULT FOR TYPE tpose USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   temporal_hash(tpose);
+    FUNCTION    1   temporal_hash(tpose),
+    FUNCTION    2   temporal_hash_extended(tpose, bigint);
 
 /******************************************************************************/

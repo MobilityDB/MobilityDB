@@ -706,11 +706,16 @@ CREATE FUNCTION temporal_hash(tjsonb)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_hash_extended(tjsonb, bigint)
+  RETURNS bigint
+  AS 'MODULE_PATHNAME', 'Temporal_hash_extended'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR CLASS tjsonb_hash_ops
   DEFAULT FOR TYPE tjsonb USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   temporal_hash(tjsonb);
+    FUNCTION    1   temporal_hash(tjsonb),
+    FUNCTION    2   temporal_hash_extended(tjsonb, bigint);
 
 /*****************************************************************************/
 

@@ -617,10 +617,15 @@ CREATE FUNCTION temporal_hash(tquadbin)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_hash_extended(tquadbin, bigint)
+  RETURNS bigint
+  AS 'MODULE_PATHNAME', 'Temporal_hash_extended'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR CLASS tquadbin_hash_ops
   DEFAULT FOR TYPE tquadbin USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   temporal_hash(tquadbin);
+    FUNCTION    1   temporal_hash(tquadbin),
+    FUNCTION    2   temporal_hash_extended(tquadbin, bigint);
 
 /******************************************************************************/

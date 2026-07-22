@@ -1352,6 +1352,7 @@ extern TInstant *temporal_end_instant(const Temporal *temp);
 extern TSequence *temporal_end_sequence(const Temporal *temp);
 extern TimestampTz temporal_end_timestamptz(const Temporal *temp);
 extern uint32 temporal_hash(const Temporal *temp);
+extern uint64 temporal_hash_extended(const Temporal *temp, uint64 seed);
 extern TInstant *temporal_instant_n(const Temporal *temp, int n);
 extern TInstant **temporal_instants(const Temporal *temp, int *count);
 extern const char *temporal_interp(const Temporal *temp);
