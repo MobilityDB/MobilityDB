@@ -165,7 +165,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return <code>true</code> if the two spatiotemporal boxes overlap, <code>false</code> otherwise. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p >An R-tree stores homogeneous boxes &ndash; same SRID, dimensionality and geodetic flag by construction &ndash; so the SRID and dimension validation of <a class="el" href="group__meos__geo__box__topo_ga6a6e1a6de1218846b94a51bd342df4bc.html#ga6a6e1a6de1218846b94a51bd342df4bc" title="Return true if the spatiotemporal boxes overlap @csqlfn Overlaps_stbox_stbox()">overlaps_stbox_stbox</a> is unnecessary here and the axes the boxes carry are compared directly </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">box1,box2</td><td>Spatiotemporal boxes </td></tr>
   </table>

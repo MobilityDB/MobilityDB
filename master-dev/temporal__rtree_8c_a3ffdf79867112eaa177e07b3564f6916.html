@@ -165,7 +165,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return <code>true</code> if the two spans overlap, <code>false</code> otherwise. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p >An R-tree stores homogeneous boxes &ndash; same span type by construction &ndash; so the validation of <a class="el" href="group__meos__setspan__topo_ga668d33c15d65b00c9ebc7784ff744ffa.html#ga668d33c15d65b00c9ebc7784ff744ffa" title="Return true if two spans overlap.">overlaps_span_span</a> is unnecessary here and the bounds are compared directly. This callback also serves as the span-overlap building block of the temporal-box and <a class="el" href="structTPCBox.html" title="Bounding box for pgpointcloud temporal types.">TPCBox</a> overlap tests </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">box1,box2</td><td>Spans </td></tr>
   </table>
