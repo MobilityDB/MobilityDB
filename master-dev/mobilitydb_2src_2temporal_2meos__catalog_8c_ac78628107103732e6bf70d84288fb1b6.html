@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: range_basetype</title>
+<title>MobilityDB: reset_mobilitydb_constants</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -93,9 +93,9 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="mobilitydb_2src_2temporal_2meos__catalog_8c_a69abbf281e160ede6aa5ecb8fa95ffdc.html#a69abbf281e160ede6aa5ecb8fa95ffdc">namestrcmp</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="mobilitydb_2src_2temporal_2meos__catalog_8c_ac3a91f1c0ddeea5993c133f252c397f0.html#ac3a91f1c0ddeea5993c133f252c397f0">oid_meosoper</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="mobilitydb_2src_2temporal_2meos__catalog_8c_a13618a9da8cab6512fe1ca80cc6149dc.html#a13618a9da8cab6512fe1ca80cc6149dc">oid_meostype</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="mobilitydb_2src_2temporal_2meos__catalog_8c_ad0d553cf4c0ab381cad9ad50da79cbf0.html#ad0d553cf4c0ab381cad9ad50da79cbf0">range_basetype</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="mobilitydb_2src_2temporal_2meos__catalog_8c_ad0d553cf4c0ab381cad9ad50da79cbf0.html#ad0d553cf4c0ab381cad9ad50da79cbf0">range_basetype</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="mobilitydb_2src_2temporal_2meos__catalog_8c_a0cd42ee4ad5a97539183f81c8251f516.html#a0cd42ee4ad5a97539183f81c8251f516">RelnameNspGetRelid</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="mobilitydb_2src_2temporal_2meos__catalog_8c_ac78628107103732e6bf70d84288fb1b6.html#ac78628107103732e6bf70d84288fb1b6">reset_mobilitydb_constants</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="mobilitydb_2src_2temporal_2meos__catalog_8c_ac78628107103732e6bf70d84288fb1b6.html#ac78628107103732e6bf70d84288fb1b6">reset_mobilitydb_constants</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="mobilitydb_2src_2temporal_2meos__catalog_8c_a53e7eb683d347e5459c937c03e347758.html#a53e7eb683d347e5459c937c03e347758">SH_DECLARE</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="mobilitydb_2src_2temporal_2meos__catalog_8c_a53e7eb683d347e5459c937c03e347758.html#a53e7eb683d347e5459c937c03e347758">SH_DECLARE</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="mobilitydb_2src_2temporal_2meos__catalog_8c_a5b839c4a61a6aa308c11c7632e17dd0c.html#a5b839c4a61a6aa308c11c7632e17dd0c">SH_DEFINE</a></td></tr>
@@ -119,8 +119,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ad0d553cf4c0ab381cad9ad50da79cbf0" name="ad0d553cf4c0ab381cad9ad50da79cbf0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad0d553cf4c0ab381cad9ad50da79cbf0">&#9670;&#160;</a></span>range_basetype()</h2>
+<a id="ac78628107103732e6bf70d84288fb1b6" name="ac78628107103732e6bf70d84288fb1b6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac78628107103732e6bf70d84288fb1b6">&#9670;&#160;</a></span>reset_mobilitydb_constants()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -129,21 +129,21 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">bool range_basetype </td>
+          <td class="memname">static void reset_mobilitydb_constants </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a05df1d1fd2c829ee784b125ed34e8401.html#a05df1d1fd2c829ee784b125ed34e8401">MeosType</a>&#160;</td>
-          <td class="paramname"><em>type</em></td><td>)</td>
+          <td class="paramname"></td><td>)</td>
           <td></td>
         </tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Return true if the type is a base type of a built-in PostgreSQL range type. </p>
+<p>Discard the run-time constants cache so it is rebuilt on next use. </p>
+<p >Needed after <a class="el" href="mobilitydb_2src_2temporal_2meos__catalog_8c_a31f90b9cf0517364cd45116f180b4e50.html#a31f90b9cf0517364cd45116f180b4e50" title="Function executed during the CREATE EXTENSION to precompute the operator cache and store it in table ...">fill_oid_cache</a> populates the <code>mobilitydb_opcache</code> table: that function reads types with <a class="el" href="mobilitydb_2src_2temporal_2meos__catalog_8c_a13618a9da8cab6512fe1ca80cc6149dc.html#a13618a9da8cab6512fe1ca80cc6149dc" title="Fetch from the cache the type number.">oid_meostype</a>, which builds the cache while the table is still empty, leaving a backend that runs <code>CREATE EXTENSION</code> with an empty operator array for the rest of its session. A fresh backend is unaffected because it reads the fully populated table. </p>
 
 </div>
 </div>
