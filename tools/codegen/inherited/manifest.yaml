@@ -91,7 +91,9 @@ subtypes:
     brief: "temporal poses"
     bin:   100
     category: tspatial
-    files: [indexes]
+    # posops is NOT generated: tpose carries additional pose-specific position
+    # operators (112 vs the templated 88), so it stays hand-maintained for now.
+    files: [compops, topops, indexes]
 
   - temp:  trgeometry
     base:  rgeometry
