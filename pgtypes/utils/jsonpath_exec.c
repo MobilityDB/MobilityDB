@@ -415,8 +415,9 @@ pg_jsonb_path_exists(const Jsonb *jb, const JsonPath *jp, const Jsonb *vars,
   bool silent, bool tz)
 {
   JsonPathExecResult res = executeJsonPath((JsonPath *) jp, (Jsonb *) vars,
-    getJsonPathVariableFromJsonb, countVariablesFromJsonb, (Jsonb *) jb, 
+    getJsonPathVariableFromJsonb, countVariablesFromJsonb, (Jsonb *) jb,
     ! silent, NULL, tz);
+  json_reset_tofree(); /* free the values tracked during execution */
   if (jperIsError(res))
     return -1;
   if (res == jperOk)
