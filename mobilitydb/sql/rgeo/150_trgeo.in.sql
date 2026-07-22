@@ -730,10 +730,15 @@ CREATE FUNCTION temporal_hash(trgeometry)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_hash_extended(trgeometry, bigint)
+  RETURNS bigint
+  AS 'MODULE_PATHNAME', 'Temporal_hash_extended'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR CLASS trgeometry_hash_ops
   DEFAULT FOR TYPE trgeometry USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   temporal_hash(trgeometry);
+    FUNCTION    1   temporal_hash(trgeometry),
+    FUNCTION    2   temporal_hash_extended(trgeometry, bigint);
 
 /******************************************************************************/

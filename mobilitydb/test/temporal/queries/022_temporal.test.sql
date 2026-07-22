@@ -4060,4 +4060,13 @@ SELECT temporal_hash(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
 SELECT temporal_hash(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
 SELECT temporal_hash(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
 
+SELECT temporal_hash_extended(tint '1@2000-01-01', 1);
+SELECT temporal_hash_extended(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', 1);
+SELECT temporal_hash_extended(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', 1);
+SELECT temporal_hash_extended(tint '{[1@2000-01-01, 2@2000-01-02],[3@2000-01-04, 3@2000-01-05]}', 1);
+SELECT temporal_hash_extended(ttext '[AAA@2000-01-01, BBB@2000-01-02]', 1);
+-- Equal values hash equal; the seed changes the hash
+SELECT temporal_hash_extended(tint '1@2000-01-01', 1) = temporal_hash_extended(tint '1@2000-01-01', 1);
+SELECT temporal_hash_extended(tint '1@2000-01-01', 1) <> temporal_hash_extended(tint '1@2000-01-01', 2);
+
 ------------------------------------------------------------------------------

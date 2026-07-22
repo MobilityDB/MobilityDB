@@ -3050,4 +3050,21 @@ Temporal_hash(PG_FUNCTION_ARGS)
   PG_RETURN_UINT32(result);
 }
 
+PGDLLEXPORT Datum Temporal_hash_extended(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Temporal_hash_extended);
+/**
+ * @ingroup mobilitydb_temporal_accessor
+ * @brief Return the 64-bit hash value of a temporal value using a seed
+ * @sqlfn temporal_hash_extended()
+ */
+Datum
+Temporal_hash_extended(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  uint64 seed = PG_GETARG_INT64(1);
+  uint64 result = temporal_hash_extended(temp, seed);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_UINT64(result);
+}
+
 /*****************************************************************************/

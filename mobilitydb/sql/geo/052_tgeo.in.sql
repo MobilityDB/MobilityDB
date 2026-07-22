@@ -1029,19 +1029,29 @@ CREATE FUNCTION temporal_hash(tgeometry)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_hash_extended(tgeometry, bigint)
+  RETURNS bigint
+  AS 'MODULE_PATHNAME', 'Temporal_hash_extended'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION temporal_hash(tgeography)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_hash'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_hash_extended(tgeography, bigint)
+  RETURNS bigint
+  AS 'MODULE_PATHNAME', 'Temporal_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR CLASS tgeometry_hash_ops
   DEFAULT FOR TYPE tgeometry USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   temporal_hash(tgeometry);
+    FUNCTION    1   temporal_hash(tgeometry),
+    FUNCTION    2   temporal_hash_extended(tgeometry, bigint);
 CREATE OPERATOR CLASS tgeography_hash_ops
   DEFAULT FOR TYPE tgeography USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   temporal_hash(tgeography);
+    FUNCTION    1   temporal_hash(tgeography),
+    FUNCTION    2   temporal_hash_extended(tgeography, bigint);
 
 /******************************************************************************/
 

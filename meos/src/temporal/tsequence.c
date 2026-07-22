@@ -2936,4 +2936,32 @@ tsequence_hash(const TSequence *seq)
   return result;
 }
 
+/**
+ * @ingroup meos_internal_temporal_accessor
+ * @brief Return the 64-bit hash of a temporal sequence using a seed
+ * @param[in] seq Temporal sequence
+ * @param[in] seed Seed
+ * @csqlfn #Temporal_hash_extended()
+ */
+uint64
+tsequence_hash_extended(const TSequence *seq, uint64 seed)
+{
+  assert(seq);
+  /* Create flags from the lower_inc and upper_inc values */
+  char flags = '\0';
+  if (seq->period.lower_inc)
+    flags |= 0x01;
+  if (seq->period.upper_inc)
+    flags |= 0x02;
+  uint64 result = hash_uint32_extended((uint32) flags, seed);
+
+  /* Merge with hash of instants */
+  for (int i = 0; i < seq->count; i++)
+  {
+    uint64 inst_hash = tinstant_hash_extended(TSEQUENCE_INST_N(seq, i), seed);
+    result = (result << 5) - result + inst_hash;
+  }
+  return result;
+}
+
 /*****************************************************************************/

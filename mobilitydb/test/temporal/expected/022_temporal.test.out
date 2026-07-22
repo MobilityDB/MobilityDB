@@ -19872,3 +19872,45 @@ SELECT temporal_hash(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[C
      743475694
 (1 row)
 
+SELECT temporal_hash_extended(tint '1@2000-01-01', 1);
+ temporal_hash_extended 
+------------------------
+     667224924826861377
+(1 row)
+
+SELECT temporal_hash_extended(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', 1);
+ temporal_hash_extended 
+------------------------
+   -6188152960460677780
+(1 row)
+
+SELECT temporal_hash_extended(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', 1);
+ temporal_hash_extended 
+------------------------
+   -6188152960460677780
+(1 row)
+
+SELECT temporal_hash_extended(tint '{[1@2000-01-01, 2@2000-01-02],[3@2000-01-04, 3@2000-01-05]}', 1);
+ temporal_hash_extended 
+------------------------
+    3041570321549013770
+(1 row)
+
+SELECT temporal_hash_extended(ttext '[AAA@2000-01-01, BBB@2000-01-02]', 1);
+ temporal_hash_extended 
+------------------------
+    2961285134100988927
+(1 row)
+
+SELECT temporal_hash_extended(tint '1@2000-01-01', 1) = temporal_hash_extended(tint '1@2000-01-01', 1);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT temporal_hash_extended(tint '1@2000-01-01', 1) <> temporal_hash_extended(tint '1@2000-01-01', 2);
+ ?column? 
+----------
+ t
+(1 row)
+

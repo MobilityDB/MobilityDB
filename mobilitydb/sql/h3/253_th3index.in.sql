@@ -655,10 +655,15 @@ CREATE FUNCTION temporal_hash(th3index)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_hash_extended(th3index, bigint)
+  RETURNS bigint
+  AS 'MODULE_PATHNAME', 'Temporal_hash_extended'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR CLASS th3index_hash_ops
   DEFAULT FOR TYPE th3index USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   temporal_hash(th3index);
+    FUNCTION    1   temporal_hash(th3index),
+    FUNCTION    2   temporal_hash_extended(th3index, bigint);
 
 /******************************************************************************/

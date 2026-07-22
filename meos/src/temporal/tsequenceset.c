@@ -2201,4 +2201,24 @@ tsequenceset_hash(const TSequenceSet *ss)
   return result;
 }
 
+/**
+ * @ingroup meos_internal_temporal_accessor
+ * @brief Return the 64-bit hash of a temporal sequence set using a seed
+ * @param[in] ss Temporal sequence set
+ * @param[in] seed Seed
+ * @csqlfn #Temporal_hash_extended()
+ */
+uint64
+tsequenceset_hash_extended(const TSequenceSet *ss, uint64 seed)
+{
+  assert(ss);
+  uint64 result = 1;
+  for (int i = 0; i < ss->count; i++)
+  {
+    uint64 seq_hash = tsequence_hash_extended(TSEQUENCESET_SEQ_N(ss, i), seed);
+    result = (result << 5) - result + seq_hash;
+  }
+  return result;
+}
+
 /*****************************************************************************/

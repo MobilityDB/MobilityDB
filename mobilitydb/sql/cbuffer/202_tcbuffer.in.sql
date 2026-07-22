@@ -731,10 +731,15 @@ CREATE FUNCTION temporal_hash(tcbuffer)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_hash_extended(tcbuffer, bigint)
+  RETURNS bigint
+  AS 'MODULE_PATHNAME', 'Temporal_hash_extended'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR CLASS tcbuffer_hash_ops
   DEFAULT FOR TYPE tcbuffer USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   temporal_hash(tcbuffer);
+    FUNCTION    1   temporal_hash(tcbuffer),
+    FUNCTION    2   temporal_hash_extended(tcbuffer, bigint);
 
 /*****************************************************************************/
