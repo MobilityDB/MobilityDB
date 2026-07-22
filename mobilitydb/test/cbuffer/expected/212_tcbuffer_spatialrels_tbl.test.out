@@ -40,6 +40,18 @@ SELECT COUNT(*) FROM tbl_tcbuffer, tbl_cbuffer WHERE aContains(temp, cb);
      9
 (1 row)
 
+SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE eContains(t1.temp, t2.temp);
+ count 
+-------
+    46
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE aContains(t1.temp, t2.temp);
+ count 
+-------
+    12
+(1 row)
+
 SELECT COUNT(*) FROM tbl_geometry, tbl_tcbuffer WHERE aCovers(g, temp);
  count 
 -------

@@ -61,6 +61,11 @@ CREATE FUNCTION eContains(tcbuffer, cbuffer)
   AS 'MODULE_PATHNAME', 'Econtains_tcbuffer_cbuffer'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION eContains(tcbuffer, tcbuffer)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Econtains_tcbuffer_tcbuffer'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
 
@@ -88,6 +93,11 @@ CREATE FUNCTION aContains(tcbuffer, geometry)
 CREATE FUNCTION aContains(tcbuffer, cbuffer)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Acontains_tcbuffer_cbuffer'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION aContains(tcbuffer, tcbuffer)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Acontains_tcbuffer_tcbuffer'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 

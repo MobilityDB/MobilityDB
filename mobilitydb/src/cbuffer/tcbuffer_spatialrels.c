@@ -215,6 +215,36 @@ Acontains_tcbuffer_cbuffer(PG_FUNCTION_ARGS)
     ALWAYS);
 }
 
+/*****************************************************************************/
+
+PGDLLEXPORT Datum Econtains_tcbuffer_tcbuffer(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Econtains_tcbuffer_tcbuffer);
+/**
+ * @ingroup mobilitydb_cbuffer_rel_ever
+ * @brief Return true if a temporal circular buffer ever contains another one
+ * @sqlfn eContains()
+ */
+inline Datum
+Econtains_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
+{
+  return EA_spatialrel_tspatial_tspatial(fcinfo, &ea_contains_tcbuffer_tcbuffer,
+    EVER);
+}
+
+PGDLLEXPORT Datum Acontains_tcbuffer_tcbuffer(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Acontains_tcbuffer_tcbuffer);
+/**
+ * @ingroup mobilitydb_cbuffer_rel_ever
+ * @brief Return true if a temporal circular buffer always contains another one
+ * @sqlfn aContains()
+ */
+inline Datum
+Acontains_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
+{
+  return EA_spatialrel_tspatial_tspatial(fcinfo, &ea_contains_tcbuffer_tcbuffer,
+    ALWAYS);
+}
+
 /*****************************************************************************
  * Ever/always covers
  *****************************************************************************/

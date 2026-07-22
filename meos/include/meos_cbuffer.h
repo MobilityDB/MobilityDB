@@ -325,6 +325,7 @@ extern int acontains_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp);
 extern int acontains_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp);
 extern int acontains_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb);
 extern int acontains_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern int acontains_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2);
 extern int acovers_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp);
 extern int acovers_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp);
 extern int acovers_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb);
@@ -345,6 +346,7 @@ extern int atouches_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *tem
 extern int econtains_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp);
 extern int econtains_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb);
 extern int econtains_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern int econtains_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2);
 extern int ecovers_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp);
 extern int ecovers_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp);
 extern int ecovers_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb);

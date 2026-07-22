@@ -42,6 +42,9 @@ SELECT COUNT(*) FROM tbl_cbuffer, tbl_tcbuffer WHERE aContains(cb, temp);
 SELECT COUNT(*) FROM tbl_tcbuffer, tbl_cbuffer WHERE eContains(temp, cb);
 SELECT COUNT(*) FROM tbl_tcbuffer, tbl_cbuffer WHERE aContains(temp, cb);
 
+SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE eContains(t1.temp, t2.temp);
+SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE aContains(t1.temp, t2.temp);
+
 -------------------------------------------------------------------------------
 -- eCovers, aCovers
 -------------------------------------------------------------------------------
