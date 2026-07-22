@@ -107,3 +107,20 @@ SELECT setUnion(s) FROM (VALUES
   (quadbinset '{48427fffffffffff, 48a6227affffffff}')) t(s);
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- Set operations: union (+), difference (-), intersection (*)
+-------------------------------------------------------------------------------
+
+SELECT setUnion(quadbinset '{480fffffffffffff, 48427fffffffffff}', quadbinset '{48427fffffffffff, 48a6227affffffff}');
+SELECT setUnion(quadbinset '{480fffffffffffff}', quadbin '48427fffffffffff');
+SELECT setUnion(quadbin '480fffffffffffff', quadbinset '{48427fffffffffff}');
+SELECT quadbinset '{480fffffffffffff, 48427fffffffffff}' + quadbinset '{48a6227affffffff}';
+
+SELECT setMinus(quadbinset '{480fffffffffffff, 48427fffffffffff}', quadbinset '{48427fffffffffff}');
+SELECT setMinus(quadbinset '{480fffffffffffff, 48427fffffffffff}', quadbin '480fffffffffffff');
+SELECT quadbinset '{480fffffffffffff, 48427fffffffffff}' - quadbinset '{48427fffffffffff}';
+
+SELECT setIntersection(quadbinset '{480fffffffffffff, 48427fffffffffff}', quadbinset '{48427fffffffffff, 48a6227affffffff}');
+SELECT setIntersection(quadbinset '{480fffffffffffff, 48427fffffffffff}', quadbin '48427fffffffffff');
+SELECT quadbinset '{480fffffffffffff, 48427fffffffffff}' * quadbinset '{48427fffffffffff}';
