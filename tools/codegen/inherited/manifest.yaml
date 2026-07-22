@@ -91,9 +91,10 @@ subtypes:
     brief: "temporal poses"
     bin:   100
     category: tspatial
-    # posops is NOT generated: tpose carries additional pose-specific position
-    # operators (112 vs the templated 88), so it stays hand-maintained for now.
-    files: [compops, topops, indexes]
+    # tpose is 3-D-capable, so its position operators include the front/back (Z)
+    # direction on top of the shared left/right/below/above/before/after set.
+    front_back: true
+    files: [compops, topops, posops, indexes]
 
   - temp:  trgeometry
     # The base-value comparison is against a `geometry` (the resolved geometry at an
@@ -105,11 +106,16 @@ subtypes:
     brief: "temporal rigid geometries"
     bin:   150
     category: tspatial
-    # rgeo follows the tgeo-aligned layout, where the combined index file sits at
-    # the gist offset (+23 -> 173) rather than the tight scheme's +16.
+    # trgeometry is 3-D-capable, so its position operators include the front/back
+    # (Z) direction on top of the shared set (same as tpose).
+    front_back: true
+    # rgeo follows the tgeo-aligned layout, where the position files sit at their
+    # tgeo offsets (posops +12 -> 162, the combined index file at the gist offset
+    # +23 -> 173) rather than the tight scheme's +9 / +16.
     positions:
+      posops:  12
       indexes: 23
-    files: [compops, indexes]
+    files: [compops, posops, indexes]
 
 # ---------------------------------------------------------------------------
 # Box-type axis (C boxops generator). The bounding-box topological operator

@@ -32,17 +32,25 @@ BANNER = (
     " * edit the template + tools/codegen/inherited/manifest.yaml and re-run. */\n")
 
 
+# Additive @IF flags: a block that only a minority of families carry defaults OFF,
+# so a family opts IN explicitly rather than opting out. front_back guards the Z
+# (front/back) position operators, which only the 3-D-capable spatial families
+# (tpose, trgeometry, and the tgeo reference) have; every other family omits them.
+DEFAULT_FALSE_FLAGS = {"front_back"}
+
+
 def apply_conditionals(text: str, sub: dict) -> str:
     """Strip ``-- @IF <flag>`` / ``-- @ENDIF`` blocks whose flag is false."""
-    # The flag defaults to true in the subtype. Marker lines are always removed,
-    # so a subtype with the flag on reproduces the reference byte-for-byte (e.g.
-    # cbuffer keeps its scalar stbox cast; a cell-index like quadbin sets
-    # scalar_stbox_cast: false to drop it).
+    # A subtractive flag defaults to true (the reference keeps the block; an
+    # exception strips it, e.g. a cell-index sets scalar_stbox_cast: false). An
+    # additive flag (DEFAULT_FALSE_FLAGS) defaults to false: the reference omits
+    # the block and a carrying family opts in (e.g. tpose sets front_back: true).
     out, skip = [], False
     for line in text.splitlines(keepends=True):
         s = line.strip()
         if s.startswith("-- @IF "):
-            skip = not sub.get(s[len("-- @IF "):].strip(), True)
+            flag = s[len("-- @IF "):].strip()
+            skip = not sub.get(flag, flag not in DEFAULT_FALSE_FLAGS)
             continue
         if s.startswith("-- @ENDIF"):
             skip = False
