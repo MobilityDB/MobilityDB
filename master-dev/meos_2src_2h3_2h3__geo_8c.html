@@ -151,7 +151,7 @@ Functions</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >Public API: static <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> geometry → set of H3 cells. </p>
 <p >Covers every WKT/GSERIALIZED geometry type:</p>
-<p >POINT — single H3 cell via h3_gs_point_to_cell. LINESTRING — sample each segment at edge_length(res)/2 spacing (Nyquist), latLngToCell per sample, dedup. POLYGON — outer + holes converted to GeoPolygon in radians, polygonToCells, dedup. MULTIPOINT — union of per-component POINTs. MULTILINESTRING — union of per-component LINESTRINGs. MULTIPOLYGON — union of per-component POLYGONs. GEOMETRYCOLLECTION — recursive union of per-component geometries.</p>
+<p >POINT — single H3 cell via geo_to_h3index_cell. LINESTRING — sample each segment at edge_length(res)/2 spacing (Nyquist), latLngToCell per sample, dedup. POLYGON — outer + holes converted to GeoPolygon in radians, polygonToCells, dedup. MULTIPOINT — union of per-component POINTs. MULTILINESTRING — union of per-component LINESTRINGs. MULTIPOLYGON — union of per-component POLYGONs. GEOMETRYCOLLECTION — recursive union of per-component geometries.</p>
 <p >The companion <code>ever_eq_h3indexset_th3index</code> predicate enables the cross-platform spatial prefilter: a th3index trip path ever-touches a cell in the given set iff (for any common instant) the trip is in one of those cells. </p>
 </div></div><!-- contents -->
 <!-- start footer part -->
