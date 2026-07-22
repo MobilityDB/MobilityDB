@@ -3231,10 +3231,6 @@
 				<listitem>
 					<para><link linkend="tquadbin_quadbin_cell_to_boundary"><varname>quadbinCellToBoundary</varname>, <varname>tquadbinCellToBoundary</varname></link>: Devuelve el polígono de frontera de una celda</para>
 				</listitem>
-
-				<listitem>
-					<para><link linkend="tquadbin_quadbin_cell_to_bounding_box"><varname>quadbinCellToBoundingBox</varname></link>: Devuelve la caja delimitadora de una celda</para>
-				</listitem>
 			</itemizedlist>
 		</sect2>
 

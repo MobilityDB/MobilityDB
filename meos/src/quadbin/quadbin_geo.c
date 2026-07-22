@@ -96,7 +96,7 @@ quadbin_cell_to_geompoint(Quadbin cell)
  * reference system its boundary polygon coincides with its envelope; it is
  * built from the cell extent as a closed 5-point ring.
  * @param[in] cell Quadbin cell
- * @csqlfn #Quadbin_cell_to_boundary(), #Quadbin_cell_to_bounding_box()
+ * @csqlfn #Quadbin_cell_to_boundary()
  */
 GSERIALIZED *
 quadbin_cell_to_geom(Quadbin cell)

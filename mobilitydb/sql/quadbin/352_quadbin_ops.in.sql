@@ -111,21 +111,17 @@ CREATE FUNCTION quadbinCellToPoint(quadbin)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
- * Boundary / bounding box
+ * Boundary
  *
  * `quadbinCellToBoundary` returns the cell as a polygon (the four
- * corners of the square tile); `quadbinCellToBoundingBox` returns
- * the axis-aligned envelope geometry. Both emit lon/lat in SRID 4326.
+ * corners of the square tile) in lon/lat SRID 4326. The axis-aligned
+ * envelope of a cell is obtained through the inherited `stbox(quadbin)`
+ * cast (see the topological-operators file).
  ******************************************************************************/
 
 CREATE FUNCTION quadbinCellToBoundary(quadbin)
   RETURNS geometry
   AS 'MODULE_PATHNAME', 'Quadbin_cell_to_boundary'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION quadbinCellToBoundingBox(quadbin)
-  RETURNS geometry
-  AS 'MODULE_PATHNAME', 'Quadbin_cell_to_bounding_box'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************

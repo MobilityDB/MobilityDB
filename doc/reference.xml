@@ -3209,10 +3209,6 @@
 				<listitem>
 					<para><link linkend="tquadbin_quadbin_cell_to_boundary"><varname>quadbinCellToBoundary</varname>, <varname>tquadbinCellToBoundary</varname></link>: Return the boundary polygon of a cell</para>
 				</listitem>
-
-				<listitem>
-					<para><link linkend="tquadbin_quadbin_cell_to_bounding_box"><varname>quadbinCellToBoundingBox</varname></link>: Return the bounding box of a cell</para>
-				</listitem>
 			</itemizedlist>
 		</sect2>
 

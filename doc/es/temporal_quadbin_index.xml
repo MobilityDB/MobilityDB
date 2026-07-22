@@ -261,12 +261,6 @@ SELECT geoToQuadbinCell(geometry 'SRID=4326;POINT(4.35 50.85)', 10)
 				<para><varname>quadbinCellToBoundary(quadbin) → geometry</varname></para>
 				<para><varname>tquadbinCellToBoundary(tquadbin) → tgeometry</varname></para>
 			</listitem>
-
-			<listitem xml:id="tquadbin_quadbin_cell_to_bounding_box">
-				<indexterm significance="normal"><primary><varname>quadbinCellToBoundingBox</varname></primary></indexterm>
-				<para>Devuelve el rectángulo delimitador alineado con los ejes de una celda como una geometría SRID 4326. Para una celda QUADBIN el rectángulo delimitador y el contorno coinciden, ya que las celdas son cuadrados web-mercator alineados con los ejes.</para>
-				<para><varname>quadbinCellToBoundingBox(quadbin) → geometry</varname></para>
-			</listitem>
 		</itemizedlist>
 	</sect1>
 
