@@ -1939,8 +1939,15 @@ numeric_hash_extended(Numeric num, uint64 seed)
  * @brief Return the addition of two numeric values
  * @note Derived from PostgreSQL function @p numeric_add()
  */
+#if MEOS
 Numeric
 numeric_add(Numeric num1, Numeric num2)
+{
+  return pg_numeric_add(num1, num2);
+}
+#endif
+Numeric
+pg_numeric_add(Numeric num1, Numeric num2)
 {
   return numeric_add_opt_error(num1, num2, NULL);
 }
@@ -2005,8 +2012,15 @@ numeric_add_opt_error(Numeric num1, Numeric num2, bool *have_error)
  * @brief Return the subtraction of two numeric values
  * @note Derived from PostgreSQL function @p numeric_sub()
  */
+#if MEOS
 Numeric
 numeric_minus(Numeric num1, Numeric num2)
+{
+  return pg_numeric_sub(num1, num2);
+}
+#endif
+Numeric
+pg_numeric_sub(Numeric num1, Numeric num2)
 {
   return numeric_sub_opt_error(num1, num2, NULL);
 }
