@@ -96,7 +96,10 @@ subtypes:
     files: [compops, topops, indexes]
 
   - temp:  trgeometry
-    base:  rgeometry
+    # The base-value comparison is against a `geometry` (the resolved geometry at an
+    # instant); the C wrapper stem is `geo`, not `geometry`, so basesym overrides it.
+    base:  geometry
+    basesym: geo
     fam:   rgeo
     stem:  trgeo
     brief: "temporal rigid geometries"
@@ -106,7 +109,7 @@ subtypes:
     # the gist offset (+23 -> 173) rather than the tight scheme's +16.
     positions:
       indexes: 23
-    files: [indexes]
+    files: [compops, indexes]
 
 # ---------------------------------------------------------------------------
 # Box-type axis (C boxops generator). The bounding-box topological operator
