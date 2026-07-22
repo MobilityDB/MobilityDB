@@ -32,6 +32,7 @@
  * @brief Bounding box operators for {BRIEF}
  */
 
+-- @IF box_extraction
 /*****************************************************************************
  * Temporal {BASE} to stbox
  *****************************************************************************/
@@ -89,6 +90,7 @@ CREATE FUNCTION expandSpace({TEMP}, float)
   AS 'SELECT @extschema@.expandSpace($1::stbox, $2)'
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT;
 
+-- @ENDIF
 /*****************************************************************************
  * Contains
  *****************************************************************************/
