@@ -35,12 +35,14 @@ subtypes:
     brief: "temporal QUADBIN cells"
     bin:   350
     category: tspatial
-    # A cell-index (like h3) has NO scalar base::stbox cast — drop that block.
-    scalar_stbox_cast: false
+    # A cell-index inherits the scalar base::stbox cast like every spatial type,
+    # backed by the quadbin_to_stbox / quadbin_{timestamptz,tstzspan}_to_stbox
+    # exports (meos/src/quadbin/tquadbin_boxops.c).
+    scalar_stbox_cast: true
     stboxes: false
-    # compops/posops/topops are generic (topops' scalar cast stripped via the flag
-    # above). spatialrels delegates to the geo spatial relationships via the
-    # cell→boundary tgeometry conversion (quadbin_cell_to_boundary), the cell-index
+    # compops/posops/topops are generic. spatialrels delegates to the geo spatial
+    # relationships via the cell→boundary tgeometry conversion
+    # (quadbin_cell_to_boundary), the cell-index
     # analogue of th3index 290. GiST/SP-GiST are split (322/323), the canonical
     # cell-index layout (th3index 272/273), not the combined cbuffer `indexes` form.
     files: [compops, posops, topops, spatialrels, gist, spgist]
@@ -55,8 +57,10 @@ subtypes:
     boundary_fn: th3CellToBoundary
     bin:   250
     category: tspatial
-    # A cell-index has NO scalar base::stbox cast — same as tquadbin.
-    scalar_stbox_cast: false
+    # A cell-index inherits the scalar base::stbox cast — same as tquadbin —
+    # backed by the h3index_to_stbox / h3index_{timestamptz,tstzspan}_to_stbox
+    # exports (meos/src/h3/th3index_boxops.c).
+    scalar_stbox_cast: true
     stboxes: false
     files: [compops, posops, topops, spatialrels, gist, spgist]
 

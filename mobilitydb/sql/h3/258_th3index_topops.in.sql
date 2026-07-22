@@ -38,12 +38,27 @@
  * Temporal h3index to stbox
  *****************************************************************************/
 
+CREATE FUNCTION stbox(h3index)
+  RETURNS stbox
+  AS 'MODULE_PATHNAME', 'H3index_to_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION stbox(h3index, timestamptz)
+  RETURNS stbox
+  AS 'MODULE_PATHNAME', 'H3index_timestamptz_to_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION stbox(h3index, tstzspan)
+  RETURNS stbox
+  AS 'MODULE_PATHNAME', 'H3index_tstzspan_to_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION stbox(th3index)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Tspatial_to_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE CAST (h3index AS stbox) WITH FUNCTION stbox(h3index);
 CREATE CAST (th3index AS stbox) WITH FUNCTION stbox(th3index);
 
 /*****************************************************************************/

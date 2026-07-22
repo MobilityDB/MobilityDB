@@ -86,11 +86,11 @@ SELECT round(ST_Y(quadbinCellToPoint(quadbin '48a6227affffffff'))::numeric, 6);
 SELECT ST_SRID(quadbinCellToPoint(quadbin '48a6227affffffff'));
 
 -------------------------------------------------------------------------------
--- Boundary / bounding box
+-- Boundary
 -------------------------------------------------------------------------------
 
 SELECT ST_GeometryType(quadbinCellToBoundary(quadbin '48a6227affffffff'));
-SELECT ST_GeometryType(quadbinCellToBoundingBox(quadbin '48a6227affffffff'));
+SELECT round(xMax(stbox(quadbin '48a6227affffffff'))::numeric, 6);
 SELECT ST_SRID(quadbinCellToBoundary(quadbin '48a6227affffffff'));
 
 -- The centroid point lies inside the cell boundary polygon

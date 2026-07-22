@@ -380,9 +380,9 @@ quadbin_cell_to_point(Quadbin cell, double *longitude, double *latitude)
 /**
  * @ingroup meos_quadbin
  * @brief Return the lon/lat bounding box (xmin, ymin, xmax, ymax) of a cell
- * @details Out-parameter helper; the geometry projections quadbinCellToBoundary
- * and quadbinCellToBoundingBox are backed by quadbin_cell_to_geom in
- * quadbin_geo.c.
+ * @details Out-parameter helper shared by the geometry boundary projection
+ * quadbinCellToBoundary (via quadbin_cell_to_geom in quadbin_geo.c) and the
+ * stbox(quadbin) cast (via quadbin_set_stbox).
  */
 void
 quadbin_cell_to_bounding_box(Quadbin cell, double *xmin, double *ymin,

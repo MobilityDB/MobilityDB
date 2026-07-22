@@ -83,10 +83,10 @@ SELECT round(ST_Y(quadbinCellToPoint(quadbin '48a6227affffffff'))::numeric, 6) =
 -- quadbin-py bbox(48a6227affffffff) = (4.218750, 50.736455, 4.570312, 50.958427)
 -------------------------------------------------------------------------------
 
-SELECT round(ST_XMin(quadbinCellToBoundingBox(quadbin '48a6227affffffff'))::numeric, 6) = 4.218750;
-SELECT round(ST_YMin(quadbinCellToBoundingBox(quadbin '48a6227affffffff'))::numeric, 6) = 50.736455;
-SELECT round(ST_XMax(quadbinCellToBoundingBox(quadbin '48a6227affffffff'))::numeric, 6) = 4.570312;
-SELECT round(ST_YMax(quadbinCellToBoundingBox(quadbin '48a6227affffffff'))::numeric, 6) = 50.958427;
+SELECT round(xMin(stbox(quadbin '48a6227affffffff'))::numeric, 6) = 4.218750;
+SELECT round(yMin(stbox(quadbin '48a6227affffffff'))::numeric, 6) = 50.736455;
+SELECT round(xMax(stbox(quadbin '48a6227affffffff'))::numeric, 6) = 4.570312;
+SELECT round(yMax(stbox(quadbin '48a6227affffffff'))::numeric, 6) = 50.958427;
 
 -------------------------------------------------------------------------------
 -- cell_to_parent / cell_to_children golden vectors (quadbin-py hierarchy)

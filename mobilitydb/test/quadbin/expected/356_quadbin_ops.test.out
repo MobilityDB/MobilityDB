@@ -123,10 +123,10 @@ SELECT ST_GeometryType(quadbinCellToBoundary(quadbin '48a6227affffffff'));
  ST_Polygon
 (1 row)
 
-SELECT ST_GeometryType(quadbinCellToBoundingBox(quadbin '48a6227affffffff'));
- st_geometrytype 
------------------
- ST_Polygon
+SELECT round(xMax(stbox(quadbin '48a6227affffffff'))::numeric, 6);
+  round   
+----------
+ 4.570313
 (1 row)
 
 SELECT ST_SRID(quadbinCellToBoundary(quadbin '48a6227affffffff'));

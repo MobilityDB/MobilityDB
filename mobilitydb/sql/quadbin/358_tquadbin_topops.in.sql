@@ -38,12 +38,27 @@
  * Temporal quadbin to stbox
  *****************************************************************************/
 
+CREATE FUNCTION stbox(quadbin)
+  RETURNS stbox
+  AS 'MODULE_PATHNAME', 'Quadbin_to_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION stbox(quadbin, timestamptz)
+  RETURNS stbox
+  AS 'MODULE_PATHNAME', 'Quadbin_timestamptz_to_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION stbox(quadbin, tstzspan)
+  RETURNS stbox
+  AS 'MODULE_PATHNAME', 'Quadbin_tstzspan_to_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION stbox(tquadbin)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Tspatial_to_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE CAST (quadbin AS stbox) WITH FUNCTION stbox(quadbin);
 CREATE CAST (tquadbin AS stbox) WITH FUNCTION stbox(tquadbin);
 
 /*****************************************************************************/

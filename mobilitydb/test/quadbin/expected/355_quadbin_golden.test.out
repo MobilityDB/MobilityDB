@@ -73,25 +73,25 @@ SELECT round(ST_Y(quadbinCellToPoint(quadbin '48a6227affffffff'))::numeric, 6) =
  t
 (1 row)
 
-SELECT round(ST_XMin(quadbinCellToBoundingBox(quadbin '48a6227affffffff'))::numeric, 6) = 4.218750;
+SELECT round(xMin(stbox(quadbin '48a6227affffffff'))::numeric, 6) = 4.218750;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT round(ST_YMin(quadbinCellToBoundingBox(quadbin '48a6227affffffff'))::numeric, 6) = 50.736455;
+SELECT round(yMin(stbox(quadbin '48a6227affffffff'))::numeric, 6) = 50.736455;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT round(ST_XMax(quadbinCellToBoundingBox(quadbin '48a6227affffffff'))::numeric, 6) = 4.570312;
+SELECT round(xMax(stbox(quadbin '48a6227affffffff'))::numeric, 6) = 4.570312;
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT round(ST_YMax(quadbinCellToBoundingBox(quadbin '48a6227affffffff'))::numeric, 6) = 50.958427;
+SELECT round(yMax(stbox(quadbin '48a6227affffffff'))::numeric, 6) = 50.958427;
  ?column? 
 ----------
  t

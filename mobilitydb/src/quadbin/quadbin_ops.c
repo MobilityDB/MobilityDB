@@ -225,20 +225,6 @@ Quadbin_cell_to_boundary(PG_FUNCTION_ARGS)
   PG_RETURN_GSERIALIZED_P(quadbin_cell_to_geom(cell));
 }
 
-PGDLLEXPORT Datum Quadbin_cell_to_bounding_box(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Quadbin_cell_to_bounding_box);
-/**
- * @ingroup mobilitydb_quadbin_conversion
- * @brief Return the cell axis-aligned envelope as a polygon (SRID 4326)
- * @sqlfn quadbinCellToBoundingBox()
- */
-Datum
-Quadbin_cell_to_bounding_box(PG_FUNCTION_ARGS)
-{
-  Quadbin cell = PG_GETARG_QUADBIN(0);
-  PG_RETURN_GSERIALIZED_P(quadbin_cell_to_geom(cell));
-}
-
 /*****************************************************************************
  * Bounding box
  *****************************************************************************/

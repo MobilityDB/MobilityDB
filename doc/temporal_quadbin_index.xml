@@ -261,12 +261,6 @@ SELECT geoToQuadbinCell(geometry 'SRID=4326;POINT(4.35 50.85)', 10)
 				<para><varname>quadbinCellToBoundary(quadbin) → geometry</varname></para>
 				<para><varname>tquadbinCellToBoundary(tquadbin) → tgeometry</varname></para>
 			</listitem>
-
-			<listitem xml:id="tquadbin_quadbin_cell_to_bounding_box">
-				<indexterm significance="normal"><primary><varname>quadbinCellToBoundingBox</varname></primary></indexterm>
-				<para>Return the axis-aligned bounding box of a cell as an SRID-4326 geometry. For a QUADBIN cell the bounding box and the boundary coincide, since cells are axis-aligned web-mercator squares.</para>
-				<para><varname>quadbinCellToBoundingBox(quadbin) → geometry</varname></para>
-			</listitem>
 		</itemizedlist>
 	</sect1>
 
