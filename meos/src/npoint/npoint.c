@@ -161,7 +161,7 @@ ensure_route_exists(int64 rid)
   if (! route_exists(rid))
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "There is no route with gid value %ld in table ways", rid);
+      "There is no route with gid value " INT64_FORMAT " in table ways", rid);
     return false;
   }
   return true;
