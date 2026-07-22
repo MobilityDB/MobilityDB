@@ -84,8 +84,8 @@ typedef enum
  *****************************************************************************/
 
 /* Point / polygon conversions — bodies in th3index_latlng.c. */
-extern GSERIALIZED *h3_cell_to_gs_point(H3Index cell);
-extern GSERIALIZED *h3_cell_to_gs_boundary(H3Index cell);
+extern GSERIALIZED *h3_cell_to_geompoint(H3Index cell);
+extern GSERIALIZED *h3_cell_to_geom(H3Index cell);
 
 /* Shared helper: build a geodetic SRID 4326 LWPOLY from a libh3
  * CellBoundary and serialise. Primary definition in

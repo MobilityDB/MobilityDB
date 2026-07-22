@@ -543,21 +543,21 @@ Datum
 datum_h3_latlng_to_cell(Datum point_d, Datum res_d)
 {
   const GSERIALIZED *point = (GSERIALIZED *) DatumGetPointer(point_d);
-  return H3IndexGetDatum(h3_gs_point_to_cell(point,
+  return H3IndexGetDatum(geo_to_h3index_cell(point,
     DatumGetInt32(res_d)));
 }
 
 Datum
 datum_h3_cell_to_latlng(Datum d)
 {
-  GSERIALIZED *gs = h3_cell_to_gs_point(DatumGetH3Index(d));
+  GSERIALIZED *gs = h3_cell_to_geompoint(DatumGetH3Index(d));
   return PointerGetDatum(gs);
 }
 
 Datum
 datum_h3_cell_to_boundary(Datum d)
 {
-  GSERIALIZED *gs = h3_cell_to_gs_boundary(DatumGetH3Index(d));
+  GSERIALIZED *gs = h3_cell_to_geom(DatumGetH3Index(d));
   return PointerGetDatum(gs);
 }
 

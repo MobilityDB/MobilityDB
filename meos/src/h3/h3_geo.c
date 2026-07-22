@@ -33,7 +33,7 @@
  *
  * Covers every WKT/GSERIALIZED geometry type:
  *
- *   POINT             — single H3 cell via h3_gs_point_to_cell.
+ *   POINT             — single H3 cell via geo_to_h3index_cell.
  *   LINESTRING        — sample each segment at edge_length(res)/2 spacing
  *                       (Nyquist), latLngToCell per sample, dedup.
  *   POLYGON           — outer + holes converted to GeoPolygon in radians,
@@ -182,7 +182,7 @@ h3_latlng_deg_to_cell(double lat_deg, double lng_deg, int32 resolution)
 }
 
 /*****************************************************************************
- * POINT — single cell.  Uses the existing h3_gs_point_to_cell which has
+ * POINT — single cell.  Uses the existing geo_to_h3index_cell which has
  * the SRID guard.
  *****************************************************************************/
 
