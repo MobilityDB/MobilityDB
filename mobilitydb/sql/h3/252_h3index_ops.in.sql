@@ -50,7 +50,7 @@
 
 CREATE FUNCTION geoToH3Cell(geometry, integer)
   RETURNS h3index
-  AS 'MODULE_PATHNAME', 'Geo_gs_point_to_h3index'
+  AS 'MODULE_PATHNAME', 'Geo_point_to_h3index'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION geoToH3IndexSet(geometry, integer)

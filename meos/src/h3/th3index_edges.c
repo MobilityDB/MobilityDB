@@ -69,7 +69,7 @@ h3_directed_edge_to_gs_boundary(H3Index edge)
    * as cells), swapping lat/lng in the process — a known upstream
    * quirk. We emit a closed POLYGON too so consumers see a uniform
    * shape, but keep x = lng, y = lat as in
-   * `h3_cell_to_gs_boundary`. */
+   * `h3_cell_to_geom`. */
   return cell_boundary_to_gs(&bnd);
 }
 

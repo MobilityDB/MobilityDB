@@ -47,19 +47,19 @@
 #include "pg_temporal/temporal.h"     /* PG_GETARG_TEMPORAL_P */
 #include "pg_geo/postgis.h"           /* PG_GETARG_GSERIALIZED_P */
 
-PGDLLEXPORT Datum Geo_gs_point_to_h3index(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Geo_gs_point_to_h3index);
+PGDLLEXPORT Datum Geo_point_to_h3index(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_point_to_h3index);
 /**
  * @ingroup mobilitydb_h3_conversion
  * @brief Single H3 cell covering a POINT geometry at the given resolution
  * @sqlfn geoToH3Cell()
  */
 Datum
-Geo_gs_point_to_h3index(PG_FUNCTION_ARGS)
+Geo_point_to_h3index(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   int32 resolution = PG_GETARG_INT32(1);
-  H3Index cell = h3_gs_point_to_cell(gs, resolution);
+  H3Index cell = geo_to_h3index_cell(gs, resolution);
   PG_FREE_IF_COPY(gs, 0);
   if (cell == (H3Index) 0)
     PG_RETURN_NULL();

@@ -32,8 +32,8 @@
  * @brief MEOS lifting for lat/lng conversions, plus the static
  * adapter bodies that back them.
  *
- * The static h3 conversions `h3_gs_point_to_cell`,
- * `h3_cell_to_gs_point`, and `h3_cell_to_gs_boundary` live here
+ * The static h3 conversions `geo_to_h3index_cell`,
+ * `h3_cell_to_geompoint`, and `h3_cell_to_geom` live here
  * alongside the lifted entries that consume them. Point reads use
  * the MobilityDB peek macro `GSERIALIZED_POINT2D_P` rather than
  * `lwgeom_from_gserialized` — approved by the PostGIS team and a
@@ -69,10 +69,10 @@
  * @brief Single H3 cell covering a POINT geometry at the given resolution
  * @param[in] point      The POINT geometry.
  * @param[in] resolution H3 resolution (0..15).
- * @csqlfn #Geo_gs_point_to_h3index()
+ * @csqlfn #Geo_point_to_h3index()
  */
 H3Index
-h3_gs_point_to_cell(const GSERIALIZED *point, int32 resolution)
+geo_to_h3index_cell(const GSERIALIZED *point, int32 resolution)
 {
   if (! ensure_srid_is_latlong(gserialized_get_srid(point)))
     return (H3Index) 0;
@@ -88,7 +88,7 @@ h3_gs_point_to_cell(const GSERIALIZED *point, int32 resolution)
 }
 
 GSERIALIZED *
-h3_cell_to_gs_point(H3Index cell)
+h3_cell_to_geompoint(H3Index cell)
 {
   LatLng ll;
   if (cellToLatLng(cell, &ll) != E_SUCCESS)
@@ -136,7 +136,7 @@ cell_boundary_to_gs(const CellBoundary *bnd)
 }
 
 GSERIALIZED *
-h3_cell_to_gs_boundary(H3Index cell)
+h3_cell_to_geom(H3Index cell)
 {
   CellBoundary bnd;
   if (cellToBoundary(cell, &bnd) != E_SUCCESS)
@@ -175,13 +175,13 @@ h3_cell_to_gs_boundary(H3Index cell)
 /**
  * @brief One-instant conversion. The Datum carries a GSERIALIZED point
  * in SRID 4326 (either tgeompoint or tgeogpoint encoding); the SRID
- * guard lives in the static adapter `h3_gs_point_to_cell`.
+ * guard lives in the static adapter `geo_to_h3index_cell`.
  */
 static TInstant *
 tpointinst_to_th3index(const TInstant *inst, int32 resolution)
 {
   const GSERIALIZED *gs = DatumGetGserializedP(tinstant_value(inst));
-  H3Index cell = h3_gs_point_to_cell(gs, resolution);
+  H3Index cell = geo_to_h3index_cell(gs, resolution);
   return tinstant_make(H3IndexGetDatum(cell), T_TH3INDEX, inst->t);
 }
 
@@ -228,7 +228,7 @@ tpointseq_densify_to_th3index(const TSequence *seq, int32 resolution)
     {
       const TInstant *inst = TSEQUENCE_INST_N(seq, i);
       const GSERIALIZED *gs = DatumGetGserializedP(tinstant_value(inst));
-      H3Index cell = h3_gs_point_to_cell(gs, resolution);
+      H3Index cell = geo_to_h3index_cell(gs, resolution);
       PUSH_INSTANT(cell, inst->t);
     }
   }
@@ -239,14 +239,14 @@ tpointseq_densify_to_th3index(const TSequence *seq, int32 resolution)
       step_deg = 1e-5;   /* defensive */
 
     /* Emit the first instant's cell. Routing the first lookup through
-     * h3_gs_point_to_cell applies the lon/lat SRID guard once for the
+     * geo_to_h3index_cell applies the lon/lat SRID guard once for the
      * whole sequence: SRID is a type-level property uniform across every
      * instant, so validating it here is sufficient and the interpolated
      * per-sample lookups below can use the cheaper raw-coordinate path. */
     {
       const TInstant *inst0 = TSEQUENCE_INST_N(seq, 0);
       const GSERIALIZED *gs0 = DatumGetGserializedP(tinstant_value(inst0));
-      H3Index cell0 = h3_gs_point_to_cell(gs0, resolution);
+      H3Index cell0 = geo_to_h3index_cell(gs0, resolution);
       PUSH_INSTANT(cell0, inst0->t);
       last_cell = cell0;
       have_last = true;
@@ -331,7 +331,7 @@ tpointseqset_densify_to_th3index(const TSequenceSet *ss, int32 resolution)
  * @brief Subtype-dispatching wrapper used by both tgeompoint and
  * tgeogpoint entrypoints.
  *
- * Every path validates the lon/lat SRID through `h3_gs_point_to_cell`
+ * Every path validates the lon/lat SRID through `geo_to_h3index_cell`
  * (the instant adapter, the non-densify branch, and the first lookup of
  * the densify walker), so non lon/lat input is rejected before any cell
  * is produced and the dispatcher itself needs no separate guard.
@@ -356,7 +356,7 @@ tpoint_to_th3index_dense(const Temporal *temp, int32 resolution)
 /*****************************************************************************
  * tgeompoint_to_th3index(tgeompoint, integer) — densifying conversion
  *
- * The adapter `h3_gs_point_to_cell` (called from `tpointinst_to_th3index`)
+ * The adapter `geo_to_h3index_cell` (called from `tpointinst_to_th3index`)
  * verifies SRID 4326 and raises on mismatch.
  *****************************************************************************/
 
@@ -421,7 +421,7 @@ th3index_to_tgeogpoint(const Temporal *temp)
 /*****************************************************************************
  * th3CellToLatlng (planar output, SRID 4326 overload)
  *
- * Both overloads share the same static adapter `h3_cell_to_gs_point`,
+ * Both overloads share the same static adapter `h3_cell_to_geompoint`,
  * which emits an SRID-4326 point. The geography-vs-geometry nature
  * of the result is disambiguated at the lifting layer via the
  * `restype` setting — downstream consumers see the intended type.
