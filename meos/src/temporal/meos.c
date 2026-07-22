@@ -408,7 +408,7 @@ check_datestyle(const char **newval, void **extra)
   if (!(elemlist && elemlist->str && elemlist->str[0]))
   {
     meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
-      "Invalid datestyle value: \"%s\"", newval);
+      "Invalid datestyle value: \"%s\"", *newval);
     return false;
   }
 
