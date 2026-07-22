@@ -422,12 +422,11 @@ tempsubtype_from_string(const char *str, int16_t *subtype)
   return false;
 }
 
-#ifndef NDEBUG
 /**
  * @brief Ensure that the subtype of a temporal value is valid
  * @note The function is used for the dispatch functions for temporal types
  */
-inline bool
+bool
 temptype_subtype(tempSubtype subtype)
 {
   return (subtype == TINSTANT || subtype == TSEQUENCE ||
@@ -438,13 +437,12 @@ temptype_subtype(tempSubtype subtype)
  * @brief Ensure that the subtype of a temporal value is valid
  * @note The function is used for the the analyze and selectivity functions
  */
-inline bool
+bool
 temptype_subtype_all(tempSubtype subtype)
 {
   return (subtype == ANYTEMPSUBTYPE ||
     subtype == TINSTANT || subtype == TSEQUENCE || subtype == TSEQUENCESET);
 }
-#endif
 
 /*****************************************************************************/
 
@@ -639,13 +637,11 @@ spantype_spansettype(MeosType type)
 
 /*****************************************************************************/
 
-#ifndef NDEBUG
 /**
  * @brief Return true if the type is a base type of one of the template types,
  * that is, @p Set, @p Span, @p SpanSet, and @p Temporal
- * @note This function is only used in the asserts
  */
-inline bool
+bool
 meos_basetype(MeosType type)
 {
   return (type == T_BOOL || type == T_DATE ||
@@ -657,7 +653,6 @@ meos_basetype(MeosType type)
     type == T_CBUFFER || type == T_JSONB || type == T_H3INDEX ||
     type == T_QUADBIN || type == T_PCPOINT || type == T_PCPATCH);
 }
-#endif
 
 /**
  * @brief Return true if the values of the base type are passed by value
@@ -728,12 +723,10 @@ meostype_length(MeosType type)
   return SHRT_MAX;
 }
 
-#ifndef NDEBUG
 /**
  * @brief Return true if the type is an alphanumeric base type
- * @note This function is only used in the asserts
  */
-inline bool
+bool
 alphanum_basetype(MeosType type)
 {
   return (type == T_BOOL || type == T_DATE || type == T_FLOAT8 ||
@@ -744,15 +737,13 @@ alphanum_basetype(MeosType type)
 
 /**
  * @brief Return true if the type is an alphanumeric base type
- * @note This function is only used in the asserts
  */
-inline bool
+bool
 alphanum_temptype(MeosType type)
 {
   return (type == T_TBOOL || type == T_TFLOAT || type == T_TINT ||
     type == T_TTEXT || type == T_TJSONB || type == T_TBIGINT);
 }
-#endif
 
 /**
  * @brief Return true if the type is a geo base type
@@ -789,12 +780,10 @@ time_type(MeosType type)
 
 /*****************************************************************************/
 
-#ifndef NDEBUG
 /**
  * @brief Return true if the type is a base type of a set type
- * @note This function is only used in the asserts
  */
-inline bool
+bool
 set_basetype(MeosType type)
 {
   return (type == T_DATE || type == T_FLOAT8 || type == T_INT4 ||
@@ -804,7 +793,6 @@ set_basetype(MeosType type)
     type == T_H3INDEX || type == T_QUADBIN || type == T_PCPOINT ||
     type == T_PCPATCH);
 }
-#endif
 
 /**
  * @brief Return true if the type is a set type
@@ -998,7 +986,6 @@ span_type(MeosType type)
 
 /**
  * @brief Return true if the type has a span type as bounding box
- * @note This function is only used in the asserts
  */
 bool
 type_span_bbox(MeosType type)
@@ -1009,7 +996,6 @@ type_span_bbox(MeosType type)
 
 /**
  * @brief Return true if the type can be converted to a temporal box
- * @note This function is only used in the asserts
  */
 bool
 span_tbox_type(MeosType type)
@@ -1020,7 +1006,6 @@ span_tbox_type(MeosType type)
 
 /**
  * @brief Return true if the type can be converted to a temporal box
- * @note This function is only used in the asserts
  */
 bool
 ensure_span_tbox_type(MeosType type)
@@ -1141,12 +1126,10 @@ temporal_type(MeosType type)
     type == T_TPCPOINT || type == T_TPCPATCH);
 }
 
-#ifndef NDEBUG
 /**
  * @brief Return true if the type is a temporal base type
- * @note This function is only used in the asserts
  */
-inline bool
+bool
 temporal_basetype(MeosType type)
 {
   return (type == T_BOOL ||
@@ -1158,7 +1141,6 @@ temporal_basetype(MeosType type)
     type == T_JSONB || type == T_QUADBIN || type == T_PCPOINT ||
     type == T_PCPATCH);
 }
-#endif
 
 /**
  * @brief Return true if the temporal type supports LINEAR interpolation
@@ -1180,9 +1162,8 @@ temptype_supports_linear(MeosType type)
 
 /**
  * @brief Return true if the type is a temporal alphanumeric type
- * @note This function is only used in the asserts
  */
-inline bool
+bool
 talphanum_type(MeosType type)
 {
   return (type == T_TBOOL || type == T_TFLOAT || type == T_TINT ||

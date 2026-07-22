@@ -232,10 +232,8 @@ typedef struct
 
 /*****************************************************************************/
 
-#ifndef NDEBUG
 extern bool temptype_subtype(tempSubtype subtype);
 extern bool temptype_subtype_all(tempSubtype subtype);
-#endif
 extern const char *tempsubtype_name(tempSubtype subtype);
 extern bool tempsubtype_from_string(const char *str, int16 *subtype);
 extern const char *meosoper_name(MeosOper oper);
@@ -259,16 +257,12 @@ extern MeosType basetype_settype(MeosType type);
 
 extern bool tnumber_basetype(MeosType type);
 extern bool geo_basetype(MeosType type);
-#ifndef NDEBUG
 extern bool meos_basetype(MeosType type);
 extern bool alphanum_basetype(MeosType type);
 extern bool alphanum_temptype(MeosType type);
-#endif
 
 extern bool time_type(MeosType type);
-#ifndef NDEBUG
 extern bool set_basetype(MeosType type);
-#endif
 
 extern bool set_type(MeosType type);
 extern bool numset_type(MeosType type);
@@ -304,16 +298,12 @@ extern bool timespanset_type(MeosType type);
 extern bool ensure_timespanset_type(MeosType type);
 
 extern bool temporal_type(MeosType type);
-#ifndef NDEBUG
 extern bool temporal_basetype(MeosType type);
-#endif
 extern bool temptype_supports_linear(MeosType type);
 extern bool basetype_byvalue(MeosType type);
 extern bool basetype_varlength(MeosType type);
 extern int16 meostype_length(MeosType type);
-#ifndef NDEBUG
 extern bool talphanum_type(MeosType type);
-#endif
 extern bool talpha_type(MeosType type);
 extern bool tnumber_type(MeosType type);
 extern bool ensure_tnumber_type(MeosType type);
