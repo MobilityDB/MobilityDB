@@ -1468,7 +1468,7 @@ tjsonb_path_exists(const Temporal *temp, const JsonPath *jp, const Jsonb *vars,
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &datum_jsonb_path_exists;
   lfinfo.argtype[0] = T_TJSONB;
-  lfinfo.numparam = 3;
+  lfinfo.numparam = 4;
   lfinfo.param[0] = PointerGetDatum(jp);
   lfinfo.param[1] = PointerGetDatum(vars);
   lfinfo.param[2] = BoolGetDatum(silent);
@@ -1504,7 +1504,7 @@ tjsonb_path_match(const Temporal *temp, const JsonPath *jp, const Jsonb *vars,
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &datum_jsonb_path_match;
   lfinfo.argtype[0] = T_TJSONB;
-  lfinfo.numparam = 3;
+  lfinfo.numparam = 4;
   lfinfo.param[0] = PointerGetDatum(jp);
   lfinfo.param[1] = PointerGetDatum(vars);
   lfinfo.param[2] = BoolGetDatum(silent);
@@ -1539,7 +1539,7 @@ tjsonb_path_query_array(const Temporal *temp, const JsonPath *jp,
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &datum_jsonb_path_query_array;
   lfinfo.argtype[0] = T_TJSONB;
-  lfinfo.numparam = 3;
+  lfinfo.numparam = 4;
   lfinfo.param[0] = PointerGetDatum(jp);
   lfinfo.param[1] = PointerGetDatum(vars);
   lfinfo.param[2] = BoolGetDatum(silent);
@@ -1575,7 +1575,7 @@ tjsonb_path_query_first(const Temporal *temp, const JsonPath *jp,
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &datum_jsonb_path_query_first;
   lfinfo.argtype[0] = T_TJSONB;
-  lfinfo.numparam = 3;
+  lfinfo.numparam = 4;
   lfinfo.param[0] = PointerGetDatum(jp);
   lfinfo.param[1] = PointerGetDatum(vars);
   lfinfo.param[2] = BoolGetDatum(silent);
