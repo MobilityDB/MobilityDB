@@ -1011,6 +1011,49 @@ geodist_geom_point_inside(double x, double y, const GeoDistGeom *g)
 }
 
 /**
+ * @brief Squared distance from a point to a 2D segment
+ */
+static inline double
+geodist_pt_seg_dist2(double px, double py, double ax, double ay, double bx,
+  double by)
+{
+  double abx = bx - ax, aby = by - ay;
+  double l2 = abx * abx + aby * aby;
+  double t = (l2 > 0.0) ? ((px - ax) * abx + (py - ay) * aby) / l2 : 0.0;
+  t = t < 0.0 ? 0.0 : (t > 1.0 ? 1.0 : t);
+  double ex = px - (ax + t * abx), ey = py - (ay + t * aby);
+  return ex * ex + ey * ey;
+}
+
+/**
+ * @brief Squared minimum distance between two 2D segments (0 when they cross),
+ * a scalar-only alternative to lw_dist2d_seg_seg for the hot nearest-approach
+ * prune (no closest-point bookkeeping)
+ */
+static inline double
+geodist_seg_seg_dist2(double ax, double ay, double bx, double by, double cx,
+  double cy, double dx, double dy)
+{
+  /* Conservative crossing test (orientation signs, no division): a touch or
+   * collinear overlap is treated as a crossing, so the returned squared
+   * distance is never above the true one -- a valid lower bound for the prune,
+   * robust near parallel where a t/u division would be ill-conditioned. */
+  double d1 = (bx - ax) * (cy - ay) - (by - ay) * (cx - ax);
+  double d2 = (bx - ax) * (dy - ay) - (by - ay) * (dx - ax);
+  double d3 = (dx - cx) * (ay - cy) - (dy - cy) * (ax - cx);
+  double d4 = (dx - cx) * (by - cy) - (dy - cy) * (bx - cx);
+  if (((d1 <= 0.0 && d2 >= 0.0) || (d1 >= 0.0 && d2 <= 0.0)) &&
+      ((d3 <= 0.0 && d4 >= 0.0) || (d3 >= 0.0 && d4 <= 0.0)))
+    return 0.0;
+  double m = geodist_pt_seg_dist2(ax, ay, cx, cy, dx, dy);
+  double v;
+  v = geodist_pt_seg_dist2(bx, by, cx, cy, dx, dy); if (v < m) m = v;
+  v = geodist_pt_seg_dist2(cx, cy, ax, ay, bx, by); if (v < m) m = v;
+  v = geodist_pt_seg_dist2(dx, dy, ax, ay, bx, by); if (v < m) m = v;
+  return m;
+}
+
+/**
  * @brief Update the running minimum with one swept-capsule unit (the centre
  * moves from c1 to c2 with radius r1 to r2; a stationary disk has c1 == c2)
  */
@@ -1064,6 +1107,23 @@ geodist_segm_nad(double cx1, double cy1, double r1, double cx2, double cy2,
         double dx = Max(Max(ed->xmin - sxmax, sxmin - ed->xmax), 0.0);
         double dy = Max(Max(ed->ymin - symax, symin - ed->ymax), 0.0);
         if (dx * dx + dy * dy >= (*best) * (*best))
+          continue;
+      }
+      /* Radius-aware tighter prune (moving disc only, straight edges): the
+       * exact swept-disc distance is at least the centre-segment-to-edge
+       * distance minus the larger radius (min_t dist(centre(t),edge) - r(t) >=
+       * segdist - rmax), so when segdist >= best + rmax the exact per-edge solve
+       * is skipped. The axis-aligned swept box expanded by the radius is a loose
+       * filter for a round disc; this rejects the many box survivors it leaves.
+       * A scalar squared seg-seg distance is used (not lw_dist2d_seg_seg, which
+       * also computes closest points and is far heavier in this hot loop). */
+      if (! ed->is_arc && *best != DBL_MAX)
+      {
+        double rmax = Max(r1, r2);
+        double thr = *best + rmax;
+        if (rmax > 0.0 &&
+            geodist_seg_seg_dist2(cx1, cy1, cx2, cy2, ed->x1, ed->y1,
+              ed->x2, ed->y2) >= thr * thr)
           continue;
       }
       double m = ed->is_arc ?
