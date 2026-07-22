@@ -45,17 +45,23 @@ def apply_conditionals(text: str, sub: dict) -> str:
     # exception strips it, e.g. a cell-index sets scalar_stbox_cast: false). An
     # additive flag (DEFAULT_FALSE_FLAGS) defaults to false: the reference omits
     # the block and a carrying family opts in (e.g. tpose sets front_back: true).
-    out, skip = [], False
+    # Blocks nest: a level is emitted only when it AND every enclosing level are
+    # kept, so an outer flag can drop a whole preamble whose inner flags still
+    # give partially-suppressing families their finer control (e.g. box_extraction
+    # wraps the scalar_stbox_cast / stboxes sub-blocks).
+    out, stack = [], []  # stack[-1] = effective skip (this level or any ancestor)
     for line in text.splitlines(keepends=True):
         s = line.strip()
         if s.startswith("-- @IF "):
             flag = s[len("-- @IF "):].strip()
-            skip = not sub.get(flag, flag not in DEFAULT_FALSE_FLAGS)
+            this_skip = not sub.get(flag, flag not in DEFAULT_FALSE_FLAGS)
+            stack.append(this_skip or (stack[-1] if stack else False))
             continue
         if s.startswith("-- @ENDIF"):
-            skip = False
+            if stack:
+                stack.pop()
             continue
-        if not skip:
+        if not (stack and stack[-1]):
             out.append(line)
     return "".join(out)
 
