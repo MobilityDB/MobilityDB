@@ -114,6 +114,24 @@ CREATE FUNCTION overabove(stbox, {TEMP})
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overabove_stbox_tspatial'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- @IF front_back
+CREATE FUNCTION front(stbox, {TEMP})
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Front_stbox_tspatial'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION overfront(stbox, {TEMP})
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overfront_stbox_tspatial'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION back(stbox, {TEMP})
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Back_stbox_tspatial'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION overback(stbox, {TEMP})
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overback_stbox_tspatial'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- @ENDIF
 CREATE FUNCTION before(stbox, {TEMP})
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_stbox_tspatial'
@@ -175,6 +193,30 @@ CREATE OPERATOR |&> (
   PROCEDURE = overabove,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
+-- @IF front_back
+CREATE OPERATOR <</ (
+  LEFTARG = stbox, RIGHTARG = {TEMP},
+  PROCEDURE = front,
+  COMMUTATOR = '/>>',
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR &</ (
+  LEFTARG = stbox, RIGHTARG = {TEMP},
+  PROCEDURE = overfront,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR />> (
+  LEFTARG = stbox, RIGHTARG = {TEMP},
+  PROCEDURE = back,
+  COMMUTATOR = '<</',
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR /&> (
+  LEFTARG = stbox, RIGHTARG = {TEMP},
+  PROCEDURE = overback,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+-- @ENDIF
 CREATE OPERATOR <<# (
   LEFTARG = stbox, RIGHTARG = {TEMP},
   PROCEDURE = before,
@@ -280,6 +322,24 @@ CREATE FUNCTION overabove({TEMP}, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overabove_tspatial_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- @IF front_back
+CREATE FUNCTION front({TEMP}, stbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Front_tspatial_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION overfront({TEMP}, stbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overfront_tspatial_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION back({TEMP}, stbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Back_tspatial_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION overback({TEMP}, stbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overback_tspatial_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- @ENDIF
 CREATE FUNCTION before({TEMP}, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_tspatial_stbox'
@@ -341,6 +401,30 @@ CREATE OPERATOR |&> (
   PROCEDURE = overabove,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
+-- @IF front_back
+CREATE OPERATOR <</ (
+  LEFTARG = {TEMP}, RIGHTARG = stbox,
+  PROCEDURE = front,
+  COMMUTATOR = '/>>',
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR &</ (
+  LEFTARG = {TEMP}, RIGHTARG = stbox,
+  PROCEDURE = overfront,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR />> (
+  LEFTARG = {TEMP}, RIGHTARG = stbox,
+  PROCEDURE = back,
+  COMMUTATOR = '<</',
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR /&> (
+  LEFTARG = {TEMP}, RIGHTARG = stbox,
+  PROCEDURE = overback,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+-- @ENDIF
 CREATE OPERATOR <<# (
   LEFTARG = {TEMP}, RIGHTARG = stbox,
   PROCEDURE = before,
@@ -400,6 +484,24 @@ CREATE FUNCTION overabove({TEMP}, {TEMP})
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overabove_tspatial_tspatial'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- @IF front_back
+CREATE FUNCTION front({TEMP}, {TEMP})
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Front_tspatial_tspatial'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION overfront({TEMP}, {TEMP})
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overfront_tspatial_tspatial'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION back({TEMP}, {TEMP})
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Back_tspatial_tspatial'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION overback({TEMP}, {TEMP})
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overback_tspatial_tspatial'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- @ENDIF
 CREATE FUNCTION before({TEMP}, {TEMP})
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_tspatial_tspatial'
@@ -461,6 +563,30 @@ CREATE OPERATOR |&> (
   PROCEDURE = overabove,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
+-- @IF front_back
+CREATE OPERATOR <</ (
+  LEFTARG = {TEMP}, RIGHTARG = {TEMP},
+  PROCEDURE = front,
+  COMMUTATOR = '/>>',
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR &</ (
+  LEFTARG = {TEMP}, RIGHTARG = {TEMP},
+  PROCEDURE = overfront,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR />> (
+  LEFTARG = {TEMP}, RIGHTARG = {TEMP},
+  PROCEDURE = back,
+  COMMUTATOR = '<</',
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR /&> (
+  LEFTARG = {TEMP}, RIGHTARG = {TEMP},
+  PROCEDURE = overback,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+-- @ENDIF
 CREATE OPERATOR <<# (
   LEFTARG = {TEMP}, RIGHTARG = {TEMP},
   PROCEDURE = before,
