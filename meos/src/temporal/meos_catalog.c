@@ -909,7 +909,8 @@ bool
 spatialset_type(MeosType type)
 {
   return (type == T_GEOMSET || type == T_GEOGSET || type == T_NPOINTSET ||
-    type == T_POSESET || type == T_CBUFFERSET);
+    type == T_POSESET || type == T_CBUFFERSET || type == T_H3INDEXSET ||
+    type == T_QUADBINSET);
 }
 
 #if MEOS
