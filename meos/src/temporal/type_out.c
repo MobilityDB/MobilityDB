@@ -233,7 +233,7 @@ int32_as_mfjson_sb(stringbuffer_t *sb, int i)
 static void
 int64_as_mfjson_sb(stringbuffer_t *sb, int64 i)
 {
-  stringbuffer_aprintf(sb, "%ld", i);
+  stringbuffer_aprintf(sb, INT64_FORMAT, i);
   return;
 }
 

@@ -501,7 +501,7 @@ ensure_not_negative_datum(Datum d, MeosType basetype)
   if (basetype == T_INT4)
     snprintf(str, sizeof(str), "%d", DatumGetInt32(d));
   else if (basetype == T_INT8)
-    snprintf(str, sizeof(str), "%ld", DatumGetInt64(d));
+    snprintf(str, sizeof(str), INT64_FORMAT, DatumGetInt64(d));
   else if (basetype == T_FLOAT8)
     snprintf(str, sizeof(str), "%f", DatumGetFloat8(d));
   else /* basetype == T_TIMESTAMPTZ */
@@ -546,7 +546,7 @@ ensure_positive_datum(Datum d, MeosType basetype)
   if (basetype == T_INT4)
     snprintf(str, sizeof(str), "%d", DatumGetInt32(d));
   else if (basetype == T_INT8)
-    snprintf(str, sizeof(str), "%ld", DatumGetInt64(d));
+    snprintf(str, sizeof(str), INT64_FORMAT, DatumGetInt64(d));
   else if (basetype == T_FLOAT8)
     snprintf(str, sizeof(str), "%f", DatumGetFloat8(d));
   meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
