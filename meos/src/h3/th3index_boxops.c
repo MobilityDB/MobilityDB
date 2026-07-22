@@ -130,6 +130,57 @@ h3index_set_stbox(H3Index cell, STBox *box)
 }
 
 /**
+ * @ingroup meos_h3_conversion
+ * @brief Return the spatiotemporal bounding box of an H3 cell
+ * @param[in] cell H3 cell index
+ * @return The geodetic X/Y bounding box of the cell (SRID 4326, no T dimension)
+ * @csqlfn #H3index_to_stbox()
+ */
+STBox *
+h3index_to_stbox(H3Index cell)
+{
+  STBox box;
+  if (! h3index_set_stbox(cell, &box))
+    return NULL;
+  return stbox_copy(&box);
+}
+
+/**
+ * @ingroup meos_h3_conversion
+ * @brief Return the spatiotemporal bounding box of an H3 cell and a timestamptz
+ * @param[in] cell H3 cell index
+ * @param[in] t Timestamp
+ * @csqlfn #H3index_timestamptz_to_stbox()
+ */
+STBox *
+h3index_timestamptz_to_stbox(H3Index cell, TimestampTz t)
+{
+  STBox box;
+  if (! h3index_set_stbox(cell, &box))
+    return NULL;
+  timestamptz_set_stbox(t, &box);
+  return stbox_copy(&box);
+}
+
+/**
+ * @ingroup meos_h3_conversion
+ * @brief Return the spatiotemporal bounding box of an H3 cell and a timestamptz
+ * span
+ * @param[in] cell H3 cell index
+ * @param[in] s Timestamptz span
+ * @csqlfn #H3index_tstzspan_to_stbox()
+ */
+STBox *
+h3index_tstzspan_to_stbox(H3Index cell, const Span *s)
+{
+  STBox box;
+  if (! h3index_set_stbox(cell, &box))
+    return NULL;
+  tstzspan_set_stbox(s, &box);
+  return stbox_copy(&box);
+}
+
+/**
  * @ingroup meos_internal_box_conversion
  * @brief Return in the last argument a spatiotemporal box constructed from an
  * array of H3 cells (the geodetic X/Y union, no T dimension)
