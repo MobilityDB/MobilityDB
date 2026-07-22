@@ -114,7 +114,7 @@ route_exists(int64 rid)
 {
   char sql[SQL_ROUTE_MAXLEN];
   snprintf(sql, sizeof(sql),
-    "SELECT true FROM public.ways WHERE gid = %ld", rid);
+    "SELECT true FROM public.ways WHERE gid = " INT64_FORMAT, rid);
   bool isNull = true;
   bool result = false;
   SPI_connect();
@@ -142,7 +142,7 @@ route_length(int64 rid)
 {
   char sql[SQL_ROUTE_MAXLEN];
   snprintf(sql, sizeof(sql),
-    "SELECT length FROM public.ways WHERE gid = %ld", rid);
+    "SELECT length FROM public.ways WHERE gid = " INT64_FORMAT, rid);
   bool isNull = true;
   double result = 0.0;
   SPI_connect();
@@ -177,7 +177,7 @@ route_geom(int64 rid)
 {
   char sql[SQL_ROUTE_MAXLEN];
   snprintf(sql, sizeof(sql),
-    "SELECT the_geom FROM public.ways WHERE gid = %ld", rid);
+    "SELECT the_geom FROM public.ways WHERE gid = " INT64_FORMAT, rid);
   bool isNull = true;
   GSERIALIZED *result = NULL;
   SPI_connect();
