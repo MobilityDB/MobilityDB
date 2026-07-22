@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: h3_grid_ring</title>
+<title>MobilityDB: h3_grid_path_cells</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_0fff62ca9c7e6b49d869dbbeba2dc9ed.html">meos</a></li><li class="navelem"><a class="el" href="dir_87ff05107218c94eb54c7d49f556ada2.html">include</a></li><li class="navelem"><a class="el" href="dir_81530ddf49c19668753319d3be3b8539.html">h3</a></li><li class="navelem"><a class="el" href="h3index__sets_8h.html">h3index_sets.h</a></li>  </ul>
+<li class="navelem"><a class="el" href="group__meos__h3__traversal.html">Grid-traversal functions</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,32 +79,33 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="h3index__sets_8h_a8f4671bdf7a3436346207a1927a88741.html#a8f4671bdf7a3436346207a1927a88741">h3_cell_to_vertexes</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="h3index__sets_8h_a4ee8be30883c99afc2f6aa471380d70c.html#a4ee8be30883c99afc2f6aa471380d70c">h3_get_icosahedron_faces</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="h3index__sets_8h_a7327708ca1ebe2003f8d57d515e44e66.html#a7327708ca1ebe2003f8d57d515e44e66">h3_grid_path_cells</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="h3index__sets_8h_aa5180cd43a468eddeaa9e0b7e436e994.html#aa5180cd43a468eddeaa9e0b7e436e994">h3_grid_ring</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="h3index__sets_8h_a098b2600c10096b1aca7aceb703e3443.html#a098b2600c10096b1aca7aceb703e3443">h3_origin_to_directed_edges</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__h3__traversal_ga282a4c801cabbe64af90dc293d2cc456.html#ga282a4c801cabbe64af90dc293d2cc456">h3_grid_disk</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__h3__traversal_ga7327708ca1ebe2003f8d57d515e44e66.html#ga7327708ca1ebe2003f8d57d515e44e66">h3_grid_path_cells</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__h3__traversal_gaa5180cd43a468eddeaa9e0b7e436e994.html#gaa5180cd43a468eddeaa9e0b7e436e994">h3_grid_ring</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__h3__traversal_ga2dce9385ef61478b0a58adb5ade6299a.html#ga2dce9385ef61478b0a58adb5ade6299a">th3index_cell_to_local_ij</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__h3__traversal_gaa0a72f357dd7bd669c27c3b4e58e3760.html#gaa0a72f357dd7bd669c27c3b4e58e3760">th3index_grid_distance</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__h3__traversal_gabb22b54bebfd98c860fbd328558be833.html#gabb22b54bebfd98c860fbd328558be833">th3index_local_ij_to_cell</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="aa5180cd43a468eddeaa9e0b7e436e994" name="aa5180cd43a468eddeaa9e0b7e436e994"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa5180cd43a468eddeaa9e0b7e436e994">&#9670;&#160;</a></span>h3_grid_ring()</h2>
+<a id="ga7327708ca1ebe2003f8d57d515e44e66" name="ga7327708ca1ebe2003f8d57d515e44e66"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga7327708ca1ebe2003f8d57d515e44e66">&#9670;&#160;</a></span>h3_grid_path_cells()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structSet.html">Set</a> * h3_grid_ring </td>
+          <td class="memname"><a class="el" href="structSet.html">Set</a> * h3_grid_path_cells </td>
           <td>(</td>
           <td class="paramtype">H3Index&#160;</td>
-          <td class="paramname"><em>origin</em>, </td>
+          <td class="paramname"><em>start</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>k</em>&#160;</td>
+          <td class="paramtype">H3Index&#160;</td>
+          <td class="paramname"><em>end</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -114,8 +115,8 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return all cells at exactly <code>k</code> grid steps from <code>origin</code>. </p>
-<p >Fails near pentagons (libh3's unsafe ring). </p>
+<p>Return the set of H3 cells on the path from a start to an end cell @csqlfn <a class="el" href="group__mobilitydb__h3__set_ga67375793f235f91556164473838a0b78.html#ga67375793f235f91556164473838a0b78" title="Return the cells on the inclusive path from start to end @sqlfn h3GridPathCells()">H3_grid_path_cells()</a> </p>
+<p >Return the cells on the inclusive path from <code>start</code> to <code>end</code>. </p>
 
 </div>
 </div>
