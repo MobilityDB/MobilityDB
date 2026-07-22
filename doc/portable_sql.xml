@@ -87,4 +87,6 @@
 	</informaltable>
 
 	<para>For example, the bounding-box overlap <literal>t1.trip &amp;&amp; t2.trip</literal> is written portably as <literal>overlaps(t1.trip, t2.trip)</literal>, and the temporal-before test <literal>p1.period &lt;&lt;# p2.period</literal> as <literal>before(p1.period, p2.period)</literal>.</para>
+
+	<para>Aggregate functions follow the same principle. A SQL aggregate is assembled from up to three PostgreSQL machinery functions, each exposed under a canonical name built from the aggregate name and its role: a transition function <varname>&lt;aggregate&gt;Transition</varname>, an optional combine function <varname>&lt;aggregate&gt;Combine</varname> used for parallel aggregation, and a final function <varname>&lt;aggregate&gt;Final</varname>. The three roles stay distinct and uniformly named so that every binding can reconstruct the aggregate from the catalog. For example, the union aggregates expose the transition functions <varname>setUnionTransition</varname>, <varname>spanUnionTransition</varname> and <varname>spansetUnionTransition</varname> and the final functions <varname>setUnionFinal</varname>, <varname>spanUnionFinal</varname> and <varname>spansetUnionFinal</varname>; a combine function, where an aggregate supports parallel execution, takes the matching <varname>&lt;aggregate&gt;Combine</varname> form.</para>
 </chapter>
