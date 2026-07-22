@@ -116,6 +116,12 @@ extern void quadbin_cell_to_point(Quadbin cell, double *longitude,
 extern void quadbin_cell_to_bounding_box(Quadbin cell, double *xmin,
   double *ymin, double *xmax, double *ymax);
 
+/* Geometry (lon/lat, SRID 4326) */
+extern Quadbin geo_to_quadbin_cell(const GSERIALIZED *point,
+  int32 resolution);
+extern GSERIALIZED *quadbin_cell_to_geompoint(Quadbin cell);
+extern GSERIALIZED *quadbin_cell_to_geom(Quadbin cell);
+
 /* Metrics */
 extern double quadbin_cell_area(Quadbin cell);
 
@@ -226,8 +232,7 @@ extern Temporal *tquadbin_cell_to_quadkey(const Temporal *temp);
 //   const Temporal *dest);
 // extern Temporal *tquadbin_cell_area(const Temporal *temp);
 
-/* Static geometry → quadbin cell / cell set + ever-intersects predicate */
-// extern Quadbin quadbin_gs_point_to_cell(const GSERIALIZED *point, int32 resolution);
+/* Static geometry → quadbin cell set + ever-intersects predicate */
 // extern Set *geo_to_quadbin_set(const GSERIALIZED *gs, int32 resolution);
 // extern int ever_eq_quadbinset_tquadbin(const Set *cells, const Temporal *tqb);
 

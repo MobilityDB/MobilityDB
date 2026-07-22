@@ -4,6 +4,11 @@ set(QUADBIN_SRCS
   # hierarchy, traversal, Web-Mercator lat/lng, metrics, serialization.
   quadbin.c
 
+  # Geometry adapters between a quadbin cell and PostGIS geometries (the
+  # lon/lat coupling the geo-free kernel deliberately excludes; the h3
+  # analogue is th3index_latlng.c).
+  quadbin_geo.c
+
   # Static `quadbin` SQL type — validating parser plus comparison / hash
   # helpers consumed by the central temporal type I/O dispatch.
   quadbin_meos.c
