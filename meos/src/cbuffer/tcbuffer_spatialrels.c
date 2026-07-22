@@ -718,6 +718,48 @@ acontains_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
   return ea_contains_tcbuffer_cbuffer(temp, cb, ALWAYS);
 }
 
+/**
+ * @ingroup meos_internal_cbuffer_rel_ever
+ * @brief Return 1 if a temporal circular buffer ever/always contains another
+ * one, 0 if not, and -1 on error
+ * @param[in] temp1,temp2 Temporal circular buffers
+ * @param[in] ever True for the ever semantics, false for the always semantics
+ * @csqlfn #Econtains_tcbuffer_tcbuffer(), #Acontains_tcbuffer_tcbuffer()
+ */
+int
+ea_contains_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
+  bool ever)
+{
+  return ea_spatialrel_tcbuffer_tcbuffer(temp1, temp2, &datum_cbuffer_contains,
+    ever, true);
+}
+
+/**
+ * @ingroup meos_geo_rel_ever
+ * @brief Return 1 if a temporal circular buffer ever contains another one, 0 if not,
+ * and -1 on error
+ * @param[in] temp1,temp2 Temporal geos
+ * @csqlfn #Econtains_tcbuffer_tcbuffer()
+ */
+int
+econtains_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
+{
+  return ea_contains_tcbuffer_tcbuffer(temp1, temp2, EVER);
+}
+
+/**
+ * @ingroup meos_geo_rel_ever
+ * @brief Return 1 if a temporal circular buffer always contains another one, 0 if not,
+ * and -1 on error
+ * @param[in] temp1,temp2 Temporal geos
+ * @csqlfn #Acontains_tcbuffer_tcbuffer()
+ */
+int
+acontains_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
+{
+  return ea_contains_tcbuffer_tcbuffer(temp1, temp2, ALWAYS);
+}
+
 /*****************************************************************************
  * Ever/always covers
  *****************************************************************************/
