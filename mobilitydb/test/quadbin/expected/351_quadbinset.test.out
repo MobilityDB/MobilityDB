@@ -165,3 +165,63 @@ SELECT setUnion(s) FROM (VALUES
  {"480fffffffffffff", "48427fffffffffff", "48a6227affffffff"}
 (1 row)
 
+SELECT setUnion(quadbinset '{480fffffffffffff, 48427fffffffffff}', quadbinset '{48427fffffffffff, 48a6227affffffff}');
+                           setunion                           
+--------------------------------------------------------------
+ {"480fffffffffffff", "48427fffffffffff", "48a6227affffffff"}
+(1 row)
+
+SELECT setUnion(quadbinset '{480fffffffffffff}', quadbin '48427fffffffffff');
+                 setunion                 
+------------------------------------------
+ {"480fffffffffffff", "48427fffffffffff"}
+(1 row)
+
+SELECT setUnion(quadbin '480fffffffffffff', quadbinset '{48427fffffffffff}');
+                 setunion                 
+------------------------------------------
+ {"480fffffffffffff", "48427fffffffffff"}
+(1 row)
+
+SELECT quadbinset '{480fffffffffffff, 48427fffffffffff}' + quadbinset '{48a6227affffffff}';
+                           ?column?                           
+--------------------------------------------------------------
+ {"480fffffffffffff", "48427fffffffffff", "48a6227affffffff"}
+(1 row)
+
+SELECT setMinus(quadbinset '{480fffffffffffff, 48427fffffffffff}', quadbinset '{48427fffffffffff}');
+       setminus       
+----------------------
+ {"480fffffffffffff"}
+(1 row)
+
+SELECT setMinus(quadbinset '{480fffffffffffff, 48427fffffffffff}', quadbin '480fffffffffffff');
+       setminus       
+----------------------
+ {"48427fffffffffff"}
+(1 row)
+
+SELECT quadbinset '{480fffffffffffff, 48427fffffffffff}' - quadbinset '{48427fffffffffff}';
+       ?column?       
+----------------------
+ {"480fffffffffffff"}
+(1 row)
+
+SELECT setIntersection(quadbinset '{480fffffffffffff, 48427fffffffffff}', quadbinset '{48427fffffffffff, 48a6227affffffff}');
+   setintersection    
+----------------------
+ {"48427fffffffffff"}
+(1 row)
+
+SELECT setIntersection(quadbinset '{480fffffffffffff, 48427fffffffffff}', quadbin '48427fffffffffff');
+   setintersection    
+----------------------
+ {"48427fffffffffff"}
+(1 row)
+
+SELECT quadbinset '{480fffffffffffff, 48427fffffffffff}' * quadbinset '{48427fffffffffff}';
+       ?column?       
+----------------------
+ {"48427fffffffffff"}
+(1 row)
+

@@ -267,3 +267,99 @@ CREATE AGGREGATE setUnion(quadbinset) (
 );
 
 /******************************************************************************/
+
+/******************************************************************************
+ * set union +
+ ******************************************************************************/
+
+CREATE FUNCTION setUnion(quadbin, quadbinset)
+  RETURNS quadbinset
+  AS 'MODULE_PATHNAME', 'Union_value_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION setUnion(quadbinset, quadbin)
+  RETURNS quadbinset
+  AS 'MODULE_PATHNAME', 'Union_set_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION setUnion(quadbinset, quadbinset)
+  RETURNS quadbinset
+  AS 'MODULE_PATHNAME', 'Union_set_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR + (
+  PROCEDURE = setUnion,
+  LEFTARG = quadbin, RIGHTARG = quadbinset,
+  COMMUTATOR = +
+);
+CREATE OPERATOR + (
+  PROCEDURE = setUnion,
+  LEFTARG = quadbinset, RIGHTARG = quadbin,
+  COMMUTATOR = +
+);
+CREATE OPERATOR + (
+  PROCEDURE = setUnion,
+  LEFTARG = quadbinset, RIGHTARG = quadbinset,
+  COMMUTATOR = +
+);
+
+/******************************************************************************
+ * set difference -
+ ******************************************************************************/
+
+CREATE FUNCTION setMinus(quadbin, quadbinset)
+  RETURNS quadbinset
+  AS 'MODULE_PATHNAME', 'Minus_value_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION setMinus(quadbinset, quadbin)
+  RETURNS quadbinset
+  AS 'MODULE_PATHNAME', 'Minus_set_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION setMinus(quadbinset, quadbinset)
+  RETURNS quadbinset
+  AS 'MODULE_PATHNAME', 'Minus_set_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR - (
+  PROCEDURE = setMinus,
+  LEFTARG = quadbin, RIGHTARG = quadbinset
+);
+CREATE OPERATOR - (
+  PROCEDURE = setMinus,
+  LEFTARG = quadbinset, RIGHTARG = quadbin
+);
+CREATE OPERATOR - (
+  PROCEDURE = setMinus,
+  LEFTARG = quadbinset, RIGHTARG = quadbinset
+);
+
+/******************************************************************************
+ * set intersection *
+ ******************************************************************************/
+
+CREATE FUNCTION setIntersection(quadbin, quadbinset)
+  RETURNS quadbinset
+  AS 'MODULE_PATHNAME', 'Intersection_value_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION setIntersection(quadbinset, quadbin)
+  RETURNS quadbinset
+  AS 'MODULE_PATHNAME', 'Intersection_set_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION setIntersection(quadbinset, quadbinset)
+  RETURNS quadbinset
+  AS 'MODULE_PATHNAME', 'Intersection_set_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR * (
+  PROCEDURE = setIntersection,
+  LEFTARG = quadbin, RIGHTARG = quadbinset,
+  COMMUTATOR = *
+);
+CREATE OPERATOR * (
+  PROCEDURE = setIntersection,
+  LEFTARG = quadbinset, RIGHTARG = quadbin,
+  COMMUTATOR = *
+);
+CREATE OPERATOR * (
+  PROCEDURE = setIntersection,
+  LEFTARG = quadbinset, RIGHTARG = quadbinset,
+  COMMUTATOR = *
+);
