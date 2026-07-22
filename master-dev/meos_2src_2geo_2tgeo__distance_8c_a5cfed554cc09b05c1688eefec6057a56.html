@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: geodist_geom_arc_set_bbox</title>
+<title>MobilityDB: geodist_seg_seg_dist2</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -82,7 +82,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_a625bf80e22b2c8973bb71dc2efff89b4.html#a625bf80e22b2c8973bb71dc2efff89b4">circ_tree_distance_tree_internal</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_a8631c67c9c1ed66eeca71632b4f412a5.html#a8631c67c9c1ed66eeca71632b4f412a5">geodist_angle_norm</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_a681bf67fbbe2bd8c5930bbe94265bc6a.html#a681bf67fbbe2bd8c5930bbe94265bc6a">geodist_geom_arc_contains_angle</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_a3cf8547db2ad7839d9712a7d2d54a3d6.html#a3cf8547db2ad7839d9712a7d2d54a3d6">geodist_geom_arc_set_bbox</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_a3cf8547db2ad7839d9712a7d2d54a3d6.html#a3cf8547db2ad7839d9712a7d2d54a3d6">geodist_geom_arc_set_bbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_a4cd5ec5e7d0958e29198a037b29866ea.html#a4cd5ec5e7d0958e29198a037b29866ea">geodist_geom_build</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_ad94bbb2abd5156da368fdf7de70ecefe.html#ad94bbb2abd5156da368fdf7de70ecefe">geodist_geom_build_buckets</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_ae728d69dc0f00e7675903a7e7e151898.html#ae728d69dc0f00e7675903a7e7e151898">geodist_geom_build_rtree</a></td></tr>
@@ -99,7 +99,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_a1f057568f02d4fc9242b8b765fd48d6e.html#a1f057568f02d4fc9242b8b765fd48d6e">geodist_pip_results</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_ad0fd7a3f0216cd1fb93b690f919b26f3.html#ad0fd7a3f0216cd1fb93b690f919b26f3">geodist_poly_seg_raycross</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_acbb740a60250e8b1359005220f55aebd.html#acbb740a60250e8b1359005220f55aebd">geodist_pt_seg_dist2</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_a5cfed554cc09b05c1688eefec6057a56.html#a5cfed554cc09b05c1688eefec6057a56">geodist_seg_seg_dist2</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_a5cfed554cc09b05c1688eefec6057a56.html#a5cfed554cc09b05c1688eefec6057a56">geodist_seg_seg_dist2</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_aeb1faf084c1b1c9985df21afd0e88f53.html#aeb1faf084c1b1c9985df21afd0e88f53">geodist_segm_arc_dt</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_a31fbe4b9da5e31fe5653a8c838dad36f.html#a31fbe4b9da5e31fe5653a8c838dad36f">geodist_segm_arc_mindist</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_a4df0852e617c941ff324a9c8e8ca76d1.html#a4df0852e617c941ff324a9c8e8ca76d1">geodist_segm_edge_dt</a></td></tr>
@@ -157,8 +157,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a3cf8547db2ad7839d9712a7d2d54a3d6" name="a3cf8547db2ad7839d9712a7d2d54a3d6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3cf8547db2ad7839d9712a7d2d54a3d6">&#9670;&#160;</a></span>geodist_geom_arc_set_bbox()</h2>
+<a id="a5cfed554cc09b05c1688eefec6057a56" name="a5cfed554cc09b05c1688eefec6057a56"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5cfed554cc09b05c1688eefec6057a56">&#9670;&#160;</a></span>geodist_seg_seg_dist2()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -167,21 +167,67 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static void geodist_geom_arc_set_bbox </td>
+          <td class="memname">static double geodist_seg_seg_dist2 </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="structGeoDistEdge.html">GeoDistEdge</a> *&#160;</td>
-          <td class="paramname"><em>e</em></td><td>)</td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>ax</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>ay</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>bx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>by</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>cx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>cy</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>dx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>dy</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p><a class="el" href="structSet.html" title="Structure to represent sets of values.">Set</a> an arc edge's bounding box: the chord endpoints extended with any cardinal-direction circle extreme (0, pi/2, pi, -pi/2) that lies within the arc's angular span, so the bucket hierarchy never prunes away the arc bulge. </p>
+<p>Squared minimum distance between two 2D segments (0 when they cross), a scalar-only alternative to lw_dist2d_seg_seg for the hot nearest-approach prune (no closest-point bookkeeping) </p>
 
 </div>
 </div>
