@@ -181,11 +181,7 @@ Quadbin_point_to_cell(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   int32 resolution = PG_GETARG_INT32(1);
-  LWGEOM *geom = lwgeom_from_gserialized(gs);
-  POINT2D pt;
-  lwpoint_getPoint2d_p((LWPOINT *) geom, &pt);
-  Quadbin result = quadbin_point_to_cell(pt.x, pt.y, (uint32_t) resolution);
-  lwgeom_free(geom);
+  Quadbin result = geo_to_quadbin_cell(gs, resolution);
   PG_FREE_IF_COPY(gs, 0);
   PG_RETURN_QUADBIN(result);
 }
@@ -201,45 +197,16 @@ Datum
 Quadbin_cell_to_point(PG_FUNCTION_ARGS)
 {
   Quadbin cell = PG_GETARG_QUADBIN(0);
-  double lon, lat;
-  quadbin_cell_to_point(cell, &lon, &lat);
-  /* Planar (non-geodetic) lon/lat point; geopoint_make is available in the
-   * MEOS=OFF extension build, unlike the MEOS-only geompoint_make2d. */
-  GSERIALIZED *result = geopoint_make(lon, lat, 0.0, false, false, 4326);
-  PG_RETURN_GSERIALIZED_P(result);
+  PG_RETURN_GSERIALIZED_P(quadbin_cell_to_geompoint(cell));
 }
 
 /*****************************************************************************
  * Boundary / bounding box
  *
- * A quadbin cell is an axis-aligned square tile, so its boundary
- * polygon and its envelope geometry coincide; both are built from the
- * `quadbin_cell_to_bounding_box` extent as a closed 5-point ring.
+ * A quadbin cell is an axis-aligned square tile, so its boundary polygon
+ * and its envelope geometry coincide; the geometry is constructed by the
+ * MEOS export quadbin_cell_to_geom.
  *****************************************************************************/
-
-/**
- * @brief Build the closed square boundary polygon (SRID 4326) of a
- * quadbin cell from its lon/lat extent
- */
-static GSERIALIZED *
-quadbin_cell_envelope(Quadbin cell)
-{
-  double xmin, ymin, xmax, ymax;
-  quadbin_cell_to_bounding_box(cell, &xmin, &ymin, &xmax, &ymax);
-  POINTARRAY *pa = ptarray_construct_empty(LW_FALSE, LW_FALSE, 5);
-  POINT4D pt;
-  pt.z = 0.0; pt.m = 0.0;
-  pt.x = xmin; pt.y = ymin; ptarray_append_point(pa, &pt, LW_TRUE);
-  pt.x = xmax; pt.y = ymin; ptarray_append_point(pa, &pt, LW_TRUE);
-  pt.x = xmax; pt.y = ymax; ptarray_append_point(pa, &pt, LW_TRUE);
-  pt.x = xmin; pt.y = ymax; ptarray_append_point(pa, &pt, LW_TRUE);
-  pt.x = xmin; pt.y = ymin; ptarray_append_point(pa, &pt, LW_TRUE); /* close */
-  LWPOLY *poly = lwpoly_construct_empty(4326, LW_FALSE, LW_FALSE);
-  lwpoly_add_ring(poly, pa);
-  GSERIALIZED *gs = geo_serialize(lwpoly_as_lwgeom(poly));
-  lwpoly_free(poly);
-  return gs;
-}
 
 PGDLLEXPORT Datum Quadbin_cell_to_boundary(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Quadbin_cell_to_boundary);
@@ -252,7 +219,7 @@ Datum
 Quadbin_cell_to_boundary(PG_FUNCTION_ARGS)
 {
   Quadbin cell = PG_GETARG_QUADBIN(0);
-  PG_RETURN_GSERIALIZED_P(quadbin_cell_envelope(cell));
+  PG_RETURN_GSERIALIZED_P(quadbin_cell_to_geom(cell));
 }
 
 PGDLLEXPORT Datum Quadbin_cell_to_bounding_box(PG_FUNCTION_ARGS);
@@ -266,7 +233,7 @@ Datum
 Quadbin_cell_to_bounding_box(PG_FUNCTION_ARGS)
 {
   Quadbin cell = PG_GETARG_QUADBIN(0);
-  PG_RETURN_GSERIALIZED_P(quadbin_cell_envelope(cell));
+  PG_RETURN_GSERIALIZED_P(quadbin_cell_to_geom(cell));
 }
 
 /*****************************************************************************

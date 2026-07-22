@@ -363,7 +363,8 @@ quadbin_point_to_cell(double longitude, double latitude, uint32_t resolution)
 /**
  * @ingroup meos_quadbin
  * @brief Return the lon/lat centroid of a quadbin cell
- * @csqlfn #Quadbin_cell_to_point()
+ * @details Out-parameter helper; the geometry projection quadbinCellToPoint
+ * is backed by quadbin_cell_to_geompoint in quadbin_geo.c.
  */
 void
 quadbin_cell_to_point(Quadbin cell, double *longitude, double *latitude)
@@ -379,7 +380,9 @@ quadbin_cell_to_point(Quadbin cell, double *longitude, double *latitude)
 /**
  * @ingroup meos_quadbin
  * @brief Return the lon/lat bounding box (xmin, ymin, xmax, ymax) of a cell
- * @csqlfn #Quadbin_cell_to_bounding_box()
+ * @details Out-parameter helper; the geometry projections quadbinCellToBoundary
+ * and quadbinCellToBoundingBox are backed by quadbin_cell_to_geom in
+ * quadbin_geo.c.
  */
 void
 quadbin_cell_to_bounding_box(Quadbin cell, double *xmin, double *ymin,
