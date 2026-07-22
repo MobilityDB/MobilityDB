@@ -1201,6 +1201,20 @@ geodist_segm_shortestline(double cx1, double cy1, double r1, double cx2,
         if (dx * dx + dy * dy >= w->d * w->d)
           continue;
       }
+      /* Radius-aware tighter prune (moving disc only, straight edges): skip the
+       * exact per-edge solve when the centre-segment-to-edge distance minus the
+       * larger radius already reaches the running minimum. The same lower bound
+       * as geodist_segm_nad, valid because it never exceeds the true swept-disc
+       * distance, so the witness cannot change. */
+      if (! e->is_arc && w->set)
+      {
+        double rmax = fmax(r1, r2);
+        double thr = w->d + rmax;
+        if (rmax > 0.0 &&
+            geodist_seg_seg_dist2(cx1, cy1, cx2, cy2, e->x1, e->y1,
+              e->x2, e->y2) >= thr * thr)
+          continue;
+      }
       double t;
       double m = e->is_arc ?
         geodist_segm_arc_dt(cx1, cy1, cx2, cy2, r1, r2, e, &t) :
@@ -1295,6 +1309,20 @@ geodist_segm_nai(double cx1, double cy1, double r1, TimestampTz t1, double cx2,
         double dx = fmax(fmax(e->xmin - sxmax, sxmin - e->xmax), 0.0);
         double dy = fmax(fmax(e->ymin - symax, symin - e->ymax), 0.0);
         if (dx * dx + dy * dy >= w->d * w->d)
+          continue;
+      }
+      /* Radius-aware tighter prune (moving disc only, straight edges): skip the
+       * exact per-edge solve when the centre-segment-to-edge distance minus the
+       * larger radius already reaches the running minimum. The same lower bound
+       * as geodist_segm_nad, valid because it never exceeds the true swept-disc
+       * distance, so the witness cannot change. */
+      if (! e->is_arc && w->set)
+      {
+        double rmax = fmax(r1, r2);
+        double thr = w->d + rmax;
+        if (rmax > 0.0 &&
+            geodist_seg_seg_dist2(cx1, cy1, cx2, cy2, e->x1, e->y1,
+              e->x2, e->y2) >= thr * thr)
           continue;
       }
       double tf;
