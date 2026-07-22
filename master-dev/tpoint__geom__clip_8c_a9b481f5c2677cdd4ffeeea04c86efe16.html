@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: extract_point</title>
+<title>MobilityDB: point_in_polygon_impl</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -104,7 +104,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a2ece32e75a2c100c944369f8eac303ad.html#a2ece32e75a2c100c944369f8eac303ad">extract_mline</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a467a8d12c2283a1ae2f999156409e245.html#a467a8d12c2283a1ae2f999156409e245">extract_mpoint</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a9fb7b43036ef8a00625955f207de9fa5.html#a9fb7b43036ef8a00625955f207de9fa5">extract_mpoly</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="tpoint__geom__clip_8c_ae2ca18e7dbb1b1bc525e19b4ffabaeb9.html#ae2ca18e7dbb1b1bc525e19b4ffabaeb9">extract_point</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_ae2ca18e7dbb1b1bc525e19b4ffabaeb9.html#ae2ca18e7dbb1b1bc525e19b4ffabaeb9">extract_point</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a288edcd2733e760e9c9a535034099385.html#a288edcd2733e760e9c9a535034099385">extract_poly</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_ac5085c6e5eecbafe3dffd4ecbbf4de6c.html#ac5085c6e5eecbafe3dffd4ecbbf4de6c">extract_triangle</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a2ee3c7ebc387865ae73d269b13b020b2.html#a2ee3c7ebc387865ae73d269b13b020b2">float8_qsort_cmp</a></td></tr>
@@ -129,7 +129,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a04527486496c6e6a7ac440dd770d054b.html#a04527486496c6e6a7ac440dd770d054b">point_geom_dist</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a19ed4b992da93a82fd98abf8e5365d90.html#a19ed4b992da93a82fd98abf8e5365d90">point_geom_within</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_ab0d0c8c8988796d63e4053c2cf44cdd0.html#ab0d0c8c8988796d63e4053c2cf44cdd0">point_in_polygon</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a9b481f5c2677cdd4ffeeea04c86efe16.html#a9b481f5c2677cdd4ffeeea04c86efe16">point_in_polygon_impl</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="tpoint__geom__clip_8c_a9b481f5c2677cdd4ffeeea04c86efe16.html#a9b481f5c2677cdd4ffeeea04c86efe16">point_in_polygon_impl</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a2ff43940422a934e45e40eb3a8c13806.html#a2ff43940422a934e45e40eb3a8c13806">point_inter_points_lines</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_ab6bad4700989bcefb8a992dcbb387fb2.html#ab6bad4700989bcefb8a992dcbb387fb2">point_on_arc</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_aa2f4628979203441083bd84d2c0994b0.html#aa2f4628979203441083bd84d2c0994b0">point_on_segment</a></td></tr>
@@ -151,8 +151,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ae2ca18e7dbb1b1bc525e19b4ffabaeb9" name="ae2ca18e7dbb1b1bc525e19b4ffabaeb9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae2ca18e7dbb1b1bc525e19b4ffabaeb9">&#9670;&#160;</a></span>extract_point()</h2>
+<a id="a9b481f5c2677cdd4ffeeea04c86efe16" name="a9b481f5c2677cdd4ffeeea04c86efe16"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9b481f5c2677cdd4ffeeea04c86efe16">&#9670;&#160;</a></span>point_in_polygon_impl()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -161,16 +161,46 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static void extract_point </td>
+          <td class="memname">static int point_in_polygon_impl </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structLWPOINT.html">LWPOINT</a> *&#160;</td>
-          <td class="paramname"><em>pt</em>, </td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="structMeosArray.html">MeosArray</a> *&#160;</td>
-          <td class="paramname"><em>edges</em>&#160;</td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>y</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structEdge.html">Edge</a> **&#160;</td>
+          <td class="paramname"><em>edges</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>nedges</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structRTree.html">RTree</a> *&#160;</td>
+          <td class="paramname"><em>rtree</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a43d43196463bde49cb067f5c20ab8481.html#a43d43196463bde49cb067f5c20ab8481">int32</a>&#160;</td>
+          <td class="paramname"><em>srid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>xmax</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -180,12 +210,12 @@ $(function() {
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Add to the dynamic array in the last argument the edge obtained from a point. </p>
+<p>Return true if a point is located in a polygon. </p>
 
 </div>
 </div>

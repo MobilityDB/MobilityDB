@@ -129,6 +129,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a04527486496c6e6a7ac440dd770d054b.html#a04527486496c6e6a7ac440dd770d054b">point_geom_dist</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a19ed4b992da93a82fd98abf8e5365d90.html#a19ed4b992da93a82fd98abf8e5365d90">point_geom_within</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_ab0d0c8c8988796d63e4053c2cf44cdd0.html#ab0d0c8c8988796d63e4053c2cf44cdd0">point_in_polygon</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a9b481f5c2677cdd4ffeeea04c86efe16.html#a9b481f5c2677cdd4ffeeea04c86efe16">point_in_polygon_impl</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a2ff43940422a934e45e40eb3a8c13806.html#a2ff43940422a934e45e40eb3a8c13806">point_inter_points_lines</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_ab6bad4700989bcefb8a992dcbb387fb2.html#ab6bad4700989bcefb8a992dcbb387fb2">point_on_arc</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_aa2f4628979203441083bd84d2c0994b0.html#aa2f4628979203441083bd84d2c0994b0">point_on_segment</a></td></tr>
@@ -209,7 +210,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Compute the intersection intervals of a trajectory segment with an array of polygon edges. </p>
-<p >For the <a class="el" href="tpoint__geom__clip_8c_ab0d0c8c8988796d63e4053c2cf44cdd0.html#ab0d0c8c8988796d63e4053c2cf44cdd0" title="Return true if a point is located in a polygon.">point_in_polygon</a> ray-casting we must use ALL edges, not only those filtered by the R-tree, otherwise the even-odd containment test breaks </p>
+<p >For the <a class="el" href="tpoint__geom__clip_8c_ab0d0c8c8988796d63e4053c2cf44cdd0.html#ab0d0c8c8988796d63e4053c2cf44cdd0" title="Return true if a point is located in a polygon, scanning every edge.">point_in_polygon</a> ray-casting we must use ALL edges, not only those filtered by the R-tree, otherwise the even-odd containment test breaks </p>
 
 </div>
 </div>
