@@ -146,6 +146,7 @@ typedef struct
 
 typedef struct
 {
+  MemoryContext context;                    /* Owns this cache, for reset */
   Oid meostype_oid[NUM_MEOS_TYPES];         /* MeosType -> Oid */
   struct oid_meostype_hash *oid_meostype;
   struct opertable_hash *meosoper_oid;
@@ -223,6 +224,9 @@ get_mobilitydb_constants()
      Initialize it to zero for the meostype_oid and oper_oid_args arrays */
   mobilitydb_constants* constants =
     MemoryContextAllocZero(context, sizeof(mobilitydb_constants));
+  /* Remember the owning context so the cache can be reset (see
+     #reset_mobilitydb_constants) */
+  constants->context = context;
 
   /* Populate the MeosType -> Oid array */
   Oid nsp_oid = mobilitydb_namespace_oid();
@@ -242,7 +246,7 @@ get_mobilitydb_constants()
   }
 
   /* Create the Oid -> MeosType hash table and populate it */
-  constants->oid_meostype = oid_meostype_create(CacheMemoryContext, 64, NULL);
+  constants->oid_meostype = oid_meostype_create(context, 64, NULL);
   /* Initialize the oid -> MeosType array */
   for (int i = 0; i < NUM_MEOS_TYPES; i++)
   {
@@ -260,7 +264,7 @@ get_mobilitydb_constants()
 
   /* Create the operator hash table and populate the operator array and the
      operator hash table */
-  constants->meosoper_oid = opertable_create(CacheMemoryContext, 2048, NULL);
+  constants->meosoper_oid = opertable_create(context, 2048, NULL);
   /* Fetch the rows of the table containing the MobilityDB operator cache */
   Oid catalog = RelnameNspGetRelid("mobilitydb_opcache", nsp_oid);
   Relation rel = table_open(catalog, AccessShareLock);
@@ -308,6 +312,24 @@ mobilitydb_initialize_cache()
     return;
   /* Cache the info if we don't already have it */
   MOBILITYDB_CONSTANTS = get_mobilitydb_constants();
+}
+
+/**
+ * @brief Discard the run-time constants cache so it is rebuilt on next use
+ * @details Needed after #fill_oid_cache populates the `mobilitydb_opcache`
+ * table: that function reads types with #oid_meostype, which builds the cache
+ * while the table is still empty, leaving a backend that runs `CREATE
+ * EXTENSION` with an empty operator array for the rest of its session. A fresh
+ * backend is unaffected because it reads the fully populated table.
+ */
+static inline void
+reset_mobilitydb_constants()
+{
+  if (MOBILITYDB_CONSTANTS)
+  {
+    MemoryContextDelete(MOBILITYDB_CONSTANTS->context);
+    MOBILITYDB_CONSTANTS = NULL;
+  }
 }
 
 /*****************************************************************************/
@@ -491,6 +513,10 @@ fill_oid_cache(PG_FUNCTION_ARGS)
   heap_endscan(scan);
   table_close(rel_pg, AccessShareLock);
   table_close(rel_mob, AccessExclusiveLock);
+  /* The cache was built above (via #oid_meostype) while `mobilitydb_opcache`
+   * was still empty, so its operator array is stale. Discard it so the next
+   * lookup rebuilds it from the now fully populated table. */
+  reset_mobilitydb_constants();
   PG_RETURN_VOID();
 }
 
