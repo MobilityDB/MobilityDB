@@ -437,12 +437,28 @@ point_on_segment(double px, double py, double x1, double y1, double x2,
  * @brief Return true if a point is located in a polygon 
  */
 static inline int
-point_in_polygon(double x, double y, Edge **edges, int nedges)
+point_in_polygon_impl(double x, double y, Edge **edges, int nedges,
+  const RTree *rtree, int32 srid, double xmax)
 {
   int inside = 0;
-  for (int i = 0; i < nedges; i++)
+  int n = nedges;
+  if (rtree)
   {
-    const Edge *restrict e = edges[i];
+    /* Only edges whose bounding box meets the +x ray from (x,y) can cross it
+     * or contain the point; querying the R-tree for those instead of scanning
+     * every edge turns the O(nedges) test into O(log nedges + candidates).
+     * The even-odd parity is order-independent and every excluded edge lies
+     * left of x or off the ray's height, so it can neither cross the +x ray
+     * nor contain the point -- the result is identical to the full scan. */
+    STBox query;
+    double xhi = (x > xmax) ? x : xmax;
+    stbox_set(true, false, false, srid, x, xhi, y, y, 0, 0, NULL, &query);
+    n = rtree_search(rtree, RTREE_OVERLAPS, &query, rtree_results);
+  }
+  for (int i = 0; i < n; i++)
+  {
+    const Edge *restrict e = rtree ?
+      edges[*(int *) meos_array_get(rtree_results, i)] : edges[i];
 
     /* Only polygon boundary edges bound a region. Point, line, and standalone
      * (1D) arc edges are ignored by the even-odd containment test */
@@ -523,6 +539,15 @@ point_in_polygon(double x, double y, Edge **edges, int nedges)
     }
   }
   return inside;
+}
+
+/**
+ * @brief Return true if a point is located in a polygon, scanning every edge
+ */
+static inline int
+point_in_polygon(double x, double y, Edge **edges, int nedges)
+{
+  return point_in_polygon_impl(x, y, edges, nedges, NULL, 0, 0.0);
 }
 
 /**
@@ -1649,7 +1674,8 @@ geo_intersects2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
    * polygonal interior (only meaningful when the other has area) */
   if (! result && edges_have_area(ptr2, n2))
     for (int i = 0; i < n1 && ! result; i++)
-      if (point_in_polygon(ptr1[i]->x1, ptr1[i]->y1, ptr2, n2))
+      if (point_in_polygon_impl(ptr1[i]->x1, ptr1[i]->y1, ptr2, n2,
+            rtree, srid2, box2.xmax))
         result = true;
   if (! result && edges_have_area(ptr1, n1))
     for (int i = 0; i < n2 && ! result; i++)
