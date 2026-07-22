@@ -38,14 +38,21 @@
 
 #include <postgres.h>
 #include <fmgr.h>
+#include <utils/timestamp.h>
 
 #include <meos.h>
 #include <meos_geo.h>
 #include <meos_h3.h>
 
+#include "geo/stbox.h"                /* PG_RETURN_STBOX_P */
 #include "temporal/set.h"             /* PG_GETARG_SET_P / PG_RETURN_SET_P */
+#include "temporal/span.h"            /* PG_GETARG_SPAN_P */
 #include "pg_temporal/temporal.h"     /* PG_GETARG_TEMPORAL_P */
 #include "pg_geo/postgis.h"           /* PG_GETARG_GSERIALIZED_P */
+
+/* h3index is stored on the int8 payload; DatumGetH3Index lives in
+ * h3/h3index.h but this file only needs the fmgr-layer getter. */
+#define PG_GETARG_H3INDEX(n) ((H3Index) PG_GETARG_INT64(n))
 
 PGDLLEXPORT Datum Geo_point_to_h3index(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geo_point_to_h3index);
@@ -114,4 +121,53 @@ Ever_eq_h3indexset_th3index(PG_FUNCTION_ARGS)
   if (r < 0)
     PG_RETURN_NULL();
   PG_RETURN_BOOL(r == 1);
+}
+
+/*****************************************************************************
+ * Bounding box
+ *****************************************************************************/
+
+PGDLLEXPORT Datum H3index_to_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(H3index_to_stbox);
+/**
+ * @ingroup mobilitydb_h3_conversion
+ * @brief Return the spatiotemporal bounding box of an H3 cell
+ * @sqlfn stbox()
+ * @sqlop @p ::
+ */
+Datum
+H3index_to_stbox(PG_FUNCTION_ARGS)
+{
+  PG_RETURN_STBOX_P(h3index_to_stbox(PG_GETARG_H3INDEX(0)));
+}
+
+PGDLLEXPORT Datum H3index_timestamptz_to_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(H3index_timestamptz_to_stbox);
+/**
+ * @ingroup mobilitydb_h3_conversion
+ * @brief Return the spatiotemporal bounding box of an H3 cell and a timestamptz
+ * @sqlfn stbox()
+ */
+Datum
+H3index_timestamptz_to_stbox(PG_FUNCTION_ARGS)
+{
+  H3Index cell = PG_GETARG_H3INDEX(0);
+  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
+  PG_RETURN_STBOX_P(h3index_timestamptz_to_stbox(cell, t));
+}
+
+PGDLLEXPORT Datum H3index_tstzspan_to_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(H3index_tstzspan_to_stbox);
+/**
+ * @ingroup mobilitydb_h3_conversion
+ * @brief Return the spatiotemporal bounding box of an H3 cell and a timestamptz
+ * span
+ * @sqlfn stbox()
+ */
+Datum
+H3index_tstzspan_to_stbox(PG_FUNCTION_ARGS)
+{
+  H3Index cell = PG_GETARG_H3INDEX(0);
+  Span *s = PG_GETARG_SPAN_P(1);
+  PG_RETURN_STBOX_P(h3index_tstzspan_to_stbox(cell, s));
 }

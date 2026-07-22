@@ -110,6 +110,58 @@ quadbin_set_stbox(Quadbin cell, STBox *box)
 }
 
 /**
+ * @ingroup meos_quadbin
+ * @brief Return the spatiotemporal bounding box of a quadbin cell
+ * @param[in] cell Quadbin cell index
+ * @return The planar X/Y bounding box of the cell (SRID 4326, no T dimension)
+ * @csqlfn #Quadbin_to_stbox()
+ */
+STBox *
+quadbin_to_stbox(Quadbin cell)
+{
+  STBox box;
+  if (! quadbin_set_stbox(cell, &box))
+    return NULL;
+  return stbox_copy(&box);
+}
+
+/**
+ * @ingroup meos_quadbin
+ * @brief Return the spatiotemporal bounding box of a quadbin cell and a
+ * timestamptz
+ * @param[in] cell Quadbin cell index
+ * @param[in] t Timestamp
+ * @csqlfn #Quadbin_timestamptz_to_stbox()
+ */
+STBox *
+quadbin_timestamptz_to_stbox(Quadbin cell, TimestampTz t)
+{
+  STBox box;
+  if (! quadbin_set_stbox(cell, &box))
+    return NULL;
+  timestamptz_set_stbox(t, &box);
+  return stbox_copy(&box);
+}
+
+/**
+ * @ingroup meos_quadbin
+ * @brief Return the spatiotemporal bounding box of a quadbin cell and a
+ * timestamptz span
+ * @param[in] cell Quadbin cell index
+ * @param[in] s Timestamptz span
+ * @csqlfn #Quadbin_tstzspan_to_stbox()
+ */
+STBox *
+quadbin_tstzspan_to_stbox(Quadbin cell, const Span *s)
+{
+  STBox box;
+  if (! quadbin_set_stbox(cell, &box))
+    return NULL;
+  tstzspan_set_stbox(s, &box);
+  return stbox_copy(&box);
+}
+
+/**
  * @ingroup meos_internal_box_conversion
  * @brief Return in the last argument a spatiotemporal box constructed from an
  * array of quadbin cells (the planar X/Y union, no T dimension)

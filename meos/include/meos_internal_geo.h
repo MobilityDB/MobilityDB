@@ -134,6 +134,7 @@ extern void spatialset_set_stbox(const Set *set, STBox *result);
 extern void stbox_set_box3d(const STBox *box, BOX3D *result);
 extern void stbox_set_gbox(const STBox *box, GBOX *result);
 extern void tstzset_set_stbox(const Set *s, STBox *result);
+extern void timestamptz_set_stbox(TimestampTz t, STBox *result);
 extern void tstzspan_set_stbox(const Span *s, STBox *result);
 extern void tstzspanset_set_stbox(const SpanSet *s, STBox *result);
 

@@ -122,6 +122,11 @@ extern Quadbin geo_to_quadbin_cell(const GSERIALIZED *point,
 extern GSERIALIZED *quadbin_cell_to_geompoint(Quadbin cell);
 extern GSERIALIZED *quadbin_cell_to_geom(Quadbin cell);
 
+/* Bounding box */
+extern STBox *quadbin_to_stbox(Quadbin cell);
+extern STBox *quadbin_timestamptz_to_stbox(Quadbin cell, TimestampTz t);
+extern STBox *quadbin_tstzspan_to_stbox(Quadbin cell, const Span *s);
+
 /* Metrics */
 extern double quadbin_cell_area(Quadbin cell);
 

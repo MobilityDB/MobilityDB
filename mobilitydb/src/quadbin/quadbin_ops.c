@@ -49,6 +49,7 @@
 #include <postgres.h>
 #include <fmgr.h>
 #include <utils/array.h>
+#include <utils/timestamp.h>
 #include <catalog/pg_type_d.h>
 /* PostGIS */
 #include <liblwgeom.h>
@@ -57,8 +58,10 @@
 #include <meos_geo.h>
 #include <meos_quadbin.h>
 #include <pgtypes.h>
+#include "geo/stbox.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "temporal/set.h"
+#include "temporal/span.h"
 #include "quadbin/quadbin_meos.h"
 /* MobilityDB */
 #include "pg_geo/postgis.h"
@@ -234,6 +237,56 @@ Quadbin_cell_to_bounding_box(PG_FUNCTION_ARGS)
 {
   Quadbin cell = PG_GETARG_QUADBIN(0);
   PG_RETURN_GSERIALIZED_P(quadbin_cell_to_geom(cell));
+}
+
+/*****************************************************************************
+ * Bounding box
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Quadbin_to_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Quadbin_to_stbox);
+/**
+ * @ingroup mobilitydb_quadbin_conversion
+ * @brief Return the spatiotemporal bounding box of a quadbin cell
+ * @sqlfn stbox()
+ * @sqlop @p ::
+ */
+Datum
+Quadbin_to_stbox(PG_FUNCTION_ARGS)
+{
+  PG_RETURN_STBOX_P(quadbin_to_stbox(PG_GETARG_QUADBIN(0)));
+}
+
+PGDLLEXPORT Datum Quadbin_timestamptz_to_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Quadbin_timestamptz_to_stbox);
+/**
+ * @ingroup mobilitydb_quadbin_conversion
+ * @brief Return the spatiotemporal bounding box of a quadbin cell and a
+ * timestamptz
+ * @sqlfn stbox()
+ */
+Datum
+Quadbin_timestamptz_to_stbox(PG_FUNCTION_ARGS)
+{
+  Quadbin cell = PG_GETARG_QUADBIN(0);
+  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
+  PG_RETURN_STBOX_P(quadbin_timestamptz_to_stbox(cell, t));
+}
+
+PGDLLEXPORT Datum Quadbin_tstzspan_to_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Quadbin_tstzspan_to_stbox);
+/**
+ * @ingroup mobilitydb_quadbin_conversion
+ * @brief Return the spatiotemporal bounding box of a quadbin cell and a
+ * timestamptz span
+ * @sqlfn stbox()
+ */
+Datum
+Quadbin_tstzspan_to_stbox(PG_FUNCTION_ARGS)
+{
+  Quadbin cell = PG_GETARG_QUADBIN(0);
+  Span *s = PG_GETARG_SPAN_P(1);
+  PG_RETURN_STBOX_P(quadbin_tstzspan_to_stbox(cell, s));
 }
 
 /*****************************************************************************
