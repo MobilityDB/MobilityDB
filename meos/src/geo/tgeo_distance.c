@@ -1018,10 +1018,10 @@ void
 geodist_segm_nad(double cx1, double cy1, double r1, double cx2, double cy2,
   double r2, const GeoDistGeom *g, double *best)
 {
-  double sxmin = fmin(cx1 - r1, cx2 - r2);
-  double sxmax = fmax(cx1 + r1, cx2 + r2);
-  double symin = fmin(cy1 - r1, cy2 - r2);
-  double symax = fmax(cy1 + r1, cy2 + r2);
+  double sxmin = Min(cx1 - r1, cx2 - r2);
+  double sxmax = Max(cx1 + r1, cx2 + r2);
+  double symin = Min(cy1 - r1, cy2 - r2);
+  double symax = Max(cy1 + r1, cy2 + r2);
   /* Coarse branch-and-bound prune: the distance between this unit's swept
    * bounding box and the geometry's overall bounding box is a lower bound on
    * the unit's nearest approach (a box contains its geometry, so the box-to-box
@@ -1032,8 +1032,8 @@ geodist_segm_nad(double cx1, double cy1, double r1, double cx2, double cy2,
    * a zero lower bound, so it is never wrongly pruned. */
   if (*best != DBL_MAX)
   {
-    double dgx = fmax(fmax(g->xmin - sxmax, sxmin - g->xmax), 0.0);
-    double dgy = fmax(fmax(g->ymin - symax, symin - g->ymax), 0.0);
+    double dgx = Max(Max(g->xmin - sxmax, sxmin - g->xmax), 0.0);
+    double dgy = Max(Max(g->ymin - symax, symin - g->ymax), 0.0);
     if (dgx * dgx + dgy * dgy >= (*best) * (*best))
       return;
   }
@@ -1050,8 +1050,8 @@ geodist_segm_nad(double cx1, double cy1, double r1, double cx2, double cy2,
     const GeoDistBucket *bk = &g->bks[b];
     if (*best != DBL_MAX)
     {
-      double dx = fmax(fmax(bk->xmin - sxmax, sxmin - bk->xmax), 0.0);
-      double dy = fmax(fmax(bk->ymin - symax, symin - bk->ymax), 0.0);
+      double dx = Max(Max(bk->xmin - sxmax, sxmin - bk->xmax), 0.0);
+      double dy = Max(Max(bk->ymin - symax, symin - bk->ymax), 0.0);
       if (dx * dx + dy * dy >= (*best) * (*best))
         continue;
     }
@@ -1061,8 +1061,8 @@ geodist_segm_nad(double cx1, double cy1, double r1, double cx2, double cy2,
       const GeoDistEdge *ed = &g->segs[k];
       if (*best != DBL_MAX)
       {
-        double dx = fmax(fmax(ed->xmin - sxmax, sxmin - ed->xmax), 0.0);
-        double dy = fmax(fmax(ed->ymin - symax, symin - ed->ymax), 0.0);
+        double dx = Max(Max(ed->xmin - sxmax, sxmin - ed->xmax), 0.0);
+        double dy = Max(Max(ed->ymin - symax, symin - ed->ymax), 0.0);
         if (dx * dx + dy * dy >= (*best) * (*best))
           continue;
       }
