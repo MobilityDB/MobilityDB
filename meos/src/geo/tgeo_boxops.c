@@ -1408,6 +1408,9 @@ geo_split_n_gboxes(const GSERIALIZED *gs, int box_count, int *count)
  * @ingroup meos_geo_base_bbox
  * @brief Return an array of N spatial boxes from the segments of a 
  * (multi)linestring
+ * @param[in] gs (Multi)line
+ * @param[in] box_count Number of boxes
+ * @param[out] count Number of elements in the output array
  * @sqlfn splitNStboxes()
  * @csqlfn #Geo_split_n_stboxes()
  */
@@ -1592,6 +1595,9 @@ geo_split_each_n_gboxes(const GSERIALIZED *gs, int elems_per_box, int *count)
  * @ingroup meos_geo_base_bbox
  * @brief Return an array of spatial boxes from the segments of a
  * (multi)linestring
+ * @param[in] gs (Multi)line
+ * @param[in] elems_per_box Number of input segments merged into an output box
+ * @param[out] count Number of elements in the output array
  * @csqlfn Geo_split_each_n_stboxes()
  */
 STBox *
