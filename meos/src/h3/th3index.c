@@ -302,6 +302,9 @@ th3index_end_value(const Temporal *temp)
  * @ingroup meos_h3_accessor
  * @brief Return the H3 cell value at the `n`-th distinct value of `temp`.
  * 1-indexed, following the cbuffer convention.
+ * @param[in] temp Temporal value
+ * @param[in] n Number
+ * @param[out] result Value
  * @return `true` on success, `false` if `n` is out of range.
  * @csqlfn #Temporal_value_n()
  */
