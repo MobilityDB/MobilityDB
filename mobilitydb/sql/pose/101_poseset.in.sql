@@ -497,31 +497,31 @@ CREATE OPERATOR * (
 
 /*****************************************************************************/
 
-CREATE FUNCTION set_distance(pose, poseset)
+CREATE FUNCTION setDistance(pose, poseset)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_distance(poseset, pose)
+CREATE FUNCTION setDistance(poseset, pose)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_distance(poseset, poseset)
+CREATE FUNCTION setDistance(poseset, poseset)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <-> (
-  PROCEDURE = set_distance,
+  PROCEDURE = setDistance,
   LEFTARG = pose, RIGHTARG = poseset,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = set_distance,
+  PROCEDURE = setDistance,
   LEFTARG = poseset, RIGHTARG = pose,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = set_distance,
+  PROCEDURE = setDistance,
   LEFTARG = poseset, RIGHTARG = poseset,
   COMMUTATOR = <->
 );

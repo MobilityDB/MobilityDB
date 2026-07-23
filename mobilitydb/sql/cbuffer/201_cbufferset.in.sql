@@ -482,31 +482,31 @@ CREATE OPERATOR * (
 
 /*****************************************************************************/
 
-CREATE FUNCTION set_distance(cbuffer, cbufferset)
+CREATE FUNCTION setDistance(cbuffer, cbufferset)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_distance(cbufferset, cbuffer)
+CREATE FUNCTION setDistance(cbufferset, cbuffer)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_distance(cbufferset, cbufferset)
+CREATE FUNCTION setDistance(cbufferset, cbufferset)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <-> (
-  PROCEDURE = set_distance,
+  PROCEDURE = setDistance,
   LEFTARG = cbuffer, RIGHTARG = cbufferset,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = set_distance,
+  PROCEDURE = setDistance,
   LEFTARG = cbufferset, RIGHTARG = cbuffer,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = set_distance,
+  PROCEDURE = setDistance,
   LEFTARG = cbufferset, RIGHTARG = cbufferset,
   COMMUTATOR = <->
 );

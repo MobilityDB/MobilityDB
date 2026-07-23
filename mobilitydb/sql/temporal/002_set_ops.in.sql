@@ -1527,192 +1527,192 @@ CREATE OPERATOR * (
 
 /*****************************************************************************/
 
-CREATE FUNCTION set_distance(integer, integer)
+CREATE FUNCTION setDistance(integer, integer)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Distance_value_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_distance(integer, intset)
+CREATE FUNCTION setDistance(integer, intset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Distance_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_distance(intset, integer)
+CREATE FUNCTION setDistance(intset, integer)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Distance_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_distance(intset, intset)
+CREATE FUNCTION setDistance(intset, intset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Distance_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION set_distance(bigint, bigint)
+CREATE FUNCTION setDistance(bigint, bigint)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Distance_value_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_distance(bigint, bigintset)
+CREATE FUNCTION setDistance(bigint, bigintset)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Distance_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_distance(bigintset, bigint)
+CREATE FUNCTION setDistance(bigintset, bigint)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Distance_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_distance(bigintset, bigintset)
+CREATE FUNCTION setDistance(bigintset, bigintset)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION set_distance(float, float)
+CREATE FUNCTION setDistance(float, float)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_value_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_distance(float, floatset)
+CREATE FUNCTION setDistance(float, floatset)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_distance(floatset, float)
+CREATE FUNCTION setDistance(floatset, float)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_distance(floatset, floatset)
+CREATE FUNCTION setDistance(floatset, floatset)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION set_distance(date, date)
+CREATE FUNCTION setDistance(date, date)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Distance_value_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_distance(date, dateset)
+CREATE FUNCTION setDistance(date, dateset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Distance_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_distance(dateset, date)
+CREATE FUNCTION setDistance(dateset, date)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Distance_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_distance(dateset, dateset)
+CREATE FUNCTION setDistance(dateset, dateset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Distance_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION set_distance(timestamptz, timestamptz)
+CREATE FUNCTION setDistance(timestamptz, timestamptz)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_value_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_distance(timestamptz, tstzset)
+CREATE FUNCTION setDistance(timestamptz, tstzset)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_distance(tstzset, timestamptz)
+CREATE FUNCTION setDistance(tstzset, timestamptz)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_distance(tstzset, tstzset)
+CREATE FUNCTION setDistance(tstzset, tstzset)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <-> (
-  PROCEDURE = set_distance,
+  PROCEDURE = setDistance,
   LEFTARG = integer, RIGHTARG = integer,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = set_distance,
+  PROCEDURE = setDistance,
   LEFTARG = integer, RIGHTARG = intset,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = set_distance,
+  PROCEDURE = setDistance,
   LEFTARG = intset, RIGHTARG = integer,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = set_distance,
+  PROCEDURE = setDistance,
   LEFTARG = intset, RIGHTARG = intset,
   COMMUTATOR = <->
 );
 
 CREATE OPERATOR <-> (
-  PROCEDURE = set_distance,
+  PROCEDURE = setDistance,
   LEFTARG = bigint, RIGHTARG = bigint,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = set_distance,
+  PROCEDURE = setDistance,
   LEFTARG = bigint, RIGHTARG = bigintset,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = set_distance,
+  PROCEDURE = setDistance,
   LEFTARG = bigintset, RIGHTARG = bigint,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = set_distance,
+  PROCEDURE = setDistance,
   LEFTARG = bigintset, RIGHTARG = bigintset,
   COMMUTATOR = <->
 );
 
 CREATE OPERATOR <-> (
-  PROCEDURE = set_distance,
+  PROCEDURE = setDistance,
   LEFTARG = float, RIGHTARG = float,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = set_distance,
+  PROCEDURE = setDistance,
   LEFTARG = float, RIGHTARG = floatset,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = set_distance,
+  PROCEDURE = setDistance,
   LEFTARG = floatset, RIGHTARG = float,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = set_distance,
+  PROCEDURE = setDistance,
   LEFTARG = floatset, RIGHTARG = floatset,
   COMMUTATOR = <->
 );
 
 CREATE OPERATOR <-> (
-  PROCEDURE = set_distance,
+  PROCEDURE = setDistance,
   LEFTARG = date, RIGHTARG = date,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = set_distance,
+  PROCEDURE = setDistance,
   LEFTARG = date, RIGHTARG = dateset,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = set_distance,
+  PROCEDURE = setDistance,
   LEFTARG = dateset, RIGHTARG = date,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = set_distance,
+  PROCEDURE = setDistance,
   LEFTARG = dateset, RIGHTARG = dateset,
   COMMUTATOR = <->
 );
 
 CREATE OPERATOR <-> (
-  PROCEDURE = set_distance,
+  PROCEDURE = setDistance,
   LEFTARG = timestamptz, RIGHTARG = timestamptz,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = set_distance,
+  PROCEDURE = setDistance,
   LEFTARG = timestamptz, RIGHTARG = tstzset,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = set_distance,
+  PROCEDURE = setDistance,
   LEFTARG = tstzset, RIGHTARG = timestamptz,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = set_distance,
+  PROCEDURE = setDistance,
   LEFTARG = tstzset, RIGHTARG = tstzset,
   COMMUTATOR = <->
 );
