@@ -88,5 +88,49 @@
 
 	<para>For example, the bounding-box overlap <literal>t1.trip &amp;&amp; t2.trip</literal> is written portably as <literal>overlaps(t1.trip, t2.trip)</literal>, and the temporal-before test <literal>p1.period &lt;&lt;# p2.period</literal> as <literal>before(p1.period, p2.period)</literal>.</para>
 
-	<para>Aggregate functions follow the same principle. A SQL aggregate is assembled from up to three PostgreSQL machinery functions, each exposed under a canonical name built from the aggregate name and its role: a transition function <varname>&lt;aggregate&gt;Transition</varname>, an optional combine function <varname>&lt;aggregate&gt;Combine</varname> used for parallel aggregation, and a final function <varname>&lt;aggregate&gt;Final</varname>. The three roles stay distinct and uniformly named so that every binding can reconstruct the aggregate from the catalog. For example, the union aggregates expose the transition functions <varname>setUnionTransition</varname>, <varname>spanUnionTransition</varname> and <varname>spansetUnionTransition</varname> and the final functions <varname>setUnionFinal</varname>, <varname>spanUnionFinal</varname> and <varname>spansetUnionFinal</varname>; a combine function, where an aggregate supports parallel execution, takes the matching <varname>&lt;aggregate&gt;Combine</varname> form.</para>
+	<para>Aggregate functions follow the same principle, and are listed in their own table below so that an engine can look up the machinery it needs without hunting through the prose. A SQL aggregate is assembled from up to three PostgreSQL machinery functions, each exposed under a canonical name built from the aggregate name and its role: a transition function <varname>&lt;aggregate&gt;Transition</varname> (always present), a combine function <varname>&lt;aggregate&gt;Combine</varname> used for parallel aggregation, and a final function <varname>&lt;aggregate&gt;Final</varname>. The combine and final roles are each optional: an aggregate whose transition state is already its result has no final function (for example <varname>extent</varname> and <varname>minDistance</varname>), and an aggregate that does not support partial aggregation has no combine function (for example the append aggregates). The roles stay distinct and uniformly named so that every binding can reconstruct the aggregate from the catalog. The following table lists every aggregate and its machinery functions; a dash (—) marks a role the aggregate does not define.</para>
+
+	<informaltable frame="all" colsep="1" rowsep="1">
+		<?dblatex table-width="autowidth.column: 1 2 3 4"?>
+		<tgroup cols="4" align="left" colsep="1" rowsep="1">
+			<thead>
+				<row>
+					<entry>Category</entry>
+					<entry>Transition</entry>
+					<entry>Combine</entry>
+					<entry>Final</entry>
+				</row>
+			</thead>
+			<tbody>
+					<row><entry>Count</entry><entry><varname>tCountTransition</varname></entry><entry><varname>tCountCombine</varname></entry><entry><varname>tCountFinal</varname></entry></row>
+					<row><entry></entry><entry><varname>wCountTransition</varname></entry><entry><varname>wCountCombine</varname></entry><entry><varname>wCountFinal</varname></entry></row>
+					<row><entry>Sum</entry><entry><varname>tSumTransition</varname></entry><entry><varname>tSumCombine</varname></entry><entry><varname>tSumFinal</varname></entry></row>
+					<row><entry></entry><entry><varname>wSumTransition</varname></entry><entry><varname>wSumCombine</varname></entry><entry><varname>wSumFinal</varname></entry></row>
+					<row><entry>Average</entry><entry><varname>tAvgTransition</varname></entry><entry><varname>tAvgCombine</varname></entry><entry><varname>tAvgFinal</varname></entry></row>
+					<row><entry></entry><entry><varname>wAvgTransition</varname></entry><entry><varname>wAvgCombine</varname></entry><entry><varname>wAvgFinal</varname></entry></row>
+					<row><entry>Minimum / maximum</entry><entry><varname>tMinTransition</varname></entry><entry><varname>tMinCombine</varname></entry><entry><varname>tMinFinal</varname></entry></row>
+					<row><entry></entry><entry><varname>tMaxTransition</varname></entry><entry><varname>tMaxCombine</varname></entry><entry><varname>tMaxFinal</varname></entry></row>
+					<row><entry></entry><entry><varname>wMinTransition</varname></entry><entry><varname>wMinCombine</varname></entry><entry><varname>wMinFinal</varname></entry></row>
+					<row><entry></entry><entry><varname>wMaxTransition</varname></entry><entry><varname>wMaxCombine</varname></entry><entry><varname>wMaxFinal</varname></entry></row>
+					<row><entry></entry><entry><varname>tMinAggTransition</varname></entry><entry><varname>tMinAggCombine</varname></entry><entry><varname>tMinAggFinal</varname></entry></row>
+					<row><entry></entry><entry><varname>tMaxAggTransition</varname></entry><entry><varname>tMaxAggCombine</varname></entry><entry><varname>tMaxAggFinal</varname></entry></row>
+					<row><entry>Boolean</entry><entry><varname>tAndTransition</varname></entry><entry><varname>tAndCombine</varname></entry><entry><varname>tAndFinal</varname></entry></row>
+					<row><entry></entry><entry><varname>tOrTransition</varname></entry><entry><varname>tOrCombine</varname></entry><entry><varname>tOrFinal</varname></entry></row>
+					<row><entry>Centroid</entry><entry><varname>tCentroidTransition</varname></entry><entry><varname>tCentroidCombine</varname></entry><entry><varname>tCentroidFinal</varname></entry></row>
+					<row><entry>Point cloud</entry><entry><varname>tnpointsTransition</varname></entry><entry><varname>tnpointsCombine</varname></entry><entry><varname>tnpointsFinal</varname></entry></row>
+					<row><entry></entry><entry><varname>tdensityTransition</varname></entry><entry><varname>tdensityCombine</varname></entry><entry><varname>tdensityFinal</varname></entry></row>
+					<row><entry>Bounding box</entry><entry><varname>extentTransition</varname></entry><entry><varname>extentCombine</varname></entry><entry>—</entry></row>
+					<row><entry>Distance</entry><entry><varname>minDistanceTransition</varname></entry><entry><varname>minDistanceCombine</varname></entry><entry>—</entry></row>
+					<row><entry>Union</entry><entry><varname>setUnionTransition</varname></entry><entry>—</entry><entry><varname>setUnionFinal</varname></entry></row>
+					<row><entry></entry><entry><varname>spanUnionTransition</varname></entry><entry><varname>spanUnionCombine</varname></entry><entry><varname>spanUnionFinal</varname></entry></row>
+					<row><entry></entry><entry><varname>spansetUnionTransition</varname></entry><entry><varname>spansetUnionCombine</varname></entry><entry><varname>spansetUnionFinal</varname></entry></row>
+					<row><entry>Merge</entry><entry><varname>mergeTransition</varname></entry><entry><varname>mergeCombine</varname></entry><entry><varname>mergeFinal</varname></entry></row>
+					<row><entry></entry><entry><varname>mergeAggTransition</varname></entry><entry><varname>mergeAggCombine</varname></entry><entry><varname>mergeAggFinal</varname></entry></row>
+					<row><entry>Append</entry><entry><varname>appendInstantTransition</varname></entry><entry>—</entry><entry><varname>appendInstantFinal</varname></entry></row>
+					<row><entry></entry><entry><varname>appendInstantAggTransition</varname></entry><entry>—</entry><entry><varname>appendInstantAggFinal</varname></entry></row>
+					<row><entry></entry><entry><varname>appendSequenceTransition</varname></entry><entry>—</entry><entry><varname>appendSequenceFinal</varname></entry></row>
+					<row><entry></entry><entry><varname>appendSequenceAggTransition</varname></entry><entry>—</entry><entry><varname>appendSequenceAggFinal</varname></entry></row>
+			</tbody>
+		</tgroup>
+	</informaltable>
 </chapter>
