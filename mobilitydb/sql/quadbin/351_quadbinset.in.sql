@@ -269,6 +269,90 @@ CREATE AGGREGATE setUnion(quadbinset) (
 /******************************************************************************/
 
 /******************************************************************************
+ * Set-theoretic operators
+ *
+ * The value-dim ordering operators (`<<`, `&<`, `>>`, `&>`) that other
+ * `*set` types ship are intentionally NOT declared: QUADBIN cell ids have
+ * no meaningful total order — the int64 comparison that the framework would
+ * use for "strictly-left" queries has no spatial or hierarchical meaning
+ * (same rationale as the bbox-operator pruning for `tquadbin`).
+ *
+ * All C implementations behind these operators (`Contains_set_*`,
+ * `Overlaps_set_set`, `Union_*`, `Minus_*`, `Intersection_*`) are
+ * type-generic — they dispatch on the operand's MeosType and route through
+ * `datum_cmp` / `datum_eq` from `type_util.c`, where `T_QUADBIN` is already
+ * wired.
+ ******************************************************************************/
+
+/******************************************************************************
+ * contains @>
+ ******************************************************************************/
+
+CREATE FUNCTION contains(quadbinset, quadbin)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contains_set_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION contains(quadbinset, quadbinset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contains_set_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR @> (
+  PROCEDURE = contains,
+  LEFTARG = quadbinset, RIGHTARG = quadbin,
+  COMMUTATOR = <@,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR @> (
+  PROCEDURE = contains,
+  LEFTARG = quadbinset, RIGHTARG = quadbinset,
+  COMMUTATOR = <@,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+
+/******************************************************************************
+ * contained by <@
+ ******************************************************************************/
+
+CREATE FUNCTION contained(quadbin, quadbinset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contained_value_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION contained(quadbinset, quadbinset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contained_set_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR <@ (
+  PROCEDURE = contained,
+  LEFTARG = quadbin, RIGHTARG = quadbinset,
+  COMMUTATOR = @>,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR <@ (
+  PROCEDURE = contained,
+  LEFTARG = quadbinset, RIGHTARG = quadbinset,
+  COMMUTATOR = @>,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+
+/******************************************************************************
+ * overlaps &&
+ ******************************************************************************/
+
+CREATE FUNCTION overlaps(quadbinset, quadbinset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overlaps_set_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR && (
+  PROCEDURE = overlaps,
+  LEFTARG = quadbinset, RIGHTARG = quadbinset,
+  COMMUTATOR = &&,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+
+/******************************************************************************
  * set union +
  ******************************************************************************/
 

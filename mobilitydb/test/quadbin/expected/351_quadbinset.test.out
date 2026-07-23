@@ -225,3 +225,51 @@ SELECT quadbinset '{480fffffffffffff, 48427fffffffffff}' * quadbinset '{48427fff
  {"48427fffffffffff"}
 (1 row)
 
+SELECT contains(quadbinset '{480fffffffffffff, 48427fffffffffff}', quadbin '480fffffffffffff');
+ contains 
+----------
+ t
+(1 row)
+
+SELECT contains(quadbinset '{480fffffffffffff, 48427fffffffffff}', quadbinset '{480fffffffffffff}');
+ contains 
+----------
+ t
+(1 row)
+
+SELECT quadbinset '{480fffffffffffff, 48427fffffffffff}' @> quadbin '48a6227affffffff';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT contained(quadbin '480fffffffffffff', quadbinset '{480fffffffffffff, 48427fffffffffff}');
+ contained 
+-----------
+ t
+(1 row)
+
+SELECT contained(quadbinset '{480fffffffffffff}', quadbinset '{480fffffffffffff, 48427fffffffffff}');
+ contained 
+-----------
+ t
+(1 row)
+
+SELECT quadbin '48a6227affffffff' <@ quadbinset '{480fffffffffffff}';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT overlaps(quadbinset '{480fffffffffffff, 48427fffffffffff}', quadbinset '{48427fffffffffff, 48a6227affffffff}');
+ overlaps 
+----------
+ t
+(1 row)
+
+SELECT quadbinset '{480fffffffffffff}' && quadbinset '{48427fffffffffff}';
+ ?column? 
+----------
+ f
+(1 row)
+

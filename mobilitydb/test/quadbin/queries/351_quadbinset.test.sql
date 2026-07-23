@@ -124,3 +124,18 @@ SELECT quadbinset '{480fffffffffffff, 48427fffffffffff}' - quadbinset '{48427fff
 SELECT setIntersection(quadbinset '{480fffffffffffff, 48427fffffffffff}', quadbinset '{48427fffffffffff, 48a6227affffffff}');
 SELECT setIntersection(quadbinset '{480fffffffffffff, 48427fffffffffff}', quadbin '48427fffffffffff');
 SELECT quadbinset '{480fffffffffffff, 48427fffffffffff}' * quadbinset '{48427fffffffffff}';
+
+-------------------------------------------------------------------------------
+-- Set topological operators: contains (@>), contained (<@), overlaps (&&)
+-------------------------------------------------------------------------------
+
+SELECT contains(quadbinset '{480fffffffffffff, 48427fffffffffff}', quadbin '480fffffffffffff');
+SELECT contains(quadbinset '{480fffffffffffff, 48427fffffffffff}', quadbinset '{480fffffffffffff}');
+SELECT quadbinset '{480fffffffffffff, 48427fffffffffff}' @> quadbin '48a6227affffffff';
+
+SELECT contained(quadbin '480fffffffffffff', quadbinset '{480fffffffffffff, 48427fffffffffff}');
+SELECT contained(quadbinset '{480fffffffffffff}', quadbinset '{480fffffffffffff, 48427fffffffffff}');
+SELECT quadbin '48a6227affffffff' <@ quadbinset '{480fffffffffffff}';
+
+SELECT overlaps(quadbinset '{480fffffffffffff, 48427fffffffffff}', quadbinset '{48427fffffffffff, 48a6227affffffff}');
+SELECT quadbinset '{480fffffffffffff}' && quadbinset '{48427fffffffffff}';
