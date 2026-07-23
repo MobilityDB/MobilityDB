@@ -194,11 +194,21 @@ CREATE FUNCTION jsonbset_union_finalfn(internal)
 CREATE AGGREGATE setUnion(jsonb) (
   SFUNC = set_union_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 160000
+  COMBINEFUNC = array_agg_combine,
+  SERIALFUNC = array_agg_serialize,
+  DESERIALFUNC = array_agg_deserialize,
+#endif //POSTGRESQL_VERSION_NUMBER >= 160000
   FINALFUNC = jsonbset_union_finalfn
 );
 CREATE AGGREGATE setUnion(jsonbset) (
   SFUNC = set_union_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 160000
+  COMBINEFUNC = array_agg_combine,
+  SERIALFUNC = array_agg_serialize,
+  DESERIALFUNC = array_agg_deserialize,
+#endif //POSTGRESQL_VERSION_NUMBER >= 160000
   FINALFUNC = jsonbset_union_finalfn
 );
 
