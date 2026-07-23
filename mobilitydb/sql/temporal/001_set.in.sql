@@ -824,36 +824,66 @@ CREATE FUNCTION textset_union_finalfn(internal)
 CREATE AGGREGATE setUnion(integer) (
   SFUNC = set_union_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 160000
+  COMBINEFUNC = array_agg_combine,
+  SERIALFUNC = array_agg_serialize,
+  DESERIALFUNC = array_agg_deserialize,
+#endif //POSTGRESQL_VERSION_NUMBER >= 160000
   FINALFUNC = intset_union_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE setUnion(bigint) (
   SFUNC = set_union_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 160000
+  COMBINEFUNC = array_agg_combine,
+  SERIALFUNC = array_agg_serialize,
+  DESERIALFUNC = array_agg_deserialize,
+#endif //POSTGRESQL_VERSION_NUMBER >= 160000
   FINALFUNC = bigintset_union_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE setUnion(float) (
   SFUNC = set_union_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 160000
+  COMBINEFUNC = array_agg_combine,
+  SERIALFUNC = array_agg_serialize,
+  DESERIALFUNC = array_agg_deserialize,
+#endif //POSTGRESQL_VERSION_NUMBER >= 160000
   FINALFUNC = floatset_union_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE setUnion(text) (
   SFUNC = set_union_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 160000
+  COMBINEFUNC = array_agg_combine,
+  SERIALFUNC = array_agg_serialize,
+  DESERIALFUNC = array_agg_deserialize,
+#endif //POSTGRESQL_VERSION_NUMBER >= 160000
   FINALFUNC = textset_union_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE setUnion(date) (
   SFUNC = set_union_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 160000
+  COMBINEFUNC = array_agg_combine,
+  SERIALFUNC = array_agg_serialize,
+  DESERIALFUNC = array_agg_deserialize,
+#endif //POSTGRESQL_VERSION_NUMBER >= 160000
   FINALFUNC = dateset_union_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE setUnion(timestamptz) (
   SFUNC = set_union_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 160000
+  COMBINEFUNC = array_agg_combine,
+  SERIALFUNC = array_agg_serialize,
+  DESERIALFUNC = array_agg_deserialize,
+#endif //POSTGRESQL_VERSION_NUMBER >= 160000
   FINALFUNC = tstzset_union_finalfn,
   PARALLEL = safe
 );
@@ -861,36 +891,66 @@ CREATE AGGREGATE setUnion(timestamptz) (
 CREATE AGGREGATE setUnion(intset) (
   SFUNC = set_union_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 160000
+  COMBINEFUNC = array_agg_combine,
+  SERIALFUNC = array_agg_serialize,
+  DESERIALFUNC = array_agg_deserialize,
+#endif //POSTGRESQL_VERSION_NUMBER >= 160000
   FINALFUNC = intset_union_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE setUnion(bigintset) (
   SFUNC = set_union_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 160000
+  COMBINEFUNC = array_agg_combine,
+  SERIALFUNC = array_agg_serialize,
+  DESERIALFUNC = array_agg_deserialize,
+#endif //POSTGRESQL_VERSION_NUMBER >= 160000
   FINALFUNC = bigintset_union_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE setUnion(floatset) (
   SFUNC = set_union_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 160000
+  COMBINEFUNC = array_agg_combine,
+  SERIALFUNC = array_agg_serialize,
+  DESERIALFUNC = array_agg_deserialize,
+#endif //POSTGRESQL_VERSION_NUMBER >= 160000
   FINALFUNC = floatset_union_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE setUnion(textset) (
   SFUNC = set_union_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 160000
+  COMBINEFUNC = array_agg_combine,
+  SERIALFUNC = array_agg_serialize,
+  DESERIALFUNC = array_agg_deserialize,
+#endif //POSTGRESQL_VERSION_NUMBER >= 160000
   FINALFUNC = textset_union_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE setUnion(dateset) (
   SFUNC = set_union_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 160000
+  COMBINEFUNC = array_agg_combine,
+  SERIALFUNC = array_agg_serialize,
+  DESERIALFUNC = array_agg_deserialize,
+#endif //POSTGRESQL_VERSION_NUMBER >= 160000
   FINALFUNC = dateset_union_finalfn,
   PARALLEL = safe
 );
 CREATE AGGREGATE setUnion(tstzset) (
   SFUNC = set_union_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 160000
+  COMBINEFUNC = array_agg_combine,
+  SERIALFUNC = array_agg_serialize,
+  DESERIALFUNC = array_agg_deserialize,
+#endif //POSTGRESQL_VERSION_NUMBER >= 160000
   FINALFUNC = tstzset_union_finalfn,
   PARALLEL = safe
 );

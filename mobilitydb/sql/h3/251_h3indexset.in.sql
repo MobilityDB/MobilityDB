@@ -255,6 +255,11 @@ CREATE FUNCTION h3indexset_union_finalfn(internal)
 CREATE AGGREGATE setUnion(h3index) (
   SFUNC = set_union_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 160000
+  COMBINEFUNC = array_agg_combine,
+  SERIALFUNC = array_agg_serialize,
+  DESERIALFUNC = array_agg_deserialize,
+#endif //POSTGRESQL_VERSION_NUMBER >= 160000
   FINALFUNC = h3indexset_union_finalfn,
   PARALLEL = safe
 );
@@ -262,6 +267,11 @@ CREATE AGGREGATE setUnion(h3index) (
 CREATE AGGREGATE setUnion(h3indexset) (
   SFUNC = set_union_transfn,
   STYPE = internal,
+#if POSTGRESQL_VERSION_NUMBER >= 160000
+  COMBINEFUNC = array_agg_combine,
+  SERIALFUNC = array_agg_serialize,
+  DESERIALFUNC = array_agg_deserialize,
+#endif //POSTGRESQL_VERSION_NUMBER >= 160000
   FINALFUNC = h3indexset_union_finalfn,
   PARALLEL = safe
 );
