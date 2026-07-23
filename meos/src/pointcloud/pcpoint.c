@@ -420,6 +420,9 @@ pcpoint_as_pcpt(const Pcpoint *pt, PCSCHEMA *schema, PCPOINT *out)
 /**
  * @ingroup meos_pointcloud_accessor
  * @brief Return the X coordinate of a pcpoint via the given schema
+ * @param[in] pt Point
+ * @param[in] schema Point cloud schema
+ * @param[out] out Result
  * @return @p true on success; @p false if the schema lacks an X dimension
  *   or the byte read fails
  * @csqlfn #Pcpoint_get_x()
@@ -438,6 +441,9 @@ pcpoint_get_x(const Pcpoint *pt, PCSCHEMA *schema, double *out)
 /**
  * @ingroup meos_pointcloud_accessor
  * @brief Return the Y coordinate of a pcpoint via the given schema
+ * @param[in] pt Point
+ * @param[in] schema Point cloud schema
+ * @param[out] out Result
  * @csqlfn #Pcpoint_get_y()
  */
 bool
@@ -454,6 +460,9 @@ pcpoint_get_y(const Pcpoint *pt, PCSCHEMA *schema, double *out)
 /**
  * @ingroup meos_pointcloud_accessor
  * @brief Return the Z coordinate of a pcpoint via the given schema
+ * @param[in] pt Point
+ * @param[in] schema Point cloud schema
+ * @param[out] out Result
  * @csqlfn #Pcpoint_get_z()
  */
 bool
@@ -470,6 +479,10 @@ pcpoint_get_z(const Pcpoint *pt, PCSCHEMA *schema, double *out)
 /**
  * @ingroup meos_pointcloud_accessor
  * @brief Return any named dimension of a pcpoint via the given schema
+ * @param[in] pt Point
+ * @param[in] schema Point cloud schema
+ * @param[in] name Dimension name
+ * @param[out] out Result
  * @csqlfn #Pcpoint_get_dim()
  */
 bool

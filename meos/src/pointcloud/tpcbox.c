@@ -458,6 +458,8 @@ bool tpcbox_geodetic(const TPCBox *box)
 /**
  * @ingroup meos_pointcloud_box_accessor
  * @brief Return in the last argument the minimum X value of a TPCBox
+ * @param[in] box Box
+ * @param[out] result Result
  * @return @p true on success, @p false if the box has no X dimension
  * @csqlfn #Tpcbox_xmin()
  */
@@ -472,6 +474,8 @@ tpcbox_xmin(const TPCBox *box, double *result)
 /**
  * @ingroup meos_pointcloud_box_accessor
  * @brief Return in the last argument the maximum X value of a TPCBox
+ * @param[in] box Box
+ * @param[out] result Result
  * @return @p true on success, @p false if the box has no X dimension
  * @csqlfn #Tpcbox_xmax()
  */
@@ -486,6 +490,8 @@ tpcbox_xmax(const TPCBox *box, double *result)
 /**
  * @ingroup meos_pointcloud_box_accessor
  * @brief Return in the last argument the minimum Y value of a TPCBox
+ * @param[in] box Box
+ * @param[out] result Result
  * @return @p true on success, @p false if the box has no XY dimensions
  * @csqlfn #Tpcbox_ymin()
  */
@@ -500,6 +506,8 @@ tpcbox_ymin(const TPCBox *box, double *result)
 /**
  * @ingroup meos_pointcloud_box_accessor
  * @brief Return in the last argument the maximum Y value of a TPCBox
+ * @param[in] box Box
+ * @param[out] result Result
  * @return @p true on success, @p false if the box has no XY dimensions
  * @csqlfn #Tpcbox_ymax()
  */
@@ -514,6 +522,8 @@ tpcbox_ymax(const TPCBox *box, double *result)
 /**
  * @ingroup meos_pointcloud_box_accessor
  * @brief Return in the last argument the minimum Z value of a TPCBox
+ * @param[in] box Box
+ * @param[out] result Result
  * @return @p true on success, @p false if the box has no Z dimension
  * @csqlfn #Tpcbox_zmin()
  */
@@ -528,6 +538,8 @@ tpcbox_zmin(const TPCBox *box, double *result)
 /**
  * @ingroup meos_pointcloud_box_accessor
  * @brief Return in the last argument the maximum Z value of a TPCBox
+ * @param[in] box Box
+ * @param[out] result Result
  * @return @p true on success, @p false if the box has no Z dimension
  * @csqlfn #Tpcbox_zmax()
  */
@@ -542,6 +554,8 @@ tpcbox_zmax(const TPCBox *box, double *result)
 /**
  * @ingroup meos_pointcloud_box_accessor
  * @brief Return in the last argument the minimum T value of a TPCBox
+ * @param[in] box Box
+ * @param[out] result Result
  * @return @p true on success, @p false if the box has no T dimension
  * @csqlfn #Tpcbox_tmin()
  */
@@ -557,6 +571,8 @@ tpcbox_tmin(const TPCBox *box, TimestampTz *result)
  * @ingroup meos_pointcloud_box_accessor
  * @brief Return in the last argument whether the minimum T value of a TPCBox
  * is inclusive
+ * @param[in] box Box
+ * @param[out] result Result
  * @return @p true on success, @p false if the box has no T dimension
  * @csqlfn #Tpcbox_tmin_inc()
  */
@@ -571,6 +587,8 @@ tpcbox_tmin_inc(const TPCBox *box, bool *result)
 /**
  * @ingroup meos_pointcloud_box_accessor
  * @brief Return in the last argument the maximum T value of a TPCBox
+ * @param[in] box Box
+ * @param[out] result Result
  * @return @p true on success, @p false if the box has no T dimension
  * @csqlfn #Tpcbox_tmax()
  */
@@ -586,6 +604,8 @@ tpcbox_tmax(const TPCBox *box, TimestampTz *result)
  * @ingroup meos_pointcloud_box_accessor
  * @brief Return in the last argument whether the maximum T value of a TPCBox
  * is inclusive
+ * @param[in] box Box
+ * @param[out] result Result
  * @return @p true on success, @p false if the box has no T dimension
  * @csqlfn #Tpcbox_tmax_inc()
  */
