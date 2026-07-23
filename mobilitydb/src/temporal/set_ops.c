@@ -568,7 +568,7 @@ PG_FUNCTION_INFO_V1(Distance_value_set);
 /**
  * @ingroup mobilitydb_setspan_dist
  * @brief Return the distance between a value and a set
- * @sqlfn set_distance()
+ * @sqlfn setDistance()
  * @sqlop @p <->
  */
 inline Datum
@@ -586,7 +586,7 @@ PG_FUNCTION_INFO_V1(Distance_set_value);
 /**
  * @ingroup mobilitydb_setspan_dist
  * @brief Return the distance between a set and a value
- * @sqlfn set_distance()
+ * @sqlfn setDistance()
  * @sqlop @p <->
  */
 Datum
@@ -604,7 +604,7 @@ PG_FUNCTION_INFO_V1(Distance_set_set);
 /**
  * @ingroup mobilitydb_setspan_dist
  * @brief Return the distance between two sets
- * @sqlfn set_distance()
+ * @sqlfn setDistance()
  * @sqlop @p <->
  */
 Datum
