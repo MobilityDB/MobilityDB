@@ -303,6 +303,9 @@ tquadbin_end_value(const Temporal *temp)
  * @ingroup meos_quadbin_accessor
  * @brief Return the quadbin cell value at the `n`-th distinct value of `temp`.
  * 1-indexed.
+ * @param[in] temp Temporal value
+ * @param[in] n Number
+ * @param[out] result Value
  * @return `true` on success, `false` if `n` is out of range.
  * @csqlfn #Temporal_value_n()
  */
