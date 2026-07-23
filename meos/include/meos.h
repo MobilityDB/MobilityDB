@@ -1867,6 +1867,15 @@ extern int nad_tint_tint(const Temporal *temp1, const Temporal *temp2);
  * Aggregate functions for temporal types
  *****************************************************************************/
 
+extern SkipList *tbigint_tmax_transfn(SkipList *state, const Temporal *temp);
+extern SkipList *tbigint_tmax_combinefn(SkipList *state1, SkipList *state2);
+extern SkipList *tbigint_tmin_transfn(SkipList *state, const Temporal *temp);
+extern SkipList *tbigint_tmin_combinefn(SkipList *state1, SkipList *state2);
+extern SkipList *tbigint_tsum_transfn(SkipList *state, const Temporal *temp);
+extern SkipList *tbigint_tsum_combinefn(SkipList *state1, SkipList *state2);
+extern SkipList *tbigint_wmax_transfn(SkipList *state, const Temporal *temp, const Interval *interv);
+extern SkipList *tbigint_wmin_transfn(SkipList *state, const Temporal *temp, const Interval *interv);
+extern SkipList *tbigint_wsum_transfn(SkipList *state, const Temporal *temp, const Interval *interv);
 extern SkipList *tbool_tand_transfn(SkipList *state, const Temporal *temp);
 extern SkipList *tbool_tand_combinefn(SkipList *state1, SkipList *state2);
 extern SkipList *tbool_tor_transfn(SkipList *state, const Temporal *temp);
