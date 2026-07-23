@@ -169,7 +169,6 @@ tposesegm_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
  * Input/output functions
  *****************************************************************************/
 
-#if MEOS
 /**
  * @ingroup meos_pose_inout
  * @brief Return a temporal pose from its Well-Known Text (WKT) representation
@@ -242,7 +241,6 @@ tpose_from_mfjson(const char *mfjson)
   VALIDATE_NOT_NULL(mfjson, NULL);
   return temporal_from_mfjson(mfjson, T_TPOSE);
 }
-#endif /* MEOS */
 
 /*****************************************************************************
  * Costructor functions
@@ -787,7 +785,6 @@ tpose_apply_geo(const Temporal *temp, const GSERIALIZED *body)
 
 /*****************************************************************************/
 
-#if MEOS
 /**
  * @ingroup meos_pose_accessor
  * @brief Return a copy of the start value of a temporal pose
@@ -857,7 +854,6 @@ tpose_values(const Temporal *temp, int *count)
   pfree(datumarr);
   return result;
 }
-#endif /* MEOS */
 
 /*****************************************************************************/
 
@@ -946,7 +942,6 @@ tpose_points(const Temporal *temp)
   }
 }
 
-#if MEOS
 /**
  * @ingroup meos_pose_accessor
  * @brief Return the value of a temporal pose at a timestamptz
@@ -969,13 +964,11 @@ tpose_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
   *result = DatumGetPoseP(res);
   return found;
 }
-#endif /* MEOS */
 
 /*****************************************************************************
  * Restriction functions
  *****************************************************************************/
 
-#if MEOS
 /**
  * @ingroup meos_pose_restrict
  * @brief Return a temporal pose restricted to a pose
@@ -1005,6 +998,5 @@ tpose_minus_pose(const Temporal *temp, const Pose *pose)
   VALIDATE_TPOSE(temp, NULL); VALIDATE_NOT_NULL(pose, NULL);
   return temporal_restrict_value(temp, PointerGetDatum(pose), REST_MINUS);
 }
-#endif /* MEOS */
 
 /*****************************************************************************/

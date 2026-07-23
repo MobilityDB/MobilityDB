@@ -1209,7 +1209,6 @@ ea_disjoint_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
     ea_intersects_tcbuffer_tcbuffer(temp1, temp2, ! ever));
 }
 
-#if MEOS
 /**
  * @ingroup meos_cbuffer_rel_ever
  * @brief Return 1 if the temporal circular buffers are ever disjoint, 0 if not,
@@ -1236,7 +1235,6 @@ adisjoint_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 {
   return ea_disjoint_tcbuffer_tcbuffer(temp1, temp2, ALWAYS);
 }
-#endif /* MEOS */
 
 /*****************************************************************************
  * Ever/always intersects
@@ -1427,7 +1425,6 @@ ea_intersects_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
 
 }
 
-#if MEOS
 /**
  * @ingroup meos_cbuffer_rel_ever
  * @brief Return 1 if the temporal circular buffers ever intersect, 0 if not,
@@ -1453,7 +1450,6 @@ aintersects_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 {
   return ea_intersects_tcbuffer_tcbuffer(temp1, temp2, ALWAYS);
 }
-#endif /* MEOS */
 
 /*****************************************************************************
  * Ever/always touches

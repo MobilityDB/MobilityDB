@@ -136,6 +136,12 @@ CREATE FUNCTION intset(jsonbset, text,
   AS 'MODULE_PATHNAME', 'Jsonbset_to_intset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION bigintset(jsonbset, text,
+    null_handle text DEFAULT 'raise_exception')
+  RETURNS bigintset
+  AS 'MODULE_PATHNAME', 'Jsonbset_to_bigintset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION floatset(jsonbset, text,
     null_handle text DEFAULT 'raise_exception')
   RETURNS floatset

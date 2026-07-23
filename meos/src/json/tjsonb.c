@@ -57,7 +57,6 @@
  * Input/output functions
  *****************************************************************************/
 
-#if MEOS
 /**
  * @ingroup meos_json_inout
  * @brief Return a temporal JSONB from its Well-Known Text (WKT) representation
@@ -83,7 +82,7 @@ tjsonbinst_in(const char *str)
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(str, NULL);
   /* Parse the WKT into a TInstant, telling the parser this is a JSONB instant */
-  return tinstant_in(str, T_TJSONB);
+  return tinstant_parse(&str, T_TJSONB, true);
 }
 
 /**
@@ -120,7 +119,6 @@ tjsonbseqset_in(const char *str)
   assert(temp->subtype == TSEQUENCESET);
   return (TSequenceSet *) temp;
 }
-#endif /* MEOS */
 
 /*****************************************************************************/
 

@@ -192,8 +192,8 @@ int main(void)
   printf("float8_acosh(%lf): %lf\n", float8_in1, float8_result);
 
   /* double float8_angular_difference(double degrees1, double degrees2); */
-  float8_result = float8_angular_difference(float8_in1, float8_in2);
-  printf("float8_angular_difference(%f, %f): %lf\n", float8_in1, float8_in2, float8_result);
+  float8_result = float_angular_difference(float8_in1, float8_in2);
+  printf("float_angular_difference(%f, %f): %lf\n", float8_in1, float8_in2, float8_result);
 
   /* double float8_asin(double num); */
   float8_result = float8_asin(0.5);

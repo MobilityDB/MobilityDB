@@ -470,7 +470,6 @@ tcbuffersegm_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
  * Input/output functions
  *****************************************************************************/
 
-#if MEOS
 /**
  * @ingroup meos_cbuffer_inout
  * @brief Return a temporal circular buffer from its Well-Known Text (WKT)
@@ -544,7 +543,6 @@ tcbufferseqset_in(const char *str)
   assert(temp->subtype == TSEQUENCESET);
   return (TSequenceSet *) temp;
 }
-#endif /* MEOS */
 
 /*****************************************************************************
  * Constructor functions

@@ -245,7 +245,6 @@ number_timestamptz_to_tbox(Datum value, MeosType basetype, TimestampTz t)
   return tbox_make(&s, &p);
 }
 
-#if MEOS
 /**
  * @ingroup meos_box_constructor
  * @brief Return a temporal box from an integer and a timestamptz
@@ -284,7 +283,6 @@ float_timestamptz_to_tbox(double d, TimestampTz t)
 {
   return number_timestamptz_to_tbox(Float8GetDatum(d), T_FLOAT8, t);
 }
-#endif /* MEOS */
 
 /**
  * @ingroup meos_internal_box_constructor
@@ -304,7 +302,6 @@ number_tstzspan_to_tbox(Datum value, MeosType basetype, const Span *s)
   return tbox_make(&s1, s);
 }
 
-#if MEOS
 /**
  * @ingroup meos_box_constructor
  * @brief Return a temporal box from an integer and a timestamptz span
@@ -349,7 +346,6 @@ float_tstzspan_to_tbox(double d, const Span *s)
   VALIDATE_TSTZSPAN(s, NULL);
   return number_tstzspan_to_tbox(Float8GetDatum(d), T_FLOAT8, s);
 }
-#endif /* MEOS */
 
 /**
  * @ingroup meos_box_constructor
@@ -425,7 +421,6 @@ number_tbox(Datum value, MeosType basetype)
   return result;
 }
 
-#if MEOS
 /**
  * @ingroup meos_internal_box_conversion
  * @brief Return in the last argument a temporal box constructed from an
@@ -511,7 +506,6 @@ float_to_tbox(double d)
   float_set_tbox(d, result);
   return result;
 }
-#endif /* MEOS */
 
 /**
  * @ingroup meos_internal_box_conversion
@@ -666,7 +660,6 @@ span_tbox(const Span *s)
   return result;
 }
 
-#if MEOS
 /**
  * @ingroup meos_box_conversion
  * @brief Convert a number span into a temporal box
@@ -719,7 +712,6 @@ spanset_to_tbox(const SpanSet *ss)
     return NULL;
   return spanset_tbox(ss);
 }
-#endif /* MEOS */
 
 /*****************************************************************************/
 
@@ -916,7 +908,6 @@ tbox_xmin(const TBox *box, double *result)
   return true;
 }
 
-#if MEOS
 /**
  * @ingroup meos_box_accessor
  * @brief Return in the last argument the minimum X value of a temporal box
@@ -976,7 +967,6 @@ tboxfloat_xmin(const TBox *box, double *result)
   *result = DatumGetFloat8(box->span.lower);
   return true;
 }
-#endif /* MEOS */
 
 /**
  * @ingroup meos_box_accessor
@@ -1025,7 +1015,6 @@ tbox_xmax(const TBox *box, double *result)
   return true;
 }
 
-#if MEOS
 /**
  * @ingroup meos_box_accessor
  * @brief Return in the last argument the maximum X value of a temporal box
@@ -1085,7 +1074,6 @@ tboxfloat_xmax(const TBox *box, double *result)
   *result = DatumGetFloat8(box->span.upper);
   return true;
 }
-#endif /* MEOS */
 
 /**
  * @ingroup meos_box_accessor
@@ -1250,7 +1238,6 @@ tbox_shift_scale_value(const TBox *box, Datum shift, Datum width,
   return result;
 }
 
-#if MEOS
 /**
  * @ingroup meos_box_transf
  * @brief Return a temporal box with the value span shifted and/or scaled by
@@ -1318,7 +1305,6 @@ tfloatbox_shift_scale(const TBox *box, double shift, double width,
   return tbox_shift_scale_value(box, Float8GetDatum(shift),
     Float8GetDatum(width), hasshift, haswidth);
 }
-#endif /* MEOS */
 
 /**
  * @ingroup meos_box_transf

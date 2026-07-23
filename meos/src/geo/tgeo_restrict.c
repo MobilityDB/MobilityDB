@@ -59,7 +59,6 @@
 
 /*****************************************************************************/
 
-#if MEOS
 /**
  * @ingroup meos_geo_restrict
  * @brief Return a temporal point restricted to a point
@@ -142,7 +141,6 @@ tgeo_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
   *result = DatumGetGserializedP(res);
   return found;
 }
-#endif /* MEOS */
 
 /*****************************************************************************
  * Force a temporal point to be 2D
@@ -1233,7 +1231,6 @@ tgeo_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
   return result;
 }
 
-#if MEOS
 /**
  * @ingroup meos_geo_restrict
  * @brief Return a temporal geo restricted to a spatiotemporal box
@@ -1262,7 +1259,6 @@ tgeo_minus_stbox(const Temporal *temp, const STBox *box, bool border_inc)
 {
   return tgeo_restrict_stbox(temp, box, border_inc, REST_MINUS);
 }
-#endif /* MEOS */
 
 /*****************************************************************************
  * Restriction functions for a spatiotemporal box keeping the original
@@ -2153,7 +2149,6 @@ tgeo_restrict_geom(const Temporal *temp, const GSERIALIZED *gs,
 
 /*****************************************************************************/
 
-#if MEOS
 /**
  * @ingroup meos_geo_restrict
  * @brief Return a temporal point restricted to a geometry
@@ -2209,7 +2204,6 @@ tgeo_minus_geom(const Temporal *temp, const GSERIALIZED *gs)
 {
   return tgeo_restrict_geom(temp, gs, REST_MINUS);
 }
-#endif /* MEOS */
 
 /*****************************************************************************/
 
@@ -2258,7 +2252,6 @@ tgeo_restrict_elevation(const Temporal *temp, const Span *s, bool atfunc)
 
 /*****************************************************************************/
 
-#if MEOS
 /**
  * @ingroup meos_geo_restrict
  * @brief Return a temporal point restricted to an elevation span
@@ -2312,6 +2305,5 @@ tgeo_minus_elevation(const Temporal *temp, const Span *s)
 {
   return tgeo_restrict_elevation(temp, s, REST_MINUS);
 }
-#endif /* MEOS */
 
 /*****************************************************************************/

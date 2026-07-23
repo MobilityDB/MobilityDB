@@ -189,7 +189,6 @@ tpoint_get_coord(const Temporal *temp, int coord)
   return tfunc_temporal(temp, &lfinfo);
 }
 
-#if MEOS
 /**
  * @ingroup meos_geo_accessor
  * @brief Return the X coordinates of a temporal point as a temporal float
@@ -228,7 +227,6 @@ tpoint_get_z(const Temporal *temp)
   VALIDATE_TPOINT(temp, NULL);
   return tpoint_get_coord(temp, 2);
 }
-#endif /* MEOS */
 
 /*****************************************************************************
  * Functions derived from PostGIS to increase floating-point precision

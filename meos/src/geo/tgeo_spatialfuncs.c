@@ -120,7 +120,6 @@ geopoint_make(double x, double y, double z, bool hasz, bool geodetic,
 
 /*****************************************************************************/
 
-#if MEOS
 /**
  * @brief Return -1, 0, or 1 depending on whether the first point is less than,
  * equal to, or greater than the second one
@@ -151,7 +150,6 @@ geopoint_cmp(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
     return 0;
   }
 }
-#endif /* MEOS */
 
 /**
  * @brief Return true if the points are equal
@@ -581,27 +579,6 @@ ensure_same_geodetic_tspatial_geo(const Temporal *temp, const GSERIALIZED *gs)
   return true;
 }
 
-#if MEOS
-/**
- * @brief Ensure that the spatiotemporal argument and the geometry/geography
- * have the same type of coordinates, either planar or geodetic
- */
-bool
-ensure_same_geodetic_tspatial_base(const Temporal *temp, Datum base)
-{
-  MeosType basetype = temptype_basetype(temp->temptype);
-  assert(spatial_basetype(basetype));
-  int16 flags = spatial_flags(base, basetype);
-  if (MEOS_FLAGS_GET_GEODETIC(temp->flags) != MEOS_FLAGS_GET_GEODETIC(flags))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Operation on mixed planar and geodetic coordinates");
-    return false;
-  }
-  return true;
-}
-#endif /* MEOS */
-
 /**
  * @brief Ensure that the SRID is known
  */
@@ -953,26 +930,6 @@ ensure_valid_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
   return true;
 }
 
-#if MEOS
-/**
- * @brief Ensure the validity of a spatiotemporal value and a 
- * geometry/geography
- * @note The geometry can be empty since some functions such atGeometry or
- * minusGeometry return different result on empty geometries.
- */
-bool
-ensure_valid_tspatial_base(const Temporal *temp, Datum base)
-{
-  VALIDATE_TSPATIAL(temp, false);
-  VALIDATE_NOT_NULL(DatumGetPointer(base), false);;
-  MeosType basetype = temptype_basetype(temp->temptype);
-  if (! ensure_same_srid(tspatial_srid(temp), spatial_srid(base, basetype)) ||
-      ! ensure_same_geodetic_tspatial_base(temp, base))
-    return false;
-  return true;
-}
-#endif /* MEOS */
-
 /**
  * @brief Ensure the validity of a temporal geo and a spatiotemporal box
  */
@@ -1122,7 +1079,6 @@ tgeom_tgeog(const Temporal *temp, bool oper)
   }
 }
 
-#if MEOS
 /**
  * @ingroup meos_geo_conversion
  * @brief Return a temporal geography from a temporal geometry
@@ -1149,7 +1105,6 @@ tgeography_to_tgeometry(const Temporal *temp)
   VALIDATE_TGEOG(temp, NULL);
   return tgeom_tgeog(temp, TGEOG_TO_TGEOM);
 }
-#endif /* MEOS */
 
 /*****************************************************************************/
 
@@ -1324,7 +1279,6 @@ tgeo_tpoint(const Temporal *temp, bool oper)
   }
 }
 
-#if MEOS
 /**
  * @ingroup meos_geo_conversion
  * @brief Return a temporal geometry point from a temporal geometry
@@ -1378,7 +1332,6 @@ tgeogpoint_to_tgeography(const Temporal *temp)
   VALIDATE_TGEOGPOINT(temp, NULL);
   return tgeo_tpoint(temp, TPOINT_TO_TGEO);
 }
-#endif /* MEOS */
 
 /*****************************************************************************
  * Affine functions
@@ -1727,7 +1680,6 @@ tgeo_centroid(const Temporal *temp)
 
 /*****************************************************************************/
 
-#if MEOS
 /**
  * @ingroup meos_geo_base_spatial
  * @brief Return an array of integers specifying the cluster number assigned to
@@ -1970,6 +1922,5 @@ geo_cluster_within(const GSERIALIZED **geoms, uint32_t ngeoms,
   *count = nclusters;
   return result;
 }
-#endif /* MEOS */
 
 /*****************************************************************************/

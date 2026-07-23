@@ -2859,6 +2859,9 @@ shortestline_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 double
 stbox_spatial_distance(const STBox *box1, const STBox *box2)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(box1, false); VALIDATE_NOT_NULL(box2, false);
+
   /* Spatial extents overlap → exact minimum is 0 (some pair of points
    * inside the joined extent has zero distance) */
   if (box1->xmin <= box2->xmax && box2->xmin <= box1->xmax &&

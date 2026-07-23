@@ -3104,7 +3104,6 @@ set_as_wkb(const Set *s, uint8_t variant, size_t *size_out)
   return datum_as_wkb(PointerGetDatum(s), s->settype, variant, size_out);
 }
 
-#if MEOS
 /**
  * @ingroup meos_setspan_inout
  * @brief Return the ASCII hex-encoded Well-Known Binary (HexWKB)
@@ -3122,7 +3121,6 @@ set_as_hexwkb(const Set *s, uint8_t variant, size_t *size_out)
   return (char *) datum_as_wkb(PointerGetDatum(s), s->settype,
     variant | (uint8_t) WKB_HEX, size_out);
 }
-#endif /* MEOS */
 
 /*****************************************************************************/
 
@@ -3142,7 +3140,6 @@ span_as_wkb(const Span *s, uint8_t variant, size_t *size_out)
   return datum_as_wkb(PointerGetDatum(s), s->spantype, variant, size_out);
 }
 
-#if MEOS
 /**
  * @ingroup meos_setspan_inout
  * @brief Return the ASCII hex-encoded Well-Known Binary (HexWKB)
@@ -3160,7 +3157,6 @@ span_as_hexwkb(const Span *s, uint8_t variant, size_t *size_out)
   return (char *) datum_as_wkb(PointerGetDatum(s), s->spantype,
     variant | (uint8_t) WKB_HEX, size_out);
 }
-#endif /* MEOS */
 
 /*****************************************************************************/
 
@@ -3180,7 +3176,6 @@ spanset_as_wkb(const SpanSet *ss, uint8_t variant, size_t *size_out)
   return datum_as_wkb(PointerGetDatum(ss), ss->spansettype, variant, size_out);
 }
 
-#if MEOS
 /**
  * @ingroup meos_setspan_inout
  * @brief Return the ASCII hex-encoded Well-Known Binary (HexWKB)
@@ -3198,7 +3193,6 @@ spanset_as_hexwkb(const SpanSet *ss, uint8_t variant, size_t *size_out)
   return (char *) datum_as_wkb(PointerGetDatum(ss), ss->spansettype,
     variant | (uint8_t) WKB_HEX, size_out);
 }
-#endif /* MEOS */
 
 /*****************************************************************************
  * WKB and HexWKB output functions for bounding box types
@@ -3221,7 +3215,6 @@ tbox_as_wkb(const TBox *box, uint8_t variant, size_t *size_out)
     size_out);
 }
 
-#if MEOS
 /**
  * @ingroup meos_box_inout
  * @brief Return the ASCII hex-encoded Well-Known Binary (HexWKB)
@@ -3239,7 +3232,6 @@ tbox_as_hexwkb(const TBox *box, uint8_t variant, size_t *size_out)
   return (char *) datum_as_wkb(PointerGetDatum(box), T_TBOX,
     variant | (uint8_t) WKB_HEX, size_out);
 }
-#endif /* MEOS */
 
 /*****************************************************************************
  * WKB and HexWKB output functions for temporal types
@@ -3262,7 +3254,6 @@ temporal_as_wkb(const Temporal *temp, uint8_t variant, size_t *size_out)
     size_out);
 }
 
-#if MEOS
 /**
  * @ingroup meos_temporal_inout
  * @brief Return the ASCII hex-encoded Well-Known Binary (HexWKB)
@@ -3280,6 +3271,5 @@ temporal_as_hexwkb(const Temporal *temp, uint8_t variant, size_t *size_out)
   return (char *) datum_as_wkb(PointerGetDatum(temp), temp->temptype,
     variant | (uint8_t) WKB_HEX, size_out);
 }
-#endif /* MEOS */
 
 /*****************************************************************************/

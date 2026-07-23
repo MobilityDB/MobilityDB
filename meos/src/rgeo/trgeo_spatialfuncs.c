@@ -517,7 +517,6 @@ trgeo_restrict_geom(const Temporal *temp, const GSERIALIZED *gs, bool atfunc)
   return result;
 }
 
-#if MEOS
 /**
  * @ingroup meos_rgeo_restrict
  * @brief Return a temporal rigid geometry restricted to a geometry
@@ -544,7 +543,6 @@ trgeometry_minus_geom(const Temporal *temp, const GSERIALIZED *gs)
 {
   return trgeo_restrict_geom(temp, gs, REST_MINUS);
 }
-#endif /* MEOS */
 
 /*****************************************************************************
  * Restriction by spatiotemporal box
@@ -625,7 +623,6 @@ trgeo_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
   return result;
 }
 
-#if MEOS
 /**
  * @ingroup meos_rgeo_restrict
  * @brief Return a temporal rigid geometry restricted to a spatiotemporal box
@@ -654,9 +651,6 @@ trgeometry_minus_stbox(const Temporal *temp, const STBox *box, bool border_inc)
 {
   return trgeo_restrict_stbox(temp, box, border_inc, REST_MINUS);
 }
-#endif /* MEOS */
-
-
 
 /**
  * @brief Apply a pose to a body-frame geometry and return the centroid of the
@@ -1061,9 +1055,7 @@ trgeometry_traversed_area(const Temporal *temp, bool unary_union)
   int n_insts = 0;
   /* temporal_insts_p returns a pointer-to-array of in-place instants;
    * neither the elements nor the array itself need element-freeing —
-   * we only pfree the array wrapper at the end. (The MEOS-public
-   * temporal_instants is gated by #if MEOS, so it isn't available in
-   * the PG-extension build.) */
+   * we only pfree the array wrapper at the end. */
   const TInstant **insts = temporal_insts_p(temp, &n_insts);
   if (! insts || n_insts <= 0)
     return NULL;

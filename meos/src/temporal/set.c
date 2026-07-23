@@ -664,7 +664,6 @@ tstzset_to_dateset(const Set *s)
  * Accessor functions
  *****************************************************************************/
 
-#if MEOS
 /**
  * @ingroup meos_internal_setspan_accessor
  * @brief Return the size in bytes of a set
@@ -677,7 +676,6 @@ set_mem_size(const Set *s)
   VALIDATE_NOT_NULL(s, -1);
   return (int) VARSIZE(s);
 }
-#endif /* MEOS */
 
 /**
  * @ingroup meos_setspan_accessor

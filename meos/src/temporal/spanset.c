@@ -275,10 +275,8 @@ spanset_make_exp(Span *spans, int count, int maxcount, bool normalize,
         char *str2 = span_out(&spans[i + 1], OUT_MAX_DIGITS);
         meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
           "The spans composing a span set must be increasing: %s, %s", str1, str2);
-#if MEOS
         pfree(str1); pfree(str2);
         return NULL;
-#endif
       }
     }
   }
@@ -314,7 +312,6 @@ spanset_make_exp(Span *spans, int count, int maxcount, bool normalize,
   return result;
 }
 
-#if MEOS
 /**
  * @ingroup meos_setspan_constructor
  * @brief Return a span set from an array of disjoint spans
@@ -331,7 +328,6 @@ spanset_make(Span *spans, int count)
     return NULL;
   return spanset_make_exp(spans, count, count, true, true);
 }
-#endif /* MEOS */
 
 /**
  * @ingroup meos_internal_setspan_constructor
@@ -409,7 +405,6 @@ set_spanset(const Set *s)
   return spanset_make_free(spans, s->count, NORMALIZE, ORDER_NO);
 }
 
-#if MEOS
 /**
  * @ingroup meos_setspan_conversion
  * @brief Convert a set into a span set
@@ -425,7 +420,6 @@ set_to_spanset(const Set *s)
     return NULL;
   return set_spanset(s);
 }
-#endif /* MEOS */
 
 /**
  * @ingroup meos_setspan_conversion
@@ -515,7 +509,6 @@ tstzspanset_to_datespanset(const SpanSet *ss)
  * Accessor functions
  *****************************************************************************/
 
-#if MEOS
 /**
  * @ingroup meos_internal_setspan_accessor
  * @brief Return the size in bytes of a span set
@@ -543,7 +536,6 @@ spanset_span(const SpanSet *ss)
   VALIDATE_NOT_NULL(ss, NULL);
   return span_copy(&ss->span);
 }
-#endif /* MEOS */
 
 /**
  * @ingroup meos_internal_setspan_accessor

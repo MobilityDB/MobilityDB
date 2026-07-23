@@ -1319,7 +1319,6 @@ tnumber_to_span(const Temporal *temp)
   return result;
 }
 
-#if MEOS
 /**
  * @ingroup meos_temporal_conversion
  * @brief Convert a temporal number into a temporal box
@@ -1335,7 +1334,6 @@ tnumber_to_tbox(const Temporal *temp)
   tnumber_set_tbox(temp, result);
   return result;
 }
-#endif /* MEOS */
 
 /*****************************************************************************
  * Transformation functions
@@ -1911,7 +1909,6 @@ temporal_shift_scale_time(const Temporal *temp, const Interval *shift,
   }
 }
 
-#if MEOS
 /**
  * @ingroup meos_temporal_transf
  * @brief Return a temporal value shifted by an interval
@@ -1937,7 +1934,6 @@ temporal_scale_time(const Temporal *temp, const Interval *duration)
 {
   return temporal_shift_scale_time(temp, NULL, duration);
 }
-#endif /* MEOS */
 
 /*****************************************************************************
  * Accessor functions
@@ -1945,7 +1941,6 @@ temporal_scale_time(const Temporal *temp, const Interval *duration)
 
 #define MEOS_INTERP_STR_MAXLEN 9
 
-#if MEOS || DEBUG_BUILD
 /**
  * @ingroup meos_internal_temporal_accessor
  * @brief Return the size in bytes of a temporal value
@@ -1958,7 +1953,6 @@ temporal_mem_size(const Temporal *temp)
   assert(temp);
   return VARSIZE(temp);
 }
-#endif /* MEOS || DEBUG_BUILD */
 
 /**
  * @ingroup meos_temporal_accessor
@@ -2549,7 +2543,6 @@ temporal_sequences_p(const Temporal *temp, int *count)
   }
 }
 
-#if MEOS
 /**
  * @ingroup meos_temporal_accessor
  * @brief Return an array of copies of the sequences of a temporal sequence
@@ -2570,7 +2563,6 @@ temporal_sequences(const Temporal *temp, int *count)
     sequences[i] = tsequence_copy(sequences[i]);
   return sequences;
 }
-#endif /* MEOS */
 
 /**
  * @ingroup meos_temporal_accessor
@@ -2837,7 +2829,6 @@ temporal_insts_p(const Temporal *temp, int *count)
   }
 }
 
-#if MEOS
 /**
  * @ingroup meos_temporal_accessor
  * @brief Return a copy of the distinct instants of a temporal value
@@ -2856,7 +2847,6 @@ temporal_instants(const Temporal *temp, int *count)
     instants[i] = tinstant_copy(instants[i]);
   return instants;
 }
-#endif /* MEOS */
 
 /**
  * @ingroup meos_temporal_accessor

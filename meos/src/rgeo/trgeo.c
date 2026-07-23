@@ -130,7 +130,6 @@ ensure_valid_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2)
  * Input/output functions
  *****************************************************************************/
 
-#if MEOS
 /**
  * @ingroup meos_rgeo_inout
  * @brief Return a temporal rigid geometry from its Well-Known Text (WKT)
@@ -159,7 +158,6 @@ trgeo_from_mfjson(const char *mfjson)
   VALIDATE_NOT_NULL(mfjson, NULL);
   return temporal_from_mfjson(mfjson, T_TRGEOMETRY);
 }
-#endif /* MEOS */
 
 /**
  * @ingroup meos_rgeo_inout

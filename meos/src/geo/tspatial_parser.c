@@ -674,7 +674,6 @@ tpoint_parse(const char **str, MeosType temptype)
   return result;
 }
 
-#if MEOS
 /**
  * @ingroup meos_geo_inout
  * @brief Return a temporal geometry point from its Well-Known Text (WKT)
@@ -729,6 +728,5 @@ tgeography_in(const char *str)
   VALIDATE_NOT_NULL(str, NULL);
   return tspatial_parse(&str, T_TGEOGRAPHY);
 }
-#endif /* MEOS */
 
 /*****************************************************************************/

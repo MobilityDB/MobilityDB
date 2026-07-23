@@ -144,7 +144,7 @@ int main(void)
         GSERIALIZED *gs = geom_in(geo_buffer, -1);
 
         /* Compute the atGeometry function */
-        Temporal *rest = tintersects_tcbuffer_geo(temp, gs, false, false);
+        Temporal *rest = tintersects_tcbuffer_geo(temp, gs);
         /* Get the number of instants of the result */
         int count = rest ? temporal_num_instants(rest): 0;
         free(rest);

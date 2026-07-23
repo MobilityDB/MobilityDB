@@ -268,7 +268,7 @@ int main(void)
           // double result = temporal_dyntimewarp_distance(temp1, temp2);
           // double result = temporal_frechet_distance(temp1, temp2);
           // double result = temporal_hausdorff_distance(temp1, temp2);
-          // int count;
+          int count;
           // Match *result = temporal_dyntimewarp_path(temp1, temp2, &count);
           // Match *result = temporal_frechet_path(temp1, temp2, &count);
 

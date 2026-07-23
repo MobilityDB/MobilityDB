@@ -1395,7 +1395,6 @@ temporal_similarity(const Temporal *temp1, const Temporal *temp2,
   return result;
 }
 
-#if MEOS
 /**
  * @ingroup meos_temporal_analytics_similarity
  * @brief Return the Frechet distance between two temporal values
@@ -1427,7 +1426,6 @@ temporal_dyntimewarp_distance(const Temporal *temp1, const Temporal *temp2)
     return DBL_MAX;
   return temporal_similarity(temp1, temp2, DYNTIMEWARP);
 }
-#endif
 
 /*****************************************************************************
  * Iterative implementation of the similarity distance with a full matrix
@@ -1657,7 +1655,6 @@ temporal_similarity_path(const Temporal *temp1, const Temporal *temp2,
   return result;
 }
 
-#if MEOS
 /**
  * @ingroup meos_temporal_analytics_similarity
  * @brief Return the Frechet distance between two temporal values
@@ -1690,7 +1687,6 @@ temporal_dyntimewarp_path(const Temporal *temp1, const Temporal *temp2,
     return NULL;
   return temporal_similarity_path(temp1, temp2, count, DYNTIMEWARP);
 }
-#endif
 
 /*****************************************************************************
  * Hausdorff distance

@@ -209,7 +209,6 @@ tnpointsegm_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
  * Input/output functions
  *****************************************************************************/
 
-#if MEOS
 /**
  * @ingroup meos_npoint_inout
  * @brief Return a temporal network point from its Well-Known Text (WKT)
@@ -299,13 +298,11 @@ tnpointseqset_in(const char *str)
   assert(temp->subtype == TSEQUENCESET);
   return (TSequenceSet *) temp;
 }
-#endif /* MEOS */
 
 /*****************************************************************************
  * Constructor functions
  *****************************************************************************/
 
-#if MEOS
 /**
  * @ingroup meos_npoint_constructor
  * @brief Return a temporal network point instant from a network point and a
@@ -385,7 +382,6 @@ tnpointseqset_from_base_tstzspanset(const Npoint *np, const SpanSet *ss,
   return tsequenceset_from_base_tstzspanset(PointerGetDatum(np), T_TNPOINT,
     ss, interp);
 }
-#endif /* MEOS */
 
 /*****************************************************************************
  * Conversion functions
@@ -579,7 +575,6 @@ tgeompoint_to_tnpoint(const Temporal *temp)
  * Accessor functions
  *****************************************************************************/
 
-#if MEOS
 /**
  * @ingroup meos_npoint_accessor
  * @brief Return a copy of the start value of a temporal network point
@@ -674,7 +669,6 @@ tnpoint_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
   *value = DatumGetNpointP(res);
   return result;
 }
-#endif /* MEOS */
 
 /**
  * @brief Return the network segments covered by the temporal network point

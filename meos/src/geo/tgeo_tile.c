@@ -643,7 +643,6 @@ stbox_tile_state_get(STboxGridState *state, STBox *box)
   return true;
 }
 
-#if MEOS
 /**
  * @ingroup meos_geo_tile
  * @brief Return the spatiotemporal grid of a spatiotemporal box
@@ -797,8 +796,6 @@ stbox_time_tiles(const STBox *bounds, const Interval *duration,
     border_inc, count);
 }
 
-#endif /* MEOS */
-
 /**
  * @brief Return a tile in the multidimensional grid of a spatiotemporal box
  * @param[in] point Point, may be `NULL`
@@ -879,7 +876,6 @@ stbox_space_time_tile(const GSERIALIZED *point, TimestampTz t,
   return result;
 }
 
-#if MEOS
 /**
  * @ingroup meos_geo_tile
  * @brief Return a tile in the spatiotemporal grid of a spatiotemporal box
@@ -931,7 +927,6 @@ stbox_get_time_tile(TimestampTz t, const Interval *duration,
   return stbox_space_time_tile(NULL, t, 0, 0, 0, duration, NULL, torigin,
     false, true);
 }
-#endif /* MEOS */
 
 /*****************************************************************************
  * Boxes functions
@@ -1023,7 +1018,6 @@ tgeo_space_time_boxes(const Temporal *temp, double xsize, double ysize,
   return result;
 }
 
-#if MEOS
 /**
  * @ingroup meos_geo_tile
  * @brief Return the spatiotemporal boxes of a temporal geo split with
@@ -1045,7 +1039,6 @@ tgeo_space_boxes(const Temporal *temp, double xsize, double ysize,
   return tgeo_space_time_boxes(temp, xsize, ysize, zsize, NULL, sorigin, 0,
     bitmatrix, border_inc, count);
 }
-#endif /* MEOS */
 
 /*****************************************************************************
  * Split functions
@@ -1349,7 +1342,6 @@ tgeo_space_time_tile_init(const Temporal *temp, double xsize, double ysize,
   return state;
 }
 
-#if MEOS
 /**
  * @ingroup meos_geo_tile
  * @brief Return the fragments a temporal geo split according to a space and
@@ -1465,6 +1457,5 @@ tgeo_space_split(const Temporal *temp, double xsize, double ysize,
     sorigin, 0, bitmatrix, border_inc);
   return (SpaceSplit) {sts.fragments, sts.space_bins, sts.count};
 }
-#endif /* MEOS */
 
 /*****************************************************************************/

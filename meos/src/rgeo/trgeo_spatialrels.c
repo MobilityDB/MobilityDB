@@ -461,7 +461,6 @@ ea_disjoint_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
   return ea_spatialrel_tspatial_tspatial(temp1, temp2, &datum2_point_ne, ever);
 }
 
-#if MEOS
 /**
  * @ingroup meos_rgeo_rel_ever
  * @brief Return 1 if the temporal rigid geometries are ever disjoint, 0 if not,
@@ -488,7 +487,6 @@ adisjoint_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
 {
   return ea_disjoint_trgeo_trgeo(temp1, temp2, ALWAYS);
 }
-#endif /* MEOS */
 
 /*****************************************************************************
  * Ever/always intersects
@@ -572,7 +570,6 @@ ea_intersects_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2,
   return ea_spatialrel_tspatial_tspatial(temp1, temp2, &datum2_point_eq, ever);
 }
 
-#if MEOS
 /**
  * @ingroup meos_rgeo_rel_ever
  * @brief Return 1 if the temporal rigid geometries ever intersect, 0 if not,
@@ -598,7 +595,6 @@ aintersects_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
 {
   return ea_intersects_trgeo_trgeo(temp1, temp2, ALWAYS);
 }
-#endif /* MEOS */
 
 /*****************************************************************************
  * Ever/always touches

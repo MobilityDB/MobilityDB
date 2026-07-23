@@ -143,10 +143,8 @@ int main(void)
           Temporal *temp2 = tgeometry_in(tgeo_buffer);
 
           /* Compute the function, uncomment the desired function */
-          // Temporal *rest = tintersects_tgeo_tgeo(temp1, temp2,
-            // false, false);
-          Temporal *rest = tdwithin_tgeo_tgeo(temp1, temp2, 10,
-            false, false);
+          // Temporal *rest = tintersects_tgeo_tgeo(temp1, temp2);
+          Temporal *rest = tdwithin_tgeo_tgeo(temp1, temp2, 10);
           // Temporal *rest = tdistance_tgeo_tgeo(temp1, temp2);
           if (rest)
           {
