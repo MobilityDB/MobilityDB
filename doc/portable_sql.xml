@@ -121,7 +121,7 @@
 					<row><entry></entry><entry><varname>tdensityTransition</varname></entry><entry><varname>tdensityCombine</varname></entry><entry><varname>tdensityFinal</varname></entry></row>
 					<row><entry>Bounding box</entry><entry><varname>extentTransition</varname></entry><entry><varname>extentCombine</varname></entry><entry>—</entry></row>
 					<row><entry>Distance</entry><entry><varname>minDistanceTransition</varname></entry><entry><varname>minDistanceCombine</varname></entry><entry>—</entry></row>
-					<row><entry>Union</entry><entry><varname>setUnionTransition</varname></entry><entry>—</entry><entry><varname>setUnionFinal</varname></entry></row>
+					<row><entry>Union</entry><entry><varname>setUnionTransition</varname></entry><entry><varname>setUnionCombine</varname></entry><entry><varname>setUnionFinal</varname></entry></row>
 					<row><entry></entry><entry><varname>spanUnionTransition</varname></entry><entry><varname>spanUnionCombine</varname></entry><entry><varname>spanUnionFinal</varname></entry></row>
 					<row><entry></entry><entry><varname>spansetUnionTransition</varname></entry><entry><varname>spansetUnionCombine</varname></entry><entry><varname>spansetUnionFinal</varname></entry></row>
 					<row><entry>Merge</entry><entry><varname>mergeTransition</varname></entry><entry><varname>mergeCombine</varname></entry><entry><varname>mergeFinal</varname></entry></row>
