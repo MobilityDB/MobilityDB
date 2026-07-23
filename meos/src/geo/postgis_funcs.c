@@ -70,7 +70,7 @@
   } while(0);
 #else
   #include <lwgeom_pg.h>
-#endif
+#endif /* MEOS */
 
 /* Function not exported in liblwgeom.h */
 extern int spheroid_init_from_srid(int32_t srid, SPHEROID *s);
@@ -80,7 +80,6 @@ extern int spheroid_init_from_srid(int32_t srid, SPHEROID *s);
  * Original MEOS functions
  *****************************************************************************/
 
-#if MEOS
 #define MAX_LEN_BOX3D    255
 #define MAX_LEN_GBOX     255
 
@@ -271,7 +270,6 @@ box3d_in(const char *str)
   }
   return box3d_make(xmin, xmax, ymin, ymax, zmin, zmax, srid);
 }
-#endif /* MEOS */
 
 /*****************************************************************************
  * Interval tree functions
@@ -410,7 +408,6 @@ geo_copy(const GSERIALIZED *gs)
   return result;
 }
 
-#if MEOS
 /**
  * @ingroup meos_geo_base_constructor
  * @brief Return a 2D geometry point constructed from the arguments
@@ -464,13 +461,11 @@ geogpoint_make3dz(int32_t srid, double x, double y, double z)
   lwpoint_free(point);
   return result;
 }
-#endif /* MEOS */
 
 /*****************************************************************************
  * Functions borrowed from gserialized.c
  *****************************************************************************/
 
-#if MEOS
 /**
  * @ingroup meos_geo_base_srid
  * @brief Get the SRID of a geometry/geography
@@ -509,7 +504,6 @@ geo_is_empty(const GSERIALIZED *gs)
   VALIDATE_NOT_NULL(gs, NULL);
   return gserialized_is_empty(gs);
 }
-#endif /* MEOS */
 
 /*****************************************************************************
  * Functions adapted from lwgeom_box.c
@@ -769,7 +763,6 @@ geo_is_unitary(const GSERIALIZED *gs)
   }
 }
 
-#if MEOS
 /**
  * @ingroup meos_geo_base_accessor
  * @brief Return the length of a geometry
@@ -791,7 +784,6 @@ geom_length(const GSERIALIZED *gs)
   lwgeom_free(lwgeom);
   return dist;
 }
-#endif /* MEOS */
 
 /**
  * @ingroup meos_geo_base_accessor
@@ -1074,7 +1066,6 @@ geom_dwithin3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   return (tolerance >= mindist);
 }
 
-#if MEOS
 /**
  * @ingroup meos_geo_base_transf
  * @brief Reverse vertex order of a geometry
@@ -1157,7 +1148,6 @@ geom_azimuth(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double *result)
 
   return true;
 }
-#endif /* MEOS */
 
 /**
  * @ingroup meos_geo_base_spatial
@@ -1335,7 +1325,6 @@ geo_pointarr(const GSERIALIZED *gs, int *count)
   return result;
 }
 
-#if MEOS
 /**
  * @ingroup meos_geo_base_spatial
  * @brief Return the number of points of a geometry
@@ -1433,7 +1422,6 @@ geo_geo_n(const GSERIALIZED *gs, int n)
   lwgeom_free(lwgeom);
   return result;
 }
-#endif /* MEOS */
 
 /*****************************************************************************
  * Functions adapted from lwgeom_geos.c
@@ -1669,7 +1657,6 @@ geom_intersects(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   return geom_intersects2d(gs1, gs2);
 }
 
-#if MEOS || RGEO
 /**
  * @ingroup meos_geo_base_rel
  * @brief Return true if the first geometry contains the second one
@@ -1681,7 +1668,6 @@ geom_contains(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
   return geom_spatialrel(gs1, gs2, CONTAINS);
 }
-#endif /* MEOS || RGEO */
 
 /**
  * @ingroup meos_geo_base_rel
@@ -1695,7 +1681,6 @@ geom_touches(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   return geom_spatialrel(gs1, gs2, TOUCHES);
 }
 
-#if MEOS || RGEO
 /**
  * @ingroup meos_geo_base_rel
  * @brief Return true if the first geometry covers the second one
@@ -1719,7 +1704,6 @@ geom_disjoint2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
   return ! geom_spatialrel(gs1, gs2, INTERSECTS);
 }
-#endif /* MEOS || RGEO */
 
 /**
  * @ingroup meos_geo_base_rel
@@ -2468,7 +2452,6 @@ geo_serialize(const LWGEOM *geom)
  * Functions adapted from lwgeom_transform.c
  *****************************************************************************/
 
-#if MEOS
 /**
  * @ingroup meos_geo_base_srid
  * @brief Return the geometry/geography transformed to an SRID
@@ -2560,7 +2543,6 @@ geo_transform_pipeline(const GSERIALIZED *gs, char *pipeline, int32_t srid_to,
   lwgeom_free(geom); pfree(gs1);
   return (result); /* new geometry */
 }
-#endif /* MEOS */
 
 /*****************************************************************************
  * Functions adapted from geography_centroid.c
@@ -3423,7 +3405,6 @@ geo_out(const GSERIALIZED *gs)
   return result;
 }
 
-#if MEOS
 /**
  * @ingroup meos_geo_base_inout
  * @brief Return a geometry/geography from its WKT representation (and
@@ -3463,7 +3444,6 @@ geo_from_text(const char *wkt, int32_t srid)
   lwgeom_parser_result_free(&lwg_parser_result);
   return geo_result;
 }
-#endif /* MEOS */
 
 /**
  * @brief Return the (Extended) Well-Known Text (EWKT or WKT) representation of
@@ -3501,7 +3481,6 @@ geo_as_text(const GSERIALIZED *gs, int precision)
   return geo_as_wkt(gs, precision, false);
 }
 
-#if MEOS || DEBUG_BUILD
 /**
  * @ingroup meos_geo_base_inout
  * @brief Return the Extended Well-Known Text (EWKT) representation of a
@@ -3517,9 +3496,7 @@ geo_as_ewkt(const GSERIALIZED *gs, int precision)
 {
   return geo_as_wkt(gs, precision, true);
 }
-#endif /* MEOS || DEBUG_BUILD */
 
-#if MEOS 
 /**
  * @ingroup meos_geo_base_inout
  * @brief Return a geometry from its ASCII hex-encoded Well-Known Binary
@@ -3689,7 +3666,6 @@ geo_from_geojson(const char *geojson)
   lwgeom_free(geom);
   return result;
 }
-#endif /* MEOS */
 
 /**
  * @ingroup meos_geo_base_inout

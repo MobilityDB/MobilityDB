@@ -501,7 +501,6 @@ pose_parse(const char **str, bool end)
   return result;
 }
 
-#if MEOS
 /**
  * @ingroup meos_pose_base_inout
  * @brief Return a pose from its string representation.
@@ -515,7 +514,6 @@ pose_in(const char *str)
   VALIDATE_NOT_NULL(str, NULL);
   return pose_parse(&str, true);
 }
-#endif /* MEOS */
 
 /**
  * @ingroup meos_pose_base_inout

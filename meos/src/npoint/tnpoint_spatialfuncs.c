@@ -504,7 +504,6 @@ tnpoint_restrict_geom(const Temporal *temp, const GSERIALIZED *gs, bool atfunc)
   return result;
 }
 
-#if MEOS
 /**
  * @ingroup meos_npoint_restrict
  * @brief Return a temporal network point restricted to a geometry
@@ -530,7 +529,6 @@ tnpoint_minus_geom(const Temporal *temp, const GSERIALIZED *gs)
 {
   return tnpoint_restrict_geom(temp, gs, REST_MINUS);
 }
-#endif /* MEOS */
 
 /*****************************************************************************/
 
@@ -561,7 +559,6 @@ tnpoint_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
   return result;
 }
 
-#if MEOS
 /**
  * @ingroup meos_npoint_restrict
  * @brief Return a temporal network point restricted to a geometry
@@ -589,6 +586,5 @@ tnpoint_minus_stbox(const Temporal *temp, const STBox *box, bool border_inc)
 {
   return tnpoint_restrict_stbox(temp, box, border_inc, REST_MINUS);
 }
-#endif /* MEOS */
 
 /*****************************************************************************/

@@ -299,7 +299,6 @@ npoint_parse(const char **str, bool end)
   return npoint_make(rid, pos);
 }
 
-#if MEOS
 /**
  * @ingroup meos_npoint_base_inout
  * @brief Return a network point from its string representation
@@ -312,7 +311,6 @@ npoint_in(const char *str)
   VALIDATE_NOT_NULL(str, NULL);
   return npoint_parse(&str, true);
 }
-#endif /* MEOS */
 
 /**
  * @ingroup meos_npoint_base_inout
@@ -552,7 +550,6 @@ npoint_from_hexwkb(const char *hexwkb)
 
 /*****************************************************************************/
 
-#if MEOS
 /**
  * @ingroup meos_npoint_base_inout
  * @brief Return the Well-Known Binary (WKB) representation of a circular
@@ -587,7 +584,6 @@ npoint_as_hexwkb(const Npoint *np, uint8_t variant, size_t *size_out)
   return (char *) datum_as_wkb(PointerGetDatum(np), T_NPOINT,
     variant | (uint8_t) WKB_HEX, size_out);
 }
-#endif /* MEOS */
 
 /*****************************************************************************
  * Constructor functions

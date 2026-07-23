@@ -1984,7 +1984,6 @@ intersection_tsequence_tsequenceset(const TSequence *seq, const TSequenceSet *ss
  * Input/output functions
  *****************************************************************************/
 
-#if MEOS
 /**
  * @ingroup meos_internal_temporal_inout
  * @brief Return a temporal sequence set from its Well-Known Text (WKT)
@@ -1999,7 +1998,6 @@ tsequenceset_in(const char *str, MeosType temptype, interpType interp)
   assert(str);
   return tsequenceset_parse(&str, temptype, interp);
 }
-#endif /* MEOS */
 
 /**
  * @brief Return the Well-Known Text (WKT) representation of a temporal

@@ -128,7 +128,6 @@ stbox_expand(const STBox *box1, STBox *box2)
  * Input/ouput functions in string format
  *****************************************************************************/
 
-#if MEOS
 /**
  * @ingroup meos_geo_box_inout
  * @brief Return a spatiotemporal box from its Well-Known Text (WKT)
@@ -158,7 +157,6 @@ stbox_in(const char *str)
   VALIDATE_NOT_NULL(str, NULL);
   return stbox_parse(&str);
 }
-#endif /* MEOS */
 
 /**
  * @ingroup meos_geo_box_inout
@@ -303,7 +301,6 @@ stbox_as_wkb(const STBox *box, uint8_t variant, size_t *size_out)
   return datum_as_wkb(PointerGetDatum(box), T_STBOX, variant, size_out);
 }
 
-#if MEOS
 /**
  * @ingroup meos_geo_box_inout
  * @brief Return the ASCII hex-encoded Well-Known Binary (HexWKB)
@@ -321,7 +318,6 @@ stbox_as_hexwkb(const STBox *box, uint8_t variant, size_t *size_out)
   return (char *) datum_as_wkb(PointerGetDatum(box), T_STBOX,
     variant | (uint8_t) WKB_HEX, size_out);
 }
-#endif /* MEOS */
 
 /*****************************************************************************
  * Constructor functions
@@ -344,6 +340,7 @@ stbox_make(bool hasx, bool hasz, bool geodetic, int32 srid, double xmin,
   double xmax, double ymin, double ymax, double zmin, double zmax,
   const Span *s)
 {
+  /* Ensure the validity of the arguments */
 #if MEOS
   if (s && s->spantype != T_TSTZSPAN)
     return NULL;
@@ -936,7 +933,6 @@ tstzset_set_stbox(const Set *s, STBox *result)
   return;
 }
 
-#if MEOS
 /**
  * @ingroup meos_geo_box_conversion
  * @brief Convert a timestamptz set into a spatiotemporal box
@@ -952,7 +948,6 @@ tstzset_to_stbox(const Set *s)
   tstzset_set_stbox(s, result);
   return result;
 }
-#endif /* MEOS */
 
 /**
  * @ingroup meos_internal_box_conversion
@@ -1006,7 +1001,6 @@ tstzspanset_set_stbox(const SpanSet *ss, STBox *result)
   return;
 }
 
-#if MEOS
 /**
  * @ingroup meos_geo_box_conversion
  * @brief Convert a timestamptz span set into a spatiotemporal box
@@ -1022,7 +1016,6 @@ tstzspanset_to_stbox(const SpanSet *ss)
   tstzspanset_set_stbox(ss, result);
   return result;
 }
-#endif /* MEOS */
 
 /*****************************************************************************
  * Generic functions
@@ -1959,7 +1952,7 @@ adjacent_stbox_stbox(const STBox *box1, const STBox *box2)
  * @param[in] box1,box2 Spatiotemporal boxes
  */
 static bool
-ensure_valid_pos_stbox_stbox(const STBox *box1, const STBox *box2)
+ensure_valid_pos_stbox_stbox_x(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(box1, NULL); VALIDATE_NOT_NULL(box2, NULL);
@@ -1981,7 +1974,7 @@ bool
 left_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_pos_stbox_stbox(box1, box2) ||
+  if (! ensure_valid_pos_stbox_stbox_x(box1, box2) ||
       ! ensure_has_X(T_STBOX, box1->flags) ||
       ! ensure_has_X(T_STBOX, box2->flags))
     return false;
@@ -1999,7 +1992,7 @@ bool
 overleft_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_pos_stbox_stbox(box1, box2) ||
+  if (! ensure_valid_pos_stbox_stbox_x(box1, box2) ||
       ! ensure_has_X(T_STBOX, box1->flags) ||
       ! ensure_has_X(T_STBOX, box2->flags))
     return false;
@@ -2017,7 +2010,7 @@ bool
 right_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_pos_stbox_stbox(box1, box2) ||
+  if (! ensure_valid_pos_stbox_stbox_x(box1, box2) ||
       ! ensure_has_X(T_STBOX, box1->flags) ||
       ! ensure_has_X(T_STBOX, box2->flags))
     return false;
@@ -2035,7 +2028,7 @@ bool
 overright_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_pos_stbox_stbox(box1, box2) ||
+  if (! ensure_valid_pos_stbox_stbox_x(box1, box2) ||
       ! ensure_has_X(T_STBOX, box1->flags) ||
       ! ensure_has_X(T_STBOX, box2->flags))
     return false;
@@ -2052,7 +2045,7 @@ bool
 below_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_pos_stbox_stbox(box1, box2) ||
+  if (! ensure_valid_pos_stbox_stbox_x(box1, box2) ||
       ! ensure_has_X(T_STBOX, box1->flags) ||
       ! ensure_has_X(T_STBOX, box2->flags))
     return false;
@@ -2070,7 +2063,7 @@ bool
 overbelow_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_pos_stbox_stbox(box1, box2) ||
+  if (! ensure_valid_pos_stbox_stbox_x(box1, box2) ||
       ! ensure_has_X(T_STBOX, box1->flags) ||
       ! ensure_has_X(T_STBOX, box2->flags))
     return false;
@@ -2087,7 +2080,7 @@ bool
 above_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_pos_stbox_stbox(box1, box2) ||
+  if (! ensure_valid_pos_stbox_stbox_x(box1, box2) ||
       ! ensure_has_X(T_STBOX, box1->flags) ||
       ! ensure_has_X(T_STBOX, box2->flags))
     return false;
@@ -2105,7 +2098,7 @@ bool
 overabove_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_pos_stbox_stbox(box1, box2) ||
+  if (! ensure_valid_pos_stbox_stbox_x(box1, box2) ||
       ! ensure_has_X(T_STBOX, box1->flags) ||
       ! ensure_has_X(T_STBOX, box2->flags))
     return false;
@@ -2123,7 +2116,7 @@ bool
 front_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_pos_stbox_stbox(box1, box2) ||
+  if (! ensure_valid_pos_stbox_stbox_x(box1, box2) ||
       ! ensure_has_Z(T_STBOX, box1->flags) ||
       ! ensure_has_Z(T_STBOX, box2->flags))
     return false;
@@ -2141,7 +2134,7 @@ bool
 overfront_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_pos_stbox_stbox(box1, box2) ||
+  if (! ensure_valid_pos_stbox_stbox_x(box1, box2) ||
       ! ensure_has_Z(T_STBOX, box1->flags) ||
       ! ensure_has_Z(T_STBOX, box2->flags))
     return false;
@@ -2159,7 +2152,7 @@ bool
 back_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_pos_stbox_stbox(box1, box2) ||
+  if (! ensure_valid_pos_stbox_stbox_x(box1, box2) ||
       ! ensure_has_Z(T_STBOX, box1->flags) ||
       ! ensure_has_Z(T_STBOX, box2->flags))
     return false;
@@ -2177,12 +2170,14 @@ bool
 overback_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_pos_stbox_stbox(box1, box2) ||
+  if (! ensure_valid_pos_stbox_stbox_x(box1, box2) ||
       ! ensure_has_Z(T_STBOX, box1->flags) ||
       ! ensure_has_Z(T_STBOX, box2->flags))
     return false;
   return (box1->zmin >= box2->zmin);
 }
+
+/*****************************************************************************/
 
 /**
  * @ingroup meos_geo_box_pos
@@ -2194,9 +2189,9 @@ bool
 before_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(box1, NULL); VALIDATE_NOT_NULL(box2, NULL);
   if (! ensure_has_T(T_STBOX, box1->flags) ||
-      ! ensure_has_T(T_STBOX, box2->flags) ||
-      ! ensure_valid_pos_stbox_stbox(box1, box2))
+      ! ensure_has_T(T_STBOX, box2->flags))
     return false;
   return left_span_span(&box1->period, &box2->period);
 }
@@ -2212,9 +2207,9 @@ bool
 overbefore_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(box1, NULL); VALIDATE_NOT_NULL(box2, NULL);
   if (! ensure_has_T(T_STBOX, box1->flags) ||
-      ! ensure_has_T(T_STBOX, box2->flags) ||
-      ! ensure_valid_pos_stbox_stbox(box1, box2))
+      ! ensure_has_T(T_STBOX, box2->flags))
     return false;
   return overleft_span_span(&box1->period, &box2->period);
 }
@@ -2229,9 +2224,9 @@ bool
 after_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(box1, NULL); VALIDATE_NOT_NULL(box2, NULL);
   if (! ensure_has_T(T_STBOX, box1->flags) ||
-      ! ensure_has_T(T_STBOX, box2->flags) ||
-      ! ensure_valid_pos_stbox_stbox(box1, box2))
+      ! ensure_has_T(T_STBOX, box2->flags))
     return false;
   return right_span_span(&box1->period, &box2->period);
 }
@@ -2247,9 +2242,9 @@ bool
 overafter_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(box1, NULL); VALIDATE_NOT_NULL(box2, NULL);
   if (! ensure_has_T(T_STBOX, box1->flags) ||
-      ! ensure_has_T(T_STBOX, box2->flags) ||
-      ! ensure_valid_pos_stbox_stbox(box1, box2))
+      ! ensure_has_T(T_STBOX, box2->flags))
     return false;
   return overright_span_span(&box1->period, &box2->period);
 }
@@ -2499,7 +2494,7 @@ int
 stbox_cmp(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  assert(box1); assert(box2);
+  VALIDATE_NOT_NULL(box1, false); VALIDATE_NOT_NULL(box2, false);
 
   /* Compare the SRID */
   if (box1->srid < box2->srid)

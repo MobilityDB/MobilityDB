@@ -366,7 +366,6 @@ jsonbset_to_alphanumset(const Set *set, const char *key, MeosType resbasetype,
   return lfunc_set(set, &lfinfo);
 }
 
-#if MEOS
 /**
  * @ingroup meos_json_set_json
  * @brief Convert a JSONB set to a temporal integer by extracting one key
@@ -380,6 +379,21 @@ jsonbset_to_intset(const Set *set, const char *key,
   nullHandleType null_handle)
 {
   return jsonbset_to_alphanumset(set, key, T_INT4, null_handle);
+}
+
+/**
+ * @ingroup meos_json_set_json
+ * @brief Convert a JSONB set to a temporal big integer by extracting one key
+ * @param[in] set JSONB set object
+ * @param[in] key Key to extract
+ * @param[in] null_handle States the null value treatment
+ * @csqlfn #Jsonbset_to_bigintset()
+ */
+Set *
+jsonbset_to_bigintset(const Set *set, const char *key,
+  nullHandleType null_handle)
+{
+  return jsonbset_to_alphanumset(set, key, T_INT8, null_handle);
 }
 
 /**
@@ -411,7 +425,6 @@ jsonbset_to_textset_key(const Set *set, const char *key,
 {
   return jsonbset_to_alphanumset(set, key, T_TEXT, null_handle);
 }
-#endif /* MEOS */
 
 /*****************************************************************************/
 

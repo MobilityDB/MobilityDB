@@ -1148,7 +1148,6 @@ tjsonb_to_talphanum(const Temporal *temp, const char *key,
   return tfunc_temporal(temp, &lfinfo);
 }
 
-#if MEOS
 /**
  * @ingroup meos_json_json
  * @brief Convert a temporal JSONB value to a temporal boolean by extracting
@@ -1229,7 +1228,6 @@ tjsonb_to_ttext_key(const Temporal *temp, const char *key,
 {
   return tjsonb_to_talphanum(temp, key, T_TTEXT, STEP, null_handle);
 }
-#endif /* MEOS */
 
 /*****************************************************************************/
 

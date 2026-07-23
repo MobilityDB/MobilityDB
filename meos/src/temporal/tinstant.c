@@ -133,7 +133,6 @@ tnumberinst_double(const TInstant *inst)
  * Intput/output functions
  *****************************************************************************/
 
-#if MEOS
 /**
  * @ingroup meos_internal_temporal_inout
  * @brief Return a temporal instant from its Well-Known Text (WKT)
@@ -147,7 +146,6 @@ tinstant_in(const char *str, MeosType temptype)
   assert(str);
   return tinstant_parse(&str, temptype, true);
 }
-#endif /* MEOS */
 
 /**
  * @brief Return the Well-Known Text (WKT) representation of a temporal instant

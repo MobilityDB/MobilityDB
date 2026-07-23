@@ -589,7 +589,6 @@ set_span(const Set *s)
   return result;
 }
 
-#if MEOS
 /**
  * @ingroup meos_setspan_conversion
  * @brief Convert a set into a span
@@ -605,7 +604,6 @@ set_to_span(const Set *s)
     return NULL;
   return set_span(s);
 }
-#endif /* MEOS */
 
 /**
  * @ingroup meos_internal_setspan_conversion
@@ -1124,7 +1122,6 @@ numspan_expand(const Span *s, Datum value)
   return result;
 }
 
-#if MEOS
 /**
  * @ingroup meos_setspan_transf
  * @brief Return an integer span with its bounds expanded/decreased by a value
@@ -1164,7 +1161,6 @@ floatspan_expand(const Span *s, double d)
 {
   return numspan_expand(s, Float8GetDatum(d));
 }
-#endif /* MEOS */
 
 /**
  * @ingroup meos_setspan_transf

@@ -1367,7 +1367,6 @@ ensure_tgeo_type_all(MeosType type)
   return false;
 }
 
-#if MEOS
 /**
  * @brief Return true if a type is a temporal geometry type
  */
@@ -1389,7 +1388,6 @@ ensure_tgeometry_type(MeosType type)
     "The temporal value must be a temporal geometry type");
   return false;
 }
-#endif /* MEOS */
 
 /**
  * @brief Return true if a type is a temporal geodetic type

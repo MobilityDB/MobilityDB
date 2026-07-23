@@ -669,7 +669,6 @@ ea_contains_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
   return ea_contains_tgeo_geo_common(temp, gs, ever, INVERT_NO);
 }
 
-#if MEOS
 /**
  * @ingroup meos_geo_rel_ever
  * @brief Return 1 if a geometry ever contains a temporal geo, 0 if not, and
@@ -725,7 +724,6 @@ acontains_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   return ea_contains_tgeo_geo_common(temp, gs, ALWAYS, INVERT_NO);
 }
-#endif /* MEOS */
 
 /*****************************************************************************/
 
@@ -753,7 +751,6 @@ ea_contains_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
   return ea_spatialrel_tgeo_tgeo(temp1, temp2, &datum_geom_contains, ever);
 }
 
-#if MEOS
 /**
  * @ingroup meos_geo_rel_ever
  * @brief Return 1 if a temporal geometry ever contains another one, 0 if not,
@@ -779,8 +776,6 @@ acontains_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 {
   return ea_contains_tgeo_tgeo(temp1, temp2, ALWAYS);
 }
-#endif /* MEOS */
-
 
 /*****************************************************************************
  * Ever/always covers
@@ -845,7 +840,6 @@ ea_covers_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
   return ea_covers_tgeo_geo_common(temp, gs, ever, INVERT_NO);
 }
 
-#if MEOS
 /**
  * @ingroup meos_geo_rel_ever
  * @brief Return 1 if a geometry ever covers a temporal geo, 0 if not, and
@@ -901,7 +895,6 @@ acovers_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   return ea_covers_tgeo_geo_common(temp, gs, ALWAYS, INVERT_NO);
 }
-#endif /* MEOS */
 
 /*****************************************************************************/
 
@@ -929,7 +922,6 @@ ea_covers_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
   return ea_spatialrel_tgeo_tgeo(temp1, temp2, &datum_geo_covers2d, ever);
 }
 
-#if MEOS
 /**
  * @ingroup meos_geo_rel_ever
  * @brief Return 1 if a temporal geometry ever covers another one, 0 if not,
@@ -955,7 +947,6 @@ acovers_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 {
   return ea_covers_tgeo_tgeo(temp1, temp2, ALWAYS);
 }
-#endif /* MEOS */
 
 /*****************************************************************************
  * Ever/always disjoint (work for both geometry and geography)
@@ -1042,7 +1033,6 @@ ea_disjoint_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
   return ea_disjoint_tgeo_geo(temp, gs, ever);
 }
 
-#if MEOS
 /**
  * @ingroup meos_geo_rel_ever
  * @brief Return 1 if a temporal geometry and a geometry are ever disjoint,
@@ -1098,7 +1088,6 @@ adisjoint_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
 {
   return adisjoint_tgeo_geo(temp, gs);
 }
-#endif /* MEOS */
 
 /*****************************************************************************/
 
@@ -1122,7 +1111,6 @@ ea_disjoint_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
   return ea_spatialrel_tspatial_tspatial(temp1, temp2, func, ever);
 }
 
-#if MEOS
 /**
  * @ingroup meos_geo_rel_ever
  * @brief Return 1 if the temporal geos are ever disjoint, 0 if not, and
@@ -1148,7 +1136,6 @@ adisjoint_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 {
   return ea_disjoint_tgeo_tgeo(temp1, temp2, ALWAYS);
 }
-#endif /* MEOS */
 
 /*****************************************************************************
  * Ever/always intersects (for both geometry and geography)
@@ -1207,7 +1194,6 @@ ea_intersects_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
   return ea_intersects_tgeo_geo(temp, gs, ever);
 }
 
-#if MEOS
 /**
  * @ingroup meos_geo_rel_ever
  * @brief Return 1 if a temporal geometry ever intersects a temporal
@@ -1263,7 +1249,6 @@ aintersects_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
 {
   return aintersects_tgeo_geo(temp, gs);
 }
-#endif /* MEOS */
 
 /*****************************************************************************/
 
@@ -1288,7 +1273,6 @@ ea_intersects_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
   return ea_spatialrel_tspatial_tspatial(temp1, temp2, func, ever);
 }
 
-#if MEOS
 /**
  * @ingroup meos_geo_rel_ever
  * @brief Return 1 if the temporal geos ever intersect, 0 if not, and
@@ -1314,7 +1298,6 @@ aintersects_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 {
   return ea_intersects_tgeo_tgeo(temp1, temp2, ALWAYS);
 }
-#endif /* MEOS */
 
 /*****************************************************************************
  * Ever/always touches
@@ -1394,7 +1377,6 @@ ea_touches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
   return result ? 1 : 0;
 }
 
-#if MEOS
 /**
  * @ingroup meos_temporal_spatial_rel_ever
  * @brief Return 1 if a temporal point ever touches a geometry, 0 if not,
@@ -1450,7 +1432,6 @@ atouches_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp)
 {
   return atouches_tpoint_geo(temp, gs);
 }
-#endif /* MEOS */
 
 /*****************************************************************************/
 
@@ -1490,7 +1471,6 @@ ea_touches_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
     INVERT_NO);
 }
 
-#if MEOS
 /**
  * @ingroup meos_geo_rel_ever
  * @brief Return 1 if a temporal geometry ever touches a geometry, 0 if not,
@@ -1546,7 +1526,6 @@ atouches_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
 {
   return atouches_tgeo_geo(temp, gs);
 }
-#endif /* MEOS */
 
 /*****************************************************************************/
 
@@ -1587,7 +1566,6 @@ ea_touches_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
     ever);
 }
 
-#if MEOS
 /**
  * @ingroup meos_geo_rel_ever
  * @brief Return 1 if a temporal geometry ever touches another one, 0 if not,
@@ -1613,7 +1591,6 @@ atouches_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 {
   return ea_touches_tgeo_tgeo(temp1, temp2, ALWAYS);
 }
-#endif /* MEOS */
 
 /*****************************************************************************
  * Ever/always dwithin (for both geometry and geography)
@@ -1739,7 +1716,6 @@ ea_dwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
   return result;
 }
 
-#if MEOS
 /**
  * @ingroup meos_geo_rel_ever
  * @brief Return 1 if a geometry and a temporal geo are ever within the
@@ -1799,7 +1775,6 @@ adwithin_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, double dist)
 {
   return adwithin_tgeo_geo(temp, gs, dist);
 }
-#endif /* MEOS */
 
 /*****************************************************************************/
 
@@ -2000,7 +1975,6 @@ ea_dwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist,
   return eafunc_temporal_temporal(temp1, temp2, &lfinfo);
 }
 
-#if MEOS
 /**
  * @ingroup meos_geo_rel_ever
  * @brief Return 1 if two temporal geos are ever within a distance,
@@ -2028,7 +2002,6 @@ adwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist)
 {
   return ea_dwithin_tgeo_tgeo(temp1, temp2, dist, ALWAYS);
 }
-#endif /* MEOS */
 
 /*****************************************************************************
  * Set-set spatial join

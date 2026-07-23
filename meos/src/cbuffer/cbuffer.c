@@ -289,7 +289,6 @@ cbuffer_parse(const char **str, bool end)
   return result;
 }
 
-#if MEOS
 /**
  * @ingroup meos_cbuffer_base_inout
  * @brief Return a circular buffer from its string representation
@@ -303,7 +302,6 @@ cbuffer_in(const char *str)
   VALIDATE_NOT_NULL(str, NULL);
   return cbuffer_parse(&str, true);
 }
-#endif /* MEOS */
 
 /**
  * @ingroup meos_cbuffer_base_inout

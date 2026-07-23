@@ -109,7 +109,6 @@ jsonb_to_set(const Jsonb *jb)
  * Constructor functions
  *****************************************************************************/
 
-#if MEOS
 /**
  * @ingroup meos_json_set_constructor
  * @brief Return a JSONB set from an array of values
@@ -130,7 +129,6 @@ jsonbset_make(const Jsonb **values, int count)
     datums[i] = PointerGetDatum(values[i]);
   return set_make_free(datums, count, T_JSONB, ORDER);
 }
-#endif /* MEOS */
 
 /*****************************************************************************
  * Accessor functions

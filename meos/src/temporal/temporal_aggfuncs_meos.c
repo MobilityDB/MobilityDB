@@ -55,18 +55,10 @@
 #include "temporal/tsequenceset.h"
 #include "temporal/type_util.h"
 
-#if ! MEOS
-  extern FunctionCallInfo fetch_fcinfo();
-  extern void store_fcinfo(FunctionCallInfo fcinfo);
-  extern MemoryContext set_aggregation_context(FunctionCallInfo fcinfo);
-  extern void unset_aggregation_context(MemoryContext ctx);
-#endif /* ! MEOS */
-
 /*****************************************************************************
  * MEOS aggregate transition functions
  *****************************************************************************/
 
-#if MEOS
 /**
  * @ingroup meos_temporal_agg
  * @brief Transition function for temporal and of temporal booleans
@@ -548,13 +540,10 @@ tnumber_tavg_combinefn(SkipList *state1, SkipList *state2)
   return temporal_tagg_combinefn(state1, state2, &datum_sum_double2, CROSSINGS_NO);
 }
 
-#endif /* MEOS */
-
 /*****************************************************************************
  * MEOS window aggregate transition functions
  *****************************************************************************/
 
-#if MEOS
 /**
  * @ingroup meos_temporal_agg
  * @brief Transition function for temporal minimum of temporal values
@@ -775,6 +764,5 @@ tnumber_wavg_transfn(SkipList *state, const Temporal *temp,
   temporal_wagg_transform_transfn(state, temp, interv, &datum_sum_double2,
     &tnumber_transform_wavg);
 }
-#endif /* MEOS */
 
 /*****************************************************************************/

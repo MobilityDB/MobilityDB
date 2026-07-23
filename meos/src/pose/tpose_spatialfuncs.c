@@ -101,7 +101,6 @@ tpose_restrict_geom(const Temporal *temp, const GSERIALIZED *gs, bool atfunc)
   return result;
 }
 
-#if MEOS
 /**
  * @ingroup meos_pose_restrict
  * @brief Return a temporal pose restricted to a geometry
@@ -127,7 +126,6 @@ tpose_minus_geom(const Temporal *temp, const GSERIALIZED *gs)
 {
   return tpose_restrict_geom(temp, gs, REST_MINUS);
 }
-#endif /* MEOS */
 
 /*****************************************************************************/
 
@@ -164,7 +162,6 @@ tpose_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
   return result;
 }
 
-#if MEOS
 /**
  * @ingroup meos_pose_restrict
  * @brief Return a temporal pose restricted to a geometry
@@ -192,6 +189,5 @@ tpose_minus_stbox(const Temporal *temp, const STBox *box, bool border_inc)
 {
   return tpose_restrict_stbox(temp, box, border_inc, REST_MINUS);
 }
-#endif /* MEOS */
 
 /*****************************************************************************/
