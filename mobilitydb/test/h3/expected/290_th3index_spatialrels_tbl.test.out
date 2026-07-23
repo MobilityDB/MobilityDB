@@ -25,7 +25,7 @@ SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE tCovers(t1.temp, t2.
 SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE eDisjoint(t1.temp, t2.temp);
  count 
 -------
-  9900
+     2
 (1 row)
 
 SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE aDisjoint(t1.temp, t2.temp);

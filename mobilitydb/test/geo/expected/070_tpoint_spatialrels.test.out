@@ -338,10 +338,8 @@ SELECT eDisjoint(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01, Point(2 2)@2000
 /* Errors */
 SELECT eDisjoint(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 ERROR:  Operation on mixed SRID
-CONTEXT:  SQL function "edisjoint" statement 1
 SELECT eDisjoint(tgeompoint 'Point(1 1)@2000-01-01', geometry 'SRID=5676;Point(1 1)');
 ERROR:  Operation on mixed SRID
-CONTEXT:  SQL function "edisjoint" statement 1
 SELECT eIntersects(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
  eintersects 
 -------------

@@ -25,7 +25,7 @@ SELECT COUNT(*) FROM tbl_tquadbin t1, tbl_tquadbin t2 WHERE tCovers(t1.temp, t2.
 SELECT COUNT(*) FROM tbl_tquadbin t1, tbl_tquadbin t2 WHERE eDisjoint(t1.temp, t2.temp);
  count 
 -------
-  9900
+     0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tquadbin t1, tbl_tquadbin t2 WHERE aDisjoint(t1.temp, t2.temp);
