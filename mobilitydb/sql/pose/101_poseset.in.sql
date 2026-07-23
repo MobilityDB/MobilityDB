@@ -345,23 +345,23 @@ CREATE OPERATOR CLASS poseset_hash_ops
  * Operators
  ******************************************************************************/
 
-CREATE FUNCTION set_contains(poseset, pose)
+CREATE FUNCTION contains(poseset, pose)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_contains(poseset, poseset)
+CREATE FUNCTION contains(poseset, poseset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
-  PROCEDURE = set_contains,
+  PROCEDURE = contains,
   LEFTARG = poseset, RIGHTARG = pose,
   COMMUTATOR = <@
   -- RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR @> (
-  PROCEDURE = set_contains,
+  PROCEDURE = contains,
   LEFTARG = poseset, RIGHTARG = poseset,
   COMMUTATOR = <@
   -- RESTRICT = span_sel, JOIN = span_joinsel
@@ -369,23 +369,23 @@ CREATE OPERATOR @> (
 
 /******************************************************************************/
 
-CREATE FUNCTION set_contained(pose, poseset)
+CREATE FUNCTION contained(pose, poseset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_contained(poseset, poseset)
+CREATE FUNCTION contained(poseset, poseset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
-  PROCEDURE = set_contained,
+  PROCEDURE = contained,
   LEFTARG = pose, RIGHTARG = poseset,
   COMMUTATOR = @>
   -- RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <@ (
-  PROCEDURE = set_contained,
+  PROCEDURE = contained,
   LEFTARG = poseset, RIGHTARG = poseset,
   COMMUTATOR = @>
   -- RESTRICT = span_sel, JOIN = span_joinsel
@@ -393,13 +393,13 @@ CREATE OPERATOR <@ (
 
 /******************************************************************************/
 
-CREATE FUNCTION set_overlaps(poseset, poseset)
+CREATE FUNCTION overlaps(poseset, poseset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
-  PROCEDURE = set_overlaps,
+  PROCEDURE = overlaps,
   LEFTARG = poseset, RIGHTARG = poseset,
   COMMUTATOR = &&
   -- RESTRICT = span_sel, JOIN = span_joinsel
