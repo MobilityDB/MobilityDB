@@ -150,7 +150,16 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return the lon/lat bounding box (xmin, ymin, xmax, ymax) of a cell. </p>
-<p >Out-parameter helper shared by the geometry boundary projection quadbinCellToBoundary (via quadbin_cell_to_geom in <a class="el" href="quadbin__geo_8c.html" title="Geometry adapters between a QUADBIN cell and PostGIS geometries.">quadbin_geo.c</a>) and the stbox(quadbin) cast (via quadbin_set_stbox). </p>
+<p >Out-parameter helper shared by the geometry boundary projection quadbinCellToBoundary (via quadbin_cell_to_geom in <a class="el" href="quadbin__geo_8c.html" title="Geometry adapters between a QUADBIN cell and PostGIS geometries.">quadbin_geo.c</a>) and the stbox(quadbin) cast (via quadbin_set_stbox). </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">cell</td><td>Quadbin cell </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">xmin</td><td>Minimum X coordinate </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">ymin</td><td>Minimum Y coordinate </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">xmax</td><td>Maximum X coordinate </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">ymax</td><td>Maximum Y coordinate </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
