@@ -794,6 +794,8 @@ tnpointseqset_positions(const TSequenceSet *ss, int *count)
 /**
  * @ingroup meos_npoint_accessor
  * @brief Return the network segments covered by the temporal network point
+ * @param[in] temp Temporal value
+ * @param[out] count Number of elements in the output array
  * @csqlfn #Tnpoint_positions()
  */
 Nsegment **
