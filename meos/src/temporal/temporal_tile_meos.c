@@ -222,6 +222,10 @@ tfloatbox_time_tiles(const TBox *box, const Interval *duration,
  * @ingroup meos_temporal_analytics_tile
  * @brief Return the temporal boxes of a temporal number split with respect to
  * a value grid
+ * @param[in] temp Temporal value
+ * @param[in] vsize Value size of the tiles
+ * @param[in] vorigin Value origin of the tiles
+ * @param[out] count Number of elements in the output array
  */
 TBox *
 tint_value_boxes(const Temporal *temp, int vsize, int vorigin, int *count)
@@ -234,6 +238,10 @@ tint_value_boxes(const Temporal *temp, int vsize, int vorigin, int *count)
  * @ingroup meos_temporal_analytics_tile
  * @brief Return the temporal boxes of a temporal number split with respect to
  * a time grid
+ * @param[in] temp Temporal value
+ * @param[in] duration Interval defining the size of the bins
+ * @param[in] torigin Time origin of the tiles
+ * @param[out] count Number of elements in the output array
  */
 TBox *
 tint_time_boxes(const Temporal *temp, const Interval *duration,
@@ -247,6 +255,12 @@ tint_time_boxes(const Temporal *temp, const Interval *duration,
  * @ingroup meos_temporal_analytics_tile
  * @brief Return the temporal boxes of a temporal number split with respect to
  * a value and possibly a time grid
+ * @param[in] temp Temporal value
+ * @param[in] vsize Value size of the tiles
+ * @param[in] duration Interval defining the size of the bins
+ * @param[in] vorigin Value origin of the tiles
+ * @param[in] torigin Time origin of the tiles
+ * @param[out] count Number of elements in the output array
  */
 TBox *
 tint_value_time_boxes(const Temporal *temp, int vsize,
@@ -262,6 +276,10 @@ tint_value_time_boxes(const Temporal *temp, int vsize,
  * @ingroup meos_temporal_analytics_tile
  * @brief Return the temporal boxes of a temporal number split with respect to
  * a value grid
+ * @param[in] temp Temporal value
+ * @param[in] vsize Value size of the tiles
+ * @param[in] vorigin Value origin of the tiles
+ * @param[out] count Number of elements in the output array
  */
 TBox *
 tfloat_value_boxes(const Temporal *temp, double vsize, double vorigin,
@@ -274,7 +292,11 @@ tfloat_value_boxes(const Temporal *temp, double vsize, double vorigin,
 /**
  * @ingroup meos_temporal_analytics_tile
  * @brief Return the temporal boxes of a temporal number split with respect to
- * a value and possibly a time grid
+ * a time grid
+ * @param[in] temp Temporal value
+ * @param[in] duration Interval defining the size of the bins
+ * @param[in] torigin Time origin of the tiles
+ * @param[out] count Number of elements in the output array
  */
 TBox *
 tfloat_time_boxes(const Temporal *temp, const Interval *duration, 
@@ -288,6 +310,12 @@ tfloat_time_boxes(const Temporal *temp, const Interval *duration,
  * @ingroup meos_temporal_analytics_tile
  * @brief Return the temporal boxes of a temporal number split with respect to
  * a value and possibly a time grid
+ * @param[in] temp Temporal value
+ * @param[in] vsize Value size of the tiles
+ * @param[in] duration Interval defining the size of the bins
+ * @param[in] vorigin Value origin of the tiles
+ * @param[in] torigin Time origin of the tiles
+ * @param[out] count Number of elements in the output array
  */
 TBox *
 tfloat_value_time_boxes(const Temporal *temp, double vsize,
