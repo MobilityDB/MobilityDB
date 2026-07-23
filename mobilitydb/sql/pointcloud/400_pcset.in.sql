@@ -312,53 +312,53 @@ CREATE OPERATOR CLASS pcpointset_hash_ops
  * pcpointset — Set operations (value ↔ set, set ↔ set)
  ******************************************************************************/
 
-CREATE FUNCTION set_contains(pcpointset, pcpoint)
+CREATE FUNCTION contains(pcpointset, pcpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_contains(pcpointset, pcpointset)
+CREATE FUNCTION contains(pcpointset, pcpointset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
-  PROCEDURE = set_contains,
+  PROCEDURE = contains,
   LEFTARG = pcpointset, RIGHTARG = pcpoint,
   COMMUTATOR = <@
 );
 CREATE OPERATOR @> (
-  PROCEDURE = set_contains,
+  PROCEDURE = contains,
   LEFTARG = pcpointset, RIGHTARG = pcpointset,
   COMMUTATOR = <@
 );
 
-CREATE FUNCTION set_contained(pcpoint, pcpointset)
+CREATE FUNCTION contained(pcpoint, pcpointset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_contained(pcpointset, pcpointset)
+CREATE FUNCTION contained(pcpointset, pcpointset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
-  PROCEDURE = set_contained,
+  PROCEDURE = contained,
   LEFTARG = pcpoint, RIGHTARG = pcpointset,
   COMMUTATOR = @>
 );
 CREATE OPERATOR <@ (
-  PROCEDURE = set_contained,
+  PROCEDURE = contained,
   LEFTARG = pcpointset, RIGHTARG = pcpointset,
   COMMUTATOR = @>
 );
 
-CREATE FUNCTION set_overlaps(pcpointset, pcpointset)
+CREATE FUNCTION overlaps(pcpointset, pcpointset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
-  PROCEDURE = set_overlaps,
+  PROCEDURE = overlaps,
   LEFTARG = pcpointset, RIGHTARG = pcpointset,
   COMMUTATOR = &&
 );
@@ -669,53 +669,53 @@ CREATE OPERATOR CLASS pcpatchset_hash_ops
  * pcpatchset — Set operations
  ******************************************************************************/
 
-CREATE FUNCTION set_contains(pcpatchset, pcpatch)
+CREATE FUNCTION contains(pcpatchset, pcpatch)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_contains(pcpatchset, pcpatchset)
+CREATE FUNCTION contains(pcpatchset, pcpatchset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
-  PROCEDURE = set_contains,
+  PROCEDURE = contains,
   LEFTARG = pcpatchset, RIGHTARG = pcpatch,
   COMMUTATOR = <@
 );
 CREATE OPERATOR @> (
-  PROCEDURE = set_contains,
+  PROCEDURE = contains,
   LEFTARG = pcpatchset, RIGHTARG = pcpatchset,
   COMMUTATOR = <@
 );
 
-CREATE FUNCTION set_contained(pcpatch, pcpatchset)
+CREATE FUNCTION contained(pcpatch, pcpatchset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_contained(pcpatchset, pcpatchset)
+CREATE FUNCTION contained(pcpatchset, pcpatchset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
-  PROCEDURE = set_contained,
+  PROCEDURE = contained,
   LEFTARG = pcpatch, RIGHTARG = pcpatchset,
   COMMUTATOR = @>
 );
 CREATE OPERATOR <@ (
-  PROCEDURE = set_contained,
+  PROCEDURE = contained,
   LEFTARG = pcpatchset, RIGHTARG = pcpatchset,
   COMMUTATOR = @>
 );
 
-CREATE FUNCTION set_overlaps(pcpatchset, pcpatchset)
+CREATE FUNCTION overlaps(pcpatchset, pcpatchset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
-  PROCEDURE = set_overlaps,
+  PROCEDURE = overlaps,
   LEFTARG = pcpatchset, RIGHTARG = pcpatchset,
   COMMUTATOR = &&
 );

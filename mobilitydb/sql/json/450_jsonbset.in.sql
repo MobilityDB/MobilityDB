@@ -340,57 +340,57 @@ CREATE OPERATOR CLASS jsonbset_hash_ops
  * Operators
  ******************************************************************************/
 
-CREATE FUNCTION set_contains(jsonbset, jsonb)
+CREATE FUNCTION contains(jsonbset, jsonb)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_contains(jsonbset, jsonbset)
+CREATE FUNCTION contains(jsonbset, jsonbset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
-  PROCEDURE = set_contains,
+  PROCEDURE = contains,
   LEFTARG = jsonbset, RIGHTARG = jsonb,
   COMMUTATOR = <@
 );
 CREATE OPERATOR @> (
-  PROCEDURE = set_contains,
+  PROCEDURE = contains,
   LEFTARG = jsonbset, RIGHTARG = jsonbset,
   COMMUTATOR = <@
 );
 
 /******************************************************************************/
 
-CREATE FUNCTION set_contained(jsonb, jsonbset)
+CREATE FUNCTION contained(jsonb, jsonbset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_contained(jsonbset, jsonbset)
+CREATE FUNCTION contained(jsonbset, jsonbset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
-  PROCEDURE = set_contained,
+  PROCEDURE = contained,
   LEFTARG = jsonb, RIGHTARG = jsonbset,
   COMMUTATOR = @>
 );
 CREATE OPERATOR <@ (
-  PROCEDURE = set_contained,
+  PROCEDURE = contained,
   LEFTARG = jsonbset, RIGHTARG = jsonbset,
   COMMUTATOR = @>
 );
 
 /******************************************************************************/
 
-CREATE FUNCTION set_overlaps(jsonbset, jsonbset)
+CREATE FUNCTION overlaps(jsonbset, jsonbset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_set_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
-  PROCEDURE = set_overlaps,
+  PROCEDURE = overlaps,
   LEFTARG = jsonbset, RIGHTARG = jsonbset,
   COMMUTATOR = &&
 );
