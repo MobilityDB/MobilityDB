@@ -73,92 +73,31 @@ CREATE FUNCTION aCovers(geometry, tgeompoint)
  * eDisjoint, aDisjoint
  *****************************************************************************/
 
--- TODO implement the index support in the tspatial_supportfn
-
-CREATE FUNCTION _edisjoint(geometry, tgeompoint)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Edisjoint_geo_tgeo'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION eDisjoint(geometry, tgeompoint)
   RETURNS boolean
-  AS 'SELECT NOT(stbox($1) OPERATOR(@extschema@.&&) $2) OR @extschema@._edisjoint($1,$2)'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
-
-CREATE FUNCTION _edisjoint(tgeompoint, geometry)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Edisjoint_tgeo_geo'
+  AS 'MODULE_PATHNAME', 'Edisjoint_geo_tgeo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION eDisjoint(tgeompoint, geometry)
   RETURNS boolean
-  AS 'SELECT NOT($1 OPERATOR(@extschema@.&&) stbox($2)) OR @extschema@._edisjoint($1,$2)'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
-
-CREATE FUNCTION _edisjoint(tgeompoint, tgeompoint)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Edisjoint_tgeo_tgeo'
+  AS 'MODULE_PATHNAME', 'Edisjoint_tgeo_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION eDisjoint(tgeompoint, tgeompoint)
   RETURNS boolean
-  AS 'SELECT NOT($1 OPERATOR(@extschema@.&&) $2) OR @extschema@._edisjoint($1,$2)'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
+  AS 'MODULE_PATHNAME', 'Edisjoint_tgeo_tgeo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- CREATE FUNCTION eDisjoint(geometry, tgeompoint)
-  -- RETURNS boolean
-  -- AS 'MODULE_PATHNAME', 'Edisjoint_geo_tgeo'
-  -- SUPPORT tspatial_supportfn
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
--- CREATE FUNCTION eDisjoint(tgeompoint, geometry)
-  -- RETURNS boolean
-  -- AS 'MODULE_PATHNAME', 'Edisjoint_tgeo_geo'
-  -- SUPPORT tspatial_supportfn
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
--- CREATE FUNCTION eDisjoint(tgeompoint, tgeompoint)
-  -- RETURNS boolean
-  -- AS 'MODULE_PATHNAME', 'Edisjoint_tgeo_tgeo'
-  -- SUPPORT tspatial_supportfn
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION _edisjoint(geography, tgeogpoint)
+CREATE FUNCTION eDisjoint(geography, tgeogpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Edisjoint_geo_tgeo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION eDisjoint(geography, tgeogpoint)
-  RETURNS boolean
-  AS 'SELECT NOT(stbox($1) OPERATOR(@extschema@.&&) $2) OR @extschema@._edisjoint($1,$2)'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
-
-CREATE FUNCTION _edisjoint(tgeogpoint, geography)
+CREATE FUNCTION eDisjoint(tgeogpoint, geography)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Edisjoint_tgeo_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION eDisjoint(tgeogpoint, geography)
-  RETURNS boolean
-  AS 'SELECT NOT($1 OPERATOR(@extschema@.&&) stbox($2)) OR @extschema@._edisjoint($1,$2)'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
-
-CREATE FUNCTION _edisjoint(tgeogpoint, tgeogpoint)
+CREATE FUNCTION eDisjoint(tgeogpoint, tgeogpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Edisjoint_tgeo_tgeo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION eDisjoint(tgeogpoint, tgeogpoint)
-  RETURNS boolean
-  AS 'SELECT NOT($1 OPERATOR(@extschema@.&&) $2) OR @extschema@._edisjoint($1,$2)'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
-
--- CREATE FUNCTION eDisjoint(geography, tgeogpoint)
-  -- RETURNS boolean
-  -- AS 'MODULE_PATHNAME', 'Edisjoint_geo_tgeo'
-  -- SUPPORT tspatial_supportfn
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
--- CREATE FUNCTION eDisjoint(tgeogpoint, geography)
-  -- RETURNS boolean
-  -- AS 'MODULE_PATHNAME', 'Edisjoint_tgeo_geo'
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
--- CREATE FUNCTION eDisjoint(tgeogpoint, tgeogpoint)
-  -- RETURNS boolean
-  -- AS 'MODULE_PATHNAME', 'Edisjoint_tgeo_tgeo'
-  -- SUPPORT tspatial_supportfn
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
 

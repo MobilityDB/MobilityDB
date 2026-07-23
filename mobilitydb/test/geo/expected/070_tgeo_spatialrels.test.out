@@ -411,10 +411,8 @@ SELECT eDisjoint(geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))', tgeometry '{Point(3 
 /* Errors */
 SELECT eDisjoint(geometry 'SRID=3812;Point(1 1)', tgeometry 'Point(1 1)@2000-01-01');
 ERROR:  Operation on mixed SRID
-CONTEXT:  SQL function "edisjoint" statement 1
 SELECT eDisjoint(tgeometry 'Point(1 1)@2000-01-01', geometry 'SRID=3812;Point(1 1)');
 ERROR:  Operation on mixed SRID
-CONTEXT:  SQL function "edisjoint" statement 1
 SELECT eIntersects(geometry 'Point(1 1)', tgeometry 'Point(1 1)@2000-01-01');
  eintersects 
 -------------
