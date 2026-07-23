@@ -563,14 +563,12 @@ pg_jsonb_path_query_first(const Jsonb *jb, const JsonPath *jp,
  * @note Derived from PostgreSQL function @p jsonb_path_query_first() and
  * @p wrapItemsInArray
  */
-#if MEOS
 Jsonb **
 jsonb_path_query_all(const Jsonb *jb, const JsonPath *jp, const Jsonb *vars,
   bool silent, bool tz, int *count)
 {
   return pg_jsonb_path_query_all(jb, jp, vars, silent, tz, count);
 }
-#endif /* MEOS */
 Jsonb **
 pg_jsonb_path_query_all(const Jsonb *jb, const JsonPath *jp, const Jsonb *vars,
   bool silent, bool tz, int *count)
