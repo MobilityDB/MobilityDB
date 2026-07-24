@@ -878,8 +878,7 @@ tcontseq_delete_tstzset(const TSequence *seq, const Set *s)
   TInstant **instants = palloc0(sizeof(TInstant *) * seq->count);
   int i = 0,    /* current instant of the argument sequence */
     j = 0,      /* current timestamp of the argument timestamp set */
-    ninsts = 0, /* number of instants in the currently constructed sequence */
-    nfree = 0;  /* number of instants removed */
+    ninsts = 0; /* number of instants in the currently constructed sequence */
   bool lower_inc1 = seq->period.lower_inc;
   bool upper_inc1 = seq->period.upper_inc;
   while (i < seq->count && j < s->count)
@@ -899,7 +898,6 @@ tcontseq_delete_tstzset(const TSequence *seq, const Set *s)
         upper_inc1 = true;
       i++; /* advance instants */
       j++; /* advance timestamps */
-      nfree++; /* advance number of instants removed */
       }
     else
     {
