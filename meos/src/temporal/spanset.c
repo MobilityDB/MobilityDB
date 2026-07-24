@@ -1000,7 +1000,6 @@ spanset_span_n(const SpanSet *ss, int n)
   return NULL;
 }
 
-#if MEOS
 /**
  * @ingroup meos_internal_setspan_accessor
  * @brief Return an array of pointers to the spans of a span set
@@ -1038,7 +1037,6 @@ spanset_spanarr(const SpanSet *ss, int *count)
   *count = ss->count;
   return spans;
 }
-#endif /* MEOS */
 
 /*****************************************************************************
  * Transformation functions

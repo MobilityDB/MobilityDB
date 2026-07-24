@@ -677,7 +677,7 @@ span_to_tbox(const Span *s)
 }
 
 /**
- * @ingroup meos_box_conversion
+ * @ingroup meos_internal_box_conversion
  * @brief Convert a number span set into a temporal box
  * @param[in] ss Span set
  * @csqlfn #Spanset_to_tbox()
