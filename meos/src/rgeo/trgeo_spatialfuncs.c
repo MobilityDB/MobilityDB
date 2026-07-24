@@ -524,7 +524,7 @@ trgeo_restrict_geom(const Temporal *temp, const GSERIALIZED *gs, bool atfunc)
  * @param[in] gs Geometry
  * @csqlfn #Trgeometry_at_geom()
  */
-inline Temporal *
+Temporal *
 trgeometry_at_geom(const Temporal *temp, const GSERIALIZED *gs)
 {
   return trgeo_restrict_geom(temp, gs, REST_AT);
@@ -538,7 +538,7 @@ trgeometry_at_geom(const Temporal *temp, const GSERIALIZED *gs)
  * @param[in] gs Geometry
  * @csqlfn #Trgeometry_minus_geom()
  */
-inline Temporal *
+Temporal *
 trgeometry_minus_geom(const Temporal *temp, const GSERIALIZED *gs)
 {
   return trgeo_restrict_geom(temp, gs, REST_MINUS);
@@ -631,7 +631,7 @@ trgeo_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
  * @param[in] border_inc True when the box contains the upper border
  * @csqlfn #Trgeometry_at_stbox()
  */
-inline Temporal *
+Temporal *
 trgeometry_at_stbox(const Temporal *temp, const STBox *box, bool border_inc)
 {
   return trgeo_restrict_stbox(temp, box, border_inc, REST_AT);
@@ -646,7 +646,7 @@ trgeometry_at_stbox(const Temporal *temp, const STBox *box, bool border_inc)
  * @param[in] border_inc True when the box contains the upper border
  * @csqlfn #Trgeometry_minus_stbox()
  */
-inline Temporal *
+Temporal *
 trgeometry_minus_stbox(const Temporal *temp, const STBox *box, bool border_inc)
 {
   return trgeo_restrict_stbox(temp, box, border_inc, REST_MINUS);

@@ -116,7 +116,7 @@ always_eq_tjsonb_jsonb(const Temporal *temp, const Jsonb *jb)
  * @param[in] temp1,temp2 Temporal JSONB
  * @csqlfn #Ever_eq_tjsonb_tjsonb()
  */
-inline int
+int
 ever_eq_tjsonb_tjsonb(const Temporal *temp1, const Temporal *temp2)
 {
   return eacomp_temporal_temporal(temp1, temp2, &datum2_eq, EVER);
@@ -128,7 +128,7 @@ ever_eq_tjsonb_tjsonb(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp1,temp2 Temporal JSONB
  * @csqlfn #Ever_ne_tjsonb_tjsonb()
  */
-inline int
+int
 ever_ne_tjsonb_tjsonb(const Temporal *temp1, const Temporal *temp2)
 {
   return eacomp_temporal_temporal(temp1, temp2, &datum2_ne, EVER);
@@ -140,7 +140,7 @@ ever_ne_tjsonb_tjsonb(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp1,temp2 Temporal JSONB
  * @csqlfn #Always_eq_tjsonb_tjsonb()
  */
-inline int
+int
 always_eq_tjsonb_tjsonb(const Temporal *temp1, const Temporal *temp2)
 {
   return eacomp_temporal_temporal(temp1, temp2, &datum2_eq, ALWAYS);
@@ -152,7 +152,7 @@ always_eq_tjsonb_tjsonb(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp1,temp2 Temporal JSONB
  * @csqlfn #Always_ne_tjsonb_tjsonb()
  */
-inline int
+int
 always_ne_tjsonb_tjsonb(const Temporal *temp1, const Temporal *temp2)
 {
   return eacomp_temporal_temporal(temp1, temp2, &datum2_ne, ALWAYS);

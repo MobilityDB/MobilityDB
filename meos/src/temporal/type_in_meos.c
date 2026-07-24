@@ -249,7 +249,7 @@ ttextseqset_from_mfjson(json_object *mfjson)
  * @return On error return @p NULL
  * @see #temporal_from_mfjson()
  */
-inline Temporal *
+Temporal *
 tbool_from_mfjson(const char *mfjson)
 {
   return temporal_from_mfjson(mfjson, T_TBOOL);
@@ -262,7 +262,7 @@ tbool_from_mfjson(const char *mfjson)
  * @return On error return @p NULL
  * @see #temporal_from_mfjson()
  */
-inline Temporal *
+Temporal *
 tint_from_mfjson(const char *mfjson)
 {
   return temporal_from_mfjson(mfjson, T_TINT);
@@ -275,7 +275,7 @@ tint_from_mfjson(const char *mfjson)
  * @return On error return @p NULL
  * @see #temporal_from_mfjson()
  */
-inline Temporal *
+Temporal *
 tbigint_from_mfjson(const char *mfjson)
 {
   return temporal_from_mfjson(mfjson, T_TBIGINT);

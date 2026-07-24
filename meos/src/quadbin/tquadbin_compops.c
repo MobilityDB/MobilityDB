@@ -103,7 +103,7 @@ eacomp_tquadbin_tquadbin(const Temporal *temp1, const Temporal *temp2,
  * @ingroup meos_quadbin_comp_ever
  * @brief Return `true` if a temporal QUADBIN cell is ever equal to a bare QUADBIN cell.
  */
-inline int
+int
 ever_eq_tquadbin_quadbin(const Temporal *temp, Quadbin cell)
 {
   return eacomp_tquadbin_quadbin(temp, cell, &datum2_eq, EVER);
@@ -113,7 +113,7 @@ ever_eq_tquadbin_quadbin(const Temporal *temp, Quadbin cell)
  * @ingroup meos_quadbin_comp_ever
  * @brief Return `true` if a bare QUADBIN cell is ever equal to a temporal QUADBIN cell.
  */
-inline int
+int
 ever_eq_quadbin_tquadbin(Quadbin cell, const Temporal *temp)
 {
   return eacomp_tquadbin_quadbin(temp, cell, &datum2_eq, EVER);
@@ -124,7 +124,7 @@ ever_eq_quadbin_tquadbin(Quadbin cell, const Temporal *temp)
  * @brief Return `true` if a temporal QUADBIN cell is ever not equal to a bare
  * QUADBIN cell.
  */
-inline int
+int
 ever_ne_tquadbin_quadbin(const Temporal *temp, Quadbin cell)
 {
   return eacomp_tquadbin_quadbin(temp, cell, &datum2_ne, EVER);
@@ -135,7 +135,7 @@ ever_ne_tquadbin_quadbin(const Temporal *temp, Quadbin cell)
  * @brief Return `true` if a bare QUADBIN cell is ever not equal to a temporal
  * QUADBIN cell.
  */
-inline int
+int
 ever_ne_quadbin_tquadbin(Quadbin cell, const Temporal *temp)
 {
   return eacomp_tquadbin_quadbin(temp, cell, &datum2_ne, EVER);
@@ -146,7 +146,7 @@ ever_ne_quadbin_tquadbin(Quadbin cell, const Temporal *temp)
  * @brief Return `true` if a temporal QUADBIN cell is always equal to a bare
  * QUADBIN cell.
  */
-inline int
+int
 always_eq_tquadbin_quadbin(const Temporal *temp, Quadbin cell)
 {
   return eacomp_tquadbin_quadbin(temp, cell, &datum2_eq, ALWAYS);
@@ -157,7 +157,7 @@ always_eq_tquadbin_quadbin(const Temporal *temp, Quadbin cell)
  * @brief Return `true` if a bare QUADBIN cell is always equal to a temporal
  * QUADBIN cell.
  */
-inline int
+int
 always_eq_quadbin_tquadbin(Quadbin cell, const Temporal *temp)
 {
   return eacomp_tquadbin_quadbin(temp, cell, &datum2_eq, ALWAYS);
@@ -168,7 +168,7 @@ always_eq_quadbin_tquadbin(Quadbin cell, const Temporal *temp)
  * @brief Return `true` if a temporal QUADBIN cell is always not equal to a bare
  * QUADBIN cell.
  */
-inline int
+int
 always_ne_tquadbin_quadbin(const Temporal *temp, Quadbin cell)
 {
   return eacomp_tquadbin_quadbin(temp, cell, &datum2_ne, ALWAYS);
@@ -179,7 +179,7 @@ always_ne_tquadbin_quadbin(const Temporal *temp, Quadbin cell)
  * @brief Return `true` if a bare QUADBIN cell is always not equal to a temporal
  * QUADBIN cell.
  */
-inline int
+int
 always_ne_quadbin_tquadbin(Quadbin cell, const Temporal *temp)
 {
   return eacomp_tquadbin_quadbin(temp, cell, &datum2_ne, ALWAYS);
@@ -194,7 +194,7 @@ always_ne_quadbin_tquadbin(Quadbin cell, const Temporal *temp)
  * @brief Return `true` if two temporal QUADBIN cells are ever equal at some
  * shared instant.
  */
-inline int
+int
 ever_eq_tquadbin_tquadbin(const Temporal *temp1, const Temporal *temp2)
 {
   return eacomp_tquadbin_tquadbin(temp1, temp2, &datum2_eq, EVER);
@@ -205,7 +205,7 @@ ever_eq_tquadbin_tquadbin(const Temporal *temp1, const Temporal *temp2)
  * @brief Return `true` if two temporal QUADBIN cells are ever unequal at some
  * shared instant.
  */
-inline int
+int
 ever_ne_tquadbin_tquadbin(const Temporal *temp1, const Temporal *temp2)
 {
   return eacomp_tquadbin_tquadbin(temp1, temp2, &datum2_ne, EVER);
@@ -216,7 +216,7 @@ ever_ne_tquadbin_tquadbin(const Temporal *temp1, const Temporal *temp2)
  * @brief Return `true` if two temporal QUADBIN cells are always equal across
  * their shared time axis.
  */
-inline int
+int
 always_eq_tquadbin_tquadbin(const Temporal *temp1, const Temporal *temp2)
 {
   return eacomp_tquadbin_tquadbin(temp1, temp2, &datum2_eq, ALWAYS);
@@ -227,7 +227,7 @@ always_eq_tquadbin_tquadbin(const Temporal *temp1, const Temporal *temp2)
  * @brief Return `true` if two temporal QUADBIN cells are always unequal across
  * their shared time axis.
  */
-inline int
+int
 always_ne_tquadbin_tquadbin(const Temporal *temp1, const Temporal *temp2)
 {
   return eacomp_tquadbin_tquadbin(temp1, temp2, &datum2_ne, ALWAYS);
@@ -266,7 +266,7 @@ tcomp_quadbin_tquadbin(Quadbin cell, const Temporal *temp,
  * @brief Return the temporal equality between a temporal QUADBIN cell and a
  * bare QUADBIN cell.
  */
-inline Temporal *
+Temporal *
 teq_tquadbin_quadbin(const Temporal *temp, Quadbin cell)
 {
   return tcomp_tquadbin_quadbin(temp, cell, &datum2_eq);
@@ -277,7 +277,7 @@ teq_tquadbin_quadbin(const Temporal *temp, Quadbin cell)
  * @brief Return the temporal equality between a bare QUADBIN cell and a
  * temporal QUADBIN cell.
  */
-inline Temporal *
+Temporal *
 teq_quadbin_tquadbin(Quadbin cell, const Temporal *temp)
 {
   return tcomp_quadbin_tquadbin(cell, temp, &datum2_eq);
@@ -288,7 +288,7 @@ teq_quadbin_tquadbin(Quadbin cell, const Temporal *temp)
  * @brief Return the temporal inequality between a temporal QUADBIN cell and a
  * bare QUADBIN cell.
  */
-inline Temporal *
+Temporal *
 tne_tquadbin_quadbin(const Temporal *temp, Quadbin cell)
 {
   return tcomp_tquadbin_quadbin(temp, cell, &datum2_ne);
@@ -299,7 +299,7 @@ tne_tquadbin_quadbin(const Temporal *temp, Quadbin cell)
  * @brief Return the temporal inequality between a bare QUADBIN cell and a
  * temporal QUADBIN cell.
  */
-inline Temporal *
+Temporal *
 tne_quadbin_tquadbin(Quadbin cell, const Temporal *temp)
 {
   return tcomp_quadbin_tquadbin(cell, temp, &datum2_ne);
@@ -310,7 +310,7 @@ tne_quadbin_tquadbin(Quadbin cell, const Temporal *temp)
  * @brief Return the temporal equality of two temporal QUADBIN cells across
  * their shared time axis.
  */
-inline Temporal *
+Temporal *
 teq_tquadbin_tquadbin(const Temporal *temp1, const Temporal *temp2)
 {
   if (! ensure_valid_tquadbin_tquadbin(temp1, temp2))
@@ -323,7 +323,7 @@ teq_tquadbin_tquadbin(const Temporal *temp1, const Temporal *temp2)
  * @brief Return the temporal inequality of two temporal QUADBIN cells across
  * their shared time axis.
  */
-inline Temporal *
+Temporal *
 tne_tquadbin_tquadbin(const Temporal *temp1, const Temporal *temp2)
 {
   if (! ensure_valid_tquadbin_tquadbin(temp1, temp2))

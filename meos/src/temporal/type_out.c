@@ -1809,8 +1809,8 @@ bytes_to_wkb_buf(uint8_t *valptr, size_t size, uint8_t *buf, uint8_t variant)
  * @brief Generic function to write a typed value to WKB buffer with size checking
  */
 static inline uint8_t *
-typed_value_to_wkb_buf(const void *value, size_t actual_size, size_t expected_size,
-                       const char *type_name, uint8_t *buf, uint8_t variant)
+typed_value_to_wkb_buf(const void *value, size_t actual_size,
+  size_t expected_size, const char *type_name, uint8_t *buf, uint8_t variant)
 {
   if (actual_size != expected_size)
   {
@@ -1830,7 +1830,7 @@ static uint8_t *
 bool_to_wkb_buf(bool b, uint8_t *buf, uint8_t variant)
 {
   return typed_value_to_wkb_buf(&b, sizeof(bool), MEOS_WKB_BYTE_SIZE,
-                                "bool", buf, variant);
+    "bool", buf, variant);
 }
 
 /**
@@ -1841,7 +1841,7 @@ static uint8_t *
 uint8_to_wkb_buf(const uint8_t i, uint8_t *buf, uint8_t variant)
 {
   return typed_value_to_wkb_buf(&i, sizeof(int8), MEOS_WKB_BYTE_SIZE,
-                                "int8", buf, variant);
+    "int8", buf, variant);
 }
 
 /**
@@ -1852,7 +1852,7 @@ static uint8_t *
 int16_to_wkb_buf(const int16 i, uint8_t *buf, uint8_t variant)
 {
   return typed_value_to_wkb_buf(&i, sizeof(int16), MEOS_WKB_INT2_SIZE,
-                                "int16", buf, variant);
+    "int16", buf, variant);
 }
 
 /**
@@ -1863,7 +1863,7 @@ uint8_t *
 int32_to_wkb_buf(const int i, uint8_t *buf, uint8_t variant)
 {
   return typed_value_to_wkb_buf(&i, sizeof(int), MEOS_WKB_INT4_SIZE,
-                                "int32", buf, variant);
+    "int32", buf, variant);
 }
 
 /**
@@ -1874,7 +1874,7 @@ uint8_t *
 int64_to_wkb_buf(const int64 i, uint8_t *buf, uint8_t variant)
 {
   return typed_value_to_wkb_buf(&i, sizeof(int64), MEOS_WKB_INT8_SIZE,
-                                "int64", buf, variant);
+    "int64", buf, variant);
 }
 
 /**
@@ -1885,7 +1885,7 @@ uint8_t*
 double_to_wkb_buf(const double d, uint8_t *buf, uint8_t variant)
 {
   return typed_value_to_wkb_buf(&d, sizeof(double), MEOS_WKB_DOUBLE_SIZE,
-                                "double", buf, variant);
+    "double", buf, variant);
 }
 
 /**
@@ -1896,7 +1896,7 @@ uint8_t *
 date_to_wkb_buf(const DateADT d, uint8_t *buf, uint8_t variant)
 {
   return typed_value_to_wkb_buf(&d, sizeof(DateADT), MEOS_WKB_DATE_SIZE,
-                                "date", buf, variant);
+    "date", buf, variant);
 }
 
 /**
@@ -1907,7 +1907,7 @@ uint8_t *
 timestamptz_to_wkb_buf(const TimestampTz t, uint8_t *buf, uint8_t variant)
 {
   return typed_value_to_wkb_buf(&t, sizeof(TimestampTz), MEOS_WKB_TIMESTAMP_SIZE,
-                                "timestamp", buf, variant);
+    "timestamp", buf, variant);
 }
 
 /**

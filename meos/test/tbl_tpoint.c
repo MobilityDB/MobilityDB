@@ -106,7 +106,7 @@ int main(void)
 
     /* Uncomment the desired function to compute */
     // Temporal *rest = temporal_simplify_dp(temp, 5, true);
-    Temporal *rest = temporal_tsample(temp, interv, start, "linear");
+    Temporal *rest = temporal_tsample(temp, interv, start, LINEAR);
     // Temporal *rest = temporal_tprecision(temp, interv, start);
     if (rest)
     {

@@ -279,7 +279,7 @@ trgeoseq_make_exp(const GSERIALIZED *geom, TInstant **instants,
  * @param[in] interp Interpolation
  * @param[in] normalize True if the resulting value should be normalized
  */
-inline TSequence *
+TSequence *
 trgeometryseq_make(const GSERIALIZED *geom, TInstant **instants, int count,
   bool lower_inc, bool upper_inc, interpType interp, bool normalize)
 {

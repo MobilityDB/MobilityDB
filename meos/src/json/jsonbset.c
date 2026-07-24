@@ -336,7 +336,7 @@ union_set_jsonb(const Set *s, const Jsonb *jb)
  * @param[in] jb Value
  * @param[in] s Set
  */
-inline Set *
+Set *
 union_jsonb_set(const Jsonb *jb, const Set *s)
 {
   return union_set_jsonb(s, jb);
@@ -363,7 +363,7 @@ intersection_set_jsonb(const Set *s, const Jsonb *jb)
  * @param[in] jb Value
  * @param[in] s Set
  */
-inline Set *
+Set *
 intersection_jsonb_set(const Jsonb *jb, const Set *s)
 {
   return intersection_set_jsonb(s, jb);

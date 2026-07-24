@@ -75,6 +75,9 @@ typedef struct h3_buf
   int      capacity;
 } h3_buf;
 
+/**
+ * @brief 
+ */
 static void
 h3_buf_init(h3_buf *buf, int initial_capacity)
 {
@@ -83,6 +86,9 @@ h3_buf_init(h3_buf *buf, int initial_capacity)
   buf->cells    = palloc(sizeof(H3Index) * (size_t) buf->capacity);
 }
 
+/**
+ * @brief 
+ */
 static void
 h3_buf_grow(h3_buf *buf, int additional)
 {
@@ -95,6 +101,9 @@ h3_buf_grow(h3_buf *buf, int additional)
   buf->capacity = new_cap;
 }
 
+/**
+ * @brief 
+ */
 static inline void
 h3_buf_push(h3_buf *buf, H3Index cell)
 {
@@ -104,6 +113,9 @@ h3_buf_push(h3_buf *buf, H3Index cell)
   buf->cells[buf->count++] = cell;
 }
 
+/**
+ * @brief 
+ */
 static void
 h3_buf_free(h3_buf *buf)
 {
@@ -121,6 +133,9 @@ h3_buf_free(h3_buf *buf)
  * duplicates.  Builds a Datum array and wraps in a Set via set_make_free.
  *****************************************************************************/
 
+/**
+ * @brief 
+ */
 static int
 h3index_compare(const void *a, const void *b)
 {
@@ -131,6 +146,9 @@ h3index_compare(const void *a, const void *b)
   return 0;
 }
 
+/**
+ * @brief 
+ */
 static Set *
 h3_buf_to_set(h3_buf *buf)
 {
@@ -161,6 +179,9 @@ h3_buf_to_set(h3_buf *buf)
  * is in degrees per single sample.
  *****************************************************************************/
 
+/**
+ * @brief 
+ */
 double
 h3_sample_step_deg(int32 resolution)
 {
@@ -171,6 +192,9 @@ h3_sample_step_deg(int32 resolution)
   return (edge_m / 2.0) / 111320.0;
 }
 
+/**
+ * @brief 
+ */
 H3Index
 h3_latlng_deg_to_cell(double lat_deg, double lng_deg, int32 resolution)
 {
@@ -186,6 +210,9 @@ h3_latlng_deg_to_cell(double lat_deg, double lng_deg, int32 resolution)
  * the SRID guard.
  *****************************************************************************/
 
+/**
+ * @brief 
+ */
 static void
 point_to_cells_into(const LWPOINT *lwp, int32 resolution, h3_buf *out)
 {
@@ -203,6 +230,9 @@ point_to_cells_into(const LWPOINT *lwp, int32 resolution, h3_buf *out)
  * and sample at edge/2 spacing.  Includes endpoints.
  *****************************************************************************/
 
+/**
+ * @brief 
+ */
 static void
 linestring_to_cells_into(const LWLINE *line, int32 resolution, h3_buf *out)
 {
@@ -238,6 +268,9 @@ linestring_to_cells_into(const LWLINE *line, int32 resolution, h3_buf *out)
  * POLYGON — outer ring + holes → GeoPolygon (in radians) → polygonToCells.
  *****************************************************************************/
 
+/**
+ * @brief 
+ */
 static void
 pointarray_to_geoloop(const POINTARRAY *pa, GeoLoop *loop)
 {
@@ -263,6 +296,9 @@ pointarray_to_geoloop(const POINTARRAY *pa, GeoLoop *loop)
   }
 }
 
+/**
+ * @brief 
+ */
 static void
 geoloop_free(GeoLoop *loop)
 {
@@ -274,8 +310,7 @@ geoloop_free(GeoLoop *loop)
 
 /**
  * @brief Push the 7 cells of `gridDisk(c, 1)` (the cell + its 6 neighbors)
- *
- * The 1-ring is the unit of coverage expansion used by
+ * @details The 1-ring is the unit of coverage expansion used by
  * `polygon_to_cells_into` to ensure that any cell the polygon overlaps
  * appears in the output set, including cells whose centroid lies
  * outside the polygon.
@@ -300,18 +335,14 @@ h3_buf_push_ring1(h3_buf *out, H3Index c)
 
 /**
  * @brief Push the cells covering an LWPOLY into the accumulator
- *
- * Coverage is layered so that the union is a superset of every cell
+ * @details Coverage is layered so that the union is a superset of every cell
  * whose interior intersects the polygon:
- *
  *   (a) `polygonToCells` (cells with centroid inside the polygon),
  *       each expanded by `gridDisk(c, 1)` to include boundary cells.
- *
  *   (b) Each polygon vertex's containing cell, also expanded by
  *       `gridDisk(c, 1)`.  Covers polygons that contain no cell
  *       centroid (i.e. polygons smaller than a hexagon at the
  *       chosen resolution).
- *
  * Layers (a) and (b) merge via the sort+dedup in `h3_buf_to_set`.
  */
 static void
@@ -372,6 +403,9 @@ polygon_to_cells_into(const LWPOLY *poly, int32 resolution, h3_buf *out)
  * Recursive walker — dispatch any LWGEOM type into the accumulator.
  *****************************************************************************/
 
+/**
+ * @brief 
+ */
 static void
 lwgeom_to_cells_into(const LWGEOM *geom, int32 resolution, h3_buf *out)
 {
@@ -412,10 +446,9 @@ lwgeom_to_cells_into(const LWGEOM *geom, int32 resolution, h3_buf *out)
 
 /**
  * @ingroup meos_h3_conversion
- * @brief Return the set of H3 cells covering a static geometry at the
- *        given resolution.
- *
- * Handles POINT, LINESTRING, POLYGON, and MULTI* / GEOMETRYCOLLECTION
+ * @brief Return the set of H3 cells covering a static geometry at the given
+ * resolution.
+ * @details Handles POINT, LINESTRING, POLYGON, and MULTI* / GEOMETRYCOLLECTION
  * combinations recursively.  Unsupported geometry types (TIN, CURVE
  * family, etc.) contribute zero cells; for collections that mix
  * supported and unsupported types, only the supported components
@@ -458,15 +491,12 @@ geo_to_h3index_set(const GSERIALIZED *gs, int32 resolution)
 /**
  * @ingroup meos_h3_comp
  * @brief Returns 1 if any cell in @p cells ever appears in the value
- *        sequence of @p th3idx, 0 if none, -1 on error.
- *
- * The cross-platform spatial prefilter consumed by
- * `eIntersects` SQL wrappers / Spark UDFs.
- * Iterates the th3index value sequence (one entry per distinct
- * instant) and tests Set membership.
- *
- * @param[in] cells   The candidate H3 cell set (T_H3INDEX).
- * @param[in] th3idx  The th3index temporal value.
+ * sequence of @p th3idx, 0 if none, -1 on error.
+ * @brief The cross-platform spatial prefilter consumed by `eIntersects`
+ * SQL wrappers / Spark UDFs. Iterates the th3index value sequence (one entry
+ * per distinct instant) and tests Set membership.
+ * @param[in] cells The candidate H3 cell set (T_H3INDEX).
+ * @param[in] th3idx The th3index temporal value.
  * @csqlfn #Ever_eq_h3indexset_th3index()
  */
 int
@@ -490,3 +520,5 @@ ever_eq_h3indexset_th3index(const Set *cells, const Temporal *th3idx)
   pfree(vals);
   return found;
 }
+
+/*****************************************************************************/
