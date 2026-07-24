@@ -28,7 +28,7 @@
  * A table of all two-digit numbers. This is used to speed up decimal digit
  * generation by copying pairs of digits into the final output.
  */
-static const char DIGIT_TABLE[200] =
+static const char DIGIT_TABLE[200] pg_attribute_nonstring = /* MEOS: packed digit-pair table, deliberately not NUL-terminated */
 "00" "01" "02" "03" "04" "05" "06" "07" "08" "09"
 "10" "11" "12" "13" "14" "15" "16" "17" "18" "19"
 "20" "21" "22" "23" "24" "25" "26" "27" "28" "29"
