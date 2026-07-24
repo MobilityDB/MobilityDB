@@ -82,9 +82,12 @@ set(NAMEDATALEN 64)
 set(MEMSET_LOOP_LIMIT 1024)
 set(PG_MAJORVERSION 18)
 
-# `gnu_printf` on GCC/Clang gives format-string warnings for the %z, %lld
-# extensions PG uses; everywhere else fall back to plain `printf`.
-if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+# `gnu_printf` gives GCC format-string checking for the %z, %lld extensions PG
+# uses (needed on MinGW, where the default `printf` archetype has MS semantics).
+# Clang does not support the `gnu_printf` archetype (it warns
+# `-Wignored-attributes`) and its plain `printf` archetype already understands
+# these C99 modifiers, so use `printf` everywhere except real GCC.
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
   set(PG_PRINTF_ATTRIBUTE gnu_printf)
 else()
   set(PG_PRINTF_ATTRIBUTE printf)

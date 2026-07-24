@@ -65,8 +65,10 @@ extern void meos_error(int errlevel, int errcode, const char *format, ...)
  */
 #if defined(pg_attribute_printf)
   pg_attribute_printf(3, 4);
-#elif defined(__GNUC__)
+#elif defined(__GNUC__) && !defined(__clang__)
   __attribute__((format(gnu_printf, 3, 4)));
+#elif defined(__GNUC__)
+  __attribute__((format(printf, 3, 4)));
 #else
   ;
 #endif
