@@ -624,7 +624,7 @@ pose_wkt_out(const Pose *pose, bool extended, int maxdd)
  * @param[in] maxdd Maximum number of decimal digits
  * @csqlfn #Pose_as_text()
  */
-inline char *
+char *
 pose_as_text(const Pose *pose, int maxdd)
 {
   return pose_wkt_out(pose, false, maxdd);
@@ -1855,7 +1855,7 @@ pose_eq(const Pose *pose1, const Pose *pose2)
  * @param[in] pose1,pose2 Poses
  * @csqlfn #Pose_ne()
  */
-inline bool
+bool
 pose_ne(const Pose *pose1, const Pose *pose2)
 {
   return ! pose_eq(pose1, pose2);
@@ -1896,7 +1896,7 @@ pose_same(const Pose *pose1, const Pose *pose2)
  * @brief Return true if the first pose is not equal to the second one
  * @param[in] pose1,pose2 Poses
  */
-inline bool
+bool
 pose_nsame(const Pose *pose1, const Pose *pose2)
 {
   return ! pose_same(pose1, pose2);
@@ -1941,7 +1941,7 @@ pose_cmp(const Pose *pose1, const Pose *pose2)
  * @param[in] pose1,pose2 Poses
  * @csqlfn #Pose_lt()
  */
-inline bool
+bool
 pose_lt(const Pose *pose1, const Pose *pose2)
 {
   return pose_cmp(pose1, pose2) < 0;
@@ -1953,7 +1953,7 @@ pose_lt(const Pose *pose1, const Pose *pose2)
  * @param[in] pose1,pose2 Poses
  * @csqlfn #Pose_le()
  */
-inline bool
+bool
 pose_le(const Pose *pose1, const Pose *pose2)
 {
   return pose_cmp(pose1, pose2) <= 0;
@@ -1965,7 +1965,7 @@ pose_le(const Pose *pose1, const Pose *pose2)
  * @param[in] pose1,pose2 Poses
  * @csqlfn #Pose_gt()
  */
-inline bool
+bool
 pose_gt(const Pose *pose1, const Pose *pose2)
 {
   return pose_cmp(pose1, pose2) > 0;
@@ -1978,7 +1978,7 @@ pose_gt(const Pose *pose1, const Pose *pose2)
  * @param[in] pose1,pose2 Poses
  * @csqlfn #Pose_ge()
  */
-inline bool
+bool
 pose_ge(const Pose *pose1, const Pose *pose2)
 {
   return pose_cmp(pose1, pose2) >= 0;

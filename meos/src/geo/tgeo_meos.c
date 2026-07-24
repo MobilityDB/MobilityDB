@@ -448,7 +448,7 @@ tgeographyseqset_from_mfjson(json_object *mfjson, int32_t srid, interpType inter
  * @return On error return @p NULL
  * @see #temporal_from_mfjson()
  */
-inline Temporal *
+Temporal *
 tgeompoint_from_mfjson(const char *mfjson)
 {
   return temporal_from_mfjson(mfjson, T_TGEOMPOINT);
@@ -461,7 +461,7 @@ tgeompoint_from_mfjson(const char *mfjson)
  * @return On error return @p NULL
  * @see #temporal_from_mfjson()
  */
-inline Temporal *
+Temporal *
 tgeogpoint_from_mfjson(const char *mfjson)
 {
   return temporal_from_mfjson(mfjson, T_TGEOGPOINT);
@@ -473,7 +473,7 @@ tgeogpoint_from_mfjson(const char *mfjson)
  * @return On error return @p NULL
  * @see #temporal_from_mfjson()
  */
-inline Temporal *
+Temporal *
 tgeometry_from_mfjson(const char *mfjson)
 {
   return temporal_from_mfjson(mfjson, T_TGEOMETRY);
@@ -486,7 +486,7 @@ tgeometry_from_mfjson(const char *mfjson)
  * @return On error return @p NULL
  * @see #temporal_from_mfjson()
  */
-inline Temporal *
+Temporal *
 tgeography_from_mfjson(const char *mfjson)
 {
   return temporal_from_mfjson(mfjson, T_TGEOGRAPHY);
@@ -679,7 +679,7 @@ tgeo_from_base_temp_int(const GSERIALIZED *gs, const Temporal *temp,
  * @param[in] gs Value
  * @param[in] temp Temporal value
  */
-inline Temporal *
+Temporal *
 tpoint_from_base_temp(const GSERIALIZED *gs, const Temporal *temp)
 {
   return tgeo_from_base_temp_int(gs, temp, true);
@@ -692,7 +692,7 @@ tpoint_from_base_temp(const GSERIALIZED *gs, const Temporal *temp)
  * @param[in] gs Value
  * @param[in] temp Temporal value
  */
-inline Temporal *
+Temporal *
 tgeo_from_base_temp(const GSERIALIZED *gs, const Temporal *temp)
 {
   return tgeo_from_base_temp_int(gs, temp, false);

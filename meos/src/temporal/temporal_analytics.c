@@ -64,13 +64,13 @@
   #include <meos_cbuffer.h>
 #endif
 #if POSE || RGEO
-#include <meos_pose.h>
-#include "pose/pose.h"
+  #include <meos_pose.h>
+  #include "pose/pose.h"
 #endif
 #if RGEO
-#include <meos_rgeo.h>
-#include "rgeo/trgeo.h"
-#include "rgeo/trgeo_seq.h"
+  #include <meos_rgeo.h>
+  #include "rgeo/trgeo.h"
+  #include "rgeo/trgeo_seq.h"
 #endif
 
 #include <utils/jsonb.h>
@@ -81,7 +81,10 @@
  * Extended Kalman Filter (EKF) outlier filtering, adapting tinyEKF to MEOS
  *****************************************************************************/
 
-/* Build constant-velocity F matrix for given dt (seconds), Jacobian of state-transition function */
+/**
+ * @brief Build constant-velocity F matrix for given dt (seconds), Jacobian of
+ * state-transition function
+ */
 static inline void
 ekf_build_F(_float_t F[EKF_N*EKF_N], double dt, int dims)
 {
@@ -92,7 +95,9 @@ ekf_build_F(_float_t F[EKF_N*EKF_N], double dt, int dims)
   if (dims >= 3) F[4*EKF_N + 5] = (_float_t) dt; /* z += vz*dt */
 }
 
-/* Build process noise Q for each used axis, process noise matrix */
+/**
+ * @brief Build process noise Q for each used axis, process noise matrix
+ */
 static inline void
 ekf_build_Q(_float_t Q[EKF_N*EKF_N], double dt, double q, int dims)
 {
@@ -108,7 +113,10 @@ ekf_build_Q(_float_t Q[EKF_N*EKF_N], double dt, double q, int dims)
   }
 }
 
-/* Build H and hx given predicted state fx; only first dims are measured, sensor-function Jacobian matrix */
+/**
+ * @brief Build H and hx given predicted state fx; only first dims are
+ * measured, sensor-function Jacobian matrix
+ */
 static inline void
 ekf_build_H_hx(_float_t H[EKF_M*EKF_N], _float_t hx[EKF_M], const _float_t fx[EKF_N], int dims)
 {
@@ -122,7 +130,9 @@ ekf_build_H_hx(_float_t H[EKF_M*EKF_N], _float_t hx[EKF_M], const _float_t fx[EK
   }
 }
 
-/* Build R, measurement covariance */
+/**
+ * @brief Build R, measurement covariance
+ */
 static inline void
 ekf_build_R(_float_t R[EKF_M*EKF_M], double variance, int dims)
 {
@@ -132,7 +142,9 @@ ekf_build_R(_float_t R[EKF_M*EKF_M], double variance, int dims)
   for (int i = dims; i < EKF_M; i++) R[i*EKF_M + i] = 1.0;
 }
 
-/* Compute sqrt(Mahalanobis^2) for innovation v and S^{-1} */
+/**
+ * @brief  Compute sqrt(Mahalanobis^2) for innovation v and S^{-1}
+ */
 static inline double
 innovation_distance(const _float_t v[EKF_M], const _float_t Sinv[EKF_M*EKF_M])
 {
@@ -145,8 +157,11 @@ innovation_distance(const _float_t v[EKF_M], const _float_t Sinv[EKF_M*EKF_M])
   return sqrt(d2);
 }
 
-/* Filter a TSequence */
-static TSequence * tsequence_ext_kalman_filter(const TSequence *seq, MeosType temptype,double gate, double q, double variance, bool to_drop)
+/**
+ * @brief Filter a TSequence
+ */
+static TSequence * tsequence_ext_kalman_filter(const TSequence *seq,
+  MeosType temptype, double gate, double q, double variance, bool to_drop)
 {
   if (seq->count < 2)
     return tsequence_copy(seq);

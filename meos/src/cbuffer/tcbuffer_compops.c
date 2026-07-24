@@ -91,7 +91,7 @@ eacomp_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
  * @param[in] temp Temporal value
  * @csqlfn #Ever_eq_cbuffer_tcbuffer()
  */
-inline int
+int
 ever_eq_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp)
 {
   return eacomp_tcbuffer_cbuffer(temp, cb, &datum2_eq, EVER);
@@ -105,7 +105,7 @@ ever_eq_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp)
  * @param[in] cb Circular buffer
  * @csqlfn #Ever_eq_tcbuffer_cbuffer()
  */
-inline int
+int
 ever_eq_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
 {
   return eacomp_tcbuffer_cbuffer(temp, cb, &datum2_eq, EVER);
@@ -119,7 +119,7 @@ ever_eq_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
  * @param[in] temp Temporal value
  * @csqlfn #Ever_ne_cbuffer_tcbuffer()
  */
-inline int
+int
 ever_ne_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp)
 {
   return eacomp_tcbuffer_cbuffer(temp, cb, &datum2_ne, EVER);
@@ -133,7 +133,7 @@ ever_ne_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp)
  * @param[in] cb Circular buffer
  * @csqlfn #Ever_ne_tcbuffer_cbuffer()
  */
-inline int
+int
 ever_ne_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
 {
   return eacomp_tcbuffer_cbuffer(temp, cb, &datum2_ne, EVER);
@@ -147,7 +147,7 @@ ever_ne_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
  * @param[in] temp Temporal value
  * @csqlfn #Always_eq_cbuffer_tcbuffer()
  */
-inline int
+int
 always_eq_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp)
 {
   return eacomp_tcbuffer_cbuffer(temp, cb, &datum2_eq, ALWAYS);
@@ -161,7 +161,7 @@ always_eq_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp)
  * @param[in] cb Circular buffer
  * @csqlfn #Always_eq_tcbuffer_cbuffer()
  */
-inline int
+int
 always_eq_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
 {
   return eacomp_tcbuffer_cbuffer(temp, cb, &datum2_eq, ALWAYS);
@@ -175,7 +175,7 @@ always_eq_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
  * @param[in] temp Temporal value
  * @csqlfn #Always_ne_cbuffer_tcbuffer()
  */
-inline int
+int
 always_ne_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp)
 {
   return eacomp_tcbuffer_cbuffer(temp, cb, &datum2_ne, ALWAYS);
@@ -189,7 +189,7 @@ always_ne_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp)
  * @param[in] cb Circular buffer
  * @csqlfn #Always_ne_tcbuffer_cbuffer()
  */
-inline int
+int
 always_ne_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
 {
   return eacomp_tcbuffer_cbuffer(temp, cb, &datum2_ne, ALWAYS);
@@ -203,7 +203,7 @@ always_ne_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
  * @param[in] temp1,temp2 Temporal circular buffers
  * @csqlfn #Ever_eq_tcbuffer_tcbuffer()
  */
-inline int
+int
 ever_eq_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 {
   return eacomp_tcbuffer_tcbuffer(temp1, temp2, &datum2_eq, EVER);
@@ -215,7 +215,7 @@ ever_eq_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp1,temp2 Temporal circular buffers
  * @csqlfn #Ever_ne_tcbuffer_tcbuffer()
  */
-inline int
+int
 ever_ne_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 {
   return eacomp_tcbuffer_tcbuffer(temp1, temp2, &datum2_ne, EVER);
@@ -227,7 +227,7 @@ ever_ne_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp1,temp2 Temporal circular buffers
  * @csqlfn #Always_eq_tcbuffer_tcbuffer()
  */
-inline int
+int
 always_eq_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 {
   return eacomp_tcbuffer_tcbuffer(temp1, temp2, &datum2_eq, ALWAYS);
@@ -239,7 +239,7 @@ always_eq_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp1,temp2 Temporal circular buffers
  * @csqlfn #Always_ne_tcbuffer_tcbuffer()
  */
-inline int
+int
 always_ne_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 {
   return eacomp_tcbuffer_tcbuffer(temp1, temp2, &datum2_ne, ALWAYS);
@@ -293,7 +293,7 @@ tcomp_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
  * @param[in] temp Temporal value
  * @csqlfn #Teq_cbuffer_tcbuffer()
  */
-inline Temporal *
+Temporal *
 teq_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp)
 {
   return tcomp_cbuffer_tcbuffer(cb, temp, &datum2_eq);
@@ -307,7 +307,7 @@ teq_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp)
  * @param[in] temp Temporal value
  * @csqlfn #Tne_cbuffer_tcbuffer()
  */
-inline Temporal *
+Temporal *
 tne_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp)
 {
   return tcomp_cbuffer_tcbuffer(cb, temp, &datum2_ne);
@@ -323,7 +323,7 @@ tne_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp)
  * @param[in] cb Circular buffer
  * @csqlfn #Teq_tcbuffer_cbuffer()
  */
-inline Temporal *
+Temporal *
 teq_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
 {
   return tcomp_tcbuffer_cbuffer(temp, cb, &datum2_eq);
@@ -337,7 +337,7 @@ teq_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
  * @param[in] cb Circular buffer
  * @csqlfn #Tne_tcbuffer_cbuffer()
  */
-inline Temporal *
+Temporal *
 tne_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
 {
   return tcomp_tcbuffer_cbuffer(temp, cb, &datum2_ne);

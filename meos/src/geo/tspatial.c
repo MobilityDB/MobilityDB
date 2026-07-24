@@ -189,7 +189,7 @@ spatialset_out_fn(const Set *s, int maxdd, outfunc wkt_out, bool extended)
  * @brief Return the Well-Known Text (WKT) representation of a spatial set
  * @csqlfn #Spatialset_as_text()
  */
-inline char *
+char *
 spatialset_as_text(const Set *s, int maxdd)
 {
   return spatialset_out_fn(s, maxdd, &spatialbase_as_text, false);
@@ -202,7 +202,7 @@ spatialset_as_text(const Set *s, int maxdd)
  * @param[in] maxdd Maximum number of decimal digits
  * @csqlfn #Spatialset_as_ewkt()
  */
-inline char *
+char *
 spatialset_as_ewkt(const Set *s, int maxdd)
 {
   /* The SRID will be output as prefix, the elements will output the SRID*/

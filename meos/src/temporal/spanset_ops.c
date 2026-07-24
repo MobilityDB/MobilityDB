@@ -203,7 +203,7 @@ contained_value_spanset(Datum value, const SpanSet *ss)
  * @param[in] ss Span set
  * @csqlfn #Contained_span_spanset()
  */
-inline bool
+bool
 contained_span_spanset(const Span *s, const SpanSet *ss)
 {
   return contains_spanset_span(ss, s);
@@ -216,7 +216,7 @@ contained_span_spanset(const Span *s, const SpanSet *ss)
  * @param[in] s Span
  * @csqlfn #Contained_spanset_span()
  */
-inline bool
+bool
 contained_spanset_span(const SpanSet *ss, const Span *s)
 {
   return contains_span_spanset(s, ss);
@@ -228,7 +228,7 @@ contained_spanset_span(const SpanSet *ss, const Span *s)
  * @param[in] ss1,ss2 Span sets
  * @csqlfn #Contained_spanset_spanset()
  */
-inline bool
+bool
 contained_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
 {
   return contains_spanset_spanset(ss2, ss1);
@@ -281,7 +281,7 @@ overlaps_spanset_span(const SpanSet *ss, const Span *s)
  * @param[in] ss Span set
  * @csqlfn #Overlaps_span_spanset()
  */
-inline bool
+bool
 overlaps_span_spanset(const Span *s, const SpanSet *ss)
 {
   return overlaps_spanset_span(ss, s);
@@ -396,7 +396,7 @@ adjacent_spanset_span(const SpanSet *ss, const Span *s)
  * @param[in] ss Span set
  * @csqlfn #Adjacent_span_spanset()
  */
-inline bool
+bool
 adjacent_span_spanset(const Span *s, const SpanSet *ss)
 {
   return adjacent_spanset_span(ss, s);
@@ -532,7 +532,7 @@ right_value_spanset(Datum value, const SpanSet *ss)
  * @param[in] ss Span set
  * @csqlfn #Right_span_spanset()
  */
-inline bool
+bool
 right_span_spanset(const Span *s, const SpanSet *ss)
 {
   return left_spanset_span(ss, s);
@@ -557,7 +557,7 @@ right_spanset_value(const SpanSet *ss, Datum value)
  * @param[in] s Span
  * @csqlfn #Right_spanset_span()
  */
-inline bool
+bool
 right_spanset_span(const SpanSet *ss, const Span *s)
 {
   return left_span_spanset(s, ss);
@@ -569,7 +569,7 @@ right_spanset_span(const SpanSet *ss, const Span *s)
  * @param[in] ss1,ss2 Span sets
  * @csqlfn #Right_spanset_spanset()
  */
-inline bool
+bool
 right_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
 {
   return left_spanset_spanset(ss2, ss1);
@@ -1024,7 +1024,7 @@ intersection_spanset_span(const SpanSet *ss, const Span *s)
  * @param[in] ss Span set
  * @csqlfn #Intersection_span_spanset()
  */
-inline SpanSet *
+SpanSet *
 intersection_span_spanset(const Span *s, const SpanSet *ss)
 {
   return intersection_spanset_span(ss, s);

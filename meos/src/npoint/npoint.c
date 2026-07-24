@@ -1142,7 +1142,7 @@ nsegment_end_position(const Nsegment *ns)
  * is the one from the @p ways table, for performance reasons we simply get
  * the SRID of the table
  */
-inline int32_t
+int32_t
 npoint_srid(const Npoint *np UNUSED)
 {
   return get_srid_ways();
@@ -1157,7 +1157,7 @@ npoint_srid(const Npoint *np UNUSED)
  * is the one from the @p ways table, for performance reasons we simply get
  * the SRID of the table
  */
-inline int32_t
+int32_t
 nsegment_srid(const Nsegment *ns UNUSED)
 {
   return get_srid_ways();
@@ -1187,7 +1187,7 @@ npoint_eq(const Npoint *np1, const Npoint *np2)
  * @param[in] np1,np2 Network points
  * @csqlfn #Npoint_ne()
  */
-inline bool
+bool
 npoint_ne(const Npoint *np1, const Npoint *np2)
 {
   return ! npoint_eq(np1, np2);
@@ -1224,7 +1224,7 @@ npoint_cmp(const Npoint *np1, const Npoint *np2)
  * @param[in] np1,np2 Network points
  * @csqlfn #Npoint_lt()
  */
-inline bool
+bool
 npoint_lt(const Npoint *np1, const Npoint *np2)
 {
   return npoint_cmp(np1, np2) < 0;
@@ -1237,7 +1237,7 @@ npoint_lt(const Npoint *np1, const Npoint *np2)
  * @param[in] np1,np2 Network points
  * @csqlfn #Npoint_le()
  */
-inline bool
+bool
 npoint_le(const Npoint *np1, const Npoint *np2)
 {
   return npoint_cmp(np1, np2) <= 0;
@@ -1249,7 +1249,7 @@ npoint_le(const Npoint *np1, const Npoint *np2)
  * @param[in] np1,np2 Network points
  * @csqlfn #Npoint_gt()
  */
-inline bool
+bool
 npoint_gt(const Npoint *np1, const Npoint *np2)
 {
   return npoint_cmp(np1, np2) > 0;
@@ -1262,7 +1262,7 @@ npoint_gt(const Npoint *np1, const Npoint *np2)
  * @param[in] np1,np2 Network points
  * @csqlfn #Npoint_ge()
  */
-inline bool
+bool
 npoint_ge(const Npoint *np1, const Npoint *np2)
 {
   return npoint_cmp(np1, np2) >= 0;
@@ -1292,7 +1292,7 @@ nsegment_eq(const Nsegment *ns1, const Nsegment *ns2)
  * @param[in] ns1,ns2 Network segments
  * @csqlfn #Nsegment_ne()
  */
-inline bool
+bool
 nsegment_ne(const Nsegment *ns1, const Nsegment *ns2)
 {
   return ! nsegment_eq(ns1, ns2);
@@ -1334,7 +1334,7 @@ nsegment_cmp(const Nsegment *ns1, const Nsegment *ns2)
  * @param[in] ns1,ns2 Network segments
  * @csqlfn #Nsegment_lt()
  */
-inline bool
+bool
 nsegment_lt(const Nsegment *ns1, const Nsegment *ns2)
 {
   return nsegment_cmp(ns1, ns2) < 0;
@@ -1347,7 +1347,7 @@ nsegment_lt(const Nsegment *ns1, const Nsegment *ns2)
  * @param[in] ns1,ns2 Network segments
  * @csqlfn #Nsegment_le()
  */
-inline bool
+bool
 nsegment_le(const Nsegment *ns1, const Nsegment *ns2)
 {
   return nsegment_cmp(ns1, ns2) <= 0;
@@ -1360,7 +1360,7 @@ nsegment_le(const Nsegment *ns1, const Nsegment *ns2)
  * @param[in] ns1,ns2 Network segments
  * @csqlfn #Nsegment_gt()
  */
-inline bool
+bool
 nsegment_gt(const Nsegment *ns1, const Nsegment *ns2)
 {
   return nsegment_cmp(ns1, ns2) > 0;
@@ -1373,7 +1373,7 @@ nsegment_gt(const Nsegment *ns1, const Nsegment *ns2)
  * @param[in] ns1,ns2 Network segments
  * @csqlfn #Nsegment_ge()
  */
-inline bool
+bool
 nsegment_ge(const Nsegment *ns1, const Nsegment *ns2)
 {
   return nsegment_cmp(ns1, ns2) >= 0;

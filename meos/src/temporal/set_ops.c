@@ -249,7 +249,7 @@ contained_value_set(Datum value, const Set *s)
  * @param[in] s1,s2 Sets
  * @csqlfn #Contained_set_set()
  */
-inline bool
+bool
 contained_set_set(const Set *s1, const Set *s2)
 {
   return contains_set_set(s2, s1);
@@ -370,7 +370,7 @@ right_set_value(const Set *s, Datum value)
  * @param[in] s1,s2 Sets
  * @csqlfn #Right_set_set()
  */
-inline bool
+bool
 right_set_set(const Set *s1, const Set *s2)
 {
   return left_set_set(s2, s1);

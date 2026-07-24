@@ -211,7 +211,7 @@ int main(void)
 
         TimestampTz origin = timestamptz_in("2000-01-03", -1);
         // Temporal *rest = temporal_tprecision(temp, i, origin);
-        // Temporal *rest = temporal_tsample(temp, i, origin, "Step");
+        // Temporal *rest = temporal_tsample(temp, i, origin, STEP);
 
         /******************* Modification functions *******************/
 

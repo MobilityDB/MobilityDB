@@ -106,7 +106,7 @@ eacomp_th3index_th3index(const Temporal *temp1, const Temporal *temp2,
  * @brief Return `true` if a temporal H3 cell is ever equal to a bare H3 cell.
  * @csqlfn #Ever_eq_th3index_h3index()
  */
-inline int
+int
 ever_eq_th3index_h3index(const Temporal *temp, H3Index cell)
 {
   return eacomp_th3index_h3index(temp, cell, &datum2_eq, EVER);
@@ -117,7 +117,7 @@ ever_eq_th3index_h3index(const Temporal *temp, H3Index cell)
  * @brief Return `true` if a bare H3 cell is ever equal to a temporal H3 cell.
  * @csqlfn #Ever_eq_h3index_th3index()
  */
-inline int
+int
 ever_eq_h3index_th3index(H3Index cell, const Temporal *temp)
 {
   return eacomp_th3index_h3index(temp, cell, &datum2_eq, EVER);
@@ -129,7 +129,7 @@ ever_eq_h3index_th3index(H3Index cell, const Temporal *temp)
  * H3 cell.
  * @csqlfn #Ever_ne_th3index_h3index()
  */
-inline int
+int
 ever_ne_th3index_h3index(const Temporal *temp, H3Index cell)
 {
   return eacomp_th3index_h3index(temp, cell, &datum2_ne, EVER);
@@ -141,7 +141,7 @@ ever_ne_th3index_h3index(const Temporal *temp, H3Index cell)
  * H3 cell.
  * @csqlfn #Ever_ne_h3index_th3index()
  */
-inline int
+int
 ever_ne_h3index_th3index(H3Index cell, const Temporal *temp)
 {
   return eacomp_th3index_h3index(temp, cell, &datum2_ne, EVER);
@@ -153,7 +153,7 @@ ever_ne_h3index_th3index(H3Index cell, const Temporal *temp)
  * H3 cell.
  * @csqlfn #Always_eq_th3index_h3index()
  */
-inline int
+int
 always_eq_th3index_h3index(const Temporal *temp, H3Index cell)
 {
   return eacomp_th3index_h3index(temp, cell, &datum2_eq, ALWAYS);
@@ -165,7 +165,7 @@ always_eq_th3index_h3index(const Temporal *temp, H3Index cell)
  * H3 cell.
  * @csqlfn #Always_eq_h3index_th3index()
  */
-inline int
+int
 always_eq_h3index_th3index(H3Index cell, const Temporal *temp)
 {
   return eacomp_th3index_h3index(temp, cell, &datum2_eq, ALWAYS);
@@ -177,7 +177,7 @@ always_eq_h3index_th3index(H3Index cell, const Temporal *temp)
  * H3 cell.
  * @csqlfn #Always_ne_th3index_h3index()
  */
-inline int
+int
 always_ne_th3index_h3index(const Temporal *temp, H3Index cell)
 {
   return eacomp_th3index_h3index(temp, cell, &datum2_ne, ALWAYS);
@@ -189,7 +189,7 @@ always_ne_th3index_h3index(const Temporal *temp, H3Index cell)
  * H3 cell.
  * @csqlfn #Always_ne_h3index_th3index()
  */
-inline int
+int
 always_ne_h3index_th3index(H3Index cell, const Temporal *temp)
 {
   return eacomp_th3index_h3index(temp, cell, &datum2_ne, ALWAYS);
@@ -205,7 +205,7 @@ always_ne_h3index_th3index(H3Index cell, const Temporal *temp)
  * shared instant.
  * @csqlfn #Ever_eq_th3index_th3index()
  */
-inline int
+int
 ever_eq_th3index_th3index(const Temporal *temp1, const Temporal *temp2)
 {
   return eacomp_th3index_th3index(temp1, temp2, &datum2_eq, EVER);
@@ -217,7 +217,7 @@ ever_eq_th3index_th3index(const Temporal *temp1, const Temporal *temp2)
  * shared instant.
  * @csqlfn #Ever_ne_th3index_th3index()
  */
-inline int
+int
 ever_ne_th3index_th3index(const Temporal *temp1, const Temporal *temp2)
 {
   return eacomp_th3index_th3index(temp1, temp2, &datum2_ne, EVER);
@@ -229,7 +229,7 @@ ever_ne_th3index_th3index(const Temporal *temp1, const Temporal *temp2)
  * their shared time axis.
  * @csqlfn #Always_eq_th3index_th3index()
  */
-inline int
+int
 always_eq_th3index_th3index(const Temporal *temp1, const Temporal *temp2)
 {
   return eacomp_th3index_th3index(temp1, temp2, &datum2_eq, ALWAYS);
@@ -241,7 +241,7 @@ always_eq_th3index_th3index(const Temporal *temp1, const Temporal *temp2)
  * their shared time axis.
  * @csqlfn #Always_ne_th3index_th3index()
  */
-inline int
+int
 always_ne_th3index_th3index(const Temporal *temp1, const Temporal *temp2)
 {
   return eacomp_th3index_th3index(temp1, temp2, &datum2_ne, ALWAYS);
@@ -281,7 +281,7 @@ tcomp_h3index_th3index(H3Index cell, const Temporal *temp,
  * bare H3 cell.
  * @csqlfn #Teq_th3index_h3index()
  */
-inline Temporal *
+Temporal *
 teq_th3index_h3index(const Temporal *temp, H3Index cell)
 {
   return tcomp_th3index_h3index(temp, cell, &datum2_eq);
@@ -293,7 +293,7 @@ teq_th3index_h3index(const Temporal *temp, H3Index cell)
  * temporal H3 cell.
  * @csqlfn #Teq_h3index_th3index()
  */
-inline Temporal *
+Temporal *
 teq_h3index_th3index(H3Index cell, const Temporal *temp)
 {
   return tcomp_h3index_th3index(cell, temp, &datum2_eq);
@@ -305,7 +305,7 @@ teq_h3index_th3index(H3Index cell, const Temporal *temp)
  * bare H3 cell.
  * @csqlfn #Tne_th3index_h3index()
  */
-inline Temporal *
+Temporal *
 tne_th3index_h3index(const Temporal *temp, H3Index cell)
 {
   return tcomp_th3index_h3index(temp, cell, &datum2_ne);
@@ -317,7 +317,7 @@ tne_th3index_h3index(const Temporal *temp, H3Index cell)
  * temporal H3 cell.
  * @csqlfn #Tne_h3index_th3index()
  */
-inline Temporal *
+Temporal *
 tne_h3index_th3index(H3Index cell, const Temporal *temp)
 {
   return tcomp_h3index_th3index(cell, temp, &datum2_ne);
@@ -329,7 +329,7 @@ tne_h3index_th3index(H3Index cell, const Temporal *temp)
  * their shared time axis.
  * @csqlfn #Teq_th3index_th3index()
  */
-inline Temporal *
+Temporal *
 teq_th3index_th3index(const Temporal *temp1, const Temporal *temp2)
 {
   if (! ensure_valid_th3index_th3index(temp1, temp2))
@@ -343,7 +343,7 @@ teq_th3index_th3index(const Temporal *temp1, const Temporal *temp2)
  * their shared time axis.
  * @csqlfn #Tne_th3index_th3index()
  */
-inline Temporal *
+Temporal *
 tne_th3index_th3index(const Temporal *temp1, const Temporal *temp2)
 {
   if (! ensure_valid_th3index_th3index(temp1, temp2))

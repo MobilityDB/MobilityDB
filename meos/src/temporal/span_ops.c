@@ -189,7 +189,7 @@ contained_value_span(Datum value, const Span *s)
  * @param[in] s1,s2 Spans
  * @csqlfn #Contained_value_span()
  */
-inline bool
+bool
 contained_span_span(const Span *s1, const Span *s2)
 {
   return contains_span_span(s2, s1);
@@ -409,7 +409,7 @@ right_span_value(const Span *s, Datum value)
  * @param[in] s1,s2 Spans
  * @csqlfn #Right_span_span()
  */
-inline bool
+bool
 right_span_span(const Span *s1, const Span *s2)
 {
   return left_span_span(s2, s1);
