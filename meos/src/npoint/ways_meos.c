@@ -271,7 +271,9 @@ get_ways_record(int64 rid, ways_record *rec)
   do
   {
     char geo_buffer[MAX_LEN_GEOM];
-    int read = fscanf(file, "%ld,%100000s\n", &rec->gid, geo_buffer);
+    long long gidbuf; /* MEOS: %ld mismatches int64 on LLP64 (Windows) */
+    int read = fscanf(file, "%lld,%100000s\n", &gidbuf, geo_buffer);
+    rec->gid = (int64) gidbuf; /* MEOS */
     if (ferror(file))
     {
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
@@ -439,7 +441,9 @@ geompoint_to_npoint(const GSERIALIZED *gs)
      */
     /* Buffer for reading the geometry string */
     char geo_buffer[MAX_LEN_GEOM];
-    int read = fscanf(file, "%ld,%100000s\n", &rec.gid, geo_buffer);
+    long long gidbuf; /* MEOS: %ld mismatches int64 on LLP64 (Windows) */
+    int read = fscanf(file, "%lld,%100000s\n", &gidbuf, geo_buffer);
+    rec.gid = (int64) gidbuf; /* MEOS */
     if (ferror(file))
     {
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
