@@ -573,6 +573,8 @@ assign_locale_messages(const char *newval, void *extra UNUSED)
    */
 #ifdef LC_MESSAGES
   (void) pg_perm_setlocale(LC_MESSAGES, newval);
+#else
+  (void) newval; /* MEOS: unused where LC_MESSAGES is absent (Windows) */
 #endif
 }
 

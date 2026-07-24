@@ -38,7 +38,7 @@ static MEOS_TLS char tzdirpath[MAXPGPATH];
  *
  * In this file, tzdirpath is assumed to be set up by select_default_timezone.
  */
-static const char *
+static const char * pg_attribute_unused() /* MEOS: called only by the non-Windows identify_system_timezone() */
 pg_TZDIR(void)
 {
 #ifndef SYSTEMTZDIR

@@ -4915,8 +4915,7 @@ int64_to_numericvar(int64 val, NumericVar *var)
   if (val < 0)
   {
     var->sign = NUMERIC_NEG;
-    // uval = pg_abs_s64(val);
-    uval = labs(val);
+    uval = i64abs(val); /* MEOS: labs() truncates int64 on LLP64 (Windows) */
   }
   else
   {

@@ -669,7 +669,7 @@ get_collation_actual_version_libc(const char *collcollate)
      * given a collation name (earlier versions required a location code
      * that we don't have).
      */
-    NLSVERSIONINFOEX version = {sizeof(NLSVERSIONINFOEX)};
+    NLSVERSIONINFOEX version = { .dwNLSVersionInfoSize = sizeof(NLSVERSIONINFOEX) }; /* MEOS: designated init silences -Wmissing-field-initializers */
     WCHAR    wide_collcollate[LOCALE_NAME_MAX_LENGTH];
 
     MultiByteToWideChar(CP_ACP, 0, collcollate, -1, wide_collcollate,
