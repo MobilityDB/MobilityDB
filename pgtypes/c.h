@@ -255,6 +255,14 @@
 #define pg_attribute_printf(f,a)
 #endif
 
+/* Mark a char array that is deliberately not a NUL-terminated string, so
+ * -Wunterminated-string-initialization / -Wstringop-* stay quiet (GCC 15+). */
+#if defined(__has_attribute) && __has_attribute (nonstring)
+#define pg_attribute_nonstring __attribute__((nonstring))
+#else
+#define pg_attribute_nonstring
+#endif
+
 /* GCC and Sunpro support aligned and packed */
 #if defined(__GNUC__) || defined(__SUNPRO_C)
 #define pg_attribute_aligned(a) __attribute__((aligned(a)))
