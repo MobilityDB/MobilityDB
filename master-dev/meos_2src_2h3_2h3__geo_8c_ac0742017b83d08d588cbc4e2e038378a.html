@@ -142,10 +142,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Push the cells covering an <a class="el" href="structLWPOLY.html">LWPOLY</a> into the accumulator. </p>
-<p >Coverage is layered so that the union is a superset of every cell whose interior intersects the polygon:</p>
-<p >(a) <code>polygonToCells</code> (cells with centroid inside the polygon), each expanded by <code>gridDisk(c, 1)</code> to include boundary cells.</p>
-<p >(b) Each polygon vertex's containing cell, also expanded by <code>gridDisk(c, 1)</code>. Covers polygons that contain no cell centroid (i.e. polygons smaller than a hexagon at the chosen resolution).</p>
-<p >Layers (a) and (b) merge via the sort+dedup in <code>h3_buf_to_set</code>. </p>
+<p >Coverage is layered so that the union is a superset of every cell whose interior intersects the polygon: (a) <code>polygonToCells</code> (cells with centroid inside the polygon), each expanded by <code>gridDisk(c, 1)</code> to include boundary cells. (b) Each polygon vertex's containing cell, also expanded by <code>gridDisk(c, 1)</code>. Covers polygons that contain no cell centroid (i.e. polygons smaller than a hexagon at the chosen resolution). Layers (a) and (b) merge via the sort+dedup in <code>h3_buf_to_set</code>. </p>
 
 </div>
 </div>

@@ -111,8 +111,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Returns 1 if any cell in <code>cells</code> ever appears in the value sequence of <code>th3idx</code>, 0 if none, -1 on error. </p>
-<p >The cross-platform spatial prefilter consumed by <code>eIntersects</code> SQL wrappers / Spark UDFs. Iterates the th3index value sequence (one entry per distinct instant) and tests <a class="el" href="structSet.html" title="Structure to represent sets of values.">Set</a> membership.</p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p >The cross-platform spatial prefilter consumed by <code>eIntersects</code> SQL wrappers / Spark UDFs. Iterates the th3index value sequence (one entry per distinct instant) and tests <a class="el" href="structSet.html" title="Structure to represent sets of values.">Set</a> membership. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">cells</td><td>The candidate H3 cell set (T_H3INDEX). </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">th3idx</td><td>The th3index temporal value. @csqlfn <a class="el" href="group__mobilitydb__h3__comp_ga3222ce9626672c5d539c09e94eeb8d19.html#ga3222ce9626672c5d539c09e94eeb8d19" title="True iff the th3index value sequence ever lies in any cell of the candidate set.">Ever_eq_h3indexset_th3index()</a> </td></tr>
