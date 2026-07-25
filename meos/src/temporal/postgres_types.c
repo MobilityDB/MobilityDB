@@ -828,7 +828,11 @@ date2timestamptz_opt_overflow(DateADT dateVal, int *overflow)
 inline TimestampTz
 date_to_timestamptz(DateADT d)
 {
+#if POSTGRESQL_VERSION_NUMBER >= 190000
+  return date2timestamptz_safe(d, NULL);
+#else
   return date2timestamptz_opt_overflow(d, NULL);
+#endif
 }
 
 /**
