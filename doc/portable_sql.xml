@@ -75,6 +75,9 @@
 				<row><entry></entry><entry>%&lt;=</entry><entry>aLe(a, b)</entry></row>
 				<row><entry></entry><entry>%&gt;</entry><entry>aGt(a, b)</entry></row>
 				<row><entry></entry><entry>%&gt;=</entry><entry>aGe(a, b)</entry></row>
+				<row><entry>Boolean (temporal bolean)</entry><entry>&amp;</entry><entry>tAnd(a, b)</entry></row>
+				<row><entry></entry><entry>|</entry><entry>tOr(a, b)</entry></row>
+				<row><entry></entry><entry>~</entry><entry>tNot(a)</entry></row>
 				<row><entry>Arithmetic (temporal numbers)</entry><entry>+</entry><entry>tAdd(a, b)</entry></row>
 				<row><entry></entry><entry>-</entry><entry>tSub(a, b)</entry></row>
 				<row><entry></entry><entry>*</entry><entry>tMul(a, b)</entry></row>
@@ -112,8 +115,6 @@
 					<row><entry></entry><entry><varname>tMaxTransition</varname></entry><entry><varname>tMaxCombine</varname></entry><entry><varname>tMaxFinal</varname></entry></row>
 					<row><entry></entry><entry><varname>wMinTransition</varname></entry><entry><varname>wMinCombine</varname></entry><entry><varname>wMinFinal</varname></entry></row>
 					<row><entry></entry><entry><varname>wMaxTransition</varname></entry><entry><varname>wMaxCombine</varname></entry><entry><varname>wMaxFinal</varname></entry></row>
-					<row><entry></entry><entry><varname>tMinAggTransition</varname></entry><entry><varname>tMinAggCombine</varname></entry><entry><varname>tMinAggFinal</varname></entry></row>
-					<row><entry></entry><entry><varname>tMaxAggTransition</varname></entry><entry><varname>tMaxAggCombine</varname></entry><entry><varname>tMaxAggFinal</varname></entry></row>
 					<row><entry>Boolean</entry><entry><varname>tAndTransition</varname></entry><entry><varname>tAndCombine</varname></entry><entry><varname>tAndFinal</varname></entry></row>
 					<row><entry></entry><entry><varname>tOrTransition</varname></entry><entry><varname>tOrCombine</varname></entry><entry><varname>tOrFinal</varname></entry></row>
 					<row><entry>Centroid</entry><entry><varname>tCentroidTransition</varname></entry><entry><varname>tCentroidCombine</varname></entry><entry><varname>tCentroidFinal</varname></entry></row>
@@ -125,11 +126,8 @@
 					<row><entry></entry><entry><varname>spanUnionTransition</varname></entry><entry><varname>spanUnionCombine</varname></entry><entry><varname>spanUnionFinal</varname></entry></row>
 					<row><entry></entry><entry><varname>spansetUnionTransition</varname></entry><entry><varname>spansetUnionCombine</varname></entry><entry><varname>spansetUnionFinal</varname></entry></row>
 					<row><entry>Merge</entry><entry><varname>mergeTransition</varname></entry><entry><varname>mergeCombine</varname></entry><entry><varname>mergeFinal</varname></entry></row>
-					<row><entry></entry><entry><varname>mergeAggTransition</varname></entry><entry><varname>mergeAggCombine</varname></entry><entry><varname>mergeAggFinal</varname></entry></row>
 					<row><entry>Append</entry><entry><varname>appendInstantTransition</varname></entry><entry>—</entry><entry><varname>appendInstantFinal</varname></entry></row>
-					<row><entry></entry><entry><varname>appendInstantAggTransition</varname></entry><entry>—</entry><entry><varname>appendInstantAggFinal</varname></entry></row>
 					<row><entry></entry><entry><varname>appendSequenceTransition</varname></entry><entry>—</entry><entry><varname>appendSequenceFinal</varname></entry></row>
-					<row><entry></entry><entry><varname>appendSequenceAggTransition</varname></entry><entry>—</entry><entry><varname>appendSequenceAggFinal</varname></entry></row>
 			</tbody>
 		</tgroup>
 	</informaltable>
