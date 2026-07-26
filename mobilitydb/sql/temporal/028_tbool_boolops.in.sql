@@ -36,31 +36,31 @@
  * Temporal and
  *****************************************************************************/
 
-CREATE FUNCTION tbool_and(boolean, tbool)
+CREATE FUNCTION tAnd(boolean, tbool)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tand_bool_tbool'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbool_and(tbool, boolean)
+CREATE FUNCTION tAnd(tbool, boolean)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tand_tbool_bool'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbool_and(tbool, tbool)
+CREATE FUNCTION tAnd(tbool, tbool)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tand_tbool_tbool'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR & (
-  PROCEDURE = tbool_and,
+  PROCEDURE = tAnd,
   LEFTARG = boolean, RIGHTARG = tbool,
   COMMUTATOR = &
 );
 CREATE OPERATOR & (
-  PROCEDURE = tbool_and,
+  PROCEDURE = tAnd,
   LEFTARG = tbool, RIGHTARG = boolean,
   COMMUTATOR = &
 );
 CREATE OPERATOR & (
-  PROCEDURE = tbool_and,
+  PROCEDURE = tAnd,
   LEFTARG = tbool, RIGHTARG = tbool,
   COMMUTATOR = &
 );
@@ -69,31 +69,31 @@ CREATE OPERATOR & (
  * Temporal or
  *****************************************************************************/
 
-CREATE FUNCTION tbool_or(boolean, tbool)
+CREATE FUNCTION tOr(boolean, tbool)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tor_bool_tbool'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbool_or(tbool, boolean)
+CREATE FUNCTION tOr(tbool, boolean)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tor_tbool_bool'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tbool_or(tbool, tbool)
+CREATE FUNCTION tOr(tbool, tbool)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tor_tbool_tbool'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR | (
-  PROCEDURE = tbool_or,
+  PROCEDURE = tOr,
   LEFTARG = boolean, RIGHTARG = tbool,
   COMMUTATOR = |
 );
 CREATE OPERATOR | (
-  PROCEDURE = tbool_or,
+  PROCEDURE = tOr,
   LEFTARG = tbool, RIGHTARG = boolean,
   COMMUTATOR = |
 );
 CREATE OPERATOR | (
-  PROCEDURE = tbool_or,
+  PROCEDURE = tOr,
   LEFTARG = tbool, RIGHTARG = tbool,
   COMMUTATOR = |
 );
@@ -102,13 +102,13 @@ CREATE OPERATOR | (
  * Temporal not
  *****************************************************************************/
 
-CREATE FUNCTION tbool_not(tbool)
+CREATE FUNCTION tNot(tbool)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tnot_tbool'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ~ (
-  PROCEDURE = tbool_not, RIGHTARG = tbool
+  PROCEDURE = tNot, RIGHTARG = tbool
 );
 
 /*****************************************************************************
