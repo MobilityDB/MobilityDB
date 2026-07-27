@@ -80,7 +80,6 @@ jsonbset_array_length(const Set *set)
 
 /*****************************************************************************/
 
-
 /**
  * @ingroup meos_json_set_json
  * @brief Extract a JSONB object field with the given key

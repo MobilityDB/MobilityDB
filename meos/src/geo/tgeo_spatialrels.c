@@ -1666,11 +1666,11 @@ ea_dwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
       return 0;
   }
 
-  /* Native GEOS-free fast path for a temporal geometry point with linear
-   * interpolation against a non-point geometry the clip engine supports
-   * (planar, 2D, strictly positive distance). Compute the native temporal
-   * within Boolean once and project it to the ever/always quantifier. Using the
-   * same #tpoint_linear_dwithin_geom as #tdwithin_tgeo_geo makes the ever/always
+  /* Native fast path for a temporal geometry point with linear interpolation
+   * against a non-point geometry the clip engine supports (planar, 2D,
+   * strictly positive distance). Compute the native temporal within Boolean
+   * once and project it to the ever/always quantifier. Using the same
+   * #tpoint_linear_dwithin_geom as #tdwithin_tgeo_geo makes the ever/always
    * projections consistent with the temporal result by construction. This kills
    * both the EVER GEOS trajectory dwithin and the ALWAYS geom_buffer + covers
    * approximation. A zero distance is left on the existing paths because the

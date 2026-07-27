@@ -34,6 +34,9 @@
  * Cache state
  *****************************************************************************/
 
+/**
+ * @brief
+ */
 typedef struct schema_entry {
   uint32_t pcid;
   PCSCHEMA *schema;
@@ -57,7 +60,7 @@ meos_pc_parse_xml_fn_t meos_pc_parse_xml_fn = NULL;
 /**
  * @brief Internal helper — copy @p xml into long-lived memory.
  * @return palloc'd cstring (TopMemoryContext on PG, malloc on standalone)
- *   or NULL when @p xml is NULL.
+ * or NULL when @p xml is NULL.
  */
 static char *
 copy_xml_long_lived(const char *xml)
@@ -261,3 +264,5 @@ meos_initialize_pointcloud(void)
 {
   pc_install_default_handlers();
 }
+
+/*****************************************************************************/

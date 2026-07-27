@@ -422,7 +422,6 @@ int
 ea_spatialrel_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
   Datum param, varfunc func, int numparam, bool ever, bool invert)
 {
-  VALIDATE_TCBUFFER(temp, -1); VALIDATE_NOT_NULL(gs, -1);
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
@@ -474,10 +473,10 @@ int
 ea_spatialrel_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
   Datum param, varfunc func, int numparam, bool ever, bool invert)
 {
-  VALIDATE_TCBUFFER(temp, -1); VALIDATE_NOT_NULL(cb, -1);
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_cbuffer(temp, cb))
     return -1;
+
   GSERIALIZED *gs = cbuffer_to_geom(cb);
   int result = ea_spatialrel_tcbuffer_geo(temp, gs, param, func, numparam,
     ever, invert);
@@ -503,7 +502,6 @@ int
 ea_spatialrel_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   datum_func2 func, bool ever, bool bbox_test)
 {
-  VALIDATE_TCBUFFER(temp1, -1); VALIDATE_TCBUFFER(temp2, -1);
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_tcbuffer(temp1, temp2))
     return -1;
@@ -537,9 +535,8 @@ int
 ea_contains_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp,
   bool ever)
 {
-  /* Native GEOS-free running ever/always contains, exactly consistent with the
-   * temporal contains; curved or unsupported geometry keeps the traversed-area
-   * path. */
+  /* Native running ever/always contains, exactly consistent with the temporal
+   * contains; curved or unsupported geometry keeps the traversed-area path. */
   int native = eacontains_tcbuffer_geo_native(temp, gs, ever, true);
   if (native >= 0)
     return native;
@@ -775,9 +772,9 @@ acontains_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 int
 ea_covers_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp, bool ever)
 {
-  /* Native GEOS-free running ever/always covers (contains up to boundary
-   * tangency), exactly consistent with the temporal covers; curved or
-   * unsupported geometry keeps the traversed-area path. */
+  /* Native running ever/always covers (contains up to boundary tangency),
+   * exactly consistent with the temporal covers; curved or unsupported
+   * geometry keeps the traversed-area path. */
   int native = eacontains_tcbuffer_geo_native(temp, gs, ever, false);
   if (native >= 0)
     return native;
@@ -1010,6 +1007,12 @@ acovers_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
  * @ingroup meos_internal_cbuffer_rel_ever
  * @brief Return 1 if a temporal circular buffer and a geometry are ever
  * disjoint,0 if not, and -1 on error or if the geometry is empty
+ * @details The always semantics reduce exactly to the native nearest-approach
+ * distance: aDisjoint(temp, gs) ⟺ ¬eIntersects(temp, gs) ⟺
+ * min_t dist(disk(t), gs) > 0. The ever semantics are computed from the
+ * native coverage of the intersecting sub-periods: eDisjoint(temp, gs) ⟺
+ * ∃t disk(t) ∩ gs = ∅. Curved or unsupported geometry falls back to the
+ * exact traversed-area path.
  * @param[in] temp Temporal circular buffer
  * @param[in] gs Geometry
  * @param[in] ever True for the ever semantics, false for the always semantics
@@ -1019,15 +1022,10 @@ int
 ea_disjoint_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
   bool ever)
 {
-  /* The always semantics reduce exactly to the native nearest-approach
-   * distance: aDisjoint(temp, gs) ⟺ ¬eIntersects(temp, gs) ⟺
-   * min_t dist(disk(t), gs) > 0. The ever semantics are computed from the
-   * native coverage of the intersecting sub-periods: eDisjoint(temp, gs) ⟺
-   * ∃t disk(t) ∩ gs = ∅. Both avoid GEOS; curved or unsupported geometry falls
-   * back to the exact traversed-area path. */
-  VALIDATE_TCBUFFER(temp, -1); VALIDATE_NOT_NULL(gs, -1);
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
+
   /* Bounding box test: a moving disk whose radius-aware bounding box is
    * disjoint from the geometry never reaches it, so it is disjoint at every
    * instant. This makes both the ever and the always quantifier true, and is a
@@ -1096,6 +1094,11 @@ adisjoint_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @ingroup meos_internal_cbuffer_rel_ever
  * @brief Return 1 if a temporal circular buffer and a circular buffer are ever
  * disjoint, 0 if not, and -1 on error
+ * @details aDisjoint = ¬eIntersects reduces exactly to ¬eDwithin(., ., 0). 
+ * A static circular buffer is a degenerate constant temporal circular buffer,
+ * so promote it and route through the native dwithin turning-point engine.
+ * The ever semantics (∃t disjoint) are not distance-reducible and stay on
+ * the traversed-area path.
  * @param[in] temp Temporal circular buffer
  * @param[in] cb Circular buffer
  * @param[in] ever True for the ever semantics, false for the always semantics
@@ -1105,16 +1108,12 @@ int
 ea_disjoint_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
   bool ever)
 {
-  /* aDisjoint = ¬eIntersects reduces exactly to ¬eDwithin(., ., 0). A static
-   * circular buffer is a degenerate constant temporal circular buffer, so
-   * promote it and route through the native (GEOS-free) dwithin turning-point
-   * engine. The ever semantics (∃t disjoint) are not distance-reducible and
-   * stay on the traversed-area path. */
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tcbuffer_cbuffer(temp, cb))
+    return -1;
+
   if (! ever)
   {
-    VALIDATE_TCBUFFER(temp, -1); VALIDATE_NOT_NULL(cb, -1);
-    if (! ensure_valid_tcbuffer_cbuffer(temp, cb))
-      return -1;
     Temporal *ctemp = tcbuffer_from_base_temp(cb, temp);
     int result = ea_dwithin_tcbuffer_tcbuffer(temp, ctemp, 0.0, EVER);
     pfree(ctemp);
@@ -1184,7 +1183,6 @@ int
 ea_disjoint_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   bool ever)
 {
-  VALIDATE_TCBUFFER(temp1, -1); VALIDATE_TCBUFFER(temp2, -1);
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_tcbuffer(temp1, temp2))
     return -1;
@@ -1244,6 +1242,12 @@ adisjoint_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
  * @ingroup meos_internal_cbuffer_rel_ever
  * @brief Return 1 if a temporal circular buffer ever/always intersects a
  * geometry, 0 if not, and -1 on error or if the geometry is empty
+ * @details The ever semantics reduce exactly to the native nearest-approach
+ * distance: eIntersects(temp, gs) ⟺ min_t dist(disk(t), gs) ≤ 0. The always
+ * semantics are the complement of ever disjoint: aIntersects(temp, gs) ⟺
+ * ¬eDisjoint(temp, gs), computed from the native coverage of the intersecting
+ * sub-periods. Both avoid linearizing the round buffer through GEOS; curved
+ * or unsupported geometry falls back to the exact traversed-area path.
  * @param[in] temp Temporal circular buffer
  * @param[in] gs Geometry
  * @param[in] ever True for the ever semantics, false for the always semantics
@@ -1253,15 +1257,10 @@ int
 ea_intersects_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
   bool ever)
 {
-  /* The ever semantics reduce exactly to the native nearest-approach distance:
-   * eIntersects(temp, gs) ⟺ min_t dist(disk(t), gs) ≤ 0. The always semantics
-   * are the complement of ever disjoint: aIntersects(temp, gs) ⟺
-   * ¬eDisjoint(temp, gs), computed from the native coverage of the intersecting
-   * sub-periods. Both avoid linearizing the round buffer through GEOS; curved
-   * or unsupported geometry falls back to the exact traversed-area path. */
-  VALIDATE_TCBUFFER(temp, -1); VALIDATE_NOT_NULL(gs, -1);
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
+
   /* Bounding box test: a moving disk whose radius-aware bounding box is
    * disjoint from the geometry never reaches it, so it neither ever nor always
    * intersects. This is a constant-time reject that avoids the analytic
@@ -1331,6 +1330,12 @@ aintersects_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @ingroup meos_internal_cbuffer_rel_ever
  * @brief Return 1 if a temporal circular buffer ever/always intersects a
  * circular buffer, 0 if not, and -1 on error
+ * @details eIntersects reduces exactly to eDwithin(., ., 0). A static circular
+ * buffer is a degenerate constant temporal circular buffer, so promote it
+ * and route through the native dwithin turning-point engine, which detects
+ * the mid-segment approach that a per-instant evaluation would miss.
+ * The always semantics (∀t intersects) are not distance-reducible and stay
+ * on the traversed-area path.
  * @param[in] temp Temporal circular buffer
  * @param[in] cb Circular buffer
  * @param[in] ever True for the ever semantics, false for the always semantics
@@ -1340,17 +1345,12 @@ int
 ea_intersects_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
   bool ever)
 {
-  /* eIntersects reduces exactly to eDwithin(., ., 0). A static circular
-   * buffer is a degenerate constant temporal circular buffer, so promote it
-   * and route through the native (GEOS-free) dwithin turning-point engine,
-   * which detects the mid-segment approach that a per-instant evaluation
-   * would miss. The always semantics (∀t intersects) are not distance-
-   * reducible and stay on the traversed-area path. */
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tcbuffer_cbuffer(temp, cb))
+    return -1;
+
   if (ever)
   {
-    VALIDATE_TCBUFFER(temp, -1); VALIDATE_NOT_NULL(cb, -1);
-    if (! ensure_valid_tcbuffer_cbuffer(temp, cb))
-      return -1;
     Temporal *ctemp = tcbuffer_from_base_temp(cb, temp);
     int result = ea_dwithin_tcbuffer_tcbuffer(temp, ctemp, 0.0, EVER);
     pfree(ctemp);
@@ -1467,9 +1467,10 @@ aintersects_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 int
 ea_touches_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 {
-  VALIDATE_TCBUFFER(temp, -1); VALIDATE_NOT_NULL(gs, -1);
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
+
   /* Bounding box test: a moving disk whose radius-aware bounding box is
    * disjoint from the geometry never reaches it, so it cannot touch. This is a
    * constant-time reject that avoids the analytic nearest-approach distance
@@ -1479,6 +1480,7 @@ ea_touches_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
   geo_set_stbox(gs, &box2);
   if (! overlaps_stbox_stbox(&box1, &box2))
     return 0;
+
   /* Touch requires the temporal value and the geometry to be at distance
    * zero; a strictly positive exact nearest-approach distance means they
    * are disjoint, so they cannot touch under either quantifier. This is
@@ -1486,10 +1488,9 @@ ea_touches_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
    * many-vertex disk for which the analytic distance is not a win. */
   if (nad_tcbuffer_geo(temp, gs) > 1e-6)
     return 0;
-  /* Native GEOS-free path for non-curved geometry: eTouches/aTouches derive
-   * from the exact boundary-contact instants, consistent with
-   * ever/always(tTouches). Curved or unsupported geometry keeps the
-   * traversed-area path. */
+  /* Native path for non-curved geometry: eTouches/aTouches derive from the
+   * exact boundary-contact instants, consistent with ever/always(tTouches).
+   * Curved or unsupported geometry keeps the traversed-area path. */
   int native = eatouches_tcbuffer_geo_native(temp, gs, ever);
   if (native >= 0)
     return native;
@@ -1666,11 +1667,11 @@ int
 ea_dwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
   double dist, bool ever, bool invert)
 {
-  VALIDATE_TCBUFFER(temp, -1); VALIDATE_NOT_NULL(gs, -1);
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return -1;
+
   /* Bounding box test: if the moving disk's radius-aware bounding box does not
    * overlap the geometry's box expanded by the distance, every instant is
    * farther than the distance, so the buffer is neither ever nor always within
@@ -1684,6 +1685,7 @@ ea_dwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
   bool pass = overlaps_stbox_stbox(&box_temp, &box_geo_exp);
   if (! pass)
     return 0;
+
   /* The ever semantics reduce exactly to the native nearest-approach
    * distance: eDwithin(temp, gs, d) ⟺ min_t dist(disk(t), gs) ≤ d. This
    * avoids linearizing the round buffer through GEOS. */
@@ -1693,8 +1695,8 @@ ea_dwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
    * geometry is the same as intersecting it once the disk radius is grown by d
    * (dist(disk, gs) ≤ d ⟺ dist(disk⊕d, gs) ≤ 0), so aDwithin(temp, gs, d) ⟺
    * the buffer expanded by d always intersects the geometry ⟺ it is never
-   * disjoint from it. Reuse the GEOS-free ever-disjoint coverage kernel on the
-   * expanded buffer; curved or unsupported geometry returns -1 and keeps the
+   * disjoint from it. Reuse the ever-disjoint coverage kernel on the expanded
+   * buffer; curved or unsupported geometry returns -1 and keeps the
    * traversed-area path below. */
   Temporal *temp_exp = tcbuffer_expand(temp, dist);
   int native = edisjoint_tcbuffer_geo_native(temp_exp, gs);
@@ -1750,14 +1752,14 @@ int
 edwithin_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
   double dist)
 {
-  VALIDATE_TCBUFFER(temp, -1); VALIDATE_NOT_NULL(cb, -1);
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_cbuffer(temp, cb) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return -1;
+
   /* A static circular buffer is a degenerate constant temporal circular
-   * buffer. Promote it and route through the native (GEOS-free) temporal
-   * circular buffer dwithin engine. */
+   * buffer. Promote it and route through the native temporal circular buffer
+   * dwithin engine. */
   Temporal *ctemp = tcbuffer_from_base_temp(cb, temp);
   int result = ea_dwithin_tcbuffer_tcbuffer(temp, ctemp, dist, EVER);
   pfree(ctemp);
@@ -1777,15 +1779,15 @@ int
 adwithin_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
   double dist)
 {
-  VALIDATE_TCBUFFER(temp, -1); VALIDATE_NOT_NULL(cb, -1);
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_cbuffer(temp, cb) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return -1;
+
   /* A static circular buffer is a degenerate constant temporal circular
-   * buffer. Promote it and route through the native (GEOS-free) temporal
-   * circular buffer dwithin engine, mirroring the ever variant; that engine
-   * carries its own radius-aware bounding-box and time-overlap prefilter. */
+   * buffer. Promote it and route through the native temporal circular buffer
+   * dwithin engine, mirroring the ever variant; that engine carries its own
+   * radius-aware bounding-box and time-overlap prefilter. */
   Temporal *ctemp = tcbuffer_from_base_temp(cb, temp);
   int result = ea_dwithin_tcbuffer_tcbuffer(temp, ctemp, dist, ALWAYS);
   pfree(ctemp);
@@ -1808,7 +1810,6 @@ int
 ea_dwithin_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   double dist, bool ever)
 {
-  VALIDATE_TCBUFFER(temp1, -1); VALIDATE_TCBUFFER(temp2, -1);
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_tcbuffer(temp1, temp2) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
@@ -1821,6 +1822,7 @@ ea_dwithin_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   temporal_set_tstzspan(temp2, &s2);
   if (! overlaps_span_span(&s1, &s2))
     return -1;
+
   /* Bounding box test with distance expansion: the buffers share time, so if
    * the first's radius-aware box does not overlap the second's box expanded by
    * the distance, every common instant is farther than the distance and the

@@ -57,13 +57,13 @@
 #include "geo/stbox.h"
 #include "temporal/temporal_rtree.h"
 
-/* Functions not exported by PostGIS */
+/* Function not exported by PostGIS */
 extern double circ_tree_distance_tree_internal(const CIRC_NODE* n1,
   const CIRC_NODE* n2, double threshold, double* min_dist, double* max_dist,
   GEOGRAPHIC_POINT* closest1, GEOGRAPHIC_POINT* closest2);
 
 /*****************************************************************************
- * GEOS-free analytic distance engine (shared with the tcbuffer family)
+ * Analytic distance engine (shared with the tcbuffer family)
  *
  * A moving disc (centre c1->c2, radius r1->r2; r may be 0 for a moving
  * point) is tested against a geometry decomposed into boundary edges. The
@@ -130,8 +130,8 @@ geodist_minfun(double A, double B, double C, double R0, double DR, double lo,
  * it as needed. A single-point array contributes one degenerate segment.
  */
 static void
-geodist_geom_edges_add_ptarray(const POINTARRAY *pa, bool is_poly, GeoDistEdge **arr,
-  int *cap, int *cnt)
+geodist_geom_edges_add_ptarray(const POINTARRAY *pa, bool is_poly,
+  GeoDistEdge **arr, int *cap, int *cnt)
 {
   if (! pa || pa->npoints == 0)
     return;
@@ -210,7 +210,7 @@ geodist_geom_arc_set_bbox(GeoDistEdge *e)
  * @brief Append one arc edge, defined by three consecutive points of a
  * circular string (start, any interior point, end), to the segment array.
  * Collinear triples degenerate to two straight segments. Mirrors the exact
- * circumcentre construction of the native clip engine (@ref tpoint_geom_clip.c).
+ * circumcentre construction of the native clip engine (#tpoint_geom_clip.c).
  */
 static void
 geodist_segs_add_arc(double ax, double ay, double bx, double by, double cx,
@@ -531,19 +531,19 @@ geodist_segm_edge_mindist(double cx1, double cy1, double cx2, double cy2,
 }
 
 /**
- * @brief Minimum of [ dist(c(t), arc) - r(t) ] for t in [0,1], where the centre
- * moves from (cx1,cy1) to (cx2,cy2) and the radius from r1 to r2, and @p e is a
- * circular-arc edge.
- * @details Let Q(t) = |c(t) - centre|^2 = A t^2 + B t + C. Where the foot angle
- * phi(t) lies within the arc's angular span the distance to the arc is
+ * @brief Minimum of [ dist(c(t), arc) - r(t) ] for t in [0,1], where the
+ * centre moves from (cx1,cy1) to (cx2,cy2) and the radius from r1 to r2,
+ * and @p e is a circular-arc edge.
+ * @details Let Q(t) = |c(t) - centre|^2 = A t^2 + B t + C. Where the foot
+ * angle phi(t) lies within the arc's angular span the distance to the arc is
  * | sqrt(Q(t)) - R |, so the distance to the moving disc is
  * | sqrt(Q(t)) - R | - r(t); its minimisers over t are the interval endpoints,
  * the circle crossings sqrt(Q)=R (kinks of the absolute value), and the
- * stationary points, whose squared equation (Q')^2 = 4 dr^2 Q is independent of
- * the sign branch and of R (identical to #geodist_minfun). Where phi(t) is
+ * stationary points, whose squared equation (Q')^2 = 4 dr^2 Q is independent
+ * of the sign branch and of R (identical to #geodist_minfun). Where phi(t) is
  * outside the span the nearest arc point is an endpoint, covered by the two
- * endpoint point-distance minimisations. Taking the minimum over the angle-gated
- * on-span candidates and the two endpoint candidates is exact.
+ * endpoint point-distance minimisations. Taking the minimum over the
+ * angle-gated on-span candidates and the two endpoint candidates is exact.
  */
 double
 geodist_segm_arc_mindist(double cx1, double cy1, double cx2, double cy2,
@@ -838,8 +838,8 @@ geodist_segm_arc_dt(double cx1, double cy1, double cx2, double cy2, double r1,
  * @brief Closest point on edge @p e to (px,py)
  */
 static void
-geodist_geom_closest_on_edge(double px, double py, const GeoDistEdge *e, double *qx,
-  double *qy)
+geodist_geom_closest_on_edge(double px, double py, const GeoDistEdge *e,
+  double *qx, double *qy)
 {
   double ux = e->x2 - e->x1, uy = e->y2 - e->y1;
   double l2 = ux * ux + uy * uy;
@@ -857,8 +857,8 @@ geodist_geom_closest_on_edge(double px, double py, const GeoDistEdge *e, double 
  * arc endpoint
  */
 static void
-geodist_geom_closest_on_arc(double px, double py, const GeoDistEdge *e, double *qx,
-  double *qy)
+geodist_geom_closest_on_arc(double px, double py, const GeoDistEdge *e,
+  double *qx, double *qy)
 {
   double vx = px - e->acx, vy = py - e->acy;
   double vl = hypot(vx, vy);
@@ -874,16 +874,22 @@ geodist_geom_closest_on_arc(double px, double py, const GeoDistEdge *e, double *
   else { *qx = e->x2; *qy = e->y2; }
 }
 
-/** @brief A segment's Morton (Z-order) key paired with its index, for sorting.
- * Sorting these lightweight handles rather than the ~128-byte edge payloads
- * keeps qsort from swapping whole edges. */
+/*****************************************************************************/
+
+/** 
+ * @brief A segment's Morton (Z-order) key paired with its index, for sorting.
+ * @details Sorting these lightweight handles rather than the ~128-byte edge
+ * payloads keeps qsort from swapping whole edges.
+ */
 typedef struct
 {
   uint32_t key;
   int idx;
 } GeoDistSortItem;
 
-/** @brief Spread the low 16 bits of @p v with one zero bit between each */
+/**
+ * @brief Spread the low 16 bits of @p v with one zero bit between each
+ */
 static uint32_t
 geodist_geom_morton_part(uint32_t v)
 {
@@ -895,7 +901,9 @@ geodist_geom_morton_part(uint32_t v)
   return v;
 }
 
-/** @brief Order GeoDistSortItem by Morton key */
+/**
+ * @brief Order GeoDistSortItem by Morton key
+ */
 static int
 geodist_geom_morton_cmp(const void *a, const void *b)
 {
@@ -913,8 +921,8 @@ geodist_geom_morton_cmp(const void *a, const void *b)
  * coarse for large coastal polygons, but the bucket boxes are tight.
  */
 static GeoDistBucket *
-geodist_geom_build_buckets(GeoDistEdge *segs, int n, double gxmin, double gymin,
-  double gxmax, double gymax, int *nbk_out)
+geodist_geom_build_buckets(GeoDistEdge *segs, int n, double gxmin,
+  double gymin, double gxmax, double gymax, int *nbk_out)
 {
   double sx = (gxmax > gxmin) ? 65535.0 / (gxmax - gxmin) : 0.0;
   double sy = (gymax > gymin) ? 65535.0 / (gymax - gymin) : 0.0;
@@ -975,10 +983,11 @@ geodist_geom_build_buckets(GeoDistEdge *segs, int n, double gxmin, double gymin,
 MEOS_TLS MeosArray *geodist_pip_results = NULL;
 
 /**
- * @brief Ray-casting interior test. Over the R-tree (relationship path) the
- * candidates are the edges overlapping the rightward ray box [x, xmax] x [y, y];
- * over the bucket hierarchy (nad path) a bucket holds a crossing edge only when y
- * is inside its y-range and its xmax reaches x, so distant buckets are skipped
+ * @brief Ray-casting interior test
+ * @details Over the R-tree (relationship path) the candidates are the edges
+ * overlapping the rightward ray box [x, xmax] x [y, y]; over the bucket
+ * hierarchy (nad path) a bucket holds a crossing edge only when y is inside
+ * its y-range and its xmax reaches x, so distant buckets are skipped
  * wholesale. Both yield the same crossing edges, and the even-odd parity is
  * order-independent, so the result matches.
  */
@@ -993,7 +1002,8 @@ geodist_geom_point_inside(double x, double y, const GeoDistGeom *g)
     int nc = rtree_search(g->rtree, RTREE_OVERLAPS, &query, geodist_pip_results);
     for (int j = 0; j < nc; j++)
       geodist_poly_seg_raycross(
-        &g->segs[*(int *) meos_array_get(geodist_pip_results, j)], x, y, &inside);
+        &g->segs[*(int *) meos_array_get(geodist_pip_results, j)], x, y,
+        &inside);
     return inside;
   }
   for (int b = 0; b < g->nbk; b++)
@@ -1003,9 +1013,7 @@ geodist_geom_point_inside(double x, double y, const GeoDistGeom *g)
       continue;
     int e = bk->start + bk->n;
     for (int i = bk->start; i < e; i++)
-    {
       geodist_poly_seg_raycross(&g->segs[i], x, y, &inside);
-    }
   }
   return inside;
 }
@@ -1696,12 +1704,11 @@ tdistance_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
       gserialized_is_empty(gs))
     return NULL;
 
-  /* Native GEOS-free branch: the temporal distance between a temporal
-   * geometric point with linear interpolation and a non-point clip-supported
-   * planar 2D geometry (including curves) is computed exactly, lifting the
-   * point-operand-only restriction below. Temporal geographies, step/discrete
-   * interpolation, 3D and non-clip-supported geometries keep the generic
-   * lifting path */
+  /* The temporal distance between a temporal geometric point with linear
+   * interpolation and a non-point clip-supported planar 2D geometry
+   * (including curves) is computed exactly, lifting the point-operand-only
+   * restriction below. Temporal geographies, step/discrete interpolation,
+   * 3D and non-clip-supported geometries keep the generic lifting path */
   if (temp->temptype == T_TGEOMPOINT && temp->subtype != TINSTANT &&
       MEOS_FLAGS_LINEAR_INTERP(temp->flags) &&
       ! MEOS_FLAGS_GET_Z(temp->flags))
@@ -1940,15 +1947,16 @@ nad_tpoint_tpoint_sync(const Temporal *temp1, const Temporal *temp2,
  * fast path applies to two temporal geos
  * @details Applies to linear temporal points of equal, non-instant subtype;
  * everything else (temporal geometries, step interpolation, instants, mixed
- * subtypes) keeps the @ref tdistance_tgeo_tgeo path
+ * subtypes) keeps the #tdistance_tgeo_tgeo path
  */
 static bool
 nad_tpoint_tpoint_sync_applies(const Temporal *temp1, const Temporal *temp2)
 {
-  return tpoint_type(temp1->temptype) &&
+  return 
+    tpoint_type(temp1->temptype) && temp1->temptype == temp2->temptype &&
+    temp1->subtype != TINSTANT && temp1->subtype == temp2->subtype &&
     MEOS_FLAGS_LINEAR_INTERP(temp1->flags) &&
-    MEOS_FLAGS_LINEAR_INTERP(temp2->flags) &&
-    temp1->subtype != TINSTANT && temp1->subtype == temp2->subtype;
+    MEOS_FLAGS_LINEAR_INTERP(temp2->flags);
 }
 
 /*****************************************************************************
@@ -2163,10 +2171,8 @@ nai_tpointseqset_linear_geo(const TSequenceSet *ss, const LWGEOM *geo)
   return tinstant_make_free(value, ss->temptype, t);
 }
 
-/*****************************************************************************/
-
 /*****************************************************************************
- * GEOS-free analytic distance between a temporal point and a geometry
+ * Analytic distance between a temporal point and a geometry
  *
  * A planar 2D linear temporal point is a moving disc of radius 0, so its
  * nearest approach, shortest line and nearest approach instant against a
@@ -2263,13 +2269,17 @@ tgeoseq_nad(const TSequence *seq, const GeoDistGeom *g, double *best)
 }
 
 /**
- * @brief GEOS-free nearest approach distance between a planar temporal point
+ * @brief Nearest approach distance between a planar temporal point
  * and a geometry; returns false when the geometry does not decompose
  */
 static bool
-nad_tgeo_geo_analytic(const Temporal *temp, const GSERIALIZED *gs,
+nad_tpoint_geo_analytic(const Temporal *temp, const GSERIALIZED *gs,
   double *result)
 {
+  /* Ensure validity of the arguments */
+  assert(temp); assert(gs); assert(result);
+  assert(tpoint_type(temp->temptype));
+
   GeoDistGeom g;
   if (! geodist_geom_build(gs, &g))
     return false;
@@ -2299,7 +2309,7 @@ nad_tgeo_geo_analytic(const Temporal *temp, const GSERIALIZED *gs,
  * @brief Update the shortest-line witness with one temporal point sequence
  */
 static void
-tgeoseq_shortestline(const TSequence *seq, const GeoDistGeom *g,
+tpointseq_shortestline(const TSequence *seq, const GeoDistGeom *g,
   GeoDistShortLine *w)
 {
   bool linear = MEOS_FLAGS_LINEAR_INTERP(seq->flags);
@@ -2324,12 +2334,15 @@ tgeoseq_shortestline(const TSequence *seq, const GeoDistGeom *g,
 }
 
 /**
- * @brief GEOS-free shortest line between a planar temporal point and a
+ * @brief Shortest line between a planar temporal point and a
  * geometry; returns NULL when the geometry does not decompose
  */
 static GSERIALIZED *
-shortestline_tgeo_geo_analytic(const Temporal *temp, const GSERIALIZED *gs)
+shortestline_tpoint_geo_analytic(const Temporal *temp, const GSERIALIZED *gs)
 {
+  /* Ensure validity of the arguments */
+  assert(temp); assert(gs); assert(tpoint_type(temp->temptype));
+
   GeoDistGeom g;
   if (! geodist_geom_build(gs, &g))
     return NULL;
@@ -2343,12 +2356,12 @@ shortestline_tgeo_geo_analytic(const Temporal *temp, const GSERIALIZED *gs)
     geodist_segm_shortestline(p->x, p->y, 0.0, p->x, p->y, 0.0, &g, &w);
   }
   else if (temp->subtype == TSEQUENCE)
-    tgeoseq_shortestline((TSequence *) temp, &g, &w);
+    tpointseq_shortestline((TSequence *) temp, &g, &w);
   else
   {
     const TSequenceSet *ss = (TSequenceSet *) temp;
     for (int i = 0; i < ss->count && ! (w.set && w.d <= 0.0); i++)
-      tgeoseq_shortestline(TSEQUENCESET_SEQ_N(ss, i), &g, &w);
+      tpointseq_shortestline(TSEQUENCESET_SEQ_N(ss, i), &g, &w);
   }
   geodist_geom_free(&g);
   if (! w.set)
@@ -2399,13 +2412,17 @@ tgeoseq_nai(const TSequence *seq, const GeoDistGeom *g, GeoDistNai *w)
 }
 
 /**
- * @brief GEOS-free nearest approach instant between a planar temporal point
+ * @brief Nearest approach instant between a planar temporal point
  * and a geometry; returns false when the geometry does not decompose
  */
 static bool
-nai_tgeo_geo_analytic(const Temporal *temp, const GSERIALIZED *gs,
+nai_tpoint_geo_analytic(const Temporal *temp, const GSERIALIZED *gs,
   TimestampTz *result)
 {
+  /* Ensure validity of the arguments */
+  assert(temp); assert(gs); assert(result);
+  assert(tpoint_type(temp->temptype));
+
   GeoDistGeom g;
   if (! geodist_geom_build(gs, &g))
     return false;
@@ -2454,12 +2471,12 @@ nai_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
       gserialized_is_empty(gs))
     return NULL;
 
-  /* Planar 2D temporal point: the GEOS-free analytic engine at radius 0 */
+  /* Planar 2D temporal point: the analytic engine at radius 0 */
   if (tpoint_type(temp->temptype) && ! MEOS_FLAGS_GET_GEODETIC(temp->flags) &&
       ! MEOS_FLAGS_GET_Z(temp->flags))
   {
     TimestampTz t;
-    if (nai_tgeo_geo_analytic(temp, gs, &t))
+    if (nai_tpoint_geo_analytic(temp, gs, &t))
     {
       Datum value;
       temporal_value_at_timestamptz(temp, t, false, &value);
@@ -2559,13 +2576,13 @@ nad_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
       gserialized_is_empty(gs))
     return DBL_MAX;
 
-  /* Planar 2D temporal point: the GEOS-free analytic engine at radius 0,
+  /* Planar 2D temporal point: the analytic engine at radius 0,
    * avoiding the trajectory materialisation */
   if (tpoint_type(temp->temptype) && ! MEOS_FLAGS_GET_GEODETIC(temp->flags) &&
       ! MEOS_FLAGS_GET_Z(temp->flags))
   {
     double result;
-    if (nad_tgeo_geo_analytic(temp, gs, &result))
+    if (nad_tpoint_geo_analytic(temp, gs, &result))
       return result;
   }
 
@@ -2775,11 +2792,11 @@ shortestline_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
   if (geodetic && ! ensure_has_not_Z_geo(gs))
     return NULL;
 
-  /* Planar 2D temporal point: the GEOS-free analytic engine at radius 0 */
-  if (! geodetic && tpoint_type(temp->temptype) &&
+  /* Planar 2D temporal point: the analytic engine at radius 0 */
+  if (tpoint_type(temp->temptype) && ! geodetic &&
       ! MEOS_FLAGS_GET_Z(temp->flags))
   {
-    GSERIALIZED *line = shortestline_tgeo_geo_analytic(temp, gs);
+    GSERIALIZED *line = shortestline_tpoint_geo_analytic(temp, gs);
     if (line)
       return line;
   }
@@ -2883,7 +2900,7 @@ stbox_spatial_distance(const STBox *box1, const STBox *box2)
 }
 
 /*****************************************************************************
- * Threshold-aware plane-sweep spatial-min kernel (Option B'')
+ * Threshold-aware plane-sweep spatial-min kernel
  *
  * Walks two tgeompoint TSequence instant arrays directly via
  * `lw_dist2d_seg_seg`, no `tpoint_trajectory()` materialisation, no
@@ -2894,6 +2911,9 @@ stbox_spatial_distance(const STBox *box1, const STBox *box2)
  * for the 2D, planar, tgeompoint, linear-interpolation case.
  *****************************************************************************/
 
+/**
+ * @brief
+ */
 typedef struct
 {
   int idx;
@@ -2903,6 +2923,9 @@ typedef struct
   float maxy;
 } SegBox;
 
+/**
+ * @brief
+ */
 static int
 segbox_cmp_minx(const void *a, const void *b)
 {
@@ -2911,6 +2934,9 @@ segbox_cmp_minx(const void *a, const void *b)
   return (da < db) ? -1 : (da > db ? 1 : 0);
 }
 
+/**
+ * @brief
+ */
 static double
 mindist_tpointseq_tpointseq_threshold(const TSequence *seq1,
   const TSequence *seq2, double threshold)
@@ -3010,7 +3036,9 @@ mindist_tpointseq_tpointseq_threshold(const TSequence *seq1,
   return dl.distance;
 }
 
-/* Dispatch across subtypes, threading the running threshold. */
+/**
+ * @brief Dispatch across subtypes, threading the running threshold
+ */
 static double
 mindist_tpoint_tpoint_threshold(const Temporal *temp1, const Temporal *temp2,
   double threshold)
@@ -3067,14 +3095,14 @@ double
 mindistance_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
   double threshold)
 {
-  VALIDATE_NOT_NULL(temp1, DBL_MAX);
-  VALIDATE_NOT_NULL(temp2, DBL_MAX);
-  VALIDATE_TGEO(temp1, DBL_MAX);
-  VALIDATE_TGEO(temp2, DBL_MAX);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(temp1, DBL_MAX); VALIDATE_NOT_NULL(temp2, DBL_MAX);
+  VALIDATE_TGEO(temp1, DBL_MAX); VALIDATE_TGEO(temp2, DBL_MAX);
   if (! ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)) ||
       ! ensure_same_dimensionality(temp1->flags, temp2->flags) ||
       ! ensure_same_geodetic(temp1->flags, temp2->flags))
     return DBL_MAX;
+
   /* Outer STBox spatial-distance prune: every point on either trajectory
    * lies within the respective STBox, so the spatial distance between the
    * boxes is a lower bound on the minimum distance; when it already meets or
@@ -3091,12 +3119,10 @@ mindistance_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
     if (stbox_spatial_distance(bbox1, bbox2) >= threshold)
       return threshold;
   }
-  bool inline_eligible =
-    ! MEOS_FLAGS_GET_Z(temp1->flags) &&
+  bool inline_eligible = ! MEOS_FLAGS_GET_Z(temp1->flags) &&
     ! MEOS_FLAGS_GET_GEODETIC(temp1->flags) &&
     MEOS_FLAGS_LINEAR_INTERP(temp1->flags) &&
-    tpoint_type(temp1->temptype) &&
-    tpoint_type(temp2->temptype) &&
+    tpoint_type(temp1->temptype) && tpoint_type(temp2->temptype) &&
     temp1->subtype != TINSTANT && temp2->subtype != TINSTANT;
   if (inline_eligible)
     return mindist_tpoint_tpoint_threshold(temp1, temp2, threshold);
@@ -3116,7 +3142,9 @@ mindistance_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
   return (d < threshold) ? d : threshold;
 }
 
-/* qsort comparator: pair record ordered by bbox-distance ascending. */
+/**
+ * @brief qsort comparator: pair record ordered by bbox-distance ascending.
+ */
 typedef struct
 {
   int i;
@@ -3124,6 +3152,9 @@ typedef struct
   double bd;
 } TgeoarrPair;
 
+/**
+ * @brief
+ */
 static int
 tgeoarr_pair_cmp(const void *a, const void *b)
 {
@@ -3136,16 +3167,16 @@ tgeoarr_pair_cmp(const void *a, const void *b)
 
 /**
  * @ingroup meos_geo_distance
- * @brief Return the exact minimum spatial distance between two arrays of
- * temporal geos
+ * @brief Return the minimum spatial distance between two arrays of temporal
+ * geos
  * @details Computes the same value as
  * `ST_Distance(ST_Collect(trajectory(arr1[*])), ST_Collect(trajectory(arr2[*])))`
  * but uses each input's STBox as a sound lower-bound prefilter: trip pairs
  * are processed in ascending bbox-distance order, and the iteration short
  * circuits once the running minimum is provably smaller than every
  * remaining pair's lower bound.  The per-pair distance still goes through
- * `geom_distance2d` (liblwgeom segment-pair sweep, no GEOS call), so the
- * result is bit-equivalent to the materialised aggregate form.
+ * `geom_distance2d` (liblwgeom segment-pair sweep), so the result is
+ * bit-equivalent to the materialised aggregate form.
  * @param[in] arr1,arr2 Arrays of temporal geos (each element must be
  *   non-NULL and share SRID / dimensionality with the rest)
  * @param[in] count1,count2 Array lengths (must be > 0)
@@ -3157,15 +3188,14 @@ double
 mindistance_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
   const Temporal **arr2, int count2)
 {
-  VALIDATE_NOT_NULL(arr1, DBL_MAX);
-  VALIDATE_NOT_NULL(arr2, DBL_MAX);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(arr1, DBL_MAX); VALIDATE_NOT_NULL(arr2, DBL_MAX);
   if (count1 <= 0 || count2 <= 0)
     return DBL_MAX;
   for (int i = 0; i < count1; i++)
     VALIDATE_TGEO(arr1[i], DBL_MAX);
   for (int j = 0; j < count2; j++)
     VALIDATE_TGEO(arr2[j], DBL_MAX);
-
   /* Soundness gate: all inputs share SRID, dimensionality, geodetic flag */
   int32 srid = tspatial_srid(arr1[0]);
   int16 flags = arr1[0]->flags;

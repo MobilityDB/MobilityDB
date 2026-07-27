@@ -59,6 +59,7 @@ eacomp_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
   Datum (*func)(Datum, Datum, MeosType), bool ever)
 {
   /* Ensure the validity of the arguments */
+  assert(func);
   if (! ensure_valid_tcbuffer_cbuffer(temp, cb))
     return -1;
   return eacomp_temporal_base(temp, PointerGetDatum(cb), func, ever);
@@ -261,6 +262,7 @@ tcomp_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp,
   Datum (*func)(Datum, Datum, MeosType))
 {
   /* Ensure the validity of the arguments */
+  assert(func);
   if (! ensure_valid_tcbuffer_cbuffer(temp, cb))
     return NULL;
   return tcomp_base_temporal(PointerGetDatum(cb), temp, func);
@@ -278,6 +280,7 @@ tcomp_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
   Datum (*func)(Datum, Datum, MeosType))
 {
   /* Ensure the validity of the arguments */
+  assert(func);
   if (! ensure_valid_tcbuffer_cbuffer(temp, cb))
     return NULL;
   return tcomp_temporal_base(temp, PointerGetDatum(cb), func);

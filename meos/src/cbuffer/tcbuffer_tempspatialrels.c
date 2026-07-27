@@ -79,9 +79,7 @@ Temporal *
 tspatialrel_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
   bool invert, datum_func2 func)
 {
-  VALIDATE_TCBUFFER(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
-  /* Ensure the validity of the arguments (the 2D/planar constraint is
-   * centralized in ensure_valid_tcbuffer_geo) */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
 
@@ -105,7 +103,6 @@ Temporal *
 tspatialrel_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   datum_func2 func)
 {
-  VALIDATE_TCBUFFER(temp1, NULL); VALIDATE_TCBUFFER(temp2, NULL);
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_tcbuffer(temp1, temp2))
     return NULL;
@@ -554,13 +551,13 @@ tinterrel_tcbufferseqset_geom(const TSequenceSet *ss, const GSERIALIZED *gs,
 }
 
 /*****************************************************************************
- * Native (GEOS-free) temporal intersects/disjoint with a geometry
+ * Native temporal intersects/disjoint with a geometry
  *
- * These mirror the traversed-area functions above but discover the intersecting
- * sub-periods from the exact swept-capsule distance kernel instead of
- * linearizing the circular buffer through GEOS. They are used for every
- * non-curved geometry; the traversed-area functions remain the fallback for
- * curved input.
+ * These mirror the traversed-area functions above but discover the
+ * intersecting sub-periods from the exact swept-capsule distance kernel
+ * instead of linearizing the circular buffer through GEOS. They are used for
+ * every non-curved geometry; the traversed-area functions remain the fallback
+ * for curved input.
  *****************************************************************************/
 
 /**
@@ -587,8 +584,8 @@ tinterrel_tcbufferseq_disc_geo_native(const TSequence *seq, bool tinter,
   for (int i = 0; i < seq->count; i++)
   {
     const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-    if (tcbuffer_disc_within_ctx(DatumGetCbufferP(tinstant_value_p(inst)), dist,
-        ctx))
+    if (tcbuffer_disc_within_ctx(DatumGetCbufferP(tinstant_value_p(inst)),
+          dist, ctx))
     {
       if (! s)
         s = value_set(TimestampTzGetDatum(inst->t), T_TIMESTAMPTZ);
@@ -847,7 +844,7 @@ tinterrel_tcbufferseqset_geo_native(const TSequenceSet *ss, bool tinter,
 }
 
 /*****************************************************************************
- * Ever/always intersects and disjoint (GEOS-free)
+ * Ever/always intersects and disjoint
  *
  * aIntersects and eDisjoint are the two ever/always intersection predicates
  * that do NOT reduce to the nearest-approach running minimum used by
@@ -856,8 +853,8 @@ tinterrel_tcbufferseqset_geo_native(const TSequenceSet *ss, bool tinter,
  * sub-period set as the temporal relationship and test whether it COVERS the
  * whole definition time, with early exit on the first uncovered (disjoint)
  * instant or sequence:
- *   eDisjoint(temp, gs) ⟺ ∃t disk(t) ∩ gs = ∅ ⟺ the intersecting sub-periods
- *     do not cover the definition time;
+ *   eDisjoint(temp, gs) ⟺ ∃t disk(t) ∩ gs = ∅ ⟺ the intersecting 
+ *     sub-periods do not cover the definition time;
  *   aIntersects(temp, gs) ⟺ ¬eDisjoint(temp, gs).
  * Curved or unsupported geometry (no context) returns -1 so the caller keeps
  * the exact traversed-area path.
@@ -957,7 +954,6 @@ static Temporal *
 tinterrel_tcbuffer_geo_dist(const Temporal *temp, const GSERIALIZED *gs,
   bool tinter, double dist)
 {
-  VALIDATE_TCBUFFER(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
@@ -979,7 +975,7 @@ tinterrel_tcbuffer_geo_dist(const Temporal *temp, const GSERIALIZED *gs,
       /* Computing disjoint */
       temporal_from_base_temp(BoolGetDatum(true), T_TBOOL, temp);
 
-  /* Native GEOS-free path for non-curved geometry; the traversed-area path
+  /* Native path for non-curved geometry; the traversed-area path
    * remains the fallback for curved input */
   void *ctx = tcbuffer_geo_ctx_make(gs);
   Temporal *result = NULL;
@@ -1050,10 +1046,10 @@ Temporal *
 tinterrel_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
   bool tinter)
 {
-  VALIDATE_TCBUFFER(temp, NULL); VALIDATE_NOT_NULL(cb, NULL);
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_cbuffer(temp, cb))
     return NULL;
+
   GSERIALIZED *geo = cbuffer_to_geom(cb);
   Temporal *result = tinterrel_tcbuffer_geo(temp, geo, tinter);
   pfree(geo);
@@ -1106,7 +1102,6 @@ Temporal *
 tspatialrel_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
   bool invert, datum_func2 func)
 {
-  VALIDATE_TCBUFFER(temp, NULL); VALIDATE_NOT_NULL(cb, NULL);
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_cbuffer(temp, cb))
     return NULL;
@@ -1118,10 +1113,10 @@ tspatialrel_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
  * Temporal contains
  *****************************************************************************/
 
-/* Native GEOS-free temporal contains (@p strict true) / covers (@p strict
- * false) of a moving disk by a geometry, defined with the touch machinery
- * below; returns NULL for curved or unsupported geometry so the caller keeps
- * the per-instant lifting path */
+/* Native temporal contains (@p strict true) / covers (@p strict false) of a
+ * moving disk by a geometry, defined with the touch machinery below; returns
+ * NULL for curved or unsupported geometry so the caller keeps the per-instant
+ * lifting path */
 static Temporal *tcontains_geo_tcbuffer_native(const Temporal *temp,
   const GSERIALIZED *gs, bool strict);
 
@@ -1136,11 +1131,13 @@ static Temporal *tcontains_geo_tcbuffer_native(const Temporal *temp,
 Temporal *
 tcontains_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp)
 {
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tcbuffer_geo(temp, gs))
+    return NULL;
   Temporal *res = tcontains_geo_tcbuffer_native(temp, gs, true);
   if (res)
     return res;
-  return tspatialrel_tcbuffer_geo(temp, gs, INVERT,
-    &datum_cbuffer_contains);
+  return tspatialrel_tcbuffer_geo(temp, gs, INVERT, &datum_cbuffer_contains);
 }
 
 /**
@@ -1171,7 +1168,6 @@ tcontains_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 Temporal *
 tcontains_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp)
 {
-  VALIDATE_TCBUFFER(temp, NULL); VALIDATE_NOT_NULL(cb, NULL);
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_cbuffer(temp, cb))
     return NULL;
@@ -1190,7 +1186,6 @@ tcontains_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp)
 Temporal *
 tcontains_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
 {
-  VALIDATE_TCBUFFER(temp, NULL); VALIDATE_NOT_NULL(cb, NULL);
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_cbuffer(temp, cb))
     return NULL;
@@ -1226,11 +1221,13 @@ tcontains_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 Temporal *
 tcovers_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp)
 {
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tcbuffer_geo(temp, gs))
+    return NULL;
   Temporal *res = tcontains_geo_tcbuffer_native(temp, gs, false);
   if (res)
     return res;
-  return tspatialrel_tcbuffer_geo(temp, gs, INVERT,
-    &datum_cbuffer_covers);
+  return tspatialrel_tcbuffer_geo(temp, gs, INVERT, &datum_cbuffer_covers);
 }
 
 /**
@@ -1261,8 +1258,7 @@ tcovers_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 Temporal *
 tcovers_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp)
 {
-  return tspatialrel_tcbuffer_cbuffer(temp, cb, INVERT,
-    &datum_cbuffer_covers);
+  return tspatialrel_tcbuffer_cbuffer(temp, cb, INVERT, &datum_cbuffer_covers);
 }
 
 /**
@@ -1441,7 +1437,7 @@ tintersects_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 }
 
 /*****************************************************************************
- * Temporal touches (GEOS-free)
+ * Temporal touches
  *
  * A moving disk touches a geometry at the INSTANTS where its boundary meets the
  * geometry boundary with disjoint interiors (#tcbuffer_disc_touch_ctx /
@@ -1665,7 +1661,7 @@ ttouches_tcbufferseqset_geo_native(const TSequenceSet *ss, const void *ctx)
 }
 
 /*****************************************************************************
- * Temporal contains and covers (GEOS-free)
+ * Temporal contains and covers
  *
  * A geometry contains (@p strict) or covers a moving disk on the sub-periods
  * where the disk centre lies in a polygon of the geometry and the disk clears
@@ -1928,14 +1924,14 @@ tcontains_tcbufferseqset_geo_native(const TSequenceSet *ss, const void *ctx,
 }
 
 /**
- * @brief Native GEOS-free temporal contains/covers of a moving disk by a
- * geometry (NULL for curved or unsupported geometry so the caller falls back)
+ * @brief Native temporal contains/covers of a moving disk by a geometry (NULL
+ * for curved or unsupported geometry so the caller falls back)
  */
 static Temporal *
 tcontains_geo_tcbuffer_native(const Temporal *temp, const GSERIALIZED *gs,
   bool strict)
 {
-  VALIDATE_TCBUFFER(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
 
@@ -1973,7 +1969,7 @@ tcontains_geo_tcbuffer_native(const Temporal *temp, const GSERIALIZED *gs,
 }
 
 /*****************************************************************************
- * Ever/always touches (GEOS-free)
+ * Ever/always touches
  *
  * eTouches and aTouches derive from the same contact set as the temporal
  * touches Boolean, so they are exactly consistent with ever/always(tTouches).
@@ -2081,7 +2077,7 @@ eatouches_tcbuffer_geo_native(const Temporal *temp, const GSERIALIZED *gs,
 }
 
 /*****************************************************************************
- * Ever/always contains and covers (GEOS-free)
+ * Ever/always contains and covers
  *
  * eContains/aContains (and the covers variants) derive from the same
  * interior/clearance test as the temporal contains Boolean, so they are exactly
@@ -2262,7 +2258,7 @@ eacontains_tcbuffer_geo_native(const Temporal *temp, const GSERIALIZED *gs,
 Temporal *
 ttouches_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  VALIDATE_TCBUFFER(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
 
@@ -2274,9 +2270,8 @@ ttouches_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
   if (! overlaps_stbox_stbox(&box1, &box2))
     return temporal_from_base_temp(BoolGetDatum(false), T_TBOOL, temp);
 
-  /* Native GEOS-free path for non-curved geometry: the moving-disk boundary
-   * contact instants. Curved or unsupported geometry keeps the traversed-area
-   * path. */
+  /* Native path for non-curved geometry: the moving-disk boundary contact 
+   * instants. Curved or unsupported geometry keeps the traversed-area path. */
   void *ctx = tcbuffer_geo_ctx_make(gs);
   if (! ctx)
     return tspatialrel_tcbuffer_geo(temp, gs, INVERT_NO, &datum_cbuffer_touches);
@@ -2373,7 +2368,6 @@ ttouches_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 Temporal *
 tdwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
 {
-  VALIDATE_TCBUFFER(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
@@ -2411,7 +2405,6 @@ tdwithin_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp, double dist)
 Temporal *
 tdwithin_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb, double dist)
 {
-  VALIDATE_TCBUFFER(temp, NULL); VALIDATE_NOT_NULL(cb, NULL);
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_cbuffer(temp, cb) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
@@ -2438,7 +2431,6 @@ Temporal *
 tdwithin_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   double dist)
 {
-  VALIDATE_TCBUFFER(temp1, NULL); VALIDATE_TCBUFFER(temp2, NULL);
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_tcbuffer(temp1, temp2) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))

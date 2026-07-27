@@ -509,7 +509,8 @@ trgeo_seq_cont_split_each_n_iter(const TSequence *seq,
  * @csqlfn #Trgeometry_split_each_n_stboxes()
  */
 STBox *
-trgeometry_split_each_n_stboxes(const Temporal *temp, int elems_per_box, int *count)
+trgeometry_split_each_n_stboxes(const Temporal *temp, int elems_per_box,
+  int *count)
 {
   assert(temp); assert(count);
   assert(temp->temptype == T_TRGEOMETRY);

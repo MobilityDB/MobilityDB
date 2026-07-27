@@ -211,7 +211,6 @@ ensure_valid_cbuffer_cbuffer(const Cbuffer *cb1, const Cbuffer *cb2)
 bool
 ensure_valid_cbufferset_cbuffer(const Set *s, const Cbuffer *cb)
 {
-  /* Ensure the validity of the arguments */
   VALIDATE_CBUFFERSET(s, false); VALIDATE_NOT_NULL(cb, false);
   if (! ensure_same_srid(spatialset_srid(s), cbuffer_srid(cb)))
     return false;
@@ -708,11 +707,10 @@ cbuffer_to_stbox(const Cbuffer *cb)
  * @param[in] cb Circular buffer
  * @csqlfn #Cbuffer_point()
  */
-const GSERIALIZED *
+inline const GSERIALIZED *
 cbuffer_point_p(const Cbuffer *cb)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(cb, NULL);
+  assert(cb);
   return (const GSERIALIZED *) (&cb->point);
 }
 
@@ -957,7 +955,6 @@ cbuffer_distance(const Cbuffer *cb1, const Cbuffer *cb2)
 double
 distance_cbuffer_cbuffer(const Cbuffer *cb1, const Cbuffer *cb2)
 {
-  VALIDATE_NOT_NULL(cb1, -1.0); VALIDATE_NOT_NULL(cb2, -1.0);
   /* Ensure the validity of the arguments */
   if (! ensure_valid_cbuffer_cbuffer(cb1, cb2))
     return -1.0;
@@ -988,7 +985,6 @@ datum_cbuffer_distance(Datum cb1, Datum cb2)
 double
 distance_cbuffer_geo(const Cbuffer *cb, const GSERIALIZED *gs)
 {
-  VALIDATE_NOT_NULL(cb, -1.0); VALIDATE_NOT_NULL(gs, -1.0);
   /* Ensure the validity of the arguments */
   if (! ensure_valid_cbuffer_geo(cb, gs) || gserialized_is_empty(gs))
     return -1.0;
@@ -1008,7 +1004,6 @@ distance_cbuffer_geo(const Cbuffer *cb, const GSERIALIZED *gs)
 double
 distance_cbuffer_stbox(const Cbuffer *cb, const STBox *box)
 {
-  VALIDATE_NOT_NULL(cb, -1.0); VALIDATE_NOT_NULL(box, -1.0);
   /* Ensure the validity of the arguments */
   if (! ensure_valid_cbuffer_stbox(cb, box))
     return -1.0;
@@ -1188,7 +1183,7 @@ int
 spatialrel_cbuffer(const Cbuffer *cb1, const Cbuffer *cb2,
   int (*func)(const Cbuffer *, const Cbuffer *))
 {
-  VALIDATE_NOT_NULL(cb1, -1); VALIDATE_NOT_NULL(cb2, -1);
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_cbuffer_cbuffer(cb1, cb2))
     return -1;
   return func(cb1, cb2);
@@ -1264,7 +1259,7 @@ touches_cbuffer_cbuffer(const Cbuffer *cb1, const Cbuffer *cb2)
 int
 dwithin_cbuffer_cbuffer(const Cbuffer *cb1, const Cbuffer *cb2, double dist)
 {
-  VALIDATE_NOT_NULL(cb1, -1); VALIDATE_NOT_NULL(cb2, -1);
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_cbuffer_cbuffer(cb1, cb2))
     return -1;
   return cbuffer_dwithin(cb1, cb2, dist);
@@ -1425,8 +1420,8 @@ cbuffer_cmp(const Cbuffer *cb1, const Cbuffer *cb2)
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(cb1, false); VALIDATE_NOT_NULL(cb2, false);
 
-  GSERIALIZED *gs1 = (GSERIALIZED *) (&cb1->point);
-  GSERIALIZED *gs2 = (GSERIALIZED *) (&cb2->point);
+  const GSERIALIZED *gs1 = (GSERIALIZED *) (&cb1->point);
+  const GSERIALIZED *gs2 = (GSERIALIZED *) (&cb2->point);
   int32_t srid1 = gserialized_get_srid(gs1);
   int32_t srid2 = gserialized_get_srid(gs2);
   /* Compare SRID */

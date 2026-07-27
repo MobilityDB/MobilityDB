@@ -54,6 +54,9 @@
  * Static adapter — vertex → geodetic point
  *****************************************************************************/
 
+/**
+ * @brief 
+ */
 GSERIALIZED *
 h3_vertex_to_gs_point(H3Index vertex)
 {

@@ -58,6 +58,9 @@
  * Unit-string dispatcher (h3-pg: miscellaneous.c)
  *****************************************************************************/
 
+/**
+ * @brief 
+ */
 H3Unit
 h3_unit_from_cstring(const char *unit)
 {
@@ -83,6 +86,9 @@ h3_unit_from_cstring(const char *unit)
  * Static adapters — libh3 metric dispatch by unit
  *****************************************************************************/
 
+/**
+ * @brief 
+ */
 double
 h3_cell_area_meos(H3Index cell, H3Unit unit)
 {
@@ -106,6 +112,9 @@ h3_cell_area_meos(H3Index cell, H3Unit unit)
   return area;
 }
 
+/**
+ * @brief 
+ */
 double
 h3_edge_length_meos(H3Index edge, H3Unit unit)
 {
@@ -129,6 +138,9 @@ h3_edge_length_meos(H3Index edge, H3Unit unit)
   return len;
 }
 
+/**
+ * @brief 
+ */
 double
 h3_gs_great_circle_distance_meos(const GSERIALIZED *a, const GSERIALIZED *b,
   H3Unit unit)

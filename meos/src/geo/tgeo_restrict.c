@@ -2098,9 +2098,9 @@ tgeo_restrict_geom(const Temporal *temp, const GSERIALIZED *gs,
   if (! overlaps_stbox_stbox(&box1, &box2))
     return atfunc ? NULL : temporal_copy(temp);
 
-  /* Native GEOS-free fast path for a temporal geometry point with linear
-   * interpolation over a geometry the clip engine supports, avoiding the GEOS
-   * ST_Intersection call. Instantaneous values, step/discrete interpolation,
+  /* Native fast path for a temporal geometry point with linear interpolation
+   * over a geometry the clip engine supports, avoiding the GEOS call done by
+   * ST_Intersection. Instantaneous values, step/discrete interpolation,
    * geodetic points, non-point temporal geos, and geometries with types the
    * clip does not handle fall through to the general path below. */
   if (temp->temptype == T_TGEOMPOINT && temp->subtype != TINSTANT &&

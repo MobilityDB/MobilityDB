@@ -157,7 +157,7 @@ meos_pc_patch_serialized_size(const PCPATCH *patch)
  */
 static size_t
 pc_patch_stats_serialize(uint8_t *buf, const PCSCHEMA *schema,
-                         const PCSTATS *stats)
+  const PCSTATS *stats)
 {
   size_t sz = schema->size;
   memcpy(buf, stats->min.data, sz);
@@ -373,19 +373,16 @@ meos_pc_patch_serialize(const PCPATCH *patch_in, void *userdata)
 SERIALIZED_PATCH *
 meos_pc_patch_serialize_to_uncompressed(const PCPATCH *patch_in)
 {
-  PCPATCH *patch = (PCPATCH *)patch_in;
+  PCPATCH *patch = (PCPATCH *) patch_in;
   SERIALIZED_PATCH *serpatch;
 
   if (patch->type != PC_NONE)
-  {
     patch = pc_patch_uncompress(patch_in);
-  }
 
   serpatch = pc_patch_uncompressed_serialize(patch);
 
   if (patch != patch_in)
     pc_patch_free(patch);
-
   return serpatch;
 }
 
@@ -402,7 +399,7 @@ meos_pc_patch_serialize_to_uncompressed(const PCPATCH *patch_in)
  */
 static PCPATCH *
 pc_patch_uncompressed_deserialize(const SERIALIZED_PATCH *serpatch,
-                                  const PCSCHEMA *schema)
+  const PCSCHEMA *schema)
 {
   uint8_t *buf;
   size_t stats_size = pc_stats_size(schema);
@@ -441,7 +438,7 @@ pc_patch_uncompressed_deserialize(const SERIALIZED_PATCH *serpatch,
  */
 static PCPATCH *
 pc_patch_dimensional_deserialize(const SERIALIZED_PATCH *serpatch,
-                                 const PCSCHEMA *schema)
+  const PCSCHEMA *schema)
 {
   PCPATCH_DIMENSIONAL *patch;
   int i;
@@ -489,7 +486,7 @@ pc_patch_dimensional_deserialize(const SERIALIZED_PATCH *serpatch,
  */
 static PCPATCH *
 pc_patch_lazperf_deserialize(const SERIALIZED_PATCH *serpatch,
-                             const PCSCHEMA *schema)
+  const PCSCHEMA *schema)
 {
   PCPATCH_LAZPERF *patch;
   uint32_t lazperfsize;
@@ -535,7 +532,7 @@ pc_patch_lazperf_deserialize(const SERIALIZED_PATCH *serpatch,
  */
 PCPATCH *
 meos_pc_patch_deserialize(const SERIALIZED_PATCH *serpatch,
-                          const PCSCHEMA *schema)
+  const PCSCHEMA *schema)
 {
   switch (serpatch->compression)
   {
@@ -551,3 +548,5 @@ meos_pc_patch_deserialize(const SERIALIZED_PATCH *serpatch,
 }
 
 #endif /* !PC_API_HAS_SERIALIZE */
+
+/*****************************************************************************/

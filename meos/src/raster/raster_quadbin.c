@@ -88,9 +88,9 @@ static const uint64_t QB_B[6] = {
 
 /**
  * @brief Morton-decode a QUADBIN cell into Web-Mercator tile coordinates.
- *
- * Canonical compact_bits algorithm matching CARTO quadbin-js quadbinCellToTile:
- * extract even/odd bits, compact right (shifts 1→2→4→8→16), descale from 2^26.
+ * @details Canonical compact_bits algorithm matching CARTO quadbin-js
+ * quadbinCellToTile: extract even/odd bits, compact right (shifts 1→2→4→8→16),
+ * descale from 2^26.
  */
 static void
 qb_to_xyz(uint64_t cell, uint32_t *tx, uint32_t *ty, uint32_t *tz)
@@ -117,9 +117,9 @@ qb_to_xyz(uint64_t cell, uint32_t *tx, uint32_t *ty, uint32_t *tz)
 
 /**
  * @brief Morton-encode tile (x, y, z) into a QUADBIN cell.
- *
- * Canonical spread_bits algorithm matching CARTO quadbin-js quadbinTileToCell:
- * scale to 2^26 grid, spread left (shifts 16→8→4→2→1), interleave x/y.
+ * @details Canonical spread_bits algorithm matching CARTO quadbin-js
+ * quadbinTileToCell: scale to 2^26 grid, spread left (shifts 16→8→4→2→1),
+ * interleave x/y.
  */
 static uint64_t
 xyz_to_qb(uint32_t tx, uint32_t ty, uint32_t tz)
@@ -143,15 +143,12 @@ xyz_to_qb(uint32_t tx, uint32_t ty, uint32_t tz)
 
 /**
  * @brief Compute the WGS-84 bounding box and Mercator top/bottom of a tile.
- *
- * The Mercator top/bot values are kept in the caller-visible representation
- * to avoid recomputing them in the hot per-instant loop.
+ * @details The Mercator top/bot values are kept in the caller-visible
+ * representation to avoid recomputing them in the hot per-instant loop.
  */
 static void
-qb_bbox(uint32_t tx, uint32_t ty, uint32_t tz,
-        double *xmin, double *xmax,
-        double *ymin, double *ymax,
-        double *top_merc, double *bot_merc)
+qb_bbox(uint32_t tx, uint32_t ty, uint32_t tz, double *xmin, double *xmax,
+  double *ymin, double *ymax, double *top_merc, double *bot_merc)
 {
   double n = (double)(UINT64_C(1) << tz);
   *xmin = (double) tx       / n * 360.0 - 180.0;
@@ -165,16 +162,14 @@ qb_bbox(uint32_t tx, uint32_t ty, uint32_t tz,
 /**
  * @brief Derive the QUADBIN cell of a Web-Mercator raster tile from its
  * EPSG:3857 georeferencing.
- *
- * A Raquet tile is a single QUADBIN cell of the Web-Mercator tile pyramid, so
- * its EPSG:3857 origin and pixel resolution determine the cell exactly. The
- * pixel extent gives the zoom (a tile of zoom @p z spans 2*QB_MERC_MAX / 2^z
- * metres); the top-left origin gives the tile column and row. The raster must
- * be a single axis-aligned Web-Mercator tile: a non-square extent, an extent
- * that is not a power-of-two fraction of the world, or an origin off the tile
- * grid are rejected (mixing georeferencing that is not a QUADBIN tile is an
- * error, not a value to coerce).
- *
+ * @details A Raquet tile is a single QUADBIN cell of the Web-Mercator tile 
+ * pyramid, so its EPSG:3857 origin and pixel resolution determine the cell 
+ * exactly. Thepixel extent gives the zoom (a tile of zoom
+ * @p z spans 2*QB_MERC_MAX / 2^z metres); the top-left origin gives the tile
+ * column and row. The raster must be a single axis-aligned Web-Mercator tile:
+ * a non-square extent, an extent that is not a power-of-two fraction of the
+ * world, or an origin off the tile grid are rejected (mixing georeferencing
+ * that is not a QUADBIN tile is an error, not a value to coerce).
  * @param[in] origin_x,origin_y Top-left corner of the raster in EPSG:3857 metres
  * @param[in] pixel_w Pixel width in metres (west-east resolution, > 0)
  * @param[in] pixel_h Pixel height in metres (north-south resolution, may be < 0)
@@ -245,7 +240,7 @@ raster_quadbin_from_bounds(double origin_x, double origin_y, double pixel_w,
  */
 static double
 read_pixel(const uint8_t *pixels, int col, int row, int width,
-           MeosPixType pixtype)
+  MeosPixType pixtype)
 {
   const uint8_t *p;
   switch (pixtype)
@@ -277,27 +272,25 @@ read_pixel(const uint8_t *pixels, int col, int row, int width,
 /**
  * @ingroup meos_raster_base_accessor
  * @brief Sample a Raquet raster chip along a tgeompoint trajectory.
- *
- * The chip is identified by its QUADBIN cell, which encodes the Web-Mercator
- * tile coordinates and thus the full georeferencing without any separate
- * metadata.  Instants outside the tile extent or on nodata pixels are
+ * @details The chip is identified by its QUADBIN cell, which encodes the
+ * Web-Mercator tile coordinates and thus the full georeferencing without any
+ * separate metadata. Instants outside the tile extent or on nodata pixels are
  * silently dropped; NULL is returned when no instants survive.
- *
- * @param[in] pixels   Row-major pixel bytes (all bands interleaved or
- *                     single-band depending on the Raquet producer)
- * @param[in] width    Tile width in pixels (typically 256)
- * @param[in] height   Tile height in pixels (typically 256)
- * @param[in] quadbin  CARTO QUADBIN cell identifier (uint64)
- * @param[in] pixtype  Pixel data type
- * @param[in] nodata   Nodata sentinel value
- * @param[in] has_nodata  Whether nodata filtering is active
- * @param[in] traj     Input tgeompoint trajectory (SRID 4326)
+ * @param[in] pixels Row-major pixel bytes (all bands interleaved or
+ * single-band depending on the Raquet producer)
+ * @param[in] width Tile width in pixels (typically 256)
+ * @param[in] height Tile height in pixels (typically 256)
+ * @param[in] quadbin CARTO QUADBIN cell identifier (uint64)
+ * @param[in] pixtype Pixel data type
+ * @param[in] nodata Nodata sentinel value
+ * @param[in] has_nodata Whether nodata filtering is active
+ * @param[in] traj Input tgeompoint trajectory (SRID 4326)
  * @return tfloat instant set, or NULL
  */
 Temporal *
 raster_tile_value_quadbin(const uint8_t *pixels, uint16_t width,
-  uint16_t height, uint64 quadbin, MeosPixType pixtype,
-  double nodata, bool has_nodata, const Temporal *traj)
+  uint16_t height, uint64 quadbin, MeosPixType pixtype, double nodata,
+  bool has_nodata, const Temporal *traj)
 {
   /* Decode QUADBIN → tile x, y, z → WGS84 bbox + Mercator top/bot */
   uint32_t tx, ty, tz;
@@ -363,19 +356,16 @@ raster_tile_value_quadbin(const uint8_t *pixels, uint16_t width,
 /**
  * @ingroup meos_raster_base_accessor
  * @brief Return the unique QUADBIN cells at @p zoom covered by a trajectory.
- *
- * Suitable for use as the WHERE-clause argument when joining against a Raquet
- * table:
- *
+ * @details Suitable for use as the WHERE-clause argument when joining against
+ * a Raquet table:
  * @code{.sql}
  *   SELECT raster_tile_value_quadbin(band_data, 256, 256, quadbin, ...)
  *   FROM   elevation_raquet
  *   WHERE  quadbin = ANY(trajectory_quadbins(traj, 8));
  * @endcode
- *
- * @param[in]  traj   Input tgeompoint trajectory (SRID 4326)
- * @param[in]  zoom   Raquet zoom level (0–15)
- * @param[out] count  Number of distinct cells returned
+ * @param[in] traj Input tgeompoint trajectory (SRID 4326)
+ * @param[in] zoom Raquet zoom level (0–15)
+ * @param[out] count Number of distinct cells returned
  * @return Palloc'd array of QUADBIN cell identifiers
  */
 uint64 *
@@ -423,3 +413,5 @@ trajectory_quadbins(const Temporal *traj, uint32_t zoom, int *count)
   *count = ncells;
   return cells;
 }
+
+/*****************************************************************************/

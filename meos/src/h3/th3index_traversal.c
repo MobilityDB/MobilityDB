@@ -76,6 +76,9 @@ h3_cell_to_local_ij_meos(H3Index origin, H3Index cell)
     false, false, SRID_UNKNOWN);
 }
 
+/**
+ * @brief 
+ */
 H3Index
 h3_local_ij_to_cell_meos(H3Index origin, const GSERIALIZED *coord)
 {

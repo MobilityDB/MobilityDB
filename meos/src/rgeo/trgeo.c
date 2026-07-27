@@ -920,7 +920,6 @@ Temporal *
 trgeometry_round(const Temporal *temp, int maxdd)
 {
   /* Ensure the validity of the arguments */
-
   VALIDATE_TRGEOMETRY(temp, NULL);
   if (! ensure_not_negative(maxdd))
     return NULL;
@@ -945,7 +944,6 @@ TInstant *
 trgeometry_as_tinstant(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-
   VALIDATE_TRGEOMETRY(temp, NULL);
 
   assert(temptype_subtype(temp->subtype));
@@ -971,7 +969,6 @@ TSequence *
 trgeometry_as_tsequence(const Temporal *temp, const char *interp_str)
 {
   /* Ensure the validity of the arguments */
-
   VALIDATE_TRGEOMETRY(temp, NULL);
 
   interpType interp;
@@ -1003,7 +1000,6 @@ TSequenceSet *
 trgeometry_as_tsequenceset(const Temporal *temp, const char *interp_str)
 {
   /* Ensure the validity of the arguments */
-
   VALIDATE_TRGEOMETRY(temp, NULL);
 
   interpType interp;

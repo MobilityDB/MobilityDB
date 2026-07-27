@@ -65,7 +65,6 @@
 bool
 ensure_valid_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
 {
-  /* Ensure the validity of the arguments */
   VALIDATE_TCBUFFER(temp, false); VALIDATE_NOT_NULL(cb, false);
   if (! ensure_same_srid(tspatial_srid(temp), cbuffer_srid(cb)))
     return false;
@@ -116,7 +115,6 @@ ensure_valid_tcbuffer_stbox(const Temporal *temp, const STBox *box)
 bool
 ensure_valid_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 {
-  /* Ensure the validity of the arguments */
   VALIDATE_TCBUFFER(temp1, false); VALIDATE_TCBUFFER(temp2, false);
   if (! ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)))
     return false;
@@ -480,6 +478,7 @@ tcbuffersegm_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
 Temporal *
 tcbuffer_in(const char *str)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(str, NULL);
   return tspatial_parse(&str, T_TCBUFFER);
 }
@@ -494,6 +493,7 @@ tcbuffer_in(const char *str)
 Temporal *
 tcbuffer_from_mfjson(const char *mfjson)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(mfjson, NULL);
   return temporal_from_mfjson(mfjson, T_TCBUFFER);
 }
@@ -852,6 +852,7 @@ tcbufferseqset_tfloatseqset(const TSequenceSet *ss)
 Temporal *
 tcbuffer_to_tfloat(const Temporal *temp)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TCBUFFER(temp, NULL);
 
   assert(temptype_subtype(temp->subtype));
@@ -1229,7 +1230,9 @@ tcbufferseqset_expand(const TSequenceSet *ss, double dist)
 Temporal *
 tcbuffer_expand(const Temporal *temp, double dist)
 {
-  assert(temp); assert(temp->temptype == T_TCBUFFER);
+  /* Ensure the validity of the arguments */
+  VALIDATE_TCBUFFER(temp, NULL);
+
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
   {
@@ -1317,8 +1320,8 @@ Temporal *
 tcbuffer_restrict_stbox(const Temporal *temp, const STBox *box,
   bool border_inc UNUSED, bool atfunc)
 {
-  VALIDATE_TCBUFFER(temp, NULL); VALIDATE_NOT_NULL(box, NULL);
   /* Ensure the validity of the arguments */
+  VALIDATE_TCBUFFER(temp, NULL); VALIDATE_NOT_NULL(box, NULL);
   if (! ensure_valid_tcbuffer_stbox(temp, box))
     return NULL;
 
@@ -1391,7 +1394,6 @@ Temporal *
 tcbuffer_restrict_geom(const Temporal *temp, const GSERIALIZED *gs, bool
   atfunc)
 {
-  VALIDATE_TCBUFFER(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
@@ -1405,9 +1407,9 @@ tcbuffer_restrict_geom(const Temporal *temp, const GSERIALIZED *gs, bool
 
   /* Restrict by the circular disk footprint, not the centre trajectory: the
    * buffer meets the geometry exactly when the moving disk intersects it. That
-   * is the true time of the (arc-exact, GEOS-free) temporal intersects
-   * relationship, so the geometry restriction reduces to restricting the
-   * buffer to that time (`at`) or its complement (`minus`) */
+   * is the true time of the (arc-exact) temporal intersects relationship,
+   * so the geometry restriction reduces to restricting the buffer to that time
+   * (`at`) or its complement (`minus`) */
   Temporal *tinter = tinterrel_tcbuffer_geo(temp, gs, TINTERSECTS);
   if (! tinter)
     return atfunc ? NULL : temporal_copy(temp);
@@ -1447,6 +1449,7 @@ tcbuffer_at_geom(const Temporal *temp, const GSERIALIZED *gs)
 Temporal *
 tcbuffer_minus_geom(const Temporal *temp, const GSERIALIZED *gs)
 {
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_geo(temp, gs))
     return NULL;
   return tcbuffer_restrict_geom(temp, gs, REST_MINUS);
