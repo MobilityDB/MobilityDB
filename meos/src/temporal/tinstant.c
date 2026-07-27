@@ -70,15 +70,13 @@
  * @param[in] inst Temporal instant
  * @csqlfn #Tinstant_value()
  */
-Datum
+inline Datum
 tinstant_value_p(const TInstant *inst)
 {
   assert(inst);
-  /* For base types passed by value */
-  if (MEOS_FLAGS_GET_BYVAL(inst->flags))
-    return inst->value;
-  /* For base types passed by reference */
-  return PointerGetDatum(&inst->value);
+  return MEOS_FLAGS_GET_BYVAL(inst->flags) ?
+    inst->value :                   /* For base types passed by value */
+    PointerGetDatum(&inst->value);  /* For base types passed by reference */
 }
 
 /**

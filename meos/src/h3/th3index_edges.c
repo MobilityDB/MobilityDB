@@ -56,6 +56,9 @@
  * Static adapter — directed edge → polygon boundary
  *****************************************************************************/
 
+/**
+ * @brief 
+ */
 GSERIALIZED *
 h3_directed_edge_to_gs_boundary(H3Index edge)
 {
@@ -219,8 +222,8 @@ th3index_get_directed_edge_destination(const Temporal *edge)
  * @ingroup meos_h3_edges
  * @brief Return the per-instant polygon boundary of a temporal directed
  * edge as a temporal geography.
- *
- * Depends on the `h3_directed_edge_to_gs_boundary` adapter (opt-out list).
+ * @details Depends on the `h3_directed_edge_to_gs_boundary` adapter
+ * (opt-out list).
  * @csqlfn #Th3index_directed_edge_to_boundary()
  */
 Temporal *

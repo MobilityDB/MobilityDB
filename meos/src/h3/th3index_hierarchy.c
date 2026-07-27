@@ -57,6 +57,9 @@
  * Next-resolution conveniences (hand-written)
  *****************************************************************************/
 
+/**
+ * @brief 
+ */
 H3Index
 h3_cell_to_parent_next_meos(H3Index cell)
 {
@@ -70,6 +73,9 @@ h3_cell_to_parent_next_meos(H3Index cell)
   return h3_cell_to_parent_meos(cell, res - 1);
 }
 
+/**
+ * @brief 
+ */
 H3Index
 h3_cell_to_center_child_next_meos(H3Index cell)
 {

@@ -428,10 +428,98 @@ tdistance_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 
 /*****************************************************************************
  * Nearest approach instant (NAI)
+ *
+ * Analytic nearest approach instant between a temporal circular buffer and a
+ * geometry
+ *
+ * The nearest approach instant is the time attaining the minimum swept-capsule
+ * distance, so it reuses the same per-segment analytic minimum as the
+ * nearest-approach value: each moving-disc unit yields the parametric fraction
+ * where it comes closest to the geometry, and the running witness keeps the
+ * earliest timestamp attaining the overall minimum. Because it minimises the
+ * same disc-to-geometry distance as #nad_tcbuffer_geo_analytic, the value at
+ * the returned instant is exactly the nearest-approach distance (the centreline
+ * delegation instead minimises the centre-to-geometry distance, which differs
+ * when the radius varies).
  *****************************************************************************/
 
-static bool nai_tcbuffer_geo_analytic(const Temporal *temp,
-  const GSERIALIZED *gs, TimestampTz *result);
+/**
+ * @brief Update the witness with one temporal circular buffer sequence,
+ * mirroring #tcbufferseq_shortestline
+ */
+static void
+nai_tcbufferseq(const TSequence *seq, const GeoDistGeom *g, GeoDistNai *w)
+{
+  bool linear = MEOS_FLAGS_LINEAR_INTERP(seq->flags);
+  if (seq->count == 1 || ! linear)
+  {
+    for (int i = 0; i < seq->count && ! (w->set && w->d <= 0.0); i++)
+    {
+      const TInstant *inst = TSEQUENCE_INST_N(seq, i);
+      const Cbuffer *c = DatumGetCbufferP(tinstant_value_p(inst));
+      const POINT2D *p = GSERIALIZED_POINT2D_P(cbuffer_point_p(c));
+      geodist_segm_nai(p->x, p->y, c->radius, inst->t, p->x, p->y, c->radius,
+        inst->t, g, w);
+    }
+    return;
+  }
+  const TInstant *i1 = TSEQUENCE_INST_N(seq, 0);
+  for (int i = 1; i < seq->count && ! (w->set && w->d <= 0.0); i++)
+  {
+    const TInstant *i2 = TSEQUENCE_INST_N(seq, i);
+    const Cbuffer *c1 = DatumGetCbufferP(tinstant_value_p(i1));
+    const Cbuffer *c2 = DatumGetCbufferP(tinstant_value_p(i2));
+    const POINT2D *p1 = GSERIALIZED_POINT2D_P(cbuffer_point_p(c1));
+    const POINT2D *p2 = GSERIALIZED_POINT2D_P(cbuffer_point_p(c2));
+    geodist_segm_nai(p1->x, p1->y, c1->radius, i1->t, p2->x, p2->y, c2->radius,
+      i2->t, g, w);
+    i1 = i2;
+  }
+}
+
+/**
+ * @brief Nearest approach instant between a temporal circular buffer and a
+ * geometry
+ * @details Returns the timestamp attaining the minimum swept-capsule distance
+ * in @p result. Returns false when the analytic path does not apply (an
+ * unsupported geometry type) so the caller can fall back to the centreline
+ * delegation.
+ */
+static bool
+nai_tcbuffer_geo_analytic(const Temporal *temp, const GSERIALIZED *gs,
+  TimestampTz *result)
+{
+  GeoDistGeom g;
+  if (! geodist_geom_build(gs, &g))
+    return false;
+
+  GeoDistNai w;
+  w.d = DBL_MAX; w.t = 0; w.set = false;
+  assert(temptype_subtype(temp->subtype));
+  if (temp->subtype == TINSTANT)
+  {
+    const TInstant *inst = (TInstant *) temp;
+    const Cbuffer *c = DatumGetCbufferP(tinstant_value_p(inst));
+    const POINT2D *p = GSERIALIZED_POINT2D_P(cbuffer_point_p(c));
+    geodist_segm_nai(p->x, p->y, c->radius, inst->t, p->x, p->y, c->radius,
+      inst->t, &g, &w);
+  }
+  else if (temp->subtype == TSEQUENCE)
+    nai_tcbufferseq((TSequence *) temp, &g, &w);
+  else
+  {
+    const TSequenceSet *ss = (TSequenceSet *) temp;
+    for (int i = 0; i < ss->count && ! (w.set && w.d <= 0.0); i++)
+      nai_tcbufferseq(TSEQUENCESET_SEQ_N(ss, i), &g, &w);
+  }
+  geodist_geom_free(&g);
+  if (! w.set)
+    return false;
+  *result = w.t;
+  return true;
+}
+
+/*****************************************************************************/
 
 /**
  * @ingroup meos_cbuffer_dist
@@ -524,8 +612,8 @@ nai_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 }
 
 /*****************************************************************************
- * GEOS-free analytic nearest approach distance between a temporal circular
- * buffer and a geometry
+ * Analytic nearest approach distance between a temporal circular buffer and a
+ * geometry
  *
  * The traversed region of a temporal circular buffer is the union of the
  * swept capsules of its segments; the distance to a geometry is the minimum
@@ -628,8 +716,8 @@ tcbufferseq_nad(const TSequence *seq, const GeoDistGeom *g, double *best)
 }
 
 /**
- * @brief GEOS-free nearest approach distance between a temporal circular
- * buffer and a geometry
+ * @brief Nearest approach distance between a temporal circular buffer and a
+ * geometry
  */
 static double
 nad_tcbuffer_geo_analytic(const Temporal *temp, const GSERIALIZED *gs)
@@ -701,10 +789,10 @@ tcbufferseq_shortestline(const TSequence *seq, const GeoDistGeom *g,
 }
 
 /**
- * @brief GEOS-free shortest line between a temporal circular buffer and a
- * geometry, arc-exact for circular-arc input. Returns NULL when the analytic
- * path does not apply (an unsupported geometry type), so the caller can fall
- * back to the exact traversed-area shortest line.
+ * @brief Shortest line between a temporal circular buffer and a geometry,
+ * arc-exact for circular-arc input. Returns NULL when the analytic path does
+ * not apply (an unsupported geometry type), so the caller can fall back to the
+ * traversed-area shortest line.
  */
 static GSERIALIZED *
 shortestline_tcbuffer_geo_analytic(const Temporal *temp, const GSERIALIZED *gs)
@@ -751,98 +839,7 @@ shortestline_tcbuffer_geo_analytic(const Temporal *temp, const GSERIALIZED *gs)
 }
 
 /*****************************************************************************
- * GEOS-free analytic nearest approach instant between a temporal circular
- * buffer and a geometry
- *
- * The nearest approach instant is the time attaining the minimum swept-capsule
- * distance, so it reuses the same per-segment analytic minimum as the
- * nearest-approach value: each moving-disc unit yields the parametric fraction
- * where it comes closest to the geometry, and the running witness keeps the
- * earliest timestamp attaining the overall minimum. Because it minimises the
- * same disc-to-geometry distance as #nad_tcbuffer_geo_analytic, the value at
- * the returned instant is exactly the nearest-approach distance (the centreline
- * delegation instead minimises the centre-to-geometry distance, which differs
- * when the radius varies).
- *****************************************************************************/
-
-/**
- * @brief Update the witness with one temporal circular buffer sequence,
- * mirroring #tcbufferseq_shortestline
- */
-static void
-tcbufferseq_nai(const TSequence *seq, const GeoDistGeom *g, GeoDistNai *w)
-{
-  bool linear = MEOS_FLAGS_LINEAR_INTERP(seq->flags);
-  if (seq->count == 1 || ! linear)
-  {
-    for (int i = 0; i < seq->count && ! (w->set && w->d <= 0.0); i++)
-    {
-      const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-      const Cbuffer *c = DatumGetCbufferP(tinstant_value_p(inst));
-      const POINT2D *p = GSERIALIZED_POINT2D_P(cbuffer_point_p(c));
-      geodist_segm_nai(p->x, p->y, c->radius, inst->t, p->x, p->y, c->radius,
-        inst->t, g, w);
-    }
-    return;
-  }
-  const TInstant *i1 = TSEQUENCE_INST_N(seq, 0);
-  for (int i = 1; i < seq->count && ! (w->set && w->d <= 0.0); i++)
-  {
-    const TInstant *i2 = TSEQUENCE_INST_N(seq, i);
-    const Cbuffer *c1 = DatumGetCbufferP(tinstant_value_p(i1));
-    const Cbuffer *c2 = DatumGetCbufferP(tinstant_value_p(i2));
-    const POINT2D *p1 = GSERIALIZED_POINT2D_P(cbuffer_point_p(c1));
-    const POINT2D *p2 = GSERIALIZED_POINT2D_P(cbuffer_point_p(c2));
-    geodist_segm_nai(p1->x, p1->y, c1->radius, i1->t, p2->x, p2->y, c2->radius,
-      i2->t, g, w);
-    i1 = i2;
-  }
-}
-
-/**
- * @brief GEOS-free nearest approach instant between a temporal circular buffer
- * and a geometry
- * @details Returns the timestamp attaining the minimum swept-capsule distance
- * in @p result. Returns false when the analytic path does not apply (an
- * unsupported geometry type) so the caller can fall back to the centreline
- * delegation.
- */
-static bool
-nai_tcbuffer_geo_analytic(const Temporal *temp, const GSERIALIZED *gs,
-  TimestampTz *result)
-{
-  GeoDistGeom g;
-  if (! geodist_geom_build(gs, &g))
-    return false;
-
-  GeoDistNai w;
-  w.d = DBL_MAX; w.t = 0; w.set = false;
-  assert(temptype_subtype(temp->subtype));
-  if (temp->subtype == TINSTANT)
-  {
-    const TInstant *inst = (TInstant *) temp;
-    const Cbuffer *c = DatumGetCbufferP(tinstant_value_p(inst));
-    const POINT2D *p = GSERIALIZED_POINT2D_P(cbuffer_point_p(c));
-    geodist_segm_nai(p->x, p->y, c->radius, inst->t, p->x, p->y, c->radius,
-      inst->t, &g, &w);
-  }
-  else if (temp->subtype == TSEQUENCE)
-    tcbufferseq_nai((TSequence *) temp, &g, &w);
-  else
-  {
-    const TSequenceSet *ss = (TSequenceSet *) temp;
-    for (int i = 0; i < ss->count && ! (w.set && w.d <= 0.0); i++)
-      tcbufferseq_nai(TSEQUENCESET_SEQ_N(ss, i), &g, &w);
-  }
-  geodist_geom_free(&g);
-  if (! w.set)
-    return false;
-  *result = w.t;
-  return true;
-}
-
-/*****************************************************************************
- * Temporal within relationship (GEOS-free)
+ * Temporal within relationship
  *
  * The sub-periods during which a temporal circular buffer stays within a
  * distance of a non-curved geometry, from the same swept-capsule distance
@@ -1177,7 +1174,7 @@ tcbufferseg_within_ctx(const Cbuffer *cb1, const Cbuffer *cb2, double dist,
 }
 
 /*****************************************************************************
- * Touches contact instants (GEOS-free)
+ * Touches contact instants
  *
  * A disk touches a geometry when their boundaries meet while their interiors
  * stay disjoint (the DE-9IM touches predicate). For a disk of centre c and
@@ -1200,8 +1197,8 @@ tcbufferseg_within_ctx(const Cbuffer *cb1, const Cbuffer *cb2, double dist,
 /**
  * @brief Signed nearest boundary distance of a stationary disk: the minimum
  * over the geometry boundary edges of dist(centre, edge) - radius, without the
- * interior-overlap clamp of #geodist_segm_nad, and set @p inside to whether the
- * centre lies strictly inside a polygon of the geometry
+ * interior-overlap clamp of #geodist_segm_nad, and set @p inside to whether
+ * the centre lies strictly inside a polygon of the geometry
  */
 static double
 tcbuffer_disc_signed_boundary(double cx, double cy, double r,
@@ -1213,9 +1210,9 @@ tcbuffer_disc_signed_boundary(double cx, double cy, double r,
    * - r against the +/-eps contact band, so only edges within r + eps of the
    * centre can change a decision. Bound the scan to that reach: when the true
    * minimum is <= eps the closest edge lies within reach so `best` equals the
-   * global minimum exactly; otherwise `best` stays > eps (or DBL_MAX), which the
-   * callers treat identically to any other value above the band. This is a fixed
-   * reach box query, result-identical to the full running-minimum scan. */
+   * global minimum exactly; otherwise `best` stays > eps (or DBL_MAX), which 
+   * the callers treat identically to any other value above the band. This is a
+   * fixed reach box query, result-identical to the full running-minimum scan. */
   double reach = r + TCBUFFER_TOUCH_EPS;
   double reach2 = reach * reach;
   STBox query;
@@ -1239,9 +1236,9 @@ tcbuffer_disc_signed_boundary(double cx, double cy, double r,
 }
 
 /**
- * @brief Return true if a stationary circular buffer touches the geometry, i.e.
- * its boundary meets the geometry boundary with disjoint interiors (the signed
- * boundary distance vanishes and the centre is not inside a polygon)
+ * @brief Return true if a stationary circular buffer touches the geometry, 
+ * i.e., its boundary meets the geometry boundary with disjoint interiors (the
+ * signed boundary distance vanishes and the centre is not inside a polygon)
  */
 bool
 tcbuffer_disc_touch_ctx(const Cbuffer *cb, const void *ctxv)
@@ -1486,6 +1483,9 @@ nad_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
  * numerical tolerance.
  *****************************************************************************/
 
+/**
+ * @brief
+ */
 typedef struct
 {
   int idx;
@@ -1495,6 +1495,9 @@ typedef struct
   float maxy;
 } TcbufferSegBox;
 
+/**
+ * @brief
+ */
 static int
 tcbuffersegbox_cmp_minx(const void *a, const void *b)
 {
@@ -1503,7 +1506,8 @@ tcbuffersegbox_cmp_minx(const void *a, const void *b)
   return (da < db) ? -1 : (da > db ? 1 : 0);
 }
 
-/* Append candidate value of f(s,t) on edge s=0 (in t) given:
+/**
+ * @brief Append candidate value of f(s,t) on edge s=0 (in t) given:
  *   e = |E|^2 with E = A - C
  *   q = E . V
  *   v = |V|^2
@@ -1512,7 +1516,8 @@ tcbuffersegbox_cmp_minx(const void *a, const void *b)
  * Computes the critical point of g(t) = sqrt(e - 2tq + t^2 v) - r_sum - t dr2
  * via the quadratic v(v - dr2^2) t^2 - 2 q (v - dr2^2) t + (q^2 - dr2^2 e) = 0.
  * Only v > dr2^2 yields a local minimum; the v == dr2^2 inflection case is
- * skipped (covered by corners). */
+ * skipped (covered by corners).
+ */
 static void
 cbuffersegm_edge_crit_in_t(double e, double q, double v, double dr2, double r_sum,
   double *best)
@@ -1546,17 +1551,19 @@ cbuffersegm_edge_crit_in_t(double e, double q, double v, double dr2, double r_su
   }
 }
 
-/* Append candidate value of f(s,t) on edge t=0 (in s) given:
+/**
+ * @brief Append candidate value of f(s,t) on edge t=0 (in s) given:
  *   e = |E|^2 with E = A - C
  *   p = E . U
  *   u = |U|^2
  *   dr1 = r_B - r_A
  *   r_sum = r_A + r_C
  * Critical point of g(s) = sqrt(e + 2sp + s^2 u) - r_sum - s dr1, derivative
- * (us + p)/sqrt(...) - dr1 = 0; analogous quadratic. */
+ * (us + p)/sqrt(...) - dr1 = 0; analogous quadratic.
+ */
 static void
-cbuffersegm_edge_crit_in_s(double e, double p, double u, double dr1, double r_sum,
-  double *best)
+cbuffersegm_edge_crit_in_s(double e, double p, double u, double dr1,
+  double r_sum, double *best)
 {
   double dr1sq = dr1 * dr1;
   if (u <= dr1sq)
@@ -1585,7 +1592,8 @@ cbuffersegm_edge_crit_in_s(double e, double p, double u, double dr1, double r_su
   }
 }
 
-/* Exact min spatial distance between two cbuffer segments,
+/**
+ * @brief Exact min spatial distance between two cbuffer segments,
  *   c1(s) = A + s(B-A), r1(s) = r_A + s(r_B - r_A), s in [0,1]
  *   c2(t) = C + t(D-C), r2(t) = r_C + t(r_D - r_C), t in [0,1]
  * Returns max(0, min over [0,1]^2 of |c1(s) - c2(t)| - r1(s) - r2(t)),
@@ -1710,7 +1718,9 @@ cbuffersegm_segm_mindist(const POINT2D *A, double rA, const POINT2D *B,
   return best > 0.0 ? best : 0.0;
 }
 
-/* Plane-sweep over two cbuffer sequences. */
+/**
+ * @brief Plane-sweep over two cbuffer sequences.
+ */
 static double
 mindist_tcbufferseq_tcbufferseq_threshold(const TSequence *seq1,
   const TSequence *seq2, double threshold)
@@ -1796,7 +1806,9 @@ mindist_tcbufferseq_tcbufferseq_threshold(const TSequence *seq1,
   return best;
 }
 
-/* Subtype dispatch. */
+/**
+ * @brief Subtype dispatch.
+ */
 static double
 mindist_tcbuffer_tcbuffer_threshold(const Temporal *temp1,
   const Temporal *temp2, double threshold)
@@ -1881,6 +1893,7 @@ double
 mindistance_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   double threshold)
 {
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_tcbuffer(temp1, temp2))
     return DBL_MAX;
 

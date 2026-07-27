@@ -732,9 +732,9 @@ tcontains_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
     /* A geometry contains a moving point when the point lies in the open
      * interior of the geometry, that is, it intersects the (closed) geometry
      * but not its boundary. Both intersections route through the native
-     * GEOS-free arc-clip engine for a temporal geometry point with linear
-     * interpolation over a clip-supported (possibly curved) geometry, and fall
-     * back to the general path otherwise (see #tinterrel_tgeo_geo). */
+     * arc-clip engine for a temporal geometry point with linear interpolation
+     * over a clip-supported (possibly curved) geometry, and fall back to the
+     * general path otherwise (see #tinterrel_tgeo_geo). */
     Temporal *inter = tinterrel_tgeo_geo(temp, gs, TINTERSECTS);
     if (! inter)
       return NULL;
@@ -832,10 +832,10 @@ tcovers_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
   /* Temporal point case: a geometry covers a moving point when the point lies
    * in the closed geometry (interior together with boundary), which is exactly
    * the temporal intersects relationship. This routes through the native
-   * GEOS-free arc-clip engine for a temporal geometry point with linear
-   * interpolation over a clip-supported (possibly curved) geometry, and falls
-   * back to the general path otherwise (see #tinterrel_tgeo_geo), keeping
-   * `tCovers` consistent with `tIntersects` and `~ tDisjoint`. */
+   * arc-clip engine for a temporal geometry point with linear interpolation
+   * over a clip-supported (possibly curved) geometry, and falls back to the
+   * general path otherwise (see #tinterrel_tgeo_geo), keeping `tCovers`
+   * consistent with `tIntersects` and `~ tDisjoint`. */
   if (tpoint_type(temp->temptype))
   {
     if (! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
@@ -1011,11 +1011,10 @@ ttouches_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
   {
     /* A moving point touches a geometry when the point lies on the boundary of
      * the geometry. The boundary intersection routes through the native
-     * GEOS-free arc-clip engine for a temporal geometry point with linear
-     * interpolation over a clip-supported (possibly curved) boundary, and falls
-     * back to the general path otherwise (see #tinterrel_tgeo_geo). When the
-     * geometry has an empty boundary (a point or multipoint) the result is
-     * false. */
+     * arc-clip engine for a temporal geometry point with linear interpolation
+     * over a clip-supported (possibly curved) boundary, and falls back to the
+     * general path otherwise (see #tinterrel_tgeo_geo). When the geometry has
+     * an empty boundary (a point or multipoint) the result is false. */
     GSERIALIZED *gsbound = geom_boundary(gs);
     if (gsbound && ! gserialized_is_empty(gsbound))
       result = tinterrel_tgeo_geo(temp, gsbound, TINTERSECTS);
@@ -1567,9 +1566,9 @@ tdwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
     return NULL;
 
   /* For a temporal point against a non-point geometry, prefer the native
-   * GEOS-free within engine when the temporal geometry point has linear
-   * interpolation, is planar and 2D, and the geometry is one the clip engine
-   * supports (this includes curved geometries handled by the arc kernel).
+   * within engine when the temporal geometry point has linear interpolation,
+   * is planar and 2D, and the geometry is one the clip engine supports
+   * (this includes curved geometries handled by the arc kernel).
    * The native path solves the per-segment within-distance sub-intervals in
    * closed form, mirroring the merged temporal circular-buffer engine
    * specialized to a moving point. Otherwise (temporal geographies, step or

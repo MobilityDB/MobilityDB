@@ -87,6 +87,9 @@ geo_to_h3index_cell(const GSERIALIZED *point, int32 resolution)
   return cell;
 }
 
+/**
+ * @brief 
+ */
 GSERIALIZED *
 h3_cell_to_geompoint(H3Index cell)
 {
@@ -135,6 +138,9 @@ cell_boundary_to_gs(const CellBoundary *bnd)
   return result;
 }
 
+/**
+ * @brief 
+ */
 GSERIALIZED *
 h3_cell_to_geom(H3Index cell)
 {

@@ -703,6 +703,7 @@ tcbuffer_traversed_area(const Temporal *temp, bool unary_union)
 GSERIALIZED *
 tcbuffer_convex_hull(const Temporal *temp)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TCBUFFER(temp, NULL);
   GSERIALIZED *area = tcbuffer_traversed_area(temp, true);
   GSERIALIZED *result = geom_convex_hull(area);

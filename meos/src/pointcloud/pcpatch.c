@@ -49,6 +49,9 @@
  * Truncate @c VARSIZE by that amount for cmp/hash.
  *****************************************************************************/
 
+/**
+ * @brief 
+ */
 typedef struct
 {
   int32 vl_len_;
@@ -236,13 +239,19 @@ pcpatch_copy(const Pcpatch *pa)
  * @brief Return the pcid (schema id) of a pcpatch
  * @csqlfn #Pcpatch_pcid()
  */
-uint32_t pcpatch_get_pcid(const Pcpatch *pa)    { assert(pa); return pa->pcid; }
+uint32_t pcpatch_get_pcid(const Pcpatch *pa)
+{
+  assert(pa); return pa->pcid;
+}
 
 /**
  * @ingroup meos_pointcloud_accessor
  * @brief Return the number of points stored in a pcpatch
  */
-uint32_t pcpatch_npoints(const Pcpatch *pa) { assert(pa); return pa->npoints; }
+uint32_t pcpatch_npoints(const Pcpatch *pa)
+{
+  assert(pa); return pa->npoints;
+}
 
 /**
  * @ingroup meos_pointcloud_accessor

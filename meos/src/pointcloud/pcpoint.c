@@ -75,6 +75,9 @@
  * would already fail at link time).
  *****************************************************************************/
 
+/**
+ * @brief 
+ */
 typedef struct
 {
   int32 vl_len_;

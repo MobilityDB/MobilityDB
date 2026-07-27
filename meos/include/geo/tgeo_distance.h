@@ -60,10 +60,11 @@ extern double tinstant_distance(const TInstant *inst1, const TInstant *inst2,
 
 /*****************************************************************************/
 
-/* GEOS-free analytic distance engine shared with the temporal circular
+/* Analytic distance engine shared with the temporal circular
  * buffer family: a moving disc (radius may be 0, i.e. a moving point)
  * against a decomposed geometry, indexed by a Morton bucket hierarchy for
- * the nearest-approach (knn) kernels and the generic R-tree elsewhere. */
+ * the nearest-approach (knn) kernels and the generic R-tree elsewhere.
+ */
 
 /**
  * @brief A geometry boundary segment with its precomputed 2D bounding box;
@@ -120,7 +121,7 @@ typedef struct
   double xmin, ymin, xmax, ymax; /**< Overall geometry bounding box */
   const GeoDistBucket *bks; /**< Morton bucket BVH (nad path), or NULL */
   int nbk;
-  RTree *rtree;                  /**< Generic R-tree (relationship path), or NULL */
+  RTree *rtree; /**< Generic R-tree (relationship path), or NULL */
 } GeoDistGeom;
 
 /**

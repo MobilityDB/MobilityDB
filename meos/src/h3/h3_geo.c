@@ -68,6 +68,9 @@
  * Growable buffer of H3Index — accumulator for the recursive walker
  *****************************************************************************/
 
+/**
+ * @brief 
+ */
 typedef struct h3_buf
 {
   H3Index *cells;

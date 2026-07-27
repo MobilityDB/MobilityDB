@@ -305,27 +305,6 @@ always_ne_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
  * Temporal comparisons
  *****************************************************************************/
 
-/* Forward declaration: the geometry-first comparison delegates to the
- * trgeometry-first materialise-and-compare path defined below. */
-static Temporal *tcomp_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
-  Datum (*func)(Datum, Datum, MeosType));
-
-/**
- * @brief Return the temporal comparison of a geometry and a temporal rigid
- * geometry
- * @param[in] temp Temporal value
- * @param[in] gs Geometry
- * @param[in] func Comparison function
- */
-static Temporal *
-tcomp_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp,
-  Datum (*func)(Datum, Datum, MeosType))
-{
-  /* datum2_eq / datum2_ne are commutative, so the geometry-first comparison
-   * reuses the trgeometry-first materialise-and-compare path. */
-  return tcomp_trgeo_geo(temp, gs, func);
-}
-
 /**
  * @brief Return the temporal comparison of a temporal rigid geometry and a
  * geometry
@@ -406,6 +385,22 @@ tcomp_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
       seq->period.lower_inc, seq->period.upper_inc, STEP, NORMALIZE);
   }
   return (Temporal *) tsequenceset_make_free(sequences, ss->count, NORMALIZE);
+}
+
+/**
+ * @brief Return the temporal comparison of a geometry and a temporal rigid
+ * geometry
+ * @param[in] temp Temporal value
+ * @param[in] gs Geometry
+ * @param[in] func Comparison function
+ */
+static Temporal *
+tcomp_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp,
+  Datum (*func)(Datum, Datum, MeosType))
+{
+  /* datum2_eq / datum2_ne are commutative, so the geometry-first comparison
+   * reuses the trgeometry-first materialise-and-compare path. */
+  return tcomp_trgeo_geo(temp, gs, func);
 }
 
 /*****************************************************************************/

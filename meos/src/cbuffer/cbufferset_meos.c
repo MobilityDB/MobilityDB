@@ -175,7 +175,7 @@ Cbuffer **
 cbufferset_values(const Set *s, int *count)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_CBUFFERSET(s, NULL);
+  VALIDATE_CBUFFERSET(s, NULL); VALIDATE_NOT_NULL(count, NULL);
 
   Cbuffer **result = palloc(sizeof(Cbuffer *) * s->count);
   for (int i = 0; i < s->count; i++)

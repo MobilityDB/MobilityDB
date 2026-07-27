@@ -383,6 +383,9 @@ th3index_value_at_timestamptz(const Temporal *temp, TimestampTz t,
  * correct shape and the bbox is recomputed from the new basetype.
  *****************************************************************************/
 
+/**
+ * @brief 
+ */
 static Datum
 datum_h3index_identity(Datum d)
 {
@@ -436,6 +439,9 @@ th3index_to_tbigint(const Temporal *temp)
  * symbols so the compops dispatcher can pass them through.
  *****************************************************************************/
 
+/**
+ * @brief 
+ */
 Datum
 datum2_h3index_eq(Datum d1, Datum d2, MeosType type)
 {
@@ -443,6 +449,9 @@ datum2_h3index_eq(Datum d1, Datum d2, MeosType type)
   return BoolGetDatum(DatumGetH3Index(d1) == DatumGetH3Index(d2));
 }
 
+/**
+ * @brief 
+ */
 Datum
 datum2_h3index_ne(Datum d1, Datum d2, MeosType type)
 {

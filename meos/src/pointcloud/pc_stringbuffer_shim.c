@@ -87,3 +87,5 @@ stringbuffer_release_string(stringbuffer_t *sb)
   sb->capacity = 0;
   return ret;
 }
+
+/*****************************************************************************/

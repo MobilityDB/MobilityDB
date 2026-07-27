@@ -349,12 +349,18 @@ h3index_hash(H3Index cell)
  * Datum wrappers for inspection
  *****************************************************************************/
 
+/**
+ * @brief 
+ */
 Datum
 datum_h3_get_resolution(Datum d)
 {
   return Int32GetDatum(h3_get_resolution_meos(DatumGetH3Index(d)));
 }
 
+/**
+ * @brief 
+ */
 Datum
 datum_h3_get_base_cell_number(Datum d)
 {
@@ -367,12 +373,18 @@ datum_h3_is_valid_cell(Datum d)
   return BoolGetDatum(h3_is_valid_cell_meos(DatumGetH3Index(d)));
 }
 
+/**
+ * @brief 
+ */
 Datum
 datum_h3_is_res_class_iii(Datum d)
 {
   return BoolGetDatum(h3_is_res_class_iii_meos(DatumGetH3Index(d)));
 }
 
+/**
+ * @brief 
+ */
 Datum
 datum_h3_is_pentagon(Datum d)
 {
@@ -386,6 +398,9 @@ datum_h3_is_pentagon(Datum d)
  * plugged into `tfunc_temporal` with `numparam = 1`.
  *****************************************************************************/
 
+/**
+ * @brief 
+ */
 Datum
 datum_h3_cell_to_parent(Datum cell_d, Datum res_d)
 {
@@ -393,6 +408,9 @@ datum_h3_cell_to_parent(Datum cell_d, Datum res_d)
     DatumGetH3Index(cell_d), DatumGetInt32(res_d)));
 }
 
+/**
+ * @brief 
+ */
 Datum
 datum_h3_cell_to_parent_next(Datum cell_d)
 {
@@ -400,6 +418,9 @@ datum_h3_cell_to_parent_next(Datum cell_d)
     DatumGetH3Index(cell_d)));
 }
 
+/**
+ * @brief 
+ */
 Datum
 datum_h3_cell_to_center_child(Datum cell_d, Datum res_d)
 {
@@ -407,6 +428,9 @@ datum_h3_cell_to_center_child(Datum cell_d, Datum res_d)
     DatumGetH3Index(cell_d), DatumGetInt32(res_d)));
 }
 
+/**
+ * @brief 
+ */
 Datum
 datum_h3_cell_to_center_child_next(Datum cell_d)
 {
@@ -414,6 +438,9 @@ datum_h3_cell_to_center_child_next(Datum cell_d)
     DatumGetH3Index(cell_d)));
 }
 
+/**
+ * @brief 
+ */
 Datum
 datum_h3_cell_to_child_pos(Datum cell_d, Datum parent_res_d)
 {
@@ -423,6 +450,9 @@ datum_h3_cell_to_child_pos(Datum cell_d, Datum parent_res_d)
     DatumGetH3Index(cell_d), DatumGetInt32(parent_res_d)));
 }
 
+/**
+ * @brief 
+ */
 Datum
 datum_h3_child_pos_to_cell(Datum pos_d, Datum parent_d, Datum child_res_d)
 {
@@ -437,6 +467,9 @@ datum_h3_child_pos_to_cell(Datum pos_d, Datum parent_d, Datum child_res_d)
  * Datum wrappers for directed edges
  *****************************************************************************/
 
+/**
+ * @brief 
+ */
 Datum
 datum_h3_are_neighbor_cells(Datum origin_d, Datum dest_d)
 {
@@ -445,6 +478,9 @@ datum_h3_are_neighbor_cells(Datum origin_d, Datum dest_d)
     DatumGetH3Index(dest_d)));
 }
 
+/**
+ * @brief 
+ */
 Datum
 datum_h3_cells_to_directed_edge(Datum origin_d, Datum dest_d)
 {
@@ -453,6 +489,9 @@ datum_h3_cells_to_directed_edge(Datum origin_d, Datum dest_d)
     DatumGetH3Index(dest_d)));
 }
 
+/**
+ * @brief 
+ */
 Datum
 datum_h3_is_valid_directed_edge(Datum d)
 {
@@ -460,6 +499,9 @@ datum_h3_is_valid_directed_edge(Datum d)
     DatumGetH3Index(d)));
 }
 
+/**
+ * @brief 
+ */
 Datum
 datum_h3_get_directed_edge_origin(Datum d)
 {
@@ -467,6 +509,9 @@ datum_h3_get_directed_edge_origin(Datum d)
     DatumGetH3Index(d)));
 }
 
+/**
+ * @brief 
+ */
 Datum
 datum_h3_get_directed_edge_destination(Datum d)
 {
@@ -474,6 +519,9 @@ datum_h3_get_directed_edge_destination(Datum d)
     DatumGetH3Index(d)));
 }
 
+/**
+ * @brief 
+ */
 Datum
 datum_h3_directed_edge_to_boundary(Datum d)
 {
@@ -485,6 +533,9 @@ datum_h3_directed_edge_to_boundary(Datum d)
  * Datum wrappers for vertices
  *****************************************************************************/
 
+/**
+ * @brief 
+ */
 Datum
 datum_h3_cell_to_vertex(Datum cell_d, Datum vnum_d)
 {
@@ -492,6 +543,9 @@ datum_h3_cell_to_vertex(Datum cell_d, Datum vnum_d)
     DatumGetH3Index(cell_d), DatumGetInt32(vnum_d)));
 }
 
+/**
+ * @brief 
+ */
 Datum
 datum_h3_vertex_to_latlng(Datum d)
 {
@@ -499,6 +553,9 @@ datum_h3_vertex_to_latlng(Datum d)
   return PointerGetDatum(gs);
 }
 
+/**
+ * @brief 
+ */
 Datum
 datum_h3_is_valid_vertex(Datum d)
 {
@@ -509,6 +566,9 @@ datum_h3_is_valid_vertex(Datum d)
  * Datum wrappers for grid traversal
  *****************************************************************************/
 
+/**
+ * @brief 
+ */
 Datum
 datum_h3_grid_distance(Datum origin_d, Datum dest_d)
 {
@@ -518,6 +578,9 @@ datum_h3_grid_distance(Datum origin_d, Datum dest_d)
     DatumGetH3Index(dest_d)));
 }
 
+/**
+ * @brief 
+ */
 Datum
 datum_h3_cell_to_local_ij(Datum origin_d, Datum cell_d)
 {
@@ -527,6 +590,9 @@ datum_h3_cell_to_local_ij(Datum origin_d, Datum cell_d)
   return PointerGetDatum(gs);
 }
 
+/**
+ * @brief 
+ */
 Datum
 datum_h3_local_ij_to_cell(Datum origin_d, Datum coord_d)
 {
@@ -539,6 +605,9 @@ datum_h3_local_ij_to_cell(Datum origin_d, Datum coord_d)
  * Datum wrappers for lat/lng conversions
  *****************************************************************************/
 
+/**
+ * @brief 
+ */
 Datum
 datum_h3_latlng_to_cell(Datum point_d, Datum res_d)
 {
@@ -547,6 +616,9 @@ datum_h3_latlng_to_cell(Datum point_d, Datum res_d)
     DatumGetInt32(res_d)));
 }
 
+/**
+ * @brief 
+ */
 Datum
 datum_h3_cell_to_latlng(Datum d)
 {
@@ -554,6 +626,9 @@ datum_h3_cell_to_latlng(Datum d)
   return PointerGetDatum(gs);
 }
 
+/**
+ * @brief 
+ */
 Datum
 datum_h3_cell_to_boundary(Datum d)
 {
@@ -568,6 +643,9 @@ datum_h3_cell_to_boundary(Datum d)
  * in an Int32 datum — no temporal unit support).
  *****************************************************************************/
 
+/**
+ * @brief 
+ */
 Datum
 datum_h3_cell_area(Datum cell_d, Datum unit_d)
 {
@@ -575,6 +653,9 @@ datum_h3_cell_area(Datum cell_d, Datum unit_d)
     (H3Unit) DatumGetInt32(unit_d)));
 }
 
+/**
+ * @brief 
+ */
 Datum
 datum_h3_edge_length(Datum edge_d, Datum unit_d)
 {
@@ -582,6 +663,9 @@ datum_h3_edge_length(Datum edge_d, Datum unit_d)
     (H3Unit) DatumGetInt32(unit_d)));
 }
 
+/**
+ * @brief 
+ */
 Datum
 datum_h3_great_circle_distance(Datum a_d, Datum b_d, Datum unit_d)
 {
