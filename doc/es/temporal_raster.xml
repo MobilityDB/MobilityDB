@@ -181,6 +181,74 @@ JOIN elevation_tiles r
 		</itemizedlist>
 	</sect1>
 
+	<sect1 xml:id="raquet_accessors">
+		<title>Accesores y Comparación de Raquet</title>
+
+		<para>Un valor <varname>raquet</varname> es autodescriptivo: los accesores siguientes leen la georreferenciación y la disposición que transporta, de modo que una tesela empaquetada con el constructor <link linkend="raquet"><varname>raquet</varname></link> o decodificada con <link linkend="raquet_read"><varname>raquet_read</varname></link> puede inspeccionarse sin conservar las columnas sueltas a partir de las cuales se construyó.</para>
+
+		<para>Las teselas también admiten el conjunto completo de operadores de comparación. El orden es total y se define primero por la celda QUADBIN, luego por el tipo de píxel, el ancho, el alto y finalmente los bytes de píxeles; está pensado para indexación y deduplicación, no para una interpretación espacial. Una clase de operadores btree por defecto hace que <varname>ORDER BY</varname>, <varname>DISTINCT</varname> y las uniones por mezcla funcionen sobre columnas <varname>raquet</varname>, y una clase de operadores hash por defecto habilita las uniones y agregaciones hash.</para>
+
+		<itemizedlist>
+			<listitem xml:id="raquet_quadbin_accessor">
+				<indexterm significance="normal"><primary><varname>quadbin</varname></primary></indexterm>
+				<para>Devolver la celda QUADBIN de una tesela Raquet</para>
+				<para><varname>quadbin(raquet) → bigint</varname></para>
+			</listitem>
+
+			<listitem xml:id="raquet_width">
+				<indexterm significance="normal"><primary><varname>width</varname></primary></indexterm>
+				<para>Devolver el ancho en píxeles de una tesela Raquet</para>
+				<para><varname>width(raquet) → integer</varname></para>
+			</listitem>
+
+			<listitem xml:id="raquet_height">
+				<indexterm significance="normal"><primary><varname>height</varname></primary></indexterm>
+				<para>Devolver el alto en píxeles de una tesela Raquet</para>
+				<para><varname>height(raquet) → integer</varname></para>
+			</listitem>
+
+			<listitem xml:id="raquet_nodata">
+				<indexterm significance="normal"><primary><varname>nodata</varname></primary></indexterm>
+				<para>Devolver el valor centinela nodata de una tesela Raquet</para>
+				<para><varname>nodata(raquet) → float8</varname></para>
+			</listitem>
+
+			<listitem xml:id="raquet_pixtype">
+				<indexterm significance="normal"><primary><varname>pixtype</varname></primary></indexterm>
+				<para>Devolver el nombre del tipo de dato de píxel de una tesela Raquet</para>
+				<para><varname>pixtype(raquet) → text</varname></para>
+				<para>El nombre devuelto es el que aceptan los constructores, es decir, uno de <varname>UINT8</varname>, <varname>INT16</varname>, <varname>INT32</varname>, <varname>FLOAT32</varname> o <varname>FLOAT64</varname>.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- Leer la disposición de una tesela empaquetada
+SELECT quadbin(tile), width(tile), height(tile), pixtype(tile), nodata(tile)
+FROM (SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'UINT8') AS tile) t;
+-- 5193776270265024512 | 2 | 2 | UINT8 | 0
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="raquet_comparison">
+				<indexterm significance="normal"><primary><varname>comparación de raquet</varname></primary></indexterm>
+				<para>Comparar dos teselas Raquet</para>
+				<para><varname>raquet = raquet → boolean</varname></para>
+				<para><varname>raquet &lt;&gt; raquet → boolean</varname></para>
+				<para><varname>raquet &lt; raquet → boolean</varname></para>
+				<para><varname>raquet &lt;= raquet → boolean</varname></para>
+				<para><varname>raquet &gt;= raquet → boolean</varname></para>
+				<para><varname>raquet &gt; raquet → boolean</varname></para>
+				<para>Las funciones que respaldan estos operadores son <varname>eq</varname>, <varname>ne</varname>, <varname>lt</varname>, <varname>le</varname>, <varname>ge</varname> y <varname>gt</varname>, junto con <varname>cmp(raquet,raquet) → integer</varname>, que devuelve -1, 0 o 1.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- Dos teselas con la misma celda, disposición y píxeles son iguales
+SELECT raquet('\x0102'::bytea, 2, 1, 5193776270265024512, 'UINT8') =
+       raquet('\x0102'::bytea, 2, 1, 5193776270265024512, 'UINT8');
+-- true
+
+-- Deduplicar teselas, lo que permiten las clases de operadores btree y hash
+SELECT DISTINCT tile FROM elevation_tiles;
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
 	<sect1 xml:id="raster_restriction">
 		<title>Operadores de Restricción y Predicado</title>
 

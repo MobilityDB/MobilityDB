@@ -183,6 +183,74 @@ JOIN elevation_tiles r
 		</itemizedlist>
 	</sect1>
 
+	<sect1 xml:id="raquet_accessors">
+		<title>Raquet Accessors and Comparison</title>
+
+		<para>A <varname>raquet</varname> value is self-describing: the accessors below read back the georeferencing and layout it carries, so a tile packaged with the <link linkend="raquet"><varname>raquet</varname></link> constructor or decoded with <link linkend="raquet_read"><varname>raquet_read</varname></link> can be inspected without keeping the loose columns it was built from.</para>
+
+		<para>Tiles also support the full set of comparison operators. The ordering is total and is defined on the QUADBIN cell first, then the pixel type, the width, the height, and finally the pixel bytes; it is meant for indexing and deduplication rather than for a spatial interpretation. A default btree operator class makes <varname>ORDER BY</varname>, <varname>DISTINCT</varname> and merge joins work on <varname>raquet</varname> columns, and a default hash operator class enables hash joins and hash aggregation.</para>
+
+		<itemizedlist>
+			<listitem xml:id="raquet_quadbin_accessor">
+				<indexterm significance="normal"><primary><varname>quadbin</varname></primary></indexterm>
+				<para>Return the QUADBIN cell of a Raquet tile</para>
+				<para><varname>quadbin(raquet) → bigint</varname></para>
+			</listitem>
+
+			<listitem xml:id="raquet_width">
+				<indexterm significance="normal"><primary><varname>width</varname></primary></indexterm>
+				<para>Return the width in pixels of a Raquet tile</para>
+				<para><varname>width(raquet) → integer</varname></para>
+			</listitem>
+
+			<listitem xml:id="raquet_height">
+				<indexterm significance="normal"><primary><varname>height</varname></primary></indexterm>
+				<para>Return the height in pixels of a Raquet tile</para>
+				<para><varname>height(raquet) → integer</varname></para>
+			</listitem>
+
+			<listitem xml:id="raquet_nodata">
+				<indexterm significance="normal"><primary><varname>nodata</varname></primary></indexterm>
+				<para>Return the nodata sentinel value of a Raquet tile</para>
+				<para><varname>nodata(raquet) → float8</varname></para>
+			</listitem>
+
+			<listitem xml:id="raquet_pixtype">
+				<indexterm significance="normal"><primary><varname>pixtype</varname></primary></indexterm>
+				<para>Return the name of the pixel data type of a Raquet tile</para>
+				<para><varname>pixtype(raquet) → text</varname></para>
+				<para>The returned name is the one the constructors accept, that is, one of <varname>UINT8</varname>, <varname>INT16</varname>, <varname>INT32</varname>, <varname>FLOAT32</varname>, or <varname>FLOAT64</varname>.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- Read back the layout of a packaged tile
+SELECT quadbin(tile), width(tile), height(tile), pixtype(tile), nodata(tile)
+FROM (SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'UINT8') AS tile) t;
+-- 5193776270265024512 | 2 | 2 | UINT8 | 0
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="raquet_comparison">
+				<indexterm significance="normal"><primary><varname>raquet comparison</varname></primary></indexterm>
+				<para>Compare two Raquet tiles</para>
+				<para><varname>raquet = raquet → boolean</varname></para>
+				<para><varname>raquet &lt;&gt; raquet → boolean</varname></para>
+				<para><varname>raquet &lt; raquet → boolean</varname></para>
+				<para><varname>raquet &lt;= raquet → boolean</varname></para>
+				<para><varname>raquet &gt;= raquet → boolean</varname></para>
+				<para><varname>raquet &gt; raquet → boolean</varname></para>
+				<para>The functions backing these operators are <varname>eq</varname>, <varname>ne</varname>, <varname>lt</varname>, <varname>le</varname>, <varname>ge</varname> and <varname>gt</varname>, together with <varname>cmp(raquet,raquet) → integer</varname>, which returns -1, 0, or 1.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- Two tiles with the same cell, layout and pixels are equal
+SELECT raquet('\x0102'::bytea, 2, 1, 5193776270265024512, 'UINT8') =
+       raquet('\x0102'::bytea, 2, 1, 5193776270265024512, 'UINT8');
+-- true
+
+-- Deduplicate tiles, which the btree and hash operator classes support
+SELECT DISTINCT tile FROM elevation_tiles;
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
 	<sect1 xml:id="raster_restriction">
 		<title>Restriction and Predicate Operators</title>
 

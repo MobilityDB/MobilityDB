@@ -330,3 +330,75 @@ FROM t;
 -- 2 x 2 GeoTIFF carries no geotransform, so omitting the quadbin is an error.
 SELECT raquet_read(
   decode('49492a00080000000b000001030001000000020000000101030001000000020000000201030001000000080000000301030001000000010000000601030001000000010000001101040001000000920000001501030001000000010000001601030001000000020000001701040001000000040000001c01030001000000010000005301030001000000010000000000000001020304', 'hex'));
+
+-------------------------------------------------------------------------------
+-- raquet accessors
+-------------------------------------------------------------------------------
+
+-- The accessors read back the georeferencing and layout the tile carries, so a
+-- packaged tile needs none of the loose columns it was built from.
+SELECT quadbin(tile), width(tile), height(tile), pixtype(tile), nodata(tile)
+FROM (SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint,
+        'UINT8') AS tile) t;
+
+-- Every pixel type name round-trips through the constructor and pixtype.
+SELECT pixtype(raquet('\x01'::bytea, 1, 1, 5193776270265024512::bigint, 'UINT8')),
+       pixtype(raquet('\x0102'::bytea, 1, 1, 5193776270265024512::bigint, 'INT16')),
+       pixtype(raquet('\x01020304'::bytea, 1, 1, 5193776270265024512::bigint, 'INT32')),
+       pixtype(raquet('\x01020304'::bytea, 1, 1, 5193776270265024512::bigint, 'FLOAT32')),
+       pixtype(raquet('\x0102030405060708'::bytea, 1, 1, 5193776270265024512::bigint,
+         'FLOAT64'));
+
+-- The nodata sentinel supplied to the constructor is the one reported back.
+SELECT nodata(raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8',
+  -9999.0));
+
+-------------------------------------------------------------------------------
+-- raquet comparison
+-------------------------------------------------------------------------------
+
+-- Tiles agreeing on cell, layout and pixels are equal; any difference orders.
+SELECT raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8') =
+       raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8') AS eq,
+       raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8') <>
+       raquet('\x0103'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8') AS ne;
+
+-- The ordering is on the QUADBIN cell first, then pixel type, width, height and
+-- finally the pixel bytes.
+SELECT raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8') <
+       raquet('\x0103'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8') AS lt_pixels,
+       raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8') <=
+       raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8') AS le_equal,
+       raquet('\x0103'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8') >
+       raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8') AS gt_pixels,
+       raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8') >=
+       raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8') AS ge_equal;
+
+-- cmp returns the three-way comparison the btree operator class uses.
+SELECT cmp(raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8'),
+           raquet('\x0103'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8')) AS lt,
+       cmp(raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8'),
+           raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8')) AS eq,
+       cmp(raquet('\x0103'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8'),
+           raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8')) AS gt;
+
+-- Sorting and deduplication go through the btree and hash operator classes.
+WITH tiles(tile) AS (VALUES
+  (raquet('\x0103'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8')),
+  (raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8')),
+  (raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8')))
+SELECT count(*) AS total, count(DISTINCT tile) AS distinct_tiles,
+       (SELECT tile::text FROM tiles ORDER BY tile LIMIT 1) =
+         raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint,
+           'UINT8')::text AS smallest_sorts_first
+FROM tiles;
+
+-- Equal tiles hash equally, and the seeded hash varies with the seed.
+SELECT raquet_hash(raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint,
+         'UINT8')) =
+       raquet_hash(raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint,
+         'UINT8')) AS equal_tiles_hash_equally,
+       raquet_hash_extended(raquet('\x0102'::bytea, 2, 1,
+         5193776270265024512::bigint, 'UINT8'), 0) <>
+       raquet_hash_extended(raquet('\x0102'::bytea, 2, 1,
+         5193776270265024512::bigint, 'UINT8'), 1) AS seed_changes_hash;

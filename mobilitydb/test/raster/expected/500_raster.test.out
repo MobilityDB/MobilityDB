@@ -283,3 +283,89 @@ FROM t;
 SELECT raquet_read(
   decode('49492a00080000000b000001030001000000020000000101030001000000020000000201030001000000080000000301030001000000010000000601030001000000010000001101040001000000920000001501030001000000010000001601030001000000020000001701040001000000040000001c01030001000000010000005301030001000000010000000000000001020304', 'hex'));
 ERROR:  Raster has no geotransform; cannot derive its QUADBIN cell: in-memory raster
+SELECT quadbin(tile), width(tile), height(tile), pixtype(tile), nodata(tile)
+FROM (SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint,
+        'UINT8') AS tile) t;
+       quadbin       | width | height | pixtype | nodata 
+---------------------+-------+--------+---------+--------
+ 5193776270265024512 |     2 |      2 | UINT8   |      0
+(1 row)
+
+SELECT pixtype(raquet('\x01'::bytea, 1, 1, 5193776270265024512::bigint, 'UINT8')),
+       pixtype(raquet('\x0102'::bytea, 1, 1, 5193776270265024512::bigint, 'INT16')),
+       pixtype(raquet('\x01020304'::bytea, 1, 1, 5193776270265024512::bigint, 'INT32')),
+       pixtype(raquet('\x01020304'::bytea, 1, 1, 5193776270265024512::bigint, 'FLOAT32')),
+       pixtype(raquet('\x0102030405060708'::bytea, 1, 1, 5193776270265024512::bigint,
+         'FLOAT64'));
+ pixtype | pixtype | pixtype | pixtype | pixtype 
+---------+---------+---------+---------+---------
+ UINT8   | INT16   | INT32   | FLOAT32 | FLOAT64
+(1 row)
+
+SELECT nodata(raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8',
+  -9999.0));
+ nodata 
+--------
+  -9999
+(1 row)
+
+SELECT raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8') =
+       raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8') AS eq,
+       raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8') <>
+       raquet('\x0103'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8') AS ne;
+ eq | ne 
+----+----
+ t  | t
+(1 row)
+
+SELECT raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8') <
+       raquet('\x0103'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8') AS lt_pixels,
+       raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8') <=
+       raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8') AS le_equal,
+       raquet('\x0103'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8') >
+       raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8') AS gt_pixels,
+       raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8') >=
+       raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8') AS ge_equal;
+ lt_pixels | le_equal | gt_pixels | ge_equal 
+-----------+----------+-----------+----------
+ t         | t        | t         | t
+(1 row)
+
+SELECT cmp(raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8'),
+           raquet('\x0103'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8')) AS lt,
+       cmp(raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8'),
+           raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8')) AS eq,
+       cmp(raquet('\x0103'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8'),
+           raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8')) AS gt;
+ lt | eq | gt 
+----+----+----
+ -1 |  0 |  1
+(1 row)
+
+WITH tiles(tile) AS (VALUES
+  (raquet('\x0103'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8')),
+  (raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8')),
+  (raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8')))
+SELECT count(*) AS total, count(DISTINCT tile) AS distinct_tiles,
+       (SELECT tile::text FROM tiles ORDER BY tile LIMIT 1) =
+         raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint,
+           'UINT8')::text AS smallest_sorts_first
+FROM tiles;
+ total | distinct_tiles | smallest_sorts_first 
+-------+----------------+----------------------
+     3 |              2 | t
+(1 row)
+
+SELECT raquet_hash(raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint,
+         'UINT8')) =
+       raquet_hash(raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint,
+         'UINT8')) AS equal_tiles_hash_equally,
+       raquet_hash_extended(raquet('\x0102'::bytea, 2, 1,
+         5193776270265024512::bigint, 'UINT8'), 0) <>
+       raquet_hash_extended(raquet('\x0102'::bytea, 2, 1,
+         5193776270265024512::bigint, 'UINT8'), 1) AS seed_changes_hash;
+ equal_tiles_hash_equally | seed_changes_hash 
+--------------------------+-------------------
+ t                        | t
+(1 row)
+
