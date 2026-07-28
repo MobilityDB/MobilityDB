@@ -372,16 +372,14 @@ sudo make install
 
 		<para>Extensiones previstas para la vía <varname>raquet</varname>:</para>
 		<itemizedlist>
-			<listitem><para><emphasis>Huella de la tesela</emphasis> — una conversión a <varname>stbox</varname> y a <varname>geometry</varname> que da la extensión espacial de una tesela, derivada de su celda QUADBIN.</para></listitem>
 			<listitem><para><emphasis>Fusión agregada de teselas</emphasis> — una variante de retorno de conjunto que acepta el arreglo completo de teselas Raquet coincidentes y fusiona los conjuntos de instantes por tesela, eliminando instantes duplicados en los límites de tesela.</para></listitem>
-			<listitem><para><emphasis>Restricción temporal</emphasis> — <varname>atTime(raquet, tstzspan)</varname> restringe una tesela a la extensión espacial visitada por una o más trayectorias durante un intervalo de tiempo.</para></listitem>
 		</itemizedlist>
 
 		<para>Las extensiones siguientes requieren un modelo de datos ráster general, es decir, sistemas de referencia espacial arbitrarios, georreferenciación afín arbitraria y varias bandas por tesela. Un valor <varname>raquet</varname> es una tesela de una sola banda cuya extensión y rejilla de píxeles se derivan de su celda QUADBIN, por lo que quedan fuera de ese modelo y siguen disponibles a través de la vía <varname>raster</varname> de PostGIS:</para>
 		<itemizedlist>
 			<listitem><para><emphasis>Teselas multibanda</emphasis> — un <varname>tfloat</varname> por banda para imágenes multiespectrales como RGB o escenas satelitales multicanal.</para></listitem>
 			<listitem><para><emphasis>Sistemas de referencia espacial arbitrarios</emphasis> — teselas fuera de la rejilla Web-Mercator y reproyección entre sistemas de referencia.</para></listitem>
-			<listitem><para><emphasis>Procesamiento ráster</emphasis> — álgebra de mapas, estadísticas de resumen, remuestreo, recorte y conversión a polígonos.</para></listitem>
+			<listitem><para><emphasis>Procesamiento ráster</emphasis> — álgebra de mapas, estadísticas de resumen, remuestreo y conversión a polígonos, junto con el recorte de una tesela a una región, como la extensión que un conjunto de trayectorias visita durante un intervalo de tiempo.</para></listitem>
 		</itemizedlist>
 	</sect1>
 </chapter>
