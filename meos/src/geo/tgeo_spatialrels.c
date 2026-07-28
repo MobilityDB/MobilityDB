@@ -1666,17 +1666,38 @@ ea_dwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
       return 0;
   }
 
+  /* The ever quantifier is the running minimum of the distance: a temporal geo
+   * is ever within @p dist of the geometry exactly when the smallest distance
+   * it ever attains is at most @p dist, which is the nearest approach distance.
+   * Reducing to it keeps the ever semantics off the temporal Boolean of the
+   * native path below, which resolves every within-distance sub-period of every
+   * segment only for the projection to discard all but their existence. The
+   * nearest approach is a single running minimum, and
+   * #nad_tpoint_geo_analytic computes it with the same GEOS-free analytic
+   * engine, so the reduction is cheaper without giving up the native path. A
+   * zero distance is left on the paths below, where the ever/always intersects
+   * and disjoint relationships are defined in terms of ea_dwithin(., ., 0.0),
+   * and geodetic input keeps the trajectory path of its own EVER branch. The
+   * reduction is restricted to planar 2D input on both sides, the same
+   * condition the native path below carries: the nearest approach requires the
+   * two operands to have the same dimensionality, whereas this relationship
+   * accepts a 2D operand against a 3D one and answers on their common
+   * dimensions. */
+  if (ever && dist > 0.0 && ! MEOS_FLAGS_GET_GEODETIC(temp->flags) &&
+      ! MEOS_FLAGS_GET_Z(temp->flags) && ! FLAGS_GET_Z(gs->gflags))
+    return (nad_tgeo_geo(temp, gs) <= dist) ? 1 : 0;
+
   /* Native fast path for a temporal geometry point with linear interpolation
    * against a non-point geometry the clip engine supports (planar, 2D,
    * strictly positive distance). Compute the native temporal within Boolean
-   * once and project it to the ever/always quantifier. Using the same
-   * #tpoint_linear_dwithin_geom as #tdwithin_tgeo_geo makes the ever/always
-   * projections consistent with the temporal result by construction. This kills
-   * both the EVER GEOS trajectory dwithin and the ALWAYS geom_buffer + covers
-   * approximation. A zero distance is left on the existing paths because the
-   * ever/always intersects and disjoint relationships are defined in terms of
-   * ea_dwithin(., ., 0.0); the POINT-vs-POINT and unsupported cases also fall
-   * through to the paths below. */
+   * once and project it to the always quantifier. Using the same
+   * #tpoint_linear_dwithin_geom as #tdwithin_tgeo_geo makes the always
+   * projection consistent with the temporal result by construction. This kills
+   * the ALWAYS geom_buffer + covers approximation. A zero distance is left on
+   * the existing paths because the ever/always intersects and disjoint
+   * relationships are defined in terms of ea_dwithin(., ., 0.0); the
+   * POINT-vs-POINT and unsupported cases also fall through to the paths
+   * below. */
   if (dist > 0.0 && temp->temptype == T_TGEOMPOINT &&
       temp->subtype != TINSTANT &&
       MEOS_FLAGS_GET_INTERP(temp->flags) == LINEAR &&
