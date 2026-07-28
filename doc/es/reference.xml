@@ -3736,6 +3736,35 @@
 		</sect2>
 
 		<sect2>
+			<title>Accesores y Comparación de Raquet</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="raquet_quadbin_accessor"><varname>quadbin</varname></link>: Devolver la celda QUADBIN de una tesela Raquet</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="raquet_width"><varname>width</varname></link>: Devolver el ancho en píxeles de una tesela Raquet</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="raquet_height"><varname>height</varname></link>: Devolver el alto en píxeles de una tesela Raquet</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="raquet_nodata"><varname>nodata</varname></link>: Devolver el valor centinela nodata de una tesela Raquet</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="raquet_pixtype"><varname>pixtype</varname></link>: Devolver el nombre del tipo de dato de píxel de una tesela Raquet</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="raquet_comparison"><varname>comparación de raquet</varname></link>: Comparar dos teselas Raquet</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
 			<title>Operadores de Restricción y Predicado</title>
 			<itemizedlist>
 				<listitem>

@@ -91,11 +91,19 @@ extern uint64 raquet_quadbin(const Raquet *rq);
 extern int raquet_width(const Raquet *rq);
 extern int raquet_height(const Raquet *rq);
 extern double raquet_nodata(const Raquet *rq);
+extern char *raquet_pixtype(const Raquet *rq);
+extern uint32 raquet_hash(const Raquet *rq);
+extern uint64 raquet_hash_extended(const Raquet *rq, uint64 seed);
 
 /* Comparison functions for Raquet tiles */
 
 extern int raquet_cmp(const Raquet *rq1, const Raquet *rq2);
 extern bool raquet_eq(const Raquet *rq1, const Raquet *rq2);
+extern bool raquet_ne(const Raquet *rq1, const Raquet *rq2);
+extern bool raquet_lt(const Raquet *rq1, const Raquet *rq2);
+extern bool raquet_le(const Raquet *rq1, const Raquet *rq2);
+extern bool raquet_ge(const Raquet *rq1, const Raquet *rq2);
+extern bool raquet_gt(const Raquet *rq1, const Raquet *rq2);
 
 /* Sampling functions */
 

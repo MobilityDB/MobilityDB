@@ -3714,6 +3714,35 @@
 		</sect2>
 
 		<sect2>
+			<title>Raquet Accessors and Comparison</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="raquet_quadbin_accessor"><varname>quadbin</varname></link>: Return the QUADBIN cell of a Raquet tile</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="raquet_width"><varname>width</varname></link>: Return the width in pixels of a Raquet tile</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="raquet_height"><varname>height</varname></link>: Return the height in pixels of a Raquet tile</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="raquet_nodata"><varname>nodata</varname></link>: Return the nodata sentinel value of a Raquet tile</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="raquet_pixtype"><varname>pixtype</varname></link>: Return the name of the pixel data type of a Raquet tile</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="raquet_comparison"><varname>raquet comparison</varname></link>: Compare two Raquet tiles</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
 			<title>Restriction and Predicate Operators</title>
 			<itemizedlist>
 				<listitem>

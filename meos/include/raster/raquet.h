@@ -114,4 +114,17 @@ raquet_pixels_size(const Raquet *rq)
     raquet_pixtype_size((MeosPixType) rq->pixtype);
 }
 
+/**
+ * @brief Return the number of hashable bytes of a Raquet tile, that is, the
+ * whole value but the varlena header
+ * @note The header is excluded since its representation depends on whether the
+ * value has been detoasted, while the bytes that follow are deterministic: the
+ * constructor zeroes the allocation, so any padding hashes reproducibly
+ */
+static inline size_t
+raquet_meaningful_size(const Raquet *rq)
+{
+  return offsetof(struct Raquet, pixels) - VARHDRSZ + raquet_pixels_size(rq);
+}
+
 #endif /* __RAQUET_H__ */

@@ -42,10 +42,12 @@
 
 /* C */
 #include <assert.h>
+#include <limits.h>
 #include <string.h>
 /* PostgreSQL */
 #include <postgres.h>
 #include <pgtypes.h>
+#include "common/hashfn.h"
 #if POSTGRESQL_VERSION_NUMBER >= 160000
   #include "varatt.h"
 #endif
@@ -282,6 +284,33 @@ raquet_nodata(const Raquet *rq)
   return rq->nodata;
 }
 
+/**
+ * @ingroup meos_raster_base_accessor
+ * @brief Return the name of the pixel data type of a Raquet tile
+ * @param[in] rq Raquet tile
+ * @return On error return @p NULL
+ * @note The returned name is the one accepted by the tile constructors, that
+ * is, one of UINT8, INT16, INT32, FLOAT32, or FLOAT64
+ * @csqlfn #Raquet_pixtype()
+ */
+char *
+raquet_pixtype(const Raquet *rq)
+{
+  VALIDATE_NOT_NULL(rq, NULL);
+  switch ((MeosPixType) rq->pixtype)
+  {
+    case MEOS_PT_UINT8:   return pstrdup("UINT8");
+    case MEOS_PT_INT16:   return pstrdup("INT16");
+    case MEOS_PT_INT32:   return pstrdup("INT32");
+    case MEOS_PT_FLOAT32: return pstrdup("FLOAT32");
+    case MEOS_PT_FLOAT64: return pstrdup("FLOAT64");
+    default:
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "Unknown raquet pixel type code: %u", rq->pixtype);
+      return NULL;
+  }
+}
+
 /*****************************************************************************
  * Comparison functions
  *****************************************************************************/
@@ -321,6 +350,106 @@ raquet_eq(const Raquet *rq1, const Raquet *rq2)
 {
   assert(rq1); assert(rq2);
   return raquet_cmp(rq1, rq2) == 0;
+}
+
+/**
+ * @ingroup meos_raster_base_comp
+ * @brief Return true if two Raquet tiles are different
+ * @param[in] rq1,rq2 Raquet tiles
+ * @csqlfn #Raquet_ne()
+ */
+bool
+raquet_ne(const Raquet *rq1, const Raquet *rq2)
+{
+  assert(rq1); assert(rq2);
+  return raquet_cmp(rq1, rq2) != 0;
+}
+
+/**
+ * @ingroup meos_raster_base_comp
+ * @brief Return true if the first Raquet tile is less than the second one
+ * @param[in] rq1,rq2 Raquet tiles
+ * @csqlfn #Raquet_lt()
+ */
+bool
+raquet_lt(const Raquet *rq1, const Raquet *rq2)
+{
+  assert(rq1); assert(rq2);
+  return raquet_cmp(rq1, rq2) < 0;
+}
+
+/**
+ * @ingroup meos_raster_base_comp
+ * @brief Return true if the first Raquet tile is less than or equal to the
+ * second one
+ * @param[in] rq1,rq2 Raquet tiles
+ * @csqlfn #Raquet_le()
+ */
+bool
+raquet_le(const Raquet *rq1, const Raquet *rq2)
+{
+  assert(rq1); assert(rq2);
+  return raquet_cmp(rq1, rq2) <= 0;
+}
+
+/**
+ * @ingroup meos_raster_base_comp
+ * @brief Return true if the first Raquet tile is greater than or equal to the
+ * second one
+ * @param[in] rq1,rq2 Raquet tiles
+ * @csqlfn #Raquet_ge()
+ */
+bool
+raquet_ge(const Raquet *rq1, const Raquet *rq2)
+{
+  assert(rq1); assert(rq2);
+  return raquet_cmp(rq1, rq2) >= 0;
+}
+
+/**
+ * @ingroup meos_raster_base_comp
+ * @brief Return true if the first Raquet tile is greater than the second one
+ * @param[in] rq1,rq2 Raquet tiles
+ * @csqlfn #Raquet_gt()
+ */
+bool
+raquet_gt(const Raquet *rq1, const Raquet *rq2)
+{
+  assert(rq1); assert(rq2);
+  return raquet_cmp(rq1, rq2) > 0;
+}
+
+/*****************************************************************************
+ * Hash functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_raster_base_accessor
+ * @brief Return the 32-bit hash of a Raquet tile
+ * @param[in] rq Raquet tile
+ * @csqlfn #Raquet_hash()
+ */
+uint32
+raquet_hash(const Raquet *rq)
+{
+  VALIDATE_NOT_NULL(rq, INT_MAX);
+  return hash_any(((const unsigned char *) rq) + VARHDRSZ,
+    (int) raquet_meaningful_size(rq));
+}
+
+/**
+ * @ingroup meos_raster_base_accessor
+ * @brief Return the 64-bit hash of a Raquet tile using a seed
+ * @param[in] rq Raquet tile
+ * @param[in] seed Seed
+ * @csqlfn #Raquet_hash_extended()
+ */
+uint64
+raquet_hash_extended(const Raquet *rq, uint64 seed)
+{
+  VALIDATE_NOT_NULL(rq, LONG_MAX);
+  return hash_any_extended(((const unsigned char *) rq) + VARHDRSZ,
+    (int) raquet_meaningful_size(rq), seed);
 }
 
 /*****************************************************************************

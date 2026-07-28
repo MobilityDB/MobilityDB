@@ -486,3 +486,260 @@ Trajectory_quadbins(PG_FUNCTION_ARGS)
 
   PG_RETURN_ARRAYTYPE_P(arr);
 }
+
+/*****************************************************************************
+ * Raquet type: accessors
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Raquet_quadbin(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raquet_quadbin);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the QUADBIN cell of a Raquet tile
+ * @sqlfn quadbin()
+ */
+Datum
+Raquet_quadbin(PG_FUNCTION_ARGS)
+{
+  Raquet *rq = PG_GETARG_RAQUET_P(0);
+  uint64 result = raquet_quadbin(rq);
+  PG_FREE_IF_COPY(rq, 0);
+  PG_RETURN_INT64((int64) result);
+}
+
+PGDLLEXPORT Datum Raquet_width(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raquet_width);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the width in pixels of a Raquet tile
+ * @sqlfn width()
+ */
+Datum
+Raquet_width(PG_FUNCTION_ARGS)
+{
+  Raquet *rq = PG_GETARG_RAQUET_P(0);
+  int result = raquet_width(rq);
+  PG_FREE_IF_COPY(rq, 0);
+  PG_RETURN_INT32(result);
+}
+
+PGDLLEXPORT Datum Raquet_height(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raquet_height);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the height in pixels of a Raquet tile
+ * @sqlfn height()
+ */
+Datum
+Raquet_height(PG_FUNCTION_ARGS)
+{
+  Raquet *rq = PG_GETARG_RAQUET_P(0);
+  int result = raquet_height(rq);
+  PG_FREE_IF_COPY(rq, 0);
+  PG_RETURN_INT32(result);
+}
+
+PGDLLEXPORT Datum Raquet_nodata(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raquet_nodata);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the nodata sentinel value of a Raquet tile
+ * @sqlfn nodata()
+ */
+Datum
+Raquet_nodata(PG_FUNCTION_ARGS)
+{
+  Raquet *rq = PG_GETARG_RAQUET_P(0);
+  double result = raquet_nodata(rq);
+  PG_FREE_IF_COPY(rq, 0);
+  PG_RETURN_FLOAT8(result);
+}
+
+PGDLLEXPORT Datum Raquet_pixtype(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raquet_pixtype);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the name of the pixel data type of a Raquet tile
+ * @sqlfn pixtype()
+ */
+Datum
+Raquet_pixtype(PG_FUNCTION_ARGS)
+{
+  Raquet *rq = PG_GETARG_RAQUET_P(0);
+  char *str = raquet_pixtype(rq);
+  text *result = cstring_to_text(str);
+  pfree(str);
+  PG_FREE_IF_COPY(rq, 0);
+  PG_RETURN_TEXT_P(result);
+}
+
+/*****************************************************************************
+ * Raquet type: comparison
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Raquet_eq(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raquet_eq);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return true if the Raquet tiles are equal
+ * @sqlfn eq()
+ * @sqlop @p =
+ */
+Datum
+Raquet_eq(PG_FUNCTION_ARGS)
+{
+  Raquet *rq1 = PG_GETARG_RAQUET_P(0);
+  Raquet *rq2 = PG_GETARG_RAQUET_P(1);
+  bool result = raquet_eq(rq1, rq2);
+  PG_FREE_IF_COPY(rq1, 0); PG_FREE_IF_COPY(rq2, 1);
+  PG_RETURN_BOOL(result);
+}
+
+PGDLLEXPORT Datum Raquet_ne(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raquet_ne);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return true if the Raquet tiles are different
+ * @sqlfn ne()
+ * @sqlop @p <>
+ */
+Datum
+Raquet_ne(PG_FUNCTION_ARGS)
+{
+  Raquet *rq1 = PG_GETARG_RAQUET_P(0);
+  Raquet *rq2 = PG_GETARG_RAQUET_P(1);
+  bool result = raquet_ne(rq1, rq2);
+  PG_FREE_IF_COPY(rq1, 0); PG_FREE_IF_COPY(rq2, 1);
+  PG_RETURN_BOOL(result);
+}
+
+PGDLLEXPORT Datum Raquet_lt(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raquet_lt);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return true if the first Raquet tile is less than the second one
+ * @sqlfn lt()
+ * @sqlop @p <
+ */
+Datum
+Raquet_lt(PG_FUNCTION_ARGS)
+{
+  Raquet *rq1 = PG_GETARG_RAQUET_P(0);
+  Raquet *rq2 = PG_GETARG_RAQUET_P(1);
+  bool result = raquet_lt(rq1, rq2);
+  PG_FREE_IF_COPY(rq1, 0); PG_FREE_IF_COPY(rq2, 1);
+  PG_RETURN_BOOL(result);
+}
+
+PGDLLEXPORT Datum Raquet_le(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raquet_le);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return true if the first Raquet tile is less than or equal to the
+ * second one
+ * @sqlfn le()
+ * @sqlop @p <=
+ */
+Datum
+Raquet_le(PG_FUNCTION_ARGS)
+{
+  Raquet *rq1 = PG_GETARG_RAQUET_P(0);
+  Raquet *rq2 = PG_GETARG_RAQUET_P(1);
+  bool result = raquet_le(rq1, rq2);
+  PG_FREE_IF_COPY(rq1, 0); PG_FREE_IF_COPY(rq2, 1);
+  PG_RETURN_BOOL(result);
+}
+
+PGDLLEXPORT Datum Raquet_ge(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raquet_ge);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return true if the first Raquet tile is greater than or equal to the
+ * second one
+ * @sqlfn ge()
+ * @sqlop @p >=
+ */
+Datum
+Raquet_ge(PG_FUNCTION_ARGS)
+{
+  Raquet *rq1 = PG_GETARG_RAQUET_P(0);
+  Raquet *rq2 = PG_GETARG_RAQUET_P(1);
+  bool result = raquet_ge(rq1, rq2);
+  PG_FREE_IF_COPY(rq1, 0); PG_FREE_IF_COPY(rq2, 1);
+  PG_RETURN_BOOL(result);
+}
+
+PGDLLEXPORT Datum Raquet_gt(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raquet_gt);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return true if the first Raquet tile is greater than the second one
+ * @sqlfn gt()
+ * @sqlop @p >
+ */
+Datum
+Raquet_gt(PG_FUNCTION_ARGS)
+{
+  Raquet *rq1 = PG_GETARG_RAQUET_P(0);
+  Raquet *rq2 = PG_GETARG_RAQUET_P(1);
+  bool result = raquet_gt(rq1, rq2);
+  PG_FREE_IF_COPY(rq1, 0); PG_FREE_IF_COPY(rq2, 1);
+  PG_RETURN_BOOL(result);
+}
+
+PGDLLEXPORT Datum Raquet_cmp(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raquet_cmp);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return -1, 0, or 1 depending on whether the first Raquet tile is
+ * less than, equal to, or greater than the second one
+ * @sqlfn cmp()
+ */
+Datum
+Raquet_cmp(PG_FUNCTION_ARGS)
+{
+  Raquet *rq1 = PG_GETARG_RAQUET_P(0);
+  Raquet *rq2 = PG_GETARG_RAQUET_P(1);
+  int result = raquet_cmp(rq1, rq2);
+  PG_FREE_IF_COPY(rq1, 0); PG_FREE_IF_COPY(rq2, 1);
+  PG_RETURN_INT32(result);
+}
+
+/*****************************************************************************
+ * Raquet type: hash
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Raquet_hash(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raquet_hash);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the 32-bit hash of a Raquet tile
+ * @sqlfn raquet_hash()
+ */
+Datum
+Raquet_hash(PG_FUNCTION_ARGS)
+{
+  Raquet *rq = PG_GETARG_RAQUET_P(0);
+  uint32 result = raquet_hash(rq);
+  PG_FREE_IF_COPY(rq, 0);
+  PG_RETURN_UINT32(result);
+}
+
+PGDLLEXPORT Datum Raquet_hash_extended(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raquet_hash_extended);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the 64-bit hash of a Raquet tile using a seed
+ * @sqlfn raquet_hash_extended()
+ */
+Datum
+Raquet_hash_extended(PG_FUNCTION_ARGS)
+{
+  Raquet *rq = PG_GETARG_RAQUET_P(0);
+  uint64 seed = PG_GETARG_INT64(1);
+  uint64 result = raquet_hash_extended(rq, seed);
+  PG_FREE_IF_COPY(rq, 0);
+  PG_RETURN_UINT64(result);
+}
+
+/*****************************************************************************/

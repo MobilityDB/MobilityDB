@@ -303,3 +303,127 @@ CREATE OR REPLACE FUNCTION aRasterValue(
   SELECT v IS NOT NULL AND minusSpan(v, $3) IS NULL
   FROM (SELECT raster_value($1, $2, $4) AS v) t
 $$ LANGUAGE SQL STRICT;
+
+/******************************************************************************
+ * Accessors for raquet tiles
+ *****************************************************************************/
+
+CREATE FUNCTION quadbin(raquet)
+  RETURNS bigint
+  AS 'MODULE_PATHNAME', 'Raquet_quadbin'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION width(raquet)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Raquet_width'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION height(raquet)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Raquet_height'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION nodata(raquet)
+  RETURNS float8
+  AS 'MODULE_PATHNAME', 'Raquet_nodata'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION pixtype(raquet)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Raquet_pixtype'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************
+ * Comparison of raquet tiles
+ *****************************************************************************/
+
+CREATE FUNCTION eq(raquet, raquet)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Raquet_eq'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION ne(raquet, raquet)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Raquet_ne'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION lt(raquet, raquet)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Raquet_lt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION le(raquet, raquet)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Raquet_le'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION ge(raquet, raquet)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Raquet_ge'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION gt(raquet, raquet)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Raquet_gt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION cmp(raquet, raquet)
+  RETURNS int4
+  AS 'MODULE_PATHNAME', 'Raquet_cmp'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR = (
+  LEFTARG = raquet, RIGHTARG = raquet,
+  PROCEDURE = eq,
+  COMMUTATOR = =, NEGATOR = <>,
+  RESTRICT = eqsel, JOIN = eqjoinsel
+);
+CREATE OPERATOR <> (
+  LEFTARG = raquet, RIGHTARG = raquet,
+  PROCEDURE = ne,
+  COMMUTATOR = <>, NEGATOR = =,
+  RESTRICT = neqsel, JOIN = neqjoinsel
+);
+CREATE OPERATOR < (
+  PROCEDURE = lt,
+  LEFTARG = raquet, RIGHTARG = raquet,
+  COMMUTATOR = >, NEGATOR = >=,
+  RESTRICT = areasel, JOIN = areajoinsel
+);
+CREATE OPERATOR <= (
+  PROCEDURE = le,
+  LEFTARG = raquet, RIGHTARG = raquet,
+  COMMUTATOR = >=, NEGATOR = >,
+  RESTRICT = areasel, JOIN = areajoinsel
+);
+CREATE OPERATOR >= (
+  PROCEDURE = ge,
+  LEFTARG = raquet, RIGHTARG = raquet,
+  COMMUTATOR = <=, NEGATOR = <,
+  RESTRICT = areasel, JOIN = areajoinsel
+);
+CREATE OPERATOR > (
+  PROCEDURE = gt,
+  LEFTARG = raquet, RIGHTARG = raquet,
+  COMMUTATOR = <, NEGATOR = <=,
+  RESTRICT = areasel, JOIN = areajoinsel
+);
+
+CREATE OPERATOR CLASS raquet_btree_ops
+  DEFAULT FOR TYPE raquet USING btree AS
+  OPERATOR  1  < ,
+  OPERATOR  2  <= ,
+  OPERATOR  3  = ,
+  OPERATOR  4  >= ,
+  OPERATOR  5  > ,
+  FUNCTION  1  cmp(raquet, raquet);
+
+/*****************************************************************************/
+
+CREATE FUNCTION raquet_hash(raquet)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Raquet_hash'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION raquet_hash_extended(raquet, bigint)
+  RETURNS bigint
+  AS 'MODULE_PATHNAME', 'Raquet_hash_extended'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR CLASS raquet_hash_ops
+  DEFAULT FOR TYPE raquet USING hash AS
+    OPERATOR    1   = ,
+    FUNCTION    1   raquet_hash(raquet),
+    FUNCTION    2   raquet_hash_extended(raquet, bigint);
+
+/*****************************************************************************/
