@@ -575,23 +575,6 @@ Minus_span_span(PG_FUNCTION_ARGS)
  * Distance functions
  ******************************************************************************/
 
-PGDLLEXPORT Datum Distance_value_value(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Distance_value_value);
-/**
- * @ingroup mobilitydb_setspan_dist
- * @brief Return the distance between two values
- * @sqlfn span_distance()
- * @sqlop @p <->
- */
-Datum
-Distance_value_value(PG_FUNCTION_ARGS)
-{
-  Datum value1 = PG_GETARG_DATUM(0);
-  Datum value2 = PG_GETARG_DATUM(1);
-  meosType basetype = oid_meostype(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  PG_RETURN_DATUM(distance_value_value(value1, value2, basetype));
-}
-
 PGDLLEXPORT Datum Distance_value_span(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Distance_value_span);
 /**

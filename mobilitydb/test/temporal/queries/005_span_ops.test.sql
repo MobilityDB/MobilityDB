@@ -106,8 +106,6 @@ SELECT floatspan '[1, 3]' * floatspan '(3, 5]';
 
 -------------------------------------------------------------------------------
 
-SELECT 1.0 <-> 1.0;
-SELECT 1.0 <-> 2.0;
 SELECT 1.0 <-> floatspan '[2, 3]';
 SELECT 1.0 <-> floatspan '[1, 3]';
 SELECT 1.0 <-> floatspan '(1, 3]';
