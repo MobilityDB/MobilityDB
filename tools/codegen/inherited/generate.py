@@ -290,6 +290,55 @@ def extract_spatialrels(filetext: str, family: str) -> str:
     return filetext[b:e]
 
 
+# --- dwithin (SQL spatialrels PG wrappers, distinct shape) ---------------
+# dwithin does not fit the shared spatialrels dispatch: each direction has a
+# static helper EA_dwithin_<dir>(fcinfo, ever) that reads the two operands and
+# the distance and calls the e/a MEOS kernel directly (no &meos dispatcher arg),
+# with two thin public wrappers on top. The static helper uses its own template;
+# the public wrappers reuse the shared spatialrels block (only {RETURN} differs).
+_DW_GET = {
+    "GSERIALIZED *": "PG_GETARG_GSERIALIZED_P",
+    "Temporal *":    "PG_GETARG_TEMPORAL_P",
+    "Cbuffer *":     "PG_GETARG_CBUFFER_P",
+}
+
+
+def render_dwithin(fam: dict) -> str:
+    """Render the ever/always dwithin region: per direction a static dispatcher
+    (rendered from dwithin_dispatcher.c.tmpl) followed by its ever and always
+    public wrappers. Arguments are declared and freed in position order."""
+    banner_t, block_t = (TEMPLATES / "spatialrels.c.tmpl").read_text().split("\n\n")
+    block_t = block_t.rstrip("\n")
+    disp_t = (TEMPLATES / "dwithin_dispatcher.c.tmpl").read_text().rstrip("\n")
+    ingroup = fam.get("ingroup", "mobilitydb_geo_rel_ever")
+    out = [banner_t.replace("{BANNER}", fam["banner"])]
+    for direc in fam["order"]:
+        d = fam["directions"][direc]
+        args = sorted(d["args"], key=lambda a: a["pos"])
+        decls = "\n".join(
+            f"  {a['type']}{a['var']} = {_DW_GET[a['type']]}({a['pos']});" for a in args)
+        frees = "\n".join(
+            f"  PG_FREE_IF_COPY({a['var']}, {a['pos']});" for a in args)
+        out.append(
+            disp_t.replace("{BRIEF}", _wrap_brief(
+                        f"Return true if {d['noun']} are ever/always within a distance"))
+                  .replace("{DIR}", direc)
+                  .replace("{DECLS}", decls)
+                  .replace("{KERNEL}", d["kernel"])
+                  .replace("{KARGS}", d["kargs"])
+                  .replace("{FREES}", frees))
+        for ea, word in (("E", "ever"), ("A", "always")):
+            out.append(
+                block_t.replace("{FN}", f"{ea}dwithin_{direc}")
+                       .replace("{INGROUP}", ingroup)
+                       .replace("{BRIEF}", _wrap_brief(
+                            f"Return true if {d['noun']} are {word} within a distance"))
+                       .replace("{SQLFN}", f"{'e' if ea == 'E' else 'a'}Dwithin")
+                       .replace("{RETURN}", f"  return EA_dwithin_{direc}(fcinfo, "
+                                            f"{'EVER' if ea == 'E' else 'ALWAYS'});"))
+    return "\n\n".join(out) + "\n"
+
+
 # --- SQL accessors (per-family, region-in-file) --------------------------
 # The Temporal<T> accessor surface (tempSubtype..segments) is declared INLINE in
 # each family's type file (052_tgeo, 202_tcbuffer, ...), not a separate numbered
@@ -578,7 +627,7 @@ def main() -> int:
             if not fam.get("reference"):
                 continue
             p = ROOT / fam["file"]
-            gen = render_spatialrels(fam)
+            gen = render_dwithin(fam) if fam.get("dwithin") else render_spatialrels(fam)
             cur = extract_spatialrels(p.read_text(), fam["family"]) if p.exists() else ""
             same = gen == cur
             ok = ok and same
