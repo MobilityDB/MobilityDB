@@ -748,13 +748,20 @@ float8_qsort_cmp(const void *a1, const void *a2)
 /**
  * @brief Compute the intersection intervals of a trajectory segment with an
  * array of polygon edges
- * @details For the #point_in_polygon ray-casting we must use ALL edges, not
- * only those filtered by the R-tree, otherwise the even-odd containment test
- * breaks
+ * @details The ray-casting cannot use the edges filtered by the segment box,
+ * since an edge outside it still crosses the ray and the even-odd containment
+ * test would break. It is given the full array and its own R-tree query
+ * instead, the +x ray of #point_in_polygon_impl, which excludes only the edges
+ * that lie left of the point or off the ray's height and so is identical to
+ * the full scan
+ * @param[in] rtree R-tree over @p all_edges, or NULL to scan them all
+ * @param[in] srid,xmax SRID and geometry bounding-box maximum abscissa, used
+ * to query @p rtree
  */
 static void
 intervals_from_polygons(const POINT2D *a, const POINT2D *b, Edge **edges,
-  int nedges, Edge **all_edges, int all_nedges)
+  int nedges, Edge **all_edges, int all_nedges, const RTree *rtree,
+  int32 srid, double xmax)
 {
   assert(a); assert(b); assert(edges); assert(nedges >= 0);
 
@@ -859,7 +866,7 @@ intervals_from_polygons(const POINT2D *a, const POINT2D *b, Edge **edges,
     double tm = (ta + tb) * 0.5;
     double x = ax + tm * rx;
     double y = ay + tm * ry;
-    if (point_in_polygon(x, y, all_edges, all_nedges))
+    if (point_in_polygon_impl(x, y, all_edges, all_nedges, rtree, srid, xmax))
     {
       Span in;
       span_set(Float8GetDatum(ta), Float8GetDatum(tb), true, true,
@@ -922,7 +929,7 @@ point_inter_points_lines(const POINT2D *a, Edge **edges, int nedges)
  */
 static void
 tpointinst_clip_edges(const TInstant *inst, Edge **edges, int nedges,
-  const RTree *rtree, Edge **cand_edges)
+  const RTree *rtree, Edge **cand_edges, double xmax)
 {
   assert(inst); assert(edges); assert(nedges > 0);
   assert(inst->temptype == T_TGEOMPOINT);
@@ -956,7 +963,8 @@ tpointinst_clip_edges(const TInstant *inst, Edge **edges, int nedges,
   bool found = point_inter_points_lines(a, sel_edges, sel_nedges);
   if (! found)
   {
-    intervals_from_polygons(a, a, sel_edges, sel_nedges, edges, nedges);
+    intervals_from_polygons(a, a, sel_edges, sel_nedges, edges, nedges, rtree,
+      tspatial_srid((Temporal *) inst), xmax);
     if (intervals->count == 0)
       return;
   }
@@ -981,7 +989,7 @@ tpointinst_clip_edges(const TInstant *inst, Edge **edges, int nedges,
  */
 static void
 tpointseq_clip_edges(const TSequence *seq, Edge **edges, int nedges,
-  const RTree *rtree, Edge **cand_edges)
+  const RTree *rtree, Edge **cand_edges, double xmax)
 {
   assert(seq); assert(edges); assert(nedges > 0);
   assert(seq->temptype == T_TGEOMPOINT);
@@ -990,7 +998,7 @@ tpointseq_clip_edges(const TSequence *seq, Edge **edges, int nedges,
   /* Singleton sequence */
   if (seq->count == 1)
     return tpointinst_clip_edges(TSEQUENCE_INST_N(seq, 0), edges, nedges,
-      rtree, cand_edges);
+      rtree, cand_edges, xmax);
 
   bool use_index = (rtree != NULL && cand_edges != NULL);
   int32_t srid = tspatial_srid((Temporal *) seq);
@@ -1033,7 +1041,8 @@ tpointseq_clip_edges(const TSequence *seq, Edge **edges, int nedges,
     intervals_from_points(a, b, sel_edges, sel_nedges);
     intervals_from_lines(a, b, sel_edges, sel_nedges);
     intervals_from_arcs(a, b, sel_edges, sel_nedges);
-    intervals_from_polygons(a, b, sel_edges, sel_nedges, edges, nedges);
+    intervals_from_polygons(a, b, sel_edges, sel_nedges, edges, nedges, rtree,
+      srid, xmax);
     if (intervals->count == 0)
       goto next_segment;
 
@@ -2032,11 +2041,11 @@ tpoint_linear_inter_geom(const Temporal *temp, const GSERIALIZED *gs,
   {
     case TINSTANT:
       tpointinst_clip_edges((TInstant *) temp, edge_ptrs, edges->count,
-        rtree, cand_edges);
+        rtree, cand_edges, box2.xmax);
       break;
     case TSEQUENCE:
       tpointseq_clip_edges((TSequence *) temp, edge_ptrs, edges->count,
-        rtree, cand_edges);
+        rtree, cand_edges, box2.xmax);
       break;
     default: /* TSEQUENCESET */
     {
@@ -2044,7 +2053,7 @@ tpoint_linear_inter_geom(const Temporal *temp, const GSERIALIZED *gs,
       TSequenceSet *ss = (TSequenceSet *) temp;
       for (int i = 0; i < ss->count; i++)
         tpointseq_clip_edges(TSEQUENCESET_SEQ_N(ss, i), edge_ptrs,
-          edges->count, rtree, cand_edges);
+          edges->count, rtree, cand_edges, box2.xmax);
     }
   }
 
