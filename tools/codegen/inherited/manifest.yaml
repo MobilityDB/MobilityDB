@@ -424,6 +424,35 @@ spatialrel_families:
           trgeometry_geo:        "a temporal rigid geometry {word} covers a geometry"
           trgeometry_trgeometry: "a temporal rigid geometry {word} covers another one"
 
+  - family:    rgeo_ea_disjoint_intersects
+    file:      mobilitydb/src/rgeo/trgeo_spatialrels.c
+    reference: true
+    ingroup:   mobilitydb_geo_rel_ever
+    order:     [geo_trgeometry, trgeometry_geo, trgeometry_trgeometry]
+    disp:
+      geo_trgeometry:        EA_spatialrel_geo_tspatial
+      trgeometry_geo:        EA_spatialrel_tspatial_geo
+      trgeometry_trgeometry: EA_spatialrel_tspatial_tspatial
+    kernel_dir:
+      geo_trgeometry:        geo_trgeo
+      trgeometry_geo:        trgeo_geo
+      trgeometry_trgeometry: trgeo_trgeo
+    predicates:
+      - rel: disjoint
+        Rel: Disjoint
+        banner: "Ever disjoint (for both geometry and geography)"
+        briefs:
+          geo_trgeometry:        "a geometry and a temporal rigid geometry are {word} disjoint"
+          trgeometry_geo:        "a temporal rigid geometry and a geometry are {word} disjoint"
+          trgeometry_trgeometry: "two temporal rigid geometries are {word} disjoint"
+      - rel: intersects
+        Rel: Intersects
+        banner: "Ever intersects (for both geometry and geography)"
+        briefs:
+          geo_trgeometry:        "a geometry and a temporal rigid geometry {word} intersect"
+          trgeometry_geo:        "a temporal rigid geometry and a geometry {word} intersect"
+          trgeometry_trgeometry: "two temporal rigid geometries {word} intersect"
+
 # ---------------------------------------------------------------------------
 # Accessor axis (SQL, per-family, region-in-file). The whole Temporal<T> accessor
 # surface (tempSubtype..segments) lives INLINE in each family's type file and

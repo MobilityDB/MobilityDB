@@ -226,6 +226,8 @@ Acovers_trgeometry_trgeometry(PG_FUNCTION_ARGS)
 }
 /* GENERATED-SPATIALRELS-END rgeo_ea_contains_covers */
 
+/* GENERATED-SPATIALRELS-BEGIN rgeo_ea_disjoint_intersects — tools/codegen/inherited/generate.py from templates/spatialrels.c.tmpl;
+ * DO NOT EDIT BY HAND; edit the template + manifest.yaml (spatialrel_families) and re-run. */
 /*****************************************************************************
  * Ever disjoint (for both geometry and geography)
  *****************************************************************************/
@@ -304,7 +306,7 @@ PGDLLEXPORT Datum Adisjoint_trgeometry_trgeometry(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Adisjoint_trgeometry_trgeometry);
 /**
  * @ingroup mobilitydb_geo_rel_ever
- * @brief Return true if two temporal rigid geometries are ever disjoint
+ * @brief Return true if two temporal rigid geometries are always disjoint
  * @sqlfn aDisjoint()
  */
 inline Datum
@@ -322,8 +324,7 @@ PGDLLEXPORT Datum Eintersects_geo_trgeometry(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Eintersects_geo_trgeometry);
 /**
  * @ingroup mobilitydb_geo_rel_ever
- * @brief Return true if a geometry and a temporal rigid geometry ever
- * intersect
+ * @brief Return true if a geometry and a temporal rigid geometry ever intersect
  * @sqlfn eIntersects()
  */
 inline Datum
@@ -336,7 +337,7 @@ PGDLLEXPORT Datum Aintersects_geo_trgeometry(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Aintersects_geo_trgeometry);
 /**
  * @ingroup mobilitydb_geo_rel_ever
- * @brief Return true if a geometry and a temporal rigid geometry ever
+ * @brief Return true if a geometry and a temporal rigid geometry always
  * intersect
  * @sqlfn aIntersects()
  */
@@ -350,8 +351,7 @@ PGDLLEXPORT Datum Eintersects_trgeometry_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Eintersects_trgeometry_geo);
 /**
  * @ingroup mobilitydb_geo_rel_ever
- * @brief Return true if a temporal rigid geometry and a geometry ever
- * intersect
+ * @brief Return true if a temporal rigid geometry and a geometry ever intersect
  * @sqlfn eIntersects()
  */
 inline Datum
@@ -392,7 +392,7 @@ PGDLLEXPORT Datum Aintersects_trgeometry_trgeometry(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Aintersects_trgeometry_trgeometry);
 /**
  * @ingroup mobilitydb_geo_rel_ever
- * @brief Return true if two temporal rigid geometries ever intersect
+ * @brief Return true if two temporal rigid geometries always intersect
  * @sqlfn aIntersects()
  */
 inline Datum
@@ -401,6 +401,7 @@ Aintersects_trgeometry_trgeometry(PG_FUNCTION_ARGS)
   return EA_spatialrel_tspatial_tspatial(fcinfo, &ea_intersects_trgeo_trgeo,
     ALWAYS);
 }
+/* GENERATED-SPATIALRELS-END rgeo_ea_disjoint_intersects */
 
 /*****************************************************************************
  * Ever/always touches
