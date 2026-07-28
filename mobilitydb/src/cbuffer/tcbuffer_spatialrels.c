@@ -853,8 +853,7 @@ EA_dwithin_geo_tcbuffer(FunctionCallInfo fcinfo, bool ever)
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   double dist = PG_GETARG_FLOAT8(2);
-  int result = ever ?
-    edwithin_tcbuffer_geo(temp, gs, dist) :
+  int result = ever ? edwithin_tcbuffer_geo(temp, gs, dist) :
     adwithin_tcbuffer_geo(temp, gs, dist);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
@@ -940,7 +939,7 @@ Adwithin_tcbuffer_geo(PG_FUNCTION_ARGS)
 }
 
 /**
- * @brief Return true if two temporal circular buffers are even/always within a
+ * @brief Return true if two temporal circular buffers are ever/always within a
  * distance
  * @sqlfn eDwithin(), aDwithin()
  */
@@ -972,8 +971,7 @@ EA_dwithin_cbuffer_tcbuffer(FunctionCallInfo fcinfo, bool ever)
   Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   double dist = PG_GETARG_FLOAT8(2);
-  int result = ever ?
-    edwithin_tcbuffer_cbuffer(temp, cb, dist) :
+  int result = ever ? edwithin_tcbuffer_cbuffer(temp, cb, dist) :
     adwithin_tcbuffer_cbuffer(temp, cb, dist);
   PG_FREE_IF_COPY(cb, 0);
   PG_FREE_IF_COPY(temp, 1);
@@ -1015,7 +1013,7 @@ Adwithin_cbuffer_tcbuffer(PG_FUNCTION_ARGS)
  * ever/always within a distance
  * @sqlfn eDwithin()
  */
-Datum
+static Datum
 EA_dwithin_tcbuffer_cbuffer(FunctionCallInfo fcinfo, bool ever)
 {
   Cbuffer *cb = PG_GETARG_CBUFFER_P(1);
