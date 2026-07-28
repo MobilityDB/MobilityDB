@@ -1281,20 +1281,20 @@ tcbuffer_disc_contains_ctx(const Cbuffer *cb, const void *ctxv, bool strict)
 }
 
 /**
- * @brief Append to @p outt the normalized times in (0,1) at which a linearly
- * moving disk touches the geometry
+ * @brief Append to @p outt the normalized times in (0,1) at which the signed
+ * boundary distance of a linearly moving disk vanishes, keeping only the
+ * contacts made from outside the geometry when @p outside_only is true
  * @details The candidate crossing times are the same region roots the within
  * kernel uses (#tcbuffersegm_edge_within_roots / #tcbuffersegm_arc_within_roots
  * at distance 0, where dist(centre, edge) == radius). Each is kept only when the
- * exact signed boundary distance vanishes there — a genuine tangential contact,
- * not an interior penetration where a nearer edge makes the signed minimum
- * negative, nor a spurious root of the squared equation where it stays
- * positive — and the centre is not inside a polygon. Returns the number of
- * contact times written (at most @p maxout)
+ * exact signed boundary distance vanishes there — not an interior penetration
+ * where a nearer edge makes the signed minimum negative, nor a spurious root of
+ * the squared equation where it stays positive. Returns the number of times
+ * written (at most @p maxout)
  */
-int
-tcbufferseg_touch_roots(const Cbuffer *cb1, const Cbuffer *cb2,
-  const void *ctxv, double *outt, int maxout)
+static int
+tcbufferseg_sg_roots(const Cbuffer *cb1, const Cbuffer *cb2,
+  const void *ctxv, double *outt, int maxout, bool outside_only)
 {
   const TcbufferGeoCtx *ctx = (const TcbufferGeoCtx *) ctxv;
   const POINT2D *p1 = GSERIALIZED_POINT2D_P(cbuffer_point_p(cb1));
@@ -1345,7 +1345,7 @@ tcbufferseg_touch_roots(const Cbuffer *cb1, const Cbuffer *cb2,
     double r = r1 + (r2 - r1) * t;
     bool inside;
     double sg = tcbuffer_disc_signed_boundary(cx, cy, r, &ctx->g, &inside);
-    if (! inside && fabs(sg) <= TCBUFFER_TOUCH_EPS)
+    if ((! outside_only || ! inside) && fabs(sg) <= TCBUFFER_TOUCH_EPS)
     {
       outt[nout++] = t;
       last = t;
@@ -1353,6 +1353,39 @@ tcbufferseg_touch_roots(const Cbuffer *cb1, const Cbuffer *cb2,
   }
   pfree(cand);
   return nout;
+}
+
+/**
+ * @brief Append to @p outt the normalized times in (0,1) at which a linearly
+ * moving disk touches the geometry
+ * @details A touch requires the interiors to be disjoint, so a vanishing signed
+ * boundary distance reached with the centre inside a polygon — the disk grazing
+ * the boundary from within — is not a contact and is left out. Returns the
+ * number of contact times written (at most @p maxout)
+ */
+int
+tcbufferseg_touch_roots(const Cbuffer *cb1, const Cbuffer *cb2,
+  const void *ctxv, double *outt, int maxout)
+{
+  return tcbufferseg_sg_roots(cb1, cb2, ctxv, outt, maxout, true);
+}
+
+/**
+ * @brief Append to @p outt the normalized times in (0,1) at which the disk
+ * boundary and the geometry boundary of a linearly moving disk are tangent,
+ * from either side
+ * @details These are the instants at which the geometry can start or stop
+ * containing or covering the disk, so they are the sub-interval breakpoints of
+ * the contains/covers kernels. Unlike #tcbufferseg_touch_roots this keeps the
+ * internal tangency, where the disk grazes the boundary from within and
+ * containment changes but no touch occurs. Returns the number of times written
+ * (at most @p maxout)
+ */
+int
+tcbufferseg_boundary_roots(const Cbuffer *cb1, const Cbuffer *cb2,
+  const void *ctxv, double *outt, int maxout)
+{
+  return tcbufferseg_sg_roots(cb1, cb2, ctxv, outt, maxout, false);
 }
 
 /*****************************************************************************

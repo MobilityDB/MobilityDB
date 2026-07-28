@@ -70,6 +70,24 @@ SELECT eContains(tcbuffer '[Cbuffer(Point(1 4),0.5)@2000-01-01, Cbuffer(Point(4 
  t
 (1 row)
 
+SELECT eContains(geometry 'Polygon((-5 -5,-5 5,5 5,5 -5,-5 -5),(-1 -1,-1 1,1 1,1 -1,-1 -1))', tcbuffer '[Cbuffer(Point(-3 0),0.5)@2000-01-01, Cbuffer(Point(3 0),0.5)@2000-01-03]');
+ econtains 
+-----------
+ t
+(1 row)
+
+SELECT aContains(geometry 'Polygon((-5 -5,-5 5,5 5,5 -5,-5 -5),(-1 -1,-1 1,1 1,1 -1,-1 -1))', tcbuffer '[Cbuffer(Point(-3 0),0.5)@2000-01-01, Cbuffer(Point(3 0),0.5)@2000-01-03]');
+ acontains 
+-----------
+ f
+(1 row)
+
+SELECT eContains(geometry 'Polygon((-5 -5,-5 5,5 5,5 -5,-5 -5))', tcbuffer '[Cbuffer(Point(-8 0),0.5)@2000-01-01, Cbuffer(Point(8 0),0.5)@2000-01-03]');
+ econtains 
+-----------
+ t
+(1 row)
+
 SELECT eContains(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tcbuffer '[Cbuffer(Point(0 0),0.5)@2000-01-01, Cbuffer(Point(8 0),0.5)@2000-01-03]');
  econtains 
 -----------

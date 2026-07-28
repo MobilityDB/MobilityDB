@@ -47,13 +47,26 @@ SELECT tContains(geometry 'Point empty', tcbuffer '{[Cbuffer(Point(1 1),0.5)@200
 
 SELECT tContains(geometry 'Linestring(1 1,2 2)', tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02]');
 
+-- The disc leaves the geometry: containment stops at the internal tangency,
+-- when the disc starts poking out, not at the later external tangency where it
+-- stops intersecting
+SELECT tContains(geometry 'Polygon((-5 -5,-5 5,5 5,5 -5,-5 -5))', tcbuffer '[Cbuffer(Point(0 0),0.5)@2000-01-01, Cbuffer(Point(8 0),0.5)@2000-01-03]');
+SELECT tContains(geometry 'Polygon((-5 -5,-5 5,5 5,5 -5,-5 -5))', tcbuffer '[Cbuffer(Point(8 0),0.5)@2000-01-01, Cbuffer(Point(0 0),0.5)@2000-01-03]');
+-- A hole the disc passes over: contained on both sides, not while it overlaps
+-- the hole, so containment starts and stops at internal tangencies only
+SELECT tContains(geometry 'Polygon((-5 -5,-5 5,5 5,5 -5,-5 -5),(-1 -1,-1 1,1 1,1 -1,-1 -1))', tcbuffer '[Cbuffer(Point(-3 0),0.5)@2000-01-01, Cbuffer(Point(3 0),0.5)@2000-01-03]');
+SELECT tCovers(geometry 'Polygon((-5 -5,-5 5,5 5,5 -5,-5 -5),(-1 -1,-1 1,1 1,1 -1,-1 -1))', tcbuffer '[Cbuffer(Point(-3 0),0.5)@2000-01-01, Cbuffer(Point(3 0),0.5)@2000-01-03]');
+
 -- Curve polygon (arc ring) input, native arc-exact; the ring is the circle of
 -- centre (0,0) and radius 5. The disc stays strictly inside the ring
 SELECT tContains(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tcbuffer '[Cbuffer(Point(0 0),0.5)@2000-01-01, Cbuffer(Point(3 0),0.5)@2000-01-03]');
+-- The disc leaves the arc ring at the internal tangency
+SELECT tContains(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tcbuffer '[Cbuffer(Point(0 0),0.5)@2000-01-01, Cbuffer(Point(8 0),0.5)@2000-01-03]');
 -- Internally tangent disc: covered by the ring but not strictly contained
 SELECT tContains(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tcbuffer 'Cbuffer(Point(4.5 0),0.5)@2000-01-01');
 -- Multi surface grouping the same curve polygon
 SELECT tContains(geometry 'MultiSurface(CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0)))', tcbuffer '[Cbuffer(Point(0 0),0.5)@2000-01-01, Cbuffer(Point(3 0),0.5)@2000-01-03]');
+SELECT tContains(geometry 'MultiSurface(CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0)))', tcbuffer '[Cbuffer(Point(0 0),0.5)@2000-01-01, Cbuffer(Point(8 0),0.5)@2000-01-03]');
 
 /* Errors */
 SELECT tContains(geometry 'SRID=5676;Point(1 1)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
