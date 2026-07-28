@@ -335,11 +335,23 @@ sudo make install
 	<sect1 xml:id="raster_roadmap">
 		<title>Hoja de Ruta de Producción</title>
 
-		<para>Extensiones futuras de este capítulo:</para>
+		<para>Las dos vías descritas en este capítulo sirven propósitos distintos y ambas se mantienen. La vía <varname>raquet</varname> es un tipo de valor MEOS autocontenido: transporta sus píxeles y su georreferenciación QUADBIN en un único valor y no necesita PostgreSQL para evaluarse, por lo que está disponible en todos los enlaces de lenguaje derivados de MEOS. La vía <varname>raster</varname> de PostGIS ofrece el procesamiento ráster mucho más rico de la extensión <varname>postgis_raster</varname> — álgebra de mapas, estadísticas, remuestreo, recorte, conversión a polígonos — únicamente dentro de PostgreSQL.</para>
+
+		<para>Ninguna vía reemplaza a la otra. El trabajo sobre la vía <varname>raquet</varname> amplía lo que una tesela nativa de la nube puede hacer a lo largo de una trayectoria; no pretende reimplementar el procesamiento ráster.</para>
+
+		<para>Extensiones previstas para la vía <varname>raquet</varname>:</para>
 		<itemizedlist>
-			<listitem><para><emphasis>Soporte multibanda</emphasis> — devolver un <varname>tfloat</varname> por banda para teselas Raquet multiespectrales (p. ej. RGB o imágenes satelitales multicanal).</para></listitem>
+			<listitem><para><emphasis>Huella de la tesela</emphasis> — una conversión a <varname>stbox</varname> y a <varname>geometry</varname> que da la extensión espacial de una tesela, derivada de su celda QUADBIN.</para></listitem>
+			<listitem><para><emphasis>Indexación espacial</emphasis> — un agregado <varname>extent</varname> y clases de operadores GiST y SP-GiST sobre la huella de la tesela, de modo que una trayectoria se una a una tabla de teselas por solapamiento espacial en lugar de por una prueba de igualdad sobre la celda QUADBIN en un único nivel de zoom fijo.</para></listitem>
 			<listitem><para><emphasis>Fusión agregada de teselas</emphasis> — una variante de retorno de conjunto que acepta el arreglo completo de teselas Raquet coincidentes y fusiona los conjuntos de instantes por tesela, eliminando instantes duplicados en los límites de tesela.</para></listitem>
-			<listitem><para><emphasis>Operador inverso</emphasis> — <varname>raster_atTime(raster, tstzspan)</varname> restringe un ráster a la extensión espacial visitada por una o más trayectorias durante un intervalo de tiempo.</para></listitem>
+			<listitem><para><emphasis>Restricción temporal</emphasis> — <varname>atTime(raquet, tstzspan)</varname> restringe una tesela a la extensión espacial visitada por una o más trayectorias durante un intervalo de tiempo.</para></listitem>
+		</itemizedlist>
+
+		<para>Las extensiones siguientes requieren un modelo de datos ráster general, es decir, sistemas de referencia espacial arbitrarios, georreferenciación afín arbitraria y varias bandas por tesela. Un valor <varname>raquet</varname> es una tesela de una sola banda cuya extensión y rejilla de píxeles se derivan de su celda QUADBIN, por lo que quedan fuera de ese modelo y siguen disponibles a través de la vía <varname>raster</varname> de PostGIS:</para>
+		<itemizedlist>
+			<listitem><para><emphasis>Teselas multibanda</emphasis> — un <varname>tfloat</varname> por banda para imágenes multiespectrales como RGB o escenas satelitales multicanal.</para></listitem>
+			<listitem><para><emphasis>Sistemas de referencia espacial arbitrarios</emphasis> — teselas fuera de la rejilla Web-Mercator y reproyección entre sistemas de referencia.</para></listitem>
+			<listitem><para><emphasis>Procesamiento ráster</emphasis> — álgebra de mapas, estadísticas de resumen, remuestreo, recorte y conversión a polígonos.</para></listitem>
 		</itemizedlist>
 	</sect1>
 </chapter>
