@@ -160,6 +160,25 @@ qb_bbox(uint32_t tx, uint32_t ty, uint32_t tz, double *xmin, double *xmax,
 }
 
 /**
+ * @brief Return the WGS-84 bounding box of the tile identified by a QUADBIN
+ * cell
+ * @param[in] cell QUADBIN cell
+ * @param[out] xmin,ymin,xmax,ymax Longitude and latitude bounds in degrees
+ * @note The raster family carries its own Morton decode and tile arithmetic, so
+ * the tile footprint is available whether or not the QUADBIN family is built
+ */
+void
+raster_quadbin_bounds(uint64 cell, double *xmin, double *ymin, double *xmax,
+  double *ymax)
+{
+  assert(xmin); assert(ymin); assert(xmax); assert(ymax);
+  uint32_t tx, ty, tz;
+  qb_to_xyz(cell, &tx, &ty, &tz);
+  double top_merc, bot_merc;
+  qb_bbox(tx, ty, tz, xmin, xmax, ymin, ymax, &top_merc, &bot_merc);
+}
+
+/**
  * @brief Derive the QUADBIN cell of a Web-Mercator raster tile from its
  * EPSG:3857 georeferencing.
  * @details A Raquet tile is a single QUADBIN cell of the Web-Mercator tile 

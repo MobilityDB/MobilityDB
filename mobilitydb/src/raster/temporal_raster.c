@@ -66,6 +66,7 @@ extern text *cstring_to_text(const char *s);
 #include <meos.h>
 #include <meos_internal.h>    /* temporal_insts_p, tsequence_make_free */
 #include <meos_raster.h>      /* MeosPixType, raster_tile_value_quadbin */
+#include "geo/stbox.h"        /* PG_RETURN_STBOX_P */
 #include "raster/raquet.h"    /* Raquet, PG_GETARG_RAQUET_P, raquet_pixtype_size */
 #include "temporal/tinstant.h"
 #include "temporal/tsequence.h"
@@ -740,6 +741,28 @@ Raquet_hash_extended(PG_FUNCTION_ARGS)
   uint64 result = raquet_hash_extended(rq, seed);
   PG_FREE_IF_COPY(rq, 0);
   PG_RETURN_UINT64(result);
+}
+
+/*****************************************************************************/
+
+/*****************************************************************************
+ * Raquet type: conversions
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Raquet_to_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raquet_to_stbox);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Convert a Raquet tile into a spatiotemporal box
+ * @sqlfn stbox()
+ */
+Datum
+Raquet_to_stbox(PG_FUNCTION_ARGS)
+{
+  Raquet *rq = PG_GETARG_RAQUET_P(0);
+  STBox *result = raquet_to_stbox(rq);
+  PG_FREE_IF_COPY(rq, 0);
+  PG_RETURN_STBOX_P(result);
 }
 
 /*****************************************************************************/

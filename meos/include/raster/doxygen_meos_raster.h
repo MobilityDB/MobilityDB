@@ -57,6 +57,10 @@
  * @ingroup meos_raster_base
  * @brief Accessor functions for static rasters
  *
+ * @defgroup meos_raster_base_conversion Conversion functions
+ * @ingroup meos_raster_base
+ * @brief Conversion functions for static rasters
+ *
  * @defgroup meos_raster_base_comp Comparison functions
  * @ingroup meos_raster_base
  * @brief Comparison functions for static rasters

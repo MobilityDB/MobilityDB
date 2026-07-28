@@ -3737,6 +3737,10 @@
 				</listitem>
 
 				<listitem>
+					<para><link linkend="raquet_to_stbox"><varname>stbox</varname></link>: Convert a Raquet tile into a spatiotemporal box</para>
+				</listitem>
+
+				<listitem>
 					<para><link linkend="raquet_comparison"><varname>raquet comparison</varname></link>: Compare two Raquet tiles</para>
 				</listitem>
 			</itemizedlist>

@@ -55,7 +55,9 @@
 #include <liblwgeom.h>
 /* MEOS */
 #include <meos.h>
+#include <meos_geo.h>
 #include <meos_internal.h>
+#include "raster/raster_quadbin.h"
 #include "temporal/temporal.h"
 #include "temporal/type_inout.h"
 
@@ -309,6 +311,52 @@ raquet_pixtype(const Raquet *rq)
         "Unknown raquet pixel type code: %u", rq->pixtype);
       return NULL;
   }
+}
+
+/*****************************************************************************
+ * Conversion functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_internal_box_conversion
+ * @brief Return in the last argument the spatiotemporal box of a Raquet tile
+ * @param[in] rq Raquet tile
+ * @param[out] box Spatiotemporal box
+ */
+void
+raquet_set_stbox(const Raquet *rq, STBox *box)
+{
+  assert(rq); assert(box);
+  memset(box, 0, sizeof(STBox));
+  double xmin, ymin, xmax, ymax;
+  raster_quadbin_bounds(rq->quadbin, &xmin, &ymin, &xmax, &ymax);
+  box->xmin = xmin;
+  box->xmax = xmax;
+  box->ymin = ymin;
+  box->ymax = ymax;
+  /* A Raquet tile is emitted as planar lon/lat (EPSG:4326), the reference
+   * system of the trajectories the sampling functions evaluate it against */
+  box->srid = SRID_DEFAULT;
+  MEOS_FLAGS_SET_X(box->flags, true);
+  MEOS_FLAGS_SET_Z(box->flags, false);
+  MEOS_FLAGS_SET_T(box->flags, false);
+  MEOS_FLAGS_SET_GEODETIC(box->flags, false);
+}
+
+/**
+ * @ingroup meos_raster_base_conversion
+ * @brief Convert a Raquet tile into a spatiotemporal box
+ * @param[in] rq Raquet tile
+ * @return The planar X/Y bounding box of the tile (SRID 4326, no T dimension)
+ * @csqlfn #Raquet_to_stbox()
+ */
+STBox *
+raquet_to_stbox(const Raquet *rq)
+{
+  VALIDATE_NOT_NULL(rq, NULL);
+  STBox box;
+  raquet_set_stbox(rq, &box);
+  return stbox_copy(&box);
 }
 
 /*****************************************************************************

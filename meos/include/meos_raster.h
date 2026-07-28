@@ -95,6 +95,10 @@ extern char *raquet_pixtype(const Raquet *rq);
 extern uint32 raquet_hash(const Raquet *rq);
 extern uint64 raquet_hash_extended(const Raquet *rq, uint64 seed);
 
+/* Conversion functions for Raquet tiles */
+
+extern STBox *raquet_to_stbox(const Raquet *rq);
+
 /* Comparison functions for Raquet tiles */
 
 extern int raquet_cmp(const Raquet *rq1, const Raquet *rq2);
