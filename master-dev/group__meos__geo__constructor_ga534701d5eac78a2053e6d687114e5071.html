@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: tpointinst_make</title>
+<title>MobilityDB: tpointseq_make_coords</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -85,32 +85,86 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__constructor_ga413f1ea874a1c7a9f5e9f2aa5d25dbdd.html#ga413f1ea874a1c7a9f5e9f2aa5d25dbdd">tgeoseq_from_base_tstzspan</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__constructor_gacee764139ad6e35c09f123e2deabbd8d.html#gacee764139ad6e35c09f123e2deabbd8d">tgeoseqset_from_base_tstzspanset</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__constructor_gab5fb13477ac320490c193edc32d47ce7.html#gab5fb13477ac320490c193edc32d47ce7">tpoint_from_base_temp</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__constructor_gacda4cc81539c7052705befb1ec426ec0.html#gacda4cc81539c7052705befb1ec426ec0">tpointinst_make</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__constructor_gacda4cc81539c7052705befb1ec426ec0.html#gacda4cc81539c7052705befb1ec426ec0">tpointinst_make</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__constructor_gafe11d30604192e4ddcf7d1c90a711c6e.html#gafe11d30604192e4ddcf7d1c90a711c6e">tpointseq_from_base_tstzset</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__constructor_ga4ebb96f5e7fb040bb8f4e917d22041df.html#ga4ebb96f5e7fb040bb8f4e917d22041df">tpointseq_from_base_tstzspan</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__constructor_ga534701d5eac78a2053e6d687114e5071.html#ga534701d5eac78a2053e6d687114e5071">tpointseq_make_coords</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__constructor_ga534701d5eac78a2053e6d687114e5071.html#ga534701d5eac78a2053e6d687114e5071">tpointseq_make_coords</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__constructor_gaba7ca510fb0154fbc2108b753ee52efe.html#gaba7ca510fb0154fbc2108b753ee52efe">tpointseqset_from_base_tstzspanset</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="gacda4cc81539c7052705befb1ec426ec0" name="gacda4cc81539c7052705befb1ec426ec0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gacda4cc81539c7052705befb1ec426ec0">&#9670;&#160;</a></span>tpointinst_make()</h2>
+<a id="ga534701d5eac78a2053e6d687114e5071" name="ga534701d5eac78a2053e6d687114e5071"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga534701d5eac78a2053e6d687114e5071">&#9670;&#160;</a></span>tpointseq_make_coords()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structTInstant.html">TInstant</a> * tpointinst_make </td>
+          <td class="memname"><a class="el" href="structTSequence.html">TSequence</a> * tpointseq_make_coords </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
-          <td class="paramname"><em>gs</em>, </td>
+          <td class="paramtype">const double *&#160;</td>
+          <td class="paramname"><em>xcoords</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a>&#160;</td>
-          <td class="paramname"><em>t</em>&#160;</td>
+          <td class="paramtype">const double *&#160;</td>
+          <td class="paramname"><em>ycoords</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const double *&#160;</td>
+          <td class="paramname"><em>zcoords</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a> *&#160;</td>
+          <td class="paramname"><em>times</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>count</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a43d43196463bde49cb067f5c20ab8481.html#a43d43196463bde49cb067f5c20ab8481">int32</a>&#160;</td>
+          <td class="paramname"><em>srid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>geodetic</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>lower_inc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>upper_inc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="meos_8h_ad06cc805fa18b06ac937fd98a9eba0e7.html#ad06cc805fa18b06ac937fd98a9eba0e7">interpType</a>&#160;</td>
+          <td class="paramname"><em>interp</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>normalize</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -120,11 +174,19 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return a temporal point instant from a point and a timestamptz. </p>
+<p>Return a temporal sequence from arrays of coordinates, one per dimension, and timestamps. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">gs</td><td>Value </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">t</td><td>Timestamp @csqlfn <a class="el" href="group__mobilitydb__temporal__constructor_ga7b173611749d0b72b536b401fdc92ff5.html#ga7b173611749d0b72b536b401fdc92ff5" title="Return a temporal instant from a value and a timestamptz @sqlfn tint(), tfloat(), ....">Tinstant_constructor()</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xcoords</td><td>Array of x coordinates </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ycoords</td><td>Array of y coordinates </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">zcoords</td><td>Array of z coordinates </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">times</td><td>Array of z timestamps </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">count</td><td>Number of elements in the arrays </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">srid</td><td>SRID of the spatial coordinates </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">geodetic</td><td>True for tgeogpoint, false for tgeompoint </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lower_inc,upper_inc</td><td>True if the respective bound is inclusive </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">interp</td><td>Interpolation </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">normalize</td><td>True if the resulting value should be normalized </td></tr>
   </table>
   </dd>
 </dl>
