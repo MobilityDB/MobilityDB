@@ -434,3 +434,29 @@ WITH t(a, b) AS (VALUES (
 SELECT stbox(a) <> stbox(b) AS distinct_cells_distinct_footprints,
        stbox(a) && stbox(a) AS overlaps_itself
 FROM t;
+
+-------------------------------------------------------------------------------
+-- raquet spatial indexing through the tile footprint
+-------------------------------------------------------------------------------
+
+CREATE TABLE test_raquet_tiles (id integer, tile raquet);
+INSERT INTO test_raquet_tiles
+SELECT g, raquet('\x01020304'::bytea, 2, 2, c, 'UINT8')
+FROM (VALUES (1, 5193776270265024512::bigint), (2, 5202501994543054848::bigint),
+             (3, 5203346419473186816::bigint), (4, 5203416788217364480::bigint))
+     v(g, c);
+
+-- The footprint is indexable with the stbox operator classes, so a tile table
+-- is searched by spatial overlap rather than by an equality test on the cell.
+CREATE INDEX test_raquet_tiles_gist ON test_raquet_tiles USING gist (stbox(tile));
+CREATE INDEX test_raquet_tiles_spgist ON test_raquet_tiles
+  USING spgist (stbox(tile));
+
+-- The extent of a set of tiles composes the footprint with the stbox extent.
+SELECT round(extent(stbox(tile)), 6) FROM test_raquet_tiles;
+
+-- Tiles are selected by overlap with a region of interest.
+SELECT count(*) FROM test_raquet_tiles
+WHERE stbox(tile) && stbox 'SRID=4326;STBOX X((0,0),(30,30))';
+
+DROP TABLE test_raquet_tiles;
