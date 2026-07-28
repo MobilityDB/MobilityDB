@@ -96,9 +96,10 @@ extern void ll2cart(const POINT2D *g, POINT3D *p);
  *****************************************************************************/
 
 /**
- * @ingroup meos_box_transf
+ * @ingroup meos_geo_box_transf
  * @brief Return the second spatiotemporal box expanded with the first one
- * @param[in] box1,box2 Spatiotemporal boxes
+ * @param[in] box1 Spatiotemporal box
+ * @param[in,out] box2 Spatiotemporal box
  * @pre No tests are made concerning the SRID, dimensionality, etc.
  * This should be ensured by the calling function.
  */

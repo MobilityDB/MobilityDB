@@ -550,6 +550,7 @@ extern bool stbox_zmin(const STBox *box, double *result);
 
 /* Transformation functions */
 
+extern void stbox_expand(const STBox *box1, STBox *box2);
 extern STBox *stbox_expand_space(const STBox *box, double d);
 extern STBox *stbox_expand_time(const STBox *box, const Interval *interv);
 extern STBox *stbox_get_space(const STBox *box);
