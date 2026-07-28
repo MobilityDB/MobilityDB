@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: tcbuffersegm_edge_within_roots</title>
+<title>MobilityDB: tcbufferseg_sg_roots</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -115,12 +115,12 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a462e66e5e03c3931fb641d3e06081ebd.html#a462e66e5e03c3931fb641d3e06081ebd">tcbuffer_tcbuffer_distance_turnpt</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a835166ac39a8fd9f766b04ed0fe10977.html#a835166ac39a8fd9f766b04ed0fe10977">TCBUFFER_TOUCH_EPS</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_afbc64a0dc7de5ef46d6db2758b864243.html#afbc64a0dc7de5ef46d6db2758b864243">tcbufferseg_boundary_roots</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_ade609fa06e4dbaab9418c718692f01ea.html#ade609fa06e4dbaab9418c718692f01ea">tcbufferseg_sg_roots</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_ade609fa06e4dbaab9418c718692f01ea.html#ade609fa06e4dbaab9418c718692f01ea">tcbufferseg_sg_roots</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a20b795086a57e9230b5e6b6b016beb0e.html#a20b795086a57e9230b5e6b6b016beb0e">tcbufferseg_touch_roots</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a693666ea2de7b1e2c2c816f13143a8b3.html#a693666ea2de7b1e2c2c816f13143a8b3">tcbufferseg_within_ctx</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a6d3777cf635480386d7a2c9246c8e547.html#a6d3777cf635480386d7a2c9246c8e547">tcbuffersegbox_cmp_minx</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_ac76f7df7056cd8c2e06fbbc07190f70f.html#ac76f7df7056cd8c2e06fbbc07190f70f">tcbuffersegm_arc_within_roots</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a16672cb709c366ecc2dfd667cc9975c6.html#a16672cb709c366ecc2dfd667cc9975c6">tcbuffersegm_edge_within_roots</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a16672cb709c366ecc2dfd667cc9975c6.html#a16672cb709c366ecc2dfd667cc9975c6">tcbuffersegm_edge_within_roots</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a076e418ee776d92825379c14829bea64.html#a076e418ee776d92825379c14829bea64">tcbufferseq_nad</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a6afa1c69b53f98f23df5b3f28683edd8.html#a6afa1c69b53f98f23df5b3f28683edd8">tcbufferseq_shortestline</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__cbuffer__dist_gaa71971787eef52a340de2bd2b673655e.html#gaa71971787eef52a340de2bd2b673655e">tdistance_tcbuffer_cbuffer</a></td></tr>
@@ -130,8 +130,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a16672cb709c366ecc2dfd667cc9975c6" name="a16672cb709c366ecc2dfd667cc9975c6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a16672cb709c366ecc2dfd667cc9975c6">&#9670;&#160;</a></span>tcbuffersegm_edge_within_roots()</h2>
+<a id="ade609fa06e4dbaab9418c718692f01ea" name="ade609fa06e4dbaab9418c718692f01ea"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ade609fa06e4dbaab9418c718692f01ea">&#9670;&#160;</a></span>tcbufferseg_sg_roots()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -140,64 +140,40 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static void tcbuffersegm_edge_within_roots </td>
+          <td class="memname">static int tcbufferseg_sg_roots </td>
           <td>(</td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>cx1</em>, </td>
+          <td class="paramtype">const <a class="el" href="structCbuffer.html">Cbuffer</a> *&#160;</td>
+          <td class="paramname"><em>cb1</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>cy1</em>, </td>
+          <td class="paramtype">const <a class="el" href="structCbuffer.html">Cbuffer</a> *&#160;</td>
+          <td class="paramname"><em>cb2</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>cx2</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>cy2</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>r1</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>r2</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const <a class="el" href="structGeoDistEdge.html">GeoDistEdge</a> *&#160;</td>
-          <td class="paramname"><em>e</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>dist</em>, </td>
+          <td class="paramtype">const void *&#160;</td>
+          <td class="paramname"><em>ctxv</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">double *&#160;</td>
-          <td class="paramname"><em>cand</em>, </td>
+          <td class="paramname"><em>outt</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int *&#160;</td>
-          <td class="paramname"><em>nc</em>&#160;</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>maxout</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>outside_only</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -212,7 +188,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Append the within-distance crossing times of one moving disc segment against one geometry edge, mirroring the perpendicular/endpoint region split of <a class="el" href="tgeo__distance_8h_a23d27836e2fed69af2e130c1e281af30.html#a23d27836e2fed69af2e130c1e281af30" title="Minimum of [ dist(c(t), edge) - r(t) ] for t in [0,1], where the centre moves from (cx1,...">geodist_segm_edge_mindist</a>. </p>
+<p>Append to <code>outt</code> the normalized times in (0,1) at which the signed boundary distance of a linearly moving disk vanishes, keeping only the contacts made from outside the geometry when <code>outside_only</code> is true. </p>
+<p >The candidate crossing times are the same region roots the within kernel uses (<a class="el" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a16672cb709c366ecc2dfd667cc9975c6.html#a16672cb709c366ecc2dfd667cc9975c6" title="Append the within-distance crossing times of one moving disc segment against one geometry edge,...">tcbuffersegm_edge_within_roots</a> / <a class="el" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_ac76f7df7056cd8c2e06fbbc07190f70f.html#ac76f7df7056cd8c2e06fbbc07190f70f" title="Append the within-distance crossing times of one moving disc segment against one circular-arc edge,...">tcbuffersegm_arc_within_roots</a> at distance 0, where dist(centre, edge) == radius). Each is kept only when the exact signed boundary distance vanishes there — not an interior penetration where a nearer edge makes the signed minimum negative, nor a spurious root of the squared equation where it stays positive. Returns the number of times written (at most <code>maxout</code>) </p>
 
 </div>
 </div>

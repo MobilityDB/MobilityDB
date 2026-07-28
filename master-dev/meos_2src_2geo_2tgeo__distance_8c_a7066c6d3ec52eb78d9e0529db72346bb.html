@@ -207,8 +207,8 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Recursively collect the boundary segments of a geometry. </p>
-<p >Returns false for a curved type that cannot be decomposed exactly (the caller then falls back to the exact traversed-area path). </p>
+<p>Recursively collect the boundary segments of a geometry, as straight edges and, when <code>allow_arc</code> is true, as circular-arc edges. </p>
+<p >Returns false for a type that has no exact edge decomposition, that is, a TIN or a polyhedral surface, and for a circular-arc type when <code>allow_arc</code> is false (the caller then falls back to the exact traversed-area path). </p>
 
 </div>
 </div>

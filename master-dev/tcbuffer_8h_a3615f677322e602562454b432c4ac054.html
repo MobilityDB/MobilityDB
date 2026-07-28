@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: ensure_valid_tcbuffer_tcbuffer</title>
+<title>MobilityDB: tcbufferseg_boundary_roots</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -82,14 +82,14 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_a4241f992c007d12379cc08aef72875f7.html#a4241f992c007d12379cc08aef72875f7">ensure_valid_tcbuffer_cbuffer</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_ad7c565c0a59ee5af55ef6e836eccc6c0.html#ad7c565c0a59ee5af55ef6e836eccc6c0">ensure_valid_tcbuffer_geo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_a3188519cb1583a50b0144c0839f25428.html#a3188519cb1583a50b0144c0839f25428">ensure_valid_tcbuffer_stbox</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="tcbuffer_8h_a8e624ea69e2812a74775bf96ba457e29.html#a8e624ea69e2812a74775bf96ba457e29">ensure_valid_tcbuffer_tcbuffer</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_a8e624ea69e2812a74775bf96ba457e29.html#a8e624ea69e2812a74775bf96ba457e29">ensure_valid_tcbuffer_tcbuffer</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_ab46cf9c12aef24f2dbd9cd87faba8c1f.html#ab46cf9c12aef24f2dbd9cd87faba8c1f">tcbuffer_disc_contains_ctx</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_a400186b42f9eaafd5dd8e83532a54452.html#a400186b42f9eaafd5dd8e83532a54452">tcbuffer_disc_touch_ctx</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_aecb593ba0ffd24dd09e14c68a52f7e04.html#aecb593ba0ffd24dd09e14c68a52f7e04">tcbuffer_disc_within_ctx</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_a9d94f9b1e16026aeac0008b451f2eb6e.html#a9d94f9b1e16026aeac0008b451f2eb6e">tcbuffer_geo_ctx_free</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_a179613ffde5ec2db04c640b18e5e801a.html#a179613ffde5ec2db04c640b18e5e801a">tcbuffer_geo_ctx_make</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_ad80a75141cb9ec6668728a7ccc19c50c.html#ad80a75141cb9ec6668728a7ccc19c50c">tcbuffer_geo_ctx_nsegs</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_a3615f677322e602562454b432c4ac054.html#a3615f677322e602562454b432c4ac054">tcbufferseg_boundary_roots</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="tcbuffer_8h_a3615f677322e602562454b432c4ac054.html#a3615f677322e602562454b432c4ac054">tcbufferseg_boundary_roots</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_a47735124ca40df2927b9c43bab54952f.html#a47735124ca40df2927b9c43bab54952f">tcbufferseg_touch_roots</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_a21c88d77dbcd89fb8f618cb2746a4f76.html#a21c88d77dbcd89fb8f618cb2746a4f76">tcbufferseg_within_ctx</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_af3597b428cbbaa760c02396241b02652.html#af3597b428cbbaa760c02396241b02652">tcbuffersegm_distance_turnpt</a></td></tr>
@@ -101,23 +101,41 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a8e624ea69e2812a74775bf96ba457e29" name="a8e624ea69e2812a74775bf96ba457e29"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8e624ea69e2812a74775bf96ba457e29">&#9670;&#160;</a></span>ensure_valid_tcbuffer_tcbuffer()</h2>
+<a id="a3615f677322e602562454b432c4ac054" name="a3615f677322e602562454b432c4ac054"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3615f677322e602562454b432c4ac054">&#9670;&#160;</a></span>tcbufferseg_boundary_roots()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool ensure_valid_tcbuffer_tcbuffer </td>
+          <td class="memname">int tcbufferseg_boundary_roots </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
-          <td class="paramname"><em>temp1</em>, </td>
+          <td class="paramtype">const <a class="el" href="structCbuffer.html">Cbuffer</a> *&#160;</td>
+          <td class="paramname"><em>cb1</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
-          <td class="paramname"><em>temp2</em>&#160;</td>
+          <td class="paramtype">const <a class="el" href="structCbuffer.html">Cbuffer</a> *&#160;</td>
+          <td class="paramname"><em>cb2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const void *&#160;</td>
+          <td class="paramname"><em>ctxv</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double *&#160;</td>
+          <td class="paramname"><em>outt</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>maxout</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -127,13 +145,8 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return true if a temporal circular buffer and a circular buffer are valid for operations. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">temp1,temp2</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> value </td></tr>
-  </table>
-  </dd>
-</dl>
+<p>Append to <code>outt</code> the normalized times in (0,1) at which the disk boundary and the geometry boundary of a linearly moving disk are tangent, from either side. </p>
+<p >These are the instants at which the geometry can start or stop containing or covering the disk, so they are the sub-interval breakpoints of the contains/covers kernels. Unlike <a class="el" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a20b795086a57e9230b5e6b6b016beb0e.html#a20b795086a57e9230b5e6b6b016beb0e" title="Append to outt the normalized times in (0,1) at which a linearly moving disk touches the geometry.">tcbufferseg_touch_roots</a> this keeps the internal tangency, where the disk grazes the boundary from within and containment changes but no touch occurs. Returns the number of times written (at most <code>maxout</code>) </p>
 
 </div>
 </div>

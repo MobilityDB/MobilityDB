@@ -89,6 +89,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_a9d94f9b1e16026aeac0008b451f2eb6e.html#a9d94f9b1e16026aeac0008b451f2eb6e">tcbuffer_geo_ctx_free</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_a179613ffde5ec2db04c640b18e5e801a.html#a179613ffde5ec2db04c640b18e5e801a">tcbuffer_geo_ctx_make</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_ad80a75141cb9ec6668728a7ccc19c50c.html#ad80a75141cb9ec6668728a7ccc19c50c">tcbuffer_geo_ctx_nsegs</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_a3615f677322e602562454b432c4ac054.html#a3615f677322e602562454b432c4ac054">tcbufferseg_boundary_roots</a></td></tr>
           <tr><td class="navtabHL"><a class="navtab" href="tcbuffer_8h_a47735124ca40df2927b9c43bab54952f.html#a47735124ca40df2927b9c43bab54952f">tcbufferseg_touch_roots</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_a21c88d77dbcd89fb8f618cb2746a4f76.html#a21c88d77dbcd89fb8f618cb2746a4f76">tcbufferseg_within_ctx</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_af3597b428cbbaa760c02396241b02652.html#af3597b428cbbaa760c02396241b02652">tcbuffersegm_distance_turnpt</a></td></tr>
@@ -145,7 +146,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Append to <code>outt</code> the normalized times in (0,1) at which a linearly moving disk touches the geometry. </p>
-<p >The candidate crossing times are the same region roots the within kernel uses (<a class="el" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a16672cb709c366ecc2dfd667cc9975c6.html#a16672cb709c366ecc2dfd667cc9975c6" title="Append the within-distance crossing times of one moving disc segment against one geometry edge,...">tcbuffersegm_edge_within_roots</a> / <a class="el" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_ac76f7df7056cd8c2e06fbbc07190f70f.html#ac76f7df7056cd8c2e06fbbc07190f70f" title="Append the within-distance crossing times of one moving disc segment against one circular-arc edge,...">tcbuffersegm_arc_within_roots</a> at distance 0, where dist(centre, edge) == radius). Each is kept only when the exact signed boundary distance vanishes there — a genuine tangential contact, not an interior penetration where a nearer edge makes the signed minimum negative, nor a spurious root of the squared equation where it stays positive — and the centre is not inside a polygon. Returns the number of contact times written (at most <code>maxout</code>) </p>
+<p >A touch requires the interiors to be disjoint, so a vanishing signed boundary distance reached with the centre inside a polygon — the disk grazing the boundary from within — is not a contact and is left out. Returns the number of contact times written (at most <code>maxout</code>) </p>
 
 </div>
 </div>

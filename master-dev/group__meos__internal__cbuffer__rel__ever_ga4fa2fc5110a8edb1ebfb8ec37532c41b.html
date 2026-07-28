@@ -137,7 +137,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return 1 if a temporal circular buffer ever/always intersects a geometry, 0 if not, and -1 on error or if the geometry is empty. </p>
-<p >The ever semantics reduce exactly to the native nearest-approach distance: eIntersects(temp, gs) ⟺ min_t dist(disk(t), gs) ≤ 0. The always semantics are the complement of ever disjoint: aIntersects(temp, gs) ⟺ ¬eDisjoint(temp, gs), computed from the native coverage of the intersecting sub-periods. Both avoid linearizing the round buffer through GEOS; curved or unsupported geometry falls back to the exact traversed-area path. </p><dl class="params"><dt>Parameters</dt><dd>
+<p >The ever semantics reduce exactly to the native nearest-approach distance: eIntersects(temp, gs) ⟺ min_t dist(disk(t), gs) ≤ 0. The always semantics are the complement of ever disjoint: aIntersects(temp, gs) ⟺ ¬eDisjoint(temp, gs), computed from the native coverage of the intersecting sub-periods. Both avoid linearizing the round buffer through GEOS; a geometry that has no edge decomposition falls back to the exact traversed-area path. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> circular buffer </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">gs</td><td>Geometry </td></tr>

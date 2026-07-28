@@ -130,7 +130,7 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return 1 if a temporal circular buffer is ever disjoint from a geometry, 0 if it always intersects, and -1 for curved or unsupported geometry (the caller then uses the traversed-area path) </p>
+<p>Return 1 if a temporal circular buffer is ever disjoint from a geometry, 0 if it always intersects, and -1 for a geometry that has no edge decomposition (the caller then uses the traversed-area path) </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> circular buffer </td></tr>
