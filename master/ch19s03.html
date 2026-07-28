@@ -12,7 +12,19 @@ SELECT round(stbox(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512,
 -- Keep the tiles whose footprint overlaps a region of interest
 SELECT * FROM elevation_tiles
 WHERE tile::stbox &amp;&amp; stbox 'SRID=4326;STBOX X((0,0),(30,30))';
-</pre></li><li class="listitem"><a name="raquet_comparison"></a><a class="indexterm" name="id15583"></a><p>Compare two Raquet tiles</p><p><code class="varname">raquet = raquet → boolean</code></p><p><code class="varname">raquet &lt;&gt; raquet → boolean</code></p><p><code class="varname">raquet &lt; raquet → boolean</code></p><p><code class="varname">raquet &lt;= raquet → boolean</code></p><p><code class="varname">raquet &gt;= raquet → boolean</code></p><p><code class="varname">raquet &gt; raquet → boolean</code></p><p>The functions backing these operators are <code class="varname">eq</code>, <code class="varname">ne</code>, <code class="varname">lt</code>, <code class="varname">le</code>, <code class="varname">ge</code> and <code class="varname">gt</code>, together with <code class="varname">cmp(raquet,raquet) → integer</code>, which returns -1, 0, or 1.</p><pre class="programlisting">
+</pre><p>The footprint carries the <code class="varname">stbox</code> operators, aggregates and operator classes, so a tile table is searched by spatial overlap at any zoom level rather than by an equality test on the QUADBIN cell at a single fixed one. Indexing the conversion gives the tile table a spatial index, and the extent of a set of tiles is the extent of their footprints.</p><pre class="programlisting">
+-- A spatial index over the tile footprints
+CREATE INDEX elevation_tiles_gist ON elevation_tiles USING gist (stbox(tile));
+CREATE INDEX elevation_tiles_spgist ON elevation_tiles USING spgist (stbox(tile));
+
+-- The extent covered by a set of tiles
+SELECT extent(stbox(tile)) FROM elevation_tiles;
+
+-- Tiles a trajectory passes through, at whatever zoom levels the table holds
+SELECT t.tripid, r.tile
+FROM trips t, elevation_tiles r
+WHERE stbox(r.tile) &amp;&amp; stbox(t.trip4326);
+</pre></li><li class="listitem"><a name="raquet_comparison"></a><a class="indexterm" name="id15586"></a><p>Compare two Raquet tiles</p><p><code class="varname">raquet = raquet → boolean</code></p><p><code class="varname">raquet &lt;&gt; raquet → boolean</code></p><p><code class="varname">raquet &lt; raquet → boolean</code></p><p><code class="varname">raquet &lt;= raquet → boolean</code></p><p><code class="varname">raquet &gt;= raquet → boolean</code></p><p><code class="varname">raquet &gt; raquet → boolean</code></p><p>The functions backing these operators are <code class="varname">eq</code>, <code class="varname">ne</code>, <code class="varname">lt</code>, <code class="varname">le</code>, <code class="varname">ge</code> and <code class="varname">gt</code>, together with <code class="varname">cmp(raquet,raquet) → integer</code>, which returns -1, 0, or 1.</p><pre class="programlisting">
 -- Two tiles with the same cell, layout and pixels are equal
 SELECT raquet('\x0102'::bytea, 2, 1, 5193776270265024512, 'UINT8') =
        raquet('\x0102'::bytea, 2, 1, 5193776270265024512, 'UINT8');
