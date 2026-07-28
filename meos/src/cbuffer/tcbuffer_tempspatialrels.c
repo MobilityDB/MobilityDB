@@ -1787,9 +1787,12 @@ tcbufferseq_contains_spanset(const TSequence *seq, const void *ctx, bool strict)
     }
     return ss;
   }
-  /* Linear: the relation is constant between consecutive sg = 0 (touch) roots.
-   * Union each vertex/root instant where it holds and each open sub-interval
-   * whose interpolated midpoint satisfies it; the spanset union normalizes the
+  /* Linear: the relation is constant between consecutive sg = 0 roots, taken
+   * from either side of the boundary — containment changes at the internal
+   * tangency just as it does at the external one, so the touch roots alone
+   * would miss the instant the disk starts poking out of the geometry. Union
+   * each vertex/root instant where it holds and each open sub-interval whose
+   * interpolated midpoint satisfies it; the spanset union normalizes the
    * endpoint inclusivity, preserving an isolated tangency (covers) or a grazing
    * hole (contains). */
   int maxo = tcbuffer_geo_ctx_nsegs(ctx) + 2;
@@ -1804,7 +1807,7 @@ tcbufferseq_contains_spanset(const TSequence *seq, const void *ctx, bool strict)
     const Cbuffer *cb1 = DatumGetCbufferP(tinstant_value_p(inst1));
     const Cbuffer *cb2 = DatumGetCbufferP(tinstant_value_p(inst2));
     double dur = (double) (inst2->t - inst1->t);
-    int nr = tcbufferseg_touch_roots(cb1, cb2, ctx, rt, maxo);
+    int nr = tcbufferseg_boundary_roots(cb1, cb2, ctx, rt, maxo);
     /* Sort the roots ascending (insertion sort; nr is small) */
     for (int a = 1; a < nr; a++)
     {
@@ -2127,7 +2130,7 @@ tcbufferseq_ever_contains_native(const TSequence *seq, const void *ctx,
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
     const Cbuffer *cb1 = DatumGetCbufferP(tinstant_value_p(inst1));
     const Cbuffer *cb2 = DatumGetCbufferP(tinstant_value_p(inst2));
-    int nr = tcbufferseg_touch_roots(cb1, cb2, ctx, rt, maxo);
+    int nr = tcbufferseg_boundary_roots(cb1, cb2, ctx, rt, maxo);
     for (int a = 1; a < nr; a++)
     {
       double v = rt[a];

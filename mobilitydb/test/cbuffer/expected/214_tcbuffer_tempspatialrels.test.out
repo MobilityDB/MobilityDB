@@ -64,10 +64,40 @@ SELECT tContains(geometry 'Linestring(1 1,2 2)', tcbuffer '[Cbuffer(Point(1 1),0
  [f@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST]
 (1 row)
 
+SELECT tContains(geometry 'Polygon((-5 -5,-5 5,5 5,5 -5,-5 -5))', tcbuffer '[Cbuffer(Point(0 0),0.5)@2000-01-01, Cbuffer(Point(8 0),0.5)@2000-01-03]');
+                                             tcontains                                              
+----------------------------------------------------------------------------------------------------
+ {[t@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 03:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tContains(geometry 'Polygon((-5 -5,-5 5,5 5,5 -5,-5 -5))', tcbuffer '[Cbuffer(Point(8 0),0.5)@2000-01-01, Cbuffer(Point(0 0),0.5)@2000-01-03]');
+                                                              tcontains                                                               
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, f@Sat Jan 01 21:00:00 2000 PST], (t@Sat Jan 01 21:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tContains(geometry 'Polygon((-5 -5,-5 5,5 5,5 -5,-5 -5),(-1 -1,-1 1,1 1,1 -1,-1 -1))', tcbuffer '[Cbuffer(Point(-3 0),0.5)@2000-01-01, Cbuffer(Point(3 0),0.5)@2000-01-03]');
+                                                                              tcontains                                                                               
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[t@Sat Jan 01 00:00:00 2000 PST, f@Sat Jan 01 12:00:00 2000 PST, f@Sun Jan 02 12:00:00 2000 PST], (t@Sun Jan 02 12:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tCovers(geometry 'Polygon((-5 -5,-5 5,5 5,5 -5,-5 -5),(-1 -1,-1 1,1 1,1 -1,-1 -1))', tcbuffer '[Cbuffer(Point(-3 0),0.5)@2000-01-01, Cbuffer(Point(3 0),0.5)@2000-01-03]');
+                                                                               tcovers                                                                                
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[t@Sat Jan 01 00:00:00 2000 PST, t@Sat Jan 01 12:00:00 2000 PST], (f@Sat Jan 01 12:00:00 2000 PST, t@Sun Jan 02 12:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
 SELECT tContains(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tcbuffer '[Cbuffer(Point(0 0),0.5)@2000-01-01, Cbuffer(Point(3 0),0.5)@2000-01-03]');
                              tcontains                              
 --------------------------------------------------------------------
  {[t@Sat Jan 01 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tContains(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tcbuffer '[Cbuffer(Point(0 0),0.5)@2000-01-01, Cbuffer(Point(8 0),0.5)@2000-01-03]');
+                                             tcontains                                              
+----------------------------------------------------------------------------------------------------
+ {[t@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 03:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]}
 (1 row)
 
 SELECT tContains(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tcbuffer 'Cbuffer(Point(4.5 0),0.5)@2000-01-01');
@@ -80,6 +110,12 @@ SELECT tContains(geometry 'MultiSurface(CurvePolygon(CircularString(5 0, 0 5, -5
                              tcontains                              
 --------------------------------------------------------------------
  {[t@Sat Jan 01 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tContains(geometry 'MultiSurface(CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0)))', tcbuffer '[Cbuffer(Point(0 0),0.5)@2000-01-01, Cbuffer(Point(8 0),0.5)@2000-01-03]');
+                                             tcontains                                              
+----------------------------------------------------------------------------------------------------
+ {[t@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 03:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]}
 (1 row)
 
 /* Errors */

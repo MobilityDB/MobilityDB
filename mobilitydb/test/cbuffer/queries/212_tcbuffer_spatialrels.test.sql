@@ -46,6 +46,14 @@ SELECT eContains(tcbuffer '[Cbuffer(Point(4 2),0.5)@2000-01-01, Cbuffer(Point(2 
 SELECT eContains(tcbuffer '[Cbuffer(Point(0 1),0.5)@2000-01-01, Cbuffer(Point(4 1),0.5)@2000-01-02]', geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))');
 SELECT eContains(tcbuffer '[Cbuffer(Point(1 4),0.5)@2000-01-01, Cbuffer(Point(4 1),0.5)@2000-01-02]', geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))');
 
+-- A hole the disc passes over: it is contained on both sides of the hole, so
+-- the ever semantics hold and the always semantics do not, both decided at
+-- internal tangencies where the disc starts and stops overlapping the hole
+SELECT eContains(geometry 'Polygon((-5 -5,-5 5,5 5,5 -5,-5 -5),(-1 -1,-1 1,1 1,1 -1,-1 -1))', tcbuffer '[Cbuffer(Point(-3 0),0.5)@2000-01-01, Cbuffer(Point(3 0),0.5)@2000-01-03]');
+SELECT aContains(geometry 'Polygon((-5 -5,-5 5,5 5,5 -5,-5 -5),(-1 -1,-1 1,1 1,1 -1,-1 -1))', tcbuffer '[Cbuffer(Point(-3 0),0.5)@2000-01-01, Cbuffer(Point(3 0),0.5)@2000-01-03]');
+-- The disc is contained only strictly inside the segment, at no vertex
+SELECT eContains(geometry 'Polygon((-5 -5,-5 5,5 5,5 -5,-5 -5))', tcbuffer '[Cbuffer(Point(-8 0),0.5)@2000-01-01, Cbuffer(Point(8 0),0.5)@2000-01-03]');
+
 -- Curve polygon (arc ring) input, native arc-exact; the ring is the circle of
 -- centre (0,0) and radius 5. The disc starts strictly inside and leaves it
 SELECT eContains(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tcbuffer '[Cbuffer(Point(0 0),0.5)@2000-01-01, Cbuffer(Point(8 0),0.5)@2000-01-03]');
