@@ -70,6 +70,30 @@ SELECT eContains(tcbuffer '[Cbuffer(Point(1 4),0.5)@2000-01-01, Cbuffer(Point(4 
  t
 (1 row)
 
+SELECT eContains(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tcbuffer '[Cbuffer(Point(0 0),0.5)@2000-01-01, Cbuffer(Point(8 0),0.5)@2000-01-03]');
+ econtains 
+-----------
+ t
+(1 row)
+
+SELECT aContains(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tcbuffer '[Cbuffer(Point(0 0),0.5)@2000-01-01, Cbuffer(Point(8 0),0.5)@2000-01-03]');
+ acontains 
+-----------
+ f
+(1 row)
+
+SELECT aContains(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tcbuffer '[Cbuffer(Point(0 0),0.5)@2000-01-01, Cbuffer(Point(3 0),0.5)@2000-01-03]');
+ acontains 
+-----------
+ t
+(1 row)
+
+SELECT eContains(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tcbuffer 'Cbuffer(Point(4.5 0),0.5)@2000-01-01');
+ econtains 
+-----------
+ f
+(1 row)
+
 SELECT eContains(tcbuffer 'Cbuffer(Point(1 1),1)@2000-01-01', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
  econtains 
 -----------
@@ -145,6 +169,24 @@ SELECT eCovers(tcbuffer '[Cbuffer(Point(1 1),1)@2000-01-01, Cbuffer(Point(2 2),1
  t
 (1 row)
 
+SELECT eCovers(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tcbuffer 'Cbuffer(Point(4.5 0),0.5)@2000-01-01');
+ ecovers 
+---------
+ t
+(1 row)
+
+SELECT eCovers(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tcbuffer '[Cbuffer(Point(0 0),0.5)@2000-01-01, Cbuffer(Point(8 0),0.5)@2000-01-03]');
+ ecovers 
+---------
+ t
+(1 row)
+
+SELECT aCovers(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tcbuffer '[Cbuffer(Point(0 0),0.5)@2000-01-01, Cbuffer(Point(3 0),0.5)@2000-01-03]');
+ acovers 
+---------
+ t
+(1 row)
+
 /* Errors */
 SELECT eCovers(tcbuffer 'Cbuffer(Point(1 1),1)@2000-01-01', geometry 'SRID=3812;Point(1 1)');
 ERROR:  Operation on mixed SRID
@@ -192,6 +234,30 @@ SELECT eDisjoint(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 
 
 SELECT eDisjoint(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}',  cbuffer 'Cbuffer(Point(1 1),0.5)');
  edisjoint 
+-----------
+ t
+(1 row)
+
+SELECT eDisjoint(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tcbuffer '[Cbuffer(Point(0 0),0.5)@2000-01-01, Cbuffer(Point(8 0),0.5)@2000-01-03]');
+ edisjoint 
+-----------
+ t
+(1 row)
+
+SELECT eDisjoint(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tcbuffer '[Cbuffer(Point(0 0),0.5)@2000-01-01, Cbuffer(Point(3 0),0.5)@2000-01-03]');
+ edisjoint 
+-----------
+ f
+(1 row)
+
+SELECT aDisjoint(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tcbuffer '[Cbuffer(Point(8 0),0.5)@2000-01-01, Cbuffer(Point(8 8),0.5)@2000-01-03]');
+ adisjoint 
+-----------
+ t
+(1 row)
+
+SELECT aDisjoint(geometry 'CircularString(5 0, 4 3, 0 5)', tcbuffer '[Cbuffer(Point(5 -3),0.5)@2000-01-01, Cbuffer(Point(5 -1),0.5)@2000-01-03]');
+ adisjoint 
 -----------
  t
 (1 row)
@@ -345,6 +411,48 @@ SELECT eIntersects(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point
  t
 (1 row)
 
+SELECT eIntersects(geometry 'CircularString(5 0, 4 3, 0 5)', tcbuffer '[Cbuffer(Point(8 6),2.5)@2000-01-01, Cbuffer(Point(4 3),2.5)@2000-01-03]');
+ eintersects 
+-------------
+ t
+(1 row)
+
+SELECT eIntersects(geometry 'CircularString(5 0, 4 3, 0 5)', tcbuffer '[Cbuffer(Point(5 -3),0.5)@2000-01-01, Cbuffer(Point(5 -1),0.5)@2000-01-03]');
+ eintersects 
+-------------
+ f
+(1 row)
+
+SELECT eIntersects(geometry 'CompoundCurve(CircularString(5 0, 4 3, 0 5),(0 5, -4 5))', tcbuffer '[Cbuffer(Point(-2 8),0.5)@2000-01-01, Cbuffer(Point(-2 4),0.5)@2000-01-03]');
+ eintersects 
+-------------
+ t
+(1 row)
+
+SELECT eIntersects(geometry 'MultiCurve(CircularString(5 0, 4 3, 0 5),(0 5, -4 5))', tcbuffer '[Cbuffer(Point(8 6),2.5)@2000-01-01, Cbuffer(Point(4 3),2.5)@2000-01-03]');
+ eintersects 
+-------------
+ t
+(1 row)
+
+SELECT eIntersects(geometry 'MultiSurface(CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0)))', tcbuffer '[Cbuffer(Point(0 0),0.5)@2000-01-01, Cbuffer(Point(8 0),0.5)@2000-01-03]');
+ eintersects 
+-------------
+ t
+(1 row)
+
+SELECT aIntersects(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tcbuffer '[Cbuffer(Point(0 0),0.5)@2000-01-01, Cbuffer(Point(3 0),0.5)@2000-01-03]');
+ aintersects 
+-------------
+ t
+(1 row)
+
+SELECT aIntersects(tcbuffer '[Cbuffer(Point(0 0),0.5)@2000-01-01, Cbuffer(Point(8 0),0.5)@2000-01-03]', geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))');
+ aintersects 
+-------------
+ f
+(1 row)
+
 /* Errors */
 SELECT eIntersects(geometry 'SRID=3812;Point(1 1)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
 ERROR:  Operation on mixed SRID
@@ -428,6 +536,30 @@ SELECT eTouches(tcbuffer '[Cbuffer(Point(0 0),0.5)@2000-01-01, Cbuffer(Point(1 0
  etouches 
 ----------
  t
+(1 row)
+
+SELECT eTouches(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tcbuffer 'Cbuffer(Point(6 0),1)@2000-01-01');
+ etouches 
+----------
+ t
+(1 row)
+
+SELECT eTouches(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tcbuffer '[Cbuffer(Point(10 0),1)@2000-01-01, Cbuffer(Point(0 0),1)@2000-01-03]');
+ etouches 
+----------
+ t
+(1 row)
+
+SELECT aTouches(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tcbuffer 'Cbuffer(Point(6 0),1)@2000-01-01');
+ atouches 
+----------
+ t
+(1 row)
+
+SELECT eTouches(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tcbuffer '[Cbuffer(Point(10 0),1)@2000-01-01, Cbuffer(Point(10 10),1)@2000-01-03]');
+ etouches 
+----------
+ f
 (1 row)
 
 /* Errors */
@@ -607,6 +739,30 @@ SELECT eDwithin(tcbuffer 'Interp=Step;{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuf
  edwithin 
 ----------
  t
+(1 row)
+
+SELECT eDwithin(geometry 'CircularString(5 0, 4 3, 0 5)', tcbuffer '[Cbuffer(Point(8 6),0.5)@2000-01-01, Cbuffer(Point(4 3),0.5)@2000-01-03]', 2);
+ edwithin 
+----------
+ t
+(1 row)
+
+SELECT eDwithin(geometry 'CircularString(5 0, 4 3, 0 5)', tcbuffer '[Cbuffer(Point(5 -3),0.5)@2000-01-01, Cbuffer(Point(5 -1),0.5)@2000-01-03]', 0.3);
+ edwithin 
+----------
+ f
+(1 row)
+
+SELECT aDwithin(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tcbuffer '[Cbuffer(Point(0 0),0.5)@2000-01-01, Cbuffer(Point(3 0),0.5)@2000-01-03]', 1);
+ adwithin 
+----------
+ t
+(1 row)
+
+SELECT aDwithin(tcbuffer '[Cbuffer(Point(8 0),0.5)@2000-01-01, Cbuffer(Point(8 8),0.5)@2000-01-03]', geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', 1);
+ adwithin 
+----------
+ f
 (1 row)
 
 /* Errors */

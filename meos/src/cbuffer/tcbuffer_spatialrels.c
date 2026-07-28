@@ -536,7 +536,8 @@ ea_contains_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp,
   bool ever)
 {
   /* Native running ever/always contains, exactly consistent with the temporal
-   * contains; curved or unsupported geometry keeps the traversed-area path. */
+   * contains; a geometry that has no edge decomposition keeps the
+   * traversed-area path. */
   int native = eacontains_tcbuffer_geo_native(temp, gs, ever, true);
   if (native >= 0)
     return native;
@@ -773,8 +774,8 @@ int
 ea_covers_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp, bool ever)
 {
   /* Native running ever/always covers (contains up to boundary tangency),
-   * exactly consistent with the temporal covers; curved or unsupported
-   * geometry keeps the traversed-area path. */
+   * exactly consistent with the temporal covers; a geometry that has no edge
+   * decomposition keeps the traversed-area path. */
   int native = eacontains_tcbuffer_geo_native(temp, gs, ever, false);
   if (native >= 0)
     return native;
@@ -1011,8 +1012,8 @@ acovers_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
  * distance: aDisjoint(temp, gs) ⟺ ¬eIntersects(temp, gs) ⟺
  * min_t dist(disk(t), gs) > 0. The ever semantics are computed from the
  * native coverage of the intersecting sub-periods: eDisjoint(temp, gs) ⟺
- * ∃t disk(t) ∩ gs = ∅. Curved or unsupported geometry falls back to the
- * exact traversed-area path.
+ * ∃t disk(t) ∩ gs = ∅. A geometry that has no edge decomposition falls back
+ * to the exact traversed-area path.
  * @param[in] temp Temporal circular buffer
  * @param[in] gs Geometry
  * @param[in] ever True for the ever semantics, false for the always semantics
@@ -1246,8 +1247,9 @@ adisjoint_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
  * distance: eIntersects(temp, gs) ⟺ min_t dist(disk(t), gs) ≤ 0. The always
  * semantics are the complement of ever disjoint: aIntersects(temp, gs) ⟺
  * ¬eDisjoint(temp, gs), computed from the native coverage of the intersecting
- * sub-periods. Both avoid linearizing the round buffer through GEOS; curved
- * or unsupported geometry falls back to the exact traversed-area path.
+ * sub-periods. Both avoid linearizing the round buffer through GEOS; a
+ * geometry that has no edge decomposition falls back to the exact
+ * traversed-area path.
  * @param[in] temp Temporal circular buffer
  * @param[in] gs Geometry
  * @param[in] ever True for the ever semantics, false for the always semantics
@@ -1488,9 +1490,9 @@ ea_touches_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
    * many-vertex disk for which the analytic distance is not a win. */
   if (nad_tcbuffer_geo(temp, gs) > 1e-6)
     return 0;
-  /* Native path for non-curved geometry: eTouches/aTouches derive from the
-   * exact boundary-contact instants, consistent with ever/always(tTouches).
-   * Curved or unsupported geometry keeps the traversed-area path. */
+  /* Native path: eTouches/aTouches derive from the exact boundary-contact
+   * instants, consistent with ever/always(tTouches). A geometry that has no
+   * edge decomposition keeps the traversed-area path. */
   int native = eatouches_tcbuffer_geo_native(temp, gs, ever);
   if (native >= 0)
     return native;
@@ -1696,8 +1698,8 @@ ea_dwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
    * (dist(disk, gs) ≤ d ⟺ dist(disk⊕d, gs) ≤ 0), so aDwithin(temp, gs, d) ⟺
    * the buffer expanded by d always intersects the geometry ⟺ it is never
    * disjoint from it. Reuse the ever-disjoint coverage kernel on the expanded
-   * buffer; curved or unsupported geometry returns -1 and keeps the
-   * traversed-area path below. */
+   * buffer; a geometry that has no edge decomposition returns -1 and keeps
+   * the traversed-area path below. */
   Temporal *temp_exp = tcbuffer_expand(temp, dist);
   int native = edisjoint_tcbuffer_geo_native(temp_exp, gs);
   pfree(temp_exp);

@@ -555,9 +555,12 @@ tinterrel_tcbufferseqset_geom(const TSequenceSet *ss, const GSERIALIZED *gs,
  *
  * These mirror the traversed-area functions above but discover the
  * intersecting sub-periods from the exact swept-capsule distance kernel
- * instead of linearizing the circular buffer through GEOS. They are used for
- * every non-curved geometry; the traversed-area functions remain the fallback
- * for curved input.
+ * instead of linearizing the circular buffer through GEOS. The boundary is
+ * decomposed into straight and circular-arc edges, so they are used for curved
+ * input (circular strings, compound curves, curve polygons, and the multi
+ * types grouping them) as well; the traversed-area functions remain the
+ * fallback for a geometry that has no edge decomposition, that is, a TIN or a
+ * polyhedral surface.
  *****************************************************************************/
 
 /**
@@ -856,8 +859,8 @@ tinterrel_tcbufferseqset_geo_native(const TSequenceSet *ss, bool tinter,
  *   eDisjoint(temp, gs) ⟺ ∃t disk(t) ∩ gs = ∅ ⟺ the intersecting 
  *     sub-periods do not cover the definition time;
  *   aIntersects(temp, gs) ⟺ ¬eDisjoint(temp, gs).
- * Curved or unsupported geometry (no context) returns -1 so the caller keeps
- * the exact traversed-area path.
+ * A geometry that has no edge decomposition (no context) returns -1 so the
+ * caller keeps the exact traversed-area path.
  *****************************************************************************/
 
 /**
@@ -905,8 +908,8 @@ tcbufferseq_ever_disjoint_native(const TSequence *seq, const void *ctx)
 /**
  * @ingroup meos_internal_cbuffer_rel_ever
  * @brief Return 1 if a temporal circular buffer is ever disjoint from a
- * geometry, 0 if it always intersects, and -1 for curved or unsupported
- * geometry (the caller then uses the traversed-area path)
+ * geometry, 0 if it always intersects, and -1 for a geometry that has no edge
+ * decomposition (the caller then uses the traversed-area path)
  * @param[in] temp Temporal circular buffer
  * @param[in] gs Geometry
  */
@@ -946,8 +949,8 @@ edisjoint_tcbuffer_geo_native(const Temporal *temp, const GSERIALIZED *gs)
  * @param[in] dist Distance by which the circular buffer is expanded, used to
  * back `tdwithin`; zero for `tintersects` and `tdisjoint`
  * @details The distance is threaded to the native within kernels, which fold
- * it into the disc radius, avoiding a separate radius-expansion pass. For
- * curved geometry, which has no native kernel, the radius is expanded and the
+ * it into the disc radius, avoiding a separate radius-expansion pass. For a
+ * geometry that has no native kernel, the radius is expanded and the
  * traversed-area path is used
  */
 static Temporal *
@@ -975,8 +978,8 @@ tinterrel_tcbuffer_geo_dist(const Temporal *temp, const GSERIALIZED *gs,
       /* Computing disjoint */
       temporal_from_base_temp(BoolGetDatum(true), T_TBOOL, temp);
 
-  /* Native path for non-curved geometry; the traversed-area path
-   * remains the fallback for curved input */
+  /* Native path, straight and circular-arc edges alike; the traversed-area
+   * path remains the fallback for a geometry that has no edge decomposition */
   void *ctx = tcbuffer_geo_ctx_make(gs);
   Temporal *result = NULL;
   assert(temptype_subtype(temp->subtype));
@@ -999,8 +1002,9 @@ tinterrel_tcbuffer_geo_dist(const Temporal *temp, const GSERIALIZED *gs,
     tcbuffer_geo_ctx_free(ctx);
     return result;
   }
-  /* Curved or unsupported geometry: expand the radius by the distance (a no-op
-   * for a zero distance) and fall back to the traversed-area path */
+  /* A geometry that has no edge decomposition: expand the radius by the
+   * distance (a no-op for a zero distance) and fall back to the traversed-area
+   * path */
   const Temporal *tw = (dist > 0.0) ? tcbuffer_expand(temp, dist) : temp;
   switch (temp->subtype)
   {
@@ -1115,8 +1119,8 @@ tspatialrel_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
 
 /* Native temporal contains (@p strict true) / covers (@p strict false) of a
  * moving disk by a geometry, defined with the touch machinery below; returns
- * NULL for curved or unsupported geometry so the caller keeps the per-instant
- * lifting path */
+ * NULL for a geometry that has no edge decomposition so the caller keeps the
+ * per-instant lifting path */
 static Temporal *tcontains_geo_tcbuffer_native(const Temporal *temp,
   const GSERIALIZED *gs, bool strict);
 
@@ -1446,8 +1450,8 @@ tintersects_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
  * sub-period. The temporal touches Boolean is thus true exactly on the contact
  * set and false elsewhere, the moving-disk analogue of the temporal-point
  * boundary approach ttouches(tpoint, geo) = tintersects(tpoint, boundary(geo)).
- * Curved or unsupported geometry (no context) keeps the traversed-area GEOS
- * path.
+ * A geometry that has no edge decomposition (no context) keeps the
+ * traversed-area GEOS path.
  *****************************************************************************/
 
 /**
@@ -1671,7 +1675,8 @@ ttouches_tcbufferseqset_geo_native(const TSequenceSet *ss, const void *ctx)
  * stays clear of the boundary so the relation is constant and decided by the
  * interior test at a sample point. A geometry with no polygonal component
  * cannot contain a positive-radius disk, which the point-in-polygon guard makes
- * false. Curved or unsupported geometry (no context) keeps the lifting path.
+ * false. A geometry that has no edge decomposition (no context) keeps the
+ * lifting path.
  *****************************************************************************/
 
 /**
@@ -1925,7 +1930,7 @@ tcontains_tcbufferseqset_geo_native(const TSequenceSet *ss, const void *ctx,
 
 /**
  * @brief Native temporal contains/covers of a moving disk by a geometry (NULL
- * for curved or unsupported geometry so the caller falls back)
+ * for a geometry that has no edge decomposition so the caller falls back)
  */
 static Temporal *
 tcontains_geo_tcbuffer_native(const Temporal *temp, const GSERIALIZED *gs,
@@ -1976,8 +1981,8 @@ tcontains_geo_tcbuffer_native(const Temporal *temp, const GSERIALIZED *gs,
  * eTouches scans the instants and segment contact roots with early exit on the
  * first contact; aTouches tests whether the contact sub-periods cover the whole
  * definition time (true only in degenerate always-tangent configurations).
- * Curved or unsupported geometry (no context) returns -1 so the caller keeps
- * the traversed-area path.
+ * A geometry that has no edge decomposition (no context) returns -1 so the
+ * caller keeps the traversed-area path.
  *****************************************************************************/
 
 /**
@@ -2037,8 +2042,8 @@ tcbufferseq_always_touches_native(const TSequence *seq, const void *ctx)
 /**
  * @ingroup meos_internal_cbuffer_rel_ever
  * @brief Return 1 if a temporal circular buffer ever/always touches a geometry,
- * 0 if not, and -1 for curved or unsupported geometry (the caller then uses the
- * traversed-area path)
+ * 0 if not, and -1 for a geometry that has no edge decomposition (the caller
+ * then uses the traversed-area path)
  * @param[in] temp Temporal circular buffer
  * @param[in] gs Geometry
  * @param[in] ever True for the ever semantics, false for the always semantics
@@ -2189,8 +2194,8 @@ tcbufferseq_always_contains_native(const TSequence *seq, const void *ctx,
 /**
  * @ingroup meos_internal_cbuffer_rel_ever
  * @brief Return 1 if a geometry ever/always contains (@p strict) or covers a
- * temporal circular buffer, 0 if not, and -1 for curved or unsupported geometry
- * (the caller then uses the traversed-area path)
+ * temporal circular buffer, 0 if not, and -1 for a geometry that has no edge
+ * decomposition (the caller then uses the traversed-area path)
  * @param[in] temp Temporal circular buffer
  * @param[in] gs Geometry
  * @param[in] ever True for the ever semantics, false for the always semantics
@@ -2270,8 +2275,9 @@ ttouches_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
   if (! overlaps_stbox_stbox(&box1, &box2))
     return temporal_from_base_temp(BoolGetDatum(false), T_TBOOL, temp);
 
-  /* Native path for non-curved geometry: the moving-disk boundary contact 
-   * instants. Curved or unsupported geometry keeps the traversed-area path. */
+  /* Native path: the moving-disk boundary contact instants, for straight and
+   * circular-arc edges alike. A geometry that has no edge decomposition keeps
+   * the traversed-area path. */
   void *ctx = tcbuffer_geo_ctx_make(gs);
   if (! ctx)
     return tspatialrel_tcbuffer_geo(temp, gs, INVERT_NO, &datum_cbuffer_touches);
