@@ -338,11 +338,23 @@ sudo make install
 	<sect1 xml:id="raster_roadmap">
 		<title>Production Roadmap</title>
 
-		<para>Future extensions to this chapter:</para>
+		<para>The two paths described in this chapter serve different purposes and are both maintained. The <varname>raquet</varname> path is a self-contained MEOS value type: it carries its pixels and its QUADBIN georeferencing in a single value and needs no PostgreSQL to evaluate, so it is available to every language binding derived from MEOS. The PostGIS <varname>raster</varname> path offers the far richer raster processing of the <varname>postgis_raster</varname> extension — map algebra, statistics, resampling, clipping, conversion to polygons — inside PostgreSQL only.</para>
+
+		<para>Neither path replaces the other. Work on the <varname>raquet</varname> path extends what a cloud-native tile can do along a trajectory; it is not an attempt to reimplement raster processing.</para>
+
+		<para>Planned extensions to the <varname>raquet</varname> path:</para>
 		<itemizedlist>
-			<listitem><para><emphasis>Multi-band support</emphasis> — return one <varname>tfloat</varname> per band for multi-spectral Raquet tiles (e.g. RGB or multi-channel satellite imagery).</para></listitem>
+			<listitem><para><emphasis>Tile footprint</emphasis> — an <varname>stbox</varname> cast and a <varname>geometry</varname> conversion giving the spatial extent of a tile, derived from its QUADBIN cell.</para></listitem>
+			<listitem><para><emphasis>Spatial indexing</emphasis> — an <varname>extent</varname> aggregate and GiST and SP-GiST operator classes over the tile footprint, so that a trajectory is joined against a tile table by spatial overlap instead of by an equality test on the QUADBIN cell at a single fixed zoom level.</para></listitem>
 			<listitem><para><emphasis>Aggregate tile merging</emphasis> — a set-returning variant that accepts the full array of matching Raquet tiles and merges the per-tile instant sets, removing duplicate instants at tile boundaries.</para></listitem>
-			<listitem><para><emphasis>Inverse operator</emphasis> — <varname>raster_atTime(raster, tstzspan)</varname> restricts a raster to the spatial extent visited by one or more trajectories during a time interval.</para></listitem>
+			<listitem><para><emphasis>Time restriction</emphasis> — <varname>atTime(raquet, tstzspan)</varname> restricting a tile to the spatial extent visited by one or more trajectories during a time interval.</para></listitem>
+		</itemizedlist>
+
+		<para>The extensions below require a general raster data model, that is, arbitrary spatial reference systems, arbitrary affine georeferencing and several bands per tile. A <varname>raquet</varname> value is a single-band tile whose extent and pixel grid follow from its QUADBIN cell, so these lie outside that model and remain available through the PostGIS <varname>raster</varname> path:</para>
+		<itemizedlist>
+			<listitem><para><emphasis>Multi-band tiles</emphasis> — one <varname>tfloat</varname> per band for multi-spectral imagery such as RGB or multi-channel satellite scenes.</para></listitem>
+			<listitem><para><emphasis>Arbitrary spatial reference systems</emphasis> — tiles outside the Web-Mercator grid, and reprojection between reference systems.</para></listitem>
+			<listitem><para><emphasis>Raster processing</emphasis> — map algebra, summary statistics, resampling, clipping and conversion to polygons.</para></listitem>
 		</itemizedlist>
 	</sect1>
 </chapter>
