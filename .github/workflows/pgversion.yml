@@ -153,6 +153,19 @@ jobs:
           sudo -u postgres createdb -p ${PGPORT}  ___mobdb___test___
           sudo -u postgres psql -p ${PGPORT}  -d ___mobdb___test___ -c "CREATE EXTENSION mobilitydb CASCADE; SELECT postgis_full_version(); SELECT mobilitydb_full_version();"
 
+      - name: Test coexistence with btree_gist
+        # btree_gist defines <-> distance operators on base types (integer,
+        # bigint, float8, date, timestamptz), so mobilitydb leaves those base
+        # types to btree_gist. Both extensions must therefore load together in
+        # either order without an "operator <-> already exists" clash.
+        run: |
+          sudo -u postgres createdb -p ${PGPORT} ___mobdb___btgist1___
+          sudo -u postgres psql -p ${PGPORT} -v ON_ERROR_STOP=1 -d ___mobdb___btgist1___ \
+            -c "CREATE EXTENSION btree_gist;" -c "CREATE EXTENSION mobilitydb CASCADE;"
+          sudo -u postgres createdb -p ${PGPORT} ___mobdb___btgist2___
+          sudo -u postgres psql -p ${PGPORT} -v ON_ERROR_STOP=1 -d ___mobdb___btgist2___ \
+            -c "CREATE EXTENSION mobilitydb CASCADE;" -c "CREATE EXTENSION btree_gist;"
+
       - name: Test
         run: |
           cd build
