@@ -242,6 +242,11 @@ def render_spatialrels(fam: dict) -> str:
     ingroup = fam.get("ingroup", "mobilitydb_geo_rel_ever")
     order = fam.get("order", _SR_ORDER)
     disp_map = fam.get("disp", _SR_DISP)
+    # Some families name the MEOS kernel with an abbreviated type token that
+    # differs from the public-function direction token (e.g. rgeo functions are
+    # `..._trgeometry` but their kernels are `ea_..._trgeo`). kernel_dir maps a
+    # direction to its kernel token; absent, the direction is used unchanged.
+    kernel_dir = fam.get("kernel_dir", {})
     out = []
     for pred in fam["predicates"]:
         out.append(banner_t.replace("{BANNER}", pred["banner"]))
@@ -249,7 +254,7 @@ def render_spatialrels(fam: dict) -> str:
         meos_fixed = pred.get("meos_fixed")
         for direc in pred.get("directions", order):
             disp = disp_over.get(direc, disp_map[direc])
-            meos = meos_fixed or f"ea_{pred['rel']}_{direc}"
+            meos = meos_fixed or f"ea_{pred['rel']}_{kernel_dir.get(direc, direc)}"
             for ea, word, low in (("E", "ever", "e"), ("A", "always", "a")):
                 brief = _wrap_brief(
                     "Return true if " + pred["briefs"][direc].replace("{word}", word))

@@ -391,6 +391,39 @@ spatialrel_families:
           - {type: "Temporal *", var: temp1, pos: 0}
           - {type: "Temporal *", var: temp2, pos: 1}
 
+  # rgeo (temporal rigid geometry) has the reduced three-direction shape (geo⊗T,
+  # T⊗geo, T⊗T; no base-value directions) and abbreviates its kernel type token
+  # trgeometry -> trgeo, so it uses kernel_dir. It shares the geo ever/always doc
+  # group.
+  - family:    rgeo_ea_contains_covers
+    file:      mobilitydb/src/rgeo/trgeo_spatialrels.c
+    reference: true
+    ingroup:   mobilitydb_geo_rel_ever
+    order:     [geo_trgeometry, trgeometry_geo, trgeometry_trgeometry]
+    disp:
+      geo_trgeometry:        EA_spatialrel_geo_tspatial
+      trgeometry_geo:        EA_spatialrel_tspatial_geo
+      trgeometry_trgeometry: EA_spatialrel_tspatial_tspatial
+    kernel_dir:
+      geo_trgeometry:        geo_trgeo
+      trgeometry_geo:        trgeo_geo
+      trgeometry_trgeometry: trgeo_trgeo
+    predicates:
+      - rel: contains
+        Rel: Contains
+        banner: "Ever/always contains"
+        briefs:
+          geo_trgeometry:        "a geometry {word} contains a temporal rigid geometry"
+          trgeometry_geo:        "a temporal rigid geometry {word} contains a geometry"
+          trgeometry_trgeometry: "a temporal rigid geometry {word} contains another one"
+      - rel: covers
+        Rel: Covers
+        banner: "Ever/always covers"
+        briefs:
+          geo_trgeometry:        "a geometry {word} covers a temporal rigid geometry"
+          trgeometry_geo:        "a temporal rigid geometry {word} covers a geometry"
+          trgeometry_trgeometry: "a temporal rigid geometry {word} covers another one"
+
 # ---------------------------------------------------------------------------
 # Accessor axis (SQL, per-family, region-in-file). The whole Temporal<T> accessor
 # surface (tempSubtype..segments) lives INLINE in each family's type file and

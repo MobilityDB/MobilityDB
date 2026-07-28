@@ -56,6 +56,8 @@
 #include "pg_geo/postgis.h"
 #include "pg_geo/tspatial.h"
 
+/* GENERATED-SPATIALRELS-BEGIN rgeo_ea_contains_covers — tools/codegen/inherited/generate.py from templates/spatialrels.c.tmpl;
+ * DO NOT EDIT BY HAND; edit the template + manifest.yaml (spatialrel_families) and re-run. */
 /*****************************************************************************
  * Ever/always contains
  *****************************************************************************/
@@ -85,66 +87,6 @@ Acontains_geo_trgeometry(PG_FUNCTION_ARGS)
 {
   return EA_spatialrel_geo_tspatial(fcinfo, &ea_contains_geo_trgeo, ALWAYS);
 }
-
-/*****************************************************************************
- * Ever/always covers
- *****************************************************************************/
-
-PGDLLEXPORT Datum Ecovers_geo_trgeometry(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Ecovers_geo_trgeometry);
-/**
- * @ingroup mobilitydb_geo_rel_ever
- * @brief Return true if a geometry ever covers a temporal rigid geometry
- * @sqlfn eCovers()
- */
-inline Datum
-Ecovers_geo_trgeometry(PG_FUNCTION_ARGS)
-{
-  return EA_spatialrel_geo_tspatial(fcinfo, &ea_covers_geo_trgeo, EVER);
-}
-
-PGDLLEXPORT Datum Acovers_geo_trgeometry(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Acovers_geo_trgeometry);
-/**
- * @ingroup mobilitydb_geo_rel_ever
- * @brief Return true if a geometry always covers a temporal rigid geometry
- * @sqlfn aCovers()
- */
-inline Datum
-Acovers_geo_trgeometry(PG_FUNCTION_ARGS)
-{
-  return EA_spatialrel_geo_tspatial(fcinfo, &ea_covers_geo_trgeo, ALWAYS);
-}
-
-/*****************************************************************************/
-
-PGDLLEXPORT Datum Ecovers_trgeometry_geo(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Ecovers_trgeometry_geo);
-/**
- * @ingroup mobilitydb_geo_rel_ever
- * @brief Return true if a geometry ever covers a temporal rigid geometry
- * @sqlfn eCovers()
- */
-inline Datum
-Ecovers_trgeometry_geo(PG_FUNCTION_ARGS)
-{
-  return EA_spatialrel_tspatial_geo(fcinfo, &ea_covers_trgeo_geo, EVER);
-}
-
-PGDLLEXPORT Datum Acovers_trgeometry_geo(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Acovers_trgeometry_geo);
-/**
- * @ingroup mobilitydb_geo_rel_ever
- * @brief Return true if a geometry always covers a temporal rigid geometry
- * @sqlfn aCovers()
- */
-inline Datum
-Acovers_trgeometry_geo(PG_FUNCTION_ARGS)
-{
-  return EA_spatialrel_tspatial_geo(fcinfo, &ea_covers_trgeo_geo, ALWAYS);
-}
-
-/*****************************************************************************/
 
 PGDLLEXPORT Datum Econtains_trgeometry_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Econtains_trgeometry_geo);
@@ -200,6 +142,62 @@ Acontains_trgeometry_trgeometry(PG_FUNCTION_ARGS)
     ALWAYS);
 }
 
+/*****************************************************************************
+ * Ever/always covers
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Ecovers_geo_trgeometry(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Ecovers_geo_trgeometry);
+/**
+ * @ingroup mobilitydb_geo_rel_ever
+ * @brief Return true if a geometry ever covers a temporal rigid geometry
+ * @sqlfn eCovers()
+ */
+inline Datum
+Ecovers_geo_trgeometry(PG_FUNCTION_ARGS)
+{
+  return EA_spatialrel_geo_tspatial(fcinfo, &ea_covers_geo_trgeo, EVER);
+}
+
+PGDLLEXPORT Datum Acovers_geo_trgeometry(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Acovers_geo_trgeometry);
+/**
+ * @ingroup mobilitydb_geo_rel_ever
+ * @brief Return true if a geometry always covers a temporal rigid geometry
+ * @sqlfn aCovers()
+ */
+inline Datum
+Acovers_geo_trgeometry(PG_FUNCTION_ARGS)
+{
+  return EA_spatialrel_geo_tspatial(fcinfo, &ea_covers_geo_trgeo, ALWAYS);
+}
+
+PGDLLEXPORT Datum Ecovers_trgeometry_geo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Ecovers_trgeometry_geo);
+/**
+ * @ingroup mobilitydb_geo_rel_ever
+ * @brief Return true if a temporal rigid geometry ever covers a geometry
+ * @sqlfn eCovers()
+ */
+inline Datum
+Ecovers_trgeometry_geo(PG_FUNCTION_ARGS)
+{
+  return EA_spatialrel_tspatial_geo(fcinfo, &ea_covers_trgeo_geo, EVER);
+}
+
+PGDLLEXPORT Datum Acovers_trgeometry_geo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Acovers_trgeometry_geo);
+/**
+ * @ingroup mobilitydb_geo_rel_ever
+ * @brief Return true if a temporal rigid geometry always covers a geometry
+ * @sqlfn aCovers()
+ */
+inline Datum
+Acovers_trgeometry_geo(PG_FUNCTION_ARGS)
+{
+  return EA_spatialrel_tspatial_geo(fcinfo, &ea_covers_trgeo_geo, ALWAYS);
+}
+
 PGDLLEXPORT Datum Ecovers_trgeometry_trgeometry(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Ecovers_trgeometry_trgeometry);
 /**
@@ -226,6 +224,7 @@ Acovers_trgeometry_trgeometry(PG_FUNCTION_ARGS)
   return EA_spatialrel_tspatial_tspatial(fcinfo, &ea_covers_trgeo_trgeo,
     ALWAYS);
 }
+/* GENERATED-SPATIALRELS-END rgeo_ea_contains_covers */
 
 /*****************************************************************************
  * Ever disjoint (for both geometry and geography)
