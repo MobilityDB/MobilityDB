@@ -3,7 +3,16 @@
 SELECT quadbin(tile), width(tile), height(tile), pixtype(tile), nodata(tile)
 FROM (SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'UINT8') AS tile) t;
 -- 5193776270265024512 | 2 | 2 | UINT8 | 0
-</pre></li><li class="listitem"><a name="raquet_comparison"></a><a class="indexterm" name="id15574"></a><p>Compare two Raquet tiles</p><p><code class="varname">raquet = raquet → boolean</code></p><p><code class="varname">raquet &lt;&gt; raquet → boolean</code></p><p><code class="varname">raquet &lt; raquet → boolean</code></p><p><code class="varname">raquet &lt;= raquet → boolean</code></p><p><code class="varname">raquet &gt;= raquet → boolean</code></p><p><code class="varname">raquet &gt; raquet → boolean</code></p><p>The functions backing these operators are <code class="varname">eq</code>, <code class="varname">ne</code>, <code class="varname">lt</code>, <code class="varname">le</code>, <code class="varname">ge</code> and <code class="varname">gt</code>, together with <code class="varname">cmp(raquet,raquet) → integer</code>, which returns -1, 0, or 1.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raquet_to_stbox"></a><a class="indexterm" name="id15574"></a><p>Convert a Raquet tile into a spatiotemporal box</p><p><code class="varname">stbox(raquet) → stbox</code></p><p>Returns the tile footprint: the longitude and latitude envelope of its QUADBIN cell, in SRID 4326 and without a time dimension. The footprint follows from the cell alone, so tiles differing in pixels, dimensions or pixel type share it. The conversion is also available as a cast.</p><pre class="programlisting">
+-- The footprint of a tile covering the north-eastern quadrant at zoom 1
+SELECT round(stbox(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512,
+  'UINT8')), 6);
+-- SRID=4326;STBOX X((0,0),(180,85.051129))
+
+-- Keep the tiles whose footprint overlaps a region of interest
+SELECT * FROM elevation_tiles
+WHERE tile::stbox &amp;&amp; stbox 'SRID=4326;STBOX X((0,0),(30,30))';
+</pre></li><li class="listitem"><a name="raquet_comparison"></a><a class="indexterm" name="id15583"></a><p>Compare two Raquet tiles</p><p><code class="varname">raquet = raquet → boolean</code></p><p><code class="varname">raquet &lt;&gt; raquet → boolean</code></p><p><code class="varname">raquet &lt; raquet → boolean</code></p><p><code class="varname">raquet &lt;= raquet → boolean</code></p><p><code class="varname">raquet &gt;= raquet → boolean</code></p><p><code class="varname">raquet &gt; raquet → boolean</code></p><p>The functions backing these operators are <code class="varname">eq</code>, <code class="varname">ne</code>, <code class="varname">lt</code>, <code class="varname">le</code>, <code class="varname">ge</code> and <code class="varname">gt</code>, together with <code class="varname">cmp(raquet,raquet) → integer</code>, which returns -1, 0, or 1.</p><pre class="programlisting">
 -- Two tiles with the same cell, layout and pixels are equal
 SELECT raquet('\x0102'::bytea, 2, 1, 5193776270265024512, 'UINT8') =
        raquet('\x0102'::bytea, 2, 1, 5193776270265024512, 'UINT8');

@@ -3,7 +3,16 @@
 SELECT quadbin(tile), width(tile), height(tile), pixtype(tile), nodata(tile)
 FROM (SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'UINT8') AS tile) t;
 -- 5193776270265024512 | 2 | 2 | UINT8 | 0
-</pre></li><li class="listitem"><a name="raquet_comparison"></a><a class="indexterm" name="id14920"></a><p>Comparar dos teselas Raquet</p><p><code class="varname">raquet = raquet → boolean</code></p><p><code class="varname">raquet &lt;&gt; raquet → boolean</code></p><p><code class="varname">raquet &lt; raquet → boolean</code></p><p><code class="varname">raquet &lt;= raquet → boolean</code></p><p><code class="varname">raquet &gt;= raquet → boolean</code></p><p><code class="varname">raquet &gt; raquet → boolean</code></p><p>Las funciones que respaldan estos operadores son <code class="varname">eq</code>, <code class="varname">ne</code>, <code class="varname">lt</code>, <code class="varname">le</code>, <code class="varname">ge</code> y <code class="varname">gt</code>, junto con <code class="varname">cmp(raquet,raquet) → integer</code>, que devuelve -1, 0 o 1.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raquet_to_stbox"></a><a class="indexterm" name="id14920"></a><p>Convertir una tesela Raquet en una caja espaciotemporal</p><p><code class="varname">stbox(raquet) → stbox</code></p><p>Devuelve la huella de la tesela: la envolvente de longitud y latitud de su celda QUADBIN, en SRID 4326 y sin dimensión temporal. La huella se deriva únicamente de la celda, por lo que teselas que difieren en píxeles, dimensiones o tipo de píxel la comparten. La conversión también está disponible como conversión de tipo.</p><pre class="programlisting">
+-- The footprint of a tile covering the north-eastern quadrant at zoom 1
+SELECT round(stbox(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512,
+  'UINT8')), 6);
+-- SRID=4326;STBOX X((0,0),(180,85.051129))
+
+-- Keep the tiles whose footprint overlaps a region of interest
+SELECT * FROM elevation_tiles
+WHERE tile::stbox &amp;&amp; stbox 'SRID=4326;STBOX X((0,0),(30,30))';
+</pre></li><li class="listitem"><a name="raquet_comparison"></a><a class="indexterm" name="id14929"></a><p>Comparar dos teselas Raquet</p><p><code class="varname">raquet = raquet → boolean</code></p><p><code class="varname">raquet &lt;&gt; raquet → boolean</code></p><p><code class="varname">raquet &lt; raquet → boolean</code></p><p><code class="varname">raquet &lt;= raquet → boolean</code></p><p><code class="varname">raquet &gt;= raquet → boolean</code></p><p><code class="varname">raquet &gt; raquet → boolean</code></p><p>Las funciones que respaldan estos operadores son <code class="varname">eq</code>, <code class="varname">ne</code>, <code class="varname">lt</code>, <code class="varname">le</code>, <code class="varname">ge</code> y <code class="varname">gt</code>, junto con <code class="varname">cmp(raquet,raquet) → integer</code>, que devuelve -1, 0 o 1.</p><pre class="programlisting">
 -- Dos teselas con la misma celda, disposición y píxeles son iguales
 SELECT raquet('\x0102'::bytea, 2, 1, 5193776270265024512, 'UINT8') =
        raquet('\x0102'::bytea, 2, 1, 5193776270265024512, 'UINT8');
