@@ -130,7 +130,12 @@ def emit_call(fname, ret, args, arg_map, skip_map, override_args,
             return f"  /* SKIP {fname}: unmapped arg type '{ty}' */\n"
         call_args.append(v)
     call = f"{fname}({', '.join(call_args)})"
+    # Preserve a `const` return qualifier in the declared result variable so a
+    # function like `const GSERIALIZED *route_geom(...)` does not trip
+    # -Wdiscarded-qualifiers when its result is assigned.
+    is_const_ret = re.search(r"\bconst\b", ret) is not None
     ret = cleanup_type(ret)
+    decl_ret = ("const " + ret) if is_const_ret else ret
     if ret == "char *":
         return (f"  {{ char *r = {call};\n"
                 f"    printf(\"{fname}: %s\\n\", r ? r : \"NULL\");\n"
@@ -182,12 +187,13 @@ def emit_call(fname, ret, args, arg_map, skip_map, override_args,
         # no_free: the function returns a borrowed pointer (e.g. a view into
         # the MEOS ways cache) that the caller must NOT free.
         if fname in no_free:
-            return (f"  {{ {ret} r = {call};\n"
+            return (f"  {{ {decl_ret} r = {call};\n"
                     f"    printf(\"{fname}: %s\\n\", r ? \"OK\" : \"NULL\");\n"
                     f"    /* {fname} returns a borrowed pointer; do NOT free */ }}\n")
-        return (f"  {{ {ret} r = {call};\n"
+        free_r = "free((void *) r)" if is_const_ret else "free(r)"
+        return (f"  {{ {decl_ret} r = {call};\n"
                 f"    printf(\"{fname}: %s\\n\", r ? \"OK\" : \"NULL\");\n"
-                f"    if (r) free(r); }}\n")
+                f"    if (r) {free_r}; }}\n")
     return f"  /* SKIP {fname}: unmapped return type '{ret}' */\n"
 
 
@@ -413,6 +419,12 @@ TPOSE_CONFIG = dict(
         "nad_tpose_tpoint":       {1: "tpoint1"},
         "nai_tpose_tpoint":       {1: "tpoint1"},
         "shortestline_tpose_tpoint": {1: "tpoint1"},
+        # A 3D pose carries a rotation quaternion (W, X, Y, Z) that MUST be of
+        # unit norm. The default "double -> 1.0" mapping would pass (1,1,1,1)
+        # (norm 2), which the constructor rejects; supply the identity
+        # quaternion (W,X,Y,Z) = (1,0,0,0).
+        "pose_make_3d":      {3: "1.0", 4: "0.0", 5: "0.0", 6: "0.0"},
+        "pose_make_point3d": {1: "1.0", 2: "0.0", 3: "0.0", 4: "0.0"},
     },
     skip={
         "tpose_value_at_timestamptz":
