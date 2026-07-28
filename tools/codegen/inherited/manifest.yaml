@@ -342,6 +342,55 @@ spatialrel_families:
           tcbuffer_cbuffer:  "a temporal circular buffer and a circular buffer {word} intersect"
           tcbuffer_tcbuffer: "two temporal circular buffers {word} intersect"
 
+  # dwithin uses a distinct shape (a per-direction static dispatcher that reads
+  # the operands + the distance and calls the e/a kernel directly, with two thin
+  # public wrappers), so `dwithin: true` selects render_dwithin. Each direction
+  # lists its two arguments (declared/freed in position order), the MEOS kernel
+  # suffix and the kernel call arguments (temporal operand first).
+  - family:    cbuffer_ea_dwithin
+    file:      mobilitydb/src/cbuffer/tcbuffer_spatialrels.c
+    reference: true
+    dwithin:   true
+    ingroup:   mobilitydb_cbuffer_rel_ever
+    banner:    "Ever/always dwithin\n * The function only accepts points and not arbitrary geometries"
+    order:     [geo_tcbuffer, tcbuffer_geo, cbuffer_tcbuffer, tcbuffer_cbuffer, tcbuffer_tcbuffer]
+    directions:
+      geo_tcbuffer:
+        noun:   "a geometry and a temporal circular buffer"
+        kernel: tcbuffer_geo
+        kargs:  "temp, gs, dist"
+        args:
+          - {type: "GSERIALIZED *", var: gs,   pos: 0}
+          - {type: "Temporal *",    var: temp, pos: 1}
+      tcbuffer_geo:
+        noun:   "a temporal circular buffer and a geometry"
+        kernel: tcbuffer_geo
+        kargs:  "temp, gs, dist"
+        args:
+          - {type: "Temporal *",    var: temp, pos: 0}
+          - {type: "GSERIALIZED *", var: gs,   pos: 1}
+      cbuffer_tcbuffer:
+        noun:   "a circular buffer and a temporal circular buffer"
+        kernel: tcbuffer_cbuffer
+        kargs:  "temp, cb, dist"
+        args:
+          - {type: "Cbuffer *",  var: cb,   pos: 0}
+          - {type: "Temporal *", var: temp, pos: 1}
+      tcbuffer_cbuffer:
+        noun:   "a temporal circular buffer and a circular buffer"
+        kernel: tcbuffer_cbuffer
+        kargs:  "temp, cb, dist"
+        args:
+          - {type: "Temporal *", var: temp, pos: 0}
+          - {type: "Cbuffer *",  var: cb,   pos: 1}
+      tcbuffer_tcbuffer:
+        noun:   "two temporal circular buffers"
+        kernel: tcbuffer_tcbuffer
+        kargs:  "temp1, temp2, dist"
+        args:
+          - {type: "Temporal *", var: temp1, pos: 0}
+          - {type: "Temporal *", var: temp2, pos: 1}
+
 # ---------------------------------------------------------------------------
 # Accessor axis (SQL, per-family, region-in-file). The whole Temporal<T> accessor
 # surface (tempSubtype..segments) lives INLINE in each family's type file and

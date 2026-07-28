@@ -837,6 +837,9 @@ Atouches_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
   return EA_spatialrel_tspatial_tspatial(fcinfo, &ea_touches_tcbuffer_tcbuffer,
     ALWAYS);
 }
+
+/* GENERATED-SPATIALRELS-BEGIN cbuffer_ea_dwithin — tools/codegen/inherited/generate.py from templates/spatialrels.c.tmpl;
+ * DO NOT EDIT BY HAND; edit the template + manifest.yaml (spatialrel_families) and re-run. */
 /*****************************************************************************
  * Ever/always dwithin
  * The function only accepts points and not arbitrary geometries
@@ -845,7 +848,7 @@ Atouches_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
 /**
  * @brief Return true if a geometry and a temporal circular buffer are
  * ever/always within a distance
- * @sqlfn eDwithin()
+ * @sqlfn eDwithin(), aDwithin()
  */
 static Datum
 EA_dwithin_geo_tcbuffer(FunctionCallInfo fcinfo, bool ever)
@@ -893,13 +896,13 @@ Adwithin_geo_tcbuffer(PG_FUNCTION_ARGS)
 /**
  * @brief Return true if a temporal circular buffer and a geometry are
  * ever/always within a distance
- * @sqlfn eDwithin()
+ * @sqlfn eDwithin(), aDwithin()
  */
 static Datum
 EA_dwithin_tcbuffer_geo(FunctionCallInfo fcinfo, bool ever)
 {
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   double dist = PG_GETARG_FLOAT8(2);
   int result = ever ? edwithin_tcbuffer_geo(temp, gs, dist) :
     adwithin_tcbuffer_geo(temp, gs, dist);
@@ -939,31 +942,9 @@ Adwithin_tcbuffer_geo(PG_FUNCTION_ARGS)
 }
 
 /**
- * @brief Return true if two temporal circular buffers are ever/always within a
- * distance
- * @sqlfn eDwithin(), aDwithin()
- */
-static Datum
-EA_dwithin_tcbuffer_tcbuffer(FunctionCallInfo fcinfo, bool ever)
-{
-  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
-  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  double dist = PG_GETARG_FLOAT8(2);
-  int result = ever ? edwithin_tcbuffer_tcbuffer(temp1, temp2, dist) :
-    adwithin_tcbuffer_tcbuffer(temp1, temp2, dist);
-  PG_FREE_IF_COPY(temp1, 0);
-  PG_FREE_IF_COPY(temp2, 1);
-  if (result < 0)
-    PG_RETURN_NULL();
-  PG_RETURN_BOOL(result);
-}
-
-/*****************************************************************************/
-
-/**
  * @brief Return true if a circular buffer and a temporal circular buffer are
  * ever/always within a distance
- * @sqlfn eDwithin()
+ * @sqlfn eDwithin(), aDwithin()
  */
 static Datum
 EA_dwithin_cbuffer_tcbuffer(FunctionCallInfo fcinfo, bool ever)
@@ -1011,13 +992,13 @@ Adwithin_cbuffer_tcbuffer(PG_FUNCTION_ARGS)
 /**
  * @brief Return true if a temporal circular buffer and a circular buffer are
  * ever/always within a distance
- * @sqlfn eDwithin()
+ * @sqlfn eDwithin(), aDwithin()
  */
 static Datum
 EA_dwithin_tcbuffer_cbuffer(FunctionCallInfo fcinfo, bool ever)
 {
-  Cbuffer *cb = PG_GETARG_CBUFFER_P(1);
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(1);
   double dist = PG_GETARG_FLOAT8(2);
   int result = ever ? edwithin_tcbuffer_cbuffer(temp, cb, dist) :
     adwithin_tcbuffer_cbuffer(temp, cb, dist);
@@ -1056,13 +1037,32 @@ Adwithin_tcbuffer_cbuffer(PG_FUNCTION_ARGS)
   return EA_dwithin_tcbuffer_cbuffer(fcinfo, ALWAYS);
 }
 
-/*****************************************************************************/
+/**
+ * @brief Return true if two temporal circular buffers are ever/always within a
+ * distance
+ * @sqlfn eDwithin(), aDwithin()
+ */
+static Datum
+EA_dwithin_tcbuffer_tcbuffer(FunctionCallInfo fcinfo, bool ever)
+{
+  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
+  double dist = PG_GETARG_FLOAT8(2);
+  int result = ever ? edwithin_tcbuffer_tcbuffer(temp1, temp2, dist) :
+    adwithin_tcbuffer_tcbuffer(temp1, temp2, dist);
+  PG_FREE_IF_COPY(temp1, 0);
+  PG_FREE_IF_COPY(temp2, 1);
+  if (result < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_BOOL(result);
+}
 
 PGDLLEXPORT Datum Edwithin_tcbuffer_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Edwithin_tcbuffer_tcbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_rel_ever
- * @brief Return true if two temporal circular buffers are ever within a distance
+ * @brief Return true if two temporal circular buffers are ever within a
+ * distance
  * @sqlfn eDwithin()
  */
 inline Datum
@@ -1075,7 +1075,8 @@ PGDLLEXPORT Datum Adwithin_tcbuffer_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Adwithin_tcbuffer_tcbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_rel_ever
- * @brief Return true if two temporal circular buffers are always within a distance
+ * @brief Return true if two temporal circular buffers are always within a
+ * distance
  * @sqlfn aDwithin()
  */
 inline Datum
@@ -1083,5 +1084,6 @@ Adwithin_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
 {
   return EA_dwithin_tcbuffer_tcbuffer(fcinfo, ALWAYS);
 }
+/* GENERATED-SPATIALRELS-END cbuffer_ea_dwithin */
 
 /*****************************************************************************/
