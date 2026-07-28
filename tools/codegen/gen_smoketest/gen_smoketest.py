@@ -106,7 +106,7 @@ GLOBAL_SKIP = {
 
 
 def emit_call(fname, ret, args, arg_map, skip_map, override_args,
-              no_free=(), value_returns=()):
+              no_free=(), value_returns=(), name_arg_map=None):
     # Direct-name skip
     if fname in skip_map:
         return f"  /* SKIP {fname}: {skip_map[fname]} */\n"
@@ -119,13 +119,25 @@ def emit_call(fname, ret, args, arg_map, skip_map, override_args,
     for k, v in GLOBAL_SKIP.items():
         if k.startswith("re:") and re.search(k[3:], fname):
             return f"  /* SKIP {fname}: {v} */\n"
+    # Name-pattern arg routing: a whole family of functions (e.g. every
+    # `tpoint_*`) shares a precondition on an argument type (its `Temporal *`
+    # must be a temporal point), so a single regex remaps that C type to the
+    # right canned input for all matching functions. Position-based
+    # override_args below still take precedence.
+    eff_arg_map = arg_map
+    if name_arg_map:
+        for pat, tymap in name_arg_map.items():
+            if re.search(pat, fname):
+                if eff_arg_map is arg_map:
+                    eff_arg_map = dict(arg_map)
+                eff_arg_map.update(tymap)
     call_args = []
     overrides = override_args.get(fname, {})
     for i, (ty, _name) in enumerate(args):
         if i in overrides:
             call_args.append(overrides[i])
             continue
-        v = arg_map.get(ty)
+        v = eff_arg_map.get(ty)
         if v is None:
             return f"  /* SKIP {fname}: unmapped arg type '{ty}' */\n"
         call_args.append(v)
@@ -326,14 +338,30 @@ TRGEO_CONFIG = dict(
     },
     override_args={
         "geo_tpose_to_trgeometry":          {1: "tpose1"},
-        "tdistance_trgeometry_tpoint":      {1: "tpoint1"},
-        "nad_trgeometry_tpoint":            {1: "tpoint1"},
-        "nai_trgeometry_tpoint":            {1: "tpoint1"},
-        "shortestline_trgeometry_tpoint":   {1: "tpoint1"},
     },
     skip={
         "trgeometry_value_n":         "out-param GSERIALIZED ** is exercised manually below",
         "trgeometry_traversed_area":  "pending union-of-swept-polygons implementation",
+        # The temporal-distance kernel for trgeometry is not implemented yet, so
+        # every distance / nearest-approach / dwithin wrapper over it aborts.
+        "re:^tdistance_trgeometry":    "tdistance_trgeometry not implemented yet",
+        "re:^nad_trgeometry":          "depends on unimplemented tdistance_trgeometry",
+        "re:^nai_trgeometry":          "depends on unimplemented tdistance_trgeometry",
+        "re:^shortestline_trgeometry": "depends on unimplemented tdistance_trgeometry",
+        "re:^e?dwithin_trgeometry":    "depends on unimplemented tdwithin_trgeosegm",
+        # These need a point-based rigid geometry the polygon default can't supply.
+        "trgeometry_body_point_trajectory": "needs a point-based trgeometry",
+        "trgeometry_space_boxes":           "needs a point-based trgeometry",
+        "trgeometry_space_time_boxes":      "needs a point-based trgeometry",
+        # Casting a multi-instant sequence to a single instant is invalid.
+        "trgeometry_as_tinstant":     "needs an instant-subtype temporal",
+        # A trgeometry's value is a pose+geometry composite, not a plain
+        # geometry, so a geomset does not match it.
+        "trgeometry_restrict_values": "value set type incompatible with trgeometry",
+        # Append consumes its input in place (destructive) and is already
+        # exercised while building trgeo_seq1 in the setup block.
+        "trgeometry_append_tinstant":  "destructive append; exercised in setup",
+        "trgeometry_append_tsequence": "destructive append; exercised in setup",
     },
     common_inputs="""\
   TimestampTz tstz1 = timestamptz_in("2001-01-02", -1);
@@ -422,13 +450,26 @@ TPOSE_CONFIG = dict(
         # A 3D pose carries a rotation quaternion (W, X, Y, Z) that MUST be of
         # unit norm. The default "double -> 1.0" mapping would pass (1,1,1,1)
         # (norm 2), which the constructor rejects; supply the identity
-        # quaternion (W,X,Y,Z) = (1,0,0,0).
+        # quaternion (W,X,Y,Z) = (1,0,0,0). pose_make_point3d also needs a 3D
+        # point geometry.
         "pose_make_3d":      {3: "1.0", 4: "0.0", 5: "0.0", 6: "0.0"},
-        "pose_make_point3d": {1: "1.0", 2: "0.0", 3: "0.0", 4: "0.0"},
+        "pose_make_point3d": {0: "geom_pointz1", 1: "1.0", 2: "0.0", 3: "0.0", 4: "0.0"},
+        # pose_orientation reads a 3D pose's quaternion.
+        "pose_orientation":  {0: "pose3d1"},
+        # tpose_make(tpoint, tradius): a temporal geometry point and a temporal
+        # float radius.
+        "tpose_make":        {0: "tpoint1", 1: "tfloat1"},
+    },
+    # A Set * argument to the pose set operations must be a poseset, not the
+    # default tstzset.
+    name_arg_map={
+        r"_pose_set$|_set_pose$|^poseset": {"Set *": "poseset1"},
     },
     skip={
         "tpose_value_at_timestamptz":
             "out-param Pose ** has no clean canned site; covered manually",
+        # Reprojection needs a populated spatial_ref_sys CSV (absent standalone).
+        "pose_transform": "reprojection needs spatial_ref_sys CSV",
     },
     common_inputs="""\
   TimestampTz tstz1 = timestamptz_in("2001-01-02", -1);
@@ -440,6 +481,10 @@ TPOSE_CONFIG = dict(
   GSERIALIZED *geom_out_param = NULL;
   Pose *pose1 = pose_in("Pose(Point(0 0), 0.0)");
   Pose *pose_out_param = NULL;
+  GSERIALIZED *geom_pointz1 = geom_in("SRID=5676;Point(0 0 0)", -1);
+  Pose *pose3d1 = pose_make_3d(0, 0, 0, 1, 0, 0, 0, false, 5676);
+  Set *poseset1 = poseset_in("{\\"Pose(Point(0 0), 0.0)\\", \\"Pose(Point(1 1), 0.5)\\"}");
+  Temporal *tfloat1 = tfloat_in("[1@2001-01-02, 2@2001-01-03]");
   STBox *stbox1 = stbox_in("STBOX X((0, 0), (10, 10))");
   Datum pose1_datum = (Datum) pose1;
   size_t size_out = 0;
@@ -457,9 +502,13 @@ TPOSE_CONFIG = dict(
   if (tpose_inst1) free(tpose_inst1);
   if (tpose1) free(tpose1);
   if (tpoint1) free(tpoint1);
+  if (tfloat1) free(tfloat1);
   free(stbox1);
   free(pose1);
+  free(pose3d1);
+  free(poseset1);
   free(geom1);
+  free(geom_pointz1);
   free(tstzspanset1);
   free(tstzset1);
   free(tstzspan1);""",
@@ -507,8 +556,20 @@ TCBUFFER_CONFIG = dict(
         "tdistance_tcbuffer_tpoint":     {1: "tpoint1"},
         "nai_tcbuffer_tpoint":           {1: "tpoint1"},
         "shortestline_tcbuffer_tpoint":  {1: "tpoint1"},
+        # tcbuffer_make(tpoint, tfloat): a temporal geometry point and a temporal
+        # float radius.
+        "tcbuffer_make":         {0: "tpoint1", 1: "tfloat1"},
+        # tgeometry_to_tcbuffer needs a temporal geometry (a tgeompoint is one).
+        "tgeometry_to_tcbuffer": {0: "tpoint1"},
+    },
+    # A Set * that must be a tstzset (the default is a cbufferset).
+    name_arg_map={
+        r"tstzset": {"Set *": "tstzset1"},
     },
     skip={
+        # Reprojection needs a populated spatial_ref_sys CSV (absent standalone).
+        "cbuffer_transform":  "reprojection needs spatial_ref_sys CSV",
+        "tcbuffer_transform": "reprojection needs spatial_ref_sys CSV",
         # Internal "Unknown compare function for type" / "type is not a
         # span type" failures, surfacing real MEOS bugs in the cbuffer
         # spanset path. Skip until fixed.
@@ -540,6 +601,9 @@ TCBUFFER_CONFIG = dict(
   Datum cbuffer1_datum = (Datum) cbuffer1;
   size_t size_out = 0;
 
+  Set *tstzset1 = tstzset_in("{2001-01-02, 2001-01-03}");
+  Temporal *tfloat1 = tfloat_in("[1@2001-01-02, 2@2001-01-03]");
+
   Temporal *tcbuffer1 = tcbuffer_in(
     "[Cbuffer(Point(0 0), 0.5)@2001-01-02, Cbuffer(Point(1 0), 0.5)@2001-01-03]");
   TInstant *tcbuffer_inst1 = (TInstant *) temporal_start_inst(tcbuffer1);
@@ -552,10 +616,12 @@ TCBUFFER_CONFIG = dict(
   /* tcbuffer_inst1 is a VIEW into tcbuffer1 (temporal_start_inst); do NOT free */
   if (tcbuffer1) free(tcbuffer1);
   if (tpoint1) free(tpoint1);
+  if (tfloat1) free(tfloat1);
   free(stbox1);
   free(cbufferset1);
   free(cbuffer1);
   free(geom1);
+  free(tstzset1);
   free(tstzspanset1);
   free(tstzspan1);""",
 )
@@ -602,6 +668,10 @@ TNPOINT_CONFIG = dict(
         "nai_tnpoint_tpoint":           {1: "tpoint1"},
         "shortestline_tnpoint_tpoint":  {1: "tpoint1"},
     },
+    # A Set * that must be a tstzset (the default is an npointset).
+    name_arg_map={
+        r"tstzset": {"Set *": "tstzset1"},
+    },
     # route_geom(rid) returns a borrowed pointer into the MEOS ways cache,
     # NOT a fresh allocation — freeing it corrupts the cache (use-after-free
     # cascades through every later route lookup).
@@ -635,11 +705,17 @@ TNPOINT_CONFIG = dict(
         "re:_set_npoint$":                     "needs ways cache",
         "re:^npointset_":                      "needs ways cache",
         "re:^npoint_to_set$":                  "needs ways cache",
+        # Mapping a geometry onto the network needs the ways cache (and matching
+        # SRID) that the standalone test environment does not populate.
+        "geompoint_to_npoint":                 "needs ways cache",
+        "geom_to_nsegment":                    "needs ways cache",
+        "tgeompoint_to_tnpoint":               "needs ways cache",
     },
     common_inputs="""\
   TimestampTz tstz1 = timestamptz_in("2001-01-02", -1);
   Span *tstzspan1 = tstzspan_in("[2001-01-01, 2001-01-04]");
   SpanSet *tstzspanset1 = tstzspanset_in("{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04]}");
+  Set *tstzset1 = tstzset_in("{2001-01-02, 2001-01-03}");
   Interval *interv1 = NULL;
   GSERIALIZED *geom1 = geom_in("Point(0 0)", -1);
   Npoint *npoint1 = npoint_in("NPoint(1, 0.5)");
@@ -667,6 +743,7 @@ TNPOINT_CONFIG = dict(
   if (tnpoint1) free(tnpoint1);
   if (tpoint1) free(tpoint1);
   free(stbox1);
+  free(tstzset1);
   free(npointset1);
   free(nsegment1);
   free(npoint1);
@@ -716,12 +793,68 @@ TGEOMETRY_CONFIG = dict(
         "interpType":          "LINEAR",
         "Datum":               "geom1_datum",
     },
-    override_args={},
+    override_args={
+        # Elevation restrictions take a 3D temporal point and a float span of
+        # elevations (not the default tstzspan); the Z accessor needs 3D.
+        "tpoint_at_elevation":    {0: "tpoint_z1", 1: "floatspan1"},
+        "tpoint_minus_elevation": {0: "tpoint_z1", 1: "floatspan1"},
+        "tpoint_get_z":           {0: "tpoint_z1"},
+        # line_locate_point(line, point): the second geometry is a point.
+        "line_locate_point":      {1: "geom_point1"},
+        # These box accessors need the Z / T dimension.
+        "stbox_volume":           {0: "stbox_zt1"},
+        "stbox_to_tstzspan":      {0: "stbox_zt1"},
+        "stbox_shift_scale_time": {0: "stbox_zt1"},
+        "stbox_expand_time":      {0: "stbox_zt1"},
+    },
+    # Name-pattern argument routing: whole families of meos_geo.h functions share
+    # a precondition the polygon/tgeometry defaults don't meet.
+    name_arg_map={
+        # tpoint_* / *_tpoint operations need a temporal point, a point value and
+        # a point geometry rather than the polygon-based tgeometry defaults.
+        r"(?:^|_)tpoint(?:_|$)": {"Temporal *": "tpoint1",
+                                  "Datum": "geom_point1_datum",
+                                  "GSERIALIZED *": "geom_point1"},
+        r"^bearing_tpoint":      {"Temporal *": "tpoint1",
+                                  "GSERIALIZED *": "geom_point1"},
+        # Line-only operations need a linestring.
+        r"^line_|^geo_split|^geo_stboxes": {"GSERIALIZED *": "geom_line1"},
+        # 3D geometry predicates need geometries carrying a Z coordinate.
+        r"^geom_\w+3d$": {"GSERIALIZED *": "geom_pointz1"},
+        # tstzset-typed set arguments (the default Set * is a geomset).
+        r"tstzset": {"Set *": "tstzset1"},
+        # tpoint constructors (tpointinst_make, tpointseq_from_base_*) take a
+        # point geometry / point value.
+        r"^tpoint": {"GSERIALIZED *": "geom_point1", "Datum": "geom_point1_datum"},
+        # SRID setters need a valid (non-unknown) SRID argument.
+        r"_set_srid$": {"int32": "5676", "int": "5676", "int32_t": "5676"},
+        # Position operators over Z (front/back) need a 3D box and 3D temporal;
+        # over T (before/after) need a box carrying a time dimension.
+        r"(?:^|_)(?:front|back|overfront|overback)_":
+            {"STBox *": "stbox_zt1", "Temporal *": "tpoint_z1"},
+        r"(?:^|_)(?:before|after|overbefore|overafter)_":
+            {"STBox *": "stbox_zt1"},
+    },
     skip={
         # Functions whose argument types need bespoke setup the
         # default canned-inputs don't supply. First-pass skip list;
         # refine as needed.
         "re:AFFINE":     "needs an AFFINE matrix",
+        # Reprojection needs a populated spatial_ref_sys CSV (absent standalone).
+        "re:transform$": "reprojection needs spatial_ref_sys CSV",
+        # Geodetic / geography conversions need geodetic inputs + the SRS CSV.
+        "re:^tgeography_|_to_tgeography$|^tgeogpoint_to|_to_tgeogpoint$":
+            "needs geodetic input / spatial_ref_sys CSV",
+        "geomeas_to_tpoint": "needs an M-dimensional geometry",
+        # These need a point-based temporal / origin the polygon defaults can't
+        # supply; a dedicated point-tgeometry input would be needed to exercise.
+        "tgeo_scale":               "needs a point-based temporal",
+        "tgeo_space_boxes":         "needs a point-based temporal",
+        "tgeo_space_time_boxes":    "needs a point-based temporal",
+        "tgeometry_to_tgeompoint":  "needs a point-based tgeometry",
+        "tgeompoint_to_tgeometry":  "conversion rejects the linear-interp point input",
+        "stbox_get_space_tile":     "needs a point origin geometry",
+        "stbox_space_tiles":        "needs a point origin geometry",
         "re:GBOX":       "needs a GBOX",
         "re:SkipList":   "needs a SkipList state",
         "re:bitmatrix":  "needs a bitmatrix",
@@ -753,28 +886,49 @@ TGEOMETRY_CONFIG = dict(
   TimestampTz tstz1 = timestamptz_in("2001-01-02", -1);
   Span *tstzspan1 = tstzspan_in("[2001-01-01, 2001-01-04]");
   SpanSet *tstzspanset1 = tstzspanset_in("{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04]}");
-  Interval *interv1 = NULL;
-  GSERIALIZED *geom1 = geom_in("Polygon((0 0,1 0,1 1,0 1,0 0))", -1);
+  Set *tstzset1 = tstzset_in("{2001-01-02, 2001-01-03}");
+  Span *floatspan1 = floatspan_in("[0, 10]");
+  Interval *interv1 = interval_in("1 day", -1);
+  GSERIALIZED *geom1 = geom_in("SRID=5676;Polygon((0 0,1 0,1 1,0 1,0 0))", -1);
+  GSERIALIZED *geom_point1 = geom_in("SRID=5676;Point(1 1)", -1);
+  GSERIALIZED *geom_pointz1 = geom_in("SRID=5676;Point(1 1 1)", -1);
+  GSERIALIZED *geom_line1 = geom_in("SRID=5676;Linestring(0 0, 2 2, 4 0)", -1);
   GSERIALIZED *geom_out_param = NULL;
-  Set *geomset1 = geomset_in("{\\"Point(0 0)\\", \\"Point(1 1)\\"}");
-  STBox *stbox1 = stbox_in("STBOX X((0, 0), (10, 10))");
+  Set *geomset1 = geomset_in("{\\"SRID=5676;Point(0 0)\\", \\"SRID=5676;Point(1 1)\\"}");
+  STBox *stbox1 = stbox_in("SRID=5676;STBOX X((0, 0), (10, 10))");
+  STBox *stbox_zt1 = stbox_in("SRID=5676;STBOX ZT(((0,0,0),(10,10,10)),[2001-01-01, 2001-01-02])");
   Datum geom1_datum = (Datum) geom1;
+  Datum geom_point1_datum = (Datum) geom_point1;
   size_t size_out = 0;
   bool bool_out = false;
 
   Temporal *tgeo1 = tgeometry_in(
-    "[Polygon((0 0,1 0,1 1,0 1,0 0))@2001-01-02, Polygon((0 0,1 0,1 1,0 1,0 0))@2001-01-03]");
+    "[SRID=5676;Polygon((0 0,1 0,1 1,0 1,0 0))@2001-01-02, SRID=5676;Polygon((0 0,1 0,1 1,0 1,0 0))@2001-01-03]");
   TInstant *tgeo_inst1 = (TInstant *) temporal_start_instant(tgeo1);
   TSequence    *tgeo_tseq1    = (TSequence *) tgeo1;
   TSequenceSet *tgeo_tseqset1 = NULL;
+  /* A temporal point (2D and 3D) for the tpoint-specific surface of meos_geo.h. */
+  Temporal *tpoint1 = tgeompoint_in(
+    "[SRID=5676;Point(0 0)@2001-01-02, SRID=5676;Point(1 1)@2001-01-03]");
+  Temporal *tpoint_z1 = tgeompoint_in(
+    "[SRID=5676;Point(0 0 0)@2001-01-02, SRID=5676;Point(1 1 1)@2001-01-03]");
   int n_out = 0;
 """,
     cleanup="""\
   if (tgeo_inst1) free(tgeo_inst1);
   if (tgeo1) free(tgeo1);
+  if (tpoint1) free(tpoint1);
+  if (tpoint_z1) free(tpoint_z1);
   free(stbox1);
+  free(stbox_zt1);
   free(geomset1);
+  free(tstzset1);
   free(geom1);
+  free(geom_point1);
+  free(geom_pointz1);
+  free(geom_line1);
+  free(floatspan1);
+  free(interv1);
   free(tstzspanset1);
   free(tstzspan1);""",
 )
@@ -922,7 +1076,8 @@ def write_test(name, cfg):
                              cfg["arg_map"], cfg["skip"],
                              cfg["override_args"],
                              cfg.get("no_free", ()),
-                             cfg.get("value_returns", ()))
+                             cfg.get("value_returns", ()),
+                             cfg.get("name_arg_map", {}))
                    for fname, ret, args in decls)
     # A common-input variable that a given type's surface never consumes is
     # acknowledged with (void), the same idiom emit_call uses for by-value
