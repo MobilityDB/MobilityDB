@@ -36,6 +36,7 @@
 
 /* C */
 #include <assert.h>
+#include <math.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal_geo.h>

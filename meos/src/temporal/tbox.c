@@ -37,6 +37,7 @@
 /* C */
 #include <assert.h>
 #include <limits.h>
+#include <math.h>
 #include <assert.h>
 /* PostgreSQL */
 #include "common/hashfn.h"

@@ -48,6 +48,7 @@
 
 /* C */
 #include <assert.h>
+#include <math.h>
 /* MEOS */
 #include <liblwgeom.h>
 #include <meos.h>

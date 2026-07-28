@@ -50,6 +50,7 @@
 
 /* PostgreSQL */
 #include <funcapi.h>
+#include <access/htup_details.h>
 #include <utils/array.h>
 /* MEOS */
 #include <meos.h>

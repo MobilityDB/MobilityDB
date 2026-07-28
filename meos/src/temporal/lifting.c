@@ -176,6 +176,7 @@
 
 /* C */
 #include <assert.h>
+#include <math.h>
 /* PostgreSQL */
 #include <postgres.h>
 #include <utils/timestamp.h>

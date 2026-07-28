@@ -37,6 +37,7 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <funcapi.h>
+#include <access/htup_details.h>
 #include <utils/array.h>
 #include <utils/timestamp.h>
 /* PostGIS */

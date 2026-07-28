@@ -48,6 +48,7 @@
 /* C */
 #include <assert.h>
 #include <limits.h>
+#include <math.h>
 /* PostgreSQL */
 #include <utils/timestamp.h>
 /* MEOS */
