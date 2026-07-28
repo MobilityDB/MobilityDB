@@ -386,6 +386,9 @@ Acovers_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
     ALWAYS);
 }
 /* GENERATED-SPATIALRELS-END cbuffer_ea_contains_covers */
+
+/* GENERATED-SPATIALRELS-BEGIN cbuffer_ea_disjoint_intersects — tools/codegen/inherited/generate.py from templates/spatialrels.c.tmpl;
+ * DO NOT EDIT BY HAND; edit the template + manifest.yaml (spatialrel_families) and re-run. */
 /*****************************************************************************
  * Ever/always disjoint
  *****************************************************************************/
@@ -446,14 +449,12 @@ Adisjoint_tcbuffer_geo(PG_FUNCTION_ARGS)
   return EA_spatialrel_tspatial_geo(fcinfo, &ea_disjoint_tcbuffer_geo, ALWAYS);
 }
 
-/*****************************************************************************/
-
 PGDLLEXPORT Datum Edisjoint_cbuffer_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Edisjoint_cbuffer_tcbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_rel_ever
- * @brief Return true if a circular buffer and a temporal circular buffer are ever
- * disjoint
+ * @brief Return true if a circular buffer and a temporal circular buffer are
+ * ever disjoint
  * @sqlfn eDisjoint()
  */
 inline Datum
@@ -508,8 +509,6 @@ Adisjoint_tcbuffer_cbuffer(PG_FUNCTION_ARGS)
     ALWAYS);
 }
 
-/*****************************************************************************/
-
 PGDLLEXPORT Datum Edisjoint_tcbuffer_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Edisjoint_tcbuffer_tcbuffer);
 /**
@@ -520,22 +519,22 @@ PG_FUNCTION_INFO_V1(Edisjoint_tcbuffer_tcbuffer);
 inline Datum
 Edisjoint_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
 {
-  return EA_spatialrel_tspatial_tspatial(fcinfo,
-    &ea_disjoint_tcbuffer_tcbuffer, EVER);
+  return EA_spatialrel_tspatial_tspatial(fcinfo, &ea_disjoint_tcbuffer_tcbuffer,
+    EVER);
 }
 
 PGDLLEXPORT Datum Adisjoint_tcbuffer_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Adisjoint_tcbuffer_tcbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_rel_ever
- * @brief Return true if two temporal circular buffers are ever disjoint
+ * @brief Return true if two temporal circular buffers are always disjoint
  * @sqlfn aDisjoint()
  */
 inline Datum
 Adisjoint_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
 {
-  return EA_spatialrel_tspatial_tspatial(fcinfo,
-    &ea_disjoint_tcbuffer_tcbuffer, ALWAYS);
+  return EA_spatialrel_tspatial_tspatial(fcinfo, &ea_disjoint_tcbuffer_tcbuffer,
+    ALWAYS);
 }
 
 /*****************************************************************************
@@ -553,15 +552,14 @@ PG_FUNCTION_INFO_V1(Eintersects_geo_tcbuffer);
 inline Datum
 Eintersects_geo_tcbuffer(PG_FUNCTION_ARGS)
 {
-  return EA_spatialrel_geo_tspatial(fcinfo, &ea_intersects_geo_tcbuffer,
-    EVER);
+  return EA_spatialrel_geo_tspatial(fcinfo, &ea_intersects_geo_tcbuffer, EVER);
 }
 
 PGDLLEXPORT Datum Aintersects_geo_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Aintersects_geo_tcbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_rel_ever
- * @brief Return true if a geometry and a temporal circular buffer ever
+ * @brief Return true if a geometry and a temporal circular buffer always
  * intersect
  * @sqlfn aIntersects()
  */
@@ -583,8 +581,7 @@ PG_FUNCTION_INFO_V1(Eintersects_tcbuffer_geo);
 inline Datum
 Eintersects_tcbuffer_geo(PG_FUNCTION_ARGS)
 {
-  return EA_spatialrel_tspatial_geo(fcinfo, &ea_intersects_tcbuffer_geo,
-    EVER);
+  return EA_spatialrel_tspatial_geo(fcinfo, &ea_intersects_tcbuffer_geo, EVER);
 }
 
 PGDLLEXPORT Datum Aintersects_tcbuffer_geo(PG_FUNCTION_ARGS);
@@ -606,63 +603,61 @@ PGDLLEXPORT Datum Eintersects_cbuffer_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Eintersects_cbuffer_tcbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_rel_ever
- * @brief Return true if a circular buffer and a temporal
- * circular buffer ever intersect
+ * @brief Return true if a circular buffer and a temporal circular buffer ever
+ * intersect
  * @sqlfn eIntersects()
  */
 inline Datum
 Eintersects_cbuffer_tcbuffer(PG_FUNCTION_ARGS)
 {
-  return EA_spatialrel_cbuffer_tcbuffer(fcinfo,
-    &ea_intersects_cbuffer_tcbuffer, EVER);
+  return EA_spatialrel_cbuffer_tcbuffer(fcinfo, &ea_intersects_cbuffer_tcbuffer,
+    EVER);
 }
 
 PGDLLEXPORT Datum Aintersects_cbuffer_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Aintersects_cbuffer_tcbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_rel_ever
- * @brief Return true if a circular buffer and a temporal
- * circular buffer always intersect
+ * @brief Return true if a circular buffer and a temporal circular buffer always
+ * intersect
  * @sqlfn aIntersects()
  */
 inline Datum
 Aintersects_cbuffer_tcbuffer(PG_FUNCTION_ARGS)
 {
-  return EA_spatialrel_cbuffer_tcbuffer(fcinfo,
-    &ea_intersects_cbuffer_tcbuffer, ALWAYS);
+  return EA_spatialrel_cbuffer_tcbuffer(fcinfo, &ea_intersects_cbuffer_tcbuffer,
+    ALWAYS);
 }
 
 PGDLLEXPORT Datum Eintersects_tcbuffer_cbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Eintersects_tcbuffer_cbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_rel_ever
- * @brief Return true if a temporal circular buffer and a circular buffer 
- * ever intersect
+ * @brief Return true if a temporal circular buffer and a circular buffer ever
+ * intersect
  * @sqlfn eIntersects()
  */
 inline Datum
 Eintersects_tcbuffer_cbuffer(PG_FUNCTION_ARGS)
 {
-  return EA_spatialrel_tcbuffer_cbuffer(fcinfo,
-    &ea_intersects_tcbuffer_cbuffer, EVER);
+  return EA_spatialrel_tcbuffer_cbuffer(fcinfo, &ea_intersects_tcbuffer_cbuffer,
+    EVER);
 }
 
 PGDLLEXPORT Datum Aintersects_tcbuffer_cbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Aintersects_tcbuffer_cbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_rel_ever
- * @brief Return true if a temporal circular buffer and a circular buffer 
- * always intersect
+ * @brief Return true if a temporal circular buffer and a circular buffer always
+ * intersect
  * @sqlfn aIntersects()
  */
 inline Datum
 Aintersects_tcbuffer_cbuffer(PG_FUNCTION_ARGS)
 {
-  return EA_spatialrel_tcbuffer_cbuffer(fcinfo,
-    &ea_intersects_tcbuffer_cbuffer, ALWAYS);
+  return EA_spatialrel_tcbuffer_cbuffer(fcinfo, &ea_intersects_tcbuffer_cbuffer,
+    ALWAYS);
 }
-
-/*****************************************************************************/
 
 PGDLLEXPORT Datum Eintersects_tcbuffer_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Eintersects_tcbuffer_tcbuffer);
@@ -674,23 +669,24 @@ PG_FUNCTION_INFO_V1(Eintersects_tcbuffer_tcbuffer);
 inline Datum
 Eintersects_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
 {
-  return EA_spatialrel_tspatial_tspatial(fcinfo,
-    &ea_intersects_tcbuffer_tcbuffer, EVER);
+  return EA_spatialrel_tspatial_tspatial(fcinfo, &ea_intersects_tcbuffer_tcbuffer,
+    EVER);
 }
 
 PGDLLEXPORT Datum Aintersects_tcbuffer_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Aintersects_tcbuffer_tcbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_rel_ever
- * @brief Return true if two temporal circular buffers ever intersect
+ * @brief Return true if two temporal circular buffers always intersect
  * @sqlfn aIntersects()
  */
 inline Datum
 Aintersects_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
 {
-  return EA_spatialrel_tspatial_tspatial(fcinfo, 
-    &ea_intersects_tcbuffer_tcbuffer, ALWAYS);
+  return EA_spatialrel_tspatial_tspatial(fcinfo, &ea_intersects_tcbuffer_tcbuffer,
+    ALWAYS);
 }
+/* GENERATED-SPATIALRELS-END cbuffer_ea_disjoint_intersects */
 
 /*****************************************************************************
  * Ever/always touches

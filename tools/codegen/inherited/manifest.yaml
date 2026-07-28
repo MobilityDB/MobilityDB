@@ -311,6 +311,37 @@ spatialrel_families:
           tcbuffer_cbuffer:  "a temporal circular buffer {word} covers a circular buffer"
           tcbuffer_tcbuffer: "a temporal circular buffer {word} covers another one"
 
+  - family:    cbuffer_ea_disjoint_intersects
+    file:      mobilitydb/src/cbuffer/tcbuffer_spatialrels.c
+    reference: true
+    ingroup:   mobilitydb_cbuffer_rel_ever
+    order:     [geo_tcbuffer, tcbuffer_geo, cbuffer_tcbuffer, tcbuffer_cbuffer, tcbuffer_tcbuffer]
+    disp:
+      geo_tcbuffer:      EA_spatialrel_geo_tspatial
+      tcbuffer_geo:      EA_spatialrel_tspatial_geo
+      cbuffer_tcbuffer:  EA_spatialrel_cbuffer_tcbuffer
+      tcbuffer_cbuffer:  EA_spatialrel_tcbuffer_cbuffer
+      tcbuffer_tcbuffer: EA_spatialrel_tspatial_tspatial
+    predicates:
+      - rel: disjoint
+        Rel: Disjoint
+        banner: "Ever/always disjoint"
+        briefs:
+          geo_tcbuffer:      "a geometry and a temporal circular buffer are {word} disjoint"
+          tcbuffer_geo:      "a temporal circular buffer and a geometry are {word} disjoint"
+          cbuffer_tcbuffer:  "a circular buffer and a temporal circular buffer are {word} disjoint"
+          tcbuffer_cbuffer:  "a temporal circular buffer and a circular buffer are {word} disjoint"
+          tcbuffer_tcbuffer: "two temporal circular buffers are {word} disjoint"
+      - rel: intersects
+        Rel: Intersects
+        banner: "Ever/always intersects"
+        briefs:
+          geo_tcbuffer:      "a geometry and a temporal circular buffer {word} intersect"
+          tcbuffer_geo:      "a temporal circular buffer and a geometry {word} intersect"
+          cbuffer_tcbuffer:  "a circular buffer and a temporal circular buffer {word} intersect"
+          tcbuffer_cbuffer:  "a temporal circular buffer and a circular buffer {word} intersect"
+          tcbuffer_tcbuffer: "two temporal circular buffers {word} intersect"
+
 # ---------------------------------------------------------------------------
 # Accessor axis (SQL, per-family, region-in-file). The whole Temporal<T> accessor
 # surface (tempSubtype..segments) lives INLINE in each family's type file and
