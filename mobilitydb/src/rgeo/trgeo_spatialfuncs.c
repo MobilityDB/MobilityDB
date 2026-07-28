@@ -36,6 +36,7 @@
 #include <postgres.h>
 #include <float.h>
 #include <funcapi.h>
+#include <access/htup_details.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>

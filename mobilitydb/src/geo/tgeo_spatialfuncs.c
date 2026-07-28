@@ -37,6 +37,7 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <funcapi.h>
+#include <access/htup_details.h>
 /* PostGIS */
 #include <liblwgeom.h>
 #include <lwgeom_pg.h>

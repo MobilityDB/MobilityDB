@@ -39,6 +39,7 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <float.h>
+#include <math.h>
 #include <utils/timestamp.h>
 /* PostGIS */
 #include <liblwgeom.h>

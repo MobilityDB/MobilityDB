@@ -36,6 +36,7 @@
 #include <assert.h>
 /* PostgreSQL */
 #include <postgres.h>
+#include <access/htup_details.h>
 #include <catalog/pg_opfamily.h>
 #include <catalog/pg_am_d.h>
 #include <nodes/supportnodes.h>
