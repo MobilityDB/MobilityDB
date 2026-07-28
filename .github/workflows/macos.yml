@@ -62,6 +62,14 @@ jobs:
           pg_ctl -D $HOME/pgdata -l logfile start
           createdb ___mobdb___test___
           psql -d ___mobdb___test___ -c "CREATE EXTENSION mobilitydb CASCADE; SELECT postgis_full_version(); SELECT mobilitydb_full_version();"
+          # btree_gist owns the base-type <-> distance operators, so mobilitydb
+          # and btree_gist must load together in either order without a clash.
+          createdb ___mobdb___btgist1___
+          psql -v ON_ERROR_STOP=1 -d ___mobdb___btgist1___ \
+            -c "CREATE EXTENSION btree_gist;" -c "CREATE EXTENSION mobilitydb CASCADE;"
+          createdb ___mobdb___btgist2___
+          psql -v ON_ERROR_STOP=1 -d ___mobdb___btgist2___ \
+            -c "CREATE EXTENSION mobilitydb CASCADE;" -c "CREATE EXTENSION btree_gist;"
     
       # The `make test` regression suite currently crashes on macOS (Apple
       # Silicon) inside `COPY tbl_textset FROM stdin` after most fixtures have
