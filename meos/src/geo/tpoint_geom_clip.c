@@ -2187,16 +2187,41 @@ point_edge_dist2(double px, double py, const Edge *e)
 
 /**
  * @brief Return true if a point is within @p dist of the geometry, taking the
- * polygon interior into account (a point inside a polygon is at distance 0)
+ * polygon interior into account (a point inside a polygon is at distance 0),
+ * pruning both tests with an R-tree over the edges when one is given
+ * @details Only an edge whose bounding box meets the square of side 2 * @p dist
+ * centred on the point can be within that distance of it; querying the R-tree
+ * for those instead of scanning every edge turns the O(nedges) test into
+ * O(log nedges + candidates). An excluded edge is farther than @p dist from the
+ * point along one axis alone, so it cannot satisfy the distance test and the
+ * result is identical to the full scan. The interior test inherits the same
+ * pruning from #point_in_polygon_impl
  */
 static bool
-point_geom_within(double px, double py, Edge **edges, int nedges, double dist)
+point_geom_within(double px, double py, Edge **edges, int nedges,
+  double dist, const RTree *rtree, int32 srid, double xmax)
 {
   const double d2 = dist * dist;
-  for (int i = 0; i < nedges; i++)
-    if (point_edge_dist2(px, py, edges[i]) <= d2 + FP_TOLERANCE)
-      return true;
-  return point_in_polygon(px, py, edges, nedges) ? true : false;
+  if (rtree)
+  {
+    STBox query;
+    stbox_set(true, false, false, srid, px - dist, px + dist, py - dist,
+      py + dist, 0, 0, NULL, &query);
+    int nc = rtree_search(rtree, RTREE_OVERLAPS, &query, rtree_results);
+    for (int i = 0; i < nc; i++)
+      if (point_edge_dist2(px, py,
+            edges[*(int *) meos_array_get(rtree_results, i)]) <=
+          d2 + FP_TOLERANCE)
+        return true;
+  }
+  else
+  {
+    for (int i = 0; i < nedges; i++)
+      if (point_edge_dist2(px, py, edges[i]) <= d2 + FP_TOLERANCE)
+        return true;
+  }
+  return point_in_polygon_impl(px, py, edges, nedges, rtree, srid, xmax) ?
+    true : false;
 }
 
 /**
@@ -2318,10 +2343,14 @@ within_roots_from_edge(double ax, double ay, double rx, double ry,
  * @param[in] all_edges,all_nedges Full edge array, used for the interior-aware
  * midpoint classification (the polygon ray-cast needs every edge)
  * @param[in] dist Distance threshold
+ * @param[in] rtree R-tree over @p all_edges, or NULL to scan them all
+ * @param[in] srid,xmax SRID and geometry bounding-box maximum abscissa, used
+ * to query @p rtree
  */
 static void
 intervals_within_edges(const POINT2D *a, const POINT2D *b, Edge **sel_edges,
-  int sel_nedges, Edge **all_edges, int all_nedges, double dist)
+  int sel_nedges, Edge **all_edges, int all_nedges, double dist,
+  const RTree *rtree, int32 srid, double xmax)
 {
   events->count = 0;
   const double ax = a->x, ay = a->y;
@@ -2362,7 +2391,8 @@ intervals_within_edges(const POINT2D *a, const POINT2D *b, Edge **sel_edges,
       continue;
     const double tm = 0.5 * (ta + tb);
     const double x = ax + tm * rx, y = ay + tm * ry;
-    if (point_geom_within(x, y, all_edges, all_nedges, dist))
+    if (point_geom_within(x, y, all_edges, all_nedges, dist, rtree,
+          srid, xmax))
     {
       Span in;
       span_set(Float8GetDatum(ta), Float8GetDatum(tb), true, true,
@@ -2384,7 +2414,8 @@ intervals_within_edges(const POINT2D *a, const POINT2D *b, Edge **sel_edges,
   {
     const double t = ev[i];
     const double x = ax + t * rx, y = ay + t * ry;
-    if (point_geom_within(x, y, all_edges, all_nedges, dist))
+    if (point_geom_within(x, y, all_edges, all_nedges, dist, rtree,
+          srid, xmax))
     {
       Span in;
       span_set(Float8GetDatum(t), Float8GetDatum(t), true, true,
@@ -2401,12 +2432,13 @@ intervals_within_edges(const POINT2D *a, const POINT2D *b, Edge **sel_edges,
  */
 static void
 tpointinst_dwithin_edges(const TInstant *inst, Edge **edges, int nedges,
-  double dist)
+  double dist, const RTree *rtree, int32 srid, double xmax)
 {
   assert(inst); assert(edges); assert(nedges > 0);
   assert(inst->temptype == T_TGEOMPOINT);
   const POINT2D *a = DATUM_POINT2D_P(tinstant_value_p(inst));
-  if (! point_geom_within(a->x, a->y, edges, nedges, dist))
+  if (! point_geom_within(a->x, a->y, edges, nedges, dist, rtree, srid,
+        xmax))
     return;
   Span s;
   span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),
@@ -2421,7 +2453,7 @@ tpointinst_dwithin_edges(const TInstant *inst, Edge **edges, int nedges,
  */
 static void
 tpointseq_dwithin_edges(const TSequence *seq, Edge **edges, int nedges,
-  const RTree *rtree, Edge **cand_edges, double dist)
+  const RTree *rtree, Edge **cand_edges, double dist, double xmax)
 {
   assert(seq); assert(edges); assert(nedges > 0);
   assert(seq->temptype == T_TGEOMPOINT);
@@ -2430,7 +2462,7 @@ tpointseq_dwithin_edges(const TSequence *seq, Edge **edges, int nedges,
   /* Singleton sequence */
   if (seq->count == 1)
     return tpointinst_dwithin_edges(TSEQUENCE_INST_N(seq, 0), edges, nedges,
-      dist);
+      dist, rtree, tspatial_srid((Temporal *) seq), xmax);
 
   bool use_index = (rtree != NULL && cand_edges != NULL);
   int32_t srid = tspatial_srid((Temporal *) seq);
@@ -2463,7 +2495,8 @@ tpointseq_dwithin_edges(const TSequence *seq, Edge **edges, int nedges,
 
     /* Reset and compute the within intervals for this segment */
     intervals->count = 0;
-    intervals_within_edges(a, b, sel_edges, sel_nedges, edges, nedges, dist);
+    intervals_within_edges(a, b, sel_edges, sel_nedges, edges, nedges, dist,
+      rtree, srid, xmax);
     if (intervals->count == 0)
       goto next_segment;
 
@@ -2603,14 +2636,14 @@ tpoint_linear_dwithin_geom(const Temporal *temp, const GSERIALIZED *gs,
   {
     case TSEQUENCE:
       tpointseq_dwithin_edges((TSequence *) temp, edge_ptrs, edges->count,
-        rtree, cand_edges, dist);
+        rtree, cand_edges, dist, box2.xmax);
       break;
     default: /* TSEQUENCESET */
     {
       TSequenceSet *ss = (TSequenceSet *) temp;
       for (int i = 0; i < ss->count; i++)
         tpointseq_dwithin_edges(TSEQUENCESET_SEQ_N(ss, i), edge_ptrs,
-          edges->count, rtree, cand_edges, dist);
+          edges->count, rtree, cand_edges, dist, box2.xmax);
     }
   }
 
