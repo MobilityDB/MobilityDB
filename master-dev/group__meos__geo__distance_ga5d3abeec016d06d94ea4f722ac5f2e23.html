@@ -135,8 +135,8 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the exact minimum spatial distance between two arrays of temporal geos. </p>
-<p >Computes the same value as <code>ST_Distance(ST_Collect(trajectory(arr1[*])), ST_Collect(trajectory(arr2[*])))</code> but uses each input's <a class="el" href="structSTBox.html" title="Structure to represent spatiotemporal boxes.">STBox</a> as a sound lower-bound prefilter: trip pairs are processed in ascending bbox-distance order, and the iteration short circuits once the running minimum is provably smaller than every remaining pair's lower bound. The per-pair distance still goes through <code>geom_distance2d</code> (liblwgeom segment-pair sweep, no GEOS call), so the result is bit-equivalent to the materialised aggregate form. </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Return the minimum spatial distance between two arrays of temporal geos. </p>
+<p >Computes the same value as <code>ST_Distance(ST_Collect(trajectory(arr1[*])), ST_Collect(trajectory(arr2[*])))</code> but uses each input's <a class="el" href="structSTBox.html" title="Structure to represent spatiotemporal boxes.">STBox</a> as a sound lower-bound prefilter: trip pairs are processed in ascending bbox-distance order, and the iteration short circuits once the running minimum is provably smaller than every remaining pair's lower bound. The per-pair distance still goes through <code>geom_distance2d</code> (liblwgeom segment-pair sweep), so the result is bit-equivalent to the materialised aggregate form. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">arr1,arr2</td><td>Arrays of temporal geos (each element must be non-NULL and share SRID / dimensionality with the rest) </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">count1,count2</td><td>Array lengths (must be &gt; 0) </td></tr>

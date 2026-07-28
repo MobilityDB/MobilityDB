@@ -143,8 +143,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Derive the QUADBIN cell of a Web-Mercator raster tile from its EPSG:3857 georeferencing. </p>
-<p >A <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> tile is a single QUADBIN cell of the Web-Mercator tile pyramid, so its EPSG:3857 origin and pixel resolution determine the cell exactly. The pixel extent gives the zoom (a tile of zoom <code>z</code> spans 2*QB_MERC_MAX / 2^z metres); the top-left origin gives the tile column and row. The raster must be a single axis-aligned Web-Mercator tile: a non-square extent, an extent that is not a power-of-two fraction of the world, or an origin off the tile grid are rejected (mixing georeferencing that is not a QUADBIN tile is an error, not a value to coerce).</p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p >A <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> tile is a single QUADBIN cell of the Web-Mercator tile pyramid, so its EPSG:3857 origin and pixel resolution determine the cell exactly. Thepixel extent gives the zoom (a tile of zoom <code>z</code> spans 2*QB_MERC_MAX / 2^z metres); the top-left origin gives the tile column and row. The raster must be a single axis-aligned Web-Mercator tile: a non-square extent, an extent that is not a power-of-two fraction of the world, or an origin off the tile grid are rejected (mixing georeferencing that is not a QUADBIN tile is an error, not a value to coerce). </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">origin_x,origin_y</td><td>Top-left corner of the raster in EPSG:3857 metres </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">pixel_w</td><td>Pixel width in metres (west-east resolution, &gt; 0) </td></tr>
