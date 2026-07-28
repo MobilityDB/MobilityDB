@@ -228,6 +228,23 @@ FROM (SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'UINT8') AS 
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="raquet_to_stbox">
+				<indexterm significance="normal"><primary><varname>stbox</varname></primary></indexterm>
+				<para>Convert a Raquet tile into a spatiotemporal box</para>
+				<para><varname>stbox(raquet) → stbox</varname></para>
+				<para>Returns the tile footprint: the longitude and latitude envelope of its QUADBIN cell, in SRID 4326 and without a time dimension. The footprint follows from the cell alone, so tiles differing in pixels, dimensions or pixel type share it. The conversion is also available as a cast.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- The footprint of a tile covering the north-eastern quadrant at zoom 1
+SELECT round(stbox(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512,
+  'UINT8')), 6);
+-- SRID=4326;STBOX X((0,0),(180,85.051129))
+
+-- Keep the tiles whose footprint overlaps a region of interest
+SELECT * FROM elevation_tiles
+WHERE tile::stbox &amp;&amp; stbox 'SRID=4326;STBOX X((0,0),(30,30))';
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="raquet_comparison">
 				<indexterm significance="normal"><primary><varname>raquet comparison</varname></primary></indexterm>
 				<para>Compare two Raquet tiles</para>

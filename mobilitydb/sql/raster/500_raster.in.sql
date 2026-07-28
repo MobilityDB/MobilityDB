@@ -427,3 +427,16 @@ CREATE OPERATOR CLASS raquet_hash_ops
     FUNCTION    2   raquet_hash_extended(raquet, bigint);
 
 /*****************************************************************************/
+
+/******************************************************************************
+ * Conversions of raquet tiles
+ *****************************************************************************/
+
+CREATE FUNCTION stbox(raquet)
+  RETURNS stbox
+  AS 'MODULE_PATHNAME', 'Raquet_to_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE CAST (raquet AS stbox) WITH FUNCTION stbox(raquet);
+
+/*****************************************************************************/

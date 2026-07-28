@@ -49,4 +49,7 @@ extern uint64 *trajectory_quadbins(const Temporal *traj, uint32_t zoom,
 extern bool raster_quadbin_from_bounds(double origin_x, double origin_y,
   double pixel_w, double pixel_h, int xsize, int ysize, uint64 *result);
 
+extern void raster_quadbin_bounds(uint64 cell, double *xmin, double *ymin,
+  double *xmax, double *ymax);
+
 #endif /* __RASTER_QUADBIN_H__ */

@@ -369,3 +369,39 @@ SELECT raquet_hash(raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint,
  t                        | t
 (1 row)
 
+SELECT round(stbox(raquet('\x01020304'::bytea, 2, 2,
+  5193776270265024512::bigint, 'UINT8')), 6);
+                  round                   
+------------------------------------------
+ SRID=4326;STBOX X((0,0),(180,85.051129))
+(1 row)
+
+SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint,
+         'UINT8')::stbox =
+       stbox(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint,
+         'UINT8')) AS cast_equals_function;
+ cast_equals_function 
+----------------------
+ t
+(1 row)
+
+SELECT stbox(raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint,
+         'UINT8')) =
+       stbox(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint,
+         'UINT8')) AS footprint_follows_the_cell;
+ footprint_follows_the_cell 
+----------------------------
+ t
+(1 row)
+
+WITH t(a, b) AS (VALUES (
+  raquet('\x01'::bytea, 1, 1, 5193776270265024512::bigint, 'UINT8'),
+  raquet('\x01'::bytea, 1, 1, 5202501994543054848::bigint, 'UINT8')))
+SELECT stbox(a) <> stbox(b) AS distinct_cells_distinct_footprints,
+       stbox(a) && stbox(a) AS overlaps_itself
+FROM t;
+ distinct_cells_distinct_footprints | overlaps_itself 
+------------------------------------+-----------------
+ t                                  | t
+(1 row)
+

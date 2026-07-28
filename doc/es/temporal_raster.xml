@@ -226,6 +226,23 @@ FROM (SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'UINT8') AS 
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="raquet_to_stbox">
+				<indexterm significance="normal"><primary><varname>stbox</varname></primary></indexterm>
+				<para>Convertir una tesela Raquet en una caja espaciotemporal</para>
+				<para><varname>stbox(raquet) → stbox</varname></para>
+				<para>Devuelve la huella de la tesela: la envolvente de longitud y latitud de su celda QUADBIN, en SRID 4326 y sin dimensión temporal. La huella se deriva únicamente de la celda, por lo que teselas que difieren en píxeles, dimensiones o tipo de píxel la comparten. La conversión también está disponible como conversión de tipo.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- The footprint of a tile covering the north-eastern quadrant at zoom 1
+SELECT round(stbox(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512,
+  'UINT8')), 6);
+-- SRID=4326;STBOX X((0,0),(180,85.051129))
+
+-- Keep the tiles whose footprint overlaps a region of interest
+SELECT * FROM elevation_tiles
+WHERE tile::stbox &amp;&amp; stbox 'SRID=4326;STBOX X((0,0),(30,30))';
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="raquet_comparison">
 				<indexterm significance="normal"><primary><varname>comparación de raquet</varname></primary></indexterm>
 				<para>Comparar dos teselas Raquet</para>

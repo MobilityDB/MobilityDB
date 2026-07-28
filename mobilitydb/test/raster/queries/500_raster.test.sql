@@ -402,3 +402,35 @@ SELECT raquet_hash(raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint,
          5193776270265024512::bigint, 'UINT8'), 0) <>
        raquet_hash_extended(raquet('\x0102'::bytea, 2, 1,
          5193776270265024512::bigint, 'UINT8'), 1) AS seed_changes_hash;
+
+-------------------------------------------------------------------------------
+-- raquet conversion to stbox
+-------------------------------------------------------------------------------
+
+-- The footprint of a tile is the lon/lat envelope of its QUADBIN cell, so the
+-- cast carries the tile extent without the pixels. The latitude bound is the
+-- Web-Mercator limit, a transcendental value, so the box is rounded.
+SELECT round(stbox(raquet('\x01020304'::bytea, 2, 2,
+  5193776270265024512::bigint, 'UINT8')), 6);
+
+-- The cast form and the function form agree.
+SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint,
+         'UINT8')::stbox =
+       stbox(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint,
+         'UINT8')) AS cast_equals_function;
+
+-- The footprint depends only on the QUADBIN cell: tiles differing in pixels,
+-- dimensions or pixel type share it.
+SELECT stbox(raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint,
+         'UINT8')) =
+       stbox(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint,
+         'UINT8')) AS footprint_follows_the_cell;
+
+-- Distinct cells give distinct footprints, and the tile is contained in its
+-- own footprint envelope.
+WITH t(a, b) AS (VALUES (
+  raquet('\x01'::bytea, 1, 1, 5193776270265024512::bigint, 'UINT8'),
+  raquet('\x01'::bytea, 1, 1, 5202501994543054848::bigint, 'UINT8')))
+SELECT stbox(a) <> stbox(b) AS distinct_cells_distinct_footprints,
+       stbox(a) && stbox(a) AS overlaps_itself
+FROM t;

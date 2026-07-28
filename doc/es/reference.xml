@@ -3759,6 +3759,10 @@
 				</listitem>
 
 				<listitem>
+					<para><link linkend="raquet_to_stbox"><varname>stbox</varname></link>: Convertir una tesela Raquet en una caja espaciotemporal</para>
+				</listitem>
+
+				<listitem>
 					<para><link linkend="raquet_comparison"><varname>comparación de raquet</varname></link>: Comparar dos teselas Raquet</para>
 				</listitem>
 			</itemizedlist>
