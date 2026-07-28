@@ -1098,6 +1098,41 @@ tsequence_make_free(TInstant **instants, int count, bool lower_inc,
 }
 
 /**
+ * @ingroup meos_geo_constructor
+ * @brief Return a temporal sequence from arrays of coordinates, one per
+ * dimension, and timestamps
+ * @param[in] xcoords Array of x coordinates
+ * @param[in] ycoords Array of y coordinates
+ * @param[in] zcoords Array of z coordinates
+ * @param[in] times Array of z timestamps
+ * @param[in] count Number of elements in the arrays
+ * @param[in] srid SRID of the spatial coordinates
+ * @param[in] geodetic True for tgeogpoint, false for tgeompoint
+ * @param[in] lower_inc,upper_inc True if the respective bound is inclusive
+ * @param[in] interp Interpolation
+ * @param[in] normalize True if the resulting value should be normalized
+ */
+TSequence *
+tpointseq_make_coords(const double *xcoords, const double *ycoords,
+  const double *zcoords, const TimestampTz *times, int count, int32 srid,
+  bool geodetic, bool lower_inc, bool upper_inc, interpType interp,
+  bool normalize)
+{
+  assert(xcoords); assert(ycoords); assert(times); assert(count > 0);
+  bool hasz = (zcoords != NULL);
+  MeosType temptype = geodetic ? T_TGEOGPOINT : T_TGEOMPOINT;
+  TInstant **instants = palloc(sizeof(TInstant *) * count);
+  for (int i = 0; i < count; i ++)
+  {
+    Datum point = PointerGetDatum(geopoint_make(xcoords[i], ycoords[i],
+      hasz ? zcoords[i] : 0.0, hasz, geodetic, srid));
+    instants[i] = tinstant_make_free(point, temptype, times[i]);
+  }
+  return tsequence_make_free(instants, count, lower_inc, upper_inc, interp,
+    normalize);
+}
+
+/**
  * @ingroup meos_internal_temporal_constructor
  * @brief Return a copy of a temporal sequence
  * @param[in] seq Temporal sequence
