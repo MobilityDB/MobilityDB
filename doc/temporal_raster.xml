@@ -243,6 +243,20 @@ SELECT round(stbox(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512,
 SELECT * FROM elevation_tiles
 WHERE tile::stbox &amp;&amp; stbox 'SRID=4326;STBOX X((0,0),(30,30))';
 </programlisting>
+				<para>The footprint carries the <varname>stbox</varname> operators, aggregates and operator classes, so a tile table is searched by spatial overlap at any zoom level rather than by an equality test on the QUADBIN cell at a single fixed one. Indexing the conversion gives the tile table a spatial index, and the extent of a set of tiles is the extent of their footprints.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- A spatial index over the tile footprints
+CREATE INDEX elevation_tiles_gist ON elevation_tiles USING gist (stbox(tile));
+CREATE INDEX elevation_tiles_spgist ON elevation_tiles USING spgist (stbox(tile));
+
+-- The extent covered by a set of tiles
+SELECT extent(stbox(tile)) FROM elevation_tiles;
+
+-- Tiles a trajectory passes through, at whatever zoom levels the table holds
+SELECT t.tripid, r.tile
+FROM trips t, elevation_tiles r
+WHERE stbox(r.tile) &amp;&amp; stbox(t.trip4326);
+</programlisting>
 			</listitem>
 
 			<listitem xml:id="raquet_comparison">
@@ -362,7 +376,6 @@ sudo make install
 		<para>Planned extensions to the <varname>raquet</varname> path:</para>
 		<itemizedlist>
 			<listitem><para><emphasis>Tile footprint</emphasis> — an <varname>stbox</varname> cast and a <varname>geometry</varname> conversion giving the spatial extent of a tile, derived from its QUADBIN cell.</para></listitem>
-			<listitem><para><emphasis>Spatial indexing</emphasis> — an <varname>extent</varname> aggregate and GiST and SP-GiST operator classes over the tile footprint, so that a trajectory is joined against a tile table by spatial overlap instead of by an equality test on the QUADBIN cell at a single fixed zoom level.</para></listitem>
 			<listitem><para><emphasis>Aggregate tile merging</emphasis> — a set-returning variant that accepts the full array of matching Raquet tiles and merges the per-tile instant sets, removing duplicate instants at tile boundaries.</para></listitem>
 			<listitem><para><emphasis>Time restriction</emphasis> — <varname>atTime(raquet, tstzspan)</varname> restricting a tile to the spatial extent visited by one or more trajectories during a time interval.</para></listitem>
 		</itemizedlist>
