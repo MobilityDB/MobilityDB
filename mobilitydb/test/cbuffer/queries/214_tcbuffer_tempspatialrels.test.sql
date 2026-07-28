@@ -47,6 +47,14 @@ SELECT tContains(geometry 'Point empty', tcbuffer '{[Cbuffer(Point(1 1),0.5)@200
 
 SELECT tContains(geometry 'Linestring(1 1,2 2)', tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02]');
 
+-- Curve polygon (arc ring) input, native arc-exact; the ring is the circle of
+-- centre (0,0) and radius 5. The disc stays strictly inside the ring
+SELECT tContains(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tcbuffer '[Cbuffer(Point(0 0),0.5)@2000-01-01, Cbuffer(Point(3 0),0.5)@2000-01-03]');
+-- Internally tangent disc: covered by the ring but not strictly contained
+SELECT tContains(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tcbuffer 'Cbuffer(Point(4.5 0),0.5)@2000-01-01');
+-- Multi surface grouping the same curve polygon
+SELECT tContains(geometry 'MultiSurface(CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0)))', tcbuffer '[Cbuffer(Point(0 0),0.5)@2000-01-01, Cbuffer(Point(3 0),0.5)@2000-01-03]');
+
 /* Errors */
 SELECT tContains(geometry 'SRID=5676;Point(1 1)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
 SELECT tContains(geometry 'Point(1 1)', tcbuffer 'SRID=5676;Cbuffer(Point(1 1),0.5)@2000-01-01');
@@ -88,6 +96,17 @@ SELECT tDisjoint(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', geometry 'Point 
 SELECT tDisjoint(tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03}', geometry 'Point empty');
 SELECT tDisjoint(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]', geometry 'Point empty');
 SELECT tDisjoint(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03], [Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}', geometry 'Point empty');
+
+-- Circular arc input (native arc-exact); arc centre (0,0) radius 5, upper-right
+-- quadrant. Complement of the corresponding tIntersects cases below
+SELECT tDisjoint(geometry 'CircularString(5 0, 4 3, 0 5)', tcbuffer '[Cbuffer(Point(8 6),2.5)@2000-01-01, Cbuffer(Point(4 3),2.5)@2000-01-03]');
+SELECT tDisjoint(tcbuffer '[Cbuffer(Point(4 3),2.5)@2000-01-01, Cbuffer(Point(8 6),2.5)@2000-01-03]', geometry 'CircularString(5 0, 4 3, 0 5)');
+-- Off-span: the disc meets the full circle but not the arc (angular gating)
+SELECT tDisjoint(geometry 'CircularString(5 0, 4 3, 0 5)', tcbuffer '[Cbuffer(Point(5 -3),0.5)@2000-01-01, Cbuffer(Point(5 -1),0.5)@2000-01-03]');
+-- Compound curve (arc chained to a line)
+SELECT tDisjoint(geometry 'CompoundCurve(CircularString(5 0, 4 3, 0 5),(0 5, -4 5))', tcbuffer '[Cbuffer(Point(-2 8),0.5)@2000-01-01, Cbuffer(Point(-2 4),0.5)@2000-01-03]');
+-- Curve polygon (arc ring): the disc starts inside the ring and exits it
+SELECT tDisjoint(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tcbuffer '[Cbuffer(Point(0 0),0.5)@2000-01-01, Cbuffer(Point(8 0),0.5)@2000-01-03]');
 
 /* Errors */
 SELECT tDisjoint(geometry 'SRID=5676;Point(1 1)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
@@ -148,6 +167,9 @@ SELECT tIntersects(geometry 'CompoundCurve(CircularString(5 0, 4 3, 0 5),(0 5, -
 SELECT tIntersects(geometry 'CompoundCurve(CircularString(5 0, 4 3, 0 5),(0 5, -4 5))', tcbuffer '[Cbuffer(Point(-2 8),0.5)@2000-01-01, Cbuffer(Point(-2 4),0.5)@2000-01-03]');
 -- Curve polygon (arc ring): the disc starts inside the ring and exits it
 SELECT tIntersects(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tcbuffer '[Cbuffer(Point(0 0),0.5)@2000-01-01, Cbuffer(Point(8 0),0.5)@2000-01-03]');
+-- Multi curve and multi surface grouping the same arc components
+SELECT tIntersects(geometry 'MultiCurve(CircularString(5 0, 4 3, 0 5),(0 5, -4 5))', tcbuffer '[Cbuffer(Point(8 6),2.5)@2000-01-01, Cbuffer(Point(4 3),2.5)@2000-01-03]');
+SELECT tIntersects(geometry 'MultiSurface(CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0)))', tcbuffer '[Cbuffer(Point(0 0),0.5)@2000-01-01, Cbuffer(Point(8 0),0.5)@2000-01-03]');
 
 -- Coverage
 SELECT tIntersects(tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(1 1),0.5)@2000-01-03}', tcbuffer 'Cbuffer(Point(2 2),0.5)@2000-01-02');
@@ -196,6 +218,15 @@ SELECT tTouches(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2
 SELECT tTouches(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03], [Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}', geometry 'Point empty');
 
 SELECT tTouches(geometry 'Linestring(1 1,2 2)', tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02]');
+
+-- Curve polygon (arc ring) input, native arc-exact; the ring is the circle of
+-- centre (0,0) and radius 5. The disc of radius 1 comes from outside and is
+-- externally tangent to the ring at the instant its centre is at distance 6
+SELECT tTouches(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tcbuffer '[Cbuffer(Point(10 0),1)@2000-01-01, Cbuffer(Point(0 0),1)@2000-01-03]');
+-- The disc stays outside the ring and never reaches it
+SELECT tTouches(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tcbuffer '[Cbuffer(Point(10 0),1)@2000-01-01, Cbuffer(Point(10 10),1)@2000-01-03]');
+-- Circular arc (a curve, not a region): the disc grazes the arc
+SELECT tTouches(geometry 'CircularString(5 0, 4 3, 0 5)', tcbuffer '[Cbuffer(Point(10 0),1)@2000-01-01, Cbuffer(Point(0 0),1)@2000-01-03]');
 
 /* Errors */
 SELECT tTouches(geometry 'SRID=5676;Point(1 1)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');

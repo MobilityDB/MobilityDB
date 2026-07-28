@@ -312,9 +312,11 @@ geodist_segs_add_curvepoly_ring(const LWGEOM *ring, bool allow_arc,
 }
 
 /**
- * @brief Recursively collect the boundary segments of a geometry. Returns
- * false for a curved type that cannot be decomposed exactly (the caller
- * then falls back to the exact traversed-area path).
+ * @brief Recursively collect the boundary segments of a geometry, as straight
+ * edges and, when @p allow_arc is true, as circular-arc edges. Returns false
+ * for a type that has no exact edge decomposition, that is, a TIN or a
+ * polyhedral surface, and for a circular-arc type when @p allow_arc is false
+ * (the caller then falls back to the exact traversed-area path).
  */
 bool
 geodist_geom_edges(const LWGEOM *lw, bool allow_arc, GeoDistEdge **arr, int *cap,
@@ -388,7 +390,8 @@ geodist_geom_edges(const LWGEOM *lw, bool allow_arc, GeoDistEdge **arr, int *cap
       return true;
     }
     default:
-      /* Curved or unsupported type: let the caller use the exact path */
+      /* A type with no edge decomposition, that is, a TIN or a polyhedral
+       * surface: let the caller use the exact path */
       return false;
   }
 }

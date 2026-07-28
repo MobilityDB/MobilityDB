@@ -548,7 +548,7 @@ nai_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
     return tinstant_make_free(value, temp->temptype, t);
   }
 
-  /* Curved or otherwise unsupported geometry: fall back to the centreline */
+  /* A geometry that has no edge decomposition: fall back to the centreline */
   Temporal *tpoint = tcbuffer_to_tgeompoint(temp);
   TInstant *resultgeom = nai_tgeo_geo(tpoint, gs);
   Datum value;
@@ -722,8 +722,8 @@ tcbufferseq_nad(const TSequence *seq, const GeoDistGeom *g, double *best)
 static double
 nad_tcbuffer_geo_analytic(const Temporal *temp, const GSERIALIZED *gs)
 {
-  /* Curved / unsupported geometry, or no segments: fall back to the exact
-   * traversed-area distance so the result is never wrong */
+  /* A geometry that has no edge decomposition, or no segments: fall back to
+   * the exact traversed-area distance so the result is never wrong */
   GeoDistGeom g;
   if (! geodist_geom_build(gs, &g))
   {
@@ -842,7 +842,7 @@ shortestline_tcbuffer_geo_analytic(const Temporal *temp, const GSERIALIZED *gs)
  * Temporal within relationship
  *
  * The sub-periods during which a temporal circular buffer stays within a
- * distance of a non-curved geometry, from the same swept-capsule distance
+ * distance of a geometry, from the same swept-capsule distance
  * kernel as the nearest-approach value. The candidate crossing instants are
  * the roots of dist(centre(t), edge) = radius(t) + dist per boundary edge;
  * each candidate sub-interval is classified with the exact interior-aware unit
@@ -862,9 +862,10 @@ typedef struct
 } TcbufferGeoCtx;
 
 /**
- * @brief Build the reusable geometry context for the native within kernel, or
- * return NULL for curved or unsupported geometry (the caller then uses the
- * exact traversed-area path)
+ * @brief Build the reusable geometry context for the native within kernel from
+ * the straight and circular-arc edges of the boundary, or return NULL for a
+ * geometry that has no edge decomposition, that is, a TIN or a polyhedral
+ * surface (the caller then uses the traversed-area path)
  */
 void *
 tcbuffer_geo_ctx_make(const GSERIALIZED *gs)
@@ -1936,7 +1937,8 @@ shortestline_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
   GSERIALIZED *result = shortestline_tcbuffer_geo_analytic(temp, gs);
   if (result)
     return result;
-  /* Curved or unsupported geometry: exact traversed-area shortest line */
+  /* A geometry that has no edge decomposition: exact traversed-area
+   * shortest line */
   GSERIALIZED *trav = tcbuffer_traversed_area(temp, false);
   result = geom_shortestline2d(trav, gs);
   pfree(trav);

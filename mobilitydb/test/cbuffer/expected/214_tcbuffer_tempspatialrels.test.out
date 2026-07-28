@@ -64,6 +64,24 @@ SELECT tContains(geometry 'Linestring(1 1,2 2)', tcbuffer '[Cbuffer(Point(1 1),0
  [f@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST]
 (1 row)
 
+SELECT tContains(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tcbuffer '[Cbuffer(Point(0 0),0.5)@2000-01-01, Cbuffer(Point(3 0),0.5)@2000-01-03]');
+                             tcontains                              
+--------------------------------------------------------------------
+ {[t@Sat Jan 01 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tContains(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tcbuffer 'Cbuffer(Point(4.5 0),0.5)@2000-01-01');
+           tcontains            
+--------------------------------
+ f@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT tContains(geometry 'MultiSurface(CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0)))', tcbuffer '[Cbuffer(Point(0 0),0.5)@2000-01-01, Cbuffer(Point(3 0),0.5)@2000-01-03]');
+                             tcontains                              
+--------------------------------------------------------------------
+ {[t@Sat Jan 01 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
 /* Errors */
 SELECT tContains(geometry 'SRID=5676;Point(1 1)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
 ERROR:  Operation on mixed SRID
@@ -223,6 +241,36 @@ SELECT tDisjoint(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2
  tdisjoint 
 -----------
  
+(1 row)
+
+SELECT tDisjoint(geometry 'CircularString(5 0, 4 3, 0 5)', tcbuffer '[Cbuffer(Point(8 6),2.5)@2000-01-01, Cbuffer(Point(4 3),2.5)@2000-01-03]');
+                                             tdisjoint                                              
+----------------------------------------------------------------------------------------------------
+ {[t@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tDisjoint(tcbuffer '[Cbuffer(Point(4 3),2.5)@2000-01-01, Cbuffer(Point(8 6),2.5)@2000-01-03]', geometry 'CircularString(5 0, 4 3, 0 5)');
+                                                              tdisjoint                                                               
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST], (t@Sun Jan 02 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tDisjoint(geometry 'CircularString(5 0, 4 3, 0 5)', tcbuffer '[Cbuffer(Point(5 -3),0.5)@2000-01-01, Cbuffer(Point(5 -1),0.5)@2000-01-03]');
+                            tdisjoint                             
+------------------------------------------------------------------
+ [t@Sat Jan 01 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT tDisjoint(geometry 'CompoundCurve(CircularString(5 0, 4 3, 0 5),(0 5, -4 5))', tcbuffer '[Cbuffer(Point(-2 8),0.5)@2000-01-01, Cbuffer(Point(-2 4),0.5)@2000-01-03]');
+                                                                              tdisjoint                                                                               
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[t@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 06:00:00 2000 PST, f@Sun Jan 02 18:00:00 2000 PST], (t@Sun Jan 02 18:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tDisjoint(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tcbuffer '[Cbuffer(Point(0 0),0.5)@2000-01-01, Cbuffer(Point(8 0),0.5)@2000-01-03]');
+                                                              tdisjoint                                                               
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 09:00:00 2000 PST], (t@Sun Jan 02 09:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST]}
 (1 row)
 
 /* Errors */
@@ -444,6 +492,18 @@ SELECT tIntersects(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5
  {[t@Sat Jan 01 00:00:00 2000 PST, t@Sun Jan 02 09:00:00 2000 PST], (f@Sun Jan 02 09:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]}
 (1 row)
 
+SELECT tIntersects(geometry 'MultiCurve(CircularString(5 0, 4 3, 0 5),(0 5, -4 5))', tcbuffer '[Cbuffer(Point(8 6),2.5)@2000-01-01, Cbuffer(Point(4 3),2.5)@2000-01-03]');
+                                            tintersects                                             
+----------------------------------------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, t@Sun Jan 02 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tIntersects(geometry 'MultiSurface(CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0)))', tcbuffer '[Cbuffer(Point(0 0),0.5)@2000-01-01, Cbuffer(Point(8 0),0.5)@2000-01-03]');
+                                                             tintersects                                                              
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[t@Sat Jan 01 00:00:00 2000 PST, t@Sun Jan 02 09:00:00 2000 PST], (f@Sun Jan 02 09:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
 SELECT tIntersects(tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(1 1),0.5)@2000-01-03}', tcbuffer 'Cbuffer(Point(2 2),0.5)@2000-01-02');
  tintersects 
 -------------
@@ -601,6 +661,24 @@ SELECT tTouches(geometry 'Linestring(1 1,2 2)', tcbuffer '[Cbuffer(Point(1 1),0.
                              ttouches                             
 ------------------------------------------------------------------
  [f@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST]
+(1 row)
+
+SELECT tTouches(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tcbuffer '[Cbuffer(Point(10 0),1)@2000-01-01, Cbuffer(Point(0 0),1)@2000-01-03]');
+                                                               ttouches                                                               
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, t@Sat Jan 01 19:12:00 2000 PST], (f@Sat Jan 01 19:12:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tTouches(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tcbuffer '[Cbuffer(Point(10 0),1)@2000-01-01, Cbuffer(Point(10 10),1)@2000-01-03]');
+                             ttouches                             
+------------------------------------------------------------------
+ [f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT tTouches(geometry 'CircularString(5 0, 4 3, 0 5)', tcbuffer '[Cbuffer(Point(10 0),1)@2000-01-01, Cbuffer(Point(0 0),1)@2000-01-03]');
+                                                                                                ttouches                                                                                                
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, t@Sat Jan 01 19:12:00 2000 PST], (f@Sat Jan 01 19:12:00 2000 PST, t@Sun Jan 02 04:48:00 2000 PST], (f@Sun Jan 02 04:48:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]}
 (1 row)
 
 /* Errors */
