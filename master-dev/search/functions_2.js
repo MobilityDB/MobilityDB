@@ -175,7 +175,7 @@ var searchData=
   ['boundary_172',['boundary',['../postgis_8h_aa4f907f73fbff2fb828a37c1cf545bf4.html#aa4f907f73fbff2fb828a37c1cf545bf4',1,'postgis.h']]],
   ['bounds_5ffrom_5fwkb_5fstate_173',['bounds_from_wkb_state',['../meos_2src_2temporal_2type__in_8c_aee13a121503297456b6357dfab175501.html#aee13a121503297456b6357dfab175501',1,'type_in.c']]],
   ['bounds_5fto_5fwkb_5fbuf_174',['bounds_to_wkb_buf',['../meos_2src_2temporal_2type__out_8c_ad136d3bbaa7ef5fa4ad924c8e738d076.html#ad136d3bbaa7ef5fa4ad924c8e738d076',1,'type_out.c']]],
-  ['box2d_5fdistance_175',['box2d_distance',['../meos_2src_2cbuffer_2tcbuffer__spatialrels_8c_a6b464ca8e8a1efb5ff923e3893a12a9c.html#a6b464ca8e8a1efb5ff923e3893a12a9c',1,'tcbuffer_spatialrels.c']]],
+  ['box2d_5fdistance_5fsqr_175',['box2d_distance_sqr',['../meos_2src_2cbuffer_2tcbuffer__spatialrels_8c_a7535b182c9790acb3db83235a22e9b1f.html#a7535b182c9790acb3db83235a22e9b1f',1,'tcbuffer_spatialrels.c']]],
   ['box2d_5fto_5flwgeom_176',['box2d_to_lwgeom',['../postgis__funcs_8c_aeb1991df8d89169246c5ff752e88aef4.html#aeb1991df8d89169246c5ff752e88aef4',1,'postgis_funcs.c']]],
   ['box2d_5fto_5flwgeom_177',['BOX2D_to_LWGEOM',['../postgis_8h_ad05dd529be6eb97bd50db1b84b637ad6.html#ad05dd529be6eb97bd50db1b84b637ad6',1,'postgis.h']]],
   ['box2d_5fto_5flwgeom_178',['box2d_to_lwgeom',['../postgis__funcs_8h_aeb1991df8d89169246c5ff752e88aef4.html#aeb1991df8d89169246c5ff752e88aef4',1,'postgis_funcs.c']]],
