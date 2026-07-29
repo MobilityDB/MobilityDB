@@ -1,0 +1,227 @@
+SET timezone = 'UTC';
+SET
+SET datestyle = 'ISO, MDY';
+SET
+SELECT COUNT(*) FROM tbl_raquet;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_raquet WHERE tile IS NULL;
+ count 
+-------
+    10
+(1 row)
+
+SELECT COUNT(DISTINCT width(tile)), COUNT(DISTINCT height(tile)) FROM tbl_raquet;
+ count | count 
+-------+-------
+     1 |     1
+(1 row)
+
+SELECT COUNT(DISTINCT pixtype(tile)) FROM tbl_raquet;
+ count 
+-------
+     1
+(1 row)
+
+SELECT COUNT(*) FROM tbl_raquet WHERE tile::text::raquet <> tile;
+ count 
+-------
+     0
+(1 row)
+
+COPY tbl_raquet TO '/tmp/tbl_raquet' (FORMAT BINARY);
+COPY 100
+DROP TABLE IF EXISTS tbl_raquet_tmp;
+NOTICE:  table "tbl_raquet_tmp" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_raquet_tmp AS TABLE tbl_raquet WITH NO DATA;
+CREATE TABLE AS
+COPY tbl_raquet_tmp FROM '/tmp/tbl_raquet' (FORMAT BINARY);
+COPY 100
+SELECT COUNT(*) FROM tbl_raquet t1, tbl_raquet_tmp t2
+WHERE t1.k = t2.k AND t1.tile <> t2.tile;
+ count 
+-------
+     0
+(1 row)
+
+DROP TABLE tbl_raquet_tmp;
+DROP TABLE
+SELECT COUNT(*) FROM tbl_raquet t1, tbl_raquet t2 WHERE t1.tile = t2.tile;
+ count 
+-------
+    90
+(1 row)
+
+SELECT COUNT(*) FROM tbl_raquet t1, tbl_raquet t2 WHERE t1.tile <> t2.tile;
+ count 
+-------
+  8010
+(1 row)
+
+SELECT COUNT(*) FROM tbl_raquet t1, tbl_raquet t2 WHERE t1.tile < t2.tile;
+ count 
+-------
+  4005
+(1 row)
+
+SELECT COUNT(*) FROM tbl_raquet t1, tbl_raquet t2 WHERE t1.tile <= t2.tile;
+ count 
+-------
+  4095
+(1 row)
+
+SELECT COUNT(*) FROM tbl_raquet t1, tbl_raquet t2 WHERE t1.tile > t2.tile;
+ count 
+-------
+  4005
+(1 row)
+
+SELECT COUNT(*) FROM tbl_raquet t1, tbl_raquet t2 WHERE t1.tile >= t2.tile;
+ count 
+-------
+  4095
+(1 row)
+
+SELECT COUNT(*) FROM tbl_raquet t1, tbl_raquet t2
+WHERE (cmp(t1.tile, t2.tile) < 0) <> (t1.tile < t2.tile);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_raquet t1, tbl_raquet t2
+WHERE (cmp(t1.tile, t2.tile) = 0) <> (t1.tile = t2.tile);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_raquet t1, tbl_raquet t2
+WHERE t1.tile = t2.tile AND raquet_hash(t1.tile) <> raquet_hash(t2.tile);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_raquet t1, tbl_raquet t2
+WHERE t1.tile = t2.tile
+  AND raquet_hash_extended(t1.tile, 1) <> raquet_hash_extended(t2.tile, 1);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_raquet WHERE tile IS NOT NULL AND stbox(tile) IS NULL;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_raquet
+WHERE NOT (stbox(tile) && stbox 'SRID=4326;STBOX X((-180,-86),(180,86))');
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_raquet WHERE tile::stbox <> stbox(tile);
+ count 
+-------
+     0
+(1 row)
+
+SELECT round(MIN(ST_XMax(b::geometry) - ST_XMin(b::geometry))::numeric, 6),
+       round(MAX(ST_XMax(b::geometry) - ST_XMin(b::geometry))::numeric, 6)
+FROM (SELECT stbox(tile) AS b FROM tbl_raquet WHERE tile IS NOT NULL) t;
+  round   |   round    
+----------+------------
+ 1.406250 | 180.000000
+(1 row)
+
+SELECT extent(stbox(tile)) IS NOT NULL FROM tbl_raquet;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT COUNT(*) FROM tbl_raquet
+WHERE stbox(tile) && stbox 'SRID=4326;STBOX X((0,0),(90,60))';
+ count 
+-------
+    14
+(1 row)
+
+CREATE INDEX tbl_raquet_rtree_idx ON tbl_raquet USING gist (stbox(tile));
+CREATE INDEX
+SET enable_seqscan = off;
+SET
+SELECT COUNT(*) FROM tbl_raquet
+WHERE stbox(tile) && stbox 'SRID=4326;STBOX X((0,0),(90,60))';
+ count 
+-------
+    14
+(1 row)
+
+SET enable_seqscan = on;
+SET
+DROP INDEX tbl_raquet_rtree_idx;
+DROP INDEX
+CREATE INDEX tbl_raquet_quadtree_idx ON tbl_raquet USING spgist (stbox(tile));
+CREATE INDEX
+SET enable_seqscan = off;
+SET
+SELECT COUNT(*) FROM tbl_raquet
+WHERE stbox(tile) && stbox 'SRID=4326;STBOX X((0,0),(90,60))';
+ count 
+-------
+    14
+(1 row)
+
+SET enable_seqscan = on;
+SET
+DROP INDEX tbl_raquet_quadtree_idx;
+DROP INDEX
+WITH traj AS (
+  SELECT tgeompoint 'SRID=4326;{Point(10.0 20.0)@2024-01-01, Point(40.0 50.0)@2024-01-02, Point(70.0 30.0)@2024-01-03}' AS t
+)
+SELECT COALESCE(numInstants(raster_tile_value(array_agg(r.tile), traj.t)), 0) >=
+       COALESCE(MAX(numInstants(raster_tile_value(r.tile, traj.t))), 0)
+FROM tbl_raquet r, traj
+WHERE r.tile IS NOT NULL
+GROUP BY traj.t;
+ ?column? 
+----------
+ t
+(1 row)
+
+WITH traj AS (
+  SELECT tgeompoint 'SRID=4326;{Point(10.0 20.0)@2024-01-01, Point(40.0 50.0)@2024-01-02, Point(70.0 30.0)@2024-01-03}' AS t
+)
+SELECT COALESCE(numInstants(raster_tile_value(array_agg(r.tile), traj.t)), 0) <= 3
+FROM tbl_raquet r, traj
+WHERE r.tile IS NOT NULL
+GROUP BY traj.t;
+ ?column? 
+----------
+ t
+(1 row)
+
+WITH traj AS (
+  SELECT tgeompoint 'SRID=4326;{Point(10.0 20.0)@2024-01-01, Point(40.0 50.0)@2024-01-02, Point(70.0 30.0)@2024-01-03}' AS t
+)
+SELECT raster_tile_value(
+         (SELECT array_agg(tile) FROM tbl_raquet WHERE tile IS NOT NULL), traj.t)::text
+       IS NOT DISTINCT FROM
+       raster_tile_value(
+         (SELECT array_agg(tile) FROM tbl_raquet
+          WHERE tile IS NOT NULL AND stbox(tile) && stbox(traj.t)), traj.t)::text
+FROM traj;
+ ?column? 
+----------
+ t
+(1 row)
+
