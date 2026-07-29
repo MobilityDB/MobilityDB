@@ -8,6 +8,7 @@ SET(LOCAL_FILES
   258_th3index_topops
   259_th3index_posops
   262_th3index_spatialrels
+  264_th3index_tempspatialrels
   272_th3index_gist
   273_th3index_spgist
   280_th3index_inspection

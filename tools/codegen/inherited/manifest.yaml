@@ -45,7 +45,7 @@ subtypes:
     # (quadbin_cell_to_boundary), the cell-index
     # analogue of th3index 290. GiST/SP-GiST are split (322/323), the canonical
     # cell-index layout (th3index 272/273), not the combined cbuffer `indexes` form.
-    files: [compops, posops, topops, spatialrels, gist, spgist]
+    files: [compops, posops, topops, spatialrels, tempspatialrels, gist, spgist]
 
   # ---- h3: convert the hand-written inherited surface to generated (mirror tquadbin) ----
   - temp:  th3index
@@ -62,7 +62,7 @@ subtypes:
     # exports (meos/src/h3/th3index_boxops.c).
     scalar_stbox_cast: true
     stboxes: false
-    files: [compops, posops, topops, spatialrels, gist, spgist]
+    files: [compops, posops, topops, spatialrels, tempspatialrels, gist, spgist]
 
   # ---- reference families (validate self-regeneration == committed; not new) ----
   - temp:  tcbuffer
