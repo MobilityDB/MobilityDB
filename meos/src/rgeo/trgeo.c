@@ -885,6 +885,8 @@ TSequence **
 trgeometry_segments(const Temporal *temp, int *count)
 {
   VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  /* The out parameter is defined even when a later check fails */
+  *count = 0;
   if (! ensure_continuous(temp))
     return NULL;
   const GSERIALIZED *geo = trgeo_geom_p(temp);

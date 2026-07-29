@@ -336,6 +336,8 @@ th3index_values(const Temporal *temp, int *count)
   VALIDATE_TH3INDEX(temp, NULL);
   if (! ensure_not_null((void *) count))
     return NULL;
+  /* The out parameter is defined even when a later check fails */
+  *count = 0;
   Datum *datums = temporal_values(temp, count);
   if (datums == NULL)
     return NULL;

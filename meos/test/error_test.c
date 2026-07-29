@@ -95,6 +95,33 @@ int main(void)
   assert(meos_errno_reset() == failed_errno);
   assert(meos_errno() == 0);
 
+  /* A function returning an array through a count out parameter leaves that
+   * count defined when it rejects its arguments, so a caller reading the count
+   * of a failed call sees no elements rather than whatever the variable held.
+   * Only the noexit handler reaches this: the default one ends the process
+   * inside the rejected check. The count starts at a value the functions never
+   * produce, so that leaving it untouched is distinguishable from setting it. */
+  int count = -559038737;
+  Temporal *inst = tint_in("1@2000-01-01");
+  assert(inst != NULL);
+  meos_errno_reset();
+  /* temporal_segments takes a sequence (set), so an instant is rejected */
+  assert(temporal_segments(inst, &count) == NULL);
+  printf("temporal_segments(instant): NULL, count %d, errno %d\n", count,
+    meos_errno());
+  assert(count == 0);
+
+  count = -559038737;
+  Temporal *seq = tint_in("{1@2000-01-01, 2@2000-01-02}");
+  assert(seq != NULL);
+  meos_errno_reset();
+  /* a span count of zero is rejected */
+  assert(temporal_split_n_spans(seq, 0, &count) == NULL);
+  printf("temporal_split_n_spans(0): NULL, count %d, errno %d\n", count,
+    meos_errno());
+  assert(count == 0);
+
+  free(inst); free(seq);
   free(good); free(good_out);
 
   /* Finalize MEOS */
