@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: contains_tbox_tnumber</title>
+<title>MobilityDB: temporal_time_overlaps</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -96,7 +96,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__bbox__topo_ga7dd38258e965bdcd3fb1ef247997c258.html#ga7dd38258e965bdcd3fb1ef247997c258">contained_tnumber_tnumber</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__bbox__topo_ga2d74136b05578d0b65947080e8592b1b.html#ga2d74136b05578d0b65947080e8592b1b">contained_tstzspan_temporal</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__bbox__topo_gabe980bd5ef35ad87195ea3b37699213a.html#gabe980bd5ef35ad87195ea3b37699213a">contains_numspan_tnumber</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__temporal__bbox__topo_ga6fcbabd4000369c5c220a5f4109ac367.html#ga6fcbabd4000369c5c220a5f4109ac367">contains_tbox_tnumber</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__bbox__topo_ga6fcbabd4000369c5c220a5f4109ac367.html#ga6fcbabd4000369c5c220a5f4109ac367">contains_tbox_tnumber</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__bbox__topo_ga2d16e2b86063dc9bd0e85657060c06b4.html#ga2d16e2b86063dc9bd0e85657060c06b4">contains_temporal_temporal</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__bbox__topo_ga747efa93e3fd2562c6cfe8651dbd61fa.html#ga747efa93e3fd2562c6cfe8651dbd61fa">contains_temporal_tstzspan</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__bbox__topo_gaa504c9b7b31ce7a55e32d309b252040a.html#gaa504c9b7b31ce7a55e32d309b252040a">contains_tnumber_numspan</a></td></tr>
@@ -119,28 +119,28 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__bbox__topo_ga20e608291f164211e58abe2266113959.html#ga20e608291f164211e58abe2266113959">same_tnumber_tbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__bbox__topo_ga2368fd0ac0146e1679b587c41bd2618c.html#ga2368fd0ac0146e1679b587c41bd2618c">same_tnumber_tnumber</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__bbox__topo_ga9ad0c602373fabd171576bbe5daeaa77.html#ga9ad0c602373fabd171576bbe5daeaa77">same_tstzspan_temporal</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__bbox__topo_ga56e3eeecd0f5bc373028c448689e3a99.html#ga56e3eeecd0f5bc373028c448689e3a99">temporal_time_overlaps</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__temporal__bbox__topo_ga56e3eeecd0f5bc373028c448689e3a99.html#ga56e3eeecd0f5bc373028c448689e3a99">temporal_time_overlaps</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga6fcbabd4000369c5c220a5f4109ac367" name="ga6fcbabd4000369c5c220a5f4109ac367"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga6fcbabd4000369c5c220a5f4109ac367">&#9670;&#160;</a></span>contains_tbox_tnumber()</h2>
+<a id="ga56e3eeecd0f5bc373028c448689e3a99" name="ga56e3eeecd0f5bc373028c448689e3a99"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga56e3eeecd0f5bc373028c448689e3a99">&#9670;&#160;</a></span>temporal_time_overlaps()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool contains_tbox_tnumber </td>
+          <td class="memname">bool temporal_time_overlaps </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structTBox.html">TBox</a> *&#160;</td>
-          <td class="paramname"><em>box</em>, </td>
+          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
+          <td class="paramname"><em>temp1</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
-          <td class="paramname"><em>temp</em>&#160;</td>
+          <td class="paramname"><em>temp2</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -150,11 +150,10 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return true if a temporal box contains the bounding box of a temporal number. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p>Return true if the time of two temporal values actually overlaps. </p>
+<p >Unlike <a class="el" href="group__meos__temporal__bbox__topo_gac7faf717b31ba4a483b0e5187a50c7b4.html#gac7faf717b31ba4a483b0e5187a50c7b4">overlaps_temporal_temporal</a>, which tests the bounding spans, this walks the actual periods, so two values whose active parts fall in each other's gaps do not count as overlapping. The periods are read in place from the sequences, so there is no allocation. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">box</td><td>Bounding box </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> value @csqlfn <a class="el" href="group__mobilitydb__temporal__bbox__topo_ga8f27260196cf83a91cf1d16e39aa24ee.html#ga8f27260196cf83a91cf1d16e39aa24ee" title="Return true if a temporal box contains the one of a temporal number @sqlfn contains_bbox()">Contains_tbox_tnumber()</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">temp1,temp2</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> values </td></tr>
   </table>
   </dd>
 </dl>
