@@ -2883,9 +2883,14 @@ stbox_spatial_distance(const STBox *box1, const STBox *box2)
   VALIDATE_NOT_NULL(box1, false); VALIDATE_NOT_NULL(box2, false);
 
   /* Spatial extents overlap → exact minimum is 0 (some pair of points
-   * inside the joined extent has zero distance) */
+   * inside the joined extent has zero distance). Every spatial axis must be
+   * tested: the distance computed below is three-dimensional whenever both
+   * boxes carry Z, so stopping at X and Y would answer 0 for boxes that share
+   * their footprint but are separated in Z. */
+  bool hasz = MEOS_FLAGS_GET_Z(box1->flags) && MEOS_FLAGS_GET_Z(box2->flags);
   if (box1->xmin <= box2->xmax && box2->xmin <= box1->xmax &&
-      box1->ymin <= box2->ymax && box2->ymin <= box1->ymax)
+      box1->ymin <= box2->ymax && box2->ymin <= box1->ymax &&
+      (! hasz || (box1->zmin <= box2->zmax && box2->zmin <= box1->zmax)))
     return 0.0;
 
   /* Spatial extents disjoint → exact bbox-to-bbox euclidean distance.
