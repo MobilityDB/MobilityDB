@@ -59,4 +59,11 @@ SELECT t.tripid, raster_tile_value(r.tile, t.trip4326)
 FROM trips t
 JOIN elevation_tiles r
   ON r.quadbin = ANY(trajectory_quadbins(t.trip4326, 8));
+</pre></li><li class="listitem"><a name="raster_tile_value_array"></a><a class="indexterm" name="id15519"></a><p>Sample an array of <code class="varname">raquet</code> raster tiles along a trajectory</p><p><code class="varname">raster_tile_value(raquet[],tgeompoint) → tfloat</code></p><p>Evaluates every tile of <code class="varname">rast</code> at each instant of <code class="varname">traj</code> (SRID 4326) and returns the sampled pixel values as a single <code class="varname">tfloat</code>. A trajectory that leaves one tile is covered by several of them, each contributing the instants that fall inside it. Tiles of one zoom level partition the plane, so they contribute disjoint instants. Tiles of different zoom levels overlap, and where two of them sample the same instant the value of the tile of higher zoom is kept, that being the one carrying the finer resolution. Returns <code class="varname">NULL</code> when no instant falls inside a tile or survives nodata filtering.</p><pre class="programlisting">
+-- Sample a trajectory across every tile it crosses, in one value
+SELECT t.tripid, raster_tile_value(array_agg(r.tile), t.trip4326)
+FROM trips t
+JOIN elevation_tiles r
+  ON r.quadbin = ANY(trajectory_quadbins(t.trip4326, 8))
+GROUP BY t.tripid, t.trip4326;
 </pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch19.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch19.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch19s03.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 19. Raster Sampling </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Raquet Accessors and Comparison</td></tr></table></div></body></html>
