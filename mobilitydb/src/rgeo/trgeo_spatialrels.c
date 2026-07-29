@@ -553,11 +553,11 @@ Adwithin_trgeometry_geo(PG_FUNCTION_ARGS)
 }
 
 /**
- * @brief Return true if two temporal rigid geometries are even/always within a
+ * @brief Return true if two temporal rigid geometries are ever/always within a
  * distance
  * @sqlfn eDwithin(), aDwithin()
  */
-Datum
+static Datum
 EA_dwithin_trgeometry_trgeometry(FunctionCallInfo fcinfo, bool ever)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
@@ -574,7 +574,7 @@ EA_dwithin_trgeometry_trgeometry(FunctionCallInfo fcinfo, bool ever)
 PGDLLEXPORT Datum Edwithin_trgeometry_trgeometry(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Edwithin_trgeometry_trgeometry);
 /**
- * @ingroup mobilitydb_geo_rel
+ * @ingroup mobilitydb_geo_rel_ever
  * @brief Return true if two temporal rigid geometries are ever within a
  * distance
  * @sqlfn eDwithin()
@@ -588,7 +588,7 @@ Edwithin_trgeometry_trgeometry(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Adwithin_trgeometry_trgeometry(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Adwithin_trgeometry_trgeometry);
 /**
- * @ingroup mobilitydb_geo_rel
+ * @ingroup mobilitydb_geo_rel_ever
  * @brief Return true if two temporal rigid geometries are always within a
  * distance
  * @sqlfn aDwithin()
