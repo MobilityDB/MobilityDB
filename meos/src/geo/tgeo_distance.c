@@ -1072,10 +1072,10 @@ void
 geodist_segm_nad(double cx1, double cy1, double r1, double cx2, double cy2,
   double r2, const GeoDistGeom *g, double *best)
 {
-  double sxmin = Min(cx1 - r1, cx2 - r2);
-  double sxmax = Max(cx1 + r1, cx2 + r2);
-  double symin = Min(cy1 - r1, cy2 - r2);
-  double symax = Max(cy1 + r1, cy2 + r2);
+  double sxmin = fmin(cx1 - r1, cx2 - r2);
+  double sxmax = fmax(cx1 + r1, cx2 + r2);
+  double symin = fmin(cy1 - r1, cy2 - r2);
+  double symax = fmax(cy1 + r1, cy2 + r2);
   /* Coarse branch-and-bound prune: the distance between this unit's swept
    * bounding box and the geometry's overall bounding box is a lower bound on
    * the unit's nearest approach (a box contains its geometry, so the box-to-box
@@ -1086,8 +1086,8 @@ geodist_segm_nad(double cx1, double cy1, double r1, double cx2, double cy2,
    * a zero lower bound, so it is never wrongly pruned. */
   if (*best != DBL_MAX)
   {
-    double dgx = Max(Max(g->xmin - sxmax, sxmin - g->xmax), 0.0);
-    double dgy = Max(Max(g->ymin - symax, symin - g->ymax), 0.0);
+    double dgx = fmax(fmax(g->xmin - sxmax, sxmin - g->xmax), 0.0);
+    double dgy = fmax(fmax(g->ymin - symax, symin - g->ymax), 0.0);
     if (dgx * dgx + dgy * dgy >= (*best) * (*best))
       return;
   }
@@ -1104,8 +1104,8 @@ geodist_segm_nad(double cx1, double cy1, double r1, double cx2, double cy2,
     const GeoDistBucket *bk = &g->bks[b];
     if (*best != DBL_MAX)
     {
-      double dx = Max(Max(bk->xmin - sxmax, sxmin - bk->xmax), 0.0);
-      double dy = Max(Max(bk->ymin - symax, symin - bk->ymax), 0.0);
+      double dx = fmax(fmax(bk->xmin - sxmax, sxmin - bk->xmax), 0.0);
+      double dy = fmax(fmax(bk->ymin - symax, symin - bk->ymax), 0.0);
       if (dx * dx + dy * dy >= (*best) * (*best))
         continue;
     }
@@ -1115,8 +1115,8 @@ geodist_segm_nad(double cx1, double cy1, double r1, double cx2, double cy2,
       const GeoDistEdge *ed = &g->segs[k];
       if (*best != DBL_MAX)
       {
-        double dx = Max(Max(ed->xmin - sxmax, sxmin - ed->xmax), 0.0);
-        double dy = Max(Max(ed->ymin - symax, symin - ed->ymax), 0.0);
+        double dx = fmax(fmax(ed->xmin - sxmax, sxmin - ed->xmax), 0.0);
+        double dy = fmax(fmax(ed->ymin - symax, symin - ed->ymax), 0.0);
         if (dx * dx + dy * dy >= (*best) * (*best))
           continue;
       }
@@ -1130,7 +1130,7 @@ geodist_segm_nad(double cx1, double cy1, double r1, double cx2, double cy2,
        * also computes closest points and is far heavier in this hot loop). */
       if (! ed->is_arc && *best != DBL_MAX)
       {
-        double rmax = Max(r1, r2);
+        double rmax = fmax(r1, r2);
         double thr = *best + rmax;
         if (rmax > 0.0 &&
             geodist_seg_seg_dist2(cx1, cy1, cx2, cy2, ed->x1, ed->y1,
@@ -2902,10 +2902,10 @@ stbox_spatial_distance(const STBox *box1, const STBox *box2)
    * general path below serialises for every pair it is given. */
   if (! MEOS_FLAGS_GET_GEODETIC(box1->flags))
   {
-    double dx = Max(Max(box1->xmin - box2->xmax, box2->xmin - box1->xmax), 0.0);
-    double dy = Max(Max(box1->ymin - box2->ymax, box2->ymin - box1->ymax), 0.0);
+    double dx = fmax(fmax(box1->xmin - box2->xmax, box2->xmin - box1->xmax), 0.0);
+    double dy = fmax(fmax(box1->ymin - box2->ymax, box2->ymin - box1->ymax), 0.0);
     double dz = hasz ?
-      Max(Max(box1->zmin - box2->zmax, box2->zmin - box1->zmax), 0.0) : 0.0;
+      fmax(fmax(box1->zmin - box2->zmax, box2->zmin - box1->zmax), 0.0) : 0.0;
     return sqrt(dx * dx + dy * dy + dz * dz);
   }
 
