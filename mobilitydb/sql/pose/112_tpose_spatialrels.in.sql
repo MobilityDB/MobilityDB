@@ -102,15 +102,15 @@ CREATE FUNCTION aCovers(tpose, tpose)
 
 CREATE FUNCTION eDisjoint(geometry, tpose)
   RETURNS boolean
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE AS
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE AS
   $$ SELECT @extschema@.eDisjoint($1, $2::@extschema@.tgeompoint::@extschema@.tgeometry) $$;
 CREATE FUNCTION eDisjoint(tpose, geometry)
   RETURNS boolean
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE AS
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE AS
   $$ SELECT @extschema@.eDisjoint($1::@extschema@.tgeompoint::@extschema@.tgeometry, $2) $$;
 CREATE FUNCTION eDisjoint(tpose, tpose)
   RETURNS boolean
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE AS
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE AS
   $$ SELECT @extschema@.eDisjoint($1::@extschema@.tgeompoint::@extschema@.tgeometry, $2::@extschema@.tgeompoint::@extschema@.tgeometry) $$;
 
 /*****************************************************************************/
