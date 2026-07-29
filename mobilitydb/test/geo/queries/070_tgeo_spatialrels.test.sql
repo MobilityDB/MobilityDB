@@ -426,6 +426,12 @@ SELECT eDwithin(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point
 
 SELECT eDwithin(tgeometry '[Point(1 1)@2000-01-02]', tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-03}', 10);
 SELECT eDwithin(tgeometry '[Point(1 1)@2000-01-02, Point(2 2)@2000-01-03, Point(1 1)@2000-01-05]', tgeometry '{Point(1 1)@2000-01-04, Point(2 2)@2000-01-06}', 10);
+
+-- Box prune keeps the exact three-valued result. Far apart in space but sharing
+-- no time (active periods fall in the other's gap) stays NULL, not a spurious 0.
+SELECT eDwithin(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02],[Point(1 1)@2000-01-05, Point(2 2)@2000-01-06]}', tgeometry '[Point(100 100)@2000-01-03, Point(101 101)@2000-01-04]', 10);
+SELECT eDwithin(tgeometry '[Point(1 1)@2000-01-03, Point(2 2)@2000-01-04]', tgeometry '[Point(100 100)@2000-01-03, Point(101 101)@2000-01-04]', 10);
+SELECT eDwithin(tgeometry '[Point(1 1)@2000-01-03, Point(2 2)@2000-01-04]', tgeometry '[Point(1 4)@2000-01-03, Point(2 5)@2000-01-04]', 10);
 SELECT eDwithin(tgeometry '[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02]', tgeometry '[Point(2 2)@2000-01-01, Point(2 2)@2000-01-02]', 2);
 SELECT eDwithin(tgeometry '[Point(1 1)@2000-01-01, Point(0 0)@2000-01-02]', tgeometry '[Point(0 2)@2000-01-01, Point(1 1)@2000-01-02]', 2);
 SELECT eDwithin(tgeometry '{[Point(1 1)@2000-01-02, Point(2 2)@2000-01-03],[Point(1 1)@2000-01-05]}', tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-04}', 10);
