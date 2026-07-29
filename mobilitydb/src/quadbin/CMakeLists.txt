@@ -4,6 +4,7 @@ add_library(pg_quadbin OBJECT
   tquadbin.c
   tquadbin_ops.c
   tquadbin_compops.c
+  tquadbin_spatialrels.c
   # The square subset shared with every DGGS family plus the
   # quadbin-unique tile / quadkey conversions; the hexagon-only H3
   # families (directed edges, vertices, pentagon / base-cell /

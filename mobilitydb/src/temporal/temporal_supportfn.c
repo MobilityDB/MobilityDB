@@ -320,6 +320,9 @@ makeBboxExpr(Node *arg, Oid argoid, Oid retoid, Oid callingfunc)
 #if RGEO
       || argtype == T_TRGEOMETRY
 #endif /* RGEO */
+#if QUADBIN
+      || argtype == T_TQUADBIN
+#endif /* QUADBIN */
       )
     funcname = "stbox";
   else
@@ -536,6 +539,9 @@ Temporal_supportfn(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
 #if RGEO
           || righttype == T_TRGEOMETRY
 #endif /* RGEO */
+#if QUADBIN
+          || righttype == T_TQUADBIN
+#endif /* QUADBIN */
           )
         exproid = meostype_oid(T_STBOX);
       else

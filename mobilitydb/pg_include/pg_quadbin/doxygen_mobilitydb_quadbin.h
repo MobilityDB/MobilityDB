@@ -69,6 +69,14 @@
  *   @defgroup mobilitydb_quadbin_comp_temp Temporal comparison functions
  *   @ingroup mobilitydb_quadbin_comp
  *   @brief Temporal comparison functions for temporal QUADBIN cell indices
+ *
+ * @defgroup mobilitydb_quadbin_rel Spatial relationship functions
+ * @ingroup mobilitydb_quadbin
+ * @brief Spatial relationship functions for temporal QUADBIN cell indices
+ *
+ *   @defgroup mobilitydb_quadbin_rel_ever Ever and always spatial relationship functions
+ *   @ingroup mobilitydb_quadbin_rel
+ *   @brief Ever and always spatial relationship functions for temporal QUADBIN cell indices
  */
 
 /*****************************************************************************/
