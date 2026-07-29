@@ -809,6 +809,19 @@ ea_covers_tgeo_geo_common(const Temporal *temp, const GSERIALIZED *gs, bool ever
       ! ensure_not_geodetic_geo(gs) || ! ensure_has_not_Z_geo(gs) ||
       ! ensure_has_not_Z(temp->temptype, temp->flags))
     return -1;
+  /* A geometry covers a point exactly when it intersects it, both placing the
+   * point in the closure of the geometry; only contains differs, by excluding
+   * the boundary. The ever semantics of a temporal point are therefore the
+   * ever intersects, which the trajectory settles in a single call, in place
+   * of the iteration below that tests every distinct value of the temporal
+   * point against the geometry one at a time. The equivalence belongs to the
+   * point: a temporal geometry intersects a geometry without being covered by
+   * it, and a point covers a geometry only where the geometry is that same
+   * point, so the reduction stays with the geometry-covers-temporal-point
+   * direction of a temporal point. */
+  if (ever && invert && tpoint_type(temp->temptype))
+    return ea_intersects_tgeo_geo(temp, gs, EVER);
+
   int result = ever ?
     /* Iterate for each composing geometry */
     ea_spatialrel_tspatial_geo(temp, gs, &datum_geo_covers2d, EVER, invert) :
