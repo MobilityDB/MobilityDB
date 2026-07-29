@@ -473,6 +473,9 @@ SELECT round((stbox 'STBOX XT(((0,0),(1,1)),[2000-01-01,2000-01-02])' |=| stbox 
 SELECT round((stbox 'GEODSTBOX Z((1.0,1.0,1.0),(2.0,2.0,2.0))' |=| stbox 'GEODSTBOX ZT(((2,2,2),(3,3,3)),[2000-01-01,2000-01-02])'), 6);
 -- 3D
 SELECT round((stbox 'STBOX ZT(((0,0,0),(1,1,1)),[2000-01-01,2000-01-02])' |=| stbox 'STBOX ZT(((2,2,2),(3,3,3)),[2000-01-01,2000-01-02])'), 6);
+-- 3D boxes sharing their footprint but separated in Z
+SELECT round((stbox 'STBOX ZT(((0,0,0),(1,1,1)),[2000-01-01,2000-01-02])' |=| stbox 'STBOX ZT(((0,0,10),(1,1,11)),[2000-01-01,2000-01-02])'), 6);
+SELECT round((stbox 'STBOX Z((0,0,0),(1,1,1))' |=| stbox 'STBOX Z((0,0,10),(1,1,11))'), 6);
 
 SELECT round((stbox 'STBOX XT(((1,1),(1,1)),[2000-01-01,2000-01-02])' |=| geometry 'Point empty'), 6);
 SELECT round((stbox 'STBOX XT(((1,1),(1,1)),[2000-01-01,2000-01-02])' |=| geometry 'Point(0 0)'), 6);

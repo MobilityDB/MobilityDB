@@ -2220,6 +2220,18 @@ SELECT round((stbox 'STBOX ZT(((0,0,0),(1,1,1)),[2000-01-01,2000-01-02])' |=| st
  1.732051
 (1 row)
 
+SELECT round((stbox 'STBOX ZT(((0,0,0),(1,1,1)),[2000-01-01,2000-01-02])' |=| stbox 'STBOX ZT(((0,0,10),(1,1,11)),[2000-01-01,2000-01-02])'), 6);
+ round 
+-------
+     9
+(1 row)
+
+SELECT round((stbox 'STBOX Z((0,0,0),(1,1,1))' |=| stbox 'STBOX Z((0,0,10),(1,1,11))'), 6);
+ round 
+-------
+     9
+(1 row)
+
 SELECT round((stbox 'STBOX XT(((1,1),(1,1)),[2000-01-01,2000-01-02])' |=| geometry 'Point empty'), 6);
  round 
 -------
