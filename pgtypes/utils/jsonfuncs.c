@@ -1479,7 +1479,7 @@ push_null_elements(JsonbParseState **ps, int num)
   JsonbValue null;
   null.type = jbvNull;
   while (num-- > 0)
-    pushJsonbValue(ps, WJB_ELEM, &null);
+    meos_pushJsonbValue(ps, WJB_ELEM, &null);
 }
 
 /*
@@ -1529,14 +1529,14 @@ push_path(JsonbParseState **st, int level, Datum *path_elems, bool *path_nulls,
       newkey.type = jbvString;
       newkey.val.string.val = c;
       newkey.val.string.len = strlen(c);
-      (void) pushJsonbValue(st, WJB_BEGIN_OBJECT, NULL);
-      (void) pushJsonbValue(st, WJB_KEY, &newkey);
+      (void) meos_pushJsonbValue(st, WJB_BEGIN_OBJECT, NULL);
+      (void) meos_pushJsonbValue(st, WJB_KEY, &newkey);
       tpath[i - level] = jbvObject;
     }
     else
     {
       /* integer, an array is expected */
-      (void) pushJsonbValue(st, WJB_BEGIN_ARRAY, NULL);
+      (void) meos_pushJsonbValue(st, WJB_BEGIN_ARRAY, NULL);
       push_null_elements(st, lindex);
       tpath[i - level] = jbvArray;
     }
@@ -1545,10 +1545,10 @@ push_path(JsonbParseState **st, int level, Datum *path_elems, bool *path_nulls,
   /* Insert an actual value for either an object or array */
   if (tpath[(path_len - level) - 1] == jbvArray)
   {
-    (void) pushJsonbValue(st, WJB_ELEM, newval);
+    (void) meos_pushJsonbValue(st, WJB_ELEM, newval);
   }
   else
-    (void) pushJsonbValue(st, WJB_VALUE, newval);
+    (void) meos_pushJsonbValue(st, WJB_VALUE, newval);
 
   /*
    * Close everything up to the last but one level. The last one will be
@@ -1560,9 +1560,9 @@ push_path(JsonbParseState **st, int level, Datum *path_elems, bool *path_nulls,
       break;
 
     if (tpath[i - level] == jbvObject)
-      (void) pushJsonbValue(st, WJB_END_OBJECT, NULL);
+      (void) meos_pushJsonbValue(st, WJB_END_OBJECT, NULL);
     else
-      (void) pushJsonbValue(st, WJB_END_ARRAY, NULL);
+      (void) meos_pushJsonbValue(st, WJB_END_ARRAY, NULL);
   }
   return;
 }
@@ -2443,7 +2443,7 @@ pg_jsonb_strip_nulls(const Jsonb *jb, bool strip_in_arrays)
         continue;
 
       /* otherwise, do a delayed push of the key */
-      (void) pushJsonbValue(&parseState, WJB_KEY, &k);
+      (void) meos_pushJsonbValue(&parseState, WJB_KEY, &k);
     }
 
     /* if strip_in_arrays is set, also skip null array elements */
@@ -2452,9 +2452,9 @@ pg_jsonb_strip_nulls(const Jsonb *jb, bool strip_in_arrays)
         continue;
 
     if (type == WJB_VALUE || type == WJB_ELEM)
-      res = pushJsonbValue(&parseState, type, &v);
+      res = meos_pushJsonbValue(&parseState, type, &v);
     else
-      res = pushJsonbValue(&parseState, type, NULL);
+      res = meos_pushJsonbValue(&parseState, type, NULL);
   }
 
   Assert(res != NULL);
@@ -2575,7 +2575,7 @@ pg_jsonb_delete(const Jsonb *jb, const text *key)
         (void) JsonbIteratorNext(&it, &v, true);
       continue;
     }
-    res = pushJsonbValue(&state, r, r < WJB_BEGIN_ARRAY ? &v : NULL);
+    res = meos_pushJsonbValue(&state, r, r < WJB_BEGIN_ARRAY ? &v : NULL);
   }
 
   Assert(res != NULL);
@@ -2649,7 +2649,7 @@ pg_jsonb_delete_array(const Jsonb *jb, text **keys_elems, int keys_len)
         continue;
       }
     }
-    res = pushJsonbValue(&state, r, r < WJB_BEGIN_ARRAY ? &v : NULL);
+    res = meos_pushJsonbValue(&state, r, r < WJB_BEGIN_ARRAY ? &v : NULL);
   }
 
   assert(res != NULL);
@@ -2710,7 +2710,7 @@ pg_jsonb_delete_index(const Jsonb *jb, int idx)
   if (idx >= (int) n)
     return pg_jsonb_copy(jb);
 
-  pushJsonbValue(&state, r, NULL);
+  meos_pushJsonbValue(&state, r, NULL);
   while ((r = JsonbIteratorNext(&it, &v, true)) != WJB_DONE)
   {
     if (r == WJB_ELEM)
@@ -2718,7 +2718,7 @@ pg_jsonb_delete_index(const Jsonb *jb, int idx)
       if ((int) i++ == idx)
         continue;
     }
-    res = pushJsonbValue(&state, r, r < WJB_BEGIN_ARRAY ? &v : NULL);
+    res = meos_pushJsonbValue(&state, r, r < WJB_BEGIN_ARRAY ? &v : NULL);
   }
 
   assert(res != NULL);
@@ -2952,9 +2952,9 @@ IteratorConcat(JsonbIterator **it1, JsonbIterator **it2,
      * Append all the tokens from v1 to res, except last WJB_END_OBJECT
      * (because res will not be finished yet).
      */
-    pushJsonbValue(state, rk1, NULL);
+    meos_pushJsonbValue(state, rk1, NULL);
     while ((r1 = JsonbIteratorNext(it1, &v1, true)) != WJB_END_OBJECT)
-      pushJsonbValue(state, r1, &v1);
+      meos_pushJsonbValue(state, r1, &v1);
 
     /*
      * Append all the tokens from v2 to res, including last WJB_END_OBJECT
@@ -2962,28 +2962,28 @@ IteratorConcat(JsonbIterator **it1, JsonbIterator **it2,
      * automatically override the value from the first object.
      */
     while ((r2 = JsonbIteratorNext(it2, &v2, true)) != WJB_DONE)
-      res = pushJsonbValue(state, r2, r2 != WJB_END_OBJECT ? &v2 : NULL);
+      res = meos_pushJsonbValue(state, r2, r2 != WJB_END_OBJECT ? &v2 : NULL);
   }
   else if (rk1 == WJB_BEGIN_ARRAY && rk2 == WJB_BEGIN_ARRAY)
   {
     /*
      * Both inputs are arrays.
      */
-    pushJsonbValue(state, rk1, NULL);
+    meos_pushJsonbValue(state, rk1, NULL);
 
     while ((r1 = JsonbIteratorNext(it1, &v1, true)) != WJB_END_ARRAY)
     {
       Assert(r1 == WJB_ELEM);
-      pushJsonbValue(state, r1, &v1);
+      meos_pushJsonbValue(state, r1, &v1);
     }
 
     while ((r2 = JsonbIteratorNext(it2, &v2, true)) != WJB_END_ARRAY)
     {
       Assert(r2 == WJB_ELEM);
-      pushJsonbValue(state, WJB_ELEM, &v2);
+      meos_pushJsonbValue(state, WJB_ELEM, &v2);
     }
 
-    res = pushJsonbValue(state, WJB_END_ARRAY, NULL /* signal to sort */ );
+    res = meos_pushJsonbValue(state, WJB_END_ARRAY, NULL /* signal to sort */ );
   }
   else if (rk1 == WJB_BEGIN_OBJECT)
   {
@@ -2992,13 +2992,13 @@ IteratorConcat(JsonbIterator **it1, JsonbIterator **it2,
      */
     Assert(rk2 == WJB_BEGIN_ARRAY);
 
-    pushJsonbValue(state, WJB_BEGIN_ARRAY, NULL);
-    pushJsonbValue(state, WJB_BEGIN_OBJECT, NULL);
+    meos_pushJsonbValue(state, WJB_BEGIN_ARRAY, NULL);
+    meos_pushJsonbValue(state, WJB_BEGIN_OBJECT, NULL);
     while ((r1 = JsonbIteratorNext(it1, &v1, true)) != WJB_DONE)
-      pushJsonbValue(state, r1, r1 != WJB_END_OBJECT ? &v1 : NULL);
+      meos_pushJsonbValue(state, r1, r1 != WJB_END_OBJECT ? &v1 : NULL);
 
     while ((r2 = JsonbIteratorNext(it2, &v2, true)) != WJB_DONE)
-      res = pushJsonbValue(state, r2, r2 != WJB_END_ARRAY ? &v2 : NULL);
+      res = meos_pushJsonbValue(state, r2, r2 != WJB_END_ARRAY ? &v2 : NULL);
   }
   else
   {
@@ -3008,15 +3008,15 @@ IteratorConcat(JsonbIterator **it1, JsonbIterator **it2,
     Assert(rk1 == WJB_BEGIN_ARRAY);
     Assert(rk2 == WJB_BEGIN_OBJECT);
 
-    pushJsonbValue(state, WJB_BEGIN_ARRAY, NULL);
+    meos_pushJsonbValue(state, WJB_BEGIN_ARRAY, NULL);
     while ((r1 = JsonbIteratorNext(it1, &v1, true)) != WJB_END_ARRAY)
-      pushJsonbValue(state, r1, &v1);
+      meos_pushJsonbValue(state, r1, &v1);
 
-    pushJsonbValue(state, WJB_BEGIN_OBJECT, NULL);
+    meos_pushJsonbValue(state, WJB_BEGIN_OBJECT, NULL);
     while ((r2 = JsonbIteratorNext(it2, &v2, true)) != WJB_DONE)
-      pushJsonbValue(state, r2, r2 != WJB_END_OBJECT ? &v2 : NULL);
+      meos_pushJsonbValue(state, r2, r2 != WJB_END_OBJECT ? &v2 : NULL);
 
-    res = pushJsonbValue(state, WJB_END_ARRAY, NULL);
+    res = meos_pushJsonbValue(state, WJB_END_ARRAY, NULL);
   }
   return res;
 }
@@ -3082,20 +3082,20 @@ setPath(JsonbIterator **it, Datum *path_elems, bool *path_nulls, int path_len,
         return NULL;
       }
 
-      (void) pushJsonbValue(st, r, NULL);
+      (void) meos_pushJsonbValue(st, r, NULL);
       setPathArray(it, path_elems, path_nulls, path_len, st, level, newval,
         v.val.array.nElems, op_type);
       r = JsonbIteratorNext(it, &v, false);
       Assert(r == WJB_END_ARRAY);
-      res = pushJsonbValue(st, r, NULL);
+      res = meos_pushJsonbValue(st, r, NULL);
       break;
     case WJB_BEGIN_OBJECT:
-      (void) pushJsonbValue(st, r, NULL);
+      (void) meos_pushJsonbValue(st, r, NULL);
       setPathObject(it, path_elems, path_nulls, path_len, st, level, newval,
         v.val.object.nPairs, op_type);
       r = JsonbIteratorNext(it, &v, true);
       Assert(r == WJB_END_OBJECT);
-      res = pushJsonbValue(st, r, NULL);
+      res = meos_pushJsonbValue(st, r, NULL);
       break;
     case WJB_ELEM:
     case WJB_VALUE:
@@ -3113,7 +3113,7 @@ setPath(JsonbIterator **it, Datum *path_elems, bool *path_nulls, int path_len,
         return NULL;
       }
 
-      res = pushJsonbValue(st, r, &v);
+      res = meos_pushJsonbValue(st, r, &v);
       break;
     default:
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
@@ -3152,8 +3152,8 @@ setPathObject(JsonbIterator **it, Datum *path_elems, bool *path_nulls,
     newkey.type = jbvString;
     newkey.val.string.val = VARDATA_ANY(pathelem);
     newkey.val.string.len = VARSIZE_ANY_EXHDR(pathelem);
-    (void) pushJsonbValue(st, WJB_KEY, &newkey);
-    (void) pushJsonbValue(st, WJB_VALUE, newval);
+    (void) meos_pushJsonbValue(st, WJB_KEY, &newkey);
+    (void) meos_pushJsonbValue(st, WJB_VALUE, newval);
   }
 
   for (i = 0; i < (int) npairs; i++)
@@ -3181,13 +3181,13 @@ setPathObject(JsonbIterator **it, Datum *path_elems, bool *path_nulls,
         r = JsonbIteratorNext(it, &v, true);  /* skip value */
         if (!(op_type & JB_PATH_DELETE))
         {
-          (void) pushJsonbValue(st, WJB_KEY, &k);
-          (void) pushJsonbValue(st, WJB_VALUE, newval);
+          (void) meos_pushJsonbValue(st, WJB_KEY, &k);
+          (void) meos_pushJsonbValue(st, WJB_VALUE, newval);
         }
       }
       else
       {
-        (void) pushJsonbValue(st, r, &k);
+        (void) meos_pushJsonbValue(st, r, &k);
         setPath(it, path_elems, path_nulls, path_len, st, level + 1, newval,
           op_type);
       }
@@ -3201,13 +3201,13 @@ setPathObject(JsonbIterator **it, Datum *path_elems, bool *path_nulls,
         newkey.type = jbvString;
         newkey.val.string.val = VARDATA_ANY(pathelem);
         newkey.val.string.len = VARSIZE_ANY_EXHDR(pathelem);
-        (void) pushJsonbValue(st, WJB_KEY, &newkey);
-        (void) pushJsonbValue(st, WJB_VALUE, newval);
+        (void) meos_pushJsonbValue(st, WJB_KEY, &newkey);
+        (void) meos_pushJsonbValue(st, WJB_VALUE, newval);
       }
 
-      (void) pushJsonbValue(st, r, &k);
+      (void) meos_pushJsonbValue(st, r, &k);
       r = JsonbIteratorNext(it, &v, false);
-      (void) pushJsonbValue(st, r, r < WJB_BEGIN_ARRAY ? &v : NULL);
+      (void) meos_pushJsonbValue(st, r, r < WJB_BEGIN_ARRAY ? &v : NULL);
       if (r == WJB_BEGIN_ARRAY || r == WJB_BEGIN_OBJECT)
       {
         int walking_level = 1;
@@ -3218,7 +3218,7 @@ setPathObject(JsonbIterator **it, Datum *path_elems, bool *path_nulls,
             ++walking_level;
           if (r == WJB_END_ARRAY || r == WJB_END_OBJECT)
             --walking_level;
-          (void) pushJsonbValue(st, r, r < WJB_BEGIN_ARRAY ? &v : NULL);
+          (void) meos_pushJsonbValue(st, r, r < WJB_BEGIN_ARRAY ? &v : NULL);
         }
       }
     }
@@ -3240,7 +3240,7 @@ setPathObject(JsonbIterator **it, Datum *path_elems, bool *path_nulls,
     newkey.type = jbvString;
     newkey.val.string.val = VARDATA_ANY(pathelem);
     newkey.val.string.len = VARSIZE_ANY_EXHDR(pathelem);
-    (void) pushJsonbValue(st, WJB_KEY, &newkey);
+    (void) meos_pushJsonbValue(st, WJB_KEY, &newkey);
     (void) push_path(st, level, path_elems, path_nulls, path_len, newval);
     /* Result is closed with WJB_END_OBJECT outside of this function */
   }
@@ -3318,7 +3318,7 @@ setPathArray(JsonbIterator **it, Datum *path_elems, bool *path_nulls,
     Assert(newval != NULL);
     if (op_type & JB_PATH_FILL_GAPS && nelems == 0 && idx > 0)
       push_null_elements(st, idx);
-    (void) pushJsonbValue(st, WJB_ELEM, newval);
+    (void) meos_pushJsonbValue(st, WJB_ELEM, newval);
     done = true;
   }
 
@@ -3334,7 +3334,7 @@ setPathArray(JsonbIterator **it, Datum *path_elems, bool *path_nulls,
       {
         r = JsonbIteratorNext(it, &v, true);  /* skip */
         if (op_type & (JB_PATH_INSERT_BEFORE | JB_PATH_CREATE))
-          (void) pushJsonbValue(st, WJB_ELEM, newval);
+          (void) meos_pushJsonbValue(st, WJB_ELEM, newval);
 
         /*
          * We should keep current value only in case of
@@ -3342,10 +3342,10 @@ setPathArray(JsonbIterator **it, Datum *path_elems, bool *path_nulls,
          * otherwise it should be deleted or replaced
          */
         if (op_type & (JB_PATH_INSERT_AFTER | JB_PATH_INSERT_BEFORE))
-          (void) pushJsonbValue(st, r, &v);
+          (void) meos_pushJsonbValue(st, r, &v);
 
         if (op_type & (JB_PATH_INSERT_AFTER | JB_PATH_REPLACE))
-          (void) pushJsonbValue(st, WJB_ELEM, newval);
+          (void) meos_pushJsonbValue(st, WJB_ELEM, newval);
       }
       else
         (void) setPath(it, path_elems, path_nulls, path_len, st, level + 1,
@@ -3354,7 +3354,7 @@ setPathArray(JsonbIterator **it, Datum *path_elems, bool *path_nulls,
     else
     {
       r = JsonbIteratorNext(it, &v, false);
-      (void) pushJsonbValue(st, r, r < WJB_BEGIN_ARRAY ? &v : NULL);
+      (void) meos_pushJsonbValue(st, r, r < WJB_BEGIN_ARRAY ? &v : NULL);
       if (r == WJB_BEGIN_ARRAY || r == WJB_BEGIN_OBJECT)
       {
         int walking_level = 1;
@@ -3365,7 +3365,7 @@ setPathArray(JsonbIterator **it, Datum *path_elems, bool *path_nulls,
             ++walking_level;
           if (r == WJB_END_ARRAY || r == WJB_END_OBJECT)
             --walking_level;
-          (void) pushJsonbValue(st, r, r < WJB_BEGIN_ARRAY ? &v : NULL);
+          (void) meos_pushJsonbValue(st, r, r < WJB_BEGIN_ARRAY ? &v : NULL);
         }
       }
     }
@@ -3379,7 +3379,7 @@ setPathArray(JsonbIterator **it, Datum *path_elems, bool *path_nulls,
      */
     if (op_type & JB_PATH_FILL_GAPS && idx > (int) nelems)
       push_null_elements(st, idx - nelems);
-    (void) pushJsonbValue(st, WJB_ELEM, newval);
+    (void) meos_pushJsonbValue(st, WJB_ELEM, newval);
     done = true;
   }
 
@@ -3635,11 +3635,11 @@ transform_jsonb_string_values(Jsonb *jsonb, void *action_state,
         v.val.string.len);
       v.val.string.val = VARDATA_ANY(out);
       v.val.string.len = VARSIZE_ANY_EXHDR(out);
-      res = pushJsonbValue(&st, type, type < WJB_BEGIN_ARRAY ? &v : NULL);
+      res = meos_pushJsonbValue(&st, type, type < WJB_BEGIN_ARRAY ? &v : NULL);
     }
     else
     {
-      res = pushJsonbValue(&st, type, (type == WJB_KEY || type == WJB_VALUE ||
+      res = meos_pushJsonbValue(&st, type, (type == WJB_KEY || type == WJB_VALUE ||
         type == WJB_ELEM) ? &v : NULL);
     }
   }

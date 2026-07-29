@@ -2578,14 +2578,14 @@ executeKeyValueMethod(JsonPathExecContext *cxt, JsonPathItem *jsp,
     tok = JsonbIteratorNext(&it, &val, true);
     Assert(tok == WJB_VALUE);
     ps = NULL;
-    pushJsonbValue(&ps, WJB_BEGIN_OBJECT, NULL);
-    pushJsonbValue(&ps, WJB_KEY, &keystr);
-    pushJsonbValue(&ps, WJB_VALUE, &key);
-    pushJsonbValue(&ps, WJB_KEY, &valstr);
-    pushJsonbValue(&ps, WJB_VALUE, &val);
-    pushJsonbValue(&ps, WJB_KEY, &idstr);
-    pushJsonbValue(&ps, WJB_VALUE, &idval);
-    keyval = pushJsonbValue(&ps, WJB_END_OBJECT, NULL);
+    meos_pushJsonbValue(&ps, WJB_BEGIN_OBJECT, NULL);
+    meos_pushJsonbValue(&ps, WJB_KEY, &keystr);
+    meos_pushJsonbValue(&ps, WJB_VALUE, &key);
+    meos_pushJsonbValue(&ps, WJB_KEY, &valstr);
+    meos_pushJsonbValue(&ps, WJB_VALUE, &val);
+    meos_pushJsonbValue(&ps, WJB_KEY, &idstr);
+    meos_pushJsonbValue(&ps, WJB_VALUE, &idval);
+    keyval = meos_pushJsonbValue(&ps, WJB_END_OBJECT, NULL);
     jsonb = JsonbValueToJsonb(keyval);
     JsonbInitBinary(&obj, jsonb);
     baseObject = setBaseObject(cxt, &obj, cxt->lastGeneratedObjectId++);
@@ -3270,11 +3270,11 @@ wrapItemsInArray(const JsonValueList *items)
   JsonbParseState *ps = NULL;
   JsonValueListIterator it;
   JsonbValue *jbv;
-  pushJsonbValue(&ps, WJB_BEGIN_ARRAY, NULL);
+  meos_pushJsonbValue(&ps, WJB_BEGIN_ARRAY, NULL);
   JsonValueListInitIterator(items, &it);
   while ((jbv = JsonValueListNext(items, &it)))
-    pushJsonbValue(&ps, WJB_ELEM, jbv);
-  return pushJsonbValue(&ps, WJB_END_ARRAY, NULL);
+    meos_pushJsonbValue(&ps, WJB_ELEM, jbv);
+  return meos_pushJsonbValue(&ps, WJB_END_ARRAY, NULL);
 }
 
 /* Check if the timezone required for casting from type1 to type2 is used */

@@ -19,6 +19,7 @@
 #include "common/hashfn.h"
 #include "lib/stringinfo.h"
 #include "port/pg_bitutils.h"
+#include "utils/palloc.h"  /* MEOS: MemoryContext + reset-callback API (backend build) */
 #include "utils/date.h"
 #include "utils/datetime.h"
 #include "utils/json.h"
@@ -29,6 +30,7 @@
 
 #include "pgtypes.h"
 #include "../../meos/include/meos_error.h"
+#include "../../meos/include/meos_tls.h"  /* MEOS: MEOS_TLS */
 
 /*****************************************************************************/
 
@@ -36,7 +38,31 @@
  * @brief Global variable that keeps the elements to free after a JSON parsing
  */
 
-static json_to_free *JSON_TO_FREE = NULL;
+static MEOS_TLS json_to_free *JSON_TO_FREE = NULL;
+
+#if ! MEOS
+/*
+ * In the PostgreSQL backend the scratch tracked by the free-list is palloc'd in
+ * the current memory context, which PostgreSQL resets or deletes between
+ * queries. The global handle must not outlive that memory: otherwise the next
+ * parse repalloc()s/pfree()s a dangling pointer. Historically every operation
+ * had to call json_reset_tofree() to avoid this (see json_reset_tofree), which
+ * is easy to miss on a build path. Instead, bind the handle's lifetime to the
+ * context that backs it -- when that context is reset or deleted, drop the
+ * handle so the next parse rebuilds it in a live context. In the standalone
+ * MEOS build there is no host memory manager, so the manual free-list stands on
+ * its own and this callback is compiled out.
+ */
+static MEOS_TLS MemoryContext JSON_TO_FREE_CONTEXT = NULL;
+
+static void
+json_tofree_context_reset(void *arg)
+{
+  (void) arg;
+  JSON_TO_FREE = NULL;
+  JSON_TO_FREE_CONTEXT = NULL;
+}
+#endif /* ! MEOS */
 
 /**
  * @brief Get the global variable that keeps the elements to free after
@@ -52,8 +78,20 @@ json_get_tofree(void)
     JSON_TO_FREE = (json_to_free *) palloc0(sizeof(json_to_free));
     JSON_TO_FREE->tofree_size = JSON_TO_FREE_INITIAL_SIZE;
     JSON_TO_FREE->tofree_count = 0;
-    JSON_TO_FREE->tofree = (void **) palloc0(JSON_TO_FREE_INITIAL_SIZE * 
+    JSON_TO_FREE->tofree = (void **) palloc0(JSON_TO_FREE_INITIAL_SIZE *
       sizeof(void *));
+#if ! MEOS
+    /* Register one reset callback on the context that backs the handle, so it
+     * is dropped when that context is reset or deleted (see the note above). */
+    if (JSON_TO_FREE_CONTEXT != CurrentMemoryContext)
+    {
+      MemoryContextCallback *cb = (MemoryContextCallback *)
+        palloc0(sizeof(MemoryContextCallback));
+      cb->func = json_tofree_context_reset;
+      MemoryContextRegisterResetCallback(CurrentMemoryContext, cb);
+      JSON_TO_FREE_CONTEXT = CurrentMemoryContext;
+    }
+#endif /* ! MEOS */
   }
  return JSON_TO_FREE;
 }
@@ -204,9 +242,9 @@ JsonbValueToJsonb(const JsonbValue *val)
     scalarArray.val.array.rawScalar = true;
     scalarArray.val.array.nElems = 1;
 
-    pushJsonbValue(&pstate, WJB_BEGIN_ARRAY, &scalarArray);
-    pushJsonbValue(&pstate, WJB_ELEM, (JsonbValue *) val);
-    res = pushJsonbValue(&pstate, WJB_END_ARRAY, NULL);
+    meos_pushJsonbValue(&pstate, WJB_BEGIN_ARRAY, &scalarArray);
+    meos_pushJsonbValue(&pstate, WJB_ELEM, (JsonbValue *) val);
+    res = meos_pushJsonbValue(&pstate, WJB_END_ARRAY, NULL);
 
     out = convertToJsonb(res);
   }
@@ -620,7 +658,7 @@ fillJsonbValue(JsonbContainer *container, int index, char *base_addr,
  * are unpacked before being added to the result.
  */
 JsonbValue *
-pushJsonbValue(JsonbParseState **pstate, JsonbIteratorToken seq,
+meos_pushJsonbValue(JsonbParseState **pstate, JsonbIteratorToken seq,
   JsonbValue *jbval)
 {
   JsonbValue *res = NULL;
@@ -628,23 +666,23 @@ pushJsonbValue(JsonbParseState **pstate, JsonbIteratorToken seq,
 
   if (jbval && (seq == WJB_ELEM || seq == WJB_VALUE) && jbval->type == jbvObject)
   {
-    pushJsonbValue(pstate, WJB_BEGIN_OBJECT, NULL);
+    meos_pushJsonbValue(pstate, WJB_BEGIN_OBJECT, NULL);
     for (i = 0; i < jbval->val.object.nPairs; i++)
     {
-      pushJsonbValue(pstate, WJB_KEY, &jbval->val.object.pairs[i].key);
-      pushJsonbValue(pstate, WJB_VALUE, &jbval->val.object.pairs[i].value);
+      meos_pushJsonbValue(pstate, WJB_KEY, &jbval->val.object.pairs[i].key);
+      meos_pushJsonbValue(pstate, WJB_VALUE, &jbval->val.object.pairs[i].value);
     }
-    return pushJsonbValue(pstate, WJB_END_OBJECT, NULL);
+    return meos_pushJsonbValue(pstate, WJB_END_OBJECT, NULL);
   }
 
   if (jbval && (seq == WJB_ELEM || seq == WJB_VALUE) && jbval->type == jbvArray)
   {
-    pushJsonbValue(pstate, WJB_BEGIN_ARRAY, NULL);
+    meos_pushJsonbValue(pstate, WJB_BEGIN_ARRAY, NULL);
     for (i = 0; i < jbval->val.array.nElems; i++)
     {
-      pushJsonbValue(pstate, WJB_ELEM, &jbval->val.array.elems[i]);
+      meos_pushJsonbValue(pstate, WJB_ELEM, &jbval->val.array.elems[i]);
     }
-    return pushJsonbValue(pstate, WJB_END_ARRAY, NULL);
+    return meos_pushJsonbValue(pstate, WJB_END_ARRAY, NULL);
   }
 
   if (!jbval || (seq != WJB_ELEM && seq != WJB_VALUE) ||
@@ -783,7 +821,7 @@ pushJsonbValueScalar(JsonbParseState **pstate, JsonbIteratorToken seq,
 }
 
 /*
- * pushJsonbValue() worker:  Iteration-like forming of Jsonb
+ * meos_pushJsonbValue() worker:  Iteration-like forming of Jsonb
  */
 static JsonbParseState *
 pushState(JsonbParseState **pstate)
@@ -798,7 +836,7 @@ pushState(JsonbParseState **pstate)
 }
 
 /*
- * pushJsonbValue() worker:  Append a pair key to state when generating a Jsonb
+ * meos_pushJsonbValue() worker:  Append a pair key to state when generating a Jsonb
  */
 static void
 appendKey(JsonbParseState *pstate, JsonbValue *string)
@@ -826,7 +864,7 @@ appendKey(JsonbParseState *pstate, JsonbValue *string)
 }
 
 /*
- * pushJsonbValue() worker:  Append a pair value to state when generating a
+ * meos_pushJsonbValue() worker:  Append a pair value to state when generating a
  * Jsonb
  */
 static void
@@ -838,7 +876,7 @@ appendValue(JsonbParseState *pstate, JsonbValue *scalarVal)
 }
 
 /*
- * pushJsonbValue() worker:  Append an element to state when generating a Jsonb
+ * meos_pushJsonbValue() worker:  Append an element to state when generating a Jsonb
  */
 static void
 appendElement(JsonbParseState *pstate, JsonbValue *scalarVal)

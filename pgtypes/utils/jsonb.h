@@ -412,7 +412,7 @@ extern JsonbValue *getKeyJsonValueFromContainer(JsonbContainer *container,
   const char *keyVal, int keyLen, JsonbValue *res);
 extern JsonbValue *getIthJsonbValueFromContainer(JsonbContainer *container,
   uint32 i);
-extern JsonbValue *pushJsonbValue(JsonbParseState **pstate,
+extern JsonbValue *meos_pushJsonbValue(JsonbParseState **pstate,
   JsonbIteratorToken seq, JsonbValue *jbval);
 extern JsonbIterator *JsonbIteratorInit(JsonbContainer *container);
 extern JsonbIteratorToken JsonbIteratorNext(JsonbIterator **it, JsonbValue *val,

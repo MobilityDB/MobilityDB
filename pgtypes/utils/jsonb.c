@@ -312,7 +312,7 @@ static JsonParseErrorType
 jsonb_in_object_start(void *pstate)
 {
   JsonbInState *_state = (JsonbInState *) pstate;
-  _state->res = pushJsonbValue(&_state->parseState, WJB_BEGIN_OBJECT, NULL);
+  _state->res = meos_pushJsonbValue(&_state->parseState, WJB_BEGIN_OBJECT, NULL);
   _state->parseState->unique_keys = _state->unique_keys;
   return JSON_SUCCESS;
 }
@@ -321,7 +321,7 @@ static JsonParseErrorType
 jsonb_in_object_end(void *pstate)
 {
   JsonbInState *_state = (JsonbInState *) pstate;
-  _state->res = pushJsonbValue(&_state->parseState, WJB_END_OBJECT, NULL);
+  _state->res = meos_pushJsonbValue(&_state->parseState, WJB_END_OBJECT, NULL);
   return JSON_SUCCESS;
 }
 
@@ -329,7 +329,7 @@ static JsonParseErrorType
 jsonb_in_array_start(void *pstate)
 {
   JsonbInState *_state = (JsonbInState *) pstate;
-  _state->res = pushJsonbValue(&_state->parseState, WJB_BEGIN_ARRAY, NULL);
+  _state->res = meos_pushJsonbValue(&_state->parseState, WJB_BEGIN_ARRAY, NULL);
   return JSON_SUCCESS;
 }
 
@@ -337,7 +337,7 @@ static JsonParseErrorType
 jsonb_in_array_end(void *pstate)
 {
   JsonbInState *_state = (JsonbInState *) pstate;
-  _state->res = pushJsonbValue(&_state->parseState, WJB_END_ARRAY, NULL);
+  _state->res = meos_pushJsonbValue(&_state->parseState, WJB_END_ARRAY, NULL);
   return JSON_SUCCESS;
 }
 
@@ -352,7 +352,7 @@ jsonb_in_object_field_start(void *pstate, char *fname, bool isnull UNUSED)
   if (!checkStringLen(v.val.string.len, _state->escontext))
     return JSON_SEM_ACTION_FAILED;
   v.val.string.val = fname;
-  _state->res = pushJsonbValue(&_state->parseState, WJB_KEY, &v);
+  _state->res = meos_pushJsonbValue(&_state->parseState, WJB_KEY, &v);
   return JSON_SUCCESS;
 }
 
@@ -447,9 +447,9 @@ jsonb_in_scalar(void *pstate, char *token, JsonTokenType tokentype)
     va.val.array.rawScalar = true;
     va.val.array.nElems = 1;
 
-    _state->res = pushJsonbValue(&_state->parseState, WJB_BEGIN_ARRAY, &va);
-    _state->res = pushJsonbValue(&_state->parseState, WJB_ELEM, &v);
-    _state->res = pushJsonbValue(&_state->parseState, WJB_END_ARRAY, NULL);
+    _state->res = meos_pushJsonbValue(&_state->parseState, WJB_BEGIN_ARRAY, &va);
+    _state->res = meos_pushJsonbValue(&_state->parseState, WJB_ELEM, &v);
+    _state->res = meos_pushJsonbValue(&_state->parseState, WJB_END_ARRAY, NULL);
   }
   else
   {
@@ -457,10 +457,10 @@ jsonb_in_scalar(void *pstate, char *token, JsonTokenType tokentype)
     switch (o->type)
     {
       case jbvArray:
-        _state->res = pushJsonbValue(&_state->parseState, WJB_ELEM, &v);
+        _state->res = meos_pushJsonbValue(&_state->parseState, WJB_ELEM, &v);
         break;
       case jbvObject:
-        _state->res = pushJsonbValue(&_state->parseState, WJB_VALUE, &v);
+        _state->res = meos_pushJsonbValue(&_state->parseState, WJB_VALUE, &v);
         break;
       default:
         meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
@@ -677,7 +677,7 @@ pg_jsonb_make(text **keys_vals, int count)
 
   JsonbInState state;
   memset(&state, 0, sizeof(JsonbInState));
-  (void) pushJsonbValue(&state.parseState, WJB_BEGIN_OBJECT, NULL);
+  (void) meos_pushJsonbValue(&state.parseState, WJB_BEGIN_OBJECT, NULL);
 
   /* Transform the keys and values into strings */
   char **keys_vals_str = palloc0(sizeof(char *) * count);
@@ -703,7 +703,7 @@ pg_jsonb_make(text **keys_vals, int count)
     v.type = jbvString;
     v.val.string.len = len;
     v.val.string.val = str;
-    (void) pushJsonbValue(&state.parseState, WJB_KEY, &v);
+    (void) meos_pushJsonbValue(&state.parseState, WJB_KEY, &v);
 
     if (! keys_vals_str[i * 2 + 1])
     {
@@ -717,10 +717,10 @@ pg_jsonb_make(text **keys_vals, int count)
       v.val.string.len = len;
       v.val.string.val = str;
     }
-    (void) pushJsonbValue(&state.parseState, WJB_VALUE, &v);
+    (void) meos_pushJsonbValue(&state.parseState, WJB_VALUE, &v);
   }
 
-  state.res = pushJsonbValue(&state.parseState, WJB_END_OBJECT, NULL);
+  state.res = meos_pushJsonbValue(&state.parseState, WJB_END_OBJECT, NULL);
   Jsonb *result = JsonbValueToJsonb(state.res);
 
   /* Clean up and return */
@@ -754,7 +754,7 @@ pg_jsonb_make_two_arg(text **keys, text **values, int count)
 {
   JsonbInState state;
   memset(&state, 0, sizeof(JsonbInState));
-  (void) pushJsonbValue(&state.parseState, WJB_BEGIN_OBJECT, NULL);
+  (void) meos_pushJsonbValue(&state.parseState, WJB_BEGIN_OBJECT, NULL);
   char **keys_str = palloc(sizeof(char *) * count);
   /* Initialized to 0 since some values may be null */
   char **values_str = palloc0(sizeof(char *) * count);
@@ -780,7 +780,7 @@ pg_jsonb_make_two_arg(text **keys, text **values, int count)
     v.type = jbvString;
     v.val.string.len = len;
     v.val.string.val = str;
-    (void) pushJsonbValue(&state.parseState, WJB_KEY, &v);
+    (void) meos_pushJsonbValue(&state.parseState, WJB_KEY, &v);
     if (! values[i])
     {
       v.type = jbvNull;
@@ -793,10 +793,10 @@ pg_jsonb_make_two_arg(text **keys, text **values, int count)
       v.val.string.len = len;
       v.val.string.val = str;
     }
-    (void) pushJsonbValue(&state.parseState, WJB_VALUE, &v);
+    (void) meos_pushJsonbValue(&state.parseState, WJB_VALUE, &v);
   }
 
-  state.res = pushJsonbValue(&state.parseState, WJB_END_OBJECT, NULL);
+  state.res = meos_pushJsonbValue(&state.parseState, WJB_END_OBJECT, NULL);
   Jsonb *result = JsonbValueToJsonb(state.res);
   for (int i = 0; i < count; ++i)
     pfree(keys_str[i]);
