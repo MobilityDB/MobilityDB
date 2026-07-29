@@ -134,7 +134,10 @@ meos_errno_restore(int err)
 int meos_errno_reset(void)
 {
   int last_errno = meos_errno();
-  meos_errno_set(0);
+  /* Clear the error status directly: #meos_errno_set ignores a zero argument
+   * so that a caller cannot clear the status through it by accident, and
+   * points here instead */
+  MEOS_ERR_NO = 0;
   errno = 0;
   return last_errno;
 }
