@@ -29,97 +29,90 @@
  *
  *****************************************************************************/
 
-/*****************************************************************************
- * Temporal spatial relationships
- *
- * Each function returns a tbool whose value at instant t is the static
- * spatial relation applied to the cell boundary at t: cast the cell
- * boundary to tgeometry and delegate to tgeometry's temporal
- * spatial-rel kernel.
- *****************************************************************************/
+{DOC}
 
 CREATE FUNCTION tContains(geometry, {TEMP})
   RETURNS tbool
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tContains($1, @extschema@.{BOUNDARY}($2)::@extschema@.tgeometry) $$;
+  AS $$ SELECT @extschema@.tContains($1, {CV2}) $$;
 CREATE FUNCTION tContains({TEMP}, geometry)
   RETURNS tbool
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tContains(@extschema@.{BOUNDARY}($1)::@extschema@.tgeometry, $2) $$;
+  AS $$ SELECT @extschema@.tContains({CV1}, $2) $$;
 CREATE FUNCTION tContains({TEMP}, {TEMP})
   RETURNS tbool
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tContains(@extschema@.{BOUNDARY}($1)::@extschema@.tgeometry,
-                          @extschema@.{BOUNDARY}($2)::@extschema@.tgeometry) $$;
+  AS $$ SELECT @extschema@.tContains({CV1},
+                          {CV2}) $$;
 
 CREATE FUNCTION tCovers(geometry, {TEMP})
   RETURNS tbool
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tCovers($1, @extschema@.{BOUNDARY}($2)::@extschema@.tgeometry) $$;
+  AS $$ SELECT @extschema@.tCovers($1, {CV2}) $$;
 CREATE FUNCTION tCovers({TEMP}, geometry)
   RETURNS tbool
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tCovers(@extschema@.{BOUNDARY}($1)::@extschema@.tgeometry, $2) $$;
+  AS $$ SELECT @extschema@.tCovers({CV1}, $2) $$;
 CREATE FUNCTION tCovers({TEMP}, {TEMP})
   RETURNS tbool
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tCovers(@extschema@.{BOUNDARY}($1)::@extschema@.tgeometry,
-                        @extschema@.{BOUNDARY}($2)::@extschema@.tgeometry) $$;
+  AS $$ SELECT @extschema@.tCovers({CV1},
+                        {CV2}) $$;
 
 CREATE FUNCTION tDisjoint(geometry, {TEMP})
   RETURNS tbool
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tDisjoint($1, @extschema@.{BOUNDARY}($2)::@extschema@.tgeometry) $$;
+  AS $$ SELECT @extschema@.tDisjoint($1, {CV2}) $$;
 CREATE FUNCTION tDisjoint({TEMP}, geometry)
   RETURNS tbool
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tDisjoint(@extschema@.{BOUNDARY}($1)::@extschema@.tgeometry, $2) $$;
+  AS $$ SELECT @extschema@.tDisjoint({CV1}, $2) $$;
 CREATE FUNCTION tDisjoint({TEMP}, {TEMP})
   RETURNS tbool
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tDisjoint(@extschema@.{BOUNDARY}($1)::@extschema@.tgeometry,
-                          @extschema@.{BOUNDARY}($2)::@extschema@.tgeometry) $$;
+  AS $$ SELECT @extschema@.tDisjoint({CV1},
+                          {CV2}) $$;
 
 CREATE FUNCTION tIntersects(geometry, {TEMP})
   RETURNS tbool
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tIntersects($1, @extschema@.{BOUNDARY}($2)::@extschema@.tgeometry) $$;
+  AS $$ SELECT @extschema@.tIntersects($1, {CV2}) $$;
 CREATE FUNCTION tIntersects({TEMP}, geometry)
   RETURNS tbool
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tIntersects(@extschema@.{BOUNDARY}($1)::@extschema@.tgeometry, $2) $$;
+  AS $$ SELECT @extschema@.tIntersects({CV1}, $2) $$;
 CREATE FUNCTION tIntersects({TEMP}, {TEMP})
   RETURNS tbool
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tIntersects(@extschema@.{BOUNDARY}($1)::@extschema@.tgeometry,
-                            @extschema@.{BOUNDARY}($2)::@extschema@.tgeometry) $$;
+  AS $$ SELECT @extschema@.tIntersects({CV1},
+                            {CV2}) $$;
 
 CREATE FUNCTION tTouches(geometry, {TEMP})
   RETURNS tbool
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tTouches($1, @extschema@.{BOUNDARY}($2)::@extschema@.tgeometry) $$;
+  AS $$ SELECT @extschema@.tTouches($1, {CV2}) $$;
 CREATE FUNCTION tTouches({TEMP}, geometry)
   RETURNS tbool
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tTouches(@extschema@.{BOUNDARY}($1)::@extschema@.tgeometry, $2) $$;
+  AS $$ SELECT @extschema@.tTouches({CV1}, $2) $$;
 CREATE FUNCTION tTouches({TEMP}, {TEMP})
   RETURNS tbool
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tTouches(@extschema@.{BOUNDARY}($1)::@extschema@.tgeometry,
-                         @extschema@.{BOUNDARY}($2)::@extschema@.tgeometry) $$;
+  AS $$ SELECT @extschema@.tTouches({CV1},
+                         {CV2}) $$;
 
 CREATE FUNCTION tDwithin(geometry, {TEMP}, dist float)
   RETURNS tbool
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tDwithin($1, @extschema@.{BOUNDARY}($2)::@extschema@.tgeometry, $3) $$;
+  AS $$ SELECT @extschema@.tDwithin($1, {CV2}, $3) $$;
 CREATE FUNCTION tDwithin({TEMP}, geometry, dist float)
   RETURNS tbool
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tDwithin(@extschema@.{BOUNDARY}($1)::@extschema@.tgeometry, $2, $3) $$;
+  AS $$ SELECT @extschema@.tDwithin({CV1}, $2, $3) $$;
 CREATE FUNCTION tDwithin({TEMP}, {TEMP}, dist float)
   RETURNS tbool
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tDwithin(@extschema@.{BOUNDARY}($1)::@extschema@.tgeometry,
-                         @extschema@.{BOUNDARY}($2)::@extschema@.tgeometry, $3) $$;
+  AS $$ SELECT @extschema@.tDwithin({CV1},
+                         {CV2}, $3) $$;
 
 /*****************************************************************************/

@@ -98,7 +98,20 @@ subtypes:
     # tpose is 3-D-capable, so its position operators include the front/back (Z)
     # direction on top of the shared left/right/below/above/before/after set.
     front_back: true
-    files: [compops, topops, posops, indexes]
+    # A temporal pose delegates its spatial relationships to tgeometry via the
+    # tgeompoint cast chain (not a cell-boundary function), and it is not a cell
+    # index, so it overrides the conversion expression and the file doc block.
+    # Only the temporal (tXxx) relationships are generated here: the ever/always
+    # spatial relationships are a hybrid (the ever intersects/dwithin are native C
+    # with index support), so 112_tpose_spatialrels stays hand-written.
+    convert: "@N@::@extschema@.tgeompoint::@extschema@.tgeometry"
+    doc:
+      tempspatialrels: |-
+        /**
+         * @file
+         * @brief Temporal spatial relationships for temporal poses
+         */
+    files: [compops, topops, posops, indexes, tempspatialrels]
 
   - temp:  trgeometry
     # The base-value comparison is against a `geometry` (the resolved geometry at an
