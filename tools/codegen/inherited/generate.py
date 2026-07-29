@@ -308,10 +308,32 @@ _DW_GET = {
 }
 
 
+def _dwithin_wrappers(block_t, ingroup, direc, noun, ret_fn):
+    """The two (ever/always) public wrappers for one dwithin direction. `ret_fn`
+    maps the EVER/ALWAYS token to the wrapper's return statement (a call to either
+    a local static dispatcher or a shared family-wide one)."""
+    out = []
+    for ea, word in (("E", "ever"), ("A", "always")):
+        eaq = "EVER" if ea == "E" else "ALWAYS"
+        out.append(
+            block_t.replace("{FN}", f"{ea}dwithin_{direc}")
+                   .replace("{INGROUP}", ingroup)
+                   .replace("{BRIEF}", _wrap_brief(
+                        f"Return true if {noun} are {word} within a distance"))
+                   .replace("{SQLFN}", f"{'e' if ea == 'E' else 'a'}Dwithin")
+                   .replace("{RETURN}", ret_fn(eaq)))
+    return out
+
+
 def render_dwithin(fam: dict) -> str:
-    """Render the ever/always dwithin region: per direction a static dispatcher
-    (rendered from dwithin_dispatcher.c.tmpl) followed by its ever and always
-    public wrappers. Arguments are declared and freed in position order."""
+    """Render the ever/always dwithin region. Each direction is either `local`
+    (its own static dispatcher reading the operands and calling the kernel, plus
+    two public wrappers — the cbuffer shape) or `shape: shared` (it reuses a
+    family-wide EA_dwithin_* dispatcher with a fixed kernel and emits only the two
+    wrappers — the geo/tgeo mixed directions of rgeo). A local dispatcher calls
+    its kernel either as a single `ea_` function taking `ever` as its last
+    argument (`ever_arg: true`, rgeo) or as an `ever ? e... : a...` ternary over
+    separate kernels (cbuffer)."""
     banner_t, block_t = (TEMPLATES / "spatialrels.c.tmpl").read_text().split("\n\n")
     block_t = block_t.rstrip("\n")
     disp_t = (TEMPLATES / "dwithin_dispatcher.c.tmpl").read_text().rstrip("\n")
@@ -319,28 +341,31 @@ def render_dwithin(fam: dict) -> str:
     out = [banner_t.replace("{BANNER}", fam["banner"])]
     for direc in fam["order"]:
         d = fam["directions"][direc]
+        if d.get("shape") == "shared":
+            out += _dwithin_wrappers(
+                block_t, ingroup, direc, d["noun"],
+                lambda eaq: f"  return {d['disp']}(fcinfo, &{d['kernel']}, {eaq});")
+            continue
         args = sorted(d["args"], key=lambda a: a["pos"])
         decls = "\n".join(
             f"  {a['type']}{a['var']} = {_DW_GET[a['type']]}({a['pos']});" for a in args)
         frees = "\n".join(
             f"  PG_FREE_IF_COPY({a['var']}, {a['pos']});" for a in args)
+        if d.get("ever_arg"):
+            result = f"  int result = ea_dwithin_{d['kernel']}({d['kargs']});"
+        else:
+            result = (f"  int result = ever ? edwithin_{d['kernel']}({d['kargs']}) :\n"
+                      f"    adwithin_{d['kernel']}({d['kargs']});")
         out.append(
             disp_t.replace("{BRIEF}", _wrap_brief(
                         f"Return true if {d['noun']} are ever/always within a distance"))
                   .replace("{DIR}", direc)
                   .replace("{DECLS}", decls)
-                  .replace("{KERNEL}", d["kernel"])
-                  .replace("{KARGS}", d["kargs"])
+                  .replace("{RESULT}", result)
                   .replace("{FREES}", frees))
-        for ea, word in (("E", "ever"), ("A", "always")):
-            out.append(
-                block_t.replace("{FN}", f"{ea}dwithin_{direc}")
-                       .replace("{INGROUP}", ingroup)
-                       .replace("{BRIEF}", _wrap_brief(
-                            f"Return true if {d['noun']} are {word} within a distance"))
-                       .replace("{SQLFN}", f"{'e' if ea == 'E' else 'a'}Dwithin")
-                       .replace("{RETURN}", f"  return EA_dwithin_{direc}(fcinfo, "
-                                            f"{'EVER' if ea == 'E' else 'ALWAYS'});"))
+        out += _dwithin_wrappers(
+            block_t, ingroup, direc, d["noun"],
+            lambda eaq: f"  return EA_dwithin_{direc}(fcinfo, {eaq});")
     return "\n\n".join(out) + "\n"
 
 

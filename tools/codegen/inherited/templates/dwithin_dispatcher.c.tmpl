@@ -7,8 +7,7 @@ EA_dwithin_{DIR}(FunctionCallInfo fcinfo, bool ever)
 {
 {DECLS}
   double dist = PG_GETARG_FLOAT8(2);
-  int result = ever ? edwithin_{KERNEL}({KARGS}) :
-    adwithin_{KERNEL}({KARGS});
+{RESULT}
 {FREES}
   if (result < 0)
     PG_RETURN_NULL();
