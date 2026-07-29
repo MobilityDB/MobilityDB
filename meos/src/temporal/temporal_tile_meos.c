@@ -695,6 +695,8 @@ temporal_time_split(const Temporal *temp, const Interval *duration,
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
       ! ensure_positive_duration(duration))
     return NULL;
+  /* The out parameter is defined even when a later check fails */
+  *count = 0;
 
   Span s;
   temporal_set_tstzspan(temp, &s);
@@ -1345,6 +1347,8 @@ tint_value_split(const Temporal *temp, int size, int origin, int **bins,
   if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
       ! ensure_temporal_isof_type(temp, T_TINT) || ! ensure_positive(size))
     return NULL;
+  /* The out parameter is defined even when a later check fails */
+  *count = 0;
 
   Datum *datum_bins;
   Temporal **result = tnumber_value_split(temp, Int32GetDatum(size),
@@ -1379,6 +1383,8 @@ tfloat_value_split(const Temporal *temp, double size, double origin,
       ! ensure_temporal_isof_type(temp, T_TFLOAT) ||
       ! ensure_positive_datum(Float8GetDatum(size), T_FLOAT8))
     return NULL;
+  /* The out parameter is defined even when a later check fails */
+  *count = 0;
 
   Datum *datum_bins;
   Temporal **result = tnumber_value_split(temp, Float8GetDatum(size),
@@ -1417,6 +1423,8 @@ tint_value_time_split(const Temporal *temp, int size, const Interval *duration,
       ! ensure_temporal_isof_type(temp, T_TINT) || ! ensure_positive(size) ||
       ! ensure_positive_duration(duration))
     return NULL;
+  /* The out parameter is defined even when a later check fails */
+  *count = 0;
 
   Datum *datum_bins;
   Temporal **result = tnumber_value_time_split(temp, Int32GetDatum(size),
@@ -1460,6 +1468,8 @@ tfloat_value_time_split(const Temporal *temp, double size,
       ! ensure_positive_datum(Float8GetDatum(size), T_FLOAT8) ||
       ! ensure_positive_duration(duration))
     return NULL;
+  /* The out parameter is defined even when a later check fails */
+  *count = 0;
 
   Datum *datum_bins;
   Temporal **result = tnumber_value_time_split(temp, Float8GetDatum(size),

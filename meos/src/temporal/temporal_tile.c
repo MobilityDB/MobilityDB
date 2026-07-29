@@ -546,6 +546,8 @@ temporal_time_bins(const Temporal *temp, const Interval *duration,
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL); VALIDATE_NOT_NULL(duration, NULL);
   VALIDATE_NOT_NULL(count, NULL);
+  /* The out parameter is defined even when a later check fails */
+  *count = 0;
   if (! ensure_positive_duration(duration))
     return NULL;
 
@@ -871,6 +873,8 @@ tnumber_value_time_tile_init(const Temporal *temp, Datum vsize,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TNUMBER(temp, NULL); VALIDATE_NOT_NULL(ntiles, NULL);
+  /* The out parameter is defined even when a later check fails */
+  *ntiles = 0;
   if (! ensure_not_negative_datum(vsize, temptype_basetype(temp->temptype)) ||
       (duration && ! ensure_positive_duration(duration)))
     return NULL;

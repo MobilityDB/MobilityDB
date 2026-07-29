@@ -2577,6 +2577,8 @@ temporal_segments(const Temporal *temp, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  /* The out parameter is defined even when a later check fails */
+  *count = 0;
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
