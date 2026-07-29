@@ -205,6 +205,8 @@ tgeoinst_merge_array_iter(TInstant **instants, int count, int *newcount)
  * @param[out] newcount Number of values in the output array
  * @pre The number of elements in the array is greater than 1 and the elemets
  * are sorted
+ * @note Returns @p NULL and sets @p newcount to 0 when the instants cannot be
+ * merged, for example when two of them share a timestamp with different values
  */
 TInstant **
 tinstant_merge_array_iter(TInstant **instants, int count, int *newcount)
@@ -225,7 +227,10 @@ tinstant_merge_array_iter(TInstant **instants, int count, int *newcount)
 
   /* Ensure the validity of the arguments and compute the bounding box */
   if (! ensure_valid_tinstarr(instants1, count1, MERGE, DISCRETE))
+  {
+    *newcount = 0;
     return NULL;
+  }
 
   TInstant **newinstants = palloc(sizeof(TInstant *) * count1);
   memcpy(newinstants, instants1, sizeof(TInstant *) * count1);
@@ -250,13 +255,10 @@ tinstant_merge_array(TInstant **instants, int count)
   tinstarr_sort((TInstant **) instants, count);
   int count1;
   TInstant **instants1 = tinstant_merge_array_iter(instants, count, &count1);
-
-  /* Ensure the validity of the arguments and TODO compute the bounding box */
-  if (! ensure_valid_tinstarr(instants1, count1, MERGE, DISCRETE))
-  {
-    pfree_array((void **) instants1, count1);
+  /* The iterator has already ensured the validity of the instants; it returns
+   * NULL when they cannot be merged */
+  if (instants1 == NULL)
     return NULL;
-  }
 
   TInstant **newinstants = palloc(sizeof(TInstant *) * count1);
   memcpy(newinstants, instants1, sizeof(TInstant *) * count1);
