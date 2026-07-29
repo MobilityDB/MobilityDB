@@ -1011,9 +1011,10 @@ Span *
 temporal_split_n_spans(const Temporal *temp, int span_count, int *count)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(count, NULL);
   /* The out parameter is defined even when a later check fails */
   *count = 0;
+  VALIDATE_NOT_NULL(temp, NULL);
   if (! ensure_positive(span_count))
     return NULL;
 
@@ -1183,9 +1184,10 @@ temporal_split_each_n_spans(const Temporal *temp, int elems_per_span,
   int *count)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(count, NULL);
   /* The out parameter is defined even when a later check fails */
   *count = 0;
+  VALIDATE_NOT_NULL(temp, NULL);
   if (! ensure_positive(elems_per_span))
     return NULL;
 
@@ -1584,9 +1586,10 @@ TBox *
 tnumber_split_n_tboxes(const Temporal *temp, int box_count, int *count)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TNUMBER(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(count, NULL);
   /* The out parameter is defined even when a later check fails */
   *count = 0;
+  VALIDATE_TNUMBER(temp, NULL);
   if (! ensure_positive(box_count))
     return NULL;
 
@@ -1756,9 +1759,10 @@ TBox *
 tnumber_split_each_n_tboxes(const Temporal *temp, int elems_per_box, int *count)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TNUMBER(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(count, NULL);
   /* The out parameter is defined even when a later check fails */
   *count = 0;
+  VALIDATE_TNUMBER(temp, NULL);
   if (! ensure_positive(elems_per_box))
     return NULL;
 

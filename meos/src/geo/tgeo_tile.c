@@ -666,9 +666,10 @@ stbox_space_time_tiles(const STBox *bounds, double xsize, double ysize,
   /* Ensure the validity of the arguments
    * Since we pass by default Point(0 0 0) as origin independently of the input
    * STBox, we test the same spatial dimensionality only for STBox Z */
-  VALIDATE_NOT_NULL(bounds, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(count, NULL);
   /* The out parameter is defined even when a later check fails */
   *count = 0;
+  VALIDATE_NOT_NULL(bounds, NULL);
   if (! ensure_has_X(T_STBOX, bounds->flags) ||
       ! ensure_not_geodetic(bounds->flags) ||
       ! ensure_not_negative_datum(Float8GetDatum(xsize), T_FLOAT8) ||
@@ -956,9 +957,10 @@ tgeo_space_time_boxes(const Temporal *temp, double xsize, double ysize,
   TimestampTz torigin, bool bitmatrix, bool border_inc, int *count)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TGEO(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(count, NULL);
   /* The out parameter is defined even when a later check fails */
   *count = 0;
+  VALIDATE_TGEO(temp, NULL);
   if ((xsize > 0 && ! ensure_not_null((void *) sorigin)) ||
       (xsize > 0 && ! ensure_positive_datum(xsize, T_FLOAT8)) ||
       (xsize > 0 && ! ensure_positive_datum(ysize, T_FLOAT8)) ||
@@ -1268,9 +1270,10 @@ tgeo_space_time_tile_init(const Temporal *temp, double xsize, double ysize,
   TimestampTz torigin, bool bitmatrix, bool border_inc, int *ntiles)
 {
   /* Ensure parameter validity */
-  VALIDATE_TGEO(temp, NULL); VALIDATE_NOT_NULL(ntiles, NULL);
+  VALIDATE_NOT_NULL(ntiles, NULL);
   /* The out parameter is defined even when a later check fails */
   *ntiles = 0;
+  VALIDATE_TGEO(temp, NULL);
   if ((xsize && ! ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8)) ||
       (xsize && ! ensure_positive_datum(Float8GetDatum(ysize), T_FLOAT8)) ||
       (xsize && ! ensure_positive_datum(Float8GetDatum(zsize), T_FLOAT8)) ||

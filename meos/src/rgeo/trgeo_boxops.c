@@ -367,6 +367,8 @@ trgeometry_split_n_stboxes(const Temporal *temp, int box_count, int *count)
   assert(temp->temptype == T_TRGEOMETRY);
   if (! ensure_positive(box_count))
     return NULL;
+  /* The out parameter is defined even when a later check fails */
+  *count = 0;
   const GSERIALIZED *geom = trgeo_geom_p(temp);
   switch (temp->subtype)
   {
@@ -516,6 +518,8 @@ trgeometry_split_each_n_stboxes(const Temporal *temp, int elems_per_box,
   assert(temp->temptype == T_TRGEOMETRY);
   if (! ensure_positive(elems_per_box))
     return NULL;
+  /* The out parameter is defined even when a later check fails */
+  *count = 0;
   const GSERIALIZED *geom = trgeo_geom_p(temp);
   switch (temp->subtype)
   {

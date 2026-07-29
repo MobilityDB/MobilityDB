@@ -816,7 +816,9 @@ TSequence **
 trgeometry_sequences(const Temporal *temp, int *count)
 {
   /* Ensure the validity of the arguments */
-
+  VALIDATE_NOT_NULL(count, NULL);
+  /* The out parameter is defined even when a later check fails */
+  *count = 0;
   VALIDATE_TRGEOMETRY(temp, NULL);
   if (! ensure_continuous(temp))
     return NULL;
@@ -884,9 +886,10 @@ trgeometry_rotation(const Temporal *temp)
 TSequence **
 trgeometry_segments(const Temporal *temp, int *count)
 {
-  VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(count, NULL);
   /* The out parameter is defined even when a later check fails */
   *count = 0;
+  VALIDATE_TRGEOMETRY(temp, NULL);
   if (! ensure_continuous(temp))
     return NULL;
   const GSERIALIZED *geo = trgeo_geom_p(temp);

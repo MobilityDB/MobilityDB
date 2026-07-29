@@ -824,6 +824,10 @@ trgeometry_dyntimewarp_distance(const Temporal *temp1, const Temporal *temp2)
 Match *
 trgeometry_frechet_path(const Temporal *temp1, const Temporal *temp2, int *count)
 {
+  if (! ensure_not_null((void *) count))
+    return NULL;
+  /* The out parameter is defined even when a later check fails */
+  *count = 0;
   if (! ensure_valid_trgeo_trgeo(temp1, temp2))
     return NULL;
   Temporal *tp1 = trgeometry_to_tpoint(temp1);
@@ -844,6 +848,10 @@ trgeometry_frechet_path(const Temporal *temp1, const Temporal *temp2, int *count
 Match *
 trgeometry_dyntimewarp_path(const Temporal *temp1, const Temporal *temp2, int *count)
 {
+  if (! ensure_not_null((void *) count))
+    return NULL;
+  /* The out parameter is defined even when a later check fails */
+  *count = 0;
   if (! ensure_valid_trgeo_trgeo(temp1, temp2))
     return NULL;
   Temporal *tp1 = trgeometry_to_tpoint(temp1);

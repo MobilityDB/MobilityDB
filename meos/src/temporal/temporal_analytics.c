@@ -1681,6 +1681,10 @@ Match *
 temporal_frechet_path(const Temporal *temp1, const Temporal *temp2, int *count)
 {
   /* Ensure the validity of the arguments */
+  if (! ensure_not_null((void *) count))
+    return NULL;
+  /* The out parameter is defined even when a later check fails */
+  *count = 0;
   if (! ensure_valid_temporal_temporal(temp1, temp2))
     return NULL;
   return temporal_similarity_path(temp1, temp2, count, FRECHET);
@@ -1698,6 +1702,10 @@ temporal_dyntimewarp_path(const Temporal *temp1, const Temporal *temp2,
   int *count)
 {
   /* Ensure the validity of the arguments */
+  if (! ensure_not_null((void *) count))
+    return NULL;
+  /* The out parameter is defined even when a later check fails */
+  *count = 0;
   if (! ensure_valid_temporal_temporal(temp1, temp2))
     return NULL;
   return temporal_similarity_path(temp1, temp2, count, DYNTIMEWARP);

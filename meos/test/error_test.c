@@ -121,6 +121,33 @@ int main(void)
     meos_errno());
   assert(count == 0);
 
+  /* The count is defined whichever argument the function rejects, not only
+   * when the count itself is the one at fault, so it is checked here on a
+   * rejection of another argument as well */
+  count = -559038737;
+  meos_errno_reset();
+  assert(temporal_segments(NULL, &count) == NULL);
+  printf("temporal_segments(NULL): NULL, count %d, errno %d\n", count,
+    meos_errno());
+  assert(count == 0);
+
+  count = -559038737;
+  Temporal *num = tint_in("{1@2000-01-01}");
+  assert(num != NULL);
+  meos_errno_reset();
+  /* the two values must share a type, so a temporal float is rejected */
+  assert(temporal_frechet_path(num, good, &count) == NULL);
+  printf("temporal_frechet_path(mixed types): NULL, count %d, errno %d\n",
+    count, meos_errno());
+  assert(count == 0);
+
+  /* A NULL count is itself rejected, rather than written through */
+  meos_errno_reset();
+  assert(temporal_frechet_path(num, num, NULL) == NULL);
+  printf("temporal_frechet_path(count NULL): NULL, errno %d\n", meos_errno());
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG);
+
+  free(num);
   free(inst); free(seq);
   free(good); free(good_out);
 

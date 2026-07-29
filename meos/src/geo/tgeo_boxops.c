@@ -779,9 +779,10 @@ STBox *
 tgeo_split_n_stboxes(const Temporal *temp, int box_count, int *count)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TSPATIAL(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(count, NULL);
   /* The out parameter is defined even when a later check fails */
   *count = 0;
+  VALIDATE_TSPATIAL(temp, NULL);
   if (! ensure_positive(box_count))
     return NULL;
 
@@ -954,9 +955,10 @@ STBox *
 tgeo_split_each_n_stboxes(const Temporal *temp, int elems_per_box, int *count)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TSPATIAL(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(count, NULL);
   /* The out parameter is defined even when a later check fails */
   *count = 0;
+  VALIDATE_TSPATIAL(temp, NULL);
   if (! ensure_positive(elems_per_box))
     return NULL;
 
@@ -1175,9 +1177,10 @@ STBox *
 geo_stboxes(const GSERIALIZED *gs, int *count)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(gs, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(count, NULL);
   /* The out parameter is defined even when a later check fails */
   *count = 0;
+  VALIDATE_NOT_NULL(gs, NULL);
   if (! ensure_not_empty(gs) || ! ensure_mline_type(gs))
     return NULL;
   
@@ -1425,9 +1428,10 @@ STBox *
 geo_split_n_stboxes(const GSERIALIZED *gs, int box_count, int *count)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(gs, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(count, NULL);
   /* The out parameter is defined even when a later check fails */
   *count = 0;
+  VALIDATE_NOT_NULL(gs, NULL);
   if (! ensure_not_empty(gs) || ! ensure_positive(box_count) ||
       ! ensure_mline_type(gs))
     return NULL;
@@ -1613,9 +1617,10 @@ STBox *
 geo_split_each_n_stboxes(const GSERIALIZED *gs, int elems_per_box, int *count)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(gs, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(count, NULL);
   /* The out parameter is defined even when a later check fails */
   *count = 0;
+  VALIDATE_NOT_NULL(gs, NULL);
   if (! ensure_not_empty(gs) || ! ensure_positive(elems_per_box) || 
       ! ensure_mline_type(gs))
     return NULL;
