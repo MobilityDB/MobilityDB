@@ -2893,7 +2893,23 @@ stbox_spatial_distance(const STBox *box1, const STBox *box2)
       (! hasz || (box1->zmin <= box2->zmax && box2->zmin <= box1->zmax)))
     return 0.0;
 
-  /* Spatial extents disjoint → exact bbox-to-bbox euclidean distance.
+  /* Spatial extents disjoint, planar input → exact bbox-to-bbox euclidean
+   * distance in closed form on the box coordinates. Each axis contributes the
+   * gap between the two extents, zero when they overlap on it, and the boxes
+   * are axis-aligned, so a nearest pair of points differs by exactly that gap
+   * on every axis. This is the form the geometry distance prune already uses
+   * per edge, and it answers without building the two box geometries that the
+   * general path below serialises for every pair it is given. */
+  if (! MEOS_FLAGS_GET_GEODETIC(box1->flags))
+  {
+    double dx = Max(Max(box1->xmin - box2->xmax, box2->xmin - box1->xmax), 0.0);
+    double dy = Max(Max(box1->ymin - box2->ymax, box2->ymin - box1->ymax), 0.0);
+    double dz = hasz ?
+      Max(Max(box1->zmin - box2->zmax, box2->zmin - box1->zmax), 0.0) : 0.0;
+    return sqrt(dx * dx + dy * dy + dz * dz);
+  }
+
+  /* Spatial extents disjoint, geodetic input → distance on the spheroid.
    * Drop the time component of each box before serialising to geometry. */
   datum_func2 func = geo_distance_fn(box1->flags);
   STBox b1 = *box1, b2 = *box2;
