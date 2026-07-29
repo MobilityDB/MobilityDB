@@ -160,8 +160,9 @@ CREATE FUNCTION aDisjoint(tquadbin, tquadbin)
 
 CREATE FUNCTION eIntersects(geometry, tquadbin)
   RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.eIntersects($1, @extschema@.tquadbinCellToBoundary($2)::@extschema@.tgeometry) $$;
+  AS 'MODULE_PATHNAME', 'Eintersects_geo_tquadbin'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION aIntersects(geometry, tquadbin)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
@@ -169,8 +170,9 @@ CREATE FUNCTION aIntersects(geometry, tquadbin)
 
 CREATE FUNCTION eIntersects(tquadbin, geometry)
   RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.eIntersects(@extschema@.tquadbinCellToBoundary($1)::@extschema@.tgeometry, $2) $$;
+  AS 'MODULE_PATHNAME', 'Eintersects_tquadbin_geo'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION aIntersects(tquadbin, geometry)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
@@ -178,9 +180,9 @@ CREATE FUNCTION aIntersects(tquadbin, geometry)
 
 CREATE FUNCTION eIntersects(tquadbin, tquadbin)
   RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.eIntersects(@extschema@.tquadbinCellToBoundary($1)::@extschema@.tgeometry,
-                            @extschema@.tquadbinCellToBoundary($2)::@extschema@.tgeometry) $$;
+  AS 'MODULE_PATHNAME', 'Eintersects_tquadbin_tquadbin'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION aIntersects(tquadbin, tquadbin)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
@@ -226,8 +228,9 @@ CREATE FUNCTION aTouches(tquadbin, tquadbin)
 
 CREATE FUNCTION eDwithin(geometry, tquadbin, dist float)
   RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.eDwithin($1, @extschema@.tquadbinCellToBoundary($2)::@extschema@.tgeometry, $3) $$;
+  AS 'MODULE_PATHNAME', 'Edwithin_geo_tquadbin'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION aDwithin(geometry, tquadbin, dist float)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
@@ -235,8 +238,9 @@ CREATE FUNCTION aDwithin(geometry, tquadbin, dist float)
 
 CREATE FUNCTION eDwithin(tquadbin, geometry, dist float)
   RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.eDwithin(@extschema@.tquadbinCellToBoundary($1)::@extschema@.tgeometry, $2, $3) $$;
+  AS 'MODULE_PATHNAME', 'Edwithin_tquadbin_geo'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION aDwithin(tquadbin, geometry, dist float)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
@@ -244,9 +248,9 @@ CREATE FUNCTION aDwithin(tquadbin, geometry, dist float)
 
 CREATE FUNCTION eDwithin(tquadbin, tquadbin, dist float)
   RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.eDwithin(@extschema@.tquadbinCellToBoundary($1)::@extschema@.tgeometry,
-                         @extschema@.tquadbinCellToBoundary($2)::@extschema@.tgeometry, $3) $$;
+  AS 'MODULE_PATHNAME', 'Edwithin_tquadbin_tquadbin'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION aDwithin(tquadbin, tquadbin, dist float)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE

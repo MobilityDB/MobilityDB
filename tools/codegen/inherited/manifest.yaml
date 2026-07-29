@@ -40,6 +40,12 @@ subtypes:
     # exports (meos/src/quadbin/tquadbin_boxops.c).
     scalar_stbox_cast: true
     stboxes: false
+    # quadbin is planar (Web Mercator), so its stbox bounds the whole cell and the
+    # ever intersects/dwithin relationships get spatial index support: they are
+    # emitted as C wrappers with SUPPORT tspatial_supportfn (tquadbin_spatialrels.c)
+    # rather than SQL cast-wrappers. (h3 is geodetic and stays SQL — a geodetic bbox
+    # vs a planar query box would error, so it does not set this flag.)
+    index_support: true
     # compops/posops/topops are generic. spatialrels delegates to the geo spatial
     # relationships via the cell→boundary tgeometry conversion
     # (quadbin_cell_to_boundary), the cell-index

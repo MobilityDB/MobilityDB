@@ -36,11 +36,13 @@ BANNER = (
 # so a family opts IN explicitly rather than opting out. front_back guards the Z
 # (front/back) position operators, which only the 3-D-capable spatial families
 # (tpose, trgeometry, and the tgeo reference) have; every other family omits them.
-DEFAULT_FALSE_FLAGS = {"front_back"}
+DEFAULT_FALSE_FLAGS = {"front_back", "index_support"}
 
 
 def apply_conditionals(text: str, sub: dict) -> str:
-    """Strip ``-- @IF <flag>`` / ``-- @ENDIF`` blocks whose flag is false."""
+    """Strip ``-- @IF <flag>`` / ``-- @ENDIF`` blocks whose flag is false (and
+    ``-- @IFNOT <flag>`` blocks whose flag is true — the two forms let one flag
+    select between a pair of mutually exclusive blocks)."""
     # A subtractive flag defaults to true (the reference keeps the block; an
     # exception strips it, e.g. a cell-index sets scalar_stbox_cast: false). An
     # additive flag (DEFAULT_FALSE_FLAGS) defaults to false: the reference omits
@@ -55,6 +57,11 @@ def apply_conditionals(text: str, sub: dict) -> str:
         if s.startswith("-- @IF "):
             flag = s[len("-- @IF "):].strip()
             this_skip = not sub.get(flag, flag not in DEFAULT_FALSE_FLAGS)
+            stack.append(this_skip or (stack[-1] if stack else False))
+            continue
+        if s.startswith("-- @IFNOT "):
+            flag = s[len("-- @IFNOT "):].strip()
+            this_skip = sub.get(flag, flag not in DEFAULT_FALSE_FLAGS)
             stack.append(this_skip or (stack[-1] if stack else False))
             continue
         if s.startswith("-- @ENDIF"):
