@@ -158,16 +158,19 @@ spatialrel_geo_geo(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
  *****************************************************************************/
 
 /**
- * @brief Return the 2D distance between two axis-aligned bounding boxes,
- * 0 when they overlap
+ * @brief Return the squared 2D distance between two axis-aligned bounding
+ * boxes, 0 when they overlap
+ * @note The square is returned so that the callers compare it with a squared
+ * distance, as the geometry distance prune does, the square root being
+ * monotonic and both compared values non-negative
  */
 static double
-box2d_distance(double axmin, double aymin, double axmax, double aymax,
+box2d_distance_sqr(double axmin, double aymin, double axmax, double aymax,
   double bxmin, double bymin, double bxmax, double bymax)
 {
   double dx = fmax(fmax(axmin - bxmax, bxmin - axmax), 0.0);
   double dy = fmax(fmax(aymin - bymax, bymin - aymax), 0.0);
-  return sqrt(dx * dx + dy * dy);
+  return dx * dx + dy * dy;
 }
 
 /**
@@ -199,11 +202,15 @@ tcbuffer_geo_box_decided(varfunc func, Datum param, int numparam,
   double sxmin, double symin, double sxmax, double symax,
   double gxmin, double gymin, double gxmax, double gymax, int *result)
 {
-  double bd = box2d_distance(sxmin, symin, sxmax, symax, gxmin, gymin,
+  double bd = box2d_distance_sqr(sxmin, symin, sxmax, symax, gxmin, gymin,
     gxmax, gymax);
   if (func == (varfunc) (&datum_geom_dwithin2d) && numparam == 3)
   {
-    if (bd > DatumGetFloat8(param))
+    /* The distance is validated as non-negative by the ever/always dwithin
+     * functions, so comparing the squares decides the same way as comparing
+     * the distances themselves */
+    double d = DatumGetFloat8(param);
+    if (bd > d * d)
     {
       *result = 0;
       return true;
