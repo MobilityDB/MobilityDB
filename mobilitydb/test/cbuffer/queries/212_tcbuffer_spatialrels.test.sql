@@ -260,6 +260,12 @@ SELECT eDwithin(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-02]', tcbuffer '{Cbuf
 SELECT eDwithin(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-02, Cbuffer(Point(2 2),0.5)@2000-01-03, Cbuffer(Point(1 1),0.5)@2000-01-05]', tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-04, Cbuffer(Point(2 2),0.5)@2000-01-06}', 10);
 SELECT eDwithin(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(1 1),0.5)@2000-01-02]', tcbuffer '[Cbuffer(Point(2 2),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02]', 2);
 SELECT eDwithin(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(0 0),0.5)@2000-01-02]', tcbuffer '[Cbuffer(Point(0 2),0.5)@2000-01-01, Cbuffer(Point(1 1),0.5)@2000-01-02]', 2);
+
+-- No shared time (active periods fall in the other's gap) is NULL for every
+-- box-short-circuited predicate, not a spurious value.
+SELECT eDwithin(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02],[Cbuffer(Point(1 1),0.5)@2000-01-05, Cbuffer(Point(2 2),0.5)@2000-01-06]}', tcbuffer '[Cbuffer(Point(100 100),0.5)@2000-01-03, Cbuffer(Point(101 101),0.5)@2000-01-04]', 10);
+SELECT eIntersects(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02],[Cbuffer(Point(1 1),0.5)@2000-01-05, Cbuffer(Point(2 2),0.5)@2000-01-06]}', tcbuffer '[Cbuffer(Point(100 100),0.5)@2000-01-03, Cbuffer(Point(101 101),0.5)@2000-01-04]');
+SELECT eDisjoint(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02],[Cbuffer(Point(1 1),0.5)@2000-01-05, Cbuffer(Point(2 2),0.5)@2000-01-06]}', tcbuffer '[Cbuffer(Point(100 100),0.5)@2000-01-03, Cbuffer(Point(101 101),0.5)@2000-01-04]');
 SELECT eDwithin(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-02, Cbuffer(Point(2 2),0.5)@2000-01-03],[Cbuffer(Point(1 1),0.5)@2000-01-05]}', tcbuffer '{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-04}', 10);
 SELECT eDwithin(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-02, Cbuffer(Point(2 2),0.5)@2000-01-03],[Cbuffer(Point(1 1),0.5)@2000-01-06]}', tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-04, Cbuffer(Point(2 2),0.5)@2000-01-05]', 10);
 SELECT eDwithin(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-02, Cbuffer(Point(2 2),0.5)@2000-01-03],[Cbuffer(Point(1 1),0.5)@2000-01-06]}', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2000-01-01],[Cbuffer(Point(1 1),0.5)@2000-01-04, Cbuffer(Point(2 2),0.5)@2000-01-05]}', 10);

@@ -513,6 +513,13 @@ ea_spatialrel_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   if (! ensure_valid_tcbuffer_tcbuffer(temp1, temp2))
     return -1;
 
+  /* Common-time gate: return -1 (SQL NULL) when the two temporal circular
+   * buffers share no time, respecting the gaps of a sequence set so a pair
+   * whose active periods fall in each other's gaps stays NULL rather than
+   * becoming a spurious 0 in the bounding-box test below. */
+  if (! temporal_time_overlaps(temp1, temp2))
+    return -1;
+
   /* Bounding box test */
   if (bbox_test)
   {
@@ -1195,12 +1202,10 @@ ea_disjoint_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   if (! ensure_valid_tcbuffer_tcbuffer(temp1, temp2))
     return -1;
 
-  /* Time-overlap test: mirror the generic function's contract of returning -1
-   * when the two temporal circular buffers do not share time. */
-  Span s1, s2;
-  temporal_set_tstzspan(temp1, &s1);
-  temporal_set_tstzspan(temp2, &s2);
-  if (! overlaps_span_span(&s1, &s2))
+  /* Common-time gate: return -1 (SQL NULL) when the two temporal circular
+   * buffers share no time, respecting the gaps of a sequence set so a pair
+   * whose active periods fall in each other's gaps stays NULL. */
+  if (! temporal_time_overlaps(temp1, temp2))
     return -1;
   /* Disjoint is the boolean complement of intersects with the ever/always
    * quantifier swapped: aDisjoint = not eIntersects, eDisjoint = not
@@ -1824,12 +1829,10 @@ ea_dwithin_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return -1;
 
-  /* Time-overlap test: mirror the generic function's contract of returning -1
-   * when the two temporal circular buffers do not share time. */
-  Span s1, s2;
-  temporal_set_tstzspan(temp1, &s1);
-  temporal_set_tstzspan(temp2, &s2);
-  if (! overlaps_span_span(&s1, &s2))
+  /* Common-time gate: return -1 (SQL NULL) when the two temporal circular
+   * buffers share no time, respecting the gaps of a sequence set so a pair
+   * whose active periods fall in each other's gaps stays NULL. */
+  if (! temporal_time_overlaps(temp1, temp2))
     return -1;
 
   /* Bounding box test with distance expansion: the buffers share time, so if
