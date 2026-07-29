@@ -373,7 +373,8 @@ raquet_to_stbox(const Raquet *rq)
 int
 raquet_cmp(const Raquet *rq1, const Raquet *rq2)
 {
-  assert(rq1); assert(rq2);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rq1, false); VALIDATE_NOT_NULL(rq2, false);
   if (rq1->quadbin != rq2->quadbin)
     return (rq1->quadbin < rq2->quadbin) ? -1 : 1;
   if (rq1->pixtype != rq2->pixtype)
@@ -396,7 +397,8 @@ raquet_cmp(const Raquet *rq1, const Raquet *rq2)
 bool
 raquet_eq(const Raquet *rq1, const Raquet *rq2)
 {
-  assert(rq1); assert(rq2);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rq1, false); VALIDATE_NOT_NULL(rq2, false);
   return raquet_cmp(rq1, rq2) == 0;
 }
 
@@ -409,7 +411,6 @@ raquet_eq(const Raquet *rq1, const Raquet *rq2)
 bool
 raquet_ne(const Raquet *rq1, const Raquet *rq2)
 {
-  assert(rq1); assert(rq2);
   return raquet_cmp(rq1, rq2) != 0;
 }
 
@@ -422,7 +423,6 @@ raquet_ne(const Raquet *rq1, const Raquet *rq2)
 bool
 raquet_lt(const Raquet *rq1, const Raquet *rq2)
 {
-  assert(rq1); assert(rq2);
   return raquet_cmp(rq1, rq2) < 0;
 }
 
@@ -436,7 +436,6 @@ raquet_lt(const Raquet *rq1, const Raquet *rq2)
 bool
 raquet_le(const Raquet *rq1, const Raquet *rq2)
 {
-  assert(rq1); assert(rq2);
   return raquet_cmp(rq1, rq2) <= 0;
 }
 
@@ -450,7 +449,6 @@ raquet_le(const Raquet *rq1, const Raquet *rq2)
 bool
 raquet_ge(const Raquet *rq1, const Raquet *rq2)
 {
-  assert(rq1); assert(rq2);
   return raquet_cmp(rq1, rq2) >= 0;
 }
 
@@ -463,7 +461,6 @@ raquet_ge(const Raquet *rq1, const Raquet *rq2)
 bool
 raquet_gt(const Raquet *rq1, const Raquet *rq2)
 {
-  assert(rq1); assert(rq2);
   return raquet_cmp(rq1, rq2) > 0;
 }
 

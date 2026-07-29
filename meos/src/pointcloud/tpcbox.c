@@ -994,7 +994,8 @@ adjacent_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 int
 tpcbox_cmp(const TPCBox *box1, const TPCBox *box2)
 {
-  assert(box1); assert(box2);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(box1, false); VALIDATE_NOT_NULL(box2, false);
   if (box1->pcid != box2->pcid)
     return (box1->pcid < box2->pcid) ? -1 : 1;
   if (box1->srid != box2->srid)

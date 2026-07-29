@@ -1916,7 +1916,7 @@ int
 pose_cmp(const Pose *pose1, const Pose *pose2)
 {
   /* Ensure the validity of the arguments */
-  assert(pose1); assert(pose2);
+  VALIDATE_NOT_NULL(pose1, false); VALIDATE_NOT_NULL(pose2, false);
 
   /* Compare first the dimension, then the SRID,
      then the position, then the orientation */
