@@ -1991,6 +1991,31 @@ ea_dwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist,
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return -1;
 
+  /* Common-time gate: return -1 (SQL NULL) when the two temporal geos share
+   * no time, matching the lifted evaluation below rather than the 0 of a box
+   * that does not meet the other. */
+  if (! temporal_time_overlaps(temp1, temp2))
+    return -1;
+
+  /* Bounding box test with distance expansion: the two share time, so if the
+   * box of the first does not meet the box of the second expanded by the
+   * distance, every common instant holds them farther apart than the distance
+   * and they are neither ever nor always within it. The reject is exact because
+   * a temporal geo never leaves its box, and the expansion grows the second box
+   * by the distance along each axis. This mirrors the constant-time reject the
+   * circular buffers carry in #ea_dwithin_tcbuffer_tcbuffer. Geodetic input
+   * keeps the lifted path, its box being in degrees where the distance is in
+   * metres, as #ea_dwithin_tgeo_geo also leaves it. */
+  if (! MEOS_FLAGS_GET_GEODETIC(temp1->flags))
+  {
+    STBox box1, box2, box2_exp;
+    tspatial_set_stbox(temp1, &box1);
+    tspatial_set_stbox(temp2, &box2);
+    stbox_expand_space_set(&box2, dist, &box2_exp);
+    if (! overlaps_stbox_stbox(&box1, &box2_exp))
+      return 0;
+  }
+
   datum_func3 func = geo_dwithin_fn(temp1->flags, temp2->flags);
   /* Fill the lifted structure */
   LiftedFunctionInfo lfinfo;
