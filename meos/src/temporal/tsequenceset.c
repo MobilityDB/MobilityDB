@@ -456,6 +456,9 @@ int *
 ensure_valid_tinstarr_gaps(TInstant **instants, int count, bool merge,
   double maxdist, const Interval *maxt, int *nsplits)
 {
+  assert(instants); assert(nsplits);
+  /* The out parameter is defined even when a later check fails */
+  *nsplits = 0;
   MeosType basetype = temptype_basetype(instants[0]->temptype);
   /* Ensure that zero-fill is done */
   int *result = palloc0(sizeof(int) * count);

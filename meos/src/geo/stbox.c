@@ -2389,9 +2389,10 @@ STBox *
 stbox_quad_split(const STBox *box, int *count)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(box, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(count, NULL);
   /* The out parameter is defined even when a later check fails */
   *count = 0;
+  VALIDATE_NOT_NULL(box, NULL);
   if (! ensure_has_X(T_STBOX, box->flags))
     return NULL;
 

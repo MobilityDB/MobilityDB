@@ -1039,6 +1039,9 @@ double *
 pose_orientation(const Pose *pose, int *count)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(count, NULL);
+  /* The out parameter is defined even when a later check fails */
+  *count = 0;
   VALIDATE_NOT_NULL(pose, NULL);
   if (! ensure_has_Z(T_POSE, pose->flags))
     return NULL;

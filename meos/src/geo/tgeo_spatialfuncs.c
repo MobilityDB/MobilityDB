@@ -1695,6 +1695,9 @@ int *
 geo_cluster_kmeans(const GSERIALIZED **geoms, uint32_t n, uint32_t k, int *count)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(count, NULL);
+  /* The out parameter is defined even when a later check fails */
+  *count = 0;
   VALIDATE_NOT_NULL(geoms, NULL);
   if (! ensure_positive(n) || ! ensure_positive(k))
     return NULL;
@@ -1740,6 +1743,10 @@ geo_cluster_dbscan(const GSERIALIZED **geoms, uint32_t ngeoms,
   double tolerance, int minpoints, int *count)
 {
   /* Ensure validity of arguments */
+  if (! ensure_not_null(count))
+    return NULL;
+  /* The out parameter is defined even when a later check fails */
+  *count = 0;
   if (! ensure_not_null(geoms))
     return NULL;
   if (tolerance < 0)
@@ -1807,7 +1814,11 @@ geo_cluster_intersecting(const GSERIALIZED **geoms, uint32_t ngeoms,
   bool gotsrid = false;
 
   /* Ensure validity of arguments */
-  if (! ensure_not_null(geoms) || ! ensure_not_null(count) || ngeoms == 0)
+  if (! ensure_not_null(count))
+    return NULL;
+  /* The out parameter is defined even when a later check fails */
+  *count = 0;
+  if (! ensure_not_null(geoms) || ngeoms == 0)
     return NULL;
 
   /* TODO short-circuit for one element? */
@@ -1882,8 +1893,11 @@ geo_cluster_within(const GSERIALIZED **geoms, uint32_t ngeoms,
   double tolerance, int *count)
 {
   /* Ensure validity of arguments */
-  /* Ensure validity of arguments */
-  if (! ensure_not_null(geoms) || ! ensure_not_null(count) || ngeoms == 0)
+  if (! ensure_not_null(count))
+    return NULL;
+  /* The out parameter is defined even when a later check fails */
+  *count = 0;
+  if (! ensure_not_null(geoms) || ngeoms == 0)
     return NULL;
   if (tolerance < 0)
   {

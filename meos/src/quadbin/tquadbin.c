@@ -334,11 +334,11 @@ tquadbin_value_n(const Temporal *temp, int n, Quadbin *result)
 Quadbin *
 tquadbin_values(const Temporal *temp, int *count)
 {
-  VALIDATE_TQUADBIN(temp, NULL);
   if (! ensure_not_null((void *) count))
     return NULL;
   /* The out parameter is defined even when a later check fails */
   *count = 0;
+  VALIDATE_TQUADBIN(temp, NULL);
   Datum *datums = temporal_values(temp, count);
   if (datums == NULL)
     return NULL;
