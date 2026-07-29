@@ -491,6 +491,8 @@ Atouches_trgeometry_trgeometry(PG_FUNCTION_ARGS)
     ALWAYS);
 }
 
+/* GENERATED-SPATIALRELS-BEGIN rgeo_ea_dwithin — tools/codegen/inherited/generate.py from templates/spatialrels.c.tmpl;
+ * DO NOT EDIT BY HAND; edit the template + manifest.yaml (spatialrel_families) and re-run. */
 /*****************************************************************************
  * Ever/always dwithin (for both geometry and geography)
  * The function only accepts points and not arbitrary geometries/geographies
@@ -598,5 +600,6 @@ Adwithin_trgeometry_trgeometry(PG_FUNCTION_ARGS)
 {
   return EA_dwithin_trgeometry_trgeometry(fcinfo, ALWAYS);
 }
+/* GENERATED-SPATIALRELS-END rgeo_ea_dwithin */
 
 /*****************************************************************************/

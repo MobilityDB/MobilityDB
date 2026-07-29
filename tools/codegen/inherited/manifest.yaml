@@ -453,6 +453,39 @@ spatialrel_families:
           trgeometry_geo:        "a temporal rigid geometry and a geometry {word} intersect"
           trgeometry_trgeometry: "two temporal rigid geometries {word} intersect"
 
+  # rgeo dwithin is a HYBRID (dwithin: true selects render_dwithin): the two mixed
+  # directions reuse the family-wide EA_dwithin_* dispatchers with the single fixed
+  # kernel ea_dwithin_trgeo_geo (the dispatcher fixes the argument order), so they
+  # are `shape: shared` and emit only the two wrappers; the T⊗T direction keeps a
+  # local static dispatcher that calls ea_dwithin_trgeo_trgeo(temp1, temp2, dist,
+  # ever) — a single kernel taking `ever` as its last argument (ever_arg: true).
+  - family:    rgeo_ea_dwithin
+    file:      mobilitydb/src/rgeo/trgeo_spatialrels.c
+    reference: true
+    dwithin:   true
+    ingroup:   mobilitydb_geo_rel_ever
+    banner:    "Ever/always dwithin (for both geometry and geography)\n * The function only accepts points and not arbitrary geometries/geographies"
+    order:     [geo_trgeometry, trgeometry_geo, trgeometry_trgeometry]
+    directions:
+      geo_trgeometry:
+        shape:  shared
+        noun:   "a geometry and a temporal rigid geometry"
+        disp:   EA_dwithin_geo_tspatial
+        kernel: ea_dwithin_trgeo_geo
+      trgeometry_geo:
+        shape:  shared
+        noun:   "a temporal rigid geometry and a geometry"
+        disp:   EA_dwithin_tspatial_geo
+        kernel: ea_dwithin_trgeo_geo
+      trgeometry_trgeometry:
+        noun:     "two temporal rigid geometries"
+        ever_arg: true
+        kernel:   trgeo_trgeo
+        kargs:    "temp1, temp2, dist, ever"
+        args:
+          - {type: "Temporal *", var: temp1, pos: 0}
+          - {type: "Temporal *", var: temp2, pos: 1}
+
 # ---------------------------------------------------------------------------
 # Accessor axis (SQL, per-family, region-in-file). The whole Temporal<T> accessor
 # surface (tempSubtype..segments) lives INLINE in each family's type file and
