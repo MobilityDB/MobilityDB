@@ -81,11 +81,29 @@ def render(behaviour: str, sub: dict) -> str:
     # It equals the SQL base type for every family EXCEPT trgeometry, whose base
     # comparison is against a `geometry` (SQL type) but whose wrapper stem is `geo`.
     basesym = sub.get("basesym", sub["base"])
-    body = (tmpl.replace("{TEMP}", sub["temp"])
+    # The spatial-relationship delegation converts each operand to tgeometry. A
+    # cell index converts via its boundary function (`{BOUNDARY}(@N@)::tgeometry`),
+    # a temporal pose via the tgeompoint cast chain (`@N@::tgeompoint::tgeometry`).
+    # `convert` is the per-operand conversion with `@N@` for the operand position.
+    convert = sub.get("convert", "@extschema@.{BOUNDARY}(@N@)::@extschema@.tgeometry")
+    cv1 = convert.replace("{BOUNDARY}", boundary).replace("@N@", "$1")
+    cv2 = convert.replace("{BOUNDARY}", boundary).replace("@N@", "$2")
+    # The file doc block defaults to the behaviour's `<behaviour>.doc.tmpl` (the
+    # cell-index prose); a family with a different flavour (a temporal pose is not
+    # a cell index) overrides it per behaviour via `doc`.
+    doc = (sub.get("doc") or {}).get(behaviour)
+    if doc is None and "{DOC}" in tmpl:
+        doc = (TEMPLATES / f"{behaviour}.doc.tmpl").read_text().rstrip("\n")
+    # {DOC} is substituted first so the doc block's own {TEMP}/{BOUNDARY}
+    # placeholders are then resolved by the substitutions that follow.
+    body = (tmpl.replace("{DOC}", doc or "")
+                .replace("{TEMP}", sub["temp"])
                 .replace("{BASESYM}", basesym)
                 .replace("{BASE}", sub["base"])
                 .replace("{CBASE}", cbase)
                 .replace("{BRIEF}", sub["brief"])
+                .replace("{CV1}", cv1)
+                .replace("{CV2}", cv2)
                 .replace("{BOUNDARY}", boundary))
     return BANNER.format(tmpl=f"{behaviour}.sql.tmpl") + body
 
