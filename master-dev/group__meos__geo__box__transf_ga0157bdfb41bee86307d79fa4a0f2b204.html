@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="group__meos__box__transf.html">Transformation functions</a></li>  </ul>
+<li class="navelem"><a class="el" href="group__meos__geo__box__transf.html">Transformation functions</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,16 +79,14 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__box__transf_ga0157bdfb41bee86307d79fa4a0f2b204.html#ga0157bdfb41bee86307d79fa4a0f2b204">stbox_expand</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__box__transf_gaa5186d1ab8e2eea26ae034109437843a.html#gaa5186d1ab8e2eea26ae034109437843a">tbigintbox_expand</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__box__transf_ga9062e6c2e3c4af603d8d0dd37183258b.html#ga9062e6c2e3c4af603d8d0dd37183258b">tbigintbox_shift_scale</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__box__transf_gac67c6dbe7c17f4ed07ed41766474bb50.html#gac67c6dbe7c17f4ed07ed41766474bb50">tbox_expand_time</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__box__transf_gae50a245542d77d7fc4b6eb54ca18ff9e.html#gae50a245542d77d7fc4b6eb54ca18ff9e">tbox_round</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__box__transf_gacf1215430408934d3fe5d414387e773e.html#gacf1215430408934d3fe5d414387e773e">tbox_shift_scale_time</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__box__transf_gafcf74fecaed1f43c35328b7512517b35.html#gafcf74fecaed1f43c35328b7512517b35">tfloatbox_expand</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__box__transf_ga6d4308ea81bad8887a4fe758e6276489.html#ga6d4308ea81bad8887a4fe758e6276489">tfloatbox_shift_scale</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__box__transf_ga9b10b6c9f49167fbe7939e662c2d4358.html#ga9b10b6c9f49167fbe7939e662c2d4358">tintbox_expand</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__box__transf_ga88ba6397fcef318558ab56e9b769475b.html#ga88ba6397fcef318558ab56e9b769475b">tintbox_shift_scale</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__box__transf_ga0157bdfb41bee86307d79fa4a0f2b204.html#ga0157bdfb41bee86307d79fa4a0f2b204">stbox_expand</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__box__transf_gac4a11f12f67a4aa938c5d25e9c5f1b7d.html#gac4a11f12f67a4aa938c5d25e9c5f1b7d">stbox_expand_space</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__box__transf_ga50ea8a17f26e8750963bc7197d5f268d.html#ga50ea8a17f26e8750963bc7197d5f268d">stbox_expand_time</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__box__transf_ga4edcda24de6d44cc284ec86247cb3711.html#ga4edcda24de6d44cc284ec86247cb3711">stbox_get_space</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__box__transf_ga17de3eae721998dbe6077beaf4c168f2.html#ga17de3eae721998dbe6077beaf4c168f2">stbox_quad_split</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__box__transf_ga21310be2634cd16def155c6566f52fea.html#ga21310be2634cd16def155c6566f52fea">stbox_round</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__box__transf_ga7c6d7e0f33d3545476c01ab813ed0400.html#ga7c6d7e0f33d3545476c01ab813ed0400">stbox_shift_scale_time</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__box__transf_gac3d5ea16ee3630691ad30668a099ba41.html#gac3d5ea16ee3630691ad30668a099ba41">stboxarr_round</a></td></tr>
         </table>
       </div>
    </td>
@@ -122,7 +120,8 @@ $(function() {
 <p>Return the second spatiotemporal box expanded with the first one. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">box1,box2</td><td>Spatiotemporal boxes </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">box1</td><td>Spatiotemporal box </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">box2</td><td>Spatiotemporal box </td></tr>
   </table>
   </dd>
 </dl>
