@@ -88,6 +88,8 @@ jobs:
           python3 ../../tools/codegen/gen_smoketest/gen_smoketest.py tjsonb
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o tjsonb_smoketest tjsonb_smoketest.c -L/usr/local/lib -lmeos -lm
           ./tjsonb_smoketest
+          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o error_test error_test.c -L/usr/local/lib -lmeos
+          ./error_test
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o merge_test merge_test.c -L/usr/local/lib -lmeos
           ./merge_test
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o numeric_test numeric_test.c -L/usr/local/lib -lmeos
