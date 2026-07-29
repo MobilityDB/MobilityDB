@@ -520,4 +520,82 @@ raster_tile_value(const Raquet *rq, const Temporal *traj)
     rq->quadbin, (MeosPixType) rq->pixtype, rq->nodata, rq->has_nodata, traj);
 }
 
+/**
+ * @ingroup meos_raster
+ * @brief Return the values of an array of Raquet tiles sampled at the instants
+ * of a trajectory
+ * @details A trajectory that leaves a single tile is sampled from the whole set
+ * of tiles covering it, each tile contributing the instants that fall inside
+ * it. Tiles of one zoom level partition the plane, so they contribute disjoint
+ * instants. Tiles of different zoom levels overlap, and where two of them
+ * sample the same instant the value of the tile of higher zoom is kept, that
+ * being the one carrying the finer resolution.
+ * @param[in] rqarr Array of Raquet tiles
+ * @param[in] count Number of tiles in the array
+ * @param[in] traj Trajectory (temporal geometry point)
+ * @return A temporal float, or @p NULL when no instant of @p traj falls inside
+ * a tile or survives nodata filtering
+ * @csqlfn #Raster_tile_value_array()
+ */
+Temporal *
+raster_tile_value_array(const Raquet **rqarr, int count, const Temporal *traj)
+{
+  VALIDATE_NOT_NULL(rqarr, NULL); VALIDATE_NOT_NULL(traj, NULL);
+  if (! ensure_positive(count))
+    return NULL;
+
+  /* The instants of the trajectory are the slots the tiles compete for, since a
+   * sampled instant carries the timestamp of the instant it was sampled at */
+  int ninsts;
+  const TInstant **insts = temporal_insts_p(traj, &ninsts);
+  double *values = palloc(sizeof(double) * ninsts);
+  int *zooms = palloc(sizeof(int) * ninsts);
+  for (int i = 0; i < ninsts; i++)
+    zooms[i] = -1;                  /* no tile has covered this instant yet */
+
+  for (int i = 0; i < count; i++)
+  {
+    if (rqarr[i] == NULL)
+      continue;
+    Temporal *sampled = raster_tile_value(rqarr[i], traj);
+    if (sampled == NULL)
+      continue;
+    int zoom = (int) raster_quadbin_zoom(rqarr[i]->quadbin);
+    int nsampled;
+    const TInstant **sinsts = temporal_insts_p(sampled, &nsampled);
+    /* Both arrays are ordered by timestamp, so one walk places every sampled
+     * value in its slot */
+    int k = 0;
+    for (int j = 0; j < nsampled; j++)
+    {
+      while (k < ninsts && insts[k]->t < sinsts[j]->t)
+        k++;
+      if (k == ninsts)
+        break;
+      if (insts[k]->t == sinsts[j]->t && zoom > zooms[k])
+      {
+        zooms[k] = zoom;
+        values[k] = DatumGetFloat8(tinstant_value(sinsts[j]));
+      }
+    }
+    pfree(sinsts); pfree(sampled);
+  }
+
+  TInstant **result_insts = palloc(sizeof(TInstant *) * ninsts);
+  int nresult = 0;
+  for (int i = 0; i < ninsts; i++)
+    if (zooms[i] >= 0)
+      result_insts[nresult++] =
+        tinstant_make(Float8GetDatum(values[i]), T_TFLOAT, insts[i]->t);
+  pfree(insts); pfree(values); pfree(zooms);
+
+  if (nresult == 0)
+  {
+    pfree(result_insts);
+    return NULL;
+  }
+  return (Temporal *) tsequence_make_free(result_insts, nresult, true, true,
+    DISCRETE, NORMALIZE);
+}
+
 /*****************************************************************************/

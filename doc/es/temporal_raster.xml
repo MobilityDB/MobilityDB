@@ -178,6 +178,21 @@ JOIN elevation_tiles r
   ON r.quadbin = ANY(trajectory_quadbins(t.trip4326, 8));
 </programlisting>
 			</listitem>
+
+			<listitem xml:id="raster_tile_value_array">
+				<indexterm significance="normal"><primary><varname>raster_tile_value</varname></primary></indexterm>
+				<para>Muestrear un arreglo de teselas ráster <varname>raquet</varname> a lo largo de una trayectoria</para>
+				<para><varname>raster_tile_value(raquet[],tgeompoint) → tfloat</varname></para>
+				<para>Evalúa cada tesela de <varname>rast</varname> en cada instante de <varname>traj</varname> (SRID 4326) y devuelve los valores de píxel muestreados como un único <varname>tfloat</varname>. Una trayectoria que sale de una tesela queda cubierta por varias, y cada una aporta los instantes que caen dentro de ella. Las teselas de un mismo nivel de zoom particionan el plano, de modo que aportan instantes disjuntos. Las teselas de niveles de zoom distintos se solapan, y cuando dos de ellas muestrean el mismo instante se conserva el valor de la tesela de mayor zoom, que es la que tiene la resolución más fina. Devuelve <varname>NULL</varname> cuando ningún instante cae dentro de una tesela o sobrevive al filtrado de nodata.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- Muestrear una trayectoria en todas las teselas que cruza, en un solo valor
+SELECT t.tripid, raster_tile_value(array_agg(r.tile), t.trip4326)
+FROM trips t
+JOIN elevation_tiles r
+  ON r.quadbin = ANY(trajectory_quadbins(t.trip4326, 8))
+GROUP BY t.tripid, t.trip4326;
+</programlisting>
+			</listitem>
 		</itemizedlist>
 	</sect1>
 
@@ -369,11 +384,6 @@ sudo make install
 		<para>Las dos vías descritas en este capítulo sirven propósitos distintos y ambas se mantienen. La vía <varname>raquet</varname> es un tipo de valor MEOS autocontenido: transporta sus píxeles y su georreferenciación QUADBIN en un único valor y no necesita PostgreSQL para evaluarse, por lo que está disponible en todos los enlaces de lenguaje derivados de MEOS. La vía <varname>raster</varname> de PostGIS ofrece el procesamiento ráster mucho más rico de la extensión <varname>postgis_raster</varname> — álgebra de mapas, estadísticas, remuestreo, recorte, conversión a polígonos — únicamente dentro de PostgreSQL.</para>
 
 		<para>Ninguna vía reemplaza a la otra. El trabajo sobre la vía <varname>raquet</varname> amplía lo que una tesela nativa de la nube puede hacer a lo largo de una trayectoria; no pretende reimplementar el procesamiento ráster.</para>
-
-		<para>Extensiones previstas para la vía <varname>raquet</varname>:</para>
-		<itemizedlist>
-			<listitem><para><emphasis>Fusión agregada de teselas</emphasis> — una variante de retorno de conjunto que acepta el arreglo completo de teselas Raquet coincidentes y fusiona los conjuntos de instantes por tesela, eliminando instantes duplicados en los límites de tesela.</para></listitem>
-		</itemizedlist>
 
 		<para>Las extensiones siguientes requieren un modelo de datos ráster general, es decir, sistemas de referencia espacial arbitrarios, georreferenciación afín arbitraria y varias bandas por tesela. Un valor <varname>raquet</varname> es una tesela de una sola banda cuya extensión y rejilla de píxeles se derivan de su celda QUADBIN, por lo que quedan fuera de ese modelo y siguen disponibles a través de la vía <varname>raster</varname> de PostGIS:</para>
 		<itemizedlist>

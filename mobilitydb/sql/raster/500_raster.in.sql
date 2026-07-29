@@ -190,6 +190,21 @@ CREATE FUNCTION raster_tile_value(
   AS 'MODULE_PATHNAME', 'Raster_tile_value'
   LANGUAGE C STRICT;
 
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Sample an array of raquet raster tiles at the instants of a
+ * trajectory, keeping the value of the tile of highest zoom where tiles overlap
+ * @param[in] rast Array of raquet tiles
+ * @param[in] traj Trajectory
+ * @csqlfn #Raster_tile_value_array()
+ */
+CREATE FUNCTION raster_tile_value(
+    rast raquet[],
+    traj tgeompoint
+) RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Raster_tile_value_array'
+  LANGUAGE C STRICT;
+
 /******************************************************************************
  * trajectory_quadbins
  *****************************************************************************/

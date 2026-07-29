@@ -3710,6 +3710,10 @@
 				<listitem>
 					<para><link linkend="raster_tile_value"><varname>raster_tile_value</varname></link>: Sample a Raquet raster tile along a trajectory</para>
 				</listitem>
+
+				<listitem>
+					<para><link linkend="raster_tile_value_array"><varname>raster_tile_value</varname></link>: Sample an array of Raquet raster tiles along a trajectory, keeping the finer resolution where tiles overlap</para>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 

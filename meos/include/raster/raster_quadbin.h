@@ -52,4 +52,6 @@ extern bool raster_quadbin_from_bounds(double origin_x, double origin_y,
 extern void raster_quadbin_bounds(uint64 cell, double *xmin, double *ymin,
   double *xmax, double *ymax);
 
+extern uint32_t raster_quadbin_zoom(uint64 cell);
+
 #endif /* __RASTER_QUADBIN_H__ */
