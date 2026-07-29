@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: raster_tile_value</title>
+<title>MobilityDB: raster_tile_value_array</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -79,23 +79,29 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__raster_ga16634159f682ebe7cc3d8cbc819d6393.html#ga16634159f682ebe7cc3d8cbc819d6393">raster_tile_value</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__raster_ga6f94f504a50893a97ad3991ebdffbb67.html#ga6f94f504a50893a97ad3991ebdffbb67">raster_tile_value_array</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__raster_ga16634159f682ebe7cc3d8cbc819d6393.html#ga16634159f682ebe7cc3d8cbc819d6393">raster_tile_value</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__raster_ga6f94f504a50893a97ad3991ebdffbb67.html#ga6f94f504a50893a97ad3991ebdffbb67">raster_tile_value_array</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga16634159f682ebe7cc3d8cbc819d6393" name="ga16634159f682ebe7cc3d8cbc819d6393"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga16634159f682ebe7cc3d8cbc819d6393">&#9670;&#160;</a></span>raster_tile_value()</h2>
+<a id="ga6f94f504a50893a97ad3991ebdffbb67" name="ga6f94f504a50893a97ad3991ebdffbb67"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga6f94f504a50893a97ad3991ebdffbb67">&#9670;&#160;</a></span>raster_tile_value_array()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structTemporal.html">Temporal</a> * raster_tile_value </td>
+          <td class="memname"><a class="el" href="structTemporal.html">Temporal</a> * raster_tile_value_array </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structRaquet.html">Raquet</a> *&#160;</td>
-          <td class="paramname"><em>rq</em>, </td>
+          <td class="paramtype">const <a class="el" href="structRaquet.html">Raquet</a> **&#160;</td>
+          <td class="paramname"><em>rqarr</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>count</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -111,14 +117,16 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the values of a <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> tile sampled at the instants of a trajectory. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p>Return the values of an array of <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> tiles sampled at the instants of a trajectory. </p>
+<p >A trajectory that leaves a single tile is sampled from the whole set of tiles covering it, each tile contributing the instants that fall inside it. Tiles of one zoom level partition the plane, so they contribute disjoint instants. Tiles of different zoom levels overlap, and where two of them sample the same instant the value of the tile of higher zoom is kept, that being the one carrying the finer resolution. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">rq</td><td><a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> tile </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">traj</td><td>Trajectory (temporal geometry point) @csqlfn <a class="el" href="group__mobilitydb__raster_gaf0323c7209a520ec3dae3743a04ac175.html#gaf0323c7209a520ec3dae3743a04ac175" title="Sample a Raquet tile along a tgeompoint trajectory.">Raster_tile_value()</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">rqarr</td><td>Array of <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> tiles </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">count</td><td>Number of tiles in the array </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">traj</td><td>Trajectory (temporal geometry point) </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section return"><dt>Returns</dt><dd>A temporal float, or <code>NULL</code> when no instant of <code>traj</code> falls inside a tile or survives nodata filtering @csqlfn <a class="el" href="group__mobilitydb__raster_gafdccba2c5f8936bff8d92514d77c2524.html#gafdccba2c5f8936bff8d92514d77c2524" title="Sample an array of Raquet tiles along a tgeompoint trajectory.">Raster_tile_value_array()</a> </dd></dl>
 
 </div>
 </div>
