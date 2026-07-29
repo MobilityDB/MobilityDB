@@ -77,6 +77,81 @@ SELECT eContains(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 ERROR:  The geometry cannot have Z dimension
 SELECT eContains(geometry 'Point(1 1)', tgeompoint 'Point(1 1 1)@2000-01-01');
 ERROR:  The tgeompoint cannot have Z dimension
+SELECT eCovers(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+ ecovers 
+---------
+ t
+(1 row)
+
+SELECT eCovers(geometry 'Point(1 1)', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+ ecovers 
+---------
+ t
+(1 row)
+
+SELECT eCovers(geometry 'Point(1 1)', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+ ecovers 
+---------
+ t
+(1 row)
+
+SELECT eCovers(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+ ecovers 
+---------
+ t
+(1 row)
+
+SELECT eCovers(geometry 'Linestring(1 1,3 3)', tgeompoint '[Point(4 2)@2000-01-01, Point(2 4)@2000-01-02]');
+ ecovers 
+---------
+ t
+(1 row)
+
+SELECT eCovers(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))', tgeompoint '[Point(1 4)@2000-01-01, Point(4 1)@2000-01-02]');
+ ecovers 
+---------
+ t
+(1 row)
+
+SELECT eCovers(geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))', tgeompoint '[Point(-5 0)@2000-01-01, Point(5 0)@2000-01-02]');
+ ecovers 
+---------
+ t
+(1 row)
+
+SELECT eIntersects(geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))', tgeompoint '[Point(-5 0)@2000-01-01, Point(5 0)@2000-01-02]');
+ eintersects 
+-------------
+ t
+(1 row)
+
+SELECT eCovers(geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))', tgeompoint 'Interp=Step;[Point(-5 0)@2000-01-01, Point(5 0)@2000-01-02]');
+ ecovers 
+---------
+ f
+(1 row)
+
+SELECT aCovers(geometry 'Polygon((-5 -5,-5 5,5 5,5 3,-3 3,-3 -3,5 -3,5 -5,-5 -5))', tgeompoint '[Point(4 4)@2000-01-01, Point(4 -4)@2000-01-02]');
+ acovers 
+---------
+ f
+(1 row)
+
+SELECT aCovers(geometry 'Polygon((-9 -9,-9 9,9 9,9 -9,-9 -9))', tgeompoint '[Point(-5 0)@2000-01-01, Point(5 0)@2000-01-02]');
+ acovers 
+---------
+ t
+(1 row)
+
+SELECT eCovers(geometry 'Point empty', tgeompoint 'Point(1 1)@2000-01-01');
+ ecovers 
+---------
+ 
+(1 row)
+
+/* Errors */
+SELECT eCovers(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+ERROR:  Operation on mixed SRID
 SELECT eDisjoint(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
  edisjoint 
 -----------

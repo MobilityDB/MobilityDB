@@ -52,6 +52,38 @@ SELECT eContains(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 SELECT eContains(geometry 'Point(1 1)', tgeompoint 'Point(1 1 1)@2000-01-01');
 
 -------------------------------------------------------------------------------
+-- eCovers, aCovers
+-------------------------------------------------------------------------------
+
+SELECT eCovers(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+SELECT eCovers(geometry 'Point(1 1)', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+SELECT eCovers(geometry 'Point(1 1)', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+SELECT eCovers(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+
+SELECT eCovers(geometry 'Linestring(1 1,3 3)', tgeompoint '[Point(4 2)@2000-01-01, Point(2 4)@2000-01-02]');
+SELECT eCovers(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))', tgeompoint '[Point(1 4)@2000-01-01, Point(4 1)@2000-01-02]');
+
+-- The point crosses the polygon between two instants and neither of them is
+-- inside it, so the relationship holds over the segment although it holds at
+-- no instant. It agrees with the ever intersects, a geometry covering a point
+-- exactly when it intersects it
+SELECT eCovers(geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))', tgeompoint '[Point(-5 0)@2000-01-01, Point(5 0)@2000-01-02]');
+SELECT eIntersects(geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))', tgeompoint '[Point(-5 0)@2000-01-01, Point(5 0)@2000-01-02]');
+-- The same crossing under step interpolation, where the point holds the value
+-- of the first instant over the segment and so never enters the polygon
+SELECT eCovers(geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))', tgeompoint 'Interp=Step;[Point(-5 0)@2000-01-01, Point(5 0)@2000-01-02]');
+
+-- The always semantics over a geometry that is not convex: both instants are
+-- covered and the segment between them leaves through the mouth
+SELECT aCovers(geometry 'Polygon((-5 -5,-5 5,5 5,5 3,-3 3,-3 -3,5 -3,5 -5,-5 -5))', tgeompoint '[Point(4 4)@2000-01-01, Point(4 -4)@2000-01-02]');
+SELECT aCovers(geometry 'Polygon((-9 -9,-9 9,9 9,9 -9,-9 -9))', tgeompoint '[Point(-5 0)@2000-01-01, Point(5 0)@2000-01-02]');
+
+SELECT eCovers(geometry 'Point empty', tgeompoint 'Point(1 1)@2000-01-01');
+
+/* Errors */
+SELECT eCovers(geometry 'SRID=5676;Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
+
+-------------------------------------------------------------------------------
 -- eDisjoint
 -------------------------------------------------------------------------------
 
