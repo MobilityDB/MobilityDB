@@ -54,6 +54,9 @@
 #if RGEO
   #include "rgeo/trgeo.h"
 #endif
+#if RASTER
+  #include <meos_raster.h>
+#endif
 
 /*****************************************************************************/
 
@@ -96,6 +99,9 @@ extern ArrayType *cbufferarr_to_array(const Cbuffer **cbarr, int count);
 #if POSE || RGEO
 extern Pose **posearr_extract(ArrayType *array, int *count);
 extern ArrayType *posearr_to_array(const Pose **posearr, int count);
+#endif
+#if RASTER
+extern Raquet **raquetarr_extract(ArrayType *array, int *count);
 #endif
 extern Span *spanarr_extract(ArrayType *array, int *count);
 extern STBox *stboxarr_extract(ArrayType *array, int *count);

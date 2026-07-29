@@ -179,6 +179,21 @@ raster_quadbin_bounds(uint64 cell, double *xmin, double *ymin, double *xmax,
 }
 
 /**
+ * @brief Return the zoom level of the tile identified by a QUADBIN cell
+ * @param[in] cell QUADBIN cell
+ * @details A higher zoom covers less ground with the same pixel grid, so of two
+ * tiles covering a point the one with the higher zoom carries the finer
+ * resolution
+ */
+uint32_t
+raster_quadbin_zoom(uint64 cell)
+{
+  uint32_t tx, ty, tz;
+  qb_to_xyz(cell, &tx, &ty, &tz);
+  return tz;
+}
+
+/**
  * @brief Derive the QUADBIN cell of a Web-Mercator raster tile from its
  * EPSG:3857 georeferencing.
  * @details A Raquet tile is a single QUADBIN cell of the Web-Mercator tile 

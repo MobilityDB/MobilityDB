@@ -233,6 +233,51 @@ FROM t;
  t
 (1 row)
 
+WITH t AS (
+  SELECT tgeompointFromText('SRID=4326;{Point(-45.0 75.0)@2024-01-01 00:00:00+00, Point(45.0 75.0)@2024-01-02 00:00:00+00, Point(135.0 75.0)@2024-01-03 00:00:00+00}') AS traj,
+    raquet('\x01020304'::bytea, 2, 2, 5192650370358181888::bigint, 'UINT8') AS west,
+    raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'UINT8') AS east
+)
+SELECT raster_tile_value(west, traj)::text AS west_alone,
+       raster_tile_value(east, traj)::text AS east_alone,
+       raster_tile_value(ARRAY[west, east], traj)::text AS merged
+FROM t;
+         west_alone         |                      east_alone                      |                                     merged                                     
+----------------------------+------------------------------------------------------+--------------------------------------------------------------------------------
+ {2@2024-01-01 00:00:00+00} | {1@2024-01-02 00:00:00+00, 2@2024-01-03 00:00:00+00} | {2@2024-01-01 00:00:00+00, 1@2024-01-02 00:00:00+00, 2@2024-01-03 00:00:00+00}
+(1 row)
+
+WITH t AS (
+  SELECT tgeompointFromText('SRID=4326;{Point(-45.0 75.0)@2024-01-01 00:00:00+00, Point(45.0 75.0)@2024-01-02 00:00:00+00, Point(135.0 75.0)@2024-01-03 00:00:00+00}') AS traj,
+    raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'UINT8') AS east,
+    raquet('\x01020304'::bytea, 2, 2, 5198279869892395008::bigint, 'UINT8') AS fine
+)
+SELECT raster_tile_value(fine, traj)::text AS fine_alone,
+       raster_tile_value(ARRAY[east, fine], traj)::text AS east_then_fine,
+       raster_tile_value(ARRAY[fine, east], traj)::text AS fine_then_east
+FROM t;
+         fine_alone         |                    east_then_fine                    |                    fine_then_east                    
+----------------------------+------------------------------------------------------+------------------------------------------------------
+ {4@2024-01-02 00:00:00+00} | {4@2024-01-02 00:00:00+00, 2@2024-01-03 00:00:00+00} | {4@2024-01-02 00:00:00+00, 2@2024-01-03 00:00:00+00}
+(1 row)
+
+WITH t AS (
+  SELECT tgeompointFromText('SRID=4326;{Point(45.0 75.0)@2024-01-02 00:00:00+00}') AS traj,
+    raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'UINT8') AS east,
+    raquet('\x01020304'::bytea, 2, 2, 5192650370358181888::bigint, 'UINT8') AS west
+)
+SELECT raster_tile_value(ARRAY[east], traj)::text = raster_tile_value(east, traj)::text
+         AS singleton_equals_scalar,
+       raster_tile_value(ARRAY[west], traj) IS NULL AS uncovered_is_null
+FROM t;
+ singleton_equals_scalar | uncovered_is_null 
+-------------------------+-------------------
+ t                       | t
+(1 row)
+
+SELECT raster_tile_value(ARRAY[]::raquet[],
+  tgeompoint 'SRID=4326;{Point(45.0 75.0)@2024-01-02 00:00:00+00}');
+ERROR:  The input array cannot be empty
 SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'UINT8')::text::raquet::text
      = raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'UINT8')::text
        AS hexwkb_roundtrip_ok;

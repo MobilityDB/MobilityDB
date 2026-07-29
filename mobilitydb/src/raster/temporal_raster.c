@@ -75,6 +75,7 @@ extern text *cstring_to_text(const char *s);
 #include "raster/raster_quadbin.h"
 /* MobilityDB */
 #include "pg_temporal/temporal.h"
+#include "pg_temporal/type_util.h" /* raquetarr_extract */
 #include "pg_raster/temporal_raster.h"
 
 /*****************************************************************************
@@ -440,6 +441,33 @@ Raster_tile_value(PG_FUNCTION_ARGS)
   Temporal *traj = PG_GETARG_TEMPORAL_P(1);
   Temporal *result = raster_tile_value(rq, traj);
   PG_FREE_IF_COPY(rq, 0);
+  PG_FREE_IF_COPY(traj, 1);
+  if (result == NULL)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Raster_tile_value_array(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_tile_value_array);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Sample an array of Raquet tiles along a tgeompoint trajectory
+ * @param[in] rqarr Array of Raquet tiles
+ * @param[in] traj  Trajectory (tgeompoint)
+ * @sqlfn raster_tile_value()
+ */
+Datum
+Raster_tile_value_array(PG_FUNCTION_ARGS)
+{
+  ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
+  ensure_not_empty_array(array);
+  Temporal *traj = PG_GETARG_TEMPORAL_P(1);
+  int count;
+  Raquet **rqarr = raquetarr_extract(array, &count);
+  Temporal *result = raster_tile_value_array((const Raquet **) rqarr, count,
+    traj);
+  pfree(rqarr);
+  PG_FREE_IF_COPY(array, 0);
   PG_FREE_IF_COPY(traj, 1);
   if (result == NULL)
     PG_RETURN_NULL();

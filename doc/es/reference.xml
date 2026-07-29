@@ -3732,6 +3732,10 @@
 				<listitem>
 					<para><link linkend="raster_tile_value"><varname>raster_tile_value</varname></link>: Muestrear una tesela ráster raquet a lo largo de una trayectoria</para>
 				</listitem>
+
+				<listitem>
+					<para><link linkend="raster_tile_value_array"><varname>raster_tile_value</varname></link>: Muestrear un arreglo de teselas ráster raquet a lo largo de una trayectoria, conservando la resolución más fina donde se solapan</para>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 

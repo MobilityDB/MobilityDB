@@ -273,6 +273,58 @@ SELECT raster_tile_value(
        AS typed_equals_untyped
 FROM t;
 
+-- raster_tile_value(raquet[], tgeompoint) samples a trajectory from every tile
+-- covering it. The three tiles below carry the same 2x2 pixel array; what
+-- distinguishes them is the ground they cover:
+--   west  = zoom 1 tile (0,0), lon [-180, 0)
+--   east  = zoom 1 tile (1,0), lon [0, 180)
+--   fine  = zoom 2 tile (2,0), lon [0, 90), lat (66.51, 85.05]
+-- The trajectory visits Point(-45 75) in west only, Point(45 75) in east and
+-- in fine, which overlap there, and Point(135 75) in east only.
+
+-- Two tiles of the same zoom partition the plane, so a trajectory crossing
+-- from one into the other is sampled from both, with no instant contributed
+-- twice. The merged result therefore covers every instant that either tile
+-- covers alone.
+WITH t AS (
+  SELECT tgeompointFromText('SRID=4326;{Point(-45.0 75.0)@2024-01-01 00:00:00+00, Point(45.0 75.0)@2024-01-02 00:00:00+00, Point(135.0 75.0)@2024-01-03 00:00:00+00}') AS traj,
+    raquet('\x01020304'::bytea, 2, 2, 5192650370358181888::bigint, 'UINT8') AS west,
+    raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'UINT8') AS east
+)
+SELECT raster_tile_value(west, traj)::text AS west_alone,
+       raster_tile_value(east, traj)::text AS east_alone,
+       raster_tile_value(ARRAY[west, east], traj)::text AS merged
+FROM t;
+
+-- Tiles of different zoom levels overlap. Where both sample the same instant
+-- the value of the tile of higher zoom is kept, that being the one carrying
+-- the finer resolution, and the outcome does not depend on the array order.
+WITH t AS (
+  SELECT tgeompointFromText('SRID=4326;{Point(-45.0 75.0)@2024-01-01 00:00:00+00, Point(45.0 75.0)@2024-01-02 00:00:00+00, Point(135.0 75.0)@2024-01-03 00:00:00+00}') AS traj,
+    raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'UINT8') AS east,
+    raquet('\x01020304'::bytea, 2, 2, 5198279869892395008::bigint, 'UINT8') AS fine
+)
+SELECT raster_tile_value(fine, traj)::text AS fine_alone,
+       raster_tile_value(ARRAY[east, fine], traj)::text AS east_then_fine,
+       raster_tile_value(ARRAY[fine, east], traj)::text AS fine_then_east
+FROM t;
+
+-- A one-element array agrees with the scalar form, and an array of tiles that
+-- the trajectory never enters returns NULL.
+WITH t AS (
+  SELECT tgeompointFromText('SRID=4326;{Point(45.0 75.0)@2024-01-02 00:00:00+00}') AS traj,
+    raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'UINT8') AS east,
+    raquet('\x01020304'::bytea, 2, 2, 5192650370358181888::bigint, 'UINT8') AS west
+)
+SELECT raster_tile_value(ARRAY[east], traj)::text = raster_tile_value(east, traj)::text
+         AS singleton_equals_scalar,
+       raster_tile_value(ARRAY[west], traj) IS NULL AS uncovered_is_null
+FROM t;
+
+-- An empty array is rejected.
+SELECT raster_tile_value(ARRAY[]::raquet[],
+  tgeompoint 'SRID=4326;{Point(45.0 75.0)@2024-01-02 00:00:00+00}');
+
 -- The HexWKB text representation round-trips through the raquet type's input
 -- and output functions (raquet::text uses raquet_out, text::raquet uses
 -- raquet_in).

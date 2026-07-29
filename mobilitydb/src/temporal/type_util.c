@@ -59,6 +59,9 @@
 #if RGEO
   #include "rgeo/trgeo.h"
 #endif
+#if RASTER
+  #include "raster/raquet.h"
+#endif
 /* MobilityDB */
 #include "pg_temporal/meos_catalog.h"
 #include "pg_temporal/doublen.h"
@@ -255,6 +258,20 @@ rgeomarr_extract(ArrayType *array, int *count)
   return result;
 }
 #endif /* RGEO */
+
+#if RASTER
+/**
+ * @brief Extract a C array from a PostgreSQL array containing Raquet tiles
+ */
+Raquet **
+raquetarr_extract(ArrayType *array, int *count)
+{
+  Raquet **result;
+  deconstruct_array(array, array->elemtype, -1, false, 'd', (Datum **) &result,
+    NULL, count);
+  return result;
+}
+#endif /* RASTER */
 
 /**
  * @brief Extract a C array from a PostgreSQL array containing spans

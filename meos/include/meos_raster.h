@@ -116,6 +116,8 @@ extern Temporal *raster_tile_value_quadbin(const uint8_t *pixels,
   double nodata, bool has_nodata, const Temporal *traj);
 
 extern Temporal *raster_tile_value(const Raquet *rq, const Temporal *traj);
+extern Temporal *raster_tile_value_array(const Raquet **rqarr, int count,
+  const Temporal *traj);
 
 extern uint64 *trajectory_quadbins(const Temporal *traj, uint32_t zoom,
   int *count);
