@@ -1,0 +1,10 @@
+/* raster_config.h.  Generated from raster_config.h.in by CMake.  */
+
+/* librtcore.h includes postgis_config.h ahead of this header, and that header
+ * carries the two settings the raster core reads, POSTGIS_GDAL_VERSION and
+ * POSTGIS_RASTER_WARN_ON_TRUNCATION.  This header therefore defines nothing;
+ * it exists because librtcore.h includes it.
+ *
+ * ENABLE_DEVELOPMENT, the third setting of the upstream autoconf header, is
+ * read nowhere in the raster core.
+ */
