@@ -2891,14 +2891,19 @@ eafunc_tstepseq_tstepseq(const TSequence *seq1, const TSequence *seq2,
     }
     else if (cmp < 0)
     {
+      /* Hold seq2 at inst1->t on its current step segment, known from the
+       * merge position [j-1, j], avoiding a per-instant binary search */
       i++;
-      inst2 = tcontseq_at_timestamptz(seq2, inst1->t);
+      const TInstant *b1 = TSEQUENCE_INST_N(seq2, j - 1);
+      inst2 = tsegment_at_timestamptz(b1, inst2, STEP, inst1->t);
       tofree[nfree++] = inst2;
     }
     else
     {
+      /* Hold seq1 at inst2->t on its current step segment [i-1, i] */
       j++;
-      inst1 = tcontseq_at_timestamptz(seq1, inst2->t);
+      const TInstant *a1 = TSEQUENCE_INST_N(seq1, i - 1);
+      inst1 = tsegment_at_timestamptz(a1, inst1, STEP, inst2->t);
       tofree[nfree++] = inst1;
     }
     /* Compute the function on the synchronized instants */
