@@ -621,3 +621,26 @@ SELECT pg_typeof(tgeompoint(tpose '[Pose(Point(1 1),0.1)@2000-01-01]'));
 SELECT pg_typeof(tgeogpoint(tpose '[GeodPose(Point(1 1),0.1)@2000-01-01]'));
 
 -------------------------------------------------------------------------------/
+
+-------------------------------------------------------------------------------
+-- MF-JSON output of the temporal poses built from real AIS data, that is, the
+-- recorded vessel positions with the course computed from them. The AIS table
+-- keeps the full precision of the source data, which is what exposes the
+-- output corruption reported at
+-- https://github.com/MobilityDB/MobilityDB/issues/850
+-- Every query below reports the rows whose output is not valid JSON, and must
+-- thus report zero
+-------------------------------------------------------------------------------
+
+WITH ais(mmsi, temp) AS (
+  SELECT mmsi, tposeSeq(array_agg(tpose(pose(geom, heading), t) ORDER BY t))
+  FROM tbl_ais_instant GROUP BY mmsi )
+SELECT count(*) FROM ais WHERE asMFJSON(temp)::jsonb IS NULL;
+
+WITH ais(mmsi, temp) AS (
+  SELECT mmsi, tposeSeq(array_agg(tpose(pose(geom, heading), t) ORDER BY t))
+  FROM tbl_ais_instant GROUP BY mmsi )
+SELECT count(*) FROM ais, generate_series(0, 15) AS d
+  WHERE asMFJSON(temp, 1, 0, d)::jsonb IS NULL;
+
+-------------------------------------------------------------------------------

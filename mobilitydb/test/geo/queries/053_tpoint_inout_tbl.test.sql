@@ -71,3 +71,40 @@ SELECT DISTINCT tgeompointFromHexEWKB(asHexEWKB(temp)) = temp FROM tbl_tgeompoin
 SELECT DISTINCT tgeogpointFromHexEWKB(asHexEWKB(temp)) = temp FROM tbl_tgeogpoint;
 
 -------------------------------------------------------------------------------
+-- MF-JSON output of the temporal point values coming from real AIS data
+-- The AIS tables keep the full precision of the recorded positions, which is
+-- what exposes the output corruption reported at
+-- https://github.com/MobilityDB/MobilityDB/issues/850
+-- Every query below reports the rows whose output is not valid JSON or does
+-- not read back with the same shape, and must thus report zero
+-------------------------------------------------------------------------------
+
+SELECT count(*) FROM tbl_ais_tgeompoint WHERE asMFJSON(temp)::jsonb IS NULL;
+SELECT count(*) FROM tbl_ais_tgeompoint
+  WHERE asMFJSON(temp::tgeogpoint)::jsonb IS NULL;
+SELECT count(*) FROM tbl_ais_tgeompoint, generate_series(0, 15) AS d
+  WHERE asMFJSON(temp, 1, 0, d)::jsonb IS NULL;
+
+-- Temporal types derived from the AIS trajectories
+
+SELECT count(*) FROM tbl_ais_tgeompoint
+  WHERE asMFJSON(getX(temp))::jsonb IS NULL;
+SELECT count(*) FROM tbl_ais_tgeompoint WHERE asMFJSON(tIntersects(temp,
+  geometry 'SRID=4326;Polygon((9 56,12 56,12 58,9 58,9 56))'))::jsonb IS NULL;
+
+-- Temporal types built from the AIS instants
+
+WITH ais(mmsi, speed, course, moving, name) AS (
+  SELECT mmsi, tfloatSeq(array_agg(tfloat(sog, t) ORDER BY t)),
+    tintSeq(array_agg(tint(round(degrees(heading))::int, t) ORDER BY t)),
+    tboolSeq(array_agg(tbool(sog > 0, t) ORDER BY t)),
+    ttextSeq(array_agg(ttext(mmsi::text, t) ORDER BY t))
+  FROM tbl_ais_instant GROUP BY mmsi )
+SELECT count(*) FROM ais WHERE asMFJSON(speed)::jsonb IS NULL OR
+  asMFJSON(course)::jsonb IS NULL OR asMFJSON(moving)::jsonb IS NULL OR
+  asMFJSON(name)::jsonb IS NULL;
+
+SELECT count(*) FROM tbl_ais_tgeompoint
+  WHERE tgeompointFromMFJSON(asMFJSON(temp)) IS NULL;
+
+-------------------------------------------------------------------------------

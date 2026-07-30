@@ -208,3 +208,39 @@ SELECT DISTINCT tgeographyFromHexEWKB(asHexEWKB(temp)) = temp FROM tbl_tgeograph
  t
 (1 row)
 
+SELECT count(*) FROM tbl_ais_tgeometry WHERE asMFJSON(temp)::jsonb IS NULL;
+ count 
+-------
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_ais_tgeometry
+  WHERE asMFJSON(temp::tgeography)::jsonb IS NULL;
+ count 
+-------
+     0
+(1 row)
+
+WITH ais(mmsi, temp) AS (
+  SELECT mmsi, tgeometrySeq(array_agg(tgeometry(geom, t) ORDER BY t))
+  FROM tbl_ais_instant GROUP BY mmsi )
+SELECT count(*) FROM ais WHERE asMFJSON(temp)::jsonb IS NULL;
+ count 
+-------
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_ais_tgeometry, generate_series(0, 15) AS d
+  WHERE asMFJSON(temp, 1, 0, d)::jsonb IS NULL;
+ count 
+-------
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_ais_tgeometry
+  WHERE tgeometryFromMFJSON(asMFJSON(temp)) IS NULL;
+ count 
+-------
+     0
+(1 row)
+

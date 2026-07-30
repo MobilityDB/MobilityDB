@@ -71,3 +71,26 @@ SELECT DISTINCT tgeometryFromHexEWKB(asHexEWKB(temp)) = temp FROM tbl_tgeometry;
 SELECT DISTINCT tgeographyFromHexEWKB(asHexEWKB(temp)) = temp FROM tbl_tgeography;
 
 -------------------------------------------------------------------------------
+-- MF-JSON output of the temporal geometry values coming from real AIS data
+-- The AIS footprints are the vessel outlines computed from the recorded
+-- positions, and keep the full precision of the computed coordinates, which is
+-- what exposes the output corruption reported at
+-- https://github.com/MobilityDB/MobilityDB/issues/850
+-- Every query below reports the rows whose output is not valid JSON or does
+-- not read back with the same shape, and must thus report zero
+-------------------------------------------------------------------------------
+
+SELECT count(*) FROM tbl_ais_tgeometry WHERE asMFJSON(temp)::jsonb IS NULL;
+SELECT count(*) FROM tbl_ais_tgeometry
+  WHERE asMFJSON(temp::tgeography)::jsonb IS NULL;
+WITH ais(mmsi, temp) AS (
+  SELECT mmsi, tgeometrySeq(array_agg(tgeometry(geom, t) ORDER BY t))
+  FROM tbl_ais_instant GROUP BY mmsi )
+SELECT count(*) FROM ais WHERE asMFJSON(temp)::jsonb IS NULL;
+SELECT count(*) FROM tbl_ais_tgeometry, generate_series(0, 15) AS d
+  WHERE asMFJSON(temp, 1, 0, d)::jsonb IS NULL;
+
+SELECT count(*) FROM tbl_ais_tgeometry
+  WHERE tgeometryFromMFJSON(asMFJSON(temp)) IS NULL;
+
+-------------------------------------------------------------------------------

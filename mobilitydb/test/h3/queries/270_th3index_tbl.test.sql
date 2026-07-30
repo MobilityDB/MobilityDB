@@ -48,3 +48,18 @@ SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE t1.temp = t2.temp;
 SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index t2 WHERE t1.temp <> t2.temp;
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- MF-JSON output of the temporal H3 cells built from real AIS data, that is,
+-- the cells covering the recorded vessel positions
+-- Every query below reports the rows whose output is not valid JSON, and must
+-- thus report zero
+-------------------------------------------------------------------------------
+
+WITH ais(mmsi, temp) AS (
+  SELECT mmsi,
+    th3indexSeq(array_agg(th3index(geoToH3Cell(geom, 10), t) ORDER BY t))
+  FROM tbl_ais_instant GROUP BY mmsi )
+SELECT count(*) FROM ais WHERE asMFJSON(temp)::jsonb IS NULL;
+
+-------------------------------------------------------------------------------

@@ -13,9 +13,21 @@ add_test(
     -P ${CMAKE_BINARY_DIR}/mobilitydb/test/scripts/test.cmake
   )
 
+add_test(
+  NAME load_ais_tables
+  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+  COMMAND ${CMAKE_COMMAND} -D TEST_OPER=run_passfail
+    -D TEST_NAME=load_ais_tables -D TEST_FILE=${CMAKE_CURRENT_SOURCE_DIR}/data/load_ais.sql.xz
+    -P ${CMAKE_BINARY_DIR}/mobilitydb/test/scripts/test.cmake
+  )
+
 set_tests_properties(load_geo_tables PROPERTIES
   DEPENDS test_setup
   FIXTURES_SETUP DBGEO
+  FIXTURES_REQUIRED "DB")
+set_tests_properties(load_ais_tables PROPERTIES
+  DEPENDS test_setup
+  FIXTURES_SETUP DBAIS
   FIXTURES_REQUIRED "DB")
 set_tests_properties(load_point_tables PROPERTIES
   DEPENDS test_setup
@@ -57,7 +69,7 @@ foreach(file ${testfiles})
         -P ${CMAKE_BINARY_DIR}/mobilitydb/test/scripts/test.cmake
       )
     set_tests_properties(${TESTNAME} PROPERTIES
-      FIXTURES_REQUIRED "DB;DBGEO;DBPOINT"
+      FIXTURES_REQUIRED "DB;DBGEO;DBPOINT;DBAIS"
       RESOURCE_LOCK DBLOCK)
   endif()
 endforeach()

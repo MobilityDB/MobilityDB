@@ -6,9 +6,21 @@ add_test(
     -P ${CMAKE_BINARY_DIR}/mobilitydb/test/scripts/test.cmake
 )
 
+add_test(
+  NAME load_ais_rgeo_tables
+  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+  COMMAND ${CMAKE_COMMAND} -D TEST_OPER=run_passfail
+    -D TEST_NAME=load_ais_rgeo_tables -D TEST_FILE=${CMAKE_CURRENT_SOURCE_DIR}/data/load_ais.sql.xz
+    -P ${CMAKE_BINARY_DIR}/mobilitydb/test/scripts/test.cmake
+)
+
 set_tests_properties(load_rgeo_tables PROPERTIES
   DEPENDS test_setup
   FIXTURES_SETUP DBRGEO
+  FIXTURES_REQUIRED "DB;DBGEO;DBPOINT")
+set_tests_properties(load_ais_rgeo_tables PROPERTIES
+  DEPENDS test_setup
+  FIXTURES_SETUP DBAISRGEO
   FIXTURES_REQUIRED "DB;DBGEO;DBPOINT")
 
 file(GLOB testfiles "queries/*.sql")
@@ -49,7 +61,7 @@ foreach(file ${testfiles})
         -P ${CMAKE_BINARY_DIR}/mobilitydb/test/scripts/test.cmake
       )
     set_tests_properties(${TESTNAME} PROPERTIES
-      FIXTURES_REQUIRED "DB;DBGEO;DBPOINT;DBRGEO"
+      FIXTURES_REQUIRED "DB;DBGEO;DBPOINT;DBRGEO;DBAISRGEO"
       RESOURCE_LOCK DBLOCK)
   endif()
 endforeach()

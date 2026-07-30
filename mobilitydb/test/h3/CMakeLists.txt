@@ -37,7 +37,7 @@ foreach(file ${testfiles})
     # use literal values and only need the base extension (DB).
     if(${TESTNAME} MATCHES "_tbl$")
       set_tests_properties(${TESTNAME} PROPERTIES
-        FIXTURES_REQUIRED "DB;DBGEO;DBPOINT;DBH3"
+        FIXTURES_REQUIRED "DB;DBGEO;DBPOINT;DBAIS;DBH3"
         RESOURCE_LOCK DBLOCK)
     else()
       set_tests_properties(${TESTNAME} PROPERTIES

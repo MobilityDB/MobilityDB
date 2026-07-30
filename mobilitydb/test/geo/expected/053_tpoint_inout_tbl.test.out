@@ -208,3 +208,58 @@ SELECT DISTINCT tgeogpointFromHexEWKB(asHexEWKB(temp)) = temp FROM tbl_tgeogpoin
  t
 (1 row)
 
+SELECT count(*) FROM tbl_ais_tgeompoint WHERE asMFJSON(temp)::jsonb IS NULL;
+ count 
+-------
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_ais_tgeompoint
+  WHERE asMFJSON(temp::tgeogpoint)::jsonb IS NULL;
+ count 
+-------
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_ais_tgeompoint, generate_series(0, 15) AS d
+  WHERE asMFJSON(temp, 1, 0, d)::jsonb IS NULL;
+ count 
+-------
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_ais_tgeompoint
+  WHERE asMFJSON(getX(temp))::jsonb IS NULL;
+ count 
+-------
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_ais_tgeompoint WHERE asMFJSON(tIntersects(temp,
+  geometry 'SRID=4326;Polygon((9 56,12 56,12 58,9 58,9 56))'))::jsonb IS NULL;
+ count 
+-------
+     0
+(1 row)
+
+WITH ais(mmsi, speed, course, moving, name) AS (
+  SELECT mmsi, tfloatSeq(array_agg(tfloat(sog, t) ORDER BY t)),
+    tintSeq(array_agg(tint(round(degrees(heading))::int, t) ORDER BY t)),
+    tboolSeq(array_agg(tbool(sog > 0, t) ORDER BY t)),
+    ttextSeq(array_agg(ttext(mmsi::text, t) ORDER BY t))
+  FROM tbl_ais_instant GROUP BY mmsi )
+SELECT count(*) FROM ais WHERE asMFJSON(speed)::jsonb IS NULL OR
+  asMFJSON(course)::jsonb IS NULL OR asMFJSON(moving)::jsonb IS NULL OR
+  asMFJSON(name)::jsonb IS NULL;
+ count 
+-------
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_ais_tgeompoint
+  WHERE tgeompointFromMFJSON(asMFJSON(temp)) IS NULL;
+ count 
+-------
+     0
+(1 row)
+
