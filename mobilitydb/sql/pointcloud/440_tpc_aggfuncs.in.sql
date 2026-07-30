@@ -187,7 +187,27 @@ CREATE AGGREGATE merge(tpcpoint) (
   PARALLEL = safe
 );
 
+CREATE AGGREGATE mergeAgg(tpcpoint) (
+  SFUNC = temporal_merge_transfn,
+  STYPE = internal,
+  COMBINEFUNC = temporal_merge_combinefn,
+  FINALFUNC = tpcpoint_tagg_finalfn,
+  SERIALFUNC = taggstate_serialize,
+  DESERIALFUNC = taggstate_deserialize,
+  PARALLEL = safe
+);
+
 CREATE AGGREGATE merge(tpcpatch) (
+  SFUNC = temporal_merge_transfn,
+  STYPE = internal,
+  COMBINEFUNC = temporal_merge_combinefn,
+  FINALFUNC = tpcpatch_tagg_finalfn,
+  SERIALFUNC = taggstate_serialize,
+  DESERIALFUNC = taggstate_deserialize,
+  PARALLEL = safe
+);
+
+CREATE AGGREGATE mergeAgg(tpcpatch) (
   SFUNC = temporal_merge_transfn,
   STYPE = internal,
   COMBINEFUNC = temporal_merge_combinefn,
@@ -225,7 +245,21 @@ CREATE AGGREGATE appendInstant(tpcpoint) (
   PARALLEL = safe
 );
 
+CREATE AGGREGATE appendInstantAgg(tpcpoint) (
+  SFUNC = temporal_app_tinst_transfn,
+  STYPE = tpcpoint,
+  FINALFUNC = temporal_append_finalfn,
+  PARALLEL = safe
+);
+
 CREATE AGGREGATE appendInstant(tpcpoint, text, interval) (
+  SFUNC = temporal_app_tinst_transfn,
+  STYPE = tpcpoint,
+  FINALFUNC = temporal_append_finalfn,
+  PARALLEL = safe
+);
+
+CREATE AGGREGATE appendInstantAgg(tpcpoint, text, interval) (
   SFUNC = temporal_app_tinst_transfn,
   STYPE = tpcpoint,
   FINALFUNC = temporal_append_finalfn,
@@ -245,6 +279,13 @@ CREATE FUNCTION temporal_append_finalfn(tpcpatch)
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE appendInstant(tpcpatch) (
+  SFUNC = temporal_app_tinst_transfn,
+  STYPE = tpcpatch,
+  FINALFUNC = temporal_append_finalfn,
+  PARALLEL = safe
+);
+
+CREATE AGGREGATE appendInstantAgg(tpcpatch) (
   SFUNC = temporal_app_tinst_transfn,
   STYPE = tpcpatch,
   FINALFUNC = temporal_append_finalfn,
@@ -272,7 +313,21 @@ CREATE AGGREGATE appendSequence(tpcpoint) (
   PARALLEL = safe
 );
 
+CREATE AGGREGATE appendSequenceAgg(tpcpoint) (
+  SFUNC = temporal_app_tseq_transfn,
+  STYPE = tpcpoint,
+  FINALFUNC = temporal_append_finalfn,
+  PARALLEL = safe
+);
+
 CREATE AGGREGATE appendSequence(tpcpatch) (
+  SFUNC = temporal_app_tseq_transfn,
+  STYPE = tpcpatch,
+  FINALFUNC = temporal_append_finalfn,
+  PARALLEL = safe
+);
+
+CREATE AGGREGATE appendSequenceAgg(tpcpatch) (
   SFUNC = temporal_app_tseq_transfn,
   STYPE = tpcpatch,
   FINALFUNC = temporal_append_finalfn,

@@ -1041,6 +1041,7 @@ CREATE INDEX ON my_table USING spgist(my_tpcpoint_column tpcpoint_kdtree_ops);
 				<indexterm significance="normal"><primary><varname>merge</varname></primary></indexterm>
 				<para>Combina múltiples valores temporales en uno solo con todos los instantes de entrada fusionados en orden temporal. Todas las entradas deben compartir el mismo pcid y subtipo.</para>
 				<para><varname>merge(tpcpoint) → tpcpoint</varname>, <varname>merge(tpcpatch) → tpcpatch</varname></para>
+				<para><varname>mergeAgg(tpcpoint) → tpcpoint</varname>, <varname>mergeAgg(tpcpatch) → tpcpatch</varname></para>
 			</listitem>
 
 			<listitem xml:id="tpcpoint_append">
@@ -1048,7 +1049,9 @@ CREATE INDEX ON my_table USING spgist(my_tpcpoint_column tpcpoint_kdtree_ops);
 				<indexterm significance="normal"><primary><varname>appendSequence</varname></primary></indexterm>
 				<para>Agregados de construcción en flujo: <varname>appendInstant</varname> ensambla instantes en una secuencia; <varname>appendSequence</varname> ensambla secuencias en un conjunto de secuencias. Útil para cargadores de trayectorias que consumen filas en orden temporal.</para>
 				<para><varname>appendInstant(tpcpoint[,interp,maxt]) → tpcpoint</varname>, <varname>appendInstant(tpcpatch) → tpcpatch</varname></para>
+				<para><varname>appendInstantAgg(tpcpoint[,interp,maxt]) → tpcpoint</varname>, <varname>appendInstantAgg(tpcpatch) → tpcpatch</varname></para>
 				<para><varname>appendSequence(tpcpoint) → tpcpoint</varname>, <varname>appendSequence(tpcpatch) → tpcpatch</varname></para>
+				<para><varname>appendSequenceAgg(tpcpoint) → tpcpoint</varname>, <varname>appendSequenceAgg(tpcpatch) → tpcpatch</varname></para>
 			</listitem>
 		</itemizedlist>
 	</sect1>
