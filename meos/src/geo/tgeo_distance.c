@@ -1770,36 +1770,40 @@ tdistance_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 }
 
 /*****************************************************************************
- * Time-synchronous nearest-approach running minimum (temporal point)
+ * Time-synchronous nearest-approach running minimum
  *
- * For two linear temporal points, the minimum of the temporal distance
+ * For two linear temporal values whose per-segment distance has analytic
+ * turning points, the minimum of the temporal distance
  * `min_t distance(temp1(t), temp2(t))` and the timestamp achieving it are
- * obtained by a single synchronization pass, WITHOUT materializing
- * `tdistance_tgeo_tgeo(temp1, temp2)` and reducing it.  The minimum of the
- * temporal distance is the minimum over each synchronized segment of its
- * endpoint values and its analytic turning point(s), i.e. exactly the
- * candidate set that `tdistance` emits as instants.  The pass mirrors the
- * synchronization + turning-point logic of `tfunc_tcontseq_tcontseq_single`
- * (lifting.c) and the sequence-set walk of `tfunc_tsequenceset_tsequenceset`,
- * reducing to the minimum instead of building a sequence.  Used by the
- * nad/nai/shortestline `tgeo_tgeo` functions for the temporal point case;
- * other temporal geos keep the `tdistance` path.  Equivalent to
- * `temporal_min_value(tdistance_tgeo_tgeo(...))`.
+ * obtained by a single synchronization pass, WITHOUT materializing the
+ * temporal distance and reducing it.  The minimum of the temporal distance is
+ * the minimum over each synchronized segment of its endpoint values and its
+ * turning point(s), i.e. exactly the candidate set that `tdistance` emits as
+ * instants.  The pass mirrors the synchronization + turning-point logic of
+ * `tfunc_tcontseq_tcontseq_single` (lifting.c) and the sequence-set walk of
+ * `tfunc_tsequenceset_tsequenceset`, reducing to the minimum instead of
+ * building a sequence.  The caller supplies the base distance function and the
+ * per-segment turning-point function, so the pass is shared by the temporal
+ * point and circular buffer families; the radius enters through the
+ * turning-point function and is zero for points.  Equivalent to
+ * `temporal_min_value(tdistance(...))`.
  *****************************************************************************/
 
 /**
  * @brief Return the minimum time-synchronous distance over the overlapping
  * period of two linear temporal point sequences, updating the running minimum
- * @param[in] seq1,seq2 Temporal point sequences with linear interpolation
+ * @param[in] seq1,seq2 Temporal sequences with linear interpolation
  * @param[in] inter Overlapping period of the two sequences
- * @param[in] func Base point distance function
+ * @param[in] func Base value distance function
+ * @param[in] turnpt Per-segment distance turning-point function
  * @param[in] curmin Current minimum distance, or infinity at the beginning
  * @param[in,out] tmin Timestamp achieving the running minimum
- * @pre Both sequences are linear temporal points; @p inter is their overlap
+ * @pre Both sequences are linear and of equal type; @p inter is their overlap
  */
 static double
-nad_tpointseq_tpointseq_sync(const TSequence *seq1, const TSequence *seq2,
-  const Span *inter, datum_func2 func, double curmin, TimestampTz *tmin)
+nad_tcontseq_tcontseq_sync(const TSequence *seq1, const TSequence *seq2,
+  const Span *inter, datum_func2 func, tpfunc_temp turnpt, double curmin,
+  TimestampTz *tmin)
 {
   MeosType temptype = seq1->temptype;
   TInstant *inst1 = (TInstant *) TSEQUENCE_INST_N(seq1, 0);
@@ -1852,7 +1856,7 @@ nad_tpointseq_tpointseq_sync(const TSequence *seq1, const TSequence *seq2,
       Datum start2 = tinstant_value_p(prev2);
       Datum end2 = tinstant_value_p(inst2);
       TimestampTz tpt1, tpt2;
-      int found = tpointsegm_distance_turnpt(start1, end1, start2, end2,
+      int found = turnpt(start1, end1, start2, end2,
         (Datum) 0, prev1->t, inst1->t, &tpt1, &tpt2);
       if (found)
       {
@@ -1894,28 +1898,29 @@ nad_tpointseq_tpointseq_sync(const TSequence *seq1, const TSequence *seq2,
 
 /**
  * @brief Return the minimum time-synchronous distance between two linear
- * temporal points and the timestamp achieving it
- * @param[in] temp1,temp2 Temporal points with linear interpolation and equal
+ * temporal values and the timestamp achieving it
+ * @param[in] temp1,temp2 Temporal values with linear interpolation and equal
  * subtype (both #TSEQUENCE or both #TSEQUENCESET)
+ * @param[in] func Base value distance function
+ * @param[in] turnpt Per-segment distance turning-point function
  * @param[out] tmin Timestamp achieving the minimum (set only when the result
  * is not infinity)
  * @return The minimum distance, or infinity if the time frames do not
  * intersect
- * @pre The temporal points are validated, linear, and of the same subtype
+ * @pre The temporal values are validated, linear, and of the same subtype
  */
-static double
-nad_tpoint_tpoint_sync(const Temporal *temp1, const Temporal *temp2,
-  TimestampTz *tmin)
+double
+nad_tcont_tcont_sync(const Temporal *temp1, const Temporal *temp2,
+  datum_func2 func, tpfunc_temp turnpt, TimestampTz *tmin)
 {
-  datum_func2 func = geo_distance_fn(temp1->flags);
   if (temp1->subtype == TSEQUENCE)
   {
     Span inter;
     if (! inter_span_span(&((TSequence *) temp1)->period,
         &((TSequence *) temp2)->period, &inter))
       return DBL_MAX;
-    return nad_tpointseq_tpointseq_sync((TSequence *) temp1,
-      (TSequence *) temp2, &inter, func, DBL_MAX, tmin);
+    return nad_tcontseq_tcontseq_sync((TSequence *) temp1,
+      (TSequence *) temp2, &inter, func, turnpt, DBL_MAX, tmin);
   }
   /* Both TSEQUENCESET: walk the overlapping component sequences */
   const TSequenceSet *ss1 = (const TSequenceSet *) temp1;
@@ -1928,8 +1933,8 @@ nad_tpoint_tpoint_sync(const Temporal *temp1, const Temporal *temp2,
     const TSequence *seq2 = TSEQUENCESET_SEQ_N(ss2, j);
     Span inter;
     if (inter_span_span(&seq1->period, &seq2->period, &inter))
-      result = nad_tpointseq_tpointseq_sync(seq1, seq2, &inter, func, result,
-        tmin);
+      result = nad_tcontseq_tcontseq_sync(seq1, seq2, &inter, func, turnpt,
+        result, tmin);
     int cmp = timestamptz_cmp_internal(
       DatumGetTimestampTz(seq1->period.upper),
       DatumGetTimestampTz(seq2->period.upper));
@@ -1947,16 +1952,17 @@ nad_tpoint_tpoint_sync(const Temporal *temp1, const Temporal *temp2,
 
 /**
  * @brief Return true if the time-synchronous nearest-approach running-minimum
- * fast path applies to two temporal geos
- * @details Applies to linear temporal points of equal, non-instant subtype;
- * everything else (temporal geometries, step interpolation, instants, mixed
- * subtypes) keeps the #tdistance_tgeo_tgeo path
+ * fast path applies to two temporal values
+ * @details Applies to linear temporal values of equal type and equal,
+ * non-instant subtype; step interpolation, instants, mixed subtypes and mixed
+ * types keep the #tdistance path. The caller additionally restricts the fast
+ * path to the families whose per-segment distance has analytic turning points
  */
-static bool
-nad_tpoint_tpoint_sync_applies(const Temporal *temp1, const Temporal *temp2)
+bool
+nad_tcont_tcont_sync_applies(const Temporal *temp1, const Temporal *temp2)
 {
-  return 
-    tpoint_type(temp1->temptype) && temp1->temptype == temp2->temptype &&
+  return
+    temp1->temptype == temp2->temptype &&
     temp1->subtype != TINSTANT && temp1->subtype == temp2->subtype &&
     MEOS_FLAGS_LINEAR_INTERP(temp1->flags) &&
     MEOS_FLAGS_LINEAR_INTERP(temp2->flags);
@@ -2527,10 +2533,12 @@ nai_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 
   /* Fast path: linear temporal points via the time-synchronous running
    * minimum, avoiding the temporal distance materialization */
-  if (nad_tpoint_tpoint_sync_applies(temp1, temp2))
+  if (tpoint_type(temp1->temptype) &&
+      nad_tcont_tcont_sync_applies(temp1, temp2))
   {
     TimestampTz t;
-    if (nad_tpoint_tpoint_sync(temp1, temp2, &t) != DBL_MAX)
+    if (nad_tcont_tcont_sync(temp1, temp2, geo_distance_fn(temp1->flags),
+      &tpointsegm_distance_turnpt, &t) != DBL_MAX)
     {
       /* The closest point may be at an exclusive bound => 3rd arg = false */
       Datum value;
@@ -2720,10 +2728,12 @@ nad_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
    * minimum, avoiding the temporal distance materialization. A finite
    * result is exact; the infinity sentinel (empty or degenerate overlap)
    * defers to the temporal distance path */
-  if (nad_tpoint_tpoint_sync_applies(temp1, temp2))
+  if (tpoint_type(temp1->temptype) &&
+      nad_tcont_tcont_sync_applies(temp1, temp2))
   {
     TimestampTz t;
-    double d = nad_tpoint_tpoint_sync(temp1, temp2, &t);
+    double d = nad_tcont_tcont_sync(temp1, temp2,
+      geo_distance_fn(temp1->flags), &tpointsegm_distance_turnpt, &t);
     if (d != DBL_MAX)
       return d;
   }
@@ -2842,8 +2852,10 @@ shortestline_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
    * defers to the temporal distance path */
   TimestampTz tmin;
   bool fast = false;
-  if (nad_tpoint_tpoint_sync_applies(temp1, temp2))
-    fast = nad_tpoint_tpoint_sync(temp1, temp2, &tmin) != DBL_MAX;
+  if (tpoint_type(temp1->temptype) &&
+      nad_tcont_tcont_sync_applies(temp1, temp2))
+    fast = nad_tcont_tcont_sync(temp1, temp2, geo_distance_fn(temp1->flags),
+      &tpointsegm_distance_turnpt, &tmin) != DBL_MAX;
 
   Temporal *dist = NULL;
   if (! fast)

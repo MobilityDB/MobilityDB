@@ -58,6 +58,12 @@ extern int tgeogpointsegm_distance_turnpt(Datum start1, Datum end1,
 extern double tinstant_distance(const TInstant *inst1, const TInstant *inst2,
   datum_func2 func);
 
+extern bool nad_tcont_tcont_sync_applies(const Temporal *temp1,
+  const Temporal *temp2);
+extern double nad_tcont_tcont_sync(const Temporal *temp1,
+  const Temporal *temp2, datum_func2 func, tpfunc_temp turnpt,
+  TimestampTz *tmin);
+
 /*****************************************************************************/
 
 /* Analytic distance engine shared with the temporal circular
