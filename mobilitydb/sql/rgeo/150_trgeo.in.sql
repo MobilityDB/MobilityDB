@@ -55,7 +55,7 @@ CREATE FUNCTION trgeometry_send(trgeometry)
   AS 'MODULE_PATHNAME', 'Trgeometry_send'
   LANGUAGE C IMMUTABLE STRICT;
 
-CREATE FUNCTION trgeo_typmod_in(cstring[])
+CREATE FUNCTION trgeometry_typmod_in(cstring[])
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Trgeometry_typmod_in'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -66,7 +66,7 @@ CREATE TYPE trgeometry (
   output = trgeometry_out,
   send = trgeometry_send,
   receive = trgeometry_recv,
-  typmod_in = trgeo_typmod_in,
+  typmod_in = trgeometry_typmod_in,
   typmod_out = tspatial_typmod_out,
   storage = extended,
   alignment = double,
