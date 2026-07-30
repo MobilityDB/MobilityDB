@@ -1789,10 +1789,7 @@ cbuffer_from_wkb_state(meos_wkb_parse_state *s, bool component)
   double x = double_from_wkb_state(s);
   double y = double_from_wkb_state(s);
   double radius = double_from_wkb_state(s);
-  GSERIALIZED *gs = geopoint_make(x, y, 0.0, false, false, srid);
-  Cbuffer *result = cbuffer_make(gs, radius);
-  pfree(gs);
-  return result;
+  return cbuffer_make_coords(srid, x, y, radius);
 }
 #endif /* CBUFFER */
 

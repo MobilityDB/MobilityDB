@@ -171,10 +171,10 @@ tcbuffersegm_dwithin_turnpt(Datum start1, Datum end1, Datum start2, Datum end2,
   double d = DatumGetFloat8(dist);
 
   /* Extract the points */
-  const POINT2D *spt1 = GSERIALIZED_POINT2D_P(cbuffer_point_p(sv1));
-  const POINT2D *ept1 = GSERIALIZED_POINT2D_P(cbuffer_point_p(ev1));
-  const POINT2D *spt2 = GSERIALIZED_POINT2D_P(cbuffer_point_p(sv2));
-  const POINT2D *ept2 = GSERIALIZED_POINT2D_P(cbuffer_point_p(ev2));
+  const POINT2D *spt1 = cbuffer_point2d_p(sv1);
+  const POINT2D *ept1 = cbuffer_point2d_p(ev1);
+  const POINT2D *spt2 = cbuffer_point2d_p(sv2);
+  const POINT2D *ept2 = cbuffer_point2d_p(ev2);
 
   double duration = (double)(upper - lower);
 
@@ -299,10 +299,10 @@ tcbuffersegm_tdwithin_turnpt(Datum start1, Datum end1, Datum start2,
   Cbuffer *sv2 = DatumGetCbufferP(start2);
   Cbuffer *ev2 = DatumGetCbufferP(end2);
   double d = DatumGetFloat8(dist);
-  const POINT2D *spt1 = GSERIALIZED_POINT2D_P(cbuffer_point_p(sv1));
-  const POINT2D *ept1 = GSERIALIZED_POINT2D_P(cbuffer_point_p(ev1));
-  const POINT2D *spt2 = GSERIALIZED_POINT2D_P(cbuffer_point_p(sv2));
-  const POINT2D *ept2 = GSERIALIZED_POINT2D_P(cbuffer_point_p(ev2));
+  const POINT2D *spt1 = cbuffer_point2d_p(sv1);
+  const POINT2D *ept1 = cbuffer_point2d_p(ev1);
+  const POINT2D *spt2 = cbuffer_point2d_p(sv2);
+  const POINT2D *ept2 = cbuffer_point2d_p(ev2);
   double duration = (double) (upper - lower);
   if (duration <= FP_TOLERANCE)
   {
@@ -740,9 +740,11 @@ TInstant *
 tcbufferinst_tgeompointinst(const TInstant *inst)
 {
   assert(inst); assert(inst->temptype == T_TCBUFFER);
-  const GSERIALIZED *point = cbuffer_point_p(
-    DatumGetCbufferP(tinstant_value_p(inst)));
-  return tinstant_make(PointerGetDatum(point), T_TGEOMPOINT, inst->t);
+  GSERIALIZED *point = cbuffer_point(DatumGetCbufferP(tinstant_value_p(inst)));
+  TInstant *result = tinstant_make(PointerGetDatum(point), T_TGEOMPOINT,
+    inst->t);
+  pfree(point);
+  return result;
 }
 
 /**
@@ -1043,9 +1045,16 @@ static Set *
 tcbufferinst_members(const TInstant *inst, bool point)
 {
   Cbuffer *cb = DatumGetCbufferP(tinstant_value_p(inst));
-  Datum value = point ?
-    PointerGetDatum(&cb->point) : Float8GetDatum(cb->radius);
-  return set_make_exp(&value, 1, 1, point ? T_GEOMETRY : T_TFLOAT, ORDER_NO);
+  if (point)
+  {
+    GSERIALIZED *gs = cbuffer_point(cb);
+    Datum value = PointerGetDatum(gs);
+    Set *result = set_make_exp(&value, 1, 1, T_GEOMETRY, ORDER_NO);
+    pfree(gs);
+    return result;
+  }
+  Datum value = Float8GetDatum(cb->radius);
+  return set_make_exp(&value, 1, 1, T_FLOAT8, ORDER_NO);
 }
 
 /**
@@ -1060,18 +1069,19 @@ tcbufferseq_members(const TSequence *seq, bool point)
     const Cbuffer *cb = DatumGetCbufferP(
       tinstant_value_p(TSEQUENCE_INST_N(seq, i)));
     values[i] = point ?
-      PointerGetDatum(&cb->point) : Float8GetDatum(cb->radius);
+      PointerGetDatum(cbuffer_point(cb)) : Float8GetDatum(cb->radius);
   }
   MeosType basetype = point ? T_GEOMETRY : T_FLOAT8;
   datumarr_sort(values, seq->count, basetype);
   int count = datumarr_remove_duplicates(values, seq->count, basetype);
+  Set *result = set_make_exp(values, count, count, basetype, ORDER_NO);
   if (point)
   {
-    /* Free the duplicate values that have been found */
-    for (int i = count; i < seq->count; i++)
+    for (int i = 0; i < seq->count; i++)
       pfree(DatumGetPointer(values[i]));
   }
-  return set_make_free(values, count, basetype, ORDER_NO);
+  pfree(values);
+  return result;
 }
 
 /**
@@ -1080,24 +1090,30 @@ tcbufferseq_members(const TSequence *seq, bool point)
 static Set *
 tcbufferseqset_members(const TSequenceSet *ss, bool point)
 {
-  Datum *values = palloc(sizeof(Datum) * ss->count);
+  Datum *values = palloc(sizeof(Datum) * ss->totalcount);
+  int nvalues = 0;
   for (int i = 0; i < ss->count; i++)
   {
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     for (int j = 0; j < seq->count; j++)
     {
-      Cbuffer *cb = DatumGetCbufferP(tinstant_value_p(TSEQUENCE_INST_N(seq, j)));
-      values[i] = point ?
-        PointerGetDatum(&cb->point) : Float8GetDatum(cb->radius);
+      const Cbuffer *cb = DatumGetCbufferP(
+        tinstant_value_p(TSEQUENCE_INST_N(seq, j)));
+      values[nvalues++] = point ?
+        PointerGetDatum(cbuffer_point(cb)) : Float8GetDatum(cb->radius);
     }
   }
-  MeosType basetype = point ? T_GEOMETRY : T_TFLOAT;
-  datumarr_sort(values, ss->count, basetype);
-  int count = datumarr_remove_duplicates(values, ss->count, basetype);
-  /* Free the duplicate values that have been found */
-  for (int i = count; i < ss->count; i++)
-    pfree(DatumGetPointer(values[i]));
-  return set_make_free(values, count, basetype, ORDER_NO);
+  MeosType basetype = point ? T_GEOMETRY : T_FLOAT8;
+  datumarr_sort(values, ss->totalcount, basetype);
+  int count = datumarr_remove_duplicates(values, ss->totalcount, basetype);
+  Set *result = set_make_exp(values, count, count, basetype, ORDER_NO);
+  if (point)
+  {
+    for (int i = 0; i < ss->totalcount; i++)
+      pfree(DatumGetPointer(values[i]));
+  }
+  pfree(values);
+  return result;
 }
 
 /**
@@ -1182,7 +1198,9 @@ tcbufferinst_expand(const TInstant *inst, double dist)
 {
   assert(inst); assert(inst->temptype == T_TCBUFFER);
   const Cbuffer *cb = DatumGetCbufferP(tinstant_value_p(inst));
-  Cbuffer *result = cbuffer_make(cbuffer_point_p(cb), cbuffer_radius(cb) + dist);
+  const POINT2D *p = cbuffer_point2d_p(cb);
+  Cbuffer *result = cbuffer_make_coords(cbuffer_srid(cb), p->x, p->y,
+    cbuffer_radius(cb) + dist);
   return tinstant_make_free(PointerGetDatum(result), T_TCBUFFER, inst->t);
 }
 

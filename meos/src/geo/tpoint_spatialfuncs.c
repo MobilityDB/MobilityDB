@@ -3319,22 +3319,22 @@ static GEOSGeometry *
 multipoint_make(const TSequence *seq, int start, int end)
 {
   GEOSContextHandle_t ctx = geos_get_context();
-  GSERIALIZED *gs = NULL; /* make compiler quiet */
   GEOSGeometry **geoms = palloc(sizeof(GEOSGeometry *) * (end - start + 1));
   for (int i = 0; i < end - start + 1; ++i)
   {
+    const POINT2D *pt = NULL; /* make compiler quiet */
     if (tpoint_type(seq->temptype))
-      gs = DatumGetGserializedP(
-        tinstant_value_p(TSEQUENCE_INST_N(seq, start + i)));
+      pt = GSERIALIZED_POINT2D_P(DatumGetGserializedP(
+        tinstant_value_p(TSEQUENCE_INST_N(seq, start + i))));
 #if CBUFFER
     else if (seq->temptype == T_TCBUFFER)
-      gs = (GSERIALIZED *) cbuffer_point_p(DatumGetCbufferP(
+      pt = cbuffer_point2d_p(DatumGetCbufferP(
         tinstant_value_p(TSEQUENCE_INST_N(seq, start + i))));
 #endif
 #if NPOINT
     else if (seq->temptype == T_TNPOINT)
-      gs = npoint_to_geompoint(DatumGetNpointP(
-        tinstant_value_p(TSEQUENCE_INST_N(seq, start + i))));
+      pt = GSERIALIZED_POINT2D_P(npoint_to_geompoint(DatumGetNpointP(
+        tinstant_value_p(TSEQUENCE_INST_N(seq, start + i)))));
 #endif
     else
     {
@@ -3342,7 +3342,6 @@ multipoint_make(const TSequence *seq, int start, int end)
         "Sequence must have a spatial point base type");
       return NULL;
     }
-    const POINT2D *pt = GSERIALIZED_POINT2D_P(gs);
     geoms[i] = GEOSGeom_createPointFromXY_r(ctx, pt->x, pt->y);
   }
   GEOSGeometry *result = GEOSGeom_createCollection_r(ctx, GEOS_MULTIPOINT, geoms, end - start + 1);
@@ -3358,17 +3357,20 @@ static GEOSGeometry *
 multipoint_add_inst_free(GEOSGeometry *geom, const TInstant *inst)
 {
   GEOSContextHandle_t ctx = geos_get_context();
-  GSERIALIZED *gs = NULL; /* make compiler quiet */
+  GSERIALIZED *gs = NULL; /* only set (and freed) for the npoint case */
+  const POINT2D *pt = NULL; /* make compiler quiet */
   if (tpoint_type(inst->temptype))
-    gs = DatumGetGserializedP(tinstant_value_p(inst));
+    pt = GSERIALIZED_POINT2D_P(DatumGetGserializedP(tinstant_value_p(inst)));
 #if CBUFFER
   else if (inst->temptype == T_TCBUFFER)
-    gs = (GSERIALIZED *) cbuffer_point_p(DatumGetCbufferP(
-      tinstant_value_p(inst)));
+    pt = cbuffer_point2d_p(DatumGetCbufferP(tinstant_value_p(inst)));
 #endif
 #if NPOINT
   else if (inst->temptype == T_TNPOINT)
+  {
     gs = npoint_to_geompoint(DatumGetNpointP(tinstant_value_p(inst)));
+    pt = GSERIALIZED_POINT2D_P(gs);
+  }
 #endif
   else
   {
@@ -3376,11 +3378,10 @@ multipoint_add_inst_free(GEOSGeometry *geom, const TInstant *inst)
       "Instant must have a spatial point base type");
     return NULL;
   }
-  const POINT2D *pt = GSERIALIZED_POINT2D_P(gs);
   GEOSGeometry *geom1 = GEOSGeom_createPointFromXY_r(ctx, pt->x, pt->y);
   GEOSGeometry *result = GEOSUnion_r(ctx, geom, geom1);
   GEOSGeom_destroy_r(ctx, geom1); GEOSGeom_destroy_r(ctx, geom);
-  if (inst->temptype == T_TNPOINT)
+  if (gs != NULL)
     pfree(gs);
   return result;
 }

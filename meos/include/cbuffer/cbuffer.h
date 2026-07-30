@@ -36,6 +36,8 @@
 
 /* PostgreSQL */
 #include <postgres.h>
+/* PostGIS */
+#include <liblwgeom.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_cbuffer.h>
@@ -49,11 +51,10 @@
 struct Cbuffer
 {
   int32 vl_len_;        /**< Varlena header (do not touch directly!) */
-  double radius;        /**< radius */
-  Datum point;          /**< First 8 bytes of the point which is passed by 
-                             reference. The extra bytes needed are added upon 
-                             creation. */
-  /* variable-length data follows */
+  int32 srid;           /**< Spatial reference identifier */
+  double radius;        /**< Radius */
+  double x;             /**< X coordinate of the centre point */
+  double y;             /**< Y coordinate of the centre point */
 };
 
 /*****************************************************************************
@@ -92,7 +93,9 @@ extern char *cbuffer_wkt_out(Datum value, int maxdd, bool extended);
 
 /* Accessor functions */
 
-extern const GSERIALIZED *cbuffer_point_p(const Cbuffer *cb);
+extern const POINT2D *cbuffer_point2d_p(const Cbuffer *cb);
+extern Cbuffer *cbuffer_make_coords(int32_t srid, double x, double y,
+  double radius);
 
 extern Datum datum_cbuffer_round(Datum buffer, Datum size);
 

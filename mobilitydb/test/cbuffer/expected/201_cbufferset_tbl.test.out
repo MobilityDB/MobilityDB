@@ -48,7 +48,7 @@ SELECT MIN(radius(startValue(round(s, 3)))) FROM tbl_cbufferset;
 SELECT MAX(memSize(s)) FROM tbl_cbufferset;
  max 
 -----
- 664
+ 504
 (1 row)
 
 SELECT MIN(numValues(s)) FROM tbl_cbufferset;
@@ -142,13 +142,13 @@ SELECT COUNT(*) FROM tbl_cbufferset t1, tbl_cbufferset t2 WHERE t1.s >= t2.s;
 SELECT MAX(set_hash(s)) FROM tbl_cbufferset;
     max     
 ------------
- 2108338657
+ 2092598553
 (1 row)
 
 SELECT MAX(set_hash_extended(s, 1)) FROM tbl_cbufferset;
          max         
 ---------------------
- 8841573282622179135
+ 8663420753996198537
 (1 row)
 
 SELECT numValues(setUnion(cb)) FROM tbl_cbuffer;

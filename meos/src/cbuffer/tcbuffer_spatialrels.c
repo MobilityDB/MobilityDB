@@ -182,7 +182,7 @@ tcbufferinst_xybox(const TInstant *inst, double *xmin, double *ymin,
   double *xmax, double *ymax)
 {
   const Cbuffer *cb = DatumGetCbufferP(tinstant_value_p(inst));
-  const POINT2D *p = GSERIALIZED_POINT2D_P(cbuffer_point_p(cb));
+  const POINT2D *p = cbuffer_point2d_p(cb);
   double r = cb->radius;
   *xmin = p->x - r; *xmax = p->x + r;
   *ymin = p->y - r; *ymax = p->y + r;
