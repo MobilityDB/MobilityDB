@@ -56,7 +56,7 @@ CREATE FUNCTION tpcpatch_in(cstring, oid, integer)
   RETURNS tpcpatch
   AS 'MODULE_PATHNAME', 'Temporal_in'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tpcpatch_out(tpcpatch)
+CREATE FUNCTION temporal_out(tpcpatch)
   RETURNS cstring
   AS 'MODULE_PATHNAME', 'Temporal_out'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -64,7 +64,7 @@ CREATE FUNCTION tpcpatch_recv(internal, oid, integer)
   RETURNS tpcpatch
   AS 'MODULE_PATHNAME', 'Temporal_recv'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tpcpatch_send(tpcpatch)
+CREATE FUNCTION temporal_send(tpcpatch)
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Temporal_send'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -72,9 +72,9 @@ CREATE FUNCTION tpcpatch_send(tpcpatch)
 CREATE TYPE tpcpatch (
   internallength = variable,
   input = tpcpatch_in,
-  output = tpcpatch_out,
+  output = temporal_out,
+  send = temporal_send,
   receive = tpcpatch_recv,
-  send = tpcpatch_send,
   typmod_in = tpc_typmod_in,
   typmod_out = tpc_typmod_out,
   storage = extended,

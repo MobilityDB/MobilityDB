@@ -42,7 +42,7 @@ CREATE FUNCTION tpose_in(cstring, oid, integer)
   RETURNS tpose
   AS 'MODULE_PATHNAME', 'Tpose_in'
   LANGUAGE C IMMUTABLE STRICT;
-CREATE FUNCTION tpose_out(tpose)
+CREATE FUNCTION temporal_out(tpose)
   RETURNS cstring
   AS 'MODULE_PATHNAME', 'Temporal_out'
   LANGUAGE C IMMUTABLE STRICT;
@@ -50,7 +50,7 @@ CREATE FUNCTION tpose_recv(internal, oid, integer)
   RETURNS tpose
   AS 'MODULE_PATHNAME', 'Temporal_recv'
   LANGUAGE C IMMUTABLE STRICT;
-CREATE FUNCTION tpose_send(tpose)
+CREATE FUNCTION temporal_send(tpose)
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Temporal_send'
   LANGUAGE C IMMUTABLE STRICT;
@@ -63,9 +63,9 @@ CREATE FUNCTION tpose_typmod_in(cstring[])
 CREATE TYPE tpose (
   internallength = variable,
   input = tpose_in,
-  output = tpose_out,
+  output = temporal_out,
+  send = temporal_send,
   receive = tpose_recv,
-  send = tpose_send,
   typmod_in = tpose_typmod_in,
   typmod_out = tspatial_typmod_out,
   storage = extended,

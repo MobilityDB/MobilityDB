@@ -57,7 +57,7 @@ CREATE FUNCTION tpcpoint_in(cstring, oid, integer)
   RETURNS tpcpoint
   AS 'MODULE_PATHNAME', 'Temporal_in'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tpcpoint_out(tpcpoint)
+CREATE FUNCTION temporal_out(tpcpoint)
   RETURNS cstring
   AS 'MODULE_PATHNAME', 'Temporal_out'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -65,7 +65,7 @@ CREATE FUNCTION tpcpoint_recv(internal, oid, integer)
   RETURNS tpcpoint
   AS 'MODULE_PATHNAME', 'Temporal_recv'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tpcpoint_send(tpcpoint)
+CREATE FUNCTION temporal_send(tpcpoint)
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Temporal_send'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -82,9 +82,9 @@ CREATE FUNCTION tpc_typmod_out(integer)
 CREATE TYPE tpcpoint (
   internallength = variable,
   input = tpcpoint_in,
-  output = tpcpoint_out,
+  output = temporal_out,
+  send = temporal_send,
   receive = tpcpoint_recv,
-  send = tpcpoint_send,
   typmod_in = tpc_typmod_in,
   typmod_out = tpc_typmod_out,
   storage = extended,
