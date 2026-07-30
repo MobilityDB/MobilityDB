@@ -1862,20 +1862,16 @@ nad_tcontseq_tcontseq_sync(const TSequence *seq1, const TSequence *seq2,
       /* Interpolate seq2 at inst1->t on its current segment, known from the
        * merge position [j-1, j], avoiding a per-instant binary search */
       i++;
-      const TInstant *b1 = TSEQUENCE_INST_N(seq2, j - 1);
-      Datum v = tsegment_value_at_timestamptz(tinstant_value_p(b1),
-        tinstant_value_p(inst2), temptype, b1->t, inst2->t, inst1->t);
-      inst2 = tinstant_make_free(v, temptype, inst1->t);
+      inst2 = tsegment_at_timestamptz(TSEQUENCE_INST_N(seq2, j - 1), inst2,
+        LINEAR, inst1->t);
       tofree[nfree++] = inst2;
     }
     else
     {
       /* Interpolate seq1 at inst2->t on its current segment [i-1, i] */
       j++;
-      const TInstant *a1 = TSEQUENCE_INST_N(seq1, i - 1);
-      Datum v = tsegment_value_at_timestamptz(tinstant_value_p(a1),
-        tinstant_value_p(inst1), temptype, a1->t, inst1->t, inst2->t);
-      inst1 = tinstant_make_free(v, temptype, inst2->t);
+      inst1 = tsegment_at_timestamptz(TSEQUENCE_INST_N(seq1, i - 1), inst1,
+        LINEAR, inst2->t);
       tofree[nfree++] = inst1;
     }
     /* A cheap segment lower bound gates the whole segment: when it already
