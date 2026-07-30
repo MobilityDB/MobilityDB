@@ -59,6 +59,7 @@
 #include "temporal/temporal.h"
 #include "temporal/tinstant.h"
 #include "temporal/temporal_boxops.h"
+#include "temporal/temporal_restrict.h"
 #include "temporal/type_util.h"
 #include "temporal/type_parser.h"
 #include "geo/tgeo_spatialfuncs.h"
@@ -2312,14 +2313,19 @@ synchronize_tsequence_tsequence(const TSequence *seq1, const TSequence *seq2,
     }
     else if (cmp < 0)
     {
+      /* Interpolate seq2 at inst1->t on its current segment [j-1, j], known
+       * from the merge position, avoiding a per-instant binary search */
       i++;
-      inst2 = tsequence_at_timestamptz(seq2, inst1->t);
+      inst2 = tsegment_at_timestamptz(TSEQUENCE_INST_N(seq2, j - 1), inst2,
+        interp2, inst1->t);
       tofree[nfree++] = inst2;
     }
     else
     {
+      /* Interpolate seq1 at inst2->t on its current segment [i-1, i] */
       j++;
-      inst1 = tsequence_at_timestamptz(seq1, inst2->t);
+      inst1 = tsegment_at_timestamptz(TSEQUENCE_INST_N(seq1, i - 1), inst1,
+        interp1, inst2->t);
       tofree[nfree++] = inst1;
     }
     /* If not the first instant add potential crossing before adding the new
