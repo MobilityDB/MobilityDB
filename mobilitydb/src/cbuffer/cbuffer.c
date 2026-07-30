@@ -379,8 +379,7 @@ Datum
 Cbuffer_point(PG_FUNCTION_ARGS)
 {
   Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
-  Datum d = PointerGetDatum(&cb->point);
-  PG_RETURN_DATUM(datum_copy(d, T_GEOMETRY));
+  PG_RETURN_POINTER(cbuffer_point(cb));
 }
 
 PGDLLEXPORT Datum Cbuffer_radius(PG_FUNCTION_ARGS);

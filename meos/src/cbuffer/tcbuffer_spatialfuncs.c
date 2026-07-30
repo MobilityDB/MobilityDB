@@ -174,10 +174,8 @@ LWGEOM *
 trapezoid_make(const Cbuffer *c1, const Cbuffer *c2)
 {
   assert(c1); assert(c2); assert(cbuffer_srid(c1) == cbuffer_srid(c2));
-  const GSERIALIZED *gs1 = cbuffer_point_p(c1);
-  const GSERIALIZED *gs2 = cbuffer_point_p(c2);
-  const POINT2D *p1 = GSERIALIZED_POINT2D_P(gs1);
-  const POINT2D *p2 = GSERIALIZED_POINT2D_P(gs2);
+  const POINT2D *p1 = cbuffer_point2d_p(c1);
+  const POINT2D *p2 = cbuffer_point2d_p(c2);
   int32_t srid = cbuffer_srid(c1);
 
   /* Compute the Euclidean distance between the centers of the circles */
@@ -348,9 +346,8 @@ GSERIALIZED *
 cbuffer_traversed_area(const Cbuffer *cb)
 {
   assert(cb);
-  const GSERIALIZED *gs = cbuffer_point_p(cb);
-  const POINT2D *p = GSERIALIZED_POINT2D_P(gs);
-  int32_t srid = gserialized_get_srid(gs);
+  const POINT2D *p = cbuffer_point2d_p(cb);
+  int32_t srid = cbuffer_srid(cb);
   LWGEOM *lwgeom;
   GSERIALIZED *result;
   /* If radius is 0 construct a point */
@@ -457,11 +454,9 @@ tcbuffersegm_traversed_area(const TInstant *inst1, const TInstant *inst2)
     cb_min = cb2;
     cb_max = cb1;
   }
-  const GSERIALIZED *gs1 = cbuffer_point_p(cb_min);
-  const GSERIALIZED *gs2 = cbuffer_point_p(cb_max);
-  const POINT2D *p1 = GSERIALIZED_POINT2D_P(gs1);
-  const POINT2D *p2 = GSERIALIZED_POINT2D_P(gs2);
-  int32_t srid = gserialized_get_srid(gs1);
+  const POINT2D *p1 = cbuffer_point2d_p(cb_min);
+  const POINT2D *p2 = cbuffer_point2d_p(cb_max);
+  int32_t srid = cbuffer_srid(cb_min);
 
   /* If the two points are equal compute the traversed area of the circular
    * buffer with the bigger radius */
@@ -476,9 +471,11 @@ tcbuffersegm_traversed_area(const TInstant *inst1, const TInstant *inst2)
   GSERIALIZED *result;
   if (cb_min->radius == 0.0 && cb_max->radius == 0.0)
   {
+    GSERIALIZED *gs1 = cbuffer_point(cb_min);
+    GSERIALIZED *gs2 = cbuffer_point(cb_max);
     res = (LWGEOM *) lwline_make(PointerGetDatum(gs1), PointerGetDatum(gs2));
     result = geo_serialize(res);
-    lwgeom_free(res);
+    lwgeom_free(res); pfree(gs1); pfree(gs2);
     return result;
   }
 

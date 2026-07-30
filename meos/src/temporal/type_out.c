@@ -1975,7 +1975,6 @@ static uint8_t *
 cbuffer_to_wkb_buf(const Cbuffer *cb, uint8_t *buf, uint8_t variant,
   bool component)
 {
-  Datum d = PointerGetDatum(&cb->point);
   if (! component)
   {
     /* Write the endian flag (byte) */
@@ -1984,14 +1983,12 @@ cbuffer_to_wkb_buf(const Cbuffer *cb, uint8_t *buf, uint8_t variant,
     uint8_t wkb_flags = (uint8_t) MEOS_WKB_SRIDFLAG;
     buf = bytes_to_wkb_buf(&wkb_flags, MEOS_WKB_BYTE_SIZE, buf, variant);
     /* Write the SRID */
-    int32_t srid = gserialized_get_srid(DatumGetGserializedP(d));
-    if (spatial_wkb_needs_srid(srid, variant))
-      buf = int32_to_wkb_buf(srid, buf, variant);
+    if (spatial_wkb_needs_srid(cb->srid, variant))
+      buf = int32_to_wkb_buf(cb->srid, buf, variant);
   }
   /* Write the circular buffer */
-  const POINT2D *point = DATUM_POINT2D_P(d);
-  buf = double_to_wkb_buf(point->x, buf, variant);
-  buf = double_to_wkb_buf(point->y, buf, variant);
+  buf = double_to_wkb_buf(cb->x, buf, variant);
+  buf = double_to_wkb_buf(cb->y, buf, variant);
   buf = double_to_wkb_buf(cb->radius, buf, variant);
   return buf;
 }

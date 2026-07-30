@@ -713,25 +713,25 @@ SELECT tempSubtype(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Poin
 SELECT memSize(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01');
  memsize 
 ---------
-      64
+      48
 (1 row)
 
 SELECT memSize(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}');
  memsize 
 ---------
-     320
+     272
 (1 row)
 
 SELECT memSize(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]');
  memsize 
 ---------
-     320
+     272
 (1 row)
 
 SELECT memSize(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}');
  memsize 
 ---------
-     688
+     608
 (1 row)
 
 SELECT asText(getValue(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01'));

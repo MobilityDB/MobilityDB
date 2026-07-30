@@ -71,16 +71,13 @@ tcbuffer_cbuffer_distance_turnpt(Datum start, Datum end, Datum value,
 {
   /* Extract the two CBUFFER values */
   Cbuffer *ca1 = DatumGetCbufferP(start);
-  const GSERIALIZED *gs1 = cbuffer_point_p(ca1);
-  const POINT2D *p1 = GSERIALIZED_POINT2D_P(gs1);
+  const POINT2D *p1 = cbuffer_point2d_p(ca1);
   Cbuffer *ca2 = DatumGetCbufferP(end);
-  const GSERIALIZED *gs2 = cbuffer_point_p(ca2);
-  const POINT2D *p2 = GSERIALIZED_POINT2D_P(gs2);
+  const POINT2D *p2 = cbuffer_point2d_p(ca2);
 
   /* Extract the circular buffer value */
   Cbuffer *cb = DatumGetCbufferP(value);
-  const GSERIALIZED *gs = cbuffer_point_p(cb);
-  const POINT2D *p = GSERIALIZED_POINT2D_P(gs);
+  const POINT2D *p = cbuffer_point2d_p(cb);
 
   /* Extract coordinates and radius at the two instants */
   double xa1 = p1->x;
@@ -325,7 +322,7 @@ nai_tcbufferseq(const TSequence *seq, const GeoDistGeom *g, GeoDistNai *w)
     {
       const TInstant *inst = TSEQUENCE_INST_N(seq, i);
       const Cbuffer *c = DatumGetCbufferP(tinstant_value_p(inst));
-      const POINT2D *p = GSERIALIZED_POINT2D_P(cbuffer_point_p(c));
+      const POINT2D *p = cbuffer_point2d_p(c);
       geodist_segm_nai(p->x, p->y, c->radius, inst->t, p->x, p->y, c->radius,
         inst->t, g, w);
     }
@@ -337,8 +334,8 @@ nai_tcbufferseq(const TSequence *seq, const GeoDistGeom *g, GeoDistNai *w)
     const TInstant *i2 = TSEQUENCE_INST_N(seq, i);
     const Cbuffer *c1 = DatumGetCbufferP(tinstant_value_p(i1));
     const Cbuffer *c2 = DatumGetCbufferP(tinstant_value_p(i2));
-    const POINT2D *p1 = GSERIALIZED_POINT2D_P(cbuffer_point_p(c1));
-    const POINT2D *p2 = GSERIALIZED_POINT2D_P(cbuffer_point_p(c2));
+    const POINT2D *p1 = cbuffer_point2d_p(c1);
+    const POINT2D *p2 = cbuffer_point2d_p(c2);
     geodist_segm_nai(p1->x, p1->y, c1->radius, i1->t, p2->x, p2->y, c2->radius,
       i2->t, g, w);
     i1 = i2;
@@ -368,7 +365,7 @@ nai_tcbuffer_geo_analytic(const Temporal *temp, const GSERIALIZED *gs,
   {
     const TInstant *inst = (TInstant *) temp;
     const Cbuffer *c = DatumGetCbufferP(tinstant_value_p(inst));
-    const POINT2D *p = GSERIALIZED_POINT2D_P(cbuffer_point_p(c));
+    const POINT2D *p = cbuffer_point2d_p(c);
     geodist_segm_nai(p->x, p->y, c->radius, inst->t, p->x, p->y, c->radius,
       inst->t, &g, &w);
   }
@@ -565,7 +562,7 @@ tcbufferseq_nad(const TSequence *seq, const GeoDistGeom *g, double *best)
     {
       const Cbuffer *c = DatumGetCbufferP(
         tinstant_value_p(TSEQUENCE_INST_N(seq, i)));
-      const POINT2D *p = GSERIALIZED_POINT2D_P(cbuffer_point_p(c));
+      const POINT2D *p = cbuffer_point2d_p(c);
       geodist_segm_nad(p->x, p->y, c->radius, p->x, p->y, c->radius, g, best);
     }
     return;
@@ -576,8 +573,8 @@ tcbufferseq_nad(const TSequence *seq, const GeoDistGeom *g, double *best)
     const TInstant *i2 = TSEQUENCE_INST_N(seq, i);
     const Cbuffer *c1 = DatumGetCbufferP(tinstant_value_p(i1));
     const Cbuffer *c2 = DatumGetCbufferP(tinstant_value_p(i2));
-    const POINT2D *p1 = GSERIALIZED_POINT2D_P(cbuffer_point_p(c1));
-    const POINT2D *p2 = GSERIALIZED_POINT2D_P(cbuffer_point_p(c2));
+    const POINT2D *p1 = cbuffer_point2d_p(c1);
+    const POINT2D *p2 = cbuffer_point2d_p(c2);
     geodist_segm_nad(p1->x, p1->y, c1->radius, p2->x, p2->y, c2->radius, g, best);
     i1 = i2;
   }
@@ -606,7 +603,7 @@ nad_tcbuffer_geo_analytic(const Temporal *temp, const GSERIALIZED *gs)
   if (temp->subtype == TINSTANT)
   {
     const Cbuffer *c = DatumGetCbufferP(tinstant_value_p((TInstant *) temp));
-    const POINT2D *p = GSERIALIZED_POINT2D_P(cbuffer_point_p(c));
+    const POINT2D *p = cbuffer_point2d_p(c);
     geodist_segm_nad(p->x, p->y, c->radius, p->x, p->y, c->radius, &g, &best);
   }
   else if (temp->subtype == TSEQUENCE)
@@ -636,7 +633,7 @@ tcbufferseq_shortestline(const TSequence *seq, const GeoDistGeom *g,
     {
       const Cbuffer *c = DatumGetCbufferP(
         tinstant_value_p(TSEQUENCE_INST_N(seq, i)));
-      const POINT2D *p = GSERIALIZED_POINT2D_P(cbuffer_point_p(c));
+      const POINT2D *p = cbuffer_point2d_p(c);
       geodist_segm_shortestline(p->x, p->y, c->radius, p->x, p->y, c->radius,
         g, w);
     }
@@ -648,8 +645,8 @@ tcbufferseq_shortestline(const TSequence *seq, const GeoDistGeom *g,
     const TInstant *i2 = TSEQUENCE_INST_N(seq, i);
     const Cbuffer *c1 = DatumGetCbufferP(tinstant_value_p(i1));
     const Cbuffer *c2 = DatumGetCbufferP(tinstant_value_p(i2));
-    const POINT2D *p1 = GSERIALIZED_POINT2D_P(cbuffer_point_p(c1));
-    const POINT2D *p2 = GSERIALIZED_POINT2D_P(cbuffer_point_p(c2));
+    const POINT2D *p1 = cbuffer_point2d_p(c1);
+    const POINT2D *p2 = cbuffer_point2d_p(c2);
     geodist_segm_shortestline(p1->x, p1->y, c1->radius, p2->x, p2->y,
       c2->radius, g, w);
     i1 = i2;
@@ -676,7 +673,7 @@ shortestline_tcbuffer_geo_analytic(const Temporal *temp, const GSERIALIZED *gs)
   if (temp->subtype == TINSTANT)
   {
     const Cbuffer *c = DatumGetCbufferP(tinstant_value_p((TInstant *) temp));
-    const POINT2D *p = GSERIALIZED_POINT2D_P(cbuffer_point_p(c));
+    const POINT2D *p = cbuffer_point2d_p(c);
     geodist_segm_shortestline(p->x, p->y, c->radius, p->x, p->y, c->radius,
       &g, &w);
   }
@@ -804,7 +801,7 @@ bool
 tcbuffer_disc_within_ctx(const Cbuffer *cb, double dist, const void *ctxv)
 {
   const TcbufferGeoCtx *ctx = (const TcbufferGeoCtx *) ctxv;
-  const POINT2D *p = GSERIALIZED_POINT2D_P(cbuffer_point_p(cb));
+  const POINT2D *p = cbuffer_point2d_p(cb);
   return tcbuffer_disc_within_dist(p->x, p->y, cb->radius, dist, &ctx->g);
 }
 
@@ -967,8 +964,8 @@ tcbufferseg_within_ctx(const Cbuffer *cb1, const Cbuffer *cb2, double dist,
   const void *ctxv, double *outlo, double *outhi, int maxout)
 {
   const TcbufferGeoCtx *ctx = (const TcbufferGeoCtx *) ctxv;
-  const POINT2D *p1 = GSERIALIZED_POINT2D_P(cbuffer_point_p(cb1));
-  const POINT2D *p2 = GSERIALIZED_POINT2D_P(cbuffer_point_p(cb2));
+  const POINT2D *p1 = cbuffer_point2d_p(cb1);
+  const POINT2D *p2 = cbuffer_point2d_p(cb2);
   double cx1 = p1->x, cy1 = p1->y, r1 = cb1->radius;
   double cx2 = p2->x, cy2 = p2->y, r2 = cb2->radius;
   int ncap = 2 + 8 * ctx->g.n;
@@ -1113,7 +1110,7 @@ bool
 tcbuffer_disc_touch_ctx(const Cbuffer *cb, const void *ctxv)
 {
   const TcbufferGeoCtx *ctx = (const TcbufferGeoCtx *) ctxv;
-  const POINT2D *p = GSERIALIZED_POINT2D_P(cbuffer_point_p(cb));
+  const POINT2D *p = cbuffer_point2d_p(cb);
   bool inside;
   double sg = tcbuffer_disc_signed_boundary(p->x, p->y, cb->radius, &ctx->g,
     &inside);
@@ -1140,7 +1137,7 @@ bool
 tcbuffer_disc_contains_ctx(const Cbuffer *cb, const void *ctxv, bool strict)
 {
   const TcbufferGeoCtx *ctx = (const TcbufferGeoCtx *) ctxv;
-  const POINT2D *p = GSERIALIZED_POINT2D_P(cbuffer_point_p(cb));
+  const POINT2D *p = cbuffer_point2d_p(cb);
   bool inside;
   double sg = tcbuffer_disc_signed_boundary(p->x, p->y, cb->radius, &ctx->g,
     &inside);
@@ -1165,8 +1162,8 @@ tcbufferseg_sg_roots(const Cbuffer *cb1, const Cbuffer *cb2,
   const void *ctxv, double *outt, int maxout, bool outside_only)
 {
   const TcbufferGeoCtx *ctx = (const TcbufferGeoCtx *) ctxv;
-  const POINT2D *p1 = GSERIALIZED_POINT2D_P(cbuffer_point_p(cb1));
-  const POINT2D *p2 = GSERIALIZED_POINT2D_P(cbuffer_point_p(cb2));
+  const POINT2D *p1 = cbuffer_point2d_p(cb1);
+  const POINT2D *p2 = cbuffer_point2d_p(cb2);
   double cx1 = p1->x, cy1 = p1->y, r1 = cb1->radius;
   double cx2 = p2->x, cy2 = p2->y, r2 = cb2->radius;
   int ncap = 8 * ctx->g.n + 2;
@@ -1364,10 +1361,10 @@ tcbufferseg_distance_lb(Datum start1, Datum end1, Datum start2, Datum end2)
   const Cbuffer *ce1 = DatumGetCbufferP(end1);
   const Cbuffer *cs2 = DatumGetCbufferP(start2);
   const Cbuffer *ce2 = DatumGetCbufferP(end2);
-  const POINT2D *s1 = GSERIALIZED_POINT2D_P(cbuffer_point_p(cs1));
-  const POINT2D *e1 = GSERIALIZED_POINT2D_P(cbuffer_point_p(ce1));
-  const POINT2D *s2 = GSERIALIZED_POINT2D_P(cbuffer_point_p(cs2));
-  const POINT2D *e2 = GSERIALIZED_POINT2D_P(cbuffer_point_p(ce2));
+  const POINT2D *s1 = cbuffer_point2d_p(cs1);
+  const POINT2D *e1 = cbuffer_point2d_p(ce1);
+  const POINT2D *s2 = cbuffer_point2d_p(cs2);
+  const POINT2D *e2 = cbuffer_point2d_p(ce2);
   double r1 = fmax(cs1->radius, ce1->radius);
   double r2 = fmax(cs2->radius, ce2->radius);
   double dx = fmax(fmax(fmin(s1->x, e1->x) - fmax(s2->x, e2->x),
@@ -1686,8 +1683,8 @@ mindist_tcbufferseq_tcbufferseq_threshold(const TSequence *seq1,
     const Cbuffer *cb_b = (seq2->count > 1) ?
       DatumGetCbufferP(tinstant_value_p(TSEQUENCE_INST_N(seq2, j + 1))) :
       cb_a;
-    const POINT2D *pa = GSERIALIZED_POINT2D_P(cbuffer_point_p(cb_a));
-    const POINT2D *pb = GSERIALIZED_POINT2D_P(cbuffer_point_p(cb_b));
+    const POINT2D *pa = cbuffer_point2d_p(cb_a);
+    const POINT2D *pb = cbuffer_point2d_p(cb_b);
     double r_max = fmax(cb_a->radius, cb_b->radius);
     boxes2[j].idx = j;
     boxes2[j].minx = (float) (fmin(pa->x, pb->x) - r_max);
@@ -1705,8 +1702,8 @@ mindist_tcbufferseq_tcbufferseq_threshold(const TSequence *seq1,
     const Cbuffer *cb_b1 = (seq1->count > 1) ?
       DatumGetCbufferP(tinstant_value_p(TSEQUENCE_INST_N(seq1, i + 1))) :
       cb_a1;
-    const POINT2D *pa1 = GSERIALIZED_POINT2D_P(cbuffer_point_p(cb_a1));
-    const POINT2D *pb1 = GSERIALIZED_POINT2D_P(cbuffer_point_p(cb_b1));
+    const POINT2D *pa1 = cbuffer_point2d_p(cb_a1);
+    const POINT2D *pb1 = cbuffer_point2d_p(cb_b1);
     double r_max1 = fmax(cb_a1->radius, cb_b1->radius);
     double s1_minx = fmin(pa1->x, pb1->x) - r_max1;
     double s1_maxx = fmax(pa1->x, pb1->x) + r_max1;
@@ -1740,8 +1737,8 @@ mindist_tcbufferseq_tcbufferseq_threshold(const TSequence *seq1,
       const Cbuffer *cb_b2 = (seq2->count > 1) ?
         DatumGetCbufferP(tinstant_value_p(TSEQUENCE_INST_N(seq2, j + 1))) :
         cb_a2;
-      const POINT2D *pa2 = GSERIALIZED_POINT2D_P(cbuffer_point_p(cb_a2));
-      const POINT2D *pb2 = GSERIALIZED_POINT2D_P(cbuffer_point_p(cb_b2));
+      const POINT2D *pa2 = cbuffer_point2d_p(cb_a2);
+      const POINT2D *pb2 = cbuffer_point2d_p(cb_b2);
       double d = cbuffersegm_segm_mindist(pa1, cb_a1->radius, pb1, cb_b1->radius,
         pa2, cb_a2->radius, pb2, cb_b2->radius, best);
       if (d < best) best = d;
