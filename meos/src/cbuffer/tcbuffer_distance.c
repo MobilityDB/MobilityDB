@@ -1491,6 +1491,19 @@ nad_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
   if (! ensure_valid_tcbuffer_tcbuffer(temp1, temp2))
     return DBL_MAX;
 
+  /* Fast path: linear temporal circular buffers via the time-synchronous
+   * running minimum, avoiding the temporal distance materialization. A finite
+   * result is exact; the infinity sentinel (empty or degenerate overlap)
+   * defers to the temporal distance path */
+  if (nad_tcont_tcont_sync_applies(temp1, temp2))
+  {
+    TimestampTz t;
+    double d = nad_tcont_tcont_sync(temp1, temp2, &datum_cbuffer_distance,
+      &tcbuffersegm_distance_turnpt, &t);
+    if (d != DBL_MAX)
+      return d;
+  }
+
   Temporal *dist = tdistance_tcbuffer_tcbuffer(temp1, temp2);
   if (dist == NULL)
     return DBL_MAX;
