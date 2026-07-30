@@ -90,18 +90,20 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tgeo__distance_8h_a47eec4e831884a3f09896530d2dc7e16.html#a47eec4e831884a3f09896530d2dc7e16">geodist_segm_nad</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__distance_8h_a96f24006be3abbb2681a296a5f0a584f.html#a96f24006be3abbb2681a296a5f0a584f">geodist_segm_nai</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__distance_8h_aac72fa62dc535bafa1aa36f710d3aff0.html#aac72fa62dc535bafa1aa36f710d3aff0">geodist_segm_shortestline</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="tgeo__distance_8h_a8b97ce7e43f953a24eb76efecd4646cf.html#a8b97ce7e43f953a24eb76efecd4646cf">nad_tcont_tcont_sync</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="tgeo__distance_8h_ac0983b4d36407d0be4c98a3fc3951b11.html#ac0983b4d36407d0be4c98a3fc3951b11">nad_tcont_tcont_sync</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__distance_8h_a7fcde4867de1c6eb598d1822dfc63472.html#a7fcde4867de1c6eb598d1822dfc63472">nad_tcont_tcont_sync_applies</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__distance_8h_ace62ed9b723bbdd8919af1458ffd011f.html#ace62ed9b723bbdd8919af1458ffd011f">point3d_min_dist</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tgeo__distance_8h_a9c1f4b48dd999fa0f02bb4f1b4ef4793.html#a9c1f4b48dd999fa0f02bb4f1b4ef4793">seglb_func</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__distance_8h_a8a0d33cecd2e24bc18b56d9783ace581.html#a8a0d33cecd2e24bc18b56d9783ace581">tgeogpointsegm_distance_turnpt</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__distance_8h_aded5425298d46d52bacc4b7d5e83d937.html#aded5425298d46d52bacc4b7d5e83d937">tgeompointsegm_distance_turnpt</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__distance_8h_a0fa63e936aeb751199264c7bd8270d10.html#a0fa63e936aeb751199264c7bd8270d10">tinstant_distance</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tgeo__distance_8h_a35a5ca43d4bc5052208683bc659ce4af.html#a35a5ca43d4bc5052208683bc659ce4af">tpointseg_distance_lb</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a8b97ce7e43f953a24eb76efecd4646cf" name="a8b97ce7e43f953a24eb76efecd4646cf"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8b97ce7e43f953a24eb76efecd4646cf">&#9670;&#160;</a></span>nad_tcont_tcont_sync()</h2>
+<a id="ac0983b4d36407d0be4c98a3fc3951b11" name="ac0983b4d36407d0be4c98a3fc3951b11"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac0983b4d36407d0be4c98a3fc3951b11">&#9670;&#160;</a></span>nad_tcont_tcont_sync()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -133,6 +135,12 @@ $(function() {
         <tr>
           <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype"><a class="el" href="tgeo__distance_8h_a9c1f4b48dd999fa0f02bb4f1b4ef4793.html#a9c1f4b48dd999fa0f02bb4f1b4ef4793">seglb_func</a>&#160;</td>
+          <td class="paramname"><em>seglb</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
           <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a> *&#160;</td>
           <td class="paramname"><em>tmin</em>&#160;</td>
         </tr>
@@ -150,6 +158,7 @@ $(function() {
     <tr><td class="paramdir">[in]</td><td class="paramname">temp1,temp2</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> values with linear interpolation and equal subtype (both <a class="el" href="meos_8h_aa2bf13c44256043c322e235fd55b00c6.html#aa2bf13c44256043c322e235fd55b00c6a7894bcf0641b04fbf63f9a20ae353380" title="Temporal sequence subtype.">TSEQUENCE</a> or both <a class="el" href="meos_8h_aa2bf13c44256043c322e235fd55b00c6.html#aa2bf13c44256043c322e235fd55b00c6ab2d79497ceb3f1491d299f44c389031c" title="Temporal sequence set subtype.">TSEQUENCESET</a>) </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">func</td><td>Base value distance function </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">turnpt</td><td>Per-segment distance turning-point function </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">seglb</td><td>Per-segment distance lower-bound function </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">tmin</td><td>Timestamp achieving the minimum (set only when the result is not infinity) </td></tr>
   </table>
   </dd>
