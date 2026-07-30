@@ -97,6 +97,16 @@ CREATE AGGREGATE merge(tpose) (
   PARALLEL = safe
 );
 
+CREATE AGGREGATE mergeAgg(tpose) (
+  SFUNC = temporal_merge_transfn,
+  STYPE = internal,
+  COMBINEFUNC = temporal_merge_combinefn,
+  FINALFUNC = tpose_tagg_finalfn,
+  SERIALFUNC = taggstate_serialize,
+  DESERIALFUNC = taggstate_deserialize,
+  PARALLEL = safe
+);
+
 /*****************************************************************************
  * Append tinstant aggregate functions
  *****************************************************************************/
@@ -134,6 +144,13 @@ CREATE AGGREGATE appendInstant(tpose) (
   PARALLEL = safe
 );
 
+CREATE AGGREGATE appendInstantAgg(tpose) (
+  SFUNC = temporal_app_tinst_transfn,
+  STYPE = tpose,
+  FINALFUNC = temporal_append_finalfn,
+  PARALLEL = safe
+);
+
 CREATE AGGREGATE appendInstant(tpose, text) (
   SFUNC = temporal_app_tinst_transfn,
   STYPE = tpose,
@@ -141,7 +158,21 @@ CREATE AGGREGATE appendInstant(tpose, text) (
   PARALLEL = safe
 );
 
+CREATE AGGREGATE appendInstantAgg(tpose, text) (
+  SFUNC = temporal_app_tinst_transfn,
+  STYPE = tpose,
+  FINALFUNC = temporal_append_finalfn,
+  PARALLEL = safe
+);
+
 CREATE AGGREGATE appendInstant(tpose, text, float, interval) (
+  SFUNC = temporal_app_tinst_transfn,
+  STYPE = tpose,
+  FINALFUNC = temporal_append_finalfn,
+  PARALLEL = safe
+);
+
+CREATE AGGREGATE appendInstantAgg(tpose, text, float, interval) (
   SFUNC = temporal_app_tinst_transfn,
   STYPE = tpose,
   FINALFUNC = temporal_append_finalfn,
@@ -157,6 +188,13 @@ CREATE FUNCTION temporal_app_tseq_transfn(tpose, tpose)
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE appendSequence(tpose) (
+  SFUNC = temporal_app_tseq_transfn,
+  STYPE = tpose,
+  FINALFUNC = temporal_append_finalfn,
+  PARALLEL = safe
+);
+
+CREATE AGGREGATE appendSequenceAgg(tpose) (
   SFUNC = temporal_app_tseq_transfn,
   STYPE = tpose,
   FINALFUNC = temporal_append_finalfn,

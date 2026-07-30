@@ -98,6 +98,16 @@ CREATE AGGREGATE merge(tjsonb) (
   PARALLEL = safe
 );
 
+CREATE AGGREGATE mergeAgg(tjsonb) (
+  SFUNC = temporal_merge_transfn,
+  STYPE = internal,
+  COMBINEFUNC = temporal_merge_combinefn,
+  FINALFUNC = tjsonb_tagg_finalfn,
+  SERIALFUNC = taggstate_serialize,
+  DESERIALFUNC = taggstate_deserialize,
+  PARALLEL = safe
+);
+
 CREATE FUNCTION temporal_app_tinst_transfn(tjsonb, tjsonb)
   RETURNS tjsonb
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
@@ -126,13 +136,34 @@ CREATE AGGREGATE appendInstant(tjsonb) (
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
+
+CREATE AGGREGATE appendInstantAgg(tjsonb) (
+  SFUNC = temporal_app_tinst_transfn(tjsonb, tjsonb),
+  STYPE = tjsonb,
+  FINALFUNC = temporal_append_finalfn,
+  PARALLEL = safe
+);
 CREATE AGGREGATE appendInstant(tjsonb, interp text) (
   SFUNC = temporal_app_tinst_transfn(tjsonb, tjsonb, text),
   STYPE = tjsonb,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
+
+CREATE AGGREGATE appendInstantAgg(tjsonb, interp text) (
+  SFUNC = temporal_app_tinst_transfn(tjsonb, tjsonb, text),
+  STYPE = tjsonb,
+  FINALFUNC = temporal_append_finalfn,
+  PARALLEL = safe
+);
 CREATE AGGREGATE appendInstant(tjsonb, interp text, maxt interval) (
+  SFUNC = temporal_app_tinst_transfn(tjsonb, tjsonb, text, maxt),
+  STYPE = tjsonb,
+  FINALFUNC = temporal_append_finalfn,
+  PARALLEL = safe
+);
+
+CREATE AGGREGATE appendInstantAgg(tjsonb, interp text, maxt interval) (
   SFUNC = temporal_app_tinst_transfn(tjsonb, tjsonb, text, maxt),
   STYPE = tjsonb,
   FINALFUNC = temporal_append_finalfn,
@@ -148,6 +179,13 @@ CREATE FUNCTION temporal_app_tseq_transfn(tjsonb, tjsonb)
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE AGGREGATE appendSequence(tjsonb) (
+  SFUNC = temporal_app_tseq_transfn,
+  STYPE = tjsonb,
+  FINALFUNC = temporal_append_finalfn,
+  PARALLEL = safe
+);
+
+CREATE AGGREGATE appendSequenceAgg(tjsonb) (
   SFUNC = temporal_app_tseq_transfn,
   STYPE = tjsonb,
   FINALFUNC = temporal_append_finalfn,

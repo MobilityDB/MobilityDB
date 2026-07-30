@@ -986,6 +986,7 @@ SELECT asText(appendSequence(tpose '[Pose(Point(1 1), 0.5)@2001-01-01]', '[Pose(
 				<para><varname>merge(tpose,tpose) → tpose</varname></para>
 				<para><varname>merge(tpose[]) → tpose</varname></para>
 				<para><varname>merge(tpose) → tpose</varname></para>
+				<para><varname>mergeAgg(tpose) → tpose</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(merge(tpose
   '[Pose(Point(1 1 1),1,0,0,0)@2001-01-01, Pose(Point(2 2 2),0,1,0,0)@2001-01-02]',

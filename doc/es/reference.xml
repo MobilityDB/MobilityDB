@@ -2227,7 +2227,7 @@
 					<title>Modificaciones</title>
 					<itemizedlist>
 						<listitem>
-							<para><link linkend="tcbuffer_appendInstant"><varname>appendInstant</varname>, <varname>appendSequence</varname></link>: Añade un instante temporal o una secuencia temporal</para>
+							<para><link linkend="tcbuffer_appendInstant"><varname>appendInstant</varname>, <varname>appendInstantAgg</varname>, <varname>appendSequence</varname>, <varname>appendSequenceAgg</varname></link>: Añade un instante temporal o una secuencia temporal</para>
 						</listitem>
 
 						<listitem>
@@ -2385,11 +2385,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="trgeometry_appendInstant"><varname>appendInstant</varname></link>: Añade un único instante a una trgeometry existente</para>
+					<para><link linkend="trgeometry_appendInstant"><varname>appendInstant</varname>, <varname>appendInstantAgg</varname></link>: Añade un único instante a una trgeometry existente</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="trgeometry_appendSequence"><varname>appendSequence</varname></link>: Añade una secuencia completa a una trgeometry existente</para>
+					<para><link linkend="trgeometry_appendSequence"><varname>appendSequence</varname>, <varname>appendSequenceAgg</varname></link>: Añade una secuencia completa a una trgeometry existente</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -2607,7 +2607,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="trgeometry_merge"><varname>merge</varname></link>: Combina dos trgeometries con la misma geometría de referencia en un conjunto de secuencias</para>
+					<para><link linkend="trgeometry_merge"><varname>merge</varname>, <varname>mergeAgg</varname></link>: Combina dos trgeometries con la misma geometría de referencia en un conjunto de secuencias</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -3644,10 +3644,10 @@
 					<para><link linkend="tpcpatch_tdensity"><varname>tdensity</varname></link>: Densidad de puntos por instante sumada entre filas</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tpcpoint_merge"><varname>merge</varname></link>: Combinar múltiples valores temporales en uno solo</para>
+					<para><link linkend="tpcpoint_merge"><varname>merge</varname>, <varname>mergeAgg</varname></link>: Combinar múltiples valores temporales en uno solo</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tpcpoint_append"><varname>appendInstant</varname>, <varname>appendSequence</varname></link>: Agregaciones de construcción en flujo</para>
+					<para><link linkend="tpcpoint_append"><varname>appendInstant</varname>, <varname>appendInstantAgg</varname>, <varname>appendSequence</varname>, <varname>appendSequenceAgg</varname></link>: Agregaciones de construcción en flujo</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
