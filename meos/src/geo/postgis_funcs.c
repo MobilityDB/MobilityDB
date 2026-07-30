@@ -3424,7 +3424,10 @@ geo_from_text(const char *wkt, int32_t srid)
 
   if (lwgeom_parse_wkt(&lwg_parser_result, (char *) wkt,
       LW_PARSER_CHECK_ALL) == LW_FAILURE )
+  {
     PG_PARSER_ERROR(lwg_parser_result);
+    return NULL;
+  }
 
   lwgeom = lwg_parser_result.geom;
 
@@ -3847,10 +3850,13 @@ geog_in(const char *str, int32 typmod)
   /* WKT then. */
   else
   {
-    if ( lwgeom_parse_wkt(&lwg_parser_result, (char *) str, 
+    if ( lwgeom_parse_wkt(&lwg_parser_result, (char *) str,
         LW_PARSER_CHECK_ALL) == LW_FAILURE )
+    {
       PG_PARSER_ERROR(lwg_parser_result);
-      lwgeom = lwg_parser_result.geom;
+      return NULL;
+    }
+    lwgeom = lwg_parser_result.geom;
   }
 
   GSERIALIZED *result = NULL;
