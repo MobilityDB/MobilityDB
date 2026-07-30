@@ -85,10 +85,7 @@ SELECT (quadbin '480fffffffffffff')::bigint;
 
 /* Errors */
 SELECT 5192650370358181887::bigint = quadbin '480fffffffffffff';
-ERROR:  operator does not exist: bigint = quadbin
-LINE 2: SELECT 5192650370358181887::bigint = quadbin '480fffffffffff...
-                                           ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+ERROR:  operator does not exist: bigint = quadbin at character 49
 SELECT isValidIndex(quadbin '480fffffffffffff');
  isvalidindex 
 --------------

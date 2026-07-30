@@ -257,10 +257,7 @@ DROP TABLE tbl_th3index_assign;
 DROP TABLE
 /* Errors */
 SELECT tbigint '622236723497533439@2012-01-01 08:00:00' = th3index '622236723497533439@2012-01-01 08:00:00';
-ERROR:  operator does not exist: tbigint = th3index
-LINE 2: ... tbigint '622236723497533439@2012-01-01 08:00:00' = th3index...
-                                                             ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+ERROR:  operator does not exist: tbigint = th3index at character 70
 DROP TABLE IF EXISTS tbl_th3index_binio;
 NOTICE:  table "tbl_th3index_binio" does not exist, skipping
 DROP TABLE

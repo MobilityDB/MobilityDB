@@ -81,7 +81,9 @@ SELECT th3GetResolution(
 SELECT th3CellToChildPos(th3index '622236750694711295@2001-01-01', 9);
 
 -- Position relative to res-3 ancestor (0x83 prefix) is in [0, 7^7 - 1].
+\set VERBOSITY terse
 SELECT th3CellToChildPos(th3index '622236750694711295@2001-01-01', 3) >= 0;
+\set VERBOSITY default
 
 SELECT th3CellToChildPos(th3index
   '[622236750694711295@2001-01-01, 622236750694711295@2001-01-02]', 9);

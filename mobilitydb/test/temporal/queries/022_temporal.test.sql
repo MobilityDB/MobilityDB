@@ -1914,7 +1914,9 @@ SELECT segmentMinDuration(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-0
 
 SELECT segmentMaxDuration(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', '1 day');
 SELECT segmentMaxDuration(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', '1 day');
+\set VERBOSITY terse
 SELECT segmentMaxDuration(tfloat 'Interp=Step;[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]', 2);
+\set VERBOSITY default
 SELECT segmentMaxDuration(tfloat 'Interp=Step;{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}', '1 day');
 /* NULL */
 SELECT segmentMaxDuration(tfloat '[1.5@2000-01-01]', '1 day');

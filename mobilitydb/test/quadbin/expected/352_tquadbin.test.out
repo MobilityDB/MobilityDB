@@ -109,10 +109,7 @@ DROP TABLE tbl_tquadbin_assign;
 DROP TABLE
 /* Errors */
 SELECT tbigint '5192650370358181887@2012-01-01 08:00:00' = tquadbin '480fffffffffffff@2012-01-01 08:00:00';
-ERROR:  operator does not exist: tbigint = tquadbin
-LINE 2: ...tbigint '5192650370358181887@2012-01-01 08:00:00' = tquadbin...
-                                                             ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+ERROR:  operator does not exist: tbigint = tquadbin at character 71
 SELECT tquadbin '480fffffffffffff@2012-01-01' = tquadbin '480fffffffffffff@2012-01-01';
  ?column? 
 ----------

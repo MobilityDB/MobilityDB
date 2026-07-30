@@ -54,10 +54,7 @@ SELECT asText(cbuffer(ST_Point(1,1), 0.5));
 
 /* Errors */
 SELECT cbuffer(1000,0.5);
-ERROR:  function cbuffer(integer, numeric) does not exist
-LINE 2: SELECT cbuffer(1000,0.5);
-               ^
-HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+ERROR:  function cbuffer(integer, numeric) does not exist at character 21
 SELECT cbuffer('Linestring(1 1,2 2)',1.5);
 ERROR:  Only point geometries accepted
 SELECT cbuffer('Point Z(1 1 1)',1.5);
@@ -65,10 +62,7 @@ ERROR:  The geometry cannot have Z dimension
 SELECT cbuffer('Point M(1 1 1)',1.5);
 ERROR:  The geometry cannot have M dimension
 SELECT cbuffer(geography 'Point(1 1)',1.5);
-ERROR:  function cbuffer(geography, numeric) does not exist
-LINE 1: SELECT cbuffer(geography 'Point(1 1)',1.5);
-               ^
-HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+ERROR:  function cbuffer(geography, numeric) does not exist at character 8
 SELECT cbuffer('Point(1 1)',-1.5);
 ERROR:  The value cannot be negative: -1.500000
 SELECT ST_AsText(point(cbuffer 'Cbuffer(Point(1 1),0.5)'));

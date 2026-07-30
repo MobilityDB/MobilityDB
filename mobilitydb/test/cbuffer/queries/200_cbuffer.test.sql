@@ -49,11 +49,15 @@ SELECT cbuffer 'Cbuffer(Point(1 1),0.5)xxx';
 SELECT asText(cbuffer('Point(1 1)', 0.5));
 SELECT asText(cbuffer(ST_Point(1,1), 0.5));
 /* Errors */
+\set VERBOSITY terse
 SELECT cbuffer(1000,0.5);
+\set VERBOSITY default
 SELECT cbuffer('Linestring(1 1,2 2)',1.5);
 SELECT cbuffer('Point Z(1 1 1)',1.5);
 SELECT cbuffer('Point M(1 1 1)',1.5);
+\set VERBOSITY terse
 SELECT cbuffer(geography 'Point(1 1)',1.5);
+\set VERBOSITY default
 SELECT cbuffer('Point(1 1)',-1.5);
 
 -------------------------------------------------------------------------------
