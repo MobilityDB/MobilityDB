@@ -673,6 +673,26 @@ SELECT ST_AsText(startValue(tpcpoint(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]),
 			</itemizedlist>
 		</sect2>
 
+		<sect2 xml:id="tpcpoint_transformations">
+			<title>Transformaciones</title>
+			<itemizedlist>
+				<listitem xml:id="tpcpoint_subtype">
+					<indexterm significance="normal"><primary><varname>tpcpointInst</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tpcpointSeq</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tpcpointSeqSet</varname></primary></indexterm>
+					<para>Transformar un tpcpoint en otro subtipo</para>
+					<para><varname>tpcpointInst(tpcpoint) → tpcpoint</varname></para>
+					<para><varname>tpcpointSeq(tpcpoint,interp='step') → tpcpoint</varname></para>
+					<para><varname>tpcpointSeqSet(tpcpoint) → tpcpoint</varname></para>
+				</listitem>
+				<listitem xml:id="tpcpoint_setInterp">
+					<indexterm significance="normal"><primary><varname>setInterp</varname></primary></indexterm>
+					<para>Transformar un tpcpoint a otra interpolación</para>
+					<para><varname>setInterp(tpcpoint,interp) → tpcpoint</varname></para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
 		<sect2 xml:id="tpcpoint_compops">
 			<title>Comparaciones</title>
 			<itemizedlist>
@@ -900,6 +920,26 @@ SELECT t, point FROM points(tpcpatch(
 			<para>Véase <xref linkend="tpcpatch_perpoint_roadmap" /> para conocer los límites de estos accesores y qué está y qué no está disponible a nivel de granularidad por punto.</para>
 		</sect2>
 
+
+		<sect2 xml:id="tpcpatch_transformations">
+			<title>Transformaciones</title>
+			<itemizedlist>
+				<listitem xml:id="tpcpatch_subtype">
+					<indexterm significance="normal"><primary><varname>tpcpatchInst</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tpcpatchSeq</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tpcpatchSeqSet</varname></primary></indexterm>
+					<para>Transformar un tpcpatch en otro subtipo</para>
+					<para><varname>tpcpatchInst(tpcpatch) → tpcpatch</varname></para>
+					<para><varname>tpcpatchSeq(tpcpatch,interp='step') → tpcpatch</varname></para>
+					<para><varname>tpcpatchSeqSet(tpcpatch) → tpcpatch</varname></para>
+				</listitem>
+				<listitem xml:id="tpcpatch_setInterp">
+					<indexterm significance="normal"><primary><varname>setInterp</varname></primary></indexterm>
+					<para>Transformar un tpcpatch a otra interpolación</para>
+					<para><varname>setInterp(tpcpatch,interp) → tpcpatch</varname></para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
 
 		<sect2 xml:id="tpcpatch_restrictions">
 			<title>Restricciones</title>

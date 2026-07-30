@@ -102,6 +102,22 @@ SELECT (:inst1) <> (:inst2);
 SELECT (:inst1) < (:inst2);
 
 -------------------------------------------------------------------------------
+-- Transformations
+-------------------------------------------------------------------------------
+
+SELECT tpcpointInst(:inst1) IS NOT NULL;
+SELECT tpcpointSeq(:inst1) IS NOT NULL;
+SELECT tpcpointSeqSet(:inst1) IS NOT NULL;
+SELECT setInterp(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]), 'step') IS NOT NULL;
+SELECT shiftTime(:inst1, interval '1 day') IS NOT NULL;
+SELECT scaleTime(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]), interval '2 days')
+  IS NOT NULL;
+SELECT shiftScaleTime(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]),
+  interval '1 day', interval '2 days') IS NOT NULL;
+SELECT tsample(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]), interval '1 day')
+  IS NOT NULL;
+
+-------------------------------------------------------------------------------
 -- Restrictions
 -------------------------------------------------------------------------------
 

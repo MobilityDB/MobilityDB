@@ -110,6 +110,23 @@ SELECT (:inst1) <> (:inst2);
 SELECT (:inst1) < (:inst2);
 
 -------------------------------------------------------------------------------
+-- Transformations
+-------------------------------------------------------------------------------
+
+SELECT tpcpatchInst(:inst1) IS NOT NULL;
+SELECT tpcpatchSeq(:inst1) IS NOT NULL;
+SELECT tpcpatchSeqSet(:inst1) IS NOT NULL;
+SELECT setInterp(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3, :inst4]), 'step')
+  IS NOT NULL;
+SELECT shiftTime(:inst1, interval '1 day') IS NOT NULL;
+SELECT scaleTime(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3, :inst4]),
+  interval '2 days') IS NOT NULL;
+SELECT shiftScaleTime(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3, :inst4]),
+  interval '1 day', interval '2 days') IS NOT NULL;
+SELECT tsample(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3, :inst4]),
+  interval '1 day') IS NOT NULL;
+
+-------------------------------------------------------------------------------
 -- Restrictions — at/minusValue(s), at/minusTime, at/minusTpcbox.
 -------------------------------------------------------------------------------
 
