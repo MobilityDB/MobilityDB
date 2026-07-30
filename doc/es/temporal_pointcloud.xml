@@ -741,6 +741,36 @@ SELECT ST_AsText(startValue(tpcpoint(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]),
 			</itemizedlist>
 		</sect2>
 
+		<sect2 xml:id="tpcpoint_modifications">
+			<title>Modificaciones</title>
+			<itemizedlist>
+				<listitem xml:id="tpcpoint_insert">
+					<indexterm significance="normal"><primary><varname>insert</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>update</varname></primary></indexterm>
+					<para>Insertar un tpcpoint en otro, o actualizar otro con él</para>
+					<para><varname>insert(tpcpoint,tpcpoint,connect bool=TRUE) → tpcpoint</varname></para>
+					<para><varname>update(tpcpoint,tpcpoint,connect bool=TRUE) → tpcpoint</varname></para>
+				</listitem>
+
+				<listitem xml:id="tpcpoint_deleteTime">
+					<indexterm significance="normal"><primary><varname>deleteTime</varname></primary></indexterm>
+					<para>Eliminar un selector de tiempo (marca de tiempo, conjunto, período o conjunto de spans) de un tpcpoint</para>
+					<para><varname>deleteTime(tpcpoint,timestamptz,connect bool=TRUE) → tpcpoint</varname></para>
+					<para><varname>deleteTime(tpcpoint,tstzset,connect bool=TRUE) → tpcpoint</varname></para>
+					<para><varname>deleteTime(tpcpoint,tstzspan,connect bool=TRUE) → tpcpoint</varname></para>
+					<para><varname>deleteTime(tpcpoint,tstzspanset,connect bool=TRUE) → tpcpoint</varname></para>
+				</listitem>
+
+				<listitem xml:id="tpcpoint_appendInstant">
+					<indexterm significance="normal"><primary><varname>appendInstant</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>appendSequence</varname></primary></indexterm>
+					<para>Añadir un instante o una secuencia a un tpcpoint</para>
+					<para><varname>appendInstant(tpcpoint,tpcpoint) → tpcpoint</varname></para>
+					<para><varname>appendSequence(tpcpoint,tpcpoint) → tpcpoint</varname></para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
 		<sect2 xml:id="tpcpoint_bbox_ops">
 			<title>Operadores de caja delimitadora</title>
 			<para>Los operadores de caja delimitadora evalúan contra el <varname>tpcbox</varname> del valor; véase <xref linkend="tpcbox_topo" /> y <xref linkend="tpcbox_pos" /> para la geometría por operador. Cada operador a continuación está conectado contra <varname>tpcbox</varname>, <varname>tstzspan</varname> y el propio <varname>tpcpoint</varname>.</para>
@@ -936,6 +966,36 @@ SELECT t, point FROM points(tpcpatch(
 					<para>Restringir un tpcpatch a los puntos cuya proyección XY intersecta (o no intersecta, en el caso de minus) una geometría 2D. Z se ignora. El llamador debe garantizar la compatibilidad de SRID entre el esquema del parche y la geometría.</para>
 					<para><varname>atGeometry(tpcpatch,geometry) → tpcpatch</varname></para>
 					<para><varname>minusGeometry(tpcpatch,geometry) → tpcpatch</varname></para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="tpcpatch_modifications">
+			<title>Modificaciones</title>
+			<itemizedlist>
+				<listitem xml:id="tpcpatch_insert">
+					<indexterm significance="normal"><primary><varname>insert</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>update</varname></primary></indexterm>
+					<para>Insertar un tpcpatch en otro, o actualizar otro con él</para>
+					<para><varname>insert(tpcpatch,tpcpatch,connect bool=TRUE) → tpcpatch</varname></para>
+					<para><varname>update(tpcpatch,tpcpatch,connect bool=TRUE) → tpcpatch</varname></para>
+				</listitem>
+
+				<listitem xml:id="tpcpatch_deleteTime">
+					<indexterm significance="normal"><primary><varname>deleteTime</varname></primary></indexterm>
+					<para>Eliminar un selector de tiempo (marca de tiempo, conjunto, período o conjunto de spans) de un tpcpatch</para>
+					<para><varname>deleteTime(tpcpatch,timestamptz,connect bool=TRUE) → tpcpatch</varname></para>
+					<para><varname>deleteTime(tpcpatch,tstzset,connect bool=TRUE) → tpcpatch</varname></para>
+					<para><varname>deleteTime(tpcpatch,tstzspan,connect bool=TRUE) → tpcpatch</varname></para>
+					<para><varname>deleteTime(tpcpatch,tstzspanset,connect bool=TRUE) → tpcpatch</varname></para>
+				</listitem>
+
+				<listitem xml:id="tpcpatch_appendInstant">
+					<indexterm significance="normal"><primary><varname>appendInstant</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>appendSequence</varname></primary></indexterm>
+					<para>Añadir un instante o una secuencia a un tpcpatch</para>
+					<para><varname>appendInstant(tpcpatch,tpcpatch) → tpcpatch</varname></para>
+					<para><varname>appendSequence(tpcpatch,tpcpatch) → tpcpatch</varname></para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
