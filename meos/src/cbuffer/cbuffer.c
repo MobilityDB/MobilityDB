@@ -941,9 +941,10 @@ cbuffer_transform_pipeline(const Cbuffer *cb, const char *pipeline,
 double
 cbuffer_distance(const Cbuffer *cb1, const Cbuffer *cb2)
 {
-  const GSERIALIZED *gs1 = cbuffer_point_p(cb1);
-  const GSERIALIZED *gs2 = cbuffer_point_p(cb2);
-  double result = Max(geom_distance2d(gs1, gs2) - cb1->radius - cb2->radius, 0);
+  const POINT2D *p1 = GSERIALIZED_POINT2D_P(cbuffer_point_p(cb1));
+  const POINT2D *p2 = GSERIALIZED_POINT2D_P(cbuffer_point_p(cb2));
+  double result = Max(hypot(p2->x - p1->x, p2->y - p1->y) -
+    cb1->radius - cb2->radius, 0);
   return result;
 }
 
