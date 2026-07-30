@@ -70,3 +70,23 @@ SELECT DISTINCT trgeometryFromHexEWKB(asHexEWKB(temp)) = temp FROM tbl_trgeometr
  t
 (1 row)
 
+SELECT count(*) FROM tbl_ais_trgeometry WHERE asMFJSON(temp)::jsonb IS NULL;
+ count 
+-------
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_ais_trgeometry, generate_series(0, 15) AS d
+  WHERE asMFJSON(temp, 1, 0, d)::jsonb IS NULL;
+ count 
+-------
+     0
+(1 row)
+
+SELECT count(*) FROM tbl_ais_trgeometry
+  WHERE trgeometryFromMFJSON(asMFJSON(temp)) IS NULL;
+ count 
+-------
+     0
+(1 row)
+

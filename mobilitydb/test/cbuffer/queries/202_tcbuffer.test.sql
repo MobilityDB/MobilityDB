@@ -666,3 +666,28 @@ SELECT numSequences(tcbufferSeqSetGaps(ARRAY[
 
 -- tprecision
 SELECT asText(tprecision(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(4 0),3)@2001-01-01 00:00:04]', interval '2 secs'));
+
+-------------------------------------------------------------------------------
+-- MF-JSON output of the temporal circular buffers built from real AIS data,
+-- that is, the recorded vessel positions with a radius accounting for the
+-- position uncertainty. The AIS table keeps the full precision of the source
+-- data, which is what exposes the output corruption reported at
+-- https://github.com/MobilityDB/MobilityDB/issues/850
+-- Every query below reports the rows whose output is not valid JSON, and must
+-- thus report zero
+-------------------------------------------------------------------------------
+
+WITH ais(mmsi, temp) AS (
+  SELECT mmsi,
+    tcbufferSeq(array_agg(tcbuffer(cbuffer(geom, 10 + sog), t) ORDER BY t))
+  FROM tbl_ais_instant GROUP BY mmsi )
+SELECT count(*) FROM ais WHERE asMFJSON(temp)::jsonb IS NULL;
+
+WITH ais(mmsi, temp) AS (
+  SELECT mmsi,
+    tcbufferSeq(array_agg(tcbuffer(cbuffer(geom, 10 + sog), t) ORDER BY t))
+  FROM tbl_ais_instant GROUP BY mmsi )
+SELECT count(*) FROM ais, generate_series(0, 15) AS d
+  WHERE asMFJSON(temp, 1, 0, d)::jsonb IS NULL;
+
+-------------------------------------------------------------------------------

@@ -32,7 +32,7 @@ foreach(file ${testfiles})
         -P ${CMAKE_BINARY_DIR}/mobilitydb/test/scripts/test.cmake
       )
     set_tests_properties(${TESTNAME} PROPERTIES
-      FIXTURES_REQUIRED "DB;DBGEO;DBPOINT;DBPOSE"
+      FIXTURES_REQUIRED "DB;DBGEO;DBPOINT;DBAIS;DBPOSE"
       RESOURCE_LOCK DBLOCK)
   endif()
 endforeach()
