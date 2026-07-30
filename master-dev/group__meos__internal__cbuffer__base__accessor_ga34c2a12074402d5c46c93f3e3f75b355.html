@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: Cbuffer::vl_len_</title>
+<title>MobilityDB: cbuffer_point2d_p</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="structCbuffer.html">Cbuffer</a></li>  </ul>
+<li class="navelem"><a class="el" href="group__meos__internal__cbuffer__base__accessor.html">Accessor functions</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,28 +79,42 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="structCbuffer_a121a38c66ff48003c153580ace3679be.html#a121a38c66ff48003c153580ace3679be">radius</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="structCbuffer_a18fc747006bae18f8a1820917ea0b2cf.html#a18fc747006bae18f8a1820917ea0b2cf">srid</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="structCbuffer_acea1edabed1e0fa4082b2272fe985397.html#acea1edabed1e0fa4082b2272fe985397">vl_len_</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="structCbuffer_a651d033cc9b502f70ff77afe9e48c5dc.html#a651d033cc9b502f70ff77afe9e48c5dc">x</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="structCbuffer_ab722b42e7bb351f692e0a3e7df808fc8.html#ab722b42e7bb351f692e0a3e7df808fc8">y</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__internal__cbuffer__base__accessor_ga34c2a12074402d5c46c93f3e3f75b355.html#ga34c2a12074402d5c46c93f3e3f75b355">cbuffer_point2d_p</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="acea1edabed1e0fa4082b2272fe985397" name="acea1edabed1e0fa4082b2272fe985397"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acea1edabed1e0fa4082b2272fe985397">&#9670;&#160;</a></span>vl_len_</h2>
+<a id="ga34c2a12074402d5c46c93f3e3f75b355" name="ga34c2a12074402d5c46c93f3e3f75b355"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga34c2a12074402d5c46c93f3e3f75b355">&#9670;&#160;</a></span>cbuffer_point2d_p()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="postgres__ext__defs_8in_8h_a43d43196463bde49cb067f5c20ab8481.html#a43d43196463bde49cb067f5c20ab8481">int32</a> Cbuffer::vl_len_</td>
+          <td class="memname">const <a class="el" href="structPOINT2D.html">POINT2D</a> * cbuffer_point2d_p </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structCbuffer.html">Cbuffer</a> *&#160;</td>
+          <td class="paramname"><em>cb</em></td><td>)</td>
+          <td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-<p>Varlena header (do not touch directly!) </p>
+<p>Return a pointer to the centre point of a circular buffer. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">cb</td><td>Circular buffer </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
