@@ -1471,10 +1471,13 @@ nad_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
   if (! ensure_valid_tcbuffer_cbuffer(temp, cb))
     return DBL_MAX;
 
-  GSERIALIZED *geom = cbuffer_to_geom(cb);
-  GSERIALIZED *trav = tcbuffer_traversed_area(temp, false);
-  double result = geom_distance2d(trav, geom);
-  pfree(trav); pfree(geom);
+  /* A static disc is a constant temporal circular buffer, so the nearest
+   * approach distance is the exact plane-sweep spatial minimum the two-temporal
+   * kernel already computes, which avoids materialising the traversed area for
+   * every pair. */
+  Temporal *ctemp = tcbuffer_from_base_temp(cb, temp);
+  double result = mindistance_tcbuffer_tcbuffer(temp, ctemp, DBL_MAX);
+  pfree(ctemp);
   return result;
 }
 
