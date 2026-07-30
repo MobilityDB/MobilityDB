@@ -3509,6 +3509,9 @@
 				<title>Restricciones</title>
 				<itemizedlist>
 					<listitem>
+						<para><link linkend="tpcpoint_atValues"><varname>atValue</varname>, <varname>minusValue</varname>, <varname>atValues</varname>, <varname>minusValues</varname></link>: Restringir a (al complemento de) un valor o un conjunto de valores</para>
+					</listitem>
+					<listitem>
 						<para><link linkend="tpcpoint_atTime"><varname>atTime</varname>, <varname>minusTime</varname></link>: Restringir a (al complemento de) un selector de tiempo</para>
 					</listitem>
 					<listitem>
@@ -3585,6 +3588,9 @@
 			<sect3>
 				<title>Restricciones</title>
 				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpcpatch_atValues"><varname>atValue</varname>, <varname>minusValue</varname>, <varname>atValues</varname>, <varname>minusValues</varname></link>: Restringir a (al complemento de) un valor o un conjunto de valores</para>
+					</listitem>
 					<listitem>
 						<para><link linkend="tpcpatch_atTpcbox"><varname>atTpcbox</varname>, <varname>minusTpcbox</varname></link>: Restringir a los instantes cuyo parche se solapa con un tpcbox (nivel de parche)</para>
 					</listitem>
