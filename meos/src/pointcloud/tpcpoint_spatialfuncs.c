@@ -8,12 +8,12 @@
 
 /**
  * @file
- * @brief Instant constructor and per-point spatial predicates for the
- *   tpcpoint temporal type.
+ * @brief Per-point spatial predicates for the tpcpoint temporal type.
  *
- * Provides the three entry-points needed for per-event streaming (e.g.
- * MobilityNebula NES operators): @ref tpointcloudinst_make,
- * @ref nad_tpcpoint_geo, and @ref eintersects_tpcpoint_geo.
+ * Provides the two per-event streaming entry-points (e.g. MobilityNebula NES
+ * operators): @ref nad_tpcpoint_geo and @ref eintersects_tpcpoint_geo. The
+ * instant constructor @ref tpcpointinst_make lives with the rest of the
+ * Temporal<T> value surface in @ref tpcpoint.c.
  */
 
 #include <assert.h>
@@ -34,24 +34,6 @@
 #include "temporal/temporal.h"  /* Temporal, TInstant */
 #include "temporal/meos_catalog.h"  /* T_TPCPOINT */
 #include "pointcloud/pcpoint.h" /* struct Pcpoint body (.pcid field) */
-
-/*****************************************************************************
- * Instant constructor
- *****************************************************************************/
-
-/**
- * @ingroup meos_pointcloud_constructor
- * @brief Return a tpcpoint instant from a pcpoint value and a timestamp
- * @param[in] pt Pcpoint value
- * @param[in] t Timestamp
- * @csqlfn #Tpointcloudinst_make()
- */
-TInstant *
-tpointcloudinst_make(const Pcpoint *pt, TimestampTz t)
-{
-  VALIDATE_NOT_NULL(pt, NULL);
-  return tinstant_make(PointerGetDatum(pt), T_TPCPOINT, t);
-}
 
 /*****************************************************************************
  * Internal helpers

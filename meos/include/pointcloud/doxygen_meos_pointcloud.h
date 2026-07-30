@@ -65,15 +65,15 @@
  *****************************************************************************/
 
 /**
- * @defgroup meos_pointcloud_inout Input and output functions
+ * @defgroup meos_pointcloud_base_inout Input and output functions
  * @ingroup meos_pointcloud_base
  * @brief Hex-WKB input / output functions for pcpoint and pcpatch
  *
- * @defgroup meos_pointcloud_accessor Accessor functions
+ * @defgroup meos_pointcloud_base_accessor Accessor functions
  * @ingroup meos_pointcloud_base
  * @brief Schema-aware coordinate accessors and metadata for pcpoint / pcpatch
  *
- * @defgroup meos_pointcloud_comp Comparison functions
+ * @defgroup meos_pointcloud_base_comp Comparison functions
  * @ingroup meos_pointcloud_base
  * @brief Equality, ordering, and hashing for pcpoint and pcpatch
  */
@@ -157,6 +157,14 @@
  * @defgroup meos_pointcloud_constructor Constructor functions
  * @ingroup meos_pointcloud
  * @brief Constructor functions for temporal pgpointcloud types
+ *
+ * @defgroup meos_pointcloud_accessor Accessor functions
+ * @ingroup meos_pointcloud
+ * @brief Accessor functions for temporal pgpointcloud types
+ *
+ * @defgroup meos_pointcloud_restrict Restriction functions
+ * @ingroup meos_pointcloud
+ * @brief Restriction functions for temporal pgpointcloud types
  *
  * @defgroup meos_pointcloud_dist Distance functions
  * @ingroup meos_pointcloud

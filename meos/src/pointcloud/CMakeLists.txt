@@ -43,9 +43,15 @@ if(POINTCLOUD)
     # fast points(tpcpatch) SRF) delegate into.
     pcpatch_decompose.c
 
-    # Instant constructor and per-point geo-spatial predicates for tpcpoint:
-    # tpointcloudinst_make, eintersects_tpcpoint_geo, nad_tpcpoint_geo.
+    # Per-point geo-spatial predicates for tpcpoint: eintersects_tpcpoint_geo,
+    # nad_tpcpoint_geo.
     tpcpoint_spatialfuncs.c
+
+    # Temporal<T> value surface (constructors, accessors, restrictions) for the
+    # temporal pgpointcloud types, generated from the tjsonb reference by
+    # tools/codegen/temporal_basetype/generate.py.
+    tpcpoint.c
+    tpcpatch.c
   )
 
   # Probe whether the linked libpc.a already declares pc_patch_deserialize

@@ -393,10 +393,61 @@ extern bool overafter_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2);
 extern bool ensure_same_pcid_tpcbox(const TPCBox *box1, const TPCBox *box2);
 
 /*****************************************************************************
- * tpcpoint constructor and spatial predicates
+ * Temporal pgpointcloud types (tpcpoint / tpcpatch) — value surface
  *****************************************************************************/
 
-extern TInstant *tpointcloudinst_make(const Pcpoint *pt, TimestampTz t);
+#if MEOS
+  #define VALIDATE_TPCPOINT(temp, ret) \
+    do { \
+          if (! ensure_not_null((void *) (temp)) || \
+              ! ensure_temporal_isof_type((Temporal *) (temp), T_TPCPOINT) ) \
+           return (ret); \
+    } while (0)
+  #define VALIDATE_TPCPATCH(temp, ret) \
+    do { \
+          if (! ensure_not_null((void *) (temp)) || \
+              ! ensure_temporal_isof_type((Temporal *) (temp), T_TPCPATCH) ) \
+           return (ret); \
+    } while (0)
+#else
+  #define VALIDATE_TPCPOINT(temp, ret) \
+    do { assert(temp); \
+      assert(((Temporal *) (temp))->temptype == T_TPCPOINT); } while (0)
+  #define VALIDATE_TPCPATCH(temp, ret) \
+    do { assert(temp); \
+      assert(((Temporal *) (temp))->temptype == T_TPCPATCH); } while (0)
+#endif
+
+extern TInstant *tpcpointinst_make(const Pcpoint *pt, TimestampTz t);
+extern TSequence *tpcpointseq_from_base_tstzset(const Pcpoint *pt, const Set *s);
+extern TSequence *tpcpointseq_from_base_tstzspan(const Pcpoint *pt, const Span *sp);
+extern TSequenceSet *tpcpointseqset_from_base_tstzspanset(const Pcpoint *pt, const SpanSet *ss);
+extern Temporal *tpcpoint_from_base_temp(const Pcpoint *pt, const Temporal *temp);
+extern Pcpoint *tpcpoint_start_value(const Temporal *temp);
+extern Pcpoint *tpcpoint_end_value(const Temporal *temp);
+extern bool tpcpoint_value_n(const Temporal *temp, int n, Pcpoint **result);
+extern Pcpoint **tpcpoint_values(const Temporal *temp, int *count);
+extern bool tpcpoint_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict, Pcpoint **value);
+extern Temporal *tpcpoint_at_value(const Temporal *temp, const Pcpoint *pt);
+extern Temporal *tpcpoint_minus_value(const Temporal *temp, const Pcpoint *pt);
+
+extern TInstant *tpcpatchinst_make(const Pcpatch *pa, TimestampTz t);
+extern TSequence *tpcpatchseq_from_base_tstzset(const Pcpatch *pa, const Set *s);
+extern TSequence *tpcpatchseq_from_base_tstzspan(const Pcpatch *pa, const Span *sp);
+extern TSequenceSet *tpcpatchseqset_from_base_tstzspanset(const Pcpatch *pa, const SpanSet *ss);
+extern Temporal *tpcpatch_from_base_temp(const Pcpatch *pa, const Temporal *temp);
+extern Pcpatch *tpcpatch_start_value(const Temporal *temp);
+extern Pcpatch *tpcpatch_end_value(const Temporal *temp);
+extern bool tpcpatch_value_n(const Temporal *temp, int n, Pcpatch **result);
+extern Pcpatch **tpcpatch_values(const Temporal *temp, int *count);
+extern bool tpcpatch_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict, Pcpatch **value);
+extern Temporal *tpcpatch_at_value(const Temporal *temp, const Pcpatch *pa);
+extern Temporal *tpcpatch_minus_value(const Temporal *temp, const Pcpatch *pa);
+
+/*****************************************************************************
+ * tpcpoint spatial predicates
+ *****************************************************************************/
+
 extern bool eintersects_tpcpoint_geo(const Temporal *temp,
   const GSERIALIZED *gs);
 extern double nad_tpcpoint_geo(const Temporal *temp, const GSERIALIZED *gs);
