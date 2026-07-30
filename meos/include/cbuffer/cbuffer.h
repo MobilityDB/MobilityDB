@@ -104,9 +104,6 @@ extern Cbuffer *cbuffer_transf_pj(const Cbuffer *cb, int32_t srid_to, const LWPR
 
 extern double cbuffer_distance(const Cbuffer *cb1, const Cbuffer *cb2);
 extern Datum datum_cbuffer_distance(Datum cb1, Datum cb2);
-extern int cbuffersegm_distance_turnpt(const Cbuffer *start1,
-  const Cbuffer *end1, const Cbuffer *start2, const Cbuffer *end2,
-  TimestampTz lower, TimestampTz upper, TimestampTz *t1, TimestampTz *t2);
 
 /* Spatial relationship functions */
 
