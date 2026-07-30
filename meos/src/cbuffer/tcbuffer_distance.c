@@ -1350,6 +1350,34 @@ nad_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
 }
 
 /**
+ * @brief Return a lower bound on the distance between two synchronized linear
+ * temporal circular buffer segments
+ * @details A moving disc stays within the bounding box of its two endpoint
+ * centres, so the box-to-box distance of the centre boxes minus the larger
+ * endpoint radius of each disc bounds the signed gap below. The bound is
+ * signed (negative when the discs may overlap), matching #cbuffer_distance
+ */
+static double
+tcbufferseg_distance_lb(Datum start1, Datum end1, Datum start2, Datum end2)
+{
+  const Cbuffer *cs1 = DatumGetCbufferP(start1);
+  const Cbuffer *ce1 = DatumGetCbufferP(end1);
+  const Cbuffer *cs2 = DatumGetCbufferP(start2);
+  const Cbuffer *ce2 = DatumGetCbufferP(end2);
+  const POINT2D *s1 = GSERIALIZED_POINT2D_P(cbuffer_point_p(cs1));
+  const POINT2D *e1 = GSERIALIZED_POINT2D_P(cbuffer_point_p(ce1));
+  const POINT2D *s2 = GSERIALIZED_POINT2D_P(cbuffer_point_p(cs2));
+  const POINT2D *e2 = GSERIALIZED_POINT2D_P(cbuffer_point_p(ce2));
+  double r1 = fmax(cs1->radius, ce1->radius);
+  double r2 = fmax(cs2->radius, ce2->radius);
+  double dx = fmax(fmax(fmin(s1->x, e1->x) - fmax(s2->x, e2->x),
+    fmin(s2->x, e2->x) - fmax(s1->x, e1->x)), 0.0);
+  double dy = fmax(fmax(fmin(s1->y, e1->y) - fmax(s2->y, e2->y),
+    fmin(s2->y, e2->y) - fmax(s1->y, e1->y)), 0.0);
+  return sqrt(dx * dx + dy * dy) - r1 - r2;
+}
+
+/**
  * @ingroup meos_cbuffer_dist
  * @brief Return the nearest approach distance of two temporal circular buffers
  * @param[in] temp1,temp2 Temporal circular buffers
@@ -1370,7 +1398,7 @@ nad_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
   {
     TimestampTz t;
     double d = nad_tcont_tcont_sync(temp1, temp2, &datum_cbuffer_distance,
-      &tcbuffersegm_distance_turnpt, &t);
+      &tcbuffersegm_distance_turnpt, &tcbufferseg_distance_lb, &t);
     if (d != DBL_MAX)
       return d;
   }
