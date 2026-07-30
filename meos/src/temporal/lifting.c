@@ -1467,6 +1467,8 @@ tfunc_tcontseq_tcontseq_single(const TSequence *seq1, const TSequence *seq2,
   TInstant *prev1 = NULL, *prev2 = NULL; /* make compiler quiet */
   TimestampTz lower = DatumGetTimestampTz(inter->lower);
   TimestampTz upper = DatumGetTimestampTz(inter->upper);
+  interpType interp1 = MEOS_FLAGS_GET_INTERP(seq1->flags);
+  interpType interp2 = MEOS_FLAGS_GET_INTERP(seq2->flags);
   int i = 0, j = 0, ninsts = 0, nfree = 0;
   if (inst1->t < lower)
   {
@@ -1493,14 +1495,19 @@ tfunc_tcontseq_tcontseq_single(const TSequence *seq1, const TSequence *seq2,
     }
     else if (cmp < 0)
     {
+      /* Interpolate seq2 at inst1->t on its current segment, known from the
+       * merge position [j-1, j], avoiding a per-instant binary search */
       i++;
-      inst2 = tcontseq_at_timestamptz(seq2, inst1->t);
+      const TInstant *b1 = TSEQUENCE_INST_N(seq2, j - 1);
+      inst2 = tsegment_at_timestamptz(b1, inst2, interp2, inst1->t);
       tofree[nfree++] = inst2;
     }
     else
     {
+      /* Interpolate seq1 at inst2->t on its current segment [i-1, i] */
       j++;
-      inst1 = tcontseq_at_timestamptz(seq1, inst2->t);
+      const TInstant *a1 = TSEQUENCE_INST_N(seq1, i - 1);
+      inst1 = tsegment_at_timestamptz(a1, inst1, interp1, inst2->t);
       tofree[nfree++] = inst1;
     }
     /* If not the first instant compute the function on the potential
