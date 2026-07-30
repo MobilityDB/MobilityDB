@@ -3724,7 +3724,10 @@ geo_as_geojson(const GSERIALIZED *gs, int option, int precision,
 
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   lwvarlena_t *txt = lwgeom_to_geojson(geom, srs, precision, output_bbox);
-  char *result = pstrdup(VARDATA(txt));
+  /* The result of lwgeom_to_geojson is a length-prefixed lwvarlena_t whose data
+   * is not null-terminated; copy exactly its length so the string does not read
+   * past the end into adjacent memory */
+  char *result = pnstrdup(VARDATA(txt), LWSIZE_GET(txt->size) - LWVARHDRSZ);
   lwgeom_free(geom); pfree(txt);
   return result;
 }
