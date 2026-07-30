@@ -125,4 +125,9 @@ RESET enable_seqscan;
 RESET enable_indexscan;
 RESET enable_bitmapscan;
 
+-- typanalyze: ANALYZE must succeed on the temporal pointcloud columns; tspatial_analyze
+-- projects each TPCBox bounding box to an STBox for the spatial statistics
+ANALYZE tbl_tpcpoint;
+ANALYZE tbl_tpcpatch;
+
 -------------------------------------------------------------------------------

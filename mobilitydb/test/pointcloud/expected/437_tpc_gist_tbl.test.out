@@ -168,3 +168,7 @@ RESET enable_indexscan;
 RESET
 RESET enable_bitmapscan;
 RESET
+ANALYZE tbl_tpcpoint;
+ANALYZE
+ANALYZE tbl_tpcpatch;
+ANALYZE
