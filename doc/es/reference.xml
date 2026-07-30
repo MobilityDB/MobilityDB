@@ -3494,6 +3494,18 @@
 			</sect3>
 
 			<sect3>
+				<title>Transformaciones</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpcpoint_subtype"><varname>tpcpointInst</varname>, <varname>tpcpointSeq</varname>, <varname>tpcpointSeqSet</varname></link>: Transformar un tpcpoint en otro subtipo</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpoint_setInterp"><varname>setInterp</varname></link>: Transformar un tpcpoint a otra interpolación</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
 				<title>Comparaciones</title>
 				<itemizedlist>
 					<listitem>
@@ -3580,6 +3592,19 @@
 					</listitem>
 					<listitem>
 						<para><link linkend="tpcpatch_points"><varname>points</varname></link>: Función que devuelve conjuntos, emitiendo una fila por (marca de tiempo, pcpoint)</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+
+			<sect3>
+				<title>Transformaciones</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpcpatch_subtype"><varname>tpcpatchInst</varname>, <varname>tpcpatchSeq</varname>, <varname>tpcpatchSeqSet</varname></link>: Transformar un tpcpatch en otro subtipo</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpatch_setInterp"><varname>setInterp</varname></link>: Transformar un tpcpatch a otra interpolación</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

@@ -369,6 +369,51 @@ CREATE FUNCTION numPoints(tpcpatch)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
+ * Transformation functions
+ ******************************************************************************/
+
+CREATE FUNCTION tpcpatchInst(tpcpatch)
+  RETURNS tpcpatch
+  AS 'MODULE_PATHNAME', 'Temporal_as_tinstant'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- The function is not strict
+CREATE FUNCTION tpcpatchSeq(tpcpatch, text DEFAULT NULL)
+  RETURNS tpcpatch
+  AS 'MODULE_PATHNAME', 'Temporal_as_tsequence'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+-- The function is not strict
+CREATE FUNCTION tpcpatchSeqSet(tpcpatch)
+  RETURNS tpcpatch
+  AS 'MODULE_PATHNAME', 'Temporal_as_tsequenceset'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+CREATE FUNCTION setInterp(tpcpatch, text)
+  RETURNS tpcpatch
+  AS 'MODULE_PATHNAME', 'Temporal_set_interp'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION shiftTime(tpcpatch, interval)
+  RETURNS tpcpatch
+  AS 'MODULE_PATHNAME', 'Temporal_shift_time'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION scaleTime(tpcpatch, interval)
+  RETURNS tpcpatch
+  AS 'MODULE_PATHNAME', 'Temporal_scale_time'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION shiftScaleTime(tpcpatch, interval, interval)
+  RETURNS tpcpatch
+  AS 'MODULE_PATHNAME', 'Temporal_shift_scale_time'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tsample(tpcpatch, duration interval,
+  origin timestamptz DEFAULT '2000-01-03', interp text DEFAULT 'discrete')
+  RETURNS tpcpatch
+  AS 'MODULE_PATHNAME', 'Temporal_tsample'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************
  * Restrictions
  ******************************************************************************/
 

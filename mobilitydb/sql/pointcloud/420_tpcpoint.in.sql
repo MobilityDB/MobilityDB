@@ -403,6 +403,51 @@ CREATE FUNCTION tgeompoint(tpcpoint)
 CREATE CAST (tpcpoint AS tgeompoint) WITH FUNCTION tgeompoint(tpcpoint);
 
 /******************************************************************************
+ * Transformation functions
+ ******************************************************************************/
+
+CREATE FUNCTION tpcpointInst(tpcpoint)
+  RETURNS tpcpoint
+  AS 'MODULE_PATHNAME', 'Temporal_as_tinstant'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- The function is not strict
+CREATE FUNCTION tpcpointSeq(tpcpoint, text DEFAULT NULL)
+  RETURNS tpcpoint
+  AS 'MODULE_PATHNAME', 'Temporal_as_tsequence'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+-- The function is not strict
+CREATE FUNCTION tpcpointSeqSet(tpcpoint)
+  RETURNS tpcpoint
+  AS 'MODULE_PATHNAME', 'Temporal_as_tsequenceset'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+CREATE FUNCTION setInterp(tpcpoint, text)
+  RETURNS tpcpoint
+  AS 'MODULE_PATHNAME', 'Temporal_set_interp'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION shiftTime(tpcpoint, interval)
+  RETURNS tpcpoint
+  AS 'MODULE_PATHNAME', 'Temporal_shift_time'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION scaleTime(tpcpoint, interval)
+  RETURNS tpcpoint
+  AS 'MODULE_PATHNAME', 'Temporal_scale_time'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION shiftScaleTime(tpcpoint, interval, interval)
+  RETURNS tpcpoint
+  AS 'MODULE_PATHNAME', 'Temporal_shift_scale_time'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tsample(tpcpoint, duration interval,
+  origin timestamptz DEFAULT '2000-01-03', interp text DEFAULT 'discrete')
+  RETURNS tpcpoint
+  AS 'MODULE_PATHNAME', 'Temporal_tsample'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************
  * Restrictions
  ******************************************************************************/
 
