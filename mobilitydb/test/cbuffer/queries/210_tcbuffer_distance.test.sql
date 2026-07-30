@@ -92,6 +92,8 @@ SELECT round(minDistance(tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer
 
 SELECT round(minDistance(tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(10 0), 0.5)@2000-01-02]', cbuffer 'Cbuffer(Point(5 5), 1)')::numeric, 6);
 SELECT round(minDistance(cbuffer 'Cbuffer(Point(5 5), 1)', tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(10 0), 0.5)@2000-01-02]')::numeric, 6);
+-- Moving disc closest to the static disc at (5,0): 5 - 1 (moving) - 2 (static) = 2
+SELECT round(cbuffer 'Cbuffer(Point(5 5), 2)' |=| tcbuffer '[Cbuffer(Point(0 0), 1)@2000-01-01, Cbuffer(Point(10 0), 1)@2000-01-02]', 6);
 
 -------------------------------------------------------------------------------
 -- minDistance(tcbuffer, tcbuffer) -- 2-ary aggregate, time-agnostic spatial
