@@ -394,6 +394,58 @@ def render_dwithin(fam: dict) -> str:
     return "\n\n".join(out) + "\n"
 
 
+# --- native temporal spatial relationships (SQL, whole-file) -------------
+# A native family (cbuffer, geo) implements its temporal spatial relationships
+# (tContains..tDwithin -> tbool) as C functions declared with
+# `AS 'MODULE_PATHNAME', '<Symbol>'`, not SQL cast-wrappers. Every (predicate,
+# direction) is a uniform four-line CREATE FUNCTION; the family lists its ordered
+# directions (each a left/right argument type; `geometry` tokenizes to `geo` in the
+# C symbol T<rel>_<left>_<right>) and its predicate set. tDwithin carries an extra
+# `dist float` argument.
+_NATIVE_TSR_FN = (
+    "CREATE FUNCTION {PRED}({LEFT}, {RIGHT}{DIST})\n"
+    "  RETURNS tbool\n"
+    "  AS 'MODULE_PATHNAME', '{SYMBOL}'\n"
+    "  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;")
+
+
+# The C symbol names the operation at the SUPERCLASS level: `geo` covers
+# geometry/geography and `tgeo` covers tgeometry/tgeography (tgeography is not there
+# yet but may be one day); every other type is its own token. The SQL signature
+# still carries the concrete argument type.
+_NATIVE_TSR_SUPERCLASS = {
+    "geometry": "geo", "geography": "geo",
+    "tgeometry": "tgeo", "tgeography": "tgeo",
+}
+
+
+def _native_tsr_token(t: str) -> str:
+    """The C-symbol superclass token for a concrete argument type."""
+    return _NATIVE_TSR_SUPERCLASS.get(t, t)
+
+
+def render_native_tempspatialrels(fam: dict) -> str:
+    """Render the whole native temporal-spatialrels SQL file from
+    tempspatialrels_native.sql.tmpl: per predicate a banner and one CREATE FUNCTION
+    per direction, backed by the C symbol T<rel>_<left-token>_<right-token>."""
+    tmpl = (TEMPLATES / "tempspatialrels_native.sql.tmpl").read_text()
+    banner = ("/*****************************************************************************\n"
+              " * {PRED}\n"
+              " *****************************************************************************/")
+    units = []
+    for pred in fam["predicates"]:
+        dist = ", dist float" if pred == "tDwithin" else ""
+        stem = "T" + pred[1:].lower()                      # tContains -> Tcontains
+        fns = [_NATIVE_TSR_FN.format(
+                   PRED=pred, LEFT=d["l"], RIGHT=d["r"], DIST=dist,
+                   SYMBOL=f"{stem}_{_native_tsr_token(d['l'])}_{_native_tsr_token(d['r'])}")
+               for d in fam["directions"]]
+        units.append(banner.replace("{PRED}", pred) + "\n\n" + "\n".join(fns))
+    doc = f"/**\n * @file\n * @brief Temporal spatial relationships for {fam['brief']}\n */"
+    return (BANNER.format(tmpl="tempspatialrels_native.sql.tmpl")
+            + tmpl.replace("{DOC}", doc).replace("{BODY}", "\n\n".join(units)))
+
+
 # --- SQL accessors (per-family, region-in-file) --------------------------
 # The Temporal<T> accessor surface (tempSubtype..segments) is declared INLINE in
 # each family's type file (052_tgeo, 202_tcbuffer, ...), not a separate numbered
@@ -716,6 +768,23 @@ def main() -> int:
                         break
                 if len(g) != len(c):
                     print(f"     line count gen={len(g)} cur={len(c)}")
+        for fam in mf.get("native_tempspatialrel_families", []):
+            p = ROOT / fam["file"]
+            gen = render_native_tempspatialrels(fam)
+            cur = p.read_text() if p.exists() else ""
+            same = gen == cur
+            ok = ok and same
+            print(f"[{'OK ' if same else 'DIFF'}] self-regen native-tempspatialrels "
+                  f"{fam['family']} -> {pathlib.Path(fam['file'])}")
+            if not same:
+                g, c = gen.splitlines(), cur.splitlines()
+                for n, (a, b) in enumerate(zip(g, c), 1):
+                    if a != b:
+                        print(f"     first diff line {n}:\n       gen: {a!r}\n"
+                              f"       cur: {b!r}")
+                        break
+                if len(g) != len(c):
+                    print(f"     line count gen={len(g)} cur={len(c)}")
         return 0 if ok else 1
 
     for sub in subs:
@@ -729,6 +798,14 @@ def main() -> int:
             p.parent.mkdir(parents=True, exist_ok=True)
             p.write_text(render(beh, sub))
             print(f"wrote {p.relative_to(ROOT)}")
+
+    for fam in mf.get("native_tempspatialrel_families", []):
+        p = ROOT / fam["file"]
+        if args.check:
+            print(f"would write {p.relative_to(ROOT)}")
+            continue
+        p.write_text(render_native_tempspatialrels(fam))
+        print(f"wrote {p.relative_to(ROOT)}")
 
     for bt in mf.get("boxtypes", []):
         if bt.get("reference"):

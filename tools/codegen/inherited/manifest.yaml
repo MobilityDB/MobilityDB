@@ -520,6 +520,25 @@ spatialrel_families:
           - {type: "Temporal *", var: temp2, pos: 1}
 
 # ---------------------------------------------------------------------------
+# Native temporal spatial relationships (SQL, whole-file). A native family
+# implements the temporal relationships (tXxx -> tbool) as C functions declared
+# with AS 'MODULE_PATHNAME','<Symbol>' rather than SQL cast-wrappers. Each family
+# lists its ordered directions (left/right argument type; `geometry` tokenizes to
+# `geo` in the C symbol T<rel>_<left>_<right>) and its predicate set; the whole
+# file is generated from templates/tempspatialrels_native.sql.tmpl.
+native_tempspatialrel_families:
+  - family:  cbuffer
+    file:    mobilitydb/sql/cbuffer/214_tcbuffer_tempspatialrels.in.sql
+    brief:   "temporal circular buffers"
+    predicates: [tContains, tCovers, tDisjoint, tIntersects, tTouches, tDwithin]
+    directions:
+      - {l: cbuffer,  r: tcbuffer}
+      - {l: tcbuffer, r: cbuffer}
+      - {l: geometry, r: tcbuffer}
+      - {l: tcbuffer, r: geometry}
+      - {l: tcbuffer, r: tcbuffer}
+
+# ---------------------------------------------------------------------------
 # Accessor axis (SQL, per-family, region-in-file). The whole Temporal<T> accessor
 # surface (tempSubtype..segments) lives INLINE in each family's type file and
 # follows ONE canonical order for every temporal type — the order of the
