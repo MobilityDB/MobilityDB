@@ -31,7 +31,7 @@
 
 extern char *database_locale;
 
-extern pg_locale_t create_pg_locale_builtin(Oid collid);
+extern pg_locale_t meos_create_pg_locale_builtin(Oid collid);
 extern char *get_collation_actual_version_builtin(const char *collcollate);
 extern size_t strlower_builtin(char *dest, size_t destsize, const char *src,
   ssize_t srclen, pg_locale_t locale);
@@ -126,7 +126,7 @@ strfold_builtin(char *dest, size_t destsize, const char *src, ssize_t srclen,
 }
 
 pg_locale_t
-create_pg_locale_builtin(Oid collid)
+meos_create_pg_locale_builtin(Oid collid)
 {
   const char *locstr;
   pg_locale_t result;
@@ -143,7 +143,7 @@ create_pg_locale_builtin(Oid collid)
     locstr = rec->locale;
   }
 
-  builtin_validate_locale(GetDatabaseEncoding(), locstr);
+  meos_builtin_validate_locale(GetDatabaseEncoding(), locstr);
   result = palloc0(sizeof(struct pg_locale_struct));
   result->info.builtin.locale = strdup(locstr);
   result->info.builtin.casemap_full = (strcmp(locstr, "PG_UNICODE_FAST") == 0);

@@ -69,11 +69,18 @@ static pg_con_fn ToClientConvProc = NULL;
 static pg_con_fn Utf8ToServerConvProc = NULL;
 
 /*
- * These variables track the currently-selected encodings.
+ * These variables track the selected encodings.
+ *
+ * MEOS uses UTF-8 as its default encoding: the standalone library pins the
+ * builtin C.UTF-8 default collation (see meos_initialize_collation), which is
+ * valid only in a UTF-8 database, and UTF-8 awareness is the purpose of
+ * vendoring the encoding and collation code. In the PostgreSQL extension these
+ * symbols are interposed by the backend, which sets them from the database
+ * encoding, so this default applies only to the standalone build.
  */
-static const pg_enc2name *ClientEncoding = &pg_enc2name_tbl[PG_SQL_ASCII];
-static const pg_enc2name *DatabaseEncoding = &pg_enc2name_tbl[PG_SQL_ASCII];
-static const pg_enc2name *MessageEncoding = &pg_enc2name_tbl[PG_SQL_ASCII];
+static const pg_enc2name *ClientEncoding = &pg_enc2name_tbl[PG_UTF8];
+static const pg_enc2name *DatabaseEncoding = &pg_enc2name_tbl[PG_UTF8];
+static const pg_enc2name *MessageEncoding = &pg_enc2name_tbl[PG_UTF8];
 
 /* Internal functions */
 static char *perform_default_encoding_conversion(const char *src,

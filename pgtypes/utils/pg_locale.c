@@ -42,7 +42,13 @@
 #include "utils/builtins.h"
 #include "utils/guc.h"
 #include "utils/memutils.h"
+#include "utils/palloc.h"  /* MEOS: MemoryContext + MemoryContextSwitchTo (backend build) */
 #include "utils/pg_locale.h"
+
+/* MEOS: the vendored memutils.h omits this backend global; declare it locally,
+ * as dynahash.c does, so the extension can pin default_locale in a persistent
+ * context (see meos_initialize_collation). */
+extern PGDLLIMPORT MemoryContext TopMemoryContext;
 
 #include "../../meos/include/meos_tls.h"  /* MEOS: MEOS_TLS */
 
@@ -84,7 +90,7 @@
 #define    MAX_L10N_DATA    80
 
 /* pg_locale_builtin.c */
-extern pg_locale_t create_pg_locale_builtin(Oid collid);
+extern pg_locale_t meos_create_pg_locale_builtin(Oid collid);
 extern char *get_collation_actual_version_builtin(const char *collcollate);
 
 /* pg_locale_icu.c */
@@ -92,10 +98,10 @@ extern char *get_collation_actual_version_builtin(const char *collcollate);
 extern UCollator *pg_ucol_open(const char *loc_str);
 extern char *get_collation_actual_version_icu(const char *collcollate);
 #endif
-extern pg_locale_t create_pg_locale_icu(Oid collid);
+extern pg_locale_t meos_create_pg_locale_icu(Oid collid);
 
 /* pg_locale_libc.c */
-extern pg_locale_t create_pg_locale_libc(Oid collid);
+extern pg_locale_t meos_create_pg_locale_libc(Oid collid);
 extern char *get_collation_actual_version_libc(const char *collcollate);
 
 extern size_t strlower_builtin(char *dst, size_t dstsize, const char *src,
@@ -166,8 +172,11 @@ static const char *COLLATIONPROVIDER[] =
   [COLLPROV_LIBC] = "c",
 };
 
-/* Global variables added by MEOS */
-char *database_locale = "C";
+/* Global variables added by MEOS.
+ * The builtin C.UTF-8 locale makes text handling UTF-8 aware (Unicode case
+ * mapping) while keeping collation deterministic (memcmp), so text hashing and
+ * ordering stay host-independent across PostgreSQL versions. */
+char *database_locale = "C.UTF-8";
 char *database_locprovider = "b";
 char *database_icurules = NULL;
 char *database_ctype = NULL;
@@ -1220,11 +1229,11 @@ create_pg_locale(Oid collid)
   
   pg_locale_t result;
   if (rec->provider == COLLPROVIDER_BUILTIN)
-    result = create_pg_locale_builtin(collid);
+    result = meos_create_pg_locale_builtin(collid);
   else if (rec->provider == COLLPROVIDER_ICU)
-    result = create_pg_locale_icu(collid);
+    result = meos_create_pg_locale_icu(collid);
   else if (rec->provider == COLLPROVIDER_LIBC)
-    result = create_pg_locale_libc(collid);
+    result = meos_create_pg_locale_libc(collid);
   else
   {
     /* shouldn't happen */
@@ -1279,12 +1288,24 @@ meos_initialize_collation(void)
 {
   Assert(default_locale == NULL);
   pg_locale_t result = {0};
+#if ! MEOS
+  /*
+   * In the PostgreSQL extension the default locale is built lazily on the first
+   * text operation, i.e. inside a query whose CurrentMemoryContext is
+   * short-lived (typically a per-tuple context). Allocate it in
+   * TopMemoryContext so the session-global @p default_locale keeps pointing at
+   * live memory after that context resets; otherwise it dangles and the next
+   * tuple's data is read as the locale struct. The standalone library builds it
+   * once in meos_initialize(), already in a persistent context.
+   */
+  MemoryContext oldcontext = MemoryContextSwitchTo(TopMemoryContext);
+#endif /* ! MEOS */
   if (strcmp(database_locprovider, COLLATIONPROVIDER[COLLPROV_BUILTIN]) == 0)
-    result = create_pg_locale_builtin(DEFAULT_COLLATION_OID);
+    result = meos_create_pg_locale_builtin(DEFAULT_COLLATION_OID);
   else if (strcmp(database_locprovider, COLLATIONPROVIDER[COLLPROV_ICU]) == 0)
-    result = create_pg_locale_icu(DEFAULT_COLLATION_OID);
+    result = meos_create_pg_locale_icu(DEFAULT_COLLATION_OID);
   else if (strcmp(database_locprovider, COLLATIONPROVIDER[COLLPROV_LIBC]) == 0)
-    result = create_pg_locale_libc(DEFAULT_COLLATION_OID);
+    result = meos_create_pg_locale_libc(DEFAULT_COLLATION_OID);
   else
     /* shouldn't happen */
     PGLOCALE_SUPPORT_ERROR(database_locprovider[0]); /* MEOS */
@@ -1293,6 +1314,9 @@ meos_initialize_collation(void)
   if (default_locale != NULL)
     pfree(default_locale);
   default_locale = result;
+#if ! MEOS
+  MemoryContextSwitchTo(oldcontext);
+#endif /* ! MEOS */
   return;
 }
 
@@ -1320,13 +1344,28 @@ meos_finalize_collation(void)
  * it shouldn't cost much.
  */
 pg_locale_t
-pg_newlocale_from_collation(Oid collid)
+meos_pg_newlocale_from_collation(Oid collid)
 {
   collation_cache_entry *cache_entry;
   bool found;
 
   if (collid == DEFAULT_COLLATION_OID)
+  {
+    /*
+     * MEOS pins its own deterministic default collation (database_locale =
+     * "C.UTF-8", built by meos_create_pg_locale_builtin) so that text hashing
+     * and comparison
+     * are host-independent -- rather than following the backend's default
+     * collation, whose provider/behaviour varies across PostgreSQL versions.
+     * The standalone library sets this up in meos_initialize(); the PostgreSQL
+     * extension does not run that path, so build it lazily on first use (inside
+     * a query, where the catalog is available). This must never return NULL:
+     * varstr_cmp and friends dereference the locale without a NULL check.
+     */
+    if (default_locale == NULL)
+      meos_initialize_collation();
     return default_locale;
+  }
 
   if (! OidIsValid(collid))
   {
@@ -1593,7 +1632,7 @@ pg_strnxfrm_prefix(char *dest, size_t destsize, const char *src,
  * valid for the locale
  */
 int
-builtin_locale_encoding(const char *locale)
+meos_builtin_locale_encoding(const char *locale)
 {
   if (strcmp(locale, "C") == 0)
     return -1;
@@ -1612,7 +1651,7 @@ builtin_locale_encoding(const char *locale)
  * of the locale name.
  */
 const char *
-builtin_validate_locale(int encoding, const char *locale)
+meos_builtin_validate_locale(int encoding, const char *locale)
 {
   const char *canonical_name = NULL;
 
@@ -1629,7 +1668,7 @@ builtin_validate_locale(int encoding, const char *locale)
     return NULL;
   }
 
-  int required_encoding = builtin_locale_encoding(canonical_name);
+  int required_encoding = meos_builtin_locale_encoding(canonical_name);
   if (required_encoding >= 0 && encoding != required_encoding)
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,

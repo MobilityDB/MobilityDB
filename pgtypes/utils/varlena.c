@@ -795,7 +795,7 @@ text_position(const text *txt1, const text *txt2, Oid collid)
 
   /* Otherwise, can't match if haystack is shorter than needle */
   // if (VARSIZE_ANY_EXHDR(txt1) < VARSIZE_ANY_EXHDR(txt2) &&
-    // pg_newlocale_from_collation(collid)->deterministic)
+    // meos_pg_newlocale_from_collation(collid)->deterministic)
   if (VARSIZE_ANY_EXHDR(txt1) < VARSIZE_ANY_EXHDR(txt2))
     return 0;
 
@@ -849,7 +849,7 @@ text_position_setup(text *txt1, text *txt2, Oid collid,
   int len2 = VARSIZE_ANY_EXHDR(txt2);
 
   check_collation_set(collid);
-  state->locale = pg_newlocale_from_collation(collid);
+  state->locale = meos_pg_newlocale_from_collation(collid);
 
   /*
    * Most callers need greedy mode, but some might want to unset this to
@@ -1227,7 +1227,7 @@ varstr_cmp(const char *txt1, int len1, const char *txt2, int len2, Oid collid)
   check_collation_set(collid);
 
   int result;
-  pg_locale_t mylocale = pg_newlocale_from_collation(collid);
+  pg_locale_t mylocale = meos_pg_newlocale_from_collation(collid);
   if (mylocale->collate_is_c)
   {
     result = memcmp(txt1, txt2, Min(len1, len2));
@@ -1290,7 +1290,7 @@ text_eq(const text *txt1, const text *txt2)
   bool result;
 
   check_collation_set(collid);
-  pg_locale_t mylocale = pg_newlocale_from_collation(collid);
+  pg_locale_t mylocale = meos_pg_newlocale_from_collation(collid);
   if (! mylocale || mylocale->deterministic)
   {
     /*
@@ -1421,7 +1421,7 @@ pg_text_starts_with(const text *txt1, const text *txt2)
   bool result;
 
   check_collation_set(collid);
-  pg_locale_t mylocale = pg_newlocale_from_collation(collid);
+  pg_locale_t mylocale = meos_pg_newlocale_from_collation(collid);
   if (!mylocale->deterministic)
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
