@@ -3318,6 +3318,20 @@ SELECT insert(
 SELECT insert(
   tfloat '{[1@2000-01-01, 2@2000-01-02], [3@2000-01-03, 4@2000-01-04], [5@2000-01-05, 6@2000-01-06]}',
   tfloat '{[2@2000-01-02, 4@2000-01-03], [4@2000-01-04, 5@2000-01-05]}', false);
+/* The time span of one sequence contains the one of the other */
+SELECT insert(
+  tfloat '[1@2000-01-01, 2@2000-01-04]',
+  tfloat '[3@2000-01-02, 3@2000-01-03]');
+SELECT insert(
+  tfloat '[3@2000-01-02, 3@2000-01-03]',
+  tfloat '[1@2000-01-01, 2@2000-01-04]');
+SELECT insert(tfloat '[1@2000-01-01, 2@2000-01-04]', tfloat '[3@2000-01-02]');
+SELECT insert(tint '[1@2000-01-01, 2@2000-01-04]', tint '[3@2000-01-02]');
+SELECT insert(ttext '[AAA@2000-01-01, BBB@2000-01-04]', ttext '[CCC@2000-01-02]');
+/* The two sequences partially overlap */
+SELECT insert(
+  tfloat '[1@2000-01-01, 2@2000-01-04]',
+  tfloat '[3@2000-01-03, 3@2000-01-06]');
 
 SELECT deleteTime(tbool 't@2000-01-01', timestamptz '2000-01-01');
 SELECT deleteTime(tbool 't@2000-01-02', timestamptz '2000-01-01');

@@ -723,16 +723,33 @@ tcontseq_insert(const TSequence *seq1, const TSequence *seq2)
       sequences[nseqs++] = tofree;
    }
   }
-  else /* overlap on the boundary */
+  else /* the two sequences overlap */
   {
-    MeosType basetype = temptype_basetype(seq1->temptype);
-    if (! ensure_tinstant_same_value(instants[0], instants[1], basetype))
-      return NULL;
+    /* The sequences may only overlap on a single instant, in which case they
+     * must have the same value at it. When they overlap on a period, which
+     * happens when the time span of one sequence contains the one of the
+     * other, the error is reported by #tcontseq_merge_array_iter below */
+    if (timestamptz_cmp_internal(instants[0]->t, instants[1]->t) == 0)
+    {
+      MeosType basetype = temptype_basetype(seq1->temptype);
+      if (! ensure_tinstant_same_value(instants[0], instants[1], basetype))
+      {
+        pfree(sequences);
+        return NULL;
+      }
+    }
   }
   sequences[nseqs++] = (TSequence *) seq2;
 
   int count;
   TSequence **newseqs = tcontseq_merge_array_iter(sequences, nseqs, &count);
+  pfree(sequences);
+  if (! newseqs)
+  {
+    if (tofree)
+      pfree(tofree);
+    return NULL;
+  }
   Temporal *result;
   if (count == 1)
   {
@@ -1118,6 +1135,8 @@ tsequenceset_insert(const TSequenceSet *ss1, const TSequenceSet *ss2)
   if (ss1->count == 1 && ss2->count == 1)
   {
     Temporal *temp = tcontseq_insert(seq1, seq2);
+    if (! temp)
+      return NULL;
     if (temp->subtype == TSEQUENCESET)
       return (TSequenceSet *) temp;
     return tsequence_to_tsequenceset_free((TSequence *) temp);
