@@ -58,7 +58,7 @@
 extern char *database_collate;
 extern char *database_ctype;
     
-extern pg_locale_t create_pg_locale_libc(Oid collid);
+extern pg_locale_t meos_create_pg_locale_libc(Oid collid);
 
 extern size_t strlower_libc(char *dst, size_t dstsize, const char *src,
   ssize_t srclen, pg_locale_t locale);
@@ -421,7 +421,7 @@ strupper_libc_mb(char *dest, size_t destsize, const char *src, ssize_t srclen,
 }
 
 pg_locale_t
-create_pg_locale_libc(Oid collid)
+meos_create_pg_locale_libc(Oid collid)
 {
   const char *collate;
   const char *ctype;

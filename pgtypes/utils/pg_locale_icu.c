@@ -53,7 +53,7 @@
 extern char *database_iculocstr;
 extern char *database_icurules;
 
-extern pg_locale_t create_pg_locale_icu(Oid collid);
+extern pg_locale_t meos_create_pg_locale_icu(Oid collid);
 extern size_t strlower_icu(char *dest, size_t destsize, const char *src,
   ssize_t srclen, pg_locale_t locale);
 extern size_t strtitle_icu(char *dest, size_t destsize, const char *src,
@@ -136,9 +136,9 @@ static const struct collate_methods collate_methods_icu_utf8 = {
 
 pg_locale_t
 #ifdef USE_ICU
-create_pg_locale_icu(Oid collid)
+meos_create_pg_locale_icu(Oid collid)
 #else
-create_pg_locale_icu(Oid collid UNUSED)
+meos_create_pg_locale_icu(Oid collid UNUSED)
 #endif /* USE_ICU */
 {
 #ifdef USE_ICU

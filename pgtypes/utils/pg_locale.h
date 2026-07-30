@@ -148,7 +148,7 @@ typedef struct
 
 extern void init_database_collation(void);
 extern void free_database_collation(void);
-extern pg_locale_t pg_newlocale_from_collation(Oid collid);
+extern pg_locale_t meos_pg_newlocale_from_collation(Oid collid);
 
 extern char *get_collation_actual_version(char collprovider, const char *collcollate);
 extern size_t pg_strlower(char *dst, size_t dstsize,
@@ -173,8 +173,8 @@ extern size_t pg_strxfrm_prefix(char *dest, const char *src, size_t destsize,
 extern size_t pg_strnxfrm_prefix(char *dest, size_t destsize, const char *src,
   ssize_t srclen, pg_locale_t locale);
 
-extern int  builtin_locale_encoding(const char *locale);
-extern const char *builtin_validate_locale(int encoding, const char *locale);
+extern int  meos_builtin_locale_encoding(const char *locale);
+extern const char *meos_builtin_validate_locale(int encoding, const char *locale);
 extern void icu_validate_locale(const char *loc_str);
 extern char *icu_language_tag(const char *loc_str, int elevel);
 extern void report_newlocale_failure(const char *localename);

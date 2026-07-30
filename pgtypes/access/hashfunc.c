@@ -262,7 +262,7 @@ text_hash(const text *txt, Oid collid)
   }
 
   uint32 result;
-  pg_locale_t mylocale = pg_newlocale_from_collation(collid);
+  pg_locale_t mylocale = meos_pg_newlocale_from_collation(collid);
   if (! mylocale || mylocale->deterministic)
   {
     result = hash_any((unsigned char *) VARDATA_ANY(txt),
@@ -312,7 +312,7 @@ text_hash_extended(const text *txt, uint64 seed, Oid collid)
   }
 
   uint64 result;
-  pg_locale_t mylocale = pg_newlocale_from_collation(collid);
+  pg_locale_t mylocale = meos_pg_newlocale_from_collation(collid);
   if (! mylocale || mylocale->deterministic)
   {
     result = hash_any_extended((unsigned char *) VARDATA_ANY(txt),

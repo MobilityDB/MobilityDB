@@ -1614,7 +1614,7 @@ str_tolower(const char *buff, size_t nbytes, Oid collid)
     return NULL;
   }
 
-  // mylocale = pg_newlocale_from_collation(collid);
+  // mylocale = meos_pg_newlocale_from_collation(collid);
 
   // /* C/POSIX collations use this path regardless of database encoding */
   // if (mylocale->ctype_is_c)
@@ -1677,7 +1677,7 @@ str_toupper(const char *buff, size_t nbytes, Oid collid)
     return NULL;
   }
 
-  // mylocale = pg_newlocale_from_collation(collid);
+  // mylocale = meos_pg_newlocale_from_collation(collid);
 
   // /* C/POSIX collations use this path regardless of database encoding */
   // if (mylocale->ctype_is_c)
@@ -1740,7 +1740,7 @@ str_initcap(const char *buff, size_t nbytes, Oid collid)
     return NULL;
   }
 
-  // mylocale = pg_newlocale_from_collation(collid);
+  // mylocale = meos_pg_newlocale_from_collation(collid);
 
   // /* C/POSIX collations use this path regardless of database encoding */
   // if (mylocale->ctype_is_c)
@@ -1810,7 +1810,7 @@ str_initcap(const char *buff, size_t nbytes, Oid collid)
     // return NULL;
   // }
 
-  // mylocale = pg_newlocale_from_collation(collid);
+  // mylocale = meos_pg_newlocale_from_collation(collid);
 
   // /* C/POSIX collations use this path regardless of database encoding */
   // if (mylocale->ctype_is_c)

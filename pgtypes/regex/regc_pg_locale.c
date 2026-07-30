@@ -248,14 +248,14 @@ pg_set_regex_collation(Oid collation)
     /*
      * Some callers expect regexes to work for C_COLLATION_OID before
      * catalog access is available, so we can't call
-     * pg_newlocale_from_collation().
+     * meos_pg_newlocale_from_collation().
      */
     strategy = PG_REGEX_STRATEGY_C;
     locale = 0;
   }
   else
   {
-    locale = pg_newlocale_from_collation(collation);
+    locale = meos_pg_newlocale_from_collation(collation);
 
     if (!locale->deterministic)
     {
