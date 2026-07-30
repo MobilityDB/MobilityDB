@@ -271,3 +271,105 @@ For a new temporal spatial type, in order:
 
 A point-valued family added this way needs no new distance mathematics: with
 `r ≡ 0` the signed gap is plain distance, and every reduction is already present.
+
+---
+
+## 6. The temporal type inventory
+
+The surface a temporal type gets is fixed by **two independent axes**, and the
+whole point of this section is that they do not coincide.
+
+- The **family axis** (§1) is the *value's geometry* — scalar, point, area, cloud,
+  or non-metric. It decides which predicates are meaningful and whether the
+  `contains`/`covers` surface is one-directional.
+- The **kernel axis** (§2) is the *turning-point strategy for the signed gap* —
+  whether the interior extremum of `g(t)` is analytic (closed form) or must be
+  found by adaptive bisection. It decides the **exactness** of the answer and
+  which reduction machinery applies.
+
+These are orthogonal. An **area** type can share the **point** type's closed-form
+kernel — `tcbuffer` does, because its gap `dist(centre, gs) − r(t)` is still
+analytic with at most two turning points. And an area type can need a *different*
+kernel — `trgeometry` does, because a rotating rigid body has no closed-form
+distance. So "point versus area" predicts the *surface* but not the *strategy*;
+"analytic versus adaptive" predicts the *strategy* but not the *surface*. The two
+tables below record each axis for every temporal type, exhaustively.
+
+### 6.1 Family axis — the value's geometry
+
+| temporal type | value geometry | signed-gap radius `r(t)` | distance surface |
+| --- | --- | --- | --- |
+| `tbool`, `ttext`, `tjsonb` | non-metric | — | none — no distance is defined |
+| `tint`, `tbigint` | scalar (ℝ, step) | n/a | number-line `\|a − b\|` |
+| `tfloat` | scalar (ℝ, linear) | n/a | number-line `\|a − b\|` |
+| `tgeompoint` | point (planar) | `0` | point — container direction one-way |
+| `tgeogpoint` | point (geodetic) | `0` | point — container direction one-way |
+| `tnpoint` | point (network, reduces to `tgeompoint`) | `0` | point — container direction one-way |
+| `tpose` | point (+ orientation carried, unused by distance) | `0` | point — container direction one-way |
+| `tcbuffer` | area — disc | `r(t)` | area — both container directions |
+| `tgeometry` | general (point ∪ area, per value) | boundary | follows the value's geometry |
+| `tgeography` | general (geodetic) | boundary | follows the value's geometry |
+| `trgeometry` | area — rigid body (translate + rotate) | boundary | area |
+| `tpointcloud` (`tpcpoint`, `tpcpatch`) | point set | extent | cloud |
+| `th3index`, `tquadbin` | discrete cell index | — | none — no continuous distance |
+
+`tnpoint` and `tpose` are same-family as `tgeompoint`: all three are points, so
+all three expose the identical one-directional container surface. `tnpoint` is a
+fraction-delta along a reference edge and `tpose` is a point plus an orientation,
+but the geometry distance sees is a point in every case — they reach it through
+the MEOS C casts `tnpoint_to_tgeompoint` and `tpose_to_tpoint` (§4). `tcbuffer` is
+*not* their family: its value is a disc, so it exposes both container directions
+and its box is radius-aware.
+
+### 6.2 Kernel axis — turning-point strategy, exactness, and reduction
+
+| temporal type | turning-point strategy | exactness | `nad` reduction |
+| --- | --- | --- | --- |
+| `tint`, `tbigint` | none — step, extremum at endpoints | exact | materialise `tdistance` + `min` |
+| `tfloat` | closed-form unary (linear gap) | exact | materialise `tdistance` + `min` |
+| `tgeompoint` | closed-form unary | exact (planar) | synchronised running-min fast-path |
+| `tgeogpoint` | closed-form unary, chordal | approximate — interior turning point linearised, not geodetic | synchronised running-min fast-path |
+| `tnpoint` | closed-form unary (via `→ tgeompoint`) | exact (planar) | materialise `tdistance` + `min` |
+| `tpose` | closed-form unary (via `→ tpoint`) | exact (planar) | materialise `tdistance` + `min` |
+| `tcbuffer` | closed-form unary, radius-aware | exact (planar) | materialise `tdistance` + `min` |
+| `tgeometry` | closed-form per-segment geo | exact (planar) | materialise `tdistance` + `min` |
+| `tgeography` | closed-form per-segment geo, chordal | approximate — as `tgeogpoint` | materialise `tdistance` + `min` |
+| `trgeometry` | adaptive ε-bisection (n ≥ 2 turning points, no closed form) | ε-bounded — converges within `MEOS_EPSILON` | vs geometry: materialise `tdistance` + `min`; vs `tpoint` / vs `trgeometry`: raises `NOT_IMPLEMENTED` |
+| `tpointcloud` | none — bounding-box distance (`nad_stbox_stbox`) | box lower bound, not point-exact | box-level, no `tdistance` |
+| `tbool`, `ttext`, `tjsonb`, `th3index`, `tquadbin` | — | — | none |
+
+Three facts this table records.
+
+**The synchronised running-min reduction is carried by `tgeompoint` and
+`tgeogpoint`.** Every other family computes `nad` by materialising the whole
+`tdistance` temporal float and taking `temporal_min_value` of it — the same
+answer, built as the entire temporal float before reducing, the pattern §2 names
+as the laggard. `tnpoint` and `tpose` reduce to a point, so the running-min
+scaffold that serves `tgeompoint` applies to them after their cast with no new
+mathematics.
+
+**The radius lives on the kernel axis, not the family axis.** The closed-form
+unary turning-point function is one function parameterised by `r(t)` — `0` for the
+point types, `r(t)` for `tcbuffer`. It is exact in both cases. This is why a
+point family is the `r ≡ 0` special case of the area kernel (§2) rather than a
+separate problem, and why sharing the kernel does not merge the families.
+
+**`trgeometry` carries the reduction but not the two-moving-body kernel.** The
+generic adaptive turning-point strategy (`tfunc_tlinearseq_adaptive`, depth-bounded
+by `MEOS_ADAPTIVE_MAX_DEPTH`) and the running-min reduction are present, and the
+one-moving-body path `tdistance_trgeometry_geo` carries the pattern end to end
+through the `solve_s_tpoly_point` bisection. What raises `NOT_IMPLEMENTED` is the
+*two-moving-body* per-segment kernel — sampling `dist(trgeo₁@t, trgeo₂@t)` and
+bisecting the segment while both operands move — named in a code comment as
+`trgeo_pair_dist_adaptive` but not defined. It clones the one-moving bisection to
+sample both sequences. Its result is ε-bounded, so it is admissible only as a
+doc-marked convergent approximation, never silently, and it does not join the exact
+closed-form kernel of the point and disc types.
+
+**`tgeogpoint` and `tgeography` interior extrema are chordal, not geodetic.** The
+distance *values* at synchronised instants are exact geographic distances, but the
+*location* of an interior turning point comes from linearising the two segments in
+3-D Cartesian space (`point3d_min_dist`), not on the sphere, so the reported
+minimum can sit slightly off the true geodesic minimum. The source marks this
+`TODO`; a geodetically exact turning point uses the chordal value as the seed of an
+iterative refinement.
