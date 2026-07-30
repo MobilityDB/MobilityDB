@@ -67,7 +67,9 @@ SELECT (h3index '8a2a1072b59ffff')::bigint;
 
 -- The cast is NOT implicit — direct comparison without `::` must error
 /* Errors */
+\set VERBOSITY terse
 SELECT 622236750694711295::bigint = h3index '8a2a1072b59ffff';
+\set VERBOSITY default
 
 -------------------------------------------------------------------------------
 -- btree opclass: ORDER BY, DISTINCT, GROUP BY

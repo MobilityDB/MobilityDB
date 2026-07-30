@@ -132,7 +132,9 @@ DROP TABLE tbl_th3index_assign;
 -- without an explicit cast must error (binder reports that no operator
 -- exists for the mixed types).
 /* Errors */
+\set VERBOSITY terse
 SELECT tbigint '622236723497533439@2012-01-01 08:00:00' = th3index '622236723497533439@2012-01-01 08:00:00';
+\set VERBOSITY default
 
 -------------------------------------------------------------------------------
 -- Send/receive (binary IO round-trip)

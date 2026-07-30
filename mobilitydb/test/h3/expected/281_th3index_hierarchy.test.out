@@ -80,10 +80,7 @@ SELECT th3CellToChildPos(th3index '622236750694711295@2001-01-01', 9);
 (1 row)
 
 SELECT th3CellToChildPos(th3index '622236750694711295@2001-01-01', 3) >= 0;
-ERROR:  operator does not exist: tbigint >= integer
-LINE 1: ...oChildPos(th3index '622236750694711295@2001-01-01', 3) >= 0;
-                                                                  ^
-HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+ERROR:  operator does not exist: tbigint >= integer at character 71
 SELECT th3CellToChildPos(th3index
   '[622236750694711295@2001-01-01, 622236750694711295@2001-01-02]', 9);
                         th3celltochildpos                         

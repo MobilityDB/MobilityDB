@@ -73,7 +73,9 @@ SELECT (quadbin '480fffffffffffff')::bigint;
 
 -- The cast is NOT implicit — direct comparison without `::` must error
 /* Errors */
+\set VERBOSITY terse
 SELECT 5192650370358181887::bigint = quadbin '480fffffffffffff';
+\set VERBOSITY default
 
 -------------------------------------------------------------------------------
 -- Validity predicates

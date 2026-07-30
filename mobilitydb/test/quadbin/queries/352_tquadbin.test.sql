@@ -88,7 +88,9 @@ DROP TABLE tbl_tquadbin_assign;
 
 -- The cast is NOT implicit
 /* Errors */
+\set VERBOSITY terse
 SELECT tbigint '5192650370358181887@2012-01-01 08:00:00' = tquadbin '480fffffffffffff@2012-01-01 08:00:00';
+\set VERBOSITY default
 
 -------------------------------------------------------------------------------
 -- Comparison operators + btree/hash

@@ -52,7 +52,9 @@ SELECT asText(pose(ST_Point(1,1), 0.5));
 SELECT pose('Linestring(1 1,2 2)',1.5);
 SELECT pose('Point Z(1 1 1)',1.5);
 SELECT pose('Point M(1 1 1)',1.5);
+\set VERBOSITY terse
 SELECT pose(geography 'Point(1 1)',1.5);
+\set VERBOSITY default
 SELECT pose('Point(1 1)',-1.5);
 
 -------------------------------------------------------------------------------
