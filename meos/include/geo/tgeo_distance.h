@@ -58,11 +58,20 @@ extern int tgeogpointsegm_distance_turnpt(Datum start1, Datum end1,
 extern double tinstant_distance(const TInstant *inst1, const TInstant *inst2,
   datum_func2 func);
 
+/**
+ * @brief Lower bound on the distance over two synchronized linear segments,
+ * cheap enough to gate the per-segment turning-point computation
+ */
+typedef double (*seglb_func)(Datum start1, Datum end1, Datum start2,
+  Datum end2);
+
 extern bool nad_tcont_tcont_sync_applies(const Temporal *temp1,
   const Temporal *temp2);
 extern double nad_tcont_tcont_sync(const Temporal *temp1,
   const Temporal *temp2, datum_func2 func, tpfunc_temp turnpt,
-  TimestampTz *tmin);
+  seglb_func seglb, TimestampTz *tmin);
+extern double tpointseg_distance_lb(Datum start1, Datum end1, Datum start2,
+  Datum end2);
 
 /*****************************************************************************/
 

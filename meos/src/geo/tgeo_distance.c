@@ -1790,20 +1790,42 @@ tdistance_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
+ * @brief Return a lower bound on the distance between two synchronized linear
+ * temporal point segments
+ * @details A moving point stays within the bounding box of its two endpoints,
+ * so the box-to-box distance of the endpoint boxes bounds the synchronized
+ * distance below. The radius is zero for a point
+ */
+double
+tpointseg_distance_lb(Datum start1, Datum end1, Datum start2, Datum end2)
+{
+  const POINT2D *s1 = DATUM_POINT2D_P(start1);
+  const POINT2D *e1 = DATUM_POINT2D_P(end1);
+  const POINT2D *s2 = DATUM_POINT2D_P(start2);
+  const POINT2D *e2 = DATUM_POINT2D_P(end2);
+  double dx = fmax(fmax(fmin(s1->x, e1->x) - fmax(s2->x, e2->x),
+    fmin(s2->x, e2->x) - fmax(s1->x, e1->x)), 0.0);
+  double dy = fmax(fmax(fmin(s1->y, e1->y) - fmax(s2->y, e2->y),
+    fmin(s2->y, e2->y) - fmax(s1->y, e1->y)), 0.0);
+  return sqrt(dx * dx + dy * dy);
+}
+
+/**
  * @brief Return the minimum time-synchronous distance over the overlapping
  * period of two linear temporal point sequences, updating the running minimum
  * @param[in] seq1,seq2 Temporal sequences with linear interpolation
  * @param[in] inter Overlapping period of the two sequences
  * @param[in] func Base value distance function
  * @param[in] turnpt Per-segment distance turning-point function
+ * @param[in] seglb Per-segment distance lower-bound function
  * @param[in] curmin Current minimum distance, or infinity at the beginning
  * @param[in,out] tmin Timestamp achieving the running minimum
  * @pre Both sequences are linear and of equal type; @p inter is their overlap
  */
 static double
 nad_tcontseq_tcontseq_sync(const TSequence *seq1, const TSequence *seq2,
-  const Span *inter, datum_func2 func, tpfunc_temp turnpt, double curmin,
-  TimestampTz *tmin)
+  const Span *inter, datum_func2 func, tpfunc_temp turnpt, seglb_func seglb,
+  double curmin, TimestampTz *tmin)
 {
   MeosType temptype = seq1->temptype;
   TInstant *inst1 = (TInstant *) TSEQUENCE_INST_N(seq1, 0);
@@ -1847,17 +1869,26 @@ nad_tcontseq_tcontseq_sync(const TSequence *seq1, const TSequence *seq2,
       inst1 = tcontseq_at_timestamptz(seq1, inst2->t);
       tofree[nfree++] = inst1;
     }
+    /* A cheap segment lower bound gates the whole segment: when it already
+     * exceeds the running minimum, neither the interior turning point(s) nor
+     * the segment endpoint can beat it, so both evaluations are skipped. Sound
+     * because the bound never exceeds the true distance minimum over the
+     * segment. A NULL bound (no cheap sound bound, e.g. a geodetic metric)
+     * always evaluates */
+    double lb = (ninsts > 0 && seglb) ?
+      seglb(tinstant_value_p(prev1), tinstant_value_p(inst1),
+        tinstant_value_p(prev2), tinstant_value_p(inst2)) : -DBL_MAX;
     /* If not the first instant, evaluate the distance at the potential
      * turning point(s) interior to the segment */
-    if (ninsts > 0)
+    if (ninsts > 0 && lb < curmin)
     {
       Datum start1 = tinstant_value_p(prev1);
       Datum end1 = tinstant_value_p(inst1);
       Datum start2 = tinstant_value_p(prev2);
       Datum end2 = tinstant_value_p(inst2);
       TimestampTz tpt1, tpt2;
-      int found = turnpt(start1, end1, start2, end2,
-        (Datum) 0, prev1->t, inst1->t, &tpt1, &tpt2);
+      int found = turnpt(start1, end1, start2, end2, (Datum) 0, prev1->t,
+        inst1->t, &tpt1, &tpt2);
       if (found)
       {
         Datum v1 = tsegment_value_at_timestamptz(start1, end1, temptype,
@@ -1880,10 +1911,14 @@ nad_tcontseq_tcontseq_sync(const TSequence *seq1, const TSequence *seq2,
         }
       }
     }
-    /* Evaluate the distance at the synchronized instant */
-    double d = DatumGetFloat8(func(tinstant_value_p(inst1),
-      tinstant_value_p(inst2)));
-    if (d < curmin) { curmin = d; *tmin = inst1->t; }
+    /* Evaluate the distance at the synchronized instant, unless the segment
+     * leading to it cannot beat the running minimum */
+    if (lb < curmin)
+    {
+      double d = DatumGetFloat8(func(tinstant_value_p(inst1),
+        tinstant_value_p(inst2)));
+      if (d < curmin) { curmin = d; *tmin = inst1->t; }
+    }
     ninsts++;
     if (i == seq1->count || j == seq2->count)
       break;
@@ -1903,6 +1938,7 @@ nad_tcontseq_tcontseq_sync(const TSequence *seq1, const TSequence *seq2,
  * subtype (both #TSEQUENCE or both #TSEQUENCESET)
  * @param[in] func Base value distance function
  * @param[in] turnpt Per-segment distance turning-point function
+ * @param[in] seglb Per-segment distance lower-bound function
  * @param[out] tmin Timestamp achieving the minimum (set only when the result
  * is not infinity)
  * @return The minimum distance, or infinity if the time frames do not
@@ -1911,7 +1947,7 @@ nad_tcontseq_tcontseq_sync(const TSequence *seq1, const TSequence *seq2,
  */
 double
 nad_tcont_tcont_sync(const Temporal *temp1, const Temporal *temp2,
-  datum_func2 func, tpfunc_temp turnpt, TimestampTz *tmin)
+  datum_func2 func, tpfunc_temp turnpt, seglb_func seglb, TimestampTz *tmin)
 {
   if (temp1->subtype == TSEQUENCE)
   {
@@ -1920,7 +1956,7 @@ nad_tcont_tcont_sync(const Temporal *temp1, const Temporal *temp2,
         &((TSequence *) temp2)->period, &inter))
       return DBL_MAX;
     return nad_tcontseq_tcontseq_sync((TSequence *) temp1,
-      (TSequence *) temp2, &inter, func, turnpt, DBL_MAX, tmin);
+      (TSequence *) temp2, &inter, func, turnpt, seglb, DBL_MAX, tmin);
   }
   /* Both TSEQUENCESET: walk the overlapping component sequences */
   const TSequenceSet *ss1 = (const TSequenceSet *) temp1;
@@ -1934,7 +1970,7 @@ nad_tcont_tcont_sync(const Temporal *temp1, const Temporal *temp2,
     Span inter;
     if (inter_span_span(&seq1->period, &seq2->period, &inter))
       result = nad_tcontseq_tcontseq_sync(seq1, seq2, &inter, func, turnpt,
-        result, tmin);
+        seglb, result, tmin);
     int cmp = timestamptz_cmp_internal(
       DatumGetTimestampTz(seq1->period.upper),
       DatumGetTimestampTz(seq2->period.upper));
@@ -2537,8 +2573,10 @@ nai_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
       nad_tcont_tcont_sync_applies(temp1, temp2))
   {
     TimestampTz t;
+    seglb_func lb = MEOS_FLAGS_GET_GEODETIC(temp1->flags) ? NULL :
+      &tpointseg_distance_lb;
     if (nad_tcont_tcont_sync(temp1, temp2, geo_distance_fn(temp1->flags),
-      &tpointsegm_distance_turnpt, &t) != DBL_MAX)
+      &tpointsegm_distance_turnpt, lb, &t) != DBL_MAX)
     {
       /* The closest point may be at an exclusive bound => 3rd arg = false */
       Datum value;
@@ -2732,8 +2770,10 @@ nad_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
       nad_tcont_tcont_sync_applies(temp1, temp2))
   {
     TimestampTz t;
+    seglb_func lb = MEOS_FLAGS_GET_GEODETIC(temp1->flags) ? NULL :
+      &tpointseg_distance_lb;
     double d = nad_tcont_tcont_sync(temp1, temp2,
-      geo_distance_fn(temp1->flags), &tpointsegm_distance_turnpt, &t);
+      geo_distance_fn(temp1->flags), &tpointsegm_distance_turnpt, lb, &t);
     if (d != DBL_MAX)
       return d;
   }
@@ -2854,8 +2894,12 @@ shortestline_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
   bool fast = false;
   if (tpoint_type(temp1->temptype) &&
       nad_tcont_tcont_sync_applies(temp1, temp2))
+  {
+    seglb_func lb = MEOS_FLAGS_GET_GEODETIC(temp1->flags) ? NULL :
+      &tpointseg_distance_lb;
     fast = nad_tcont_tcont_sync(temp1, temp2, geo_distance_fn(temp1->flags),
-      &tpointsegm_distance_turnpt, &tmin) != DBL_MAX;
+      &tpointsegm_distance_turnpt, lb, &tmin) != DBL_MAX;
+  }
 
   Temporal *dist = NULL;
   if (! fast)
