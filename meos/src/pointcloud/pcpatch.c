@@ -159,7 +159,7 @@ pcpatch_parse(const char **str, bool end)
 }
 
 /**
- * @ingroup meos_pointcloud_inout
+ * @ingroup meos_pointcloud_base_inout
  * @brief Return a pcpatch from its textual (hex-WKB) representation
  * @param[in] str String
  * @note PG-side input is provided by pgpointcloud's own
@@ -177,7 +177,7 @@ pcpatch_hex_in(const char *str)
 }
 
 /**
- * @ingroup meos_pointcloud_inout
+ * @ingroup meos_pointcloud_base_inout
  * @brief Return the textual (hex-WKB) representation of a pcpatch
  * @param[in] pa Patch
  * @param[in] maxdd Unused (kept for API uniformity with set_out)
@@ -197,7 +197,7 @@ pcpatch_hex_out(const Pcpatch *pa, int maxdd)
 }
 
 /**
- * @ingroup meos_pointcloud_inout
+ * @ingroup meos_pointcloud_base_inout
  * @brief Return a pcpatch from its hex-WKB representation
  */
 Pcpatch *
@@ -207,7 +207,7 @@ pcpatch_from_hexwkb(const char *hexwkb)
 }
 
 /**
- * @ingroup meos_pointcloud_inout
+ * @ingroup meos_pointcloud_base_inout
  * @brief Return the hex-WKB representation of a pcpatch
  */
 char *
@@ -235,7 +235,7 @@ pcpatch_copy(const Pcpatch *pa)
 }
 
 /**
- * @ingroup meos_pointcloud_accessor
+ * @ingroup meos_pointcloud_base_accessor
  * @brief Return the pcid (schema id) of a pcpatch
  * @csqlfn #Pcpatch_pcid()
  */
@@ -245,7 +245,7 @@ uint32_t pcpatch_get_pcid(const Pcpatch *pa)
 }
 
 /**
- * @ingroup meos_pointcloud_accessor
+ * @ingroup meos_pointcloud_base_accessor
  * @brief Return the number of points stored in a pcpatch
  */
 uint32_t pcpatch_npoints(const Pcpatch *pa)
@@ -254,7 +254,7 @@ uint32_t pcpatch_npoints(const Pcpatch *pa)
 }
 
 /**
- * @ingroup meos_pointcloud_accessor
+ * @ingroup meos_pointcloud_base_accessor
  * @brief Return the 32-bit hash of a pcpatch
  */
 uint32
@@ -266,7 +266,7 @@ pcpatch_hash(const Pcpatch *pa)
 }
 
 /**
- * @ingroup meos_pointcloud_accessor
+ * @ingroup meos_pointcloud_base_accessor
  * @brief Return the 64-bit hash of a pcpatch with a seed
  */
 uint64
@@ -282,7 +282,7 @@ pcpatch_hash_extended(const Pcpatch *pa, uint64 seed)
  *****************************************************************************/
 
 /**
- * @ingroup meos_pointcloud_comp
+ * @ingroup meos_pointcloud_base_comp
  * @brief Compare two pcpatch values byte-wise
  * @return -1 / 0 / 1
  * @note Compares only the meaningful-prefix bytes — pgpointcloud's
@@ -303,28 +303,28 @@ pcpatch_cmp(const Pcpatch *pa1, const Pcpatch *pa2)
 }
 
 /**
- * @ingroup meos_pointcloud_comp
+ * @ingroup meos_pointcloud_base_comp
  * @brief Return true if two pcpatch values are equal
  */
 bool pcpatch_eq(const Pcpatch *pa1, const Pcpatch *pa2)
 { return pcpatch_cmp(pa1, pa2) == 0; }
 
 /**
- * @ingroup meos_pointcloud_comp
+ * @ingroup meos_pointcloud_base_comp
  * @brief Return true if two pcpatch values differ
  */
 bool pcpatch_ne(const Pcpatch *pa1, const Pcpatch *pa2)
 { return pcpatch_cmp(pa1, pa2) != 0; }
 
 /**
- * @ingroup meos_pointcloud_comp
+ * @ingroup meos_pointcloud_base_comp
  * @brief Return true if the first pcpatch precedes the second in total order
  */
 bool pcpatch_lt(const Pcpatch *pa1, const Pcpatch *pa2)
 { return pcpatch_cmp(pa1, pa2) <  0; }
 
 /**
- * @ingroup meos_pointcloud_comp
+ * @ingroup meos_pointcloud_base_comp
  * @brief Return true if the first pcpatch precedes or equals the second
  *   in total order
  */
@@ -332,14 +332,14 @@ bool pcpatch_le(const Pcpatch *pa1, const Pcpatch *pa2)
 { return pcpatch_cmp(pa1, pa2) <= 0; }
 
 /**
- * @ingroup meos_pointcloud_comp
+ * @ingroup meos_pointcloud_base_comp
  * @brief Return true if the first pcpatch follows the second in total order
  */
 bool pcpatch_gt(const Pcpatch *pa1, const Pcpatch *pa2)
 { return pcpatch_cmp(pa1, pa2) >  0; }
 
 /**
- * @ingroup meos_pointcloud_comp
+ * @ingroup meos_pointcloud_base_comp
  * @brief Return true if the first pcpatch follows or equals the second
  *   in total order
  */

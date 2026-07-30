@@ -204,7 +204,7 @@ pcpoint_parse(const char **str, bool end)
 }
 
 /**
- * @ingroup meos_pointcloud_inout
+ * @ingroup meos_pointcloud_base_inout
  * @brief Return a pcpoint from its textual (hex-WKB) representation
  * @param[in] str String
  * @note PG-side input is provided by pgpointcloud's own @c pcpoint_in,
@@ -222,7 +222,7 @@ pcpoint_hex_in(const char *str)
 }
 
 /**
- * @ingroup meos_pointcloud_inout
+ * @ingroup meos_pointcloud_base_inout
  * @brief Return the textual (hex-WKB) representation of a pcpoint
  * @param[in] pt Point
  * @param[in] maxdd Unused (kept for API uniformity with set_out)
@@ -242,7 +242,7 @@ pcpoint_hex_out(const Pcpoint *pt, int maxdd)
 }
 
 /**
- * @ingroup meos_pointcloud_inout
+ * @ingroup meos_pointcloud_base_inout
  * @brief Return a pcpoint from its hex-WKB representation
  */
 Pcpoint *
@@ -252,7 +252,7 @@ pcpoint_from_hexwkb(const char *hexwkb)
 }
 
 /**
- * @ingroup meos_pointcloud_inout
+ * @ingroup meos_pointcloud_base_inout
  * @brief Return the hex-WKB representation of a pcpoint
  */
 char *
@@ -284,7 +284,7 @@ pcpoint_copy(const Pcpoint *pt)
  *****************************************************************************/
 
 /**
- * @ingroup meos_pointcloud_accessor
+ * @ingroup meos_pointcloud_base_accessor
  * @brief Return the pcid (schema id) of a pcpoint
  * @csqlfn #Pcpoint_pcid()
  */
@@ -296,7 +296,7 @@ pcpoint_get_pcid(const Pcpoint *pt)
 }
 
 /**
- * @ingroup meos_pointcloud_accessor
+ * @ingroup meos_pointcloud_base_accessor
  * @brief Return the 32-bit hash of a pcpoint
  * @note Hashes only the meaningful-prefix bytes — pgpointcloud's
  *   struct-tail padding is skipped because it holds uninitialized heap
@@ -311,7 +311,7 @@ pcpoint_hash(const Pcpoint *pt)
 }
 
 /**
- * @ingroup meos_pointcloud_accessor
+ * @ingroup meos_pointcloud_base_accessor
  * @brief Return the 64-bit seeded hash of a pcpoint
  */
 uint64
@@ -331,7 +331,7 @@ pcpoint_hash_extended(const Pcpoint *pt, uint64 seed)
  *****************************************************************************/
 
 /**
- * @ingroup meos_pointcloud_comp
+ * @ingroup meos_pointcloud_base_comp
  * @brief Compare two pcpoints byte-wise
  * @return -1 / 0 / 1
  * @note Compares only the meaningful-prefix bytes — pgpointcloud's
@@ -353,28 +353,28 @@ pcpoint_cmp(const Pcpoint *pt1, const Pcpoint *pt2)
 }
 
 /**
- * @ingroup meos_pointcloud_comp
+ * @ingroup meos_pointcloud_base_comp
  * @brief Return true if two pcpoints are equal
  */
 bool pcpoint_eq(const Pcpoint *pt1, const Pcpoint *pt2)
 { return pcpoint_cmp(pt1, pt2) == 0; }
 
 /**
- * @ingroup meos_pointcloud_comp
+ * @ingroup meos_pointcloud_base_comp
  * @brief Return true if two pcpoints differ
  */
 bool pcpoint_ne(const Pcpoint *pt1, const Pcpoint *pt2)
 { return pcpoint_cmp(pt1, pt2) != 0; }
 
 /**
- * @ingroup meos_pointcloud_comp
+ * @ingroup meos_pointcloud_base_comp
  * @brief Return true if the first pcpoint precedes the second in total order
  */
 bool pcpoint_lt(const Pcpoint *pt1, const Pcpoint *pt2)
 { return pcpoint_cmp(pt1, pt2) <  0; }
 
 /**
- * @ingroup meos_pointcloud_comp
+ * @ingroup meos_pointcloud_base_comp
  * @brief Return true if the first pcpoint precedes or equals the second
  *   in total order
  */
@@ -382,14 +382,14 @@ bool pcpoint_le(const Pcpoint *pt1, const Pcpoint *pt2)
 { return pcpoint_cmp(pt1, pt2) <= 0; }
 
 /**
- * @ingroup meos_pointcloud_comp
+ * @ingroup meos_pointcloud_base_comp
  * @brief Return true if the first pcpoint follows the second in total order
  */
 bool pcpoint_gt(const Pcpoint *pt1, const Pcpoint *pt2)
 { return pcpoint_cmp(pt1, pt2) >  0; }
 
 /**
- * @ingroup meos_pointcloud_comp
+ * @ingroup meos_pointcloud_base_comp
  * @brief Return true if the first pcpoint follows or equals the second
  *   in total order
  */
@@ -421,7 +421,7 @@ pcpoint_as_pcpt(const Pcpoint *pt, PCSCHEMA *schema, PCPOINT *out)
 }
 
 /**
- * @ingroup meos_pointcloud_accessor
+ * @ingroup meos_pointcloud_base_accessor
  * @brief Return the X coordinate of a pcpoint via the given schema
  * @param[in] pt Point
  * @param[in] schema Point cloud schema
@@ -442,7 +442,7 @@ pcpoint_get_x(const Pcpoint *pt, PCSCHEMA *schema, double *out)
 }
 
 /**
- * @ingroup meos_pointcloud_accessor
+ * @ingroup meos_pointcloud_base_accessor
  * @brief Return the Y coordinate of a pcpoint via the given schema
  * @param[in] pt Point
  * @param[in] schema Point cloud schema
@@ -461,7 +461,7 @@ pcpoint_get_y(const Pcpoint *pt, PCSCHEMA *schema, double *out)
 }
 
 /**
- * @ingroup meos_pointcloud_accessor
+ * @ingroup meos_pointcloud_base_accessor
  * @brief Return the Z coordinate of a pcpoint via the given schema
  * @param[in] pt Point
  * @param[in] schema Point cloud schema
@@ -480,7 +480,7 @@ pcpoint_get_z(const Pcpoint *pt, PCSCHEMA *schema, double *out)
 }
 
 /**
- * @ingroup meos_pointcloud_accessor
+ * @ingroup meos_pointcloud_base_accessor
  * @brief Return any named dimension of a pcpoint via the given schema
  * @param[in] pt Point
  * @param[in] schema Point cloud schema
