@@ -465,7 +465,7 @@ trgeo_restrict_overlap(const Temporal *temp, const SpanSet *ss, bool atfunc)
   pfree(tpose);
   if (! res)
     return NULL;
-  Temporal *result = geo_tpose_to_trgeometry(trgeo_geom_p(temp), res);
+  Temporal *result = geometry_tpose_to_trgeometry(trgeo_geom_p(temp), res);
   pfree(res);
   return result;
 }
@@ -768,8 +768,8 @@ trgeometry_hausdorff_distance(const Temporal *temp1, const Temporal *temp2)
 {
   if (! ensure_valid_trgeo_trgeo(temp1, temp2))
     return DBL_MAX;
-  Temporal *tp1 = trgeometry_to_tpoint(temp1);
-  Temporal *tp2 = trgeometry_to_tpoint(temp2);
+  Temporal *tp1 = trgeometry_to_tgeompoint(temp1);
+  Temporal *tp2 = trgeometry_to_tgeompoint(temp2);
   double result = temporal_hausdorff_distance(tp1, tp2);
   pfree(tp1); pfree(tp2);
   return result;
@@ -787,8 +787,8 @@ trgeometry_frechet_distance(const Temporal *temp1, const Temporal *temp2)
 {
   if (! ensure_valid_trgeo_trgeo(temp1, temp2))
     return DBL_MAX;
-  Temporal *tp1 = trgeometry_to_tpoint(temp1);
-  Temporal *tp2 = trgeometry_to_tpoint(temp2);
+  Temporal *tp1 = trgeometry_to_tgeompoint(temp1);
+  Temporal *tp2 = trgeometry_to_tgeompoint(temp2);
   double result = temporal_similarity(tp1, tp2, FRECHET);
   pfree(tp1); pfree(tp2);
   return result;
@@ -806,8 +806,8 @@ trgeometry_dyntimewarp_distance(const Temporal *temp1, const Temporal *temp2)
 {
   if (! ensure_valid_trgeo_trgeo(temp1, temp2))
     return DBL_MAX;
-  Temporal *tp1 = trgeometry_to_tpoint(temp1);
-  Temporal *tp2 = trgeometry_to_tpoint(temp2);
+  Temporal *tp1 = trgeometry_to_tgeompoint(temp1);
+  Temporal *tp2 = trgeometry_to_tgeompoint(temp2);
   double result = temporal_similarity(tp1, tp2, DYNTIMEWARP);
   pfree(tp1); pfree(tp2);
   return result;
@@ -830,8 +830,8 @@ trgeometry_frechet_path(const Temporal *temp1, const Temporal *temp2, int *count
   *count = 0;
   if (! ensure_valid_trgeo_trgeo(temp1, temp2))
     return NULL;
-  Temporal *tp1 = trgeometry_to_tpoint(temp1);
-  Temporal *tp2 = trgeometry_to_tpoint(temp2);
+  Temporal *tp1 = trgeometry_to_tgeompoint(temp1);
+  Temporal *tp2 = trgeometry_to_tgeompoint(temp2);
   Match *result = temporal_similarity_path(tp1, tp2, count, FRECHET);
   pfree(tp1); pfree(tp2);
   return result;
@@ -854,8 +854,8 @@ trgeometry_dyntimewarp_path(const Temporal *temp1, const Temporal *temp2, int *c
   *count = 0;
   if (! ensure_valid_trgeo_trgeo(temp1, temp2))
     return NULL;
-  Temporal *tp1 = trgeometry_to_tpoint(temp1);
-  Temporal *tp2 = trgeometry_to_tpoint(temp2);
+  Temporal *tp1 = trgeometry_to_tgeompoint(temp1);
+  Temporal *tp2 = trgeometry_to_tgeompoint(temp2);
   Match *result = temporal_similarity_path(tp1, tp2, count, DYNTIMEWARP);
   pfree(tp1); pfree(tp2);
   return result;
@@ -878,7 +878,7 @@ trgeometry_length(const Temporal *temp)
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, -1.0);
 
-  Temporal *tpoint = trgeometry_to_tpoint(temp);
+  Temporal *tpoint = trgeometry_to_tgeompoint(temp);
   double result = tpoint_length(tpoint);
   pfree(tpoint);
   return result;
@@ -897,7 +897,7 @@ trgeometry_cumulative_length(const Temporal *temp)
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
 
-  Temporal *tpoint = trgeometry_to_tpoint(temp);
+  Temporal *tpoint = trgeometry_to_tgeompoint(temp);
   Temporal *result = tpoint_cumulative_length(tpoint);
   pfree(tpoint);
   return result;
@@ -915,7 +915,7 @@ trgeometry_speed(const Temporal *temp)
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
 
-  Temporal *tpoint = trgeometry_to_tpoint(temp);
+  Temporal *tpoint = trgeometry_to_tgeompoint(temp);
   Temporal *result = temporal_derivative(tpoint);
   pfree(tpoint);
   return result;
@@ -934,7 +934,7 @@ trgeometry_twcentroid(const Temporal *temp)
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
 
-  Temporal *tpoint = trgeometry_to_tpoint(temp);
+  Temporal *tpoint = trgeometry_to_tgeompoint(temp);
   GSERIALIZED *result = tpoint_twcentroid(tpoint);
   pfree(tpoint);
   return result;
@@ -1118,7 +1118,7 @@ trgeometry_traversed_area(const Temporal *temp, bool unary_union)
  * reference geometry and emits the resulting polygon. The returned
  * `tgeometry` has the same temporal structure as the input and the same
  * SRID as the reference geometry.
- * @note Unlike `trgeometry_to_tpoint` (which gives the antenna point trajectory),
+ * @note Unlike `trgeometry_to_tgeompoint` (which gives the antenna point trajectory),
  * this preserves the body's footprint at each instant — the natural input
  * for compositional spatial-rel queries against `tgeometry`'s full surface.
  * @param[in] temp Temporal rigid geometry

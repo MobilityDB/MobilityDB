@@ -390,7 +390,7 @@ Trgeometry_constructor(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *tpose = PG_GETARG_TEMPORAL_P(1);
-  Temporal *result = geo_tpose_to_trgeometry(gs, tpose);
+  Temporal *result = geometry_tpose_to_trgeometry(gs, tpose);
   PG_FREE_IF_COPY(gs, 0);
   if (! result)
     PG_RETURN_NULL();
@@ -428,7 +428,7 @@ Datum
 Trgeometry_to_tpoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = trgeometry_to_tpoint(temp);
+  Temporal *result = trgeometry_to_tgeompoint(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
 }

@@ -383,7 +383,7 @@ TRGEO_CONFIG = dict(
     LINEAR, 0.0, NULL, false);
   TSequence    *trgeo_tseq1    = (TSequence *) trgeo_seq1;
   TSequenceSet *trgeo_tseqset1 = NULL;
-  Temporal *tpoint1 = trgeometry_to_tpoint(trgeo_seq1);
+  Temporal *tpoint1 = trgeometry_to_tgeompoint(trgeo_seq1);
   Temporal *tpose1 = trgeometry_to_tpose(trgeo_seq1);
   int n_out = 0;
 """,

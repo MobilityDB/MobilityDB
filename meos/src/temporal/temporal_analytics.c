@@ -998,7 +998,7 @@ temporal_tprecision(const Temporal *temp, const Interval *duration,
     Temporal *tpose = trgeometry_to_tpose(temp);
     Temporal *res = temporal_tprecision(tpose, duration, torigin);
     res->temptype = T_TPOSE;
-    Temporal *result = geo_tpose_to_trgeometry(trgeo_geom_p(temp), res);
+    Temporal *result = geometry_tpose_to_trgeometry(trgeo_geom_p(temp), res);
     pfree(res); pfree(tpose);
     return result;
   }

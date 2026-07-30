@@ -32,7 +32,7 @@
  * @brief Spatial and spatiotemporal grid tiling for temporal rigid geometries
  *
  * The boxes are computed on the temporal centroid trajectory
- * (`trgeometry_to_tpoint`) and thus reuse the `tgeo` tiling kernel, keeping the
+ * (`trgeometry_to_tgeompoint`) and thus reuse the `tgeo` tiling kernel, keeping the
  * trgeometry tiling surface aligned with the temporal geometry one.
  */
 
@@ -68,7 +68,7 @@ trgeometry_space_boxes(const Temporal *temp, double xsize, double ysize,
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
 
-  Temporal *tpoint = trgeometry_to_tpoint(temp);
+  Temporal *tpoint = trgeometry_to_tgeompoint(temp);
   STBox *result = tgeo_space_time_boxes(tpoint, xsize, ysize, zsize, NULL,
     sorigin, 0, bitmatrix, border_inc, count);
   pfree(tpoint);
@@ -97,7 +97,7 @@ trgeometry_space_time_boxes(const Temporal *temp, double xsize, double ysize,
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
 
-  Temporal *tpoint = trgeometry_to_tpoint(temp);
+  Temporal *tpoint = trgeometry_to_tgeompoint(temp);
   STBox *result = tgeo_space_time_boxes(tpoint, xsize, ysize, zsize, duration,
     sorigin, torigin, bitmatrix, border_inc, count);
   pfree(tpoint);

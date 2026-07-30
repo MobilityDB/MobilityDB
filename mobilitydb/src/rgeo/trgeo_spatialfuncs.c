@@ -251,8 +251,8 @@ Trgeo_similarity_distance(FunctionCallInfo fcinfo, SimFunc simfunc)
     PG_FREE_IF_COPY(temp2, 1);
     PG_RETURN_NULL();
   }
-  Temporal *tp1 = trgeometry_to_tpoint(temp1);
-  Temporal *tp2 = trgeometry_to_tpoint(temp2);
+  Temporal *tp1 = trgeometry_to_tgeompoint(temp1);
+  Temporal *tp2 = trgeometry_to_tgeompoint(temp2);
   double result = (simfunc == HAUSDORFF) ?
     temporal_hausdorff_distance(tp1, tp2) :
     temporal_similarity(tp1, tp2, simfunc);
@@ -344,8 +344,8 @@ Trgeo_similarity_path(FunctionCallInfo fcinfo, SimFunc simfunc)
       MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
     Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
     Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-    Temporal *tp1 = trgeometry_to_tpoint(temp1);
-    Temporal *tp2 = trgeometry_to_tpoint(temp2);
+    Temporal *tp1 = trgeometry_to_tgeompoint(temp1);
+    Temporal *tp2 = trgeometry_to_tgeompoint(temp2);
     int count;
     Match *path = temporal_similarity_path(tp1, tp2, &count, simfunc);
     pfree(tp1); pfree(tp2);

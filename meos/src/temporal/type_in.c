@@ -1516,7 +1516,7 @@ temporal_from_mfjson(const char *mfjson, MeosType temptype)
   json_object_put(poObj);
 #if RGEO
   if (temptype_orig == T_TRGEOMETRY && temptype == T_TPOSE)
-    return geo_tpose_to_trgeometry(gs, result);
+    return geometry_tpose_to_trgeometry(gs, result);
 #endif /* RGEO */
   return result;
 }
@@ -2586,7 +2586,7 @@ temporal_from_wkb_state(meos_wkb_parse_state *s)
 #if RGEO
   if (s->temptype == T_TPOSE && temptype_orig == T_TRGEOMETRY)
   {
-    Temporal *result = geo_tpose_to_trgeometry(gs, res);
+    Temporal *result = geometry_tpose_to_trgeometry(gs, res);
     pfree(gs); pfree(res);
     return result;
   }
