@@ -604,6 +604,64 @@ def extract_accessors(filetext: str, family: str) -> str:
     return filetext[b:e]
 
 
+# --- SQL Input/Output: type-I/O sub-family -------------------------------------
+# The canonical PG text/binary I/O every temporal type must have (in/out/recv/send +
+# the shared typmod/analyze + CREATE TYPE). Pure {TEMP}-token, no base-value
+# marshalling. In io_type.sql.tmpl the blocks are separated by a blank line: a block
+# that mentions {TEMP} repeats once per base type (no blank line between the per-type
+# copies, house style); a block that does not (typmod/analyze) is emitted once.
+# Per-type overrides carry the family variation ([[temporal-io-symbol-reuse-matrix]]):
+# {IN_SYM} (default Temporal_in; spatial families override T<fam>_in for typmod/SRID
+# checks), {OUT_SYM}/{RECV_SYM}/{SEND_SYM} (default Temporal_*; trgeometry overrides
+# Trgeometry_* — its reference geometry sits at the start of the text form / end of the
+# binary form), and {OUT_NAME}/{SEND_NAME} the referenced SQL fn name (default
+# temporal_out/temporal_send; pose/rgeo override tpose_out/trgeometry_out).
+def _io_markers(family: str):
+    begin = (f"-- GENERATED-IO-BEGIN {family} — "
+             "tools/codegen/inherited/generate.py from templates/io_type.sql.tmpl;\n"
+             "-- DO NOT EDIT BY HAND; edit the template + manifest.yaml "
+             "(io_families) and re-run.\n")
+    return begin, f"-- GENERATED-IO-END {family}\n"
+
+
+def _io_sub(text: str, t: dict) -> str:
+    return (text.replace("{IN_SYM}", t.get("in_sym", "Temporal_in"))
+                .replace("{OUT_NAME}", t.get("out_name", "temporal_out"))
+                .replace("{OUT_SYM}", t.get("out_sym", "Temporal_out"))
+                .replace("{RECV_SYM}", t.get("recv_sym", "Temporal_recv"))
+                .replace("{SEND_NAME}", t.get("send_name", "temporal_send"))
+                .replace("{SEND_SYM}", t.get("send_sym", "Temporal_send"))
+                .replace("{TEMP}", t["temp"]))
+
+
+def render_io_type(fam: dict) -> str:
+    """Render the type-I/O region for one family from its per-type `types` table.
+    A block mentioning {TEMP} repeats per type; a block without it (typmod/analyze)
+    is emitted once. Matches the base file (022_temporal) region byte-for-byte."""
+    types = fam.get("types") or [{"temp": fam["temp"]}]
+    blocks = []
+    for blk in (TEMPLATES / "io_type.sql.tmpl").read_text().strip("\n").split("\n\n"):
+        if "{TEMP}" in blk:
+            blocks.append("\n".join(_io_sub(blk, t) for t in types))
+        else:
+            blocks.append(blk)
+    return "\n" + "\n\n".join(blocks) + "\n"
+
+
+def splice_io_type(filetext: str, family: str, rendered: str) -> str:
+    begin, end = _io_markers(family)
+    b = filetext.index(begin) + len(begin)
+    e = filetext.index(end)
+    return filetext[:b] + rendered + filetext[e:]
+
+
+def extract_io_type(filetext: str, family: str) -> str:
+    begin, end = _io_markers(family)
+    b = filetext.index(begin) + len(begin)
+    e = filetext.index(end)
+    return filetext[b:e]
+
+
 def _accessor_names() -> set:
     """Every SQL function name the generated accessor region can carry: the shared
     template's functions plus the gated TNumber/orderable reductions. Used to find and
@@ -768,6 +826,25 @@ def main() -> int:
                         break
                 if len(g) != len(c):
                     print(f"     line count gen={len(g)} cur={len(c)}")
+        for fam in mf.get("io_families", []):
+            if not fam.get("reference"):
+                continue
+            p = ROOT / fam["file"]
+            gen = render_io_type(fam)
+            cur = extract_io_type(p.read_text(), fam["family"]) if p.exists() else ""
+            same = gen == cur
+            ok = ok and same
+            print(f"[{'OK ' if same else 'DIFF'}] self-regen io {fam['family']} "
+                  f"-> {pathlib.Path(fam['file'])}")
+            if not same:
+                g, c = gen.splitlines(), cur.splitlines()
+                for n, (a, b) in enumerate(zip(g, c), 1):
+                    if a != b:
+                        print(f"     first diff line {n}:\n       gen: {a!r}\n"
+                              f"       cur: {b!r}")
+                        break
+                if len(g) != len(c):
+                    print(f"     line count gen={len(g)} cur={len(c)}")
         for fam in mf.get("native_tempspatialrel_families", []):
             p = ROOT / fam["file"]
             gen = render_native_tempspatialrels(fam)
@@ -848,6 +925,16 @@ def main() -> int:
             continue
         p.write_text(splice_accessors(text, fam["family"], render_accessors(fam)))
         print(f"spliced accessors {fam['family']} -> {fam['file']}")
+
+    for fam in mf.get("io_families", []):
+        if fam.get("reference"):
+            continue
+        p = ROOT / fam["file"]
+        if args.check:
+            print(f"would splice io {fam['family']} -> {fam['file']}")
+            continue
+        p.write_text(splice_io_type(p.read_text(), fam["family"], render_io_type(fam)))
+        print(f"spliced io {fam['family']} -> {fam['file']}")
     return 0
 
 

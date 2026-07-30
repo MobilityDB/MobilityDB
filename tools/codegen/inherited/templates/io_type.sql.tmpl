@@ -1,0 +1,46 @@
+CREATE FUNCTION {TEMP}_in(cstring, oid, integer)
+  RETURNS {TEMP}
+  AS 'MODULE_PATHNAME', '{IN_SYM}'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION {OUT_NAME}({TEMP})
+  RETURNS cstring
+  AS 'MODULE_PATHNAME', '{OUT_SYM}'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION {TEMP}_recv(internal, oid, integer)
+  RETURNS {TEMP}
+  AS 'MODULE_PATHNAME', '{RECV_SYM}'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION {SEND_NAME}({TEMP})
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', '{SEND_SYM}'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION temporal_typmod_in(cstring[])
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Temporal_typmod_in'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION temporal_typmod_out(integer)
+  RETURNS cstring
+  AS 'MODULE_PATHNAME', 'Temporal_typmod_out'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION temporal_analyze(internal)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Temporal_analyze'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE TYPE {TEMP} (
+  internallength = variable,
+  input = {TEMP}_in,
+  output = {OUT_NAME},
+  send = {SEND_NAME},
+  receive = {TEMP}_recv,
+  typmod_in = temporal_typmod_in,
+  typmod_out = temporal_typmod_out,
+  storage = extended,
+  alignment = double,
+  analyze = temporal_analyze
+);

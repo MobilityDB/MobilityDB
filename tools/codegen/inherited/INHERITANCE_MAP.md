@@ -119,10 +119,10 @@ kernel wiring, currently: `geo_ea_contains_covers`, `geo_ea_disjoint_intersects`
 
 | `<sect1>` | MEOS prefix | generated? | canonical generator / notes |
 |---|---|---|---|
-| Input and Output | `temporal_` | ✗ HAND | per-type recv/send/in/out |
+| Input and Output | `temporal_` | ✗ HAND | **two sub-families**: (a) **type I/O** `<type>_in`/`_out`/`_recv`/`_send` (PG registration, one set per type); (b) **canonical representations** — text `asText`/`asEWKT`/`fromText`, binary `asBinary`/`asEWKB`, hex `asHexWKB`/`fromHexWKB`, **MF-JSON** `asMFJSON`/`fromMFJSON` (MEOS-C `temporal_as_{wkb,hexwkb,mfjson}` + `temporal_from_{wkb,hexwkb,mfjson}`). Both token-shaped → generable |
 | Constructors | `temporal_` | ✗ HAND | tXxxInst/Seq/SeqSet |
 | Conversions | `temporal_` | ✗ HAND | casts |
-| Accessors | `temporal_` | ✗ HAND | getTime, getValues, startTimestamp, duration, memSize … |
+| Accessors | `temporal_` | ✓ **GEN** | `accessors.sql.tmpl` multi-base renderer from base `022_temporal.in.sql` — the value/time/generic set for ALL families (§4c); per-family value shape = manifest `types:` tokens. A few interleaved/positional accessors stay hand per family |
 | Transformations | `temporal_` | ✗ HAND | shiftTime/scaleTime, setInterp, tprecision, tsample |
 | Modifications | `temporal_` | ✗ HAND | appendInstant, insert, update, merge |
 | Restrictions | `temporal_` | ✗ HAND | atValue(s)/minusValue(s), atTime/minusTime, atSpan(set), atTbox |
@@ -179,6 +179,182 @@ Two more reference chapters carry inherited surface:
 | → Indexing | (index) | ✓ **GEN** | GiST/SP-GiST via `gist/spgist/indexes.sql.tmpl` |
 | → Statistics and Selectivity | (selectivity) | ✗ HAND | |
 | `temporal_types_analytics.xml` → Simplification / Reduction / Similarity / Extended Kalman Filter / Splitting / Multidimensional Tiling | `temporal_`/`tgeo_` | ✗ HAND | analytics; tiling `stboxes`/`splitNStboxes` are per-family table shapes |
+
+### 4c. Canonical accessor set & order — the inherited value/time surface
+
+Order is authoritative from `doc/temporal_types_p1.xml`
+`<sect1 xml:id="ttype_accessors">` (one `<sect2>` per group representative; paired
+value/time and start/end/N/plural members share the sect). The whole set is
+**generated** by `templates/accessors.sql.tmpl` (multi-base renderer) from the base
+reference file `mobilitydb/sql/temporal/022_temporal.in.sql`; each family in
+`accessor_families` supplies only its per-base-type `types:` tokens.
+
+| # | `<sect2>` (representative) | full group members | shape |
+|---|---|---|---|
+| 1 | memSize | memSize | generic |
+| 2 | tempSubtype | tempSubtype | generic |
+| 3 | tempBasetype | tempBasetype | generic |
+| 4 | interp | interp | generic |
+| 5 | getValue | getValue, getTimestamp | **value** |
+| 6 | getValues | getValues, getTime | **value** (getValues → base *set*) |
+| 7 | timeSpan | timeSpan | generic (tstzspan) |
+| 8 | startValue | startValue, endValue, valueN | **value** |
+| 9 | valueAtTimestamp | valueAtTimestamp | **value** |
+| 10 | duration | duration | generic (interval) |
+| 11 | lowerInc | lowerInc, upperInc | generic |
+| 12 | numInstants | numInstants | generic |
+| 13 | startInstant | startInstant, endInstant, instantN, instants | generic (returns same `T`) |
+| 14 | numTimestamps | numTimestamps | generic |
+| 15 | startTimestamp | startTimestamp, endTimestamp, timestampN, timestamps | generic |
+| 16 | numSequences | numSequences | generic |
+| 17 | startSequence | startSequence, endSequence, sequenceN, sequences | generic (returns same `T`) |
+| 18 | segments | segments | generic (returns same `T`) |
+
+**Per-family value shape** is entirely captured by the manifest `types:` tokens
+(`accessor_families`, one row per base type) — this is the single place that says how
+each family fills the **value** rows:
+
+| token | meaning | example |
+|---|---|---|
+| `base` | scalar base value (getValue/startValue/endValue/valueN/valueAtTimestamp) | tcbuffer→`cbuffer`, tint→`integer` |
+| `baseset` | the `getValues` return — a **set** for most, a **spanset for numbers** | tcbuffer→`cbufferset`, tfloat→`floatspanset` |
+| `gvsym` | getValues C symbol when it differs (numbers → value spanset) | `Tnumber_valuespans` |
+| `valueset` | the **discrete** `valueSet` return — emitted **only** when `numeric`/`orderable` | tint→`intset` |
+| `numeric` / `orderable` | gate the TNumber/orderable-only extras: `valueSet`, `minValue`, `maxValue`, `avgValue`, `minInstant`, `maxInstant` | tint/tbigint/tfloat numeric; ttext orderable |
+| `valret` / `valsym` | **value-materializing override**: value accessors return this type via that symbol family instead of the base | trgeometry→`geometry` / `Trgeometry` |
+
+⭐ Canonical (user-corrected twice — do NOT re-derive from code frequency):
+`getValues` returns the value **SET** for every type, the value **SPANSET** only for
+`TNumber` (`gvsym: Tnumber_valuespans`); `valueSet` exists **only at `TNumber`/orderable**
+to name the plain set vs the spanset. `trgeometry` is the sole family whose value
+accessors are overridden (`valret: geometry`, `valsym: Trgeometry`) — it stores a pose
++ appended reference geometry, so getValue/getValues expose the raw pose while
+startValue/endValue/valueN/valueAtTimestamp re-apply the pose to materialize a geometry.
+
+Restrictions (`ttype_restrictions`) reuse the same value marshalling: `atValue`/
+`minusValue` (scalar `base`) + `atValues`/`minusValues` (`baseset`).
+
+### 4d. Per-family specific (non-inherited) surface
+
+Beyond the generated inherited set, each family adds its OWN functions — hand,
+value-shaped, **not** emitted by any inherited template (they live in the family's
+`spatialfuncs`/type file). This is the complete per-family delta (live at the `.in.sql`
+numbers in §6):
+
+| family | specific functions | notes |
+|---|---|---|
+| **tcbuffer** (202) | `point`, `radius` | the two components of a circular buffer (center `tgeompoint` + `tfloat`) |
+| **tnpoint** (302) | `route`, `routes`, `getPosition`, `positions`, `nsegment` | network-position components (route id + fractional position) |
+| **tpose** (102) | `point`, `rotation`, `yaw`, `pitch`, `roll`, `speed`, `angularSpeed` | rigid-pose components (2D: rotation/yaw; 3D quaternion: pitch/roll) |
+| **trgeometry** (150) | `point`, `rotation` | its value accessors are NOT specific here — they are the generated `valret`/`valsym` override (§4c) |
+| **tpcpoint** (420) | `getX`, `getY`, `getZ` | point-coordinate accessors; the temporal **value** surface (`startValue`… → `Pcpoint`) is value-opaque, generated verbatim (base `pcpoint`/`pcpointset`) |
+| **tpcpatch** (430) | (patch geometry accessors) | value-opaque container like tpcpoint (base `pcpatch`/`pcpatchset`) |
+| **tgeo** (geo/point) | SRID, trajectory, traversedArea, convexHull, … | the hand reference layout — see §5 |
+
+**Value-opaque ⇒ nothing extra to override**: `tjsonb`, `tpcpoint`, `tpcpatch`,
+`tcbuffer`, `tnpoint`, `tpose` all fill the **value** rows with a plain `base`/`baseset`
+(the base value is opaque to the accessor), so their inherited value surface is fully
+generated; only `trgeometry` overrides it. The families' *specific* functions above are
+a separate, small hand surface (components/coordinates), orthogonal to the inherited set.
+
+### 4e. Input/Output generation scope (the next `✗ HAND → ✓ GEN` target)
+
+The Input/Output `<sect1>` is **two token-shaped sub-families**; both mirror the
+`accessor_families` model (per-type `types:` rows, region-marked blocks in a reference
+file, `--validate` byte-for-byte). Live at MobilityDB master ~`b496986dd`.
+
+**A — Type I/O** (in the type file: `022_temporal`, `102_tpose`, `202_tcbuffer`, …).
+Canonical PG functions **every** temporal type must have, plus `CREATE TYPE`:
+
+| function | signature | backing symbol | shape |
+|---|---|---|---|
+| `<temp>_in` | `(cstring, oid, integer) → <temp>` | `Temporal_in` / **`T<fam>_in`** (spatial ones apply typmod/SRID checks) | per-type name |
+| `temporal_out` | `(<temp>) → cstring` | `Temporal_out` / **`Trgeometry_out`** | overloaded name |
+| `<temp>_recv` | `(internal, oid, integer) → <temp>` | `Temporal_recv` / **`Trgeometry_recv`** | per-type name |
+| `temporal_send` | `(<temp>) → bytea` | `Temporal_send` / **`Trgeometry_send`** | overloaded name |
+| `temporal_typmod_in`/`_out`, `temporal_analyze` | shared | generic | **emit once** |
+| `CREATE TYPE <temp>` | fixed skeleton | — | per-type |
+
+Pure `{TEMP}`-token, **zero base-value marshalling** → the most mechanical section. Token
+model needs per-type symbol overrides: `in_sym` (default `Temporal_in`, override
+`T<fam>_in`), `out_sym`/`recv_sym`/`send_sym` (default `Temporal_*`, override
+`Trgeometry_*`). See [[temporal-io-symbol-reuse-matrix]] for the full family matrix.
+
+**Two structural shapes** (base ≠ spatial — the type-I/O is NOT uniformly reused):
+
+| aspect | base (`022`, tbool…ttext) | spatial (`202`+, tcbuffer/tnpoint/tpose/tgeo…) |
+|---|---|---|
+| shell type | none | `CREATE TYPE <t>;` forward decl **first** |
+| `typmod_in` | shared `temporal_typmod_in` | **own `<t>_typmod_in`** (`T<fam>_typmod_in`, encodes SRID/Z) |
+| `typmod_out` / `analyze` | own `temporal_typmod_out` / `temporal_analyze` (defined here) | shared `tspatial_typmod_out` / `tspatial_analyze` |
+| `CREATE TYPE` field order | input/output/**send/receive** | input/output/**receive/send** |
+
+Status: the base shape is **generated** (`io_type.sql.tmpl` + `io_families` `temporal`
+reference, `--validate` byte-for-byte). The spatial shape needs a template variant
+(`@IF spatial`: shell type + `T<fam>_typmod_in` + `tspatial_typmod_out`/`_analyze` +
+swapped send/receive) — the next increment.
+
+- **Reuse is uniform except two families**: `_out`/`_send`/`_recv` are base-value-agnostic
+  → generic for all **except trgeometry** (owns all four `Trgeometry_*` because the
+  reference geometry sits at the **beginning** of the text form and the **end** of the
+  binary form — `trgeo_parser.c:306` / `trgeo_inst.c:187`). `_in` specializes per spatial
+  family (`T<fam>_in`).
+- ⚠️ **Open question**: `tpcpoint`/`tpcpatch` reuse the **generic** `Temporal_in` while
+  sibling spatial families carry `T<fam>_in`. Whether pointcloud needs the SRID/typmod
+  checks its siblings apply is unresolved ([[close-gaps-in-meos-c-not-sql-composition]]).
+
+**B — Canonical representations** (in `_inout` files: `023_temporal_inout`,
+`053_tgeo_inout`, or inline in family type files). Two shapes gated by a `spatial` flag:
+
+| representation | base (TAlpha/TNumber) | + TSpatial<T> | backing symbol |
+|---|---|---|---|
+| text | `asText` | `asEWKT` (`SRID=n;` prefix) / `FromText` / `FromEWKT` | `Temporal_as_text` · array `Temporalarr_as_text` |
+| binary (WKB) | `asBinary` / `FromBinary` | `asEWKB` (embeds SRID) / `FromEWKB` | `Temporal_as_wkb` / `Temporal_from_wkb` |
+| hex | `asHexWKB` / `FromHexWKB` | — | `Temporal_as_hexwkb` / `Temporal_from_hexwkb` |
+| MF-JSON | `asMFJSON` / `FromMFJSON` | — | `Temporal_as_mfjson` / `Temporal_from_mfjson` |
+
+EWKT/EWKB are **TSpatial<T>-level**, the `E` = carries the SRID
+([[ewkt-ewkb-tspatial-srid-representation]]). Conventions to reproduce verbatim:
+`maxdecimaldigits int4 DEFAULT 15` on float/coordinate-bearing types only;
+`endianenconding text DEFAULT ''` (canonical misspelling) on `asBinary`/`asHexWKB`.
+
+**Plan**: new `io_families` manifest axis reusing the `accessor_families` per-type rows
+(add `spatial` + `in_sym`/`out_sym`/… overrides). Templates `io_type.sql.tmpl` (A) and
+`io_repr.sql.tmpl` (B, base + `@IF spatial` E-extensions). Reference families = base
+`temporal` (base shape) + `geo` (spatial shape); rgeo = the specialize-all outlier.
+Start with **A/type-I/O** (purest token) then **B/representations**, cbuffer first.
+
+### 4f. Type-I/O canonicalization — `Temporal<>` vs `TSpatial<>` irregularities
+
+Canonical references (both regular): base = `022` (tbool…ttext); spatial = `052_tgeo`
+(tgeometry/tgeography/tgeompoint/tgeogpoint) — shell `CREATE TYPE <t>;`, `<t>_in`/
+`temporal_out`/`<t>_recv`/`temporal_send`, `<t>_typmod_in`, shared `tspatial_typmod_out`
++ `tspatial_analyze`, `send/receive` order. Every *derived* spatial family deviates; the
+plan is to regularize each to the spatial canon, after which the spatial I/O template is
+one clean variant with per-family symbol tokens only.
+
+| id | irregularity | families | canonical form | class |
+|---|---|---|---|---|
+| I1 | `CREATE TYPE` field order `receive/send` | cbuffer, npoint, pose, rgeo, tpcpoint, tpcpatch | `send/receive` (base + tgeo) | non-API reorder — **resolved** |
+| I2 | redundant `<t>_out`/`<t>_send` SQL renames (symbol = generic `Temporal_out`/`Temporal_send`) | pose, tpcpoint, tpcpatch | `temporal_out`/`temporal_send` (drop the rename) | **resolved** |
+| I3 | `temporal_typmod_in`/`_out` **+** `tspatial_analyze` | npoint | **keep** — legitimate hybrid, not an irregularity | no change |
+| I4 | `trgeo_typmod_in` SQL name vs `Trgeometry_typmod_in` symbol | rgeo | `trgeometry_typmod_in` (optional naming nit) | API — sign-off |
+| I5 | `CREATE TYPE` registers **no `analyze`** though `tpcbox`/`tpc_boxops` give it a spatial bbox | tpcpoint, tpcpatch | add an `analyze` typanalyze for bbox stats | statistics gap — sign-off |
+
+rgeo's `Trgeometry_out`/`_recv`/`_send` are genuine distinct functions (reference geometry
+at the start of the text / end of the binary form) — kept, not an irregularity. npoint's
+hybrid (I3) is likewise kept: its SRID comes from the `ways` table (`npoint_srid()` →
+`get_srid_ways()`, not per-value), so there is no column-SRID typmod, yet the value still
+carries a spatial stbox bbox — `temporal_typmod_in/out` + `tspatial_analyze` is correct.
+Status: I1 + I2 resolved (`send/receive` order + `temporal_out`/`temporal_send` overloads,
+`--validate` green); I3 needs no change; I4 is only an optional naming nit
+(`trgeo_typmod_in`→`trgeometry_typmod_in`) — the `recv` arity is NOT an irregularity:
+`recv(internal)` and `recv(internal, oid, integer)` are BOTH canonical PG (PG source
+`findTypeReceiveFunction`; PG always passes 3 args via `ReceiveFunctionCall`), see
+[[pg-receive-function-arity-both-valid]]. I5 (add the missing `analyze` typanalyze;
+`tpc_typmod_in/out` are legitimate `pcid` typmod, kept) is a schema gap held for sign-off.
+Pattern: per-family typmod semantics (npoint ways-SRID, pointcloud `pcid`) are legitimate —
+`typmod_in`/`typmod_out`/`analyze` are independent per-family tokens, never forced uniform.
 
 ## 5. `TSpatial<T>` / `TGeo<T>` chapter — section-by-section
 
@@ -275,10 +451,15 @@ template yet — pure hand today):
   ever/always compops template.
 
 **C. Sections that are inherently per-family / value-shaped** (generation needs the
-per-type base-value marshalling, tracked binding-side, e.g. MobilityDuck):
-Input/Output, Constructors, Conversions, Accessors, Transformations,
-Modifications, Restrictions. These are the largest hand surface and the subject of
-the binding generators (see memory
+per-type base-value marshalling): Input/Output, Constructors, Conversions,
+Transformations, Modifications, Restrictions. **Accessors are now generated** for
+every family (§4c, `accessors.sql.tmpl` + manifest `types:` tokens) — the value-shaped
+rows via `base`/`baseset`/`valret`, the rest generically; only interleaved/positional
+accessors stay hand. The MEOS-**C** value surface (`start_value`/`value_at_timestamptz`/
+`values`/`at_value`… in `meos/src/<fam>.c`) is the sibling generation target —
+`temporal_basetype.c.tmpl`, byte-for-byte reference `meos/src/json/tjsonb.c`, cloneable
+for the value-opaque families (jsonb/pcpoint/pcpatch/cbuffer). The remaining hand
+sections are the subject of the binding generators (see memory
 `mobilityduck-tcbuffer-full-implementation-roadmap`).
 
 ## 8. Comparison with the MEOS-API generated hierarchy

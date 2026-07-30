@@ -618,3 +618,19 @@ accessor_families:
     reference: true
     types:
       - {temp: tpcpatch, base: pcpatch, baseset: pcpatchset}
+
+# Input/Output — type-I/O sub-family (in/out/recv/send + shared typmod/analyze +
+# CREATE TYPE). Pure {TEMP}-token; per-type symbol/name overrides carry the family
+# variation (in_sym/out_sym/recv_sym/send_sym + out_name/send_name). Base temporal
+# uses the generic Temporal_* symbols throughout. See INHERITANCE_MAP.md §4e and
+# the temporal-io-symbol-reuse-matrix memory.
+io_families:
+  - family:    temporal
+    file:      mobilitydb/sql/temporal/022_temporal.in.sql
+    reference: true
+    types:
+      - {temp: tbool}
+      - {temp: tint}
+      - {temp: tbigint}
+      - {temp: tfloat}
+      - {temp: ttext}
