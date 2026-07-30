@@ -57,6 +57,9 @@ CREATE FUNCTION mobilitydb_full_version()
  * Input/Output
  ******************************************************************************/
 
+-- GENERATED-IO-BEGIN temporal — tools/codegen/inherited/generate.py from templates/io_type.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.yaml (io_families) and re-run.
+
 CREATE FUNCTION tbool_in(cstring, oid, integer)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Temporal_in'
@@ -215,6 +218,7 @@ CREATE TYPE ttext (
   alignment = double,
   analyze = temporal_analyze
 );
+-- GENERATED-IO-END temporal
 
 -- Special cast for enforcing the typmod restrictions
 CREATE FUNCTION tbool(tbool, integer)
