@@ -73,6 +73,9 @@
 #include "pg_temporal/meos_catalog.h"
 #include "pg_temporal/span_analyze.h"
 #include "pg_temporal/temporal_analyze.h"
+#if POINTCLOUD
+  #include "pointcloud/tpc_boxops.h"
+#endif
 
 /*****************************************************************************
  * Functions copied from PostGIS file gserialized_estimate.c
@@ -604,7 +607,11 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
      * a temporal point while the original function gets a geometry.
      */
     MeosType type = oid_meostype(stats->attrtypid);
-    assert(spatialset_type(type) || tspatial_type(type));
+    assert(spatialset_type(type) || tspatial_type(type)
+#if POINTCLOUD
+      || tpointcloud_temptype(type)
+#endif
+      );
     if (spatialset_type(type))
     {
       /* Get bounding box from spatial set */
@@ -614,6 +621,20 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
       if (VARATT_IS_EXTENDED(set))
         pfree(set);
     }
+#if POINTCLOUD
+    else if (tpointcloud_temptype(type))
+    {
+      /* Get the bounding box from a temporal pointcloud value, projecting its
+       * TPCBox to an STBox (dropping the schema-specific pcid) */
+      Temporal *temp = DatumGetTemporalP(datum);
+      TPCBox tpcbox;
+      temporal_set_bbox(temp, &tpcbox);
+      tpcbox_set_stbox(&tpcbox, &box);
+      /* Free up memory if our temporal value was copied */
+      if (VARATT_IS_EXTENDED(temp))
+        pfree(temp);
+    }
+#endif
     else /* tspatial_type(type) */
     {
       /* Get bounding box from temporal point */

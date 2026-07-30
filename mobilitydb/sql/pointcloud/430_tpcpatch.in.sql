@@ -78,7 +78,8 @@ CREATE TYPE tpcpatch (
   typmod_in = tpc_typmod_in,
   typmod_out = tpc_typmod_out,
   storage = extended,
-  alignment = double
+  alignment = double,
+  analyze = tspatial_analyze
 );
 
 -- Special cast for enforcing the typmod restriction on INSERT / cast.
