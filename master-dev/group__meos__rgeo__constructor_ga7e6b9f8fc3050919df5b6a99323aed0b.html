@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: trgeo_as_text</title>
+<title>MobilityDB: geometry_tpose_to_trgeometry</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="group__meos__rgeo__inout.html">Input and output functions</a></li>  </ul>
+<li class="navelem"><a class="el" href="group__meos__rgeo__constructor.html">Constructor functions</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,32 +79,32 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__inout_ga59389c9831e57642510c33eb90833813.html#ga59389c9831e57642510c33eb90833813">trgeo_as_ewkt</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__rgeo__inout_ga0dbdab2b803536afa308f6f8009925ad.html#ga0dbdab2b803536afa308f6f8009925ad">trgeo_as_text</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__inout_ga121a38b7770977cb9c46d2cd8a5f1d7d.html#ga121a38b7770977cb9c46d2cd8a5f1d7d">trgeo_from_mfjson</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__inout_gacbf9085b59322c5b9d250d0a36fd5a77.html#gacbf9085b59322c5b9d250d0a36fd5a77">trgeo_in</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__inout_ga8a53468a7a10539c8408f1d035a58a75.html#ga8a53468a7a10539c8408f1d035a58a75">trgeometry_out</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__rgeo__constructor_ga7e6b9f8fc3050919df5b6a99323aed0b.html#ga7e6b9f8fc3050919df5b6a99323aed0b">geometry_tpose_to_trgeometry</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__constructor_ga1e3553b3b2731e1e608a1b332716a858.html#ga1e3553b3b2731e1e608a1b332716a858">trgeometryinst_make</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__constructor_ga947427e667e7583ddd16f98434f3a6a0.html#ga947427e667e7583ddd16f98434f3a6a0">trgeometryseq_make</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__constructor_gadd252597ce3a68e6ee522f79aedd7ab3.html#gadd252597ce3a68e6ee522f79aedd7ab3">trgeometryseqset_make</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__constructor_ga7e9808fc6718933a0bee18dbb41f2ebf.html#ga7e9808fc6718933a0bee18dbb41f2ebf">trgeometryseqset_make_gaps</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga0dbdab2b803536afa308f6f8009925ad" name="ga0dbdab2b803536afa308f6f8009925ad"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga0dbdab2b803536afa308f6f8009925ad">&#9670;&#160;</a></span>trgeo_as_text()</h2>
+<a id="ga7e6b9f8fc3050919df5b6a99323aed0b" name="ga7e6b9f8fc3050919df5b6a99323aed0b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga7e6b9f8fc3050919df5b6a99323aed0b">&#9670;&#160;</a></span>geometry_tpose_to_trgeometry()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">char * trgeo_as_text </td>
+          <td class="memname"><a class="el" href="structTemporal.html">Temporal</a> * geometry_tpose_to_trgeometry </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
-          <td class="paramname"><em>temp</em>, </td>
+          <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
+          <td class="paramname"><em>gs</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>maxdd</em>&#160;</td>
+          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
+          <td class="paramname"><em>temp</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -114,11 +114,11 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the Well-Known Text (WKT) representation of a temporal rigid geometry. </p>
+<p>Construct a temporal rigid geometry from a geometry and a temporal pose. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> rigid geometry </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">maxdd</td><td>Maximum number of decimal digits </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">gs</td><td>Geometry </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> pose </td></tr>
   </table>
   </dd>
 </dl>

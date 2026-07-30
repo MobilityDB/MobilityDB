@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: trgeo_in</title>
+<title>MobilityDB: trgeometry_to_tgeompoint</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="group__meos__rgeo__inout.html">Input and output functions</a></li>  </ul>
+<li class="navelem"><a class="el" href="group__meos__rgeo__conversion.html">Conversion functions</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,35 +79,34 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__inout_ga59389c9831e57642510c33eb90833813.html#ga59389c9831e57642510c33eb90833813">trgeo_as_ewkt</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__inout_ga0dbdab2b803536afa308f6f8009925ad.html#ga0dbdab2b803536afa308f6f8009925ad">trgeo_as_text</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__inout_ga121a38b7770977cb9c46d2cd8a5f1d7d.html#ga121a38b7770977cb9c46d2cd8a5f1d7d">trgeo_from_mfjson</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__rgeo__inout_gacbf9085b59322c5b9d250d0a36fd5a77.html#gacbf9085b59322c5b9d250d0a36fd5a77">trgeo_in</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__inout_ga8a53468a7a10539c8408f1d035a58a75.html#ga8a53468a7a10539c8408f1d035a58a75">trgeometry_out</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__conversion_gae2e2d991ef8cc83dd23563b67c02c123.html#gae2e2d991ef8cc83dd23563b67c02c123">trgeometry_geom</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__conversion_ga137cc1c0fb7a5fd65104491f437de231.html#ga137cc1c0fb7a5fd65104491f437de231">trgeometry_to_tgeometry</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__rgeo__conversion_ga7c45c387dfdd4129e5c5892096161194.html#ga7c45c387dfdd4129e5c5892096161194">trgeometry_to_tgeompoint</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__conversion_gad36b03cbe138577db46c3aa285e8edcc.html#gad36b03cbe138577db46c3aa285e8edcc">trgeometry_to_tpose</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="gacbf9085b59322c5b9d250d0a36fd5a77" name="gacbf9085b59322c5b9d250d0a36fd5a77"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gacbf9085b59322c5b9d250d0a36fd5a77">&#9670;&#160;</a></span>trgeo_in()</h2>
+<a id="ga7c45c387dfdd4129e5c5892096161194" name="ga7c45c387dfdd4129e5c5892096161194"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga7c45c387dfdd4129e5c5892096161194">&#9670;&#160;</a></span>trgeometry_to_tgeompoint()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structTemporal.html">Temporal</a> * trgeo_in </td>
+          <td class="memname"><a class="el" href="structTemporal.html">Temporal</a> * trgeometry_to_tgeompoint </td>
           <td>(</td>
-          <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>str</em></td><td>)</td>
+          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
+          <td class="paramname"><em>temp</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Return a temporal rigid geometry from its Well-Known Text (WKT) representation. </p>
+<p>Return a temporal point obtained from the points of the temporal pose of a temporal rigid geometry. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">str</td><td>String </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> rigid geometry @csqlfn <a class="el" href="group__mobilitydb__rgeo__conversion_ga142de800850dfec13ccdea0a3a26641a.html#ga142de800850dfec13ccdea0a3a26641a" title="Convert a temporal rigid geometry into a temporal point @sqlfn tgeompoint(), tgeogpoint()">Trgeometry_to_tpoint()</a> </td></tr>
   </table>
   </dd>
 </dl>
