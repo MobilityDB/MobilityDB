@@ -3533,6 +3533,21 @@
 			</sect3>
 
 			<sect3>
+				<title>Modificaciones</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpcpoint_insert"><varname>insert</varname>, <varname>update</varname></link>: Insertar un tpcpoint en otro, o actualizar otro con él</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpoint_deleteTime"><varname>deleteTime</varname></link>: Eliminar un selector de tiempo de un tpcpoint</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpoint_appendInstant"><varname>appendInstant</varname>, <varname>appendSequence</varname></link>: Añadir un instante o una secuencia a un tpcpoint</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
 				<title>Operaciones de cuadro delimitador</title>
 				<itemizedlist>
 					<listitem>
@@ -3624,6 +3639,21 @@
 					</listitem>
 					<listitem>
 						<para><link linkend="tpcpatch_atGeometry"><varname>atGeometry</varname>, <varname>minusGeometry</varname></link>: Restringir a (al complemento de) los puntos que intersectan una geometría 2D</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Modificaciones</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpcpatch_insert"><varname>insert</varname>, <varname>update</varname></link>: Insertar un tpcpatch en otro, o actualizar otro con él</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpatch_deleteTime"><varname>deleteTime</varname></link>: Eliminar un selector de tiempo de un tpcpatch</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpatch_appendInstant"><varname>appendInstant</varname>, <varname>appendSequence</varname></link>: Añadir un instante o una secuencia a un tpcpatch</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

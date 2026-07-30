@@ -147,3 +147,31 @@ SELECT atTpcbox(:inst1, tpcbox_zt(0, 0, 0, 10, 10, 10,
   tstzspan '[2024-01-01, 2024-01-31]', 999, 0)) IS NULL;
 
 -------------------------------------------------------------------------------
+-- Modifications
+-- insert/update take temporal values that share the same value at their
+-- common timestamp; append adds an instant/sequence after the end.
+-------------------------------------------------------------------------------
+
+SELECT insert(tpcpointSeq(ARRAY[:inst1, :inst2]),
+  tpcpointSeq(ARRAY[:inst2, :inst3])) IS NOT NULL;
+SELECT insert(tpcpointSeq(ARRAY[:inst1, :inst2]),
+  tpcpointSeq(ARRAY[:inst2, :inst3]), false) IS NOT NULL;
+SELECT update(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]),
+  tpcpointSeq(ARRAY[:inst2])) IS NOT NULL;
+SELECT update(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]),
+  tpcpointSeq(ARRAY[:inst2, :inst3])) IS NOT NULL;
+
+SELECT deleteTime(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]),
+  timestamptz '2024-01-02') IS NOT NULL;
+SELECT deleteTime(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]),
+  tstzset '{2024-01-02}') IS NOT NULL;
+SELECT deleteTime(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]),
+  tstzspan '[2024-01-02, 2024-01-02]') IS NOT NULL;
+SELECT deleteTime(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]),
+  tstzspanset '{[2024-01-02, 2024-01-02]}') IS NOT NULL;
+
+SELECT appendInstant(tpcpointSeq(ARRAY[:inst1, :inst2]), :inst3) IS NOT NULL;
+SELECT appendSequence(tpcpointSeq(ARRAY[:inst1]),
+  tpcpointSeq(ARRAY[:inst2, :inst3])) IS NOT NULL;
+
+-------------------------------------------------------------------------------

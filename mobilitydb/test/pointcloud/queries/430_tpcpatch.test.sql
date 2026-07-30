@@ -204,3 +204,31 @@ SELECT count(DISTINCT t)
   FROM points(tpcpatchSeq(ARRAY[:inst1, :inst2]));
 
 -------------------------------------------------------------------------------
+-- Modifications
+-- insert/update take temporal values that share the same value at their
+-- common timestamp; append adds an instant/sequence after the end.
+-------------------------------------------------------------------------------
+
+SELECT insert(tpcpatchSeq(ARRAY[:inst1, :inst2]),
+  tpcpatchSeq(ARRAY[:inst2, :inst3])) IS NOT NULL;
+SELECT insert(tpcpatchSeq(ARRAY[:inst1, :inst2]),
+  tpcpatchSeq(ARRAY[:inst2, :inst3]), false) IS NOT NULL;
+SELECT update(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3]),
+  tpcpatchSeq(ARRAY[:inst2])) IS NOT NULL;
+SELECT update(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3]),
+  tpcpatchSeq(ARRAY[:inst2, :inst3])) IS NOT NULL;
+
+SELECT deleteTime(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3]),
+  timestamptz '2024-01-02') IS NOT NULL;
+SELECT deleteTime(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3]),
+  tstzset '{2024-01-02}') IS NOT NULL;
+SELECT deleteTime(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3]),
+  tstzspan '[2024-01-02, 2024-01-02]') IS NOT NULL;
+SELECT deleteTime(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3]),
+  tstzspanset '{[2024-01-02, 2024-01-02]}') IS NOT NULL;
+
+SELECT appendInstant(tpcpatchSeq(ARRAY[:inst1, :inst2]), :inst3) IS NOT NULL;
+SELECT appendSequence(tpcpatchSeq(ARRAY[:inst1, :inst2]),
+  tpcpatchSeq(ARRAY[:inst3])) IS NOT NULL;
+
+-------------------------------------------------------------------------------

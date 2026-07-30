@@ -544,6 +544,45 @@ CREATE FUNCTION points(tpcpatch)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
+ * Modification functions
+ ******************************************************************************/
+
+CREATE FUNCTION insert(tpcpatch, tpcpatch, connect boolean DEFAULT TRUE)
+  RETURNS tpcpatch
+  AS 'MODULE_PATHNAME', 'Temporal_insert'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION update(tpcpatch, tpcpatch, connect boolean DEFAULT TRUE)
+  RETURNS tpcpatch
+  AS 'MODULE_PATHNAME', 'Temporal_update'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION deleteTime(tpcpatch, timestamptz, connect boolean DEFAULT TRUE)
+  RETURNS tpcpatch
+  AS 'MODULE_PATHNAME', 'Temporal_delete_timestamptz'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION deleteTime(tpcpatch, tstzset, connect boolean DEFAULT TRUE)
+  RETURNS tpcpatch
+  AS 'MODULE_PATHNAME', 'Temporal_delete_tstzset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION deleteTime(tpcpatch, tstzspan, connect boolean DEFAULT TRUE)
+  RETURNS tpcpatch
+  AS 'MODULE_PATHNAME', 'Temporal_delete_tstzspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION deleteTime(tpcpatch, tstzspanset, connect boolean DEFAULT TRUE)
+  RETURNS tpcpatch
+  AS 'MODULE_PATHNAME', 'Temporal_delete_tstzspanset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION appendInstant(tpcpatch, tpcpatch)
+  RETURNS tpcpatch
+  AS 'MODULE_PATHNAME', 'Temporal_append_tinstant'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION appendSequence(tpcpatch, tpcpatch)
+  RETURNS tpcpatch
+  AS 'MODULE_PATHNAME', 'Temporal_append_tsequence'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************
  * Ever / always
  ******************************************************************************/
 
