@@ -105,6 +105,20 @@ SELECT (:inst1) < (:inst2);
 -- Restrictions
 -------------------------------------------------------------------------------
 
+-- Value restrictions: present value → at non-null / minus non-null;
+-- value set → at / minus non-null; absent value → at NULL.
+SELECT atValue(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]),
+  PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[])) IS NOT NULL;
+SELECT minusValue(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]),
+  PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[])) IS NOT NULL;
+SELECT atValues(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]),
+  set(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]),
+    PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[])])) IS NOT NULL;
+SELECT minusValues(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]),
+  set(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[])])) IS NOT NULL;
+SELECT atValue(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]),
+  PC_MakePoint(1, ARRAY[9.0, 9.0, 9.0]::float[])) IS NULL;
+
 SELECT atTime(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]),
   tstzspan '[2024-01-02, 2024-01-03]') IS NOT NULL;
 SELECT atTpcbox(:inst2, tpcbox_zt(0, 0, 0, 10, 10, 10,

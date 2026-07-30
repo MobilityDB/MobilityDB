@@ -406,6 +406,26 @@ CREATE CAST (tpcpoint AS tgeompoint) WITH FUNCTION tgeompoint(tpcpoint);
  * Restrictions
  ******************************************************************************/
 
+CREATE FUNCTION atValue(tpcpoint, pcpoint)
+  RETURNS tpcpoint
+  AS 'MODULE_PATHNAME', 'Temporal_at_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION minusValue(tpcpoint, pcpoint)
+  RETURNS tpcpoint
+  AS 'MODULE_PATHNAME', 'Temporal_minus_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION atValues(tpcpoint, pcpointset)
+  RETURNS tpcpoint
+  AS 'MODULE_PATHNAME', 'Temporal_at_values'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION minusValues(tpcpoint, pcpointset)
+  RETURNS tpcpoint
+  AS 'MODULE_PATHNAME', 'Temporal_minus_values'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION atTime(tpcpoint, timestamptz)
   RETURNS tpcpoint
   AS 'MODULE_PATHNAME', 'Temporal_at_timestamptz'

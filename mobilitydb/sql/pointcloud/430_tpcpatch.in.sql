@@ -372,6 +372,26 @@ CREATE FUNCTION numPoints(tpcpatch)
  * Restrictions
  ******************************************************************************/
 
+CREATE FUNCTION atValue(tpcpatch, pcpatch)
+  RETURNS tpcpatch
+  AS 'MODULE_PATHNAME', 'Temporal_at_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION minusValue(tpcpatch, pcpatch)
+  RETURNS tpcpatch
+  AS 'MODULE_PATHNAME', 'Temporal_minus_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION atValues(tpcpatch, pcpatchset)
+  RETURNS tpcpatch
+  AS 'MODULE_PATHNAME', 'Temporal_at_values'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION minusValues(tpcpatch, pcpatchset)
+  RETURNS tpcpatch
+  AS 'MODULE_PATHNAME', 'Temporal_minus_values'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION atTime(tpcpatch, timestamptz)
   RETURNS tpcpatch
   AS 'MODULE_PATHNAME', 'Temporal_at_timestamptz'

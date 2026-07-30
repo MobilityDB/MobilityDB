@@ -110,8 +110,21 @@ SELECT (:inst1) <> (:inst2);
 SELECT (:inst1) < (:inst2);
 
 -------------------------------------------------------------------------------
--- Restrictions — at/minusTime, at/minusTpcbox.
+-- Restrictions — at/minusValue(s), at/minusTime, at/minusTpcbox.
 -------------------------------------------------------------------------------
+
+-- Value restrictions: present value → at / minus non-null; value set →
+-- at / minus non-null; absent value → at NULL.
+SELECT atValue(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3, :inst4]), :patch1)
+  IS NOT NULL;
+SELECT minusValue(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3, :inst4]), :patch1)
+  IS NOT NULL;
+SELECT atValues(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3, :inst4]),
+  set(ARRAY[:patch1, :patch2])) IS NOT NULL;
+SELECT minusValues(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3, :inst4]),
+  set(ARRAY[:patch1])) IS NOT NULL;
+SELECT atValue(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3, :inst4]),
+  PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[9.0, 9.0, 9.0]::float[])])) IS NULL;
 
 SELECT atTime(tpcpatchSeq(ARRAY[:inst1, :inst2]),
   tstzspan '[2024-01-02, 2024-01-03]') IS NOT NULL;
