@@ -166,7 +166,7 @@ CREATE FUNCTION tgeometry(geometry, tstzspanset, text DEFAULT 'step')
   AS 'MODULE_PATHNAME', 'Tsequenceset_from_base_tstzspanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tgeography(geography, tstzspanset, text DEFAULT 'step')
-  RETURNS tgeometry
+  RETURNS tgeography
   AS 'MODULE_PATHNAME', 'Tsequenceset_from_base_tstzspanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 

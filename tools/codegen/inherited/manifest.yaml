@@ -880,7 +880,6 @@ constructor_families:
     temp: tgeometry
   - base: geography
     temp: tgeography
-    spanset_ret: tgeometry
   blocks:
   - lit: "/******************************************************************************\n * Constructors\n ******************************************************************************/"
   - ops:
@@ -915,7 +914,6 @@ constructor_families:
   - base: geography
     temp: tgeogpoint
     ibase: geography(Point)
-    spanset_ret: tgeompoint
   blocks:
   - lit: "/******************************************************************************\n * Constructors\n ******************************************************************************/"
   - ops:
