@@ -1267,6 +1267,120 @@ def bootstrap_representations(filetext: str, fam: dict, rendered: str) -> str:
     return filetext[:start] + begin + rendered + end + "\n" + filetext[block_end:]
 
 
+# --- B-tree comparison sub-family (SQL, per-family region-in-file) ---------------
+# The Temporal<T> comparison-and-B-tree-indexing surface every temporal type carries:
+# the six comparison functions lt/le/eq/ne/ge/gt plus cmp (backing the generic
+# Temporal_lt/_le/_eq/_ne/_ge/_gt/_cmp kernels), the six B-tree operators
+# `< <= = <> >= >` with their COMMUTATOR/NEGATOR clauses, and the
+# `CREATE OPERATOR CLASS <temp>_btree_ops ... USING btree` opclass. The CREATE
+# FUNCTION set is uniform across families (only the temporal type token varies, the
+# backing symbol and RETURNS are fixed lt/le/eq/ne/ge/gt->bool + cmp->int4) so ONE
+# four-line skeleton (templates/comparisons.sql.tmpl) emits every function; the
+# operators, opclass, section banner and per-type dividers carry per-family
+# whitespace/selectivity irregularities (spatial families use tspatial_sel/joinsel,
+# the scalar families use scalar per-op selectivity, and the opclass spacing drifts)
+# so they are reproduced BYTE-EXACT via `lit` blocks in the manifest, exactly as the
+# constructor surface reproduces its section headers and family-extra overloads.
+#
+# `--validate` extracts the committed hand block by section-header ANCHORS
+# (marker-aware, mirroring extract_constructors: sliced by GENERATED-COMPARISONS
+# markers once they exist, else by the banner header down to the divider that opens
+# the B-tree/hash tail), so the deployed .in.sql files are untouched while the
+# template is proven. The pointcloud families (tpcpoint/tpcpatch) are intentionally
+# absent from the manifest: their B-tree block interleaves with the hash block with
+# no separating divider and reorders the functions (eq/ne/lt/le/ge/gt) with a
+# distinct RETURNS spelling and one-line operator layout, so it is not a token-swap
+# of the shared skeleton; likewise the base temporal families (set/span/spanset/
+# tbox/temporal) group functions across multiple base types with non-contiguous
+# operators/opclasses and Span_*/Tbox_* symbols. Both are classified out by omission
+# from the data, never by a code-level skip.
+def _comparisons_markers(family: str):
+    begin = (f"-- GENERATED-COMPARISONS-BEGIN {family} — "
+             "tools/codegen/inherited/generate.py from templates/comparisons.sql.tmpl;\n"
+             "-- DO NOT EDIT BY HAND; edit the template + manifest.yaml "
+             "(comparison_families) and re-run.\n")
+    return begin, f"-- GENERATED-COMPARISONS-END {family}\n"
+
+
+# Default op -> (RETURNS, backing C symbol) for the six comparison functions plus the
+# B-tree support `cmp`; the fully canonical generic comparison set, identical for
+# every temporal family (a family that deviates would override via a `funcs` spec,
+# none do today).
+_CMP_OPS = [
+    ("lt", "bool", "Temporal_lt"),
+    ("le", "bool", "Temporal_le"),
+    ("eq", "bool", "Temporal_eq"),
+    ("ne", "bool", "Temporal_ne"),
+    ("ge", "bool", "Temporal_ge"),
+    ("gt", "bool", "Temporal_gt"),
+    ("cmp", "int4", "Temporal_cmp"),
+]
+
+
+def _cmp_funcs(temp: str) -> str:
+    """Render the seven comparison CREATE FUNCTIONs for one temporal type from the
+    shared skeleton (templates/comparisons.sql.tmpl). The functions are packed with no
+    blank line between them (matching the hand file) and the block ends with the
+    trailing newline of the last function; the blank line that separates them from the
+    following operators is part of the surrounding `lit` block."""
+    tmpl = (TEMPLATES / "comparisons.sql.tmpl").read_text().rstrip("\n")
+    out = [tmpl.replace("{SIG}", f"{name}({temp}, {temp})")
+               .replace("{RET}", ret).replace("{SYM}", sym)
+           for name, ret, sym in _CMP_OPS]
+    return "\n".join(out) + "\n"
+
+
+def render_comparisons(fam: dict) -> str:
+    """Render one family's comparison block from its `blocks` sequence. A block is a
+    verbatim `lit` (the section banner, operators, B-tree opclass and per-type
+    dividers, kept exactly as the hand file) or a `funcs` temporal-type token (the
+    seven comparison functions rendered from the shared skeleton). Blocks concatenate
+    with no automatic separator — every separator is baked into the `lit` blocks — so
+    the rendered text is byte-identical to the committed region."""
+    out = ""
+    for blk in fam["blocks"]:
+        out += blk["lit"] if "lit" in blk else _cmp_funcs(blk["funcs"])
+    return out
+
+
+def extract_comparisons(filetext: str, fam: dict) -> str:
+    """Return the committed hand comparison block. Marker-aware: if the
+    GENERATED-COMPARISONS region exists, slice between its markers; otherwise slice
+    from the `/*` opening the section banner (found via the family's `begin` header
+    anchor) down to, exclusive, the `/*` opening the B-tree/hash tail (found via the
+    family's `end` anchor), mirroring extract_constructors."""
+    begin, end = _comparisons_markers(fam["family"])
+    if begin in filetext:
+        b = filetext.index(begin) + len(begin)
+        e = filetext.index(end)
+        return filetext[b:e]
+    i = filetext.index(fam["begin"])
+    start = filetext.rfind("/*", 0, i)
+    j = filetext.index(fam["end"])
+    return filetext[start:filetext.rfind("/*", 0, j)]
+
+
+def splice_comparisons(filetext: str, family: str, rendered: str) -> str:
+    begin, end = _comparisons_markers(family)
+    b = filetext.index(begin) + len(begin)
+    e = filetext.index(end)
+    return filetext[:b] + rendered + filetext[e:]
+
+
+def bootstrap_comparisons(filetext: str, fam: dict, rendered: str) -> str:
+    """Insert the GENERATED-COMPARISONS markers around the family's committed hand
+    block (sliced by the same banner/divider anchors extract uses), so a future
+    non-reference emit is fully declarative with no hand-placed marker. Idempotent:
+    once the markers exist the reference/splice path owns the region. Not run while the
+    families are reference-only (validate-only)."""
+    i = filetext.index(fam["begin"])
+    start = filetext.rfind("/*", 0, i)
+    j = filetext.index(fam["end"])
+    end = filetext.rfind("/*", 0, j)
+    begin_m, end_m = _comparisons_markers(fam["family"])
+    return filetext[:start] + begin_m + rendered + end_m + filetext[end:]
+
+
 def target_path(behaviour: str, sub: dict, positions: dict) -> pathlib.Path:
     # The within-50-bin offset defaults to the shared `positions` map (the tight
     # cbuffer-anchored layout); a family on the tgeo-aligned layout overrides a
@@ -1461,6 +1575,25 @@ def main() -> int:
                         break
                 if len(g) != len(c):
                     print(f"     line count gen={len(g)} cur={len(c)}")
+        for fam in mf.get("comparison_families", []):
+            if not fam.get("reference"):
+                continue
+            p = ROOT / fam["file"]
+            gen = render_comparisons(fam)
+            cur = extract_comparisons(p.read_text(), fam) if p.exists() else ""
+            same = gen == cur
+            ok = ok and same
+            print(f"[{'OK ' if same else 'DIFF'}] self-regen comparisons {fam['family']} "
+                  f"-> {pathlib.Path(fam['file'])}")
+            if not same:
+                g, c = gen.splitlines(), cur.splitlines()
+                for n, (a, b) in enumerate(zip(g, c), 1):
+                    if a != b:
+                        print(f"     first diff line {n}:\n       gen: {a!r}\n"
+                              f"       cur: {b!r}")
+                        break
+                if len(g) != len(c):
+                    print(f"     line count gen={len(g)} cur={len(c)}")
         for fam in mf.get("native_tempspatialrel_families", []):
             p = ROOT / fam["file"]
             gen = render_native_tempspatialrels(fam)
@@ -1613,6 +1746,27 @@ def main() -> int:
         else:
             p.write_text(bootstrap_transformations(text, fam, render_transformations(fam)))
             print(f"bootstrapped transformations {fam['family']} -> {fam['file']}")
+
+    for fam in mf.get("comparison_families", []):
+        # Reference families are validate-only: keep the committed hand block, never
+        # emit into .in.sql (mirrors constructors/io/representations). A future
+        # non-reference family bootstraps its GENERATED-COMPARISONS region once, then
+        # splices.
+        if fam.get("reference"):
+            continue
+        p = ROOT / fam["file"]
+        text = p.read_text()
+        begin, _ = _comparisons_markers(fam["family"])
+        if args.check:
+            print(f"would {'splice' if begin in text else 'bootstrap'} comparisons "
+                  f"{fam['family']} -> {fam['file']}")
+            continue
+        if begin in text:
+            p.write_text(splice_comparisons(text, fam["family"], render_comparisons(fam)))
+            print(f"spliced comparisons {fam['family']} -> {fam['file']}")
+        else:
+            p.write_text(bootstrap_comparisons(text, fam, render_comparisons(fam)))
+            print(f"bootstrapped comparisons {fam['family']} -> {fam['file']}")
     return 0
 
 
