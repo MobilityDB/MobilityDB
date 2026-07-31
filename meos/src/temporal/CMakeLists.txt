@@ -27,6 +27,7 @@ set(TEMPORAL_SOURCES
   temporal_modif.c
   temporal_restrict.c
   temporal_rtree.c
+  temporal_sptree.c
   temporal_tile.c
   temporal_waggfuncs.c
   tinstant.c
