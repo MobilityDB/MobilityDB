@@ -1381,6 +1381,110 @@ def bootstrap_comparisons(filetext: str, fam: dict, rendered: str) -> str:
     return filetext[:start] + begin_m + rendered + end_m + filetext[end:]
 
 
+# --- SQL Conversions sub-family (SQL, per-family region-in-file) ------------------
+# The Temporal<T> cast surface every temporal type carries: the CREATE FUNCTION
+# conversion wrappers (timeSpan -> tstzspan, and the cross-type casts to/from the
+# sibling temporal types — tcbuffer<->tgeompoint/tgeometry/tfloat, tnpoint<->
+# tgeompoint, tjsonb<->ttext, tpose->tgeompoint/tgeogpoint, trgeometry->tpose/
+# tgeompoint/tgeogpoint/tgeometry/stbox/geometry) plus the matching CREATE CAST
+# statements. Each CREATE FUNCTION is the SAME four-line skeleton
+# (templates/conversions.sql.tmpl); only the signature {SIG}, return {RET}, backing
+# symbol {SYM}, strictness ({STRICT}) and an optional leading comment ({PRE}) differ
+# — so ONE skeleton emits every wrapper. The CREATE CAST lines and the one irregular
+# SQL wrapper (rgeo's expandSpace, LANGUAGE SQL not C) are NOT the CREATE-FUNCTION
+# skeleton, so they are reproduced BYTE-EXACT via `lit` blocks in the manifest,
+# exactly as the constructor surface reproduces its section headers and family-extra
+# overloads; the wrappers go in `fns` blocks (skeleton-rendered CREATE FUNCTIONs).
+# Blocks concatenate with NO automatic separator (every banner / blank line / cast is
+# baked into the `lit` blocks, the funcs end with their own trailing newline), so the
+# rendered text is byte-identical to the committed region — the comparison-surface model.
+#
+# `--validate` extracts the committed hand block by section-header ANCHORS
+# (marker-aware, mirroring extract_constructors: sliced by GENERATED-CONVERSIONS
+# markers once they exist, else by the Conversions banner header down to the `/*` of
+# the next section), so the deployed .in.sql files are untouched while the template is
+# proven. FOUR families are intentionally absent from the manifest: th3index and
+# tquadbin scatter their casts across three non-contiguous locations (the typmod
+# self-cast in the I/O area, the tbigint assignment casts, and the tstzspan cast
+# buried in the Accessors section — there is no single Conversions section to slice),
+# and tpcpoint/tpcpatch likewise have no contiguous conversion section (tpcpoint's
+# lone tgeompoint cast trails the Accessors block; tpcpatch has none). They are
+# classified out by omission from the data, never by a code-level skip.
+def _conversions_markers(family: str):
+    begin = (f"-- GENERATED-CONVERSIONS-BEGIN {family} — "
+             "tools/codegen/inherited/generate.py from templates/conversions.sql.tmpl;\n"
+             "-- DO NOT EDIT BY HAND; edit the template + manifest.yaml "
+             "(conversion_families) and re-run.\n")
+    return begin, f"-- GENERATED-CONVERSIONS-END {family}\n"
+
+
+def _conv_skeleton(sig: str, ret: str, sym: str, strict: bool, pre: str) -> str:
+    """One conversion CREATE FUNCTION from the shared skeleton (no trailing newline, so
+    blocks can be joined with explicit newline control). `pre` is a leading comment line
+    or ""; `strict` toggles the ` STRICT` keyword."""
+    tmpl = (TEMPLATES / "conversions.sql.tmpl").read_text()
+    return (tmpl.replace("{PRE}", pre).replace("{SIG}", sig).replace("{RET}", ret)
+                .replace("{SYM}", sym)
+                .replace("{STRICT}", " STRICT" if strict else "").rstrip("\n"))
+
+
+def render_conversions(fam: dict) -> str:
+    """Render one family's conversion block from its `blocks` sequence. A block is a
+    verbatim `lit` (the section banner, blank lines, CREATE CAST statements and the one
+    irregular LANGUAGE-SQL wrapper, kept exactly as the hand file) or a `fns` list (the
+    conversion CREATE FUNCTIONs rendered from the shared skeleton, packed with no blank
+    line and closed by one trailing newline). Blocks concatenate with no automatic
+    separator — every separator is baked into the `lit` blocks — so the rendered text is
+    byte-identical to the committed region (the comparison-surface model)."""
+    out = ""
+    for blk in fam["blocks"]:
+        if "lit" in blk:
+            out += blk["lit"]
+        else:
+            out += "\n".join(_conv_skeleton(f["sig"], f["ret"], f["sym"],
+                                            f.get("strict", True), f.get("pre", ""))
+                             for f in blk["fns"]) + "\n"
+    return out
+
+
+def extract_conversions(filetext: str, fam: dict) -> str:
+    """Return the committed hand conversion block. Marker-aware: if the
+    GENERATED-CONVERSIONS region exists, slice between its markers; otherwise slice from
+    the `/*` opening the Conversions banner (found via the family's `begin` header
+    anchor) down to, exclusive, the `/*` opening the next section (found via the
+    family's `end` anchor), mirroring extract_constructors."""
+    begin, end = _conversions_markers(fam["family"])
+    if begin in filetext:
+        b = filetext.index(begin) + len(begin)
+        e = filetext.index(end)
+        return filetext[b:e]
+    i = filetext.index(fam["begin"])
+    start = filetext.rfind("/*", 0, i)
+    j = filetext.index(fam["end"])
+    return filetext[start:filetext.rfind("/*", 0, j)]
+
+
+def splice_conversions(filetext: str, family: str, rendered: str) -> str:
+    begin, end = _conversions_markers(family)
+    b = filetext.index(begin) + len(begin)
+    e = filetext.index(end)
+    return filetext[:b] + rendered + filetext[e:]
+
+
+def bootstrap_conversions(filetext: str, fam: dict, rendered: str) -> str:
+    """Insert the GENERATED-CONVERSIONS markers around the family's committed hand block
+    (sliced by the same banner/anchor span extract uses), so a future non-reference emit
+    is fully declarative with no hand-placed marker. Idempotent: once the markers exist
+    the reference/splice path owns the region. Not run while the families are
+    reference-only (validate-only)."""
+    i = filetext.index(fam["begin"])
+    start = filetext.rfind("/*", 0, i)
+    j = filetext.index(fam["end"])
+    end = filetext.rfind("/*", 0, j)
+    begin_m, end_m = _conversions_markers(fam["family"])
+    return filetext[:start] + begin_m + rendered + end_m + filetext[end:]
+
+
 def target_path(behaviour: str, sub: dict, positions: dict) -> pathlib.Path:
     # The within-50-bin offset defaults to the shared `positions` map (the tight
     # cbuffer-anchored layout); a family on the tgeo-aligned layout overrides a
@@ -1594,6 +1698,25 @@ def main() -> int:
                         break
                 if len(g) != len(c):
                     print(f"     line count gen={len(g)} cur={len(c)}")
+        for fam in mf.get("conversion_families", []):
+            if not fam.get("reference"):
+                continue
+            p = ROOT / fam["file"]
+            gen = render_conversions(fam)
+            cur = extract_conversions(p.read_text(), fam) if p.exists() else ""
+            same = gen == cur
+            ok = ok and same
+            print(f"[{'OK ' if same else 'DIFF'}] self-regen conversions {fam['family']} "
+                  f"-> {pathlib.Path(fam['file'])}")
+            if not same:
+                g, c = gen.splitlines(), cur.splitlines()
+                for n, (a, b) in enumerate(zip(g, c), 1):
+                    if a != b:
+                        print(f"     first diff line {n}:\n       gen: {a!r}\n"
+                              f"       cur: {b!r}")
+                        break
+                if len(g) != len(c):
+                    print(f"     line count gen={len(g)} cur={len(c)}")
         for fam in mf.get("native_tempspatialrel_families", []):
             p = ROOT / fam["file"]
             gen = render_native_tempspatialrels(fam)
@@ -1767,6 +1890,26 @@ def main() -> int:
         else:
             p.write_text(bootstrap_comparisons(text, fam, render_comparisons(fam)))
             print(f"bootstrapped comparisons {fam['family']} -> {fam['file']}")
+
+    for fam in mf.get("conversion_families", []):
+        # Reference families are validate-only: keep the committed hand block, never
+        # emit into .in.sql (mirrors constructors/comparisons). A future non-reference
+        # family bootstraps its GENERATED-CONVERSIONS region once, then splices.
+        if fam.get("reference"):
+            continue
+        p = ROOT / fam["file"]
+        text = p.read_text()
+        begin, _ = _conversions_markers(fam["family"])
+        if args.check:
+            print(f"would {'splice' if begin in text else 'bootstrap'} conversions "
+                  f"{fam['family']} -> {fam['file']}")
+            continue
+        if begin in text:
+            p.write_text(splice_conversions(text, fam["family"], render_conversions(fam)))
+            print(f"spliced conversions {fam['family']} -> {fam['file']}")
+        else:
+            p.write_text(bootstrap_conversions(text, fam, render_conversions(fam)))
+            print(f"bootstrapped conversions {fam['family']} -> {fam['file']}")
     return 0
 
 

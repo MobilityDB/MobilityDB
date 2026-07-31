@@ -1666,3 +1666,93 @@ comparison_families:
   - lit: "/******************************************************************************\n * Comparison functions and B-tree indexing\n ******************************************************************************/\n\n"
   - funcs: trgeometry
   - lit: "\nCREATE OPERATOR < (\n  LEFTARG = trgeometry, RIGHTARG = trgeometry,\n  PROCEDURE = lt,\n  COMMUTATOR = >, NEGATOR = >=,\n  RESTRICT = scalarltsel, JOIN = scalarltjoinsel\n);\nCREATE OPERATOR <= (\n  LEFTARG = trgeometry, RIGHTARG = trgeometry,\n  PROCEDURE = le,\n  COMMUTATOR = >=, NEGATOR = >,\n  RESTRICT = scalarltsel, JOIN = scalarltjoinsel\n);\nCREATE OPERATOR = (\n  LEFTARG = trgeometry, RIGHTARG = trgeometry,\n  PROCEDURE = eq,\n  COMMUTATOR = =, NEGATOR = <>,\n  RESTRICT = eqsel, JOIN = eqjoinsel\n);\nCREATE OPERATOR <> (\n  LEFTARG = trgeometry, RIGHTARG = trgeometry,\n  PROCEDURE = ne,\n  COMMUTATOR = <>, NEGATOR = =,\n  RESTRICT = neqsel, JOIN = neqjoinsel\n);\nCREATE OPERATOR >= (\n  LEFTARG = trgeometry, RIGHTARG = trgeometry,\n  PROCEDURE = ge,\n  COMMUTATOR = <=, NEGATOR = <,\n  RESTRICT = scalargtsel, JOIN = scalargtjoinsel\n);\nCREATE OPERATOR > (\n  LEFTARG = trgeometry, RIGHTARG = trgeometry,\n  PROCEDURE = gt,\n  COMMUTATOR = <, NEGATOR = <=,\n  RESTRICT = scalargtsel, JOIN = scalargtjoinsel\n);\n\nCREATE OPERATOR CLASS trgeometry_btree_ops\n  DEFAULT FOR TYPE trgeometry USING btree AS\n    OPERATOR  1  <,\n    OPERATOR  2  <=,\n    OPERATOR  3  =,\n    OPERATOR  4  >=,\n    OPERATOR  5  >,\n    FUNCTION  1  cmp(trgeometry, trgeometry);\n\n"
+conversion_families:
+- family: geo
+  file: mobilitydb/sql/geo/052_tgeo.in.sql
+  reference: true
+  begin: "\n * Conversions\n"
+  end: "\n * Transformations\n"
+  blocks:
+  - lit: "/******************************************************************************\n * Conversions\n ******************************************************************************/\n\n"
+  - fns:
+    - {sig: "timeSpan(tgeometry)", ret: tstzspan, sym: Temporal_to_tstzspan}
+    - {sig: "timeSpan(tgeography)", ret: tstzspan, sym: Temporal_to_tstzspan}
+  - lit: "\nCREATE CAST (tgeometry AS tstzspan) WITH FUNCTION timeSpan(tgeometry);\nCREATE CAST (tgeography AS tstzspan) WITH FUNCTION timeSpan(tgeography);\n\n"
+- family: tpoint
+  file: mobilitydb/sql/geo/052_tpoint.in.sql
+  reference: true
+  begin: "\n * Conversions\n"
+  end: "\n * Transformations\n"
+  blocks:
+  - lit: "/******************************************************************************\n * Conversions\n ******************************************************************************/\n\n"
+  - fns:
+    - {sig: "timeSpan(tgeompoint)", ret: tstzspan, sym: Temporal_to_tstzspan}
+    - {sig: "timeSpan(tgeogpoint)", ret: tstzspan, sym: Temporal_to_tstzspan}
+  - lit: "\nCREATE CAST (tgeompoint AS tstzspan) WITH FUNCTION timeSpan(tgeompoint);\nCREATE CAST (tgeogpoint AS tstzspan) WITH FUNCTION timeSpan(tgeogpoint);\n\n"
+- family: cbuffer
+  file: mobilitydb/sql/cbuffer/202_tcbuffer.in.sql
+  reference: true
+  begin: "\n * Conversions\n"
+  end: "\n * Accessor functions\n"
+  blocks:
+  - lit: "/*****************************************************************************\n * Conversions\n *****************************************************************************/\n\n"
+  - fns:
+    - {sig: "tgeompoint(tcbuffer)", ret: tgeompoint, sym: Tcbuffer_to_tgeompoint}
+    - {sig: "tfloat(tcbuffer)", ret: tfloat, sym: Tcbuffer_to_tfloat}
+  - lit: "\n"
+  - fns:
+    - {sig: "tcbuffer(tgeompoint)", ret: tcbuffer, sym: Tgeometry_to_tcbuffer}
+    - {sig: "tcbuffer(tgeometry)", ret: tcbuffer, sym: Tgeometry_to_tcbuffer}
+  - lit: "\nCREATE CAST (tcbuffer AS tgeompoint) WITH FUNCTION tgeompoint(tcbuffer);\nCREATE CAST (tcbuffer AS tfloat) WITH FUNCTION tfloat(tcbuffer);\nCREATE CAST (tgeompoint AS tcbuffer) WITH FUNCTION tcbuffer(tgeompoint);\nCREATE CAST (tgeometry AS tcbuffer) WITH FUNCTION tcbuffer(tgeometry);\n\n"
+- family: json
+  file: mobilitydb/sql/json/452_tjsonb.in.sql
+  reference: true
+  begin: "\n * Conversions\n"
+  end: "\n * Accessor functions\n"
+  blocks:
+  - lit: "/*****************************************************************************\n * Conversions\n *****************************************************************************/\n\n"
+  - fns:
+    - {sig: "ttext(tjsonb)", ret: ttext, sym: Tjsonb_as_ttext}
+    - {sig: "tjsonb(ttext)", ret: tjsonb, sym: Ttext_as_tjsonb}
+  - lit: "\nCREATE CAST (tjsonb AS ttext) WITH FUNCTION ttext(tjsonb);\nCREATE CAST (ttext AS tjsonb) WITH FUNCTION tjsonb(ttext);\n\n"
+- family: npoint
+  file: mobilitydb/sql/npoint/302_tnpoint.in.sql
+  reference: true
+  begin: "\n * Cast functions\n"
+  end: "\n * Transformation functions\n"
+  blocks:
+  - lit: "/******************************************************************************\n * Cast functions\n ******************************************************************************/\n\n"
+  - fns:
+    - {sig: "tgeompoint(tnpoint)", ret: tgeompoint, sym: Tnpoint_to_tgeompoint}
+    - {sig: "tnpoint(tgeompoint)", ret: tnpoint, sym: Tgeompoint_to_tnpoint}
+  - lit: "\nCREATE CAST (tnpoint AS tgeompoint) WITH FUNCTION tgeompoint(tnpoint);\nCREATE CAST (tgeompoint AS tnpoint) WITH FUNCTION tnpoint(tgeompoint);\n\n"
+- family: pose
+  file: mobilitydb/sql/pose/102_tpose.in.sql
+  reference: true
+  begin: "\n * Conversions\n"
+  end: "\n * Accessor functions\n"
+  blocks:
+  - lit: "/******************************************************************************\n * Conversions\n ******************************************************************************/\n\n"
+  - fns:
+    - {sig: "tgeompoint(tpose)", ret: tgeompoint, sym: Tpose_to_tpoint}
+    - {sig: "tgeogpoint(tpose)", ret: tgeogpoint, sym: Tpose_to_tpoint}
+  - lit: "\nCREATE CAST (tpose AS tgeompoint) WITH FUNCTION tgeompoint(tpose);\nCREATE CAST (tpose AS tgeogpoint) WITH FUNCTION tgeogpoint(tpose);\n\n"
+- family: rgeo
+  file: mobilitydb/sql/rgeo/150_trgeo.in.sql
+  reference: true
+  begin: "\n * Conversion functions\n"
+  end: "\n * Accessor Functions\n"
+  blocks:
+  - lit: "/******************************************************************************\n * Conversion functions\n ******************************************************************************/\n\n"
+  - fns:
+    - {sig: "tpose(trgeometry)", ret: tpose, sym: Trgeometry_to_tpose}
+    - {sig: "tgeompoint(trgeometry)", ret: tgeompoint, sym: Trgeometry_to_tpoint}
+    - {sig: "tgeogpoint(trgeometry)", ret: tgeogpoint, sym: Trgeometry_to_tpoint}
+    - {sig: "tgeometry(trgeometry)", ret: tgeometry, sym: Trgeometry_to_tgeometry}
+  - lit: "\nCREATE CAST (trgeometry AS tpose) WITH FUNCTION tpose(trgeometry);\nCREATE CAST (trgeometry AS tgeompoint) WITH FUNCTION tgeompoint(trgeometry);\nCREATE CAST (trgeometry AS tgeogpoint) WITH FUNCTION tgeogpoint(trgeometry);\nCREATE CAST (trgeometry AS tgeometry) WITH FUNCTION tgeometry(trgeometry);\n\n"
+  - fns:
+    - {sig: "stbox(trgeometry)", ret: stbox, sym: Tspatial_to_stbox}
+  - lit: "\nCREATE CAST (trgeometry AS stbox) WITH FUNCTION stbox(trgeometry);\n\nCREATE FUNCTION expandSpace(trgeometry, float)\n  RETURNS stbox\n  AS 'SELECT @extschema@.expandSpace($1::stbox, $2)'\n  LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT;\n\n"
+  - fns:
+    - {sig: "geometry(trgeometry)", ret: geometry, sym: Trgeometry_to_geom}
+  - lit: "\nCREATE CAST (trgeometry AS geometry) WITH FUNCTION geometry(trgeometry);\n\n"
