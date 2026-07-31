@@ -71,7 +71,7 @@ PG_FUNCTION_INFO_V1(Textset_as_jsonbset);
 /**
  * @ingroup mobilitydb_json_jsonbset
  * @brief Transform a text set into a JSONB set
- * @sqlfn ttext()
+ * @sqlfn jsonbset()
  * @sqlop @p ::
  */
 Datum

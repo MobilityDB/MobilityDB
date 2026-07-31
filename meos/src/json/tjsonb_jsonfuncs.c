@@ -769,6 +769,7 @@ tjsonb_array_element(const Temporal *temp, int idx, bool astext,
  * @brief Delete a key specified by an index from a temporal JSONB value
  * @param[in] temp Temporal JSONB value
  * @param[in] idx Index
+ * @csqlfn #Tjsonb_delete_index()
  */
 Temporal *
 tjsonb_delete_index(const Temporal *temp, int idx)
@@ -794,6 +795,7 @@ tjsonb_delete_index(const Temporal *temp, int idx)
  * @brief Delete a key or an array element from a temporal JSONB value
  * @param[in] temp Temporal JSONB value
  * @param[in] key Key
+ * @csqlfn #Tjsonb_delete()
  */
 Temporal *
 tjsonb_delete(const Temporal *temp, const text *key)
@@ -818,6 +820,7 @@ tjsonb_delete(const Temporal *temp, const text *key)
  * @param[in] temp Temporal JSONB value
  * @param[in] keys Keys
  * @param[in] count Number of elements in the input array
+ * @csqlfn #Tjsonb_delete_array()
  */
 Temporal *
 tjsonb_delete_array(const Temporal *temp, text **keys, int count)
@@ -846,6 +849,7 @@ tjsonb_delete_array(const Temporal *temp, text **keys, int count)
  * @brief Delete a key from a temporal JSONB value
  * @param[in] temp Temporal JSONB value
  * @param[in] key Key
+ * @csqlfn #Tjsonb_exists()
  */
 Temporal *
 tjsonb_exists(const Temporal *temp, const text *key)
@@ -1311,6 +1315,7 @@ tjsonb_pretty(const Temporal *temp)
  * @param[in] temp Temporal JSONB value
  * @param[in] path_elems Array of path elements
  * @param[in] path_len Number of elements in the input array
+ * @csqlfn #Tjsonb_delete_path()
  */
 Temporal *
 tjsonb_delete_path(const Temporal *temp, text **path_elems, int path_len)
@@ -1416,6 +1421,7 @@ tjsonb_extract_path(const Temporal *temp, text **path_elems, int path_len,
  * @param[in] after When true, if the last path step is an array index that
  * is out of range, the new value is added at the beginning of the array if
  * the index is negative, or at the end of the array if it is positive
+ * @csqlfn #Tjsonb_insert()
  */
 Temporal *
 tjsonb_insert(const Temporal *temp, text **path_elems, int path_len,

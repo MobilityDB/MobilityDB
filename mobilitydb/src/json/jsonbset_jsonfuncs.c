@@ -198,7 +198,7 @@ PG_FUNCTION_INFO_V1(Concat_jsonbset_jsonb);
 /**
  * @ingroup mobilitydb_json_json
  * @brief Concat a JSONB set with a JSONB value
- * @sqlfn jsonb_concat()
+ * @sqlfn jsonbset_concat()
  * @sqlop @p ||
  */
 Datum
@@ -222,7 +222,7 @@ PG_FUNCTION_INFO_V1(Jsonbset_delete);
 /**
  * @ingroup mobilitydb_json_json
  * @brief Delete a key or an element array from a JSONB set value
- * @sqlfn jsonb_delete_key()
+ * @sqlfn jsonbset_delete()
  * @sqlop @p -
  */
 Datum
@@ -246,7 +246,7 @@ PG_FUNCTION_INFO_V1(Jsonbset_delete_array);
 /**
  * @ingroup mobilitydb_json_json
  * @brief Delete an array of keys or array elements from a JSONB set value
- * @sqlfn jsonb_delete_array()
+ * @sqlfn jsonbset_delete_array()
  * @sqlop @p -
  */
 Datum
@@ -285,7 +285,7 @@ PG_FUNCTION_INFO_V1(Jsonbset_delete_index);
 /**
  * @ingroup mobilitydb_json_json
  * @brief Delete a key specified by an index from a JSONB set value
- * @sqlfn jsonb_delete()
+ * @sqlfn jsonbset_delete_index()
  * @sqlop @p -
  */
 Datum
@@ -683,7 +683,7 @@ PG_FUNCTION_INFO_V1(Jsonbset_to_intset);
 /**
  * @ingroup mobilitydb_json_json
  * @brief Convert a JSONB set value into an integer set
- * @sqlfn tint()
+ * @sqlfn intset()
  */
 Datum
 Jsonbset_to_intset(PG_FUNCTION_ARGS)
@@ -696,7 +696,7 @@ PG_FUNCTION_INFO_V1(Jsonbset_to_bigintset);
 /**
  * @ingroup mobilitydb_json_json
  * @brief Convert a JSONB set value into a big integer set
- * @sqlfn tbigint()
+ * @sqlfn bigintset()
  */
 Datum
 Jsonbset_to_bigintset(PG_FUNCTION_ARGS)
@@ -709,7 +709,7 @@ PG_FUNCTION_INFO_V1(Jsonbset_to_floatset);
 /**
  * @ingroup mobilitydb_json_json
  * @brief Convert a JSONB set value into a float set
- * @sqlfn tfloat()
+ * @sqlfn floatset()
  */
 Datum
 Jsonbset_to_floatset(PG_FUNCTION_ARGS)
@@ -722,7 +722,7 @@ PG_FUNCTION_INFO_V1(Jsonbset_to_textset_key);
 /**
  * @ingroup mobilitydb_json_json
  * @brief Convert a JSONB set value into a text set
- * @sqlfn ttext()
+ * @sqlfn textset()
  */
 Datum
 Jsonbset_to_textset_key(PG_FUNCTION_ARGS)
@@ -915,7 +915,7 @@ PG_FUNCTION_INFO_V1(Jsonbset_path_match_opr);
  * value
  * @details Implementation of operator "tjsonb @@ jsonpath" (2-argument version
  * of jsonbset_path_match())
- * @sqlfn Jsonbset_path_match_opr()
+ * @sqlfn jsonbset_path_match_opr()
  */
 Datum
 Jsonbset_path_match_opr(PG_FUNCTION_ARGS)
@@ -981,7 +981,7 @@ Jsonbset_path_query_array_tz(PG_FUNCTION_ARGS)
 /**
  * @brief Extract the first item specified by a JSON path expression from a
  * JSONB set value. If there are no items, return NULL.
- * @sqlfn jsonbset_query_first(), jsonbset_query_first_tz()
+ * @sqlfn jsonbset_path_query_first(), jsonbset_path_query_first_tz()
  */
 Datum
 Jsonbset_path_query_first_common(FunctionCallInfo fcinfo, bool tz)
