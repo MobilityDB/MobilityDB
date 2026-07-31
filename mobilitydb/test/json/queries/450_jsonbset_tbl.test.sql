@@ -66,8 +66,6 @@ SELECT MAX(memSize(set(jb))) FROM tbl_jsonb;
 SELECT COUNT(*) FROM tbl_jsonbset WHERE s @> startValue(s);
 SELECT COUNT(*) FROM tbl_jsonbset WHERE startValue(s) <@ s;
 SELECT COUNT(*) FROM tbl_jsonbset t1, tbl_jsonbset t2 WHERE t1.s && t2.s;
-SELECT COUNT(*) FROM tbl_jsonbset t1, tbl_jsonbset t2 WHERE t1.s >> t2.s;
-SELECT COUNT(*) FROM tbl_jsonbset t1, tbl_jsonbset t2 WHERE t1.s << t2.s;
 
 SELECT MAX(memSize(s || jb)) FROM tbl_jsonbset, tbl_jsonb;
 SELECT MAX(memSize(s - text 'timestamp')) FROM tbl_jsonbset;

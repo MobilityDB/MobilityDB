@@ -369,31 +369,6 @@ CREATE OPERATOR && (
 
 /*****************************************************************************/
 
--- “Left”/“right” operators, useful for btree spans
-CREATE FUNCTION left(jsonbset, jsonbset)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Left_set_set'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR << (
-  PROCEDURE = left,
-  LEFTARG = jsonbset, RIGHTARG = jsonbset,
-  COMMUTATOR = >>
-);
-
-CREATE FUNCTION right(jsonbset, jsonbset)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Right_set_set'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR >> (
-  PROCEDURE = right,
-  LEFTARG = jsonbset, RIGHTARG = jsonbset,
-  COMMUTATOR = <<
-);
-
-/*****************************************************************************/
-
 CREATE FUNCTION setUnion(jsonb, jsonbset)
   RETURNS jsonbset
   AS 'MODULE_PATHNAME', 'Union_value_set'
