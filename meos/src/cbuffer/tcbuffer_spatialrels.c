@@ -693,6 +693,17 @@ int
 ea_contains_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
   bool ever)
 {
+  /* A moving disk that is disjoint from the static disk contains it under
+   * neither quantifier: reject a pair with disjoint radius-aware bounding
+   * boxes, or a strictly positive exact disk-to-disk nearest-approach
+   * distance, before the per-instant geometry containment predicate. */
+  STBox box1, box2;
+  tspatial_set_stbox(temp, &box1);
+  cbuffer_set_stbox(cb, &box2);
+  if (! overlaps_stbox_stbox(&box1, &box2))
+    return 0;
+  if (nad_tcbuffer_cbuffer(temp, cb) > 1e-6)
+    return 0;
   const char p[] = "T********";
   int result = ever ?
     ea_spatialrel_tcbuffer_cbuffer(temp, cb, PointerGetDatum(p),
@@ -938,6 +949,17 @@ int
 ea_covers_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
   bool ever)
 {
+  /* A moving disk that is disjoint from the static disk covers it under
+   * neither quantifier: reject a pair with disjoint radius-aware bounding
+   * boxes, or a strictly positive exact disk-to-disk nearest-approach
+   * distance, before the per-instant geometry cover predicate. */
+  STBox box1, box2;
+  tspatial_set_stbox(temp, &box1);
+  cbuffer_set_stbox(cb, &box2);
+  if (! overlaps_stbox_stbox(&box1, &box2))
+    return 0;
+  if (nad_tcbuffer_cbuffer(temp, cb) > 1e-6)
+    return 0;
   return ea_spatialrel_tcbuffer_cbuffer(temp, cb, (Datum) NULL,
     (varfunc) &datum_geom_covers, 2, ever, INVERT_NO);
 }
