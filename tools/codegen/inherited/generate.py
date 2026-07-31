@@ -1585,6 +1585,115 @@ def bootstrap_restrictions(filetext: str, fam: dict, rendered: str) -> str:
     return filetext[:start] + begin_m + rendered + end_m + filetext[end:]
 
 
+# --- SQL Modifications sub-family (SQL, per-family region-in-file) ----------------
+# The Temporal<T> modification surface every temporal type carries: the CREATE FUNCTION
+# wrappers that edit a temporal value — insert/update(temp,temp), deleteTime over the
+# four time types (timestamptz, tstzset, tstzspan, tstzspanset), and, where the family
+# keeps them in this section, appendInstant/appendSequence(temp,temp) and the
+# merge(temp,temp)/merge(temp[]) pair (geo/tpoint carry append/merge in their
+# Transformations area instead, so their modification block is insert/update/deleteTime
+# only). Every wrapper is the SAME four-line skeleton
+# (templates/modifications.sql.tmpl); only the signature {SIG}, return {RET}, backing
+# symbol {SYM}, strictness ({STRICT}) and an optional leading comment ({PRE}) differ —
+# so ONE skeleton emits every wrapper. Section banners, blank-line separators and any
+# comment lines are reproduced BYTE-EXACT via `lit` blocks in the manifest, exactly as
+# the conversion surface reproduces its banners and CREATE CAST statements; the
+# skeleton-shaped wrappers go in `fns` blocks. Blocks concatenate with NO automatic
+# separator (every banner / blank line is baked into the `lit` blocks, the funcs end
+# with their own trailing newline), so the rendered text is byte-identical to the
+# committed region — the conversion-surface model.
+#
+# `--validate` extracts the committed hand block by section-header ANCHORS
+# (marker-aware, mirroring extract_conversions: sliced by GENERATED-MODIFICATIONS
+# markers once they exist, else by the Modification banner header down to the `/*` of
+# the next section, or — when the family sets `raw_end` because its hand file runs the
+# tiling material straight after deleteTime with no separating banner (th3index,
+# tquadbin) — down to the exact `end` anchor text itself), so the deployed .in.sql
+# files are untouched while the template is proven. The base temporal file
+# (022_temporal.in.sql) keeps its hand block: its region interleaves the tbool/tint/
+# tfloat/ttext quartet, left for the template-class pass.
+def _modifications_markers(family: str):
+    begin = (f"-- GENERATED-MODIFICATIONS-BEGIN {family} — "
+             "tools/codegen/inherited/generate.py from templates/modifications.sql.tmpl;\n"
+             "-- DO NOT EDIT BY HAND; edit the template + manifest.yaml "
+             "(modification_families) and re-run.\n")
+    return begin, f"-- GENERATED-MODIFICATIONS-END {family}\n"
+
+
+def _modif_skeleton(sig: str, ret: str, sym: str, strict: bool, pre: str) -> str:
+    """One modification CREATE FUNCTION from the shared skeleton (no trailing newline,
+    so blocks can be joined with explicit newline control). `pre` is a leading comment
+    line or ""; `strict` toggles the ` STRICT` keyword."""
+    tmpl = (TEMPLATES / "modifications.sql.tmpl").read_text()
+    return (tmpl.replace("{PRE}", pre).replace("{SIG}", sig).replace("{RET}", ret)
+                .replace("{SYM}", sym)
+                .replace("{STRICT}", " STRICT" if strict else "").rstrip("\n"))
+
+
+def render_modifications(fam: dict) -> str:
+    """Render one family's modification block from its `blocks` sequence. A block is a
+    verbatim `lit` (the section banners, blank lines and comment lines, kept exactly as
+    the hand file) or a `fns` list (the modification CREATE FUNCTIONs rendered from the
+    shared skeleton, packed with no blank line and closed by one trailing newline).
+    Blocks concatenate with no automatic separator — every separator is baked into the
+    `lit` blocks — so the rendered text is byte-identical to the committed region (the
+    conversion-surface model)."""
+    out = ""
+    for blk in fam["blocks"]:
+        if "lit" in blk:
+            out += blk["lit"]
+        else:
+            out += "\n".join(_modif_skeleton(f["sig"], f["ret"], f["sym"],
+                                             f.get("strict", True), f.get("pre", ""))
+                             for f in blk["fns"]) + "\n"
+    return out
+
+
+def _modifications_span(filetext: str, fam: dict):
+    """The [start, end) span of the family's committed hand modification block: from
+    the `/*` opening the Modification banner (found via the `begin` header anchor) down
+    to, exclusive, the `/*` opening the next section (found via the `end` anchor) — or,
+    when the family sets `raw_end` because no banner separates the block from what
+    follows (th3index/tquadbin run their tiling material straight after deleteTime),
+    down to the exact `end` anchor text itself."""
+    i = filetext.index(fam["begin"])
+    start = filetext.rfind("/*", 0, i)
+    j = filetext.index(fam["end"])
+    end = j if fam.get("raw_end") else filetext.rfind("/*", 0, j)
+    return start, end
+
+
+def extract_modifications(filetext: str, fam: dict) -> str:
+    """Return the committed hand modification block. Marker-aware: if the
+    GENERATED-MODIFICATIONS region exists, slice between its markers; otherwise slice
+    the banner/anchor span, mirroring extract_conversions."""
+    begin, end = _modifications_markers(fam["family"])
+    if begin in filetext:
+        b = filetext.index(begin) + len(begin)
+        e = filetext.index(end)
+        return filetext[b:e]
+    start, e = _modifications_span(filetext, fam)
+    return filetext[start:e]
+
+
+def splice_modifications(filetext: str, family: str, rendered: str) -> str:
+    begin, end = _modifications_markers(family)
+    b = filetext.index(begin) + len(begin)
+    e = filetext.index(end)
+    return filetext[:b] + rendered + filetext[e:]
+
+
+def bootstrap_modifications(filetext: str, fam: dict, rendered: str) -> str:
+    """Insert the GENERATED-MODIFICATIONS markers around the family's committed hand
+    block (sliced by the same banner/anchor span extract uses), so a future
+    non-reference emit is fully declarative with no hand-placed marker. Idempotent:
+    once the markers exist the reference/splice path owns the region. Not run while the
+    families are reference-only (validate-only)."""
+    start, end = _modifications_span(filetext, fam)
+    begin_m, end_m = _modifications_markers(fam["family"])
+    return filetext[:start] + begin_m + rendered + end_m + filetext[end:]
+
+
 def target_path(behaviour: str, sub: dict, positions: dict) -> pathlib.Path:
     # The within-50-bin offset defaults to the shared `positions` map (the tight
     # cbuffer-anchored layout); a family on the tgeo-aligned layout overrides a
@@ -1836,6 +1945,25 @@ def main() -> int:
                         break
                 if len(g) != len(c):
                     print(f"     line count gen={len(g)} cur={len(c)}")
+        for fam in mf.get("modification_families", []):
+            if not fam.get("reference"):
+                continue
+            p = ROOT / fam["file"]
+            gen = render_modifications(fam)
+            cur = extract_modifications(p.read_text(), fam) if p.exists() else ""
+            same = gen == cur
+            ok = ok and same
+            print(f"[{'OK ' if same else 'DIFF'}] self-regen modifications {fam['family']} "
+                  f"-> {pathlib.Path(fam['file'])}")
+            if not same:
+                g, c = gen.splitlines(), cur.splitlines()
+                for n, (a, b) in enumerate(zip(g, c), 1):
+                    if a != b:
+                        print(f"     first diff line {n}:\n       gen: {a!r}\n"
+                              f"       cur: {b!r}")
+                        break
+                if len(g) != len(c):
+                    print(f"     line count gen={len(g)} cur={len(c)}")
         for fam in mf.get("native_tempspatialrel_families", []):
             p = ROOT / fam["file"]
             gen = render_native_tempspatialrels(fam)
@@ -2050,6 +2178,28 @@ def main() -> int:
         else:
             p.write_text(bootstrap_restrictions(text, fam, render_restrictions(fam)))
             print(f"bootstrapped restrictions {fam['family']} -> {fam['file']}")
+
+    for fam in mf.get("modification_families", []):
+        # Reference families are validate-only: keep the committed hand block, never
+        # emit into .in.sql (mirrors constructors/comparisons/conversions). A future
+        # non-reference family bootstraps its GENERATED-MODIFICATIONS region once, then
+        # splices.
+        if fam.get("reference"):
+            continue
+        p = ROOT / fam["file"]
+        text = p.read_text()
+        begin, _ = _modifications_markers(fam["family"])
+        if args.check:
+            print(f"would {'splice' if begin in text else 'bootstrap'} modifications "
+                  f"{fam['family']} -> {fam['file']}")
+            continue
+        if begin in text:
+            p.write_text(splice_modifications(text, fam["family"],
+                                              render_modifications(fam)))
+            print(f"spliced modifications {fam['family']} -> {fam['file']}")
+        else:
+            p.write_text(bootstrap_modifications(text, fam, render_modifications(fam)))
+            print(f"bootstrapped modifications {fam['family']} -> {fam['file']}")
     return 0
 
 
