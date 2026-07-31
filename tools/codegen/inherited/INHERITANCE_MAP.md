@@ -7,8 +7,10 @@
 >
 > The ordering authority is the **doc XML `<sect1>` structure** — the reference
 > manual chapters are the contract for *which* behaviours are inherited and in
-> *what order*. This document is a working draft to revise together; every claim
-> below cites live source (master `13ad7b9d3`).
+> *what order*: `temporal_types_p1/p2.xml` / `temporal_spatial_p1/p2.xml` for the
+> temporal classes, and `doc/set_span_types.xml` for the value-domain classes
+> `Set<T>` / `Span<T>` / `SpanSet<T>` (§9). This document is a working draft to
+> revise together; every claim below cites live source (master `13ad7b9d3`).
 
 ---
 
@@ -167,7 +169,9 @@ finite-subset representations of the value/time domains that the restriction sur
 (atValues=Set, atSpan=Span, atTbox=TBox…) consumes. Their operator files
 (`001–015`, `021_tbox`) are hand today; memory
 `generate-boxops-campaign-boxtype-axis` flags the repeated per-span-type
-`005_span_ops`/`009_spanset_ops` as a future generation target.
+`005_span_ops`/`009_spanset_ops` as a future generation target. **§9 maps this
+value-domain surface class-by-class** (membership, the Set-vs-Span asymmetry,
+doc sections, file map, and the `setfamilies:` manifest axis).
 
 ### 4b. Aggregation / Indexing / Analytics chapters (also `Temporal<T>`-inherited)
 
@@ -496,6 +500,106 @@ Notes:
 - The object model is **curated, not auto-derived** (`"no class is guessed"`), so
   these are additions to make in `meta/object-model.json` — the fix is to add the
   missing leaves/intermediates (and widen `scope`) so every binding derives them.
+
+## 9. Value-domain classes — `Set<T>` / `Span<T>` / `SpanSet<T>`
+
+The finite-subset value-domain types that the temporal restriction/accessor
+surface consumes (§4a). Ordering authority: **`doc/set_span_types.xml`**. All
+catalog/doc line numbers in this section are live at master `5bca73bc8`.
+
+### 9.1 Class membership (live `meos/src/temporal/meos_catalog.c`)
+
+| class | members | catalog |
+|---|---|---|
+| `Set<T>` (**16**) | intset, bigintset, floatset, textset, dateset, tstzset, geomset, geogset, npointset, poseset, cbufferset, jsonbset, h3indexset, quadbinset, pcpointset, pcpatchset | `MEOS_SETTYPE_CATALOG` :262-280 · `set_type()` :801-808 · `set_basetype()` :787-794 |
+| `Span<T>` (**5**) | intspan, bigintspan, floatspan, datespan, tstzspan | `MEOS_SPANTYPE_CATALOG` :287-295 · `span_type()` :982-987 |
+| `SpanSet<T>` (**5**) | intspanset, bigintspanset, floatspanset, datespanset, tstzspanset | `MEOS_SPANSETTYPE_CATALOG` :301-309 · `spanset_type()` :1080-1085 |
+
+Sub-predicates: `spatialset_type()` :909-914 = geomset, geogset, npointset,
+poseset, cbufferset, h3indexset, quadbinset (**7** — the sets that carry a
+bounding box). `pointcloudset_type()` :950-954 = pcpointset, pcpatchset — NOT
+`spatialset_type()`: pointcloud sets carry no bounding box (the note at
+:944-948; the TPCBox structure is what carries pointcloud spatial bounds).
+
+### 9.2 WHY the 16-vs-5 asymmetry
+
+- **Every base type has a set type** because a temporal value is a *function*
+  from time to the base domain and `getValues` returns its RANGE as a set
+  (§4c row 6) — a family cannot have a temporal type without its base set type.
+- **`Span<T>` needs a total order AND a meaningful contiguous interval** on the
+  base domain, so it exists only for `span_basetype()` :963-967 = date, float,
+  int, bigint, timestamptz — numbers + time. `span_canon_basetype()` :973-976 =
+  date, int, bigint marks the **discrete** bases whose spans canonicalize with
+  +1 (upper bound normalized to exclusive).
+- **Order alone is NOT enough**: text is ordered — textset deploys the full
+  `<< >> &< &>` position surface in `mobilitydb/sql/temporal/002_set_ops.in.sql`
+  — but there is no textspan (`span_basetype()` excludes `T_TEXT`): a
+  contiguous interval of texts is not meaningful.
+
+### 9.3 `doc/set_span_types.xml` — section-by-section
+
+| `<sect1>` (doc line) | generated? | notes |
+|---|---|---|
+| Input and Output (:102) | ✗ HAND | in/out/recv/send + asText/asBinary/FromBinary/FromHexWKB |
+| Constructors (:268) | ✗ HAND | `set()`/`span()`/`spanset()` |
+| Conversions (:325) | ✗ HAND | base↔set/span, span↔spanset, range/multirange |
+| Accessors (:442) | ✗ HAND | memSize/lower/upper/width/duration/numValues/… |
+| Transformations (:693) | ✗ HAND | shift/scale, floor/ceil/round, spans/splitN |
+| Spatial Reference System (:901, `spatialset_spatial_srid`) | ✗ HAND | spatial sets only (SRID/setSRID/transform) |
+| Set Operations (:958, `setspan_set_ops`) | ✗ HAND | union/intersection/minus, ∈/⊆ |
+| Bounding Box Operations (:1012, `setspan_topo_pos`) | ✗ HAND | sect2 Topological (:1014) · Position (:1082) · Splitting (:1162) |
+| Distance Operations (:1219, `setspan_distance`) | ✗ HAND | `<->` / setDistance — metric bases only |
+| Comparisons (:1248, `setspan_comparisons`) | ✗ HAND | btree `< <= > >=` + `=`/`<>`, cmp, hash — ALL 16 sets have them |
+| Aggregations (:1306, `setspan_agg`) | ✗ HAND | setUnion/spanUnion/extent/… |
+| Indexing (:1389, `setspan_indexing`) | ✗ HAND | GiST/SP-GiST opclasses |
+
+Today **every row is HAND** — the value-domain layer has no template in
+`tools/codegen/inherited/templates/` and emits nothing from the generator.
+
+### 9.4 The template-class principle
+
+`Span`/`SpanSet`/`TBox` are each **ONE C struct parameterized by a basetype
+field**, not per-instantiation structs: `Span` (`meos/include/meos.h:154-163`,
+`spantype`/`basetype` fields :156-157), `SpanSet` (:168-179), `TBox` = two
+`Span`s (:184-189); `Set` likewise (:140-149). One implementation dispatches on
+the basetype for every instantiation, so **generation must happen at the
+TEMPLATE level**: one `span<T>` template covers intspan/bigintspan/floatspan/
+datespan/tstzspan and every future instantiation. Generating per instantiation
+is the anti-pattern (see memory
+`span-spanset-tbox-are-template-classes-generate-at-template-level`).
+
+### 9.5 Per-family file map (`mobilitydb/sql/`)
+
+The template-class reference layer lives in `temporal/`:
+
+| class | type | ops | indexes | aggfuncs |
+|---|---|---|---|---|
+| `Set<T>` | `001_set` | `002_set_ops` | `013_set_indexes` | — |
+| `Span<T>` | `003_span` | `005_span_ops` | `011_span_indexes` | `015_span_aggfuncs` |
+| `SpanSet<T>` | `007_spanset` | `009_spanset_ops` | `012_spanset_indexes` | — |
+
+plus the 8 per-family set files that instantiate `Set<T>` for the plug-in base
+types: `geo/050_geoset` · `pose/101_poseset` · `cbuffer/201_cbufferset` ·
+`h3/251_h3indexset` · `npoint/301_npointset` · `quadbin/351_quadbinset` ·
+`pointcloud/400_pcset` · `json/450_jsonbset` (the jsonb-specific path/element
+operators live separately in `json/451_jsonbset_jsonfuncs`).
+
+### 9.6 What the `setfamilies:` manifest axis encodes
+
+The `setfamilies:` axis in `manifest.yaml` carries one row per set type with the
+tokens a set/span template needs. It is descriptive only — no `files:` entries,
+no template, nothing emitted.
+
+| token | meaning |
+|---|---|
+| `ordered` | the base has a SEMANTIC total order (int, bigint, float, text, date, timestamptz) — **this flag is what decides whether position operators are emitted at all**; the 10 unordered bases get none |
+| `posops_spelling` | `value` = `<< >> &< &>` (numbers + text) · `time` = `<<# #>> &<# #&>` (date + timestamptz); omitted when not ordered |
+| `metric` | `<->` / `setDistance` is deployed (all ordered bases except text, plus geomset/geogset/npointset/poseset/cbufferset) |
+| `spatial` | the set is `spatialset_type()` (:909-914) — carries a bounding box and the SRS section (§9.3); pcpointset/pcpatchset are `pointcloudset_type()`, not spatial |
+
+Known deployed irregularity the axis does not model: jsonbset has the `<<`/`>>`
+pair (`json/450_jsonbset.in.sql:378-393`, `Left_set_set`/`Right_set_set`)
+without `&<`/`&>`, though jsonb has no semantic order.
 
 ---
 
