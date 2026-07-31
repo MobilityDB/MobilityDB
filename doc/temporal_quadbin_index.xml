@@ -36,6 +36,18 @@ SELECT tquadbin(SequenceSet) '{[480fffffffffffff@2001-01-01, 48427fffffffffff@20
 -- ERROR: temporal type (Instant) does not match column type (Sequence)
 SELECT tquadbin(Sequence) '480fffffffffffff@2001-01-01';
 </programlisting>
+		<para>The functions <varname>asText</varname>, <varname>asBinary</varname>, and <varname>asHexWKB</varname> serialize a <varname>tquadbin</varname> value, and <varname>tquadbinFromBinary</varname> and <varname>tquadbinFromHexWKB</varname> reconstruct it. The hexadecimal WKB form lets a temporal QUADBIN index column round-trip through a text-based <varname>COPY</varname>.</para>
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asHexWKB(tquadbin '480fffffffffffff@2001-01-01');
+SELECT tquadbinFromHexWKB(asHexWKB(tquadbin '480fffffffffffff@2001-01-01'));
+-- 480fffffffffffff@2001-01-01
+</programlisting>
+		<para>The <emphasis>MF-JSON</emphasis> representation is available through <varname>asMFJSON(tquadbin)</varname> and <varname>tquadbinFromMFJSON(text)</varname>. The cell payload renders as the int64 cell identifier in the <varname>values</varname> array, the same representation carried by <varname>tbigint</varname>.</para>
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asMFJSON(tquadbin '480fffffffffffff@2001-01-01');
+SELECT tquadbinFromMFJSON(asMFJSON(tquadbin '480fffffffffffff@2001-01-01'));
+-- 480fffffffffffff@2001-01-01
+</programlisting>
 	</sect1>
 
 	<sect1 xml:id="tquadbin_conversions">

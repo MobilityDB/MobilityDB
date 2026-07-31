@@ -89,6 +89,46 @@ CREATE TYPE tquadbin (
 );
 
 /******************************************************************************
+ * Text and (Hex)WKB I/O (mirrors the tcbuffer / tnpoint / tpose plug-in types)
+ ******************************************************************************/
+
+CREATE FUNCTION asText(tquadbin)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Temporal_as_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asBinary(tquadbin, endianenconding text DEFAULT '')
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Temporal_as_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asHexWKB(tquadbin, endianenconding text DEFAULT '')
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Temporal_as_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asMFJSON(temp tquadbin, options int4 DEFAULT 0,
+    flags int4 DEFAULT 0, maxdecimaldigits int4 DEFAULT 15)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Temporal_as_mfjson'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tquadbinFromBinary(bytea)
+  RETURNS tquadbin
+  AS 'MODULE_PATHNAME', 'Temporal_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tquadbinFromHexWKB(text)
+  RETURNS tquadbin
+  AS 'MODULE_PATHNAME', 'Temporal_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tquadbinFromMFJSON(text)
+  RETURNS tquadbin
+  AS 'MODULE_PATHNAME', 'Temporal_from_mfjson'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************
  * Typmod enforcer + self-cast (mirrors tbigint / tint / tfloat / ttext)
  ******************************************************************************/
 

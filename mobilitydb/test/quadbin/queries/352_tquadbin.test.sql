@@ -58,6 +58,24 @@ SELECT tquadbin 'Interp=Step;[480fffffffffffff@2001-01-01 08:00:00,48427ffffffff
 SELECT tquadbin '{[480fffffffffffff@2001-01-01 08:00:00,48427fffffffffff@2001-01-01 08:05:00],[48a6227affffffff@2001-01-01 08:10:00]}';
 
 -------------------------------------------------------------------------------
+-- MF-JSON input/output (quadbin cell ids are serialized as their int8 value,
+-- mirroring the tbigint sibling)
+-------------------------------------------------------------------------------
+
+SELECT asMFJSON(tquadbin '480fffffffffffff@2012-01-01 08:00:00');
+SELECT asMFJSON(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}');
+SELECT asMFJSON(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02]');
+SELECT asMFJSON(tquadbin '{[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02], [48a6227affffffff@2001-01-03, 48a6227affffffff@2001-01-04]}');
+-- Bound the bbox precision so the output is platform-independent
+SELECT asMFJSON(tquadbin '480fffffffffffff@2012-01-01 08:00:00', 1, 3, 6);
+
+-- Round-trip: tquadbinFromMFJSON(asMFJSON(...)) preserves the value
+SELECT tquadbinFromMFJSON(asMFJSON(tquadbin '480fffffffffffff@2012-01-01 08:00:00'));
+SELECT tquadbinFromMFJSON(asMFJSON(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}'));
+SELECT tquadbinFromMFJSON(asMFJSON(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02]'));
+SELECT tquadbinFromMFJSON(asMFJSON(tquadbin '{[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02], [48a6227affffffff@2001-01-03, 48a6227affffffff@2001-01-04]}'));
+
+-------------------------------------------------------------------------------
 -- Typmod
 -------------------------------------------------------------------------------
 
@@ -67,6 +85,18 @@ SELECT tquadbin(SequenceSet) '{[480fffffffffffff@2001-01-01, 48427fffffffffff@20
 /* Errors */
 SELECT tquadbin(Instant) '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}';
 SELECT tquadbin(Garbage) '480fffffffffffff@2012-01-01 08:00:00';
+
+-------------------------------------------------------------------------------
+-- WKB / HexWKB round-trips
+-------------------------------------------------------------------------------
+
+SELECT asText(tquadbinFromBinary(asBinary(tquadbin '480fffffffffffff@2001-01-01')));
+SELECT asText(tquadbinFromBinary(asBinary(tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}')));
+SELECT asText(tquadbinFromBinary(asBinary(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02]')));
+SELECT asText(tquadbinFromBinary(asBinary(tquadbin '{[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02], [48a6227affffffff@2001-01-03, 48a6227affffffff@2001-01-04]}')));
+-- Little-endian (NDR)
+SELECT asText(tquadbinFromBinary(asBinary(tquadbin '480fffffffffffff@2001-01-01', 'NDR')));
+SELECT asText(tquadbinFromHexWKB(asHexWKB(tquadbin '480fffffffffffff@2001-01-01')));
 
 -------------------------------------------------------------------------------
 -- Assignment casts to/from tbigint (explicit AS ASSIGNMENT, bidirectional)
