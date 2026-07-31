@@ -81,6 +81,8 @@ CREATE FUNCTION trgeometry(trgeometry, integer)
 
 CREATE CAST (trgeometry AS trgeometry) WITH FUNCTION trgeometry(trgeometry, integer) AS IMPLICIT;
 
+-- GENERATED-REPRESENTATIONS-BEGIN rgeo — tools/codegen/inherited/generate.py from templates/representations.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.yaml (representation_families) and re-run.
 /*****************************************************************************
  * Input/output from (E)WKT, (E)WKB, HexEWKB, and MFJSON representation
  *****************************************************************************/
@@ -155,6 +157,8 @@ CREATE FUNCTION asHexEWKB(trgeometry, endianenconding text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- GENERATED-REPRESENTATIONS-END rgeo
 
 /******************************************************************************
  * Constructors

@@ -81,6 +81,8 @@ CREATE FUNCTION tcbuffer(tcbuffer, integer)
 
 CREATE CAST (tcbuffer AS tcbuffer) WITH FUNCTION tcbuffer(tcbuffer, integer) AS IMPLICIT;
 
+-- GENERATED-REPRESENTATIONS-BEGIN cbuffer — tools/codegen/inherited/generate.py from templates/representations.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.yaml (representation_families) and re-run.
 /*****************************************************************************
  * Input/output from (E)WKT, (E)WKB, and HexEWKB representation
  *****************************************************************************/
@@ -155,6 +157,8 @@ CREATE FUNCTION asHexEWKB(tcbuffer, endianenconding text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- GENERATED-REPRESENTATIONS-END cbuffer
 
 /*****************************************************************************
  * Constructors

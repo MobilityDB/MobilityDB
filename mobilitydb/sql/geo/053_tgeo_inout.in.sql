@@ -33,6 +33,8 @@
  * MF-JSON representation
  */
 
+-- GENERATED-REPRESENTATIONS-BEGIN geo — tools/codegen/inherited/generate.py from templates/representations.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.yaml (representation_families) and re-run.
 /*****************************************************************************
  * Input
  *****************************************************************************/
@@ -179,3 +181,4 @@ CREATE FUNCTION asHexEWKB(tgeography, endianenconding text DEFAULT '')
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
+-- GENERATED-REPRESENTATIONS-END geo

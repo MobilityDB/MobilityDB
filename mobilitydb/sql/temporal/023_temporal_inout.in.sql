@@ -33,6 +33,8 @@
  * representation
  */
 
+-- GENERATED-REPRESENTATIONS-BEGIN temporal — tools/codegen/inherited/generate.py from templates/representations.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.yaml (representation_families) and re-run.
 /*****************************************************************************
  * Input
  *****************************************************************************/
@@ -222,3 +224,4 @@ CREATE FUNCTION asHexWKB(ttext, endianenconding text DEFAULT '')
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
+-- GENERATED-REPRESENTATIONS-END temporal
