@@ -3452,6 +3452,15 @@
 			<title>Tipo temporal <varname>tpcpoint</varname></title>
 
 			<sect3>
+				<title>Entrada y salida</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpcpoint_asText"><varname>asText</varname>, <varname>tpcpoint::text</varname></link>: Devolver la representación textual, o convertir a texto</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
 				<title>Constructores</title>
 				<itemizedlist>
 					<listitem>
@@ -3583,6 +3592,15 @@
 
 		<sect2>
 			<title>Tipo temporal <varname>tpcpatch</varname></title>
+
+			<sect3>
+				<title>Entrada y salida</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpcpatch_asText"><varname>asText</varname>, <varname>tpcpatch::text</varname></link>: Devolver la representación textual, o convertir a texto</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
 
 			<sect3>
 				<title>Constructores</title>

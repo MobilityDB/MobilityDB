@@ -121,6 +121,21 @@ CREATE FUNCTION asMFJSON(tpcpatch, options int4 DEFAULT 0,
   AS 'MODULE_PATHNAME', 'Temporal_as_mfjson'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- asText takes no maxdecimaldigits argument: a pcpatch prints as the hex-WKB
+-- of its serialized form, which has no decimal places to round. This mirrors
+-- th3index, the other spatial temporal type whose base value has no
+-- coordinate text form.
+CREATE FUNCTION asText(tpcpatch)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Temporal_as_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asText(tpcpatch[])
+  RETURNS text[]
+  AS 'MODULE_PATHNAME', 'Temporalarr_as_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE CAST (tpcpatch AS text) WITH FUNCTION asText(tpcpatch);
+
 /******************************************************************************
  * Ergonomic pcpatch constructor
  *
