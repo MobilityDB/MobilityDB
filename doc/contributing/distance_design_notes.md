@@ -91,6 +91,40 @@ Each predicate is a running **minimum** or **maximum** of `g` with an early exit
 Two reductions cover the whole table, so a family needs at most two distance
 kernels plus its own per-segment turning-point function. Everything else derives.
 
+**Containment reuses the same scalar with the radius sign flipped.** `contains`
+and `covers` between two areas are the same signed-gap question with the
+threshold changed from the radius **sum** to the radius **difference**. Disc A
+contains disc B when the farthest point of B from A's centre stays inside A,
+`dist(centre_A, centre_B) + r_B ≤ r_A`, so the containment gap is
+
+```
+g⊃(t) = dist(centre_A(t), centre_B(t)) − (r_A(t) − r_B(t))
+```
+
+— `covers` at `g⊃ ≤ 0`, strict `contains` at `g⊃ < 0`, the two differing only on
+the measure-zero boundary where the disc is internally tangent. The intersects
+gap subtracts the sum `r_A + r_B`; the containment gap subtracts the difference
+`r_A − r_B`. One scalar, one sign, and every containment predicate is again a
+running reduction of it: `eContains ≡ ∃ g⊃ < 0`, `aCovers ≡ ∀ g⊃ ≤ 0`. Testing
+the four extreme points of one disc against the other is a strictly weaker
+approximation that reports a disc poking out along a diagonal as contained; the
+scalar gap is the exact statement.
+
+**The gap is convex over a segment, so the two quantifiers need different
+evidence.** `dist` of two affinely-moving centres is a norm of an affine
+function, hence convex; subtracting the affine threshold keeps it convex. A
+convex function on a segment attains its **maximum at an endpoint**, so `always`
+(`∀ g ≤ 0`) is decided by the two segment endpoints alone — no interior scan. Its
+**minimum** may fall in the interior, so `ever` (`∃ g < 0`) needs the sub-interval
+between the two roots of the squared gap `dist² = (r_A − r_B)²`; the
+turning-point function returns exactly that sub-interval, and the temporal Boolean
+is true across it rather than only at the closest-approach instant. This is the
+same turning-point machinery the bounded `dwithin` uses, with the radius sum
+replaced by the difference and the distance set to zero. The endpoint test that
+decides `always` must carry the strictness of the predicate — `g < 0` for
+contains, `g ≤ 0` for covers — so two identical discs, whose gap is zero for the
+whole segment, cover each other throughout but never strictly contain.
+
 **The `ever(tR)` / `always(tR)` projections define correctness; they are not the
 implementation.** `eR ≡ ever(tR)` and `aR ≡ always(tR)` are the oracle a test
 uses. Computing them by materialising the full temporal Boolean and projecting
@@ -147,6 +181,7 @@ unknown, which here means no shared instant.
 | `disjoint` prefilter | **no** | a box miss would prove disjointness and prune true rows |
 | exact `nad`, `minDistance`, `\|=\|` — whole-pair box | **no** | no external threshold exists; the nearest pair can sit just outside the box |
 | exact `nad` — per-segment lower bound vs the running min | **yes** (planar) | the running minimum is a live threshold; a segment whose centre-box-minus-radius lower bound ≥ the running min cannot lower it |
+| `touches` prefilter via exact `nad` | **yes** | contact needs the gap `= 0` exactly; a strictly positive `nad` proves disjoint, so the pair can neither ever nor always touch |
 
 Soundness of the threshold prune depends on the box enclosing the whole value.
 For `tcbuffer` this holds because the box is **radius-aware** — the extent is
@@ -162,6 +197,17 @@ maximum radii, signed) is sound: when that lower bound is at or above the runnin
 minimum, the segment — turning point and per-instant endpoints alike — cannot
 lower it and is skipped. The bound is planar; a planar box separation is not a
 lower bound on a geodesic distance, so the geodetic path takes no prune.
+
+Contact is the measure-zero boundary of intersection: two values touch only where
+the signed gap is exactly zero. A strictly positive `nad` therefore rejects a
+pair from `touches` without removing any touching instant, and the result is
+unchanged down to the byte. The same lower-bound reject does **not** transfer to
+`contains` or `covers`, which hold across an open sub-interval rather than at a
+single instant — a pair whose exact discs are already apart can still have their
+polygonal approximations overlap, so a containment prefilter built on the exact
+gap disagrees with a containment kernel built on the approximation. Containment
+is made exact by computing the gap directly (§2), not by pruning an approximate
+kernel.
 
 ### Why bounded predicates get the box for free and distance does not
 
