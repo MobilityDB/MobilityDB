@@ -118,7 +118,7 @@ jsonbset_object_field(const Set *set, const text *key, bool astext,
  * @param[in] set JSONB set
  * @param[in] jb JSONB
  * @param[in] invert True if the arguments must be inverted
- * @csqlfn #Concat_jsonbset_jsonbset()
+ * @csqlfn #Concat_jsonb_jsonbset(), #Concat_jsonbset_jsonb()
  */
 Set *
 concat_jsonbset_jsonb(const Set *set, const Jsonb *jb, bool invert)
@@ -173,6 +173,7 @@ jsonbset_array_element(const Set *set, int idx, bool astext,
  * @brief Delete a key specified by an index from a JSONB set
  * @param[in] set JSONB set
  * @param[in] idx Index
+ * @csqlfn #Jsonbset_delete_index()
  */
 Set *
 jsonbset_delete_index(const Set *set, int idx)
@@ -197,6 +198,7 @@ jsonbset_delete_index(const Set *set, int idx)
  * @brief Delete a key or an array element from a JSONB set
  * @param[in] set JSONB set
  * @param[in] key Key
+ * @csqlfn #Jsonbset_delete()
  */
 Set *
 jsonbset_delete(const Set *set, const text *key)
@@ -220,6 +222,7 @@ jsonbset_delete(const Set *set, const text *key)
  * @param[in] set JSONB set
  * @param[in] keys Keys
  * @param[in] count Number of elements in the input array
+ * @csqlfn #Jsonbset_delete_array()
  */
 Set *
 jsonbset_delete_array(const Set *set, text **keys, int count)
@@ -416,7 +419,7 @@ jsonbset_to_floatset(const Set *set, const char *key,
  * @param[in] set JSONB set object
  * @param[in] key Key to extract
  * @param[in] null_handle States the null value treatment
- * @csqlfn #Jsonbset_to_ttextset_key()
+ * @csqlfn #Jsonbset_to_textset_key()
  */
 Set *
 jsonbset_to_textset_key(const Set *set, const char *key,
@@ -482,6 +485,7 @@ jsonbset_pretty(const Set *set)
  * @param[in] set JSONB set
  * @param[in] path_elems Array of path elements
  * @param[in] path_len Number of elements in the input array
+ * @csqlfn #Jsonbset_delete_path()
  */
 Set *
 jsonbset_delete_path(const Set *set, text **path_elems, int path_len)
@@ -557,6 +561,7 @@ jsonbset_extract_path(const Set *set, text **path_elems, int path_len,
  * @param[in] after When true, if the last path step is an array index that
  * is out of range, the new value is added at the beginning of the array if
  * the index is negative, or at the end of the array if it is positive
+ * @csqlfn #Jsonbset_insert()
  */
 Set *
 jsonbset_insert(const Set *set, text **path_elems, int path_len,

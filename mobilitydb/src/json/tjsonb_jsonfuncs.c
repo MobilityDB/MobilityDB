@@ -230,7 +230,7 @@ PG_FUNCTION_INFO_V1(Tjson_object_field_opr);
 /**
  * @ingroup mobilitydb_json_json
  * @brief Extract a field from a temporal JSON value
- * @sqlfn tjson_object_field()
+ * @sqlfn tjson_object_field_opr()
  * @sqlop @p ->
  */
 Datum
@@ -360,7 +360,7 @@ PG_FUNCTION_INFO_V1(Concat_tjsonb_jsonb);
 /**
  * @ingroup mobilitydb_json_json
  * @brief Concat a temporal JSONB with a JSONB value
- * @sqlfn jsonb_concat()
+ * @sqlfn tjsonb_concat()
  * @sqlop @p ||
  */
 Datum
@@ -382,7 +382,7 @@ PG_FUNCTION_INFO_V1(Concat_tjsonb_tjsonb);
 /**
  * @ingroup mobilitydb_json_json
  * @brief Concat two temporal JSONB values
- * @sqlfn jsonb_concat()
+ * @sqlfn tjsonb_concat()
  * @sqlop @p ||
  */
 Datum
@@ -408,7 +408,7 @@ PG_FUNCTION_INFO_V1(Tjsonb_delete);
 /**
  * @ingroup mobilitydb_json_json
  * @brief Delete a key or an element array from a temporal JSONB value
- * @sqlfn jsonb_delete_key()
+ * @sqlfn tjsonb_delete()
  * @sqlop @p -
  */
 Datum
@@ -432,7 +432,7 @@ PG_FUNCTION_INFO_V1(Tjsonb_delete_array);
 /**
  * @ingroup mobilitydb_json_json
  * @brief Delete an array of keys or array elements from a temporal JSONB value
- * @sqlfn jsonb_delete_array()
+ * @sqlfn tjsonb_delete_array()
  * @sqlop @p -
  */
 Datum
@@ -471,7 +471,7 @@ PG_FUNCTION_INFO_V1(Tjsonb_delete_index);
 /**
  * @ingroup mobilitydb_json_json
  * @brief Delete a key specified by an index from a temporal JSONB value
- * @sqlfn jsonb_delete()
+ * @sqlfn tjsonb_delete_index()
  * @sqlop @p -
  */
 Datum
@@ -733,7 +733,7 @@ PG_FUNCTION_INFO_V1(Tjson_extract_path_opr);
 /**
  * @ingroup mobilitydb_json_json
  * @brief Extract an item specified by a path from a temporal JSON value as text
- * @sqlfn tjson_extract_path_text()
+ * @sqlfn tjson_extract_path_opr()
  */
 Datum
 Tjson_extract_path_opr(PG_FUNCTION_ARGS)
@@ -1221,7 +1221,7 @@ PG_FUNCTION_INFO_V1(Tjsonb_path_match_opr);
  * value
  * @details Implementation of operator "tjsonb @@ jsonpath" (2-argument version
  * of tjsonb_path_match())
- * @sqlfn Tjsonb_path_match_opr()
+ * @sqlfn tjsonb_path_match_opr()
  */
 Datum
 Tjsonb_path_match_opr(PG_FUNCTION_ARGS)
@@ -1287,7 +1287,7 @@ Tjsonb_path_query_array_tz(PG_FUNCTION_ARGS)
 /**
  * @brief Extract the first item specified by a JSON path expression from a
  * temporal JSONB value. If there are no items, return NULL.
- * @sqlfn tjsonb_query_first(), tjsonb_query_first_tz()
+ * @sqlfn tjsonb_path_query_first(), tjsonb_path_query_first_tz()
  */
 Datum
 Tjsonb_path_query_first_common(FunctionCallInfo fcinfo, bool tz)
