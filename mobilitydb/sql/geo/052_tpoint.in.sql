@@ -158,7 +158,7 @@ CREATE FUNCTION tgeompoint(geometry, tstzspanset, text DEFAULT 'linear')
   AS 'MODULE_PATHNAME', 'Tsequenceset_from_base_tstzspanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tgeogpoint(geography, tstzspanset, text DEFAULT 'linear')
-  RETURNS tgeompoint
+  RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'Tsequenceset_from_base_tstzspanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
