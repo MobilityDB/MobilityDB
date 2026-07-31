@@ -1028,44 +1028,6 @@ distance_cbuffer_stbox(const Cbuffer *cb, const STBox *box)
  * Auxiliary functions for spatial relationships
  *****************************************************************************/
 
-/**
- * @brief Return 1 if a point is inside a circle or in the border, 0 otherwise
- * @note Inspired by
- * https://stackoverflow.com/questions/481144/equation-for-testing-if-a-point-is-inside-a-circle
- */
-bool
-point_in_circle(const POINT2D *center, double radius, double x, double y)
-{ 
-  double dx = fabs(x - center->x);
-  if (dx > radius)
-    return false;
-  int dy = fabs(y - center->y);
-  if (dy > radius)
-    return false;
-  if (dx + dy <= radius)
-    return true;
-  return (dx * dx + dy * dy <= radius * radius);
-}
-
-/**
- * @brief Return 1 if a point is inside a circle, 0 otherwise
- * @note Inspired by
- * https://stackoverflow.com/questions/481144/equation-for-testing-if-a-point-is-inside-a-circle
- */
-bool
-point_inside_circle(const POINT2D *center, double radius, double x, double y)
-{ 
-  double dx = fabs(x - center->x);
-  if (dx >= radius)
-    return false;
-  int dy = fabs(y - center->y);
-  if (dy >= radius)
-    return false;
-  if (dx + dy < radius)
-    return true;
-  return (dx * dx + dy * dy < radius * radius);
-}
-
 /*****************************************************************************
  * Spatial relationship functions
  * There are three versions of these functions
@@ -1088,14 +1050,11 @@ point_inside_circle(const POINT2D *center, double radius, double x, double y)
 int
 cbuffer_contains(const Cbuffer *cb1, const Cbuffer *cb2)
 {
-  const POINT2D *pt1 = cbuffer_point2d_p(cb1);
-  const POINT2D *pt2 = cbuffer_point2d_p(cb2);
-  if (! point_inside_circle(pt1, cb1->radius, pt2->x - cb2->radius, pt2->y) ||
-      ! point_inside_circle(pt1, cb1->radius, pt2->x + cb2->radius, pt2->y) ||
-      ! point_inside_circle(pt1, cb1->radius, pt2->x, pt2->y - cb2->radius) ||
-      ! point_inside_circle(pt1, cb1->radius, pt2->x, pt2->y + cb2->radius))
-    return 0;
-  return 1;
+  /* The disk (pt2, r2) is contained in the disk (pt1, r1) exactly when its
+   * farthest point from pt1, at distance dist(pt1, pt2) + r2, is strictly
+   * inside (pt1, r1) */
+  double dist = hypot(cb2->x - cb1->x, cb2->y - cb1->y);
+  return (dist + cb2->radius < cb1->radius) ? 1 : 0;
 }
 
 /**
@@ -1108,14 +1067,11 @@ cbuffer_contains(const Cbuffer *cb1, const Cbuffer *cb2)
 int
 cbuffer_covers(const Cbuffer *cb1, const Cbuffer *cb2)
 {
-  const POINT2D *pt1 = cbuffer_point2d_p(cb1);
-  const POINT2D *pt2 = cbuffer_point2d_p(cb2);
-  if (! point_in_circle(pt1, cb1->radius, pt2->x - cb2->radius, pt2->y) ||
-      ! point_in_circle(pt1, cb1->radius, pt2->x + cb2->radius, pt2->y) ||
-      ! point_in_circle(pt1, cb1->radius, pt2->x, pt2->y - cb2->radius) ||
-      ! point_in_circle(pt1, cb1->radius, pt2->x, pt2->y + cb2->radius))
-    return 0;
-  return 1;
+  /* The disk (pt2, r2) is covered by the disk (pt1, r1) exactly when its
+   * farthest point from pt1, at distance dist(pt1, pt2) + r2, lies inside or on
+   * the boundary of (pt1, r1) */
+  double dist = hypot(cb2->x - cb1->x, cb2->y - cb1->y);
+  return (dist + cb2->radius <= cb1->radius) ? 1 : 0;
 }
 
 /**
