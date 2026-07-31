@@ -143,7 +143,7 @@ CREATE FUNCTION quadbin_cmp(quadbin, quadbin)
   AS 'MODULE_PATHNAME', 'Quadbin_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION quadbin_hash(quadbin)
+CREATE FUNCTION hash(quadbin)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Quadbin_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -210,7 +210,7 @@ CREATE OPERATOR CLASS quadbin_ops
 CREATE OPERATOR CLASS quadbin_ops
   DEFAULT FOR TYPE quadbin USING hash AS
     OPERATOR  1  =,
-    FUNCTION  1  quadbin_hash(quadbin);
+    FUNCTION  1  hash(quadbin);
 
 /******************************************************************************
  * Validity predicates

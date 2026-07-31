@@ -95,7 +95,7 @@ SELECT COUNT(*) FROM tbl_poseset2d t1, tbl_poseset2d t2 WHERE t1.s <= t2.s;
 SELECT COUNT(*) FROM tbl_poseset2d t1, tbl_poseset2d t2 WHERE t1.s > t2.s;
 SELECT COUNT(*) FROM tbl_poseset2d t1, tbl_poseset2d t2 WHERE t1.s >= t2.s;
 
-SELECT MAX(set_hash(s)) FROM tbl_poseset2d;
+SELECT MAX(hash(s)) FROM tbl_poseset2d;
 
 -------------------------------------------------------------------------------
 -- Aggregation functions

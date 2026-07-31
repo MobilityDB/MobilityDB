@@ -293,11 +293,11 @@ CREATE OPERATOR CLASS jsonbset_btree_ops
 
 /******************************************************************************/
 
-CREATE FUNCTION set_hash(jsonbset)
+CREATE FUNCTION hash(jsonbset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Set_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_hash_extended(jsonbset, bigint)
+CREATE FUNCTION hashExtended(jsonbset, bigint)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Set_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -305,8 +305,8 @@ CREATE FUNCTION set_hash_extended(jsonbset, bigint)
 CREATE OPERATOR CLASS jsonbset_hash_ops
   DEFAULT FOR TYPE jsonbset USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   set_hash(jsonbset),
-    FUNCTION    2   set_hash_extended(jsonbset, bigint);
+    FUNCTION    1   hash(jsonbset),
+    FUNCTION    2   hashExtended(jsonbset, bigint);
 
 /*****************************************************************************
  * JSONB Functions

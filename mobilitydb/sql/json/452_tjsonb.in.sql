@@ -702,11 +702,11 @@ CREATE OPERATOR CLASS tjsonb_btree_ops
 
 /*****************************************************************************/
 
-CREATE FUNCTION temporal_hash(tjsonb)
+CREATE FUNCTION hash(tjsonb)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_hash_extended(tjsonb, bigint)
+CREATE FUNCTION hashExtended(tjsonb, bigint)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Temporal_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -714,8 +714,8 @@ CREATE FUNCTION temporal_hash_extended(tjsonb, bigint)
 CREATE OPERATOR CLASS tjsonb_hash_ops
   DEFAULT FOR TYPE tjsonb USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   temporal_hash(tjsonb),
-    FUNCTION    2   temporal_hash_extended(tjsonb, bigint);
+    FUNCTION    1   hash(tjsonb),
+    FUNCTION    2   hashExtended(tjsonb, bigint);
 
 /*****************************************************************************/
 

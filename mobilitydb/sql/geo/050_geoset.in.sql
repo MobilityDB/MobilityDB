@@ -584,20 +584,20 @@ CREATE OPERATOR CLASS geogset_btree_ops
 
 /******************************************************************************/
 
-CREATE FUNCTION set_hash(geomset)
+CREATE FUNCTION hash(geomset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Set_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_hash(geogset)
+CREATE FUNCTION hash(geogset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Set_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION set_hash_extended(geomset, bigint)
+CREATE FUNCTION hashExtended(geomset, bigint)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Set_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_hash_extended(geogset, bigint)
+CREATE FUNCTION hashExtended(geogset, bigint)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Set_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -605,13 +605,13 @@ CREATE FUNCTION set_hash_extended(geogset, bigint)
 CREATE OPERATOR CLASS geomset_hash_ops
   DEFAULT FOR TYPE geomset USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   set_hash(geomset),
-    FUNCTION    2   set_hash_extended(geomset, bigint);
+    FUNCTION    1   hash(geomset),
+    FUNCTION    2   hashExtended(geomset, bigint);
 CREATE OPERATOR CLASS geogset_hash_ops
   DEFAULT FOR TYPE geogset USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   set_hash(geogset),
-    FUNCTION    2   set_hash_extended(geogset, bigint);
+    FUNCTION    1   hash(geogset),
+    FUNCTION    2   hashExtended(geogset, bigint);
 
 /******************************************************************************
  * Operators

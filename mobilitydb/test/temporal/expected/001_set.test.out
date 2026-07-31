@@ -494,49 +494,49 @@ SELECT tstzset '{2000-01-01}' >= tstzset '{2000-01-01, 2000-01-02, 2000-01-03}';
  f
 (1 row)
 
-SELECT set_hash(dateset '{2000-01-01,2000-01-02}') = set_hash(dateset '{2000-01-01,2000-01-02}');
+SELECT hash(dateset '{2000-01-01,2000-01-02}') = hash(dateset '{2000-01-01,2000-01-02}');
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT set_hash(dateset '{2000-01-01,2000-01-02}') <> set_hash(dateset '{2000-01-01,2000-01-02}');
+SELECT hash(dateset '{2000-01-01,2000-01-02}') <> hash(dateset '{2000-01-01,2000-01-02}');
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT set_hash(tstzset '{2000-01-01,2000-01-02}') = set_hash(tstzset '{2000-01-01,2000-01-02}');
+SELECT hash(tstzset '{2000-01-01,2000-01-02}') = hash(tstzset '{2000-01-01,2000-01-02}');
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT set_hash(tstzset '{2000-01-01,2000-01-02}') <> set_hash(tstzset '{2000-01-01,2000-01-02}');
+SELECT hash(tstzset '{2000-01-01,2000-01-02}') <> hash(tstzset '{2000-01-01,2000-01-02}');
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT set_hash_extended(dateset '{2000-01-01,2000-01-02}', 1) = set_hash_extended(dateset '{2000-01-01,2000-01-02}', 1);
+SELECT hashExtended(dateset '{2000-01-01,2000-01-02}', 1) = hashExtended(dateset '{2000-01-01,2000-01-02}', 1);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT set_hash_extended(dateset '{2000-01-01,2000-01-02}', 1) <> set_hash_extended(dateset '{2000-01-01,2000-01-02}', 1);
+SELECT hashExtended(dateset '{2000-01-01,2000-01-02}', 1) <> hashExtended(dateset '{2000-01-01,2000-01-02}', 1);
  ?column? 
 ----------
  f
 (1 row)
 
-SELECT set_hash_extended(tstzset '{2000-01-01,2000-01-02}', 1) = set_hash_extended(tstzset '{2000-01-01,2000-01-02}', 1);
+SELECT hashExtended(tstzset '{2000-01-01,2000-01-02}', 1) = hashExtended(tstzset '{2000-01-01,2000-01-02}', 1);
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT set_hash_extended(tstzset '{2000-01-01,2000-01-02}', 1) <> set_hash_extended(tstzset '{2000-01-01,2000-01-02}', 1);
+SELECT hashExtended(tstzset '{2000-01-01,2000-01-02}', 1) <> hashExtended(tstzset '{2000-01-01,2000-01-02}', 1);
  ?column? 
 ----------
  f

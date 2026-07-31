@@ -198,19 +198,19 @@ SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t <= t2.t;
 SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t > t2.t;
 SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset t2 WHERE t1.t >= t2.t;
 
-SELECT MAX(set_hash(i)) FROM tbl_intset;
-SELECT MAX(set_hash(b)) FROM tbl_bigintset;
-SELECT MAX(set_hash(f)) FROM tbl_floatset;
-SELECT MAX(set_hash(t)) FROM tbl_textset;
-SELECT MAX(set_hash(d)) FROM tbl_dateset;
-SELECT MAX(set_hash(t)) FROM tbl_tstzset;
+SELECT MAX(hash(i)) FROM tbl_intset;
+SELECT MAX(hash(b)) FROM tbl_bigintset;
+SELECT MAX(hash(f)) FROM tbl_floatset;
+SELECT MAX(hash(t)) FROM tbl_textset;
+SELECT MAX(hash(d)) FROM tbl_dateset;
+SELECT MAX(hash(t)) FROM tbl_tstzset;
 
-SELECT MAX(set_hash_extended(i, 1)) FROM tbl_intset;
-SELECT MAX(set_hash_extended(b, 1)) FROM tbl_bigintset;
-SELECT MAX(set_hash_extended(f, 1)) FROM tbl_floatset;
-SELECT MAX(set_hash_extended(t, 1)) FROM tbl_textset;
-SELECT MAX(set_hash_extended(d, 1)) FROM tbl_dateset;
-SELECT MAX(set_hash_extended(t, 1)) FROM tbl_tstzset;
+SELECT MAX(hashExtended(i, 1)) FROM tbl_intset;
+SELECT MAX(hashExtended(b, 1)) FROM tbl_bigintset;
+SELECT MAX(hashExtended(f, 1)) FROM tbl_floatset;
+SELECT MAX(hashExtended(t, 1)) FROM tbl_textset;
+SELECT MAX(hashExtended(d, 1)) FROM tbl_dateset;
+SELECT MAX(hashExtended(t, 1)) FROM tbl_tstzset;
 
 -------------------------------------------------------------------------------
 -- Aggregation functions

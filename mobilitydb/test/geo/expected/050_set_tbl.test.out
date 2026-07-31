@@ -333,13 +333,13 @@ SELECT COUNT(*) FROM tbl_geogset t1, tbl_geogset t2 WHERE t1.g >= t2.g;
   4950
 (1 row)
 
-SELECT MAX(set_hash(g)) FROM tbl_geomset;
+SELECT MAX(hash(g)) FROM tbl_geomset;
     max     
 ------------
  2098051068
 (1 row)
 
-SELECT MAX(set_hash(g)) FROM tbl_geogset;
+SELECT MAX(hash(g)) FROM tbl_geogset;
     max     
 ------------
  2135464549

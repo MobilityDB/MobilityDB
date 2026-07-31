@@ -3039,7 +3039,7 @@ PG_FUNCTION_INFO_V1(Temporal_hash);
 /**
  * @ingroup mobilitydb_temporal_accessor
  * @brief Return the hash value of a temporal value
- * @sqlfn temporal_hash()
+ * @sqlfn hash()
  */
 Datum
 Temporal_hash(PG_FUNCTION_ARGS)
@@ -3055,7 +3055,7 @@ PG_FUNCTION_INFO_V1(Temporal_hash_extended);
 /**
  * @ingroup mobilitydb_temporal_accessor
  * @brief Return the 64-bit hash value of a temporal value using a seed
- * @sqlfn temporal_hash_extended()
+ * @sqlfn hashExtended()
  */
 Datum
 Temporal_hash_extended(PG_FUNCTION_ARGS)

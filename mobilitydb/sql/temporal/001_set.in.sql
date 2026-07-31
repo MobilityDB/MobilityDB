@@ -1422,52 +1422,52 @@ CREATE OPERATOR CLASS tstzset_btree_ops
  * Hash functions for defining hash indexes
  ******************************************************************************/
 
-CREATE FUNCTION set_hash(intset)
+CREATE FUNCTION hash(intset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Set_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_hash(bigintset)
+CREATE FUNCTION hash(bigintset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Set_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_hash(floatset)
+CREATE FUNCTION hash(floatset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Set_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_hash(textset)
+CREATE FUNCTION hash(textset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Set_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_hash(dateset)
+CREATE FUNCTION hash(dateset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Set_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_hash(tstzset)
+CREATE FUNCTION hash(tstzset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Set_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION set_hash_extended(intset, bigint)
+CREATE FUNCTION hashExtended(intset, bigint)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Set_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_hash_extended(bigintset, bigint)
+CREATE FUNCTION hashExtended(bigintset, bigint)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Set_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_hash_extended(floatset, bigint)
+CREATE FUNCTION hashExtended(floatset, bigint)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Set_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_hash_extended(textset, bigint)
+CREATE FUNCTION hashExtended(textset, bigint)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Set_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_hash_extended(dateset, bigint)
+CREATE FUNCTION hashExtended(dateset, bigint)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Set_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_hash_extended(tstzset, bigint)
+CREATE FUNCTION hashExtended(tstzset, bigint)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Set_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -1475,32 +1475,32 @@ CREATE FUNCTION set_hash_extended(tstzset, bigint)
 CREATE OPERATOR CLASS intset_hash_ops
   DEFAULT FOR TYPE intset USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   set_hash(intset),
-    FUNCTION    2   set_hash_extended(intset, bigint);
+    FUNCTION    1   hash(intset),
+    FUNCTION    2   hashExtended(intset, bigint);
 CREATE OPERATOR CLASS bigintset_hash_ops
   DEFAULT FOR TYPE bigintset USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   set_hash(bigintset),
-    FUNCTION    2   set_hash_extended(bigintset, bigint);
+    FUNCTION    1   hash(bigintset),
+    FUNCTION    2   hashExtended(bigintset, bigint);
 CREATE OPERATOR CLASS floatset_hash_ops
   DEFAULT FOR TYPE floatset USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   set_hash(floatset),
-    FUNCTION    2   set_hash_extended(floatset, bigint);
+    FUNCTION    1   hash(floatset),
+    FUNCTION    2   hashExtended(floatset, bigint);
 CREATE OPERATOR CLASS textset_hash_ops
   DEFAULT FOR TYPE textset USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   set_hash(textset),
-    FUNCTION    2   set_hash_extended(textset, bigint);
+    FUNCTION    1   hash(textset),
+    FUNCTION    2   hashExtended(textset, bigint);
 CREATE OPERATOR CLASS dateset_hash_ops
   DEFAULT FOR TYPE dateset USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   set_hash(dateset),
-    FUNCTION    2   set_hash_extended(dateset, bigint);
+    FUNCTION    1   hash(dateset),
+    FUNCTION    2   hashExtended(dateset, bigint);
 CREATE OPERATOR CLASS tstzset_hash_ops
   DEFAULT FOR TYPE tstzset USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   set_hash(tstzset),
-    FUNCTION    2   set_hash_extended(tstzset, bigint);
+    FUNCTION    1   hash(tstzset),
+    FUNCTION    2   hashExtended(tstzset, bigint);
 
 /******************************************************************************/

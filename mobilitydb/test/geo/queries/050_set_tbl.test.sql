@@ -146,12 +146,12 @@ SELECT COUNT(*) FROM tbl_geogset t1, tbl_geogset t2 WHERE t1.g <= t2.g;
 SELECT COUNT(*) FROM tbl_geogset t1, tbl_geogset t2 WHERE t1.g > t2.g;
 SELECT COUNT(*) FROM tbl_geogset t1, tbl_geogset t2 WHERE t1.g >= t2.g;
 
-SELECT MAX(set_hash(g)) FROM tbl_geomset;
-SELECT MAX(set_hash(g)) FROM tbl_geogset;
+SELECT MAX(hash(g)) FROM tbl_geomset;
+SELECT MAX(hash(g)) FROM tbl_geogset;
 
 -- PostGIS currently does not provide an extended hash function
--- SELECT MAX(set_hash_extended(g, 1)) FROM tbl_geomset;
--- SELECT MAX(set_hash_extended(g, 1)) FROM tbl_geogset;
+-- SELECT MAX(hashExtended(g, 1)) FROM tbl_geomset;
+-- SELECT MAX(hashExtended(g, 1)) FROM tbl_geogset;
 
 -------------------------------------------------------------------------------
 -- Aggregation functions

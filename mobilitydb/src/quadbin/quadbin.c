@@ -223,7 +223,7 @@ PG_FUNCTION_INFO_V1(Quadbin_hash);
 /**
  * @ingroup mobilitydb_quadbin_base_accessor
  * @brief Return the hash code of a quadbin value
- * @sqlfn quadbin_hash()
+ * @sqlfn hash()
  */
 Datum
 Quadbin_hash(PG_FUNCTION_ARGS)

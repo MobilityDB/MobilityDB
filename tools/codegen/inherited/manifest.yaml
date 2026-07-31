@@ -1585,7 +1585,7 @@ comparison_families:
   file: mobilitydb/sql/geo/052_tgeo.in.sql
   reference: true
   begin: "\n * Comparison functions and B-tree indexing\n"
-  end: temporal_hash
+  end: "CREATE FUNCTION hash("
   blocks:
   - lit: "/******************************************************************************\n * Comparison functions and B-tree indexing\n ******************************************************************************/\n\n"
   - funcs: tgeometry
@@ -1596,7 +1596,7 @@ comparison_families:
   file: mobilitydb/sql/geo/052_tpoint.in.sql
   reference: true
   begin: "\n * Comparison functions and B-tree indexing\n"
-  end: temporal_hash
+  end: "CREATE FUNCTION hash("
   blocks:
   - lit: "/******************************************************************************\n * Comparison functions and B-tree indexing\n ******************************************************************************/\n\n"
   - funcs: tgeompoint
@@ -1607,7 +1607,7 @@ comparison_families:
   file: mobilitydb/sql/cbuffer/202_tcbuffer.in.sql
   reference: true
   begin: "\n * Comparison functions and B-tree indexing\n"
-  end: temporal_hash
+  end: "CREATE FUNCTION hash("
   blocks:
   - lit: "/*****************************************************************************\n * Comparison functions and B-tree indexing\n *****************************************************************************/\n\n"
   - funcs: tcbuffer
@@ -1616,7 +1616,7 @@ comparison_families:
   file: mobilitydb/sql/h3/253_th3index.in.sql
   reference: true
   begin: "\n * Comparison functions and B-tree / hash indexing\n"
-  end: temporal_hash
+  end: "CREATE FUNCTION hash("
   blocks:
   - lit: "/******************************************************************************\n * Comparison functions and B-tree / hash indexing\n *\n * All th3index values share the exact same on-disk layout as every\n * other temporal type, so the generic Temporal_* dispatch in the\n * backend is enough \u2014 no th3index-specific wrappers required.\n ******************************************************************************/\n\n"
   - funcs: th3index
@@ -1625,7 +1625,7 @@ comparison_families:
   file: mobilitydb/sql/json/452_tjsonb.in.sql
   reference: true
   begin: "\n * Comparison functions and B-tree indexing\n"
-  end: temporal_hash
+  end: "CREATE FUNCTION hash("
   blocks:
   - lit: "/*****************************************************************************\n * Comparison functions and B-tree indexing\n *****************************************************************************/\n\n"
   - funcs: tjsonb
@@ -1634,7 +1634,7 @@ comparison_families:
   file: mobilitydb/sql/npoint/302_tnpoint.in.sql
   reference: true
   begin: "\n * Comparison functions and B-tree indexing\n"
-  end: temporal_hash
+  end: "CREATE FUNCTION hash("
   blocks:
   - lit: "/******************************************************************************\n * Comparison functions and B-tree indexing\n ******************************************************************************/\n\n"
   - funcs: tnpoint
@@ -1643,7 +1643,7 @@ comparison_families:
   file: mobilitydb/sql/pose/102_tpose.in.sql
   reference: true
   begin: "\n * Comparison functions and B-tree indexing\n"
-  end: temporal_hash
+  end: "CREATE FUNCTION hash("
   blocks:
   - lit: "/******************************************************************************\n * Comparison functions and B-tree indexing\n ******************************************************************************/\n\n"
   - funcs: tpose
@@ -1652,7 +1652,7 @@ comparison_families:
   file: mobilitydb/sql/quadbin/353_tquadbin.in.sql
   reference: true
   begin: "\n * Comparison functions and B-tree / hash indexing\n"
-  end: temporal_hash
+  end: "CREATE FUNCTION hash("
   blocks:
   - lit: "/******************************************************************************\n * Comparison functions and B-tree / hash indexing\n *\n * All tquadbin values share the exact same on-disk layout as every\n * other temporal type, so the generic Temporal_* dispatch in the\n * backend is enough \u2014 no tquadbin-specific wrappers required.\n ******************************************************************************/\n\n"
   - funcs: tquadbin
@@ -1661,7 +1661,7 @@ comparison_families:
   file: mobilitydb/sql/rgeo/150_trgeo.in.sql
   reference: true
   begin: "\n * Comparison functions and B-tree indexing\n"
-  end: temporal_hash
+  end: "CREATE FUNCTION hash("
   blocks:
   - lit: "/******************************************************************************\n * Comparison functions and B-tree indexing\n ******************************************************************************/\n\n"
   - funcs: trgeometry

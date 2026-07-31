@@ -174,7 +174,7 @@ CREATE FUNCTION h3index_cmp(h3index, h3index)
   AS 'MODULE_PATHNAME', 'H3index_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION h3index_hash(h3index)
+CREATE FUNCTION hash(h3index)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'H3index_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -241,7 +241,7 @@ CREATE OPERATOR CLASS h3index_ops
 CREATE OPERATOR CLASS h3index_ops
   DEFAULT FOR TYPE h3index USING hash AS
     OPERATOR  1  =,
-    FUNCTION  1  h3index_hash(h3index);
+    FUNCTION  1  hash(h3index);
 
 /******************************************************************************
  * Validity predicates

@@ -336,11 +336,11 @@ CREATE OPERATOR CLASS poseset_btree_ops
 
 /******************************************************************************/
 
-CREATE FUNCTION set_hash(poseset)
+CREATE FUNCTION hash(poseset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Set_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_hash_extended(poseset, bigint)
+CREATE FUNCTION hashExtended(poseset, bigint)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Set_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -348,8 +348,8 @@ CREATE FUNCTION set_hash_extended(poseset, bigint)
 CREATE OPERATOR CLASS poseset_hash_ops
   DEFAULT FOR TYPE poseset USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   set_hash(poseset),
-    FUNCTION    2   set_hash_extended(poseset, bigint);
+    FUNCTION    1   hash(poseset),
+    FUNCTION    2   hashExtended(poseset, bigint);
 
 /******************************************************************************
  * Operators

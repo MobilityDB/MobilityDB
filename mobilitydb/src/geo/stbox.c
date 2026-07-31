@@ -1765,7 +1765,7 @@ PG_FUNCTION_INFO_V1(Stbox_hash);
 /**
  * @ingroup mobilitydb_geo_box_comp
  * @brief Return the hash value of a spatiotemporal box
- * @sqlfn stbox_hash()
+ * @sqlfn hash()
  */
 Datum
 Stbox_hash(PG_FUNCTION_ARGS)
@@ -1779,7 +1779,7 @@ PG_FUNCTION_INFO_V1(Stbox_hash_extended);
 /**
  * @ingroup mobilitydb_geo_box_comp
  * @brief Return the hash value of a spatiotemporal box
- * @sqlfn stbox_hash_extended()
+ * @sqlfn hashExtended()
  */
 Datum
 Stbox_hash_extended(PG_FUNCTION_ARGS)

@@ -102,9 +102,9 @@ SELECT COUNT(*) FROM tbl_npointset t1, tbl_npointset t2 WHERE t1.n <= t2.n;
 SELECT COUNT(*) FROM tbl_npointset t1, tbl_npointset t2 WHERE t1.n > t2.n;
 SELECT COUNT(*) FROM tbl_npointset t1, tbl_npointset t2 WHERE t1.n >= t2.n;
 
-SELECT MAX(set_hash(n)) FROM tbl_npointset;
+SELECT MAX(hash(n)) FROM tbl_npointset;
 
-SELECT MAX(set_hash_extended(n, 1)) FROM tbl_npointset;
+SELECT MAX(hashExtended(n, 1)) FROM tbl_npointset;
 
 -------------------------------------------------------------------------------
 -- Aggregation functions

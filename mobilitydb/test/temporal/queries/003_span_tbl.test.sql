@@ -183,8 +183,8 @@ SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t <= t2.t;
 SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t > t2.t;
 SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan t2 WHERE t1.t >= t2.t;
 
-SELECT MAX(span_hash(t)) != 0 FROM tbl_tstzspan;
-SELECT MAX(span_hash_extended(t, 1)) != 0 FROM tbl_tstzspan;
+SELECT MAX(hash(t)) != 0 FROM tbl_tstzspan;
+SELECT MAX(hashExtended(t, 1)) != 0 FROM tbl_tstzspan;
 
 -------------------------------------------------------------------------------
 -- Aggregation functions

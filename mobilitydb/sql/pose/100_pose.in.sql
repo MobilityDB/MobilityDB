@@ -370,11 +370,11 @@ CREATE OPERATOR CLASS pose_btree_ops
 
 /******************************************************************************/
 
-CREATE FUNCTION pose_hash(pose)
+CREATE FUNCTION hash(pose)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Pose_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION pose_hash_extended(pose, bigint)
+CREATE FUNCTION hashExtended(pose, bigint)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Pose_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -382,7 +382,7 @@ CREATE FUNCTION pose_hash_extended(pose, bigint)
 CREATE OPERATOR CLASS pose_hash_ops
   DEFAULT FOR TYPE pose USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   pose_hash(pose),
-    FUNCTION    2   pose_hash_extended(pose, bigint);
+    FUNCTION    1   hash(pose),
+    FUNCTION    2   hashExtended(pose, bigint);
 
 /******************************************************************************/

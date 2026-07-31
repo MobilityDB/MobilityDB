@@ -1162,44 +1162,44 @@ CREATE OPERATOR CLASS tstzspan_btree_ops
 
 /******************************************************************************/
 
-CREATE FUNCTION span_hash(intspan)
+CREATE FUNCTION hash(intspan)
   RETURNS integer
  AS 'MODULE_PATHNAME', 'Span_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_hash(bigintspan)
+CREATE FUNCTION hash(bigintspan)
   RETURNS integer
  AS 'MODULE_PATHNAME', 'Span_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_hash(floatspan)
+CREATE FUNCTION hash(floatspan)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Span_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_hash(datespan)
+CREATE FUNCTION hash(datespan)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Span_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_hash(tstzspan)
+CREATE FUNCTION hash(tstzspan)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Span_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION span_hash_extended(intspan, bigint)
+CREATE FUNCTION hashExtended(intspan, bigint)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Span_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_hash_extended(bigintspan, bigint)
+CREATE FUNCTION hashExtended(bigintspan, bigint)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Span_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_hash_extended(floatspan, bigint)
+CREATE FUNCTION hashExtended(floatspan, bigint)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Span_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_hash_extended(datespan, bigint)
+CREATE FUNCTION hashExtended(datespan, bigint)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Span_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_hash_extended(tstzspan, bigint)
+CREATE FUNCTION hashExtended(tstzspan, bigint)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Span_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -1207,27 +1207,27 @@ CREATE FUNCTION span_hash_extended(tstzspan, bigint)
 CREATE OPERATOR CLASS intspan_hash_ops
   DEFAULT FOR TYPE intspan USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   span_hash(intspan),
-    FUNCTION    2   span_hash_extended(intspan, bigint);
+    FUNCTION    1   hash(intspan),
+    FUNCTION    2   hashExtended(intspan, bigint);
 CREATE OPERATOR CLASS bigintspan_hash_ops
   DEFAULT FOR TYPE bigintspan USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   span_hash(bigintspan),
-    FUNCTION    2   span_hash_extended(bigintspan, bigint);
+    FUNCTION    1   hash(bigintspan),
+    FUNCTION    2   hashExtended(bigintspan, bigint);
 CREATE OPERATOR CLASS floatspan_hash_ops
   DEFAULT FOR TYPE floatspan USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   span_hash(floatspan),
-    FUNCTION    2   span_hash_extended(floatspan, bigint);
+    FUNCTION    1   hash(floatspan),
+    FUNCTION    2   hashExtended(floatspan, bigint);
 CREATE OPERATOR CLASS datespan_hash_ops
   DEFAULT FOR TYPE datespan USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   span_hash(datespan),
-    FUNCTION    2   span_hash_extended(datespan, bigint);
+    FUNCTION    1   hash(datespan),
+    FUNCTION    2   hashExtended(datespan, bigint);
 CREATE OPERATOR CLASS tstzspan_hash_ops
   DEFAULT FOR TYPE tstzspan USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   span_hash(tstzspan),
-    FUNCTION    2   span_hash_extended(tstzspan, bigint);
+    FUNCTION    1   hash(tstzspan),
+    FUNCTION    2   hashExtended(tstzspan, bigint);
 
 /******************************************************************************/

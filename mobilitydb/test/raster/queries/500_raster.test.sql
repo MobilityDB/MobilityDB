@@ -446,13 +446,13 @@ SELECT count(*) AS total, count(DISTINCT tile) AS distinct_tiles,
 FROM tiles;
 
 -- Equal tiles hash equally, and the seeded hash varies with the seed.
-SELECT raquet_hash(raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint,
+SELECT hash(raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint,
          'UINT8')) =
-       raquet_hash(raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint,
+       hash(raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint,
          'UINT8')) AS equal_tiles_hash_equally,
-       raquet_hash_extended(raquet('\x0102'::bytea, 2, 1,
+       hashExtended(raquet('\x0102'::bytea, 2, 1,
          5193776270265024512::bigint, 'UINT8'), 0) <>
-       raquet_hash_extended(raquet('\x0102'::bytea, 2, 1,
+       hashExtended(raquet('\x0102'::bytea, 2, 1,
          5193776270265024512::bigint, 'UINT8'), 1) AS seed_changes_hash;
 
 -------------------------------------------------------------------------------

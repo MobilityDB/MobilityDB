@@ -78,10 +78,10 @@ WHERE (cmp(t1.tile, t2.tile) = 0) <> (t1.tile = t2.tile);
 
 -- Equal tiles hash equally, which is what the hash operator class requires
 SELECT COUNT(*) FROM tbl_raquet t1, tbl_raquet t2
-WHERE t1.tile = t2.tile AND raquet_hash(t1.tile) <> raquet_hash(t2.tile);
+WHERE t1.tile = t2.tile AND hash(t1.tile) <> hash(t2.tile);
 SELECT COUNT(*) FROM tbl_raquet t1, tbl_raquet t2
 WHERE t1.tile = t2.tile
-  AND raquet_hash_extended(t1.tile, 1) <> raquet_hash_extended(t2.tile, 1);
+  AND hashExtended(t1.tile, 1) <> hashExtended(t2.tile, 1);
 
 -------------------------------------------------------------------------------
 -- Tile footprint

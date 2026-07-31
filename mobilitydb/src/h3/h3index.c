@@ -299,6 +299,7 @@ PG_FUNCTION_INFO_V1(H3index_hash);
 /**
  * @ingroup mobilitydb_h3_base_accessor
  * @brief Return the hash code of an h3index value
+ * @sqlfn hash()
  */
 Datum
 H3index_hash(PG_FUNCTION_ARGS)

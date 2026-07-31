@@ -303,11 +303,11 @@ CREATE OPERATOR CLASS pcpointset_btree_ops
     OPERATOR  5  >,
     FUNCTION  1  cmp(pcpointset, pcpointset);
 
-CREATE FUNCTION set_hash(pcpointset)
+CREATE FUNCTION hash(pcpointset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Set_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_hash_extended(pcpointset, bigint)
+CREATE FUNCTION hashExtended(pcpointset, bigint)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Set_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -315,8 +315,8 @@ CREATE FUNCTION set_hash_extended(pcpointset, bigint)
 CREATE OPERATOR CLASS pcpointset_hash_ops
   DEFAULT FOR TYPE pcpointset USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   set_hash(pcpointset),
-    FUNCTION    2   set_hash_extended(pcpointset, bigint);
+    FUNCTION    1   hash(pcpointset),
+    FUNCTION    2   hashExtended(pcpointset, bigint);
 
 /******************************************************************************
  * pcpointset — Set operations (value ↔ set, set ↔ set)
@@ -670,11 +670,11 @@ CREATE OPERATOR CLASS pcpatchset_btree_ops
     OPERATOR  5  >,
     FUNCTION  1  cmp(pcpatchset, pcpatchset);
 
-CREATE FUNCTION set_hash(pcpatchset)
+CREATE FUNCTION hash(pcpatchset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Set_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_hash_extended(pcpatchset, bigint)
+CREATE FUNCTION hashExtended(pcpatchset, bigint)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Set_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -682,8 +682,8 @@ CREATE FUNCTION set_hash_extended(pcpatchset, bigint)
 CREATE OPERATOR CLASS pcpatchset_hash_ops
   DEFAULT FOR TYPE pcpatchset USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   set_hash(pcpatchset),
-    FUNCTION    2   set_hash_extended(pcpatchset, bigint);
+    FUNCTION    1   hash(pcpatchset),
+    FUNCTION    2   hashExtended(pcpatchset, bigint);
 
 /******************************************************************************
  * pcpatchset — Set operations

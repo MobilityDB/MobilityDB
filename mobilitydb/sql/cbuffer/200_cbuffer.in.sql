@@ -295,11 +295,11 @@ CREATE OPERATOR CLASS cbuffer_btree_ops
 
 /******************************************************************************/
 
-CREATE FUNCTION cbuffer_hash(cbuffer)
+CREATE FUNCTION hash(cbuffer)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Cbuffer_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION cbuffer_hash_extended(cbuffer, bigint)
+CREATE FUNCTION hashExtended(cbuffer, bigint)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Cbuffer_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -307,7 +307,7 @@ CREATE FUNCTION cbuffer_hash_extended(cbuffer, bigint)
 CREATE OPERATOR CLASS cbuffer_hash_ops
   DEFAULT FOR TYPE cbuffer USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   cbuffer_hash(cbuffer),
-    FUNCTION    2   cbuffer_hash_extended(cbuffer, bigint);
+    FUNCTION    1   hash(cbuffer),
+    FUNCTION    2   hashExtended(cbuffer, bigint);
 
 /******************************************************************************/

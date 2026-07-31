@@ -366,23 +366,23 @@ SELECT tstzspanset '{[2000-01-01,2000-01-01]}' <= tstzspanset '{(2000-01-01,2000
 SELECT tstzspanset '{[2000-01-01,2000-01-01]}' > tstzspanset '{(2000-01-01,2000-01-02),(2000-01-02,2000-01-03),(2000-01-03,2000-01-04)}';
 SELECT tstzspanset '{[2000-01-01,2000-01-01]}' >= tstzspanset '{(2000-01-01,2000-01-02),(2000-01-02,2000-01-03),(2000-01-03,2000-01-04)}';
 
-SELECT spanset_hash(intspanset '{[1,2]}') = spanset_hash(intspanset '{[1,2]}');
-SELECT spanset_hash(intspanset '{[1,2]}') <> spanset_hash(intspanset '{[2,2]}');
-SELECT spanset_hash(floatspanset '{[1.5,2.5]}') = spanset_hash(floatspanset '{[1.5,2.5]}');
-SELECT spanset_hash(floatspanset '{[1.5,2.5]}') <> spanset_hash(floatspanset '{[2.5,2.5]}');
-SELECT spanset_hash(datespanset '{[2000-01-01,2000-01-02]}') = spanset_hash(datespanset '{[2000-01-01,2000-01-02]}');
-SELECT spanset_hash(datespanset '{[2000-01-01,2000-01-02]}') <> spanset_hash(datespanset '{[2000-01-02,2000-01-02]}');
-SELECT spanset_hash(tstzspanset '{[2000-01-01,2000-01-02]}') = spanset_hash(tstzspanset '{[2000-01-01,2000-01-02]}');
-SELECT spanset_hash(tstzspanset '{[2000-01-01,2000-01-02]}') <> spanset_hash(tstzspanset '{[2000-01-02,2000-01-02]}');
+SELECT hash(intspanset '{[1,2]}') = hash(intspanset '{[1,2]}');
+SELECT hash(intspanset '{[1,2]}') <> hash(intspanset '{[2,2]}');
+SELECT hash(floatspanset '{[1.5,2.5]}') = hash(floatspanset '{[1.5,2.5]}');
+SELECT hash(floatspanset '{[1.5,2.5]}') <> hash(floatspanset '{[2.5,2.5]}');
+SELECT hash(datespanset '{[2000-01-01,2000-01-02]}') = hash(datespanset '{[2000-01-01,2000-01-02]}');
+SELECT hash(datespanset '{[2000-01-01,2000-01-02]}') <> hash(datespanset '{[2000-01-02,2000-01-02]}');
+SELECT hash(tstzspanset '{[2000-01-01,2000-01-02]}') = hash(tstzspanset '{[2000-01-01,2000-01-02]}');
+SELECT hash(tstzspanset '{[2000-01-01,2000-01-02]}') <> hash(tstzspanset '{[2000-01-02,2000-01-02]}');
 
-SELECT spanset_hash_extended(intspanset '{[1,2]}', 1) = spanset_hash_extended(intspanset '{[1,2]}', 1);
-SELECT spanset_hash_extended(intspanset '{[1,2]}', 1) <> spanset_hash_extended(intspanset '{[2,2]}', 1);
-SELECT spanset_hash_extended(floatspanset '{[1,2]}', 1) = spanset_hash_extended(floatspanset '{[1,2]}', 1);
-SELECT spanset_hash_extended(floatspanset '{[1,2]}', 1) <> spanset_hash_extended(floatspanset '{[2,2]}', 1);
-SELECT spanset_hash_extended(datespanset '{[2000-01-01,2000-01-02]}', 1) = spanset_hash_extended(datespanset '{[2000-01-01,2000-01-02]}', 1);
-SELECT spanset_hash_extended(datespanset '{[2000-01-01,2000-01-02]}', 1) <> spanset_hash_extended(datespanset '{[2000-01-02,2000-01-02]}', 1);
-SELECT spanset_hash_extended(tstzspanset '{[2000-01-01,2000-01-02]}', 1) = spanset_hash_extended(tstzspanset '{[2000-01-01,2000-01-02]}', 1);
-SELECT spanset_hash_extended(tstzspanset '{[2000-01-01,2000-01-02]}', 1) <> spanset_hash_extended(tstzspanset '{[2000-01-02,2000-01-02]}', 1);
+SELECT hashExtended(intspanset '{[1,2]}', 1) = hashExtended(intspanset '{[1,2]}', 1);
+SELECT hashExtended(intspanset '{[1,2]}', 1) <> hashExtended(intspanset '{[2,2]}', 1);
+SELECT hashExtended(floatspanset '{[1,2]}', 1) = hashExtended(floatspanset '{[1,2]}', 1);
+SELECT hashExtended(floatspanset '{[1,2]}', 1) <> hashExtended(floatspanset '{[2,2]}', 1);
+SELECT hashExtended(datespanset '{[2000-01-01,2000-01-02]}', 1) = hashExtended(datespanset '{[2000-01-01,2000-01-02]}', 1);
+SELECT hashExtended(datespanset '{[2000-01-01,2000-01-02]}', 1) <> hashExtended(datespanset '{[2000-01-02,2000-01-02]}', 1);
+SELECT hashExtended(tstzspanset '{[2000-01-01,2000-01-02]}', 1) = hashExtended(tstzspanset '{[2000-01-01,2000-01-02]}', 1);
+SELECT hashExtended(tstzspanset '{[2000-01-01,2000-01-02]}', 1) <> hashExtended(tstzspanset '{[2000-01-02,2000-01-02]}', 1);
 
 -------------------------------------------------------------------------------
 -- Transformation functions

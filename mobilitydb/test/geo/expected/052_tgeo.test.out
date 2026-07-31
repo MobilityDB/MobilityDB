@@ -5748,51 +5748,51 @@ SELECT 1 WHERE tgeography '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-0
         1
 (1 row)
 
-SELECT temporal_hash(tgeometry 'Point(1 1)@2000-01-01');
- temporal_hash 
----------------
-    -662351635
+SELECT hash(tgeometry 'Point(1 1)@2000-01-01');
+    hash    
+------------
+ -662351635
 (1 row)
 
-SELECT temporal_hash(tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
- temporal_hash 
----------------
-     952722557
+SELECT hash(tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
+   hash    
+-----------
+ 952722557
 (1 row)
 
-SELECT temporal_hash(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
- temporal_hash 
----------------
-     952722557
+SELECT hash(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
+   hash    
+-----------
+ 952722557
 (1 row)
 
-SELECT temporal_hash(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
- temporal_hash 
----------------
-    1578504766
+SELECT hash(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+    hash    
+------------
+ 1578504766
 (1 row)
 
-SELECT temporal_hash(tgeography 'Point(1.5 1.5)@2000-01-01');
- temporal_hash 
----------------
-    -106066283
+SELECT hash(tgeography 'Point(1.5 1.5)@2000-01-01');
+    hash    
+------------
+ -106066283
 (1 row)
 
-SELECT temporal_hash(tgeography '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}');
- temporal_hash 
----------------
-    1270938069
+SELECT hash(tgeography '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}');
+    hash    
+------------
+ 1270938069
 (1 row)
 
-SELECT temporal_hash(tgeography '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]');
- temporal_hash 
----------------
-    1270938069
+SELECT hash(tgeography '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]');
+    hash    
+------------
+ 1270938069
 (1 row)
 
-SELECT temporal_hash(tgeography '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}');
- temporal_hash 
----------------
-     263421688
+SELECT hash(tgeography '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}');
+   hash    
+-----------
+ 263421688
 (1 row)
 

@@ -743,7 +743,7 @@ PG_FUNCTION_INFO_V1(Raquet_hash);
 /**
  * @ingroup mobilitydb_raster
  * @brief Return the 32-bit hash of a Raquet tile
- * @sqlfn raquet_hash()
+ * @sqlfn hash()
  */
 Datum
 Raquet_hash(PG_FUNCTION_ARGS)
@@ -759,7 +759,7 @@ PG_FUNCTION_INFO_V1(Raquet_hash_extended);
 /**
  * @ingroup mobilitydb_raster
  * @brief Return the 64-bit hash of a Raquet tile using a seed
- * @sqlfn raquet_hash_extended()
+ * @sqlfn hashExtended()
  */
 Datum
 Raquet_hash_extended(PG_FUNCTION_ARGS)
