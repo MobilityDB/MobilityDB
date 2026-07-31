@@ -1,0 +1,19 @@
+# Line endings
+#
+# Normalise text files to LF in the repository and check them out with the
+# convention of the working platform. Without this, a file committed from a
+# Windows checkout keeps its CRLF endings in the repository, and any editor
+# that rewrites them turns a one-line change into a whole-file diff.
+* text=auto
+
+# Image sources are carried verbatim: they are written by drawing tools that
+# compare their output byte for byte, and their line endings carry no meaning
+# for a reader of this repository.
+*.svg -text
+
+# Binary assets
+*.pdf binary
+*.png binary
+*.jpg binary
+*.gif binary
+*.xz  binary
