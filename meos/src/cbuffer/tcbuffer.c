@@ -406,6 +406,155 @@ tcbuffersegm_tdwithin_turnpt(Datum start1, Datum end1, Datum start2,
 }
 
 /**
+ * @brief Return 1 or 2 if the first temporal circular buffer segment contains
+ * (@p strict) or covers the second one during a sub-period of the segment,
+ * return 0 otherwise
+ * @details A moving disk (P1, R1) contains a moving disk (P2, R2) when
+ * dist(P1, P2) + R2 <= R1, that is when the clearance
+ * g(t) = dist(P1(t), P2(t)) - (R1(t) - R2(t)) is non-positive; g is the distance
+ * of the centres minus the radius DIFFERENCE, so this mirrors
+ * #tcbuffersegm_tdwithin_turnpt with the radius sum replaced by the difference
+ * and the distance set to zero. It returns the sub-interval [t1, t2] of
+ * [lower, upper] during which the relation holds, so the temporal contains and
+ * covers Boolean is true on a continuous interval rather than only at the
+ * clearance minimum. With @p strict true an isolated tangency (g = 0 at a single
+ * instant) does not count, matching the strict interior of contains.
+ * @param[in] start1,end1 Circular buffers defining the first segment
+ * @param[in] start2,end2 Circular buffers defining the second segment
+ * @param[in] strict Passed as a float, non-zero for contains, zero for covers
+ * @param[in] lower,upper Timestamps defining the segments
+ * @param[out] t1,t2 Timestamps defining the resulting period
+ * @pre The segments are not constant.
+ */
+int
+tcbuffersegm_contains_turnpt(Datum start1, Datum end1, Datum start2,
+  Datum end2, Datum strict, TimestampTz lower, TimestampTz upper,
+  TimestampTz *t1, TimestampTz *t2)
+{
+  assert(t1); assert(t2); assert(lower < upper);
+  const Cbuffer *sv1 = DatumGetCbufferP(start1);
+  const Cbuffer *ev1 = DatumGetCbufferP(end1);
+  const Cbuffer *sv2 = DatumGetCbufferP(start2);
+  const Cbuffer *ev2 = DatumGetCbufferP(end2);
+  bool is_strict = (DatumGetFloat8(strict) != 0);
+  const POINT2D *spt1 = cbuffer_point2d_p(sv1);
+  const POINT2D *ept1 = cbuffer_point2d_p(ev1);
+  const POINT2D *spt2 = cbuffer_point2d_p(sv2);
+  const POINT2D *ept2 = cbuffer_point2d_p(ev2);
+  double duration = (double) (upper - lower);
+  if (duration <= FP_TOLERANCE)
+  {
+    *t1 = *t2 = 0;
+    return 0;
+  }
+  double dx0 = spt1->x - spt2->x;
+  double dy0 = spt1->y - spt2->y;
+  /* Radius DIFFERENCE R1 - R2 (contains threshold), not the sum */
+  double r0 = sv1->radius - sv2->radius;
+  double vx = (ept1->x - spt1->x - (ept2->x - spt2->x)) / duration;
+  double vy = (ept1->y - spt1->y - (ept2->y - spt2->y)) / duration;
+  double vr = (ev1->radius - sv1->radius - (ev2->radius - sv2->radius)) /
+    duration;
+  /* Clearance g(t) = dist(centres) - (r0 + vr t); crossings solve g = 0, i.e.
+   * dist^2 = (r0 + vr t)^2, valid only where r0 + vr t >= 0 */
+  double a = vx * vx + vy * vy - vr * vr;
+  double b = 2 * (dx0 * vx + dy0 * vy - r0 * vr);
+  double c = dx0 * dx0 + dy0 * dy0 - r0 * r0;
+  double delta = b * b - 4 * a * c;
+  double roots[2];
+  int nroots = 0;
+  if (delta >= -FP_TOLERANCE)
+  {
+    double t_cand1, g1;
+    if (a == 0 && fabs(b) >= FP_TOLERANCE)
+    {
+      t_cand1 = -c / b;
+      if (t_cand1 >= -FP_TOLERANCE && t_cand1 <= duration + FP_TOLERANCE)
+      {
+        g1 = tcbuffersegm_distance_at_time(dx0, dy0, vx, vy, r0, vr, t_cand1);
+        if (fabs(g1) < FP_TOLERANCE) roots[nroots++] = t_cand1;
+      }
+    }
+    else
+    {
+      double sqrt_delta = sqrt(fmax(0.0, delta));
+      t_cand1 = (-b - sqrt_delta) / (2 * a);
+      double t_cand2 = (-b + sqrt_delta) / (2 * a);
+      if (t_cand1 >= -FP_TOLERANCE && t_cand1 <= duration + FP_TOLERANCE)
+      {
+        g1 = tcbuffersegm_distance_at_time(dx0, dy0, vx, vy, r0, vr, t_cand1);
+        if (fabs(g1) < FP_TOLERANCE) roots[nroots++] = t_cand1;
+      }
+      if (fabs(t_cand2 - t_cand1) > FP_TOLERANCE && t_cand2 >= -FP_TOLERANCE &&
+          t_cand2 <= duration + FP_TOLERANCE)
+      {
+        g1 = tcbuffersegm_distance_at_time(dx0, dy0, vx, vy, r0, vr, t_cand2);
+        if (fabs(g1) < FP_TOLERANCE) roots[nroots++] = t_cand2;
+      }
+    }
+  }
+  if (nroots == 2 && roots[0] > roots[1])
+  {
+    double tmp = roots[0]; roots[0] = roots[1]; roots[1] = tmp;
+  }
+  /* Contains/covers status at the two segment endpoints: covers is g <= 0,
+   * strict contains is g < 0, so identical or internally tangent disks
+   * (g == 0 throughout) covers but never strictly contains */
+  double g_lower = tcbuffersegm_distance_at_time(dx0, dy0, vx, vy, r0, vr, 0.0);
+  double g_upper = tcbuffersegm_distance_at_time(dx0, dy0, vx, vy, r0, vr,
+    duration);
+  bool in_lower = is_strict ? (g_lower < - FP_TOLERANCE) :
+    (g_lower <= FP_TOLERANCE);
+  bool in_upper = is_strict ? (g_upper < - FP_TOLERANCE) :
+    (g_upper <= FP_TOLERANCE);
+  double tstart, tend;
+  if (nroots == 0)
+  {
+    if (! in_lower)
+    {
+      *t1 = *t2 = (TimestampTz) 0;
+      return 0;
+    }
+    tstart = 0.0; tend = duration;
+  }
+  else if (nroots == 1)
+  {
+    if (in_lower && ! in_upper)
+    {
+      tstart = 0.0; tend = roots[0];
+    }
+    else if (! in_lower && in_upper)
+    {
+      tstart = roots[0]; tend = duration;
+    }
+    else
+    {
+      /* Isolated tangency: the disks graze from inside at a single instant.
+       * Covers holds there, strict contains does not. */
+      if (is_strict)
+      {
+        *t1 = *t2 = (TimestampTz) 0;
+        return 0;
+      }
+      *t1 = *t2 = lower + (TimestampTz) roots[0];
+      return 1;
+    }
+  }
+  else
+  {
+    tstart = roots[0]; tend = roots[1];
+  }
+  if (tend - tstart < FP_TOLERANCE)
+  {
+    *t1 = *t2 = lower + (TimestampTz) tstart;
+    return 1;
+  }
+  *t1 = lower + (TimestampTz) tstart;
+  *t2 = lower + (TimestampTz) tend;
+  return 2;
+}
+
+/**
  * @brief Return 1 or 2 if two temporal circular buffer segments are at a
  * minimum distance during the period defined by the output timestamps, return
  * 0 otherwise

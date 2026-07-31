@@ -129,6 +129,30 @@ LINE 1: SELECT tContains(geometry 'Point(1 1)', tcbuffer 'Cbuffer(Po...
                                                          ^
 SELECT tContains(geometry 'Point(1 1 1)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
 ERROR:  The geometry cannot have Z dimension
+SELECT tContains(tcbuffer '[Cbuffer(Point(0 0),5)@2000-01-01, Cbuffer(Point(0 0),5)@2000-01-03]', tcbuffer '[Cbuffer(Point(-10 0),1)@2000-01-01, Cbuffer(Point(10 0),1)@2000-01-03]');
+                                                                                  tcontains                                                                                  
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, t@Sat Jan 01 14:23:59.999999 2000 PST, t@Sun Jan 02 09:36:00 2000 PST], (f@Sun Jan 02 09:36:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tCovers(tcbuffer '[Cbuffer(Point(0 0),5)@2000-01-01, Cbuffer(Point(0 0),5)@2000-01-03]', tcbuffer '[Cbuffer(Point(-10 0),1)@2000-01-01, Cbuffer(Point(10 0),1)@2000-01-03]');
+                                                                                   tcovers                                                                                   
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, t@Sat Jan 01 14:23:59.999999 2000 PST, t@Sun Jan 02 09:36:00 2000 PST], (f@Sun Jan 02 09:36:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tContains(tcbuffer '[Cbuffer(Point(0 0),1)@2000-01-01, Cbuffer(Point(4 0),1)@2000-01-03]', tcbuffer '[Cbuffer(Point(0 0),1)@2000-01-01, Cbuffer(Point(4 0),1)@2000-01-03]');
+                             tcontains                              
+--------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tCovers(tcbuffer '[Cbuffer(Point(0 0),1)@2000-01-01, Cbuffer(Point(4 0),1)@2000-01-03]', tcbuffer '[Cbuffer(Point(0 0),1)@2000-01-01, Cbuffer(Point(4 0),1)@2000-01-03]');
+                              tcovers                               
+--------------------------------------------------------------------
+ {[t@Sat Jan 01 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
 SELECT tDisjoint(NULL::geometry, tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
  tdisjoint 
 -----------
