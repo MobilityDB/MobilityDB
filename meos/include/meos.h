@@ -405,6 +405,7 @@ extern SPTree *sptree_create_floatspan(SPTreeKind kind);
 extern SPTree *sptree_create_datespan(SPTreeKind kind);
 extern SPTree *sptree_create_tstzspan(SPTreeKind kind);
 extern SPTree *sptree_create_tbox(SPTreeKind kind);
+extern SPTree *sptree_create_stbox(SPTreeKind kind);
 extern void sptree_free(SPTree *sptree);
 extern void sptree_insert(SPTree *sptree, void *box, int id);
 extern void sptree_insert_temporal(SPTree *sptree, const Temporal *temp, int id);

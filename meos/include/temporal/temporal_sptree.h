@@ -80,6 +80,8 @@ struct SPTree
   int nchild;           /**< Number of children per node */
   SPTreeKind kind;      /**< Quad-tree or k-d tree */
   SPNode *root;         /**< Root node, or @p NULL when empty */
+  int (*box_dims)(const void *box);  /**< Dimensions of a box, or @p NULL when
+                                          fixed at creation */
   uint8 (*get_quadrant)(const void *centroid, const void *key);
   void (*nodebox_init)(void *nodebox, const void *centroid,
     const struct SPTree *sptree);

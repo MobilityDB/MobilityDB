@@ -52,6 +52,7 @@
 #include <string.h>
 #include <math.h>
 #include <meos.h>
+#include <meos_geo.h>
 
 /* Number of boxes inserted into every index */
 #define NUM_BOXES 2048
@@ -250,6 +251,58 @@ test_tbox(SPTreeKind kind, const char *kindname)
 }
 
 /*****************************************************************************
+ * Spatiotemporal box
+ *****************************************************************************/
+
+static STBox *
+random_stbox(int sspan, int tspan)
+{
+  double xlo = random_int(-10000, 10000) / 10.0;
+  double ylo = random_int(-10000, 10000) / 10.0;
+  TimestampTz tlo = (TimestampTz) random_int(0, 1000000) * 1000000;
+  Span *t = tstzspan_make(tlo, tlo + (TimestampTz) random_int(1, tspan) *
+    1000000, true, false);
+  STBox *box = stbox_make(true, false, false, 0, xlo,
+    xlo + random_int(1, sspan) / 10.0, ylo, ylo + random_int(1, sspan) / 10.0,
+    0, 0, t);
+  free(t);
+  return box;
+}
+
+static void
+test_stbox(SPTreeKind kind, const char *kindname)
+{
+  STBox **boxes = malloc(NUM_BOXES * sizeof(STBox *));
+  SPTree *sptree = sptree_create_stbox(kind);
+  for (int i = 0; i < NUM_BOXES; i++)
+  {
+    boxes[i] = random_stbox(200, 50);
+    sptree_insert(sptree, boxes[i], i);
+  }
+  STBox *query = random_stbox(3000, 400);
+
+  bool *ov = calloc(NUM_BOXES, sizeof(bool));
+  bool *co = calloc(NUM_BOXES, sizeof(bool));
+  bool *cb = calloc(NUM_BOXES, sizeof(bool));
+  for (int i = 0; i < NUM_BOXES; i++)
+  {
+    ov[i] = overlaps_stbox_stbox(boxes[i], query);
+    co[i] = contains_stbox_stbox(boxes[i], query);
+    cb[i] = contains_stbox_stbox(query, boxes[i]);
+  }
+
+  printf("Spatiotemporal box %s (%d random boxes):\n", kindname, NUM_BOXES);
+  compare("  overlaps    ", sptree, RTREE_OVERLAPS, query, ov);
+  compare("  contains    ", sptree, RTREE_CONTAINS, query, co);
+  compare("  contained by", sptree, RTREE_CONTAINED_BY, query, cb);
+
+  for (int i = 0; i < NUM_BOXES; i++)
+    free(boxes[i]);
+  free(boxes); free(query); free(ov); free(co); free(cb);
+  sptree_free(sptree);
+}
+
+/*****************************************************************************
  * Multi-entry (MEST) indexing over temporal numbers
  *****************************************************************************/
 
@@ -386,6 +439,134 @@ test_mest(void)
   sptree_free(deg);
 }
 
+/*****************************************************************************
+ * Multi-entry (MEST) indexing over temporal geos
+ *****************************************************************************/
+
+/* Build a deliberately wiggly, high-extent tgeompoint trip */
+static Temporal *
+make_wiggly_trip(int seed, char *buf, size_t bufsize)
+{
+  double ox = random_double(0, 900);
+  double oy = random_double(0, 900);
+  double amp = random_double(40, 90);
+  double phase = random_double(0, 6.28);
+  size_t pos = 0;
+  pos += (size_t) snprintf(buf + pos, bufsize - pos, "SRID=0;[");
+  for (int k = 0; k < TRIP_LEN; k++)
+  {
+    double x = ox + k * 2.0;
+    double y = oy + amp * sin(phase + k * 0.9 + seed * 0.01);
+    int mm = k / 60, ss = k % 60;
+    pos += (size_t) snprintf(buf + pos, bufsize - pos,
+      "%sPoint(%.4f %.4f)@2020-01-01 %02d:%02d:00+00",
+      (k == 0) ? "" : ", ", x, y, mm, ss);
+  }
+  snprintf(buf + pos, bufsize - pos, "]");
+  return tgeompoint_in(buf);
+}
+
+static void
+test_stbox_mest(void)
+{
+  char buf[MAX_LEN_TRIP];
+  Temporal **trips = malloc(sizeof(Temporal *) * NUM_TRIPS);
+  SPTree *single = sptree_create_stbox(SPTREE_QUADTREE);
+  SPTree *mest = sptree_create_stbox(SPTREE_QUADTREE);
+  SPTree *deg = sptree_create_stbox(SPTREE_QUADTREE);
+  for (int i = 0; i < NUM_TRIPS; i++)
+  {
+    trips[i] = make_wiggly_trip(i, buf, sizeof(buf));
+    sptree_insert_temporal(single, trips[i], i);
+    sptree_insert_temporal_split(mest, trips[i], i, MAX_BOXES);
+    sptree_insert_temporal_split(deg, trips[i], i, 1);
+  }
+  Temporal *query = make_wiggly_trip(123456, buf, sizeof(buf));
+
+  MeosArray *single_ids = meos_array_create(sizeof(int));
+  MeosArray *mest_ids = meos_array_create(sizeof(int));
+  MeosArray *deg_ids = meos_array_create(sizeof(int));
+  int single_count = sptree_search_temporal(single, RTREE_OVERLAPS, query,
+    single_ids);
+  int mest_count = sptree_search_temporal_dedup(mest, RTREE_OVERLAPS, query,
+    MAX_BOXES, mest_ids);
+  int deg_count = sptree_search_temporal_dedup(deg, RTREE_OVERLAPS, query, 1,
+    deg_ids);
+
+  bool *in_single = calloc(NUM_TRIPS, sizeof(bool));
+  bool *in_mest = calloc(NUM_TRIPS, sizeof(bool));
+  bool *in_deg = calloc(NUM_TRIPS, sizeof(bool));
+  int *mest_seen = calloc(NUM_TRIPS, sizeof(int));
+  int *deg_seen = calloc(NUM_TRIPS, sizeof(int));
+  for (int i = 0; i < single_count; i++)
+    in_single[*(int *) meos_array_get(single_ids, i)] = true;
+  for (int i = 0; i < mest_count; i++)
+  {
+    int id = *(int *) meos_array_get(mest_ids, i);
+    in_mest[id] = true;
+    mest_seen[id]++;
+  }
+  for (int i = 0; i < deg_count; i++)
+  {
+    int id = *(int *) meos_array_get(deg_ids, i);
+    in_deg[id] = true;
+    deg_seen[id]++;
+  }
+
+  printf("MEST SPTree (tgeompoint, %d wiggly trips, maxboxes=%d):\n",
+    NUM_TRIPS, MAX_BOXES);
+
+  int qn;
+  STBox *qboxes = tgeo_split_n_stboxes(query, MAX_BOXES, &qn);
+  int missed = 0;
+  for (int i = 0; i < NUM_TRIPS; i++)
+  {
+    int tn;
+    STBox *tboxes = tgeo_split_n_stboxes(trips[i], MAX_BOXES, &tn);
+    bool overlap = false;
+    for (int a = 0; a < tn && ! overlap; a++)
+      for (int b = 0; b < qn && ! overlap; b++)
+        if (overlaps_stbox_stbox(&tboxes[a], &qboxes[b]))
+          overlap = true;
+    free(tboxes);
+    if (overlap && ! in_mest[i])
+      missed++;
+  }
+  free(qboxes);
+  check("(i) no false negatives vs exact per-segment oracle", missed == 0);
+
+  bool dedup_ok = true;
+  for (int i = 0; i < NUM_TRIPS; i++)
+    if (mest_seen[i] > 1 || deg_seen[i] > 1)
+      dedup_ok = false;
+  check("(ii) every surviving id appears exactly once", dedup_ok);
+
+  bool subset_ok = (mest_count <= single_count);
+  for (int i = 0; i < NUM_TRIPS; i++)
+    if (in_mest[i] && ! in_single[i])
+      subset_ok = false;
+  check("(iii) MEST candidate set <= single-box candidate set", subset_ok);
+
+  bool deg_ok = (deg_count == single_count);
+  for (int i = 0; i < NUM_TRIPS && deg_ok; i++)
+    if (in_deg[i] != in_single[i])
+      deg_ok = false;
+  check("(iv) maxboxes<=1 identical to single-box result", deg_ok);
+
+  free(in_single); free(in_mest); free(in_deg);
+  free(mest_seen); free(deg_seen);
+  meos_array_destroy(single_ids);
+  meos_array_destroy(mest_ids);
+  meos_array_destroy(deg_ids);
+  free(query);
+  for (int i = 0; i < NUM_TRIPS; i++)
+    free(trips[i]);
+  free(trips);
+  sptree_free(single);
+  sptree_free(mest);
+  sptree_free(deg);
+}
+
 int
 main(void)
 {
@@ -399,7 +580,10 @@ main(void)
   test_floatspan(SPTREE_KDTREE, "k-d tree");
   test_tbox(SPTREE_QUADTREE, "quad-tree");
   test_tbox(SPTREE_KDTREE, "k-d tree");
+  test_stbox(SPTREE_QUADTREE, "quad-tree");
+  test_stbox(SPTREE_KDTREE, "k-d tree");
   test_mest();
+  test_stbox_mest();
 
   meos_finalize();
 
