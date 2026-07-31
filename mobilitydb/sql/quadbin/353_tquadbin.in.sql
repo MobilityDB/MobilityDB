@@ -88,6 +88,8 @@ CREATE TYPE tquadbin (
   analyze = temporal_analyze
 );
 
+-- GENERATED-REPRESENTATIONS-BEGIN quadbin — tools/codegen/inherited/generate.py from templates/representations.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.yaml (representation_families) and re-run.
 /******************************************************************************
  * Text and (Hex)WKB I/O (mirrors the tcbuffer / tnpoint / tpose plug-in types)
  ******************************************************************************/
@@ -127,6 +129,8 @@ CREATE FUNCTION tquadbinFromMFJSON(text)
   RETURNS tquadbin
   AS 'MODULE_PATHNAME', 'Temporal_from_mfjson'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- GENERATED-REPRESENTATIONS-END quadbin
 
 /******************************************************************************
  * Typmod enforcer + self-cast (mirrors tbigint / tint / tfloat / ttext)

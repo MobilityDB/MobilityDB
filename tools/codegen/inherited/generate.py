@@ -812,10 +812,16 @@ def render_representations(fam: dict) -> str:
 
 
 def extract_representations(filetext: str, fam: dict) -> str:
-    """Return the committed hand representation block, sliced by section-header
-    anchors (no in-file markers needed): from the `/*` opening the block's header
-    down to (exclusive) the `/*` opening the next section's header, or EOF for a
-    whole-file family."""
+    """Return the committed representation block. Once the GENERATED-REPRESENTATIONS
+    markers are in place, slice by them (like extract_io_type); before the bootstrap
+    inserts them, fall back to the section-header anchors: from the `/*` opening the
+    block's header down to (exclusive) the `/*` opening the next section's header, or
+    EOF for a whole-file family."""
+    begin, end_marker = _representations_markers(fam["family"])
+    if begin in filetext:
+        b = filetext.index(begin) + len(begin)
+        e = filetext.index(end_marker)
+        return filetext[b:e]
     i = filetext.index(fam["begin"])
     start = filetext.rfind("/*", 0, i)
     if fam.get("whole_file"):
@@ -877,6 +883,23 @@ def bootstrap_accessors(filetext: str, fam: dict, rendered: str) -> str:
     begin, end = _accessors_markers(fam["family"])
     text = prefix + begin + rendered + end + "\n" + rest
     return re.sub(r"\n\n\n+", "\n\n", text)  # tidy the blank runs left by the removals
+
+
+def bootstrap_representations(filetext: str, fam: dict, rendered: str) -> str:
+    """Create the GENERATED-REPRESENTATIONS region for a family whose representation
+    block is still a bare hand-written section (no markers). Unlike accessors the block
+    is CONTIGUOUS — the same section-header anchors extract_representations slices by —
+    so wrap exactly that span with the markers; the enclosed text is the rendered block,
+    byte-identical to the committed hand block (--validate proves it before the flip).
+    Idempotent afterward: the markers exist, so the splice path reproduces this output."""
+    i = filetext.index(fam["begin"])
+    start = filetext.rfind("/*", 0, i)
+    begin, end = _representations_markers(fam["family"])
+    if fam.get("whole_file"):
+        return filetext[:start] + begin + rendered + end
+    j = filetext.index(fam["end"])
+    block_end = filetext.rfind("/*", 0, j)
+    return filetext[:start] + begin + rendered + end + "\n" + filetext[block_end:]
 
 
 def target_path(behaviour: str, sub: dict, positions: dict) -> pathlib.Path:
@@ -1125,6 +1148,27 @@ def main() -> int:
             continue
         p.write_text(splice_io_type(p.read_text(), fam["family"], render_io_type(fam)))
         print(f"spliced io {fam['family']} -> {fam['file']}")
+
+    for fam in mf.get("representation_families", []):
+        p = ROOT / fam["file"]
+        text = p.read_text()
+        begin, _ = _representations_markers(fam["family"])
+        if begin not in text:
+            # No region yet -> BOOTSTRAP it once from the manifest entry (the block is a
+            # bare hand section). After this the markers exist and the splice path owns it.
+            if args.check:
+                print(f"would bootstrap representations {fam['family']} -> {fam['file']}")
+                continue
+            p.write_text(bootstrap_representations(text, fam, render_representations(fam)))
+            print(f"bootstrapped representations {fam['family']} -> {fam['file']}")
+            continue
+        if fam.get("reference"):
+            continue
+        if args.check:
+            print(f"would splice representations {fam['family']} -> {fam['file']}")
+            continue
+        p.write_text(splice_representations(text, fam["family"], render_representations(fam)))
+        print(f"spliced representations {fam['family']} -> {fam['file']}")
     return 0
 
 

@@ -76,6 +76,8 @@ CREATE FUNCTION tnpoint(tnpoint, integer)
 
 CREATE CAST (tnpoint AS tnpoint) WITH FUNCTION tnpoint(tnpoint, integer) AS IMPLICIT;
 
+-- GENERATED-REPRESENTATIONS-BEGIN npoint — tools/codegen/inherited/generate.py from templates/representations.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.yaml (representation_families) and re-run.
 /*****************************************************************************
  * Input/output from (E)WKT, (E)WKB, and HexEWKB
  *****************************************************************************/
@@ -120,6 +122,8 @@ CREATE FUNCTION asMFJSON(tnpoint, options int4 DEFAULT 0,
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_as_mfjson'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- GENERATED-REPRESENTATIONS-END npoint
 
 /******************************************************************************
  * Constructors
