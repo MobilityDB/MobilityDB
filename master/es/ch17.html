@@ -9,4 +9,12 @@ SELECT tquadbin(Instant) '480fffffffffffff@2001-01-01';
 SELECT tquadbin(SequenceSet) '{[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02]}';
 -- ERROR: el tipo temporal (Instant) no coincide con el tipo de columna (Sequence)
 SELECT tquadbin(Sequence) '480fffffffffffff@2001-01-01';
+</pre><p>Las funciones <code class="varname">asText</code>, <code class="varname">asBinary</code> y <code class="varname">asHexWKB</code> serializan un valor <code class="varname">tquadbin</code>, y <code class="varname">tquadbinFromBinary</code> y <code class="varname">tquadbinFromHexWKB</code> lo reconstruyen. La forma hexadecimal WKB permite que una columna de índice QUADBIN temporal se transfiera de ida y vuelta mediante un <code class="varname">COPY</code> basado en texto.</p><pre class="programlisting">
+SELECT asHexWKB(tquadbin '480fffffffffffff@2001-01-01');
+SELECT tquadbinFromHexWKB(asHexWKB(tquadbin '480fffffffffffff@2001-01-01'));
+-- 480fffffffffffff@2001-01-01
+</pre><p>La representación <span class="emphasis"><em>MF-JSON</em></span> está disponible mediante <code class="varname">asMFJSON(tquadbin)</code> y <code class="varname">tquadbinFromMFJSON(text)</code>. La carga útil de la celda se representa como el identificador int64 de la celda en el arreglo <code class="varname">values</code>, la misma representación que utiliza <code class="varname">tbigint</code>.</p><pre class="programlisting">
+SELECT asMFJSON(tquadbin '480fffffffffffff@2001-01-01');
+SELECT tquadbinFromMFJSON(asMFJSON(tquadbin '480fffffffffffff@2001-01-01'));
+-- 480fffffffffffff@2001-01-01
 </pre></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch16s17.html">Anterior</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ch17s02.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Notas operativas </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Conversiones</td></tr></table></div></body></html>

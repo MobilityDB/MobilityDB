@@ -9,4 +9,12 @@ SELECT tquadbin(Instant) '480fffffffffffff@2001-01-01';
 SELECT tquadbin(SequenceSet) '{[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02]}';
 -- ERROR: temporal type (Instant) does not match column type (Sequence)
 SELECT tquadbin(Sequence) '480fffffffffffff@2001-01-01';
+</pre><p>The functions <code class="varname">asText</code>, <code class="varname">asBinary</code>, and <code class="varname">asHexWKB</code> serialize a <code class="varname">tquadbin</code> value, and <code class="varname">tquadbinFromBinary</code> and <code class="varname">tquadbinFromHexWKB</code> reconstruct it. The hexadecimal WKB form lets a temporal QUADBIN index column round-trip through a text-based <code class="varname">COPY</code>.</p><pre class="programlisting">
+SELECT asHexWKB(tquadbin '480fffffffffffff@2001-01-01');
+SELECT tquadbinFromHexWKB(asHexWKB(tquadbin '480fffffffffffff@2001-01-01'));
+-- 480fffffffffffff@2001-01-01
+</pre><p>The <span class="emphasis"><em>MF-JSON</em></span> representation is available through <code class="varname">asMFJSON(tquadbin)</code> and <code class="varname">tquadbinFromMFJSON(text)</code>. The cell payload renders as the int64 cell identifier in the <code class="varname">values</code> array, the same representation carried by <code class="varname">tbigint</code>.</p><pre class="programlisting">
+SELECT asMFJSON(tquadbin '480fffffffffffff@2001-01-01');
+SELECT tquadbinFromMFJSON(asMFJSON(tquadbin '480fffffffffffff@2001-01-01'));
+-- 480fffffffffffff@2001-01-01
 </pre></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch16s17.html">Prev</a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ch17s02.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Operational notes </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Conversions</td></tr></table></div></body></html>
