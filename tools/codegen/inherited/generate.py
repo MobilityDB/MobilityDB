@@ -1301,10 +1301,15 @@ def bootstrap_representations(filetext: str, fam: dict, rendered: str) -> str:
 # geomset+geogset) lists its types op-outer via a `funcs` token LIST. Two shapes are
 # reproduced via `lit` instead of the skeleton, encoded, never normalized:
 # h3indexset/quadbinset spell the functions in a compact 3-line form (`RETURNS
-# boolean AS 'MODULE_PATHNAME', ...`) and interleave `hash()` + the hash opclass
-# inside the comparison section, and the pointcloud sets (pcpointset/pcpatchset)
-# have no divider between the B-tree opclass and the hash tail, so their extracted
-# region carries the hash functions/opclass as a trailing `lit`.
+# boolean AS 'MODULE_PATHNAME', ...`) with `hash()` interleaved between `cmp()`
+# and the operators — the region is contiguous, so that interior function stays
+# inside it as part of the compact-form `lit` — and the pointcloud sets
+# (pcpointset/pcpatchset) have no `/*` divider between the B-tree opclass and the
+# hash tail. Both shapes therefore close their region with `end_exact: true`: the
+# slice ends exactly at the `end:` anchor (the hash opclass for h3indexset/
+# quadbinset, the first hash function for the pointcloud sets) instead of at the
+# `/*` opening the section the anchor names, which keeps the hash tail OUT of the
+# comparison region so the hash surface can be owned separately.
 def _comparisons_markers(family: str):
     begin = (f"-- GENERATED-COMPARISONS-BEGIN {family} — "
              "tools/codegen/inherited/generate.py from templates/comparisons.sql.tmpl;\n"
@@ -1381,7 +1386,8 @@ def extract_comparisons(filetext: str, fam: dict) -> str:
     GENERATED-COMPARISONS region exists, slice between its markers; otherwise slice
     from the `/*` opening the section banner (found via the family's `begin` header
     anchor) down to, exclusive, the `/*` opening the B-tree/hash tail (found via the
-    family's `end` anchor), mirroring extract_constructors."""
+    family's `end` anchor), mirroring extract_constructors. A family whose tail has
+    no `/*` divider before it (`end_exact: true`) ends exactly at the anchor."""
     begin, end = _comparisons_markers(fam["family"])
     if begin in filetext:
         b = filetext.index(begin) + len(begin)
@@ -1390,7 +1396,7 @@ def extract_comparisons(filetext: str, fam: dict) -> str:
     i = filetext.index(fam["begin"])
     start = filetext.rfind("/*", 0, i)
     j = filetext.index(fam["end"])
-    return filetext[start:filetext.rfind("/*", 0, j)]
+    return filetext[start:j if fam.get("end_exact") else filetext.rfind("/*", 0, j)]
 
 
 def splice_comparisons(filetext: str, family: str, rendered: str) -> str:
@@ -1409,7 +1415,7 @@ def bootstrap_comparisons(filetext: str, fam: dict, rendered: str) -> str:
     i = filetext.index(fam["begin"])
     start = filetext.rfind("/*", 0, i)
     j = filetext.index(fam["end"])
-    end = filetext.rfind("/*", 0, j)
+    end = j if fam.get("end_exact") else filetext.rfind("/*", 0, j)
     begin_m, end_m = _comparisons_markers(fam["family"])
     return filetext[:start] + begin_m + rendered + end_m + filetext[end:]
 
