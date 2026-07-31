@@ -762,4 +762,269 @@ sptree_free(SPTree *sptree)
   return;
 }
 
+/*****************************************************************************
+ * Nearest-neighbour (kNN) cursor
+ *
+ * An incremental best-first traversal (Hjaltason and Samet) that yields the
+ * stored ids in order of increasing distance to a query bounding box. A binary
+ * min-heap holds two kinds of entries: tree nodes still to be expanded, keyed
+ * by the distance from the query to the node's region, and stored ids ready to
+ * be emitted, keyed by the distance from the query to the box stored at the
+ * node. Because a node's region contains every box in its subtree, the region
+ * distance is a lower bound on those box distances, so when an id reaches the
+ * top of the heap nothing unexpanded is closer and ids pop in exact distance
+ * order. The caller controls how many are consumed (e.g. to honour a `LIMIT
+ * k`), so the traversal never materialises more of the tree than required. The
+ * distance is the same one the SP-GiST operator class uses for its priority
+ * queue: the region distance through #distance_span_nodespan,
+ * #distance_tbox_nodebox and #distance_stbox_nodebox, and the distance to a
+ * stored box through the same routines on the degenerate region equal to that
+ * box.
+ *****************************************************************************/
+
+/**
+ * @brief Return the distance from a query box to an inner node region of the
+ * SPTree's box type
+ * @param[in] sptree The SPTree providing the box type
+ * @param[in] query The query bounding box
+ * @param[in] nodebox The inner node region
+ */
+static double
+sptree_nodebox_distance(const SPTree *sptree, const void *query,
+  const void *nodebox)
+{
+  if (sptree->bboxtype == T_TBOX)
+    return distance_tbox_nodebox((const TBox *) query,
+      (const TboxNode *) nodebox);
+  if (sptree->bboxtype == T_STBOX)
+    return distance_stbox_nodebox((const STBox *) query,
+      (const STboxNode *) nodebox);
+  /* Span types */
+  return distance_span_nodespan((const Span *) query,
+    (const SpanNode *) nodebox);
+}
+
+/**
+ * @brief Fill @p nodebox with the degenerate node region equal to a single box
+ * @details Every inner node region (SpanNode, TboxNode, STboxNode) is a pair of
+ * boxes `{left, right}`; the region reduces to the single box @p box when both
+ * halves equal it, so #sptree_nodebox_distance then returns the distance to
+ * @p box exactly.
+ * @param[in] sptree The SPTree providing the box size
+ * @param[in] box The bounding box
+ * @param[out] nodebox The degenerate node region
+ */
+static void
+sptree_box_nodebox(const SPTree *sptree, const void *box, void *nodebox)
+{
+  memcpy(nodebox, box, sptree->boxsize);
+  memcpy((char *) nodebox + sptree->boxsize, box, sptree->boxsize);
+  return;
+}
+
+/**
+ * @brief A single entry of the kNN cursor's priority queue
+ * @details An entry is either a stored id ready to be emitted (@p is_emit true,
+ * @p id set) or a tree node still to be expanded (@p is_emit false, @p node,
+ * @p region and @p level set), keyed by @p dist.
+ */
+typedef struct SPNNEntry
+{
+  double dist;                 /**< Distance from the query to the entry */
+  bool is_emit;                /**< True for an emittable id, false for a node */
+  int id;                      /**< Stored id (when @p is_emit) */
+  const SPNode *node;          /**< Tree node to expand (when not @p is_emit) */
+  int level;                   /**< Depth of @p node (drives the k-d dimension) */
+  char region[SPTREE_NODEBOX_MAXSIZE];  /**< Region covered by @p node */
+} SPNNEntry;
+
+/**
+ * @brief Incremental nearest-neighbour cursor over an SPTree
+ */
+struct SPNNCursor
+{
+  const SPTree *sptree;   /**< Indexed SPTree (borrowed, not owned) */
+  void *query;            /**< Private copy of the query bounding box */
+  SPNNEntry *heap;        /**< Binary min-heap keyed by distance */
+  int count;              /**< Number of entries currently in the heap */
+  int capacity;           /**< Allocated capacity of the heap array */
+};
+
+/**
+ * @brief Push an entry onto the cursor's min-heap, growing it if needed
+ */
+static void
+spnn_heap_push(SPNNCursor *cursor, const SPNNEntry *entry)
+{
+  if (cursor->count == cursor->capacity)
+  {
+    cursor->capacity *= 2;
+    cursor->heap = repalloc(cursor->heap,
+      (size_t) cursor->capacity * sizeof(SPNNEntry));
+  }
+  int i = cursor->count++;
+  cursor->heap[i] = *entry;
+  /* Sift up while the child is closer than its parent */
+  while (i > 0)
+  {
+    int parent = (i - 1) / 2;
+    if (cursor->heap[parent].dist <= cursor->heap[i].dist)
+      break;
+    SPNNEntry tmp = cursor->heap[parent];
+    cursor->heap[parent] = cursor->heap[i];
+    cursor->heap[i] = tmp;
+    i = parent;
+  }
+  return;
+}
+
+/**
+ * @brief Pop and return the minimum-distance entry of the cursor's heap
+ * @pre `cursor->count > 0`
+ */
+static SPNNEntry
+spnn_heap_pop(SPNNCursor *cursor)
+{
+  assert(cursor->count > 0);
+  SPNNEntry top = cursor->heap[0];
+  cursor->heap[0] = cursor->heap[--cursor->count];
+  /* Sift down towards the closer child */
+  int i = 0;
+  while (true)
+  {
+    int left = 2 * i + 1, right = 2 * i + 2, smallest = i;
+    if (left < cursor->count &&
+        cursor->heap[left].dist < cursor->heap[smallest].dist)
+      smallest = left;
+    if (right < cursor->count &&
+        cursor->heap[right].dist < cursor->heap[smallest].dist)
+      smallest = right;
+    if (smallest == i)
+      break;
+    SPNNEntry tmp = cursor->heap[i];
+    cursor->heap[i] = cursor->heap[smallest];
+    cursor->heap[smallest] = tmp;
+    i = smallest;
+  }
+  return top;
+}
+
+/**
+ * @ingroup meos_temporal_box_index
+ * @brief Open a nearest-neighbour cursor that yields the ids stored in an
+ * SPTree in order of increasing distance to a query bounding box
+ * @details The cursor performs an incremental best-first traversal: repeated
+ * calls to #sptree_nn_cursor_next return the indexed ids from nearest to
+ * farthest. The caller stops consuming when it has enough neighbours (e.g.
+ * after `k` results), so no more of the tree is visited than required. The
+ * query box is copied into the cursor, so the caller may free or reuse it
+ * immediately. Close the cursor with #sptree_nn_cursor_close.
+ * @param[in] sptree The SPTree to query
+ * @param[in] query The query bounding box of type @p sptree->bboxtype
+ * @return A cursor to be freed with #sptree_nn_cursor_close
+ */
+SPNNCursor *
+sptree_nn_cursor_open(const SPTree *sptree, const void *query)
+{
+  assert(sptree); assert(query);
+  SPNNCursor *cursor = palloc0(sizeof(SPNNCursor));
+  cursor->sptree = sptree;
+  cursor->query = palloc(sptree->boxsize);
+  memcpy(cursor->query, query, sptree->boxsize);
+  cursor->capacity = 64;
+  cursor->heap = palloc((size_t) cursor->capacity * sizeof(SPNNEntry));
+  cursor->count = 0;
+  /* Seed the heap with the root node covering the infinite region */
+  if (sptree->root)
+  {
+    SPNNEntry entry;
+    memset(&entry, 0, sizeof(entry));
+    entry.is_emit = false;
+    entry.node = sptree->root;
+    entry.level = 0;
+    sptree->nodebox_init(entry.region, sptree->root->centroid, sptree);
+    entry.dist = sptree_nodebox_distance(sptree, cursor->query, entry.region);
+    spnn_heap_push(cursor, &entry);
+  }
+  return cursor;
+}
+
+/**
+ * @ingroup meos_temporal_box_index
+ * @brief Advance a nearest-neighbour cursor to the next closest id
+ * @details Returns the next id in order of increasing distance to the query
+ * box. When @p id_out or @p dist_out is not @p NULL it receives the id and its
+ * distance.
+ * @param[in] cursor The cursor previously opened with #sptree_nn_cursor_open
+ * @param[out] id_out Receives the id of the next neighbour, or @p NULL
+ * @param[out] dist_out Receives the distance of the next neighbour, or @p NULL
+ * @return @p true if a neighbour was produced, @p false once exhausted
+ */
+bool
+sptree_nn_cursor_next(SPNNCursor *cursor, int *id_out, double *dist_out)
+{
+  assert(cursor);
+  const SPTree *sptree = cursor->sptree;
+  while (cursor->count > 0)
+  {
+    SPNNEntry entry = spnn_heap_pop(cursor);
+    if (entry.is_emit)
+    {
+      /* A stored id reached the top of the heap: nothing unexpanded is closer */
+      if (id_out)
+        *id_out = entry.id;
+      if (dist_out)
+        *dist_out = entry.dist;
+      return true;
+    }
+    /* Expand the node: emit its stored box and push its children */
+    const SPNode *node = entry.node;
+    SPNNEntry emit;
+    memset(&emit, 0, sizeof(emit));
+    emit.is_emit = true;
+    emit.id = node->id;
+    char centroidbox[SPTREE_NODEBOX_MAXSIZE];
+    sptree_box_nodebox(sptree, node->centroid, centroidbox);
+    emit.dist = sptree_nodebox_distance(sptree, cursor->query, centroidbox);
+    spnn_heap_push(cursor, &emit);
+    for (int quadrant = 0; quadrant < sptree->nchild; quadrant++)
+    {
+      const SPNode *child = node->children[quadrant];
+      if (! child)
+        continue;
+      SPNNEntry childentry;
+      memset(&childentry, 0, sizeof(childentry));
+      childentry.is_emit = false;
+      childentry.node = child;
+      childentry.level = entry.level + 1;
+      if (sptree->kind == SPTREE_QUADTREE)
+        sptree->quadtree_next(entry.region, node->centroid, (uint8) quadrant,
+          childentry.region);
+      else
+        sptree->kdtree_next(entry.region, node->centroid, (uint8) quadrant,
+          entry.level, childentry.region);
+      childentry.dist = sptree_nodebox_distance(sptree, cursor->query,
+        childentry.region);
+      spnn_heap_push(cursor, &childentry);
+    }
+  }
+  return false;
+}
+
+/**
+ * @ingroup meos_temporal_box_index
+ * @brief Close a nearest-neighbour cursor and free its resources
+ * @param[in] cursor The cursor to close; @p NULL is ignored
+ */
+void
+sptree_nn_cursor_close(SPNNCursor *cursor)
+{
+  if (! cursor)
+    return;
+  pfree(cursor->heap);
+  pfree(cursor->query);
+  pfree(cursor);
+  return;
+}
+
 /*****************************************************************************/

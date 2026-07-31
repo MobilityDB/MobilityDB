@@ -414,6 +414,15 @@ extern int sptree_search(const SPTree *sptree, RTreeSearchOp op, const void *que
 extern int sptree_search_temporal(const SPTree *sptree, RTreeSearchOp op, const Temporal *temp, MeosArray *result);
 extern int sptree_search_temporal_dedup(const SPTree *sptree, RTreeSearchOp op, const Temporal *temp, int maxboxes, MeosArray *result);
 
+/**
+ * Cursor for a nearest-neighbour scan of an in-memory space-partitioning index
+ */
+typedef struct SPNNCursor SPNNCursor;
+
+extern SPNNCursor *sptree_nn_cursor_open(const SPTree *sptree, const void *query);
+extern bool sptree_nn_cursor_next(SPNNCursor *cursor, int *id_out, double *dist_out);
+extern void sptree_nn_cursor_close(SPNNCursor *cursor);
+
 /*****************************************************************************
  * Initialization of the MEOS library
  *****************************************************************************/

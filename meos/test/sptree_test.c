@@ -567,6 +567,236 @@ test_stbox_mest(void)
   sptree_free(deg);
 }
 
+/*****************************************************************************
+ * Nearest-neighbour cursor
+ *****************************************************************************/
+
+/* Number of nearest neighbours checked by the early-stop property */
+#define K 20
+/* Tolerance for floating-point distance comparisons */
+#define EPS 1e-9
+
+static int
+cmp_double(const void *a, const void *b)
+{
+  double x = *(const double *) a, y = *(const double *) b;
+  return (x > y) - (x < y);
+}
+
+/* One-dimensional gap between two intervals, zero when they overlap */
+static double
+span_gap(double qlo, double qhi, double lo, double hi)
+{
+  if (hi < qlo)
+    return qlo - hi;
+  if (qhi < lo)
+    return lo - qhi;
+  return 0.0;
+}
+
+/* Drain the cursor fully, recording the id and distance sequence and how many
+ * times each id is produced */
+static int
+drain(SPNNCursor *cursor, int *cur_id, double *cur_dist, int *seen)
+{
+  int n = 0, id;
+  double dist;
+  while (sptree_nn_cursor_next(cursor, &id, &dist))
+  {
+    if (n < NUM_BOXES)
+    {
+      cur_id[n] = id;
+      cur_dist[n] = dist;
+    }
+    if (id >= 0 && id < NUM_BOXES)
+      seen[id]++;
+    n++;
+  }
+  return n;
+}
+
+/* Check the metric-agnostic properties: completeness, monotonicity and that
+ * the first K results match the full-drain prefix */
+static void
+check_structural(const char *label, SPTree *sptree, const void *query,
+  const int *cur_id, const double *cur_dist, const int *seen, int n)
+{
+  char name[128];
+  bool complete = (n == NUM_BOXES);
+  for (int i = 0; i < NUM_BOXES; i++)
+    if (seen[i] != 1)
+      complete = false;
+  snprintf(name, sizeof(name), "%s completeness (every id once)", label);
+  check(name, complete);
+
+  bool monotone = true;
+  for (int i = 1; i < n; i++)
+    if (cur_dist[i] < cur_dist[i - 1] - EPS)
+      monotone = false;
+  snprintf(name, sizeof(name), "%s non-decreasing distances", label);
+  check(name, monotone);
+
+  bool early = true;
+  SPNNCursor *kc = sptree_nn_cursor_open(sptree, query);
+  for (int i = 0; i < K && early; i++)
+  {
+    int kid;
+    double kdist;
+    if (! sptree_nn_cursor_next(kc, &kid, &kdist) || kid != cur_id[i] ||
+        fabs(kdist - cur_dist[i]) > EPS)
+      early = false;
+  }
+  sptree_nn_cursor_close(kc);
+  snprintf(name, sizeof(name), "%s first K match full-drain prefix", label);
+  check(name, early);
+}
+
+/* Additionally check the reported distances against a brute-force oracle */
+static void
+check_metric(const char *label, const int *cur_id, const double *cur_dist,
+  int n, const double *brute)
+{
+  char name[128];
+  double *sorted = malloc(NUM_BOXES * sizeof(double));
+  memcpy(sorted, brute, NUM_BOXES * sizeof(double));
+  qsort(sorted, NUM_BOXES, sizeof(double), cmp_double);
+
+  bool dist_ok = true;
+  for (int i = 0; i < n; i++)
+    if (fabs(cur_dist[i] - brute[cur_id[i]]) > EPS)
+      dist_ok = false;
+  snprintf(name, sizeof(name), "%s reported distance equals the box distance",
+    label);
+  check(name, dist_ok);
+
+  bool order_ok = (n == NUM_BOXES);
+  for (int i = 0; i < n && order_ok; i++)
+    if (fabs(cur_dist[i] - sorted[i]) > EPS)
+      order_ok = false;
+  snprintf(name, sizeof(name), "%s order matches sorted brute-force distances",
+    label);
+  check(name, order_ok);
+  free(sorted);
+}
+
+static void
+test_nn_floatspan(void)
+{
+  double *lo = malloc(NUM_BOXES * sizeof(double));
+  double *hi = malloc(NUM_BOXES * sizeof(double));
+  SPTree *sptree = sptree_create_floatspan(SPTREE_QUADTREE);
+  for (int i = 0; i < NUM_BOXES; i++)
+  {
+    lo[i] = random_int(-10000, 10000) / 10.0;
+    hi[i] = lo[i] + random_int(1, 200) / 10.0;
+    Span *s = floatspan_make(lo[i], hi[i], true, false);
+    sptree_insert(sptree, s, i);
+    free(s);
+  }
+  double qlo = random_int(-10000, 10000) / 10.0;
+  double qhi = qlo + 30.0;
+  Span *query = floatspan_make(qlo, qhi, true, false);
+
+  double *brute = malloc(NUM_BOXES * sizeof(double));
+  for (int i = 0; i < NUM_BOXES; i++)
+    brute[i] = span_gap(qlo, qhi, lo[i], hi[i]);
+
+  int *seen = calloc(NUM_BOXES, sizeof(int));
+  double *cd = malloc(NUM_BOXES * sizeof(double));
+  int *ci = malloc(NUM_BOXES * sizeof(int));
+  SPNNCursor *cursor = sptree_nn_cursor_open(sptree, query);
+  int n = drain(cursor, ci, cd, seen);
+  sptree_nn_cursor_close(cursor);
+
+  printf("NN SPTree (float span, %d random spans):\n", NUM_BOXES);
+  check_structural("  ", sptree, query, ci, cd, seen, n);
+  /* The span node distance uses distance_span_span, whose scale is not
+   * replicated here; validate the ordering metric-robustly by checking the
+   * first result is a box of globally minimum gap to the query */
+  double minbrute = brute[0];
+  for (int i = 1; i < NUM_BOXES; i++)
+    if (brute[i] < minbrute)
+      minbrute = brute[i];
+  check("   nearest is a minimum-gap box",
+    n > 0 && fabs(brute[ci[0]] - minbrute) <= EPS);
+
+  free(lo); free(hi); free(query); free(brute);
+  free(seen); free(cd); free(ci);
+  sptree_free(sptree);
+}
+
+static void
+test_nn_tbox(void)
+{
+  double *v = malloc(NUM_BOXES * sizeof(double));
+  double *vh = malloc(NUM_BOXES * sizeof(double));
+  /* A single shared time span makes every box overlap in time, so the distance
+   * reduces to the value-dimension gap */
+  Span *tspan = tstzspan_make(0, (TimestampTz) 1000000000, true, false);
+  SPTree *sptree = sptree_create_tbox(SPTREE_QUADTREE);
+  for (int i = 0; i < NUM_BOXES; i++)
+  {
+    v[i] = random_int(-10000, 10000) / 10.0;
+    vh[i] = v[i] + random_int(1, 200) / 10.0;
+    Span *s = floatspan_make(v[i], vh[i], true, false);
+    TBox *box = tbox_make(s, tspan);
+    sptree_insert(sptree, box, i);
+    free(s); free(box);
+  }
+  double qlo = random_int(-10000, 10000) / 10.0;
+  double qhi = qlo + 30.0;
+  Span *qs = floatspan_make(qlo, qhi, true, false);
+  TBox *query = tbox_make(qs, tspan);
+  free(qs);
+
+  double *brute = malloc(NUM_BOXES * sizeof(double));
+  for (int i = 0; i < NUM_BOXES; i++)
+    brute[i] = span_gap(qlo, qhi, v[i], vh[i]);
+
+  int *seen = calloc(NUM_BOXES, sizeof(int));
+  double *cd = malloc(NUM_BOXES * sizeof(double));
+  int *ci = malloc(NUM_BOXES * sizeof(int));
+  SPNNCursor *cursor = sptree_nn_cursor_open(sptree, query);
+  int n = drain(cursor, ci, cd, seen);
+  sptree_nn_cursor_close(cursor);
+
+  printf("NN SPTree (temporal box, %d random boxes):\n", NUM_BOXES);
+  check_structural("  ", sptree, query, ci, cd, seen, n);
+  check_metric("  ", ci, cd, n, brute);
+
+  free(v); free(vh); free(tspan); free(query); free(brute);
+  free(seen); free(cd); free(ci);
+  sptree_free(sptree);
+}
+
+static void
+test_nn_stbox(void)
+{
+  STBox **boxes = malloc(NUM_BOXES * sizeof(STBox *));
+  SPTree *sptree = sptree_create_stbox(SPTREE_QUADTREE);
+  for (int i = 0; i < NUM_BOXES; i++)
+  {
+    boxes[i] = random_stbox(200, 50);
+    sptree_insert(sptree, boxes[i], i);
+  }
+  STBox *query = random_stbox(3000, 400);
+
+  int *seen = calloc(NUM_BOXES, sizeof(int));
+  double *cd = malloc(NUM_BOXES * sizeof(double));
+  int *ci = malloc(NUM_BOXES * sizeof(int));
+  SPNNCursor *cursor = sptree_nn_cursor_open(sptree, query);
+  int n = drain(cursor, ci, cd, seen);
+  sptree_nn_cursor_close(cursor);
+
+  printf("NN SPTree (spatiotemporal box, %d random boxes):\n", NUM_BOXES);
+  check_structural("  ", sptree, query, ci, cd, seen, n);
+
+  for (int i = 0; i < NUM_BOXES; i++)
+    free(boxes[i]);
+  free(boxes); free(query); free(seen); free(cd); free(ci);
+  sptree_free(sptree);
+}
+
 int
 main(void)
 {
@@ -584,6 +814,9 @@ main(void)
   test_stbox(SPTREE_KDTREE, "k-d tree");
   test_mest();
   test_stbox_mest();
+  test_nn_floatspan();
+  test_nn_tbox();
+  test_nn_stbox();
 
   meos_finalize();
 
