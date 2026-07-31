@@ -193,16 +193,16 @@ CREATE OPERATOR <> (LEFTARG = quadbinset, RIGHTARG = quadbinset,
   RESTRICT = neqsel, JOIN = neqjoinsel);
 CREATE OPERATOR < (LEFTARG = quadbinset, RIGHTARG = quadbinset,
   PROCEDURE = lt, COMMUTATOR = >, NEGATOR = >=,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel);
+  RESTRICT = span_sel, JOIN = span_joinsel);
 CREATE OPERATOR <= (LEFTARG = quadbinset, RIGHTARG = quadbinset,
   PROCEDURE = le, COMMUTATOR = >=, NEGATOR = >,
-  RESTRICT = scalarlesel, JOIN = scalarlejoinsel);
+  RESTRICT = span_sel, JOIN = span_joinsel);
 CREATE OPERATOR > (LEFTARG = quadbinset, RIGHTARG = quadbinset,
   PROCEDURE = gt, COMMUTATOR = <, NEGATOR = <=,
-  RESTRICT = scalargtsel, JOIN = scalargtjoinsel);
+  RESTRICT = span_sel, JOIN = span_joinsel);
 CREATE OPERATOR >= (LEFTARG = quadbinset, RIGHTARG = quadbinset,
   PROCEDURE = ge, COMMUTATOR = <=, NEGATOR = <,
-  RESTRICT = scalargesel, JOIN = scalargejoinsel);
+  RESTRICT = span_sel, JOIN = span_joinsel);
 
 CREATE OPERATOR CLASS quadbinset_btree_ops
   DEFAULT FOR TYPE quadbinset USING btree AS

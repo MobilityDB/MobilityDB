@@ -193,16 +193,16 @@ CREATE OPERATOR <> (LEFTARG = h3indexset, RIGHTARG = h3indexset,
   RESTRICT = neqsel, JOIN = neqjoinsel);
 CREATE OPERATOR < (LEFTARG = h3indexset, RIGHTARG = h3indexset,
   PROCEDURE = lt, COMMUTATOR = >, NEGATOR = >=,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel);
+  RESTRICT = span_sel, JOIN = span_joinsel);
 CREATE OPERATOR <= (LEFTARG = h3indexset, RIGHTARG = h3indexset,
   PROCEDURE = le, COMMUTATOR = >=, NEGATOR = >,
-  RESTRICT = scalarlesel, JOIN = scalarlejoinsel);
+  RESTRICT = span_sel, JOIN = span_joinsel);
 CREATE OPERATOR > (LEFTARG = h3indexset, RIGHTARG = h3indexset,
   PROCEDURE = gt, COMMUTATOR = <, NEGATOR = <=,
-  RESTRICT = scalargtsel, JOIN = scalargtjoinsel);
+  RESTRICT = span_sel, JOIN = span_joinsel);
 CREATE OPERATOR >= (LEFTARG = h3indexset, RIGHTARG = h3indexset,
   PROCEDURE = ge, COMMUTATOR = <=, NEGATOR = <,
-  RESTRICT = scalargesel, JOIN = scalargejoinsel);
+  RESTRICT = span_sel, JOIN = span_joinsel);
 
 CREATE OPERATOR CLASS h3indexset_btree_ops
   DEFAULT FOR TYPE h3indexset USING btree AS
