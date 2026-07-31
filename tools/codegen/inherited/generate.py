@@ -1837,6 +1837,142 @@ def bootstrap_topops(filetext: str, fam: dict, rendered: str) -> str:
     return filetext[:start] + begin_m + rendered + end_m + filetext[end:]
 
 
+# --- Position-operators sub-family (SQL, per-family region-in-file) ---------------
+# The Set<T> position surface is GATED on order: only the six alpha sets of
+# 002_set_ops are ordered (`ordered: true` in the setfamilies table), so the one
+# `set` entry below is the whole axis and every other set family emits NONE — a
+# partial position surface on an unordered type is a defect, not a gap. Each of
+# the four positions pairs a value spelling with a time spelling — left/before,
+# right/after, overleft/overbefore, overright/overafter — because a family's
+# `posops_spelling` picks the name by domain: the value pairs (int/bigint/float/
+# text) use left `<<` / right `>>` / overleft `&<` / overright `&>` backed by the
+# Left_/Right_/Overleft_/Overright_ kernels, the time pairs (date/tstz) use
+# before `<<#` / after `#>>` / overbefore `&<#` / overafter `#&>` backed by
+# Before_/After_/Overbefore_/Overafter_. A position's stanza lists the value
+# pairs' three directions ((value, set), (set, value), (set, set)) then the time
+# pairs', all packed; its operators follow the same order, `<<`/`<<#` commuting
+# with `>>`/`#>>` and the over- forms carrying no COMMUTATOR. The selectivity
+# clause reuses the topop tokens per pair (`value_selectivity` /
+# `time_selectivity` parallel to the pair lists); either key also accepts a map
+# keyed by position, because the committed clauses genuinely differ position by
+# position (dateset: none on `<<#`/`#>>`/`#&>` but active span on `&<#`) — an
+# encoded irregularity, not a rule.
+def _posops_markers(family: str):
+    begin = (f"-- GENERATED-POSOPS-BEGIN {family} — "
+             "tools/codegen/inherited/generate.py from templates/comparisons.sql.tmpl;\n"
+             "-- DO NOT EDIT BY HAND; edit the template + manifest.yaml "
+             "(posop_families) and re-run.\n")
+    return begin, f"-- GENERATED-POSOPS-END {family}\n"
+
+
+# position -> (value name, time name, value op, time op, value COMMUTATOR or
+# None, time COMMUTATOR or None). The C symbol is the capitalized function name
+# + _value_set/_set_value/_set_set.
+_POSOP_TABLE = {
+    "left": ("left", "before", "<<", "<<#", ">>", "#>>"),
+    "right": ("right", "after", ">>", "#>>", "<<", "<<#"),
+    "overleft": ("overleft", "overbefore", "&<", "&<#", None, None),
+    "overright": ("overright", "overafter", "&>", "#&>", None, None),
+}
+_POSOP_DIRS = (("{v}", "{s}", "value_set"), ("{s}", "{v}", "set_value"),
+               ("{s}", "{s}", "set_set"))
+
+
+def _posop_fns(pos: str, fam: dict) -> str:
+    """The position's CREATE FUNCTIONs: the value-spelling name over the value
+    pairs then the time-spelling name over the time pairs, all packed."""
+    tmpl = (TEMPLATES / "comparisons.sql.tmpl").read_text().rstrip("\n")
+    vname, tname = _POSOP_TABLE[pos][0], _POSOP_TABLE[pos][1]
+    out = []
+    for name, pairs in ((vname, fam["pairs"]), (tname, fam["time_pairs"])):
+        for v, s in pairs:
+            for l, r, dsym in _POSOP_DIRS:
+                out.append(tmpl.replace("{SIG}", f"{name}({l.format(v=v, s=s)}, "
+                                                 f"{r.format(v=v, s=s)})")
+                               .replace("{RET}", "boolean")
+                               .replace("{SYM}", f"{name.capitalize()}_{dsym}"))
+    return "\n".join(out) + "\n"
+
+
+def _posop_ops(pos: str, fam: dict) -> str:
+    """The position's operators: the value symbol over the value pairs then the
+    time symbol over the time pairs, all packed, each closed by the pair's
+    selectivity token (the topop token set)."""
+    vname, tname, vop, top, vcomm, tcomm = _POSOP_TABLE[pos]
+    out = []
+    for name, op, comm, pairs, selkey in (
+            (vname, vop, vcomm, fam["pairs"], "value_selectivity"),
+            (tname, top, tcomm, fam["time_pairs"], "time_selectivity")):
+        sel = fam.get(selkey, "none")
+        if isinstance(sel, dict):
+            sel = sel[pos]
+        for idx, (v, s) in enumerate(pairs):
+            tail = _TOPOP_SEL[sel[idx] if isinstance(sel, list) else sel]
+            for l, r, _ in _POSOP_DIRS:
+                comm_line = f",\n  COMMUTATOR = {comm}" if comm else ""
+                text = (f"CREATE OPERATOR {op} (\n"
+                        f"  PROCEDURE = {name},\n"
+                        f"  LEFTARG = {l.format(v=v, s=s)}, "
+                        f"RIGHTARG = {r.format(v=v, s=s)}{comm_line}{tail}\n"
+                        f");")
+                out.append(text)
+    return "\n".join(out) + "\n"
+
+
+def render_posops(fam: dict) -> str:
+    """Render one family's position block from its `blocks` sequence: verbatim
+    `lit` blocks and `posfns` / `posops` position names. Blocks concatenate with
+    no automatic separator, so the rendered text is byte-identical to the
+    committed region."""
+    out = ""
+    for blk in fam["blocks"]:
+        if "lit" in blk:
+            out += blk["lit"]
+        elif "posfns" in blk:
+            out += _posop_fns(blk["posfns"], fam)
+        else:
+            out += _posop_ops(blk["posops"], fam)
+    return out
+
+
+def extract_posops(filetext: str, fam: dict) -> str:
+    """Return the committed position block (marker-aware; the hash-axis anchor
+    conventions otherwise)."""
+    begin, end = _posops_markers(fam["family"])
+    if begin in filetext:
+        b = filetext.index(begin) + len(begin)
+        e = filetext.index(end)
+        return filetext[b:e]
+    i = filetext.index(fam["begin"])
+    start = i if fam.get("begin_exact") else filetext.rfind("/*", 0, i)
+    if fam.get("whole_file"):
+        return filetext[start:]
+    j = filetext.index(fam["end"])
+    return filetext[start:j if fam.get("end_exact") else filetext.rfind("/*", 0, j)]
+
+
+def splice_posops(filetext: str, family: str, rendered: str) -> str:
+    begin, end = _posops_markers(family)
+    b = filetext.index(begin) + len(begin)
+    e = filetext.index(end)
+    return filetext[:b] + rendered + filetext[e:]
+
+
+def bootstrap_posops(filetext: str, fam: dict, rendered: str) -> str:
+    """Insert the GENERATED-POSOPS markers around the family's committed hand
+    block (same anchors extract_posops uses); idempotent afterward. Not run while
+    the families are reference-only (validate-only)."""
+    i = filetext.index(fam["begin"])
+    start = i if fam.get("begin_exact") else filetext.rfind("/*", 0, i)
+    if fam.get("whole_file"):
+        end = len(filetext)
+    else:
+        j = filetext.index(fam["end"])
+        end = j if fam.get("end_exact") else filetext.rfind("/*", 0, j)
+    begin_m, end_m = _posops_markers(fam["family"])
+    return filetext[:start] + begin_m + rendered + end_m + filetext[end:]
+
+
 # --- SQL Conversions sub-family (SQL, per-family region-in-file) ------------------
 # The Temporal<T> cast surface every temporal type carries: the CREATE FUNCTION
 # conversion wrappers (timeSpan -> tstzspan, and the cross-type casts to/from the
@@ -2524,6 +2660,25 @@ def main() -> int:
                         break
                 if len(g) != len(c):
                     print(f"     line count gen={len(g)} cur={len(c)}")
+        for fam in mf.get("posop_families", []):
+            if not fam.get("reference"):
+                continue
+            p = ROOT / fam["file"]
+            gen = render_posops(fam)
+            cur = extract_posops(p.read_text(), fam) if p.exists() else ""
+            same = gen == cur
+            ok = ok and same
+            print(f"[{'OK ' if same else 'DIFF'}] self-regen posops {fam['family']} "
+                  f"-> {pathlib.Path(fam['file'])}")
+            if not same:
+                g, c = gen.splitlines(), cur.splitlines()
+                for n, (a, b) in enumerate(zip(g, c), 1):
+                    if a != b:
+                        print(f"     first diff line {n}:\n       gen: {a!r}\n"
+                              f"       cur: {b!r}")
+                        break
+                if len(g) != len(c):
+                    print(f"     line count gen={len(g)} cur={len(c)}")
         for fam in mf.get("conversion_families", []):
             if not fam.get("reference"):
                 continue
@@ -2833,6 +2988,27 @@ def main() -> int:
         else:
             p.write_text(bootstrap_topops(text, fam, render_topops(fam)))
             print(f"bootstrapped topops {fam['family']} -> {fam['file']}")
+
+    for fam in mf.get("posop_families", []):
+        # Reference families are validate-only: keep the committed hand block, never
+        # emit into .in.sql (mirrors comparisons/hash/setops/topops). A future
+        # non-reference family bootstraps its GENERATED-POSOPS region once, then
+        # splices.
+        if fam.get("reference"):
+            continue
+        p = ROOT / fam["file"]
+        text = p.read_text()
+        begin, _ = _posops_markers(fam["family"])
+        if args.check:
+            print(f"would {'splice' if begin in text else 'bootstrap'} posops "
+                  f"{fam['family']} -> {fam['file']}")
+            continue
+        if begin in text:
+            p.write_text(splice_posops(text, fam["family"], render_posops(fam)))
+            print(f"spliced posops {fam['family']} -> {fam['file']}")
+        else:
+            p.write_text(bootstrap_posops(text, fam, render_posops(fam)))
+            print(f"bootstrapped posops {fam['family']} -> {fam['file']}")
 
     for fam in mf.get("conversion_families", []):
         # Reference families are validate-only: keep the committed hand block, never
