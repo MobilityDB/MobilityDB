@@ -145,13 +145,23 @@ unknown, which here means no shared instant.
 | fixed-threshold `dwithin(d)`, `intersects` | yes | box distance > `d` ⟹ every point pair is farther than `d` |
 | ordering key for a pair loop | yes | the box distance is a valid lower bound to sort on |
 | `disjoint` prefilter | **no** | a box miss would prove disjointness and prune true rows |
-| exact `nad`, `minDistance`, `|=|` | **no** | no threshold exists; the nearest pair can sit just outside the box |
+| exact `nad`, `minDistance`, `\|=\|` — whole-pair box | **no** | no external threshold exists; the nearest pair can sit just outside the box |
+| exact `nad` — per-segment lower bound vs the running min | **yes** (planar) | the running minimum is a live threshold; a segment whose centre-box-minus-radius lower bound ≥ the running min cannot lower it |
 
 Soundness of the threshold prune depends on the box enclosing the whole value.
 For `tcbuffer` this holds because the box is **radius-aware** — the extent is
 expanded by the radius, so it encloses the swept disc, not merely the centre
 path. A family whose box covered only a centre would need that expansion before
 the prune became valid.
+
+An exact `nad` has no external threshold, so the whole-pair box cannot prune it —
+yet the synchronised running-min walk manufactures one. The running minimum found
+so far is itself a live threshold, so a per-segment lower bound on the signed gap
+(the separation of the two centre boxes over the segment, minus the sum of the
+maximum radii, signed) is sound: when that lower bound is at or above the running
+minimum, the segment — turning point and per-instant endpoints alike — cannot
+lower it and is skipped. The bound is planar; a planar box separation is not a
+lower bound on a geodesic distance, so the geodetic path takes no prune.
 
 ### Why bounded predicates get the box for free and distance does not
 
@@ -331,7 +341,7 @@ and its box is radius-aware.
 | `tgeogpoint` | closed-form unary, chordal | approximate — interior turning point linearised, not geodetic | synchronised running-min fast-path |
 | `tnpoint` | closed-form unary (via `→ tgeompoint`) | exact (planar) | materialise `tdistance` + `min` |
 | `tpose` | closed-form unary (via `→ tpoint`) | exact (planar) | materialise `tdistance` + `min` |
-| `tcbuffer` | closed-form unary, radius-aware | exact (planar) | materialise `tdistance` + `min` |
+| `tcbuffer` | closed-form unary, radius-aware | exact (planar) | synchronised running-min fast-path (shared radius-aware kernel) |
 | `tgeometry` | closed-form per-segment geo | exact (planar) | materialise `tdistance` + `min` |
 | `tgeography` | closed-form per-segment geo, chordal | approximate — as `tgeogpoint` | materialise `tdistance` + `min` |
 | `trgeometry` | adaptive ε-bisection (n ≥ 2 turning points, no closed form) | ε-bounded — converges within `MEOS_EPSILON` | vs geometry: materialise `tdistance` + `min`; vs `tpoint` / vs `trgeometry`: raises `NOT_IMPLEMENTED` |
@@ -340,13 +350,15 @@ and its box is radius-aware.
 
 Three facts this table records.
 
-**The synchronised running-min reduction is carried by `tgeompoint` and
-`tgeogpoint`.** Every other family computes `nad` by materialising the whole
+**The synchronised running-min reduction is carried by `tgeompoint`,
+`tgeogpoint`, and `tcbuffer`** through one shared radius-parameterised kernel
+(`nad_tcont_tcont_sync`), the disc radius `0` for the point types and `r(t)` for
+`tcbuffer` — the `g(t) = dist(centre, ·) − r(t)` unification of §2 realised as a
+single walk. Every other family computes `nad` by materialising the whole
 `tdistance` temporal float and taking `temporal_min_value` of it — the same
 answer, built as the entire temporal float before reducing, the pattern §2 names
 as the laggard. `tnpoint` and `tpose` reduce to a point, so the running-min
-scaffold that serves `tgeompoint` applies to them after their cast with no new
-mathematics.
+scaffold applies to them after their cast with no new mathematics.
 
 **The radius lives on the kernel axis, not the family axis.** The closed-form
 unary turning-point function is one function parameterised by `r(t)` — `0` for the
