@@ -230,60 +230,9 @@ jsonbfunc_jsonbset(const Set *s, datum_func1 func, MeosType settype UNUSED,
   return set_make_free(values, s->count, restype, ORDER_NO);
 }
 
-/**
- * @brief Return the concatenation of a text set and a set (internal function)
- * @param[in] s Set
- * @param[in] jb JSONB
- * @param[in] func Function to apply
- * @param[in] invert True when the arguments must be inverted
- */
-Set *
-jsonbfunc_jsonbset_jsonb(const Set *s, const Jsonb *jb, datum_func2 func,
-  bool invert)
-{
-  assert(s); assert(jb); assert(s->settype == T_JSONBSET);
-  Datum *values = palloc(sizeof(Datum) * s->count);
-  for (int i = 0; i < s->count; i++)
-    values[i] = invert ?
-      func(PointerGetDatum(jb), SET_VAL_N(s, i)) :
-      func(SET_VAL_N(s, i), PointerGetDatum(jb));
-  return set_make_free(values, s->count, T_JSONB, ORDER_NO);
-}
-
-/**
- * @brief Return the concatenation of a text set and a set (internal function)
- * @param[in] s Set
- * @param[in] txt Key
- * @param[in] func Function to apply
- */
-Set *
-jsonbfunc_jsonbset_text(const Set *s, const text *txt, datum_func2 func)
-{
-  assert(s); assert(txt); assert(s->settype == T_JSONBSET);
-  Datum *values = palloc(sizeof(Datum) * s->count);
-  for (int i = 0; i < s->count; i++)
-    values[i] = func(SET_VAL_N(s, i), PointerGetDatum(txt));
-  return set_make_free(values, s->count, T_JSONB, ORDER_NO);
-}
-
 /*****************************************************************************
  * Operators
  *****************************************************************************/
-
-// /**
- // * @ingroup meos_json_set_json
- // * @brief Return the concatenation of a JSONB set and a JSONB value
- // * @param[in] s JSONB set
- // * @param[in] jb JSONB value
- // * @csqlfn #Concat_jsonbset_jsonb()
- // */
-// Set *
-// concat_jsonbset_jsonb(const Set *s, const Jsonb *jb, bool invert)
-// {
-  // /* Ensure the validity of the arguments */
-  // VALIDATE_JSONBSET(s, NULL); VALIDATE_NOT_NULL(jb, NULL);
-  // return jsonbfunc_jsonbset_jsonb(s, jb, &datum_jsonb_concat, invert);
-// }
 
 /**
  * @ingroup meos_json_set_json

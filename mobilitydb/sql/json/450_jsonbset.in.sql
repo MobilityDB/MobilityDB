@@ -308,44 +308,6 @@ CREATE OPERATOR CLASS jsonbset_hash_ops
     FUNCTION    1   hash(jsonbset),
     FUNCTION    2   hashExtended(jsonbset, bigint);
 
-/*****************************************************************************
- * JSONB Functions
- *****************************************************************************/
-
--- CREATE FUNCTION jsonbset_concat(jsonb, jsonbset)
-  -- RETURNS jsonbset
-  -- AS 'MODULE_PATHNAME', 'Concat_jsonb_jsonbset'
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
--- CREATE FUNCTION jsonbset_concat(jsonbset, jsonb)
-  -- RETURNS jsonbset
-  -- AS 'MODULE_PATHNAME', 'Concat_jsonbset_jsonb'
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
--- CREATE OPERATOR || (
-  -- PROCEDURE = jsonbset_concat,
-  -- LEFTARG   = jsonb, RIGHTARG = jsonbset
--- );
--- CREATE OPERATOR || (
-  -- PROCEDURE = jsonbset_concat,
-  -- LEFTARG   = jsonbset, RIGHTARG = jsonb
--- );
-
--- CREATE FUNCTION jsonbset_delete(jsonbset, text)
-  -- RETURNS jsonbset
-  -- AS 'MODULE_PATHNAME', 'Delete_jsonbset_key'
-  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
--- CREATE OPERATOR - (
-  -- PROCEDURE = jsonbset_delete,
-  -- LEFTARG   = jsonbset, RIGHTARG = text
--- );
-
--- CREATE FUNCTION jsonbset_set(s jsonbset, path text[], val jsonb,
-  -- create_missing boolean DEFAULT true)
--- RETURNS jsonbset
--- AS 'MODULE_PATHNAME', 'Jsonbset_set'
--- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 /******************************************************************************
  * Operators
  ******************************************************************************/
