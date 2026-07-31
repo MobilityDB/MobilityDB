@@ -1420,6 +1420,132 @@ def bootstrap_comparisons(filetext: str, fam: dict, rendered: str) -> str:
     return filetext[:start] + begin_m + rendered + end_m + filetext[end:]
 
 
+# --- Hash sub-family (SQL, per-family region-in-file) -----------------------------
+# The Set<T> hash-indexing surface every set type carries: hash() -> integer
+# (Set_hash) and hashExtended(, bigint) -> bigint (Set_hash_extended) — canonical
+# bare names across the whole tree — plus the `<set>_hash_ops ... USING hash`
+# opclass. The CREATE FUNCTIONs are the same four-line skeleton the comparison
+# surface renders (templates/comparisons.sql.tmpl) with the _HASH_OPS table
+# supplying the signatures; a multi-type file (001_set, 050_geoset) groups them
+# op-outer / type-inner exactly like _cmp_funcs (every type's hash, then every
+# type's hashExtended, groups separated by one blank line). The opclass is the
+# same five-line block per type (packed with no blank line between consecutive
+# types), so it renders from the _HASH_OPCLASS skeleton via `opcls` blocks;
+# section banners / dividers / blank lines are `lit` blocks, concatenated with no
+# automatic separator (the comparison-surface model).
+#
+# Anchoring reuses the comparison-axis conventions: the region starts at the `/*`
+# opening the divider before the `begin` anchor and ends before the `/*` found
+# via the `end` anchor; `begin_exact`/`end_exact` slice exactly at the anchor for
+# the shapes with no divider (the pointcloud sets' hash block follows the B-tree
+# opclass bare), and `whole_file` ends at EOF (001_set's hash section is the file
+# tail). Two families are lit-only irregularities, encoded, never normalized:
+# h3indexset/quadbinset ship only the hash opclass here — their hash() function
+# sits inside the comparison region's compact-form lit and they have no
+# hashExtended — with a narrower opclass spelling (`OPERATOR  1  =,`, no
+# FUNCTION 2).
+def _hash_markers(family: str):
+    begin = (f"-- GENERATED-HASH-BEGIN {family} — "
+             "tools/codegen/inherited/generate.py from templates/comparisons.sql.tmpl;\n"
+             "-- DO NOT EDIT BY HAND; edit the template + manifest.yaml "
+             "(hash_families) and re-run.\n")
+    return begin, f"-- GENERATED-HASH-END {family}\n"
+
+
+# Signature pattern -> (RETURNS, backing C symbol) for the two hash functions.
+_HASH_OPS = [
+    ("hash({t})", "integer", "Set_hash"),
+    ("hashExtended({t}, bigint)", "bigint", "Set_hash_extended"),
+]
+# The canonical hash opclass block (one per type, packed when a file has several).
+_HASH_OPCLASS = ("CREATE OPERATOR CLASS {t}_hash_ops\n"
+                 "  DEFAULT FOR TYPE {t} USING hash AS\n"
+                 "    OPERATOR    1   = ,\n"
+                 "    FUNCTION    1   hash({t}),\n"
+                 "    FUNCTION    2   hashExtended({t}, bigint);")
+
+
+def _hash_funcs(types) -> str:
+    """Render the two hash CREATE FUNCTIONs from the shared skeleton, mirroring
+    _cmp_funcs: one type token (packed) or a token list (op-outer / type-inner,
+    op groups separated by one blank line)."""
+    tmpl = (TEMPLATES / "comparisons.sql.tmpl").read_text().rstrip("\n")
+    if isinstance(types, str):
+        types = [types]
+    groups = ["\n".join(tmpl.replace("{SIG}", sig.format(t=t))
+                            .replace("{RET}", ret).replace("{SYM}", sym)
+                        for t in types)
+              for sig, ret, sym in _HASH_OPS]
+    return ("\n\n" if len(types) > 1 else "\n").join(groups) + "\n"
+
+
+def _hash_opclasses(types) -> str:
+    """The canonical hash opclass for one type token or a packed token list."""
+    if isinstance(types, str):
+        types = [types]
+    return "\n".join(_HASH_OPCLASS.format(t=t) for t in types) + "\n"
+
+
+def render_hash(fam: dict) -> str:
+    """Render one family's hash block from its `blocks` sequence: verbatim `lit`
+    blocks (banners, dividers, blank lines, the h3/quadbin narrow opclasses),
+    `funcs` type token(s) (the two hash functions from the shared skeleton) and
+    `opcls` type token(s) (the canonical opclass). Blocks concatenate with no
+    automatic separator, so the rendered text is byte-identical to the committed
+    region."""
+    out = ""
+    for blk in fam["blocks"]:
+        if "lit" in blk:
+            out += blk["lit"]
+        elif "funcs" in blk:
+            out += _hash_funcs(blk["funcs"])
+        else:
+            out += _hash_opclasses(blk["opcls"])
+    return out
+
+
+def extract_hash(filetext: str, fam: dict) -> str:
+    """Return the committed hash block. Marker-aware; before the markers exist,
+    slice by the comparison-axis anchor conventions (`begin`/`end` headers with
+    the `/*` rule, `begin_exact`/`end_exact` for anchor-exact cuts, `whole_file`
+    for a file-tail region)."""
+    begin, end = _hash_markers(fam["family"])
+    if begin in filetext:
+        b = filetext.index(begin) + len(begin)
+        e = filetext.index(end)
+        return filetext[b:e]
+    i = filetext.index(fam["begin"])
+    start = i if fam.get("begin_exact") else filetext.rfind("/*", 0, i)
+    if fam.get("whole_file"):
+        return filetext[start:]
+    j = filetext.index(fam["end"])
+    return filetext[start:j if fam.get("end_exact") else filetext.rfind("/*", 0, j)]
+
+
+def splice_hash(filetext: str, family: str, rendered: str) -> str:
+    begin, end = _hash_markers(family)
+    b = filetext.index(begin) + len(begin)
+    e = filetext.index(end)
+    return filetext[:b] + rendered + filetext[e:]
+
+
+def bootstrap_hash(filetext: str, fam: dict, rendered: str) -> str:
+    """Insert the GENERATED-HASH markers around the family's committed hand block
+    (sliced by the same anchors extract_hash uses), so a future non-reference emit
+    is fully declarative with no hand-placed marker. Idempotent: once the markers
+    exist the reference/splice path owns the region. Not run while the families
+    are reference-only (validate-only)."""
+    i = filetext.index(fam["begin"])
+    start = i if fam.get("begin_exact") else filetext.rfind("/*", 0, i)
+    if fam.get("whole_file"):
+        end = len(filetext)
+    else:
+        j = filetext.index(fam["end"])
+        end = j if fam.get("end_exact") else filetext.rfind("/*", 0, j)
+    begin_m, end_m = _hash_markers(fam["family"])
+    return filetext[:start] + begin_m + rendered + end_m + filetext[end:]
+
+
 # --- SQL Conversions sub-family (SQL, per-family region-in-file) ------------------
 # The Temporal<T> cast surface every temporal type carries: the CREATE FUNCTION
 # conversion wrappers (timeSpan -> tstzspan, and the cross-type casts to/from the
@@ -1946,6 +2072,25 @@ def main() -> int:
                         break
                 if len(g) != len(c):
                     print(f"     line count gen={len(g)} cur={len(c)}")
+        for fam in mf.get("hash_families", []):
+            if not fam.get("reference"):
+                continue
+            p = ROOT / fam["file"]
+            gen = render_hash(fam)
+            cur = extract_hash(p.read_text(), fam) if p.exists() else ""
+            same = gen == cur
+            ok = ok and same
+            print(f"[{'OK ' if same else 'DIFF'}] self-regen hash {fam['family']} "
+                  f"-> {pathlib.Path(fam['file'])}")
+            if not same:
+                g, c = gen.splitlines(), cur.splitlines()
+                for n, (a, b) in enumerate(zip(g, c), 1):
+                    if a != b:
+                        print(f"     first diff line {n}:\n       gen: {a!r}\n"
+                              f"       cur: {b!r}")
+                        break
+                if len(g) != len(c):
+                    print(f"     line count gen={len(g)} cur={len(c)}")
         for fam in mf.get("conversion_families", []):
             if not fam.get("reference"):
                 continue
@@ -2176,6 +2321,26 @@ def main() -> int:
         else:
             p.write_text(bootstrap_comparisons(text, fam, render_comparisons(fam)))
             print(f"bootstrapped comparisons {fam['family']} -> {fam['file']}")
+
+    for fam in mf.get("hash_families", []):
+        # Reference families are validate-only: keep the committed hand block, never
+        # emit into .in.sql (mirrors comparisons). A future non-reference family
+        # bootstraps its GENERATED-HASH region once, then splices.
+        if fam.get("reference"):
+            continue
+        p = ROOT / fam["file"]
+        text = p.read_text()
+        begin, _ = _hash_markers(fam["family"])
+        if args.check:
+            print(f"would {'splice' if begin in text else 'bootstrap'} hash "
+                  f"{fam['family']} -> {fam['file']}")
+            continue
+        if begin in text:
+            p.write_text(splice_hash(text, fam["family"], render_hash(fam)))
+            print(f"spliced hash {fam['family']} -> {fam['file']}")
+        else:
+            p.write_text(bootstrap_hash(text, fam, render_hash(fam)))
+            print(f"bootstrapped hash {fam['family']} -> {fam['file']}")
 
     for fam in mf.get("conversion_families", []):
         # Reference families are validate-only: keep the committed hand block, never

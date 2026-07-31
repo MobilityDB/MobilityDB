@@ -1766,6 +1766,111 @@ comparison_families:
   end_exact: true
   blocks:
   - lit: "/******************************************************************************\n * Comparison operators + btree / hash opclasses\n ******************************************************************************/\n\nCREATE FUNCTION eq(quadbinset, quadbinset)\n  RETURNS boolean AS 'MODULE_PATHNAME', 'Set_eq'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION ne(quadbinset, quadbinset)\n  RETURNS boolean AS 'MODULE_PATHNAME', 'Set_ne'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION lt(quadbinset, quadbinset)\n  RETURNS boolean AS 'MODULE_PATHNAME', 'Set_lt'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION le(quadbinset, quadbinset)\n  RETURNS boolean AS 'MODULE_PATHNAME', 'Set_le'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION ge(quadbinset, quadbinset)\n  RETURNS boolean AS 'MODULE_PATHNAME', 'Set_ge'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION gt(quadbinset, quadbinset)\n  RETURNS boolean AS 'MODULE_PATHNAME', 'Set_gt'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION cmp(quadbinset, quadbinset)\n  RETURNS integer AS 'MODULE_PATHNAME', 'Set_cmp'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION hash(quadbinset)\n  RETURNS integer AS 'MODULE_PATHNAME', 'Set_hash'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\nCREATE OPERATOR = (LEFTARG = quadbinset, RIGHTARG = quadbinset,\n  PROCEDURE = eq, COMMUTATOR = =, NEGATOR = <>,\n  RESTRICT = eqsel, JOIN = eqjoinsel, HASHES, MERGES);\nCREATE OPERATOR <> (LEFTARG = quadbinset, RIGHTARG = quadbinset,\n  PROCEDURE = ne, COMMUTATOR = <>, NEGATOR = =,\n  RESTRICT = neqsel, JOIN = neqjoinsel);\nCREATE OPERATOR < (LEFTARG = quadbinset, RIGHTARG = quadbinset,\n  PROCEDURE = lt, COMMUTATOR = >, NEGATOR = >=,\n  RESTRICT = span_sel, JOIN = span_joinsel);\nCREATE OPERATOR <= (LEFTARG = quadbinset, RIGHTARG = quadbinset,\n  PROCEDURE = le, COMMUTATOR = >=, NEGATOR = >,\n  RESTRICT = span_sel, JOIN = span_joinsel);\nCREATE OPERATOR > (LEFTARG = quadbinset, RIGHTARG = quadbinset,\n  PROCEDURE = gt, COMMUTATOR = <, NEGATOR = <=,\n  RESTRICT = span_sel, JOIN = span_joinsel);\nCREATE OPERATOR >= (LEFTARG = quadbinset, RIGHTARG = quadbinset,\n  PROCEDURE = ge, COMMUTATOR = <=, NEGATOR = <,\n  RESTRICT = span_sel, JOIN = span_joinsel);\n\nCREATE OPERATOR CLASS quadbinset_btree_ops\n  DEFAULT FOR TYPE quadbinset USING btree AS\n    OPERATOR  1  <,\n    OPERATOR  2  <=,\n    OPERATOR  3  =,\n    OPERATOR  4  >=,\n    OPERATOR  5  >,\n    FUNCTION  1  cmp(quadbinset, quadbinset);\n\n"
+hash_families:
+- family: set
+  file: mobilitydb/sql/temporal/001_set.in.sql
+  reference: true
+  begin: "\n * Hash functions for defining hash indexes\n"
+  whole_file: true
+  blocks:
+  - lit: "/******************************************************************************\n * Hash functions for defining hash indexes\n ******************************************************************************/\n\n"
+  - funcs: [intset, bigintset, floatset, textset, dateset, tstzset]
+  - lit: "\n"
+  - opcls: [intset, bigintset, floatset, textset, dateset, tstzset]
+  - lit: "\n/******************************************************************************/\n"
+- family: geoset
+  file: mobilitydb/sql/geo/050_geoset.in.sql
+  reference: true
+  begin: "CREATE FUNCTION hash(geomset"
+  end: "\n * Operators\n"
+  blocks:
+  - lit: "/******************************************************************************/\n\n"
+  - funcs: [geomset, geogset]
+  - lit: "\n"
+  - opcls: [geomset, geogset]
+  - lit: "\n"
+- family: cbufferset
+  file: mobilitydb/sql/cbuffer/201_cbufferset.in.sql
+  reference: true
+  begin: "CREATE FUNCTION hash(cbufferset"
+  end: "\n * Operators\n"
+  blocks:
+  - lit: "/******************************************************************************/\n\n"
+  - funcs: cbufferset
+  - lit: "\n"
+  - opcls: cbufferset
+  - lit: "\n"
+- family: h3indexset
+  file: mobilitydb/sql/h3/251_h3indexset.in.sql
+  reference: true
+  begin: "CREATE OPERATOR CLASS h3indexset_hash_ops"
+  begin_exact: true
+  end: "\n * unnest \u2014 SETOF expansion\n"
+  blocks:
+  - lit: "CREATE OPERATOR CLASS h3indexset_hash_ops\n  DEFAULT FOR TYPE h3indexset USING hash AS\n    OPERATOR  1  =,\n    FUNCTION  1  hash(h3indexset);\n\n"
+- family: jsonbset
+  file: mobilitydb/sql/json/450_jsonbset.in.sql
+  reference: true
+  begin: "CREATE FUNCTION hash(jsonbset"
+  end: "\n * Operators\n"
+  blocks:
+  - lit: "/******************************************************************************/\n\n"
+  - funcs: jsonbset
+  - lit: "\n"
+  - opcls: jsonbset
+  - lit: "\n"
+- family: npointset
+  file: mobilitydb/sql/npoint/301_npointset.in.sql
+  reference: true
+  begin: "CREATE FUNCTION hash(npointset"
+  end: "\n * Operators\n"
+  blocks:
+  - lit: "/******************************************************************************/\n\n"
+  - funcs: npointset
+  - lit: "\n"
+  - opcls: npointset
+  - lit: "\n"
+- family: pcpointset
+  file: mobilitydb/sql/pointcloud/400_pcset.in.sql
+  reference: true
+  begin: "CREATE FUNCTION hash("
+  begin_exact: true
+  end: "\n * pcpointset \u2014 Set operations"
+  blocks:
+  - funcs: pcpointset
+  - lit: "\n"
+  - opcls: pcpointset
+  - lit: "\n"
+- family: pcpatchset
+  file: mobilitydb/sql/pointcloud/400_pcset.in.sql
+  reference: true
+  begin: "CREATE FUNCTION hash(pcpatchset"
+  begin_exact: true
+  end: "\n * pcpatchset \u2014 Set operations"
+  blocks:
+  - funcs: pcpatchset
+  - lit: "\n"
+  - opcls: pcpatchset
+  - lit: "\n"
+- family: poseset
+  file: mobilitydb/sql/pose/101_poseset.in.sql
+  reference: true
+  begin: "CREATE FUNCTION hash(poseset"
+  end: "\n * Operators\n"
+  blocks:
+  - lit: "/******************************************************************************/\n\n"
+  - funcs: poseset
+  - lit: "\n"
+  - opcls: poseset
+  - lit: "\n"
+- family: quadbinset
+  file: mobilitydb/sql/quadbin/351_quadbinset.in.sql
+  reference: true
+  begin: "CREATE OPERATOR CLASS quadbinset_hash_ops"
+  begin_exact: true
+  end: "\n * unnest \u2014 SETOF expansion\n"
+  blocks:
+  - lit: "CREATE OPERATOR CLASS quadbinset_hash_ops\n  DEFAULT FOR TYPE quadbinset USING hash AS\n    OPERATOR  1  =,\n    FUNCTION  1  hash(quadbinset);\n\n"
 conversion_families:
 - family: geo
   file: mobilitydb/sql/geo/052_tgeo.in.sql
