@@ -715,6 +715,13 @@ shortestline_tcbuffer_geo_analytic(const Temporal *temp, const GSERIALIZED *gs)
  * nearest-approach value.
  *****************************************************************************/
 
+/* Context kind discriminator shared as the first member of every context
+ * struct, so the ever/always/spanset scan kernels can be reused verbatim for a
+ * geometry boundary (#TcbufferGeoCtx) or for a single static circular buffer
+ * (#TcbufferDiscCtx) */
+#define TCBUF_CTX_GEO 0
+#define TCBUF_CTX_DISC 1
+
 /**
  * @brief Reusable geometry context that owns the boundary segments and the
  * bucket hierarchy, so many discs and segments can be tested against one
@@ -722,9 +729,24 @@ shortestline_tcbuffer_geo_analytic(const Temporal *temp, const GSERIALIZED *gs)
  */
 typedef struct
 {
+  int kind;             /**< Always #TCBUF_CTX_GEO */
   GeoDistEdge *segs;
   GeoDistGeom g;
 } TcbufferGeoCtx;
+
+/**
+ * @brief Reusable disc context that owns a single static circular buffer, so
+ * the contains/covers scan kernels test a moving disk against it exactly (disc
+ * in disc, no polygon approximation of the boundary)
+ */
+typedef struct
+{
+  int kind;             /**< Always #TCBUF_CTX_DISC */
+  Cbuffer cb;           /**< The static circular buffer */
+  bool container_is_temporal; /**< True if the temporal disk is the container
+                                   (temp contains cb), false if @p cb contains
+                                   the temporal disk */
+} TcbufferDiscCtx;
 
 /**
  * @brief Build the reusable geometry context for the native within kernel from
@@ -755,6 +777,7 @@ tcbuffer_geo_ctx_make(const GSERIALIZED *gs)
     if (segs[k].ymax > gymax) gymax = segs[k].ymax;
   }
   TcbufferGeoCtx *ctx = palloc(sizeof(TcbufferGeoCtx));
+  ctx->kind = TCBUF_CTX_GEO;
   ctx->segs = segs;
   ctx->g = (GeoDistGeom) { segs, n, has_poly, gxmin, gymin, gxmax, gymax, NULL,
     0, geodist_geom_build_rtree(segs, n) };
@@ -784,12 +807,42 @@ tcbuffer_geo_ctx_free(void *ctx)
 }
 
 /**
- * @brief Return the number of boundary segments in a geometry context, used to
- * size the per-segment within-interval output
+ * @brief Build a disc context wrapping a single static circular buffer for the
+ * exact disc-in-disc contains/covers scan kernels
+ * @param[in] cb Static circular buffer
+ * @param[in] container_is_temporal True if the temporal disk is the container
+ * (temp contains @p cb), false if @p cb is the container (@p cb contains temp)
+ */
+void *
+tcbuffer_disc_ctx_make(const Cbuffer *cb, bool container_is_temporal)
+{
+  TcbufferDiscCtx *ctx = palloc(sizeof(TcbufferDiscCtx));
+  ctx->kind = TCBUF_CTX_DISC;
+  ctx->cb = *cb;
+  ctx->container_is_temporal = container_is_temporal;
+  return ctx;
+}
+
+/**
+ * @brief Free a disc context built by #tcbuffer_disc_ctx_make
+ */
+void
+tcbuffer_disc_ctx_free(void *ctx)
+{
+  if (ctx)
+    pfree(ctx);
+}
+
+/**
+ * @brief Return the number of boundary segments in a context, used to size the
+ * per-segment root output (a disc boundary yields at most the two roots of the
+ * quadratic clearance equation)
  */
 int
 tcbuffer_geo_ctx_nsegs(const void *ctxv)
 {
+  if (*(const int *) ctxv == TCBUF_CTX_DISC)
+    return 1;
   return ((const TcbufferGeoCtx *) ctxv)->g.n;
 }
 
@@ -1136,6 +1189,19 @@ tcbuffer_disc_touch_ctx(const Cbuffer *cb, const void *ctxv)
 bool
 tcbuffer_disc_contains_ctx(const Cbuffer *cb, const void *ctxv, bool strict)
 {
+  if (*(const int *) ctxv == TCBUF_CTX_DISC)
+  {
+    /* Exact disc-in-disc test: a disk (C, rc) is contained in a disk (P, R)
+     * iff dist(P, C) + rc <= R (covers) / < R (contains). The moving disk is
+     * @p cb; the static disk and the containment direction come from the
+     * context */
+    const TcbufferDiscCtx *d = (const TcbufferDiscCtx *) ctxv;
+    const Cbuffer *outer = d->container_is_temporal ? cb : &d->cb;
+    const Cbuffer *inner = d->container_is_temporal ? &d->cb : cb;
+    double gap = hypot(inner->x - outer->x, inner->y - outer->y) +
+      inner->radius - outer->radius;
+    return strict ? (gap < - TCBUFFER_TOUCH_EPS) : (gap <= TCBUFFER_TOUCH_EPS);
+  }
   const TcbufferGeoCtx *ctx = (const TcbufferGeoCtx *) ctxv;
   const POINT2D *p = cbuffer_point2d_p(cb);
   bool inside;
@@ -1246,10 +1312,61 @@ tcbufferseg_touch_roots(const Cbuffer *cb1, const Cbuffer *cb2,
  * containment changes but no touch occurs. Returns the number of times written
  * (at most @p maxout)
  */
+/**
+ * @brief Append to @p outt the interior times in (0,1) at which a linearly
+ * moving disk starts or stops containing/covering (or being contained/covered
+ * by) the static disk of a disc context
+ * @details Over the segment the moving disk is P(t)=(x0+t dx, y0+t dy),
+ * R(t)=r0+t dr. Containment flips where the clearance g(t)=||P(t)-C||-thr(t)
+ * vanishes, thr(t)=m+s t being R(t)-rc (temporal container) or rc-R(t) (static
+ * container). Squaring the non-negative ||P(t)-C|| gives the quadratic
+ * Q(t)=(a-s^2)t^2+(b-2ms)t+(c-m^2); a root is a genuine clearance zero only
+ * where thr>=0, which discards the spurious branch introduced by squaring.
+ */
+static int
+tcbuffer_disc_seg_roots(const Cbuffer *cb1, const Cbuffer *cb2,
+  const TcbufferDiscCtx *d, double *outt, int maxout)
+{
+  double x0 = cb1->x, y0 = cb1->y, r0 = cb1->radius;
+  double dx = cb2->x - cb1->x, dy = cb2->y - cb1->y, dr = cb2->radius - r0;
+  double cx = d->cb.x, cy = d->cb.y, rc = d->cb.radius;
+  double m, s;
+  if (d->container_is_temporal) { m = r0 - rc; s = dr; }
+  else { m = rc - r0; s = -dr; }
+  double ex = x0 - cx, ey = y0 - cy;
+  double a = dx * dx + dy * dy, b = 2 * (ex * dx + ey * dy), c = ex * ex + ey * ey;
+  double A = a - s * s, B = b - 2 * m * s, C = c - m * m;
+  double cand[2];
+  int ncand = 0;
+  if (fabs(A) > 1e-12)
+  {
+    double disc = B * B - 4 * A * C;
+    if (disc >= 0)
+    {
+      double sq = sqrt(disc);
+      cand[ncand++] = (-B - sq) / (2 * A);
+      cand[ncand++] = (-B + sq) / (2 * A);
+    }
+  }
+  else if (fabs(B) > 1e-12)
+    cand[ncand++] = -C / B;
+  int n = 0;
+  for (int i = 0; i < ncand && n < maxout; i++)
+  {
+    double t = cand[i];
+    if (t > 0.0 && t < 1.0 && (m + s * t) >= - TCBUFFER_TOUCH_EPS)
+      outt[n++] = t;
+  }
+  return n;
+}
+
 int
 tcbufferseg_boundary_roots(const Cbuffer *cb1, const Cbuffer *cb2,
   const void *ctxv, double *outt, int maxout)
 {
+  if (*(const int *) ctxv == TCBUF_CTX_DISC)
+    return tcbuffer_disc_seg_roots(cb1, cb2, (const TcbufferDiscCtx *) ctxv,
+      outt, maxout);
   return tcbufferseg_sg_roots(cb1, cb2, ctxv, outt, maxout, false);
 }
 

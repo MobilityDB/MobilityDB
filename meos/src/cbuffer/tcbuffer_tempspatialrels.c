@@ -1123,6 +1123,8 @@ tspatialrel_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
  * per-instant lifting path */
 static Temporal *tcontains_geo_tcbuffer_native(const Temporal *temp,
   const GSERIALIZED *gs, bool strict);
+extern Temporal *tcontains_disc_tcbuffer_native(const Temporal *temp,
+  const Cbuffer *cb, bool container_is_temporal, bool strict);
 
 /**
  * @ingroup meos_cbuffer_rel_temp
@@ -1175,8 +1177,7 @@ tcontains_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp)
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_cbuffer(temp, cb))
     return NULL;
-  return tspatialrel_tspatial_base(temp, PointerGetDatum(cb),
-    (Datum) NULL, (varfunc) &datum_cbuffer_contains, 0, INVERT);
+  return tcontains_disc_tcbuffer_native(temp, cb, false, true);
 }
 
 /**
@@ -1193,8 +1194,7 @@ tcontains_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_cbuffer(temp, cb))
     return NULL;
-  return tspatialrel_tspatial_base(temp, PointerGetDatum(cb),
-    (Datum) NULL, (varfunc) &datum_cbuffer_contains, 0, INVERT_NO);
+  return tcontains_disc_tcbuffer_native(temp, cb, true, true);
 }
 
 /**
@@ -1262,7 +1262,10 @@ tcovers_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 Temporal *
 tcovers_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp)
 {
-  return tspatialrel_tcbuffer_cbuffer(temp, cb, INVERT, &datum_cbuffer_covers);
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tcbuffer_cbuffer(temp, cb))
+    return NULL;
+  return tcontains_disc_tcbuffer_native(temp, cb, false, false);
 }
 
 /**
@@ -1276,8 +1279,10 @@ tcovers_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp)
 Temporal *
 tcovers_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
 {
-  return tspatialrel_tcbuffer_cbuffer(temp, cb, INVERT_NO,
-    &datum_cbuffer_covers);
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tcbuffer_cbuffer(temp, cb))
+    return NULL;
+  return tcontains_disc_tcbuffer_native(temp, cb, true, false);
 }
 
 /**
@@ -2204,27 +2209,16 @@ tcbufferseq_always_contains_native(const TSequence *seq, const void *ctx,
  * @param[in] ever True for the ever semantics, false for the always semantics
  * @param[in] strict True for contains, false for covers
  */
-int
-eacontains_tcbuffer_geo_native(const Temporal *temp, const GSERIALIZED *gs,
+/**
+ * @brief Return 1 if a context (@p strict) ever/always contains or covers a
+ * temporal circular buffer, 0 if not, scanning the instants and per-segment
+ * sub-intervals; the context abstracts either a geometry boundary or a static
+ * disc
+ */
+static int
+eacontains_tcbuffer_ctx_native(const Temporal *temp, const void *ctx,
   bool ever, bool strict)
 {
-  if (gserialized_is_empty(gs))
-    return -1;
-
-  /* Bounding box test: a moving disk whose radius-aware bounding box is
-   * disjoint from the geometry is never inside it, so it never contains/covers
-   * at any instant. This constant-time reject avoids the per-segment clearance
-   * scan on the common non-overlapping case (e.g. a spatial join over disjoint
-   * extents), giving 0 for both the ever and always semantics */
-  STBox box1, box2;
-  tspatial_set_stbox(temp, &box1);
-  geo_set_stbox(gs, &box2);
-  if (! overlaps_stbox_stbox(&box1, &box2))
-    return 0;
-
-  void *ctx = tcbuffer_geo_ctx_make(gs);
-  if (! ctx)
-    return -1;
   int result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
@@ -2251,7 +2245,97 @@ eacontains_tcbuffer_geo_native(const Temporal *temp, const GSERIALIZED *gs,
       if (! ever && ! r) { result = 0; break; }
     }
   }
+  return result;
+}
+
+int
+eacontains_tcbuffer_geo_native(const Temporal *temp, const GSERIALIZED *gs,
+  bool ever, bool strict)
+{
+  if (gserialized_is_empty(gs))
+    return -1;
+
+  /* Bounding box test: a moving disk whose radius-aware bounding box is
+   * disjoint from the geometry is never inside it, so it never contains/covers
+   * at any instant. This constant-time reject avoids the per-segment clearance
+   * scan on the common non-overlapping case (e.g. a spatial join over disjoint
+   * extents), giving 0 for both the ever and always semantics */
+  STBox box1, box2;
+  tspatial_set_stbox(temp, &box1);
+  geo_set_stbox(gs, &box2);
+  if (! overlaps_stbox_stbox(&box1, &box2))
+    return 0;
+
+  void *ctx = tcbuffer_geo_ctx_make(gs);
+  if (! ctx)
+    return -1;
+  int result = eacontains_tcbuffer_ctx_native(temp, ctx, ever, strict);
   tcbuffer_geo_ctx_free(ctx);
+  return result;
+}
+
+/**
+ * @ingroup meos_internal_cbuffer_rel_ever
+ * @brief Return 1 if a temporal circular buffer ever/always contains (@p strict)
+ * or covers a static circular buffer, or the static circular buffer the
+ * temporal one, 0 if not
+ * @param[in] temp Temporal circular buffer
+ * @param[in] cb Static circular buffer
+ * @param[in] ever True for the ever semantics, false for the always semantics
+ * @param[in] container_is_temporal True if @p temp is the container
+ * @param[in] strict True for contains, false for covers
+ */
+int
+eacontains_tcbuffer_cbuffer_native(const Temporal *temp, const Cbuffer *cb,
+  bool ever, bool container_is_temporal, bool strict)
+{
+  /* Bounding box test: two disjoint radius-aware bounding boxes cannot contain
+   * one another at any instant */
+  STBox box1, box2;
+  tspatial_set_stbox(temp, &box1);
+  cbuffer_set_stbox(cb, &box2);
+  if (! overlaps_stbox_stbox(&box1, &box2))
+    return 0;
+
+  void *ctx = tcbuffer_disc_ctx_make(cb, container_is_temporal);
+  int result = eacontains_tcbuffer_ctx_native(temp, ctx, ever, strict);
+  tcbuffer_disc_ctx_free(ctx);
+  return result;
+}
+
+/**
+ * @brief Native temporal contains/covers Boolean for a temporal circular buffer
+ * and a static circular buffer, exact disc in disc
+ */
+Temporal *
+tcontains_disc_tcbuffer_native(const Temporal *temp, const Cbuffer *cb,
+  bool container_is_temporal, bool strict)
+{
+  /* Bounding box test: a false everywhere the boxes are disjoint */
+  STBox box1, box2;
+  tspatial_set_stbox(temp, &box1);
+  cbuffer_set_stbox(cb, &box2);
+  if (! overlaps_stbox_stbox(&box1, &box2))
+    return temporal_from_base_temp(BoolGetDatum(false), T_TBOOL, temp);
+
+  void *ctx = tcbuffer_disc_ctx_make(cb, container_is_temporal);
+  Temporal *result = NULL;
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      result = tcontains_tcbufferinst_geo_native((TInstant *) temp, ctx,
+        strict);
+      break;
+    case TSEQUENCE:
+      result = tcontains_tcbufferseq_geo_native((TSequence *) temp, ctx,
+        strict);
+      break;
+    default: /* TSEQUENCESET */
+      result = tcontains_tcbufferseqset_geo_native((TSequenceSet *) temp, ctx,
+        strict);
+  }
+  tcbuffer_disc_ctx_free(ctx);
   return result;
 }
 
