@@ -89,8 +89,8 @@ bbox_type(MeosType bboxtype)
 size_t
 bbox_get_size(MeosType bboxtype)
 {
-  assert(bbox_type(bboxtype));
-  if (bboxtype == T_TSTZSPAN)
+  assert(bbox_type(bboxtype) || span_type(bboxtype));
+  if (span_type(bboxtype))
     return sizeof(Span);
   if (bboxtype == T_TBOX)
     return sizeof(TBox);
