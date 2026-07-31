@@ -183,6 +183,26 @@ temporal_restrict_value(const Temporal *temp, Datum value, bool atfunc)
         (Temporal *) tsequence_as_tsequenceset((TSequence *) temp);
   }
 
+  /* For the minus of a spatial type, the direct per-segment restriction splits
+   * every segment and normalises the pieces back with a per-merge collinearity
+   * test on the spatial base value. Route the minus through the time complement
+   * of the at-restriction instead: the at-restriction finds the same crossings
+   * but builds a small result, and the time-based minus rebuilds the kept
+   * intervals without the value-driven re-split and normalisation. */
+  if (! atfunc && tspatial_type(temp->temptype))
+  {
+    Temporal *at = temporal_restrict_value(temp, value, REST_AT);
+    if (at == NULL)
+      return (temp->subtype != TSEQUENCE ||
+          MEOS_FLAGS_DISCRETE_INTERP(temp->flags)) ?
+        temporal_copy(temp) :
+        (Temporal *) tsequence_as_tsequenceset((TSequence *) temp);
+    SpanSet *ss = temporal_time(at);
+    Temporal *result = temporal_restrict_tstzspanset(temp, ss, REST_MINUS);
+    pfree(at); pfree(ss);
+    return result;
+  }
+
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
   {
