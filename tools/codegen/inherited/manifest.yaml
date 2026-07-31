@@ -2291,6 +2291,34 @@ topop_families:
   - lit: "\n"
   - topops: overlaps
   - lit: "\n"
+posop_families:
+- family: set
+  file: mobilitydb/sql/temporal/002_set_ops.in.sql
+  reference: true
+  begin: "CREATE FUNCTION left(integer"
+  end: "CREATE FUNCTION setUnion(integer"
+  value_selectivity: [span, span, span, none]
+  time_selectivity: {left: [none, span], right: [none, span], overleft: [span, span], overright: [none, span]}
+  pairs: [[integer, intset], [bigint, bigintset], [float, floatset], [text, textset]]
+  time_pairs: [[date, dateset], [timestamptz, tstzset]]
+  blocks:
+  - lit: "/******************************************************************************/\n\n"
+  - posfns: left
+  - lit: "\n"
+  - posops: left
+  - lit: "\n/******************************************************************************/\n\n"
+  - posfns: right
+  - lit: "\n"
+  - posops: right
+  - lit: "\n/******************************************************************************/\n\n"
+  - posfns: overleft
+  - lit: "\n"
+  - posops: overleft
+  - lit: "\n/******************************************************************************/\n\n"
+  - posfns: overright
+  - lit: "\n"
+  - posops: overright
+  - lit: "\n"
 conversion_families:
 - family: geo
   file: mobilitydb/sql/geo/052_tgeo.in.sql
@@ -2928,9 +2956,8 @@ setfamilies:
   - {set: npointset,  base: npoint,      ordered: false,                         metric: true,  spatial: true}
   - {set: poseset,    base: pose,        ordered: false,                         metric: true,  spatial: true}
   - {set: cbufferset, base: cbuffer,     ordered: false,                         metric: true,  spatial: true}
-  # jsonb has no semantic order, yet 450_jsonbset.in.sql:378-393 deploys the
-  # `<<`/`>>` pair (Left_set_set/Right_set_set) without `&<`/`&>` — a partial
-  # posops surface the ordered flag deliberately does not model.
+  # jsonb has no semantic order and 450_jsonbset.in.sql deploys no position
+  # operators.
   - {set: jsonbset,   base: jsonb,       ordered: false,                         metric: false, spatial: false}
   - {set: h3indexset, base: h3index,     ordered: false,                         metric: false, spatial: true}
   - {set: quadbinset, base: quadbin,     ordered: false,                         metric: false, spatial: true}
