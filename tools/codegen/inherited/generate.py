@@ -1290,10 +1290,21 @@ def bootstrap_representations(filetext: str, fam: dict, rendered: str) -> str:
 # absent from the manifest: their B-tree block interleaves with the hash block with
 # no separating divider and reorders the functions (eq/ne/lt/le/ge/gt) with a
 # distinct RETURNS spelling and one-line operator layout, so it is not a token-swap
-# of the shared skeleton; likewise the base temporal families (set/span/spanset/
-# tbox/temporal) group functions across multiple base types with non-contiguous
+# of the shared skeleton; likewise the base temporal families (span/spanset/tbox/
+# temporal) group functions across multiple base types with non-contiguous
 # operators/opclasses and Span_*/Tbox_* symbols. Both are classified out by omission
 # from the data, never by a code-level skip.
+#
+# The value-domain Set<T> families ARE in the manifest (`ops: set` selects the
+# Set_* kernel table). Their skeleton-rendered `funcs` cover the canonical 4-line
+# spelling; a multi-type file (001_set: six alpha base types, 050_geoset:
+# geomset+geogset) lists its types op-outer via a `funcs` token LIST. Two shapes are
+# reproduced via `lit` instead of the skeleton, encoded, never normalized:
+# h3indexset/quadbinset spell the functions in a compact 3-line form (`RETURNS
+# boolean AS 'MODULE_PATHNAME', ...`) and interleave `hash()` + the hash opclass
+# inside the comparison section, and the pointcloud sets (pcpointset/pcpatchset)
+# have no divider between the B-tree opclass and the hash tail, so their extracted
+# region carries the hash functions/opclass as a trailing `lit`.
 def _comparisons_markers(family: str):
     begin = (f"-- GENERATED-COMPARISONS-BEGIN {family} — "
              "tools/codegen/inherited/generate.py from templates/comparisons.sql.tmpl;\n"
@@ -1304,8 +1315,9 @@ def _comparisons_markers(family: str):
 
 # Default op -> (RETURNS, backing C symbol) for the six comparison functions plus the
 # B-tree support `cmp`; the fully canonical generic comparison set, identical for
-# every temporal family (a family that deviates would override via a `funcs` spec,
-# none do today).
+# every temporal family. A value-domain Set<T> family selects the _SET_CMP_OPS table
+# instead via `ops: set`; a family that deviates otherwise would override via a
+# `funcs` spec, none do today.
 _CMP_OPS = [
     ("lt", "bool", "Temporal_lt"),
     ("le", "bool", "Temporal_le"),
@@ -1315,31 +1327,52 @@ _CMP_OPS = [
     ("gt", "bool", "Temporal_gt"),
     ("cmp", "int4", "Temporal_cmp"),
 ]
+# The Set<T> comparison surface is the same seven-function skeleton backed by the
+# Set_* kernels, in the canonical set-file order (eq/ne before the inequalities,
+# unlike the temporal lt-first order) and with cmp spelled `integer` (the temporal
+# files spell it `int4`) — both reproduced verbatim, never normalized.
+_SET_CMP_OPS = [
+    ("eq", "bool", "Set_eq"),
+    ("ne", "bool", "Set_ne"),
+    ("lt", "bool", "Set_lt"),
+    ("le", "bool", "Set_le"),
+    ("ge", "bool", "Set_ge"),
+    ("gt", "bool", "Set_gt"),
+    ("cmp", "integer", "Set_cmp"),
+]
 
 
-def _cmp_funcs(temp: str) -> str:
-    """Render the seven comparison CREATE FUNCTIONs for one temporal type from the
-    shared skeleton (templates/comparisons.sql.tmpl). The functions are packed with no
-    blank line between them (matching the hand file) and the block ends with the
-    trailing newline of the last function; the blank line that separates them from the
-    following operators is part of the surrounding `lit` block."""
+def _cmp_funcs(types, ops=_CMP_OPS) -> str:
+    """Render the seven comparison CREATE FUNCTIONs from the shared skeleton
+    (templates/comparisons.sql.tmpl). `types` is one type token (the temporal shape:
+    the seven functions packed with no blank line between them) or a list of tokens
+    (the multi-type set files 001_set/050_geoset: grouped op-outer / type-inner —
+    every type's eq, then every type's ne, ... — the op groups separated by one
+    blank line, no blank within a group). The block ends with the trailing newline
+    of the last function; the blank line that separates it from the following
+    operators is part of the surrounding `lit` block."""
     tmpl = (TEMPLATES / "comparisons.sql.tmpl").read_text().rstrip("\n")
-    out = [tmpl.replace("{SIG}", f"{name}({temp}, {temp})")
-               .replace("{RET}", ret).replace("{SYM}", sym)
-           for name, ret, sym in _CMP_OPS]
-    return "\n".join(out) + "\n"
+    if isinstance(types, str):
+        types = [types]
+    groups = ["\n".join(tmpl.replace("{SIG}", f"{name}({t}, {t})")
+                            .replace("{RET}", ret).replace("{SYM}", sym)
+                        for t in types)
+              for name, ret, sym in ops]
+    return ("\n\n" if len(types) > 1 else "\n").join(groups) + "\n"
 
 
 def render_comparisons(fam: dict) -> str:
     """Render one family's comparison block from its `blocks` sequence. A block is a
     verbatim `lit` (the section banner, operators, B-tree opclass and per-type
-    dividers, kept exactly as the hand file) or a `funcs` temporal-type token (the
-    seven comparison functions rendered from the shared skeleton). Blocks concatenate
-    with no automatic separator — every separator is baked into the `lit` blocks — so
-    the rendered text is byte-identical to the committed region."""
+    dividers, kept exactly as the hand file) or a `funcs` type token / token list (the
+    seven comparison functions rendered from the shared skeleton, backed by the
+    Temporal_* kernels, or by the Set_* kernels when the family carries `ops: set`).
+    Blocks concatenate with no automatic separator — every separator is baked into the
+    `lit` blocks — so the rendered text is byte-identical to the committed region."""
+    ops = _SET_CMP_OPS if fam.get("ops") == "set" else _CMP_OPS
     out = ""
     for blk in fam["blocks"]:
-        out += blk["lit"] if "lit" in blk else _cmp_funcs(blk["funcs"])
+        out += blk["lit"] if "lit" in blk else _cmp_funcs(blk["funcs"], ops)
     return out
 
 
