@@ -1333,6 +1333,262 @@ rtree_search_temporal_dedup(const RTree *rtree, RTreeSearchOp op,
   return meos_array_count(result);
 }
 
+/*****************************************************************************
+ * Nearest-neighbour (kNN) cursor
+ *
+ * An incremental best-first traversal (Hjaltason and Samet) that yields the
+ * indexed ids in order of increasing distance to a query bounding box. A
+ * binary min-heap holds two kinds of entries: tree nodes still to be expanded
+ * and leaf ids ready to be emitted, both keyed by the minimum distance between
+ * the query box and the entry's bounding box. Because a node's box distance is
+ * a lower bound on the distance of every entry it contains, when a leaf id
+ * reaches the top of the heap no unexpanded node can be closer, so ids pop in
+ * exact distance order. The caller controls how many ids are consumed (e.g. to
+ * honour a `LIMIT k`), so the traversal never materialises more of the tree
+ * than the caller reads. The distance is the same box-to-box nearest approach
+ * distance used by the `|=|` operator; an entry whose box does not share the
+ * query's time extent (for temporal box types with a time dimension on both
+ * sides) is reported at infinity and ordered last.
+ *****************************************************************************/
+
+/**
+ * @brief Return the nearest approach distance between two bounding boxes of
+ * the RTree's box type
+ * @details Dispatches on the RTree box type to the canonical box-to-box
+ * distance so the cursor orders entries exactly as the `|=|` operator. For
+ * spatiotemporal boxes the distance is spatial and, when both boxes carry a
+ * time dimension, infinite if their time extents are disjoint (mirroring
+ * #nad_stbox_stbox); for temporal boxes the same holds through
+ * #nad_tbox_tbox; for spans it is the one-dimensional gap.
+ * @param[in] rtree The RTree providing the box type
+ * @param[in] query,box Bounding boxes of type @p rtree->bboxtype
+ */
+static double
+rtree_bbox_distance(const RTree *rtree, const void *query, const void *box)
+{
+  if (rtree->bboxtype == T_TBOX)
+    return nad_tbox_tbox((const TBox *) query, (const TBox *) box);
+  if (rtree->bboxtype == T_STBOX)
+    return nad_stbox_stbox((const STBox *) query, (const STBox *) box);
+#if POINTCLOUD
+  if (rtree->bboxtype == T_TPCBOX)
+    /* TPCBox shares the STBox prefix layout (see get_axis_tpcbox) */
+    return nad_stbox_stbox((const STBox *) query, (const STBox *) box);
+#endif
+  /* Span types: the one-dimensional gap between the two spans, zero when they
+   * overlap, read through the box's axis accessor */
+  double qlo = rtree->get_axis(query, 0, false);
+  double qup = rtree->get_axis(query, 0, true);
+  double blo = rtree->get_axis(box, 0, false);
+  double bup = rtree->get_axis(box, 0, true);
+  if (bup < qlo)
+    return qlo - bup;
+  if (qup < blo)
+    return blo - qup;
+  return 0.0;
+}
+
+/**
+ * @brief A single entry of the kNN cursor's priority queue
+ * @details An entry is either a tree node still to be expanded
+ * (@p is_leaf_entry false, @p node set) or a leaf id ready to be emitted
+ * (@p is_leaf_entry true, @p id set), keyed by @p dist, the distance from the
+ * query box to the entry's bounding box.
+ */
+typedef struct RTreeNNEntry
+{
+  double dist;             /**< Distance from the query to the entry's box */
+  bool is_leaf_entry;      /**< True for an emittable id, false for a node */
+  int id;                  /**< Leaf id (when @p is_leaf_entry) */
+  const RTreeNode *node;   /**< Tree node to expand (when not @p is_leaf_entry) */
+} RTreeNNEntry;
+
+/**
+ * @brief Incremental nearest-neighbour cursor over an RTree
+ */
+struct RTreeNNCursor
+{
+  const RTree *rtree;      /**< Indexed RTree (borrowed, not owned) */
+  void *query;            /**< Private copy of the query bounding box */
+  RTreeNNEntry *heap;     /**< Binary min-heap keyed by distance */
+  int count;              /**< Number of entries currently in the heap */
+  int capacity;           /**< Allocated capacity of the heap array */
+};
+
+/**
+ * @brief Push an entry onto the cursor's min-heap, growing it if needed
+ * @param[in] cursor The cursor whose heap receives the entry
+ * @param[in] entry The entry to insert
+ */
+static void
+nn_heap_push(RTreeNNCursor *cursor, RTreeNNEntry entry)
+{
+  if (cursor->count == cursor->capacity)
+  {
+    cursor->capacity *= 2;
+    cursor->heap = repalloc(cursor->heap,
+      (size_t) cursor->capacity * sizeof(RTreeNNEntry));
+  }
+  int i = cursor->count++;
+  cursor->heap[i] = entry;
+  /* Sift up while the child is closer than its parent */
+  while (i > 0)
+  {
+    int parent = (i - 1) / 2;
+    if (cursor->heap[parent].dist <= cursor->heap[i].dist)
+      break;
+    RTreeNNEntry tmp = cursor->heap[parent];
+    cursor->heap[parent] = cursor->heap[i];
+    cursor->heap[i] = tmp;
+    i = parent;
+  }
+  return;
+}
+
+/**
+ * @brief Pop and return the minimum-distance entry of the cursor's heap
+ * @param[in] cursor The cursor whose heap is non-empty
+ * @pre `cursor->count > 0`
+ */
+static RTreeNNEntry
+nn_heap_pop(RTreeNNCursor *cursor)
+{
+  assert(cursor->count > 0);
+  RTreeNNEntry top = cursor->heap[0];
+  cursor->heap[0] = cursor->heap[--cursor->count];
+  /* Sift down towards the closer child */
+  int i = 0;
+  while (true)
+  {
+    int left = 2 * i + 1, right = 2 * i + 2, smallest = i;
+    if (left < cursor->count &&
+        cursor->heap[left].dist < cursor->heap[smallest].dist)
+      smallest = left;
+    if (right < cursor->count &&
+        cursor->heap[right].dist < cursor->heap[smallest].dist)
+      smallest = right;
+    if (smallest == i)
+      break;
+    RTreeNNEntry tmp = cursor->heap[i];
+    cursor->heap[i] = cursor->heap[smallest];
+    cursor->heap[smallest] = tmp;
+    i = smallest;
+  }
+  return top;
+}
+
+/**
+ * @ingroup meos_geo_box_index
+ * @brief Open a nearest-neighbour cursor that yields the ids stored in an
+ * RTree in order of increasing distance to a query bounding box
+ * @details The cursor performs an incremental best-first traversal: repeated
+ * calls to #rtree_nn_cursor_next return the indexed ids from nearest to
+ * farthest, using the same box-to-box distance as the `|=|` operator. The
+ * caller stops consuming when it has enough neighbours (e.g. after `k`
+ * results), so no more of the tree is visited than required. The query box is
+ * copied into the cursor, so the caller may free or reuse it immediately. The
+ * query box must have the same box type as the RTree; a spatial-only query on
+ * an STBox index yields a purely spatial ordering, while a query carrying a
+ * time dimension additionally requires overlapping time extents (as for
+ * `|=|`). Close the cursor with #rtree_nn_cursor_close.
+ * @param[in] rtree The RTree to query
+ * @param[in] query The query bounding box of type @p rtree->bboxtype
+ * @return A cursor to be freed with #rtree_nn_cursor_close
+ */
+RTreeNNCursor *
+rtree_nn_cursor_open(const RTree *rtree, const void *query)
+{
+  assert(rtree); assert(query);
+  RTreeNNCursor *cursor = palloc0(sizeof(RTreeNNCursor));
+  cursor->rtree = rtree;
+  cursor->query = palloc(rtree->bboxsize);
+  memcpy(cursor->query, query, rtree->bboxsize);
+  cursor->capacity = MAXITEMS;
+  cursor->heap = palloc((size_t) cursor->capacity * sizeof(RTreeNNEntry));
+  cursor->count = 0;
+  /* Seed the heap with the root, which is always expanded first */
+  if (rtree->root)
+  {
+    RTreeNNEntry root_entry;
+    root_entry.dist = 0.0;
+    root_entry.is_leaf_entry = false;
+    root_entry.id = 0;
+    root_entry.node = rtree->root;
+    nn_heap_push(cursor, root_entry);
+  }
+  return cursor;
+}
+
+/**
+ * @ingroup meos_geo_box_index
+ * @brief Advance a nearest-neighbour cursor to the next closest id
+ * @details Returns the next id in order of increasing distance to the query
+ * box. When @p id_out or @p dist_out is not @p NULL it receives the id and its
+ * distance. An id whose box has no valid distance to the query (e.g. disjoint
+ * time extents for temporal box types) is reported last with an infinite
+ * distance.
+ * @param[in] cursor The cursor previously opened with #rtree_nn_cursor_open
+ * @param[out] id_out Receives the id of the next neighbour, or @p NULL
+ * @param[out] dist_out Receives the distance of the next neighbour, or @p NULL
+ * @return @p true if a neighbour was produced, @p false once exhausted
+ */
+bool
+rtree_nn_cursor_next(RTreeNNCursor *cursor, int *id_out, double *dist_out)
+{
+  assert(cursor);
+  while (cursor->count > 0)
+  {
+    RTreeNNEntry entry = nn_heap_pop(cursor);
+    if (entry.is_leaf_entry)
+    {
+      /* A leaf id reached the top of the heap: nothing unexpanded is closer */
+      if (id_out)
+        *id_out = entry.id;
+      if (dist_out)
+        *dist_out = entry.dist;
+      return true;
+    }
+    /* Expand the node: push every child keyed by its box distance */
+    const RTreeNode *node = entry.node;
+    for (int i = 0; i < node->count; i++)
+    {
+      RTreeNNEntry child;
+      child.dist = rtree_bbox_distance(cursor->rtree, cursor->query,
+        RTREE_NODE_BBOX_N(node, i));
+      if (node->node_type == RTREE_LEAF)
+      {
+        child.is_leaf_entry = true;
+        child.id = node->ids[i];
+        child.node = NULL;
+      }
+      else
+      {
+        child.is_leaf_entry = false;
+        child.id = 0;
+        child.node = node->nodes[i];
+      }
+      nn_heap_push(cursor, child);
+    }
+  }
+  return false;
+}
+
+/**
+ * @ingroup meos_geo_box_index
+ * @brief Close a nearest-neighbour cursor and free its resources
+ * @param[in] cursor The cursor to close; @p NULL is ignored
+ */
+void
+rtree_nn_cursor_close(RTreeNNCursor *cursor)
+{
+  if (! cursor)
+    return;
+  pfree(cursor->heap);
+  pfree(cursor->query);
+  pfree(cursor);
+  return;
+}
+
 /**
  * @brief Frees the memory allocated for an RTree node
  * @details The function recursively frees the memory of an RTree node.
