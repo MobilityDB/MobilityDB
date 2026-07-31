@@ -123,10 +123,6 @@ extern Temporal *tjsonb_to_talphanum(const Temporal *temp, const char *key,
 
 extern Set *jsonbfunc_jsonbset(const Set *s, datum_func1 func, MeosType intype,
   MeosType restype);
-extern Set *jsonbfunc_jsonbset_jsonb(const Set *s, const Jsonb *jb,
-  datum_func2 func, bool invert);
-extern Set *jsonbfunc_jsonbset_text(const Set *s, const text *txt,
-  datum_func2 func);
 
 /*****************************************************************************
  * Temporal wrappers for JSONB operations
