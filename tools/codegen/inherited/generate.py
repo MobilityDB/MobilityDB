@@ -839,6 +839,196 @@ def splice_representations(filetext: str, family: str, rendered: str) -> str:
     return filetext[:b] + rendered + filetext[e:]
 
 
+# --- SQL Constructors sub-family (SQL, per-family region-in-file) ----------------
+# The Temporal<T> value-and-time constructors every temporal type carries:
+# <temp>(<base>, timestamptz|tstzset|tstzspan|tstzspanset) plus the array
+# constructors <temp>Seq/<temp>SeqSet/<temp>SeqSetGaps — all pure wiring to the
+# generic Tinstant_constructor / Tsequence_from_base_* / Tsequenceset_from_base_* /
+# Tsequence_constructor / Tsequenceset_constructor / Tsequenceset_constructor_gaps
+# kernels (mirrors sub-family B representations). Every CREATE FUNCTION is the SAME
+# four-line skeleton (templates/constructors.sql.tmpl); only the signature {SIG},
+# return {RET}, backing symbol {SYM}, an optional strictness ({STRICT}) and an
+# optional leading comment ({PRE}) differ — so ONE skeleton emits the whole surface;
+# the per-family shape (which ops, the interpolation default, whether the base-span
+# constructors carry a `text DEFAULT` interp arg, the SeqSetGaps arg list/strictness,
+# the section headers/dividers and per-op/per-type symbol + return overrides) is data
+# in the manifest `constructor_families` table.
+#
+# Two orthogonal capability axes vary the base shape, exactly as the ground-truth
+# matrix shows (NOT "all spatial" — the flags are per family):
+#   * span_interp : a continuous family (linear-capable: tgeo/tpoint/tcbuffer/tnpoint/
+#     tpose/trgeo) carries `text DEFAULT '<interp>'` on the (base,tstzspan) and
+#     (base,tstzspanset) constructors; a step-only cell/plug-in family (th3index/
+#     tquadbin/tjsonb) omits it. `interp` is the default interpolation string.
+#   * SeqSetGaps : a continuous/scalar-distance family adds `maxdist float DEFAULT
+#     NULL` to `<temp>SeqSetGaps` (gaps_maxdist), a cell/discrete family exposes only
+#     the time gap `maxt interval DEFAULT NULL`, and a step-patch family (tpcpoint/
+#     tpcpatch) has NO SeqSetGaps at all (the op is simply absent from its sequence).
+# `<temp>SeqSetGaps` is always NON-strict: the canonical `-- The function is not
+# strict` comment (its {PRE}) precedes it and STRICT is omitted, reproduced verbatim.
+#
+# Region markers for the eventual Phase-2 emit (mirroring _representations_markers);
+# Phase-1 --validate extracts the committed hand block by section-header ANCHORS
+# (marker-aware: sliced by GENERATED-CONSTRUCTORS markers once they exist, else the
+# section headers) so the deployed .in.sql files are untouched while the template is
+# being proven.
+def _constructors_markers(family: str):
+    begin = (f"-- GENERATED-CONSTRUCTORS-BEGIN {family} — "
+             "tools/codegen/inherited/generate.py from templates/constructors.sql.tmpl;\n"
+             "-- DO NOT EDIT BY HAND; edit the template + manifest.yaml "
+             "(constructor_families) and re-run.\n")
+    return begin, f"-- GENERATED-CONSTRUCTORS-END {family}\n"
+
+
+# Default op -> backing C symbol; the fully canonical generic constructor set. A
+# family whose instant (or, for rgeo, every) symbol deviates overrides it per op via
+# its `syms` map (geo: Tgeoinst_constructor, tpoint: Tpointinst_constructor, rgeo:
+# the whole Trgeometry_* family).
+_CTOR_SYM = {
+    "instant": "Tinstant_constructor",
+    "from_tstzset": "Tsequence_from_base_tstzset",
+    "from_tstzspan": "Tsequence_from_base_tstzspan",
+    "from_tstzspanset": "Tsequenceset_from_base_tstzspanset",
+    "seq": "Tsequence_constructor",
+    "seqset": "Tsequenceset_constructor",
+    "seqsetgaps": "Tsequenceset_constructor_gaps",
+}
+
+
+def _ctor_skeleton(sig: str, ret: str, sym: str, strict: bool, pre: str) -> str:
+    """One constructor CREATE FUNCTION from the shared skeleton (no trailing newline,
+    so ops/blocks can be joined with explicit blank-line control). `pre` is a leading
+    comment line (the `-- The function is not strict` marker, or the tpcpoint interp
+    note) or ""; `strict` toggles the ` STRICT` keyword."""
+    tmpl = (TEMPLATES / "constructors.sql.tmpl").read_text()
+    return (tmpl.replace("{PRE}", pre).replace("{SIG}", sig).replace("{RET}", ret)
+                .replace("{SYM}", sym)
+                .replace("{STRICT}", " STRICT" if strict else "").rstrip("\n"))
+
+
+def _ctor_op_sig(op: str, fam: dict, pair: dict) -> str:
+    """The canonical signature for constructor op `op` and one (base,temp) pair.
+    `span_interp` decides whether the from-span forms carry a `text DEFAULT` interp
+    arg; `inc` selects the array lower/upper inclusion arg spelling; `gaps_maxdist`
+    adds the continuous scalar-distance arg to SeqSetGaps."""
+    T, B = pair["temp"], pair["base"]
+    interp = fam.get("interp", "step")
+    span = f", text DEFAULT '{interp}'" if fam.get("span_interp") else ""
+    if op == "instant":
+        return f"{T}({pair.get('ibase', B)}, timestamptz)"
+    if op == "from_tstzset":
+        return f"{T}({B}, tstzset)"
+    if op == "from_tstzspan":
+        return f"{T}({B}, tstzspan{span})"
+    if op == "from_tstzspanset":
+        return f"{T}({B}, tstzspanset{span})"
+    if op == "seq":
+        linc, uinc = (("lowerInc", "upperInc") if fam.get("inc") == "camel"
+                      else ("lower_inc", "upper_inc"))
+        return (f"{T}Seq({T}[], text DEFAULT '{interp}',\n"
+                f"    {linc} boolean DEFAULT true, {uinc} boolean DEFAULT true)")
+    if op == "seqset":
+        return f"{T}SeqSet({T}[])"
+    if op == "seqsetgaps":
+        if fam.get("gaps_maxdist"):
+            return (f"{T}SeqSetGaps({T}[], maxt interval DEFAULT NULL,\n"
+                    f"    maxdist float DEFAULT NULL, "
+                    f"text DEFAULT '{fam.get('gaps_interp', interp)}')")
+        return f"{T}SeqSetGaps({T}[], maxt interval DEFAULT NULL)"
+    raise SystemExit(f"unknown constructor op {op!r}")
+
+
+def _ctor_op(op_spec, fam: dict) -> str:
+    """Render constructor op `op_spec` over every family pair, the pairs packed with
+    no blank line (matching the dual-base geo/tpoint pairing). An op_spec is a bare op
+    name or a dict {op, pre} carrying an extra leading comment (the tpcpoint interp
+    note). SeqSetGaps is non-strict and its `-- The function is not strict` marker (and
+    any extra `pre`) precedes the FIRST pair only."""
+    if isinstance(op_spec, dict):
+        op, extra_pre = op_spec["op"], op_spec.get("pre", "")
+    else:
+        op, extra_pre = op_spec, ""
+    strict = op != "seqsetgaps"
+    marker = "-- The function is not strict\n" if op == "seqsetgaps" else ""
+    sym = fam.get("syms", {}).get(op, _CTOR_SYM[op])
+    out = []
+    for i, pair in enumerate(fam["pairs"]):
+        # The (base,tstzspanset) overload carries a per-pair return override for the
+        # two families whose geography/geog overload has the committed wrong-RETURNS
+        # copy-paste (geo -> tgeometry, tpoint -> tgeompoint); every other op/pair
+        # returns the pair's own temporal type.
+        ret = pair.get("spanset_ret", pair["temp"]) if op == "from_tstzspanset" else pair["temp"]
+        pre = (extra_pre + marker) if i == 0 else ""
+        out.append(_ctor_skeleton(_ctor_op_sig(op, fam, pair), ret, sym, strict, pre))
+    return "\n".join(out)
+
+
+def render_constructors(fam: dict) -> str:
+    """Render one family's constructor block from its `blocks` sequence. A block is a
+    verbatim `lit` (a section header/divider kept exactly as the hand file), an `ops`
+    list (canonical ops rendered from the family flags/pairs, packed with no blank),
+    or an explicit `fns` list (the family-specific non-canonical overloads: tcbuffer's
+    tcbuffer(tgeompoint,tfloat), rgeo's trgeometry(geometry,tpose)). Blocks are
+    separated by one blank line, except a `glue` block joins with a single newline (the
+    tjsonb divider whose preceding line carries two trailing spaces, reproduced by
+    baking that line into the glued lit). The block ends with the blank line that
+    precedes the next section (the section-header anchor slice)."""
+    parts = []
+    for blk in fam["blocks"]:
+        if "lit" in blk:
+            text = blk["lit"]
+        elif "fns" in blk:
+            text = "\n".join(_ctor_skeleton(f["sig"], f["ret"], f["sym"],
+                                            f.get("strict", True), f.get("pre", ""))
+                             for f in blk["fns"])
+        else:
+            text = "\n".join(_ctor_op(o, fam) for o in blk["ops"])
+        parts.append((blk.get("glue", False), text))
+    out = parts[0][1]
+    for glue, text in parts[1:]:
+        out += ("\n" if glue else "\n\n") + text
+    return out + "\n\n"
+
+
+def extract_constructors(filetext: str, fam: dict) -> str:
+    """Return the committed hand constructor block. Marker-aware: if the
+    GENERATED-CONSTRUCTORS region exists, slice between its markers; otherwise slice by
+    section-header anchors (from the `/*` opening the block's header down to, exclusive,
+    the `/*` opening the next section's header), mirroring extract_representations."""
+    begin, end = _constructors_markers(fam["family"])
+    if begin in filetext:
+        b = filetext.index(begin) + len(begin)
+        e = filetext.index(end)
+        return filetext[b:e]
+    i = filetext.index(fam["begin"])
+    start = filetext.rfind("/*", 0, i)
+    if fam.get("whole_file"):
+        return filetext[start:len(filetext)]
+    j = filetext.index(fam["end"])
+    return filetext[start:filetext.rfind("/*", 0, j)]
+
+
+def splice_constructors(filetext: str, family: str, rendered: str) -> str:
+    begin, end = _constructors_markers(family)
+    b = filetext.index(begin) + len(begin)
+    e = filetext.index(end)
+    return filetext[:b] + rendered + filetext[e:]
+
+
+def bootstrap_constructors(filetext: str, fam: dict, rendered: str) -> str:
+    """Insert the GENERATED-CONSTRUCTORS markers around the family's committed hand
+    block (sliced by the same section-header anchors extract uses), so a Phase-2 emit
+    is fully declarative with no hand-placed marker. Idempotent: once the markers
+    exist, the reference/splice path owns the region. Not run while the families are
+    reference-only (validate-only)."""
+    i = filetext.index(fam["begin"])
+    start = filetext.rfind("/*", 0, i)
+    j = filetext.index(fam["end"])
+    end = filetext.rfind("/*", 0, j)
+    begin_m, end_m = _constructors_markers(fam["family"])
+    return filetext[:start] + begin_m + rendered + end_m + filetext[end:]
+
+
 def _accessor_names() -> set:
     """Every SQL function name the generated accessor region can carry: the shared
     template's functions plus the gated TNumber/orderable reductions. Used to find and
@@ -1058,6 +1248,25 @@ def main() -> int:
                         break
                 if len(g) != len(c):
                     print(f"     line count gen={len(g)} cur={len(c)}")
+        for fam in mf.get("constructor_families", []):
+            if not fam.get("reference"):
+                continue
+            p = ROOT / fam["file"]
+            gen = render_constructors(fam)
+            cur = extract_constructors(p.read_text(), fam) if p.exists() else ""
+            same = gen == cur
+            ok = ok and same
+            print(f"[{'OK ' if same else 'DIFF'}] self-regen constructors {fam['family']} "
+                  f"-> {pathlib.Path(fam['file'])}")
+            if not same:
+                g, c = gen.splitlines(), cur.splitlines()
+                for n, (a, b) in enumerate(zip(g, c), 1):
+                    if a != b:
+                        print(f"     first diff line {n}:\n       gen: {a!r}\n"
+                              f"       cur: {b!r}")
+                        break
+                if len(g) != len(c):
+                    print(f"     line count gen={len(g)} cur={len(c)}")
         for fam in mf.get("native_tempspatialrel_families", []):
             p = ROOT / fam["file"]
             gen = render_native_tempspatialrels(fam)
@@ -1169,6 +1378,26 @@ def main() -> int:
             continue
         p.write_text(splice_representations(text, fam["family"], render_representations(fam)))
         print(f"spliced representations {fam['family']} -> {fam['file']}")
+
+    for fam in mf.get("constructor_families", []):
+        # Reference families are validate-only: keep the committed hand block, never
+        # emit into .in.sql (mirrors io/representations). A future non-reference family
+        # bootstraps its GENERATED-CONSTRUCTORS region once, then splices.
+        if fam.get("reference"):
+            continue
+        p = ROOT / fam["file"]
+        text = p.read_text()
+        begin, _ = _constructors_markers(fam["family"])
+        if args.check:
+            print(f"would {'splice' if begin in text else 'bootstrap'} constructors "
+                  f"{fam['family']} -> {fam['file']}")
+            continue
+        if begin in text:
+            p.write_text(splice_constructors(text, fam["family"], render_constructors(fam)))
+            print(f"spliced constructors {fam['family']} -> {fam['file']}")
+        else:
+            p.write_text(bootstrap_constructors(text, fam, render_constructors(fam)))
+            print(f"bootstrapped constructors {fam['family']} -> {fam['file']}")
     return 0
 
 
