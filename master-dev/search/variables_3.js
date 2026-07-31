@@ -20,11 +20,12 @@ var searchData=
   ['border_5finc_17',['border_inc',['../structPcpointInTpcboxArgs_aa13ca093933b696c5639a82d2107b250.html#aa13ca093933b696c5639a82d2107b250',1,'PcpointInTpcboxArgs']]],
   ['bottom_18',['BOTTOM',['../tgeo__restrict_8c_a95369c5b8afe2eec95c1dd3e1bdb9f58.html#a95369c5b8afe2eec95c1dd3e1bdb9f58',1,'tgeo_restrict.c']]],
   ['boundingbox_19',['boundingBox',['../structConsiderSplitContext_a767857a96a981f955ecaa94ba581fbe5.html#a767857a96a981f955ecaa94ba581fbe5',1,'ConsiderSplitContext']]],
-  ['bounds_20',['bounds',['../structSERIALIZED__PATCH_ae3e707c393637dd87b460a54c55742e4.html#ae3e707c393637dd87b460a54c55742e4',1,'SERIALIZED_PATCH::bounds()'],['../structPcpatchLayoutShadow_a5af792b3316a0dc6fa3192a28179587e.html#a5af792b3316a0dc6fa3192a28179587e',1,'PcpatchLayoutShadow::bounds()'],['../structPcpatch_aa438c392ed95cc042aec514c34c6c4f8.html#aa438c392ed95cc042aec514c34c6c4f8',1,'Pcpatch::bounds()']]],
+  ['bounds_20',['bounds',['../structPcpatchLayoutShadow_a5af792b3316a0dc6fa3192a28179587e.html#a5af792b3316a0dc6fa3192a28179587e',1,'PcpatchLayoutShadow::bounds()'],['../structSERIALIZED__PATCH_ae3e707c393637dd87b460a54c55742e4.html#ae3e707c393637dd87b460a54c55742e4',1,'SERIALIZED_PATCH::bounds()'],['../structPcpatch_aa438c392ed95cc042aec514c34c6c4f8.html#aa438c392ed95cc042aec514c34c6c4f8',1,'Pcpatch::bounds()']]],
   ['box_21',['box',['../structSTboxGridState_a3a3eb1787d37276a04fb6dcec0c83157.html#a3a3eb1787d37276a04fb6dcec0c83157',1,'STboxGridState::box()'],['../structPcpointInTpcboxArgs_a90c451588f1941a84249c2f2fc129c30.html#a90c451588f1941a84249c2f2fc129c30',1,'PcpointInTpcboxArgs::box()'],['../structSortedTbox_aab643b6d1e0e36161b739368bbf40496.html#aab643b6d1e0e36161b739368bbf40496',1,'SortedTbox::box()'],['../structRTree_a26f062b73bea07093c04fc1bc970d211.html#a26f062b73bea07093c04fc1bc970d211',1,'RTree::box()'],['../structTboxGridState_ae18f2e92f8a52507fa59c71e615e8dee.html#ae18f2e92f8a52507fa59c71e615e8dee',1,'TboxGridState::box()'],['../structSortedSTbox_a659af5ab69fb25d2f5fc9a3410ba4d44.html#a659af5ab69fb25d2f5fc9a3410ba4d44',1,'SortedSTbox::box()']]],
-  ['boxes_22',['boxes',['../structRTreeNode_ab54c4691081a5cfa8b25bb33fe5cd941.html#ab54c4691081a5cfa8b25bb33fe5cd941',1,'RTreeNode']]],
-  ['boxsize_23',['boxsize',['../structSPTree_ad62c92a2921e443878b7a071c9d2f110.html#ad62c92a2921e443878b7a071c9d2f110',1,'SPTree']]],
-  ['brussels_5fregion_24',['brussels_region',['../06__berlinmod__clip_8c_aff80fddce3de8a49e422b11dd089808e.html#aff80fddce3de8a49e422b11dd089808e',1,'06_berlinmod_clip.c']]],
-  ['bwgs_25',['bwgs',['../projection__gk_8c_af88b207bfe586e48b65d500fe28c84e8.html#af88b207bfe586e48b65d500fe28c84e8',1,'projection_gk.c']]],
-  ['byte_26',['byte',['../structBitMatrix_ab0835fc1d6cc612f1cfe07e138ec15c1.html#ab0835fc1d6cc612f1cfe07e138ec15c1',1,'BitMatrix']]]
+  ['box_5fdims_22',['box_dims',['../structSPTree_ad39287a2e78c50042b4bec352e65e8fe.html#ad39287a2e78c50042b4bec352e65e8fe',1,'SPTree']]],
+  ['boxes_23',['boxes',['../structRTreeNode_ab54c4691081a5cfa8b25bb33fe5cd941.html#ab54c4691081a5cfa8b25bb33fe5cd941',1,'RTreeNode']]],
+  ['boxsize_24',['boxsize',['../structSPTree_ad62c92a2921e443878b7a071c9d2f110.html#ad62c92a2921e443878b7a071c9d2f110',1,'SPTree']]],
+  ['brussels_5fregion_25',['brussels_region',['../06__berlinmod__clip_8c_aff80fddce3de8a49e422b11dd089808e.html#aff80fddce3de8a49e422b11dd089808e',1,'06_berlinmod_clip.c']]],
+  ['bwgs_26',['bwgs',['../projection__gk_8c_af88b207bfe586e48b65d500fe28c84e8.html#af88b207bfe586e48b65d500fe28c84e8',1,'projection_gk.c']]],
+  ['byte_27',['byte',['../structBitMatrix_ab0835fc1d6cc612f1cfe07e138ec15c1.html#ab0835fc1d6cc612f1cfe07e138ec15c1',1,'BitMatrix']]]
 ];

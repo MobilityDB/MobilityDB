@@ -89,6 +89,7 @@ $(function() {
 <code>#include &lt;string.h&gt;</code><br />
 <code>#include &lt;math.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="meos__geo_8h_source.html">meos_geo.h</a>&gt;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
@@ -113,10 +114,14 @@ Functions</h2></td></tr>
 <tr class="separator:a840291bc02cba5474a4cb46a9b9566fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a363410508b646e18415f6e98fec2cc7c"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sptree__test_8c_a363410508b646e18415f6e98fec2cc7c.html#a363410508b646e18415f6e98fec2cc7c">make_wiggly_tfloat</a> (int seed, char *buf, size_t bufsize)</td></tr>
 <tr class="separator:a363410508b646e18415f6e98fec2cc7c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0742c189340b27beae68622edef728c9"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sptree__test_8c_a0742c189340b27beae68622edef728c9.html#a0742c189340b27beae68622edef728c9">make_wiggly_trip</a> (int seed, char *buf, size_t bufsize)</td></tr>
+<tr class="separator:a0742c189340b27beae68622edef728c9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1aee8ddca348bf6c880cccf84c86dd1d"><td class="memItemLeft" align="right" valign="top">static double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sptree__test_8c_a1aee8ddca348bf6c880cccf84c86dd1d.html#a1aee8ddca348bf6c880cccf84c86dd1d">random_double</a> (double min, double max)</td></tr>
 <tr class="separator:a1aee8ddca348bf6c880cccf84c86dd1d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a636d972bd6309b69b957293ee08e0615"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sptree__test_8c_a636d972bd6309b69b957293ee08e0615.html#a636d972bd6309b69b957293ee08e0615">random_int</a> (int min, int max)</td></tr>
 <tr class="separator:a636d972bd6309b69b957293ee08e0615"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af26b481611b5afe1da17ac6780cf1340"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structSTBox.html">STBox</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sptree__test_8c_af26b481611b5afe1da17ac6780cf1340.html#af26b481611b5afe1da17ac6780cf1340">random_stbox</a> (int sspan, int tspan)</td></tr>
+<tr class="separator:af26b481611b5afe1da17ac6780cf1340"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6faffe217a384aa119c1e88d7bff2c53"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structTBox.html">TBox</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sptree__test_8c_a6faffe217a384aa119c1e88d7bff2c53.html#a6faffe217a384aa119c1e88d7bff2c53">random_tbox</a> (int vspan, int tspan)</td></tr>
 <tr class="separator:a6faffe217a384aa119c1e88d7bff2c53"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adf0705e05b0841e5db290121e43827bf"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sptree__test_8c_adf0705e05b0841e5db290121e43827bf.html#adf0705e05b0841e5db290121e43827bf">test_floatspan</a> (<a class="el" href="meos_8h_ae914b0430eccba91c6ee1284e68f36dc.html#ae914b0430eccba91c6ee1284e68f36dc">SPTreeKind</a> kind, const char *kindname)</td></tr>
@@ -125,6 +130,10 @@ Functions</h2></td></tr>
 <tr class="separator:acce0a94434e829deb340c41f6240783a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:affd78a65996e64fdbb00838db66e2adb"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sptree__test_8c_affd78a65996e64fdbb00838db66e2adb.html#affd78a65996e64fdbb00838db66e2adb">test_mest</a> (void)</td></tr>
 <tr class="separator:affd78a65996e64fdbb00838db66e2adb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a140a1b3990e265a6e43d8eb28c404114"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sptree__test_8c_a140a1b3990e265a6e43d8eb28c404114.html#a140a1b3990e265a6e43d8eb28c404114">test_stbox</a> (<a class="el" href="meos_8h_ae914b0430eccba91c6ee1284e68f36dc.html#ae914b0430eccba91c6ee1284e68f36dc">SPTreeKind</a> kind, const char *kindname)</td></tr>
+<tr class="separator:a140a1b3990e265a6e43d8eb28c404114"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adf40c6724cc1b25ed943d675ed545320"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sptree__test_8c_adf40c6724cc1b25ed943d675ed545320.html#adf40c6724cc1b25ed943d675ed545320">test_stbox_mest</a> (void)</td></tr>
+<tr class="separator:adf40c6724cc1b25ed943d675ed545320"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac26851fdbeca374ca0e9bac3215b84e4"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="sptree__test_8c_ac26851fdbeca374ca0e9bac3215b84e4.html#ac26851fdbeca374ca0e9bac3215b84e4">test_tbox</a> (<a class="el" href="meos_8h_ae914b0430eccba91c6ee1284e68f36dc.html#ae914b0430eccba91c6ee1284e68f36dc">SPTreeKind</a> kind, const char *kindname)</td></tr>
 <tr class="separator:ac26851fdbeca374ca0e9bac3215b84e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
