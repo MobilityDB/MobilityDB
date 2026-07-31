@@ -1566,3 +1566,103 @@ transformation_families:
 
       --   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;'
     glue: true
+
+# B-tree comparison sub-family (SQL, per-family region-in-file). The six comparison
+# functions lt/le/eq/ne/ge/gt + cmp (backing Temporal_lt/.../_cmp), the six B-tree
+# operators `< <= = <> >= >` and the `<temp>_btree_ops` USING btree opclass. Built
+# from ONE skeleton (templates/comparisons.sql.tmpl) for the uniform CREATE FUNCTION
+# set; the operators/opclass/banner/dividers carry per-family whitespace + per-op
+# selectivity drift so they are reproduced BYTE-EXACT as `lit` blocks (as the
+# constructor surface does for its headers + family-extras). `--validate` extracts
+# the committed hand block by banner header (begin) + B-tree/hash-tail divider (end)
+# anchors so the deployed .in.sql is untouched while the template is proven. The
+# tpcpoint/tpcpatch families (B-tree interleaved with hash, no divider, reordered
+# functions) and the base set/span/spanset/tbox/temporal families (grouped multi-
+# basetype functions, Span_*/Tbox_* symbols) do not token-swap the shared skeleton
+# and are classified out by omission from the data below, never by a code skip.
+comparison_families:
+- family: geo
+  file: mobilitydb/sql/geo/052_tgeo.in.sql
+  reference: true
+  begin: "\n * Comparison functions and B-tree indexing\n"
+  end: temporal_hash
+  blocks:
+  - lit: "/******************************************************************************\n * Comparison functions and B-tree indexing\n ******************************************************************************/\n\n"
+  - funcs: tgeometry
+  - lit: "\nCREATE OPERATOR < (\n  LEFTARG = tgeometry, RIGHTARG = tgeometry,\n  PROCEDURE = lt,\n  COMMUTATOR = >, NEGATOR = >=,\n  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel\n);\nCREATE OPERATOR <= (\n  LEFTARG = tgeometry, RIGHTARG = tgeometry,\n  PROCEDURE = le,\n  COMMUTATOR = >=, NEGATOR = >,\n  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel\n);\nCREATE OPERATOR = (\n  LEFTARG = tgeometry, RIGHTARG = tgeometry,\n  PROCEDURE = eq,\n  COMMUTATOR = =, NEGATOR = <>,\n  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel\n);\nCREATE OPERATOR <> (\n  LEFTARG = tgeometry, RIGHTARG = tgeometry,\n  PROCEDURE = ne,\n  COMMUTATOR = <>, NEGATOR = =,\n  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel\n);\nCREATE OPERATOR >= (\n  LEFTARG = tgeometry, RIGHTARG = tgeometry,\n  PROCEDURE = ge,\n  COMMUTATOR = <=, NEGATOR = <,\n  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel\n);\nCREATE OPERATOR > (\n  LEFTARG = tgeometry, RIGHTARG = tgeometry,\n  PROCEDURE = gt,\n  COMMUTATOR = <, NEGATOR = <=,\n  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel\n);\n\nCREATE OPERATOR CLASS tgeometry_btree_ops\n  DEFAULT FOR TYPE tgeometry USING btree AS\n    OPERATOR  1  <,\n    OPERATOR  2  <=,\n    OPERATOR  3  =,\n    OPERATOR  4  >=,\n    OPERATOR  5  >,\n    FUNCTION  1  cmp(tgeometry, tgeometry);\n\n/******************************************************************************/\n\n"
+  - funcs: tgeography
+  - lit: "\nCREATE OPERATOR < (\n  LEFTARG = tgeography, RIGHTARG = tgeography,\n  PROCEDURE = lt,\n  COMMUTATOR = >,  NEGATOR = >=,\n  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel\n);\nCREATE OPERATOR <= (\n  LEFTARG = tgeography, RIGHTARG = tgeography,\n  PROCEDURE = le,\n  COMMUTATOR = >=, NEGATOR = >,\n  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel\n);\nCREATE OPERATOR = (\n  LEFTARG = tgeography, RIGHTARG = tgeography,\n  PROCEDURE = eq,\n  COMMUTATOR = =, NEGATOR = <>,\n  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel\n);\nCREATE OPERATOR <> (\n  LEFTARG = tgeography, RIGHTARG = tgeography,\n  PROCEDURE = ne,\n  COMMUTATOR = <>, NEGATOR = =,\n  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel\n);\nCREATE OPERATOR >= (\n  LEFTARG = tgeography, RIGHTARG = tgeography,\n  PROCEDURE = ge,\n  COMMUTATOR = <=, NEGATOR = <,\n  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel\n);\nCREATE OPERATOR > (\n  LEFTARG = tgeography, RIGHTARG = tgeography,\n  PROCEDURE = gt,\n  COMMUTATOR = <, NEGATOR = <=,\n  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel\n);\n\nCREATE OPERATOR CLASS tgeography_btree_ops\n  DEFAULT FOR TYPE tgeography USING btree AS\n    OPERATOR  1  <,\n    OPERATOR  2  <=,\n    OPERATOR  3  =,\n    OPERATOR  4  >=,\n    OPERATOR  5  >,\n    FUNCTION  1  cmp(tgeography, tgeography);\n\n"
+- family: tpoint
+  file: mobilitydb/sql/geo/052_tpoint.in.sql
+  reference: true
+  begin: "\n * Comparison functions and B-tree indexing\n"
+  end: temporal_hash
+  blocks:
+  - lit: "/******************************************************************************\n * Comparison functions and B-tree indexing\n ******************************************************************************/\n\n"
+  - funcs: tgeompoint
+  - lit: "\nCREATE OPERATOR < (\n  LEFTARG = tgeompoint, RIGHTARG = tgeompoint,\n  PROCEDURE = lt,\n  COMMUTATOR = >, NEGATOR = >=,\n  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel\n);\nCREATE OPERATOR <= (\n  LEFTARG = tgeompoint, RIGHTARG = tgeompoint,\n  PROCEDURE = le,\n  COMMUTATOR = >=, NEGATOR = >,\n  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel\n);\nCREATE OPERATOR = (\n  LEFTARG = tgeompoint, RIGHTARG = tgeompoint,\n  PROCEDURE = eq,\n  COMMUTATOR = =, NEGATOR = <>,\n  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel\n);\nCREATE OPERATOR <> (\n  LEFTARG = tgeompoint, RIGHTARG = tgeompoint,\n  PROCEDURE = ne,\n  COMMUTATOR = <>, NEGATOR = =,\n  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel\n);\nCREATE OPERATOR >= (\n  LEFTARG = tgeompoint, RIGHTARG = tgeompoint,\n  PROCEDURE = ge,\n  COMMUTATOR = <=, NEGATOR = <,\n  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel\n);\nCREATE OPERATOR > (\n  LEFTARG = tgeompoint, RIGHTARG = tgeompoint,\n  PROCEDURE = gt,\n  COMMUTATOR = <, NEGATOR = <=,\n  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel\n);\n\nCREATE OPERATOR CLASS tgeompoint_btree_ops\n  DEFAULT FOR TYPE tgeompoint USING btree AS\n    OPERATOR  1  <,\n    OPERATOR  2  <=,\n    OPERATOR  3  =,\n    OPERATOR  4  >=,\n    OPERATOR  5  >,\n    FUNCTION  1  cmp(tgeompoint, tgeompoint);\n\n/******************************************************************************/\n\n"
+  - funcs: tgeogpoint
+  - lit: "\nCREATE OPERATOR < (\n  LEFTARG = tgeogpoint, RIGHTARG = tgeogpoint,\n  PROCEDURE = lt,\n  COMMUTATOR = >,  NEGATOR = >=,\n  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel\n);\nCREATE OPERATOR <= (\n  LEFTARG = tgeogpoint, RIGHTARG = tgeogpoint,\n  PROCEDURE = le,\n  COMMUTATOR = >=, NEGATOR = >,\n  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel\n);\nCREATE OPERATOR = (\n  LEFTARG = tgeogpoint, RIGHTARG = tgeogpoint,\n  PROCEDURE = eq,\n  COMMUTATOR = =, NEGATOR = <>,\n  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel\n);\nCREATE OPERATOR <> (\n  LEFTARG = tgeogpoint, RIGHTARG = tgeogpoint,\n  PROCEDURE = ne,\n  COMMUTATOR = <>, NEGATOR = =,\n  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel\n);\nCREATE OPERATOR >= (\n  LEFTARG = tgeogpoint, RIGHTARG = tgeogpoint,\n  PROCEDURE = ge,\n  COMMUTATOR = <=, NEGATOR = <,\n  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel\n);\nCREATE OPERATOR > (\n  LEFTARG = tgeogpoint, RIGHTARG = tgeogpoint,\n  PROCEDURE = gt,\n  COMMUTATOR = <, NEGATOR = <=,\n  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel\n);\n\nCREATE OPERATOR CLASS tgeogpoint_btree_ops\n  DEFAULT FOR TYPE tgeogpoint USING btree AS\n    OPERATOR  1  <,\n    OPERATOR  2  <=,\n    OPERATOR  3  =,\n    OPERATOR  4  >=,\n    OPERATOR  5  >,\n    FUNCTION  1  cmp(tgeogpoint, tgeogpoint);\n\n"
+- family: cbuffer
+  file: mobilitydb/sql/cbuffer/202_tcbuffer.in.sql
+  reference: true
+  begin: "\n * Comparison functions and B-tree indexing\n"
+  end: temporal_hash
+  blocks:
+  - lit: "/*****************************************************************************\n * Comparison functions and B-tree indexing\n *****************************************************************************/\n\n"
+  - funcs: tcbuffer
+  - lit: "\nCREATE OPERATOR < (\n  LEFTARG = tcbuffer, RIGHTARG = tcbuffer,\n  PROCEDURE = lt,\n  COMMUTATOR = >, NEGATOR = >=,\n  RESTRICT = scalarltsel, JOIN = scalarltjoinsel\n);\nCREATE OPERATOR <= (\n  LEFTARG = tcbuffer, RIGHTARG = tcbuffer,\n  PROCEDURE = le,\n  COMMUTATOR = >=, NEGATOR = >,\n  RESTRICT = scalarltsel, JOIN = scalarltjoinsel\n);\nCREATE OPERATOR = (\n  LEFTARG = tcbuffer, RIGHTARG = tcbuffer,\n  PROCEDURE = eq,\n  COMMUTATOR = =, NEGATOR = <>,\n  RESTRICT = eqsel, JOIN = eqjoinsel\n);\nCREATE OPERATOR <> (\n  LEFTARG = tcbuffer, RIGHTARG = tcbuffer,\n  PROCEDURE = ne,\n  COMMUTATOR = <>, NEGATOR = =,\n  RESTRICT = neqsel, JOIN = neqjoinsel\n);\nCREATE OPERATOR >= (\n  LEFTARG = tcbuffer, RIGHTARG = tcbuffer,\n  PROCEDURE = ge,\n  COMMUTATOR = <=, NEGATOR = <,\n  RESTRICT = scalargtsel, JOIN = scalargtjoinsel\n);\nCREATE OPERATOR > (\n  LEFTARG = tcbuffer, RIGHTARG = tcbuffer,\n  PROCEDURE = gt,\n  COMMUTATOR = <, NEGATOR = <=,\n  RESTRICT = scalargtsel, JOIN = scalargtjoinsel\n);\n\nCREATE OPERATOR CLASS tcbuffer_btree_ops\n  DEFAULT FOR TYPE tcbuffer USING btree AS\n    OPERATOR  1 <,\n    OPERATOR  2 <=,\n    OPERATOR  3 =,\n    OPERATOR  4 >=,\n    OPERATOR  5 >,\n    FUNCTION  1 cmp(tcbuffer, tcbuffer);\n\n"
+- family: h3
+  file: mobilitydb/sql/h3/253_th3index.in.sql
+  reference: true
+  begin: "\n * Comparison functions and B-tree / hash indexing\n"
+  end: temporal_hash
+  blocks:
+  - lit: "/******************************************************************************\n * Comparison functions and B-tree / hash indexing\n *\n * All th3index values share the exact same on-disk layout as every\n * other temporal type, so the generic Temporal_* dispatch in the\n * backend is enough \u2014 no th3index-specific wrappers required.\n ******************************************************************************/\n\n"
+  - funcs: th3index
+  - lit: "\nCREATE OPERATOR < (\n  LEFTARG = th3index, RIGHTARG = th3index,\n  PROCEDURE = lt,\n  COMMUTATOR = >, NEGATOR = >=,\n  RESTRICT = scalarltsel, JOIN = scalarltjoinsel\n);\nCREATE OPERATOR <= (\n  LEFTARG = th3index, RIGHTARG = th3index,\n  PROCEDURE = le,\n  COMMUTATOR = >=, NEGATOR = >,\n  RESTRICT = scalarltsel, JOIN = scalarltjoinsel\n);\nCREATE OPERATOR = (\n  LEFTARG = th3index, RIGHTARG = th3index,\n  PROCEDURE = eq,\n  COMMUTATOR = =, NEGATOR = <>,\n  RESTRICT = eqsel, JOIN = eqjoinsel\n);\nCREATE OPERATOR <> (\n  LEFTARG = th3index, RIGHTARG = th3index,\n  PROCEDURE = ne,\n  COMMUTATOR = <>, NEGATOR = =,\n  RESTRICT = neqsel, JOIN = neqjoinsel\n);\nCREATE OPERATOR >= (\n  LEFTARG = th3index, RIGHTARG = th3index,\n  PROCEDURE = ge,\n  COMMUTATOR = <=, NEGATOR = <,\n  RESTRICT = scalargtsel, JOIN = scalargtjoinsel\n);\nCREATE OPERATOR > (\n  LEFTARG = th3index, RIGHTARG = th3index,\n  PROCEDURE = gt,\n  COMMUTATOR = <, NEGATOR = <=,\n  RESTRICT = scalargtsel, JOIN = scalargtjoinsel\n);\n\nCREATE OPERATOR CLASS th3index_btree_ops\n  DEFAULT FOR TYPE th3index USING btree AS\n    OPERATOR  1 <,\n    OPERATOR  2 <=,\n    OPERATOR  3 =,\n    OPERATOR  4 >=,\n    OPERATOR  5 >,\n    FUNCTION  1 cmp(th3index, th3index);\n\n"
+- family: json
+  file: mobilitydb/sql/json/452_tjsonb.in.sql
+  reference: true
+  begin: "\n * Comparison functions and B-tree indexing\n"
+  end: temporal_hash
+  blocks:
+  - lit: "/*****************************************************************************\n * Comparison functions and B-tree indexing\n *****************************************************************************/\n\n"
+  - funcs: tjsonb
+  - lit: "\nCREATE OPERATOR < (\n  LEFTARG = tjsonb, RIGHTARG = tjsonb,\n  PROCEDURE = lt,\n  COMMUTATOR = >, NEGATOR = >=,\n  RESTRICT = scalarltsel, JOIN = scalarltjoinsel\n);\nCREATE OPERATOR <= (\n  LEFTARG = tjsonb, RIGHTARG = tjsonb,\n  PROCEDURE = le,\n  COMMUTATOR = >=, NEGATOR = >,\n  RESTRICT = scalarltsel, JOIN = scalarltjoinsel\n);\nCREATE OPERATOR = (\n  LEFTARG = tjsonb, RIGHTARG = tjsonb,\n  PROCEDURE = eq,\n  COMMUTATOR = =, NEGATOR = <>,\n  RESTRICT = eqsel, JOIN = eqjoinsel\n);\nCREATE OPERATOR <> (\n  LEFTARG = tjsonb, RIGHTARG = tjsonb,\n  PROCEDURE = ne,\n  COMMUTATOR = <>, NEGATOR = =,\n  RESTRICT = neqsel, JOIN = neqjoinsel\n);\nCREATE OPERATOR >= (\n  LEFTARG = tjsonb, RIGHTARG = tjsonb,\n  PROCEDURE = ge,\n  COMMUTATOR = <=, NEGATOR = <,\n  RESTRICT = scalargtsel, JOIN = scalargtjoinsel\n);\nCREATE OPERATOR > (\n  LEFTARG = tjsonb, RIGHTARG = tjsonb,\n  PROCEDURE = gt,\n  COMMUTATOR = <, NEGATOR = <=,\n  RESTRICT = scalargtsel, JOIN = scalargtjoinsel\n);\n\nCREATE OPERATOR CLASS tjsonb_btree_ops\n  DEFAULT FOR TYPE tjsonb USING btree AS\n    OPERATOR  1 <,\n    OPERATOR  2 <=,\n    OPERATOR  3 =,\n    OPERATOR  4 >=,\n    OPERATOR  5 >,\n    FUNCTION  1 cmp(tjsonb, tjsonb);\n\n"
+- family: npoint
+  file: mobilitydb/sql/npoint/302_tnpoint.in.sql
+  reference: true
+  begin: "\n * Comparison functions and B-tree indexing\n"
+  end: temporal_hash
+  blocks:
+  - lit: "/******************************************************************************\n * Comparison functions and B-tree indexing\n ******************************************************************************/\n\n"
+  - funcs: tnpoint
+  - lit: "\nCREATE OPERATOR < (\n  LEFTARG = tnpoint, RIGHTARG = tnpoint,\n  PROCEDURE = lt,\n  COMMUTATOR = >, NEGATOR = >=,\n  RESTRICT = scalarltsel, JOIN = scalarltjoinsel\n);\nCREATE OPERATOR <= (\n  LEFTARG = tnpoint, RIGHTARG = tnpoint,\n  PROCEDURE = le,\n  COMMUTATOR = >=, NEGATOR = >,\n  RESTRICT = scalarltsel, JOIN = scalarltjoinsel\n);\nCREATE OPERATOR = (\n  LEFTARG = tnpoint, RIGHTARG = tnpoint,\n  PROCEDURE = eq,\n  COMMUTATOR = =, NEGATOR = <>,\n  RESTRICT = eqsel, JOIN = eqjoinsel\n);\nCREATE OPERATOR <> (\n  LEFTARG = tnpoint, RIGHTARG = tnpoint,\n  PROCEDURE = ne,\n  COMMUTATOR = <>, NEGATOR = =,\n  RESTRICT = neqsel, JOIN = neqjoinsel\n);\nCREATE OPERATOR >= (\n  LEFTARG = tnpoint, RIGHTARG = tnpoint,\n  PROCEDURE = ge,\n  COMMUTATOR = <=, NEGATOR = <,\n  RESTRICT = scalargtsel, JOIN = scalargtjoinsel\n);\nCREATE OPERATOR > (\n  LEFTARG = tnpoint, RIGHTARG = tnpoint,\n  PROCEDURE = gt,\n  COMMUTATOR = <, NEGATOR = <=,\n  RESTRICT = scalargtsel, JOIN = scalargtjoinsel\n);\n\nCREATE OPERATOR CLASS tnpoint_btree_ops\n  DEFAULT FOR TYPE tnpoint USING btree AS\n    OPERATOR  1 <,\n    OPERATOR  2 <=,\n    OPERATOR  3 =,\n    OPERATOR  4 >=,\n    OPERATOR  5 >,\n    FUNCTION  1 cmp(tnpoint, tnpoint);\n\n"
+- family: pose
+  file: mobilitydb/sql/pose/102_tpose.in.sql
+  reference: true
+  begin: "\n * Comparison functions and B-tree indexing\n"
+  end: temporal_hash
+  blocks:
+  - lit: "/******************************************************************************\n * Comparison functions and B-tree indexing\n ******************************************************************************/\n\n"
+  - funcs: tpose
+  - lit: "\nCREATE OPERATOR < (\n  LEFTARG = tpose, RIGHTARG = tpose,\n  PROCEDURE = lt,\n  COMMUTATOR = >, NEGATOR = >=,\n  RESTRICT = scalarltsel, JOIN = scalarltjoinsel\n);\nCREATE OPERATOR <= (\n  LEFTARG = tpose, RIGHTARG = tpose,\n  PROCEDURE = le,\n  COMMUTATOR = >=, NEGATOR = >,\n  RESTRICT = scalarltsel, JOIN = scalarltjoinsel\n);\nCREATE OPERATOR = (\n  LEFTARG = tpose, RIGHTARG = tpose,\n  PROCEDURE = eq,\n  COMMUTATOR = =, NEGATOR = <>,\n  RESTRICT = eqsel, JOIN = eqjoinsel\n);\nCREATE OPERATOR <> (\n  LEFTARG = tpose, RIGHTARG = tpose,\n  PROCEDURE = ne,\n  COMMUTATOR = <>, NEGATOR = =,\n  RESTRICT = neqsel, JOIN = neqjoinsel\n);\nCREATE OPERATOR >= (\n  LEFTARG = tpose, RIGHTARG = tpose,\n  PROCEDURE = ge,\n  COMMUTATOR = <=, NEGATOR = <,\n  RESTRICT = scalargtsel, JOIN = scalargtjoinsel\n);\nCREATE OPERATOR > (\n  LEFTARG = tpose, RIGHTARG = tpose,\n  PROCEDURE = gt,\n  COMMUTATOR = <, NEGATOR = <=,\n  RESTRICT = scalargtsel, JOIN = scalargtjoinsel\n);\n\nCREATE OPERATOR CLASS tpose_btree_ops\n  DEFAULT FOR TYPE tpose USING btree AS\n    OPERATOR  1 <,\n    OPERATOR  2 <=,\n    OPERATOR  3 =,\n    OPERATOR  4 >=,\n    OPERATOR  5 >,\n    FUNCTION  1 cmp(tpose, tpose);\n\n"
+- family: quadbin
+  file: mobilitydb/sql/quadbin/353_tquadbin.in.sql
+  reference: true
+  begin: "\n * Comparison functions and B-tree / hash indexing\n"
+  end: temporal_hash
+  blocks:
+  - lit: "/******************************************************************************\n * Comparison functions and B-tree / hash indexing\n *\n * All tquadbin values share the exact same on-disk layout as every\n * other temporal type, so the generic Temporal_* dispatch in the\n * backend is enough \u2014 no tquadbin-specific wrappers required.\n ******************************************************************************/\n\n"
+  - funcs: tquadbin
+  - lit: "\nCREATE OPERATOR < (\n  LEFTARG = tquadbin, RIGHTARG = tquadbin,\n  PROCEDURE = lt,\n  COMMUTATOR = >, NEGATOR = >=,\n  RESTRICT = scalarltsel, JOIN = scalarltjoinsel\n);\nCREATE OPERATOR <= (\n  LEFTARG = tquadbin, RIGHTARG = tquadbin,\n  PROCEDURE = le,\n  COMMUTATOR = >=, NEGATOR = >,\n  RESTRICT = scalarltsel, JOIN = scalarltjoinsel\n);\nCREATE OPERATOR = (\n  LEFTARG = tquadbin, RIGHTARG = tquadbin,\n  PROCEDURE = eq,\n  COMMUTATOR = =, NEGATOR = <>,\n  RESTRICT = eqsel, JOIN = eqjoinsel\n);\nCREATE OPERATOR <> (\n  LEFTARG = tquadbin, RIGHTARG = tquadbin,\n  PROCEDURE = ne,\n  COMMUTATOR = <>, NEGATOR = =,\n  RESTRICT = neqsel, JOIN = neqjoinsel\n);\nCREATE OPERATOR >= (\n  LEFTARG = tquadbin, RIGHTARG = tquadbin,\n  PROCEDURE = ge,\n  COMMUTATOR = <=, NEGATOR = <,\n  RESTRICT = scalargtsel, JOIN = scalargtjoinsel\n);\nCREATE OPERATOR > (\n  LEFTARG = tquadbin, RIGHTARG = tquadbin,\n  PROCEDURE = gt,\n  COMMUTATOR = <, NEGATOR = <=,\n  RESTRICT = scalargtsel, JOIN = scalargtjoinsel\n);\n\nCREATE OPERATOR CLASS tquadbin_btree_ops\n  DEFAULT FOR TYPE tquadbin USING btree AS\n    OPERATOR  1 <,\n    OPERATOR  2 <=,\n    OPERATOR  3 =,\n    OPERATOR  4 >=,\n    OPERATOR  5 >,\n    FUNCTION  1 cmp(tquadbin, tquadbin);\n\n"
+- family: rgeo
+  file: mobilitydb/sql/rgeo/150_trgeo.in.sql
+  reference: true
+  begin: "\n * Comparison functions and B-tree indexing\n"
+  end: temporal_hash
+  blocks:
+  - lit: "/******************************************************************************\n * Comparison functions and B-tree indexing\n ******************************************************************************/\n\n"
+  - funcs: trgeometry
+  - lit: "\nCREATE OPERATOR < (\n  LEFTARG = trgeometry, RIGHTARG = trgeometry,\n  PROCEDURE = lt,\n  COMMUTATOR = >, NEGATOR = >=,\n  RESTRICT = scalarltsel, JOIN = scalarltjoinsel\n);\nCREATE OPERATOR <= (\n  LEFTARG = trgeometry, RIGHTARG = trgeometry,\n  PROCEDURE = le,\n  COMMUTATOR = >=, NEGATOR = >,\n  RESTRICT = scalarltsel, JOIN = scalarltjoinsel\n);\nCREATE OPERATOR = (\n  LEFTARG = trgeometry, RIGHTARG = trgeometry,\n  PROCEDURE = eq,\n  COMMUTATOR = =, NEGATOR = <>,\n  RESTRICT = eqsel, JOIN = eqjoinsel\n);\nCREATE OPERATOR <> (\n  LEFTARG = trgeometry, RIGHTARG = trgeometry,\n  PROCEDURE = ne,\n  COMMUTATOR = <>, NEGATOR = =,\n  RESTRICT = neqsel, JOIN = neqjoinsel\n);\nCREATE OPERATOR >= (\n  LEFTARG = trgeometry, RIGHTARG = trgeometry,\n  PROCEDURE = ge,\n  COMMUTATOR = <=, NEGATOR = <,\n  RESTRICT = scalargtsel, JOIN = scalargtjoinsel\n);\nCREATE OPERATOR > (\n  LEFTARG = trgeometry, RIGHTARG = trgeometry,\n  PROCEDURE = gt,\n  COMMUTATOR = <, NEGATOR = <=,\n  RESTRICT = scalargtsel, JOIN = scalargtjoinsel\n);\n\nCREATE OPERATOR CLASS trgeometry_btree_ops\n  DEFAULT FOR TYPE trgeometry USING btree AS\n    OPERATOR  1  <,\n    OPERATOR  2  <=,\n    OPERATOR  3  =,\n    OPERATOR  4  >=,\n    OPERATOR  5  >,\n    FUNCTION  1  cmp(trgeometry, trgeometry);\n\n"
