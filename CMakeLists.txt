@@ -264,6 +264,43 @@ if(H3)
       "  -DH3_LIBRARY=/path/to/libh3.so -DH3_INCLUDE_DIR=/path/to/h3api.h\n"
       "to cmake.")
   endif()
+  # A static libh3.a built without -fPIC links fine into an executable but
+  # fails the final MobilityDB .so link with a cryptic
+  #   relocation R_X86_64_PC32 ... can not be used when making a shared object;
+  #   recompile with -fPIC
+  # error. Reproduce that link here (force every archive member in with
+  # --whole-archive, ignore unresolved externals so only relocation errors can
+  # fail it) and turn it into an actionable message. Only meaningful for an ELF
+  # static archive with a GNU-style linker; shared libs and other platforms are
+  # unaffected and skipped. Cached per resolved path so it runs only once.
+  if(H3_LIBRARY MATCHES "\\.a$" AND CMAKE_SYSTEM_NAME STREQUAL "Linux"
+     AND NOT "${H3_STATIC_PIC_OK}" STREQUAL "${H3_LIBRARY}")
+    set(_h3_probe "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/h3_pic_probe.so")
+    execute_process(
+      COMMAND ${CMAKE_C_COMPILER} -shared -fPIC
+              -Wl,--whole-archive "${H3_LIBRARY}" -Wl,--no-whole-archive
+              -Wl,--unresolved-symbols=ignore-all
+              -o "${_h3_probe}"
+      RESULT_VARIABLE _h3_link_rv
+      OUTPUT_VARIABLE _h3_link_out
+      ERROR_VARIABLE  _h3_link_err)
+    file(REMOVE "${_h3_probe}")
+    if(_h3_link_err MATCHES "recompile with -fPIC" OR
+       _h3_link_err MATCHES "can not be used when making a shared object")
+      message(FATAL_ERROR
+        "The libh3 static archive found at\n"
+        "  ${H3_LIBRARY}\n"
+        "was built without position-independent code (-fPIC) and cannot be "
+        "linked into the shared MobilityDB library. Fix it by either:\n"
+        "  * installing a shared libh3 (build H3 with -DBUILD_SHARED_LIBS=ON), or\n"
+        "  * rebuilding the static archive with -DCMAKE_POSITION_INDEPENDENT_CODE=ON\n"
+        "    and pointing cmake at it via -DH3_LIBRARY=/path/to/pic/libh3.a\n")
+    endif()
+    # Passed (or the linker gave no PIC diagnostic): remember it so re-configures
+    # skip the probe unless H3_LIBRARY changes.
+    set(H3_STATIC_PIC_OK "${H3_LIBRARY}" CACHE INTERNAL
+      "libh3 static archive validated as position-independent")
+  endif()
   include_directories(${H3_INCLUDE_DIR})
 endif()
 
