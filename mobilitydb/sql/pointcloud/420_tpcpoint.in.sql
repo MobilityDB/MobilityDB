@@ -505,6 +505,17 @@ CREATE FUNCTION minusTime(tpcpoint, tstzspanset)
   AS 'MODULE_PATHNAME', 'Temporal_minus_tstzspanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION beforeTimestamp(tpcpoint, timestamptz,
+    strict bool DEFAULT TRUE)
+  RETURNS tpcpoint
+  AS 'MODULE_PATHNAME', 'Temporal_before_timestamptz'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION afterTimestamp(tpcpoint, timestamptz,
+    strict bool DEFAULT TRUE)
+  RETURNS tpcpoint
+  AS 'MODULE_PATHNAME', 'Temporal_after_timestamptz'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /******************************************************************************
  * TPCBox-based restrictions
  ******************************************************************************/

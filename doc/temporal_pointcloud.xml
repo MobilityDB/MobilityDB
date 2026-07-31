@@ -763,6 +763,14 @@ SELECT ST_AsText(startValue(tpcpoint(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]),
 					<para><varname>atTpcbox(tpcpoint,tpcbox,border_inc bool=TRUE) → tpcpoint</varname></para>
 					<para><varname>minusTpcbox(tpcpoint,tpcbox,border_inc bool=TRUE) → tpcpoint</varname></para>
 				</listitem>
+
+				<listitem xml:id="tpcpoint_beforeTimestamp">
+					<indexterm significance="normal"><primary><varname>beforeTimestamp</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>afterTimestamp</varname></primary></indexterm>
+					<para>Restrict a tpcpoint to the instants before or after a timestamp. The strict flag excludes the instant at the timestamp itself</para>
+					<para><varname>beforeTimestamp(tpcpoint,timestamptz,strict bool=TRUE) → tpcpoint</varname></para>
+					<para><varname>afterTimestamp(tpcpoint,timestamptz,strict bool=TRUE) → tpcpoint</varname></para>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 
@@ -1012,6 +1020,14 @@ SELECT t, point FROM points(tpcpatch(
 					<para>Restrict a tpcpatch to the points whose XY projection intersects (or does not intersect, for minus) a 2D geometry. Z is ignored. SRID compatibility between the patch schema and the geometry must be ensured by the caller.</para>
 					<para><varname>atGeometry(tpcpatch,geometry) → tpcpatch</varname></para>
 					<para><varname>minusGeometry(tpcpatch,geometry) → tpcpatch</varname></para>
+				</listitem>
+
+				<listitem xml:id="tpcpatch_beforeTimestamp">
+					<indexterm significance="normal"><primary><varname>beforeTimestamp</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>afterTimestamp</varname></primary></indexterm>
+					<para>Restrict a tpcpatch to the instants before or after a timestamp. The strict flag excludes the instant at the timestamp itself</para>
+					<para><varname>beforeTimestamp(tpcpatch,timestamptz,strict bool=TRUE) → tpcpatch</varname></para>
+					<para><varname>afterTimestamp(tpcpatch,timestamptz,strict bool=TRUE) → tpcpatch</varname></para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

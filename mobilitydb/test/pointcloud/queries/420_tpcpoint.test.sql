@@ -146,6 +146,24 @@ SELECT minusTpcbox(:inst2, tpcbox_zt(0, 0, 0, 10, 10, 10,
 SELECT atTpcbox(:inst1, tpcbox_zt(0, 0, 0, 10, 10, 10,
   tstzspan '[2024-01-01, 2024-01-31]', 999, 0)) IS NULL;
 
+-- Restriction to the instants before / after a timestamp. The strict flag
+-- is true by default and excludes the instant at the timestamp itself, which
+-- on a sequence shows up as the inclusivity of the resulting time span.
+SELECT timeSpan(beforeTimestamp(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]),
+  timestamptz '2024-01-02'));
+SELECT timeSpan(beforeTimestamp(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]),
+  timestamptz '2024-01-02', false));
+SELECT timeSpan(afterTimestamp(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]),
+  timestamptz '2024-01-02'));
+SELECT timeSpan(afterTimestamp(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]),
+  timestamptz '2024-01-02', false));
+-- An instant is dropped by the strict form at its own timestamp and kept by
+-- the non-strict one.
+SELECT beforeTimestamp(:inst2, timestamptz '2024-01-02') IS NULL;
+SELECT afterTimestamp(:inst2, timestamptz '2024-01-02') IS NULL;
+SELECT numInstants(beforeTimestamp(:inst2, timestamptz '2024-01-02', false));
+SELECT numInstants(afterTimestamp(:inst2, timestamptz '2024-01-02', false));
+
 -------------------------------------------------------------------------------
 -- Modifications
 -- insert/update take temporal values that share the same value at their

@@ -758,6 +758,14 @@ SELECT ST_AsText(startValue(tpcpoint(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]),
 					<para><varname>atTpcbox(tpcpoint,tpcbox,border_inc bool=TRUE) → tpcpoint</varname></para>
 					<para><varname>minusTpcbox(tpcpoint,tpcbox,border_inc bool=TRUE) → tpcpoint</varname></para>
 				</listitem>
+
+				<listitem xml:id="tpcpoint_beforeTimestamp">
+					<indexterm significance="normal"><primary><varname>beforeTimestamp</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>afterTimestamp</varname></primary></indexterm>
+					<para>Restringir un tpcpoint a los instantes anteriores o posteriores a una marca de tiempo. El indicador strict excluye el instante en la marca de tiempo misma</para>
+					<para><varname>beforeTimestamp(tpcpoint,timestamptz,strict bool=TRUE) → tpcpoint</varname></para>
+					<para><varname>afterTimestamp(tpcpoint,timestamptz,strict bool=TRUE) → tpcpoint</varname></para>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 
@@ -1006,6 +1014,14 @@ SELECT t, point FROM points(tpcpatch(
 					<para>Restringir un tpcpatch a los puntos cuya proyección XY intersecta (o no intersecta, en el caso de minus) una geometría 2D. Z se ignora. El llamador debe garantizar la compatibilidad de SRID entre el esquema del parche y la geometría.</para>
 					<para><varname>atGeometry(tpcpatch,geometry) → tpcpatch</varname></para>
 					<para><varname>minusGeometry(tpcpatch,geometry) → tpcpatch</varname></para>
+				</listitem>
+
+				<listitem xml:id="tpcpatch_beforeTimestamp">
+					<indexterm significance="normal"><primary><varname>beforeTimestamp</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>afterTimestamp</varname></primary></indexterm>
+					<para>Restringir un tpcpatch a los instantes anteriores o posteriores a una marca de tiempo. El indicador strict excluye el instante en la marca de tiempo misma</para>
+					<para><varname>beforeTimestamp(tpcpatch,timestamptz,strict bool=TRUE) → tpcpatch</varname></para>
+					<para><varname>afterTimestamp(tpcpatch,timestamptz,strict bool=TRUE) → tpcpatch</varname></para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

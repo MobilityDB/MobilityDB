@@ -3529,6 +3529,9 @@
 					<listitem>
 						<para><link linkend="tpcpoint_atTpcbox"><varname>atTpcbox</varname>, <varname>minusTpcbox</varname></link>: Restringir a (al complemento de) la extensión de un tpcbox</para>
 					</listitem>
+					<listitem>
+						<para><link linkend="tpcpoint_beforeTimestamp"><varname>beforeTimestamp</varname>, <varname>afterTimestamp</varname></link>: Restringir a los instantes anteriores o posteriores a una marca de tiempo</para>
+					</listitem>
 				</itemizedlist>
 			</sect3>
 
@@ -3639,6 +3642,9 @@
 					</listitem>
 					<listitem>
 						<para><link linkend="tpcpatch_atGeometry"><varname>atGeometry</varname>, <varname>minusGeometry</varname></link>: Restringir a (al complemento de) los puntos que intersectan una geometría 2D</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpatch_beforeTimestamp"><varname>beforeTimestamp</varname>, <varname>afterTimestamp</varname></link>: Restringir a los instantes anteriores o posteriores a una marca de tiempo</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

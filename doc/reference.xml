@@ -3507,6 +3507,9 @@
 					<listitem>
 						<para><link linkend="tpcpoint_atTpcbox"><varname>atTpcbox</varname>, <varname>minusTpcbox</varname></link>: Restrict to (the complement of) the extent of a tpcbox</para>
 					</listitem>
+					<listitem>
+						<para><link linkend="tpcpoint_beforeTimestamp"><varname>beforeTimestamp</varname>, <varname>afterTimestamp</varname></link>: Restrict to the instants before or after a timestamp</para>
+					</listitem>
 				</itemizedlist>
 			</sect3>
 
@@ -3617,6 +3620,9 @@
 					</listitem>
 					<listitem>
 						<para><link linkend="tpcpatch_atGeometry"><varname>atGeometry</varname>, <varname>minusGeometry</varname></link>: Restrict to (the complement of) the points intersecting a 2D geometry</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpatch_beforeTimestamp"><varname>beforeTimestamp</varname>, <varname>afterTimestamp</varname></link>: Restrict to the instants before or after a timestamp</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
