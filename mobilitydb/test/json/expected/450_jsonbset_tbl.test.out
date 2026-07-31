@@ -217,13 +217,13 @@ SELECT COUNT(*) FROM tbl_jsonbset t1, tbl_jsonbset t2 WHERE t1.s >= t2.s;
   9244
 (1 row)
 
-SELECT MAX(set_hash(s)) FROM tbl_jsonbset;
+SELECT MAX(hash(s)) FROM tbl_jsonbset;
     max     
 ------------
  2107504745
 (1 row)
 
-SELECT MAX(set_hash_extended(s, 1)) FROM tbl_jsonbset;
+SELECT MAX(hashExtended(s, 1)) FROM tbl_jsonbset;
          max         
 ---------------------
  9209195217540800445

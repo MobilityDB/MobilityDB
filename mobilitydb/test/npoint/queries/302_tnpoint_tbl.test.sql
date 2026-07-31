@@ -288,7 +288,7 @@ WHERE t1.temp >= t2.temp;
 -------------------------------------------------------------------------------
 
 -- This test currently shows different result on github
-SELECT MAX(temporal_hash(temp)) FROM tbl_tnpoint;
+SELECT MAX(hash(temp)) FROM tbl_tnpoint;
 
 -------------------------------------------------------------------------------
 -- Test index support function for ever/always equal and intersects<Time>

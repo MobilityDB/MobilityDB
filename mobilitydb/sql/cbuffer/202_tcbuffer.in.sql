@@ -731,11 +731,11 @@ CREATE OPERATOR CLASS tcbuffer_btree_ops
 
 /*****************************************************************************/
 
-CREATE FUNCTION temporal_hash(tcbuffer)
+CREATE FUNCTION hash(tcbuffer)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_hash_extended(tcbuffer, bigint)
+CREATE FUNCTION hashExtended(tcbuffer, bigint)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Temporal_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -743,7 +743,7 @@ CREATE FUNCTION temporal_hash_extended(tcbuffer, bigint)
 CREATE OPERATOR CLASS tcbuffer_hash_ops
   DEFAULT FOR TYPE tcbuffer USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   temporal_hash(tcbuffer),
-    FUNCTION    2   temporal_hash_extended(tcbuffer, bigint);
+    FUNCTION    1   hash(tcbuffer),
+    FUNCTION    2   hashExtended(tcbuffer, bigint);
 
 /*****************************************************************************/

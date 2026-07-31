@@ -657,11 +657,11 @@ CREATE OPERATOR CLASS tquadbin_btree_ops
 
 /******************************************************************************/
 
-CREATE FUNCTION temporal_hash(tquadbin)
+CREATE FUNCTION hash(tquadbin)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_hash_extended(tquadbin, bigint)
+CREATE FUNCTION hashExtended(tquadbin, bigint)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Temporal_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -669,7 +669,7 @@ CREATE FUNCTION temporal_hash_extended(tquadbin, bigint)
 CREATE OPERATOR CLASS tquadbin_hash_ops
   DEFAULT FOR TYPE tquadbin USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   temporal_hash(tquadbin),
-    FUNCTION    2   temporal_hash_extended(tquadbin, bigint);
+    FUNCTION    1   hash(tquadbin),
+    FUNCTION    2   hashExtended(tquadbin, bigint);
 
 /******************************************************************************/

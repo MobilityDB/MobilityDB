@@ -321,11 +321,11 @@ CREATE OPERATOR CLASS cbufferset_btree_ops
 
 /******************************************************************************/
 
-CREATE FUNCTION set_hash(cbufferset)
+CREATE FUNCTION hash(cbufferset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Set_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_hash_extended(cbufferset, bigint)
+CREATE FUNCTION hashExtended(cbufferset, bigint)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Set_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -333,8 +333,8 @@ CREATE FUNCTION set_hash_extended(cbufferset, bigint)
 CREATE OPERATOR CLASS cbufferset_hash_ops
   DEFAULT FOR TYPE cbufferset USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   set_hash(cbufferset),
-    FUNCTION    2   set_hash_extended(cbufferset, bigint);
+    FUNCTION    1   hash(cbufferset),
+    FUNCTION    2   hashExtended(cbufferset, bigint);
 
 /******************************************************************************
  * Operators

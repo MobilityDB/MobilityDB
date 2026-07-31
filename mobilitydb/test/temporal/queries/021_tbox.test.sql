@@ -445,13 +445,13 @@ SELECT COUNT(*) FROM tbl_tboxfloat t1, tbl_tboxfloat t2 WHERE t1.b >= t2.b;
 
 -------------------------------------------------------------------------------
 
-SELECT tbox_hash(tbox 'TBOXFLOAT X([1.0,1.0])');
-SELECT tbox_hash_extended(tbox 'TBOXFLOAT X([1.0,1.0])', 1);
+SELECT hash(tbox 'TBOXFLOAT X([1.0,1.0])');
+SELECT hashExtended(tbox 'TBOXFLOAT X([1.0,1.0])', 1);
 
-SELECT tbox_hash(tbox 'TBOXFLOAT T([2000-01-02,2000-01-02])');
-SELECT tbox_hash_extended(tbox 'TBOXFLOAT T([2000-01-02,2000-01-02])', 1);
+SELECT hash(tbox 'TBOXFLOAT T([2000-01-02,2000-01-02])');
+SELECT hashExtended(tbox 'TBOXFLOAT T([2000-01-02,2000-01-02])', 1);
 
-SELECT tbox_hash(tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])');
-SELECT tbox_hash_extended(tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])', 1);
+SELECT hash(tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])');
+SELECT hashExtended(tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])', 1);
 
 -------------------------------------------------------------------------------

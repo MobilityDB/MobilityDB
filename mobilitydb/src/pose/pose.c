@@ -926,7 +926,7 @@ PG_FUNCTION_INFO_V1(Pose_hash_extended);
 /**
  * @ingroup mobilitydb_pose_base_accessor
  * @brief Return the 64-bit hash value of a pose using a seed
- * @sqlfn hash_extended()
+ * @sqlfn hashExtended()
  */
 Datum
 Pose_hash_extended(PG_FUNCTION_ARGS)

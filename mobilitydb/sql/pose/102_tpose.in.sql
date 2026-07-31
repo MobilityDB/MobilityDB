@@ -762,11 +762,11 @@ CREATE OPERATOR CLASS tpose_btree_ops
 
 /******************************************************************************/
 
-CREATE FUNCTION temporal_hash(tpose)
+CREATE FUNCTION hash(tpose)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_hash_extended(tpose, bigint)
+CREATE FUNCTION hashExtended(tpose, bigint)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Temporal_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -774,7 +774,7 @@ CREATE FUNCTION temporal_hash_extended(tpose, bigint)
 CREATE OPERATOR CLASS tpose_hash_ops
   DEFAULT FOR TYPE tpose USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   temporal_hash(tpose),
-    FUNCTION    2   temporal_hash_extended(tpose, bigint);
+    FUNCTION    1   hash(tpose),
+    FUNCTION    2   hashExtended(tpose, bigint);
 
 /******************************************************************************/

@@ -675,11 +675,11 @@ CREATE OPERATOR CLASS tpcpoint_btree_ops
     OPERATOR  5  >,
     FUNCTION  1  cmp(tpcpoint, tpcpoint);
 
-CREATE FUNCTION temporal_hash(tpcpoint)
+CREATE FUNCTION hash(tpcpoint)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_hash_extended(tpcpoint, bigint)
+CREATE FUNCTION hashExtended(tpcpoint, bigint)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Temporal_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -687,7 +687,7 @@ CREATE FUNCTION temporal_hash_extended(tpcpoint, bigint)
 CREATE OPERATOR CLASS tpcpoint_hash_ops
   DEFAULT FOR TYPE tpcpoint USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   temporal_hash(tpcpoint),
-    FUNCTION    2   temporal_hash_extended(tpcpoint, bigint);
+    FUNCTION    1   hash(tpcpoint),
+    FUNCTION    2   hashExtended(tpcpoint, bigint);
 
 /*****************************************************************************/

@@ -181,7 +181,7 @@ CREATE FUNCTION gt(quadbinset, quadbinset)
 CREATE FUNCTION cmp(quadbinset, quadbinset)
   RETURNS integer AS 'MODULE_PATHNAME', 'Set_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_hash(quadbinset)
+CREATE FUNCTION hash(quadbinset)
   RETURNS integer AS 'MODULE_PATHNAME', 'Set_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -216,7 +216,7 @@ CREATE OPERATOR CLASS quadbinset_btree_ops
 CREATE OPERATOR CLASS quadbinset_hash_ops
   DEFAULT FOR TYPE quadbinset USING hash AS
     OPERATOR  1  =,
-    FUNCTION  1  set_hash(quadbinset);
+    FUNCTION  1  hash(quadbinset);
 
 /******************************************************************************
  * unnest — SETOF expansion

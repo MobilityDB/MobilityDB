@@ -4055,34 +4055,34 @@ SELECT tfloat '{1@2000-01-01, 1@2000-01-02}' = tfloat '{[1@2000-01-01], [1@2000-
 
 -------------------------------------------------------------------------------
 
-SELECT temporal_hash(tbool 't@2000-01-01');
-SELECT temporal_hash(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
-SELECT temporal_hash(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
-SELECT temporal_hash(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}');
-SELECT temporal_hash(tint '1@2000-01-01');
-SELECT temporal_hash(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
-SELECT temporal_hash(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
-SELECT temporal_hash(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
-SELECT temporal_hash(tbigint '1@2000-01-01');
-SELECT temporal_hash(tbigint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
-SELECT temporal_hash(tbigint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
-SELECT temporal_hash(tbigint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
-SELECT temporal_hash(tfloat '1.5@2000-01-01');
-SELECT temporal_hash(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
-SELECT temporal_hash(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
-SELECT temporal_hash(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
-SELECT temporal_hash(ttext 'AAA@2000-01-01');
-SELECT temporal_hash(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
-SELECT temporal_hash(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
-SELECT temporal_hash(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
+SELECT hash(tbool 't@2000-01-01');
+SELECT hash(tbool '{t@2000-01-01, f@2000-01-02, t@2000-01-03}');
+SELECT hash(tbool '[t@2000-01-01, f@2000-01-02, t@2000-01-03]');
+SELECT hash(tbool '{[t@2000-01-01, f@2000-01-02, t@2000-01-03],[t@2000-01-04, t@2000-01-05]}');
+SELECT hash(tint '1@2000-01-01');
+SELECT hash(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
+SELECT hash(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
+SELECT hash(tint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
+SELECT hash(tbigint '1@2000-01-01');
+SELECT hash(tbigint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}');
+SELECT hash(tbigint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]');
+SELECT hash(tbigint '{[1@2000-01-01, 2@2000-01-02, 1@2000-01-03],[3@2000-01-04, 3@2000-01-05]}');
+SELECT hash(tfloat '1.5@2000-01-01');
+SELECT hash(tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}');
+SELECT hash(tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]');
+SELECT hash(tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}');
+SELECT hash(ttext 'AAA@2000-01-01');
+SELECT hash(ttext '{AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03}');
+SELECT hash(ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]');
+SELECT hash(ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}');
 
-SELECT temporal_hash_extended(tint '1@2000-01-01', 1);
-SELECT temporal_hash_extended(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', 1);
-SELECT temporal_hash_extended(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', 1);
-SELECT temporal_hash_extended(tint '{[1@2000-01-01, 2@2000-01-02],[3@2000-01-04, 3@2000-01-05]}', 1);
-SELECT temporal_hash_extended(ttext '[AAA@2000-01-01, BBB@2000-01-02]', 1);
+SELECT hashExtended(tint '1@2000-01-01', 1);
+SELECT hashExtended(tint '{1@2000-01-01, 2@2000-01-02, 1@2000-01-03}', 1);
+SELECT hashExtended(tint '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03]', 1);
+SELECT hashExtended(tint '{[1@2000-01-01, 2@2000-01-02],[3@2000-01-04, 3@2000-01-05]}', 1);
+SELECT hashExtended(ttext '[AAA@2000-01-01, BBB@2000-01-02]', 1);
 -- Equal values hash equal; the seed changes the hash
-SELECT temporal_hash_extended(tint '1@2000-01-01', 1) = temporal_hash_extended(tint '1@2000-01-01', 1);
-SELECT temporal_hash_extended(tint '1@2000-01-01', 1) <> temporal_hash_extended(tint '1@2000-01-01', 2);
+SELECT hashExtended(tint '1@2000-01-01', 1) = hashExtended(tint '1@2000-01-01', 1);
+SELECT hashExtended(tint '1@2000-01-01', 1) <> hashExtended(tint '1@2000-01-01', 2);
 
 ------------------------------------------------------------------------------

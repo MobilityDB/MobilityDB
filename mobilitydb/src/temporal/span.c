@@ -958,7 +958,7 @@ PG_FUNCTION_INFO_V1(Span_hash);
 /**
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return the 32-bit hash value of a span
- * @sqlfn span_hash()
+ * @sqlfn hash()
  */
 Datum
 Span_hash(PG_FUNCTION_ARGS)
@@ -972,7 +972,7 @@ PG_FUNCTION_INFO_V1(Span_hash_extended);
 /**
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return the 64-bit hash value of a span using a seed
- * @sqlfn hash_extended()
+ * @sqlfn hashExtended()
  */
 Datum
 Span_hash_extended(PG_FUNCTION_ARGS)

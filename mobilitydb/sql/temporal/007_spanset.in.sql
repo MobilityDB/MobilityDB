@@ -1292,44 +1292,44 @@ CREATE OPERATOR CLASS tstzspanset_btree_ops
 
 /******************************************************************************/
 
-CREATE FUNCTION spanset_hash(intspanset)
+CREATE FUNCTION hash(intspanset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Spanset_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spanset_hash(bigintspanset)
+CREATE FUNCTION hash(bigintspanset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Spanset_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spanset_hash(floatspanset)
+CREATE FUNCTION hash(floatspanset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Spanset_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spanset_hash(datespanset)
+CREATE FUNCTION hash(datespanset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Spanset_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spanset_hash(tstzspanset)
+CREATE FUNCTION hash(tstzspanset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Spanset_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION spanset_hash_extended(intspanset, bigint)
+CREATE FUNCTION hashExtended(intspanset, bigint)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Spanset_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spanset_hash_extended(bigintspanset, bigint)
+CREATE FUNCTION hashExtended(bigintspanset, bigint)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Spanset_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spanset_hash_extended(floatspanset, bigint)
+CREATE FUNCTION hashExtended(floatspanset, bigint)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Spanset_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spanset_hash_extended(datespanset, bigint)
+CREATE FUNCTION hashExtended(datespanset, bigint)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Spanset_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION spanset_hash_extended(tstzspanset, bigint)
+CREATE FUNCTION hashExtended(tstzspanset, bigint)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Spanset_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -1337,28 +1337,28 @@ CREATE FUNCTION spanset_hash_extended(tstzspanset, bigint)
 CREATE OPERATOR CLASS intspanset_hash_ops
   DEFAULT FOR TYPE intspanset USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   spanset_hash(intspanset),
-    FUNCTION    2   spanset_hash_extended(intspanset, bigint);
+    FUNCTION    1   hash(intspanset),
+    FUNCTION    2   hashExtended(intspanset, bigint);
 CREATE OPERATOR CLASS bigintspanset_hash_ops
   DEFAULT FOR TYPE bigintspanset USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   spanset_hash(bigintspanset),
-    FUNCTION    2   spanset_hash_extended(bigintspanset, bigint);
+    FUNCTION    1   hash(bigintspanset),
+    FUNCTION    2   hashExtended(bigintspanset, bigint);
 CREATE OPERATOR CLASS floatspanset_hash_ops
   DEFAULT FOR TYPE floatspanset USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   spanset_hash(floatspanset),
-    FUNCTION    2   spanset_hash_extended(floatspanset, bigint);
+    FUNCTION    1   hash(floatspanset),
+    FUNCTION    2   hashExtended(floatspanset, bigint);
 CREATE OPERATOR CLASS datespanset_hash_ops
   DEFAULT FOR TYPE datespanset USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   spanset_hash(datespanset),
-    FUNCTION    2   spanset_hash_extended(datespanset, bigint);
+    FUNCTION    1   hash(datespanset),
+    FUNCTION    2   hashExtended(datespanset, bigint);
 CREATE OPERATOR CLASS tstzspanset_hash_ops
   DEFAULT FOR TYPE tstzspanset USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   spanset_hash(tstzspanset),
-    FUNCTION    2   spanset_hash_extended(tstzspanset, bigint);
+    FUNCTION    1   hash(tstzspanset),
+    FUNCTION    2   hashExtended(tstzspanset, bigint);
 
 
 /******************************************************************************/

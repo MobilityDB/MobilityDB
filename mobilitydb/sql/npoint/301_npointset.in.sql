@@ -314,11 +314,11 @@ CREATE OPERATOR CLASS npointset_btree_ops
 
 /******************************************************************************/
 
-CREATE FUNCTION set_hash(npointset)
+CREATE FUNCTION hash(npointset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Set_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_hash_extended(npointset, bigint)
+CREATE FUNCTION hashExtended(npointset, bigint)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Set_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -326,8 +326,8 @@ CREATE FUNCTION set_hash_extended(npointset, bigint)
 CREATE OPERATOR CLASS npointset_hash_ops
   DEFAULT FOR TYPE npointset USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   set_hash(npointset),
-    FUNCTION    2   set_hash_extended(npointset, bigint);
+    FUNCTION    1   hash(npointset),
+    FUNCTION    2   hashExtended(npointset, bigint);
 
 /******************************************************************************
  * Operators

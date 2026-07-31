@@ -141,11 +141,11 @@ SELECT tstzspan '[2000-01-01,2000-01-01]' > tstzspan '(2000-01-01,2000-01-02)';
 SELECT tstzspan '[2000-01-01,2000-01-01]' >= tstzspan '(2000-01-01,2000-01-02)';
 SELECT tstzspan '[2000-01-01,2000-01-01]' = tstzspan '(2000-01-01,2000-01-02)';
 
-SELECT span_hash(tstzspan '[2000-01-01,2000-01-02]') = span_hash(tstzspan '[2000-01-01,2000-01-02]');
-SELECT span_hash(tstzspan '[2000-01-01,2000-01-02]') <> span_hash(tstzspan '[2000-01-02,2000-01-02]');
+SELECT hash(tstzspan '[2000-01-01,2000-01-02]') = hash(tstzspan '[2000-01-01,2000-01-02]');
+SELECT hash(tstzspan '[2000-01-01,2000-01-02]') <> hash(tstzspan '[2000-01-02,2000-01-02]');
 
-SELECT span_hash_extended(tstzspan '[2000-01-01,2000-01-02]', 1) = span_hash_extended(tstzspan '[2000-01-01,2000-01-02]', 1);
-SELECT span_hash_extended(tstzspan '[2000-01-01,2000-01-02]', 1) <> span_hash_extended(tstzspan '[2000-01-02,2000-01-02]', 1);
+SELECT hashExtended(tstzspan '[2000-01-01,2000-01-02]', 1) = hashExtended(tstzspan '[2000-01-01,2000-01-02]', 1);
+SELECT hashExtended(tstzspan '[2000-01-01,2000-01-02]', 1) <> hashExtended(tstzspan '[2000-01-02,2000-01-02]', 1);
 
 -------------------------------------------------------------------------------
 

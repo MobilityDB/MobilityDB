@@ -425,12 +425,12 @@ CREATE OPERATOR CLASS raquet_btree_ops
 
 /*****************************************************************************/
 
-CREATE FUNCTION raquet_hash(raquet)
+CREATE FUNCTION hash(raquet)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Raquet_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION raquet_hash_extended(raquet, bigint)
+CREATE FUNCTION hashExtended(raquet, bigint)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Raquet_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -438,8 +438,8 @@ CREATE FUNCTION raquet_hash_extended(raquet, bigint)
 CREATE OPERATOR CLASS raquet_hash_ops
   DEFAULT FOR TYPE raquet USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   raquet_hash(raquet),
-    FUNCTION    2   raquet_hash_extended(raquet, bigint);
+    FUNCTION    1   hash(raquet),
+    FUNCTION    2   hashExtended(raquet, bigint);
 
 /*****************************************************************************/
 

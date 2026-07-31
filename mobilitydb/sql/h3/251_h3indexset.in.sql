@@ -181,7 +181,7 @@ CREATE FUNCTION gt(h3indexset, h3indexset)
 CREATE FUNCTION cmp(h3indexset, h3indexset)
   RETURNS integer AS 'MODULE_PATHNAME', 'Set_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION set_hash(h3indexset)
+CREATE FUNCTION hash(h3indexset)
   RETURNS integer AS 'MODULE_PATHNAME', 'Set_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -216,7 +216,7 @@ CREATE OPERATOR CLASS h3indexset_btree_ops
 CREATE OPERATOR CLASS h3indexset_hash_ops
   DEFAULT FOR TYPE h3indexset USING hash AS
     OPERATOR  1  =,
-    FUNCTION  1  set_hash(h3indexset);
+    FUNCTION  1  hash(h3indexset);
 
 /******************************************************************************
  * unnest — SETOF expansion

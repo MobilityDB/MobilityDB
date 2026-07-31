@@ -1439,38 +1439,38 @@ SELECT COUNT(*) FROM tbl_tboxfloat t1, tbl_tboxfloat t2 WHERE t1.b >= t2.b;
   4950
 (1 row)
 
-SELECT tbox_hash(tbox 'TBOXFLOAT X([1.0,1.0])');
- tbox_hash 
+SELECT hash(tbox 'TBOXFLOAT X([1.0,1.0])');
+   hash    
 -----------
  968363612
 (1 row)
 
-SELECT tbox_hash_extended(tbox 'TBOXFLOAT X([1.0,1.0])', 1);
- tbox_hash_extended  
+SELECT hashExtended(tbox 'TBOXFLOAT X([1.0,1.0])', 1);
+    hashextended     
 ---------------------
  4991639173001897668
 (1 row)
 
-SELECT tbox_hash(tbox 'TBOXFLOAT T([2000-01-02,2000-01-02])');
- tbox_hash  
+SELECT hash(tbox 'TBOXFLOAT T([2000-01-02,2000-01-02])');
+    hash    
 ------------
  1472778806
 (1 row)
 
-SELECT tbox_hash_extended(tbox 'TBOXFLOAT T([2000-01-02,2000-01-02])', 1);
- tbox_hash_extended  
+SELECT hashExtended(tbox 'TBOXFLOAT T([2000-01-02,2000-01-02])', 1);
+    hashextended     
 ---------------------
  6393472602966114521
 (1 row)
 
-SELECT tbox_hash(tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])');
- tbox_hash  
+SELECT hash(tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])');
+    hash    
 ------------
  1124885432
 (1 row)
 
-SELECT tbox_hash_extended(tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])', 1);
- tbox_hash_extended  
+SELECT hashExtended(tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])', 1);
+    hashextended     
 ---------------------
  2841424149611304447
 (1 row)

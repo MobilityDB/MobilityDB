@@ -655,11 +655,11 @@ CREATE OPERATOR CLASS th3index_btree_ops
 
 /******************************************************************************/
 
-CREATE FUNCTION temporal_hash(th3index)
+CREATE FUNCTION hash(th3index)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_hash_extended(th3index, bigint)
+CREATE FUNCTION hashExtended(th3index, bigint)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Temporal_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -667,7 +667,7 @@ CREATE FUNCTION temporal_hash_extended(th3index, bigint)
 CREATE OPERATOR CLASS th3index_hash_ops
   DEFAULT FOR TYPE th3index USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   temporal_hash(th3index),
-    FUNCTION    2   temporal_hash_extended(th3index, bigint);
+    FUNCTION    1   hash(th3index),
+    FUNCTION    2   hashExtended(th3index, bigint);
 
 /******************************************************************************/

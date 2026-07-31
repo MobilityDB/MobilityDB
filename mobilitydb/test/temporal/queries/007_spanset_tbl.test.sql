@@ -223,8 +223,8 @@ SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.t <= t2.t;
 SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.t > t2.t;
 SELECT COUNT(*) FROM tbl_tstzspanset t1, tbl_tstzspanset t2 WHERE t1.t >= t2.t;
 
-SELECT MAX(spanset_hash(t)) != 0 FROM tbl_tstzspanset;
-SELECT MAX(spanset_hash_extended(t, 1)) != 0 FROM tbl_tstzspanset;
+SELECT MAX(hash(t)) != 0 FROM tbl_tstzspanset;
+SELECT MAX(hashExtended(t, 1)) != 0 FROM tbl_tstzspanset;
 
 -------------------------------------------------------------------------------
 -- Transformation Functions

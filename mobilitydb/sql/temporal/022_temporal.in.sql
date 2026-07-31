@@ -2715,44 +2715,44 @@ CREATE OPERATOR CLASS ttext_btree_ops
 
 /******************************************************************************/
 
-CREATE FUNCTION temporal_hash(tbool)
+CREATE FUNCTION hash(tbool)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_hash(tint)
+CREATE FUNCTION hash(tint)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_hash(tbigint)
+CREATE FUNCTION hash(tbigint)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_hash(tfloat)
+CREATE FUNCTION hash(tfloat)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_hash(ttext)
+CREATE FUNCTION hash(ttext)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION temporal_hash_extended(tbool, bigint)
+CREATE FUNCTION hashExtended(tbool, bigint)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Temporal_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_hash_extended(tint, bigint)
+CREATE FUNCTION hashExtended(tint, bigint)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Temporal_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_hash_extended(tbigint, bigint)
+CREATE FUNCTION hashExtended(tbigint, bigint)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Temporal_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_hash_extended(tfloat, bigint)
+CREATE FUNCTION hashExtended(tfloat, bigint)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Temporal_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION temporal_hash_extended(ttext, bigint)
+CREATE FUNCTION hashExtended(ttext, bigint)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Temporal_hash_extended'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -2760,27 +2760,27 @@ CREATE FUNCTION temporal_hash_extended(ttext, bigint)
 CREATE OPERATOR CLASS tbool_hash_ops
   DEFAULT FOR TYPE tbool USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   temporal_hash(tbool),
-    FUNCTION    2   temporal_hash_extended(tbool, bigint);
+    FUNCTION    1   hash(tbool),
+    FUNCTION    2   hashExtended(tbool, bigint);
 CREATE OPERATOR CLASS tint_hash_ops
   DEFAULT FOR TYPE tint USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   temporal_hash(tint),
-    FUNCTION    2   temporal_hash_extended(tint, bigint);
+    FUNCTION    1   hash(tint),
+    FUNCTION    2   hashExtended(tint, bigint);
 CREATE OPERATOR CLASS tbigint_hash_ops
   DEFAULT FOR TYPE tbigint USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   temporal_hash(tbigint),
-    FUNCTION    2   temporal_hash_extended(tbigint, bigint);
+    FUNCTION    1   hash(tbigint),
+    FUNCTION    2   hashExtended(tbigint, bigint);
 CREATE OPERATOR CLASS tfloat_hash_ops
   DEFAULT FOR TYPE tfloat USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   temporal_hash(tfloat),
-    FUNCTION    2   temporal_hash_extended(tfloat, bigint);
+    FUNCTION    1   hash(tfloat),
+    FUNCTION    2   hashExtended(tfloat, bigint);
 CREATE OPERATOR CLASS ttext_hash_ops
   DEFAULT FOR TYPE ttext USING hash AS
     OPERATOR    1   = ,
-    FUNCTION    1   temporal_hash(ttext),
-    FUNCTION    2   temporal_hash_extended(ttext, bigint);
+    FUNCTION    1   hash(ttext),
+    FUNCTION    2   hashExtended(ttext, bigint);
 
 /******************************************************************************/

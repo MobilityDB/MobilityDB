@@ -139,13 +139,13 @@ SELECT COUNT(*) FROM tbl_cbufferset t1, tbl_cbufferset t2 WHERE t1.s >= t2.s;
   4950
 (1 row)
 
-SELECT MAX(set_hash(s)) FROM tbl_cbufferset;
+SELECT MAX(hash(s)) FROM tbl_cbufferset;
     max     
 ------------
  2092598553
 (1 row)
 
-SELECT MAX(set_hash_extended(s, 1)) FROM tbl_cbufferset;
+SELECT MAX(hashExtended(s, 1)) FROM tbl_cbufferset;
          max         
 ---------------------
  8663420753996198537

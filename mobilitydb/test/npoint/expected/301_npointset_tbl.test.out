@@ -169,13 +169,13 @@ SELECT COUNT(*) FROM tbl_npointset t1, tbl_npointset t2 WHERE t1.n >= t2.n;
   4950
 (1 row)
 
-SELECT MAX(set_hash(n)) FROM tbl_npointset;
+SELECT MAX(hash(n)) FROM tbl_npointset;
     max     
 ------------
  2135309225
 (1 row)
 
-SELECT MAX(set_hash_extended(n, 1)) FROM tbl_npointset;
+SELECT MAX(hashExtended(n, 1)) FROM tbl_npointset;
          max         
 ---------------------
  9200703917019737513
