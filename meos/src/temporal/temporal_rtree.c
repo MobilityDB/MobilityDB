@@ -1111,10 +1111,10 @@ rtree_insert_temporal(RTree *rtree, const Temporal *temp, int id)
   if (! ensure_rtree_temporal_compatible(rtree, temp))
     return;
   /* Use a stack buffer large enough for any MEOS bounding box type */
-  char buf[sizeof(STBox)];
-  memset(buf, 0, sizeof(buf));
-  temporal_set_bbox(temp, buf);
-  rtree_insert(rtree, buf, id);
+  bboxunion buf;
+  memset(&buf, 0, sizeof(buf));
+  temporal_set_bbox(temp, &buf);
+  rtree_insert(rtree, &buf, id);
   return;
 }
 
@@ -1140,10 +1140,10 @@ rtree_search_temporal(const RTree *rtree, RTreeSearchOp op,
     return 0;
   }
   /* Use a stack buffer large enough for any MEOS bounding box type */
-  char buf[sizeof(STBox)];
-  memset(buf, 0, sizeof(buf));
-  temporal_set_bbox(temp, buf);
-  return rtree_search(rtree, op, buf, result);
+  bboxunion buf;
+  memset(&buf, 0, sizeof(buf));
+  temporal_set_bbox(temp, &buf);
+  return rtree_search(rtree, op, &buf, result);
 }
 
 /*****************************************************************************

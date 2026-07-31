@@ -82,6 +82,10 @@ struct SPTree
   SPNode *root;         /**< Root node, or @p NULL when empty */
   int (*box_dims)(const void *box);  /**< Dimensions of a box, or @p NULL when
                                           fixed at creation */
+  void (*project)(const void *in, void *out);  /**< Project an incoming box
+                                          into the internal box type, or
+                                          @p NULL when boxes are stored as
+                                          received */
   uint8 (*get_quadrant)(const void *centroid, const void *key);
   void (*nodebox_init)(void *nodebox, const void *centroid,
     const struct SPTree *sptree);

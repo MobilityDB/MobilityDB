@@ -46,6 +46,9 @@
 #include <meos.h>
 #include <meos_geo.h>
 #include <meos_internal.h>
+#if POINTCLOUD
+  #include <meos_pointcloud.h>
+#endif
 #include "temporal/temporal.h"
 #include "temporal/span_index.h"
 #include "temporal/tbox_index.h"
@@ -224,6 +227,30 @@ stbox_leaf_consistent(const void *key, const void *query, RTreeSearchOp op)
   return overlaps_stbox_stbox(k, q);
 }
 
+#if POINTCLOUD
+/*****************************************************************************
+ * Family-specific adapters (TPCBox)
+ *
+ * A TPCBox carries the same spatial and temporal bounds as an STBox plus a
+ * trailing pcid, so a tpcbox tree is internally an STBox tree: every incoming
+ * box and query is projected to an STBox on entry through #tpcbox_to_stbox
+ * and the STBox adapters above do the rest. Only the projection is specific
+ * to the type.
+ *****************************************************************************/
+
+/**
+ * @brief Project a TPCBox onto an STBox held in caller-provided memory
+ */
+static void
+tpcbox_project(const void *in, void *out)
+{
+  STBox *box = tpcbox_to_stbox((const TPCBox *) in);
+  memcpy(out, box, sizeof(STBox));
+  pfree(box);
+  return;
+}
+#endif /* POINTCLOUD */
+
 /*****************************************************************************
  * Creation
  *****************************************************************************/
@@ -237,7 +264,11 @@ stbox_leaf_consistent(const void *key, const void *query, RTreeSearchOp op)
 SPTree *
 sptree_create(MeosType bboxtype, SPTreeKind kind)
 {
-  assert(span_type(bboxtype) || bboxtype == T_TBOX || bboxtype == T_STBOX);
+  assert(span_type(bboxtype) || bboxtype == T_TBOX || bboxtype == T_STBOX
+#if POINTCLOUD
+    || bboxtype == T_TPCBOX
+#endif
+    );
   SPTree *sptree = palloc0(sizeof(SPTree));
   sptree->bboxtype = bboxtype;
   sptree->boxsize = bbox_get_size(bboxtype);
@@ -267,6 +298,25 @@ sptree_create(MeosType bboxtype, SPTreeKind kind)
     sptree->inner_consistent = &tbox_inner_consistent;
     sptree->leaf_consistent = &tbox_leaf_consistent;
   }
+#if POINTCLOUD
+  else if (bboxtype == T_TPCBOX)
+  {
+    /* A tpcbox tree is internally an STBox tree: boxes and queries are
+     * projected through #tpcbox_project on entry, so the box storage, the
+     * node regions and every adapter are the STBox ones */
+    sptree->boxsize = sizeof(STBox);
+    sptree->dims = -1;
+    sptree->nodeboxsize = sizeof(STboxNode);
+    sptree->project = &tpcbox_project;
+    sptree->box_dims = &stbox_box_dims;
+    sptree->get_quadrant = &stbox_get_quadrant;
+    sptree->nodebox_init = &stbox_nodebox_init;
+    sptree->quadtree_next = &stbox_quadtree_next;
+    sptree->kdtree_next = &stbox_kdtree_next;
+    sptree->inner_consistent = &stbox_inner_consistent;
+    sptree->leaf_consistent = &stbox_leaf_consistent;
+  }
+#endif /* POINTCLOUD */
   else /* bboxtype == T_STBOX */
   {
     /* The dimensions (6 for 2D+T, 8 for 3D+T) and hence the number of children
@@ -371,6 +421,25 @@ sptree_create_stbox(SPTreeKind kind)
   return sptree_create(T_STBOX, kind);
 }
 
+#if POINTCLOUD
+/**
+ * @ingroup meos_pointcloud_box
+ * @brief Create an in-memory space-partitioning index for the @c tpcbox
+ * bounding-box type
+ * @details The boxes are projected to spatiotemporal boxes on entry, so the
+ * tree reuses the spatiotemporal box partitioning unchanged. Pair with
+ * @ref sptree_insert / @ref sptree_insert_temporal to populate and
+ * @ref sptree_search / @ref sptree_search_temporal to query.
+ * @param[in] kind Quad-tree or k-d tree
+ * @return SPTree initialized
+ */
+SPTree *
+sptree_create_tpcbox(SPTreeKind kind)
+{
+  return sptree_create(T_TPCBOX, kind);
+}
+#endif /* POINTCLOUD */
+
 /*****************************************************************************
  * Insertion
  *****************************************************************************/
@@ -401,6 +470,13 @@ spnode_make(const SPTree *sptree, const void *box, int id)
 void
 sptree_insert(SPTree *sptree, void *box, int id)
 {
+  /* Project the incoming box into the internal box type (TPCBox: STBox) */
+  bboxunion proj;
+  if (sptree->project)
+  {
+    sptree->project(box, &proj);
+    box = &proj;
+  }
   /* Determine the deferred dimensions from the first box (STBox: 6 for 2D+T,
    * 8 for 3D+T) and hence the number of children per node */
   if (sptree->dims < 0)
@@ -480,6 +556,13 @@ int
 sptree_search(const SPTree *sptree, RTreeSearchOp op, const void *query,
   MeosArray *result)
 {
+  /* Project the query box into the internal box type (TPCBox: STBox) */
+  bboxunion proj;
+  if (sptree->project)
+  {
+    sptree->project(query, &proj);
+    query = &proj;
+  }
   meos_array_reset(result);
   if (sptree->root)
   {
@@ -513,7 +596,11 @@ ensure_sptree_temporal_compatible(const SPTree *sptree, const Temporal *temp)
   bool compatible =
     (talpha_type(temptype) && sptree->bboxtype == T_TSTZSPAN) ||
     (tnumber_type(temptype) && sptree->bboxtype == T_TBOX) ||
-    (tspatial_type(temptype) && sptree->bboxtype == T_STBOX);
+    (tspatial_type(temptype) && sptree->bboxtype == T_STBOX)
+#if POINTCLOUD
+    || (tpointcloud_temptype(temptype) && sptree->bboxtype == T_TPCBOX)
+#endif
+    ;
   if (! compatible)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
@@ -541,10 +628,10 @@ sptree_insert_temporal(SPTree *sptree, const Temporal *temp, int id)
   if (! ensure_sptree_temporal_compatible(sptree, temp))
     return;
   /* Use a stack buffer large enough for any MEOS bounding box type */
-  char buf[sizeof(STBox)];
-  memset(buf, 0, sizeof(buf));
-  temporal_set_bbox(temp, buf);
-  sptree_insert(sptree, buf, id);
+  bboxunion buf;
+  memset(&buf, 0, sizeof(buf));
+  temporal_set_bbox(temp, &buf);
+  sptree_insert(sptree, &buf, id);
   return;
 }
 
@@ -570,10 +657,10 @@ sptree_search_temporal(const SPTree *sptree, RTreeSearchOp op,
     return 0;
   }
   /* Use a stack buffer large enough for any MEOS bounding box type */
-  char buf[sizeof(STBox)];
-  memset(buf, 0, sizeof(buf));
-  temporal_set_bbox(temp, buf);
-  return sptree_search(sptree, op, buf, result);
+  bboxunion buf;
+  memset(&buf, 0, sizeof(buf));
+  temporal_set_bbox(temp, &buf);
+  return sptree_search(sptree, op, &buf, result);
 }
 
 /**
@@ -599,10 +686,12 @@ sptree_temporal_split_boxes(const SPTree *sptree, const Temporal *temp,
 {
   assert(sptree); assert(temp); assert(count);
 
-  /* Degenerate single minimum bounding box */
+  /* Degenerate single minimum bounding box. The allocation is sized for any
+   * MEOS bounding box type because the temporal type's box may be larger than
+   * the internal one (a TPCBox is projected to an STBox at insertion) */
   if (maxboxes <= 1 || temp->subtype == TINSTANT)
   {
-    void *result = palloc0(sptree->boxsize);
+    void *result = palloc0(sizeof(bboxunion));
     temporal_set_bbox(temp, result);
     *count = 1;
     return result;
@@ -617,9 +706,9 @@ sptree_temporal_split_boxes(const SPTree *sptree, const Temporal *temp,
   if (tgeo_type_all(temptype))
     return tgeo_split_n_stboxes(temp, maxboxes, count);
 
-  /* No per-segment splitter (e.g. tcbuffer, tnpoint, tpose): fall back to the
-   * single minimum bounding box */
-  void *result = palloc0(sptree->boxsize);
+  /* No per-segment splitter (e.g. tcbuffer, tnpoint, tpose, tpcpoint,
+   * tpcpatch): fall back to the single minimum bounding box */
+  void *result = palloc0(sizeof(bboxunion));
   temporal_set_bbox(temp, result);
   *count = 1;
   return result;
@@ -799,6 +888,12 @@ sptree_nodebox_distance(const SPTree *sptree, const void *query,
   if (sptree->bboxtype == T_STBOX)
     return distance_stbox_nodebox((const STBox *) query,
       (const STboxNode *) nodebox);
+#if POINTCLOUD
+  if (sptree->bboxtype == T_TPCBOX)
+    /* The boxes are stored internally as STBox (see tpcbox_project) */
+    return distance_stbox_nodebox((const STBox *) query,
+      (const STboxNode *) nodebox);
+#endif
   /* Span types */
   return distance_span_nodespan((const Span *) query,
     (const SpanNode *) nodebox);
@@ -930,7 +1025,11 @@ sptree_nn_cursor_open(const SPTree *sptree, const void *query)
   SPNNCursor *cursor = palloc0(sizeof(SPNNCursor));
   cursor->sptree = sptree;
   cursor->query = palloc(sptree->boxsize);
-  memcpy(cursor->query, query, sptree->boxsize);
+  /* Project the query box into the internal box type (TPCBox: STBox) */
+  if (sptree->project)
+    sptree->project(query, cursor->query);
+  else
+    memcpy(cursor->query, query, sptree->boxsize);
   cursor->capacity = 64;
   cursor->heap = palloc((size_t) cursor->capacity * sizeof(SPNNEntry));
   cursor->count = 0;
