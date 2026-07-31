@@ -1302,6 +1302,25 @@ datum_cbuffer_dwithin(Datum cb1, Datum cb2, Datum dist)
     DatumGetCbufferP(cb2), DatumGetFloat8(dist)));
 }
 
+/**
+ * @ingroup meos_internal_cbuffer_base_rel
+ * @brief Return a Datum true if the first 2D circular buffer contains
+ * (@p strict non-zero) or covers the second one
+ * @param[in] cb1,cb2 Circular buffers
+ * @param[in] strict Passed as a float, non-zero for contains, zero for covers
+ * @note Ternary predicate mirroring #datum_cbuffer_dwithin so the contains and
+ * covers Boolean of two temporal circular buffers can be lifted with the
+ * per-segment turning points
+ */
+Datum
+datum_cbuffer_contains3(Datum cb1, Datum cb2, Datum strict)
+{
+  const Cbuffer *c1 = DatumGetCbufferP(cb1);
+  const Cbuffer *c2 = DatumGetCbufferP(cb2);
+  return BoolGetDatum((DatumGetFloat8(strict) != 0) ?
+    cbuffer_contains(c1, c2) : cbuffer_covers(c1, c2));
+}
+
 /*****************************************************************************
  * Comparison functions for defining B-tree indexes
  *****************************************************************************/

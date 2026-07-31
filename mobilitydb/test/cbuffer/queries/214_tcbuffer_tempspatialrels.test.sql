@@ -74,6 +74,16 @@ SELECT tContains(geometry 'Point(1 1)', tcbuffer 'SRID=5676;Cbuffer(Point(1 1),0
 SELECT tContains(geometry 'Point(1 1)', tcbuffer 'Cbuffer(Point(1 1 1),0.5)@2000-01-01');
 SELECT tContains(geometry 'Point(1 1 1)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
 
+-- Two temporal circular buffers: a small disc passing straight through a large
+-- stationary one is contained on the interval between the two clearance
+-- crossings, not only at the closest-approach instant
+SELECT tContains(tcbuffer '[Cbuffer(Point(0 0),5)@2000-01-01, Cbuffer(Point(0 0),5)@2000-01-03]', tcbuffer '[Cbuffer(Point(-10 0),1)@2000-01-01, Cbuffer(Point(10 0),1)@2000-01-03]');
+SELECT tCovers(tcbuffer '[Cbuffer(Point(0 0),5)@2000-01-01, Cbuffer(Point(0 0),5)@2000-01-03]', tcbuffer '[Cbuffer(Point(-10 0),1)@2000-01-01, Cbuffer(Point(10 0),1)@2000-01-03]');
+-- Identical moving buffers cover each other throughout but never strictly
+-- contain (the boundaries coincide)
+SELECT tContains(tcbuffer '[Cbuffer(Point(0 0),1)@2000-01-01, Cbuffer(Point(4 0),1)@2000-01-03]', tcbuffer '[Cbuffer(Point(0 0),1)@2000-01-01, Cbuffer(Point(4 0),1)@2000-01-03]');
+SELECT tCovers(tcbuffer '[Cbuffer(Point(0 0),1)@2000-01-01, Cbuffer(Point(4 0),1)@2000-01-03]', tcbuffer '[Cbuffer(Point(0 0),1)@2000-01-01, Cbuffer(Point(4 0),1)@2000-01-03]');
+
 -------------------------------------------------------------------------------
 -- tDisjoint
 -------------------------------------------------------------------------------

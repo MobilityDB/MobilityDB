@@ -1198,6 +1198,33 @@ tcontains_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
 }
 
 /**
+ * @brief Return a temporal Boolean that states whether a temporal circular
+ * buffer contains (@p strict) or covers another one, splitting each synchronized
+ * segment at the clearance crossings so the result holds on a continuous
+ * interval rather than only at the clearance minimum
+ */
+static Temporal *
+tcontains_covers_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
+  bool strict)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tcbuffer_tcbuffer(temp1, temp2))
+    return NULL;
+
+  Temporal *sync1, *sync2;
+  /* Synchronization without adding crossings; NULL when they share no time */
+  if (! intersection_temporal_temporal(temp1, temp2, SYNCHRONIZE_NOCROSS,
+      &sync1, &sync2))
+    return NULL;
+
+  Temporal *result = tdwithin_tspatial_tspatial(sync1, sync2,
+    Float8GetDatum(strict ? 1.0 : 0.0), &datum_cbuffer_contains3,
+    &tcbuffersegm_contains_turnpt);
+  pfree(sync1); pfree(sync2);
+  return result;
+}
+
+/**
  * @ingroup meos_cbuffer_rel_temp
  * @brief Return a temporal Boolean that states whether a temporal circular
  * buffer contains another one
@@ -1207,7 +1234,7 @@ tcontains_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
 Temporal *
 tcontains_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 {
-  return tspatialrel_tcbuffer_tcbuffer(temp1, temp2, &datum_cbuffer_contains);
+  return tcontains_covers_tcbuffer_tcbuffer(temp1, temp2, true);
 }
 
 /*****************************************************************************
@@ -1295,8 +1322,7 @@ tcovers_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
 Temporal *
 tcovers_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 {
-  return tspatialrel_tcbuffer_tcbuffer(temp1, temp2,
-    &datum_cbuffer_covers);
+  return tcontains_covers_tcbuffer_tcbuffer(temp1, temp2, false);
 }
 
 /*****************************************************************************

@@ -122,6 +122,7 @@ extern Datum datum_cbuffer_covers(Datum cb1, Datum cb2);
 extern Datum datum_cbuffer_disjoint(Datum cb1, Datum cb2);
 extern Datum datum_cbuffer_intersects(Datum cb1, Datum cb2);
 extern Datum datum_cbuffer_dwithin(Datum cb1, Datum cb2, Datum dist);
+extern Datum datum_cbuffer_contains3(Datum cb1, Datum cb2, Datum strict);
 extern Datum datum_cbuffer_touches(Datum cb1, Datum cb2);
 
 /*****************************************************************************/
