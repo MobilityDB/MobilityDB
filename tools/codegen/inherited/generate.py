@@ -662,6 +662,177 @@ def extract_io_type(filetext: str, family: str) -> str:
     return filetext[b:e]
 
 
+# --- SQL Input/Output: representations sub-family (sub-family B) ----------------
+# The WKT/(E)WKT/MF-JSON/(E/Hex)WKB REPRESENTATION converters every temporal type
+# carries: as<Fmt>(temp) outputs and <temp>From<Fmt>(...) constructors, all pure
+# wiring to the generic Temporal_*/Tspatial_*/Trgeometry_* representation kernels
+# (see full-inherited-generation-program §"sub-family B"). Every CREATE FUNCTION is
+# the SAME four-line skeleton (templates/representations.sql.tmpl) — only the
+# signature {SIG}, return {RET} and backing symbol {SYM} differ — so ONE skeleton
+# emits the whole surface; the per-family shape (which ops, in which order/grouping,
+# the section headers, and the per-op/per-type symbol + maxdecimaldigits overrides)
+# is data in the manifest `representation_families` table.
+#
+# The base shape (asText/asBinary/asHexWKB/asMFJSON + From{Text,Binary,HexWKB,MFJSON})
+# is uniform; two orthogonal capability axes vary it, exactly as the ground-truth
+# matrix shows (NOT "all spatial" — the flags are per family):
+#   * ewkt_ewkb : a family that carries the E-forms lists asEWKT/asEWKB +
+#     From{EWKT,EWKB,HexEWKB} in its op sequence (tgeo/tpoint/tcbuffer/tpose/trgeo);
+#     tnpoint and th3index are spatial yet carry NONE of them, so it is opt-in data,
+#     not a class rule.
+#   * text form : pointcloud (tpcpoint/tpcpatch) withholds asText/FromText/FromMFJSON
+#     (a base-type capability); such a family simply omits those ops from its sequence.
+# The canonical MISSPELLING `endianenconding text DEFAULT ''` (asBinary/asEWKB/
+# asHexWKB/asHexEWKB) and `maxdecimaldigits int4 DEFAULT 15` (only float/coordinate-
+# bearing types, per-type via the `maxdd` token) are reproduced verbatim.
+#
+# Region markers for the eventual Phase-2 emit (mirroring _io_markers); Phase-1
+# --validate extracts the committed hand block by section-header ANCHORS instead, so
+# the deployed .in.sql files are never touched while the template is being proven.
+def _representations_markers(family: str):
+    begin = (f"-- GENERATED-REPRESENTATIONS-BEGIN {family} — "
+             "tools/codegen/inherited/generate.py from templates/representations.sql.tmpl;\n"
+             "-- DO NOT EDIT BY HAND; edit the template + manifest.yaml "
+             "(representation_families) and re-run.\n")
+    return begin, f"-- GENERATED-REPRESENTATIONS-END {family}\n"
+
+
+# From-constructor argument types and the as-output return types (the invariant
+# structure of each op; the varying part — symbol, maxdecimaldigits/endianenconding
+# presence — is computed below or overridden per family).
+_REPR_FROM_ARG = {
+    "FromText": "text", "FromEWKT": "text", "FromMFJSON": "text",
+    "FromBinary": "bytea", "FromEWKB": "bytea",
+    "FromHexWKB": "text", "FromHexEWKB": "text",
+}
+_REPR_AS_RET = {
+    "asText": "text", "asEWKT": "text", "asMFJSON": "text",
+    "asBinary": "bytea", "asEWKB": "bytea",
+    "asHexWKB": "text", "asHexEWKB": "text",
+}
+_REPR_ARRAY_OPS = {"asText", "asEWKT"}          # carry a `[]` array overload
+_REPR_ENDIAN_OPS = {"asBinary", "asEWKB", "asHexWKB", "asHexEWKB"}
+# Default backing symbols shared by (nearly) every family; a family overrides the
+# spatial/reference-specific ones (FromText/FromEWKT, asText/asEWKT/asEWKB, and the
+# array symbols) via its `syms`/`arrsyms` maps.
+_REPR_DEFAULT_SYM = {
+    "FromBinary": "Temporal_from_wkb", "FromEWKB": "Temporal_from_wkb",
+    "FromHexWKB": "Temporal_from_hexwkb", "FromHexEWKB": "Temporal_from_hexwkb",
+    "FromMFJSON": "Temporal_from_mfjson",
+    "asMFJSON": "Temporal_as_mfjson", "asBinary": "Temporal_as_wkb",
+    "asHexWKB": "Temporal_as_hexwkb", "asHexEWKB": "Temporal_as_hexwkb",
+}
+
+
+def _repr_skeleton(sig: str, ret: str, sym: str) -> str:
+    """One representation CREATE FUNCTION from the shared skeleton (no trailing
+    newline, so groups/blocks can be joined with explicit blank-line control)."""
+    tmpl = (TEMPLATES / "representations.sql.tmpl").read_text()
+    return (tmpl.replace("{SIG}", sig).replace("{RET}", ret)
+                .replace("{SYM}", sym).rstrip("\n"))
+
+
+def _repr_mfjson_sig(t: dict, fam: dict) -> str:
+    """asMFJSON's signature: the sole per-family/per-type shape variation. `named`
+    prefixes the first arg with `temp ` (base/json/h3 do, spatial forms do not);
+    `mfjson_maxdd` (defaults to the type's `maxdd`) appends maxdecimaldigits; json is
+    the one single-line form."""
+    argname = "temp " if fam.get("mfjson_named") else ""
+    maxdd = t.get("mfjson_maxdd", t.get("maxdd", False))
+    if fam.get("mfjson_oneline"):
+        return f"asMFJSON({argname}{t['temp']}, options int4 DEFAULT 0, flags int4 DEFAULT 0)"
+    sig = (f"asMFJSON({argname}{t['temp']}, options int4 DEFAULT 0,\n"
+           "    flags int4 DEFAULT 0")
+    return sig + (", maxdecimaldigits int4 DEFAULT 15)" if maxdd else ")")
+
+
+def _repr_fn(op: str, t: dict, fam: dict, array: bool) -> str:
+    """Render one representation function for op `op`, type `t`. `array` selects the
+    `[]` overload of an array-bearing output op."""
+    if op in _REPR_FROM_ARG:                                   # <temp>From<Fmt>(arg)
+        sym = fam.get("syms", {}).get(op, _REPR_DEFAULT_SYM.get(op))
+        return _repr_skeleton(f"{t['temp']}{op}({_REPR_FROM_ARG[op]})", t["temp"], sym)
+    if op == "asMFJSON":
+        sym = fam.get("syms", {}).get(op, _REPR_DEFAULT_SYM[op])
+        return _repr_skeleton(_repr_mfjson_sig(t, fam), "text", sym)
+    # as<Fmt>(temp[, tail]) output.  maxdecimaldigits only on maxdd types (text/ewkt);
+    # endianenconding on the (E/Hex)WKB ops; both reproduced verbatim.
+    if op in _REPR_ENDIAN_OPS:
+        tail = ", endianenconding text DEFAULT ''"
+    elif op in _REPR_ARRAY_OPS and t.get("maxdd"):
+        tail = ", maxdecimaldigits int4 DEFAULT 15"
+    else:
+        tail = ""
+    ttype = t["temp"] + "[]" if array else t["temp"]
+    ret = _REPR_AS_RET[op] + ("[]" if array else "")
+    if array:
+        sym = fam.get("arrsyms", {})[op]
+    else:
+        sym = fam.get("syms", {}).get(op, _REPR_DEFAULT_SYM.get(op))
+    return _repr_skeleton(f"{op}({ttype}{tail})", ret, sym)
+
+
+def _repr_op(op: str, fam: dict) -> str:
+    """One op over every family type. From-ops and non-array outputs list their types
+    consecutively (no blank); an array output groups each type's scalar+array pair,
+    the pairs separated by a blank line (the doc/house style the hand files follow)."""
+    temps = fam["temps"]
+    # An op carries its `[]` overload only where the family supplies an array symbol
+    # for it (th3index's asText is scalar-only, so it withholds the arrsym).
+    if op in _REPR_ARRAY_OPS and op in fam.get("arrsyms", {}):
+        return "\n\n".join(_repr_fn(op, t, fam, False) + "\n" + _repr_fn(op, t, fam, True)
+                           for t in temps)
+    return "\n".join(_repr_fn(op, t, fam, False) for t in temps)
+
+
+def _repr_ops(item, fam: dict) -> str:
+    """An op-sequence item: a bare op (blank-separated from its siblings) or a list of
+    ops fused with NO blank between them (the tnpoint FromBinary+FromHexWKB pairing,
+    the pointcloud no-blank run)."""
+    if isinstance(item, list):
+        return "\n".join(_repr_op(op, fam) for op in item)
+    return _repr_op(item, fam)
+
+
+def render_representations(fam: dict) -> str:
+    """Render one family's representation block from its `blocks` sequence. A block is
+    either a verbatim `lit` (a section header/separator, kept exactly as the hand
+    file) or an `ops` list; blocks and the ops within a block are separated by one
+    blank line. A whole-file family (its own dedicated *_inout file) ends at EOF with
+    the trailing separator; a region-in-file family ends with the blank line that
+    precedes the next section."""
+    segs = []
+    for blk in fam["blocks"]:
+        if "lit" in blk:
+            segs.append(blk["lit"])
+        else:
+            segs.append("\n\n".join(_repr_ops(it, fam) for it in blk["ops"]))
+    body = "\n\n".join(segs)
+    return body + ("\n" if fam.get("whole_file") else "\n\n")
+
+
+def extract_representations(filetext: str, fam: dict) -> str:
+    """Return the committed hand representation block, sliced by section-header
+    anchors (no in-file markers needed): from the `/*` opening the block's header
+    down to (exclusive) the `/*` opening the next section's header, or EOF for a
+    whole-file family."""
+    i = filetext.index(fam["begin"])
+    start = filetext.rfind("/*", 0, i)
+    if fam.get("whole_file"):
+        end = len(filetext)
+    else:
+        j = filetext.index(fam["end"])
+        end = filetext.rfind("/*", 0, j)
+    return filetext[start:end]
+
+
+def splice_representations(filetext: str, family: str, rendered: str) -> str:
+    begin, end = _representations_markers(family)
+    b = filetext.index(begin) + len(begin)
+    e = filetext.index(end)
+    return filetext[:b] + rendered + filetext[e:]
+
+
 def _accessor_names() -> set:
     """Every SQL function name the generated accessor region can carry: the shared
     template's functions plus the gated TNumber/orderable reductions. Used to find and
@@ -835,6 +1006,25 @@ def main() -> int:
             same = gen == cur
             ok = ok and same
             print(f"[{'OK ' if same else 'DIFF'}] self-regen io {fam['family']} "
+                  f"-> {pathlib.Path(fam['file'])}")
+            if not same:
+                g, c = gen.splitlines(), cur.splitlines()
+                for n, (a, b) in enumerate(zip(g, c), 1):
+                    if a != b:
+                        print(f"     first diff line {n}:\n       gen: {a!r}\n"
+                              f"       cur: {b!r}")
+                        break
+                if len(g) != len(c):
+                    print(f"     line count gen={len(g)} cur={len(c)}")
+        for fam in mf.get("representation_families", []):
+            if not fam.get("reference"):
+                continue
+            p = ROOT / fam["file"]
+            gen = render_representations(fam)
+            cur = extract_representations(p.read_text(), fam) if p.exists() else ""
+            same = gen == cur
+            ok = ok and same
+            print(f"[{'OK ' if same else 'DIFF'}] self-regen representations {fam['family']} "
                   f"-> {pathlib.Path(fam['file'])}")
             if not same:
                 g, c = gen.splitlines(), cur.splitlines()
