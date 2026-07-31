@@ -643,13 +643,9 @@ int
 ea_contains_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp,
   bool ever)
 {
-  const char p[] = "T********";
-  int result = ever ?
-    ea_spatialrel_tcbuffer_cbuffer(temp, cb, PointerGetDatum(p),
-      (varfunc) &datum_geom_relate_pattern, 3, ever, INVERT) :
-    ea_spatialrel_tcbuffer_cbuffer(temp, cb, (Datum) NULL,
-      (varfunc) &datum_geom_contains, 2, ever, INVERT);
-  return result;
+  if (! ensure_valid_tcbuffer_cbuffer(temp, cb))
+    return -1;
+  return eacontains_tcbuffer_cbuffer_native(temp, cb, ever, false, true);
 }
 
 /**
@@ -693,13 +689,9 @@ int
 ea_contains_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
   bool ever)
 {
-  const char p[] = "T********";
-  int result = ever ?
-    ea_spatialrel_tcbuffer_cbuffer(temp, cb, PointerGetDatum(p),
-      (varfunc) &datum_geom_relate_pattern, 3, ever, INVERT_NO) :
-    ea_spatialrel_tcbuffer_cbuffer(temp, cb, (Datum) NULL,
-      (varfunc) &datum_geom_contains, 2, ever, INVERT_NO);
-  return result;
+  if (! ensure_valid_tcbuffer_cbuffer(temp, cb))
+    return -1;
+  return eacontains_tcbuffer_cbuffer_native(temp, cb, ever, true, true);
 }
 
 /**
@@ -893,8 +885,9 @@ int
 ea_covers_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp,
   bool ever)
 {
-  return ea_spatialrel_tcbuffer_cbuffer(temp, cb, (Datum) NULL,
-    (varfunc) &datum_geom_covers, 2, ever, INVERT);
+  if (! ensure_valid_tcbuffer_cbuffer(temp, cb))
+    return -1;
+  return eacontains_tcbuffer_cbuffer_native(temp, cb, ever, false, false);
 }
 
 /**
@@ -938,8 +931,9 @@ int
 ea_covers_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
   bool ever)
 {
-  return ea_spatialrel_tcbuffer_cbuffer(temp, cb, (Datum) NULL,
-    (varfunc) &datum_geom_covers, 2, ever, INVERT_NO);
+  if (! ensure_valid_tcbuffer_cbuffer(temp, cb))
+    return -1;
+  return eacontains_tcbuffer_cbuffer_native(temp, cb, ever, true, false);
 }
 
 /**

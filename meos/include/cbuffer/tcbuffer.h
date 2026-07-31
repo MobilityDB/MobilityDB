@@ -76,6 +76,9 @@ extern int tcbuffersegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
 
 extern void *tcbuffer_geo_ctx_make(const GSERIALIZED *gs);
 extern void tcbuffer_geo_ctx_free(void *ctx);
+extern void *tcbuffer_disc_ctx_make(const Cbuffer *cb,
+  bool container_is_temporal);
+extern void tcbuffer_disc_ctx_free(void *ctx);
 extern int tcbuffer_geo_ctx_nsegs(const void *ctx);
 extern bool tcbuffer_disc_within_ctx(const Cbuffer *cb, double dist,
   const void *ctx);

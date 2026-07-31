@@ -19,7 +19,7 @@ SELECT COUNT(*) FROM tbl_tcbuffer, tbl_geometry WHERE aContains(temp, g);
 SELECT COUNT(*) FROM tbl_cbuffer, tbl_tcbuffer WHERE eContains(cb, temp);
  count 
 -------
-  1833
+   411
 (1 row)
 
 SELECT COUNT(*) FROM tbl_cbuffer, tbl_tcbuffer WHERE aContains(cb, temp);
@@ -31,13 +31,13 @@ SELECT COUNT(*) FROM tbl_cbuffer, tbl_tcbuffer WHERE aContains(cb, temp);
 SELECT COUNT(*) FROM tbl_tcbuffer, tbl_cbuffer WHERE eContains(temp, cb);
  count 
 -------
-  1833
+   493
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tcbuffer, tbl_cbuffer WHERE aContains(temp, cb);
  count 
 -------
-     9
+     1
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE eContains(t1.temp, t2.temp);
@@ -73,7 +73,7 @@ SELECT COUNT(*) FROM tbl_tcbuffer, tbl_geometry WHERE aCovers(temp, g);
 SELECT COUNT(*) FROM tbl_cbuffer, tbl_tcbuffer WHERE eCovers(cb, temp);
  count 
 -------
-     9
+   411
 (1 row)
 
 SELECT COUNT(*) FROM tbl_cbuffer, tbl_tcbuffer WHERE aCovers(cb, temp);
@@ -85,13 +85,13 @@ SELECT COUNT(*) FROM tbl_cbuffer, tbl_tcbuffer WHERE aCovers(cb, temp);
 SELECT COUNT(*) FROM tbl_tcbuffer, tbl_cbuffer WHERE eCovers(temp, cb);
  count 
 -------
-   488
+   493
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tcbuffer, tbl_cbuffer WHERE aCovers(temp, cb);
  count 
 -------
-     9
+     1
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE eCovers(t1.temp, t2.temp);
