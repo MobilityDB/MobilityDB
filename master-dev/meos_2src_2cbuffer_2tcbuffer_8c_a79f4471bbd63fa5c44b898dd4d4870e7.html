@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: tgeomseq_tcbufferseq</title>
+<title>MobilityDB: tcbuffersegm_contains_turnpt</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -113,7 +113,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer_8c_a2330247267a5a24e9a43b416deef75fc.html#a2330247267a5a24e9a43b416deef75fc">tcbufferinst_members</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer_8c_a942b5205af3e48299e944c0fd08e35c0.html#a942b5205af3e48299e944c0fd08e35c0">tcbufferinst_tfloatinst</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer_8c_a73c72aad0d4702ee646297a1d85177dc.html#a73c72aad0d4702ee646297a1d85177dc">tcbufferinst_tgeompointinst</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer_8c_a79f4471bbd63fa5c44b898dd4d4870e7.html#a79f4471bbd63fa5c44b898dd4d4870e7">tcbuffersegm_contains_turnpt</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer_8c_a79f4471bbd63fa5c44b898dd4d4870e7.html#a79f4471bbd63fa5c44b898dd4d4870e7">tcbuffersegm_contains_turnpt</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer_8c_aac333a6b2756b18c9156b32c2e5abd56.html#aac333a6b2756b18c9156b32c2e5abd56">tcbuffersegm_distance_at_time</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer_8c_af3597b428cbbaa760c02396241b02652.html#af3597b428cbbaa760c02396241b02652">tcbuffersegm_distance_turnpt</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer_8c_ab3e58d559198cc6a317cd0187e019eee.html#ab3e58d559198cc6a317cd0187e019eee">tcbuffersegm_dwithin_turnpt</a></td></tr>
@@ -138,29 +138,92 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__cbuffer__constructor_gaa2037347abedeeb6ad5797738ce923d8.html#gaa2037347abedeeb6ad5797738ce923d8">tgeompoint_tfloat_to_tcbufferinst</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__cbuffer__constructor_gafa8dd85e0c63475b55abbe4f5da077f7.html#gafa8dd85e0c63475b55abbe4f5da077f7">tgeompoint_tfloat_to_tcbufferseq</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__cbuffer__constructor_ga04c6da0ce8f61116da864fd5fe6baa1e.html#ga04c6da0ce8f61116da864fd5fe6baa1e">tgeompoint_tfloat_to_tcbufferseqset</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer_8c_af225f6b3f628f2d1732bffe0d488aad8.html#af225f6b3f628f2d1732bffe0d488aad8">tgeomseq_tcbufferseq</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer_8c_af225f6b3f628f2d1732bffe0d488aad8.html#af225f6b3f628f2d1732bffe0d488aad8">tgeomseq_tcbufferseq</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer_8c_a26419ed841d48d9ad2107ce15de4b2df.html#a26419ed841d48d9ad2107ce15de4b2df">tgeomseqset_tcbufferseqset</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="af225f6b3f628f2d1732bffe0d488aad8" name="af225f6b3f628f2d1732bffe0d488aad8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af225f6b3f628f2d1732bffe0d488aad8">&#9670;&#160;</a></span>tgeomseq_tcbufferseq()</h2>
+<a id="a79f4471bbd63fa5c44b898dd4d4870e7" name="a79f4471bbd63fa5c44b898dd4d4870e7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a79f4471bbd63fa5c44b898dd4d4870e7">&#9670;&#160;</a></span>tcbuffersegm_contains_turnpt()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structTSequence.html">TSequence</a> * tgeomseq_tcbufferseq </td>
+          <td class="memname">int tcbuffersegm_contains_turnpt </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structTSequence.html">TSequence</a> *&#160;</td>
-          <td class="paramname"><em>seq</em></td><td>)</td>
+          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td>
+          <td class="paramname"><em>start1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td>
+          <td class="paramname"><em>end1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td>
+          <td class="paramname"><em>start2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td>
+          <td class="paramname"><em>end2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td>
+          <td class="paramname"><em>strict</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a>&#160;</td>
+          <td class="paramname"><em>lower</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a>&#160;</td>
+          <td class="paramname"><em>upper</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a> *&#160;</td>
+          <td class="paramname"><em>t1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a> *&#160;</td>
+          <td class="paramname"><em>t2</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Convert a temporal geometry into a temporal circular buffer. </p>
+<p>Return 1 or 2 if the first temporal circular buffer segment contains (<code>strict</code>) or covers the second one during a sub-period of the segment, return 0 otherwise. </p>
+<p >A moving disk (P1, R1) contains a moving disk (P2, R2) when dist(P1, P2) + R2 &lt;= R1, that is when the clearance g(t) = dist(P1(t), P2(t)) - (R1(t) - R2(t)) is non-positive; g is the distance of the centres minus the radius DIFFERENCE, so this mirrors <a class="el" href="meos_2src_2cbuffer_2tcbuffer_8c_a191ab7e616804f5704e89c0fb8cc0d8e.html#a191ab7e616804f5704e89c0fb8cc0d8e" title="Return 1 or 2 if two temporal circular buffer segments are within a distance during a sub-period of t...">tcbuffersegm_tdwithin_turnpt</a> with the radius sum replaced by the difference and the distance set to zero. It returns the sub-interval [t1, t2] of [lower, upper] during which the relation holds, so the temporal contains and covers Boolean is true on a continuous interval rather than only at the clearance minimum. With <code>strict</code> true an isolated tangency (g = 0 at a single instant) does not count, matching the strict interior of contains. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">start1,end1</td><td>Circular buffers defining the first segment </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">start2,end2</td><td>Circular buffers defining the second segment </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">strict</td><td>Passed as a float, non-zero for contains, zero for covers </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lower,upper</td><td>Timestamps defining the segments </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">t1,t2</td><td>Timestamps defining the resulting period </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section pre"><dt>Precondition</dt><dd>The segments are not constant. </dd></dl>
 
 </div>
 </div>

@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: tcbuffersegm_intersection</title>
+<title>MobilityDB: tcbuffersegm_contains_turnpt</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -94,24 +94,24 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_a3615f677322e602562454b432c4ac054.html#a3615f677322e602562454b432c4ac054">tcbufferseg_boundary_roots</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_a47735124ca40df2927b9c43bab54952f.html#a47735124ca40df2927b9c43bab54952f">tcbufferseg_touch_roots</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_a21c88d77dbcd89fb8f618cb2746a4f76.html#a21c88d77dbcd89fb8f618cb2746a4f76">tcbufferseg_within_ctx</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_a79f4471bbd63fa5c44b898dd4d4870e7.html#a79f4471bbd63fa5c44b898dd4d4870e7">tcbuffersegm_contains_turnpt</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="tcbuffer_8h_a79f4471bbd63fa5c44b898dd4d4870e7.html#a79f4471bbd63fa5c44b898dd4d4870e7">tcbuffersegm_contains_turnpt</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_af3597b428cbbaa760c02396241b02652.html#af3597b428cbbaa760c02396241b02652">tcbuffersegm_distance_turnpt</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_ab3e58d559198cc6a317cd0187e019eee.html#ab3e58d559198cc6a317cd0187e019eee">tcbuffersegm_dwithin_turnpt</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="tcbuffer_8h_ad43e8fc7429abf2a1a715d8487a06112.html#ad43e8fc7429abf2a1a715d8487a06112">tcbuffersegm_intersection</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_ad43e8fc7429abf2a1a715d8487a06112.html#ad43e8fc7429abf2a1a715d8487a06112">tcbuffersegm_intersection</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_a737d1fd050a3e1f157099b161487b5c6.html#a737d1fd050a3e1f157099b161487b5c6">tcbuffersegm_intersection_value</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_a191ab7e616804f5704e89c0fb8cc0d8e.html#a191ab7e616804f5704e89c0fb8cc0d8e">tcbuffersegm_tdwithin_turnpt</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ad43e8fc7429abf2a1a715d8487a06112" name="ad43e8fc7429abf2a1a715d8487a06112"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad43e8fc7429abf2a1a715d8487a06112">&#9670;&#160;</a></span>tcbuffersegm_intersection()</h2>
+<a id="a79f4471bbd63fa5c44b898dd4d4870e7" name="a79f4471bbd63fa5c44b898dd4d4870e7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a79f4471bbd63fa5c44b898dd4d4870e7">&#9670;&#160;</a></span>tcbuffersegm_contains_turnpt()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int tcbuffersegm_intersection </td>
+          <td class="memname">int tcbuffersegm_contains_turnpt </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td>
           <td class="paramname"><em>start1</em>, </td>
@@ -133,6 +133,12 @@ $(function() {
           <td></td>
           <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td>
           <td class="paramname"><em>end2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td>
+          <td class="paramname"><em>strict</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -166,16 +172,18 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return 1 or 2 if two temporal circular buffer segments intersect during the period defined by the output timestamps, return 0 otherwise. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p>Return 1 or 2 if the first temporal circular buffer segment contains (<code>strict</code>) or covers the second one during a sub-period of the segment, return 0 otherwise. </p>
+<p >A moving disk (P1, R1) contains a moving disk (P2, R2) when dist(P1, P2) + R2 &lt;= R1, that is when the clearance g(t) = dist(P1(t), P2(t)) - (R1(t) - R2(t)) is non-positive; g is the distance of the centres minus the radius DIFFERENCE, so this mirrors <a class="el" href="meos_2src_2cbuffer_2tcbuffer_8c_a191ab7e616804f5704e89c0fb8cc0d8e.html#a191ab7e616804f5704e89c0fb8cc0d8e" title="Return 1 or 2 if two temporal circular buffer segments are within a distance during a sub-period of t...">tcbuffersegm_tdwithin_turnpt</a> with the radius sum replaced by the difference and the distance set to zero. It returns the sub-interval [t1, t2] of [lower, upper] during which the relation holds, so the temporal contains and covers Boolean is true on a continuous interval rather than only at the clearance minimum. With <code>strict</code> true an isolated tangency (g = 0 at a single instant) does not count, matching the strict interior of contains. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">start1,end1</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> instants defining the first segment </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">start2,end2</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> instants defining the second segment </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">start1,end1</td><td>Circular buffers defining the first segment </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">start2,end2</td><td>Circular buffers defining the second segment </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">strict</td><td>Passed as a float, non-zero for contains, zero for covers </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lower,upper</td><td>Timestamps defining the segments </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">t1,t2</td><td>Timestamps defining the resulting period, may be equal </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">t1,t2</td><td>Timestamps defining the resulting period </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section pre"><dt>Precondition</dt><dd>The segments are not constant. </dd></dl>
 
 </div>
 </div>
