@@ -270,13 +270,13 @@ CREATE FUNCTION aEq(tgeography, tgeography)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR %= (
-  LEFTARG = tgeography, RIGHTARG = tgeography,
+  LEFTARG = tgeometry, RIGHTARG = tgeometry,
   PROCEDURE = aEq,
   NEGATOR = ?<>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR %= (
-  LEFTARG = tgeometry, RIGHTARG = tgeometry,
+  LEFTARG = tgeography, RIGHTARG = tgeography,
   PROCEDURE = aEq,
   NEGATOR = ?<>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
