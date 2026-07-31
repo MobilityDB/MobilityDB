@@ -38,10 +38,11 @@ var searchData=
   ['spanset_5fops_2ec_35',['spanset_ops.c',['../mobilitydb_2src_2temporal_2spanset__ops_8c.html',1,'(Global Namespace)'],['../meos_2src_2temporal_2spanset__ops_8c.html',1,'(Global Namespace)']]],
   ['spanset_5fops_5fmeos_2ec_36',['spanset_ops_meos.c',['../spanset__ops__meos_8c.html',1,'']]],
   ['spatialset_2ec_37',['spatialset.c',['../spatialset_8c.html',1,'']]],
-  ['stbox_2ec_38',['stbox.c',['../mobilitydb_2src_2geo_2stbox_8c.html',1,'(Global Namespace)'],['../meos_2src_2geo_2stbox_8c.html',1,'(Global Namespace)']]],
-  ['stbox_2eh_39',['stbox.h',['../stbox_8h.html',1,'']]],
-  ['stbox_5findex_2ec_40',['stbox_index.c',['../stbox__index_8c.html',1,'']]],
-  ['stbox_5findex_2eh_41',['stbox_index.h',['../stbox__index_8h.html',1,'']]],
-  ['stbox_5ftile_2ec_42',['stbox_tile.c',['../stbox__tile_8c.html',1,'']]],
-  ['stratnum_2eh_43',['stratnum.h',['../stratnum_8h.html',1,'']]]
+  ['sptree_5ftest_2ec_38',['sptree_test.c',['../sptree__test_8c.html',1,'']]],
+  ['stbox_2ec_39',['stbox.c',['../mobilitydb_2src_2geo_2stbox_8c.html',1,'(Global Namespace)'],['../meos_2src_2geo_2stbox_8c.html',1,'(Global Namespace)']]],
+  ['stbox_2eh_40',['stbox.h',['../stbox_8h.html',1,'']]],
+  ['stbox_5findex_2ec_41',['stbox_index.c',['../stbox__index_8c.html',1,'']]],
+  ['stbox_5findex_2eh_42',['stbox_index.h',['../stbox__index_8h.html',1,'']]],
+  ['stbox_5ftile_2ec_43',['stbox_tile.c',['../stbox__tile_8c.html',1,'']]],
+  ['stratnum_2eh_44',['stratnum.h',['../stratnum_8h.html',1,'']]]
 ];

@@ -15,7 +15,7 @@ var searchData=
   ['right_5flower_12',['right_lower',['../structConsiderSplitContext_a162416d9eb39cd01736aa3ae1d46ac23.html#a162416d9eb39cd01736aa3ae1d46ac23',1,'ConsiderSplitContext']]],
   ['rightlower_13',['rightLower',['../structConsiderSplitContext_a429305c1628a73ce14433a3ff20bc673.html#a429305c1628a73ce14433a3ff20bc673',1,'ConsiderSplitContext']]],
   ['rings_14',['rings',['../structLWPOLY_a2b0a8b89f0af409f4bd4527255bc1bbf.html#a2b0a8b89f0af409f4bd4527255bc1bbf',1,'LWPOLY::rings()'],['../structLWCURVEPOLY_a7697b8eddb636d429009fd5f84b95089.html#a7697b8eddb636d429009fd5f84b95089',1,'LWCURVEPOLY::rings()']]],
-  ['root_15',['root',['../structRTree_af63bc9816508ff62fba78dc67f0b5fd7.html#af63bc9816508ff62fba78dc67f0b5fd7',1,'RTree']]],
+  ['root_15',['root',['../structRTree_af63bc9816508ff62fba78dc67f0b5fd7.html#af63bc9816508ff62fba78dc67f0b5fd7',1,'RTree::root()'],['../structSPTree_acaf0b9e5069c0499e033a1e1b83ccd29.html#acaf0b9e5069c0499e033a1e1b83ccd29',1,'SPTree::root()']]],
   ['rotx_16',['rotx',['../projection__gk_8c_a48691d48226a83de51fef2037fd39bf2.html#a48691d48226a83de51fef2037fd39bf2',1,'projection_gk.c']]],
   ['roty_17',['roty',['../projection__gk_8c_af2d270424ed9bf1a5fab2accf380e966.html#af2d270424ed9bf1a5fab2accf380e966',1,'projection_gk.c']]],
   ['rotz_18',['rotz',['../projection__gk_8c_a3bc522161034a64098cc55f6798ecc39.html#a3bc522161034a64098cc55f6798ecc39',1,'projection_gk.c']]],
