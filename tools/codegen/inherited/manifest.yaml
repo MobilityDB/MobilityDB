@@ -2078,6 +2078,219 @@ setop_families:
   - setfns: intersection
   - lit: "\n"
   - setops: intersection
+topop_families:
+- family: set
+  file: mobilitydb/sql/temporal/002_set_ops.in.sql
+  reference: true
+  begin: "CREATE FUNCTION contains(intset,"
+  end: "CREATE FUNCTION left(integer"
+  selectivity: [span, span, span, none, none, span]
+  pairs: [[integer, intset], [bigint, bigintset], [float, floatset], [text, textset], [date, dateset], [timestamptz, tstzset]]
+  blocks:
+  - lit: "/******************************************************************************\n * Operators\n ******************************************************************************/\n\n"
+  - topfns: contains
+  - lit: "\n"
+  - topops: contains
+  - lit: "\n/******************************************************************************/\n\n"
+  - topfns: contained
+  - lit: "\n"
+  - topops: contained
+  - lit: "\n/******************************************************************************/\n\n"
+  - topfns: overlaps
+  - lit: "\n"
+  - topops: overlaps
+  - lit: "\n"
+- family: geoset
+  file: mobilitydb/sql/geo/050_geoset.in.sql
+  reference: true
+  begin: "CREATE FUNCTION contains(geomset,"
+  end: "CREATE FUNCTION setUnion(geometry,"
+  selectivity: stbox_comment
+  pairs: [[geometry, geomset], [geography, geogset]]
+  blocks:
+  - lit: "/******************************************************************************\n * Operators\n ******************************************************************************/\n\n"
+  - topfns: contains
+  - lit: "\n"
+  - topops: contains
+  - lit: "\n/******************************************************************************/\n\n"
+  - topfns: contained
+  - lit: "\n"
+  - topops: contained
+  - lit: "\n/******************************************************************************/\n\n"
+  - topfns: overlaps
+  - lit: "\n"
+  - topops: overlaps
+  - lit: "\n"
+- family: cbufferset
+  file: mobilitydb/sql/cbuffer/201_cbufferset.in.sql
+  reference: true
+  begin: "CREATE FUNCTION contains(cbufferset,"
+  end: "CREATE FUNCTION setUnion(cbuffer,"
+  selectivity: span_comment
+  pairs: [[cbuffer, cbufferset]]
+  blocks:
+  - lit: "/******************************************************************************\n * Operators\n ******************************************************************************/\n\n"
+  - topfns: contains
+  - lit: "\n"
+  - topops: contains
+  - lit: "\n/******************************************************************************/\n\n"
+  - topfns: contained
+  - lit: "\n"
+  - topops: contained
+  - lit: "\n/******************************************************************************/\n\n"
+  - topfns: overlaps
+  - lit: "\n"
+  - topops: overlaps
+  - lit: "\n"
+- family: h3indexset
+  file: mobilitydb/sql/h3/251_h3indexset.in.sql
+  reference: true
+  begin: "CREATE FUNCTION contains(h3indexset,"
+  end: "CREATE FUNCTION setUnion(h3index,"
+  selectivity: span
+  pairs: [[h3index, h3indexset]]
+  blocks:
+  - lit: "/******************************************************************************\n * contains @>\n ******************************************************************************/\n\n"
+  - topfns: contains
+  - lit: "\n"
+  - topops: contains
+  - lit: "\n/******************************************************************************\n * contained by <@\n ******************************************************************************/\n\n"
+  - topfns: contained
+  - lit: "\n"
+  - topops: contained
+  - lit: "\n/******************************************************************************\n * overlaps &&\n ******************************************************************************/\n\n"
+  - topfns: overlaps
+  - lit: "\n"
+  - topops: overlaps
+  - lit: "\n"
+- family: jsonbset
+  file: mobilitydb/sql/json/450_jsonbset.in.sql
+  reference: true
+  begin: "CREATE FUNCTION contains(jsonbset,"
+  end: "CREATE FUNCTION setUnion(jsonb,"
+  selectivity: none
+  pairs: [[jsonb, jsonbset]]
+  blocks:
+  - lit: "/******************************************************************************\n * Operators\n ******************************************************************************/\n\n"
+  - topfns: contains
+  - lit: "\n"
+  - topops: contains
+  - lit: "\n/******************************************************************************/\n\n"
+  - topfns: contained
+  - lit: "\n"
+  - topops: contained
+  - lit: "\n/******************************************************************************/\n\n"
+  - topfns: overlaps
+  - lit: "\n"
+  - topops: overlaps
+  - lit: "\n"
+- family: npointset
+  file: mobilitydb/sql/npoint/301_npointset.in.sql
+  reference: true
+  begin: "CREATE FUNCTION contains(npointset,"
+  end: "CREATE FUNCTION setUnion(npoint,"
+  selectivity: span_comment
+  pairs: [[npoint, npointset]]
+  blocks:
+  - lit: "/******************************************************************************\n * Operators\n ******************************************************************************/\n\n"
+  - topfns: contains
+  - lit: "\n"
+  - topops: contains
+  - lit: "\n/******************************************************************************/\n\n"
+  - topfns: contained
+  - lit: "\n"
+  - topops: contained
+  - lit: "\n/******************************************************************************/\n\n"
+  - topfns: overlaps
+  - lit: "\n"
+  - topops: overlaps
+  - lit: "\n"
+- family: pcpointset
+  file: mobilitydb/sql/pointcloud/400_pcset.in.sql
+  reference: true
+  begin: "CREATE FUNCTION contains(pcpointset,"
+  end: "CREATE FUNCTION setUnion(pcpoint,"
+  end_exact: true
+  selectivity: none
+  pairs: [[pcpoint, pcpointset]]
+  blocks:
+  - lit: "/******************************************************************************\n * pcpointset \u2014 Set operations (value \u2194 set, set \u2194 set)\n ******************************************************************************/\n\n"
+  - topfns: contains
+  - lit: "\n"
+  - topops: contains
+  - lit: "\n"
+  - topfns: contained
+  - lit: "\n"
+  - topops: contained
+  - lit: "\n"
+  - topfns: overlaps
+  - lit: "\n"
+  - topops: overlaps
+  - lit: "\n"
+- family: pcpatchset
+  file: mobilitydb/sql/pointcloud/400_pcset.in.sql
+  reference: true
+  begin: "CREATE FUNCTION contains(pcpatchset,"
+  end: "CREATE FUNCTION setUnion(pcpatch,"
+  end_exact: true
+  selectivity: none
+  pairs: [[pcpatch, pcpatchset]]
+  blocks:
+  - lit: "/******************************************************************************\n * pcpatchset \u2014 Set operations\n ******************************************************************************/\n\n"
+  - topfns: contains
+  - lit: "\n"
+  - topops: contains
+  - lit: "\n"
+  - topfns: contained
+  - lit: "\n"
+  - topops: contained
+  - lit: "\n"
+  - topfns: overlaps
+  - lit: "\n"
+  - topops: overlaps
+  - lit: "\n"
+- family: poseset
+  file: mobilitydb/sql/pose/101_poseset.in.sql
+  reference: true
+  begin: "CREATE FUNCTION contains(poseset,"
+  end: "CREATE FUNCTION setUnion(pose,"
+  selectivity: span_comment
+  pairs: [[pose, poseset]]
+  blocks:
+  - lit: "/******************************************************************************\n * Operators\n ******************************************************************************/\n\n"
+  - topfns: contains
+  - lit: "\n"
+  - topops: contains
+  - lit: "\n/******************************************************************************/\n\n"
+  - topfns: contained
+  - lit: "\n"
+  - topops: contained
+  - lit: "\n/******************************************************************************/\n\n"
+  - topfns: overlaps
+  - lit: "\n"
+  - topops: overlaps
+  - lit: "\n"
+- family: quadbinset
+  file: mobilitydb/sql/quadbin/351_quadbinset.in.sql
+  reference: true
+  begin: "CREATE FUNCTION contains(quadbinset,"
+  end: "CREATE FUNCTION setUnion(quadbin,"
+  selectivity: span
+  pairs: [[quadbin, quadbinset]]
+  blocks:
+  - lit: "/******************************************************************************\n * contains @>\n ******************************************************************************/\n\n"
+  - topfns: contains
+  - lit: "\n"
+  - topops: contains
+  - lit: "\n/******************************************************************************\n * contained by <@\n ******************************************************************************/\n\n"
+  - topfns: contained
+  - lit: "\n"
+  - topops: contained
+  - lit: "\n/******************************************************************************\n * overlaps &&\n ******************************************************************************/\n\n"
+  - topfns: overlaps
+  - lit: "\n"
+  - topops: overlaps
+  - lit: "\n"
 conversion_families:
 - family: geo
   file: mobilitydb/sql/geo/052_tgeo.in.sql

@@ -1701,6 +1701,142 @@ def bootstrap_setops(filetext: str, fam: dict, rendered: str) -> str:
     return filetext[:start] + begin_m + rendered + end_m + filetext[end:]
 
 
+# --- Topological-operators sub-family (SQL, per-family region-in-file) ------------
+# The Set<T> topological surface every set type carries, in the committed file
+# order contains / contained / overlaps: the boolean CREATE FUNCTIONs from the
+# shared four-line skeleton (templates/comparisons.sql.tmpl) — contains has the
+# (set, value) and (set, set) directions, contained (value, set) and (set, set),
+# overlaps (set, set) only — followed by the matching operators `@>` / `<@` / `&&`
+# from the _TOPOP_OPERATOR skeleton. Unlike the set operations, both functions and
+# operators pack across ALL pairs with no blank line between pairs.
+#
+# The operators' selectivity clause is where the families (and, inside
+# 002_set_ops, the individual pairs) genuinely disagree, so it is data, not
+# template: a family carries `selectivity:` as one token or a per-pair list —
+# `span` (active RESTRICT = span_sel, JOIN = span_joinsel: the alpha
+# int/bigint/float/tstz pairs, h3indexset, quadbinset), `none` (no clause: the
+# alpha text/date pairs, jsonbset, the pointcloud sets), `span_comment` /
+# `stbox_comment` (the clause present but commented out: cbufferset, npointset,
+# poseset / geoset). Each token reproduces the committed spelling verbatim,
+# including the missing comma before a commented clause.
+def _topops_markers(family: str):
+    begin = (f"-- GENERATED-TOPOPS-BEGIN {family} — "
+             "tools/codegen/inherited/generate.py from templates/comparisons.sql.tmpl;\n"
+             "-- DO NOT EDIT BY HAND; edit the template + manifest.yaml "
+             "(topop_families) and re-run.\n")
+    return begin, f"-- GENERATED-TOPOPS-END {family}\n"
+
+
+# Per predicate: signature patterns and backing C symbols (all RETURNS boolean).
+_TOPOP_FNS = {
+    "contains": [("contains({s}, {v})", "Contains_set_value"),
+                 ("contains({s}, {s})", "Contains_set_set")],
+    "contained": [("contained({v}, {s})", "Contained_value_set"),
+                  ("contained({s}, {s})", "Contained_set_set")],
+    "overlaps": [("overlaps({s}, {s})", "Overlaps_set_set")],
+}
+# Per predicate: operator symbol, PROCEDURE, COMMUTATOR and argument directions.
+_TOPOP_OPS = {
+    "contains": ("@>", "contains", "<@", (("{s}", "{v}"), ("{s}", "{s}"))),
+    "contained": ("<@", "contained", "@>", (("{v}", "{s}"), ("{s}", "{s}"))),
+    "overlaps": ("&&", "overlaps", "&&", (("{s}", "{s}"),)),
+}
+# selectivity token -> the text closing the COMMUTATOR line and, when present,
+# the RESTRICT line (active or commented).
+_TOPOP_SEL = {
+    "span": ",\n  RESTRICT = span_sel, JOIN = span_joinsel",
+    "none": "",
+    "span_comment": "\n  -- RESTRICT = span_sel, JOIN = span_joinsel",
+    "stbox_comment": "\n  -- RESTRICT = stbox_sel, JOIN = stbox_joinsel",
+}
+
+
+def _topop_sel(fam: dict, idx: int) -> str:
+    sel = fam.get("selectivity", "none")
+    return sel[idx] if isinstance(sel, list) else sel
+
+
+def _topop_fns(op: str, pairs: list) -> str:
+    """The predicate's CREATE FUNCTIONs for every (value, set) pair, all packed."""
+    tmpl = (TEMPLATES / "comparisons.sql.tmpl").read_text().rstrip("\n")
+    return "\n".join(tmpl.replace("{SIG}", sig.format(v=v, s=s))
+                         .replace("{RET}", "boolean").replace("{SYM}", sym)
+                     for v, s in pairs
+                     for sig, sym in _TOPOP_FNS[op]) + "\n"
+
+
+def _topop_ops(op: str, fam: dict) -> str:
+    """The predicate's operators for every pair, all packed, each closed by the
+    pair's selectivity token."""
+    sym, proc, comm, dirs = _TOPOP_OPS[op]
+    out = []
+    for idx, (v, s) in enumerate(fam["pairs"]):
+        tail = _TOPOP_SEL[_topop_sel(fam, idx)]
+        for l, r in dirs:
+            out.append(f"CREATE OPERATOR {sym} (\n"
+                       f"  PROCEDURE = {proc},\n"
+                       f"  LEFTARG = {l.format(v=v, s=s)}, "
+                       f"RIGHTARG = {r.format(v=v, s=s)},\n"
+                       f"  COMMUTATOR = {comm}{tail}\n"
+                       f");")
+    return "\n".join(out) + "\n"
+
+
+def render_topops(fam: dict) -> str:
+    """Render one family's topological block from its `blocks` sequence: verbatim
+    `lit` blocks (banners, dividers, blank lines), `topfns` predicate names (the
+    CREATE FUNCTIONs) and `topops` predicate names (the operators). Blocks
+    concatenate with no automatic separator, so the rendered text is
+    byte-identical to the committed region."""
+    out = ""
+    for blk in fam["blocks"]:
+        if "lit" in blk:
+            out += blk["lit"]
+        elif "topfns" in blk:
+            out += _topop_fns(blk["topfns"], fam["pairs"])
+        else:
+            out += _topop_ops(blk["topops"], fam)
+    return out
+
+
+def extract_topops(filetext: str, fam: dict) -> str:
+    """Return the committed topological block (marker-aware; the hash-axis anchor
+    conventions otherwise)."""
+    begin, end = _topops_markers(fam["family"])
+    if begin in filetext:
+        b = filetext.index(begin) + len(begin)
+        e = filetext.index(end)
+        return filetext[b:e]
+    i = filetext.index(fam["begin"])
+    start = i if fam.get("begin_exact") else filetext.rfind("/*", 0, i)
+    if fam.get("whole_file"):
+        return filetext[start:]
+    j = filetext.index(fam["end"])
+    return filetext[start:j if fam.get("end_exact") else filetext.rfind("/*", 0, j)]
+
+
+def splice_topops(filetext: str, family: str, rendered: str) -> str:
+    begin, end = _topops_markers(family)
+    b = filetext.index(begin) + len(begin)
+    e = filetext.index(end)
+    return filetext[:b] + rendered + filetext[e:]
+
+
+def bootstrap_topops(filetext: str, fam: dict, rendered: str) -> str:
+    """Insert the GENERATED-TOPOPS markers around the family's committed hand
+    block (same anchors extract_topops uses); idempotent afterward. Not run while
+    the families are reference-only (validate-only)."""
+    i = filetext.index(fam["begin"])
+    start = i if fam.get("begin_exact") else filetext.rfind("/*", 0, i)
+    if fam.get("whole_file"):
+        end = len(filetext)
+    else:
+        j = filetext.index(fam["end"])
+        end = j if fam.get("end_exact") else filetext.rfind("/*", 0, j)
+    begin_m, end_m = _topops_markers(fam["family"])
+    return filetext[:start] + begin_m + rendered + end_m + filetext[end:]
+
+
 # --- SQL Conversions sub-family (SQL, per-family region-in-file) ------------------
 # The Temporal<T> cast surface every temporal type carries: the CREATE FUNCTION
 # conversion wrappers (timeSpan -> tstzspan, and the cross-type casts to/from the
@@ -2265,6 +2401,25 @@ def main() -> int:
                         break
                 if len(g) != len(c):
                     print(f"     line count gen={len(g)} cur={len(c)}")
+        for fam in mf.get("topop_families", []):
+            if not fam.get("reference"):
+                continue
+            p = ROOT / fam["file"]
+            gen = render_topops(fam)
+            cur = extract_topops(p.read_text(), fam) if p.exists() else ""
+            same = gen == cur
+            ok = ok and same
+            print(f"[{'OK ' if same else 'DIFF'}] self-regen topops {fam['family']} "
+                  f"-> {pathlib.Path(fam['file'])}")
+            if not same:
+                g, c = gen.splitlines(), cur.splitlines()
+                for n, (a, b) in enumerate(zip(g, c), 1):
+                    if a != b:
+                        print(f"     first diff line {n}:\n       gen: {a!r}\n"
+                              f"       cur: {b!r}")
+                        break
+                if len(g) != len(c):
+                    print(f"     line count gen={len(g)} cur={len(c)}")
         for fam in mf.get("conversion_families", []):
             if not fam.get("reference"):
                 continue
@@ -2535,6 +2690,26 @@ def main() -> int:
         else:
             p.write_text(bootstrap_setops(text, fam, render_setops(fam)))
             print(f"bootstrapped setops {fam['family']} -> {fam['file']}")
+
+    for fam in mf.get("topop_families", []):
+        # Reference families are validate-only: keep the committed hand block, never
+        # emit into .in.sql (mirrors comparisons/hash/setops). A future non-reference
+        # family bootstraps its GENERATED-TOPOPS region once, then splices.
+        if fam.get("reference"):
+            continue
+        p = ROOT / fam["file"]
+        text = p.read_text()
+        begin, _ = _topops_markers(fam["family"])
+        if args.check:
+            print(f"would {'splice' if begin in text else 'bootstrap'} topops "
+                  f"{fam['family']} -> {fam['file']}")
+            continue
+        if begin in text:
+            p.write_text(splice_topops(text, fam["family"], render_topops(fam)))
+            print(f"spliced topops {fam['family']} -> {fam['file']}")
+        else:
+            p.write_text(bootstrap_topops(text, fam, render_topops(fam)))
+            print(f"bootstrapped topops {fam['family']} -> {fam['file']}")
 
     for fam in mf.get("conversion_families", []):
         # Reference families are validate-only: keep the committed hand block, never
