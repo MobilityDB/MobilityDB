@@ -1756,3 +1756,511 @@ conversion_families:
   - fns:
     - {sig: "geometry(trgeometry)", ret: geometry, sym: Trgeometry_to_geom}
   - lit: "\nCREATE CAST (trgeometry AS geometry) WITH FUNCTION geometry(trgeometry);\n\n"
+restriction_families:
+- family: geo
+  file: mobilitydb/sql/geo/052_tgeo.in.sql
+  reference: true
+  begin: "\n * Restriction Functions\n"
+  end: "\n * Modification Functions\n"
+  blocks:
+  - lit: "/*****************************************************************************\n * Restriction Functions\n *****************************************************************************/\n\n"
+  - fns:
+    - {sig: "atValue(tgeometry, geometry)", ret: tgeometry, sym: Temporal_at_value}
+    - {sig: "atValue(tgeography, geography)", ret: tgeography, sym: Temporal_at_value}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusValue(tgeometry, geometry)", ret: tgeometry, sym: Temporal_minus_value}
+    - {sig: "minusValue(tgeography, geography)", ret: tgeography, sym: Temporal_minus_value}
+  - lit: "\n"
+  - fns:
+    - {sig: "atValues(tgeometry, geomset)", ret: tgeometry, sym: Temporal_at_values}
+    - {sig: "atValues(tgeography, geogset)", ret: tgeography, sym: Temporal_at_values}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusValues(tgeometry, geomset)", ret: tgeometry, sym: Temporal_minus_values}
+    - {sig: "minusValues(tgeography, geogset)", ret: tgeography, sym: Temporal_minus_values}
+  - lit: "\n"
+  - fns:
+    - {sig: "atTime(tgeometry, timestamptz)", ret: tgeometry, sym: Temporal_at_timestamptz}
+    - {sig: "atTime(tgeography, timestamptz)", ret: tgeography, sym: Temporal_at_timestamptz}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusTime(tgeometry, timestamptz)", ret: tgeometry, sym: Temporal_minus_timestamptz}
+    - {sig: "minusTime(tgeography, timestamptz)", ret: tgeography, sym: Temporal_minus_timestamptz}
+  - lit: "\n"
+  - fns:
+    - {sig: "valueAtTimestamp(tgeometry, timestamptz)", ret: geometry, sym: Temporal_value_at_timestamptz}
+    - {sig: "valueAtTimestamp(tgeography, timestamptz)", ret: geography, sym: Temporal_value_at_timestamptz}
+  - lit: "\n"
+  - fns:
+    - {sig: "atTime(tgeometry, tstzset)", ret: tgeometry, sym: Temporal_at_tstzset}
+    - {sig: "atTime(tgeography, tstzset)", ret: tgeography, sym: Temporal_at_tstzset}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusTime(tgeometry, tstzset)", ret: tgeometry, sym: Temporal_minus_tstzset}
+    - {sig: "minusTime(tgeography, tstzset)", ret: tgeography, sym: Temporal_minus_tstzset}
+  - lit: "\n"
+  - fns:
+    - {sig: "atTime(tgeometry, tstzspan)", ret: tgeometry, sym: Temporal_at_tstzspan}
+    - {sig: "atTime(tgeography, tstzspan)", ret: tgeography, sym: Temporal_at_tstzspan}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusTime(tgeometry, tstzspan)", ret: tgeometry, sym: Temporal_minus_tstzspan}
+    - {sig: "minusTime(tgeography, tstzspan)", ret: tgeography, sym: Temporal_minus_tstzspan}
+  - lit: "\n"
+  - fns:
+    - {sig: "atTime(tgeometry, tstzspanset)", ret: tgeometry, sym: Temporal_at_tstzspanset}
+    - {sig: "atTime(tgeography, tstzspanset)", ret: tgeography, sym: Temporal_at_tstzspanset}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusTime(tgeometry, tstzspanset)", ret: tgeometry, sym: Temporal_minus_tstzspanset}
+    - {sig: "minusTime(tgeography, tstzspanset)", ret: tgeography, sym: Temporal_minus_tstzspanset}
+  - lit: "\n"
+  - fns:
+    - {sig: "beforeTimestamp(tgeometry, timestamptz, strict bool DEFAULT TRUE)", ret: tgeometry, sym: Temporal_before_timestamptz}
+    - {sig: "beforeTimestamp(tgeography, timestamptz, strict bool DEFAULT TRUE)", ret: tgeography, sym: Temporal_before_timestamptz}
+  - lit: "\n"
+  - fns:
+    - {sig: "afterTimestamp(tgeometry, timestamptz, strict bool DEFAULT TRUE)", ret: tgeometry, sym: Temporal_after_timestamptz}
+    - {sig: "afterTimestamp(tgeography, timestamptz, strict bool DEFAULT TRUE)", ret: tgeography, sym: Temporal_after_timestamptz}
+  - lit: "\n"
+- family: tpoint
+  file: mobilitydb/sql/geo/052_tpoint.in.sql
+  reference: true
+  begin: "\n * Restriction Functions\n"
+  end: "\n * Modification Functions\n"
+  blocks:
+  - lit: "/*****************************************************************************\n * Restriction Functions\n *****************************************************************************/\n\n"
+  - fns:
+    - {sig: "atValue(tgeompoint, geometry(Point))", ret: tgeompoint, sym: Temporal_at_value}
+    - {sig: "atValue(tgeogpoint, geography(Point))", ret: tgeogpoint, sym: Temporal_at_value}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusValue(tgeompoint, geometry(Point))", ret: tgeompoint, sym: Temporal_minus_value}
+    - {sig: "minusValue(tgeogpoint, geography(Point))", ret: tgeogpoint, sym: Temporal_minus_value}
+  - lit: "\n"
+  - fns:
+    - {sig: "atValues(tgeompoint, geomset)", ret: tgeompoint, sym: Temporal_at_values}
+    - {sig: "atValues(tgeogpoint, geogset)", ret: tgeogpoint, sym: Temporal_at_values}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusValues(tgeompoint, geomset)", ret: tgeompoint, sym: Temporal_minus_values}
+    - {sig: "minusValues(tgeogpoint, geogset)", ret: tgeogpoint, sym: Temporal_minus_values}
+  - lit: "\n"
+  - fns:
+    - {sig: "atTime(tgeompoint, timestamptz)", ret: tgeompoint, sym: Temporal_at_timestamptz}
+    - {sig: "atTime(tgeogpoint, timestamptz)", ret: tgeogpoint, sym: Temporal_at_timestamptz}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusTime(tgeompoint, timestamptz)", ret: tgeompoint, sym: Temporal_minus_timestamptz}
+    - {sig: "minusTime(tgeogpoint, timestamptz)", ret: tgeogpoint, sym: Temporal_minus_timestamptz}
+  - lit: "\n"
+  - fns:
+    - {sig: "valueAtTimestamp(tgeompoint, timestamptz)", ret: geometry(Point), sym: Temporal_value_at_timestamptz}
+    - {sig: "valueAtTimestamp(tgeogpoint, timestamptz)", ret: geography(Point), sym: Temporal_value_at_timestamptz}
+  - lit: "\n"
+  - fns:
+    - {sig: "atTime(tgeompoint, tstzset)", ret: tgeompoint, sym: Temporal_at_tstzset}
+    - {sig: "atTime(tgeogpoint, tstzset)", ret: tgeogpoint, sym: Temporal_at_tstzset}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusTime(tgeompoint, tstzset)", ret: tgeompoint, sym: Temporal_minus_tstzset}
+    - {sig: "minusTime(tgeogpoint, tstzset)", ret: tgeogpoint, sym: Temporal_minus_tstzset}
+  - lit: "\n"
+  - fns:
+    - {sig: "atTime(tgeompoint, tstzspan)", ret: tgeompoint, sym: Temporal_at_tstzspan}
+    - {sig: "atTime(tgeogpoint, tstzspan)", ret: tgeogpoint, sym: Temporal_at_tstzspan}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusTime(tgeompoint, tstzspan)", ret: tgeompoint, sym: Temporal_minus_tstzspan}
+    - {sig: "minusTime(tgeogpoint, tstzspan)", ret: tgeogpoint, sym: Temporal_minus_tstzspan}
+  - lit: "\n"
+  - fns:
+    - {sig: "atTime(tgeompoint, tstzspanset)", ret: tgeompoint, sym: Temporal_at_tstzspanset}
+    - {sig: "atTime(tgeogpoint, tstzspanset)", ret: tgeogpoint, sym: Temporal_at_tstzspanset}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusTime(tgeompoint, tstzspanset)", ret: tgeompoint, sym: Temporal_minus_tstzspanset}
+    - {sig: "minusTime(tgeogpoint, tstzspanset)", ret: tgeogpoint, sym: Temporal_minus_tstzspanset}
+  - lit: "\n"
+  - fns:
+    - {sig: "beforeTimestamp(tgeompoint, timestamptz, strict bool DEFAULT TRUE)", ret: tgeompoint, sym: Temporal_before_timestamptz}
+    - {sig: "beforeTimestamp(tgeogpoint, timestamptz, strict bool DEFAULT TRUE)", ret: tgeogpoint, sym: Temporal_before_timestamptz}
+  - lit: "\n"
+  - fns:
+    - {sig: "afterTimestamp(tgeompoint, timestamptz, strict bool DEFAULT TRUE)", ret: tgeompoint, sym: Temporal_after_timestamptz}
+    - {sig: "afterTimestamp(tgeogpoint, timestamptz, strict bool DEFAULT TRUE)", ret: tgeogpoint, sym: Temporal_after_timestamptz}
+  - lit: "\n"
+- family: cbuffer
+  file: mobilitydb/sql/cbuffer/202_tcbuffer.in.sql
+  reference: true
+  begin: "\n * Restriction functions\n"
+  end: "\n * Unnest Function\n"
+  blocks:
+  - lit: "/*****************************************************************************\n * Restriction functions\n *****************************************************************************/\n\n"
+  - fns:
+    - {sig: "atValues(tcbuffer, cbufferset)", ret: tcbuffer, sym: Temporal_at_values}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusValues(tcbuffer, cbufferset)", ret: tcbuffer, sym: Temporal_minus_values}
+  - lit: "\n"
+  - fns:
+    - {sig: "atTime(tcbuffer, timestamptz)", ret: tcbuffer, sym: Temporal_at_timestamptz}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusTime(tcbuffer, timestamptz)", ret: tcbuffer, sym: Temporal_minus_timestamptz}
+  - lit: "\n"
+  - fns:
+    - {sig: "atTime(tcbuffer, tstzset)", ret: tcbuffer, sym: Temporal_at_tstzset}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusTime(tcbuffer, tstzset)", ret: tcbuffer, sym: Temporal_minus_tstzset}
+  - lit: "\n"
+  - fns:
+    - {sig: "atTime(tcbuffer, tstzspan)", ret: tcbuffer, sym: Temporal_at_tstzspan}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusTime(tcbuffer, tstzspan)", ret: tcbuffer, sym: Temporal_minus_tstzspan}
+  - lit: "\n"
+  - fns:
+    - {sig: "atTime(tcbuffer, tstzspanset)", ret: tcbuffer, sym: Temporal_at_tstzspanset}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusTime(tcbuffer, tstzspanset)", ret: tcbuffer, sym: Temporal_minus_tstzspanset}
+  - lit: "\n"
+  - fns:
+    - {sig: "beforeTimestamp(tcbuffer, timestamptz, strict bool DEFAULT TRUE)", ret: tcbuffer, sym: Temporal_before_timestamptz}
+  - lit: "\n"
+  - fns:
+    - {sig: "afterTimestamp(tcbuffer, timestamptz, strict bool DEFAULT TRUE)", ret: tcbuffer, sym: Temporal_after_timestamptz}
+  - lit: "\n"
+- family: h3
+  file: mobilitydb/sql/h3/253_th3index.in.sql
+  reference: true
+  begin: "\n * Restriction functions\n"
+  end: "\n * Modification functions\n"
+  blocks:
+  - lit: "/******************************************************************************\n * Restriction functions\n ******************************************************************************/\n\n"
+  - fns:
+    - {sig: "atValue(th3index, h3index)", ret: th3index, sym: Temporal_at_value}
+    - {sig: "minusValue(th3index, h3index)", ret: th3index, sym: Temporal_minus_value}
+    - {sig: "atValues(th3index, h3indexset)", ret: th3index, sym: Temporal_at_values}
+    - {sig: "minusValues(th3index, h3indexset)", ret: th3index, sym: Temporal_minus_values}
+  - lit: "\n"
+  - fns:
+    - {sig: "atTime(th3index, timestamptz)", ret: th3index, sym: Temporal_at_timestamptz}
+    - {sig: "minusTime(th3index, timestamptz)", ret: th3index, sym: Temporal_minus_timestamptz}
+    - {sig: "atTime(th3index, tstzset)", ret: th3index, sym: Temporal_at_tstzset}
+    - {sig: "minusTime(th3index, tstzset)", ret: th3index, sym: Temporal_minus_tstzset}
+    - {sig: "atTime(th3index, tstzspan)", ret: th3index, sym: Temporal_at_tstzspan}
+    - {sig: "minusTime(th3index, tstzspan)", ret: th3index, sym: Temporal_minus_tstzspan}
+    - {sig: "atTime(th3index, tstzspanset)", ret: th3index, sym: Temporal_at_tstzspanset}
+    - {sig: "minusTime(th3index, tstzspanset)", ret: th3index, sym: Temporal_minus_tstzspanset}
+  - lit: "\n"
+  - fns:
+    - {sig: "beforeTimestamp(th3index, timestamptz, strict bool DEFAULT TRUE)", ret: th3index, sym: Temporal_before_timestamptz}
+    - {sig: "afterTimestamp(th3index, timestamptz, strict bool DEFAULT TRUE)", ret: th3index, sym: Temporal_after_timestamptz}
+  - lit: "\n"
+- family: json
+  file: mobilitydb/sql/json/452_tjsonb.in.sql
+  reference: true
+  begin: "\n * Restriction functions\n"
+  end: "\n * Unnest Function\n"
+  blocks:
+  - lit: "/*****************************************************************************\n * Restriction functions\n *****************************************************************************/\n\n"
+  - fns:
+    - {sig: "atValue(tjsonb, jsonb)", ret: tjsonb, sym: Temporal_at_value}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusValue(tjsonb, jsonb)", ret: tjsonb, sym: Temporal_minus_value}
+  - lit: "\n"
+  - fns:
+    - {sig: "atValues(tjsonb, jsonbset)", ret: tjsonb, sym: Temporal_at_values}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusValues(tjsonb, jsonbset)", ret: tjsonb, sym: Temporal_minus_values}
+  - lit: "\n"
+  - fns:
+    - {sig: "atMin(tjsonb)", ret: tjsonb, sym: Temporal_at_min}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusMin(tjsonb)", ret: tjsonb, sym: Temporal_minus_min}
+  - lit: "\n"
+  - fns:
+    - {sig: "atMax(tjsonb)", ret: tjsonb, sym: Temporal_at_max}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusMax(tjsonb)", ret: tjsonb, sym: Temporal_minus_max}
+  - lit: "\n"
+  - fns:
+    - {sig: "atTime(tjsonb, timestamptz)", ret: tjsonb, sym: Temporal_at_timestamptz}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusTime(tjsonb, timestamptz)", ret: tjsonb, sym: Temporal_minus_timestamptz}
+  - lit: "\n"
+  - fns:
+    - {sig: "atTime(tjsonb, tstzset)", ret: tjsonb, sym: Temporal_at_tstzset}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusTime(tjsonb, tstzset)", ret: tjsonb, sym: Temporal_minus_tstzset}
+  - lit: "\n"
+  - fns:
+    - {sig: "atTime(tjsonb, tstzspan)", ret: tjsonb, sym: Temporal_at_tstzspan}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusTime(tjsonb, tstzspan)", ret: tjsonb, sym: Temporal_minus_tstzspan}
+  - lit: "\n"
+  - fns:
+    - {sig: "atTime(tjsonb, tstzspanset)", ret: tjsonb, sym: Temporal_at_tstzspanset}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusTime(tjsonb, tstzspanset)", ret: tjsonb, sym: Temporal_minus_tstzspanset}
+  - lit: "\n"
+  - fns:
+    - {sig: "beforeTimestamp(tjsonb, timestamptz, strict bool DEFAULT TRUE)", ret: tjsonb, sym: Temporal_before_timestamptz}
+  - lit: "\n"
+  - fns:
+    - {sig: "afterTimestamp(tjsonb, timestamptz, strict bool DEFAULT TRUE)", ret: tjsonb, sym: Temporal_after_timestamptz}
+  - lit: "\n"
+- family: npoint
+  file: mobilitydb/sql/npoint/302_tnpoint.in.sql
+  reference: true
+  begin: "\n * Restriction functions\n"
+  end: "\n * Stop Function\n"
+  blocks:
+  - lit: "/******************************************************************************\n * Restriction functions\n ******************************************************************************/\n\n"
+  - fns:
+    - {sig: "atValue(tnpoint, npoint)", ret: tnpoint, sym: Tnpoint_at_npoint}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusValue(tnpoint, npoint)", ret: tnpoint, sym: Tnpoint_minus_npoint}
+  - lit: "\n"
+  - fns:
+    - {sig: "atValues(tnpoint, npointset)", ret: tnpoint, sym: Tnpoint_at_npointset}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusValues(tnpoint, npointset)", ret: tnpoint, sym: Tnpoint_minus_npointset}
+  - lit: "\n"
+  - fns:
+    - {sig: "atTime(tnpoint, timestamptz)", ret: tnpoint, sym: Temporal_at_timestamptz}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusTime(tnpoint, timestamptz)", ret: tnpoint, sym: Temporal_minus_timestamptz}
+  - lit: "\n"
+  - fns:
+    - {sig: "atTime(tnpoint, tstzset)", ret: tnpoint, sym: Temporal_at_tstzset}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusTime(tnpoint, tstzset)", ret: tnpoint, sym: Temporal_minus_tstzset}
+  - lit: "\n"
+  - fns:
+    - {sig: "atTime(tnpoint, tstzspan)", ret: tnpoint, sym: Temporal_at_tstzspan}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusTime(tnpoint, tstzspan)", ret: tnpoint, sym: Temporal_minus_tstzspan}
+  - lit: "\n"
+  - fns:
+    - {sig: "atTime(tnpoint, tstzspanset)", ret: tnpoint, sym: Temporal_at_tstzspanset}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusTime(tnpoint, tstzspanset)", ret: tnpoint, sym: Temporal_minus_tstzspanset}
+  - lit: "\n"
+  - fns:
+    - {sig: "beforeTimestamp(tnpoint, timestamptz, strict bool DEFAULT TRUE)", ret: tnpoint, sym: Temporal_before_timestamptz}
+  - lit: "\n"
+  - fns:
+    - {sig: "afterTimestamp(tnpoint, timestamptz, strict bool DEFAULT TRUE)", ret: tnpoint, sym: Temporal_after_timestamptz}
+  - lit: "\n"
+- family: tpcpoint
+  file: mobilitydb/sql/pointcloud/420_tpcpoint.in.sql
+  reference: true
+  begin: "\n * Restrictions\n"
+  end: "\n * Modification functions\n"
+  blocks:
+  - lit: "/******************************************************************************\n * Restrictions\n ******************************************************************************/\n\n"
+  - fns:
+    - {sig: "atValue(tpcpoint, pcpoint)", ret: tpcpoint, sym: Temporal_at_value}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusValue(tpcpoint, pcpoint)", ret: tpcpoint, sym: Temporal_minus_value}
+  - lit: "\n"
+  - fns:
+    - {sig: "atValues(tpcpoint, pcpointset)", ret: tpcpoint, sym: Temporal_at_values}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusValues(tpcpoint, pcpointset)", ret: tpcpoint, sym: Temporal_minus_values}
+  - lit: "\n"
+  - fns:
+    - {sig: "atTime(tpcpoint, timestamptz)", ret: tpcpoint, sym: Temporal_at_timestamptz}
+    - {sig: "atTime(tpcpoint, tstzset)", ret: tpcpoint, sym: Temporal_at_tstzset}
+    - {sig: "atTime(tpcpoint, tstzspan)", ret: tpcpoint, sym: Temporal_at_tstzspan}
+    - {sig: "atTime(tpcpoint, tstzspanset)", ret: tpcpoint, sym: Temporal_at_tstzspanset}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusTime(tpcpoint, timestamptz)", ret: tpcpoint, sym: Temporal_minus_timestamptz}
+    - {sig: "minusTime(tpcpoint, tstzset)", ret: tpcpoint, sym: Temporal_minus_tstzset}
+    - {sig: "minusTime(tpcpoint, tstzspan)", ret: tpcpoint, sym: Temporal_minus_tstzspan}
+    - {sig: "minusTime(tpcpoint, tstzspanset)", ret: tpcpoint, sym: Temporal_minus_tstzspanset}
+  - lit: "\nCREATE FUNCTION beforeTimestamp(tpcpoint, timestamptz,\n    strict bool DEFAULT TRUE)\n  RETURNS tpcpoint\n  AS 'MODULE_PATHNAME', 'Temporal_before_timestamptz'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION afterTimestamp(tpcpoint, timestamptz,\n    strict bool DEFAULT TRUE)\n  RETURNS tpcpoint\n  AS 'MODULE_PATHNAME', 'Temporal_after_timestamptz'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n/******************************************************************************\n * TPCBox-based restrictions\n ******************************************************************************/\n\n"
+  - fns:
+    - {sig: "atTpcbox(tpcpoint, tpcbox, border_inc boolean DEFAULT TRUE)", ret: tpcpoint, sym: Tpcpoint_at_tpcbox}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusTpcbox(tpcpoint, tpcbox, border_inc boolean DEFAULT TRUE)", ret: tpcpoint, sym: Tpcpoint_minus_tpcbox}
+  - lit: "\n"
+- family: tpcpatch
+  file: mobilitydb/sql/pointcloud/430_tpcpatch.in.sql
+  reference: true
+  begin: "\n * Restrictions\n"
+  end: "\n * Spatial relationships (tpcpatch"
+  blocks:
+  - lit: "/******************************************************************************\n * Restrictions\n ******************************************************************************/\n\n"
+  - fns:
+    - {sig: "atValue(tpcpatch, pcpatch)", ret: tpcpatch, sym: Temporal_at_value}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusValue(tpcpatch, pcpatch)", ret: tpcpatch, sym: Temporal_minus_value}
+  - lit: "\n"
+  - fns:
+    - {sig: "atValues(tpcpatch, pcpatchset)", ret: tpcpatch, sym: Temporal_at_values}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusValues(tpcpatch, pcpatchset)", ret: tpcpatch, sym: Temporal_minus_values}
+  - lit: "\n"
+  - fns:
+    - {sig: "atTime(tpcpatch, timestamptz)", ret: tpcpatch, sym: Temporal_at_timestamptz}
+    - {sig: "atTime(tpcpatch, tstzset)", ret: tpcpatch, sym: Temporal_at_tstzset}
+    - {sig: "atTime(tpcpatch, tstzspan)", ret: tpcpatch, sym: Temporal_at_tstzspan}
+    - {sig: "atTime(tpcpatch, tstzspanset)", ret: tpcpatch, sym: Temporal_at_tstzspanset}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusTime(tpcpatch, timestamptz)", ret: tpcpatch, sym: Temporal_minus_timestamptz}
+    - {sig: "minusTime(tpcpatch, tstzset)", ret: tpcpatch, sym: Temporal_minus_tstzset}
+    - {sig: "minusTime(tpcpatch, tstzspan)", ret: tpcpatch, sym: Temporal_minus_tstzspan}
+    - {sig: "minusTime(tpcpatch, tstzspanset)", ret: tpcpatch, sym: Temporal_minus_tstzspanset}
+  - lit: "\nCREATE FUNCTION beforeTimestamp(tpcpatch, timestamptz,\n    strict bool DEFAULT TRUE)\n  RETURNS tpcpatch\n  AS 'MODULE_PATHNAME', 'Temporal_before_timestamptz'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION afterTimestamp(tpcpatch, timestamptz,\n    strict bool DEFAULT TRUE)\n  RETURNS tpcpatch\n  AS 'MODULE_PATHNAME', 'Temporal_after_timestamptz'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n/******************************************************************************\n * TPCBox-based restrictions (patch-level / coarse)\n ******************************************************************************/\n\n"
+  - fns:
+    - {sig: "atTpcbox(tpcpatch, tpcbox, border_inc boolean DEFAULT TRUE)", ret: tpcpatch, sym: Tpcpatch_at_tpcbox}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusTpcbox(tpcpatch, tpcbox, border_inc boolean DEFAULT TRUE)", ret: tpcpatch, sym: Tpcpatch_minus_tpcbox}
+  - lit: "\n/******************************************************************************\n * TPCBox-based restrictions (per-point / fine)\n *\n * Same arguments as the patch-level variants, but each surviving instant\n * carries a freshly-built pcpatch holding only the points inside (or\n * outside, for minus) the box. Instants whose patches have zero\n * surviving points are dropped.\n ******************************************************************************/\n\nCREATE FUNCTION atTpcboxFine(tpcpatch, tpcbox,\n    border_inc boolean DEFAULT TRUE)\n  RETURNS tpcpatch\n  AS 'MODULE_PATHNAME', 'Tpcpatch_at_tpcbox_fine'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\nCREATE FUNCTION minusTpcboxFine(tpcpatch, tpcbox,\n    border_inc boolean DEFAULT TRUE)\n  RETURNS tpcpatch\n  AS 'MODULE_PATHNAME', 'Tpcpatch_minus_tpcbox_fine'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n/******************************************************************************\n * Geometry-based restrictions (per-point)\n *\n * Keep the points whose XY projection intersects (or doesn't, for\n * minus) the supplied geometry. Z is ignored. SRID compatibility\n * between the patch schema and the geometry must be ensured by the\n * caller.\n ******************************************************************************/\n\n"
+  - fns:
+    - {sig: "atGeometry(tpcpatch, geometry)", ret: tpcpatch, sym: Tpcpatch_at_geometry}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusGeometry(tpcpatch, geometry)", ret: tpcpatch, sym: Tpcpatch_minus_geometry}
+  - lit: "\n"
+- family: pose
+  file: mobilitydb/sql/pose/102_tpose.in.sql
+  reference: true
+  begin: "\n * Restriction Functions\n"
+  end: "\n * Unnest Function\n"
+  blocks:
+  - lit: "/*****************************************************************************\n * Restriction Functions\n *****************************************************************************/\n\n"
+  - fns:
+    - {sig: "atValue(tpose, pose)", ret: tpose, sym: Temporal_at_value}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusValue(tpose, pose)", ret: tpose, sym: Temporal_minus_value}
+  - lit: "\n"
+  - fns:
+    - {sig: "atValues(tpose, poseset)", ret: tpose, sym: Temporal_at_values}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusValues(tpose, poseset)", ret: tpose, sym: Temporal_minus_values}
+  - lit: "\n"
+  - fns:
+    - {sig: "atTime(tpose, timestamptz)", ret: tpose, sym: Temporal_at_timestamptz}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusTime(tpose, timestamptz)", ret: tpose, sym: Temporal_minus_timestamptz}
+  - lit: "\n"
+  - fns:
+    - {sig: "atTime(tpose, tstzset)", ret: tpose, sym: Temporal_at_tstzset}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusTime(tpose, tstzset)", ret: tpose, sym: Temporal_minus_tstzset}
+  - lit: "\n"
+  - fns:
+    - {sig: "atTime(tpose, tstzspan)", ret: tpose, sym: Temporal_at_tstzspan}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusTime(tpose, tstzspan)", ret: tpose, sym: Temporal_minus_tstzspan}
+  - lit: "\n"
+  - fns:
+    - {sig: "atTime(tpose, tstzspanset)", ret: tpose, sym: Temporal_at_tstzspanset}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusTime(tpose, tstzspanset)", ret: tpose, sym: Temporal_minus_tstzspanset}
+  - lit: "\n"
+  - fns:
+    - {sig: "beforeTimestamp(tpose, timestamptz, strict bool DEFAULT TRUE)", ret: tpose, sym: Temporal_before_timestamptz}
+  - lit: "\n"
+  - fns:
+    - {sig: "afterTimestamp(tpose, timestamptz, strict bool DEFAULT TRUE)", ret: tpose, sym: Temporal_after_timestamptz}
+  - lit: "\n"
+- family: quadbin
+  file: mobilitydb/sql/quadbin/353_tquadbin.in.sql
+  reference: true
+  begin: "\n * Restriction functions\n"
+  end: "\n * Modification functions\n"
+  blocks:
+  - lit: "/******************************************************************************\n * Restriction functions\n ******************************************************************************/\n\n"
+  - fns:
+    - {sig: "atValue(tquadbin, quadbin)", ret: tquadbin, sym: Temporal_at_value}
+    - {sig: "minusValue(tquadbin, quadbin)", ret: tquadbin, sym: Temporal_minus_value}
+    - {sig: "atValues(tquadbin, quadbinset)", ret: tquadbin, sym: Temporal_at_values}
+    - {sig: "minusValues(tquadbin, quadbinset)", ret: tquadbin, sym: Temporal_minus_values}
+  - lit: "\n"
+  - fns:
+    - {sig: "atTime(tquadbin, timestamptz)", ret: tquadbin, sym: Temporal_at_timestamptz}
+    - {sig: "minusTime(tquadbin, timestamptz)", ret: tquadbin, sym: Temporal_minus_timestamptz}
+    - {sig: "atTime(tquadbin, tstzset)", ret: tquadbin, sym: Temporal_at_tstzset}
+    - {sig: "minusTime(tquadbin, tstzset)", ret: tquadbin, sym: Temporal_minus_tstzset}
+    - {sig: "atTime(tquadbin, tstzspan)", ret: tquadbin, sym: Temporal_at_tstzspan}
+    - {sig: "minusTime(tquadbin, tstzspan)", ret: tquadbin, sym: Temporal_minus_tstzspan}
+    - {sig: "atTime(tquadbin, tstzspanset)", ret: tquadbin, sym: Temporal_at_tstzspanset}
+    - {sig: "minusTime(tquadbin, tstzspanset)", ret: tquadbin, sym: Temporal_minus_tstzspanset}
+  - lit: "\n"
+  - fns:
+    - {sig: "beforeTimestamp(tquadbin, timestamptz, strict bool DEFAULT TRUE)", ret: tquadbin, sym: Temporal_before_timestamptz}
+    - {sig: "afterTimestamp(tquadbin, timestamptz, strict bool DEFAULT TRUE)", ret: tquadbin, sym: Temporal_after_timestamptz}
+  - lit: "\n"
+- family: rgeo
+  file: mobilitydb/sql/rgeo/150_trgeo.in.sql
+  reference: true
+  begin: "\n * Restriction Functions\n"
+  end: "\n * Unnest Function\n"
+  blocks:
+  - lit: "/*****************************************************************************\n * Restriction Functions\n *****************************************************************************/\n\n-- CREATE FUNCTION atValues(trgeometry, geometry)\n  -- RETURNS trgeometry\n  -- AS 'MODULE_PATHNAME', 'Temporal_at_value'\n  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n-- CREATE FUNCTION minusValues(trgeometry, geometry)\n  -- RETURNS trgeometry\n  -- AS 'MODULE_PATHNAME', 'Temporal_minus_value'\n  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n-- CREATE FUNCTION atValues(trgeometry, geomset)\n  -- RETURNS trgeometry\n  -- AS 'MODULE_PATHNAME', 'Temporal_at_values'\n  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n-- CREATE FUNCTION minusValues(trgeometry, geomset)\n  -- RETURNS trgeometry\n  -- AS 'MODULE_PATHNAME', 'Temporal_minus_values'\n  -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n"
+  - fns:
+    - {sig: "atTime(trgeometry, timestamptz)", ret: trgeometry, sym: Temporal_at_timestamptz}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusTime(trgeometry, timestamptz)", ret: trgeometry, sym: Temporal_minus_timestamptz}
+  - lit: "\n"
+  - fns:
+    - {sig: "atTime(trgeometry, tstzset)", ret: trgeometry, sym: Temporal_at_tstzset}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusTime(trgeometry, tstzset)", ret: trgeometry, sym: Temporal_minus_tstzset}
+  - lit: "\n"
+  - fns:
+    - {sig: "atTime(trgeometry, tstzspan)", ret: trgeometry, sym: Temporal_at_tstzspan}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusTime(trgeometry, tstzspan)", ret: trgeometry, sym: Temporal_minus_tstzspan}
+  - lit: "\n"
+  - fns:
+    - {sig: "atTime(trgeometry, tstzspanset)", ret: trgeometry, sym: Temporal_at_tstzspanset}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusTime(trgeometry, tstzspanset)", ret: trgeometry, sym: Temporal_minus_tstzspanset}
+  - lit: "\n"
+  - fns:
+    - {sig: "beforeTimestamp(trgeometry, timestamptz, strict bool DEFAULT TRUE)", ret: trgeometry, sym: Temporal_before_timestamptz}
+  - lit: "\n"
+  - fns:
+    - {sig: "afterTimestamp(trgeometry, timestamptz, strict bool DEFAULT TRUE)", ret: trgeometry, sym: Temporal_after_timestamptz}
+  - lit: "\n"
