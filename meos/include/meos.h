@@ -382,6 +382,37 @@ extern RTreeNNCursor *rtree_nn_cursor_open(const RTree *rtree, const void *query
 extern bool rtree_nn_cursor_next(RTreeNNCursor *cursor, int *id_out, double *dist_out);
 extern void rtree_nn_cursor_close(RTreeNNCursor *cursor);
 
+/**
+ * @brief Enumeration that defines the kind of an in-memory space-partitioning
+ * index
+ */
+typedef enum
+{
+  SPTREE_QUADTREE,   /**< Quad-tree (2^dims children per node) */
+  SPTREE_KDTREE      /**< K-d tree (two children per node) */
+} SPTreeKind;
+
+/**
+ * Structure for the in-memory space-partitioning index (quad-tree, k-d tree)
+ */
+typedef struct SPTree SPTree;
+
+/* SPTree functions */
+
+extern SPTree *sptree_create_intspan(SPTreeKind kind);
+extern SPTree *sptree_create_bigintspan(SPTreeKind kind);
+extern SPTree *sptree_create_floatspan(SPTreeKind kind);
+extern SPTree *sptree_create_datespan(SPTreeKind kind);
+extern SPTree *sptree_create_tstzspan(SPTreeKind kind);
+extern SPTree *sptree_create_tbox(SPTreeKind kind);
+extern void sptree_free(SPTree *sptree);
+extern void sptree_insert(SPTree *sptree, void *box, int id);
+extern void sptree_insert_temporal(SPTree *sptree, const Temporal *temp, int id);
+extern void sptree_insert_temporal_split(SPTree *sptree, const Temporal *temp, int id, int maxboxes);
+extern int sptree_search(const SPTree *sptree, RTreeSearchOp op, const void *query, MeosArray *result);
+extern int sptree_search_temporal(const SPTree *sptree, RTreeSearchOp op, const Temporal *temp, MeosArray *result);
+extern int sptree_search_temporal_dedup(const SPTree *sptree, RTreeSearchOp op, const Temporal *temp, int maxboxes, MeosArray *result);
+
 /*****************************************************************************
  * Initialization of the MEOS library
  *****************************************************************************/
