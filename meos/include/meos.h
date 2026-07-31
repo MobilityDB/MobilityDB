@@ -373,6 +373,15 @@ extern int rtree_search(const RTree *rtree, RTreeSearchOp op, const void *query,
 extern int rtree_search_temporal(const RTree *rtree, RTreeSearchOp op, const Temporal *temp, MeosArray *result);
 extern int rtree_search_temporal_dedup(const RTree *rtree, RTreeSearchOp op, const Temporal *temp, int maxboxes, MeosArray *result);
 
+/**
+ * Cursor for a nearest-neighbour scan of an in-memory Rtree index
+ */
+typedef struct RTreeNNCursor RTreeNNCursor;
+
+extern RTreeNNCursor *rtree_nn_cursor_open(const RTree *rtree, const void *query);
+extern bool rtree_nn_cursor_next(RTreeNNCursor *cursor, int *id_out, double *dist_out);
+extern void rtree_nn_cursor_close(RTreeNNCursor *cursor);
+
 /*****************************************************************************
  * Initialization of the MEOS library
  *****************************************************************************/

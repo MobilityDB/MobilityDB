@@ -112,6 +112,8 @@ jobs:
           ./parse_test
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o rtree_mest_test rtree_mest_test.c -L/usr/local/lib -lmeos -lm
           ./rtree_mest_test
+          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o rtree_knn_test rtree_knn_test.c -L/usr/local/lib -lmeos -lm
+          ./rtree_knn_test
 
   threaded:
     name: Thread-safety (TSan)
