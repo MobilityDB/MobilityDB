@@ -1208,6 +1208,31 @@ CREATE INDEX ON my_table USING spgist(my_tpcpoint_column tpcpoint_kdtree_ops);
 		<para>El receptor también necesita que <varname>mobilitydb_init</varname> se haya ejecutado — automático en cualquier backend que haya cargado la extensión <varname>mobilitydb</varname>, ya que el módulo de información de funciones instala allí el hook de análisis de XML.</para>
 	</sect1>
 
+	<sect1 xml:id="tpointcloud_astext">
+		<title>Salida de texto</title>
+
+		<itemizedlist>
+			<listitem xml:id="tpcpoint_asText">
+				<indexterm significance="normal"><primary><varname>asText</varname></primary></indexterm>
+				<para>Devolver la representación textual de un tpcpoint, o de un arreglo de ellos, y convertir un tpcpoint a texto</para>
+				<para><varname>asText(tpcpoint) → text</varname></para>
+				<para><varname>asText(tpcpoint[]) → text[]</varname></para>
+				<para><varname>tpcpoint::text → text</varname></para>
+			</listitem>
+			<listitem xml:id="tpcpatch_asText">
+				<indexterm significance="normal"><primary><varname>asText</varname></primary></indexterm>
+				<para>Devolver la representación textual de un tpcpatch, o de un arreglo de ellos, y convertir un tpcpatch a texto</para>
+				<para><varname>asText(tpcpatch) → text</varname></para>
+				<para><varname>asText(tpcpatch[]) → text[]</varname></para>
+				<para><varname>tpcpatch::text → text</varname></para>
+			</listitem>
+		</itemizedlist>
+
+		<para>A diferencia de los demás tipos temporales espaciales, aquí <varname>asText</varname> no recibe un argumento <varname>maxdecimaldigits</varname>: un <varname>pcpoint</varname> o un <varname>pcpatch</varname> se imprime como el hex-WKB de su forma serializada, que no tiene decimales que redondear. Lo mismo ocurre con <varname>th3index</varname>.</para>
+
+		<para>La salida de texto es el subconjunto seguro de la superficie textual: no existe <varname>tpcpointFromText</varname> / <varname>tpcpatchFromText</varname>, porque <varname>pcpoint_in</varname> / <varname>pcpatch_in</varname> de pgPointCloud solo aceptan hex-WKB y el esquema no se puede reconstruir a partir de la forma textual. Para la ida y vuelta use <varname>asBinary</varname> / <varname>asHexWKB</varname> con sus funciones de análisis correspondientes.</para>
+	</sect1>
+
 	<sect1 xml:id="tpointcloud_mfjson">
 		<title>Salida MF-JSON</title>
 		<itemizedlist>

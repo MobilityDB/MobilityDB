@@ -49,6 +49,17 @@ SELECT tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2024-01-01'::timestamptz)::text =
   (:inst1)::text;
 
 -------------------------------------------------------------------------------
+-- Text output
+-------------------------------------------------------------------------------
+
+-- asText produces the same string as the type's own output function, and the
+-- cast to text goes through it.
+SELECT asText(:inst1) = format('%s', :inst1);
+SELECT (:inst1)::text = asText(:inst1);
+-- The array form maps over the elements.
+SELECT array_length(asText(ARRAY[:inst1, :inst2]), 1);
+
+-------------------------------------------------------------------------------
 -- pcid + subtype size
 -------------------------------------------------------------------------------
 

@@ -1215,6 +1215,31 @@ CREATE INDEX ON my_table USING spgist(my_tpcpoint_column tpcpoint_kdtree_ops);
 		<para>The receiver also needs <varname>mobilitydb_init</varname> to have run — automatic in any backend that has loaded the <varname>mobilitydb</varname> extension, since the function-info module installs the XML-parse hook there.</para>
 	</sect1>
 
+	<sect1 xml:id="tpointcloud_astext">
+		<title>Text output</title>
+
+		<itemizedlist>
+			<listitem xml:id="tpcpoint_asText">
+				<indexterm significance="normal"><primary><varname>asText</varname></primary></indexterm>
+				<para>Return the text representation of a tpcpoint, or of an array of them, and cast a tpcpoint to text</para>
+				<para><varname>asText(tpcpoint) → text</varname></para>
+				<para><varname>asText(tpcpoint[]) → text[]</varname></para>
+				<para><varname>tpcpoint::text → text</varname></para>
+			</listitem>
+			<listitem xml:id="tpcpatch_asText">
+				<indexterm significance="normal"><primary><varname>asText</varname></primary></indexterm>
+				<para>Return the text representation of a tpcpatch, or of an array of them, and cast a tpcpatch to text</para>
+				<para><varname>asText(tpcpatch) → text</varname></para>
+				<para><varname>asText(tpcpatch[]) → text[]</varname></para>
+				<para><varname>tpcpatch::text → text</varname></para>
+			</listitem>
+		</itemizedlist>
+
+		<para>Unlike the other spatial temporal types, <varname>asText</varname> takes no <varname>maxdecimaldigits</varname> argument here: a <varname>pcpoint</varname> or <varname>pcpatch</varname> prints as the hex-WKB of its serialized form, which has no decimal places to round. The same holds for <varname>th3index</varname>.</para>
+
+		<para>Text output is the safe subset of the textual surface: there is no <varname>tpcpointFromText</varname> / <varname>tpcpatchFromText</varname>, because pgPointCloud's <varname>pcpoint_in</varname> / <varname>pcpatch_in</varname> accept hex-WKB only and the schema is not reconstructible from the text form. For round-trip use <varname>asBinary</varname> / <varname>asHexWKB</varname> with their matching parse functions.</para>
+	</sect1>
+
 	<sect1 xml:id="tpointcloud_mfjson">
 		<title>MF-JSON output</title>
 		<itemizedlist>

@@ -3430,6 +3430,15 @@
 			<title>Temporal Type <varname>tpcpoint</varname></title>
 
 			<sect3>
+				<title>Input and Output</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpcpoint_asText"><varname>asText</varname>, <varname>tpcpoint::text</varname></link>: Return the text representation, or cast to text</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
 				<title>Constructors</title>
 				<itemizedlist>
 					<listitem>
@@ -3561,6 +3570,15 @@
 
 		<sect2>
 			<title>Temporal Type <varname>tpcpatch</varname></title>
+
+			<sect3>
+				<title>Input and Output</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpcpatch_asText"><varname>asText</varname>, <varname>tpcpatch::text</varname></link>: Return the text representation, or cast to text</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
 
 			<sect3>
 				<title>Constructors</title>
