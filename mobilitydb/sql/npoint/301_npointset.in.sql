@@ -281,26 +281,26 @@ CREATE OPERATOR <> (
 CREATE OPERATOR < (
   LEFTARG = npointset, RIGHTARG = npointset,
   PROCEDURE = lt,
-  COMMUTATOR = >, NEGATOR = >=
-  -- RESTRICT = span_sel, JOIN = span_joinsel
+  COMMUTATOR = >, NEGATOR = >=,
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = npointset, RIGHTARG = npointset,
   PROCEDURE = le,
-  COMMUTATOR = >=, NEGATOR = >
-  -- RESTRICT = span_sel, JOIN = span_joinsel
+  COMMUTATOR = >=, NEGATOR = >,
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR >= (
   LEFTARG = npointset, RIGHTARG = npointset,
   PROCEDURE = ge,
-  COMMUTATOR = <=, NEGATOR = <
-  -- RESTRICT = span_sel, JOIN = span_joinsel
+  COMMUTATOR = <=, NEGATOR = <,
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR > (
   LEFTARG = npointset, RIGHTARG = npointset,
   PROCEDURE = gt,
-  COMMUTATOR = <, NEGATOR = <=
-  -- RESTRICT = span_sel, JOIN = span_joinsel
+  COMMUTATOR = <, NEGATOR = <=,
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 CREATE OPERATOR CLASS npointset_btree_ops

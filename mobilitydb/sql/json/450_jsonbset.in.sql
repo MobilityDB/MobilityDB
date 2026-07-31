@@ -260,26 +260,26 @@ CREATE OPERATOR <> (
 CREATE OPERATOR < (
   LEFTARG = jsonbset, RIGHTARG = jsonbset,
   PROCEDURE = lt,
-  COMMUTATOR = >, NEGATOR = >=
-  -- RESTRICT = span_sel, JOIN = span_joinsel
+  COMMUTATOR = >, NEGATOR = >=,
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = jsonbset, RIGHTARG = jsonbset,
   PROCEDURE = le,
-  COMMUTATOR = >=, NEGATOR = >
-  -- RESTRICT = span_sel, JOIN = span_joinsel
+  COMMUTATOR = >=, NEGATOR = >,
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR >= (
   LEFTARG = jsonbset, RIGHTARG = jsonbset,
   PROCEDURE = ge,
-  COMMUTATOR = <=, NEGATOR = <
-  -- RESTRICT = span_sel, JOIN = span_joinsel
+  COMMUTATOR = <=, NEGATOR = <,
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR > (
   LEFTARG = jsonbset, RIGHTARG = jsonbset,
   PROCEDURE = gt,
-  COMMUTATOR = <, NEGATOR = <=
-  -- RESTRICT = span_sel, JOIN = span_joinsel
+  COMMUTATOR = <, NEGATOR = <=,
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 CREATE OPERATOR CLASS jsonbset_btree_ops

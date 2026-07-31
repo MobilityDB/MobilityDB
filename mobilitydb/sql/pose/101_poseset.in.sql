@@ -303,26 +303,26 @@ CREATE OPERATOR <> (
 CREATE OPERATOR < (
   LEFTARG = poseset, RIGHTARG = poseset,
   PROCEDURE = lt,
-  COMMUTATOR = >, NEGATOR = >=
-  -- RESTRICT = span_sel, JOIN = span_joinsel
+  COMMUTATOR = >, NEGATOR = >=,
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = poseset, RIGHTARG = poseset,
   PROCEDURE = le,
-  COMMUTATOR = >=, NEGATOR = >
-  -- RESTRICT = span_sel, JOIN = span_joinsel
+  COMMUTATOR = >=, NEGATOR = >,
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR >= (
   LEFTARG = poseset, RIGHTARG = poseset,
   PROCEDURE = ge,
-  COMMUTATOR = <=, NEGATOR = <
-  -- RESTRICT = span_sel, JOIN = span_joinsel
+  COMMUTATOR = <=, NEGATOR = <,
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR > (
   LEFTARG = poseset, RIGHTARG = poseset,
   PROCEDURE = gt,
-  COMMUTATOR = <, NEGATOR = <=
-  -- RESTRICT = span_sel, JOIN = span_joinsel
+  COMMUTATOR = <, NEGATOR = <=,
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 CREATE OPERATOR CLASS poseset_btree_ops

@@ -516,53 +516,53 @@ CREATE OPERATOR <> (
 CREATE OPERATOR < (
   LEFTARG = geomset, RIGHTARG = geomset,
   PROCEDURE = lt,
-  COMMUTATOR = >, NEGATOR = >=
-  -- RESTRICT = stbox_sel, JOIN = stbox_joinsel
+  COMMUTATOR = >, NEGATOR = >=,
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR < (
   LEFTARG = geogset, RIGHTARG = geogset,
   PROCEDURE = lt,
-  COMMUTATOR = >, NEGATOR = >=
-  -- RESTRICT = stbox_sel, JOIN = stbox_joinsel
+  COMMUTATOR = >, NEGATOR = >=,
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 CREATE OPERATOR <= (
   LEFTARG = geomset, RIGHTARG = geomset,
   PROCEDURE = le,
-  COMMUTATOR = >=, NEGATOR = >
-  -- RESTRICT = stbox_sel, JOIN = stbox_joinsel
+  COMMUTATOR = >=, NEGATOR = >,
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = geogset, RIGHTARG = geogset,
   PROCEDURE = le,
-  COMMUTATOR = >=, NEGATOR = >
-  -- RESTRICT = stbox_sel, JOIN = stbox_joinsel
+  COMMUTATOR = >=, NEGATOR = >,
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 CREATE OPERATOR >= (
   LEFTARG = geomset, RIGHTARG = geomset,
   PROCEDURE = ge,
-  COMMUTATOR = <=, NEGATOR = <
-  -- RESTRICT = stbox_sel, JOIN = stbox_joinsel
+  COMMUTATOR = <=, NEGATOR = <,
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR >= (
   LEFTARG = geogset, RIGHTARG = geogset,
   PROCEDURE = ge,
-  COMMUTATOR = <=, NEGATOR = <
-  -- RESTRICT = stbox_sel, JOIN = stbox_joinsel
+  COMMUTATOR = <=, NEGATOR = <,
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 CREATE OPERATOR > (
   LEFTARG = geomset, RIGHTARG = geomset,
   PROCEDURE = gt,
-  COMMUTATOR = <, NEGATOR = <=
-  -- RESTRICT = stbox_sel, JOIN = stbox_joinsel
+  COMMUTATOR = <, NEGATOR = <=,
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR > (
   LEFTARG = geogset, RIGHTARG = geogset,
   PROCEDURE = gt,
-  COMMUTATOR = <, NEGATOR = <=
-  -- RESTRICT = stbox_sel, JOIN = stbox_joinsel
+  COMMUTATOR = <, NEGATOR = <=,
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 CREATE OPERATOR CLASS geomset_btree_ops

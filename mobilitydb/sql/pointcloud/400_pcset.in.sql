@@ -276,22 +276,26 @@ CREATE OPERATOR <> (
 CREATE OPERATOR < (
   LEFTARG = pcpointset, RIGHTARG = pcpointset,
   PROCEDURE = lt,
-  COMMUTATOR = >, NEGATOR = >=
+  COMMUTATOR = >, NEGATOR = >=,
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = pcpointset, RIGHTARG = pcpointset,
   PROCEDURE = le,
-  COMMUTATOR = >=, NEGATOR = >
+  COMMUTATOR = >=, NEGATOR = >,
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR >= (
   LEFTARG = pcpointset, RIGHTARG = pcpointset,
   PROCEDURE = ge,
-  COMMUTATOR = <=, NEGATOR = <
+  COMMUTATOR = <=, NEGATOR = <,
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR > (
   LEFTARG = pcpointset, RIGHTARG = pcpointset,
   PROCEDURE = gt,
-  COMMUTATOR = <, NEGATOR = <=
+  COMMUTATOR = <, NEGATOR = <=,
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 CREATE OPERATOR CLASS pcpointset_btree_ops
@@ -643,22 +647,26 @@ CREATE OPERATOR <> (
 CREATE OPERATOR < (
   LEFTARG = pcpatchset, RIGHTARG = pcpatchset,
   PROCEDURE = lt,
-  COMMUTATOR = >, NEGATOR = >=
+  COMMUTATOR = >, NEGATOR = >=,
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = pcpatchset, RIGHTARG = pcpatchset,
   PROCEDURE = le,
-  COMMUTATOR = >=, NEGATOR = >
+  COMMUTATOR = >=, NEGATOR = >,
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR >= (
   LEFTARG = pcpatchset, RIGHTARG = pcpatchset,
   PROCEDURE = ge,
-  COMMUTATOR = <=, NEGATOR = <
+  COMMUTATOR = <=, NEGATOR = <,
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 CREATE OPERATOR > (
   LEFTARG = pcpatchset, RIGHTARG = pcpatchset,
   PROCEDURE = gt,
-  COMMUTATOR = <, NEGATOR = <=
+  COMMUTATOR = <, NEGATOR = <=,
+  RESTRICT = span_sel, JOIN = span_joinsel
 );
 
 CREATE OPERATOR CLASS pcpatchset_btree_ops
