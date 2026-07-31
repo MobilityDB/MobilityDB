@@ -1973,6 +1973,118 @@ def bootstrap_posops(filetext: str, fam: dict, rendered: str) -> str:
     return filetext[:start] + begin_m + rendered + end_m + filetext[end:]
 
 
+# --- Set-distance sub-family (SQL, per-family region-in-file) ---------------------
+# The Set<T> distance surface is GATED on metric: only the families whose base
+# carries a distance deploy it (the alpha sets minus text in 002_set_ops, geoset,
+# cbufferset, npointset, poseset — `metric: true` in the setfamilies table); the
+# others (textset, jsonbset, h3indexset, quadbinset, the pointcloud sets) emit
+# NONE. setDistance carries the three directions (value, set) / (set, value) /
+# (set, set) backed by Distance_value_set / Distance_set_value / Distance_set_set,
+# followed by the `<->` operators with COMMUTATOR = <-> and no selectivity
+# clause; functions and operators group pair-outer like the set operations (a
+# pair's three blocks packed, one blank line between pairs). The RETURNS type is
+# per pair (`rets:` parallel to `pairs:`) — integer for intset/dateset, bigint
+# for bigintset, float for the continuous and spatial families — and a pair may
+# spell a per-direction list: bigintset declares bigint on its value directions
+# but float on (set, set), reproduced verbatim, never normalized. Every distance
+# region is its file's tail (whole_file), closed by a trailing bare divider.
+def _distance_markers(family: str):
+    begin = (f"-- GENERATED-DISTANCE-BEGIN {family} — "
+             "tools/codegen/inherited/generate.py from templates/comparisons.sql.tmpl;\n"
+             "-- DO NOT EDIT BY HAND; edit the template + manifest.yaml "
+             "(distance_families) and re-run.\n")
+    return begin, f"-- GENERATED-DISTANCE-END {family}\n"
+
+
+_DIST_DIRS = (("{v}", "{s}", "Distance_value_set"),
+              ("{s}", "{v}", "Distance_set_value"),
+              ("{s}", "{s}", "Distance_set_set"))
+
+
+def _dist_fns(fam: dict) -> str:
+    """The three setDistance CREATE FUNCTIONs for every (value, set) pair: a
+    pair's functions packed, consecutive pairs separated by one blank line."""
+    tmpl = (TEMPLATES / "comparisons.sql.tmpl").read_text().rstrip("\n")
+    groups = []
+    for (v, s), ret in zip(fam["pairs"], fam["rets"]):
+        rets = ret if isinstance(ret, list) else [ret] * 3
+        groups.append("\n".join(
+            tmpl.replace("{SIG}", f"setDistance({l.format(v=v, s=s)}, "
+                                  f"{r.format(v=v, s=s)})")
+                .replace("{RET}", rd).replace("{SYM}", sym)
+            for (l, r, sym), rd in zip(_DIST_DIRS, rets)))
+    return "\n\n".join(groups) + "\n"
+
+
+def _dist_ops(fam: dict) -> str:
+    """The three `<->` operators for every pair, grouped like the functions."""
+    groups = []
+    for v, s in fam["pairs"]:
+        groups.append("\n".join(
+            f"CREATE OPERATOR <-> (\n"
+            f"  PROCEDURE = setDistance,\n"
+            f"  LEFTARG = {l.format(v=v, s=s)}, "
+            f"RIGHTARG = {r.format(v=v, s=s)},\n"
+            f"  COMMUTATOR = <->\n"
+            f");"
+            for l, r, _ in _DIST_DIRS))
+    return "\n\n".join(groups) + "\n"
+
+
+def render_distance(fam: dict) -> str:
+    """Render one family's distance block from its `blocks` sequence: verbatim
+    `lit` blocks plus the `distfns` / `distops` stanzas. Blocks concatenate with
+    no automatic separator, so the rendered text is byte-identical to the
+    committed region."""
+    out = ""
+    for blk in fam["blocks"]:
+        if "lit" in blk:
+            out += blk["lit"]
+        elif "distfns" in blk:
+            out += _dist_fns(fam)
+        else:
+            out += _dist_ops(fam)
+    return out
+
+
+def extract_distance(filetext: str, fam: dict) -> str:
+    """Return the committed distance block (marker-aware; the hash-axis anchor
+    conventions otherwise)."""
+    begin, end = _distance_markers(fam["family"])
+    if begin in filetext:
+        b = filetext.index(begin) + len(begin)
+        e = filetext.index(end)
+        return filetext[b:e]
+    i = filetext.index(fam["begin"])
+    start = i if fam.get("begin_exact") else filetext.rfind("/*", 0, i)
+    if fam.get("whole_file"):
+        return filetext[start:]
+    j = filetext.index(fam["end"])
+    return filetext[start:j if fam.get("end_exact") else filetext.rfind("/*", 0, j)]
+
+
+def splice_distance(filetext: str, family: str, rendered: str) -> str:
+    begin, end = _distance_markers(family)
+    b = filetext.index(begin) + len(begin)
+    e = filetext.index(end)
+    return filetext[:b] + rendered + filetext[e:]
+
+
+def bootstrap_distance(filetext: str, fam: dict, rendered: str) -> str:
+    """Insert the GENERATED-DISTANCE markers around the family's committed hand
+    block (same anchors extract_distance uses); idempotent afterward. Not run
+    while the families are reference-only (validate-only)."""
+    i = filetext.index(fam["begin"])
+    start = i if fam.get("begin_exact") else filetext.rfind("/*", 0, i)
+    if fam.get("whole_file"):
+        end = len(filetext)
+    else:
+        j = filetext.index(fam["end"])
+        end = j if fam.get("end_exact") else filetext.rfind("/*", 0, j)
+    begin_m, end_m = _distance_markers(fam["family"])
+    return filetext[:start] + begin_m + rendered + end_m + filetext[end:]
+
+
 # --- SQL Conversions sub-family (SQL, per-family region-in-file) ------------------
 # The Temporal<T> cast surface every temporal type carries: the CREATE FUNCTION
 # conversion wrappers (timeSpan -> tstzspan, and the cross-type casts to/from the
@@ -2679,6 +2791,25 @@ def main() -> int:
                         break
                 if len(g) != len(c):
                     print(f"     line count gen={len(g)} cur={len(c)}")
+        for fam in mf.get("distance_families", []):
+            if not fam.get("reference"):
+                continue
+            p = ROOT / fam["file"]
+            gen = render_distance(fam)
+            cur = extract_distance(p.read_text(), fam) if p.exists() else ""
+            same = gen == cur
+            ok = ok and same
+            print(f"[{'OK ' if same else 'DIFF'}] self-regen distance {fam['family']} "
+                  f"-> {pathlib.Path(fam['file'])}")
+            if not same:
+                g, c = gen.splitlines(), cur.splitlines()
+                for n, (a, b) in enumerate(zip(g, c), 1):
+                    if a != b:
+                        print(f"     first diff line {n}:\n       gen: {a!r}\n"
+                              f"       cur: {b!r}")
+                        break
+                if len(g) != len(c):
+                    print(f"     line count gen={len(g)} cur={len(c)}")
         for fam in mf.get("conversion_families", []):
             if not fam.get("reference"):
                 continue
@@ -3009,6 +3140,26 @@ def main() -> int:
         else:
             p.write_text(bootstrap_posops(text, fam, render_posops(fam)))
             print(f"bootstrapped posops {fam['family']} -> {fam['file']}")
+
+    for fam in mf.get("distance_families", []):
+        # Reference families are validate-only: keep the committed hand block, never
+        # emit into .in.sql (mirrors the other set axes). A future non-reference
+        # family bootstraps its GENERATED-DISTANCE region once, then splices.
+        if fam.get("reference"):
+            continue
+        p = ROOT / fam["file"]
+        text = p.read_text()
+        begin, _ = _distance_markers(fam["family"])
+        if args.check:
+            print(f"would {'splice' if begin in text else 'bootstrap'} distance "
+                  f"{fam['family']} -> {fam['file']}")
+            continue
+        if begin in text:
+            p.write_text(splice_distance(text, fam["family"], render_distance(fam)))
+            print(f"spliced distance {fam['family']} -> {fam['file']}")
+        else:
+            p.write_text(bootstrap_distance(text, fam, render_distance(fam)))
+            print(f"bootstrapped distance {fam['family']} -> {fam['file']}")
 
     for fam in mf.get("conversion_families", []):
         # Reference families are validate-only: keep the committed hand block, never
