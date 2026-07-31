@@ -634,3 +634,220 @@ io_families:
       - {temp: tbigint}
       - {temp: tfloat}
       - {temp: ttext}
+
+# ---------------------------------------------------------------------------
+# Representations sub-family B (SQL, per-family region / dedicated *_inout file).
+# as<Fmt> outputs + <temp>From<Fmt> constructors, all pure wiring to the generic
+# Temporal_*/Tspatial_*/Trgeometry_* representation kernels. Built from ONE skeleton
+# (templates/representations.sql.tmpl); the per-family op sequence, section-header
+# literals and per-op/per-type symbol + maxdecimaldigits overrides are data here.
+# `--validate` extracts the committed hand block by section-header anchors
+# (begin/end) so the deployed .in.sql is untouched while the template is proven.
+representation_families:
+- family: temporal
+  file: mobilitydb/sql/temporal/023_temporal_inout.in.sql
+  reference: true
+  whole_file: true
+  begin: "\n * Input\n"
+  mfjson_named: true
+  temps:
+  - temp: tbool
+  - temp: tint
+  - temp: tbigint
+  - temp: tfloat
+    maxdd: true
+  - temp: ttext
+  syms:
+    asText: Temporal_as_text
+  arrsyms:
+    asText: Temporalarr_as_text
+  blocks:
+  - lit: "/*****************************************************************************\n * Input\n *****************************************************************************/"
+  - ops:
+    - FromMFJSON
+  - lit: /*****************************************************************************/
+  - ops:
+    - FromBinary
+    - FromHexWKB
+  - lit: "/*****************************************************************************\n * Output\n *****************************************************************************/"
+  - ops:
+    - asText
+    - asMFJSON
+  - lit: /*****************************************************************************/
+  - ops:
+    - asBinary
+    - asHexWKB
+  - lit: /*****************************************************************************/
+- family: geo
+  file: mobilitydb/sql/geo/053_tgeo_inout.in.sql
+  reference: true
+  whole_file: true
+  begin: "\n * Input\n"
+  temps:
+  - temp: tgeometry
+    maxdd: true
+  - temp: tgeography
+    maxdd: true
+  syms:
+    FromText: Tspatial_from_ewkt
+    FromEWKT: Tspatial_from_ewkt
+    asText: Tspatial_as_text
+    asEWKT: Tspatial_as_ewkt
+    asEWKB: Tspatial_as_ewkb
+    asHexEWKB: Tspatial_as_hexewkb
+  arrsyms:
+    asText: Spatialarr_as_text
+    asEWKT: Spatialarr_as_ewkt
+  blocks:
+  - lit: "/*****************************************************************************\n * Input\n *****************************************************************************/"
+  - ops:
+    - FromText
+    - FromEWKT
+    - FromMFJSON
+    - FromBinary
+    - FromEWKB
+    - FromHexEWKB
+  - lit: "/*****************************************************************************\n * Output\n *****************************************************************************/"
+  - ops:
+    - asText
+    - asEWKT
+    - asMFJSON
+    - asBinary
+    - asEWKB
+    - asHexWKB
+    - asHexEWKB
+  - lit: /*****************************************************************************/
+- family: cbuffer
+  file: mobilitydb/sql/cbuffer/202_tcbuffer.in.sql
+  reference: true
+  begin: "\n * Input/output from (E)WKT, (E)WKB, and HexEWKB representation\n"
+  end: "\n * Constructors\n"
+  temps:
+  - temp: tcbuffer
+    maxdd: true
+  syms:
+    FromText: Tspatial_from_ewkt
+    FromEWKT: Tspatial_from_ewkt
+    asText: Tspatial_as_text
+    asEWKT: Tspatial_as_ewkt
+    asEWKB: Tspatial_as_ewkb
+  arrsyms:
+    asText: Spatialarr_as_text
+    asEWKT: Spatialarr_as_ewkt
+  blocks:
+  - lit: "/*****************************************************************************\n * Input/output from (E)WKT, (E)WKB, and HexEWKB representation\n *****************************************************************************/"
+  - ops:
+    - FromText
+    - FromEWKT
+    - FromBinary
+    - FromEWKB
+    - FromHexEWKB
+    - FromMFJSON
+  - lit: /*****************************************************************************/
+  - ops:
+    - asText
+    - asEWKT
+    - asMFJSON
+    - asBinary
+    - asEWKB
+    - asHexEWKB
+- family: npoint
+  file: mobilitydb/sql/npoint/302_tnpoint.in.sql
+  reference: true
+  begin: "\n * Input/output from (E)WKT, (E)WKB, and HexEWKB\n"
+  end: "\n * Constructors\n"
+  temps:
+  - temp: tnpoint
+    maxdd: true
+  syms:
+    asText: Tspatial_as_text
+  arrsyms:
+    asText: Spatialarr_as_text
+  blocks:
+  - lit: "/*****************************************************************************\n * Input/output from (E)WKT, (E)WKB, and HexEWKB\n *****************************************************************************/"
+  - ops:
+    - - FromBinary
+      - FromHexWKB
+    - FromMFJSON
+  - lit: /*****************************************************************************/
+  - ops:
+    - asText
+    - asBinary
+    - asHexWKB
+    - asMFJSON
+- family: rgeo
+  file: mobilitydb/sql/rgeo/150_trgeo.in.sql
+  reference: true
+  begin: "\n * Input/output from (E)WKT, (E)WKB, HexEWKB, and MFJSON representation\n"
+  end: "\n * Constructors\n"
+  temps:
+  - temp: trgeometry
+    maxdd: true
+  syms:
+    FromText: Trgeometry_from_ewkt
+    FromEWKT: Trgeometry_from_ewkt
+    asText: Trgeometry_as_text
+    asEWKT: Trgeometry_as_ewkt
+    asEWKB: Tspatial_as_ewkb
+  arrsyms:
+    asText: Spatialarr_as_text
+    asEWKT: Spatialarr_as_ewkt
+  blocks:
+  - lit: "/*****************************************************************************\n * Input/output from (E)WKT, (E)WKB, HexEWKB, and MFJSON representation\n *****************************************************************************/"
+  - ops:
+    - FromText
+    - FromEWKT
+    - FromMFJSON
+    - FromBinary
+    - FromEWKB
+    - FromHexEWKB
+  - lit: /******************************************************************************/
+  - ops:
+    - asText
+    - asEWKT
+    - asMFJSON
+    - asBinary
+    - asEWKB
+    - asHexEWKB
+- family: h3
+  file: mobilitydb/sql/h3/253_th3index.in.sql
+  reference: true
+  mfjson_named: true
+  begin: "\n * Text and (Hex)WKB I/O (mirrors the tcbuffer / tnpoint / tpose plug-in types)\n"
+  end: "\n * Typmod enforcer + self-cast (mirrors tbigint / tint / tfloat / ttext)\n"
+  temps:
+  - temp: th3index
+    mfjson_maxdd: true
+  syms:
+    asText: Temporal_as_text
+  blocks:
+  - lit: "/******************************************************************************\n * Text and (Hex)WKB I/O (mirrors the tcbuffer / tnpoint / tpose plug-in types)\n ******************************************************************************/"
+  - ops:
+    - asText
+    - asBinary
+    - asHexWKB
+    - asMFJSON
+    - FromBinary
+    - FromHexWKB
+    - FromMFJSON
+- family: quadbin
+  file: mobilitydb/sql/quadbin/353_tquadbin.in.sql
+  reference: true
+  mfjson_named: true
+  begin: "\n * Text and (Hex)WKB I/O (mirrors the tcbuffer / tnpoint / tpose plug-in types)\n"
+  end: "\n * Typmod enforcer + self-cast (mirrors tbigint / tint / tfloat / ttext)\n"
+  temps:
+  - temp: tquadbin
+    mfjson_maxdd: true
+  syms:
+    asText: Temporal_as_text
+  blocks:
+  - lit: "/******************************************************************************\n * Text and (Hex)WKB I/O (mirrors the tcbuffer / tnpoint / tpose plug-in types)\n ******************************************************************************/"
+  - ops:
+    - asText
+    - asBinary
+    - asHexWKB
+    - asMFJSON
+    - FromBinary
+    - FromHexWKB
+    - FromMFJSON
