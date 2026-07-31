@@ -73,13 +73,13 @@ CREATE FUNCTION aEq(geography, tgeogpoint)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR %= (
-  LEFTARG = geography, RIGHTARG = tgeogpoint,
+  LEFTARG = geometry, RIGHTARG = tgeompoint,
   PROCEDURE = aEq,
   NEGATOR = ?<>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR %= (
-  LEFTARG = geometry, RIGHTARG = tgeompoint,
+  LEFTARG = geography, RIGHTARG = tgeogpoint,
   PROCEDURE = aEq,
   NEGATOR = ?<>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
@@ -167,13 +167,13 @@ CREATE FUNCTION aEq(tgeogpoint, geography)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR %= (
-  LEFTARG = tgeogpoint, RIGHTARG = geography,
+  LEFTARG = tgeompoint, RIGHTARG = geometry,
   PROCEDURE = aEq,
   NEGATOR = ?<>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR %= (
-  LEFTARG = tgeompoint, RIGHTARG = geometry,
+  LEFTARG = tgeogpoint, RIGHTARG = geography,
   PROCEDURE = aEq,
   NEGATOR = ?<>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
@@ -261,13 +261,13 @@ CREATE FUNCTION aEq(tgeogpoint, tgeogpoint)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR %= (
-  LEFTARG = tgeogpoint, RIGHTARG = tgeogpoint,
+  LEFTARG = tgeompoint, RIGHTARG = tgeompoint,
   PROCEDURE = aEq,
   NEGATOR = ?<>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR %= (
-  LEFTARG = tgeompoint, RIGHTARG = tgeompoint,
+  LEFTARG = tgeogpoint, RIGHTARG = tgeogpoint,
   PROCEDURE = aEq,
   NEGATOR = ?<>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
