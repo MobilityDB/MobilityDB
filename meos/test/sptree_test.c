@@ -53,6 +53,9 @@
 #include <math.h>
 #include <meos.h>
 #include <meos_geo.h>
+#if POINTCLOUD
+#include <meos_pointcloud.h>
+#endif
 
 /* Number of boxes inserted into every index */
 #define NUM_BOXES 2048
@@ -301,6 +304,65 @@ test_stbox(SPTreeKind kind, const char *kindname)
   free(boxes); free(query); free(ov); free(co); free(cb);
   sptree_free(sptree);
 }
+
+#if POINTCLOUD
+/*****************************************************************************
+ * Pointcloud spatiotemporal box (TPCBox)
+ *
+ * The tpcbox tree is internally an STBox tree (the boxes are projected on
+ * entry), so the oracle here uses the native tpcbox predicates to prove that
+ * the projection loses nothing. All boxes share the same pcid and srid, as
+ * required by the tpcbox predicates.
+ *****************************************************************************/
+
+static TPCBox *
+random_tpcbox(int sspan, int tspan)
+{
+  double xlo = random_int(-10000, 10000) / 10.0;
+  double ylo = random_int(-10000, 10000) / 10.0;
+  TimestampTz tlo = (TimestampTz) random_int(0, 1000000) * 1000000;
+  Span *t = tstzspan_make(tlo, tlo + (TimestampTz) random_int(1, tspan) *
+    1000000, true, false);
+  TPCBox *box = tpcbox_make(true, false, true, false, 0, 1, xlo,
+    xlo + random_int(1, sspan) / 10.0, ylo, ylo + random_int(1, sspan) / 10.0,
+    0, 0, t);
+  free(t);
+  return box;
+}
+
+static void
+test_tpcbox(SPTreeKind kind, const char *kindname)
+{
+  TPCBox **boxes = malloc(NUM_BOXES * sizeof(TPCBox *));
+  SPTree *sptree = sptree_create_tpcbox(kind);
+  for (int i = 0; i < NUM_BOXES; i++)
+  {
+    boxes[i] = random_tpcbox(200, 50);
+    sptree_insert(sptree, boxes[i], i);
+  }
+  TPCBox *query = random_tpcbox(3000, 400);
+
+  bool *ov = calloc(NUM_BOXES, sizeof(bool));
+  bool *co = calloc(NUM_BOXES, sizeof(bool));
+  bool *cb = calloc(NUM_BOXES, sizeof(bool));
+  for (int i = 0; i < NUM_BOXES; i++)
+  {
+    ov[i] = overlaps_tpcbox_tpcbox(boxes[i], query);
+    co[i] = contains_tpcbox_tpcbox(boxes[i], query);
+    cb[i] = contains_tpcbox_tpcbox(query, boxes[i]);
+  }
+
+  printf("Pointcloud box %s (%d random boxes):\n", kindname, NUM_BOXES);
+  compare("  overlaps    ", sptree, RTREE_OVERLAPS, query, ov);
+  compare("  contains    ", sptree, RTREE_CONTAINS, query, co);
+  compare("  contained by", sptree, RTREE_CONTAINED_BY, query, cb);
+
+  for (int i = 0; i < NUM_BOXES; i++)
+    free(boxes[i]);
+  free(boxes); free(query); free(ov); free(co); free(cb);
+  sptree_free(sptree);
+}
+#endif /* POINTCLOUD */
 
 /*****************************************************************************
  * Multi-entry (MEST) indexing over temporal numbers
@@ -812,6 +874,10 @@ main(void)
   test_tbox(SPTREE_KDTREE, "k-d tree");
   test_stbox(SPTREE_QUADTREE, "quad-tree");
   test_stbox(SPTREE_KDTREE, "k-d tree");
+#if POINTCLOUD
+  test_tpcbox(SPTREE_QUADTREE, "quad-tree");
+  test_tpcbox(SPTREE_KDTREE, "k-d tree");
+#endif
   test_mest();
   test_stbox_mest();
   test_nn_floatspan();
