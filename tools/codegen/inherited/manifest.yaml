@@ -1175,3 +1175,394 @@ constructor_families:
     - sig: trgeometry(geometry, tpose)
       ret: trgeometry
       sym: Trgeometry_constructor
+transformation_families:
+- family: geo
+  file: mobilitydb/sql/geo/052_tgeo.in.sql
+  reference: true
+  begin: "\n * Transformations\n"
+  end: "\n * Accessor Functions\n"
+  temps:
+  - tgeometry
+  - tgeography
+  blocks:
+  - lit: "/******************************************************************************\n * Transformations\n ******************************************************************************/"
+  - ops:
+    - inst
+    - seq
+    - seqset
+    temps:
+    - tgeometry
+  - ops:
+    - inst
+    - seq
+    - seqset
+    temps:
+    - tgeography
+  - ops:
+    - setInterp
+  - fns:
+    - sig: appendInstant(tgeometry, tgeometry)
+      ret: tgeometry
+      sym: Temporal_append_tinstant
+    - sig: appendInstant(tgeography, tgeography)
+      ret: tgeography
+      sym: Temporal_append_tinstant
+  - fns:
+    - sig: appendSequence(tgeometry, tgeometry)
+      ret: tgeometry
+      sym: Temporal_append_tsequence
+    - sig: appendSequence(tgeography, tgeography)
+      ret: tgeography
+      sym: Temporal_append_tsequence
+  - fns:
+    - sig: merge(tgeometry, tgeometry)
+      ret: tgeometry
+      sym: Temporal_merge
+      strict: false
+      pre: '-- The function is not strict
+
+        '
+    - sig: merge(tgeography, tgeography)
+      ret: tgeography
+      sym: Temporal_merge
+      strict: false
+  - lit: "CREATE FUNCTION merge(tgeometry[])\n  RETURNS tgeometry\nAS 'MODULE_PATHNAME', 'Temporal_merge_array'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION merge(tgeography[])\n  RETURNS tgeography\nAS 'MODULE_PATHNAME', 'Temporal_merge_array'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"
+- family: tpoint
+  file: mobilitydb/sql/geo/052_tpoint.in.sql
+  reference: true
+  begin: "\n * Transformations\n"
+  end: "\n * Accessor Functions\n"
+  temps:
+  - tgeompoint
+  - tgeogpoint
+  blocks:
+  - lit: "/******************************************************************************\n * Transformations\n ******************************************************************************/"
+  - ops:
+    - inst
+    - seq
+    - seqset
+    temps:
+    - tgeompoint
+  - ops:
+    - inst
+    - seq
+    - seqset
+    temps:
+    - tgeogpoint
+  - ops:
+    - setInterp
+  - fns:
+    - sig: appendInstant(tgeompoint, tgeompoint)
+      ret: tgeompoint
+      sym: Temporal_append_tinstant
+    - sig: appendInstant(tgeogpoint, tgeogpoint)
+      ret: tgeogpoint
+      sym: Temporal_append_tinstant
+  - fns:
+    - sig: appendSequence(tgeompoint, tgeompoint)
+      ret: tgeompoint
+      sym: Temporal_append_tsequence
+    - sig: appendSequence(tgeogpoint, tgeogpoint)
+      ret: tgeogpoint
+      sym: Temporal_append_tsequence
+  - fns:
+    - sig: merge(tgeompoint, tgeompoint)
+      ret: tgeompoint
+      sym: Temporal_merge
+      strict: false
+      pre: '-- The function is not strict
+
+        '
+    - sig: merge(tgeogpoint, tgeogpoint)
+      ret: tgeogpoint
+      sym: Temporal_merge
+      strict: false
+  - lit: "CREATE FUNCTION merge(tgeompoint[])\n  RETURNS tgeompoint\nAS 'MODULE_PATHNAME', 'Temporal_merge_array'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION merge(tgeogpoint[])\n  RETURNS tgeogpoint\nAS 'MODULE_PATHNAME', 'Temporal_merge_array'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"
+- family: cbuffer
+  file: mobilitydb/sql/cbuffer/202_tcbuffer.in.sql
+  reference: true
+  begin: "\n * Transformation functions\n"
+  end: "\n * Restriction functions\n"
+  temps:
+  - tcbuffer
+  blocks:
+  - lit: "/*****************************************************************************\n * Transformation functions\n *****************************************************************************/"
+  - fns:
+    - sig: expand(tcbuffer, float)
+      ret: tcbuffer
+      sym: Tcbuffer_expand
+  - lit: "  \n/*****************************************************************************/\n-- Transformations for all temporal types"
+    glue: true
+  - ops:
+    - inst
+    - seq
+    - seqset
+  - ops:
+    - setInterp
+  - fns:
+    - sig: round(tcbuffer, integer DEFAULT 0)
+      ret: tcbuffer
+      sym: Temporal_round
+    - sig: round(tcbuffer[], integer DEFAULT 0)
+      ret: tcbuffer[]
+      sym: Temporalarr_round
+  - ops:
+    - tsample
+  - ops:
+    - tprecision
+  - ops:
+    - shiftTime
+  - ops:
+    - scaleTime
+  - ops:
+    - shiftScaleTime
+- family: json
+  file: mobilitydb/sql/json/452_tjsonb.in.sql
+  reference: true
+  begin: "\n * Transformation functions\n"
+  end: "\n * Restriction functions\n"
+  temps:
+  - tjsonb
+  seqset_notext: true
+  blocks:
+  - lit: "/*****************************************************************************\n * Transformation functions\n *****************************************************************************/"
+  - lit: "  \n-- Transformations for all temporal types"
+    glue: true
+  - ops:
+    - inst
+    - seq
+    - seqset
+  - ops:
+    - setInterp
+  - ops:
+    - shiftTime
+  - ops:
+    - scaleTime
+  - ops:
+    - shiftScaleTime
+  - ops:
+    - tsample
+- family: npoint
+  file: mobilitydb/sql/npoint/302_tnpoint.in.sql
+  reference: true
+  begin: "\n * Transformation functions\n"
+  end: "\n * Append functions\n"
+  temps:
+  - tnpoint
+  blocks:
+  - lit: "/******************************************************************************\n * Transformation functions\n ******************************************************************************/"
+  - ops:
+    - inst
+    - seq
+    - seqset
+  - ops:
+    - setInterp
+  - fns:
+    - sig: round(tnpoint, integer DEFAULT 0)
+      ret: tnpoint
+      sym: Temporal_round
+    - sig: round(tnpoint[], integer DEFAULT 0)
+      ret: tnpoint
+      sym: Temporalarr_round
+  - ops:
+    - tsample
+- family: tpcpoint
+  file: mobilitydb/sql/pointcloud/420_tpcpoint.in.sql
+  reference: true
+  begin: "\n * Transformation functions\n"
+  end: "\n * Restrictions\n"
+  temps:
+  - tpcpoint
+  seqset_notext: true
+  blocks:
+  - lit: "/******************************************************************************\n * Transformation functions\n ******************************************************************************/"
+  - ops:
+    - inst
+    - seq
+    - seqset
+  - ops:
+    - setInterp
+  - ops:
+    - shiftTime
+  - ops:
+    - scaleTime
+  - ops:
+    - shiftScaleTime
+  - ops:
+    - tsample
+- family: tpcpatch
+  file: mobilitydb/sql/pointcloud/430_tpcpatch.in.sql
+  reference: true
+  begin: "\n * Transformation functions\n"
+  end: "\n * Restrictions\n"
+  temps:
+  - tpcpatch
+  seqset_notext: true
+  blocks:
+  - lit: "/******************************************************************************\n * Transformation functions\n ******************************************************************************/"
+  - ops:
+    - inst
+    - seq
+    - seqset
+  - ops:
+    - setInterp
+  - ops:
+    - shiftTime
+  - ops:
+    - scaleTime
+  - ops:
+    - shiftScaleTime
+  - ops:
+    - tsample
+- family: pose
+  file: mobilitydb/sql/pose/102_tpose.in.sql
+  reference: true
+  begin: "\n * Transformation functions\n"
+  end: "\n * Restriction Functions\n"
+  temps:
+  - tpose
+  blocks:
+  - lit: "/******************************************************************************\n * Transformation functions\n ******************************************************************************/"
+  - ops:
+    - inst
+    - seq
+    - seqset
+  - ops:
+    - setInterp
+  - fns:
+    - sig: round(tpose, integer DEFAULT 0)
+      ret: tpose
+      sym: Temporal_round
+    - sig: round(tpose[], integer DEFAULT 0)
+      ret: tpose[]
+      sym: Temporalarr_round
+  - ops:
+    - tsample
+  - ops:
+    - tprecision
+  - ops:
+    - shiftTime
+  - ops:
+    - scaleTime
+  - ops:
+    - shiftScaleTime
+- family: h3
+  file: mobilitydb/sql/h3/253_th3index.in.sql
+  reference: true
+  begin: "\n * Transformations\n"
+  end: "\n * Accessor functions\n"
+  temps:
+  - th3index
+  blocks:
+  - lit: "/******************************************************************************\n * Transformations\n ******************************************************************************/"
+  - ops:
+    - inst
+    - seq
+    - seqset
+  - ops:
+    - setInterp
+  - fns:
+    - sig: appendInstant(th3index, th3index)
+      ret: th3index
+      sym: Temporal_append_tinstant
+    - sig: appendSequence(th3index, th3index)
+      ret: th3index
+      sym: Temporal_append_tsequence
+    - sig: merge(th3index, th3index)
+      ret: th3index
+      sym: Temporal_merge
+      strict: false
+      pre: '-- The function is not strict
+
+        '
+    - sig: merge(th3index[])
+      ret: th3index
+      sym: Temporal_merge_array
+  - ops:
+    - shiftTime
+    - scaleTime
+    - shiftScaleTime
+    - tprecision
+    - tsample
+- family: quadbin
+  file: mobilitydb/sql/quadbin/353_tquadbin.in.sql
+  reference: true
+  begin: "\n * Transformations\n"
+  end: "\n * Accessor functions\n"
+  temps:
+  - tquadbin
+  blocks:
+  - lit: "/******************************************************************************\n * Transformations\n ******************************************************************************/"
+  - ops:
+    - inst
+    - seq
+    - seqset
+  - ops:
+    - setInterp
+  - fns:
+    - sig: appendInstant(tquadbin, tquadbin)
+      ret: tquadbin
+      sym: Temporal_append_tinstant
+    - sig: appendSequence(tquadbin, tquadbin)
+      ret: tquadbin
+      sym: Temporal_append_tsequence
+    - sig: merge(tquadbin, tquadbin)
+      ret: tquadbin
+      sym: Temporal_merge
+      strict: false
+      pre: '-- The function is not strict
+
+        '
+    - sig: merge(tquadbin[])
+      ret: tquadbin
+      sym: Temporal_merge_array
+  - ops:
+    - shiftTime
+    - scaleTime
+    - shiftScaleTime
+    - tprecision
+    - tsample
+- family: rgeo
+  file: mobilitydb/sql/rgeo/150_trgeo.in.sql
+  reference: true
+  begin: "\n * Transformation functions\n"
+  end: "\n * Restriction Functions\n"
+  temps:
+  - trgeometry
+  seqset_notext: false
+  syms:
+    inst: Trgeometry_as_tinstant
+    seq: Trgeometry_as_tsequence
+    seqset: Trgeometry_as_tsequenceset
+  blocks:
+  - lit: "/******************************************************************************\n * Transformation functions\n ******************************************************************************/"
+  - ops:
+    - inst
+    - seq
+    - seqset
+  - ops:
+    - setInterp
+  - fns:
+    - sig: round(trgeometry, integer DEFAULT 0)
+      ret: trgeometry
+      sym: Temporal_round
+    - sig: round(trgeometry[], integer DEFAULT 0)
+      ret: trgeometry[]
+      sym: Temporalarr_round
+  - ops:
+    - shiftTime
+  - ops:
+    - scaleTime
+  - ops:
+    - shiftScaleTime
+    - tprecision
+  - lit: '-- CREATE FUNCTION tsample(trgeometry, duration interval,
+
+      --   origin timestamptz DEFAULT ''2000-01-03'')
+
+      --   RETURNS trgeometry
+
+      --   AS ''MODULE_PATHNAME'', ''Temporal_tsample''
+
+      --   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;'
+    glue: true

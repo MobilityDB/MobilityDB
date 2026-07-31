@@ -1029,6 +1029,181 @@ def bootstrap_constructors(filetext: str, fam: dict, rendered: str) -> str:
     return filetext[:start] + begin_m + rendered + end_m + filetext[end:]
 
 
+# --- SQL Transformations sub-family (SQL, per-family region-in-file) --------------
+# The Temporal<T> interpolation-and-time transformation surface every temporal type
+# carries: the <temp>Inst/<temp>Seq/<temp>SeqSet subtype casts, setInterp, and the
+# time transforms shiftTime/scaleTime/shiftScaleTime/tsample/tprecision — all pure
+# wiring to the generic Temporal_as_tinstant/_tsequence/_tsequenceset /
+# Temporal_set_interp / Temporal_shift_time/_scale_time/_shift_scale_time /
+# Temporal_tsample / Temporal_tprecision kernels (mirrors the constructor sub-family).
+# Every CREATE FUNCTION is the SAME four-line skeleton (templates/transformations.sql
+# .tmpl); only the signature {SIG}, return {RET}, backing symbol {SYM}, strictness
+# ({STRICT}) and an optional leading comment ({PRE}) differ — so ONE skeleton emits
+# the whole surface; the per-family shape (which CORE ops in which order/grouping, the
+# family-EXTRA transforms — append/merge/round/expand — and the section headers /
+# dividers) is data in the manifest `transformation_families` table.
+#
+# CORE ops bind the generic Temporal_* symbols uniformly (rgeo overrides Inst/Seq/
+# SeqSet to its Trgeometry_as_* specializations via `syms`); the <temp>Seq/<temp>SeqSet
+# casts are NON-strict and each carries the canonical `-- The function is not strict`
+# comment as its {PRE} (a step-only family whose SeqSet takes no interpolation arg sets
+# `seqset_notext: true`). FAMILY-EXTRA transforms (and the geo/tpoint merge-array whose
+# `AS` line is un-indented, and rgeo's commented-out tsample) go in `fns`/`lit` blocks
+# reproduced byte-exact. A dual-base family (geo/tpoint) lists both temporal types in
+# `temps` and scopes the per-type Inst/Seq/SeqSet blocks with a block-level `temps`.
+#
+# Region markers for the eventual Phase-2 emit (mirroring _constructors_markers);
+# Phase-1 --validate extracts the committed hand block by section-header ANCHORS
+# (marker-aware) so the deployed .in.sql files are untouched while the template is
+# being proven.
+def _transformations_markers(family: str):
+    begin = (f"-- GENERATED-TRANSFORMATIONS-BEGIN {family} — "
+             "tools/codegen/inherited/generate.py from templates/transformations.sql.tmpl;\n"
+             "-- DO NOT EDIT BY HAND; edit the template + manifest.yaml "
+             "(transformation_families) and re-run.\n")
+    return begin, f"-- GENERATED-TRANSFORMATIONS-END {family}\n"
+
+
+# Default CORE op -> backing C symbol (the fully canonical generic transformation set).
+# A family whose Inst/Seq/SeqSet (or any) symbol deviates overrides it per op via its
+# `syms` map (rgeo: Trgeometry_as_tinstant/_tsequence/_tsequenceset).
+_XFORM_SYM = {
+    "inst": "Temporal_as_tinstant",
+    "seq": "Temporal_as_tsequence",
+    "seqset": "Temporal_as_tsequenceset",
+    "setInterp": "Temporal_set_interp",
+    "shiftTime": "Temporal_shift_time",
+    "scaleTime": "Temporal_scale_time",
+    "shiftScaleTime": "Temporal_shift_scale_time",
+    "tsample": "Temporal_tsample",
+    "tprecision": "Temporal_tprecision",
+}
+
+
+def _xform_skeleton(sig: str, ret: str, sym: str, strict: bool, pre: str) -> str:
+    """One transformation CREATE FUNCTION from the shared skeleton (no trailing
+    newline). `pre` is a leading comment line (the `-- The function is not strict`
+    marker) or ""; `strict` toggles the ` STRICT` keyword."""
+    tmpl = (TEMPLATES / "transformations.sql.tmpl").read_text()
+    return (tmpl.replace("{PRE}", pre).replace("{SIG}", sig).replace("{RET}", ret)
+                .replace("{SYM}", sym)
+                .replace("{STRICT}", " STRICT" if strict else "").rstrip("\n"))
+
+
+def _xform_op_sig(op: str, fam: dict, temp: str) -> str:
+    """The canonical signature for CORE transformation op `op` and temporal type
+    `temp`. `seqset_notext` drops the optional `text DEFAULT NULL` interpolation arg
+    from the SeqSet cast (the step-only json/pointcloud families)."""
+    T = temp
+    if op == "inst":
+        return f"{T}Inst({T})"
+    if op == "seq":
+        return f"{T}Seq({T}, text DEFAULT NULL)"
+    if op == "seqset":
+        arg = T if fam.get("seqset_notext") else f"{T}, text DEFAULT NULL"
+        return f"{T}SeqSet({arg})"
+    if op == "setInterp":
+        return f"setInterp({T}, text)"
+    if op == "shiftTime":
+        return f"shiftTime({T}, interval)"
+    if op == "scaleTime":
+        return f"scaleTime({T}, interval)"
+    if op == "shiftScaleTime":
+        return f"shiftScaleTime({T}, interval, interval)"
+    if op == "tsample":
+        return (f"tsample({T}, duration interval,\n"
+                f"  origin timestamptz DEFAULT '2000-01-03', "
+                f"interp text DEFAULT 'discrete')")
+    if op == "tprecision":
+        return (f"tprecision({T}, duration interval,\n"
+                f"  origin timestamptz DEFAULT '2000-01-03')")
+    raise SystemExit(f"unknown transformation op {op!r}")
+
+
+def _xform_op_fn(op: str, fam: dict, temp: str) -> str:
+    """Render one CORE transformation function for op `op` and type `temp`. The Seq/
+    SeqSet casts are NON-strict and each carries the `-- The function is not strict`
+    marker as its leading comment; every other op is STRICT."""
+    strict = op not in ("seq", "seqset")
+    pre = "-- The function is not strict\n" if op in ("seq", "seqset") else ""
+    sym = fam.get("syms", {}).get(op, _XFORM_SYM[op])
+    return _xform_skeleton(_xform_op_sig(op, fam, temp), temp, sym, strict, pre)
+
+
+def _xform_ops_block(blk: dict, fam: dict) -> str:
+    """One `ops` block: each CORE op over the block's temporal types (default the
+    family `temps`, overridden per block for a dual-base family's per-type grouping),
+    packed op-outer / type-inner with no blank line (house style)."""
+    temps = blk.get("temps", fam["temps"])
+    return "\n".join(_xform_op_fn(op, fam, t) for op in blk["ops"] for t in temps)
+
+
+def render_transformations(fam: dict) -> str:
+    """Render one family's transformation block from its `blocks` sequence. A block is
+    a verbatim `lit` (a section header/divider/prose comment or a byte-irregular
+    function kept exactly as the hand file), an `ops` list (CORE transforms rendered
+    from the family flags/temps, packed with no blank), or an explicit `fns` list (the
+    family-EXTRA overloads: expand/round/appendInstant/appendSequence/merge). Blocks are
+    separated by one blank line, except a `glue` block joins with a single newline (the
+    cbuffer/json dividers whose preceding line carries two trailing spaces, and rgeo's
+    trailing commented-out tsample). The block ends with the blank line that precedes the
+    next section (the section-header anchor slice)."""
+    parts = []
+    for blk in fam["blocks"]:
+        if "lit" in blk:
+            text = blk["lit"]
+        elif "fns" in blk:
+            text = "\n".join(_xform_skeleton(f["sig"], f["ret"], f["sym"],
+                                             f.get("strict", True), f.get("pre", ""))
+                             for f in blk["fns"])
+        else:
+            text = _xform_ops_block(blk, fam)
+        parts.append((blk.get("glue", False), text))
+    out = parts[0][1]
+    for glue, text in parts[1:]:
+        out += ("\n" if glue else "\n\n") + text
+    return out + "\n\n"
+
+
+def extract_transformations(filetext: str, fam: dict) -> str:
+    """Return the committed hand transformation block. Marker-aware: if the
+    GENERATED-TRANSFORMATIONS region exists, slice between its markers; otherwise slice
+    by section-header anchors (from the `/*` opening the block's header down to,
+    exclusive, the `/*` opening the next section's header), mirroring
+    extract_constructors."""
+    begin, end = _transformations_markers(fam["family"])
+    if begin in filetext:
+        b = filetext.index(begin) + len(begin)
+        e = filetext.index(end)
+        return filetext[b:e]
+    i = filetext.index(fam["begin"])
+    start = filetext.rfind("/*", 0, i)
+    if fam.get("whole_file"):
+        return filetext[start:len(filetext)]
+    j = filetext.index(fam["end"])
+    return filetext[start:filetext.rfind("/*", 0, j)]
+
+
+def splice_transformations(filetext: str, family: str, rendered: str) -> str:
+    begin, end = _transformations_markers(family)
+    b = filetext.index(begin) + len(begin)
+    e = filetext.index(end)
+    return filetext[:b] + rendered + filetext[e:]
+
+
+def bootstrap_transformations(filetext: str, fam: dict, rendered: str) -> str:
+    """Insert the GENERATED-TRANSFORMATIONS markers around the family's committed hand
+    block (sliced by the same section-header anchors extract uses), so a Phase-2 emit is
+    fully declarative with no hand-placed marker. Not run while the families are
+    reference-only (validate-only)."""
+    i = filetext.index(fam["begin"])
+    start = filetext.rfind("/*", 0, i)
+    j = filetext.index(fam["end"])
+    end = filetext.rfind("/*", 0, j)
+    begin_m, end_m = _transformations_markers(fam["family"])
+    return filetext[:start] + begin_m + rendered + end_m + filetext[end:]
+
+
 def _accessor_names() -> set:
     """Every SQL function name the generated accessor region can carry: the shared
     template's functions plus the gated TNumber/orderable reductions. Used to find and
@@ -1267,6 +1442,25 @@ def main() -> int:
                         break
                 if len(g) != len(c):
                     print(f"     line count gen={len(g)} cur={len(c)}")
+        for fam in mf.get("transformation_families", []):
+            if not fam.get("reference"):
+                continue
+            p = ROOT / fam["file"]
+            gen = render_transformations(fam)
+            cur = extract_transformations(p.read_text(), fam) if p.exists() else ""
+            same = gen == cur
+            ok = ok and same
+            print(f"[{'OK ' if same else 'DIFF'}] self-regen transformations {fam['family']} "
+                  f"-> {pathlib.Path(fam['file'])}")
+            if not same:
+                g, c = gen.splitlines(), cur.splitlines()
+                for n, (a, b) in enumerate(zip(g, c), 1):
+                    if a != b:
+                        print(f"     first diff line {n}:\n       gen: {a!r}\n"
+                              f"       cur: {b!r}")
+                        break
+                if len(g) != len(c):
+                    print(f"     line count gen={len(g)} cur={len(c)}")
         for fam in mf.get("native_tempspatialrel_families", []):
             p = ROOT / fam["file"]
             gen = render_native_tempspatialrels(fam)
@@ -1398,6 +1592,27 @@ def main() -> int:
         else:
             p.write_text(bootstrap_constructors(text, fam, render_constructors(fam)))
             print(f"bootstrapped constructors {fam['family']} -> {fam['file']}")
+
+    for fam in mf.get("transformation_families", []):
+        # Reference families are validate-only: keep the committed hand block, never
+        # emit into .in.sql (mirrors constructors). A future non-reference family
+        # bootstraps its GENERATED-TRANSFORMATIONS region once, then splices.
+        if fam.get("reference"):
+            continue
+        p = ROOT / fam["file"]
+        text = p.read_text()
+        begin, _ = _transformations_markers(fam["family"])
+        if args.check:
+            print(f"would {'splice' if begin in text else 'bootstrap'} transformations "
+                  f"{fam['family']} -> {fam['file']}")
+            continue
+        if begin in text:
+            p.write_text(splice_transformations(text, fam["family"],
+                                                render_transformations(fam)))
+            print(f"spliced transformations {fam['family']} -> {fam['file']}")
+        else:
+            p.write_text(bootstrap_transformations(text, fam, render_transformations(fam)))
+            print(f"bootstrapped transformations {fam['family']} -> {fam['file']}")
     return 0
 
 
