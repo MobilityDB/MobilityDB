@@ -84,6 +84,8 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_a3188519cb1583a50b0144c0839f25428.html#a3188519cb1583a50b0144c0839f25428">ensure_valid_tcbuffer_stbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_a8e624ea69e2812a74775bf96ba457e29.html#a8e624ea69e2812a74775bf96ba457e29">ensure_valid_tcbuffer_tcbuffer</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_ab46cf9c12aef24f2dbd9cd87faba8c1f.html#ab46cf9c12aef24f2dbd9cd87faba8c1f">tcbuffer_disc_contains_ctx</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_a43cd90c5acaca8757fe7199606c87bb5.html#a43cd90c5acaca8757fe7199606c87bb5">tcbuffer_disc_ctx_free</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_a65acf4c4ea8ab3d06ee8716b905cedbe.html#a65acf4c4ea8ab3d06ee8716b905cedbe">tcbuffer_disc_ctx_make</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_a400186b42f9eaafd5dd8e83532a54452.html#a400186b42f9eaafd5dd8e83532a54452">tcbuffer_disc_touch_ctx</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_aecb593ba0ffd24dd09e14c68a52f7e04.html#aecb593ba0ffd24dd09e14c68a52f7e04">tcbuffer_disc_within_ctx</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer_8h_a9d94f9b1e16026aeac0008b451f2eb6e.html#a9d94f9b1e16026aeac0008b451f2eb6e">tcbuffer_geo_ctx_free</a></td></tr>
@@ -123,7 +125,7 @@ $(function() {
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const void *&#160;</td>
-          <td class="paramname"><em>ctxv</em>, </td>
+          <td class="paramname"><em>ctx</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -144,9 +146,6 @@ $(function() {
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>Append to <code>outt</code> the normalized times in (0,1) at which the disk boundary and the geometry boundary of a linearly moving disk are tangent, from either side. </p>
-<p >These are the instants at which the geometry can start or stop containing or covering the disk, so they are the sub-interval breakpoints of the contains/covers kernels. Unlike <a class="el" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a20b795086a57e9230b5e6b6b016beb0e.html#a20b795086a57e9230b5e6b6b016beb0e" title="Append to outt the normalized times in (0,1) at which a linearly moving disk touches the geometry.">tcbufferseg_touch_roots</a> this keeps the internal tangency, where the disk grazes the boundary from within and containment changes but no touch occurs. Returns the number of times written (at most <code>maxout</code>) </p>
 
 </div>
 </div>

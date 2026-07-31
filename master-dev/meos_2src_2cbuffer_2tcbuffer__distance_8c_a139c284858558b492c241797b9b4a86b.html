@@ -100,8 +100,13 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__cbuffer__dist_ga62655ee42ac3e60b1c37311abec6a421.html#ga62655ee42ac3e60b1c37311abec6a421">shortestline_tcbuffer_geo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a0d78a94f31f4f528363f8d9797345486.html#a0d78a94f31f4f528363f8d9797345486">shortestline_tcbuffer_geo_analytic</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__cbuffer__dist_gabac1839e590edad0b9808d1197c39ac0.html#gabac1839e590edad0b9808d1197c39ac0">shortestline_tcbuffer_tcbuffer</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_ad1cf66426dcd284828e4068b5d26e3a6.html#ad1cf66426dcd284828e4068b5d26e3a6">TCBUF_CTX_DISC</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_ad230bd024095594026f7c398553bcbd3.html#ad230bd024095594026f7c398553bcbd3">TCBUF_CTX_GEO</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a459fea86e8cf06713463c25ebceba203.html#a459fea86e8cf06713463c25ebceba203">tcbuffer_cbuffer_distance_turnpt</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a05d51bd67da1b4389a17f8b9ee6b0baf.html#a05d51bd67da1b4389a17f8b9ee6b0baf">tcbuffer_disc_contains_ctx</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a43cd90c5acaca8757fe7199606c87bb5.html#a43cd90c5acaca8757fe7199606c87bb5">tcbuffer_disc_ctx_free</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a65acf4c4ea8ab3d06ee8716b905cedbe.html#a65acf4c4ea8ab3d06ee8716b905cedbe">tcbuffer_disc_ctx_make</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a5fa397ab276adbe576588ece222d463b.html#a5fa397ab276adbe576588ece222d463b">tcbuffer_disc_seg_roots</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_aa42aa42239e18baebe621f3cf1ddeef0.html#aa42aa42239e18baebe621f3cf1ddeef0">tcbuffer_disc_signed_boundary</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a275499d8904ee6b51f7b0201c762b0dd.html#a275499d8904ee6b51f7b0201c762b0dd">tcbuffer_disc_touch_ctx</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a25267d48ab536f5cdb9ab6415f955e1e.html#a25267d48ab536f5cdb9ab6415f955e1e">tcbuffer_disc_within_ctx</a></td></tr>
@@ -145,7 +150,7 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the number of boundary segments in a geometry context, used to size the per-segment within-interval output. </p>
+<p>Return the number of boundary segments in a context, used to size the per-segment root output (a disc boundary yields at most the two roots of the quadratic clearance equation) </p>
 
 </div>
 </div>
