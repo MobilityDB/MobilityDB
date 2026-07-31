@@ -1570,6 +1570,21 @@ int
 ea_touches_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
   bool ever)
 {
+  /* Bounding box test: a moving disk whose radius-aware bounding box is
+   * disjoint from the static disk never reaches it, so it cannot touch. This
+   * is a constant-time reject for far-away pairs in a spatial join. */
+  STBox box1, box2;
+  tspatial_set_stbox(temp, &box1);
+  cbuffer_set_stbox(cb, &box2);
+  if (! overlaps_stbox_stbox(&box1, &box2))
+    return 0;
+  /* Touch requires the two disks to be at distance zero; a strictly positive
+   * exact nearest-approach distance means they are disjoint, so they cannot
+   * touch under either quantifier. The native disk-to-disk nearest-approach
+   * distance is analytic and cheap, so this prunes far pairs before the
+   * per-instant geometry touch predicate below. */
+  if (nad_tcbuffer_cbuffer(temp, cb) > 1e-6)
+    return 0;
   return ea_spatialrel_tcbuffer_cbuffer(temp, cb, (Datum) NULL,
     (varfunc) &datum_geom_touches, 2, ever, INVERT_NO);
 }
