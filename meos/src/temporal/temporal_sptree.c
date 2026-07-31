@@ -44,10 +44,12 @@
 #include <stdlib.h>
 /* MEOS */
 #include <meos.h>
+#include <meos_geo.h>
 #include <meos_internal.h>
 #include "temporal/temporal.h"
 #include "temporal/span_index.h"
 #include "temporal/tbox_index.h"
+#include "geo/stbox_index.h"
 #include "temporal/temporal_sptree.h"
 
 /*****************************************************************************
@@ -162,6 +164,67 @@ tbox_leaf_consistent(const void *key, const void *query, RTreeSearchOp op)
 }
 
 /*****************************************************************************
+ * Family-specific adapters (STBox)
+ *****************************************************************************/
+
+static int
+stbox_box_dims(const void *box)
+{
+  return MEOS_FLAGS_GET_Z(((const STBox *) box)->flags) ? 8 : 6;
+}
+
+static uint8
+stbox_get_quadrant(const void *centroid, const void *key)
+{
+  return getQuadrant8D((const STBox *) centroid, (const STBox *) key);
+}
+
+static void
+stbox_nodebox_init(void *nodebox, const void *centroid,
+  const struct SPTree *sptree UNUSED)
+{
+  stboxnode_init((const STBox *) centroid, (STboxNode *) nodebox);
+}
+
+static void
+stbox_quadtree_next(const void *nodebox, const void *centroid, uint8 quadrant,
+  void *next)
+{
+  stboxnode_quadtree_next((const STboxNode *) nodebox, (const STBox *) centroid,
+    quadrant, (STboxNode *) next);
+}
+
+static void
+stbox_kdtree_next(const void *nodebox, const void *centroid, uint8 node,
+  int level, void *next)
+{
+  stboxnode_kdtree_next((const STboxNode *) nodebox, (const STBox *) centroid,
+    node, level, (STboxNode *) next);
+}
+
+static bool
+stbox_inner_consistent(const void *nodebox, const void *query, RTreeSearchOp op)
+{
+  const STboxNode *n = (const STboxNode *) nodebox;
+  const STBox *q = (const STBox *) query;
+  if (op == RTREE_CONTAINS)
+    return contain8D(n, q);
+  return overlap8D(n, q);
+}
+
+static bool
+stbox_leaf_consistent(const void *key, const void *query, RTreeSearchOp op)
+{
+  const STBox *k = (const STBox *) key;
+  const STBox *q = (const STBox *) query;
+  if (op == RTREE_CONTAINS)
+    return contains_stbox_stbox(k, q);
+  if (op == RTREE_CONTAINED_BY)
+    return contains_stbox_stbox(q, k);
+  return overlaps_stbox_stbox(k, q);
+}
+
+/*****************************************************************************
  * Creation
  *****************************************************************************/
 
@@ -174,7 +237,7 @@ tbox_leaf_consistent(const void *key, const void *query, RTreeSearchOp op)
 SPTree *
 sptree_create(MeosType bboxtype, SPTreeKind kind)
 {
-  assert(span_type(bboxtype) || bboxtype == T_TBOX);
+  assert(span_type(bboxtype) || bboxtype == T_TBOX || bboxtype == T_STBOX);
   SPTree *sptree = palloc0(sizeof(SPTree));
   sptree->bboxtype = bboxtype;
   sptree->boxsize = bbox_get_size(bboxtype);
@@ -193,7 +256,7 @@ sptree_create(MeosType bboxtype, SPTreeKind kind)
     sptree->inner_consistent = &span_inner_consistent;
     sptree->leaf_consistent = &span_leaf_consistent;
   }
-  else /* bboxtype == T_TBOX */
+  else if (bboxtype == T_TBOX)
   {
     sptree->dims = 4;
     sptree->nodeboxsize = sizeof(TboxNode);
@@ -204,7 +267,22 @@ sptree_create(MeosType bboxtype, SPTreeKind kind)
     sptree->inner_consistent = &tbox_inner_consistent;
     sptree->leaf_consistent = &tbox_leaf_consistent;
   }
-  sptree->nchild = (kind == SPTREE_QUADTREE) ? (1 << sptree->dims) : 2;
+  else /* bboxtype == T_STBOX */
+  {
+    /* The dimensions (6 for 2D+T, 8 for 3D+T) and hence the number of children
+     * are determined at the first insertion from the Z flag of the box */
+    sptree->dims = -1;
+    sptree->nodeboxsize = sizeof(STboxNode);
+    sptree->box_dims = &stbox_box_dims;
+    sptree->get_quadrant = &stbox_get_quadrant;
+    sptree->nodebox_init = &stbox_nodebox_init;
+    sptree->quadtree_next = &stbox_quadtree_next;
+    sptree->kdtree_next = &stbox_kdtree_next;
+    sptree->inner_consistent = &stbox_inner_consistent;
+    sptree->leaf_consistent = &stbox_leaf_consistent;
+  }
+  sptree->nchild = (sptree->dims < 0) ? -1 :
+    ((kind == SPTREE_QUADTREE) ? (1 << sptree->dims) : 2);
   assert(sptree->nodeboxsize <= SPTREE_NODEBOX_MAXSIZE);
   return sptree;
 }
@@ -281,6 +359,18 @@ sptree_create_tbox(SPTreeKind kind)
   return sptree_create(T_TBOX, kind);
 }
 
+/**
+ * @ingroup meos_misc
+ * @brief Create an in-memory space-partitioning index for spatiotemporal boxes
+ * @param[in] kind Quad-tree or k-d tree
+ * @return SPTree initialized
+ */
+SPTree *
+sptree_create_stbox(SPTreeKind kind)
+{
+  return sptree_create(T_STBOX, kind);
+}
+
 /*****************************************************************************
  * Insertion
  *****************************************************************************/
@@ -311,6 +401,14 @@ spnode_make(const SPTree *sptree, const void *box, int id)
 void
 sptree_insert(SPTree *sptree, void *box, int id)
 {
+  /* Determine the deferred dimensions from the first box (STBox: 6 for 2D+T,
+   * 8 for 3D+T) and hence the number of children per node */
+  if (sptree->dims < 0)
+  {
+    sptree->dims = sptree->box_dims(box);
+    sptree->nchild = (sptree->kind == SPTREE_QUADTREE) ?
+      (1 << sptree->dims) : 2;
+  }
   SPNode **slot = &sptree->root;
   int level = 0;
   while (*slot != NULL)
@@ -414,7 +512,8 @@ ensure_sptree_temporal_compatible(const SPTree *sptree, const Temporal *temp)
   MeosType temptype = temp->temptype;
   bool compatible =
     (talpha_type(temptype) && sptree->bboxtype == T_TSTZSPAN) ||
-    (tnumber_type(temptype) && sptree->bboxtype == T_TBOX);
+    (tnumber_type(temptype) && sptree->bboxtype == T_TBOX) ||
+    (tspatial_type(temptype) && sptree->bboxtype == T_STBOX);
   if (! compatible)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
@@ -515,8 +614,11 @@ sptree_temporal_split_boxes(const SPTree *sptree, const Temporal *temp,
     return temporal_split_n_spans(temp, maxboxes, count);
   if (tnumber_type(temptype))
     return tnumber_split_n_tboxes(temp, maxboxes, count);
+  if (tgeo_type_all(temptype))
+    return tgeo_split_n_stboxes(temp, maxboxes, count);
 
-  /* No per-segment splitter: fall back to the single minimum bounding box */
+  /* No per-segment splitter (e.g. tcbuffer, tnpoint, tpose): fall back to the
+   * single minimum bounding box */
   void *result = palloc0(sptree->boxsize);
   temporal_set_bbox(temp, result);
   *count = 1;
