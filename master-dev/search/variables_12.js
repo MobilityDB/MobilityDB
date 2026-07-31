@@ -5,7 +5,7 @@ var searchData=
   ['quadbin_2',['quadbin',['../structRaquet_a462a6f39cdd328133ae72cf5fe347b9b.html#a462a6f39cdd328133ae72cf5fe347b9b',1,'Raquet']]],
   ['quadbin_5fcellops_3',['quadbin_cellops',['../meos_2src_2quadbin_2tquadbin__ops_8c_ac198225647d908e10f9dc83d4881958a.html#ac198225647d908e10f9dc83d4881958a',1,'tquadbin_ops.c']]],
   ['quadtree_5fnext_4',['quadtree_next',['../structSPTree_a3e081f826f66132ba4d70d7f5b796635.html#a3e081f826f66132ba4d70d7f5b796635',1,'SPTree']]],
-  ['query_5',['query',['../structRTreeNNCursor_ae493fc8dfb548950aa58e431ef9fd4bc.html#ae493fc8dfb548950aa58e431ef9fd4bc',1,'RTreeNNCursor']]],
+  ['query_5',['query',['../structRTreeNNCursor_ae493fc8dfb548950aa58e431ef9fd4bc.html#ae493fc8dfb548950aa58e431ef9fd4bc',1,'RTreeNNCursor::query()'],['../structSPNNCursor_aad2b05b6541a9ade7d4f3ebf68013d38.html#aad2b05b6541a9ade7d4f3ebf68013d38',1,'SPNNCursor::query()']]],
   ['qx_6',['qx',['../structGeoDistShortLine_aa9ae77fe34ac5b74952b2d777a234961.html#aa9ae77fe34ac5b74952b2d777a234961',1,'GeoDistShortLine']]],
   ['qy_7',['qy',['../structGeoDistShortLine_aefd0b592af80607625405f9ac0c7cfde.html#aefd0b592af80607625405f9ac0c7cfde',1,'GeoDistShortLine']]]
 ];
