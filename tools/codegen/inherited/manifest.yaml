@@ -2319,6 +2319,72 @@ posop_families:
   - lit: "\n"
   - posops: overright
   - lit: "\n"
+distance_families:
+- family: set
+  file: mobilitydb/sql/temporal/002_set_ops.in.sql
+  reference: true
+  begin: "CREATE FUNCTION setDistance(integer"
+  whole_file: true
+  pairs: [[integer, intset], [bigint, bigintset], [float, floatset], [date, dateset], [timestamptz, tstzset]]
+  rets: [integer, [bigint, bigint, float], float, integer, float]
+  blocks:
+  - lit: "/*****************************************************************************/\n\n"
+  - distfns: true
+  - lit: "\n"
+  - distops: true
+  - lit: "\n/*****************************************************************************/\n"
+- family: geoset
+  file: mobilitydb/sql/geo/050_geoset.in.sql
+  reference: true
+  begin: "CREATE FUNCTION setDistance(geometry,"
+  whole_file: true
+  pairs: [[geometry, geomset], [geography, geogset]]
+  rets: [float, float]
+  blocks:
+  - lit: "/*****************************************************************************/\n\n"
+  - distfns: true
+  - lit: "\n"
+  - distops: true
+  - lit: "\n/*****************************************************************************/\n"
+- family: cbufferset
+  file: mobilitydb/sql/cbuffer/201_cbufferset.in.sql
+  reference: true
+  begin: "CREATE FUNCTION setDistance(cbuffer,"
+  whole_file: true
+  pairs: [[cbuffer, cbufferset]]
+  rets: [float]
+  blocks:
+  - lit: "/*****************************************************************************/\n\n"
+  - distfns: true
+  - lit: "\n"
+  - distops: true
+  - lit: "\n/*****************************************************************************/\n"
+- family: npointset
+  file: mobilitydb/sql/npoint/301_npointset.in.sql
+  reference: true
+  begin: "CREATE FUNCTION setDistance(npoint,"
+  whole_file: true
+  pairs: [[npoint, npointset]]
+  rets: [float]
+  blocks:
+  - lit: "/*****************************************************************************/\n\n"
+  - distfns: true
+  - lit: "\n"
+  - distops: true
+  - lit: "\n/*****************************************************************************/\n"
+- family: poseset
+  file: mobilitydb/sql/pose/101_poseset.in.sql
+  reference: true
+  begin: "CREATE FUNCTION setDistance(pose,"
+  whole_file: true
+  pairs: [[pose, poseset]]
+  rets: [float]
+  blocks:
+  - lit: "/*****************************************************************************/\n\n"
+  - distfns: true
+  - lit: "\n"
+  - distops: true
+  - lit: "\n/*****************************************************************************/\n"
 conversion_families:
 - family: geo
   file: mobilitydb/sql/geo/052_tgeo.in.sql
