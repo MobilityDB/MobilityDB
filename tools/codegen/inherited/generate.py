@@ -1546,6 +1546,161 @@ def bootstrap_hash(filetext: str, fam: dict, rendered: str) -> str:
     return filetext[:start] + begin_m + rendered + end_m + filetext[end:]
 
 
+# --- Set-operations sub-family (SQL, per-family region-in-file) -------------------
+# The Set<T> set-operation surface every set type carries, in the committed file
+# order setUnion / setMinus / setIntersection: for each operation the three
+# argument directions (value op set, set op value, set op set) as CREATE FUNCTIONs
+# from the shared four-line skeleton (templates/comparisons.sql.tmpl), followed by
+# the matching operators (`+` for setUnion and `*` for setIntersection with a
+# COMMUTATOR clause, `-` for setMinus without one) from the _SETOP_OPERATOR
+# skeleton. The return types follow the direction: a union always returns the set;
+# minus returns the left argument's type; intersection returns the value type
+# unless both arguments are sets. A family declares its (value, set) type pairs
+# once (`pairs:`, one pair for a single-type file, several for 002_set_ops and
+# 050_geoset); functions and operators are grouped op-outer / pair-inner, the
+# three blocks of a pair packed and consecutive pairs separated by one blank
+# line. Dividers/blank lines between the op stanzas are `lit` blocks, concatenated
+# with no automatic separator (the comparison-surface model). Anchoring reuses the
+# hash-axis conventions (begin/end with the `/*` rule, begin_exact/end_exact,
+# whole_file for the files whose set operations are the file tail — h3indexset,
+# jsonbset, quadbinset, 400_pcset's pcpatchset; quadbinset alone ends with no
+# trailing divider, an encoded irregularity).
+def _setops_markers(family: str):
+    begin = (f"-- GENERATED-SETOPS-BEGIN {family} — "
+             "tools/codegen/inherited/generate.py from templates/comparisons.sql.tmpl;\n"
+             "-- DO NOT EDIT BY HAND; edit the template + manifest.yaml "
+             "(setop_families) and re-run.\n")
+    return begin, f"-- GENERATED-SETOPS-END {family}\n"
+
+
+# Per operation: the three directions as (signature, RETURNS, backing C symbol)
+# patterns over the family's (value {v}, set {s}) type pair. The RETURNS column is
+# the alpha-set (002_set_ops) spelling, which matches the C wrappers: every
+# direction dispatches through Setop_base_set / Setop_set_base / Setop_set_set
+# (mobilitydb/src/temporal/set_ops.c), all of which PG_RETURN_SET_P. A family
+# with `value_returns: true` instead declares the VALUE type on setMinus(value,
+# set) and on setIntersection(value, set)/(set, value) — geoset, cbufferset,
+# jsonbset, npointset, the pointcloud sets and poseset all do — mislabeling the
+# set datum those wrappers return. The override reproduces the committed
+# declarations verbatim; correcting them is an API-surface change left to its
+# own patch.
+_SETOP_FNS = {
+    "union": [
+        ("setUnion({v}, {s})", "{s}", "Union_value_set"),
+        ("setUnion({s}, {v})", "{s}", "Union_set_value"),
+        ("setUnion({s}, {s})", "{s}", "Union_set_set"),
+    ],
+    "minus": [
+        ("setMinus({v}, {s})", "{s}", "Minus_value_set"),
+        ("setMinus({s}, {v})", "{s}", "Minus_set_value"),
+        ("setMinus({s}, {s})", "{s}", "Minus_set_set"),
+    ],
+    "intersection": [
+        ("setIntersection({v}, {s})", "{s}", "Intersection_value_set"),
+        ("setIntersection({s}, {v})", "{s}", "Intersection_set_value"),
+        ("setIntersection({s}, {s})", "{s}", "Intersection_set_set"),
+    ],
+}
+# Per operation: the operator symbol, its PROCEDURE and whether it commutes.
+_SETOP_OPS = {
+    "union": ("+", "setUnion", True),
+    "minus": ("-", "setMinus", False),
+    "intersection": ("*", "setIntersection", True),
+}
+_SETOP_OPERATOR = ("CREATE OPERATOR {op} (\n"
+                   "  PROCEDURE = {proc},\n"
+                   "  LEFTARG = {l}, RIGHTARG = {r}{comm}\n"
+                   ");")
+
+
+# The directions whose RETURNS a `value_returns: true` family declares as the
+# value type: op -> direction indexes into _SETOP_FNS[op].
+_SETOP_VALUE_RETS = {"union": (), "minus": (0,), "intersection": (0, 1)}
+
+
+def _setop_fns(op: str, pairs: list, value_returns: bool = False) -> str:
+    """The three CREATE FUNCTIONs of one operation for every (value, set) pair:
+    a pair's functions packed, consecutive pairs separated by one blank line."""
+    tmpl = (TEMPLATES / "comparisons.sql.tmpl").read_text().rstrip("\n")
+    table = [(sig, "{v}" if value_returns and d in _SETOP_VALUE_RETS[op] else ret,
+              sym)
+             for d, (sig, ret, sym) in enumerate(_SETOP_FNS[op])]
+    groups = ["\n".join(tmpl.replace("{SIG}", sig.format(v=v, s=s))
+                            .replace("{RET}", ret.format(v=v, s=s))
+                            .replace("{SYM}", sym)
+                        for sig, ret, sym in table)
+              for v, s in pairs]
+    return "\n\n".join(groups) + "\n"
+
+
+def _setop_ops(op: str, pairs: list) -> str:
+    """The three operators of one operation for every (value, set) pair, grouped
+    exactly like the functions."""
+    sym, proc, commutes = _SETOP_OPS[op]
+    comm = f",\n  COMMUTATOR = {sym}" if commutes else ""
+    groups = ["\n".join(_SETOP_OPERATOR.format(op=sym, proc=proc, l=l, r=r,
+                                               comm=comm)
+                        for l, r in ((v, s), (s, v), (s, s)))
+              for v, s in pairs]
+    return "\n\n".join(groups) + "\n"
+
+
+def render_setops(fam: dict) -> str:
+    """Render one family's set-operation block from its `blocks` sequence:
+    verbatim `lit` blocks (dividers, blank lines), `setfns` operation names (the
+    three-direction CREATE FUNCTIONs over the family's `pairs`) and `setops`
+    operation names (the matching operators). Blocks concatenate with no automatic
+    separator, so the rendered text is byte-identical to the committed region."""
+    out = ""
+    for blk in fam["blocks"]:
+        if "lit" in blk:
+            out += blk["lit"]
+        elif "setfns" in blk:
+            out += _setop_fns(blk["setfns"], fam["pairs"],
+                              fam.get("value_returns", False))
+        else:
+            out += _setop_ops(blk["setops"], fam["pairs"])
+    return out
+
+
+def extract_setops(filetext: str, fam: dict) -> str:
+    """Return the committed set-operation block (marker-aware; the hash-axis
+    anchor conventions otherwise)."""
+    begin, end = _setops_markers(fam["family"])
+    if begin in filetext:
+        b = filetext.index(begin) + len(begin)
+        e = filetext.index(end)
+        return filetext[b:e]
+    i = filetext.index(fam["begin"])
+    start = i if fam.get("begin_exact") else filetext.rfind("/*", 0, i)
+    if fam.get("whole_file"):
+        return filetext[start:]
+    j = filetext.index(fam["end"])
+    return filetext[start:j if fam.get("end_exact") else filetext.rfind("/*", 0, j)]
+
+
+def splice_setops(filetext: str, family: str, rendered: str) -> str:
+    begin, end = _setops_markers(family)
+    b = filetext.index(begin) + len(begin)
+    e = filetext.index(end)
+    return filetext[:b] + rendered + filetext[e:]
+
+
+def bootstrap_setops(filetext: str, fam: dict, rendered: str) -> str:
+    """Insert the GENERATED-SETOPS markers around the family's committed hand
+    block (same anchors extract_setops uses); idempotent afterward. Not run while
+    the families are reference-only (validate-only)."""
+    i = filetext.index(fam["begin"])
+    start = i if fam.get("begin_exact") else filetext.rfind("/*", 0, i)
+    if fam.get("whole_file"):
+        end = len(filetext)
+    else:
+        j = filetext.index(fam["end"])
+        end = j if fam.get("end_exact") else filetext.rfind("/*", 0, j)
+    begin_m, end_m = _setops_markers(fam["family"])
+    return filetext[:start] + begin_m + rendered + end_m + filetext[end:]
+
+
 # --- SQL Conversions sub-family (SQL, per-family region-in-file) ------------------
 # The Temporal<T> cast surface every temporal type carries: the CREATE FUNCTION
 # conversion wrappers (timeSpan -> tstzspan, and the cross-type casts to/from the
@@ -2091,6 +2246,25 @@ def main() -> int:
                         break
                 if len(g) != len(c):
                     print(f"     line count gen={len(g)} cur={len(c)}")
+        for fam in mf.get("setop_families", []):
+            if not fam.get("reference"):
+                continue
+            p = ROOT / fam["file"]
+            gen = render_setops(fam)
+            cur = extract_setops(p.read_text(), fam) if p.exists() else ""
+            same = gen == cur
+            ok = ok and same
+            print(f"[{'OK ' if same else 'DIFF'}] self-regen setops {fam['family']} "
+                  f"-> {pathlib.Path(fam['file'])}")
+            if not same:
+                g, c = gen.splitlines(), cur.splitlines()
+                for n, (a, b) in enumerate(zip(g, c), 1):
+                    if a != b:
+                        print(f"     first diff line {n}:\n       gen: {a!r}\n"
+                              f"       cur: {b!r}")
+                        break
+                if len(g) != len(c):
+                    print(f"     line count gen={len(g)} cur={len(c)}")
         for fam in mf.get("conversion_families", []):
             if not fam.get("reference"):
                 continue
@@ -2341,6 +2515,26 @@ def main() -> int:
         else:
             p.write_text(bootstrap_hash(text, fam, render_hash(fam)))
             print(f"bootstrapped hash {fam['family']} -> {fam['file']}")
+
+    for fam in mf.get("setop_families", []):
+        # Reference families are validate-only: keep the committed hand block, never
+        # emit into .in.sql (mirrors comparisons/hash). A future non-reference family
+        # bootstraps its GENERATED-SETOPS region once, then splices.
+        if fam.get("reference"):
+            continue
+        p = ROOT / fam["file"]
+        text = p.read_text()
+        begin, _ = _setops_markers(fam["family"])
+        if args.check:
+            print(f"would {'splice' if begin in text else 'bootstrap'} setops "
+                  f"{fam['family']} -> {fam['file']}")
+            continue
+        if begin in text:
+            p.write_text(splice_setops(text, fam["family"], render_setops(fam)))
+            print(f"spliced setops {fam['family']} -> {fam['file']}")
+        else:
+            p.write_text(bootstrap_setops(text, fam, render_setops(fam)))
+            print(f"bootstrapped setops {fam['family']} -> {fam['file']}")
 
     for fam in mf.get("conversion_families", []):
         # Reference families are validate-only: keep the committed hand block, never
