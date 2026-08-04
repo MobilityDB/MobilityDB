@@ -7,9 +7,11 @@ echo "shared_preload_libraries = 'postgis-3.so'" >> "$PGDATA"/postgresql.conf
 # Perform all actions as $POSTGRES_USER
 export PGUSER="$POSTGRES_USER"
 
-# Create the 'template_mobilitydb' template db
+# Create the 'template_mobilitydb' template db from PostGIS template
 "${psql[@]}" <<- 'EOSQL'
-CREATE DATABASE template_mobilitydb IS_TEMPLATE true;
+CREATE DATABASE template_mobilitydb
+  TEMPLATE template_postgis
+  IS_TEMPLATE true;
 EOSQL
 
 # Load mobilitydb into both template_database and $POSTGRES_DB
