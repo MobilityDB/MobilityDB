@@ -182,7 +182,8 @@ pq_sendint(StringInfo buf, uint32 i, int b)
 			pq_sendint32(buf, (uint32) i);
 			break;
 		default:
-			elog(ERROR, "unsupported integer size %d", b);
+			meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "unsupported integer size %d", b);
 			break;
 	}
 }
