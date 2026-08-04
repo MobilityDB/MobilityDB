@@ -21,6 +21,7 @@ for DB in template_mobilitydb "$POSTGRES_DB"; do
   "${psql[@]}" --dbname="$DB" <<-'EOSQL'
     CREATE EXTENSION IF NOT EXISTS postgis;
     LOAD 'postgis-3.so';
+    CREATE EXTENSION IF NOT EXISTS pointcloud;
     CREATE EXTENSION IF NOT EXISTS mobilitydb;
 EOSQL
 done
