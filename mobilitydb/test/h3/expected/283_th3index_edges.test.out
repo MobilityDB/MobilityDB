@@ -1,66 +1,68 @@
 SELECT th3AreNeighborCells(
-  th3index '612544986753269759@2001-01-01',
-  th3index '612544986761658367@2001-01-01');
+  th3index '880326b885fffff@2001-01-01',
+  th3index '880326b88dfffff@2001-01-01');
       th3areneighborcells       
 --------------------------------
  t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
 SELECT th3AreNeighborCells(
-  th3index '612544986753269759@2001-01-01',
-  th3index '612544986753269759@2001-01-01');
+  th3index '880326b885fffff@2001-01-01',
+  th3index '880326b885fffff@2001-01-01');
       th3areneighborcells       
 --------------------------------
  f@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
 SELECT th3AreNeighborCells(
-  th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-02]',
-  th3index '[612544986761658367@2001-01-01, 612544986753269759@2001-01-02]');
+  th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-02]',
+  th3index '[880326b88dfffff@2001-01-01, 880326b885fffff@2001-01-02]');
                        th3areneighborcells                        
 ------------------------------------------------------------------
  [t@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
 SELECT th3GetDirectedEdgeOrigin(th3CellsToDirectedEdge(
-    th3index '612544986753269759@2001-01-01',
-    th3index '612544986761658367@2001-01-01'))
-  = th3index '612544986753269759@2001-01-01';
+    th3index '880326b885fffff@2001-01-01',
+    th3index '880326b88dfffff@2001-01-01'))
+  = th3index '880326b885fffff@2001-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
 SELECT th3GetDirectedEdgeDestination(th3CellsToDirectedEdge(
-    th3index '612544986753269759@2001-01-01',
-    th3index '612544986761658367@2001-01-01'))
-  = th3index '612544986761658367@2001-01-01';
+    th3index '880326b885fffff@2001-01-01',
+    th3index '880326b88dfffff@2001-01-01'))
+  = th3index '880326b88dfffff@2001-01-01';
  ?column? 
 ----------
  t
 (1 row)
 
 SELECT isValidDirectedEdge(th3CellsToDirectedEdge(
-  th3index '612544986753269759@2001-01-01',
-  th3index '612544986761658367@2001-01-01'));
+  th3index '880326b885fffff@2001-01-01',
+  th3index '880326b88dfffff@2001-01-01'));
       isvaliddirectededge       
 --------------------------------
  t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT isValidDirectedEdge(th3index '612544986753269759@2001-01-01');
+SELECT isValidDirectedEdge(th3index '880326b885fffff@2001-01-01');
       isvaliddirectededge       
 --------------------------------
  f@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
 SELECT isValidDirectedEdge(th3index '0@2001-01-01');
-ERROR:  h3index value 0 does not encode a valid H3 cell
-LINE 1: SELECT isValidDirectedEdge(th3index '0@2001-01-01');
-                                            ^
+      isvaliddirectededge       
+--------------------------------
+ f@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
 SELECT isValidCell(th3GetDirectedEdgeOrigin(th3CellsToDirectedEdge(
-  th3index '612544986753269759@2001-01-01',
-  th3index '612544986761658367@2001-01-01')));
+  th3index '880326b885fffff@2001-01-01',
+  th3index '880326b88dfffff@2001-01-01')));
           isvalidcell           
 --------------------------------
  t@Mon Jan 01 00:00:00 2001 PST
@@ -68,8 +70,8 @@ SELECT isValidCell(th3GetDirectedEdgeOrigin(th3CellsToDirectedEdge(
 
 SELECT isValidCell(th3GetDirectedEdgeDestination(
   th3CellsToDirectedEdge(
-    th3index '612544986753269759@2001-01-01',
-    th3index '612544986761658367@2001-01-01')));
+    th3index '880326b885fffff@2001-01-01',
+    th3index '880326b88dfffff@2001-01-01')));
           isvalidcell           
 --------------------------------
  t@Mon Jan 01 00:00:00 2001 PST
@@ -77,8 +79,8 @@ SELECT isValidCell(th3GetDirectedEdgeDestination(
 
 SELECT th3DirectedEdgeToBoundary(
   th3CellsToDirectedEdge(
-    th3index '612544986753269759@2001-01-01',
-    th3index '612544986761658367@2001-01-01')) IS NOT NULL;
+    th3index '880326b885fffff@2001-01-01',
+    th3index '880326b88dfffff@2001-01-01')) IS NOT NULL;
  ?column? 
 ----------
  t

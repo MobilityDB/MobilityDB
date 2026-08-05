@@ -18,40 +18,40 @@
 -- th3GetResolution
 -------------------------------------------------------------------------------
 
-SELECT th3GetResolution(th3index '590464338553208831@2001-01-01');
-SELECT th3GetResolution(th3index '612544986753269759@2001-01-01');
+SELECT th3GetResolution(th3index '831c02fffffffff@2001-01-01');
+SELECT th3GetResolution(th3index '880326b885fffff@2001-01-01');
 
 -- All four temporal subtypes
 SELECT th3GetResolution(th3index
-  '{590464338553208831@2001-01-01, 590464201114255359@2001-01-02}');
+  '{831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02}');
 SELECT th3GetResolution(th3index
-  '[590464338553208831@2001-01-01, 590464201114255359@2001-01-02]');
+  '[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02]');
 SELECT th3GetResolution(th3index
-  '{[590464338553208831@2001-01-01, 590464201114255359@2001-01-02],
-    [612544986753269759@2001-01-03, 612544986761658367@2001-01-04]}');
+  '{[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02],
+    [880326b885fffff@2001-01-03, 880326b88dfffff@2001-01-04]}');
 
 -------------------------------------------------------------------------------
 -- th3GetBaseCellNumber
 -------------------------------------------------------------------------------
 
-SELECT th3GetBaseCellNumber(th3index '590464338553208831@2001-01-01');
-SELECT th3GetBaseCellNumber(th3index '590464201114255359@2001-01-01');
-SELECT th3GetBaseCellNumber(th3index '612544986753269759@2001-01-01');
+SELECT th3GetBaseCellNumber(th3index '831c02fffffffff@2001-01-01');
+SELECT th3GetBaseCellNumber(th3index '831c00fffffffff@2001-01-01');
+SELECT th3GetBaseCellNumber(th3index '880326b885fffff@2001-01-01');
 
 SELECT th3GetBaseCellNumber(th3index
-  '[590464338553208831@2001-01-01, 590464201114255359@2001-01-02]');
+  '[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02]');
 
 -------------------------------------------------------------------------------
 -- isValidCell
 -------------------------------------------------------------------------------
 
-SELECT isValidCell(th3index '590464338553208831@2001-01-01');
-SELECT isValidCell(th3index '590464201114255359@2001-01-01');
+SELECT isValidCell(th3index '831c02fffffffff@2001-01-01');
+SELECT isValidCell(th3index '831c00fffffffff@2001-01-01');
 SELECT isValidCell(th3index '0@2001-01-01');
 
 -- Mixed valid + invalid in a sequence
 SELECT isValidCell(th3index
-  '{590464338553208831@2001-01-01, 0@2001-01-02, 590464201114255359@2001-01-03}');
+  '{831c02fffffffff@2001-01-01, 0@2001-01-02, 831c00fffffffff@2001-01-03}');
 
 -------------------------------------------------------------------------------
 -- th3IsResClassIii
@@ -59,20 +59,20 @@ SELECT isValidCell(th3index
 
 -- Class III alternates with resolution: even = class II, odd = class III.
 -- res 3 cells are class III (true); res 8 cells are class II (false).
-SELECT th3IsResClassIii(th3index '590464338553208831@2001-01-01');
-SELECT th3IsResClassIii(th3index '612544986753269759@2001-01-01');
+SELECT th3IsResClassIii(th3index '831c02fffffffff@2001-01-01');
+SELECT th3IsResClassIii(th3index '880326b885fffff@2001-01-01');
 
 SELECT th3IsResClassIii(th3index
-  '{590464338553208831@2001-01-01, 612544986753269759@2001-01-02}');
+  '{831c02fffffffff@2001-01-01, 880326b885fffff@2001-01-02}');
 
 -------------------------------------------------------------------------------
 -- th3IsPentagon
 -------------------------------------------------------------------------------
 
-SELECT th3IsPentagon(th3index '590464338553208831@2001-01-01');
-SELECT th3IsPentagon(th3index '590464201114255359@2001-01-01');
+SELECT th3IsPentagon(th3index '831c02fffffffff@2001-01-01');
+SELECT th3IsPentagon(th3index '831c00fffffffff@2001-01-01');
 
 SELECT th3IsPentagon(th3index
-  '{590464338553208831@2001-01-01, 590464201114255359@2001-01-02}');
+  '{831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02}');
 
 -------------------------------------------------------------------------------

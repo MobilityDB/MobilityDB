@@ -220,8 +220,8 @@ basetype_in(const char *str, MeosType type, bool end UNUSED, Datum *result)
 #if H3
     case T_H3INDEX:
     {
-      H3Index cell = h3index_in(str);
-      if (cell == (H3Index) 0)
+      H3Index cell = meos_h3index_in(str);
+      if (meos_errno())
         return false;
       *result = Int64GetDatum((int64) cell);
       return true;

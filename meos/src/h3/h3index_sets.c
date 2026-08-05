@@ -109,8 +109,15 @@ h3index_set_from_buffer(H3Index *cells, int64_t max)
  * @brief Return the set of H3 cells within grid distance k of an origin cell
  * @csqlfn #H3_grid_disk()
  */
+#if MEOS
 Set *
 h3_grid_disk(H3Index origin, int k)
+{
+  return meos_h3_grid_disk(origin, k);
+}
+#endif
+Set *
+meos_h3_grid_disk(H3Index origin, int k)
 {
   if (k < 0)
   {
@@ -142,8 +149,15 @@ h3_grid_disk(H3Index origin, int k)
  * cell
  * @csqlfn #H3_grid_ring()
  */
+#if MEOS
 Set *
 h3_grid_ring(H3Index origin, int k)
+{
+  return meos_h3_grid_ring(origin, k);
+}
+#endif
+Set *
+meos_h3_grid_ring(H3Index origin, int k)
 {
   if (k < 0)
   {
@@ -181,8 +195,15 @@ h3_grid_ring(H3Index origin, int k)
  * @brief Return the set of H3 cells on the path from a start to an end cell
  * @csqlfn #H3_grid_path_cells()
  */
+#if MEOS
 Set *
 h3_grid_path_cells(H3Index start, H3Index end)
+{
+  return meos_h3_grid_path_cells(start, end);
+}
+#endif
+Set *
+meos_h3_grid_path_cells(H3Index start, H3Index end)
 {
   int64_t size;
   if (gridPathCellsSize(start, end, &size) != E_SUCCESS)
@@ -212,8 +233,15 @@ h3_grid_path_cells(H3Index start, H3Index end)
  * @brief Return the set of children of an H3 cell at a finer resolution
  * @csqlfn #H3_cell_to_children()
  */
+#if MEOS
 Set *
 h3_cell_to_children(H3Index origin, int childRes)
+{
+  return meos_h3_cell_to_children(origin, childRes);
+}
+#endif
+Set *
+meos_h3_cell_to_children(H3Index origin, int childRes)
 {
   int64_t max;
   if (cellToChildrenSize(origin, childRes, &max) != E_SUCCESS)
@@ -239,8 +267,15 @@ h3_cell_to_children(H3Index origin, int childRes)
  * @brief Return the compacted representation of a set of H3 cells
  * @csqlfn #H3_compact_cells()
  */
+#if MEOS
 Set *
 h3_compact_cells(const Set *cells)
+{
+  return meos_h3_compact_cells(cells);
+}
+#endif
+Set *
+meos_h3_compact_cells(const Set *cells)
 {
   if (! cells)
   {
@@ -269,8 +304,15 @@ h3_compact_cells(const Set *cells)
  * @brief Return the uncompacted set of a set of H3 cells at a given resolution
  * @csqlfn #H3_uncompact_cells()
  */
+#if MEOS
 Set *
 h3_uncompact_cells(const Set *cells, int res)
+{
+  return meos_h3_uncompact_cells(cells, res);
+}
+#endif
+Set *
+meos_h3_uncompact_cells(const Set *cells, int res)
 {
   if (! cells)
   {
@@ -312,8 +354,15 @@ h3_uncompact_cells(const Set *cells, int res)
  * @brief Return the set of directed edges originating from an H3 cell
  * @csqlfn #H3_origin_to_directed_edges()
  */
+#if MEOS
 Set *
 h3_origin_to_directed_edges(H3Index origin)
+{
+  return meos_h3_origin_to_directed_edges(origin);
+}
+#endif
+Set *
+meos_h3_origin_to_directed_edges(H3Index origin)
 {
   /* Always 6 slots; pentagons fill only 5 (one slot is 0). */
   H3Index *edges = palloc0(6 * sizeof(H3Index));
@@ -332,8 +381,15 @@ h3_origin_to_directed_edges(H3Index origin)
  * @brief Return the set of vertexes of an H3 cell
  * @csqlfn #H3_cell_to_vertexes()
  */
+#if MEOS
 Set *
 h3_cell_to_vertexes(H3Index cell)
+{
+  return meos_h3_cell_to_vertexes(cell);
+}
+#endif
+Set *
+meos_h3_cell_to_vertexes(H3Index cell)
 {
   /* Always 6 slots; pentagons fill only 5 (one slot is 0). */
   H3Index *vertexes = palloc0(6 * sizeof(H3Index));
@@ -356,8 +412,15 @@ h3_cell_to_vertexes(H3Index cell)
  * @brief Return the set of icosahedron face indexes intersected by an H3 cell
  * @csqlfn #H3_get_icosahedron_faces()
  */
+#if MEOS
 Set *
 h3_get_icosahedron_faces(H3Index cell)
+{
+  return meos_h3_get_icosahedron_faces(cell);
+}
+#endif
+Set *
+meos_h3_get_icosahedron_faces(H3Index cell)
 {
   int maxFaces;
   if (maxFaceCount(cell, &maxFaces) != E_SUCCESS)

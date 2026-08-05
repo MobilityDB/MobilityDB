@@ -97,7 +97,8 @@ jobs:
           # EXTENSION pointcloud, pulled in before mobilitydb), provided by
           # postgresql-${VER}-pointcloud for the supported PG versions.
           sudo apt-get -y install lcov libh3-dev \
-            postgresql-${{ matrix.psql }}-pointcloud
+            postgresql-${{ matrix.psql }}-pointcloud \
+            postgresql-${{ matrix.psql }}-h3
 
       - name: Locate libh3 on disk and pin its paths
         if: matrix.coverage == '1'

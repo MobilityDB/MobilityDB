@@ -20,23 +20,23 @@
 -- startValue
 -------------------------------------------------------------------------------
 
-SELECT startValue(th3index '590464338553208831@2001-01-01');
+SELECT startValue(th3index '831c02fffffffff@2001-01-01');
 SELECT startValue(th3index
-  '{590464338553208831@2001-01-01, 590464201114255359@2001-01-02}');
+  '{831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02}');
 SELECT startValue(th3index
-  '[590464338553208831@2001-01-01, 590464201114255359@2001-01-02]');
+  '[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02]');
 
 -------------------------------------------------------------------------------
 -- endValue
 -------------------------------------------------------------------------------
 
-SELECT endValue(th3index '590464338553208831@2001-01-01');
+SELECT endValue(th3index '831c02fffffffff@2001-01-01');
 SELECT endValue(th3index
-  '{590464338553208831@2001-01-01, 590464201114255359@2001-01-02}');
+  '{831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02}');
 
 -- On a constant single-value sequence, start = end
-SELECT startValue(th3index '590464338553208831@2001-01-01')
-  = endValue(th3index '590464338553208831@2001-01-01');
+SELECT startValue(th3index '831c02fffffffff@2001-01-01')
+  = endValue(th3index '831c02fffffffff@2001-01-01');
 
 -------------------------------------------------------------------------------
 -- valueN
@@ -44,44 +44,44 @@ SELECT startValue(th3index '590464338553208831@2001-01-01')
 
 -- 1-indexed
 SELECT valueN(th3index
-  '{590464338553208831@2001-01-01, 590464201114255359@2001-01-02}', 1);
+  '{831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02}', 1);
 SELECT valueN(th3index
-  '{590464338553208831@2001-01-01, 590464201114255359@2001-01-02}', 2);
+  '{831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02}', 2);
 
 -- Out-of-range returns NULL (not an error)
-SELECT valueN(th3index '590464338553208831@2001-01-01', 99);
+SELECT valueN(th3index '831c02fffffffff@2001-01-01', 99);
 
 -------------------------------------------------------------------------------
 -- getValues
 -------------------------------------------------------------------------------
 
 -- Single-instant: a 1-element h3indexset
-SELECT getValues(th3index '590464338553208831@2001-01-01');
+SELECT getValues(th3index '831c02fffffffff@2001-01-01');
 
 -- Duplicates collapse (same value at two instants)
 SELECT getValues(th3index
-  '{590464338553208831@2001-01-01, 590464338553208831@2001-01-02}');
+  '{831c02fffffffff@2001-01-01, 831c02fffffffff@2001-01-02}');
 
 -- Three distinct values
 SELECT getValues(th3index
-  '[590464338553208831@2001-01-01, 590464201114255359@2001-01-02,
-    612544986753269759@2001-01-03]');
+  '[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02,
+    880326b885fffff@2001-01-03]');
 
 -------------------------------------------------------------------------------
 -- valueAtTimestamp
 -------------------------------------------------------------------------------
 
-SELECT valueAtTimestamp(th3index '590464338553208831@2001-01-01',
+SELECT valueAtTimestamp(th3index '831c02fffffffff@2001-01-01',
   '2001-01-01');
 
 -- At a time inside a step-interp sequence — returns the prior instant's value
 SELECT valueAtTimestamp(th3index
-  '[590464338553208831@2001-01-01, 590464201114255359@2001-01-05]',
+  '[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-05]',
   '2001-01-03');
 
 -- Before the start of a sequence — returns NULL
 SELECT valueAtTimestamp(th3index
-  '[590464338553208831@2001-01-01, 590464201114255359@2001-01-05]',
+  '[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-05]',
   '2000-12-31');
 
 -------------------------------------------------------------------------------

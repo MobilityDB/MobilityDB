@@ -72,4 +72,23 @@
  * h3_cell_to_vertexes / h3_get_icosahedron_faces are public cell-set
  * operations declared in the umbrella header meos_h3.h (included above). */
 
+/*****************************************************************************
+ * Internal twins of the public cell-set functions
+ *
+ * The bare names collide with the C symbols of the h3-pg PostgreSQL
+ * extension; the MobilityDB extension build must not export them, so
+ * internal call sites use the meos_-prefixed twins and the bare names
+ * are compiled only under MEOS (see h3index_sets.c).
+ *****************************************************************************/
+
+extern Set *meos_h3_grid_disk(H3Index origin, int k);
+extern Set *meos_h3_grid_ring(H3Index origin, int k);
+extern Set *meos_h3_grid_path_cells(H3Index start, H3Index end);
+extern Set *meos_h3_cell_to_children(H3Index origin, int childRes);
+extern Set *meos_h3_compact_cells(const Set *cells);
+extern Set *meos_h3_uncompact_cells(const Set *cells, int res);
+extern Set *meos_h3_origin_to_directed_edges(H3Index origin);
+extern Set *meos_h3_cell_to_vertexes(H3Index cell);
+extern Set *meos_h3_get_icosahedron_faces(H3Index cell);
+
 #endif /* __H3INDEX_SETS_H__ */

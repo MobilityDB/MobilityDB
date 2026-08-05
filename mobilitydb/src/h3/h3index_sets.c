@@ -68,7 +68,7 @@ H3_grid_disk(PG_FUNCTION_ARGS)
 {
   H3Index origin = PG_GETARG_H3INDEX(0);
   int k = PG_GETARG_INT32(1);
-  Set *result = h3_grid_disk(origin, k);
+  Set *result = meos_h3_grid_disk(origin, k);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_SET_P(result);
@@ -86,7 +86,7 @@ H3_grid_ring(PG_FUNCTION_ARGS)
 {
   H3Index origin = PG_GETARG_H3INDEX(0);
   int k = PG_GETARG_INT32(1);
-  Set *result = h3_grid_ring(origin, k);
+  Set *result = meos_h3_grid_ring(origin, k);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_SET_P(result);
@@ -104,7 +104,7 @@ H3_grid_path_cells(PG_FUNCTION_ARGS)
 {
   H3Index start = PG_GETARG_H3INDEX(0);
   H3Index end = PG_GETARG_H3INDEX(1);
-  Set *result = h3_grid_path_cells(start, end);
+  Set *result = meos_h3_grid_path_cells(start, end);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_SET_P(result);
@@ -126,7 +126,7 @@ H3_cell_to_children(PG_FUNCTION_ARGS)
 {
   H3Index origin = PG_GETARG_H3INDEX(0);
   int child_res = PG_GETARG_INT32(1);
-  Set *result = h3_cell_to_children(origin, child_res);
+  Set *result = meos_h3_cell_to_children(origin, child_res);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_SET_P(result);
@@ -143,7 +143,7 @@ Datum
 H3_compact_cells(PG_FUNCTION_ARGS)
 {
   Set *cells = PG_GETARG_SET_P(0);
-  Set *result = h3_compact_cells(cells);
+  Set *result = meos_h3_compact_cells(cells);
   PG_FREE_IF_COPY(cells, 0);
   if (! result)
     PG_RETURN_NULL();
@@ -163,7 +163,7 @@ H3_uncompact_cells(PG_FUNCTION_ARGS)
 {
   Set *cells = PG_GETARG_SET_P(0);
   int res = PG_GETARG_INT32(1);
-  Set *result = h3_uncompact_cells(cells, res);
+  Set *result = meos_h3_uncompact_cells(cells, res);
   PG_FREE_IF_COPY(cells, 0);
   if (! result)
     PG_RETURN_NULL();
@@ -185,7 +185,7 @@ Datum
 H3_origin_to_directed_edges(PG_FUNCTION_ARGS)
 {
   H3Index origin = PG_GETARG_H3INDEX(0);
-  Set *result = h3_origin_to_directed_edges(origin);
+  Set *result = meos_h3_origin_to_directed_edges(origin);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_SET_P(result);
@@ -202,7 +202,7 @@ Datum
 H3_cell_to_vertexes(PG_FUNCTION_ARGS)
 {
   H3Index cell = PG_GETARG_H3INDEX(0);
-  Set *result = h3_cell_to_vertexes(cell);
+  Set *result = meos_h3_cell_to_vertexes(cell);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_SET_P(result);
@@ -223,7 +223,7 @@ Datum
 H3_get_icosahedron_faces(PG_FUNCTION_ARGS)
 {
   H3Index cell = PG_GETARG_H3INDEX(0);
-  Set *result = h3_get_icosahedron_faces(cell);
+  Set *result = meos_h3_get_icosahedron_faces(cell);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_SET_P(result);

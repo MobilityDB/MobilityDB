@@ -20,26 +20,26 @@
 -------------------------------------------------------------------------------
 
 -- A hexagon has six vertices (numbered 0..5)
-SELECT th3CellToVertex(th3index '612544986753269759@2001-01-01', 0)
+SELECT th3CellToVertex(th3index '880326b885fffff@2001-01-01', 0)
   IS NOT NULL;
-SELECT th3CellToVertex(th3index '612544986753269759@2001-01-01', 5)
+SELECT th3CellToVertex(th3index '880326b885fffff@2001-01-01', 5)
   IS NOT NULL;
 
 -- All four temporal subtypes
 SELECT th3CellToVertex(th3index
-  '{612544986753269759@2001-01-01, 612544986761658367@2001-01-02}', 0)
+  '{880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-02}', 0)
   IS NOT NULL;
 SELECT th3CellToVertex(th3index
-  '[612544986753269759@2001-01-01, 612544986761658367@2001-01-02]', 0)
+  '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-02]', 0)
   IS NOT NULL;
 
 -- Distinct vertex numbers must yield distinct vertices for the same cell
-SELECT th3CellToVertex(th3index '612544986753269759@2001-01-01', 0)
-  <> th3CellToVertex(th3index '612544986753269759@2001-01-01', 1);
+SELECT th3CellToVertex(th3index '880326b885fffff@2001-01-01', 0)
+  <> th3CellToVertex(th3index '880326b885fffff@2001-01-01', 1);
 
 -- Out-of-range vertex number must error
 /* Errors */
-SELECT th3CellToVertex(th3index '612544986753269759@2001-01-01', 9);
+SELECT th3CellToVertex(th3index '880326b885fffff@2001-01-01', 9);
 
 -------------------------------------------------------------------------------
 -- isValidVertex
@@ -47,10 +47,10 @@ SELECT th3CellToVertex(th3index '612544986753269759@2001-01-01', 9);
 
 -- A freshly built vertex is valid
 SELECT isValidVertex(
-  th3CellToVertex(th3index '612544986753269759@2001-01-01', 0));
+  th3CellToVertex(th3index '880326b885fffff@2001-01-01', 0));
 
 -- A plain cell is not a valid vertex
-SELECT isValidVertex(th3index '612544986753269759@2001-01-01');
+SELECT isValidVertex(th3index '880326b885fffff@2001-01-01');
 SELECT isValidVertex(th3index '0@2001-01-01');
 
 -------------------------------------------------------------------------------
@@ -58,7 +58,7 @@ SELECT isValidVertex(th3index '0@2001-01-01');
 -------------------------------------------------------------------------------
 
 SELECT th3VertexToLatlng(
-  th3CellToVertex(th3index '612544986753269759@2001-01-01', 0))
+  th3CellToVertex(th3index '880326b885fffff@2001-01-01', 0))
   IS NOT NULL;
 
 -------------------------------------------------------------------------------

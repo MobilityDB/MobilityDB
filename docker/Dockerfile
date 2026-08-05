@@ -14,6 +14,8 @@ RUN apt-get update \
         libgsl-dev \
         libgeos-dev \
         postgresql-server-dev-${PG_MAJOR} \
+        libh3-dev \
+        libh3-1 \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy local MobilityDB source instead of downloading
@@ -25,7 +27,7 @@ RUN mkdir -p build \
     && cd build \
     && rm -rf * \
     && cmake -DCMAKE_BUILD_TYPE=Release \
-             -DNPOINT=on -DCBUFFER=on -DPOSE=on .. \
+             -DNPOINT=on -DCBUFFER=on -DPOSE=on -DH3=on .. \
     && make -j$(nproc) \
     && make install
 
@@ -43,6 +45,9 @@ LABEL org.opencontainers.image.source="https://github.com/MobilityDB/MobilityDB"
 # Install runtime dependencies only
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
+        postgresql-${PG_MAJOR}-h3 \
+        postgresql-${PG_MAJOR}-pointcloud \
+        libh3-1 \
         libproj-dev \
         libjson-c-dev \
         libgsl-dev \
