@@ -35,18 +35,35 @@
 #include <meos.h>
 
 /*****************************************************************************
- * Struct-tail padding
+ * Reserved tail
  *
- * Same phenomenon as pcpoint.c — pgpointcloud's @c pc_patch_serialize*
- * allocates @c sizeof(SERIALIZED_PATCH) - 1 + <packed-points size> and
- * leaves the struct-tail padding uninitialized. For SERIALIZED_PATCH:
+ * Same phenomenon as pcpoint.c, but the amount reserved is NOT the tail
+ * padding of the structure. A serialized patch is sized as
+ *
+ *   BUFFERALIGN(sizeof(SERIALIZED_PATCH)) - 1 + pc_stats_size + <data size>
+ *
+ * (upstream @c pc_patch_serialize, mirrored by @c meos_pc_patch_serialize in
+ * pgsql_compat.c), and the statistics and packed points are written from
+ * @c offsetof(SERIALIZED_PATCH, data) onwards. For SERIALIZED_PATCH:
  *
  *   { uint32_t size; uint32_t pcid; uint32_t compression;
  *     uint32_t npoints; PCBOUNDS bounds; uint8_t data[1]; }
  *
- * PCBOUNDS is 4 doubles (alignment 8), so @c data[1] sits at offset 48
- * and the struct rounds to 56 — 7 bytes of tail padding on x86_64.
- * Truncate @c VARSIZE by that amount for cmp/hash.
+ * PCBOUNDS is 4 doubles (alignment 8), so @c data[1] sits at offset 48 and
+ * the structure rounds to 56. BUFFERALIGN rounds that up to 64, so the bytes
+ * that are reserved but never written are
+ *
+ *   BUFFERALIGN(sizeof) - 1 - offsetof(data)
+ *
+ * which is 15, not the 7 the structure alone accounts for. The buffer comes
+ * from @c palloc, so those bytes hold whatever the heap held before; deriving
+ * the amount from the structure leaves 8 of them inside the compared prefix
+ * and makes @c pcpatch_cmp and @c pcpatch_hash depend on uninitialized
+ * memory. Truncate @c VARSIZE by the reserved amount for cmp/hash.
+ *
+ * The point counterpart needs no such rounding: a serialized point is sized
+ * as @c sizeof(SERIALIZED_POINT) - 1 + schema->size, with no BUFFERALIGN, so
+ * pcpoint.c measures its reserve from the structure alone.
  *****************************************************************************/
 
 /**
@@ -63,13 +80,14 @@ typedef struct
 } PcpatchLayoutShadow;
 
 #define PCPATCH_TAIL_PADDING \
-  (sizeof(PcpatchLayoutShadow) - offsetof(PcpatchLayoutShadow, data) - 1)
+  (BUFFERALIGN(sizeof(PcpatchLayoutShadow)) - 1 - \
+   offsetof(PcpatchLayoutShadow, data))
 
 /**
  * @brief Return the comparable byte length of a pcpatch.
- * @details Strips the trailing zero-padding that pgpointcloud's varlena
- * layout reserves for the in-place data area, so that
- * @c pcpatch_cmp / @c pcpatch_hash do not depend on padding bytes.
+ * @details Strips the trailing bytes that pgpointcloud's varlena layout
+ * reserves past the statistics and packed points, so that
+ * @c pcpatch_cmp / @c pcpatch_hash do not depend on them.
  */
 static inline size_t
 pcpatch_meaningful_size(const Pcpatch *pa)
@@ -181,6 +199,11 @@ pcpatch_hex_in(const char *str)
  * @brief Return the textual (hex-WKB) representation of a pcpatch
  * @param[in] pa Patch
  * @param[in] maxdd Unused (kept for API uniformity with set_out)
+ * @note The bytes past the meaningful prefix are the reserved tail described
+ * at the top of this file, which the allocation leaves uninitialized. They
+ * are emitted as zeros so that two patches holding the same points always
+ * print the same string, keeping the full @c VARSIZE length that the
+ * deserializer's size check expects.
  */
 char *
 pcpatch_hex_out(const Pcpatch *pa, int maxdd)
@@ -188,10 +211,14 @@ pcpatch_hex_out(const Pcpatch *pa, int maxdd)
   (void) maxdd;
   assert(pa);
   size_t byte_len = VARSIZE(pa);
+  size_t meaningful = pcpatch_meaningful_size(pa);
   size_t hex_len = byte_len * 2;
   char *result = palloc(hex_len + 1);
-  for (size_t i = 0; i < byte_len; i++)
+  size_t i = 0;
+  for (; i < meaningful; i++)
     deparse_hex(((const uint8_t *) pa)[i], result + 2 * i);
+  for (; i < byte_len; i++)
+    deparse_hex(0, result + 2 * i);
   result[hex_len] = '\0';
   return result;
 }
