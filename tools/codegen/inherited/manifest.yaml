@@ -5595,3 +5595,127 @@ aggregate_families:
     - {sig: "temporal_app_tseq_transfn(tpcpoint, tpcpoint)", ret: "tpcpoint", sym: "Temporal_app_tseq_transfn", strict: false, pre: "-- The function is not STRICT\n"}
     - {sig: "temporal_app_tseq_transfn(tpcpatch, tpcpatch)", ret: "tpcpatch", sym: "Temporal_app_tseq_transfn", strict: false}
   - lit: "\nCREATE AGGREGATE appendSequence(tpcpoint) (\n  SFUNC = temporal_app_tseq_transfn,\n  STYPE = tpcpoint,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\nCREATE AGGREGATE appendSequenceAgg(tpcpoint) (\n  SFUNC = temporal_app_tseq_transfn,\n  STYPE = tpcpoint,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\nCREATE AGGREGATE appendSequence(tpcpatch) (\n  SFUNC = temporal_app_tseq_transfn,\n  STYPE = tpcpatch,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\nCREATE AGGREGATE appendSequenceAgg(tpcpatch) (\n  SFUNC = temporal_app_tseq_transfn,\n  STYPE = tpcpatch,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\n/*****************************************************************************/\n"
+
+tiling_families:
+- family: geo
+  file: mobilitydb/sql/geo/052_tgeo.in.sql
+  reference: true
+  begin: "\n * Multidimensional tiling\n"
+  end: "\n * Comparison functions and B-tree indexing\n"
+  blocks:
+  - lit: "/******************************************************************************\n * Multidimensional tiling\n ******************************************************************************/\n\nCREATE TYPE time_tgeom AS (\n  time timestamptz,\n  tgeom tgeometry\n);\nCREATE TYPE time_tgeog AS (\n  time timestamptz,\n  tgeog tgeography\n);\n\n"
+  - fns:
+    - {sig: "timeSplit(tgeometry, bin_width interval,\n    origin timestamptz DEFAULT '2000-01-03')", ret: "setof time_tgeom", sym: "Temporal_time_split"}
+    - {sig: "timeSplit(tgeography, bin_width interval,\n    origin timestamptz DEFAULT '2000-01-03')", ret: "setof time_tgeog", sym: "Temporal_time_split"}
+  - lit: "\n"
+- family: tpoint
+  file: mobilitydb/sql/geo/052_tpoint.in.sql
+  reference: true
+  begin: "\n * Multidimensional tiling\n"
+  end: "\n * Comparison functions and B-tree indexing\n"
+  blocks:
+  - lit: "/******************************************************************************\n * Multidimensional tiling\n ******************************************************************************/\n\nCREATE TYPE time_tgeompoint AS (\n  time timestamptz,\n  temp tgeompoint\n);\nCREATE TYPE time_tgeogpoint AS (\n  time timestamptz,\n  temp tgeogpoint\n);\n\n"
+  - fns:
+    - {sig: "timeSplit(tgeompoint, bin_width interval,\n    origin timestamptz DEFAULT '2000-01-03')", ret: "setof time_tgeompoint", sym: "Temporal_time_split"}
+    - {sig: "timeSplit(tgeogpoint, bin_width interval,\n    origin timestamptz DEFAULT '2000-01-03')", ret: "setof time_tgeogpoint", sym: "Temporal_time_split"}
+  - lit: "\n"
+- family: cbuffer
+  file: mobilitydb/sql/cbuffer/202_tcbuffer.in.sql
+  reference: true
+  begin: "\n * Multidimensional tiling\n"
+  end: "\n * Comparison functions and B-tree indexing\n"
+  blocks:
+  - lit: "/*****************************************************************************\n * Multidimensional tiling\n *****************************************************************************/\n\nCREATE TYPE time_tcbuffer AS (\n  time timestamptz,\n  temp tcbuffer\n);\n\n"
+  - fns:
+    - {sig: "timeSplit(tcbuffer, bin_width interval,\n    origin timestamptz DEFAULT '2000-01-03')", ret: "setof time_tcbuffer", sym: "Temporal_time_split"}
+  - lit: "\n"
+- family: json
+  file: mobilitydb/sql/json/452_tjsonb.in.sql
+  reference: true
+  begin: "\n * Multidimensional tiling\n"
+  end: "\n * Comparison functions and B-tree indexing\n"
+  blocks:
+  - lit: "/*****************************************************************************\n * Multidimensional tiling\n *****************************************************************************/\n\nCREATE TYPE time_tjsonb AS (\n  time timestamptz,\n  temp tjsonb\n);\n\n"
+  - fns:
+    - {sig: "timeSplit(tjsonb, bin_width interval,\n    origin timestamptz DEFAULT '2000-01-03')", ret: "setof time_tjsonb", sym: "Temporal_time_split"}
+  - lit: "\n/*****************************************************************************/\n\n-- spans()\nCREATE FUNCTION spans(tjsonb)\n  RETURNS tstzspan[]\n  AS 'MODULE_PATHNAME', 'Temporal_spans'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n-- splitNSpans()\nCREATE FUNCTION splitNSpans(tjsonb, integer)\n  RETURNS tstzspan[]\n  AS 'MODULE_PATHNAME', 'Temporal_split_n_spans'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n-- splitEachNSpans()\nCREATE FUNCTION splitEachNSpans(tjsonb, integer)\n  RETURNS tstzspan[]\n  AS 'MODULE_PATHNAME', 'Temporal_split_each_n_spans'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n"
+- family: npoint
+  file: mobilitydb/sql/npoint/302_tnpoint.in.sql
+  reference: true
+  begin: "\n * Multidimensional tiling\n"
+  end: "\n * Comparison functions and B-tree indexing\n"
+  blocks:
+  - lit: "/******************************************************************************\n * Multidimensional tiling\n ******************************************************************************/\n\nCREATE TYPE time_tnpoint AS (\n  time timestamptz,\n  temp tnpoint\n);\n\n"
+  - fns:
+    - {sig: "timeSplit(tnpoint, bin_width interval,\n    origin timestamptz DEFAULT '2000-01-03')", ret: "setof time_tnpoint", sym: "Temporal_time_split"}
+  - lit: "\n"
+- family: pose
+  file: mobilitydb/sql/pose/102_tpose.in.sql
+  reference: true
+  begin: "\n * Multidimensional tiling\n"
+  end: "\n * Comparison functions and B-tree indexing\n"
+  blocks:
+  - lit: "/******************************************************************************\n * Multidimensional tiling\n ******************************************************************************/\n\nCREATE TYPE time_tpose AS (\n  time timestamptz,\n  temp tpose\n);\n\n"
+  - fns:
+    - {sig: "timeSplit(tpose, bin_width interval,\n    origin timestamptz DEFAULT '2000-01-03')", ret: "setof time_tpose", sym: "Temporal_time_split"}
+  - lit: "\n"
+- family: rgeo
+  file: mobilitydb/sql/rgeo/150_trgeo.in.sql
+  reference: true
+  begin: "\n * Multidimensional tiling\n"
+  end: "\n * Comparison functions and B-tree indexing\n"
+  blocks:
+  - lit: "/******************************************************************************\n * Multidimensional tiling\n ******************************************************************************/\n\nCREATE TYPE time_trgeometry AS (\n  time timestamptz,\n  temp trgeometry\n);\n\n"
+  - fns:
+    - {sig: "timeSplit(trgeometry, bucket_width interval,\n    origin timestamptz DEFAULT '2000-01-03')", ret: "setof time_trgeometry", sym: "Temporal_time_split"}
+  - lit: "\n"
+- family: tgeo_tile
+  file: mobilitydb/sql/geo/058_tgeo_tile.in.sql
+  reference: true
+  begin: "@brief Functions for spatial and spatiotemporal tiles"
+  end: ""
+  blocks:
+  - lit: "/**\n * @file\n * @brief Functions for spatial and spatiotemporal tiles\n */\n\n/******************************************************************************\n * Multidimensional tiling\n ******************************************************************************/\n\n"
+  - fns:
+    - {sig: "spaceBoxes(tgeometry, xsize float, ysize float, zsize float,\n    sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "stbox[]", sym: "Tgeo_space_boxes"}
+    - {sig: "spaceBoxes(tgeometry, xsize float,\n    sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "stbox[]", sql: "SELECT @extschema@.spaceBoxes($1, $2, $2, $2, $3, $4)"}
+    - {sig: "spaceBoxes(tgeometry, xsize float, ysize float,\n    sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "stbox[]", sql: "SELECT @extschema@.spaceBoxes($1, $2, $3, $2, $4, $5)"}
+  - lit: "\n"
+  - fns:
+    - {sig: "timeBoxes(tgeometry, interval,\n    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "stbox[]", sym: "Tgeo_time_boxes"}
+  - lit: "\n"
+  - fns:
+    - {sig: "spaceTimeBoxes(tgeometry, xsize float, ysize float,\n    zsize float, interval, sorigin geometry DEFAULT 'Point(0 0 0)',\n    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "stbox[]", sym: "Tgeo_space_time_boxes"}
+    - {sig: "spaceTimeBoxes(tgeometry, xsize float, interval,\n    sorigin geometry DEFAULT 'Point(0 0 0)',\n    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "stbox[]", sql: "SELECT @extschema@.spaceTimeBoxes($1, $2, $2, $2, $3, $4, $5, $6)"}
+    - {sig: "spaceTimeBoxes(tgeometry, xsize float, ysize float, interval,\n    sorigin geometry DEFAULT 'Point(0 0 0)',\n    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "stbox[]", sql: "SELECT @extschema@.spaceTimeBoxes($1, $2, $3, $2, $4, $5, $6, $7)"}
+  - lit: "\n/*****************************************************************************/\n\nCREATE TYPE point_tgeo AS (\n  point geometry,\n  tgeo tgeometry\n);\n\n"
+  - fns:
+    - {sig: "spaceSplit(tgeometry, xsize float, ysize float, zsize float,\n    sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "SETOF point_tgeo", sym: "Tgeo_space_split"}
+    - {sig: "spaceSplit(tgeometry, size float,\n    sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "SETOF point_tgeo", sql: "SELECT @extschema@.spaceSplit($1, $2, $2, $2, $3, $4)"}
+    - {sig: "spaceSplit(tgeometry, sizeX float, sizeY float,\n    sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "SETOF point_tgeo", sql: "SELECT @extschema@.spaceSplit($1, $2, $3, $2, $4, $5)"}
+  - lit: "\nCREATE TYPE point_time_tgeo AS (\n  point geometry,\n  time timestamptz,\n  tgeo tgeometry\n);\n\n"
+  - fns:
+    - {sig: "spaceTimeSplit(tgeometry, xsize float, ysize float,\n    zsize float, interval, sorigin geometry DEFAULT 'Point(0 0 0)',\n    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "SETOF point_time_tgeo", sym: "Tgeo_space_time_split"}
+    - {sig: "spaceTimeSplit(tgeometry, size float, interval,\n    sorigin geometry DEFAULT 'Point(0 0 0)',\n    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "SETOF point_time_tgeo", sql: "SELECT @extschema@.spaceTimeSplit($1, $2, $2, $2, $3, $4, $5, $6)"}
+    - {sig: "spaceTimeSplit(tgeometry, xsize float, ysize float, interval,\n    sorigin geometry DEFAULT 'Point(0 0 0)',\n    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "SETOF point_time_tgeo", sql: "SELECT @extschema@.spaceTimeSplit($1, $2, $3, $2, $4, $5, $6, $7)"}
+  - lit: "\n/*****************************************************************************/"
+- family: trgeo_tile
+  file: mobilitydb/sql/rgeo/158_trgeo_tile.in.sql
+  reference: true
+  begin: "@brief Spatial and spatiotemporal grid tiling for temporal rigid geometries"
+  end: ""
+  blocks:
+  - lit: "/**\n * @file\n * @brief Spatial and spatiotemporal grid tiling for temporal rigid geometries\n */\n\n"
+  - fns:
+    - {sig: "spaceBoxes(trgeometry, xsize float, ysize float, zsize float,\n    sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "stbox[]", sym: "Trgeometry_space_boxes"}
+    - {sig: "spaceBoxes(trgeometry, xsize float,\n    sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "stbox[]", sql: "SELECT @extschema@.spaceBoxes($1, $2, $2, $2, $3, $4)"}
+    - {sig: "spaceBoxes(trgeometry, xsize float, ysize float,\n    sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "stbox[]", sql: "SELECT @extschema@.spaceBoxes($1, $2, $3, $2, $4, $5)"}
+  - lit: "\n"
+  - fns:
+    - {sig: "timeBoxes(trgeometry, interval,\n    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "stbox[]", sym: "Trgeo_time_boxes"}
+  - lit: "\n"
+  - fns:
+    - {sig: "spaceTimeBoxes(trgeometry, xsize float, ysize float,\n    zsize float, interval, sorigin geometry DEFAULT 'Point(0 0 0)',\n    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "stbox[]", sym: "Trgeometry_space_time_boxes"}
+    - {sig: "spaceTimeBoxes(trgeometry, xsize float, interval,\n    sorigin geometry DEFAULT 'Point(0 0 0)',\n    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "stbox[]", sql: "SELECT @extschema@.spaceTimeBoxes($1, $2, $2, $2, $3, $4, $5, $6)"}
+    - {sig: "spaceTimeBoxes(trgeometry, xsize float, ysize float, interval,\n    sorigin geometry DEFAULT 'Point(0 0 0)',\n    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "stbox[]", sql: "SELECT @extschema@.spaceTimeBoxes($1, $2, $3, $2, $4, $5, $6, $7)"}
+  - lit: "\n/*****************************************************************************/"

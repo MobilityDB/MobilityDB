@@ -2747,6 +2747,122 @@ def bootstrap_aggregates(filetext: str, fam: dict, rendered: str) -> str:
     return filetext[:start] + begin_m + rendered + end_m + filetext[end:]
 
 
+# --- SQL Multidimensional tiling sub-family (SQL, region-in-file or whole-file) ---
+# The TSpatial<T> tiling surface: the in-file "Multidimensional tiling" section every
+# spatial family carries (the time_<temp> composite type + the timeSplit SRF wired to
+# the generic Temporal_time_split kernel) and, for the families with a dedicated
+# *_tile.in.sql file, the whole spaceBoxes/timeBoxes/spaceTimeBoxes box surface and
+# the spaceSplit/spaceTimeSplit SRFs with their composite types — wired to the
+# Tgeo_*/Trgeometry_* tiling kernels, the size-collapsing overloads delegating via
+# `LANGUAGE SQL` one-liners. Every CREATE FUNCTION is the SAME four-line skeleton
+# (templates/tiling.sql.tmpl); only the signature {SIG} (which may span lines),
+# return {RET}, body {AS} (a C symbol `'MODULE_PATHNAME', '<sym>'` for a `sym` entry
+# or a `'SELECT ...'` delegation for a `sql` entry, which also selects {LANG} C/SQL)
+# and an optional leading comment ({PRE}) differ — so ONE skeleton emits every
+# function; tiling functions are uniformly `IMMUTABLE PARALLEL SAFE STRICT`. The
+# CREATE TYPE composite-type statements, section banners and blank-line separators
+# are reproduced BYTE-EXACT via `lit` blocks in the manifest, exactly as the
+# conversion surface reproduces its CREATE CASTs; the skeleton-shaped functions go in
+# `fns` blocks. Blocks concatenate with NO automatic separator, so the rendered text
+# is byte-identical to the committed region — the conversion-surface model.
+#
+# `--validate` extracts the committed hand block by section-header ANCHORS
+# (marker-aware, mirroring extract_conversions: sliced by GENERATED-TILING markers
+# once they exist, else from the `/*` opening the "Multidimensional tiling" banner
+# down to the `/*` of the Comparison section — or to EOF for a `whole_file` family
+# owning its dedicated *_tile.in.sql file), so the deployed .in.sql files are
+# untouched while the template is proven. FIVE tiling homes are intentionally absent
+# from the manifest because they drift from the tgeo reference shape: 058_tpoint_tile
+# spells its LANGUAGE clause `IMMUTABLE STRICT PARALLEL SAFE` (STRICT mid-clause),
+# 119_tpose_tile and 445_tpcpoint_tile delegate through dollar-quoted
+# `LANGUAGE SQL ... AS $$` cast chains, 025_temporal_tile groups the alpha base-type
+# quartet (the template-class pass, the 022_temporal precedent), and th3index/
+# tquadbin run their bannerless time_<temp>/timeSplit material straight after the
+# modification block with no section header to anchor. All are classified out by
+# omission from the data, never by a code-level skip.
+def _tiling_markers(family: str):
+    begin = (f"-- GENERATED-TILING-BEGIN {family} — "
+             "tools/codegen/inherited/generate.py from templates/tiling.sql.tmpl;\n"
+             "-- DO NOT EDIT BY HAND; edit the template + manifest.yaml "
+             "(tiling_families) and re-run.\n")
+    return begin, f"-- GENERATED-TILING-END {family}\n"
+
+
+def _tiling_skeleton(f: dict) -> str:
+    """One tiling CREATE FUNCTION from the shared skeleton (no trailing newline, so
+    blocks can be joined with explicit newline control). A `sym` entry is a C-backed
+    function (`AS 'MODULE_PATHNAME', '<sym>'`, LANGUAGE C); a `sql` entry is a
+    size-collapsing delegation (`AS '<select>'`, LANGUAGE SQL). `pre` is a leading
+    comment line or ""."""
+    tmpl = (TEMPLATES / "tiling.sql.tmpl").read_text()
+    if "sym" in f:
+        asx, lang = f"'MODULE_PATHNAME', '{f['sym']}'", "C"
+    else:
+        asx, lang = f"'{f['sql']}'", "SQL"
+    return (tmpl.replace("{PRE}", f.get("pre", "")).replace("{SIG}", f["sig"])
+                .replace("{RET}", f["ret"]).replace("{AS}", asx)
+                .replace("{LANG}", lang).rstrip("\n"))
+
+
+def render_tiling(fam: dict) -> str:
+    """Render one family's tiling block from its `blocks` sequence. A block is a
+    verbatim `lit` (the section banners, CREATE TYPE statements and blank lines, kept
+    exactly as the hand file) or a `fns` list (the tiling CREATE FUNCTIONs rendered
+    from the shared skeleton, packed with no blank line and closed by one trailing
+    newline). Blocks concatenate with no automatic separator — every separator is
+    baked into the `lit` blocks — so the rendered text is byte-identical to the
+    committed region (the conversion-surface model)."""
+    out = ""
+    for blk in fam["blocks"]:
+        if "lit" in blk:
+            out += blk["lit"]
+        else:
+            out += "\n".join(_tiling_skeleton(f) for f in blk["fns"]) + "\n"
+    return out
+
+
+def extract_tiling(filetext: str, fam: dict) -> str:
+    """Return the committed hand tiling block. Marker-aware: if the GENERATED-TILING
+    region exists, slice between its markers; otherwise slice from the `/*` opening
+    the tiling banner (found via the family's `begin` anchor) down to EOF for a
+    whole-file family, or to the `/*` opening the next section (the family's `end`
+    anchor), mirroring extract_representations."""
+    begin, end = _tiling_markers(fam["family"])
+    if begin in filetext:
+        b = filetext.index(begin) + len(begin)
+        e = filetext.index(end)
+        return filetext[b:e]
+    i = filetext.index(fam["begin"])
+    start = filetext.rfind("/*", 0, i)
+    if fam.get("whole_file"):
+        return filetext[start:len(filetext)]
+    j = filetext.index(fam["end"])
+    return filetext[start:filetext.rfind("/*", 0, j)]
+
+
+def splice_tiling(filetext: str, family: str, rendered: str) -> str:
+    begin, end = _tiling_markers(family)
+    b = filetext.index(begin) + len(begin)
+    e = filetext.index(end)
+    return filetext[:b] + rendered + filetext[e:]
+
+
+def bootstrap_tiling(filetext: str, fam: dict, rendered: str) -> str:
+    """Insert the GENERATED-TILING markers around the family's committed hand block
+    (sliced by the same anchor span extract uses), so a future non-reference emit is
+    fully declarative with no hand-placed marker. Idempotent: once the markers exist
+    the reference/splice path owns the region. Not run while the families are
+    reference-only (validate-only)."""
+    i = filetext.index(fam["begin"])
+    start = filetext.rfind("/*", 0, i)
+    begin_m, end_m = _tiling_markers(fam["family"])
+    if fam.get("whole_file"):
+        return filetext[:start] + begin_m + rendered + end_m
+    j = filetext.index(fam["end"])
+    end = filetext.rfind("/*", 0, j)
+    return filetext[:start] + begin_m + rendered + end_m + filetext[end:]
+
+
 def target_path(behaviour: str, sub: dict, positions: dict) -> pathlib.Path:
     # The within-50-bin offset defaults to the shared `positions` map (the tight
     # cbuffer-anchored layout); a family on the tgeo-aligned layout overrides a
@@ -3121,6 +3237,25 @@ def main() -> int:
             same = gen == cur
             ok = ok and same
             print(f"[{'OK ' if same else 'DIFF'}] self-regen mathfuncs {fam['family']} "
+                  f"-> {pathlib.Path(fam['file'])}")
+            if not same:
+                g, c = gen.splitlines(), cur.splitlines()
+                for n, (a, b) in enumerate(zip(g, c), 1):
+                    if a != b:
+                        print(f"     first diff line {n}:\n       gen: {a!r}\n"
+                              f"       cur: {b!r}")
+                        break
+                if len(g) != len(c):
+                    print(f"     line count gen={len(g)} cur={len(c)}")
+        for fam in mf.get("tiling_families", []):
+            if not fam.get("reference"):
+                continue
+            p = ROOT / fam["file"]
+            gen = render_tiling(fam)
+            cur = extract_tiling(p.read_text(), fam) if p.exists() else ""
+            same = gen == cur
+            ok = ok and same
+            print(f"[{'OK ' if same else 'DIFF'}] self-regen tiling {fam['family']} "
                   f"-> {pathlib.Path(fam['file'])}")
             if not same:
                 g, c = gen.splitlines(), cur.splitlines()
@@ -3567,6 +3702,26 @@ def main() -> int:
         else:
             p.write_text(bootstrap_aggregates(text, fam, render_aggregates(fam)))
             print(f"bootstrapped aggregates {fam['family']} -> {fam['file']}")
+    for fam in mf.get("tiling_families", []):
+        # Reference families are validate-only: keep the committed hand block, never
+        # emit into .in.sql (mirrors constructors/comparisons/conversions). A future
+        # non-reference family bootstraps its GENERATED-TILING region once, then
+        # splices.
+        if fam.get("reference"):
+            continue
+        p = ROOT / fam["file"]
+        text = p.read_text()
+        begin, _ = _tiling_markers(fam["family"])
+        if args.check:
+            print(f"would {'splice' if begin in text else 'bootstrap'} tiling "
+                  f"{fam['family']} -> {fam['file']}")
+            continue
+        if begin in text:
+            p.write_text(splice_tiling(text, fam["family"], render_tiling(fam)))
+            print(f"spliced tiling {fam['family']} -> {fam['file']}")
+        else:
+            p.write_text(bootstrap_tiling(text, fam, render_tiling(fam)))
+            print(f"bootstrapped tiling {fam['family']} -> {fam['file']}")
     return 0
 
 
