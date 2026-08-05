@@ -79,8 +79,15 @@
  * input shapes.
  * @csqlfn #H3index_in()
  */
+#if MEOS
 H3Index
 h3index_in(const char *str)
+{
+  return meos_h3index_in(str);
+}
+#endif
+H3Index
+meos_h3index_in(const char *str)
 {
   if (str == NULL)
   {
@@ -89,61 +96,17 @@ h3index_in(const char *str)
     return (H3Index) 0;
   }
 
-  /* Strip leading whitespace. */
-  while (*str && isspace((unsigned char) *str))
-    str++;
-
-  /* Skip an optional "0x" / "0X" hex prefix. */
-  bool force_hex = false;
-  if (str[0] == '0' && (str[1] == 'x' || str[1] == 'X'))
+  /* Delegate to libh3, exactly as the h3-pg extension's input function
+   * does, so both extensions parse the same representation (hexadecimal,
+   * with an optional "0x" prefix, no cell-validity check) */
+  H3Index cell;
+  H3Error err;
+  if ((err = stringToH3(str, &cell)) != E_SUCCESS)
   {
-    force_hex = true;
-    str += 2;
-  }
-
-  /* Detect representation:
-   *   - if any character outside [0-9] appears (e.g. a-f), treat as hex.
-   *   - otherwise treat as decimal.
-   * H3 cells in hex are 15 chars; in decimal up to 20 chars (uint64 max).
-   */
-  bool is_hex = force_hex;
-  if (! is_hex)
-  {
-    for (const char *p = str; *p && ! isspace((unsigned char) *p); p++)
-    {
-      if (! isdigit((unsigned char) *p))
-      {
-        is_hex = true;
-        break;
-      }
-    }
-  }
-
-  H3Index cell = (H3Index) 0;
-  char *end = NULL;
-  errno = 0;
-  if (is_hex)
-    cell = (H3Index) strtoull(str, &end, 16);
-  else
-    cell = (H3Index) strtoull(str, &end, 10);
-
-  if (errno != 0 || end == str || (end && *end != '\0' &&
-      ! isspace((unsigned char) *end)))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "invalid h3index input \"%s\"", str);
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+      "invalid h3index input \"%s\": h3 error code %u", str, (unsigned) err);
     return (H3Index) 0;
   }
-
-  /* Reject the conventional "invalid" sentinel and anything libh3
-   * does not consider a valid cell. */
-  if (cell == (H3Index) 0 || ! h3_is_valid_cell_meos(cell))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "h3index value %s does not encode a valid H3 cell", str);
-    return (H3Index) 0;
-  }
-
   return cell;
 }
 
@@ -158,12 +121,27 @@ h3index_in(const char *str)
  * leading zeros.
  * @csqlfn #H3index_out()
  */
+#if MEOS
 char *
 h3index_out(H3Index cell)
 {
-  /* Maximum 16 hex chars for 64 bits + null terminator. */
+  return meos_h3index_out(cell);
+}
+#endif
+char *
+meos_h3index_out(H3Index cell)
+{
+  /* Maximum 16 hex chars for 64 bits + null terminator. Delegate to
+   * libh3, exactly as the h3-pg extension's output function does */
   char *buf = palloc(17);
-  snprintf(buf, 17, "%" PRIx64, (uint64_t) cell);
+  H3Error err;
+  if ((err = h3ToString(cell, buf, 17)) != E_SUCCESS)
+  {
+    pfree(buf);
+    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+      "h3 library error %u while formatting an h3index", (unsigned) err);
+    return NULL;
+  }
   return buf;
 }
 
@@ -253,8 +231,15 @@ h3index_as_hexwkb(H3Index cell, uint8_t variant, size_t *size_out)
  * @brief Return true if two h3index values are equal
  * @csqlfn #H3index_eq()
  */
+#if MEOS
 bool
 h3index_eq(H3Index a, H3Index b)
+{
+  return a == b;
+}
+#endif
+bool
+meos_h3index_eq(H3Index a, H3Index b)
 {
   return a == b;
 }
@@ -264,8 +249,15 @@ h3index_eq(H3Index a, H3Index b)
  * @brief Return true if two h3index values are not equal
  * @csqlfn #H3index_ne()
  */
+#if MEOS
 bool
 h3index_ne(H3Index a, H3Index b)
+{
+  return a != b;
+}
+#endif
+bool
+meos_h3index_ne(H3Index a, H3Index b)
 {
   return a != b;
 }
@@ -275,8 +267,15 @@ h3index_ne(H3Index a, H3Index b)
  * @brief Return true if the first h3index is less than the second
  * @csqlfn #H3index_lt()
  */
+#if MEOS
 bool
 h3index_lt(H3Index a, H3Index b)
+{
+  return a < b;
+}
+#endif
+bool
+meos_h3index_lt(H3Index a, H3Index b)
 {
   return a < b;
 }
@@ -287,8 +286,15 @@ h3index_lt(H3Index a, H3Index b)
  * the second
  * @csqlfn #H3index_le()
  */
+#if MEOS
 bool
 h3index_le(H3Index a, H3Index b)
+{
+  return a <= b;
+}
+#endif
+bool
+meos_h3index_le(H3Index a, H3Index b)
 {
   return a <= b;
 }
@@ -298,8 +304,15 @@ h3index_le(H3Index a, H3Index b)
  * @brief Return true if the first h3index is greater than the second
  * @csqlfn #H3index_gt()
  */
+#if MEOS
 bool
 h3index_gt(H3Index a, H3Index b)
+{
+  return a > b;
+}
+#endif
+bool
+meos_h3index_gt(H3Index a, H3Index b)
 {
   return a > b;
 }
@@ -310,8 +323,15 @@ h3index_gt(H3Index a, H3Index b)
  * to the second
  * @csqlfn #H3index_ge()
  */
+#if MEOS
 bool
 h3index_ge(H3Index a, H3Index b)
+{
+  return a >= b;
+}
+#endif
+bool
+meos_h3index_ge(H3Index a, H3Index b)
 {
   return a >= b;
 }
@@ -322,8 +342,15 @@ h3index_ge(H3Index a, H3Index b)
  * less than, equal to, or greater than the second
  * @csqlfn #H3index_cmp()
  */
+#if MEOS
 int
 h3index_cmp(H3Index a, H3Index b)
+{
+  return (a < b) ? -1 : (a > b) ? 1 : 0;
+}
+#endif
+int
+meos_h3index_cmp(H3Index a, H3Index b)
 {
   return (a < b) ? -1 : (a > b) ? 1 : 0;
 }
@@ -339,8 +366,15 @@ h3index_cmp(H3Index a, H3Index b)
  * what the SQL hash opclass was previously delegating to.
  * @csqlfn #H3index_hash()
  */
+#if MEOS
 uint32
 h3index_hash(H3Index cell)
+{
+  return int64_hash((int64) cell);
+}
+#endif
+uint32
+meos_h3index_hash(H3Index cell)
 {
   return int64_hash((int64) cell);
 }

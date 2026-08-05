@@ -1,78 +1,78 @@
 SELECT th3GridDistance(
-  th3index '612544986753269759@2001-01-01',
-  th3index '612544986753269759@2001-01-01');
+  th3index '880326b885fffff@2001-01-01',
+  th3index '880326b885fffff@2001-01-01');
         th3griddistance         
 --------------------------------
  0@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
 SELECT th3GridDistance(
-  th3index '612544986753269759@2001-01-01',
-  th3index '612544986761658367@2001-01-01');
+  th3index '880326b885fffff@2001-01-01',
+  th3index '880326b88dfffff@2001-01-01');
         th3griddistance         
 --------------------------------
  1@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
 SELECT th3GridDistance(
-    th3index '612544986753269759@2001-01-01',
-    th3index '612544986761658367@2001-01-01')
+    th3index '880326b885fffff@2001-01-01',
+    th3index '880326b88dfffff@2001-01-01')
   = th3GridDistance(
-    th3index '612544986761658367@2001-01-01',
-    th3index '612544986753269759@2001-01-01');
+    th3index '880326b88dfffff@2001-01-01',
+    th3index '880326b885fffff@2001-01-01');
  ?column? 
 ----------
  t
 (1 row)
 
 SELECT th3GridDistance(
-  th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-02]',
-  th3index '[612544986761658367@2001-01-01, 612544986753269759@2001-01-02]')
+  th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-02]',
+  th3index '[880326b88dfffff@2001-01-01, 880326b885fffff@2001-01-02]')
   IS NOT NULL;
  ?column? 
 ----------
  t
 (1 row)
 
-SELECT (th3index '612544986753269759@2001-01-01')
-  <-> (th3index '612544986761658367@2001-01-01');
+SELECT (th3index '880326b885fffff@2001-01-01')
+  <-> (th3index '880326b88dfffff@2001-01-01');
             ?column?            
 --------------------------------
  1@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT (th3index '612544986753269759@2001-01-01'
-        <-> th3index '612544986761658367@2001-01-01')
+SELECT (th3index '880326b885fffff@2001-01-01'
+        <-> th3index '880326b88dfffff@2001-01-01')
   = th3GridDistance(
-      th3index '612544986753269759@2001-01-01',
-      th3index '612544986761658367@2001-01-01');
+      th3index '880326b885fffff@2001-01-01',
+      th3index '880326b88dfffff@2001-01-01');
  ?column? 
 ----------
  t
 (1 row)
 
 SELECT th3CellToLocalIj(
-  th3index '612544986753269759@2001-01-01',
-  th3index '612544986753269759@2001-01-01') IS NOT NULL;
+  th3index '880326b885fffff@2001-01-01',
+  th3index '880326b885fffff@2001-01-01') IS NOT NULL;
  ?column? 
 ----------
  t
 (1 row)
 
 SELECT th3CellToLocalIj(
-  th3index '612544986753269759@2001-01-01',
-  th3index '612544986761658367@2001-01-01') IS NOT NULL;
+  th3index '880326b885fffff@2001-01-01',
+  th3index '880326b88dfffff@2001-01-01') IS NOT NULL;
  ?column? 
 ----------
  t
 (1 row)
 
 SELECT th3LocalIjToCell(
-    th3index '612544986753269759@2001-01-01',
+    th3index '880326b885fffff@2001-01-01',
     th3CellToLocalIj(
-      th3index '612544986753269759@2001-01-01',
-      th3index '612544986761658367@2001-01-01'))
-  = th3index '612544986761658367@2001-01-01';
+      th3index '880326b885fffff@2001-01-01',
+      th3index '880326b88dfffff@2001-01-01'))
+  = th3index '880326b88dfffff@2001-01-01';
  ?column? 
 ----------
  t

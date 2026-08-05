@@ -43,16 +43,6 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include <pgtypes.h>
-/*****************************************************************************
- * Public base JSON / JSONB / JSONPATH API
- *
- * The full base-type surface (json/jsonb input-output, the json accessors,
- * jsonb conversions, and jsonpath query) is declared here -- in the public
- * meos/include tree -- so that every binding generated from the MEOS-API
- * catalog gets the complete API over the base jsonb type, not only the
- * temporal tjsonb wrapper. The implementations live in the vendored pgtypes
- * sources; the Jsonb/JsonPath/text/Numeric types come from <pgtypes.h> above.
- *****************************************************************************/
 
 /*****************************************************************************/
 

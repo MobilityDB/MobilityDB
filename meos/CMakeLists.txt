@@ -146,15 +146,6 @@ endif()
 # Build MEOS library
 #--------------------------------
 
-# Customize the meos.in.h and meos_internal.in.h files for external include with MEOS library
-
-# Read files
-file(READ "${CMAKE_SOURCE_DIR}/meos/include/meos.h" MEOS_H)
-file(READ "${CMAKE_SOURCE_DIR}/meos/include/meos_internal.h" MEOS_INTERNAL_H)
-file(READ "${CMAKE_SOURCE_DIR}/meos/include/meos_geo.h" MEOS_GEO_H)
-file(READ "${CMAKE_SOURCE_DIR}/meos/include/postgres_ext_defs.in.h" POSTGRES_EXT_DEFS_IN_H)
-file(READ "${CMAKE_SOURCE_DIR}/meos/include/postgis_ext_defs.in.h" POSTGIS_EXT_DEFS_IN_H)
-
 # MEOS
 set(MEOS_OBJECTS "$<TARGET_OBJECTS:temporal>")
 set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:geo>")
@@ -293,8 +284,10 @@ if(MEOS)
   file(READ "${CMAKE_SOURCE_DIR}/meos/include/meos_error.h" MEOS_ERROR_H)
   file(READ "${CMAKE_SOURCE_DIR}/meos/include/meos_geo.h" MEOS_GEO_H)
   file(READ "${CMAKE_SOURCE_DIR}/meos/include/meos_json.h" MEOS_JSON_H)
+  file(READ "${CMAKE_SOURCE_DIR}/meos/include/meos_h3.h" MEOS_H3_H)
   file(READ "${CMAKE_SOURCE_DIR}/meos/include/postgres_ext_defs.in.h" POSTGRES_EXT_DEFS_IN_H)
   file(READ "${CMAKE_SOURCE_DIR}/meos/include/postgis_ext_defs.in.h" POSTGIS_EXT_DEFS_IN_H)
+  file(READ "${CMAKE_SOURCE_DIR}/meos/include/h3_ext_defs.in.h" H3_EXT_DEFS_IN_H)
 
   # Generate meos_export.h
   string(REPLACE "#if MEOS\n#include \"postgres_int_defs.h\"\n#else\n#include <postgres.h>\n#include <utils/date.h>\n#include <utils/timestamp.h>\n#endif" "${POSTGRES_EXT_DEFS_IN_H}" MEOS_EXP_H1 "${MEOS_H}")
@@ -310,12 +303,20 @@ if(MEOS)
   string(REGEX REPLACE "#include <liblwgeom.h>" "${POSTGIS_EXT_DEFS_IN_H}" MEOS_GEO_EXP_H "${MEOS_GEO_H}")
   file(WRITE "${CMAKE_BINARY_DIR}/meos_geo_export.h" "${MEOS_GEO_EXP_H}")
 
+  if(H3)
+    # Generate meos_h3_export.h: replace the MEOS-gated include of the
+    # h3-pg-colliding declarations with their unconditional content, so the
+    # installed public header exposes the full h3index surface to bindings
+    string(REPLACE "#if MEOS\n#include \"h3_ext_defs.in.h\"\n#endif /* MEOS */" "${H3_EXT_DEFS_IN_H}" MEOS_H3_EXP_H "${MEOS_H3_H}")
+    file(WRITE "${CMAKE_BINARY_DIR}/meos_h3_export.h" "${MEOS_H3_EXP_H}")
+  endif()
+
   if(JSON)
     # Generate meos_json_export.h. The library build pulls the Jsonb / JsonPath
     # types from the internal <pgtypes.h> umbrella; for the installed PUBLIC
     # header replace it with the public type headers <pg_numeric.h> (Numeric)
     # and <pg_json.h> (the opaque Jsonb / JsonPath types).
-    string(REGEX REPLACE "#include <pgtypes.h>\n" "#include <pg_numeric.h>\n#include <pg_json.h>\n" MEOS_JSON_EXP_H "${MEOS_JSON_H}")
+    string(REGEX REPLACE "#include <pgtypes.h>\n" "#include <pg_numeric.h>\n#include <pg_json.h>\n\n${POSTGIS_EXT_DEFS_IN_H}" MEOS_JSON_EXP_H "${MEOS_JSON_H}")
     file(WRITE "${CMAKE_BINARY_DIR}/meos_json_export.h" "${MEOS_JSON_EXP_H}")
   endif()
 
@@ -378,8 +379,9 @@ if(MEOS)
   endif()
   if(H3)
     install(
-      FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_h3.h"
-      DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+      FILES "${CMAKE_BINARY_DIR}/meos_h3_export.h"
+      DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+      RENAME "meos_h3.h")
   endif()
   if(JSON)
     install(

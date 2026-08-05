@@ -215,6 +215,9 @@ endif()
 # CBUFFER / NPOINT / POSE / RGEO add internal types that live inside
 # libMobilityDB itself with no extra CREATE EXTENSION dependency.
 set(MOBILITYDB_REQUIRES "postgis")
+if(H3)
+  set(MOBILITYDB_REQUIRES "${MOBILITYDB_REQUIRES}, h3")
+endif()
 if(POINTCLOUD)
   set(MOBILITYDB_REQUIRES "${MOBILITYDB_REQUIRES}, pointcloud")
 endif()

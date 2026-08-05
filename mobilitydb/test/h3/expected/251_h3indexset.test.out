@@ -11,18 +11,18 @@ SELECT h3indexset '{8a2a1072b59ffff}';
 (1 row)
 
 SELECT h3indexset '{622236750694711295}';
-     h3indexset      
----------------------
- {"8a2a1072b59ffff"}
-(1 row)
-
+ERROR:  H3 cellToBoundary failed for cell ffffffffffffffff
+LINE 1: SELECT h3indexset '{622236750694711295}';
+                          ^
 /* Errors */
 SELECT h3indexset '{0}';
-ERROR:  h3index value 0 does not encode a valid H3 cell
-LINE 2: SELECT h3indexset '{0}';
-                          ^
+ h3indexset 
+------------
+ {"0"}
+(1 row)
+
 SELECT h3indexset '{not-a-cell}';
-ERROR:  invalid h3index input "not-a-cell"
+ERROR:  invalid h3index input "not-a-cell": h3 error code 1
 LINE 1: SELECT h3indexset '{not-a-cell}';
                           ^
 SELECT set(h3index '8a2a1072b59ffff');

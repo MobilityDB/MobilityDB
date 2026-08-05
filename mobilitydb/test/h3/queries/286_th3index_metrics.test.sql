@@ -20,26 +20,26 @@
 -------------------------------------------------------------------------------
 
 -- Default unit ('km2')
-SELECT th3CellArea(th3index '590464338553208831@2001-01-01') IS NOT NULL;
+SELECT th3CellArea(th3index '831c02fffffffff@2001-01-01') IS NOT NULL;
 
 -- All three valid area units
-SELECT th3CellArea(th3index '590464338553208831@2001-01-01', 'km2')
+SELECT th3CellArea(th3index '831c02fffffffff@2001-01-01', 'km2')
   IS NOT NULL;
-SELECT th3CellArea(th3index '590464338553208831@2001-01-01', 'm2')
+SELECT th3CellArea(th3index '831c02fffffffff@2001-01-01', 'm2')
   IS NOT NULL;
-SELECT th3CellArea(th3index '590464338553208831@2001-01-01', 'rads2')
+SELECT th3CellArea(th3index '831c02fffffffff@2001-01-01', 'rads2')
   IS NOT NULL;
 
 -- Sequence form
 SELECT th3CellArea(th3index
-  '[590464338553208831@2001-01-01, 622236750694711295@2001-01-02]', 'km2')
+  '[831c02fffffffff@2001-01-01, 8a2a1072b59ffff@2001-01-02]', 'km2')
   IS NOT NULL;
 
 -- Length unit on an area function — h3-pg behaviour: error.
 /* Errors */
-SELECT th3CellArea(th3index '590464338553208831@2001-01-01', 'km');
+SELECT th3CellArea(th3index '831c02fffffffff@2001-01-01', 'km');
 -- Invalid unit string
-SELECT th3CellArea(th3index '590464338553208831@2001-01-01', 'lightyears');
+SELECT th3CellArea(th3index '831c02fffffffff@2001-01-01', 'lightyears');
 
 -------------------------------------------------------------------------------
 -- th3EdgeLength(th3index, text) — lift_with_const
@@ -47,29 +47,29 @@ SELECT th3CellArea(th3index '590464338553208831@2001-01-01', 'lightyears');
 
 -- Default unit ('km')
 SELECT th3EdgeLength(th3CellsToDirectedEdge(
-    th3index '612544986753269759@2001-01-01',
-    th3index '612544986761658367@2001-01-01')) IS NOT NULL;
+    th3index '880326b885fffff@2001-01-01',
+    th3index '880326b88dfffff@2001-01-01')) IS NOT NULL;
 
 -- All three valid length units
 SELECT th3EdgeLength(th3CellsToDirectedEdge(
-    th3index '612544986753269759@2001-01-01',
-    th3index '612544986761658367@2001-01-01'), 'km') IS NOT NULL;
+    th3index '880326b885fffff@2001-01-01',
+    th3index '880326b88dfffff@2001-01-01'), 'km') IS NOT NULL;
 SELECT th3EdgeLength(th3CellsToDirectedEdge(
-    th3index '612544986753269759@2001-01-01',
-    th3index '612544986761658367@2001-01-01'), 'm') IS NOT NULL;
+    th3index '880326b885fffff@2001-01-01',
+    th3index '880326b88dfffff@2001-01-01'), 'm') IS NOT NULL;
 SELECT th3EdgeLength(th3CellsToDirectedEdge(
-    th3index '612544986753269759@2001-01-01',
-    th3index '612544986761658367@2001-01-01'), 'rads') IS NOT NULL;
+    th3index '880326b885fffff@2001-01-01',
+    th3index '880326b88dfffff@2001-01-01'), 'rads') IS NOT NULL;
 
 -- Area unit on a length function — must error.
 /* Errors */
 SELECT th3EdgeLength(th3CellsToDirectedEdge(
-    th3index '612544986753269759@2001-01-01',
-    th3index '612544986761658367@2001-01-01'), 'km2');
+    th3index '880326b885fffff@2001-01-01',
+    th3index '880326b88dfffff@2001-01-01'), 'km2');
 -- Invalid unit string
 SELECT th3EdgeLength(th3CellsToDirectedEdge(
-    th3index '612544986753269759@2001-01-01',
-    th3index '612544986761658367@2001-01-01'), 'parsec');
+    th3index '880326b885fffff@2001-01-01',
+    th3index '880326b88dfffff@2001-01-01'), 'parsec');
 
 -------------------------------------------------------------------------------
 -- greatCircleDistance(tgeogpoint, tgeogpoint, text) — binary_synced

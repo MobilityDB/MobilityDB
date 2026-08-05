@@ -47,6 +47,7 @@
  * Type plumbing
  ******************************************************************************/
 
+/*
 CREATE TYPE h3index;
 
 CREATE FUNCTION h3index_in(cstring)
@@ -79,6 +80,7 @@ CREATE TYPE h3index (
   alignment = double,
   storage = plain
 );
+*/
 
 /******************************************************************************
  * WKB and HexWKB input/output
@@ -126,8 +128,8 @@ CREATE FUNCTION asHexWKB(h3index, endianenconding text DEFAULT '')
  * sidesteps the need for a dedicated cast function here.
  ******************************************************************************/
 
-CREATE CAST (bigint AS h3index) WITHOUT FUNCTION AS ASSIGNMENT;
-CREATE CAST (h3index AS bigint) WITHOUT FUNCTION AS ASSIGNMENT;
+-- CREATE CAST (bigint AS h3index) WITHOUT FUNCTION AS ASSIGNMENT;
+-- CREATE CAST (h3index AS bigint) WITHOUT FUNCTION AS ASSIGNMENT;
 
 /******************************************************************************
  * Comparison operators
@@ -139,6 +141,7 @@ CREATE CAST (h3index AS bigint) WITHOUT FUNCTION AS ASSIGNMENT;
  * boiler-plate and lets MobilityDuck consume the same primitives.
  ******************************************************************************/
 
+/*
 CREATE FUNCTION h3index_eq(h3index, h3index)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'H3index_eq'
@@ -221,6 +224,7 @@ CREATE OPERATOR >= (
   COMMUTATOR = <=, NEGATOR = <,
   RESTRICT = scalargesel, JOIN = scalargejoinsel
 );
+*/
 
 /******************************************************************************
  * btree + hash operator classes
@@ -229,6 +233,7 @@ CREATE OPERATOR >= (
  * exact-match lookups, plus distinct, GROUP BY, etc.
  ******************************************************************************/
 
+/*
 CREATE OPERATOR CLASS h3index_ops
   DEFAULT FOR TYPE h3index USING btree AS
     OPERATOR  1  <,
@@ -242,6 +247,7 @@ CREATE OPERATOR CLASS h3index_ops
   DEFAULT FOR TYPE h3index USING hash AS
     OPERATOR  1  =,
     FUNCTION  1  hash(h3index);
+*/
 
 /******************************************************************************
  * Validity predicates

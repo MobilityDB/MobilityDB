@@ -28,75 +28,75 @@
 -------------------------------------------------------------------------------
 -- Temporal instant
 
-SELECT th3index '622236723497533439@2012-01-01 08:00:00';
+SELECT th3index '8a2a100d645ffff@2012-01-01 08:00:00';
 /* Errors */
 SELECT th3index 'ABC@2012-01-01 08:00:00';
-SELECT th3index '622236723497533439@2012-01-01 08:00:00,';
+SELECT th3index '8a2a100d645ffff@2012-01-01 08:00:00,';
 
 -------------------------------------------------------------------------------
 -- Temporal discrete sequence
 
-SELECT th3index ' { 622236723497533439@2001-01-01 08:00:00 , 622236723497533440@2001-01-01 08:05:00 , 622236723497533441@2001-01-01 08:06:00 } ';
-SELECT th3index '{622236723497533439@2001-01-01 08:00:00,622236723497533440@2001-01-01 08:05:00,622236723497533441@2001-01-01 08:06:00}';
+SELECT th3index ' { 8a2a100d645ffff@2001-01-01 08:00:00 , 8a2a100d6460000@2001-01-01 08:05:00 , 8a2a100d6460001@2001-01-01 08:06:00 } ';
+SELECT th3index '{8a2a100d645ffff@2001-01-01 08:00:00,8a2a100d6460000@2001-01-01 08:05:00,8a2a100d6460001@2001-01-01 08:06:00}';
 /* Errors */
-SELECT th3index '{622236723497533439@2001-01-01, 622236723497533440@2001-01-02, 622236723497533441@2001-01-03';
-SELECT th3index '{622236723497533439@2001-01-01, 622236723497533440@2001-01-02, 622236723497533441@2001-01-03},';
+SELECT th3index '{8a2a100d645ffff@2001-01-01, 8a2a100d6460000@2001-01-02, 8a2a100d6460001@2001-01-03';
+SELECT th3index '{8a2a100d645ffff@2001-01-01, 8a2a100d6460000@2001-01-02, 8a2a100d6460001@2001-01-03},';
 
 -------------------------------------------------------------------------------
 -- Temporal continuous sequence (step interpolation is inherited from T_INT8)
 
-SELECT th3index ' [ 622236723497533439@2001-01-01 08:00:00 , 622236723497533440@2001-01-01 08:05:00 , 622236723497533441@2001-01-01 08:06:00 ] ';
-SELECT th3index '[622236723497533439@2001-01-01 08:00:00,622236723497533440@2001-01-01 08:05:00,622236723497533441@2001-01-01 08:06:00]';
-SELECT th3index 'Interp=Step;[622236723497533439@2001-01-01 08:00:00,622236723497533440@2001-01-01 08:05:00,622236723497533441@2001-01-01 08:06:00]';
+SELECT th3index ' [ 8a2a100d645ffff@2001-01-01 08:00:00 , 8a2a100d6460000@2001-01-01 08:05:00 , 8a2a100d6460001@2001-01-01 08:06:00 ] ';
+SELECT th3index '[8a2a100d645ffff@2001-01-01 08:00:00,8a2a100d6460000@2001-01-01 08:05:00,8a2a100d6460001@2001-01-01 08:06:00]';
+SELECT th3index 'Interp=Step;[8a2a100d645ffff@2001-01-01 08:00:00,8a2a100d6460000@2001-01-01 08:05:00,8a2a100d6460001@2001-01-01 08:06:00]';
 
 -------------------------------------------------------------------------------
 -- Temporal sequence set
 
-SELECT th3index ' { [ 622236723497533439@2001-01-01 08:00:00 , 622236723497533440@2001-01-01 08:05:00 ] , [ 622236723497533441@2001-01-01 08:10:00 , 622236723497533442@2001-01-01 08:15:00 ] } ';
-SELECT th3index '{[622236723497533439@2001-01-01 08:00:00,622236723497533440@2001-01-01 08:05:00],[622236723497533441@2001-01-01 08:10:00,622236723497533442@2001-01-01 08:15:00]}';
+SELECT th3index ' { [ 8a2a100d645ffff@2001-01-01 08:00:00 , 8a2a100d6460000@2001-01-01 08:05:00 ] , [ 8a2a100d6460001@2001-01-01 08:10:00 , 8a2a100d6460002@2001-01-01 08:15:00 ] } ';
+SELECT th3index '{[8a2a100d645ffff@2001-01-01 08:00:00,8a2a100d6460000@2001-01-01 08:05:00],[8a2a100d6460001@2001-01-01 08:10:00,8a2a100d6460002@2001-01-01 08:15:00]}';
 
 -------------------------------------------------------------------------------
 -- MF-JSON input/output (h3index cell ids are serialized as their int8 value,
 -- mirroring the tbigint sibling)
 -------------------------------------------------------------------------------
 
-SELECT asMFJSON(th3index '612544986753269759@2012-01-01 08:00:00');
-SELECT asMFJSON(th3index '{612544986753269759@2001-01-01, 612544986761658367@2001-01-02}');
-SELECT asMFJSON(th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-02]');
-SELECT asMFJSON(th3index '{[612544986753269759@2001-01-01, 612544986761658367@2001-01-02], [612544986753269759@2001-01-03, 612544986753269759@2001-01-04]}');
+SELECT asMFJSON(th3index '880326b885fffff@2012-01-01 08:00:00');
+SELECT asMFJSON(th3index '{880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-02}');
+SELECT asMFJSON(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-02]');
+SELECT asMFJSON(th3index '{[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-02], [880326b885fffff@2001-01-03, 880326b885fffff@2001-01-04]}');
 -- Bound the geodetic bbox precision so the output is platform-independent
-SELECT asMFJSON(th3index '612544986753269759@2012-01-01 08:00:00', 1, 3, 6);
+SELECT asMFJSON(th3index '880326b885fffff@2012-01-01 08:00:00', 1, 3, 6);
 
 -- Round-trip: th3indexFromMFJSON(asMFJSON(...)) preserves the value
-SELECT th3indexFromMFJSON(asMFJSON(th3index '612544986753269759@2012-01-01 08:00:00'));
-SELECT th3indexFromMFJSON(asMFJSON(th3index '{612544986753269759@2001-01-01, 612544986761658367@2001-01-02}'));
-SELECT th3indexFromMFJSON(asMFJSON(th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-02]'));
-SELECT th3indexFromMFJSON(asMFJSON(th3index '{[612544986753269759@2001-01-01, 612544986761658367@2001-01-02], [612544986753269759@2001-01-03, 612544986753269759@2001-01-04]}'));
+SELECT th3indexFromMFJSON(asMFJSON(th3index '880326b885fffff@2012-01-01 08:00:00'));
+SELECT th3indexFromMFJSON(asMFJSON(th3index '{880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-02}'));
+SELECT th3indexFromMFJSON(asMFJSON(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-02]'));
+SELECT th3indexFromMFJSON(asMFJSON(th3index '{[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-02], [880326b885fffff@2001-01-03, 880326b885fffff@2001-01-04]}'));
 
 -------------------------------------------------------------------------------
 -- Typmod
 -------------------------------------------------------------------------------
 
-SELECT th3index(Instant) '622236723497533439@2012-01-01 08:00:00';
-SELECT th3index(Sequence) '{622236723497533439@2001-01-01, 622236723497533440@2001-01-02}';
-SELECT th3index(Sequence) '[622236723497533439@2001-01-01, 622236723497533440@2001-01-02]';
-SELECT th3index(SequenceSet) '{[622236723497533439@2001-01-01, 622236723497533440@2001-01-02]}';
+SELECT th3index(Instant) '8a2a100d645ffff@2012-01-01 08:00:00';
+SELECT th3index(Sequence) '{8a2a100d645ffff@2001-01-01, 8a2a100d6460000@2001-01-02}';
+SELECT th3index(Sequence) '[8a2a100d645ffff@2001-01-01, 8a2a100d6460000@2001-01-02]';
+SELECT th3index(SequenceSet) '{[8a2a100d645ffff@2001-01-01, 8a2a100d6460000@2001-01-02]}';
 /* Errors */
-SELECT th3index(Instant) '{622236723497533439@2001-01-01, 622236723497533440@2001-01-02}';
-SELECT th3index(Sequence) '622236723497533439@2012-01-01 08:00:00';
-SELECT th3index(Garbage) '622236723497533439@2012-01-01 08:00:00';
+SELECT th3index(Instant) '{8a2a100d645ffff@2001-01-01, 8a2a100d6460000@2001-01-02}';
+SELECT th3index(Sequence) '8a2a100d645ffff@2012-01-01 08:00:00';
+SELECT th3index(Garbage) '8a2a100d645ffff@2012-01-01 08:00:00';
 
 -------------------------------------------------------------------------------
 -- WKB / HexWKB round-trips
 -------------------------------------------------------------------------------
 
-SELECT asText(th3indexFromBinary(asBinary(th3index '612544986753269759@2001-01-01')));
-SELECT asText(th3indexFromBinary(asBinary(th3index '{612544986753269759@2001-01-01, 612544986761658367@2001-01-02}')));
-SELECT asText(th3indexFromBinary(asBinary(th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-02]')));
-SELECT asText(th3indexFromBinary(asBinary(th3index '{[612544986753269759@2001-01-01, 612544986761658367@2001-01-02], [612544986753269759@2001-01-03, 612544986753269759@2001-01-04]}')));
+SELECT asText(th3indexFromBinary(asBinary(th3index '880326b885fffff@2001-01-01')));
+SELECT asText(th3indexFromBinary(asBinary(th3index '{880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-02}')));
+SELECT asText(th3indexFromBinary(asBinary(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-02]')));
+SELECT asText(th3indexFromBinary(asBinary(th3index '{[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-02], [880326b885fffff@2001-01-03, 880326b885fffff@2001-01-04]}')));
 -- Little-endian (NDR)
-SELECT asText(th3indexFromBinary(asBinary(th3index '612544986753269759@2001-01-01', 'NDR')));
-SELECT asText(th3indexFromHexWKB(asHexWKB(th3index '612544986753269759@2001-01-01')));
+SELECT asText(th3indexFromBinary(asBinary(th3index '880326b885fffff@2001-01-01', 'NDR')));
+SELECT asText(th3indexFromHexWKB(asHexWKB(th3index '880326b885fffff@2001-01-01')));
 
 -------------------------------------------------------------------------------
 -- Assignment casts to/from tbigint
@@ -111,15 +111,15 @@ SELECT (tbigint '{622236723497533439@2001-01-01, 622236723497533440@2001-01-02}'
 SELECT (tbigint '[622236723497533439@2001-01-01, 622236723497533440@2001-01-02]')::th3index;
 
 -- th3index -> tbigint (explicit via ::)
-SELECT (th3index '622236723497533439@2012-01-01 08:00:00')::tbigint;
-SELECT (th3index '{622236723497533439@2001-01-01, 622236723497533440@2001-01-02}')::tbigint;
-SELECT (th3index '[622236723497533439@2001-01-01, 622236723497533440@2001-01-02]')::tbigint;
+SELECT (th3index '8a2a100d645ffff@2012-01-01 08:00:00')::tbigint;
+SELECT (th3index '{8a2a100d645ffff@2001-01-01, 8a2a100d6460000@2001-01-02}')::tbigint;
+SELECT (th3index '[8a2a100d645ffff@2001-01-01, 8a2a100d6460000@2001-01-02]')::tbigint;
 
 -- Round-trip preserves value
 SELECT ((tbigint '622236723497533439@2012-01-01 08:00:00')::th3index)::tbigint
   = tbigint '622236723497533439@2012-01-01 08:00:00';
-SELECT ((th3index '622236723497533439@2012-01-01 08:00:00')::tbigint)::th3index
-  = th3index '622236723497533439@2012-01-01 08:00:00';
+SELECT ((th3index '8a2a100d645ffff@2012-01-01 08:00:00')::tbigint)::th3index
+  = th3index '8a2a100d645ffff@2012-01-01 08:00:00';
 
 -- Assignment-context: casts are accepted in INSERT/UPDATE without ::
 DROP TABLE IF EXISTS tbl_th3index_assign;
@@ -133,7 +133,7 @@ DROP TABLE tbl_th3index_assign;
 -- exists for the mixed types).
 /* Errors */
 \set VERBOSITY terse
-SELECT tbigint '622236723497533439@2012-01-01 08:00:00' = th3index '622236723497533439@2012-01-01 08:00:00';
+SELECT tbigint '622236723497533439@2012-01-01 08:00:00' = th3index '8a2a100d645ffff@2012-01-01 08:00:00';
 \set VERBOSITY default
 
 -------------------------------------------------------------------------------
@@ -143,9 +143,9 @@ SELECT tbigint '622236723497533439@2012-01-01 08:00:00' = th3index '622236723497
 DROP TABLE IF EXISTS tbl_th3index_binio;
 CREATE TABLE tbl_th3index_binio(k int, temp th3index);
 INSERT INTO tbl_th3index_binio VALUES
-  (1, th3index '622236723497533439@2012-01-01 08:00:00'),
-  (2, th3index '{622236723497533439@2001-01-01, 622236723497533440@2001-01-02}'),
-  (3, th3index '[622236723497533439@2001-01-01, 622236723497533440@2001-01-02]');
+  (1, th3index '8a2a100d645ffff@2012-01-01 08:00:00'),
+  (2, th3index '{8a2a100d645ffff@2001-01-01, 8a2a100d6460000@2001-01-02}'),
+  (3, th3index '[8a2a100d645ffff@2001-01-01, 8a2a100d6460000@2001-01-02]');
 
 COPY tbl_th3index_binio TO '/tmp/tbl_th3index_binio' (FORMAT BINARY);
 
@@ -162,67 +162,67 @@ DROP TABLE tbl_th3index_binio_tmp;
 -------------------------------------------------------------------------------
 -- Constructors (inherited Temporal<T> surface)
 -------------------------------------------------------------------------------
-SELECT th3index(h3index '612544986753269759', timestamptz '2001-01-01 08:00');
-SELECT th3index(h3index '612544986753269759', tstzset '{2001-01-01, 2001-01-02}');
-SELECT th3index(h3index '612544986753269759', tstzspan '[2001-01-01, 2001-01-02]');
-SELECT th3index(h3index '612544986753269759', tstzspanset '{[2001-01-01, 2001-01-02]}');
-SELECT th3indexSeq(ARRAY[th3index '612544986753269759@2001-01-01', th3index '612544986761658367@2001-01-02']);
-SELECT th3indexSeqSet(ARRAY[th3indexSeq(ARRAY[th3index '612544986753269759@2001-01-01'])]);
+SELECT th3index(h3index '880326b885fffff', timestamptz '2001-01-01 08:00');
+SELECT th3index(h3index '880326b885fffff', tstzset '{2001-01-01, 2001-01-02}');
+SELECT th3index(h3index '880326b885fffff', tstzspan '[2001-01-01, 2001-01-02]');
+SELECT th3index(h3index '880326b885fffff', tstzspanset '{[2001-01-01, 2001-01-02]}');
+SELECT th3indexSeq(ARRAY[th3index '880326b885fffff@2001-01-01', th3index '880326b88dfffff@2001-01-02']);
+SELECT th3indexSeqSet(ARRAY[th3indexSeq(ARRAY[th3index '880326b885fffff@2001-01-01'])]);
 
 -------------------------------------------------------------------------------
 -- Conversions / transformations
 -------------------------------------------------------------------------------
-SELECT timeSpan(th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-03]');
-SELECT (th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-03]')::tstzspan;
-SELECT th3indexInst(th3index '612544986753269759@2001-01-01');
-SELECT th3indexSeq(th3index '612544986753269759@2001-01-01');
-SELECT setInterp(th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-02]', 'discrete');
-SELECT appendInstant(th3index '[612544986753269759@2001-01-01]', th3index '612544986761658367@2001-01-02');
-SELECT merge(th3index '612544986753269759@2001-01-01', th3index '612544986761658367@2001-01-02');
-SELECT shiftTime(th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-03]', interval '1 day');
-SELECT scaleTime(th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-03]', interval '2 days');
+SELECT timeSpan(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-03]');
+SELECT (th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-03]')::tstzspan;
+SELECT th3indexInst(th3index '880326b885fffff@2001-01-01');
+SELECT th3indexSeq(th3index '880326b885fffff@2001-01-01');
+SELECT setInterp(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-02]', 'discrete');
+SELECT appendInstant(th3index '[880326b885fffff@2001-01-01]', th3index '880326b88dfffff@2001-01-02');
+SELECT merge(th3index '880326b885fffff@2001-01-01', th3index '880326b88dfffff@2001-01-02');
+SELECT shiftTime(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-03]', interval '1 day');
+SELECT scaleTime(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-03]', interval '2 days');
 
 -------------------------------------------------------------------------------
 -- Accessors
 -------------------------------------------------------------------------------
-SELECT tempSubtype(th3index '{612544986753269759@2001-01-01, 612544986761658367@2001-01-02}');
-SELECT tempBasetype(th3index '612544986753269759@2001-01-01');
-SELECT interp(th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-02]');
-SELECT memSize(th3index '612544986753269759@2001-01-01') > 0;
-SELECT getValue(th3index '612544986753269759@2001-01-01');
-SELECT getTimestamp(th3index '612544986753269759@2001-01-01');
-SELECT getTime(th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-03]');
-SELECT duration(th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-03]');
-SELECT numInstants(th3index '{612544986753269759@2001-01-01, 612544986761658367@2001-01-02}');
-SELECT startInstant(th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-03]');
-SELECT instantN(th3index '{612544986753269759@2001-01-01, 612544986761658367@2001-01-02}', 2);
-SELECT numTimestamps(th3index '{612544986753269759@2001-01-01, 612544986761658367@2001-01-02}');
-SELECT timestamps(th3index '{612544986753269759@2001-01-01, 612544986761658367@2001-01-02}');
-SELECT numSequences(th3index '{[612544986753269759@2001-01-01], [612544986761658367@2001-01-02]}');
-SELECT sequenceN(th3index '{[612544986753269759@2001-01-01], [612544986761658367@2001-01-02]}', 1);
-SELECT segments(th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-02]');
+SELECT tempSubtype(th3index '{880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-02}');
+SELECT tempBasetype(th3index '880326b885fffff@2001-01-01');
+SELECT interp(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-02]');
+SELECT memSize(th3index '880326b885fffff@2001-01-01') > 0;
+SELECT getValue(th3index '880326b885fffff@2001-01-01');
+SELECT getTimestamp(th3index '880326b885fffff@2001-01-01');
+SELECT getTime(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-03]');
+SELECT duration(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-03]');
+SELECT numInstants(th3index '{880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-02}');
+SELECT startInstant(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-03]');
+SELECT instantN(th3index '{880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-02}', 2);
+SELECT numTimestamps(th3index '{880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-02}');
+SELECT timestamps(th3index '{880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-02}');
+SELECT numSequences(th3index '{[880326b885fffff@2001-01-01], [880326b88dfffff@2001-01-02]}');
+SELECT sequenceN(th3index '{[880326b885fffff@2001-01-01], [880326b88dfffff@2001-01-02]}', 1);
+SELECT segments(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-02]');
 SELECT (rec).value, (rec).time FROM
-  (SELECT unnest(th3index '{612544986753269759@2001-01-01, 612544986761658367@2001-01-02}') AS rec) t;
+  (SELECT unnest(th3index '{880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-02}') AS rec) t;
 
 -------------------------------------------------------------------------------
 -- Restrictions
 -------------------------------------------------------------------------------
-SELECT atValue(th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-02, 612544986753269759@2001-01-03]', h3index '612544986753269759');
-SELECT minusValue(th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-02, 612544986753269759@2001-01-03]', h3index '612544986753269759');
-SELECT atValues(th3index '{612544986753269759@2001-01-01, 612544986761658367@2001-01-02}', set(ARRAY[h3index '612544986753269759', h3index '612544986761658367']));
-SELECT atTime(th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-03]', timestamptz '2001-01-02');
-SELECT minusTime(th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-03]', timestamptz '2001-01-02');
-SELECT atTime(th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-05]', tstzspan '[2001-01-02, 2001-01-04]');
-SELECT beforeTimestamp(th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-05]', timestamptz '2001-01-03');
-SELECT afterTimestamp(th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-05]', timestamptz '2001-01-03');
+SELECT atValue(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-02, 880326b885fffff@2001-01-03]', h3index '880326b885fffff');
+SELECT minusValue(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-02, 880326b885fffff@2001-01-03]', h3index '880326b885fffff');
+SELECT atValues(th3index '{880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-02}', set(ARRAY[h3index '880326b885fffff', h3index '880326b88dfffff']));
+SELECT atTime(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-03]', timestamptz '2001-01-02');
+SELECT minusTime(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-03]', timestamptz '2001-01-02');
+SELECT atTime(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-05]', tstzspan '[2001-01-02, 2001-01-04]');
+SELECT beforeTimestamp(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-05]', timestamptz '2001-01-03');
+SELECT afterTimestamp(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-05]', timestamptz '2001-01-03');
 
 -------------------------------------------------------------------------------
 -- Modifications
 -------------------------------------------------------------------------------
-SELECT insert(th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-03]', th3index '[612544986761658367@2001-01-04, 612544986761658367@2001-01-05]');
-SELECT update(th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-03]', th3index '612544986761658367@2001-01-02');
-SELECT deleteTime(th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-03]', timestamptz '2001-01-02');
+SELECT insert(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-03]', th3index '[880326b88dfffff@2001-01-04, 880326b88dfffff@2001-01-05]');
+SELECT update(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-03]', th3index '880326b88dfffff@2001-01-02');
+SELECT deleteTime(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-03]', timestamptz '2001-01-02');
 SELECT (rec).time, (rec).temp FROM
-  (SELECT timeSplit(th3index '[612544986753269759@2001-01-01, 612544986761658367@2001-01-04]', interval '2 days', timestamptz '2001-01-01') AS rec) t;
+  (SELECT timeSplit(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-04]', interval '2 days', timestamptz '2001-01-01') AS rec) t;
 
 -------------------------------------------------------------------------------

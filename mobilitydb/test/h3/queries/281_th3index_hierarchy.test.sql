@@ -25,52 +25,52 @@
 -- Round-trip property: the parent at resolution R has resolution R.
 -- This holds without us having to know the parent value.
 SELECT th3GetResolution(
-  th3CellToParent(th3index '590464338553208831@2001-01-01', 2));
+  th3CellToParent(th3index '831c02fffffffff@2001-01-01', 2));
 SELECT th3GetResolution(
-  th3CellToParent(th3index '622236750694711295@2001-01-01', 5));
+  th3CellToParent(th3index '8a2a1072b59ffff@2001-01-01', 5));
 
 SELECT th3GetResolution(th3CellToParent(th3index
-  '[590464338553208831@2001-01-01, 590464201114255359@2001-01-02]', 1));
+  '[831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02]', 1));
 
 -- res 0 is the coarsest level — asking for a parent at a finer
 -- resolution must error (h3-pg semantics).
 /* Errors */
-SELECT th3CellToParent(th3index '590464338553208831@2001-01-01', 5);
+SELECT th3CellToParent(th3index '831c02fffffffff@2001-01-01', 5);
 
 -------------------------------------------------------------------------------
 -- th3CellToParent(th3index) — drop one resolution
 -------------------------------------------------------------------------------
 
 SELECT th3GetResolution(
-  th3CellToParent(th3index '590464338553208831@2001-01-01'));
+  th3CellToParent(th3index '831c02fffffffff@2001-01-01'));
 SELECT th3GetResolution(
-  th3CellToParent(th3index '622236750694711295@2001-01-01'));
+  th3CellToParent(th3index '8a2a1072b59ffff@2001-01-01'));
 
 -- Idempotent property: parent(parent(cell)) is the same as parent at res-2
 SELECT th3CellToParent(th3CellToParent(
-    th3index '622236750694711295@2001-01-01'))
-  = th3CellToParent(th3index '622236750694711295@2001-01-01', 8);
+    th3index '8a2a1072b59ffff@2001-01-01'))
+  = th3CellToParent(th3index '8a2a1072b59ffff@2001-01-01', 8);
 
 -------------------------------------------------------------------------------
 -- th3CellToCenterChild(th3index, integer) — lift_with_const
 -------------------------------------------------------------------------------
 
 SELECT th3GetResolution(
-  th3CellToCenterChild(th3index '590464338553208831@2001-01-01', 5));
+  th3CellToCenterChild(th3index '831c02fffffffff@2001-01-01', 5));
 SELECT th3GetResolution(
-  th3CellToCenterChild(th3index '590464338553208831@2001-01-01', 10));
+  th3CellToCenterChild(th3index '831c02fffffffff@2001-01-01', 10));
 
 -- Round-trip: the parent of a center child at finer res equals the cell.
 SELECT th3CellToParent(
-  th3CellToCenterChild(th3index '590464338553208831@2001-01-01', 7), 3)
-  = th3index '590464338553208831@2001-01-01';
+  th3CellToCenterChild(th3index '831c02fffffffff@2001-01-01', 7), 3)
+  = th3index '831c02fffffffff@2001-01-01';
 
 -------------------------------------------------------------------------------
 -- th3CellToCenterChild(th3index) — drop one resolution finer
 -------------------------------------------------------------------------------
 
 SELECT th3GetResolution(
-  th3CellToCenterChild(th3index '590464338553208831@2001-01-01'));
+  th3CellToCenterChild(th3index '831c02fffffffff@2001-01-01'));
 
 -------------------------------------------------------------------------------
 -- th3CellToChildPos(th3index, integer)
@@ -78,15 +78,15 @@ SELECT th3GetResolution(
 
 -- Position of a res-10 NYC cell among the children of its res-9 parent
 -- is in [0, 6] (hex parent has 7 children).
-SELECT th3CellToChildPos(th3index '622236750694711295@2001-01-01', 9);
+SELECT th3CellToChildPos(th3index '8a2a1072b59ffff@2001-01-01', 9);
 
 -- Position relative to res-3 ancestor (0x83 prefix) is in [0, 7^7 - 1].
 \set VERBOSITY terse
-SELECT th3CellToChildPos(th3index '622236750694711295@2001-01-01', 3) >= 0;
+SELECT th3CellToChildPos(th3index '8a2a1072b59ffff@2001-01-01', 3) >= 0;
 \set VERBOSITY default
 
 SELECT th3CellToChildPos(th3index
-  '[622236750694711295@2001-01-01, 622236750694711295@2001-01-02]', 9);
+  '[8a2a1072b59ffff@2001-01-01, 8a2a1072b59ffff@2001-01-02]', 9);
 
 -------------------------------------------------------------------------------
 -- th3ChildPosToCell(tbigint, th3index, integer)
@@ -96,9 +96,9 @@ SELECT th3CellToChildPos(th3index
 -------------------------------------------------------------------------------
 
 SELECT th3ChildPosToCell(
-    th3CellToChildPos(th3index '622236750694711295@2001-01-01', 9),
-    th3CellToParent(th3index '622236750694711295@2001-01-01', 9),
+    th3CellToChildPos(th3index '8a2a1072b59ffff@2001-01-01', 9),
+    th3CellToParent(th3index '8a2a1072b59ffff@2001-01-01', 9),
     10)
-  = th3index '622236750694711295@2001-01-01';
+  = th3index '8a2a1072b59ffff@2001-01-01';
 
 -------------------------------------------------------------------------------
