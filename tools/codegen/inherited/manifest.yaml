@@ -3471,3 +3471,1789 @@ mathfunc_families:
   - fns:
     - {sig: "tan(tfloat)", ret: "tfloat", sym: "Tfloat_tan"}
   - lit: "\n/******************************************************************************/\n"
+span_families:
+- family: span
+  file: mobilitydb/sql/temporal/003_span.in.sql
+  reference: true
+  begin: "CREATE TYPE intspan;"
+  order: [int, bigint, float, date, tstz]
+  insts:
+    int: {v: integer, sp: intspan, ss: intspanset, vs: intset, rg: int4range, mr: int4multirange}
+    bigint: {v: bigint, sp: bigintspan, ss: bigintspanset, vs: bigintset, rg: int8range, mr: int8multirange}
+    float: {v: float, sp: floatspan, ss: floatspanset, vs: floatset}
+    date: {v: date, sp: datespan, ss: datespanset, vs: dateset, rg: daterange, mr: datemultirange}
+    tstz: {v: timestamptz, sp: tstzspan, ss: tstzspanset, vs: tstzset, rg: tstzrange, mr: tstzmultirange}
+  blocks:
+  - {stmt: "CREATE TYPE {sp};"}
+  - lit: "\n/* Forward reference of the types needed for the result of set operations */\n"
+  - {stmt: "CREATE TYPE {ss};"}
+  - lit: "\n"
+  - group:
+    - {sig: "{sp}_in(cstring)", ret: "{sp}", sym: Span_in}
+    - {sig: "{sp}_out({sp})", ret: "cstring", sym: Span_out}
+    - {sig: "{sp}_recv(internal)", ret: "{sp}", sym: Span_recv}
+    - {sig: "{sp}_send({sp})", ret: "bytea", sym: Span_send}
+    sep: "\n"
+  - lit: "\n/* The span_analyze function is defined in file 001_set.in.sql */\n\n"
+  - {stmt: "CREATE TYPE {sp} (\n  internallength = 24,\n  input = {sp}_in,\n  output = {sp}_out,\n  receive = {sp}_recv,\n  send = {sp}_send,\n  alignment = double,\n  analyze = span_analyze\n);", only: [int]}
+  - lit: "\n"
+  - {stmt: "CREATE TYPE {sp} (\n  internallength = 24,\n  input = {sp}_in,\n  output = {sp}_out,\n  receive = {sp}_recv,\n  send = {sp}_send,\n  alignment = double,\n  analyze = span_analyze\n);", only: [bigint]}
+  - lit: "\n"
+  - {stmt: "CREATE TYPE {sp} (\n  internallength = 24,\n  input = {sp}_in,\n  output = {sp}_out,\n  receive = {sp}_recv,\n  send = {sp}_send,\n  alignment = double,\n  analyze = span_analyze\n);", only: [float]}
+  - lit: "\n"
+  - {stmt: "CREATE TYPE {sp} (\n  internallength = 24,\n  input = {sp}_in,\n  output = {sp}_out,\n  receive = {sp}_recv,\n  send = {sp}_send,\n  alignment = double,\n  analyze = span_analyze\n);", only: [date]}
+  - lit: "\n"
+  - {stmt: "CREATE TYPE {sp} (\n  internallength = 24,\n  input = {sp}_in,\n  output = {sp}_out,\n  receive = {sp}_recv,\n  send = {sp}_send,\n  alignment = double,\n  analyze = span_analyze\n);", only: [tstz]}
+  - lit: "\n/******************************************************************************/\n\n-- Input/output in WKT, WKB and HexWKB representation\n\n"
+  - {sig: "{sp}FromBinary(bytea)", ret: "{sp}", sym: Span_from_wkb, order: [int, bigint, float, tstz, date]}
+  - lit: "\n"
+  - {sig: "{sp}FromHexWKB(text)", ret: "{sp}", sym: Span_from_hexwkb, order: [int, bigint, float, tstz, date]}
+  - lit: "\n"
+  - {sig: "asText({sp})", ret: "text", sym: Span_as_text, only: [int, bigint]}
+  - {sig: "asText({sp}, maxdecimaldigits int4 DEFAULT 15)", ret: "text", sym: Span_as_text, only: [float]}
+  - {sig: "asText({sp})", ret: "text", sym: Span_as_text, only: [date, tstz]}
+  - lit: "\n"
+  - {sig: "asBinary({sp}, endianenconding text DEFAULT '')", ret: "bytea", sym: Span_as_wkb}
+  - lit: "\n"
+  - {sig: "asHexWKB({sp}, endianenconding text DEFAULT '')", ret: "text", sym: Span_as_hexwkb}
+  - lit: "\n/******************************************************************************\n * Constructor functions\n ******************************************************************************/\n\n"
+  - {sig: "span({v}, {v}, boolean DEFAULT true, boolean DEFAULT false)", ret: "{sp}", sym: Span_constructor}
+  - lit: "\n/******************************************************************************\n * Conversion functions\n ******************************************************************************/\n\n"
+  - {sig: "span({v})", ret: "{sp}", sym: Value_to_span}
+  - lit: "\n"
+  - {stmt: "CREATE CAST ({v} AS {sp}) WITH FUNCTION span({v});"}
+  - lit: "\n"
+  - {sig: "span({vs})", ret: "{sp}", sym: Set_to_span}
+  - lit: "\n"
+  - {stmt: "CREATE CAST ({vs} AS {sp}) WITH FUNCTION span({vs});"}
+  - lit: "\n"
+  - {sig: "spans({vs})", ret: "{sp}[]", sym: Set_spans}
+  - lit: "\n"
+  - {sig: "splitNSpans({vs}, {v})", ret: "{sp}[]", sym: Set_split_n_spans, only: [int]}
+  - {sig: "splitNSpans(bigintset, {v})", ret: "bigintspan[]", sym: Set_split_n_spans, only: [int]}
+  - {sig: "splitNSpans(floatset, {v})", ret: "floatspan[]", sym: Set_split_n_spans, only: [int]}
+  - {sig: "splitNSpans(dateset, {v})", ret: "datespan[]", sym: Set_split_n_spans, only: [int]}
+  - {sig: "splitNSpans(tstzset, {v})", ret: "tstzspan[]", sym: Set_split_n_spans, only: [int]}
+  - lit: "\n"
+  - {sig: "splitEachNSpans({vs}, {v})", ret: "{sp}[]", sym: Set_split_each_n_spans, only: [int]}
+  - {sig: "splitEachNSpans(bigintset, {v})", ret: "bigintspan[]", sym: Set_split_each_n_spans, only: [int]}
+  - {sig: "splitEachNSpans(floatset, {v})", ret: "floatspan[]", sym: Set_split_each_n_spans, only: [int]}
+  - {sig: "splitEachNSpans(dateset, {v})", ret: "datespan[]", sym: Set_split_each_n_spans, only: [int]}
+  - {sig: "splitEachNSpans(tstzset, {v})", ret: "tstzspan[]", sym: Set_split_each_n_spans, only: [int]}
+  - lit: "\n"
+  - {sig: "{sp}(floatspan)", ret: "{sp}", sym: Floatspan_to_intspan, only: [int]}
+  - {sig: "floatspan({sp})", ret: "floatspan", sym: Intspan_to_floatspan, only: [int]}
+  - lit: "\n"
+  - {stmt: "CREATE CAST ({sp} AS floatspan) WITH FUNCTION floatspan({sp});", only: [int]}
+  - {stmt: "CREATE CAST (floatspan AS {sp}) WITH FUNCTION {sp}(floatspan);", only: [int]}
+  - lit: "\n"
+  - {sig: "{sp}(tstzspan)", ret: "{sp}", sym: Tstzspan_to_datespan, only: [date]}
+  - {sig: "tstzspan({sp})", ret: "tstzspan", sym: Datespan_to_tstzspan, only: [date]}
+  - lit: "\n"
+  - {stmt: "CREATE CAST ({sp} AS tstzspan) WITH FUNCTION tstzspan({sp});", only: [date]}
+  - {stmt: "CREATE CAST (tstzspan AS {sp}) WITH FUNCTION {sp}(tstzspan);", only: [date]}
+  - lit: "\n"
+  - {sig: "span({rg})", ret: "{sp}", sym: Range_to_span, only: [int, bigint, date, tstz]}
+  - lit: "\n"
+  - {sig: "range({sp})", ret: "{rg}", sym: Span_to_range, only: [int, bigint, date, tstz]}
+  - lit: "\n"
+  - {stmt: "CREATE CAST ({rg} AS {sp}) WITH FUNCTION span({rg});", only: [int, bigint, date, tstz]}
+  - {stmt: "CREATE CAST ({sp} AS {rg}) WITH FUNCTION range({sp});", only: [int, bigint, date, tstz]}
+  - lit: "\n/******************************************************************************\n * Accessor functions\n ******************************************************************************/\n\n"
+  - {sig: "lower({sp})", ret: "{v}", sym: Span_lower}
+  - lit: "\n"
+  - {sig: "upper({sp})", ret: "{v}", sym: Span_upper}
+  - lit: "\n"
+  - {sig: "lowerInc({sp})", ret: "boolean", sym: Span_lower_inc}
+  - lit: "\n"
+  - {sig: "upperInc({sp})", ret: "boolean", sym: Span_upper_inc}
+  - lit: "\n"
+  - {sig: "width({sp})", ret: "int", sym: Numspan_width, only: [int]}
+  - {sig: "width({sp})", ret: "{v}", sym: Numspan_width, only: [bigint, float]}
+  - lit: "\n"
+  - {sig: "duration({sp})", ret: "interval", sym: Datespan_duration, only: [date]}
+  - {sig: "duration({sp})", ret: "interval", sym: Tstzspan_duration, only: [tstz]}
+  - lit: "\n/*****************************************************************************\n * Transformation functions\n *****************************************************************************/\n\n"
+  - {sig: "expand({sp}, {v})", ret: "{sp}", sym: Numspan_expand, only: [int]}
+  - {sig: "expand({sp}, {v})", ret: "{sp}", sym: Numspan_shift, only: [bigint]}
+  - {sig: "expand({sp}, {v})", ret: "{sp}", sym: Numspan_expand, only: [float]}
+  - {sig: "expand(datespan, {v})", ret: "datespan", sym: Numspan_expand, only: [int]}
+  - {sig: "expand({sp}, interval)", ret: "{sp}", sym: Tstzspan_expand, only: [tstz]}
+  - lit: "\n"
+  - {sig: "shift({v}, interval)", ret: "{v}", sym: Timestamptz_shift, only: [tstz]}
+  - lit: "\n"
+  - {sig: "shift({sp}, {v})", ret: "{sp}", sym: Numspan_shift, only: [int, bigint, float]}
+  - {sig: "shift(datespan, {v})", ret: "datespan", sym: Numspan_shift, only: [int]}
+  - {sig: "shift({sp}, interval)", ret: "{sp}", sym: Tstzspan_shift, only: [tstz]}
+  - lit: "\n"
+  - {sig: "scale({sp}, {v})", ret: "{sp}", sym: Numspan_scale, only: [int, bigint, float]}
+  - {sig: "scale(datespan, {v})", ret: "datespan", sym: Numspan_scale, only: [int]}
+  - {sig: "scale({sp}, interval)", ret: "{sp}", sym: Tstzspan_scale, only: [tstz]}
+  - lit: "\n"
+  - {sig: "shiftScale({sp}, {v}, {v})", ret: "{sp}", sym: Numspan_shift_scale, only: [int, bigint, float]}
+  - {sig: "shiftScale(datespan, {v}, {v})", ret: "datespan", sym: Numspan_shift_scale, only: [int]}
+  - {sig: "shiftScale({sp}, interval, interval)", ret: "{sp}", sym: Tstzspan_shift_scale, only: [tstz]}
+  - lit: "\n"
+  - {sig: "floor({sp})", ret: "{sp}", sym: Floatspan_floor, only: [float]}
+  - {sig: "ceil({sp})", ret: "{sp}", sym: Floatspan_ceil, only: [float]}
+  - lit: "\n"
+  - {sig: "round(float, {v} DEFAULT 0)", ret: "float", sym: Float_round, only: [int]}
+  - lit: "\n"
+  - {sig: "round(floatspan, {v} DEFAULT 0)", ret: "floatspan", sym: Floatspan_round, only: [int]}
+  - lit: "\n"
+  - {sig: "degrees({sp}, bool DEFAULT FALSE)", ret: "{sp}", sym: Floatspan_degrees, only: [float]}
+  - {sig: "radians({sp})", ret: "{sp}", sym: Floatspan_radians, only: [float]}
+  - lit: "\n/*****************************************************************************\n * Selectivity functions\n *****************************************************************************/\n\n-- Functions span_sel and span_joinsel are defined in the file defining the\n-- set type\n\n-- Functions for debugging the selectivity code\n\n-- Given a table, column, and span returns the estimate of what proportion\n-- of the table would be returned by a query using the given operator.\nCREATE FUNCTION _mobdb_span_sel(tbl regclass, col text, oper regoper,\n    i intspan)\n  RETURNS float\n  AS 'MODULE_PATHNAME'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION _mobdb_span_sel(tbl regclass, col text, oper regoper,\n    b bigintspan)\n  RETURNS float\n  AS 'MODULE_PATHNAME'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION _mobdb_span_sel(tbl regclass, col text, oper regoper,\n    f floatspan)\n  RETURNS float\n  AS 'MODULE_PATHNAME'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION _mobdb_span_sel(tbl regclass, col text, oper regoper,\n    p datespan)\n  RETURNS float\n  AS 'MODULE_PATHNAME'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION _mobdb_span_sel(tbl regclass, col text, oper regoper,\n    p tstzspan)\n  RETURNS float\n  AS 'MODULE_PATHNAME'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n-- Given two tables and columns, returns estimate of the proportion of rows a\n-- given join operator will return relative to the number of rows an\n-- unconstrained table join would return\nCREATE OR REPLACE FUNCTION _mobdb_span_joinsel(tbl1 regclass, col1 text,\n    tbl2 regclass, col2 text, oper regoper)\n  RETURNS float\n  AS 'MODULE_PATHNAME'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n/******************************************************************************\n * Comparison operators\n ******************************************************************************/\n\n"
+  - {sig: "eq({sp}, {sp})", ret: "boolean", sym: Span_eq}
+  - lit: "\n"
+  - {sig: "ne({sp}, {sp})", ret: "boolean", sym: Span_ne}
+  - lit: "\n"
+  - {sig: "lt({sp}, {sp})", ret: "boolean", sym: Span_lt}
+  - lit: "\n"
+  - {sig: "le({sp}, {sp})", ret: "boolean", sym: Span_le}
+  - lit: "\n"
+  - {sig: "ge({sp}, {sp})", ret: "boolean", sym: Span_ge}
+  - lit: "\n"
+  - {sig: "gt({sp}, {sp})", ret: "boolean", sym: Span_gt}
+  - lit: "\n"
+  - {sig: "cmp({sp}, {sp})", ret: "int4", sym: Span_cmp}
+  - lit: "\n"
+  - {stmt: "CREATE OPERATOR = (\n  PROCEDURE = eq,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = =, NEGATOR = <>,\n  RESTRICT = eqsel, JOIN = eqjoinsel\n);"}
+  - lit: "\n"
+  - {stmt: "CREATE OPERATOR <> (\n  PROCEDURE = ne,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = <>, NEGATOR = =,\n  RESTRICT = neqsel, JOIN = neqjoinsel\n);"}
+  - lit: "\n"
+  - {stmt: "CREATE OPERATOR < (\n  PROCEDURE = lt,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = >, NEGATOR = >=,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+  - lit: "\n"
+  - {stmt: "CREATE OPERATOR <= (\n  PROCEDURE = le,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = >=, NEGATOR = >,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+  - lit: "\n"
+  - {stmt: "CREATE OPERATOR >= (\n  PROCEDURE = ge,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = <=, NEGATOR = <,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+  - lit: "\n"
+  - {stmt: "CREATE OPERATOR > (\n  PROCEDURE = gt,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = <, NEGATOR = <=,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+  - lit: "\n"
+  - {stmt: "CREATE OPERATOR CLASS {sp}_btree_ops\n  DEFAULT FOR TYPE {sp} USING btree AS\n  OPERATOR  1  < ,\n  OPERATOR  2  <= ,\n  OPERATOR  3  = ,\n  OPERATOR  4  >= ,\n  OPERATOR  5  > ,\n  FUNCTION  1  cmp({sp}, {sp});"}
+  - lit: "\n/******************************************************************************/\n\nCREATE FUNCTION hash(intspan)\n  RETURNS integer\n AS 'MODULE_PATHNAME', 'Span_hash'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION hash(bigintspan)\n  RETURNS integer\n AS 'MODULE_PATHNAME', 'Span_hash'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n"
+  - {sig: "hash({sp})", ret: "integer", sym: Span_hash, only: [float, date, tstz]}
+  - lit: "\n"
+  - {sig: "hashExtended({sp}, bigint)", ret: "bigint", sym: Span_hash_extended, only: [int, bigint]}
+  - {sig: "hashExtended(floatspan, {v})", ret: "{v}", sym: Span_hash_extended, only: [bigint]}
+  - {sig: "hashExtended(datespan, {v})", ret: "{v}", sym: Span_hash_extended, only: [bigint]}
+  - {sig: "hashExtended(tstzspan, {v})", ret: "{v}", sym: Span_hash_extended, only: [bigint]}
+  - lit: "\n"
+  - {stmt: "CREATE OPERATOR CLASS {sp}_hash_ops\n  DEFAULT FOR TYPE {sp} USING hash AS\n    OPERATOR    1   = ,\n    FUNCTION    1   hash({sp}),\n    FUNCTION    2   hashExtended({sp}, bigint);"}
+  - lit: "\n/******************************************************************************/\n"
+- family: spanset
+  file: mobilitydb/sql/temporal/007_spanset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * Input/Output\n"
+  order: [int, bigint, float, date, tstz]
+  insts:
+    int: {v: integer, sp: intspan, ss: intspanset, vs: intset, rg: int4range, mr: int4multirange}
+    bigint: {v: bigint, sp: bigintspan, ss: bigintspanset, vs: bigintset, rg: int8range, mr: int8multirange}
+    float: {v: float, sp: floatspan, ss: floatspanset, vs: floatset}
+    date: {v: date, sp: datespan, ss: datespanset, vs: dateset, rg: daterange, mr: datemultirange}
+    tstz: {v: timestamptz, sp: tstzspan, ss: tstzspanset, vs: tstzset, rg: tstzrange, mr: tstzmultirange}
+  blocks:
+  - lit: "/******************************************************************************\n * Input/Output\n ******************************************************************************/\n\n"
+  - {sig: "{ss}_in(cstring)", ret: "{ss}", sym: Spanset_in}
+  - lit: "\n"
+  - {sig: "{ss}_out({ss})", ret: "cstring", sym: Spanset_out}
+  - lit: "\n"
+  - {sig: "{ss}_recv(internal)", ret: "{ss}", sym: Spanset_recv}
+  - lit: "\n"
+  - {sig: "{ss}_send({ss})", ret: "bytea", sym: Spanset_send}
+  - lit: "\n/* The span_analyze function is defined in file 001_set.in.sql */\n\n"
+  - {stmt: "CREATE TYPE {ss} (\n  internallength = variable,\n  input = {ss}_in,\n  output = {ss}_out,\n  receive = {ss}_recv,\n  send = {ss}_send,\n  alignment = double,\n-- The following line makes NULL if size < 128\n  storage = extended,\n  analyze = span_analyze\n);", only: [int, bigint, float]}
+  - {stmt: "CREATE TYPE {ss} (\n  internallength = variable,\n  input = {ss}_in,\n  output = {ss}_out,\n  receive = {ss}_recv,\n  send = {ss}_send,\n  alignment = double,\n  storage = extended,\n  analyze = span_analyze\n);", only: [date, tstz]}
+  - lit: "\n/******************************************************************************/\n\n-- Input/output in WKB and HexWKB representation\n\n"
+  - {sig: "{ss}FromBinary(bytea)", ret: "{ss}", sym: Spanset_from_wkb}
+  - lit: "\n"
+  - {sig: "{ss}FromHexWKB(text)", ret: "{ss}", sym: Spanset_from_hexwkb}
+  - lit: "\n"
+  - {sig: "asText({ss})", ret: "text", sym: Spanset_as_text, only: [int, bigint]}
+  - {sig: "asText({ss}, maxdecimaldigits int4 DEFAULT 15)", ret: "text", sym: Spanset_as_text, only: [float]}
+  - {sig: "asText({ss})", ret: "text", sym: Spanset_as_text, only: [date, tstz]}
+  - lit: "\n"
+  - {sig: "asBinary({ss}, endianenconding text DEFAULT '')", ret: "bytea", sym: Spanset_as_wkb}
+  - lit: "\n"
+  - {sig: "asHexWKB({ss}, endianenconding text DEFAULT '')", ret: "text", sym: Spanset_as_hexwkb}
+  - lit: "\n/******************************************************************************\n * Constructor functions\n ******************************************************************************/\n\n"
+  - {sig: "spanset({sp}[])", ret: "{ss}", sym: Spanset_constructor}
+  - lit: "\n/******************************************************************************\n * Conversion functions\n ******************************************************************************/\n\n"
+  - {sig: "spanset({v})", ret: "{ss}", sym: Value_to_spanset}
+  - lit: "\n"
+  - {stmt: "CREATE CAST ({v} AS {ss}) WITH FUNCTION spanset({v});"}
+  - lit: "\n"
+  - {sig: "spanset({vs})", ret: "{ss}", sym: Set_to_spanset}
+  - lit: "\n"
+  - {stmt: "CREATE CAST ({vs} AS {ss}) WITH FUNCTION spanset({vs});"}
+  - lit: "\n"
+  - {sig: "spanset({sp})", ret: "{ss}", sym: Span_to_spanset}
+  - lit: "\n"
+  - {stmt: "CREATE CAST ({sp} AS {ss}) WITH FUNCTION spanset({sp});"}
+  - lit: "\n"
+  - {sig: "span({ss})", ret: "{sp}", sym: Spanset_to_span}
+  - lit: "\n"
+  - {stmt: "CREATE CAST ({ss} AS {sp}) WITH FUNCTION span({ss});"}
+  - lit: "\n"
+  - {sig: "{ss}(floatspanset)", ret: "{ss}", sym: Floatspanset_to_intspanset, only: [int]}
+  - {sig: "floatspanset({ss})", ret: "floatspanset", sym: Intspanset_to_floatspanset, only: [int]}
+  - lit: "\n"
+  - {stmt: "CREATE CAST ({ss} AS floatspanset) WITH FUNCTION floatspanset({ss});", only: [int]}
+  - {stmt: "CREATE CAST (floatspanset AS {ss}) WITH FUNCTION {ss}(floatspanset);", only: [int]}
+  - lit: "\n"
+  - {sig: "{ss}(tstzspanset)", ret: "{ss}", sym: Tstzspanset_to_datespanset, only: [date]}
+  - {sig: "tstzspanset({ss})", ret: "tstzspanset", sym: Datespanset_to_tstzspanset, only: [date]}
+  - lit: "\n"
+  - {stmt: "CREATE CAST ({ss} AS tstzspanset) WITH FUNCTION tstzspanset({ss});", only: [date]}
+  - {stmt: "CREATE CAST (tstzspanset AS {ss}) WITH FUNCTION {ss}(tstzspanset);", only: [date]}
+  - lit: "\n#if POSTGRESQL_VERSION_NUMBER >= 140000\n"
+  - {sig: "multirange({ss})", ret: "{mr}", sym: Spanset_to_multirange, only: [int, bigint, date, tstz]}
+  - lit: "\n"
+  - {sig: "spanset({mr})", ret: "{ss}", sym: Multirange_to_spanset, only: [int, bigint, date, tstz]}
+  - lit: "\n"
+  - {stmt: "CREATE CAST ({ss} AS {mr}) WITH FUNCTION multirange({ss});", only: [int, bigint, date, tstz]}
+  - {stmt: "CREATE CAST ({mr} AS {ss}) WITH FUNCTION spanset({mr});", only: [int, bigint, date, tstz]}
+  - lit: "#endif //POSTGRESQL_VERSION_NUMBER >= 140000\n\n/******************************************************************************\n * Accessor Functions\n ******************************************************************************/\n\n"
+  - {sig: "memSize({ss})", ret: "integer", sym: Spanset_mem_size}
+  - lit: "\n"
+  - {sig: "lower({ss})", ret: "{v}", sym: Spanset_lower}
+  - lit: "\n"
+  - {sig: "upper({ss})", ret: "{v}", sym: Spanset_upper}
+  - lit: "\n"
+  - {sig: "lowerInc({ss})", ret: "boolean", sym: Spanset_lower_inc}
+  - lit: "\n"
+  - {sig: "upperInc({ss})", ret: "boolean", sym: Spanset_upper_inc}
+  - lit: "\n"
+  - {sig: "width({ss}, boundspan boolean DEFAULT FALSE)", ret: "int", sym: Numspanset_width, only: [int]}
+  - {sig: "width({ss}, boundspan boolean DEFAULT FALSE)", ret: "{v}", sym: Numspanset_width, only: [bigint, float]}
+  - lit: "\n"
+  - {sig: "duration({ss}, boundspan boolean DEFAULT FALSE)", ret: "interval", sym: Datespanset_duration, only: [date]}
+  - {sig: "duration({ss}, boundspan boolean DEFAULT FALSE)", ret: "interval", sym: Tstzspanset_duration, only: [tstz]}
+  - lit: "\n"
+  - {sig: "numSpans({ss})", ret: "integer", sym: Spanset_num_spans}
+  - lit: "\n"
+  - {sig: "startSpan({ss})", ret: "{sp}", sym: Spanset_start_span}
+  - lit: "\n"
+  - {sig: "endSpan({ss})", ret: "{sp}", sym: Spanset_end_span}
+  - lit: "\n"
+  - {sig: "spanN({ss}, {v})", ret: "{sp}", sym: Spanset_span_n, only: [int]}
+  - {sig: "spanN(bigintspanset, {v})", ret: "bigintspan", sym: Spanset_span_n, only: [int]}
+  - {sig: "spanN(floatspanset, {v})", ret: "floatspan", sym: Spanset_span_n, only: [int]}
+  - {sig: "spanN(datespanset, {v})", ret: "datespan", sym: Spanset_span_n, only: [int]}
+  - {sig: "spanN(tstzspanset, {v})", ret: "tstzspan", sym: Spanset_span_n, only: [int]}
+  - lit: "\n"
+  - {sig: "numDates({ss})", ret: "integer", sym: Datespanset_num_dates, only: [date]}
+  - lit: "\n"
+  - {sig: "startDate({ss})", ret: "{v}", sym: Datespanset_start_date, only: [date]}
+  - lit: "\n"
+  - {sig: "endDate({ss})", ret: "{v}", sym: Datespanset_end_date, only: [date]}
+  - lit: "\n"
+  - {sig: "{v}N({ss}, integer)", ret: "{v}", sym: Datespanset_date_n, only: [date]}
+  - lit: "\n"
+  - {sig: "dates({ss})", ret: "{vs}", sym: Datespanset_dates, only: [date]}
+  - lit: "\n"
+  - {sig: "numTimestamps({ss})", ret: "integer", sym: Tstzspanset_num_timestamps, only: [tstz]}
+  - lit: "\n"
+  - {sig: "startTimestamp({ss})", ret: "{v}", sym: Tstzspanset_start_timestamptz, only: [tstz]}
+  - lit: "\n"
+  - {sig: "endTimestamp({ss})", ret: "{v}", sym: Tstzspanset_end_timestamptz, only: [tstz]}
+  - lit: "\n"
+  - {sig: "timestampN(tstzspanset, {v})", ret: "timestamptz", sym: Tstzspanset_timestamptz_n, only: [int]}
+  - lit: "\n"
+  - {sig: "timestamps({ss})", ret: "{vs}", sym: Tstzspanset_timestamps, only: [tstz]}
+  - lit: "\n/*****************************************************************************\n * Transformation functions\n *****************************************************************************/\n\n"
+  - {sig: "shift({ss}, {v})", ret: "{ss}", sym: Numspanset_shift, only: [int, bigint, float]}
+  - {sig: "shift(datespanset, {v})", ret: "datespanset", sym: Numspanset_shift, only: [int]}
+  - {sig: "shift({ss}, interval)", ret: "{ss}", sym: Tstzspanset_shift, only: [tstz]}
+  - lit: "\n"
+  - {sig: "scale({ss}, {v})", ret: "{ss}", sym: Numspanset_scale, only: [int, bigint, float]}
+  - {sig: "scale(datespanset, {v})", ret: "datespanset", sym: Numspanset_scale, only: [int]}
+  - {sig: "scale({ss}, interval)", ret: "{ss}", sym: Tstzspanset_scale, only: [tstz]}
+  - lit: "\n"
+  - {sig: "shiftScale({ss}, {v}, {v})", ret: "{ss}", sym: Numspanset_shift_scale, only: [int, bigint, float]}
+  - {sig: "shiftScale(datespanset, {v}, {v})", ret: "datespanset", sym: Numspanset_shift_scale, only: [int]}
+  - {sig: "shiftScale({ss}, interval, interval)", ret: "{ss}", sym: Tstzspanset_shift_scale, only: [tstz]}
+  - lit: "\n"
+  - {sig: "floor({ss})", ret: "{ss}", sym: Floatspanset_floor, only: [float]}
+  - {sig: "ceil({ss})", ret: "{ss}", sym: Floatspanset_ceil, only: [float]}
+  - lit: "\n"
+  - {sig: "round(floatspanset, {v} DEFAULT 0)", ret: "floatspanset", sym: Floatspanset_round, only: [int]}
+  - lit: "\n"
+  - {sig: "degrees({ss}, bool DEFAULT FALSE)", ret: "{ss}", sym: Floatspanset_degrees, only: [float]}
+  - {sig: "radians({ss})", ret: "{ss}", sym: Floatspanset_radians, only: [float]}
+  - lit: "\n/*****************************************************************************/\n\n"
+  - {sig: "spans({ss})", ret: "{sp}[]", sym: Spanset_spans}
+  - lit: "\n"
+  - {sig: "splitNSpans({ss}, {v})", ret: "{sp}[]", sym: Spanset_split_n_spans, only: [int]}
+  - {sig: "splitNSpans(bigintspanset, {v})", ret: "bigintspan[]", sym: Spanset_split_n_spans, only: [int]}
+  - {sig: "splitNSpans(floatspanset, {v})", ret: "floatspan[]", sym: Spanset_split_n_spans, only: [int]}
+  - {sig: "splitNSpans(datespanset, {v})", ret: "datespan[]", sym: Spanset_split_n_spans, only: [int]}
+  - {sig: "splitNSpans(tstzspanset, {v})", ret: "tstzspan[]", sym: Spanset_split_n_spans, only: [int]}
+  - lit: "\n"
+  - {sig: "splitEachNSpans({ss}, {v})", ret: "{sp}[]", sym: Spanset_split_each_n_spans, only: [int]}
+  - {sig: "splitEachNSpans(bigintspanset, {v})", ret: "bigintspan[]", sym: Spanset_split_each_n_spans, only: [int]}
+  - {sig: "splitEachNSpans(floatspanset, {v})", ret: "floatspan[]", sym: Spanset_split_each_n_spans, only: [int]}
+  - {sig: "splitEachNSpans(datespanset, {v})", ret: "datespan[]", sym: Spanset_split_each_n_spans, only: [int]}
+  - {sig: "splitEachNSpans(tstzspanset, {v})", ret: "tstzspan[]", sym: Spanset_split_each_n_spans, only: [int]}
+  - lit: "\n/******************************************************************************\n * Comparison operators\n ******************************************************************************/\n\n"
+  - {sig: "eq({ss}, {ss})", ret: "bool", sym: Spanset_eq}
+  - lit: "\n"
+  - {sig: "ne({ss}, {ss})", ret: "bool", sym: Spanset_ne}
+  - lit: "\n"
+  - {sig: "lt({ss}, {ss})", ret: "bool", sym: Spanset_lt}
+  - lit: "\n"
+  - {sig: "le({ss}, {ss})", ret: "bool", sym: Spanset_le}
+  - lit: "\n"
+  - {sig: "ge({ss}, {ss})", ret: "bool", sym: Spanset_ge}
+  - lit: "\n"
+  - {sig: "gt({ss}, {ss})", ret: "bool", sym: Spanset_gt}
+  - lit: "\n"
+  - {sig: "cmp({ss}, {ss})", ret: "integer", sym: Spanset_cmp}
+  - lit: "\n"
+  - {stmt: "CREATE OPERATOR = (\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  PROCEDURE = eq,\n  COMMUTATOR = =, NEGATOR = <>,\n  RESTRICT = eqsel, JOIN = eqjoinsel\n);"}
+  - lit: "\n"
+  - {stmt: "CREATE OPERATOR <> (\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  PROCEDURE = ne,\n  COMMUTATOR = <>, NEGATOR = =,\n  RESTRICT = neqsel, JOIN = neqjoinsel\n);"}
+  - lit: "\n"
+  - {stmt: "CREATE OPERATOR < (\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  PROCEDURE = lt,\n  COMMUTATOR = >, NEGATOR = >=,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+  - lit: "\n"
+  - {stmt: "CREATE OPERATOR <= (\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  PROCEDURE = le,\n  COMMUTATOR = >=, NEGATOR = >,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+  - lit: "\n"
+  - {stmt: "CREATE OPERATOR >= (\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  PROCEDURE = ge,\n  COMMUTATOR = <=, NEGATOR = <,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+  - lit: "\n"
+  - {stmt: "CREATE OPERATOR > (\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  PROCEDURE = gt,\n  COMMUTATOR = <, NEGATOR = <=,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+  - lit: "\n"
+  - {stmt: "CREATE OPERATOR CLASS {ss}_btree_ops\n  DEFAULT FOR TYPE {ss} USING btree AS\n    OPERATOR  1  <,\n    OPERATOR  2  <=,\n    OPERATOR  3  =,\n    OPERATOR  4  >=,\n    OPERATOR  5  >,\n    FUNCTION  1  cmp({ss}, {ss});"}
+  - lit: "\n/******************************************************************************/\n\n"
+  - {sig: "hash({ss})", ret: "integer", sym: Spanset_hash}
+  - lit: "\n"
+  - {sig: "hashExtended({ss}, bigint)", ret: "bigint", sym: Spanset_hash_extended, only: [int, bigint]}
+  - {sig: "hashExtended(floatspanset, {v})", ret: "{v}", sym: Spanset_hash_extended, only: [bigint]}
+  - {sig: "hashExtended(datespanset, {v})", ret: "{v}", sym: Spanset_hash_extended, only: [bigint]}
+  - {sig: "hashExtended(tstzspanset, {v})", ret: "{v}", sym: Spanset_hash_extended, only: [bigint]}
+  - lit: "\n"
+  - {stmt: "CREATE OPERATOR CLASS {ss}_hash_ops\n  DEFAULT FOR TYPE {ss} USING hash AS\n    OPERATOR    1   = ,\n    FUNCTION    1   hash({ss}),\n    FUNCTION    2   hashExtended({ss}, bigint);"}
+  - lit: "\n\n/******************************************************************************/\n"
+- family: span_ops
+  file: mobilitydb/sql/temporal/005_span_ops.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * Topological operators\n"
+  order: [int, bigint, float, date, tstz]
+  insts:
+    int: {v: integer, sp: intspan, ss: intspanset, vs: intset, rg: int4range, mr: int4multirange}
+    bigint: {v: bigint, sp: bigintspan, ss: bigintspanset, vs: bigintset, rg: int8range, mr: int8multirange}
+    float: {v: float, sp: floatspan, ss: floatspanset, vs: floatset}
+    date: {v: date, sp: datespan, ss: datespanset, vs: dateset, rg: daterange, mr: datemultirange}
+    tstz: {v: timestamptz, sp: tstzspan, ss: tstzspanset, vs: tstzset, rg: tstzrange, mr: tstzmultirange}
+  blocks:
+  - group:
+    - {stmt: "/******************************************************************************\n * Topological operators\n ******************************************************************************/"}
+    - {stmt: "\nCREATE FUNCTION contains({sp}, {v})\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Contains_span_value'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    - {sig: "contains({sp}, {sp})", ret: "boolean", sym: Contains_span_span}
+    - {stmt: "\nCREATE OPERATOR @> (\n  PROCEDURE = contains,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR @> (\n  PROCEDURE = contains,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [int]
+  - lit: "\n"
+  - group:
+    - {sig: "contains({sp}, {v})", ret: "boolean", sym: Contains_span_value}
+    - {sig: "contains({sp}, {sp})", ret: "boolean", sym: Contains_span_span}
+    - {stmt: "\nCREATE OPERATOR @> (\n  PROCEDURE = contains,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR @> (\n  PROCEDURE = contains,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [bigint]
+  - lit: "\n"
+  - group:
+    - {sig: "contains({sp}, {v})", ret: "boolean", sym: Contains_span_value}
+    - {sig: "contains({sp}, {sp})", ret: "boolean", sym: Contains_span_span}
+    - {stmt: "\nCREATE OPERATOR @> (\n  PROCEDURE = contains,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR @> (\n  PROCEDURE = contains,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [float]
+  - lit: "\n"
+  - group:
+    - {sig: "contains({sp}, {v})", ret: "boolean", sym: Contains_span_value}
+    - {sig: "contains({sp}, {sp})", ret: "boolean", sym: Contains_span_span}
+    - {stmt: "\nCREATE OPERATOR @> (\n  PROCEDURE = contains,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR @> (\n  PROCEDURE = contains,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [date, tstz]
+  - lit: "\n"
+  - group:
+    - {stmt: "/******************************************************************************/"}
+    - {stmt: "\nCREATE FUNCTION contained({v}, {sp})\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Contained_value_span'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    - {sig: "contained({sp}, {sp})", ret: "boolean", sym: Contained_span_span}
+    - {stmt: "\nCREATE OPERATOR <@ (\n  PROCEDURE = contained,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR <@ (\n  PROCEDURE = contained,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [int]
+  - lit: "\n"
+  - group:
+    - {sig: "contained({v}, {sp})", ret: "boolean", sym: Contained_value_span}
+    - {sig: "contained({sp}, {sp})", ret: "boolean", sym: Contained_span_span}
+    - {stmt: "\nCREATE OPERATOR <@ (\n  PROCEDURE = contained,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR <@ (\n  PROCEDURE = contained,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [bigint]
+  - lit: "\n"
+  - group:
+    - {sig: "contained({v}, {sp})", ret: "boolean", sym: Contained_value_span}
+    - {sig: "contained({sp}, {sp})", ret: "boolean", sym: Contained_span_span}
+    - {stmt: "\nCREATE OPERATOR <@ (\n  PROCEDURE = contained,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR <@ (\n  PROCEDURE = contained,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [float]
+  - lit: "\n"
+  - group:
+    - {sig: "contained({v}, {sp})", ret: "boolean", sym: Contained_value_span}
+    - {sig: "contained({sp}, {sp})", ret: "boolean", sym: Contained_span_span}
+    - {stmt: "\nCREATE OPERATOR <@ (\n  PROCEDURE = contained,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR <@ (\n  PROCEDURE = contained,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [date, tstz]
+  - lit: "\n"
+  - group:
+    - {stmt: "/******************************************************************************/"}
+    - {stmt: "\nCREATE FUNCTION overlaps({sp}, {sp})\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Overlaps_span_span'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    - {stmt: "\nCREATE OPERATOR && (\n  PROCEDURE = overlaps,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = &&,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [int]
+  - lit: "\n"
+  - group:
+    - {sig: "overlaps({sp}, {sp})", ret: "boolean", sym: Overlaps_span_span}
+    - {stmt: "\nCREATE OPERATOR && (\n  PROCEDURE = overlaps,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = &&,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [bigint]
+  - lit: "\n"
+  - group:
+    - {sig: "overlaps({sp}, {sp})", ret: "boolean", sym: Overlaps_span_span}
+    - {stmt: "\nCREATE OPERATOR && (\n  PROCEDURE = overlaps,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = &&,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [float]
+  - lit: "\n"
+  - group:
+    - {sig: "overlaps({sp}, {sp})", ret: "boolean", sym: Overlaps_span_span}
+    - {stmt: "\nCREATE OPERATOR && (\n  PROCEDURE = overlaps,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = &&,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [date, tstz]
+  - lit: "\n"
+  - group:
+    - {stmt: "/******************************************************************************/"}
+    - {stmt: "\nCREATE FUNCTION adjacent({v}, {sp})\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Adjacent_value_span'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    - {sig: "adjacent({sp}, {v})", ret: "boolean", sym: Adjacent_span_value}
+    - {sig: "adjacent({sp}, {sp})", ret: "boolean", sym: Adjacent_span_span}
+    - {stmt: "\nCREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [int]
+  - lit: "\n"
+  - group:
+    - {sig: "adjacent({v}, {sp})", ret: "boolean", sym: Adjacent_value_span}
+    - {sig: "adjacent({sp}, {v})", ret: "boolean", sym: Adjacent_span_value}
+    - {sig: "adjacent({sp}, {sp})", ret: "boolean", sym: Adjacent_span_span}
+    - {stmt: "\nCREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [bigint]
+  - lit: "\n"
+  - group:
+    - {sig: "adjacent({v}, {sp})", ret: "boolean", sym: Adjacent_value_span}
+    - {sig: "adjacent({sp}, {v})", ret: "boolean", sym: Adjacent_span_value}
+    - {sig: "adjacent({sp}, {sp})", ret: "boolean", sym: Adjacent_span_span}
+    - {stmt: "\nCREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [float]
+  - lit: "\n"
+  - group:
+    - {sig: "adjacent({v}, {sp})", ret: "boolean", sym: Adjacent_value_span}
+    - {sig: "adjacent({sp}, {v})", ret: "boolean", sym: Adjacent_span_value}
+    - {sig: "adjacent({sp}, {sp})", ret: "boolean", sym: Adjacent_span_span}
+    - {stmt: "\nCREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [date, tstz]
+  - lit: "\n"
+  - group:
+    - {stmt: "/******************************************************************************\n * Position operators\n ******************************************************************************/"}
+    - {stmt: "\nCREATE FUNCTION left({v}, {sp})\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Left_value_span'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    - {sig: "left({sp}, {v})", ret: "boolean", sym: Left_span_value}
+    - {sig: "left({sp}, {sp})", ret: "boolean", sym: Left_span_span}
+    - {stmt: "\nCREATE OPERATOR << (\n  PROCEDURE = left,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = >>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR << (\n  PROCEDURE = left,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = >>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR << (\n  PROCEDURE = left,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = >>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [int]
+  - lit: "\n"
+  - group:
+    - {sig: "left({v}, {sp})", ret: "boolean", sym: Left_value_span}
+    - {sig: "left({sp}, {v})", ret: "boolean", sym: Left_span_value}
+    - {sig: "left({sp}, {sp})", ret: "boolean", sym: Left_span_span}
+    - {stmt: "\nCREATE OPERATOR << (\n  PROCEDURE = left,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = >>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR << (\n  PROCEDURE = left,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = >>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR << (\n  PROCEDURE = left,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = >>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [bigint]
+  - lit: "\n"
+  - group:
+    - {sig: "left({v}, {sp})", ret: "boolean", sym: Left_value_span}
+    - {sig: "left({sp}, {v})", ret: "boolean", sym: Left_span_value}
+    - {sig: "left({sp}, {sp})", ret: "boolean", sym: Left_span_span}
+    - {stmt: "\nCREATE OPERATOR << (\n  PROCEDURE = left,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = >>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR << (\n  PROCEDURE = left,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = >>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR << (\n  PROCEDURE = left,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = >>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [float]
+  - lit: "\n"
+  - group:
+    - {sig: "before({v}, {sp})", ret: "boolean", sym: Before_value_span}
+    - {sig: "before({sp}, {v})", ret: "boolean", sym: Before_span_value}
+    - {sig: "before({sp}, {sp})", ret: "boolean", sym: Before_span_span}
+    - {stmt: "\nCREATE OPERATOR <<# (\n  PROCEDURE = before,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = #>>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR <<# (\n  PROCEDURE = before,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = #>>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR <<# (\n  PROCEDURE = before,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = #>>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [date, tstz]
+  - lit: "\n"
+  - group:
+    - {stmt: "/******************************************************************************/"}
+    - {stmt: "\nCREATE FUNCTION right({v}, {sp})\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Right_value_span'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    - {sig: "right({sp}, {v})", ret: "boolean", sym: Right_span_value}
+    - {sig: "right({sp}, {sp})", ret: "boolean", sym: Right_span_span}
+    - {stmt: "\nCREATE OPERATOR >> (\n  PROCEDURE = right,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = <<,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR >> (\n  PROCEDURE = right,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = <<,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR >> (\n  PROCEDURE = right,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = <<,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [int]
+  - lit: "\n"
+  - group:
+    - {sig: "right({v}, {sp})", ret: "boolean", sym: Right_value_span}
+    - {sig: "right({sp}, {v})", ret: "boolean", sym: Right_span_value}
+    - {sig: "right({sp}, {sp})", ret: "boolean", sym: Right_span_span}
+    - {stmt: "\nCREATE OPERATOR >> (\n  PROCEDURE = right,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = <<,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR >> (\n  PROCEDURE = right,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = <<,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR >> (\n  PROCEDURE = right,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = <<,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [bigint]
+  - lit: "\n"
+  - group:
+    - {sig: "right({v}, {sp})", ret: "boolean", sym: Right_value_span}
+    - {sig: "right({sp}, {v})", ret: "boolean", sym: Right_span_value}
+    - {sig: "right({sp}, {sp})", ret: "boolean", sym: Right_span_span}
+    - {stmt: "\nCREATE OPERATOR >> (\n  PROCEDURE = right,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = <<,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR >> (\n  PROCEDURE = right,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = <<,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR >> (\n  PROCEDURE = right,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = <<,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [float]
+  - lit: "\n"
+  - group:
+    - {sig: "after({v}, {sp})", ret: "boolean", sym: After_value_span}
+    - {sig: "after({sp}, {v})", ret: "boolean", sym: After_span_value}
+    - {sig: "after({sp}, {sp})", ret: "boolean", sym: After_span_span}
+    - {stmt: "\nCREATE OPERATOR #>> (\n  PROCEDURE = after,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = <<#,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR #>> (\n  PROCEDURE = after,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = <<#,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR #>> (\n  PROCEDURE = after,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = <<#,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [date, tstz]
+  - lit: "\n"
+  - group:
+    - {stmt: "/******************************************************************************/"}
+    - {stmt: "\nCREATE FUNCTION overleft({v}, {sp})\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Overleft_value_span'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    - {sig: "overleft({sp}, {v})", ret: "boolean", sym: Overleft_span_value}
+    - {sig: "overleft({sp}, {sp})", ret: "boolean", sym: Overleft_span_span}
+    - {stmt: "\nCREATE OPERATOR &< (\n  PROCEDURE = overleft,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR &< (\n  PROCEDURE = overleft,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR &< (\n  PROCEDURE = overleft,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [int]
+  - lit: "\n"
+  - group:
+    - {sig: "overleft({v}, {sp})", ret: "boolean", sym: Overleft_value_span}
+    - {sig: "overleft({sp}, {v})", ret: "boolean", sym: Overleft_span_value}
+    - {sig: "overleft({sp}, {sp})", ret: "boolean", sym: Overleft_span_span}
+    - {stmt: "\nCREATE OPERATOR &< (\n  PROCEDURE = overleft,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR &< (\n  PROCEDURE = overleft,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR &< (\n  PROCEDURE = overleft,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [bigint]
+  - lit: "\n"
+  - group:
+    - {sig: "overleft({v}, {sp})", ret: "boolean", sym: Overleft_value_span}
+    - {sig: "overleft({sp}, {v})", ret: "boolean", sym: Overleft_span_value}
+    - {sig: "overleft({sp}, {sp})", ret: "boolean", sym: Overleft_span_span}
+    - {stmt: "\nCREATE OPERATOR &< (\n  PROCEDURE = overleft,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR &< (\n  PROCEDURE = overleft,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR &< (\n  PROCEDURE = overleft,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [float]
+  - lit: "\n"
+  - group:
+    - {sig: "overbefore({v}, {sp})", ret: "boolean", sym: Overbefore_value_span}
+    - {sig: "overbefore({sp}, {v})", ret: "boolean", sym: Overbefore_span_value}
+    - {sig: "overbefore({sp}, {sp})", ret: "boolean", sym: Overbefore_span_span}
+    - {stmt: "\nCREATE OPERATOR &<# (\n  PROCEDURE = overbefore,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR &<# (\n  PROCEDURE = overbefore,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR &<# (\n  PROCEDURE = overbefore,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [date, tstz]
+  - lit: "\n"
+  - group:
+    - {stmt: "/******************************************************************************/"}
+    - {stmt: "\nCREATE FUNCTION overright({v}, {sp})\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Overright_value_span'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    - {sig: "overright({sp}, {v})", ret: "boolean", sym: Overright_span_value}
+    - {sig: "overright({sp}, {sp})", ret: "boolean", sym: Overright_span_span}
+    - {stmt: "\nCREATE OPERATOR &> (\n  PROCEDURE = overright,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR &> (\n  PROCEDURE = overright,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR &> (\n  PROCEDURE = overright,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [int]
+  - lit: "\n"
+  - group:
+    - {sig: "overright({v}, {sp})", ret: "boolean", sym: Overright_value_span}
+    - {sig: "overright({sp}, {v})", ret: "boolean", sym: Overright_span_value}
+    - {sig: "overright({sp}, {sp})", ret: "boolean", sym: Overright_span_span}
+    - {stmt: "\nCREATE OPERATOR &> (\n  PROCEDURE = overright,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR &> (\n  PROCEDURE = overright,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR &> (\n  PROCEDURE = overright,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [bigint]
+  - lit: "\n"
+  - group:
+    - {sig: "overright({v}, {sp})", ret: "boolean", sym: Overright_value_span}
+    - {sig: "overright({sp}, {v})", ret: "boolean", sym: Overright_span_value}
+    - {sig: "overright({sp}, {sp})", ret: "boolean", sym: Overright_span_span}
+    - {stmt: "\nCREATE OPERATOR &> (\n  PROCEDURE = overright,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR &> (\n  PROCEDURE = overright,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR &> (\n  PROCEDURE = overright,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [float]
+  - lit: "\n"
+  - group:
+    - {sig: "overafter({v}, {sp})", ret: "boolean", sym: Overafter_value_span}
+    - {sig: "overafter({sp}, {v})", ret: "boolean", sym: Overafter_span_value}
+    - {sig: "overafter({sp}, {sp})", ret: "boolean", sym: Overafter_span_span}
+    - {stmt: "\nCREATE OPERATOR #&> (\n  PROCEDURE = overafter,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR #&> (\n  PROCEDURE = overafter,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR #&> (\n  PROCEDURE = overafter,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [date, tstz]
+  - lit: "\n"
+  - group:
+    - {stmt: "/*****************************************************************************\n * Set operators\n *****************************************************************************/"}
+    - {stmt: "\nCREATE FUNCTION spanUnion({v}, {sp})\n  RETURNS {ss}\n  AS 'MODULE_PATHNAME', 'Union_value_span'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    - {sig: "spanUnion({sp}, {v})", ret: "{ss}", sym: Union_span_value}
+    - {sig: "spanUnion({sp}, {sp})", ret: "{ss}", sym: Union_span_span}
+    - {stmt: "\nCREATE OPERATOR + (\n  PROCEDURE = spanUnion,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = +\n);"}
+    - {stmt: "CREATE OPERATOR + (\n  PROCEDURE = spanUnion,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = +\n);"}
+    - {stmt: "CREATE OPERATOR + (\n  PROCEDURE = spanUnion,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = +\n);"}
+    sep: "\n"
+    order: [int]
+  - lit: "\n"
+  - group:
+    - {sig: "spanUnion({v}, {sp})", ret: "{ss}", sym: Union_value_span}
+    - {sig: "spanUnion({sp}, {v})", ret: "{ss}", sym: Union_span_value}
+    - {sig: "spanUnion({sp}, {sp})", ret: "{ss}", sym: Union_span_span}
+    - {stmt: "\n"}
+    - {stmt: "CREATE OPERATOR + (\n  PROCEDURE = spanUnion,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = +\n);"}
+    - {stmt: "CREATE OPERATOR + (\n  PROCEDURE = spanUnion,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = +\n);"}
+    - {stmt: "CREATE OPERATOR + (\n  PROCEDURE = spanUnion,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = +\n);"}
+    sep: "\n"
+    order: [bigint]
+  - lit: "\n"
+  - group:
+    - {sig: "spanUnion({v}, {sp})", ret: "{ss}", sym: Union_value_span}
+    - {sig: "spanUnion({sp}, {v})", ret: "{ss}", sym: Union_span_value}
+    - {sig: "spanUnion({sp}, {sp})", ret: "{ss}", sym: Union_span_span}
+    - {stmt: "\nCREATE OPERATOR + (\n  PROCEDURE = spanUnion,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = +\n);"}
+    - {stmt: "CREATE OPERATOR + (\n  PROCEDURE = spanUnion,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = +\n);"}
+    - {stmt: "CREATE OPERATOR + (\n  PROCEDURE = spanUnion,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = +\n);"}
+    sep: "\n"
+    order: [float]
+  - lit: "\n"
+  - group:
+    - {sig: "spanUnion({v}, {sp})", ret: "{ss}", sym: Union_value_span}
+    - {sig: "spanUnion({sp}, {v})", ret: "{ss}", sym: Union_span_value}
+    - {sig: "spanUnion({sp}, {sp})", ret: "{ss}", sym: Union_span_span}
+    - {stmt: "\nCREATE OPERATOR + (\n  PROCEDURE = spanUnion,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = +\n);"}
+    - {stmt: "CREATE OPERATOR + (\n  PROCEDURE = spanUnion,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = +\n);"}
+    - {stmt: "CREATE OPERATOR + (\n  PROCEDURE = spanUnion,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = +\n);"}
+    sep: "\n"
+    order: [date, tstz]
+  - lit: "\n"
+  - group:
+    - {stmt: "/******************************************************************************/"}
+    - {stmt: "\nCREATE FUNCTION spanIntersection({v}, {sp})\n  RETURNS {sp}\n  AS 'MODULE_PATHNAME', 'Intersection_value_span'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    - {sig: "spanIntersection({sp}, {v})", ret: "{sp}", sym: Intersection_span_value}
+    - {sig: "spanIntersection({sp}, {sp})", ret: "{sp}", sym: Intersection_span_span}
+    - {stmt: "\nCREATE OPERATOR * (\n  PROCEDURE = spanIntersection,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = *\n);"}
+    - {stmt: "CREATE OPERATOR * (\n  PROCEDURE = spanIntersection,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = *\n);"}
+    - {stmt: "CREATE OPERATOR * (\n  PROCEDURE = spanIntersection,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = *\n);"}
+    sep: "\n"
+    order: [int]
+  - lit: "\n"
+  - group:
+    - {sig: "spanIntersection({v}, {sp})", ret: "{sp}", sym: Intersection_value_span}
+    - {sig: "spanIntersection({sp}, {v})", ret: "{sp}", sym: Intersection_span_value}
+    - {sig: "spanIntersection({sp}, {sp})", ret: "{sp}", sym: Intersection_span_span}
+    - {stmt: "\n"}
+    - {stmt: "CREATE OPERATOR * (\n  PROCEDURE = spanIntersection,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = *\n);"}
+    - {stmt: "CREATE OPERATOR * (\n  PROCEDURE = spanIntersection,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = *\n);"}
+    - {stmt: "CREATE OPERATOR * (\n  PROCEDURE = spanIntersection,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = *\n);"}
+    sep: "\n"
+    order: [bigint]
+  - lit: "\n"
+  - group:
+    - {sig: "spanIntersection({v}, {sp})", ret: "{sp}", sym: Intersection_value_span}
+    - {sig: "spanIntersection({sp}, {v})", ret: "{sp}", sym: Intersection_span_value}
+    - {sig: "spanIntersection({sp}, {sp})", ret: "{sp}", sym: Intersection_span_span}
+    - {stmt: "\nCREATE OPERATOR * (\n  PROCEDURE = spanIntersection,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = *\n);"}
+    - {stmt: "CREATE OPERATOR * (\n  PROCEDURE = spanIntersection,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = *\n);"}
+    - {stmt: "CREATE OPERATOR * (\n  PROCEDURE = spanIntersection,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = *\n);"}
+    sep: "\n"
+    order: [float]
+  - lit: "\n"
+  - group:
+    - {sig: "spanIntersection({v}, {sp})", ret: "{sp}", sym: Intersection_value_span}
+    - {sig: "spanIntersection({sp}, {v})", ret: "{sp}", sym: Intersection_span_value}
+    - {sig: "spanIntersection({sp}, {sp})", ret: "{sp}", sym: Intersection_span_span}
+    - {stmt: "\nCREATE OPERATOR * (\n  PROCEDURE = spanIntersection,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = *\n);"}
+    - {stmt: "CREATE OPERATOR * (\n  PROCEDURE = spanIntersection,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = *\n);"}
+    - {stmt: "CREATE OPERATOR * (\n  PROCEDURE = spanIntersection,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = *\n);"}
+    sep: "\n"
+    order: [date, tstz]
+  - lit: "\n"
+  - group:
+    - {stmt: "/******************************************************************************/"}
+    - {stmt: "\nCREATE FUNCTION spanMinus({v}, {sp})\n  RETURNS {ss}\n  AS 'MODULE_PATHNAME', 'Minus_value_span'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    - {sig: "spanMinus({sp}, {v})", ret: "{ss}", sym: Minus_span_value}
+    - {sig: "spanMinus({sp}, {sp})", ret: "{ss}", sym: Minus_span_span}
+    - {stmt: "\nCREATE OPERATOR - (\n  PROCEDURE = spanMinus,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = -\n);"}
+    - {stmt: "CREATE OPERATOR - (\n  PROCEDURE = spanMinus,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = -\n);"}
+    - {stmt: "CREATE OPERATOR - (\n  PROCEDURE = spanMinus,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = -\n);"}
+    sep: "\n"
+    order: [int]
+  - lit: "\n"
+  - group:
+    - {sig: "spanMinus({v}, {sp})", ret: "{ss}", sym: Minus_value_span}
+    - {sig: "spanMinus({sp}, {v})", ret: "{ss}", sym: Minus_span_value}
+    - {sig: "spanMinus({sp}, {sp})", ret: "{ss}", sym: Minus_span_span}
+    - {stmt: "\n"}
+    - {stmt: "CREATE OPERATOR - (\n  PROCEDURE = spanMinus,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = -\n);"}
+    - {stmt: "CREATE OPERATOR - (\n  PROCEDURE = spanMinus,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = -\n);"}
+    - {stmt: "CREATE OPERATOR - (\n  PROCEDURE = spanMinus,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = -\n);"}
+    sep: "\n"
+    order: [bigint]
+  - lit: "\n"
+  - group:
+    - {sig: "spanMinus({v}, {sp})", ret: "{ss}", sym: Minus_value_span}
+    - {sig: "spanMinus({sp}, {v})", ret: "{ss}", sym: Minus_span_value}
+    - {sig: "spanMinus({sp}, {sp})", ret: "{ss}", sym: Minus_span_span}
+    - {stmt: "\nCREATE OPERATOR - (\n  PROCEDURE = spanMinus,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = -\n);"}
+    - {stmt: "CREATE OPERATOR - (\n  PROCEDURE = spanMinus,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = -\n);"}
+    - {stmt: "CREATE OPERATOR - (\n  PROCEDURE = spanMinus,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = -\n);"}
+    sep: "\n"
+    order: [float]
+  - lit: "\n"
+  - group:
+    - {sig: "spanMinus({v}, {sp})", ret: "{ss}", sym: Minus_value_span}
+    - {sig: "spanMinus({sp}, {v})", ret: "{ss}", sym: Minus_span_value}
+    - {sig: "spanMinus({sp}, {sp})", ret: "{ss}", sym: Minus_span_span}
+    - {stmt: "\nCREATE OPERATOR - (\n  PROCEDURE = spanMinus,\n  LEFTARG = {v}, RIGHTARG = {sp}\n);"}
+    - {stmt: "CREATE OPERATOR - (\n  PROCEDURE = spanMinus,\n  LEFTARG = {sp}, RIGHTARG = {v}\n);"}
+    - {stmt: "CREATE OPERATOR - (\n  PROCEDURE = spanMinus,\n  LEFTARG = {sp}, RIGHTARG = {sp}\n);"}
+    sep: "\n"
+    order: [date, tstz]
+  - lit: "\n"
+  - group:
+    - {stmt: "/*****************************************************************************\n * Distance operators\n *****************************************************************************/"}
+    - {stmt: "\nCREATE FUNCTION span_distance({v}, {sp})\n  RETURNS {v}\n  AS 'MODULE_PATHNAME', 'Distance_value_span'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    - {sig: "span_distance({sp}, {v})", ret: "{v}", sym: Distance_span_value}
+    - {sig: "span_distance({sp}, {sp})", ret: "{v}", sym: Distance_span_span}
+    - {stmt: "\nCREATE OPERATOR <-> (\n  PROCEDURE = span_distance,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = <->\n);"}
+    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = span_distance,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = <->\n);"}
+    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = span_distance,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = <->\n);"}
+    sep: "\n"
+    order: [int]
+  - lit: "\n"
+  - group:
+    - {sig: "span_distance({v}, {sp})", ret: "{v}", sym: Distance_value_span}
+    - {sig: "span_distance({sp}, {v})", ret: "{v}", sym: Distance_span_value}
+    - {sig: "span_distance({sp}, {sp})", ret: "{v}", sym: Distance_span_span}
+    - {stmt: "\nCREATE OPERATOR <-> (\n  PROCEDURE = span_distance,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = <->\n);"}
+    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = span_distance,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = <->\n);"}
+    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = span_distance,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = <->\n);"}
+    sep: "\n"
+    order: [bigint]
+  - lit: "\n"
+  - group:
+    - {sig: "span_distance({v}, {sp})", ret: "{v}", sym: Distance_value_span}
+    - {sig: "span_distance({sp}, {v})", ret: "{v}", sym: Distance_span_value}
+    - {sig: "span_distance({sp}, {sp})", ret: "{v}", sym: Distance_span_span}
+    - {stmt: "\nCREATE OPERATOR <-> (\n  PROCEDURE = span_distance,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = <->\n);"}
+    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = span_distance,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = <->\n);"}
+    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = span_distance,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = <->\n);"}
+    sep: "\n"
+    order: [float]
+  - lit: "\nCREATE FUNCTION span_distance(date, datespan)\n  RETURNS integer\n  AS 'MODULE_PATHNAME', 'Distance_value_span'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION span_distance(datespan, date)\n  RETURNS integer\n  AS 'MODULE_PATHNAME', 'Distance_span_value'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION span_distance(datespan, datespan)\n  RETURNS integer\n  AS 'MODULE_PATHNAME', 'Distance_span_span'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n"
+  - group:
+    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = span_distance,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = <->\n);"}
+    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = span_distance,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = <->\n);"}
+    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = span_distance,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = <->\n);"}
+    sep: "\n"
+    order: [date]
+  - lit: "\nCREATE FUNCTION span_distance(timestamptz, tstzspan)\n  RETURNS float\n  AS 'MODULE_PATHNAME', 'Distance_value_span'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION span_distance(tstzspan, timestamptz)\n  RETURNS float\n  AS 'MODULE_PATHNAME', 'Distance_span_value'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION span_distance(tstzspan, tstzspan)\n  RETURNS float\n  AS 'MODULE_PATHNAME', 'Distance_span_span'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n"
+  - group:
+    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = span_distance,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = <->\n);"}
+    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = span_distance,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = <->\n);"}
+    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = span_distance,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = <->\n);"}
+    - {stmt: "\n/*****************************************************************************/"}
+    sep: "\n"
+    order: [tstz]
+- family: spanset_ops
+  file: mobilitydb/sql/temporal/009_spanset_ops.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * Operators\n"
+  order: [int, bigint, float, date, tstz]
+  insts:
+    int: {v: integer, sp: intspan, ss: intspanset, vs: intset, rg: int4range, mr: int4multirange}
+    bigint: {v: bigint, sp: bigintspan, ss: bigintspanset, vs: bigintset, rg: int8range, mr: int8multirange}
+    float: {v: float, sp: floatspan, ss: floatspanset, vs: floatset}
+    date: {v: date, sp: datespan, ss: datespanset, vs: dateset, rg: daterange, mr: datemultirange}
+    tstz: {v: timestamptz, sp: tstzspan, ss: tstzspanset, vs: tstzset, rg: tstzrange, mr: tstzmultirange}
+  blocks:
+  - group:
+    - {stmt: "/******************************************************************************\n * Operators\n ******************************************************************************/"}
+    - {stmt: "\nCREATE FUNCTION contains({sp}, {ss})\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Contains_span_spanset'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    - {sig: "contains({ss}, {v})", ret: "boolean", sym: Contains_spanset_value}
+    - {sig: "contains({ss}, {sp})", ret: "boolean", sym: Contains_spanset_span}
+    - {sig: "contains({ss}, {ss})", ret: "boolean", sym: Contains_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR @> (\n  PROCEDURE = contains,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR @> (\n  PROCEDURE = contains,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR @> (\n  PROCEDURE = contains,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR @> (\n  PROCEDURE = contains,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [int]
+  - lit: "\n"
+  - group:
+    - {sig: "contains({sp}, {ss})", ret: "boolean", sym: Contains_span_spanset}
+    - {sig: "contains({ss}, {v})", ret: "boolean", sym: Contains_spanset_value}
+    - {sig: "contains({ss}, {sp})", ret: "boolean", sym: Contains_spanset_span}
+    - {sig: "contains({ss}, {ss})", ret: "boolean", sym: Contains_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR @> (\n  PROCEDURE = contains,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR @> (\n  PROCEDURE = contains,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR @> (\n  PROCEDURE = contains,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR @> (\n  PROCEDURE = contains,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [bigint]
+  - lit: "\n"
+  - group:
+    - {sig: "contains({sp}, {ss})", ret: "boolean", sym: Contains_span_spanset}
+    - {sig: "contains({ss}, {v})", ret: "boolean", sym: Contains_spanset_value}
+    - {sig: "contains({ss}, {sp})", ret: "boolean", sym: Contains_spanset_span}
+    - {sig: "contains({ss}, {ss})", ret: "boolean", sym: Contains_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR @> (\n  PROCEDURE = contains,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR @> (\n  PROCEDURE = contains,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR @> (\n  PROCEDURE = contains,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR @> (\n  PROCEDURE = contains,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [float]
+  - lit: "\n"
+  - group:
+    - {sig: "contains({sp}, {ss})", ret: "boolean", sym: Contains_span_spanset}
+    - {sig: "contains({ss}, {v})", ret: "boolean", sym: Contains_spanset_value}
+    - {sig: "contains({ss}, {sp})", ret: "boolean", sym: Contains_spanset_span}
+    - {sig: "contains({ss}, {ss})", ret: "boolean", sym: Contains_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR @> (\n  PROCEDURE = contains,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR @> (\n  PROCEDURE = contains,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR @> (\n  PROCEDURE = contains,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR @> (\n  PROCEDURE = contains,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = <@,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [date, tstz]
+  - lit: "\n"
+  - group:
+    - {stmt: "/*****************************************************************************/"}
+    - {stmt: "\nCREATE FUNCTION contained({v}, {ss})\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Contained_value_spanset'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    - {sig: "contained({sp}, {ss})", ret: "boolean", sym: Contained_span_spanset}
+    - {sig: "contained({ss}, {sp})", ret: "boolean", sym: Contained_spanset_span}
+    - {sig: "contained({ss}, {ss})", ret: "boolean", sym: Contained_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR <@ (\n  PROCEDURE = contained,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR <@ (\n  PROCEDURE = contained,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR <@ (\n  PROCEDURE = contained,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR <@ (\n  PROCEDURE = contained,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [int]
+  - lit: "\n"
+  - group:
+    - {sig: "contained({v}, {ss})", ret: "boolean", sym: Contained_value_spanset}
+    - {sig: "contained({sp}, {ss})", ret: "boolean", sym: Contained_span_spanset}
+    - {sig: "contained({ss}, {sp})", ret: "boolean", sym: Contained_spanset_span}
+    - {sig: "contained({ss}, {ss})", ret: "boolean", sym: Contained_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR <@ (\n  PROCEDURE = contained,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR <@ (\n  PROCEDURE = contained,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR <@ (\n  PROCEDURE = contained,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR <@ (\n  PROCEDURE = contained,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [bigint]
+  - lit: "\n"
+  - group:
+    - {sig: "contained({v}, {ss})", ret: "boolean", sym: Contained_value_spanset}
+    - {sig: "contained({sp}, {ss})", ret: "boolean", sym: Contained_span_spanset}
+    - {sig: "contained({ss}, {sp})", ret: "boolean", sym: Contained_spanset_span}
+    - {sig: "contained({ss}, {ss})", ret: "boolean", sym: Contained_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR <@ (\n  PROCEDURE = contained,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR <@ (\n  PROCEDURE = contained,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR <@ (\n  PROCEDURE = contained,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR <@ (\n  PROCEDURE = contained,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [float]
+  - lit: "\n"
+  - group:
+    - {sig: "contained({v}, {ss})", ret: "boolean", sym: Contained_value_spanset}
+    - {sig: "contained({sp}, {ss})", ret: "boolean", sym: Contained_span_spanset}
+    - {sig: "contained({ss}, {sp})", ret: "boolean", sym: Contained_spanset_span}
+    - {sig: "contained({ss}, {ss})", ret: "boolean", sym: Contained_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR <@ (\n  PROCEDURE = contained,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR <@ (\n  PROCEDURE = contained,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR <@ (\n  PROCEDURE = contained,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR <@ (\n  PROCEDURE = contained,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = @>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [date, tstz]
+  - lit: "\n"
+  - group:
+    - {stmt: "/*****************************************************************************/"}
+    - {stmt: "\nCREATE FUNCTION overlaps({sp}, {ss})\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Overlaps_span_spanset'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    - {sig: "overlaps({ss}, {sp})", ret: "boolean", sym: Overlaps_spanset_span}
+    - {sig: "overlaps({ss}, {ss})", ret: "boolean", sym: Overlaps_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR && (\n  PROCEDURE = overlaps,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = &&,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR && (\n  PROCEDURE = overlaps,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = &&,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR && (\n  PROCEDURE = overlaps,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = &&,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [int]
+  - lit: "\n"
+  - group:
+    - {sig: "overlaps({sp}, {ss})", ret: "boolean", sym: Overlaps_span_spanset}
+    - {sig: "overlaps({ss}, {sp})", ret: "boolean", sym: Overlaps_spanset_span}
+    - {sig: "overlaps({ss}, {ss})", ret: "boolean", sym: Overlaps_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR && (\n  PROCEDURE = overlaps,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = &&,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR && (\n  PROCEDURE = overlaps,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = &&,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR && (\n  PROCEDURE = overlaps,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = &&,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [bigint]
+  - lit: "\n"
+  - group:
+    - {sig: "overlaps({sp}, {ss})", ret: "boolean", sym: Overlaps_span_spanset}
+    - {sig: "overlaps({ss}, {sp})", ret: "boolean", sym: Overlaps_spanset_span}
+    - {sig: "overlaps({ss}, {ss})", ret: "boolean", sym: Overlaps_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR && (\n  PROCEDURE = overlaps,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = &&,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR && (\n  PROCEDURE = overlaps,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = &&,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR && (\n  PROCEDURE = overlaps,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = &&,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [float]
+  - lit: "\n"
+  - group:
+    - {sig: "overlaps({sp}, {ss})", ret: "boolean", sym: Overlaps_span_spanset}
+    - {sig: "overlaps({ss}, {sp})", ret: "boolean", sym: Overlaps_spanset_span}
+    - {sig: "overlaps({ss}, {ss})", ret: "boolean", sym: Overlaps_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR && (\n  PROCEDURE = overlaps,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = &&,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR && (\n  PROCEDURE = overlaps,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = &&,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR && (\n  PROCEDURE = overlaps,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = &&,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [date, tstz]
+  - lit: "\n"
+  - group:
+    - {stmt: "/*****************************************************************************/"}
+    - {stmt: "\nCREATE FUNCTION left({v}, {ss})\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Left_value_spanset'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    - {sig: "left({sp}, {ss})", ret: "boolean", sym: Left_span_spanset}
+    - {sig: "left({ss}, {v})", ret: "boolean", sym: Left_spanset_value}
+    - {sig: "left({ss}, {sp})", ret: "boolean", sym: Left_spanset_span}
+    - {sig: "left({ss}, {ss})", ret: "boolean", sym: Left_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR << (\n  PROCEDURE = left,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  COMMUTATOR = >>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR << (\n  PROCEDURE = left,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = >>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR << (\n  PROCEDURE = left,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  COMMUTATOR = >>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR << (\n  PROCEDURE = left,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = >>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR << (\n  PROCEDURE = left,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = >>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [int]
+  - lit: "\n"
+  - group:
+    - {sig: "left({v}, {ss})", ret: "boolean", sym: Left_value_spanset}
+    - {sig: "left({sp}, {ss})", ret: "boolean", sym: Left_span_spanset}
+    - {sig: "left({ss}, {v})", ret: "boolean", sym: Left_spanset_value}
+    - {sig: "left({ss}, {sp})", ret: "boolean", sym: Left_spanset_span}
+    - {sig: "left({ss}, {ss})", ret: "boolean", sym: Left_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR << (\n  PROCEDURE = left,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  COMMUTATOR = >>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR << (\n  PROCEDURE = left,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = >>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR << (\n  PROCEDURE = left,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  COMMUTATOR = >>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR << (\n  PROCEDURE = left,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = >>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR << (\n  PROCEDURE = left,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = >>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [bigint]
+  - lit: "\n"
+  - group:
+    - {sig: "left({v}, {ss})", ret: "boolean", sym: Left_value_spanset}
+    - {sig: "left({sp}, {ss})", ret: "boolean", sym: Left_span_spanset}
+    - {sig: "left({ss}, {v})", ret: "boolean", sym: Left_spanset_value}
+    - {sig: "left({ss}, {sp})", ret: "boolean", sym: Left_spanset_span}
+    - {sig: "left({ss}, {ss})", ret: "boolean", sym: Left_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR << (\n  PROCEDURE = left,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  COMMUTATOR = >>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR << (\n  PROCEDURE = left,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = >>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR << (\n  PROCEDURE = left,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  COMMUTATOR = >>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR << (\n  PROCEDURE = left,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = >>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR << (\n  PROCEDURE = left,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = >>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [float]
+  - lit: "\n"
+  - group:
+    - {sig: "before({v}, {ss})", ret: "boolean", sym: Before_value_spanset}
+    - {sig: "before({sp}, {ss})", ret: "boolean", sym: Before_span_spanset}
+    - {sig: "before({ss}, {v})", ret: "boolean", sym: Before_spanset_value}
+    - {sig: "before({ss}, {sp})", ret: "boolean", sym: Before_spanset_span}
+    - {sig: "before({ss}, {ss})", ret: "boolean", sym: Before_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR <<# (\n  PROCEDURE = before,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  COMMUTATOR = #>>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR <<# (\n  PROCEDURE = before,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = #>>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR <<# (\n  PROCEDURE = before,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  COMMUTATOR = #>>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR <<# (\n  PROCEDURE = before,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = #>>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR <<# (\n  PROCEDURE = before,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = #>>,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [date, tstz]
+  - lit: "\n"
+  - group:
+    - {stmt: "/*****************************************************************************/"}
+    - {stmt: "\nCREATE FUNCTION right({v}, {ss})\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Right_value_spanset'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    - {sig: "right({sp}, {ss})", ret: "boolean", sym: Right_span_spanset}
+    - {sig: "right({ss}, {v})", ret: "boolean", sym: Right_spanset_value}
+    - {sig: "right({ss}, {sp})", ret: "boolean", sym: Right_spanset_span}
+    - {sig: "right({ss}, {ss})", ret: "boolean", sym: Right_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR >> (\n  PROCEDURE = right,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  COMMUTATOR = <<,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR >> (\n  PROCEDURE = right,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = <<,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR >> (\n  PROCEDURE = right,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  COMMUTATOR = <<,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR >> (\n  PROCEDURE = right,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = <<,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR >> (\n  PROCEDURE = right,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = <<,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [int]
+  - lit: "\n"
+  - group:
+    - {sig: "right({v}, {ss})", ret: "boolean", sym: Right_value_spanset}
+    - {sig: "right({sp}, {ss})", ret: "boolean", sym: Right_span_spanset}
+    - {sig: "right({ss}, {v})", ret: "boolean", sym: Right_spanset_value}
+    - {sig: "right({ss}, {sp})", ret: "boolean", sym: Right_spanset_span}
+    - {sig: "right({ss}, {ss})", ret: "boolean", sym: Right_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR >> (\n  PROCEDURE = right,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  COMMUTATOR = <<,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR >> (\n  PROCEDURE = right,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = <<,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR >> (\n  PROCEDURE = right,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = <<,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR >> (\n  PROCEDURE = right,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  COMMUTATOR = <<,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR >> (\n  PROCEDURE = right,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = <<,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [bigint]
+  - lit: "\n"
+  - group:
+    - {sig: "right({v}, {ss})", ret: "boolean", sym: Right_value_spanset}
+    - {sig: "right({sp}, {ss})", ret: "boolean", sym: Right_span_spanset}
+    - {sig: "right({ss}, {v})", ret: "boolean", sym: Right_spanset_value}
+    - {sig: "right({ss}, {sp})", ret: "boolean", sym: Right_spanset_span}
+    - {sig: "right({ss}, {ss})", ret: "boolean", sym: Right_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR >> (\n  PROCEDURE = right,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  COMMUTATOR = <<,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR >> (\n  PROCEDURE = right,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = <<,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR >> (\n  PROCEDURE = right,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  COMMUTATOR = <<,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR >> (\n  PROCEDURE = right,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = <<,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR >> (\n  PROCEDURE = right,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = <<,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [float]
+  - lit: "\n"
+  - group:
+    - {sig: "after({v}, {ss})", ret: "boolean", sym: After_value_spanset}
+    - {sig: "after({sp}, {ss})", ret: "boolean", sym: After_span_spanset}
+    - {sig: "after({ss}, {v})", ret: "boolean", sym: After_spanset_value}
+    - {sig: "after({ss}, {sp})", ret: "boolean", sym: After_spanset_span}
+    - {sig: "after({ss}, {ss})", ret: "boolean", sym: After_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR #>> (\n  PROCEDURE = after,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  COMMUTATOR = <<#,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR #>> (\n  PROCEDURE = after,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = <<#,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR #>> (\n  PROCEDURE = after,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  COMMUTATOR = <<#,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR #>> (\n  PROCEDURE = after,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = <<#,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR #>> (\n  PROCEDURE = after,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = <<#,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [date, tstz]
+  - lit: "\n"
+  - group:
+    - {stmt: "/*****************************************************************************/"}
+    - {stmt: "\nCREATE FUNCTION overleft({v}, {ss})\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Overleft_value_spanset'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    - {sig: "overleft({sp}, {ss})", ret: "boolean", sym: Overleft_span_spanset}
+    - {sig: "overleft({ss}, {v})", ret: "boolean", sym: Overleft_spanset_value}
+    - {sig: "overleft({ss}, {sp})", ret: "boolean", sym: Overleft_spanset_span}
+    - {sig: "overleft({ss}, {ss})", ret: "boolean", sym: Overleft_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR &< (\n  PROCEDURE = overleft,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR &< (\n  PROCEDURE = overleft,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR &< (\n  PROCEDURE = overleft,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR &< (\n  PROCEDURE = overleft,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR &< (\n  PROCEDURE = overleft,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [int]
+  - lit: "\n"
+  - group:
+    - {sig: "overleft({v}, {ss})", ret: "boolean", sym: Overleft_value_spanset}
+    - {sig: "overleft({sp}, {ss})", ret: "boolean", sym: Overleft_span_spanset}
+    - {sig: "overleft({ss}, {v})", ret: "boolean", sym: Overleft_spanset_value}
+    - {sig: "overleft({ss}, {sp})", ret: "boolean", sym: Overleft_spanset_span}
+    - {sig: "overleft({ss}, {ss})", ret: "boolean", sym: Overleft_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR &< (\n  PROCEDURE = overleft,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR &< (\n  PROCEDURE = overleft,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR &< (\n  PROCEDURE = overleft,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR &< (\n  PROCEDURE = overleft,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR &< (\n  PROCEDURE = overleft,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [bigint]
+  - lit: "\n"
+  - group:
+    - {sig: "overleft({v}, {ss})", ret: "boolean", sym: Overleft_value_spanset}
+    - {sig: "overleft({sp}, {ss})", ret: "boolean", sym: Overleft_span_spanset}
+    - {sig: "overleft({ss}, {v})", ret: "boolean", sym: Overleft_spanset_value}
+    - {sig: "overleft({ss}, {sp})", ret: "boolean", sym: Overleft_spanset_span}
+    - {sig: "overleft({ss}, {ss})", ret: "boolean", sym: Overleft_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR &< (\n  PROCEDURE = overleft,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR &< (\n  PROCEDURE = overleft,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR &< (\n  PROCEDURE = overleft,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR &< (\n  PROCEDURE = overleft,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR &< (\n  PROCEDURE = overleft,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [float]
+  - lit: "\n"
+  - group:
+    - {sig: "overbefore({v}, {ss})", ret: "boolean", sym: Overbefore_value_spanset}
+    - {sig: "overbefore({sp}, {ss})", ret: "boolean", sym: Overbefore_span_spanset}
+    - {sig: "overbefore({ss}, {v})", ret: "boolean", sym: Overbefore_spanset_value}
+    - {sig: "overbefore({ss}, {sp})", ret: "boolean", sym: Overbefore_spanset_span}
+    - {sig: "overbefore({ss}, {ss})", ret: "boolean", sym: Overbefore_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR &<# (\n  PROCEDURE = overbefore,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR &<# (\n  PROCEDURE = overbefore,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR &<# (\n  PROCEDURE = overbefore,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR &<# (\n  PROCEDURE = overbefore,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR &<# (\n  PROCEDURE = overbefore,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [date, tstz]
+  - lit: "\n"
+  - group:
+    - {stmt: "/*****************************************************************************/"}
+    - {stmt: "\nCREATE FUNCTION overright({v}, {ss})\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Overright_value_spanset'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    - {sig: "overright({sp}, {ss})", ret: "boolean", sym: Overright_span_spanset}
+    - {sig: "overright({ss}, {v})", ret: "boolean", sym: Overright_spanset_value}
+    - {sig: "overright({ss}, {sp})", ret: "boolean", sym: Overright_spanset_span}
+    - {sig: "overright({ss}, {ss})", ret: "boolean", sym: Overright_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR &> (\n  PROCEDURE = overright,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR &> (\n  PROCEDURE = overright,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR &> (\n  PROCEDURE = overright,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR &> (\n  PROCEDURE = overright,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR &> (\n  PROCEDURE = overright,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [int]
+  - lit: "\n"
+  - group:
+    - {sig: "overright({v}, {ss})", ret: "boolean", sym: Overright_value_spanset}
+    - {sig: "overright({sp}, {ss})", ret: "boolean", sym: Overright_span_spanset}
+    - {sig: "overright({ss}, {v})", ret: "boolean", sym: Overright_spanset_value}
+    - {sig: "overright({ss}, {sp})", ret: "boolean", sym: Overright_spanset_span}
+    - {sig: "overright({ss}, {ss})", ret: "boolean", sym: Overright_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR &> (\n  PROCEDURE = overright,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR &> (\n  PROCEDURE = overright,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR &> (\n  PROCEDURE = overright,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR &> (\n  PROCEDURE = overright,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR &> (\n  PROCEDURE = overright,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [bigint]
+  - lit: "\n"
+  - group:
+    - {sig: "overright({v}, {ss})", ret: "boolean", sym: Overright_value_spanset}
+    - {sig: "overright({sp}, {ss})", ret: "boolean", sym: Overright_span_spanset}
+    - {sig: "overright({ss}, {v})", ret: "boolean", sym: Overright_spanset_value}
+    - {sig: "overright({ss}, {sp})", ret: "boolean", sym: Overright_spanset_span}
+    - {sig: "overright({ss}, {ss})", ret: "boolean", sym: Overright_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR &> (\n  PROCEDURE = overright,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR &> (\n  PROCEDURE = overright,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR &> (\n  PROCEDURE = overright,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR &> (\n  PROCEDURE = overright,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR &> (\n  PROCEDURE = overright,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [float]
+  - lit: "\n"
+  - group:
+    - {sig: "overafter({v}, {ss})", ret: "boolean", sym: Overafter_value_spanset}
+    - {sig: "overafter({sp}, {ss})", ret: "boolean", sym: Overafter_span_spanset}
+    - {sig: "overafter({ss}, {v})", ret: "boolean", sym: Overafter_spanset_value}
+    - {sig: "overafter({ss}, {sp})", ret: "boolean", sym: Overafter_spanset_span}
+    - {sig: "overafter({ss}, {ss})", ret: "boolean", sym: Overafter_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR #&> (\n  PROCEDURE = overafter,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR #&> (\n  PROCEDURE = overafter,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR #&> (\n  PROCEDURE = overafter,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR #&> (\n  PROCEDURE = overafter,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR #&> (\n  PROCEDURE = overafter,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [date, tstz]
+  - lit: "\n"
+  - group:
+    - {stmt: "/*****************************************************************************/"}
+    - {stmt: "\nCREATE FUNCTION adjacent({v}, {ss})\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Adjacent_value_spanset'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    - {sig: "adjacent({sp}, {ss})", ret: "boolean", sym: Adjacent_span_spanset}
+    - {sig: "adjacent({ss}, {v})", ret: "boolean", sym: Adjacent_spanset_value}
+    - {sig: "adjacent({ss}, {sp})", ret: "boolean", sym: Adjacent_spanset_span}
+    - {sig: "adjacent({ss}, {ss})", ret: "boolean", sym: Adjacent_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [int]
+  - lit: "\n"
+  - group:
+    - {sig: "adjacent({v}, {ss})", ret: "boolean", sym: Adjacent_value_spanset}
+    - {sig: "adjacent({sp}, {ss})", ret: "boolean", sym: Adjacent_span_spanset}
+    - {sig: "adjacent({ss}, {v})", ret: "boolean", sym: Adjacent_spanset_value}
+    - {sig: "adjacent({ss}, {sp})", ret: "boolean", sym: Adjacent_spanset_span}
+    - {sig: "adjacent({ss}, {ss})", ret: "boolean", sym: Adjacent_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [bigint]
+  - lit: "\n"
+  - group:
+    - {sig: "adjacent({v}, {ss})", ret: "boolean", sym: Adjacent_value_spanset}
+    - {sig: "adjacent({sp}, {ss})", ret: "boolean", sym: Adjacent_span_spanset}
+    - {sig: "adjacent({ss}, {v})", ret: "boolean", sym: Adjacent_spanset_value}
+    - {sig: "adjacent({ss}, {sp})", ret: "boolean", sym: Adjacent_spanset_span}
+    - {sig: "adjacent({ss}, {ss})", ret: "boolean", sym: Adjacent_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [float]
+  - lit: "\n"
+  - group:
+    - {sig: "adjacent({v}, {ss})", ret: "boolean", sym: Adjacent_value_spanset}
+    - {sig: "adjacent({sp}, {ss})", ret: "boolean", sym: Adjacent_span_spanset}
+    - {sig: "adjacent({ss}, {v})", ret: "boolean", sym: Adjacent_spanset_value}
+    - {sig: "adjacent({ss}, {sp})", ret: "boolean", sym: Adjacent_spanset_span}
+    - {sig: "adjacent({ss}, {ss})", ret: "boolean", sym: Adjacent_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    - {stmt: "CREATE OPERATOR -|- (\n  PROCEDURE = adjacent,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = -|-,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);"}
+    sep: "\n"
+    order: [date, tstz]
+  - lit: "\n"
+  - group:
+    - {stmt: "/*****************************************************************************/"}
+    - {stmt: "\nCREATE FUNCTION spansetUnion({v}, {ss})\n  RETURNS {ss}\n  AS 'MODULE_PATHNAME', 'Union_value_spanset'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    - {sig: "spanUnion({sp}, {ss})", ret: "{ss}", sym: Union_span_spanset}
+    - {sig: "spansetUnion({ss}, {v})", ret: "{ss}", sym: Union_spanset_value}
+    - {sig: "spansetUnion({ss}, {sp})", ret: "{ss}", sym: Union_spanset_span}
+    - {sig: "spansetUnion({ss}, {ss})", ret: "{ss}", sym: Union_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR + (\n  PROCEDURE = spansetUnion,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  COMMUTATOR = +\n);"}
+    - {stmt: "CREATE OPERATOR + (\n  PROCEDURE = spanUnion,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = +\n);"}
+    - {stmt: "CREATE OPERATOR + (\n  PROCEDURE = spansetUnion,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  COMMUTATOR = +\n);"}
+    - {stmt: "CREATE OPERATOR + (\n  PROCEDURE = spansetUnion,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = +\n);"}
+    - {stmt: "CREATE OPERATOR + (\n  PROCEDURE = spansetUnion,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = +\n);"}
+    sep: "\n"
+    order: [int]
+  - lit: "\n"
+  - group:
+    - {sig: "spansetUnion({v}, {ss})", ret: "{ss}", sym: Union_value_spanset}
+    - {sig: "spanUnion({sp}, {ss})", ret: "{ss}", sym: Union_span_spanset}
+    - {sig: "spansetUnion({ss}, {v})", ret: "{ss}", sym: Union_spanset_value}
+    - {sig: "spansetUnion({ss}, {sp})", ret: "{ss}", sym: Union_spanset_span}
+    - {sig: "spansetUnion({ss}, {ss})", ret: "{ss}", sym: Union_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR + (\n  PROCEDURE = spansetUnion,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  COMMUTATOR = +\n);"}
+    - {stmt: "CREATE OPERATOR + (\n  PROCEDURE = spanUnion,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = +\n);"}
+    - {stmt: "CREATE OPERATOR + (\n  PROCEDURE = spansetUnion,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  COMMUTATOR = +\n);"}
+    - {stmt: "CREATE OPERATOR + (\n  PROCEDURE = spansetUnion,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = +\n);"}
+    - {stmt: "CREATE OPERATOR + (\n  PROCEDURE = spansetUnion,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = +\n);"}
+    sep: "\n"
+    order: [bigint]
+  - lit: "\n"
+  - group:
+    - {sig: "spansetUnion({v}, {ss})", ret: "{ss}", sym: Union_value_spanset}
+    - {sig: "spanUnion({sp}, {ss})", ret: "{ss}", sym: Union_span_spanset}
+    - {sig: "spansetUnion({ss}, {v})", ret: "{ss}", sym: Union_spanset_value}
+    - {sig: "spansetUnion({ss}, {sp})", ret: "{ss}", sym: Union_spanset_span}
+    - {sig: "spansetUnion({ss}, {ss})", ret: "{ss}", sym: Union_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR + (\n  PROCEDURE = spansetUnion,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  COMMUTATOR = +\n);"}
+    - {stmt: "CREATE OPERATOR + (\n  PROCEDURE = spanUnion,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = +\n);"}
+    - {stmt: "CREATE OPERATOR + (\n  PROCEDURE = spansetUnion,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  COMMUTATOR = +\n);"}
+    - {stmt: "CREATE OPERATOR + (\n  PROCEDURE = spansetUnion,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = +\n);"}
+    - {stmt: "CREATE OPERATOR + (\n  PROCEDURE = spansetUnion,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = +\n);"}
+    sep: "\n"
+    order: [float]
+  - lit: "\n"
+  - group:
+    - {sig: "spansetUnion({v}, {ss})", ret: "{ss}", sym: Union_value_spanset}
+    - {sig: "spanUnion({sp}, {ss})", ret: "{ss}", sym: Union_span_spanset}
+    - {sig: "spansetUnion({ss}, {v})", ret: "{ss}", sym: Union_spanset_value}
+    - {sig: "spansetUnion({ss}, {sp})", ret: "{ss}", sym: Union_spanset_span}
+    - {sig: "spansetUnion({ss}, {ss})", ret: "{ss}", sym: Union_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR + (\n  PROCEDURE = spansetUnion,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  COMMUTATOR = +\n);"}
+    - {stmt: "CREATE OPERATOR + (\n  PROCEDURE = spanUnion,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = +\n);"}
+    - {stmt: "CREATE OPERATOR + (\n  PROCEDURE = spansetUnion,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  COMMUTATOR = +\n);"}
+    - {stmt: "CREATE OPERATOR + (\n  PROCEDURE = spansetUnion,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = +\n);"}
+    - {stmt: "CREATE OPERATOR + (\n  PROCEDURE = spansetUnion,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = +\n);"}
+    sep: "\n"
+    order: [date, tstz]
+  - lit: "\n"
+  - group:
+    - {stmt: "/*****************************************************************************/"}
+    - {stmt: "\nCREATE FUNCTION spansetMinus({v}, {ss})\n  RETURNS {ss}\n  AS 'MODULE_PATHNAME', 'Minus_value_spanset'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    - {sig: "spanMinus({sp}, {ss})", ret: "{ss}", sym: Minus_span_spanset}
+    - {sig: "spansetMinus({ss}, {v})", ret: "{ss}", sym: Minus_spanset_value}
+    - {sig: "spansetMinus({ss}, {sp})", ret: "{ss}", sym: Minus_spanset_span}
+    - {sig: "spansetMinus({ss}, {ss})", ret: "{ss}", sym: Minus_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR - (\n  PROCEDURE = spansetMinus,\n  LEFTARG = {v}, RIGHTARG = {ss}\n);"}
+    - {stmt: "CREATE OPERATOR - (\n  PROCEDURE = spanMinus,\n  LEFTARG = {sp}, RIGHTARG = {ss}\n);"}
+    - {stmt: "CREATE OPERATOR - (\n  PROCEDURE = spansetMinus,\n  LEFTARG = {ss}, RIGHTARG = {v}\n);"}
+    - {stmt: "CREATE OPERATOR - (\n  PROCEDURE = spansetMinus,\n  LEFTARG = {ss}, RIGHTARG = {sp}\n);"}
+    - {stmt: "CREATE OPERATOR - (\n  PROCEDURE = spansetMinus,\n  LEFTARG = {ss}, RIGHTARG = {ss}\n);"}
+    sep: "\n"
+    order: [int]
+  - lit: "\n"
+  - group:
+    - {sig: "spansetMinus({v}, {ss})", ret: "{ss}", sym: Minus_value_spanset}
+    - {sig: "spanMinus({sp}, {ss})", ret: "{ss}", sym: Minus_span_spanset}
+    - {sig: "spansetMinus({ss}, {v})", ret: "{ss}", sym: Minus_spanset_value}
+    - {sig: "spansetMinus({ss}, {sp})", ret: "{ss}", sym: Minus_spanset_span}
+    - {sig: "spansetMinus({ss}, {ss})", ret: "{ss}", sym: Minus_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR - (\n  PROCEDURE = spansetMinus,\n  LEFTARG = {v}, RIGHTARG = {ss}\n);"}
+    - {stmt: "CREATE OPERATOR - (\n  PROCEDURE = spanMinus,\n  LEFTARG = {sp}, RIGHTARG = {ss}\n);"}
+    - {stmt: "CREATE OPERATOR - (\n  PROCEDURE = spansetMinus,\n  LEFTARG = {ss}, RIGHTARG = {v}\n);"}
+    - {stmt: "CREATE OPERATOR - (\n  PROCEDURE = spansetMinus,\n  LEFTARG = {ss}, RIGHTARG = {sp}\n);"}
+    - {stmt: "CREATE OPERATOR - (\n  PROCEDURE = spansetMinus,\n  LEFTARG = {ss}, RIGHTARG = {ss}\n);"}
+    sep: "\n"
+    order: [bigint]
+  - lit: "\n"
+  - group:
+    - {sig: "spansetMinus({v}, {ss})", ret: "{ss}", sym: Minus_value_spanset}
+    - {sig: "spanMinus({sp}, {ss})", ret: "{ss}", sym: Minus_span_spanset}
+    - {sig: "spansetMinus({ss}, {v})", ret: "{ss}", sym: Minus_spanset_value}
+    - {sig: "spansetMinus({ss}, {sp})", ret: "{ss}", sym: Minus_spanset_span}
+    - {sig: "spansetMinus({ss}, {ss})", ret: "{ss}", sym: Minus_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR - (\n  PROCEDURE = spansetMinus,\n  LEFTARG = {v}, RIGHTARG = {ss}\n);"}
+    - {stmt: "CREATE OPERATOR - (\n  PROCEDURE = spanMinus,\n  LEFTARG = {sp}, RIGHTARG = {ss}\n);"}
+    - {stmt: "CREATE OPERATOR - (\n  PROCEDURE = spansetMinus,\n  LEFTARG = {ss}, RIGHTARG = {v}\n);"}
+    - {stmt: "CREATE OPERATOR - (\n  PROCEDURE = spansetMinus,\n  LEFTARG = {ss}, RIGHTARG = {sp}\n);"}
+    - {stmt: "CREATE OPERATOR - (\n  PROCEDURE = spansetMinus,\n  LEFTARG = {ss}, RIGHTARG = {ss}\n);"}
+    sep: "\n"
+    order: [float]
+  - lit: "\n"
+  - group:
+    - {sig: "spansetMinus({v}, {ss})", ret: "{ss}", sym: Minus_value_spanset}
+    - {sig: "spanMinus({sp}, {ss})", ret: "{ss}", sym: Minus_span_spanset}
+    - {sig: "spansetMinus({ss}, {v})", ret: "{ss}", sym: Minus_spanset_value}
+    - {sig: "spansetMinus({ss}, {sp})", ret: "{ss}", sym: Minus_spanset_span}
+    - {sig: "spansetMinus({ss}, {ss})", ret: "{ss}", sym: Minus_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR - (\n  PROCEDURE = spansetMinus,\n  LEFTARG = {v}, RIGHTARG = {ss}\n);"}
+    - {stmt: "CREATE OPERATOR - (\n  PROCEDURE = spanMinus,\n  LEFTARG = {sp}, RIGHTARG = {ss}\n);"}
+    - {stmt: "CREATE OPERATOR - (\n  PROCEDURE = spansetMinus,\n  LEFTARG = {ss}, RIGHTARG = {v}\n);"}
+    - {stmt: "CREATE OPERATOR - (\n  PROCEDURE = spansetMinus,\n  LEFTARG = {ss}, RIGHTARG = {sp}\n);"}
+    - {stmt: "CREATE OPERATOR - (\n  PROCEDURE = spansetMinus,\n  LEFTARG = {ss}, RIGHTARG = {ss}\n);"}
+    sep: "\n"
+    order: [date, tstz]
+  - lit: "\n"
+  - group:
+    - {stmt: "/*****************************************************************************/"}
+    - {stmt: "\nCREATE FUNCTION spansetIntersection({v}, {ss})\n  RETURNS {ss}\n  AS 'MODULE_PATHNAME', 'Intersection_value_spanset'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    - {sig: "spanIntersection({sp}, {ss})", ret: "{ss}", sym: Intersection_span_spanset}
+    - {sig: "spansetIntersection({ss}, {v})", ret: "{ss}", sym: Intersection_spanset_value}
+    - {sig: "spansetIntersection({ss}, {sp})", ret: "{ss}", sym: Intersection_spanset_span}
+    - {sig: "spansetIntersection({ss}, {ss})", ret: "{ss}", sym: Intersection_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR * (\n  PROCEDURE = spansetIntersection,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  COMMUTATOR = *\n);"}
+    - {stmt: "CREATE OPERATOR * (\n  PROCEDURE = spanIntersection,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = *\n);"}
+    - {stmt: "CREATE OPERATOR * (\n  PROCEDURE = spansetIntersection,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  COMMUTATOR = *\n);"}
+    - {stmt: "CREATE OPERATOR * (\n  PROCEDURE = spansetIntersection,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = *\n);"}
+    - {stmt: "CREATE OPERATOR * (\n  PROCEDURE = spansetIntersection,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = *\n);"}
+    sep: "\n"
+    order: [int]
+  - lit: "\n"
+  - group:
+    - {sig: "spansetIntersection({v}, {ss})", ret: "{ss}", sym: Intersection_value_spanset}
+    - {sig: "spanIntersection({sp}, {ss})", ret: "{ss}", sym: Intersection_span_spanset}
+    - {sig: "spansetIntersection({ss}, {v})", ret: "{ss}", sym: Intersection_spanset_value}
+    - {sig: "spansetIntersection({ss}, {sp})", ret: "{ss}", sym: Intersection_spanset_span}
+    - {sig: "spansetIntersection({ss}, {ss})", ret: "{ss}", sym: Intersection_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR * (\n  PROCEDURE = spansetIntersection,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  COMMUTATOR = *\n);"}
+    - {stmt: "CREATE OPERATOR * (\n  PROCEDURE = spanIntersection,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = *\n);"}
+    - {stmt: "CREATE OPERATOR * (\n  PROCEDURE = spansetIntersection,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  COMMUTATOR = *\n);"}
+    - {stmt: "CREATE OPERATOR * (\n  PROCEDURE = spansetIntersection,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = *\n);"}
+    - {stmt: "CREATE OPERATOR * (\n  PROCEDURE = spansetIntersection,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = *\n);"}
+    sep: "\n"
+    order: [bigint]
+  - lit: "\n"
+  - group:
+    - {sig: "spansetIntersection({v}, {ss})", ret: "{ss}", sym: Intersection_value_spanset}
+    - {sig: "spanIntersection({sp}, {ss})", ret: "{ss}", sym: Intersection_span_spanset}
+    - {sig: "spansetIntersection({ss}, {v})", ret: "{ss}", sym: Intersection_spanset_value}
+    - {sig: "spansetIntersection({ss}, {sp})", ret: "{ss}", sym: Intersection_spanset_span}
+    - {sig: "spansetIntersection({ss}, {ss})", ret: "{ss}", sym: Intersection_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR * (\n  PROCEDURE = spansetIntersection,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  COMMUTATOR = *\n);"}
+    - {stmt: "CREATE OPERATOR * (\n  PROCEDURE = spanIntersection,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = *\n);"}
+    - {stmt: "CREATE OPERATOR * (\n  PROCEDURE = spansetIntersection,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  COMMUTATOR = *\n);"}
+    - {stmt: "CREATE OPERATOR * (\n  PROCEDURE = spansetIntersection,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = *\n);"}
+    - {stmt: "CREATE OPERATOR * (\n  PROCEDURE = spansetIntersection,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = *\n);"}
+    sep: "\n"
+    order: [float]
+  - lit: "\n"
+  - group:
+    - {sig: "spansetIntersection({v}, {ss})", ret: "{ss}", sym: Intersection_value_spanset}
+    - {sig: "spanIntersection({sp}, {ss})", ret: "{ss}", sym: Intersection_span_spanset}
+    - {sig: "spansetIntersection({ss}, {v})", ret: "{v}", sym: Intersection_spanset_value}
+    - {sig: "spansetIntersection({ss}, {sp})", ret: "{ss}", sym: Intersection_spanset_span}
+    - {sig: "spansetIntersection({ss}, {ss})", ret: "{ss}", sym: Intersection_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR * (\n  PROCEDURE = spansetIntersection,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  COMMUTATOR = *\n);"}
+    - {stmt: "CREATE OPERATOR * (\n  PROCEDURE = spanIntersection,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = *\n);"}
+    - {stmt: "CREATE OPERATOR * (\n  PROCEDURE = spansetIntersection,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  COMMUTATOR = *\n);"}
+    - {stmt: "CREATE OPERATOR * (\n  PROCEDURE = spansetIntersection,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = *\n);"}
+    - {stmt: "CREATE OPERATOR * (\n  PROCEDURE = spansetIntersection,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = *\n);"}
+    sep: "\n"
+    order: [date]
+  - lit: "\n"
+  - group:
+    - {sig: "spansetIntersection({v}, {ss})", ret: "{ss}", sym: Intersection_value_spanset}
+    - {sig: "spanIntersection({sp}, {ss})", ret: "{ss}", sym: Intersection_span_spanset}
+    - {sig: "spansetIntersection({ss}, {v})", ret: "{ss}", sym: Intersection_spanset_value}
+    - {sig: "spansetIntersection({ss}, {sp})", ret: "{ss}", sym: Intersection_spanset_span}
+    - {sig: "spansetIntersection({ss}, {ss})", ret: "{ss}", sym: Intersection_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR * (\n  PROCEDURE = spansetIntersection,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  COMMUTATOR = *\n);"}
+    - {stmt: "CREATE OPERATOR * (\n  PROCEDURE = spanIntersection,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = *\n);"}
+    - {stmt: "CREATE OPERATOR * (\n  PROCEDURE = spansetIntersection,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  COMMUTATOR = *\n);"}
+    - {stmt: "CREATE OPERATOR * (\n  PROCEDURE = spansetIntersection,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = *\n);"}
+    - {stmt: "CREATE OPERATOR * (\n  PROCEDURE = spansetIntersection,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = *\n);"}
+    - {stmt: "\n/*****************************************************************************\n * Distance operators\n *****************************************************************************/"}
+    sep: "\n"
+    order: [tstz]
+  - lit: "\n"
+  - group:
+    - {sig: "span_distance({v}, {ss})", ret: "{v}", sym: Distance_value_spanset}
+    - {sig: "span_distance({sp}, {ss})", ret: "{v}", sym: Distance_span_spanset}
+    - {sig: "span_distance({ss}, {v})", ret: "{v}", sym: Distance_spanset_value}
+    - {sig: "span_distance({ss}, {sp})", ret: "{v}", sym: Distance_spanset_span}
+    - {sig: "span_distance({ss}, {ss})", ret: "{v}", sym: Distance_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR <-> (\n  PROCEDURE = span_distance,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  COMMUTATOR = <->\n);"}
+    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = span_distance,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = <->\n);"}
+    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = span_distance,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  COMMUTATOR = <->\n);"}
+    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = span_distance,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = <->\n);"}
+    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = span_distance,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = <->\n);"}
+    sep: "\n"
+    order: [int, bigint, float]
+  - lit: "\nCREATE FUNCTION span_distance(date, datespanset)\n  RETURNS integer\n  AS 'MODULE_PATHNAME', 'Distance_value_spanset'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION span_distance(datespan, datespanset)\n  RETURNS integer\n  AS 'MODULE_PATHNAME', 'Distance_span_spanset'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION span_distance(datespanset, date)\n  RETURNS integer\n  AS 'MODULE_PATHNAME', 'Distance_spanset_value'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION span_distance(datespanset, datespan)\n  RETURNS integer\n  AS 'MODULE_PATHNAME', 'Distance_spanset_span'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION span_distance(datespanset, datespanset)\n  RETURNS integer\n  AS 'MODULE_PATHNAME', 'Distance_spanset_spanset'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n"
+  - group:
+    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = span_distance,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  COMMUTATOR = <->\n);"}
+    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = span_distance,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = <->\n);"}
+    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = span_distance,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  COMMUTATOR = <->\n);"}
+    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = span_distance,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = <->\n);"}
+    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = span_distance,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = <->\n);"}
+    sep: "\n"
+    order: [date]
+  - lit: "\nCREATE FUNCTION time_distance(timestamptz, tstzspanset)\n  RETURNS float\n  AS 'MODULE_PATHNAME', 'Distance_value_spanset'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION time_distance(tstzspan, tstzspanset)\n  RETURNS float\n  AS 'MODULE_PATHNAME', 'Distance_span_spanset'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION time_distance(tstzspanset, timestamptz)\n  RETURNS float\n  AS 'MODULE_PATHNAME', 'Distance_spanset_value'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION time_distance(tstzspanset, tstzspan)\n  RETURNS float\n  AS 'MODULE_PATHNAME', 'Distance_spanset_span'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION time_distance(tstzspanset, tstzspanset)\n  RETURNS float\n  AS 'MODULE_PATHNAME', 'Distance_spanset_spanset'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n"
+  - group:
+    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = time_distance,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  COMMUTATOR = <->\n);"}
+    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = time_distance,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = <->\n);"}
+    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = time_distance,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  COMMUTATOR = <->\n);"}
+    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = time_distance,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = <->\n);"}
+    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = time_distance,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = <->\n);"}
+    - {stmt: "\n/*****************************************************************************/"}
+    sep: "\n"
+    order: [tstz]
+- family: span_indexes
+  file: mobilitydb/sql/temporal/011_span_indexes.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * R-tree GiST indexes\n"
+  order: [int, bigint, float, date, tstz]
+  insts:
+    int: {v: integer, sp: intspan, ss: intspanset, vs: intset, rg: int4range, mr: int4multirange}
+    bigint: {v: bigint, sp: bigintspan, ss: bigintspanset, vs: bigintset, rg: int8range, mr: int8multirange}
+    float: {v: float, sp: floatspan, ss: floatspanset, vs: floatset}
+    date: {v: date, sp: datespan, ss: datespanset, vs: dateset, rg: daterange, mr: datemultirange}
+    tstz: {v: timestamptz, sp: tstzspan, ss: tstzspanset, vs: tstzset, rg: tstzrange, mr: tstzmultirange}
+  blocks:
+  - group:
+    - {stmt: "/******************************************************************************\n * R-tree GiST indexes\n ******************************************************************************/"}
+    - {stmt: "\nCREATE FUNCTION span_gist_consistent(internal, {sp}, smallint, oid, internal)\n  RETURNS bool\n  AS 'MODULE_PATHNAME', 'Span_gist_consistent'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    - {sig: "span_gist_union(internal, internal)", ret: "internal", sym: Span_gist_union}
+    - {sig: "span_gist_penalty(internal, internal, internal)", ret: "internal", sym: Span_gist_penalty}
+    - {sig: "span_gist_picksplit(internal, internal)", ret: "internal", sym: Span_gist_picksplit}
+    - {sig: "span_gist_same({sp}, {sp}, internal)", ret: "internal", sym: Span_gist_same}
+    - {sig: "span_gist_distance(internal, {sp}, smallint, oid, internal)", ret: "internal", sym: Span_gist_distance}
+    - {sig: "span_gist_fetch(internal)", ret: "internal", sym: Span_gist_fetch}
+    - {stmt: "\n/******************************************************************************/"}
+    sep: "\n"
+    order: [int]
+  - lit: "\n"
+  - group:
+    - {stmt: "CREATE OPERATOR CLASS {sp}_rtree_ops\n  DEFAULT FOR TYPE {sp} USING gist AS\n  -- strictly left\n  OPERATOR  1     << ({sp}, {v}),\n  OPERATOR  1     << ({sp}, {sp}),\n  OPERATOR  1     << ({sp}, {ss}),\n  -- overlaps or left\n  OPERATOR  2     &< ({sp}, {v}),\n  OPERATOR  2     &< ({sp}, {sp}),\n  OPERATOR  2     &< ({sp}, {ss}),\n  -- overlaps\n  OPERATOR  3     && ({sp}, {sp}),\n  OPERATOR  3     && ({sp}, {ss}),\n  -- overlaps or right\n  OPERATOR  4     &> ({sp}, {v}),\n  OPERATOR  4     &> ({sp}, {sp}),\n  OPERATOR  4     &> ({sp}, {ss}),\n  -- strictly right\n  OPERATOR  5     >> ({sp}, {v}),\n  OPERATOR  5     >> ({sp}, {sp}),\n  OPERATOR  5     >> ({sp}, {ss}),\n  -- contains\n  OPERATOR  7     @> ({sp}, {v}),\n  OPERATOR  7     @> ({sp}, {sp}),\n  OPERATOR  7     @> ({sp}, {ss}),\n  -- contained by\n  OPERATOR  8     <@ ({sp}, {sp}),\n  OPERATOR  8     <@ ({sp}, {ss}),\n  -- adjacent\n  OPERATOR  17    -|- ({sp}, {sp}),\n  OPERATOR  17    -|- ({sp}, {ss}),\n  -- equals\n  OPERATOR  18    = ({sp}, {sp}),\n  -- nearest approach distance\n  OPERATOR  25    <-> ({sp}, {v}) FOR ORDER BY pg_catalog.{v}_ops,\n  OPERATOR  25    <-> ({sp}, {sp}) FOR ORDER BY pg_catalog.{v}_ops,\n  OPERATOR  25    <-> ({sp}, {ss}) FOR ORDER BY pg_catalog.{v}_ops,\n  -- functions\n  FUNCTION  1  span_gist_consistent(internal, {sp}, smallint, oid, internal),\n  FUNCTION  2  span_gist_union(internal, internal),\n  FUNCTION  5  span_gist_penalty(internal, internal, internal),\n  FUNCTION  6  span_gist_picksplit(internal, internal),\n  FUNCTION  7  span_gist_same({sp}, {sp}, internal),\n  FUNCTION  8  span_gist_distance(internal, {sp}, smallint, oid, internal),\n  FUNCTION  9  span_gist_fetch(internal);"}
+    - {stmt: "\n/******************************************************************************/"}
+    sep: "\n"
+    order: [int]
+  - lit: "\n"
+  - group:
+    - {sig: "span_gist_consistent(internal, {sp}, smallint, oid, internal)", ret: "bool", sym: Span_gist_consistent}
+    - {sig: "span_gist_same({sp}, {sp}, internal)", ret: "internal", sym: Span_gist_same}
+    - {sig: "span_gist_distance(internal, {sp}, smallint, oid, internal)", ret: "internal", sym: Span_gist_distance}
+    - {stmt: "\n/******************************************************************************/"}
+    - {stmt: "\nCREATE OPERATOR CLASS {sp}_rtree_ops\n  DEFAULT FOR TYPE {sp} USING gist AS\n  -- strictly left\n  OPERATOR  1     << ({sp}, {v}),\n  OPERATOR  1     << ({sp}, {sp}),\n  OPERATOR  1     << ({sp}, {ss}),\n  -- overlaps or left\n  OPERATOR  2     &< ({sp}, {v}),\n  OPERATOR  2     &< ({sp}, {sp}),\n  OPERATOR  2     &< ({sp}, {ss}),\n  -- overlaps\n  OPERATOR  3     && ({sp}, {sp}),\n  OPERATOR  3     && ({sp}, {ss}),\n  -- overlaps or right\n  OPERATOR  4     &> ({sp}, {v}),\n  OPERATOR  4     &> ({sp}, {sp}),\n  OPERATOR  4     &> ({sp}, {ss}),\n  -- strictly right\n  OPERATOR  5     >> ({sp}, {v}),\n  OPERATOR  5     >> ({sp}, {sp}),\n  OPERATOR  5     >> ({sp}, {ss}),\n  -- contains\n  OPERATOR  7     @> ({sp}, {v}),\n  OPERATOR  7     @> ({sp}, {sp}),\n  OPERATOR  7     @> ({sp}, {ss}),\n  -- contained by\n  OPERATOR  8     <@ ({sp}, {sp}),\n  OPERATOR  8     <@ ({sp}, {ss}),\n  -- adjacent\n  OPERATOR  17    -|- ({sp}, {sp}),\n  OPERATOR  17    -|- ({sp}, {ss}),\n  -- equals\n  OPERATOR  18    = ({sp}, {sp}),\n  -- nearest approach distance\n  OPERATOR  25    <-> ({sp}, {v}) FOR ORDER BY pg_catalog.integer_ops,\n  OPERATOR  25    <-> ({sp}, {sp}) FOR ORDER BY pg_catalog.integer_ops,\n  OPERATOR  25    <-> ({sp}, {ss}) FOR ORDER BY pg_catalog.integer_ops,\n  -- functions\n  FUNCTION  1  span_gist_consistent(internal, {sp}, smallint, oid, internal),\n  FUNCTION  2  span_gist_union(internal, internal),\n  FUNCTION  5  span_gist_penalty(internal, internal, internal),\n  FUNCTION  6  span_gist_picksplit(internal, internal),\n  FUNCTION  7  span_gist_same({sp}, {sp}, internal),\n  FUNCTION  8  span_gist_distance(internal, {sp}, smallint, oid, internal),\n  FUNCTION  9  span_gist_fetch(internal);"}
+    sep: "\n"
+    order: [bigint]
+  - lit: "\n"
+  - group:
+    - {stmt: "/******************************************************************************/"}
+    - {stmt: "\nCREATE FUNCTION span_gist_consistent(internal, {sp}, smallint, oid, internal)\n  RETURNS bool\n  AS 'MODULE_PATHNAME', 'Span_gist_consistent'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    - {sig: "span_gist_same({sp}, {sp}, internal)", ret: "internal", sym: Span_gist_same}
+    - {sig: "span_gist_distance(internal, {sp}, smallint, oid, internal)", ret: "internal", sym: Span_gist_distance}
+    - {stmt: "\n/******************************************************************************/"}
+    sep: "\n"
+    order: [float]
+  - lit: "\n"
+  - group:
+    - {stmt: "CREATE OPERATOR CLASS {sp}_rtree_ops\n  DEFAULT FOR TYPE {sp} USING gist AS\n  -- strictly left\n  OPERATOR  1     << ({sp}, {v}),\n  OPERATOR  1     << ({sp}, {sp}),\n  OPERATOR  1     << ({sp}, {ss}),\n  -- overlaps or left\n  OPERATOR  2     &< ({sp}, {v}),\n  OPERATOR  2     &< ({sp}, {sp}),\n  OPERATOR  2     &< ({sp}, {ss}),\n  -- overlaps\n  OPERATOR  3     && ({sp}, {sp}),\n  OPERATOR  3     && ({sp}, {ss}),\n  -- overlaps or right\n  OPERATOR  4     &> ({sp}, {v}),\n  OPERATOR  4     &> ({sp}, {sp}),\n  OPERATOR  4     &> ({sp}, {ss}),\n  -- strictly right\n  OPERATOR  5     >> ({sp}, {v}),\n  OPERATOR  5     >> ({sp}, {sp}),\n  OPERATOR  5     >> ({sp}, {ss}),\n  -- contains\n  OPERATOR  7     @> ({sp}, {v}),\n  OPERATOR  7     @> ({sp}, {sp}),\n  OPERATOR  7     @> ({sp}, {ss}),\n  -- contained by\n  OPERATOR  8     <@ ({sp}, {sp}),\n  OPERATOR  8     <@ ({sp}, {ss}),\n  -- adjacent\n  OPERATOR  17    -|- ({sp}, {sp}),\n  OPERATOR  17    -|- ({sp}, {ss}),\n  -- equals\n  OPERATOR  18    = ({sp}, {sp}),\n  -- nearest approach distance\n  OPERATOR  25    <-> ({sp}, {v}) FOR ORDER BY pg_catalog.{v}_ops,\n  OPERATOR  25    <-> ({sp}, {sp}) FOR ORDER BY pg_catalog.{v}_ops,\n  OPERATOR  25    <-> ({sp}, {ss}) FOR ORDER BY pg_catalog.{v}_ops,\n  -- functions\n  FUNCTION  1  span_gist_consistent(internal, {sp}, smallint, oid, internal),\n  FUNCTION  2  span_gist_union(internal, internal),\n  FUNCTION  5  span_gist_penalty(internal, internal, internal),\n  FUNCTION  6  span_gist_picksplit(internal, internal),\n  FUNCTION  7  span_gist_same({sp}, {sp}, internal),\n  FUNCTION  8  span_gist_distance(internal, {sp}, smallint, oid, internal),\n  FUNCTION  9  span_gist_fetch(internal);"}
+    - {stmt: "\n/******************************************************************************/"}
+    sep: "\n"
+    order: [float]
+  - lit: "\n"
+  - group:
+    - {sig: "span_gist_consistent(internal, {sp}, smallint, oid, internal)", ret: "bool", sym: Span_gist_consistent}
+    - {sig: "span_gist_same({sp}, {sp}, internal)", ret: "internal", sym: Span_gist_same}
+    - {sig: "span_gist_distance(internal, {sp}, smallint, oid, internal)", ret: "internal", sym: Span_gist_distance}
+    - {stmt: "\n/******************************************************************************/"}
+    - {stmt: "\nCREATE OPERATOR CLASS {sp}_rtree_ops\n  DEFAULT FOR TYPE {sp} USING gist AS\n  -- strictly left\n  OPERATOR  1     <<# ({sp}, {v}),\n  OPERATOR  1     <<# ({sp}, {sp}),\n  OPERATOR  1     <<# ({sp}, {ss}),\n  -- overlaps or left\n  OPERATOR  2     &<# ({sp}, {v}),\n  OPERATOR  2     &<# ({sp}, {sp}),\n  OPERATOR  2     &<# ({sp}, {ss}),\n  -- overlaps\n  OPERATOR  3     && ({sp}, {sp}),\n  OPERATOR  3     && ({sp}, {ss}),\n  -- overlaps or right\n  OPERATOR  4     #&> ({sp}, {v}),\n  OPERATOR  4     #&> ({sp}, {sp}),\n  OPERATOR  4     #&> ({sp}, {ss}),\n  -- strictly right\n  OPERATOR  5     #>> ({sp}, {v}),\n  OPERATOR  5     #>> ({sp}, {sp}),\n  OPERATOR  5     #>> ({sp}, {ss}),\n  -- contains\n  OPERATOR  7     @> ({sp}, {v}),\n  OPERATOR  7     @> ({sp}, {sp}),\n  OPERATOR  7     @> ({sp}, {ss}),\n  -- contained by\n  OPERATOR  8     <@ ({sp}, {sp}),\n  OPERATOR  8     <@ ({sp}, {ss}),\n  -- adjacent\n  OPERATOR  17    -|- ({sp}, {sp}),\n  OPERATOR  17    -|- ({sp}, {ss}),\n  -- equals\n  OPERATOR  18    = ({sp}, {sp}),\n  -- nearest approach distance\n  OPERATOR  25    <-> ({sp}, {v}) FOR ORDER BY pg_catalog.integer_ops,\n  OPERATOR  25    <-> ({sp}, {sp}) FOR ORDER BY pg_catalog.integer_ops,\n  OPERATOR  25    <-> ({sp}, {ss}) FOR ORDER BY pg_catalog.integer_ops,\n  -- functions\n  FUNCTION  1  span_gist_consistent(internal, {sp}, smallint, oid, internal),\n  FUNCTION  2  span_gist_union(internal, internal),\n  FUNCTION  5  span_gist_penalty(internal, internal, internal),\n  FUNCTION  6  span_gist_picksplit(internal, internal),\n  FUNCTION  7  span_gist_same({sp}, {sp}, internal),\n  FUNCTION  8  span_gist_distance(internal, {sp}, smallint, oid, internal),\n  FUNCTION  9  span_gist_fetch(internal);"}
+    sep: "\n"
+    order: [date]
+  - lit: "\n"
+  - group:
+    - {stmt: "/******************************************************************************/"}
+    - {stmt: "\nCREATE FUNCTION span_gist_consistent(internal, {sp}, smallint, oid, internal)\n  RETURNS bool\n  AS 'MODULE_PATHNAME', 'Span_gist_consistent'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    - {sig: "span_gist_same({sp}, {sp}, internal)", ret: "internal", sym: Span_gist_same}
+    - {sig: "span_gist_distance(internal, {sp}, smallint, oid, internal)", ret: "internal", sym: Span_gist_distance}
+    - {stmt: "\n/******************************************************************************/"}
+    sep: "\n"
+    order: [tstz]
+  - lit: "\n"
+  - group:
+    - {stmt: "CREATE OPERATOR CLASS {sp}_rtree_ops\n  DEFAULT FOR TYPE {sp} USING gist AS\n  -- overlaps\n  OPERATOR  3    && ({sp}, {sp}),\n  OPERATOR  3    && ({sp}, {ss}),\n  -- contains\n  OPERATOR  7    @> ({sp}, {v}),\n  OPERATOR  7    @> ({sp}, {sp}),\n  OPERATOR  7    @> ({sp}, {ss}),\n  -- contained by\n  OPERATOR  8    <@ ({sp}, {sp}),\n  OPERATOR  8    <@ ({sp}, {ss}),\n  -- adjacent\n  OPERATOR  17    -|- ({sp}, {sp}),\n  OPERATOR  17    -|- ({sp}, {ss}),\n  -- equals\n  OPERATOR  18    = ({sp}, {sp}),\n  -- nearest approach distance\n  OPERATOR  25    <-> ({sp}, {v}) FOR ORDER BY pg_catalog.float_ops,\n  OPERATOR  25    <-> ({sp}, {sp}) FOR ORDER BY pg_catalog.float_ops,\n  OPERATOR  25    <-> ({sp}, {ss}) FOR ORDER BY pg_catalog.float_ops,\n  -- overlaps or before\n  OPERATOR  28    &<# ({sp}, {v}),\n  OPERATOR  28    &<# ({sp}, {sp}),\n  OPERATOR  28    &<# ({sp}, {ss}),\n  -- strictly before\n  OPERATOR  29    <<# ({sp}, {v}),\n  OPERATOR  29    <<# ({sp}, {sp}),\n  OPERATOR  29    <<# ({sp}, {ss}),\n  -- strictly after\n  OPERATOR  30    #>> ({sp}, {v}),\n  OPERATOR  30    #>> ({sp}, {sp}),\n  OPERATOR  30    #>> ({sp}, {ss}),\n  -- overlaps or after\n  OPERATOR  31    #&> ({sp}, {v}),\n  OPERATOR  31    #&> ({sp}, {sp}),\n  OPERATOR  31    #&> ({sp}, {ss}),\n  -- functions\n  FUNCTION  1  span_gist_consistent(internal, {sp}, smallint, oid, internal),\n  FUNCTION  2  span_gist_union(internal, internal),\n  FUNCTION  5  span_gist_penalty(internal, internal, internal),\n  FUNCTION  6  span_gist_picksplit(internal, internal),\n  FUNCTION  7  span_gist_same({sp}, {sp}, internal),\n  FUNCTION  8  span_gist_distance(internal, {sp}, smallint, oid, internal),\n  FUNCTION  9  span_gist_fetch(internal);"}
+    - {stmt: "\n/******************************************************************************\n * Quad-tree SP-GiST indexes\n ******************************************************************************/"}
+    sep: "\n"
+    order: [tstz]
+  - lit: "\nCREATE FUNCTION intspan_spgist_config(internal, internal)\n  RETURNS void\n  AS 'MODULE_PATHNAME', 'Intspan_spgist_config'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION bigintspan_spgist_config(internal, internal)\n  RETURNS void\n  AS 'MODULE_PATHNAME', 'Bigintspan_spgist_config'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION floatspan_spgist_config(internal, internal)\n  RETURNS void\n  AS 'MODULE_PATHNAME', 'Floatspan_spgist_config'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION datespan_spgist_config(internal, internal)\n  RETURNS void\n  AS 'MODULE_PATHNAME', 'Datespan_spgist_config'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION tstzspan_spgist_config(internal, internal)\n  RETURNS void\n  AS 'MODULE_PATHNAME', 'Tstzspan_spgist_config'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n"
+  - group:
+    - {sig: "span_quadtree_choose(internal, internal)", ret: "void", sym: Span_quadtree_choose}
+    - {sig: "span_quadtree_picksplit(internal, internal)", ret: "void", sym: Span_quadtree_picksplit}
+    - {sig: "span_quadtree_inner_consistent(internal, internal)", ret: "void", sym: Span_quadtree_inner_consistent}
+    - {sig: "span_spgist_leaf_consistent(internal, internal)", ret: "bool", sym: Span_spgist_leaf_consistent}
+    - {stmt: "\n/******************************************************************************/"}
+    - {stmt: "\nCREATE OPERATOR CLASS {sp}_quadtree_ops\n  DEFAULT FOR TYPE {sp} USING spgist AS\n  -- strictly left\n  OPERATOR  1     << ({sp}, {v}),\n  OPERATOR  1     << ({sp}, {sp}),\n  OPERATOR  1     << ({sp}, {ss}),\n  -- overlaps or left\n  OPERATOR  2     &< ({sp}, {v}),\n  OPERATOR  2     &< ({sp}, {sp}),\n  OPERATOR  2     &< ({sp}, {ss}),\n  -- overlaps\n  OPERATOR  3     && ({sp}, {sp}),\n  OPERATOR  3     && ({sp}, {ss}),\n  -- overlaps or right\n  OPERATOR  4     &> ({sp}, {v}),\n  OPERATOR  4     &> ({sp}, {sp}),\n  OPERATOR  4     &> ({sp}, {ss}),\n  -- strictly right\n  OPERATOR  5     >> ({sp}, {v}),\n  OPERATOR  5     >> ({sp}, {sp}),\n  OPERATOR  5     >> ({sp}, {ss}),\n  -- contains\n  OPERATOR  7     @> ({sp}, {v}),\n  OPERATOR  7     @> ({sp}, {sp}),\n  OPERATOR  7     @> ({sp}, {ss}),\n  -- contained by\n  OPERATOR  8     <@ ({sp}, {sp}),\n  OPERATOR  8     <@ ({sp}, {ss}),\n  -- adjacent\n  OPERATOR  17    -|- ({sp}, {sp}),\n  OPERATOR  17    -|- ({sp}, {ss}),\n  -- equals\n  OPERATOR  18    = ({sp}, {sp}),\n  -- nearest approach distance\n  OPERATOR  25    <-> ({sp}, {v}) FOR ORDER BY pg_catalog.{v}_ops,\n  OPERATOR  25    <-> ({sp}, {sp}) FOR ORDER BY pg_catalog.{v}_ops,\n  OPERATOR  25    <-> ({sp}, {ss}) FOR ORDER BY pg_catalog.{v}_ops,\n  -- functions\n  FUNCTION  1  {sp}_spgist_config(internal, internal),\n  FUNCTION  2  span_quadtree_choose(internal, internal),\n  FUNCTION  3  span_quadtree_picksplit(internal, internal),\n  FUNCTION  4  span_quadtree_inner_consistent(internal, internal),\n  FUNCTION  5  span_spgist_leaf_consistent(internal, internal);"}
+    sep: "\n"
+    order: [int]
+  - lit: "\n"
+  - group:
+    - {stmt: "/******************************************************************************/"}
+    - {stmt: "\nCREATE OPERATOR CLASS {sp}_quadtree_ops\n  DEFAULT FOR TYPE {sp} USING spgist AS\n  -- strictly left\n  OPERATOR  1     << ({sp}, {v}),\n  OPERATOR  1     << ({sp}, {sp}),\n  OPERATOR  1     << ({sp}, {ss}),\n  -- overlaps or left\n  OPERATOR  2     &< ({sp}, {v}),\n  OPERATOR  2     &< ({sp}, {sp}),\n  OPERATOR  2     &< ({sp}, {ss}),\n  -- overlaps\n  OPERATOR  3     && ({sp}, {sp}),\n  OPERATOR  3     && ({sp}, {ss}),\n  -- overlaps or right\n  OPERATOR  4     &> ({sp}, {v}),\n  OPERATOR  4     &> ({sp}, {sp}),\n  OPERATOR  4     &> ({sp}, {ss}),\n  -- strictly right\n  OPERATOR  5     >> ({sp}, {v}),\n  OPERATOR  5     >> ({sp}, {sp}),\n  OPERATOR  5     >> ({sp}, {ss}),\n  -- contains\n  OPERATOR  7     @> ({sp}, {v}),\n  OPERATOR  7     @> ({sp}, {sp}),\n  OPERATOR  7     @> ({sp}, {ss}),\n  -- contained by\n  OPERATOR  8     <@ ({sp}, {sp}),\n  OPERATOR  8     <@ ({sp}, {ss}),\n  -- adjacent\n  OPERATOR  17    -|- ({sp}, {sp}),\n  OPERATOR  17    -|- ({sp}, {ss}),\n  -- equals\n  OPERATOR  18    = ({sp}, {sp}),\n  -- nearest approach distance\n  OPERATOR  25    <-> ({sp}, {v}) FOR ORDER BY pg_catalog.integer_ops,\n  OPERATOR  25    <-> ({sp}, {sp}) FOR ORDER BY pg_catalog.integer_ops,\n  OPERATOR  25    <-> ({sp}, {ss}) FOR ORDER BY pg_catalog.integer_ops,\n  -- functions\n  FUNCTION  1  {sp}_spgist_config(internal, internal),\n  FUNCTION  2  span_quadtree_choose(internal, internal),\n  FUNCTION  3  span_quadtree_picksplit(internal, internal),\n  FUNCTION  4  span_quadtree_inner_consistent(internal, internal),\n  FUNCTION  5  span_spgist_leaf_consistent(internal, internal);"}
+    - {stmt: "\n/******************************************************************************/"}
+    sep: "\n"
+    order: [bigint]
+  - lit: "\n"
+  - group:
+    - {stmt: "CREATE OPERATOR CLASS {sp}_quadtree_ops\n  DEFAULT FOR TYPE {sp} USING spgist AS\n  -- strictly left\n  OPERATOR  1     << ({sp}, {v}),\n  OPERATOR  1     << ({sp}, {sp}),\n  OPERATOR  1     << ({sp}, {ss}),\n  -- overlaps or left\n  OPERATOR  2     &< ({sp}, {v}),\n  OPERATOR  2     &< ({sp}, {sp}),\n  OPERATOR  2     &< ({sp}, {ss}),\n  -- overlaps\n  OPERATOR  3     && ({sp}, {sp}),\n  OPERATOR  3     && ({sp}, {ss}),\n  -- overlaps or right\n  OPERATOR  4     &> ({sp}, {v}),\n  OPERATOR  4     &> ({sp}, {sp}),\n  OPERATOR  4     &> ({sp}, {ss}),\n  -- strictly right\n  OPERATOR  5     >> ({sp}, {v}),\n  OPERATOR  5     >> ({sp}, {sp}),\n  OPERATOR  5     >> ({sp}, {ss}),\n  -- contains\n  OPERATOR  7     @> ({sp}, {v}),\n  OPERATOR  7     @> ({sp}, {sp}),\n  OPERATOR  7     @> ({sp}, {ss}),\n  -- contained by\n  OPERATOR  8     <@ ({sp}, {sp}),\n  OPERATOR  8     <@ ({sp}, {ss}),\n  -- adjacent\n  OPERATOR  17    -|- ({sp}, {sp}),\n  OPERATOR  17    -|- ({sp}, {ss}),\n  -- equals\n  OPERATOR  18    = ({sp}, {sp}),\n  -- nearest approach distance\n  OPERATOR  25    <-> ({sp}, {v}) FOR ORDER BY pg_catalog.{v}_ops,\n  OPERATOR  25    <-> ({sp}, {sp}) FOR ORDER BY pg_catalog.{v}_ops,\n  OPERATOR  25    <-> ({sp}, {ss}) FOR ORDER BY pg_catalog.{v}_ops,\n  -- functions\n  FUNCTION  1  {sp}_spgist_config(internal, internal),\n  FUNCTION  2  span_quadtree_choose(internal, internal),\n  FUNCTION  3  span_quadtree_picksplit(internal, internal),\n  FUNCTION  4  span_quadtree_inner_consistent(internal, internal),\n  FUNCTION  5  span_spgist_leaf_consistent(internal, internal);"}
+    - {stmt: "\n/******************************************************************************/"}
+    sep: "\n"
+    order: [float]
+  - lit: "\n"
+  - group:
+    - {stmt: "CREATE OPERATOR CLASS {sp}_quadtree_ops\n  DEFAULT FOR TYPE {sp} USING spgist AS\n  -- overlaps\n  OPERATOR  3    && ({sp}, {sp}),\n  OPERATOR  3    && ({sp}, {ss}),\n  -- contains\n  OPERATOR  7    @> ({sp}, {v}),\n  OPERATOR  7    @> ({sp}, {sp}),\n  OPERATOR  7    @> ({sp}, {ss}),\n  -- contained by\n  OPERATOR  8    <@ ({sp}, {sp}),\n  OPERATOR  8    <@ ({sp}, {ss}),\n  -- adjacent\n  OPERATOR  17    -|- ({sp}, {sp}),\n  OPERATOR  17    -|- ({sp}, {ss}),\n  -- equals\n  OPERATOR  18    = ({sp}, {sp}),\n  -- nearest approach distance\n  OPERATOR  25    <-> ({sp}, {v}) FOR ORDER BY pg_catalog.integer_ops,\n  OPERATOR  25    <-> ({sp}, {sp}) FOR ORDER BY pg_catalog.integer_ops,\n  OPERATOR  25    <-> ({sp}, {ss}) FOR ORDER BY pg_catalog.integer_ops,\n  -- overlaps or before\n  OPERATOR  28    &<# ({sp}, {v}),\n  OPERATOR  28    &<# ({sp}, {sp}),\n  OPERATOR  28    &<# ({sp}, {ss}),\n  -- strictly before\n  OPERATOR  29    <<# ({sp}, {v}),\n  OPERATOR  29    <<# ({sp}, {sp}),\n  OPERATOR  29    <<# ({sp}, {ss}),\n  -- strictly after\n  OPERATOR  30    #>> ({sp}, {v}),\n  OPERATOR  30    #>> ({sp}, {sp}),\n  OPERATOR  30    #>> ({sp}, {ss}),\n  -- overlaps or after\n  OPERATOR  31    #&> ({sp}, {v}),\n  OPERATOR  31    #&> ({sp}, {sp}),\n  OPERATOR  31    #&> ({sp}, {ss}),\n  -- functions\n  FUNCTION  1  {sp}_spgist_config(internal, internal),\n  FUNCTION  2  span_quadtree_choose(internal, internal),\n  FUNCTION  3  span_quadtree_picksplit(internal, internal),\n  FUNCTION  4  span_quadtree_inner_consistent(internal, internal),\n  FUNCTION  5  span_spgist_leaf_consistent(internal, internal);"}
+    - {stmt: "\n/******************************************************************************/"}
+    sep: "\n"
+    order: [date]
+  - lit: "\n"
+  - group:
+    - {stmt: "CREATE OPERATOR CLASS {sp}_quadtree_ops\n  DEFAULT FOR TYPE {sp} USING spgist AS\n  -- overlaps\n  OPERATOR  3    && ({sp}, {sp}),\n  OPERATOR  3    && ({sp}, {ss}),\n  -- contains\n  OPERATOR  7    @> ({sp}, {v}),\n  OPERATOR  7    @> ({sp}, {sp}),\n  OPERATOR  7    @> ({sp}, {ss}),\n  -- contained by\n  OPERATOR  8    <@ ({sp}, {sp}),\n  OPERATOR  8    <@ ({sp}, {ss}),\n  -- adjacent\n  OPERATOR  17    -|- ({sp}, {sp}),\n  OPERATOR  17    -|- ({sp}, {ss}),\n  -- equals\n  OPERATOR  18    = ({sp}, {sp}),\n  -- nearest approach distance\n  OPERATOR  25    <-> ({sp}, {v}) FOR ORDER BY pg_catalog.float_ops,\n  OPERATOR  25    <-> ({sp}, {sp}) FOR ORDER BY pg_catalog.float_ops,\n  OPERATOR  25    <-> ({sp}, {ss}) FOR ORDER BY pg_catalog.float_ops,\n  -- overlaps or before\n  OPERATOR  28    &<# ({sp}, {v}),\n  OPERATOR  28    &<# ({sp}, {sp}),\n  OPERATOR  28    &<# ({sp}, {ss}),\n  -- strictly before\n  OPERATOR  29    <<# ({sp}, {v}),\n  OPERATOR  29    <<# ({sp}, {sp}),\n  OPERATOR  29    <<# ({sp}, {ss}),\n  -- strictly after\n  OPERATOR  30    #>> ({sp}, {v}),\n  OPERATOR  30    #>> ({sp}, {sp}),\n  OPERATOR  30    #>> ({sp}, {ss}),\n  -- overlaps or after\n  OPERATOR  31    #&> ({sp}, {v}),\n  OPERATOR  31    #&> ({sp}, {sp}),\n  OPERATOR  31    #&> ({sp}, {ss}),\n  -- functions\n  FUNCTION  1  {sp}_spgist_config(internal, internal),\n  FUNCTION  2  span_quadtree_choose(internal, internal),\n  FUNCTION  3  span_quadtree_picksplit(internal, internal),\n  FUNCTION  4  span_quadtree_inner_consistent(internal, internal),\n  FUNCTION  5  span_spgist_leaf_consistent(internal, internal);"}
+    - {stmt: "\n/******************************************************************************\n * Kd-tree SP-GiST indexes\n ******************************************************************************/"}
+    - {stmt: "\nCREATE FUNCTION span_kdtree_choose(internal, internal)\n  RETURNS void\n  AS 'MODULE_PATHNAME', 'Span_kdtree_choose'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    - {sig: "span_kdtree_picksplit(internal, internal)", ret: "void", sym: Span_kdtree_picksplit}
+    - {sig: "span_kdtree_inner_consistent(internal, internal)", ret: "void", sym: Span_kdtree_inner_consistent}
+    sep: "\n"
+    order: [tstz]
+  - lit: "\n"
+  - group:
+    - {stmt: "/******************************************************************************/"}
+    - {stmt: "\nCREATE OPERATOR CLASS {sp}_kdtree_ops\n  FOR TYPE {sp} USING spgist AS\n  -- strictly left\n  OPERATOR  1     << ({sp}, {v}),\n  OPERATOR  1     << ({sp}, {sp}),\n  OPERATOR  1     << ({sp}, {ss}),\n  -- overlaps or left\n  OPERATOR  2     &< ({sp}, {v}),\n  OPERATOR  2     &< ({sp}, {sp}),\n  OPERATOR  2     &< ({sp}, {ss}),\n  -- overlaps\n  OPERATOR  3     && ({sp}, {sp}),\n  OPERATOR  3     && ({sp}, {ss}),\n  -- overlaps or right\n  OPERATOR  4     &> ({sp}, {v}),\n  OPERATOR  4     &> ({sp}, {sp}),\n  OPERATOR  4     &> ({sp}, {ss}),\n  -- strictly right\n  OPERATOR  5     >> ({sp}, {v}),\n  OPERATOR  5     >> ({sp}, {sp}),\n  OPERATOR  5     >> ({sp}, {ss}),\n  -- contains\n  OPERATOR  7     @> ({sp}, {v}),\n  OPERATOR  7     @> ({sp}, {sp}),\n  OPERATOR  7     @> ({sp}, {ss}),\n  -- contained by\n  OPERATOR  8     <@ ({sp}, {sp}),\n  OPERATOR  8     <@ ({sp}, {ss}),\n  -- adjacent\n  OPERATOR  17    -|- ({sp}, {sp}),\n  OPERATOR  17    -|- ({sp}, {ss}),\n  -- equals\n  OPERATOR  18    = ({sp}, {sp}),\n  -- nearest approach distance\n  OPERATOR  25    <-> ({sp}, {v}) FOR ORDER BY pg_catalog.{v}_ops,\n  OPERATOR  25    <-> ({sp}, {sp}) FOR ORDER BY pg_catalog.{v}_ops,\n  OPERATOR  25    <-> ({sp}, {ss}) FOR ORDER BY pg_catalog.{v}_ops,\n  -- functions\n  FUNCTION  1  {sp}_spgist_config(internal, internal),\n  FUNCTION  2  span_kdtree_choose(internal, internal),\n  FUNCTION  3  span_kdtree_picksplit(internal, internal),\n  FUNCTION  4  span_kdtree_inner_consistent(internal, internal),\n  FUNCTION  5  span_spgist_leaf_consistent(internal, internal);"}
+    - {stmt: "\n/******************************************************************************/"}
+    sep: "\n"
+    order: [int]
+  - lit: "\n"
+  - group:
+    - {stmt: "CREATE OPERATOR CLASS {sp}_kdtree_ops\n  FOR TYPE {sp} USING spgist AS\n  -- strictly left\n  OPERATOR  1     << ({sp}, {v}),\n  OPERATOR  1     << ({sp}, {sp}),\n  OPERATOR  1     << ({sp}, {ss}),\n  -- overlaps or left\n  OPERATOR  2     &< ({sp}, {v}),\n  OPERATOR  2     &< ({sp}, {sp}),\n  OPERATOR  2     &< ({sp}, {ss}),\n  -- overlaps\n  OPERATOR  3     && ({sp}, {sp}),\n  OPERATOR  3     && ({sp}, {ss}),\n  -- overlaps or right\n  OPERATOR  4     &> ({sp}, {v}),\n  OPERATOR  4     &> ({sp}, {sp}),\n  OPERATOR  4     &> ({sp}, {ss}),\n  -- strictly right\n  OPERATOR  5     >> ({sp}, {v}),\n  OPERATOR  5     >> ({sp}, {sp}),\n  OPERATOR  5     >> ({sp}, {ss}),\n  -- contains\n  OPERATOR  7     @> ({sp}, {v}),\n  OPERATOR  7     @> ({sp}, {sp}),\n  OPERATOR  7     @> ({sp}, {ss}),\n  -- contained by\n  OPERATOR  8     <@ ({sp}, {sp}),\n  OPERATOR  8     <@ ({sp}, {ss}),\n  -- adjacent\n  OPERATOR  17    -|- ({sp}, {sp}),\n  OPERATOR  17    -|- ({sp}, {ss}),\n  -- equals\n  OPERATOR  18    = ({sp}, {sp}),\n  -- nearest approach distance\n  OPERATOR  25    <-> ({sp}, {v}) FOR ORDER BY pg_catalog.integer_ops,\n  OPERATOR  25    <-> ({sp}, {sp}) FOR ORDER BY pg_catalog.integer_ops,\n  OPERATOR  25    <-> ({sp}, {ss}) FOR ORDER BY pg_catalog.integer_ops,\n  -- functions\n  FUNCTION  1  {sp}_spgist_config(internal, internal),\n  FUNCTION  2  span_kdtree_choose(internal, internal),\n  FUNCTION  3  span_kdtree_picksplit(internal, internal),\n  FUNCTION  4  span_kdtree_inner_consistent(internal, internal),\n  FUNCTION  5  span_spgist_leaf_consistent(internal, internal);"}
+    - {stmt: "\n/******************************************************************************/"}
+    sep: "\n"
+    order: [bigint]
+  - lit: "\n"
+  - group:
+    - {stmt: "CREATE OPERATOR CLASS {sp}_kdtree_ops\n  FOR TYPE {sp} USING spgist AS\n  -- strictly left\n  OPERATOR  1     << ({sp}, {v}),\n  OPERATOR  1     << ({sp}, {sp}),\n  OPERATOR  1     << ({sp}, {ss}),\n  -- overlaps or left\n  OPERATOR  2     &< ({sp}, {v}),\n  OPERATOR  2     &< ({sp}, {sp}),\n  OPERATOR  2     &< ({sp}, {ss}),\n  -- overlaps\n  OPERATOR  3     && ({sp}, {sp}),\n  OPERATOR  3     && ({sp}, {ss}),\n  -- overlaps or right\n  OPERATOR  4     &> ({sp}, {v}),\n  OPERATOR  4     &> ({sp}, {sp}),\n  OPERATOR  4     &> ({sp}, {ss}),\n  -- strictly right\n  OPERATOR  5     >> ({sp}, {v}),\n  OPERATOR  5     >> ({sp}, {sp}),\n  OPERATOR  5     >> ({sp}, {ss}),\n  -- contains\n  OPERATOR  7     @> ({sp}, {v}),\n  OPERATOR  7     @> ({sp}, {sp}),\n  OPERATOR  7     @> ({sp}, {ss}),\n  -- contained by\n  OPERATOR  8     <@ ({sp}, {sp}),\n  OPERATOR  8     <@ ({sp}, {ss}),\n  -- adjacent\n  OPERATOR  17    -|- ({sp}, {sp}),\n  OPERATOR  17    -|- ({sp}, {ss}),\n  -- equals\n  OPERATOR  18    = ({sp}, {sp}),\n  -- nearest approach distance\n  OPERATOR  25    <-> ({sp}, {v}) FOR ORDER BY pg_catalog.{v}_ops,\n  OPERATOR  25    <-> ({sp}, {sp}) FOR ORDER BY pg_catalog.{v}_ops,\n  OPERATOR  25    <-> ({sp}, {ss}) FOR ORDER BY pg_catalog.{v}_ops,\n  -- functions\n  FUNCTION  1  {sp}_spgist_config(internal, internal),\n  FUNCTION  2  span_kdtree_choose(internal, internal),\n  FUNCTION  3  span_kdtree_picksplit(internal, internal),\n  FUNCTION  4  span_kdtree_inner_consistent(internal, internal),\n  FUNCTION  5  span_spgist_leaf_consistent(internal, internal);"}
+    - {stmt: "\n/******************************************************************************/"}
+    sep: "\n"
+    order: [float]
+  - lit: "\n"
+  - group:
+    - {stmt: "CREATE OPERATOR CLASS {sp}_kdtree_ops\n  FOR TYPE {sp} USING spgist AS\n  -- overlaps\n  OPERATOR  3    && ({sp}, {sp}),\n  OPERATOR  3    && ({sp}, {ss}),\n  -- contains\n  OPERATOR  7    @> ({sp}, {v}),\n  OPERATOR  7    @> ({sp}, {sp}),\n  OPERATOR  7    @> ({sp}, {ss}),\n  -- contained by\n  OPERATOR  8    <@ ({sp}, {sp}),\n  OPERATOR  8    <@ ({sp}, {ss}),\n  -- adjacent\n  OPERATOR  17    -|- ({sp}, {sp}),\n  OPERATOR  17    -|- ({sp}, {ss}),\n  -- equals\n  OPERATOR  18    = ({sp}, {sp}),\n  -- nearest approach distance\n  OPERATOR  25    <-> ({sp}, {v}) FOR ORDER BY pg_catalog.integer_ops,\n  OPERATOR  25    <-> ({sp}, {sp}) FOR ORDER BY pg_catalog.integer_ops,\n  OPERATOR  25    <-> ({sp}, {ss}) FOR ORDER BY pg_catalog.integer_ops,\n  -- overlaps or before\n  OPERATOR  28    &<# ({sp}, {v}),\n  OPERATOR  28    &<# ({sp}, {sp}),\n  OPERATOR  28    &<# ({sp}, {ss}),\n  -- strictly before\n  OPERATOR  29    <<# ({sp}, {v}),\n  OPERATOR  29    <<# ({sp}, {sp}),\n  OPERATOR  29    <<# ({sp}, {ss}),\n  -- strictly after\n  OPERATOR  30    #>> ({sp}, {v}),\n  OPERATOR  30    #>> ({sp}, {sp}),\n  OPERATOR  30    #>> ({sp}, {ss}),\n  -- overlaps or after\n  OPERATOR  31    #&> ({sp}, {v}),\n  OPERATOR  31    #&> ({sp}, {sp}),\n  OPERATOR  31    #&> ({sp}, {ss}),\n  -- functions\n  FUNCTION  1  {sp}_spgist_config(internal, internal),\n  FUNCTION  2  span_kdtree_choose(internal, internal),\n  FUNCTION  3  span_kdtree_picksplit(internal, internal),\n  FUNCTION  4  span_kdtree_inner_consistent(internal, internal),\n  FUNCTION  5  span_spgist_leaf_consistent(internal, internal);"}
+    - {stmt: "\n/******************************************************************************/"}
+    sep: "\n"
+    order: [date]
+  - lit: "\n"
+  - group:
+    - {stmt: "CREATE OPERATOR CLASS {sp}_kdtree_ops\n  FOR TYPE {sp} USING spgist AS\n  -- overlaps\n  OPERATOR  3    && ({sp}, {sp}),\n  OPERATOR  3    && ({sp}, {ss}),\n  -- contains\n  OPERATOR  7    @> ({sp}, {v}),\n  OPERATOR  7    @> ({sp}, {sp}),\n  OPERATOR  7    @> ({sp}, {ss}),\n  -- contained by\n  OPERATOR  8    <@ ({sp}, {sp}),\n  OPERATOR  8    <@ ({sp}, {ss}),\n  -- adjacent\n  OPERATOR  17    -|- ({sp}, {sp}),\n  OPERATOR  17    -|- ({sp}, {ss}),\n  -- equals\n  OPERATOR  18    = ({sp}, {sp}),\n  -- nearest approach distance\n  OPERATOR  25    <-> ({sp}, {v}) FOR ORDER BY pg_catalog.float_ops,\n  OPERATOR  25    <-> ({sp}, {sp}) FOR ORDER BY pg_catalog.float_ops,\n  OPERATOR  25    <-> ({sp}, {ss}) FOR ORDER BY pg_catalog.float_ops,\n  -- overlaps or before\n  OPERATOR  28    &<# ({sp}, {v}),\n  OPERATOR  28    &<# ({sp}, {sp}),\n  OPERATOR  28    &<# ({sp}, {ss}),\n  -- strictly before\n  OPERATOR  29    <<# ({sp}, {v}),\n  OPERATOR  29    <<# ({sp}, {sp}),\n  OPERATOR  29    <<# ({sp}, {ss}),\n  -- strictly after\n  OPERATOR  30    #>> ({sp}, {v}),\n  OPERATOR  30    #>> ({sp}, {sp}),\n  OPERATOR  30    #>> ({sp}, {ss}),\n  -- overlaps or after\n  OPERATOR  31    #&> ({sp}, {v}),\n  OPERATOR  31    #&> ({sp}, {sp}),\n  OPERATOR  31    #&> ({sp}, {ss}),\n  -- functions\n  FUNCTION  1  {sp}_spgist_config(internal, internal),\n  FUNCTION  2  span_kdtree_choose(internal, internal),\n  FUNCTION  3  span_kdtree_picksplit(internal, internal),\n  FUNCTION  4  span_kdtree_inner_consistent(internal, internal),\n  FUNCTION  5  span_spgist_leaf_consistent(internal, internal);"}
+    - {stmt: "\n/******************************************************************************/\n"}
+    sep: "\n"
+    order: [tstz]
+- family: spanset_indexes
+  file: mobilitydb/sql/temporal/012_spanset_indexes.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * R-tree GiST indexes\n"
+  order: [int, bigint, float, date, tstz]
+  insts:
+    int: {v: integer, sp: intspan, ss: intspanset, vs: intset, rg: int4range, mr: int4multirange}
+    bigint: {v: bigint, sp: bigintspan, ss: bigintspanset, vs: bigintset, rg: int8range, mr: int8multirange}
+    float: {v: float, sp: floatspan, ss: floatspanset, vs: floatset}
+    date: {v: date, sp: datespan, ss: datespanset, vs: dateset, rg: daterange, mr: datemultirange}
+    tstz: {v: timestamptz, sp: tstzspan, ss: tstzspanset, vs: tstzset, rg: tstzrange, mr: tstzmultirange}
+  blocks:
+  - lit: "/******************************************************************************\n * R-tree GiST indexes\n ******************************************************************************/\n\nCREATE FUNCTION span_gist_consistent(internal, intspanset, smallint, oid, internal)\n  RETURNS bool\n  AS 'MODULE_PATHNAME', 'Span_gist_consistent'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION span_gist_consistent(internal, bigintspanset, smallint, oid, internal)\n  RETURNS bool\n  AS 'MODULE_PATHNAME', 'Span_gist_consistent'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION span_gist_consistent(internal, floatspanset, smallint, oid, internal)\n  RETURNS bool\n  AS 'MODULE_PATHNAME', 'Span_gist_consistent'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION span_gist_consistent(internal, datespanset, smallint, oid, internal)\n  RETURNS bool\n  AS 'MODULE_PATHNAME', 'Span_gist_consistent'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION span_gist_consistent(internal, tstzspanset, smallint, oid, internal)\n  RETURNS bool\n  AS 'MODULE_PATHNAME', 'Span_gist_consistent'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION spanset_gist_compress(internal)\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Spanset_gist_compress'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n"
+  - group:
+    - {stmt: "/******************************************************************************/"}
+    - {stmt: "\nCREATE OPERATOR CLASS {ss}_rtree_ops\n  DEFAULT FOR TYPE {ss} USING gist AS\n  STORAGE {sp},\n  -- strictly left\n  OPERATOR  1     << ({ss}, {v}),\n  OPERATOR  1     << ({ss}, {sp}),\n  OPERATOR  1     << ({ss}, {ss}),\n  -- overlaps or left\n  OPERATOR  2     &< ({ss}, {v}),\n  OPERATOR  2     &< ({ss}, {sp}),\n  OPERATOR  2     &< ({ss}, {ss}),\n  -- overlaps\n  OPERATOR  3     && ({ss}, {sp}),\n  OPERATOR  3     && ({ss}, {ss}),\n  -- overlaps or right\n  OPERATOR  4     &> ({ss}, {v}),\n  OPERATOR  4     &> ({ss}, {sp}),\n  OPERATOR  4     &> ({ss}, {ss}),\n  -- strictly right\n  OPERATOR  5     >> ({ss}, {v}),\n  OPERATOR  5     >> ({ss}, {sp}),\n  OPERATOR  5     >> ({ss}, {ss}),\n  -- contains\n  OPERATOR  7     @> ({ss}, {v}),\n  OPERATOR  7     @> ({ss}, {sp}),\n  OPERATOR  7     @> ({ss}, {ss}),\n  -- contained by\n  OPERATOR  8     <@ ({ss}, {sp}),\n  OPERATOR  8     <@ ({ss}, {ss}),\n  -- adjacent\n  OPERATOR  17    -|- ({ss}, {sp}),\n  OPERATOR  17    -|- ({ss}, {ss}),\n  -- equals\n  OPERATOR  18    = ({ss}, {ss}),\n  -- nearest approach distance\n  OPERATOR  25    <-> ({ss}, {v}) FOR ORDER BY pg_catalog.{v}_ops,\n  OPERATOR  25    <-> ({ss}, {sp}) FOR ORDER BY pg_catalog.{v}_ops,\n  OPERATOR  25    <-> ({ss}, {ss}) FOR ORDER BY pg_catalog.{v}_ops,\n  -- functions\n  FUNCTION  1  span_gist_consistent(internal, {ss}, smallint, oid, internal),\n  FUNCTION  2  span_gist_union(internal, internal),\n  FUNCTION  3  spanset_gist_compress(internal),\n  FUNCTION  5  span_gist_penalty(internal, internal, internal),\n  FUNCTION  6  span_gist_picksplit(internal, internal),\n  FUNCTION  7  span_gist_same({sp}, {sp}, internal),\n  FUNCTION  8  span_gist_distance(internal, {sp}, smallint, oid, internal);"}
+    - {stmt: "\n/******************************************************************************/"}
+    sep: "\n"
+    order: [int]
+  - lit: "\n"
+  - group:
+    - {stmt: "CREATE OPERATOR CLASS {ss}_rtree_ops\n  DEFAULT FOR TYPE {ss} USING gist AS\n  STORAGE {sp},\n  -- strictly left\n  OPERATOR  1     << ({ss}, {v}),\n  OPERATOR  1     << ({ss}, {sp}),\n  OPERATOR  1     << ({ss}, {ss}),\n  -- overlaps or left\n  OPERATOR  2     &< ({ss}, {v}),\n  OPERATOR  2     &< ({ss}, {sp}),\n  OPERATOR  2     &< ({ss}, {ss}),\n  -- overlaps\n  OPERATOR  3     && ({ss}, {sp}),\n  OPERATOR  3     && ({ss}, {ss}),\n  -- overlaps or right\n  OPERATOR  4     &> ({ss}, {v}),\n  OPERATOR  4     &> ({ss}, {sp}),\n  OPERATOR  4     &> ({ss}, {ss}),\n  -- strictly right\n  OPERATOR  5     >> ({ss}, {v}),\n  OPERATOR  5     >> ({ss}, {sp}),\n  OPERATOR  5     >> ({ss}, {ss}),\n  -- contains\n  OPERATOR  7     @> ({ss}, {v}),\n  OPERATOR  7     @> ({ss}, {sp}),\n  OPERATOR  7     @> ({ss}, {ss}),\n  -- contained by\n  OPERATOR  8     <@ ({ss}, {sp}),\n  OPERATOR  8     <@ ({ss}, {ss}),\n  -- adjacent\n  OPERATOR  17    -|- ({ss}, {sp}),\n  OPERATOR  17    -|- ({ss}, {ss}),\n  -- equals\n  OPERATOR  18    = ({ss}, {ss}),\n  -- nearest approach distance\n  OPERATOR  25    <-> ({ss}, {v}) FOR ORDER BY pg_catalog.integer_ops,\n  OPERATOR  25    <-> ({ss}, {sp}) FOR ORDER BY pg_catalog.integer_ops,\n  OPERATOR  25    <-> ({ss}, {ss}) FOR ORDER BY pg_catalog.integer_ops,\n  -- functions\n  FUNCTION  1  span_gist_consistent(internal, {ss}, smallint, oid, internal),\n  FUNCTION  2  span_gist_union(internal, internal),\n  FUNCTION  3  spanset_gist_compress(internal),\n  FUNCTION  5  span_gist_penalty(internal, internal, internal),\n  FUNCTION  6  span_gist_picksplit(internal, internal),\n  FUNCTION  7  span_gist_same({sp}, {sp}, internal),\n  FUNCTION  8  span_gist_distance(internal, {sp}, smallint, oid, internal);"}
+    - {stmt: "\n/******************************************************************************/"}
+    sep: "\n"
+    order: [bigint]
+  - lit: "\n"
+  - group:
+    - {stmt: "CREATE OPERATOR CLASS {ss}_rtree_ops\n  DEFAULT FOR TYPE {ss} USING gist AS\n  STORAGE {sp},\n  -- strictly left\n  OPERATOR  1     << ({ss}, {v}),\n  OPERATOR  1     << ({ss}, {sp}),\n  OPERATOR  1     << ({ss}, {ss}),\n  -- overlaps or left\n  OPERATOR  2     &< ({ss}, {v}),\n  OPERATOR  2     &< ({ss}, {sp}),\n  OPERATOR  2     &< ({ss}, {ss}),\n  -- overlaps\n  OPERATOR  3     && ({ss}, {sp}),\n  OPERATOR  3     && ({ss}, {ss}),\n  -- overlaps or right\n  OPERATOR  4     &> ({ss}, {v}),\n  OPERATOR  4     &> ({ss}, {sp}),\n  OPERATOR  4     &> ({ss}, {ss}),\n  -- strictly right\n  OPERATOR  5     >> ({ss}, {v}),\n  OPERATOR  5     >> ({ss}, {sp}),\n  OPERATOR  5     >> ({ss}, {ss}),\n  -- contains\n  OPERATOR  7     @> ({ss}, {v}),\n  OPERATOR  7     @> ({ss}, {sp}),\n  OPERATOR  7     @> ({ss}, {ss}),\n  -- contained by\n  OPERATOR  8     <@ ({ss}, {sp}),\n  OPERATOR  8     <@ ({ss}, {ss}),\n  -- adjacent\n  OPERATOR  17    -|- ({ss}, {sp}),\n  OPERATOR  17    -|- ({ss}, {ss}),\n  -- equals\n  OPERATOR  18    = ({ss}, {ss}),\n  -- nearest approach distance\n  OPERATOR  25    <-> ({ss}, {v}) FOR ORDER BY pg_catalog.{v}_ops,\n  OPERATOR  25    <-> ({ss}, {sp}) FOR ORDER BY pg_catalog.{v}_ops,\n  OPERATOR  25    <-> ({ss}, {ss}) FOR ORDER BY pg_catalog.{v}_ops,\n  -- functions\n  FUNCTION  1  span_gist_consistent(internal, {ss}, smallint, oid, internal),\n  FUNCTION  2  span_gist_union(internal, internal),\n  FUNCTION  3  spanset_gist_compress(internal),\n  FUNCTION  5  span_gist_penalty(internal, internal, internal),\n  FUNCTION  6  span_gist_picksplit(internal, internal),\n  FUNCTION  7  span_gist_same({sp}, {sp}, internal),\n  FUNCTION  8  span_gist_distance(internal, {sp}, smallint, oid, internal);"}
+    - {stmt: "\n/******************************************************************************/"}
+    sep: "\n"
+    order: [float]
+  - lit: "\n"
+  - group:
+    - {stmt: "CREATE OPERATOR CLASS {ss}_rtree_ops\n  DEFAULT FOR TYPE {ss} USING gist AS\n  STORAGE {sp},\n  -- overlaps\n  OPERATOR  3    && ({ss}, {sp}),\n  OPERATOR  3    && ({ss}, {ss}),\n  -- contains\n  OPERATOR  7    @> ({ss}, {v}),\n  OPERATOR  7    @> ({ss}, {sp}),\n  OPERATOR  7    @> ({ss}, {ss}),\n  -- contained by\n  OPERATOR  8    <@ ({ss}, {sp}),\n  OPERATOR  8    <@ ({ss}, {ss}),\n  -- adjacent\n  OPERATOR  17    -|- ({ss}, {sp}),\n  OPERATOR  17    -|- ({ss}, {ss}),\n  -- equals\n  OPERATOR  18    = ({ss}, {ss}),\n  -- nearest approach distance\n  OPERATOR  25    <-> ({ss}, {v}) FOR ORDER BY pg_catalog.integer_ops,\n  OPERATOR  25    <-> ({ss}, {sp}) FOR ORDER BY pg_catalog.integer_ops,\n  OPERATOR  25    <-> ({ss}, {ss}) FOR ORDER BY pg_catalog.integer_ops,\n  -- overlaps or before\n  OPERATOR  28    &<# ({ss}, {v}),\n  OPERATOR  28    &<# ({ss}, {sp}),\n  OPERATOR  28    &<# ({ss}, {ss}),\n  -- strictly before\n  OPERATOR  29    <<# ({ss}, {v}),\n  OPERATOR  29    <<# ({ss}, {sp}),\n  OPERATOR  29    <<# ({ss}, {ss}),\n  -- strictly after\n  OPERATOR  30    #>> ({ss}, {v}),\n  OPERATOR  30    #>> ({ss}, {sp}),\n  OPERATOR  30    #>> ({ss}, {ss}),\n  -- overlaps or after\n  OPERATOR  31    #&> ({ss}, {v}),\n  OPERATOR  31    #&> ({ss}, {sp}),\n  OPERATOR  31    #&> ({ss}, {ss}),\n  -- functions\n  FUNCTION  1  span_gist_consistent(internal, {ss}, smallint, oid, internal),\n  FUNCTION  2  span_gist_union(internal, internal),\n  FUNCTION  3  spanset_gist_compress(internal),\n  FUNCTION  5  span_gist_penalty(internal, internal, internal),\n  FUNCTION  6  span_gist_picksplit(internal, internal),\n  FUNCTION  7  span_gist_same({sp}, {sp}, internal);"}
+    - {stmt: "\n/******************************************************************************/"}
+    sep: "\n"
+    order: [date]
+  - lit: "\n"
+  - group:
+    - {stmt: "CREATE OPERATOR CLASS {ss}_rtree_ops\n  DEFAULT FOR TYPE {ss} USING gist AS\n  STORAGE {sp},\n  -- overlaps\n  OPERATOR  3    && ({ss}, {sp}),\n  OPERATOR  3    && ({ss}, {ss}),\n  -- contains\n  OPERATOR  7    @> ({ss}, {v}),\n  OPERATOR  7    @> ({ss}, {sp}),\n  OPERATOR  7    @> ({ss}, {ss}),\n  -- contained by\n  OPERATOR  8    <@ ({ss}, {sp}),\n  OPERATOR  8    <@ ({ss}, {ss}),\n  -- adjacent\n  OPERATOR  17    -|- ({ss}, {sp}),\n  OPERATOR  17    -|- ({ss}, {ss}),\n  -- equals\n  OPERATOR  18    = ({ss}, {ss}),\n  -- nearest approach distance\n  OPERATOR  25    <-> ({ss}, {v}) FOR ORDER BY pg_catalog.float_ops,\n  OPERATOR  25    <-> ({ss}, {sp}) FOR ORDER BY pg_catalog.float_ops,\n  OPERATOR  25    <-> ({ss}, {ss}) FOR ORDER BY pg_catalog.float_ops,\n  -- overlaps or before\n  OPERATOR  28    &<# ({ss}, {v}),\n  OPERATOR  28    &<# ({ss}, {sp}),\n  OPERATOR  28    &<# ({ss}, {ss}),\n  -- strictly before\n  OPERATOR  29    <<# ({ss}, {v}),\n  OPERATOR  29    <<# ({ss}, {sp}),\n  OPERATOR  29    <<# ({ss}, {ss}),\n  -- strictly after\n  OPERATOR  30    #>> ({ss}, {v}),\n  OPERATOR  30    #>> ({ss}, {sp}),\n  OPERATOR  30    #>> ({ss}, {ss}),\n  -- overlaps or after\n  OPERATOR  31    #&> ({ss}, {v}),\n  OPERATOR  31    #&> ({ss}, {sp}),\n  OPERATOR  31    #&> ({ss}, {ss}),\n  -- functions\n  FUNCTION  1  span_gist_consistent(internal, {ss}, smallint, oid, internal),\n  FUNCTION  2  span_gist_union(internal, internal),\n  FUNCTION  3  spanset_gist_compress(internal),\n  FUNCTION  5  span_gist_penalty(internal, internal, internal),\n  FUNCTION  6  span_gist_picksplit(internal, internal),\n  FUNCTION  7  span_gist_same({sp}, {sp}, internal);"}
+    - {stmt: "\n/******************************************************************************\n * Quad-tree SP-GiST indexes\n ******************************************************************************/"}
+    - {stmt: "\nCREATE FUNCTION spanset_spgist_compress(internal)\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Spanset_spgist_compress'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    sep: "\n"
+    order: [tstz]
+  - lit: "\n"
+  - group:
+    - {stmt: "/******************************************************************************/"}
+    - {stmt: "\nCREATE OPERATOR CLASS {ss}_quadtree_ops\n  DEFAULT FOR TYPE {ss} USING spgist AS\n  -- strictly left\n  OPERATOR  1     << ({ss}, {v}),\n  OPERATOR  1     << ({ss}, {sp}),\n  OPERATOR  1     << ({ss}, {ss}),\n  -- overlaps or left\n  OPERATOR  2     &< ({ss}, {v}),\n  OPERATOR  2     &< ({ss}, {sp}),\n  OPERATOR  2     &< ({ss}, {ss}),\n  -- overlaps\n  OPERATOR  3     && ({ss}, {sp}),\n  OPERATOR  3     && ({ss}, {ss}),\n  -- overlaps or right\n  OPERATOR  4     &> ({ss}, {v}),\n  OPERATOR  4     &> ({ss}, {sp}),\n  OPERATOR  4     &> ({ss}, {ss}),\n  -- strictly right\n  OPERATOR  5     >> ({ss}, {v}),\n  OPERATOR  5     >> ({ss}, {sp}),\n  OPERATOR  5     >> ({ss}, {ss}),\n  -- contains\n  OPERATOR  7     @> ({ss}, {v}),\n  OPERATOR  7     @> ({ss}, {sp}),\n  OPERATOR  7     @> ({ss}, {ss}),\n  -- contained by\n  OPERATOR  8     <@ ({ss}, {sp}),\n  OPERATOR  8     <@ ({ss}, {ss}),\n  -- adjacent\n  OPERATOR  17    -|- ({ss}, {sp}),\n  OPERATOR  17    -|- ({ss}, {ss}),\n  -- equals\n  OPERATOR  18    = ({ss}, {ss}),\n  -- nearest approach distance\n  OPERATOR  25    <-> ({ss}, {v}) FOR ORDER BY pg_catalog.{v}_ops,\n  OPERATOR  25    <-> ({ss}, {sp}) FOR ORDER BY pg_catalog.{v}_ops,\n  OPERATOR  25    <-> ({ss}, {ss}) FOR ORDER BY pg_catalog.{v}_ops,\n  -- functions\n  FUNCTION  1  {sp}_spgist_config(internal, internal),\n  FUNCTION  2  span_quadtree_choose(internal, internal),\n  FUNCTION  3  span_quadtree_picksplit(internal, internal),\n  FUNCTION  4  span_quadtree_inner_consistent(internal, internal),\n  FUNCTION  5  span_spgist_leaf_consistent(internal, internal),\n  FUNCTION  6  spanset_spgist_compress(internal);"}
+    - {stmt: "\n/******************************************************************************/"}
+    sep: "\n"
+    order: [int]
+  - lit: "\nCREATE OPERATOR CLASS bigintspanset_quadtree_ops\n  DEFAULT FOR TYPE bigintspanset USING spgist AS\n  -- strictly left\n  OPERATOR  1     << (bigintspanset, bigint),\n  OPERATOR  1     << (bigintspanset, bigintspan),\n  OPERATOR  1     << (bigintspanset, bigintspanset),\n  -- overlaps or left\n  OPERATOR  2     &< (bigintspanset, bigint),\n  OPERATOR  2     &< (bigintspanset, bigintspan),\n  OPERATOR  2     &< (bigintspanset, bigintspanset),\n  -- overlaps\n  OPERATOR  3     && (bigintspanset, bigintspan),\n  OPERATOR  3     && (bigintspanset, bigintspanset),\n  -- overlaps or right\n  OPERATOR  4     &> (bigintspanset, bigint),\n  OPERATOR  4     &> (bigintspanset, bigintspan),\n  OPERATOR  4     &> (bigintspanset, bigintspanset),\n  -- strictly right\n  OPERATOR  5     >> (bigintspanset, bigint),\n  OPERATOR  5     >> (bigintspanset, bigintspan),\n  OPERATOR  5     >> (bigintspanset, bigintspanset),\n  -- contains\n  OPERATOR  7     @> (bigintspanset, bigint),\n  OPERATOR  7     @> (bigintspanset, bigintspan),\n  OPERATOR  7     @> (bigintspanset, bigintspanset),\n  -- contained by\n  OPERATOR  8     <@ (bigintspanset, bigintspan),\n  OPERATOR  8     <@ (bigintspanset, bigintspanset),\n  -- adjacent\n  OPERATOR  17    -|- (bigintspanset, bigintspan),\n  OPERATOR  17    -|- (bigintspanset, bigintspanset),\n  -- equals\n  OPERATOR  18    = (bigintspanset, bigintspanset),\n  -- nearest approach distance\n  OPERATOR  25    <-> (bigintspanset, bigint) FOR ORDER BY pg_catalog.integer_ops,\n  OPERATOR  25    <-> (bigintspanset, bigintspan) FOR ORDER BY pg_catalog.integer_ops,\n  OPERATOR  25    <-> (bigintspanset, bigintspanset) FOR ORDER BY pg_catalog.integer_ops,\n  -- functions\n  FUNCTION  1  intspan_spgist_config(internal, internal),\n  FUNCTION  2  span_quadtree_choose(internal, internal),\n  FUNCTION  3  span_quadtree_picksplit(internal, internal),\n  FUNCTION  4  span_quadtree_inner_consistent(internal, internal),\n  FUNCTION  5  span_spgist_leaf_consistent(internal, internal),\n  FUNCTION  6  spanset_spgist_compress(internal);\n\n"
+  - group:
+    - {stmt: "/******************************************************************************/"}
+    - {stmt: "\nCREATE OPERATOR CLASS {ss}_quadtree_ops\n  DEFAULT FOR TYPE {ss} USING spgist AS\n  -- strictly left\n  OPERATOR  1     << ({ss}, {v}),\n  OPERATOR  1     << ({ss}, {sp}),\n  OPERATOR  1     << ({ss}, {ss}),\n  -- overlaps or left\n  OPERATOR  2     &< ({ss}, {v}),\n  OPERATOR  2     &< ({ss}, {sp}),\n  OPERATOR  2     &< ({ss}, {ss}),\n  -- overlaps\n  OPERATOR  3     && ({ss}, {sp}),\n  OPERATOR  3     && ({ss}, {ss}),\n  -- overlaps or right\n  OPERATOR  4     &> ({ss}, {v}),\n  OPERATOR  4     &> ({ss}, {sp}),\n  OPERATOR  4     &> ({ss}, {ss}),\n  -- strictly right\n  OPERATOR  5     >> ({ss}, {v}),\n  OPERATOR  5     >> ({ss}, {sp}),\n  OPERATOR  5     >> ({ss}, {ss}),\n  -- contains\n  OPERATOR  7     @> ({ss}, {v}),\n  OPERATOR  7     @> ({ss}, {sp}),\n  OPERATOR  7     @> ({ss}, {ss}),\n  -- contained by\n  OPERATOR  8     <@ ({ss}, {sp}),\n  OPERATOR  8     <@ ({ss}, {ss}),\n  -- adjacent\n  OPERATOR  17    -|- ({ss}, {sp}),\n  OPERATOR  17    -|- ({ss}, {ss}),\n  -- equals\n  OPERATOR  18    = ({ss}, {ss}),\n  -- nearest approach distance\n  OPERATOR  25    <-> ({ss}, {v}) FOR ORDER BY pg_catalog.{v}_ops,\n  OPERATOR  25    <-> ({ss}, {sp}) FOR ORDER BY pg_catalog.{v}_ops,\n  OPERATOR  25    <-> ({ss}, {ss}) FOR ORDER BY pg_catalog.{v}_ops,\n  -- functions\n  FUNCTION  1  {sp}_spgist_config(internal, internal),\n  FUNCTION  2  span_quadtree_choose(internal, internal),\n  FUNCTION  3  span_quadtree_picksplit(internal, internal),\n  FUNCTION  4  span_quadtree_inner_consistent(internal, internal),\n  FUNCTION  5  span_spgist_leaf_consistent(internal, internal),\n  FUNCTION  6  spanset_spgist_compress(internal);"}
+    - {stmt: "\n/******************************************************************************/"}
+    sep: "\n"
+    order: [float]
+  - lit: "\n"
+  - group:
+    - {stmt: "CREATE OPERATOR CLASS {ss}_quadtree_ops\n  DEFAULT FOR TYPE {ss} USING spgist AS\n  -- overlaps\n  OPERATOR  3    && ({ss}, {sp}),\n  OPERATOR  3    && ({ss}, {ss}),\n  -- contains\n  OPERATOR  7    @> ({ss}, {v}),\n  OPERATOR  7    @> ({ss}, {sp}),\n  OPERATOR  7    @> ({ss}, {ss}),\n  -- contained by\n  OPERATOR  8    <@ ({ss}, {sp}),\n  OPERATOR  8    <@ ({ss}, {ss}),\n  -- adjacent\n  OPERATOR  17    -|- ({ss}, {sp}),\n  OPERATOR  17    -|- ({ss}, {ss}),"}
+    - {stmt: "-- equals\n  OPERATOR  18    = ({ss}, {ss}),\n  -- nearest approach distance\n  OPERATOR  25    <-> ({ss}, {v}) FOR ORDER BY pg_catalog.integer_ops,\n  OPERATOR  25    <-> ({ss}, {sp}) FOR ORDER BY pg_catalog.integer_ops,\n  OPERATOR  25    <-> ({ss}, {ss}) FOR ORDER BY pg_catalog.integer_ops,\n  -- overlaps or before\n  OPERATOR  28    &<# ({ss}, {v}),\n  OPERATOR  28    &<# ({ss}, {sp}),\n  OPERATOR  28    &<# ({ss}, {ss}),\n  -- strictly before\n  OPERATOR  29    <<# ({ss}, {v}),\n  OPERATOR  29    <<# ({ss}, {sp}),\n  OPERATOR  29    <<# ({ss}, {ss}),\n  -- strictly after\n  OPERATOR  30    #>> ({ss}, {v}),\n  OPERATOR  30    #>> ({ss}, {sp}),\n  OPERATOR  30    #>> ({ss}, {ss}),\n  -- overlaps or after\n  OPERATOR  31    #&> ({ss}, {v}),\n  OPERATOR  31    #&> ({ss}, {sp}),\n  OPERATOR  31    #&> ({ss}, {ss}),\n  -- functions\n  FUNCTION  1  {sp}_spgist_config(internal, internal),\n  FUNCTION  2  span_quadtree_choose(internal, internal),\n  FUNCTION  3  span_quadtree_picksplit(internal, internal),\n  FUNCTION  4  span_quadtree_inner_consistent(internal, internal),\n  FUNCTION  5  span_spgist_leaf_consistent(internal, internal),\n  FUNCTION  6  spanset_spgist_compress(internal);"}
+    - {stmt: "\n/******************************************************************************/"}
+    sep: "\n"
+    order: [date]
+  - lit: "\n"
+  - group:
+    - {stmt: "CREATE OPERATOR CLASS {ss}_quadtree_ops\n  DEFAULT FOR TYPE {ss} USING spgist AS\n  -- overlaps\n  OPERATOR  3    && ({ss}, {sp}),\n  OPERATOR  3    && ({ss}, {ss}),\n  -- contains\n  OPERATOR  7    @> ({ss}, {v}),\n  OPERATOR  7    @> ({ss}, {sp}),\n  OPERATOR  7    @> ({ss}, {ss}),\n  -- contained by\n  OPERATOR  8    <@ ({ss}, {sp}),\n  OPERATOR  8    <@ ({ss}, {ss}),\n  -- adjacent\n  OPERATOR  17    -|- ({ss}, {sp}),\n  OPERATOR  17    -|- ({ss}, {ss}),"}
+    - {stmt: "-- equals\n  OPERATOR  18    = ({ss}, {ss}),\n  -- nearest approach distance\n  OPERATOR  25    <-> ({ss}, {v}) FOR ORDER BY pg_catalog.float_ops,\n  OPERATOR  25    <-> ({ss}, {sp}) FOR ORDER BY pg_catalog.float_ops,\n  OPERATOR  25    <-> ({ss}, {ss}) FOR ORDER BY pg_catalog.float_ops,\n  -- overlaps or before\n  OPERATOR  28    &<# ({ss}, {v}),\n  OPERATOR  28    &<# ({ss}, {sp}),\n  OPERATOR  28    &<# ({ss}, {ss}),\n  -- strictly before\n  OPERATOR  29    <<# ({ss}, {v}),\n  OPERATOR  29    <<# ({ss}, {sp}),\n  OPERATOR  29    <<# ({ss}, {ss}),\n  -- strictly after\n  OPERATOR  30    #>> ({ss}, {v}),\n  OPERATOR  30    #>> ({ss}, {sp}),\n  OPERATOR  30    #>> ({ss}, {ss}),\n  -- overlaps or after\n  OPERATOR  31    #&> ({ss}, {v}),\n  OPERATOR  31    #&> ({ss}, {sp}),\n  OPERATOR  31    #&> ({ss}, {ss}),\n  -- functions\n  FUNCTION  1  {sp}_spgist_config(internal, internal),\n  FUNCTION  2  span_quadtree_choose(internal, internal),\n  FUNCTION  3  span_quadtree_picksplit(internal, internal),\n  FUNCTION  4  span_quadtree_inner_consistent(internal, internal),\n  FUNCTION  5  span_spgist_leaf_consistent(internal, internal),\n  FUNCTION  6  spanset_spgist_compress(internal);"}
+    - {stmt: "\n/******************************************************************************\n * Kd-tree SP-GiST indexes\n ******************************************************************************/"}
+    sep: "\n"
+    order: [tstz]
+  - lit: "\n"
+  - group:
+    - {stmt: "CREATE OPERATOR CLASS {ss}_kdtree_ops\n  FOR TYPE {ss} USING spgist AS\n  -- strictly left\n  OPERATOR  1     << ({ss}, {v}),\n  OPERATOR  1     << ({ss}, {sp}),\n  OPERATOR  1     << ({ss}, {ss}),\n  -- overlaps or left\n  OPERATOR  2     &< ({ss}, {v}),\n  OPERATOR  2     &< ({ss}, {sp}),\n  OPERATOR  2     &< ({ss}, {ss}),\n  -- overlaps\n  OPERATOR  3     && ({ss}, {sp}),\n  OPERATOR  3     && ({ss}, {ss}),\n  -- overlaps or right\n  OPERATOR  4     &> ({ss}, {v}),\n  OPERATOR  4     &> ({ss}, {sp}),\n  OPERATOR  4     &> ({ss}, {ss}),\n  -- strictly right\n  OPERATOR  5     >> ({ss}, {v}),\n  OPERATOR  5     >> ({ss}, {sp}),\n  OPERATOR  5     >> ({ss}, {ss}),\n  -- contains\n  OPERATOR  7     @> ({ss}, {v}),\n  OPERATOR  7     @> ({ss}, {sp}),\n  OPERATOR  7     @> ({ss}, {ss}),\n  -- contained by\n  OPERATOR  8     <@ ({ss}, {sp}),\n  OPERATOR  8     <@ ({ss}, {ss}),\n  -- adjacent\n  OPERATOR  17    -|- ({ss}, {sp}),\n  OPERATOR  17    -|- ({ss}, {ss}),\n  -- equals\n  OPERATOR  18    = ({ss}, {ss}),\n  -- nearest approach distance\n  OPERATOR  25    <-> ({ss}, {v}) FOR ORDER BY pg_catalog.{v}_ops,\n  OPERATOR  25    <-> ({ss}, {sp}) FOR ORDER BY pg_catalog.{v}_ops,\n  OPERATOR  25    <-> ({ss}, {ss}) FOR ORDER BY pg_catalog.{v}_ops,\n  -- functions\n  FUNCTION  1  {sp}_spgist_config(internal, internal),\n  FUNCTION  2  span_kdtree_choose(internal, internal),\n  FUNCTION  3  span_kdtree_picksplit(internal, internal),\n  FUNCTION  4  span_kdtree_inner_consistent(internal, internal),\n  FUNCTION  5  span_spgist_leaf_consistent(internal, internal),\n  FUNCTION  6  spanset_spgist_compress(internal);"}
+    - {stmt: "\n/******************************************************************************/"}
+    sep: "\n"
+    order: [int]
+  - lit: "\nCREATE OPERATOR CLASS bigintspanset_kdtree_ops\n  FOR TYPE bigintspanset USING spgist AS\n  -- strictly left\n  OPERATOR  1     << (bigintspanset, bigint),\n  OPERATOR  1     << (bigintspanset, bigintspan),\n  OPERATOR  1     << (bigintspanset, bigintspanset),\n  -- overlaps or left\n  OPERATOR  2     &< (bigintspanset, bigint),\n  OPERATOR  2     &< (bigintspanset, bigintspan),\n  OPERATOR  2     &< (bigintspanset, bigintspanset),\n  -- overlaps\n  OPERATOR  3     && (bigintspanset, bigintspan),\n  OPERATOR  3     && (bigintspanset, bigintspanset),\n  -- overlaps or right\n  OPERATOR  4     &> (bigintspanset, bigint),\n  OPERATOR  4     &> (bigintspanset, bigintspan),\n  OPERATOR  4     &> (bigintspanset, bigintspanset),\n  -- strictly right\n  OPERATOR  5     >> (bigintspanset, bigint),\n  OPERATOR  5     >> (bigintspanset, bigintspan),\n  OPERATOR  5     >> (bigintspanset, bigintspanset),\n  -- contains\n  OPERATOR  7     @> (bigintspanset, bigint),\n  OPERATOR  7     @> (bigintspanset, bigintspan),\n  OPERATOR  7     @> (bigintspanset, bigintspanset),\n  -- contained by\n  OPERATOR  8     <@ (bigintspanset, bigintspan),\n  OPERATOR  8     <@ (bigintspanset, bigintspanset),\n  -- adjacent\n  OPERATOR  17    -|- (bigintspanset, bigintspan),\n  OPERATOR  17    -|- (bigintspanset, bigintspanset),\n  -- equals\n  OPERATOR  18    = (bigintspanset, bigintspanset),\n  -- nearest approach distance\n  OPERATOR  25    <-> (bigintspanset, bigint) FOR ORDER BY pg_catalog.integer_ops,\n  OPERATOR  25    <-> (bigintspanset, bigintspan) FOR ORDER BY pg_catalog.integer_ops,\n  OPERATOR  25    <-> (bigintspanset, bigintspanset) FOR ORDER BY pg_catalog.integer_ops,\n  -- functions\n  FUNCTION  1  intspan_spgist_config(internal, internal),\n  FUNCTION  2  span_kdtree_choose(internal, internal),\n  FUNCTION  3  span_kdtree_picksplit(internal, internal),\n  FUNCTION  4  span_kdtree_inner_consistent(internal, internal),\n  FUNCTION  5  span_spgist_leaf_consistent(internal, internal),\n  FUNCTION  6  spanset_spgist_compress(internal);\n\n"
+  - group:
+    - {stmt: "/******************************************************************************/"}
+    - {stmt: "\nCREATE OPERATOR CLASS {ss}_kdtree_ops\n  FOR TYPE {ss} USING spgist AS\n  -- strictly left\n  OPERATOR  1     << ({ss}, {v}),\n  OPERATOR  1     << ({ss}, {sp}),\n  OPERATOR  1     << ({ss}, {ss}),\n  -- overlaps or left\n  OPERATOR  2     &< ({ss}, {v}),\n  OPERATOR  2     &< ({ss}, {sp}),\n  OPERATOR  2     &< ({ss}, {ss}),\n  -- overlaps\n  OPERATOR  3     && ({ss}, {sp}),\n  OPERATOR  3     && ({ss}, {ss}),\n  -- overlaps or right\n  OPERATOR  4     &> ({ss}, {v}),\n  OPERATOR  4     &> ({ss}, {sp}),\n  OPERATOR  4     &> ({ss}, {ss}),\n  -- strictly right\n  OPERATOR  5     >> ({ss}, {v}),\n  OPERATOR  5     >> ({ss}, {sp}),\n  OPERATOR  5     >> ({ss}, {ss}),\n  -- contains\n  OPERATOR  7     @> ({ss}, {v}),\n  OPERATOR  7     @> ({ss}, {sp}),\n  OPERATOR  7     @> ({ss}, {ss}),\n  -- contained by\n  OPERATOR  8     <@ ({ss}, {sp}),\n  OPERATOR  8     <@ ({ss}, {ss}),\n  -- adjacent\n  OPERATOR  17    -|- ({ss}, {sp}),\n  OPERATOR  17    -|- ({ss}, {ss}),\n  -- equals\n  OPERATOR  18    = ({ss}, {ss}),\n  -- nearest approach distance\n  OPERATOR  25    <-> ({ss}, {v}) FOR ORDER BY pg_catalog.{v}_ops,\n  OPERATOR  25    <-> ({ss}, {sp}) FOR ORDER BY pg_catalog.{v}_ops,\n  OPERATOR  25    <-> ({ss}, {ss}) FOR ORDER BY pg_catalog.{v}_ops,\n  -- functions\n  FUNCTION  1  {sp}_spgist_config(internal, internal),\n  FUNCTION  2  span_kdtree_choose(internal, internal),\n  FUNCTION  3  span_kdtree_picksplit(internal, internal),\n  FUNCTION  4  span_kdtree_inner_consistent(internal, internal),\n  FUNCTION  5  span_spgist_leaf_consistent(internal, internal),\n  FUNCTION  6  spanset_spgist_compress(internal);"}
+    - {stmt: "\n/******************************************************************************/"}
+    sep: "\n"
+    order: [float]
+  - lit: "\n"
+  - group:
+    - {stmt: "CREATE OPERATOR CLASS {ss}_kdtree_ops\n  FOR TYPE {ss} USING spgist AS\n  -- overlaps\n  OPERATOR  3    && ({ss}, {sp}),\n  OPERATOR  3    && ({ss}, {ss}),\n  -- contains\n  OPERATOR  7    @> ({ss}, {v}),\n  OPERATOR  7    @> ({ss}, {sp}),\n  OPERATOR  7    @> ({ss}, {ss}),\n  -- contained by\n  OPERATOR  8    <@ ({ss}, {sp}),\n  OPERATOR  8    <@ ({ss}, {ss}),\n  -- adjacent\n  OPERATOR  17    -|- ({ss}, {sp}),\n  OPERATOR  17    -|- ({ss}, {ss}),"}
+    - {stmt: "-- equals\n  OPERATOR  18    = ({ss}, {ss}),\n  -- nearest approach distance\n  OPERATOR  25    <-> ({ss}, {v}) FOR ORDER BY pg_catalog.integer_ops,\n  OPERATOR  25    <-> ({ss}, {sp}) FOR ORDER BY pg_catalog.integer_ops,\n  OPERATOR  25    <-> ({ss}, {ss}) FOR ORDER BY pg_catalog.integer_ops,\n  -- overlaps or before\n  OPERATOR  28    &<# ({ss}, {v}),\n  OPERATOR  28    &<# ({ss}, {sp}),\n  OPERATOR  28    &<# ({ss}, {ss}),\n  -- strictly before\n  OPERATOR  29    <<# ({ss}, {v}),\n  OPERATOR  29    <<# ({ss}, {sp}),\n  OPERATOR  29    <<# ({ss}, {ss}),\n  -- strictly after\n  OPERATOR  30    #>> ({ss}, {v}),\n  OPERATOR  30    #>> ({ss}, {sp}),\n  OPERATOR  30    #>> ({ss}, {ss}),\n  -- overlaps or after\n  OPERATOR  31    #&> ({ss}, {v}),\n  OPERATOR  31    #&> ({ss}, {sp}),\n  OPERATOR  31    #&> ({ss}, {ss}),\n  -- functions\n  FUNCTION  1  {sp}_spgist_config(internal, internal),\n  FUNCTION  2  span_kdtree_choose(internal, internal),\n  FUNCTION  3  span_kdtree_picksplit(internal, internal),\n  FUNCTION  4  span_kdtree_inner_consistent(internal, internal),\n  FUNCTION  5  span_spgist_leaf_consistent(internal, internal),\n  FUNCTION  6  spanset_spgist_compress(internal);"}
+    - {stmt: "\n/******************************************************************************/"}
+    sep: "\n"
+    order: [date]
+  - lit: "\n"
+  - group:
+    - {stmt: "CREATE OPERATOR CLASS {ss}_kdtree_ops\n  FOR TYPE {ss} USING spgist AS\n  -- overlaps\n  OPERATOR  3    && ({ss}, {sp}),\n  OPERATOR  3    && ({ss}, {ss}),\n  -- contains\n  OPERATOR  7    @> ({ss}, {v}),\n  OPERATOR  7    @> ({ss}, {sp}),\n  OPERATOR  7    @> ({ss}, {ss}),\n  -- contained by\n  OPERATOR  8    <@ ({ss}, {sp}),\n  OPERATOR  8    <@ ({ss}, {ss}),\n  -- adjacent\n  OPERATOR  17    -|- ({ss}, {sp}),\n  OPERATOR  17    -|- ({ss}, {ss}),"}
+    - {stmt: "-- equals\n  OPERATOR  18    = ({ss}, {ss}),\n  -- nearest approach distance\n  OPERATOR  25    <-> ({ss}, {v}) FOR ORDER BY pg_catalog.float_ops,\n  OPERATOR  25    <-> ({ss}, {sp}) FOR ORDER BY pg_catalog.float_ops,\n  OPERATOR  25    <-> ({ss}, {ss}) FOR ORDER BY pg_catalog.float_ops,\n  -- overlaps or before\n  OPERATOR  28    &<# ({ss}, {v}),\n  OPERATOR  28    &<# ({ss}, {sp}),\n  OPERATOR  28    &<# ({ss}, {ss}),\n  -- strictly before\n  OPERATOR  29    <<# ({ss}, {v}),\n  OPERATOR  29    <<# ({ss}, {sp}),\n  OPERATOR  29    <<# ({ss}, {ss}),\n  -- strictly after\n  OPERATOR  30    #>> ({ss}, {v}),\n  OPERATOR  30    #>> ({ss}, {sp}),\n  OPERATOR  30    #>> ({ss}, {ss}),\n  -- overlaps or after\n  OPERATOR  31    #&> ({ss}, {v}),\n  OPERATOR  31    #&> ({ss}, {sp}),\n  OPERATOR  31    #&> ({ss}, {ss}),\n  -- functions\n  FUNCTION  1  {sp}_spgist_config(internal, internal),\n  FUNCTION  2  span_kdtree_choose(internal, internal),\n  FUNCTION  3  span_kdtree_picksplit(internal, internal),\n  FUNCTION  4  span_kdtree_inner_consistent(internal, internal),\n  FUNCTION  5  span_spgist_leaf_consistent(internal, internal),\n  FUNCTION  6  spanset_spgist_compress(internal);"}
+    - {stmt: "\n/******************************************************************************/"}
+    sep: "\n"
+    order: [tstz]
+- family: span_aggfuncs
+  file: mobilitydb/sql/temporal/015_span_aggfuncs.in.sql
+  reference: true
+  begin: "/*****************************************************************************/\n-- span + span\n"
+  order: [int, bigint, float, date, tstz]
+  insts:
+    int: {v: integer, sp: intspan, ss: intspanset, vs: intset, rg: int4range, mr: int4multirange}
+    bigint: {v: bigint, sp: bigintspan, ss: bigintspanset, vs: bigintset, rg: int8range, mr: int8multirange}
+    float: {v: float, sp: floatspan, ss: floatspanset, vs: floatset}
+    date: {v: date, sp: datespan, ss: datespanset, vs: dateset, rg: daterange, mr: datemultirange}
+    tstz: {v: timestamptz, sp: tstzspan, ss: tstzspanset, vs: tstzset, rg: tstzrange, mr: tstzmultirange}
+  blocks:
+  - group:
+    - {stmt: "/*****************************************************************************/"}
+    - {stmt: "-- span + span"}
+    - {stmt: "\n-- The function is not strict"}
+    - {stmt: "CREATE FUNCTION span_extent_transfn({sp}, {sp})\n  RETURNS {sp}\n  AS 'MODULE_PATHNAME', 'Span_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
+    - {stmt: "CREATE FUNCTION span_extent_combinefn({sp}, {sp})\n  RETURNS {sp}\n  AS 'MODULE_PATHNAME', 'Span_extent_combinefn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
+    sep: "\n"
+    order: [int]
+  - lit: "\n"
+  - group:
+    - {stmt: "CREATE FUNCTION span_extent_transfn({sp}, {sp})\n  RETURNS {sp}\n  AS 'MODULE_PATHNAME', 'Span_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
+    - {stmt: "CREATE FUNCTION span_extent_combinefn({sp}, {sp})\n  RETURNS {sp}\n  AS 'MODULE_PATHNAME', 'Span_extent_combinefn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
+    sep: "\n"
+    order: [bigint]
+  - lit: "\nCREATE FUNCTION span_extent_transfn(floatspan, floatspan)\n  RETURNS floatspan\n  AS 'MODULE_PATHNAME', 'Span_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION span_extent_combinefn(floatspan, floatspan)\n  RETURNS floatspan\n  AS 'MODULE_PATHNAME', 'Span_extent_combinefn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION span_extent_transfn(datespan, datespan)\n  RETURNS datespan\n  AS 'MODULE_PATHNAME', 'Span_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION span_extent_combinefn(datespan, datespan)\n  RETURNS datespan\n  AS 'MODULE_PATHNAME', 'Span_extent_combinefn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION span_extent_transfn(tstzspan, tstzspan)\n  RETURNS tstzspan\n  AS 'MODULE_PATHNAME', 'Span_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION span_extent_combinefn(tstzspan, tstzspan)\n  RETURNS tstzspan\n  AS 'MODULE_PATHNAME', 'Span_extent_combinefn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\n\n"
+  - group:
+    - {stmt: "CREATE AGGREGATE extent({sp}) (\n  SFUNC = span_extent_transfn,\n  STYPE = {sp},\n  COMBINEFUNC = span_extent_combinefn,\n  PARALLEL = safe\n);"}
+  - lit: "\n/*****************************************************************************/\n-- span + base\n\n-- The function is not strict\nCREATE FUNCTION span_extent_transfn(intspan, integer)\n  RETURNS intspan\n  AS 'MODULE_PATHNAME', 'Spanbase_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION span_extent_transfn(bigintspan, bigint)\n  RETURNS bigintspan\n  AS 'MODULE_PATHNAME', 'Spanbase_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION span_extent_transfn(floatspan, float)\n  RETURNS floatspan\n  AS 'MODULE_PATHNAME', 'Spanbase_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION span_extent_transfn(datespan, date)\n  RETURNS datespan\n  AS 'MODULE_PATHNAME', 'Spanbase_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION span_extent_transfn(tstzspan, timestamptz)\n  RETURNS tstzspan\n  AS 'MODULE_PATHNAME', 'Spanbase_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\n\n"
+  - group:
+    - {stmt: "CREATE AGGREGATE extent({v}) (\n  SFUNC = span_extent_transfn,\n  STYPE = {sp},\n  COMBINEFUNC = span_extent_combinefn,\n  PARALLEL = safe\n);"}
+  - lit: "\n/*****************************************************************************/\n-- span + <type>\n\n-- The function is not strict\nCREATE FUNCTION set_extent_transfn(intspan, intset)\n  RETURNS intspan\n  AS 'MODULE_PATHNAME', 'Set_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION set_extent_transfn(bigintspan, bigintset)\n  RETURNS bigintspan\n  AS 'MODULE_PATHNAME', 'Set_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION set_extent_transfn(floatspan, floatset)\n  RETURNS floatspan\n  AS 'MODULE_PATHNAME', 'Set_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION set_extent_transfn(datespan, dateset)\n  RETURNS datespan\n  AS 'MODULE_PATHNAME', 'Set_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION set_extent_transfn(tstzspan, tstzset)\n  RETURNS tstzspan\n  AS 'MODULE_PATHNAME', 'Set_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\n\n"
+  - group:
+    - {stmt: "CREATE AGGREGATE extent({vs}) (\n  SFUNC = set_extent_transfn,\n  STYPE = {sp},\n  COMBINEFUNC = span_extent_combinefn,\n  PARALLEL = safe\n);"}
+  - lit: "\n-- The function is not strict\nCREATE FUNCTION spanset_extent_transfn(intspan, intspanset)\n  RETURNS intspan\n  AS 'MODULE_PATHNAME', 'Spanset_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION spanset_extent_transfn(bigintspan, bigintspanset)\n  RETURNS bigintspan\n  AS 'MODULE_PATHNAME', 'Spanset_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION spanset_extent_transfn(floatspan, floatspanset)\n  RETURNS floatspan\n  AS 'MODULE_PATHNAME', 'Spanset_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION spanset_extent_transfn(datespan, datespanset)\n  RETURNS datespan\n  AS 'MODULE_PATHNAME', 'Spanset_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION spanset_extent_transfn(tstzspan, tstzspanset)\n  RETURNS tstzspan\n  AS 'MODULE_PATHNAME', 'Spanset_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\n\n"
+  - group:
+    - {stmt: "CREATE AGGREGATE extent({ss}) (\n  SFUNC = spanset_extent_transfn,\n  STYPE = {sp},\n  COMBINEFUNC = span_extent_combinefn,\n  PARALLEL = safe\n);"}
+  - lit: "\n/*****************************************************************************/\n\n-- The function is not strict\nCREATE FUNCTION intspan_union_finalfn(internal)\n  RETURNS intspanset\n  AS 'MODULE_PATHNAME', 'Span_union_finalfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION bigintspan_union_finalfn(internal)\n  RETURNS bigintspanset\n  AS 'MODULE_PATHNAME', 'Span_union_finalfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION floatspan_union_finalfn(internal)\n  RETURNS floatspanset\n  AS 'MODULE_PATHNAME', 'Span_union_finalfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION datespan_union_finalfn(internal)\n  RETURNS datespanset\n  AS 'MODULE_PATHNAME', 'Span_union_finalfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION tstzspan_union_finalfn(internal)\n  RETURNS tstzspanset\n  AS 'MODULE_PATHNAME', 'Span_union_finalfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\n\n"
+  - group:
+    - {stmt: "CREATE AGGREGATE spanUnion({sp}) (\n  SFUNC = array_agg_transfn,\n  STYPE = internal,\n#if POSTGRESQL_VERSION_NUMBER >= 160000\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n#endif //POSTGRESQL_VERSION_NUMBER >= 160000\n  FINALFUNC = {sp}_union_finalfn,\n  PARALLEL = safe\n);"}
+  - lit: "\n/*****************************************************************************/\n\n-- The function is not strict\nCREATE FUNCTION spanset_union_transfn(internal, intspanset)\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Spanset_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION spanset_union_transfn(internal, bigintspanset)\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Spanset_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION spanset_union_transfn(internal, floatspanset)\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Spanset_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION spanset_union_transfn(internal, datespanset)\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Spanset_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION spanset_union_transfn(internal, tstzspanset)\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Spanset_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\n\n"
+  - group:
+    - {stmt: "CREATE AGGREGATE spansetUnion({ss}) (\n  SFUNC = spanset_union_transfn,\n  STYPE = internal,\n#if POSTGRESQL_VERSION_NUMBER >= 160000\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n#endif //POSTGRESQL_VERSION_NUMBER >= 160000\n  FINALFUNC = {sp}_union_finalfn,\n  PARALLEL = safe\n);"}
+  - lit: "\n/*****************************************************************************/\n"
