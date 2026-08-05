@@ -226,6 +226,13 @@ pcpoint_hex_in(const char *str)
  * @brief Return the textual (hex-WKB) representation of a pcpoint
  * @param[in] pt Point
  * @param[in] maxdd Unused (kept for API uniformity with set_out)
+ * @note The bytes past the meaningful prefix are pgpointcloud's struct-tail
+ * padding, which its constructor leaves uninitialized (see the file header).
+ * They are emitted as zeros so that two pcpoints holding the same point
+ * always print the same string. The full @c VARSIZE length is still written:
+ * the deserializer checks that the byte count matches
+ * @c sizeof(SERIALIZED_POINT) - 1 + schema->size, so dropping the padding
+ * would make the output unparseable rather than merely shorter.
  */
 char *
 pcpoint_hex_out(const Pcpoint *pt, int maxdd)
@@ -233,10 +240,14 @@ pcpoint_hex_out(const Pcpoint *pt, int maxdd)
   (void) maxdd;
   assert(pt);
   size_t byte_len = VARSIZE(pt);
+  size_t meaningful = pcpoint_meaningful_size(pt);
   size_t hex_len = byte_len * 2;
   char *result = palloc(hex_len + 1);
-  for (size_t i = 0; i < byte_len; i++)
+  size_t i = 0;
+  for (; i < meaningful; i++)
     deparse_hex(((const uint8_t *) pt)[i], result + 2 * i);
+  for (; i < byte_len; i++)
+    deparse_hex(0, result + 2 * i);
   result[hex_len] = '\0';
   return result;
 }

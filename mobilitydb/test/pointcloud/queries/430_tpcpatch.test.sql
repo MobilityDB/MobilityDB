@@ -47,6 +47,9 @@ SELECT asText(:inst1) = format('%s', :inst1);
 SELECT (:inst1)::text = asText(:inst1);
 -- The array form maps over the elements.
 SELECT array_length(asText(ARRAY[:inst1, :inst2]), 1);
+-- The array form and the element-wise form agree: the representation must
+-- not depend on pgpointcloud's uninitialized struct-tail padding.
+SELECT asText(ARRAY[:inst1, :inst2]) = ARRAY[asText(:inst1), asText(:inst2)];
 
 -------------------------------------------------------------------------------
 -- pcid + per-instant point counts
