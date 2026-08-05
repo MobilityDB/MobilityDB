@@ -2502,6 +2502,142 @@ def bootstrap_mathfuncs(filetext: str, fam: dict, rendered: str) -> str:
     return filetext[:start] + begin_m + rendered + end_m + filetext[end:]
 
 
+# --- span<T> / spanset<T> template files (SQL, whole-file region) -----------------
+# Span and SpanSet are ONE C struct parameterized by a basetype, so their SQL
+# files (003_span.in.sql, 007_spanset.in.sql) are a single template projected
+# over the five instantiations int / bigint / float / date / tstz — never
+# per-instantiation SQL. A family declares its `insts:` table once (each key
+# maps the tokens {v} = base value type, {sp} = span type, {ss} = spanset
+# type, {vs} = value-set type, {rg}/{mr} = the PG range/multirange
+# counterparts) and a default emission `order:`; every stanza then falls out
+# of one definition:
+#   - `fns:`  one CREATE FUNCTION template ({sig}/{ret}/{sym}, rendered from
+#     templates/comparisons.sql.tmpl) emitted per instantiation, packed. A
+#     stanza may override the default order (`order:` — several WKB stanzas
+#     order tstz before date), restrict itself (`only:` — e.g. a float-only
+#     function), or carry per-instantiation field overrides (`over:` — e.g.
+#     floatspan's asText takes maxdecimaldigits; discrete-vs-continuous
+#     differences are expressed the same way).
+#   - `stmt:` one arbitrary CREATE-statement template (operator, operator
+#     class, type shell/definition, cast, aggregate) emitted per
+#     instantiation, packed, with the same order/only overrides.
+#   - `group:` a type-outer stanza: a LIST of templates (functions and/or
+#     statements) emitted together for each instantiation in turn — the I/O
+#     and cast sections' shape, where a type's whole cluster precedes the
+#     next type's.
+#   - `lit:`  banners, dividers, blank lines and the statements that exist
+#     ONCE (e.g. the selectivity-function definitions) or deviate from their
+#     stanza's template (e.g. the one-space AS indentation of hash(intspan)/
+#     hash(bigintspan)), verbatim.
+# The region is the whole file after the license/docblock header (begin_exact
+# at the first statement, whole_file to EOF).
+def _spanfile_markers(family: str):
+    begin = (f"-- GENERATED-SPANFILE-BEGIN {family} — "
+             "tools/codegen/inherited/generate.py from templates/comparisons.sql.tmpl;\n"
+             "-- DO NOT EDIT BY HAND; edit the template + manifest.yaml "
+             "(span_families) and re-run.\n")
+    return begin, f"-- GENERATED-SPANFILE-END {family}\n"
+
+
+def _spanfile_sub(text: str, tok: dict) -> str:
+    """Substitute one instantiation's tokens: {v} = base value type, {sp} =
+    span type, {ss} = spanset type, {vs} = value-set type, {rg}/{mr} = the
+    PostgreSQL range/multirange counterparts (absent for float, which has no
+    canonical range type)."""
+    for key in ("ss", "sp", "vs", "mr", "rg", "v"):
+        text = text.replace("{" + key + "}", tok.get(key, ""))
+    return text
+
+
+def _spanfile_fns(blk: dict, fam: dict) -> str:
+    """One CREATE FUNCTION template emitted per instantiation, packed."""
+    tmpl = (TEMPLATES / "comparisons.sql.tmpl").read_text().rstrip("\n")
+    out = []
+    for key in blk.get("only") or blk.get("order") or fam["order"]:
+        spec = {"sig": blk["sig"], "ret": blk["ret"], "sym": blk["sym"]}
+        spec.update(blk.get("over", {}).get(key, {}))
+        tok = fam["insts"][key]
+        out.append(tmpl.replace("{SIG}", _spanfile_sub(spec["sig"], tok))
+                       .replace("{RET}", _spanfile_sub(spec["ret"], tok))
+                       .replace("{SYM}", spec["sym"]))
+    return "\n".join(out) + "\n"
+
+
+def _spanfile_group(blk: dict, fam: dict) -> str:
+    """A type-outer stanza: a LIST of templates (functions and/or statements)
+    emitted together for each instantiation in turn — the shape of the I/O and
+    cast sections, where every type carries its _in/_out/_recv/_send (or cast)
+    cluster before the next type starts."""
+    tmpl = (TEMPLATES / "comparisons.sql.tmpl").read_text().rstrip("\n")
+    clusters = []
+    for key in blk.get("only") or blk.get("order") or fam["order"]:
+        tok = fam["insts"][key]
+        parts = []
+        for it in blk["group"]:
+            if "sig" in it:
+                parts.append(tmpl.replace("{SIG}", _spanfile_sub(it["sig"], tok))
+                                 .replace("{RET}", _spanfile_sub(it["ret"], tok))
+                                 .replace("{SYM}", it["sym"]))
+            else:
+                parts.append(_spanfile_sub(it["stmt"], tok))
+        clusters.append("\n".join(parts))
+    # A type's whole cluster precedes the next type's, separated by `sep`
+    # (default: packed; the I/O sections separate clusters by one blank line).
+    return (("\n" + blk.get("sep", "")).join(clusters)) + "\n"
+
+
+def _spanfile_stmts(blk: dict, fam: dict) -> str:
+    """One arbitrary CREATE-statement template (operator, operator class, type
+    shell/definition, cast, aggregate) emitted per instantiation, packed."""
+    out = []
+    for key in blk.get("only") or blk.get("order") or fam["order"]:
+        out.append(_spanfile_sub(blk["stmt"], fam["insts"][key]))
+    return "\n".join(out) + "\n"
+
+
+def render_spanfile(fam: dict) -> str:
+    """Render one template file's region from its `blocks` sequence. Blocks
+    concatenate with no automatic separator, so the rendered text is
+    byte-identical to the committed file."""
+    out = ""
+    for blk in fam["blocks"]:
+        if "lit" in blk:
+            out += blk["lit"]
+        elif "group" in blk:
+            out += _spanfile_group(blk, fam)
+        elif "sig" in blk:
+            out += _spanfile_fns(blk, fam)
+        else:
+            out += _spanfile_stmts(blk, fam)
+    return out
+
+
+def extract_spanfile(filetext: str, fam: dict) -> str:
+    """Return the committed region (marker-aware; else begin_exact + EOF)."""
+    begin, end = _spanfile_markers(fam["family"])
+    if begin in filetext:
+        b = filetext.index(begin) + len(begin)
+        e = filetext.index(end)
+        return filetext[b:e]
+    return filetext[filetext.index(fam["begin"]):]
+
+
+def splice_spanfile(filetext: str, family: str, rendered: str) -> str:
+    begin, end = _spanfile_markers(family)
+    b = filetext.index(begin) + len(begin)
+    e = filetext.index(end)
+    return filetext[:b] + rendered + filetext[e:]
+
+
+def bootstrap_spanfile(filetext: str, fam: dict, rendered: str) -> str:
+    """Insert the GENERATED-SPANFILE markers around the file body (everything
+    from the first statement to EOF); idempotent afterward. Not run while the
+    families are reference-only (validate-only)."""
+    start = filetext.index(fam["begin"])
+    begin_m, end_m = _spanfile_markers(fam["family"])
+    return filetext[:start] + begin_m + rendered + end_m
+
+
 def target_path(behaviour: str, sub: dict, positions: dict) -> pathlib.Path:
     # The within-50-bin offset defaults to the shared `positions` map (the tight
     # cbuffer-anchored layout); a family on the tgeo-aligned layout overrides a
@@ -2903,6 +3039,25 @@ def main() -> int:
                         break
                 if len(g) != len(c):
                     print(f"     line count gen={len(g)} cur={len(c)}")
+        for fam in mf.get("span_families", []):
+            if not fam.get("reference"):
+                continue
+            p = ROOT / fam["file"]
+            gen = render_spanfile(fam)
+            cur = extract_spanfile(p.read_text(), fam) if p.exists() else ""
+            same = gen == cur
+            ok = ok and same
+            print(f"[{'OK ' if same else 'DIFF'}] self-regen spanfile {fam['family']} "
+                  f"-> {pathlib.Path(fam['file'])}")
+            if not same:
+                g, c = gen.splitlines(), cur.splitlines()
+                for n, (a, b) in enumerate(zip(g, c), 1):
+                    if a != b:
+                        print(f"     first diff line {n}:\n       gen: {a!r}\n"
+                              f"       cur: {b!r}")
+                        break
+                if len(g) != len(c):
+                    print(f"     line count gen={len(g)} cur={len(c)}")
         return 0 if ok else 1
 
     for sub in subs:
@@ -3244,6 +3399,26 @@ def main() -> int:
         else:
             p.write_text(bootstrap_mathfuncs(text, fam, render_mathfuncs(fam)))
             print(f"bootstrapped mathfuncs {fam['family']} -> {fam['file']}")
+    for fam in mf.get("span_families", []):
+        # Reference families are validate-only: keep the committed hand file, never
+        # emit into .in.sql (mirrors the other set axes). A future non-reference
+        # family bootstraps its GENERATED-SPANFILE region once, then splices.
+        if fam.get("reference"):
+            continue
+        p = ROOT / fam["file"]
+        text = p.read_text()
+        begin, _ = _spanfile_markers(fam["family"])
+        if args.check:
+            print(f"would {'splice' if begin in text else 'bootstrap'} spanfile "
+                  f"{fam['family']} -> {fam['file']}")
+            continue
+        if begin in text:
+            p.write_text(splice_spanfile(text, fam["family"], render_spanfile(fam)))
+            print(f"spliced spanfile {fam['family']} -> {fam['file']}")
+        else:
+            p.write_text(bootstrap_spanfile(text, fam, render_spanfile(fam)))
+            print(f"bootstrapped spanfile {fam['family']} -> {fam['file']}")
+
     return 0
 
 
