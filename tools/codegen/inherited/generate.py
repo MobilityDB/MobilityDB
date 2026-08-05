@@ -2613,12 +2613,17 @@ def render_spanfile(fam: dict) -> str:
 
 
 def extract_spanfile(filetext: str, fam: dict) -> str:
-    """Return the committed region (marker-aware; else begin_exact + EOF)."""
+    """Return the committed region (marker-aware; else begin_exact + EOF, or —
+    when the entry carries an `end:` anchor because its region is a SECTION of a
+    file whose neighbouring sections belong to other axes, e.g. the Set<T>
+    sections of 001_set.in.sql — begin_exact up to the exact `end:` text)."""
     begin, end = _spanfile_markers(fam["family"])
     if begin in filetext:
         b = filetext.index(begin) + len(begin)
         e = filetext.index(end)
         return filetext[b:e]
+    if "end" in fam:
+        return filetext[filetext.index(fam["begin"]):filetext.index(fam["end"])]
     return filetext[filetext.index(fam["begin"]):]
 
 
@@ -2631,10 +2636,14 @@ def splice_spanfile(filetext: str, family: str, rendered: str) -> str:
 
 def bootstrap_spanfile(filetext: str, fam: dict, rendered: str) -> str:
     """Insert the GENERATED-SPANFILE markers around the file body (everything
-    from the first statement to EOF); idempotent afterward. Not run while the
-    families are reference-only (validate-only)."""
+    from the first statement to EOF, or up to the `end:` anchor for a
+    region-in-file entry); idempotent afterward. Not run while the families are
+    reference-only (validate-only)."""
     start = filetext.index(fam["begin"])
     begin_m, end_m = _spanfile_markers(fam["family"])
+    if "end" in fam:
+        return (filetext[:start] + begin_m + rendered + end_m
+                + filetext[filetext.index(fam["end"]):])
     return filetext[:start] + begin_m + rendered + end_m
 
 
