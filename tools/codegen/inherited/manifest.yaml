@@ -5257,6 +5257,167 @@ span_families:
   - group:
     - {stmt: "CREATE AGGREGATE spansetUnion({ss}) (\n  SFUNC = spanset_union_transfn,\n  STYPE = internal,\n#if POSTGRESQL_VERSION_NUMBER >= 160000\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n#endif //POSTGRESQL_VERSION_NUMBER >= 160000\n  FINALFUNC = {sp}_union_finalfn,\n  PARALLEL = safe\n);"}
   - lit: "\n/*****************************************************************************/\n"
+- family: set_indexes
+  file: mobilitydb/sql/temporal/013_set_indexes.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * R-tree GiST indexes\n"
+  order: [int, bigint, float, date, tstz]
+  insts:
+    int: {v: integer, sp: intspan, ss: intspanset, vs: intset, rg: int4range, mr: int4multirange}
+    bigint: {v: bigint, sp: bigintspan, ss: bigintspanset, vs: bigintset, rg: int8range, mr: int8multirange}
+    float: {v: float, sp: floatspan, ss: floatspanset, vs: floatset}
+    date: {v: date, sp: datespan, ss: datespanset, vs: dateset, rg: daterange, mr: datemultirange}
+    tstz: {v: timestamptz, sp: tstzspan, ss: tstzspanset, vs: tstzset, rg: tstzrange, mr: tstzmultirange}
+  blocks:
+  - group:
+    - {stmt: "/******************************************************************************\n * R-tree GiST indexes\n ******************************************************************************/"}
+    - {stmt: "\nCREATE FUNCTION span_gist_consistent(internal, {vs}, smallint, oid, internal)\n  RETURNS bool\n  AS 'MODULE_PATHNAME', 'Span_gist_consistent'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    - {sig: "span_gist_distance(internal, {vs}, smallint, oid, internal)", ret: "internal", sym: Span_gist_distance}
+    - {sig: "set_gist_compress(internal)", ret: "internal", sym: Set_gist_compress}
+    - {stmt: "\n/******************************************************************************/"}
+    sep: "\n"
+    order: [int]
+  - lit: "\n"
+  - group:
+    - {stmt: "CREATE OPERATOR CLASS {vs}_rtree_ops\n  DEFAULT FOR TYPE {vs} USING gist AS\n  STORAGE {sp},\n  -- strictly left\n  OPERATOR  1     << ({vs}, {v}),\n  OPERATOR  1     << ({vs}, {vs}),\n  -- overlaps or left\n  OPERATOR  2     &< ({vs}, {v}),\n  OPERATOR  2     &< ({vs}, {vs}),\n  -- overlaps\n  OPERATOR  3     && ({vs}, {vs}),\n  -- overlaps or right\n  OPERATOR  4     &> ({vs}, {v}),\n  OPERATOR  4     &> ({vs}, {vs}),\n  -- strictly right\n  OPERATOR  5     >> ({vs}, {v}),\n  OPERATOR  5     >> ({vs}, {vs}),\n  -- contains\n  OPERATOR  7     @> ({vs}, {v}),\n  OPERATOR  7     @> ({vs}, {vs}),\n  -- contained by\n  OPERATOR  8     <@ ({vs}, {vs}),\n  -- equals\n  OPERATOR  18    = ({vs}, {vs}),\n  -- nearest approach distance\n  OPERATOR  25    <-> ({vs}, {v}) FOR ORDER BY pg_catalog.{v}_ops,\n  OPERATOR  25    <-> ({vs}, {vs}) FOR ORDER BY pg_catalog.{v}_ops,\n  -- functions\n  FUNCTION  1  span_gist_consistent(internal, {vs}, smallint, oid, internal),\n  FUNCTION  2  span_gist_union(internal, internal),\n  FUNCTION  3  set_gist_compress(internal),\n  FUNCTION  5  span_gist_penalty(internal, internal, internal),\n  FUNCTION  6  span_gist_picksplit(internal, internal),\n  FUNCTION  7  span_gist_same({sp}, {sp}, internal),\n  FUNCTION  8  span_gist_distance(internal, {vs}, smallint, oid, internal);"}
+    - {stmt: "\n/******************************************************************************/"}
+    sep: "\n"
+    order: [int]
+  - lit: "\n"
+  - group:
+    - {sig: "span_gist_consistent(internal, {vs}, smallint, oid, internal)", ret: "bool", sym: Span_gist_consistent}
+    - {sig: "span_gist_distance(internal, {vs}, smallint, oid, internal)", ret: "internal", sym: Span_gist_distance}
+    - {stmt: "\n/******************************************************************************/"}
+    - {stmt: "\nCREATE OPERATOR CLASS {vs}_rtree_ops\n  DEFAULT FOR TYPE {vs} USING gist AS\n  STORAGE {sp},\n  -- strictly left\n  OPERATOR  1     << ({vs}, {v}),\n  OPERATOR  1     << ({vs}, {vs}),\n  -- overlaps or left\n  OPERATOR  2     &< ({vs}, {v}),\n  OPERATOR  2     &< ({vs}, {vs}),\n  -- overlaps\n  OPERATOR  3     && ({vs}, {vs}),\n  -- overlaps or right\n  OPERATOR  4     &> ({vs}, {v}),\n  OPERATOR  4     &> ({vs}, {vs}),\n  -- strictly right\n  OPERATOR  5     >> ({vs}, {v}),\n  OPERATOR  5     >> ({vs}, {vs}),\n  -- contains\n  OPERATOR  7     @> ({vs}, {v}),\n  OPERATOR  7     @> ({vs}, {vs}),\n  -- contained by\n  OPERATOR  8     <@ ({vs}, {vs}),\n  -- equals\n  OPERATOR  18    = ({vs}, {vs}),\n  -- nearest approach distance\n  OPERATOR  25    <-> ({vs}, {v}) FOR ORDER BY pg_catalog.integer_ops,\n  OPERATOR  25    <-> ({vs}, {vs}) FOR ORDER BY pg_catalog.integer_ops,\n  -- functions\n  FUNCTION  1  span_gist_consistent(internal, {vs}, smallint, oid, internal),\n  FUNCTION  2  span_gist_union(internal, internal),\n  FUNCTION  3  set_gist_compress(internal),\n  FUNCTION  5  span_gist_penalty(internal, internal, internal),\n  FUNCTION  6  span_gist_picksplit(internal, internal),\n  FUNCTION  7  span_gist_same({sp}, {sp}, internal),\n  FUNCTION  8  span_gist_distance(internal, {vs}, smallint, oid, internal);"}
+    sep: "\n"
+    order: [bigint]
+  - lit: "\n"
+  - group:
+    - {stmt: "/******************************************************************************/"}
+    - {stmt: "\nCREATE FUNCTION span_gist_consistent(internal, {vs}, smallint, oid, internal)\n  RETURNS bool\n  AS 'MODULE_PATHNAME', 'Span_gist_consistent'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    - {sig: "span_gist_distance(internal, {vs}, smallint, oid, internal)", ret: "internal", sym: Span_gist_distance}
+    - {stmt: "\n/******************************************************************************/"}
+    sep: "\n"
+    order: [float]
+  - lit: "\n"
+  - group:
+    - {stmt: "CREATE OPERATOR CLASS {vs}_rtree_ops\n  DEFAULT FOR TYPE {vs} USING gist AS\n  STORAGE {sp},\n  -- strictly left\n  OPERATOR  1     << ({vs}, {v}),\n  OPERATOR  1     << ({vs}, {vs}),\n  -- overlaps or left\n  OPERATOR  2     &< ({vs}, {v}),\n  OPERATOR  2     &< ({vs}, {vs}),\n  -- overlaps\n  OPERATOR  3     && ({vs}, {vs}),\n  -- overlaps or right\n  OPERATOR  4     &> ({vs}, {v}),\n  OPERATOR  4     &> ({vs}, {vs}),\n  -- strictly right\n  OPERATOR  5     >> ({vs}, {v}),\n  OPERATOR  5     >> ({vs}, {vs}),\n  -- contains\n  OPERATOR  7     @> ({vs}, {v}),\n  OPERATOR  7     @> ({vs}, {vs}),\n  -- contained by\n  OPERATOR  8     <@ ({vs}, {vs}),\n  -- equals\n  OPERATOR  18    = ({vs}, {vs}),\n  -- nearest approach distance\n  OPERATOR  25    <-> ({vs}, {v}) FOR ORDER BY pg_catalog.{v}_ops,\n  OPERATOR  25    <-> ({vs}, {vs}) FOR ORDER BY pg_catalog.{v}_ops,\n  -- functions\n  FUNCTION  1  span_gist_consistent(internal, {vs}, smallint, oid, internal),\n  FUNCTION  2  span_gist_union(internal, internal),\n  FUNCTION  3  set_gist_compress(internal),\n  FUNCTION  5  span_gist_penalty(internal, internal, internal),\n  FUNCTION  6  span_gist_picksplit(internal, internal),\n  FUNCTION  7  span_gist_same({sp}, {sp}, internal),\n  FUNCTION  8  span_gist_distance(internal, {vs}, smallint, oid, internal);"}
+    - {stmt: "\n/*****************************************************************************/"}
+    sep: "\n"
+    order: [float]
+  - lit: "\n"
+  - group:
+    - {sig: "span_gist_consistent(internal, {vs}, smallint, oid, internal)", ret: "bool", sym: Span_gist_consistent}
+    - {stmt: "\n/*****************************************************************************/"}
+    - {stmt: "\nCREATE OPERATOR CLASS {vs}_rtree_ops\n  DEFAULT FOR TYPE {vs} USING gist AS\n  STORAGE {sp},\n  -- overlaps\n  OPERATOR  3    && ({vs}, {vs}),\n  -- contains\n  OPERATOR  7    @> ({vs}, {v}),\n  OPERATOR  7    @> ({vs}, {vs}),\n  -- contained by\n  OPERATOR  8    <@ ({vs}, {vs}),\n  -- equals\n  OPERATOR  18    = ({vs}, {vs}),\n  -- nearest approach distance\n  OPERATOR  25    <-> ({vs}, {v}) FOR ORDER BY pg_catalog.integer_ops,\n  OPERATOR  25    <-> ({vs}, {vs}) FOR ORDER BY pg_catalog.integer_ops,\n  -- overlaps or before\n  OPERATOR  28    &<# ({vs}, {v}),\n  OPERATOR  28    &<# ({vs}, {vs}),\n  -- strictly before\n  OPERATOR  29    <<# ({vs}, {v}),\n  OPERATOR  29    <<# ({vs}, {vs}),\n  -- strictly after\n  OPERATOR  30    #>> ({vs}, {v}),\n  OPERATOR  30    #>> ({vs}, {vs}),\n  -- overlaps or after\n  OPERATOR  31    #&> ({vs}, {v}),\n  OPERATOR  31    #&> ({vs}, {vs}),\n  -- functions\n  FUNCTION  1  span_gist_consistent(internal, {vs}, smallint, oid, internal),\n  FUNCTION  2  span_gist_union(internal, internal),\n  FUNCTION  3  set_gist_compress(internal),\n  FUNCTION  5  span_gist_penalty(internal, internal, internal),\n  FUNCTION  6  span_gist_picksplit(internal, internal),\n  FUNCTION  7  span_gist_same({sp}, {sp}, internal);"}
+    sep: "\n"
+    order: [date]
+  - lit: "\n"
+  - group:
+    - {stmt: "/*****************************************************************************/"}
+    - {stmt: "\nCREATE FUNCTION span_gist_consistent(internal, {vs}, smallint, oid, internal)\n  RETURNS bool\n  AS 'MODULE_PATHNAME', 'Span_gist_consistent'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    - {stmt: "\n/*****************************************************************************/"}
+    sep: "\n"
+    order: [tstz]
+  - lit: "\n"
+  - group:
+    - {stmt: "CREATE OPERATOR CLASS {vs}_rtree_ops\n  DEFAULT FOR TYPE {vs} USING gist AS\n  STORAGE {sp},\n  -- overlaps\n  OPERATOR  3    && ({vs}, {vs}),\n  -- contains\n  OPERATOR  7    @> ({vs}, {v}),\n  OPERATOR  7    @> ({vs}, {vs}),\n  -- contained by\n  OPERATOR  8    <@ ({vs}, {vs}),\n  -- equals\n  OPERATOR  18    = ({vs}, {vs}),\n  -- nearest approach distance\n  OPERATOR  25    <-> ({vs}, {v}) FOR ORDER BY pg_catalog.float_ops,\n  OPERATOR  25    <-> ({vs}, {vs}) FOR ORDER BY pg_catalog.float_ops,\n  -- overlaps or before\n  OPERATOR  28    &<# ({vs}, {v}),\n  OPERATOR  28    &<# ({vs}, {vs}),\n  -- strictly before\n  OPERATOR  29    <<# ({vs}, {v}),\n  OPERATOR  29    <<# ({vs}, {vs}),\n  -- strictly after\n  OPERATOR  30    #>> ({vs}, {v}),\n  OPERATOR  30    #>> ({vs}, {vs}),\n  -- overlaps or after\n  OPERATOR  31    #&> ({vs}, {v}),\n  OPERATOR  31    #&> ({vs}, {vs}),\n  -- functions\n  FUNCTION  1  span_gist_consistent(internal, {vs}, smallint, oid, internal),\n  FUNCTION  2  span_gist_union(internal, internal),\n  FUNCTION  3  set_gist_compress(internal),\n  FUNCTION  5  span_gist_penalty(internal, internal, internal),\n  FUNCTION  6  span_gist_picksplit(internal, internal),\n  FUNCTION  7  span_gist_same({sp}, {sp}, internal);"}
+    - {stmt: "\n/******************************************************************************\n * Quad-tree SP-GiST indexes\n ******************************************************************************/"}
+    sep: "\n"
+    order: [tstz]
+  - lit: "\nCREATE FUNCTION intset_spgist_config(internal, internal)\n  RETURNS void\n  AS 'MODULE_PATHNAME', 'Intspan_spgist_config'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION bigintset_spgist_config(internal, internal)\n  RETURNS void\n  AS 'MODULE_PATHNAME', 'Bigintspan_spgist_config'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION floatset_spgist_config(internal, internal)\n  RETURNS void\n  AS 'MODULE_PATHNAME', 'Floatspan_spgist_config'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION set_spgist_compress(internal)\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Set_spgist_compress'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n"
+  - group:
+    - {stmt: "/******************************************************************************/"}
+    - {stmt: "\nCREATE OPERATOR CLASS {vs}_quadtree_ops\n  DEFAULT FOR TYPE {vs} USING spgist AS\n  -- strictly left\n  OPERATOR  1     << ({vs}, {v}),\n  OPERATOR  1     << ({vs}, {vs}),\n  -- overlaps or left\n  OPERATOR  2     &< ({vs}, {v}),\n  OPERATOR  2     &< ({vs}, {vs}),\n  -- overlaps\n  OPERATOR  3     && ({vs}, {vs}),\n  -- overlaps or right\n  OPERATOR  4     &> ({vs}, {v}),\n  OPERATOR  4     &> ({vs}, {vs}),\n  -- strictly right\n  OPERATOR  5     >> ({vs}, {v}),\n  OPERATOR  5     >> ({vs}, {vs}),\n  -- contains\n  OPERATOR  7     @> ({vs}, {v}),\n  OPERATOR  7     @> ({vs}, {vs}),\n  -- contained by\n  OPERATOR  8     <@ ({vs}, {vs}),\n  -- equals\n  OPERATOR  18    = ({vs}, {vs}),\n  -- nearest approach distance\n  OPERATOR  25    <-> ({vs}, {v}) FOR ORDER BY pg_catalog.{v}_ops,\n  OPERATOR  25    <-> ({vs}, {vs}) FOR ORDER BY pg_catalog.{v}_ops,\n  -- functions\n  FUNCTION  1  {vs}_spgist_config(internal, internal),\n  FUNCTION  2  span_quadtree_choose(internal, internal),\n  FUNCTION  3  span_quadtree_picksplit(internal, internal),\n  FUNCTION  4  span_quadtree_inner_consistent(internal, internal),\n  FUNCTION  5  span_spgist_leaf_consistent(internal, internal),\n  FUNCTION  6  set_spgist_compress(internal);"}
+    - {stmt: "\n/******************************************************************************/"}
+    sep: "\n"
+    order: [int]
+  - lit: "\nCREATE OPERATOR CLASS bigintset_quadtree_ops\n  DEFAULT FOR TYPE bigintset USING spgist AS\n  -- strictly left\n  OPERATOR  1     << (bigintset, bigint),\n  OPERATOR  1     << (bigintset, bigintset),\n  -- overlaps or left\n  OPERATOR  2     &< (bigintset, bigint),\n  OPERATOR  2     &< (bigintset, bigintset),\n  -- overlaps\n  OPERATOR  3     && (bigintset, bigintset),\n  -- overlaps or right\n  OPERATOR  4     &> (bigintset, bigint),\n  OPERATOR  4     &> (bigintset, bigintset),\n  -- strictly right\n  OPERATOR  5     >> (bigintset, bigint),\n  OPERATOR  5     >> (bigintset, bigintset),\n  -- contains\n  OPERATOR  7     @> (bigintset, bigint),\n  OPERATOR  7     @> (bigintset, bigintset),\n  -- contained by\n  OPERATOR  8     <@ (bigintset, bigintset),\n  -- equals\n  OPERATOR  18    = (bigintset, bigintset),\n  -- nearest approach distance\n  OPERATOR  25    <-> (bigintset, bigint) FOR ORDER BY pg_catalog.integer_ops,\n  OPERATOR  25    <-> (bigintset, bigintset) FOR ORDER BY pg_catalog.integer_ops,\n  -- functions\n  FUNCTION  1  intset_spgist_config(internal, internal),\n  FUNCTION  2  span_quadtree_choose(internal, internal),\n  FUNCTION  3  span_quadtree_picksplit(internal, internal),\n  FUNCTION  4  span_quadtree_inner_consistent(internal, internal),\n  FUNCTION  5  span_spgist_leaf_consistent(internal, internal),\n  FUNCTION  6  set_spgist_compress(internal);\n\n"
+  - group:
+    - {stmt: "/******************************************************************************/"}
+    - {stmt: "\nCREATE OPERATOR CLASS {vs}_quadtree_ops\n  DEFAULT FOR TYPE {vs} USING spgist AS\n  -- strictly left\n  OPERATOR  1     << ({vs}, {v}),\n  OPERATOR  1     << ({vs}, {vs}),\n  -- overlaps or left\n  OPERATOR  2     &< ({vs}, {v}),\n  OPERATOR  2     &< ({vs}, {vs}),\n  -- overlaps\n  OPERATOR  3     && ({vs}, {vs}),\n  -- overlaps or right\n  OPERATOR  4     &> ({vs}, {v}),\n  OPERATOR  4     &> ({vs}, {vs}),\n  -- strictly right\n  OPERATOR  5     >> ({vs}, {v}),\n  OPERATOR  5     >> ({vs}, {vs}),\n  -- contains\n  OPERATOR  7     @> ({vs}, {v}),\n  OPERATOR  7     @> ({vs}, {vs}),\n  -- contained by\n  OPERATOR  8     <@ ({vs}, {vs}),\n  -- equals\n  OPERATOR  18    = ({vs}, {vs}),\n  -- nearest approach distance\n  OPERATOR  25    <-> ({vs}, {v}) FOR ORDER BY pg_catalog.{v}_ops,\n  OPERATOR  25    <-> ({vs}, {vs}) FOR ORDER BY pg_catalog.{v}_ops,\n  -- functions\n  FUNCTION  1  {vs}_spgist_config(internal, internal),\n  FUNCTION  2  span_quadtree_choose(internal, internal),\n  FUNCTION  3  span_quadtree_picksplit(internal, internal),\n  FUNCTION  4  span_quadtree_inner_consistent(internal, internal),\n  FUNCTION  5  span_spgist_leaf_consistent(internal, internal),\n  FUNCTION  6  set_spgist_compress(internal);"}
+    - {stmt: "\n/******************************************************************************/"}
+    sep: "\n"
+    order: [float]
+  - lit: "\n"
+  - group:
+    - {stmt: "CREATE OPERATOR CLASS {vs}_quadtree_ops\n  DEFAULT FOR TYPE {vs} USING spgist AS\n  -- overlaps\n  OPERATOR  3    && ({vs}, {vs}),\n  -- contains\n  OPERATOR  7    @> ({vs}, {v}),\n  OPERATOR  7    @> ({vs}, {vs}),\n  -- contained by\n  OPERATOR  8    <@ ({vs}, {vs}),\n  -- equals\n  OPERATOR  18    = ({vs}, {vs}),\n  -- nearest approach distance\n  OPERATOR  25    <-> ({vs}, {v}) FOR ORDER BY pg_catalog.integer_ops,\n  OPERATOR  25    <-> ({vs}, {vs}) FOR ORDER BY pg_catalog.integer_ops,\n  -- overlaps or before\n  OPERATOR  28    &<# ({vs}, {v}),\n  OPERATOR  28    &<# ({vs}, {vs}),\n  -- strictly before\n  OPERATOR  29    <<# ({vs}, {v}),\n  OPERATOR  29    <<# ({vs}, {vs}),\n  -- strictly after\n  OPERATOR  30    #>> ({vs}, {v}),\n  OPERATOR  30    #>> ({vs}, {vs}),\n  -- overlaps or after\n  OPERATOR  31    #&> ({vs}, {v}),\n  OPERATOR  31    #&> ({vs}, {vs}),\n  -- functions\n  FUNCTION  1  {sp}_spgist_config(internal, internal),\n  FUNCTION  2  span_quadtree_choose(internal, internal),\n  FUNCTION  3  span_quadtree_picksplit(internal, internal),\n  FUNCTION  4  span_quadtree_inner_consistent(internal, internal),\n  FUNCTION  5  span_spgist_leaf_consistent(internal, internal),\n  FUNCTION  6  set_spgist_compress(internal);"}
+    - {stmt: "\n/******************************************************************************/"}
+    sep: "\n"
+    order: [date]
+  - lit: "\n"
+  - group:
+    - {stmt: "CREATE OPERATOR CLASS {vs}_quadtree_ops\n  DEFAULT FOR TYPE {vs} USING spgist AS\n  -- overlaps\n  OPERATOR  3    && ({vs}, {vs}),\n  -- contains\n  OPERATOR  7    @> ({vs}, {v}),\n  OPERATOR  7    @> ({vs}, {vs}),\n  -- contained by\n  OPERATOR  8    <@ ({vs}, {vs}),\n  -- equals\n  OPERATOR  18    = ({vs}, {vs}),\n  -- nearest approach distance\n  OPERATOR  25    <-> ({vs}, {v}) FOR ORDER BY pg_catalog.float_ops,\n  OPERATOR  25    <-> ({vs}, {vs}) FOR ORDER BY pg_catalog.float_ops,\n  -- overlaps or before\n  OPERATOR  28    &<# ({vs}, {v}),\n  OPERATOR  28    &<# ({vs}, {vs}),\n  -- strictly before\n  OPERATOR  29    <<# ({vs}, {v}),\n  OPERATOR  29    <<# ({vs}, {vs}),\n  -- strictly after\n  OPERATOR  30    #>> ({vs}, {v}),\n  OPERATOR  30    #>> ({vs}, {vs}),\n  -- overlaps or after\n  OPERATOR  31    #&> ({vs}, {v}),\n  OPERATOR  31    #&> ({vs}, {vs}),\n  -- functions\n  FUNCTION  1  {sp}_spgist_config(internal, internal),\n  FUNCTION  2  span_quadtree_choose(internal, internal),\n  FUNCTION  3  span_quadtree_picksplit(internal, internal),\n  FUNCTION  4  span_quadtree_inner_consistent(internal, internal),\n  FUNCTION  5  span_spgist_leaf_consistent(internal, internal),\n  FUNCTION  6  set_spgist_compress(internal);"}
+    - {stmt: "\n/******************************************************************************\n * Kd-tree indexes\n ******************************************************************************/"}
+    sep: "\n"
+    order: [tstz]
+  - lit: "\n"
+  - group:
+    - {stmt: "CREATE OPERATOR CLASS {vs}_kdtree_ops\n  FOR TYPE {vs} USING spgist AS\n  -- strictly left\n  OPERATOR  1     << ({vs}, {v}),\n  OPERATOR  1     << ({vs}, {vs}),\n  -- overlaps or left\n  OPERATOR  2     &< ({vs}, {v}),\n  OPERATOR  2     &< ({vs}, {vs}),\n  -- overlaps\n  OPERATOR  3     && ({vs}, {vs}),\n  -- overlaps or right\n  OPERATOR  4     &> ({vs}, {v}),\n  OPERATOR  4     &> ({vs}, {vs}),\n  -- strictly right\n  OPERATOR  5     >> ({vs}, {v}),\n  OPERATOR  5     >> ({vs}, {vs}),\n  -- contains\n  OPERATOR  7     @> ({vs}, {v}),\n  OPERATOR  7     @> ({vs}, {vs}),\n  -- contained by\n  OPERATOR  8     <@ ({vs}, {vs}),\n  -- equals\n  OPERATOR  18    = ({vs}, {vs}),\n  -- nearest approach distance\n  OPERATOR  25    <-> ({vs}, {v}) FOR ORDER BY pg_catalog.{v}_ops,\n  OPERATOR  25    <-> ({vs}, {vs}) FOR ORDER BY pg_catalog.{v}_ops,\n  -- functions\n  FUNCTION  1  {vs}_spgist_config(internal, internal),\n  FUNCTION  2  span_kdtree_choose(internal, internal),\n  FUNCTION  3  span_kdtree_picksplit(internal, internal),\n  FUNCTION  4  span_kdtree_inner_consistent(internal, internal),\n  FUNCTION  5  span_spgist_leaf_consistent(internal, internal),\n  FUNCTION  6  set_spgist_compress(internal);"}
+    - {stmt: "\n/******************************************************************************/"}
+    sep: "\n"
+    order: [int]
+  - lit: "\nCREATE OPERATOR CLASS bigintset_kdtree_ops\n  FOR TYPE bigintset USING spgist AS\n  -- strictly left\n  OPERATOR  1     << (bigintset, bigint),\n  OPERATOR  1     << (bigintset, bigintset),\n  -- overlaps or left\n  OPERATOR  2     &< (bigintset, bigint),\n  OPERATOR  2     &< (bigintset, bigintset),\n  -- overlaps\n  OPERATOR  3     && (bigintset, bigintset),\n  -- overlaps or right\n  OPERATOR  4     &> (bigintset, bigint),\n  OPERATOR  4     &> (bigintset, bigintset),\n  -- strictly right\n  OPERATOR  5     >> (bigintset, bigint),\n  OPERATOR  5     >> (bigintset, bigintset),\n  -- contains\n  OPERATOR  7     @> (bigintset, bigint),\n  OPERATOR  7     @> (bigintset, bigintset),\n  -- contained by\n  OPERATOR  8     <@ (bigintset, bigintset),\n  -- equals\n  OPERATOR  18    = (bigintset, bigintset),\n  -- nearest approach distance\n  OPERATOR  25    <-> (bigintset, bigint) FOR ORDER BY pg_catalog.integer_ops,\n  OPERATOR  25    <-> (bigintset, bigintset) FOR ORDER BY pg_catalog.integer_ops,\n  -- functions\n  FUNCTION  1  intset_spgist_config(internal, internal),\n  FUNCTION  2  span_kdtree_choose(internal, internal),\n  FUNCTION  3  span_kdtree_picksplit(internal, internal),\n  FUNCTION  4  span_kdtree_inner_consistent(internal, internal),\n  FUNCTION  5  span_spgist_leaf_consistent(internal, internal),\n  FUNCTION  6  set_spgist_compress(internal);\n\n"
+  - group:
+    - {stmt: "/******************************************************************************/"}
+    - {stmt: "\nCREATE OPERATOR CLASS {vs}_kdtree_ops\n  FOR TYPE {vs} USING spgist AS\n  -- strictly left\n  OPERATOR  1     << ({vs}, {v}),\n  OPERATOR  1     << ({vs}, {vs}),\n  -- overlaps or left\n  OPERATOR  2     &< ({vs}, {v}),\n  OPERATOR  2     &< ({vs}, {vs}),\n  -- overlaps\n  OPERATOR  3     && ({vs}, {vs}),\n  -- overlaps or right\n  OPERATOR  4     &> ({vs}, {v}),\n  OPERATOR  4     &> ({vs}, {vs}),\n  -- strictly right\n  OPERATOR  5     >> ({vs}, {v}),\n  OPERATOR  5     >> ({vs}, {vs}),\n  -- contains\n  OPERATOR  7     @> ({vs}, {v}),\n  OPERATOR  7     @> ({vs}, {vs}),\n  -- contained by\n  OPERATOR  8     <@ ({vs}, {vs}),\n  -- equals\n  OPERATOR  18    = ({vs}, {vs}),\n  -- nearest approach distance\n  OPERATOR  25    <-> ({vs}, {v}) FOR ORDER BY pg_catalog.{v}_ops,\n  OPERATOR  25    <-> ({vs}, {vs}) FOR ORDER BY pg_catalog.{v}_ops,\n  -- functions\n  FUNCTION  1  {vs}_spgist_config(internal, internal),\n  FUNCTION  2  span_kdtree_choose(internal, internal),\n  FUNCTION  3  span_kdtree_picksplit(internal, internal),\n  FUNCTION  4  span_kdtree_inner_consistent(internal, internal),\n  FUNCTION  5  span_spgist_leaf_consistent(internal, internal),\n  FUNCTION  6  set_spgist_compress(internal);"}
+    - {stmt: "\n/******************************************************************************/"}
+    sep: "\n"
+    order: [float]
+  - lit: "\n"
+  - group:
+    - {stmt: "CREATE OPERATOR CLASS {vs}_kdtree_ops\n  FOR TYPE {vs} USING spgist AS\n  -- overlaps\n  OPERATOR  3    && ({vs}, {vs}),\n  -- contains\n  OPERATOR  7    @> ({vs}, {v}),\n  OPERATOR  7    @> ({vs}, {vs}),\n  -- contained by\n  OPERATOR  8    <@ ({vs}, {vs}),\n  -- equals\n  OPERATOR  18    = ({vs}, {vs}),\n  -- nearest approach distance\n  OPERATOR  25    <-> ({vs}, {v}) FOR ORDER BY pg_catalog.integer_ops,\n  OPERATOR  25    <-> ({vs}, {vs}) FOR ORDER BY pg_catalog.integer_ops,\n  -- overlaps or before\n  OPERATOR  28    &<# ({vs}, {v}),\n  OPERATOR  28    &<# ({vs}, {vs}),\n  -- strictly before\n  OPERATOR  29    <<# ({vs}, {v}),\n  OPERATOR  29    <<# ({vs}, {vs}),\n  -- strictly after\n  OPERATOR  30    #>> ({vs}, {v}),\n  OPERATOR  30    #>> ({vs}, {vs}),\n  -- overlaps or after\n  OPERATOR  31    #&> ({vs}, {v}),\n  OPERATOR  31    #&> ({vs}, {vs}),\n  -- functions\n  FUNCTION  1  {sp}_spgist_config(internal, internal),\n  FUNCTION  2  span_kdtree_choose(internal, internal),\n  FUNCTION  3  span_kdtree_picksplit(internal, internal),\n  FUNCTION  4  span_kdtree_inner_consistent(internal, internal),\n  FUNCTION  5  span_spgist_leaf_consistent(internal, internal),\n  FUNCTION  6  set_spgist_compress(internal);"}
+    - {stmt: "\n/******************************************************************************/"}
+    sep: "\n"
+    order: [date]
+  - lit: "\n"
+  - group:
+    - {stmt: "CREATE OPERATOR CLASS {vs}_kdtree_ops\n  FOR TYPE {vs} USING spgist AS\n  -- overlaps\n  OPERATOR  3    && ({vs}, {vs}),\n  -- contains\n  OPERATOR  7    @> ({vs}, {v}),\n  OPERATOR  7    @> ({vs}, {vs}),\n  -- contained by\n  OPERATOR  8    <@ ({vs}, {vs}),\n  -- equals\n  OPERATOR  18    = ({vs}, {vs}),\n  -- nearest approach distance\n  OPERATOR  25    <-> ({vs}, {v}) FOR ORDER BY pg_catalog.float_ops,\n  OPERATOR  25    <-> ({vs}, {vs}) FOR ORDER BY pg_catalog.float_ops,\n  -- overlaps or before\n  OPERATOR  28    &<# ({vs}, {v}),\n  OPERATOR  28    &<# ({vs}, {vs}),\n  -- strictly before\n  OPERATOR  29    <<# ({vs}, {v}),\n  OPERATOR  29    <<# ({vs}, {vs}),\n  -- strictly after\n  OPERATOR  30    #>> ({vs}, {v}),\n  OPERATOR  30    #>> ({vs}, {vs}),\n  -- overlaps or after\n  OPERATOR  31    #&> ({vs}, {v}),\n  OPERATOR  31    #&> ({vs}, {vs}),\n  -- functions\n  FUNCTION  1  {sp}_spgist_config(internal, internal),\n  FUNCTION  2  span_kdtree_choose(internal, internal),\n  FUNCTION  3  span_kdtree_picksplit(internal, internal),\n  FUNCTION  4  span_kdtree_inner_consistent(internal, internal),\n  FUNCTION  5  span_spgist_leaf_consistent(internal, internal),\n  FUNCTION  6  set_spgist_compress(internal);"}
+    - {stmt: "\n/******************************************************************************\n * GIN indexes\n ******************************************************************************/"}
+    sep: "\n"
+    order: [tstz]
+  - lit: "\n"
+  - group:
+    - {stmt: "CREATE FUNCTION set_gin_extract_value({v}, internal)\nRETURNS internal\nAS 'MODULE_PATHNAME', 'Set_gin_extract_value'\nLANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    - {stmt: "\nCREATE FUNCTION set_gin_extract_query({v}, internal, int2, internal, internal, internal, internal)\nRETURNS internal\nAS 'MODULE_PATHNAME', 'Set_gin_extract_query'\nLANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    - {stmt: "\nCREATE FUNCTION set_gin_triconsistent(internal, int2, {v}, int4, internal, internal, internal)\nRETURNS char\nAS 'MODULE_PATHNAME', 'Set_gin_triconsistent'\nLANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    sep: "\n"
+    order: [int]
+  - lit: "\n"
+  - group:
+    - {stmt: "/******************************************************************************/"}
+    - {stmt: "\nCREATE OPERATOR CLASS {vs}_gin_ops\n  DEFAULT FOR TYPE {vs} USING gin AS\n  STORAGE {v},\n  -- overlaps\n  OPERATOR  10    && ({vs}, {vs}),\n  -- contains value\n  OPERATOR  20    @> ({vs}, {v}),\n  -- contains set\n  OPERATOR  21    @> ({vs}, {vs}),\n  -- contained\n  OPERATOR  30    <@ ({vs}, {vs}),\n    -- same\n  OPERATOR  40    = ({vs}, {vs}),\n  -- functions\n  FUNCTION   2    set_gin_extract_value({v}, internal),\n  FUNCTION   3    set_gin_extract_query({v}, internal, int2, internal, internal, internal, internal),\n  FUNCTION   6    set_gin_triconsistent(internal, int2, {v}, int4, internal, internal, internal);"}
+    - {stmt: "\n/******************************************************************************/"}
+    sep: "\n"
+    order: [int]
+  - lit: "\n"
+  - group:
+    - {stmt: "CREATE FUNCTION set_gin_extract_value({v}, internal)\nRETURNS internal\nAS 'MODULE_PATHNAME', 'Set_gin_extract_value'\nLANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    - {stmt: "\nCREATE FUNCTION set_gin_extract_query({v}, internal, int2, internal, internal, internal, internal)\nRETURNS internal\nAS 'MODULE_PATHNAME', 'Set_gin_extract_query'\nLANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    - {stmt: "\nCREATE FUNCTION set_gin_triconsistent(internal, int2, {v}, int4, internal, internal, internal)\nRETURNS char\nAS 'MODULE_PATHNAME', 'Set_gin_triconsistent'\nLANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    sep: "\n"
+    order: [bigint]
+  - lit: "\n"
+  - group:
+    - {stmt: "/******************************************************************************/"}
+    - {stmt: "\nCREATE OPERATOR CLASS {vs}_gin_ops\n  DEFAULT FOR TYPE {vs} USING gin AS\n  STORAGE {v},\n  -- overlaps\n  OPERATOR  10    && ({vs}, {vs}),\n  -- contains value\n  OPERATOR  20    @> ({vs}, {v}),\n  -- contains set\n  OPERATOR  21    @> ({vs}, {vs}),\n  -- contained\n  OPERATOR  30    <@ ({vs}, {vs}),\n  -- equal\n  OPERATOR  40    = ({vs}, {vs}),\n  -- functions\n  FUNCTION   2    set_gin_extract_value({v}, internal),\n  FUNCTION   3    set_gin_extract_query({v}, internal, int2, internal, internal, internal, internal),\n  FUNCTION   6    set_gin_triconsistent(internal, int2, {v}, int4, internal, internal, internal);"}
+    - {stmt: "\n/******************************************************************************/"}
+    sep: "\n"
+    order: [bigint]
+  - lit: "\n"
+  - group:
+    - {stmt: "CREATE FUNCTION set_gin_extract_value({v}, internal)\nRETURNS internal\nAS 'MODULE_PATHNAME', 'Set_gin_extract_value'\nLANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    - {stmt: "\nCREATE FUNCTION set_gin_extract_query({v}, internal, int2, internal, internal, internal, internal)\nRETURNS internal\nAS 'MODULE_PATHNAME', 'Set_gin_extract_query'\nLANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    - {stmt: "\nCREATE FUNCTION set_gin_triconsistent(internal, int2, {v}, int4, internal, internal, internal)\nRETURNS char\nAS 'MODULE_PATHNAME', 'Set_gin_triconsistent'\nLANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    sep: "\n"
+    order: [date]
+  - lit: "\n"
+  - group:
+    - {stmt: "/******************************************************************************/"}
+    - {stmt: "\nCREATE OPERATOR CLASS {vs}_gin_ops\n  DEFAULT FOR TYPE {vs} USING gin AS\n  STORAGE {v},\n  -- overlaps\n  OPERATOR  10    && ({vs}, {vs}),\n  -- contains value\n  OPERATOR  20    @> ({vs}, {v}),\n  -- contains set\n  OPERATOR  21    @> ({vs}, {vs}),\n  -- contained\n  OPERATOR  30    <@ ({vs}, {vs}),\n    -- same\n  OPERATOR  40    = ({vs}, {vs}),\n  -- functions\n  FUNCTION   2    set_gin_extract_value({v}, internal),\n  FUNCTION   3    set_gin_extract_query({v}, internal, int2, internal, internal, internal, internal),\n  FUNCTION   6    set_gin_triconsistent(internal, int2, {v}, int4, internal, internal, internal);"}
+    - {stmt: "\n/******************************************************************************/\n"}
+    sep: "\n"
+    order: [date]
 
 aggregate_families:
 - family: geo
