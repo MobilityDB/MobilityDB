@@ -128,7 +128,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return the comparable byte length of a pcpatch. </p>
-<p >Strips the trailing zero-padding that pgpointcloud's varlena layout reserves for the in-place data area, so that <code>pcpatch_cmp</code> / <code>pcpatch_hash</code> do not depend on padding bytes. </p>
+<p >Strips the trailing bytes that pgpointcloud's varlena layout reserves past the statistics and packed points, so that <code>pcpatch_cmp</code> / <code>pcpatch_hash</code> do not depend on them. </p>
 
 </div>
 </div>

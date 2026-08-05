@@ -125,6 +125,7 @@ $(function() {
   </table>
   </dd>
 </dl>
+<dl class="section note"><dt>Note</dt><dd>The bytes past the meaningful prefix are the reserved tail described at the top of this file, which the allocation leaves uninitialized. They are emitted as zeros so that two patches holding the same points always print the same string, keeping the full <code>VARSIZE</code> length that the deserializer's size check expects. </dd></dl>
 
 </div>
 </div>

@@ -110,11 +110,14 @@ $(function() {
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define PCPATCH_TAIL_PADDING&#160;&#160;&#160;  (sizeof(<a class="el" href="structPcpatchLayoutShadow.html">PcpatchLayoutShadow</a>) - offsetof(<a class="el" href="structPcpatchLayoutShadow.html">PcpatchLayoutShadow</a>, data) - 1)</td>
+          <td class="memname">#define PCPATCH_TAIL_PADDING</td>
         </tr>
       </table>
 </div><div class="memdoc">
-
+<b>Value:</b><div class="fragment"><div class="line">  (BUFFERALIGN(<span class="keyword">sizeof</span>(<a class="code hl_struct" href="structPcpatchLayoutShadow.html">PcpatchLayoutShadow</a>)) - 1 - \</div>
+<div class="line">   offsetof(<a class="code hl_struct" href="structPcpatchLayoutShadow.html">PcpatchLayoutShadow</a>, data))</div>
+<div class="ttc" id="astructPcpatchLayoutShadow_html"><div class="ttname"><a href="structPcpatchLayoutShadow.html">PcpatchLayoutShadow</a></div><div class="ttdef"><b>Definition:</b> pcpatch.c:73</div></div>
+</div><!-- fragment -->
 </div>
 </div>
     </td>
