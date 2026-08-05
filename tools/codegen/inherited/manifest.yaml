@@ -5418,6 +5418,31 @@ span_families:
     - {stmt: "\n/******************************************************************************/\n"}
     sep: "\n"
     order: [date]
+- family: set_aggregations
+  file: mobilitydb/sql/temporal/001_set.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * Aggregate functions\n ******************************************************************************/\n"
+  end: "/*****************************************************************************\n * Selectivity functions"
+  order: [int, bigint, float, text, date, tstz]
+  insts:
+    int: {v: integer, vs: intset}
+    bigint: {v: bigint, vs: bigintset}
+    float: {v: float, vs: floatset}
+    text: {v: text, vs: textset}
+    date: {v: date, vs: dateset}
+    tstz: {v: timestamptz, vs: tstzset}
+  blocks:
+  - lit: "/******************************************************************************\n * Aggregate functions\n ******************************************************************************/\n\n-- The function is not STRICT\n"
+  - {stmt: "CREATE FUNCTION set_union_transfn(internal, {v})\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Value_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
+  - lit: "\n-- The function is not STRICT\n"
+  - {stmt: "CREATE FUNCTION set_union_transfn(internal, {vs})\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Set_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
+  - lit: "\n"
+  - {stmt: "CREATE FUNCTION {vs}_union_finalfn(internal)\n  RETURNS {vs}\n  AS 'MODULE_PATHNAME', 'Set_union_finalfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;", order: [int, bigint, float, date, tstz, text]}
+  - lit: "\n"
+  - {stmt: "CREATE AGGREGATE setUnion({v}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n#if POSTGRESQL_VERSION_NUMBER >= 160000\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n#endif //POSTGRESQL_VERSION_NUMBER >= 160000\n  FINALFUNC = {vs}_union_finalfn,\n  PARALLEL = safe\n);"}
+  - lit: "\n"
+  - {stmt: "CREATE AGGREGATE setUnion({vs}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n#if POSTGRESQL_VERSION_NUMBER >= 160000\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n#endif //POSTGRESQL_VERSION_NUMBER >= 160000\n  FINALFUNC = {vs}_union_finalfn,\n  PARALLEL = safe\n);"}
+  - lit: "\n"
 
 aggregate_families:
 - family: geo
