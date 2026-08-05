@@ -2638,6 +2638,115 @@ def bootstrap_spanfile(filetext: str, fam: dict, rendered: str) -> str:
     return filetext[:start] + begin_m + rendered + end_m
 
 
+# --- SQL Aggregates sub-family (SQL, whole-file) ----------------------------------
+# The Temporal<T> aggregate surface every temporal type carries in its dedicated
+# *_aggfuncs.in.sql file: the extent/tCount/wCount/merge/appendInstant/appendSequence
+# aggregate machinery — the transition/final CREATE FUNCTIONs wired to the generic
+# Tspatial_extent_transfn / Temporal_tcount_transfn / Temporal_wcount_transfn /
+# Temporal_merge_transfn / Temporal_app_tinst_transfn / Temporal_app_tseq_transfn /
+# Temporal_tagg_finalfn / Temporal_append_finalfn kernels — plus the CREATE AGGREGATE
+# statements on top of them. Every machinery CREATE FUNCTION is the SAME four-line
+# skeleton (templates/aggregates.sql.tmpl); only the signature {SIG} (which may span
+# lines: the interp/maxdist/maxt overloads), return {RET}, backing symbol {SYM},
+# strictness ({STRICT}) and an optional leading comment ({PRE}) differ — so ONE
+# skeleton emits every machinery function. The CREATE AGGREGATE statements, section
+# banners, comment lines and blank-line separators are reproduced BYTE-EXACT via
+# `lit` blocks in the manifest, exactly as the comparison surface reproduces its
+# operators and opclasses; the skeleton-shaped functions go in `fns` blocks. Blocks
+# concatenate with NO automatic separator (every banner / blank line is baked into
+# the `lit` blocks, the funcs end with their own trailing newline), so the rendered
+# text is byte-identical to the committed region — the conversion-surface model.
+#
+# `--validate` extracts the committed hand block by section-header ANCHORS
+# (marker-aware, mirroring extract_conversions: sliced by GENERATED-AGGREGATES
+# markers once they exist, else from the `/*` opening the file doc header down to
+# EOF — each family owns its WHOLE dedicated *_aggfuncs.in.sql file, so every family
+# sets `whole_file: true` like the whole-file representation families), so the
+# deployed .in.sql files are untouched while the template is proven. The base
+# temporal aggregate files (015_span_aggfuncs, 040_temporal_aggfuncs,
+# 042_temporal_waggfuncs) are intentionally absent from the manifest: they group the
+# machinery across the alpha base-type quartet with per-type tmin/tmax/tsum/tavg
+# kernels, so they belong to the template-class pass (the 022_temporal precedent) —
+# classified out by omission from the data, never by a code-level skip.
+def _aggregates_markers(family: str):
+    begin = (f"-- GENERATED-AGGREGATES-BEGIN {family} — "
+             "tools/codegen/inherited/generate.py from templates/aggregates.sql.tmpl;\n"
+             "-- DO NOT EDIT BY HAND; edit the template + manifest.yaml "
+             "(aggregate_families) and re-run.\n")
+    return begin, f"-- GENERATED-AGGREGATES-END {family}\n"
+
+
+def _agg_skeleton(sig: str, ret: str, sym: str, strict: bool, pre: str) -> str:
+    """One aggregate-machinery CREATE FUNCTION from the shared skeleton (no trailing
+    newline, so blocks can be joined with explicit newline control). `pre` is a
+    leading comment line or ""; `strict` toggles the ` STRICT` keyword."""
+    tmpl = (TEMPLATES / "aggregates.sql.tmpl").read_text()
+    return (tmpl.replace("{PRE}", pre).replace("{SIG}", sig).replace("{RET}", ret)
+                .replace("{SYM}", sym)
+                .replace("{STRICT}", " STRICT" if strict else "").rstrip("\n"))
+
+
+def render_aggregates(fam: dict) -> str:
+    """Render one family's aggregate block from its `blocks` sequence. A block is a
+    verbatim `lit` (the file doc header, section banners, CREATE AGGREGATE statements,
+    comment lines and blank lines, kept exactly as the hand file) or a `fns` list (the
+    machinery CREATE FUNCTIONs rendered from the shared skeleton, packed with no blank
+    line and closed by one trailing newline). Blocks concatenate with no automatic
+    separator — every separator is baked into the `lit` blocks — so the rendered text
+    is byte-identical to the committed region (the conversion-surface model)."""
+    out = ""
+    for blk in fam["blocks"]:
+        if "lit" in blk:
+            out += blk["lit"]
+        else:
+            out += "\n".join(_agg_skeleton(f["sig"], f["ret"], f["sym"],
+                                           f.get("strict", True), f.get("pre", ""))
+                             for f in blk["fns"]) + "\n"
+    return out
+
+
+def extract_aggregates(filetext: str, fam: dict) -> str:
+    """Return the committed hand aggregate block. Marker-aware: if the
+    GENERATED-AGGREGATES region exists, slice between its markers; otherwise slice
+    from the `/*` opening the file doc header (found via the family's `begin` anchor)
+    down to EOF for a whole-file family, or to the `/*` opening the next section (the
+    family's `end` anchor), mirroring extract_representations."""
+    begin, end = _aggregates_markers(fam["family"])
+    if begin in filetext:
+        b = filetext.index(begin) + len(begin)
+        e = filetext.index(end)
+        return filetext[b:e]
+    i = filetext.index(fam["begin"])
+    start = filetext.rfind("/*", 0, i)
+    if fam.get("whole_file"):
+        return filetext[start:len(filetext)]
+    j = filetext.index(fam["end"])
+    return filetext[start:filetext.rfind("/*", 0, j)]
+
+
+def splice_aggregates(filetext: str, family: str, rendered: str) -> str:
+    begin, end = _aggregates_markers(family)
+    b = filetext.index(begin) + len(begin)
+    e = filetext.index(end)
+    return filetext[:b] + rendered + filetext[e:]
+
+
+def bootstrap_aggregates(filetext: str, fam: dict, rendered: str) -> str:
+    """Insert the GENERATED-AGGREGATES markers around the family's committed hand
+    block (sliced by the same anchor span extract uses), so a future non-reference
+    emit is fully declarative with no hand-placed marker. Idempotent: once the markers
+    exist the reference/splice path owns the region. Not run while the families are
+    reference-only (validate-only)."""
+    i = filetext.index(fam["begin"])
+    start = filetext.rfind("/*", 0, i)
+    begin_m, end_m = _aggregates_markers(fam["family"])
+    if fam.get("whole_file"):
+        return filetext[:start] + begin_m + rendered + end_m
+    j = filetext.index(fam["end"])
+    end = filetext.rfind("/*", 0, j)
+    return filetext[:start] + begin_m + rendered + end_m + filetext[end:]
+
+
 def target_path(behaviour: str, sub: dict, positions: dict) -> pathlib.Path:
     # The within-50-bin offset defaults to the shared `positions` map (the tight
     # cbuffer-anchored layout); a family on the tgeo-aligned layout overrides a
@@ -3012,6 +3121,25 @@ def main() -> int:
             same = gen == cur
             ok = ok and same
             print(f"[{'OK ' if same else 'DIFF'}] self-regen mathfuncs {fam['family']} "
+                  f"-> {pathlib.Path(fam['file'])}")
+            if not same:
+                g, c = gen.splitlines(), cur.splitlines()
+                for n, (a, b) in enumerate(zip(g, c), 1):
+                    if a != b:
+                        print(f"     first diff line {n}:\n       gen: {a!r}\n"
+                              f"       cur: {b!r}")
+                        break
+                if len(g) != len(c):
+                    print(f"     line count gen={len(g)} cur={len(c)}")
+        for fam in mf.get("aggregate_families", []):
+            if not fam.get("reference"):
+                continue
+            p = ROOT / fam["file"]
+            gen = render_aggregates(fam)
+            cur = extract_aggregates(p.read_text(), fam) if p.exists() else ""
+            same = gen == cur
+            ok = ok and same
+            print(f"[{'OK ' if same else 'DIFF'}] self-regen aggregates {fam['family']} "
                   f"-> {pathlib.Path(fam['file'])}")
             if not same:
                 g, c = gen.splitlines(), cur.splitlines()
@@ -3419,6 +3547,26 @@ def main() -> int:
             p.write_text(bootstrap_spanfile(text, fam, render_spanfile(fam)))
             print(f"bootstrapped spanfile {fam['family']} -> {fam['file']}")
 
+    for fam in mf.get("aggregate_families", []):
+        # Reference families are validate-only: keep the committed hand block, never
+        # emit into .in.sql (mirrors constructors/comparisons/conversions). A future
+        # non-reference family bootstraps its GENERATED-AGGREGATES region once, then
+        # splices.
+        if fam.get("reference"):
+            continue
+        p = ROOT / fam["file"]
+        text = p.read_text()
+        begin, _ = _aggregates_markers(fam["family"])
+        if args.check:
+            print(f"would {'splice' if begin in text else 'bootstrap'} aggregates "
+                  f"{fam['family']} -> {fam['file']}")
+            continue
+        if begin in text:
+            p.write_text(splice_aggregates(text, fam["family"], render_aggregates(fam)))
+            print(f"spliced aggregates {fam['family']} -> {fam['file']}")
+        else:
+            p.write_text(bootstrap_aggregates(text, fam, render_aggregates(fam)))
+            print(f"bootstrapped aggregates {fam['family']} -> {fam['file']}")
     return 0
 
 
