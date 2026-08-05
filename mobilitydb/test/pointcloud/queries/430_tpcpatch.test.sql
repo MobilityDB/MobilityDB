@@ -123,6 +123,17 @@ SELECT (:inst1) = (:inst2);
 SELECT (:inst1) <> (:inst2);
 SELECT (:inst1) < (:inst2);
 
+-- Two patches built by separate calls from the same points deduplicate into
+-- one set value, and compare equal once lifted: the comparison must not reach
+-- the bytes the serialized layout reserves past the statistics and the packed
+-- points.
+SELECT numValues(set(ARRAY[:patch1,
+  PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]),
+    PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[])])]));
+SELECT (:inst1) = tpcpatch(PC_Patch(ARRAY[
+  PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]),
+  PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[])]), '2024-01-01'::timestamptz);
+
 -------------------------------------------------------------------------------
 -- Transformations
 -------------------------------------------------------------------------------

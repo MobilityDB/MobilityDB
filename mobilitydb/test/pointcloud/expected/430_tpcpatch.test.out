@@ -229,6 +229,22 @@ SELECT (tpcpatch(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), 
  t
 (1 row)
 
+SELECT numValues(set(ARRAY[PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[])]),
+  PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]),
+    PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[])])]));
+ numvalues 
+-----------
+         1
+(1 row)
+
+SELECT (tpcpatch(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[])]), '2024-01-01'::timestamptz)) = tpcpatch(PC_Patch(ARRAY[
+  PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]),
+  PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[])]), '2024-01-01'::timestamptz);
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT tpcpatchInst(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[])]), '2024-01-01'::timestamptz)) IS NOT NULL;
  ?column? 
 ----------
