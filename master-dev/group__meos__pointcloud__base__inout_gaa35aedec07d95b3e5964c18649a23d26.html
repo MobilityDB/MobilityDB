@@ -125,6 +125,7 @@ $(function() {
   </table>
   </dd>
 </dl>
+<dl class="section note"><dt>Note</dt><dd>The bytes past the meaningful prefix are pgpointcloud's struct-tail padding, which its constructor leaves uninitialized (see the file header). They are emitted as zeros so that two pcpoints holding the same point always print the same string. The full <code>VARSIZE</code> length is still written: the deserializer checks that the byte count matches <code>sizeof(SERIALIZED_POINT)</code> - 1 + schema-&gt;size, so dropping the padding would make the output unparseable rather than merely shorter. </dd></dl>
 
 </div>
 </div>
