@@ -505,7 +505,9 @@ Notes:
 
 The finite-subset value-domain types that the temporal restriction/accessor
 surface consumes (§4a). Ordering authority: **`doc/set_span_types.xml`**. All
-catalog/doc line numbers in this section are live at master `5bca73bc8`.
+catalog/doc line numbers in this section are live at master `63f974c5f`; the
+`span_families` line numbers are at the tip of the span/set-indexes generator
+series that introduces the axis.
 
 ### 9.1 Class membership (live `meos/src/temporal/meos_catalog.c`)
 
@@ -517,7 +519,7 @@ catalog/doc line numbers in this section are live at master `5bca73bc8`.
 
 Sub-predicates: `spatialset_type()` :909-914 = geomset, geogset, npointset,
 poseset, cbufferset, h3indexset, quadbinset (**7** — the sets that carry a
-bounding box). `pointcloudset_type()` :950-954 = pcpointset, pcpatchset — NOT
+bounding box). `pointcloudset_type()` :951-955 = pcpointset, pcpatchset — NOT
 `spatialset_type()`: pointcloud sets carry no bounding box (the note at
 :944-948; the TPCBox structure is what carries pointcloud spatial bounds).
 
@@ -534,27 +536,39 @@ bounding box). `pointcloudset_type()` :950-954 = pcpointset, pcpatchset — NOT
 - **Order alone is NOT enough**: text is ordered — textset deploys the full
   `<< >> &< &>` position surface in `mobilitydb/sql/temporal/002_set_ops.in.sql`
   — but there is no textspan (`span_basetype()` excludes `T_TEXT`): a
-  contiguous interval of texts is not meaningful.
+  contiguous interval of texts is not meaningful. The same boundary shows in
+  indexing: `013_set_indexes.in.sql` lifts each set through its bounding span,
+  so its GiST/SP-GiST opclasses exist exactly for the five span-basetype sets
+  (the file contains no textset occurrence), and its GIN opclasses exist only
+  for intset, bigintset and dateset — the `span_canon_basetype()` discretes.
 
 ### 9.3 `doc/set_span_types.xml` — section-by-section
 
-| `<sect1>` (doc line) | generated? | notes |
-|---|---|---|
-| Input and Output (:102) | ✗ HAND | in/out/recv/send + asText/asBinary/FromBinary/FromHexWKB |
-| Constructors (:268) | ✗ HAND | `set()`/`span()`/`spanset()` |
-| Conversions (:325) | ✗ HAND | base↔set/span, span↔spanset, range/multirange |
-| Accessors (:442) | ✗ HAND | memSize/lower/upper/width/duration/numValues/… |
-| Transformations (:693) | ✗ HAND | shift/scale, floor/ceil/round, spans/splitN |
-| Spatial Reference System (:901, `spatialset_spatial_srid`) | ✗ HAND | spatial sets only (SRID/setSRID/transform) |
-| Set Operations (:958, `setspan_set_ops`) | ✗ HAND | union/intersection/minus, ∈/⊆ |
-| Bounding Box Operations (:1012, `setspan_topo_pos`) | ✗ HAND | sect2 Topological (:1014) · Position (:1082) · Splitting (:1162) |
-| Distance Operations (:1219, `setspan_distance`) | ✗ HAND | `<->` / setDistance — metric bases only |
-| Comparisons (:1248, `setspan_comparisons`) | ✗ HAND | btree `< <= > >=` + `=`/`<>`, cmp, hash — ALL 16 sets have them |
-| Aggregations (:1306, `setspan_agg`) | ✗ HAND | setUnion/spanUnion/extent/… |
-| Indexing (:1389, `setspan_indexing`) | ✗ HAND | GiST/SP-GiST opclasses |
+Per class: ✓ GEN = the section's SQL is generator-governed (a `reference: true`
+manifest entry re-renders it byte-for-byte under `--validate`; the `axis`
+column names the `manifest.yaml` key) · ✗ HAND = hand-maintained.
 
-Today **every row is HAND** — the value-domain layer has no template in
-`tools/codegen/inherited/templates/` and emits nothing from the generator.
+| `<sect1>` (doc line) | `Set<T>` | `Span<T>` | `SpanSet<T>` | axis |
+|---|---|---|---|---|
+| Input and Output (:102) | ✗ HAND | ✓ GEN | ✓ GEN | `span_families` (003/007 entries) |
+| Constructors (:268) | ✗ HAND | ✓ GEN | ✓ GEN | `span_families` |
+| Conversions (:325) | ✗ HAND | ✓ GEN | ✓ GEN | `span_families` |
+| Accessors (:442) | ✗ HAND | ✓ GEN | ✓ GEN | `span_families` |
+| Transformations (:693) | ✗ HAND | ✓ GEN | ✓ GEN | `span_families` |
+| Spatial Reference System (:901) | ✗ HAND (spatial sets only) | — | — | — |
+| Set Operations (:958) | ✓ GEN | ✓ GEN | ✓ GEN | `setop_families` :1874 · `span_families` (005/009) |
+| BBox Ops · Topological (:1014) | ✓ GEN | ✓ GEN | ✓ GEN | `topop_families` :2081 · `span_families` (005/009) |
+| BBox Ops · Position (:1082) | ✓ GEN (ordered sets only) | ✓ GEN | ✓ GEN | `posop_families` :2294 · `span_families` (005/009) |
+| BBox Ops · Splitting (:1162) | ✓ GEN (`spans`/`splitNSpans`/`splitEachNSpans` live in `003_span.in.sql`) | ✓ GEN | ✓ GEN | `span_families` (003/007 entries) |
+| Distance (:1219) | ✓ GEN (metric sets only) | ✓ GEN | ✓ GEN | `distance_families` :2322 · `span_families` (005/009) |
+| Comparisons (:1248) | ✓ GEN | ✓ GEN | ✓ GEN | `comparison_families` :1583 (`ops: set` entries :1669-1768) + `hash_families` :1769 · `span_families` (003/007) |
+| Aggregations (:1306) | partial — the `extent` aggregates over sets are ✓ GEN in `015_span_aggfuncs.in.sql`; `setUnion` in `001_set.in.sql` is ✗ HAND | ✓ GEN | ✓ GEN | `span_families` (015 entry) |
+| Indexing (:1389) | ✓ GEN (span-basetype sets only, §9.2) | ✓ GEN | ✓ GEN | `span_families` (011/012/013 entries) |
+
+Remaining ✗ HAND backlog for `Set<T>`: Input/Output, Constructors,
+Conversions, Accessors, Transformations, the spatial-set SRS section, and the
+`setUnion` half of Aggregations — spread over `001_set.in.sql` and the 8
+per-family set files (§9.5).
 
 ### 9.4 The template-class principle
 
@@ -568,38 +582,74 @@ datespan/tstzspan and every future instantiation. Generating per instantiation
 is the anti-pattern (see memory
 `span-spanset-tbox-are-template-classes-generate-at-template-level`).
 
+The `span_families` axis realizes this: each template file is ONE manifest
+entry whose `insts:` table maps the five instantiations to their tokens, and
+every stanza is written once against the tokens (§9.7) — a sixth
+instantiation would be one more `insts:` row, not another SQL file.
+
 ### 9.5 Per-family file map (`mobilitydb/sql/`)
 
-The template-class reference layer lives in `temporal/`:
+The template-class reference layer lives in `temporal/`; ✓ marks files whose
+whole body is generator-governed by a `span_families` entry:
 
 | class | type | ops | indexes | aggfuncs |
 |---|---|---|---|---|
-| `Set<T>` | `001_set` | `002_set_ops` | `013_set_indexes` | — |
-| `Span<T>` | `003_span` | `005_span_ops` | `011_span_indexes` | `015_span_aggfuncs` |
-| `SpanSet<T>` | `007_spanset` | `009_spanset_ops` | `012_spanset_indexes` | — |
+| `Set<T>` | `001_set` | `002_set_ops` (regions ✓ via the set axes) | `013_set_indexes` ✓ | shares `015` ✓ |
+| `Span<T>` | `003_span` ✓ | `005_span_ops` ✓ | `011_span_indexes` ✓ | `015_span_aggfuncs` ✓ |
+| `SpanSet<T>` | `007_spanset` ✓ | `009_spanset_ops` ✓ | `012_spanset_indexes` ✓ | shares `015` ✓ |
 
 plus the 8 per-family set files that instantiate `Set<T>` for the plug-in base
 types: `geo/050_geoset` · `pose/101_poseset` · `cbuffer/201_cbufferset` ·
 `h3/251_h3indexset` · `npoint/301_npointset` · `quadbin/351_quadbinset` ·
 `pointcloud/400_pcset` · `json/450_jsonbset` (the jsonb-specific path/element
-operators live separately in `json/451_jsonbset_jsonfuncs`).
+operators live separately in `json/451_jsonbset_jsonfuncs`). Their comparison /
+hash / set-operation / topological / position / distance regions are governed
+by the per-surface set axes; their I/O, constructor, conversion, accessor,
+transformation and SRS sections are the hand backlog of §9.3.
 
 ### 9.6 What the `setfamilies:` manifest axis encodes
 
-The `setfamilies:` axis in `manifest.yaml` carries one row per set type with the
-tokens a set/span template needs. It is descriptive only — no `files:` entries,
-no template, nothing emitted.
+The `setfamilies:` axis (`manifest.yaml:3012`) carries one row per set type
+with the classification tokens of `Set<T>`. It is the descriptive table whose
+flags the per-surface set axes implement as deployment gates.
 
 | token | meaning |
 |---|---|
 | `ordered` | the base has a SEMANTIC total order (int, bigint, float, text, date, timestamptz) — **this flag is what decides whether position operators are emitted at all**; the 10 unordered bases get none |
 | `posops_spelling` | `value` = `<< >> &< &>` (numbers + text) · `time` = `<<# #>> &<# #&>` (date + timestamptz); omitted when not ordered |
-| `metric` | `<->` / `setDistance` is deployed (all ordered bases except text, plus geomset/geogset/npointset/poseset/cbufferset) |
+| `metric` | `<->` / `setDistance` is deployed (all ordered bases except text, plus geomset/geogset/npointset/poseset/cbufferset) — the gate of `distance_families` :2322 |
 | `spatial` | the set is `spatialset_type()` (:909-914) — carries a bounding box and the SRS section (§9.3); pcpointset/pcpatchset are `pointcloudset_type()`, not spatial |
 
 Known deployed irregularity the axis does not model: jsonbset has the `<<`/`>>`
 pair (`json/450_jsonbset.in.sql:378-393`, `Left_set_set`/`Right_set_set`)
 without `&<`/`&>`, though jsonb has no semantic order.
+
+### 9.7 What the `span_families:` axis encodes
+
+One entry per template file (`003_span`, `005_span_ops`, `007_spanset`,
+`009_spanset_ops`, `011_span_indexes`, `012_spanset_indexes`,
+`015_span_aggfuncs`, `013_set_indexes`), rendered by `render_spanfile()`
+(`generate.py`) over the entry's `blocks:`; the region is the whole file body
+from `begin:` to EOF.
+
+| key | meaning |
+|---|---|
+| `insts:` | the per-instantiation token rows: `{v}` base value type, `{sp}` span, `{ss}` spanset, `{vs}` value set, `{rg}`/`{mr}` the PostgreSQL range/multirange counterparts — absent for float, which has no canonical range type |
+| `order:` | default emission order `[int, bigint, float, date, tstz]`; a block may override it (several WKB stanzas order tstz before date) or restrict to a subset (`only:` / a block-level `order:` such as the discrete-only GIN opclasses) |
+| `sig`/`ret`/`sym` | one CREATE FUNCTION per instantiation from the shared four-line skeleton (`templates/comparisons.sql.tmpl`) |
+| `stmt` | one arbitrary CREATE statement per instantiation (operators, opclasses, type shells, casts, aggregates) |
+| `group` | a type-outer stanza: a list of templates emitted together per instantiation — the shape of the I/O, cast and operator sections, where a type's whole cluster precedes the next type's (`sep:` declares the cluster separator) |
+| `lit` | verbatim text: banners, one-off statements, and encoded irregularities (e.g. the one-space AS indentation of `hash(intspan)`/`hash(bigintspan)` in `003_span.in.sql:1167/1171`) |
+
+`span`/`spanset` are the MEOS counterparts of PostgreSQL `range`/`multirange`
+(the `{rg}`/`{mr}` tokens carry the cast targets): the API inherits from
+PostgreSQL's range/multirange and orthogonalizes it across the MEOS base
+types. Recorded
+consequence: `span_sel`/`span_joinsel` are the `rangesel` counterpart and
+belong to the value-domain types (the RESTRICT/JOIN estimators of the set and
+span operators, e.g. `003_span.in.sql` and the `001_set.in.sql` comparison
+operators), while the `scalar*sel` estimators belong to BASE types (e.g.
+`cbuffer/200_cbuffer.in.sql`).
 
 ---
 
