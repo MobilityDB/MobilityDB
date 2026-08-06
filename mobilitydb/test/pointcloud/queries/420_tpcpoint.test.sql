@@ -162,6 +162,16 @@ SELECT minusTpcbox(:inst2, tpcbox_zt(0, 0, 0, 10, 10, 10,
 SELECT atTpcbox(:inst1, tpcbox_zt(0, 0, 0, 10, 10, 10,
   tstzspan '[2024-01-01, 2024-01-31]', 999, 0)) IS NULL;
 
+-- Boxes without every dimension: a spatial-only box restricts spatially, a
+-- temporal-only box temporally. Minus of a box covering the whole value is
+-- empty.
+SELECT numInstants(atTpcbox(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]),
+  tpcbox_z(0, 0, 0, 2, 2, 2, 1)));
+SELECT minusTpcbox(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]),
+  tpcbox_z(0, 0, 0, 10, 10, 10, 1)) IS NULL;
+SELECT numInstants(atTpcbox(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]),
+  tpcbox_t(tstzspan '[2024-01-01, 2024-01-02]', 1)));
+
 -- Restriction to the instants before / after a timestamp. The strict flag
 -- is true by default and excludes the instant at the timestamp itself, which
 -- on a sequence shows up as the inclusivity of the resulting time span.

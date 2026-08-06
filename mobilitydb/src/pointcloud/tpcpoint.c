@@ -410,23 +410,29 @@ tpcpoint_restrict_tpcbox(const Temporal *temp, const TPCBox *box,
 
   /* TPCBox shares the period + xyz + srid prefix of STBox, but inserts
    * pcid before flags, so the flags byte offsets differ.  Build the
-   * STBox explicitly with X/Y/Z/T set and GEODETIC cleared. */
+   * STBox explicitly, mirroring the box's own dimension flags, with
+   * GEODETIC cleared. */
   STBox sbox;
   memset(&sbox, 0, sizeof(STBox));
-  sbox.period = box->period;
+  bool hast = MEOS_FLAGS_GET_T(box->flags);
+  if (hast)
+    sbox.period = box->period;
   sbox.xmin = box->xmin; sbox.ymin = box->ymin; sbox.zmin = box->zmin;
   sbox.xmax = box->xmax; sbox.ymax = box->ymax; sbox.zmax = box->zmax;
   sbox.srid = box->srid;
-  MEOS_FLAGS_SET_X(sbox.flags, true);
-  MEOS_FLAGS_SET_Z(sbox.flags, true);
-  MEOS_FLAGS_SET_T(sbox.flags, true);
+  MEOS_FLAGS_SET_X(sbox.flags, MEOS_FLAGS_GET_X(box->flags));
+  MEOS_FLAGS_SET_Z(sbox.flags, MEOS_FLAGS_GET_Z(box->flags));
+  MEOS_FLAGS_SET_T(sbox.flags, hast);
   MEOS_FLAGS_SET_GEODETIC(sbox.flags, false);
 
-  /* Restrict projection by the equivalent stbox. */
+  /* Restrict projection by the equivalent stbox.  An empty restriction
+   * of the pcid-matched projection is an empty result for at and minus
+   * alike: a NULL minus means no part of the value lies outside the
+   * box. */
   Temporal *tpoint_rest = tgeo_restrict_stbox(tpoint, &sbox, border_inc, atfunc);
   pfree(tpoint);
   if (! tpoint_rest)
-    return atfunc ? NULL : temporal_copy(temp);
+    return NULL;
 
   /* Lift the result's time span back onto the ORIGINAL tpcpoint to
    * recover the full pcpoint values at each surviving instant. */
