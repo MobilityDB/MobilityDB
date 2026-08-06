@@ -275,3 +275,39 @@ SELECT appendSequence(tpcpatchSeq(ARRAY[:inst1, :inst2]),
   tpcpatchSeq(ARRAY[:inst3])) IS NOT NULL;
 
 -------------------------------------------------------------------------------
+-- Unnest
+-- One row per distinct value, with the span set on which the temporal value
+-- takes it. inst1 and inst3 carry the same patch, so the sequence of the
+-- three has two rows and the patch1 row has two spans.
+-------------------------------------------------------------------------------
+
+SELECT count(*) FROM unnest(tpcpatchSeq(ARRAY[:inst1, :inst2]));
+SELECT count(*) FROM unnest(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3]));
+SELECT numSpans((u).time) FROM
+  unnest(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3])) u
+  WHERE (u).value::text = (:patch1)::text;
+-- Every span set is contained in the time span of the temporal value.
+SELECT bool_and((u).time <@ timeSpan(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3])))
+  FROM unnest(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3])) u;
+
+-------------------------------------------------------------------------------
+-- Multidimensional tiling
+-- timeSplit cuts a temporal value into the fragments falling in each time bin.
+-------------------------------------------------------------------------------
+
+SELECT count(*) FROM
+  timeSplit(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3]), interval '1 day');
+SELECT count(*) FROM
+  timeSplit(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3]), interval '1 week');
+-- The bins start at the origin, so shifting it shifts the fragments.
+SELECT count(*) FROM timeSplit(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3]),
+  interval '2 days', timestamptz '2024-01-01');
+-- Each fragment starts at or after the bin it is labelled with, and stays
+-- inside the time span of the value it was cut from.
+SELECT bool_and(time <= startTimestamp(temp))
+  FROM timeSplit(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3]), interval '1 day');
+SELECT bool_and(timeSpan(temp) <@
+    timeSpan(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3])))
+  FROM timeSplit(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3]), interval '1 day');
+
+-------------------------------------------------------------------------------

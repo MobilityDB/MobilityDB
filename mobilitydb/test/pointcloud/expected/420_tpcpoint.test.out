@@ -440,3 +440,66 @@ SELECT appendSequence(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0,
  t
 (1 row)
 
+SELECT count(*) FROM unnest(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[]), '2024-01-02'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 3.0, 3.0]::float[]), '2024-01-03'::timestamptz)]));
+ count 
+-------
+     3
+(1 row)
+
+SELECT count(*) FROM unnest(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[]), '2024-01-02'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-03'::timestamptz)]));
+ count 
+-------
+     2
+(1 row)
+
+SELECT numSpans((u).time) FROM
+  unnest(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[]), '2024-01-02'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-03'::timestamptz)])) u
+  WHERE (u).value::text = (pcpoint(1, 1.0, 1.0, 1.0))::text;
+ numspans 
+----------
+        2
+(1 row)
+
+SELECT bool_and((u).time <@ timeSpan(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[]), '2024-01-02'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 3.0, 3.0]::float[]), '2024-01-03'::timestamptz)])))
+  FROM unnest(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[]), '2024-01-02'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 3.0, 3.0]::float[]), '2024-01-03'::timestamptz)])) u;
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT count(*) FROM
+  timeSplit(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[]), '2024-01-02'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 3.0, 3.0]::float[]), '2024-01-03'::timestamptz)]), interval '1 day');
+ count 
+-------
+     3
+(1 row)
+
+SELECT count(*) FROM
+  timeSplit(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[]), '2024-01-02'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 3.0, 3.0]::float[]), '2024-01-03'::timestamptz)]), interval '1 week');
+ count 
+-------
+     1
+(1 row)
+
+SELECT count(*) FROM timeSplit(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[]), '2024-01-02'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 3.0, 3.0]::float[]), '2024-01-03'::timestamptz)]),
+  interval '2 days', timestamptz '2024-01-01');
+ count 
+-------
+     2
+(1 row)
+
+SELECT bool_and(time <= startTimestamp(temp))
+  FROM timeSplit(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[]), '2024-01-02'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 3.0, 3.0]::float[]), '2024-01-03'::timestamptz)]), interval '1 day');
+ bool_and 
+----------
+ t
+(1 row)
+
+SELECT bool_and(timeSpan(temp) <@
+    timeSpan(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[]), '2024-01-02'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 3.0, 3.0]::float[]), '2024-01-03'::timestamptz)])))
+  FROM timeSplit(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[]), '2024-01-02'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 3.0, 3.0]::float[]), '2024-01-03'::timestamptz)]), interval '1 day');
+ bool_and 
+----------
+ t
+(1 row)
+

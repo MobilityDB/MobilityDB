@@ -36,6 +36,8 @@
 \set inst1 'tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), ''2024-01-01''::timestamptz)'
 \set inst2 'tpcpoint(PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[]), ''2024-01-02''::timestamptz)'
 \set inst3 'tpcpoint(PC_MakePoint(1, ARRAY[3.0, 3.0, 3.0]::float[]), ''2024-01-03''::timestamptz)'
+-- Same value as inst1 at a later timestamp.
+\set inst1rep 'tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), ''2024-01-03''::timestamptz)'
 
 -------------------------------------------------------------------------------
 -- Ergonomic pcpoint constructors — same value as the verbose form.
@@ -205,5 +207,41 @@ SELECT deleteTime(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]),
 SELECT appendInstant(tpcpointSeq(ARRAY[:inst1, :inst2]), :inst3) IS NOT NULL;
 SELECT appendSequence(tpcpointSeq(ARRAY[:inst1]),
   tpcpointSeq(ARRAY[:inst2, :inst3])) IS NOT NULL;
+
+-------------------------------------------------------------------------------
+-- Unnest
+-- One row per distinct value, with the span set on which the temporal value
+-- takes it. A value occurring twice yields one row whose span set has two
+-- spans, so the row count is the number of DISTINCT values.
+-------------------------------------------------------------------------------
+
+SELECT count(*) FROM unnest(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]));
+SELECT count(*) FROM unnest(tpcpointSeq(ARRAY[:inst1, :inst2, :inst1rep]));
+SELECT numSpans((u).time) FROM
+  unnest(tpcpointSeq(ARRAY[:inst1, :inst2, :inst1rep])) u
+  WHERE (u).value::text = (pcpoint(1, 1.0, 1.0, 1.0))::text;
+-- Every span set is contained in the time span of the temporal value.
+SELECT bool_and((u).time <@ timeSpan(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3])))
+  FROM unnest(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3])) u;
+
+-------------------------------------------------------------------------------
+-- Multidimensional tiling
+-- timeSplit cuts a temporal value into the fragments falling in each time bin.
+-------------------------------------------------------------------------------
+
+SELECT count(*) FROM
+  timeSplit(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]), interval '1 day');
+SELECT count(*) FROM
+  timeSplit(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]), interval '1 week');
+-- The bins start at the origin, so shifting it shifts the fragments.
+SELECT count(*) FROM timeSplit(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]),
+  interval '2 days', timestamptz '2024-01-01');
+-- Each fragment starts at or after the bin it is labelled with, and stays
+-- inside the time span of the value it was cut from.
+SELECT bool_and(time <= startTimestamp(temp))
+  FROM timeSplit(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]), interval '1 day');
+SELECT bool_and(timeSpan(temp) <@
+    timeSpan(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3])))
+  FROM timeSplit(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]), interval '1 day');
 
 -------------------------------------------------------------------------------

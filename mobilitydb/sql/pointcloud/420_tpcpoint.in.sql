@@ -585,6 +585,35 @@ CREATE FUNCTION appendSequence(tpcpoint, tpcpoint)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
+ * Unnest
+ ******************************************************************************/
+
+CREATE TYPE pcpoint_tstzspanset AS (
+  value pcpoint,
+  time tstzspanset
+);
+
+CREATE FUNCTION unnest(tpcpoint)
+  RETURNS SETOF pcpoint_tstzspanset
+  AS 'MODULE_PATHNAME', 'Temporal_unnest'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************
+ * Multidimensional tiling
+ ******************************************************************************/
+
+CREATE TYPE time_tpcpoint AS (
+  time timestamptz,
+  temp tpcpoint
+);
+
+CREATE FUNCTION timeSplit(tpcpoint, bin_width interval,
+    origin timestamptz DEFAULT '2000-01-03')
+  RETURNS setof time_tpcpoint
+  AS 'MODULE_PATHNAME', 'Temporal_time_split'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
+
+/******************************************************************************
  * Comparison / B-tree / hash
  ******************************************************************************/
 

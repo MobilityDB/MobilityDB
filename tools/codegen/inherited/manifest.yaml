@@ -3229,7 +3229,7 @@ modification_families:
   file: mobilitydb/sql/pointcloud/420_tpcpoint.in.sql
   reference: true
   begin: "\n * Modification functions\n"
-  end: "\n * Comparison / B-tree / hash\n"
+  end: "\n * Unnest\n"
   blocks:
   - lit: "/******************************************************************************\n * Modification functions\n ******************************************************************************/\n\n"
   - fns:
@@ -3250,7 +3250,7 @@ modification_families:
   file: mobilitydb/sql/pointcloud/430_tpcpatch.in.sql
   reference: true
   begin: "\n * Modification functions\n"
-  end: "\n * Comparison / B-tree / hash\n"
+  end: "\n * Unnest\n"
   blocks:
   - lit: "/******************************************************************************\n * Modification functions\n ******************************************************************************/\n\n"
   - fns:
@@ -7122,6 +7122,26 @@ tiling_families:
   - lit: "/******************************************************************************\n * Multidimensional tiling\n ******************************************************************************/\n\nCREATE TYPE time_tnpoint AS (\n  time timestamptz,\n  temp tnpoint\n);\n\n"
   - fns:
     - {sig: "timeSplit(tnpoint, bin_width interval,\n    origin timestamptz DEFAULT '2000-01-03')", ret: "setof time_tnpoint", sym: "Temporal_time_split"}
+  - lit: "\n"
+- family: tpcpoint
+  file: mobilitydb/sql/pointcloud/420_tpcpoint.in.sql
+  reference: true
+  begin: "\n * Unnest\n"
+  end: "\n * Comparison / B-tree / hash\n"
+  blocks:
+  - lit: "/******************************************************************************\n * Unnest\n ******************************************************************************/\n\nCREATE TYPE pcpoint_tstzspanset AS (\n  value pcpoint,\n  time tstzspanset\n);\n\nCREATE FUNCTION unnest(tpcpoint)\n  RETURNS SETOF pcpoint_tstzspanset\n  AS 'MODULE_PATHNAME', 'Temporal_unnest'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n/******************************************************************************\n * Multidimensional tiling\n ******************************************************************************/\n\nCREATE TYPE time_tpcpoint AS (\n  time timestamptz,\n  temp tpcpoint\n);\n\n"
+  - fns:
+    - {sig: "timeSplit(tpcpoint, bin_width interval,\n    origin timestamptz DEFAULT '2000-01-03')", ret: "setof time_tpcpoint", sym: "Temporal_time_split"}
+  - lit: "\n"
+- family: tpcpatch
+  file: mobilitydb/sql/pointcloud/430_tpcpatch.in.sql
+  reference: true
+  begin: "\n * Unnest\n"
+  end: "\n * Comparison / B-tree / hash\n"
+  blocks:
+  - lit: "/******************************************************************************\n * Unnest\n ******************************************************************************/\n\nCREATE TYPE pcpatch_tstzspanset AS (\n  value pcpatch,\n  time tstzspanset\n);\n\nCREATE FUNCTION unnest(tpcpatch)\n  RETURNS SETOF pcpatch_tstzspanset\n  AS 'MODULE_PATHNAME', 'Temporal_unnest'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n/******************************************************************************\n * Multidimensional tiling\n ******************************************************************************/\n\nCREATE TYPE time_tpcpatch AS (\n  time timestamptz,\n  temp tpcpatch\n);\n\n"
+  - fns:
+    - {sig: "timeSplit(tpcpatch, bin_width interval,\n    origin timestamptz DEFAULT '2000-01-03')", ret: "setof time_tpcpatch", sym: "Temporal_time_split"}
   - lit: "\n"
 - family: pose
   file: mobilitydb/sql/pose/102_tpose.in.sql
