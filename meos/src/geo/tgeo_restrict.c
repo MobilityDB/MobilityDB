@@ -1186,6 +1186,21 @@ tgeo_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
   if (hast && ! hasx)
     return temporal_restrict_tstzspan(temp, &box->period, atfunc);
 
+  /* For minus with a box having both the X and the T dimensions, the
+   * result is the complement of the at restriction: at every instant the
+   * value is atomically inside or outside the box, so the at and minus
+   * restrictions partition the time domain */
+  if (! atfunc && hast)
+  {
+    Temporal *atres = tgeo_restrict_stbox(temp, box, border_inc, REST_AT);
+    if (! atres)
+      return temporal_copy(temp);
+    SpanSet *ss = temporal_time(atres);
+    Temporal *result = temporal_restrict_tstzspanset(temp, ss, REST_MINUS);
+    pfree(atres); pfree(ss);
+    return result;
+  }
+
   /* Bounding box test */
   STBox box1;
   tspatial_set_stbox(temp, &box1);
