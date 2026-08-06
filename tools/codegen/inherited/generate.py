@@ -2939,12 +2939,25 @@ def bootstrap_aggregates(filetext: str, fam: dict, rendered: str) -> str:
 # _tile and 445_tpcpoint_tile delegate through dollar-quoted `LANGUAGE SQL ... AS $$
 # <body> $$;` cast chains instead of the `AS '<sym-or-select>'` one-liner — a `body`
 # fn entry (the verbatim dollar-quoted SQL) selects templates/tiling_delegate.sql
-# .tmpl instead. TWO tiling homes remain absent from the manifest because they don't
-# anchor on the "Multidimensional tiling" section header at all: 025_temporal_tile
-# groups the alpha base-type quartet (the template-class pass, the 022_temporal
-# precedent), and th3index/tquadbin run their bannerless time_<temp>/timeSplit
-# material straight after the modification block with no section header to anchor.
-# Both are classified out by omission from the data, never by a code-level skip.
+# .tmpl instead. 025_temporal_tile groups the base-type quintet (tbool/tint/tbigint/
+# tfloat/ttext) function-outer / type-inner, the 022_temporal restriction/modification
+# precedent: a `gen` chunk (ONE function expanded over the family's `types:` pool that
+# its `presence` class selects — `all` every type, `numeric` tint/tbigint/tfloat only)
+# with {TEMP}/{BASE}/{BASEFULL}/{SPAN}/{VDEF} tokens in its sig/ret (`_tiling_sub`,
+# mirroring `_restr_sub`); the non-multiplied span/tbox-generic bins()/getBin()/
+# valueTiles()/timeTiles()/valueTimeTiles()/getValueTile()/getTBoxTimeTile()/
+# getValueTimeTile() functions that precede/interleave the per-type groups appear
+# exactly once each, so they stay verbatim `lit` text rather than going through a
+# `gen`/`fns` skeleton. th3index/tquadbin carry the SAME time_<temp>/timeSplit
+# material as the single/dual-type spatial families above (a `lit` composite type +
+# one `fns` timeSplit + the spans()/splitNSpans()/splitEachNSpans() trio also present
+# in the json/tjsonb family) but run it straight after the Modification block with NO
+# "Multidimensional tiling" section header to anchor on — `begin_exact: true` anchors
+# the family's `begin` string (the literal `CREATE TYPE time_th3index AS (` text) at
+# its own index instead of backing up to a preceding `/*` comment open, mirroring the
+# comparison/hash/setops/topops/posops axes' `begin_exact`/`end_exact` convention; the
+# `end` anchor (the "Comparison functions and B-tree / hash indexing" banner) still
+# resolves by the default backward `/*` search since that IS a real banner.
 def _tiling_markers(family: str):
     begin = (f"-- GENERATED-TILING-BEGIN {family} — "
              "tools/codegen/inherited/generate.py from templates/tiling.sql.tmpl;\n"
@@ -2980,18 +2993,43 @@ def _tiling_skeleton(f: dict, fam: dict = None) -> str:
                 .replace("{LANG}", lang).rstrip("\n"))
 
 
+def _tiling_sub(text: str, t: dict) -> str:
+    """Substitute one base type's tokens into a `gen` chunk's sig/ret, mirroring
+    `_restr_sub`. {BASEFULL} before {BASE} so the longer token is never clipped by
+    the shorter one's replacement."""
+    return (text.replace("{BASEFULL}", t.get("basefull", ""))
+                .replace("{BASE}", t.get("base", ""))
+                .replace("{SPAN}", t.get("span", ""))
+                .replace("{VDEF}", t.get("vdef", ""))
+                .replace("{TEMP}", t["temp"]))
+
+
 def render_tiling(fam: dict) -> str:
     """Render one family's tiling block from its `blocks` sequence. A block is a
     verbatim `lit` (the section banners, CREATE TYPE statements and blank lines, kept
-    exactly as the hand file) or a `fns` list (the tiling CREATE FUNCTIONs rendered
+    exactly as the hand file), a `fns` list (the tiling CREATE FUNCTIONs rendered
     from the shared skeleton, packed with no blank line and closed by one trailing
-    newline). Blocks concatenate with no automatic separator — every separator is
-    baked into the `lit` blocks — so the rendered text is byte-identical to the
-    committed region (the conversion-surface model)."""
+    newline), or — for the base Temporal<T> multi-base-type mode (025_temporal_tile)
+    — a `gen` chunk (ONE function expanded over the family's `types:` pool that its
+    `presence` class selects, packed like a `fns` list, mirroring render_restrictions).
+    Blocks concatenate with no automatic separator — every separator is baked into
+    the `lit` blocks — so the rendered text is byte-identical to the committed region
+    (the conversion-surface model)."""
+    types = fam.get("types") or []
+    pools = {"all": types, "numeric": [t for t in types if t.get("numeric")]}
     out = ""
     for blk in fam["blocks"]:
         if "lit" in blk:
             out += blk["lit"]
+        elif "gen" in blk:
+            g = blk["gen"]
+            items = []
+            for t in pools[g.get("presence", "all")]:
+                f = dict(g)
+                f["sig"] = _tiling_sub(g["sig"], t)
+                f["ret"] = _tiling_sub(g.get("ret", "{TEMP}"), t)
+                items.append(_tiling_skeleton(f, fam))
+            out += "\n".join(items) + "\n"
         else:
             out += "\n".join(_tiling_skeleton(f, fam) for f in blk["fns"]) + "\n"
     return out
@@ -3002,14 +3040,16 @@ def extract_tiling(filetext: str, fam: dict) -> str:
     region exists, slice between its markers; otherwise slice from the `/*` opening
     the tiling banner (found via the family's `begin` anchor) down to EOF for a
     whole-file family, or to the `/*` opening the next section (the family's `end`
-    anchor), mirroring extract_representations."""
+    anchor), mirroring extract_representations. `begin_exact` (th3index/tquadbin,
+    whose timeSplit material has no "Multidimensional tiling" banner to back up to)
+    anchors `begin` at its own index instead, mirroring the comparison/hash axes."""
     begin, end = _tiling_markers(fam["family"])
     if begin in filetext:
         b = filetext.index(begin) + len(begin)
         e = filetext.index(end)
         return filetext[b:e]
     i = filetext.index(fam["begin"])
-    start = filetext.rfind("/*", 0, i)
+    start = i if fam.get("begin_exact") else filetext.rfind("/*", 0, i)
     if fam.get("whole_file"):
         return filetext[start:len(filetext)]
     j = filetext.index(fam["end"])
@@ -3030,7 +3070,7 @@ def bootstrap_tiling(filetext: str, fam: dict, rendered: str) -> str:
     the reference/splice path owns the region. Not run while the families are
     reference-only (validate-only)."""
     i = filetext.index(fam["begin"])
-    start = filetext.rfind("/*", 0, i)
+    start = i if fam.get("begin_exact") else filetext.rfind("/*", 0, i)
     begin_m, end_m = _tiling_markers(fam["family"])
     if fam.get("whole_file"):
         return filetext[:start] + begin_m + rendered + end_m
