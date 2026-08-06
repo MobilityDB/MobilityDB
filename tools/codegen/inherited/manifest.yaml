@@ -4897,46 +4897,46 @@ span_families:
   - lit: "\n"
   - group:
     - {stmt: "/*****************************************************************************\n * Distance operators\n *****************************************************************************/"}
-    - {stmt: "\nCREATE FUNCTION span_distance({v}, {sp})\n  RETURNS {v}\n  AS 'MODULE_PATHNAME', 'Distance_value_span'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
-    - {sig: "span_distance({sp}, {v})", ret: "{v}", sym: Distance_span_value}
-    - {sig: "span_distance({sp}, {sp})", ret: "{v}", sym: Distance_span_span}
-    - {stmt: "\nCREATE OPERATOR <-> (\n  PROCEDURE = span_distance,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = <->\n);"}
-    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = span_distance,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = <->\n);"}
-    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = span_distance,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = <->\n);"}
+    - {stmt: "\nCREATE FUNCTION distance({v}, {sp})\n  RETURNS {v}\n  AS 'MODULE_PATHNAME', 'Distance_value_span'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    - {sig: "distance({sp}, {v})", ret: "{v}", sym: Distance_span_value}
+    - {sig: "distance({sp}, {sp})", ret: "{v}", sym: Distance_span_span}
+    - {stmt: "\nCREATE OPERATOR <-> (\n  PROCEDURE = distance,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = <->\n);"}
+    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = distance,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = <->\n);"}
+    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = distance,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = <->\n);"}
     sep: "\n"
     order: [int]
   - lit: "\n"
   - group:
-    - {sig: "span_distance({v}, {sp})", ret: "{v}", sym: Distance_value_span}
-    - {sig: "span_distance({sp}, {v})", ret: "{v}", sym: Distance_span_value}
-    - {sig: "span_distance({sp}, {sp})", ret: "{v}", sym: Distance_span_span}
-    - {stmt: "\nCREATE OPERATOR <-> (\n  PROCEDURE = span_distance,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = <->\n);"}
-    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = span_distance,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = <->\n);"}
-    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = span_distance,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = <->\n);"}
+    - {sig: "distance({v}, {sp})", ret: "{v}", sym: Distance_value_span}
+    - {sig: "distance({sp}, {v})", ret: "{v}", sym: Distance_span_value}
+    - {sig: "distance({sp}, {sp})", ret: "{v}", sym: Distance_span_span}
+    - {stmt: "\nCREATE OPERATOR <-> (\n  PROCEDURE = distance,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = <->\n);"}
+    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = distance,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = <->\n);"}
+    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = distance,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = <->\n);"}
     sep: "\n"
     order: [bigint]
   - lit: "\n"
   - group:
-    - {sig: "span_distance({v}, {sp})", ret: "{v}", sym: Distance_value_span}
-    - {sig: "span_distance({sp}, {v})", ret: "{v}", sym: Distance_span_value}
-    - {sig: "span_distance({sp}, {sp})", ret: "{v}", sym: Distance_span_span}
-    - {stmt: "\nCREATE OPERATOR <-> (\n  PROCEDURE = span_distance,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = <->\n);"}
-    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = span_distance,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = <->\n);"}
-    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = span_distance,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = <->\n);"}
+    - {sig: "distance({v}, {sp})", ret: "{v}", sym: Distance_value_span}
+    - {sig: "distance({sp}, {v})", ret: "{v}", sym: Distance_span_value}
+    - {sig: "distance({sp}, {sp})", ret: "{v}", sym: Distance_span_span}
+    - {stmt: "\nCREATE OPERATOR <-> (\n  PROCEDURE = distance,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = <->\n);"}
+    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = distance,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = <->\n);"}
+    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = distance,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = <->\n);"}
     sep: "\n"
     order: [float]
-  - lit: "\nCREATE FUNCTION span_distance(date, datespan)\n  RETURNS integer\n  AS 'MODULE_PATHNAME', 'Distance_value_span'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION span_distance(datespan, date)\n  RETURNS integer\n  AS 'MODULE_PATHNAME', 'Distance_span_value'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION span_distance(datespan, datespan)\n  RETURNS integer\n  AS 'MODULE_PATHNAME', 'Distance_span_span'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n"
+  - lit: "\nCREATE FUNCTION distance(date, datespan)\n  RETURNS integer\n  AS 'MODULE_PATHNAME', 'Distance_value_span'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION distance(datespan, date)\n  RETURNS integer\n  AS 'MODULE_PATHNAME', 'Distance_span_value'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION distance(datespan, datespan)\n  RETURNS integer\n  AS 'MODULE_PATHNAME', 'Distance_span_span'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n"
   - group:
-    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = span_distance,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = <->\n);"}
-    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = span_distance,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = <->\n);"}
-    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = span_distance,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = <->\n);"}
+    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = distance,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = <->\n);"}
+    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = distance,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = <->\n);"}
+    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = distance,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = <->\n);"}
     sep: "\n"
     order: [date]
-  - lit: "\nCREATE FUNCTION span_distance(timestamptz, tstzspan)\n  RETURNS float\n  AS 'MODULE_PATHNAME', 'Distance_value_span'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION span_distance(tstzspan, timestamptz)\n  RETURNS float\n  AS 'MODULE_PATHNAME', 'Distance_span_value'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION span_distance(tstzspan, tstzspan)\n  RETURNS float\n  AS 'MODULE_PATHNAME', 'Distance_span_span'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n"
+  - lit: "\nCREATE FUNCTION distance(timestamptz, tstzspan)\n  RETURNS float\n  AS 'MODULE_PATHNAME', 'Distance_value_span'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION distance(tstzspan, timestamptz)\n  RETURNS float\n  AS 'MODULE_PATHNAME', 'Distance_span_value'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION distance(tstzspan, tstzspan)\n  RETURNS float\n  AS 'MODULE_PATHNAME', 'Distance_span_span'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n"
   - group:
-    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = span_distance,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = <->\n);"}
-    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = span_distance,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = <->\n);"}
-    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = span_distance,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = <->\n);"}
+    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = distance,\n  LEFTARG = {v}, RIGHTARG = {sp},\n  COMMUTATOR = <->\n);"}
+    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = distance,\n  LEFTARG = {sp}, RIGHTARG = {v},\n  COMMUTATOR = <->\n);"}
+    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = distance,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = <->\n);"}
     - {stmt: "\n/*****************************************************************************/"}
     sep: "\n"
     order: [tstz]
@@ -5563,34 +5563,34 @@ span_families:
     order: [tstz]
   - lit: "\n"
   - group:
-    - {sig: "span_distance({v}, {ss})", ret: "{v}", sym: Distance_value_spanset}
-    - {sig: "span_distance({sp}, {ss})", ret: "{v}", sym: Distance_span_spanset}
-    - {sig: "span_distance({ss}, {v})", ret: "{v}", sym: Distance_spanset_value}
-    - {sig: "span_distance({ss}, {sp})", ret: "{v}", sym: Distance_spanset_span}
-    - {sig: "span_distance({ss}, {ss})", ret: "{v}", sym: Distance_spanset_spanset}
-    - {stmt: "\nCREATE OPERATOR <-> (\n  PROCEDURE = span_distance,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  COMMUTATOR = <->\n);"}
-    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = span_distance,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = <->\n);"}
-    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = span_distance,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  COMMUTATOR = <->\n);"}
-    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = span_distance,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = <->\n);"}
-    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = span_distance,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = <->\n);"}
+    - {sig: "distance({v}, {ss})", ret: "{v}", sym: Distance_value_spanset}
+    - {sig: "distance({sp}, {ss})", ret: "{v}", sym: Distance_span_spanset}
+    - {sig: "distance({ss}, {v})", ret: "{v}", sym: Distance_spanset_value}
+    - {sig: "distance({ss}, {sp})", ret: "{v}", sym: Distance_spanset_span}
+    - {sig: "distance({ss}, {ss})", ret: "{v}", sym: Distance_spanset_spanset}
+    - {stmt: "\nCREATE OPERATOR <-> (\n  PROCEDURE = distance,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  COMMUTATOR = <->\n);"}
+    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = distance,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = <->\n);"}
+    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = distance,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  COMMUTATOR = <->\n);"}
+    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = distance,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = <->\n);"}
+    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = distance,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = <->\n);"}
     sep: "\n"
     order: [int, bigint, float]
-  - lit: "\nCREATE FUNCTION span_distance(date, datespanset)\n  RETURNS integer\n  AS 'MODULE_PATHNAME', 'Distance_value_spanset'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION span_distance(datespan, datespanset)\n  RETURNS integer\n  AS 'MODULE_PATHNAME', 'Distance_span_spanset'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION span_distance(datespanset, date)\n  RETURNS integer\n  AS 'MODULE_PATHNAME', 'Distance_spanset_value'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION span_distance(datespanset, datespan)\n  RETURNS integer\n  AS 'MODULE_PATHNAME', 'Distance_spanset_span'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION span_distance(datespanset, datespanset)\n  RETURNS integer\n  AS 'MODULE_PATHNAME', 'Distance_spanset_spanset'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n"
+  - lit: "\nCREATE FUNCTION distance(date, datespanset)\n  RETURNS integer\n  AS 'MODULE_PATHNAME', 'Distance_value_spanset'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION distance(datespan, datespanset)\n  RETURNS integer\n  AS 'MODULE_PATHNAME', 'Distance_span_spanset'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION distance(datespanset, date)\n  RETURNS integer\n  AS 'MODULE_PATHNAME', 'Distance_spanset_value'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION distance(datespanset, datespan)\n  RETURNS integer\n  AS 'MODULE_PATHNAME', 'Distance_spanset_span'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION distance(datespanset, datespanset)\n  RETURNS integer\n  AS 'MODULE_PATHNAME', 'Distance_spanset_spanset'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n"
   - group:
-    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = span_distance,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  COMMUTATOR = <->\n);"}
-    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = span_distance,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = <->\n);"}
-    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = span_distance,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  COMMUTATOR = <->\n);"}
-    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = span_distance,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = <->\n);"}
-    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = span_distance,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = <->\n);"}
+    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = distance,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  COMMUTATOR = <->\n);"}
+    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = distance,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = <->\n);"}
+    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = distance,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  COMMUTATOR = <->\n);"}
+    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = distance,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = <->\n);"}
+    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = distance,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = <->\n);"}
     sep: "\n"
     order: [date]
-  - lit: "\nCREATE FUNCTION time_distance(timestamptz, tstzspanset)\n  RETURNS float\n  AS 'MODULE_PATHNAME', 'Distance_value_spanset'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION time_distance(tstzspan, tstzspanset)\n  RETURNS float\n  AS 'MODULE_PATHNAME', 'Distance_span_spanset'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION time_distance(tstzspanset, timestamptz)\n  RETURNS float\n  AS 'MODULE_PATHNAME', 'Distance_spanset_value'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION time_distance(tstzspanset, tstzspan)\n  RETURNS float\n  AS 'MODULE_PATHNAME', 'Distance_spanset_span'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION time_distance(tstzspanset, tstzspanset)\n  RETURNS float\n  AS 'MODULE_PATHNAME', 'Distance_spanset_spanset'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n"
+  - lit: "\nCREATE FUNCTION distance(timestamptz, tstzspanset)\n  RETURNS float\n  AS 'MODULE_PATHNAME', 'Distance_value_spanset'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION distance(tstzspan, tstzspanset)\n  RETURNS float\n  AS 'MODULE_PATHNAME', 'Distance_span_spanset'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION distance(tstzspanset, timestamptz)\n  RETURNS float\n  AS 'MODULE_PATHNAME', 'Distance_spanset_value'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION distance(tstzspanset, tstzspan)\n  RETURNS float\n  AS 'MODULE_PATHNAME', 'Distance_spanset_span'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION distance(tstzspanset, tstzspanset)\n  RETURNS float\n  AS 'MODULE_PATHNAME', 'Distance_spanset_spanset'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n"
   - group:
-    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = time_distance,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  COMMUTATOR = <->\n);"}
-    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = time_distance,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = <->\n);"}
-    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = time_distance,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  COMMUTATOR = <->\n);"}
-    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = time_distance,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = <->\n);"}
-    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = time_distance,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = <->\n);"}
+    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = distance,\n  LEFTARG = {v}, RIGHTARG = {ss},\n  COMMUTATOR = <->\n);"}
+    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = distance,\n  LEFTARG = {sp}, RIGHTARG = {ss},\n  COMMUTATOR = <->\n);"}
+    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = distance,\n  LEFTARG = {ss}, RIGHTARG = {v},\n  COMMUTATOR = <->\n);"}
+    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = distance,\n  LEFTARG = {ss}, RIGHTARG = {sp},\n  COMMUTATOR = <->\n);"}
+    - {stmt: "CREATE OPERATOR <-> (\n  PROCEDURE = distance,\n  LEFTARG = {ss}, RIGHTARG = {ss},\n  COMMUTATOR = <->\n);"}
     - {stmt: "\n/*****************************************************************************/"}
     sep: "\n"
     order: [tstz]

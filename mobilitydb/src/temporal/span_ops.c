@@ -580,7 +580,7 @@ PG_FUNCTION_INFO_V1(Distance_value_span);
 /**
  * @ingroup mobilitydb_setspan_dist
  * @brief Return the distance between a value and a span
- * @sqlfn span_distance()
+ * @sqlfn distance()
  * @sqlop @p <->
  */
 Datum
@@ -596,7 +596,7 @@ PG_FUNCTION_INFO_V1(Distance_span_value);
 /**
  * @ingroup mobilitydb_setspan_dist
  * @brief Return the distance between a span and a value
- * @sqlfn span_distance()
+ * @sqlfn distance()
  * @sqlop @p <->
  */
 Datum
@@ -612,7 +612,7 @@ PG_FUNCTION_INFO_V1(Distance_span_span);
 /**
  * @ingroup mobilitydb_setspan_dist
  * @brief Return the distance between two spans
- * @sqlfn span_distance()
+ * @sqlfn distance()
  * @sqlop @p <->
  */
 Datum

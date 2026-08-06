@@ -2591,237 +2591,237 @@ CREATE OPERATOR * (
  * Distance operators
  *****************************************************************************/
 
-CREATE FUNCTION span_distance(integer, intspanset)
+CREATE FUNCTION distance(integer, intspanset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Distance_value_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_distance(intspan, intspanset)
+CREATE FUNCTION distance(intspan, intspanset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Distance_span_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_distance(intspanset, integer)
+CREATE FUNCTION distance(intspanset, integer)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Distance_spanset_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_distance(intspanset, intspan)
+CREATE FUNCTION distance(intspanset, intspan)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Distance_spanset_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_distance(intspanset, intspanset)
+CREATE FUNCTION distance(intspanset, intspanset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Distance_spanset_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <-> (
-  PROCEDURE = span_distance,
+  PROCEDURE = distance,
   LEFTARG = integer, RIGHTARG = intspanset,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = span_distance,
+  PROCEDURE = distance,
   LEFTARG = intspan, RIGHTARG = intspanset,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = span_distance,
+  PROCEDURE = distance,
   LEFTARG = intspanset, RIGHTARG = integer,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = span_distance,
+  PROCEDURE = distance,
   LEFTARG = intspanset, RIGHTARG = intspan,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = span_distance,
+  PROCEDURE = distance,
   LEFTARG = intspanset, RIGHTARG = intspanset,
   COMMUTATOR = <->
 );
 
-CREATE FUNCTION span_distance(bigint, bigintspanset)
+CREATE FUNCTION distance(bigint, bigintspanset)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Distance_value_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_distance(bigintspan, bigintspanset)
+CREATE FUNCTION distance(bigintspan, bigintspanset)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Distance_span_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_distance(bigintspanset, bigint)
+CREATE FUNCTION distance(bigintspanset, bigint)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Distance_spanset_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_distance(bigintspanset, bigintspan)
+CREATE FUNCTION distance(bigintspanset, bigintspan)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Distance_spanset_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_distance(bigintspanset, bigintspanset)
+CREATE FUNCTION distance(bigintspanset, bigintspanset)
   RETURNS bigint
   AS 'MODULE_PATHNAME', 'Distance_spanset_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <-> (
-  PROCEDURE = span_distance,
+  PROCEDURE = distance,
   LEFTARG = bigint, RIGHTARG = bigintspanset,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = span_distance,
+  PROCEDURE = distance,
   LEFTARG = bigintspan, RIGHTARG = bigintspanset,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = span_distance,
+  PROCEDURE = distance,
   LEFTARG = bigintspanset, RIGHTARG = bigint,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = span_distance,
+  PROCEDURE = distance,
   LEFTARG = bigintspanset, RIGHTARG = bigintspan,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = span_distance,
+  PROCEDURE = distance,
   LEFTARG = bigintspanset, RIGHTARG = bigintspanset,
   COMMUTATOR = <->
 );
 
-CREATE FUNCTION span_distance(float, floatspanset)
+CREATE FUNCTION distance(float, floatspanset)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_value_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_distance(floatspan, floatspanset)
+CREATE FUNCTION distance(floatspan, floatspanset)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_span_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_distance(floatspanset, float)
+CREATE FUNCTION distance(floatspanset, float)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_spanset_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_distance(floatspanset, floatspan)
+CREATE FUNCTION distance(floatspanset, floatspan)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_spanset_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_distance(floatspanset, floatspanset)
+CREATE FUNCTION distance(floatspanset, floatspanset)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_spanset_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <-> (
-  PROCEDURE = span_distance,
+  PROCEDURE = distance,
   LEFTARG = float, RIGHTARG = floatspanset,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = span_distance,
+  PROCEDURE = distance,
   LEFTARG = floatspan, RIGHTARG = floatspanset,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = span_distance,
+  PROCEDURE = distance,
   LEFTARG = floatspanset, RIGHTARG = float,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = span_distance,
+  PROCEDURE = distance,
   LEFTARG = floatspanset, RIGHTARG = floatspan,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = span_distance,
+  PROCEDURE = distance,
   LEFTARG = floatspanset, RIGHTARG = floatspanset,
   COMMUTATOR = <->
 );
 
-CREATE FUNCTION span_distance(date, datespanset)
+CREATE FUNCTION distance(date, datespanset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Distance_value_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_distance(datespan, datespanset)
+CREATE FUNCTION distance(datespan, datespanset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Distance_span_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_distance(datespanset, date)
+CREATE FUNCTION distance(datespanset, date)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Distance_spanset_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_distance(datespanset, datespan)
+CREATE FUNCTION distance(datespanset, datespan)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Distance_spanset_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION span_distance(datespanset, datespanset)
+CREATE FUNCTION distance(datespanset, datespanset)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Distance_spanset_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <-> (
-  PROCEDURE = span_distance,
+  PROCEDURE = distance,
   LEFTARG = date, RIGHTARG = datespanset,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = span_distance,
+  PROCEDURE = distance,
   LEFTARG = datespan, RIGHTARG = datespanset,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = span_distance,
+  PROCEDURE = distance,
   LEFTARG = datespanset, RIGHTARG = date,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = span_distance,
+  PROCEDURE = distance,
   LEFTARG = datespanset, RIGHTARG = datespan,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = span_distance,
+  PROCEDURE = distance,
   LEFTARG = datespanset, RIGHTARG = datespanset,
   COMMUTATOR = <->
 );
 
-CREATE FUNCTION time_distance(timestamptz, tstzspanset)
+CREATE FUNCTION distance(timestamptz, tstzspanset)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_value_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION time_distance(tstzspan, tstzspanset)
+CREATE FUNCTION distance(tstzspan, tstzspanset)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_span_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION time_distance(tstzspanset, timestamptz)
+CREATE FUNCTION distance(tstzspanset, timestamptz)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_spanset_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION time_distance(tstzspanset, tstzspan)
+CREATE FUNCTION distance(tstzspanset, tstzspan)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_spanset_span'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION time_distance(tstzspanset, tstzspanset)
+CREATE FUNCTION distance(tstzspanset, tstzspanset)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_spanset_spanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <-> (
-  PROCEDURE = time_distance,
+  PROCEDURE = distance,
   LEFTARG = timestamptz, RIGHTARG = tstzspanset,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = time_distance,
+  PROCEDURE = distance,
   LEFTARG = tstzspan, RIGHTARG = tstzspanset,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = time_distance,
+  PROCEDURE = distance,
   LEFTARG = tstzspanset, RIGHTARG = timestamptz,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = time_distance,
+  PROCEDURE = distance,
   LEFTARG = tstzspanset, RIGHTARG = tstzspan,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = time_distance,
+  PROCEDURE = distance,
   LEFTARG = tstzspanset, RIGHTARG = tstzspanset,
   COMMUTATOR = <->
 );
