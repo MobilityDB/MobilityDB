@@ -210,8 +210,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Append to <code>cand</code> the normalized times in (lo,hi) at which the moving disc distance to a region equals <code>dist</code>, i.e. </p>
-<p >the roots of (A - DR^2) t^2 + (B - 2 R0 DR) t + (C - R0^2) = 0 with R0 = r1 + dist </p>
+<p>Append to <code>cand</code> the normalized times in [lo,hi] at which the moving disc distance to a region equals <code>dist</code>, i.e. </p>
+<p >the roots of (A - DR^2) t^2 + (B - 2 R0 DR) t + (C - R0^2) = 0 with R0 = r1 + dist </p><dl class="section note"><dt>Note</dt><dd>The bounds are inclusive. The caller splits a segment into perpendicular/endpoint sub-regions at breakpoints (<a class="el" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a16672cb709c366ecc2dfd667cc9975c6.html#a16672cb709c366ecc2dfd667cc9975c6" title="Append the within-distance crossing times of one moving disc segment against one geometry edge,...">tcbuffersegm_edge_within_roots</a>); when the moving centre crosses the geometry exactly at a polygon vertex, the crossing time coincides exactly with the breakpoint shared by the two adjacent sub-regions, and is a genuine root of BOTH regions' equations there. A strict <code>&gt; lo &amp;&amp; &lt; hi</code> test drops it from both sides, so the true crossing silently vanishes from <code>cand</code> and the within-distance test over-extends the sub-period it reports </dd></dl>
 
 </div>
 </div>
