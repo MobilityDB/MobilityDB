@@ -85,7 +85,9 @@ CREATE CAST (tpose AS tpose) WITH FUNCTION tpose(tpose, integer) AS IMPLICIT;
 
 -- GENERATED-IO-END pose
 
-  /*****************************************************************************
+  -- GENERATED-REPRESENTATIONS-BEGIN pose — tools/codegen/inherited/generate.py from templates/representations.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.yaml (representation_families) and re-run.
+/*****************************************************************************
    * Input/output from (E)WKT, (E)WKB, HexEWKB, and MFJSON representation
    *****************************************************************************/
 
@@ -177,6 +179,8 @@ CREATE FUNCTION asHexEWKB(tpose, endianenconding text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- GENERATED-REPRESENTATIONS-END pose
 
 /******************************************************************************
  * Constructors

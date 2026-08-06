@@ -94,6 +94,8 @@ CREATE CAST (tpcpatch AS tpcpatch)
 
 -- GENERATED-IO-END pointcloud_patch
 
+-- GENERATED-REPRESENTATIONS-BEGIN pointcloud_patch — tools/codegen/inherited/generate.py from templates/representations.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.yaml (representation_families) and re-run.
 /******************************************************************************
  * WKB / HexWKB helpers
  ******************************************************************************/
@@ -139,6 +141,8 @@ CREATE FUNCTION asText(tpcpatch[])
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (tpcpatch AS text) WITH FUNCTION asText(tpcpatch);
+
+-- GENERATED-REPRESENTATIONS-END pointcloud_patch
 
 /******************************************************************************
  * Ergonomic pcpatch constructor
