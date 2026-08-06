@@ -132,6 +132,22 @@ extern int eraster_value(const Temporal *traj, const STBox *box,
 extern int araster_value(const Temporal *traj, const STBox *box,
   raster_sample_fn sample, void *ctx, const Span *vspan);
 
+/* GDAL-backed sampling of a raster file: opens the file, derives the
+ * bounding-box pre-filter from its geotransform, and thinly wraps
+ * raster_value/raster_at_value/raster_minus_value/eraster_value/
+ * araster_value with a GDALRasterIO-backed sample callback */
+
+extern Temporal *raster_value_gdal(const char *path, int band,
+  const Temporal *traj);
+extern Temporal *raster_at_value_gdal(const char *path, int band,
+  const Temporal *traj, const Span *vspan);
+extern Temporal *raster_minus_value_gdal(const char *path, int band,
+  const Temporal *traj, const Span *vspan);
+extern int eraster_value_gdal(const char *path, int band,
+  const Temporal *traj, const Span *vspan);
+extern int araster_value_gdal(const char *path, int band,
+  const Temporal *traj, const Span *vspan);
+
 extern Temporal *raster_tile_value_quadbin(const uint8_t *pixels,
   uint16_t width, uint16_t height, uint64 quadbin, MeosPixType pixtype,
   double nodata, bool has_nodata, const Temporal *traj);

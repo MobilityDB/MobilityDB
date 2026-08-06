@@ -47,6 +47,7 @@
 #include "raster/raquet.h"
 
 /* C */
+#include <math.h>
 #include <stdint.h>
 #include <string.h>
 /* GDAL */
@@ -56,6 +57,8 @@
 #include <ogr_srs_api.h>
 /* PostgreSQL */
 #include <postgres.h>
+/* liblwgeom (vendored) */
+#include <liblwgeom.h>        /* GSERIALIZED, GBOX, gserialized_get_gbox_p */
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
@@ -256,6 +259,268 @@ raquet_read_bytes(const uint8_t *data, size_t size, uint64 quadbin)
   Raquet *result = raquet_from_gdal_dataset(ds, quadbin, "in-memory raster");
   GDALClose(ds);
   VSIUnlink(vpath);
+  return result;
+}
+
+/*****************************************************************************
+ * GDAL-backed raster_value sampler: gives any MEOS caller (not just the PG
+ * raster binding) a working sample callback over a GDAL-readable raster file
+ *****************************************************************************/
+
+/**
+ * @brief Per-call state for #raster_value_gdal_sample: the raster band to
+ * read, the inverse geotransform mapping a geographic point to a pixel
+ * (col, row), the band size for bounds-checking, and the nodata sentinel
+ */
+typedef struct
+{
+  GDALRasterBandH band;
+  double inv_gt[6];
+  int xsize;
+  int ysize;
+  int has_nodata;
+  double nodata;
+} RasterValueGdalCtx;
+
+/**
+ * @brief Raster sampling callback backed by a single-pixel GDALRasterIO
+ * read: the context carries the band and the inverse geotransform, only the
+ * point argument varies per call
+ */
+static bool
+raster_value_gdal_sample(void *ctxp, const GSERIALIZED *point, double *value)
+{
+  RasterValueGdalCtx *ctx = (RasterValueGdalCtx *) ctxp;
+  GBOX gbox;
+  gserialized_get_gbox_p((GSERIALIZED *) point, &gbox);
+  double col_f, row_f;
+  GDALApplyGeoTransform(ctx->inv_gt, gbox.xmin, gbox.ymin, &col_f, &row_f);
+  int col = (int) floor(col_f);
+  int row = (int) floor(row_f);
+  if (col < 0 || col >= ctx->xsize || row < 0 || row >= ctx->ysize)
+    return false;   /* point outside the pixel grid */
+  double val;
+  if (GDALRasterIO(ctx->band, GF_Read, col, row, 1, 1, &val, 1, 1,
+      GDT_Float64, 0, 0) != CE_None)
+    return false;
+  if (ctx->has_nodata && val == ctx->nodata)
+    return false;   /* nodata pixel */
+  *value = val;
+  return true;
+}
+
+/**
+ * @brief Open a raster file via GDAL and build the #RasterValueGdalCtx and
+ * the extent STBox pre-filter shared by every raster_value_gdal wrapper
+ * @param[in] path Path to a GDAL-readable raster file
+ * @param[in] band_num Band number (1-based)
+ * @param[out] ds_out Open GDAL dataset; the caller closes it with GDALClose
+ * @param[out] ctx Sampling context, valid while @p ds_out stays open
+ * @param[out] box Bounding-box pre-filter derived from the geotransform
+ * @return true on success; on failure sets a MEOS error and returns false
+ */
+static bool
+raster_value_gdal_open(const char *path, int band_num, GDALDatasetH *ds_out,
+  RasterValueGdalCtx *ctx, STBox *box)
+{
+  GDALAllRegister();
+  GDALDatasetH ds = GDALOpen(path, GA_ReadOnly);
+  if (! ds)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Cannot open raster file: %s", path);
+    return false;
+  }
+  double gt[6];
+  if (GDALGetGeoTransform(ds, gt) != CE_None)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Raster has no geotransform: %s", path);
+    goto cleanup;
+  }
+  if (! GDALInvGeoTransform(gt, ctx->inv_gt))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Raster geotransform is not invertible: %s", path);
+    goto cleanup;
+  }
+  GDALRasterBandH rb = GDALGetRasterBand(ds, band_num);
+  if (! rb)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Raster has no band %d: %s", band_num, path);
+    goto cleanup;
+  }
+  int has_nodata = 0;
+  double nodata = GDALGetRasterNoDataValue(rb, &has_nodata);
+
+  ctx->band = rb;
+  ctx->xsize = GDALGetRasterBandXSize(rb);
+  ctx->ysize = GDALGetRasterBandYSize(rb);
+  ctx->has_nodata = has_nodata;
+  ctx->nodata = nodata;
+
+  /* Bounding box of the raster extent, from the four corners of the
+   * geotransform (correct even for a rotated geotransform) */
+  int xsize = GDALGetRasterXSize(ds);
+  int ysize = GDALGetRasterYSize(ds);
+  double xs[4], ys[4];
+  GDALApplyGeoTransform(gt, 0, 0, &xs[0], &ys[0]);
+  GDALApplyGeoTransform(gt, xsize, 0, &xs[1], &ys[1]);
+  GDALApplyGeoTransform(gt, 0, ysize, &xs[2], &ys[2]);
+  GDALApplyGeoTransform(gt, xsize, ysize, &xs[3], &ys[3]);
+  memset(box, 0, sizeof(STBox));
+  box->xmin = box->xmax = xs[0];
+  box->ymin = box->ymax = ys[0];
+  for (int i = 1; i < 4; i++)
+  {
+    if (xs[i] < box->xmin) box->xmin = xs[i];
+    if (xs[i] > box->xmax) box->xmax = xs[i];
+    if (ys[i] < box->ymin) box->ymin = ys[i];
+    if (ys[i] > box->ymax) box->ymax = ys[i];
+  }
+
+  *ds_out = ds;
+  return true;
+
+cleanup:
+  GDALClose(ds);
+  return false;
+}
+
+/**
+ * @ingroup meos_raster
+ * @brief Return the values of a raster band sampled at the instants of a
+ * trajectory, reading the raster through GDAL
+ * @param[in] path Path to a GDAL-readable raster file
+ * @param[in] band Band number (1-based)
+ * @param[in] traj Trajectory (SRID matching the raster)
+ */
+Temporal *
+raster_value_gdal(const char *path, int band, const Temporal *traj)
+{
+  VALIDATE_NOT_NULL(path, NULL); VALIDATE_NOT_NULL(traj, NULL);
+
+  GDALDatasetH ds;
+  RasterValueGdalCtx ctx;
+  STBox box;
+  if (! raster_value_gdal_open(path, band, &ds, &ctx, &box))
+    return NULL;
+  Temporal *result = raster_value(traj, &box, &raster_value_gdal_sample,
+    &ctx);
+  GDALClose(ds);
+  return result;
+}
+
+/**
+ * @ingroup meos_raster
+ * @brief Return the instants of a trajectory where the raster pixel value,
+ * read through GDAL, falls inside a float span
+ * @param[in] path Path to a GDAL-readable raster file
+ * @param[in] band Band number (1-based)
+ * @param[in] traj Trajectory (SRID matching the raster)
+ * @param[in] vspan Float value range (inclusive bounds)
+ */
+Temporal *
+raster_at_value_gdal(const char *path, int band, const Temporal *traj,
+  const Span *vspan)
+{
+  VALIDATE_NOT_NULL(path, NULL); VALIDATE_NOT_NULL(traj, NULL);
+  VALIDATE_NOT_NULL(vspan, NULL);
+
+  GDALDatasetH ds;
+  RasterValueGdalCtx ctx;
+  STBox box;
+  if (! raster_value_gdal_open(path, band, &ds, &ctx, &box))
+    return NULL;
+  Temporal *result = raster_at_value(traj, &box, &raster_value_gdal_sample,
+    &ctx, vspan);
+  GDALClose(ds);
+  return result;
+}
+
+/**
+ * @ingroup meos_raster
+ * @brief Return the instants of a trajectory where the raster pixel value,
+ * read through GDAL, falls outside a float span
+ * @param[in] path Path to a GDAL-readable raster file
+ * @param[in] band Band number (1-based)
+ * @param[in] traj Trajectory (SRID matching the raster)
+ * @param[in] vspan Float value range to exclude
+ */
+Temporal *
+raster_minus_value_gdal(const char *path, int band, const Temporal *traj,
+  const Span *vspan)
+{
+  VALIDATE_NOT_NULL(path, NULL); VALIDATE_NOT_NULL(traj, NULL);
+  VALIDATE_NOT_NULL(vspan, NULL);
+
+  GDALDatasetH ds;
+  RasterValueGdalCtx ctx;
+  STBox box;
+  if (! raster_value_gdal_open(path, band, &ds, &ctx, &box))
+    return NULL;
+  Temporal *result = raster_minus_value(traj, &box,
+    &raster_value_gdal_sample, &ctx, vspan);
+  GDALClose(ds);
+  return result;
+}
+
+/**
+ * @ingroup meos_raster
+ * @brief Return true if a trajectory ever samples a raster pixel value,
+ * read through GDAL, inside a float span
+ * @param[in] path Path to a GDAL-readable raster file
+ * @param[in] band Band number (1-based)
+ * @param[in] traj Trajectory (SRID matching the raster)
+ * @param[in] vspan Float value range
+ * @return 1 if the trajectory ever samples a value inside @p vspan, 0 if
+ * not, and -1 on error
+ */
+int
+eraster_value_gdal(const char *path, int band, const Temporal *traj,
+  const Span *vspan)
+{
+  VALIDATE_NOT_NULL(path, -1); VALIDATE_NOT_NULL(traj, -1);
+  VALIDATE_NOT_NULL(vspan, -1);
+
+  GDALDatasetH ds;
+  RasterValueGdalCtx ctx;
+  STBox box;
+  if (! raster_value_gdal_open(path, band, &ds, &ctx, &box))
+    return -1;
+  int result = eraster_value(traj, &box, &raster_value_gdal_sample, &ctx,
+    vspan);
+  GDALClose(ds);
+  return result;
+}
+
+/**
+ * @ingroup meos_raster
+ * @brief Return true if every in-raster-extent instant of a trajectory
+ * samples a raster pixel value, read through GDAL, inside a float span
+ * @param[in] path Path to a GDAL-readable raster file
+ * @param[in] band Band number (1-based)
+ * @param[in] traj Trajectory (SRID matching the raster)
+ * @param[in] vspan Float value range
+ * @return 1 if every sampled value falls inside @p vspan, 0 if not, and -1
+ * on error
+ */
+int
+araster_value_gdal(const char *path, int band, const Temporal *traj,
+  const Span *vspan)
+{
+  VALIDATE_NOT_NULL(path, -1); VALIDATE_NOT_NULL(traj, -1);
+  VALIDATE_NOT_NULL(vspan, -1);
+
+  GDALDatasetH ds;
+  RasterValueGdalCtx ctx;
+  STBox box;
+  if (! raster_value_gdal_open(path, band, &ds, &ctx, &box))
+    return -1;
+  int result = araster_value(traj, &box, &raster_value_gdal_sample, &ctx,
+    vspan);
+  GDALClose(ds);
   return result;
 }
 
