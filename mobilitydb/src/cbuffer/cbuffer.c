@@ -665,7 +665,7 @@ PG_FUNCTION_INFO_V1(Cbuffer_eq);
 /**
  * @ingroup mobilitydb_cbuffer_base_comp
  * @brief Return true if the first circular buffer is equal to the second one
- * @sqlfn cbuffer_eq()
+ * @sqlfn eq()
  * @sqlop @p =
  */
 Datum
@@ -682,7 +682,7 @@ PG_FUNCTION_INFO_V1(Cbuffer_ne);
  * @ingroup mobilitydb_cbuffer_base_comp
  * @brief Return true if the first circular buffer is different from the second
  * one
- * @sqlfn cbuffer_ne()
+ * @sqlfn ne()
  * @sqlop @p <>
  */
 Datum
@@ -700,7 +700,7 @@ PG_FUNCTION_INFO_V1(Cbuffer_cmp);
  * @brief Return -1, 0, or 1 depending on whether the first circular buffer
  * is less than, equal to, or greater than the second one
  * @note Function used for B-tree comparison
- * @sqlfn cbuffer_cmp()
+ * @sqlfn cmp()
  */
 Datum
 Cbuffer_cmp(PG_FUNCTION_ARGS)
@@ -715,7 +715,7 @@ PG_FUNCTION_INFO_V1(Cbuffer_lt);
 /**
  * @ingroup mobilitydb_cbuffer_base_comp
  * @brief Return true if the first circular buffer is less than the second one
- * @sqlfn cbuffer_lt()
+ * @sqlfn lt()
  * @sqlop @p <
  */
 Datum
@@ -732,7 +732,7 @@ PG_FUNCTION_INFO_V1(Cbuffer_le);
  * @ingroup mobilitydb_cbuffer_base_comp
  * @brief Return true if the first circular buffer is less than or equal to the
  * second one
- * @sqlfn cbuffer_le()
+ * @sqlfn le()
  * @sqlop @p <=
  */
 Datum
@@ -749,7 +749,7 @@ PG_FUNCTION_INFO_V1(Cbuffer_ge);
  * @ingroup mobilitydb_cbuffer_base_comp
  * @brief Return true if the first circular buffer is greater than or equal to
  * the second one
- * @sqlfn cbuffer_ge()
+ * @sqlfn ge()
  * @sqlop @p >=
  */
 Datum
@@ -766,7 +766,7 @@ PG_FUNCTION_INFO_V1(Cbuffer_gt);
  * @ingroup mobilitydb_cbuffer_base_comp
  * @brief Return true if the first circular buffer is greater than the second
  * one
- * @sqlfn cbuffer_gt()
+ * @sqlfn gt()
  * @sqlop @p >
  */
 Datum

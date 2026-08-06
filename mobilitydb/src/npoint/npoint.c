@@ -797,7 +797,7 @@ PG_FUNCTION_INFO_V1(Npoint_eq);
 /**
  * @ingroup mobilitydb_npoint_base_comp
  * @brief Return true if the first network point is equal to the second one
- * @sqlfn npoint_eq()
+ * @sqlfn eq()
  * @sqlop @p =
  */
 Datum
@@ -813,7 +813,7 @@ PG_FUNCTION_INFO_V1(Npoint_ne);
 /**
  * @ingroup mobilitydb_npoint_base_comp
  * @brief Return true if the first network point is not equal to the second one
- * @sqlfn npoint_ne()
+ * @sqlfn ne()
  * @sqlop @p <>
  */
 Datum
@@ -831,7 +831,7 @@ PG_FUNCTION_INFO_V1(Npoint_cmp);
  * @brief Return -1, 0, or 1 depending on whether the first network point
  * is less than, equal to, or greater than the second one
  * @note Function used for B-tree comparison
- * @sqlfn npoint_cmp()
+ * @sqlfn cmp()
  */
 Datum
 Npoint_cmp(PG_FUNCTION_ARGS)
@@ -846,7 +846,7 @@ PG_FUNCTION_INFO_V1(Npoint_lt);
 /**
  * @ingroup mobilitydb_npoint_base_comp
  * @brief Return true if the first network point is less than the second one
- * @sqlfn npoint_lt()
+ * @sqlfn lt()
  * @sqlop @p <
  */
 Datum
@@ -863,7 +863,7 @@ PG_FUNCTION_INFO_V1(Npoint_le);
  * @ingroup mobilitydb_npoint_base_comp
  * @brief Return true if the first network point is less than or equal to the
  * second one
- * @sqlfn npoint_le()
+ * @sqlfn le()
  * @sqlop @p <=
  */
 Datum
@@ -880,7 +880,7 @@ PG_FUNCTION_INFO_V1(Npoint_ge);
  * @ingroup mobilitydb_npoint_base_comp
  * @brief Return true if the first network point is greater than or equal to the
  * second one
- * @sqlfn npoint_ge()
+ * @sqlfn ge()
  * @sqlop @p >=
  */
 Datum
@@ -896,7 +896,7 @@ PG_FUNCTION_INFO_V1(Npoint_gt);
 /**
  * @ingroup mobilitydb_npoint_base_comp
  * @brief Return true if the first network point is greater than the second one
- * @sqlfn npoint_gt()
+ * @sqlfn gt()
  * @sqlop @p >
  */
 Datum
@@ -914,7 +914,7 @@ PG_FUNCTION_INFO_V1(Nsegment_eq);
 /**
  * @ingroup mobilitydb_npoint_base_comp
  * @brief Return true if the first network segment is equal to the second one
- * @sqlfn nsegment_eq()
+ * @sqlfn eq()
  * @sqlop @p =
  */
 Datum
@@ -930,7 +930,7 @@ PG_FUNCTION_INFO_V1(Nsegment_ne);
 /**
  * @ingroup mobilitydb_npoint_base_comp
  * @brief Return true if the first network segment is not equal to the second one
- * @sqlfn nsegment_ne()
+ * @sqlfn ne()
  * @sqlop @p <>
  */
 Datum
@@ -947,7 +947,7 @@ PG_FUNCTION_INFO_V1(Nsegment_cmp);
  * @ingroup mobilitydb_npoint_base_comp
  * @brief Return -1, 0, or 1 depending on whether the first network segment
  * is less than, equal to, or greater than the second one
- * @sqlfn nsegment_cmp()
+ * @sqlfn cmp()
  */
 Datum
 Nsegment_cmp(PG_FUNCTION_ARGS)
@@ -964,7 +964,7 @@ PG_FUNCTION_INFO_V1(Nsegment_lt);
 /**
  * @ingroup mobilitydb_npoint_base_comp
  * @brief Return true if the first network segment is less than the second one
- * @sqlfn nsegment_lt()
+ * @sqlfn lt()
  * @sqlop @p <
  */
 Datum
@@ -981,7 +981,7 @@ PG_FUNCTION_INFO_V1(Nsegment_le);
  * @ingroup mobilitydb_npoint_base_comp
  * @brief Return true if the first network segment is less than or equal to the
  * second one
- * @sqlfn nsegment_le()
+ * @sqlfn le()
  * @sqlop @p <=
  */
 Datum
@@ -998,7 +998,7 @@ PG_FUNCTION_INFO_V1(Nsegment_ge);
  * @ingroup mobilitydb_npoint_base_comp
  * @brief Return true if the first network segment is greater than or equal to the
  * second one
- * @sqlfn nsegment_ge()
+ * @sqlfn ge()
  * @sqlop @p >=
  */
 Datum
@@ -1014,7 +1014,7 @@ PG_FUNCTION_INFO_V1(Nsegment_gt);
 /**
  * @ingroup mobilitydb_npoint_base_comp
  * @brief Return true if the first network segment is greater than the second one
- * @sqlfn nsegment_gt()
+ * @sqlfn gt()
  * @sqlop @p >
  */
 Datum

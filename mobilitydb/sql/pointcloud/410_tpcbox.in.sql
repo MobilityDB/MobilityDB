@@ -284,52 +284,52 @@ CREATE OPERATOR -|- (
  * Comparison / B-tree
  ******************************************************************************/
 
-CREATE FUNCTION tpcbox_eq(tpcbox, tpcbox)
+CREATE FUNCTION eq(tpcbox, tpcbox)
   RETURNS boolean AS 'MODULE_PATHNAME', 'Tpcbox_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tpcbox_ne(tpcbox, tpcbox)
+CREATE FUNCTION ne(tpcbox, tpcbox)
   RETURNS boolean AS 'MODULE_PATHNAME', 'Tpcbox_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tpcbox_lt(tpcbox, tpcbox)
+CREATE FUNCTION lt(tpcbox, tpcbox)
   RETURNS boolean AS 'MODULE_PATHNAME', 'Tpcbox_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tpcbox_le(tpcbox, tpcbox)
+CREATE FUNCTION le(tpcbox, tpcbox)
   RETURNS boolean AS 'MODULE_PATHNAME', 'Tpcbox_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tpcbox_gt(tpcbox, tpcbox)
+CREATE FUNCTION gt(tpcbox, tpcbox)
   RETURNS boolean AS 'MODULE_PATHNAME', 'Tpcbox_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tpcbox_ge(tpcbox, tpcbox)
+CREATE FUNCTION ge(tpcbox, tpcbox)
   RETURNS boolean AS 'MODULE_PATHNAME', 'Tpcbox_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tpcbox_cmp(tpcbox, tpcbox)
+CREATE FUNCTION cmp(tpcbox, tpcbox)
   RETURNS integer AS 'MODULE_PATHNAME', 'Tpcbox_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR = (
-  LEFTARG = tpcbox, RIGHTARG = tpcbox, PROCEDURE = tpcbox_eq,
+  LEFTARG = tpcbox, RIGHTARG = tpcbox, PROCEDURE = eq,
   COMMUTATOR = =, NEGATOR = <>,
   RESTRICT = eqsel, JOIN = eqjoinsel
 );
 CREATE OPERATOR <> (
-  LEFTARG = tpcbox, RIGHTARG = tpcbox, PROCEDURE = tpcbox_ne,
+  LEFTARG = tpcbox, RIGHTARG = tpcbox, PROCEDURE = ne,
   COMMUTATOR = <>, NEGATOR = =,
   RESTRICT = neqsel, JOIN = neqjoinsel
 );
 CREATE OPERATOR < (
-  LEFTARG = tpcbox, RIGHTARG = tpcbox, PROCEDURE = tpcbox_lt,
+  LEFTARG = tpcbox, RIGHTARG = tpcbox, PROCEDURE = lt,
   COMMUTATOR = >, NEGATOR = >=
 );
 CREATE OPERATOR <= (
-  LEFTARG = tpcbox, RIGHTARG = tpcbox, PROCEDURE = tpcbox_le,
+  LEFTARG = tpcbox, RIGHTARG = tpcbox, PROCEDURE = le,
   COMMUTATOR = >=, NEGATOR = >
 );
 CREATE OPERATOR >= (
-  LEFTARG = tpcbox, RIGHTARG = tpcbox, PROCEDURE = tpcbox_ge,
+  LEFTARG = tpcbox, RIGHTARG = tpcbox, PROCEDURE = ge,
   COMMUTATOR = <=, NEGATOR = <
 );
 CREATE OPERATOR > (
-  LEFTARG = tpcbox, RIGHTARG = tpcbox, PROCEDURE = tpcbox_gt,
+  LEFTARG = tpcbox, RIGHTARG = tpcbox, PROCEDURE = gt,
   COMMUTATOR = <, NEGATOR = <=
 );
 
@@ -340,7 +340,7 @@ CREATE OPERATOR CLASS tpcbox_btree_ops
     OPERATOR  3  =,
     OPERATOR  4  >=,
     OPERATOR  5  >,
-    FUNCTION  1  tpcbox_cmp(tpcbox, tpcbox);
+    FUNCTION  1  cmp(tpcbox, tpcbox);
 
 /******************************************************************************
  * Position predicates — strict + overlap variants across X / Y / Z / time.
