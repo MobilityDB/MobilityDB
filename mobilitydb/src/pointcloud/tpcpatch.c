@@ -198,8 +198,11 @@ pcpatch_passes_tpcbox(const Pcpatch *pa, TimestampTz t, const TPCBox *box,
 {
   if (pa->pcid != box->pcid)
     return false;
-  if (! contains_span_timestamptz(&box->period, t))
+  if (MEOS_FLAGS_GET_T(box->flags) &&
+      ! contains_span_timestamptz(&box->period, t))
     return false;
+  if (! MEOS_FLAGS_GET_X(box->flags))
+    return true;
   /* PCBOUNDS layout: {xmin, xmax, ymin, ymax} — see pc_api.h. */
   double pxmin = pa->bounds[0], pxmax = pa->bounds[1];
   double pymin = pa->bounds[2], pymax = pa->bounds[3];
