@@ -3347,6 +3347,73 @@ conversion_families:
     - {sig: "geometry(trgeometry)", ret: geometry, sym: Trgeometry_to_geom}
   - lit: "\nCREATE CAST (trgeometry AS geometry) WITH FUNCTION geometry(trgeometry);\n\n"
 restriction_families:
+# The base Temporal<T> file declares the restriction surface for EVERY base type,
+# function-outer / type-inner; `types:` (per-base-type tokens) selects the `gen`
+# chunk mode, whose presence classes gate each function on the accessor-mode flags:
+# every type carries the value/time restrictions, `orderable` (tint/tbigint/tfloat/
+# ttext) adds atValues/minusValues and the min/max reductions, `numeric`
+# (tint/tbigint/tfloat) adds the span/spanset/tbox restrictions.
+- family: temporal
+  file: mobilitydb/sql/temporal/022_temporal.in.sql
+  reference: true
+  begin: "\n * Restriction functions\n"
+  end: "\n * Modification Functions\n"
+  types:
+  - {temp: tbool,   base: boolean}
+  - {temp: tint,    base: integer, set: intset,    span: intspan,    spanset: intspanset,    numeric: true, orderable: true}
+  - {temp: tbigint, base: bigint,  set: bigintset, span: bigintspan, spanset: bigintspanset, numeric: true, orderable: true}
+  - {temp: tfloat,  base: float,   set: floatset,  span: floatspan,  spanset: floatspanset,  numeric: true, orderable: true}
+  - {temp: ttext,   base: text,    set: textset,   orderable: true}
+  blocks:
+  - lit: "/*****************************************************************************\n * Restriction functions\n *****************************************************************************/\n\n"
+  - gen: {sig: "atValue({TEMP}, {BASE})", sym: Temporal_at_value}
+  - lit: "\n"
+  - gen: {sig: "minusValue({TEMP}, {BASE})", sym: Temporal_minus_value}
+  - lit: "\n"
+  - gen: {sig: "atValues({TEMP}, {SET})", sym: Temporal_at_values, presence: orderable}
+  - lit: "\n"
+  - gen: {sig: "minusValues({TEMP}, {SET})", sym: Temporal_minus_values, presence: orderable}
+  - lit: "\n"
+  - gen: {sig: "atSpan({TEMP}, {SPAN})", sym: Tnumber_at_span, presence: numeric}
+  - lit: "\n"
+  - gen: {sig: "minusSpan({TEMP}, {SPAN})", sym: Tnumber_minus_span, presence: numeric}
+  - lit: "\n"
+  - gen: {sig: "atSpanset({TEMP}, {SPANSET})", sym: Tnumber_at_spanset, presence: numeric}
+  - lit: "\n"
+  - gen: {sig: "minusSpanset({TEMP}, {SPANSET})", sym: Tnumber_minus_spanset, presence: numeric}
+  - lit: "\n"
+  - gen: {sig: "atMin({TEMP})", sym: Temporal_at_min, presence: orderable}
+  - lit: "\n"
+  - gen: {sig: "minusMin({TEMP})", sym: Temporal_minus_min, presence: orderable}
+  - lit: "\n"
+  - gen: {sig: "atMax({TEMP})", sym: Temporal_at_max, presence: orderable}
+  - lit: "\n"
+  - gen: {sig: "minusMax({TEMP})", sym: Temporal_minus_max, presence: orderable}
+  - lit: "\n"
+  - gen: {sig: "atTbox({TEMP}, tbox)", sym: Tnumber_at_tbox, presence: numeric}
+  - lit: "\n"
+  - gen: {sig: "minusTbox({TEMP}, tbox)", sym: Tnumber_minus_tbox, presence: numeric}
+  - lit: "\n"
+  - gen: {sig: "atTime({TEMP}, timestamptz)", sym: Temporal_at_timestamptz}
+  - lit: "\n"
+  - gen: {sig: "minusTime({TEMP}, timestamptz)", sym: Temporal_minus_timestamptz}
+  - lit: "\n"
+  - gen: {sig: "atTime({TEMP}, tstzset)", sym: Temporal_at_tstzset}
+  - lit: "\n"
+  - gen: {sig: "minusTime({TEMP}, tstzset)", sym: Temporal_minus_tstzset}
+  - lit: "\n"
+  - gen: {sig: "atTime({TEMP}, tstzspan)", sym: Temporal_at_tstzspan}
+  - lit: "\n"
+  - gen: {sig: "minusTime({TEMP}, tstzspan)", sym: Temporal_minus_tstzspan}
+  - lit: "\n"
+  - gen: {sig: "atTime({TEMP}, tstzspanset)", sym: Temporal_at_tstzspanset}
+  - lit: "\n"
+  - gen: {sig: "minusTime({TEMP}, tstzspanset)", sym: Temporal_minus_tstzspanset}
+  - lit: "\n"
+  - gen: {sig: "beforeTimestamp({TEMP}, timestamptz, strict bool DEFAULT TRUE)", sym: Temporal_before_timestamptz}
+  - lit: "\n"
+  - gen: {sig: "afterTimestamp({TEMP}, timestamptz, strict bool DEFAULT TRUE)", sym: Temporal_after_timestamptz}
+  - lit: "\n"
 - family: geo
   file: mobilitydb/sql/geo/052_tgeo.in.sql
   reference: true

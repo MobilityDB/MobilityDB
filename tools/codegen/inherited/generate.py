@@ -2263,6 +2263,18 @@ def bootstrap_conversions(filetext: str, fam: dict, rendered: str) -> str:
 # the `lit` blocks, the funcs end with their own trailing newline), so the rendered text
 # is byte-identical to the committed region — the conversion-surface model.
 #
+# The base Temporal<T> file (022_temporal) declares the SAME restriction chunk for EVERY
+# base type, function-outer / type-inner (all five types' atValue, then all five types'
+# minusValue, ...), with three presence classes: every type carries the value/time
+# restrictions, only the orderable types (`orderable: true` — tint/tbigint/tfloat/ttext)
+# carry atValues/minusValues and the min/max reductions, and only the numeric types
+# (`numeric: true` — tint/tbigint/tfloat) carry the span/spanset/tbox restrictions —
+# the same per-base-type `types:` token table and presence flags as the accessor
+# multi-base-type mode. A `gen` block is one such chunk: its `sig`/`ret` carry
+# {TEMP}/{BASE}/{SET}/{SPAN}/{SPANSET} tokens expanded once per type in the pool that
+# its `presence` (all/orderable/numeric, default all) selects. Single-type families
+# spell their wrappers explicitly in `fns` blocks and are untouched by this mode.
+#
 # `--validate` extracts the committed hand block by section-header ANCHORS (marker-aware,
 # mirroring extract_conversions: sliced by GENERATED-RESTRICTIONS markers once they exist,
 # else by the Restriction banner header down to the `/*` of the next non-restriction
@@ -2288,18 +2300,41 @@ def _restr_skeleton(sig: str, ret: str, sym: str, strict: bool, pre: str) -> str
                 .replace("{STRICT}", " STRICT" if strict else "").rstrip("\n"))
 
 
+def _restr_sub(text: str, t: dict) -> str:
+    """Substitute one base type's tokens into a `gen` chunk's sig/ret. {SPANSET} before
+    {SPAN} so the longer token is never clipped by the shorter one's replacement."""
+    return (text.replace("{SPANSET}", t.get("spanset", ""))
+                .replace("{SPAN}", t.get("span", ""))
+                .replace("{SET}", t.get("set", ""))
+                .replace("{BASE}", t.get("base", ""))
+                .replace("{TEMP}", t["temp"]))
+
+
 def render_restrictions(fam: dict) -> str:
     """Render one family's restriction block from its `blocks` sequence. A block is a
     verbatim `lit` (the section banners, blank lines, commented-out placeholders and any
-    multi-line-signature wrapper, kept exactly as the hand file) or a `fns` list (the
+    multi-line-signature wrapper, kept exactly as the hand file), a `fns` list (the
     restriction CREATE FUNCTIONs rendered from the shared skeleton, packed with no blank
-    line and closed by one trailing newline). Blocks concatenate with no automatic
-    separator — every separator is baked into the `lit` blocks — so the rendered text is
-    byte-identical to the committed region (the conversion-surface model)."""
+    line and closed by one trailing newline), or — for the base Temporal<T> multi-base-type
+    mode — a `gen` chunk (ONE function expanded over the family's `types:` pool that its
+    `presence` class selects, packed like a `fns` list). Blocks concatenate with no
+    automatic separator — every separator is baked into the `lit` blocks — so the rendered
+    text is byte-identical to the committed region (the conversion-surface model)."""
+    types = fam.get("types") or []
+    pools = {"all": types,
+             "numeric": [t for t in types if t.get("numeric")],
+             "orderable": [t for t in types if t.get("orderable")]}
     out = ""
     for blk in fam["blocks"]:
         if "lit" in blk:
             out += blk["lit"]
+        elif "gen" in blk:
+            g = blk["gen"]
+            out += "\n".join(_restr_skeleton(_restr_sub(g["sig"], t),
+                                             _restr_sub(g.get("ret", "{TEMP}"), t),
+                                             g["sym"], g.get("strict", True),
+                                             g.get("pre", ""))
+                             for t in pools[g.get("presence", "all")]) + "\n"
         else:
             out += "\n".join(_restr_skeleton(f["sig"], f["ret"], f["sym"],
                                              f.get("strict", True), f.get("pre", ""))
