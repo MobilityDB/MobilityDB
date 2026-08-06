@@ -1357,10 +1357,6 @@ representation_families:
     - FromBinary
     - FromHexWKB
     - FromMFJSON
-# tjsonb interleaves CREATE CASTs with the representation wrappers (text <-> tjsonb
-# round-trip via FromText/asText, with one commented-out jsonb cast kept verbatim);
-# its asMFJSON is the one single-line signature (mfjson_oneline) and FromText backs
-# onto the plain Temporal_from_text (no spatial E-forms).
 - family: json
   file: mobilitydb/sql/json/452_tjsonb.in.sql
   reference: true
@@ -1379,7 +1375,7 @@ representation_families:
   - lit: "/*****************************************************************************\n * Input/output from WKT, WKB, HexWKB, and MFJSON representation\n *****************************************************************************/"
   - ops:
     - FromText
-  - lit: "CREATE CAST (text AS tjsonb) WITH FUNCTION tjsonbFromText(text);"
+  - lit: CREATE CAST (text AS tjsonb) WITH FUNCTION tjsonbFromText(text);
   - ops:
     - FromBinary
     - FromHexWKB
@@ -1387,15 +1383,13 @@ representation_families:
   - lit: /*****************************************************************************/
   - ops:
     - asText
-  - lit: "-- CREATE CAST (jsonb AS text) WITH FUNCTION asText(jsonb);\nCREATE CAST (tjsonb AS text) WITH FUNCTION asText(tjsonb);"
+  - lit: '-- CREATE CAST (jsonb AS text) WITH FUNCTION asText(jsonb);
+
+      CREATE CAST (tjsonb AS text) WITH FUNCTION asText(tjsonb);'
   - ops:
     - asMFJSON
     - asBinary
     - asHexWKB
-# tpose interleaves its GeoPose exchange-format trio (tposeFromGeoPose / asGeoPose /
-# applyPose, pose-specific OGC GeoPose I/O, not part of the inherited surface) between
-# the From-text and From-binary runs; the section banner is indented by two spaces in
-# the hand file. Both are kept verbatim as lits.
 - family: pose
   file: mobilitydb/sql/pose/102_tpose.in.sql
   reference: true
@@ -1432,11 +1426,6 @@ representation_families:
     - asBinary
     - asEWKB
     - asHexEWKB
-# The pointcloud types have no coordinate text form (a pcpoint/pcpatch prints as the
-# hex-WKB of its serialized form), so asText takes no maxdecimaldigits and there is
-# no FromText/FromMFJSON (asMFJSON is output-only) — a base-type capability. The
-# WKB run and the rationale comments abut their functions with no blank line (fused
-# lit items), reproduced verbatim.
 - family: pointcloud
   file: mobilitydb/sql/pointcloud/420_tpcpoint.in.sql
   reference: true
@@ -1456,11 +1445,25 @@ representation_families:
       - FromHexWKB
       - asBinary
       - asHexWKB
-      - lit: "-- asMFJSON is output-only: the JSON form summarises a tpcpoint by\n-- (coordinates, datetimes) without carrying the schema (pcid + dim\n-- layout) needed to reconstruct the value, so a parse-back path is\n-- intentionally not exposed. Use asBinary / tpcpointFromBinary or\n-- asHexWKB / tpcpointFromHexWKB for round-trip."
+      - lit: '-- asMFJSON is output-only: the JSON form summarises a tpcpoint by
+
+          -- (coordinates, datetimes) without carrying the schema (pcid + dim
+
+          -- layout) needed to reconstruct the value, so a parse-back path is
+
+          -- intentionally not exposed. Use asBinary / tpcpointFromBinary or
+
+          -- asHexWKB / tpcpointFromHexWKB for round-trip.'
       - asMFJSON
-    - - lit: "-- asText takes no maxdecimaldigits argument: a pcpoint prints as the hex-WKB\n-- of its serialized form, which has no decimal places to round. This mirrors\n-- th3index, the other spatial temporal type whose base value has no\n-- coordinate text form."
+    - - lit: '-- asText takes no maxdecimaldigits argument: a pcpoint prints as the hex-WKB
+
+          -- of its serialized form, which has no decimal places to round. This mirrors
+
+          -- th3index, the other spatial temporal type whose base value has no
+
+          -- coordinate text form.'
       - asText
-  - lit: "CREATE CAST (tpcpoint AS text) WITH FUNCTION asText(tpcpoint);"
+  - lit: CREATE CAST (tpcpoint AS text) WITH FUNCTION asText(tpcpoint);
 - family: pointcloud_patch
   file: mobilitydb/sql/pointcloud/430_tpcpatch.in.sql
   reference: true
@@ -1480,24 +1483,71 @@ representation_families:
       - FromHexWKB
       - asBinary
       - asHexWKB
-      - lit: "-- asMFJSON is output-only: the JSON form summarises a tpcpatch by\n-- (pcid, npoints, bounds) per instant without carrying the per-point\n-- payload, so a parse-back path is intentionally not exposed. Use\n-- asBinary / tpcpatchFromBinary or asHexWKB / tpcpatchFromHexWKB for\n-- round-trip."
-      - asMFJSON
-    - - lit: "-- asText takes no maxdecimaldigits argument: a pcpatch prints as the hex-WKB\n-- of its serialized form, which has no decimal places to round. This mirrors\n-- th3index, the other spatial temporal type whose base value has no\n-- coordinate text form."
-      - asText
-  - lit: "CREATE CAST (tpcpatch AS text) WITH FUNCTION asText(tpcpatch);"
+      - lit: '-- asMFJSON is output-only: the JSON form summarises a tpcpatch by
 
-# ---------------------------------------------------------------------------
-# Constructors sub-family (SQL, per-family region-in-file).
-# <temp>(<base>, timestamptz|tstzset|tstzspan|tstzspanset) + the array constructors
-# <temp>Seq/<temp>SeqSet/<temp>SeqSetGaps, all pure wiring to the generic
-# Tinstant_constructor / Tsequence_from_base_* / Tsequenceset_from_base_* /
-# Tsequence_constructor / Tsequenceset_constructor / Tsequenceset_constructor_gaps
-# kernels. Built from ONE skeleton (templates/constructors.sql.tmpl); the per-family
-# op sequence, interpolation default, base-span interp arg, SeqSetGaps arg list +
-# strictness, section-header literals and per-op/per-type symbol + return overrides
-# are data here. `--validate` extracts the committed hand block by section-header
-# anchors (begin/end) so the deployed .in.sql is untouched while the template is
-# proven.
+          -- (pcid, npoints, bounds) per instant without carrying the per-point
+
+          -- payload, so a parse-back path is intentionally not exposed. Use
+
+          -- asBinary / tpcpatchFromBinary or asHexWKB / tpcpatchFromHexWKB for
+
+          -- round-trip.'
+      - asMFJSON
+    - - lit: '-- asText takes no maxdecimaldigits argument: a pcpatch prints as the hex-WKB
+
+          -- of its serialized form, which has no decimal places to round. This mirrors
+
+          -- th3index, the other spatial temporal type whose base value has no
+
+          -- coordinate text form.'
+      - asText
+  - lit: CREATE CAST (tpcpatch AS text) WITH FUNCTION asText(tpcpatch);
+- family: tpoint
+  file: mobilitydb/sql/geo/053_tpoint_inout.in.sql
+  reference: true
+  whole_file: true
+  begin: "\n * Input\n"
+  temps:
+  - temp: tgeompoint
+    maxdd: true
+  - temp: tgeogpoint
+    maxdd: true
+  syms:
+    FromText: Tpoint_from_ewkt
+    FromEWKT: Tpoint_from_ewkt
+    asText: Tspatial_as_text
+    asEWKT: Tspatial_as_ewkt
+    asEWKB: Tspatial_as_ewkb
+    asHexEWKB: Tspatial_as_hexewkb
+  arrsyms:
+    asText: Spatialarr_as_text
+    asEWKT: Spatialarr_as_ewkt
+  blocks:
+  - lit: "/*****************************************************************************\n * Input\n *****************************************************************************/"
+  - ops:
+    - FromText
+    - FromEWKT
+    - FromMFJSON
+    - FromBinary
+    - FromEWKB
+    - FromHexEWKB
+  - lit: "/*****************************************************************************\n * Output\n *****************************************************************************/"
+  - ops:
+    - asText
+  - lit: "CREATE FUNCTION asText(geometry[], maxdecimaldigits int4 DEFAULT 15)\n  RETURNS text[]\n  AS 'MODULE_PATHNAME', 'Spatialarr_as_text'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION asText(geography[], maxdecimaldigits int4 DEFAULT 15)\n  RETURNS text[]\n  AS 'MODULE_PATHNAME', 'Spatialarr_as_text'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"
+  - ops:
+    - asEWKT
+  - lit: "-- Single base geometry/geography EWKT. In the PostgreSQL extension this rewrites\n-- to PostGIS ST_AsEWKT; the standalone MEOS library and the generated bindings\n-- back the same asEWKT(geometry) surface with the geo_as_ewkt() kernel. Together\n-- with transform(geometry, integer) this lets one portable generator/suite use\n-- MobilityDB names (asEWKT, transform) instead of PostGIS-only ST_AsEWKT/ST_Transform.\nCREATE FUNCTION asEWKT(geometry, maxdecimaldigits int4 DEFAULT 15)\n  RETURNS text\n  AS 'SELECT @extschema@.ST_AsEWKT($1, $2)'\n  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION asEWKT(geography, maxdecimaldigits int4 DEFAULT 15)\n  RETURNS text\n  AS 'SELECT @extschema@.ST_AsEWKT($1, $2)'\n  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;\n\nCREATE FUNCTION asEWKT(geometry[], maxdecimaldigits int4 DEFAULT 15)\n  RETURNS text[]\n  AS 'MODULE_PATHNAME', 'Spatialarr_as_ewkt'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION asEWKT(geography[], maxdecimaldigits int4 DEFAULT 15)\n  RETURNS text[]\n  AS 'MODULE_PATHNAME', 'Spatialarr_as_ewkt'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"
+  - ops:
+    - asMFJSON
+    - asBinary
+    - asEWKB
+  - ops:
+    - - lit: "-- asHexWKB: base hex-WKB (variant 0, no SRID) \u2014 portable RFC #861 name,\n-- byte-for-byte identical to MobilityDuck asHexWKB and MobilitySpark asHexWKB."
+      - asHexWKB
+    - - lit: "-- asHexEWKB: extended hex-WKB (WKB_EXTENDED flag, includes SRID) \u2014\n-- mirrors asEWKB() and is consistent with MobilityDuck asHexEWKB."
+      - asHexEWKB
+  - lit: /*****************************************************************************/
 constructor_families:
 - family: geo
   file: mobilitydb/sql/geo/052_tgeo.in.sql
