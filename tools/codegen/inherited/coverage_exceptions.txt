@@ -133,7 +133,6 @@ mobilitydb/sql/temporal/032_temporal_boxops.in.sql
 mobilitydb/sql/temporal/034_temporal_posops.in.sql
 mobilitydb/sql/temporal/036_tnumber_distance.in.sql
 mobilitydb/sql/temporal/038_temporal_similarity.in.sql
-mobilitydb/sql/temporal/040_temporal_aggfuncs.in.sql
 mobilitydb/sql/temporal/042_temporal_waggfuncs.in.sql
 mobilitydb/sql/temporal/043_temporal_gist.in.sql
 mobilitydb/sql/temporal/044_temporal_spgist.in.sql

@@ -2821,11 +2821,15 @@ def bootstrap_spanfile(filetext: str, fam: dict, rendered: str) -> str:
 # EOF — each family owns its WHOLE dedicated *_aggfuncs.in.sql file, so every family
 # sets `whole_file: true` like the whole-file representation families), so the
 # deployed .in.sql files are untouched while the template is proven. The base
-# temporal aggregate files (015_span_aggfuncs, 040_temporal_aggfuncs,
-# 042_temporal_waggfuncs) are intentionally absent from the manifest: they group the
-# machinery across the alpha base-type quartet with per-type tmin/tmax/tsum/tavg
-# kernels, so they belong to the template-class pass (the 022_temporal precedent) —
-# classified out by omission from the data, never by a code-level skip.
+# `family: temporal` entry (040_temporal_aggfuncs.in.sql) governs the alpha
+# base-type quintet (tbool/tint/tbigint/tfloat/ttext) by the same `fns`/`lit`
+# transcription every other family here uses — its per-type groupings (extent's
+# tstzspan-vs-tbox STYPE split, tAnd/tOr's tbool-only scope, tMin/tMax/tSum/tAvg's
+# per-type kernel symbols) are irregular enough that a `gen`/`types:` chunk (the
+# 022_temporal restriction/modification/transformation/tiling precedent) would not
+# be a faithful mirror. 015_span_aggfuncs (span_families) and
+# 042_temporal_waggfuncs (moving-window aggregates, no sibling family carries an
+# equivalent surface) stay out of this axis.
 def _aggregates_markers(family: str):
     begin = (f"-- GENERATED-AGGREGATES-BEGIN {family} — "
              "tools/codegen/inherited/generate.py from templates/aggregates.sql.tmpl;\n"
