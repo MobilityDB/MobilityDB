@@ -1332,6 +1332,18 @@ _CMP_OPS = [
     ("gt", "bool", "Temporal_gt"),
     ("cmp", "int4", "Temporal_cmp"),
 ]
+# The base temporal file (022_temporal) spells the same seven functions with
+# RETURNS `boolean` and cmp -> `integer` (the derived families spell `bool`/`int4`),
+# reproduced verbatim, never normalized; selected via `ops: base`.
+_BASE_CMP_OPS = [
+    ("lt", "boolean", "Temporal_lt"),
+    ("le", "boolean", "Temporal_le"),
+    ("eq", "boolean", "Temporal_eq"),
+    ("ne", "boolean", "Temporal_ne"),
+    ("ge", "boolean", "Temporal_ge"),
+    ("gt", "boolean", "Temporal_gt"),
+    ("cmp", "integer", "Temporal_cmp"),
+]
 # The Set<T> comparison surface is the same seven-function skeleton backed by the
 # Set_* kernels, in the canonical set-file order (eq/ne before the inequalities,
 # unlike the temporal lt-first order) and with cmp spelled `integer` (the temporal
@@ -1374,7 +1386,7 @@ def render_comparisons(fam: dict) -> str:
     Temporal_* kernels, or by the Set_* kernels when the family carries `ops: set`).
     Blocks concatenate with no automatic separator — every separator is baked into the
     `lit` blocks — so the rendered text is byte-identical to the committed region."""
-    ops = _SET_CMP_OPS if fam.get("ops") == "set" else _CMP_OPS
+    ops = {"set": _SET_CMP_OPS, "base": _BASE_CMP_OPS}.get(fam.get("ops"), _CMP_OPS)
     out = ""
     for blk in fam["blocks"]:
         out += blk["lit"] if "lit" in blk else _cmp_funcs(blk["funcs"], ops)
