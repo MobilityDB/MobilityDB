@@ -3541,6 +3541,18 @@
 			</sect3>
 
 			<sect3>
+				<title>Splitting</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpcpoint_unnest"><varname>unnest</varname></link>: Return the distinct values of a tpcpoint with the span set on which each of them is taken</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpoint_timeSplit"><varname>timeSplit</varname></link>: Split a tpcpoint into fragments, one per time bin</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
 				<title>Bounding-box Operators</title>
 				<itemizedlist>
 					<listitem>
@@ -3659,6 +3671,18 @@
 					</listitem>
 					<listitem>
 						<para><link linkend="tpcpatch_appendInstant"><varname>appendInstant</varname>, <varname>appendSequence</varname></link>: Append an instant or a sequence to a tpcpatch</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Splitting</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpcpatch_unnest"><varname>unnest</varname></link>: Return the distinct values of a tpcpatch with the span set on which each of them is taken</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpatch_timeSplit"><varname>timeSplit</varname></link>: Split a tpcpatch into fragments, one per time bin</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

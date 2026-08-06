@@ -3563,6 +3563,18 @@
 			</sect3>
 
 			<sect3>
+				<title>Fragmentación</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpcpoint_unnest"><varname>unnest</varname></link>: Devolver los valores distintos de un tpcpoint con el conjunto de spans durante el cual toma cada uno de ellos</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpoint_timeSplit"><varname>timeSplit</varname></link>: Fragmentar un tpcpoint en fragmentos, uno por cada intervalo de tiempo</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
 				<title>Operaciones de cuadro delimitador</title>
 				<itemizedlist>
 					<listitem>
@@ -3681,6 +3693,18 @@
 					</listitem>
 					<listitem>
 						<para><link linkend="tpcpatch_appendInstant"><varname>appendInstant</varname>, <varname>appendSequence</varname></link>: Añadir un instante o una secuencia a un tpcpatch</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Fragmentación</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tpcpatch_unnest"><varname>unnest</varname></link>: Devolver los valores distintos de un tpcpatch con el conjunto de spans durante el cual toma cada uno de ellos</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpatch_timeSplit"><varname>timeSplit</varname></link>: Fragmentar un tpcpatch en fragmentos, uno por cada intervalo de tiempo</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
