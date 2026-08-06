@@ -159,6 +159,34 @@ subtypes:
       indexes:         23
     files: [compops, topops, posops, indexes, tempspatialrels]
 
+  # ---- pointcloud: two temporal types sharing one 50-number band ----
+  # The band runs 400 pcset, 410 tpcbox, 420 tpcpoint, 430 tpcpatch, 435+ the
+  # operator files shared by both types, so the default compops offset (bin + 4)
+  # would land on 404 — ahead of the types whose operators it declares, which
+  # CREATE EXTENSION rejects. Each type overrides the offset to sit after 430
+  # and before 435, and carries its own entry because the generator emits one
+  # file per subtype. `fam` is needed because the directory is named after the
+  # family, not after the base type.
+  - temp:  tpcpoint
+    base:  pcpoint
+    fam:   pointcloud
+    brief: "temporal pgpointcloud points"
+    bin:   400
+    category: tspatial
+    positions:
+      compops: 33
+    files: [compops]
+
+  - temp:  tpcpatch
+    base:  pcpatch
+    fam:   pointcloud
+    brief: "temporal pgpointcloud patches"
+    bin:   400
+    category: tspatial
+    positions:
+      compops: 34
+    files: [compops]
+
 # ---------------------------------------------------------------------------
 # Box-type axis (C boxops generator). The bounding-box topological operator
 # wrappers (overlaps/contains/contained/same/adjacent) are per BOX TYPE, not
@@ -3201,7 +3229,7 @@ modification_families:
   file: mobilitydb/sql/pointcloud/420_tpcpoint.in.sql
   reference: true
   begin: "\n * Modification functions\n"
-  end: "\n * Ever / always predicates\n"
+  end: "\n * Comparison / B-tree / hash\n"
   blocks:
   - lit: "/******************************************************************************\n * Modification functions\n ******************************************************************************/\n\n"
   - fns:
@@ -3222,7 +3250,7 @@ modification_families:
   file: mobilitydb/sql/pointcloud/430_tpcpatch.in.sql
   reference: true
   begin: "\n * Modification functions\n"
-  end: "\n * Ever / always\n"
+  end: "\n * Comparison / B-tree / hash\n"
   blocks:
   - lit: "/******************************************************************************\n * Modification functions\n ******************************************************************************/\n\n"
   - fns:

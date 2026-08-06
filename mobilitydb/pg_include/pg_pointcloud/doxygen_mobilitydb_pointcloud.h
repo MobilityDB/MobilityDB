@@ -84,6 +84,18 @@
  * @defgroup mobilitydb_pointcloud_conversion Conversion functions
  * @ingroup mobilitydb_pointcloud_temp
  * @brief Conversions between tpcpoint / tpcpatch and tgeompoint / tgeometry
+ *
+ * @defgroup mobilitydb_pointcloud_comp Comparison functions
+ * @ingroup mobilitydb_pointcloud_temp
+ * @brief Comparison functions for temporal pgpointcloud types
+ *
+ *   @defgroup mobilitydb_pointcloud_comp_ever Ever and always comparison functions
+ *   @ingroup mobilitydb_pointcloud_comp
+ *   @brief Ever and always comparison functions for temporal pgpointcloud types
+ *
+ *   @defgroup mobilitydb_pointcloud_comp_temp Temporal comparison functions
+ *   @ingroup mobilitydb_pointcloud_comp
+ *   @brief Temporal comparison functions for temporal pgpointcloud types
  */
 
 /*****************************************************************************

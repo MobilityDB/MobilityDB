@@ -174,6 +174,19 @@
  * @ingroup meos_pointcloud
  * @brief Ever and always comparison functions for temporal pgpointcloud types
  *
+ * @defgroup meos_pointcloud_comp Comparison functions
+ * @ingroup meos_pointcloud
+ * @brief Comparison functions for temporal pgpointcloud types
+ *
+ *   @defgroup meos_pointcloud_comp_ever Ever and always comparison functions
+ *   @ingroup meos_pointcloud_comp
+ *   @brief Ever and always comparison functions for temporal pgpointcloud
+ *     types
+ *
+ *   @defgroup meos_pointcloud_comp_temp Temporal comparison functions
+ *   @ingroup meos_pointcloud_comp
+ *   @brief Temporal comparison functions for temporal pgpointcloud types
+ *
  * @defgroup meos_internal_pointcloud Functions for temporal pgpointcloud types
  * @ingroup meos_internal
  * @brief Functions for temporal pgpointcloud types

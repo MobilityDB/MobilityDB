@@ -3521,7 +3521,10 @@
 						<para><link linkend="tpcpoint_btree"><varname>=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=</varname></link>: Comparaciones tradicionales</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tpcpoint_ever_eq"><varname>?=, %=</varname></link>: Comparaciones de igualdad alguna vez y siempre</para>
+						<para><link linkend="tpcpoint_ever_eq"><varname>eEq</varname>, <varname>aEq</varname>, <varname>eNe</varname>, <varname>aNe</varname>, <varname>?=, %=, ?&lt;&gt;, %&lt;&gt;</varname></link>: Comparaciones de igualdad y desigualdad alguna vez y siempre</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpoint_temporal_eq"><varname>tEq</varname>, <varname>tNe</varname>, <varname>#=, #&lt;&gt;</varname></link>: Comparaciones de igualdad y desigualdad temporales</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
