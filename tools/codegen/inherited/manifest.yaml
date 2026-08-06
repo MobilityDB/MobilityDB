@@ -5674,6 +5674,186 @@ span_families:
   - lit: "\n"
   - {sig: "unnest({vs})", ret: "SETOF {v}", sym: Set_unnest}
   - lit: "\n"
+- family: set_transformations
+  file: mobilitydb/sql/temporal/001_set.in.sql
+  reference: true
+  begin: "/*****************************************************************************\n * Transformation functions\n *****************************************************************************/\n"
+  end: "/******************************************************************************\n * Aggregate functions"
+  order: [int, bigint, float, text, date, tstz]
+  insts:
+    int: {v: integer, vs: intset}
+    bigint: {v: bigint, vs: bigintset}
+    float: {v: float, vs: floatset}
+    text: {v: text, vs: textset}
+    date: {v: date, vs: dateset}
+    tstz: {v: timestamptz, vs: tstzset}
+  blocks:
+  - lit: "/*****************************************************************************\n * Transformation functions\n *****************************************************************************/\n\n"
+  - {sig: "shift({vs}, {v})", ret: "{vs}", sym: Numset_shift, only: [int, bigint, float]}
+  - {sig: "shift(dateset, {v})", ret: "dateset", sym: Numset_shift, only: [int]}
+  - {sig: "shift({vs}, interval)", ret: "{vs}", sym: Tstzset_shift, only: [tstz]}
+  - lit: "\n"
+  - {sig: "scale({vs}, {v})", ret: "{vs}", sym: Numset_scale, only: [int, bigint, float]}
+  - {sig: "scale(dateset, {v})", ret: "dateset", sym: Numset_scale, only: [int]}
+  - {sig: "scale({vs}, interval)", ret: "{vs}", sym: Tstzset_scale, only: [tstz]}
+  - lit: "\n"
+  - {sig: "shiftScale({vs}, {v}, {v})", ret: "{vs}", sym: Numset_shift_scale, only: [int, bigint, float]}
+  - {sig: "shiftScale(dateset, {v}, {v})", ret: "dateset", sym: Numset_shift_scale, only: [int]}
+  - {sig: "shiftScale({vs}, interval, interval)", ret: "{vs}", sym: Tstzset_shift_scale, only: [tstz]}
+  - lit: "\n"
+  - {sig: "floor({vs})", ret: "{vs}", sym: Floatset_floor, only: [float]}
+  - {sig: "ceil({vs})", ret: "{vs}", sym: Floatset_ceil, only: [float]}
+  - lit: "\n"
+  - {sig: "round({vs}, integer DEFAULT 0)", ret: "{vs}", sym: Set_round, only: [float]}
+  - {sig: "degrees({vs}, bool DEFAULT FALSE)", ret: "{vs}", sym: Floatset_degrees, only: [float]}
+  - {sig: "radians({vs})", ret: "{vs}", sym: Floatset_radians, only: [float]}
+  - lit: "\n"
+  - {sig: "lower({vs})", ret: "{vs}", sym: Textset_lower, only: [text]}
+  - {sig: "upper({vs})", ret: "{vs}", sym: Textset_upper, only: [text]}
+  - {sig: "initcap({vs})", ret: "{vs}", sym: Textset_initcap, only: [text]}
+  - lit: "\n/******************************************************************************\n * Transform a set to a set of values\n ******************************************************************************/\n\n"
+  - {sig: "unnest({vs})", ret: "SETOF {v}", sym: Set_unnest}
+  - lit: "\n/*****************************************************************************\n * Temporal text concatenation\n *****************************************************************************/\n\n"
+  - {sig: "textset_cat({v}, {vs})", ret: "{vs}", sym: Textcat_text_textset, only: [text]}
+  - {sig: "textset_cat({vs}, {v})", ret: "{vs}", sym: Textcat_textset_text, only: [text]}
+  - lit: "\n"
+  - {stmt: "CREATE OPERATOR || (\n  PROCEDURE = textset_cat,\n  LEFTARG = {v}, RIGHTARG = {vs}\n);", only: [text]}
+  - {stmt: "CREATE OPERATOR || (\n  PROCEDURE = textset_cat,\n  LEFTARG = {vs}, RIGHTARG = {v}\n);", only: [text]}
+  - lit: "\n"
+
+- family: geoset_transformations
+  file: mobilitydb/sql/geo/050_geoset.in.sql
+  reference: true
+  begin: "/*****************************************************************************\n * Transformation functions\n *****************************************************************************/\n"
+  end: "/*****************************************************************************/\n\n-- The function is not STRICT"
+  order: [geom, geog]
+  insts:
+    geom: {v: geometry, vs: geomset}
+    geog: {v: geography, vs: geogset}
+  blocks:
+  - lit: "/*****************************************************************************\n * Transformation functions\n *****************************************************************************/\n\n"
+  - {sig: "round({vs}, integer DEFAULT 0)", ret: "{vs}", sym: Set_round}
+  - lit: "\n/******************************************************************************\n * Transformation set of values <-> set\n ******************************************************************************/\n\n"
+  - {sig: "unnest({vs})", ret: "SETOF {v}", sym: Set_unnest}
+  - lit: "\n"
+
+- family: poseset_transformations
+  file: mobilitydb/sql/pose/101_poseset.in.sql
+  reference: true
+  begin: "/*****************************************************************************\n * Transformation functions\n *****************************************************************************/\n"
+  end: "/******************************************************************************\n * Accessor functions"
+  order: [pose]
+  insts:
+    pose: {v: pose, vs: poseset}
+  blocks:
+  - lit: "/*****************************************************************************\n * Transformation functions\n *****************************************************************************/\n\n"
+  - {sig: "round({vs}, integer DEFAULT 0)", ret: "{vs}", sym: Set_round}
+  - lit: "\n"
+
+- family: poseset_unnest
+  file: mobilitydb/sql/pose/101_poseset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * Transformation set of values <-> set\n ******************************************************************************/\n"
+  end: "/*****************************************************************************/\n\n-- The function is not STRICT"
+  order: [pose]
+  insts:
+    pose: {v: pose, vs: poseset}
+  blocks:
+  - lit: "/******************************************************************************\n * Transformation set of values <-> set\n ******************************************************************************/\n\n"
+  - {sig: "unnest({vs})", ret: "SETOF {v}", sym: Set_unnest}
+  - lit: "\n"
+
+- family: cbufferset_transformations
+  file: mobilitydb/sql/cbuffer/201_cbufferset.in.sql
+  reference: true
+  begin: "/*****************************************************************************\n * Transformation functions\n *****************************************************************************/\n"
+  end: "/******************************************************************************\n * Accessor functions"
+  order: [cbuffer]
+  insts:
+    cbuffer: {v: cbuffer, vs: cbufferset}
+  blocks:
+  - lit: "/*****************************************************************************\n * Transformation functions\n *****************************************************************************/\n\n"
+  - {sig: "round({vs}, integer DEFAULT 0)", ret: "{vs}", sym: Set_round}
+  - lit: "\n"
+
+- family: cbufferset_unnest
+  file: mobilitydb/sql/cbuffer/201_cbufferset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * Transformation set of values <-> set\n ******************************************************************************/\n"
+  end: "/*****************************************************************************/\n\n-- The function is not STRICT"
+  order: [cbuffer]
+  insts:
+    cbuffer: {v: cbuffer, vs: cbufferset}
+  blocks:
+  - lit: "/******************************************************************************\n * Transformation set of values <-> set\n ******************************************************************************/\n\n"
+  - {sig: "unnest({vs})", ret: "SETOF {v}", sym: Set_unnest}
+  - lit: "\n"
+
+- family: npointset_transformations
+  file: mobilitydb/sql/npoint/301_npointset.in.sql
+  reference: true
+  begin: "/*****************************************************************************\n * Transformation functions\n *****************************************************************************/\n"
+  end: "/******************************************************************************\n * Accessor functions"
+  order: [npoint]
+  insts:
+    npoint: {v: npoint, vs: npointset}
+  blocks:
+  - lit: "/*****************************************************************************\n * Transformation functions\n *****************************************************************************/\n\n"
+  - {sig: "round({vs}, integer DEFAULT 0)", ret: "{vs}", sym: Set_round}
+  - lit: "\n"
+
+- family: npointset_unnest
+  file: mobilitydb/sql/npoint/301_npointset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * Transformation set of values <-> set\n ******************************************************************************/\n"
+  end: "/*****************************************************************************/\n\n-- The function is not STRICT"
+  order: [npoint]
+  insts:
+    npoint: {v: npoint, vs: npointset}
+  blocks:
+  - lit: "/******************************************************************************\n * Transformation set of values <-> set\n ******************************************************************************/\n\n"
+  - {sig: "unnest({vs})", ret: "SETOF {v}", sym: Set_unnest}
+  - lit: "\n"
+
+- family: jsonbset_unnest
+  file: mobilitydb/sql/json/450_jsonbset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * Transformation set of values <-> set\n ******************************************************************************/\n"
+  end: "/*****************************************************************************/\n\n-- The function is not STRICT"
+  order: [jsonb]
+  insts:
+    jsonb: {v: jsonb, vs: jsonbset}
+  blocks:
+  - lit: "/******************************************************************************\n * Transformation set of values <-> set\n ******************************************************************************/\n\n"
+  - {sig: "unnest({vs})", ret: "SETOF {v}", sym: Set_unnest}
+  - lit: "\n"
+
+- family: h3indexset_unnest
+  file: mobilitydb/sql/h3/251_h3indexset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * unnest \u2014 SETOF expansion\n ******************************************************************************/\n"
+  end: "/******************************************************************************\n * setUnion aggregate"
+  order: [h3index]
+  insts:
+    h3index: {v: h3index, vs: h3indexset}
+  blocks:
+  - lit: "/******************************************************************************\n * unnest \u2014 SETOF expansion\n ******************************************************************************/\n\n"
+  - {sig: "unnest({vs})", ret: "SETOF {v}", sym: Set_unnest}
+  - lit: "\n"
+
+- family: quadbinset_unnest
+  file: mobilitydb/sql/quadbin/351_quadbinset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * unnest \u2014 SETOF expansion\n ******************************************************************************/\n"
+  end: "/******************************************************************************\n * setUnion aggregate"
+  order: [quadbin]
+  insts:
+    quadbin: {v: quadbin, vs: quadbinset}
+  blocks:
+  - lit: "/******************************************************************************\n * unnest \u2014 SETOF expansion\n ******************************************************************************/\n\n"
+  - {sig: "unnest({vs})", ret: "SETOF {v}", sym: Set_unnest}
+  - lit: "\n"
+
 
 
 aggregate_families:
