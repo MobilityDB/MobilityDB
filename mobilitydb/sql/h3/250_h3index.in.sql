@@ -31,22 +31,43 @@
  * @file
  * @brief Static `h3index` SQL type — the base type of `th3index`.
  *
- * Defines the static h3index value type with parser / output /
- * send / receive, the six comparison operators, the btree and
- * hash operator classes, and the explicit (ASSIGNMENT) casts to
- * and from `bigint`.
+ * The h3index type itself, its parser / output / send / receive, the
+ * six comparison operators, the btree and hash operator classes and
+ * the casts to and from `bigint` all come from the **h3 PostgreSQL
+ * extension** (h3-pg), which mobilitydb requires when built with
+ * `-DH3=ON` (see `MOBILITYDB_REQUIRES` in the top-level CMakeLists).
+ * Defining them here as well would collide on `CREATE EXTENSION`, so
+ * this file only adds the surface h3-pg does not provide: the WKB and
+ * HexWKB base-value I/O and the validity predicates.
  *
  * The on-disk representation is identical to `bigint`: an int64
  * passed by value. The dedicated SQL type exists only to make
  * h3-specific functions type-safe — a user cannot accidentally
  * feed an arbitrary `bigint` to a function that expects an H3
  * cell, and vice-versa.
+ *
+ * The four commented-out blocks below — type plumbing, the bigint
+ * casts, the comparison functions and operators, and the btree and
+ * hash operator classes — are RETAINED ON PURPOSE and are not dead
+ * code to be cleaned up. They are the reference example of a
+ * complete, self-contained base-type surface, for the bindings that
+ * have no h3-pg to lean on (MobilitySpark, MobilityDuck, Nebula) and
+ * must declare the type, its comparisons and its operator classes
+ * themselves. Their PG C wrappers (`H3index_in`, `H3index_eq`, …)
+ * no longer exist in `mobilitydb/src/h3/h3index.c`, so the blocks
+ * cannot be uncommented as they stand — they are a template, not
+ * switchable code.
+ *
+ * A grep for `h3index_eq` or `h3index_cmp` in this file therefore
+ * matches comment text, not live SQL: h3index is not a bare-naming
+ * laggard, it has no live base-type comparison surface at all.
  */
 
 /******************************************************************************
  * Type plumbing
  ******************************************************************************/
 
+-- Provided by the h3 extension; retained as a binding reference (see the file header).
 /*
 CREATE TYPE h3index;
 
@@ -128,6 +149,7 @@ CREATE FUNCTION asHexWKB(h3index, endianenconding text DEFAULT '')
  * sidesteps the need for a dedicated cast function here.
  ******************************************************************************/
 
+-- Provided by the h3 extension; retained as a binding reference (see the file header).
 -- CREATE CAST (bigint AS h3index) WITHOUT FUNCTION AS ASSIGNMENT;
 -- CREATE CAST (h3index AS bigint) WITHOUT FUNCTION AS ASSIGNMENT;
 
@@ -141,6 +163,7 @@ CREATE FUNCTION asHexWKB(h3index, endianenconding text DEFAULT '')
  * boiler-plate and lets MobilityDuck consume the same primitives.
  ******************************************************************************/
 
+-- Provided by the h3 extension; retained as a binding reference (see the file header).
 /*
 CREATE FUNCTION h3index_eq(h3index, h3index)
   RETURNS boolean
@@ -233,6 +256,7 @@ CREATE OPERATOR >= (
  * exact-match lookups, plus distinct, GROUP BY, etc.
  ******************************************************************************/
 
+-- Provided by the h3 extension; retained as a binding reference (see the file header).
 /*
 CREATE OPERATOR CLASS h3index_ops
   DEFAULT FOR TYPE h3index USING btree AS
