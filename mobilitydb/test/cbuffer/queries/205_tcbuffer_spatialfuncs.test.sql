@@ -67,6 +67,9 @@ SELECT getTime(minusGeometry(
   tcbuffer '[Cbuffer(Point(0 0),1)@2000-01-01, Cbuffer(Point(4 0),1)@2000-01-05]',
   geometry 'Point(2 50)'));
 
+SELECT asText(atGeometry(tcbuffer '[Cbuffer(Point(1 1), 0)@2001-01-01, Cbuffer(Point(4 4), 0)@2001-01-04]', 'Polygon((2 2,2 3,3 3,3 2,2 2))'));
+SELECT asText(minusGeometry(tcbuffer '[Cbuffer(Point(1 1), 0)@2001-01-01, Cbuffer(Point(4 4), 0)@2001-01-04]', 'Polygon((2 2,2 3,3 3,3 2,2 2))'));
+
 -------------------------------------------------------------------------------
 -- Centroid
 -------------------------------------------------------------------------------
