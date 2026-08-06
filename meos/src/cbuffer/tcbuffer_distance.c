@@ -243,10 +243,357 @@ tdistance_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
   return tfunc_temporal_base(temp, PointerGetDatum(cb), &lfinfo);
 }
 
+/*****************************************************************************
+ * Temporal distance to a geometry: exact full-geometry engine
+ *
+ * The bounding-circle composition above (geom_to_cbuffer + tdistance_tcbuffer
+ * _cbuffer) collapses a non-point, non-circle geometry to its minimum
+ * bounding circle, which is a systematic over-estimate for every line or
+ * polygon. This engine instead reuses the #geodist_geom_build edge
+ * decomposition already shared with #nad_tcbuffer_geo_analytic and
+ * #nai_tcbuffer_geo_analytic: for every edge (straight or circular-arc) it
+ * finds the exact stationary points, in closed form, of the radius-aware
+ * signed gap
+ *   g(t) = dist(centre(t), edge) - r(t)
+ * mirroring #geodist_minfun (tgeo_distance.c). The distance to the whole
+ * geometry at every segment endpoint and every per-edge turning point is
+ * emitted as an exact instant, with linear interpolation in between,
+ * exactly as #tpointseq_distance_geom (tpoint_geom_clip.c) does for the r = 0
+ * (moving point) case: the global minimum over the segment is the minimum,
+ * over edges, of each edge's own minimum, so emitting every per-edge
+ * extremum makes the temporal float's minValue exact, and every emitted
+ * value is the exact clamped distance #cbuffer_distance would report at that
+ * instant.
+ *****************************************************************************/
+
+/**
+ * @brief Return the exact distance from a stationary disc to the whole
+ * geometry, clamped at zero to match #cbuffer_distance
+ */
+static inline double
+tcbuffer_geom_dist(double cx, double cy, double r, const GeoDistGeom *g)
+{
+  double best = DBL_MAX;
+  geodist_segm_nad(cx, cy, r, cx, cy, r, g, &best);
+  return fmax(best, 0.0);
+}
+
+/**
+ * @brief Append a candidate parameter to the array if it lies in [0,1]
+ * (clamping a tiny out-of-range value to the nearest endpoint)
+ * @details A candidate outside its originating feature's true region is
+ * harmless: the caller always re-evaluates the exact distance to the whole
+ * geometry at the emitted parameter (#tcbuffer_geom_dist), so an extra
+ * sample never changes correctness, only adds a redundant instant
+ */
+static void
+tcbuffer_add_within01(double t, double *cand, int *nc)
+{
+  if (t > -1e-9 && t < 1.0 + 1e-9)
+  {
+    if (t < 0.0) t = 0.0; else if (t > 1.0) t = 1.0;
+    cand[(*nc)++] = t;
+  }
+}
+
+/**
+ * @brief Append the [0,1] stationary-point candidates of
+ * sqrt(A t^2 + B t + C) - (a value increasing at rate DR)
+ * @details Same closed form as #geodist_minfun (tgeo_distance.c), which
+ * minimises this quantity: the constant term of the subtracted value drops
+ * out of its derivative, so only DR enters the (up to two) roots of the
+ * stationarity equation squared, (A^2 - A DR^2) t^2 + (A B - B DR^2) t +
+ * (B^2/4 - C DR^2) = 0, plus the quadratic vertex -B/(2A) explicitly, since
+ * in the perpendicular regime that quadratic is a perfect square and the
+ * discriminant can round to a spurious negative, silently dropping the true
+ * double root -- the instant the moving centre crosses the edge's supporting
+ * line or circle (an exact zero-distance overlap)
+ */
+static void
+tcbuffer_add_dist_turnpts(double A, double B, double C, double DR,
+  double *cand, int *nc)
+{
+  double a2 = A * (A - DR * DR);
+  double a1 = B * (A - DR * DR);
+  double a0 = 0.25 * B * B - C * DR * DR;
+  if (fabs(a2) > 1e-18)
+  {
+    double disc = a1 * a1 - 4.0 * a2 * a0;
+    if (disc >= 0.0)
+    {
+      double sd = sqrt(disc);
+      tcbuffer_add_within01((-a1 + sd) / (2.0 * a2), cand, nc);
+      tcbuffer_add_within01((-a1 - sd) / (2.0 * a2), cand, nc);
+    }
+  }
+  else if (fabs(a1) > 1e-18)
+    tcbuffer_add_within01(-a0 / a1, cand, nc);
+  if (fabs(A) > 1e-18)
+    tcbuffer_add_within01(-B / (2.0 * A), cand, nc);
+}
+
+/**
+ * @brief Append the [0,1] candidate turning parameters of the moving disc
+ * distance to a straight edge, mirroring the endpoint/perpendicular feature
+ * split of #geodist_segm_edge_mindist
+ * @param[in] cx1,cy1,cx2,cy2 Centre of the disc at the segment bounds
+ * @param[in] r1,r2 Radius of the disc at the segment bounds
+ * @param[in] e Edge
+ * @param[in,out] cand,nc Candidate array and count
+ */
+static void
+tcbuffersegm_edge_dist_turnpts(double cx1, double cy1, double cx2, double cy2,
+  double r1, double r2, const GeoDistEdge *e, double *cand, int *nc)
+{
+  const double dcx = cx2 - cx1, dcy = cy2 - cy1, dr = r2 - r1;
+  const double ax = e->x1, ay = e->y1, bx = e->x2, by = e->y2;
+  const double ux = bx - ax, uy = by - ay, l2 = ux * ux + uy * uy;
+
+  /* Closest approach to the edge start */
+  {
+    double A = dcx * dcx + dcy * dcy;
+    double B = 2.0 * ((cx1 - ax) * dcx + (cy1 - ay) * dcy);
+    double C = (cx1 - ax) * (cx1 - ax) + (cy1 - ay) * (cy1 - ay);
+    tcbuffer_add_dist_turnpts(A, B, C, dr, cand, nc);
+  }
+  /* Degenerate edge (a point): only the point-distance branch applies */
+  if (l2 <= 1e-24)
+    return;
+
+  /* Closest approach to the edge end */
+  {
+    double A = dcx * dcx + dcy * dcy;
+    double B = 2.0 * ((cx1 - bx) * dcx + (cy1 - by) * dcy);
+    double C = (cx1 - bx) * (cx1 - bx) + (cy1 - by) * (cy1 - by);
+    tcbuffer_add_dist_turnpts(A, B, C, dr, cand, nc);
+  }
+  /* Perpendicular-foot time (moving centre on the supporting line) */
+  const double k0 = (cx1 - ax) * uy - (cy1 - ay) * ux;
+  const double k1 = dcx * uy - dcy * ux;
+  if (fabs(k1) > 1e-18)
+  {
+    double A = k1 * k1 / l2;
+    double B = 2.0 * k0 * k1 / l2;
+    double C = k0 * k0 / l2;
+    tcbuffer_add_dist_turnpts(A, B, C, dr, cand, nc);
+  }
+  /* Foot-parameter region boundaries (s = 0 and s = 1): the nearest feature
+   * changes there, a kink in the per-edge distance */
+  const double s0 = (cx1 - ax) * ux + (cy1 - ay) * uy;
+  const double s1 = dcx * ux + dcy * uy;
+  if (fabs(s1) > 1e-18)
+  {
+    tcbuffer_add_within01(-s0 / s1, cand, nc);
+    tcbuffer_add_within01((l2 - s0) / s1, cand, nc);
+  }
+}
+
+/**
+ * @brief Append the [0,1] candidate turning parameters of the moving disc
+ * distance to a circular-arc edge, mirroring the on-span/off-span split of
+ * #geodist_segm_arc_mindist
+ * @param[in] cx1,cy1,cx2,cy2 Centre of the disc at the segment bounds
+ * @param[in] r1,r2 Radius of the disc at the segment bounds
+ * @param[in] e Edge
+ * @param[in,out] cand,nc Candidate array and count
+ */
+static void
+tcbuffersegm_arc_dist_turnpts(double cx1, double cy1, double cx2, double cy2,
+  double r1, double r2, const GeoDistEdge *e, double *cand, int *nc)
+{
+  const double dcx = cx2 - cx1, dcy = cy2 - cy1, dr = r2 - r1;
+  const double px = e->acx, py = e->acy, R = e->arad;
+  const double A = dcx * dcx + dcy * dcy;
+  const double B = 2.0 * ((cx1 - px) * dcx + (cy1 - py) * dcy);
+  const double C = (cx1 - px) * (cx1 - px) + (cy1 - py) * (cy1 - py);
+
+  /* Circle crossings sqrt(Q) = R: kinks of the absolute value defining the
+   * distance to the arc's supporting circle */
+  {
+    double c0 = C - R * R;
+    if (fabs(A) > 1e-18)
+    {
+      double disc = B * B - 4.0 * A * c0;
+      if (disc >= 0.0)
+      {
+        double sd = sqrt(disc);
+        tcbuffer_add_within01((-B + sd) / (2.0 * A), cand, nc);
+        tcbuffer_add_within01((-B - sd) / (2.0 * A), cand, nc);
+      }
+    }
+    else if (fabs(B) > 1e-18)
+      tcbuffer_add_within01(-c0 / B, cand, nc);
+  }
+  /* Vertex of Q: closest/farthest approach to the arc's centre */
+  if (fabs(A) > 1e-18)
+    tcbuffer_add_within01(-B / (2.0 * A), cand, nc);
+  /* Stationary points of | sqrt(Q) - R | - r(t): R is a constant offset so
+   * it cancels in the derivative, giving the same closed form as the
+   * straight-edge branches */
+  tcbuffer_add_dist_turnpts(A, B, C, dr, cand, nc);
+  /* Angular-sector boundary crossings: the moving centre crosses the ray
+   * from the arc's centre through an endpoint. Purely positional, so the
+   * same closed form applies regardless of the radius */
+  for (int ep = 0; ep < 2; ep++)
+  {
+    double ex = ep == 0 ? e->x1 : e->x2, ey = ep == 0 ? e->y1 : e->y2;
+    double ddx = ex - px, ddy = ey - py;
+    double wx = cx1 - px, wy = cy1 - py;
+    double den = dcx * ddy - dcy * ddx;
+    if (fabs(den) > 1e-18)
+      tcbuffer_add_within01(-(wx * ddy - wy * ddx) / den, cand, nc);
+  }
+  /* Off-span regions are nearest to an arc endpoint */
+  for (int ep = 0; ep < 2; ep++)
+  {
+    double ex = ep == 0 ? e->x1 : e->x2, ey = ep == 0 ? e->y1 : e->y2;
+    double Be = 2.0 * ((cx1 - ex) * dcx + (cy1 - ey) * dcy);
+    double Ce = (cx1 - ex) * (cx1 - ex) + (cy1 - ey) * (cy1 - ey);
+    tcbuffer_add_dist_turnpts(A, Be, Ce, dr, cand, nc);
+  }
+}
+
+/**
+ * @brief Comparator for sorting the per-segment distance turning-point
+ * candidates
+ */
+static int
+tcbufferdist_cand_cmp(const void *a, const void *b)
+{
+  double d = *(const double *) a - *(const double *) b;
+  return (d < 0.0) ? -1 : (d > 0.0 ? 1 : 0);
+}
+
+/**
+ * @brief Return the temporal distance of one temporal circular buffer
+ * sequence to a geometry given as its edge decomposition
+ */
+static TSequence *
+tcbufferseq_distance_geom(const TSequence *seq, const GeoDistGeom *g)
+{
+  bool linear = MEOS_FLAGS_LINEAR_INTERP(seq->flags);
+  if (seq->count == 1 || ! linear)
+  {
+    /* Step or discrete interpolation, or a single instant: every instant is
+     * a stationary disc, no interior turning point. The result keeps the
+     * input's own interpolation (discrete stays discrete, step stays step) */
+    interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+    TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+    for (int i = 0; i < seq->count; i++)
+    {
+      const TInstant *inst = TSEQUENCE_INST_N(seq, i);
+      const Cbuffer *c = DatumGetCbufferP(tinstant_value_p(inst));
+      const POINT2D *p = cbuffer_point2d_p(c);
+      double d = tcbuffer_geom_dist(p->x, p->y, c->radius, g);
+      instants[i] = tinstant_make(Float8GetDatum(d), T_TFLOAT, inst->t);
+    }
+    return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
+      seq->period.upper_inc, interp, NORMALIZE);
+  }
+
+  /* Linear interpolation, at least two instants: upper bound on the number
+   * of result instants is the two endpoints of every segment plus, per edge,
+   * up to eleven straight-edge or fourteen arc-edge turning points */
+  int cap = g->n * 16 + 4;
+  int maxinsts = 1 + (seq->count - 1) * cap;
+  TInstant **instants = palloc(sizeof(TInstant *) * maxinsts);
+  int ninsts = 0;
+  double *cand = palloc(sizeof(double) * cap);
+
+  const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
+  const Cbuffer *c1 = DatumGetCbufferP(tinstant_value_p(inst1));
+  const POINT2D *p1 = cbuffer_point2d_p(c1);
+  instants[ninsts++] = tinstant_make(
+    Float8GetDatum(tcbuffer_geom_dist(p1->x, p1->y, c1->radius, g)), T_TFLOAT,
+    inst1->t);
+  for (int i = 1; i < seq->count; i++)
+  {
+    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
+    const Cbuffer *c2 = DatumGetCbufferP(tinstant_value_p(inst2));
+    const POINT2D *p2 = cbuffer_point2d_p(c2);
+
+    int nc = 0;
+    for (int j = 0; j < g->n; j++)
+    {
+      const GeoDistEdge *e = &g->segs[j];
+      if (e->is_arc)
+        tcbuffersegm_arc_dist_turnpts(p1->x, p1->y, p2->x, p2->y, c1->radius,
+          c2->radius, e, cand, &nc);
+      else
+        tcbuffersegm_edge_dist_turnpts(p1->x, p1->y, p2->x, p2->y, c1->radius,
+          c2->radius, e, cand, &nc);
+    }
+    qsort(cand, nc, sizeof(double), tcbufferdist_cand_cmp);
+
+    const double duration = (double) (inst2->t - inst1->t);
+    TimestampTz prevt = inst1->t;
+    for (int k = 0; k < nc; k++)
+    {
+      double frac = cand[k];
+      if (frac <= MEOS_EPSILON || frac >= 1.0 - MEOS_EPSILON)
+        continue;
+      if (k > 0 && fabs(frac - cand[k - 1]) < MEOS_EPSILON)
+        continue;
+      TimestampTz t = inst1->t + (TimestampTz) (duration * frac);
+      /* Keep the instants strictly increasing and off the segment bounds */
+      if (t <= prevt || t >= inst2->t)
+        continue;
+      double cx = p1->x + frac * (p2->x - p1->x);
+      double cy = p1->y + frac * (p2->y - p1->y);
+      double r = c1->radius + frac * (c2->radius - c1->radius);
+      instants[ninsts++] = tinstant_make(
+        Float8GetDatum(tcbuffer_geom_dist(cx, cy, r, g)), T_TFLOAT, t);
+      prevt = t;
+    }
+    instants[ninsts++] = tinstant_make(
+      Float8GetDatum(tcbuffer_geom_dist(p2->x, p2->y, c2->radius, g)),
+      T_TFLOAT, inst2->t);
+
+    inst1 = inst2; c1 = c2; p1 = p2;
+  }
+  pfree(cand);
+
+  return tsequence_make_free(instants, ninsts, seq->period.lower_inc,
+    seq->period.upper_inc, LINEAR, NORMALIZE);
+}
+
+/**
+ * @brief Return the temporal distance of a temporal circular buffer to a
+ * geometry given as its edge decomposition
+ */
+static Temporal *
+tdistance_tcbuffer_geo_analytic(const Temporal *temp, const GeoDistGeom *g)
+{
+  assert(temptype_subtype(temp->subtype));
+  if (temp->subtype == TINSTANT)
+  {
+    const TInstant *inst = (const TInstant *) temp;
+    const Cbuffer *c = DatumGetCbufferP(tinstant_value_p(inst));
+    const POINT2D *p = cbuffer_point2d_p(c);
+    double d = tcbuffer_geom_dist(p->x, p->y, c->radius, g);
+    return (Temporal *) tinstant_make(Float8GetDatum(d), T_TFLOAT, inst->t);
+  }
+  if (temp->subtype == TSEQUENCE)
+    return (Temporal *) tcbufferseq_distance_geom((TSequence *) temp, g);
+  /* TSEQUENCESET */
+  const TSequenceSet *ss = (const TSequenceSet *) temp;
+  TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
+  for (int i = 0; i < ss->count; i++)
+    sequences[i] = tcbufferseq_distance_geom(TSEQUENCESET_SEQ_N(ss, i), g);
+  return (Temporal *) tsequenceset_make_free(sequences, ss->count, NORMALIZE);
+}
+
 /**
  * @ingroup meos_cbuffer_dist
  * @brief Return the temporal distance between a temporal circular buffer and
  * a geometry
+ * @details The geometry is decomposed into its boundary edges (straight and
+ * circular-arc), the same decomposition #nad_tcbuffer_geo and
+ * #nearestApproachInstant use, and the distance to the full geometry is
+ * computed exactly rather than to its minimum bounding circle. A geometry
+ * with no exact edge decomposition (a TIN or a polyhedral surface) falls
+ * back to the bounding-circle approximation, mirroring the other analytic
+ * distance kernels of this file.
  * @csqlfn #Tdistance_tcbuffer_geo()
  */
 Temporal *
@@ -256,6 +603,16 @@ tdistance_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
   if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
 
+  GeoDistGeom g;
+  if (geodist_geom_build(gs, &g))
+  {
+    Temporal *result = tdistance_tcbuffer_geo_analytic(temp, &g);
+    geodist_geom_free(&g);
+    return result;
+  }
+
+  /* No exact edge decomposition (TIN / polyhedral surface): fall back to the
+   * bounding-circle approximation */
   Cbuffer *cb = geom_to_cbuffer(gs);
   Temporal *result = tdistance_tcbuffer_cbuffer(temp, cb);
   pfree(cb);
