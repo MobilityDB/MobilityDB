@@ -5853,6 +5853,130 @@ span_families:
   - lit: "/******************************************************************************\n * unnest \u2014 SETOF expansion\n ******************************************************************************/\n\n"
   - {sig: "unnest({vs})", ret: "SETOF {v}", sym: Set_unnest}
   - lit: "\n"
+- family: set_conversions
+  file: mobilitydb/sql/temporal/001_set.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * Conversion functions\n ******************************************************************************/\n"
+  end: "/******************************************************************************\n * Accessor functions"
+  order: [int, bigint, float, text, date, tstz]
+  insts:
+    int: {v: integer, vs: intset}
+    bigint: {v: bigint, vs: bigintset}
+    float: {v: float, vs: floatset}
+    text: {v: text, vs: textset}
+    date: {v: date, vs: dateset}
+    tstz: {v: timestamptz, vs: tstzset}
+  blocks:
+  - lit: "/******************************************************************************\n * Conversion functions\n ******************************************************************************/\n\n"
+  - {sig: "set({v})", ret: "{vs}", sym: Value_to_set}
+  - lit: "\n"
+  - {stmt: "CREATE CAST ({v} AS {vs}) WITH FUNCTION set({v});"}
+  - lit: "\n"
+  - {sig: "floatset({vs})", ret: "floatset", sym: Intset_to_floatset, only: [int]}
+  - {sig: "intset(floatset)", ret: "intset", sym: Floatset_to_intset, only: [int]}
+  - lit: "\n"
+  - {stmt: "CREATE CAST ({vs} AS floatset) WITH FUNCTION floatset({vs});", only: [int]}
+  - {stmt: "CREATE CAST (floatset AS {vs}) WITH FUNCTION intset(floatset);", only: [int]}
+  - lit: "\n"
+  - {sig: "tstzset({vs})", ret: "tstzset", sym: Dateset_to_tstzset, only: [date]}
+  - {sig: "dateset(tstzset)", ret: "dateset", sym: Tstzset_to_dateset, only: [date]}
+  - lit: "\n"
+  - {stmt: "CREATE CAST ({vs} AS tstzset) WITH FUNCTION tstzset({vs});", only: [date]}
+  - {stmt: "CREATE CAST (tstzset AS {vs}) WITH FUNCTION dateset(tstzset);", only: [date]}
+  - lit: "\n"
+
+- family: geoset_conversions
+  file: mobilitydb/sql/geo/050_geoset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * Conversion functions\n ******************************************************************************/\n"
+  end: "/******************************************************************************\n * Accessor functions"
+  order: [geom, geog]
+  insts:
+    geom: {v: geometry, vs: geomset}
+    geog: {v: geography, vs: geogset}
+  blocks:
+  - lit: "/******************************************************************************\n * Conversion functions\n ******************************************************************************/\n\n"
+  - {sig: "set({v})", ret: "{vs}", sym: Value_to_set}
+  - lit: "\n"
+  - {stmt: "CREATE CAST ({v} AS {vs}) WITH FUNCTION set({v});"}
+  - lit: "\n"
+
+- family: poseset_conversions
+  file: mobilitydb/sql/pose/101_poseset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * Conversion functions\n ******************************************************************************/\n"
+  end: "/*****************************************************************************\n * Transformation functions"
+  order: [pose]
+  insts:
+    pose: {v: pose, vs: poseset}
+  blocks:
+  - lit: "/******************************************************************************\n * Conversion functions\n ******************************************************************************/\n\n"
+  - {sig: "set({v})", ret: "{vs}", sym: Value_to_set}
+  - lit: "\n"
+  - {stmt: "CREATE CAST ({v} AS {vs}) WITH FUNCTION set({v});"}
+  - lit: "\n"
+  - {sig: "stbox({vs})", ret: "stbox", sym: Spatialset_to_stbox}
+  - lit: "\n"
+  - {stmt: "CREATE CAST ({vs} AS stbox) WITH FUNCTION stbox({vs});"}
+  - lit: "\n"
+
+- family: cbufferset_conversions
+  file: mobilitydb/sql/cbuffer/201_cbufferset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * Conversion functions\n ******************************************************************************/\n"
+  end: "/*****************************************************************************\n * Transformation functions"
+  order: [cbuffer]
+  insts:
+    cbuffer: {v: cbuffer, vs: cbufferset}
+  blocks:
+  - lit: "/******************************************************************************\n * Conversion functions\n ******************************************************************************/\n\n"
+  - {sig: "set({v})", ret: "{vs}", sym: Value_to_set}
+  - lit: "\n"
+  - {stmt: "CREATE CAST ({v} AS {vs}) WITH FUNCTION set({v});"}
+  - lit: "\n"
+  - {sig: "stbox({vs})", ret: "stbox", sym: Spatialset_to_stbox}
+  - lit: "\n"
+  - {stmt: "CREATE CAST ({vs} AS stbox) WITH FUNCTION stbox({vs});"}
+  - lit: "\n"
+
+- family: npointset_conversions
+  file: mobilitydb/sql/npoint/301_npointset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * Conversions\n ******************************************************************************/\n"
+  end: "/*****************************************************************************\n * Transformation functions"
+  order: [npoint]
+  insts:
+    npoint: {v: npoint, vs: npointset}
+  blocks:
+  - lit: "/******************************************************************************\n * Conversions\n ******************************************************************************/\n\n"
+  - {sig: "set({v})", ret: "{vs}", sym: Value_to_set}
+  - {sig: "stbox({vs})", ret: "stbox", sym: Spatialset_to_stbox}
+  - lit: "\n"
+  - {stmt: "CREATE CAST ({v} AS {vs}) WITH FUNCTION set({v});"}
+  - {stmt: "CREATE CAST ({vs} AS stbox) WITH FUNCTION stbox({vs});"}
+  - lit: "\n"
+
+- family: jsonbset_conversions
+  file: mobilitydb/sql/json/450_jsonbset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * Conversions\n ******************************************************************************/\n"
+  end: "/*****************************************************************************\n * Transformations"
+  order: [jsonb]
+  insts:
+    jsonb: {v: jsonb, vs: jsonbset}
+  blocks:
+  - lit: "/******************************************************************************\n * Conversions\n ******************************************************************************/\n\n"
+  - {sig: "set({v})", ret: "{vs}", sym: Value_to_set}
+  - lit: "\n"
+  - {stmt: "CREATE CAST ({v} AS {vs}) WITH FUNCTION set({v});"}
+  - lit: "\n"
+  - {sig: "textset({vs})", ret: "textset", sym: Jsonbset_as_textset}
+  - {sig: "jsonbset(textset)", ret: "{vs}", sym: Textset_as_jsonbset}
+  - lit: "\n"
+  - {stmt: "CREATE CAST ({vs} AS textset) WITH FUNCTION textset({vs});"}
+  - {stmt: "CREATE CAST (textset AS {vs}) WITH FUNCTION jsonbset(textset);"}
+  - lit: "\n"
+
 
 
 
