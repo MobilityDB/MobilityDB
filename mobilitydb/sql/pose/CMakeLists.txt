@@ -4,6 +4,7 @@ SET(LOCAL_FILES
   102_tpose
   104_tpose_compops
   105_tpose_spatialfuncs
+  107_tpose_boxops
   108_tpose_topops
   109_tpose_posops
   110_tpose_distance

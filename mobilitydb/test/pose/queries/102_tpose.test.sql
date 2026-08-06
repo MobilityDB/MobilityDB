@@ -644,3 +644,11 @@ SELECT count(*) FROM ais, generate_series(0, 15) AS d
   WHERE asMFJSON(temp, 1, 0, d)::jsonb IS NULL;
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- Multidimensional tiling
+-------------------------------------------------------------------------------
+
+SELECT spans(tpose '[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03]');
+SELECT splitNSpans(tpose '[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03]', 2);
+SELECT splitEachNSpans(tpose '[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03]', 2);

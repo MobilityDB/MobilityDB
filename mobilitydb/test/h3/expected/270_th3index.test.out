@@ -576,3 +576,21 @@ SELECT (rec).time, (rec).temp FROM
  Wed Jan 03 00:00:00 2001 PST | [880326b885fffff@Wed Jan 03 00:00:00 2001 PST, 880326b88dfffff@Thu Jan 04 00:00:00 2001 PST]
 (2 rows)
 
+SELECT spans(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-04]');
+                              spans                               
+------------------------------------------------------------------
+ {"[Mon Jan 01 00:00:00 2001 PST, Thu Jan 04 00:00:00 2001 PST]"}
+(1 row)
+
+SELECT splitNSpans(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-04]', 2);
+                           splitnspans                            
+------------------------------------------------------------------
+ {"[Mon Jan 01 00:00:00 2001 PST, Thu Jan 04 00:00:00 2001 PST]"}
+(1 row)
+
+SELECT splitEachNSpans(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-04]', 2);
+                         spliteachnspans                          
+------------------------------------------------------------------
+ {"[Mon Jan 01 00:00:00 2001 PST, Thu Jan 04 00:00:00 2001 PST]"}
+(1 row)
+

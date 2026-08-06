@@ -5,6 +5,7 @@ SET(LOCAL_FILES
   # 203_tcbuffer_inout
   204_tcbuffer_compops
   205_tcbuffer_spatialfuncs
+  207_tcbuffer_boxops
   208_tcbuffer_topops
   209_tcbuffer_posops
   210_tcbuffer_distance
