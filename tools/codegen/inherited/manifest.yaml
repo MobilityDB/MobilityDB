@@ -6468,6 +6468,64 @@ span_families:
   - {sig: "asBinary({vs}, endianenconding text DEFAULT '')", ret: "bytea", sym: Set_as_wkb}
   - {sig: "asHexWKB({vs}, endianenconding text DEFAULT '')", ret: "text", sym: Set_as_hexwkb}
   - lit: "\n"
+- family: geoset_srs
+  file: mobilitydb/sql/geo/050_geoset.in.sql
+  reference: true
+  begin: "/*****************************************************************************\n * SRID functions\n *****************************************************************************/\n"
+  end: "/*****************************************************************************\n * Transformation functions"
+  order: [geom, geog]
+  insts:
+    geom: {v: geometry, vs: geomset}
+    geog: {v: geography, vs: geogset}
+  blocks:
+  - lit: "/*****************************************************************************\n * SRID functions\n *****************************************************************************/\n\n"
+  - {sig: "SRID({vs})", ret: "integer", sym: Spatialset_srid}
+  - lit: "\n"
+  - {sig: "setSRID({vs}, integer)", ret: "{vs}", sym: Spatialset_set_srid}
+  - lit: "\n"
+  - {sig: "transform({vs}, integer)", ret: "{vs}", sym: Spatialset_transform}
+  - lit: "\n"
+  - {sig: "transformPipeline({vs}, text, srid integer DEFAULT 0,\n    is_forward boolean DEFAULT true)", ret: "{vs}", sym: Spatialset_transform_pipeline}
+  - lit: "\n"
+
+- family: poseset_srs
+  file: mobilitydb/sql/pose/101_poseset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * SRID\n ******************************************************************************/\n"
+  end: "/******************************************************************************\n * Transformation set of values <-> set"
+  order: [pose]
+  insts:
+    pose: {v: pose, vs: poseset}
+  blocks:
+  - lit: "/******************************************************************************\n * SRID\n ******************************************************************************/\n\n"
+  - {sig: "SRID({vs})", ret: "integer", sym: Spatialset_srid}
+  - lit: "\n"
+  - {sig: "setSRID({vs}, integer)", ret: "{vs}", sym: Spatialset_set_srid}
+  - lit: "\n"
+  - {sig: "transform({vs}, integer)", ret: "{vs}", sym: Spatialset_transform}
+  - lit: "\n"
+  - {sig: "transformPipeline({vs}, text, srid integer DEFAULT 0,\n    is_forward boolean DEFAULT true)", ret: "{vs}", sym: Spatialset_transform_pipeline}
+  - lit: "\n"
+
+- family: cbufferset_srs
+  file: mobilitydb/sql/cbuffer/201_cbufferset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * SRID\n ******************************************************************************/\n"
+  end: "/******************************************************************************\n * Transformation set of values <-> set"
+  order: [cbuffer]
+  insts:
+    cbuffer: {v: cbuffer, vs: cbufferset}
+  blocks:
+  - lit: "/******************************************************************************\n * SRID\n ******************************************************************************/\n\n"
+  - {sig: "SRID({vs})", ret: "integer", sym: Spatialset_srid}
+  - lit: "\n"
+  - {sig: "setSRID({vs}, integer)", ret: "{vs}", sym: Spatialset_set_srid}
+  - lit: "\n"
+  - {sig: "transform({vs}, integer)", ret: "{vs}", sym: Spatialset_transform}
+  - lit: "\n"
+  - {sig: "transformPipeline({vs}, text, srid integer DEFAULT 0,\n    is_forward boolean DEFAULT true)", ret: "{vs}", sym: Spatialset_transform_pipeline}
+  - lit: "\n"
+
 
 
 
