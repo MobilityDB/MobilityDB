@@ -104,6 +104,8 @@ CREATE CAST (tpcpoint AS tpcpoint)
 
 -- GENERATED-IO-END pointcloud
 
+-- GENERATED-REPRESENTATIONS-BEGIN pointcloud — tools/codegen/inherited/generate.py from templates/representations.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.yaml (representation_families) and re-run.
 /******************************************************************************
  * WKB / HexWKB helpers
  ******************************************************************************/
@@ -149,6 +151,8 @@ CREATE FUNCTION asText(tpcpoint[])
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (tpcpoint AS text) WITH FUNCTION asText(tpcpoint);
+
+-- GENERATED-REPRESENTATIONS-END pointcloud
 
 /******************************************************************************
  * Ergonomic pcpoint constructors

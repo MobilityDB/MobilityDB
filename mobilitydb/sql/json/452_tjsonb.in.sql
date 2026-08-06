@@ -76,6 +76,8 @@ CREATE FUNCTION tjsonb(tjsonb, integer)
 
 CREATE CAST (tjsonb AS tjsonb) WITH FUNCTION tjsonb(tjsonb, integer) AS IMPLICIT;
 
+-- GENERATED-REPRESENTATIONS-BEGIN json — tools/codegen/inherited/generate.py from templates/representations.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.yaml (representation_families) and re-run.
 /*****************************************************************************
  * Input/output from WKT, WKB, HexWKB, and MFJSON representation
  *****************************************************************************/
@@ -130,6 +132,8 @@ CREATE FUNCTION asHexWKB(tjsonb, endianenconding text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- GENERATED-REPRESENTATIONS-END json
 
 /*****************************************************************************
  * Constructors

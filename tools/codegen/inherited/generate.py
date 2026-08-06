@@ -818,11 +818,15 @@ def _repr_op(op: str, fam: dict) -> str:
 
 
 def _repr_ops(item, fam: dict) -> str:
-    """An op-sequence item: a bare op (blank-separated from its siblings) or a list of
+    """An op-sequence item: a bare op (blank-separated from its siblings), a list of
     ops fused with NO blank between them (the tnpoint FromBinary+FromHexWKB pairing,
-    the pointcloud no-blank run)."""
+    the pointcloud no-blank run), or a `lit` dict — a verbatim commentary/line run
+    that abuts its neighbours with no blank line when it sits inside a fused list
+    (the pointcloud output-only asMFJSON / hex-WKB asText rationale comments)."""
     if isinstance(item, list):
-        return "\n".join(_repr_op(op, fam) for op in item)
+        return "\n".join(_repr_ops(op, fam) for op in item)
+    if isinstance(item, dict):
+        return item["lit"]
     return _repr_op(item, fam)
 
 
