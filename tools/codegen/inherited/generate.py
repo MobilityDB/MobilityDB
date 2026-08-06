@@ -2836,15 +2836,22 @@ def bootstrap_aggregates(filetext: str, fam: dict, rendered: str) -> str:
 # once they exist, else from the `/*` opening the "Multidimensional tiling" banner
 # down to the `/*` of the Comparison section — or to EOF for a `whole_file` family
 # owning its dedicated *_tile.in.sql file), so the deployed .in.sql files are
-# untouched while the template is proven. FIVE tiling homes are intentionally absent
-# from the manifest because they drift from the tgeo reference shape: 058_tpoint_tile
-# spells its LANGUAGE clause `IMMUTABLE STRICT PARALLEL SAFE` (STRICT mid-clause),
-# 119_tpose_tile and 445_tpcpoint_tile delegate through dollar-quoted
-# `LANGUAGE SQL ... AS $$` cast chains, 025_temporal_tile groups the alpha base-type
-# quartet (the template-class pass, the 022_temporal precedent), and th3index/
-# tquadbin run their bannerless time_<temp>/timeSplit material straight after the
-# modification block with no section header to anchor. All are classified out by
-# omission from the data, never by a code-level skip.
+# untouched while the template is proven. 058_tpoint_tile, 119_tpose_tile and
+# 445_tpcpoint_tile drift from the tgeo reference shape but are still ONE skeleton
+# each, selected per family/fn rather than per-token: 058_tpoint_tile spells its
+# LANGUAGE clause `IMMUTABLE STRICT PARALLEL SAFE` (STRICT mid-clause, not
+# tgeo/trgeo's `PARALLEL SAFE STRICT`) uniformly for all its functions — the family
+# sets `strict_mid: true` and `_tiling_skeleton` swaps in templates/tiling_strict
+# .sql.tmpl (same {SIG}/{RET}/{AS}/{LANG} placeholders, reordered clause); 119_tpose
+# _tile and 445_tpcpoint_tile delegate through dollar-quoted `LANGUAGE SQL ... AS $$
+# <body> $$;` cast chains instead of the `AS '<sym-or-select>'` one-liner — a `body`
+# fn entry (the verbatim dollar-quoted SQL) selects templates/tiling_delegate.sql
+# .tmpl instead. TWO tiling homes remain absent from the manifest because they don't
+# anchor on the "Multidimensional tiling" section header at all: 025_temporal_tile
+# groups the alpha base-type quartet (the template-class pass, the 022_temporal
+# precedent), and th3index/tquadbin run their bannerless time_<temp>/timeSplit
+# material straight after the modification block with no section header to anchor.
+# Both are classified out by omission from the data, never by a code-level skip.
 def _tiling_markers(family: str):
     begin = (f"-- GENERATED-TILING-BEGIN {family} — "
              "tools/codegen/inherited/generate.py from templates/tiling.sql.tmpl;\n"
@@ -2853,13 +2860,24 @@ def _tiling_markers(family: str):
     return begin, f"-- GENERATED-TILING-END {family}\n"
 
 
-def _tiling_skeleton(f: dict) -> str:
+def _tiling_skeleton(f: dict, fam: dict = None) -> str:
     """One tiling CREATE FUNCTION from the shared skeleton (no trailing newline, so
-    blocks can be joined with explicit newline control). A `sym` entry is a C-backed
-    function (`AS 'MODULE_PATHNAME', '<sym>'`, LANGUAGE C); a `sql` entry is a
-    size-collapsing delegation (`AS '<select>'`, LANGUAGE SQL). `pre` is a leading
-    comment line or ""."""
-    tmpl = (TEMPLATES / "tiling.sql.tmpl").read_text()
+    blocks can be joined with explicit newline control). A `body` entry is a
+    dollar-quoted SQL delegation (`LANGUAGE SQL ... AS $$ <body> $$;`, the 119_tpose
+    _tile/445_tpcpoint_tile shape, templates/tiling_delegate.sql.tmpl). Otherwise a
+    `sym` entry is a C-backed function (`AS 'MODULE_PATHNAME', '<sym>'`, LANGUAGE C);
+    a `sql` entry is a size-collapsing delegation (`AS '<select>'`, LANGUAGE SQL);
+    `pre` is a leading comment line or ""; the family's `strict_mid: true` (the
+    058_tpoint_tile shape) selects templates/tiling_strict.sql.tmpl, which spells
+    the LANGUAGE clause `IMMUTABLE STRICT PARALLEL SAFE` instead of the default
+    templates/tiling.sql.tmpl's `IMMUTABLE PARALLEL SAFE STRICT`."""
+    if "body" in f:
+        tmpl = (TEMPLATES / "tiling_delegate.sql.tmpl").read_text()
+        return (tmpl.replace("{SIG}", f["sig"]).replace("{RET}", f["ret"])
+                    .replace("{BODY}", f["body"]).rstrip("\n"))
+    tmpl_name = "tiling_strict.sql.tmpl" if (fam or {}).get("strict_mid") \
+        else "tiling.sql.tmpl"
+    tmpl = (TEMPLATES / tmpl_name).read_text()
     if "sym" in f:
         asx, lang = f"'MODULE_PATHNAME', '{f['sym']}'", "C"
     else:
@@ -2882,7 +2900,7 @@ def render_tiling(fam: dict) -> str:
         if "lit" in blk:
             out += blk["lit"]
         else:
-            out += "\n".join(_tiling_skeleton(f) for f in blk["fns"]) + "\n"
+            out += "\n".join(_tiling_skeleton(f, fam) for f in blk["fns"]) + "\n"
     return out
 
 
