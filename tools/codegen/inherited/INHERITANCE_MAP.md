@@ -550,25 +550,26 @@ column names the `manifest.yaml` key) · ✗ HAND = hand-maintained.
 
 | `<sect1>` (doc line) | `Set<T>` | `Span<T>` | `SpanSet<T>` | axis |
 |---|---|---|---|---|
-| Input and Output (:102) | ✗ HAND | ✓ GEN | ✓ GEN | `span_families` (003/007 entries) |
-| Constructors (:268) | ✗ HAND | ✓ GEN | ✓ GEN | `span_families` |
-| Conversions (:325) | ✗ HAND | ✓ GEN | ✓ GEN | `span_families` |
-| Accessors (:442) | ✗ HAND | ✓ GEN | ✓ GEN | `span_families` |
-| Transformations (:693) | ✗ HAND | ✓ GEN | ✓ GEN | `span_families` |
-| Spatial Reference System (:901) | ✗ HAND (spatial sets only) | — | — | — |
+| Input and Output (:102) | ✓ GEN | ✓ GEN | ✓ GEN | `span_families` (003/007 entries; sets: `set_io` + the per-family `*set_io` entries) |
+| Constructors (:268) | ✓ GEN | ✓ GEN | ✓ GEN | `span_families` (sets: `set_constructors` + `*set_constructors`; h3/quadbin/pointcloud fold their singleton conversion + cast into this section) |
+| Conversions (:325) | ✓ GEN | ✓ GEN | ✓ GEN | `span_families` (sets: `set_conversions` + `*set_conversions`; h3/quadbin/pointcloud have no separate Conversions section — see Constructors) |
+| Accessors (:442) | ✓ GEN | ✓ GEN | ✓ GEN | `span_families` (sets: `set_accessors` + `*set_accessors`; the pointcloud entries also carry the trailing `unnest`) |
+| Transformations (:693) | ✓ GEN | ✓ GEN | ✓ GEN | `span_families` (sets: `set_transformations` + the per-family `*set_transformations`/`*set_unnest` entries; jsonbset's empty Transformations banner stays hand) |
+| Spatial Reference System (:901) | ✓ GEN (geoset/poseset/cbufferset — the only set files with an SRS section; npointset/h3indexset/quadbinset have no SRID functions) | — | — | `span_families` (`*set_srs` entries) |
 | Set Operations (:958) | ✓ GEN | ✓ GEN | ✓ GEN | `setop_families` :1874 · `span_families` (005/009) |
 | BBox Ops · Topological (:1014) | ✓ GEN | ✓ GEN | ✓ GEN | `topop_families` :2081 · `span_families` (005/009) |
 | BBox Ops · Position (:1082) | ✓ GEN (ordered sets only) | ✓ GEN | ✓ GEN | `posop_families` :2294 · `span_families` (005/009) |
 | BBox Ops · Splitting (:1162) | ✓ GEN (`spans`/`splitNSpans`/`splitEachNSpans` live in `003_span.in.sql`) | ✓ GEN | ✓ GEN | `span_families` (003/007 entries) |
 | Distance (:1219) | ✓ GEN (metric sets only) | ✓ GEN | ✓ GEN | `distance_families` :2322 · `span_families` (005/009) |
 | Comparisons (:1248) | ✓ GEN | ✓ GEN | ✓ GEN | `comparison_families` :1583 (`ops: set` entries :1669-1768) + `hash_families` :1769 · `span_families` (003/007) |
-| Aggregations (:1306) | partial — the `extent` aggregates over sets are ✓ GEN in `015_span_aggfuncs.in.sql`; `setUnion` in `001_set.in.sql` is ✗ HAND | ✓ GEN | ✓ GEN | `span_families` (015 entry) |
+| Aggregations (:1306) | ✓ GEN — the `extent` aggregates over sets in `015_span_aggfuncs.in.sql`, `setUnion` in `001_set.in.sql`, and the per-family `setUnion` regions | ✓ GEN | ✓ GEN | `span_families` (015 entry + `set_aggregations` + the per-family `*set_setunion` entries) |
 | Indexing (:1389) | ✓ GEN (span-basetype sets only, §9.2) | ✓ GEN | ✓ GEN | `span_families` (011/012/013 entries) |
 
-Remaining ✗ HAND backlog for `Set<T>`: Input/Output, Constructors,
-Conversions, Accessors, Transformations, the spatial-set SRS section, and the
-`setUnion` half of Aggregations — spread over `001_set.in.sql` and the 8
-per-family set files (§9.5).
+The `Set<T>` backlog is CLOSED: every section of `001_set.in.sql` and of the
+8 per-family set files (§9.5) is generator-governed by a `reference: true`
+`span_families` entry (region-in-file entries carry an exact `end:` anchor).
+The only ungoverned residue is jsonbset's empty `Transformations` banner
+(nothing to render).
 
 ### 9.4 The template-class principle
 
@@ -605,7 +606,8 @@ types: `geo/050_geoset` · `pose/101_poseset` · `cbuffer/201_cbufferset` ·
 operators live separately in `json/451_jsonbset_jsonfuncs`). Their comparison /
 hash / set-operation / topological / position / distance regions are governed
 by the per-surface set axes; their I/O, constructor, conversion, accessor,
-transformation and SRS sections are the hand backlog of §9.3.
+transformation, SRS and setUnion sections are governed by the region-in-file
+`span_families` entries of §9.3.
 
 ### 9.6 What the `setfamilies:` manifest axis encodes
 
