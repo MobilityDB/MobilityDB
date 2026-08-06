@@ -1088,6 +1088,18 @@ def bootstrap_constructors(filetext: str, fam: dict, rendered: str) -> str:
 # reproduced byte-exact. A dual-base family (geo/tpoint) lists both temporal types in
 # `temps` and scopes the per-type Inst/Seq/SeqSet blocks with a block-level `temps`.
 #
+# The base Temporal<T> file (022_temporal) ALSO declares a numeric-only Tnumber value
+# transform trio (shiftValue/scaleValue/shiftScaleValue) whose argument type is the
+# base value domain itself (integer/bigint/float), not a CORE-op fixed type — so it
+# does not fit the `ops` mechanism (which binds fixed non-temporal argument types) and
+# instead uses a `gen` chunk (mirroring the restriction/modification multi-base-type
+# mode): one function expanded over the family's `types:` token table, gated by the
+# same `numeric`/`orderable` presence flags, with `{TEMP}`/`{BASE}` tokens in its
+# `sig`/`ret`. The Seq/SeqSet casts and the odd-indent merge(T,T) overload keep their
+# irregularities (SeqSet's tfloat-only interpolation arg; merge's stray extra indent
+# on tfloat/ttext) as explicit `fns`/`lit` blocks rather than forcing them through
+# either mechanism.
+#
 # Region markers for the eventual Phase-2 emit (mirroring _constructors_markers);
 # Phase-1 --validate extracts the committed hand block by section-header ANCHORS
 # (marker-aware) so the deployed .in.sql files are untouched while the template is
@@ -1174,16 +1186,28 @@ def _xform_ops_block(blk: dict, fam: dict) -> str:
     return "\n".join(_xform_op_fn(op, fam, t) for op in blk["ops"] for t in temps)
 
 
+def _xform_sub(text: str, t: dict) -> str:
+    """Substitute one base type's tokens into a `gen` chunk's sig/ret."""
+    return text.replace("{BASE}", t.get("base", "")).replace("{TEMP}", t["temp"])
+
+
 def render_transformations(fam: dict) -> str:
     """Render one family's transformation block from its `blocks` sequence. A block is
     a verbatim `lit` (a section header/divider/prose comment or a byte-irregular
     function kept exactly as the hand file), an `ops` list (CORE transforms rendered
-    from the family flags/temps, packed with no blank), or an explicit `fns` list (the
-    family-EXTRA overloads: expand/round/appendInstant/appendSequence/merge). Blocks are
-    separated by one blank line, except a `glue` block joins with a single newline (the
-    cbuffer/json dividers whose preceding line carries two trailing spaces, and rgeo's
-    trailing commented-out tsample). The block ends with the blank line that precedes the
-    next section (the section-header anchor slice)."""
+    from the family flags/temps, packed with no blank), an explicit `fns` list (the
+    family-EXTRA overloads: expand/round/appendInstant/appendSequence/merge), or — for
+    the base Temporal<T> multi-base-type mode — a `gen` chunk (ONE function expanded
+    over the family's `types:` pool that its `presence` class selects, mirroring the
+    restriction/modification gen mode). Blocks are separated by one blank line, except
+    a `glue` block joins with a single newline (the cbuffer/json dividers whose
+    preceding line carries two trailing spaces, and rgeo's trailing commented-out
+    tsample). The block ends with the blank line that precedes the next section (the
+    section-header anchor slice)."""
+    types = fam.get("types") or []
+    pools = {"all": types,
+             "numeric": [t for t in types if t.get("numeric")],
+             "orderable": [t for t in types if t.get("orderable")]}
     parts = []
     for blk in fam["blocks"]:
         if "lit" in blk:
@@ -1192,6 +1216,13 @@ def render_transformations(fam: dict) -> str:
             text = "\n".join(_xform_skeleton(f["sig"], f["ret"], f["sym"],
                                              f.get("strict", True), f.get("pre", ""))
                              for f in blk["fns"])
+        elif "gen" in blk:
+            g = blk["gen"]
+            text = "\n".join(_xform_skeleton(_xform_sub(g["sig"], t),
+                                             _xform_sub(g.get("ret", "{TEMP}"), t),
+                                             g["sym"], g.get("strict", True),
+                                             g.get("pre", ""))
+                             for t in pools[g.get("presence", "all")])
         else:
             text = _xform_ops_block(blk, fam)
         parts.append((blk.get("glue", False), text))
