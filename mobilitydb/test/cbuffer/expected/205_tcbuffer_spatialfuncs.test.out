@@ -78,6 +78,18 @@ SELECT getTime(minusGeometry(
  {[Sat Jan 01 00:00:00 2000 PST, Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
+SELECT asText(atGeometry(tcbuffer '[Cbuffer(Point(1 1), 0)@2001-01-01, Cbuffer(Point(4 4), 0)@2001-01-04]', 'Polygon((2 2,2 3,3 3,3 2,2 2))'));
+                                                   astext                                                   
+------------------------------------------------------------------------------------------------------------
+ {[Cbuffer(POINT(2 2),0)@Tue Jan 02 00:00:00 2001 PST, Cbuffer(POINT(3 3),0)@Wed Jan 03 00:00:00 2001 PST]}
+(1 row)
+
+SELECT asText(minusGeometry(tcbuffer '[Cbuffer(Point(1 1), 0)@2001-01-01, Cbuffer(Point(4 4), 0)@2001-01-04]', 'Polygon((2 2,2 3,3 3,3 2,2 2))'));
+                                                                                                        astext                                                                                                        
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[Cbuffer(POINT(1 1),0)@Mon Jan 01 00:00:00 2001 PST, Cbuffer(POINT(2 2),0)@Tue Jan 02 00:00:00 2001 PST), (Cbuffer(POINT(3 3),0)@Wed Jan 03 00:00:00 2001 PST, Cbuffer(POINT(4 4),0)@Thu Jan 04 00:00:00 2001 PST]}
+(1 row)
+
 SELECT centroid(NULL::tcbuffer);
  centroid 
 ----------

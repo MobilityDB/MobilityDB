@@ -859,9 +859,17 @@ tcbuffer_disc_within_ctx(const Cbuffer *cb, double dist, const void *ctxv)
 }
 
 /**
- * @brief Append to @p cand the normalized times in (lo,hi) at which the moving
+ * @brief Append to @p cand the normalized times in [lo,hi] at which the moving
  * disc distance to a region equals @p dist, i.e. the roots of
  * (A - DR^2) t^2 + (B - 2 R0 DR) t + (C - R0^2) = 0 with R0 = r1 + dist
+ * @note The bounds are inclusive. The caller splits a segment into
+ * perpendicular/endpoint sub-regions at breakpoints (#tcbuffersegm_edge_within_roots);
+ * when the moving centre crosses the geometry exactly at a polygon vertex, the
+ * crossing time coincides exactly with the breakpoint shared by the two
+ * adjacent sub-regions, and is a genuine root of BOTH regions' equations
+ * there. A strict `> lo && < hi` test drops it from both sides, so the true
+ * crossing silently vanishes from @p cand and the within-distance test
+ * over-extends the sub-period it reports
  */
 static void
 tcbuffer_region_within_roots(double A, double B, double C, double R0,
@@ -875,7 +883,7 @@ tcbuffer_region_within_roots(double A, double B, double C, double R0,
     if (fabs(b) > 1e-18)
     {
       double t = -c / b;
-      if (t > lo && t < hi)
+      if (t >= lo && t <= hi)
         cand[(*nc)++] = t;
     }
     return;
@@ -886,9 +894,9 @@ tcbuffer_region_within_roots(double A, double B, double C, double R0,
   double sd = sqrt(disc);
   double t1 = (-b - sd) / (2.0 * a);
   double t2 = (-b + sd) / (2.0 * a);
-  if (t1 > lo && t1 < hi)
+  if (t1 >= lo && t1 <= hi)
     cand[(*nc)++] = t1;
-  if (t2 > lo && t2 < hi)
+  if (t2 >= lo && t2 <= hi)
     cand[(*nc)++] = t2;
 }
 

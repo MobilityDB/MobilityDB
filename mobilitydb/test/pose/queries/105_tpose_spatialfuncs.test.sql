@@ -69,6 +69,9 @@ SELECT asText(minusGeometry(
   tpose '[Pose(Point(0 0),0)@2000-01-01, Pose(Point(5 0),0)@2000-01-06]',
   'Polygon((1 -1,3 -1,3 1,1 1,1 -1))'::geometry));
 
+SELECT asText(atGeometry(tpose '[Pose(Point(1 1), 0.3)@2001-01-01, Pose(Point(4 4), 0.7)@2001-01-04]', 'Polygon((2 2,2 3,3 3,3 2,2 2))'), 6);
+SELECT asText(minusGeometry(tpose '[Pose(Point(1 1), 0.3)@2001-01-01, Pose(Point(4 4), 0.7)@2001-01-04]', 'Polygon((2 2,2 3,3 3,3 2,2 2))'), 6);
+
 -------------------------------------------------------------------------------
 -- atGeometry / minusGeometry — sequence set
 
