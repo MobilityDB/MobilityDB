@@ -70,23 +70,43 @@ typedef struct
   double ymax;        /**< maximum y value */
   double zmax;        /**< maximum z value */
   int32_t srid;       /**< SRID */
-  uint32_t pcid;      /**< pgpointcloud schema id */
   int16 flags;        /**< flags */
-  char padding[6];    /**< explicit pad to 8-byte alignment */
+  /* Every field above is byte-identical to STBox, so a TPCBox is read
+   * through an @p STBox pointer by the shared spatiotemporal code. The
+   * pgpointcloud schema id follows that common prefix. */
+  char padding[2];    /**< explicit pad, kept zero: send/recv copy the struct */
+  uint32_t pcid;      /**< pgpointcloud schema id */
 } TPCBox;
 
-/* TPCBox shares its leading layout with STBox so that a TPCBox can be
- * projected to an STBox by dropping the trailing pcid + padding. The
- * layout-compatibility cast (CREATE CAST tpcbox AS stbox) and any
- * future tooling that converts between the two rely on this. */
+/* A TPCBox begins with a whole STBox: every STBox field sits at the same
+ * offset, so the shared spatiotemporal code reads a TPCBox through an
+ * @p STBox pointer, and a TPCBox is projected to an STBox by dropping the
+ * trailing pcid. The layout-compatibility cast (CREATE CAST tpcbox AS
+ * stbox) relies on this, as does the SRID accessor.
+ *
+ * ⛔ The flags offset is the one that matters most: nearly every box
+ * operation reads the X / Z / T / GEODETIC bits, so a divergence there
+ * silently misreads every box rather than failing loudly. */
 static_assert(offsetof(TPCBox, period) == offsetof(STBox, period),
                "TPCBox and STBox must share the period offset");
 static_assert(offsetof(TPCBox, xmin) == offsetof(STBox, xmin),
                "TPCBox and STBox must share the xmin offset");
+static_assert(offsetof(TPCBox, ymin) == offsetof(STBox, ymin),
+               "TPCBox and STBox must share the ymin offset");
+static_assert(offsetof(TPCBox, zmin) == offsetof(STBox, zmin),
+               "TPCBox and STBox must share the zmin offset");
+static_assert(offsetof(TPCBox, xmax) == offsetof(STBox, xmax),
+               "TPCBox and STBox must share the xmax offset");
+static_assert(offsetof(TPCBox, ymax) == offsetof(STBox, ymax),
+               "TPCBox and STBox must share the ymax offset");
 static_assert(offsetof(TPCBox, zmax) == offsetof(STBox, zmax),
                "TPCBox and STBox must share the zmax offset");
 static_assert(offsetof(TPCBox, srid) == offsetof(STBox, srid),
                "TPCBox and STBox must share the srid offset");
+static_assert(offsetof(TPCBox, flags) == offsetof(STBox, flags),
+               "TPCBox and STBox must share the flags offset");
+static_assert(offsetof(TPCBox, pcid) >= sizeof(STBox),
+               "the pcid of a TPCBox must follow the whole STBox prefix");
 
 /*****************************************************************************
  * Validity macros

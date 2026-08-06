@@ -209,6 +209,20 @@ SELECT appendSequence(tpcpointSeq(ARRAY[:inst1]),
   tpcpointSeq(ARRAY[:inst2, :inst3])) IS NOT NULL;
 
 -------------------------------------------------------------------------------
+-- SRID
+-- Reading the SRID of a tpcpoint goes through the generic spatiotemporal
+-- dispatcher. The instant form reads the schema of the value; the sequence
+-- form reads the bounding box, whose leading layout is that of an STBox.
+-- Both agree with the schema registered in pointcloud_formats.
+-------------------------------------------------------------------------------
+
+SELECT SRID(:inst1);
+SELECT SRID(tpcpointSeq(ARRAY[:inst1, :inst2]));
+SELECT SRID(tpcpointSeqSet(ARRAY[tpcpointSeq(ARRAY[:inst1, :inst2])]));
+SELECT SRID(:inst1) = (SELECT srid FROM pointcloud_formats WHERE pcid = 1);
+SELECT SRID(tpcpointSeq(ARRAY[:inst1, :inst2])) = SRID(:inst1);
+
+-------------------------------------------------------------------------------
 -- Unnest
 -- One row per distinct value, with the span set on which the temporal value
 -- takes it. A value occurring twice yields one row whose span set has two
