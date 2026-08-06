@@ -3095,6 +3095,80 @@ def strip_banner(text: str) -> str:
 
 COVERAGE_EXCEPTIONS = HERE / "coverage_exceptions.txt"
 
+# BINDING-HEADER-PARSE-OK: this is MobilityDB's own in-repo SQL generator reading
+# the catalog it ships with, not a binding consuming meos-idl.json. The catalog is
+# the single source of truth for class membership, so the generator reads the
+# predicate bodies rather than carrying its own copy of the hierarchy.
+CLASS_PREDICATE_SOURCES = (
+    "meos/src/temporal/meos_catalog.c",
+    "meos/src/temporal/tcellindex.c",
+)
+CATALOG_NAMES = "meos/src/temporal/meos_catalog.c"
+
+
+def catalog_type_names() -> dict:
+    """`T_<X>` -> the canonical lowercase type name from the catalog name array."""
+    src = (ROOT / CATALOG_NAMES).read_text()
+    return dict(re.findall(r'\[(T_[A-Z0-9_]+)\]\s*=\s*"([^"]+)"', src))
+
+
+def parse_class_members(predicate: str, names: dict) -> list:
+    """The temporal types a catalog class predicate accepts, canonically named.
+
+    Every predicate is a flat `type == T_X || type == T_Y` disjunction, so the
+    membership is read directly off the body. Preprocessor lines are ignored: a
+    family gated behind `#if QUADBIN` is still a member of the class. Names are
+    resolved through the catalog name array, never by lowercasing the enum.
+    """
+    for rel in CLASS_PREDICATE_SOURCES:
+        src = (ROOT / rel).read_text()
+        m = re.search(r"\n" + predicate + r"\(MeosType type[^)]*\)\s*\{(.*?)\n\}",
+                      src, re.S)
+        if not m:
+            continue
+        body = "\n".join(l for l in m.group(1).splitlines()
+                         if not l.lstrip().startswith("#"))
+        out = []
+        for enum in re.findall(r"(T_[A-Z0-9_]+)", body):
+            if enum not in names:
+                raise SystemExit(f"{predicate}(): {enum} is absent from the "
+                                 f"catalog name array")
+            out.append(names[enum])
+        return out
+    raise SystemExit(f"class predicate {predicate}() not found in "
+                     f"{', '.join(CLASS_PREDICATE_SOURCES)}")
+
+
+def check_classes(mf: dict) -> int:
+    """The manifest's class membership agrees with the catalog predicates.
+
+    Membership is derived from the predicate bodies; the manifest records the
+    expected result so that adding a type to a class in MEOS fails here until
+    the generated surface follows.
+    """
+    classes = mf.get("classes") or {}
+    if not classes:
+        print("no classes: block in the manifest")
+        return 1
+    names = catalog_type_names()
+    ok = True
+    for name in sorted(classes):
+        spec = classes[name]
+        live = parse_class_members(spec["predicate"], names)
+        want = spec.get("members") or []
+        if live == want:
+            print(f"[OK  ] {name:12} {spec['predicate']:22} {len(live):2} members")
+            continue
+        ok = False
+        print(f"[DRIFT] {name:12} {spec['predicate']}")
+        print(f"        catalog : {' '.join(live)}")
+        print(f"        manifest: {' '.join(want)}")
+    if not ok:
+        print("class membership FAILED - update the manifest and the surface it drives")
+        return 1
+    print(f"class membership OK - {len(classes)} classes match the catalog")
+    return 0
+
 
 def manifest_files(mf: dict) -> set:
     """Every mobilitydb/sql path named by a manifest entry, repo-relative."""
@@ -3157,11 +3231,17 @@ def main() -> int:
     ap.add_argument("--coverage", action="store_true",
                     help="every .in.sql is manifest-governed or listed in "
                          "coverage_exceptions.txt (the list may only shrink)")
+    ap.add_argument("--classes", action="store_true",
+                    help="the manifest classes: block matches the catalog "
+                         "class predicates")
     ap.add_argument("--only", help="restrict to one temp type (e.g. tquadbin)")
     args = ap.parse_args()
 
     if args.coverage:
         return check_coverage(yaml.safe_load(MANIFEST.read_text()))
+
+    if args.classes:
+        return check_classes(yaml.safe_load(MANIFEST.read_text()))
 
     mf = yaml.safe_load(MANIFEST.read_text())
     positions = mf["positions"]
