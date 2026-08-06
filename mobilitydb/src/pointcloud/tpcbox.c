@@ -843,7 +843,7 @@ PG_FUNCTION_INFO_V1(Tpcbox_eq);
 /**
  * @ingroup mobilitydb_pointcloud_box_comp
  * @brief PG wrapper: tpcbox = tpcbox
- * @sqlfn tpcbox_eq()
+ * @sqlfn eq()
  * @sqlop @p =
  */
 Datum Tpcbox_eq(PG_FUNCTION_ARGS) { TPCBOX_PRED_2_BODY(tpcbox_eq) }
@@ -853,7 +853,7 @@ PG_FUNCTION_INFO_V1(Tpcbox_ne);
 /**
  * @ingroup mobilitydb_pointcloud_box_comp
  * @brief PG wrapper: tpcbox <> tpcbox
- * @sqlfn tpcbox_ne()
+ * @sqlfn ne()
  * @sqlop @p <>
  */
 Datum Tpcbox_ne(PG_FUNCTION_ARGS) { TPCBOX_PRED_2_BODY(tpcbox_ne) }
@@ -863,7 +863,7 @@ PG_FUNCTION_INFO_V1(Tpcbox_lt);
 /**
  * @ingroup mobilitydb_pointcloud_box_comp
  * @brief PG wrapper: tpcbox < tpcbox
- * @sqlfn tpcbox_lt()
+ * @sqlfn lt()
  * @sqlop @p <
  */
 Datum Tpcbox_lt(PG_FUNCTION_ARGS) { TPCBOX_PRED_2_BODY(tpcbox_lt) }
@@ -873,7 +873,7 @@ PG_FUNCTION_INFO_V1(Tpcbox_le);
 /**
  * @ingroup mobilitydb_pointcloud_box_comp
  * @brief PG wrapper: tpcbox <= tpcbox
- * @sqlfn tpcbox_le()
+ * @sqlfn le()
  * @sqlop @p <=
  */
 Datum Tpcbox_le(PG_FUNCTION_ARGS) { TPCBOX_PRED_2_BODY(tpcbox_le) }
@@ -883,7 +883,7 @@ PG_FUNCTION_INFO_V1(Tpcbox_gt);
 /**
  * @ingroup mobilitydb_pointcloud_box_comp
  * @brief PG wrapper: tpcbox > tpcbox
- * @sqlfn tpcbox_gt()
+ * @sqlfn gt()
  * @sqlop @p >
  */
 Datum Tpcbox_gt(PG_FUNCTION_ARGS) { TPCBOX_PRED_2_BODY(tpcbox_gt) }
@@ -893,7 +893,7 @@ PG_FUNCTION_INFO_V1(Tpcbox_ge);
 /**
  * @ingroup mobilitydb_pointcloud_box_comp
  * @brief PG wrapper: tpcbox >= tpcbox
- * @sqlfn tpcbox_ge()
+ * @sqlfn ge()
  * @sqlop @p >=
  */
 Datum Tpcbox_ge(PG_FUNCTION_ARGS) { TPCBOX_PRED_2_BODY(tpcbox_ge) }
@@ -903,7 +903,7 @@ PG_FUNCTION_INFO_V1(Tpcbox_cmp);
 /**
  * @ingroup mobilitydb_pointcloud_box_comp
  * @brief B-tree comparator for tpcbox
- * @sqlfn tpcbox_cmp()
+ * @sqlfn cmp()
  */
 Datum
 Tpcbox_cmp(PG_FUNCTION_ARGS)

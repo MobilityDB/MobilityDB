@@ -218,67 +218,67 @@ CREATE OPERATOR ~= (
  * Comparisons
  ******************************************************************************/
 
-CREATE FUNCTION cbuffer_eq(cbuffer, cbuffer)
+CREATE FUNCTION eq(cbuffer, cbuffer)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Cbuffer_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION cbuffer_ne(cbuffer, cbuffer)
+CREATE FUNCTION ne(cbuffer, cbuffer)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Cbuffer_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION cbuffer_lt(cbuffer, cbuffer)
+CREATE FUNCTION lt(cbuffer, cbuffer)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Cbuffer_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION cbuffer_le(cbuffer, cbuffer)
+CREATE FUNCTION le(cbuffer, cbuffer)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Cbuffer_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION cbuffer_ge(cbuffer, cbuffer)
+CREATE FUNCTION ge(cbuffer, cbuffer)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Cbuffer_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION cbuffer_gt(cbuffer, cbuffer)
+CREATE FUNCTION gt(cbuffer, cbuffer)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Cbuffer_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION cbuffer_cmp(cbuffer, cbuffer)
+CREATE FUNCTION cmp(cbuffer, cbuffer)
   RETURNS int4
   AS 'MODULE_PATHNAME', 'Cbuffer_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR = (
-  PROCEDURE = cbuffer_eq,
+  PROCEDURE = eq,
   LEFTARG = cbuffer, RIGHTARG = cbuffer,
   COMMUTATOR = =, NEGATOR = <>,
   RESTRICT = eqsel, JOIN = eqjoinsel
 );
 CREATE OPERATOR <> (
-  PROCEDURE = cbuffer_ne,
+  PROCEDURE = ne,
   LEFTARG = cbuffer, RIGHTARG = cbuffer,
   COMMUTATOR = <>, NEGATOR = =,
   RESTRICT = neqsel, JOIN = neqjoinsel
 );
 CREATE OPERATOR < (
-  PROCEDURE = cbuffer_lt,
+  PROCEDURE = lt,
   LEFTARG = cbuffer, RIGHTARG = cbuffer,
   COMMUTATOR = >, NEGATOR = >=,
   RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR <= (
-  PROCEDURE = cbuffer_le,
+  PROCEDURE = le,
   LEFTARG = cbuffer, RIGHTARG = cbuffer,
   COMMUTATOR = >=, NEGATOR = >,
   RESTRICT = scalarlesel, JOIN = scalarlejoinsel
 );
 CREATE OPERATOR >= (
-  PROCEDURE = cbuffer_ge,
+  PROCEDURE = ge,
   LEFTARG = cbuffer, RIGHTARG = cbuffer,
   COMMUTATOR = <=, NEGATOR = <,
   RESTRICT = scalargesel, JOIN = scalargejoinsel
 );
 CREATE OPERATOR > (
-  PROCEDURE = cbuffer_gt,
+  PROCEDURE = gt,
   LEFTARG = cbuffer, RIGHTARG = cbuffer,
   COMMUTATOR = <, NEGATOR = <=,
   RESTRICT = scalargtsel, JOIN = scalargtjoinsel
@@ -291,7 +291,7 @@ CREATE OPERATOR CLASS cbuffer_btree_ops
   OPERATOR  3 = ,
   OPERATOR  4 >= ,
   OPERATOR  5 > ,
-  FUNCTION  1 cbuffer_cmp(cbuffer, cbuffer);
+  FUNCTION  1 cmp(cbuffer, cbuffer);
 
 /******************************************************************************/
 

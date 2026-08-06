@@ -401,10 +401,10 @@ SELECT npoint 'npoint(1,0.5)' >= npoint 'npoint(2,0.5)';
  f
 (1 row)
 
-SELECT nsegment_cmp(nsegment 'nsegment(1,0.3,0.5)', nsegment 'nsegment(1,0.3,0.4)');
- nsegment_cmp 
---------------
-            1
+SELECT cmp(nsegment 'nsegment(1,0.3,0.5)', nsegment 'nsegment(1,0.3,0.4)');
+ cmp 
+-----
+   1
 (1 row)
 
 SELECT nsegment 'nsegment(1,0.3,0.5)' = nsegment 'nsegment(1,0.3,0.5)';

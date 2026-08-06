@@ -108,37 +108,37 @@ CREATE CAST (quadbin AS bigint) WITHOUT FUNCTION AS ASSIGNMENT;
  * boiler-plate and lets MobilityDuck consume the same primitives.
  ******************************************************************************/
 
-CREATE FUNCTION quadbin_eq(quadbin, quadbin)
+CREATE FUNCTION eq(quadbin, quadbin)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Quadbin_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION quadbin_ne(quadbin, quadbin)
+CREATE FUNCTION ne(quadbin, quadbin)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Quadbin_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION quadbin_lt(quadbin, quadbin)
+CREATE FUNCTION lt(quadbin, quadbin)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Quadbin_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION quadbin_le(quadbin, quadbin)
+CREATE FUNCTION le(quadbin, quadbin)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Quadbin_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION quadbin_gt(quadbin, quadbin)
+CREATE FUNCTION gt(quadbin, quadbin)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Quadbin_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION quadbin_ge(quadbin, quadbin)
+CREATE FUNCTION ge(quadbin, quadbin)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Quadbin_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION quadbin_cmp(quadbin, quadbin)
+CREATE FUNCTION cmp(quadbin, quadbin)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Quadbin_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -150,7 +150,7 @@ CREATE FUNCTION hash(quadbin)
 
 CREATE OPERATOR = (
   LEFTARG = quadbin, RIGHTARG = quadbin,
-  PROCEDURE = quadbin_eq,
+  PROCEDURE = eq,
   COMMUTATOR = =, NEGATOR = <>,
   RESTRICT = eqsel, JOIN = eqjoinsel,
   HASHES, MERGES
@@ -158,35 +158,35 @@ CREATE OPERATOR = (
 
 CREATE OPERATOR <> (
   LEFTARG = quadbin, RIGHTARG = quadbin,
-  PROCEDURE = quadbin_ne,
+  PROCEDURE = ne,
   COMMUTATOR = <>, NEGATOR = =,
   RESTRICT = neqsel, JOIN = neqjoinsel
 );
 
 CREATE OPERATOR < (
   LEFTARG = quadbin, RIGHTARG = quadbin,
-  PROCEDURE = quadbin_lt,
+  PROCEDURE = lt,
   COMMUTATOR = >, NEGATOR = >=,
   RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
 
 CREATE OPERATOR <= (
   LEFTARG = quadbin, RIGHTARG = quadbin,
-  PROCEDURE = quadbin_le,
+  PROCEDURE = le,
   COMMUTATOR = >=, NEGATOR = >,
   RESTRICT = scalarlesel, JOIN = scalarlejoinsel
 );
 
 CREATE OPERATOR > (
   LEFTARG = quadbin, RIGHTARG = quadbin,
-  PROCEDURE = quadbin_gt,
+  PROCEDURE = gt,
   COMMUTATOR = <, NEGATOR = <=,
   RESTRICT = scalargtsel, JOIN = scalargtjoinsel
 );
 
 CREATE OPERATOR >= (
   LEFTARG = quadbin, RIGHTARG = quadbin,
-  PROCEDURE = quadbin_ge,
+  PROCEDURE = ge,
   COMMUTATOR = <=, NEGATOR = <,
   RESTRICT = scalargesel, JOIN = scalargejoinsel
 );
@@ -205,7 +205,7 @@ CREATE OPERATOR CLASS quadbin_ops
     OPERATOR  3  =,
     OPERATOR  4  >=,
     OPERATOR  5  >,
-    FUNCTION  1  quadbin_cmp(quadbin, quadbin);
+    FUNCTION  1  cmp(quadbin, quadbin);
 
 CREATE OPERATOR CLASS quadbin_ops
   DEFAULT FOR TYPE quadbin USING hash AS

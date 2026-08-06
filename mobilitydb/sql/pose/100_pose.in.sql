@@ -293,67 +293,67 @@ CREATE OPERATOR ~= (
  * Comparisons
  ******************************************************************************/
 
-CREATE FUNCTION pose_eq(pose, pose)
+CREATE FUNCTION eq(pose, pose)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Pose_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION pose_ne(pose, pose)
+CREATE FUNCTION ne(pose, pose)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Pose_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION pose_lt(pose, pose)
+CREATE FUNCTION lt(pose, pose)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Pose_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION pose_le(pose, pose)
+CREATE FUNCTION le(pose, pose)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Pose_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION pose_ge(pose, pose)
+CREATE FUNCTION ge(pose, pose)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Pose_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION pose_gt(pose, pose)
+CREATE FUNCTION gt(pose, pose)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Pose_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION pose_cmp(pose, pose)
+CREATE FUNCTION cmp(pose, pose)
   RETURNS int4
   AS 'MODULE_PATHNAME', 'Pose_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR = (
-  PROCEDURE = pose_eq,
+  PROCEDURE = eq,
   LEFTARG = pose, RIGHTARG = pose,
   COMMUTATOR = =, NEGATOR = <>,
   RESTRICT = eqsel, JOIN = eqjoinsel
 );
 CREATE OPERATOR <> (
-  PROCEDURE = pose_ne,
+  PROCEDURE = ne,
   LEFTARG = pose, RIGHTARG = pose,
   COMMUTATOR = <>, NEGATOR = =,
   RESTRICT = neqsel, JOIN = neqjoinsel
 );
 CREATE OPERATOR < (
-  PROCEDURE = pose_lt,
+  PROCEDURE = lt,
   LEFTARG = pose, RIGHTARG = pose,
   COMMUTATOR = >, NEGATOR = >=,
   RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR <= (
-  PROCEDURE = pose_le,
+  PROCEDURE = le,
   LEFTARG = pose, RIGHTARG = pose,
   COMMUTATOR = >=, NEGATOR = >,
   RESTRICT = scalarlesel, JOIN = scalarlejoinsel
 );
 CREATE OPERATOR >= (
-  PROCEDURE = pose_ge,
+  PROCEDURE = ge,
   LEFTARG = pose, RIGHTARG = pose,
   COMMUTATOR = <=, NEGATOR = <,
   RESTRICT = scalargesel, JOIN = scalargejoinsel
 );
 CREATE OPERATOR > (
-  PROCEDURE = pose_gt,
+  PROCEDURE = gt,
   LEFTARG = pose, RIGHTARG = pose,
   COMMUTATOR = <, NEGATOR = <=,
   RESTRICT = scalargtsel, JOIN = scalargtjoinsel
@@ -366,7 +366,7 @@ CREATE OPERATOR CLASS pose_btree_ops
   OPERATOR  3 = ,
   OPERATOR  4 >= ,
   OPERATOR  5 > ,
-  FUNCTION  1 pose_cmp(pose, pose);
+  FUNCTION  1 cmp(pose, pose);
 
 /******************************************************************************/
 
