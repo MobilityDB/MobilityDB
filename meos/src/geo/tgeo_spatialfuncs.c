@@ -110,12 +110,23 @@ GSERIALIZED *
 geopoint_make(double x, double y, double z, bool hasz, bool geodetic,
   int32_t srid)
 {
-  LWPOINT *point = hasz ?
-    lwpoint_make3dz(srid, x, y, z) : lwpoint_make2d(srid, x, y);
-  FLAGS_SET_GEODETIC(point->flags, geodetic);
-  GSERIALIZED *result = geo_serialize((LWGEOM *) point);
-  lwpoint_free(point);
-  return result;
+  /* The coordinate list, the point array, and the point are in the stack,
+   * since only the serialized result outlives the function */
+  double coords[3] = {x, y, z};
+  lwflags_t flags = 0;
+  FLAGS_SET_Z(flags, hasz);
+  FLAGS_SET_GEODETIC(flags, geodetic);
+  POINTARRAY pa;
+  pa.npoints = pa.maxpoints = 1;
+  pa.flags = flags;
+  pa.serialized_pointlist = (uint8_t *) coords;
+  LWPOINT point;
+  point.bbox = NULL;
+  point.point = &pa;
+  point.srid = srid;
+  point.flags = flags;
+  point.type = POINTTYPE;
+  return geo_serialize((LWGEOM *) &point);
 }
 
 /*****************************************************************************/
