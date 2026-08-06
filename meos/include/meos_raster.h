@@ -48,6 +48,7 @@
 #include <stdint.h>
 /* MEOS */
 #include <meos.h>
+#include <meos_geo.h>
 
 /**
  * @brief Pixel data type for raster chip sampling.
@@ -110,6 +111,17 @@ extern bool raquet_ge(const Raquet *rq1, const Raquet *rq2);
 extern bool raquet_gt(const Raquet *rq1, const Raquet *rq2);
 
 /* Sampling functions */
+
+/**
+ * @brief Callback returning the raster pixel value at a point: return true
+ * and set @p value, or return false when the point lies outside the raster
+ * or on a nodata pixel
+ */
+typedef bool (*raster_sample_fn)(void *ctx, const GSERIALIZED *point,
+  double *value);
+
+extern Temporal *raster_value(const Temporal *traj, const STBox *box,
+  raster_sample_fn sample, void *ctx);
 
 extern Temporal *raster_tile_value_quadbin(const uint8_t *pixels,
   uint16_t width, uint16_t height, uint64 quadbin, MeosPixType pixtype,

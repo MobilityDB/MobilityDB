@@ -57,6 +57,8 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include <meos_raster.h>
+#include "temporal/temporal.h"
 #include "temporal/tinstant.h"
 #include "temporal/tsequence.h"
 /* Raster */
@@ -367,6 +369,69 @@ raster_tile_value_quadbin(const uint8_t *pixels, uint16_t width,
     double pixval = read_pixel(pixels, col, row, width, pixtype);
     if (has_nodata && pixval == nodata)
       continue;
+
+    result_insts[ninsts++] =
+      tinstant_make(Float8GetDatum(pixval), T_TFLOAT, insts[i]->t);
+  }
+
+  pfree(insts);
+
+  if (ninsts == 0)
+  {
+    pfree(result_insts);
+    return NULL;
+  }
+  return (Temporal *) tsequence_make_free(result_insts, ninsts,
+                                          true, true, DISCRETE, NORMALIZE);
+}
+
+/**
+ * @ingroup meos_raster
+ * @brief Return the values of a raster sampled at the instants of a
+ * trajectory
+ * @details The pixel access is delegated to the @p sample callback so that
+ * the one algorithm serves any raster engine: the MobilityDB extension
+ * samples through PostGIS raster's @p ST_Value, a program using the MEOS
+ * library samples through GDAL or any other reader.
+ * @param[in] traj Trajectory (temporal geometry point)
+ * @param[in] box Bounding box of the raster used as a pre-filter, may be
+ * @p NULL
+ * @param[in] sample Callback returning the pixel value at a point
+ * @param[in] ctx Opaque context passed through to the callback
+ * @return A temporal float, or @p NULL when no instant of @p traj falls
+ * inside the raster or survives nodata filtering
+ * @csqlfn #Raster_value()
+ */
+Temporal *
+raster_value(const Temporal *traj, const STBox *box, raster_sample_fn sample,
+  void *ctx)
+{
+  VALIDATE_NOT_NULL(traj, NULL); VALIDATE_NOT_NULL((void *) sample, NULL);
+
+  /* Iterate over trajectory instants */
+  int count;
+  const TInstant **insts = temporal_insts_p(traj, &count);
+  TInstant **result_insts = palloc(sizeof(TInstant *) * count);
+  int ninsts = 0;
+
+  for (int i = 0; i < count; i++)
+  {
+    GSERIALIZED *pt_gs =
+      (GSERIALIZED *) DatumGetPointer(tinstant_value(insts[i]));
+
+    /* Bounding-box pre-filter: for a point the GBOX is degenerate */
+    if (box)
+    {
+      GBOX pt_box;
+      gserialized_get_gbox_p(pt_gs, &pt_box);
+      if (pt_box.xmin < box->xmin || pt_box.xmin > box->xmax ||
+          pt_box.ymin < box->ymin || pt_box.ymin > box->ymax)
+        continue;
+    }
+
+    double pixval;
+    if (! sample(ctx, pt_gs, &pixval))
+      continue;   /* nodata pixel or geometry outside the pixel grid */
 
     result_insts[ninsts++] =
       tinstant_make(Float8GetDatum(pixval), T_TFLOAT, insts[i]->t);

@@ -128,31 +128,48 @@ PG_FUNCTION_INFO_V1(Raster_value);
  * @param[in] band Band number (1-based, default 1)
  * @csqlfn #Raster_value()
  */
+/**
+ * @brief Raster sampling callback backed by PostGIS raster's ST_Value: the
+ * context is a prepared FunctionCallInfo whose raster/band/nodata/resample
+ * arguments are constant, only the point argument varies per call
+ */
+static bool
+raster_st_value_sample(void *ctx, const GSERIALIZED *point, double *value)
+{
+  FunctionCallInfo fcinfo_val = (FunctionCallInfo) ctx;
+  fcinfo_val->args[2].value  = PointerGetDatum(point);
+  fcinfo_val->args[2].isnull = false;
+  fcinfo_val->isnull         = false;   /* reset before every call */
+  Datum pixval = FunctionCallInvoke(fcinfo_val);
+  if (fcinfo_val->isnull)
+    return false;   /* nodata pixel or geometry outside the pixel grid */
+  *value = DatumGetFloat8(pixval);
+  return true;
+}
+
 Datum
 Raster_value(PG_FUNCTION_ARGS)
 {
-  /* ── arguments ──────────────────────────────────────────────────────── */
   Datum     rast_datum = PG_GETARG_DATUM(0);
   Temporal *traj       = PG_GETARG_TEMPORAL_P(1);
   int32     band       = PG_ARGISNULL(2) ? 1 : PG_GETARG_INT32(2);
 
-  /* ── OID resolution (once per session) ──────────────────────────────── */
+  /* OID resolution (once per session) */
   init_oids();
 
-  /* ── Raster convex hull — used as a bounding-box pre-filter ─────────── */
+  /* Raster convex hull — the bounding-box pre-filter of the MEOS kernel */
   Datum hull_datum =
     OidFunctionCall1(st_convexhull_raster_oid, rast_datum);
   GSERIALIZED *hull_gs = (GSERIALIZED *) DatumGetPointer(hull_datum);
   GBOX         hull_box;
   gserialized_get_gbox_p(hull_gs, &hull_box);
   pfree(hull_gs);
-
-  /* ── Iterate over trajectory instants ───────────────────────────────── */
-  int count;
-  const TInstant **insts = temporal_insts_p(traj, &count);
-
-  TInstant **result_insts = palloc(sizeof(TInstant *) * count);
-  int ninsts = 0;
+  STBox box;
+  memset(&box, 0, sizeof(STBox));
+  box.xmin = hull_box.xmin;
+  box.xmax = hull_box.xmax;
+  box.ymin = hull_box.ymin;
+  box.ymax = hull_box.ymax;
 
   /* Prepare a reusable FunctionCallInfo for ST_Value (handles NULL returns) */
   FmgrInfo flinfo;
@@ -174,45 +191,12 @@ Raster_value(PG_FUNCTION_ARGS)
   fcinfo_val->args[4].value  = PointerGetDatum(cstring_to_text("nearest"));
   fcinfo_val->args[4].isnull = false;
 
-  for (int i = 0; i < count; i++)
-  {
-    Datum geom_datum = tinstant_value(insts[i]);
-
-    /* ── Bounding-box pre-filter ─────────────────────────────────────── */
-    GSERIALIZED *pt_gs = (GSERIALIZED *) DatumGetPointer(geom_datum);
-    GBOX         pt_box;
-    gserialized_get_gbox_p(pt_gs, &pt_box);
-    /* For a POINT, pt_box.xmin == xmax and ymin == ymax */
-    if (pt_box.xmin < hull_box.xmin || pt_box.xmin > hull_box.xmax ||
-        pt_box.ymin < hull_box.ymin || pt_box.ymin > hull_box.ymax)
-      continue;
-
-    /* ── ST_Value call with NULL detection ───────────────────────────── */
-    fcinfo_val->args[2].value  = geom_datum;
-    fcinfo_val->args[2].isnull = false;
-    fcinfo_val->isnull         = false;   /* reset before every call */
-
-    Datum pixval = FunctionCallInvoke(fcinfo_val);
-    if (fcinfo_val->isnull)
-      continue;   /* nodata pixel or geometry outside the pixel grid */
-
-    result_insts[ninsts++] =
-      tinstant_make(pixval, T_TFLOAT, insts[i]->t);
-  }
-
-  pfree(insts);
-
-  if (ninsts == 0)
-  {
-    pfree(result_insts);
-    PG_FREE_IF_COPY(traj, 1);
-    PG_RETURN_NULL();
-  }
-
-  TSequence *result =
-    tsequence_make_free(result_insts, ninsts, true, true, DISCRETE, NORMALIZE);
+  Temporal *result = raster_value(traj, &box, &raster_st_value_sample,
+    fcinfo_val);
 
   PG_FREE_IF_COPY(traj, 1);
+  if (result == NULL)
+    PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
 }
 
