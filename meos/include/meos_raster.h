@@ -123,6 +123,15 @@ typedef bool (*raster_sample_fn)(void *ctx, const GSERIALIZED *point,
 extern Temporal *raster_value(const Temporal *traj, const STBox *box,
   raster_sample_fn sample, void *ctx);
 
+extern Temporal *raster_at_value(const Temporal *traj, const STBox *box,
+  raster_sample_fn sample, void *ctx, const Span *vspan);
+extern Temporal *raster_minus_value(const Temporal *traj, const STBox *box,
+  raster_sample_fn sample, void *ctx, const Span *vspan);
+extern int eraster_value(const Temporal *traj, const STBox *box,
+  raster_sample_fn sample, void *ctx, const Span *vspan);
+extern int araster_value(const Temporal *traj, const STBox *box,
+  raster_sample_fn sample, void *ctx, const Span *vspan);
+
 extern Temporal *raster_tile_value_quadbin(const uint8_t *pixels,
   uint16_t width, uint16_t height, uint64 quadbin, MeosPixType pixtype,
   double nodata, bool has_nodata, const Temporal *traj);

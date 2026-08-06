@@ -243,10 +243,9 @@ CREATE OR REPLACE FUNCTION atRasterValue(
     rast  raster,
     vspan floatspan,
     band  integer DEFAULT 1
-) RETURNS tgeompoint AS $$
-  SELECT atTime($1, getTime(atSpan(v, $3)))
-  FROM (SELECT raster_value($2, $1, $4) AS v) t
-$$ LANGUAGE SQL STRICT;
+) RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Raster_at_value'
+  LANGUAGE C STRICT;
 
 /******************************************************************************
  * minusRasterValue
@@ -267,10 +266,9 @@ CREATE OR REPLACE FUNCTION minusRasterValue(
     rast  raster,
     vspan floatspan,
     band  integer DEFAULT 1
-) RETURNS tgeompoint AS $$
-  SELECT atTime($1, getTime(minusSpan(v, $3)))
-  FROM (SELECT raster_value($2, $1, $4) AS v) t
-$$ LANGUAGE SQL STRICT;
+) RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Raster_minus_value'
+  LANGUAGE C STRICT;
 
 /******************************************************************************
  * eRasterValue
@@ -291,9 +289,9 @@ CREATE OR REPLACE FUNCTION eRasterValue(
     traj  tgeompoint,
     vspan floatspan,
     band  integer DEFAULT 1
-) RETURNS boolean AS $$
-  SELECT atSpan(raster_value($1, $2, $4), $3) IS NOT NULL
-$$ LANGUAGE SQL STRICT;
+) RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Eraster_value'
+  LANGUAGE C STRICT;
 
 /******************************************************************************
  * aRasterValue
@@ -314,10 +312,9 @@ CREATE OR REPLACE FUNCTION aRasterValue(
     traj  tgeompoint,
     vspan floatspan,
     band  integer DEFAULT 1
-) RETURNS boolean AS $$
-  SELECT v IS NOT NULL AND minusSpan(v, $3) IS NULL
-  FROM (SELECT raster_value($1, $2, $4) AS v) t
-$$ LANGUAGE SQL STRICT;
+) RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Araster_value'
+  LANGUAGE C STRICT;
 
 /******************************************************************************
  * Accessors for raquet tiles
