@@ -219,4 +219,8 @@ SELECT deleteTime(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-
 SELECT (rec).time, (rec).temp FROM
   (SELECT timeSplit(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-04]', interval '2 days', timestamptz '2001-01-01') AS rec) t;
 
+SELECT spans(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-04]');
+SELECT splitNSpans(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-04]', 2);
+SELECT splitEachNSpans(tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-04]', 2);
+
 -------------------------------------------------------------------------------

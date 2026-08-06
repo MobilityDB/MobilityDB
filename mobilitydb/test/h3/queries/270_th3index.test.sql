@@ -225,4 +225,8 @@ SELECT deleteTime(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01
 SELECT (rec).time, (rec).temp FROM
   (SELECT timeSplit(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-04]', interval '2 days', timestamptz '2001-01-01') AS rec) t;
 
+SELECT spans(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-04]');
+SELECT splitNSpans(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-04]', 2);
+SELECT splitEachNSpans(th3index '[880326b885fffff@2001-01-01, 880326b88dfffff@2001-01-04]', 2);
+
 -------------------------------------------------------------------------------
