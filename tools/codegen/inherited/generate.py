@@ -3206,8 +3206,18 @@ AXIS_RENDERERS = {
 }
 
 
+# A declaration's subject is its name and its arguments. The RETURNS clause is
+# dropped before matching: a type merely produced by a function is not covered by
+# it, or `applyPose(geometry, tpose) RETURNS tgeompoint` would report tgeompoint
+# as having a representation surface. Constructors still resolve, because there
+# the type is in the function name (`tjsonbFromBinary(bytea) RETURNS tjsonb`).
+DECLARATION = re.compile(
+    r"CREATE (?:OR REPLACE )?(?:FUNCTION|TYPE|CAST|OPERATOR)[^\n;]*", re.I)
+RETURNS_CLAUSE = re.compile(r"\bRETURNS\s+\w+", re.I)
+
+
 def rendered_temp_types(axis: str, entries: list, candidates: list) -> set:
-    """The temporal types named by the SQL an axis renders."""
+    """The temporal types an axis's rendered SQL declares a surface for."""
     render = AXIS_RENDERERS.get(axis)
     if render is None:
         return set()
@@ -3219,9 +3229,11 @@ def rendered_temp_types(axis: str, entries: list, candidates: list) -> set:
             text = render(entry)
         except Exception:
             continue
-        for temp in candidates:
-            if re.search(rf"\b{temp}\b", text):
-                out.add(temp)
+        for decl in DECLARATION.finditer(text):
+            subject = RETURNS_CLAUSE.sub("", decl.group(0))
+            for temp in candidates:
+                if temp not in out and re.search(rf"\b{temp}\b", subject):
+                    out.add(temp)
     return out
 
 
