@@ -48,3 +48,6 @@ jobs:
 
       - name: Every SQL file is generator-governed or listed as an exception
         run: python3 tools/codegen/inherited/generate.py --coverage
+
+      - name: Class membership matches the catalog predicates
+        run: python3 tools/codegen/inherited/generate.py --classes
