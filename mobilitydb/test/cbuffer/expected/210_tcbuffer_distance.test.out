@@ -238,6 +238,120 @@ SELECT round(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1)
  {[0@Sat Jan 01 00:00:00 2000 PST, 0@Mon Jan 03 00:00:00 2000 PST], [0@Tue Jan 04 00:00:00 2000 PST, 0@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
+SELECT round(startValue(tcbuffer 'Cbuffer(Point(2 10), 0.5)@2000-01-01' <-> geometry 'Polygon((0 0,100 0,100 1,0 1,0 0))')::numeric, 6);
+  round   
+----------
+ 8.500000
+(1 row)
+
+SELECT round((ST_Distance('Point(2 10)'::geometry, 'Polygon((0 0,100 0,100 1,0 1,0 0))'::geometry) - 0.5)::numeric, 6);
+  round   
+----------
+ 8.500000
+(1 row)
+
+SELECT round(startValue(tcbuffer 'Cbuffer(Point(2 7), 0.3)@2000-01-01' <-> geometry 'Polygon((0 0,10 0,10 10,5 10,5 5,0 5,0 0))')::numeric, 6);
+  round   
+----------
+ 1.700000
+(1 row)
+
+SELECT round(GREATEST(ST_Distance('Point(2 7)'::geometry, 'Polygon((0 0,10 0,10 10,5 10,5 5,0 5,0 0))'::geometry) - 0.3, 0)::numeric, 6);
+  round   
+----------
+ 1.700000
+(1 row)
+
+SELECT round(startValue(tcbuffer 'Cbuffer(Point(50 20), 1)@2000-01-01' <-> geometry 'Linestring(0 0,100 0)')::numeric, 6);
+   round   
+-----------
+ 19.000000
+(1 row)
+
+SELECT round((ST_Distance('Point(50 20)'::geometry, 'Linestring(0 0,100 0)'::geometry) - 1)::numeric, 6);
+   round   
+-----------
+ 19.000000
+(1 row)
+
+SELECT round(startValue(tcbuffer 'Cbuffer(Point(5 5), 0.2)@2000-01-01' <-> geometry 'Polygon((-10 -10,-10 20,20 20,20 -10,-10 -10),(0 0,10 0,10 10,0 10,0 0))')::numeric, 6);
+  round   
+----------
+ 4.800000
+(1 row)
+
+SELECT round((ST_Distance('Point(5 5)'::geometry, 'Polygon((-10 -10,-10 20,20 20,20 -10,-10 -10),(0 0,10 0,10 10,0 10,0 0))'::geometry) - 0.2)::numeric, 6);
+  round   
+----------
+ 4.800000
+(1 row)
+
+SELECT round(startValue(tcbuffer 'Cbuffer(Point(5 15), 0.4)@2000-01-01' <-> geometry 'Multipolygon(((0 0,10 0,10 10,0 10,0 0)),((0 20,10 20,10 30,0 30,0 20)))')::numeric, 6);
+  round   
+----------
+ 4.600000
+(1 row)
+
+SELECT round(GREATEST(ST_Distance('Point(5 15)'::geometry, 'Multipolygon(((0 0,10 0,10 10,0 10,0 0)),((0 20,10 20,10 30,0 30,0 20)))'::geometry) - 0.4, 0)::numeric, 6);
+  round   
+----------
+ 4.600000
+(1 row)
+
+SELECT round(minValue(tcbuffer '[Cbuffer(Point(-10 5), 0.2)@2000-01-01, Cbuffer(Point(20 5), 1.5)@2000-01-02]' <-> geometry 'Polygon((0 0,10 0,10 10,0 10,0 0))')::numeric, 6);
+  round   
+----------
+ 0.000000
+(1 row)
+
+SELECT round(nearestApproachDistance(tcbuffer '[Cbuffer(Point(-10 5), 0.2)@2000-01-01, Cbuffer(Point(20 5), 1.5)@2000-01-02]', geometry 'Polygon((0 0,10 0,10 10,0 10,0 0))')::numeric, 6);
+  round   
+----------
+ 0.000000
+(1 row)
+
+SELECT round(minValue(tcbuffer '[Cbuffer(Point(-5 -5), 0.3)@2000-01-01, Cbuffer(Point(15 15), 0.3)@2000-01-02]' <-> geometry 'Polygon((0 0,10 0,10 10,0 10,0 0))')::numeric, 6);
+  round   
+----------
+ 0.000000
+(1 row)
+
+SELECT round(nearestApproachDistance(tcbuffer '[Cbuffer(Point(-5 -5), 0.3)@2000-01-01, Cbuffer(Point(15 15), 0.3)@2000-01-02]', geometry 'Polygon((0 0,10 0,10 10,0 10,0 0))')::numeric, 6);
+  round   
+----------
+ 0.000000
+(1 row)
+
+SELECT round(minValue(tcbuffer 'Cbuffer(Point(0 8), 1)@2000-01-01' <-> geometry 'CircularString(5 0, 0 5, -5 0)')::numeric, 6);
+  round   
+----------
+ 2.000000
+(1 row)
+
+SELECT round(nearestApproachDistance(tcbuffer 'Cbuffer(Point(0 8), 1)@2000-01-01', geometry 'CircularString(5 0, 0 5, -5 0)')::numeric, 6);
+  round   
+----------
+ 2.000000
+(1 row)
+
+SELECT round(tcbuffer '{Cbuffer(Point(2 10), 0.5)@2000-01-01, Cbuffer(Point(50 20), 1)@2000-01-02}' <-> geometry 'Polygon((0 0,100 0,100 1,0 1,0 0))', 6);
+                                round                                
+---------------------------------------------------------------------
+ {8.5@Sat Jan 01 00:00:00 2000 PST, 18@Sun Jan 02 00:00:00 2000 PST}
+(1 row)
+
+SELECT round(tcbuffer 'Interp=Step;[Cbuffer(Point(2 10), 0.5)@2000-01-01, Cbuffer(Point(50 20), 1)@2000-01-02]' <-> geometry 'Polygon((0 0,100 0,100 1,0 1,0 0))', 6);
+                                      round                                      
+---------------------------------------------------------------------------------
+ Interp=Step;[8.5@Sat Jan 01 00:00:00 2000 PST, 18@Sun Jan 02 00:00:00 2000 PST]
+(1 row)
+
+SELECT round(tcbuffer '{[Cbuffer(Point(2 10), 0.5)@2000-01-01, Cbuffer(Point(3 10), 0.5)@2000-01-02], [Cbuffer(Point(50 20), 1)@2000-01-03, Cbuffer(Point(51 20), 1)@2000-01-04]}' <-> geometry 'Polygon((0 0,100 0,100 1,0 1,0 0))', 6);
+                                                                   round                                                                    
+--------------------------------------------------------------------------------------------------------------------------------------------
+ {[8.5@Sat Jan 01 00:00:00 2000 PST, 8.5@Sun Jan 02 00:00:00 2000 PST], [18@Mon Jan 03 00:00:00 2000 PST, 18@Tue Jan 04 00:00:00 2000 PST]}
+(1 row)
+
 SELECT round(minDistance(tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(10 0), 0.5)@2000-01-02]', geometry 'Point(5 5)')::numeric, 6);
   round   
 ----------

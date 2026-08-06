@@ -75,6 +75,62 @@ SELECT round(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1),
 SELECT round(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}' <-> tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}', 6);
 
 -------------------------------------------------------------------------------
+-- Temporal distance to a non-point geometry: the full geometry is decomposed
+-- into its boundary edges, not collapsed to its minimum bounding circle. Every
+-- assertion cross-checks the kernel against an INDEPENDENT oracle -- either
+-- GEOS ST_Distance from the sampled centre to the geometry minus the sampled
+-- radius, or the already-native nearestApproachDistance/minDistance kernel.
+-------------------------------------------------------------------------------
+
+-- A long thin rectangle: its minimum bounding circle has radius about 50
+-- centred near (50, 0.5), which encloses the point below even though it is
+-- far from the polygon's own boundary (true distance 8.5)
+SELECT round(startValue(tcbuffer 'Cbuffer(Point(2 10), 0.5)@2000-01-01' <-> geometry 'Polygon((0 0,100 0,100 1,0 1,0 0))')::numeric, 6);
+SELECT round((ST_Distance('Point(2 10)'::geometry, 'Polygon((0 0,100 0,100 1,0 1,0 0))'::geometry) - 0.5)::numeric, 6);
+
+-- A concave L-shaped polygon: the centre sits in the missing corner, close to
+-- the notch but far from the bounding circle boundary
+SELECT round(startValue(tcbuffer 'Cbuffer(Point(2 7), 0.3)@2000-01-01' <-> geometry 'Polygon((0 0,10 0,10 10,5 10,5 5,0 5,0 0))')::numeric, 6);
+SELECT round(GREATEST(ST_Distance('Point(2 7)'::geometry, 'Polygon((0 0,10 0,10 10,5 10,5 5,0 5,0 0))'::geometry) - 0.3, 0)::numeric, 6);
+
+-- A linestring: the bounding-circle composition would measure to the chord's
+-- circle rather than the line itself
+SELECT round(startValue(tcbuffer 'Cbuffer(Point(50 20), 1)@2000-01-01' <-> geometry 'Linestring(0 0,100 0)')::numeric, 6);
+SELECT round((ST_Distance('Point(50 20)'::geometry, 'Linestring(0 0,100 0)'::geometry) - 1)::numeric, 6);
+
+-- A polygon with a hole: the buffer sits inside the hole, closer to the
+-- inner ring than the outer bounding circle would suggest
+SELECT round(startValue(tcbuffer 'Cbuffer(Point(5 5), 0.2)@2000-01-01' <-> geometry 'Polygon((-10 -10,-10 20,20 20,20 -10,-10 -10),(0 0,10 0,10 10,0 10,0 0))')::numeric, 6);
+SELECT round((ST_Distance('Point(5 5)'::geometry, 'Polygon((-10 -10,-10 20,20 20,20 -10,-10 -10),(0 0,10 0,10 10,0 10,0 0))'::geometry) - 0.2)::numeric, 6);
+
+-- A multipolygon: the centre sits in the gap between the two components
+SELECT round(startValue(tcbuffer 'Cbuffer(Point(5 15), 0.4)@2000-01-01' <-> geometry 'Multipolygon(((0 0,10 0,10 10,0 10,0 0)),((0 20,10 20,10 30,0 30,0 20)))')::numeric, 6);
+SELECT round(GREATEST(ST_Distance('Point(5 15)'::geometry, 'Multipolygon(((0 0,10 0,10 10,0 10,0 0)),((0 20,10 20,10 30,0 30,0 20)))'::geometry) - 0.4, 0)::numeric, 6);
+
+-- A moving buffer with a growing radius sweeping through a polygon interior,
+-- exercising the interior-crossing (zero-clamp) turning points. The minimum
+-- of the temporal distance must equal the analytic nearest-approach distance,
+-- computed by the independent nad_tcbuffer_geo kernel.
+SELECT round(minValue(tcbuffer '[Cbuffer(Point(-10 5), 0.2)@2000-01-01, Cbuffer(Point(20 5), 1.5)@2000-01-02]' <-> geometry 'Polygon((0 0,10 0,10 10,0 10,0 0))')::numeric, 6);
+SELECT round(nearestApproachDistance(tcbuffer '[Cbuffer(Point(-10 5), 0.2)@2000-01-01, Cbuffer(Point(20 5), 1.5)@2000-01-02]', geometry 'Polygon((0 0,10 0,10 10,0 10,0 0))')::numeric, 6);
+
+-- An interior extremum away from the segment's own endpoints: a buffer that
+-- passes near, but not through, a polygon corner
+SELECT round(minValue(tcbuffer '[Cbuffer(Point(-5 -5), 0.3)@2000-01-01, Cbuffer(Point(15 15), 0.3)@2000-01-02]' <-> geometry 'Polygon((0 0,10 0,10 10,0 10,0 0))')::numeric, 6);
+SELECT round(nearestApproachDistance(tcbuffer '[Cbuffer(Point(-5 -5), 0.3)@2000-01-01, Cbuffer(Point(15 15), 0.3)@2000-01-02]', geometry 'Polygon((0 0,10 0,10 10,0 10,0 0))')::numeric, 6);
+
+-- A circular-arc geometry stays arc-exact, sharing the edge decomposition of
+-- the already arc-exact nad_tcbuffer_geo kernel
+SELECT round(minValue(tcbuffer 'Cbuffer(Point(0 8), 1)@2000-01-01' <-> geometry 'CircularString(5 0, 0 5, -5 0)')::numeric, 6);
+SELECT round(nearestApproachDistance(tcbuffer 'Cbuffer(Point(0 8), 1)@2000-01-01', geometry 'CircularString(5 0, 0 5, -5 0)')::numeric, 6);
+
+-- Discrete, step, and sequence-set dispatch against a non-point geometry:
+-- every instant is a stationary disc, so there is no interior turning point
+SELECT round(tcbuffer '{Cbuffer(Point(2 10), 0.5)@2000-01-01, Cbuffer(Point(50 20), 1)@2000-01-02}' <-> geometry 'Polygon((0 0,100 0,100 1,0 1,0 0))', 6);
+SELECT round(tcbuffer 'Interp=Step;[Cbuffer(Point(2 10), 0.5)@2000-01-01, Cbuffer(Point(50 20), 1)@2000-01-02]' <-> geometry 'Polygon((0 0,100 0,100 1,0 1,0 0))', 6);
+SELECT round(tcbuffer '{[Cbuffer(Point(2 10), 0.5)@2000-01-01, Cbuffer(Point(3 10), 0.5)@2000-01-02], [Cbuffer(Point(50 20), 1)@2000-01-03, Cbuffer(Point(51 20), 1)@2000-01-04]}' <-> geometry 'Polygon((0 0,100 0,100 1,0 1,0 0))', 6);
+
+-------------------------------------------------------------------------------
 -- minDistance(tcbuffer, geometry) / (geometry, tcbuffer) -- scalar, reduces
 -- to NAD when one side has no time dimension
 -------------------------------------------------------------------------------
