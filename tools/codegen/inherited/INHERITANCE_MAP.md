@@ -10,7 +10,9 @@
 > *what order*: `temporal_types_p1/p2.xml` / `temporal_spatial_p1/p2.xml` for the
 > temporal classes, and `doc/set_span_types.xml` for the value-domain classes
 > `Set<T>` / `Span<T>` / `SpanSet<T>` (§9). This document is a working draft to
-> revise together; every claim below cites live source (master `13ad7b9d3`).
+> revise together; every claim below cites live source. The generated/hand status of
+> each section is read from `manifest.yaml` (the axis and its entry count), so the table
+> and the generator cannot drift apart silently.
 
 ---
 
@@ -121,13 +123,13 @@ kernel wiring, currently: `geo_ea_contains_covers`, `geo_ea_disjoint_intersects`
 
 | `<sect1>` | MEOS prefix | generated? | canonical generator / notes |
 |---|---|---|---|
-| Input and Output | `temporal_` | ✗ HAND | **two sub-families**: (a) **type I/O** `<type>_in`/`_out`/`_recv`/`_send` (PG registration, one set per type); (b) **canonical representations** — text `asText`/`asEWKT`/`fromText`, binary `asBinary`/`asEWKB`, hex `asHexWKB`/`fromHexWKB`, **MF-JSON** `asMFJSON`/`fromMFJSON` (MEOS-C `temporal_as_{wkb,hexwkb,mfjson}` + `temporal_from_{wkb,hexwkb,mfjson}`). Both token-shaped → generable |
-| Constructors | `temporal_` | ✗ HAND | tXxxInst/Seq/SeqSet |
-| Conversions | `temporal_` | ✗ HAND | casts |
+| Input and Output | `temporal_` | ◐ PARTIAL | **two sub-families**: (a) **type I/O** `<type>_in`/`_out`/`_recv`/`_send` — `io_families`, **1 entry** (`temporal`); the spatial shape is not wired. (b) **canonical representations** — `asText`/`asEWKT`/`asBinary`/`asEWKB`/`asHexWKB`/`asMFJSON` + the `From*` constructors — `representation_families`, **7 entries** (cbuffer, geo, h3, npoint, quadbin, rgeo, temporal); json, pose and the pointcloud families are not wired |
+| Constructors | `temporal_` | ✓ **GEN** | `constructors.sql.tmpl` + `constructor_families`, **11 entries** all `reference: true` (cbuffer, geo, h3, json, npoint, pose, quadbin, rgeo, tpcpatch, tpcpoint, tpoint) |
+| Conversions | `temporal_` | ◐ PARTIAL | `conversions.sql.tmpl` + `conversion_families`, **7 entries** (cbuffer, geo, json, npoint, pose, rgeo, tpoint); h3, quadbin and the pointcloud families are not wired |
 | Accessors | `temporal_` | ✓ **GEN** | `accessors.sql.tmpl` multi-base renderer from base `022_temporal.in.sql` — the value/time/generic set for ALL families (§4c); per-family value shape = manifest `types:` tokens. A few interleaved/positional accessors stay hand per family |
-| Transformations | `temporal_` | ✗ HAND | shiftTime/scaleTime, setInterp, tprecision, tsample |
-| Modifications | `temporal_` | ✗ HAND | appendInstant, insert, update, merge |
-| Restrictions | `temporal_` | ✗ HAND | atValue(s)/minusValue(s), atTime/minusTime, atSpan(set), atTbox |
+| Transformations | `temporal_` | ✓ **GEN** | `transformations.sql.tmpl` + `transformation_families`, **11 entries** all `reference: true` (cbuffer, geo, h3, json, npoint, pose, quadbin, rgeo, tpcpatch, tpcpoint, tpoint) — shiftTime/scaleTime, setInterp, tprecision, tsample |
+| Modifications | `temporal_` | ✓ **GEN** | `modifications.sql.tmpl` + `modification_families`, **11 entries** all `reference: true` (same family set) — appendInstant, insert, update, merge |
+| Restrictions | `temporal_` | ✓ **GEN** | `restrictions.sql.tmpl` + `restriction_families`, **11 entries** all `reference: true` (same family set) — atValue(s)/minusValue(s), atTime/minusTime, atSpan(set), atTbox |
 | **Bounding Box Operators** | `temporal_`/`tnumber_` | ✓ **GEN** | `topops.sql.tmpl` (`&&`,`@>`,`<@`,`~=`,`-\|-`) + `posops.sql.tmpl` (`<<`,`>>`,`&<`,`&>`,`<<#`,`#>>`…) + `boxops.c.tmpl` box types `tstzspan`,`tbox` |
 | Comparisons → Traditional | (btree) | ✗ HAND | `=`,`<>`,`<`,`>`,`<=`,`>=` |
 | Comparisons → **Ever/Always** | `temporal_` | ✓ **GEN** | `compops.sql.tmpl`: `eEq`/`aEq`/`eNe`/`aNe` + `?=`/`%=`/`?<>`/`%<>` (all 3 arg directions) |
@@ -147,7 +149,7 @@ documented inline in `temporal_types_p1/p2` (no separate number chapter).
 | behaviour (file in `sql/temporal/`) | class | generated? | notes |
 |---|---|---|---|
 | `021_tbox` (TBox type: value × time) | TNumber | ✗ HAND | the number bounding box; its **C dispatchers ARE generated** — `boxops.c.tmpl` box type `tbox` region in `temporal_boxops.c` |
-| `026_tnumber_mathfuncs` (`+ - * /`, abs, delta, trend, derivative) | TNumber | ✗ HAND | no math template |
+| `026_tnumber_mathfuncs` (`+ - * /`, abs, delta, trend, derivative) | TNumber | ✓ **GEN** | `mathfuncs.sql.tmpl` + `mathfunc_families`, **1 entry** (`tnumber`, `reference: true`) — the whole-file TNumber arithmetic surface |
 | `036_tnumber_distance` (tDistance, nad) | TNumber | ✗ HAND | no distance template |
 | number Restrictions (atSpan/atSpanset/atTbox) | TNumber | ✗ HAND | numeric-span / value×time box restrict |
 | number Aggregates (extent, tSum, tAvg, tMin/tMax) | TNumber | ✗ HAND | `040_temporal_aggfuncs` |
@@ -179,10 +181,11 @@ Two more reference chapters carry inherited surface:
 
 | chapter → `<sect1>` | prefix | generated? | notes |
 |---|---|---|---|
-| `temporal_types_aggregation.xml` → Aggregation | `temporal_`/`tnumber_` | ✗ HAND | tCount/extent/tMin/tMax/tSum/tAvg/merge/appendInstant (`temporal_aggfuncs.c`) |
+| `temporal_types_aggregation.xml` → Aggregation | `temporal_`/`tnumber_` | ✓ **GEN** | `aggregates.sql.tmpl` + `aggregate_families`, **8 entries** all `reference: true` (cbuffer, geo, json, npoint, pointcloud, pose, rgeo, tpoint) — tCount/extent/tMin/tMax/tSum/tAvg/merge/appendInstant |
 | → Indexing | (index) | ✓ **GEN** | GiST/SP-GiST via `gist/spgist/indexes.sql.tmpl` |
 | → Statistics and Selectivity | (selectivity) | ✗ HAND | |
-| `temporal_types_analytics.xml` → Simplification / Reduction / Similarity / Extended Kalman Filter / Splitting / Multidimensional Tiling | `temporal_`/`tgeo_` | ✗ HAND | analytics; tiling `stboxes`/`splitNStboxes` are per-family table shapes |
+| `temporal_types_analytics.xml` → Simplification / Reduction / Similarity / Extended Kalman Filter / Splitting | `temporal_`/`tgeo_` | ✗ HAND | analytics; no template |
+| `temporal_types_analytics.xml` → Multidimensional Tiling | `temporal_`/`tgeo_` | ✓ **GEN** | `tiling.sql.tmpl` + `tiling_families`, **9 entries** all `reference: true` (cbuffer, geo, json, npoint, pose, rgeo, tgeo_tile, tpoint, trgeo_tile) |
 
 ### 4c. Canonical accessor set & order — the inherited value/time surface
 
@@ -656,6 +659,8 @@ operators), while the `scalar*sel` estimators belong to BASE types (e.g.
 ---
 
 ### Legend
-✓ **GEN** = emitted by `tools/codegen/inherited/` today · ✗ HAND = hand-maintained
+✓ **GEN** = a template plus a `reference: true` manifest axis governs the surface, so
+`--validate` re-renders it byte-for-byte · ◐ **PARTIAL** = the axis exists but covers only
+some families; the row names the ones that are not wired · ✗ HAND = hand-maintained
 `.in.sql` (no template / reserved position only). All catalog line numbers are live at
 MobilityDB `b6624f21a` / MEOS-API `65ced3016`.
