@@ -625,7 +625,7 @@ CREATE FUNCTION stops(tpose, maxdist float DEFAULT 0.0,
 
 CREATE FUNCTION insert(tpose, tpose, connect boolean DEFAULT TRUE)
   RETURNS tpose
-  AS 'MODULE_PATHNAME', 'Temporal_update'
+  AS 'MODULE_PATHNAME', 'Temporal_insert'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION update(tpose, tpose, connect boolean DEFAULT TRUE)

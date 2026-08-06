@@ -589,7 +589,7 @@ CREATE FUNCTION stops(trgeometry, maxdist float DEFAULT 0.0,
 
 CREATE FUNCTION insert(trgeometry, trgeometry, connect boolean DEFAULT TRUE)
   RETURNS trgeometry
-  AS 'MODULE_PATHNAME', 'Temporal_update'
+  AS 'MODULE_PATHNAME', 'Temporal_insert'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION update(trgeometry, trgeometry, connect boolean DEFAULT TRUE)

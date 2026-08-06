@@ -593,7 +593,7 @@ CREATE FUNCTION stops(tcbuffer, maxdist float DEFAULT 0.0,
 
 CREATE FUNCTION insert(tcbuffer, tcbuffer, connect boolean DEFAULT TRUE)
   RETURNS tcbuffer
-  AS 'MODULE_PATHNAME', 'Temporal_update'
+  AS 'MODULE_PATHNAME', 'Temporal_insert'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION update(tcbuffer, tcbuffer, connect boolean DEFAULT TRUE)
