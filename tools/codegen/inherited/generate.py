@@ -1457,6 +1457,12 @@ _HASH_OPS = [
     ("hash({t})", "integer", "Set_hash"),
     ("hashExtended({t}, bigint)", "bigint", "Set_hash_extended"),
 ]
+# The Temporal<T> hash surface is the same two-function skeleton backed by the
+# Temporal_* kernels; selected via `ops: temporal`.
+_TEMP_HASH_OPS = [
+    ("hash({t})", "integer", "Temporal_hash"),
+    ("hashExtended({t}, bigint)", "bigint", "Temporal_hash_extended"),
+]
 # The canonical hash opclass block (one per type, packed when a file has several).
 _HASH_OPCLASS = ("CREATE OPERATOR CLASS {t}_hash_ops\n"
                  "  DEFAULT FOR TYPE {t} USING hash AS\n"
@@ -1465,17 +1471,18 @@ _HASH_OPCLASS = ("CREATE OPERATOR CLASS {t}_hash_ops\n"
                  "    FUNCTION    2   hashExtended({t}, bigint);")
 
 
-def _hash_funcs(types) -> str:
+def _hash_funcs(types, ops=_HASH_OPS) -> str:
     """Render the two hash CREATE FUNCTIONs from the shared skeleton, mirroring
     _cmp_funcs: one type token (packed) or a token list (op-outer / type-inner,
-    op groups separated by one blank line)."""
+    op groups separated by one blank line). `ops` selects the kernel table
+    (Set_* by default, Temporal_* for the temporal families)."""
     tmpl = (TEMPLATES / "comparisons.sql.tmpl").read_text().rstrip("\n")
     if isinstance(types, str):
         types = [types]
     groups = ["\n".join(tmpl.replace("{SIG}", sig.format(t=t))
                             .replace("{RET}", ret).replace("{SYM}", sym)
                         for t in types)
-              for sig, ret, sym in _HASH_OPS]
+              for sig, ret, sym in ops]
     return ("\n\n" if len(types) > 1 else "\n").join(groups) + "\n"
 
 
@@ -1493,12 +1500,13 @@ def render_hash(fam: dict) -> str:
     `opcls` type token(s) (the canonical opclass). Blocks concatenate with no
     automatic separator, so the rendered text is byte-identical to the committed
     region."""
+    ops = _TEMP_HASH_OPS if fam.get("ops") == "temporal" else _HASH_OPS
     out = ""
     for blk in fam["blocks"]:
         if "lit" in blk:
             out += blk["lit"]
         elif "funcs" in blk:
-            out += _hash_funcs(blk["funcs"])
+            out += _hash_funcs(blk["funcs"], ops)
         else:
             out += _hash_opclasses(blk["opcls"])
     return out
