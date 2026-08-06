@@ -5443,6 +5443,238 @@ span_families:
   - lit: "\n"
   - {stmt: "CREATE AGGREGATE setUnion({vs}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n#if POSTGRESQL_VERSION_NUMBER >= 160000\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n#endif //POSTGRESQL_VERSION_NUMBER >= 160000\n  FINALFUNC = {vs}_union_finalfn,\n  PARALLEL = safe\n);"}
   - lit: "\n"
+- family: set_accessors
+  file: mobilitydb/sql/temporal/001_set.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * Accessor functions\n ******************************************************************************/\n"
+  end: "/*****************************************************************************\n * Transformation functions"
+  order: [int, bigint, float, text, date, tstz]
+  insts:
+    int: {v: integer, vs: intset}
+    bigint: {v: bigint, vs: bigintset}
+    float: {v: float, vs: floatset}
+    text: {v: text, vs: textset}
+    date: {v: date, vs: dateset}
+    tstz: {v: timestamptz, vs: tstzset}
+  blocks:
+  - lit: "/******************************************************************************\n * Accessor functions\n ******************************************************************************/\n\n"
+  - {sig: "memSize({vs})", ret: "integer", sym: Set_mem_size}
+  - lit: "\n"
+  - {sig: "numValues({vs})", ret: "integer", sym: Set_num_values}
+  - lit: "\n"
+  - {sig: "startValue({vs})", ret: "{v}", sym: Set_start_value}
+  - lit: "\n"
+  - {sig: "endValue({vs})", ret: "{v}", sym: Set_end_value}
+  - lit: "\n"
+  - {sig: "valueN({vs}, integer)", ret: "{v}", sym: Set_value_n}
+  - lit: "\n/* Values is a reserved word in SQL */\n"
+  - {sig: "getValues({vs})", ret: "{v}[]", sym: Set_values}
+  - lit: "\n"
+
+- family: geoset_accessors
+  file: mobilitydb/sql/geo/050_geoset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * Accessor functions\n ******************************************************************************/\n"
+  end: "/*****************************************************************************\n * SRID functions"
+  order: [geom, geog]
+  insts:
+    geom: {v: geometry, vs: geomset}
+    geog: {v: geography, vs: geogset}
+  blocks:
+  - lit: "/******************************************************************************\n * Accessor functions\n ******************************************************************************/\n\n"
+  - {sig: "memSize({vs})", ret: "integer", sym: Set_mem_size}
+  - lit: "\n"
+  - {sig: "numValues({vs})", ret: "integer", sym: Set_num_values}
+  - lit: "\n"
+  - {sig: "startValue({vs})", ret: "{v}", sym: Set_start_value}
+  - lit: "\n"
+  - {sig: "endValue({vs})", ret: "{v}", sym: Set_end_value}
+  - lit: "\n"
+  - {sig: "valueN({vs}, integer)", ret: "{v}", sym: Set_value_n}
+  - lit: "\n"
+  - {sig: "getValues({vs})", ret: "{v}[]", sym: Set_values}
+  - lit: "\n"
+
+- family: poseset_accessors
+  file: mobilitydb/sql/pose/101_poseset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * Accessor functions\n ******************************************************************************/\n"
+  end: "/******************************************************************************\n * SRID\n"
+  order: [pose]
+  insts:
+    pose: {v: pose, vs: poseset}
+  blocks:
+  - lit: "/******************************************************************************\n * Accessor functions\n ******************************************************************************/\n\n"
+  - {sig: "memSize({vs})", ret: "integer", sym: Set_mem_size}
+  - lit: "\n"
+  - {sig: "numValues({vs})", ret: "integer", sym: Set_num_values}
+  - lit: "\n"
+  - {sig: "startValue({vs})", ret: "{v}", sym: Set_start_value}
+  - lit: "\n"
+  - {sig: "endValue({vs})", ret: "{v}", sym: Set_end_value}
+  - lit: "\n"
+  - {sig: "valueN({vs}, integer)", ret: "{v}", sym: Set_value_n}
+  - lit: "\n"
+  - {sig: "getValues({vs})", ret: "{v}[]", sym: Set_values}
+  - lit: "\n"
+
+- family: cbufferset_accessors
+  file: mobilitydb/sql/cbuffer/201_cbufferset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * Accessor functions\n ******************************************************************************/\n"
+  end: "/******************************************************************************\n * SRID\n"
+  order: [cbuffer]
+  insts:
+    cbuffer: {v: cbuffer, vs: cbufferset}
+  blocks:
+  - lit: "/******************************************************************************\n * Accessor functions\n ******************************************************************************/\n\n"
+  - {sig: "memSize({vs})", ret: "integer", sym: Set_mem_size}
+  - lit: "\n"
+  - {sig: "numValues({vs})", ret: "integer", sym: Set_num_values}
+  - lit: "\n"
+  - {sig: "startValue({vs})", ret: "{v}", sym: Set_start_value}
+  - lit: "\n"
+  - {sig: "endValue({vs})", ret: "{v}", sym: Set_end_value}
+  - lit: "\n"
+  - {sig: "valueN({vs}, integer)", ret: "{v}", sym: Set_value_n}
+  - lit: "\n"
+  - {sig: "getValues({vs})", ret: "{v}[]", sym: Set_values}
+  - lit: "\n"
+
+- family: npointset_accessors
+  file: mobilitydb/sql/npoint/301_npointset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * Accessor functions\n ******************************************************************************/\n"
+  end: "/******************************************************************************\n * Transformation set of values <-> set"
+  order: [npoint]
+  insts:
+    npoint: {v: npoint, vs: npointset}
+  blocks:
+  - lit: "/******************************************************************************\n * Accessor functions\n ******************************************************************************/\n\n"
+  - {sig: "memSize({vs})", ret: "integer", sym: Set_mem_size}
+  - lit: "\n"
+  - {sig: "numValues({vs})", ret: "integer", sym: Set_num_values}
+  - lit: "\n"
+  - {sig: "startValue({vs})", ret: "{v}", sym: Set_start_value}
+  - lit: "\n"
+  - {sig: "endValue({vs})", ret: "{v}", sym: Set_end_value}
+  - lit: "\n"
+  - {sig: "valueN({vs}, integer)", ret: "{v}", sym: Set_value_n}
+  - lit: "\n"
+  - {sig: "getValues({vs})", ret: "{v}[]", sym: Set_values}
+  - lit: "\n"
+  - {sig: "routes({vs})", ret: "bigintset", sym: Npointset_routes}
+  - lit: "\n"
+
+- family: h3indexset_accessors
+  file: mobilitydb/sql/h3/251_h3indexset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * Accessors\n ******************************************************************************/\n"
+  end: "/******************************************************************************\n * Comparison operators + btree / hash opclasses"
+  order: [h3index]
+  insts:
+    h3index: {v: h3index, vs: h3indexset}
+  blocks:
+  - lit: "/******************************************************************************\n * Accessors\n ******************************************************************************/\n\n"
+  - {sig: "memSize({vs})", ret: "integer", sym: Set_mem_size}
+  - lit: "\n"
+  - {sig: "numValues({vs})", ret: "integer", sym: Set_num_values}
+  - lit: "\n"
+  - {sig: "startValue({vs})", ret: "{v}", sym: Set_start_value}
+  - lit: "\n"
+  - {sig: "endValue({vs})", ret: "{v}", sym: Set_end_value}
+  - lit: "\n"
+  - {sig: "valueN({vs}, integer)", ret: "{v}", sym: Set_value_n}
+  - lit: "\n"
+  - {sig: "getValues({vs})", ret: "{v}[]", sym: Set_values}
+  - lit: "\n"
+
+- family: quadbinset_accessors
+  file: mobilitydb/sql/quadbin/351_quadbinset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * Accessors\n ******************************************************************************/\n"
+  end: "/******************************************************************************\n * Comparison operators + btree / hash opclasses"
+  order: [quadbin]
+  insts:
+    quadbin: {v: quadbin, vs: quadbinset}
+  blocks:
+  - lit: "/******************************************************************************\n * Accessors\n ******************************************************************************/\n\n"
+  - {sig: "memSize({vs})", ret: "integer", sym: Set_mem_size}
+  - lit: "\n"
+  - {sig: "numValues({vs})", ret: "integer", sym: Set_num_values}
+  - lit: "\n"
+  - {sig: "startValue({vs})", ret: "{v}", sym: Set_start_value}
+  - lit: "\n"
+  - {sig: "endValue({vs})", ret: "{v}", sym: Set_end_value}
+  - lit: "\n"
+  - {sig: "valueN({vs}, integer)", ret: "{v}", sym: Set_value_n}
+  - lit: "\n"
+  - {sig: "getValues({vs})", ret: "{v}[]", sym: Set_values}
+  - lit: "\n"
+
+- family: jsonbset_accessors
+  file: mobilitydb/sql/json/450_jsonbset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * Accessors\n ******************************************************************************/\n"
+  end: "/******************************************************************************\n * Transformation set of values <-> set"
+  order: [jsonb]
+  insts:
+    jsonb: {v: jsonb, vs: jsonbset}
+  blocks:
+  - lit: "/******************************************************************************\n * Accessors\n ******************************************************************************/\n\n"
+  - {sig: "memSize({vs})", ret: "integer", sym: Set_mem_size}
+  - lit: "\n"
+  - {sig: "numValues({vs})", ret: "integer", sym: Set_num_values}
+  - lit: "\n"
+  - {sig: "startValue({vs})", ret: "{v}", sym: Set_start_value}
+  - lit: "\n"
+  - {sig: "endValue({vs})", ret: "{v}", sym: Set_end_value}
+  - lit: "\n"
+  - {sig: "valueN({vs}, integer)", ret: "{v}", sym: Set_value_n}
+  - lit: "\n"
+  - {sig: "getValues({vs})", ret: "{v}[]", sym: Set_values}
+  - lit: "\n"
+
+- family: pcpointset_accessors
+  file: mobilitydb/sql/pointcloud/400_pcset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * pcpointset \u2014 Accessors\n ******************************************************************************/\n"
+  end: "/******************************************************************************\n * pcpointset \u2014 Aggregate"
+  order: [pcpoint]
+  insts:
+    pcpoint: {v: pcpoint, vs: pcpointset}
+  blocks:
+  - lit: "/******************************************************************************\n * pcpointset \u2014 Accessors\n ******************************************************************************/\n\n"
+  - {sig: "memSize({vs})", ret: "integer", sym: Set_mem_size}
+  - {sig: "numValues({vs})", ret: "integer", sym: Set_num_values}
+  - {sig: "startValue({vs})", ret: "{v}", sym: Set_start_value}
+  - {sig: "endValue({vs})", ret: "{v}", sym: Set_end_value}
+  - {sig: "valueN({vs}, integer)", ret: "{v}", sym: Set_value_n}
+  - {sig: "getValues({vs})", ret: "{v}[]", sym: Set_values}
+  - lit: "\n"
+  - {sig: "unnest({vs})", ret: "SETOF {v}", sym: Set_unnest}
+  - lit: "\n"
+
+- family: pcpatchset_accessors
+  file: mobilitydb/sql/pointcloud/400_pcset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * pcpatchset \u2014 Accessors\n ******************************************************************************/\n"
+  end: "/******************************************************************************\n * pcpatchset \u2014 Aggregate"
+  order: [pcpatch]
+  insts:
+    pcpatch: {v: pcpatch, vs: pcpatchset}
+  blocks:
+  - lit: "/******************************************************************************\n * pcpatchset \u2014 Accessors\n ******************************************************************************/\n\n"
+  - {sig: "memSize({vs})", ret: "integer", sym: Set_mem_size}
+  - {sig: "numValues({vs})", ret: "integer", sym: Set_num_values}
+  - {sig: "startValue({vs})", ret: "{v}", sym: Set_start_value}
+  - {sig: "endValue({vs})", ret: "{v}", sym: Set_end_value}
+  - {sig: "valueN({vs}, integer)", ret: "{v}", sym: Set_value_n}
+  - {sig: "getValues({vs})", ret: "{v}[]", sym: Set_values}
+  - lit: "\n"
+  - {sig: "unnest({vs})", ret: "SETOF {v}", sym: Set_unnest}
+  - lit: "\n"
+
 
 aggregate_families:
 - family: geo
