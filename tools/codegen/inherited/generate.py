@@ -3093,13 +3093,75 @@ def strip_banner(text: str) -> str:
     return text[i:] if i != -1 else text
 
 
+COVERAGE_EXCEPTIONS = HERE / "coverage_exceptions.txt"
+
+
+def manifest_files(mf: dict) -> set:
+    """Every mobilitydb/sql path named by a manifest entry, repo-relative."""
+    out = set()
+    for value in mf.values():
+        if not isinstance(value, list):
+            continue
+        for entry in value:
+            if isinstance(entry, dict) and entry.get("file"):
+                out.add(entry["file"])
+    return out
+
+
+def read_exceptions() -> list:
+    """The still-ungoverned files, one path per line; '#' starts a comment."""
+    if not COVERAGE_EXCEPTIONS.exists():
+        return []
+    lines = COVERAGE_EXCEPTIONS.read_text().splitlines()
+    return [l.strip() for l in lines if l.strip() and not l.lstrip().startswith("#")]
+
+
+def check_coverage(mf: dict) -> int:
+    """Every .in.sql is governed by the manifest or listed as an exception.
+
+    The exception list is a ratchet: it may only shrink. A file that is neither
+    governed nor listed is a new hand-written surface and fails; a listed file
+    that has since become governed must be removed from the list.
+    """
+    covered = manifest_files(mf)
+    listed = set(read_exceptions())
+    sqldir = ROOT / "mobilitydb" / "sql"
+    found = sorted(str(p.relative_to(ROOT)) for p in sqldir.rglob("*.in.sql"))
+
+    ungoverned = [f for f in found if f not in covered and f not in listed]
+    stale = sorted(f for f in listed if f in covered)
+    missing = sorted(f for f in listed if f not in found)
+
+    for f in ungoverned:
+        print(f"[NEW ] ungoverned and unlisted: {f}")
+    for f in stale:
+        print(f"[DONE] now governed, remove from coverage_exceptions.txt: {f}")
+    for f in missing:
+        print(f"[GONE] listed but absent from the tree, remove it: {f}")
+
+    governed = len(covered & set(found))
+    print(f"coverage: {governed}/{len(found)} governed, "
+          f"{len(listed) - len(stale) - len(missing)} still excepted")
+    if ungoverned or stale or missing:
+        print("coverage ratchet FAILED - see the entries above")
+        return 1
+    print("coverage ratchet OK")
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--check", action="store_true", help="dry-run: list target paths")
     ap.add_argument("--validate", action="store_true",
                     help="regenerate reference subtypes and diff vs committed")
+    ap.add_argument("--coverage", action="store_true",
+                    help="every .in.sql is manifest-governed or listed in "
+                         "coverage_exceptions.txt (the list may only shrink)")
     ap.add_argument("--only", help="restrict to one temp type (e.g. tquadbin)")
     args = ap.parse_args()
+
+    if args.coverage:
+        return check_coverage(yaml.safe_load(MANIFEST.read_text()))
 
     mf = yaml.safe_load(MANIFEST.read_text())
     positions = mf["positions"]
