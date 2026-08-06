@@ -78,7 +78,7 @@ CREATE FUNCTION splitNSpans(tint, integer)
   RETURNS tstzspan[]
   AS 'MODULE_PATHNAME', 'Temporal_split_n_spans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION splitNSpans(tbigint, bigint)
+CREATE FUNCTION splitNSpans(tbigint, integer)
   RETURNS tstzspan[]
   AS 'MODULE_PATHNAME', 'Temporal_split_n_spans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -99,7 +99,7 @@ CREATE FUNCTION splitEachNSpans(tint, integer)
   RETURNS tstzspan[]
   AS 'MODULE_PATHNAME', 'Temporal_split_each_n_spans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION splitEachNSpans(tbigint, bigint)
+CREATE FUNCTION splitEachNSpans(tbigint, integer)
   RETURNS tstzspan[]
   AS 'MODULE_PATHNAME', 'Temporal_split_each_n_spans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -116,7 +116,7 @@ CREATE FUNCTION splitNTboxes(tint, integer)
   RETURNS tbox[]
   AS 'MODULE_PATHNAME', 'Tnumber_split_n_tboxes'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION splitNTboxes(tbigint, bigint)
+CREATE FUNCTION splitNTboxes(tbigint, integer)
   RETURNS tbox[]
   AS 'MODULE_PATHNAME', 'Tnumber_split_n_tboxes'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -129,7 +129,7 @@ CREATE FUNCTION splitEachNTboxes(tint, integer)
   RETURNS tbox[]
   AS 'MODULE_PATHNAME', 'Tnumber_split_each_n_tboxes'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION splitEachNTboxes(tbigint, bigint)
+CREATE FUNCTION splitEachNTboxes(tbigint, integer)
   RETURNS tbox[]
   AS 'MODULE_PATHNAME', 'Tnumber_split_each_n_tboxes'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
