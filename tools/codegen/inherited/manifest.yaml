@@ -653,309 +653,502 @@ accessor_families:
 # uses the generic Temporal_* symbols throughout. See INHERITANCE_MAP.md §4e and
 # the temporal-io-symbol-reuse-matrix memory.
 io_families:
-  - family:    temporal
-    file:      mobilitydb/sql/temporal/022_temporal.in.sql
-    reference: true
-    types:
-      - {temp: tbool}
-      - {temp: tint}
-      - {temp: tbigint}
-      - {temp: tfloat}
-      - {temp: ttext}
-
-# Spatial type-I/O families: the shell CREATE TYPE forward declaration, the
-# _in/_out/_recv/_send quartet, the per-family typmod_in, the shared
-# tspatial_typmod_out/tspatial_analyze hooks (declared once, in the geo file),
-# the CREATE TYPE definition and the typmod-enforcing self-cast. The hand
-# layout is TYPE-major (a type's whole cluster precedes the next type's), so
-# these entries use the generic blocks vocabulary (lit / stmt / fns / group over
-# an `insts` token table, {t} = the temporal type) the set-file I/O entries
-# established, not the op-major io_type.sql.tmpl. Per-family irregularities are
-# kept verbatim: pose/rgeo quartets omit PARALLEL SAFE (rgeo also renames
-# _out/_send to trgeometry_* and its _recv takes bare `internal`); the
-# cbuffer/npoint/pose/rgeo typmod-enforce wrappers have no space after the
-# MODULE_PATHNAME comma; npoint/h3/quadbin reuse temporal_typmod_in/out;
-# tquadbin's CREATE TYPE hooks temporal_analyze where th3index hooks
-# tspatial_analyze; the pointcloud types share the schema-aware tpc_typmod pair
-# (declared once, in the tpcpoint file) and split their self-cast over two lines.
-  - family: geo
-    file: mobilitydb/sql/geo/052_tgeo.in.sql
-    reference: true
-    begin: "CREATE TYPE tgeometry;"
-    end: "/******************************************************************************\n * Constructors\n"
-    order: [geom, geog]
-    insts:
-      geom: {t: tgeometry}
-      geog: {t: tgeography}
-    blocks:
-    - lit: "CREATE TYPE tgeometry;\nCREATE TYPE tgeography;\n\n/******************************************************************************\n * Input/Output\n ******************************************************************************/\n\n"
-    - group:
-      - {sig: "{t}_in(cstring, oid, integer)", ret: "{t}", sym: Tgeo_in}
-      - {sig: "temporal_out({t})", ret: cstring, sym: Temporal_out}
-      - {sig: "{t}_recv(internal, oid, integer)", ret: "{t}", sym: Temporal_recv}
-      - {sig: "temporal_send({t})", ret: bytea, sym: Temporal_send}
-      only: [geom]
-    - lit: "\n"
-    - sig: "{t}_typmod_in(cstring[])"
-      ret: integer
-      sym: Tgeometry_typmod_in
-      over:
-        geog: {sym: Tgeography_typmod_in}
-    - lit: "CREATE FUNCTION tspatial_typmod_out(integer)\n  RETURNS cstring\n  AS 'MODULE_PATHNAME', 'Tspatial_typmod_out'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\nCREATE FUNCTION tspatial_analyze(internal)\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Tspatial_analyze'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n"
-    - stmt: "CREATE TYPE {t} (\n  internallength = variable,\n  input = {t}_in,\n  output = temporal_out,\n  send = temporal_send,\n  receive = {t}_recv,\n  typmod_in = {t}_typmod_in,\n  typmod_out = tspatial_typmod_out,\n  storage = extended,\n  alignment = double,\n  analyze = tspatial_analyze\n);"
-      only: [geom]
-    - lit: "\n"
-    - group:
-      - {sig: "{t}_in(cstring, oid, integer)", ret: "{t}", sym: Tgeo_in}
-      - {sig: "temporal_out({t})", ret: cstring, sym: Temporal_out}
-      - {sig: "{t}_recv(internal, oid, integer)", ret: "{t}", sym: Temporal_recv}
-      - {sig: "temporal_send({t})", ret: bytea, sym: Temporal_send}
-      only: [geog]
-    - lit: "\n"
-    - stmt: "CREATE TYPE {t} (\n  internallength = variable,\n  input = {t}_in,\n  output = temporal_out,\n  send = temporal_send,\n  receive = {t}_recv,\n  typmod_in = {t}_typmod_in,\n  typmod_out = tspatial_typmod_out,\n  storage = extended,\n  alignment = double,\n  analyze = tspatial_analyze\n);"
-      only: [geog]
-    - lit: "\n-- Special cast for enforcing the typmod restrictions\n"
-    - sig: "{t}({t}, integer)"
-      ret: "{t}"
-      sym: Tspatial_enforce_typmod
-    - lit: "\n"
-    - stmt: "CREATE CAST ({t} AS {t}) WITH FUNCTION {t}({t}, integer) AS IMPLICIT;"
-    - lit: "\n"
-  - family: tpoint
-    file: mobilitydb/sql/geo/052_tpoint.in.sql
-    reference: true
-    begin: "CREATE TYPE tgeompoint;"
-    end: "/******************************************************************************\n * Constructors\n"
-    order: [geom, geog]
-    insts:
-      geom: {t: tgeompoint}
-      geog: {t: tgeogpoint}
-    blocks:
-    - lit: "CREATE TYPE tgeompoint;\nCREATE TYPE tgeogpoint;\n\n/******************************************************************************\n * Input/Output\n ******************************************************************************/\n\n"
-    - group:
-      - {sig: "{t}_in(cstring, oid, integer)", ret: "{t}", sym: Tpoint_in}
-      - {sig: "temporal_out({t})", ret: cstring, sym: Temporal_out}
-      - {sig: "{t}_recv(internal, oid, integer)", ret: "{t}", sym: Temporal_recv}
-      - {sig: "temporal_send({t})", ret: bytea, sym: Temporal_send}
-      only: [geom]
-    - lit: "\n"
-    - sig: "{t}_typmod_in(cstring[])"
-      ret: integer
-      sym: Tgeompoint_typmod_in
-      only: [geom]
-    - lit: "\n"
-    - stmt: "CREATE TYPE {t} (\n  internallength = variable,\n  input = {t}_in,\n  output = temporal_out,\n  send = temporal_send,\n  receive = {t}_recv,\n  typmod_in = {t}_typmod_in,\n  typmod_out = tspatial_typmod_out,\n  storage = extended,\n  alignment = double,\n  analyze = tspatial_analyze\n);"
-      only: [geom]
-    - lit: "\n"
-    - group:
-      - {sig: "{t}_in(cstring, oid, integer)", ret: "{t}", sym: Tpoint_in}
-      - {sig: "temporal_out({t})", ret: cstring, sym: Temporal_out}
-      - {sig: "{t}_recv(internal, oid, integer)", ret: "{t}", sym: Temporal_recv}
-      - {sig: "temporal_send({t})", ret: bytea, sym: Temporal_send}
-      only: [geog]
-    - lit: "\n"
-    - sig: "{t}_typmod_in(cstring[])"
-      ret: integer
-      sym: Tgeogpoint_typmod_in
-      only: [geog]
-    - lit: "\n"
-    - stmt: "CREATE TYPE {t} (\n  internallength = variable,\n  input = {t}_in,\n  output = temporal_out,\n  send = temporal_send,\n  receive = {t}_recv,\n  typmod_in = {t}_typmod_in,\n  typmod_out = tspatial_typmod_out,\n  storage = extended,\n  alignment = double,\n  analyze = tspatial_analyze\n);"
-      only: [geog]
-    - lit: "\n-- Special cast for enforcing the typmod restrictions\n"
-    - sig: "{t}({t}, integer)"
-      ret: "{t}"
-      sym: Tspatial_enforce_typmod
-    - lit: "\n"
-    - stmt: "CREATE CAST ({t} AS {t}) WITH FUNCTION {t}({t}, integer) AS IMPLICIT;"
-    - lit: "\n"
-  - family: cbuffer
-    file: mobilitydb/sql/cbuffer/202_tcbuffer.in.sql
-    reference: true
-    begin: "CREATE TYPE tcbuffer;"
-    end: "-- GENERATED-REPRESENTATIONS-BEGIN cbuffer"
-    order: [cb]
-    insts:
-      cb: {t: tcbuffer}
-    blocks:
-    - lit: "CREATE TYPE tcbuffer;\n\n/*****************************************************************************\n * Input/Output\n *****************************************************************************/\n\n"
-    - group:
-      - {sig: "{t}_in(cstring, oid, integer)", ret: "{t}", sym: Tcbuffer_in}
-      - {sig: "temporal_out({t})", ret: cstring, sym: Temporal_out}
-      - {sig: "{t}_recv(internal, oid, integer)", ret: "{t}", sym: Temporal_recv}
-      - {sig: "temporal_send({t})", ret: bytea, sym: Temporal_send}
-    - lit: "\n"
-    - sig: "{t}_typmod_in(cstring[])"
-      ret: integer
-      sym: Tcbuffer_typmod_in
-    - lit: "\n"
-    - stmt: "CREATE TYPE {t} (\n  internallength = variable,\n  input = {t}_in,\n  output = temporal_out,\n  send = temporal_send,\n  receive = {t}_recv,\n  typmod_in = {t}_typmod_in,\n  typmod_out = tspatial_typmod_out,\n  storage = extended,\n  alignment = double,\n  analyze = tspatial_analyze\n);"
-    - lit: "\n-- Special cast for enforcing the typmod restrictions\nCREATE FUNCTION tcbuffer(tcbuffer, integer)\n  RETURNS tcbuffer\n  AS 'MODULE_PATHNAME','Tcbuffer_enforce_typmod'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\nCREATE CAST (tcbuffer AS tcbuffer) WITH FUNCTION tcbuffer(tcbuffer, integer) AS IMPLICIT;\n\n"
-  - family: npoint
-    file: mobilitydb/sql/npoint/302_tnpoint.in.sql
-    reference: true
-    begin: "CREATE TYPE tnpoint;"
-    end: "-- GENERATED-REPRESENTATIONS-BEGIN npoint"
-    order: [np]
-    insts:
-      np: {t: tnpoint}
-    blocks:
-    - lit: "CREATE TYPE tnpoint;\n\n/******************************************************************************\n * Input/Output\n ******************************************************************************/\n\n"
-    - group:
-      - {sig: "{t}_in(cstring, oid, integer)", ret: "{t}", sym: Tnpoint_in}
-      - {sig: "temporal_out({t})", ret: cstring, sym: Temporal_out}
-      - {sig: "{t}_recv(internal, oid, integer)", ret: "{t}", sym: Temporal_recv}
-      - {sig: "temporal_send({t})", ret: bytea, sym: Temporal_send}
-    - lit: "\n"
-    - stmt: "CREATE TYPE {t} (\n  internallength = variable,\n  input = {t}_in,\n  output = temporal_out,\n  send = temporal_send,\n  receive = {t}_recv,\n  typmod_in = temporal_typmod_in,\n  typmod_out = temporal_typmod_out,\n  storage = extended,\n  alignment = double,\n  analyze = tspatial_analyze\n);"
-    - lit: "\n-- Special cast for enforcing the typmod restrictions\nCREATE FUNCTION tnpoint(tnpoint, integer)\n  RETURNS tnpoint\n  AS 'MODULE_PATHNAME','Temporal_enforce_typmod'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\nCREATE CAST (tnpoint AS tnpoint) WITH FUNCTION tnpoint(tnpoint, integer) AS IMPLICIT;\n\n"
-  - family: pose
-    file: mobilitydb/sql/pose/102_tpose.in.sql
-    reference: true
-    begin: "CREATE TYPE tpose;"
-    end: "  /*****************************************************************************\n   * Input/output from (E)WKT"
-    order: [po]
-    insts:
-      po: {t: tpose}
-    blocks:
-    - lit: "CREATE TYPE tpose;\n\n/******************************************************************************\n * Input/output\n ******************************************************************************/\n\nCREATE FUNCTION tpose_in(cstring, oid, integer)\n  RETURNS tpose\n  AS 'MODULE_PATHNAME', 'Tpose_in'\n  LANGUAGE C IMMUTABLE STRICT;\nCREATE FUNCTION temporal_out(tpose)\n  RETURNS cstring\n  AS 'MODULE_PATHNAME', 'Temporal_out'\n  LANGUAGE C IMMUTABLE STRICT;\nCREATE FUNCTION tpose_recv(internal, oid, integer)\n  RETURNS tpose\n  AS 'MODULE_PATHNAME', 'Temporal_recv'\n  LANGUAGE C IMMUTABLE STRICT;\nCREATE FUNCTION temporal_send(tpose)\n  RETURNS bytea\n  AS 'MODULE_PATHNAME', 'Temporal_send'\n  LANGUAGE C IMMUTABLE STRICT;\n\n"
-    - sig: "{t}_typmod_in(cstring[])"
-      ret: integer
-      sym: Tpose_typmod_in
-    - lit: "\n"
-    - stmt: "CREATE TYPE {t} (\n  internallength = variable,\n  input = {t}_in,\n  output = temporal_out,\n  send = temporal_send,\n  receive = {t}_recv,\n  typmod_in = {t}_typmod_in,\n  typmod_out = tspatial_typmod_out,\n  storage = extended,\n  alignment = double,\n  analyze = tspatial_analyze\n);"
-    - lit: "\n-- Special cast for enforcing the typmod restrictions\nCREATE FUNCTION tpose(tpose, integer)\n  RETURNS tpose\n  AS 'MODULE_PATHNAME','Tspatial_enforce_typmod'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\nCREATE CAST (tpose AS tpose) WITH FUNCTION tpose(tpose, integer) AS IMPLICIT;\n\n"
-  - family: rgeo
-    file: mobilitydb/sql/rgeo/150_trgeo.in.sql
-    reference: true
-    begin: "CREATE TYPE trgeometry;"
-    end: "-- GENERATED-REPRESENTATIONS-BEGIN rgeo"
-    order: [rg]
-    insts:
-      rg: {t: trgeometry}
-    blocks:
-    - lit: "CREATE TYPE trgeometry;\n\n/******************************************************************************\n * Input/Output\n ******************************************************************************/\n\nCREATE FUNCTION trgeometry_in(cstring, oid, integer)\n  RETURNS trgeometry\n  AS 'MODULE_PATHNAME', 'Trgeometry_in'\n  LANGUAGE C IMMUTABLE STRICT;\nCREATE FUNCTION trgeometry_out(trgeometry)\n  RETURNS cstring\n  AS 'MODULE_PATHNAME', 'Trgeometry_out'\n  LANGUAGE C IMMUTABLE STRICT;\nCREATE FUNCTION trgeometry_recv(internal)\n  RETURNS trgeometry\n  AS 'MODULE_PATHNAME', 'Trgeometry_recv'\n  LANGUAGE C IMMUTABLE STRICT;\nCREATE FUNCTION trgeometry_send(trgeometry)\n  RETURNS bytea\n  AS 'MODULE_PATHNAME', 'Trgeometry_send'\n  LANGUAGE C IMMUTABLE STRICT;\n\n"
-    - sig: "{t}_typmod_in(cstring[])"
-      ret: integer
-      sym: Trgeometry_typmod_in
-    - lit: "\n"
-    - stmt: "CREATE TYPE {t} (\n  internallength = variable,\n  input = {t}_in,\n  output = {t}_out,\n  send = {t}_send,\n  receive = {t}_recv,\n  typmod_in = {t}_typmod_in,\n  typmod_out = tspatial_typmod_out,\n  storage = extended,\n  alignment = double,\n  analyze = tspatial_analyze\n);"
-    - lit: "\n-- Special cast for enforcing the typmod restrictions\nCREATE FUNCTION trgeometry(trgeometry, integer)\n  RETURNS trgeometry\n  AS 'MODULE_PATHNAME','Tspatial_enforce_typmod'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\nCREATE CAST (trgeometry AS trgeometry) WITH FUNCTION trgeometry(trgeometry, integer) AS IMPLICIT;\n\n"
-  - family: h3
-    file: mobilitydb/sql/h3/253_th3index.in.sql
-    reference: true
-    begin: "CREATE TYPE th3index;"
-    end: "-- GENERATED-REPRESENTATIONS-BEGIN h3"
-    order: [h3]
-    insts:
-      h3: {t: th3index}
-    blocks:
-    - lit: "CREATE TYPE th3index;\n\n/******************************************************************************\n * Input / Output\n ******************************************************************************/\n\n"
-    - sig: "{t}_in(cstring, oid, integer)"
-      ret: "{t}"
-      sym: Temporal_in
-    - lit: "\n"
-    - sig: "{t}_recv(internal, oid, integer)"
-      ret: "{t}"
-      sym: Temporal_recv
-    - lit: "\n"
-    - sig: "temporal_out({t})"
+- family: temporal
+  file: mobilitydb/sql/temporal/022_temporal.in.sql
+  reference: true
+  types:
+  - temp: tbool
+  - temp: tint
+  - temp: tbigint
+  - temp: tfloat
+  - temp: ttext
+- family: geo
+  file: mobilitydb/sql/geo/052_tgeo.in.sql
+  reference: true
+  begin: CREATE TYPE tgeometry;
+  end: "/******************************************************************************\n * Constructors\n"
+  order:
+  - geom
+  - geog
+  insts:
+    geom:
+      t: tgeometry
+    geog:
+      t: tgeography
+  blocks:
+  - lit: "CREATE TYPE tgeometry;\nCREATE TYPE tgeography;\n\n/******************************************************************************\n * Input/Output\n ******************************************************************************/\n\n"
+  - group:
+    - sig: '{t}_in(cstring, oid, integer)'
+      ret: '{t}'
+      sym: Tgeo_in
+    - sig: temporal_out({t})
       ret: cstring
       sym: Temporal_out
-    - lit: "\n"
-    - sig: "temporal_send({t})"
+    - sig: '{t}_recv(internal, oid, integer)'
+      ret: '{t}'
+      sym: Temporal_recv
+    - sig: temporal_send({t})
       ret: bytea
       sym: Temporal_send
-    - lit: "\n"
-    - stmt: "CREATE TYPE {t} (\n  internallength = variable,\n  input = {t}_in,\n  output = temporal_out,\n  send = temporal_send,\n  receive = {t}_recv,\n  typmod_in = temporal_typmod_in,\n  typmod_out = temporal_typmod_out,\n  storage = extended,\n  alignment = double,\n  analyze = tspatial_analyze\n);"
-    - lit: "\n"
-  - family: quadbin
-    file: mobilitydb/sql/quadbin/353_tquadbin.in.sql
-    reference: true
-    begin: "CREATE TYPE tquadbin;"
-    end: "-- GENERATED-REPRESENTATIONS-BEGIN quadbin"
-    order: [qb]
-    insts:
-      qb: {t: tquadbin}
-    blocks:
-    - lit: "CREATE TYPE tquadbin;\n\n/******************************************************************************\n * Input / Output\n ******************************************************************************/\n\n"
-    - sig: "{t}_in(cstring, oid, integer)"
-      ret: "{t}"
-      sym: Temporal_in
-    - lit: "\n"
-    - sig: "{t}_recv(internal, oid, integer)"
-      ret: "{t}"
-      sym: Temporal_recv
-    - lit: "\n"
-    - sig: "temporal_out({t})"
+    only:
+    - geom
+  - lit: '
+
+      '
+  - sig: '{t}_typmod_in(cstring[])'
+    ret: integer
+    sym: Tgeometry_typmod_in
+    over:
+      geog:
+        sym: Tgeography_typmod_in
+  - lit: "CREATE FUNCTION tspatial_typmod_out(integer)\n  RETURNS cstring\n  AS 'MODULE_PATHNAME', 'Tspatial_typmod_out'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\nCREATE FUNCTION tspatial_analyze(internal)\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Tspatial_analyze'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n"
+  - stmt: "CREATE TYPE {t} (\n  internallength = variable,\n  input = {t}_in,\n  output = temporal_out,\n  send = temporal_send,\n  receive = {t}_recv,\n  typmod_in = {t}_typmod_in,\n  typmod_out = tspatial_typmod_out,\n  storage = extended,\n  alignment = double,\n  analyze = tspatial_analyze\n);"
+    only:
+    - geom
+  - lit: '
+
+      '
+  - group:
+    - sig: '{t}_in(cstring, oid, integer)'
+      ret: '{t}'
+      sym: Tgeo_in
+    - sig: temporal_out({t})
       ret: cstring
       sym: Temporal_out
-    - lit: "\n"
-    - sig: "temporal_send({t})"
+    - sig: '{t}_recv(internal, oid, integer)'
+      ret: '{t}'
+      sym: Temporal_recv
+    - sig: temporal_send({t})
       ret: bytea
       sym: Temporal_send
-    - lit: "\n"
-    - stmt: "CREATE TYPE {t} (\n  internallength = variable,\n  input = {t}_in,\n  output = temporal_out,\n  send = temporal_send,\n  receive = {t}_recv,\n  typmod_in = temporal_typmod_in,\n  typmod_out = temporal_typmod_out,\n  storage = extended,\n  alignment = double,\n  analyze = temporal_analyze\n);"
-    - lit: "\n"
-  - family: pointcloud
-    file: mobilitydb/sql/pointcloud/420_tpcpoint.in.sql
-    reference: true
-    begin: "CREATE TYPE tpcpoint;"
-    end: "/******************************************************************************\n * WKB / HexWKB helpers\n"
-    order: [pc]
-    insts:
-      pc: {t: tpcpoint}
-    blocks:
-    - lit: "CREATE TYPE tpcpoint;\n\n/******************************************************************************\n * Input / output — all via the generic Temporal_* wrappers\n ******************************************************************************/\n\n"
-    - group:
-      - {sig: "{t}_in(cstring, oid, integer)", ret: "{t}", sym: Temporal_in}
-      - {sig: "temporal_out({t})", ret: cstring, sym: Temporal_out}
-      - {sig: "{t}_recv(internal, oid, integer)", ret: "{t}", sym: Temporal_recv}
-      - {sig: "temporal_send({t})", ret: bytea, sym: Temporal_send}
-    - lit: "\n"
-    - sig: "tpc_typmod_in(cstring[])"
-      ret: integer
-      sym: Tpc_typmod_in
-    - sig: "tpc_typmod_out(integer)"
-      ret: cstring
-      sym: Tpc_typmod_out
-    - lit: "\n"
-    - stmt: "CREATE TYPE {t} (\n  internallength = variable,\n  input = {t}_in,\n  output = temporal_out,\n  send = temporal_send,\n  receive = {t}_recv,\n  typmod_in = tpc_typmod_in,\n  typmod_out = tpc_typmod_out,\n  storage = extended,\n  alignment = double,\n  analyze = tspatial_analyze\n);"
-    - lit: "\n-- Special cast for enforcing the typmod restriction on INSERT / cast.\n"
-    - sig: "{t}({t}, integer)"
-      ret: "{t}"
-      sym: Tpc_enforce_typmod
-    - lit: "CREATE CAST (tpcpoint AS tpcpoint)\n  WITH FUNCTION tpcpoint(tpcpoint, integer) AS IMPLICIT;\n\n"
-  - family: pointcloud_patch
-    file: mobilitydb/sql/pointcloud/430_tpcpatch.in.sql
-    reference: true
-    begin: "CREATE TYPE tpcpatch;"
-    end: "/******************************************************************************\n * WKB / HexWKB helpers\n"
-    order: [pc]
-    insts:
-      pc: {t: tpcpatch}
-    blocks:
-    - lit: "CREATE TYPE tpcpatch;\n\n/******************************************************************************\n * Input / output\n ******************************************************************************/\n\n"
-    - group:
-      - {sig: "{t}_in(cstring, oid, integer)", ret: "{t}", sym: Temporal_in}
-      - {sig: "temporal_out({t})", ret: cstring, sym: Temporal_out}
-      - {sig: "{t}_recv(internal, oid, integer)", ret: "{t}", sym: Temporal_recv}
-      - {sig: "temporal_send({t})", ret: bytea, sym: Temporal_send}
-    - lit: "\n"
-    - stmt: "CREATE TYPE {t} (\n  internallength = variable,\n  input = {t}_in,\n  output = temporal_out,\n  send = temporal_send,\n  receive = {t}_recv,\n  typmod_in = tpc_typmod_in,\n  typmod_out = tpc_typmod_out,\n  storage = extended,\n  alignment = double,\n  analyze = tspatial_analyze\n);"
-    - lit: "\n-- Special cast for enforcing the typmod restriction on INSERT / cast.\n"
-    - sig: "{t}({t}, integer)"
-      ret: "{t}"
-      sym: Tpc_enforce_typmod
-    - lit: "CREATE CAST (tpcpatch AS tpcpatch)\n  WITH FUNCTION tpcpatch(tpcpatch, integer) AS IMPLICIT;\n\n"
+    only:
+    - geog
+  - lit: '
 
-# ---------------------------------------------------------------------------
-# Representations sub-family B (SQL, per-family region / dedicated *_inout file).
-# as<Fmt> outputs + <temp>From<Fmt> constructors, all pure wiring to the generic
-# Temporal_*/Tspatial_*/Trgeometry_* representation kernels. Built from ONE skeleton
-# (templates/representations.sql.tmpl); the per-family op sequence, section-header
-# literals and per-op/per-type symbol + maxdecimaldigits overrides are data here.
-# `--validate` extracts the committed hand block by section-header anchors
-# (begin/end) so the deployed .in.sql is untouched while the template is proven.
+      '
+  - stmt: "CREATE TYPE {t} (\n  internallength = variable,\n  input = {t}_in,\n  output = temporal_out,\n  send = temporal_send,\n  receive = {t}_recv,\n  typmod_in = {t}_typmod_in,\n  typmod_out = tspatial_typmod_out,\n  storage = extended,\n  alignment = double,\n  analyze = tspatial_analyze\n);"
+    only:
+    - geog
+  - lit: '
+
+      -- Special cast for enforcing the typmod restrictions
+
+      '
+  - sig: '{t}({t}, integer)'
+    ret: '{t}'
+    sym: Tspatial_enforce_typmod
+  - lit: '
+
+      '
+  - stmt: CREATE CAST ({t} AS {t}) WITH FUNCTION {t}({t}, integer) AS IMPLICIT;
+  - lit: '
+
+      '
+- family: tpoint
+  file: mobilitydb/sql/geo/052_tpoint.in.sql
+  reference: true
+  begin: CREATE TYPE tgeompoint;
+  end: "/******************************************************************************\n * Constructors\n"
+  order:
+  - geom
+  - geog
+  insts:
+    geom:
+      t: tgeompoint
+    geog:
+      t: tgeogpoint
+  blocks:
+  - lit: "CREATE TYPE tgeompoint;\nCREATE TYPE tgeogpoint;\n\n/******************************************************************************\n * Input/Output\n ******************************************************************************/\n\n"
+  - group:
+    - sig: '{t}_in(cstring, oid, integer)'
+      ret: '{t}'
+      sym: Tpoint_in
+    - sig: temporal_out({t})
+      ret: cstring
+      sym: Temporal_out
+    - sig: '{t}_recv(internal, oid, integer)'
+      ret: '{t}'
+      sym: Temporal_recv
+    - sig: temporal_send({t})
+      ret: bytea
+      sym: Temporal_send
+    only:
+    - geom
+  - lit: '
+
+      '
+  - sig: '{t}_typmod_in(cstring[])'
+    ret: integer
+    sym: Tgeompoint_typmod_in
+    only:
+    - geom
+  - lit: '
+
+      '
+  - stmt: "CREATE TYPE {t} (\n  internallength = variable,\n  input = {t}_in,\n  output = temporal_out,\n  send = temporal_send,\n  receive = {t}_recv,\n  typmod_in = {t}_typmod_in,\n  typmod_out = tspatial_typmod_out,\n  storage = extended,\n  alignment = double,\n  analyze = tspatial_analyze\n);"
+    only:
+    - geom
+  - lit: '
+
+      '
+  - group:
+    - sig: '{t}_in(cstring, oid, integer)'
+      ret: '{t}'
+      sym: Tpoint_in
+    - sig: temporal_out({t})
+      ret: cstring
+      sym: Temporal_out
+    - sig: '{t}_recv(internal, oid, integer)'
+      ret: '{t}'
+      sym: Temporal_recv
+    - sig: temporal_send({t})
+      ret: bytea
+      sym: Temporal_send
+    only:
+    - geog
+  - lit: '
+
+      '
+  - sig: '{t}_typmod_in(cstring[])'
+    ret: integer
+    sym: Tgeogpoint_typmod_in
+    only:
+    - geog
+  - lit: '
+
+      '
+  - stmt: "CREATE TYPE {t} (\n  internallength = variable,\n  input = {t}_in,\n  output = temporal_out,\n  send = temporal_send,\n  receive = {t}_recv,\n  typmod_in = {t}_typmod_in,\n  typmod_out = tspatial_typmod_out,\n  storage = extended,\n  alignment = double,\n  analyze = tspatial_analyze\n);"
+    only:
+    - geog
+  - lit: '
+
+      -- Special cast for enforcing the typmod restrictions
+
+      '
+  - sig: '{t}({t}, integer)'
+    ret: '{t}'
+    sym: Tspatial_enforce_typmod
+  - lit: '
+
+      '
+  - stmt: CREATE CAST ({t} AS {t}) WITH FUNCTION {t}({t}, integer) AS IMPLICIT;
+  - lit: '
+
+      '
+- family: cbuffer
+  file: mobilitydb/sql/cbuffer/202_tcbuffer.in.sql
+  reference: true
+  begin: CREATE TYPE tcbuffer;
+  end: -- GENERATED-REPRESENTATIONS-BEGIN cbuffer
+  order:
+  - cb
+  insts:
+    cb:
+      t: tcbuffer
+  blocks:
+  - lit: "CREATE TYPE tcbuffer;\n\n/*****************************************************************************\n * Input/Output\n *****************************************************************************/\n\n"
+  - group:
+    - sig: '{t}_in(cstring, oid, integer)'
+      ret: '{t}'
+      sym: Tcbuffer_in
+    - sig: temporal_out({t})
+      ret: cstring
+      sym: Temporal_out
+    - sig: '{t}_recv(internal, oid, integer)'
+      ret: '{t}'
+      sym: Temporal_recv
+    - sig: temporal_send({t})
+      ret: bytea
+      sym: Temporal_send
+  - lit: '
+
+      '
+  - sig: '{t}_typmod_in(cstring[])'
+    ret: integer
+    sym: Tcbuffer_typmod_in
+  - lit: '
+
+      '
+  - stmt: "CREATE TYPE {t} (\n  internallength = variable,\n  input = {t}_in,\n  output = temporal_out,\n  send = temporal_send,\n  receive = {t}_recv,\n  typmod_in = {t}_typmod_in,\n  typmod_out = tspatial_typmod_out,\n  storage = extended,\n  alignment = double,\n  analyze = tspatial_analyze\n);"
+  - lit: "\n-- Special cast for enforcing the typmod restrictions\nCREATE FUNCTION tcbuffer(tcbuffer, integer)\n  RETURNS tcbuffer\n  AS 'MODULE_PATHNAME','Tcbuffer_enforce_typmod'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\nCREATE CAST (tcbuffer AS tcbuffer) WITH FUNCTION tcbuffer(tcbuffer, integer) AS IMPLICIT;\n\n"
+- family: npoint
+  file: mobilitydb/sql/npoint/302_tnpoint.in.sql
+  reference: true
+  begin: CREATE TYPE tnpoint;
+  end: -- GENERATED-REPRESENTATIONS-BEGIN npoint
+  order:
+  - np
+  insts:
+    np:
+      t: tnpoint
+  blocks:
+  - lit: "CREATE TYPE tnpoint;\n\n/******************************************************************************\n * Input/Output\n ******************************************************************************/\n\n"
+  - group:
+    - sig: '{t}_in(cstring, oid, integer)'
+      ret: '{t}'
+      sym: Tnpoint_in
+    - sig: temporal_out({t})
+      ret: cstring
+      sym: Temporal_out
+    - sig: '{t}_recv(internal, oid, integer)'
+      ret: '{t}'
+      sym: Temporal_recv
+    - sig: temporal_send({t})
+      ret: bytea
+      sym: Temporal_send
+  - lit: '
+
+      '
+  - stmt: "CREATE TYPE {t} (\n  internallength = variable,\n  input = {t}_in,\n  output = temporal_out,\n  send = temporal_send,\n  receive = {t}_recv,\n  typmod_in = temporal_typmod_in,\n  typmod_out = temporal_typmod_out,\n  storage = extended,\n  alignment = double,\n  analyze = tspatial_analyze\n);"
+  - lit: "\n-- Special cast for enforcing the typmod restrictions\nCREATE FUNCTION tnpoint(tnpoint, integer)\n  RETURNS tnpoint\n  AS 'MODULE_PATHNAME','Temporal_enforce_typmod'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\nCREATE CAST (tnpoint AS tnpoint) WITH FUNCTION tnpoint(tnpoint, integer) AS IMPLICIT;\n\n"
+- family: pose
+  file: mobilitydb/sql/pose/102_tpose.in.sql
+  reference: true
+  begin: CREATE TYPE tpose;
+  end: "  /*****************************************************************************\n   * Input/output from (E)WKT"
+  order:
+  - po
+  insts:
+    po:
+      t: tpose
+  blocks:
+  - lit: "CREATE TYPE tpose;\n\n/******************************************************************************\n * Input/output\n ******************************************************************************/\n\nCREATE FUNCTION tpose_in(cstring, oid, integer)\n  RETURNS tpose\n  AS 'MODULE_PATHNAME', 'Tpose_in'\n  LANGUAGE C IMMUTABLE STRICT;\nCREATE FUNCTION temporal_out(tpose)\n  RETURNS cstring\n  AS 'MODULE_PATHNAME', 'Temporal_out'\n  LANGUAGE C IMMUTABLE STRICT;\nCREATE FUNCTION tpose_recv(internal, oid, integer)\n  RETURNS tpose\n  AS 'MODULE_PATHNAME', 'Temporal_recv'\n  LANGUAGE C IMMUTABLE STRICT;\nCREATE FUNCTION temporal_send(tpose)\n  RETURNS bytea\n  AS 'MODULE_PATHNAME', 'Temporal_send'\n  LANGUAGE C IMMUTABLE STRICT;\n\n"
+  - sig: '{t}_typmod_in(cstring[])'
+    ret: integer
+    sym: Tpose_typmod_in
+  - lit: '
+
+      '
+  - stmt: "CREATE TYPE {t} (\n  internallength = variable,\n  input = {t}_in,\n  output = temporal_out,\n  send = temporal_send,\n  receive = {t}_recv,\n  typmod_in = {t}_typmod_in,\n  typmod_out = tspatial_typmod_out,\n  storage = extended,\n  alignment = double,\n  analyze = tspatial_analyze\n);"
+  - lit: "\n-- Special cast for enforcing the typmod restrictions\nCREATE FUNCTION tpose(tpose, integer)\n  RETURNS tpose\n  AS 'MODULE_PATHNAME','Tspatial_enforce_typmod'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\nCREATE CAST (tpose AS tpose) WITH FUNCTION tpose(tpose, integer) AS IMPLICIT;\n\n"
+- family: rgeo
+  file: mobilitydb/sql/rgeo/150_trgeo.in.sql
+  reference: true
+  begin: CREATE TYPE trgeometry;
+  end: -- GENERATED-REPRESENTATIONS-BEGIN rgeo
+  order:
+  - rg
+  insts:
+    rg:
+      t: trgeometry
+  blocks:
+  - lit: "CREATE TYPE trgeometry;\n\n/******************************************************************************\n * Input/Output\n ******************************************************************************/\n\nCREATE FUNCTION trgeometry_in(cstring, oid, integer)\n  RETURNS trgeometry\n  AS 'MODULE_PATHNAME', 'Trgeometry_in'\n  LANGUAGE C IMMUTABLE STRICT;\nCREATE FUNCTION trgeometry_out(trgeometry)\n  RETURNS cstring\n  AS 'MODULE_PATHNAME', 'Trgeometry_out'\n  LANGUAGE C IMMUTABLE STRICT;\nCREATE FUNCTION trgeometry_recv(internal)\n  RETURNS trgeometry\n  AS 'MODULE_PATHNAME', 'Trgeometry_recv'\n  LANGUAGE C IMMUTABLE STRICT;\nCREATE FUNCTION trgeometry_send(trgeometry)\n  RETURNS bytea\n  AS 'MODULE_PATHNAME', 'Trgeometry_send'\n  LANGUAGE C IMMUTABLE STRICT;\n\n"
+  - sig: '{t}_typmod_in(cstring[])'
+    ret: integer
+    sym: Trgeometry_typmod_in
+  - lit: '
+
+      '
+  - stmt: "CREATE TYPE {t} (\n  internallength = variable,\n  input = {t}_in,\n  output = {t}_out,\n  send = {t}_send,\n  receive = {t}_recv,\n  typmod_in = {t}_typmod_in,\n  typmod_out = tspatial_typmod_out,\n  storage = extended,\n  alignment = double,\n  analyze = tspatial_analyze\n);"
+  - lit: "\n-- Special cast for enforcing the typmod restrictions\nCREATE FUNCTION trgeometry(trgeometry, integer)\n  RETURNS trgeometry\n  AS 'MODULE_PATHNAME','Tspatial_enforce_typmod'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\nCREATE CAST (trgeometry AS trgeometry) WITH FUNCTION trgeometry(trgeometry, integer) AS IMPLICIT;\n\n"
+- family: h3
+  file: mobilitydb/sql/h3/253_th3index.in.sql
+  reference: true
+  begin: CREATE TYPE th3index;
+  end: -- GENERATED-REPRESENTATIONS-BEGIN h3
+  order:
+  - h3
+  insts:
+    h3:
+      t: th3index
+  blocks:
+  - lit: "CREATE TYPE th3index;\n\n/******************************************************************************\n * Input / Output\n ******************************************************************************/\n\n"
+  - sig: '{t}_in(cstring, oid, integer)'
+    ret: '{t}'
+    sym: Temporal_in
+  - lit: '
+
+      '
+  - sig: '{t}_recv(internal, oid, integer)'
+    ret: '{t}'
+    sym: Temporal_recv
+  - lit: '
+
+      '
+  - sig: temporal_out({t})
+    ret: cstring
+    sym: Temporal_out
+  - lit: '
+
+      '
+  - sig: temporal_send({t})
+    ret: bytea
+    sym: Temporal_send
+  - lit: '
+
+      '
+  - stmt: "CREATE TYPE {t} (\n  internallength = variable,\n  input = {t}_in,\n  output = temporal_out,\n  send = temporal_send,\n  receive = {t}_recv,\n  typmod_in = temporal_typmod_in,\n  typmod_out = temporal_typmod_out,\n  storage = extended,\n  alignment = double,\n  analyze = tspatial_analyze\n);"
+  - lit: '
+
+      '
+- family: quadbin
+  file: mobilitydb/sql/quadbin/353_tquadbin.in.sql
+  reference: true
+  begin: CREATE TYPE tquadbin;
+  end: -- GENERATED-REPRESENTATIONS-BEGIN quadbin
+  order:
+  - qb
+  insts:
+    qb:
+      t: tquadbin
+  blocks:
+  - lit: "CREATE TYPE tquadbin;\n\n/******************************************************************************\n * Input / Output\n ******************************************************************************/\n\n"
+  - sig: '{t}_in(cstring, oid, integer)'
+    ret: '{t}'
+    sym: Temporal_in
+  - lit: '
+
+      '
+  - sig: '{t}_recv(internal, oid, integer)'
+    ret: '{t}'
+    sym: Temporal_recv
+  - lit: '
+
+      '
+  - sig: temporal_out({t})
+    ret: cstring
+    sym: Temporal_out
+  - lit: '
+
+      '
+  - sig: temporal_send({t})
+    ret: bytea
+    sym: Temporal_send
+  - lit: '
+
+      '
+  - stmt: "CREATE TYPE {t} (\n  internallength = variable,\n  input = {t}_in,\n  output = temporal_out,\n  send = temporal_send,\n  receive = {t}_recv,\n  typmod_in = temporal_typmod_in,\n  typmod_out = temporal_typmod_out,\n  storage = extended,\n  alignment = double,\n  analyze = temporal_analyze\n);"
+  - lit: '
+
+      '
+- family: pointcloud
+  file: mobilitydb/sql/pointcloud/420_tpcpoint.in.sql
+  reference: true
+  begin: CREATE TYPE tpcpoint;
+  end: "/******************************************************************************\n * WKB / HexWKB helpers\n"
+  order:
+  - pc
+  insts:
+    pc:
+      t: tpcpoint
+  blocks:
+  - lit: "CREATE TYPE tpcpoint;\n\n/******************************************************************************\n * Input / output \u2014 all via the generic Temporal_* wrappers\n ******************************************************************************/\n\n"
+  - group:
+    - sig: '{t}_in(cstring, oid, integer)'
+      ret: '{t}'
+      sym: Temporal_in
+    - sig: temporal_out({t})
+      ret: cstring
+      sym: Temporal_out
+    - sig: '{t}_recv(internal, oid, integer)'
+      ret: '{t}'
+      sym: Temporal_recv
+    - sig: temporal_send({t})
+      ret: bytea
+      sym: Temporal_send
+  - lit: '
+
+      '
+  - sig: tpc_typmod_in(cstring[])
+    ret: integer
+    sym: Tpc_typmod_in
+  - sig: tpc_typmod_out(integer)
+    ret: cstring
+    sym: Tpc_typmod_out
+  - lit: '
+
+      '
+  - stmt: "CREATE TYPE {t} (\n  internallength = variable,\n  input = {t}_in,\n  output = temporal_out,\n  send = temporal_send,\n  receive = {t}_recv,\n  typmod_in = tpc_typmod_in,\n  typmod_out = tpc_typmod_out,\n  storage = extended,\n  alignment = double,\n  analyze = tspatial_analyze\n);"
+  - lit: '
+
+      -- Special cast for enforcing the typmod restriction on INSERT / cast.
+
+      '
+  - sig: '{t}({t}, integer)'
+    ret: '{t}'
+    sym: Tpc_enforce_typmod
+  - lit: "CREATE CAST (tpcpoint AS tpcpoint)\n  WITH FUNCTION tpcpoint(tpcpoint, integer) AS IMPLICIT;\n\n"
+- family: pointcloud_patch
+  file: mobilitydb/sql/pointcloud/430_tpcpatch.in.sql
+  reference: true
+  begin: CREATE TYPE tpcpatch;
+  end: "/******************************************************************************\n * WKB / HexWKB helpers\n"
+  order:
+  - pc
+  insts:
+    pc:
+      t: tpcpatch
+  blocks:
+  - lit: "CREATE TYPE tpcpatch;\n\n/******************************************************************************\n * Input / output\n ******************************************************************************/\n\n"
+  - group:
+    - sig: '{t}_in(cstring, oid, integer)'
+      ret: '{t}'
+      sym: Temporal_in
+    - sig: temporal_out({t})
+      ret: cstring
+      sym: Temporal_out
+    - sig: '{t}_recv(internal, oid, integer)'
+      ret: '{t}'
+      sym: Temporal_recv
+    - sig: temporal_send({t})
+      ret: bytea
+      sym: Temporal_send
+  - lit: '
+
+      '
+  - stmt: "CREATE TYPE {t} (\n  internallength = variable,\n  input = {t}_in,\n  output = temporal_out,\n  send = temporal_send,\n  receive = {t}_recv,\n  typmod_in = tpc_typmod_in,\n  typmod_out = tpc_typmod_out,\n  storage = extended,\n  alignment = double,\n  analyze = tspatial_analyze\n);"
+  - lit: '
+
+      -- Special cast for enforcing the typmod restriction on INSERT / cast.
+
+      '
+  - sig: '{t}({t}, integer)'
+    ret: '{t}'
+    sym: Tpc_enforce_typmod
+  - lit: "CREATE CAST (tpcpatch AS tpcpatch)\n  WITH FUNCTION tpcpatch(tpcpatch, integer) AS IMPLICIT;\n\n"
+- family: json
+  file: mobilitydb/sql/json/452_tjsonb.in.sql
+  reference: true
+  begin: CREATE TYPE tjsonb;
+  end: -- GENERATED-REPRESENTATIONS-BEGIN json
+  order:
+  - js
+  insts:
+    js:
+      t: tjsonb
+  blocks:
+  - lit: "CREATE TYPE tjsonb;\n\n/*****************************************************************************\n * Input/Output\n *****************************************************************************/\n\n"
+  - sig: '{t}_in(cstring, oid, integer)'
+    ret: '{t}'
+    sym: Temporal_in
+  - sig: temporal_out({t})
+    ret: cstring
+    sym: Temporal_out
+  - sig: '{t}_recv(internal, oid, integer)'
+    ret: '{t}'
+    sym: Temporal_recv
+  - sig: temporal_send({t})
+    ret: bytea
+    sym: Temporal_send
+  - lit: '
+
+      '
+  - stmt: "CREATE TYPE {t} (\n  internallength = variable,\n  input = {t}_in,\n  output = temporal_out,\n  send = temporal_send,\n  receive = {t}_recv,\n  typmod_in = temporal_typmod_in,\n  typmod_out = temporal_typmod_out,\n  storage = extended,\n  alignment = double,\n  analyze = temporal_analyze\n);"
+  - lit: '
+
+      -- Special cast for enforcing the typmod restrictions
+
+      '
+  - sig: '{t}({t}, integer)'
+    ret: '{t}'
+    sym: Temporal_enforce_typmod
+  - lit: '
+
+      '
+  - stmt: CREATE CAST ({t} AS {t}) WITH FUNCTION {t}({t}, integer) AS IMPLICIT;
+  - lit: '
+
+      '
 representation_families:
 - family: temporal
   file: mobilitydb/sql/temporal/023_temporal_inout.in.sql
