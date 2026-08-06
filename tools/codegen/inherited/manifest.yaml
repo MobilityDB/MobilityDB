@@ -6127,6 +6127,348 @@ span_families:
   - lit: "\n"
   - {stmt: "CREATE CAST ({v} AS {vs}) WITH FUNCTION set({v});"}
   - lit: "\n"
+- family: set_io
+  file: mobilitydb/sql/temporal/001_set.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * Input/Output\n ******************************************************************************/\n"
+  end: "/******************************************************************************\n * Constructor functions"
+  order: [int, bigint, float, text, date, tstz]
+  insts:
+    int: {v: integer, vs: intset}
+    bigint: {v: bigint, vs: bigintset}
+    float: {v: float, vs: floatset}
+    text: {v: text, vs: textset}
+    date: {v: date, vs: dateset}
+    tstz: {v: timestamptz, vs: tstzset}
+  blocks:
+  - lit: "/******************************************************************************\n * Input/Output\n ******************************************************************************/\n\n"
+  - {stmt: "CREATE TYPE {vs};"}
+  - lit: "\n"
+  - group:
+    - {sig: "{vs}_in(cstring)", ret: "{vs}", sym: Set_in}
+    - {sig: "{vs}_out({vs})", ret: "cstring", sym: Set_out}
+    - {sig: "{vs}_recv(internal)", ret: "{vs}", sym: Set_recv}
+    - {sig: "{vs}_send({vs})", ret: "bytea", sym: Set_send}
+    sep: "\n"
+  - lit: "\nCREATE FUNCTION span_analyze(internal)\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Span_analyze'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n"
+  - {stmt: "CREATE TYPE {vs} (\n  internallength = variable,\n  input = {vs}_in,\n  output = {vs}_out,\n  receive = {vs}_recv,\n  send = {vs}_send,\n  alignment = double,\n  storage = extended,\n  analyze = span_analyze\n);", only: [int]}
+  - lit: "\n"
+  - {stmt: "CREATE TYPE {vs} (\n  internallength = variable,\n  input = {vs}_in,\n  output = {vs}_out,\n  receive = {vs}_recv,\n  send = {vs}_send,\n  alignment = double,\n  storage = extended,\n  analyze = span_analyze\n);", only: [bigint]}
+  - lit: "\n"
+  - {stmt: "CREATE TYPE {vs} (\n  internallength = variable,\n  input = {vs}_in,\n  output = {vs}_out,\n  receive = {vs}_recv,\n  send = {vs}_send,\n  alignment = double,\n  storage = extended,\n  analyze = span_analyze\n);", only: [float]}
+  - lit: "\n"
+  - {stmt: "CREATE TYPE {vs} (\n  internallength = variable,\n  input = {vs}_in,\n  output = {vs}_out,\n  receive = {vs}_recv,\n  send = {vs}_send,\n  alignment = double,\n  storage = extended\n);", only: [text]}
+  - lit: "\n"
+  - {stmt: "CREATE TYPE {vs} (\n  internallength = variable,\n  input = {vs}_in,\n  output = {vs}_out,\n  receive = {vs}_recv,\n  send = {vs}_send,\n  alignment = double,\n  storage = extended\n);", only: [date]}
+  - lit: "\n"
+  - {stmt: "CREATE TYPE {vs} (\n  internallength = variable,\n  input = {vs}_in,\n  output = {vs}_out,\n  receive = {vs}_recv,\n  send = {vs}_send,\n  alignment = double,\n  storage = extended,\n  analyze = span_analyze\n);", only: [tstz]}
+  - lit: "\n"
+  - lit: "/******************************************************************************/\n\n-- Input/output in WKT, WKB, and HexWKB representation\n\n"
+  - {sig: "{vs}FromBinary(bytea)", ret: "{vs}", sym: Set_from_wkb}
+  - lit: "\n"
+  - {sig: "{vs}FromHexWKB(text)", ret: "{vs}", sym: Set_from_hexwkb}
+  - lit: "\n"
+  - {sig: "asText({vs})", ret: "text", sym: Set_as_text, only: [int, bigint]}
+  - {sig: "asText({vs}, maxdecimaldigits int4 DEFAULT 15)", ret: "text", sym: Set_as_text, only: [float]}
+  - {sig: "asText({vs})", ret: "text", sym: Set_as_text, only: [text, date, tstz]}
+  - lit: "\n"
+  - {sig: "asBinary({vs}, endianenconding text DEFAULT '')", ret: "bytea", sym: Set_as_wkb}
+  - lit: "\n"
+  - {sig: "asHexWKB({vs}, endianenconding text DEFAULT '')", ret: "text", sym: Set_as_hexwkb}
+  - lit: "\n"
+
+- family: geoset_io
+  file: mobilitydb/sql/geo/050_geoset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * Input/Output\n ******************************************************************************/\n"
+  end: "/******************************************************************************\n * Constructor\n"
+  order: [geom, geog]
+  insts:
+    geom: {v: geometry, vs: geomset}
+    geog: {v: geography, vs: geogset}
+  blocks:
+  - lit: "/******************************************************************************\n * Input/Output\n ******************************************************************************/\n\n"
+  - {stmt: "CREATE TYPE {vs};"}
+  - lit: "\n"
+  - group:
+    - {sig: "{vs}_in(cstring)", ret: "{vs}", sym: Set_in}
+    - {sig: "{vs}_out({vs})", ret: "cstring", sym: Set_out}
+    - {sig: "{vs}_recv(internal)", ret: "{vs}", sym: Set_recv}
+    - {sig: "{vs}_send({vs})", ret: "bytea", sym: Set_send}
+    sep: "\n"
+  - lit: "\nCREATE FUNCTION spatialset_analyze(internal)\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Spatialset_analyze'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n"
+  - {stmt: "CREATE TYPE {vs} (\n  internallength = variable,\n  input = {vs}_in,\n  output = {vs}_out,\n  receive = {vs}_recv,\n  send = {vs}_send,\n  alignment = double,\n  storage = extended,\n  analyze = spatialset_analyze\n);", only: [geom]}
+  - lit: "\n"
+  - {stmt: "CREATE TYPE {vs} (\n  internallength = variable,\n  input = {vs}_in,\n  output = {vs}_out,\n  receive = {vs}_recv,\n  send = {vs}_send,\n  alignment = double,\n  storage = extended,\n  analyze = spatialset_analyze\n);", only: [geog]}
+  - lit: "\n/******************************************************************************/\n\n-- Input/output in WKB and HexWKB representation\n\n"
+  - group:
+    - {sig: "{vs}FromText(text)", ret: "{vs}", sym: Spatialset_from_ewkt}
+    - {sig: "{vs}FromEWKT(text)", ret: "{vs}", sym: Spatialset_from_ewkt}
+    sep: "\n"
+  - lit: "\n"
+  - group:
+    - {sig: "{vs}FromBinary(bytea)", ret: "{vs}", sym: Set_from_wkb}
+    - {sig: "{vs}FromEWKB(bytea)", ret: "{vs}", sym: Set_from_wkb}
+    - {sig: "{vs}FromHexWKB(text)", ret: "{vs}", sym: Set_from_hexwkb}
+    sep: "\n"
+  - lit: "\n"
+  - group:
+    - {sig: "asText({vs}, maxdecimaldigits int4 DEFAULT 15)", ret: "text", sym: Spatialset_as_text}
+    - {sig: "asEWKT({vs}, maxdecimaldigits int4 DEFAULT 15)", ret: "text", sym: Spatialset_as_ewkt}
+    sep: "\n"
+  - lit: "\n"
+  - group:
+    - {sig: "asBinary({vs}, endianenconding text DEFAULT '')", ret: "bytea", sym: Set_as_wkb}
+    - {sig: "asHexWKB({vs}, endianenconding text DEFAULT '')", ret: "text", sym: Set_as_hexwkb}
+    sep: "\n"
+  - lit: "\n"
+
+- family: poseset_io
+  file: mobilitydb/sql/pose/101_poseset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * Input/Output\n ******************************************************************************/\n"
+  end: "/******************************************************************************\n * Constructors"
+  order: [pose]
+  insts:
+    pose: {v: pose, vs: poseset}
+  blocks:
+  - lit: "/******************************************************************************\n * Input/Output\n ******************************************************************************/\n\n"
+  - {stmt: "CREATE TYPE {vs};"}
+  - lit: "\n"
+  - {sig: "{vs}_in(cstring)", ret: "{vs}", sym: Set_in}
+  - {sig: "{vs}_out({vs})", ret: "cstring", sym: Set_out}
+  - {sig: "{vs}_recv(internal)", ret: "{vs}", sym: Set_recv}
+  - {sig: "{vs}_send({vs})", ret: "bytea", sym: Set_send}
+  - lit: "\n"
+  - {stmt: "CREATE TYPE {vs} (\n  internallength = variable,\n  input = {vs}_in,\n  output = {vs}_out,\n  receive = {vs}_recv,\n  send = {vs}_send,\n  alignment = double,\n  storage = extended\n  -- , analyze = geoset_analyze\n);"}
+  - lit: "\n/******************************************************************************/\n\n-- Input/output in WKT, WKB, and HexWKB representation\n\n"
+  - {sig: "{vs}FromText(text)", ret: "{vs}", sym: Spatialset_from_ewkt}
+  - {sig: "{vs}FromEWKT(text)", ret: "{vs}", sym: Spatialset_from_ewkt}
+  - lit: "\n"
+  - {sig: "{vs}FromBinary(bytea)", ret: "{vs}", sym: Set_from_wkb}
+  - {sig: "{vs}FromEWKB(bytea)", ret: "{vs}", sym: Set_from_wkb}
+  - {sig: "{vs}FromHexWKB(text)", ret: "{vs}", sym: Set_from_hexwkb}
+  - lit: "\n"
+  - {sig: "asText({vs}, maxdecimaldigits int4 DEFAULT 15)", ret: "text", sym: Spatialset_as_text}
+  - {sig: "asEWKT({vs}, maxdecimaldigits int4 DEFAULT 15)", ret: "text", sym: Spatialset_as_ewkt}
+  - lit: "\n"
+  - {sig: "asBinary({vs}, endianenconding text DEFAULT '')", ret: "bytea", sym: Set_as_wkb}
+  - {sig: "asEWKB({vs}, endianenconding text DEFAULT '')", ret: "bytea", sym: Spatialset_as_ewkb}
+  - {sig: "asHexWKB({vs}, endianenconding text DEFAULT '')", ret: "text", sym: Set_as_hexwkb}
+  - lit: "\n"
+
+- family: npointset_io
+  file: mobilitydb/sql/npoint/301_npointset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * Input/Output\n ******************************************************************************/\n"
+  end: "/******************************************************************************\n * Constructor\n"
+  order: [npoint]
+  insts:
+    npoint: {v: npoint, vs: npointset}
+  blocks:
+  - lit: "/******************************************************************************\n * Input/Output\n ******************************************************************************/\n\n"
+  - {stmt: "CREATE TYPE {vs};"}
+  - lit: "\n"
+  - {sig: "{vs}_in(cstring)", ret: "{vs}", sym: Set_in}
+  - {sig: "{vs}_out({vs})", ret: "cstring", sym: Set_out}
+  - {sig: "{vs}_recv(internal)", ret: "{vs}", sym: Set_recv}
+  - {sig: "{vs}_send({vs})", ret: "bytea", sym: Set_send}
+  - lit: "\n"
+  - {stmt: "CREATE TYPE {vs} (\n  internallength = variable,\n  input = {vs}_in,\n  output = {vs}_out,\n  receive = {vs}_recv,\n  send = {vs}_send,\n  alignment = double,\n  storage = extended\n  -- , analyze = geoset_analyze\n);"}
+  - lit: "\n/******************************************************************************/\n\n-- Input/output in WKT, WKB, and HexWKB representation\n\n"
+  - {sig: "{vs}FromText(text)", ret: "{vs}", sym: Spatialset_from_ewkt}
+  - {sig: "{vs}FromEWKT(text)", ret: "{vs}", sym: Spatialset_from_ewkt}
+  - lit: "\n"
+  - {sig: "{vs}FromBinary(bytea)", ret: "{vs}", sym: Set_from_wkb}
+  - {sig: "{vs}FromEWKB(bytea)", ret: "{vs}", sym: Set_from_wkb}
+  - {sig: "{vs}FromHexWKB(text)", ret: "{vs}", sym: Set_from_hexwkb}
+  - lit: "\n"
+  - {sig: "asText({vs}, maxdecimaldigits int4 DEFAULT 15)", ret: "text", sym: Set_as_text}
+  - {sig: "asEWKT({vs}, maxdecimaldigits int4 DEFAULT 15)", ret: "text", sym: Spatialset_as_ewkt}
+  - lit: "\n"
+  - {sig: "asBinary({vs}, endianenconding text DEFAULT '')", ret: "bytea", sym: Set_as_wkb}
+  - {sig: "asEWKB({vs}, endianenconding text DEFAULT '')", ret: "bytea", sym: Spatialset_as_ewkb}
+  - {sig: "asHexWKB({vs}, endianenconding text DEFAULT '')", ret: "text", sym: Set_as_hexwkb}
+  - lit: "\n"
+
+- family: cbufferset_io
+  file: mobilitydb/sql/cbuffer/201_cbufferset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * Input/Output\n ******************************************************************************/\n"
+  end: "/******************************************************************************\n * Constructors"
+  order: [cbuffer]
+  insts:
+    cbuffer: {v: cbuffer, vs: cbufferset}
+  blocks:
+  - lit: "/******************************************************************************\n * Input/Output\n ******************************************************************************/\n\n"
+  - {stmt: "CREATE TYPE {vs};"}
+  - lit: "\n"
+  - {sig: "{vs}_in(cstring)", ret: "{vs}", sym: Set_in}
+  - {sig: "{vs}_out({vs})", ret: "cstring", sym: Set_out}
+  - {sig: "{vs}_recv(internal)", ret: "{vs}", sym: Set_recv}
+  - {sig: "{vs}_send({vs})", ret: "bytea", sym: Set_send}
+  - lit: "\n"
+  - {stmt: "CREATE TYPE {vs} (\n  internallength = variable,\n  input = {vs}_in,\n  output = {vs}_out,\n  receive = {vs}_recv,\n  send = {vs}_send,\n  alignment = double,\n  storage = extended\n  -- , analyze = geoset_analyze\n);"}
+  - lit: "\n/******************************************************************************/\n\n-- Input/output in WKB and HexWKB representation\n\n"
+  - {sig: "{vs}FromBinary(bytea)", ret: "{vs}", sym: Set_from_wkb}
+  - lit: "\n"
+  - {sig: "{vs}FromHexWKB(text)", ret: "{vs}", sym: Set_from_hexwkb}
+  - lit: "\n"
+  - {sig: "asBinary({vs}, endianenconding text DEFAULT '')", ret: "bytea", sym: Set_as_wkb}
+  - {sig: "asHexWKB({vs}, endianenconding text DEFAULT '')", ret: "text", sym: Set_as_hexwkb}
+  - lit: "\n"
+  - {sig: "asText({vs}, maxdecimaldigits int4 DEFAULT 15)", ret: "text", sym: Spatialset_as_text}
+  - lit: "\n"
+  - {sig: "asEWKT({vs}, maxdecimaldigits int4 DEFAULT 15)", ret: "text", sym: Spatialset_as_ewkt}
+  - lit: "\n"
+
+- family: jsonbset_io
+  file: mobilitydb/sql/json/450_jsonbset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * Input/Output\n ******************************************************************************/\n"
+  end: "/******************************************************************************\n * Constructors"
+  order: [jsonb]
+  insts:
+    jsonb: {v: jsonb, vs: jsonbset}
+  blocks:
+  - lit: "/******************************************************************************\n * Input/Output\n ******************************************************************************/\n\n"
+  - {stmt: "CREATE TYPE {vs};"}
+  - lit: "\n"
+  - {sig: "{vs}_in(cstring)", ret: "{vs}", sym: Set_in}
+  - {sig: "{vs}_out({vs})", ret: "cstring", sym: Set_out}
+  - lit: "\n"
+  - {sig: "{vs}_recv(internal)", ret: "{vs}", sym: Set_recv}
+  - {sig: "{vs}_send({vs})", ret: "bytea", sym: Set_send}
+  - lit: "\n"
+  - {stmt: "CREATE TYPE {vs} (\n  INTERNALLENGTH = VARIABLE,\n  INPUT = {vs}_in,\n  OUTPUT = {vs}_out,\n  RECEIVE = {vs}_recv,\n  SEND = {vs}_send,\n  ALIGNMENT = DOUBLE,\n  STORAGE = EXTENDED\n);"}
+  - lit: "\n/******************************************************************************/\n\n-- Input/output in WKB and HexWKB representation\n\n"
+  - {sig: "{vs}FromBinary(bytea)", ret: "{vs}", sym: Set_from_wkb}
+  - lit: "\n"
+  - {sig: "{vs}FromHexWKB(text)", ret: "{vs}", sym: Set_from_hexwkb}
+  - lit: "\n"
+  - {sig: "asText({vs})", ret: "text", sym: Set_as_text}
+  - lit: "\n"
+  - {sig: "asBinary({vs}, endianencoding text DEFAULT '')", ret: "bytea", sym: Set_as_wkb}
+  - lit: "\n"
+  - {sig: "asHexWKB({vs}, endianencoding text DEFAULT '')", ret: "text", sym: Set_as_hexwkb}
+  - lit: "\n"
+
+- family: h3indexset_io
+  file: mobilitydb/sql/h3/251_h3indexset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * Type plumbing\n ******************************************************************************/\n"
+  end: "/******************************************************************************\n * Constructors"
+  order: [h3index]
+  insts:
+    h3index: {v: h3index, vs: h3indexset}
+  blocks:
+  - lit: "/******************************************************************************\n * Type plumbing\n ******************************************************************************/\n\n"
+  - {stmt: "CREATE TYPE {vs};"}
+  - lit: "\n"
+  - {sig: "{vs}_in(cstring)", ret: "{vs}", sym: Set_in}
+  - lit: "\n"
+  - {sig: "{vs}_out({vs})", ret: "cstring", sym: Set_out}
+  - lit: "\n"
+  - {sig: "{vs}_recv(internal)", ret: "{vs}", sym: Set_recv}
+  - lit: "\n"
+  - {sig: "{vs}_send({vs})", ret: "bytea", sym: Set_send}
+  - lit: "\n"
+  - {stmt: "CREATE TYPE {vs} (\n  internallength = variable,\n  input = {vs}_in,\n  output = {vs}_out,\n  receive = {vs}_recv,\n  send = {vs}_send,\n  alignment = double,\n  storage = extended\n  -- , analyze = geoset_analyze\n);"}
+  - lit: "\n/******************************************************************************\n * WKB / HexWKB helpers\n ******************************************************************************/\n\n"
+  - {sig: "{vs}FromBinary(bytea)", ret: "{vs}", sym: Set_from_wkb}
+  - lit: "\n"
+  - {sig: "{vs}FromHexWKB(text)", ret: "{vs}", sym: Set_from_hexwkb}
+  - lit: "\n"
+  - {sig: "asText({vs})", ret: "text", sym: Set_as_text}
+  - lit: "\n"
+  - {sig: "asBinary({vs}, endianenconding text DEFAULT '')", ret: "bytea", sym: Set_as_wkb}
+  - lit: "\n"
+  - {sig: "asHexWKB({vs}, endianenconding text DEFAULT '')", ret: "text", sym: Set_as_hexwkb}
+  - lit: "\n"
+
+- family: quadbinset_io
+  file: mobilitydb/sql/quadbin/351_quadbinset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * Type plumbing\n ******************************************************************************/\n"
+  end: "/******************************************************************************\n * Constructors"
+  order: [quadbin]
+  insts:
+    quadbin: {v: quadbin, vs: quadbinset}
+  blocks:
+  - lit: "/******************************************************************************\n * Type plumbing\n ******************************************************************************/\n\n"
+  - {stmt: "CREATE TYPE {vs};"}
+  - lit: "\n"
+  - {sig: "{vs}_in(cstring)", ret: "{vs}", sym: Set_in}
+  - lit: "\n"
+  - {sig: "{vs}_out({vs})", ret: "cstring", sym: Set_out}
+  - lit: "\n"
+  - {sig: "{vs}_recv(internal)", ret: "{vs}", sym: Set_recv}
+  - lit: "\n"
+  - {sig: "{vs}_send({vs})", ret: "bytea", sym: Set_send}
+  - lit: "\n"
+  - {stmt: "CREATE TYPE {vs} (\n  internallength = variable,\n  input = {vs}_in,\n  output = {vs}_out,\n  receive = {vs}_recv,\n  send = {vs}_send,\n  alignment = double,\n  storage = extended\n  -- , analyze = geoset_analyze\n);"}
+  - lit: "\n/******************************************************************************\n * WKB / HexWKB helpers\n ******************************************************************************/\n\n"
+  - {sig: "{vs}FromBinary(bytea)", ret: "{vs}", sym: Set_from_wkb}
+  - lit: "\n"
+  - {sig: "{vs}FromHexWKB(text)", ret: "{vs}", sym: Set_from_hexwkb}
+  - lit: "\n"
+  - {sig: "asText({vs})", ret: "text", sym: Set_as_text}
+  - lit: "\n"
+  - {sig: "asBinary({vs}, endianenconding text DEFAULT '')", ret: "bytea", sym: Set_as_wkb}
+  - lit: "\n"
+  - {sig: "asHexWKB({vs}, endianenconding text DEFAULT '')", ret: "text", sym: Set_as_hexwkb}
+  - lit: "\n"
+
+- family: pcpointset_io
+  file: mobilitydb/sql/pointcloud/400_pcset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * pcpointset \u2014 Input / output\n ******************************************************************************/\n"
+  end: "/******************************************************************************\n * pcpointset \u2014 Constructor / conversion"
+  order: [pcpoint]
+  insts:
+    pcpoint: {v: pcpoint, vs: pcpointset}
+  blocks:
+  - lit: "/******************************************************************************\n * pcpointset \u2014 Input / output\n ******************************************************************************/\n\n"
+  - {stmt: "CREATE TYPE {vs};"}
+  - lit: "\n"
+  - {sig: "{vs}_in(cstring)", ret: "{vs}", sym: Set_in}
+  - {sig: "{vs}_out({vs})", ret: "cstring", sym: Set_out}
+  - {sig: "{vs}_recv(internal)", ret: "{vs}", sym: Set_recv}
+  - {sig: "{vs}_send({vs})", ret: "bytea", sym: Set_send}
+  - lit: "\n"
+  - {stmt: "CREATE TYPE {vs} (\n  internallength = variable,\n  input = {vs}_in,\n  output = {vs}_out,\n  receive = {vs}_recv,\n  send = {vs}_send,\n  alignment = double,\n  storage = extended\n);"}
+  - lit: "\n"
+  - {sig: "{vs}FromBinary(bytea)", ret: "{vs}", sym: Set_from_wkb}
+  - {sig: "{vs}FromHexWKB(text)", ret: "{vs}", sym: Set_from_hexwkb}
+  - {sig: "asBinary({vs}, endianenconding text DEFAULT '')", ret: "bytea", sym: Set_as_wkb}
+  - {sig: "asHexWKB({vs}, endianenconding text DEFAULT '')", ret: "text", sym: Set_as_hexwkb}
+  - lit: "\n"
+
+- family: pcpatchset_io
+  file: mobilitydb/sql/pointcloud/400_pcset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * pcpatchset \u2014 Input / output\n ******************************************************************************/\n"
+  end: "/******************************************************************************\n * pcpatchset \u2014 Constructor / conversion"
+  order: [pcpatch]
+  insts:
+    pcpatch: {v: pcpatch, vs: pcpatchset}
+  blocks:
+  - lit: "/******************************************************************************\n * pcpatchset \u2014 Input / output\n ******************************************************************************/\n\n"
+  - {stmt: "CREATE TYPE {vs};"}
+  - lit: "\n"
+  - {sig: "{vs}_in(cstring)", ret: "{vs}", sym: Set_in}
+  - {sig: "{vs}_out({vs})", ret: "cstring", sym: Set_out}
+  - {sig: "{vs}_recv(internal)", ret: "{vs}", sym: Set_recv}
+  - {sig: "{vs}_send({vs})", ret: "bytea", sym: Set_send}
+  - lit: "\n"
+  - {stmt: "CREATE TYPE {vs} (\n  internallength = variable,\n  input = {vs}_in,\n  output = {vs}_out,\n  receive = {vs}_recv,\n  send = {vs}_send,\n  alignment = double,\n  storage = extended\n);"}
+  - lit: "\n"
+  - {sig: "{vs}FromBinary(bytea)", ret: "{vs}", sym: Set_from_wkb}
+  - {sig: "{vs}FromHexWKB(text)", ret: "{vs}", sym: Set_from_hexwkb}
+  - {sig: "asBinary({vs}, endianenconding text DEFAULT '')", ret: "bytea", sym: Set_as_wkb}
+  - {sig: "asHexWKB({vs}, endianenconding text DEFAULT '')", ret: "text", sym: Set_as_hexwkb}
+  - lit: "\n"
+
 
 
 
