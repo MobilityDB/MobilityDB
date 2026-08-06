@@ -75,6 +75,7 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
+<a href="#nested-classes">Data Structures</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">raquet_gdal.c File Reference</div></div>
 </div><!--header-->
@@ -83,6 +84,7 @@ $(function() {
 <p>GDAL-backed ingest of a raster file into a <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> raster chip.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="raquet_8h_source.html">raster/raquet.h</a>&quot;</code><br />
+<code>#include &lt;math.h&gt;</code><br />
 <code>#include &lt;stdint.h&gt;</code><br />
 <code>#include &lt;string.h&gt;</code><br />
 <code>#include &lt;gdal.h&gt;</code><br />
@@ -90,16 +92,29 @@ $(function() {
 <code>#include &lt;cpl_vsi.h&gt;</code><br />
 <code>#include &lt;ogr_srs_api.h&gt;</code><br />
 <code>#include &lt;postgres.h&gt;</code><br />
+<code>#include &lt;liblwgeom.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a>&gt;</code><br />
 <code>#include &quot;temporal/temporal.h&quot;</code><br />
 <code>#include &quot;<a class="el" href="raster__quadbin_8h_source.html">raster/raster_quadbin.h</a>&quot;</code><br />
 </div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
+Data Structures</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structRasterValueGdalCtx.html">RasterValueGdalCtx</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Per-call state for <a class="el" href="raquet__gdal_8c_ab87a1c152ee495b1cb908bb4a2347c07.html#ab87a1c152ee495b1cb908bb4a2347c07" title="Raster sampling callback backed by a single-pixel GDALRasterIO read: the context carries the band and...">raster_value_gdal_sample</a>: the raster band to read, the inverse geotransform mapping a geographic point to a pixel (col, row), the band size for bounds-checking, and the nodata sentinel.  <a href="structRasterValueGdalCtx.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:gafc38f8c4e13d724289623b7e60f73eb7"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__raster_gafc38f8c4e13d724289623b7e60f73eb7.html#gafc38f8c4e13d724289623b7e60f73eb7">araster_value_gdal</a> (const char *path, int band, const <a class="el" href="structTemporal.html">Temporal</a> *traj, const <a class="el" href="structSpan.html">Span</a> *vspan)</td></tr>
+<tr class="memdesc:gafc38f8c4e13d724289623b7e60f73eb7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if every in-raster-extent instant of a trajectory samples a raster pixel value, read through GDAL, inside a float span.  <a href="group__meos__raster_gafc38f8c4e13d724289623b7e60f73eb7.html#gafc38f8c4e13d724289623b7e60f73eb7">More...</a><br /></td></tr>
+<tr class="separator:gafc38f8c4e13d724289623b7e60f73eb7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac39227a30ae3a48e67a0ff4219b4cec9"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="raquet__gdal_8c_ac39227a30ae3a48e67a0ff4219b4cec9.html#ac39227a30ae3a48e67a0ff4219b4cec9">derive_quadbin</a> (GDALDatasetH ds, <a class="el" href="postgres__ext__defs_8in_8h_abc0f5bc07737e498f287334775dff2b6.html#abc0f5bc07737e498f287334775dff2b6">uint64</a> *quadbin, const char *label)</td></tr>
 <tr class="memdesc:ac39227a30ae3a48e67a0ff4219b4cec9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Derive the QUADBIN cell of a raster tile from an open GDAL dataset's EPSG:3857 geotransform and spatial reference.  <a href="raquet__gdal_8c_ac39227a30ae3a48e67a0ff4219b4cec9.html#ac39227a30ae3a48e67a0ff4219b4cec9">More...</a><br /></td></tr>
 <tr class="separator:ac39227a30ae3a48e67a0ff4219b4cec9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4c346b7cef5e2b1172738c5b0268dba2"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__raster_ga4c346b7cef5e2b1172738c5b0268dba2.html#ga4c346b7cef5e2b1172738c5b0268dba2">eraster_value_gdal</a> (const char *path, int band, const <a class="el" href="structTemporal.html">Temporal</a> *traj, const <a class="el" href="structSpan.html">Span</a> *vspan)</td></tr>
+<tr class="memdesc:ga4c346b7cef5e2b1172738c5b0268dba2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if a trajectory ever samples a raster pixel value, read through GDAL, inside a float span.  <a href="group__meos__raster_ga4c346b7cef5e2b1172738c5b0268dba2.html#ga4c346b7cef5e2b1172738c5b0268dba2">More...</a><br /></td></tr>
+<tr class="separator:ga4c346b7cef5e2b1172738c5b0268dba2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1ad6caa75bcb39f22b945dd177ce05a8"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="raquet__gdal_8c_a1ad6caa75bcb39f22b945dd177ce05a8.html#a1ad6caa75bcb39f22b945dd177ce05a8">gdal_to_pixtype</a> (GDALDataType dt, <a class="el" href="meos__raster_8h_ab4899fb599b17f4121bb9a377d9dd040.html#ab4899fb599b17f4121bb9a377d9dd040">MeosPixType</a> *pixtype)</td></tr>
 <tr class="memdesc:a1ad6caa75bcb39f22b945dd177ce05a8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Map a GDAL data type to the corresponding <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> pixel type.  <a href="raquet__gdal_8c_a1ad6caa75bcb39f22b945dd177ce05a8.html#a1ad6caa75bcb39f22b945dd177ce05a8">More...</a><br /></td></tr>
 <tr class="separator:a1ad6caa75bcb39f22b945dd177ce05a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -112,6 +127,21 @@ Functions</h2></td></tr>
 <tr class="memitem:ga8148a95b3bfb66a65ce6628ba5858c33"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structRaquet.html">Raquet</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__raster__base__constructor_ga8148a95b3bfb66a65ce6628ba5858c33.html#ga8148a95b3bfb66a65ce6628ba5858c33">raquet_read_bytes</a> (const uint8_t *data, size_t size, <a class="el" href="postgres__ext__defs_8in_8h_abc0f5bc07737e498f287334775dff2b6.html#abc0f5bc07737e498f287334775dff2b6">uint64</a> quadbin)</td></tr>
 <tr class="memdesc:ga8148a95b3bfb66a65ce6628ba5858c33"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> tile decoded from an in-memory raster file via GDAL.  <a href="group__meos__raster__base__constructor_ga8148a95b3bfb66a65ce6628ba5858c33.html#ga8148a95b3bfb66a65ce6628ba5858c33">More...</a><br /></td></tr>
 <tr class="separator:ga8148a95b3bfb66a65ce6628ba5858c33"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaec821bb605409a4d76b82b430314731a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTemporal.html">Temporal</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__raster_gaec821bb605409a4d76b82b430314731a.html#gaec821bb605409a4d76b82b430314731a">raster_at_value_gdal</a> (const char *path, int band, const <a class="el" href="structTemporal.html">Temporal</a> *traj, const <a class="el" href="structSpan.html">Span</a> *vspan)</td></tr>
+<tr class="memdesc:gaec821bb605409a4d76b82b430314731a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the instants of a trajectory where the raster pixel value, read through GDAL, falls inside a float span.  <a href="group__meos__raster_gaec821bb605409a4d76b82b430314731a.html#gaec821bb605409a4d76b82b430314731a">More...</a><br /></td></tr>
+<tr class="separator:gaec821bb605409a4d76b82b430314731a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf1a93312364b67448bd807c19950a876"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTemporal.html">Temporal</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__raster_gaf1a93312364b67448bd807c19950a876.html#gaf1a93312364b67448bd807c19950a876">raster_minus_value_gdal</a> (const char *path, int band, const <a class="el" href="structTemporal.html">Temporal</a> *traj, const <a class="el" href="structSpan.html">Span</a> *vspan)</td></tr>
+<tr class="memdesc:gaf1a93312364b67448bd807c19950a876"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the instants of a trajectory where the raster pixel value, read through GDAL, falls outside a float span.  <a href="group__meos__raster_gaf1a93312364b67448bd807c19950a876.html#gaf1a93312364b67448bd807c19950a876">More...</a><br /></td></tr>
+<tr class="separator:gaf1a93312364b67448bd807c19950a876"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga1d7d7cce324dd280e4b8faf90ca5a417"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTemporal.html">Temporal</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__raster_ga1d7d7cce324dd280e4b8faf90ca5a417.html#ga1d7d7cce324dd280e4b8faf90ca5a417">raster_value_gdal</a> (const char *path, int band, const <a class="el" href="structTemporal.html">Temporal</a> *traj)</td></tr>
+<tr class="memdesc:ga1d7d7cce324dd280e4b8faf90ca5a417"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the values of a raster band sampled at the instants of a trajectory, reading the raster through GDAL.  <a href="group__meos__raster_ga1d7d7cce324dd280e4b8faf90ca5a417.html#ga1d7d7cce324dd280e4b8faf90ca5a417">More...</a><br /></td></tr>
+<tr class="separator:ga1d7d7cce324dd280e4b8faf90ca5a417"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aed00e70863ee161d315e89c87ea3faed"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="raquet__gdal_8c_aed00e70863ee161d315e89c87ea3faed.html#aed00e70863ee161d315e89c87ea3faed">raster_value_gdal_open</a> (const char *path, int band_num, GDALDatasetH *ds_out, <a class="el" href="structRasterValueGdalCtx.html">RasterValueGdalCtx</a> *ctx, <a class="el" href="structSTBox.html">STBox</a> *box)</td></tr>
+<tr class="memdesc:aed00e70863ee161d315e89c87ea3faed"><td class="mdescLeft">&#160;</td><td class="mdescRight">Open a raster file via GDAL and build the <a class="el" href="structRasterValueGdalCtx.html" title="Per-call state for raster_value_gdal_sample: the raster band to read, the inverse geotransform mappin...">RasterValueGdalCtx</a> and the extent <a class="el" href="structSTBox.html" title="Structure to represent spatiotemporal boxes.">STBox</a> pre-filter shared by every raster_value_gdal wrapper.  <a href="raquet__gdal_8c_aed00e70863ee161d315e89c87ea3faed.html#aed00e70863ee161d315e89c87ea3faed">More...</a><br /></td></tr>
+<tr class="separator:aed00e70863ee161d315e89c87ea3faed"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab87a1c152ee495b1cb908bb4a2347c07"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="raquet__gdal_8c_ab87a1c152ee495b1cb908bb4a2347c07.html#ab87a1c152ee495b1cb908bb4a2347c07">raster_value_gdal_sample</a> (void *ctxp, const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *point, double *value)</td></tr>
+<tr class="memdesc:ab87a1c152ee495b1cb908bb4a2347c07"><td class="mdescLeft">&#160;</td><td class="mdescRight">Raster sampling callback backed by a single-pixel GDALRasterIO read: the context carries the band and the inverse geotransform, only the point argument varies per call.  <a href="raquet__gdal_8c_ab87a1c152ee495b1cb908bb4a2347c07.html#ab87a1c152ee495b1cb908bb4a2347c07">More...</a><br /></td></tr>
+<tr class="separator:ab87a1c152ee495b1cb908bb4a2347c07"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >GDAL-backed ingest of a raster file into a <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> raster chip. </p>

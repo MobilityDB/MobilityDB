@@ -14,12 +14,13 @@ var searchData=
   ['interp_11',['interp',['../structmeos__wkb__parse__state_ab7078221407e8512699d39fa61766a69.html#ab7078221407e8512699d39fa61766a69',1,'meos_wkb_parse_state']]],
   ['intervals_12',['intervals',['../tpoint__geom__clip_8c_a64202e8121143ed79dd5ea7145cbe49e.html#a64202e8121143ed79dd5ea7145cbe49e',1,'tpoint_geom_clip.c']]],
   ['intervalstyle_13',['IntervalStyle',['../meos_8c_abc75cb539277c7cfa814b8755690cb1d.html#abc75cb539277c7cfa814b8755690cb1d',1,'meos.c']]],
-  ['invalid_5fgeoms_14',['invalid_geoms',['../parse__test_8c_a7ab19e7eceff96b867031b1b49c81cf2.html#a7ab19e7eceff96b867031b1b49c81cf2',1,'parse_test.c']]],
-  ['invert_15',['invert',['../structLiftedFunctionInfo_af63eedf967d20fcf7557af1de580f1ba.html#af63eedf967d20fcf7557af1de580f1ba',1,'LiftedFunctionInfo']]],
-  ['is_5farc_16',['is_arc',['../structGeoDistEdge_ad0d697fa34bfb22d1a6f92fbae24bcee.html#ad0d697fa34bfb22d1a6f92fbae24bcee',1,'GeoDistEdge']]],
-  ['is_5femit_17',['is_emit',['../structSPNNEntry_ad8e934df0849ed99161ade65a7dec0ee.html#ad8e934df0849ed99161ade65a7dec0ee',1,'SPNNEntry']]],
-  ['is_5fleaf_5fentry_18',['is_leaf_entry',['../structRTreeNNEntry_a4de3913b3ceb2c9ee8898e84e1db03dd.html#a4de3913b3ceb2c9ee8898e84e1db03dd',1,'RTreeNNEntry']]],
-  ['is_5fpoly_19',['is_poly',['../structGeoDistEdge_ab0a5493a3979214689f4ffcb289b48fc.html#ab0a5493a3979214689f4ffcb289b48fc',1,'GeoDistEdge']]],
-  ['is_5fvalid_5fcell_20',['is_valid_cell',['../structDggsCellOps_ac9faeb2e965811eb12c134e002f21f46.html#ac9faeb2e965811eb12c134e002f21f46',1,'DggsCellOps']]],
-  ['iters_21',['iters',['../structworker__arg_a213c8664685dd0777b0396a423b62952.html#a213c8664685dd0777b0396a423b62952',1,'worker_arg']]]
+  ['inv_5fgt_14',['inv_gt',['../structRasterValueGdalCtx_afe199fefbd8b51e0775e1144cb18001d.html#afe199fefbd8b51e0775e1144cb18001d',1,'RasterValueGdalCtx']]],
+  ['invalid_5fgeoms_15',['invalid_geoms',['../parse__test_8c_a7ab19e7eceff96b867031b1b49c81cf2.html#a7ab19e7eceff96b867031b1b49c81cf2',1,'parse_test.c']]],
+  ['invert_16',['invert',['../structLiftedFunctionInfo_af63eedf967d20fcf7557af1de580f1ba.html#af63eedf967d20fcf7557af1de580f1ba',1,'LiftedFunctionInfo']]],
+  ['is_5farc_17',['is_arc',['../structGeoDistEdge_ad0d697fa34bfb22d1a6f92fbae24bcee.html#ad0d697fa34bfb22d1a6f92fbae24bcee',1,'GeoDistEdge']]],
+  ['is_5femit_18',['is_emit',['../structSPNNEntry_ad8e934df0849ed99161ade65a7dec0ee.html#ad8e934df0849ed99161ade65a7dec0ee',1,'SPNNEntry']]],
+  ['is_5fleaf_5fentry_19',['is_leaf_entry',['../structRTreeNNEntry_a4de3913b3ceb2c9ee8898e84e1db03dd.html#a4de3913b3ceb2c9ee8898e84e1db03dd',1,'RTreeNNEntry']]],
+  ['is_5fpoly_20',['is_poly',['../structGeoDistEdge_ab0a5493a3979214689f4ffcb289b48fc.html#ab0a5493a3979214689f4ffcb289b48fc',1,'GeoDistEdge']]],
+  ['is_5fvalid_5fcell_21',['is_valid_cell',['../structDggsCellOps_ac9faeb2e965811eb12c134e002f21f46.html#ac9faeb2e965811eb12c134e002f21f46',1,'DggsCellOps']]],
+  ['iters_22',['iters',['../structworker__arg_a213c8664685dd0777b0396a423b62952.html#a213c8664685dd0777b0396a423b62952',1,'worker_arg']]]
 ];
