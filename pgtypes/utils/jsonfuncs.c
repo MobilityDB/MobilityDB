@@ -448,6 +448,8 @@ json_errsave_error(JsonParseErrorType error, JsonLexContext *lex UNUSED,
 /**
  * @ingroup meos_json_base_accessor
  * @brief Return the set of keys of a JSON value
+ * @param[in] js JSON value
+ * @param[out] count Number of elements in the output array
  * @note Derived from PostgreSQL function @p json_object_keys()
  */
 #if MEOS
@@ -551,6 +553,8 @@ okeys_scalar(void *state, char *token UNUSED, JsonTokenType tokentype UNUSED)
  * necessary. This is probably safe enough for a list of keys of a single
  * object, since they are limited in size to NAMEDATALEN and the number of
  * keys is unlikely to be so huge that it has major memory implications.
+ * @param[in] jb JSONB value
+ * @param[out] count Number of elements in the output array
  * @note Derived from PostgreSQL function @p jsonb_object_keys()
  */
 #if MEOS
@@ -1732,6 +1736,9 @@ alen_array_element_start(void *state, bool isnull UNUSED)
 /**
  * @ingroup meos_json_base_accessor
  * @brief Return two arrays of keys and values of a JSON value
+ * @param[in] js JSON value
+ * @param[out] values Array of values
+ * @param[out] count Number of elements in the output array
  * @note Derived from PostgreSQL function: @p json_each()
  */
 #if MEOS
@@ -1750,6 +1757,9 @@ pg_json_each(const text *js, text **values, int *count)
 /**
  * @ingroup meos_json_base_accessor
  * @brief Return two arrays of keys and values of a JSON value as text
+ * @param[in] js JSON value
+ * @param[out] values Array of values
+ * @param[out] count Number of elements in the output array
  * @note Derived from PostgreSQL function: @p json_each_text()
  */
 #if MEOS
@@ -1902,6 +1912,8 @@ each_scalar(void *state, char *token, JsonTokenType tokentype UNUSED)
 /**
  * @ingroup meos_json_base_accessor
  * @brief Return the elements of a JSON array
+ * @param[in] js JSON value
+ * @param[out] count Number of elements in the output array
  * @note Derived from PostgreSQL function: @p json_array_elements()
  */
 #if MEOS
@@ -1920,6 +1932,8 @@ pg_json_array_elements(const text *js, int *count)
 /**
  * @ingroup meos_json_base_accessor
  * @brief Return the elements of a JSON array as text
+ * @param[in] js JSON value
+ * @param[out] count Number of elements in the output array
  * @note Derived from PostgreSQL function: @p json_array_elements_text()
  */
 #if MEOS
@@ -2069,6 +2083,9 @@ elements_scalar(void *state, char *token, JsonTokenType tokentype UNUSED)
 /**
  * @ingroup meos_json_base_accessor
  * @brief Return two arrays of keys and values of a JSONB value
+ * @param[in] jb JSONB value
+ * @param[out] values Array of values
+ * @param[out] count Number of elements in the output array
  * @note Derived from PostgreSQL function: @p jsonb_each()
  */
 #if MEOS
@@ -2087,6 +2104,9 @@ pg_jsonb_each(const Jsonb *jb, Jsonb **values, int *count)
 /**
  * @ingroup meos_json_base_accessor
  * @brief Return two arrays of keys and values of a JSONB value as text
+ * @param[in] jb JSONB value
+ * @param[out] values Array of values
+ * @param[out] count Number of elements in the output array
  * @note Derived from PostgreSQL function: @p jsonb_each_text()
  */
 #if MEOS
@@ -2159,6 +2179,8 @@ each_worker_jsonb(const Jsonb *jb, void **values, int *count,
 /**
  * @ingroup meos_json_base_accessor
  * @brief Return the elements of a JSONB array
+ * @param[in] jb JSONB value
+ * @param[out] count Number of elements in the output array
  * @note Derived from PostgreSQL function: @p jsonb_array_elements()
  */
 #if MEOS
@@ -2178,6 +2200,8 @@ pg_jsonb_array_elements(const Jsonb *jb, int *count)
 /**
  * @ingroup meos_json_base_accessor
  * @brief Return the elements of a JSONB array as text
+ * @param[in] jb JSONB value
+ * @param[out] count Number of elements in the output array
  * @note Derived from PostgreSQL function: @p jsonb_array_elements()
  */
 #if MEOS
