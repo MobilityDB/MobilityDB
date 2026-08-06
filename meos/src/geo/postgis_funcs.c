@@ -52,6 +52,7 @@
 #include <intervaltree.h>
 #include <lwgeom_geos.h>
 #include <measures.h>
+#include <measures3d.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
@@ -987,6 +988,25 @@ geom_distance3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
   assert(gs1); assert(gs2);
   assert(gserialized_get_srid(gs1) == gserialized_get_srid(gs2));
+
+  /* Fast path: the distance between two points with Z is computed from their
+   * coordinates with the primitive that the general computation reaches, which
+   * avoids deserializing the geometries */
+  if (gserialized_get_type(gs1) == POINTTYPE &&
+      gserialized_get_type(gs2) == POINTTYPE &&
+      gserialized_has_z(gs1) && gserialized_has_z(gs2) &&
+      ! gserialized_is_empty(gs1) && ! gserialized_is_empty(gs2))
+  {
+    DISTPTS3D dl;
+    memset(&dl, 0, sizeof(DISTPTS3D));
+    dl.mode = DIST_MIN;
+    dl.distance = DBL_MAX;
+    dl.tolerance = 0.0;
+    dl.twisted = -1;
+    lw_dist3d_pt_pt(GSERIALIZED_POINT3DZ_P(gs1), GSERIALIZED_POINT3DZ_P(gs2),
+      &dl);
+    return dl.distance;
+  }
 
   LWGEOM *geom1 = lwgeom_from_gserialized(gs1);
   LWGEOM *geom2 = lwgeom_from_gserialized(gs2);
