@@ -51,6 +51,7 @@
 #include <lwgeom_log.h>
 #include <intervaltree.h>
 #include <lwgeom_geos.h>
+#include <measures.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
@@ -949,6 +950,22 @@ geom_distance2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
   assert(gs1); assert(gs2);
   assert(gserialized_get_srid(gs1) == gserialized_get_srid(gs2));
+
+  /* Fast path: the distance between two points is computed from their
+   * coordinates with the primitive that the general computation reaches, which
+   * avoids deserializing the geometries. This keeps the deserialization out of
+   * the temporal-distance hot path, where the lifting loop computes the
+   * distance for every synchronized pair of instants */
+  if (gserialized_get_type(gs1) == POINTTYPE &&
+      gserialized_get_type(gs2) == POINTTYPE &&
+      ! gserialized_is_empty(gs1) && ! gserialized_is_empty(gs2))
+  {
+    DISTPTS dl;
+    lw_dist2d_distpts_init(&dl, DIST_MIN);
+    lw_dist2d_pt_pt(GSERIALIZED_POINT2D_P(gs1), GSERIALIZED_POINT2D_P(gs2),
+      &dl);
+    return dl.distance;
+  }
 
   LWGEOM *geom1 = lwgeom_from_gserialized(gs1);
   LWGEOM *geom2 = lwgeom_from_gserialized(gs2);
