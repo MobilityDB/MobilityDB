@@ -5976,6 +5976,158 @@ span_families:
   - {stmt: "CREATE CAST ({vs} AS textset) WITH FUNCTION textset({vs});"}
   - {stmt: "CREATE CAST (textset AS {vs}) WITH FUNCTION jsonbset(textset);"}
   - lit: "\n"
+- family: set_constructors
+  file: mobilitydb/sql/temporal/001_set.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * Constructor functions\n ******************************************************************************/\n"
+  end: "/******************************************************************************\n * Conversion functions"
+  order: [int, bigint, float, text, date, tstz]
+  insts:
+    int: {v: integer, vs: intset}
+    bigint: {v: bigint, vs: bigintset}
+    float: {v: float, vs: floatset}
+    text: {v: text, vs: textset}
+    date: {v: date, vs: dateset}
+    tstz: {v: timestamptz, vs: tstzset}
+  blocks:
+  - lit: "/******************************************************************************\n * Constructor functions\n ******************************************************************************/\n\n"
+  - {sig: "set({v}[])", ret: "{vs}", sym: Set_constructor}
+  - lit: "\n"
+
+- family: geoset_constructors
+  file: mobilitydb/sql/geo/050_geoset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * Constructor\n ******************************************************************************/\n"
+  end: "/******************************************************************************\n * Conversion functions"
+  order: [geom, geog]
+  insts:
+    geom: {v: geometry, vs: geomset}
+    geog: {v: geography, vs: geogset}
+  blocks:
+  - lit: "/******************************************************************************\n * Constructor\n ******************************************************************************/\n\n"
+  - {sig: "set({v}[])", ret: "{vs}", sym: Set_constructor}
+  - lit: "\n"
+
+- family: poseset_constructors
+  file: mobilitydb/sql/pose/101_poseset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * Constructors\n ******************************************************************************/\n"
+  end: "/******************************************************************************\n * Conversion functions"
+  order: [pose]
+  insts:
+    pose: {v: pose, vs: poseset}
+  blocks:
+  - lit: "/******************************************************************************\n * Constructors\n ******************************************************************************/\n\n"
+  - {sig: "set({v}[])", ret: "{vs}", sym: Set_constructor}
+  - lit: "\n"
+
+- family: cbufferset_constructors
+  file: mobilitydb/sql/cbuffer/201_cbufferset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * Constructors\n ******************************************************************************/\n"
+  end: "/******************************************************************************\n * Conversion functions"
+  order: [cbuffer]
+  insts:
+    cbuffer: {v: cbuffer, vs: cbufferset}
+  blocks:
+  - lit: "/******************************************************************************\n * Constructors\n ******************************************************************************/\n\n"
+  - {sig: "set({v}[])", ret: "{vs}", sym: Set_constructor}
+  - lit: "\n"
+
+- family: npointset_constructors
+  file: mobilitydb/sql/npoint/301_npointset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * Constructor\n ******************************************************************************/\n"
+  end: "/******************************************************************************\n * Conversions"
+  order: [npoint]
+  insts:
+    npoint: {v: npoint, vs: npointset}
+  blocks:
+  - lit: "/******************************************************************************\n * Constructor\n ******************************************************************************/\n\n"
+  - {sig: "set({v}[])", ret: "{vs}", sym: Set_constructor}
+  - lit: "\n"
+
+- family: jsonbset_constructors
+  file: mobilitydb/sql/json/450_jsonbset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * Constructors\n ******************************************************************************/\n"
+  end: "/******************************************************************************\n * Conversions"
+  order: [jsonb]
+  insts:
+    jsonb: {v: jsonb, vs: jsonbset}
+  blocks:
+  - lit: "/******************************************************************************\n * Constructors\n ******************************************************************************/\n\n"
+  - {sig: "set({v}[])", ret: "{vs}", sym: Set_constructor}
+  - lit: "\n"
+
+- family: h3indexset_constructors
+  file: mobilitydb/sql/h3/251_h3indexset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * Constructors\n ******************************************************************************/\n"
+  end: "/******************************************************************************\n * Accessors"
+  order: [h3index]
+  insts:
+    h3index: {v: h3index, vs: h3indexset}
+  blocks:
+  - lit: "/******************************************************************************\n * Constructors\n ******************************************************************************/\n\n"
+  - {sig: "set({v}[])", ret: "{vs}", sym: Set_constructor}
+  - lit: "\n-- Singleton constructor: `set(basetype)` is the cross-set convention\n-- (matches set(bigint), set(text), etc.).\n"
+  - {sig: "set({v})", ret: "{vs}", sym: Value_to_set}
+  - lit: "\n"
+  - {stmt: "CREATE CAST ({v} AS {vs}) WITH FUNCTION set({v});"}
+  - lit: "\n"
+
+- family: quadbinset_constructors
+  file: mobilitydb/sql/quadbin/351_quadbinset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * Constructors\n ******************************************************************************/\n"
+  end: "/******************************************************************************\n * Accessors"
+  order: [quadbin]
+  insts:
+    quadbin: {v: quadbin, vs: quadbinset}
+  blocks:
+  - lit: "/******************************************************************************\n * Constructors\n ******************************************************************************/\n\n"
+  - {sig: "set({v}[])", ret: "{vs}", sym: Set_constructor}
+  - lit: "\n-- Singleton constructor: `set(basetype)` is the cross-set convention\n-- (matches set(bigint), set(text), etc.).\n"
+  - {sig: "set({v})", ret: "{vs}", sym: Value_to_set}
+  - lit: "\n"
+  - {stmt: "CREATE CAST ({v} AS {vs}) WITH FUNCTION set({v});"}
+  - lit: "\n"
+
+- family: pcpointset_constructors
+  file: mobilitydb/sql/pointcloud/400_pcset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * pcpointset \u2014 Constructor / conversion\n ******************************************************************************/\n"
+  end: "/******************************************************************************\n * pcpointset \u2014 Accessors"
+  order: [pcpoint]
+  insts:
+    pcpoint: {v: pcpoint, vs: pcpointset}
+  blocks:
+  - lit: "/******************************************************************************\n * pcpointset \u2014 Constructor / conversion\n ******************************************************************************/\n\n"
+  - {sig: "set({v}[])", ret: "{vs}", sym: Set_constructor}
+  - lit: "\n"
+  - {sig: "set({v})", ret: "{vs}", sym: Value_to_set}
+  - lit: "\n"
+  - {stmt: "CREATE CAST ({v} AS {vs}) WITH FUNCTION set({v});"}
+  - lit: "\n"
+
+- family: pcpatchset_constructors
+  file: mobilitydb/sql/pointcloud/400_pcset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * pcpatchset \u2014 Constructor / conversion\n ******************************************************************************/\n"
+  end: "/******************************************************************************\n * pcpatchset \u2014 Accessors"
+  order: [pcpatch]
+  insts:
+    pcpatch: {v: pcpatch, vs: pcpatchset}
+  blocks:
+  - lit: "/******************************************************************************\n * pcpatchset \u2014 Constructor / conversion\n ******************************************************************************/\n\n"
+  - {sig: "set({v}[])", ret: "{vs}", sym: Set_constructor}
+  - lit: "\n"
+  - {sig: "set({v})", ret: "{vs}", sym: Value_to_set}
+  - lit: "\n"
+  - {stmt: "CREATE CAST ({v} AS {vs}) WITH FUNCTION set({v});"}
+  - lit: "\n"
+
 
 
 
