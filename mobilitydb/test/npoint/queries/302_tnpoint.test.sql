@@ -505,6 +505,14 @@ SELECT afterTimestamp(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-
 -- Modification functions
 -------------------------------------------------------------------------------
 
+SELECT insert(
+  tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02], [Npoint(1, 0.5)@2000-01-03, Npoint(1, 0.6)@2000-01-04]}',
+  tnpoint '{[Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]}');
+/* Error: insert vs update distinguishing case (disagreeing value at common timestamp) */
+SELECT insert(
+  tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02]',
+  tnpoint '[Npoint(1, 0.9)@2000-01-02, Npoint(1, 0.9)@2000-01-03]');
+
 SELECT deleteTime(tnpoint 'Npoint(1, 0.5)@2000-01-01', timestamptz '2000-01-01');
 SELECT deleteTime(tnpoint '{Npoint(1, 0.3)@2000-01-01, Npoint(1, 0.5)@2000-01-02, Npoint(1, 0.5)@2000-01-03}', timestamptz '2000-01-01');
 SELECT deleteTime(tnpoint '[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', timestamptz '2000-01-01');
