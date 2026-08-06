@@ -5,6 +5,8 @@ SET(LOCAL_FILES
   412_tpcbox_spgist
   420_tpcpoint
   430_tpcpatch
+  433_tpcpoint_compops
+  434_tpcpatch_compops
   435_tpc_topops
   436_tpc_posops
   437_tpc_gist

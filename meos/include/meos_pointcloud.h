@@ -445,6 +445,66 @@ extern Temporal *tpcpatch_at_value(const Temporal *temp, const Pcpatch *pa);
 extern Temporal *tpcpatch_minus_value(const Temporal *temp, const Pcpatch *pa);
 
 /*****************************************************************************
+ * Ever/always and temporal comparisons
+ *****************************************************************************/
+
+/* Ever/always comparison functions */
+
+extern int ever_eq_pcpoint_tpcpoint(const Pcpoint *pt, const Temporal *temp);
+extern int ever_eq_tpcpoint_pcpoint(const Temporal *temp, const Pcpoint *pt);
+extern int ever_eq_tpcpoint_tpcpoint(const Temporal *temp1,
+  const Temporal *temp2);
+extern int ever_ne_pcpoint_tpcpoint(const Pcpoint *pt, const Temporal *temp);
+extern int ever_ne_tpcpoint_pcpoint(const Temporal *temp, const Pcpoint *pt);
+extern int ever_ne_tpcpoint_tpcpoint(const Temporal *temp1,
+  const Temporal *temp2);
+extern int always_eq_pcpoint_tpcpoint(const Pcpoint *pt, const Temporal *temp);
+extern int always_eq_tpcpoint_pcpoint(const Temporal *temp, const Pcpoint *pt);
+extern int always_eq_tpcpoint_tpcpoint(const Temporal *temp1,
+  const Temporal *temp2);
+extern int always_ne_pcpoint_tpcpoint(const Pcpoint *pt, const Temporal *temp);
+extern int always_ne_tpcpoint_pcpoint(const Temporal *temp, const Pcpoint *pt);
+extern int always_ne_tpcpoint_tpcpoint(const Temporal *temp1,
+  const Temporal *temp2);
+
+extern int ever_eq_pcpatch_tpcpatch(const Pcpatch *pa, const Temporal *temp);
+extern int ever_eq_tpcpatch_pcpatch(const Temporal *temp, const Pcpatch *pa);
+extern int ever_eq_tpcpatch_tpcpatch(const Temporal *temp1,
+  const Temporal *temp2);
+extern int ever_ne_pcpatch_tpcpatch(const Pcpatch *pa, const Temporal *temp);
+extern int ever_ne_tpcpatch_pcpatch(const Temporal *temp, const Pcpatch *pa);
+extern int ever_ne_tpcpatch_tpcpatch(const Temporal *temp1,
+  const Temporal *temp2);
+extern int always_eq_pcpatch_tpcpatch(const Pcpatch *pa, const Temporal *temp);
+extern int always_eq_tpcpatch_pcpatch(const Temporal *temp, const Pcpatch *pa);
+extern int always_eq_tpcpatch_tpcpatch(const Temporal *temp1,
+  const Temporal *temp2);
+extern int always_ne_pcpatch_tpcpatch(const Pcpatch *pa, const Temporal *temp);
+extern int always_ne_tpcpatch_pcpatch(const Temporal *temp, const Pcpatch *pa);
+extern int always_ne_tpcpatch_tpcpatch(const Temporal *temp1,
+  const Temporal *temp2);
+
+/* Temporal comparison functions */
+
+extern Temporal *teq_pcpoint_tpcpoint(const Pcpoint *pt,
+  const Temporal *temp);
+extern Temporal *teq_tpcpoint_pcpoint(const Temporal *temp,
+  const Pcpoint *pt);
+extern Temporal *tne_pcpoint_tpcpoint(const Pcpoint *pt,
+  const Temporal *temp);
+extern Temporal *tne_tpcpoint_pcpoint(const Temporal *temp,
+  const Pcpoint *pt);
+
+extern Temporal *teq_pcpatch_tpcpatch(const Pcpatch *pa,
+  const Temporal *temp);
+extern Temporal *teq_tpcpatch_pcpatch(const Temporal *temp,
+  const Pcpatch *pa);
+extern Temporal *tne_pcpatch_tpcpatch(const Pcpatch *pa,
+  const Temporal *temp);
+extern Temporal *tne_tpcpatch_pcpatch(const Temporal *temp,
+  const Pcpatch *pa);
+
+/*****************************************************************************
  * tpcpoint spatial predicates
  *****************************************************************************/
 

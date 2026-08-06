@@ -609,28 +609,6 @@ CREATE FUNCTION appendSequence(tpcpatch, tpcpatch)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
- * Ever / always
- ******************************************************************************/
-
-CREATE FUNCTION eEq(tpcpatch, pcpatch)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Ever_eq_temporal_base'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION aEq(tpcpatch, pcpatch)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_eq_temporal_base'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR ?= (
-  LEFTARG = tpcpatch, RIGHTARG = pcpatch,
-  PROCEDURE = eEq
-);
-CREATE OPERATOR %= (
-  LEFTARG = tpcpatch, RIGHTARG = pcpatch,
-  PROCEDURE = aEq
-);
-
-/******************************************************************************
  * Comparison / B-tree / hash
  ******************************************************************************/
 

@@ -52,6 +52,11 @@ if(POINTCLOUD)
     # tools/codegen/temporal_basetype/generate.py.
     tpcpoint.c
     tpcpatch.c
+
+    # Ever/always and temporal comparisons for the temporal pgpointcloud
+    # types — typed wrappers over the generic eacomp_* / tcomp_* kernels,
+    # mirroring meos/src/cbuffer/tcbuffer_compops.c.
+    tpc_compops.c
   )
 
   # Probe whether the linked libpc.a already declares pc_patch_deserialize

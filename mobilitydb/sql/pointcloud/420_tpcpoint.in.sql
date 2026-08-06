@@ -585,28 +585,6 @@ CREATE FUNCTION appendSequence(tpcpoint, tpcpoint)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
- * Ever / always predicates
- ******************************************************************************/
-
-CREATE FUNCTION eEq(tpcpoint, pcpoint)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Ever_eq_temporal_base'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION aEq(tpcpoint, pcpoint)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_eq_temporal_base'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR ?= (
-  LEFTARG = tpcpoint, RIGHTARG = pcpoint,
-  PROCEDURE = eEq
-);
-CREATE OPERATOR %= (
-  LEFTARG = tpcpoint, RIGHTARG = pcpoint,
-  PROCEDURE = aEq
-);
-
-/******************************************************************************
  * Comparison / B-tree / hash
  ******************************************************************************/
 

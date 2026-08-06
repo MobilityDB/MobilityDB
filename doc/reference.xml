@@ -3499,7 +3499,10 @@
 						<para><link linkend="tpcpoint_btree"><varname>=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=</varname></link>: Traditional comparisons</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tpcpoint_ever_eq"><varname>?=, %=</varname></link>: Ever and always equality comparisons</para>
+						<para><link linkend="tpcpoint_ever_eq"><varname>eEq</varname>, <varname>aEq</varname>, <varname>eNe</varname>, <varname>aNe</varname>, <varname>?=, %=, ?&lt;&gt;, %&lt;&gt;</varname></link>: Ever and always equality and inequality comparisons</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpoint_temporal_eq"><varname>tEq</varname>, <varname>tNe</varname>, <varname>#=, #&lt;&gt;</varname></link>: Temporal equality and inequality comparisons</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

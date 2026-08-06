@@ -718,11 +718,36 @@ SELECT ST_AsText(startValue(tpcpoint(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]),
 				</listitem>
 
 				<listitem xml:id="tpcpoint_ever_eq">
+					<indexterm significance="normal"><primary><varname>eEq</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>aEq</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>eNe</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>aNe</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>?=</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>%=</varname></primary></indexterm>
-					<para>Test whether the value at any (ever) or every (always) instant equals a given pcpoint</para>
+					<para>Test whether the value at any (ever) or every (always) instant equals, or differs from, a pcpoint or another tpcpoint</para>
+					<para><varname>eEq(pcpoint,tpcpoint) → boolean</varname></para>
+					<para><varname>eEq(tpcpoint,pcpoint) → boolean</varname></para>
+					<para><varname>eEq(tpcpoint,tpcpoint) → boolean</varname></para>
+					<para><varname>aEq</varname>, <varname>eNe</varname> and <varname>aNe</varname> take the same three argument pairs</para>
+					<para><varname>pcpoint ?= tpcpoint → boolean</varname></para>
 					<para><varname>tpcpoint ?= pcpoint → boolean</varname></para>
-					<para><varname>tpcpoint %= pcpoint → boolean</varname></para>
+					<para><varname>tpcpoint ?= tpcpoint → boolean</varname></para>
+					<para>The operators <varname>%=</varname>, <varname>?&lt;&gt;</varname> and <varname>%&lt;&gt;</varname> take the same three operand pairs</para>
+				</listitem>
+
+				<listitem xml:id="tpcpoint_temporal_eq">
+					<indexterm significance="normal"><primary><varname>tEq</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tNe</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>#=</varname></primary></indexterm>
+					<para>Return the temporal equality or inequality of a tpcpoint with a pcpoint or with another tpcpoint, as a tbool</para>
+					<para><varname>tEq(pcpoint,tpcpoint) → tbool</varname></para>
+					<para><varname>tEq(tpcpoint,pcpoint) → tbool</varname></para>
+					<para><varname>tEq(tpcpoint,tpcpoint) → tbool</varname></para>
+					<para><varname>tNe</varname> takes the same three argument pairs</para>
+					<para><varname>pcpoint #= tpcpoint → tbool</varname></para>
+					<para><varname>tpcpoint #= pcpoint → tbool</varname></para>
+					<para><varname>tpcpoint #= tpcpoint → tbool</varname></para>
+					<para>The operator <varname>#&lt;&gt;</varname> takes the same three operand pairs</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1087,6 +1112,44 @@ SELECT t, point FROM points(tpcpatch(
 					<para>Nearest-approach distance (<varname>|=|</varname>) is KNN-orderable through the GiST opclass.</para>
 					<para><varname>nearestApproachDistance(tpcpatch,tpcbox) → float</varname></para>
 					<para><varname>nearestApproachDistance(tpcpatch,tpcpatch) → float</varname></para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="tpcpatch_comparisons">
+			<title>Comparisons</title>
+			<itemizedlist>
+				<listitem xml:id="tpcpatch_ever_eq">
+					<indexterm significance="normal"><primary><varname>eEq</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>aEq</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>eNe</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>aNe</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>?=</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>%=</varname></primary></indexterm>
+					<para>Test whether the value at any (ever) or every (always) instant equals, or differs from, a pcpatch or another tpcpatch</para>
+					<para><varname>eEq(pcpatch,tpcpatch) → boolean</varname></para>
+					<para><varname>eEq(tpcpatch,pcpatch) → boolean</varname></para>
+					<para><varname>eEq(tpcpatch,tpcpatch) → boolean</varname></para>
+					<para><varname>aEq</varname>, <varname>eNe</varname> and <varname>aNe</varname> take the same three argument pairs</para>
+					<para><varname>pcpatch ?= tpcpatch → boolean</varname></para>
+					<para><varname>tpcpatch ?= pcpatch → boolean</varname></para>
+					<para><varname>tpcpatch ?= tpcpatch → boolean</varname></para>
+					<para>The operators <varname>%=</varname>, <varname>?&lt;&gt;</varname> and <varname>%&lt;&gt;</varname> take the same three operand pairs</para>
+				</listitem>
+
+				<listitem xml:id="tpcpatch_temporal_eq">
+					<indexterm significance="normal"><primary><varname>tEq</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tNe</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>#=</varname></primary></indexterm>
+					<para>Return the temporal equality or inequality of a tpcpatch with a pcpatch or with another tpcpatch, as a tbool</para>
+					<para><varname>tEq(pcpatch,tpcpatch) → tbool</varname></para>
+					<para><varname>tEq(tpcpatch,pcpatch) → tbool</varname></para>
+					<para><varname>tEq(tpcpatch,tpcpatch) → tbool</varname></para>
+					<para><varname>tNe</varname> takes the same three argument pairs</para>
+					<para><varname>pcpatch #= tpcpatch → tbool</varname></para>
+					<para><varname>tpcpatch #= pcpatch → tbool</varname></para>
+					<para><varname>tpcpatch #= tpcpatch → tbool</varname></para>
+					<para>The operator <varname>#&lt;&gt;</varname> takes the same three operand pairs</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
