@@ -105,5 +105,6 @@ extern bool quadbin_gt(Quadbin a, Quadbin b);
 extern bool quadbin_ge(Quadbin a, Quadbin b);
 extern int quadbin_cmp(Quadbin a, Quadbin b);
 extern uint32 quadbin_hash(Quadbin cell);
+extern uint64 quadbin_hash_extended(Quadbin cell, uint64 seed);
 
 #endif /* __QUADBIN_MEOS_H__ */

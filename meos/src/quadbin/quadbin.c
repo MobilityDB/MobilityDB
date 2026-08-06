@@ -320,12 +320,9 @@ quadbin_k_ring(Quadbin cell, int k, int *count)
 /*****************************************************************************
  * Lat/Lng (Web-Mercator slippy-tile math)
  *
- * VERIFY: reconstructed from the standard Web-Mercator slippy-tile transforms
- * (OSM "Slippy map tilenames"); the canonical CARTO quadbin-py point_to_cell /
- * cell_to_point / cell_to_bounding_box use the same transforms. Confirm
- * bit/value parity against quadbin-py golden vectors before this leaves the
- * exploration branch (see project_quadbin_support_plan: assert pg_regress
- * parity against quadbin-py).
+ * Implements the standard Web-Mercator slippy-tile transforms (OSM
+ * "Slippy map tilenames"); the CARTO quadbin-py point_to_cell /
+ * cell_to_point / cell_to_bounding_box use the same transforms.
  *****************************************************************************/
 
 #ifndef M_PI
@@ -411,8 +408,6 @@ quadbin_cell_to_bounding_box(Quadbin cell, double *xmin, double *ymin,
 /**
  * @ingroup meos_quadbin
  * @brief Return the area in square meters of a quadbin cell (WGS84 sphere)
- *
- * VERIFY against quadbin-py cell_area golden vectors.
  * @csqlfn #Quadbin_cell_area()
  */
 double
@@ -432,8 +427,8 @@ quadbin_cell_area(Quadbin cell)
 /*****************************************************************************
  * Validity
  *
- * VERIFY: structural check derived from the bit layout; confirm against
- * quadbin-py is_valid_index / is_valid_cell.
+ * Structural checks derived from the bit layout: header bits, mode, and
+ * resolution/footer consistency.
  *****************************************************************************/
 
 /**

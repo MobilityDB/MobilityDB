@@ -39,3 +39,15 @@ SELECT COUNT(*) FROM tbl_quadbinset t1, tbl_quadbinset t2 WHERE t1.s <> t2.s;
   8008
 (1 row)
 
+SELECT MAX(hash(s)) FROM tbl_quadbinset;
+    max     
+------------
+ 2059291470
+(1 row)
+
+SELECT MAX(hashExtended(s, 1)) FROM tbl_quadbinset;
+         max         
+---------------------
+ 9189439360704845208
+(1 row)
+
