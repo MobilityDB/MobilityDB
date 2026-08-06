@@ -6525,6 +6525,178 @@ span_families:
   - lit: "\n"
   - {sig: "transformPipeline({vs}, text, srid integer DEFAULT 0,\n    is_forward boolean DEFAULT true)", ret: "{vs}", sym: Spatialset_transform_pipeline}
   - lit: "\n"
+- family: geoset_setunion
+  file: mobilitydb/sql/geo/050_geoset.in.sql
+  reference: true
+  begin: "/*****************************************************************************/\n\n-- The function is not STRICT\nCREATE FUNCTION set_union_transfn(internal, geometry)"
+  end: "/*****************************************************************************\n * Selectivity functions"
+  order: [geom, geog]
+  insts:
+    geom: {v: geometry, vs: geomset}
+    geog: {v: geography, vs: geogset}
+  blocks:
+  - lit: "/*****************************************************************************/\n\n-- The function is not STRICT\n"
+  - {stmt: "CREATE FUNCTION set_union_transfn(internal, {v})\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Value_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
+  - lit: "\n"
+  - {stmt: "CREATE FUNCTION set_union_transfn(internal, {vs})\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Set_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
+  - lit: "\n"
+  - {stmt: "CREATE FUNCTION {vs}_union_finalfn(internal)\n  RETURNS {vs}\n  AS 'MODULE_PATHNAME', 'Set_union_finalfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
+  - lit: "\n"
+  - {stmt: "CREATE AGGREGATE setUnion({v}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n#if POSTGRESQL_VERSION_NUMBER >= 160000\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n#endif //POSTGRESQL_VERSION_NUMBER >= 160000\n  FINALFUNC = {vs}_union_finalfn\n);"}
+  - lit: "\n"
+  - {stmt: "CREATE AGGREGATE setUnion({vs}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n#if POSTGRESQL_VERSION_NUMBER >= 160000\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n#endif //POSTGRESQL_VERSION_NUMBER >= 160000\n  FINALFUNC = {vs}_union_finalfn\n);"}
+  - lit: "\n"
+
+- family: poseset_setunion
+  file: mobilitydb/sql/pose/101_poseset.in.sql
+  reference: true
+  begin: "/*****************************************************************************/\n\n-- The function is not STRICT\nCREATE FUNCTION set_union_transfn(internal, pose)"
+  end: "/******************************************************************************\n * Comparison functions and B-tree indexing"
+  order: [pose]
+  insts:
+    pose: {v: pose, vs: poseset}
+  blocks:
+  - lit: "/*****************************************************************************/\n\n-- The function is not STRICT\n"
+  - {stmt: "CREATE FUNCTION set_union_transfn(internal, {v})\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Value_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
+  - {stmt: "CREATE FUNCTION set_union_transfn(internal, {vs})\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Set_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
+  - {stmt: "CREATE FUNCTION {vs}_union_finalfn(internal)\n  RETURNS {vs}\n  AS 'MODULE_PATHNAME', 'Set_union_finalfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
+  - lit: "\n"
+  - {stmt: "CREATE AGGREGATE setUnion({v}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n#if POSTGRESQL_VERSION_NUMBER >= 160000\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n#endif //POSTGRESQL_VERSION_NUMBER >= 160000\n  FINALFUNC = {vs}_union_finalfn\n);"}
+  - {stmt: "CREATE AGGREGATE setUnion({vs}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n#if POSTGRESQL_VERSION_NUMBER >= 160000\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n#endif //POSTGRESQL_VERSION_NUMBER >= 160000\n  FINALFUNC = {vs}_union_finalfn\n);"}
+  - lit: "\n"
+
+- family: cbufferset_setunion
+  file: mobilitydb/sql/cbuffer/201_cbufferset.in.sql
+  reference: true
+  begin: "/*****************************************************************************/\n\n-- The function is not STRICT\nCREATE FUNCTION set_union_transfn(internal, cbuffer)"
+  end: "/******************************************************************************\n * Comparison functions and B-tree indexing"
+  order: [cbuffer]
+  insts:
+    cbuffer: {v: cbuffer, vs: cbufferset}
+  blocks:
+  - lit: "/*****************************************************************************/\n\n-- The function is not STRICT\n"
+  - {stmt: "CREATE FUNCTION set_union_transfn(internal, {v})\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Value_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
+  - {stmt: "CREATE FUNCTION set_union_transfn(internal, {vs})\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Set_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
+  - {stmt: "CREATE FUNCTION {vs}_union_finalfn(internal)\n  RETURNS {vs}\n  AS 'MODULE_PATHNAME', 'Set_union_finalfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
+  - lit: "\n"
+  - {stmt: "CREATE AGGREGATE setUnion({v}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n#if POSTGRESQL_VERSION_NUMBER >= 160000\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n#endif //POSTGRESQL_VERSION_NUMBER >= 160000\n  FINALFUNC = {vs}_union_finalfn\n);"}
+  - {stmt: "CREATE AGGREGATE setUnion({vs}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n#if POSTGRESQL_VERSION_NUMBER >= 160000\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n#endif //POSTGRESQL_VERSION_NUMBER >= 160000\n  FINALFUNC = {vs}_union_finalfn\n);"}
+  - lit: "\n"
+
+- family: npointset_setunion
+  file: mobilitydb/sql/npoint/301_npointset.in.sql
+  reference: true
+  begin: "/*****************************************************************************/\n\n-- The function is not STRICT\nCREATE FUNCTION set_union_transfn(internal, npoint)"
+  end: "/******************************************************************************\n * Comparison functions and B-tree indexing"
+  order: [npoint]
+  insts:
+    npoint: {v: npoint, vs: npointset}
+  blocks:
+  - lit: "/*****************************************************************************/\n\n-- The function is not STRICT\n"
+  - {stmt: "CREATE FUNCTION set_union_transfn(internal, {v})\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Value_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
+  - {stmt: "CREATE FUNCTION set_union_transfn(internal, {vs})\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Set_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
+  - {stmt: "CREATE FUNCTION {vs}_union_finalfn(internal)\n  RETURNS {vs}\n  AS 'MODULE_PATHNAME', 'Set_union_finalfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
+  - lit: "\n"
+  - {stmt: "CREATE AGGREGATE setUnion({v}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n#if POSTGRESQL_VERSION_NUMBER >= 160000\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n#endif //POSTGRESQL_VERSION_NUMBER >= 160000\n  FINALFUNC = {vs}_union_finalfn\n);"}
+  - {stmt: "CREATE AGGREGATE setUnion({vs}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n#if POSTGRESQL_VERSION_NUMBER >= 160000\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n#endif //POSTGRESQL_VERSION_NUMBER >= 160000\n  FINALFUNC = {vs}_union_finalfn\n);"}
+  - lit: "\n"
+
+- family: jsonbset_setunion
+  file: mobilitydb/sql/json/450_jsonbset.in.sql
+  reference: true
+  begin: "/*****************************************************************************/\n\n-- The function is not STRICT\nCREATE FUNCTION set_union_transfn(internal, jsonb)"
+  end: "/******************************************************************************\n * Comparison functions and B-tree indexing"
+  order: [jsonb]
+  insts:
+    jsonb: {v: jsonb, vs: jsonbset}
+  blocks:
+  - lit: "/*****************************************************************************/\n\n-- The function is not STRICT\n"
+  - {stmt: "CREATE FUNCTION set_union_transfn(internal, {v})\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Value_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
+  - {stmt: "CREATE FUNCTION set_union_transfn(internal, {vs})\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Set_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
+  - {stmt: "CREATE FUNCTION {vs}_union_finalfn(internal)\n  RETURNS {vs}\n  AS 'MODULE_PATHNAME', 'Set_union_finalfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
+  - lit: "\n"
+  - {stmt: "CREATE AGGREGATE setUnion({v}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n#if POSTGRESQL_VERSION_NUMBER >= 160000\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n#endif //POSTGRESQL_VERSION_NUMBER >= 160000\n  FINALFUNC = {vs}_union_finalfn\n);"}
+  - {stmt: "CREATE AGGREGATE setUnion({vs}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n#if POSTGRESQL_VERSION_NUMBER >= 160000\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n#endif //POSTGRESQL_VERSION_NUMBER >= 160000\n  FINALFUNC = {vs}_union_finalfn\n);"}
+  - lit: "\n"
+
+- family: h3indexset_setunion
+  file: mobilitydb/sql/h3/251_h3indexset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * setUnion aggregate\n *\n * Two aggregate overloads, matching the pattern every other *set\n * ships with: one that aggregates scalars into a set\n * (`setUnion(h3index)`), one that aggregates sets into a set\n * (`setUnion(h3indexset)`). Both share the same finalfn.\n ******************************************************************************/\n"
+  end: "/******************************************************************************\n * Set-theoretic operators"
+  order: [h3index]
+  insts:
+    h3index: {v: h3index, vs: h3indexset}
+  blocks:
+  - lit: "/******************************************************************************\n * setUnion aggregate\n *\n * Two aggregate overloads, matching the pattern every other *set\n * ships with: one that aggregates scalars into a set\n * (`setUnion(h3index)`), one that aggregates sets into a set\n * (`setUnion(h3indexset)`). Both share the same finalfn.\n ******************************************************************************/\n\n-- The transition function is not STRICT\n"
+  - {stmt: "CREATE FUNCTION set_union_transfn(internal, {v})\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Value_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
+  - lit: "\n"
+  - {stmt: "CREATE FUNCTION set_union_transfn(internal, {vs})\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Set_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
+  - lit: "\n"
+  - {stmt: "CREATE FUNCTION {vs}_union_finalfn(internal)\n  RETURNS {vs}\n  AS 'MODULE_PATHNAME', 'Set_union_finalfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
+  - lit: "\n"
+  - {stmt: "CREATE AGGREGATE setUnion({v}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n#if POSTGRESQL_VERSION_NUMBER >= 160000\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n#endif //POSTGRESQL_VERSION_NUMBER >= 160000\n  FINALFUNC = {vs}_union_finalfn,\n  PARALLEL = safe\n);"}
+  - lit: "\n"
+  - {stmt: "CREATE AGGREGATE setUnion({vs}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n#if POSTGRESQL_VERSION_NUMBER >= 160000\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n#endif //POSTGRESQL_VERSION_NUMBER >= 160000\n  FINALFUNC = {vs}_union_finalfn,\n  PARALLEL = safe\n);"}
+  - lit: "\n"
+
+- family: quadbinset_setunion
+  file: mobilitydb/sql/quadbin/351_quadbinset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * setUnion aggregate\n *\n * Two aggregate overloads, matching the pattern every other *set\n * ships with: one that aggregates scalars into a set\n * (`setUnion(quadbin)`), one that aggregates sets into a set\n * (`setUnion(quadbinset)`). Both share the same finalfn.\n ******************************************************************************/\n"
+  end: "/******************************************************************************/\n\n/******************************************************************************\n * Set-theoretic operators"
+  order: [quadbin]
+  insts:
+    quadbin: {v: quadbin, vs: quadbinset}
+  blocks:
+  - lit: "/******************************************************************************\n * setUnion aggregate\n *\n * Two aggregate overloads, matching the pattern every other *set\n * ships with: one that aggregates scalars into a set\n * (`setUnion(quadbin)`), one that aggregates sets into a set\n * (`setUnion(quadbinset)`). Both share the same finalfn.\n ******************************************************************************/\n\n-- The transition function is not STRICT\n"
+  - {stmt: "CREATE FUNCTION set_union_transfn(internal, {v})\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Value_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
+  - lit: "\n"
+  - {stmt: "CREATE FUNCTION set_union_transfn(internal, {vs})\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Set_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
+  - lit: "\n"
+  - {stmt: "CREATE FUNCTION {vs}_union_finalfn(internal)\n  RETURNS {vs}\n  AS 'MODULE_PATHNAME', 'Set_union_finalfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
+  - lit: "\n"
+  - {stmt: "CREATE AGGREGATE setUnion({v}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n#if POSTGRESQL_VERSION_NUMBER >= 160000\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n#endif //POSTGRESQL_VERSION_NUMBER >= 160000\n  FINALFUNC = {vs}_union_finalfn,\n  PARALLEL = safe\n);"}
+  - lit: "\n"
+  - {stmt: "CREATE AGGREGATE setUnion({vs}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n#if POSTGRESQL_VERSION_NUMBER >= 160000\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n#endif //POSTGRESQL_VERSION_NUMBER >= 160000\n  FINALFUNC = {vs}_union_finalfn,\n  PARALLEL = safe\n);"}
+  - lit: "\n"
+
+- family: pcpointset_setunion
+  file: mobilitydb/sql/pointcloud/400_pcset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * pcpointset \u2014 Aggregate\n ******************************************************************************/\n"
+  end: "/******************************************************************************\n * pcpointset \u2014 Comparison / B-tree / hash"
+  order: [pcpoint]
+  insts:
+    pcpoint: {v: pcpoint, vs: pcpointset}
+  blocks:
+  - lit: "/******************************************************************************\n * pcpointset \u2014 Aggregate\n ******************************************************************************/\n\n"
+  - {stmt: "CREATE FUNCTION set_union_transfn(internal, {v})\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Value_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
+  - {stmt: "CREATE FUNCTION set_union_transfn(internal, {vs})\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Set_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
+  - {stmt: "CREATE FUNCTION {vs}_union_finalfn(internal)\n  RETURNS {vs}\n  AS 'MODULE_PATHNAME', 'Set_union_finalfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
+  - lit: "\n"
+  - {stmt: "CREATE AGGREGATE setUnion({v}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n#if POSTGRESQL_VERSION_NUMBER >= 160000\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n#endif //POSTGRESQL_VERSION_NUMBER >= 160000\n  FINALFUNC = {vs}_union_finalfn\n);"}
+  - {stmt: "CREATE AGGREGATE setUnion({vs}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n#if POSTGRESQL_VERSION_NUMBER >= 160000\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n#endif //POSTGRESQL_VERSION_NUMBER >= 160000\n  FINALFUNC = {vs}_union_finalfn\n);"}
+  - lit: "\n"
+
+- family: pcpatchset_setunion
+  file: mobilitydb/sql/pointcloud/400_pcset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * pcpatchset \u2014 Aggregate\n ******************************************************************************/\n"
+  end: "/******************************************************************************\n * pcpatchset \u2014 Comparison / B-tree / hash"
+  order: [pcpatch]
+  insts:
+    pcpatch: {v: pcpatch, vs: pcpatchset}
+  blocks:
+  - lit: "/******************************************************************************\n * pcpatchset \u2014 Aggregate\n ******************************************************************************/\n\n"
+  - {stmt: "CREATE FUNCTION set_union_transfn(internal, {v})\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Value_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
+  - {stmt: "CREATE FUNCTION set_union_transfn(internal, {vs})\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Set_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
+  - {stmt: "CREATE FUNCTION {vs}_union_finalfn(internal)\n  RETURNS {vs}\n  AS 'MODULE_PATHNAME', 'Set_union_finalfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
+  - lit: "\n"
+  - {stmt: "CREATE AGGREGATE setUnion({v}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n#if POSTGRESQL_VERSION_NUMBER >= 160000\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n#endif //POSTGRESQL_VERSION_NUMBER >= 160000\n  FINALFUNC = {vs}_union_finalfn\n);"}
+  - {stmt: "CREATE AGGREGATE setUnion({vs}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n#if POSTGRESQL_VERSION_NUMBER >= 160000\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n#endif //POSTGRESQL_VERSION_NUMBER >= 160000\n  FINALFUNC = {vs}_union_finalfn\n);"}
+  - lit: "\n"
+
 
 
 
