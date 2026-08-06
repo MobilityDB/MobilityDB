@@ -33,4 +33,8 @@ SELECT COUNT(*) FROM tbl_quadbinset WHERE memSize(s) IS NOT NULL;
 SELECT COUNT(*) FROM tbl_quadbinset t1, tbl_quadbinset t2 WHERE t1.s = t2.s;
 SELECT COUNT(*) FROM tbl_quadbinset t1, tbl_quadbinset t2 WHERE t1.s <> t2.s;
 
+SELECT MAX(hash(s)) FROM tbl_quadbinset;
+
+SELECT MAX(hashExtended(s, 1)) FROM tbl_quadbinset;
+
 -------------------------------------------------------------------------------

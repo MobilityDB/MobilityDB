@@ -231,6 +231,21 @@ Quadbin_hash(PG_FUNCTION_ARGS)
   PG_RETURN_UINT32(quadbin_hash(PG_GETARG_QUADBIN(0)));
 }
 
+PGDLLEXPORT Datum Quadbin_hash_extended(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Quadbin_hash_extended);
+/**
+ * @ingroup mobilitydb_quadbin_base_accessor
+ * @brief Return the 64-bit hash value of a quadbin value using a seed
+ * @sqlfn hashExtended()
+ */
+Datum
+Quadbin_hash_extended(PG_FUNCTION_ARGS)
+{
+  Quadbin cell = PG_GETARG_QUADBIN(0);
+  uint64 seed = PG_GETARG_INT64(1);
+  PG_RETURN_UINT64(quadbin_hash_extended(cell, seed));
+}
+
 /*****************************************************************************
  * Validity predicates — thin wrappers over the first-party kernel
  * `quadbin_is_valid_*` checks declared in `meos_quadbin.h`.

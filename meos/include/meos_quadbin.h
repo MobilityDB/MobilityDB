@@ -147,6 +147,7 @@ extern bool quadbin_gt(Quadbin a, Quadbin b);
 extern bool quadbin_ge(Quadbin a, Quadbin b);
 extern int quadbin_cmp(Quadbin a, Quadbin b);
 extern uint32_t quadbin_hash(Quadbin cell);
+extern uint64 quadbin_hash_extended(Quadbin cell, uint64 seed);
 
 /* Set-returning static helpers (square subset; return `quadbinset`) */
 extern Set *quadbin_grid_disk(Quadbin origin, int k);

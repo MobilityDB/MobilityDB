@@ -201,4 +201,18 @@ quadbin_hash(Quadbin cell)
   return int64_hash((int64) cell);
 }
 
+/**
+ * @ingroup meos_quadbin_base_accessor
+ * @brief Return the 64-bit hash value of a quadbin using a seed — matches
+ * the result `hashint8extended` would produce on the same bit pattern.
+ * @param[in] cell Quadbin cell
+ * @param[in] seed Seed
+ * @csqlfn #Quadbin_hash_extended()
+ */
+uint64
+quadbin_hash_extended(Quadbin cell, uint64 seed)
+{
+  return int64_hash_extended((int64) cell, seed);
+}
+
 /*****************************************************************************/

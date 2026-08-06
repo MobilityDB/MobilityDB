@@ -147,6 +147,10 @@ CREATE FUNCTION hash(quadbin)
   RETURNS integer
   AS 'MODULE_PATHNAME', 'Quadbin_hash'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION hashExtended(quadbin, bigint)
+  RETURNS bigint
+  AS 'MODULE_PATHNAME', 'Quadbin_hash_extended'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR = (
   LEFTARG = quadbin, RIGHTARG = quadbin,
@@ -210,7 +214,8 @@ CREATE OPERATOR CLASS quadbin_ops
 CREATE OPERATOR CLASS quadbin_ops
   DEFAULT FOR TYPE quadbin USING hash AS
     OPERATOR  1  =,
-    FUNCTION  1  hash(quadbin);
+    FUNCTION  1  hash(quadbin),
+    FUNCTION  2  hashExtended(quadbin, bigint);
 
 /******************************************************************************
  * Validity predicates
