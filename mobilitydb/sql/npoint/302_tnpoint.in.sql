@@ -32,6 +32,8 @@
  * @brief Basic functions for temporal network points
  */
 
+-- GENERATED-IO-BEGIN npoint — tools/codegen/inherited/generate.py from templates/comparisons.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.yaml (io_families) and re-run.
 CREATE TYPE tnpoint;
 
 /******************************************************************************
@@ -75,6 +77,8 @@ CREATE FUNCTION tnpoint(tnpoint, integer)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (tnpoint AS tnpoint) WITH FUNCTION tnpoint(tnpoint, integer) AS IMPLICIT;
+
+-- GENERATED-IO-END npoint
 
 -- GENERATED-REPRESENTATIONS-BEGIN npoint — tools/codegen/inherited/generate.py from templates/representations.sql.tmpl;
 -- DO NOT EDIT BY HAND; edit the template + manifest.yaml (representation_families) and re-run.

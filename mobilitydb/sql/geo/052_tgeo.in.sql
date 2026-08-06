@@ -32,6 +32,8 @@
  * @brief Basic functions for temporal geometry/geographies
  */
 
+-- GENERATED-IO-BEGIN geo — tools/codegen/inherited/generate.py from templates/comparisons.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.yaml (io_families) and re-run.
 CREATE TYPE tgeometry;
 CREATE TYPE tgeography;
 
@@ -129,6 +131,8 @@ CREATE FUNCTION tgeography(tgeography, integer)
 
 CREATE CAST (tgeometry AS tgeometry) WITH FUNCTION tgeometry(tgeometry, integer) AS IMPLICIT;
 CREATE CAST (tgeography AS tgeography) WITH FUNCTION tgeography(tgeography, integer) AS IMPLICIT;
+
+-- GENERATED-IO-END geo
 
 /******************************************************************************
  * Constructors

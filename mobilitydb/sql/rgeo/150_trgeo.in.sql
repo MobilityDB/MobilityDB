@@ -32,6 +32,8 @@
  * @brief Basic functions for temporal rigid geometries
  */
 
+-- GENERATED-IO-BEGIN rgeo — tools/codegen/inherited/generate.py from templates/comparisons.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.yaml (io_families) and re-run.
 CREATE TYPE trgeometry;
 
 /******************************************************************************
@@ -80,6 +82,8 @@ CREATE FUNCTION trgeometry(trgeometry, integer)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (trgeometry AS trgeometry) WITH FUNCTION trgeometry(trgeometry, integer) AS IMPLICIT;
+
+-- GENERATED-IO-END rgeo
 
 -- GENERATED-REPRESENTATIONS-BEGIN rgeo — tools/codegen/inherited/generate.py from templates/representations.sql.tmpl;
 -- DO NOT EDIT BY HAND; edit the template + manifest.yaml (representation_families) and re-run.

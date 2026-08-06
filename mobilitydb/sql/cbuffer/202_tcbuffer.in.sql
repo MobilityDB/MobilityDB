@@ -32,6 +32,8 @@
  * @brief Basic functions for temporal circular buffers
  */
 
+-- GENERATED-IO-BEGIN cbuffer — tools/codegen/inherited/generate.py from templates/comparisons.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.yaml (io_families) and re-run.
 CREATE TYPE tcbuffer;
 
 /*****************************************************************************
@@ -80,6 +82,8 @@ CREATE FUNCTION tcbuffer(tcbuffer, integer)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (tcbuffer AS tcbuffer) WITH FUNCTION tcbuffer(tcbuffer, integer) AS IMPLICIT;
+
+-- GENERATED-IO-END cbuffer
 
 -- GENERATED-REPRESENTATIONS-BEGIN cbuffer — tools/codegen/inherited/generate.py from templates/representations.sql.tmpl;
 -- DO NOT EDIT BY HAND; edit the template + manifest.yaml (representation_families) and re-run.

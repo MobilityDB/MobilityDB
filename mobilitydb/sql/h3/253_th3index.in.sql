@@ -49,6 +49,8 @@
  * are `WITHOUT FUNCTION` — see below.
  */
 
+-- GENERATED-IO-BEGIN h3 — tools/codegen/inherited/generate.py from templates/comparisons.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.yaml (io_families) and re-run.
 CREATE TYPE th3index;
 
 /******************************************************************************
@@ -87,6 +89,8 @@ CREATE TYPE th3index (
   alignment = double,
   analyze = tspatial_analyze
 );
+
+-- GENERATED-IO-END h3
 
 -- GENERATED-REPRESENTATIONS-BEGIN h3 — tools/codegen/inherited/generate.py from templates/representations.sql.tmpl;
 -- DO NOT EDIT BY HAND; edit the template + manifest.yaml (representation_families) and re-run.

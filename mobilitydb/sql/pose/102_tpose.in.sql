@@ -32,6 +32,8 @@
  * @brief Basic functions for temporal poses
  */
 
+-- GENERATED-IO-BEGIN pose — tools/codegen/inherited/generate.py from templates/comparisons.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.yaml (io_families) and re-run.
 CREATE TYPE tpose;
 
 /******************************************************************************
@@ -80,6 +82,8 @@ CREATE FUNCTION tpose(tpose, integer)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (tpose AS tpose) WITH FUNCTION tpose(tpose, integer) AS IMPLICIT;
+
+-- GENERATED-IO-END pose
 
   /*****************************************************************************
    * Input/output from (E)WKT, (E)WKB, HexEWKB, and MFJSON representation

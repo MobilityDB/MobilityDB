@@ -46,6 +46,8 @@
  * per-type `pcid(tpcpatch)` and `startNumPoints(tpcpatch)`.
  */
 
+-- GENERATED-IO-BEGIN pointcloud_patch — tools/codegen/inherited/generate.py from templates/comparisons.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.yaml (io_families) and re-run.
 CREATE TYPE tpcpatch;
 
 /******************************************************************************
@@ -89,6 +91,8 @@ CREATE FUNCTION tpcpatch(tpcpatch, integer)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE CAST (tpcpatch AS tpcpatch)
   WITH FUNCTION tpcpatch(tpcpatch, integer) AS IMPLICIT;
+
+-- GENERATED-IO-END pointcloud_patch
 
 /******************************************************************************
  * WKB / HexWKB helpers

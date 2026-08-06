@@ -616,12 +616,20 @@ def extract_accessors(filetext: str, family: str) -> str:
 # Trgeometry_* — its reference geometry sits at the start of the text form / end of the
 # binary form), and {OUT_NAME}/{SEND_NAME} the referenced SQL fn name (default
 # temporal_out/temporal_send; pose/rgeo override tpose_out/trgeometry_out).
-def _io_markers(family: str):
+def _io_markers(family: str, tmpl: str = "io_type.sql.tmpl"):
     begin = (f"-- GENERATED-IO-BEGIN {family} — "
-             "tools/codegen/inherited/generate.py from templates/io_type.sql.tmpl;\n"
+             f"tools/codegen/inherited/generate.py from templates/{tmpl};\n"
              "-- DO NOT EDIT BY HAND; edit the template + manifest.yaml "
              "(io_families) and re-run.\n")
     return begin, f"-- GENERATED-IO-END {family}\n"
+
+
+def _io_fam_markers(fam: dict):
+    """A family's io markers: the base op-major template family cites
+    io_type.sql.tmpl; a spatial blocks family renders its CREATE FUNCTIONs from
+    the shared four-line skeleton, so its markers cite comparisons.sql.tmpl."""
+    return _io_markers(fam["family"],
+                       "comparisons.sql.tmpl" if "blocks" in fam else "io_type.sql.tmpl")
 
 
 def _io_sub(text: str, t: dict) -> str:
@@ -635,9 +643,15 @@ def _io_sub(text: str, t: dict) -> str:
 
 
 def render_io_type(fam: dict) -> str:
-    """Render the type-I/O region for one family from its per-type `types` table.
-    A block mentioning {TEMP} repeats per type; a block without it (typmod/analyze)
-    is emitted once. Matches the base file (022_temporal) region byte-for-byte."""
+    """Render the type-I/O region for one family. A spatial `blocks` family renders
+    through the generic blocks engine (lit / stmt / fns / group over its `insts`
+    token table — the vocabulary the set-file I/O entries established), reproducing
+    the type-major hand layout byte-for-byte. The base family renders the op-major
+    io_type.sql.tmpl: a template block mentioning {TEMP} repeats per type; a block
+    without it (typmod/analyze) is emitted once. Matches the committed region
+    byte-for-byte in both shapes."""
+    if "blocks" in fam:
+        return render_spanfile(fam)
     types = fam.get("types") or [{"temp": fam["temp"]}]
     blocks = []
     for blk in (TEMPLATES / "io_type.sql.tmpl").read_text().strip("\n").split("\n\n"):
@@ -648,18 +662,36 @@ def render_io_type(fam: dict) -> str:
     return "\n" + "\n\n".join(blocks) + "\n"
 
 
-def splice_io_type(filetext: str, family: str, rendered: str) -> str:
-    begin, end = _io_markers(family)
+def splice_io_type(filetext: str, fam: dict, rendered: str) -> str:
+    begin, end = _io_fam_markers(fam)
     b = filetext.index(begin) + len(begin)
     e = filetext.index(end)
     return filetext[:b] + rendered + filetext[e:]
 
 
-def extract_io_type(filetext: str, family: str) -> str:
-    begin, end = _io_markers(family)
-    b = filetext.index(begin) + len(begin)
-    e = filetext.index(end)
-    return filetext[b:e]
+def extract_io_type(filetext: str, fam: dict) -> str:
+    """Return the committed type-I/O region. Marker-aware: slice between the
+    GENERATED-IO markers once they exist; before the bootstrap inserts them, a
+    spatial blocks family slices by its exact `begin`/`end` text anchors (the
+    `CREATE TYPE <t>;` shell opening the region and the first text of the next
+    surface), mirroring extract_spanfile."""
+    begin, end = _io_fam_markers(fam)
+    if begin in filetext:
+        b = filetext.index(begin) + len(begin)
+        e = filetext.index(end)
+        return filetext[b:e]
+    return filetext[filetext.index(fam["begin"]):filetext.index(fam["end"])]
+
+
+def bootstrap_io_type(filetext: str, fam: dict, rendered: str) -> str:
+    """Insert the GENERATED-IO markers around a spatial blocks family's committed
+    hand region (sliced by the same exact `begin`/`end` anchors extract uses), so a
+    future non-reference emit is fully declarative with no hand-placed marker.
+    Idempotent: once the markers exist the reference/splice path owns the region."""
+    start = filetext.index(fam["begin"])
+    end = filetext.index(fam["end"])
+    begin_m, end_m = _io_fam_markers(fam)
+    return filetext[:start] + begin_m + rendered + end_m + "\n" + filetext[end:]
 
 
 # --- SQL Input/Output: representations sub-family (sub-family B) ----------------
@@ -2563,8 +2595,8 @@ def _spanfile_sub(text: str, tok: dict) -> str:
     """Substitute one instantiation's tokens: {v} = base value type, {sp} =
     span type, {ss} = spanset type, {vs} = value-set type, {rg}/{mr} = the
     PostgreSQL range/multirange counterparts (absent for float, which has no
-    canonical range type)."""
-    for key in ("ss", "sp", "vs", "mr", "rg", "v"):
+    canonical range type), {t} = temporal type (the spatial type-I/O entries)."""
+    for key in ("ss", "sp", "vs", "mr", "rg", "v", "t"):
         text = text.replace("{" + key + "}", tok.get(key, ""))
     return text
 
@@ -3015,7 +3047,7 @@ def main() -> int:
                 continue
             p = ROOT / fam["file"]
             gen = render_io_type(fam)
-            cur = extract_io_type(p.read_text(), fam["family"]) if p.exists() else ""
+            cur = extract_io_type(p.read_text(), fam) if p.exists() else ""
             same = gen == cur
             ok = ok and same
             print(f"[{'OK ' if same else 'DIFF'}] self-regen io {fam['family']} "
@@ -3415,13 +3447,24 @@ def main() -> int:
         print(f"spliced accessors {fam['family']} -> {fam['file']}")
 
     for fam in mf.get("io_families", []):
+        p = ROOT / fam["file"]
+        text = p.read_text()
+        begin, _ = _io_fam_markers(fam)
+        if begin not in text and "begin" in fam:
+            # No region yet -> BOOTSTRAP it once from the manifest entry (the block is a
+            # bare hand section). After this the markers exist and the splice path owns it.
+            if args.check:
+                print(f"would bootstrap io {fam['family']} -> {fam['file']}")
+                continue
+            p.write_text(bootstrap_io_type(text, fam, render_io_type(fam)))
+            print(f"bootstrapped io {fam['family']} -> {fam['file']}")
+            continue
         if fam.get("reference"):
             continue
-        p = ROOT / fam["file"]
         if args.check:
             print(f"would splice io {fam['family']} -> {fam['file']}")
             continue
-        p.write_text(splice_io_type(p.read_text(), fam["family"], render_io_type(fam)))
+        p.write_text(splice_io_type(text, fam, render_io_type(fam)))
         print(f"spliced io {fam['family']} -> {fam['file']}")
 
     for fam in mf.get("representation_families", []):
