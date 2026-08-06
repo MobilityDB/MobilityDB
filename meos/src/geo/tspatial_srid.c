@@ -94,7 +94,15 @@
 int32_t
 spatial_srid(Datum d, MeosType basetype)
 {
+  /* T_PCPOINT is deliberately outside spatial_basetype(): the other
+   * spatial_* dispatchers have no pgpointcloud case, and deriving a
+   * pcpoint's flags needs its schema. Only the SRID is available without
+   * one, so it is admitted here rather than catalog-wide. */
+#if POINTCLOUD
+  assert(spatial_basetype(basetype) || basetype == T_PCPOINT);
+#else
   assert(spatial_basetype(basetype));
+#endif
   switch (basetype)
   {
     case T_GEOMETRY:
@@ -243,7 +251,13 @@ spatialset_set_srid(const Set *s, int32_t srid)
 int32_t
 tspatialinst_srid(const TInstant *inst)
 {
-  assert(inst); assert(tspatial_type(inst->temptype));
+  assert(inst);
+#if POINTCLOUD
+  assert(tspatial_type(inst->temptype) ||
+    tpointcloud_temptype(inst->temptype));
+#else
+  assert(tspatial_type(inst->temptype));
+#endif
   MeosType basetype = temptype_basetype(inst->temptype);
   return spatial_srid(tinstant_value_p(inst), basetype);
 }
@@ -258,8 +272,20 @@ tspatialinst_srid(const TInstant *inst)
 int32_t
 tspatial_srid(const Temporal *temp)
 {
-  /* Ensure the validity of the arguments */
+  /* Ensure the validity of the arguments. The pgpointcloud temporal types
+   * are accepted alongside the spatiotemporal ones: they are excluded from
+   * tspatial_type() because their bounding box is a TPCBox rather than an
+   * STBox, but a TPCBox begins with a whole STBox (see the static_asserts in
+   * meos_pointcloud.h), so the SRID is read from the same offset. This
+   * mirrors how temporal_boxops.c admits them beside tspatial_type(). */
+#if POINTCLOUD
+  if (! ensure_not_null((void *) temp))
+    return SRID_INVALID;
+  if (! tpointcloud_temptype(temp->temptype))
+    VALIDATE_TSPATIAL(temp, SRID_INVALID);
+#else
   VALIDATE_TSPATIAL(temp, SRID_INVALID);
+#endif
   const STBox *box;
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
