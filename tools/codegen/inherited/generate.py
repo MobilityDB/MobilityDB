@@ -2946,6 +2946,128 @@ def bootstrap_tiling(filetext: str, fam: dict, rendered: str) -> str:
     return filetext[:start] + begin_m + rendered + end_m + filetext[end:]
 
 
+# --- SQL Temporal comparison sub-family (SQL, whole-file, base-type multi-quartet) -
+# The base-type comparison surface carried whole by 030_temporal_compops.in.sql: the
+# tnumber_supportfn index-support function, the ever/always eEq/eNe/eLt/eGt/eLe/eGe
+# functions+operators (base-temporal, temporal-base and, for eq/ne, temporal-temporal
+# directions) and the temporal tEq/tNe/tLt/tGt/tLe/tGe functions+operators
+# (base-temporal/temporal-base/temporal-temporal, one 3-function/3-operator group per
+# base type), across the five alpha base types (tbool/tint/tbigint/tfloat/ttext) — a
+# single family, not one per type (the base-type loop lives entirely inside the one
+# file, the 022_temporal `ops: base` precedent). Every statement in the file is one
+# of THREE skeletons, proven exhaustive by round-trip over the whole region (237
+# CREATE FUNCTIONs, 234 CREATE OPERATORs, zero leftover non-lit text):
+# templates/compops_func.sql.tmpl (SIG/RET/SYM, an optional SUPPORT line for the
+# tnumber-typed overloads); templates/compops_op_evalways.sql.tmpl (the ever/always
+# `?=`-family shape: LEFTARG/RIGHTARG first, then PROCEDURE, NEGATOR,
+# RESTRICT/JOIN); templates/compops_op_temporal.sql.tmpl (the temporal `#=`-family
+# shape: PROCEDURE first, then LEFTARG/RIGHTARG, COMMUTATOR, no RESTRICT/JOIN). The
+# section banners, `-- Temporal <type>` dividers and blank-line separators — whose
+# eEq/eNe/aEq/aNe vs eLt/eLe/eGt/eGe/aLt/aLe/aGt/aGe grouping order is NOT a uniform
+# nested loop (the base-temporal/temporal-base pass groups ever-then-always per op,
+# the eLt/Le/Gt/Ge run groups all-ever-then-all-always, and the temporal-temporal
+# pass regroups again) — are reproduced BYTE-EXACT via `lit` blocks in the manifest,
+# committed order preserved, never normalized into a synthetic loop; the
+# skeleton-shaped statements go in `items` blocks (mixed func/op_ea/op_t entries,
+# packed with no blank line, closed by one trailing newline — the tiling-surface
+# model). The whole file (from its own `@file`/`@brief` doc comment past the license
+# header down to EOF) is the generated region — the tgeo_tile whole_file/end=""
+# precedent.
+def _compops_markers(family: str):
+    begin = (f"-- GENERATED-COMPOPS-BEGIN {family} — "
+             "tools/codegen/inherited/generate.py from templates/compops_*.sql.tmpl;\n"
+             "-- DO NOT EDIT BY HAND; edit the templates + manifest.yaml "
+             "(compops_families) and re-run.\n")
+    return begin, f"-- GENERATED-COMPOPS-END {family}\n"
+
+
+def _compops_skeleton(item: dict) -> str:
+    """One comparison-surface statement from its shared skeleton (no trailing
+    newline, so blocks can be joined with explicit newline control). A `func` item
+    is a CREATE FUNCTION (templates/compops_func.sql.tmpl; an optional `support`
+    inserts a `SUPPORT <fn>` line for the tnumber-typed overloads). An `op_ea` item
+    is an ever/always CREATE OPERATOR (templates/compops_op_evalways.sql.tmpl,
+    LEFTARG/RIGHTARG-first with NEGATOR/RESTRICT/JOIN). An `op_t` item is a temporal
+    CREATE OPERATOR (templates/compops_op_temporal.sql.tmpl, PROCEDURE-first with
+    COMMUTATOR only)."""
+    if item["kind"] == "func":
+        tmpl = (TEMPLATES / "compops_func.sql.tmpl").read_text()
+        support = f"  SUPPORT {item['support']}\n" if item.get("support") else ""
+        return (tmpl.replace("{SIG}", item["sig"]).replace("{RET}", item["ret"])
+                    .replace("{SYM}", item["sym"]).replace("{SUPPORT}", support)
+                    .rstrip("\n"))
+    if item["kind"] == "op_ea":
+        tmpl = (TEMPLATES / "compops_op_evalways.sql.tmpl").read_text()
+        return (tmpl.replace("{OP}", item["op"]).replace("{L}", item["L"])
+                    .replace("{R}", item["R"]).replace("{PROC}", item["proc"])
+                    .replace("{NEG}", item["neg"]).replace("{REST}", item["rest"])
+                    .replace("{JOIN}", item["join"]).rstrip("\n"))
+    tmpl = (TEMPLATES / "compops_op_temporal.sql.tmpl").read_text()
+    return (tmpl.replace("{OP}", item["op"]).replace("{PROC}", item["proc"])
+                .replace("{L}", item["L"]).replace("{R}", item["R"])
+                .replace("{COMM}", item["comm"]).rstrip("\n"))
+
+
+def render_compops(fam: dict) -> str:
+    """Render one family's comparison block from its `blocks` sequence. A block is a
+    verbatim `lit` (the section banners, per-type dividers and blank-line
+    separators, kept exactly as the hand file) or an `items` list (the
+    func/op_ea/op_t statements rendered from the shared skeletons, packed with no
+    blank line and closed by one trailing newline). Blocks concatenate with no
+    automatic separator — every separator is baked into the `lit` blocks — so the
+    rendered text is byte-identical to the committed region (the tiling-surface
+    model)."""
+    out = ""
+    for blk in fam["blocks"]:
+        if "lit" in blk:
+            out += blk["lit"]
+        else:
+            out += "\n".join(_compops_skeleton(it) for it in blk["items"]) + "\n"
+    return out
+
+
+def extract_compops(filetext: str, fam: dict) -> str:
+    """Return the committed hand comparison block. Marker-aware: if the
+    GENERATED-COMPOPS region exists, slice between its markers; otherwise slice
+    from the `/*` opening the family's own file doc comment (found via the family's
+    `begin` anchor) down to EOF for this whole_file family, mirroring
+    extract_tiling."""
+    begin, end = _compops_markers(fam["family"])
+    if begin in filetext:
+        b = filetext.index(begin) + len(begin)
+        e = filetext.index(end)
+        return filetext[b:e]
+    i = filetext.index(fam["begin"])
+    start = filetext.rfind("/*", 0, i)
+    if fam.get("whole_file"):
+        return filetext[start:len(filetext)]
+    j = filetext.index(fam["end"])
+    return filetext[start:filetext.rfind("/*", 0, j)]
+
+
+def splice_compops(filetext: str, family: str, rendered: str) -> str:
+    begin, end = _compops_markers(family)
+    b = filetext.index(begin) + len(begin)
+    e = filetext.index(end)
+    return filetext[:b] + rendered + filetext[e:]
+
+
+def bootstrap_compops(filetext: str, fam: dict, rendered: str) -> str:
+    """Insert the GENERATED-COMPOPS markers around the family's committed hand block
+    (sliced by the same anchor span extract uses), so a future non-reference emit is
+    fully declarative with no hand-placed marker. Idempotent: once the markers exist
+    the reference/splice path owns the region. Not run while the family is
+    reference-only (validate-only)."""
+    i = filetext.index(fam["begin"])
+    start = filetext.rfind("/*", 0, i)
+    begin_m, end_m = _compops_markers(fam["family"])
+    if fam.get("whole_file"):
+        return filetext[:start] + begin_m + rendered + end_m
+    j = filetext.index(fam["end"])
+    end = filetext.rfind("/*", 0, j)
+    return filetext[:start] + begin_m + rendered + end_m + filetext[end:]
+
+
 def target_path(behaviour: str, sub: dict, positions: dict) -> pathlib.Path:
     # The within-50-bin offset defaults to the shared `positions` map (the tight
     # cbuffer-anchored layout); a family on the tgeo-aligned layout overrides a
@@ -3339,6 +3461,25 @@ def main() -> int:
             same = gen == cur
             ok = ok and same
             print(f"[{'OK ' if same else 'DIFF'}] self-regen tiling {fam['family']} "
+                  f"-> {pathlib.Path(fam['file'])}")
+            if not same:
+                g, c = gen.splitlines(), cur.splitlines()
+                for n, (a, b) in enumerate(zip(g, c), 1):
+                    if a != b:
+                        print(f"     first diff line {n}:\n       gen: {a!r}\n"
+                              f"       cur: {b!r}")
+                        break
+                if len(g) != len(c):
+                    print(f"     line count gen={len(g)} cur={len(c)}")
+        for fam in mf.get("compops_families", []):
+            if not fam.get("reference"):
+                continue
+            p = ROOT / fam["file"]
+            gen = render_compops(fam)
+            cur = extract_compops(p.read_text(), fam) if p.exists() else ""
+            same = gen == cur
+            ok = ok and same
+            print(f"[{'OK ' if same else 'DIFF'}] self-regen compops {fam['family']} "
                   f"-> {pathlib.Path(fam['file'])}")
             if not same:
                 g, c = gen.splitlines(), cur.splitlines()
@@ -3816,6 +3957,26 @@ def main() -> int:
         else:
             p.write_text(bootstrap_tiling(text, fam, render_tiling(fam)))
             print(f"bootstrapped tiling {fam['family']} -> {fam['file']}")
+    for fam in mf.get("compops_families", []):
+        # Reference families are validate-only: keep the committed hand block, never
+        # emit into .in.sql (mirrors constructors/comparisons/conversions/tiling). A
+        # future non-reference family bootstraps its GENERATED-COMPOPS region once,
+        # then splices.
+        if fam.get("reference"):
+            continue
+        p = ROOT / fam["file"]
+        text = p.read_text()
+        begin, _ = _compops_markers(fam["family"])
+        if args.check:
+            print(f"would {'splice' if begin in text else 'bootstrap'} compops "
+                  f"{fam['family']} -> {fam['file']}")
+            continue
+        if begin in text:
+            p.write_text(splice_compops(text, fam["family"], render_compops(fam)))
+            print(f"spliced compops {fam['family']} -> {fam['file']}")
+        else:
+            p.write_text(bootstrap_compops(text, fam, render_compops(fam)))
+            print(f"bootstrapped compops {fam['family']} -> {fam['file']}")
     return 0
 
 
