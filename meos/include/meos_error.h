@@ -59,11 +59,14 @@ extern void meos_error(int errlevel, int errcode, const char *format, ...)
  * Give meos_error printf-style format checking. In the PostgreSQL-backed
  * build pg_attribute_printf is available and selects the gnu_printf
  * archetype (correct on MinGW, where the default printf archetype is MS
- * semantics). This public header is also consumed standalone, where that
- * macro may not be in scope, so fall back to the gnu_printf attribute
- * directly under GCC/Clang, and to nothing on compilers that lack it.
+ * semantics). Clang is excluded from that path because it rejects the
+ * gnu_printf archetype with -Wignored-attributes; it takes the plain
+ * printf archetype below instead. This public header is also consumed
+ * standalone, where the macro may not be in scope, so fall back to the
+ * gnu_printf attribute directly under GCC, plain printf under Clang, and
+ * to nothing on compilers that lack it.
  */
-#if defined(pg_attribute_printf)
+#if defined(pg_attribute_printf) && !defined(__clang__)
   pg_attribute_printf(3, 4);
 #elif defined(__GNUC__) && !defined(__clang__)
   __attribute__((format(gnu_printf, 3, 4)));
