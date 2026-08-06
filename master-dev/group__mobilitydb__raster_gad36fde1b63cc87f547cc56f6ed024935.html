@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: Raquet_read</title>
+<title>MobilityDB: raster_st_value_sample</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -95,12 +95,12 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__raster_ga9856bc5a959d435aff3989c39a00175c.html#ga9856bc5a959d435aff3989c39a00175c">Raquet_out</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__raster_ga12c7114e6dec3d4446255d2e8652d13b.html#ga12c7114e6dec3d4446255d2e8652d13b">Raquet_pixtype</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__raster_ga0d742c9fbded109c8693c87a5ecbbd90.html#ga0d742c9fbded109c8693c87a5ecbbd90">Raquet_quadbin</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__mobilitydb__raster_gadd3326aa667969a105ab781f6f4e19ff.html#gadd3326aa667969a105ab781f6f4e19ff">Raquet_read</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__raster_gadd3326aa667969a105ab781f6f4e19ff.html#gadd3326aa667969a105ab781f6f4e19ff">Raquet_read</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__raster_ga43803f927c9f993801fc927dc00b088d.html#ga43803f927c9f993801fc927dc00b088d">Raquet_recv</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__raster_ga16c6f1d46e91d35eb97d0fd12393b479.html#ga16c6f1d46e91d35eb97d0fd12393b479">Raquet_send</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__raster_ga468b7e4a18baebf58b479c6878c679f0.html#ga468b7e4a18baebf58b479c6878c679f0">Raquet_to_stbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__raster_ga2cb551252bc97f77549d33b1495eaa30.html#ga2cb551252bc97f77549d33b1495eaa30">Raquet_width</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__raster_gad36fde1b63cc87f547cc56f6ed024935.html#gad36fde1b63cc87f547cc56f6ed024935">raster_st_value_sample</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__mobilitydb__raster_gad36fde1b63cc87f547cc56f6ed024935.html#gad36fde1b63cc87f547cc56f6ed024935">raster_st_value_sample</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__raster_gaf0323c7209a520ec3dae3743a04ac175.html#gaf0323c7209a520ec3dae3743a04ac175">Raster_tile_value</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__raster_gafdccba2c5f8936bff8d92514d77c2524.html#gafdccba2c5f8936bff8d92514d77c2524">Raster_tile_value_array</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__raster_ga3ec8080fa4f807997c628eba90802da9.html#ga3ec8080fa4f807997c628eba90802da9">Raster_tile_value_quadbin</a></td></tr>
@@ -109,30 +109,56 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="gadd3326aa667969a105ab781f6f4e19ff" name="gadd3326aa667969a105ab781f6f4e19ff"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gadd3326aa667969a105ab781f6f4e19ff">&#9670;&#160;</a></span>Raquet_read()</h2>
+<a id="gad36fde1b63cc87f547cc56f6ed024935" name="gad36fde1b63cc87f547cc56f6ed024935"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gad36fde1b63cc87f547cc56f6ed024935">&#9670;&#160;</a></span>raster_st_value_sample()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> Raquet_read </td>
+          <td class="memname">static bool raster_st_value_sample </td>
           <td>(</td>
-          <td class="paramtype">PG_FUNCTION_ARGS&#160;</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>ctx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
+          <td class="paramname"><em>point</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double *&#160;</td>
+          <td class="paramname"><em>value</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-<p>Return a <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> tile decoded from an in-memory raster file via GDAL. </p>
-<p >The raster file is supplied as bytes in any GDAL-supported format and decoded through GDAL's <code>/vsimem/</code> virtual filesystem, so no server-side file access is required. </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Return the values of a raster band sampled at the instants of a trajectory. </p>
+<dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">rasterfile</td><td>Raster file bytes (bytea) </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">quadbin</td><td>CARTO QUADBIN cell (bigint), or NULL to derive it from the raster geotransform and EPSG:3857 spatial reference @sqlfn <a class="el" href="group__meos__raster__base__constructor_gadbb297bae58b06d3ebba66b7c5a10f86.html#gadbb297bae58b06d3ebba66b7c5a10f86" title="Return a Raquet tile read from a raster file via GDAL.">raquet_read()</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">rast</td><td>Raster </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">traj</td><td>Trajectory </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">band</td><td>Band number (1-based, default 1) @csqlfn <a class="el" href="temporal__raster_8c_ad0c70f99b636a9ede4a0918e33b9e808.html#ad0c70f99b636a9ede4a0918e33b9e808">Raster_value()</a></td></tr>
   </table>
   </dd>
 </dl>
+<p>Raster sampling callback backed by PostGIS raster's ST_Value: the context is a prepared FunctionCallInfo whose raster/band/nodata/resample arguments are constant, only the point argument varies per call </p>
 
 </div>
 </div>

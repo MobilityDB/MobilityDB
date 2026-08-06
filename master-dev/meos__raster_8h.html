@@ -87,6 +87,7 @@ $(function() {
 <div class="textblock"><code>#include &lt;stdbool.h&gt;</code><br />
 <code>#include &lt;stdint.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="meos__geo_8h_source.html">meos_geo.h</a>&gt;</code><br />
 </div>
 <p><a href="meos__raster_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -94,6 +95,9 @@ $(function() {
 Typedefs</h2></td></tr>
 <tr class="memitem:a82bc18d6228bd1c7229a47fd763cd791"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="structRaquet.html">Raquet</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos__raster_8h_a82bc18d6228bd1c7229a47fd763cd791.html#a82bc18d6228bd1c7229a47fd763cd791">Raquet</a></td></tr>
 <tr class="separator:a82bc18d6228bd1c7229a47fd763cd791"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad1d2107f437db77a74b9e4ae942b1bc6"><td class="memItemLeft" align="right" valign="top">typedef bool(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos__raster_8h_ad1d2107f437db77a74b9e4ae942b1bc6.html#ad1d2107f437db77a74b9e4ae942b1bc6">raster_sample_fn</a>) (void *ctx, const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *point, double *value)</td></tr>
+<tr class="memdesc:ad1d2107f437db77a74b9e4ae942b1bc6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Callback returning the raster pixel value at a point: return true and set <code>value</code>, or return false when the point lies outside the raster or on a nodata pixel.  <a href="meos__raster_8h_ad1d2107f437db77a74b9e4ae942b1bc6.html#ad1d2107f437db77a74b9e4ae942b1bc6">More...</a><br /></td></tr>
+<tr class="separator:ad1d2107f437db77a74b9e4ae942b1bc6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="enum-members" name="enum-members"></a>
 Enumerations</h2></td></tr>
@@ -194,6 +198,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ga07eac8c18e7c6ac0b6e3d37f58ae221a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTemporal.html">Temporal</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__raster__base__accessor_ga07eac8c18e7c6ac0b6e3d37f58ae221a.html#ga07eac8c18e7c6ac0b6e3d37f58ae221a">raster_tile_value_quadbin</a> (const uint8_t *pixels, uint16_t width, uint16_t height, <a class="el" href="postgres__ext__defs_8in_8h_abc0f5bc07737e498f287334775dff2b6.html#abc0f5bc07737e498f287334775dff2b6">uint64</a> quadbin, <a class="el" href="meos__raster_8h_ab4899fb599b17f4121bb9a377d9dd040.html#ab4899fb599b17f4121bb9a377d9dd040">MeosPixType</a> pixtype, double nodata, bool has_nodata, const <a class="el" href="structTemporal.html">Temporal</a> *traj)</td></tr>
 <tr class="memdesc:ga07eac8c18e7c6ac0b6e3d37f58ae221a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sample a <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> raster chip along a tgeompoint trajectory.  <a href="group__meos__raster__base__accessor_ga07eac8c18e7c6ac0b6e3d37f58ae221a.html#ga07eac8c18e7c6ac0b6e3d37f58ae221a">More...</a><br /></td></tr>
 <tr class="separator:ga07eac8c18e7c6ac0b6e3d37f58ae221a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga3f954c8594d253d7ecc6677e8fdeabc6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTemporal.html">Temporal</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__raster_ga3f954c8594d253d7ecc6677e8fdeabc6.html#ga3f954c8594d253d7ecc6677e8fdeabc6">raster_value</a> (const <a class="el" href="structTemporal.html">Temporal</a> *traj, const <a class="el" href="structSTBox.html">STBox</a> *box, <a class="el" href="meos__raster_8h_ad1d2107f437db77a74b9e4ae942b1bc6.html#ad1d2107f437db77a74b9e4ae942b1bc6">raster_sample_fn</a> sample, void *ctx)</td></tr>
+<tr class="memdesc:ga3f954c8594d253d7ecc6677e8fdeabc6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the values of a raster sampled at the instants of a trajectory.  <a href="group__meos__raster_ga3f954c8594d253d7ecc6677e8fdeabc6.html#ga3f954c8594d253d7ecc6677e8fdeabc6">More...</a><br /></td></tr>
+<tr class="separator:ga3f954c8594d253d7ecc6677e8fdeabc6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga683d59d59af47d462f0a1b7bb844b77c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_abc0f5bc07737e498f287334775dff2b6.html#abc0f5bc07737e498f287334775dff2b6">uint64</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__raster__base__accessor_ga683d59d59af47d462f0a1b7bb844b77c.html#ga683d59d59af47d462f0a1b7bb844b77c">trajectory_quadbins</a> (const <a class="el" href="structTemporal.html">Temporal</a> *traj, uint32_t zoom, int *count)</td></tr>
 <tr class="memdesc:ga683d59d59af47d462f0a1b7bb844b77c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the unique QUADBIN cells at <code>zoom</code> covered by a trajectory.  <a href="group__meos__raster__base__accessor_ga683d59d59af47d462f0a1b7bb844b77c.html#ga683d59d59af47d462f0a1b7bb844b77c">More...</a><br /></td></tr>
 <tr class="separator:ga683d59d59af47d462f0a1b7bb844b77c"><td class="memSeparator" colspan="2">&#160;</td></tr>
