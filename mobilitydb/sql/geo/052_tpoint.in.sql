@@ -772,11 +772,11 @@ CREATE FUNCTION afterTimestamp(tgeogpoint, timestamptz, strict bool DEFAULT TRUE
 
 CREATE FUNCTION insert(tgeompoint, tgeompoint, connect boolean DEFAULT TRUE)
   RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'Temporal_update'
+  AS 'MODULE_PATHNAME', 'Temporal_insert'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION insert(tgeogpoint, tgeompoint, connect boolean DEFAULT TRUE)
+CREATE FUNCTION insert(tgeogpoint, tgeogpoint, connect boolean DEFAULT TRUE)
   RETURNS tgeogpoint
-  AS 'MODULE_PATHNAME', 'Temporal_update'
+  AS 'MODULE_PATHNAME', 'Temporal_insert'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION update(tgeompoint, tgeompoint, connect boolean DEFAULT TRUE)

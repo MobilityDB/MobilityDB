@@ -4009,8 +4009,8 @@ modification_families:
   blocks:
   - lit: "/*****************************************************************************\n * Modification Functions\n *****************************************************************************/\n\n"
   - fns:
-    - {sig: "insert(tgeometry, tgeometry, connect boolean DEFAULT TRUE)", ret: "tgeometry", sym: "Temporal_update"}
-    - {sig: "insert(tgeography, tgeometry, connect boolean DEFAULT TRUE)", ret: "tgeography", sym: "Temporal_update"}
+    - {sig: "insert(tgeometry, tgeometry, connect boolean DEFAULT TRUE)", ret: "tgeometry", sym: "Temporal_insert"}
+    - {sig: "insert(tgeography, tgeography, connect boolean DEFAULT TRUE)", ret: "tgeography", sym: "Temporal_insert"}
   - lit: "\n"
   - fns:
     - {sig: "update(tgeometry, tgeometry, connect boolean DEFAULT TRUE)", ret: "tgeometry", sym: "Temporal_update"}
@@ -4040,8 +4040,8 @@ modification_families:
   blocks:
   - lit: "/*****************************************************************************\n * Modification Functions\n *****************************************************************************/\n\n"
   - fns:
-    - {sig: "insert(tgeompoint, tgeompoint, connect boolean DEFAULT TRUE)", ret: "tgeompoint", sym: "Temporal_update"}
-    - {sig: "insert(tgeogpoint, tgeompoint, connect boolean DEFAULT TRUE)", ret: "tgeogpoint", sym: "Temporal_update"}
+    - {sig: "insert(tgeompoint, tgeompoint, connect boolean DEFAULT TRUE)", ret: "tgeompoint", sym: "Temporal_insert"}
+    - {sig: "insert(tgeogpoint, tgeogpoint, connect boolean DEFAULT TRUE)", ret: "tgeogpoint", sym: "Temporal_insert"}
   - lit: "\n"
   - fns:
     - {sig: "update(tgeompoint, tgeompoint, connect boolean DEFAULT TRUE)", ret: "tgeompoint", sym: "Temporal_update"}
@@ -4071,7 +4071,7 @@ modification_families:
   blocks:
   - lit: "/*****************************************************************************\n * Modification Functions\n *****************************************************************************/\n\n"
   - fns:
-    - {sig: "insert(tcbuffer, tcbuffer, connect boolean DEFAULT TRUE)", ret: "tcbuffer", sym: "Temporal_update"}
+    - {sig: "insert(tcbuffer, tcbuffer, connect boolean DEFAULT TRUE)", ret: "tcbuffer", sym: "Temporal_insert"}
   - lit: "\n"
   - fns:
     - {sig: "update(tcbuffer, tcbuffer, connect boolean DEFAULT TRUE)", ret: "tcbuffer", sym: "Temporal_update"}
@@ -4155,7 +4155,7 @@ modification_families:
   blocks:
   - lit: "/*****************************************************************************\n * Modification Functions\n *****************************************************************************/\n\n"
   - fns:
-    - {sig: "insert(tnpoint, tnpoint, connect boolean DEFAULT TRUE)", ret: "tnpoint", sym: "Temporal_update"}
+    - {sig: "insert(tnpoint, tnpoint, connect boolean DEFAULT TRUE)", ret: "tnpoint", sym: "Temporal_insert"}
   - lit: "\n"
   - fns:
     - {sig: "update(tnpoint, tnpoint, connect boolean DEFAULT TRUE)", ret: "tnpoint", sym: "Temporal_update"}
@@ -4216,7 +4216,7 @@ modification_families:
   blocks:
   - lit: "/*****************************************************************************\n * Modification Functions\n *****************************************************************************/\n\n"
   - fns:
-    - {sig: "insert(tpose, tpose, connect boolean DEFAULT TRUE)", ret: "tpose", sym: "Temporal_update"}
+    - {sig: "insert(tpose, tpose, connect boolean DEFAULT TRUE)", ret: "tpose", sym: "Temporal_insert"}
   - lit: "\n"
   - fns:
     - {sig: "update(tpose, tpose, connect boolean DEFAULT TRUE)", ret: "tpose", sym: "Temporal_update"}
@@ -4269,7 +4269,7 @@ modification_families:
   blocks:
   - lit: "/*****************************************************************************\n * Modification Functions\n *****************************************************************************/\n\n"
   - fns:
-    - {sig: "insert(trgeometry, trgeometry, connect boolean DEFAULT TRUE)", ret: "trgeometry", sym: "Temporal_update"}
+    - {sig: "insert(trgeometry, trgeometry, connect boolean DEFAULT TRUE)", ret: "trgeometry", sym: "Temporal_insert"}
   - lit: "\n"
   - fns:
     - {sig: "update(trgeometry, trgeometry, connect boolean DEFAULT TRUE)", ret: "trgeometry", sym: "Temporal_update"}

@@ -771,11 +771,11 @@ CREATE FUNCTION afterTimestamp(tgeography, timestamptz, strict bool DEFAULT TRUE
 
 CREATE FUNCTION insert(tgeometry, tgeometry, connect boolean DEFAULT TRUE)
   RETURNS tgeometry
-  AS 'MODULE_PATHNAME', 'Temporal_update'
+  AS 'MODULE_PATHNAME', 'Temporal_insert'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION insert(tgeography, tgeometry, connect boolean DEFAULT TRUE)
+CREATE FUNCTION insert(tgeography, tgeography, connect boolean DEFAULT TRUE)
   RETURNS tgeography
-  AS 'MODULE_PATHNAME', 'Temporal_update'
+  AS 'MODULE_PATHNAME', 'Temporal_insert'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION update(tgeometry, tgeometry, connect boolean DEFAULT TRUE)
