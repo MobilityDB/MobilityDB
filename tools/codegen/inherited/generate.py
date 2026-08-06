@@ -3170,6 +3170,94 @@ def check_classes(mf: dict) -> int:
     return 0
 
 
+# tdoubleN are internal working types with no SQL surface, so they are not part
+# of any behaviour's expected membership.
+INTERNAL_TEMP_TYPES = ("tdouble2", "tdouble3", "tdouble4")
+
+# Which renderer produces each axis's SQL. Coverage is measured from that output
+# rather than from manifest keys: the manifest names the type an entry stands for
+# in at least five different ways (types[].temp, insts.*.t, temps, blocks[].funcs,
+# blocks[].opcls), so a key-based reading silently undercounts any axis whose
+# vocabulary it does not know. The rendered SQL names the types whatever the
+# entry looks like.
+AXIS_RENDERERS = {
+    "accessor_families": lambda f: render_accessors(f),
+    "io_families": lambda f: render_io_type(f),
+    "representation_families": lambda f: render_representations(f),
+    "constructor_families": lambda f: render_constructors(f),
+    "transformation_families": lambda f: render_transformations(f),
+    "comparison_families": lambda f: render_comparisons(f),
+    "hash_families": lambda f: render_hash(f),
+    "setop_families": lambda f: render_setops(f),
+    "topop_families": lambda f: render_topops(f),
+    "posop_families": lambda f: render_posops(f),
+    "distance_families": lambda f: render_distance(f),
+    "conversion_families": lambda f: render_conversions(f),
+    "restriction_families": lambda f: render_restrictions(f),
+    "modification_families": lambda f: render_modifications(f),
+    "mathfunc_families": lambda f: render_mathfuncs(f),
+    "tiling_families": lambda f: render_tiling(f),
+    "compops_families": lambda f: render_compops(f),
+    "aggregate_families": lambda f: render_aggregates(f),
+    "native_tempspatialrel_families": lambda f: render_native_tempspatialrels(f),
+    "span_families": lambda f: render_spanfile(f),
+    "spatialrel_families":
+        lambda f: render_dwithin(f) if f.get("dwithin") else render_spatialrels(f),
+}
+
+
+def rendered_temp_types(axis: str, entries: list, candidates: list) -> set:
+    """The temporal types named by the SQL an axis renders."""
+    render = AXIS_RENDERERS.get(axis)
+    if render is None:
+        return set()
+    out = set()
+    for entry in entries:
+        if not isinstance(entry, dict):
+            continue
+        try:
+            text = render(entry)
+        except Exception:
+            continue
+        for temp in candidates:
+            if re.search(rf"\b{temp}\b", text):
+                out.add(temp)
+    return out
+
+
+def report_gaps(mf: dict) -> int:
+    """Per behaviour, which members of its class its rendered SQL does not name.
+
+    Reports rather than gates: class completeness is the target being worked
+    towards, so this prints the remaining members as an ordered backlog.
+    """
+    classes = mf.get("classes") or {}
+    if not classes:
+        print("no classes: block in the manifest")
+        return 1
+    every = [m for m in classes["temporal"]["members"]
+             if m not in INTERNAL_TEMP_TYPES]
+    ranked = sorted(classes.items(), key=lambda kv: len(kv[1].get("members") or []))
+    for axis in sorted(AXIS_RENDERERS):
+        entries = mf.get(axis) or []
+        if not entries:
+            continue
+        have = rendered_temp_types(axis, entries, every)
+        if not have:
+            print(f"[   ?] {axis:30} unmeasured - rendering named no type")
+            continue
+        owner, members = "temporal", classes["temporal"]["members"]
+        for name, spec in ranked:
+            if have <= set(spec.get("members") or []):
+                owner, members = name, spec["members"]
+                break
+        want = [m for m in members if m not in INTERNAL_TEMP_TYPES]
+        missing = [m for m in want if m not in have]
+        print(f"[{len(want) - len(missing):2}/{len(want):2}] {axis:30} {owner:12} "
+              f"missing: {' '.join(missing) if missing else '-'}")
+    return 0
+
+
 def manifest_files(mf: dict) -> set:
     """Every mobilitydb/sql path named by a manifest entry, repo-relative."""
     out = set()
@@ -3234,6 +3322,9 @@ def main() -> int:
     ap.add_argument("--classes", action="store_true",
                     help="the manifest classes: block matches the catalog "
                          "class predicates")
+    ap.add_argument("--gaps", action="store_true",
+                    help="per behaviour, which members of its class are not "
+                         "covered yet")
     ap.add_argument("--only", help="restrict to one temp type (e.g. tquadbin)")
     args = ap.parse_args()
 
@@ -3242,6 +3333,9 @@ def main() -> int:
 
     if args.classes:
         return check_classes(yaml.safe_load(MANIFEST.read_text()))
+
+    if args.gaps:
+        return report_gaps(yaml.safe_load(MANIFEST.read_text()))
 
     mf = yaml.safe_load(MANIFEST.read_text())
     positions = mf["positions"]
