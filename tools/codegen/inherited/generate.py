@@ -2398,15 +2398,24 @@ def bootstrap_restrictions(filetext: str, fam: dict, rendered: str) -> str:
 # with their own trailing newline), so the rendered text is byte-identical to the
 # committed region — the conversion-surface model.
 #
+# The base Temporal<T> file (022_temporal) declares the SAME modification chunk for EVERY
+# base type, function-outer / type-inner (all five types' insert, then all five types'
+# update, ...). Unlike the restriction surface, no orderable/numeric gating applies to
+# this chunk — every base type carries the same insert/update/deleteTime wrappers — but
+# the family keeps the same per-base-type `types:` token table and presence-pool
+# mechanism (all/orderable/numeric) as the restriction and accessor multi-base-type
+# modes for consistency. A `gen` block is one such chunk: its `sig`/`ret` carry a {TEMP}
+# token expanded once per type in the pool that its `presence` (all/orderable/numeric,
+# default all) selects. Single-type and dual-type families spell their wrappers
+# explicitly in `fns` blocks and are untouched by this mode.
+#
 # `--validate` extracts the committed hand block by section-header ANCHORS
 # (marker-aware, mirroring extract_conversions: sliced by GENERATED-MODIFICATIONS
 # markers once they exist, else by the Modification banner header down to the `/*` of
 # the next section, or — when the family sets `raw_end` because its hand file runs the
 # tiling material straight after deleteTime with no separating banner (th3index,
 # tquadbin) — down to the exact `end` anchor text itself), so the deployed .in.sql
-# files are untouched while the template is proven. The base temporal file
-# (022_temporal.in.sql) keeps its hand block: its region interleaves the tbool/tint/
-# tfloat/ttext quartet, left for the template-class pass.
+# files are untouched while the template is proven.
 def _modifications_markers(family: str):
     begin = (f"-- GENERATED-MODIFICATIONS-BEGIN {family} — "
              "tools/codegen/inherited/generate.py from templates/modifications.sql.tmpl;\n"
@@ -2425,18 +2434,36 @@ def _modif_skeleton(sig: str, ret: str, sym: str, strict: bool, pre: str) -> str
                 .replace("{STRICT}", " STRICT" if strict else "").rstrip("\n"))
 
 
+def _modif_sub(text: str, t: dict) -> str:
+    """Substitute one base type's {TEMP} token into a `gen` chunk's sig/ret."""
+    return text.replace("{TEMP}", t["temp"])
+
+
 def render_modifications(fam: dict) -> str:
     """Render one family's modification block from its `blocks` sequence. A block is a
     verbatim `lit` (the section banners, blank lines and comment lines, kept exactly as
-    the hand file) or a `fns` list (the modification CREATE FUNCTIONs rendered from the
-    shared skeleton, packed with no blank line and closed by one trailing newline).
-    Blocks concatenate with no automatic separator — every separator is baked into the
-    `lit` blocks — so the rendered text is byte-identical to the committed region (the
-    conversion-surface model)."""
+    the hand file), a `fns` list (the modification CREATE FUNCTIONs rendered from the
+    shared skeleton, packed with no blank line and closed by one trailing newline), or —
+    for the base Temporal<T> multi-base-type mode — a `gen` chunk (ONE function expanded
+    over the family's `types:` pool that its `presence` class selects, packed like a
+    `fns` list). Blocks concatenate with no automatic separator — every separator is
+    baked into the `lit` blocks — so the rendered text is byte-identical to the
+    committed region (the conversion-surface model)."""
+    types = fam.get("types") or []
+    pools = {"all": types,
+             "numeric": [t for t in types if t.get("numeric")],
+             "orderable": [t for t in types if t.get("orderable")]}
     out = ""
     for blk in fam["blocks"]:
         if "lit" in blk:
             out += blk["lit"]
+        elif "gen" in blk:
+            g = blk["gen"]
+            out += "\n".join(_modif_skeleton(_modif_sub(g["sig"], t),
+                                             _modif_sub(g.get("ret", "{TEMP}"), t),
+                                             g["sym"], g.get("strict", True),
+                                             g.get("pre", ""))
+                             for t in pools[g.get("presence", "all")]) + "\n"
         else:
             out += "\n".join(_modif_skeleton(f["sig"], f["ret"], f["sym"],
                                              f.get("strict", True), f.get("pre", ""))
