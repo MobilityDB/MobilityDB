@@ -47,6 +47,8 @@
  * the `tgeompoint(tpcpoint)` XY projection cast are all included.
  */
 
+-- GENERATED-IO-BEGIN pointcloud — tools/codegen/inherited/generate.py from templates/comparisons.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.yaml (io_families) and re-run.
 CREATE TYPE tpcpoint;
 
 /******************************************************************************
@@ -99,6 +101,8 @@ CREATE FUNCTION tpcpoint(tpcpoint, integer)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE CAST (tpcpoint AS tpcpoint)
   WITH FUNCTION tpcpoint(tpcpoint, integer) AS IMPLICIT;
+
+-- GENERATED-IO-END pointcloud
 
 /******************************************************************************
  * WKB / HexWKB helpers

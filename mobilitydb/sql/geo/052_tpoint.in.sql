@@ -32,6 +32,8 @@
  * @brief Basic functions for temporal geometry/geography points
  */
 
+-- GENERATED-IO-BEGIN tpoint — tools/codegen/inherited/generate.py from templates/comparisons.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.yaml (io_families) and re-run.
 CREATE TYPE tgeompoint;
 CREATE TYPE tgeogpoint;
 
@@ -121,6 +123,8 @@ CREATE FUNCTION tgeogpoint(tgeogpoint, integer)
 
 CREATE CAST (tgeompoint AS tgeompoint) WITH FUNCTION tgeompoint(tgeompoint, integer) AS IMPLICIT;
 CREATE CAST (tgeogpoint AS tgeogpoint) WITH FUNCTION tgeogpoint(tgeogpoint, integer) AS IMPLICIT;
+
+-- GENERATED-IO-END tpoint
 
 /******************************************************************************
  * Constructors
