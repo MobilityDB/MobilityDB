@@ -1860,6 +1860,175 @@ constructor_families:
       ret: trgeometry
       sym: Trgeometry_constructor
 transformation_families:
+# The base Temporal<T> file declares the transformation surface for EVERY base type,
+# op-outer / type-inner. Most CORE ops (Inst/setInterp/shiftTime/scaleTime/
+# shiftScaleTime/tsample) fit the `ops` mechanism unmodified over the family's flat
+# `temps:` list (tprecision restricts to the numeric `temps:` override, tint/tbigint/
+# tfloat). The Seq/SeqSet casts spell their five wrappers as explicit `fns` (SeqSet's
+# tfloat overload alone carries the interpolation arg, a genuine hand-file asymmetry;
+# and only their first wrapper carries the `-- The function is not strict` comment,
+# which the generic `ops` per-type pre marker cannot express). The numeric-only
+# shiftValue/scaleValue/shiftScaleValue trio (whose argument is the type's own base
+# value domain, not a fixed CORE-op type) uses a `gen` chunk over the family's
+# `types:` token table (mirroring the restriction/modification multi-base-type mode),
+# gated `presence: numeric`. merge(T, T)'s tfloat/ttext overloads carry a stray extra
+# `AS` indent in the hand file, reproduced verbatim as a `lit` block.
+- family: temporal
+  file: mobilitydb/sql/temporal/022_temporal.in.sql
+  reference: true
+  begin: "\n * Transformation functions\n"
+  end: "\n * Restriction functions\n"
+  temps:
+  - tbool
+  - tint
+  - tbigint
+  - tfloat
+  - ttext
+  types:
+  - {temp: tbool}
+  - {temp: tint,    base: integer, numeric: true, orderable: true}
+  - {temp: tbigint, base: bigint,  numeric: true, orderable: true}
+  - {temp: tfloat,  base: float,   numeric: true, orderable: true}
+  - {temp: ttext,   orderable: true}
+  blocks:
+  - lit: "/******************************************************************************\n * Transformation functions\n ******************************************************************************/"
+  - ops:
+    - inst
+  - fns:
+    - sig: tboolSeq(tbool, text DEFAULT NULL)
+      ret: tbool
+      sym: Temporal_as_tsequence
+      strict: false
+      pre: '-- The function is not strict
+
+        '
+    - sig: tintSeq(tint, text DEFAULT NULL)
+      ret: tint
+      sym: Temporal_as_tsequence
+      strict: false
+    - sig: tbigintSeq(tbigint, text DEFAULT NULL)
+      ret: tbigint
+      sym: Temporal_as_tsequence
+      strict: false
+    - sig: tfloatSeq(tfloat, text DEFAULT NULL)
+      ret: tfloat
+      sym: Temporal_as_tsequence
+      strict: false
+    - sig: ttextSeq(ttext, text DEFAULT NULL)
+      ret: ttext
+      sym: Temporal_as_tsequence
+      strict: false
+  - fns:
+    - sig: tboolSeqSet(tbool)
+      ret: tbool
+      sym: Temporal_as_tsequenceset
+      strict: false
+      pre: '-- The function is not strict
+
+        '
+    - sig: tintSeqSet(tint)
+      ret: tint
+      sym: Temporal_as_tsequenceset
+      strict: false
+    - sig: tbigintSeqSet(tbigint)
+      ret: tbigint
+      sym: Temporal_as_tsequenceset
+      strict: false
+    - sig: tfloatSeqSet(tfloat, text DEFAULT NULL)
+      ret: tfloat
+      sym: Temporal_as_tsequenceset
+      strict: false
+    - sig: ttextSeqSet(ttext)
+      ret: ttext
+      sym: Temporal_as_tsequenceset
+      strict: false
+  - ops:
+    - setInterp
+  - lit: /******************************************************************************/
+  - gen: {sig: "shiftValue({TEMP}, {BASE})", sym: Tnumber_shift_value, presence: numeric}
+  - gen: {sig: "scaleValue({TEMP}, {BASE})", sym: Tnumber_scale_value, presence: numeric}
+  - gen: {sig: "shiftScaleValue({TEMP}, {BASE}, {BASE})", sym: Tnumber_shift_scale_value, presence: numeric}
+  - lit: /******************************************************************************/
+  - ops:
+    - shiftTime
+  - ops:
+    - scaleTime
+  - ops:
+    - shiftScaleTime
+  - ops:
+    - tprecision
+    temps:
+    - tint
+    - tbigint
+    - tfloat
+  - ops:
+    - tsample
+  - lit: /******************************************************************************/
+  - fns:
+    - sig: appendInstant(tbool, tbool)
+      ret: tbool
+      sym: Temporal_append_tinstant
+    - sig: appendInstant(tint, tint)
+      ret: tint
+      sym: Temporal_append_tinstant
+    - sig: appendInstant(tbigint, tbigint)
+      ret: tbigint
+      sym: Temporal_append_tinstant
+    - sig: appendInstant(tfloat, tfloat)
+      ret: tfloat
+      sym: Temporal_append_tinstant
+    - sig: appendInstant(ttext, ttext)
+      ret: ttext
+      sym: Temporal_append_tinstant
+  - fns:
+    - sig: appendInstant(tbool, tbool, interp text)
+      ret: tbool
+      sym: Temporal_append_tinstant
+    - sig: appendInstant(tint, tint, interp text)
+      ret: tint
+      sym: Temporal_append_tinstant
+    - sig: appendInstant(tbigint, tbigint, interp text)
+      ret: tbigint
+      sym: Temporal_append_tinstant
+    - sig: appendInstant(tfloat, tfloat, interp text)
+      ret: tfloat
+      sym: Temporal_append_tinstant
+    - sig: appendInstant(ttext, ttext, interp text)
+      ret: ttext
+      sym: Temporal_append_tinstant
+  - fns:
+    - sig: appendSequence(tbool, tbool)
+      ret: tbool
+      sym: Temporal_append_tsequence
+    - sig: appendSequence(tint, tint)
+      ret: tint
+      sym: Temporal_append_tsequence
+    - sig: appendSequence(tbigint, tbigint)
+      ret: tbigint
+      sym: Temporal_append_tsequence
+    - sig: appendSequence(tfloat, tfloat)
+      ret: tfloat
+      sym: Temporal_append_tsequence
+    - sig: appendSequence(ttext, ttext)
+      ret: ttext
+      sym: Temporal_append_tsequence
+  - lit: "-- The function is not strict\nCREATE FUNCTION merge(tbool, tbool)\n  RETURNS tbool\n  AS 'MODULE_PATHNAME', 'Temporal_merge'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION merge(tint, tint)\n  RETURNS tint\n  AS 'MODULE_PATHNAME', 'Temporal_merge'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION merge(tbigint, tbigint)\n  RETURNS tbigint\n  AS 'MODULE_PATHNAME', 'Temporal_merge'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION merge(tfloat, tfloat)\n  RETURNS tfloat\n    AS 'MODULE_PATHNAME', 'Temporal_merge'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION merge(ttext, ttext)\n  RETURNS ttext\n    AS 'MODULE_PATHNAME', 'Temporal_merge'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"
+  - fns:
+    - sig: merge(tbool[])
+      ret: tbool
+      sym: Temporal_merge_array
+    - sig: merge(tint[])
+      ret: tint
+      sym: Temporal_merge_array
+    - sig: merge(tbigint[])
+      ret: tbigint
+      sym: Temporal_merge_array
+    - sig: merge(tfloat[])
+      ret: tfloat
+      sym: Temporal_merge_array
+    - sig: merge(ttext[])
+      ret: ttext
+      sym: Temporal_merge_array
 - family: geo
   file: mobilitydb/sql/geo/052_tgeo.in.sql
   reference: true
