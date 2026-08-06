@@ -77,7 +77,7 @@
  * @ingroup meos_h3_base_inout
  * @brief Parse a string into an H3Index. See header for the accepted
  * input shapes.
- * @csqlfn #H3index_in()
+ * @sqlfn h3index_in()
  */
 #if MEOS
 H3Index
@@ -119,7 +119,7 @@ meos_h3index_in(const char *str)
  * @brief Format an H3Index as its canonical hex string. Matches
  * h3-pg's `h3index_out` output: lowercase, no "0x" prefix, no
  * leading zeros.
- * @csqlfn #H3index_out()
+ * @sqlfn h3index_out()
  */
 #if MEOS
 char *
@@ -162,7 +162,7 @@ meos_h3index_out(H3Index cell)
  * @brief Return an h3index from its Well-Known Binary (WKB) representation
  * @param[in] wkb WKB string
  * @param[in] size Size of the string
- * @csqlfn #H3index_recv(), #H3index_from_wkb()
+ * @csqlfn #H3index_from_wkb()
  */
 H3Index
 h3index_from_wkb(const uint8_t *wkb, size_t size)
@@ -194,7 +194,7 @@ h3index_from_hexwkb(const char *hexwkb)
  * @param[in] cell H3 cell id
  * @param[in] variant Output variant
  * @param[out] size_out Size of the output
- * @csqlfn #H3index_send(), #H3index_as_wkb()
+ * @csqlfn #H3index_as_wkb()
  */
 uint8_t *
 h3index_as_wkb(H3Index cell, uint8_t variant, size_t *size_out)
@@ -229,7 +229,7 @@ h3index_as_hexwkb(H3Index cell, uint8_t variant, size_t *size_out)
 /**
  * @ingroup meos_h3_base_comp
  * @brief Return true if two h3index values are equal
- * @csqlfn #H3index_eq()
+ * @sqlop @p =
  */
 #if MEOS
 bool
@@ -247,7 +247,7 @@ meos_h3index_eq(H3Index a, H3Index b)
 /**
  * @ingroup meos_h3_base_comp
  * @brief Return true if two h3index values are not equal
- * @csqlfn #H3index_ne()
+ * @sqlop @p <>
  */
 #if MEOS
 bool
@@ -265,7 +265,7 @@ meos_h3index_ne(H3Index a, H3Index b)
 /**
  * @ingroup meos_h3_base_comp
  * @brief Return true if the first h3index is less than the second
- * @csqlfn #H3index_lt()
+ * @sqlop @p <
  */
 #if MEOS
 bool
@@ -284,7 +284,7 @@ meos_h3index_lt(H3Index a, H3Index b)
  * @ingroup meos_h3_base_comp
  * @brief Return true if the first h3index is less than or equal to
  * the second
- * @csqlfn #H3index_le()
+ * @sqlop @p <=
  */
 #if MEOS
 bool
@@ -302,7 +302,7 @@ meos_h3index_le(H3Index a, H3Index b)
 /**
  * @ingroup meos_h3_base_comp
  * @brief Return true if the first h3index is greater than the second
- * @csqlfn #H3index_gt()
+ * @sqlop @p >
  */
 #if MEOS
 bool
@@ -321,7 +321,7 @@ meos_h3index_gt(H3Index a, H3Index b)
  * @ingroup meos_h3_base_comp
  * @brief Return true if the first h3index is greater than or equal
  * to the second
- * @csqlfn #H3index_ge()
+ * @sqlop @p >=
  */
 #if MEOS
 bool
@@ -340,7 +340,7 @@ meos_h3index_ge(H3Index a, H3Index b)
  * @ingroup meos_h3_base_comp
  * @brief Return -1 / 0 / 1 depending on whether the first h3index is
  * less than, equal to, or greater than the second
- * @csqlfn #H3index_cmp()
+ * @sqlfn h3index_cmp()
  */
 #if MEOS
 int
@@ -364,7 +364,7 @@ meos_h3index_cmp(H3Index a, H3Index b)
  * @brief Return the 32-bit hash value of an h3index — matches the
  * result `hashint8` would produce on the same bit pattern, which is
  * what the SQL hash opclass was previously delegating to.
- * @csqlfn #H3index_hash()
+ * @sqlfn hash()
  */
 #if MEOS
 uint32

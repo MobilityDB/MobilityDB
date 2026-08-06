@@ -2617,7 +2617,7 @@ stbox_gt(const STBox *box1, const STBox *box2)
  * @brief Return the 32-bit hash value of a spatiotemporal box
  * @param[in] box Spatiotemporal box
  * @return On error return @p INT_MAX
- * @sqlfn stbox_hash()
+ * @sqlfn hash()
  * @csqlfn #Stbox_hash()
  */
 uint32
