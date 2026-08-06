@@ -208,24 +208,44 @@ GROUP BY t.tripid, t.trip4326;
 				<indexterm significance="normal"><primary><varname>quadbin</varname></primary></indexterm>
 				<para>Devolver la celda QUADBIN de una tesela Raquet</para>
 				<para><varname>quadbin(raquet) → bigint</varname></para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT quadbin(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'UINT8'));
+-- 5193776270265024512
+</programlisting>
 			</listitem>
 
 			<listitem xml:id="raquet_width">
 				<indexterm significance="normal"><primary><varname>width</varname></primary></indexterm>
 				<para>Devolver el ancho en píxeles de una tesela Raquet</para>
 				<para><varname>width(raquet) → integer</varname></para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT width(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'UINT8'));
+-- 2
+</programlisting>
 			</listitem>
 
 			<listitem xml:id="raquet_height">
 				<indexterm significance="normal"><primary><varname>height</varname></primary></indexterm>
 				<para>Devolver el alto en píxeles de una tesela Raquet</para>
 				<para><varname>height(raquet) → integer</varname></para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT height(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'UINT8'));
+-- 2
+</programlisting>
 			</listitem>
 
 			<listitem xml:id="raquet_nodata">
 				<indexterm significance="normal"><primary><varname>nodata</varname></primary></indexterm>
 				<para>Devolver el valor centinela nodata de una tesela Raquet</para>
 				<para><varname>nodata(raquet) → float8</varname></para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT nodata(raquet('\x01020304'::bytea, 2, 2,
+  5193776270265024512, 'UINT8', 255));
+-- 255
+-- The sentinel defaults to 0 when the constructor omits it.
+SELECT nodata(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'UINT8'));
+-- 0
+</programlisting>
 			</listitem>
 
 			<listitem xml:id="raquet_pixtype">
