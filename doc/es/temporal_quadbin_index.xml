@@ -91,6 +91,14 @@ SELECT (tquadbin '480fffffffffffff@2001-01-01')::tgeompoint;
 				<indexterm significance="normal"><primary><varname>isValidIndex</varname></primary></indexterm>
 				<para>Devuelve si un valor es un identificador QUADBIN estructuralmente válido (etiqueta de cabecera y campo de resolución correctos)</para>
 				<para><varname>isValidIndex(quadbin) → boolean</varname></para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT isValidIndex(quadbin '480fffffffffffff');
+-- t
+-- The input function already rejects malformed text, so a value that is
+-- structurally invalid can only arrive through the bigint conversion.
+SELECT isValidIndex(0::bigint::quadbin);
+-- f
+</programlisting>
 			</listitem>
 
 			<listitem xml:id="quadbin_is_valid_cell">
@@ -265,6 +273,14 @@ SELECT geoToQuadbinCell(geometry 'SRID=4326;POINT(4.35 50.85)', 10)
 				<para>Devuelve el centroide de una celda como un punto SRID 4326. La forma estática toma un único <varname>quadbin</varname>; la forma temporal devuelve el centroide de cada celda de una trayectoria como un <varname>tgeompoint</varname>.</para>
 				<para><varname>quadbinCellToPoint(quadbin) → geometry</varname></para>
 				<para><varname>tquadbinCellToPoint(tquadbin) → tgeompoint</varname></para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_AsText(quadbinCellToPoint(quadbin '48427fffffffffff'));
+-- POINT(-101.25 48.92249926375824)
+SELECT asText(tquadbinCellToPoint(tquadbin
+  '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}'));
+-- {POINT(0 0)@2001-01-01,
+--  POINT(-101.25 48.92249926375824)@2001-01-02}
+</programlisting>
 			</listitem>
 
 			<listitem xml:id="tquadbin_quadbin_cell_to_boundary">
@@ -272,6 +288,12 @@ SELECT geoToQuadbinCell(geometry 'SRID=4326;POINT(4.35 50.85)', 10)
 				<para>Devuelve el contorno poligonal cuadrado de una celda como una geometría SRID 4326. La forma estática toma un único <varname>quadbin</varname>; la forma temporal devuelve el contorno de cada celda de una trayectoria como un <varname>tgeometry</varname>.</para>
 				<para><varname>quadbinCellToBoundary(quadbin) → geometry</varname></para>
 				<para><varname>tquadbinCellToBoundary(tquadbin) → tgeometry</varname></para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_AsText(quadbinCellToBoundary(quadbin '480fffffffffffff'));
+-- POLYGON((-180 -85.0511287798066,180 -85.0511287798066,
+--          180 85.0511287798066,-180 85.0511287798066,
+--          -180 -85.0511287798066))
+</programlisting>
 			</listitem>
 		</itemizedlist>
 	</sect1>
@@ -333,6 +355,12 @@ SELECT quadbinCellToQuadkey(quadbin '48a6227affffffff');
 				<para>Devuelve el área de una celda sobre la esfera, en metros cuadrados. La forma estática toma un único <varname>quadbin</varname>; la forma temporal devuelve el área de cada celda de una trayectoria como un <varname>tfloat</varname>. El área de la celda se reduce hacia los polos, ya que los cuadrados web-mercator cubren progresivamente menos terreno a latitudes más altas.</para>
 				<para><varname>quadbinCellArea(quadbin) → float8</varname></para>
 				<para><varname>tquadbinCellArea(tquadbin) → tfloat</varname></para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT round(quadbinCellArea(quadbin '480fffffffffffff')::numeric, 0);
+-- 508164135963886
+SELECT round(quadbinCellArea(quadbin '48427fffffffffff')::numeric, 0);
+-- 2726563416104
+</programlisting>
 			</listitem>
 		</itemizedlist>
 	</sect1>

@@ -104,9 +104,9 @@ SELECT geoToH3IndexSet(geometry 'SRID=4326;Point(4.35 50.85)', 7);
 			</listitem>
 
 			<listitem xml:id="th3_ever_eq_set">
-				<indexterm significance="normal"><primary><varname>ever_eq</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>eEq</varname></primary></indexterm>
 				<para>Return whether a temporal H3 trajectory ever takes one of the cells in a cell set. Combined with <varname>geoToH3IndexSet</varname> it answers whether a trip ever passes through a region, without materialising the trajectory geometry — the sound, conservative prefilter for the exact <varname>eIntersects(geometry,th3index)</varname>.</para>
-				<para><varname>ever_eq(h3indexset,th3index) → boolean</varname></para>
+				<para><varname>eEq(h3indexset,th3index) → boolean</varname></para>
 				<para><varname>h3indexset ?= th3index → boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT geoToH3IndexSet(geometry 'SRID=4326;Point(4.35 50.85)', 7) ?=
@@ -216,6 +216,10 @@ SELECT isValidCell(th3index '0@2001-01-01');
 				<indexterm significance="normal"><primary><varname>th3IsResClassIii</varname></primary></indexterm>
 				<para>Return a temporal boolean stating whether each cell has Class-III orientation. Class III alternates with resolution: odd resolutions are class III, even are class II.</para>
 				<para><varname>th3IsResClassIii(th3index) → tbool</varname></para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT th3IsResClassIii(th3index '871fa44a8ffffff@2001-01-01');
+-- t@2001-01-01
+</programlisting>
 			</listitem>
 
 			<listitem xml:id="th3_h3_is_pentagon">
@@ -252,18 +256,33 @@ SELECT th3GetResolution(
 				<para>Return the temporal center-child cell at the given resolution. The no-argument form drops to the next-finer resolution.</para>
 				<para><varname>th3CellToCenterChild(th3index,integer) → th3index</varname></para>
 				<para><varname>th3CellToCenterChild(th3index) → th3index</varname></para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT th3CellToCenterChild(th3index '871fa44a8ffffff@2001-01-01', 8);
+-- 881fa44a81fffff@2001-01-01
+-- Without a resolution the child is one level finer.
+SELECT th3CellToCenterChild(th3index '871fa44a8ffffff@2001-01-01');
+-- 881fa44a81fffff@2001-01-01
+</programlisting>
 			</listitem>
 
 			<listitem xml:id="th3_h3_cell_to_child_pos">
 				<indexterm significance="normal"><primary><varname>th3CellToChildPos</varname></primary></indexterm>
 				<para>Return the ordinal position (0-based) of each cell among the children of its parent at the given resolution</para>
 				<para><varname>th3CellToChildPos(th3index,integer) → tbigint</varname></para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT th3CellToChildPos(th3index '871fa44a8ffffff@2001-01-01', 6);
+-- 0@2001-01-01
+</programlisting>
 			</listitem>
 
 			<listitem xml:id="th3_h3_child_pos_to_cell">
 				<indexterm significance="normal"><primary><varname>th3ChildPosToCell</varname></primary></indexterm>
 				<para>Return the temporal child cell at a given ordinal position of the given parent, at the given child resolution. The two temporal operands are synchronised over their shared time axis.</para>
 				<para><varname>th3ChildPosToCell(tbigint,th3index,integer) → th3index</varname></para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT th3ChildPosToCell(tbigint '0@2001-01-01', th3index '871fa44a8ffffff@2001-01-01', 8);
+-- 881fa44a81fffff@2001-01-01
+</programlisting>
 			</listitem>
 		</itemizedlist>
 	</sect1>
@@ -272,14 +291,16 @@ SELECT th3GetResolution(
 		<title>Lat/Lng Conversions</title>
 		<itemizedlist>
 			<listitem xml:id="th3_tgeompoint_to_th3">
-				<indexterm significance="normal"><primary><varname>tgeompoint_to_th3</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>tgeogpoint_to_th3</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>th3index</varname></primary></indexterm>
 				<para>Return the temporal H3 cell at the given resolution that contains each point in a temporal geodetic or planar point (SRID must be 4326 for the <varname>tgeompoint</varname> overload)</para>
-				<para><varname>tgeogpoint_to_th3(tgeogpoint,integer) → th3index</varname></para>
-				<para><varname>tgeompoint_to_th3(tgeompoint,integer) → th3index</varname></para>
+				<para><varname>th3index(tgeogpoint,integer) → th3index</varname></para>
+				<para><varname>th3index(tgeompoint,integer) → th3index</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT th3GetResolution(tgeogpoint_to_th3(
+SELECT th3GetResolution(th3index(
   tgeogpoint 'POINT(-73.96 40.78)@2001-01-01', 9));
+-- 9@2001-01-01
+SELECT th3GetResolution(th3index(
+  tgeompoint 'SRID=4326;POINT(-73.96 40.78)@2001-01-01', 9));
 -- 9@2001-01-01
 </programlisting>
 			</listitem>
@@ -289,12 +310,25 @@ SELECT th3GetResolution(tgeogpoint_to_th3(
 				<para>Return the temporal geodetic centroid of each cell in a trajectory. A planar (SRID 4326) overload is available under the name <varname>th3CellToLatlngTgeompoint</varname>.</para>
 				<para><varname>th3CellToLatlng(th3index) → tgeogpoint</varname></para>
 				<para><varname>th3CellToLatlngTgeompoint(th3index) → tgeompoint</varname></para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(th3CellToLatlng(th3index '871fa44a8ffffff@2001-01-01'), 6);
+-- POINT(4.297401 50.8043)@2001-01-01
+SELECT asText(th3CellToLatlngTgeompoint(th3index '871fa44a8ffffff@2001-01-01'), 6);
+-- POINT(4.297401 50.8043)@2001-01-01
+</programlisting>
 			</listitem>
 
 			<listitem xml:id="th3_h3_cell_to_boundary">
 				<indexterm significance="normal"><primary><varname>th3CellToBoundary</varname></primary></indexterm>
 				<para>Return the temporal polygon boundary of each cell in a trajectory, as a temporal geography</para>
 				<para><varname>th3CellToBoundary(th3index) → tgeography</varname></para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_GeometryType(getValue(th3CellToBoundary(th3index '871fa44a8ffffff@2001-01-01'))::geometry);
+-- ST_Polygon
+-- A hexagon closes on its first vertex, so it has seven points.
+SELECT ST_NPoints(getValue(th3CellToBoundary(th3index '871fa44a8ffffff@2001-01-01'))::geometry);
+-- 7
+</programlisting>
 			</listitem>
 		</itemizedlist>
 	</sect1>
@@ -319,12 +353,24 @@ SELECT th3AreNeighborCells(
 				<indexterm significance="normal"><primary><varname>th3CellsToDirectedEdge</varname></primary></indexterm>
 				<para>Return a temporal directed-edge identifier from an origin/destination pair of temporal cells</para>
 				<para><varname>th3CellsToDirectedEdge(th3index,th3index) → th3index</varname></para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT th3CellsToDirectedEdge(th3index '871fa44a8ffffff@2001-01-01',
+    th3index '871fa44aeffffff@2001-01-01');
+-- 1671fa44a8ffffff@2001-01-01
+</programlisting>
 			</listitem>
 
 			<listitem xml:id="th3_h3_is_valid_directed_edge">
 				<indexterm significance="normal"><primary><varname>isValidDirectedEdge</varname></primary></indexterm>
 				<para>Return a temporal boolean stating at each instant whether the value is a valid H3 directed edge</para>
 				<para><varname>isValidDirectedEdge(th3index) → tbool</varname></para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT isValidDirectedEdge(th3CellsToDirectedEdge(th3index '871fa44a8ffffff@2001-01-01',
+    th3index '871fa44aeffffff@2001-01-01'));
+-- t@2001-01-01
+SELECT isValidDirectedEdge(th3index '871fa44a8ffffff@2001-01-01');
+-- f@2001-01-01
+</programlisting>
 			</listitem>
 
 			<listitem xml:id="th3_h3_get_directed_edge_origin">
@@ -333,12 +379,26 @@ SELECT th3AreNeighborCells(
 				<para>Return the temporal origin or destination cell of a temporal directed edge</para>
 				<para><varname>th3GetDirectedEdgeOrigin(th3index) → th3index</varname></para>
 				<para><varname>th3GetDirectedEdgeDestination(th3index) → th3index</varname></para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT th3GetDirectedEdgeOrigin(th3CellsToDirectedEdge(th3index '871fa44a8ffffff@2001-01-01',
+    th3index '871fa44aeffffff@2001-01-01'));
+-- 871fa44a8ffffff@2001-01-01
+SELECT th3GetDirectedEdgeDestination(th3CellsToDirectedEdge(th3index '871fa44a8ffffff@2001-01-01',
+    th3index '871fa44aeffffff@2001-01-01'));
+-- 871fa44aeffffff@2001-01-01
+</programlisting>
 			</listitem>
 
 			<listitem xml:id="th3_h3_directed_edge_to_boundary">
 				<indexterm significance="normal"><primary><varname>th3DirectedEdgeToBoundary</varname></primary></indexterm>
 				<para>Return the temporal polygon boundary of each directed edge in a trajectory, as a temporal geography</para>
 				<para><varname>th3DirectedEdgeToBoundary(th3index) → tgeography</varname></para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_NPoints(getValue(th3DirectedEdgeToBoundary(
+  th3CellsToDirectedEdge(th3index '871fa44a8ffffff@2001-01-01',
+    th3index '871fa44aeffffff@2001-01-01')))::geometry);
+-- 3
+</programlisting>
 			</listitem>
 		</itemizedlist>
 	</sect1>
@@ -350,18 +410,30 @@ SELECT th3AreNeighborCells(
 				<indexterm significance="normal"><primary><varname>th3CellToVertex</varname></primary></indexterm>
 				<para>Return the temporal H3 vertex at the given vertex number (0–5 for hexagons, 0–4 for pentagons)</para>
 				<para><varname>th3CellToVertex(th3index,integer) → th3index</varname></para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT th3CellToVertex(th3index '871fa44a8ffffff@2001-01-01', 0);
+-- 2071fa44a8ffffff@2001-01-01
+</programlisting>
 			</listitem>
 
 			<listitem xml:id="th3_h3_vertex_to_latlng">
 				<indexterm significance="normal"><primary><varname>th3VertexToLatlng</varname></primary></indexterm>
 				<para>Return the temporal geodetic coordinates of each vertex in a trajectory</para>
 				<para><varname>th3VertexToLatlng(th3index) → tgeogpoint</varname></para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(th3VertexToLatlng(th3CellToVertex(th3index '871fa44a8ffffff@2001-01-01', 0)), 6);
+-- POINT(4.280027 50.807655)@2001-01-01
+</programlisting>
 			</listitem>
 
 			<listitem xml:id="th3_h3_is_valid_vertex">
 				<indexterm significance="normal"><primary><varname>isValidVertex</varname></primary></indexterm>
 				<para>Return a temporal boolean stating at each instant whether the value is a valid H3 vertex</para>
 				<para><varname>isValidVertex(th3index) → tbool</varname></para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT isValidVertex(th3CellToVertex(th3index '871fa44a8ffffff@2001-01-01', 0));
+-- t@2001-01-01
+</programlisting>
 			</listitem>
 		</itemizedlist>
 	</sect1>
@@ -388,6 +460,16 @@ SELECT th3index '880326b885fffff@2001-01-01'
 				<para>Convert between a temporal cell and a temporal local (I, J) coordinate pair relative to an origin temporal cell. The local coordinate is exposed as a <varname>tgeompoint</varname> with the I axis in the <varname>x</varname> slot and J in <varname>y</varname>.</para>
 				<para><varname>th3CellToLocalIj(th3index,th3index) → tgeompoint</varname></para>
 				<para><varname>th3LocalIjToCell(th3index,tgeompoint) → th3index</varname></para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(th3CellToLocalIj(th3index '871fa44a8ffffff@2001-01-01',
+  th3index '871fa44aeffffff@2001-01-01'));
+-- POINT(497 320)@2001-01-01
+-- The two are inverse of each other.
+SELECT th3LocalIjToCell(th3index '871fa44a8ffffff@2001-01-01',
+  th3CellToLocalIj(th3index '871fa44a8ffffff@2001-01-01',
+    th3index '871fa44aeffffff@2001-01-01'));
+-- 871fa44aeffffff@2001-01-01
+</programlisting>
 			</listitem>
 		</itemizedlist>
 	</sect1>
@@ -400,18 +482,34 @@ SELECT th3index '880326b885fffff@2001-01-01'
 				<indexterm significance="normal"><primary><varname>th3CellArea</varname></primary></indexterm>
 				<para>Return the temporal area of each cell in a trajectory, in the requested unit</para>
 				<para><varname>th3CellArea(th3index,text='km2') → tfloat</varname></para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT th3CellArea(th3index '871fa44a8ffffff@2001-01-01');
+-- 4.441914270110932@2001-01-01
+SELECT th3CellArea(th3index '871fa44a8ffffff@2001-01-01', 'm2');
+-- 4441914.270110932@2001-01-01
+</programlisting>
 			</listitem>
 
 			<listitem xml:id="th3_h3_edge_length">
 				<indexterm significance="normal"><primary><varname>th3EdgeLength</varname></primary></indexterm>
 				<para>Return the temporal length of each directed edge in a trajectory, in the requested unit</para>
 				<para><varname>th3EdgeLength(th3index,text='km') → tfloat</varname></para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT th3EdgeLength(th3CellsToDirectedEdge(th3index '871fa44a8ffffff@2001-01-01',
+    th3index '871fa44aeffffff@2001-01-01'));
+-- 1.272084901305088@2001-01-01
+</programlisting>
 			</listitem>
 
 			<listitem xml:id="th3_h3_great_circle_distance">
 				<indexterm significance="normal"><primary><varname>greatCircleDistance</varname></primary></indexterm>
 				<para>Return the temporal great-circle distance between two temporal geodetic points (not between cells). The two operands are synchronised.</para>
 				<para><varname>greatCircleDistance(tgeogpoint,tgeogpoint,text='km') → tfloat</varname></para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT greatCircleDistance(tgeogpoint 'Point(0 0)@2001-01-01',
+  tgeogpoint 'Point(1 0)@2001-01-01');
+-- 111.19505197522943@2001-01-01
+</programlisting>
 			</listitem>
 		</itemizedlist>
 	</sect1>
@@ -425,11 +523,11 @@ SELECT th3index '880326b885fffff@2001-01-01'
 
 			<itemizedlist>
 				<listitem xml:id="th3_ever_eq">
-					<indexterm significance="normal"><primary><varname>ever_eq</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>eEq</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>?=</varname></primary></indexterm>
 					<para>Return <varname>true</varname> if a temporal H3 cell is ever equal to the probe at at least one instant</para>
-					<para><varname>ever_eq({h3index,th3index},th3index) → boolean</varname></para>
-					<para><varname>ever_eq(th3index,h3index) → boolean</varname></para>
+					<para><varname>eEq({h3index,th3index},th3index) → boolean</varname></para>
+					<para><varname>eEq(th3index,h3index) → boolean</varname></para>
 					<para><varname>{h3index,th3index} ?= th3index</varname></para>
 					<para><varname>th3index ?= h3index</varname></para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -441,33 +539,45 @@ SELECT th3index
 				</listitem>
 
 				<listitem xml:id="th3_always_eq">
-					<indexterm significance="normal"><primary><varname>always_eq</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>aEq</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>%=</varname></primary></indexterm>
 					<para>Return <varname>true</varname> if a temporal H3 cell is always equal to the probe across its entire time axis</para>
-					<para><varname>always_eq({h3index,th3index},th3index) → boolean</varname></para>
-					<para><varname>always_eq(th3index,h3index) → boolean</varname></para>
+					<para><varname>aEq({h3index,th3index},th3index) → boolean</varname></para>
+					<para><varname>aEq(th3index,h3index) → boolean</varname></para>
 					<para><varname>{h3index,th3index} %= th3index</varname></para>
 					<para><varname>th3index %= h3index</varname></para>
+									<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT aEq(th3index '871fa44a8ffffff@2001-01-01', h3index '871fa44a8ffffff');
+-- t
+</programlisting>
 				</listitem>
 
 				<listitem xml:id="th3_ever_ne">
-					<indexterm significance="normal"><primary><varname>ever_ne</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>eNe</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>?&lt;&gt;</varname></primary></indexterm>
 					<para>Return <varname>true</varname> if a temporal H3 cell is ever different from the probe</para>
-					<para><varname>ever_ne({h3index,th3index},th3index) → boolean</varname></para>
-					<para><varname>ever_ne(th3index,h3index) → boolean</varname></para>
+					<para><varname>eNe({h3index,th3index},th3index) → boolean</varname></para>
+					<para><varname>eNe(th3index,h3index) → boolean</varname></para>
 					<para><varname>{h3index,th3index} ?&lt;&gt; th3index</varname></para>
 					<para><varname>th3index ?&lt;&gt; h3index</varname></para>
+									<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT eNe(th3index '871fa44a8ffffff@2001-01-01', h3index '871fa44aeffffff');
+-- t
+</programlisting>
 				</listitem>
 
 				<listitem xml:id="th3_always_ne">
-					<indexterm significance="normal"><primary><varname>always_ne</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>aNe</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>%&lt;&gt;</varname></primary></indexterm>
 					<para>Return <varname>true</varname> if a temporal H3 cell is always different from the probe</para>
-					<para><varname>always_ne({h3index,th3index},th3index) → boolean</varname></para>
-					<para><varname>always_ne(th3index,h3index) → boolean</varname></para>
+					<para><varname>aNe({h3index,th3index},th3index) → boolean</varname></para>
+					<para><varname>aNe(th3index,h3index) → boolean</varname></para>
 					<para><varname>{h3index,th3index} %&lt;&gt; th3index</varname></para>
 					<para><varname>th3index %&lt;&gt; h3index</varname></para>
+									<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT aNe(th3index '871fa44a8ffffff@2001-01-01', h3index '871fa44aeffffff');
+-- t
+</programlisting>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -476,19 +586,25 @@ SELECT th3index
 			<title>Temporal Comparisons</title>
 			<itemizedlist>
 				<listitem xml:id="th3_temporal_teq">
-					<indexterm significance="normal"><primary><varname>temporal_teq</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tEq</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>#=</varname></primary></indexterm>
-					<indexterm significance="normal"><primary><varname>temporal_tne</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tNe</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>#&lt;&gt;</varname></primary></indexterm>
 					<para>Return a temporal boolean giving the per-instant equality (or inequality) between a temporal H3 cell and a probe</para>
-					<para><varname>temporal_teq({h3index,th3index},th3index) → tbool</varname></para>
-					<para><varname>temporal_teq(th3index,h3index) → tbool</varname></para>
-					<para><varname>temporal_tne({h3index,th3index},th3index) → tbool</varname></para>
-					<para><varname>temporal_tne(th3index,h3index) → tbool</varname></para>
+					<para><varname>tEq({h3index,th3index},th3index) → tbool</varname></para>
+					<para><varname>tEq(th3index,h3index) → tbool</varname></para>
+					<para><varname>tNe({h3index,th3index},th3index) → tbool</varname></para>
+					<para><varname>tNe(th3index,h3index) → tbool</varname></para>
 					<para><varname>{h3index,th3index} #= th3index</varname></para>
 					<para><varname>th3index #= h3index</varname></para>
 					<para><varname>{h3index,th3index} #&lt;&gt; th3index</varname></para>
 					<para><varname>th3index #&lt;&gt; h3index</varname></para>
+									<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tEq(th3index '871fa44a8ffffff@2001-01-01', h3index '871fa44a8ffffff');
+-- t@2001-01-01
+SELECT tNe(th3index '871fa44a8ffffff@2001-01-01', h3index '871fa44a8ffffff');
+-- f@2001-01-01
+</programlisting>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -515,6 +631,12 @@ SELECT th3index
 				<para><varname>th3index &lt;@ {tstzspan,stbox,th3index} → boolean</varname></para>
 				<para><varname>th3index ~= {tstzspan,stbox,th3index} → boolean</varname></para>
 				<para><varname>th3index -|- {tstzspan,stbox,th3index} → boolean</varname></para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT th3index '871fa44a8ffffff@2001-01-01' &amp;&amp; tstzspan '[2001-01-01, 2001-01-02]';
+-- t
+SELECT th3index '871fa44a8ffffff@2001-01-01' ~= th3index '871fa44a8ffffff@2001-01-01';
+-- t
+</programlisting>
 			</listitem>
 
 			<listitem xml:id="th3_space_position">
@@ -535,6 +657,11 @@ SELECT th3index
 				<para><varname>th3index &amp;&lt;| {stbox,th3index} → boolean</varname></para>
 				<para><varname>th3index |&amp;&gt; {stbox,th3index} → boolean</varname></para>
 				<para><varname>th3index |&gt;&gt; {stbox,th3index} → boolean</varname></para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT th3index '871fa44a8ffffff@2001-01-01' &lt;&lt;
+  th3index '871fa44aeffffff@2001-01-01';
+-- f
+</programlisting>
 			</listitem>
 
 			<listitem xml:id="th3_time_position">
@@ -547,6 +674,14 @@ SELECT th3index
 				<para><varname>th3index &amp;&lt;# {tstzspan,stbox,th3index} → boolean</varname></para>
 				<para><varname>th3index #&gt;&gt; {tstzspan,stbox,th3index} → boolean</varname></para>
 				<para><varname>th3index #&amp;&gt; {tstzspan,stbox,th3index} → boolean</varname></para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT th3index '871fa44a8ffffff@2001-01-01' &lt;&lt;#
+  th3index '871fa44aeffffff@2001-01-05';
+-- t
+SELECT th3index '871fa44a8ffffff@2001-01-01' #&gt;&gt;
+  th3index '871fa44aeffffff@2001-01-05';
+-- f
+</programlisting>
 			</listitem>
 		</itemizedlist>
 	</sect1>
@@ -560,54 +695,97 @@ SELECT th3index
 				<indexterm significance="normal"><primary><varname>h3GridDisk</varname></primary></indexterm>
 				<para>All cells within <varname>k</varname> grid steps of the origin (inclusive of the origin at k=0).</para>
 				<para><varname>h3GridDisk(h3index, integer) → h3indexset</varname></para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT h3GridDisk(h3index '871fa44a8ffffff', 1);
+-- {"871fa44a8ffffff", "871fa44a9ffffff", "871fa44aaffffff", "871fa44abffffff",
+--  "871fa44acffffff", "871fa44adffffff", "871fa44aeffffff"}
+</programlisting>
 			</listitem>
 
 			<listitem xml:id="th3_h3_grid_ring">
 				<indexterm significance="normal"><primary><varname>h3GridRing</varname></primary></indexterm>
 				<para>The cells at <emphasis>exactly</emphasis> <varname>k</varname> grid steps from the origin. Fails near pentagons.</para>
 				<para><varname>h3GridRing(h3index, integer) → h3indexset</varname></para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT h3GridRing(h3index '871fa44a8ffffff', 1);
+-- {"871fa44a9ffffff", "871fa44aaffffff", "871fa44abffffff", "871fa44acffffff",
+--  "871fa44adffffff", "871fa44aeffffff"}
+</programlisting>
 			</listitem>
 
 			<listitem xml:id="th3_h3_grid_path_cells">
 				<indexterm significance="normal"><primary><varname>h3GridPathCells</varname></primary></indexterm>
 				<para>The inclusive path of cells between two cells of the same resolution.</para>
 				<para><varname>h3GridPathCells(h3index, h3index) → h3indexset</varname></para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT h3GridPathCells(h3index '871fa44a8ffffff', h3index '871fa44b1ffffff');
+-- {"871fa4484ffffff", "871fa44a3ffffff", "871fa44a8ffffff", "871fa44aeffffff",
+--  "871fa44b1ffffff"}
+</programlisting>
 			</listitem>
 
 			<listitem xml:id="th3_h3_cell_to_children">
 				<indexterm significance="normal"><primary><varname>h3CellToChildren</varname></primary></indexterm>
 				<para>All children of a cell at the given target resolution.</para>
 				<para><varname>h3CellToChildren(h3index, integer) → h3indexset</varname></para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT h3CellToChildren(h3index '831c02fffffffff', 4);
+-- {"841c021ffffffff", "841c023ffffffff", "841c025ffffffff", "841c027ffffffff",
+--  "841c029ffffffff", "841c02bffffffff", "841c02dffffffff"}
+</programlisting>
 			</listitem>
 
 			<listitem xml:id="th3_h3_compact_cells">
 				<indexterm significance="normal"><primary><varname>h3CompactCells</varname></primary></indexterm>
 				<para>Compacted representation of a cell set — finer cells are merged into their parent whenever a full hexagonal set of siblings is present.</para>
 				<para><varname>h3CompactCells(h3indexset) → h3indexset</varname></para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT h3CompactCells(h3CellToChildren(h3index '831c02fffffffff', 4));
+-- {"831c02fffffffff"}
+</programlisting>
 			</listitem>
 
 			<listitem xml:id="th3_h3_uncompact_cells">
 				<indexterm significance="normal"><primary><varname>h3UncompactCells</varname></primary></indexterm>
 				<para>Uncompacted representation at the given resolution — the inverse of <varname>h3CompactCells</varname>.</para>
 				<para><varname>h3UncompactCells(h3indexset, integer) → h3indexset</varname></para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT numValues(h3UncompactCells(
+  h3CompactCells(h3CellToChildren(h3index '831c02fffffffff', 4)), 4));
+-- 7
+</programlisting>
 			</listitem>
 
 			<listitem xml:id="th3_h3_origin_to_directed_edges">
 				<indexterm significance="normal"><primary><varname>h3OriginToDirectedEdges</varname></primary></indexterm>
 				<para>All outgoing directed edges of a cell (6 for hexagons, 5 for pentagons).</para>
 				<para><varname>h3OriginToDirectedEdges(h3index) → h3indexset</varname></para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT h3OriginToDirectedEdges(h3index '871fa44a8ffffff');
+-- {"1171fa44a8ffffff", "1271fa44a8ffffff", "1371fa44a8ffffff",
+--  "1471fa44a8ffffff", "1571fa44a8ffffff", "1671fa44a8ffffff"}
+</programlisting>
 			</listitem>
 
 			<listitem xml:id="th3_h3_cell_to_vertexes">
 				<indexterm significance="normal"><primary><varname>h3CellToVertexes</varname></primary></indexterm>
 				<para>All vertexes of a cell (6 for hexagons, 5 for pentagons).</para>
 				<para><varname>h3CellToVertexes(h3index) → h3indexset</varname></para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT h3CellToVertexes(h3index '871fa44a8ffffff');
+-- {"2071fa44a8ffffff", "2171fa44a8ffffff", "2271fa44a8ffffff",
+--  "2371fa44a8ffffff", "2471fa44a8ffffff", "2571fa44a8ffffff"}
+</programlisting>
 			</listitem>
 
 			<listitem xml:id="th3_h3_get_icosahedron_faces">
 				<indexterm significance="normal"><primary><varname>h3GetIcosahedronFaces</varname></primary></indexterm>
 				<para>The icosahedron face indexes (0..19) intersected by a cell.</para>
 				<para><varname>h3GetIcosahedronFaces(h3index) → intset</varname></para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT h3GetIcosahedronFaces(h3index '831c02fffffffff');
+-- {6, 11}
+</programlisting>
 			</listitem>
 		</itemizedlist>
 	</sect1>
