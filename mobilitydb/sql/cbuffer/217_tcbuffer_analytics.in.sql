@@ -31,9 +31,16 @@
  * @file
  * @brief Analytic functions for temporal circular buffers
  *
- * All functions simplify the center-point trajectory (cast to tgeompoint),
- * extract the surviving timestamps, and restrict the original tcbuffer to
- * those timestamps — preserving the radius channel at each surviving instant.
+ * All functions simplify the center-point trajectory (cast to tgeompoint)
+ * and then delete from the original tcbuffer the instants the simplification
+ * dropped, preserving the radius channel at each surviving instant.
+ *
+ * The instants are DELETED rather than the survivors selected: restricting to
+ * a set of timestamps yields a discrete value, which would silently strip the
+ * interpolation and the sequence segmentation, whereas deleting with connect
+ * set to TRUE rejoins the survivors and keeps both. When the simplification
+ * drops nothing the difference is empty, and an empty set is NULL, so the
+ * COALESCE returns the value unchanged.
  */
 
 /*****************************************************************************/
@@ -41,37 +48,49 @@
 CREATE FUNCTION minDistSimplify(tcbuffer, float)
   RETURNS tcbuffer
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE AS $$
-    SELECT @extschema@.atTime(
-      $1,
-      @extschema@.set(@extschema@.timestamps(
-        @extschema@.minDistSimplify($1::@extschema@.tgeompoint, $2))))
+    SELECT COALESCE(
+      @extschema@.deleteTime($1,
+        @extschema@.set(@extschema@.timestamps($1)) -
+        @extschema@.set(@extschema@.timestamps(
+          @extschema@.minDistSimplify($1::@extschema@.tgeompoint, $2))),
+        TRUE),
+      $1)
   $$;
 
 CREATE FUNCTION minTimeDeltaSimplify(tcbuffer, interval)
   RETURNS tcbuffer
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE AS $$
-    SELECT @extschema@.atTime(
-      $1,
-      @extschema@.set(@extschema@.timestamps(
-        @extschema@.minTimeDeltaSimplify($1::@extschema@.tgeompoint, $2))))
+    SELECT COALESCE(
+      @extschema@.deleteTime($1,
+        @extschema@.set(@extschema@.timestamps($1)) -
+        @extschema@.set(@extschema@.timestamps(
+          @extschema@.minTimeDeltaSimplify($1::@extschema@.tgeompoint, $2))),
+        TRUE),
+      $1)
   $$;
 
 CREATE FUNCTION maxDistSimplify(tcbuffer, float, boolean DEFAULT TRUE)
   RETURNS tcbuffer
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE AS $$
-    SELECT @extschema@.atTime(
-      $1,
-      @extschema@.set(@extschema@.timestamps(
-        @extschema@.maxDistSimplify($1::@extschema@.tgeompoint, $2, $3))))
+    SELECT COALESCE(
+      @extschema@.deleteTime($1,
+        @extschema@.set(@extschema@.timestamps($1)) -
+        @extschema@.set(@extschema@.timestamps(
+          @extschema@.maxDistSimplify($1::@extschema@.tgeompoint, $2, $3))),
+        TRUE),
+      $1)
   $$;
 
 CREATE FUNCTION douglasPeuckerSimplify(tcbuffer, float, boolean DEFAULT TRUE)
   RETURNS tcbuffer
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE AS $$
-    SELECT @extschema@.atTime(
-      $1,
-      @extschema@.set(@extschema@.timestamps(
-        @extschema@.douglasPeuckerSimplify($1::@extschema@.tgeompoint, $2, $3))))
+    SELECT COALESCE(
+      @extschema@.deleteTime($1,
+        @extschema@.set(@extschema@.timestamps($1)) -
+        @extschema@.set(@extschema@.timestamps(
+          @extschema@.douglasPeuckerSimplify($1::@extschema@.tgeompoint, $2, $3))),
+        TRUE),
+      $1)
   $$;
 
 /*****************************************************************************/

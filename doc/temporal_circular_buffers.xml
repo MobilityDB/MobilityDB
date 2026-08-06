@@ -1096,6 +1096,21 @@ FROM Temp;
 				<para><varname>minDistSimplify(tcbuffer,mindist float) → tcbuffer</varname></para>
 				<para><varname>minTimeDeltaSimplify(tcbuffer,mint interval) → tcbuffer</varname></para>
 				<para>The simplification operates on the center trajectory of the temporal circular buffer and preserves the radius at each surviving instant. Simplification applies only to temporal sequences or sequence sets with linear interpolation. In all other cases, a copy of the given value is returned.</para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(minDistSimplify(tcbuffer
+  '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(1 0), 1)@2001-01-02,
+    Cbuffer(Point(4 0), 1)@2001-01-03]', 2));
+-- [Cbuffer(POINT(0 0),1)@2001-01-01, Cbuffer(POINT(4 0),1)@2001-01-03]
+-- The result keeps the interpolation of the value it simplifies.
+SELECT interp(minDistSimplify(tcbuffer
+  '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(1 0), 1)@2001-01-02,
+    Cbuffer(Point(4 0), 1)@2001-01-03]', 2));
+-- Linear
+SELECT asText(minTimeDeltaSimplify(tcbuffer
+  '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(1 0), 1)@2001-01-02,
+    Cbuffer(Point(4 0), 1)@2001-01-04]', interval '2 days'));
+-- [Cbuffer(POINT(0 0),1)@2001-01-01, Cbuffer(POINT(4 0),1)@2001-01-04]
+</programlisting>
 			</listitem>
 
 			<listitem xml:id="tcbuffer_douglasPeuckerSimplify">
