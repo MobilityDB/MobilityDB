@@ -1253,6 +1253,20 @@ SELECT asText(afterTimestamp(tgeography '{[Point(1.5 1.5)@2000-01-01, Point(2.5 
 -- Modification functions
 -------------------------------------------------------------------------------
 
+SELECT asText(insert(
+  tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02], [Point(3 3)@2000-01-03, Point(4 4)@2000-01-04]}',
+  tgeometry '{[Point(2 2)@2000-01-02, Point(3 3)@2000-01-03]}'));
+SELECT asText(insert(
+  tgeography '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02], [Point(3.5 3.5)@2000-01-03, Point(4.5 4.5)@2000-01-04]}',
+  tgeography '{[Point(2.5 2.5)@2000-01-02, Point(3.5 3.5)@2000-01-03]}'));
+/* Errors: insert vs update distinguishing case (disagreeing value at common timestamp) */
+SELECT asText(insert(
+  tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]',
+  tgeometry '[Point(3 3)@2000-01-02, Point(3 3)@2000-01-03]'));
+SELECT asText(insert(
+  tgeography '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02]',
+  tgeography '[Point(3.5 3.5)@2000-01-02, Point(3.5 3.5)@2000-01-03]'));
+
 SELECT asText(deleteTime(tgeometry 'Point(1 1)@2000-01-01', timestamptz '2000-01-01'));
 SELECT asText(deleteTime(tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}', timestamptz '2000-01-01'));
 SELECT asText(deleteTime(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', timestamptz '2000-01-01'));

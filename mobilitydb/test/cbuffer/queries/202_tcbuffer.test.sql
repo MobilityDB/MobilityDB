@@ -510,6 +510,14 @@ SELECT asText(afterTimestamp(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cb
 -- Modification functions
 -------------------------------------------------------------------------------
 
+SELECT asText(insert(
+  tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02], [Cbuffer(Point(1 1), 0.5)@2000-01-03, Cbuffer(Point(1 1), 0.6)@2000-01-04]}',
+  tcbuffer '{[Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]}'));
+/* Error: insert vs update distinguishing case (disagreeing value at common timestamp) */
+SELECT asText(insert(
+  tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02]',
+  tcbuffer '[Cbuffer(Point(1 1), 0.9)@2000-01-02, Cbuffer(Point(1 1), 0.9)@2000-01-03]'));
+
 SELECT asText(deleteTime(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01', timestamptz '2000-01-01'));
 SELECT asText(deleteTime(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}', timestamptz '2000-01-01'));
 SELECT asText(deleteTime(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]', timestamptz '2000-01-01'));

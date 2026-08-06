@@ -447,6 +447,14 @@ SELECT asText(afterTimestamp(tpose '{[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Poi
 -- Modification functions
 -------------------------------------------------------------------------------
 
+SELECT asText(insert(
+  tpose '{[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02], [Pose(Point(1 1), 0.5)@2000-01-03, Pose(Point(1 1), 0.6)@2000-01-04]}',
+  tpose '{[Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03]}'));
+/* Error: insert vs update distinguishing case (disagreeing value at common timestamp) */
+SELECT asText(insert(
+  tpose '[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02]',
+  tpose '[Pose(Point(1 1), 0.9)@2000-01-02, Pose(Point(1 1), 0.9)@2000-01-03]'));
+
 SELECT asText(deleteTime(tpose 'Pose(Point(1 1), 0.5)@2000-01-01', timestamptz '2000-01-01'));
 SELECT asText(deleteTime(tpose '{Pose(Point(1 1), 0.3)@2000-01-01, Pose(Point(1 1), 0.5)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03}', timestamptz '2000-01-01'));
 SELECT asText(deleteTime(tpose '[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03]', timestamptz '2000-01-01'));

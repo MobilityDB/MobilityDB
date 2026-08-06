@@ -484,6 +484,13 @@ SELECT asText(afterTimestamp(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{[Pose(Point
 -- Modification functions
 -------------------------------------------------------------------------------
 
+/* insert vs update distinguishing case (disagreeing value at common timestamp):
+ * under the pre-fix Temporal_update wiring this would succeed by overwriting,
+ * insert() correctly rejects it */
+SELECT asText(insert(
+  trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02]',
+  trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 1), 0.9)@2000-01-02, Pose(Point(1 1), 0.9)@2000-01-03]'));
+
 SELECT asText(deleteTime(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1), 0.5)@2000-01-01', timestamptz '2000-01-01'));
 SELECT asText(deleteTime(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{Pose(Point(1 1), 0.3)@2000-01-01, Pose(Point(1 1), 0.5)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03}', timestamptz '2000-01-01'));
 SELECT asText(deleteTime(trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03]', timestamptz '2000-01-01'));
