@@ -32,6 +32,8 @@
  * @brief Basic functions for temporal JSONB
  */
 
+-- GENERATED-IO-BEGIN json — tools/codegen/inherited/generate.py from templates/comparisons.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.yaml (io_families) and re-run.
 CREATE TYPE tjsonb;
 
 /*****************************************************************************
@@ -75,6 +77,8 @@ CREATE FUNCTION tjsonb(tjsonb, integer)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (tjsonb AS tjsonb) WITH FUNCTION tjsonb(tjsonb, integer) AS IMPLICIT;
+
+-- GENERATED-IO-END json
 
 -- GENERATED-REPRESENTATIONS-BEGIN json — tools/codegen/inherited/generate.py from templates/representations.sql.tmpl;
 -- DO NOT EDIT BY HAND; edit the template + manifest.yaml (representation_families) and re-run.
