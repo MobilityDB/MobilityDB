@@ -37,6 +37,7 @@
 
 /* C */
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 /* PostgreSQL */
 #if MEOS
