@@ -483,6 +483,40 @@ def _accessors_markers(family: str):
     return begin, f"-- GENERATED-ACCESSORS-END {family}\n"
 
 
+def _acc_skeleton(sig: str, ret: str, sym: str, pre: str = "") -> str:
+    """One accessor CREATE FUNCTION assembled inline from a fixed four-line skeleton
+    (always STRICT — every accessor in the hand files is). `pre` is a leading
+    comment line (with its own trailing newline) or ''. Mirrors `_restr_skeleton`'s
+    shape but kept local: accessors carry no PRE/STRICT template file of their own,
+    and every existing accessor's body is this exact skeleton."""
+    return (f"{pre}CREATE FUNCTION {sig}\n"
+            f"  RETURNS {ret}\n"
+            f"  AS 'MODULE_PATHNAME', '{sym}'\n"
+            f"  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;")
+
+
+def render_accessor_blocks(fam: dict) -> str:
+    """Render one family's accessor region from its `blocks` sequence — the same
+    lit/fns architecture render_restrictions uses. tgeo/tpoint fold `getValues`
+    into a differently-named/positioned `valueSet`, relocate `valueAtTimestamp`
+    under Restriction Functions, and drop `timeSpan` (declared earlier as a cast
+    target), so the fixed canonical order the shared accessors.sql.tmpl assumes
+    cannot reproduce them; a family with an explicit `blocks` list is rendered
+    here instead of by the templated `types` path. `lit` is verbatim text (the
+    banner, blank-line separators, hand comments); `fns` is a list of
+    {sig, ret, sym[, pre]} rendered with `_acc_skeleton`, packed with no blank
+    line and closed by one trailing newline — byte-identical to the committed
+    hand region, every separator baked into a `lit` block."""
+    out = ""
+    for blk in fam["blocks"]:
+        if "lit" in blk:
+            out += blk["lit"]
+        else:
+            out += "\n".join(_acc_skeleton(f["sig"], f["ret"], f["sym"], f.get("pre", ""))
+                             for f in blk["fns"]) + "\n"
+    return out
+
+
 def render_accessors(fam: dict) -> str:
     """Render the accessor region for one family from its per-base-type `types`
     table. ONE renderer serves every family: a spatial subtype is a single-element
@@ -491,7 +525,12 @@ def render_accessors(fam: dict) -> str:
     types. An old {temp/base/baseset} family is normalized to a one-element table,
     so this reproduces the merged subtype regions byte-for-byte. Groups are emitted
     accessor-outer / type-inner and separated by one blank line; the gated accessors
-    slot in at their canonical positions for the types that carry them."""
+    slot in at their canonical positions for the types that carry them.
+
+    A family carrying `blocks` instead of `types` diverges from the shared
+    canonical order (see render_accessor_blocks) and is delegated there."""
+    if "blocks" in fam:
+        return render_accessor_blocks(fam)
     types = fam.get("types") or [{"temp": fam["temp"],
                                   "base": fam.get("base", ""),
                                   "baseset": fam.get("baseset", "")}]
@@ -616,11 +655,25 @@ def splice_accessors(filetext: str, family: str, rendered: str) -> str:
     return filetext[:b] + rendered + filetext[e:]
 
 
-def extract_accessors(filetext: str, family: str) -> str:
+def extract_accessors(filetext: str, fam) -> str:
+    """The committed hand accessor block. Marker-aware, mirroring
+    extract_restrictions: if the GENERATED-ACCESSORS region exists, slice between
+    its markers (every `types`-mode family, once bootstrapped); otherwise — a
+    `blocks`-mode family, still a bare hand-written section — slice from the `/*`
+    opening the family's `begin` banner anchor down to, exclusive, the `/*` opening
+    the `end` anchor, with NO file mutation (`fam` may still be passed as a bare
+    family-name string by a `types`-mode-only caller, since the marker branch never
+    needs the dict)."""
+    family = fam if isinstance(fam, str) else fam["family"]
     begin, end = _accessors_markers(family)
-    b = filetext.index(begin) + len(begin)
-    e = filetext.index(end)
-    return filetext[b:e]
+    if begin in filetext:
+        b = filetext.index(begin) + len(begin)
+        e = filetext.index(end)
+        return filetext[b:e]
+    i = filetext.index(fam["begin"])
+    start = filetext.rfind("/*", 0, i)
+    j = filetext.index(fam["end"])
+    return filetext[start:filetext.rfind("/*", 0, j)]
 
 
 # --- SQL Input/Output: type-I/O sub-family -------------------------------------
@@ -3612,7 +3665,7 @@ def main() -> int:
                 continue
             p = ROOT / fam["file"]
             gen = render_accessors(fam)
-            cur = extract_accessors(p.read_text(), fam["family"]) if p.exists() else ""
+            cur = extract_accessors(p.read_text(), fam) if p.exists() else ""
             same = gen == cur
             ok = ok and same
             print(f"[{'OK ' if same else 'DIFF'}] self-regen accessors {fam['family']} "
@@ -4029,6 +4082,11 @@ def main() -> int:
         print(f"spliced spatialrels {fam['family']} -> {fam['file']}")
 
     for fam in mf.get("accessor_families", []):
+        if fam.get("reference"):
+            # A reference family self-regenerates for --validate to prove against
+            # (marker-bound once bootstrapped, anchor-bound if still `blocks`-mode
+            # bare hand text); never write it here, matching every other axis.
+            continue
         p = ROOT / fam["file"]
         text = p.read_text()
         begin, _ = _accessors_markers(fam["family"])
@@ -4040,8 +4098,6 @@ def main() -> int:
                 continue
             p.write_text(bootstrap_accessors(text, fam, render_accessors(fam)))
             print(f"bootstrapped accessors {fam['family']} -> {fam['file']}")
-            continue
-        if fam.get("reference"):
             continue
         if args.check:
             print(f"would splice accessors {fam['family']} -> {fam['file']}")
