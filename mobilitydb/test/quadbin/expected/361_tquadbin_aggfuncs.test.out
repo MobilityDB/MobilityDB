@@ -1,0 +1,164 @@
+SELECT round(extent(temp), 6) FROM ( VALUES
+  (NULL::tquadbin),
+  (tquadbin '480fffffffffffff@2001-01-01'),
+  (tquadbin '{48427fffffffffff@2001-01-01, 480fffffffffffff@2001-01-02}')) t(temp);
+                                                        round                                                         
+----------------------------------------------------------------------------------------------------------------------
+ SRID=4326;STBOX XT(((-180,-85.051129),(180,85.051129)),[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST])
+(1 row)
+
+SELECT round(extent(temp), 6) FROM ( VALUES
+  (tquadbin '480fffffffffffff@2001-01-01'),
+  (tquadbin '{48427fffffffffff@2001-01-01, 480fffffffffffff@2001-01-02}'),
+  (NULL)) t(temp);
+                                                        round                                                         
+----------------------------------------------------------------------------------------------------------------------
+ SRID=4326;STBOX XT(((-180,-85.051129),(180,85.051129)),[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST])
+(1 row)
+
+SELECT round(extent(temp), 6) FROM ( VALUES
+  (tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02]'),
+  ('{[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02], [48a6227affffffff@2001-01-03, 48a6227affffffff@2001-01-04]}')) t(temp);
+                                                        round                                                         
+----------------------------------------------------------------------------------------------------------------------
+ SRID=4326;STBOX XT(((-180,-85.051129),(180,85.051129)),[Mon Jan 01 00:00:00 2001 PST, Thu Jan 04 00:00:00 2001 PST])
+(1 row)
+
+SELECT round(extent(temp), 6) FROM ( VALUES (tquadbin '480fffffffffffff@2001-01-01')) t(temp);
+                                                        round                                                         
+----------------------------------------------------------------------------------------------------------------------
+ SRID=4326;STBOX XT(((-180,-85.051129),(180,85.051129)),[Mon Jan 01 00:00:00 2001 PST, Mon Jan 01 00:00:00 2001 PST])
+(1 row)
+
+SELECT round(extent(temp), 6) FROM ( VALUES (NULL::tquadbin)) t(temp);
+ round 
+-------
+ 
+(1 row)
+
+WITH Temp(temp) AS (
+  SELECT tquadbin '[480fffffffffffff@2001-01-01, 480fffffffffffff@2001-01-03]' UNION
+  SELECT tquadbin '[48427fffffffffff@2001-01-02, 48427fffffffffff@2001-01-04]' )
+SELECT tCount(Temp) FROM Temp;
+                                                                                tcount                                                                                
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[1@Mon Jan 01 00:00:00 2001 PST, 2@Tue Jan 02 00:00:00 2001 PST, 2@Wed Jan 03 00:00:00 2001 PST], (1@Wed Jan 03 00:00:00 2001 PST, 1@Thu Jan 04 00:00:00 2001 PST]}
+(1 row)
+
+WITH Temp(temp) AS (
+  SELECT tquadbin '[480fffffffffffff@2001-01-01, 480fffffffffffff@2001-01-03]' UNION
+  SELECT tquadbin '[48427fffffffffff@2001-01-02, 48427fffffffffff@2001-01-04]' )
+SELECT wCount(Temp, interval '2 days') FROM Temp;
+                                                                                wcount                                                                                
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[1@Mon Jan 01 00:00:00 2001 PST, 2@Tue Jan 02 00:00:00 2001 PST, 2@Fri Jan 05 00:00:00 2001 PST], (1@Fri Jan 05 00:00:00 2001 PST, 1@Sat Jan 06 00:00:00 2001 PST]}
+(1 row)
+
+SELECT merge(temp) FROM (VALUES
+  (tquadbin '480fffffffffffff@2001-01-01'),
+  (tquadbin '48427fffffffffff@2001-01-02')) t(temp);
+                                             merge                                              
+------------------------------------------------------------------------------------------------
+ {480fffffffffffff@Mon Jan 01 00:00:00 2001 PST, 48427fffffffffff@Tue Jan 02 00:00:00 2001 PST}
+(1 row)
+
+SELECT mergeAgg(temp) FROM (VALUES
+  (tquadbin '480fffffffffffff@2001-01-01'),
+  (tquadbin '48427fffffffffff@2001-01-02')) t(temp);
+                                            mergeagg                                            
+------------------------------------------------------------------------------------------------
+ {480fffffffffffff@Mon Jan 01 00:00:00 2001 PST, 48427fffffffffff@Tue Jan 02 00:00:00 2001 PST}
+(1 row)
+
+WITH temp(inst) AS (
+  SELECT tquadbin '480fffffffffffff@2001-01-01' UNION
+  SELECT tquadbin '48427fffffffffff@2001-01-02' UNION
+  SELECT tquadbin '48a6227affffffff@2001-01-03' )
+SELECT asText(appendInstant(inst ORDER BY inst)) FROM temp;
+                                                                    astext                                                                     
+-----------------------------------------------------------------------------------------------------------------------------------------------
+ [480fffffffffffff@Mon Jan 01 00:00:00 2001 PST, 48427fffffffffff@Tue Jan 02 00:00:00 2001 PST, 48a6227affffffff@Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
+WITH temp(inst) AS (
+  SELECT tquadbin '480fffffffffffff@2001-01-01' UNION
+  SELECT tquadbin '48427fffffffffff@2001-01-02' UNION
+  SELECT tquadbin '48a6227affffffff@2001-01-03' )
+SELECT asText(appendInstantAgg(inst ORDER BY inst)) FROM temp;
+                                                                    astext                                                                     
+-----------------------------------------------------------------------------------------------------------------------------------------------
+ [480fffffffffffff@Mon Jan 01 00:00:00 2001 PST, 48427fffffffffff@Tue Jan 02 00:00:00 2001 PST, 48a6227affffffff@Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
+WITH temp(inst) AS (
+  SELECT tquadbin '480fffffffffffff@2001-01-01' UNION
+  SELECT tquadbin '480fffffffffffff@2001-01-01' UNION
+  SELECT tquadbin '48427fffffffffff@2001-01-02' UNION
+  SELECT tquadbin '48a6227affffffff@2001-01-03' )
+SELECT asText(appendInstant(inst ORDER BY inst)) FROM temp;
+                                                                    astext                                                                     
+-----------------------------------------------------------------------------------------------------------------------------------------------
+ [480fffffffffffff@Mon Jan 01 00:00:00 2001 PST, 48427fffffffffff@Tue Jan 02 00:00:00 2001 PST, 48a6227affffffff@Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
+WITH temp(inst) AS (
+  SELECT tquadbin '480fffffffffffff@2001-01-01' UNION
+  SELECT tquadbin '48427fffffffffff@2001-01-02' UNION
+  SELECT tquadbin '48a6227affffffff@2001-01-03' )
+SELECT asText(appendInstant(inst ORDER BY inst, 'step')) FROM temp;
+                                                                    astext                                                                     
+-----------------------------------------------------------------------------------------------------------------------------------------------
+ [480fffffffffffff@Mon Jan 01 00:00:00 2001 PST, 48427fffffffffff@Tue Jan 02 00:00:00 2001 PST, 48a6227affffffff@Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
+WITH temp(inst) AS (
+  SELECT tquadbin '480fffffffffffff@2001-01-01' UNION
+  SELECT tquadbin '48427fffffffffff@2001-01-02' UNION
+  SELECT tquadbin '48a6227affffffff@2001-01-04' UNION
+  SELECT tquadbin '480fffffffffffff@2001-01-08' )
+SELECT asText(appendInstant(inst, 'step', interval '1 day' ORDER BY inst)) FROM temp;
+                                                                                               astext                                                                                               
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[480fffffffffffff@Mon Jan 01 00:00:00 2001 PST, 48427fffffffffff@Tue Jan 02 00:00:00 2001 PST], [48a6227affffffff@Thu Jan 04 00:00:00 2001 PST], [480fffffffffffff@Mon Jan 08 00:00:00 2001 PST]}
+(1 row)
+
+/* Errors */
+WITH temp(inst) AS (
+  SELECT tquadbin '480fffffffffffff@2001-01-01' UNION
+  SELECT tquadbin '48427fffffffffff@2001-01-01' )
+SELECT asText(appendInstant(inst ORDER BY inst)) FROM temp;
+ERROR:  The temporal values have different value at their common timestamp Mon Jan 01 00:00:00 2001 PST
+WITH temp1(k, inst) AS (
+  SELECT 1, tquadbin '480fffffffffffff@2001-01-01' UNION
+  SELECT 2, tquadbin '48427fffffffffff@2001-01-02' UNION
+  SELECT 3, tquadbin '48a6227affffffff@2001-01-03' UNION
+  SELECT 4, tquadbin '480fffffffffffff@2001-01-04' UNION
+  SELECT 5, tquadbin '48427fffffffffff@2001-01-05' UNION
+  SELECT 6, tquadbin '48a6227affffffff@2001-01-06' ),
+temp2(k, seq) AS (
+  SELECT (k - 1) / 2, appendInstant(inst ORDER BY inst)
+  FROM temp1
+  GROUP BY (k - 1) / 2)
+SELECT asText(appendSequence(seq ORDER BY seq)) FROM temp2;
+                                                                                                                                              astext                                                                                                                                              
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[480fffffffffffff@Mon Jan 01 00:00:00 2001 PST, 48427fffffffffff@Tue Jan 02 00:00:00 2001 PST], [48a6227affffffff@Wed Jan 03 00:00:00 2001 PST, 480fffffffffffff@Thu Jan 04 00:00:00 2001 PST], [48427fffffffffff@Fri Jan 05 00:00:00 2001 PST, 48a6227affffffff@Sat Jan 06 00:00:00 2001 PST]}
+(1 row)
+
+WITH temp1(k, inst) AS (
+  SELECT 1, tquadbin '480fffffffffffff@2001-01-01' UNION
+  SELECT 2, tquadbin '48427fffffffffff@2001-01-02' UNION
+  SELECT 3, tquadbin '48a6227affffffff@2001-01-03' UNION
+  SELECT 4, tquadbin '480fffffffffffff@2001-01-04' UNION
+  SELECT 5, tquadbin '48427fffffffffff@2001-01-05' UNION
+  SELECT 6, tquadbin '48a6227affffffff@2001-01-06' ),
+temp2(k, seq) AS (
+  SELECT (k - 1) / 2, appendInstant(inst ORDER BY inst)
+  FROM temp1
+  GROUP BY (k - 1) / 2)
+SELECT asText(appendSequenceAgg(seq ORDER BY seq)) FROM temp2;
+                                                                                                                                              astext                                                                                                                                              
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[480fffffffffffff@Mon Jan 01 00:00:00 2001 PST, 48427fffffffffff@Tue Jan 02 00:00:00 2001 PST], [48a6227affffffff@Wed Jan 03 00:00:00 2001 PST, 480fffffffffffff@Thu Jan 04 00:00:00 2001 PST], [48427fffffffffff@Fri Jan 05 00:00:00 2001 PST, 48a6227affffffff@Sat Jan 06 00:00:00 2001 PST]}
+(1 row)
+

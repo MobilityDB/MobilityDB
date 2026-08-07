@@ -225,7 +225,7 @@ Two more reference chapters carry inherited surface:
 
 | chapter → `<sect1>` | prefix | generated? | notes |
 |---|---|---|---|
-| `temporal_types_aggregation.xml` → Aggregation | `temporal_`/`tnumber_` | ✓ **GEN** | `aggregates.sql.tmpl` + `aggregate_families`, **9 entries** all `reference: true`, `whole_file: true` (temporal, cbuffer, geo, json, npoint, pointcloud, pose, rgeo, tpoint) — tCount/extent/tMin/tMax/tSum/tAvg/merge/appendInstant; `--gaps`: 16/18, missing th3index, tquadbin |
+| `temporal_types_aggregation.xml` → Aggregation | `temporal_`/`tnumber_` | ✓ **GEN** | `aggregates.sql.tmpl` + `aggregate_families`, **11 entries** all `reference: true`, `whole_file: true` (temporal, cbuffer, geo, json, npoint, pointcloud, pose, rgeo, tpoint, th3index, quadbin) — tCount/extent/tMin/tMax/tSum/tAvg/merge/appendInstant; `--gaps`: 18/18, full coverage |
 | → Indexing | (index) | ✓ **GEN** | GiST/SP-GiST via `gist/spgist/indexes.sql.tmpl` |
 | → Statistics and Selectivity | (selectivity) | ✗ HAND | |
 | `temporal_types_analytics.xml` → Simplification / Reduction / Similarity / Extended Kalman Filter / Splitting | `temporal_`/`tgeo_` | ✗ HAND | analytics; no template |
@@ -469,18 +469,17 @@ plain = the file exists but is still hand-maintained.
 | npoint (300) | **304** | 306 | **308** | **309** | 312 | **314** | **320** | **322** | **316** | 307 |
 | pose (100) | **104** | 105 | **108** | **109** | 110 | **111** | 112 | **114** | **116** | 107 |
 | rgeo (150) | **154** | 156 | **161** | **162** | 164 | **168** | 170 | **172** | **173** | 160 |
-| h3 (250) | **254** | 255 | **258** | **259** | — | — | **262** | **264** | **272**·**273** | **257** |
-| quadbin (350) | **354** | 355 | **358** | **359** | — | — | **362** | **364** | **372**·**373** | **357** |
+| h3 (250) | **254** | 255 | **258** | **259** | — | **261** | **262** | **264** | **272**·**273** | **257** |
+| quadbin (350) | **354** | 355 | **358** | **359** | — | **361** | **362** | **364** | **372**·**373** | **357** |
 
 Reading the table:
 - **`compops`/`topops`/`posops`/`idx` are generated for every derived family** via the
   `subtypes:` `files:` track (§3): cbuffer, npoint, pose, rgeo (`[compops, topops,
   posops, indexes]`) and h3, quadbin (`[compops, posops, topops, spatialrels, gist,
   spgist]`).
-- **`aggfuncs` is generated for cbuffer, npoint, pose, rgeo** via the whole-file
-  `aggregate_families` axis (§4b), not the `subtypes:` track; h3/quadbin have no
-  `aggfuncs` file at all (`--gaps`: `aggregate_families` 16/18, missing th3index,
-  tquadbin).
+- **`aggfuncs` is generated for cbuffer, npoint, pose, rgeo, h3, quadbin** via the
+  whole-file `aggregate_families` axis (§4b), not the `subtypes:` track (`--gaps`:
+  `aggregate_families` 18/18, full coverage).
 - **`tempsp.rels` is generated for cbuffer, npoint, pose, rgeo, h3, quadbin** via
   `tempspatialrel_families` (§3/§5) — native for cbuffer, cast-delegated for the
   other five (`--gaps`: `tempspatialrel_families` 10/10, full `tspatial`-class
@@ -521,8 +520,6 @@ Reading the table:
   rgeo). npoint has no native kernel by design — its ever/always relationships
   cast-delegate to `tgeometry` at the SQL level instead (§3, §6, `subtypes:`
   `spatialrels` bullet below), so it needs none.
-- `aggregate_families`: th3index, tquadbin (today: temporal, cbuffer, geo, json,
-  npoint, pointcloud, pose, rgeo, tpoint — 16/18 temporal types).
 - `conversion_families`: tgeography, tpcpoint, tpcpatch (today: 15/18 temporal
   types, via 8 family entries).
 - `comparison_families` (Traditional comparisons): tpcpoint, tpcpatch (today:

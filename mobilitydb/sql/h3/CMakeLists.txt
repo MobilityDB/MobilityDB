@@ -8,6 +8,7 @@ SET(LOCAL_FILES
   257_th3index_boxops
   258_th3index_topops
   259_th3index_posops
+  261_th3index_aggfuncs
   262_th3index_spatialrels
   264_th3index_tempspatialrels
   272_th3index_gist

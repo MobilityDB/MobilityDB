@@ -3127,6 +3127,19 @@
 		</sect2>
 
 		<sect2>
+		<title>Agregaciones</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="th3_tCount"><varname>tCount</varname></link>: Conteo temporal</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_wCount"><varname>wCount</varname></link>: Conteo de ventana</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
 			<title>Índices</title>
 			<itemizedlist>
 				<listitem>
@@ -3272,6 +3285,19 @@
 			<itemizedlist>
 				<listitem>
 					<para><link linkend="tquadbin_comparisons"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname></link>: Comparaciones tradicionales</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+		<title>Agregaciones</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="tquadbin_tCount"><varname>tCount</varname></link>: Conteo temporal</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tquadbin_wCount"><varname>wCount</varname></link>: Conteo de ventana</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
