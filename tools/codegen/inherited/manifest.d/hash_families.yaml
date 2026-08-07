@@ -230,7 +230,7 @@ hash_families:
 - family: pcpointset
   file: mobilitydb/sql/pointcloud/400_pcset.in.sql
   reference: true
-  begin: "CREATE FUNCTION hash("
+  begin: "CREATE FUNCTION hash(pcpointset"
   begin_exact: true
   end: "\n * pcpointset \u2014 Set operations"
   blocks:

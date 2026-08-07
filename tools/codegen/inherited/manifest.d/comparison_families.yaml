@@ -184,7 +184,7 @@ comparison_families:
   reference: true
   ops: set
   begin: "\n * pcpointset \u2014 Comparison / B-tree / hash\n"
-  end: "CREATE FUNCTION hash("
+  end: "CREATE FUNCTION hash(pcpointset"
   end_exact: true
   blocks:
   - lit: "/******************************************************************************\n * pcpointset \u2014 Comparison / B-tree / hash\n ******************************************************************************/\n\n"

@@ -179,4 +179,358 @@ Pcpoint_get_dim(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8(v);
 }
 
+/*****************************************************************************
+ * Comparison functions for pcpoint
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Pcpoint_eq(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pcpoint_eq);
+/**
+ * @ingroup mobilitydb_pointcloud_base_comp
+ * @brief Return true if the first pcpoint is equal to the second one
+ * @sqlfn eq()
+ * @sqlop @p =
+ */
+Datum
+Pcpoint_eq(PG_FUNCTION_ARGS)
+{
+  Pcpoint *pt1 = PG_GETARG_PCPOINT_P(0);
+  Pcpoint *pt2 = PG_GETARG_PCPOINT_P(1);
+  bool result = pcpoint_eq(pt1, pt2);
+  PG_FREE_IF_COPY(pt1, 0);
+  PG_FREE_IF_COPY(pt2, 1);
+  PG_RETURN_BOOL(result);
+}
+
+PGDLLEXPORT Datum Pcpoint_ne(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pcpoint_ne);
+/**
+ * @ingroup mobilitydb_pointcloud_base_comp
+ * @brief Return true if the first pcpoint is different from the second one
+ * @sqlfn ne()
+ * @sqlop @p <>
+ */
+Datum
+Pcpoint_ne(PG_FUNCTION_ARGS)
+{
+  Pcpoint *pt1 = PG_GETARG_PCPOINT_P(0);
+  Pcpoint *pt2 = PG_GETARG_PCPOINT_P(1);
+  bool result = pcpoint_ne(pt1, pt2);
+  PG_FREE_IF_COPY(pt1, 0);
+  PG_FREE_IF_COPY(pt2, 1);
+  PG_RETURN_BOOL(result);
+}
+
+PGDLLEXPORT Datum Pcpoint_cmp(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pcpoint_cmp);
+/**
+ * @ingroup mobilitydb_pointcloud_base_comp
+ * @brief Return -1, 0, or 1 depending on whether the first pcpoint is less
+ * than, equal to, or greater than the second one
+ * @note Function used for B-tree comparison
+ * @sqlfn cmp()
+ */
+Datum
+Pcpoint_cmp(PG_FUNCTION_ARGS)
+{
+  Pcpoint *pt1 = PG_GETARG_PCPOINT_P(0);
+  Pcpoint *pt2 = PG_GETARG_PCPOINT_P(1);
+  int result = pcpoint_cmp(pt1, pt2);
+  PG_FREE_IF_COPY(pt1, 0);
+  PG_FREE_IF_COPY(pt2, 1);
+  PG_RETURN_INT32(result);
+}
+
+PGDLLEXPORT Datum Pcpoint_lt(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pcpoint_lt);
+/**
+ * @ingroup mobilitydb_pointcloud_base_comp
+ * @brief Return true if the first pcpoint is less than the second one
+ * @sqlfn lt()
+ * @sqlop @p <
+ */
+Datum
+Pcpoint_lt(PG_FUNCTION_ARGS)
+{
+  Pcpoint *pt1 = PG_GETARG_PCPOINT_P(0);
+  Pcpoint *pt2 = PG_GETARG_PCPOINT_P(1);
+  bool result = pcpoint_lt(pt1, pt2);
+  PG_FREE_IF_COPY(pt1, 0);
+  PG_FREE_IF_COPY(pt2, 1);
+  PG_RETURN_BOOL(result);
+}
+
+PGDLLEXPORT Datum Pcpoint_le(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pcpoint_le);
+/**
+ * @ingroup mobilitydb_pointcloud_base_comp
+ * @brief Return true if the first pcpoint is less than or equal to the
+ * second one
+ * @sqlfn le()
+ * @sqlop @p <=
+ */
+Datum
+Pcpoint_le(PG_FUNCTION_ARGS)
+{
+  Pcpoint *pt1 = PG_GETARG_PCPOINT_P(0);
+  Pcpoint *pt2 = PG_GETARG_PCPOINT_P(1);
+  bool result = pcpoint_le(pt1, pt2);
+  PG_FREE_IF_COPY(pt1, 0);
+  PG_FREE_IF_COPY(pt2, 1);
+  PG_RETURN_BOOL(result);
+}
+
+PGDLLEXPORT Datum Pcpoint_ge(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pcpoint_ge);
+/**
+ * @ingroup mobilitydb_pointcloud_base_comp
+ * @brief Return true if the first pcpoint is greater than or equal to the
+ * second one
+ * @sqlfn ge()
+ * @sqlop @p >=
+ */
+Datum
+Pcpoint_ge(PG_FUNCTION_ARGS)
+{
+  Pcpoint *pt1 = PG_GETARG_PCPOINT_P(0);
+  Pcpoint *pt2 = PG_GETARG_PCPOINT_P(1);
+  bool result = pcpoint_ge(pt1, pt2);
+  PG_FREE_IF_COPY(pt1, 0);
+  PG_FREE_IF_COPY(pt2, 1);
+  PG_RETURN_BOOL(result);
+}
+
+PGDLLEXPORT Datum Pcpoint_gt(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pcpoint_gt);
+/**
+ * @ingroup mobilitydb_pointcloud_base_comp
+ * @brief Return true if the first pcpoint is greater than the second one
+ * @sqlfn gt()
+ * @sqlop @p >
+ */
+Datum
+Pcpoint_gt(PG_FUNCTION_ARGS)
+{
+  Pcpoint *pt1 = PG_GETARG_PCPOINT_P(0);
+  Pcpoint *pt2 = PG_GETARG_PCPOINT_P(1);
+  bool result = pcpoint_gt(pt1, pt2);
+  PG_FREE_IF_COPY(pt1, 0);
+  PG_FREE_IF_COPY(pt2, 1);
+  PG_RETURN_BOOL(result);
+}
+
+/*****************************************************************************
+ * Functions for defining hash indexes on pcpoint
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Pcpoint_hash(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pcpoint_hash);
+/**
+ * @ingroup mobilitydb_pointcloud_base_comp
+ * @brief Return the 32-bit hash value of a pcpoint
+ * @sqlfn hash()
+ */
+Datum
+Pcpoint_hash(PG_FUNCTION_ARGS)
+{
+  Pcpoint *pt = PG_GETARG_PCPOINT_P(0);
+  uint32 result = pcpoint_hash(pt);
+  PG_FREE_IF_COPY(pt, 0);
+  PG_RETURN_UINT32(result);
+}
+
+PGDLLEXPORT Datum Pcpoint_hash_extended(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pcpoint_hash_extended);
+/**
+ * @ingroup mobilitydb_pointcloud_base_comp
+ * @brief Return the 64-bit hash value of a pcpoint using a seed
+ * @sqlfn hashExtended()
+ */
+Datum
+Pcpoint_hash_extended(PG_FUNCTION_ARGS)
+{
+  Pcpoint *pt = PG_GETARG_PCPOINT_P(0);
+  uint64 seed = PG_GETARG_INT64(1);
+  uint64 result = pcpoint_hash_extended(pt, seed);
+  PG_FREE_IF_COPY(pt, 0);
+  PG_RETURN_UINT64(result);
+}
+
+/*****************************************************************************
+ * Comparison functions for pcpatch
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Pcpatch_eq(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pcpatch_eq);
+/**
+ * @ingroup mobilitydb_pointcloud_base_comp
+ * @brief Return true if the first pcpatch is equal to the second one
+ * @sqlfn eq()
+ * @sqlop @p =
+ */
+Datum
+Pcpatch_eq(PG_FUNCTION_ARGS)
+{
+  Pcpatch *pa1 = PG_GETARG_PCPATCH_P(0);
+  Pcpatch *pa2 = PG_GETARG_PCPATCH_P(1);
+  bool result = pcpatch_eq(pa1, pa2);
+  PG_FREE_IF_COPY(pa1, 0);
+  PG_FREE_IF_COPY(pa2, 1);
+  PG_RETURN_BOOL(result);
+}
+
+PGDLLEXPORT Datum Pcpatch_ne(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pcpatch_ne);
+/**
+ * @ingroup mobilitydb_pointcloud_base_comp
+ * @brief Return true if the first pcpatch is different from the second one
+ * @sqlfn ne()
+ * @sqlop @p <>
+ */
+Datum
+Pcpatch_ne(PG_FUNCTION_ARGS)
+{
+  Pcpatch *pa1 = PG_GETARG_PCPATCH_P(0);
+  Pcpatch *pa2 = PG_GETARG_PCPATCH_P(1);
+  bool result = pcpatch_ne(pa1, pa2);
+  PG_FREE_IF_COPY(pa1, 0);
+  PG_FREE_IF_COPY(pa2, 1);
+  PG_RETURN_BOOL(result);
+}
+
+PGDLLEXPORT Datum Pcpatch_cmp(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pcpatch_cmp);
+/**
+ * @ingroup mobilitydb_pointcloud_base_comp
+ * @brief Return -1, 0, or 1 depending on whether the first pcpatch is less
+ * than, equal to, or greater than the second one
+ * @note Function used for B-tree comparison
+ * @sqlfn cmp()
+ */
+Datum
+Pcpatch_cmp(PG_FUNCTION_ARGS)
+{
+  Pcpatch *pa1 = PG_GETARG_PCPATCH_P(0);
+  Pcpatch *pa2 = PG_GETARG_PCPATCH_P(1);
+  int result = pcpatch_cmp(pa1, pa2);
+  PG_FREE_IF_COPY(pa1, 0);
+  PG_FREE_IF_COPY(pa2, 1);
+  PG_RETURN_INT32(result);
+}
+
+PGDLLEXPORT Datum Pcpatch_lt(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pcpatch_lt);
+/**
+ * @ingroup mobilitydb_pointcloud_base_comp
+ * @brief Return true if the first pcpatch is less than the second one
+ * @sqlfn lt()
+ * @sqlop @p <
+ */
+Datum
+Pcpatch_lt(PG_FUNCTION_ARGS)
+{
+  Pcpatch *pa1 = PG_GETARG_PCPATCH_P(0);
+  Pcpatch *pa2 = PG_GETARG_PCPATCH_P(1);
+  bool result = pcpatch_lt(pa1, pa2);
+  PG_FREE_IF_COPY(pa1, 0);
+  PG_FREE_IF_COPY(pa2, 1);
+  PG_RETURN_BOOL(result);
+}
+
+PGDLLEXPORT Datum Pcpatch_le(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pcpatch_le);
+/**
+ * @ingroup mobilitydb_pointcloud_base_comp
+ * @brief Return true if the first pcpatch is less than or equal to the
+ * second one
+ * @sqlfn le()
+ * @sqlop @p <=
+ */
+Datum
+Pcpatch_le(PG_FUNCTION_ARGS)
+{
+  Pcpatch *pa1 = PG_GETARG_PCPATCH_P(0);
+  Pcpatch *pa2 = PG_GETARG_PCPATCH_P(1);
+  bool result = pcpatch_le(pa1, pa2);
+  PG_FREE_IF_COPY(pa1, 0);
+  PG_FREE_IF_COPY(pa2, 1);
+  PG_RETURN_BOOL(result);
+}
+
+PGDLLEXPORT Datum Pcpatch_ge(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pcpatch_ge);
+/**
+ * @ingroup mobilitydb_pointcloud_base_comp
+ * @brief Return true if the first pcpatch is greater than or equal to the
+ * second one
+ * @sqlfn ge()
+ * @sqlop @p >=
+ */
+Datum
+Pcpatch_ge(PG_FUNCTION_ARGS)
+{
+  Pcpatch *pa1 = PG_GETARG_PCPATCH_P(0);
+  Pcpatch *pa2 = PG_GETARG_PCPATCH_P(1);
+  bool result = pcpatch_ge(pa1, pa2);
+  PG_FREE_IF_COPY(pa1, 0);
+  PG_FREE_IF_COPY(pa2, 1);
+  PG_RETURN_BOOL(result);
+}
+
+PGDLLEXPORT Datum Pcpatch_gt(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pcpatch_gt);
+/**
+ * @ingroup mobilitydb_pointcloud_base_comp
+ * @brief Return true if the first pcpatch is greater than the second one
+ * @sqlfn gt()
+ * @sqlop @p >
+ */
+Datum
+Pcpatch_gt(PG_FUNCTION_ARGS)
+{
+  Pcpatch *pa1 = PG_GETARG_PCPATCH_P(0);
+  Pcpatch *pa2 = PG_GETARG_PCPATCH_P(1);
+  bool result = pcpatch_gt(pa1, pa2);
+  PG_FREE_IF_COPY(pa1, 0);
+  PG_FREE_IF_COPY(pa2, 1);
+  PG_RETURN_BOOL(result);
+}
+
+/*****************************************************************************
+ * Functions for defining hash indexes on pcpatch
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Pcpatch_hash(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pcpatch_hash);
+/**
+ * @ingroup mobilitydb_pointcloud_base_comp
+ * @brief Return the 32-bit hash value of a pcpatch
+ * @sqlfn hash()
+ */
+Datum
+Pcpatch_hash(PG_FUNCTION_ARGS)
+{
+  Pcpatch *pa = PG_GETARG_PCPATCH_P(0);
+  uint32 result = pcpatch_hash(pa);
+  PG_FREE_IF_COPY(pa, 0);
+  PG_RETURN_UINT32(result);
+}
+
+PGDLLEXPORT Datum Pcpatch_hash_extended(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pcpatch_hash_extended);
+/**
+ * @ingroup mobilitydb_pointcloud_base_comp
+ * @brief Return the 64-bit hash value of a pcpatch using a seed
+ * @sqlfn hashExtended()
+ */
+Datum
+Pcpatch_hash_extended(PG_FUNCTION_ARGS)
+{
+  Pcpatch *pa = PG_GETARG_PCPATCH_P(0);
+  uint64 seed = PG_GETARG_INT64(1);
+  uint64 result = pcpatch_hash_extended(pa, seed);
+  PG_FREE_IF_COPY(pa, 0);
+  PG_RETURN_UINT64(result);
+}
+
 /*****************************************************************************/

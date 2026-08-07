@@ -318,6 +318,7 @@ pcpoint_get_pcid(const Pcpoint *pt)
  * @note Hashes only the meaningful-prefix bytes — pgpointcloud's
  *   struct-tail padding is skipped because it holds uninitialized heap
  *   bytes that differ between otherwise-identical values.
+ * @csqlfn #Pcpoint_hash()
  */
 uint32
 pcpoint_hash(const Pcpoint *pt)
@@ -331,6 +332,7 @@ pcpoint_hash(const Pcpoint *pt)
 /**
  * @ingroup meos_pointcloud_base_accessor
  * @brief Return the 64-bit seeded hash of a pcpoint
+ * @csqlfn #Pcpoint_hash_extended()
  */
 uint64
 pcpoint_hash_extended(const Pcpoint *pt, uint64 seed)
@@ -357,6 +359,7 @@ pcpoint_hash_extended(const Pcpoint *pt, uint64 seed)
  *   struct-tail padding is skipped (see the padding comment above).
  *   Two pcpoints that disagree only on those padding bytes now compare
  *   equal, making Set dedup and B-tree equality deterministic.
+ * @csqlfn #Pcpoint_cmp()
  */
 int
 pcpoint_cmp(const Pcpoint *pt1, const Pcpoint *pt2)
