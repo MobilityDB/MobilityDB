@@ -200,6 +200,22 @@ Pcpoint_srid(PG_FUNCTION_ARGS)
   PG_RETURN_INT32(srid);
 }
 
+PGDLLEXPORT Datum Pcpatch_srid(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pcpatch_srid);
+/**
+ * @ingroup mobilitydb_pointcloud_base_srid
+ * @brief Return the SRID of a pcpatch
+ * @sqlfn SRID()
+ */
+Datum
+Pcpatch_srid(PG_FUNCTION_ARGS)
+{
+  Pcpatch *pa = PG_GETARG_PCPATCH_P(0);
+  int32_t srid = meos_pc_schema_get_srid(pcpatch_get_pcid(pa));
+  PG_FREE_IF_COPY(pa, 0);
+  PG_RETURN_INT32(srid);
+}
+
 /*****************************************************************************
  * Comparison functions for pcpoint
  *****************************************************************************/

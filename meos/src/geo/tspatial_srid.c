@@ -61,6 +61,7 @@
 #endif
 #if POINTCLOUD
   #include "pointcloud/pcpoint.h"
+  #include "pointcloud/pcpatch.h"
   #include "pointcloud/meos_schema_hook.h"
 #endif
 #if POSE
@@ -75,6 +76,7 @@
 #endif
 #if POINTCLOUD
   #include "pointcloud/pcpoint.h"
+  #include "pointcloud/pcpatch.h"
   #include "pointcloud/meos_schema_hook.h"
 #endif
 
@@ -94,12 +96,15 @@
 int32_t
 spatial_srid(Datum d, MeosType basetype)
 {
-  /* T_PCPOINT is deliberately outside spatial_basetype(): the other
-   * spatial_* dispatchers have no pgpointcloud case, and deriving a
-   * pcpoint's flags needs its schema. Only the SRID is available without
-   * one, so it is admitted here rather than catalog-wide. */
+  /* T_PCPOINT and T_PCPATCH are deliberately outside spatial_basetype():
+   * the other spatial_* dispatchers have no pgpointcloud case, and
+   * deriving a pcpoint's or pcpatch's flags needs its schema. Only the
+   * SRID is available without one, since both carry the same pcid and
+   * resolve it through the same schema lookup, so the two are admitted
+   * here rather than catalog-wide. */
 #if POINTCLOUD
-  assert(spatial_basetype(basetype) || basetype == T_PCPOINT);
+  assert(spatial_basetype(basetype) || basetype == T_PCPOINT ||
+    basetype == T_PCPATCH);
 #else
   assert(spatial_basetype(basetype));
 #endif
@@ -130,6 +135,10 @@ spatial_srid(Datum d, MeosType basetype)
     case T_PCPOINT: {
       const Pcpoint *pt = DatumGetPcpointP(d);
       return meos_pc_schema_get_srid(pcpoint_get_pcid(pt));
+    }
+    case T_PCPATCH: {
+      const Pcpatch *pa = DatumGetPcpatchP(d);
+      return meos_pc_schema_get_srid(pcpatch_get_pcid(pa));
     }
 #endif
 #if QUADBIN

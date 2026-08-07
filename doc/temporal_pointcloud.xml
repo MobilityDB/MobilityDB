@@ -233,6 +233,8 @@ SELECT getDim(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]), 'X');
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT SRID(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]));
 -- 0
+SELECT SRID(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]), PC_MakePoint(1, ARRAY[11.0, 21.0, 31.0])]));
+-- 0
 </programlisting>
 				</listitem>
 			</itemizedlist>

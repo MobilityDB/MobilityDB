@@ -13,6 +13,19 @@ SELECT numPoints(tpcpatch(
  t
 (1 row)
 
+SELECT SRID(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)));
+ srid 
+------
+    0
+(1 row)
+
+SELECT SRID(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0))) =
+  SRID(pcpoint(1, 1.0, 1.0, 1.0));
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT asText(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[])]), '2024-01-01'::timestamptz)) = format('%s', tpcpatch(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[])]), '2024-01-01'::timestamptz));
  ?column? 
 ----------
