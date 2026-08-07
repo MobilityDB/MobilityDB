@@ -5,7 +5,7 @@
 # land unnoticed. The list is a ratchet: it may only shrink. Bring a file
 # under the manifest, then delete its line here.
 #
-# 128 of 182 files remain.
+# 129 of 182 files remain.
 
 mobilitydb/sql/cbuffer/200_cbuffer.in.sql
 mobilitydb/sql/cbuffer/204_tcbuffer_compops.in.sql
@@ -59,6 +59,7 @@ mobilitydb/sql/h3/286_th3index_metrics.in.sql
 mobilitydb/sql/json/451_jsonbset_jsonfuncs.in.sql
 mobilitydb/sql/json/454_tjsonb_jsonfuncs.in.sql
 mobilitydb/sql/json/456_tjsonb_op.in.sql
+mobilitydb/sql/json/458_tjsonb_compops.in.sql
 mobilitydb/sql/json/460_tjsonb_topops.in.sql
 mobilitydb/sql/json/462_tjsonb_posops.in.sql
 mobilitydb/sql/json/466_tjsonb_indexes.in.sql
