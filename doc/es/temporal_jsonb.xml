@@ -312,26 +312,19 @@ SELECT minusValues(textset '[{"speed": 10}, null,
 				<indexterm significance="normal"><primary><varname>jsonbset_path_exists</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>jsonbset_path_exists_tz</varname></primary></indexterm>
 				<para>¿Devuelve la ruta JSON algún elemento para el conjunto JSONB especificado?</para>
-				<para><varname>jsonbset @? jsonpath → tbool</varname></para>
-				<para><varname>jsonbset_path_exists(jsonbset,vars jsonb='{}',silent boolean=false) → tbool</varname></para>
-				<para><varname>jsonbset_path_exists_tz(jsonbset,vars jsonb='{}',silent boolean=false) → tbool</varname></para>
+				<para><varname>jsonbset @? jsonpath → boolean[]</varname></para>
+				<para><varname>jsonbset_path_exists(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]</varname></para>
+				<para><varname>jsonbset_path_exists_tz(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]</varname></para>
 				<para>El operador <varname>@?</varname> suprime los siguientes errores: campo de objeto o elemento de arreglo faltante, tipo de elemento JSON inesperado, errores de fecha/hora y numéricos. Las funciones anteriores también pueden suprimir estos tipos de errores estableciendo el último argumento en verdadero. Este comportamiento puede ser útil al buscar en colecciones de documentos JSON de estructura variable.</para>
+				<para>El resultado es un booleano por cada valor del conjunto, en el orden de los valores del conjunto.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT jsonbset '[{"speed":10}, {"speed": 20, "units": "km/h"}]' @?
-  '$.units ? (@ == "km/h")';
--- [f, t]
-SELECT jsonbset_path_exists(jsonbset
-  '{{"road": "Bvd Gén. Jacques", "category": "primary"},
-  {"road": "Bvd Gén. Jacques", "category": "primary"},
-  {"road": "Bvd de la Cambre", "category": "residential"}}',
-  '$.category ? (@ == "residential")');
--- {f, f, t}
--- TODO, it works without ".datetime()"
-SELECT jsonbset_path_exists_tz(jsonbset
-  '[{"speed":10, "cameraId": "25", "lastInspection": "2000-08-01 12:00:00"},
-    {"speed":20, "cameraId": "35", "lastInspection": "2000-03-01 12:00:00"}]',
-  '$.lastInspection ? (@.datetime() > "2000-06-01".datetime() )');
--- [t, f]
+SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}';
+-- {"{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10}"}
+SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' @? '$.units';
+-- {t,f}
+SELECT jsonbset_path_exists(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}',
+  '$.speed ? (@ &gt; $min)', '{"min": 15}');
+-- {t,f}
 </programlisting>
 			</listitem>
 
@@ -340,26 +333,19 @@ SELECT jsonbset_path_exists_tz(jsonbset
 				<indexterm significance="normal"><primary><varname>jsonbset_path_match</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>jsonbset_path_match_tz</varname></primary></indexterm>
 				<para>Devolver el resultado de una comprobación de predicado de ruta JSON para un conjunto JSONB</para>
-				<para><varname>jsonbset @@ jsonpath → tbool</varname></para>
-				<para><varname>jsonbset_path_match(jsonbset,vars jsonb='{}',silent boolean=false) → tbool</varname></para>
-				<para><varname>jsonbset_path_match_tz(jsonbset,vars jsonb='{}',silent boolean=false) → tbool</varname></para>
+				<para><varname>jsonbset @@ jsonpath → boolean[]</varname></para>
+				<para><varname>jsonbset_path_match(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]</varname></para>
+				<para><varname>jsonbset_path_match_tz(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]</varname></para>
 				<para>El operador <varname>@@</varname> suprime los siguientes errores: campo de objeto o elemento de arreglo faltante, tipo de elemento JSON inesperado, errores de fecha/hora y numéricos. Las funciones anteriores también pueden suprimir estos tipos de errores estableciendo el último argumento en verdadero. Este comportamiento puede ser útil al buscar en colecciones de documentos JSON de estructura variable.</para>
+				<para>El resultado es un booleano por cada valor del conjunto, en el orden de los valores del conjunto.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT jsonbset '[{"speed":10}, {"speed": 20, "units": "km/h"}]' @@
-  '$.units == "km/h"';
--- [f, t]
-SELECT jsonbset_path_match(jsonbset
-  '{{"road": "Bvd Gén. Jacques", "category": "primary"},
-  {"road": "Bvd Gén. Jacques", "category": "primary"},
-  {"road": "Bvd de la Cambre", "category": "residential"}}',
-  '$.category == "residential"');
--- {f, f, t}
--- TODO, it works without ".datetime()"
-SELECT jsonbset_path_match_tz(jsonbset
-  '[{"speed":10, "cameraId": "25", "lastInspection": "2000-08-01 12:00:00"},
-    {"speed":20, "cameraId": "35", "lastInspection": "2000-03-01 12:00:00"}]',
-  '$.lastInspection.datetime() > "2000-06-01".datetime()');
--- [t, f]
+SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}';
+-- {"{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10}"}
+SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' @@ '$.speed &gt; 15';
+-- {t,f}
+SELECT jsonbset_path_match(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}',
+  '$.speed &gt; $min', '{"min": 15}');
+-- {t,f}
 </programlisting>
 			</listitem>
 

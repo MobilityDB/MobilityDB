@@ -341,6 +341,26 @@ lfunc_set(const Set *set, LiftedFunctionInfo *lfinfo)
   return result;
 }
 
+/**
+ * @brief Apply a lifted predicate to the elements of a set
+ * @param[in] set Set
+ * @param[in] lfinfo Information about the lifted function
+ * @param[out] count Number of values in the output array
+ * @note A predicate returns a Boolean for every element of the set. There is
+ * no Boolean set type, and a set would remove the duplicate results and
+ * reorder them, so the result is an array in the order of the elements
+ */
+bool *
+lfunc_set_bool(const Set *set, LiftedFunctionInfo *lfinfo, int *count)
+{
+  assert(set); assert(lfinfo); assert(count);
+  bool *result = palloc(sizeof(bool) * set->count);
+  for (int i = 0; i < set->count; i++)
+    result[i] = DatumGetBool(lfunc_base(SET_VAL_N(set, i), lfinfo));
+  *count = set->count;
+  return result;
+}
+
 /*****************************************************************************
  * Functions where the argument is a temporal type.
  * The function is applied to the composing instants.

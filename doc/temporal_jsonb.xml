@@ -312,26 +312,19 @@ SELECT minusValues(textset '[{"speed": 10}, null,
 				<indexterm significance="normal"><primary><varname>jsonbset_path_exists</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>jsonbset_path_exists_tz</varname></primary></indexterm>
 				<para>Does the JSON path return any item for the specified JSONB set?</para>
-				<para><varname>jsonbset @? jsonpath → tbool</varname></para>
-				<para><varname>jsonbset_path_exists(jsonbset,vars jsonb='{}',silent boolean=false) → tbool</varname></para>
-				<para><varname>jsonbset_path_exists_tz(jsonbset,vars jsonb='{}',silent boolean=false) → tbool</varname></para>
+				<para><varname>jsonbset @? jsonpath → boolean[]</varname></para>
+				<para><varname>jsonbset_path_exists(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]</varname></para>
+				<para><varname>jsonbset_path_exists_tz(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]</varname></para>
 				<para>The operator <varname>@?</varname> suppresses the following errors: missing object field or array element, unexpected JSON item type, datetime and numeric errors. The above functions can also suppress these types of errors by setting the last argument to true. This behavior might be helpful when searching JSON document collections of varying structure.</para>
+				<para>The result is a Boolean for every value of the set, in the order of the values of the set.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT jsonbset '[{"speed":10}, {"speed": 20, "units": "km/h"}]' @?
-  '$.units ? (@ == "km/h")';
--- [f, t]
-SELECT jsonbset_path_exists(jsonbset 
-  '{{"road": "Bvd Gén. Jacques", "category": "primary"},
-  {"road": "Bvd Gén. Jacques", "category": "primary"},
-  {"road": "Bvd de la Cambre", "category": "residential"}}',
-  '$.category ? (@ == "residential")');
--- {f, f, t}
--- TODO, it works without ".datetime()"
-SELECT jsonbset_path_exists_tz(jsonbset
-  '[{"speed":10, "cameraId": "25", "lastInspection": "2000-08-01 12:00:00"}, 
-    {"speed":20, "cameraId": "35", "lastInspection": "2000-03-01 12:00:00"}]',
-  '$.lastInspection ? (@.datetime() > "2000-06-01".datetime() )');
--- [t, f]
+SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}';
+-- {"{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10}"}
+SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' @? '$.units';
+-- {t,f}
+SELECT jsonbset_path_exists(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}',
+  '$.speed ? (@ &gt; $min)', '{"min": 15}');
+-- {t,f}
 </programlisting>
 			</listitem>
 
@@ -340,26 +333,19 @@ SELECT jsonbset_path_exists_tz(jsonbset
 				<indexterm significance="normal"><primary><varname>jsonbset_path_match</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>jsonbset_path_match_tz</varname></primary></indexterm>
 				<para>Return the result of a JSON path predicate check for a JSONB set</para>
-				<para><varname>jsonbset @@ jsonpath → tbool</varname></para>
-				<para><varname>jsonbset_path_match(jsonbset,vars jsonb='{}',silent boolean=false) → tbool</varname></para>
-				<para><varname>jsonbset_path_match_tz(jsonbset,vars jsonb='{}',silent boolean=false) → tbool</varname></para>
+				<para><varname>jsonbset @@ jsonpath → boolean[]</varname></para>
+				<para><varname>jsonbset_path_match(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]</varname></para>
+				<para><varname>jsonbset_path_match_tz(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]</varname></para>
 				<para>The operator <varname>@@</varname> suppresses the following errors: missing object field or array element, unexpected JSON item type, datetime and numeric errors. The above functions can also suppress these types of errors by setting the last argument to true. This behavior might be helpful when searching JSON document collections of varying structure.</para>
+				<para>The result is a Boolean for every value of the set, in the order of the values of the set.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT jsonbset '[{"speed":10}, {"speed": 20, "units": "km/h"}]' @@
-  '$.units == "km/h"';
--- [f, t]
-SELECT jsonbset_path_match(jsonbset 
-  '{{"road": "Bvd Gén. Jacques", "category": "primary"},
-  {"road": "Bvd Gén. Jacques", "category": "primary"},
-  {"road": "Bvd de la Cambre", "category": "residential"}}',
-  '$.category == "residential"');
--- {f, f, t}
--- TODO, it works without ".datetime()"
-SELECT jsonbset_path_match_tz(jsonbset
-  '[{"speed":10, "cameraId": "25", "lastInspection": "2000-08-01 12:00:00"}, 
-    {"speed":20, "cameraId": "35", "lastInspection": "2000-03-01 12:00:00"}]',
-  '$.lastInspection.datetime() > "2000-06-01".datetime()');
--- [t, f]
+SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}';
+-- {"{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10}"}
+SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' @@ '$.speed &gt; 15';
+-- {t,f}
+SELECT jsonbset_path_match(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}',
+  '$.speed &gt; $min', '{"min": 15}');
+-- {t,f}
 </programlisting>
 			</listitem>
 

@@ -136,6 +136,8 @@ extern int eafunc_temporal_temporal(const Temporal *temp1,
 /*****************************************************************************/
 
 extern Set *lfunc_set(const Set *set, LiftedFunctionInfo *lfinfo);
+extern bool *lfunc_set_bool(const Set *set, LiftedFunctionInfo *lfinfo,
+  int *count);
 
 /*****************************************************************************/
 
