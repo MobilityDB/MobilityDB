@@ -1,4 +1,44 @@
+# The base Temporal<T> file also declares the conversion surface for the three
+# discrete numeric types (tint/tbigint/tbool cross-casts, plus the tint/tbigint/
+# tfloat valueSpan/tbox casts, tfloat pulled in incidentally since its casts share
+# the same chunks). tfloat and ttext are not named here — tfloat already surfaces
+# through these shared numeric chunks and ttext through the json family's ttext<->
+# tjsonb casts — so they are not missing from the class, just covered elsewhere.
+# th3index and tquadbin are NOT modeled: their casts scatter across three
+# non-contiguous locations (the typmod self-cast in the I/O area, the tbigint
+# assignment casts, and the tstzspan cast buried in the Accessors section), so
+# there is no single Conversions section to slice with the begin/end-anchor model
+# every other family here uses. tpcpoint/tpcpatch are reserved for a separate
+# pointcloud session and are likewise absent.
 conversion_families:
+- family: temporal
+  file: mobilitydb/sql/temporal/022_temporal.in.sql
+  reference: true
+  begin: "\n * Conversion functions\n"
+  end: "\n * Accessor functions\n"
+  blocks:
+  - lit: "/******************************************************************************\n * Conversion functions\n ******************************************************************************/\n\n"
+  - fns:
+    - {sig: "valueSpan(tint)", ret: intspan, sym: Tnumber_to_span}
+    - {sig: "valueSpan(tbigint)", ret: bigintspan, sym: Tnumber_to_span}
+    - {sig: "valueSpan(tfloat)", ret: floatspan, sym: Tnumber_to_span}
+  - lit: "\nCREATE CAST (tint AS intspan) WITH FUNCTION valueSpan(tint);\nCREATE CAST (tbigint AS bigintspan) WITH FUNCTION valueSpan(tbigint);\nCREATE CAST (tfloat AS floatspan) WITH FUNCTION valueSpan(tfloat);\n\n"
+  - fns:
+    - {sig: "tint(tbool)", ret: tint, sym: Tbool_to_tint}
+  - lit: "CREATE CAST (tbool AS tint) WITH FUNCTION tint(tbool);\n\n"
+  - fns:
+    - {sig: "tbigint(tint)", ret: tbigint, sym: Tint_to_tbigint}
+    - {sig: "tfloat(tint)", ret: tfloat, sym: Tint_to_tfloat}
+    - {sig: "tint(tbigint)", ret: tint, sym: Tbigint_to_tint}
+    - {sig: "tfloat(tbigint)", ret: tfloat, sym: Tbigint_to_tfloat}
+    - {sig: "tint(tfloat)", ret: tint, sym: Tfloat_to_tint}
+    - {sig: "tbigint(tfloat)", ret: tbigint, sym: Tfloat_to_tbigint}
+  - lit: "\nCREATE CAST (tint AS tbigint) WITH FUNCTION tbigint(tint);\nCREATE CAST (tint AS tfloat) WITH FUNCTION tfloat(tint);\nCREATE CAST (tbigint AS tint) WITH FUNCTION tint(tbigint);\nCREATE CAST (tbigint AS tfloat) WITH FUNCTION tfloat(tbigint);\nCREATE CAST (tfloat AS tint) WITH FUNCTION tint(tfloat);\nCREATE CAST (tfloat AS tbigint) WITH FUNCTION tbigint(tfloat);\n\n"
+  - fns:
+    - {sig: "tbox(tint)", ret: tbox, sym: Tnumber_to_tbox}
+    - {sig: "tbox(tbigint)", ret: tbox, sym: Tnumber_to_tbox}
+    - {sig: "tbox(tfloat)", ret: tbox, sym: Tnumber_to_tbox}
+  - lit: "\nCREATE CAST (tint AS tbox) WITH FUNCTION tbox(tint);\nCREATE CAST (tbigint AS tbox) WITH FUNCTION tbox(tbigint);\nCREATE CAST (tfloat AS tbox) WITH FUNCTION tbox(tfloat);\n\n"
 - family: geo
   file: mobilitydb/sql/geo/052_tgeo.in.sql
   reference: true
