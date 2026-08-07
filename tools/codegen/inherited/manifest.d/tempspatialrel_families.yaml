@@ -171,3 +171,21 @@ tempspatialrel_families:
        * @file
        * @brief Temporal spatial relationships for temporal rigid geometries
        */
+
+  # tnpoint is point-like, not a cell index, so `convert` chains the same
+  # tgeompoint cast chain as tpose (its own cast target is tgeompoint, not
+  # tgeometry directly) rather than a boundary function.
+  - family:  tnpoint
+    impl:    cast
+    file:    mobilitydb/sql/npoint/322_tnpoint_tempspatialrels.in.sql
+    predicates: [tContains, tCovers, tDisjoint, tIntersects, tTouches, tDwithin]
+    directions:
+      - {l: geometry, r: tnpoint}
+      - {l: tnpoint,  r: geometry}
+      - {l: tnpoint,  r: tnpoint}
+    convert: "@N@::@extschema@.tgeompoint::@extschema@.tgeometry"
+    doc: |-
+      /**
+       * @file
+       * @brief Temporal spatial relationships for temporal network points
+       */

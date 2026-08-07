@@ -14,6 +14,8 @@ SET(LOCAL_FILES
   312_tnpoint_distance
   314_tnpoint_aggfuncs
   316_tnpoint_indexes
+  320_tnpoint_spatialrels
+  322_tnpoint_tempspatialrels
   )
 
 foreach (f ${LOCAL_FILES})

@@ -70,6 +70,7 @@ mobilitydb/sql/npoint/310_tnpoint_routeops.in.sql
 mobilitydb/sql/npoint/311_tnpoint_gin.in.sql
 mobilitydb/sql/npoint/312_tnpoint_distance.in.sql
 mobilitydb/sql/npoint/316_tnpoint_indexes.in.sql
+mobilitydb/sql/npoint/320_tnpoint_spatialrels.in.sql
 mobilitydb/sql/pointcloud/410_tpcbox.in.sql
 mobilitydb/sql/pointcloud/411_tpcbox_gist.in.sql
 mobilitydb/sql/pointcloud/412_tpcbox_spgist.in.sql
