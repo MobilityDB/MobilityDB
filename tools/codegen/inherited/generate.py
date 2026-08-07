@@ -2196,10 +2196,11 @@ def bootstrap_distance(filetext: str, fam: dict, rendered: str) -> str:
 
 # --- SQL Conversions sub-family (SQL, per-family region-in-file) ------------------
 # The Temporal<T> cast surface every temporal type carries: the CREATE FUNCTION
-# conversion wrappers (timeSpan -> tstzspan, and the cross-type casts to/from the
-# sibling temporal types — tcbuffer<->tgeompoint/tgeometry/tfloat, tnpoint<->
-# tgeompoint, tjsonb<->ttext, tpose->tgeompoint/tgeogpoint, trgeometry->tpose/
-# tgeompoint/tgeogpoint/tgeometry/stbox/geometry) plus the matching CREATE CAST
+# conversion wrappers (timeSpan -> tstzspan, the base numeric cross-casts tbool<->
+# tint<->tbigint<->tfloat plus their valueSpan/tbox casts, and the cross-type casts
+# to/from the sibling temporal types — tcbuffer<->tgeompoint/tgeometry/tfloat,
+# tnpoint<->tgeompoint, tjsonb<->ttext, tpose->tgeompoint/tgeogpoint, trgeometry->
+# tpose/tgeompoint/tgeogpoint/tgeometry/stbox/geometry) plus the matching CREATE CAST
 # statements. Each CREATE FUNCTION is the SAME four-line skeleton
 # (templates/conversions.sql.tmpl); only the signature {SIG}, return {RET}, backing
 # symbol {SYM}, strictness ({STRICT}) and an optional leading comment ({PRE}) differ
