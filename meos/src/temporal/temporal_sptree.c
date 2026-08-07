@@ -681,7 +681,7 @@ sptree_search_temporal(const SPTree *sptree, RTreeSearchOp op,
  * @pre `temp` is compatible with `sptree` (verified by the callers)
  */
 static void *
-sptree_temporal_split_boxes(const SPTree *sptree, const Temporal *temp,
+sptree_temporal_split_boxes(const SPTree *sptree UNUSED, const Temporal *temp,
   int maxboxes, int *count)
 {
   assert(sptree); assert(temp); assert(count);
