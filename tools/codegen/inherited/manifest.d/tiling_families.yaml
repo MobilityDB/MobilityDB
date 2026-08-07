@@ -79,6 +79,13 @@ tiling_families:
   - fns:
     - {sig: "timeSplit(tpcpatch, bin_width interval,\n    origin timestamptz DEFAULT '2000-01-03')", ret: "setof time_tpcpatch", sym: "Temporal_time_split"}
   - lit: "\n"
+- family: tpc_boxops
+  file: mobilitydb/sql/pointcloud/435_tpc_boxops.in.sql
+  reference: true
+  begin: "@brief Bounding box operations for temporal pcpoint and pcpatch values"
+  end: ""
+  blocks:
+  - lit: "/**\n * @file\n * @brief Bounding box operations for temporal pcpoint and pcpatch values\n */\n\n-- tpcpoint\n\n-- spans()\nCREATE FUNCTION spans(tpcpoint)\n  RETURNS tstzspan[]\n  AS 'MODULE_PATHNAME', 'Temporal_spans'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n-- splitNSpans()\nCREATE FUNCTION splitNSpans(tpcpoint, integer)\n  RETURNS tstzspan[]\n  AS 'MODULE_PATHNAME', 'Temporal_split_n_spans'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n-- splitEachNSpans()\nCREATE FUNCTION splitEachNSpans(tpcpoint, integer)\n  RETURNS tstzspan[]\n  AS 'MODULE_PATHNAME', 'Temporal_split_each_n_spans'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n-- tpcpatch\n\n-- spans()\nCREATE FUNCTION spans(tpcpatch)\n  RETURNS tstzspan[]\n  AS 'MODULE_PATHNAME', 'Temporal_spans'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n-- splitNSpans()\nCREATE FUNCTION splitNSpans(tpcpatch, integer)\n  RETURNS tstzspan[]\n  AS 'MODULE_PATHNAME', 'Temporal_split_n_spans'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n-- splitEachNSpans()\nCREATE FUNCTION splitEachNSpans(tpcpatch, integer)\n  RETURNS tstzspan[]\n  AS 'MODULE_PATHNAME', 'Temporal_split_each_n_spans'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n/*****************************************************************************/"
 - family: pose
   file: mobilitydb/sql/pose/102_tpose.in.sql
   reference: true
@@ -251,7 +258,7 @@ tiling_families:
     - {sig: "spaceTimeSplit(tpose, xsize float, ysize float, interval,\n    sorigin geometry DEFAULT 'Point(0 0 0)',\n    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "SETOF point_time_tpose", body: "    SELECT @extschema@.spaceTimeSplit($1, $2, $3, $2, $4, $5, $6, $7, $8)"}
   - lit: "\n/*****************************************************************************/"
 - family: tpcpoint_tile
-  file: mobilitydb/sql/pointcloud/445_tpcpoint_tile.in.sql
+  file: mobilitydb/sql/pointcloud/446_tpcpoint_tile.in.sql
   reference: true
   begin: "@brief Tile functions for temporal pcpoint"
   end: ""

@@ -438,7 +438,7 @@ aggregate_families:
     - {sig: "temporal_app_tseq_transfn(tjsonb, tjsonb)", ret: "tjsonb", sym: "Temporal_app_tseq_transfn", strict: false, pre: "-- The function is not STRICT\n"}
   - lit: "\nCREATE AGGREGATE appendSequence(tjsonb) (\n  SFUNC = temporal_app_tseq_transfn,\n  STYPE = tjsonb,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\nCREATE AGGREGATE appendSequenceAgg(tjsonb) (\n  SFUNC = temporal_app_tseq_transfn,\n  STYPE = tjsonb,\n  FINALFUNC = temporal_append_finalfn,\n  PARALLEL = safe\n);\n\n/*****************************************************************************/\n"
 - family: pointcloud
-  file: mobilitydb/sql/pointcloud/440_tpc_aggfuncs.in.sql
+  file: mobilitydb/sql/pointcloud/441_tpc_aggfuncs.in.sql
   reference: true
   begin: "@brief Aggregate functions for the pgPointCloud temporal types."
   whole_file: true
