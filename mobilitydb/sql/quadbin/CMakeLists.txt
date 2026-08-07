@@ -8,6 +8,7 @@ SET(LOCAL_FILES
   357_tquadbin_boxops
   358_tquadbin_topops
   359_tquadbin_posops
+  361_tquadbin_aggfuncs
   362_tquadbin_spatialrels
   364_tquadbin_tempspatialrels
   372_tquadbin_gist

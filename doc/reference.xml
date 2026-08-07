@@ -3105,6 +3105,19 @@
 		</sect2>
 
 		<sect2>
+		<title>Aggregations</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="th3_tCount"><varname>tCount</varname></link>: Temporal count</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="th3_wCount"><varname>wCount</varname></link>: Window count</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
 			<title>Indexing</title>
 			<itemizedlist>
 				<listitem>
@@ -3250,6 +3263,19 @@
 			<itemizedlist>
 				<listitem>
 					<para><link linkend="tquadbin_comparisons"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname></link>: Traditional comparisons</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
+		<title>Aggregations</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="tquadbin_tCount"><varname>tCount</varname></link>: Temporal count</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="tquadbin_wCount"><varname>wCount</varname></link>: Window count</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
