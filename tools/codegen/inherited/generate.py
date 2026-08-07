@@ -3346,14 +3346,44 @@ AXIS_RENDERERS = {
 }
 
 
-# A declaration's subject is its name and its arguments. The RETURNS clause is
-# dropped before matching: a type merely produced by a function is not covered by
-# it, or `applyPose(geometry, tpose) RETURNS tgeompoint` would report tgeompoint
-# as having a representation surface. Constructors still resolve, because there
-# the type is in the function name (`tjsonbFromBinary(bytea) RETURNS tjsonb`).
+# A declaration's subject is the type the operation is *about*, not every
+# temporal type its text happens to mention. The RETURNS clause is dropped
+# before matching: a type merely produced by a function is not a type it
+# covers, or `applyPose(geometry, tpose) RETURNS tgeompoint` would report
+# tgeompoint as having a representation surface. Symmetrically, an ARGUMENT
+# that happens to be a temporal type is not automatically the subject either:
+# a constructor `tcbuffer(tgeompoint, tfloat)` is about tcbuffer, not about
+# tgeompoint or tfloat — those are just the raw position/radius inputs the
+# constructor happens to take (rgeo's `trgeometry(geometry, tpose)` is the
+# same shape). The rule that resolves both: when the declared name IS itself
+# one of the candidate types, the name alone is the subject and the arguments
+# are incidental (constructors, `CREATE TYPE {TEMP} (`); otherwise the name is
+# a generic verb (`atValue`, `asText`, `{TEMP}_in`) and the subject is
+# whichever candidate type the argument list names. conversion_families is the
+# one axis where neither half of that split is incidental: a conversion or
+# CAST genuinely relates two temporal types (`tint(tfloat)` is coverage for
+# both tint's and tfloat's conversion surface, and pose's `tgeompoint(tpose)`
+# is tpose's only conversion declaration since there is no reverse
+# `tpose(tgeompoint)`), so it keeps scanning the whole declaration instead of
+# picking one side.
 DECLARATION = re.compile(
     r"CREATE (?:OR REPLACE )?(?:FUNCTION|TYPE|CAST|OPERATOR)[^\n;]*", re.I)
 RETURNS_CLAUSE = re.compile(r"\bRETURNS\s+\w+", re.I)
+DECL_NAME = re.compile(
+    r"^CREATE (?:OR REPLACE )?(?:FUNCTION|TYPE|CAST|OPERATOR)\s*([A-Za-z_]\w*)?", re.I)
+WHOLE_DECL_AXES = {"conversion_families"}
+
+
+def _decl_subject(subject: str, candidates: list) -> set:
+    """The candidate type(s) one declaration (RETURNS already stripped) is a
+    coverage subject for: the name if the name IS a candidate type, else
+    whichever candidate type(s) the argument list names."""
+    m = DECL_NAME.match(subject)
+    name = m.group(1)
+    if name in candidates:
+        return {name}
+    args = subject[m.end():]
+    return {temp for temp in candidates if re.search(rf"\b{temp}\b", args)}
 
 
 def rendered_temp_types(axis: str, entries: list, candidates: list) -> set:
@@ -3361,6 +3391,7 @@ def rendered_temp_types(axis: str, entries: list, candidates: list) -> set:
     render = AXIS_RENDERERS.get(axis)
     if render is None:
         return set()
+    whole = axis in WHOLE_DECL_AXES
     out = set()
     for entry in entries:
         if not isinstance(entry, dict):
@@ -3371,9 +3402,10 @@ def rendered_temp_types(axis: str, entries: list, candidates: list) -> set:
             continue
         for decl in DECLARATION.finditer(text):
             subject = RETURNS_CLAUSE.sub("", decl.group(0))
-            for temp in candidates:
-                if temp not in out and re.search(rf"\b{temp}\b", subject):
-                    out.add(temp)
+            if whole:
+                out.update(t for t in candidates if re.search(rf"\b{t}\b", subject))
+            else:
+                out.update(_decl_subject(subject, candidates))
     return out
 
 
