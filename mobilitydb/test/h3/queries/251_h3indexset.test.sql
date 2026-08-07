@@ -9,7 +9,7 @@
 -- h3indexset — set of h3 cells. All operations delegate to
 -- the generic Set_* C symbols; the dispatch arms in basetype_in /
 -- basetype_out (catalog work) make the per-element parser
--- and formatter route through h3index_parse / h3index_to_string.
+-- and formatter route through h3index_in / h3index_out.
 
 -------------------------------------------------------------------------------
 -- Input / Output
@@ -20,7 +20,9 @@ SELECT h3indexset '{8a2a1072b59ffff, 831c02fffffffff, 880326b885fffff}';
 -- Singleton
 SELECT h3indexset '{8a2a1072b59ffff}';
 
--- Decimal element form is also accepted (h3index_parse handles both)
+-- The h3 library reads a cell literal as hexadecimal, so the decimal
+-- spelling of a cell is read as hex, exceeds 64 bits, and reaches the
+-- cell lookup as the saturated value
 SELECT h3indexset '{622236750694711295}';
 
 /* Errors */

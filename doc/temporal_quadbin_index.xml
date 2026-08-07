@@ -21,7 +21,7 @@
 
 	<sect1 xml:id="tquadbin_inout">
 		<title>Input and Output</title>
-		<para>A <varname>tquadbin</varname> value is entered using the standard temporal syntax with the underlying 64-bit QUADBIN cell identifier. The input parser accepts both the canonical hexadecimal form and the equivalent unsigned decimal. Hexadecimal is idiomatic in the QUADBIN ecosystem and is what the output function emits — all examples below use it. For reference, the hex value <varname>480fffffffffffff</varname> used in the examples is the resolution-0 world cell, equal to the decimal value <varname>5192650370358181887</varname>.</para>
+		<para>A <varname>tquadbin</varname> value is entered using the standard temporal syntax with the underlying 64-bit QUADBIN cell identifier. The input parser accepts the canonical hexadecimal form, with an optional <varname>0x</varname> prefix, in either letter case, as the CARTO reference implementation reads it. Hexadecimal is idiomatic in the QUADBIN ecosystem and is what the output function emits — all examples below use it. For reference, the hex value <varname>480fffffffffffff</varname> used in the examples is the resolution-0 world cell, equal to the decimal value <varname>5192650370358181887</varname>.</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tquadbin '480fffffffffffff@2001-01-01';
 SELECT tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}';
@@ -430,7 +430,7 @@ CREATE INDEX ON trips USING hash(cells);        -- uses tquadbin_hash_ops by def
 			<title>Durability and storage</title>
 			<para>The on-disk representation of <varname>tquadbin</varname> is byte-identical to <varname>tbigint</varname> (each instant carries one 64-bit QUADBIN cell ID plus a timestamp). Consequences for storage planning:</para>
 			<itemizedlist>
-				<listitem><para><emphasis>WKT</emphasis> via <varname>tquadbin_in</varname> and the temporal output function. Cells render as canonical hex strings (e.g. <varname>'480fffffffffffff'</varname>); both decimal and hex are accepted on input. Round-trip is bit-stable.</para></listitem>
+				<listitem><para><emphasis>WKT</emphasis> via <varname>tquadbin_in</varname> and the temporal output function. Cells render as canonical hex strings (e.g. <varname>'480fffffffffffff'</varname>), which is also the form accepted on input. Round-trip is bit-stable.</para></listitem>
 				<listitem><para><emphasis>WKB / EWKB / HexWKB</emphasis> via the standard PostGIS endian-flag-then-payload pattern. Stable across PostgreSQL major versions.</para></listitem>
 				<listitem><para><emphasis>pg_dump</emphasis> uses WKT in plain mode and WKB under <varname>--binary-upgrade</varname>; both round-trip cleanly.</para></listitem>
 				<listitem><para><emphasis>Cross-cast with <varname>tbigint</varname></emphasis>: the bidirectional <varname>tquadbin :: tbigint</varname> casts are zero-cost bitwise reinterpretations. Use them when working with both type-safe (<varname>tquadbin</varname>) and arithmetic-friendly (<varname>tbigint</varname>) views of the same trajectory in a single query.</para></listitem>

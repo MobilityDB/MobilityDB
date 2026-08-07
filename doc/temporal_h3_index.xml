@@ -21,7 +21,7 @@
 
 	<sect1 xml:id="th3_inout">
 		<title>Input and Output</title>
-		<para>A <varname>th3index</varname> value is entered using the standard temporal syntax with the underlying 64-bit H3 cell identifier. The input parser accepts both the canonical hexadecimal form (as produced by the H3 CLI and by <varname>h3_cell_to_string</varname> upstream) and the equivalent unsigned decimal. Hexadecimal is idiomatic in the H3 ecosystem and is what the output function emits — all examples below use it. For reference, the hex value <varname>831c02fffffffff</varname> used in the examples corresponds to the decimal value <varname>590464338553208831</varname>.</para>
+		<para>A <varname>th3index</varname> value is entered using the standard temporal syntax with the underlying 64-bit H3 cell identifier. The input parser accepts the canonical hexadecimal form (as produced by the H3 CLI and by <varname>h3_cell_to_string</varname> upstream), with an optional <varname>0x</varname> prefix, as the H3 library itself reads it. Hexadecimal is idiomatic in the H3 ecosystem and is what the output function emits — all examples below use it.</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT th3index '831c02fffffffff@2001-01-01';
 SELECT th3index '{831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02}';
@@ -915,7 +915,7 @@ CREATE INDEX ON trips USING spgist(cells th3_kdtree_ops);
 			<title>Durability and storage</title>
 			<para>The on-disk representation of <varname>th3index</varname> is byte-identical to <varname>tbigint</varname> (each instant carries one 64-bit H3 cell ID plus a timestamp). Consequences for storage planning:</para>
 			<itemizedlist>
-				<listitem><para><emphasis>WKT</emphasis> via <varname>th3_in</varname> and <varname>th3_out</varname>. Cells render as canonical hex strings (e.g. <varname>'8928308280fffff'</varname>); both decimal and hex are accepted on input. Round-trip is bit-stable.</para></listitem>
+				<listitem><para><emphasis>WKT</emphasis> via <varname>th3_in</varname> and <varname>th3_out</varname>. Cells render as canonical hex strings (e.g. <varname>'8928308280fffff'</varname>), which is also the form accepted on input. Round-trip is bit-stable.</para></listitem>
 				<listitem><para><emphasis>WKB / EWKB / HexWKB</emphasis> via the standard PostGIS endian-flag-then-payload pattern. Stable across PostgreSQL major versions.</para></listitem>
 				<listitem><para><emphasis>MFJSON</emphasis> via <varname>asMFJSON(th3index)</varname> and <varname>th3indexFromMFJSON(text)</varname>. The cell payload renders as the int64 cell identifier in the <varname>values</varname> array, the same representation carried by <varname>tbigint</varname>; consumers that need the canonical hex form apply <varname>h3_cell_to_string</varname>.</para></listitem>
 				<listitem><para><emphasis>pg_dump</emphasis> uses WKT in plain mode and WKB under <varname>--binary-upgrade</varname>; both round-trip cleanly.</para></listitem>

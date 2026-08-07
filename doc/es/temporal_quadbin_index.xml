@@ -21,7 +21,7 @@
 
 	<sect1 xml:id="tquadbin_inout">
 		<title>Entrada y Salida</title>
-		<para>Un valor <varname>tquadbin</varname> se introduce utilizando la sintaxis temporal estándar con el identificador de celda QUADBIN de 64 bits subyacente. El analizador acepta tanto la forma hexadecimal canónica como el equivalente en decimal sin signo. El hexadecimal es idiomático en el ecosistema QUADBIN y es lo que emite la función de salida — todos los ejemplos siguientes lo usan. Como referencia, el valor hexadecimal <varname>480fffffffffffff</varname> empleado en los ejemplos es la celda mundial de resolución 0, igual al valor decimal <varname>5192650370358181887</varname>.</para>
+		<para>Un valor <varname>tquadbin</varname> se introduce utilizando la sintaxis temporal estándar con el identificador de celda QUADBIN de 64 bits subyacente. El analizador acepta la forma hexadecimal canónica, con un prefijo <varname>0x</varname> opcional, en cualquiera de las dos cajas de letra, tal como la lee la implementación de referencia de CARTO. El hexadecimal es idiomático en el ecosistema QUADBIN y es lo que emite la función de salida — todos los ejemplos siguientes lo usan. Como referencia, el valor hexadecimal <varname>480fffffffffffff</varname> empleado en los ejemplos es la celda mundial de resolución 0, igual al valor decimal <varname>5192650370358181887</varname>.</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tquadbin '480fffffffffffff@2001-01-01';
 SELECT tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}';
@@ -430,7 +430,7 @@ CREATE INDEX ON trips USING hash(cells);        -- usa tquadbin_hash_ops por def
 			<title>Durabilidad y almacenamiento</title>
 			<para>La representación en disco de <varname>tquadbin</varname> es idéntica byte a byte a la de <varname>tbigint</varname> (cada instante lleva un ID de celda QUADBIN de 64 bits más una marca de tiempo). Consecuencias para la planificación del almacenamiento:</para>
 			<itemizedlist>
-				<listitem><para><emphasis>WKT</emphasis> vía <varname>tquadbin_in</varname> y la función de salida temporal. Las celdas se representan como cadenas hexadecimales canónicas (por ejemplo, <varname>'480fffffffffffff'</varname>); se aceptan tanto decimal como hexadecimal en la entrada. El ciclo de ida y vuelta es estable a nivel de bits.</para></listitem>
+				<listitem><para><emphasis>WKT</emphasis> vía <varname>tquadbin_in</varname> y la función de salida temporal. Las celdas se representan como cadenas hexadecimales canónicas (por ejemplo, <varname>'480fffffffffffff'</varname>), que es también la forma aceptada en la entrada. El ciclo de ida y vuelta es estable a nivel de bits.</para></listitem>
 				<listitem><para><emphasis>WKB / EWKB / HexWKB</emphasis> vía el patrón estándar de PostGIS de bandera de endianness seguida de la carga útil. Estable entre versiones mayores de PostgreSQL.</para></listitem>
 				<listitem><para><emphasis>pg_dump</emphasis> usa WKT en modo plano y WKB bajo <varname>--binary-upgrade</varname>; ambos completan el ciclo de ida y vuelta limpiamente.</para></listitem>
 				<listitem><para><emphasis>Conversión cruzada con <varname>tbigint</varname></emphasis>: las conversiones bidireccionales <varname>tquadbin :: tbigint</varname> son reinterpretaciones bit a bit sin coste. Úselas cuando trabaje con vistas seguras por tipo (<varname>tquadbin</varname>) y aptas para aritmética (<varname>tbigint</varname>) de la misma trayectoria en una sola consulta.</para></listitem>

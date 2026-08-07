@@ -35,7 +35,7 @@
  * Every C call routes to a generic `Set_*` symbol. The dispatch
  * arms in `type_in.c` / `type_out.c` (basetype_in / basetype_out
  * cases for T_H3INDEX) make the generic Set parser and formatter
- * use h3index_parse / h3index_to_string for elements.
+ * use h3index_in / h3index_out for elements.
  */
 
 /******************************************************************************
