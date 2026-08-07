@@ -693,16 +693,16 @@ SELECT ST_AsEWKT(getValue(tgeography '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)
 SELECT ST_AsEWKT(getValue(tgeography '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]'));
 SELECT ST_AsEWKT(getValue(tgeography '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'));
 
-SELECT asEWKT(valueSet(tgeometry 'Point(1 1)@2000-01-01'));
-SELECT asEWKT(valueSet(tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}'));
-SELECT asEWKT(valueSet(tgeometry '{Point(1 1)@2000-01-01, Point(1 1)@2000-01-02}'));
-SELECT asEWKT(valueSet(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]'));
-SELECT asEWKT(valueSet(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'));
-SELECT asEWKT(valueSet(tgeography 'Point(1.5 1.5)@2000-01-01'));
-SELECT asEWKT(valueSet(tgeography '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}'));
-SELECT asEWKT(valueSet(tgeography '{Point(1 1)@2000-01-01, Point(1 1)@2000-01-02}'));
-SELECT asEWKT(valueSet(tgeography '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]'));
-SELECT asEWKT(valueSet(tgeography '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'));
+SELECT asEWKT(getValues(tgeometry 'Point(1 1)@2000-01-01'));
+SELECT asEWKT(getValues(tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}'));
+SELECT asEWKT(getValues(tgeometry '{Point(1 1)@2000-01-01, Point(1 1)@2000-01-02}'));
+SELECT asEWKT(getValues(tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]'));
+SELECT asEWKT(getValues(tgeometry '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}'));
+SELECT asEWKT(getValues(tgeography 'Point(1.5 1.5)@2000-01-01'));
+SELECT asEWKT(getValues(tgeography '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03}'));
+SELECT asEWKT(getValues(tgeography '{Point(1 1)@2000-01-01, Point(1 1)@2000-01-02}'));
+SELECT asEWKT(getValues(tgeography '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]'));
+SELECT asEWKT(getValues(tgeography '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'));
 
 SELECT ST_AsEWKT(startValue(tgeometry 'Point(1 1)@2000-01-01'));
 SELECT ST_AsEWKT(startValue(tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}'));

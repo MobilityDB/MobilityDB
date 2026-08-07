@@ -201,22 +201,6 @@ CREATE FUNCTION tgeogpointSeqSetGaps(tgeogpoint[], maxt interval DEFAULT NULL,
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 /******************************************************************************
- * Conversions
- ******************************************************************************/
-
-CREATE FUNCTION timeSpan(tgeompoint)
-  RETURNS tstzspan
-  AS 'MODULE_PATHNAME', 'Temporal_to_tstzspan'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION timeSpan(tgeogpoint)
-  RETURNS tstzspan
-  AS 'MODULE_PATHNAME', 'Temporal_to_tstzspan'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE CAST (tgeompoint AS tstzspan) WITH FUNCTION timeSpan(tgeompoint);
-CREATE CAST (tgeogpoint AS tstzspan) WITH FUNCTION timeSpan(tgeogpoint);
-
-/******************************************************************************
  * Transformations
  ******************************************************************************/
 
@@ -300,6 +284,9 @@ AS 'MODULE_PATHNAME', 'Temporal_merge_array'
  * Accessor Functions
  ******************************************************************************/
 
+-- GENERATED-ACCESSORS-BEGIN tpoint — tools/codegen/inherited/generate.py from templates/accessors.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/accessor_families.yaml and re-run.
+
 CREATE FUNCTION tempSubtype(tgeompoint)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_subtype'
@@ -345,9 +332,7 @@ CREATE FUNCTION getValue(tgeogpoint)
   AS 'MODULE_PATHNAME', 'Tinstant_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- There is no getValues() function for temporal points,
--- it is called trajectory() for temporal points
-
+-- timestamp is a reserved word in SQL
 CREATE FUNCTION getTimestamp(tgeompoint)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'Tinstant_timestamptz'
@@ -357,22 +342,14 @@ CREATE FUNCTION getTimestamp(tgeogpoint)
   AS 'MODULE_PATHNAME', 'Tinstant_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION valueSet(tgeompoint)
+-- values is a reserved word in SQL
+CREATE FUNCTION getValues(tgeompoint)
   RETURNS geomset
   AS 'MODULE_PATHNAME', 'Temporal_valueset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION valueSet(tgeogpoint)
+CREATE FUNCTION getValues(tgeogpoint)
   RETURNS geogset
   AS 'MODULE_PATHNAME', 'Temporal_valueset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION valueN(tgeompoint, integer)
-  RETURNS geometry
-  AS 'MODULE_PATHNAME', 'Temporal_value_n'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION valueN(tgeogpoint, integer)
-  RETURNS geography
-  AS 'MODULE_PATHNAME', 'Temporal_value_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- time is a reserved word in SQL
@@ -383,6 +360,16 @@ CREATE FUNCTION getTime(tgeompoint)
 CREATE FUNCTION getTime(tgeogpoint)
   RETURNS tstzspanset
   AS 'MODULE_PATHNAME', 'Temporal_time'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- timeSpan is the bounding period, the tstzspan extent of the temporal value
+CREATE FUNCTION timeSpan(tgeompoint)
+  RETURNS tstzspan
+  AS 'MODULE_PATHNAME', 'Temporal_to_tstzspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION timeSpan(tgeogpoint)
+  RETURNS tstzspan
+  AS 'MODULE_PATHNAME', 'Temporal_to_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION startValue(tgeompoint)
@@ -401,6 +388,24 @@ CREATE FUNCTION endValue(tgeompoint)
 CREATE FUNCTION endValue(tgeogpoint)
   RETURNS geography(Point)
   AS 'MODULE_PATHNAME', 'Temporal_end_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION valueN(tgeompoint, int)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Temporal_value_n'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION valueN(tgeogpoint, int)
+  RETURNS geography
+  AS 'MODULE_PATHNAME', 'Temporal_value_n'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION valueAtTimestamp(tgeompoint, timestamptz)
+  RETURNS geometry(Point)
+  AS 'MODULE_PATHNAME', 'Temporal_value_at_timestamptz'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION valueAtTimestamp(tgeogpoint, timestamptz)
+  RETURNS geography(Point)
+  AS 'MODULE_PATHNAME', 'Temporal_value_at_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION duration(tgeompoint, boundspan boolean DEFAULT FALSE)
@@ -573,6 +578,11 @@ CREATE FUNCTION segments(tgeogpoint)
   RETURNS tgeogpoint[]
   AS 'MODULE_PATHNAME', 'Temporal_segments'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- GENERATED-ACCESSORS-END tpoint
+
+-- The tstzspan cast is backed by the generated timeSpan accessor.
+CREATE CAST (tgeompoint AS tstzspan) WITH FUNCTION timeSpan(tgeompoint);
+CREATE CAST (tgeogpoint AS tstzspan) WITH FUNCTION timeSpan(tgeogpoint);
 
 /*****************************************************************************
  * Shift and scale functions
@@ -683,15 +693,6 @@ CREATE FUNCTION minusTime(tgeompoint, timestamptz)
 CREATE FUNCTION minusTime(tgeogpoint, timestamptz)
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'Temporal_minus_timestamptz'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION valueAtTimestamp(tgeompoint, timestamptz)
-  RETURNS geometry(Point)
-  AS 'MODULE_PATHNAME', 'Temporal_value_at_timestamptz'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION valueAtTimestamp(tgeogpoint, timestamptz)
-  RETURNS geography(Point)
-  AS 'MODULE_PATHNAME', 'Temporal_value_at_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION atTime(tgeompoint, tstzset)

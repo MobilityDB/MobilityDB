@@ -106,20 +106,13 @@ SELECT tint(tfloat '[1.5@2001-01-01, 2.5@2001-01-03]');
 		<itemizedlist>
 			<listitem xml:id="talpha_valueSet">
 				<indexterm significance="normal"><primary><varname>valueSet</varname></primary></indexterm>
-				<para>Return the values of the temporal number or geometry as a set</para>
-				<para><varname>valueSet(tnumber, tgeo) → {numset,geoset}</varname></para>
+				<para>Return the values of a temporal number as a set</para>
+				<para><varname>valueSet(tnumber) → numset</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT valueSet(tint '[1@2001-01-01, 2@2001-01-03]');
 -- {1, 2}
 SELECT valueSet(tfloat '{[1@2001-01-01, 2@2001-01-03), [3@2001-01-03, 4@2001-01-05)}');
 -- {1, 2, 3, 4}
-SELECT asText(valueSet(tgeompoint '{[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02),
-  [Point(0 1)@2001-01-03, Point(1 1)@2001-01-04)}'));
--- {"POINT(0 0)", "POINT(1 1)", "POINT(0 1)"}
-SELECT asText(valueSet(tgeography 
-  '{[Point(0 0)@2001-01-01, Linestring(0 0,1 1)@2001-01-02],
-    [Point(1 1)@2001-01-03, Linestring(0 0,1 1)@2001-01-04]}'));
--- {"POINT(0 0)", "LINESTRING(0 0,1 1)", "POINT(1 1)"}
 </programlisting>
 			</listitem>
 

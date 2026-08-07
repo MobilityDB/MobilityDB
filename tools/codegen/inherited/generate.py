@@ -483,40 +483,6 @@ def _accessors_markers(family: str):
     return begin, f"-- GENERATED-ACCESSORS-END {family}\n"
 
 
-def _acc_skeleton(sig: str, ret: str, sym: str, pre: str = "") -> str:
-    """One accessor CREATE FUNCTION assembled inline from a fixed four-line skeleton
-    (always STRICT — every accessor in the hand files is). `pre` is a leading
-    comment line (with its own trailing newline) or ''. Mirrors `_restr_skeleton`'s
-    shape but kept local: accessors carry no PRE/STRICT template file of their own,
-    and every existing accessor's body is this exact skeleton."""
-    return (f"{pre}CREATE FUNCTION {sig}\n"
-            f"  RETURNS {ret}\n"
-            f"  AS 'MODULE_PATHNAME', '{sym}'\n"
-            f"  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;")
-
-
-def render_accessor_blocks(fam: dict) -> str:
-    """Render one family's accessor region from its `blocks` sequence — the same
-    lit/fns architecture render_restrictions uses. tgeo/tpoint fold `getValues`
-    into a differently-named/positioned `valueSet`, relocate `valueAtTimestamp`
-    under Restriction Functions, and drop `timeSpan` (declared earlier as a cast
-    target), so the fixed canonical order the shared accessors.sql.tmpl assumes
-    cannot reproduce them; a family with an explicit `blocks` list is rendered
-    here instead of by the templated `types` path. `lit` is verbatim text (the
-    banner, blank-line separators, hand comments); `fns` is a list of
-    {sig, ret, sym[, pre]} rendered with `_acc_skeleton`, packed with no blank
-    line and closed by one trailing newline — byte-identical to the committed
-    hand region, every separator baked into a `lit` block."""
-    out = ""
-    for blk in fam["blocks"]:
-        if "lit" in blk:
-            out += blk["lit"]
-        else:
-            out += "\n".join(_acc_skeleton(f["sig"], f["ret"], f["sym"], f.get("pre", ""))
-                             for f in blk["fns"]) + "\n"
-    return out
-
-
 def render_accessors(fam: dict) -> str:
     """Render the accessor region for one family from its per-base-type `types`
     table. ONE renderer serves every family: a spatial subtype is a single-element
@@ -527,10 +493,14 @@ def render_accessors(fam: dict) -> str:
     accessor-outer / type-inner and separated by one blank line; the gated accessors
     slot in at their canonical positions for the types that carry them.
 
-    A family carrying `blocks` instead of `types` diverges from the shared
-    canonical order (see render_accessor_blocks) and is delegated there."""
-    if "blocks" in fam:
-        return render_accessor_blocks(fam)
+    Every accessor_families entry uses this `types` table — geo/tpoint used to carry
+    an explicit `blocks` sequence (getValues folded into a differently-named/
+    positioned valueSet, valueAtTimestamp relocated under Restriction Functions,
+    timeSpan hoisted out as an early cast target) rendered by a since-retired
+    render_accessor_blocks(); normalizing that content onto the canonical order
+    (rename to getValues, timeSpan/valueAtTimestamp back at their template
+    positions, a VALNRET override for tpoint's pre-existing valueN signature) let
+    it join this templated path like every sibling family."""
     types = fam.get("types") or [{"temp": fam["temp"],
                                   "base": fam.get("base", ""),
                                   "baseset": fam.get("baseset", "")}]
@@ -628,10 +598,14 @@ def _sub_type(text: str, t: dict) -> str:
     accessors (startValue/endValue/valueN/valueAtTimestamp): {BASE} via Temporal_* by
     default, but a family whose value is materialized from a companion payload overrides
     them (trgeometry re-applies the pose to its reference geometry -> geometry via
-    Trgeometry_*), while getValue keeps the raw stored {BASE}."""
+    Trgeometry_*), while getValue keeps the raw stored {BASE}. {VALNRET} is valueN's own
+    return type, {VALRET} by default; tgeompoint/tgeogpoint's valueN pre-dates the
+    geometry(Point)/geography(Point) typmod startValue/endValue/valueAtTimestamp carry,
+    so it overrides down to the bare base type to reproduce that pre-existing signature."""
     return (text.replace("{VSET}", t.get("valueset", ""))
                 .replace("{GVSYM}", t.get("gvsym", "Temporal_valueset"))
                 .replace("{VALRET}", t.get("valret", t["base"]))
+                .replace("{VALNRET}", t.get("valnret", t.get("valret", t["base"])))
                 .replace("{VALSYM}", t.get("valsym", "Temporal"))
                 .replace("{BASESET}", t.get("baseset", ""))
                 .replace("{BASE}", t["base"])
