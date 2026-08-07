@@ -125,7 +125,7 @@ Functions</h2></td></tr>
 <div class="textblock"><p >Internal helpers for the static <code>h3index</code> SQL type. </p>
 <p >The static h3index type is the analogue of the static <code>cbuffer</code> type — it provides the base value that the temporal <code>th3index</code> type carries through time. Unlike <code>cbuffer</code>, h3index has no compound payload (it is a 64-bit integer cell identifier), so the helpers here are minimal:</p>
 <ul>
-<li>an input parser that accepts both decimal and hex strings,</li>
+<li>an input parser that delegates to the h3 library, which reads the canonical hexadecimal cell literal with an optional "0x" prefix,</li>
 <li>an output formatter (canonical form is hex, matching h3-pg),</li>
 <li>comparison / ordering / hashing helpers — exposed at the MEOS layer so MobilityDuck and other consumers can reuse them without re-implementing the int64 bit-compare logic. </li>
 </ul>
