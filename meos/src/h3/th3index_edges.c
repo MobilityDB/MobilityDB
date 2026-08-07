@@ -89,9 +89,8 @@ h3_directed_edge_to_gs_boundary(H3Index edge)
 Temporal *
 th3index_are_neighbor_cells(const Temporal *origin, const Temporal *dest)
 {
-  assert(origin); assert(dest);
-  assert(origin->temptype == T_TH3INDEX);
-  assert(dest->temptype == T_TH3INDEX);
+  VALIDATE_TH3INDEX(origin, NULL);
+  VALIDATE_TH3INDEX(dest, NULL);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -118,9 +117,8 @@ th3index_are_neighbor_cells(const Temporal *origin, const Temporal *dest)
 Temporal *
 th3index_cells_to_directed_edge(const Temporal *origin, const Temporal *dest)
 {
-  assert(origin); assert(dest);
-  assert(origin->temptype == T_TH3INDEX);
-  assert(dest->temptype == T_TH3INDEX);
+  VALIDATE_TH3INDEX(origin, NULL);
+  VALIDATE_TH3INDEX(dest, NULL);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -148,7 +146,7 @@ th3index_cells_to_directed_edge(const Temporal *origin, const Temporal *dest)
 Temporal *
 th3index_is_valid_directed_edge(const Temporal *edge)
 {
-  assert(edge); assert(edge->temptype == T_TH3INDEX);
+  VALIDATE_TH3INDEX(edge, NULL);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -174,7 +172,7 @@ th3index_is_valid_directed_edge(const Temporal *edge)
 Temporal *
 th3index_get_directed_edge_origin(const Temporal *edge)
 {
-  assert(edge); assert(edge->temptype == T_TH3INDEX);
+  VALIDATE_TH3INDEX(edge, NULL);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -200,7 +198,7 @@ th3index_get_directed_edge_origin(const Temporal *edge)
 Temporal *
 th3index_get_directed_edge_destination(const Temporal *edge)
 {
-  assert(edge); assert(edge->temptype == T_TH3INDEX);
+  VALIDATE_TH3INDEX(edge, NULL);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -229,7 +227,7 @@ th3index_get_directed_edge_destination(const Temporal *edge)
 Temporal *
 th3index_directed_edge_to_boundary(const Temporal *edge)
 {
-  assert(edge); assert(edge->temptype == T_TH3INDEX);
+  VALIDATE_TH3INDEX(edge, NULL);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));

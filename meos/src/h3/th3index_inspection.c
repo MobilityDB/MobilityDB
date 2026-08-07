@@ -60,7 +60,7 @@
 Temporal *
 th3index_get_resolution(const Temporal *temp)
 {
-  assert(temp); assert(temp->temptype == T_TH3INDEX);
+  VALIDATE_TH3INDEX(temp, NULL);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -86,7 +86,7 @@ th3index_get_resolution(const Temporal *temp)
 Temporal *
 th3index_get_base_cell_number(const Temporal *temp)
 {
-  assert(temp); assert(temp->temptype == T_TH3INDEX);
+  VALIDATE_TH3INDEX(temp, NULL);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -113,7 +113,7 @@ th3index_get_base_cell_number(const Temporal *temp)
 Temporal *
 th3index_is_valid_cell(const Temporal *temp)
 {
-  assert(temp); assert(temp->temptype == T_TH3INDEX);
+  VALIDATE_TH3INDEX(temp, NULL);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -140,7 +140,7 @@ th3index_is_valid_cell(const Temporal *temp)
 Temporal *
 th3index_is_res_class_iii(const Temporal *temp)
 {
-  assert(temp); assert(temp->temptype == T_TH3INDEX);
+  VALIDATE_TH3INDEX(temp, NULL);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -167,7 +167,7 @@ th3index_is_res_class_iii(const Temporal *temp)
 Temporal *
 th3index_is_pentagon(const Temporal *temp)
 {
-  assert(temp); assert(temp->temptype == T_TH3INDEX);
+  VALIDATE_TH3INDEX(temp, NULL);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));

@@ -83,7 +83,7 @@ h3_vertex_to_gs_point(H3Index vertex)
 Temporal *
 th3index_cell_to_vertex(const Temporal *temp, int32 vertex_num)
 {
-  assert(temp); assert(temp->temptype == T_TH3INDEX);
+  VALIDATE_TH3INDEX(temp, NULL);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -111,7 +111,7 @@ th3index_cell_to_vertex(const Temporal *temp, int32 vertex_num)
 Temporal *
 th3index_vertex_to_latlng(const Temporal *temp)
 {
-  assert(temp); assert(temp->temptype == T_TH3INDEX);
+  VALIDATE_TH3INDEX(temp, NULL);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -138,7 +138,7 @@ th3index_vertex_to_latlng(const Temporal *temp)
 Temporal *
 th3index_is_valid_vertex(const Temporal *temp)
 {
-  assert(temp); assert(temp->temptype == T_TH3INDEX);
+  VALIDATE_TH3INDEX(temp, NULL);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));

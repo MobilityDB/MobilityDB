@@ -376,7 +376,7 @@ tpoint_to_th3index_dense(const Temporal *temp, int32 resolution)
 Temporal *
 tgeompoint_to_th3index(const Temporal *temp, int32 resolution)
 {
-  assert(temp); assert(temp->temptype == T_TGEOMPOINT);
+  VALIDATE_TGEOMPOINT(temp, NULL);
   return tpoint_to_th3index_dense(temp, resolution);
 }
 
@@ -394,7 +394,7 @@ tgeompoint_to_th3index(const Temporal *temp, int32 resolution)
 Temporal *
 tgeogpoint_to_th3index(const Temporal *temp, int32 resolution)
 {
-  assert(temp); assert(temp->temptype == T_TGEOGPOINT);
+  VALIDATE_TGEOGPOINT(temp, NULL);
   return tpoint_to_th3index_dense(temp, resolution);
 }
 
@@ -410,7 +410,7 @@ tgeogpoint_to_th3index(const Temporal *temp, int32 resolution)
 Temporal *
 th3index_to_tgeogpoint(const Temporal *temp)
 {
-  assert(temp); assert(temp->temptype == T_TH3INDEX);
+  VALIDATE_TH3INDEX(temp, NULL);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -442,7 +442,7 @@ th3index_to_tgeogpoint(const Temporal *temp)
 Temporal *
 th3index_to_tgeompoint(const Temporal *temp)
 {
-  assert(temp); assert(temp->temptype == T_TH3INDEX);
+  VALIDATE_TH3INDEX(temp, NULL);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -469,7 +469,7 @@ th3index_to_tgeompoint(const Temporal *temp)
 Temporal *
 th3index_cell_to_boundary(const Temporal *temp)
 {
-  assert(temp); assert(temp->temptype == T_TH3INDEX);
+  VALIDATE_TH3INDEX(temp, NULL);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));

@@ -178,7 +178,8 @@ h3_gs_great_circle_distance_meos(const GSERIALIZED *a, const GSERIALIZED *b,
 Temporal *
 th3index_cell_area(const Temporal *temp, const char *unit)
 {
-  assert(temp); assert(temp->temptype == T_TH3INDEX);
+  VALIDATE_TH3INDEX(temp, NULL);
+  VALIDATE_NOT_NULL(unit, NULL);
 
   H3Unit u = h3_unit_from_cstring(unit);
 
@@ -208,7 +209,8 @@ th3index_cell_area(const Temporal *temp, const char *unit)
 Temporal *
 th3index_edge_length(const Temporal *temp, const char *unit)
 {
-  assert(temp); assert(temp->temptype == T_TH3INDEX);
+  VALIDATE_TH3INDEX(temp, NULL);
+  VALIDATE_NOT_NULL(unit, NULL);
 
   H3Unit u = h3_unit_from_cstring(unit);
 
@@ -245,9 +247,9 @@ Temporal *
 tgeogpoint_great_circle_distance(const Temporal *a, const Temporal *b,
   const char *unit)
 {
-  assert(a); assert(b);
-  assert(a->temptype == T_TGEOGPOINT);
-  assert(b->temptype == T_TGEOGPOINT);
+  VALIDATE_TGEOGPOINT(a, NULL);
+  VALIDATE_TGEOGPOINT(b, NULL);
+  VALIDATE_NOT_NULL(unit, NULL);
 
   H3Unit u = h3_unit_from_cstring(unit);
 
