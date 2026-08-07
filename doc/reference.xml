@@ -52,6 +52,13 @@
 					<entry><varname>ttext</varname></entry>
 				</row>
 				<row>
+					<entry><emphasis role="bold"><varname>jsonb</varname></emphasis></entry>
+					<entry><varname>jsonbset</varname></entry>
+					<entry><varname/></entry>
+					<entry><varname/></entry>
+					<entry><varname>tjsonb</varname></entry>
+				</row>
+				<row>
 					<entry><emphasis role="bold"><varname>integer</varname></emphasis></entry>
 					<entry><varname>intset</varname></entry>
 					<entry><varname>intspan</varname></entry>
@@ -105,7 +112,7 @@
 					<entry><varname>poseset</varname></entry>
 					<entry><varname/></entry>
 					<entry><varname/></entry>
-					<entry><varname>tpose</varname></entry>
+					<entry><varname>tpose</varname>, <varname>trgeometry</varname></entry>
 				</row>
 				<row>
 					<entry><emphasis role="bold"><varname>npoint</varname></emphasis></entry>

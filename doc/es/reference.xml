@@ -39,17 +39,24 @@
 			<tbody>
 				<row>
 					<entry><emphasis role="bold"><varname>bool</varname></emphasis></entry>
-					<entry><varname></varname></entry>
-					<entry><varname></varname></entry>
-					<entry><varname></varname></entry>
+					<entry><varname/></entry>
+					<entry><varname/></entry>
+					<entry><varname/></entry>
 					<entry><varname>tbool</varname></entry>
 				</row>
 				<row>
 					<entry><emphasis role="bold"><varname>text</varname></emphasis></entry>
 					<entry><varname>textset</varname></entry>
-					<entry><varname></varname></entry>
-					<entry><varname></varname></entry>
+					<entry><varname/></entry>
+					<entry><varname/></entry>
 					<entry><varname>ttext</varname></entry>
+				</row>
+				<row>
+					<entry><emphasis role="bold"><varname>jsonb</varname></emphasis></entry>
+					<entry><varname>jsonbset</varname></entry>
+					<entry><varname/></entry>
+					<entry><varname/></entry>
+					<entry><varname>tjsonb</varname></entry>
 				</row>
 				<row>
 					<entry><emphasis role="bold"><varname>integer</varname></emphasis></entry>
@@ -77,48 +84,48 @@
 					<entry><varname>dateset</varname></entry>
 					<entry><varname>datespan</varname></entry>
 					<entry><varname>datespanset</varname></entry>
-					<entry><varname></varname></entry>
+					<entry><varname/></entry>
 				</row>
 				<row>
 					<entry><emphasis role="bold"><varname>timestamptz</varname></emphasis></entry>
 					<entry><varname>tstzset</varname></entry>
 					<entry><varname>tstzspan</varname></entry>
 					<entry><varname>tstzspanset</varname></entry>
-					<entry><varname></varname></entry>
+					<entry><varname/></entry>
 				</row>
 				<row>
 					<entry><emphasis role="bold"><varname>geometry</varname></emphasis></entry>
 					<entry><varname>geomset</varname></entry>
-					<entry><varname></varname></entry>
-					<entry><varname></varname></entry>
-					<entry><varname>tgeompoint</varname></entry>
+					<entry><varname/></entry>
+					<entry><varname/></entry>
+					<entry><varname>tgeompoint</varname>, <varname>tgeometry</varname></entry>
 				</row>
 				<row>
 					<entry><emphasis role="bold"><varname>geography</varname></emphasis></entry>
 					<entry><varname>geogset</varname></entry>
-					<entry><varname></varname></entry>
-					<entry><varname></varname></entry>
+					<entry><varname/></entry>
+					<entry><varname/></entry>
 					<entry><varname>tgeogpoint</varname>, <varname>tgeography</varname></entry>
 				</row>
 				<row>
 					<entry><emphasis role="bold"><varname>pose</varname></emphasis></entry>
 					<entry><varname>poseset</varname></entry>
-					<entry><varname></varname></entry>
-					<entry><varname></varname></entry>
-					<entry><varname>tpose</varname></entry>
+					<entry><varname/></entry>
+					<entry><varname/></entry>
+					<entry><varname>tpose</varname>, <varname>trgeometry</varname></entry>
 				</row>
 				<row>
 					<entry><emphasis role="bold"><varname>npoint</varname></emphasis></entry>
 					<entry><varname>npointset</varname></entry>
-					<entry><varname></varname></entry>
-					<entry><varname></varname></entry>
+					<entry><varname/></entry>
+					<entry><varname/></entry>
 					<entry><varname>tnpoint</varname></entry>
 				</row>
 				<row>
 					<entry><emphasis role="bold"><varname>cbuffer</varname></emphasis></entry>
 					<entry><varname>cbufferset</varname></entry>
-					<entry><varname></varname></entry>
-					<entry><varname></varname></entry>
+					<entry><varname/></entry>
+					<entry><varname/></entry>
 					<entry><varname>tcbuffer</varname></entry>
 				</row>
 				<row>

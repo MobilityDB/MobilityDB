@@ -59,3 +59,11 @@ jobs:
         uses: actions/checkout@v4
       - name: Check spatial-relationship (geo x tgeo) grid completeness
         run: python3 tools/scripts/check_spatialrel_orthogonality.py
+
+  templatetypes_check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Check that the templatetypes table documents the type catalog
+        run: python3 tools/scripts/check_templatetypes_doc.py

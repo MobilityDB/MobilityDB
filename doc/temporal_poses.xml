@@ -300,7 +300,7 @@ SELECT asEWKT(setSRID(pose 'Pose(Point(0 0),1)', 4326));
 				</listitem>
 
 				<listitem xml:id="pose_transform">
-					<indexterm significance="normal"><primary><varname> </varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>transform</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>transformPipeline</varname></primary></indexterm>
 					<para>Transform to a spatial reference identifier</para>
 					<para><varname>transform(pose,integer) → pose</varname></para>
