@@ -5,6 +5,7 @@ SET(LOCAL_FILES
   253_th3index
   254_th3index_compops
   255_th3index_spatialfuncs
+  257_th3index_boxops
   258_th3index_topops
   259_th3index_posops
   262_th3index_spatialrels

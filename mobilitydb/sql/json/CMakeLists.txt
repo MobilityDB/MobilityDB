@@ -5,6 +5,7 @@ SET(LOCAL_FILES
   454_tjsonb_jsonfuncs
   456_tjsonb_op
   458_tjsonb_compops
+  459_tjsonb_boxops
   460_tjsonb_topops
   462_tjsonb_posops
   464_tjsonb_aggfuncs

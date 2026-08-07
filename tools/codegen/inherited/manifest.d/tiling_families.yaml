@@ -41,7 +41,14 @@ tiling_families:
   - lit: "/*****************************************************************************\n * Multidimensional tiling\n *****************************************************************************/\n\nCREATE TYPE time_tjsonb AS (\n  time timestamptz,\n  temp tjsonb\n);\n\n"
   - fns:
     - {sig: "timeSplit(tjsonb, bin_width interval,\n    origin timestamptz DEFAULT '2000-01-03')", ret: "setof time_tjsonb", sym: "Temporal_time_split"}
-  - lit: "\n/*****************************************************************************/\n\n-- spans()\nCREATE FUNCTION spans(tjsonb)\n  RETURNS tstzspan[]\n  AS 'MODULE_PATHNAME', 'Temporal_spans'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n-- splitNSpans()\nCREATE FUNCTION splitNSpans(tjsonb, integer)\n  RETURNS tstzspan[]\n  AS 'MODULE_PATHNAME', 'Temporal_split_n_spans'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n-- splitEachNSpans()\nCREATE FUNCTION splitEachNSpans(tjsonb, integer)\n  RETURNS tstzspan[]\n  AS 'MODULE_PATHNAME', 'Temporal_split_each_n_spans'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n"
+  - lit: "\n"
+- family: json_boxops
+  file: mobilitydb/sql/json/459_tjsonb_boxops.in.sql
+  reference: true
+  begin: "@brief Bounding box operations for temporal JSONB values"
+  end: ""
+  blocks:
+  - lit: "/**\n * @file\n * @brief Bounding box operations for temporal JSONB values\n */\n\n-- spans()\nCREATE FUNCTION spans(tjsonb)\n  RETURNS tstzspan[]\n  AS 'MODULE_PATHNAME', 'Temporal_spans'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n-- splitNSpans()\nCREATE FUNCTION splitNSpans(tjsonb, integer)\n  RETURNS tstzspan[]\n  AS 'MODULE_PATHNAME', 'Temporal_split_n_spans'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n-- splitEachNSpans()\nCREATE FUNCTION splitEachNSpans(tjsonb, integer)\n  RETURNS tstzspan[]\n  AS 'MODULE_PATHNAME', 'Temporal_split_each_n_spans'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n/*****************************************************************************/"
 - family: npoint
   file: mobilitydb/sql/npoint/302_tnpoint.in.sql
   reference: true
@@ -312,7 +319,14 @@ tiling_families:
   - lit: "CREATE TYPE time_th3index AS (\n  time timestamptz,\n  temp th3index\n);\n\n"
   - fns:
     - {sig: "timeSplit(th3index, bin_width interval,\n    origin timestamptz DEFAULT '2000-01-03')", ret: "setof time_th3index", sym: "Temporal_time_split"}
-  - lit: "\n/******************************************************************************/\n\n-- spans()\nCREATE FUNCTION spans(th3index)\n  RETURNS tstzspan[]\n  AS 'MODULE_PATHNAME', 'Temporal_spans'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n-- splitNSpans()\nCREATE FUNCTION splitNSpans(th3index, integer)\n  RETURNS tstzspan[]\n  AS 'MODULE_PATHNAME', 'Temporal_split_n_spans'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n-- splitEachNSpans()\nCREATE FUNCTION splitEachNSpans(th3index, integer)\n  RETURNS tstzspan[]\n  AS 'MODULE_PATHNAME', 'Temporal_split_each_n_spans'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n"
+  - lit: "\n"
+- family: th3index_boxops
+  file: mobilitydb/sql/h3/257_th3index_boxops.in.sql
+  reference: true
+  begin: "@brief Bounding box operations for temporal H3 cells"
+  end: ""
+  blocks:
+  - lit: "/**\n * @file\n * @brief Bounding box operations for temporal H3 cells\n */\n\n-- spans()\nCREATE FUNCTION spans(th3index)\n  RETURNS tstzspan[]\n  AS 'MODULE_PATHNAME', 'Temporal_spans'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n-- splitNSpans()\nCREATE FUNCTION splitNSpans(th3index, integer)\n  RETURNS tstzspan[]\n  AS 'MODULE_PATHNAME', 'Temporal_split_n_spans'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n-- splitEachNSpans()\nCREATE FUNCTION splitEachNSpans(th3index, integer)\n  RETURNS tstzspan[]\n  AS 'MODULE_PATHNAME', 'Temporal_split_each_n_spans'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n/*****************************************************************************/"
 
 - family: quadbin
   file: mobilitydb/sql/quadbin/353_tquadbin.in.sql
@@ -324,4 +338,11 @@ tiling_families:
   - lit: "CREATE TYPE time_tquadbin AS (\n  time timestamptz,\n  temp tquadbin\n);\n\n"
   - fns:
     - {sig: "timeSplit(tquadbin, bin_width interval,\n    origin timestamptz DEFAULT '2000-01-03')", ret: "setof time_tquadbin", sym: "Temporal_time_split"}
-  - lit: "\n/******************************************************************************/\n\n-- spans()\nCREATE FUNCTION spans(tquadbin)\n  RETURNS tstzspan[]\n  AS 'MODULE_PATHNAME', 'Temporal_spans'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n-- splitNSpans()\nCREATE FUNCTION splitNSpans(tquadbin, integer)\n  RETURNS tstzspan[]\n  AS 'MODULE_PATHNAME', 'Temporal_split_n_spans'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n-- splitEachNSpans()\nCREATE FUNCTION splitEachNSpans(tquadbin, integer)\n  RETURNS tstzspan[]\n  AS 'MODULE_PATHNAME', 'Temporal_split_each_n_spans'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n"
+  - lit: "\n"
+- family: quadbin_boxops
+  file: mobilitydb/sql/quadbin/357_tquadbin_boxops.in.sql
+  reference: true
+  begin: "@brief Bounding box operations for temporal QUADBIN cells"
+  end: ""
+  blocks:
+  - lit: "/**\n * @file\n * @brief Bounding box operations for temporal QUADBIN cells\n */\n\n-- spans()\nCREATE FUNCTION spans(tquadbin)\n  RETURNS tstzspan[]\n  AS 'MODULE_PATHNAME', 'Temporal_spans'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n-- splitNSpans()\nCREATE FUNCTION splitNSpans(tquadbin, integer)\n  RETURNS tstzspan[]\n  AS 'MODULE_PATHNAME', 'Temporal_split_n_spans'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n-- splitEachNSpans()\nCREATE FUNCTION splitEachNSpans(tquadbin, integer)\n  RETURNS tstzspan[]\n  AS 'MODULE_PATHNAME', 'Temporal_split_each_n_spans'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n/*****************************************************************************/"
