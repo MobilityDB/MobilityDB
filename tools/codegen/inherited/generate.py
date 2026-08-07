@@ -93,6 +93,14 @@ def apply_conditionals(text: str, sub: dict) -> str:
 
 
 def render(behaviour: str, sub: dict) -> str:
+    if behaviour == "compops":
+        # compops is not a flat {TOKEN}-substitution template like the other
+        # subtypes behaviours: it is the shared, DATA-driven engine defined below
+        # (render_compops_body), fed a one-pair spec built from this subtype's own
+        # base/temp/basesym/brief fields — the same engine the multi-pair
+        # `compops_families:` entries (temporal, tgeo, tpoint) use.
+        return BANNER.format(tmpl="compops.sql.tmpl") + render_compops_body(
+            _compops_spec_from_subtype(sub))
     tmpl = apply_conditionals((TEMPLATES / f"{behaviour}.sql.tmpl").read_text(), sub)
     # The cell-boundary function name defaults to `<temp>CellToBoundary`
     # (e.g. tquadbinCellToBoundary), but the h3 family - whose cell functions carry
@@ -3227,126 +3235,253 @@ def bootstrap_tiling(filetext: str, fam: dict, rendered: str) -> str:
     return filetext[:start] + begin_m + rendered + end_m + filetext[end:]
 
 
-# --- SQL Temporal comparison sub-family (SQL, whole-file, base-type multi-quartet) -
-# The base-type comparison surface carried whole by 030_temporal_compops.in.sql: the
-# tnumber_supportfn index-support function, the ever/always eEq/eNe/eLt/eGt/eLe/eGe
-# functions+operators (base-temporal, temporal-base and, for eq/ne, temporal-temporal
-# directions) and the temporal tEq/tNe/tLt/tGt/tLe/tGe functions+operators
-# (base-temporal/temporal-base/temporal-temporal, one 3-function/3-operator group per
-# base type), across the five alpha base types (tbool/tint/tbigint/tfloat/ttext) — a
-# single family, not one per type (the base-type loop lives entirely inside the one
-# file, the 022_temporal `ops: base` precedent). Every statement in the file is one
-# of THREE skeletons, proven exhaustive by round-trip over the whole region (237
-# CREATE FUNCTIONs, 234 CREATE OPERATORs, zero leftover non-lit text):
-# templates/compops_func.sql.tmpl (SIG/RET/SYM, an optional SUPPORT line for the
-# tnumber-typed overloads); templates/compops_op_evalways.sql.tmpl (the ever/always
-# `?=`-family shape: LEFTARG/RIGHTARG first, then PROCEDURE, NEGATOR,
-# RESTRICT/JOIN); templates/compops_op_temporal.sql.tmpl (the temporal `#=`-family
-# shape: PROCEDURE first, then LEFTARG/RIGHTARG, COMMUTATOR, no RESTRICT/JOIN). The
-# section banners, `-- Temporal <type>` dividers and blank-line separators — whose
-# eEq/eNe/aEq/aNe vs eLt/eLe/eGt/eGe/aLt/aLe/aGt/aGe grouping order is NOT a uniform
-# nested loop (the base-temporal/temporal-base pass groups ever-then-always per op,
-# the eLt/Le/Gt/Ge run groups all-ever-then-all-always, and the temporal-temporal
-# pass regroups again) — are reproduced BYTE-EXACT via `lit` blocks in the manifest,
-# committed order preserved, never normalized into a synthetic loop; the
-# skeleton-shaped statements go in `items` blocks (mixed func/op_ea/op_t entries,
-# packed with no blank line, closed by one trailing newline — the tiling-surface
-# model). The whole file (from its own `@file`/`@brief` doc comment past the license
-# header down to EOF) is the generated region — the tgeo_tile whole_file/end=""
-# precedent.
-def _compops_markers(family: str):
-    begin = (f"-- GENERATED-COMPOPS-BEGIN {family} — "
-             "tools/codegen/inherited/generate.py from templates/compops_*.sql.tmpl;\n"
-             "-- DO NOT EDIT BY HAND; edit the templates + manifest.d/compops_families.yaml "
-             "and re-run.\n")
-    return begin, f"-- GENERATED-COMPOPS-END {family}\n"
+# --- SQL comparison-operator behaviour (ONE mechanism for every family) -------
+# The ever/always (`?=`/`%=`/`?<>`/`%<>`/...) and temporal-valued (`#=`/`#<>`/`#<`/
+# ...) SQL comparison surface is a single, whole-file, DATA-driven engine used by
+# every family that has it: the single-(base,temp)-pair families that reach it via
+# `subtypes:` + `files: [compops, ...]` (cbuffer, jsonb, quadbin, h3index, npoint,
+# pose, trgeometry, pcpoint, pcpatch — `render()` builds their one-pair spec from
+# the subtype's own base/temp/basesym fields, see `_compops_spec_from_subtype`) and
+# the multi-pair families that declare an explicit `compops_families:` entry
+# (temporal: 5 base types sharing one generic base/temporal C symbol per op;
+# tgeo/tpoint: 2 base types — geometry/geography — sharing one generic geo/tgeo C
+# symbol per op). Every compops file is fully generated (the subtypes whole-file
+# model, GENERATED banner included); there is no hand-written region left to
+# splice.
+#
+# A "pair" is one (base, temp) SQL-type combination the family compares. Every
+# pair always gets Eq/Ne; a pair whose `orderable: true` additionally gets
+# Lt/Le/Gt/Ge (temporal's int/bigint/float/text — not boolean). The family-level
+# `basesym`/`tempsym` are the tokens the C symbol names use in place of the SQL
+# type names (default: the pair's own base/temp names, i.e. one C function per SQL
+# type — cbuffer's `Ever_eq_cbuffer_tcbuffer`); a family whose C implementation
+# dispatches on the runtime Oid instead overrides them to one token shared by every
+# pair (temporal: "base"/"temporal" -> `Ever_eq_base_temporal`; tgeo/tpoint:
+# "geo"/"tgeo" -> `Ever_eq_geo_tgeo` for BOTH the geometry and the geography pair).
+# One further irregularity this does NOT paper over: the temporal-VALUED
+# (`#=`-family) temp-temp direction resolves through a single, fully-generic MEOS
+# entry point regardless of family (`Teq_temporal_temporal`, never
+# `Teq_tgeo_tgeo`), so that one symbol is fixed text, not `{tempsym}_{tempsym}` —
+# encoded once in `_compops_t_group`, not per family.
+#
+# Statement-group order (proven by round-tripping every already-governed family —
+# the template's own emission order and the tgeo/tpoint committed files already
+# agree byte-for-byte on it, so it is both the majority AND the mechanism's native
+# shape; 030_temporal_compops was the one outlier, internally inconsistent between
+# its own regions, normalized here to match): DIRECTION outer (base-temp,
+# temp-base, temp-temp), PREDICATE next (Eq, Ne, then Lt, Le, Gt, Ge for the
+# orderable pairs), QUANTIFIER innermost for the ever/always region (Ever func(s),
+# Ever op(s), Always func(s), Always op(s)); the temporal-valued region follows
+# every ever/always direction, grouped PREDICATE outer then PAIR (each pair's
+# base-temp/temp-base/temp-temp triad together).
+#
+_COMPOPS_TOP = "/" + "*" * 77
+_COMPOPS_BOT = " " + "*" * 77 + "/"
+_COMPOPS_SOLO = "/" + "*" * 77 + "/"
 
 
-def _compops_skeleton(item: dict) -> str:
-    """One comparison-surface statement from its shared skeleton (no trailing
-    newline, so blocks can be joined with explicit newline control). A `func` item
-    is a CREATE FUNCTION (templates/compops_func.sql.tmpl; an optional `support`
-    inserts a `SUPPORT <fn>` line for the tnumber-typed overloads). An `op_ea` item
-    is an ever/always CREATE OPERATOR (templates/compops_op_evalways.sql.tmpl,
-    LEFTARG/RIGHTARG-first with NEGATOR/RESTRICT/JOIN). An `op_t` item is a temporal
-    CREATE OPERATOR (templates/compops_op_temporal.sql.tmpl, PROCEDURE-first with
-    COMMUTATOR only)."""
-    if item["kind"] == "func":
-        tmpl = (TEMPLATES / "compops_func.sql.tmpl").read_text()
-        support = f"  SUPPORT {item['support']}\n" if item.get("support") else ""
-        return (tmpl.replace("{SIG}", item["sig"]).replace("{RET}", item["ret"])
-                    .replace("{SYM}", item["sym"]).replace("{SUPPORT}", support)
-                    .rstrip("\n"))
-    if item["kind"] == "op_ea":
-        tmpl = (TEMPLATES / "compops_op_evalways.sql.tmpl").read_text()
-        return (tmpl.replace("{OP}", item["op"]).replace("{L}", item["L"])
-                    .replace("{R}", item["R"]).replace("{PROC}", item["proc"])
-                    .replace("{NEG}", item["neg"]).replace("{REST}", item["rest"])
-                    .replace("{JOIN}", item["join"]).rstrip("\n"))
+def _compops_h2(text: str) -> str:
+    """A `/***** {text} *****/` section banner — the shared MobilityDB SQL file
+    style (license header, boxops, tiling, ... all use the same 79-column rule)."""
+    return f"{_COMPOPS_TOP}\n * {text}\n{_COMPOPS_BOT}\n\n"
+
+
+# key, SQL-name Cap(italized), orderable-only, ever/always operator + negator,
+# temporal operator + commutator. Fixed across every family (a property of the
+# predicate itself, not a per-family choice) — the (Lt, Gt) and (Le, Ge) pairs
+# share the same shape, just swapped.
+_COMPOPS_PREDICATES = [
+    {"key": "eq", "cap": "Eq", "ordered": False,
+     "ever_op": "?=", "always_op": "%=", "ever_neg": "%<>", "always_neg": "?<>",
+     "t_op": "#=", "t_comm": "#="},
+    {"key": "ne", "cap": "Ne", "ordered": False,
+     "ever_op": "?<>", "always_op": "%<>", "ever_neg": "%=", "always_neg": "?=",
+     "t_op": "#<>", "t_comm": "#<>"},
+    {"key": "lt", "cap": "Lt", "ordered": True,
+     "ever_op": "?<", "always_op": "%<", "ever_neg": "%>=", "always_neg": "?>=",
+     "t_op": "#<", "t_comm": "#>"},
+    {"key": "le", "cap": "Le", "ordered": True,
+     "ever_op": "?<=", "always_op": "%<=", "ever_neg": "%>", "always_neg": "?>",
+     "t_op": "#<=", "t_comm": "#>="},
+    {"key": "gt", "cap": "Gt", "ordered": True,
+     "ever_op": "?>", "always_op": "%>", "ever_neg": "%<=", "always_neg": "?<=",
+     "t_op": "#>", "t_comm": "#<"},
+    {"key": "ge", "cap": "Ge", "ordered": True,
+     "ever_op": "?>=", "always_op": "%>=", "ever_neg": "%<", "always_neg": "?<",
+     "t_op": "#>=", "t_comm": "#<="},
+]
+
+_COMPOPS_T_HEADING = {
+    "eq": "Temporal equal", "ne": "Temporal not equal",
+    "lt": "Temporal less than", "le": "Temporal less than or equal",
+    "gt": "Temporal greater than", "ge": "Temporal greater than or equal",
+}
+
+_COMPOPS_DIRECTIONS = ["base_temp", "temp_base", "temp_temp"]
+
+
+def _compops_lr(direction: str, pair: dict, basesym: str, tempsym: str):
+    """The (LEFTARG, RIGHTARG) SQL types and the (left, right) C-symbol tokens for
+    one pair in one direction."""
+    if direction == "base_temp":
+        return pair["base"], pair["temp"], basesym, tempsym
+    if direction == "temp_base":
+        return pair["temp"], pair["base"], tempsym, basesym
+    return pair["temp"], pair["temp"], tempsym, tempsym
+
+
+def _compops_func(sig: str, ret: str, sym: str, support: str | None) -> str:
+    tmpl = (TEMPLATES / "compops_func.sql.tmpl").read_text()
+    sup = f"  SUPPORT {support}\n" if support else ""
+    return (tmpl.replace("{SIG}", sig).replace("{RET}", ret).replace("{SYM}", sym)
+                .replace("{SUPPORT}", sup).rstrip("\n"))
+
+
+def _compops_op_ea(op: str, l: str, r: str, proc: str, neg: str, rest: str,
+                    join: str) -> str:
+    tmpl = (TEMPLATES / "compops_op_evalways.sql.tmpl").read_text()
+    return (tmpl.replace("{OP}", op).replace("{L}", l).replace("{R}", r)
+                .replace("{PROC}", proc).replace("{NEG}", neg)
+                .replace("{REST}", rest).replace("{JOIN}", join).rstrip("\n"))
+
+
+def _compops_op_t(op: str, proc: str, l: str, r: str, comm: str) -> str:
     tmpl = (TEMPLATES / "compops_op_temporal.sql.tmpl").read_text()
-    return (tmpl.replace("{OP}", item["op"]).replace("{PROC}", item["proc"])
-                .replace("{L}", item["L"]).replace("{R}", item["R"])
-                .replace("{COMM}", item["comm"]).rstrip("\n"))
+    return (tmpl.replace("{OP}", op).replace("{PROC}", proc).replace("{L}", l)
+                .replace("{R}", r).replace("{COMM}", comm).rstrip("\n"))
 
 
-def render_compops(fam: dict) -> str:
-    """Render one family's comparison block from its `blocks` sequence. A block is a
-    verbatim `lit` (the section banners, per-type dividers and blank-line
-    separators, kept exactly as the hand file) or an `items` list (the
-    func/op_ea/op_t statements rendered from the shared skeletons, packed with no
-    blank line and closed by one trailing newline). Blocks concatenate with no
-    automatic separator — every separator is baked into the `lit` blocks — so the
-    rendered text is byte-identical to the committed region (the tiling-surface
-    model)."""
+def _compops_ea_group(pred: dict, direction: str, pairs: list, basesym: str,
+                       tempsym: str) -> str:
+    """One direction's Ever+Always func/op block for one predicate; empty if no
+    pair in this family carries the predicate (an orderable-only predicate on a
+    family with no orderable pair)."""
+    applic = [p for p in pairs if not pred["ordered"] or p.get("orderable")]
+    if not applic:
+        return ""
     out = ""
-    for blk in fam["blocks"]:
-        if "lit" in blk:
-            out += blk["lit"]
-        else:
-            out += "\n".join(_compops_skeleton(it) for it in blk["items"]) + "\n"
+    for qual, prefix, op_key, neg_key in (
+            ("Ever", "e", "ever_op", "ever_neg"),
+            ("Always", "a", "always_op", "always_neg")):
+        funcs, ops = [], []
+        for p in applic:
+            l, r, lsym, rsym = _compops_lr(direction, p, basesym, tempsym)
+            sym = f"{qual}_{pred['key']}_{lsym}_{rsym}"
+            support = p.get("eqsupport") if pred["key"] == "eq" else None
+            funcs.append(_compops_func(f"{prefix}{pred['cap']}({l}, {r})",
+                                        "boolean", sym, support))
+            ops.append(_compops_op_ea(pred[op_key], l, r, f"{prefix}{pred['cap']}",
+                                       pred[neg_key], p["rest"], p["join"]))
+        out += "\n".join(funcs) + "\n\n" + "\n".join(ops) + "\n\n"
     return out
 
 
-def extract_compops(filetext: str, fam: dict) -> str:
-    """Return the committed hand comparison block. Marker-aware: if the
-    GENERATED-COMPOPS region exists, slice between its markers; otherwise slice
-    from the `/*` opening the family's own file doc comment (found via the family's
-    `begin` anchor) down to EOF for this whole_file family, mirroring
-    extract_tiling."""
-    begin, end = _compops_markers(fam["family"])
-    if begin in filetext:
-        b = filetext.index(begin) + len(begin)
-        e = filetext.index(end)
-        return filetext[b:e]
-    i = filetext.index(fam["begin"])
-    start = filetext.rfind("/*", 0, i)
-    if fam.get("whole_file"):
-        return filetext[start:len(filetext)]
-    j = filetext.index(fam["end"])
-    return filetext[start:filetext.rfind("/*", 0, j)]
+def _compops_t_group(pred: dict, pairs: list, basesym: str, tempsym: str) -> str:
+    """The temporal-valued (`#=`-family) region for one predicate: one
+    base-temp/temp-base/temp-temp triad per applicable pair, pairs separated by a
+    plain section rule."""
+    applic = [p for p in pairs if not pred["ordered"] or p.get("orderable")]
+    if not applic:
+        return ""
+    groups = []
+    for p in applic:
+        funcs, ops = [], []
+        for direction in _COMPOPS_DIRECTIONS:
+            l, r, lsym, rsym = _compops_lr(direction, p, basesym, tempsym)
+            if direction == "temp_temp":
+                lsym = rsym = "temporal"
+            sym = f"T{pred['key']}_{lsym}_{rsym}"
+            funcs.append(_compops_func(f"t{pred['cap']}({l}, {r})", "tbool", sym, None))
+            ops.append(_compops_op_t(pred["t_op"], f"t{pred['cap']}", l, r,
+                                      pred["t_comm"]))
+        groups.append("\n".join(funcs) + "\n\n" + "\n".join(ops) + "\n\n")
+    return (_COMPOPS_SOLO + "\n\n").join(groups)
 
 
-def splice_compops(filetext: str, family: str, rendered: str) -> str:
-    begin, end = _compops_markers(family)
-    b = filetext.index(begin) + len(begin)
-    e = filetext.index(end)
-    return filetext[:b] + rendered + filetext[e:]
+def render_compops_body(spec: dict) -> str:
+    """One family's whole compops file body (license header through EOF; the
+    caller prepends the GENERATED banner). `spec`: `brief` (the @file @brief noun
+    phrase), optional `note` (an extra @note paragraph — temporal only), family
+    `basesym`/`tempsym` (the C-symbol tokens; default to the first pair's own
+    base/temp SQL name), optional `support` ({sig, ret, sym} for a self-declared
+    index-support function — temporal/tgeo; a family whose support function is
+    declared by a sibling file, e.g. tpoint/cbuffer, omits it and just references
+    the name via each pair's `eqsupport`), and `pairs` (each {base, temp, rest,
+    join}, optional `orderable`, `eqsupport`) — by the time this function sees
+    them, every pair already carries `base` (either hand-paired 1:1 with `temp`
+    in a `subtypes:` entry via `_compops_spec_from_subtype`, or derived from
+    `temp` by `render_compops` for a `compops_families` entry; see
+    `catalog_temptype_basetype`)."""
+    pairs = spec["pairs"]
+    basesym = spec.get("basesym") or pairs[0]["base"]
+    tempsym = spec.get("tempsym") or pairs[0]["temp"]
+    note = ""
+    if spec.get("note"):
+        note = "\n * @note " + spec["note"].replace("\n", "\n * ")
+    header = (TEMPLATES / "compops.sql.tmpl").read_text()
+    out = header.replace("{BRIEF}", spec["brief"]).replace("{NOTE}", note)
+    if spec.get("support"):
+        s = spec["support"]
+        out += _compops_h2("Index Support Function")
+        out += _compops_func(s["sig"], s["ret"], s["sym"], None) + "\n\n"
+    out += _compops_h2("Ever/Always Comparison Functions")
+    for i, direction in enumerate(_COMPOPS_DIRECTIONS):
+        for pred in _COMPOPS_PREDICATES:
+            out += _compops_ea_group(pred, direction, pairs, basesym, tempsym)
+        if i < len(_COMPOPS_DIRECTIONS) - 1:
+            out += _COMPOPS_SOLO + "\n\n"
+    for pred in _COMPOPS_PREDICATES:
+        t = _compops_t_group(pred, pairs, basesym, tempsym)
+        if not t:
+            continue
+        out += _compops_h2(_COMPOPS_T_HEADING[pred["key"]]) + t
+    out = re.sub(r"\n{3,}", "\n\n", out)
+    return out.rstrip("\n") + "\n" + _COMPOPS_SOLO + "\n"
 
 
-def bootstrap_compops(filetext: str, fam: dict, rendered: str) -> str:
-    """Insert the GENERATED-COMPOPS markers around the family's committed hand block
-    (sliced by the same anchor span extract uses), so a future non-reference emit is
-    fully declarative with no hand-placed marker. Idempotent: once the markers exist
-    the reference/splice path owns the region. Not run while the family is
-    reference-only (validate-only)."""
-    i = filetext.index(fam["begin"])
-    start = filetext.rfind("/*", 0, i)
-    begin_m, end_m = _compops_markers(fam["family"])
-    if fam.get("whole_file"):
-        return filetext[:start] + begin_m + rendered + end_m
-    j = filetext.index(fam["end"])
-    end = filetext.rfind("/*", 0, j)
-    return filetext[:start] + begin_m + rendered + end_m + filetext[end:]
+def _compops_spec_from_subtype(sub: dict) -> dict:
+    """The one-pair spec for a `subtypes:` family reaching compops via its generic
+    `files:` list — every one of these families shares the shape the old flat
+    template used to hardcode: `tspatial_sel`/`tspatial_joinsel` on every operator,
+    `tspatial_supportfn` on Eq, no ordered comparisons."""
+    return {
+        "brief": sub["brief"],
+        "basesym": sub.get("basesym", sub["base"]),
+        "tempsym": sub["temp"],
+        "pairs": [{"base": sub["base"], "temp": sub["temp"],
+                   "rest": "tspatial_sel", "join": "tspatial_joinsel",
+                   "eqsupport": "tspatial_supportfn"}],
+    }
+
+
+def render_compops(fam: dict) -> str:
+    """One `compops_families:` entry's whole file (GENERATED banner + body).
+
+    A `compops_families:` `pairs:` entry names only its `temp` type; `base` is
+    derived here from `catalog_temptype_basetype()` (never hand-paired) so a
+    pair can never name a base other than the temporal type's own — a pair
+    naming `temp: tfloat` and `base: integer` would render `tGt(tfloat,
+    integer)` while the C entry point still derives float8 from the temp type
+    alone. A pair that still carries a `base:` key (a stale manifest, or an
+    attempt to reintroduce a hand-paired base) is rejected rather than
+    silently overridden."""
+    bases = catalog_temptype_basetype()
+    pairs = []
+    for p in fam["pairs"]:
+        if "base" in p:
+            raise SystemExit(
+                f"compops_families {fam['family']!r}: pair temp={p['temp']!r} "
+                "declares a base: key; base is derived from the catalog's own "
+                "temptype_basetype() association (catalog_temptype_basetype), "
+                "never paired by hand. Remove the base: key.")
+        if p["temp"] not in bases:
+            raise SystemExit(
+                f"compops_families {fam['family']!r}: temp={p['temp']!r} has "
+                "no temptype_basetype entry in meos_catalog.c's "
+                "MEOS_RELTYPE_CATALOG.")
+        pairs.append({**p, "base": bases[p["temp"]]})
+    spec = {**fam, "pairs": pairs}
+    return BANNER.format(tmpl="compops.sql.tmpl") + render_compops_body(spec)
 
 
 def target_path(behaviour: str, sub: dict, positions: dict) -> pathlib.Path:
@@ -3391,6 +3526,37 @@ def catalog_type_names() -> dict:
     """`T_<X>` -> the canonical lowercase type name from the catalog name array."""
     src = (ROOT / CATALOG_NAMES).read_text()
     return dict(re.findall(r'\[(T_[A-Z0-9_]+)\]\s*=\s*"([^"]+)"', src))
+
+
+# meos_catalog.c's `MEOS_TYPE_NAMES` spells the five scalar catalog base types
+# whose SQL keyword differs from the internal/pg_type name (bool/int4/int8/
+# float8, matching pg_type.typname) with that internal spelling; the generated
+# SQL spells them with the SQL-standard keyword instead (boolean/integer/
+# bigint/float) — a fixed fact about PostgreSQL's own type-name aliasing, not a
+# per-family choice, so it is applied uniformly wherever a catalog base name
+# feeds a compops pair.
+_CATALOG_BASE_SQL_ALIAS = {
+    "bool": "boolean", "int4": "integer", "int8": "bigint", "float8": "float",
+}
+
+
+def catalog_temptype_basetype() -> dict:
+    """temp SQL type name -> base SQL type name, read from meos_catalog.c's
+    `MEOS_RELTYPE_CATALOG[...].temptype_basetype` field — the exact table the
+    MEOS entry point for the compops functions reads at runtime
+    (temptype_basetype(), read by tcomp_temporal_base() in
+    meos/src/temporal/temporal_compops.c). This is the SoT `render_compops`
+    uses to derive a `compops_families:` pair's `base` from its `temp`, so a
+    pair can never name a base other than the temporal type's own."""
+    names = catalog_type_names()
+    src = (ROOT / CATALOG_NAMES).read_text()
+    out = {}
+    for temp_enum, base_enum in re.findall(
+            r"\[(T_[A-Z0-9_]+)\]\s*=\s*\{\s*\.temptype_basetype\s*=\s*(T_[A-Z0-9_]+)\s*\}",
+            src):
+        base = names[base_enum]
+        out[names[temp_enum]] = _CATALOG_BASE_SQL_ALIAS.get(base, base)
+    return out
 
 
 def parse_class_members(predicate: str, names: dict) -> list:
@@ -4065,25 +4231,10 @@ def main() -> int:
                         break
                 if len(g) != len(c):
                     print(f"     line count gen={len(g)} cur={len(c)}")
-        for fam in mf.get("compops_families", []):
-            if not fam.get("reference"):
-                continue
-            p = ROOT / fam["file"]
-            gen = render_compops(fam)
-            cur = extract_compops(p.read_text(), fam) if p.exists() else ""
-            same = gen == cur
-            ok = ok and same
-            print(f"[{'OK ' if same else 'DIFF'}] self-regen compops {fam['family']} "
-                  f"-> {pathlib.Path(fam['file'])}")
-            if not same:
-                g, c = gen.splitlines(), cur.splitlines()
-                for n, (a, b) in enumerate(zip(g, c), 1):
-                    if a != b:
-                        print(f"     first diff line {n}:\n       gen: {a!r}\n"
-                              f"       cur: {b!r}")
-                        break
-                if len(g) != len(c):
-                    print(f"     line count gen={len(g)} cur={len(c)}")
+        # compops_families entries are whole-file generated (never reference-only,
+        # see render_compops above) — their --validate coverage is the plain
+        # git-clean check after a default run, same as every other non-reference
+        # whole-file axis (subtypes' non-reference members, tquadbin/th3index/...).
         for fam in mf.get("aggregate_families", []):
             if not fam.get("reference"):
                 continue
@@ -4555,25 +4706,14 @@ def main() -> int:
             p.write_text(bootstrap_tiling(text, fam, render_tiling(fam)))
             print(f"bootstrapped tiling {fam['family']} -> {fam['file']}")
     for fam in mf.get("compops_families", []):
-        # Reference families are validate-only: keep the committed hand block, never
-        # emit into .in.sql (mirrors constructors/comparisons/conversions/tiling). A
-        # future non-reference family bootstraps its GENERATED-COMPOPS region once,
-        # then splices.
-        if fam.get("reference"):
-            continue
+        # Whole-file generated, like every subtypes non-reference member (no
+        # splice/bootstrap: there is no hand-written region left to preserve).
         p = ROOT / fam["file"]
-        text = p.read_text()
-        begin, _ = _compops_markers(fam["family"])
         if args.check:
-            print(f"would {'splice' if begin in text else 'bootstrap'} compops "
-                  f"{fam['family']} -> {fam['file']}")
+            print(f"would write compops {fam['family']} -> {fam['file']}")
             continue
-        if begin in text:
-            p.write_text(splice_compops(text, fam["family"], render_compops(fam)))
-            print(f"spliced compops {fam['family']} -> {fam['file']}")
-        else:
-            p.write_text(bootstrap_compops(text, fam, render_compops(fam)))
-            print(f"bootstrapped compops {fam['family']} -> {fam['file']}")
+        p.write_text(render_compops(fam))
+        print(f"wrote compops {fam['family']} -> {fam['file']}")
     return 0
 
 

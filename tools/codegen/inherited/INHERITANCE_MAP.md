@@ -113,7 +113,7 @@ no subtype currently routes `aggfuncs` through the `subtypes:` track. Live templ
 
 | behaviour | template(s) | status |
 |---|---|---|
-| compops | `compops.sql.tmpl` | **GENERATED** — Ever/Always **and** Temporal (`tEq`/`tNe` → `#=`/`#<>`) comparisons together (see §4) |
+| compops | `compops.sql.tmpl` | **GENERATED** — ONE engine (`render_compops_body` in `generate.py`) for every family: Ever/Always **and** Temporal (`tEq`/`tNe`/`tLt`/`tGt`/`tLe`/`tGe` → `#=`/`#<>`/`#<`/`#>`/`#<=`/`#>=`) comparisons together (see §4) |
 | topops | `topops.sql.tmpl` | **GENERATED** |
 | posops | `posops.sql.tmpl` | **GENERATED** |
 | spatialrels | `spatialrels.c.tmpl` + `spatialrels.sql.tmpl` | **GENERATED** (ever/always) |
@@ -171,8 +171,8 @@ SQL (§6, `320_tnpoint_spatialrels`).
 | Restrictions | `temporal_` | ✓ **GEN** | `restrictions.sql.tmpl` + `restriction_families`, **12 entries** all `reference: true` (same family set) — atValue(s)/minusValue(s), atTime/minusTime, atSpan(set), atTbox |
 | **Bounding Box Operators** | `temporal_`/`tnumber_` | ✓ **GEN** | `topops.sql.tmpl` (`&&`,`@>`,`<@`,`~=`,`-\|-`) + `posops.sql.tmpl` (`<<`,`>>`,`&<`,`&>`,`<<#`,`#>>`…), both via the `subtypes:` track (§3), + `boxops.c.tmpl` box types `tstzspan`,`tbox` |
 | Comparisons → Traditional | (btree) | ✓ **GEN** | `comparisons.sql.tmpl` + `comparison_families` (10 temporal-type entries: temporal, geo, tpoint, cbuffer, h3, json, npoint, pose, quadbin, rgeo) — `=`,`<>`,`<`,`>`,`<=`,`>=` + `cmp` + the `<type>_btree_ops` opclass; `--gaps`: `comparison_families` 16/18, missing tpcpoint, tpcpatch. The hash tail of the same files (`hash`/`hashExtended` + the `<type>_hash_ops` opclass) is `hash_families` — the same 10 entries plus `pointcloud`/`pointcloud_patch`, which each render tpcpoint's/tpcpatch's whole comparison+hash section as one entry (pointcloud has no `comparison_families` row of its own); `--gaps`: `hash_families` 18/18, full coverage |
-| Comparisons → **Ever/Always** | `temporal_` | ✓ **GEN** | `compops.sql.tmpl` + `compops_families` (temporal, tgeo, tpoint whole-file) / the `subtypes:` `compops` behaviour (every other family): `eEq`/`aEq`/`eNe`/`aNe` + `?=`/`%=`/`?<>`/`%<>` (all 3 arg directions) |
-| Comparisons → Temporal | `temporal_` | ✓ **GEN** | same template/entries as Ever/Always above — `compops.sql.tmpl` renders `tEq`/`tNe` → `#=`/`#<>` in the same pass, not a separate template |
+| Comparisons → **Ever/Always** | `temporal_` | ✓ **GEN** | `compops.sql.tmpl` + one shared `render_compops_body` engine, fed by two manifest tracks: `compops_families` (multi-pair families — temporal's 5 base types on one generic base/temporal C symbol per op, tgeo/tpoint's geometry+geography pair on one generic geo/tgeo C symbol per op) and the `subtypes:` `compops` behaviour (every one-pair family — cbuffer, jsonb, quadbin, h3index, npoint, pose, trgeometry, pcpoint, pcpatch). `eEq`/`aEq`/`eNe`/`aNe` + `?=`/`%=`/`?<>`/`%<>` (all 3 arg directions); a pair marked `orderable` (temporal's int/bigint/float/text) additionally gets `eLt…aGe` + `?<…%>=`. A `compops_families` `pairs:` entry names only its `temp` type — `base` is never hand-paired alongside it; `render_compops` derives it from `catalog_temptype_basetype()`, read from meos_catalog.c's own `MEOS_RELTYPE_CATALOG[...].temptype_basetype` field, the same table `temptype_basetype()` reads at runtime for these functions' MEOS entry point. This makes a mismatched pair (`temp: tfloat` naming `base: integer`, which would render `tGt(tfloat, integer)` while the C entry point still derives float8 from the temp type alone) unrepresentable — the generator raises if a pair still carries a `base:` key |
+| Comparisons → Temporal | `temporal_` | ✓ **GEN** | same engine as Ever/Always above — renders `tEq`/`tNe`/`tLt`/`tGt`/`tLe`/`tGe` → `#=`/`#<>`/`#<`/`#>`/`#<=`/`#>=` in the same pass, not a separate template |
 | Miscellaneous | `temporal_` | ✗ HAND | |
 
 ### 4a. `TNumber<T>` and the talpha types — the base/number reference surface
@@ -198,14 +198,17 @@ documented inline in `temporal_types_p1/p2` (no separate number chapter).
 ⚠️ **`tbigint` and `tjsonb` are full members** of `tnumber_type()` / `talpha_type()`
 (catalog:1214/1192) but are **absent from the MEOS-API lattice** (§8) — a curation gap.
 
-**The generic base `Temporal<T>` reference files** (`030_temporal_compops`,
-`032_temporal_boxops` (extraction: spans/tboxes/split*), `033_temporal_topops`
-(topological: overlaps/contains/contained/same/adjacent), `034_temporal_posops`,
-`040/042` aggfuncs, `043/044` gist/spgist, `022/023` type/inout, `025_temporal_tile`,
-`038/046` similarity/analytics) are likewise the hand reference; the generator
-re-emits their *shape* onto the derived families (§6) and regenerates the **C boxops
-region** for box
-type `tstzspan` inside `temporal_boxops.c`.
+**The generic base `Temporal<T>` reference files** (`032_temporal_boxops`
+(extraction: spans/tboxes/split*), `033_temporal_topops` (topological: overlaps/
+contains/contained/same/adjacent), `034_temporal_posops`, `040/042` aggfuncs,
+`043/044` gist/spgist, `022/023` type/inout, `025_temporal_tile`, `038/046`
+similarity/analytics) are likewise the hand reference; the generator re-emits their
+*shape* onto the derived families (§6) and regenerates the **C boxops region** for
+box type `tstzspan` inside `temporal_boxops.c`. `030_temporal_compops` is the one
+exception in this group: it is fully generated (§3/§4, the `compops_families`
+entry), not a hand reference — the derived families' one-pair compops files reach
+the same engine independently via their own `subtypes:` entry, not by copying
+`030`'s shape.
 
 **Base value-domain types** (`Set` / `Span` / `SpanSet` / `TBox` / `STBox`) are the
 finite-subset representations of the value/time domains that the restriction surface
@@ -505,7 +508,11 @@ Reading the table:
   kernel, its ever/always relationships cast-delegate to `tgeometry` in pure SQL
   (320, previous bullet).
 - The **geo/tpoint/tgeo** family SQL surfaces are not in the `subtypes:` list at all
-  (geo is the hand-written reference layout the generator derives from).
+  (geo is the hand-written reference layout the generator derives from) — **except
+  `compops`**: `temporal`/`tgeo`/`tpoint` each carry an explicit multi-pair
+  `compops_families` entry feeding the same engine as the `subtypes:` track, so
+  `030_temporal_compops`/`054_tgeo_compops`/`054_tpoint_compops` are fully
+  generated, whole-file, like every `subtypes:` compops file.
 
 ## 7. The gap (what remains ungoverned)
 

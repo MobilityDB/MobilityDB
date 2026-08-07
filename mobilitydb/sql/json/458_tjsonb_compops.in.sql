@@ -42,11 +42,6 @@ CREATE FUNCTION eEq(jsonb, tjsonb)
   AS 'MODULE_PATHNAME', 'Ever_eq_jsonb_tjsonb'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION aEq(jsonb, tjsonb)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_eq_jsonb_tjsonb'
-  SUPPORT tspatial_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?= (
   LEFTARG = jsonb, RIGHTARG = tjsonb,
@@ -54,6 +49,13 @@ CREATE OPERATOR ?= (
   NEGATOR = %<>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
+
+CREATE FUNCTION aEq(jsonb, tjsonb)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_eq_jsonb_tjsonb'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE OPERATOR %= (
   LEFTARG = jsonb, RIGHTARG = tjsonb,
   PROCEDURE = aEq,
@@ -65,10 +67,6 @@ CREATE FUNCTION eNe(jsonb, tjsonb)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Ever_ne_jsonb_tjsonb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION aNe(jsonb, tjsonb)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_ne_jsonb_tjsonb'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?<> (
   LEFTARG = jsonb, RIGHTARG = tjsonb,
@@ -76,6 +74,12 @@ CREATE OPERATOR ?<> (
   NEGATOR = %=,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
+
+CREATE FUNCTION aNe(jsonb, tjsonb)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_ne_jsonb_tjsonb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE OPERATOR %<> (
   LEFTARG = jsonb, RIGHTARG = tjsonb,
   PROCEDURE = aNe,
@@ -90,11 +94,6 @@ CREATE FUNCTION eEq(tjsonb, jsonb)
   AS 'MODULE_PATHNAME', 'Ever_eq_tjsonb_jsonb'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION aEq(tjsonb, jsonb)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_eq_tjsonb_jsonb'
-  SUPPORT tspatial_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?= (
   LEFTARG = tjsonb, RIGHTARG = jsonb,
@@ -102,6 +101,13 @@ CREATE OPERATOR ?= (
   NEGATOR = %<>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
+
+CREATE FUNCTION aEq(tjsonb, jsonb)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_eq_tjsonb_jsonb'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE OPERATOR %= (
   LEFTARG = tjsonb, RIGHTARG = jsonb,
   PROCEDURE = aEq,
@@ -113,10 +119,6 @@ CREATE FUNCTION eNe(tjsonb, jsonb)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Ever_ne_tjsonb_jsonb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION aNe(tjsonb, jsonb)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_ne_tjsonb_jsonb'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?<> (
   LEFTARG = tjsonb, RIGHTARG = jsonb,
@@ -124,6 +126,12 @@ CREATE OPERATOR ?<> (
   NEGATOR = %=,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
+
+CREATE FUNCTION aNe(tjsonb, jsonb)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_ne_tjsonb_jsonb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE OPERATOR %<> (
   LEFTARG = tjsonb, RIGHTARG = jsonb,
   PROCEDURE = aNe,
@@ -138,11 +146,6 @@ CREATE FUNCTION eEq(tjsonb, tjsonb)
   AS 'MODULE_PATHNAME', 'Ever_eq_tjsonb_tjsonb'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION aEq(tjsonb, tjsonb)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_eq_tjsonb_tjsonb'
-  SUPPORT tspatial_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?= (
   LEFTARG = tjsonb, RIGHTARG = tjsonb,
@@ -150,6 +153,13 @@ CREATE OPERATOR ?= (
   NEGATOR = %<>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
+
+CREATE FUNCTION aEq(tjsonb, tjsonb)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_eq_tjsonb_tjsonb'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE OPERATOR %= (
   LEFTARG = tjsonb, RIGHTARG = tjsonb,
   PROCEDURE = aEq,
@@ -161,10 +171,6 @@ CREATE FUNCTION eNe(tjsonb, tjsonb)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Ever_ne_tjsonb_tjsonb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION aNe(tjsonb, tjsonb)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_ne_tjsonb_tjsonb'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?<> (
   LEFTARG = tjsonb, RIGHTARG = tjsonb,
@@ -172,6 +178,12 @@ CREATE OPERATOR ?<> (
   NEGATOR = %=,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
+
+CREATE FUNCTION aNe(tjsonb, tjsonb)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_ne_tjsonb_tjsonb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE OPERATOR %<> (
   LEFTARG = tjsonb, RIGHTARG = tjsonb,
   PROCEDURE = aNe,
@@ -244,5 +256,4 @@ CREATE OPERATOR #<> (
   LEFTARG = tjsonb, RIGHTARG = tjsonb,
   COMMUTATOR = #<>
 );
-
-/******************************************************************************/
+/*****************************************************************************/

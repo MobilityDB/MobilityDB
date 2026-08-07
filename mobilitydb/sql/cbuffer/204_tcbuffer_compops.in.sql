@@ -42,11 +42,6 @@ CREATE FUNCTION eEq(cbuffer, tcbuffer)
   AS 'MODULE_PATHNAME', 'Ever_eq_cbuffer_tcbuffer'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION aEq(cbuffer, tcbuffer)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_eq_cbuffer_tcbuffer'
-  SUPPORT tspatial_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?= (
   LEFTARG = cbuffer, RIGHTARG = tcbuffer,
@@ -54,6 +49,13 @@ CREATE OPERATOR ?= (
   NEGATOR = %<>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
+
+CREATE FUNCTION aEq(cbuffer, tcbuffer)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_eq_cbuffer_tcbuffer'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE OPERATOR %= (
   LEFTARG = cbuffer, RIGHTARG = tcbuffer,
   PROCEDURE = aEq,
@@ -65,10 +67,6 @@ CREATE FUNCTION eNe(cbuffer, tcbuffer)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Ever_ne_cbuffer_tcbuffer'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION aNe(cbuffer, tcbuffer)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_ne_cbuffer_tcbuffer'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?<> (
   LEFTARG = cbuffer, RIGHTARG = tcbuffer,
@@ -76,6 +74,12 @@ CREATE OPERATOR ?<> (
   NEGATOR = %=,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
+
+CREATE FUNCTION aNe(cbuffer, tcbuffer)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_ne_cbuffer_tcbuffer'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE OPERATOR %<> (
   LEFTARG = cbuffer, RIGHTARG = tcbuffer,
   PROCEDURE = aNe,
@@ -90,11 +94,6 @@ CREATE FUNCTION eEq(tcbuffer, cbuffer)
   AS 'MODULE_PATHNAME', 'Ever_eq_tcbuffer_cbuffer'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION aEq(tcbuffer, cbuffer)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_eq_tcbuffer_cbuffer'
-  SUPPORT tspatial_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?= (
   LEFTARG = tcbuffer, RIGHTARG = cbuffer,
@@ -102,6 +101,13 @@ CREATE OPERATOR ?= (
   NEGATOR = %<>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
+
+CREATE FUNCTION aEq(tcbuffer, cbuffer)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_eq_tcbuffer_cbuffer'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE OPERATOR %= (
   LEFTARG = tcbuffer, RIGHTARG = cbuffer,
   PROCEDURE = aEq,
@@ -113,10 +119,6 @@ CREATE FUNCTION eNe(tcbuffer, cbuffer)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Ever_ne_tcbuffer_cbuffer'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION aNe(tcbuffer, cbuffer)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_ne_tcbuffer_cbuffer'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?<> (
   LEFTARG = tcbuffer, RIGHTARG = cbuffer,
@@ -124,6 +126,12 @@ CREATE OPERATOR ?<> (
   NEGATOR = %=,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
+
+CREATE FUNCTION aNe(tcbuffer, cbuffer)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_ne_tcbuffer_cbuffer'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE OPERATOR %<> (
   LEFTARG = tcbuffer, RIGHTARG = cbuffer,
   PROCEDURE = aNe,
@@ -138,11 +146,6 @@ CREATE FUNCTION eEq(tcbuffer, tcbuffer)
   AS 'MODULE_PATHNAME', 'Ever_eq_tcbuffer_tcbuffer'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION aEq(tcbuffer, tcbuffer)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_eq_tcbuffer_tcbuffer'
-  SUPPORT tspatial_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?= (
   LEFTARG = tcbuffer, RIGHTARG = tcbuffer,
@@ -150,6 +153,13 @@ CREATE OPERATOR ?= (
   NEGATOR = %<>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
+
+CREATE FUNCTION aEq(tcbuffer, tcbuffer)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_eq_tcbuffer_tcbuffer'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE OPERATOR %= (
   LEFTARG = tcbuffer, RIGHTARG = tcbuffer,
   PROCEDURE = aEq,
@@ -161,10 +171,6 @@ CREATE FUNCTION eNe(tcbuffer, tcbuffer)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Ever_ne_tcbuffer_tcbuffer'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION aNe(tcbuffer, tcbuffer)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_ne_tcbuffer_tcbuffer'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?<> (
   LEFTARG = tcbuffer, RIGHTARG = tcbuffer,
@@ -172,6 +178,12 @@ CREATE OPERATOR ?<> (
   NEGATOR = %=,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
+
+CREATE FUNCTION aNe(tcbuffer, tcbuffer)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_ne_tcbuffer_tcbuffer'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE OPERATOR %<> (
   LEFTARG = tcbuffer, RIGHTARG = tcbuffer,
   PROCEDURE = aNe,
@@ -244,5 +256,4 @@ CREATE OPERATOR #<> (
   LEFTARG = tcbuffer, RIGHTARG = tcbuffer,
   COMMUTATOR = #<>
 );
-
-/******************************************************************************/
+/*****************************************************************************/

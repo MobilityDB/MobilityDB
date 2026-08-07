@@ -44,11 +44,6 @@ CREATE FUNCTION eEq(pose, tpose)
   AS 'MODULE_PATHNAME', 'Ever_eq_pose_tpose'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION aEq(pose, tpose)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_eq_pose_tpose'
-  SUPPORT tspatial_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?= (
   LEFTARG = pose, RIGHTARG = tpose,
@@ -56,6 +51,13 @@ CREATE OPERATOR ?= (
   NEGATOR = %<>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
+
+CREATE FUNCTION aEq(pose, tpose)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_eq_pose_tpose'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE OPERATOR %= (
   LEFTARG = pose, RIGHTARG = tpose,
   PROCEDURE = aEq,
@@ -67,10 +69,6 @@ CREATE FUNCTION eNe(pose, tpose)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Ever_ne_pose_tpose'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION aNe(pose, tpose)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_ne_pose_tpose'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?<> (
   LEFTARG = pose, RIGHTARG = tpose,
@@ -78,6 +76,12 @@ CREATE OPERATOR ?<> (
   NEGATOR = %=,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
+
+CREATE FUNCTION aNe(pose, tpose)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_ne_pose_tpose'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE OPERATOR %<> (
   LEFTARG = pose, RIGHTARG = tpose,
   PROCEDURE = aNe,
@@ -92,11 +96,6 @@ CREATE FUNCTION eEq(tpose, pose)
   AS 'MODULE_PATHNAME', 'Ever_eq_tpose_pose'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION aEq(tpose, pose)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_eq_tpose_pose'
-  SUPPORT tspatial_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?= (
   LEFTARG = tpose, RIGHTARG = pose,
@@ -104,6 +103,13 @@ CREATE OPERATOR ?= (
   NEGATOR = %<>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
+
+CREATE FUNCTION aEq(tpose, pose)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_eq_tpose_pose'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE OPERATOR %= (
   LEFTARG = tpose, RIGHTARG = pose,
   PROCEDURE = aEq,
@@ -115,10 +121,6 @@ CREATE FUNCTION eNe(tpose, pose)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Ever_ne_tpose_pose'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION aNe(tpose, pose)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_ne_tpose_pose'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?<> (
   LEFTARG = tpose, RIGHTARG = pose,
@@ -126,6 +128,12 @@ CREATE OPERATOR ?<> (
   NEGATOR = %=,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
+
+CREATE FUNCTION aNe(tpose, pose)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_ne_tpose_pose'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE OPERATOR %<> (
   LEFTARG = tpose, RIGHTARG = pose,
   PROCEDURE = aNe,
@@ -140,11 +148,6 @@ CREATE FUNCTION eEq(tpose, tpose)
   AS 'MODULE_PATHNAME', 'Ever_eq_tpose_tpose'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION aEq(tpose, tpose)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_eq_tpose_tpose'
-  SUPPORT tspatial_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?= (
   LEFTARG = tpose, RIGHTARG = tpose,
@@ -152,6 +155,13 @@ CREATE OPERATOR ?= (
   NEGATOR = %<>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
+
+CREATE FUNCTION aEq(tpose, tpose)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_eq_tpose_tpose'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE OPERATOR %= (
   LEFTARG = tpose, RIGHTARG = tpose,
   PROCEDURE = aEq,
@@ -163,10 +173,6 @@ CREATE FUNCTION eNe(tpose, tpose)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Ever_ne_tpose_tpose'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION aNe(tpose, tpose)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_ne_tpose_tpose'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?<> (
   LEFTARG = tpose, RIGHTARG = tpose,
@@ -174,6 +180,12 @@ CREATE OPERATOR ?<> (
   NEGATOR = %=,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
+
+CREATE FUNCTION aNe(tpose, tpose)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_ne_tpose_tpose'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE OPERATOR %<> (
   LEFTARG = tpose, RIGHTARG = tpose,
   PROCEDURE = aNe,
@@ -246,5 +258,4 @@ CREATE OPERATOR #<> (
   LEFTARG = tpose, RIGHTARG = tpose,
   COMMUTATOR = #<>
 );
-
-/******************************************************************************/
+/*****************************************************************************/
