@@ -286,3 +286,76 @@ SELECT intset(jsonbset '{"{\"a\":1, \"b\":2.5}"}', text 'xxx');
 ERROR:  The lifted operation returned NULL
 SELECT intset(jsonbset '{"{\"a\":\"xxx\", \"b\":2.5}"}', text 'a');
 ERROR:  Invalid numeric string for key "a": xxx
+SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' @? '$.units';
+ ?column? 
+----------
+ {t,f}
+(1 row)
+
+SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' @? '$.speed ? (@ > 15)';
+ ?column? 
+----------
+ {t,f}
+(1 row)
+
+SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' @? '$.xxx';
+ ?column? 
+----------
+ {f,f}
+(1 row)
+
+SELECT jsonbset_path_exists(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', '$.units');
+ jsonbset_path_exists 
+----------------------
+ {t,f}
+(1 row)
+
+SELECT jsonbset_path_exists(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', '$.speed ? (@ > $min)', '{"min": 15}');
+ jsonbset_path_exists 
+----------------------
+ {t,f}
+(1 row)
+
+SELECT jsonbset_path_exists_tz(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', '$.units');
+ jsonbset_path_exists_tz 
+-------------------------
+ {t,f}
+(1 row)
+
+SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' @@ '$.speed > 15';
+ ?column? 
+----------
+ {t,f}
+(1 row)
+
+SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' @@ '$.speed == 10';
+ ?column? 
+----------
+ {f,t}
+(1 row)
+
+SELECT jsonbset_path_match(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', '$.speed > 15');
+ jsonbset_path_match 
+---------------------
+ {t,f}
+(1 row)
+
+SELECT jsonbset_path_match(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', '$.speed > $min', '{"min": 15}');
+ jsonbset_path_match 
+---------------------
+ {t,f}
+(1 row)
+
+SELECT jsonbset_path_match_tz(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', '$.speed > 15');
+ jsonbset_path_match_tz 
+------------------------
+ {t,f}
+(1 row)
+
+/* A path matching nothing is unknown, that is, false, for every element */
+SELECT jsonbset_path_match(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', '$.xxx > 15', '{}', false);
+ jsonbset_path_match 
+---------------------
+ {f,f}
+(1 row)
+

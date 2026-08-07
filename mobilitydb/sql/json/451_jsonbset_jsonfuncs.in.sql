@@ -241,17 +241,17 @@ CREATE FUNCTION jsonbset_pretty(jsonbset)
 
 CREATE FUNCTION jsonbset_path_exists(jsonbset, jsonpath, vars jsonb DEFAULT '{}',
   silent boolean DEFAULT FALSE)
-RETURNS jsonbset
+RETURNS boolean[]
 AS 'MODULE_PATHNAME', 'Jsonbset_path_exists'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION jsonbset_path_exists_tz(jsonbset, jsonpath,
   vars jsonb DEFAULT '{}', silent boolean DEFAULT false)
-RETURNS jsonbset
+RETURNS boolean[]
 AS 'MODULE_PATHNAME', 'Jsonbset_path_exists_tz'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION jsonbset_path_exists_opr(jsonbset, jsonpath)
-  RETURNS textset
+  RETURNS boolean[]
   AS 'MODULE_PATHNAME', 'Jsonbset_path_exists_opr'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -262,17 +262,17 @@ CREATE OPERATOR @? (
 
 CREATE FUNCTION jsonbset_path_match(jsonbset, jsonpath, vars jsonb DEFAULT '{}',
   silent boolean DEFAULT FALSE)
-RETURNS bool[]
+RETURNS boolean[]
 AS 'MODULE_PATHNAME', 'Jsonbset_path_match'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION jsonbset_path_match_tz(jsonbset, jsonpath,
   vars jsonb DEFAULT '{}', silent boolean DEFAULT FALSE)
-RETURNS bool[]
+RETURNS boolean[]
 AS 'MODULE_PATHNAME', 'Jsonbset_path_match_tz'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION jsonbset_path_match_opr(jsonbset, jsonpath)
-  RETURNS bool[]
+  RETURNS boolean[]
   AS 'MODULE_PATHNAME', 'Jsonbset_path_match_opr'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 

@@ -333,6 +333,21 @@ datumarr_to_array(Datum *values, int count, MeosType type)
 }
 
 /**
+ * @brief Return a C array of Booleans converted into a PostgreSQL array
+ */
+ArrayType *
+boolarr_to_array(bool *values, int count)
+{
+  assert(count > 0);
+  Datum *dvalues = palloc(sizeof(Datum) * count);
+  for (int i = 0; i < count; i++)
+    dvalues[i] = BoolGetDatum(values[i]);
+  ArrayType *result = construct_array(dvalues, count, BOOLOID, 1, true, 'c');
+  pfree(dvalues); pfree(values);
+  return result;
+}
+
+/**
  * @brief Return a C array of timestamps converted into a PostgreSQL array
  */
 ArrayType *

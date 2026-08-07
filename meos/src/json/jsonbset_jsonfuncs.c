@@ -247,15 +247,17 @@ jsonbset_delete_array(const Set *set, text **keys, int count)
 
 /**
  * @ingroup meos_json_set_json
- * @brief Delete a key from a JSONB set
+ * @brief Return for every value of a JSONB set whether it contains a key
  * @param[in] set JSONB set
  * @param[in] key Key
+ * @param[out] count Number of values in the output array
  */
-Set *
-jsonbset_exists(const Set *set, const text *key)
+bool *
+jsonbset_exists(const Set *set, const text *key, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_JSONBSET(set, NULL); VALIDATE_NOT_NULL(key, NULL);
+  VALIDATE_NOT_NULL(count, NULL);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -263,23 +265,26 @@ jsonbset_exists(const Set *set, const text *key)
   lfinfo.argtype[0] = T_JSONBSET;
   lfinfo.numparam = 1;
   lfinfo.param[0] = PointerGetDatum(key);
-  lfinfo.restype = T_TBOOL;
-  return lfunc_set(set, &lfinfo);
+  return lfunc_set_bool(set, &lfinfo, count);
 }
 
 /**
  * @ingroup meos_json_set_json
- * @brief Delete an array of keys from a JSONB set
+ * @brief Return for every value of a JSONB set whether it contains the keys of
+ * an array
  * @param[in] set JSONB set
  * @param[in] keys Keys
  * @param[in] count Number of elements in the input array
  * @param[in] any True for the 'any' semantics, false for the 'all' semantics
+ * @param[out] rescount Number of values in the output array
  */
-Set *
-jsonbset_exists_array(const Set *set, text **keys, int count, bool any)
+bool *
+jsonbset_exists_array(const Set *set, text **keys, int count, bool any,
+  int *rescount)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_JSONBSET(set, NULL); VALIDATE_NOT_NULL(keys, NULL);
+  VALIDATE_NOT_NULL(rescount, NULL);
   if (! ensure_positive(count))
     return NULL;
 
@@ -291,8 +296,7 @@ jsonbset_exists_array(const Set *set, text **keys, int count, bool any)
   lfinfo.param[0] = PointerGetDatum(keys);
   lfinfo.param[1] = Int32GetDatum(count);
   lfinfo.param[2] = BoolGetDatum(any);
-  lfinfo.restype = T_TBOOL;
-  return lfunc_set(set, &lfinfo);
+  return lfunc_set_bool(set, &lfinfo, rescount);
 }
 
 /**
@@ -589,8 +593,8 @@ jsonbset_insert(const Set *set, text **path_elems, int path_len,
 
 /**
  * @ingroup meos_json_set_json
- * @brief Return true if a JSON path expression returns at least one item for a
- * JSONB set
+ * @brief Return for every value of a JSONB set whether a JSON path expression
+ * returns at least one item for it
  * @param[in] set JSONB set
  * @param[in] jp JSON path expression
  * @param[in] vars JSON variables, may be NULL
@@ -599,34 +603,35 @@ jsonbset_insert(const Set *set, text **path_elems, int path_len,
  * numeric errors, when false, no errors are suppressed
  * @param[in] tz When true, support comparisons of date/time values that
  * require timezone-aware conversions, false otherwise
+ * @param[out] count Number of values in the output array
+ * @csqlfn #Jsonbset_path_exists()
  */
-Set *
+bool *
 jsonbset_path_exists(const Set *set, const JsonPath *jp, const Jsonb *vars,
-  bool silent, bool tz)
+  bool silent, bool tz, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_JSONBSET(set, NULL); VALIDATE_NOT_NULL(jp, NULL);
+  VALIDATE_NOT_NULL(count, NULL);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &datum_jsonb_path_exists;
   lfinfo.argtype[0] = T_JSONBSET;
-  lfinfo.numparam = 3;
+  lfinfo.numparam = 4;
   lfinfo.param[0] = PointerGetDatum(jp);
   lfinfo.param[1] = PointerGetDatum(vars);
   lfinfo.param[2] = BoolGetDatum(silent);
   lfinfo.param[3] = BoolGetDatum(tz);
-  lfinfo.restype = T_TBOOL;
-  return lfunc_set(set, &lfinfo);
+  return lfunc_set_bool(set, &lfinfo, count);
 }
 
 /*****************************************************************************/
 
 /**
  * @ingroup meos_json_set_json
- * @brief Extract an item specified by a JSON path expression from a temporal
- * JSONB value
- * predicate
+ * @brief Return for every value of a JSONB set the result of a JSON path
+ * predicate check
  * @param[in] set JSONB set
  * @param[in] jp JSON path expression
  * @param[in] vars JSON variables, may be NULL
@@ -635,25 +640,27 @@ jsonbset_path_exists(const Set *set, const JsonPath *jp, const Jsonb *vars,
  * numeric errors, when false, no errors are suppressed
  * @param[in] tz When true, support comparisons of date/time values that
  * require timezone-aware conversions, false otherwise
+ * @param[out] count Number of values in the output array
+ * @csqlfn #Jsonbset_path_match()
  */
-Set *
+bool *
 jsonbset_path_match(const Set *set, const JsonPath *jp, const Jsonb *vars,
-  bool silent, bool tz)
+  bool silent, bool tz, int *count)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_JSONBSET(set, NULL); VALIDATE_NOT_NULL(jp, NULL);
+  VALIDATE_NOT_NULL(count, NULL);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &datum_jsonb_path_match;
   lfinfo.argtype[0] = T_JSONBSET;
-  lfinfo.numparam = 3;
+  lfinfo.numparam = 4;
   lfinfo.param[0] = PointerGetDatum(jp);
   lfinfo.param[1] = PointerGetDatum(vars);
   lfinfo.param[2] = BoolGetDatum(silent);
   lfinfo.param[3] = BoolGetDatum(tz);
-  lfinfo.restype = T_TBOOL;
-  return lfunc_set(set, &lfinfo);
+  return lfunc_set_bool(set, &lfinfo, count);
 }
 
 /*****************************************************************************/

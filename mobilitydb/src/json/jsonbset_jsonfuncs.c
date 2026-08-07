@@ -48,6 +48,7 @@
 #include <pgtypes.h>
 /* MobilityDB */
 #include "pg_temporal/temporal.h"
+#include "pg_temporal/type_util.h"
 
 /* Function defined in file tjsonb_jsonfuncs.c */
 extern nullHandleType input_null_handle_text(FunctionCallInfo fcinfo, int argno);
@@ -778,8 +779,8 @@ Jsonbset_pretty(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
- * @brief Return true if a JSON path expression returns at least one item for a
- * JSONB set value
+ * @brief Return for every value of a JSONB set whether a JSON path expression
+ * returns at least one item for it
  * @sqlfn jsonbset_path_exists(), jsonbset_path_exists_tz()
  */
 Datum
@@ -796,13 +797,14 @@ Jsonbset_path_exists_common(FunctionCallInfo fcinfo, bool tz)
     silent = PG_GETARG_BOOL(3);
   }
   /* Compute the result */
-  Set *result = jsonbset_path_exists(set, jp, vars, silent, tz);
+  int count;
+  bool *result = jsonbset_path_exists(set, jp, vars, silent, tz, &count);
   /* Clean up and return */
   PG_FREE_IF_COPY(set, 0);
   PG_FREE_IF_COPY(jp, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_SET_P(result);
+  PG_RETURN_ARRAYTYPE_P(boolarr_to_array(result, count));
 }
 
 PGDLLEXPORT Datum Jsonbset_path_exists(PG_FUNCTION_ARGS);
@@ -870,13 +872,14 @@ Jsonbset_path_match_common(FunctionCallInfo fcinfo, bool tz)
     silent = PG_GETARG_BOOL(3);
   }
   /* Compute the result */
-  Set *result = jsonbset_path_match(set, jp, vars, silent, tz);
+  int count;
+  bool *result = jsonbset_path_match(set, jp, vars, silent, tz, &count);
   /* Clean up and return */
   PG_FREE_IF_COPY(set, 0);
   PG_FREE_IF_COPY(jp, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_SET_P(result);
+  PG_RETURN_ARRAYTYPE_P(boolarr_to_array(result, count));
 }
 
 PGDLLEXPORT Datum Jsonbset_path_match(PG_FUNCTION_ARGS);
