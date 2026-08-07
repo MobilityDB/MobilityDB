@@ -1,0 +1,34 @@
+
+# Temporal class membership, derived from the catalog class predicates.
+#
+# generate.py --classes re-reads each predicate body and fails when this
+# block disagrees, so adding a type to a class in MEOS cannot land without
+# the generated surface following it.
+classes:
+  temporal:
+    predicate: temporal_type
+    members: [tbool, tdouble2, tdouble3, tdouble4, tfloat, tint, ttext, tgeompoint, tgeogpoint, tnpoint, tpose, tcbuffer, tgeometry, tgeography, trgeometry, tjsonb, tbigint, th3index, tquadbin, tpcpoint, tpcpatch]
+  talpha:
+    predicate: talpha_type
+    members: [tbool, tdouble2, tdouble3, tdouble4, ttext, tjsonb]
+  tnumber:
+    predicate: tnumber_type
+    members: [tfloat, tint, tbigint]
+  tspatial:
+    predicate: tspatial_type
+    members: [tgeompoint, tgeogpoint, tnpoint, tpose, tcbuffer, tgeometry, tgeography, trgeometry, th3index, tquadbin]
+  tgeo:
+    predicate: tgeo_type
+    members: [tgeometry, tgeography]
+  tgeo_all:
+    predicate: tgeo_type_all
+    members: [tgeompoint, tgeogpoint, tgeometry, tgeography]
+  tpoint:
+    predicate: tpoint_type
+    members: [tgeompoint, tgeogpoint]
+  tcellindex:
+    predicate: tcellindex_type
+    members: [tquadbin]
+  tpointcloud:
+    predicate: tpointcloud_temptype
+    members: [tpcpoint, tpcpatch]

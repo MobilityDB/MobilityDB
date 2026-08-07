@@ -1,0 +1,48 @@
+
+# ---------------------------------------------------------------------------
+# Value-domain family axis (Set<T> / Span<T> / SpanSet<T>). DESCRIPTIVE ONLY —
+# no `files:` entries and no set/span template exist yet, so nothing is emitted
+# from this axis; it records the per-family tokens a later generation phase
+# consumes (see INHERITANCE_MAP.md §9).
+#
+# Set<T> exists for EVERY base type because a temporal value is a function from
+# time to the base domain and `getValues` returns its RANGE as a set — so every
+# family that has a temporal type needs its base set type. Span<T> / SpanSet<T>
+# additionally need a total order AND a meaningful contiguous interval on the
+# base domain, so they exist only for the ordered interval-meaningful bases of
+# `span_basetype()` (meos_catalog.c:963-967): date, float, int, bigint,
+# timestamptz — text is ordered but has no textspan.
+#
+# Per-row tokens:
+#   set / base        the set type and its base type (MEOS_SETTYPE_CATALOG,
+#                     meos_catalog.c:265-280)
+#   ordered           true only where the base has a SEMANTIC total order; it is
+#                     what decides whether position operators are emitted at all
+#   posops_spelling   value = << >> &< &>  (numbers + text)
+#                     time  = <<# #>> &<# #&>  (date + timestamptz)
+#                     omitted when not ordered
+#   metric            true where `<->` / setDistance is deployed today
+#   spatial           true where the set carries a bounding box —
+#                     spatialset_type() (meos_catalog.c:909-914)
+setfamilies:
+  - {set: intset,     base: integer,     ordered: true,  posops_spelling: value, metric: true,  spatial: false}
+  - {set: bigintset,  base: bigint,      ordered: true,  posops_spelling: value, metric: true,  spatial: false}
+  - {set: floatset,   base: float,       ordered: true,  posops_spelling: value, metric: true,  spatial: false}
+  # text is ordered (posops deployed) but has no setDistance and no textspan.
+  - {set: textset,    base: text,        ordered: true,  posops_spelling: value, metric: false, spatial: false}
+  - {set: dateset,    base: date,        ordered: true,  posops_spelling: time,  metric: true,  spatial: false}
+  - {set: tstzset,    base: timestamptz, ordered: true,  posops_spelling: time,  metric: true,  spatial: false}
+  - {set: geomset,    base: geometry,    ordered: false,                         metric: true,  spatial: true}
+  - {set: geogset,    base: geography,   ordered: false,                         metric: true,  spatial: true}
+  - {set: npointset,  base: npoint,      ordered: false,                         metric: true,  spatial: true}
+  - {set: poseset,    base: pose,        ordered: false,                         metric: true,  spatial: true}
+  - {set: cbufferset, base: cbuffer,     ordered: false,                         metric: true,  spatial: true}
+  # jsonb has no semantic order and 450_jsonbset.in.sql deploys no position
+  # operators.
+  - {set: jsonbset,   base: jsonb,       ordered: false,                         metric: false, spatial: false}
+  - {set: h3indexset, base: h3index,     ordered: false,                         metric: false, spatial: true}
+  - {set: quadbinset, base: quadbin,     ordered: false,                         metric: false, spatial: true}
+  # pointcloud sets are NOT spatialset_type(): they carry no bounding box —
+  # pointcloudset_type() (meos_catalog.c:950-954) is the separate predicate.
+  - {set: pcpointset, base: pcpoint,     ordered: false,                         metric: false, spatial: false}
+  - {set: pcpatchset, base: pcpatch,     ordered: false,                         metric: false, spatial: false}

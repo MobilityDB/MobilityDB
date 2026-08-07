@@ -59,7 +59,7 @@
 #include "temporal/temporal.h"
 
 /* GENERATED-BOXOPS-BEGIN tpcbox — tools/codegen/inherited/generate.py from templates/boxops.c.tmpl; DO NOT EDIT BY HAND;
- * edit the template + manifest.yaml (boxtypes) and re-run. */
+ * edit the template + manifest.d/boxtypes.yaml and re-run. */
 /*****************************************************************************
  * Generic box functions
  *****************************************************************************/

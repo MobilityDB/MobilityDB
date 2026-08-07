@@ -33,7 +33,7 @@
  */
 
 -- GENERATED-IO-BEGIN geo — tools/codegen/inherited/generate.py from templates/comparisons.sql.tmpl;
--- DO NOT EDIT BY HAND; edit the template + manifest.yaml (io_families) and re-run.
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/io_families.yaml and re-run.
 CREATE TYPE tgeometry;
 CREATE TYPE tgeography;
 

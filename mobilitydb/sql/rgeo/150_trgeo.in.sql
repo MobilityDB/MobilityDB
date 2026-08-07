@@ -33,7 +33,7 @@
  */
 
 -- GENERATED-IO-BEGIN rgeo — tools/codegen/inherited/generate.py from templates/comparisons.sql.tmpl;
--- DO NOT EDIT BY HAND; edit the template + manifest.yaml (io_families) and re-run.
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/io_families.yaml and re-run.
 CREATE TYPE trgeometry;
 
 /******************************************************************************
@@ -86,7 +86,7 @@ CREATE CAST (trgeometry AS trgeometry) WITH FUNCTION trgeometry(trgeometry, inte
 -- GENERATED-IO-END rgeo
 
 -- GENERATED-REPRESENTATIONS-BEGIN rgeo — tools/codegen/inherited/generate.py from templates/representations.sql.tmpl;
--- DO NOT EDIT BY HAND; edit the template + manifest.yaml (representation_families) and re-run.
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/representation_families.yaml and re-run.
 /*****************************************************************************
  * Input/output from (E)WKT, (E)WKB, HexEWKB, and MFJSON representation
  *****************************************************************************/
@@ -262,7 +262,7 @@ CREATE FUNCTION rotation(trgeometry)
 -- Accessors for all temporal types
 
 -- GENERATED-ACCESSORS-BEGIN rgeo — tools/codegen/inherited/generate.py from templates/accessors.sql.tmpl;
--- DO NOT EDIT BY HAND; edit the template + manifest.yaml (accessor_families) and re-run.
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/accessor_families.yaml and re-run.
 
 CREATE FUNCTION tempSubtype(trgeometry)
   RETURNS text

@@ -34,7 +34,7 @@
  */
 
 -- GENERATED-REPRESENTATIONS-BEGIN tpoint — tools/codegen/inherited/generate.py from templates/representations.sql.tmpl;
--- DO NOT EDIT BY HAND; edit the template + manifest.yaml (representation_families) and re-run.
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/representation_families.yaml and re-run.
 /*****************************************************************************
  * Input
  *****************************************************************************/

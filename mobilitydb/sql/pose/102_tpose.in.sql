@@ -33,7 +33,7 @@
  */
 
 -- GENERATED-IO-BEGIN pose — tools/codegen/inherited/generate.py from templates/comparisons.sql.tmpl;
--- DO NOT EDIT BY HAND; edit the template + manifest.yaml (io_families) and re-run.
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/io_families.yaml and re-run.
 CREATE TYPE tpose;
 
 /******************************************************************************
@@ -86,7 +86,7 @@ CREATE CAST (tpose AS tpose) WITH FUNCTION tpose(tpose, integer) AS IMPLICIT;
 -- GENERATED-IO-END pose
 
   -- GENERATED-REPRESENTATIONS-BEGIN pose — tools/codegen/inherited/generate.py from templates/representations.sql.tmpl;
--- DO NOT EDIT BY HAND; edit the template + manifest.yaml (representation_families) and re-run.
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/representation_families.yaml and re-run.
 /*****************************************************************************
    * Input/output from (E)WKT, (E)WKB, HexEWKB, and MFJSON representation
    *****************************************************************************/
@@ -291,7 +291,7 @@ CREATE FUNCTION angularSpeed(tpose)
 -- Accessors for all temporal types
 
 -- GENERATED-ACCESSORS-BEGIN pose — tools/codegen/inherited/generate.py from templates/accessors.sql.tmpl;
--- DO NOT EDIT BY HAND; edit the template + manifest.yaml (accessor_families) and re-run.
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/accessor_families.yaml and re-run.
 
 CREATE FUNCTION tempSubtype(tpose)
   RETURNS text

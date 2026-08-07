@@ -33,7 +33,7 @@
  */
 
 -- GENERATED-IO-BEGIN npoint — tools/codegen/inherited/generate.py from templates/comparisons.sql.tmpl;
--- DO NOT EDIT BY HAND; edit the template + manifest.yaml (io_families) and re-run.
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/io_families.yaml and re-run.
 CREATE TYPE tnpoint;
 
 /******************************************************************************
@@ -81,7 +81,7 @@ CREATE CAST (tnpoint AS tnpoint) WITH FUNCTION tnpoint(tnpoint, integer) AS IMPL
 -- GENERATED-IO-END npoint
 
 -- GENERATED-REPRESENTATIONS-BEGIN npoint — tools/codegen/inherited/generate.py from templates/representations.sql.tmpl;
--- DO NOT EDIT BY HAND; edit the template + manifest.yaml (representation_families) and re-run.
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/representation_families.yaml and re-run.
 /*****************************************************************************
  * Input/output from (E)WKT, (E)WKB, and HexEWKB
  *****************************************************************************/
@@ -269,7 +269,7 @@ CREATE FUNCTION routes(tnpoint)
 -- Accessors for all temporal types
 
 -- GENERATED-ACCESSORS-BEGIN npoint — tools/codegen/inherited/generate.py from templates/accessors.sql.tmpl;
--- DO NOT EDIT BY HAND; edit the template + manifest.yaml (accessor_families) and re-run.
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/accessor_families.yaml and re-run.
 
 CREATE FUNCTION tempSubtype(tnpoint)
   RETURNS text

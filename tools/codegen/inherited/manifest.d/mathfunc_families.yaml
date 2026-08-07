@@ -1,0 +1,142 @@
+mathfunc_families:
+- family: tnumber
+  file: mobilitydb/sql/temporal/026_tnumber_mathfuncs.in.sql
+  reference: true
+  begin: "@brief Temporal mathematic functions"
+  whole_file: true
+  blocks:
+  - lit: "/**\n * @file\n * @brief Temporal mathematic functions and operators\n */\n\n/*****************************************************************************\n * Temporal addition\n *****************************************************************************/\n\n/* integer + <TYPE> */\n\n"
+  - fns:
+    - {sig: "tAdd(bigint, tbigint)", ret: "tbigint", sym: "Add_number_tnumber"}
+    - {sig: "tAdd(integer, tint)", ret: "tint", sym: "Add_number_tnumber"}
+  - lit: "\nCREATE OPERATOR + (\n  PROCEDURE = tAdd,\n  LEFTARG = bigint, RIGHTARG = tbigint,\n  COMMUTATOR = +\n);\nCREATE OPERATOR + (\n  PROCEDURE = tAdd,\n  LEFTARG = integer, RIGHTARG = tint,\n  COMMUTATOR = +\n);\n\n/*****************************************************************************/\n\n/* float + <TYPE> */\n\n"
+  - fns:
+    - {sig: "tAdd(float, tfloat)", ret: "tfloat", sym: "Add_number_tnumber"}
+  - lit: "\nCREATE OPERATOR + (\n  PROCEDURE = tAdd,\n  LEFTARG = float, RIGHTARG = tfloat,\n  COMMUTATOR = +\n);\n\n/*****************************************************************************/\n/* tint + <TYPE> */\n\n"
+  - fns:
+    - {sig: "tAdd(tbigint, bigint)", ret: "tbigint", sym: "Add_tnumber_number"}
+    - {sig: "tAdd(tbigint, tbigint)", ret: "tbigint", sym: "Add_tnumber_tnumber"}
+  - lit: "\nCREATE OPERATOR + (\n  PROCEDURE = tAdd,\n  LEFTARG = tbigint, RIGHTARG = bigint,\n  COMMUTATOR = +\n);\nCREATE OPERATOR + (\n  PROCEDURE = tAdd,\n  LEFTARG = tbigint, RIGHTARG = tbigint,\n  COMMUTATOR = +\n);\n\n"
+  - fns:
+    - {sig: "tAdd(tint, integer)", ret: "tint", sym: "Add_tnumber_number"}
+    - {sig: "tAdd(tint, tint)", ret: "tint", sym: "Add_tnumber_tnumber"}
+  - lit: "\nCREATE OPERATOR + (\n  PROCEDURE = tAdd,\n  LEFTARG = tint, RIGHTARG = integer,\n  COMMUTATOR = +\n);\nCREATE OPERATOR + (\n  PROCEDURE = tAdd,\n  LEFTARG = tint, RIGHTARG = tint,\n  COMMUTATOR = +\n);\n\n/*****************************************************************************/\n/* tfloat + <TYPE> */\n\n"
+  - fns:
+    - {sig: "tAdd(tfloat, float)", ret: "tfloat", sym: "Add_tnumber_number"}
+    - {sig: "tAdd(tfloat, tfloat)", ret: "tfloat", sym: "Add_tnumber_tnumber"}
+  - lit: "\nCREATE OPERATOR + (\n  PROCEDURE = tAdd,\n  LEFTARG = tfloat, RIGHTARG = float,\n  COMMUTATOR = +\n);\nCREATE OPERATOR + (\n  PROCEDURE = tAdd,\n  LEFTARG = tfloat, RIGHTARG = tfloat,\n  COMMUTATOR = +\n);\n\n/*****************************************************************************\n * Temporal subtraction\n *****************************************************************************/\n\n/* integer - <TYPE> */\n\n"
+  - fns:
+    - {sig: "tSub(bigint, tbigint)", ret: "tbigint", sym: "Sub_number_tnumber"}
+    - {sig: "tSub(integer, tint)", ret: "tint", sym: "Sub_number_tnumber"}
+  - lit: "\nCREATE OPERATOR - (\n  PROCEDURE = tSub,\n  LEFTARG = bigint, RIGHTARG = tbigint\n);\nCREATE OPERATOR - (\n  PROCEDURE = tSub,\n  LEFTARG = integer, RIGHTARG = tint\n);\n\n/*****************************************************************************/\n\n/* tint - <TYPE> */\n\n"
+  - fns:
+    - {sig: "tSub(tbigint, bigint)", ret: "tbigint", sym: "Sub_tnumber_number"}
+    - {sig: "tSub(tbigint, tbigint)", ret: "tbigint", sym: "Sub_tnumber_tnumber"}
+  - lit: "\nCREATE OPERATOR - (\n  PROCEDURE = tSub,\n  LEFTARG = tbigint, RIGHTARG = bigint\n);\nCREATE OPERATOR - (\n  PROCEDURE = tSub,\n  LEFTARG = tbigint, RIGHTARG = tbigint\n);\n\n"
+  - fns:
+    - {sig: "tSub(tint, integer)", ret: "tint", sym: "Sub_tnumber_number"}
+    - {sig: "tSub(tint, tint)", ret: "tint", sym: "Sub_tnumber_tnumber"}
+  - lit: "\nCREATE OPERATOR - (\n  PROCEDURE = tSub,\n  LEFTARG = tint, RIGHTARG = integer\n);\nCREATE OPERATOR - (\n  PROCEDURE = tSub,\n  LEFTARG = tint, RIGHTARG = tint\n);\n\n/*****************************************************************************/\n\n/* float - <TYPE> */\n\n"
+  - fns:
+    - {sig: "tSub(float, tfloat)", ret: "tfloat", sym: "Sub_number_tnumber"}
+  - lit: "\nCREATE OPERATOR - (\n  PROCEDURE = tSub,\n  LEFTARG = float, RIGHTARG = tfloat\n);\n\n/*****************************************************************************/\n\n/* tfloat - <TYPE> */\n\n"
+  - fns:
+    - {sig: "tSub(tfloat, float)", ret: "tfloat", sym: "Sub_tnumber_number"}
+    - {sig: "tSub(tfloat, tfloat)", ret: "tfloat", sym: "Sub_tnumber_tnumber"}
+  - lit: "\nCREATE OPERATOR - (\n  PROCEDURE = tSub,\n  LEFTARG = tfloat, RIGHTARG = float\n);\nCREATE OPERATOR - (\n  PROCEDURE = tSub,\n  LEFTARG = tfloat, RIGHTARG = tfloat\n);\n\n/*****************************************************************************\n * Temporal multiplication\n *****************************************************************************/\n\n/* integer * <TYPE> */\n\n"
+  - fns:
+    - {sig: "tMul(bigint, tbigint)", ret: "tbigint", sym: "Mul_number_tnumber"}
+    - {sig: "tMul(integer, tint)", ret: "tint", sym: "Mul_number_tnumber"}
+  - lit: "\nCREATE OPERATOR * (\n  PROCEDURE = tMul,\n  LEFTARG = integer, RIGHTARG = tint,\n  COMMUTATOR = *\n);\nCREATE OPERATOR * (\n  PROCEDURE = tMul,\n  LEFTARG = bigint, RIGHTARG = tbigint,\n  COMMUTATOR = *\n);\n\n/*****************************************************************************/\n/* tint * <TYPE> */\n\n"
+  - fns:
+    - {sig: "tMul(tbigint, bigint)", ret: "tbigint", sym: "Mul_tnumber_number"}
+    - {sig: "tMul(tbigint, tbigint)", ret: "tbigint", sym: "Mul_tnumber_tnumber"}
+  - lit: "\nCREATE OPERATOR * (\n  PROCEDURE = tMul,\n  LEFTARG = tbigint, RIGHTARG = bigint,\n  COMMUTATOR = *\n);\nCREATE OPERATOR * (\n  PROCEDURE = tMul,\n  LEFTARG = tbigint, RIGHTARG = tbigint,\n  COMMUTATOR = *\n);\n\n"
+  - fns:
+    - {sig: "tMul(tint, integer)", ret: "tint", sym: "Mul_tnumber_number"}
+    - {sig: "tMul(tint, tint)", ret: "tint", sym: "Mul_tnumber_tnumber"}
+  - lit: "\nCREATE OPERATOR * (\n  PROCEDURE = tMul,\n  LEFTARG = tint, RIGHTARG = integer,\n  COMMUTATOR = *\n);\nCREATE OPERATOR * (\n  PROCEDURE = tMul,\n  LEFTARG = tint, RIGHTARG = tint,\n  COMMUTATOR = *\n);\n\n/*****************************************************************************/\n\n/* float * <TYPE> */\n\n"
+  - fns:
+    - {sig: "tMul(float, tfloat)", ret: "tfloat", sym: "Mul_number_tnumber"}
+  - lit: "\nCREATE OPERATOR * (\n  PROCEDURE = tMul,\n  LEFTARG = float, RIGHTARG = tfloat,\n  COMMUTATOR = *\n);\n\n/*****************************************************************************/\n/* tfloat * <TYPE> */\n\n"
+  - fns:
+    - {sig: "tMul(tfloat, float)", ret: "tfloat", sym: "Mul_tnumber_number"}
+    - {sig: "tMul(tfloat, tfloat)", ret: "tfloat", sym: "Mul_tnumber_tnumber"}
+  - lit: "\nCREATE OPERATOR * (\n  PROCEDURE = tMul,\n  LEFTARG = tfloat, RIGHTARG = float,\n  COMMUTATOR = *\n);\nCREATE OPERATOR * (\n  PROCEDURE = tMul,\n  LEFTARG = tfloat, RIGHTARG = tfloat,\n  COMMUTATOR = *\n);\n\n/*****************************************************************************\n * Temporal division\n *****************************************************************************/\n\n/* integer / <TYPE> */\n\n"
+  - fns:
+    - {sig: "tDiv(bigint, tbigint)", ret: "tbigint", sym: "Div_number_tnumber"}
+    - {sig: "tDiv(integer, tint)", ret: "tint", sym: "Div_number_tnumber"}
+  - lit: "\nCREATE OPERATOR / (\n  PROCEDURE = tDiv,\n  LEFTARG = bigint, RIGHTARG = tbigint\n);\nCREATE OPERATOR / (\n  PROCEDURE = tDiv,\n  LEFTARG = integer, RIGHTARG = tint\n);\n\n/*****************************************************************************/\n/* tint / <TYPE> */\n\n"
+  - fns:
+    - {sig: "tDiv(tbigint, bigint)", ret: "tbigint", sym: "Div_tnumber_number"}
+    - {sig: "tDiv(tbigint, tbigint)", ret: "tbigint", sym: "Div_tnumber_tnumber"}
+  - lit: "\nCREATE OPERATOR / (\n  PROCEDURE = tDiv,\n  LEFTARG = tbigint, RIGHTARG = bigint\n);\nCREATE OPERATOR / (\n  PROCEDURE = tDiv,\n  LEFTARG = tbigint, RIGHTARG = tbigint\n);\n\n"
+  - fns:
+    - {sig: "tDiv(tint, integer)", ret: "tint", sym: "Div_tnumber_number"}
+    - {sig: "tDiv(tint, tint)", ret: "tint", sym: "Div_tnumber_tnumber"}
+  - lit: "\nCREATE OPERATOR / (\n  PROCEDURE = tDiv,\n  LEFTARG = tint, RIGHTARG = integer\n);\nCREATE OPERATOR / (\n  PROCEDURE = tDiv,\n  LEFTARG = tint, RIGHTARG = tint\n);\n\n/*****************************************************************************/\n\n/* float / <TYPE> */\n\n"
+  - fns:
+    - {sig: "tDiv(float, tfloat)", ret: "tfloat", sym: "Div_number_tnumber"}
+  - lit: "\nCREATE OPERATOR / (\n  PROCEDURE = tDiv,\n  LEFTARG = float, RIGHTARG = tfloat\n);\n\n/*****************************************************************************/\n\n"
+  - fns:
+    - {sig: "tDiv(tfloat, float)", ret: "tfloat", sym: "Div_tnumber_number"}
+    - {sig: "tDiv(tfloat, tfloat)", ret: "tfloat", sym: "Div_tnumber_tnumber"}
+  - lit: "\nCREATE OPERATOR / (\n  PROCEDURE = tDiv,\n  LEFTARG = tfloat, RIGHTARG = float\n);\nCREATE OPERATOR / (\n  PROCEDURE = tDiv,\n  LEFTARG = tfloat, RIGHTARG = tfloat\n);\n\n/******************************************************************************/\n\n"
+  - fns:
+    - {sig: "abs(tbigint)", ret: "tint", sym: "Tnumber_abs"}
+    - {sig: "abs(tint)", ret: "tint", sym: "Tnumber_abs"}
+    - {sig: "abs(tfloat)", ret: "tfloat", sym: "Tnumber_abs"}
+  - lit: "\n"
+  - fns:
+    - {sig: "deltaValue(tbigint)", ret: "tint", sym: "Tnumber_delta_value"}
+    - {sig: "deltaValue(tint)", ret: "tint", sym: "Tnumber_delta_value"}
+    - {sig: "deltaValue(tfloat)", ret: "tfloat", sym: "Tnumber_delta_value"}
+  - lit: "\n"
+  - fns:
+    - {sig: "floor(tfloat)", ret: "tfloat", sym: "Tfloat_floor"}
+  - lit: "\n"
+  - fns:
+    - {sig: "ceil(tfloat)", ret: "tfloat", sym: "Tfloat_ceil"}
+  - lit: "\n"
+  - fns:
+    - {sig: "round(tfloat, integer DEFAULT 0)", ret: "tfloat", sym: "Temporal_round"}
+    - {sig: "round(tfloat[], integer DEFAULT 0)", ret: "tfloat[]", sym: "Temporalarr_round"}
+  - lit: "\n"
+  - fns:
+    - {sig: "degrees(float, bool DEFAULT FALSE)", ret: "float", sym: "Float_degrees"}
+  - lit: "\n"
+  - fns:
+    - {sig: "degrees(tfloat, bool DEFAULT FALSE)", ret: "tfloat", sym: "Tfloat_degrees"}
+  - lit: "\n"
+  - fns:
+    - {sig: "radians(tfloat)", ret: "tfloat", sym: "Tfloat_radians"}
+  - lit: "\n"
+  - fns:
+    - {sig: "angularDifference(float, float)", ret: "float", sym: "Float_angular_difference"}
+  - lit: "\n"
+  - fns:
+    - {sig: "trend(tbigint)", ret: "tint", sym: "Tnumber_trend"}
+    - {sig: "trend(tint)", ret: "tint", sym: "Tnumber_trend"}
+    - {sig: "trend(tfloat)", ret: "tint", sym: "Tnumber_trend"}
+  - lit: "\n"
+  - fns:
+    - {sig: "derivative(tfloat)", ret: "tfloat", sym: "Temporal_derivative"}
+  - lit: "\n"
+  - fns:
+    - {sig: "exp(tfloat)", ret: "tfloat", sym: "Tfloat_exp"}
+  - lit: "\n"
+  - fns:
+    - {sig: "ln(tfloat)", ret: "tfloat", sym: "Tfloat_ln"}
+  - lit: "\n"
+  - fns:
+    - {sig: "log10(tfloat)", ret: "tfloat", sym: "Tfloat_log10"}
+  - lit: "\n"
+  - fns:
+    - {sig: "sin(tfloat)", ret: "tfloat", sym: "Tfloat_sin"}
+  - lit: "\n"
+  - fns:
+    - {sig: "cos(tfloat)", ret: "tfloat", sym: "Tfloat_cos"}
+  - lit: "\n"
+  - fns:
+    - {sig: "tan(tfloat)", ret: "tfloat", sym: "Tfloat_tan"}
+  - lit: "\n/******************************************************************************/\n"
