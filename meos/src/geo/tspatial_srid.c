@@ -96,15 +96,16 @@
 int32_t
 spatial_srid(Datum d, MeosType basetype)
 {
-  /* T_PCPOINT and T_PCPATCH are deliberately outside spatial_basetype():
+  /* The pgpointcloud base types are deliberately outside spatial_basetype():
    * the other spatial_* dispatchers have no pgpointcloud case, and
-   * deriving a pcpoint's or pcpatch's flags needs its schema. Only the
-   * SRID is available without one, since both carry the same pcid and
-   * resolve it through the same schema lookup, so the two are admitted
-   * here rather than catalog-wide. */
+   * deriving a pcpoint's or pcpatch's flags needs its schema, unlike the
+   * SRID which both resolve through the same pcid-keyed schema lookup. The
+   * dispatch admits them through pointcloud_basetype(), the base-type
+   * counterpart of tpointcloud_temptype() that the boxops dispatch already
+   * uses the same way to admit tpcpoint and tpcpatch beside
+   * tspatial_type(). */
 #if POINTCLOUD
-  assert(spatial_basetype(basetype) || basetype == T_PCPOINT ||
-    basetype == T_PCPATCH);
+  assert(spatial_basetype(basetype) || pointcloud_basetype(basetype));
 #else
   assert(spatial_basetype(basetype));
 #endif
