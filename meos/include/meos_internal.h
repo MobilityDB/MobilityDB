@@ -945,6 +945,10 @@ extern bool temporal_bbox_eq(const void *box1, const void *box2,
   MeosType temptype);
 extern int temporal_bbox_cmp(const void *box1, const void *box2,
   MeosType temptype);
+extern bool ensure_bbox_temporal_compatible(MeosType bboxtype,
+  const Temporal *temp);
+extern void *bbox_temporal_split_boxes(MeosType bboxtype, size_t boxsize,
+  const Temporal *temp, int maxboxes, int *count);
 
 /* Set functions for set and span types */
 

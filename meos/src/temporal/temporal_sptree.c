@@ -584,34 +584,6 @@ sptree_search(const SPTree *sptree, RTreeSearchOp op, const void *query,
  *****************************************************************************/
 
 /**
- * @brief Return true if the SPTree's bounding box type is compatible with the
- * temporal type, report an error otherwise
- * @param[in] sptree Pointer to the SPTree structure
- * @param[in] temp Temporal value
- */
-static bool
-ensure_sptree_temporal_compatible(const SPTree *sptree, const Temporal *temp)
-{
-  MeosType temptype = temp->temptype;
-  bool compatible =
-    (talpha_type(temptype) && sptree->bboxtype == T_TSTZSPAN) ||
-    (tnumber_type(temptype) && sptree->bboxtype == T_TBOX) ||
-    (tspatial_type(temptype) && sptree->bboxtype == T_STBOX)
-#if POINTCLOUD
-    || (tpointcloud_temptype(temptype) && sptree->bboxtype == T_TPCBOX)
-#endif
-    ;
-  if (! compatible)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
-      "SPTree bounding box type (%s) is not compatible with temporal type (%s)",
-      meostype_name(sptree->bboxtype), meostype_name(temptype));
-    return false;
-  }
-  return true;
-}
-
-/**
  * @ingroup meos_temporal_box_index
  * @brief Insert a temporal value into an in-memory space-partitioning index
  * @details The bounding box is automatically extracted from the temporal value.
@@ -625,7 +597,7 @@ ensure_sptree_temporal_compatible(const SPTree *sptree, const Temporal *temp)
 void
 sptree_insert_temporal(SPTree *sptree, const Temporal *temp, int id)
 {
-  if (! ensure_sptree_temporal_compatible(sptree, temp))
+  if (! ensure_bbox_temporal_compatible(sptree->bboxtype, temp))
     return;
   /* Use a stack buffer large enough for any MEOS bounding box type */
   bboxunion buf;
@@ -651,7 +623,7 @@ int
 sptree_search_temporal(const SPTree *sptree, RTreeSearchOp op,
   const Temporal *temp, MeosArray *result)
 {
-  if (! ensure_sptree_temporal_compatible(sptree, temp))
+  if (! ensure_bbox_temporal_compatible(sptree->bboxtype, temp))
   {
     meos_array_reset(result);
     return 0;
@@ -661,57 +633,6 @@ sptree_search_temporal(const SPTree *sptree, RTreeSearchOp op,
   memset(&buf, 0, sizeof(buf));
   temporal_set_bbox(temp, &buf);
   return sptree_search(sptree, op, &buf, result);
-}
-
-/**
- * @brief Decompose a temporal value into an array of tight per-segment
- * bounding boxes whose element type matches the SPTree's bounding box type
- * @details The decomposition reuses the same per-segment machinery as the
- * single-box path: temporal alphas are split with #temporal_split_n_spans and
- * temporal numbers with #tnumber_split_n_tboxes. When `maxboxes <= 1` or the
- * temporal value is an instant, the function degenerates to the single minimum
- * bounding box, byte-identical to the result of #temporal_set_bbox used by
- * #sptree_insert_temporal.
- * @param[in] sptree The SPTree whose bounding box type drives the element type
- * @param[in] temp The temporal value to decompose
- * @param[in] maxboxes Maximum number of boxes produced for `temp`
- * @param[out] count Number of boxes in the returned array
- * @return Allocated array of `*count` bounding boxes, each of `sptree->boxsize`
- * bytes
- * @pre `temp` is compatible with `sptree` (verified by the callers)
- */
-static void *
-sptree_temporal_split_boxes(const SPTree *sptree UNUSED, const Temporal *temp,
-  int maxboxes, int *count)
-{
-  assert(sptree); assert(temp); assert(count);
-
-  /* Degenerate single minimum bounding box. The allocation is sized for any
-   * MEOS bounding box type because the temporal type's box may be larger than
-   * the internal one (a TPCBox is projected to an STBox at insertion) */
-  if (maxboxes <= 1 || temp->subtype == TINSTANT)
-  {
-    void *result = palloc0(sizeof(bboxunion));
-    temporal_set_bbox(temp, result);
-    *count = 1;
-    return result;
-  }
-
-  /* Multi-box decomposition reusing the existing per-type splitters */
-  MeosType temptype = temp->temptype;
-  if (talpha_type(temptype))
-    return temporal_split_n_spans(temp, maxboxes, count);
-  if (tnumber_type(temptype))
-    return tnumber_split_n_tboxes(temp, maxboxes, count);
-  if (tgeo_type_all(temptype))
-    return tgeo_split_n_stboxes(temp, maxboxes, count);
-
-  /* No per-segment splitter (e.g. tcbuffer, tnpoint, tpose, tpcpoint,
-   * tpcpatch): fall back to the single minimum bounding box */
-  void *result = palloc0(sizeof(bboxunion));
-  temporal_set_bbox(temp, result);
-  *count = 1;
-  return result;
 }
 
 /**
@@ -735,10 +656,10 @@ void
 sptree_insert_temporal_split(SPTree *sptree, const Temporal *temp, int id,
   int maxboxes)
 {
-  if (! ensure_sptree_temporal_compatible(sptree, temp))
+  if (! ensure_bbox_temporal_compatible(sptree->bboxtype, temp))
     return;
   int count;
-  void *boxes = sptree_temporal_split_boxes(sptree, temp, maxboxes, &count);
+  void *boxes = bbox_temporal_split_boxes(sptree->bboxtype, sizeof(bboxunion), temp, maxboxes, &count);
   if (! boxes)
     return;
   for (int i = 0; i < count; i++)
@@ -771,11 +692,11 @@ sptree_search_temporal_dedup(const SPTree *sptree, RTreeSearchOp op,
   const Temporal *temp, int maxboxes, MeosArray *result)
 {
   meos_array_reset(result);
-  if (! ensure_sptree_temporal_compatible(sptree, temp))
+  if (! ensure_bbox_temporal_compatible(sptree->bboxtype, temp))
     return 0;
 
   int count;
-  void *boxes = sptree_temporal_split_boxes(sptree, temp, maxboxes, &count);
+  void *boxes = bbox_temporal_split_boxes(sptree->bboxtype, sizeof(bboxunion), temp, maxboxes, &count);
   if (! boxes)
     return 0;
 

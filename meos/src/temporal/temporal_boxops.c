@@ -176,6 +176,100 @@ temporal_bbox_cmp(const void *box1, const void *box2, MeosType temptype)
     return stbox_cmp((STBox *) box1, (STBox *) box2);
 }
 
+/**
+ * @brief Return true if the bounding box type is compatible with the
+ * temporal type, report an error otherwise
+ * @details Shared by the in-memory RTree and SPTree indexes: temporal alphas
+ * (tbool, ttext) require a span bounding box, temporal numbers (tint,
+ * tfloat) require a TBox, spatiotemporal types (tgeompoint, tgeogpoint,
+ * etc.) require an STBox, and, when POINTCLOUD is enabled, temporal point
+ * clouds (tpcpoint, tpcpatch) require a TPCBox.
+ * @param[in] bboxtype Bounding box type of the index
+ * @param[in] temp Temporal value
+ */
+bool
+ensure_bbox_temporal_compatible(MeosType bboxtype, const Temporal *temp)
+{
+  assert(temp);
+  MeosType temptype = temp->temptype;
+  bool compatible =
+    (talpha_type(temptype) && bboxtype == T_TSTZSPAN) ||
+    (tnumber_type(temptype) && bboxtype == T_TBOX) ||
+    (tspatial_type(temptype) && bboxtype == T_STBOX)
+#if POINTCLOUD
+    || (tpointcloud_temptype(temptype) && bboxtype == T_TPCBOX)
+#endif
+    ;
+  if (! compatible)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+      "Bounding box type (%s) is not compatible with temporal type (%s)",
+      meostype_name(bboxtype), meostype_name(temptype));
+    return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Decompose a temporal value into an array of tight per-segment
+ * bounding boxes whose element type matches the given bounding box type
+ * @details Shared by the in-memory RTree and SPTree indexes. The
+ * decomposition reuses the same per-segment bounding box machinery as the
+ * single-box path: temporal alphas are split with #temporal_split_n_spans,
+ * temporal numbers with #tnumber_split_n_tboxes, and temporal geos with
+ * #tgeo_split_n_stboxes. These already handle the TINSTANT, TSEQUENCE and
+ * TSEQUENCESET subtypes, the discrete, step and linear interpolations, and
+ * the Z, geodetic and SRID flags, and coarsen by merging adjacent segment
+ * boxes (deterministic chunking) down to at most `maxboxes` boxes. When
+ * `maxboxes <= 1`, the temporal value is an instant, or the temporal type
+ * has no per-segment splitter (e.g. tcbuffer, tnpoint, tpose, tpcpoint,
+ * tpcpatch), the function degenerates to the single minimum bounding box,
+ * byte-identical to the result of #temporal_set_bbox.
+ * @param[in] bboxtype Bounding box type of the index (unused for the
+ * multi-box decomposition, kept for symmetry with the compatibility check
+ * and for the assertion below)
+ * @param[in] boxsize Size in bytes of a single bounding box allocated for
+ * the degenerate/fallback single-box result; the caller passes a size large
+ * enough to hold #temporal_set_bbox's output for `temp`, which may differ
+ * from the index's own per-entry box size (e.g. an index that internally
+ * projects a larger box type onto a smaller one)
+ * @param[in] temp Temporal value to decompose
+ * @param[in] maxboxes Maximum number of boxes produced for `temp`
+ * @param[out] count Number of boxes in the returned array
+ * @return Allocated array of `*count` bounding boxes, or @p NULL on error
+ * @pre `temp` is compatible with `bboxtype` (verified by the callers)
+ */
+void *
+bbox_temporal_split_boxes(MeosType bboxtype UNUSED, size_t boxsize,
+  const Temporal *temp, int maxboxes, int *count)
+{
+  assert(bbox_type(bboxtype)); assert(temp); assert(count);
+
+  /* Degenerate single minimum bounding box */
+  if (maxboxes <= 1 || temp->subtype == TINSTANT)
+  {
+    void *result = palloc0(boxsize);
+    temporal_set_bbox(temp, result);
+    *count = 1;
+    return result;
+  }
+
+  /* Multi-box decomposition reusing the existing per-type splitters */
+  MeosType temptype = temp->temptype;
+  if (talpha_type(temptype))
+    return temporal_split_n_spans(temp, maxboxes, count);
+  if (tnumber_type(temptype))
+    return tnumber_split_n_tboxes(temp, maxboxes, count);
+  if (tgeo_type_all(temptype))
+    return tgeo_split_n_stboxes(temp, maxboxes, count);
+
+  /* No per-segment splitter: fall back to the single minimum bounding box */
+  void *result = palloc0(boxsize);
+  temporal_set_bbox(temp, result);
+  *count = 1;
+  return result;
+}
+
 /*****************************************************************************
  * Compute the bounding box at the creation of temporal values
  *****************************************************************************/
