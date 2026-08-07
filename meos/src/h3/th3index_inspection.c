@@ -40,6 +40,7 @@
 #include <string.h>
 
 #include <meos.h>
+#include <meos_cellindex.h>
 #include <meos_h3.h>
 
 #include "temporal/temporal.h"
@@ -61,17 +62,7 @@ Temporal *
 th3index_get_resolution(const Temporal *temp)
 {
   VALIDATE_TH3INDEX(temp, NULL);
-
-  LiftedFunctionInfo lfinfo;
-  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) &datum_h3_get_resolution;
-  lfinfo.numparam = 0;
-  lfinfo.argtype[0] = T_TH3INDEX;
-  lfinfo.restype = T_TINT;
-  lfinfo.reslinear = false;
-  lfinfo.invert = INVERT_NO;
-  lfinfo.discont = CONTINUOUS;
-  return tfunc_temporal(temp, &lfinfo);
+  return tcellindex_get_resolution(temp);
 }
 
 /*****************************************************************************
@@ -114,17 +105,7 @@ Temporal *
 th3index_is_valid_cell(const Temporal *temp)
 {
   VALIDATE_TH3INDEX(temp, NULL);
-
-  LiftedFunctionInfo lfinfo;
-  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) &datum_h3_is_valid_cell;
-  lfinfo.numparam = 0;
-  lfinfo.argtype[0] = T_TH3INDEX;
-  lfinfo.restype = T_TBOOL;
-  lfinfo.reslinear = false;
-  lfinfo.invert = INVERT_NO;
-  lfinfo.discont = CONTINUOUS;
-  return tfunc_temporal(temp, &lfinfo);
+  return tcellindex_is_valid_cell(temp);
 }
 
 /*****************************************************************************
