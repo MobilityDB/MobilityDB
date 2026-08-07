@@ -86,14 +86,14 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_ga0019e015bac80fc360eed13f38720c3e.html#ga0019e015bac80fc360eed13f38720c3e">raquet_pixtype</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_gab184fc345bab3f91cd572b95ae94feb7.html#gab184fc345bab3f91cd572b95ae94feb7">raquet_quadbin</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_gad1d550458722f56daf1b8a64ec557062.html#gad1d550458722f56daf1b8a64ec557062">raquet_width</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__raster__base__accessor_ga07eac8c18e7c6ac0b6e3d37f58ae221a.html#ga07eac8c18e7c6ac0b6e3d37f58ae221a">raster_tile_value_quadbin</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__raster__base__accessor_gaba1c7c459b677034a960af575f20e119.html#gaba1c7c459b677034a960af575f20e119">raster_tile_value_quadbin</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_ga683d59d59af47d462f0a1b7bb844b77c.html#ga683d59d59af47d462f0a1b7bb844b77c">trajectory_quadbins</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga07eac8c18e7c6ac0b6e3d37f58ae221a" name="ga07eac8c18e7c6ac0b6e3d37f58ae221a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga07eac8c18e7c6ac0b6e3d37f58ae221a">&#9670;&#160;</a></span>raster_tile_value_quadbin()</h2>
+<a id="gaba1c7c459b677034a960af575f20e119" name="gaba1c7c459b677034a960af575f20e119"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaba1c7c459b677034a960af575f20e119">&#9670;&#160;</a></span>raster_tile_value_quadbin()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -103,6 +103,12 @@ $(function() {
           <td>(</td>
           <td class="paramtype">const uint8_t *&#160;</td>
           <td class="paramname"><em>pixels</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>pixels_size</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -158,6 +164,7 @@ $(function() {
 <p >The chip is identified by its QUADBIN cell, which encodes the Web-Mercator tile coordinates and thus the full georeferencing without any separate metadata. Instants outside the tile extent or on nodata pixels are silently dropped; NULL is returned when no instants survive. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">pixels</td><td>Row-major pixel bytes (all bands interleaved or single-band depending on the <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> producer) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">pixels_size</td><td>Number of bytes available at <code>pixels</code> </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">width</td><td>Tile width in pixels (typically 256) </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">height</td><td>Tile height in pixels (typically 256) </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">quadbin</td><td>CARTO QUADBIN cell identifier (uint64) </td></tr>
