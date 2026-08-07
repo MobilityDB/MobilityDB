@@ -12,6 +12,12 @@ SELECT tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2024-01-01'::timestamptz)::text =
  t
 (1 row)
 
+SELECT SRID(pcpoint(1, 1.0, 1.0, 1.0));
+ srid 
+------
+    0
+(1 row)
+
 SELECT asText(tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz)) = format('%s', tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz));
  ?column? 
 ----------

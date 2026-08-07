@@ -51,6 +51,7 @@
 #include <meos_pointcloud.h>
 #include "pointcloud/pcpoint.h"
 #include "pointcloud/pcpatch.h"
+#include "pointcloud/meos_schema_hook.h"
 /* MobilityDB */
 #include "pg_pointcloud/schema_cache.h"
 
@@ -177,6 +178,26 @@ Pcpoint_get_dim(PG_FUNCTION_ARGS)
   if (! ok)
     PG_RETURN_NULL();
   PG_RETURN_FLOAT8(v);
+}
+
+/*****************************************************************************
+ * SRID functions
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Pcpoint_srid(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pcpoint_srid);
+/**
+ * @ingroup mobilitydb_pointcloud_base_srid
+ * @brief Return the SRID of a pcpoint
+ * @sqlfn SRID()
+ */
+Datum
+Pcpoint_srid(PG_FUNCTION_ARGS)
+{
+  Pcpoint *pt = PG_GETARG_PCPOINT_P(0);
+  int32_t srid = meos_pc_schema_get_srid(pcpoint_get_pcid(pt));
+  PG_FREE_IF_COPY(pt, 0);
+  PG_RETURN_INT32(srid);
 }
 
 /*****************************************************************************

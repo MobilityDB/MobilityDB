@@ -91,6 +91,19 @@ CREATE FUNCTION getDim(pcpoint, text)
   LANGUAGE C STABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
+ * SRID functions
+ *
+ * pcpoint only: deriving a pcpatch's flags needs its schema and only the
+ * SRID is available without one (see the T_PCPOINT relaxation in MEOS
+ * spatial_srid), but the pcpatch dispatch case itself is not implemented.
+ ******************************************************************************/
+
+CREATE FUNCTION SRID(pcpoint)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Pcpoint_srid'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************
  * pcpoint — Comparison / B-tree / hash
  ******************************************************************************/
 
