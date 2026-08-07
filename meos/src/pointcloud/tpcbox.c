@@ -430,7 +430,7 @@ pcpatch_to_tpcbox(const Pcpatch *pa, int32_t srid)
  * @csqlfn #Tpcbox_hasx()
  */
 bool tpcbox_hasx(const TPCBox *box)
-{ VALIDATE_TPCBOX(box, false); return MEOS_FLAGS_GET_X(box->flags); }
+{ VALIDATE_TPCBOX(box, false); return stbox_hasx((const STBox *) box); }
 
 /**
  * @ingroup meos_pointcloud_box_accessor
@@ -438,7 +438,7 @@ bool tpcbox_hasx(const TPCBox *box)
  * @csqlfn #Tpcbox_hasz()
  */
 bool tpcbox_hasz(const TPCBox *box)
-{ VALIDATE_TPCBOX(box, false); return MEOS_FLAGS_GET_Z(box->flags); }
+{ VALIDATE_TPCBOX(box, false); return stbox_hasz((const STBox *) box); }
 
 /**
  * @ingroup meos_pointcloud_box_accessor
@@ -446,14 +446,14 @@ bool tpcbox_hasz(const TPCBox *box)
  * @csqlfn #Tpcbox_hast()
  */
 bool tpcbox_hast(const TPCBox *box)
-{ VALIDATE_TPCBOX(box, false); return MEOS_FLAGS_GET_T(box->flags); }
+{ VALIDATE_TPCBOX(box, false); return stbox_hast((const STBox *) box); }
 
 /**
  * @ingroup meos_pointcloud_box_accessor
  * @brief Return @p true if a TPCBox is in a geographic SRID
  */
 bool tpcbox_geodetic(const TPCBox *box)
-{ VALIDATE_TPCBOX(box, false); return MEOS_FLAGS_GET_GEODETIC(box->flags); }
+{ VALIDATE_TPCBOX(box, false); return stbox_isgeodetic((const STBox *) box); }
 
 /**
  * @ingroup meos_pointcloud_box_accessor
@@ -467,8 +467,7 @@ bool
 tpcbox_xmin(const TPCBox *box, double *result)
 {
   VALIDATE_TPCBOX(box, false); VALIDATE_NOT_NULL(result, false);
-  if (! MEOS_FLAGS_GET_X(box->flags)) return false;
-  *result = box->xmin; return true;
+  return stbox_xmin((const STBox *) box, result);
 }
 
 /**
@@ -483,8 +482,7 @@ bool
 tpcbox_xmax(const TPCBox *box, double *result)
 {
   VALIDATE_TPCBOX(box, false); VALIDATE_NOT_NULL(result, false);
-  if (! MEOS_FLAGS_GET_X(box->flags)) return false;
-  *result = box->xmax; return true;
+  return stbox_xmax((const STBox *) box, result);
 }
 
 /**
@@ -499,8 +497,7 @@ bool
 tpcbox_ymin(const TPCBox *box, double *result)
 {
   VALIDATE_TPCBOX(box, false); VALIDATE_NOT_NULL(result, false);
-  if (! MEOS_FLAGS_GET_X(box->flags)) return false;
-  *result = box->ymin; return true;
+  return stbox_ymin((const STBox *) box, result);
 }
 
 /**
@@ -515,8 +512,7 @@ bool
 tpcbox_ymax(const TPCBox *box, double *result)
 {
   VALIDATE_TPCBOX(box, false); VALIDATE_NOT_NULL(result, false);
-  if (! MEOS_FLAGS_GET_X(box->flags)) return false;
-  *result = box->ymax; return true;
+  return stbox_ymax((const STBox *) box, result);
 }
 
 /**
@@ -531,8 +527,7 @@ bool
 tpcbox_zmin(const TPCBox *box, double *result)
 {
   VALIDATE_TPCBOX(box, false); VALIDATE_NOT_NULL(result, false);
-  if (! MEOS_FLAGS_GET_Z(box->flags)) return false;
-  *result = box->zmin; return true;
+  return stbox_zmin((const STBox *) box, result);
 }
 
 /**
@@ -547,8 +542,7 @@ bool
 tpcbox_zmax(const TPCBox *box, double *result)
 {
   VALIDATE_TPCBOX(box, false); VALIDATE_NOT_NULL(result, false);
-  if (! MEOS_FLAGS_GET_Z(box->flags)) return false;
-  *result = box->zmax; return true;
+  return stbox_zmax((const STBox *) box, result);
 }
 
 /**
@@ -563,8 +557,7 @@ bool
 tpcbox_tmin(const TPCBox *box, TimestampTz *result)
 {
   VALIDATE_TPCBOX(box, false); VALIDATE_NOT_NULL(result, false);
-  if (! MEOS_FLAGS_GET_T(box->flags)) return false;
-  *result = DatumGetTimestampTz(box->period.lower); return true;
+  return stbox_tmin((const STBox *) box, result);
 }
 
 /**
@@ -580,8 +573,7 @@ bool
 tpcbox_tmin_inc(const TPCBox *box, bool *result)
 {
   VALIDATE_TPCBOX(box, false); VALIDATE_NOT_NULL(result, false);
-  if (! MEOS_FLAGS_GET_T(box->flags)) return false;
-  *result = box->period.lower_inc; return true;
+  return stbox_tmin_inc((const STBox *) box, result);
 }
 
 /**
@@ -596,8 +588,7 @@ bool
 tpcbox_tmax(const TPCBox *box, TimestampTz *result)
 {
   VALIDATE_TPCBOX(box, false); VALIDATE_NOT_NULL(result, false);
-  if (! MEOS_FLAGS_GET_T(box->flags)) return false;
-  *result = DatumGetTimestampTz(box->period.upper); return true;
+  return stbox_tmax((const STBox *) box, result);
 }
 
 /**
@@ -613,8 +604,7 @@ bool
 tpcbox_tmax_inc(const TPCBox *box, bool *result)
 {
   VALIDATE_TPCBOX(box, false); VALIDATE_NOT_NULL(result, false);
-  if (! MEOS_FLAGS_GET_T(box->flags)) return false;
-  *result = box->period.upper_inc; return true;
+  return stbox_tmax_inc((const STBox *) box, result);
 }
 
 /**
