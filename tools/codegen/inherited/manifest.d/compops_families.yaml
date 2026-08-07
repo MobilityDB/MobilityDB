@@ -629,7 +629,6 @@ compops_families:
   - lit: "\n/*****************************************************************************/\n\n-- Temporal float\n\n"
   - items:
     - {kind: func, sig: "tGt(float, tfloat)", ret: "tbool", sym: "Tgt_base_temporal"}
-    - {kind: func, sig: "tGt(tfloat, integer)", ret: "tbool", sym: "Tgt_temporal_base"}
     - {kind: func, sig: "tGt(tfloat, float)", ret: "tbool", sym: "Tgt_temporal_base"}
     - {kind: func, sig: "tGt(tfloat, tfloat)", ret: "tbool", sym: "Tgt_temporal_temporal"}
   - lit: "\n"
@@ -710,7 +709,6 @@ compops_families:
   - lit: "\n/*****************************************************************************/\n\n-- Temporal float\n\n"
   - items:
     - {kind: func, sig: "tGe(float, tfloat)", ret: "tbool", sym: "Tge_base_temporal"}
-    - {kind: func, sig: "tGe(tfloat, integer)", ret: "tbool", sym: "Tge_temporal_base"}
     - {kind: func, sig: "tGe(tfloat, float)", ret: "tbool", sym: "Tge_temporal_base"}
     - {kind: func, sig: "tGe(tfloat, tfloat)", ret: "tbool", sym: "Tge_temporal_temporal"}
   - lit: "\n"
