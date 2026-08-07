@@ -442,10 +442,18 @@ tsequence_join_test(const TSequence *seq1, const TSequence *seq2,
      */
     (eq_last2_last1 && eq_last1_first1 && eq_first1_first2)
     ||
-    /* If float/point sequences and collinear last/first segments having the same duration
+    /* If linear sequences and collinear last/first segments having the same duration
        ..., 1@t1, 2@t2) [2@t2, 3@t3, ... -> ..., 1@t1, 3@t3, ...
+       This must be restricted to LINEAR interpolation: unlike
+       #tsequence_norm_test, checking temptype_supports_linear (i.e., the
+       type CAN be linear) instead of interp == LINEAR (i.e., this sequence
+       IS linear) would also match step sequences whose values happen to be
+       collinear, e.g., ..., 1@t1, 2@t2] (2@t2, 3@t3, ... which would wrongly
+       remove the shared instant 2@t2. For step interpolation, the value at
+       the shared boundary timestamp is the inclusive side's value and must
+       always survive the join.
     */
-    (temptype_supports_linear(seq1->temptype) && eq_last1_first1 &&
+    (interp == LINEAR && eq_last1_first1 &&
       datum_collinear(last2value, first1value, first2value, basetype,
         last2->t, first1->t, first2->t))
     ))

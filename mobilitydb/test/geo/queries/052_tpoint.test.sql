@@ -613,6 +613,16 @@ SELECT asText(merge(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint '{Point(1 1)@
 SELECT asText(merge(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint '{Point(1 1)@2000-01-03, Point(2 2)@2000-01-04, Point(1 1)@2000-01-05}'));
 SELECT asText(merge(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-01'));
 
+-- Merging step sequences that meet at a shared timestamp keeps the
+-- inclusive side's value at the seam: splitting a step sequence with
+-- atTime/minusTime at an interior timestamp and merging the pieces back
+-- together must return the original value
+SELECT tgeompoint 'Interp=Step;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(3 3 3)@2000-01-03]' =
+  merge(atTime(tgeompoint 'Interp=Step;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(3 3 3)@2000-01-03]', tstzspan '[2000-01-01,2000-01-02]'),
+    minusTime(tgeompoint 'Interp=Step;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(3 3 3)@2000-01-03]', tstzspan '[2000-01-01,2000-01-02]'));
+SELECT st_astext(valueAtTimestamp(merge(atTime(tgeompoint 'Interp=Step;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(3 3 3)@2000-01-03]', tstzspan '[2000-01-01,2000-01-02]'),
+    minusTime(tgeompoint 'Interp=Step;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(3 3 3)@2000-01-03]', tstzspan '[2000-01-01,2000-01-02]')), timestamptz '2000-01-02'));
+
 /* Errors */
 SELECT merge(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-02');
 SELECT merge(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1 1)@2000-01-02');
