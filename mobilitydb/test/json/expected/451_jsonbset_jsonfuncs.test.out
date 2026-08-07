@@ -286,6 +286,61 @@ SELECT intset(jsonbset '{"{\"a\":1, \"b\":2.5}"}', text 'xxx');
 ERROR:  The lifted operation returned NULL
 SELECT intset(jsonbset '{"{\"a\":\"xxx\", \"b\":2.5}"}', text 'a');
 ERROR:  Invalid numeric string for key "a": xxx
+SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' ? text 'units';
+ ?column? 
+----------
+ {t,f}
+(1 row)
+
+SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' ? text 'speed';
+ ?column? 
+----------
+ {t,t}
+(1 row)
+
+SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' ? text 'xxx';
+ ?column? 
+----------
+ {f,f}
+(1 row)
+
+SELECT jsonbset_exists(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', text 'speed');
+ jsonbset_exists 
+-----------------
+ {t,t}
+(1 row)
+
+SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' ?| ARRAY[text 'units', text 'lights'];
+ ?column? 
+----------
+ {t,f}
+(1 row)
+
+SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' ?& ARRAY[text 'speed', text 'units'];
+ ?column? 
+----------
+ {t,f}
+(1 row)
+
+SELECT jsonbset_exists_any(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', ARRAY[text 'speed']);
+ jsonbset_exists_any 
+---------------------
+ {t,t}
+(1 row)
+
+SELECT jsonbset_exists_all(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', ARRAY[text 'speed']);
+ jsonbset_exists_all 
+---------------------
+ {t,t}
+(1 row)
+
+/* An empty array of keys has no result */
+SELECT jsonbset '{"{\"speed\": 10}"}' ?| ARRAY[]::text[];
+ ?column? 
+----------
+ 
+(1 row)
+
 SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' @? '$.units';
  ?column? 
 ----------
