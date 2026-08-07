@@ -69,6 +69,11 @@
 #if RGEO
   #include "rgeo/trgeo.h"
 #endif
+#if POINTCLOUD
+  #include "pointcloud/pcpoint.h"
+  #include "pointcloud/pcpatch.h"
+  #include "pointcloud/meos_schema_hook.h"
+#endif
 
 #include <utils/jsonb.h>
 #include <utils/numeric.h>
@@ -481,13 +486,78 @@ quadbin_flags(void)
 }
 #endif /* QUADBIN */
 
+#if POINTCLOUD
+/**
+ * @brief Get the MEOS flags from a point cloud point
+ * @note A TPCBox begins with a complete STBox (see the static_asserts in
+ * meos_pointcloud.h), so its flags byte IS the value's MEOS spatial flags;
+ * this reads the flags off the pcpoint's bounding box rather than deriving
+ * them independently
+ */
+static int16
+pcpoint_flags(const Pcpoint *pt)
+{
+  PCSCHEMA *schema = meos_pc_schema(pcpoint_get_pcid(pt));
+  if (! schema)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Could not find the point cloud schema of a pcpoint");
+    return -1;
+  }
+  TPCBox *box = pcpoint_to_tpcbox(pt, schema);
+  if (! box)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Could not compute the bounding box of a pcpoint");
+    return -1;
+  }
+  int16 result = box->flags;
+  pfree(box);
+  return result;
+}
+
+/**
+ * @brief Get the MEOS flags from a point cloud patch
+ * @note A TPCBox begins with a complete STBox (see the static_asserts in
+ * meos_pointcloud.h), so its flags byte IS the value's MEOS spatial flags;
+ * this reads the flags off the pcpatch's bounding box rather than deriving
+ * them independently
+ */
+static int16
+pcpatch_flags(const Pcpatch *pa)
+{
+  int32_t srid = meos_pc_schema_get_srid(pcpatch_get_pcid(pa));
+  TPCBox *box = pcpatch_to_tpcbox(pa, srid);
+  if (! box)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Could not compute the bounding box of a pcpatch");
+    return -1;
+  }
+  int16 result = box->flags;
+  pfree(box);
+  return result;
+}
+#endif /* POINTCLOUD */
+
 /**
  * @brief Get the MEOS flags from a spatial value
  */
 int16
 spatial_flags(Datum d, MeosType basetype)
 {
+  /* The pgpointcloud base types are deliberately outside spatial_basetype():
+   * their flags are read from their TPCBox rather than derived like the
+   * other spatial_* dispatchers, so the catalog-wide predicate stays
+   * unchanged and only this single dispatcher admits them, through the
+   * catalog's own pointcloud_basetype() predicate — the base-type sibling
+   * of tpointcloud_temptype(), which the boxops dispatch already uses the
+   * same way to admit tpcpoint/tpcpatch beside tspatial_type(). */
+#if POINTCLOUD
+  assert(spatial_basetype(basetype) || pointcloud_basetype(basetype));
+#else
   assert(spatial_basetype(basetype));
+#endif
   switch (basetype)
   {
     case T_GEOMETRY:
@@ -514,6 +584,12 @@ spatial_flags(Datum d, MeosType basetype)
     case T_H3INDEX:
       (void) d;
       return h3index_flags();
+#endif
+#if POINTCLOUD
+    case T_PCPOINT:
+      return pcpoint_flags(DatumGetPcpointP(d));
+    case T_PCPATCH:
+      return pcpatch_flags(DatumGetPcpatchP(d));
 #endif
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
