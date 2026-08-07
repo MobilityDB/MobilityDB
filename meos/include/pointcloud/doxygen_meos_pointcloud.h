@@ -158,6 +158,10 @@
  * @ingroup meos_pointcloud
  * @brief Constructor functions for temporal pgpointcloud types
  *
+ * @defgroup meos_pointcloud_conversion Conversion functions
+ * @ingroup meos_pointcloud
+ * @brief Conversion functions for temporal pgpointcloud types
+ *
  * @defgroup meos_pointcloud_accessor Accessor functions
  * @ingroup meos_pointcloud
  * @brief Accessor functions for temporal pgpointcloud types

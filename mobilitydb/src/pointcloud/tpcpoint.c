@@ -64,7 +64,6 @@
 #include "temporal/tinstant.h"
 #include "temporal/tsequence.h"
 #include "temporal/tsequenceset.h"
-#include "geo/tgeo_spatialfuncs.h"  /* geopoint_make */
 #include "pointcloud/pcpoint.h"
 #include "pointcloud/tpcbox.h"     /* PG_GETARG_TPCBOX_P */
 /* MobilityDB */
@@ -257,90 +256,11 @@ TPCPOINT_PROJ(Tpcpoint_get_z, dim_get_z)
 /*****************************************************************************
  * Projection to tgeompoint
  *
- * Per-instant mapper: pcpoint → POINT gserialized with the schema's
- * SRID and Z-presence. Reuses the schema cache on the first instant;
- * the same-pcid invariant (enforced at construction by set_make_exp)
- * lets us cache schema + z-flag once per sequence.
+ * The per-instant schema-aware projection (pcpoint -> POINT gserialized)
+ * lives in the MEOS function @c tpointcloud_to_tgeompoint, shared by this
+ * wrapper, the bbox-based restrictions below, and the spatial
+ * relationships / nearest-approach distance.
  *****************************************************************************/
-
-static TInstant *
-tpcpointinst_tgeompointinst(const TInstant *inst, const PCSCHEMA *schema)
-{
-  const Pcpoint *pt =
-    (const Pcpoint *) DatumGetPointer(tinstant_value_p(inst));
-  PCPOINT pcpt;
-  pcpt.readonly = 1;
-  pcpt.schema = schema;
-  pcpt.data = (uint8_t *) pt->data;
-  double x, y, z = 0.0;
-  if (! pc_point_get_x(&pcpt, &x) || ! pc_point_get_y(&pcpt, &y))
-    return NULL;
-  bool hasz = (schema->zdim != NULL);
-  if (hasz && ! pc_point_get_z(&pcpt, &z))
-    return NULL;
-  GSERIALIZED *gs = geopoint_make(x, y, z, hasz, /* geodetic */ false,
-    (int32_t) schema->srid);
-  TInstant *result = tinstant_make(PointerGetDatum(gs), T_TGEOMPOINT, inst->t);
-  pfree(gs);
-  return result;
-}
-
-static TSequence *
-tpcpointseq_tgeompointseq(const TSequence *seq, const PCSCHEMA *schema)
-{
-  TInstant **insts = palloc(sizeof(TInstant *) * seq->count);
-  int n = 0;
-  for (int i = 0; i < seq->count; i++)
-  {
-    TInstant *out = tpcpointinst_tgeompointinst(TSEQUENCE_INST_N(seq, i),
-      schema);
-    if (! out) continue;
-    insts[n++] = out;
-  }
-  /* Step-interpolated in; linear is semantically meaningful for the
-   * projected XY path (the sensor physically moved), so we promote. */
-  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
-  if (interp == STEP) interp = LINEAR;
-  return tsequence_make_free(insts, n, seq->period.lower_inc,
-    seq->period.upper_inc, interp, NORMALIZE);
-}
-
-static TSequenceSet *
-tpcpointseqset_tgeompointseqset(const TSequenceSet *ss, const PCSCHEMA *schema)
-{
-  TSequence **seqs = palloc(sizeof(TSequence *) * ss->count);
-  int n = 0;
-  for (int i = 0; i < ss->count; i++)
-  {
-    TSequence *out = tpcpointseq_tgeompointseq(TSEQUENCESET_SEQ_N(ss, i),
-      schema);
-    if (! out) continue;
-    seqs[n++] = out;
-  }
-  return tsequenceset_make_free(seqs, n, NORMALIZE);
-}
-
-/* Project a tpcpoint Temporal* to a fresh tgeompoint Temporal* by
- * dispatching to the per-subtype static helpers. The schema must be
- * resolved by the caller (typically via tpcpoint_schema). Returns
- * NULL on dispatch error. Reusable from spatialrels and restriction
- * code paths. */
-static Temporal *
-tpcpoint_project_tgeompoint(const Temporal *temp, const PCSCHEMA *schema)
-{
-  switch (temp->subtype)
-  {
-    case TINSTANT:
-      return (Temporal *) tpcpointinst_tgeompointinst((TInstant *) temp,
-        schema);
-    case TSEQUENCE:
-      return (Temporal *) tpcpointseq_tgeompointseq((TSequence *) temp,
-        schema);
-    default: /* TSEQUENCESET */
-      return (Temporal *) tpcpointseqset_tgeompointseqset(
-        (TSequenceSet *) temp, schema);
-  }
-}
 
 PGDLLEXPORT Datum Tpcpoint_to_tgeompoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcpoint_to_tgeompoint);
@@ -354,8 +274,7 @@ Datum
 Tpcpoint_to_tgeompoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  PCSCHEMA *schema = tpcpoint_schema(temp);
-  Temporal *result = tpcpoint_project_tgeompoint(temp, schema);
+  Temporal *result = tpointcloud_to_tgeompoint(temp);
   PG_FREE_IF_COPY(temp, 0);
   if (! result) PG_RETURN_NULL();
   PG_RETURN_POINTER(result);
@@ -388,23 +307,8 @@ tpcpoint_restrict_tpcbox(const Temporal *temp, const TPCBox *box,
   if (first->pcid != box->pcid)
     return atfunc ? NULL : temporal_copy(temp);
 
-  /* Project tpcpoint -> tgeompoint via the existing static helper. */
-  PCSCHEMA *schema = tpcpoint_schema(temp);
-  Temporal *tpoint;
-  switch (temp->subtype)
-  {
-    case TINSTANT:
-      tpoint = (Temporal *)
-        tpcpointinst_tgeompointinst((TInstant *) temp, schema);
-      break;
-    case TSEQUENCE:
-      tpoint = (Temporal *)
-        tpcpointseq_tgeompointseq((TSequence *) temp, schema);
-      break;
-    default: /* TSEQUENCESET */
-      tpoint = (Temporal *)
-        tpcpointseqset_tgeompointseqset((TSequenceSet *) temp, schema);
-  }
+  /* Project tpcpoint -> tgeompoint via the shared MEOS conversion. */
+  Temporal *tpoint = tpointcloud_to_tgeompoint(temp);
   if (! tpoint)
     return atfunc ? NULL : temporal_copy(temp);
 
@@ -525,8 +429,7 @@ Tpcpoint_get_dim(PG_FUNCTION_ARGS)
 static Temporal *
 tpcpoint_to_tgeompoint_temp(const Temporal *temp)
 {
-  PCSCHEMA *schema = tpcpoint_schema(temp);
-  return tpcpoint_project_tgeompoint(temp, schema);
+  return tpointcloud_to_tgeompoint(temp);
 }
 
 #define EA_INTERSECTS_TPC_GEO(NAME, EVER)                                      \

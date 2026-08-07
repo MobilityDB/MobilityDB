@@ -33,6 +33,7 @@
                                    meos_pc_schema, pcpoint_get_x/y */
 #include "temporal/temporal.h"  /* Temporal, TInstant */
 #include "temporal/meos_catalog.h"  /* T_TPCPOINT */
+#include "geo/tgeo_spatialfuncs.h"  /* geopoint_make */
 #include "pointcloud/pcpoint.h" /* struct Pcpoint body (.pcid field) */
 
 /*****************************************************************************
@@ -64,6 +65,114 @@ tpointcloudinst_pcpoint(const Temporal *temp)
   assert(temp->temptype == T_TPCPOINT);
   return (const Pcpoint *) DatumGetPointer(
     tinstant_value_p((const TInstant *) temp));
+}
+
+/*****************************************************************************
+ * Projection to tgeompoint
+ *
+ * Per-instant mapper: pcpoint -> POINT gserialized with the schema's SRID
+ * and Z-presence, read through the schema-aware public accessors
+ * (pcpoint_get_x/y/z). The schema is resolved once from the value's
+ * common pcid (enforced at construction time by set_make_exp's
+ * same-pcid check) and shared across every instant.
+ *****************************************************************************/
+
+/**
+ * @brief Return the temporal geometry point instant equivalent to a
+ *   temporal pointcloud instant
+ */
+static TInstant *
+tpointcloudinst_to_tgeompointinst(const TInstant *inst, PCSCHEMA *schema)
+{
+  const Pcpoint *pt =
+    (const Pcpoint *) DatumGetPointer(tinstant_value_p(inst));
+  double x, y, z = 0.0;
+  if (! pcpoint_get_x(pt, schema, &x) || ! pcpoint_get_y(pt, schema, &y))
+    return NULL;
+  bool hasz = (schema->zdim != NULL);
+  if (hasz && ! pcpoint_get_z(pt, schema, &z))
+    return NULL;
+  GSERIALIZED *gs = geopoint_make(x, y, z, hasz, /* geodetic */ false,
+    (int32_t) schema->srid);
+  TInstant *result = tinstant_make(PointerGetDatum(gs), T_TGEOMPOINT, inst->t);
+  pfree(gs);
+  return result;
+}
+
+/**
+ * @brief Return the temporal geometry point sequence equivalent to a
+ *   temporal pointcloud sequence
+ */
+static TSequence *
+tpointcloudseq_to_tgeompointseq(const TSequence *seq, PCSCHEMA *schema)
+{
+  TInstant **insts = palloc(sizeof(TInstant *) * seq->count);
+  int n = 0;
+  for (int i = 0; i < seq->count; i++)
+  {
+    TInstant *out = tpointcloudinst_to_tgeompointinst(
+      TSEQUENCE_INST_N(seq, i), schema);
+    if (! out) continue;
+    insts[n++] = out;
+  }
+  /* Step-interpolated in; linear is semantically meaningful for the
+   * projected XY path (the sensor physically moved), so we promote. */
+  interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  if (interp == STEP) interp = LINEAR;
+  return tsequence_make_free(insts, n, seq->period.lower_inc,
+    seq->period.upper_inc, interp, NORMALIZE);
+}
+
+/**
+ * @brief Return the temporal geometry point sequence set equivalent to a
+ *   temporal pointcloud sequence set
+ */
+static TSequenceSet *
+tpointcloudseqset_to_tgeompointseqset(const TSequenceSet *ss,
+  PCSCHEMA *schema)
+{
+  TSequence **seqs = palloc(sizeof(TSequence *) * ss->count);
+  int n = 0;
+  for (int i = 0; i < ss->count; i++)
+  {
+    TSequence *out = tpointcloudseq_to_tgeompointseq(
+      TSEQUENCESET_SEQ_N(ss, i), schema);
+    if (! out) continue;
+    seqs[n++] = out;
+  }
+  return tsequenceset_make_free(seqs, n, NORMALIZE);
+}
+
+/**
+ * @ingroup meos_pointcloud_conversion
+ * @brief Return a temporal pointcloud value projected onto a temporal
+ *   geometry point by extracting X/Y/[Z] from each instant's pcpoint via
+ *   the schema cache
+ * @param[in] temp Temporal pointcloud value
+ * @return NULL if the pcid schema cannot be resolved
+ * @csqlfn #Tpcpoint_to_tgeompoint()
+ */
+Temporal *
+tpointcloud_to_tgeompoint(const Temporal *temp)
+{
+  VALIDATE_TPCPOINT(temp, NULL);
+  const Pcpoint *first =
+    (const Pcpoint *) DatumGetPointer(temporal_start_value(temp));
+  PCSCHEMA *schema = meos_pc_schema(first->pcid);
+  if (! schema)
+    return NULL;
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      return (Temporal *) tpointcloudinst_to_tgeompointinst(
+        (const TInstant *) temp, schema);
+    case TSEQUENCE:
+      return (Temporal *) tpointcloudseq_to_tgeompointseq(
+        (const TSequence *) temp, schema);
+    default: /* TSEQUENCESET */
+      return (Temporal *) tpointcloudseqset_to_tgeompointseqset(
+        (const TSequenceSet *) temp, schema);
+  }
 }
 
 /*****************************************************************************
