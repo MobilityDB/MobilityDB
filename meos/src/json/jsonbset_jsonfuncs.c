@@ -251,6 +251,7 @@ jsonbset_delete_array(const Set *set, text **keys, int count)
  * @param[in] set JSONB set
  * @param[in] key Key
  * @param[out] count Number of values in the output array
+ * @csqlfn #Jsonbset_exists()
  */
 bool *
 jsonbset_exists(const Set *set, const text *key, int *count)
@@ -277,6 +278,7 @@ jsonbset_exists(const Set *set, const text *key, int *count)
  * @param[in] count Number of elements in the input array
  * @param[in] any True for the 'any' semantics, false for the 'all' semantics
  * @param[out] rescount Number of values in the output array
+ * @csqlfn #Jsonbset_exists_any(), #Jsonbset_exists_all()
  */
 bool *
 jsonbset_exists_array(const Set *set, text **keys, int count, bool any,

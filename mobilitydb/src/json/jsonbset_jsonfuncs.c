@@ -281,6 +281,109 @@ Jsonbset_delete_array(PG_FUNCTION_ARGS)
   PG_RETURN_SET_P(result);
 }
 
+/*****************************************************************************/
+
+PGDLLEXPORT Datum Jsonbset_exists(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Jsonbset_exists);
+/**
+ * @ingroup mobilitydb_json_json
+ * @brief Return for every value of a JSONB set whether the text string exists
+ * as a top-level key or array element within it
+ * @sqlfn jsonbset_exists()
+ * @sqlop @p ?
+ */
+Datum
+Jsonbset_exists(PG_FUNCTION_ARGS)
+{
+  /* Input arguments */
+  Set *set = PG_GETARG_SET_P(0);
+  text *key = PG_GETARG_TEXT_P(1);
+  /* Compute the result */
+  int count;
+  bool *result = jsonbset_exists(set, key, &count);
+  /* Clean up and return */
+  PG_FREE_IF_COPY(set, 0);
+  PG_FREE_IF_COPY(key, 1);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_ARRAYTYPE_P(boolarr_to_array(result, count));
+}
+
+/**
+ * @brief Return for every value of a JSONB set whether any or all of the text
+ * strings of an array exist as top-level keys or array elements within it
+ * @sqlfn jsonbset_exists_any(), jsonbset_exists_all()
+ */
+Datum
+Jsonbset_exists_array(FunctionCallInfo fcinfo, bool any)
+{
+  /* Input arguments */
+  Set *set = PG_GETARG_SET_P(0);
+  ArrayType *keys = PG_GETARG_ARRAYTYPE_P(1);
+  if (ARR_NDIM(keys) > 1)
+    ereport(ERROR, (errcode(ERRCODE_ARRAY_SUBSCRIPT_ERROR),
+       errmsg("wrong number of array subscripts")));
+
+  /* Extract the keys from the array */
+  int keys_len;
+  Datum *keys_elems;
+  bool *keys_nulls;
+  deconstruct_array(keys, TEXTOID, -1, false, 'i', &keys_elems, &keys_nulls,
+    &keys_len);
+  if (keys_len == 0)
+  {
+    pfree(keys_elems); pfree(keys_nulls);
+    PG_FREE_IF_COPY(set, 0);
+    PG_FREE_IF_COPY(keys, 1);
+    PG_RETURN_NULL();
+  }
+
+  /* Compute the result */
+  int count;
+  bool *result = jsonbset_exists_array(set, (text **) keys_elems, keys_len,
+    any, &count);
+
+  /* Clean up and return */
+  pfree(keys_elems); pfree(keys_nulls);
+  PG_FREE_IF_COPY(set, 0);
+  PG_FREE_IF_COPY(keys, 1);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_ARRAYTYPE_P(boolarr_to_array(result, count));
+}
+
+PGDLLEXPORT Datum Jsonbset_exists_any(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Jsonbset_exists_any);
+/**
+ * @ingroup mobilitydb_json_json
+ * @brief Return for every value of a JSONB set whether any of the text strings
+ * of an array exist as top-level keys or array elements within it
+ * @sqlfn jsonbset_exists_any()
+ * @sqlop @p ?|
+ */
+Datum
+Jsonbset_exists_any(PG_FUNCTION_ARGS)
+{
+  return Jsonbset_exists_array(fcinfo, true);
+}
+
+PGDLLEXPORT Datum Jsonbset_exists_all(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Jsonbset_exists_all);
+/**
+ * @ingroup mobilitydb_json_json
+ * @brief Return for every value of a JSONB set whether all of the text strings
+ * of an array exist as top-level keys or array elements within it
+ * @sqlfn jsonbset_exists_all()
+ * @sqlop @p ?&
+ */
+Datum
+Jsonbset_exists_all(PG_FUNCTION_ARGS)
+{
+  return Jsonbset_exists_array(fcinfo, false);
+}
+
+/*****************************************************************************/
+
 PGDLLEXPORT Datum Jsonbset_delete_index(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Jsonbset_delete_index);
 /**

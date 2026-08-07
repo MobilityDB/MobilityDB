@@ -192,41 +192,26 @@ SELECT minusValues(jsonbset '[["Grand Place", "La Bourse"],
 
 			<listitem xml:id="jsonbset_exists">
 				<indexterm significance="normal"><primary><varname>?</varname></primary></indexterm>
-				<para>Temporal JSONB exists</para>
-				<para><varname>jsonbset ? jsonb → tbool</varname></para>
-				<para><varname>jsonbset ?| jsonb[] → tbool</varname></para>
-				<para><varname>jsonbset ?&amp; jsonb[] → tbool</varname></para>
+				<para>JSONB set exists</para>
+				<para><varname>jsonbset ? text → boolean[]</varname></para>
+				<para><varname>jsonbset ?| text[] → boolean[]</varname></para>
+				<para><varname>jsonbset ?&amp; text[] → boolean[]</varname></para>
 				<para>As in PostgreSQL, the operators <varname>?|</varname> and <varname>?&amp;</varname> test, respectively, whether <emphasis>any</emphasis> or <emphasis>all</emphasis> of the strings in the text array exist as top-level keys or array elements.</para>
+				<para>The result is a Boolean for every value of the set, in the order of the values of the set.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT jsonbset '"{\"geom\": \"Point(1 1)\"}"' ? text 'geom';
--- t
-SELECT jsonbset '{{"geom": "Point(1 1)"}, {"geom": "Point(2 2)"},
-  {"geom": "Point(1 1)"}}' ?| ARRAY[text 'geom'];
--- {t, t, t}
-SELECT jsonbset '[{"speed": 10, "units": "km/h"},
-  {"speed": 20, "units": "km/h"}]' ?&amp; ARRAY['speed', 'units'];
--- {[t, t]}
+SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}';
+-- {"{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10}"}
+SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' ? text 'units';
+-- {t,f}
+SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}'
+  ?| ARRAY[text 'units', text 'lights'];
+-- {t,f}
+SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}'
+  ?&amp; ARRAY[text 'speed', text 'units'];
+-- {t,f}
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="jsonbset_contains">
-				<indexterm significance="normal"><primary><varname>@&gt;</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>&lt;@</varname></primary></indexterm>
-				<para>Temporal JSONB contains/contained</para>
-				<para><varname>{jsonbset,jsonb} @&gt; {jsonbset,jsonb} → tbool</varname></para>
-				<para><varname>{jsonbset,jsonb} &lt;@ {jsonbset,jsonb} → tbool</varname></para>
-				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT jsonbset '"{\"geom\": \"Point(1 1)\"}"' @&gt; jsonb '{"geom": "Point(1 1)"}';
--- t
-SELECT jsonbset '{{"geom": "Point(1 1)"}, {"geom": "Point(2 2)"},
-  {"geom": "Point(1 1)"}}' @&gt; jsonb '{"geom": "Point(1 1)"}';
--- {t, f, t}
-SELECT jsonb '{"geom": "Point(1 1)"}' &lt;@ jsonbset '{[{"geom": "Point(1 1)"},
-  {"geom": "Point(1 1)"}, {"geom": "Point(1 1)"}],
-  [{"geom": "Point(2 2)"}, {"geom": "Point(2 2)"}]}';
--- {[t, t], [f, f]}
-</programlisting>
-			</listitem>
 
 			<listitem xml:id="jsonbset_set">
 				<indexterm significance="normal"><primary><varname>jsonbset_set</varname></primary></indexterm>

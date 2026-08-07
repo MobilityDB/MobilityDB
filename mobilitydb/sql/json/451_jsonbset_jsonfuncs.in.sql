@@ -208,6 +208,36 @@ CREATE OPERATOR #- (
   LEFTARG   = jsonbset, RIGHTARG = text[]
 );
 
+/*****************************************************************************
+ * Exists
+ *****************************************************************************/
+
+CREATE FUNCTION jsonbset_exists(jsonbset, text)
+  RETURNS boolean[]
+  AS 'MODULE_PATHNAME', 'Jsonbset_exists'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION jsonbset_exists_any(jsonbset, text[])
+  RETURNS boolean[]
+  AS 'MODULE_PATHNAME', 'Jsonbset_exists_any'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION jsonbset_exists_all(jsonbset, text[])
+  RETURNS boolean[]
+  AS 'MODULE_PATHNAME', 'Jsonbset_exists_all'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR ? (
+  PROCEDURE = jsonbset_exists,
+  LEFTARG   = jsonbset, RIGHTARG = text
+);
+CREATE OPERATOR ?| (
+  PROCEDURE = jsonbset_exists_any,
+  LEFTARG   = jsonbset, RIGHTARG = text[]
+);
+CREATE OPERATOR ?& (
+  PROCEDURE = jsonbset_exists_all,
+  LEFTARG   = jsonbset, RIGHTARG = text[]
+);
+
 /*****************************************************************************/
 
 CREATE FUNCTION jsonbset_set(jsonbset, path text[], val jsonb,

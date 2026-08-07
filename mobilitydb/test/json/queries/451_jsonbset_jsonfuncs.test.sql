@@ -123,6 +123,22 @@ SELECT intset(jsonbset '{"{\"a\":\"xxx\", \"b\":2.5}"}', text 'a');
 -------------------------------------------------------------------------------
 
 
+-- Exists. The result is one Boolean per value of the set, in the order of the
+-- values of the set
+SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' ? text 'units';
+SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' ? text 'speed';
+SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' ? text 'xxx';
+SELECT jsonbset_exists(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', text 'speed');
+
+SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' ?| ARRAY[text 'units', text 'lights'];
+SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' ?& ARRAY[text 'speed', text 'units'];
+SELECT jsonbset_exists_any(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', ARRAY[text 'speed']);
+SELECT jsonbset_exists_all(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', ARRAY[text 'speed']);
+/* An empty array of keys has no result */
+SELECT jsonbset '{"{\"speed\": 10}"}' ?| ARRAY[]::text[];
+
+-------------------------------------------------------------------------------
+
 -- JSON path functions. The result of a path predicate is one Boolean per
 -- element of the set, in the order of the elements
 
