@@ -124,7 +124,8 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the temporal distance between a temporal circular buffer and a geometry @csqlfn <a class="el" href="group__mobilitydb__cbuffer__dist_gaec3d1e7cad1fd0dbd8afbc55eb3ac86d.html#gaec3d1e7cad1fd0dbd8afbc55eb3ac86d" title="Return the temporal distance between a temporal circular buffer and a geometry point @sqlfn tDistance...">Tdistance_tcbuffer_geo()</a> </p>
+<p>Return the temporal distance between a temporal circular buffer and a geometry. </p>
+<p >The geometry is decomposed into its boundary edges (straight and circular-arc), the same decomposition <a class="el" href="group__meos__cbuffer__dist_gaf99ed4bf225ebcbafeb06261026b20a6.html#gaf99ed4bf225ebcbafeb06261026b20a6" title="Return the nearest approach distance of a temporal circular buffer and a geometry.">nad_tcbuffer_geo</a> and #nearestApproachInstant use, and the distance to the full geometry is computed exactly rather than to its minimum bounding circle. A geometry with no exact edge decomposition (a TIN or a polyhedral surface) falls back to the bounding-circle approximation, mirroring the other analytic distance kernels of this file. @csqlfn <a class="el" href="group__mobilitydb__cbuffer__dist_gaec3d1e7cad1fd0dbd8afbc55eb3ac86d.html#gaec3d1e7cad1fd0dbd8afbc55eb3ac86d" title="Return the temporal distance between a temporal circular buffer and a geometry point @sqlfn tDistance...">Tdistance_tcbuffer_geo()</a> </p>
 
 </div>
 </div>
