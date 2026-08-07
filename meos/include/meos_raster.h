@@ -149,8 +149,8 @@ extern int araster_value_gdal(const char *path, int band,
   const Temporal *traj, const Span *vspan);
 
 extern Temporal *raster_tile_value_quadbin(const uint8_t *pixels,
-  uint16_t width, uint16_t height, uint64 quadbin, MeosPixType pixtype,
-  double nodata, bool has_nodata, const Temporal *traj);
+  size_t pixels_size, uint16_t width, uint16_t height, uint64 quadbin,
+  MeosPixType pixtype, double nodata, bool has_nodata, const Temporal *traj);
 
 extern Temporal *raster_tile_value(const Raquet *rq, const Temporal *traj);
 extern Temporal *raster_tile_value_array(const Raquet **rqarr, int count,

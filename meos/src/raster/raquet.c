@@ -513,8 +513,9 @@ Temporal *
 raster_tile_value(const Raquet *rq, const Temporal *traj)
 {
   VALIDATE_NOT_NULL(rq, NULL); VALIDATE_NOT_NULL(traj, NULL);
-  return raster_tile_value_quadbin(rq->pixels, rq->width, rq->height,
-    rq->quadbin, (MeosPixType) rq->pixtype, rq->nodata, rq->has_nodata, traj);
+  return raster_tile_value_quadbin(rq->pixels, raquet_pixels_size(rq),
+    rq->width, rq->height, rq->quadbin, (MeosPixType) rq->pixtype, rq->nodata,
+    rq->has_nodata, traj);
 }
 
 /**

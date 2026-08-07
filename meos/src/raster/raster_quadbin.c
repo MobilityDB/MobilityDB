@@ -62,6 +62,7 @@
 #include "temporal/tinstant.h"
 #include "temporal/tsequence.h"
 /* Raster */
+#include "raster/raquet.h"
 #include "raster/raster_quadbin.h"
 
 /*****************************************************************************
@@ -314,6 +315,7 @@ read_pixel(const uint8_t *pixels, int col, int row, int width,
  * silently dropped; NULL is returned when no instants survive.
  * @param[in] pixels Row-major pixel bytes (all bands interleaved or
  * single-band depending on the Raquet producer)
+ * @param[in] pixels_size Number of bytes available at @p pixels
  * @param[in] width Tile width in pixels (typically 256)
  * @param[in] height Tile height in pixels (typically 256)
  * @param[in] quadbin CARTO QUADBIN cell identifier (uint64)
@@ -324,10 +326,20 @@ read_pixel(const uint8_t *pixels, int col, int row, int width,
  * @return tfloat instant set, or NULL
  */
 Temporal *
-raster_tile_value_quadbin(const uint8_t *pixels, uint16_t width,
-  uint16_t height, uint64 quadbin, MeosPixType pixtype, double nodata,
-  bool has_nodata, const Temporal *traj)
+raster_tile_value_quadbin(const uint8_t *pixels, size_t pixels_size,
+  uint16_t width, uint16_t height, uint64 quadbin, MeosPixType pixtype,
+  double nodata, bool has_nodata, const Temporal *traj)
 {
+  VALIDATE_NOT_NULL(pixels, NULL);
+  size_t need = (size_t) width * height * raquet_pixtype_size(pixtype);
+  if (pixels_size < need)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The pixel array has %zu bytes but %zu are required for a %d x %d tile",
+      pixels_size, need, width, height);
+    return NULL;
+  }
+
   /* Decode QUADBIN → tile x, y, z → WGS84 bbox + Mercator top/bot */
   uint32_t tx, ty, tz;
   qb_to_xyz(quadbin, &tx, &ty, &tz);

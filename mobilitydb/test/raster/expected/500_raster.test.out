@@ -219,6 +219,16 @@ SELECT raster_tile_value_quadbin(
  {1@2024-01-01 00:00:00+00, 2@2024-01-02 00:00:00+00, 3@2024-01-03 00:00:00+00}
 (1 row)
 
+SELECT raster_tile_value_quadbin(
+  '\x0102'::bytea,             -- 2 bytes, but a 2x2 UINT8 tile needs 4
+  2::integer,                  -- width
+  2::integer,                  -- height
+  5193776270265024512::bigint, -- quadbin_tile_to_cell(1,0,1)
+  'UINT8',
+  0.0, false,
+  tgeompointFromText('SRID=4326;{Point(45.0 10.0)@2024-01-01 00:00:00+00}')
+);
+ERROR:  The pixel array has 2 bytes but 4 are required for a 2 x 2 tile
 WITH t AS (
   SELECT tgeompointFromText('SRID=4326;{Point(45.0 75.0)@2024-01-01 00:00:00+00, Point(135.0 75.0)@2024-01-02 00:00:00+00, Point(45.0 10.0)@2024-01-03 00:00:00+00, Point(-45.0 75.0)@2024-01-04 00:00:00+00}') AS traj
 )

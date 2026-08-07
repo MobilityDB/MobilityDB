@@ -257,6 +257,19 @@ SELECT raster_tile_value_quadbin(
   tgeompointFromText('SRID=4326;{Point(45.0 75.0)@2024-01-01 00:00:00+00, Point(135.0 75.0)@2024-01-02 00:00:00+00, Point(45.0 10.0)@2024-01-03 00:00:00+00, Point(-45.0 75.0)@2024-01-04 00:00:00+00}')
 )::text AS result;
 
+-- A pixel array too small for the declared width/height raises an error
+-- rather than sampling past the end of the buffer. Point(45 10) maps to
+-- col=0, row=1 (byte offset 2), which is past the 2 bytes actually supplied.
+SELECT raster_tile_value_quadbin(
+  '\x0102'::bytea,             -- 2 bytes, but a 2x2 UINT8 tile needs 4
+  2::integer,                  -- width
+  2::integer,                  -- height
+  5193776270265024512::bigint, -- quadbin_tile_to_cell(1,0,1)
+  'UINT8',
+  0.0, false,
+  tgeompointFromText('SRID=4326;{Point(45.0 10.0)@2024-01-01 00:00:00+00}')
+);
+
 -------------------------------------------------------------------------------
 -- raquet type: construction, WKB round-trip, and typed sampling
 -------------------------------------------------------------------------------
