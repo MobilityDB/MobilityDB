@@ -389,6 +389,32 @@ set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O2")
 # Disable compiler optimizations for debugging
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
 
+# Assertion checking, the counterpart of PostgreSQL's --enable-cassert.
+#
+# An assertion states a precondition that an internal function trusts, the
+# public function above it having already tested the same constraint with the
+# VALIDATE_* macros. A production build compiles the assertions out, since
+# re-testing a precondition in the loops over the instants of a sequence or the
+# elements of a set would pay for it a second time. The option is therefore OFF
+# by default and a release keeps its current flags.
+#
+# cmake defines NDEBUG in every configuration except Debug, which ties whether
+# the assertions are checked to the optimization level. CASSERT separates the
+# two: a build can be optimized and still check its preconditions, and a
+# session under a debugger can keep them without giving up -O2.
+option(CASSERT
+  "Set ON|OFF (default=OFF) to check the assertions stating the preconditions \
+of the internal functions. A production build compiles them out." OFF)
+if(CASSERT)
+  message(STATUS "Assertion checking enabled")
+  foreach(config "" _DEBUG _RELEASE _RELWITHDEBINFO _MINSIZEREL)
+    string(REPLACE "-DNDEBUG" "" CMAKE_C_FLAGS${config}
+      "${CMAKE_C_FLAGS${config}}")
+    string(REPLACE "-DNDEBUG" "" CMAKE_CXX_FLAGS${config}
+      "${CMAKE_CXX_FLAGS${config}}")
+  endforeach()
+endif()
+
 # Check machine architecture: big endian vs. little endian
 # Needed for WKB support in MobilityDB and PostGIS (file postgis_config.h.in)
 include(TestBigEndian)

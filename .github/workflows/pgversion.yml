@@ -132,13 +132,18 @@ jobs:
           mkdir build
           cd build
           # The coverage/test build enables ALL present families so the suite
-          # exercises cross-family behaviour. Families are plug&play 
+          # exercises cross-family behaviour. Families are plug&play
           # independent in code; only the test build turns them all on.
           # H3 depends on libh3, POINTCLOUD on pgPointCloud's libpc.a, and RASTER
           # on PostGIS raster — all installed/built/located above only on coverage builds.
+          # The same build checks the assertions (CASSERT=ON), so that the
+          # preconditions the internal functions trust are verified over the
+          # whole surface. It is the only job that both compiles every family
+          # and runs the regression suite; the others keep a release build,
+          # where the assertions are compiled out.
           cmake -DCMAKE_BUILD_TYPE=Release -DWITH_COVERAGE=${{ matrix.coverage }} \
             -DCBUFFER=ON -DNPOINT=ON -DPOSE=ON -DRGEO=ON -DQUADBIN=ON \
-            ${{ matrix.coverage == '1' && '-DPOINTCLOUD=ON' || '' }} \
+            ${{ matrix.coverage == '1' && '-DPOINTCLOUD=ON -DCASSERT=ON' || '' }} \
             ${{ matrix.coverage == '1' && format('-DH3=ON -DH3_INCLUDE_DIR={0} -DH3_LIBRARY={1} -DRASTER=ON', env.H3_INCLUDE_DIR, env.H3_LIBRARY) || '' }} \
             ..
 
