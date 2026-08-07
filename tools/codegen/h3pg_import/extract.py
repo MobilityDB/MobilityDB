@@ -43,11 +43,12 @@ except ImportError:
     sys.exit("pyyaml required: pip install pyyaml")
 
 
-ROOT = pathlib.Path(__file__).resolve().parents[2]
+HERE = pathlib.Path(__file__).resolve().parent
+ROOT = HERE.parents[2]
 H3PG_ROOT = ROOT / "h3-pg"
 OUT_C = ROOT / "meos" / "src" / "h3" / "h3_generated.c"
 OUT_H = ROOT / "meos" / "include" / "h3" / "h3_generated.h"
-REPORT = pathlib.Path(__file__).parent / "extraction_report.txt"
+REPORT = HERE / "extraction_report.txt"
 
 MDB_LICENSE = """\
 /*****************************************************************************
@@ -199,6 +200,33 @@ def find_pg_functions(text: str) -> Iterable[tuple[str, str, str]]:
         yield m["comment"], m["name"], m["body"]
 
 
+#: A local declaration carrying no initializer. A pointer is left alone: it
+#: is never the destination libh3 fills by address in these bindings.
+_BARE_DECL = re.compile(r"^(\s*[A-Za-z_][A-Za-z0-9_]*\s+[A-Za-z_]\w*)\s*;\s*$")
+
+
+def _initialized_decl(line: str) -> str:
+    """Give a local declaration an initializer.
+
+    A binding declares the destination of a libh3 call and passes its address.
+    libh3 leaves the destination untouched when it reports an error, and the
+    guard that follows is all that stands between that and the `return`. In
+    h3-pg the guard is `ereport(ERROR)`, which does not return, so the
+    destination is never read on the error path. Its MEOS translation is
+    `meos_error(ERROR, ...)`, which DOES return under the non-exiting error
+    handler that the language bindings install, and the function then returns
+    the destination: an uninitialized read, surfacing as a value built from
+    stack memory.
+
+    Initializing the declaration removes the undefined behaviour at its
+    source, so the error path returns 0 — the value h3 documents as the
+    invalid cell. `= {0}` initializes a scalar and a struct alike, so no
+    return type needs to be known here.
+    """
+    m = _BARE_DECL.match(line)
+    return "%s = {0};" % m.group(1) if m else line
+
+
 def try_transform(ruleset: RuleSet, rel_path: str, doc: str, name: str, body: str
                   ) -> tuple[Extracted | None, str | None]:
     """Return (extracted, None) on success, (None, reason) if a line
@@ -247,7 +275,7 @@ def try_transform(ruleset: RuleSet, rel_path: str, doc: str, name: str, body: st
                     stripped,
                 )
             ):
-                body_lines.append(stripped)
+                body_lines.append(_initialized_decl(stripped))
                 continue
             # Otherwise, we've left the prefix.
             consumed_arg_prefix = False
@@ -430,7 +458,13 @@ def main() -> int:
     skipped: list[Skipped] = []
     failed: list[Skipped] = []  # lines that didn't match and AREN'T opted out
 
-    for c_file in iter_binding_files():
+    binding_files = list(iter_binding_files())
+    if not binding_files:
+        sys.exit(
+            "no binding source under %s — the h3-pg subtree is absent or the "
+            "path is wrong. Refusing to write an empty result." % H3PG_ROOT)
+
+    for c_file in binding_files:
         rel = c_file.relative_to(ROOT).as_posix()
         skip_whole = optout.file_is_skipped(rel)
         if skip_whole:
