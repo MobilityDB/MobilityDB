@@ -2246,7 +2246,7 @@ def bootstrap_distance(filetext: str, fam: dict, rendered: str) -> str:
 # the next section), so the deployed .in.sql files are untouched while the template is
 # proven. th3index and tquadbin each carry a typmod self-cast in the I/O area and a
 # tstzspan cast buried in the Accessors section, both owned by other axes; between
-# them sits a single contiguous "Explicit assignment casts to / from tbigint" region
+# them sits a single contiguous "Conversions" region
 # (the tbigint cross-casts), which this axis slices like any other family. TWO
 # families remain intentionally absent from the manifest: tpcpoint/tpcpatch have no
 # contiguous conversion section (tpcpoint's lone tgeompoint cast trails the Accessors

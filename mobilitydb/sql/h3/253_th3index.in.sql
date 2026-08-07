@@ -149,7 +149,7 @@ CREATE CAST (th3index AS th3index) WITH FUNCTION th3index(th3index, integer)
   AS IMPLICIT;
 
 /******************************************************************************
- * Explicit assignment casts to / from tbigint
+ * Conversions
  *
  * The int64 payload is shared, but th3index sequences carry a geodetic
  * STBox bbox while tbigint sequences carry a TBox; a binary coercion
