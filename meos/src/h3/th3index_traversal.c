@@ -109,9 +109,8 @@ h3_local_ij_to_cell_meos(H3Index origin, const GSERIALIZED *coord)
 Temporal *
 th3index_grid_distance(const Temporal *origin, const Temporal *dest)
 {
-  assert(origin); assert(dest);
-  assert(origin->temptype == T_TH3INDEX);
-  assert(dest->temptype == T_TH3INDEX);
+  VALIDATE_TH3INDEX(origin, NULL);
+  VALIDATE_TH3INDEX(dest, NULL);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -139,9 +138,8 @@ th3index_grid_distance(const Temporal *origin, const Temporal *dest)
 Temporal *
 th3index_cell_to_local_ij(const Temporal *origin, const Temporal *cell)
 {
-  assert(origin); assert(cell);
-  assert(origin->temptype == T_TH3INDEX);
-  assert(cell->temptype == T_TH3INDEX);
+  VALIDATE_TH3INDEX(origin, NULL);
+  VALIDATE_TH3INDEX(cell, NULL);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -169,9 +167,8 @@ th3index_cell_to_local_ij(const Temporal *origin, const Temporal *cell)
 Temporal *
 th3index_local_ij_to_cell(const Temporal *origin, const Temporal *coord)
 {
-  assert(origin); assert(coord);
-  assert(origin->temptype == T_TH3INDEX);
-  assert(coord->temptype == T_TGEOMPOINT);
+  VALIDATE_TH3INDEX(origin, NULL);
+  VALIDATE_TGEOMPOINT(coord, NULL);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));

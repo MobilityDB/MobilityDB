@@ -101,7 +101,7 @@ h3_cell_to_center_child_next_meos(H3Index cell)
 Temporal *
 th3index_cell_to_parent(const Temporal *temp, int32 resolution)
 {
-  assert(temp); assert(temp->temptype == T_TH3INDEX);
+  VALIDATE_TH3INDEX(temp, NULL);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -128,7 +128,7 @@ th3index_cell_to_parent(const Temporal *temp, int32 resolution)
 Temporal *
 th3index_cell_to_parent_next(const Temporal *temp)
 {
-  assert(temp); assert(temp->temptype == T_TH3INDEX);
+  VALIDATE_TH3INDEX(temp, NULL);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -154,7 +154,7 @@ th3index_cell_to_parent_next(const Temporal *temp)
 Temporal *
 th3index_cell_to_center_child(const Temporal *temp, int32 resolution)
 {
-  assert(temp); assert(temp->temptype == T_TH3INDEX);
+  VALIDATE_TH3INDEX(temp, NULL);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -181,7 +181,7 @@ th3index_cell_to_center_child(const Temporal *temp, int32 resolution)
 Temporal *
 th3index_cell_to_center_child_next(const Temporal *temp)
 {
-  assert(temp); assert(temp->temptype == T_TH3INDEX);
+  VALIDATE_TH3INDEX(temp, NULL);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -208,7 +208,7 @@ th3index_cell_to_center_child_next(const Temporal *temp)
 Temporal *
 th3index_cell_to_child_pos(const Temporal *temp, int32 parent_res)
 {
-  assert(temp); assert(temp->temptype == T_TH3INDEX);
+  VALIDATE_TH3INDEX(temp, NULL);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -240,9 +240,8 @@ Temporal *
 th3index_child_pos_to_cell(const Temporal *child_pos, const Temporal *parent,
   int32 child_res)
 {
-  assert(child_pos); assert(parent);
-  assert(child_pos->temptype == T_TBIGINT);
-  assert(parent->temptype == T_TH3INDEX);
+  VALIDATE_TBIGINT(child_pos, NULL);
+  VALIDATE_TH3INDEX(parent, NULL);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
