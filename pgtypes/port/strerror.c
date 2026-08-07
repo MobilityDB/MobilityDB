@@ -18,9 +18,8 @@
  * Within this file, "strerror" means the platform's function not pg_strerror,
  * and likewise for "strerror_r"
  */
-// MEOS
-// #undef strerror
-// #undef strerror_r
+#undef strerror
+#undef strerror_r
 
 static char *gnuish_strerror_r(int errnum, char *buf, size_t buflen);
 static char *get_errno_symbol(int errnum);
