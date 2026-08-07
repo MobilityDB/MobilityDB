@@ -576,26 +576,6 @@ CREATE FUNCTION timeSplit(tquadbin, bin_width interval,
   AS 'MODULE_PATHNAME', 'Temporal_time_split'
   LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
 
-/******************************************************************************/
-
--- spans()
-CREATE FUNCTION spans(tquadbin)
-  RETURNS tstzspan[]
-  AS 'MODULE_PATHNAME', 'Temporal_spans'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
--- splitNSpans()
-CREATE FUNCTION splitNSpans(tquadbin, integer)
-  RETURNS tstzspan[]
-  AS 'MODULE_PATHNAME', 'Temporal_split_n_spans'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
--- splitEachNSpans()
-CREATE FUNCTION splitEachNSpans(tquadbin, integer)
-  RETURNS tstzspan[]
-  AS 'MODULE_PATHNAME', 'Temporal_split_each_n_spans'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 /******************************************************************************
  * Comparison functions and B-tree / hash indexing
  *
