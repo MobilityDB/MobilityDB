@@ -13,6 +13,15 @@
 > revise together; every claim below cites live source. The generated/hand status of
 > each section is read from `manifest.d/` (the axis and its entry count), so the table
 > and the generator cannot drift apart silently.
+>
+> **The manifest is split**, one file per axis: `manifest.d/<axis>.yaml` (e.g.
+> `manifest.d/accessor_families.yaml`), loaded and merged by `generate.py`'s
+> `load_manifest()`. **Three machine checks** keep this map honest: `--coverage`
+> (every `.in.sql` under `mobilitydb/sql/` is either named by a manifest entry or
+> listed in `coverage_exceptions.txt`; the exception list is a ratchet that may only
+> shrink), `--classes` (the manifest's `classes:` block matches the live catalog
+> class predicates), and `--gaps` (per behaviour axis, which members of its class the
+> rendered SQL does not yet name — a backlog report, not a gate).
 
 ---
 
@@ -22,22 +31,22 @@ The class of a temporal type is decided by the catalog membership predicates —
 these are the single source of truth, not naming heuristics.
 
 ```
-Temporal<T>              temporal_type      = ALL temporal types            (catalog:1139)
-  ├── TAlpha<T>          talpha_type        = tbool, ttext, tjsonb, tdouble2/3/4  (catalog:1213)
+Temporal<T>              temporal_type      = ALL temporal types            (catalog:1117)
+  ├── TAlpha<T>          talpha_type        = tbool, ttext, tjsonb, tdouble2/3/4  (catalog:1192)
   │     ├── TBool  ├── TText  └── TJsonb   (tdoubleN = internal)
-  ├── TNumber<T>         tnumber_type       = tint, tbigint, tfloat          (catalog:1234)
+  ├── TNumber<T>         tnumber_type       = tint, tbigint, tfloat          (catalog:1214)
   │     ├── TInt   ├── TBigint  └── TFloat
   └── TSpatial<T>        tspatial_type      = tgeompoint tgeogpoint tnpoint tpose
         │                                     tcbuffer tgeometry tgeography
-        │                                     trgeometry th3index tquadbin (10) (catalog:1294)
-        ├── TGeo<T>      tgeo_type          = tgeometry, tgeography          (catalog:1343)
-        │   (all)        tgeo_type_all      = + tgeompoint + tgeogpoint (4)   (catalog:1368)
+        │                                     trgeometry th3index tquadbin (10) (catalog:1276)
+        ├── TGeo<T>      tgeo_type          = tgeometry, tgeography          (catalog:1325)
+        │   (all)        tgeo_type_all      = + tgeompoint + tgeogpoint (4)   (catalog:1350)
         │     ├── TGeometry  ├── TGeography
-        │     └── TPoint<T>  tpoint_type    = tgeompoint, tgeogpoint         (catalog:1321)
+        │     └── TPoint<T>  tpoint_type    = tgeompoint, tgeogpoint         (catalog:1303)
         ├── Tcell<T>     tcellindex_type    = tquadbin   (th3index INTENDED,  (tcellindex.c:63)
         │     │                               not yet wired — §5a)           via DggsCellOps
         │     ├── TQuadbin  └── (TH3Index, hand today)
-        ├── TPointcloud  tpointcloud_temptype = tpcpoint, tpcpatch  (#if POINTCLOUD) (catalog:1224)
+        ├── TPointcloud  tpointcloud_temptype = tpcpoint, tpcpatch  (#if POINTCLOUD) (catalog:1204)
         │     ├── TPcpoint  └── TPcpatch
         └── (TSpatial, no intermediate): tcbuffer, tnpoint, tpose, trgeometry
 ```
@@ -94,46 +103,74 @@ into CI (`check-codegen.yml`, `--validate`/`--check`). It has **two output modes
 - **region-in-file** for C: emits the block between
   `GENERATED-BOXOPS-BEGIN/END` and `GENERATED-SPATIALRELS-BEGIN/END` markers.
 
-**A `positions:` entry only means a slot is reserved. A behaviour is *generated*
-only if a matching `templates/<behaviour>.*.tmpl` exists.** Live templates:
+**A `positions:` entry only means a slot is reserved** (`manifest.d/positions.yaml`:
+compops, spatialfuncs, topops, posops, distance, aggfuncs, spatialrels, indexes,
+gist, spgist). **A behaviour is *generated* for a given family only if the family
+lists it in its `subtypes:` entry's `files:`** (`manifest.d/subtypes.yaml`) **and a
+matching `templates/<behaviour>.sql.tmpl` exists** — or, for `aggfuncs`, if the
+family has a whole-file entry on the separate `aggregate_families` axis (§4b), since
+no subtype currently routes `aggfuncs` through the `subtypes:` track. Live templates:
 
 | behaviour | template(s) | status |
 |---|---|---|
-| compops | `compops.sql.tmpl` | **GENERATED** (Ever/Always comparisons only — see §4) |
+| compops | `compops.sql.tmpl` | **GENERATED** — Ever/Always **and** Temporal (`tEq`/`tNe` → `#=`/`#<>`) comparisons together (see §4) |
 | topops | `topops.sql.tmpl` | **GENERATED** |
 | posops | `posops.sql.tmpl` | **GENERATED** |
 | spatialrels | `spatialrels.c.tmpl` + `spatialrels.sql.tmpl` | **GENERATED** (ever/always) |
 | boxops (C) | `boxops.c.tmpl` | **GENERATED** (box-type axis) |
 | gist / spgist / indexes | `gist/spgist/indexes.sql.tmpl` | **GENERATED** (index infra) |
+| aggfuncs | `aggregates.sql.tmpl` | **GENERATED** — whole-file per family via the separate `aggregate_families` axis (§4b), not the `subtypes:` track |
 | spatialfuncs | — | reserved position, **HAND** |
 | distance | — | reserved position, **HAND** |
-| aggfuncs | — | reserved position, **HAND** |
-| tempspatialrels | — | reserved position, **HAND** |
+
+**`topops.sql.tmpl`/`posops.sql.tmpl` serve two independent manifest tracks** that
+happen to share a template name: the `topop_families`/`posop_families` axes (§9,
+Set<T>/Span<T> topological/position operators) and the `subtypes:` `files:` track
+(this table, the per-family Temporal<T>/TSpatial<T> bounding-box operators `&&`,
+`@>`, `<@`, `~=`, `-\|-` / `<<`, `>>`, `&<`, `&>`…). The two never share a manifest
+entry.
+
+**Temporal spatial relationships (`tempspatialrel_families:`)** — a third,
+standalone whole-file axis (no `positions:` slot, no `subtypes:` participation) for
+the Spatiotemporal predicate surface (`tIntersects`/`tDwithin`/`tContains`/
+`tTouches`/`tCovers`/`tDisjoint`). Each family entry sets `impl: native` (rendered
+by `templates/tempspatialrels_native.sql.tmpl` — the family owns its own C kernel
+per predicate/direction) or `impl: cast` (rendered by `templates/tempspatialrels.sql.tmpl`
+— the family converts its operand to `tgeometry` and delegates to `tgeo`'s functions,
+per the cast-only spatial-uniformization rule). See §5 and §6.
 
 **Box-type axis (`boxtypes:`)** — the C bounding-box dispatchers are per *box type*,
 not per family: `stbox` (tspatial), `tbox` (tnumber, composite value×time),
 `tstzspan` (temporal-only), `tpcbox` (pointcloud). One `stbox` impl serves every
 `TSpatial<T>` family.
 
-**Spatialrel families (`spatialrel_families:`)** — the ever/always spatial-rel C
-kernel wiring, currently: `geo_ea_contains_covers`, `geo_ea_disjoint_intersects`,
-`geo_ea_dwithin` (the **geo** family).
+**Spatialrel families (`spatialrel_families:`)** — the ever/always spatial-rel **C**
+kernel wiring (region-in-file inside `meos/src/<fam>/*_spatialrels.c`, not a whole
+SQL file): `geo_ea_contains_covers`/`geo_ea_disjoint_intersects`/`geo_ea_dwithin`
+(**geo**, `tgeo_spatialrels.c`), `cbuffer_ea_contains_covers`/
+`cbuffer_ea_disjoint_intersects`/`cbuffer_ea_dwithin` (**cbuffer**,
+`tcbuffer_spatialrels.c`), `rgeo_ea_contains_covers`/`rgeo_ea_disjoint_intersects`/
+`rgeo_ea_dwithin` (**rgeo**, `trgeo_spatialrels.c`). Because this axis renders C, not
+SQL, `--gaps` cannot see it (its `CREATE FUNCTION`-matching regex finds nothing in
+C source) and under-reports its coverage — read the manifest itself, not the `--gaps`
+number, for this one axis. `npoint`/`pose` native C spatial-rel wrappers are still
+hand (memory `spatialrel-wrapper-surface-is-inherited-generate-it`).
 
 ## 4. `Temporal<T>` chapter — section-by-section
 
 | `<sect1>` | MEOS prefix | generated? | canonical generator / notes |
 |---|---|---|---|
-| Input and Output | `temporal_` | ◐ PARTIAL | **two sub-families**: (a) **type I/O** `<type>_in`/`_out`/`_recv`/`_send` — `io_families`, **1 entry** (`temporal`); the spatial shape is not wired. (b) **canonical representations** — `asText`/`asEWKT`/`asBinary`/`asEWKB`/`asHexWKB`/`asMFJSON` + the `From*` constructors — `representation_families`, **7 entries** (cbuffer, geo, h3, npoint, quadbin, rgeo, temporal); json, pose and the pointcloud families are not wired |
-| Constructors | `temporal_` | ✓ **GEN** | `constructors.sql.tmpl` + `constructor_families`, **11 entries** all `reference: true` (cbuffer, geo, h3, json, npoint, pose, quadbin, rgeo, tpcpatch, tpcpoint, tpoint) |
-| Conversions | `temporal_` | ◐ PARTIAL | `conversions.sql.tmpl` + `conversion_families`, **7 entries** (cbuffer, geo, json, npoint, pose, rgeo, tpoint); h3, quadbin and the pointcloud families are not wired |
+| Input and Output | `temporal_` | ✓ **GEN** | **two sub-families**, both full coverage (`--gaps`: `io_families` 18/18, `representation_families` 18/18): (a) **type I/O** `<type>_in`/`_out`/`_recv`/`_send` — `io_type.sql.tmpl` + `io_families`, **12 entries** (temporal, cbuffer, geo, h3, json, npoint, pointcloud, pointcloud_patch, pose, quadbin, rgeo, tpoint). (b) **canonical representations** — `asText`/`asEWKT`/`asBinary`/`asEWKB`/`asHexWKB`/`asMFJSON` + the `From*` constructors — `representations.sql.tmpl` + `representation_families`, **12 entries** (same family set) |
+| Constructors | `temporal_` | ✓ **GEN** | `constructors.sql.tmpl` + `constructor_families`, **12 entries** all `reference: true` (temporal, cbuffer, geo, h3, json, npoint, pose, quadbin, rgeo, tpcpatch, tpcpoint, tpoint) |
+| Conversions | `temporal_` | ◐ PARTIAL | `conversions.sql.tmpl` + `conversion_families`, **8 entries** (temporal, cbuffer, h3, json, npoint, pose, quadbin, rgeo) — `--gaps`: `conversion_families` 15/18, missing tgeography, tpcpoint, tpcpatch. `geo`/`tpoint` have no dedicated entry: their conversion surface is already named as the RETURNS/argument type of other families' declarations (e.g. rgeo's `tgeometry(trgeometry)`) |
 | Accessors | `temporal_` | ✓ **GEN** | `accessors.sql.tmpl` multi-base renderer from base `022_temporal.in.sql` — the value/time/generic set for ALL families (§4c); per-family value shape = manifest `types:` tokens. A few interleaved/positional accessors stay hand per family |
-| Transformations | `temporal_` | ✓ **GEN** | `transformations.sql.tmpl` + `transformation_families`, **11 entries** all `reference: true` (cbuffer, geo, h3, json, npoint, pose, quadbin, rgeo, tpcpatch, tpcpoint, tpoint) — shiftTime/scaleTime, setInterp, tprecision, tsample |
-| Modifications | `temporal_` | ✓ **GEN** | `modifications.sql.tmpl` + `modification_families`, **11 entries** all `reference: true` (same family set) — appendInstant, insert, update, merge |
-| Restrictions | `temporal_` | ✓ **GEN** | `restrictions.sql.tmpl` + `restriction_families`, **11 entries** all `reference: true` (same family set) — atValue(s)/minusValue(s), atTime/minusTime, atSpan(set), atTbox |
-| **Bounding Box Operators** | `temporal_`/`tnumber_` | ✓ **GEN** | `topops.sql.tmpl` (`&&`,`@>`,`<@`,`~=`,`-\|-`) + `posops.sql.tmpl` (`<<`,`>>`,`&<`,`&>`,`<<#`,`#>>`…) + `boxops.c.tmpl` box types `tstzspan`,`tbox` |
-| Comparisons → Traditional | (btree) | ✗ HAND | `=`,`<>`,`<`,`>`,`<=`,`>=` |
-| Comparisons → **Ever/Always** | `temporal_` | ✓ **GEN** | `compops.sql.tmpl`: `eEq`/`aEq`/`eNe`/`aNe` + `?=`/`%=`/`?<>`/`%<>` (all 3 arg directions) |
-| Comparisons → Temporal | `temporal_` | ✗ HAND | `tEq`/`tNe` → `#=`/`#<>` (no template) |
+| Transformations | `temporal_` | ✓ **GEN** | `transformations.sql.tmpl` + `transformation_families`, **12 entries** all `reference: true` (same family set as Constructors) — shiftTime/scaleTime, setInterp, tprecision, tsample |
+| Modifications | `temporal_` | ✓ **GEN** | `modifications.sql.tmpl` + `modification_families`, **12 entries** all `reference: true` (same family set) — appendInstant, insert, update, merge |
+| Restrictions | `temporal_` | ✓ **GEN** | `restrictions.sql.tmpl` + `restriction_families`, **12 entries** all `reference: true` (same family set) — atValue(s)/minusValue(s), atTime/minusTime, atSpan(set), atTbox |
+| **Bounding Box Operators** | `temporal_`/`tnumber_` | ✓ **GEN** | `topops.sql.tmpl` (`&&`,`@>`,`<@`,`~=`,`-\|-`) + `posops.sql.tmpl` (`<<`,`>>`,`&<`,`&>`,`<<#`,`#>>`…), both via the `subtypes:` track (§3), + `boxops.c.tmpl` box types `tstzspan`,`tbox` |
+| Comparisons → Traditional | (btree) | ✓ **GEN** | `comparisons.sql.tmpl` + `comparison_families` (10 temporal-type entries: temporal, geo, tpoint, cbuffer, h3, json, npoint, pose, quadbin, rgeo) — `=`,`<>`,`<`,`>`,`<=`,`>=` + `cmp` + the `<type>_btree_ops` opclass; `--gaps`: 16/18, missing tpcpoint, tpcpatch. The hash tail of the same files (`hash`/`hashExtended` + the `<type>_hash_ops` opclass) is `hash_families`, same family set |
+| Comparisons → **Ever/Always** | `temporal_` | ✓ **GEN** | `compops.sql.tmpl` + `compops_families` (temporal, tgeo, tpoint whole-file) / the `subtypes:` `compops` behaviour (every other family): `eEq`/`aEq`/`eNe`/`aNe` + `?=`/`%=`/`?<>`/`%<>` (all 3 arg directions) |
+| Comparisons → Temporal | `temporal_` | ✓ **GEN** | same template/entries as Ever/Always above — `compops.sql.tmpl` renders `tEq`/`tNe` → `#=`/`#<>` in the same pass, not a separate template |
 | Miscellaneous | `temporal_` | ✗ HAND | |
 
 ### 4a. `TNumber<T>` and the talpha types — the base/number reference surface
@@ -151,13 +188,13 @@ documented inline in `temporal_types_p1/p2` (no separate number chapter).
 | `021_tbox` (TBox type: value × time) | TNumber | ✗ HAND | the number bounding box; its **C dispatchers ARE generated** — `boxops.c.tmpl` box type `tbox` region in `temporal_boxops.c` |
 | `026_tnumber_mathfuncs` (`+ - * /`, abs, delta, trend, derivative) | TNumber | ✓ **GEN** | `mathfuncs.sql.tmpl` + `mathfunc_families`, **1 entry** (`tnumber`, `reference: true`) — the whole-file TNumber arithmetic surface |
 | `036_tnumber_distance` (tDistance, nad) | TNumber | ✗ HAND | no distance template |
-| number Restrictions (atSpan/atSpanset/atTbox) | TNumber | ✗ HAND | numeric-span / value×time box restrict |
-| number Aggregates (extent, tSum, tAvg, tMin/tMax) | TNumber | ✗ HAND | `040_temporal_aggfuncs` |
+| number Restrictions (atSpan/atSpanset/atTbox) | TNumber | ✓ **GEN** | inside `022_temporal.in.sql`, governed by `restriction_families`' `temporal` entry (§4 table) |
+| number Aggregates (extent, tSum, tAvg, tMin/tMax) | TNumber | ✓ **GEN** | `040_temporal_aggfuncs`, governed by `aggregate_families`' `temporal` entry (§4b) |
 | `028_tbool_boolops` (`&` `\|` `~`, tAnd/tOr/tNot) | TAlpha (tbool) | ✗ HAND | tbool-specific |
 | `029_ttext_textfuncs` (`\|\|`, upper/lower) | TAlpha (ttext) | ✗ HAND | ttext-specific |
 
 ⚠️ **`tbigint` and `tjsonb` are full members** of `tnumber_type()` / `talpha_type()`
-(catalog:1234/1213) but are **absent from the MEOS-API lattice** (§8) — a curation gap.
+(catalog:1214/1192) but are **absent from the MEOS-API lattice** (§8) — a curation gap.
 
 **The generic base `Temporal<T>` reference files** (`030_temporal_compops`,
 `032_temporal_boxops`, `034_temporal_posops`, `040/042` aggfuncs, `043/044`
@@ -181,11 +218,11 @@ Two more reference chapters carry inherited surface:
 
 | chapter → `<sect1>` | prefix | generated? | notes |
 |---|---|---|---|
-| `temporal_types_aggregation.xml` → Aggregation | `temporal_`/`tnumber_` | ✓ **GEN** | `aggregates.sql.tmpl` + `aggregate_families`, **8 entries** all `reference: true` (cbuffer, geo, json, npoint, pointcloud, pose, rgeo, tpoint) — tCount/extent/tMin/tMax/tSum/tAvg/merge/appendInstant |
+| `temporal_types_aggregation.xml` → Aggregation | `temporal_`/`tnumber_` | ✓ **GEN** | `aggregates.sql.tmpl` + `aggregate_families`, **9 entries** all `reference: true`, `whole_file: true` (temporal, cbuffer, geo, json, npoint, pointcloud, pose, rgeo, tpoint) — tCount/extent/tMin/tMax/tSum/tAvg/merge/appendInstant; `--gaps`: 16/18, missing th3index, tquadbin |
 | → Indexing | (index) | ✓ **GEN** | GiST/SP-GiST via `gist/spgist/indexes.sql.tmpl` |
 | → Statistics and Selectivity | (selectivity) | ✗ HAND | |
 | `temporal_types_analytics.xml` → Simplification / Reduction / Similarity / Extended Kalman Filter / Splitting | `temporal_`/`tgeo_` | ✗ HAND | analytics; no template |
-| `temporal_types_analytics.xml` → Multidimensional Tiling | `temporal_`/`tgeo_` | ✓ **GEN** | `tiling.sql.tmpl` + `tiling_families`, **9 entries** all `reference: true` (cbuffer, geo, json, npoint, pose, rgeo, tgeo_tile, tpoint, trgeo_tile) |
+| `temporal_types_analytics.xml` → Multidimensional Tiling | `temporal_`/`tgeo_` | ✓ **GEN** | `tiling.sql.tmpl` + `tiling_families`, **17 entries** all `reference: true` (temporal, cbuffer, geo, json, npoint, pose, quadbin, rgeo, th3index, tgeo_tile, tpcpatch, tpcpoint, tpcpoint_tile, tpoint, tpoint_tile, tpose_tile, trgeo_tile) — `--gaps`: 18/18 |
 
 ### 4c. Canonical accessor set & order — the inherited value/time surface
 
@@ -264,11 +301,12 @@ numbers in §6):
 generated; only `trgeometry` overrides it. The families' *specific* functions above are
 a separate, small hand surface (components/coordinates), orthogonal to the inherited set.
 
-### 4e. Input/Output generation scope (the next `✗ HAND → ✓ GEN` target)
+### 4e. Input/Output generation scope
 
-The Input/Output `<sect1>` is **two token-shaped sub-families**; both mirror the
-`accessor_families` model (per-type `types:` rows, region-marked blocks in a reference
-file, `--validate` byte-for-byte). Live at MobilityDB master ~`b496986dd`.
+The Input/Output `<sect1>` is **two token-shaped sub-families**, both fully governed
+(`--gaps`: `io_families` 18/18, `representation_families` 18/18); both mirror the
+`accessor_families` model (per-type `types:` rows, region-marked blocks in a
+reference file, `--validate` byte-for-byte).
 
 **A — Type I/O** (in the type file: `022_temporal`, `102_tpose`, `202_tcbuffer`, …).
 Canonical PG functions **every** temporal type must have, plus `CREATE TYPE`:
@@ -296,10 +334,13 @@ model needs per-type symbol overrides: `in_sym` (default `Temporal_in`, override
 | `typmod_out` / `analyze` | own `temporal_typmod_out` / `temporal_analyze` (defined here) | shared `tspatial_typmod_out` / `tspatial_analyze` |
 | `CREATE TYPE` field order | input/output/**send/receive** | input/output/**receive/send** |
 
-Status: the base shape is **generated** (`io_type.sql.tmpl` + `io_families` `temporal`
-reference, `--validate` byte-for-byte). The spatial shape needs a template variant
-(`@IF spatial`: shell type + `T<fam>_typmod_in` + `tspatial_typmod_out`/`_analyze` +
-swapped send/receive) — the next increment.
+Both shapes are generated: the base shape from `io_families`' `temporal` entry
+(`types:` rows substituted straight into `templates/io_type.sql.tmpl`); every
+spatial family's entry instead carries its own `blocks:` sequence (the shared
+`lit`/`group`/`sig`-`ret`-`sym`/`stmt`/`only`/`over` block-DSL that `comparison_families`,
+`topop_families` and others also use) reproducing the shell type + `T<fam>_typmod_in`
++ `tspatial_typmod_out`/`_analyze` + swapped send/receive verbatim — there is no
+separate `io_repr.sql.tmpl`; the generic block renderer covers both shapes.
 
 - **Reuse is uniform except two families**: `_out`/`_send`/`_recv` are base-value-agnostic
   → generic for all **except trgeometry** (owns all four `Trgeometry_*` because the
@@ -325,20 +366,20 @@ EWKT/EWKB are **TSpatial<T>-level**, the `E` = carries the SRID
 `maxdecimaldigits int4 DEFAULT 15` on float/coordinate-bearing types only;
 `endianenconding text DEFAULT ''` (canonical misspelling) on `asBinary`/`asHexWKB`.
 
-**Plan**: new `io_families` manifest axis reusing the `accessor_families` per-type rows
-(add `spatial` + `in_sym`/`out_sym`/… overrides). Templates `io_type.sql.tmpl` (A) and
-`io_repr.sql.tmpl` (B, base + `@IF spatial` E-extensions). Reference families = base
-`temporal` (base shape) + `geo` (spatial shape); rgeo = the specialize-all outlier.
-Start with **A/type-I/O** (purest token) then **B/representations**, cbuffer first.
+Governed by `templates/representations.sql.tmpl` + `representation_families`,
+**12 entries** all `reference: true` (temporal, cbuffer, geo, h3, json, npoint,
+pointcloud, pointcloud_patch, pose, quadbin, rgeo, tpoint) — the same family set as
+`io_families` above.
 
 ### 4f. Type-I/O canonicalization — `Temporal<>` vs `TSpatial<>` irregularities
 
 Canonical references (both regular): base = `022` (tbool…ttext); spatial = `052_tgeo`
 (tgeometry/tgeography/tgeompoint/tgeogpoint) — shell `CREATE TYPE <t>;`, `<t>_in`/
 `temporal_out`/`<t>_recv`/`temporal_send`, `<t>_typmod_in`, shared `tspatial_typmod_out`
-+ `tspatial_analyze`, `send/receive` order. Every *derived* spatial family deviates; the
-plan is to regularize each to the spatial canon, after which the spatial I/O template is
-one clean variant with per-family symbol tokens only.
++ `tspatial_analyze`, `send/receive` order. Every *derived* spatial family's `io_families`
+entry reproduces its own irregularities verbatim via the shared block-DSL (§4e) rather
+than converging on one clean variant — the table below is the map of which
+irregularities are genuine (kept) vs. resolved.
 
 | id | irregularity | families | canonical form | class |
 |---|---|---|---|---|
@@ -367,16 +408,16 @@ Pattern: per-family typmod semantics (npoint ways-SRID, pointcloud `pcid`) are l
 
 | `<sect1>` | MEOS prefix | generated? | canonical generator / notes |
 |---|---|---|---|
-| Input and Output | `tspatial_` | ✗ HAND | asText/asEWKT/asMFJSON + FromXxx constructors |
-| Conversions | `tspatial_`/`tgeo_` | ✗ HAND | |
-| Accessors | `tspatial_`/`tgeo_`/`tpoint_` | ✗ HAND | SRID, trajectory, traversedArea, convexHull … |
-| Transformations | `tspatial_`/`tgeo_` | ✗ HAND | setSRID, transform |
-| Restrictions | `tspatial_`/`tgeo_` | ✗ HAND | atGeometry/atStbox/minus… |
+| Input and Output | `tspatial_` | ✓ **GEN** | asText/asEWKT/asMFJSON + FromXxx constructors — the same `io_families`/`representation_families` axes as §4 (a family's type file carries both its Temporal<T>- and TSpatial<T>-level I/O in one region) |
+| Conversions | `tspatial_`/`tgeo_` | ◐ PARTIAL | cross-class casts (e.g. `tgeompoint(tcbuffer)`, `tpose(trgeometry)`) are named inside the same `conversion_families` entries as §4, not a separate axis |
+| Accessors | `tspatial_`/`tgeo_`/`tpoint_` | ✗ HAND | SRID, trajectory, traversedArea, convexHull … (in the family's `spatialfuncs` file — no template) |
+| Transformations | `tspatial_`/`tgeo_` | ✗ HAND | setSRID, transform (in the family's `spatialfuncs` file — no template) |
+| Restrictions | `tspatial_`/`tgeo_` | ✗ HAND | atGeometry/atStbox/minus… (in the family's `spatialfuncs` file — no template) |
 | Spatial Reference System | `tspatial_` (`spatialfuncs`) | ✗ HAND | reserved position, no template |
-| **Bounding Box Operations** | `tspatial_` | ✓ **GEN** | `topops`+`posops`+`boxops.c.tmpl` box type `stbox` |
+| **Bounding Box Operations** | `tspatial_` | ✓ **GEN** | `topops`+`posops`+`boxops.c.tmpl` box type `stbox`, via the `subtypes:` track (§3) |
 | Distance Operations | `tspatial_`/`tgeo_` (`distance`) | ✗ HAND | tDistance/nad/nai/shortestLine — reserved position, no template |
-| Spatial Rel. → **Ever/Always** | `tspatial_`/`tgeo_` | ✓ **GEN** | `spatialrels.{c,sql}.tmpl` — geo via `spatialrel_families`; cbuffer/npoint/h3/quadbin via subtype wiring |
-| Spatial Rel. → Spatiotemporal | `tspatial_` (`tempspatialrels`) | ✗ HAND | tIntersects/tDwithin/tContains/tTouches — reserved position, no template |
+| Spatial Rel. → **Ever/Always** | `tspatial_`/`tgeo_` | ◐ PARTIAL | the SQL wrapper file is `subtypes:`-track-generated only for the cast-delegated cell families (th3index, tquadbin — `spatialrels.sql.tmpl`); the underlying C ever/always kernel is separately generated for geo, cbuffer and rgeo via `spatialrel_families` (§3) while their own SQL wrapper files (212/170) stay hand; npoint/pose are hand at both levels |
+| Spatial Rel. → Spatiotemporal | `tspatial_` (`tempspatialrels`) | ✓ **GEN** | `tempspatialrels.sql.tmpl`/`tempspatialrels_native.sql.tmpl` + `tempspatialrel_families` (§3) — `--gaps`: `tempspatialrel_families` 9/10, missing tnpoint. Native impl (own C kernel): cbuffer, tgeo, tpoint. Cast impl (delegates to tgeo): tquadbin, th3index, tpose, trgeometry |
 
 Index infra (`gist`/`spgist`/`indexes`) is generated but is not a doc `<sect1>`.
 
@@ -389,7 +430,8 @@ kernels + catalog identity), and the generic `tcellindex_*` entry points lift th
 kernel via `tfunc_temporal`. Adding a DGGS (e.g. Google S2) = a descriptor + kernel,
 **no new temporal scaffolding, SQL, or binding code** (`tcellindex.h:38-64`).
 
-The generic inherited Tcell API (`tcellindex.h:139-145`):
+The generic inherited Tcell API (declared in the umbrella header
+`meos/include/meos_cellindex.h:52-58`, implemented in `tcellindex.c`):
 `tcellindex_get_resolution` · `is_valid_cell` · `cell_to_parent` · `cell_to_point` ·
 `cell_to_boundary` · `cell_area`.
 
@@ -414,60 +456,81 @@ plain = the file exists but is still hand-maintained.
 
 | family | compops | spatialfuncs | topops | posops | distance | aggfuncs | spatialrels | tempsp.rels | idx / gist·spgist | boxops |
 |---|---|---|---|---|---|---|---|---|---|---|
-| cbuffer (200) | **204** | 205 | **208** | **209** | 210 | 211 | 212 | 214 | **216** | — |
-| npoint (300) | **304** | 306 | **308** | **309** | 312 | 314 | — | — | **316** | — |
-| pose (100) | 104 | 105 | 108 | 109 | 110 | 111 | 112 | 114 | **116** | — |
-| rgeo (150) | 152 | 153 | 156 | 157 | 161 | 159 | 154 | 155 | **162** | 166 |
-| h3 (250) | **254** | 255 | **258** | **259** | — | — | **262** | — | **272**·**273** | — |
-| quadbin (350) | **354** | 355 | **358** | **359** | — | — | **362** | — | **372**·**373** | — |
+| cbuffer (200) | **204** | 205 | **208** | **209** | 210 | **211** | 212 | **214** | **216** | 207 |
+| npoint (300) | **304** | 306 | **308** | **309** | 312 | **314** | — | — | **316** | 307 |
+| pose (100) | **104** | 105 | **108** | **109** | 110 | **111** | 112 | **114** | **116** | 107 |
+| rgeo (150) | **154** | 156 | **161** | **162** | 164 | **168** | 170 | **172** | **173** | 160 |
+| h3 (250) | **254** | 255 | **258** | **259** | — | — | **262** | **264** | **272**·**273** | — |
+| quadbin (350) | **354** | 355 | **358** | **359** | — | — | **362** | **364** | **372**·**373** | — |
 
 Reading the table:
-- **`tpose` and `trgeometry` generate ONLY their index file** — every other inherited
-  file (compops/spatialfuncs/topops/posops/distance/aggfuncs/spatialrels/
-  tempspatialrels; rgeo also boxops166) is hand-maintained → the prime migration
-  target (templates already exist for compops/topops/posops/spatialrels).
-- **`spatialfuncs`, `distance`, `aggfuncs`, `tempspatialrels` are generated for NO
-  family** — no template exists; hand everywhere.
-- **`spatialrels` SQL** is generated only for the **cast-delegated cell families**
-  (h3 262, quadbin 362) via `spatialrels.sql.tmpl` (boundary→`tgeometry` cast).
-  cbuffer 212 / pose 112 / rgeo 154 spatialrels are hand; npoint has none.
-- The C ever/always spatial-rel **kernel** (`spatialrel_families` axis) is generated
-  only in the **geo** file `tgeo_spatialrels.c` (contains/covers/disjoint/intersects/
-  dwithin); cbuffer/rgeo/pose native C spatial-rel wrappers are still hand
-  (memory `spatialrel-wrapper-surface-is-inherited-generate-it`: "NEXT = roll to
-  cbuffer/rgeo/pose").
+- **`compops`/`topops`/`posops`/`idx` are generated for every derived family** via the
+  `subtypes:` `files:` track (§3): cbuffer, npoint, pose, rgeo (`[compops, topops,
+  posops, indexes]`) and h3, quadbin (`[compops, posops, topops, spatialrels, gist,
+  spgist]`).
+- **`aggfuncs` is generated for cbuffer, npoint, pose, rgeo** via the whole-file
+  `aggregate_families` axis (§4b), not the `subtypes:` track; h3/quadbin have no
+  `aggfuncs` file at all (`--gaps`: `aggregate_families` 16/18, missing th3index,
+  tquadbin).
+- **`tempsp.rels` is generated for cbuffer, pose, rgeo, h3, quadbin** via
+  `tempspatialrel_families` (§3/§5) — native for cbuffer, cast-delegated for the
+  other four; npoint has no `tempspatialrels` file (`--gaps`: `tempspatialrel_families`
+  9/10, missing tnpoint).
+- **`spatialrels` SQL** (the ever/always wrapper *file*) is generated only for the
+  **cast-delegated cell families** (h3 262, quadbin 362) via the `subtypes:`
+  `spatialrels` behaviour (boundary→`tgeometry` cast). cbuffer 212, pose 112 and
+  rgeo 170 stay hand — even though their underlying **C** ever/always kernel
+  dispatch is generated (next bullet); npoint has neither.
+- **`spatialfuncs`, `distance` and `boxops`** (the box-cast `.in.sql` file, not the C
+  dispatcher) **are generated for no family** — no template exists; hand everywhere.
+- The C ever/always spatial-rel **kernel** (`spatialrel_families` axis, §3) is
+  generated in the **geo**, **cbuffer** and **rgeo** files (`tgeo_spatialrels.c`,
+  `tcbuffer_spatialrels.c`, `trgeo_spatialrels.c`: contains/covers/disjoint/
+  intersects/dwithin); npoint/pose native C spatial-rel wrappers are still hand
+  (memory `spatialrel-wrapper-surface-is-inherited-generate-it`).
 - The **geo/tpoint/tgeo** family SQL surfaces are not in the `subtypes:` list at all
   (geo is the hand-written reference layout the generator derives from).
 
-## 7. The gap (roadmap, most-mechanical first)
+## 7. The gap (what remains ungoverned)
 
-**A. Widen coverage of already-generated behaviours** (templates exist, just wire
-more subtypes in `manifest.d/`):
-- Add compops/topops/posops to `tpose`, `trgeometry` (today: indexes-only).
-- Add spatialrels wiring for cbuffer/npoint/pose/rgeo (today: geo + h3/quadbin).
+**A. Behaviours with a template, still not wired for every family:**
+- `spatialrel_families` (the C ever/always kernel): npoint, pose (today: geo,
+  cbuffer, rgeo).
+- `tempspatialrel_families`: npoint (today: cbuffer, tgeo, tpoint, tquadbin,
+  th3index, tpose, trgeometry — 9/10 tspatial members).
+- `aggregate_families`: th3index, tquadbin (today: temporal, cbuffer, geo, json,
+  npoint, pointcloud, pose, rgeo, tpoint — 16/18 temporal types).
+- `conversion_families`: tgeography, tpcpoint, tpcpatch (today: 15/18 temporal
+  types, via 8 family entries).
+- `comparison_families`/`hash_families` (Traditional comparisons + hash):
+  tpcpoint, tpcpatch (today: 16/18 temporal types).
+- The `subtypes:` `spatialrels` behaviour (the ever/always SQL wrapper *file*, as
+  opposed to the C kernel above) still covers only the cast-delegated cell
+  families (th3index, tquadbin); cbuffer/pose/rgeo's own wrapper files (212/112/
+  170) stay hand even though their C kernel is generated.
 
-**B. New templates for reserved-position behaviours** (position slot exists, no
-template yet — pure hand today):
-- `tempspatialrels` (tIntersects/tDwithin/…) — the ever/always sibling already
-  generates; the temporal variant is the natural next template.
+**B. Sections with no template at all** (reserved `positions:` slot, pure hand):
 - `distance` (tDistance/nad/nai/shortestLine).
-- `spatialfuncs` (SRID / transform / trajectory scaffolding).
-- `aggfuncs` (tCount/extent/tMin/tMax/tSum/tAvg + the union aggregates — note the
-  new `@csqlaggfn` catalog identity, MobilityDB #1411 + MEOS-API #55, both merged).
-- Comparisons → **Temporal** (`tEq`/`tNe` → `#=`/`#<>`) alongside the existing
-  ever/always compops template.
+- `spatialfuncs` (SRID / transform / trajectory / atGeometry / atStbox
+  scaffolding — the TSpatial<T>-level Accessors/Transformations/Restrictions/SRS
+  rows of §5).
+- Comparisons → Miscellaneous (§4, `temporal_types_p2.xml` `ttype_miscellaneous`).
+- TNumber's `036_tnumber_distance` and the tbool/ttext-specific `028`/`029` files
+  (§4a).
 
-**C. Sections that are inherently per-family / value-shaped** (generation needs the
-per-type base-value marshalling): Input/Output, Constructors, Conversions,
-Transformations, Modifications, Restrictions. **Accessors are now generated** for
-every family (§4c, `accessors.sql.tmpl` + manifest `types:` tokens) — the value-shaped
-rows via `base`/`baseset`/`valret`, the rest generically; only interleaved/positional
-accessors stay hand. The MEOS-**C** value surface (`start_value`/`value_at_timestamptz`/
-`values`/`at_value`… in `meos/src/<fam>.c`) is the sibling generation target —
-`temporal_basetype.c.tmpl`, byte-for-byte reference `meos/src/json/tjsonb.c`, cloneable
-for the value-opaque families (jsonb/pcpoint/pcpatch/cbuffer). The remaining hand
-sections are the subject of the binding generators (see memory
-`mobilityduck-tcbuffer-full-implementation-roadmap`).
+**C. The per-family SQL surface is generated end to end.** Input/Output,
+Constructors, Transformations, Modifications, Restrictions and Accessors (§4c,
+`accessors.sql.tmpl` + manifest `types:` tokens — the value-shaped rows via
+`base`/`baseset`/`valret`, the rest generically; only interleaved/positional
+accessors stay hand) all have a `reference: true` axis at full or near-full
+class coverage (§4/§4b). Conversions is the one SQL axis still partial (§4, 15/18).
+The MEOS-**C** value surface (`start_value`/`value_at_timestamptz`/`values`/
+`at_value`… in `meos/src/<fam>.c`) is not generated at all — that is the next tier
+of this program, not a template gap in `tools/codegen/inherited/`: a
+`temporal_basetype.c.tmpl` (no such template exists yet), byte-for-byte reference
+`meos/src/json/tjsonb.c`, cloneable for the value-opaque families (jsonb/pcpoint/
+pcpatch/cbuffer). The remaining hand sections are the subject of the binding
+generators (see memory `mobilityduck-tcbuffer-full-implementation-roadmap`).
 
 ## 8. Comparison with the MEOS-API generated hierarchy
 
@@ -476,16 +539,16 @@ model, `meta/object-model.json` `lattice` (MEOS-API master `65ced3016`). It decl
 **18 classes**: Temporal · TAlpha{TBool,TText} · TNumber{TInt,TFloat} ·
 TSpatial{TGeo{TPoint{TGeomPoint,TGeogPoint}, TGeometry, TGeography}, TCbuffer, TNpoint,
 TPose, TRGeometry}. Diffed against the live MEOS catalog predicates
-(`meos_catalog.c` @ MobilityDB `b6624f21a`), these live types/classes are **missing**:
+(`meos_catalog.c` @ MobilityDB `c85c0e1d6`), these live types/classes are **missing**:
 
 | missing from lattice | live type / predicate | belongs under | category |
 |---|---|---|---|
-| **TBigint** | `tbigint` (`tnumber_type` :1234) | TNumber | **in-scope leaf, omitted (defect)** — number family IS in `scope.inScopeTypeFamilies` |
-| **TJsonb** | `tjsonb` (`talpha_type` :1213) | TAlpha | in-scope family (alpha), omitted leaf |
-| **TH3Index** | `th3index` (`tspatial_type` :1298) | TSpatial → Tcell | deferred family (not in declared scope) |
-| **TQuadbin** | `tquadbin` (`tspatial_type` :1299) | TSpatial → Tcell | deferred family |
-| **TPcpoint** | `tpcpoint` (`tpointcloud_temptype` :1224) | TSpatial → TPointcloud | deferred family (`#if POINTCLOUD`) |
-| **TPcpatch** | `tpcpatch` (`tpointcloud_temptype` :1224) | TSpatial → TPointcloud | deferred family |
+| **TBigint** | `tbigint` (`tnumber_type` :1214) | TNumber | **in-scope leaf, omitted (defect)** — number family IS in `scope.inScopeTypeFamilies` |
+| **TJsonb** | `tjsonb` (`talpha_type` :1192) | TAlpha | in-scope family (alpha), omitted leaf |
+| **TH3Index** | `th3index` (`tspatial_type` :1280) | TSpatial → Tcell | deferred family (not in declared scope) |
+| **TQuadbin** | `tquadbin` (`tspatial_type` :1281) | TSpatial → Tcell | deferred family |
+| **TPcpoint** | `tpcpoint` (`tpointcloud_temptype` :1204) | TSpatial → TPointcloud | deferred family (`#if POINTCLOUD`) |
+| **TPcpatch** | `tpcpatch` (`tpointcloud_temptype` :1204) | TSpatial → TPointcloud | deferred family |
 | **Tcell / TCellIndex** (abstract) | `tcellindex_type()` | between TSpatial and cell leaves | missing intermediate |
 | **TPointcloud** (abstract) | `tpointcloud_temptype()` | between TSpatial and pointcloud leaves | missing intermediate |
 
@@ -508,9 +571,8 @@ Notes:
 
 The finite-subset value-domain types that the temporal restriction/accessor
 surface consumes (§4a). Ordering authority: **`doc/set_span_types.xml`**. All
-catalog/doc line numbers in this section are live at master `63f974c5f`; the
-`span_families` line numbers are at the tip of the span/set-indexes generator
-series that introduces the axis.
+catalog/doc line numbers in this section are live at master `c85c0e1d6`; manifest
+axes are cited by `manifest.d/<axis>.yaml` filename, not by line number.
 
 ### 9.1 Class membership (live `meos/src/temporal/meos_catalog.c`)
 
@@ -559,12 +621,12 @@ column names the `manifest.d/` key) · ✗ HAND = hand-maintained.
 | Accessors (:442) | ✓ GEN | ✓ GEN | ✓ GEN | `span_families` (sets: `set_accessors` + `*set_accessors`; the pointcloud entries also carry the trailing `unnest`) |
 | Transformations (:693) | ✓ GEN | ✓ GEN | ✓ GEN | `span_families` (sets: `set_transformations` + the per-family `*set_transformations`/`*set_unnest` entries; jsonbset's empty Transformations banner stays hand) |
 | Spatial Reference System (:901) | ✓ GEN (geoset/poseset/cbufferset — the only set files with an SRS section; npointset/h3indexset/quadbinset have no SRID functions) | — | — | `span_families` (`*set_srs` entries) |
-| Set Operations (:958) | ✓ GEN | ✓ GEN | ✓ GEN | `setop_families` :1874 · `span_families` (005/009) |
-| BBox Ops · Topological (:1014) | ✓ GEN | ✓ GEN | ✓ GEN | `topop_families` :2081 · `span_families` (005/009) |
-| BBox Ops · Position (:1082) | ✓ GEN (ordered sets only) | ✓ GEN | ✓ GEN | `posop_families` :2294 · `span_families` (005/009) |
+| Set Operations (:958) | ✓ GEN | ✓ GEN | ✓ GEN | `manifest.d/setop_families.yaml` · `span_families` (005/009) |
+| BBox Ops · Topological (:1014) | ✓ GEN | ✓ GEN | ✓ GEN | `manifest.d/topop_families.yaml` · `span_families` (005/009) |
+| BBox Ops · Position (:1082) | ✓ GEN (ordered sets only) | ✓ GEN | ✓ GEN | `manifest.d/posop_families.yaml` · `span_families` (005/009) |
 | BBox Ops · Splitting (:1162) | ✓ GEN (`spans`/`splitNSpans`/`splitEachNSpans` live in `003_span.in.sql`) | ✓ GEN | ✓ GEN | `span_families` (003/007 entries) |
-| Distance (:1219) | ✓ GEN (metric sets only) | ✓ GEN | ✓ GEN | `distance_families` :2322 · `span_families` (005/009) |
-| Comparisons (:1248) | ✓ GEN | ✓ GEN | ✓ GEN | `comparison_families` :1583 (`ops: set` entries :1669-1768) + `hash_families` :1769 · `span_families` (003/007) |
+| Distance (:1219) | ✓ GEN (metric sets only) | ✓ GEN | ✓ GEN | `manifest.d/distance_families.yaml` · `span_families` (005/009) |
+| Comparisons (:1248) | ✓ GEN | ✓ GEN | ✓ GEN | `manifest.d/comparison_families.yaml` (`set` family entries) + `manifest.d/hash_families.yaml` · `span_families` (003/007) |
 | Aggregations (:1306) | ✓ GEN — the `extent` aggregates over sets in `015_span_aggfuncs.in.sql`, `setUnion` in `001_set.in.sql`, and the per-family `setUnion` regions | ✓ GEN | ✓ GEN | `span_families` (015 entry + `set_aggregations` + the per-family `*set_setunion` entries) |
 | Indexing (:1389) | ✓ GEN (span-basetype sets only, §9.2) | ✓ GEN | ✓ GEN | `span_families` (011/012/013 entries) |
 
@@ -622,7 +684,7 @@ flags the per-surface set axes implement as deployment gates.
 |---|---|
 | `ordered` | the base has a SEMANTIC total order (int, bigint, float, text, date, timestamptz) — **this flag is what decides whether position operators are emitted at all**; the 10 unordered bases get none |
 | `posops_spelling` | `value` = `<< >> &< &>` (numbers + text) · `time` = `<<# #>> &<# #&>` (date + timestamptz); omitted when not ordered |
-| `metric` | `<->` / `setDistance` is deployed (all ordered bases except text, plus geomset/geogset/npointset/poseset/cbufferset) — the gate of `distance_families` :2322 |
+| `metric` | `<->` / `setDistance` is deployed (all ordered bases except text, plus geomset/geogset/npointset/poseset/cbufferset) — the gate of `manifest.d/distance_families.yaml` |
 | `spatial` | the set is `spatialset_type()` (:909-914) — carries a bounding box and the SRS section (§9.3); pcpointset/pcpatchset are `pointcloudset_type()`, not spatial |
 
 Known deployed irregularity the axis does not model: jsonbset has the `<<`/`>>`
@@ -662,5 +724,6 @@ operators), while the `scalar*sel` estimators belong to BASE types (e.g.
 ✓ **GEN** = a template plus a `reference: true` manifest axis governs the surface, so
 `--validate` re-renders it byte-for-byte · ◐ **PARTIAL** = the axis exists but covers only
 some families; the row names the ones that are not wired · ✗ HAND = hand-maintained
-`.in.sql` (no template / reserved position only). All catalog line numbers are live at
-MobilityDB `b6624f21a` / MEOS-API `65ced3016`.
+`.in.sql` (no template / reserved position only). All MobilityDB catalog line numbers
+are live at MobilityDB `c85c0e1d6`; MEOS-API line numbers (§8) are live at MEOS-API
+`65ced3016`.
