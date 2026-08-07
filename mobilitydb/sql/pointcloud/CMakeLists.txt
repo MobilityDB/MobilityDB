@@ -7,18 +7,19 @@ SET(LOCAL_FILES
   430_tpcpatch
   433_tpcpoint_compops
   434_tpcpatch_compops
-  435_tpc_topops
-  436_tpc_posops
-  437_tpc_gist
-  438_tpc_spgist
-  439_tpc_distance
-  440_tpc_aggfuncs
-  441_tpcpoint_spatialfuncs
-  442_tpcpoint_spatialrels
-  443_tpcpoint_tempspatialrels
-  444_tpcpoint_analytics
-  445_tpcpoint_tile
-  446_tpcpoint_distance
+  435_tpc_boxops
+  436_tpc_topops
+  437_tpc_posops
+  438_tpc_gist
+  439_tpc_spgist
+  440_tpc_distance
+  441_tpc_aggfuncs
+  442_tpcpoint_spatialfuncs
+  443_tpcpoint_spatialrels
+  444_tpcpoint_tempspatialrels
+  445_tpcpoint_analytics
+  446_tpcpoint_tile
+  447_tpcpoint_distance
   )
 
 foreach (f ${LOCAL_FILES})

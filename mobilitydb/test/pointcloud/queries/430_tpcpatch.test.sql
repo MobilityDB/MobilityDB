@@ -323,4 +323,8 @@ SELECT bool_and(timeSpan(temp) <@
     timeSpan(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3])))
   FROM timeSplit(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3]), interval '1 day');
 
+SELECT spans(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3]));
+SELECT splitNSpans(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3]), 2);
+SELECT splitEachNSpans(tpcpatchSeq(ARRAY[:inst1, :inst2, :inst3]), 2);
+
 -------------------------------------------------------------------------------
