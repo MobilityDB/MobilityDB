@@ -58,6 +58,7 @@
  */
 extern Datum regprocedurein(PG_FUNCTION_ARGS);
 extern text *cstring_to_text(const char *s);
+extern char *text_to_cstring(const text *t);
 /* PostgreSQL array support (does not pull in fmgrprotos.h) */
 #include <utils/array.h>
 /* PostGIS liblwgeom (vendored) */
@@ -360,18 +361,10 @@ Araster_value(PG_FUNCTION_ARGS)
 static MeosPixType
 text_to_pixtype(const text *pt)
 {
-  const char *s   = VARDATA_ANY(pt);
-  int         len = (int) VARSIZE_ANY_EXHDR(pt);
-  if (len == 5 && strncmp(s, "UINT8",   5) == 0) return MEOS_PT_UINT8;
-  if (len == 5 && strncmp(s, "INT16",   5) == 0) return MEOS_PT_INT16;
-  if (len == 5 && strncmp(s, "INT32",   5) == 0) return MEOS_PT_INT32;
-  if (len == 7 && strncmp(s, "FLOAT32", 7) == 0) return MEOS_PT_FLOAT32;
-  if (len == 7 && strncmp(s, "FLOAT64", 7) == 0) return MEOS_PT_FLOAT64;
-  ereport(ERROR,
-    (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-     errmsg("unknown pixel type \"%.*s\": use UINT8, INT16, INT32, FLOAT32, "
-            "or FLOAT64", len, s)));
-  return MEOS_PT_UINT8; /* unreachable */
+  char *s = text_to_cstring(pt);
+  MeosPixType result = raquet_pixtype_from_string(s);
+  pfree(s);
+  return result;
 }
 
 PGDLLEXPORT Datum Raster_tile_value_quadbin(PG_FUNCTION_ARGS);

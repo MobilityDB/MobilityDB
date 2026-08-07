@@ -65,6 +65,11 @@ typedef enum
   MEOS_PT_FLOAT64 = 4,   /**< 64-bit IEEE double      */
 } MeosPixType;
 
+/* Pixel type utility functions */
+
+extern size_t raquet_pixtype_size(MeosPixType pixtype);
+extern MeosPixType raquet_pixtype_from_string(const char *str);
+
 /* Opaque structure to represent a Raquet raster tile */
 
 typedef struct Raquet Raquet;
