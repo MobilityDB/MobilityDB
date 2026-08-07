@@ -48,6 +48,9 @@
 
 /* Per-DGGS descriptors, defined in each family and referenced here under the
  * same build-flag guard that compiles the family. */
+#if H3
+extern const DggsCellOps h3_cellops;
+#endif
 #if QUADBIN
 extern const DggsCellOps quadbin_cellops;
 #endif
@@ -63,6 +66,9 @@ bool
 tcellindex_type(MeosType type UNUSED)
 {
   return
+#if H3
+    type == T_TH3INDEX ||
+#endif
 #if QUADBIN
     type == T_TQUADBIN ||
 #endif
@@ -90,6 +96,10 @@ dggs_cellops(MeosType temptype)
 {
   switch (temptype)
   {
+#if H3
+    case T_TH3INDEX:
+      return &h3_cellops;
+#endif
 #if QUADBIN
     case T_TQUADBIN:
       return &quadbin_cellops;
