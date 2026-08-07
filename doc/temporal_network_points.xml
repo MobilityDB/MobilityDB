@@ -778,7 +778,10 @@ SELECT tnpoint '[NPoint(1, 0.3)@2001-01-03, NPoint(1, 0.3)@2001-01-05]' #&gt;&gt
 	<sect1 xml:id="tnpoint_spatial_rels">
 		<title>Spatial Relationships</title>
 		<para>
-			The topological and distance relationships described in <xref linkend="tgeo_spatial_rel"/> such as <varname>eIntersects</varname>, <varname>aDwithin</varname>, or <varname>tContains</varname> are defined over the geographical space while the temporal network points are defined over the network space. To be able to apply these relationships to the temporal network points, they must be transformed to temporal geometry points. This can be easily performed using the functions <varname>geometry</varname> and <varname>tgeompoint</varname> or using an explicit casting <varname>::</varname> as shown in the examples below.
+			The topological and distance relationships described in <xref linkend="tgeo_spatial_rel"/> such as <varname>eIntersects</varname>, <varname>aDwithin</varname>, or <varname>tContains</varname> are defined over the geographical space while the temporal network points are defined over the network space. Every one of these relationships also accepts a <varname>tnpoint</varname> argument directly: internally, each network-point operand is converted to a temporal geometry point through the standard <varname>tnpoint::tgeompoint</varname> cast (the point resolved along its route) and then to <varname>tgeometry</varname>, and the corresponding <varname>tgeometry</varname> relationship computes the result, exactly as if the cast had been written out by hand.
+		</para>
+		<para>
+			Because the delegate target <varname>tgeometry</varname> only supports step interpolation, a multi-instant <varname>tnpoint</varname> sequence argument must use step interpolation (<varname>Interp=Step;...</varname>); a sequence with the default linear interpolation raises an error on the implicit conversion, the same restriction already in force when casting a linear <varname>tgeompoint</varname>/<varname>tgeogpoint</varname> to <varname>tgeometry</varname>/<varname>tgeography</varname>. A single instant has no interpolation and is unaffected.
 		</para>
 
 		<itemizedlist>
@@ -786,14 +789,14 @@ SELECT tnpoint '[NPoint(1, 0.3)@2001-01-03, NPoint(1, 0.3)@2001-01-05]' #&gt;&gt
 				<para>Ever and always spatial relationships</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT eContains(geometry 'SRID=5676;Polygon((0 0,0 50,50 50,50 0,0 0))',
-  tgeompoint(tnpoint '[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.3)@2001-01-03)'));
+  tnpoint 'Npoint(1, 0.1)@2001-01-01');
 -- false
 SELECT eDisjoint(geometry(npoint 'NPoint(2, 0.0)'),
-  tgeompoint(tnpoint '[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.3)@2001-01-03)'));
+  tnpoint 'Npoint(1, 0.1)@2001-01-01');
 -- true
 SELECT eIntersects(
-  tnpoint '[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.3)@2001-01-03)'::tgeompoint,
-  tnpoint '[NPoint(2, 0.0)@2001-01-01, NPoint(2, 1)@2001-01-03)'::tgeompoint);
+  tnpoint 'Npoint(1, 0.1)@2001-01-01',
+  tnpoint 'Npoint(2, 0.0)@2001-01-01');
 -- false
 </programlisting>
 			</listitem>
@@ -802,17 +805,15 @@ SELECT eIntersects(
 				<para>Spatiotemporal relationships</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tContains(geometry 'SRID=5676;Polygon((0 0,0 50,50 50,50 0,0 0))',
-  tgeompoint(tnpoint '[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.3)@2001-01-03)'));
--- [f@2001-01-01 00:00:00+01, f@2001-01-03 00:00:00+01)
+  tnpoint 'Interp=Step;[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.3)@2001-01-03]');
+-- [f@2001-01-01, f@2001-01-03]
 SELECT tDisjoint(geometry(npoint 'NPoint(2, 0.0)'),
-  tgeompoint(tnpoint '[NPoint(1, 0.1)@2001-01-01, NPoint(1, 0.3)@2001-01-03)'));
--- [t@2001-01-01 00:00:00+01, t@2001-01-03 00:00:00+01)
+  tnpoint 'Interp=Step;[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.3)@2001-01-03]');
+-- [t@2001-01-01, t@2001-01-03]
 SELECT tDwithin(
-  tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-03)'::tgeompoint,
-  tnpoint '[NPoint(1, 0.5)@2001-01-01, NPoint(1, 0.3)@2001-01-03)'::tgeompoint, 1);
-/* {[t@2001-01-01 00:00:00+01, t@2001-01-01 22:35:55.379053+01],
-   (f@2001-01-01 22:35:55.379053+01, t@2001-01-02 01:24:04.620946+01,
-   t@2001-01-03 00:00:00+01)} */
+  tnpoint 'Interp=Step;[Npoint(1, 0.3)@2001-01-01, Npoint(1, 0.5)@2001-01-03]',
+  tnpoint 'Interp=Step;[Npoint(1, 0.5)@2001-01-01, Npoint(1, 0.3)@2001-01-03]', 1);
+-- [f@2001-01-01, f@2001-01-03]
 </programlisting>
 			</listitem>
 		</itemizedlist>

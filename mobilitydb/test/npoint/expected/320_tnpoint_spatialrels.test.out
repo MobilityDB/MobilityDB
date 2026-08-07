@@ -1,0 +1,85 @@
+SELECT eContains(NULL::geometry, tnpoint 'Npoint(1, 0.5)@2000-01-01');
+ econtains 
+-----------
+ 
+(1 row)
+
+SELECT eContains(geometry 'SRID=5676;Point(1 1)', NULL::tnpoint);
+ econtains 
+-----------
+ 
+(1 row)
+
+SELECT tContains(NULL::geometry, tnpoint 'Npoint(1, 0.5)@2000-01-01');
+ tcontains 
+-----------
+ 
+(1 row)
+
+SELECT tContains(geometry 'SRID=5676;Point(1 1)', NULL::tnpoint);
+ tcontains 
+-----------
+ 
+(1 row)
+
+WITH t AS (
+  SELECT tnpoint 'Interp=Step;[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.3)@2001-01-03]' AS seq1,
+         tnpoint 'Interp=Step;[Npoint(2, 0.0)@2001-01-01, Npoint(2, 1)@2001-01-03]' AS seq2,
+         geometry 'SRID=5676;Polygon((0 0,0 50,50 50,50 0,0 0))' AS big_region,
+         geometry(npoint 'NPoint(2, 0.0)') AS far_point
+)
+SELECT
+  eContains(big_region, seq1) = eContains(big_region, seq1::tgeompoint::tgeometry) AS ec_geo_np,
+  eContains(seq1, big_region) = eContains(seq1::tgeompoint::tgeometry, big_region) AS ec_np_geo,
+  eContains(seq1, seq2) = eContains(seq1::tgeompoint::tgeometry, seq2::tgeompoint::tgeometry) AS ec_np_np,
+  eCovers(big_region, seq1) = eCovers(big_region, seq1::tgeompoint::tgeometry) AS ecv_geo_np,
+  eDisjoint(far_point, seq1) = eDisjoint(far_point, seq1::tgeompoint::tgeometry) AS edj_geo_np,
+  eIntersects(seq1, seq2) = eIntersects(seq1::tgeompoint::tgeometry, seq2::tgeompoint::tgeometry) AS ei_np_np,
+  eTouches(big_region, seq1) = eTouches(big_region, seq1::tgeompoint::tgeometry) AS etc_geo_np,
+  eDwithin(seq1, seq2, 1.0) = eDwithin(seq1::tgeompoint::tgeometry, seq2::tgeompoint::tgeometry, 1.0) AS edw_np_np
+FROM t;
+ ec_geo_np | ec_np_geo | ec_np_np | ecv_geo_np | edj_geo_np | ei_np_np | etc_geo_np | edw_np_np 
+-----------+-----------+----------+------------+------------+----------+------------+-----------
+ t         | t         | t        | t          | t          | t        | t          | t
+(1 row)
+
+WITH t AS (
+  SELECT tnpoint 'Interp=Step;[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.3)@2001-01-03]' AS seq1,
+         tnpoint 'Interp=Step;[Npoint(2, 0.0)@2001-01-01, Npoint(2, 1)@2001-01-03]' AS seq2,
+         geometry 'SRID=5676;Polygon((0 0,0 50,50 50,50 0,0 0))' AS big_region
+)
+SELECT
+  aContains(big_region, seq1) = aContains(big_region, seq1::tgeompoint::tgeometry) AS ac_geo_np,
+  aCovers(big_region, seq1) = aCovers(big_region, seq1::tgeompoint::tgeometry) AS acv_geo_np,
+  aDisjoint(seq1, seq2) = aDisjoint(seq1::tgeompoint::tgeometry, seq2::tgeompoint::tgeometry) AS adj_np_np,
+  aIntersects(big_region, seq1) = aIntersects(big_region, seq1::tgeompoint::tgeometry) AS ai_geo_np,
+  aTouches(seq1, big_region) = aTouches(seq1::tgeompoint::tgeometry, big_region) AS atc_np_geo,
+  aDwithin(big_region, seq1, 1.0) = aDwithin(big_region, seq1::tgeompoint::tgeometry, 1.0) AS adw_geo_np
+FROM t;
+ ac_geo_np | acv_geo_np | adj_np_np | ai_geo_np | atc_np_geo | adw_geo_np 
+-----------+------------+-----------+-----------+------------+------------
+ t         | t          | t         | t         | t          | t
+(1 row)
+
+SELECT eContains(geometry 'SRID=5676;Polygon((0 0,0 50,50 50,50 0,0 0))',
+  tnpoint 'Npoint(1, 0.1)@2001-01-01');
+ econtains 
+-----------
+ f
+(1 row)
+
+SELECT eDisjoint(geometry(npoint 'NPoint(2, 0.0)'),
+  tnpoint 'Npoint(1, 0.1)@2001-01-01');
+ edisjoint 
+-----------
+ t
+(1 row)
+
+SELECT eIntersects(
+  tnpoint 'Npoint(1, 0.1)@2001-01-01',
+  tnpoint 'Npoint(2, 0.0)@2001-01-01');
+ eintersects 
+-------------
+ f
+(1 row)
+
