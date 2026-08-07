@@ -268,7 +268,7 @@ each family fills the **value** rows:
 | `baseset` | the `getValues` return — a **set** for most, a **spanset for numbers** | tcbuffer→`cbufferset`, tfloat→`floatspanset` |
 | `gvsym` | getValues C symbol when it differs (numbers → value spanset) | `Tnumber_valuespans` |
 | `valueset` | the **discrete** `valueSet` return — emitted **only** when `numeric`/`orderable` | tint→`intset` |
-| `numeric` / `orderable` | gate the TNumber/orderable-only extras: `valueSet`, `minValue`, `maxValue`, `avgValue`, `minInstant`, `maxInstant` | tint/tbigint/tfloat numeric; ttext orderable |
+| `numeric` / `orderable` | gate the TNumber/orderable-only extras: `valueSet`, `minValue`, `maxValue`, `avgValue`, `minInstant`, `maxInstant`, and the min/max restrictions `atMin`, `atMax`, `minusMin`, `minusMax` | tint/tbigint/tfloat numeric; ttext orderable |
 | `valret` / `valsym` | **value-materializing override**: value accessors return this type via that symbol family instead of the base | trgeometry→`geometry` / `Trgeometry` |
 
 ⭐ Canonical (user-corrected twice — do NOT re-derive from code frequency):

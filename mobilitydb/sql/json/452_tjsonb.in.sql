@@ -446,26 +446,6 @@ CREATE FUNCTION minusValues(tjsonb, jsonbset)
   AS 'MODULE_PATHNAME', 'Temporal_minus_values'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION atMin(tjsonb)
-  RETURNS tjsonb
-  AS 'MODULE_PATHNAME', 'Temporal_at_min'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION minusMin(tjsonb)
-  RETURNS tjsonb
-  AS 'MODULE_PATHNAME', 'Temporal_minus_min'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION atMax(tjsonb)
-  RETURNS tjsonb
-  AS 'MODULE_PATHNAME', 'Temporal_at_max'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION minusMax(tjsonb)
-  RETURNS tjsonb
-  AS 'MODULE_PATHNAME', 'Temporal_minus_max'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 CREATE FUNCTION atTime(tjsonb, timestamptz)
   RETURNS tjsonb
   AS 'MODULE_PATHNAME', 'Temporal_at_timestamptz'
