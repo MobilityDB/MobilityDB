@@ -4,12 +4,12 @@
 # the same chunks). tfloat and ttext are not named here — tfloat already surfaces
 # through these shared numeric chunks and ttext through the json family's ttext<->
 # tjsonb casts — so they are not missing from the class, just covered elsewhere.
-# th3index and tquadbin are NOT modeled: their casts scatter across three
-# non-contiguous locations (the typmod self-cast in the I/O area, the tbigint
-# assignment casts, and the tstzspan cast buried in the Accessors section), so
-# there is no single Conversions section to slice with the begin/end-anchor model
-# every other family here uses. tpcpoint/tpcpatch are reserved for a separate
-# pointcloud session and are likewise absent.
+# th3index and tquadbin each carry a typmod self-cast in the I/O area and a
+# tstzspan cast buried in the Accessors section (both owned by other axes, left
+# alone here); the dedicated conversion region between them — the "Explicit
+# assignment casts to / from tbigint" banner down to the Constructors banner —
+# is the single contiguous slice this axis governs. tpcpoint/tpcpatch are
+# reserved for a separate pointcloud session and are likewise absent.
 conversion_families:
 - family: temporal
   file: mobilitydb/sql/temporal/022_temporal.in.sql
@@ -128,3 +128,25 @@ conversion_families:
   - fns:
     - {sig: "geometry(trgeometry)", ret: geometry, sym: Trgeometry_to_geom}
   - lit: "\nCREATE CAST (trgeometry AS geometry) WITH FUNCTION geometry(trgeometry);\n\n"
+- family: h3
+  file: mobilitydb/sql/h3/253_th3index.in.sql
+  reference: true
+  begin: "\n * Explicit assignment casts to / from tbigint\n"
+  end: "\n * Constructors\n"
+  blocks:
+  - lit: "/******************************************************************************\n * Explicit assignment casts to / from tbigint\n *\n * The int64 payload is shared, but th3index sequences carry a geodetic\n * STBox bbox while tbigint sequences carry a TBox; a binary coercion\n * would leave the wrong bbox shape in place and the wrong temptype byte\n * inside the Temporal header. The cast therefore goes through a real\n * function that lifts an identity Datum function so the result is\n * rebuilt at the correct shape. The cast is declared `AS ASSIGNMENT`\n * so the user must spell out `::th3index` or `::tbigint` — mistakes\n * surface as a clear binder error rather than silently reinterpreting\n * an arbitrary int64 trajectory as a stream of H3 cells.\n ******************************************************************************/\n\n"
+  - fns:
+    - {sig: "th3index(tbigint)", ret: th3index, sym: Tbigint_to_th3index}
+    - {sig: "tbigint(th3index)", ret: tbigint, sym: Th3index_to_tbigint}
+  - lit: "\nCREATE CAST (tbigint AS th3index) WITH FUNCTION th3index(tbigint) AS ASSIGNMENT;\nCREATE CAST (th3index AS tbigint) WITH FUNCTION tbigint(th3index) AS ASSIGNMENT;\n\n"
+- family: quadbin
+  file: mobilitydb/sql/quadbin/353_tquadbin.in.sql
+  reference: true
+  begin: "\n * Explicit assignment casts to / from tbigint\n"
+  end: "\n * Constructors\n"
+  blocks:
+  - lit: "/******************************************************************************\n * Explicit assignment casts to / from tbigint\n *\n * The int64 payload is shared, but tquadbin sequences carry a planar\n * STBox bbox while tbigint sequences carry a TBox; a binary coercion\n * would leave the wrong bbox shape in place and the wrong temptype byte\n * inside the Temporal header. The cast therefore goes through a real\n * function that lifts an identity Datum function so the result is\n * rebuilt at the correct shape. The cast is declared `AS ASSIGNMENT`\n * so the user must spell out `::tquadbin` or `::tbigint` — mistakes\n * surface as a clear binder error rather than silently reinterpreting\n * an arbitrary int64 trajectory as a stream of quadbin cells.\n ******************************************************************************/\n\n"
+  - fns:
+    - {sig: "tquadbin(tbigint)", ret: tquadbin, sym: Tbigint_to_tquadbin}
+    - {sig: "tbigint(tquadbin)", ret: tbigint, sym: Tquadbin_to_tbigint}
+  - lit: "\nCREATE CAST (tbigint AS tquadbin) WITH FUNCTION tquadbin(tbigint) AS ASSIGNMENT;\nCREATE CAST (tquadbin AS tbigint) WITH FUNCTION tbigint(tquadbin) AS ASSIGNMENT;\n\n"
