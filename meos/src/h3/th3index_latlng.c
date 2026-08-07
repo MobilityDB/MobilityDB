@@ -49,6 +49,7 @@
 #include <liblwgeom.h>
 
 #include <meos.h>
+#include <meos_cellindex.h>
 #include <meos_h3.h>
 
 #include "geo/tgeo_spatialfuncs.h"
@@ -411,17 +412,7 @@ Temporal *
 th3index_to_tgeogpoint(const Temporal *temp)
 {
   VALIDATE_TH3INDEX(temp, NULL);
-
-  LiftedFunctionInfo lfinfo;
-  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) &datum_h3_cell_to_latlng;
-  lfinfo.numparam = 0;
-  lfinfo.argtype[0] = T_TH3INDEX;
-  lfinfo.restype = T_TGEOGPOINT;
-  lfinfo.reslinear = false;
-  lfinfo.invert = INVERT_NO;
-  lfinfo.discont = CONTINUOUS;
-  return tfunc_temporal(temp, &lfinfo);
+  return tcellindex_cell_to_point(temp);
 }
 
 /*****************************************************************************
@@ -470,17 +461,7 @@ Temporal *
 th3index_cell_to_boundary(const Temporal *temp)
 {
   VALIDATE_TH3INDEX(temp, NULL);
-
-  LiftedFunctionInfo lfinfo;
-  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) &datum_h3_cell_to_boundary;
-  lfinfo.numparam = 0;
-  lfinfo.argtype[0] = T_TH3INDEX;
-  lfinfo.restype = T_TGEOGRAPHY;
-  lfinfo.reslinear = false;
-  lfinfo.invert = INVERT_NO;
-  lfinfo.discont = CONTINUOUS;
-  return tfunc_temporal(temp, &lfinfo);
+  return tcellindex_cell_to_boundary(temp);
 }
 
 /*****************************************************************************/

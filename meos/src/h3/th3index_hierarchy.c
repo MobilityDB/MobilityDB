@@ -43,6 +43,7 @@
 #include <string.h>
 
 #include <meos.h>
+#include <meos_cellindex.h>
 #include <meos_h3.h>
 #include <h3api.h>
 
@@ -102,18 +103,7 @@ Temporal *
 th3index_cell_to_parent(const Temporal *temp, int32 resolution)
 {
   VALIDATE_TH3INDEX(temp, NULL);
-
-  LiftedFunctionInfo lfinfo;
-  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) &datum_h3_cell_to_parent;
-  lfinfo.numparam = 1;
-  lfinfo.param[0] = Int32GetDatum(resolution);
-  lfinfo.argtype[0] = T_TH3INDEX;
-  lfinfo.restype = T_TH3INDEX;
-  lfinfo.reslinear = false;
-  lfinfo.invert = INVERT_NO;
-  lfinfo.discont = CONTINUOUS;
-  return tfunc_temporal(temp, &lfinfo);
+  return tcellindex_cell_to_parent(temp, resolution);
 }
 
 /*****************************************************************************
