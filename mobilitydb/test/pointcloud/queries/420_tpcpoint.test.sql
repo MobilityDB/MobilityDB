@@ -109,6 +109,13 @@ SELECT numInstants((:inst1)::tgeompoint);
 SELECT numInstants((tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]))::tgeompoint);
 
 -------------------------------------------------------------------------------
+-- Cast to tstzspan matches timeSpan
+-------------------------------------------------------------------------------
+
+SELECT (tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]))::tstzspan =
+  timeSpan(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]));
+
+-------------------------------------------------------------------------------
 -- Comparisons
 -------------------------------------------------------------------------------
 

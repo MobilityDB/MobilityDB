@@ -425,6 +425,9 @@ CREATE FUNCTION tgeompoint(tpcpoint)
 
 CREATE CAST (tpcpoint AS tgeompoint) WITH FUNCTION tgeompoint(tpcpoint);
 
+-- The tstzspan cast is backed by the generated timeSpan accessor.
+CREATE CAST (tpcpoint AS tstzspan) WITH FUNCTION timeSpan(tpcpoint);
+
 /******************************************************************************
  * Transformation functions
  ******************************************************************************/
@@ -666,19 +669,23 @@ CREATE OPERATOR <> (
 );
 CREATE OPERATOR < (
   LEFTARG = tpcpoint, RIGHTARG = tpcpoint, PROCEDURE = lt,
-  COMMUTATOR = >, NEGATOR = >=
+  COMMUTATOR = >, NEGATOR = >=,
+  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = tpcpoint, RIGHTARG = tpcpoint, PROCEDURE = le,
-  COMMUTATOR = >=, NEGATOR = >
+  COMMUTATOR = >=, NEGATOR = >,
+  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR >= (
   LEFTARG = tpcpoint, RIGHTARG = tpcpoint, PROCEDURE = ge,
-  COMMUTATOR = <=, NEGATOR = <
+  COMMUTATOR = <=, NEGATOR = <,
+  RESTRICT = scalargtsel, JOIN = scalargtjoinsel
 );
 CREATE OPERATOR > (
   LEFTARG = tpcpoint, RIGHTARG = tpcpoint, PROCEDURE = gt,
-  COMMUTATOR = <, NEGATOR = <=
+  COMMUTATOR = <, NEGATOR = <=,
+  RESTRICT = scalargtsel, JOIN = scalargtjoinsel
 );
 
 CREATE OPERATOR CLASS tpcpoint_btree_ops

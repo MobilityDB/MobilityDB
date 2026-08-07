@@ -114,6 +114,10 @@ SELECT startTimestamp(tpcpatchSeq(ARRAY[:inst1, :inst2]));
 SELECT endTimestamp(tpcpatchSeq(ARRAY[:inst1, :inst2]));
 SELECT pcid(tpcpatchSeq(ARRAY[:inst1, :inst2]));
 
+-- Cast to tstzspan matches timeSpan.
+SELECT (tpcpatchSeq(ARRAY[:inst1, :inst2]))::tstzspan =
+  timeSpan(tpcpatchSeq(ARRAY[:inst1, :inst2]));
+
 -------------------------------------------------------------------------------
 -- Comparisons
 -------------------------------------------------------------------------------

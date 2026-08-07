@@ -391,6 +391,9 @@ CREATE FUNCTION numPoints(tpcpatch)
   AS 'MODULE_PATHNAME', 'Tpcpatch_npoints'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- The tstzspan cast is backed by the generated timeSpan accessor.
+CREATE CAST (tpcpatch AS tstzspan) WITH FUNCTION timeSpan(tpcpatch);
+
 /******************************************************************************
  * Transformation functions
  ******************************************************************************/
@@ -690,19 +693,23 @@ CREATE OPERATOR <> (
 );
 CREATE OPERATOR < (
   LEFTARG = tpcpatch, RIGHTARG = tpcpatch, PROCEDURE = lt,
-  COMMUTATOR = >, NEGATOR = >=
+  COMMUTATOR = >, NEGATOR = >=,
+  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = tpcpatch, RIGHTARG = tpcpatch, PROCEDURE = le,
-  COMMUTATOR = >=, NEGATOR = >
+  COMMUTATOR = >=, NEGATOR = >,
+  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
 );
 CREATE OPERATOR >= (
   LEFTARG = tpcpatch, RIGHTARG = tpcpatch, PROCEDURE = ge,
-  COMMUTATOR = <=, NEGATOR = <
+  COMMUTATOR = <=, NEGATOR = <,
+  RESTRICT = scalargtsel, JOIN = scalargtjoinsel
 );
 CREATE OPERATOR > (
   LEFTARG = tpcpatch, RIGHTARG = tpcpatch, PROCEDURE = gt,
-  COMMUTATOR = <, NEGATOR = <=
+  COMMUTATOR = <, NEGATOR = <=,
+  RESTRICT = scalargtsel, JOIN = scalargtjoinsel
 );
 
 CREATE OPERATOR CLASS tpcpatch_btree_ops
