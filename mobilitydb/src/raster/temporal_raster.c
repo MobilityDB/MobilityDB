@@ -402,9 +402,10 @@ Raster_tile_value_quadbin(PG_FUNCTION_ARGS)
   Temporal  *traj      = PG_GETARG_TEMPORAL_P(7);
 
   const uint8_t *pixels = (const uint8_t *) VARDATA_ANY(pxbytea);
+  size_t pixels_size    = (size_t) VARSIZE_ANY_EXHDR(pxbytea);
   MeosPixType pixtype   = text_to_pixtype(pixtype_t);
 
-  Temporal *result = raster_tile_value_quadbin(pixels,
+  Temporal *result = raster_tile_value_quadbin(pixels, pixels_size,
     (uint16_t) width, (uint16_t) height, (uint64) quadbin,
     pixtype, nodata, has_nd, traj);
 

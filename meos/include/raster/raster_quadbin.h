@@ -40,8 +40,8 @@
 #include <meos_raster.h>
 
 extern Temporal *raster_tile_value_quadbin(const uint8_t *pixels,
-  uint16_t width, uint16_t height, uint64 quadbin, MeosPixType pixtype,
-  double nodata, bool has_nodata, const Temporal *traj);
+  size_t pixels_size, uint16_t width, uint16_t height, uint64 quadbin,
+  MeosPixType pixtype, double nodata, bool has_nodata, const Temporal *traj);
 
 extern uint64 *trajectory_quadbins(const Temporal *traj, uint32_t zoom,
   int *count);
