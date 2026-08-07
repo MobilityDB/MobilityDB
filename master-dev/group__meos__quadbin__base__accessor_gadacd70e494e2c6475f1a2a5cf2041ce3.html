@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: Quadbin_hash</title>
+<title>MobilityDB: quadbin_hash_extended</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="group__mobilitydb__quadbin__base__accessor.html">Accessor functions</a></li>  </ul>
+<li class="navelem"><a class="el" href="group__meos__quadbin__base__accessor.html">Accessor functions</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,31 +79,46 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtabHL"><a class="navtab" href="group__mobilitydb__quadbin__base__accessor_ga75dd0022bafe3b7ca2ed9683f43f22d0.html#ga75dd0022bafe3b7ca2ed9683f43f22d0">Quadbin_hash</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__quadbin__base__accessor_ga328c1d76f4cf25ac31f6cb106bc6b2a9.html#ga328c1d76f4cf25ac31f6cb106bc6b2a9">Quadbin_hash_extended</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__quadbin__base__accessor_ga6991cb9ef3e128e9ca5ffaf05ebf530e.html#ga6991cb9ef3e128e9ca5ffaf05ebf530e">Quadbin_is_valid_cell</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__quadbin__base__accessor_gab98265b0e748d75ea65f4dee1865135d.html#gab98265b0e748d75ea65f4dee1865135d">Quadbin_is_valid_index</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__quadbin__base__accessor_ga68cefb0bf8f47a97b9a10ecb1cf7e546.html#ga68cefb0bf8f47a97b9a10ecb1cf7e546">quadbin_hash</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__quadbin__base__accessor_gadacd70e494e2c6475f1a2a5cf2041ce3.html#gadacd70e494e2c6475f1a2a5cf2041ce3">quadbin_hash_extended</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga75dd0022bafe3b7ca2ed9683f43f22d0" name="ga75dd0022bafe3b7ca2ed9683f43f22d0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga75dd0022bafe3b7ca2ed9683f43f22d0">&#9670;&#160;</a></span>Quadbin_hash()</h2>
+<a id="gadacd70e494e2c6475f1a2a5cf2041ce3" name="gadacd70e494e2c6475f1a2a5cf2041ce3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gadacd70e494e2c6475f1a2a5cf2041ce3">&#9670;&#160;</a></span>quadbin_hash_extended()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> Quadbin_hash </td>
+          <td class="memname"><a class="el" href="postgres__ext__defs_8in_8h_abc0f5bc07737e498f287334775dff2b6.html#abc0f5bc07737e498f287334775dff2b6">uint64</a> quadbin_hash_extended </td>
           <td>(</td>
-          <td class="paramtype">PG_FUNCTION_ARGS&#160;</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype"><a class="el" href="meos__quadbin_8h_a62e3d9d99cbf73b81567f1958cb16c4a.html#a62e3d9d99cbf73b81567f1958cb16c4a">Quadbin</a>&#160;</td>
+          <td class="paramname"><em>cell</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_abc0f5bc07737e498f287334775dff2b6.html#abc0f5bc07737e498f287334775dff2b6">uint64</a>&#160;</td>
+          <td class="paramname"><em>seed</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Return the hash code of a quadbin value @sqlfn hash() </p>
+<p>Return the 64-bit hash value of a quadbin using a seed — matches the result <code>hashint8extended</code> would produce on the same bit pattern. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">cell</td><td>Quadbin cell </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">seed</td><td>Seed @csqlfn <a class="el" href="group__mobilitydb__quadbin__base__accessor_ga328c1d76f4cf25ac31f6cb106bc6b2a9.html#ga328c1d76f4cf25ac31f6cb106bc6b2a9" title="Return the 64-bit hash value of a quadbin value using a seed @sqlfn hashExtended()">Quadbin_hash_extended()</a> </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

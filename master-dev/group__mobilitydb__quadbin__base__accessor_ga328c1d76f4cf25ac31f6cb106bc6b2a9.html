@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: Quadbin_hash</title>
+<title>MobilityDB: Quadbin_hash_extended</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -79,22 +79,22 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtabHL"><a class="navtab" href="group__mobilitydb__quadbin__base__accessor_ga75dd0022bafe3b7ca2ed9683f43f22d0.html#ga75dd0022bafe3b7ca2ed9683f43f22d0">Quadbin_hash</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__quadbin__base__accessor_ga328c1d76f4cf25ac31f6cb106bc6b2a9.html#ga328c1d76f4cf25ac31f6cb106bc6b2a9">Quadbin_hash_extended</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__quadbin__base__accessor_ga75dd0022bafe3b7ca2ed9683f43f22d0.html#ga75dd0022bafe3b7ca2ed9683f43f22d0">Quadbin_hash</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__mobilitydb__quadbin__base__accessor_ga328c1d76f4cf25ac31f6cb106bc6b2a9.html#ga328c1d76f4cf25ac31f6cb106bc6b2a9">Quadbin_hash_extended</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__quadbin__base__accessor_ga6991cb9ef3e128e9ca5ffaf05ebf530e.html#ga6991cb9ef3e128e9ca5ffaf05ebf530e">Quadbin_is_valid_cell</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__quadbin__base__accessor_gab98265b0e748d75ea65f4dee1865135d.html#gab98265b0e748d75ea65f4dee1865135d">Quadbin_is_valid_index</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga75dd0022bafe3b7ca2ed9683f43f22d0" name="ga75dd0022bafe3b7ca2ed9683f43f22d0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga75dd0022bafe3b7ca2ed9683f43f22d0">&#9670;&#160;</a></span>Quadbin_hash()</h2>
+<a id="ga328c1d76f4cf25ac31f6cb106bc6b2a9" name="ga328c1d76f4cf25ac31f6cb106bc6b2a9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga328c1d76f4cf25ac31f6cb106bc6b2a9">&#9670;&#160;</a></span>Quadbin_hash_extended()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> Quadbin_hash </td>
+          <td class="memname"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> Quadbin_hash_extended </td>
           <td>(</td>
           <td class="paramtype">PG_FUNCTION_ARGS&#160;</td>
           <td class="paramname"></td><td>)</td>
@@ -103,7 +103,7 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the hash code of a quadbin value @sqlfn hash() </p>
+<p>Return the 64-bit hash value of a quadbin value using a seed @sqlfn hashExtended() </p>
 
 </div>
 </div>
