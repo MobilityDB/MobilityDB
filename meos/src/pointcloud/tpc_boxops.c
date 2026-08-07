@@ -32,6 +32,7 @@
 #include <meos_internal.h>
 #include "temporal/span.h"
 #include "temporal/temporal.h"
+#include "temporal/meos_catalog.h"  /* T_TPCPOINT */
 #include <utils/timestamp.h>   /* TimestampTzGetDatum */
 #include "pointcloud/meos_schema_hook.h"
 #include "pointcloud/pcpoint.h"
@@ -367,10 +368,40 @@ nad_tpointcloud_tpcbox(const Temporal *temp, const TPCBox *box)
 double
 nad_tpointcloud_tpointcloud(const Temporal *temp1, const Temporal *temp2)
 {
-  TPCBox tmp1, tmp2;
-  temporal_set_bbox(temp1, &tmp1);
-  temporal_set_bbox(temp2, &tmp2);
-  return nad_tpcbox_tpcbox(&tmp1, &tmp2);
+  /* Patches are not point trajectories: they have no single-point
+   * projection to a tgeompoint, so their nearest-approach distance stays
+   * the distance between their bounding boxes, exactly as before. */
+  if (temp1->temptype != T_TPCPOINT || temp2->temptype != T_TPCPOINT)
+  {
+    TPCBox tmp1, tmp2;
+    temporal_set_bbox(temp1, &tmp1);
+    temporal_set_bbox(temp2, &tmp2);
+    return nad_tpcbox_tpcbox(&tmp1, &tmp2);
+  }
+
+  /* PCID mismatch: the two values live in unrelated coordinate systems */
+  const Pcpoint *first1 =
+    (const Pcpoint *) DatumGetPointer(temporal_start_value(temp1));
+  const Pcpoint *first2 =
+    (const Pcpoint *) DatumGetPointer(temporal_start_value(temp2));
+  if (first1->pcid != first2->pcid)
+    return DBL_MAX;
+
+  /* Project both values onto their point trajectories and return the
+   * minimum of their synchronized distance, as the sibling spatiotemporal
+   * types do. This is finer than the bounding-box distance computed by
+   * nad_tpcbox_tpcbox: it can only be equal to or larger. */
+  Temporal *proj1 = tpointcloud_to_tgeompoint(temp1);
+  Temporal *proj2 = tpointcloud_to_tgeompoint(temp2);
+  if (! proj1 || ! proj2)
+  {
+    if (proj1) pfree(proj1);
+    if (proj2) pfree(proj2);
+    return DBL_MAX;
+  }
+  double result = nad_tgeo_tgeo(proj1, proj2);
+  pfree(proj1); pfree(proj2);
+  return result;
 }
 
 /*****************************************************************************/

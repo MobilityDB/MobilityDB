@@ -438,6 +438,10 @@ extern bool ensure_same_pcid_tpcbox(const TPCBox *box1, const TPCBox *box2);
       assert(((Temporal *) (temp))->temptype == T_TPCPATCH); } while (0)
 #endif
 
+/* Conversion */
+
+extern Temporal *tpointcloud_to_tgeompoint(const Temporal *temp);
+
 extern TInstant *tpcpointinst_make(const Pcpoint *pt, TimestampTz t);
 extern TSequence *tpcpointseq_from_base_tstzset(const Pcpoint *pt, const Set *s);
 extern TSequence *tpcpointseq_from_base_tstzspan(const Pcpoint *pt, const Span *sp);
