@@ -945,6 +945,16 @@ SELECT merge(tfloat '[2@2000-01-02, 4@2000-01-04]', tfloat '[1@2000-01-01, 2@200
 
 SELECT merge(tfloat '{[1@2000-01-01, 2@2000-01-02], [3@2000-01-03, 4@2000-01-04]}', tfloat '{[2@2000-01-02, 3@2000-01-03], [4@2000-01-04, 5@2000-01-05]}');
 
+-- Merging step sequences that meet at a shared timestamp keeps the
+-- inclusive side's value at the seam: splitting a step sequence with
+-- atTime/minusTime at an interior timestamp and merging the pieces back
+-- together must return the original value
+SELECT tint 'Interp=Step;[1@2000-01-01, 2@2000-01-02, 3@2000-01-03]' =
+  merge(atTime(tint 'Interp=Step;[1@2000-01-01, 2@2000-01-02, 3@2000-01-03]', tstzspan '[2000-01-01,2000-01-02]'),
+    minusTime(tint 'Interp=Step;[1@2000-01-01, 2@2000-01-02, 3@2000-01-03]', tstzspan '[2000-01-01,2000-01-02]'));
+SELECT valueAtTimestamp(merge(atTime(tint 'Interp=Step;[1@2000-01-01, 2@2000-01-02, 3@2000-01-03]', tstzspan '[2000-01-01,2000-01-02]'),
+    minusTime(tint 'Interp=Step;[1@2000-01-01, 2@2000-01-02, 3@2000-01-03]', tstzspan '[2000-01-01,2000-01-02]')), timestamptz '2000-01-02');
+
 -- NULL
 SELECT merge(NULL::tfloat, NULL::tfloat);
 SELECT merge(tfloat '1@2000-01-01', NULL);

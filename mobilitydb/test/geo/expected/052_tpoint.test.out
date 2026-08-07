@@ -1598,6 +1598,21 @@ SELECT asText(merge(tgeompoint 'Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2
  POINT(1 1)@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
+SELECT tgeompoint 'Interp=Step;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(3 3 3)@2000-01-03]' =
+  merge(atTime(tgeompoint 'Interp=Step;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(3 3 3)@2000-01-03]', tstzspan '[2000-01-01,2000-01-02]'),
+    minusTime(tgeompoint 'Interp=Step;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(3 3 3)@2000-01-03]', tstzspan '[2000-01-01,2000-01-02]'));
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT st_astext(valueAtTimestamp(merge(atTime(tgeompoint 'Interp=Step;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(3 3 3)@2000-01-03]', tstzspan '[2000-01-01,2000-01-02]'),
+    minusTime(tgeompoint 'Interp=Step;[Point(1 1 1)@2000-01-01, Point(2 2 2)@2000-01-02, Point(3 3 3)@2000-01-03]', tstzspan '[2000-01-01,2000-01-02]')), timestamptz '2000-01-02'));
+    st_astext    
+-----------------
+ POINT Z (2 2 2)
+(1 row)
+
 /* Errors */
 SELECT merge(tgeompoint 'SRID=5676;Point(1 1)@2000-01-01', tgeompoint 'Point(1 1)@2000-01-02');
 ERROR:  Operation on mixed SRID
