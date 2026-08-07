@@ -3483,6 +3483,38 @@ def rendered_temp_types(axis: str, entries: list, candidates: list) -> set:
     return out
 
 
+# The subtypes: mechanism (the module-level render(), used by --check/--validate
+# to emit per-subtype files) produces five of these axes' SQL straight from
+# templates/<behaviour>.sql.tmpl instead of a *_families entry, keyed by the
+# behaviour name in a subtypes: entry's `files` list (gist/spgist/indexes have no
+# *_families axis of their own to feed, so they stay unmeasured here). A type on
+# the subtypes track counts as covered on the axis its behaviour corresponds to,
+# the same way a *_families entry does.
+SUBTYPE_AXIS_BEHAVIOUR = {
+    "compops_families": "compops",
+    "topop_families": "topops",
+    "posop_families": "posops",
+    "spatialrel_families": "spatialrels",
+    "native_tempspatialrel_families": "tempspatialrels",
+}
+
+
+def rendered_subtype_types(axis: str, subtypes: list, candidates: list) -> set:
+    """The temporal types the subtypes: mechanism's rendered SQL declares a
+    surface for, on the behaviour (if any) that feeds this axis."""
+    behaviour = SUBTYPE_AXIS_BEHAVIOUR.get(axis)
+    if behaviour is None:
+        return set()
+    out = set()
+    for sub in subtypes:
+        if behaviour not in (sub.get("files") or []):
+            continue
+        for decl in DECLARATION.finditer(render(behaviour, sub)):
+            subject = RETURNS_CLAUSE.sub("", decl.group(0))
+            out.update(_decl_subject(subject, candidates))
+    return out
+
+
 def report_gaps(mf: dict) -> int:
     """Per behaviour, which members of its class its rendered SQL does not name.
 
@@ -3496,11 +3528,13 @@ def report_gaps(mf: dict) -> int:
     every = [m for m in classes["temporal"]["members"]
              if m not in INTERNAL_TEMP_TYPES]
     ranked = sorted(classes.items(), key=lambda kv: len(kv[1].get("members") or []))
+    subtypes = mf.get("subtypes") or []
     for axis in sorted(AXIS_RENDERERS):
         entries = mf.get(axis) or []
-        if not entries:
+        if not entries and axis not in SUBTYPE_AXIS_BEHAVIOUR:
             continue
-        have = rendered_temp_types(axis, entries, every)
+        have = (rendered_temp_types(axis, entries, every)
+                | rendered_subtype_types(axis, subtypes, every))
         if not have:
             print(f"[   ?] {axis:30} unmeasured - rendering named no type")
             continue
