@@ -10,6 +10,11 @@ set(H3_SRCS
   # Static set-returning h3-pg ports.
   h3index_sets.c
 
+  # The h3_cellops descriptor that plugs the kernel into the shared temporal
+  # cell-index machinery (meos/src/temporal/tcellindex.c), with the square-metre
+  # adapter its area slot takes. The quadbin analogue is tquadbin_ops.c.
+  th3index_ops.c
+
   # Public inheritance boilerplate: inout, constructors,
   # conversions, accessors, validators.
   th3index.c

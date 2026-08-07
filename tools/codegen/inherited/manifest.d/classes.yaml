@@ -28,7 +28,7 @@ classes:
     members: [tgeompoint, tgeogpoint]
   tcellindex:
     predicate: tcellindex_type
-    members: [tquadbin]
+    members: [th3index, tquadbin]
   tpointcloud:
     predicate: tpointcloud_temptype
     members: [tpcpoint, tpcpatch]
