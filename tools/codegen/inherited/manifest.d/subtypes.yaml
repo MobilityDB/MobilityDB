@@ -1,0 +1,162 @@
+
+# Temporal<T> subclasses. `files` lists the inherited behaviours the subtype has
+# (a discrete cell-index has no continuous distance / tempspatialrels / spatialfuncs;
+# those flags are how the family-reference "surface minus exceptions" is encoded).
+subtypes:
+  # ---- POC: the new type driving this generator ----
+  - temp:  tquadbin
+    base:  quadbin
+    brief: "temporal QUADBIN cells"
+    bin:   350
+    category: tspatial
+    # A cell-index inherits the scalar base::stbox cast like every spatial type,
+    # backed by the quadbin_to_stbox / quadbin_{timestamptz,tstzspan}_to_stbox
+    # exports (meos/src/quadbin/tquadbin_boxops.c).
+    scalar_stbox_cast: true
+    stboxes: false
+    # quadbin is planar (Web Mercator), so its stbox bounds the whole cell and the
+    # ever intersects/dwithin relationships get spatial index support: they are
+    # emitted as C wrappers with SUPPORT tspatial_supportfn (tquadbin_spatialrels.c)
+    # rather than SQL cast-wrappers. (h3 is geodetic and stays SQL — a geodetic bbox
+    # vs a planar query box would error, so it does not set this flag.)
+    index_support: true
+    # compops/posops/topops are generic. spatialrels delegates to the geo spatial
+    # relationships via the cell→boundary tgeometry conversion
+    # (quadbin_cell_to_boundary), the cell-index
+    # analogue of th3index 290. GiST/SP-GiST are split (322/323), the canonical
+    # cell-index layout (th3index 272/273), not the combined cbuffer `indexes` form.
+    files: [compops, posops, topops, spatialrels, tempspatialrels, gist, spgist]
+
+  # ---- h3: convert the hand-written inherited surface to generated (mirror tquadbin) ----
+  - temp:  th3index
+    base:  h3index
+    # The h3 family directory is `h3`, not the base type name `h3index`.
+    fam:   h3
+    brief: "temporal H3 cells"
+    # pg-h3 cell fns temporalize as t+h3Xxx -> th3CellToBoundary (see memory).
+    boundary_fn: th3CellToBoundary
+    bin:   250
+    category: tspatial
+    # A cell-index inherits the scalar base::stbox cast — same as tquadbin —
+    # backed by the h3index_to_stbox / h3index_{timestamptz,tstzspan}_to_stbox
+    # exports (meos/src/h3/th3index_boxops.c).
+    scalar_stbox_cast: true
+    stboxes: false
+    files: [compops, posops, topops, spatialrels, tempspatialrels, gist, spgist]
+
+  # ---- reference families (validate self-regeneration == committed; not new) ----
+  - temp:  tcbuffer
+    base:  cbuffer
+    brief: "temporal circular buffers"
+    bin:   200
+    category: tspatial
+    reference: true
+    files: [compops, posops, topops, indexes]
+
+  # ---- converted families: the combined `indexes` opclass file is now generated ----
+  # These reproduce the cbuffer reference byte-for-byte (npoint's non-canonical index
+  # doc-comment header is normalised to the shared form). Their other inherited files
+  # are still hand-maintained and will be migrated incrementally.
+  - temp:  tnpoint
+    base:  npoint
+    brief: "temporal network points"
+    bin:   300
+    category: tspatial
+    # npoint's scalar base::stbox conversions are npoint-specific (Npoint_to_stbox
+    # + the extra nsegment/timestamptz/tstzspan variants), so they live in the base
+    # file 300_npoint (Conversion between network and space), not the templated
+    # cbuffer block; and tnpoint has no trajectory-tiling stboxes functions.
+    scalar_stbox_cast: false
+    stboxes: false
+    files: [compops, posops, topops, indexes]
+
+  - temp:  tpose
+    base:  pose
+    brief: "temporal poses"
+    bin:   100
+    category: tspatial
+    # tpose is 3-D-capable, so its position operators include the front/back (Z)
+    # direction on top of the shared left/right/below/above/before/after set.
+    front_back: true
+    # A temporal pose delegates its spatial relationships to tgeometry via the
+    # tgeompoint cast chain (not a cell-boundary function), and it is not a cell
+    # index, so it overrides the conversion expression and the file doc block.
+    # Only the temporal (tXxx) relationships are generated here: the ever/always
+    # spatial relationships are a hybrid (the ever intersects/dwithin are native C
+    # with index support), so 112_tpose_spatialrels stays hand-written.
+    convert: "@N@::@extschema@.tgeompoint::@extschema@.tgeometry"
+    doc:
+      tempspatialrels: |-
+        /**
+         * @file
+         * @brief Temporal spatial relationships for temporal poses
+         */
+    files: [compops, topops, posops, indexes, tempspatialrels]
+
+  - temp:  trgeometry
+    # The base-value comparison is against a `geometry` (the resolved geometry at an
+    # instant); the C wrapper stem is `geo`, not `geometry`, so basesym overrides it.
+    base:  geometry
+    basesym: geo
+    fam:   rgeo
+    stem:  trgeo
+    brief: "temporal rigid geometries"
+    bin:   150
+    category: tspatial
+    # trgeometry is 3-D-capable, so its position operators include the front/back
+    # (Z) direction on top of the shared set (same as tpose).
+    front_back: true
+    # rgeo is the fully box-extraction-split family: its topops file holds ONLY the
+    # topological operators, while the stbox casts / stboxes / expandSpace preamble
+    # lives in the separate 160_trgeo_boxops extraction file. Drop that preamble.
+    box_extraction: false
+    # rgeo delegates its temporal spatial relationships to tgeometry via the single
+    # tgeometry(trgeometry) cast (2D-only, so no geography branch), and is not a cell
+    # index, so it overrides the conversion expression and the file doc block. Only
+    # the temporal (tXxx) relationships are generated: the ever/always ones are
+    # native C wrappers (170_trgeo_spatialrels) that stay hand-written.
+    convert: "@N@::@extschema@.tgeometry"
+    doc:
+      tempspatialrels: |-
+        /**
+         * @file
+         * @brief Temporal spatial relationships for temporal rigid geometries
+         */
+    # rgeo follows the tgeo-aligned layout, where the position files sit at their
+    # tgeo offsets (topops +11 -> 161, posops +12 -> 162, tempspatialrels +22 -> 172,
+    # the combined index file at the gist offset +23 -> 173) rather than the tight
+    # scheme's +8 / +9 / +16.
+    positions:
+      topops:          11
+      posops:          12
+      tempspatialrels: 22
+      indexes:         23
+    files: [compops, topops, posops, indexes, tempspatialrels]
+
+  # ---- pointcloud: two temporal types sharing one 50-number band ----
+  # The band runs 400 pcset, 410 tpcbox, 420 tpcpoint, 430 tpcpatch, 435+ the
+  # operator files shared by both types, so the default compops offset (bin + 4)
+  # would land on 404 — ahead of the types whose operators it declares, which
+  # CREATE EXTENSION rejects. Each type overrides the offset to sit after 430
+  # and before 435, and carries its own entry because the generator emits one
+  # file per subtype. `fam` is needed because the directory is named after the
+  # family, not after the base type.
+  - temp:  tpcpoint
+    base:  pcpoint
+    fam:   pointcloud
+    brief: "temporal pgpointcloud points"
+    bin:   400
+    category: tspatial
+    positions:
+      compops: 33
+    files: [compops]
+
+  - temp:  tpcpatch
+    base:  pcpatch
+    fam:   pointcloud
+    brief: "temporal pgpointcloud patches"
+    bin:   400
+    category: tspatial
+    positions:
+      compops: 34
+    files: [compops]

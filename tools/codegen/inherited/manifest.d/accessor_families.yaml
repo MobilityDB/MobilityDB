@@ -1,0 +1,81 @@
+
+# ---------------------------------------------------------------------------
+# Accessor axis (SQL, per-family, region-in-file). The whole Temporal<T> accessor
+# surface (tempSubtype..segments) lives INLINE in each family's type file and
+# follows ONE canonical order for every temporal type — the order of the
+# "Accessors" <sect1> in doc/temporal_types_p1.xml. A single generic template
+# (templates/accessors.sql.tmpl) emits the whole block; the only per-family
+# variation is the tokens `temp` ({TEMP}), `base` ({BASE}) and `baseset`
+# ({BASESET}). The generator emits the region between the GENERATED-ACCESSORS
+# markers in `file`. `reference: true` = self-regen must reproduce the committed
+# region byte-for-byte.
+accessor_families:
+  # The base Temporal<T> file declares the accessor surface for EVERY base type;
+  # `types:` (per-base-type tokens) selects the multi-base-type renderer, which also
+  # emits the TNumber/orderable-only accessors (valueSet/minValue/maxValue/avgValue/
+  # minInstant/maxInstant) gated by the `numeric`/`orderable` flags. baseset = the
+  # getValues return (a spanset for numbers), valueset = the discrete valueSet return.
+  - family:    temporal
+    file:      mobilitydb/sql/temporal/022_temporal.in.sql
+    reference: true
+    types:
+      - {temp: tbool,   base: boolean, baseset: "boolean[]"}
+      - {temp: tint,    base: integer, baseset: intspanset,    valueset: intset,    gvsym: Tnumber_valuespans, numeric: true, orderable: true}
+      - {temp: tbigint, base: bigint,  baseset: bigintspanset, valueset: bigintset, gvsym: Tnumber_valuespans, numeric: true, orderable: true}
+      - {temp: tfloat,  base: float,   baseset: floatspanset,  valueset: floatset,  gvsym: Tnumber_valuespans, numeric: true, orderable: true}
+      - {temp: ttext,   base: text,    baseset: textset,       orderable: true}
+
+  - family:    cbuffer
+    file:      mobilitydb/sql/cbuffer/202_tcbuffer.in.sql
+    reference: true
+    types:
+      - {temp: tcbuffer, base: cbuffer, baseset: cbufferset}
+
+  - family:    npoint
+    file:      mobilitydb/sql/npoint/302_tnpoint.in.sql
+    reference: true
+    types:
+      - {temp: tnpoint, base: npoint, baseset: npointset}
+
+  - family:    pose
+    file:      mobilitydb/sql/pose/102_tpose.in.sql
+    reference: true
+    types:
+      - {temp: tpose, base: pose, baseset: poseset}
+
+  # trgeometry stores temporal poses with the reference geometry appended to the
+  # bytestream; getValue/getValues expose the raw pose (base pose / poseset), while
+  # startValue/endValue/valueN/valueAtTimestamp materialize the geometry (valret) by
+  # re-applying the pose to that reference geometry via the Trgeometry_* symbols (valsym).
+  - family:    rgeo
+    file:      mobilitydb/sql/rgeo/150_trgeo.in.sql
+    reference: true
+    types:
+      - {temp: trgeometry, base: pose, baseset: poseset, valret: geometry, valsym: Trgeometry}
+
+  - family:    json
+    file:      mobilitydb/sql/json/452_tjsonb.in.sql
+    reference: true
+    types:
+      - {temp: tjsonb, base: jsonb, baseset: jsonbset}
+
+  - family:    quadbin
+    file:      mobilitydb/sql/quadbin/353_tquadbin.in.sql
+    reference: true
+    types:
+      - {temp: tquadbin, base: quadbin, baseset: quadbinset}
+  - family:    h3
+    file:      mobilitydb/sql/h3/253_th3index.in.sql
+    reference: true
+    types:
+      - {temp: th3index, base: h3index, baseset: h3indexset}
+  - family:    pointcloud
+    file:      mobilitydb/sql/pointcloud/420_tpcpoint.in.sql
+    reference: true
+    types:
+      - {temp: tpcpoint, base: pcpoint, baseset: pcpointset}
+  - family:    pointcloud_patch
+    file:      mobilitydb/sql/pointcloud/430_tpcpatch.in.sql
+    reference: true
+    types:
+      - {temp: tpcpatch, base: pcpatch, baseset: pcpatchset}

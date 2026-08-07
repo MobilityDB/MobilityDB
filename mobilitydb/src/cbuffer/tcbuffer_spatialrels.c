@@ -97,7 +97,7 @@ EA_spatialrel_tcbuffer_cbuffer(FunctionCallInfo fcinfo,
 }
 
 /* GENERATED-SPATIALRELS-BEGIN cbuffer_ea_contains_covers — tools/codegen/inherited/generate.py from templates/spatialrels.c.tmpl;
- * DO NOT EDIT BY HAND; edit the template + manifest.yaml (spatialrel_families) and re-run. */
+ * DO NOT EDIT BY HAND; edit the template + manifest.d/spatialrel_families.yaml and re-run. */
 /*****************************************************************************
  * Ever/always contains
  *****************************************************************************/
@@ -388,7 +388,7 @@ Acovers_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
 /* GENERATED-SPATIALRELS-END cbuffer_ea_contains_covers */
 
 /* GENERATED-SPATIALRELS-BEGIN cbuffer_ea_disjoint_intersects — tools/codegen/inherited/generate.py from templates/spatialrels.c.tmpl;
- * DO NOT EDIT BY HAND; edit the template + manifest.yaml (spatialrel_families) and re-run. */
+ * DO NOT EDIT BY HAND; edit the template + manifest.d/spatialrel_families.yaml and re-run. */
 /*****************************************************************************
  * Ever/always disjoint
  *****************************************************************************/
@@ -839,7 +839,7 @@ Atouches_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
 }
 
 /* GENERATED-SPATIALRELS-BEGIN cbuffer_ea_dwithin — tools/codegen/inherited/generate.py from templates/spatialrels.c.tmpl;
- * DO NOT EDIT BY HAND; edit the template + manifest.yaml (spatialrel_families) and re-run. */
+ * DO NOT EDIT BY HAND; edit the template + manifest.d/spatialrel_families.yaml and re-run. */
 /*****************************************************************************
  * Ever/always dwithin
  * The function only accepts points and not arbitrary geometries

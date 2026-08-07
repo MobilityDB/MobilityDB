@@ -57,7 +57,7 @@
 #include "pg_geo/tspatial.h"
 
 /* GENERATED-SPATIALRELS-BEGIN rgeo_ea_contains_covers — tools/codegen/inherited/generate.py from templates/spatialrels.c.tmpl;
- * DO NOT EDIT BY HAND; edit the template + manifest.yaml (spatialrel_families) and re-run. */
+ * DO NOT EDIT BY HAND; edit the template + manifest.d/spatialrel_families.yaml and re-run. */
 /*****************************************************************************
  * Ever/always contains
  *****************************************************************************/
@@ -227,7 +227,7 @@ Acovers_trgeometry_trgeometry(PG_FUNCTION_ARGS)
 /* GENERATED-SPATIALRELS-END rgeo_ea_contains_covers */
 
 /* GENERATED-SPATIALRELS-BEGIN rgeo_ea_disjoint_intersects — tools/codegen/inherited/generate.py from templates/spatialrels.c.tmpl;
- * DO NOT EDIT BY HAND; edit the template + manifest.yaml (spatialrel_families) and re-run. */
+ * DO NOT EDIT BY HAND; edit the template + manifest.d/spatialrel_families.yaml and re-run. */
 /*****************************************************************************
  * Ever disjoint (for both geometry and geography)
  *****************************************************************************/
@@ -492,7 +492,7 @@ Atouches_trgeometry_trgeometry(PG_FUNCTION_ARGS)
 }
 
 /* GENERATED-SPATIALRELS-BEGIN rgeo_ea_dwithin — tools/codegen/inherited/generate.py from templates/spatialrels.c.tmpl;
- * DO NOT EDIT BY HAND; edit the template + manifest.yaml (spatialrel_families) and re-run. */
+ * DO NOT EDIT BY HAND; edit the template + manifest.d/spatialrel_families.yaml and re-run. */
 /*****************************************************************************
  * Ever/always dwithin (for both geometry and geography)
  * The function only accepts points and not arbitrary geometries/geographies

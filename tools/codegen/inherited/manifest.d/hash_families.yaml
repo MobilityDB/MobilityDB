@@ -1,0 +1,270 @@
+hash_families:
+# The Temporal<T> hash surface: the same two-function skeleton backed by the
+# Temporal_* kernels (ops: temporal) plus the canonical hash opclass, closing
+# each temporal type file's tail. The base file groups its five types op-outer
+# (every hash, then every hashExtended); tgeo/tpoint group type-major with the
+# two types' function pairs packed; the opclasses pack per file.
+- family: temporal
+  file: mobilitydb/sql/temporal/022_temporal.in.sql
+  reference: true
+  ops: temporal
+  begin: "CREATE FUNCTION hash(tbool"
+  whole_file: true
+  blocks:
+  - lit: "/******************************************************************************/\n\n"
+  - funcs:
+    - tbool
+    - tint
+    - tbigint
+    - tfloat
+    - ttext
+  - lit: "\n"
+  - opcls:
+    - tbool
+    - tint
+    - tbigint
+    - tfloat
+    - ttext
+  - lit: "\n/******************************************************************************/\n"
+- family: geo
+  file: mobilitydb/sql/geo/052_tgeo.in.sql
+  reference: true
+  ops: temporal
+  begin: "CREATE FUNCTION hash(tgeometry"
+  whole_file: true
+  blocks:
+  - lit: "/******************************************************************************/\n\n"
+  - funcs: tgeometry
+  - funcs: tgeography
+  - lit: "\n"
+  - opcls:
+    - tgeometry
+    - tgeography
+  - lit: "\n/******************************************************************************/\n\n"
+- family: tpoint
+  file: mobilitydb/sql/geo/052_tpoint.in.sql
+  reference: true
+  ops: temporal
+  begin: "CREATE FUNCTION hash(tgeompoint"
+  whole_file: true
+  blocks:
+  - lit: "/******************************************************************************/\n\n"
+  - funcs: tgeompoint
+  - funcs: tgeogpoint
+  - lit: "\n"
+  - opcls:
+    - tgeompoint
+    - tgeogpoint
+  - lit: "\n/******************************************************************************/\n\n"
+- family: cbuffer
+  file: mobilitydb/sql/cbuffer/202_tcbuffer.in.sql
+  reference: true
+  ops: temporal
+  begin: "CREATE FUNCTION hash(tcbuffer"
+  whole_file: true
+  blocks:
+  - lit: "/*****************************************************************************/\n\n"
+  - funcs: tcbuffer
+  - lit: "\n"
+  - opcls: tcbuffer
+  - lit: "\n/*****************************************************************************/\n"
+- family: npoint
+  file: mobilitydb/sql/npoint/302_tnpoint.in.sql
+  reference: true
+  ops: temporal
+  begin: "CREATE FUNCTION hash(tnpoint"
+  whole_file: true
+  blocks:
+  - lit: "/******************************************************************************/\n\n"
+  - funcs: tnpoint
+  - lit: "\n"
+  - opcls: tnpoint
+  - lit: "\n/******************************************************************************/\n"
+- family: pose
+  file: mobilitydb/sql/pose/102_tpose.in.sql
+  reference: true
+  ops: temporal
+  begin: "CREATE FUNCTION hash(tpose"
+  whole_file: true
+  blocks:
+  - lit: "/******************************************************************************/\n\n"
+  - funcs: tpose
+  - lit: "\n"
+  - opcls: tpose
+  - lit: "\n/******************************************************************************/\n"
+- family: rgeo
+  file: mobilitydb/sql/rgeo/150_trgeo.in.sql
+  reference: true
+  ops: temporal
+  begin: "CREATE FUNCTION hash(trgeometry"
+  whole_file: true
+  blocks:
+  - lit: "/******************************************************************************/\n\n"
+  - funcs: trgeometry
+  - lit: "\n"
+  - opcls: trgeometry
+  - lit: "\n/******************************************************************************/\n"
+- family: h3
+  file: mobilitydb/sql/h3/253_th3index.in.sql
+  reference: true
+  ops: temporal
+  begin: "CREATE FUNCTION hash(th3index"
+  whole_file: true
+  blocks:
+  - lit: "/******************************************************************************/\n\n"
+  - funcs: th3index
+  - lit: "\n"
+  - opcls: th3index
+  - lit: "\n/******************************************************************************/\n"
+- family: quadbin
+  file: mobilitydb/sql/quadbin/353_tquadbin.in.sql
+  reference: true
+  ops: temporal
+  begin: "CREATE FUNCTION hash(tquadbin"
+  whole_file: true
+  blocks:
+  - lit: "/******************************************************************************/\n\n"
+  - funcs: tquadbin
+  - lit: "\n"
+  - opcls: tquadbin
+  - lit: "\n/******************************************************************************/\n"
+- family: json
+  file: mobilitydb/sql/json/452_tjsonb.in.sql
+  reference: true
+  ops: temporal
+  begin: "CREATE FUNCTION hash(tjsonb"
+  whole_file: true
+  blocks:
+  - lit: "/*****************************************************************************/\n\n"
+  - funcs: tjsonb
+  - lit: "\n"
+  - opcls: tjsonb
+  - lit: "\n/*****************************************************************************/\n\n"
+- family: pointcloud
+  file: mobilitydb/sql/pointcloud/420_tpcpoint.in.sql
+  reference: true
+  ops: temporal
+  begin: "CREATE FUNCTION hash(tpcpoint"
+  whole_file: true
+  blocks:
+  - lit: "/******************************************************************************\n * Comparison / B-tree / hash\n ******************************************************************************/\n\nCREATE FUNCTION eq(tpcpoint, tpcpoint)\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Temporal_eq'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION ne(tpcpoint, tpcpoint)\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Temporal_ne'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION lt(tpcpoint, tpcpoint)\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Temporal_lt'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION le(tpcpoint, tpcpoint)\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Temporal_le'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION ge(tpcpoint, tpcpoint)\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Temporal_ge'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION gt(tpcpoint, tpcpoint)\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Temporal_gt'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION cmp(tpcpoint, tpcpoint)\n  RETURNS integer\n  AS 'MODULE_PATHNAME', 'Temporal_cmp'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\nCREATE OPERATOR = (\n  LEFTARG = tpcpoint, RIGHTARG = tpcpoint, PROCEDURE = eq,\n  COMMUTATOR = =, NEGATOR = <>,\n  RESTRICT = eqsel, JOIN = eqjoinsel\n);\nCREATE OPERATOR <> (\n  LEFTARG = tpcpoint, RIGHTARG = tpcpoint, PROCEDURE = ne,\n  COMMUTATOR = <>, NEGATOR = =,\n  RESTRICT = neqsel, JOIN = neqjoinsel\n);\nCREATE OPERATOR < (\n  LEFTARG = tpcpoint, RIGHTARG = tpcpoint, PROCEDURE = lt,\n  COMMUTATOR = >, NEGATOR = >=\n);\nCREATE OPERATOR <= (\n  LEFTARG = tpcpoint, RIGHTARG = tpcpoint, PROCEDURE = le,\n  COMMUTATOR = >=, NEGATOR = >\n);\nCREATE OPERATOR >= (\n  LEFTARG = tpcpoint, RIGHTARG = tpcpoint, PROCEDURE = ge,\n  COMMUTATOR = <=, NEGATOR = <\n);\nCREATE OPERATOR > (\n  LEFTARG = tpcpoint, RIGHTARG = tpcpoint, PROCEDURE = gt,\n  COMMUTATOR = <, NEGATOR = <=\n);\n\nCREATE OPERATOR CLASS tpcpoint_btree_ops\n  DEFAULT FOR TYPE tpcpoint USING btree AS\n    OPERATOR  1  <,\n    OPERATOR  2  <=,\n    OPERATOR  3  =,\n    OPERATOR  4  >=,\n    OPERATOR  5  >,\n    FUNCTION  1  cmp(tpcpoint, tpcpoint);\n\n"
+  - funcs: tpcpoint
+  - lit: "\n"
+  - opcls: tpcpoint
+  - lit: "\n/*****************************************************************************/\n"
+- family: pointcloud_patch
+  file: mobilitydb/sql/pointcloud/430_tpcpatch.in.sql
+  reference: true
+  ops: temporal
+  begin: "CREATE FUNCTION hash(tpcpatch"
+  whole_file: true
+  blocks:
+  - lit: "/******************************************************************************\n * Comparison / B-tree / hash\n ******************************************************************************/\n\nCREATE FUNCTION eq(tpcpatch, tpcpatch)\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Temporal_eq'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION ne(tpcpatch, tpcpatch)\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Temporal_ne'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION lt(tpcpatch, tpcpatch)\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Temporal_lt'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION le(tpcpatch, tpcpatch)\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Temporal_le'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION ge(tpcpatch, tpcpatch)\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Temporal_ge'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION gt(tpcpatch, tpcpatch)\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Temporal_gt'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION cmp(tpcpatch, tpcpatch)\n  RETURNS integer\n  AS 'MODULE_PATHNAME', 'Temporal_cmp'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\nCREATE OPERATOR = (\n  LEFTARG = tpcpatch, RIGHTARG = tpcpatch, PROCEDURE = eq,\n  COMMUTATOR = =, NEGATOR = <>,\n  RESTRICT = eqsel, JOIN = eqjoinsel\n);\nCREATE OPERATOR <> (\n  LEFTARG = tpcpatch, RIGHTARG = tpcpatch, PROCEDURE = ne,\n  COMMUTATOR = <>, NEGATOR = =,\n  RESTRICT = neqsel, JOIN = neqjoinsel\n);\nCREATE OPERATOR < (\n  LEFTARG = tpcpatch, RIGHTARG = tpcpatch, PROCEDURE = lt,\n  COMMUTATOR = >, NEGATOR = >=\n);\nCREATE OPERATOR <= (\n  LEFTARG = tpcpatch, RIGHTARG = tpcpatch, PROCEDURE = le,\n  COMMUTATOR = >=, NEGATOR = >\n);\nCREATE OPERATOR >= (\n  LEFTARG = tpcpatch, RIGHTARG = tpcpatch, PROCEDURE = ge,\n  COMMUTATOR = <=, NEGATOR = <\n);\nCREATE OPERATOR > (\n  LEFTARG = tpcpatch, RIGHTARG = tpcpatch, PROCEDURE = gt,\n  COMMUTATOR = <, NEGATOR = <=\n);\n\nCREATE OPERATOR CLASS tpcpatch_btree_ops\n  DEFAULT FOR TYPE tpcpatch USING btree AS\n    OPERATOR  1  <,\n    OPERATOR  2  <=,\n    OPERATOR  3  =,\n    OPERATOR  4  >=,\n    OPERATOR  5  >,\n    FUNCTION  1  cmp(tpcpatch, tpcpatch);\n\n"
+  - funcs: tpcpatch
+  - lit: "\n"
+  - opcls: tpcpatch
+  - lit: "\n/*****************************************************************************/\n"
+- family: set
+  file: mobilitydb/sql/temporal/001_set.in.sql
+  reference: true
+  begin: "\n * Hash functions for defining hash indexes\n"
+  whole_file: true
+  blocks:
+  - lit: "/******************************************************************************\n * Hash functions for defining hash indexes\n ******************************************************************************/\n\n"
+  - funcs: [intset, bigintset, floatset, textset, dateset, tstzset]
+  - lit: "\n"
+  - opcls: [intset, bigintset, floatset, textset, dateset, tstzset]
+  - lit: "\n/******************************************************************************/\n"
+- family: geoset
+  file: mobilitydb/sql/geo/050_geoset.in.sql
+  reference: true
+  begin: "CREATE FUNCTION hash(geomset"
+  end: "\n * Operators\n"
+  blocks:
+  - lit: "/******************************************************************************/\n\n"
+  - funcs: [geomset, geogset]
+  - lit: "\n"
+  - opcls: [geomset, geogset]
+  - lit: "\n"
+- family: cbufferset
+  file: mobilitydb/sql/cbuffer/201_cbufferset.in.sql
+  reference: true
+  begin: "CREATE FUNCTION hash(cbufferset"
+  end: "\n * Operators\n"
+  blocks:
+  - lit: "/******************************************************************************/\n\n"
+  - funcs: cbufferset
+  - lit: "\n"
+  - opcls: cbufferset
+  - lit: "\n"
+- family: h3indexset
+  file: mobilitydb/sql/h3/251_h3indexset.in.sql
+  reference: true
+  begin: "CREATE OPERATOR CLASS h3indexset_hash_ops"
+  begin_exact: true
+  end: "\n * unnest \u2014 SETOF expansion\n"
+  blocks:
+  - lit: "CREATE OPERATOR CLASS h3indexset_hash_ops\n  DEFAULT FOR TYPE h3indexset USING hash AS\n    OPERATOR  1  =,\n    FUNCTION  1  hash(h3indexset);\n\n"
+- family: jsonbset
+  file: mobilitydb/sql/json/450_jsonbset.in.sql
+  reference: true
+  begin: "CREATE FUNCTION hash(jsonbset"
+  end: "\n * Operators\n"
+  blocks:
+  - lit: "/******************************************************************************/\n\n"
+  - funcs: jsonbset
+  - lit: "\n"
+  - opcls: jsonbset
+  - lit: "\n"
+- family: npointset
+  file: mobilitydb/sql/npoint/301_npointset.in.sql
+  reference: true
+  begin: "CREATE FUNCTION hash(npointset"
+  end: "\n * Operators\n"
+  blocks:
+  - lit: "/******************************************************************************/\n\n"
+  - funcs: npointset
+  - lit: "\n"
+  - opcls: npointset
+  - lit: "\n"
+- family: pcpointset
+  file: mobilitydb/sql/pointcloud/400_pcset.in.sql
+  reference: true
+  begin: "CREATE FUNCTION hash("
+  begin_exact: true
+  end: "\n * pcpointset \u2014 Set operations"
+  blocks:
+  - funcs: pcpointset
+  - lit: "\n"
+  - opcls: pcpointset
+  - lit: "\n"
+- family: pcpatchset
+  file: mobilitydb/sql/pointcloud/400_pcset.in.sql
+  reference: true
+  begin: "CREATE FUNCTION hash(pcpatchset"
+  begin_exact: true
+  end: "\n * pcpatchset \u2014 Set operations"
+  blocks:
+  - funcs: pcpatchset
+  - lit: "\n"
+  - opcls: pcpatchset
+  - lit: "\n"
+- family: poseset
+  file: mobilitydb/sql/pose/101_poseset.in.sql
+  reference: true
+  begin: "CREATE FUNCTION hash(poseset"
+  end: "\n * Operators\n"
+  blocks:
+  - lit: "/******************************************************************************/\n\n"
+  - funcs: poseset
+  - lit: "\n"
+  - opcls: poseset
+  - lit: "\n"
+- family: quadbinset
+  file: mobilitydb/sql/quadbin/351_quadbinset.in.sql
+  reference: true
+  begin: "CREATE OPERATOR CLASS quadbinset_hash_ops"
+  begin_exact: true
+  end: "\n * unnest \u2014 SETOF expansion\n"
+  blocks:
+  - lit: "CREATE OPERATOR CLASS quadbinset_hash_ops\n  DEFAULT FOR TYPE quadbinset USING hash AS\n    OPERATOR  1  =,\n    FUNCTION  1  hash(quadbinset),\n    FUNCTION  2  hashExtended(quadbinset, bigint);\n\n"

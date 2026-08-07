@@ -1,0 +1,329 @@
+modification_families:
+# The base Temporal<T> file declares the modification surface for EVERY base type,
+# function-outer / type-inner; `types:` (per-base-type tokens) selects the `gen` chunk
+# mode. Every type carries the SAME insert/update/deleteTime wrappers — no orderable/
+# numeric gating applies to this surface, but the family keeps the same per-base-type
+# `types:` table and presence-pool mechanism as the restriction and accessor
+# multi-base-type modes for consistency.
+- family: temporal
+  file: mobilitydb/sql/temporal/022_temporal.in.sql
+  reference: true
+  begin: "\n * Modification Functions\n"
+  end: "\n * Segment Duration Functions\n"
+  types:
+  - {temp: tbool}
+  - {temp: tint,    numeric: true, orderable: true}
+  - {temp: tbigint, numeric: true, orderable: true}
+  - {temp: tfloat,  numeric: true, orderable: true}
+  - {temp: ttext,   orderable: true}
+  blocks:
+  - lit: "/*****************************************************************************\n * Modification Functions\n *****************************************************************************/\n\n"
+  - gen: {sig: "insert({TEMP}, {TEMP}, connect boolean DEFAULT TRUE)", sym: Temporal_insert}
+  - lit: "\n"
+  - gen: {sig: "update({TEMP}, {TEMP}, connect boolean DEFAULT TRUE)", sym: Temporal_update}
+  - lit: "\n"
+  - gen: {sig: "deleteTime({TEMP}, timestamptz, connect boolean DEFAULT TRUE)", sym: Temporal_delete_timestamptz}
+  - lit: "\n"
+  - gen: {sig: "deleteTime({TEMP}, tstzset, connect boolean DEFAULT TRUE)", sym: Temporal_delete_tstzset}
+  - lit: "\n"
+  - gen: {sig: "deleteTime({TEMP}, tstzspan, connect boolean DEFAULT TRUE)", sym: Temporal_delete_tstzspan}
+  - lit: "\n"
+  - gen: {sig: "deleteTime({TEMP}, tstzspanset, connect boolean DEFAULT TRUE)", sym: Temporal_delete_tstzspanset}
+  - lit: "\n"
+- family: geo
+  file: mobilitydb/sql/geo/052_tgeo.in.sql
+  reference: true
+  begin: "\n * Modification Functions\n"
+  end: "\n * Stops Function\n"
+  blocks:
+  - lit: "/*****************************************************************************\n * Modification Functions\n *****************************************************************************/\n\n"
+  - fns:
+    - {sig: "insert(tgeometry, tgeometry, connect boolean DEFAULT TRUE)", ret: "tgeometry", sym: "Temporal_insert"}
+    - {sig: "insert(tgeography, tgeography, connect boolean DEFAULT TRUE)", ret: "tgeography", sym: "Temporal_insert"}
+  - lit: "\n"
+  - fns:
+    - {sig: "update(tgeometry, tgeometry, connect boolean DEFAULT TRUE)", ret: "tgeometry", sym: "Temporal_update"}
+    - {sig: "update(tgeography, tgeography, connect boolean DEFAULT TRUE)", ret: "tgeography", sym: "Temporal_update"}
+  - lit: "\n"
+  - fns:
+    - {sig: "deleteTime(tgeometry, timestamptz, connect boolean DEFAULT TRUE)", ret: "tgeometry", sym: "Temporal_delete_timestamptz"}
+    - {sig: "deleteTime(tgeography, timestamptz, connect boolean DEFAULT TRUE)", ret: "tgeography", sym: "Temporal_delete_timestamptz"}
+  - lit: "\n"
+  - fns:
+    - {sig: "deleteTime(tgeometry, tstzset, connect boolean DEFAULT TRUE)", ret: "tgeometry", sym: "Temporal_delete_tstzset"}
+    - {sig: "deleteTime(tgeography, tstzset, connect boolean DEFAULT TRUE)", ret: "tgeography", sym: "Temporal_delete_tstzset"}
+  - lit: "\n"
+  - fns:
+    - {sig: "deleteTime(tgeometry, tstzspan, connect boolean DEFAULT TRUE)", ret: "tgeometry", sym: "Temporal_delete_tstzspan"}
+    - {sig: "deleteTime(tgeography, tstzspan, connect boolean DEFAULT TRUE)", ret: "tgeography", sym: "Temporal_delete_tstzspan"}
+  - lit: "\n"
+  - fns:
+    - {sig: "deleteTime(tgeometry, tstzspanset, connect boolean DEFAULT TRUE)", ret: "tgeometry", sym: "Temporal_delete_tstzspanset"}
+    - {sig: "deleteTime(tgeography, tstzspanset, connect boolean DEFAULT TRUE)", ret: "tgeography", sym: "Temporal_delete_tstzspanset"}
+  - lit: "\n"
+- family: tpoint
+  file: mobilitydb/sql/geo/052_tpoint.in.sql
+  reference: true
+  begin: "\n * Modification Functions\n"
+  end: "\n * Stops Function\n"
+  blocks:
+  - lit: "/*****************************************************************************\n * Modification Functions\n *****************************************************************************/\n\n"
+  - fns:
+    - {sig: "insert(tgeompoint, tgeompoint, connect boolean DEFAULT TRUE)", ret: "tgeompoint", sym: "Temporal_insert"}
+    - {sig: "insert(tgeogpoint, tgeogpoint, connect boolean DEFAULT TRUE)", ret: "tgeogpoint", sym: "Temporal_insert"}
+  - lit: "\n"
+  - fns:
+    - {sig: "update(tgeompoint, tgeompoint, connect boolean DEFAULT TRUE)", ret: "tgeompoint", sym: "Temporal_update"}
+    - {sig: "update(tgeogpoint, tgeogpoint, connect boolean DEFAULT TRUE)", ret: "tgeogpoint", sym: "Temporal_update"}
+  - lit: "\n"
+  - fns:
+    - {sig: "deleteTime(tgeompoint, timestamptz, connect boolean DEFAULT TRUE)", ret: "tgeompoint", sym: "Temporal_delete_timestamptz"}
+    - {sig: "deleteTime(tgeogpoint, timestamptz, connect boolean DEFAULT TRUE)", ret: "tgeogpoint", sym: "Temporal_delete_timestamptz"}
+  - lit: "\n"
+  - fns:
+    - {sig: "deleteTime(tgeompoint, tstzset, connect boolean DEFAULT TRUE)", ret: "tgeompoint", sym: "Temporal_delete_tstzset"}
+    - {sig: "deleteTime(tgeogpoint, tstzset, connect boolean DEFAULT TRUE)", ret: "tgeogpoint", sym: "Temporal_delete_tstzset"}
+  - lit: "\n"
+  - fns:
+    - {sig: "deleteTime(tgeompoint, tstzspan, connect boolean DEFAULT TRUE)", ret: "tgeompoint", sym: "Temporal_delete_tstzspan"}
+    - {sig: "deleteTime(tgeogpoint, tstzspan, connect boolean DEFAULT TRUE)", ret: "tgeogpoint", sym: "Temporal_delete_tstzspan"}
+  - lit: "\n"
+  - fns:
+    - {sig: "deleteTime(tgeompoint, tstzspanset, connect boolean DEFAULT TRUE)", ret: "tgeompoint", sym: "Temporal_delete_tstzspanset"}
+    - {sig: "deleteTime(tgeogpoint, tstzspanset, connect boolean DEFAULT TRUE)", ret: "tgeogpoint", sym: "Temporal_delete_tstzspanset"}
+  - lit: "\n"
+- family: cbuffer
+  file: mobilitydb/sql/cbuffer/202_tcbuffer.in.sql
+  reference: true
+  begin: "\n * Modification Functions\n"
+  end: "\n * Multidimensional tiling\n"
+  blocks:
+  - lit: "/*****************************************************************************\n * Modification Functions\n *****************************************************************************/\n\n"
+  - fns:
+    - {sig: "insert(tcbuffer, tcbuffer, connect boolean DEFAULT TRUE)", ret: "tcbuffer", sym: "Temporal_insert"}
+  - lit: "\n"
+  - fns:
+    - {sig: "update(tcbuffer, tcbuffer, connect boolean DEFAULT TRUE)", ret: "tcbuffer", sym: "Temporal_update"}
+  - lit: "\n"
+  - fns:
+    - {sig: "deleteTime(tcbuffer, timestamptz, connect boolean DEFAULT TRUE)", ret: "tcbuffer", sym: "Temporal_delete_timestamptz"}
+    - {sig: "deleteTime(tcbuffer, tstzset, connect boolean DEFAULT TRUE)", ret: "tcbuffer", sym: "Temporal_delete_tstzset"}
+    - {sig: "deleteTime(tcbuffer, tstzspan, connect boolean DEFAULT TRUE)", ret: "tcbuffer", sym: "Temporal_delete_tstzspan"}
+    - {sig: "deleteTime(tcbuffer, tstzspanset, connect boolean DEFAULT TRUE)", ret: "tcbuffer", sym: "Temporal_delete_tstzspanset"}
+  - lit: "\n"
+  - fns:
+    - {sig: "appendInstant(tcbuffer, tcbuffer)", ret: "tcbuffer", sym: "Temporal_append_tinstant"}
+  - lit: "\n"
+  - fns:
+    - {sig: "appendSequence(tcbuffer, tcbuffer)", ret: "tcbuffer", sym: "Temporal_append_tsequence"}
+  - lit: "\n"
+  - fns:
+    - {sig: "merge(tcbuffer, tcbuffer)", ret: "tcbuffer", sym: "Temporal_merge", pre: "-- The function is not strict\n"}
+  - lit: "\n"
+  - fns:
+    - {sig: "merge(tcbuffer[])", ret: "tcbuffer", sym: "Temporal_merge_array"}
+  - lit: "\n"
+- family: h3
+  file: mobilitydb/sql/h3/253_th3index.in.sql
+  reference: true
+  begin: "\n * Modification functions\n"
+  end: "CREATE TYPE time_th3index AS ("
+  raw_end: true
+  blocks:
+  - lit: "/******************************************************************************\n * Modification functions\n ******************************************************************************/\n\n"
+  - fns:
+    - {sig: "insert(th3index, th3index, connect boolean DEFAULT TRUE)", ret: "th3index", sym: "Temporal_insert"}
+    - {sig: "update(th3index, th3index, connect boolean DEFAULT TRUE)", ret: "th3index", sym: "Temporal_update"}
+    - {sig: "deleteTime(th3index, timestamptz, connect boolean DEFAULT TRUE)", ret: "th3index", sym: "Temporal_delete_timestamptz"}
+    - {sig: "deleteTime(th3index, tstzset, connect boolean DEFAULT TRUE)", ret: "th3index", sym: "Temporal_delete_tstzset"}
+    - {sig: "deleteTime(th3index, tstzspan, connect boolean DEFAULT TRUE)", ret: "th3index", sym: "Temporal_delete_tstzspan"}
+    - {sig: "deleteTime(th3index, tstzspanset, connect boolean DEFAULT TRUE)", ret: "th3index", sym: "Temporal_delete_tstzspanset"}
+  - lit: "\n"
+- family: json
+  file: mobilitydb/sql/json/452_tjsonb.in.sql
+  reference: true
+  begin: "\n * Modification Functions\n"
+  end: "\n * Multidimensional tiling\n"
+  blocks:
+  - lit: "/*****************************************************************************\n * Modification Functions\n *****************************************************************************/\n\n"
+  - fns:
+    - {sig: "insert(tjsonb, tjsonb, connect boolean DEFAULT TRUE)", ret: "tjsonb", sym: "Temporal_insert"}
+  - lit: "\n"
+  - fns:
+    - {sig: "update(tjsonb, tjsonb, connect boolean DEFAULT TRUE)", ret: "tjsonb", sym: "Temporal_update"}
+  - lit: "\n"
+  - fns:
+    - {sig: "deleteTime(tjsonb, timestamptz, connect boolean DEFAULT TRUE)", ret: "tjsonb", sym: "Temporal_delete_timestamptz"}
+  - lit: "\n"
+  - fns:
+    - {sig: "deleteTime(tjsonb, tstzset, connect boolean DEFAULT TRUE)", ret: "tjsonb", sym: "Temporal_delete_tstzset"}
+  - lit: "\n"
+  - fns:
+    - {sig: "deleteTime(tjsonb, tstzspan, connect boolean DEFAULT TRUE)", ret: "tjsonb", sym: "Temporal_delete_tstzspan"}
+  - lit: "\n"
+  - fns:
+    - {sig: "deleteTime(tjsonb, tstzspanset, connect boolean DEFAULT TRUE)", ret: "tjsonb", sym: "Temporal_delete_tstzspanset"}
+  - lit: "\n"
+  - fns:
+    - {sig: "appendInstant(tjsonb, tjsonb)", ret: "tjsonb", sym: "Temporal_append_tinstant"}
+  - lit: "\n"
+  - fns:
+    - {sig: "appendSequence(tjsonb, tjsonb)", ret: "tjsonb", sym: "Temporal_append_tsequence"}
+  - lit: "\n"
+  - fns:
+    - {sig: "merge(tjsonb, tjsonb)", ret: "tjsonb", sym: "Temporal_merge", pre: "-- The function is not strict\n"}
+  - lit: "\n"
+  - fns:
+    - {sig: "merge(tjsonb[])", ret: "tjsonb", sym: "Temporal_merge_array"}
+  - lit: "\n"
+- family: npoint
+  file: mobilitydb/sql/npoint/302_tnpoint.in.sql
+  reference: true
+  begin: "\n * Modification Functions\n"
+  end: "\n * Multidimensional tiling\n"
+  blocks:
+  - lit: "/*****************************************************************************\n * Modification Functions\n *****************************************************************************/\n\n"
+  - fns:
+    - {sig: "insert(tnpoint, tnpoint, connect boolean DEFAULT TRUE)", ret: "tnpoint", sym: "Temporal_insert"}
+  - lit: "\n"
+  - fns:
+    - {sig: "update(tnpoint, tnpoint, connect boolean DEFAULT TRUE)", ret: "tnpoint", sym: "Temporal_update"}
+  - lit: "\n"
+  - fns:
+    - {sig: "deleteTime(tnpoint, timestamptz, connect boolean DEFAULT TRUE)", ret: "tnpoint", sym: "Temporal_delete_timestamptz"}
+    - {sig: "deleteTime(tnpoint, tstzset, connect boolean DEFAULT TRUE)", ret: "tnpoint", sym: "Temporal_delete_tstzset"}
+    - {sig: "deleteTime(tnpoint, tstzspan, connect boolean DEFAULT TRUE)", ret: "tnpoint", sym: "Temporal_delete_tstzspan"}
+    - {sig: "deleteTime(tnpoint, tstzspanset, connect boolean DEFAULT TRUE)", ret: "tnpoint", sym: "Temporal_delete_tstzspanset"}
+  - lit: "\n"
+- family: tpcpoint
+  file: mobilitydb/sql/pointcloud/420_tpcpoint.in.sql
+  reference: true
+  begin: "\n * Modification functions\n"
+  end: "\n * Unnest\n"
+  blocks:
+  - lit: "/******************************************************************************\n * Modification functions\n ******************************************************************************/\n\n"
+  - fns:
+    - {sig: "insert(tpcpoint, tpcpoint, connect boolean DEFAULT TRUE)", ret: "tpcpoint", sym: "Temporal_insert"}
+    - {sig: "update(tpcpoint, tpcpoint, connect boolean DEFAULT TRUE)", ret: "tpcpoint", sym: "Temporal_update"}
+  - lit: "\n"
+  - fns:
+    - {sig: "deleteTime(tpcpoint, timestamptz, connect boolean DEFAULT TRUE)", ret: "tpcpoint", sym: "Temporal_delete_timestamptz"}
+    - {sig: "deleteTime(tpcpoint, tstzset, connect boolean DEFAULT TRUE)", ret: "tpcpoint", sym: "Temporal_delete_tstzset"}
+    - {sig: "deleteTime(tpcpoint, tstzspan, connect boolean DEFAULT TRUE)", ret: "tpcpoint", sym: "Temporal_delete_tstzspan"}
+    - {sig: "deleteTime(tpcpoint, tstzspanset, connect boolean DEFAULT TRUE)", ret: "tpcpoint", sym: "Temporal_delete_tstzspanset"}
+  - lit: "\n"
+  - fns:
+    - {sig: "appendInstant(tpcpoint, tpcpoint)", ret: "tpcpoint", sym: "Temporal_append_tinstant"}
+    - {sig: "appendSequence(tpcpoint, tpcpoint)", ret: "tpcpoint", sym: "Temporal_append_tsequence"}
+  - lit: "\n"
+- family: tpcpatch
+  file: mobilitydb/sql/pointcloud/430_tpcpatch.in.sql
+  reference: true
+  begin: "\n * Modification functions\n"
+  end: "\n * Unnest\n"
+  blocks:
+  - lit: "/******************************************************************************\n * Modification functions\n ******************************************************************************/\n\n"
+  - fns:
+    - {sig: "insert(tpcpatch, tpcpatch, connect boolean DEFAULT TRUE)", ret: "tpcpatch", sym: "Temporal_insert"}
+    - {sig: "update(tpcpatch, tpcpatch, connect boolean DEFAULT TRUE)", ret: "tpcpatch", sym: "Temporal_update"}
+  - lit: "\n"
+  - fns:
+    - {sig: "deleteTime(tpcpatch, timestamptz, connect boolean DEFAULT TRUE)", ret: "tpcpatch", sym: "Temporal_delete_timestamptz"}
+    - {sig: "deleteTime(tpcpatch, tstzset, connect boolean DEFAULT TRUE)", ret: "tpcpatch", sym: "Temporal_delete_tstzset"}
+    - {sig: "deleteTime(tpcpatch, tstzspan, connect boolean DEFAULT TRUE)", ret: "tpcpatch", sym: "Temporal_delete_tstzspan"}
+    - {sig: "deleteTime(tpcpatch, tstzspanset, connect boolean DEFAULT TRUE)", ret: "tpcpatch", sym: "Temporal_delete_tstzspanset"}
+  - lit: "\n"
+  - fns:
+    - {sig: "appendInstant(tpcpatch, tpcpatch)", ret: "tpcpatch", sym: "Temporal_append_tinstant"}
+    - {sig: "appendSequence(tpcpatch, tpcpatch)", ret: "tpcpatch", sym: "Temporal_append_tsequence"}
+  - lit: "\n"
+- family: pose
+  file: mobilitydb/sql/pose/102_tpose.in.sql
+  reference: true
+  begin: "\n * Modification Functions\n"
+  end: "\n * Multidimensional tiling\n"
+  blocks:
+  - lit: "/*****************************************************************************\n * Modification Functions\n *****************************************************************************/\n\n"
+  - fns:
+    - {sig: "insert(tpose, tpose, connect boolean DEFAULT TRUE)", ret: "tpose", sym: "Temporal_insert"}
+  - lit: "\n"
+  - fns:
+    - {sig: "update(tpose, tpose, connect boolean DEFAULT TRUE)", ret: "tpose", sym: "Temporal_update"}
+  - lit: "\n"
+  - fns:
+    - {sig: "deleteTime(tpose, timestamptz, connect boolean DEFAULT TRUE)", ret: "tpose", sym: "Temporal_delete_timestamptz"}
+  - lit: "\n"
+  - fns:
+    - {sig: "deleteTime(tpose, tstzset, connect boolean DEFAULT TRUE)", ret: "tpose", sym: "Temporal_delete_tstzset"}
+  - lit: "\n"
+  - fns:
+    - {sig: "deleteTime(tpose, tstzspan, connect boolean DEFAULT TRUE)", ret: "tpose", sym: "Temporal_delete_tstzspan"}
+  - lit: "\n"
+  - fns:
+    - {sig: "deleteTime(tpose, tstzspanset, connect boolean DEFAULT TRUE)", ret: "tpose", sym: "Temporal_delete_tstzspanset"}
+  - lit: "\n"
+  - fns:
+    - {sig: "appendInstant(tpose, tpose)", ret: "tpose", sym: "Temporal_append_tinstant"}
+  - lit: "\n"
+  - fns:
+    - {sig: "appendSequence(tpose, tpose)", ret: "tpose", sym: "Temporal_append_tsequence"}
+  - lit: "\n"
+  - fns:
+    - {sig: "merge(tpose, tpose)", ret: "tpose", sym: "Temporal_merge", pre: "-- The function is not strict\n"}
+  - lit: "\n"
+  - fns:
+    - {sig: "merge(tpose[])", ret: "tpose", sym: "Temporal_merge_array"}
+  - lit: "\n"
+- family: quadbin
+  file: mobilitydb/sql/quadbin/353_tquadbin.in.sql
+  reference: true
+  begin: "\n * Modification functions\n"
+  end: "CREATE TYPE time_tquadbin AS ("
+  raw_end: true
+  blocks:
+  - lit: "/******************************************************************************\n * Modification functions\n ******************************************************************************/\n\n"
+  - fns:
+    - {sig: "insert(tquadbin, tquadbin, connect boolean DEFAULT TRUE)", ret: "tquadbin", sym: "Temporal_insert"}
+    - {sig: "update(tquadbin, tquadbin, connect boolean DEFAULT TRUE)", ret: "tquadbin", sym: "Temporal_update"}
+    - {sig: "deleteTime(tquadbin, timestamptz, connect boolean DEFAULT TRUE)", ret: "tquadbin", sym: "Temporal_delete_timestamptz"}
+    - {sig: "deleteTime(tquadbin, tstzset, connect boolean DEFAULT TRUE)", ret: "tquadbin", sym: "Temporal_delete_tstzset"}
+    - {sig: "deleteTime(tquadbin, tstzspan, connect boolean DEFAULT TRUE)", ret: "tquadbin", sym: "Temporal_delete_tstzspan"}
+    - {sig: "deleteTime(tquadbin, tstzspanset, connect boolean DEFAULT TRUE)", ret: "tquadbin", sym: "Temporal_delete_tstzspanset"}
+  - lit: "\n"
+- family: rgeo
+  file: mobilitydb/sql/rgeo/150_trgeo.in.sql
+  reference: true
+  begin: "\n * Modification Functions\n"
+  end: "\n * Multidimensional tiling\n"
+  blocks:
+  - lit: "/*****************************************************************************\n * Modification Functions\n *****************************************************************************/\n\n"
+  - fns:
+    - {sig: "insert(trgeometry, trgeometry, connect boolean DEFAULT TRUE)", ret: "trgeometry", sym: "Temporal_insert"}
+  - lit: "\n"
+  - fns:
+    - {sig: "update(trgeometry, trgeometry, connect boolean DEFAULT TRUE)", ret: "trgeometry", sym: "Temporal_update"}
+  - lit: "\n"
+  - fns:
+    - {sig: "deleteTime(trgeometry, timestamptz, connect boolean DEFAULT TRUE)", ret: "trgeometry", sym: "Temporal_delete_timestamptz"}
+  - lit: "\n"
+  - fns:
+    - {sig: "deleteTime(trgeometry, tstzset, connect boolean DEFAULT TRUE)", ret: "trgeometry", sym: "Temporal_delete_tstzset"}
+  - lit: "\n"
+  - fns:
+    - {sig: "deleteTime(trgeometry, tstzspan, connect boolean DEFAULT TRUE)", ret: "trgeometry", sym: "Temporal_delete_tstzspan"}
+  - lit: "\n"
+  - fns:
+    - {sig: "deleteTime(trgeometry, tstzspanset, connect boolean DEFAULT TRUE)", ret: "trgeometry", sym: "Temporal_delete_tstzspanset"}
+  - lit: "\n"
+  - fns:
+    - {sig: "appendInstant(trgeometry, trgeometry)", ret: "trgeometry", sym: "Temporal_append_tinstant"}
+  - lit: "\n"
+  - fns:
+    - {sig: "appendSequence(trgeometry, trgeometry)", ret: "trgeometry", sym: "Temporal_append_tsequence"}
+  - lit: "\n"
+  - fns:
+    - {sig: "merge(trgeometry, trgeometry)", ret: "trgeometry", sym: "Temporal_merge", strict: false, pre: "-- The function is not strict\n"}
+  - lit: "\n"
+  - fns:
+    - {sig: "merge(trgeometry[])", ret: "trgeometry", sym: "Temporal_merge_array"}
+  - lit: "\n"

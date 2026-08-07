@@ -58,7 +58,7 @@ CREATE FUNCTION mobilitydb_full_version()
  ******************************************************************************/
 
 -- GENERATED-IO-BEGIN temporal — tools/codegen/inherited/generate.py from templates/io_type.sql.tmpl;
--- DO NOT EDIT BY HAND; edit the template + manifest.yaml (io_families) and re-run.
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/io_families.yaml and re-run.
 
 CREATE FUNCTION tbool_in(cstring, oid, integer)
   RETURNS tbool
@@ -491,7 +491,7 @@ CREATE CAST (tfloat AS tbox) WITH FUNCTION tbox(tfloat);
  ******************************************************************************/
 
 -- GENERATED-ACCESSORS-BEGIN temporal — tools/codegen/inherited/generate.py from templates/accessors.sql.tmpl;
--- DO NOT EDIT BY HAND; edit the template + manifest.yaml (accessor_families) and re-run.
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/accessor_families.yaml and re-run.
 
 CREATE FUNCTION tempSubtype(tbool)
   RETURNS text

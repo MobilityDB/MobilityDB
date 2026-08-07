@@ -50,7 +50,7 @@
  */
 
 -- GENERATED-IO-BEGIN h3 — tools/codegen/inherited/generate.py from templates/comparisons.sql.tmpl;
--- DO NOT EDIT BY HAND; edit the template + manifest.yaml (io_families) and re-run.
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/io_families.yaml and re-run.
 CREATE TYPE th3index;
 
 /******************************************************************************
@@ -93,7 +93,7 @@ CREATE TYPE th3index (
 -- GENERATED-IO-END h3
 
 -- GENERATED-REPRESENTATIONS-BEGIN h3 — tools/codegen/inherited/generate.py from templates/representations.sql.tmpl;
--- DO NOT EDIT BY HAND; edit the template + manifest.yaml (representation_families) and re-run.
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/representation_families.yaml and re-run.
 /******************************************************************************
  * Text and (Hex)WKB I/O (mirrors the tcbuffer / tnpoint / tpose plug-in types)
  ******************************************************************************/
@@ -287,7 +287,7 @@ CREATE FUNCTION tsample(th3index, duration interval,
  ******************************************************************************/
 
 -- GENERATED-ACCESSORS-BEGIN h3 — tools/codegen/inherited/generate.py from templates/accessors.sql.tmpl;
--- DO NOT EDIT BY HAND; edit the template + manifest.yaml (accessor_families) and re-run.
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/accessor_families.yaml and re-run.
 
 CREATE FUNCTION tempSubtype(th3index)
   RETURNS text

@@ -1,0 +1,422 @@
+# The base Temporal<T> file ALSO declares the constructor surface for every base
+# scalar type (tbool/tint/tbigint/tfloat/ttext), mirroring the spatial/cell
+# families' shape but with a twist the family-level span_interp/gaps_maxdist
+# flags cannot express: within this ONE family the interpolation default is
+# per-type, not per-family (tfloat alone is continuous/'linear', the other four
+# are discrete/'step'), and the SeqSetGaps maxdist argument is per-type too
+# (present for the three numeric types tint/tbigint/tfloat, absent for
+# tbool/ttext, with only tfloat additionally carrying the trailing interpolation
+# text arg). Instant/from_tstzset/SeqSet are uniform across all five types (no
+# interpolation argument anywhere) and fit the generic `ops` mechanism over a
+# flat five-pair `pairs:` list; from_tstzspan/from_tstzspanset/Seq/SeqSetGaps
+# vary per type and are spelled as explicit `fns` blocks, reproduced byte-exact
+# from the hand file (SeqSetGaps keeps its `-- The function is not strict`
+# marker on the first entry only, exactly as the generic seqsetgaps op does).
+constructor_families:
+- family: temporal
+  file: mobilitydb/sql/temporal/022_temporal.in.sql
+  reference: true
+  begin: "\n * Constructor functions\n"
+  end: "\n * Conversion functions\n"
+  pairs:
+  - base: boolean
+    temp: tbool
+  - base: integer
+    temp: tint
+  - base: bigint
+    temp: tbigint
+  - base: float
+    temp: tfloat
+  - base: text
+    temp: ttext
+  blocks:
+  - lit: "/******************************************************************************\n * Constructor functions\n ******************************************************************************/"
+  - ops:
+    - instant
+  - ops:
+    - from_tstzset
+  - fns:
+    - sig: tbool(boolean, tstzspan)
+      ret: tbool
+      sym: Tsequence_from_base_tstzspan
+    - sig: tint(integer, tstzspan)
+      ret: tint
+      sym: Tsequence_from_base_tstzspan
+    - sig: tbigint(bigint, tstzspan)
+      ret: tbigint
+      sym: Tsequence_from_base_tstzspan
+    - sig: "tfloat(float, tstzspan, text DEFAULT 'linear')"
+      ret: tfloat
+      sym: Tsequence_from_base_tstzspan
+    - sig: ttext(text, tstzspan)
+      ret: ttext
+      sym: Tsequence_from_base_tstzspan
+  - fns:
+    - sig: tbool(boolean, tstzspanset)
+      ret: tbool
+      sym: Tsequenceset_from_base_tstzspanset
+    - sig: tint(integer, tstzspanset)
+      ret: tint
+      sym: Tsequenceset_from_base_tstzspanset
+    - sig: tbigint(bigint, tstzspanset)
+      ret: tbigint
+      sym: Tsequenceset_from_base_tstzspanset
+    - sig: "tfloat(float, tstzspanset, text DEFAULT 'linear')"
+      ret: tfloat
+      sym: Tsequenceset_from_base_tstzspanset
+    - sig: ttext(text, tstzspanset)
+      ret: ttext
+      sym: Tsequenceset_from_base_tstzspanset
+  - lit: /******************************************************************************/
+  - fns:
+    - sig: "tboolSeq(tbool[], text DEFAULT 'step',\n    lowerInc boolean DEFAULT true, upperInc boolean DEFAULT true)"
+      ret: tbool
+      sym: Tsequence_constructor
+    - sig: "tintSeq(tint[], text DEFAULT 'step',\n    lowerInc boolean DEFAULT true, upperInc boolean DEFAULT true)"
+      ret: tint
+      sym: Tsequence_constructor
+    - sig: "tbigintSeq(tbigint[], text DEFAULT 'step',\n    lowerInc boolean DEFAULT true, upperInc boolean DEFAULT true)"
+      ret: tbigint
+      sym: Tsequence_constructor
+    - sig: "tfloatSeq(tfloat[], text DEFAULT 'linear',\n    lowerInc boolean DEFAULT true, upperInc boolean DEFAULT true)"
+      ret: tfloat
+      sym: Tsequence_constructor
+    - sig: "ttextSeq(ttext[], text DEFAULT 'step',\n    lowerInc boolean DEFAULT true, upperInc boolean DEFAULT true)"
+      ret: ttext
+      sym: Tsequence_constructor
+  - ops:
+    - seqset
+  - fns:
+    - sig: tboolSeqSetGaps(tbool[], maxt interval DEFAULT NULL)
+      ret: tbool
+      sym: Tsequenceset_constructor_gaps
+      strict: false
+      pre: '-- The function is not strict
+
+        '
+    - sig: "tintSeqSetGaps(tint[], maxt interval DEFAULT NULL,\n    maxdist float DEFAULT NULL)"
+      ret: tint
+      sym: Tsequenceset_constructor_gaps
+      strict: false
+    - sig: "tbigintSeqSetGaps(tbigint[], maxt interval DEFAULT NULL,\n    maxdist float DEFAULT NULL)"
+      ret: tbigint
+      sym: Tsequenceset_constructor_gaps
+      strict: false
+    - sig: "tfloatSeqSetGaps(tfloat[], maxt interval DEFAULT NULL,\n    maxdist float DEFAULT NULL, text DEFAULT 'linear')"
+      ret: tfloat
+      sym: Tsequenceset_constructor_gaps
+      strict: false
+    - sig: ttextSeqSetGaps(ttext[], maxt interval DEFAULT NULL)
+      ret: ttext
+      sym: Tsequenceset_constructor_gaps
+      strict: false
+- family: geo
+  file: mobilitydb/sql/geo/052_tgeo.in.sql
+  reference: true
+  begin: "\n * Constructors\n"
+  end: "\n * Conversions\n"
+  interp: step
+  span_interp: true
+  gaps_maxdist: true
+  syms:
+    instant: Tgeoinst_constructor
+  pairs:
+  - base: geometry
+    temp: tgeometry
+  - base: geography
+    temp: tgeography
+  blocks:
+  - lit: "/******************************************************************************\n * Constructors\n ******************************************************************************/"
+  - ops:
+    - instant
+  - ops:
+    - from_tstzset
+  - ops:
+    - from_tstzspan
+  - ops:
+    - from_tstzspanset
+  - lit: /******************************************************************************/
+  - ops:
+    - seq
+  - ops:
+    - seqset
+  - ops:
+    - seqsetgaps
+- family: tpoint
+  file: mobilitydb/sql/geo/052_tpoint.in.sql
+  reference: true
+  begin: "\n * Constructors\n"
+  end: "\n * Conversions\n"
+  interp: linear
+  span_interp: true
+  gaps_maxdist: true
+  syms:
+    instant: Tpointinst_constructor
+  pairs:
+  - base: geometry
+    temp: tgeompoint
+    ibase: geometry(Point)
+  - base: geography
+    temp: tgeogpoint
+    ibase: geography(Point)
+  blocks:
+  - lit: "/******************************************************************************\n * Constructors\n ******************************************************************************/"
+  - ops:
+    - instant
+  - ops:
+    - from_tstzset
+  - ops:
+    - from_tstzspan
+  - ops:
+    - from_tstzspanset
+  - lit: /******************************************************************************/
+  - ops:
+    - seq
+  - ops:
+    - seqset
+  - ops:
+    - seqsetgaps
+- family: cbuffer
+  file: mobilitydb/sql/cbuffer/202_tcbuffer.in.sql
+  reference: true
+  begin: "\n * Constructors\n"
+  end: "\n * Conversions\n"
+  interp: linear
+  span_interp: true
+  gaps_maxdist: true
+  pairs:
+  - base: cbuffer
+    temp: tcbuffer
+  blocks:
+  - lit: "/*****************************************************************************\n * Constructors\n *****************************************************************************/"
+  - ops:
+    - instant
+  - ops:
+    - from_tstzset
+  - ops:
+    - from_tstzspan
+  - ops:
+    - from_tstzspanset
+  - lit: /*****************************************************************************/
+  - ops:
+    - seq
+  - ops:
+    - seqset
+  - ops:
+    - seqsetgaps
+  - lit: /*****************************************************************************/
+  - fns:
+    - sig: tcbuffer(tgeompoint, tfloat)
+      ret: tcbuffer
+      sym: Tcbuffer_constructor
+- family: h3
+  file: mobilitydb/sql/h3/253_th3index.in.sql
+  reference: true
+  begin: "\n * Constructors\n"
+  end: "\n * Transformations\n"
+  interp: step
+  span_interp: false
+  gaps_maxdist: false
+  inc: camel
+  pairs:
+  - base: h3index
+    temp: th3index
+  blocks:
+  - lit: "/******************************************************************************\n * Constructors\n *\n * Inherited Temporal<T> surface wired to the generic constructor symbols\n * (the value Datum carries the h3 cell, dispatch is on the base oid).\n * `th3index` has step interpolation only, so the from-span and array\n * constructors take no interpolation argument / default to `'step'`, and a\n * cell has no scalar-distance metric so `th3indexSeqSetGaps` exposes only the\n * time gap (the `tbigint` / `ttext` form, not the continuous `tcbuffer` one).\n ******************************************************************************/"
+  - ops:
+    - instant
+    - from_tstzset
+    - from_tstzspan
+    - from_tstzspanset
+  - ops:
+    - seq
+    - seqset
+    - seqsetgaps
+- family: json
+  file: mobilitydb/sql/json/452_tjsonb.in.sql
+  reference: true
+  begin: "\n * Constructors\n"
+  end: "\n * Conversions\n"
+  interp: step
+  span_interp: false
+  gaps_maxdist: false
+  inc: camel
+  pairs:
+  - base: jsonb
+    temp: tjsonb
+  blocks:
+  - lit: "/*****************************************************************************\n * Constructors\n *****************************************************************************/"
+  - ops:
+    - instant
+  - ops:
+    - from_tstzset
+  - ops:
+    - from_tstzspan
+  - ops:
+    - from_tstzspanset
+  - lit: "  \n/*****************************************************************************/"
+    glue: true
+  - ops:
+    - seq
+  - ops:
+    - seqset
+  - ops:
+    - seqsetgaps
+- family: npoint
+  file: mobilitydb/sql/npoint/302_tnpoint.in.sql
+  reference: true
+  begin: "\n * Constructors\n"
+  end: "\n * Cast functions\n"
+  interp: linear
+  span_interp: true
+  gaps_maxdist: true
+  pairs:
+  - base: npoint
+    temp: tnpoint
+  blocks:
+  - lit: "/******************************************************************************\n * Constructors\n ******************************************************************************/"
+  - ops:
+    - instant
+    - from_tstzset
+    - from_tstzspan
+    - from_tstzspanset
+  - lit: /******************************************************************************/
+  - ops:
+    - seq
+    - seqset
+    - seqsetgaps
+- family: tpcpoint
+  file: mobilitydb/sql/pointcloud/420_tpcpoint.in.sql
+  reference: true
+  begin: "\n * Constructors\n"
+  end: "\n * Accessors"
+  interp: step
+  span_interp: true
+  pairs:
+  - base: pcpoint
+    temp: tpcpoint
+  blocks:
+  - lit: "/******************************************************************************\n * Constructors\n ******************************************************************************/"
+  - ops:
+    - instant
+  - ops:
+    - from_tstzset
+  - ops:
+    - op: from_tstzspan
+      pre: '-- Interpolation default ''step'' to match tpcpoint''s natural semantics.
+
+        '
+  - ops:
+    - from_tstzspanset
+  - ops:
+    - seq
+  - ops:
+    - seqset
+- family: tpcpatch
+  file: mobilitydb/sql/pointcloud/430_tpcpatch.in.sql
+  reference: true
+  begin: "\n * Constructors\n"
+  end: "\n * Accessors\n"
+  interp: step
+  span_interp: true
+  pairs:
+  - base: pcpatch
+    temp: tpcpatch
+  blocks:
+  - lit: "/******************************************************************************\n * Constructors\n ******************************************************************************/"
+  - ops:
+    - instant
+  - ops:
+    - from_tstzset
+  - ops:
+    - from_tstzspan
+  - ops:
+    - from_tstzspanset
+  - ops:
+    - seq
+  - ops:
+    - seqset
+- family: pose
+  file: mobilitydb/sql/pose/102_tpose.in.sql
+  reference: true
+  begin: "\n * Constructors\n"
+  end: "\n * Conversions\n"
+  interp: linear
+  span_interp: true
+  gaps_maxdist: true
+  gaps_interp: step
+  pairs:
+  - base: pose
+    temp: tpose
+  blocks:
+  - lit: "/******************************************************************************\n * Constructors\n ******************************************************************************/"
+  - ops:
+    - instant
+  - ops:
+    - from_tstzset
+  - ops:
+    - from_tstzspan
+  - ops:
+    - from_tstzspanset
+  - lit: /******************************************************************************/
+  - ops:
+    - seq
+  - ops:
+    - seqset
+  - ops:
+    - seqsetgaps
+- family: quadbin
+  file: mobilitydb/sql/quadbin/353_tquadbin.in.sql
+  reference: true
+  begin: "\n * Constructors\n"
+  end: "\n * Transformations\n"
+  interp: step
+  span_interp: false
+  gaps_maxdist: false
+  inc: camel
+  pairs:
+  - base: quadbin
+    temp: tquadbin
+  blocks:
+  - lit: "/******************************************************************************\n * Constructors\n *\n * Inherited Temporal<T> surface wired to the generic constructor symbols\n * (the value Datum carries the quadbin cell, dispatch is on the base oid).\n * `tquadbin` has step interpolation only, so the from-span and array\n * constructors take no interpolation argument / default to `'step'`, and a\n * cell has no scalar-distance metric so `tquadbinSeqSetGaps` exposes only the\n * time gap (the `tbigint` / `ttext` form, not the continuous `tcbuffer` one).\n ******************************************************************************/"
+  - ops:
+    - instant
+    - from_tstzset
+    - from_tstzspan
+    - from_tstzspanset
+  - ops:
+    - seq
+    - seqset
+    - seqsetgaps
+- family: rgeo
+  file: mobilitydb/sql/rgeo/150_trgeo.in.sql
+  reference: true
+  begin: "\n * Constructors\n"
+  end: "\n * Conversion functions\n"
+  interp: linear
+  span_interp: false
+  gaps_maxdist: true
+  syms:
+    instant: Trgeometry_inst_constructor
+    seq: Trgeometry_seq_constructor
+    seqset: Trgeometry_seqset_constructor
+    seqsetgaps: Trgeometry_seqset_constructor_gaps
+  pairs:
+  - base: geometry
+    temp: trgeometry
+    ibase: geometry, pose
+  blocks:
+  - lit: "/******************************************************************************\n * Constructors\n ******************************************************************************/"
+  - ops:
+    - instant
+  - ops:
+    - seq
+  - ops:
+    - seqset
+  - ops:
+    - seqsetgaps
+  - lit: /*****************************************************************************/
+  - fns:
+    - sig: trgeometry(geometry, tpose)
+      ret: trgeometry
+      sym: Trgeometry_constructor

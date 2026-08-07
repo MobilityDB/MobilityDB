@@ -11,7 +11,7 @@
 > temporal classes, and `doc/set_span_types.xml` for the value-domain classes
 > `Set<T>` / `Span<T>` / `SpanSet<T>` (§9). This document is a working draft to
 > revise together; every claim below cites live source. The generated/hand status of
-> each section is read from `manifest.yaml` (the axis and its entry count), so the table
+> each section is read from `manifest.d/` (the axis and its entry count), so the table
 > and the generator cannot drift apart silently.
 
 ---
@@ -89,7 +89,7 @@ Temporal<T>              temporal_type      = ALL temporal types            (cat
 is the one canonical generator for the inherited operator surface. It is wired
 into CI (`check-codegen.yml`, `--validate`/`--check`). It has **two output modes**:
 
-- **whole-file SQL** at a fixed 50-bin position (`positions:` in `manifest.yaml`):
+- **whole-file SQL** at a fixed 50-bin position (`positions:` in `manifest.d/positions.yaml`):
   emits a complete `NNN_<family>_<behaviour>.in.sql`.
 - **region-in-file** for C: emits the block between
   `GENERATED-BOXOPS-BEGIN/END` and `GENERATED-SPATIALRELS-BEGIN/END` markers.
@@ -399,7 +399,7 @@ The generic inherited Tcell API (`tcellindex.h:139-145`):
 | catalog predicate `tcellindex_type()` | **quadbin only** (`#if QUADBIN → T_TQUADBIN`, `tcellindex.c:63`). **th3index is NOT wired** — it uses its own libh3 surface |
 | descriptor registered | `quadbin_cellops` (`meos/src/quadbin/tquadbin_ops.c:132`) — **no `h3_cellops`** |
 | SQL wrappers (cellResolution/isValidCell/cellToParent/cellToPoint/cellToBoundary/cellArea) | **per-family HAND** in the `spatialfuncs` slot: h3 `255_th3index_spatialfuncs`, quadbin `355_tquadbin_spatialfuncs`; names are family-prefixed (`th3CellToBoundary` / `tquadbin…`) |
-| cell→boundary hook | the key inherited hook: `spatialrels.sql.tmpl` cast-delegates via `<fam>CellToBoundary($n)::tgeometry` (`manifest.yaml` `boundary_fn`) — this IS generated (§6, h3 262 / quadbin 362) |
+| cell→boundary hook | the key inherited hook: `spatialrels.sql.tmpl` cast-delegates via `<fam>CellToBoundary($n)::tgeometry` (`manifest.d/` `boundary_fn`) — this IS generated (§6, h3 262 / quadbin 362) |
 
 ⇒ **Gap**: `th3index` should be migrated onto the `DggsCellOps` descriptor +
 `tcellindex_type()` (add `#if H3 → T_TH3INDEX` and an `h3_cellops`) so both cell
@@ -409,7 +409,7 @@ generated from a `tcellindex` template instead of hand-written twice.
 ## 6. Per-family gap — every inherited `.in.sql` file, generated vs hand
 
 Each cell = the live file number (`mobilitydb/sql/<fam>/`). **Bold** = the
-file is emitted by the generator today (in that subtype's `manifest.yaml` `files:`);
+file is emitted by the generator today (in that subtype's `manifest.d/` `files:`);
 plain = the file exists but is still hand-maintained.
 
 | family | compops | spatialfuncs | topops | posops | distance | aggfuncs | spatialrels | tempsp.rels | idx / gist·spgist | boxops |
@@ -442,7 +442,7 @@ Reading the table:
 ## 7. The gap (roadmap, most-mechanical first)
 
 **A. Widen coverage of already-generated behaviours** (templates exist, just wire
-more subtypes in `manifest.yaml`):
+more subtypes in `manifest.d/`):
 - Add compops/topops/posops to `tpose`, `trgeometry` (today: indexes-only).
 - Add spatialrels wiring for cbuffer/npoint/pose/rgeo (today: geo + h3/quadbin).
 
@@ -549,7 +549,7 @@ bounding box). `pointcloudset_type()` :951-955 = pcpointset, pcpatchset — NOT
 
 Per class: ✓ GEN = the section's SQL is generator-governed (a `reference: true`
 manifest entry re-renders it byte-for-byte under `--validate`; the `axis`
-column names the `manifest.yaml` key) · ✗ HAND = hand-maintained.
+column names the `manifest.d/` key) · ✗ HAND = hand-maintained.
 
 | `<sect1>` (doc line) | `Set<T>` | `Span<T>` | `SpanSet<T>` | axis |
 |---|---|---|---|---|
@@ -614,7 +614,7 @@ transformation, SRS and setUnion sections are governed by the region-in-file
 
 ### 9.6 What the `setfamilies:` manifest axis encodes
 
-The `setfamilies:` axis (`manifest.yaml:3012`) carries one row per set type
+The `setfamilies:` axis (`manifest.d/setfamilies.yaml`) carries one row per set type
 with the classification tokens of `Set<T>`. It is the descriptive table whose
 flags the per-surface set axes implement as deployment gates.
 

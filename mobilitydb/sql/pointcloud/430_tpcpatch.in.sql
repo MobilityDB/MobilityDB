@@ -47,7 +47,7 @@
  */
 
 -- GENERATED-IO-BEGIN pointcloud_patch — tools/codegen/inherited/generate.py from templates/comparisons.sql.tmpl;
--- DO NOT EDIT BY HAND; edit the template + manifest.yaml (io_families) and re-run.
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/io_families.yaml and re-run.
 CREATE TYPE tpcpatch;
 
 /******************************************************************************
@@ -95,7 +95,7 @@ CREATE CAST (tpcpatch AS tpcpatch)
 -- GENERATED-IO-END pointcloud_patch
 
 -- GENERATED-REPRESENTATIONS-BEGIN pointcloud_patch — tools/codegen/inherited/generate.py from templates/representations.sql.tmpl;
--- DO NOT EDIT BY HAND; edit the template + manifest.yaml (representation_families) and re-run.
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/representation_families.yaml and re-run.
 /******************************************************************************
  * WKB / HexWKB helpers
  ******************************************************************************/
@@ -203,7 +203,7 @@ CREATE FUNCTION tpcpatchSeqSet(tpcpatch[])
  ******************************************************************************/
 
 -- GENERATED-ACCESSORS-BEGIN pointcloud_patch — tools/codegen/inherited/generate.py from templates/accessors.sql.tmpl;
--- DO NOT EDIT BY HAND; edit the template + manifest.yaml (accessor_families) and re-run.
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/accessor_families.yaml and re-run.
 
 CREATE FUNCTION tempSubtype(tpcpatch)
   RETURNS text

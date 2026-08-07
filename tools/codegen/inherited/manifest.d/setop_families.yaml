@@ -1,0 +1,207 @@
+setop_families:
+- family: set
+  file: mobilitydb/sql/temporal/002_set_ops.in.sql
+  reference: true
+  begin: "CREATE FUNCTION setUnion(integer"
+  end: "CREATE FUNCTION setDistance("
+  pairs: [[integer, intset], [bigint, bigintset], [float, floatset], [text, textset], [date, dateset], [timestamptz, tstzset]]
+  blocks:
+  - lit: "/*****************************************************************************/\n\n"
+  - setfns: union
+  - lit: "\n"
+  - setops: union
+  - lit: "\n/*****************************************************************************/\n\n"
+  - setfns: minus
+  - lit: "\n"
+  - setops: minus
+  - lit: "\n/*****************************************************************************/\n\n"
+  - setfns: intersection
+  - lit: "\n"
+  - setops: intersection
+  - lit: "\n"
+- family: geoset
+  file: mobilitydb/sql/geo/050_geoset.in.sql
+  reference: true
+  value_returns: true
+  begin: "CREATE FUNCTION setUnion(geometry,"
+  end: "CREATE FUNCTION setDistance("
+  pairs: [[geometry, geomset], [geography, geogset]]
+  blocks:
+  - lit: "/*****************************************************************************/\n\n"
+  - setfns: union
+  - lit: "\n"
+  - setops: union
+  - lit: "\n/*****************************************************************************/\n\n"
+  - setfns: minus
+  - lit: "\n"
+  - setops: minus
+  - lit: "\n/*****************************************************************************/\n\n"
+  - setfns: intersection
+  - lit: "\n"
+  - setops: intersection
+  - lit: "\n"
+- family: cbufferset
+  file: mobilitydb/sql/cbuffer/201_cbufferset.in.sql
+  reference: true
+  value_returns: true
+  begin: "CREATE FUNCTION setUnion(cbuffer,"
+  end: "CREATE FUNCTION setDistance("
+  pairs: [[cbuffer, cbufferset]]
+  blocks:
+  - lit: "/*****************************************************************************/\n\n"
+  - setfns: union
+  - lit: "\n"
+  - setops: union
+  - lit: "\n/*****************************************************************************/\n\n"
+  - setfns: minus
+  - lit: "\n"
+  - setops: minus
+  - lit: "\n/*****************************************************************************/\n\n"
+  - setfns: intersection
+  - lit: "\n"
+  - setops: intersection
+  - lit: "\n"
+- family: h3indexset
+  file: mobilitydb/sql/h3/251_h3indexset.in.sql
+  reference: true
+  begin: "CREATE FUNCTION setUnion(h3index,"
+  whole_file: true
+  pairs: [[h3index, h3indexset]]
+  blocks:
+  - lit: "/******************************************************************************\n * set union +\n ******************************************************************************/\n\n"
+  - setfns: union
+  - lit: "\n"
+  - setops: union
+  - lit: "\n/******************************************************************************\n * set difference -\n ******************************************************************************/\n\n"
+  - setfns: minus
+  - lit: "\n"
+  - setops: minus
+  - lit: "\n/******************************************************************************\n * set intersection *\n ******************************************************************************/\n\n"
+  - setfns: intersection
+  - lit: "\n"
+  - setops: intersection
+  - lit: "\n/******************************************************************************/\n"
+- family: jsonbset
+  file: mobilitydb/sql/json/450_jsonbset.in.sql
+  reference: true
+  value_returns: true
+  begin: "CREATE FUNCTION setUnion(jsonb,"
+  whole_file: true
+  pairs: [[jsonb, jsonbset]]
+  blocks:
+  - lit: "/*****************************************************************************/\n\n"
+  - setfns: union
+  - lit: "\n"
+  - setops: union
+  - lit: "\n/*****************************************************************************/\n\n"
+  - setfns: minus
+  - lit: "\n"
+  - setops: minus
+  - lit: "\n/*****************************************************************************/\n\n"
+  - setfns: intersection
+  - lit: "\n"
+  - setops: intersection
+  - lit: "\n/*****************************************************************************/\n"
+- family: npointset
+  file: mobilitydb/sql/npoint/301_npointset.in.sql
+  reference: true
+  value_returns: true
+  begin: "CREATE FUNCTION setUnion(npoint,"
+  end: "CREATE FUNCTION setDistance("
+  pairs: [[npoint, npointset]]
+  blocks:
+  - lit: "/*****************************************************************************/\n\n"
+  - setfns: union
+  - lit: "\n"
+  - setops: union
+  - lit: "\n/*****************************************************************************/\n\n"
+  - setfns: minus
+  - lit: "\n"
+  - setops: minus
+  - lit: "\n/*****************************************************************************/\n\n"
+  - setfns: intersection
+  - lit: "\n"
+  - setops: intersection
+  - lit: "\n"
+- family: pcpointset
+  file: mobilitydb/sql/pointcloud/400_pcset.in.sql
+  reference: true
+  value_returns: true
+  begin: "CREATE FUNCTION setUnion(pcpoint,"
+  begin_exact: true
+  end: "\n * pcpatchset \u2014 Input / output\n"
+  pairs: [[pcpoint, pcpointset]]
+  blocks:
+  - setfns: union
+  - lit: "\n"
+  - setops: union
+  - lit: "\n"
+  - setfns: minus
+  - lit: "\n"
+  - setops: minus
+  - lit: "\n"
+  - setfns: intersection
+  - lit: "\n"
+  - setops: intersection
+  - lit: "\n"
+- family: pcpatchset
+  file: mobilitydb/sql/pointcloud/400_pcset.in.sql
+  reference: true
+  value_returns: true
+  begin: "CREATE FUNCTION setUnion(pcpatch,"
+  begin_exact: true
+  whole_file: true
+  pairs: [[pcpatch, pcpatchset]]
+  blocks:
+  - setfns: union
+  - lit: "\n"
+  - setops: union
+  - lit: "\n"
+  - setfns: minus
+  - lit: "\n"
+  - setops: minus
+  - lit: "\n"
+  - setfns: intersection
+  - lit: "\n"
+  - setops: intersection
+  - lit: "\n/*****************************************************************************/\n"
+- family: poseset
+  file: mobilitydb/sql/pose/101_poseset.in.sql
+  reference: true
+  value_returns: true
+  begin: "CREATE FUNCTION setUnion(pose,"
+  end: "CREATE FUNCTION setDistance("
+  pairs: [[pose, poseset]]
+  blocks:
+  - lit: "/*****************************************************************************/\n\n"
+  - setfns: union
+  - lit: "\n"
+  - setops: union
+  - lit: "\n/*****************************************************************************/\n\n"
+  - setfns: minus
+  - lit: "\n"
+  - setops: minus
+  - lit: "\n/*****************************************************************************/\n\n"
+  - setfns: intersection
+  - lit: "\n"
+  - setops: intersection
+  - lit: "\n"
+- family: quadbinset
+  file: mobilitydb/sql/quadbin/351_quadbinset.in.sql
+  reference: true
+  begin: "CREATE FUNCTION setUnion(quadbin,"
+  whole_file: true
+  pairs: [[quadbin, quadbinset]]
+  blocks:
+  - lit: "/******************************************************************************\n * set union +\n ******************************************************************************/\n\n"
+  - setfns: union
+  - lit: "\n"
+  - setops: union
+  - lit: "\n/******************************************************************************\n * set difference -\n ******************************************************************************/\n\n"
+  - setfns: minus
+  - lit: "\n"
+  - setops: minus
+  - lit: "\n/******************************************************************************\n * set intersection *\n ******************************************************************************/\n\n"
+  - setfns: intersection
+  - lit: "\n"
+  - setops: intersection

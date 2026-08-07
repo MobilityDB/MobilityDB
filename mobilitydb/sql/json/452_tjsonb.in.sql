@@ -33,7 +33,7 @@
  */
 
 -- GENERATED-IO-BEGIN json — tools/codegen/inherited/generate.py from templates/comparisons.sql.tmpl;
--- DO NOT EDIT BY HAND; edit the template + manifest.yaml (io_families) and re-run.
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/io_families.yaml and re-run.
 CREATE TYPE tjsonb;
 
 /*****************************************************************************
@@ -81,7 +81,7 @@ CREATE CAST (tjsonb AS tjsonb) WITH FUNCTION tjsonb(tjsonb, integer) AS IMPLICIT
 -- GENERATED-IO-END json
 
 -- GENERATED-REPRESENTATIONS-BEGIN json — tools/codegen/inherited/generate.py from templates/representations.sql.tmpl;
--- DO NOT EDIT BY HAND; edit the template + manifest.yaml (representation_families) and re-run.
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/representation_families.yaml and re-run.
 /*****************************************************************************
  * Input/output from WKT, WKB, HexWKB, and MFJSON representation
  *****************************************************************************/
@@ -205,7 +205,7 @@ CREATE CAST (ttext AS tjsonb) WITH FUNCTION tjsonb(ttext);
 -- Accessors for all temporal types
 
 -- GENERATED-ACCESSORS-BEGIN json — tools/codegen/inherited/generate.py from templates/accessors.sql.tmpl;
--- DO NOT EDIT BY HAND; edit the template + manifest.yaml (accessor_families) and re-run.
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/accessor_families.yaml and re-run.
 
 CREATE FUNCTION tempSubtype(tjsonb)
   RETURNS text
