@@ -1,0 +1,625 @@
+/*****************************************************************************
+ *
+ * This MobilityDB code is provided under The PostgreSQL License.
+ * Copyright (c) 2016-2026, Université libre de Bruxelles and MobilityDB
+ * contributors
+ *
+ * MobilityDB includes portions of PostGIS version 3 source code released
+ * under the GNU General Public License (GPLv2 or later).
+ * Copyright (c) 2001-2025, PostGIS contributors
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose, without fee, and without a written
+ * agreement is hereby granted, provided that the above copyright notice and
+ * this paragraph and the following two paragraphs appear in all copies.
+ *
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
+ * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
+ * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
+ * OF SUCH DAMAGE.
+ *
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
+ * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+ *
+ *****************************************************************************/
+
+/**
+ * @file
+ * @brief Bounding box operators for temporal points
+ */
+
+/*****************************************************************************
+ * Contains
+ *****************************************************************************/
+
+CREATE FUNCTION contains(tstzspan, tgeompoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contains_tstzspan_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION contains(tgeompoint, tstzspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contains_temporal_tstzspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR @> (
+  PROCEDURE = contains,
+  LEFTARG = tstzspan, RIGHTARG = tgeompoint,
+  COMMUTATOR = <@,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR @> (
+  PROCEDURE = contains,
+  LEFTARG = tgeompoint, RIGHTARG = tstzspan,
+  COMMUTATOR = <@,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+
+/*****************************************************************************/
+
+CREATE FUNCTION contains(tstzspan, tgeogpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contains_tstzspan_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION contains(tgeogpoint, tstzspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contains_temporal_tstzspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR @> (
+  PROCEDURE = contains,
+  LEFTARG = tstzspan, RIGHTARG = tgeogpoint,
+  COMMUTATOR = <@,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR @> (
+  PROCEDURE = contains,
+  LEFTARG = tgeogpoint, RIGHTARG = tstzspan,
+  COMMUTATOR = <@,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+
+/*****************************************************************************/
+
+CREATE FUNCTION contains(stbox, tgeompoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contains_stbox_tspatial'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION contains(tgeompoint, stbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contains_tspatial_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION contains(tgeompoint, tgeompoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contains_tspatial_tspatial'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR @> (
+  PROCEDURE = contains,
+  LEFTARG = stbox, RIGHTARG = tgeompoint,
+  COMMUTATOR = <@,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR @> (
+  PROCEDURE = contains,
+  LEFTARG = tgeompoint, RIGHTARG = stbox,
+  COMMUTATOR = <@,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR @> (
+  PROCEDURE = contains,
+  LEFTARG = tgeompoint, RIGHTARG = tgeompoint,
+  COMMUTATOR = <@,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+
+/*****************************************************************************/
+
+CREATE FUNCTION contains(stbox, tgeogpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contains_stbox_tspatial'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION contains(tgeogpoint, stbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contains_tspatial_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION contains(tgeogpoint, tgeogpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contains_tspatial_tspatial'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR @> (
+  PROCEDURE = contains,
+  LEFTARG = stbox, RIGHTARG = tgeogpoint,
+  COMMUTATOR = <@,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR @> (
+  PROCEDURE = contains,
+  LEFTARG = tgeogpoint, RIGHTARG = stbox,
+  COMMUTATOR = <@,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR @> (
+  PROCEDURE = contains,
+  LEFTARG = tgeogpoint, RIGHTARG = tgeogpoint,
+  COMMUTATOR = <@,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+
+/*****************************************************************************
+ * Contained
+ *****************************************************************************/
+
+CREATE FUNCTION contained(tstzspan, tgeompoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contained_tstzspan_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION contained(tgeompoint, tstzspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contained_temporal_tstzspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR <@ (
+  PROCEDURE = contained,
+  LEFTARG = tstzspan, RIGHTARG = tgeompoint,
+  COMMUTATOR = @>,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR <@ (
+  PROCEDURE = contained,
+  LEFTARG = tgeompoint, RIGHTARG = tstzspan,
+  COMMUTATOR = @>,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+
+/*****************************************************************************/
+
+CREATE FUNCTION contained(stbox, tgeompoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contained_stbox_tspatial'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION contained(tgeompoint, stbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contained_tspatial_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION contained(tgeompoint, tgeompoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contained_tspatial_tspatial'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR <@ (
+  PROCEDURE = contained,
+  LEFTARG = stbox, RIGHTARG = tgeompoint,
+  COMMUTATOR = @>,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR <@ (
+  PROCEDURE = contained,
+  LEFTARG = tgeompoint, RIGHTARG = stbox,
+  COMMUTATOR = @>,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR <@ (
+  PROCEDURE = contained,
+  LEFTARG = tgeompoint, RIGHTARG = tgeompoint,
+  COMMUTATOR = @>,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+
+/*****************************************************************************/
+
+CREATE FUNCTION contained(tstzspan, tgeogpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contained_tstzspan_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION contained(tgeogpoint, tstzspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contained_temporal_tstzspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR <@ (
+  PROCEDURE = contained,
+  LEFTARG = tstzspan, RIGHTARG = tgeogpoint,
+  COMMUTATOR = @>,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR <@ (
+  PROCEDURE = contained,
+  LEFTARG = tgeogpoint, RIGHTARG = tstzspan,
+  COMMUTATOR = @>,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+
+/*****************************************************************************/
+
+CREATE FUNCTION contained(stbox, tgeogpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contained_stbox_tspatial'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION contained(tgeogpoint, stbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contained_tspatial_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION contained(tgeogpoint, tgeogpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contained_tspatial_tspatial'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR <@ (
+  PROCEDURE = contained,
+  LEFTARG = stbox, RIGHTARG = tgeogpoint,
+  COMMUTATOR = @>,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR <@ (
+  PROCEDURE = contained,
+  LEFTARG = tgeogpoint, RIGHTARG = stbox,
+  COMMUTATOR = @>,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR <@ (
+  PROCEDURE = contained,
+  LEFTARG = tgeogpoint, RIGHTARG = tgeogpoint,
+  COMMUTATOR = @>,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+
+/*****************************************************************************
+ * Overlaps
+ *****************************************************************************/
+
+CREATE FUNCTION overlaps(tstzspan, tgeompoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overlaps_tstzspan_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION overlaps(tgeompoint, tstzspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overlaps_temporal_tstzspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR && (
+  PROCEDURE = overlaps,
+  LEFTARG = tstzspan, RIGHTARG = tgeompoint,
+  COMMUTATOR = &&,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR && (
+  PROCEDURE = overlaps,
+  LEFTARG = tgeompoint, RIGHTARG = tstzspan,
+  COMMUTATOR = &&,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+
+/*****************************************************************************/
+
+CREATE FUNCTION overlaps(stbox, tgeompoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overlaps_stbox_tspatial'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION overlaps(tgeompoint, stbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overlaps_tspatial_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION overlaps(tgeompoint, tgeompoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overlaps_tspatial_tspatial'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR && (
+  PROCEDURE = overlaps,
+  LEFTARG = stbox, RIGHTARG = tgeompoint,
+  COMMUTATOR = &&,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR && (
+  PROCEDURE = overlaps,
+  LEFTARG = tgeompoint, RIGHTARG = stbox,
+  COMMUTATOR = &&,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR && (
+  PROCEDURE = overlaps,
+  LEFTARG = tgeompoint, RIGHTARG = tgeompoint,
+  COMMUTATOR = &&,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+
+/*****************************************************************************/
+
+CREATE FUNCTION overlaps(tstzspan, tgeogpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overlaps_tstzspan_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION overlaps(tgeogpoint, tstzspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overlaps_temporal_tstzspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR && (
+  PROCEDURE = overlaps,
+  LEFTARG = tstzspan, RIGHTARG = tgeogpoint,
+  COMMUTATOR = &&,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR && (
+  PROCEDURE = overlaps,
+  LEFTARG = tgeogpoint, RIGHTARG = tstzspan,
+  COMMUTATOR = &&,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+
+/*****************************************************************************/
+
+CREATE FUNCTION overlaps(stbox, tgeogpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overlaps_stbox_tspatial'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION overlaps(tgeogpoint, stbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overlaps_tspatial_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION overlaps(tgeogpoint, tgeogpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overlaps_tspatial_tspatial'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR && (
+  PROCEDURE = overlaps,
+  LEFTARG = stbox, RIGHTARG = tgeogpoint,
+  COMMUTATOR = &&,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR && (
+  PROCEDURE = overlaps,
+  LEFTARG = tgeogpoint, RIGHTARG = stbox,
+  COMMUTATOR = &&,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR && (
+  PROCEDURE = overlaps,
+  LEFTARG = tgeogpoint, RIGHTARG = tgeogpoint,
+  COMMUTATOR = &&,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+
+/*****************************************************************************
+ * Same
+ *****************************************************************************/
+
+CREATE FUNCTION same(tstzspan, tgeompoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Same_tstzspan_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION same(tgeompoint, tstzspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Same_temporal_tstzspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR ~= (
+  PROCEDURE = same,
+  LEFTARG = tstzspan, RIGHTARG = tgeompoint,
+  COMMUTATOR = ~=,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR ~= (
+  PROCEDURE = same,
+  LEFTARG = tgeompoint, RIGHTARG = tstzspan,
+  COMMUTATOR = ~=,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+
+/*****************************************************************************/
+
+CREATE FUNCTION same(stbox, tgeompoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Same_stbox_tspatial'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION same(tgeompoint, stbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Same_tspatial_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION same(tgeompoint, tgeompoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Same_tspatial_tspatial'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR ~= (
+  PROCEDURE = same,
+  LEFTARG = stbox, RIGHTARG = tgeompoint,
+  COMMUTATOR = ~=,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR ~= (
+  PROCEDURE = same,
+  LEFTARG = tgeompoint, RIGHTARG = stbox,
+  COMMUTATOR = ~=,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR ~= (
+  PROCEDURE = same,
+  LEFTARG = tgeompoint, RIGHTARG = tgeompoint,
+  COMMUTATOR = ~=,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+
+/*****************************************************************************/
+
+CREATE FUNCTION same(tstzspan, tgeogpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Same_tstzspan_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION same(tgeogpoint, tstzspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Same_temporal_tstzspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR ~= (
+  PROCEDURE = same,
+  LEFTARG = tstzspan, RIGHTARG = tgeogpoint,
+  COMMUTATOR = ~=,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR ~= (
+  PROCEDURE = same,
+  LEFTARG = tgeogpoint, RIGHTARG = tstzspan,
+  COMMUTATOR = ~=,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+
+/*****************************************************************************/
+
+CREATE FUNCTION same(stbox, tgeogpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Same_stbox_tspatial'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION same(tgeogpoint, stbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Same_tspatial_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION same(tgeogpoint, tgeogpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Same_tspatial_tspatial'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR ~= (
+  PROCEDURE = same,
+  LEFTARG = stbox, RIGHTARG = tgeogpoint,
+  COMMUTATOR = ~=,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR ~= (
+  PROCEDURE = same,
+  LEFTARG = tgeogpoint, RIGHTARG = stbox,
+  COMMUTATOR = ~=,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR ~= (
+  PROCEDURE = same,
+  LEFTARG = tgeogpoint, RIGHTARG = tgeogpoint,
+  COMMUTATOR = ~=,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+
+/*****************************************************************************
+ * Adjacent
+ *****************************************************************************/
+
+CREATE FUNCTION adjacent(tstzspan, tgeompoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Adjacent_tstzspan_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION adjacent(tgeompoint, tstzspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Adjacent_temporal_tstzspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR -|- (
+  PROCEDURE = adjacent,
+  LEFTARG = tstzspan, RIGHTARG = tgeompoint,
+  COMMUTATOR = -|-,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR -|- (
+  PROCEDURE = adjacent,
+  LEFTARG = tgeompoint, RIGHTARG = tstzspan,
+  COMMUTATOR = -|-,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+
+/*****************************************************************************/
+
+CREATE FUNCTION adjacent(stbox, tgeompoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Adjacent_stbox_tspatial'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION adjacent(tgeompoint, stbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Adjacent_tspatial_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION adjacent(tgeompoint, tgeompoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Adjacent_tspatial_tspatial'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR -|- (
+  PROCEDURE = adjacent,
+  LEFTARG = stbox, RIGHTARG = tgeompoint,
+  COMMUTATOR = -|-,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR -|- (
+  PROCEDURE = adjacent,
+  LEFTARG = tgeompoint, RIGHTARG = stbox,
+  COMMUTATOR = -|-,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR -|- (
+  PROCEDURE = adjacent,
+  LEFTARG = tgeompoint, RIGHTARG = tgeompoint,
+  COMMUTATOR = -|-,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+
+/*****************************************************************************/
+
+CREATE FUNCTION adjacent(tstzspan, tgeogpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Adjacent_tstzspan_temporal'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION adjacent(tgeogpoint, tstzspan)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Adjacent_temporal_tstzspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR -|- (
+  PROCEDURE = adjacent,
+  LEFTARG = tstzspan, RIGHTARG = tgeogpoint,
+  COMMUTATOR = -|-,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR -|- (
+  PROCEDURE = adjacent,
+  LEFTARG = tgeogpoint, RIGHTARG = tstzspan,
+  COMMUTATOR = -|-,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+
+/*****************************************************************************/
+
+CREATE FUNCTION adjacent(stbox, tgeogpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Adjacent_stbox_tspatial'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION adjacent(tgeogpoint, stbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Adjacent_tspatial_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION adjacent(tgeogpoint, tgeogpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Adjacent_tspatial_tspatial'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR -|- (
+  PROCEDURE = adjacent,
+  LEFTARG = stbox, RIGHTARG = tgeogpoint,
+  COMMUTATOR = -|-,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR -|- (
+  PROCEDURE = adjacent,
+  LEFTARG = tgeogpoint, RIGHTARG = stbox,
+  COMMUTATOR = -|-,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR -|- (
+  PROCEDURE = adjacent,
+  LEFTARG = tgeogpoint, RIGHTARG = tgeogpoint,
+  COMMUTATOR = -|-,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+
+/*****************************************************************************/
