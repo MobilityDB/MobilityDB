@@ -61,14 +61,11 @@ subtypes:
   # byte-identical in shape to this template's single-pair output, so it converges
   # here from the compops_families items/lit axis rather than staying a second
   # hand-transcribed mechanism for the same behaviour. Not tspatial (no `category`;
-  # the field is unused by the generator, so no value fits). `brief` reproduces the
-  # committed file's doc string verbatim (misdescribes tjsonb as "circular buffers",
-  # a pre-existing copy/paste artifact from tcbuffer) since converging ownership
-  # must not change committed .in.sql content.
+  # the field is unused by the generator, so no value fits).
   - temp:  tjsonb
     base:  jsonb
     fam:   json
-    brief: "temporal circular buffers"
+    brief: "temporal JSONB"
     bin:   454
     reference: true
     files: [compops]
