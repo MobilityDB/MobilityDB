@@ -149,7 +149,7 @@ CREATE CAST (tquadbin AS tquadbin) WITH FUNCTION tquadbin(tquadbin, integer)
   AS IMPLICIT;
 
 /******************************************************************************
- * Explicit assignment casts to / from tbigint
+ * Conversions
  *
  * The int64 payload is shared, but tquadbin sequences carry a planar
  * STBox bbox while tbigint sequences carry a TBox; a binary coercion
