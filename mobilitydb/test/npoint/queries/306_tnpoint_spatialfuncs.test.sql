@@ -109,6 +109,21 @@ SELECT round(minusStbox(tnpoint '{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@200
 SELECT round(minusStbox(tnpoint 'Interp=Step;[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03]', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2000-01-01,2000-01-02])', false), 6);
 SELECT round(minusStbox(tnpoint 'Interp=Step;{[Npoint(1, 0.2)@2000-01-01, Npoint(1, 0.4)@2000-01-02, Npoint(1, 0.5)@2000-01-03], [Npoint(2, 0.6)@2000-01-04, Npoint(2, 0.6)@2000-01-05]}', 'SRID=5676;STBOX XT(((40,40),(80,80)),[2000-01-01,2000-01-02])', false), 6);
 
+-------------------------------------------------------------------------------
+-- atStbox/minusStbox for a linear tnpoint whose route (gid 1) bends between
+-- the two instants, so the box boundary is crossed at a point that is NOT on
+-- the straight chord between the instants' route-projected positions
+
+SELECT round(atStbox(tnpoint '[Npoint(1, 0.1)@2000-01-01, Npoint(1, 0.5)@2000-01-02]', 'SRID=5676;STBOX X((55,75),(75,85))'), 6);
+SELECT round(minusStbox(tnpoint '[Npoint(1, 0.1)@2000-01-01, Npoint(1, 0.5)@2000-01-02]', 'SRID=5676;STBOX X((55,75),(75,85))'), 6);
+
+-- Partition property: atStbox and minusStbox partition the original value
+WITH temp(temp, box) AS (
+  SELECT tnpoint '[Npoint(1, 0.1)@2000-01-01, Npoint(1, 0.5)@2000-01-02]',
+    stbox 'SRID=5676;STBOX X((55,75),(75,85))' )
+SELECT temp = merge(atStbox(temp, box), minusStbox(temp, box))
+FROM temp;
+
 SELECT same(npoint(1, 0.5), npoint(1, 0.50000001));
 SELECT same(npoint 'Npoint(1, 1)', npoint 'Npoint(2, 1)');
 -- TODO

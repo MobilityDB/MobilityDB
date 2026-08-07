@@ -550,13 +550,17 @@ tnpoint_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
   VALIDATE_TNPOINT(temp, NULL); VALIDATE_NOT_NULL(box, NULL);
   Temporal *tpoint = tnpoint_to_tgeompoint(temp);
   Temporal *res = tgeo_restrict_stbox(tpoint, box, border_inc, atfunc);
-  pfree(tpoint);
   Temporal *result = NULL;
   if (res)
   {
-    result = tgeompoint_to_tnpoint(res);
+    /* We do not call the function tgeompoint_to_tnpoint to avoid
+     * roundoff errors */
+    SpanSet *ss = temporal_time(res);
+    result = temporal_restrict_tstzspanset(temp, ss, REST_AT);
     pfree(res);
+    pfree(ss);
   }
+  pfree(tpoint);
   return result;
 }
 
