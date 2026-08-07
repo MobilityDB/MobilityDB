@@ -43,9 +43,9 @@ Temporal<T>              temporal_type      = ALL temporal types            (cat
         │   (all)        tgeo_type_all      = + tgeompoint + tgeogpoint (4)   (catalog:1350)
         │     ├── TGeometry  ├── TGeography
         │     └── TPoint<T>  tpoint_type    = tgeompoint, tgeogpoint         (catalog:1303)
-        ├── Tcell<T>     tcellindex_type    = tquadbin   (th3index INTENDED,  (tcellindex.c:63)
-        │     │                               not yet wired — §5a)           via DggsCellOps
-        │     ├── TQuadbin  └── (TH3Index, hand today)
+        ├── Tcell<T>     tcellindex_type    = th3index, tquadbin (2)         (tcellindex.c:66)
+        │     │                               both wired via DggsCellOps    (§5a)
+        │     ├── TH3Index  └── TQuadbin
         ├── TPointcloud  tpointcloud_temptype = tpcpoint, tpcpatch  (#if POINTCLOUD) (catalog:1204)
         │     ├── TPcpoint  └── TPcpatch
         └── (TSpatial, no intermediate): tcbuffer, tnpoint, tpose, trgeometry
@@ -153,8 +153,10 @@ SQL file): `geo_ea_contains_covers`/`geo_ea_disjoint_intersects`/`geo_ea_dwithin
 `rgeo_ea_dwithin` (**rgeo**, `trgeo_spatialrels.c`). Because this axis renders C, not
 SQL, `--gaps` cannot see it (its `CREATE FUNCTION`-matching regex finds nothing in
 C source) and under-reports its coverage — read the manifest itself, not the `--gaps`
-number, for this one axis. `npoint`/`pose` native C spatial-rel wrappers are still
-hand (memory `spatialrel-wrapper-surface-is-inherited-generate-it`).
+number, for this one axis. `pose`'s native C spatial-rel wrapper is still hand
+(memory `spatialrel-wrapper-surface-is-inherited-generate-it`); `npoint` needs no
+native kernel — its ever/always relationships cast-delegate to `tgeometry` in pure
+SQL (§6, `320_tnpoint_spatialrels`).
 
 ## 4. `Temporal<T>` chapter — section-by-section
 
@@ -168,7 +170,7 @@ hand (memory `spatialrel-wrapper-surface-is-inherited-generate-it`).
 | Modifications | `temporal_` | ✓ **GEN** | `modifications.sql.tmpl` + `modification_families`, **12 entries** all `reference: true` (same family set) — appendInstant, insert, update, merge |
 | Restrictions | `temporal_` | ✓ **GEN** | `restrictions.sql.tmpl` + `restriction_families`, **12 entries** all `reference: true` (same family set) — atValue(s)/minusValue(s), atTime/minusTime, atSpan(set), atTbox |
 | **Bounding Box Operators** | `temporal_`/`tnumber_` | ✓ **GEN** | `topops.sql.tmpl` (`&&`,`@>`,`<@`,`~=`,`-\|-`) + `posops.sql.tmpl` (`<<`,`>>`,`&<`,`&>`,`<<#`,`#>>`…), both via the `subtypes:` track (§3), + `boxops.c.tmpl` box types `tstzspan`,`tbox` |
-| Comparisons → Traditional | (btree) | ✓ **GEN** | `comparisons.sql.tmpl` + `comparison_families` (10 temporal-type entries: temporal, geo, tpoint, cbuffer, h3, json, npoint, pose, quadbin, rgeo) — `=`,`<>`,`<`,`>`,`<=`,`>=` + `cmp` + the `<type>_btree_ops` opclass; `--gaps`: 16/18, missing tpcpoint, tpcpatch. The hash tail of the same files (`hash`/`hashExtended` + the `<type>_hash_ops` opclass) is `hash_families`, same family set |
+| Comparisons → Traditional | (btree) | ✓ **GEN** | `comparisons.sql.tmpl` + `comparison_families` (10 temporal-type entries: temporal, geo, tpoint, cbuffer, h3, json, npoint, pose, quadbin, rgeo) — `=`,`<>`,`<`,`>`,`<=`,`>=` + `cmp` + the `<type>_btree_ops` opclass; `--gaps`: `comparison_families` 16/18, missing tpcpoint, tpcpatch. The hash tail of the same files (`hash`/`hashExtended` + the `<type>_hash_ops` opclass) is `hash_families` — the same 10 entries plus `pointcloud`/`pointcloud_patch`, which each render tpcpoint's/tpcpatch's whole comparison+hash section as one entry (pointcloud has no `comparison_families` row of its own); `--gaps`: `hash_families` 18/18, full coverage |
 | Comparisons → **Ever/Always** | `temporal_` | ✓ **GEN** | `compops.sql.tmpl` + `compops_families` (temporal, tgeo, tpoint whole-file) / the `subtypes:` `compops` behaviour (every other family): `eEq`/`aEq`/`eNe`/`aNe` + `?=`/`%=`/`?<>`/`%<>` (all 3 arg directions) |
 | Comparisons → Temporal | `temporal_` | ✓ **GEN** | same template/entries as Ever/Always above — `compops.sql.tmpl` renders `tEq`/`tNe` → `#=`/`#<>` in the same pass, not a separate template |
 | Miscellaneous | `temporal_` | ✗ HAND | |
@@ -418,8 +420,8 @@ Pattern: per-family typmod semantics (npoint ways-SRID, pointcloud `pcid`) are l
 | Spatial Reference System | `tspatial_` (`spatialfuncs`) | ✗ HAND | reserved position, no template |
 | **Bounding Box Operations** | `tspatial_` | ✓ **GEN** | `topops`+`posops`+`boxops.c.tmpl` box type `stbox`, via the `subtypes:` track (§3) |
 | Distance Operations | `tspatial_`/`tgeo_` (`distance`) | ✗ HAND | tDistance/nad/nai/shortestLine — reserved position, no template |
-| Spatial Rel. → **Ever/Always** | `tspatial_`/`tgeo_` | ◐ PARTIAL | the SQL wrapper file is `subtypes:`-track-generated only for the cast-delegated cell families (th3index, tquadbin — `spatialrels.sql.tmpl`); the underlying C ever/always kernel is separately generated for geo, cbuffer and rgeo via `spatialrel_families` (§3) while their own SQL wrapper files (212/170) stay hand; npoint/pose are hand at both levels |
-| Spatial Rel. → Spatiotemporal | `tspatial_` (`tempspatialrels`) | ✓ **GEN** | `tempspatialrels.sql.tmpl`/`tempspatialrels_native.sql.tmpl` + `tempspatialrel_families` (§3) — `--gaps`: `tempspatialrel_families` 9/10, missing tnpoint. Native impl (own C kernel): cbuffer, tgeo, tpoint. Cast impl (delegates to tgeo): tquadbin, th3index, tpose, trgeometry |
+| Spatial Rel. → **Ever/Always** | `tspatial_`/`tgeo_` | ◐ PARTIAL | the SQL wrapper file is `subtypes:`-track-generated for the cast-delegated families (th3index, tquadbin, tnpoint — `spatialrels.sql.tmpl`); the underlying C ever/always kernel is separately generated for geo, cbuffer and rgeo via `spatialrel_families` (§3) while their own SQL wrapper files (212/170) stay hand; pose is hand at both levels |
+| Spatial Rel. → Spatiotemporal | `tspatial_` (`tempspatialrels`) | ✓ **GEN** | `tempspatialrels.sql.tmpl`/`tempspatialrels_native.sql.tmpl` + `tempspatialrel_families` (§3) — `--gaps`: `tempspatialrel_families` 10/10, full coverage. Native impl (own C kernel): cbuffer, tgeo, tpoint. Cast impl (delegates to tgeo): tquadbin, th3index, tpose, trgeometry, tnpoint |
 
 Index infra (`gist`/`spgist`/`indexes`) is generated but is not a doc `<sect1>`.
 
@@ -433,22 +435,24 @@ kernel via `tfunc_temporal`. Adding a DGGS (e.g. Google S2) = a descriptor + ker
 **no new temporal scaffolding, SQL, or binding code** (`tcellindex.h:38-64`).
 
 The generic inherited Tcell API (declared in the umbrella header
-`meos/include/meos_cellindex.h:52-58`, implemented in `tcellindex.c`):
+`meos/include/meos_cellindex.h:72-78`, implemented in `tcellindex.c`):
 `tcellindex_get_resolution` · `is_valid_cell` · `cell_to_parent` · `cell_to_point` ·
 `cell_to_boundary` · `cell_area`.
 
 | aspect | state |
 |---|---|
 | C implementation | **unified once** via `DggsCellOps` — the `Tcell` C surface is effectively "generated" (single generic body, per-DGGS descriptor) |
-| catalog predicate `tcellindex_type()` | **quadbin only** (`#if QUADBIN → T_TQUADBIN`, `tcellindex.c:63`). **th3index is NOT wired** — it uses its own libh3 surface |
-| descriptor registered | `quadbin_cellops` (`meos/src/quadbin/tquadbin_ops.c:132`) — **no `h3_cellops`** |
-| SQL wrappers (cellResolution/isValidCell/cellToParent/cellToPoint/cellToBoundary/cellArea) | **per-family HAND** in the `spatialfuncs` slot: h3 `255_th3index_spatialfuncs`, quadbin `355_tquadbin_spatialfuncs`; names are family-prefixed (`th3CellToBoundary` / `tquadbin…`) |
+| catalog predicate `tcellindex_type()` | **both cell families** (`#if H3 → T_TH3INDEX`, `#if QUADBIN → T_TQUADBIN`, `tcellindex.c:66-76`) |
+| descriptor registered | `h3_cellops` (`meos/src/h3/th3index_ops.c:79`) and `quadbin_cellops` (`meos/src/quadbin/tquadbin_ops.c:132`), both dispatched from `dggs_cellops()` |
+| SQL wrappers (cellResolution/isValidCell/cellToParent/cellToPoint/cellToBoundary/cellArea) | **per-family HAND** in the `spatialfuncs` slot: h3 `255_th3index_spatialfuncs`, quadbin `355_tquadbin_spatialfuncs`; names are family-prefixed (`th3CellToBoundary` / `tquadbin…`) — a second, independent surface from the generic `tcellindex_*` descriptor path above, not sourced from it |
 | cell→boundary hook | the key inherited hook: `spatialrels.sql.tmpl` cast-delegates via `<fam>CellToBoundary($n)::tgeometry` (`manifest.d/` `boundary_fn`) — this IS generated (§6, h3 262 / quadbin 362) |
 
-⇒ **Gap**: `th3index` should be migrated onto the `DggsCellOps` descriptor +
-`tcellindex_type()` (add `#if H3 → T_TH3INDEX` and an `h3_cellops`) so both cell
-families share one C implementation, and the per-family SQL cell wrappers could then be
-generated from a `tcellindex` template instead of hand-written twice.
+⇒ **Remaining opportunity**: both DGGS families are wired onto `DggsCellOps` and
+`tcellindex_type()`, so the C implementation is unified and the two paths (typed
+per-family functions, generic descriptor lift) agree slot-for-slot; the per-family
+SQL cell wrappers (`255_th3index_spatialfuncs`, `355_tquadbin_spatialfuncs`) could
+now be generated from a single `tcellindex` template instead of hand-written twice,
+since the underlying descriptor surface is identical across both families.
 
 ## 6. Per-family gap — every inherited `.in.sql` file, generated vs hand
 
@@ -459,11 +463,11 @@ plain = the file exists but is still hand-maintained.
 | family | compops | spatialfuncs | topops | posops | distance | aggfuncs | spatialrels | tempsp.rels | idx / gist·spgist | boxops |
 |---|---|---|---|---|---|---|---|---|---|---|
 | cbuffer (200) | **204** | 205 | **208** | **209** | 210 | **211** | 212 | **214** | **216** | 207 |
-| npoint (300) | **304** | 306 | **308** | **309** | 312 | **314** | — | — | **316** | 307 |
+| npoint (300) | **304** | 306 | **308** | **309** | 312 | **314** | **320** | **322** | **316** | 307 |
 | pose (100) | **104** | 105 | **108** | **109** | 110 | **111** | 112 | **114** | **116** | 107 |
 | rgeo (150) | **154** | 156 | **161** | **162** | 164 | **168** | 170 | **172** | **173** | 160 |
-| h3 (250) | **254** | 255 | **258** | **259** | — | — | **262** | **264** | **272**·**273** | — |
-| quadbin (350) | **354** | 355 | **358** | **359** | — | — | **362** | **364** | **372**·**373** | — |
+| h3 (250) | **254** | 255 | **258** | **259** | — | — | **262** | **264** | **272**·**273** | **257** |
+| quadbin (350) | **354** | 355 | **358** | **359** | — | — | **362** | **364** | **372**·**373** | **357** |
 
 Reading the table:
 - **`compops`/`topops`/`posops`/`idx` are generated for every derived family** via the
@@ -474,42 +478,54 @@ Reading the table:
   `aggregate_families` axis (§4b), not the `subtypes:` track; h3/quadbin have no
   `aggfuncs` file at all (`--gaps`: `aggregate_families` 16/18, missing th3index,
   tquadbin).
-- **`tempsp.rels` is generated for cbuffer, pose, rgeo, h3, quadbin** via
+- **`tempsp.rels` is generated for cbuffer, npoint, pose, rgeo, h3, quadbin** via
   `tempspatialrel_families` (§3/§5) — native for cbuffer, cast-delegated for the
-  other four; npoint has no `tempspatialrels` file (`--gaps`: `tempspatialrel_families`
-  9/10, missing tnpoint).
-- **`spatialrels` SQL** (the ever/always wrapper *file*) is generated only for the
-  **cast-delegated cell families** (h3 262, quadbin 362) via the `subtypes:`
-  `spatialrels` behaviour (boundary→`tgeometry` cast). cbuffer 212, pose 112 and
+  other five (`--gaps`: `tempspatialrel_families` 10/10, full `tspatial`-class
+  coverage).
+- **`spatialrels` SQL** (the ever/always wrapper *file*) is generated for the
+  **cast-delegated families** (h3 262, quadbin 362, npoint 320) via the `subtypes:`
+  `spatialrels` behaviour — a cell-boundary→`tgeometry` cast for h3/quadbin, a
+  `tnpoint::tgeompoint::tgeometry` cast for npoint. cbuffer 212, pose 112 and
   rgeo 170 stay hand — even though their underlying **C** ever/always kernel
-  dispatch is generated (next bullet); npoint has neither.
-- **`spatialfuncs`, `distance` and `boxops`** (the box-cast `.in.sql` file, not the C
-  dispatcher) **are generated for no family** — no template exists; hand everywhere.
+  dispatch is generated (next bullet).
+- **`spatialfuncs` and `distance`** are generated for no family — no template
+  exists; hand everywhere.
+- **`boxops`** (the box-cast `.in.sql` file holding `spans`/`splitNSpans`/
+  `splitEachNSpans`, not the C dispatcher) is generated via the `tiling_families`
+  axis (reference-block entries, no dedicated template) for **h3 (257)** and
+  **quadbin (357)** in this table — plus, outside the `subtypes:`-track family set
+  above, for json/tjsonb (`459`) and pointcloud (`435`, one file covering both
+  tpcpoint and tpcpatch). cbuffer (207), npoint (307), pose (107) and rgeo (160)
+  stay hand.
 - The C ever/always spatial-rel **kernel** (`spatialrel_families` axis, §3) is
   generated in the **geo**, **cbuffer** and **rgeo** files (`tgeo_spatialrels.c`,
   `tcbuffer_spatialrels.c`, `trgeo_spatialrels.c`: contains/covers/disjoint/
-  intersects/dwithin); npoint/pose native C spatial-rel wrappers are still hand
-  (memory `spatialrel-wrapper-surface-is-inherited-generate-it`).
+  intersects/dwithin); pose's native C spatial-rel wrapper is still hand (memory
+  `spatialrel-wrapper-surface-is-inherited-generate-it`) — npoint needs no native
+  kernel, its ever/always relationships cast-delegate to `tgeometry` in pure SQL
+  (320, previous bullet).
 - The **geo/tpoint/tgeo** family SQL surfaces are not in the `subtypes:` list at all
   (geo is the hand-written reference layout the generator derives from).
 
 ## 7. The gap (what remains ungoverned)
 
 **A. Behaviours with a template, still not wired for every family:**
-- `spatialrel_families` (the C ever/always kernel): npoint, pose (today: geo,
-  cbuffer, rgeo).
-- `tempspatialrel_families`: npoint (today: cbuffer, tgeo, tpoint, tquadbin,
-  th3index, tpose, trgeometry — 9/10 tspatial members).
+- `spatialrel_families` (the C ever/always kernel): pose (today: geo, cbuffer,
+  rgeo). npoint has no native kernel by design — its ever/always relationships
+  cast-delegate to `tgeometry` at the SQL level instead (§3, §6, `subtypes:`
+  `spatialrels` bullet below), so it needs none.
 - `aggregate_families`: th3index, tquadbin (today: temporal, cbuffer, geo, json,
   npoint, pointcloud, pose, rgeo, tpoint — 16/18 temporal types).
 - `conversion_families`: tgeography, tpcpoint, tpcpatch (today: 15/18 temporal
   types, via 8 family entries).
-- `comparison_families`/`hash_families` (Traditional comparisons + hash):
-  tpcpoint, tpcpatch (today: 16/18 temporal types).
+- `comparison_families` (Traditional comparisons): tpcpoint, tpcpatch (today:
+  16/18 temporal types, via 10 family entries). `hash_families` has no such gap
+  (18/18) — its `pointcloud`/`pointcloud_patch` entries render tpcpoint's/
+  tpcpatch's whole comparison+hash section directly.
 - The `subtypes:` `spatialrels` behaviour (the ever/always SQL wrapper *file*, as
-  opposed to the C kernel above) still covers only the cast-delegated cell
-  families (th3index, tquadbin); cbuffer/pose/rgeo's own wrapper files (212/112/
-  170) stay hand even though their C kernel is generated.
+  opposed to the C kernel above) covers the cast-delegated families (th3index,
+  tquadbin, tnpoint); cbuffer/pose/rgeo's own wrapper files (212/112/170) stay
+  hand even though cbuffer's and rgeo's C kernel is generated.
 
 **B. Sections with no template at all** (reserved `positions:` slot, pure hand):
 - `distance` (tDistance/nad/nai/shortestLine).
