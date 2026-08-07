@@ -18,7 +18,6 @@ positions:
   distance:        10
   aggfuncs:        11
   spatialrels:     12
-  tempspatialrels: 14
   indexes:         16
   # Cell-index families split the GiST and SP-GiST opclasses into separate files
   # (the canonical geo/h3 layout); the combined `indexes` above is the cbuffer form.

@@ -45,7 +45,6 @@ mobilitydb/sql/h3/255_th3index_spatialfuncs.in.sql
 mobilitydb/sql/h3/258_th3index_topops.in.sql
 mobilitydb/sql/h3/259_th3index_posops.in.sql
 mobilitydb/sql/h3/262_th3index_spatialrels.in.sql
-mobilitydb/sql/h3/264_th3index_tempspatialrels.in.sql
 mobilitydb/sql/h3/272_th3index_gist.in.sql
 mobilitydb/sql/h3/273_th3index_spgist.in.sql
 mobilitydb/sql/h3/280_th3index_inspection.in.sql
@@ -94,7 +93,6 @@ mobilitydb/sql/pose/108_tpose_topops.in.sql
 mobilitydb/sql/pose/109_tpose_posops.in.sql
 mobilitydb/sql/pose/110_tpose_distance.in.sql
 mobilitydb/sql/pose/112_tpose_spatialrels.in.sql
-mobilitydb/sql/pose/114_tpose_tempspatialrels.in.sql
 mobilitydb/sql/pose/116_tpose_indexes.in.sql
 mobilitydb/sql/pose/117_tpose_analytics.in.sql
 mobilitydb/sql/pose/120_geopose_frames.in.sql
@@ -105,7 +103,6 @@ mobilitydb/sql/quadbin/355_tquadbin_spatialfuncs.in.sql
 mobilitydb/sql/quadbin/358_tquadbin_topops.in.sql
 mobilitydb/sql/quadbin/359_tquadbin_posops.in.sql
 mobilitydb/sql/quadbin/362_tquadbin_spatialrels.in.sql
-mobilitydb/sql/quadbin/364_tquadbin_tempspatialrels.in.sql
 mobilitydb/sql/quadbin/372_tquadbin_gist.in.sql
 mobilitydb/sql/quadbin/373_tquadbin_spgist.in.sql
 mobilitydb/sql/raster/500_raster.in.sql
@@ -117,7 +114,6 @@ mobilitydb/sql/rgeo/162_trgeo_posops.in.sql
 mobilitydb/sql/rgeo/164_trgeo_distance.in.sql
 mobilitydb/sql/rgeo/166_trgeo_similarity.in.sql
 mobilitydb/sql/rgeo/170_trgeo_spatialrels.in.sql
-mobilitydb/sql/rgeo/172_trgeo_tempspatialrels.in.sql
 mobilitydb/sql/rgeo/173_trgeo_indexes.in.sql
 mobilitydb/sql/rgeo/175_trgeo_geom_clip.in.sql
 mobilitydb/sql/rgeo/176_trgeo_vclip.in.sql

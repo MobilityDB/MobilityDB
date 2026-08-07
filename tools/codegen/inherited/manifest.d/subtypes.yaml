@@ -25,7 +25,9 @@ subtypes:
     # (quadbin_cell_to_boundary), the cell-index
     # analogue of th3index 290. GiST/SP-GiST are split (322/323), the canonical
     # cell-index layout (th3index 272/273), not the combined cbuffer `indexes` form.
-    files: [compops, posops, topops, spatialrels, tempspatialrels, gist, spgist]
+    # tempspatialrels (364) is generated separately, from the `impl: cast` entry
+    # in manifest.d/tempspatialrel_families.yaml.
+    files: [compops, posops, topops, spatialrels, gist, spgist]
 
   # ---- h3: convert the hand-written inherited surface to generated (mirror tquadbin) ----
   - temp:  th3index
@@ -42,7 +44,9 @@ subtypes:
     # exports (meos/src/h3/th3index_boxops.c).
     scalar_stbox_cast: true
     stboxes: false
-    files: [compops, posops, topops, spatialrels, tempspatialrels, gist, spgist]
+    # tempspatialrels (264) is generated separately, from the `impl: cast` entry
+    # in manifest.d/tempspatialrel_families.yaml.
+    files: [compops, posops, topops, spatialrels, gist, spgist]
 
   # ---- reference families (validate self-regeneration == committed; not new) ----
   - temp:  tcbuffer
@@ -94,20 +98,14 @@ subtypes:
     # tpose is 3-D-capable, so its position operators include the front/back (Z)
     # direction on top of the shared left/right/below/above/before/after set.
     front_back: true
-    # A temporal pose delegates its spatial relationships to tgeometry via the
-    # tgeompoint cast chain (not a cell-boundary function), and it is not a cell
-    # index, so it overrides the conversion expression and the file doc block.
-    # Only the temporal (tXxx) relationships are generated here: the ever/always
-    # spatial relationships are a hybrid (the ever intersects/dwithin are native C
-    # with index support), so 112_tpose_spatialrels stays hand-written.
-    convert: "@N@::@extschema@.tgeompoint::@extschema@.tgeometry"
-    doc:
-      tempspatialrels: |-
-        /**
-         * @file
-         * @brief Temporal spatial relationships for temporal poses
-         */
-    files: [compops, topops, posops, indexes, tempspatialrels]
+    # A temporal pose delegates its spatial relationships (114) to tgeometry via
+    # the tgeompoint cast chain, from the `impl: cast` entry in
+    # manifest.d/tempspatialrel_families.yaml (not a cell-boundary function, and
+    # not a cell index, so that entry overrides the conversion expression and the
+    # file doc block). The ever/always spatial relationships are a hybrid (the
+    # ever intersects/dwithin are native C with index support), so
+    # 112_tpose_spatialrels stays hand-written.
+    files: [compops, topops, posops, indexes]
 
   - temp:  trgeometry
     # The base-value comparison is against a `geometry` (the resolved geometry at an
@@ -126,28 +124,20 @@ subtypes:
     # topological operators, while the stbox casts / stboxes / expandSpace preamble
     # lives in the separate 160_trgeo_boxops extraction file. Drop that preamble.
     box_extraction: false
-    # rgeo delegates its temporal spatial relationships to tgeometry via the single
-    # tgeometry(trgeometry) cast (2D-only, so no geography branch), and is not a cell
-    # index, so it overrides the conversion expression and the file doc block. Only
-    # the temporal (tXxx) relationships are generated: the ever/always ones are
-    # native C wrappers (170_trgeo_spatialrels) that stay hand-written.
-    convert: "@N@::@extschema@.tgeometry"
-    doc:
-      tempspatialrels: |-
-        /**
-         * @file
-         * @brief Temporal spatial relationships for temporal rigid geometries
-         */
+    # rgeo delegates its temporal spatial relationships (172) to tgeometry via the
+    # single tgeometry(trgeometry) cast (2D-only, so no geography branch), from the
+    # `impl: cast` entry in manifest.d/tempspatialrel_families.yaml (not a cell
+    # index, so that entry overrides the conversion expression and the file doc
+    # block). The ever/always ones are native C wrappers (170_trgeo_spatialrels)
+    # that stay hand-written.
     # rgeo follows the tgeo-aligned layout, where the position files sit at their
-    # tgeo offsets (topops +11 -> 161, posops +12 -> 162, tempspatialrels +22 -> 172,
-    # the combined index file at the gist offset +23 -> 173) rather than the tight
-    # scheme's +8 / +9 / +16.
+    # tgeo offsets (topops +11 -> 161, posops +12 -> 162, the combined index file
+    # at the gist offset +23 -> 173) rather than the tight scheme's +8 / +9 / +16.
     positions:
       topops:          11
       posops:          12
-      tempspatialrels: 22
       indexes:         23
-    files: [compops, topops, posops, indexes, tempspatialrels]
+    files: [compops, topops, posops, indexes]
 
   # ---- pointcloud: two temporal types sharing one 50-number band ----
   # The band runs 400 pcset, 410 tpcbox, 420 tpcpoint, 430 tpcpatch, 435+ the

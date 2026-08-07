@@ -413,26 +413,55 @@ def render_dwithin(fam: dict) -> str:
     return "\n\n".join(out) + "\n"
 
 
-# --- native temporal spatial relationships (SQL, whole-file) -------------
-# A native family (cbuffer, geo) implements its temporal spatial relationships
-# (tContains..tDwithin -> tbool) as C functions declared with
-# `AS 'MODULE_PATHNAME', '<Symbol>'`, not SQL cast-wrappers. Every (predicate,
-# direction) is a uniform four-line CREATE FUNCTION; the family lists its ordered
-# directions (each a left/right argument type; `geometry` tokenizes to `geo` in the
-# C symbol T<rel>_<left>_<right>) and its predicate set. tDwithin carries an extra
-# `dist float` argument. A predicate normally reuses the family-wide `directions`
-# list, but a family whose predicate matrix is not uniform (tgeo/tpoint: e.g.
-# tTouches has no tt/geodetic direction, tContains/tCovers on tpoint only cover
-# the geo-vs-t direction) gives that predicate its own `directions` override; a
-# single direction may also carry `strict: false` (a non-strict wrapper, still
-# `LANGUAGE C IMMUTABLE PARALLEL SAFE` minus the STRICT keyword) and/or a
-# `comment` line emitted immediately above that one CREATE FUNCTION (an alias
-# note, e.g. "Alias for temporal not equals, that is, tgeo_tne or #<>").
+# --- temporal spatial relationships (SQL, whole-file; native + cast) -----
+# Every Temporal<T>'s tXxx(base?, base?) -> tbool surface is one (predicate x
+# direction) matrix rendered into the shared {DOC}+{BODY} file shape. `impl`
+# (default `native`) picks how each cell's CREATE FUNCTION body is built:
+#  - native (cbuffer, tgeo, tpoint) - the family has its own C kernel per
+#    (predicate, direction), declared `AS 'MODULE_PATHNAME', '<Symbol>'`.
+#    `geometry`/`geography` tokenize to `geo`, and every temporal geo/point
+#    flavour (tgeometry/tgeography as well as tgeompoint/tgeogpoint, which
+#    temporalize the same tgeo_* kernel) tokenizes to `tgeo`, in the C symbol
+#    T<rel>_<left>_<right>; a direction may also carry `strict: false` (a
+#    non-strict wrapper, still `LANGUAGE C IMMUTABLE PARALLEL SAFE` minus the
+#    STRICT keyword) and/or a `comment` line emitted immediately above it (an
+#    alias note, e.g. "Alias for temporal not equals, that is, tgeo_tne or
+#    #<>").
+#  - cast (the cell indexes, pose, rgeo) - the family has no relationship
+#    kernel of its own. Per the cast-only spatial-uniformization rule (geo is
+#    the one place the relationship logic lives; nothing else re-implements
+#    it — memory north-star-spatial-cast-only-no-duplication), it converts
+#    each of its own operands to tgeometry via `convert` (`@N@` marks the
+#    operand position) and re-delegates to tgeometry's SQL-callable
+#    @extschema@.<Pred>; a `geometry` operand always passes through raw (it
+#    IS the delegation target, never converted).
+# Both impls share the (predicate, direction) matrix: a predicate normally
+# reuses the family-wide `directions` list, but a family whose matrix is not
+# uniform (tgeo/tpoint) gives that predicate its own `directions` override
+# (`name`+`directions` instead of a bare predicate name). Only the per-cell
+# body differs, plus two purely cosmetic differences already baked into the
+# committed surface before this axis existed: the native form's per-predicate
+# banner (the cast form has none) and the cast form's whole-file closing
+# banner (the native form has none).
+#
+# templates/tempspatialrels_native.sql.tmpl (native) and
+# templates/tempspatialrels.sql.tmpl (cast) are byte-identical {DOC}+{BODY}
+# wrappers; both exist only so a generated file's banner truthfully names the
+# template it was rendered from.
 _NATIVE_TSR_FN = (
     "CREATE FUNCTION {PRED}({LEFT}, {RIGHT}{DIST})\n"
     "  RETURNS tbool\n"
     "  AS 'MODULE_PATHNAME', '{SYMBOL}'\n"
     "  LANGUAGE C IMMUTABLE {STRICT} PARALLEL SAFE;")
+
+_CAST_TSR_FN = (
+    "CREATE FUNCTION {PRED}({LEFT}, {RIGHT}{DIST})\n"
+    "  RETURNS tbool\n"
+    "  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE\n"
+    "  AS $$ SELECT @extschema@.{PRED}({ARGS}) $$;")
+
+_TSR_CLOSING_BANNER = (
+    "/*****************************************************************************/")
 
 
 # The C symbol names the operation at the SUPERCLASS level: `geo` covers
@@ -452,11 +481,43 @@ def _native_tsr_token(t: str) -> str:
     return _NATIVE_TSR_SUPERCLASS.get(t, t)
 
 
-def render_native_tempspatialrels(fam: dict) -> str:
-    """Render the whole native temporal-spatialrels SQL file from
-    tempspatialrels_native.sql.tmpl: per predicate a banner and one CREATE FUNCTION
-    per direction, backed by the C symbol T<rel>_<left-token>_<right-token>."""
-    tmpl = (TEMPLATES / "tempspatialrels_native.sql.tmpl").read_text()
+def _tsr_cast_operand(t: str, pos: int, convert: str) -> str:
+    """One cast-family operand's SQL expression: `geometry` (the delegation
+    target) passes through raw; the family's own type converts via
+    `convert` (`@N@` -> the operand's `$`-position)."""
+    if t == "geometry":
+        return f"${pos}"
+    return convert.replace("@N@", f"${pos}")
+
+
+def _tsr_cast_body(pred: str, d: dict, fam: dict) -> str:
+    """One cast-family CREATE FUNCTION: both operands converted (or passed
+    through raw) and re-delegated to tgeometry's same-named predicate. When
+    BOTH operands need conversion (the own-type x own-type direction), the
+    call wraps onto a second line indented to the column of the CREATE
+    FUNCTION signature's argument list, matching the historical hand-tuned
+    alignment every cast family's committed SQL already carries."""
+    convert = fam["convert"]
+    l = _tsr_cast_operand(d["l"], 1, convert)
+    r = _tsr_cast_operand(d["r"], 2, convert)
+    dist_sig = ", dist float" if pred == "tDwithin" else ""
+    dist_arg = ", $3" if pred == "tDwithin" else ""
+    if d["l"] != "geometry" and d["r"] != "geometry":
+        indent = " " * (len("CREATE FUNCTION ") + len(pred) + 1)
+        args = f"{l},\n{indent}{r}{dist_arg}"
+    else:
+        args = f"{l}, {r}{dist_arg}"
+    return _CAST_TSR_FN.format(PRED=pred, LEFT=d["l"], RIGHT=d["r"], DIST=dist_sig, ARGS=args)
+
+
+def render_tempspatialrels(fam: dict) -> str:
+    """Render one family's whole tempspatialrels SQL file: per predicate one
+    CREATE FUNCTION per direction, native (`AS 'MODULE_PATHNAME', ...`) or
+    cast-and-delegate (`AS $$ SELECT @extschema@... $$`) per `fam['impl']`
+    (default 'native') — see the module comment above."""
+    impl = fam.get("impl", "native")
+    tmpl_name = "tempspatialrels.sql.tmpl" if impl == "cast" else "tempspatialrels_native.sql.tmpl"
+    tmpl = (TEMPLATES / tmpl_name).read_text()
     banner = ("/*****************************************************************************\n"
               " * {PRED}\n"
               " *****************************************************************************/")
@@ -466,6 +527,9 @@ def render_native_tempspatialrels(fam: dict) -> str:
             name, directions = pred["name"], pred["directions"]
         else:
             name, directions = pred, fam["directions"]
+        if impl == "cast":
+            units.append("\n".join(_tsr_cast_body(name, d, fam) for d in directions))
+            continue
         dist = ", dist float" if name == "tDwithin" else ""
         stem = "T" + name[1:].lower()                      # tContains -> Tcontains
         lines = []
@@ -477,9 +541,21 @@ def render_native_tempspatialrels(fam: dict) -> str:
                 STRICT="STRICT" if d.get("strict", True) else "",
                 SYMBOL=f"{stem}_{_native_tsr_token(d['l'])}_{_native_tsr_token(d['r'])}"))
         units.append(banner.replace("{PRED}", name) + "\n\n" + "\n".join(lines))
-    doc = f"/**\n * @file\n * @brief Temporal spatial relationships for {fam['brief']}\n */"
-    return (BANNER.format(tmpl="tempspatialrels_native.sql.tmpl")
-            + tmpl.replace("{DOC}", doc).replace("{BODY}", "\n\n".join(units)))
+    body = "\n\n".join(units)
+    if impl == "cast":
+        body += "\n\n" + _TSR_CLOSING_BANNER
+    doc = fam.get("doc")
+    if doc is None:
+        # A native family with no explicit `doc` gets the brief-derived
+        # one-liner (cbuffer/tgeo/tpoint); a cast family with no explicit
+        # `doc` falls back to the shared cell-index prose (h3/quadbin) — a
+        # future native family must supply its own `doc` rather than fall
+        # through to cast's cell-index wording.
+        doc = (f"/**\n * @file\n * @brief Temporal spatial relationships for {fam['brief']}\n */"
+               if impl != "cast"
+               else (TEMPLATES / "tempspatialrels.doc.tmpl").read_text().rstrip("\n"))
+    return (BANNER.format(tmpl=tmpl_name)
+            + tmpl.replace("{DOC}", doc).replace("{BODY}", body))
 
 
 # --- SQL accessors (per-family, region-in-file) --------------------------
@@ -3404,7 +3480,7 @@ AXIS_RENDERERS = {
     "tiling_families": lambda f: render_tiling(f),
     "compops_families": lambda f: render_compops(f),
     "aggregate_families": lambda f: render_aggregates(f),
-    "native_tempspatialrel_families": lambda f: render_native_tempspatialrels(f),
+    "tempspatialrel_families": lambda f: render_tempspatialrels(f),
     "span_families": lambda f: render_spanfile(f),
     "spatialrel_families":
         lambda f: render_dwithin(f) if f.get("dwithin") else render_spatialrels(f),
@@ -3486,7 +3562,6 @@ SUBTYPE_AXIS_BEHAVIOUR = {
     "topop_families": "topops",
     "posop_families": "posops",
     "spatialrel_families": "spatialrels",
-    "native_tempspatialrel_families": "tempspatialrels",
 }
 
 
@@ -4028,13 +4103,13 @@ def main() -> int:
                         break
                 if len(g) != len(c):
                     print(f"     line count gen={len(g)} cur={len(c)}")
-        for fam in mf.get("native_tempspatialrel_families", []):
+        for fam in mf.get("tempspatialrel_families", []):
             p = ROOT / fam["file"]
-            gen = render_native_tempspatialrels(fam)
+            gen = render_tempspatialrels(fam)
             cur = p.read_text() if p.exists() else ""
             same = gen == cur
             ok = ok and same
-            print(f"[{'OK ' if same else 'DIFF'}] self-regen native-tempspatialrels "
+            print(f"[{'OK ' if same else 'DIFF'}] self-regen tempspatialrels "
                   f"{fam['family']} -> {pathlib.Path(fam['file'])}")
             if not same:
                 g, c = gen.splitlines(), cur.splitlines()
@@ -4078,12 +4153,12 @@ def main() -> int:
             p.write_text(render(beh, sub))
             print(f"wrote {p.relative_to(ROOT)}")
 
-    for fam in mf.get("native_tempspatialrel_families", []):
+    for fam in mf.get("tempspatialrel_families", []):
         p = ROOT / fam["file"]
         if args.check:
             print(f"would write {p.relative_to(ROOT)}")
             continue
-        p.write_text(render_native_tempspatialrels(fam))
+        p.write_text(render_tempspatialrels(fam))
         print(f"wrote {p.relative_to(ROOT)}")
 
     for bt in mf.get("boxtypes", []):
