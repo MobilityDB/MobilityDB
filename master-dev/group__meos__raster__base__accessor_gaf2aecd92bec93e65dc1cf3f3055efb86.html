@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: raquet_quadbin</title>
+<title>MobilityDB: raquet_pixtype_from_string</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -84,9 +84,9 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_ga2ca2fc75183c44687bd597a065203b86.html#ga2ca2fc75183c44687bd597a065203b86">raquet_height</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_ga2766fcf64c97c0d748bb0cf20938081e.html#ga2766fcf64c97c0d748bb0cf20938081e">raquet_nodata</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_ga0019e015bac80fc360eed13f38720c3e.html#ga0019e015bac80fc360eed13f38720c3e">raquet_pixtype</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_gaf2aecd92bec93e65dc1cf3f3055efb86.html#gaf2aecd92bec93e65dc1cf3f3055efb86">raquet_pixtype_from_string</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__raster__base__accessor_gaf2aecd92bec93e65dc1cf3f3055efb86.html#gaf2aecd92bec93e65dc1cf3f3055efb86">raquet_pixtype_from_string</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_ga3d753a5a1074d72ee5ab110426852f9d.html#ga3d753a5a1074d72ee5ab110426852f9d">raquet_pixtype_size</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__raster__base__accessor_gab184fc345bab3f91cd572b95ae94feb7.html#gab184fc345bab3f91cd572b95ae94feb7">raquet_quadbin</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_gab184fc345bab3f91cd572b95ae94feb7.html#gab184fc345bab3f91cd572b95ae94feb7">raquet_quadbin</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_gad1d550458722f56daf1b8a64ec557062.html#gad1d550458722f56daf1b8a64ec557062">raquet_width</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_gaba1c7c459b677034a960af575f20e119.html#gaba1c7c459b677034a960af575f20e119">raster_tile_value_quadbin</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_ga683d59d59af47d462f0a1b7bb844b77c.html#ga683d59d59af47d462f0a1b7bb844b77c">trajectory_quadbins</a></td></tr>
@@ -94,23 +94,30 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="gab184fc345bab3f91cd572b95ae94feb7" name="gab184fc345bab3f91cd572b95ae94feb7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gab184fc345bab3f91cd572b95ae94feb7">&#9670;&#160;</a></span>raquet_quadbin()</h2>
+<a id="gaf2aecd92bec93e65dc1cf3f3055efb86" name="gaf2aecd92bec93e65dc1cf3f3055efb86"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaf2aecd92bec93e65dc1cf3f3055efb86">&#9670;&#160;</a></span>raquet_pixtype_from_string()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="postgres__ext__defs_8in_8h_abc0f5bc07737e498f287334775dff2b6.html#abc0f5bc07737e498f287334775dff2b6">uint64</a> raquet_quadbin </td>
+          <td class="memname"><a class="el" href="meos__raster_8h_ab4899fb599b17f4121bb9a377d9dd040.html#ab4899fb599b17f4121bb9a377d9dd040">MeosPixType</a> raquet_pixtype_from_string </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structRaquet.html">Raquet</a> *&#160;</td>
-          <td class="paramname"><em>rq</em></td><td>)</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>str</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Return the QUADBIN cell of a <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> tile @csqlfn <a class="el" href="group__mobilitydb__raster_ga0d742c9fbded109c8693c87a5ecbbd90.html#ga0d742c9fbded109c8693c87a5ecbbd90" title="Return the QUADBIN cell of a Raquet tile @sqlfn quadbin()">Raquet_quadbin()</a> </p>
+<p>Return the pixel data type corresponding to a name. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">str</td><td>Pixel type name: UINT8, INT16, INT32, FLOAT32, or FLOAT64 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section note"><dt>Note</dt><dd>This is the parser counterpart of <a class="el" href="group__meos__raster__base__accessor_ga0019e015bac80fc360eed13f38720c3e.html#ga0019e015bac80fc360eed13f38720c3e" title="Return the name of the pixel data type of a Raquet tile.">raquet_pixtype()</a> </dd></dl>
 
 </div>
 </div>
