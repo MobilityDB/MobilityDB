@@ -114,7 +114,7 @@ constructor_families:
   file: mobilitydb/sql/geo/052_tgeo.in.sql
   reference: true
   begin: "\n * Constructors\n"
-  end: "\n * Conversions\n"
+  end: "\n * Transformations\n"
   interp: step
   span_interp: true
   gaps_maxdist: true
@@ -146,7 +146,7 @@ constructor_families:
   file: mobilitydb/sql/geo/052_tpoint.in.sql
   reference: true
   begin: "\n * Constructors\n"
-  end: "\n * Conversions\n"
+  end: "\n * Transformations\n"
   interp: linear
   span_interp: true
   gaps_maxdist: true

@@ -209,22 +209,6 @@ CREATE FUNCTION tgeographySeqSetGaps(tgeography[], maxt interval DEFAULT NULL,
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 /******************************************************************************
- * Conversions
- ******************************************************************************/
-
-CREATE FUNCTION timeSpan(tgeometry)
-  RETURNS tstzspan
-  AS 'MODULE_PATHNAME', 'Temporal_to_tstzspan'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION timeSpan(tgeography)
-  RETURNS tstzspan
-  AS 'MODULE_PATHNAME', 'Temporal_to_tstzspan'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE CAST (tgeometry AS tstzspan) WITH FUNCTION timeSpan(tgeometry);
-CREATE CAST (tgeography AS tstzspan) WITH FUNCTION timeSpan(tgeography);
-
-/******************************************************************************
  * Transformations
  ******************************************************************************/
 
@@ -308,6 +292,9 @@ AS 'MODULE_PATHNAME', 'Temporal_merge_array'
  * Accessor Functions
  ******************************************************************************/
 
+-- GENERATED-ACCESSORS-BEGIN geo — tools/codegen/inherited/generate.py from templates/accessors.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/accessor_families.yaml and re-run.
+
 CREATE FUNCTION tempSubtype(tgeometry)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_subtype'
@@ -353,9 +340,7 @@ CREATE FUNCTION getValue(tgeography)
   AS 'MODULE_PATHNAME', 'Tinstant_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- There is no getValues() function for temporal geos,
--- it is called traversedArea() for temporal geos
-
+-- timestamp is a reserved word in SQL
 CREATE FUNCTION getTimestamp(tgeometry)
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'Tinstant_timestamptz'
@@ -365,22 +350,14 @@ CREATE FUNCTION getTimestamp(tgeography)
   AS 'MODULE_PATHNAME', 'Tinstant_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION valueSet(tgeometry)
+-- values is a reserved word in SQL
+CREATE FUNCTION getValues(tgeometry)
   RETURNS geomset
   AS 'MODULE_PATHNAME', 'Temporal_valueset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION valueSet(tgeography)
+CREATE FUNCTION getValues(tgeography)
   RETURNS geogset
   AS 'MODULE_PATHNAME', 'Temporal_valueset'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION valueN(tgeometry, integer)
-  RETURNS geometry
-  AS 'MODULE_PATHNAME', 'Temporal_value_n'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION valueN(tgeography, integer)
-  RETURNS geography
-  AS 'MODULE_PATHNAME', 'Temporal_value_n'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- time is a reserved word in SQL
@@ -391,6 +368,16 @@ CREATE FUNCTION getTime(tgeometry)
 CREATE FUNCTION getTime(tgeography)
   RETURNS tstzspanset
   AS 'MODULE_PATHNAME', 'Temporal_time'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- timeSpan is the bounding period, the tstzspan extent of the temporal value
+CREATE FUNCTION timeSpan(tgeometry)
+  RETURNS tstzspan
+  AS 'MODULE_PATHNAME', 'Temporal_to_tstzspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION timeSpan(tgeography)
+  RETURNS tstzspan
+  AS 'MODULE_PATHNAME', 'Temporal_to_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION startValue(tgeometry)
@@ -409,6 +396,24 @@ CREATE FUNCTION endValue(tgeometry)
 CREATE FUNCTION endValue(tgeography)
   RETURNS geography
   AS 'MODULE_PATHNAME', 'Temporal_end_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION valueN(tgeometry, int)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Temporal_value_n'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION valueN(tgeography, int)
+  RETURNS geography
+  AS 'MODULE_PATHNAME', 'Temporal_value_n'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION valueAtTimestamp(tgeometry, timestamptz)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Temporal_value_at_timestamptz'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION valueAtTimestamp(tgeography, timestamptz)
+  RETURNS geography
+  AS 'MODULE_PATHNAME', 'Temporal_value_at_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION duration(tgeometry, boundspan boolean DEFAULT FALSE)
@@ -581,6 +586,11 @@ CREATE FUNCTION segments(tgeography)
   RETURNS tgeography[]
   AS 'MODULE_PATHNAME', 'Temporal_segments'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- GENERATED-ACCESSORS-END geo
+
+-- The tstzspan cast is backed by the generated timeSpan accessor.
+CREATE CAST (tgeometry AS tstzspan) WITH FUNCTION timeSpan(tgeometry);
+CREATE CAST (tgeography AS tstzspan) WITH FUNCTION timeSpan(tgeography);
 
 /*****************************************************************************
  * Shift and scale functions
@@ -682,15 +692,6 @@ CREATE FUNCTION minusTime(tgeometry, timestamptz)
 CREATE FUNCTION minusTime(tgeography, timestamptz)
   RETURNS tgeography
   AS 'MODULE_PATHNAME', 'Temporal_minus_timestamptz'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE FUNCTION valueAtTimestamp(tgeometry, timestamptz)
-  RETURNS geometry
-  AS 'MODULE_PATHNAME', 'Temporal_value_at_timestamptz'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION valueAtTimestamp(tgeography, timestamptz)
-  RETURNS geography
-  AS 'MODULE_PATHNAME', 'Temporal_value_at_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION atTime(tgeometry, tstzset)

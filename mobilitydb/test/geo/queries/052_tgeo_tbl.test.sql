@@ -170,10 +170,10 @@ SELECT MAX(ST_MemSize(getValue(inst)::geometry)) FROM tbl_tgeography_inst;
 SELECT MAX(ST_MemSize(getValue(inst))) FROM tbl_tgeometry3D_inst;
 SELECT MAX(ST_MemSize(getValue(inst)::geometry)) FROM tbl_tgeography3D_inst;
 
-SELECT MAX(memSize(valueSet(temp))) FROM tbl_tgeometry;
-SELECT MAX(memSize(valueSet(temp))) FROM tbl_tgeography;
-SELECT MAX(memSize(valueSet(temp))) FROM tbl_tgeometry3D;
-SELECT MAX(memSize(valueSet(temp))) FROM tbl_tgeography3D;
+SELECT MAX(memSize(getValues(temp))) FROM tbl_tgeometry;
+SELECT MAX(memSize(getValues(temp))) FROM tbl_tgeography;
+SELECT MAX(memSize(getValues(temp))) FROM tbl_tgeometry3D;
+SELECT MAX(memSize(getValues(temp))) FROM tbl_tgeography3D;
 
 SELECT MAX(ST_MemSize(startValue(temp))) FROM tbl_tgeometry;
 SELECT MAX(ST_MemSize(startValue(temp)::geometry)) FROM tbl_tgeography;

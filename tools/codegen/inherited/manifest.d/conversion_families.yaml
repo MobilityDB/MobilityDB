@@ -39,28 +39,6 @@ conversion_families:
     - {sig: "tbox(tbigint)", ret: tbox, sym: Tnumber_to_tbox}
     - {sig: "tbox(tfloat)", ret: tbox, sym: Tnumber_to_tbox}
   - lit: "\nCREATE CAST (tint AS tbox) WITH FUNCTION tbox(tint);\nCREATE CAST (tbigint AS tbox) WITH FUNCTION tbox(tbigint);\nCREATE CAST (tfloat AS tbox) WITH FUNCTION tbox(tfloat);\n\n"
-- family: geo
-  file: mobilitydb/sql/geo/052_tgeo.in.sql
-  reference: true
-  begin: "\n * Conversions\n"
-  end: "\n * Transformations\n"
-  blocks:
-  - lit: "/******************************************************************************\n * Conversions\n ******************************************************************************/\n\n"
-  - fns:
-    - {sig: "timeSpan(tgeometry)", ret: tstzspan, sym: Temporal_to_tstzspan}
-    - {sig: "timeSpan(tgeography)", ret: tstzspan, sym: Temporal_to_tstzspan}
-  - lit: "\nCREATE CAST (tgeometry AS tstzspan) WITH FUNCTION timeSpan(tgeometry);\nCREATE CAST (tgeography AS tstzspan) WITH FUNCTION timeSpan(tgeography);\n\n"
-- family: tpoint
-  file: mobilitydb/sql/geo/052_tpoint.in.sql
-  reference: true
-  begin: "\n * Conversions\n"
-  end: "\n * Transformations\n"
-  blocks:
-  - lit: "/******************************************************************************\n * Conversions\n ******************************************************************************/\n\n"
-  - fns:
-    - {sig: "timeSpan(tgeompoint)", ret: tstzspan, sym: Temporal_to_tstzspan}
-    - {sig: "timeSpan(tgeogpoint)", ret: tstzspan, sym: Temporal_to_tstzspan}
-  - lit: "\nCREATE CAST (tgeompoint AS tstzspan) WITH FUNCTION timeSpan(tgeompoint);\nCREATE CAST (tgeogpoint AS tstzspan) WITH FUNCTION timeSpan(tgeogpoint);\n\n"
 - family: cbuffer
   file: mobilitydb/sql/cbuffer/202_tcbuffer.in.sql
   reference: true
