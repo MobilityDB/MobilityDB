@@ -17,3 +17,84 @@ native_tempspatialrel_families:
       - {l: geometry, r: tcbuffer}
       - {l: tcbuffer, r: geometry}
       - {l: tcbuffer, r: tcbuffer}
+
+  # tgeo is the base of the delegation chain: h3/quadbin/pose/rgeo's SQL
+  # cast-wrappers (templates/tempspatialrels.sql.tmpl) all convert their operand
+  # to tgeometry and call these same tContains..tDwithin functions. Its predicate
+  # matrix is not uniform across directions (tContains/tCovers have no geodetic
+  # direction; tDisjoint/tIntersects add a tgeography/tgeography direction that
+  # aliases the temporal (in)equality operators; tDwithin's t-vs-geo direction is
+  # not strict), so each of those three predicates overrides the family-wide
+  # `directions` default that tCovers/tContains/tTouches reuse unchanged.
+  - family:  tgeo
+    file:    mobilitydb/sql/geo/072_tgeo_tempspatialrels.in.sql
+    brief:   "temporal geometries/geographies"
+    directions:
+      - {l: geometry,  r: tgeometry}
+      - {l: tgeometry, r: geometry}
+      - {l: tgeometry, r: tgeometry}
+    predicates:
+      - tContains
+      - tCovers
+      - name: tDisjoint
+        directions:
+          - {l: geometry,  r: tgeometry}
+          - {l: tgeometry, r: geometry}
+          - {l: tgeometry, r: tgeometry,
+             comment: "Alias for temporal not equals, that is, geo_tne or #<>"}
+          - {l: tgeography, r: tgeography}
+      - name: tIntersects
+        directions:
+          - {l: geometry,  r: tgeometry}
+          - {l: tgeometry, r: geometry}
+          - {l: tgeometry, r: tgeometry,
+             comment: "Alias for temporal equals, that is, tgeo_teq or #="}
+          - {l: tgeography, r: tgeography}
+      - tTouches
+      - name: tDwithin
+        directions:
+          - {l: geometry,  r: tgeometry}
+          - {l: tgeometry, r: geometry, strict: false,
+             comment: "The function is not strict"}
+          - {l: tgeometry, r: tgeometry}
+
+  # tpoint (tgeompoint/tgeogpoint) shares the tgeo native C symbols (a point
+  # temporalizes the same tgeo_* kernel — see _NATIVE_TSR_SUPERCLASS), but its
+  # predicate matrix is narrower than tgeo's: tContains/tCovers expose only the
+  # geo-vs-t direction (a point containing/covering is degenerate the other way),
+  # tTouches has no t-vs-t or geodetic direction, and tDwithin's t-vs-geo
+  # direction is strict here (unlike tgeo's). Every predicate overrides the
+  # (absent) family default explicitly.
+  - family:  tpoint
+    file:    mobilitydb/sql/geo/072_tpoint_tempspatialrels.in.sql
+    brief:   "temporal geometries/geographies"
+    predicates:
+      - name: tContains
+        directions:
+          - {l: geometry, r: tgeompoint}
+      - name: tCovers
+        directions:
+          - {l: geometry, r: tgeompoint}
+      - name: tDisjoint
+        directions:
+          - {l: geometry,   r: tgeompoint}
+          - {l: tgeompoint, r: geometry}
+          - {l: tgeompoint, r: tgeompoint,
+             comment: "Alias for temporal not equals, that is, tgeo_tne or #<>"}
+          - {l: tgeogpoint, r: tgeogpoint}
+      - name: tIntersects
+        directions:
+          - {l: geometry,   r: tgeompoint}
+          - {l: tgeompoint, r: geometry}
+          - {l: tgeompoint, r: tgeompoint,
+             comment: "Alias for temporal equals, that is, tgeo_teq or #="}
+          - {l: tgeogpoint, r: tgeogpoint}
+      - name: tTouches
+        directions:
+          - {l: geometry,   r: tgeompoint}
+          - {l: tgeompoint, r: geometry}
+      - name: tDwithin
+        directions:
+          - {l: geometry,   r: tgeompoint}
+          - {l: tgeompoint, r: geometry}
+          - {l: tgeompoint, r: tgeompoint}

@@ -31,8 +31,6 @@ mobilitydb/sql/geo/070_tgeo_spatialrels.in.sql
 mobilitydb/sql/geo/070_tpoint_spatialrels.in.sql
 mobilitydb/sql/geo/071_tgeo_setset.in.sql
 mobilitydb/sql/geo/071_tpoint_setset.in.sql
-mobilitydb/sql/geo/072_tgeo_tempspatialrels.in.sql
-mobilitydb/sql/geo/072_tpoint_tempspatialrels.in.sql
 mobilitydb/sql/geo/073_tgeo_gist.in.sql
 mobilitydb/sql/geo/073_tpoint_gist.in.sql
 mobilitydb/sql/geo/074_tgeo_spgist.in.sql

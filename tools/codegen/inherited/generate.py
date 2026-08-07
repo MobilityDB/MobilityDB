@@ -420,21 +420,30 @@ def render_dwithin(fam: dict) -> str:
 # direction) is a uniform four-line CREATE FUNCTION; the family lists its ordered
 # directions (each a left/right argument type; `geometry` tokenizes to `geo` in the
 # C symbol T<rel>_<left>_<right>) and its predicate set. tDwithin carries an extra
-# `dist float` argument.
+# `dist float` argument. A predicate normally reuses the family-wide `directions`
+# list, but a family whose predicate matrix is not uniform (tgeo/tpoint: e.g.
+# tTouches has no tt/geodetic direction, tContains/tCovers on tpoint only cover
+# the geo-vs-t direction) gives that predicate its own `directions` override; a
+# single direction may also carry `strict: false` (a non-strict wrapper, still
+# `LANGUAGE C IMMUTABLE PARALLEL SAFE` minus the STRICT keyword) and/or a
+# `comment` line emitted immediately above that one CREATE FUNCTION (an alias
+# note, e.g. "Alias for temporal not equals, that is, tgeo_tne or #<>").
 _NATIVE_TSR_FN = (
     "CREATE FUNCTION {PRED}({LEFT}, {RIGHT}{DIST})\n"
     "  RETURNS tbool\n"
     "  AS 'MODULE_PATHNAME', '{SYMBOL}'\n"
-    "  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;")
+    "  LANGUAGE C IMMUTABLE {STRICT} PARALLEL SAFE;")
 
 
 # The C symbol names the operation at the SUPERCLASS level: `geo` covers
-# geometry/geography and `tgeo` covers tgeometry/tgeography (tgeography is not there
-# yet but may be one day); every other type is its own token. The SQL signature
+# geometry/geography, and `tgeo` covers every temporal geo/point flavour
+# (tgeometry/tgeography as well as tgeompoint/tgeogpoint, which temporalize the
+# same tgeo_* kernel); every other type is its own token. The SQL signature
 # still carries the concrete argument type.
 _NATIVE_TSR_SUPERCLASS = {
     "geometry": "geo", "geography": "geo",
     "tgeometry": "tgeo", "tgeography": "tgeo",
+    "tgeompoint": "tgeo", "tgeogpoint": "tgeo",
 }
 
 
@@ -453,13 +462,21 @@ def render_native_tempspatialrels(fam: dict) -> str:
               " *****************************************************************************/")
     units = []
     for pred in fam["predicates"]:
-        dist = ", dist float" if pred == "tDwithin" else ""
-        stem = "T" + pred[1:].lower()                      # tContains -> Tcontains
-        fns = [_NATIVE_TSR_FN.format(
-                   PRED=pred, LEFT=d["l"], RIGHT=d["r"], DIST=dist,
-                   SYMBOL=f"{stem}_{_native_tsr_token(d['l'])}_{_native_tsr_token(d['r'])}")
-               for d in fam["directions"]]
-        units.append(banner.replace("{PRED}", pred) + "\n\n" + "\n".join(fns))
+        if isinstance(pred, dict):
+            name, directions = pred["name"], pred["directions"]
+        else:
+            name, directions = pred, fam["directions"]
+        dist = ", dist float" if name == "tDwithin" else ""
+        stem = "T" + name[1:].lower()                      # tContains -> Tcontains
+        lines = []
+        for d in directions:
+            if d.get("comment"):
+                lines.append(f"-- {d['comment']}")
+            lines.append(_NATIVE_TSR_FN.format(
+                PRED=name, LEFT=d["l"], RIGHT=d["r"], DIST=dist,
+                STRICT="STRICT" if d.get("strict", True) else "",
+                SYMBOL=f"{stem}_{_native_tsr_token(d['l'])}_{_native_tsr_token(d['r'])}"))
+        units.append(banner.replace("{PRED}", name) + "\n\n" + "\n".join(lines))
     doc = f"/**\n * @file\n * @brief Temporal spatial relationships for {fam['brief']}\n */"
     return (BANNER.format(tmpl="tempspatialrels_native.sql.tmpl")
             + tmpl.replace("{DOC}", doc).replace("{BODY}", "\n\n".join(units)))
