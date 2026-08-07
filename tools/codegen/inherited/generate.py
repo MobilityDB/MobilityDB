@@ -2270,13 +2270,14 @@ def bootstrap_distance(filetext: str, fam: dict, rendered: str) -> str:
 # (marker-aware, mirroring extract_constructors: sliced by GENERATED-CONVERSIONS
 # markers once they exist, else by the Conversions banner header down to the `/*` of
 # the next section), so the deployed .in.sql files are untouched while the template is
-# proven. FOUR families are intentionally absent from the manifest: th3index and
-# tquadbin scatter their casts across three non-contiguous locations (the typmod
-# self-cast in the I/O area, the tbigint assignment casts, and the tstzspan cast
-# buried in the Accessors section — there is no single Conversions section to slice),
-# and tpcpoint/tpcpatch likewise have no contiguous conversion section (tpcpoint's
-# lone tgeompoint cast trails the Accessors block; tpcpatch has none). They are
-# classified out by omission from the data, never by a code-level skip.
+# proven. th3index and tquadbin each carry a typmod self-cast in the I/O area and a
+# tstzspan cast buried in the Accessors section, both owned by other axes; between
+# them sits a single contiguous "Explicit assignment casts to / from tbigint" region
+# (the tbigint cross-casts), which this axis slices like any other family. TWO
+# families remain intentionally absent from the manifest: tpcpoint/tpcpatch have no
+# contiguous conversion section (tpcpoint's lone tgeompoint cast trails the Accessors
+# block; tpcpatch has none). They are classified out by omission from the data, never
+# by a code-level skip.
 def _conversions_markers(family: str):
     begin = (f"-- GENERATED-CONVERSIONS-BEGIN {family} — "
              "tools/codegen/inherited/generate.py from templates/conversions.sql.tmpl;\n"
