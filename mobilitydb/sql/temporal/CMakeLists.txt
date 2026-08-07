@@ -19,6 +19,7 @@ SET(LOCAL_FILES
   029_ttext_textfuncs
   030_temporal_compops
   032_temporal_boxops
+  033_temporal_topops
   034_temporal_posops
   036_tnumber_distance
   038_temporal_similarity

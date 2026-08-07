@@ -197,10 +197,12 @@ documented inline in `temporal_types_p1/p2` (no separate number chapter).
 (catalog:1214/1192) but are **absent from the MEOS-API lattice** (§8) — a curation gap.
 
 **The generic base `Temporal<T>` reference files** (`030_temporal_compops`,
-`032_temporal_boxops`, `034_temporal_posops`, `040/042` aggfuncs, `043/044`
-gist/spgist, `022/023` type/inout, `025_temporal_tile`, `038/046`
-similarity/analytics) are likewise the hand reference; the generator re-emits their
-*shape* onto the derived families (§6) and regenerates the **C boxops region** for box
+`032_temporal_boxops` (extraction: spans/tboxes/split*), `033_temporal_topops`
+(topological: overlaps/contains/contained/same/adjacent), `034_temporal_posops`,
+`040/042` aggfuncs, `043/044` gist/spgist, `022/023` type/inout, `025_temporal_tile`,
+`038/046` similarity/analytics) are likewise the hand reference; the generator
+re-emits their *shape* onto the derived families (§6) and regenerates the **C boxops
+region** for box
 type `tstzspan` inside `temporal_boxops.c`.
 
 **Base value-domain types** (`Set` / `Span` / `SpanSet` / `TBox` / `STBox`) are the
