@@ -145,7 +145,25 @@ datum_cmp(Datum l, Datum r, MeosType type)
       return text_cmp(DatumGetTextP(l), DatumGetTextP(r), DEFAULT_COLLATION_OID);
     case T_GEOMETRY:
     case T_GEOGRAPHY:
-      return gserialized_cmp(DatumGetGserializedP(l), DatumGetGserializedP(r));
+    {
+      const GSERIALIZED *gs1 = DatumGetGserializedP(l);
+      const GSERIALIZED *gs2 = DatumGetGserializedP(r);
+      /* Fast path: two points of the same SRID and dimension are ordered by
+       * their coordinates, as the centre of two circular buffers is. The
+       * general comparison builds a bounding box and a sortable hash for each
+       * operand, which is the dominant cost of sorting the values of a
+       * temporal point. A point precedes any other geometry, so that the
+       * order stays total on a value holding geometries of several types */
+      bool point1 = (gserialized_get_type(gs1) == POINTTYPE);
+      bool point2 = (gserialized_get_type(gs2) == POINTTYPE);
+      if (point1 && point2 &&
+          gserialized_get_srid(gs1) == gserialized_get_srid(gs2) &&
+          FLAGS_GET_Z(gs1->gflags) == FLAGS_GET_Z(gs2->gflags))
+        return geopoint_cmp(gs1, gs2);
+      if (point1 != point2)
+        return point1 ? -1 : 1;
+      return gserialized_cmp(gs1, gs2);
+    }
 #if CBUFFER
     case T_CBUFFER:
       return cbuffer_cmp(DatumGetCbufferP(l), DatumGetCbufferP(r));
