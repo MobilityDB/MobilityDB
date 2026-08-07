@@ -44,11 +44,6 @@ CREATE FUNCTION eEq(pcpoint, tpcpoint)
   AS 'MODULE_PATHNAME', 'Ever_eq_pcpoint_tpcpoint'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION aEq(pcpoint, tpcpoint)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_eq_pcpoint_tpcpoint'
-  SUPPORT tspatial_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?= (
   LEFTARG = pcpoint, RIGHTARG = tpcpoint,
@@ -56,6 +51,13 @@ CREATE OPERATOR ?= (
   NEGATOR = %<>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
+
+CREATE FUNCTION aEq(pcpoint, tpcpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_eq_pcpoint_tpcpoint'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE OPERATOR %= (
   LEFTARG = pcpoint, RIGHTARG = tpcpoint,
   PROCEDURE = aEq,
@@ -67,10 +69,6 @@ CREATE FUNCTION eNe(pcpoint, tpcpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Ever_ne_pcpoint_tpcpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION aNe(pcpoint, tpcpoint)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_ne_pcpoint_tpcpoint'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?<> (
   LEFTARG = pcpoint, RIGHTARG = tpcpoint,
@@ -78,6 +76,12 @@ CREATE OPERATOR ?<> (
   NEGATOR = %=,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
+
+CREATE FUNCTION aNe(pcpoint, tpcpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_ne_pcpoint_tpcpoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE OPERATOR %<> (
   LEFTARG = pcpoint, RIGHTARG = tpcpoint,
   PROCEDURE = aNe,
@@ -92,11 +96,6 @@ CREATE FUNCTION eEq(tpcpoint, pcpoint)
   AS 'MODULE_PATHNAME', 'Ever_eq_tpcpoint_pcpoint'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION aEq(tpcpoint, pcpoint)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_eq_tpcpoint_pcpoint'
-  SUPPORT tspatial_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?= (
   LEFTARG = tpcpoint, RIGHTARG = pcpoint,
@@ -104,6 +103,13 @@ CREATE OPERATOR ?= (
   NEGATOR = %<>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
+
+CREATE FUNCTION aEq(tpcpoint, pcpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_eq_tpcpoint_pcpoint'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE OPERATOR %= (
   LEFTARG = tpcpoint, RIGHTARG = pcpoint,
   PROCEDURE = aEq,
@@ -115,10 +121,6 @@ CREATE FUNCTION eNe(tpcpoint, pcpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Ever_ne_tpcpoint_pcpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION aNe(tpcpoint, pcpoint)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_ne_tpcpoint_pcpoint'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?<> (
   LEFTARG = tpcpoint, RIGHTARG = pcpoint,
@@ -126,6 +128,12 @@ CREATE OPERATOR ?<> (
   NEGATOR = %=,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
+
+CREATE FUNCTION aNe(tpcpoint, pcpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_ne_tpcpoint_pcpoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE OPERATOR %<> (
   LEFTARG = tpcpoint, RIGHTARG = pcpoint,
   PROCEDURE = aNe,
@@ -140,11 +148,6 @@ CREATE FUNCTION eEq(tpcpoint, tpcpoint)
   AS 'MODULE_PATHNAME', 'Ever_eq_tpcpoint_tpcpoint'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION aEq(tpcpoint, tpcpoint)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_eq_tpcpoint_tpcpoint'
-  SUPPORT tspatial_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?= (
   LEFTARG = tpcpoint, RIGHTARG = tpcpoint,
@@ -152,6 +155,13 @@ CREATE OPERATOR ?= (
   NEGATOR = %<>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
+
+CREATE FUNCTION aEq(tpcpoint, tpcpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_eq_tpcpoint_tpcpoint'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE OPERATOR %= (
   LEFTARG = tpcpoint, RIGHTARG = tpcpoint,
   PROCEDURE = aEq,
@@ -163,10 +173,6 @@ CREATE FUNCTION eNe(tpcpoint, tpcpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Ever_ne_tpcpoint_tpcpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION aNe(tpcpoint, tpcpoint)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_ne_tpcpoint_tpcpoint'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?<> (
   LEFTARG = tpcpoint, RIGHTARG = tpcpoint,
@@ -174,6 +180,12 @@ CREATE OPERATOR ?<> (
   NEGATOR = %=,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
+
+CREATE FUNCTION aNe(tpcpoint, tpcpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_ne_tpcpoint_tpcpoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE OPERATOR %<> (
   LEFTARG = tpcpoint, RIGHTARG = tpcpoint,
   PROCEDURE = aNe,
@@ -246,5 +258,4 @@ CREATE OPERATOR #<> (
   LEFTARG = tpcpoint, RIGHTARG = tpcpoint,
   COMMUTATOR = #<>
 );
-
-/******************************************************************************/
+/*****************************************************************************/

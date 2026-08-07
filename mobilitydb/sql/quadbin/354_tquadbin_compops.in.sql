@@ -44,11 +44,6 @@ CREATE FUNCTION eEq(quadbin, tquadbin)
   AS 'MODULE_PATHNAME', 'Ever_eq_quadbin_tquadbin'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION aEq(quadbin, tquadbin)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_eq_quadbin_tquadbin'
-  SUPPORT tspatial_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?= (
   LEFTARG = quadbin, RIGHTARG = tquadbin,
@@ -56,6 +51,13 @@ CREATE OPERATOR ?= (
   NEGATOR = %<>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
+
+CREATE FUNCTION aEq(quadbin, tquadbin)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_eq_quadbin_tquadbin'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE OPERATOR %= (
   LEFTARG = quadbin, RIGHTARG = tquadbin,
   PROCEDURE = aEq,
@@ -67,10 +69,6 @@ CREATE FUNCTION eNe(quadbin, tquadbin)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Ever_ne_quadbin_tquadbin'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION aNe(quadbin, tquadbin)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_ne_quadbin_tquadbin'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?<> (
   LEFTARG = quadbin, RIGHTARG = tquadbin,
@@ -78,6 +76,12 @@ CREATE OPERATOR ?<> (
   NEGATOR = %=,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
+
+CREATE FUNCTION aNe(quadbin, tquadbin)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_ne_quadbin_tquadbin'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE OPERATOR %<> (
   LEFTARG = quadbin, RIGHTARG = tquadbin,
   PROCEDURE = aNe,
@@ -92,11 +96,6 @@ CREATE FUNCTION eEq(tquadbin, quadbin)
   AS 'MODULE_PATHNAME', 'Ever_eq_tquadbin_quadbin'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION aEq(tquadbin, quadbin)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_eq_tquadbin_quadbin'
-  SUPPORT tspatial_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?= (
   LEFTARG = tquadbin, RIGHTARG = quadbin,
@@ -104,6 +103,13 @@ CREATE OPERATOR ?= (
   NEGATOR = %<>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
+
+CREATE FUNCTION aEq(tquadbin, quadbin)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_eq_tquadbin_quadbin'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE OPERATOR %= (
   LEFTARG = tquadbin, RIGHTARG = quadbin,
   PROCEDURE = aEq,
@@ -115,10 +121,6 @@ CREATE FUNCTION eNe(tquadbin, quadbin)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Ever_ne_tquadbin_quadbin'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION aNe(tquadbin, quadbin)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_ne_tquadbin_quadbin'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?<> (
   LEFTARG = tquadbin, RIGHTARG = quadbin,
@@ -126,6 +128,12 @@ CREATE OPERATOR ?<> (
   NEGATOR = %=,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
+
+CREATE FUNCTION aNe(tquadbin, quadbin)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_ne_tquadbin_quadbin'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE OPERATOR %<> (
   LEFTARG = tquadbin, RIGHTARG = quadbin,
   PROCEDURE = aNe,
@@ -140,11 +148,6 @@ CREATE FUNCTION eEq(tquadbin, tquadbin)
   AS 'MODULE_PATHNAME', 'Ever_eq_tquadbin_tquadbin'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION aEq(tquadbin, tquadbin)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_eq_tquadbin_tquadbin'
-  SUPPORT tspatial_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?= (
   LEFTARG = tquadbin, RIGHTARG = tquadbin,
@@ -152,6 +155,13 @@ CREATE OPERATOR ?= (
   NEGATOR = %<>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
+
+CREATE FUNCTION aEq(tquadbin, tquadbin)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_eq_tquadbin_tquadbin'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE OPERATOR %= (
   LEFTARG = tquadbin, RIGHTARG = tquadbin,
   PROCEDURE = aEq,
@@ -163,10 +173,6 @@ CREATE FUNCTION eNe(tquadbin, tquadbin)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Ever_ne_tquadbin_tquadbin'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION aNe(tquadbin, tquadbin)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_ne_tquadbin_tquadbin'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?<> (
   LEFTARG = tquadbin, RIGHTARG = tquadbin,
@@ -174,6 +180,12 @@ CREATE OPERATOR ?<> (
   NEGATOR = %=,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
+
+CREATE FUNCTION aNe(tquadbin, tquadbin)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_ne_tquadbin_tquadbin'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE OPERATOR %<> (
   LEFTARG = tquadbin, RIGHTARG = tquadbin,
   PROCEDURE = aNe,
@@ -246,5 +258,4 @@ CREATE OPERATOR #<> (
   LEFTARG = tquadbin, RIGHTARG = tquadbin,
   COMMUTATOR = #<>
 );
-
-/******************************************************************************/
+/*****************************************************************************/

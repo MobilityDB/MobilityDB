@@ -44,11 +44,6 @@ CREATE FUNCTION eEq(h3index, th3index)
   AS 'MODULE_PATHNAME', 'Ever_eq_h3index_th3index'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION aEq(h3index, th3index)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_eq_h3index_th3index'
-  SUPPORT tspatial_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?= (
   LEFTARG = h3index, RIGHTARG = th3index,
@@ -56,6 +51,13 @@ CREATE OPERATOR ?= (
   NEGATOR = %<>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
+
+CREATE FUNCTION aEq(h3index, th3index)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_eq_h3index_th3index'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE OPERATOR %= (
   LEFTARG = h3index, RIGHTARG = th3index,
   PROCEDURE = aEq,
@@ -67,10 +69,6 @@ CREATE FUNCTION eNe(h3index, th3index)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Ever_ne_h3index_th3index'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION aNe(h3index, th3index)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_ne_h3index_th3index'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?<> (
   LEFTARG = h3index, RIGHTARG = th3index,
@@ -78,6 +76,12 @@ CREATE OPERATOR ?<> (
   NEGATOR = %=,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
+
+CREATE FUNCTION aNe(h3index, th3index)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_ne_h3index_th3index'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE OPERATOR %<> (
   LEFTARG = h3index, RIGHTARG = th3index,
   PROCEDURE = aNe,
@@ -92,11 +96,6 @@ CREATE FUNCTION eEq(th3index, h3index)
   AS 'MODULE_PATHNAME', 'Ever_eq_th3index_h3index'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION aEq(th3index, h3index)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_eq_th3index_h3index'
-  SUPPORT tspatial_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?= (
   LEFTARG = th3index, RIGHTARG = h3index,
@@ -104,6 +103,13 @@ CREATE OPERATOR ?= (
   NEGATOR = %<>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
+
+CREATE FUNCTION aEq(th3index, h3index)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_eq_th3index_h3index'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE OPERATOR %= (
   LEFTARG = th3index, RIGHTARG = h3index,
   PROCEDURE = aEq,
@@ -115,10 +121,6 @@ CREATE FUNCTION eNe(th3index, h3index)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Ever_ne_th3index_h3index'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION aNe(th3index, h3index)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_ne_th3index_h3index'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?<> (
   LEFTARG = th3index, RIGHTARG = h3index,
@@ -126,6 +128,12 @@ CREATE OPERATOR ?<> (
   NEGATOR = %=,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
+
+CREATE FUNCTION aNe(th3index, h3index)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_ne_th3index_h3index'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE OPERATOR %<> (
   LEFTARG = th3index, RIGHTARG = h3index,
   PROCEDURE = aNe,
@@ -140,11 +148,6 @@ CREATE FUNCTION eEq(th3index, th3index)
   AS 'MODULE_PATHNAME', 'Ever_eq_th3index_th3index'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION aEq(th3index, th3index)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_eq_th3index_th3index'
-  SUPPORT tspatial_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?= (
   LEFTARG = th3index, RIGHTARG = th3index,
@@ -152,6 +155,13 @@ CREATE OPERATOR ?= (
   NEGATOR = %<>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
+
+CREATE FUNCTION aEq(th3index, th3index)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_eq_th3index_th3index'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE OPERATOR %= (
   LEFTARG = th3index, RIGHTARG = th3index,
   PROCEDURE = aEq,
@@ -163,10 +173,6 @@ CREATE FUNCTION eNe(th3index, th3index)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Ever_ne_th3index_th3index'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION aNe(th3index, th3index)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Always_ne_th3index_th3index'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?<> (
   LEFTARG = th3index, RIGHTARG = th3index,
@@ -174,6 +180,12 @@ CREATE OPERATOR ?<> (
   NEGATOR = %=,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
+
+CREATE FUNCTION aNe(th3index, th3index)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Always_ne_th3index_th3index'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE OPERATOR %<> (
   LEFTARG = th3index, RIGHTARG = th3index,
   PROCEDURE = aNe,
@@ -246,5 +258,4 @@ CREATE OPERATOR #<> (
   LEFTARG = th3index, RIGHTARG = th3index,
   COMMUTATOR = #<>
 );
-
-/******************************************************************************/
+/*****************************************************************************/
