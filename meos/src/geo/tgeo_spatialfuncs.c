@@ -142,11 +142,17 @@ geopoint_cmp(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   {
     const POINT3DZ *point1 = GSERIALIZED_POINT3DZ_P(gs1);
     const POINT3DZ *point2 = GSERIALIZED_POINT3DZ_P(gs2);
-    if (float8_lt(point1->x, point2->x) || float8_lt(point1->y, point2->y) || 
-        float8_lt(point1->z, point2->z))
+    if (float8_lt(point1->x, point2->x))
       return -1;
-    if (float8_gt(point1->x, point2->x) || float8_gt(point1->y, point2->y) || 
-        float8_gt(point1->z, point2->z))
+    if (float8_gt(point1->x, point2->x))
+      return 1;
+    if (float8_lt(point1->y, point2->y))
+      return -1;
+    if (float8_gt(point1->y, point2->y))
+      return 1;
+    if (float8_lt(point1->z, point2->z))
+      return -1;
+    if (float8_gt(point1->z, point2->z))
       return 1;
     return 0;
   }
@@ -154,9 +160,13 @@ geopoint_cmp(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   {
     const POINT2D *point1 = GSERIALIZED_POINT2D_P(gs1);
     const POINT2D *point2 = GSERIALIZED_POINT2D_P(gs2);
-    if (float8_lt(point1->x, point2->x) || float8_lt(point1->y, point2->y))
+    if (float8_lt(point1->x, point2->x))
       return -1;
-    if (float8_gt(point1->x, point2->x) || float8_gt(point1->y, point2->y))
+    if (float8_gt(point1->x, point2->x))
+      return 1;
+    if (float8_lt(point1->y, point2->y))
+      return -1;
+    if (float8_gt(point1->y, point2->y))
       return 1;
     return 0;
   }
