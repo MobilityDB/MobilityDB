@@ -30,7 +30,7 @@
 /**
  * @file
  * @brief Ever/always and temporal comparison functions and operators for
- * temporal circular buffers
+ * temporal JSONB
  */
 
 /*****************************************************************************
