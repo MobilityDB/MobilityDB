@@ -70,6 +70,19 @@ tcellindex_type(MeosType type UNUSED)
 }
 
 /**
+ * @brief Ensure that @p type is a temporal DGGS cell-index type.
+ */
+bool
+ensure_tcellindex_type(MeosType type)
+{
+  if (tcellindex_type(type))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+    "The temporal value must be a temporal cell index");
+  return false;
+}
+
+/**
  * @brief Return the operations descriptor for a temporal cell-index type.
  */
 const DggsCellOps *
@@ -156,7 +169,7 @@ tcellindex_lift_param1(const Temporal *temp, Datum (*func)(Datum, Datum),
 Temporal *
 tcellindex_get_resolution(const Temporal *temp)
 {
-  assert(temp); assert(tcellindex_type(temp->temptype));
+  VALIDATE_TCELLINDEX(temp, NULL);
   const DggsCellOps *ops = dggs_cellops(temp->temptype);
   if (! ops)
     return NULL;
@@ -173,7 +186,7 @@ tcellindex_get_resolution(const Temporal *temp)
 Temporal *
 tcellindex_is_valid_cell(const Temporal *temp)
 {
-  assert(temp); assert(tcellindex_type(temp->temptype));
+  VALIDATE_TCELLINDEX(temp, NULL);
   const DggsCellOps *ops = dggs_cellops(temp->temptype);
   if (! ops)
     return NULL;
@@ -189,7 +202,7 @@ tcellindex_is_valid_cell(const Temporal *temp)
 Temporal *
 tcellindex_cell_to_parent(const Temporal *temp, int32 resolution)
 {
-  assert(temp); assert(tcellindex_type(temp->temptype));
+  VALIDATE_TCELLINDEX(temp, NULL);
   const DggsCellOps *ops = dggs_cellops(temp->temptype);
   if (! ops)
     return NULL;
@@ -206,7 +219,7 @@ tcellindex_cell_to_parent(const Temporal *temp, int32 resolution)
 Temporal *
 tcellindex_cell_to_point(const Temporal *temp)
 {
-  assert(temp); assert(tcellindex_type(temp->temptype));
+  VALIDATE_TCELLINDEX(temp, NULL);
   const DggsCellOps *ops = dggs_cellops(temp->temptype);
   if (! ops)
     return NULL;
@@ -222,7 +235,7 @@ tcellindex_cell_to_point(const Temporal *temp)
 Temporal *
 tcellindex_cell_to_boundary(const Temporal *temp)
 {
-  assert(temp); assert(tcellindex_type(temp->temptype));
+  VALIDATE_TCELLINDEX(temp, NULL);
   const DggsCellOps *ops = dggs_cellops(temp->temptype);
   if (! ops)
     return NULL;
@@ -240,7 +253,7 @@ tcellindex_cell_to_boundary(const Temporal *temp)
 Temporal *
 tcellindex_cell_area(const Temporal *temp)
 {
-  assert(temp); assert(tcellindex_type(temp->temptype));
+  VALIDATE_TCELLINDEX(temp, NULL);
   const DggsCellOps *ops = dggs_cellops(temp->temptype);
   if (! ops)
     return NULL;

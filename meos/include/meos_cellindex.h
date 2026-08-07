@@ -45,6 +45,26 @@
 /* MEOS */
 #include <meos.h>
 
+/**
+ * @brief Ensure that the temporal value is a temporal cell index.
+ * Matches the pattern of `VALIDATE_TNUMBER`, the other macro stating a class
+ * of temporal types rather than a single one.
+ */
+#if MEOS
+  #define VALIDATE_TCELLINDEX(temp, ret) \
+    do { \
+      if (! ensure_not_null((void *) (temp)) || \
+          ! ensure_tcellindex_type(((Temporal *) (temp))->temptype) ) \
+        return (ret); \
+    } while (0)
+#else
+  #define VALIDATE_TCELLINDEX(temp, ret) \
+    do { \
+      assert(temp); \
+      assert(tcellindex_type(((Temporal *) (temp))->temptype)); \
+    } while (0)
+#endif /* MEOS */
+
 /*****************************************************************************
  * Accessor functions for temporal cell indices
  *****************************************************************************/

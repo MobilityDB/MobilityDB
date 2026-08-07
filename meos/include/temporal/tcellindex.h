@@ -126,6 +126,12 @@ typedef struct DggsCellOps
 extern bool tcellindex_type(MeosType type);
 
 /**
+ * @brief Ensure that @p type is a temporal DGGS cell-index type, or raise an
+ * error.
+ */
+extern bool ensure_tcellindex_type(MeosType type);
+
+/**
  * @brief Return the operations descriptor for a temporal cell-index type, or
  * raise an error if @p temptype is not a (compiled-in) DGGS type.
  */
