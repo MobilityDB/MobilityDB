@@ -27,6 +27,7 @@
 
 /* C */
 #include <assert.h>
+#include <limits.h>
 #include <string.h>
 /* PostgreSQL */
 #include <postgres.h>
@@ -40,6 +41,8 @@
 #include "pc_api.h"
 /* MEOS */
 #include <meos.h>
+#include <meos_internal.h>
+#include "temporal/temporal.h"
 #include <meos_pointcloud.h>
 #include "pointcloud/meos_schema_hook.h"
 
@@ -238,7 +241,8 @@ char *
 pcpoint_hex_out(const Pcpoint *pt, int maxdd)
 {
   (void) maxdd;
-  assert(pt);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pt, NULL);
   size_t byte_len = VARSIZE(pt);
   size_t meaningful = pcpoint_meaningful_size(pt);
   size_t hex_len = byte_len * 2;
@@ -283,7 +287,8 @@ pcpoint_as_hexwkb(const Pcpoint *pt)
 Pcpoint *
 pcpoint_copy(const Pcpoint *pt)
 {
-  assert(pt);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pt, NULL);
   size_t sz = VARSIZE(pt);
   Pcpoint *result = palloc(sz);
   memcpy(result, pt, sz);
@@ -302,7 +307,8 @@ pcpoint_copy(const Pcpoint *pt)
 uint32_t
 pcpoint_get_pcid(const Pcpoint *pt)
 {
-  assert(pt);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pt, INT_MAX);
   return pt->pcid;
 }
 
@@ -316,7 +322,8 @@ pcpoint_get_pcid(const Pcpoint *pt)
 uint32
 pcpoint_hash(const Pcpoint *pt)
 {
-  assert(pt);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pt, INT_MAX);
   return hash_any((const unsigned char *) pt,
     (int) pcpoint_meaningful_size(pt));
 }
@@ -328,7 +335,8 @@ pcpoint_hash(const Pcpoint *pt)
 uint64
 pcpoint_hash_extended(const Pcpoint *pt, uint64 seed)
 {
-  assert(pt);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pt, LONG_MAX);
   return hash_any_extended((const unsigned char *) pt,
     (int) pcpoint_meaningful_size(pt), seed);
 }
@@ -353,7 +361,8 @@ pcpoint_hash_extended(const Pcpoint *pt, uint64 seed)
 int
 pcpoint_cmp(const Pcpoint *pt1, const Pcpoint *pt2)
 {
-  assert(pt1); assert(pt2);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pt1, false); VALIDATE_NOT_NULL(pt2, false);
   size_t sz1 = pcpoint_meaningful_size(pt1);
   size_t sz2 = pcpoint_meaningful_size(pt2);
   size_t minsz = (sz1 < sz2) ? sz1 : sz2;
@@ -444,7 +453,9 @@ pcpoint_as_pcpt(const Pcpoint *pt, PCSCHEMA *schema, PCPOINT *out)
 bool
 pcpoint_get_x(const Pcpoint *pt, PCSCHEMA *schema, double *out)
 {
-  assert(pt); assert(schema); assert(out);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pt, false); VALIDATE_NOT_NULL(schema, false);
+  VALIDATE_NOT_NULL(out, false);
   if (! schema->xdim)
     return false;
   PCPOINT pcpt;
@@ -463,7 +474,9 @@ pcpoint_get_x(const Pcpoint *pt, PCSCHEMA *schema, double *out)
 bool
 pcpoint_get_y(const Pcpoint *pt, PCSCHEMA *schema, double *out)
 {
-  assert(pt); assert(schema); assert(out);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pt, false); VALIDATE_NOT_NULL(schema, false);
+  VALIDATE_NOT_NULL(out, false);
   if (! schema->ydim)
     return false;
   PCPOINT pcpt;
@@ -482,7 +495,9 @@ pcpoint_get_y(const Pcpoint *pt, PCSCHEMA *schema, double *out)
 bool
 pcpoint_get_z(const Pcpoint *pt, PCSCHEMA *schema, double *out)
 {
-  assert(pt); assert(schema); assert(out);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pt, false); VALIDATE_NOT_NULL(schema, false);
+  VALIDATE_NOT_NULL(out, false);
   if (! schema->zdim)
     return false;
   PCPOINT pcpt;
@@ -503,7 +518,9 @@ bool
 pcpoint_get_dim(const Pcpoint *pt, PCSCHEMA *schema,
   const char *name, double *out)
 {
-  assert(pt); assert(schema); assert(name); assert(out);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pt, false); VALIDATE_NOT_NULL(schema, false);
+  VALIDATE_NOT_NULL(name, false); VALIDATE_NOT_NULL(out, false);
   PCPOINT pcpt;
   pcpoint_as_pcpt(pt, schema, &pcpt);
   return pc_point_get_double_by_name(&pcpt, name, out) != 0;
@@ -519,7 +536,8 @@ pcpoint_get_dim(const Pcpoint *pt, PCSCHEMA *schema,
 TPCBox *
 pcpoint_to_tpcbox(const Pcpoint *pt, PCSCHEMA *schema)
 {
-  assert(pt); assert(schema);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pt, NULL); VALIDATE_NOT_NULL(schema, NULL);
   if (! schema->xdim || ! schema->ydim)
     return NULL;
   PCPOINT pcpt;
