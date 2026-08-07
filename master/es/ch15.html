@@ -167,39 +167,23 @@ SELECT minusValues(textset '[{"speed": 10}, null,
   {"speed": 20, "PoIs": ["Grand Place", "La Bourse"]}]', 'null');
 /* {[{"speed": 10}, {"speed": 10}),
    [{"speed": 20, "PoIs": ["Grand Place", "La Bourse"]}]}
-</pre></li><li class="listitem"><a name="jsonbset_path_exists"></a><a class="indexterm" name="id11135"></a><a class="indexterm" name="id11138"></a><a class="indexterm" name="id11141"></a><p>¿Devuelve la ruta JSON algún elemento para el conjunto JSONB especificado?</p><p><code class="varname">jsonbset @? jsonpath → tbool</code></p><p><code class="varname">jsonbset_path_exists(jsonbset,vars jsonb='{}',silent boolean=false) → tbool</code></p><p><code class="varname">jsonbset_path_exists_tz(jsonbset,vars jsonb='{}',silent boolean=false) → tbool</code></p><p>El operador <code class="varname">@?</code> suprime los siguientes errores: campo de objeto o elemento de arreglo faltante, tipo de elemento JSON inesperado, errores de fecha/hora y numéricos. Las funciones anteriores también pueden suprimir estos tipos de errores estableciendo el último argumento en verdadero. Este comportamiento puede ser útil al buscar en colecciones de documentos JSON de estructura variable.</p><pre class="programlisting">
-SELECT jsonbset '[{"speed":10}, {"speed": 20, "units": "km/h"}]' @?
-  '$.units ? (@ == "km/h")';
--- [f, t]
-SELECT jsonbset_path_exists(jsonbset
-  '{{"road": "Bvd Gén. Jacques", "category": "primary"},
-  {"road": "Bvd Gén. Jacques", "category": "primary"},
-  {"road": "Bvd de la Cambre", "category": "residential"}}',
-  '$.category ? (@ == "residential")');
--- {f, f, t}
--- TODO, it works without ".datetime()"
-SELECT jsonbset_path_exists_tz(jsonbset
-  '[{"speed":10, "cameraId": "25", "lastInspection": "2000-08-01 12:00:00"},
-    {"speed":20, "cameraId": "35", "lastInspection": "2000-03-01 12:00:00"}]',
-  '$.lastInspection ? (@.datetime() &gt; "2000-06-01".datetime() )');
--- [t, f]
-</pre></li><li class="listitem"><a name="jsonbset_path_match"></a><a class="indexterm" name="id11155"></a><a class="indexterm" name="id11158"></a><a class="indexterm" name="id11161"></a><p>Devolver el resultado de una comprobación de predicado de ruta JSON para un conjunto JSONB</p><p><code class="varname">jsonbset @@ jsonpath → tbool</code></p><p><code class="varname">jsonbset_path_match(jsonbset,vars jsonb='{}',silent boolean=false) → tbool</code></p><p><code class="varname">jsonbset_path_match_tz(jsonbset,vars jsonb='{}',silent boolean=false) → tbool</code></p><p>El operador <code class="varname">@@</code> suprime los siguientes errores: campo de objeto o elemento de arreglo faltante, tipo de elemento JSON inesperado, errores de fecha/hora y numéricos. Las funciones anteriores también pueden suprimir estos tipos de errores estableciendo el último argumento en verdadero. Este comportamiento puede ser útil al buscar en colecciones de documentos JSON de estructura variable.</p><pre class="programlisting">
-SELECT jsonbset '[{"speed":10}, {"speed": 20, "units": "km/h"}]' @@
-  '$.units == "km/h"';
--- [f, t]
-SELECT jsonbset_path_match(jsonbset
-  '{{"road": "Bvd Gén. Jacques", "category": "primary"},
-  {"road": "Bvd Gén. Jacques", "category": "primary"},
-  {"road": "Bvd de la Cambre", "category": "residential"}}',
-  '$.category == "residential"');
--- {f, f, t}
--- TODO, it works without ".datetime()"
-SELECT jsonbset_path_match_tz(jsonbset
-  '[{"speed":10, "cameraId": "25", "lastInspection": "2000-08-01 12:00:00"},
-    {"speed":20, "cameraId": "35", "lastInspection": "2000-03-01 12:00:00"}]',
-  '$.lastInspection.datetime() &gt; "2000-06-01".datetime()');
--- [t, f]
-</pre></li><li class="listitem"><a name="jsonbset_path_query_array"></a><a class="indexterm" name="id11175"></a><a class="indexterm" name="id11178"></a><p>Devolver todos los elementos devueltos por una ruta JSON de un conjunto JSONB, como un arreglo JSON</p><p><code class="varname">jsonbset_path_query_array(jsonbset,vars jsonb='{}',silent boolean=false) → jsonbset</code></p><p><code class="varname">jsonbset_path_query_array_tz(jsonbset,vars jsonb='{}',silent boolean=false) → jsonbset</code></p><p>La función anterior puede suprimir los siguientes errores estableciendo el último argumento en verdadero: campo de objeto o elemento de arreglo faltante, tipo de elemento JSON inesperado, errores de fecha/hora y numéricos. Este comportamiento puede ser útil al buscar en colecciones de documentos JSON de estructura variable.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="jsonbset_path_exists"></a><a class="indexterm" name="id11135"></a><a class="indexterm" name="id11138"></a><a class="indexterm" name="id11141"></a><p>¿Devuelve la ruta JSON algún elemento para el conjunto JSONB especificado?</p><p><code class="varname">jsonbset @? jsonpath → boolean[]</code></p><p><code class="varname">jsonbset_path_exists(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]</code></p><p><code class="varname">jsonbset_path_exists_tz(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]</code></p><p>El operador <code class="varname">@?</code> suprime los siguientes errores: campo de objeto o elemento de arreglo faltante, tipo de elemento JSON inesperado, errores de fecha/hora y numéricos. Las funciones anteriores también pueden suprimir estos tipos de errores estableciendo el último argumento en verdadero. Este comportamiento puede ser útil al buscar en colecciones de documentos JSON de estructura variable.</p><p>El resultado es un booleano por cada valor del conjunto, en el orden de los valores del conjunto.</p><pre class="programlisting">
+SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}';
+-- {"{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10}"}
+SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' @? '$.units';
+-- {t,f}
+SELECT jsonbset_path_exists(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}',
+  '$.speed ? (@ &gt; $min)', '{"min": 15}');
+-- {t,f}
+</pre></li><li class="listitem"><a name="jsonbset_path_match"></a><a class="indexterm" name="id11156"></a><a class="indexterm" name="id11159"></a><a class="indexterm" name="id11162"></a><p>Devolver el resultado de una comprobación de predicado de ruta JSON para un conjunto JSONB</p><p><code class="varname">jsonbset @@ jsonpath → boolean[]</code></p><p><code class="varname">jsonbset_path_match(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]</code></p><p><code class="varname">jsonbset_path_match_tz(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]</code></p><p>El operador <code class="varname">@@</code> suprime los siguientes errores: campo de objeto o elemento de arreglo faltante, tipo de elemento JSON inesperado, errores de fecha/hora y numéricos. Las funciones anteriores también pueden suprimir estos tipos de errores estableciendo el último argumento en verdadero. Este comportamiento puede ser útil al buscar en colecciones de documentos JSON de estructura variable.</p><p>El resultado es un booleano por cada valor del conjunto, en el orden de los valores del conjunto.</p><pre class="programlisting">
+SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}';
+-- {"{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10}"}
+SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' @@ '$.speed &gt; 15';
+-- {t,f}
+SELECT jsonbset_path_match(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}',
+  '$.speed &gt; $min', '{"min": 15}');
+-- {t,f}
+</pre></li><li class="listitem"><a name="jsonbset_path_query_array"></a><a class="indexterm" name="id11177"></a><a class="indexterm" name="id11180"></a><p>Devolver todos los elementos devueltos por una ruta JSON de un conjunto JSONB, como un arreglo JSON</p><p><code class="varname">jsonbset_path_query_array(jsonbset,vars jsonb='{}',silent boolean=false) → jsonbset</code></p><p><code class="varname">jsonbset_path_query_array_tz(jsonbset,vars jsonb='{}',silent boolean=false) → jsonbset</code></p><p>La función anterior puede suprimir los siguientes errores estableciendo el último argumento en verdadero: campo de objeto o elemento de arreglo faltante, tipo de elemento JSON inesperado, errores de fecha/hora y numéricos. Este comportamiento puede ser útil al buscar en colecciones de documentos JSON de estructura variable.</p><pre class="programlisting">
 SELECT jsonbset_path_query_array(jsonbset
   '[{"speed":10}, {"speed": 20, "units": "km/h"}]',
   '$ ? (@.speed &gt;= $min &amp;&amp; @.speed &lt;= $max)', '{"min":10, "max":30}');
@@ -211,7 +195,7 @@ SELECT jsonbset_path_query_array_tz(jsonbset
   '$.inspections ? (@.timestamp_tz() &gt;= $min.timestamp_tz() &amp;&amp;
    @.timestamp_tz() &lt;= $max.timestamp_tz())', '{"min":"2000-01-05", "max":"2000-01-09"}');
 -- [["2000-01-06", "2000-01-09"], ["2000-01-07"]]
-</pre></li><li class="listitem"><a name="jsonbset_path_query_first"></a><a class="indexterm" name="id11189"></a><a class="indexterm" name="id11192"></a><p>Devolver el primer elemento devuelto por una ruta JSON de un conjunto JSONB</p><p><code class="varname">jsonbset_path_query_first(jsonbset,vars jsonb='{}',silent boolean=false) → jsonbset</code></p><p><code class="varname">jsonbset_path_query_first_tz(jsonbset,vars jsonb='{}',silent boolean=false) → jsonbset</code></p><p>Las funciones anteriores pueden suprimir los siguientes errores estableciendo el último argumento en verdadero: campo de objeto o elemento de arreglo faltante, tipo de elemento JSON inesperado, errores de fecha/hora y numéricos. Este comportamiento puede ser útil al buscar en colecciones de documentos JSON de estructura variable.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="jsonbset_path_query_first"></a><a class="indexterm" name="id11191"></a><a class="indexterm" name="id11194"></a><p>Devolver el primer elemento devuelto por una ruta JSON de un conjunto JSONB</p><p><code class="varname">jsonbset_path_query_first(jsonbset,vars jsonb='{}',silent boolean=false) → jsonbset</code></p><p><code class="varname">jsonbset_path_query_first_tz(jsonbset,vars jsonb='{}',silent boolean=false) → jsonbset</code></p><p>Las funciones anteriores pueden suprimir los siguientes errores estableciendo el último argumento en verdadero: campo de objeto o elemento de arreglo faltante, tipo de elemento JSON inesperado, errores de fecha/hora y numéricos. Este comportamiento puede ser útil al buscar en colecciones de documentos JSON de estructura variable.</p><pre class="programlisting">
 SELECT jsonbset_path_query_first(jsonbset
   '[{"speed":10}, {"speed": 20, "units": "km/h"}]',
   '$.speed ? (@ &gt;= $min &amp;&amp; @ &lt;= $max'), '{"min":10, "max":30}');
