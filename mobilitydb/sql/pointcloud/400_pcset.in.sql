@@ -91,6 +91,198 @@ CREATE FUNCTION getDim(pcpoint, text)
   LANGUAGE C STABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
+ * pcpoint — Comparison / B-tree / hash
+ ******************************************************************************/
+
+CREATE FUNCTION eq(pcpoint, pcpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Pcpoint_eq'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION ne(pcpoint, pcpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Pcpoint_ne'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION lt(pcpoint, pcpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Pcpoint_lt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION le(pcpoint, pcpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Pcpoint_le'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION ge(pcpoint, pcpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Pcpoint_ge'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION gt(pcpoint, pcpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Pcpoint_gt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION cmp(pcpoint, pcpoint)
+  RETURNS int4
+  AS 'MODULE_PATHNAME', 'Pcpoint_cmp'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR = (
+  PROCEDURE = eq,
+  LEFTARG = pcpoint, RIGHTARG = pcpoint,
+  COMMUTATOR = =, NEGATOR = <>,
+  RESTRICT = eqsel, JOIN = eqjoinsel
+);
+CREATE OPERATOR <> (
+  PROCEDURE = ne,
+  LEFTARG = pcpoint, RIGHTARG = pcpoint,
+  COMMUTATOR = <>, NEGATOR = =,
+  RESTRICT = neqsel, JOIN = neqjoinsel
+);
+CREATE OPERATOR < (
+  PROCEDURE = lt,
+  LEFTARG = pcpoint, RIGHTARG = pcpoint,
+  COMMUTATOR = >, NEGATOR = >=,
+  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+);
+CREATE OPERATOR <= (
+  PROCEDURE = le,
+  LEFTARG = pcpoint, RIGHTARG = pcpoint,
+  COMMUTATOR = >=, NEGATOR = >,
+  RESTRICT = scalarlesel, JOIN = scalarlejoinsel
+);
+CREATE OPERATOR >= (
+  PROCEDURE = ge,
+  LEFTARG = pcpoint, RIGHTARG = pcpoint,
+  COMMUTATOR = <=, NEGATOR = <,
+  RESTRICT = scalargesel, JOIN = scalargejoinsel
+);
+CREATE OPERATOR > (
+  PROCEDURE = gt,
+  LEFTARG = pcpoint, RIGHTARG = pcpoint,
+  COMMUTATOR = <, NEGATOR = <=,
+  RESTRICT = scalargtsel, JOIN = scalargtjoinsel
+);
+
+CREATE OPERATOR CLASS pcpoint_btree_ops
+  DEFAULT FOR TYPE pcpoint USING btree AS
+  OPERATOR  1 < ,
+  OPERATOR  2 <= ,
+  OPERATOR  3 = ,
+  OPERATOR  4 >= ,
+  OPERATOR  5 > ,
+  FUNCTION  1 cmp(pcpoint, pcpoint);
+
+/******************************************************************************/
+
+CREATE FUNCTION hash(pcpoint)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Pcpoint_hash'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION hashExtended(pcpoint, bigint)
+  RETURNS bigint
+  AS 'MODULE_PATHNAME', 'Pcpoint_hash_extended'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR CLASS pcpoint_hash_ops
+  DEFAULT FOR TYPE pcpoint USING hash AS
+    OPERATOR    1   = ,
+    FUNCTION    1   hash(pcpoint),
+    FUNCTION    2   hashExtended(pcpoint, bigint);
+
+/******************************************************************************
+ * pcpatch — Comparison / B-tree / hash
+ ******************************************************************************/
+
+CREATE FUNCTION eq(pcpatch, pcpatch)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Pcpatch_eq'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION ne(pcpatch, pcpatch)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Pcpatch_ne'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION lt(pcpatch, pcpatch)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Pcpatch_lt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION le(pcpatch, pcpatch)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Pcpatch_le'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION ge(pcpatch, pcpatch)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Pcpatch_ge'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION gt(pcpatch, pcpatch)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Pcpatch_gt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION cmp(pcpatch, pcpatch)
+  RETURNS int4
+  AS 'MODULE_PATHNAME', 'Pcpatch_cmp'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR = (
+  PROCEDURE = eq,
+  LEFTARG = pcpatch, RIGHTARG = pcpatch,
+  COMMUTATOR = =, NEGATOR = <>,
+  RESTRICT = eqsel, JOIN = eqjoinsel
+);
+CREATE OPERATOR <> (
+  PROCEDURE = ne,
+  LEFTARG = pcpatch, RIGHTARG = pcpatch,
+  COMMUTATOR = <>, NEGATOR = =,
+  RESTRICT = neqsel, JOIN = neqjoinsel
+);
+CREATE OPERATOR < (
+  PROCEDURE = lt,
+  LEFTARG = pcpatch, RIGHTARG = pcpatch,
+  COMMUTATOR = >, NEGATOR = >=,
+  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+);
+CREATE OPERATOR <= (
+  PROCEDURE = le,
+  LEFTARG = pcpatch, RIGHTARG = pcpatch,
+  COMMUTATOR = >=, NEGATOR = >,
+  RESTRICT = scalarlesel, JOIN = scalarlejoinsel
+);
+CREATE OPERATOR >= (
+  PROCEDURE = ge,
+  LEFTARG = pcpatch, RIGHTARG = pcpatch,
+  COMMUTATOR = <=, NEGATOR = <,
+  RESTRICT = scalargesel, JOIN = scalargejoinsel
+);
+CREATE OPERATOR > (
+  PROCEDURE = gt,
+  LEFTARG = pcpatch, RIGHTARG = pcpatch,
+  COMMUTATOR = <, NEGATOR = <=,
+  RESTRICT = scalargtsel, JOIN = scalargtjoinsel
+);
+
+CREATE OPERATOR CLASS pcpatch_btree_ops
+  DEFAULT FOR TYPE pcpatch USING btree AS
+  OPERATOR  1 < ,
+  OPERATOR  2 <= ,
+  OPERATOR  3 = ,
+  OPERATOR  4 >= ,
+  OPERATOR  5 > ,
+  FUNCTION  1 cmp(pcpatch, pcpatch);
+
+/******************************************************************************/
+
+CREATE FUNCTION hash(pcpatch)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Pcpatch_hash'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION hashExtended(pcpatch, bigint)
+  RETURNS bigint
+  AS 'MODULE_PATHNAME', 'Pcpatch_hash_extended'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR CLASS pcpatch_hash_ops
+  DEFAULT FOR TYPE pcpatch USING hash AS
+    OPERATOR    1   = ,
+    FUNCTION    1   hash(pcpatch),
+    FUNCTION    2   hashExtended(pcpatch, bigint);
+
+/******************************************************************************
  * pcpointset — Input / output
  ******************************************************************************/
 

@@ -292,6 +292,7 @@ uint32_t pcpatch_npoints(const Pcpatch *pa)
 /**
  * @ingroup meos_pointcloud_base_accessor
  * @brief Return the 32-bit hash of a pcpatch
+ * @csqlfn #Pcpatch_hash()
  */
 uint32
 pcpatch_hash(const Pcpatch *pa)
@@ -305,6 +306,7 @@ pcpatch_hash(const Pcpatch *pa)
 /**
  * @ingroup meos_pointcloud_base_accessor
  * @brief Return the 64-bit hash of a pcpatch with a seed
+ * @csqlfn #Pcpatch_hash_extended()
  */
 uint64
 pcpatch_hash_extended(const Pcpatch *pa, uint64 seed)
@@ -326,6 +328,7 @@ pcpatch_hash_extended(const Pcpatch *pa, uint64 seed)
  * @note Compares only the meaningful-prefix bytes — pgpointcloud's
  *   struct-tail padding is skipped so two pcpatches that disagree only
  *   on those padding bytes compare equal.
+ * @csqlfn #Pcpatch_cmp()
  */
 int
 pcpatch_cmp(const Pcpatch *pa1, const Pcpatch *pa2)

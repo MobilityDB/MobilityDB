@@ -69,6 +69,10 @@
  * @ingroup mobilitydb_pointcloud_base
  * @brief Schema-aware accessors (pcid, getX, getY, getZ, getDim) for
  *   pcpoint / pcpatch
+ *
+ * @defgroup mobilitydb_pointcloud_base_comp Comparison functions
+ * @ingroup mobilitydb_pointcloud_base
+ * @brief Comparison functions for pcpoint / pcpatch
  */
 
 /*****************************************************************************
