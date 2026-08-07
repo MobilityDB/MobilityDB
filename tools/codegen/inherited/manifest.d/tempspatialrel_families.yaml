@@ -1,13 +1,25 @@
 
 # ---------------------------------------------------------------------------
-# Native temporal spatial relationships (SQL, whole-file). A native family
-# implements the temporal relationships (tXxx -> tbool) as C functions declared
-# with AS 'MODULE_PATHNAME','<Symbol>' rather than SQL cast-wrappers. Each family
-# lists its ordered directions (left/right argument type; `geometry` tokenizes to
-# `geo` in the C symbol T<rel>_<left>_<right>) and its predicate set; the whole
-# file is generated from templates/tempspatialrels_native.sql.tmpl.
-native_tempspatialrel_families:
+# Temporal spatial relationships (SQL, whole-file). Every Temporal<T>'s
+# tXxx(base?, base?) -> tbool surface is generated here from one (predicate x
+# direction) matrix per family; `impl` (default `native`) picks how:
+#  - native (cbuffer, tgeo, tpoint) - the family implements the relationship
+#    as its own C kernel per (predicate, direction), declared with
+#    AS 'MODULE_PATHNAME','<Symbol>'. Each family lists its ordered directions
+#    (left/right argument type; `geometry`/`geography` tokenize to `geo`, every
+#    temporal geo/point flavour to `tgeo`, in the C symbol
+#    T<rel>_<left>_<right>) and its predicate set.
+#  - cast (the cell indexes, pose, rgeo) - the family has no relationship
+#    kernel of its own; per the cast-only spatial-uniformization rule (geo is
+#    the one place the relationship logic lives — memory
+#    north-star-spatial-cast-only-no-duplication), it converts each of its own
+#    operands to tgeometry via `convert` and re-delegates to tgeometry's
+#    tContains..tDwithin. See generate.py's render_tempspatialrels for the
+#    full mechanism (both impls share the predicate/direction matrix; only the
+#    per-cell CREATE FUNCTION body differs).
+tempspatialrel_families:
   - family:  cbuffer
+    impl:    native
     file:    mobilitydb/sql/cbuffer/214_tcbuffer_tempspatialrels.in.sql
     brief:   "temporal circular buffers"
     predicates: [tContains, tCovers, tDisjoint, tIntersects, tTouches, tDwithin]
@@ -27,6 +39,7 @@ native_tempspatialrel_families:
   # not strict), so each of those three predicates overrides the family-wide
   # `directions` default that tCovers/tContains/tTouches reuse unchanged.
   - family:  tgeo
+    impl:    native
     file:    mobilitydb/sql/geo/072_tgeo_tempspatialrels.in.sql
     brief:   "temporal geometries/geographies"
     directions:
@@ -66,6 +79,7 @@ native_tempspatialrel_families:
   # direction is strict here (unlike tgeo's). Every predicate overrides the
   # (absent) family default explicitly.
   - family:  tpoint
+    impl:    native
     file:    mobilitydb/sql/geo/072_tpoint_tempspatialrels.in.sql
     brief:   "temporal geometries/geographies"
     predicates:
@@ -98,3 +112,62 @@ native_tempspatialrel_families:
           - {l: geometry,   r: tgeompoint}
           - {l: tgeompoint, r: geometry}
           - {l: tgeompoint, r: tgeompoint}
+
+  # ---- cast: delegate to tgeo's tContains..tDwithin above via a cast
+  # expression (cast-only spatial uniformization; no family below has
+  # spatial-relationship logic of its own). Every direction is `geometry`
+  # (raw, the delegation target) x the family's own type (converted, both
+  # ways) plus the own-type x own-type direction. `doc` omitted falls back to
+  # the shared cell-index prose (tempspatialrels.doc.tmpl) below. ----
+  - family:  tquadbin
+    impl:    cast
+    file:    mobilitydb/sql/quadbin/364_tquadbin_tempspatialrels.in.sql
+    predicates: [tContains, tCovers, tDisjoint, tIntersects, tTouches, tDwithin]
+    directions:
+      - {l: geometry, r: tquadbin}
+      - {l: tquadbin, r: geometry}
+      - {l: tquadbin, r: tquadbin}
+    convert: "@extschema@.tquadbinCellToBoundary(@N@)::@extschema@.tgeometry"
+
+  - family:  th3index
+    impl:    cast
+    file:    mobilitydb/sql/h3/264_th3index_tempspatialrels.in.sql
+    predicates: [tContains, tCovers, tDisjoint, tIntersects, tTouches, tDwithin]
+    directions:
+      - {l: geometry,  r: th3index}
+      - {l: th3index,  r: geometry}
+      - {l: th3index,  r: th3index}
+    convert: "@extschema@.th3CellToBoundary(@N@)::@extschema@.tgeometry"
+
+  # tpose/trgeometry are not cell indexes, so `convert` chains a direct cast
+  # (or, for tpose, the tgeompoint cast chain) instead of a boundary function,
+  # and each supplies its own file doc block rather than the cell-index prose.
+  - family:  tpose
+    impl:    cast
+    file:    mobilitydb/sql/pose/114_tpose_tempspatialrels.in.sql
+    predicates: [tContains, tCovers, tDisjoint, tIntersects, tTouches, tDwithin]
+    directions:
+      - {l: geometry, r: tpose}
+      - {l: tpose,    r: geometry}
+      - {l: tpose,    r: tpose}
+    convert: "@N@::@extschema@.tgeompoint::@extschema@.tgeometry"
+    doc: |-
+      /**
+       * @file
+       * @brief Temporal spatial relationships for temporal poses
+       */
+
+  - family:  trgeometry
+    impl:    cast
+    file:    mobilitydb/sql/rgeo/172_trgeo_tempspatialrels.in.sql
+    predicates: [tContains, tCovers, tDisjoint, tIntersects, tTouches, tDwithin]
+    directions:
+      - {l: geometry,   r: trgeometry}
+      - {l: trgeometry, r: geometry}
+      - {l: trgeometry, r: trgeometry}
+    convert: "@N@::@extschema@.tgeometry"
+    doc: |-
+      /**
+       * @file
+       * @brief Temporal spatial relationships for temporal rigid geometries
+       */
