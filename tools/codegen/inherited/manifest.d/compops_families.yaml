@@ -729,3 +729,369 @@ compops_families:
     - {kind: op_t, op: "#>=", proc: "tGe", L: "ttext", R: "text", comm: "#<="}
     - {kind: op_t, op: "#>=", proc: "tGe", L: "ttext", R: "ttext", comm: "#<="}
   - lit: "\n/*****************************************************************************/"
+- family: tgeo
+  file: mobilitydb/sql/geo/054_tgeo_compops.in.sql
+  reference: true
+  begin: "@brief Ever/always and temporal comparison functions and operators for\n * temporal geometries/geographies"
+  end: ""
+  blocks:
+  - lit: "/**\n * @file\n * @brief Ever/always and temporal comparison functions and operators for\n * temporal geometries/geographies\n */\n\n/*****************************************************************************\n * Index Support Function\n *****************************************************************************/\n\n"
+  - items:
+    - {kind: func, sig: "tspatial_supportfn(internal)", ret: "internal", sym: "Tspatial_supportfn"}
+  - lit: "\n/*****************************************************************************\n * Ever/Always Comparison Functions\n *****************************************************************************/\n\n"
+  - items:
+    - {kind: func, sig: "eEq(geometry, tgeometry)", ret: "boolean", sym: "Ever_eq_geo_tgeo", support: "tspatial_supportfn"}
+    - {kind: func, sig: "eEq(geography, tgeography)", ret: "boolean", sym: "Ever_eq_geo_tgeo", support: "tspatial_supportfn"}
+  - lit: "\n"
+  - items:
+    - {kind: op_ea, op: "?=", L: "geometry", R: "tgeometry", proc: "eEq", neg: "%<>", rest: "tspatial_sel", join: "tspatial_joinsel"}
+    - {kind: op_ea, op: "?=", L: "geography", R: "tgeography", proc: "eEq", neg: "%<>", rest: "tspatial_sel", join: "tspatial_joinsel"}
+  - lit: "\n"
+  - items:
+    - {kind: func, sig: "aEq(geometry, tgeometry)", ret: "boolean", sym: "Always_eq_geo_tgeo", support: "tspatial_supportfn"}
+    - {kind: func, sig: "aEq(geography, tgeography)", ret: "boolean", sym: "Always_eq_geo_tgeo", support: "tspatial_supportfn"}
+  - lit: "\n"
+  - items:
+    - {kind: op_ea, op: "%=", L: "geometry", R: "tgeometry", proc: "aEq", neg: "?<>", rest: "tspatial_sel", join: "tspatial_joinsel"}
+    - {kind: op_ea, op: "%=", L: "geography", R: "tgeography", proc: "aEq", neg: "?<>", rest: "tspatial_sel", join: "tspatial_joinsel"}
+  - lit: "\n"
+  - items:
+    - {kind: func, sig: "eNe(geometry, tgeometry)", ret: "boolean", sym: "Ever_ne_geo_tgeo"}
+    - {kind: func, sig: "eNe(geography, tgeography)", ret: "boolean", sym: "Ever_ne_geo_tgeo"}
+  - lit: "\n"
+  - items:
+    - {kind: op_ea, op: "?<>", L: "geometry", R: "tgeometry", proc: "eNe", neg: "%=", rest: "tspatial_sel", join: "tspatial_joinsel"}
+    - {kind: op_ea, op: "?<>", L: "geography", R: "tgeography", proc: "eNe", neg: "%=", rest: "tspatial_sel", join: "tspatial_joinsel"}
+  - lit: "\n"
+  - items:
+    - {kind: func, sig: "aNe(geometry, tgeometry)", ret: "boolean", sym: "Always_ne_geo_tgeo"}
+    - {kind: func, sig: "aNe(geography, tgeography)", ret: "boolean", sym: "Always_ne_geo_tgeo"}
+  - lit: "\n"
+  - items:
+    - {kind: op_ea, op: "%<>", L: "geometry", R: "tgeometry", proc: "aNe", neg: "?=", rest: "tspatial_sel", join: "tspatial_joinsel"}
+    - {kind: op_ea, op: "%<>", L: "geography", R: "tgeography", proc: "aNe", neg: "?=", rest: "tspatial_sel", join: "tspatial_joinsel"}
+  - lit: "\n/*****************************************************************************/\n\n"
+  - items:
+    - {kind: func, sig: "eEq(tgeometry, geometry)", ret: "boolean", sym: "Ever_eq_tgeo_geo", support: "tspatial_supportfn"}
+    - {kind: func, sig: "eEq(tgeography, geography)", ret: "boolean", sym: "Ever_eq_tgeo_geo", support: "tspatial_supportfn"}
+  - lit: "\n"
+  - items:
+    - {kind: op_ea, op: "?=", L: "tgeometry", R: "geometry", proc: "eEq", neg: "%<>", rest: "tspatial_sel", join: "tspatial_joinsel"}
+    - {kind: op_ea, op: "?=", L: "tgeography", R: "geography", proc: "eEq", neg: "%<>", rest: "tspatial_sel", join: "tspatial_joinsel"}
+  - lit: "\n"
+  - items:
+    - {kind: func, sig: "aEq(tgeometry, geometry)", ret: "boolean", sym: "Always_eq_tgeo_geo", support: "tspatial_supportfn"}
+    - {kind: func, sig: "aEq(tgeography, geography)", ret: "boolean", sym: "Always_eq_tgeo_geo", support: "tspatial_supportfn"}
+  - lit: "\n"
+  - items:
+    - {kind: op_ea, op: "%=", L: "tgeometry", R: "geometry", proc: "aEq", neg: "?<>", rest: "tspatial_sel", join: "tspatial_joinsel"}
+    - {kind: op_ea, op: "%=", L: "tgeography", R: "geography", proc: "aEq", neg: "?<>", rest: "tspatial_sel", join: "tspatial_joinsel"}
+  - lit: "\n"
+  - items:
+    - {kind: func, sig: "eNe(tgeometry, geometry)", ret: "boolean", sym: "Ever_ne_tgeo_geo"}
+    - {kind: func, sig: "eNe(tgeography, geography)", ret: "boolean", sym: "Ever_ne_tgeo_geo"}
+  - lit: "\n"
+  - items:
+    - {kind: op_ea, op: "?<>", L: "tgeometry", R: "geometry", proc: "eNe", neg: "%=", rest: "tspatial_sel", join: "tspatial_joinsel"}
+    - {kind: op_ea, op: "?<>", L: "tgeography", R: "geography", proc: "eNe", neg: "%=", rest: "tspatial_sel", join: "tspatial_joinsel"}
+  - lit: "\n"
+  - items:
+    - {kind: func, sig: "aNe(tgeometry, geometry)", ret: "boolean", sym: "Always_ne_tgeo_geo"}
+    - {kind: func, sig: "aNe(tgeography, geography)", ret: "boolean", sym: "Always_ne_tgeo_geo"}
+  - lit: "\n"
+  - items:
+    - {kind: op_ea, op: "%<>", L: "tgeometry", R: "geometry", proc: "aNe", neg: "?=", rest: "tspatial_sel", join: "tspatial_joinsel"}
+    - {kind: op_ea, op: "%<>", L: "tgeography", R: "geography", proc: "aNe", neg: "?=", rest: "tspatial_sel", join: "tspatial_joinsel"}
+  - lit: "\n/*****************************************************************************/\n\n"
+  - items:
+    - {kind: func, sig: "eEq(tgeometry, tgeometry)", ret: "boolean", sym: "Ever_eq_tgeo_tgeo", support: "tspatial_supportfn"}
+    - {kind: func, sig: "eEq(tgeography, tgeography)", ret: "boolean", sym: "Ever_eq_tgeo_tgeo", support: "tspatial_supportfn"}
+  - lit: "\n"
+  - items:
+    - {kind: op_ea, op: "?=", L: "tgeometry", R: "tgeometry", proc: "eEq", neg: "%<>", rest: "tspatial_sel", join: "tspatial_joinsel"}
+    - {kind: op_ea, op: "?=", L: "tgeography", R: "tgeography", proc: "eEq", neg: "%<>", rest: "tspatial_sel", join: "tspatial_joinsel"}
+  - lit: "\n"
+  - items:
+    - {kind: func, sig: "aEq(tgeometry, tgeometry)", ret: "boolean", sym: "Always_eq_tgeo_tgeo", support: "tspatial_supportfn"}
+    - {kind: func, sig: "aEq(tgeography, tgeography)", ret: "boolean", sym: "Always_eq_tgeo_tgeo", support: "tspatial_supportfn"}
+  - lit: "\n"
+  - items:
+    - {kind: op_ea, op: "%=", L: "tgeometry", R: "tgeometry", proc: "aEq", neg: "?<>", rest: "tspatial_sel", join: "tspatial_joinsel"}
+    - {kind: op_ea, op: "%=", L: "tgeography", R: "tgeography", proc: "aEq", neg: "?<>", rest: "tspatial_sel", join: "tspatial_joinsel"}
+  - lit: "\n"
+  - items:
+    - {kind: func, sig: "eNe(tgeometry, tgeometry)", ret: "boolean", sym: "Ever_ne_tgeo_tgeo"}
+    - {kind: func, sig: "eNe(tgeography, tgeography)", ret: "boolean", sym: "Ever_ne_tgeo_tgeo"}
+  - lit: "\n"
+  - items:
+    - {kind: op_ea, op: "?<>", L: "tgeometry", R: "tgeometry", proc: "eNe", neg: "%=", rest: "tspatial_sel", join: "tspatial_joinsel"}
+    - {kind: op_ea, op: "?<>", L: "tgeography", R: "tgeography", proc: "eNe", neg: "%=", rest: "tspatial_sel", join: "tspatial_joinsel"}
+  - lit: "\n"
+  - items:
+    - {kind: func, sig: "aNe(tgeometry, tgeometry)", ret: "boolean", sym: "Always_ne_tgeo_tgeo"}
+    - {kind: func, sig: "aNe(tgeography, tgeography)", ret: "boolean", sym: "Always_ne_tgeo_tgeo"}
+  - lit: "\n"
+  - items:
+    - {kind: op_ea, op: "%<>", L: "tgeometry", R: "tgeometry", proc: "aNe", neg: "?=", rest: "tspatial_sel", join: "tspatial_joinsel"}
+    - {kind: op_ea, op: "%<>", L: "tgeography", R: "tgeography", proc: "aNe", neg: "?=", rest: "tspatial_sel", join: "tspatial_joinsel"}
+  - lit: "\n/*****************************************************************************\n * Temporal equal\n *****************************************************************************/\n\n"
+  - items:
+    - {kind: func, sig: "tEq(geometry, tgeometry)", ret: "tbool", sym: "Teq_geo_tgeo"}
+    - {kind: func, sig: "tEq(tgeometry, geometry)", ret: "tbool", sym: "Teq_tgeo_geo"}
+    - {kind: func, sig: "tEq(tgeometry, tgeometry)", ret: "tbool", sym: "Teq_temporal_temporal"}
+  - lit: "\n"
+  - items:
+    - {kind: op_t, op: "#=", L: "geometry", R: "tgeometry", proc: "tEq", comm: "#="}
+    - {kind: op_t, op: "#=", L: "tgeometry", R: "geometry", proc: "tEq", comm: "#="}
+    - {kind: op_t, op: "#=", L: "tgeometry", R: "tgeometry", proc: "tEq", comm: "#="}
+  - lit: "\n/*****************************************************************************/\n\n"
+  - items:
+    - {kind: func, sig: "tEq(geography, tgeography)", ret: "tbool", sym: "Teq_geo_tgeo"}
+    - {kind: func, sig: "tEq(tgeography, geography)", ret: "tbool", sym: "Teq_tgeo_geo"}
+    - {kind: func, sig: "tEq(tgeography, tgeography)", ret: "tbool", sym: "Teq_temporal_temporal"}
+  - lit: "\n"
+  - items:
+    - {kind: op_t, op: "#=", L: "geography", R: "tgeography", proc: "tEq", comm: "#="}
+    - {kind: op_t, op: "#=", L: "tgeography", R: "geography", proc: "tEq", comm: "#="}
+    - {kind: op_t, op: "#=", L: "tgeography", R: "tgeography", proc: "tEq", comm: "#="}
+  - lit: "\n/*****************************************************************************\n * Temporal not equal\n *****************************************************************************/\n\n"
+  - items:
+    - {kind: func, sig: "tNe(geometry, tgeometry)", ret: "tbool", sym: "Tne_geo_tgeo"}
+    - {kind: func, sig: "tNe(tgeometry, geometry)", ret: "tbool", sym: "Tne_tgeo_geo"}
+    - {kind: func, sig: "tNe(tgeometry, tgeometry)", ret: "tbool", sym: "Tne_temporal_temporal"}
+  - lit: "\n"
+  - items:
+    - {kind: op_t, op: "#<>", L: "geometry", R: "tgeometry", proc: "tNe", comm: "#<>"}
+    - {kind: op_t, op: "#<>", L: "tgeometry", R: "geometry", proc: "tNe", comm: "#<>"}
+    - {kind: op_t, op: "#<>", L: "tgeometry", R: "tgeometry", proc: "tNe", comm: "#<>"}
+  - lit: "\n/*****************************************************************************/\n\n"
+  - items:
+    - {kind: func, sig: "tNe(geography, tgeography)", ret: "tbool", sym: "Tne_geo_tgeo"}
+    - {kind: func, sig: "tNe(tgeography, geography)", ret: "tbool", sym: "Tne_tgeo_geo"}
+    - {kind: func, sig: "tNe(tgeography, tgeography)", ret: "tbool", sym: "Tne_temporal_temporal"}
+  - lit: "\n"
+  - items:
+    - {kind: op_t, op: "#<>", L: "geography", R: "tgeography", proc: "tNe", comm: "#<>"}
+    - {kind: op_t, op: "#<>", L: "tgeography", R: "geography", proc: "tNe", comm: "#<>"}
+    - {kind: op_t, op: "#<>", L: "tgeography", R: "tgeography", proc: "tNe", comm: "#<>"}
+  - lit: "\n/******************************************************************************/"
+
+- family: tpoint
+  file: mobilitydb/sql/geo/054_tpoint_compops.in.sql
+  reference: true
+  begin: "@brief Ever/always and temporal comparison functions and operators for\n * temporal geometry/geography points"
+  end: ""
+  blocks:
+  - lit: "/**\n * @file\n * @brief Ever/always and temporal comparison functions and operators for\n * temporal geometry/geography points\n */\n\n/*****************************************************************************\n * Ever/Always Comparison Functions\n *****************************************************************************/\n\n"
+  - items:
+    - {kind: func, sig: "eEq(geometry, tgeompoint)", ret: "boolean", sym: "Ever_eq_geo_tgeo", support: "tspatial_supportfn"}
+    - {kind: func, sig: "eEq(geography, tgeogpoint)", ret: "boolean", sym: "Ever_eq_geo_tgeo", support: "tspatial_supportfn"}
+  - lit: "\n"
+  - items:
+    - {kind: op_ea, op: "?=", L: "geometry", R: "tgeompoint", proc: "eEq", neg: "%<>", rest: "tspatial_sel", join: "tspatial_joinsel"}
+    - {kind: op_ea, op: "?=", L: "geography", R: "tgeogpoint", proc: "eEq", neg: "%<>", rest: "tspatial_sel", join: "tspatial_joinsel"}
+  - lit: "\n"
+  - items:
+    - {kind: func, sig: "aEq(geometry, tgeompoint)", ret: "boolean", sym: "Always_eq_geo_tgeo", support: "tspatial_supportfn"}
+    - {kind: func, sig: "aEq(geography, tgeogpoint)", ret: "boolean", sym: "Always_eq_geo_tgeo", support: "tspatial_supportfn"}
+  - lit: "\n"
+  - items:
+    - {kind: op_ea, op: "%=", L: "geometry", R: "tgeompoint", proc: "aEq", neg: "?<>", rest: "tspatial_sel", join: "tspatial_joinsel"}
+    - {kind: op_ea, op: "%=", L: "geography", R: "tgeogpoint", proc: "aEq", neg: "?<>", rest: "tspatial_sel", join: "tspatial_joinsel"}
+  - lit: "\n"
+  - items:
+    - {kind: func, sig: "eNe(geometry, tgeompoint)", ret: "boolean", sym: "Ever_ne_geo_tgeo"}
+    - {kind: func, sig: "eNe(geography, tgeogpoint)", ret: "boolean", sym: "Ever_ne_geo_tgeo"}
+  - lit: "\n"
+  - items:
+    - {kind: op_ea, op: "?<>", L: "geometry", R: "tgeompoint", proc: "eNe", neg: "%=", rest: "tspatial_sel", join: "tspatial_joinsel"}
+    - {kind: op_ea, op: "?<>", L: "geography", R: "tgeogpoint", proc: "eNe", neg: "%=", rest: "tspatial_sel", join: "tspatial_joinsel"}
+  - lit: "\n"
+  - items:
+    - {kind: func, sig: "aNe(geometry, tgeompoint)", ret: "boolean", sym: "Always_ne_geo_tgeo"}
+    - {kind: func, sig: "aNe(geography, tgeogpoint)", ret: "boolean", sym: "Always_ne_geo_tgeo"}
+  - lit: "\n"
+  - items:
+    - {kind: op_ea, op: "%<>", L: "geometry", R: "tgeompoint", proc: "aNe", neg: "?=", rest: "tspatial_sel", join: "tspatial_joinsel"}
+    - {kind: op_ea, op: "%<>", L: "geography", R: "tgeogpoint", proc: "aNe", neg: "?=", rest: "tspatial_sel", join: "tspatial_joinsel"}
+  - lit: "\n/*****************************************************************************/\n\n"
+  - items:
+    - {kind: func, sig: "eEq(tgeompoint, geometry)", ret: "boolean", sym: "Ever_eq_tgeo_geo", support: "tspatial_supportfn"}
+    - {kind: func, sig: "eEq(tgeogpoint, geography)", ret: "boolean", sym: "Ever_eq_tgeo_geo", support: "tspatial_supportfn"}
+  - lit: "\n"
+  - items:
+    - {kind: op_ea, op: "?=", L: "tgeompoint", R: "geometry", proc: "eEq", neg: "%<>", rest: "tspatial_sel", join: "tspatial_joinsel"}
+    - {kind: op_ea, op: "?=", L: "tgeogpoint", R: "geography", proc: "eEq", neg: "%<>", rest: "tspatial_sel", join: "tspatial_joinsel"}
+  - lit: "\n"
+  - items:
+    - {kind: func, sig: "aEq(tgeompoint, geometry)", ret: "boolean", sym: "Always_eq_tgeo_geo", support: "tspatial_supportfn"}
+    - {kind: func, sig: "aEq(tgeogpoint, geography)", ret: "boolean", sym: "Always_eq_tgeo_geo", support: "tspatial_supportfn"}
+  - lit: "\n"
+  - items:
+    - {kind: op_ea, op: "%=", L: "tgeompoint", R: "geometry", proc: "aEq", neg: "?<>", rest: "tspatial_sel", join: "tspatial_joinsel"}
+    - {kind: op_ea, op: "%=", L: "tgeogpoint", R: "geography", proc: "aEq", neg: "?<>", rest: "tspatial_sel", join: "tspatial_joinsel"}
+  - lit: "\n"
+  - items:
+    - {kind: func, sig: "eNe(tgeompoint, geometry)", ret: "boolean", sym: "Ever_ne_tgeo_geo"}
+    - {kind: func, sig: "eNe(tgeogpoint, geography)", ret: "boolean", sym: "Ever_ne_tgeo_geo"}
+  - lit: "\n"
+  - items:
+    - {kind: op_ea, op: "?<>", L: "tgeompoint", R: "geometry", proc: "eNe", neg: "%=", rest: "tspatial_sel", join: "tspatial_joinsel"}
+    - {kind: op_ea, op: "?<>", L: "tgeogpoint", R: "geography", proc: "eNe", neg: "%=", rest: "tspatial_sel", join: "tspatial_joinsel"}
+  - lit: "\n"
+  - items:
+    - {kind: func, sig: "aNe(tgeompoint, geometry)", ret: "boolean", sym: "Always_ne_tgeo_geo"}
+    - {kind: func, sig: "aNe(tgeogpoint, geography)", ret: "boolean", sym: "Always_ne_tgeo_geo"}
+  - lit: "\n"
+  - items:
+    - {kind: op_ea, op: "%<>", L: "tgeompoint", R: "geometry", proc: "aNe", neg: "?=", rest: "tspatial_sel", join: "tspatial_joinsel"}
+    - {kind: op_ea, op: "%<>", L: "tgeogpoint", R: "geography", proc: "aNe", neg: "?=", rest: "tspatial_sel", join: "tspatial_joinsel"}
+  - lit: "\n/*****************************************************************************/\n\n"
+  - items:
+    - {kind: func, sig: "eEq(tgeompoint, tgeompoint)", ret: "boolean", sym: "Ever_eq_tgeo_tgeo", support: "tspatial_supportfn"}
+    - {kind: func, sig: "eEq(tgeogpoint, tgeogpoint)", ret: "boolean", sym: "Ever_eq_tgeo_tgeo", support: "tspatial_supportfn"}
+  - lit: "\n"
+  - items:
+    - {kind: op_ea, op: "?=", L: "tgeompoint", R: "tgeompoint", proc: "eEq", neg: "%<>", rest: "tspatial_sel", join: "tspatial_joinsel"}
+    - {kind: op_ea, op: "?=", L: "tgeogpoint", R: "tgeogpoint", proc: "eEq", neg: "%<>", rest: "tspatial_sel", join: "tspatial_joinsel"}
+  - lit: "\n"
+  - items:
+    - {kind: func, sig: "aEq(tgeompoint, tgeompoint)", ret: "boolean", sym: "Always_eq_tgeo_tgeo", support: "tspatial_supportfn"}
+    - {kind: func, sig: "aEq(tgeogpoint, tgeogpoint)", ret: "boolean", sym: "Always_eq_tgeo_tgeo", support: "tspatial_supportfn"}
+  - lit: "\n"
+  - items:
+    - {kind: op_ea, op: "%=", L: "tgeompoint", R: "tgeompoint", proc: "aEq", neg: "?<>", rest: "tspatial_sel", join: "tspatial_joinsel"}
+    - {kind: op_ea, op: "%=", L: "tgeogpoint", R: "tgeogpoint", proc: "aEq", neg: "?<>", rest: "tspatial_sel", join: "tspatial_joinsel"}
+  - lit: "\n"
+  - items:
+    - {kind: func, sig: "eNe(tgeompoint, tgeompoint)", ret: "boolean", sym: "Ever_ne_tgeo_tgeo"}
+    - {kind: func, sig: "eNe(tgeogpoint, tgeogpoint)", ret: "boolean", sym: "Ever_ne_tgeo_tgeo"}
+  - lit: "\n"
+  - items:
+    - {kind: op_ea, op: "?<>", L: "tgeompoint", R: "tgeompoint", proc: "eNe", neg: "%=", rest: "tspatial_sel", join: "tspatial_joinsel"}
+    - {kind: op_ea, op: "?<>", L: "tgeogpoint", R: "tgeogpoint", proc: "eNe", neg: "%=", rest: "tspatial_sel", join: "tspatial_joinsel"}
+  - lit: "\n"
+  - items:
+    - {kind: func, sig: "aNe(tgeompoint, tgeompoint)", ret: "boolean", sym: "Always_ne_tgeo_tgeo"}
+    - {kind: func, sig: "aNe(tgeogpoint, tgeogpoint)", ret: "boolean", sym: "Always_ne_tgeo_tgeo"}
+  - lit: "\n"
+  - items:
+    - {kind: op_ea, op: "%<>", L: "tgeompoint", R: "tgeompoint", proc: "aNe", neg: "?=", rest: "tspatial_sel", join: "tspatial_joinsel"}
+    - {kind: op_ea, op: "%<>", L: "tgeogpoint", R: "tgeogpoint", proc: "aNe", neg: "?=", rest: "tspatial_sel", join: "tspatial_joinsel"}
+  - lit: "\n/*****************************************************************************\n * Temporal equal\n *****************************************************************************/\n\n"
+  - items:
+    - {kind: func, sig: "tEq(geometry, tgeompoint)", ret: "tbool", sym: "Teq_geo_tgeo"}
+    - {kind: func, sig: "tEq(tgeompoint, geometry)", ret: "tbool", sym: "Teq_tgeo_geo"}
+    - {kind: func, sig: "tEq(tgeompoint, tgeompoint)", ret: "tbool", sym: "Teq_temporal_temporal"}
+  - lit: "\n"
+  - items:
+    - {kind: op_t, op: "#=", L: "geometry", R: "tgeompoint", proc: "tEq", comm: "#="}
+    - {kind: op_t, op: "#=", L: "tgeompoint", R: "geometry", proc: "tEq", comm: "#="}
+    - {kind: op_t, op: "#=", L: "tgeompoint", R: "tgeompoint", proc: "tEq", comm: "#="}
+  - lit: "\n/*****************************************************************************/\n\n"
+  - items:
+    - {kind: func, sig: "tEq(geography, tgeogpoint)", ret: "tbool", sym: "Teq_geo_tgeo"}
+    - {kind: func, sig: "tEq(tgeogpoint, geography)", ret: "tbool", sym: "Teq_tgeo_geo"}
+    - {kind: func, sig: "tEq(tgeogpoint, tgeogpoint)", ret: "tbool", sym: "Teq_temporal_temporal"}
+  - lit: "\n"
+  - items:
+    - {kind: op_t, op: "#=", L: "geography", R: "tgeogpoint", proc: "tEq", comm: "#="}
+    - {kind: op_t, op: "#=", L: "tgeogpoint", R: "geography", proc: "tEq", comm: "#="}
+    - {kind: op_t, op: "#=", L: "tgeogpoint", R: "tgeogpoint", proc: "tEq", comm: "#="}
+  - lit: "\n/*****************************************************************************\n * Temporal not equal\n *****************************************************************************/\n\n"
+  - items:
+    - {kind: func, sig: "tNe(geometry, tgeompoint)", ret: "tbool", sym: "Tne_geo_tgeo"}
+    - {kind: func, sig: "tNe(tgeompoint, geometry)", ret: "tbool", sym: "Tne_tgeo_geo"}
+    - {kind: func, sig: "tNe(tgeompoint, tgeompoint)", ret: "tbool", sym: "Tne_temporal_temporal"}
+  - lit: "\n"
+  - items:
+    - {kind: op_t, op: "#<>", L: "geometry", R: "tgeompoint", proc: "tNe", comm: "#<>"}
+    - {kind: op_t, op: "#<>", L: "tgeompoint", R: "geometry", proc: "tNe", comm: "#<>"}
+    - {kind: op_t, op: "#<>", L: "tgeompoint", R: "tgeompoint", proc: "tNe", comm: "#<>"}
+  - lit: "\n/*****************************************************************************/\n\n"
+  - items:
+    - {kind: func, sig: "tNe(geography, tgeogpoint)", ret: "tbool", sym: "Tne_geo_tgeo"}
+    - {kind: func, sig: "tNe(tgeogpoint, geography)", ret: "tbool", sym: "Tne_tgeo_geo"}
+    - {kind: func, sig: "tNe(tgeogpoint, tgeogpoint)", ret: "tbool", sym: "Tne_temporal_temporal"}
+  - lit: "\n"
+  - items:
+    - {kind: op_t, op: "#<>", L: "geography", R: "tgeogpoint", proc: "tNe", comm: "#<>"}
+    - {kind: op_t, op: "#<>", L: "tgeogpoint", R: "geography", proc: "tNe", comm: "#<>"}
+    - {kind: op_t, op: "#<>", L: "tgeogpoint", R: "tgeogpoint", proc: "tNe", comm: "#<>"}
+  - lit: "\n/******************************************************************************/"
+
+- family: tjsonb
+  file: mobilitydb/sql/json/458_tjsonb_compops.in.sql
+  reference: true
+  begin: "@brief Ever/always and temporal comparison functions and operators for\n * temporal circular buffers"
+  end: ""
+  blocks:
+  - lit: "/**\n * @file\n * @brief Ever/always and temporal comparison functions and operators for\n * temporal circular buffers\n */\n\n/*****************************************************************************\n * Ever/Always Comparison Functions\n *****************************************************************************/\n\n"
+  - items:
+    - {kind: func, sig: "eEq(jsonb, tjsonb)", ret: "boolean", sym: "Ever_eq_jsonb_tjsonb", support: "tspatial_supportfn"}
+    - {kind: func, sig: "aEq(jsonb, tjsonb)", ret: "boolean", sym: "Always_eq_jsonb_tjsonb", support: "tspatial_supportfn"}
+  - lit: "\n"
+  - items:
+    - {kind: op_ea, op: "?=", L: "jsonb", R: "tjsonb", proc: "eEq", neg: "%<>", rest: "tspatial_sel", join: "tspatial_joinsel"}
+    - {kind: op_ea, op: "%=", L: "jsonb", R: "tjsonb", proc: "aEq", neg: "?<>", rest: "tspatial_sel", join: "tspatial_joinsel"}
+  - lit: "\n"
+  - items:
+    - {kind: func, sig: "eNe(jsonb, tjsonb)", ret: "boolean", sym: "Ever_ne_jsonb_tjsonb"}
+    - {kind: func, sig: "aNe(jsonb, tjsonb)", ret: "boolean", sym: "Always_ne_jsonb_tjsonb"}
+  - lit: "\n"
+  - items:
+    - {kind: op_ea, op: "?<>", L: "jsonb", R: "tjsonb", proc: "eNe", neg: "%=", rest: "tspatial_sel", join: "tspatial_joinsel"}
+    - {kind: op_ea, op: "%<>", L: "jsonb", R: "tjsonb", proc: "aNe", neg: "?=", rest: "tspatial_sel", join: "tspatial_joinsel"}
+  - lit: "\n/*****************************************************************************/\n\n"
+  - items:
+    - {kind: func, sig: "eEq(tjsonb, jsonb)", ret: "boolean", sym: "Ever_eq_tjsonb_jsonb", support: "tspatial_supportfn"}
+    - {kind: func, sig: "aEq(tjsonb, jsonb)", ret: "boolean", sym: "Always_eq_tjsonb_jsonb", support: "tspatial_supportfn"}
+  - lit: "\n"
+  - items:
+    - {kind: op_ea, op: "?=", L: "tjsonb", R: "jsonb", proc: "eEq", neg: "%<>", rest: "tspatial_sel", join: "tspatial_joinsel"}
+    - {kind: op_ea, op: "%=", L: "tjsonb", R: "jsonb", proc: "aEq", neg: "?<>", rest: "tspatial_sel", join: "tspatial_joinsel"}
+  - lit: "\n"
+  - items:
+    - {kind: func, sig: "eNe(tjsonb, jsonb)", ret: "boolean", sym: "Ever_ne_tjsonb_jsonb"}
+    - {kind: func, sig: "aNe(tjsonb, jsonb)", ret: "boolean", sym: "Always_ne_tjsonb_jsonb"}
+  - lit: "\n"
+  - items:
+    - {kind: op_ea, op: "?<>", L: "tjsonb", R: "jsonb", proc: "eNe", neg: "%=", rest: "tspatial_sel", join: "tspatial_joinsel"}
+    - {kind: op_ea, op: "%<>", L: "tjsonb", R: "jsonb", proc: "aNe", neg: "?=", rest: "tspatial_sel", join: "tspatial_joinsel"}
+  - lit: "\n/*****************************************************************************/\n\n"
+  - items:
+    - {kind: func, sig: "eEq(tjsonb, tjsonb)", ret: "boolean", sym: "Ever_eq_tjsonb_tjsonb", support: "tspatial_supportfn"}
+    - {kind: func, sig: "aEq(tjsonb, tjsonb)", ret: "boolean", sym: "Always_eq_tjsonb_tjsonb", support: "tspatial_supportfn"}
+  - lit: "\n"
+  - items:
+    - {kind: op_ea, op: "?=", L: "tjsonb", R: "tjsonb", proc: "eEq", neg: "%<>", rest: "tspatial_sel", join: "tspatial_joinsel"}
+    - {kind: op_ea, op: "%=", L: "tjsonb", R: "tjsonb", proc: "aEq", neg: "?<>", rest: "tspatial_sel", join: "tspatial_joinsel"}
+  - lit: "\n"
+  - items:
+    - {kind: func, sig: "eNe(tjsonb, tjsonb)", ret: "boolean", sym: "Ever_ne_tjsonb_tjsonb"}
+    - {kind: func, sig: "aNe(tjsonb, tjsonb)", ret: "boolean", sym: "Always_ne_tjsonb_tjsonb"}
+  - lit: "\n"
+  - items:
+    - {kind: op_ea, op: "?<>", L: "tjsonb", R: "tjsonb", proc: "eNe", neg: "%=", rest: "tspatial_sel", join: "tspatial_joinsel"}
+    - {kind: op_ea, op: "%<>", L: "tjsonb", R: "tjsonb", proc: "aNe", neg: "?=", rest: "tspatial_sel", join: "tspatial_joinsel"}
+  - lit: "\n/*****************************************************************************\n * Temporal equal\n *****************************************************************************/\n\n"
+  - items:
+    - {kind: func, sig: "tEq(jsonb, tjsonb)", ret: "tbool", sym: "Teq_jsonb_tjsonb"}
+    - {kind: func, sig: "tEq(tjsonb, jsonb)", ret: "tbool", sym: "Teq_tjsonb_jsonb"}
+    - {kind: func, sig: "tEq(tjsonb, tjsonb)", ret: "tbool", sym: "Teq_temporal_temporal"}
+  - lit: "\n"
+  - items:
+    - {kind: op_t, op: "#=", L: "jsonb", R: "tjsonb", proc: "tEq", comm: "#="}
+    - {kind: op_t, op: "#=", L: "tjsonb", R: "jsonb", proc: "tEq", comm: "#="}
+    - {kind: op_t, op: "#=", L: "tjsonb", R: "tjsonb", proc: "tEq", comm: "#="}
+  - lit: "\n/*****************************************************************************\n * Temporal not equal\n *****************************************************************************/\n\n"
+  - items:
+    - {kind: func, sig: "tNe(jsonb, tjsonb)", ret: "tbool", sym: "Tne_jsonb_tjsonb"}
+    - {kind: func, sig: "tNe(tjsonb, jsonb)", ret: "tbool", sym: "Tne_tjsonb_jsonb"}
+    - {kind: func, sig: "tNe(tjsonb, tjsonb)", ret: "tbool", sym: "Tne_temporal_temporal"}
+  - lit: "\n"
+  - items:
+    - {kind: op_t, op: "#<>", L: "jsonb", R: "tjsonb", proc: "tNe", comm: "#<>"}
+    - {kind: op_t, op: "#<>", L: "tjsonb", R: "jsonb", proc: "tNe", comm: "#<>"}
+    - {kind: op_t, op: "#<>", L: "tjsonb", R: "tjsonb", proc: "tNe", comm: "#<>"}
+  - lit: "\n/******************************************************************************/"
