@@ -38,6 +38,17 @@ SELECT numPoints(tpcpatch(
   '2024-01-01'::timestamptz)) = 2;
 
 -------------------------------------------------------------------------------
+-- SRID
+-------------------------------------------------------------------------------
+
+-- pcid 1 is registered with SRID 0 in the test fixture.
+SELECT SRID(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)));
+-- A patch and a point sharing the same pcid resolve the same SRID: both
+-- go through the same schema lookup.
+SELECT SRID(pcpatch(1, pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0))) =
+  SRID(pcpoint(1, 1.0, 1.0, 1.0));
+
+-------------------------------------------------------------------------------
 -- Text output
 -------------------------------------------------------------------------------
 

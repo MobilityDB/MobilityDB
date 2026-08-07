@@ -72,7 +72,7 @@
  *
  * @defgroup mobilitydb_pointcloud_base_srid Spatial reference system functions
  * @ingroup mobilitydb_pointcloud_base
- * @brief Spatial reference system functions for pcpoint
+ * @brief Spatial reference system functions for pcpoint / pcpatch
  *
  * @defgroup mobilitydb_pointcloud_base_comp Comparison functions
  * @ingroup mobilitydb_pointcloud_base
