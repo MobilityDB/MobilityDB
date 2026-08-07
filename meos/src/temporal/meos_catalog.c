@@ -224,6 +224,91 @@ static const char *MEOS_OPER_NAMES[] =
 #endif /* JSON */
 };
 
+/**
+ * @brief Global constant array containing the types related to each type of
+ * the enumeration MeosType defined in file `meos_catalog.h`, indexed by the
+ * type itself
+ * @note Every field is named after the function that reads it, so that a
+ * relation that does not apply to a type keeps the value `T_UNKNOWN` and a
+ * type of the wrong kind is rejected as it was by the arrays of pairs that
+ * this array replaces. A relation and its inverse are read from the entry of
+ * each of the two types, so that every lookup is an access to this array
+ */
+static const reltype_catalog_struct MEOS_RELTYPE_CATALOG[] =
+{
+  [T_DATE] = { .basetype_settype = T_DATESET, .basetype_spantype = T_DATESPAN },
+  [T_DATESET] = { .settype_basetype = T_DATE },
+  [T_DATESPAN] = { .spantype_basetype = T_DATE,
+    .spantype_spansettype = T_DATESPANSET },
+  [T_DATESPANSET] = { .spansettype_spantype = T_DATESPAN },
+  [T_FLOAT8] = { .basetype_settype = T_FLOATSET,
+    .basetype_spantype = T_FLOATSPAN },
+  [T_FLOATSET] = { .settype_basetype = T_FLOAT8 },
+  [T_FLOATSPAN] = { .spantype_basetype = T_FLOAT8,
+    .spantype_spansettype = T_FLOATSPANSET },
+  [T_FLOATSPANSET] = { .spansettype_spantype = T_FLOATSPAN },
+  [T_INT4] = { .basetype_settype = T_INTSET, .basetype_spantype = T_INTSPAN },
+  [T_INTSET] = { .settype_basetype = T_INT4 },
+  [T_INTSPAN] = { .spantype_basetype = T_INT4,
+    .spantype_spansettype = T_INTSPANSET },
+  [T_INTSPANSET] = { .spansettype_spantype = T_INTSPAN },
+  [T_INT8] = { .basetype_settype = T_BIGINTSET,
+    .basetype_spantype = T_BIGINTSPAN },
+  [T_BIGINTSET] = { .settype_basetype = T_INT8 },
+  [T_BIGINTSPAN] = { .spantype_basetype = T_INT8,
+    .spantype_spansettype = T_BIGINTSPANSET },
+  [T_BIGINTSPANSET] = { .spansettype_spantype = T_BIGINTSPAN },
+  [T_TBOOL] = { .temptype_basetype = T_BOOL },
+  [T_TDOUBLE2] = { .temptype_basetype = T_DOUBLE2 },
+  [T_TDOUBLE3] = { .temptype_basetype = T_DOUBLE3 },
+  [T_TDOUBLE4] = { .temptype_basetype = T_DOUBLE4 },
+  [T_TEXT] = { .basetype_settype = T_TEXTSET },
+  [T_TEXTSET] = { .settype_basetype = T_TEXT },
+  [T_TFLOAT] = { .temptype_basetype = T_FLOAT8 },
+  [T_TIMESTAMPTZ] = { .basetype_settype = T_TSTZSET,
+    .basetype_spantype = T_TSTZSPAN },
+  [T_TINT] = { .temptype_basetype = T_INT4 },
+  [T_TSTZSET] = { .settype_basetype = T_TIMESTAMPTZ },
+  [T_TSTZSPAN] = { .spantype_basetype = T_TIMESTAMPTZ,
+    .spantype_spansettype = T_TSTZSPANSET },
+  [T_TSTZSPANSET] = { .spansettype_spantype = T_TSTZSPAN },
+  [T_TTEXT] = { .temptype_basetype = T_TEXT },
+  [T_GEOMETRY] = { .basetype_settype = T_GEOMSET },
+  [T_GEOMSET] = { .settype_basetype = T_GEOMETRY },
+  [T_GEOGRAPHY] = { .basetype_settype = T_GEOGSET },
+  [T_GEOGSET] = { .settype_basetype = T_GEOGRAPHY },
+  [T_TGEOMPOINT] = { .temptype_basetype = T_GEOMETRY },
+  [T_TGEOGPOINT] = { .temptype_basetype = T_GEOGRAPHY },
+  [T_NPOINT] = { .basetype_settype = T_NPOINTSET },
+  [T_NPOINTSET] = { .settype_basetype = T_NPOINT },
+  [T_TNPOINT] = { .temptype_basetype = T_NPOINT },
+  [T_POSE] = { .basetype_settype = T_POSESET },
+  [T_POSESET] = { .settype_basetype = T_POSE },
+  [T_TPOSE] = { .temptype_basetype = T_POSE },
+  [T_CBUFFER] = { .basetype_settype = T_CBUFFERSET },
+  [T_CBUFFERSET] = { .settype_basetype = T_CBUFFER },
+  [T_TCBUFFER] = { .temptype_basetype = T_CBUFFER },
+  [T_TGEOMETRY] = { .temptype_basetype = T_GEOMETRY },
+  [T_TGEOGRAPHY] = { .temptype_basetype = T_GEOGRAPHY },
+  [T_TRGEOMETRY] = { .temptype_basetype = T_POSE },
+  [T_JSONB] = { .basetype_settype = T_JSONBSET },
+  [T_JSONBSET] = { .settype_basetype = T_JSONB },
+  [T_TJSONB] = { .temptype_basetype = T_JSONB },
+  [T_TBIGINT] = { .temptype_basetype = T_INT8 },
+  [T_H3INDEX] = { .basetype_settype = T_H3INDEXSET },
+  [T_H3INDEXSET] = { .settype_basetype = T_H3INDEX },
+  [T_TH3INDEX] = { .temptype_basetype = T_H3INDEX },
+  [T_QUADBIN] = { .basetype_settype = T_QUADBINSET },
+  [T_QUADBINSET] = { .settype_basetype = T_QUADBIN },
+  [T_TQUADBIN] = { .temptype_basetype = T_QUADBIN },
+  [T_PCPOINT] = { .basetype_settype = T_PCPOINTSET },
+  [T_PCPOINTSET] = { .settype_basetype = T_PCPOINT },
+  [T_TPCPOINT] = { .temptype_basetype = T_PCPOINT },
+  [T_PCPATCH] = { .basetype_settype = T_PCPATCHSET },
+  [T_PCPATCHSET] = { .settype_basetype = T_PCPATCH },
+  [T_TPCPATCH] = { .temptype_basetype = T_PCPATCH },
+};
+
 #define TEMPSUBTYPE_STR_MAXLEN 12
 
 /**
@@ -254,89 +339,6 @@ static const char * MEOS_INTERPTYPE_NAMES[] =
 };
 
 /*****************************************************************************/
-
-/**
- * @brief Global constant array that keeps type information for the defined set
- * types
- */
-static const settype_catalog_struct MEOS_SETTYPE_CATALOG[] =
-{
-  /* settype        basetype */
-  {T_DATESET,       T_DATE},
-  {T_FLOATSET,      T_FLOAT8},
-  {T_INTSET,        T_INT4},
-  {T_BIGINTSET,     T_INT8},
-  {T_TEXTSET,       T_TEXT},
-  {T_TSTZSET,       T_TIMESTAMPTZ},
-  {T_GEOMSET,       T_GEOMETRY},
-  {T_GEOGSET,       T_GEOGRAPHY},
-  {T_NPOINTSET,     T_NPOINT},
-  {T_POSESET,       T_POSE},
-  {T_CBUFFERSET,    T_CBUFFER},
-  {T_JSONBSET,      T_JSONB},
-  {T_H3INDEXSET,    T_H3INDEX},
-  {T_QUADBINSET,    T_QUADBIN},
-  {T_PCPOINTSET,    T_PCPOINT},
-  {T_PCPATCHSET,    T_PCPATCH},
-};
-
-/**
- * @brief Global constant array that keeps type information for the defined
- * span types
- */
-static const spantype_catalog_struct MEOS_SPANTYPE_CATALOG[] =
-{
-  /* spantype       basetype */
-  {T_DATESPAN,      T_DATE},
-  {T_FLOATSPAN,     T_FLOAT8},
-  {T_INTSPAN,       T_INT4},
-  {T_BIGINTSPAN,    T_INT8},
-  {T_TSTZSPAN,      T_TIMESTAMPTZ},
-};
-
-/**
- * @brief Global constant array that keeps type information for the defined
- * span set types
- */
-static const spansettype_catalog_struct MEOS_SPANSETTYPE_CATALOG[] =
-{
-  /* spansettype    spantype */
-  {T_DATESPANSET,   T_DATESPAN},
-  {T_FLOATSPANSET,  T_FLOATSPAN},
-  {T_INTSPANSET,    T_INTSPAN},
-  {T_BIGINTSPANSET, T_BIGINTSPAN},
-  {T_TSTZSPANSET,   T_TSTZSPAN},
-};
-
-/**
- * @brief Global constant array that keeps type information for the defined
- * temporal types
- */
-static const temptype_catalog_struct MEOS_TEMPTYPE_CATALOG[] =
-{
-  /* temptype    basetype  (canonical MeosType enum-value order) */
-  {T_TBOOL,      T_BOOL},      /* 26 */
-  {T_TDOUBLE2,   T_DOUBLE2},   /* 28 */
-  {T_TDOUBLE3,   T_DOUBLE3},   /* 29 */
-  {T_TDOUBLE4,   T_DOUBLE4},   /* 30 */
-  {T_TFLOAT,     T_FLOAT8},    /* 33 */
-  {T_TINT,       T_INT4},      /* 35 */
-  {T_TTEXT,      T_TEXT},      /* 41 */
-  {T_TGEOMPOINT, T_GEOMETRY},  /* 46 */
-  {T_TGEOGPOINT, T_GEOGRAPHY}, /* 47 */
-  {T_TNPOINT,    T_NPOINT},    /* 51 */
-  {T_TPOSE,      T_POSE},      /* 56 */
-  {T_TCBUFFER,   T_CBUFFER},   /* 59 */
-  {T_TGEOMETRY,  T_GEOMETRY},  /* 60 */
-  {T_TGEOGRAPHY, T_GEOGRAPHY}, /* 61 */
-  {T_TRGEOMETRY, T_POSE},      /* 62 */
-  {T_TJSONB,     T_JSONB},     /* 66 */
-  {T_TBIGINT,    T_INT8},      /* 67 */
-  {T_TH3INDEX,   T_H3INDEX},   /* 70 */
-  {T_TQUADBIN,   T_QUADBIN},   /* 73 */
-  {T_TPCPOINT,   T_PCPOINT},   /* 76 */
-  {T_TPCPATCH,   T_PCPATCH},   /* 79 */
-};
 
 /*****************************************************************************/
 
@@ -511,12 +513,10 @@ interptype_from_string(const char *str)
 MeosType
 temptype_basetype(MeosType type)
 {
-  int n = sizeof(MEOS_TEMPTYPE_CATALOG) / sizeof(temptype_catalog_struct);
-  for (int i = 0; i < n; i++)
-  {
-    if (MEOS_TEMPTYPE_CATALOG[i].temptype == type)
-      return MEOS_TEMPTYPE_CATALOG[i].basetype;
-  }
+  size_t n = sizeof(MEOS_RELTYPE_CATALOG) / sizeof(reltype_catalog_struct);
+  if ((size_t) type < n &&
+      MEOS_RELTYPE_CATALOG[type].temptype_basetype != T_UNKNOWN)
+    return MEOS_RELTYPE_CATALOG[type].temptype_basetype;
   /* We only arrive here on error */
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
     "type %d is not a temporal type", type);
@@ -533,12 +533,10 @@ temptype_basetype(MeosType type)
 MeosType
 settype_basetype(MeosType type)
 {
-  int n = sizeof(MEOS_SETTYPE_CATALOG) / sizeof(settype_catalog_struct);
-  for (int i = 0; i < n; i++)
-  {
-    if (MEOS_SETTYPE_CATALOG[i].settype == type)
-      return MEOS_SETTYPE_CATALOG[i].basetype;
-  }
+  size_t n = sizeof(MEOS_RELTYPE_CATALOG) / sizeof(reltype_catalog_struct);
+  if ((size_t) type < n &&
+      MEOS_RELTYPE_CATALOG[type].settype_basetype != T_UNKNOWN)
+    return MEOS_RELTYPE_CATALOG[type].settype_basetype;
   /* We only arrive here on error */
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
     "type %s is not a set type", meostype_name(type));
@@ -551,12 +549,10 @@ settype_basetype(MeosType type)
 MeosType
 basetype_settype(MeosType type)
 {
-  int n = sizeof(MEOS_SETTYPE_CATALOG) / sizeof(settype_catalog_struct);
-  for (int i = 0; i < n; i++)
-  {
-    if (MEOS_SETTYPE_CATALOG[i].basetype == type)
-      return MEOS_SETTYPE_CATALOG[i].settype;
-  }
+  size_t n = sizeof(MEOS_RELTYPE_CATALOG) / sizeof(reltype_catalog_struct);
+  if ((size_t) type < n &&
+      MEOS_RELTYPE_CATALOG[type].basetype_settype != T_UNKNOWN)
+    return MEOS_RELTYPE_CATALOG[type].basetype_settype;
   /* We only arrive here on error */
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
     "type %s is not a set type", meostype_name(type));
@@ -569,12 +565,10 @@ basetype_settype(MeosType type)
 MeosType
 spantype_basetype(MeosType type)
 {
-  int n = sizeof(MEOS_SPANTYPE_CATALOG) / sizeof(spantype_catalog_struct);
-  for (int i = 0; i < n; i++)
-  {
-    if (MEOS_SPANTYPE_CATALOG[i].spantype == type)
-      return MEOS_SPANTYPE_CATALOG[i].basetype;
-  }
+  size_t n = sizeof(MEOS_RELTYPE_CATALOG) / sizeof(reltype_catalog_struct);
+  if ((size_t) type < n &&
+      MEOS_RELTYPE_CATALOG[type].spantype_basetype != T_UNKNOWN)
+    return MEOS_RELTYPE_CATALOG[type].spantype_basetype;
   /* We only arrive here on error */
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
     "type %s is not a span type", meostype_name(type));
@@ -587,12 +581,10 @@ spantype_basetype(MeosType type)
 MeosType
 spansettype_spantype(MeosType type)
 {
-  int n = sizeof(MEOS_SPANSETTYPE_CATALOG) / sizeof(spansettype_catalog_struct);
-  for (int i = 0; i < n; i++)
-  {
-    if (MEOS_SPANSETTYPE_CATALOG[i].spansettype == type)
-      return MEOS_SPANSETTYPE_CATALOG[i].spantype;
-  }
+  size_t n = sizeof(MEOS_RELTYPE_CATALOG) / sizeof(reltype_catalog_struct);
+  if ((size_t) type < n &&
+      MEOS_RELTYPE_CATALOG[type].spansettype_spantype != T_UNKNOWN)
+    return MEOS_RELTYPE_CATALOG[type].spansettype_spantype;
   /* We only arrive here on error */
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
     "type %s is not a span set type", meostype_name(type));
@@ -605,12 +597,10 @@ spansettype_spantype(MeosType type)
 MeosType
 basetype_spantype(MeosType type)
 {
-  int n = sizeof(MEOS_SPANTYPE_CATALOG) / sizeof(spantype_catalog_struct);
-  for (int i = 0; i < n; i++)
-  {
-    if (MEOS_SPANTYPE_CATALOG[i].basetype == type)
-      return MEOS_SPANTYPE_CATALOG[i].spantype;
-  }
+  size_t n = sizeof(MEOS_RELTYPE_CATALOG) / sizeof(reltype_catalog_struct);
+  if ((size_t) type < n &&
+      MEOS_RELTYPE_CATALOG[type].basetype_spantype != T_UNKNOWN)
+    return MEOS_RELTYPE_CATALOG[type].basetype_spantype;
   /* We only arrive here on error */
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
     "type %s is not a span type", meostype_name(type));
@@ -623,12 +613,10 @@ basetype_spantype(MeosType type)
 MeosType
 spantype_spansettype(MeosType type)
 {
-  int n = sizeof(MEOS_SPANSETTYPE_CATALOG) / sizeof(spansettype_catalog_struct);
-  for (int i = 0; i < n; i++)
-  {
-    if (MEOS_SPANSETTYPE_CATALOG[i].spantype == type)
-      return MEOS_SPANSETTYPE_CATALOG[i].spansettype;
-  }
+  size_t n = sizeof(MEOS_RELTYPE_CATALOG) / sizeof(reltype_catalog_struct);
+  if ((size_t) type < n &&
+      MEOS_RELTYPE_CATALOG[type].spantype_spansettype != T_UNKNOWN)
+    return MEOS_RELTYPE_CATALOG[type].spantype_spansettype;
   /* We only arrive here on error */
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
     "type %s is not a span type", meostype_name(type));

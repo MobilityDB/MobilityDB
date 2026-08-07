@@ -195,40 +195,19 @@ typedef enum
 } MeosOper;
 
 /**
- * Structure to represent the temporal type cache array.
+ * Structure to represent the types related to a type, which the type cache
+ * array keeps at the entry of the type itself
  */
 typedef struct
 {
-  MeosType temptype;    /**< Enum value of the temporal type */
-  MeosType basetype;    /**< Enum value of the base type */
-} temptype_catalog_struct;
-
-/**
- * Structure to represent the span type cache array.
- */
-typedef struct
-{
-  MeosType settype;     /**< Enum value of the set type */
-  MeosType basetype;    /**< Enum value of the base type */
-} settype_catalog_struct;
-
-/**
- * Structure to represent the span type cache array.
- */
-typedef struct
-{
-  MeosType spantype;    /**< Enum value of the span type */
-  MeosType basetype;    /**< Enum value of the base type */
-} spantype_catalog_struct;
-
-/**
- * Structure to represent the spanset type cache array.
- */
-typedef struct
-{
-  MeosType spansettype;    /**< Enum value of the span type */
-  MeosType spantype;       /**< Enum value of the base type */
-} spansettype_catalog_struct;
+  MeosType settype_basetype;     /**< Base type of a set type */
+  MeosType spantype_basetype;    /**< Base type of a span type */
+  MeosType temptype_basetype;    /**< Base type of a temporal type */
+  MeosType basetype_settype;     /**< Set type of a base type */
+  MeosType basetype_spantype;    /**< Span type of a base type */
+  MeosType spansettype_spantype; /**< Span type of a span set type */
+  MeosType spantype_spansettype; /**< Span set type of a span type */
+} reltype_catalog_struct;
 
 /*****************************************************************************/
 
