@@ -81,6 +81,50 @@ ensure_valid_pixtype(uint8 pixtype)
 }
 
 /*****************************************************************************
+ * Pixel type functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_raster_base_accessor
+ * @brief Return the size in bytes of a single pixel of the given type
+ * @param[in] pixtype Pixel data type
+ */
+size_t
+raquet_pixtype_size(MeosPixType pixtype)
+{
+  switch (pixtype)
+  {
+    case MEOS_PT_UINT8:   return 1;
+    case MEOS_PT_INT16:   return 2;
+    case MEOS_PT_INT32:   return 4;
+    case MEOS_PT_FLOAT32: return 4;
+    case MEOS_PT_FLOAT64: return 8;
+    default:              return 0;
+  }
+}
+
+/**
+ * @ingroup meos_raster_base_accessor
+ * @brief Return the pixel data type corresponding to a name
+ * @param[in] str Pixel type name: UINT8, INT16, INT32, FLOAT32, or FLOAT64
+ * @note This is the parser counterpart of #raquet_pixtype()
+ */
+MeosPixType
+raquet_pixtype_from_string(const char *str)
+{
+  VALIDATE_NOT_NULL(str, MEOS_PT_UINT8);
+  if (strcmp(str, "UINT8") == 0)   return MEOS_PT_UINT8;
+  if (strcmp(str, "INT16") == 0)   return MEOS_PT_INT16;
+  if (strcmp(str, "INT32") == 0)   return MEOS_PT_INT32;
+  if (strcmp(str, "FLOAT32") == 0) return MEOS_PT_FLOAT32;
+  if (strcmp(str, "FLOAT64") == 0) return MEOS_PT_FLOAT64;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "Unknown pixel type \"%s\": use UINT8, INT16, INT32, FLOAT32, or FLOAT64",
+    str);
+  return MEOS_PT_UINT8; /* make compiler quiet */
+}
+
+/*****************************************************************************
  * Input/output functions
  *****************************************************************************/
 

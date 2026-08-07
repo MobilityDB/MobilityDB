@@ -94,23 +94,6 @@ extern void raquet_set_stbox(const Raquet *rq, STBox *box);
  *****************************************************************************/
 
 /**
- * @brief Return the size in bytes of a single pixel of the given type
- */
-static inline size_t
-raquet_pixtype_size(MeosPixType pixtype)
-{
-  switch (pixtype)
-  {
-    case MEOS_PT_UINT8:   return 1;
-    case MEOS_PT_INT16:   return 2;
-    case MEOS_PT_INT32:   return 4;
-    case MEOS_PT_FLOAT32: return 4;
-    case MEOS_PT_FLOAT64: return 8;
-    default:              return 0;
-  }
-}
-
-/**
  * @brief Return the number of pixel bytes of a Raquet tile
  */
 static inline size_t
