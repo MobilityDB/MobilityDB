@@ -1609,6 +1609,13 @@ SELECT tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}' #> 1.5;
 SELECT tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]' #> 1.5;
 SELECT tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}' #> 1.5;
 
+-- An integer literal against a tfloat resolves through the numeric cast to the
+-- (tfloat, float) overload, not a dedicated (tfloat, integer) one
+SELECT tGt(tfloat '[1@2000-01-01, 3@2000-01-02]', 5);
+SELECT tfloat '[1@2000-01-01, 3@2000-01-02]' #> 5;
+SELECT tGt(tfloat '[1@2000-01-01, 8@2000-01-02]', 5);
+SELECT tfloat '[1@2000-01-01, 8@2000-01-02]' #> 5;
+
 SELECT tfloat '1.5@2000-01-01' #> tfloat '1.5@2000-01-01';
 SELECT tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}' #> tfloat '1.5@2000-01-01';
 SELECT tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]' #> tfloat '1.5@2000-01-01';
@@ -1788,6 +1795,13 @@ SELECT tfloat '1.5@2000-01-01' #>= 1.5;
 SELECT tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}' #>= 1.5;
 SELECT tfloat '[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03]' #>= 1.5;
 SELECT tfloat '{[1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03],[3.5@2000-01-04, 3.5@2000-01-05]}' #>= 1.5;
+
+-- An integer literal against a tfloat resolves through the numeric cast to the
+-- (tfloat, float) overload, not a dedicated (tfloat, integer) one
+SELECT tGe(tfloat '[1@2000-01-01, 3@2000-01-02]', 5);
+SELECT tfloat '[1@2000-01-01, 3@2000-01-02]' #>= 5;
+SELECT tGe(tfloat '[1@2000-01-01, 8@2000-01-02]', 5);
+SELECT tfloat '[1@2000-01-01, 8@2000-01-02]' #>= 5;
 
 SELECT tfloat '1.5@2000-01-01' #>= tfloat '1.5@2000-01-01';
 SELECT tfloat '{1.5@2000-01-01, 2.5@2000-01-02, 1.5@2000-01-03}' #>= tfloat '1.5@2000-01-01';

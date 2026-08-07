@@ -2254,10 +2254,6 @@ CREATE FUNCTION tGt(float, tfloat)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tgt_base_temporal'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tGt(tfloat, integer)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tgt_temporal_base'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tGt(tfloat, float)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tgt_temporal_base'
@@ -2526,10 +2522,6 @@ CREATE OPERATOR #>= (
 CREATE FUNCTION tGe(float, tfloat)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tge_base_temporal'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tGe(tfloat, integer)
-  RETURNS tbool
-  AS 'MODULE_PATHNAME', 'Tge_temporal_base'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tGe(tfloat, float)
   RETURNS tbool
