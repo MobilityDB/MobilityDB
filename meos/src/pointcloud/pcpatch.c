@@ -21,6 +21,7 @@
 
 /* C */
 #include <assert.h>
+#include <limits.h>
 #include <string.h>
 #include <stddef.h>          /* offsetof */
 /* PostgreSQL */
@@ -33,6 +34,8 @@
 #include <liblwgeom.h>       /* parse_hex, deparse_hex */
 /* MEOS */
 #include <meos.h>
+#include <meos_internal.h>
+#include "temporal/temporal.h"
 
 /*****************************************************************************
  * Reserved tail
@@ -209,7 +212,8 @@ char *
 pcpatch_hex_out(const Pcpatch *pa, int maxdd)
 {
   (void) maxdd;
-  assert(pa);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pa, NULL);
   size_t byte_len = VARSIZE(pa);
   size_t meaningful = pcpatch_meaningful_size(pa);
   size_t hex_len = byte_len * 2;
@@ -254,7 +258,8 @@ pcpatch_as_hexwkb(const Pcpatch *pa)
 Pcpatch *
 pcpatch_copy(const Pcpatch *pa)
 {
-  assert(pa);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pa, NULL);
   size_t sz = VARSIZE(pa);
   Pcpatch *result = palloc(sz);
   memcpy(result, pa, sz);
@@ -268,7 +273,9 @@ pcpatch_copy(const Pcpatch *pa)
  */
 uint32_t pcpatch_get_pcid(const Pcpatch *pa)
 {
-  assert(pa); return pa->pcid;
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pa, INT_MAX);
+  return pa->pcid;
 }
 
 /**
@@ -277,7 +284,9 @@ uint32_t pcpatch_get_pcid(const Pcpatch *pa)
  */
 uint32_t pcpatch_npoints(const Pcpatch *pa)
 {
-  assert(pa); return pa->npoints;
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pa, INT_MAX);
+  return pa->npoints;
 }
 
 /**
@@ -287,7 +296,8 @@ uint32_t pcpatch_npoints(const Pcpatch *pa)
 uint32
 pcpatch_hash(const Pcpatch *pa)
 {
-  assert(pa);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pa, INT_MAX);
   return hash_any((const unsigned char *) pa,
     (int) pcpatch_meaningful_size(pa));
 }
@@ -299,7 +309,8 @@ pcpatch_hash(const Pcpatch *pa)
 uint64
 pcpatch_hash_extended(const Pcpatch *pa, uint64 seed)
 {
-  assert(pa);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pa, LONG_MAX);
   return hash_any_extended((const unsigned char *) pa,
     (int) pcpatch_meaningful_size(pa), seed);
 }
@@ -319,7 +330,8 @@ pcpatch_hash_extended(const Pcpatch *pa, uint64 seed)
 int
 pcpatch_cmp(const Pcpatch *pa1, const Pcpatch *pa2)
 {
-  assert(pa1); assert(pa2);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pa1, false); VALIDATE_NOT_NULL(pa2, false);
   size_t sz1 = pcpatch_meaningful_size(pa1);
   size_t sz2 = pcpatch_meaningful_size(pa2);
   size_t minsz = (sz1 < sz2) ? sz1 : sz2;
