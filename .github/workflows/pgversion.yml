@@ -1,8 +1,9 @@
 name: Main Build
 
 # Test for supported PostgreSQL/PostGIS versions.
-# Minimum supported PG is 16 (see mobilitydb/CMakeLists.txt PG_MIN_MAJOR_VERSION).
-# 3 (PostgreSQL) * 1 (PostGIS) * 1 (Linux) + 1 (coverage) = 4 jobs are triggered.
+# Supported PG range is 16 to 19 (see mobilitydb/CMakeLists.txt
+# PG_MIN_MAJOR_VERSION / PG_MAX_MAJOR_VERSION); the matrix below covers it.
+# 4 (PostgreSQL) * 1 (PostGIS) * 1 (Linux) + 1 (coverage) = 5 jobs are triggered.
 # Allow manual trigger
 
 on:
