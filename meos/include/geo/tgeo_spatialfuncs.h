@@ -90,6 +90,9 @@ extern bool ensure_srid_is_latlong(int32_t srid);
 extern bool ensure_spatial_validity(const Temporal *temp1,
   const Temporal *temp2);
 extern int spheroid_init_from_srid(int32_t srid, SPHEROID *s);
+extern bool ensure_geodetic_geo(const GSERIALIZED *gs);
+extern bool ensure_not_geodetic_geo(const GSERIALIZED *gs);
+extern bool ensure_geodetic(int16 flags);
 extern bool ensure_not_geodetic(int16 flags);
 extern bool ensure_same_geodetic(int16 flags1, int16 flags2);
 extern bool ensure_same_geodetic_geo(const GSERIALIZED *gs1,

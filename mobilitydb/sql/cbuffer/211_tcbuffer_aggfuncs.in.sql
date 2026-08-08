@@ -66,7 +66,7 @@ CREATE AGGREGATE wCount(tcbuffer, interval) (
 
 /*****************************************************************************/
 
--- The function is not strict
+-- The functions are not strict
 CREATE FUNCTION temporal_merge_transfn(internal, tcbuffer)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_merge_transfn'
@@ -76,6 +76,8 @@ CREATE FUNCTION tcbuffer_tagg_finalfn(internal)
   AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+/* Function deprecated in 1.4
+   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE merge(tcbuffer) (
   SFUNC = temporal_merge_transfn,
   STYPE = internal,
@@ -85,7 +87,6 @@ CREATE AGGREGATE merge(tcbuffer) (
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = safe
 );
-
 CREATE AGGREGATE mergeAgg(tcbuffer) (
   SFUNC = temporal_merge_transfn,
   STYPE = internal,
@@ -100,39 +101,35 @@ CREATE AGGREGATE mergeAgg(tcbuffer) (
  * Append tinstant aggregate functions
  *****************************************************************************/
 
--- The function is not STRICT
+-- The functions are not strict
 CREATE FUNCTION temporal_app_tinst_transfn(tcbuffer, tcbuffer)
   RETURNS tcbuffer
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-
--- The function is not STRICT
 CREATE FUNCTION temporal_app_tinst_transfn(tcbuffer, tcbuffer,
     interp text DEFAULT NULL)
   RETURNS tcbuffer
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-
--- The function is not STRICT
 CREATE FUNCTION temporal_app_tinst_transfn(tcbuffer, tcbuffer,
     interp text DEFAULT NULL, maxdist float DEFAULT NULL, 
     maxt interval DEFAULT NULL)
   RETURNS tcbuffer
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-
 CREATE FUNCTION temporal_append_finalfn(tcbuffer)
   RETURNS tcbuffer
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
+/* Function deprecated in 1.4
+   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendInstant(tcbuffer) (
   SFUNC = temporal_app_tinst_transfn,
   STYPE = tcbuffer,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
-
 CREATE AGGREGATE appendInstantAgg(tcbuffer) (
   SFUNC = temporal_app_tinst_transfn,
   STYPE = tcbuffer,
@@ -140,13 +137,14 @@ CREATE AGGREGATE appendInstantAgg(tcbuffer) (
   PARALLEL = safe
 );
 
+/* Function deprecated in 1.4
+   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendInstant(tcbuffer, text) (
   SFUNC = temporal_app_tinst_transfn,
   STYPE = tcbuffer,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
-
 CREATE AGGREGATE appendInstantAgg(tcbuffer, text) (
   SFUNC = temporal_app_tinst_transfn,
   STYPE = tcbuffer,
@@ -154,13 +152,14 @@ CREATE AGGREGATE appendInstantAgg(tcbuffer, text) (
   PARALLEL = safe
 );
 
+/* Function deprecated in 1.4
+   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendInstant(tcbuffer, text, float, interval) (
   SFUNC = temporal_app_tinst_transfn,
   STYPE = tcbuffer,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
-
 CREATE AGGREGATE appendInstantAgg(tcbuffer, text, float, interval) (
   SFUNC = temporal_app_tinst_transfn,
   STYPE = tcbuffer,
@@ -170,19 +169,20 @@ CREATE AGGREGATE appendInstantAgg(tcbuffer, text, float, interval) (
 
 /*****************************************************************************/
 
--- The function is not STRICT
+-- The function is not strict
 CREATE FUNCTION temporal_app_tseq_transfn(tcbuffer, tcbuffer)
   RETURNS tcbuffer
   AS 'MODULE_PATHNAME', 'Temporal_app_tseq_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
+/* Function deprecated in 1.4
+   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendSequence(tcbuffer) (
   SFUNC = temporal_app_tseq_transfn,
   STYPE = tcbuffer,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
-
 CREATE AGGREGATE appendSequenceAgg(tcbuffer) (
   SFUNC = temporal_app_tseq_transfn,
   STYPE = tcbuffer,

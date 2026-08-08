@@ -38,7 +38,7 @@ transformation_families:
       ret: tbool
       sym: Temporal_as_tsequence
       strict: false
-      pre: '-- The function is not strict
+      pre: '-- The functions are not strict
 
         '
     - sig: tintSeq(tint, text DEFAULT NULL)
@@ -62,7 +62,7 @@ transformation_families:
       ret: tbool
       sym: Temporal_as_tsequenceset
       strict: false
-      pre: '-- The function is not strict
+      pre: '-- The functions are not strict
 
         '
     - sig: tintSeqSet(tint)
@@ -151,7 +151,7 @@ transformation_families:
     - sig: appendSequence(ttext, ttext)
       ret: ttext
       sym: Temporal_append_tsequence
-  - lit: "-- The function is not strict\nCREATE FUNCTION merge(tbool, tbool)\n  RETURNS tbool\n  AS 'MODULE_PATHNAME', 'Temporal_merge'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION merge(tint, tint)\n  RETURNS tint\n  AS 'MODULE_PATHNAME', 'Temporal_merge'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION merge(tbigint, tbigint)\n  RETURNS tbigint\n  AS 'MODULE_PATHNAME', 'Temporal_merge'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION merge(tfloat, tfloat)\n  RETURNS tfloat\n    AS 'MODULE_PATHNAME', 'Temporal_merge'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION merge(ttext, ttext)\n  RETURNS ttext\n    AS 'MODULE_PATHNAME', 'Temporal_merge'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"
+  - lit: "-- The functions are not strict\nCREATE FUNCTION merge(tbool, tbool)\n  RETURNS tbool\n  AS 'MODULE_PATHNAME', 'Temporal_merge'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION merge(tint, tint)\n  RETURNS tint\n  AS 'MODULE_PATHNAME', 'Temporal_merge'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION merge(tbigint, tbigint)\n  RETURNS tbigint\n  AS 'MODULE_PATHNAME', 'Temporal_merge'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION merge(tfloat, tfloat)\n  RETURNS tfloat\n    AS 'MODULE_PATHNAME', 'Temporal_merge'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION merge(ttext, ttext)\n  RETURNS ttext\n    AS 'MODULE_PATHNAME', 'Temporal_merge'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"
   - fns:
     - sig: merge(tbool[])
       ret: tbool

@@ -37,9 +37,8 @@
 /* C */
 #include <assert.h>
 /* PostgreSQL */
-#if POSTGRESQL_VERSION_NUMBER >= 160000
-  #include "varatt.h"
-#endif
+#include <postgres.h>
+#include <varatt.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>

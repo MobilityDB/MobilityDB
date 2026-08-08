@@ -447,7 +447,6 @@ CREATE FUNCTION tstzspanset(datespanset)
 CREATE CAST (datespanset AS tstzspanset) WITH FUNCTION tstzspanset(datespanset);
 CREATE CAST (tstzspanset AS datespanset) WITH FUNCTION datespanset(tstzspanset);
 
-#if POSTGRESQL_VERSION_NUMBER >= 140000
 CREATE FUNCTION multirange(intspanset)
   RETURNS int4multirange
   AS 'MODULE_PATHNAME', 'Spanset_to_multirange'
@@ -490,7 +489,6 @@ CREATE CAST (int4multirange AS intspanset) WITH FUNCTION spanset(int4multirange)
 CREATE CAST (int8multirange AS bigintspanset) WITH FUNCTION spanset(int8multirange);
 CREATE CAST (datemultirange AS datespanset) WITH FUNCTION spanset(datemultirange);
 CREATE CAST (tstzmultirange AS tstzspanset) WITH FUNCTION spanset(tstzmultirange);
-#endif //POSTGRESQL_VERSION_NUMBER >= 140000
 
 /******************************************************************************
  * Accessor Functions

@@ -26,9 +26,7 @@
 #include <math.h>
 /* PostgreSQL */
 #include <postgres.h>
-#if POSTGRESQL_VERSION_NUMBER >= 160000
-  #include "varatt.h"
-#endif
+#include <varatt.h>
 #include <common/hashfn.h>
 #include <common/int.h>
 #include <lib/stringinfo.h>
@@ -38,22 +36,9 @@
 #include <utils/numeric.h>
 #include <utils/timestamp.h>
 #include <utils/jsonb.h>
-
+/* MEOS */
 #include <pgtypes.h>
 #include "../../meos/include/meos_error.h"
-
-#if POSTGRESQL_VERSION_NUMBER < 160000
-/*
- * Similarly, wrappers around labs()/llabs() matching our int64.
- */
-#if SIZEOF_LONG == 8
-#define i64abs(i) ((int64) labs(i))
-#elif SIZEOF_LONG_LONG == 8
-#define i64abs(i) ((int64) llabs(i))
-#else
-#error "cannot find integer type of the same size as int64_t"
-#endif
-#endif /* POSTGRESQL_VERSION_NUMBER < 160000 */
 
 /* ----------
  * Local data types

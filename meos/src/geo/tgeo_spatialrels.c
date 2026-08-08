@@ -590,7 +590,6 @@ int
 ea_spatialrel_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
   datum_func2 func, bool ever)
 {
-  VALIDATE_TGEO(temp1, -1); VALIDATE_TGEO(temp2, -1);
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tgeo_tgeo(temp1, temp2) ||
       ! ensure_not_geodetic(temp1->flags) ||
@@ -633,7 +632,6 @@ int
 ea_contains_tgeo_geo_common(const Temporal *temp, const GSERIALIZED *gs, bool ever,
   bool invert)
 {
-  VALIDATE_TGEO(temp, -1); VALIDATE_NOT_NULL(gs, -1);
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tgeo_geo(temp, gs) || gserialized_is_empty(gs) ||
       ! ensure_not_geodetic_geo(gs) || ! ensure_has_not_Z_geo(gs) ||
@@ -804,12 +802,12 @@ int
 ea_covers_tgeo_geo_common(const Temporal *temp, const GSERIALIZED *gs, bool ever,
   bool invert)
 {
-  VALIDATE_TGEO(temp, -1); VALIDATE_NOT_NULL(gs, -1);
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tgeo_geo(temp, gs) || gserialized_is_empty(gs) ||
       ! ensure_not_geodetic_geo(gs) || ! ensure_has_not_Z_geo(gs) ||
       ! ensure_has_not_Z(temp->temptype, temp->flags))
     return -1;
+
   /* A geometry covers a point exactly when it intersects it, both placing the
    * point in the closure of the geometry; only contains differs, by excluding
    * the boundary. The ever semantics of a temporal point are therefore the
@@ -986,7 +984,6 @@ acovers_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 int
 ea_disjoint_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 {
-  VALIDATE_TGEO(temp, -1); VALIDATE_NOT_NULL(gs, -1);
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tgeo_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
@@ -1118,7 +1115,7 @@ adisjoint_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
 int
 ea_disjoint_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
 {
-  VALIDATE_TGEO(temp1, -1); VALIDATE_TGEO(temp2, -1);
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_tgeo_tgeo(temp1, temp2))
     return -1;
   datum_func2 func = geo_disjoint_fn(temp1->flags, temp2->flags);
@@ -1173,7 +1170,6 @@ adisjoint_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 int
 ea_intersects_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 {
-  VALIDATE_TGEO(temp, -1); VALIDATE_NOT_NULL(gs, -1);
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tgeo_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
@@ -1280,7 +1276,7 @@ int
 ea_intersects_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
   bool ever)
 {
-  VALIDATE_TGEO(temp1, -1); VALIDATE_TGEO(temp2, -1);
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_tgeo_tgeo(temp1, temp2))
     return -1;
   datum_func2 func = geo_intersects_fn(temp1->flags, temp2->flags);
@@ -1339,7 +1335,6 @@ aintersects_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 int
 ea_touches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 {
-  VALIDATE_TGEO(temp, -1); VALIDATE_NOT_NULL(gs, -1);
   /* Ensure validity of the arguments */
   if (! ensure_valid_tpoint_geo(temp, gs) || gserialized_is_empty(gs) ||
       /* The validity function ensures that both have the same geodetic flag */
@@ -1466,7 +1461,6 @@ atouches_geo_tpoint(const GSERIALIZED *gs, const Temporal *temp)
 int
 ea_touches_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 {
-  VALIDATE_TGEO(temp, -1); VALIDATE_NOT_NULL(gs, -1);
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tgeo_geo(temp, gs) || gserialized_is_empty(gs) ||
       /* The validity function ensures that both have the same geodetic flag */
@@ -1560,7 +1554,6 @@ atouches_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
 int
 ea_touches_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
 {
-  VALIDATE_TGEO(temp1, -1); VALIDATE_TGEO(temp2, -1);
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tgeo_tgeo(temp1, temp2) ||
       /* The validity function ensures that both have the same geodetic flag */
@@ -1625,7 +1618,6 @@ int
 ea_dwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
   bool ever)
 {
-  VALIDATE_TGEO(temp, -1); VALIDATE_NOT_NULL(gs, -1);
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tgeo_geo(temp, gs) || gserialized_is_empty(gs) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
@@ -1713,7 +1705,7 @@ ea_dwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
    * POINT-vs-POINT and unsupported cases also fall through to the paths
    * below. */
   if (dist > 0.0 && temp->temptype == T_TGEOMPOINT &&
-      temp->subtype != TINSTANT &&
+      temp->subtype != TINSTANT && 
       MEOS_FLAGS_GET_INTERP(temp->flags) == LINEAR &&
       ! MEOS_FLAGS_GET_GEODETIC(temp->flags) &&
       ! MEOS_FLAGS_GET_Z(temp->flags) && ! FLAGS_GET_Z(gs->gflags) &&
@@ -1986,7 +1978,6 @@ int
 ea_dwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist,
   bool ever)
 {
-  VALIDATE_TGEO(temp1, -1); VALIDATE_TGEO(temp2, -1);
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tgeo_tgeo(temp1, temp2) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))

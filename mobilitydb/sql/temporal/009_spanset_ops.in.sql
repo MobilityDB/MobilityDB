@@ -36,22 +36,22 @@ CREATE FUNCTION tprecision(timestamptz, duration interval,
     origin timestamptz DEFAULT '2000-01-03')
   RETURNS timestamptz
   AS 'MODULE_PATHNAME', 'Timestamptz_tprecision'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tprecision(tstzset, duration interval,
     origin timestamptz DEFAULT '2000-01-03')
   RETURNS tstzset
   AS 'MODULE_PATHNAME', 'Tstzset_tprecision'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tprecision(tstzspan, duration interval,
     origin timestamptz DEFAULT '2000-01-03')
   RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Tstzspan_tprecision'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tprecision(tstzspanset, duration interval,
     origin timestamptz DEFAULT '2000-01-03')
   RETURNS tstzspanset
   AS 'MODULE_PATHNAME', 'Tstzspanset_tprecision'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
  * Operators

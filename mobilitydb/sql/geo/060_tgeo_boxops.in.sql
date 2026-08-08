@@ -53,11 +53,11 @@ CREATE CAST (tgeography AS stbox) WITH FUNCTION stbox(tgeography);
 CREATE FUNCTION expandSpace(tgeometry, float)
   RETURNS stbox
   AS 'SELECT @extschema@.expandSpace($1::stbox, $2)'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT;
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION expandSpace(tgeography, float)
   RETURNS stbox
   AS 'SELECT @extschema@.expandSpace($1::stbox, $2)'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT;
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
 

@@ -81,7 +81,7 @@ CREATE FUNCTION splitEachNStboxes(tcbuffer, integer)
 CREATE FUNCTION expandSpace(tcbuffer, float)
   RETURNS stbox
   AS 'SELECT @extschema@.expandSpace($1::stbox, $2)'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT;
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
  * Contains

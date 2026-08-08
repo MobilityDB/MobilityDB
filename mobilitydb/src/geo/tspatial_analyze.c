@@ -60,9 +60,7 @@
 #include <math.h>
 /* PostgreSQL */
 #include <postgres.h>
-#if POSTGRESQL_VERSION_NUMBER >= 160000
-  #include "varatt.h"
-#endif
+#include <varatt.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>

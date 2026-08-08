@@ -404,7 +404,6 @@ Tstzspanset_to_datespanset(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
-#if POSTGRESQL_VERSION_NUMBER >= 140000
 PGDLLEXPORT Datum Spanset_to_multirange(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Spanset_to_multirange);
 /**
@@ -454,7 +453,6 @@ Multirange_to_spanset(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(mrange, 0);
   PG_RETURN_SPANSET_P(result);
 }
-#endif /* POSTGRESQL_VERSION_NUMBER >= 140000 */
 
 /*****************************************************************************
  * Accessor functions

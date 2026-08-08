@@ -313,9 +313,10 @@ static void
 tcbuffer_add_dist_turnpts(double A, double B, double C, double DR,
   double *cand, int *nc)
 {
-  double a2 = A * (A - DR * DR);
-  double a1 = B * (A - DR * DR);
-  double a0 = 0.25 * B * B - C * DR * DR;
+  double DR_2 = DR * DR;
+  double a2 = A * (A - DR_2);
+  double a1 = B * (A - DR_2);
+  double a0 = 0.25 * B * B - C * DR_2;
   if (fabs(a2) > 1e-18)
   {
     double disc = a1 * a1 - 4.0 * a2 * a0;

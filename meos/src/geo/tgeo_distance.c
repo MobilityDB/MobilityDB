@@ -62,6 +62,11 @@ extern double circ_tree_distance_tree_internal(const CIRC_NODE* n1,
   const CIRC_NODE* n2, double threshold, double* min_dist, double* max_dist,
   GEOGRAPHIC_POINT* closest1, GEOGRAPHIC_POINT* closest2);
 
+/* Floating-point tolerance — matches the convention in tpoint_geom_clip.c */
+#ifndef FP_TOLERANCE
+#define FP_TOLERANCE 1e-12
+#endif
+
 /*****************************************************************************
  * Analytic distance engine (shared with the tcbuffer family)
  *
@@ -88,17 +93,19 @@ geodist_minfun(double A, double B, double C, double R0, double DR, double lo,
   int nc = 0;
   cand[nc++] = lo;
   cand[nc++] = hi;
-  double a2 = A * (A - DR * DR);
-  double a1 = B * (A - DR * DR);
-  double a0 = 0.25 * B * B - C * DR * DR;
+  double DR_2 = DR * DR;
+  double a2 = A * (A - DR_2);
+  double a1 = B * (A - DR_2);
+  double a0 = 0.25 * B * B - C * DR_2;
   if (fabs(a2) > 1e-18)
   {
     double disc = a1 * a1 - 4.0 * a2 * a0;
     if (disc >= 0.0)
     {
       double sd = sqrt(disc);
-      cand[nc++] = (-a1 + sd) / (2.0 * a2);
-      cand[nc++] = (-a1 - sd) / (2.0 * a2);
+      double two_a2 = 2.0 * a2;
+      cand[nc++] = (-a1 + sd) / two_a2;
+      cand[nc++] = (-a1 - sd) / two_a2;
     }
   }
   else if (fabs(a1) > 1e-18)
@@ -163,10 +170,9 @@ geodist_geom_edges_add_ptarray(const POINTARRAY *pa, bool is_poly,
 static double
 geodist_angle_norm(double a)
 {
-  double r = fmod(a, 2.0 * M_PI);
-  if (r < 0.0)
-    r += 2.0 * M_PI;
-  return r;
+  const double TWOPI = 2.0 * M_PI;
+  double r = fmod(a, TWOPI);
+  return (r < 0.0) ? r + TWOPI : r;
 }
 
 /**
@@ -179,7 +185,7 @@ geodist_geom_arc_contains_angle(const GeoDistEdge *e, double phi)
     geodist_angle_norm(e->at1 - e->at0) : geodist_angle_norm(e->at0 - e->at1);
   double off = e->accw ?
     geodist_angle_norm(phi - e->at0) : geodist_angle_norm(e->at0 - phi);
-  return off <= sweep + 1e-12;
+  return off <= sweep + FP_TOLERANCE;
 }
 
 /**
@@ -227,7 +233,7 @@ geodist_segs_add_arc(double ax, double ay, double bx, double by, double cx,
   }
   /* Twice the signed area of triangle ABC; zero => collinear */
   double d = 2.0 * (ax * (by - cy) + bx * (cy - ay) + cx * (ay - by));
-  if (fabs(d) < 1e-12)
+  if (fabs(d) < FP_TOLERANCE)
   {
     /* Collinear: two straight segments A->B, B->C */
     for (int seg = 0; seg < 2; seg++)
@@ -319,8 +325,8 @@ geodist_segs_add_curvepoly_ring(const LWGEOM *ring, bool allow_arc,
  * (the caller then falls back to the exact traversed-area path).
  */
 bool
-geodist_geom_edges(const LWGEOM *lw, bool allow_arc, GeoDistEdge **arr, int *cap,
-  int *cnt, bool *has_poly)
+geodist_geom_edges(const LWGEOM *lw, bool allow_arc, GeoDistEdge **arr,
+  int *cap, int *cnt, bool *has_poly)
 {
   switch (lw->type)
   {
@@ -404,7 +410,8 @@ geodist_geom_edges(const LWGEOM *lw, bool allow_arc, GeoDistEdge **arr, int *cap
  * line, and standalone (1D) arc edges (not @p is_poly) contribute nothing.
  */
 static void
-geodist_poly_seg_raycross(const GeoDistEdge *s, double x, double y, bool *inside)
+geodist_poly_seg_raycross(const GeoDistEdge *s, double x, double y,
+  bool *inside)
 {
   if (! s->is_poly)
     return;
@@ -416,7 +423,7 @@ geodist_poly_seg_raycross(const GeoDistEdge *s, double x, double y, bool *inside
      * ray that only grazes the circle tangentially does not cross. */
     const double dyc = y - s->acy;
     const double h2 = s->arad * s->arad - dyc * dyc;
-    if (h2 <= 1e-12)
+    if (h2 <= FP_TOLERANCE)
       return;
     const double h = sqrt(h2);
     const double xhit[2] = {s->acx - h, s->acx + h};
@@ -433,8 +440,10 @@ geodist_poly_seg_raycross(const GeoDistEdge *s, double x, double y, bool *inside
        * arc endpoint (a ring junction on the ray) is owned by this edge only if
        * the arc interior rises above the ray there; an interior crossing is
        * always transversal and always counted. */
-      const bool at_ep0 = fabs(xi - s->x1) < 1e-12 && fabs(y - s->y1) < 1e-12;
-      const bool at_ep1 = fabs(xi - s->x2) < 1e-12 && fabs(y - s->y2) < 1e-12;
+      const bool at_ep0 = fabs(xi - s->x1) < FP_TOLERANCE && 
+        fabs(y - s->y1) < FP_TOLERANCE;
+      const bool at_ep1 = fabs(xi - s->x2) < FP_TOLERANCE && 
+        fabs(y - s->y2) < FP_TOLERANCE;
       if (at_ep0 || at_ep1)
       {
         const double theta_e = at_ep0 ? s->at0 : s->at1;
@@ -584,9 +593,10 @@ geodist_segm_arc_mindist(double cx1, double cy1, double cx2, double cy2,
     cand[nc++] = -B / (2.0 * A);
   /* Stationary points of | sqrt(Q) - R | - r(t): (Q')^2 = 4 dr^2 Q */
   {
-    double a2 = A * (A - dr * dr);
-    double a1 = B * (A - dr * dr);
-    double a0 = 0.25 * B * B - C * dr * dr;
+    const double dr_2 = dr * dr;
+    double a2 = A * (A - dr_2);
+    double a1 = B * (A - dr_2);
+    double a0 = 0.25 * B * B - C * dr_2;
     if (fabs(a2) > 1e-18)
     {
       double disc = a1 * a1 - 4.0 * a2 * a0;
@@ -644,9 +654,10 @@ geodist_minfun_w(double A, double B, double C, double R0, double DR, double lo,
   int nc = 0;
   cand[nc++] = lo;
   cand[nc++] = hi;
-  double a2 = A * (A - DR * DR);
-  double a1 = B * (A - DR * DR);
-  double a0 = 0.25 * B * B - C * DR * DR;
+  double DR_2 = DR * DR;
+  double a2 = A * (A - DR_2);
+  double a1 = B * (A - DR_2);
+  double a0 = 0.25 * B * B - C * DR_2;
   if (fabs(a2) > 1e-18)
   {
     double disc = a1 * a1 - 4.0 * a2 * a0;
@@ -790,9 +801,10 @@ geodist_segm_arc_dt(double cx1, double cy1, double cx2, double cy2, double r1,
     cand[nc++] = -B / (2.0 * A);
   /* Stationary points of | sqrt(Q) - R | - r(t): (Q')^2 = 4 dr^2 Q */
   {
-    double a2 = A * (A - dr * dr);
-    double a1 = B * (A - dr * dr);
-    double a0 = 0.25 * B * B - C * dr * dr;
+    const double dr_2 = dr * dr;
+    double a2 = A * (A - dr_2);
+    double a1 = B * (A - dr_2);
+    double a0 = 0.25 * B * B - C * dr_2;
     if (fabs(a2) > 1e-18)
     {
       double disc = a1 * a1 - 4.0 * a2 * a0;
@@ -865,7 +877,7 @@ geodist_geom_closest_on_arc(double px, double py, const GeoDistEdge *e,
 {
   double vx = px - e->acx, vy = py - e->acy;
   double vl = hypot(vx, vy);
-  if (vl > 1e-12 && geodist_geom_arc_contains_angle(e, atan2(vy, vx)))
+  if (vl > FP_TOLERANCE && geodist_geom_arc_contains_angle(e, atan2(vy, vx)))
   {
     *qx = e->acx + vx * (e->arad / vl);
     *qy = e->acy + vy * (e->arad / vl);
@@ -1091,8 +1103,8 @@ geodist_segm_nad(double cx1, double cy1, double r1, double cx2, double cy2,
     if (dgx * dgx + dgy * dgy >= (*best) * (*best))
       return;
   }
-  if (g->has_poly &&
-      (geodist_geom_point_inside(cx1, cy1, g) || geodist_geom_point_inside(cx2, cy2, g)))
+  if (g->has_poly && (geodist_geom_point_inside(cx1, cy1, g) || 
+      geodist_geom_point_inside(cx2, cy2, g)))
   {
     *best = 0.0;
     return;
@@ -1243,7 +1255,7 @@ geodist_segm_shortestline(double cx1, double cy1, double r1, double cx2,
         double vx = qx - ccx, vy = qy - ccy;
         double vl = sqrt(vx * vx + vy * vy);
         double pxp, pyp;
-        if (vl <= 1e-12 || m <= 0.0)
+        if (vl <= FP_TOLERANCE || m <= 0.0)
         {
           /* Overlap or centre on the edge: degenerate line at the contact */
           pxp = qx; pyp = qy;
@@ -1678,12 +1690,11 @@ tpointsegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
   TimestampTz *t1, TimestampTz *t2)
 {
   assert(lower < upper); assert(t1); assert(t2);
-  if (FLAGS_GET_GEODETIC(DatumGetGserializedP(start1)->gflags))
-    return tgeogpointsegm_distance_turnpt(start1, end1, start2, end2,
-      param, lower, upper, t1, t2);
-  else
-    return tgeompointsegm_distance_turnpt(start1, end1, start2, end2,
-      param, lower, upper, t1, t2);
+  return FLAGS_GET_GEODETIC(DatumGetGserializedP(start1)->gflags) ?
+    tgeogpointsegm_distance_turnpt(start1, end1, start2, end2, param,
+      lower, upper, t1, t2) :
+    tgeompointsegm_distance_turnpt(start1, end1, start2, end2, param,
+      lower, upper, t1, t2);
 }
 
 /*****************************************************************************/
@@ -1713,8 +1724,7 @@ tdistance_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
    * restriction below. Temporal geographies, step/discrete interpolation,
    * 3D and non-clip-supported geometries keep the generic lifting path */
   if (temp->temptype == T_TGEOMPOINT && temp->subtype != TINSTANT &&
-      MEOS_FLAGS_LINEAR_INTERP(temp->flags) &&
-      ! MEOS_FLAGS_GET_Z(temp->flags))
+      MEOS_FLAGS_LINEAR_INTERP(temp->flags) && ! MEOS_FLAGS_GET_Z(temp->flags))
   {
     LWGEOM *geom = lwgeom_from_gserialized(gs);
     bool native = geom->type != POINTTYPE && geom_clip_supported(geom);
@@ -1954,6 +1964,7 @@ double
 nad_tcont_tcont_sync(const Temporal *temp1, const Temporal *temp2,
   datum_func2 func, tpfunc_temp turnpt, seglb_func seglb, TimestampTz *tmin)
 {
+  /* Both TSEQUENCE */
   if (temp1->subtype == TSEQUENCE)
   {
     Span inter;

@@ -572,7 +572,7 @@ CREATE FUNCTION timeSplit(th3index, bin_width interval,
     origin timestamptz DEFAULT '2000-01-03')
   RETURNS setof time_th3index
   AS 'MODULE_PATHNAME', 'Temporal_time_split'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
  * Comparison functions and B-tree / hash indexing

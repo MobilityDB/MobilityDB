@@ -28,22 +28,21 @@
 /* C */
 #include <assert.h>
 #include <limits.h>
+#include <stddef.h>          /* offsetof */
 #include <string.h>
 /* PostgreSQL */
 #include <postgres.h>
-#if POSTGRESQL_VERSION_NUMBER >= 160000
-  #include "varatt.h"
-#endif
-#include "common/hashfn.h"
-#include <stddef.h>          /* offsetof */
+#include <varatt.h>
+#include <common/hashfn.h>
+/* PostGIS */
 #include <liblwgeom.h>       /* parse_hex, deparse_hex (PostGIS) */
-/* pgpointcloud */
+/* pgPointCloud */
 #include "pc_api.h"
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include "temporal/temporal.h"
 #include <meos_pointcloud.h>
+#include "temporal/temporal.h"
 #include "pointcloud/meos_schema_hook.h"
 
 /*****************************************************************************

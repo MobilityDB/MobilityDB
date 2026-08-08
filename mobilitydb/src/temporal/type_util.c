@@ -43,9 +43,7 @@
 #include <catalog/pg_type_d.h>
 #include <utils/array.h>
 #include <utils/rangetypes.h>
-#if POSTGRESQL_VERSION_NUMBER >= 140000
-  #include <utils/multirangetypes.h>
-#endif /* POSTGRESQL_VERSION_NUMBER >= 140000 */
+#include <utils/multirangetypes.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
@@ -532,14 +530,9 @@ range_make(Datum from, Datum to, bool lower_inc, bool upper_inc,
   upper.infinite = false;
   upper.inclusive = upper_inc;
   upper.lower = false;
-#if POSTGRESQL_VERSION_NUMBER >= 160000
   return make_range(typcache, &lower, &upper, false, NULL);
-#else
-  return make_range(typcache, &lower, &upper, false);
-#endif /* POSTGRESQL_VERSION_NUMBER >= 140000 */
 }
 
-#if POSTGRESQL_VERSION_NUMBER >= 140000
 /**
  * @brief Return a range value from given arguments
  */
@@ -564,18 +557,13 @@ multirange_make(const SpanSet *ss)
     upper.infinite = false;
     upper.inclusive = s->upper_inc;
     upper.lower = false;
-#if POSTGRESQL_VERSION_NUMBER >= 160000
     ranges[i] = make_range(typcache, &lower, &upper, false, NULL);
-#else
-    ranges[i] = make_range(typcache, &lower, &upper, false);
-#endif /* POSTGRESQL_VERSION_NUMBER >= 160000 */
   }
   MultirangeType *result = make_multirange(mrangetypid, typcache, ss->count,
     ranges);
   pfree_array((void **) ranges, ss->count);
   return result;
 }
-#endif /* POSTGRESQL_VERSION_NUMBER >= 140000 */
 
 #if DEBUG_BUILD
 /**
@@ -590,7 +578,6 @@ pg_range_out(RangeType *r)
   return DatumGetCString(call_function1(range_out, d));
 }
 
-#if POSTGRESQL_VERSION_NUMBER >= 140000
 /**
  * @brief Return the string representation of a multirange
  * @param[in] r Timestamp
@@ -602,7 +589,6 @@ pg_multirange_out(MultirangeType *mr)
   Datum d = PointerGetDatum(mr);
   return DatumGetCString(call_function1(multirange_out, d));
 }
-#endif /* POSTGRESQL_VERSION_NUMBER >= 140000 */
 #endif /* DEBUG_BUILD */
 
 /*****************************************************************************/

@@ -56,16 +56,13 @@
 #include <access/htup_details.h>
 #include <access/table.h>
 #include <catalog/pg_extension.h>
-#if POSTGRESQL_VERSION_NUMBER < 140000
-#include <catalog/indexing.h>
-#endif
 #include <commands/extension.h>
 #include <utils/fmgroids.h>
 #include <utils/lsyscache.h>
 #include <utils/memutils.h>
 #include <utils/rel.h>
 #include <utils/syscache.h>
-/* pgpointcloud */
+/* pgPointCloud */
 #include "pc_api.h"
 /* MEOS */
 #include <pgtypes.h>  /* text_to_cstring — NOT utils/builtins.h, whose
@@ -74,38 +71,7 @@
 /* MobilityDB */
 #include "pg_pointcloud/schema_cache.h"
 
-#if POSTGRESQL_VERSION_NUMBER < 160000
-/*
- * get_extension_schema - given an extension OID, fetch its extnamespace
- *
- * Returns InvalidOid if no such extension.
- */
-static Oid
-get_extension_schema(Oid ext_oid)
-{
-  Relation rel = table_open(ExtensionRelationId, AccessShareLock);
-
-  ScanKeyData entry[1];
-  ScanKeyInit(&entry[0], Anum_pg_extension_oid, BTEqualStrategyNumber, F_OIDEQ,
-  ObjectIdGetDatum(ext_oid));
-
-  SysScanDesc scandesc = systable_beginscan(rel, ExtensionOidIndexId, true,
-    NULL, 1, entry);
-
-  HeapTuple tuple = systable_getnext(scandesc);
-
-  /* We assume that there can be at most one matching tuple */
-  Oid result;
-  if (HeapTupleIsValid(tuple))
-    result = ((Form_pg_extension) GETSTRUCT(tuple))->extnamespace;
-  else
-    result = InvalidOid;
-
-  systable_endscan(scandesc);
-  table_close(rel, AccessShareLock);
-  return result;
-}
-#endif
+/*****************************************************************************/
 
 /**
  * @brief Return the install namespace of the pgpointcloud extension, or

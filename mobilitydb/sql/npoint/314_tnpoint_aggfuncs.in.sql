@@ -104,6 +104,8 @@ CREATE FUNCTION tnpoint_tagg_finalfn(internal)
   AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+/* Function deprecated in 1.4
+   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE merge(tnpoint) (
   SFUNC = temporal_merge_transfn,
   STYPE = internal,
@@ -114,7 +116,6 @@ CREATE AGGREGATE merge(tnpoint) (
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = safe
 );
-
 CREATE AGGREGATE mergeAgg(tnpoint) (
   SFUNC = temporal_merge_transfn,
   STYPE = internal,
@@ -156,13 +157,14 @@ CREATE FUNCTION temporal_append_finalfn(tnpoint)
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
+/* Function deprecated in 1.4
+   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendInstant(tnpoint) (
   SFUNC = temporal_app_tinst_transfn,
   STYPE = tnpoint,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
-
 CREATE AGGREGATE appendInstantAgg(tnpoint) (
   SFUNC = temporal_app_tinst_transfn,
   STYPE = tnpoint,
@@ -170,13 +172,14 @@ CREATE AGGREGATE appendInstantAgg(tnpoint) (
   PARALLEL = safe
 );
 
+/* Function deprecated in 1.4
+   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendInstant(tnpoint, text) (
   SFUNC = temporal_app_tinst_transfn,
   STYPE = tnpoint,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
-
 CREATE AGGREGATE appendInstantAgg(tnpoint, text) (
   SFUNC = temporal_app_tinst_transfn,
   STYPE = tnpoint,
@@ -184,13 +187,14 @@ CREATE AGGREGATE appendInstantAgg(tnpoint, text) (
   PARALLEL = safe
 );
 
+/* Function deprecated in 1.4
+   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendInstant(tnpoint, text, float, interval) (
   SFUNC = temporal_app_tinst_transfn,
   STYPE = tnpoint,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
-
 CREATE AGGREGATE appendInstantAgg(tnpoint, text, float, interval) (
   SFUNC = temporal_app_tinst_transfn,
   STYPE = tnpoint,
@@ -206,13 +210,14 @@ CREATE FUNCTION temporal_app_tseq_transfn(tnpoint, tnpoint)
   AS 'MODULE_PATHNAME', 'Temporal_app_tseq_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
+/* Function deprecated in 1.4
+   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendSequence(tnpoint) (
   SFUNC = temporal_app_tseq_transfn,
   STYPE = tnpoint,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
-
 CREATE AGGREGATE appendSequenceAgg(tnpoint) (
   SFUNC = temporal_app_tseq_transfn,
   STYPE = tnpoint,

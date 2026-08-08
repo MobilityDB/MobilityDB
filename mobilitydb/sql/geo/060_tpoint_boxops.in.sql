@@ -53,20 +53,20 @@ CREATE CAST (tgeogpoint AS stbox) WITH FUNCTION stbox(tgeogpoint);
 CREATE FUNCTION expandSpace(geometry, float)
   RETURNS stbox
   AS 'SELECT @extschema@.expandSpace($1::stbox, $2)'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT;
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION expandSpace(geography, float)
   RETURNS stbox
   AS 'SELECT @extschema@.expandSpace($1::stbox, $2)'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT;
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION expandSpace(tgeompoint, float)
   RETURNS stbox
   AS 'SELECT @extschema@.expandSpace($1::stbox, $2)'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT;
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION expandSpace(tgeogpoint, float)
   RETURNS stbox
   AS 'SELECT @extschema@.expandSpace($1::stbox, $2)'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT;
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
 
