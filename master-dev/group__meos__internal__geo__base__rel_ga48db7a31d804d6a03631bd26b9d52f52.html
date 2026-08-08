@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: get_extension_schema</title>
+<title>MobilityDB: geom_spatialrel</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_b060bd5020a833a37671e1e10417da21.html">mobilitydb</a></li><li class="navelem"><a class="el" href="dir_c9f6390d5d8264054b7997353d94a8b4.html">src</a></li><li class="navelem"><a class="el" href="dir_d80dda5ed0d798aac8d49610aaf79a63.html">pointcloud</a></li><li class="navelem"><a class="el" href="schema__cache_8c.html">schema_cache.c</a></li>  </ul>
+<li class="navelem"><a class="el" href="group__meos__internal__geo__base__rel.html">Spatial relationship functions</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,38 +79,52 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="schema__cache_8c_ae8dcb8aab16a4e8627eb505e8e1cfa93.html#ae8dcb8aab16a4e8627eb505e8e1cfa93">fetch_schema_xml</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="schema__cache_8c_ac52b2cf5cf2809658d7270c735d4991b.html#ac52b2cf5cf2809658d7270c735d4991b">get_extension_schema</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="schema__cache_8c_a00f3ffb8d09b4e902b45929d7e4b9176.html#a00f3ffb8d09b4e902b45929d7e4b9176">mobilitydb_pc_parse_xml</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="schema__cache_8c_a5413d10daad8e7e5a65062dd90d7c72f.html#a5413d10daad8e7e5a65062dd90d7c72f">mobilitydb_pc_schema</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="schema__cache_8c_ab1be377f748c34c1d5662712da1ec79d.html#ab1be377f748c34c1d5662712da1ec79d">pointcloud_namespace_oid</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__internal__geo__base__rel_ga48db7a31d804d6a03631bd26b9d52f52.html#ga48db7a31d804d6a03631bd26b9d52f52">geom_spatialrel</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ac52b2cf5cf2809658d7270c735d4991b" name="ac52b2cf5cf2809658d7270c735d4991b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac52b2cf5cf2809658d7270c735d4991b">&#9670;&#160;</a></span>get_extension_schema()</h2>
+<a id="ga48db7a31d804d6a03631bd26b9d52f52" name="ga48db7a31d804d6a03631bd26b9d52f52"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga48db7a31d804d6a03631bd26b9d52f52">&#9670;&#160;</a></span>geom_spatialrel()</h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static <a class="el" href="postgres__ext__defs_8in_8h_a545a1e974d4c848ee2e2dcfdd503335f.html#a545a1e974d4c848ee2e2dcfdd503335f">Oid</a> get_extension_schema </td>
+          <td class="memname">bool geom_spatialrel </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a545a1e974d4c848ee2e2dcfdd503335f.html#a545a1e974d4c848ee2e2dcfdd503335f">Oid</a>&#160;</td>
-          <td class="paramname"><em>ext_oid</em></td><td>)</td>
+          <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
+          <td class="paramname"><em>gs1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
+          <td class="paramname"><em>gs2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="meos__geo_8h_a24b4bb83270bd2149778ccb5712f264c.html#a24b4bb83270bd2149778ccb5712f264c">spatialRel</a>&#160;</td>
+          <td class="paramname"><em>rel</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
+
+<p>Return true if two geometries satisfy a given spatial relationship, where the function called depend on the third argument. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">gs1,gs2</td><td>Geometries </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">rel</td><td>Spatial relationship </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section note"><dt>Note</dt><dd>PostGIS functions: <code><a class="el" href="postgis_8h_a50e932882c68dd610fff31fdd35b7872.html#a50e932882c68dd610fff31fdd35b7872">ST_Intersects(PG_FUNCTION_ARGS)</a></code>, <code><a class="el" href="postgis_8h_a0cfa09cd454140cb1bf1e61d5f055988.html#a0cfa09cd454140cb1bf1e61d5f055988">contains(PG_FUNCTION_ARGS)</a></code>, <code><a class="el" href="postgis_8h_a4a4ffc86be2289771ac3875476508449.html#a4a4ffc86be2289771ac3875476508449">touches(PG_FUNCTION_ARGS)</a></code> </dd></dl>
 
 </div>
 </div>

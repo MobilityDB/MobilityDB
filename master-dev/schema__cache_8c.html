@@ -87,7 +87,6 @@ $(function() {
 <code>#include &lt;access/htup_details.h&gt;</code><br />
 <code>#include &lt;access/table.h&gt;</code><br />
 <code>#include &lt;catalog/pg_extension.h&gt;</code><br />
-<code>#include &lt;catalog/indexing.h&gt;</code><br />
 <code>#include &lt;commands/extension.h&gt;</code><br />
 <code>#include &lt;utils/fmgroids.h&gt;</code><br />
 <code>#include &lt;utils/lsyscache.h&gt;</code><br />
@@ -104,8 +103,6 @@ Functions</h2></td></tr>
 <tr class="memitem:ae8dcb8aab16a4e8627eb505e8e1cfa93"><td class="memItemLeft" align="right" valign="top">static char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="schema__cache_8c_ae8dcb8aab16a4e8627eb505e8e1cfa93.html#ae8dcb8aab16a4e8627eb505e8e1cfa93">fetch_schema_xml</a> (uint32_t pcid)</td></tr>
 <tr class="memdesc:ae8dcb8aab16a4e8627eb505e8e1cfa93"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fetch the XML schema text for a given pcid from <code>pointcloud_formats</code> via a direct heap scan.  <a href="schema__cache_8c_ae8dcb8aab16a4e8627eb505e8e1cfa93.html#ae8dcb8aab16a4e8627eb505e8e1cfa93">More...</a><br /></td></tr>
 <tr class="separator:ae8dcb8aab16a4e8627eb505e8e1cfa93"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac52b2cf5cf2809658d7270c735d4991b"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="postgres__ext__defs_8in_8h_a545a1e974d4c848ee2e2dcfdd503335f.html#a545a1e974d4c848ee2e2dcfdd503335f">Oid</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="schema__cache_8c_ac52b2cf5cf2809658d7270c735d4991b.html#ac52b2cf5cf2809658d7270c735d4991b">get_extension_schema</a> (<a class="el" href="postgres__ext__defs_8in_8h_a545a1e974d4c848ee2e2dcfdd503335f.html#a545a1e974d4c848ee2e2dcfdd503335f">Oid</a> ext_oid)</td></tr>
-<tr class="separator:ac52b2cf5cf2809658d7270c735d4991b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a00f3ffb8d09b4e902b45929d7e4b9176"><td class="memItemLeft" align="right" valign="top"><a class="el" href="meos__pointcloud_8h_a2ddd866faf8fced9f7400b1810bf8b69.html#a2ddd866faf8fced9f7400b1810bf8b69">PCSCHEMA</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="schema__cache_8c_a00f3ffb8d09b4e902b45929d7e4b9176.html#a00f3ffb8d09b4e902b45929d7e4b9176">mobilitydb_pc_parse_xml</a> (uint32_t pcid, const char *xml)</td></tr>
 <tr class="memdesc:a00f3ffb8d09b4e902b45929d7e4b9176"><td class="mdescLeft">&#160;</td><td class="mdescRight">Resolve a pgPointCloud schema by pcid (PG-layer hook impl).  <a href="schema__cache_8c_a00f3ffb8d09b4e902b45929d7e4b9176.html#a00f3ffb8d09b4e902b45929d7e4b9176">More...</a><br /></td></tr>
 <tr class="separator:a00f3ffb8d09b4e902b45929d7e4b9176"><td class="memSeparator" colspan="2">&#160;</td></tr>

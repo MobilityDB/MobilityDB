@@ -83,6 +83,8 @@ $(function() {
 <p>Spatial functions for temporal geos.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="tgeo__spatialfuncs_8h_source.html">geo/tgeo_spatialfuncs.h</a>&quot;</code><br />
+<code>#include &lt;postgres.h&gt;</code><br />
+<code>#include &lt;varatt.h&gt;</code><br />
 <code>#include &lt;utils/float.h&gt;</code><br />
 <code>#include &lt;liblwgeom.h&gt;</code><br />
 <code>#include &lt;liblwgeom_internal.h&gt;</code><br />
@@ -142,6 +144,12 @@ Functions</h2></td></tr>
 <tr class="memitem:a5a1e302df2a9050f52d61a023b976f88"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2geo_2tgeo__spatialfuncs_8c_a5a1e302df2a9050f52d61a023b976f88.html#a5a1e302df2a9050f52d61a023b976f88">datum_pt_distance3d</a> (<a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> geom1, <a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> geom2)</td></tr>
 <tr class="memdesc:a5a1e302df2a9050f52d61a023b976f88"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the 3D distance between the two geometry points.  <a href="meos_2src_2geo_2tgeo__spatialfuncs_8c_a5a1e302df2a9050f52d61a023b976f88.html#a5a1e302df2a9050f52d61a023b976f88">More...</a><br /></td></tr>
 <tr class="separator:a5a1e302df2a9050f52d61a023b976f88"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a93d394a0737770462f220008bf456b2a"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2geo_2tgeo__spatialfuncs_8c_a93d394a0737770462f220008bf456b2a.html#a93d394a0737770462f220008bf456b2a">ensure_geodetic</a> (<a class="el" href="postgres__ext__defs_8in_8h_a259fa4834387bd68627ddf37bb3ebdb9.html#a259fa4834387bd68627ddf37bb3ebdb9">int16</a> flags)</td></tr>
+<tr class="memdesc:a93d394a0737770462f220008bf456b2a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Ensure that the spatiotemporal argument has geodetic coordinates.  <a href="meos_2src_2geo_2tgeo__spatialfuncs_8c_a93d394a0737770462f220008bf456b2a.html#a93d394a0737770462f220008bf456b2a">More...</a><br /></td></tr>
+<tr class="separator:a93d394a0737770462f220008bf456b2a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5a9bab3deb1bb4a4d65e6203fed22c01"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2geo_2tgeo__spatialfuncs_8c_a5a9bab3deb1bb4a4d65e6203fed22c01.html#a5a9bab3deb1bb4a4d65e6203fed22c01">ensure_geodetic_geo</a> (const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *gs)</td></tr>
+<tr class="memdesc:a5a9bab3deb1bb4a4d65e6203fed22c01"><td class="mdescLeft">&#160;</td><td class="mdescRight">Ensure that the geometry has geodetic coordinates.  <a href="meos_2src_2geo_2tgeo__spatialfuncs_8c_a5a9bab3deb1bb4a4d65e6203fed22c01.html#a5a9bab3deb1bb4a4d65e6203fed22c01">More...</a><br /></td></tr>
+<tr class="separator:a5a9bab3deb1bb4a4d65e6203fed22c01"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a211b552031d00186a4a9fb86abd834f8"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2geo_2tgeo__spatialfuncs_8c_a211b552031d00186a4a9fb86abd834f8.html#a211b552031d00186a4a9fb86abd834f8">ensure_has_M_geo</a> (const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *gs)</td></tr>
 <tr class="memdesc:a211b552031d00186a4a9fb86abd834f8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Ensure that the geometry/geography has M dimension.  <a href="meos_2src_2geo_2tgeo__spatialfuncs_8c_a211b552031d00186a4a9fb86abd834f8.html#a211b552031d00186a4a9fb86abd834f8">More...</a><br /></td></tr>
 <tr class="separator:a211b552031d00186a4a9fb86abd834f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
