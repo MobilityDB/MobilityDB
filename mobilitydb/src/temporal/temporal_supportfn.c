@@ -571,12 +571,8 @@ Temporal_supportfn(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
          * The comparison expression has to be a pseudo constant,
          * (not volatile or dependent on the target index table)
          */
-#if POSTGRESQL_VERSION_NUMBER >= 140000
         if (!is_pseudo_constant_for_index(req->root, (Node *) expandexpr,
-          req->index))
-#else
-        if (!is_pseudo_constant_for_index((Node *)expandexpr, req->index))
-#endif
+            req->index))
           PG_RETURN_POINTER((Node *) NULL);
 
         /* OK, we can make an index expression */
@@ -604,12 +600,8 @@ Temporal_supportfn(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
          * The comparison expression has to be a pseudoconstant
          * (not volatile or dependent on the target index's table)
          */
-#if POSTGRESQL_VERSION_NUMBER >= 140000
         if (!is_pseudo_constant_for_index(req->root, (Node *) bboxexpr,
-          req->index))
-#else
-        if (!is_pseudo_constant_for_index((Node *) bboxexpr, req->index))
-#endif
+            req->index))
           PG_RETURN_POINTER((Node *) NULL);
 
         expr = make_opclause(idxoperid, BOOLOID, false, (Expr *) leftarg,

@@ -35,10 +35,9 @@
 #include "geo/tgeo_spatialfuncs.h"
 
 /* PostgreSQL */
+#include <postgres.h>
+#include <varatt.h>
 #include <utils/float.h>
-#if POSTGRESQL_VERSION_NUMBER >= 160000
-  #include "varatt.h"
-#endif
 /* PostGIS */
 #include <liblwgeom.h>
 #include <liblwgeom_internal.h>
@@ -617,6 +616,20 @@ ensure_spatial_validity(const Temporal *temp1, const Temporal *temp2)
 }
 
 /**
+ * @brief Ensure that the spatiotemporal argument has geodetic coordinates
+ */
+bool
+ensure_geodetic(int16 flags)
+{
+  if ((MEOS_FLAGS_GET_X(flags) || MEOS_FLAGS_GET_Z(flags)) && 
+    MEOS_FLAGS_GET_GEODETIC(flags))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "Only geodetic coordinates supported");
+  return false;
+}
+
+/**
  * @brief Ensure that the spatiotemporal argument has planar coordinates
  */
 bool
@@ -900,6 +913,19 @@ ensure_has_not_M_geo(const GSERIALIZED *gs)
     return true;
   meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
     "The geometry cannot have M dimension");
+  return false;
+}
+
+/**
+ * @brief Ensure that the geometry has geodetic coordinates
+ */
+bool
+ensure_geodetic_geo(const GSERIALIZED *gs)
+{
+  if (FLAGS_GET_GEODETIC(gs->gflags))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "Only geodetic coordinates supported");
   return false;
 }
 

@@ -996,8 +996,9 @@ trgeo_trav_adaptive(const Temporal *temp, const TInstant *inst_a,
   Pose *pose_b = DatumGetPoseP(tinstant_value_p((TInstant *) inst_b));
   /* Angular shortest-path distance between the two pose orientations. */
   double dtheta = pose_b->data[2] - pose_a->data[2];
-  while (dtheta > M_PI)  dtheta -= 2.0 * M_PI;
-  while (dtheta < -M_PI) dtheta += 2.0 * M_PI;
+  const double TWOPI = 2.0 * M_PI;
+  while (dtheta > M_PI)  dtheta -= TWOPI;
+  while (dtheta < -M_PI) dtheta += TWOPI;
   double abs_dtheta = fabs(dtheta);
   if (abs_dtheta < TRGEO_TRAVERSED_AREA_ANGLE_TOL ||
       depth >= TRGEO_TRAVERSED_AREA_MAX_DEPTH ||

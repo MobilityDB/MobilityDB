@@ -44,16 +44,10 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <fmgr.h>
-#if POSTGRESQL_VERSION_NUMBER >= 160000
-  #include "varatt.h"
-#endif
-/* pgpointcloud */
+#include <varatt.h>
+/* pgPointCloud */
 #include "pc_api.h"
-/* MEOS — we cannot include utils/builtins.h here: meos_internal.h pulls
- * in <json-c/json.h>, whose `struct json_object` collides with PG's
- * `Datum json_object(PG_FUNCTION_ARGS)` in utils/fmgrprotos.h. The two
- * headers are mutually exclusive, so we take text_to_cstring from
- * <pgtypes.h>, which declares it without pulling fmgrprotos. */
+/* MEOS */
 #include <meos.h>
 #include <pgtypes.h>            /* text_to_cstring — NOT utils/builtins.h */
 #include <meos_geo.h>

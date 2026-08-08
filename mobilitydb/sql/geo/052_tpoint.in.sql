@@ -866,12 +866,12 @@ CREATE FUNCTION timeSplit(tgeompoint, bin_width interval,
     origin timestamptz DEFAULT '2000-01-03')
   RETURNS setof time_tgeompoint
   AS 'MODULE_PATHNAME', 'Temporal_time_split'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION timeSplit(tgeogpoint, bin_width interval,
     origin timestamptz DEFAULT '2000-01-03')
   RETURNS setof time_tgeogpoint
   AS 'MODULE_PATHNAME', 'Temporal_time_split'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
  * Comparison functions and B-tree indexing

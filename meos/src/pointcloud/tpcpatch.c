@@ -39,9 +39,7 @@
 #include <float.h>
 /* PostgreSQL */
 #include <postgres.h>
-#if POSTGRESQL_VERSION_NUMBER >= 160000
-  #include "varatt.h"
-#endif
+#include <varatt.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
@@ -53,6 +51,7 @@
 #include "temporal/temporal.h"
 #include "temporal/type_util.h"
 #include "pointcloud/pcpatch.h"
+
 /*****************************************************************************
  * Constructor functions
  *****************************************************************************/

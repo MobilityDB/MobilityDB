@@ -1765,17 +1765,9 @@ span_hash(const Span *s)
   /* Merge hashes of flags, type, and bounds */
   uint32 result = hash_bytes_uint32((uint32) flags);
   result ^= type_hash;
-#if POSTGRESQL_VERSION_NUMBER >= 150000
   result = pg_rotate_left32(result, 1);
-#else
-  result =  (result << 1) | (result >> 31);
-#endif
   result ^= lower_hash;
-#if POSTGRESQL_VERSION_NUMBER >= 150000
   result = pg_rotate_left32(result, 1);
-#else
-  result =  (result << 1) | (result >> 31);
-#endif
   result ^= upper_hash;
 
   return result;

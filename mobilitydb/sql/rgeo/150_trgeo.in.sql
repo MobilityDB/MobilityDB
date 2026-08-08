@@ -234,7 +234,7 @@ CREATE CAST (trgeometry AS stbox) WITH FUNCTION stbox(trgeometry);
 CREATE FUNCTION expandSpace(trgeometry, float)
   RETURNS stbox
   AS 'SELECT @extschema@.expandSpace($1::stbox, $2)'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT;
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION geometry(trgeometry)
   RETURNS geometry
@@ -651,7 +651,7 @@ CREATE FUNCTION timeSplit(trgeometry, bucket_width interval,
     origin timestamptz DEFAULT '2000-01-03')
   RETURNS setof time_trgeometry
   AS 'MODULE_PATHNAME', 'Temporal_time_split'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE STRICT;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
  * Comparison functions and B-tree indexing

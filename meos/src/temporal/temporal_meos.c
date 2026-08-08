@@ -40,10 +40,8 @@
 #include <limits.h>
 /* PostgreSQL */
 #include <postgres.h>
+#include <varatt.h>
 #include <utils/float.h>
-#if POSTGRESQL_VERSION_NUMBER >= 160000
-  #include "varatt.h"
-#endif
 #include "utils/varlena.h"
 /* MEOS */
 #include <meos.h>

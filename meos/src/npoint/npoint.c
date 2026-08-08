@@ -1403,11 +1403,7 @@ npoint_hash(const Npoint *np)
 
   /* Merge hashes of value and position */
   uint32 result = rid_hash;
-#if POSTGRESQL_VERSION_NUMBER >= 150000
   result = pg_rotate_left32(result, 1);
-#else
-  result =  (result << 1) | (result >> 31);
-#endif
   result ^= pos_hash;
   return result;
 }

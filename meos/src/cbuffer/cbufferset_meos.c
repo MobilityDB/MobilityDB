@@ -37,9 +37,7 @@
 #include <float.h>
 /* PostgreSQL */
 #include <postgres.h>
-#if POSTGRESQL_VERSION_NUMBER >= 160000
-  #include "varatt.h"
-#endif
+#include <varatt.h>
 /* PostGIS */
 #include <liblwgeom.h>
 /* MEOS */

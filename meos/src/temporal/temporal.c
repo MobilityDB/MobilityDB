@@ -40,10 +40,9 @@
 #include <geos_c.h>
 #include <limits.h>
 /* PostgreSQL */
+#include <postgres.h>
+#include <varatt.h>
 #include <utils/float.h>
-#if POSTGRESQL_VERSION_NUMBER >= 160000
-  #include "varatt.h"
-#endif
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
@@ -540,14 +539,16 @@ positive_datum(Datum d, MeosType basetype)
 bool
 ensure_positive_datum(Datum d, MeosType basetype)
 {
+  assert(basetype == T_INT4 || basetype == T_INT8 || basetype == T_FLOAT8 ||
+    basetype == T_DATE || basetype == T_TIMESTAMPTZ);
   if (positive_datum(d, basetype))
     return true;
   char str[256];
-  if (basetype == T_INT4)
+  if (basetype == T_INT4 || basetype == T_DATE)
     snprintf(str, sizeof(str), "%d", DatumGetInt32(d));
-  else if (basetype == T_INT8)
+  else if (basetype == T_INT8 || basetype == T_TIMESTAMPTZ)
     snprintf(str, sizeof(str), INT64_FORMAT, DatumGetInt64(d));
-  else if (basetype == T_FLOAT8)
+  else /* basetype == T_FLOAT8 */
     snprintf(str, sizeof(str), "%f", DatumGetFloat8(d));
   meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
     "The value must be strictly positive: %s", str);

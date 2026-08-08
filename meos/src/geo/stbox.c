@@ -2638,60 +2638,28 @@ stbox_hash(const STBox *box)
   if (hasx)
   {
     result ^= float8_hash(box->xmin);
-#if POSTGRESQL_VERSION_NUMBER >= 150000
     result = pg_rotate_left32(result, 1);
-#else
-    result =  (result << 1) | (result >> 31);
-#endif
     result ^= float8_hash(box->ymin);
-#if POSTGRESQL_VERSION_NUMBER >= 150000
     result = pg_rotate_left32(result, 1);
-#else
-    result =  (result << 1) | (result >> 31);
-#endif
     if (hasz)
     {
       result ^= float8_hash(box->zmin);
-#if POSTGRESQL_VERSION_NUMBER >= 150000
       result = pg_rotate_left32(result, 1);
-#else
-      result =  (result << 1) | (result >> 31);
-#endif
     }
     result ^= float8_hash(box->xmax);
-#if POSTGRESQL_VERSION_NUMBER >= 150000
     result = pg_rotate_left32(result, 1);
-#else
-    result =  (result << 1) | (result >> 31);
-#endif
     result ^= float8_hash(box->ymax);
-#if POSTGRESQL_VERSION_NUMBER >= 150000
     result = pg_rotate_left32(result, 1);
-#else
-    result =  (result << 1) | (result >> 31);
-#endif
     if (hasz)
     {
       result ^= float8_hash(box->zmax);
-#if POSTGRESQL_VERSION_NUMBER >= 150000
       result = pg_rotate_left32(result, 1);
-#else
-      result =  (result << 1) | (result >> 31);
-#endif
     }
     result ^= hash_uint32(box->srid);
-#if POSTGRESQL_VERSION_NUMBER >= 150000
     result = pg_rotate_left32(result, 1);
-#else
-    result =  (result << 1) | (result >> 31);
-#endif
   }
   result ^= hash_uint32((uint32) box->flags);
-#if POSTGRESQL_VERSION_NUMBER >= 150000
     result = pg_rotate_left32(result, 1);
-#else
-    result =  (result << 1) | (result >> 31);
-#endif
   return result;
 }
 

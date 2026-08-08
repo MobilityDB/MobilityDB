@@ -47,15 +47,12 @@
 /* C */
 #include <assert.h>
 #include <string.h>
-/* PostgreSQL — palloc, SET_VARSIZE, BUFFERALIGN are PG infrastructure
- * already in scope when MEOS is built; this file uses no fmgr machinery. */
+/* PostgreSQL */
 #include <postgres.h>
-#if POSTGRESQL_VERSION_NUMBER >= 160000
-  #include "varatt.h"
-#endif
-/* pgPointCloud — types + helpers needed by the bodies below. */
-#include "pc_api.h"
-#include "pc_api_internal.h"
+#include <varatt.h>
+/* pgPointCloud */
+#include <pc_api.h>
+#include <pc_api_internal.h>
 
 /*****************************************************************************
  * pcpoint serialization (public)

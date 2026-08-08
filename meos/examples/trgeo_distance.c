@@ -200,8 +200,9 @@ make_pose_from_ais(double lon, double lat, double heading_deg)
 
   /* Heading → theta */
   double theta = (90.0 - heading_deg) * M_PI / 180.0;
-  while (theta > M_PI)  theta -= 2.0 * M_PI;
-  while (theta < -M_PI) theta += 2.0 * M_PI;
+  const double TWOPI = 2.0 * M_PI;
+  while (theta > M_PI)  theta -= TWOPI;
+  while (theta < -M_PI) theta += TWOPI;
   const double THETA_EPS = 1e-7;
   if (theta >  M_PI - THETA_EPS) theta =  M_PI - THETA_EPS;
   if (theta < -M_PI + THETA_EPS) theta = -M_PI + THETA_EPS;

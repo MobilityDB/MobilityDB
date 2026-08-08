@@ -385,7 +385,7 @@ CREATE FUNCTION ttextSeqSet(ttext[])
   AS 'MODULE_PATHNAME', 'Tsequenceset_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- The function is not strict
+-- The functions are not strict
 CREATE FUNCTION tboolSeqSetGaps(tbool[], maxt interval DEFAULT NULL)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tsequenceset_constructor_gaps'
@@ -1334,7 +1334,7 @@ CREATE FUNCTION ttextInst(ttext)
   AS 'MODULE_PATHNAME', 'Temporal_as_tinstant'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- The function is not strict
+-- The functions are not strict
 CREATE FUNCTION tboolSeq(tbool, text DEFAULT NULL)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Temporal_as_tsequence'
@@ -1356,7 +1356,7 @@ CREATE FUNCTION ttextSeq(ttext, text DEFAULT NULL)
   AS 'MODULE_PATHNAME', 'Temporal_as_tsequence'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
--- The function is not strict
+-- The functions are not strict
 CREATE FUNCTION tboolSeqSet(tbool)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Temporal_as_tsequenceset'
@@ -1612,7 +1612,7 @@ CREATE FUNCTION appendSequence(ttext, ttext)
   AS 'MODULE_PATHNAME', 'Temporal_append_tsequence'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- The function is not strict
+-- The functions are not strict
 CREATE FUNCTION merge(tbool, tbool)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Temporal_merge'

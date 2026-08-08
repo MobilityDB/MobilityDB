@@ -51,9 +51,7 @@
 #include <fmgr.h>
 #include <catalog/pg_operator.h>
 #include <utils/typcache.h>
-#if POSTGRESQL_VERSION_NUMBER >= 160000
-  #include "varatt.h"
-#endif
+#include <varatt.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
@@ -359,16 +357,13 @@ Span_analyze(PG_FUNCTION_ARGS)
   /* Ensure type has a span as a bounding box */
   assert(type_span_bbox(oid_meostype(stats->attrtypid)));
 
-  /*
-   * Call the standard typanalyze function. It may fail to find needed
-   * operators, in which case we also can't do anything, so just fail.
-   */
+  /* Call the standard typanalyze function. It may fail to find needed
+   * operators, in which case we also can't do anything, so just fail */
   if (! std_typanalyze(stats))
     PG_RETURN_BOOL(false);
 
   /* Set the callback function to compute statistics. */
   stats->compute_stats = &span_compute_stats;
-
 
 #if POSTGRESQL_VERSION_NUMBER >= 170000
   if (stats->attstattarget < 0)

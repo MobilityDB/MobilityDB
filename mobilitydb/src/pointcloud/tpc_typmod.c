@@ -30,19 +30,13 @@
  * @endcode
  */
 
+/* PostgreSQL */
 #include <postgres.h>
 #include <fmgr.h>
-#include <utils/array.h>
 #include <catalog/pg_type.h>     /* CSTRINGOID */
-#if POSTGRESQL_VERSION_NUMBER >= 160000
-  #include "varatt.h"
-#endif
-
-/* meos_internal.h pulls in <json-c/json.h>, whose `struct json_object`
- * collides with PG's `Datum json_object(PG_FUNCTION_ARGS)` in
- * utils/fmgrprotos.h (transitively via utils/builtins.h). So we take the
- * int parser from <pgtypes.h> (int32_in), which declares it without
- * pulling fmgrprotos. */
+#include <utils/array.h>
+#include <varatt.h>
+/* MEOS */
 #include <meos.h>
 #include <pgtypes.h>             /* int32_in — NOT utils/builtins.h */
 #include <meos_pointcloud.h>     /* pcpoint_get_pcid, pcpatch_get_pcid */

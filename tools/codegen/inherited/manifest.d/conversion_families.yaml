@@ -102,7 +102,7 @@ conversion_families:
   - lit: "\nCREATE CAST (trgeometry AS tpose) WITH FUNCTION tpose(trgeometry);\nCREATE CAST (trgeometry AS tgeompoint) WITH FUNCTION tgeompoint(trgeometry);\nCREATE CAST (trgeometry AS tgeogpoint) WITH FUNCTION tgeogpoint(trgeometry);\nCREATE CAST (trgeometry AS tgeometry) WITH FUNCTION tgeometry(trgeometry);\n\n"
   - fns:
     - {sig: "stbox(trgeometry)", ret: stbox, sym: Tspatial_to_stbox}
-  - lit: "\nCREATE CAST (trgeometry AS stbox) WITH FUNCTION stbox(trgeometry);\n\nCREATE FUNCTION expandSpace(trgeometry, float)\n  RETURNS stbox\n  AS 'SELECT @extschema@.expandSpace($1::stbox, $2)'\n  LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT;\n\n"
+  - lit: "\nCREATE CAST (trgeometry AS stbox) WITH FUNCTION stbox(trgeometry);\n\nCREATE FUNCTION expandSpace(trgeometry, float)\n  RETURNS stbox\n  AS 'SELECT @extschema@.expandSpace($1::stbox, $2)'\n  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;\n\n"
   - fns:
     - {sig: "geometry(trgeometry)", ret: geometry, sym: Trgeometry_to_geom}
   - lit: "\nCREATE CAST (trgeometry AS geometry) WITH FUNCTION geometry(trgeometry);\n\n"

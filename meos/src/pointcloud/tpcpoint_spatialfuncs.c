@@ -16,21 +16,19 @@
  * Temporal<T> value surface in @ref tpcpoint.c.
  */
 
+/* C */
 #include <assert.h>
 #include <float.h>
+/* PostgreSQL */
 #include <postgres.h>
-#if POSTGRESQL_VERSION_NUMBER >= 160000
-  #include "varatt.h"
-#endif
-
-#include <pc_api.h>             /* PCSCHEMA (struct body with .srid) */
-
+#include <varatt.h>
+/* pgPointCloud */
+#include <pc_api.h>
+/* MEOS */
 #include <meos.h>
-#include <meos_geo.h>           /* GSERIALIZED, geompoint_make2d, geom_* */
-#include <meos_internal.h>      /* tinstant_make, tinstant_value_p,
-                                   VALIDATE_NOT_NULL */
-#include <meos_pointcloud.h>    /* Pcpoint (typedef), PCSCHEMA (typedef),
-                                   meos_pc_schema, pcpoint_get_x/y */
+#include <meos_geo.h>
+#include <meos_internal.h>
+#include <meos_pointcloud.h>
 #include "temporal/temporal.h"  /* Temporal, TInstant */
 #include "temporal/meos_catalog.h"  /* T_TPCPOINT */
 #include "geo/tgeo_spatialfuncs.h"  /* geopoint_make */

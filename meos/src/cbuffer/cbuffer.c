@@ -42,11 +42,9 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <pgtypes.h>
-#if POSTGRESQL_VERSION_NUMBER >= 160000
-  #include "varatt.h"
-#endif
-#include "common/hashfn.h"
-#include "port/pg_bitutils.h"
+#include <varatt.h>
+#include <common/hashfn.h>
+#include <port/pg_bitutils.h>
 #include <utils/float.h>
 /* PostGIS */
 #include <liblwgeom.h>
@@ -1496,15 +1494,9 @@ cbuffer_hash(const Cbuffer *cb)
 
   /* Merge the hashes of the coordinates and the radius */
   uint32 result = x_hash;
-#if POSTGRESQL_VERSION_NUMBER >= 150000
   result = pg_rotate_left32(result, 1);
   result ^= y_hash;
   result = pg_rotate_left32(result, 1);
-#else
-  result =  (result << 1) | (result >> 31);
-  result ^= y_hash;
-  result =  (result << 1) | (result >> 31);
-#endif
   result ^= radius_hash;
   return result;
 }

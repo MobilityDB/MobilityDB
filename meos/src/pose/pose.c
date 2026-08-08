@@ -38,9 +38,7 @@
 /* Postgres */
 #include <postgres.h>
 #include <pgtypes.h>
-#if POSTGRESQL_VERSION_NUMBER >= 160000
-  #include "varatt.h"
-#endif
+#include <varatt.h>
 #include <common/hashfn.h>
 #include <utils/float.h>
 /* MEOS */

@@ -3073,7 +3073,7 @@ def bootstrap_aggregates(filetext: str, fam: dict, rendered: str) -> str:
 # return {RET}, body {AS} (a C symbol `'MODULE_PATHNAME', '<sym>'` for a `sym` entry
 # or a `'SELECT ...'` delegation for a `sql` entry, which also selects {LANG} C/SQL)
 # and an optional leading comment ({PRE}) differ — so ONE skeleton emits every
-# function; tiling functions are uniformly `IMMUTABLE PARALLEL SAFE STRICT`. The
+# function; tiling functions are uniformly `IMMUTABLE STRICT PARALLEL SAFE`. The
 # CREATE TYPE composite-type statements, section banners and blank-line separators
 # are reproduced BYTE-EXACT via `lit` blocks in the manifest, exactly as the
 # conversion surface reproduces its CREATE CASTs; the skeleton-shaped functions go in
@@ -3087,11 +3087,9 @@ def bootstrap_aggregates(filetext: str, fam: dict, rendered: str) -> str:
 # owning its dedicated *_tile.in.sql file), so the deployed .in.sql files are
 # untouched while the template is proven. 058_tpoint_tile, 119_tpose_tile and
 # 445_tpcpoint_tile drift from the tgeo reference shape but are still ONE skeleton
-# each, selected per family/fn rather than per-token: 058_tpoint_tile spells its
-# LANGUAGE clause `IMMUTABLE STRICT PARALLEL SAFE` (STRICT mid-clause, not
-# tgeo/trgeo's `PARALLEL SAFE STRICT`) uniformly for all its functions — the family
-# sets `strict_mid: true` and `_tiling_skeleton` swaps in templates/tiling_strict
-# .sql.tmpl (same {SIG}/{RET}/{AS}/{LANG} placeholders, reordered clause); 119_tpose
+# each, selected per family/fn rather than per-token: every family spells its
+# LANGUAGE clause `IMMUTABLE STRICT PARALLEL SAFE`, the one order the deployed SQL
+# uses, so ONE template serves them all; 119_tpose
 # _tile and 445_tpcpoint_tile delegate through dollar-quoted `LANGUAGE SQL ... AS $$
 # <body> $$;` cast chains instead of the `AS '<sym-or-select>'` one-liner — a `body`
 # fn entry (the verbatim dollar-quoted SQL) selects templates/tiling_delegate.sql
@@ -3129,17 +3127,14 @@ def _tiling_skeleton(f: dict, fam: dict = None) -> str:
     _tile/445_tpcpoint_tile shape, templates/tiling_delegate.sql.tmpl). Otherwise a
     `sym` entry is a C-backed function (`AS 'MODULE_PATHNAME', '<sym>'`, LANGUAGE C);
     a `sql` entry is a size-collapsing delegation (`AS '<select>'`, LANGUAGE SQL);
-    `pre` is a leading comment line or ""; the family's `strict_mid: true` (the
-    058_tpoint_tile shape) selects templates/tiling_strict.sql.tmpl, which spells
-    the LANGUAGE clause `IMMUTABLE STRICT PARALLEL SAFE` instead of the default
-    templates/tiling.sql.tmpl's `IMMUTABLE PARALLEL SAFE STRICT`."""
+    `pre` is a leading comment line or ""; templates/tiling.sql.tmpl spells the
+    LANGUAGE clause `IMMUTABLE STRICT PARALLEL SAFE` for every family, the one
+    order the deployed SQL uses."""
     if "body" in f:
         tmpl = (TEMPLATES / "tiling_delegate.sql.tmpl").read_text()
         return (tmpl.replace("{SIG}", f["sig"]).replace("{RET}", f["ret"])
                     .replace("{BODY}", f["body"]).rstrip("\n"))
-    tmpl_name = "tiling_strict.sql.tmpl" if (fam or {}).get("strict_mid") \
-        else "tiling.sql.tmpl"
-    tmpl = (TEMPLATES / tmpl_name).read_text()
+    tmpl = (TEMPLATES / "tiling.sql.tmpl").read_text()
     if "sym" in f:
         asx, lang = f"'MODULE_PATHNAME', '{f['sym']}'", "C"
     else:

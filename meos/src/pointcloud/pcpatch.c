@@ -26,10 +26,8 @@
 #include <stddef.h>          /* offsetof */
 /* PostgreSQL */
 #include <postgres.h>
-#if POSTGRESQL_VERSION_NUMBER >= 160000
-  #include "varatt.h"
-#endif
-#include "common/hashfn.h"
+#include <varatt.h>
+#include <common/hashfn.h>
 /* PostGIS */
 #include <liblwgeom.h>       /* parse_hex, deparse_hex */
 /* MEOS */

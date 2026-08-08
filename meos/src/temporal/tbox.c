@@ -2035,18 +2035,10 @@ tbox_hash(const TBox *box)
   if (hasx)
   {
     result ^= span_hash(&box->span);
-#if POSTGRESQL_VERSION_NUMBER >= 150000
     result = pg_rotate_left32(result, 1);
-#else
-    result =  (result << 1) | (result >> 31);
-#endif
   }
   result ^= hash_uint32(box->flags);
-#if POSTGRESQL_VERSION_NUMBER >= 150000
   result = pg_rotate_left32(result, 1);
-#else
-  result =  (result << 1) | (result >> 31);
-#endif
   return result;
 }
 

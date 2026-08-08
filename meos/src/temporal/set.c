@@ -41,10 +41,8 @@
 #include <limits.h>
 /* PostgreSQL */
 #include <postgres.h>
+#include <varatt.h>
 #include <utils/timestamp.h>
-#if POSTGRESQL_VERSION_NUMBER >= 160000
-  #include "varatt.h"
-#endif
 /* PostGIS */
 #include <liblwgeom.h>
 /* MEOS */

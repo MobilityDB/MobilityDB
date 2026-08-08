@@ -39,12 +39,10 @@
 #include <limits.h>
 /* PostgreSQL */
 #include <postgres.h>
-#include "port/pg_bitutils.h"
+#include <varatt.h>
+#include <port/pg_bitutils.h>
 #include <utils/timestamp.h>
 #include <common/hashfn.h>
-#if POSTGRESQL_VERSION_NUMBER >= 160000
-  #include "varatt.h"
-#endif
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
@@ -673,11 +671,7 @@ tinstant_hash(const TInstant *inst)
   uint32 time_hash = int64_hash(inst->t);
   /* Merge hashes of value and timestamp */
   uint32 result = value_hash;
-#if POSTGRESQL_VERSION_NUMBER >= 150000
   result = pg_rotate_left32(result, 1);
-#else
-  result =  (result << 1) | (result >> 31);
-#endif
   result ^= time_hash;
   return result;
 }

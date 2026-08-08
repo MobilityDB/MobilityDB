@@ -233,14 +233,14 @@ span_families:
   - lit: "\n"
   - {stmt: "CREATE CAST ({ss} AS tstzspanset) WITH FUNCTION tstzspanset({ss});", only: [date]}
   - {stmt: "CREATE CAST (tstzspanset AS {ss}) WITH FUNCTION {ss}(tstzspanset);", only: [date]}
-  - lit: "\n#if POSTGRESQL_VERSION_NUMBER >= 140000\n"
+  - lit: "\n"
   - {sig: "multirange({ss})", ret: "{mr}", sym: Spanset_to_multirange, only: [int, bigint, date, tstz]}
   - lit: "\n"
   - {sig: "spanset({mr})", ret: "{ss}", sym: Multirange_to_spanset, only: [int, bigint, date, tstz]}
   - lit: "\n"
   - {stmt: "CREATE CAST ({ss} AS {mr}) WITH FUNCTION multirange({ss});", only: [int, bigint, date, tstz]}
   - {stmt: "CREATE CAST ({mr} AS {ss}) WITH FUNCTION spanset({mr});", only: [int, bigint, date, tstz]}
-  - lit: "#endif //POSTGRESQL_VERSION_NUMBER >= 140000\n\n/******************************************************************************\n * Accessor Functions\n ******************************************************************************/\n\n"
+  - lit: "\n/******************************************************************************\n * Accessor Functions\n ******************************************************************************/\n\n"
   - {sig: "memSize({ss})", ret: "integer", sym: Spanset_mem_size}
   - lit: "\n"
   - {sig: "lower({ss})", ret: "{v}", sym: Spanset_lower}
@@ -1754,7 +1754,7 @@ span_families:
   - group:
     - {stmt: "/*****************************************************************************/"}
     - {stmt: "-- span + span"}
-    - {stmt: "\n-- The function is not strict"}
+    - {stmt: "\n-- The functions are not strict"}
     - {stmt: "CREATE FUNCTION span_extent_transfn({sp}, {sp})\n  RETURNS {sp}\n  AS 'MODULE_PATHNAME', 'Span_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
     - {stmt: "CREATE FUNCTION span_extent_combinefn({sp}, {sp})\n  RETURNS {sp}\n  AS 'MODULE_PATHNAME', 'Span_extent_combinefn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
     sep: "\n"
@@ -1765,24 +1765,24 @@ span_families:
     - {stmt: "CREATE FUNCTION span_extent_combinefn({sp}, {sp})\n  RETURNS {sp}\n  AS 'MODULE_PATHNAME', 'Span_extent_combinefn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
     sep: "\n"
     order: [bigint]
-  - lit: "\nCREATE FUNCTION span_extent_transfn(floatspan, floatspan)\n  RETURNS floatspan\n  AS 'MODULE_PATHNAME', 'Span_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION span_extent_combinefn(floatspan, floatspan)\n  RETURNS floatspan\n  AS 'MODULE_PATHNAME', 'Span_extent_combinefn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION span_extent_transfn(datespan, datespan)\n  RETURNS datespan\n  AS 'MODULE_PATHNAME', 'Span_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION span_extent_combinefn(datespan, datespan)\n  RETURNS datespan\n  AS 'MODULE_PATHNAME', 'Span_extent_combinefn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION span_extent_transfn(tstzspan, tstzspan)\n  RETURNS tstzspan\n  AS 'MODULE_PATHNAME', 'Span_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION span_extent_combinefn(tstzspan, tstzspan)\n  RETURNS tstzspan\n  AS 'MODULE_PATHNAME', 'Span_extent_combinefn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\n\n"
+  - lit: "\nCREATE FUNCTION span_extent_transfn(floatspan, floatspan)\n  RETURNS floatspan\n  AS 'MODULE_PATHNAME', 'Span_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION span_extent_combinefn(floatspan, floatspan)\n  RETURNS floatspan\n  AS 'MODULE_PATHNAME', 'Span_extent_combinefn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\n\nCREATE FUNCTION span_extent_transfn(datespan, datespan)\n  RETURNS datespan\n  AS 'MODULE_PATHNAME', 'Span_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION span_extent_combinefn(datespan, datespan)\n  RETURNS datespan\n  AS 'MODULE_PATHNAME', 'Span_extent_combinefn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\n\nCREATE FUNCTION span_extent_transfn(tstzspan, tstzspan)\n  RETURNS tstzspan\n  AS 'MODULE_PATHNAME', 'Span_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION span_extent_combinefn(tstzspan, tstzspan)\n  RETURNS tstzspan\n  AS 'MODULE_PATHNAME', 'Span_extent_combinefn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\n\n"
   - group:
     - {stmt: "CREATE AGGREGATE extent({sp}) (\n  SFUNC = span_extent_transfn,\n  STYPE = {sp},\n  COMBINEFUNC = span_extent_combinefn,\n  PARALLEL = safe\n);"}
-  - lit: "\n/*****************************************************************************/\n-- span + base\n\n-- The function is not strict\nCREATE FUNCTION span_extent_transfn(intspan, integer)\n  RETURNS intspan\n  AS 'MODULE_PATHNAME', 'Spanbase_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION span_extent_transfn(bigintspan, bigint)\n  RETURNS bigintspan\n  AS 'MODULE_PATHNAME', 'Spanbase_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION span_extent_transfn(floatspan, float)\n  RETURNS floatspan\n  AS 'MODULE_PATHNAME', 'Spanbase_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION span_extent_transfn(datespan, date)\n  RETURNS datespan\n  AS 'MODULE_PATHNAME', 'Spanbase_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION span_extent_transfn(tstzspan, timestamptz)\n  RETURNS tstzspan\n  AS 'MODULE_PATHNAME', 'Spanbase_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\n\n"
+  - lit: "\n/*****************************************************************************/\n-- span + base\n\n-- The functions are not strict\nCREATE FUNCTION span_extent_transfn(intspan, integer)\n  RETURNS intspan\n  AS 'MODULE_PATHNAME', 'Spanbase_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION span_extent_transfn(bigintspan, bigint)\n  RETURNS bigintspan\n  AS 'MODULE_PATHNAME', 'Spanbase_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION span_extent_transfn(floatspan, float)\n  RETURNS floatspan\n  AS 'MODULE_PATHNAME', 'Spanbase_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION span_extent_transfn(datespan, date)\n  RETURNS datespan\n  AS 'MODULE_PATHNAME', 'Spanbase_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION span_extent_transfn(tstzspan, timestamptz)\n  RETURNS tstzspan\n  AS 'MODULE_PATHNAME', 'Spanbase_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\n\n"
   - group:
     - {stmt: "CREATE AGGREGATE extent({v}) (\n  SFUNC = span_extent_transfn,\n  STYPE = {sp},\n  COMBINEFUNC = span_extent_combinefn,\n  PARALLEL = safe\n);"}
-  - lit: "\n/*****************************************************************************/\n-- span + <type>\n\n-- The function is not strict\nCREATE FUNCTION set_extent_transfn(intspan, intset)\n  RETURNS intspan\n  AS 'MODULE_PATHNAME', 'Set_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION set_extent_transfn(bigintspan, bigintset)\n  RETURNS bigintspan\n  AS 'MODULE_PATHNAME', 'Set_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION set_extent_transfn(floatspan, floatset)\n  RETURNS floatspan\n  AS 'MODULE_PATHNAME', 'Set_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION set_extent_transfn(datespan, dateset)\n  RETURNS datespan\n  AS 'MODULE_PATHNAME', 'Set_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION set_extent_transfn(tstzspan, tstzset)\n  RETURNS tstzspan\n  AS 'MODULE_PATHNAME', 'Set_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\n\n"
+  - lit: "\n/*****************************************************************************/\n-- span + <type>\n\n-- The functions are not strict\nCREATE FUNCTION set_extent_transfn(intspan, intset)\n  RETURNS intspan\n  AS 'MODULE_PATHNAME', 'Set_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION set_extent_transfn(bigintspan, bigintset)\n  RETURNS bigintspan\n  AS 'MODULE_PATHNAME', 'Set_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION set_extent_transfn(floatspan, floatset)\n  RETURNS floatspan\n  AS 'MODULE_PATHNAME', 'Set_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION set_extent_transfn(datespan, dateset)\n  RETURNS datespan\n  AS 'MODULE_PATHNAME', 'Set_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION set_extent_transfn(tstzspan, tstzset)\n  RETURNS tstzspan\n  AS 'MODULE_PATHNAME', 'Set_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\n\n"
   - group:
     - {stmt: "CREATE AGGREGATE extent({vs}) (\n  SFUNC = set_extent_transfn,\n  STYPE = {sp},\n  COMBINEFUNC = span_extent_combinefn,\n  PARALLEL = safe\n);"}
-  - lit: "\n-- The function is not strict\nCREATE FUNCTION spanset_extent_transfn(intspan, intspanset)\n  RETURNS intspan\n  AS 'MODULE_PATHNAME', 'Spanset_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION spanset_extent_transfn(bigintspan, bigintspanset)\n  RETURNS bigintspan\n  AS 'MODULE_PATHNAME', 'Spanset_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION spanset_extent_transfn(floatspan, floatspanset)\n  RETURNS floatspan\n  AS 'MODULE_PATHNAME', 'Spanset_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION spanset_extent_transfn(datespan, datespanset)\n  RETURNS datespan\n  AS 'MODULE_PATHNAME', 'Spanset_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION spanset_extent_transfn(tstzspan, tstzspanset)\n  RETURNS tstzspan\n  AS 'MODULE_PATHNAME', 'Spanset_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\n\n"
+  - lit: "\n-- The functions are not strict\nCREATE FUNCTION spanset_extent_transfn(intspan, intspanset)\n  RETURNS intspan\n  AS 'MODULE_PATHNAME', 'Spanset_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION spanset_extent_transfn(bigintspan, bigintspanset)\n  RETURNS bigintspan\n  AS 'MODULE_PATHNAME', 'Spanset_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION spanset_extent_transfn(floatspan, floatspanset)\n  RETURNS floatspan\n  AS 'MODULE_PATHNAME', 'Spanset_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION spanset_extent_transfn(datespan, datespanset)\n  RETURNS datespan\n  AS 'MODULE_PATHNAME', 'Spanset_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION spanset_extent_transfn(tstzspan, tstzspanset)\n  RETURNS tstzspan\n  AS 'MODULE_PATHNAME', 'Spanset_extent_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\n\n"
   - group:
     - {stmt: "CREATE AGGREGATE extent({ss}) (\n  SFUNC = spanset_extent_transfn,\n  STYPE = {sp},\n  COMBINEFUNC = span_extent_combinefn,\n  PARALLEL = safe\n);"}
-  - lit: "\n/*****************************************************************************/\n\n-- The function is not strict\nCREATE FUNCTION intspan_union_finalfn(internal)\n  RETURNS intspanset\n  AS 'MODULE_PATHNAME', 'Span_union_finalfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION bigintspan_union_finalfn(internal)\n  RETURNS bigintspanset\n  AS 'MODULE_PATHNAME', 'Span_union_finalfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION floatspan_union_finalfn(internal)\n  RETURNS floatspanset\n  AS 'MODULE_PATHNAME', 'Span_union_finalfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION datespan_union_finalfn(internal)\n  RETURNS datespanset\n  AS 'MODULE_PATHNAME', 'Span_union_finalfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION tstzspan_union_finalfn(internal)\n  RETURNS tstzspanset\n  AS 'MODULE_PATHNAME', 'Span_union_finalfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\n\n"
+  - lit: "\n/*****************************************************************************/\n\n-- The functions are not strict\nCREATE FUNCTION intspan_union_finalfn(internal)\n  RETURNS intspanset\n  AS 'MODULE_PATHNAME', 'Span_union_finalfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION bigintspan_union_finalfn(internal)\n  RETURNS bigintspanset\n  AS 'MODULE_PATHNAME', 'Span_union_finalfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION floatspan_union_finalfn(internal)\n  RETURNS floatspanset\n  AS 'MODULE_PATHNAME', 'Span_union_finalfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION datespan_union_finalfn(internal)\n  RETURNS datespanset\n  AS 'MODULE_PATHNAME', 'Span_union_finalfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION tstzspan_union_finalfn(internal)\n  RETURNS tstzspanset\n  AS 'MODULE_PATHNAME', 'Span_union_finalfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\n\n"
   - group:
-    - {stmt: "CREATE AGGREGATE spanUnion({sp}) (\n  SFUNC = array_agg_transfn,\n  STYPE = internal,\n#if POSTGRESQL_VERSION_NUMBER >= 160000\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n#endif //POSTGRESQL_VERSION_NUMBER >= 160000\n  FINALFUNC = {sp}_union_finalfn,\n  PARALLEL = safe\n);"}
-  - lit: "\n/*****************************************************************************/\n\n-- The function is not strict\nCREATE FUNCTION spanset_union_transfn(internal, intspanset)\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Spanset_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION spanset_union_transfn(internal, bigintspanset)\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Spanset_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION spanset_union_transfn(internal, floatspanset)\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Spanset_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION spanset_union_transfn(internal, datespanset)\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Spanset_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION spanset_union_transfn(internal, tstzspanset)\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Spanset_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\n\n"
+    - {stmt: "CREATE AGGREGATE spanUnion({sp}) (\n  SFUNC = array_agg_transfn,\n  STYPE = internal,\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n  FINALFUNC = {sp}_union_finalfn,\n  PARALLEL = safe\n);"}
+  - lit: "\n/*****************************************************************************/\n\n-- The functions are not strict\nCREATE FUNCTION spanset_union_transfn(internal, intspanset)\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Spanset_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION spanset_union_transfn(internal, bigintspanset)\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Spanset_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION spanset_union_transfn(internal, floatspanset)\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Spanset_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION spanset_union_transfn(internal, datespanset)\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Spanset_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\nCREATE FUNCTION spanset_union_transfn(internal, tstzspanset)\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Spanset_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;\n\n"
   - group:
-    - {stmt: "CREATE AGGREGATE spansetUnion({ss}) (\n  SFUNC = spanset_union_transfn,\n  STYPE = internal,\n#if POSTGRESQL_VERSION_NUMBER >= 160000\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n#endif //POSTGRESQL_VERSION_NUMBER >= 160000\n  FINALFUNC = {sp}_union_finalfn,\n  PARALLEL = safe\n);"}
+    - {stmt: "CREATE AGGREGATE spansetUnion({ss}) (\n  SFUNC = spanset_union_transfn,\n  STYPE = internal,\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n  FINALFUNC = {sp}_union_finalfn,\n  PARALLEL = safe\n);"}
   - lit: "\n/*****************************************************************************/\n"
 - family: set_indexes
   file: mobilitydb/sql/temporal/013_set_indexes.in.sql
@@ -1959,16 +1959,16 @@ span_families:
     date: {v: date, vs: dateset}
     tstz: {v: timestamptz, vs: tstzset}
   blocks:
-  - lit: "/******************************************************************************\n * Aggregate functions\n ******************************************************************************/\n\n-- The function is not STRICT\n"
+  - lit: "/******************************************************************************\n * Aggregate functions\n ******************************************************************************/\n\n-- The functions are not STRICT\n"
   - {stmt: "CREATE FUNCTION set_union_transfn(internal, {v})\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Value_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
-  - lit: "\n-- The function is not STRICT\n"
+  - lit: "\n-- The functions are not STRICT\n"
   - {stmt: "CREATE FUNCTION set_union_transfn(internal, {vs})\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Set_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
-  - lit: "\n"
+  - lit: "\n-- The functions are not STRICT\n"
   - {stmt: "CREATE FUNCTION {vs}_union_finalfn(internal)\n  RETURNS {vs}\n  AS 'MODULE_PATHNAME', 'Set_union_finalfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;", order: [int, bigint, float, date, tstz, text]}
   - lit: "\n"
-  - {stmt: "CREATE AGGREGATE setUnion({v}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n#if POSTGRESQL_VERSION_NUMBER >= 160000\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n#endif //POSTGRESQL_VERSION_NUMBER >= 160000\n  FINALFUNC = {vs}_union_finalfn,\n  PARALLEL = safe\n);"}
+  - {stmt: "CREATE AGGREGATE setUnion({v}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n  FINALFUNC = {vs}_union_finalfn,\n  PARALLEL = safe\n);"}
   - lit: "\n"
-  - {stmt: "CREATE AGGREGATE setUnion({vs}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n#if POSTGRESQL_VERSION_NUMBER >= 160000\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n#endif //POSTGRESQL_VERSION_NUMBER >= 160000\n  FINALFUNC = {vs}_union_finalfn,\n  PARALLEL = safe\n);"}
+  - {stmt: "CREATE AGGREGATE setUnion({vs}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n  FINALFUNC = {vs}_union_finalfn,\n  PARALLEL = safe\n);"}
   - lit: "\n"
 - family: set_accessors
   file: mobilitydb/sql/temporal/001_set.in.sql
@@ -3069,9 +3069,9 @@ span_families:
   - lit: "\n"
   - {stmt: "CREATE FUNCTION {vs}_union_finalfn(internal)\n  RETURNS {vs}\n  AS 'MODULE_PATHNAME', 'Set_union_finalfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
   - lit: "\n"
-  - {stmt: "CREATE AGGREGATE setUnion({v}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n#if POSTGRESQL_VERSION_NUMBER >= 160000\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n#endif //POSTGRESQL_VERSION_NUMBER >= 160000\n  FINALFUNC = {vs}_union_finalfn\n);"}
+  - {stmt: "CREATE AGGREGATE setUnion({v}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n  FINALFUNC = {vs}_union_finalfn\n);"}
   - lit: "\n"
-  - {stmt: "CREATE AGGREGATE setUnion({vs}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n#if POSTGRESQL_VERSION_NUMBER >= 160000\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n#endif //POSTGRESQL_VERSION_NUMBER >= 160000\n  FINALFUNC = {vs}_union_finalfn\n);"}
+  - {stmt: "CREATE AGGREGATE setUnion({vs}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n  FINALFUNC = {vs}_union_finalfn\n);"}
   - lit: "\n"
 
 - family: poseset_setunion
@@ -3088,8 +3088,8 @@ span_families:
   - {stmt: "CREATE FUNCTION set_union_transfn(internal, {vs})\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Set_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
   - {stmt: "CREATE FUNCTION {vs}_union_finalfn(internal)\n  RETURNS {vs}\n  AS 'MODULE_PATHNAME', 'Set_union_finalfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
   - lit: "\n"
-  - {stmt: "CREATE AGGREGATE setUnion({v}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n#if POSTGRESQL_VERSION_NUMBER >= 160000\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n#endif //POSTGRESQL_VERSION_NUMBER >= 160000\n  FINALFUNC = {vs}_union_finalfn\n);"}
-  - {stmt: "CREATE AGGREGATE setUnion({vs}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n#if POSTGRESQL_VERSION_NUMBER >= 160000\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n#endif //POSTGRESQL_VERSION_NUMBER >= 160000\n  FINALFUNC = {vs}_union_finalfn\n);"}
+  - {stmt: "CREATE AGGREGATE setUnion({v}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n  FINALFUNC = {vs}_union_finalfn\n);"}
+  - {stmt: "CREATE AGGREGATE setUnion({vs}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n  FINALFUNC = {vs}_union_finalfn\n);"}
   - lit: "\n"
 
 - family: cbufferset_setunion
@@ -3106,8 +3106,8 @@ span_families:
   - {stmt: "CREATE FUNCTION set_union_transfn(internal, {vs})\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Set_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
   - {stmt: "CREATE FUNCTION {vs}_union_finalfn(internal)\n  RETURNS {vs}\n  AS 'MODULE_PATHNAME', 'Set_union_finalfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
   - lit: "\n"
-  - {stmt: "CREATE AGGREGATE setUnion({v}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n#if POSTGRESQL_VERSION_NUMBER >= 160000\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n#endif //POSTGRESQL_VERSION_NUMBER >= 160000\n  FINALFUNC = {vs}_union_finalfn\n);"}
-  - {stmt: "CREATE AGGREGATE setUnion({vs}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n#if POSTGRESQL_VERSION_NUMBER >= 160000\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n#endif //POSTGRESQL_VERSION_NUMBER >= 160000\n  FINALFUNC = {vs}_union_finalfn\n);"}
+  - {stmt: "CREATE AGGREGATE setUnion({v}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n  FINALFUNC = {vs}_union_finalfn\n);"}
+  - {stmt: "CREATE AGGREGATE setUnion({vs}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n  FINALFUNC = {vs}_union_finalfn\n);"}
   - lit: "\n"
 
 - family: npointset_setunion
@@ -3124,8 +3124,8 @@ span_families:
   - {stmt: "CREATE FUNCTION set_union_transfn(internal, {vs})\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Set_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
   - {stmt: "CREATE FUNCTION {vs}_union_finalfn(internal)\n  RETURNS {vs}\n  AS 'MODULE_PATHNAME', 'Set_union_finalfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
   - lit: "\n"
-  - {stmt: "CREATE AGGREGATE setUnion({v}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n#if POSTGRESQL_VERSION_NUMBER >= 160000\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n#endif //POSTGRESQL_VERSION_NUMBER >= 160000\n  FINALFUNC = {vs}_union_finalfn\n);"}
-  - {stmt: "CREATE AGGREGATE setUnion({vs}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n#if POSTGRESQL_VERSION_NUMBER >= 160000\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n#endif //POSTGRESQL_VERSION_NUMBER >= 160000\n  FINALFUNC = {vs}_union_finalfn\n);"}
+  - {stmt: "CREATE AGGREGATE setUnion({v}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n  FINALFUNC = {vs}_union_finalfn\n);"}
+  - {stmt: "CREATE AGGREGATE setUnion({vs}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n  FINALFUNC = {vs}_union_finalfn\n);"}
   - lit: "\n"
 
 - family: jsonbset_setunion
@@ -3142,8 +3142,8 @@ span_families:
   - {stmt: "CREATE FUNCTION set_union_transfn(internal, {vs})\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Set_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
   - {stmt: "CREATE FUNCTION {vs}_union_finalfn(internal)\n  RETURNS {vs}\n  AS 'MODULE_PATHNAME', 'Set_union_finalfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
   - lit: "\n"
-  - {stmt: "CREATE AGGREGATE setUnion({v}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n#if POSTGRESQL_VERSION_NUMBER >= 160000\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n#endif //POSTGRESQL_VERSION_NUMBER >= 160000\n  FINALFUNC = {vs}_union_finalfn\n);"}
-  - {stmt: "CREATE AGGREGATE setUnion({vs}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n#if POSTGRESQL_VERSION_NUMBER >= 160000\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n#endif //POSTGRESQL_VERSION_NUMBER >= 160000\n  FINALFUNC = {vs}_union_finalfn\n);"}
+  - {stmt: "CREATE AGGREGATE setUnion({v}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n  FINALFUNC = {vs}_union_finalfn\n);"}
+  - {stmt: "CREATE AGGREGATE setUnion({vs}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n  FINALFUNC = {vs}_union_finalfn\n);"}
   - lit: "\n"
 
 - family: h3indexset_setunion
@@ -3162,9 +3162,9 @@ span_families:
   - lit: "\n"
   - {stmt: "CREATE FUNCTION {vs}_union_finalfn(internal)\n  RETURNS {vs}\n  AS 'MODULE_PATHNAME', 'Set_union_finalfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
   - lit: "\n"
-  - {stmt: "CREATE AGGREGATE setUnion({v}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n#if POSTGRESQL_VERSION_NUMBER >= 160000\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n#endif //POSTGRESQL_VERSION_NUMBER >= 160000\n  FINALFUNC = {vs}_union_finalfn,\n  PARALLEL = safe\n);"}
+  - {stmt: "CREATE AGGREGATE setUnion({v}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n  FINALFUNC = {vs}_union_finalfn,\n  PARALLEL = safe\n);"}
   - lit: "\n"
-  - {stmt: "CREATE AGGREGATE setUnion({vs}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n#if POSTGRESQL_VERSION_NUMBER >= 160000\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n#endif //POSTGRESQL_VERSION_NUMBER >= 160000\n  FINALFUNC = {vs}_union_finalfn,\n  PARALLEL = safe\n);"}
+  - {stmt: "CREATE AGGREGATE setUnion({vs}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n  FINALFUNC = {vs}_union_finalfn,\n  PARALLEL = safe\n);"}
   - lit: "\n"
 
 - family: quadbinset_setunion
@@ -3183,9 +3183,9 @@ span_families:
   - lit: "\n"
   - {stmt: "CREATE FUNCTION {vs}_union_finalfn(internal)\n  RETURNS {vs}\n  AS 'MODULE_PATHNAME', 'Set_union_finalfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
   - lit: "\n"
-  - {stmt: "CREATE AGGREGATE setUnion({v}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n#if POSTGRESQL_VERSION_NUMBER >= 160000\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n#endif //POSTGRESQL_VERSION_NUMBER >= 160000\n  FINALFUNC = {vs}_union_finalfn,\n  PARALLEL = safe\n);"}
+  - {stmt: "CREATE AGGREGATE setUnion({v}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n  FINALFUNC = {vs}_union_finalfn,\n  PARALLEL = safe\n);"}
   - lit: "\n"
-  - {stmt: "CREATE AGGREGATE setUnion({vs}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n#if POSTGRESQL_VERSION_NUMBER >= 160000\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n#endif //POSTGRESQL_VERSION_NUMBER >= 160000\n  FINALFUNC = {vs}_union_finalfn,\n  PARALLEL = safe\n);"}
+  - {stmt: "CREATE AGGREGATE setUnion({vs}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n  FINALFUNC = {vs}_union_finalfn,\n  PARALLEL = safe\n);"}
   - lit: "\n"
 
 - family: pcpointset_setunion
@@ -3202,8 +3202,8 @@ span_families:
   - {stmt: "CREATE FUNCTION set_union_transfn(internal, {vs})\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Set_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
   - {stmt: "CREATE FUNCTION {vs}_union_finalfn(internal)\n  RETURNS {vs}\n  AS 'MODULE_PATHNAME', 'Set_union_finalfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
   - lit: "\n"
-  - {stmt: "CREATE AGGREGATE setUnion({v}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n#if POSTGRESQL_VERSION_NUMBER >= 160000\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n#endif //POSTGRESQL_VERSION_NUMBER >= 160000\n  FINALFUNC = {vs}_union_finalfn\n);"}
-  - {stmt: "CREATE AGGREGATE setUnion({vs}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n#if POSTGRESQL_VERSION_NUMBER >= 160000\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n#endif //POSTGRESQL_VERSION_NUMBER >= 160000\n  FINALFUNC = {vs}_union_finalfn\n);"}
+  - {stmt: "CREATE AGGREGATE setUnion({v}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n  FINALFUNC = {vs}_union_finalfn\n);"}
+  - {stmt: "CREATE AGGREGATE setUnion({vs}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n  FINALFUNC = {vs}_union_finalfn\n);"}
   - lit: "\n"
 
 - family: pcpatchset_setunion
@@ -3220,6 +3220,6 @@ span_families:
   - {stmt: "CREATE FUNCTION set_union_transfn(internal, {vs})\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Set_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
   - {stmt: "CREATE FUNCTION {vs}_union_finalfn(internal)\n  RETURNS {vs}\n  AS 'MODULE_PATHNAME', 'Set_union_finalfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
   - lit: "\n"
-  - {stmt: "CREATE AGGREGATE setUnion({v}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n#if POSTGRESQL_VERSION_NUMBER >= 160000\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n#endif //POSTGRESQL_VERSION_NUMBER >= 160000\n  FINALFUNC = {vs}_union_finalfn\n);"}
-  - {stmt: "CREATE AGGREGATE setUnion({vs}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n#if POSTGRESQL_VERSION_NUMBER >= 160000\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n#endif //POSTGRESQL_VERSION_NUMBER >= 160000\n  FINALFUNC = {vs}_union_finalfn\n);"}
+  - {stmt: "CREATE AGGREGATE setUnion({v}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n  FINALFUNC = {vs}_union_finalfn\n);"}
+  - {stmt: "CREATE AGGREGATE setUnion({vs}) (\n  SFUNC = set_union_transfn,\n  STYPE = internal,\n  COMBINEFUNC = array_agg_combine,\n  SERIALFUNC = array_agg_serialize,\n  DESERIALFUNC = array_agg_deserialize,\n  FINALFUNC = {vs}_union_finalfn\n);"}
   - lit: "\n"

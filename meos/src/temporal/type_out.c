@@ -36,11 +36,9 @@
 #include <assert.h>
 /* PostgreSQL */
 #include <postgres.h>
-#include "utils/timestamp.h"
-#if POSTGRESQL_VERSION_NUMBER >= 160000
-  #include "varatt.h"
-#endif
-#include "utils/varlena.h"
+#include <varatt.h>
+#include <utils/timestamp.h>
+#include <utils/varlena.h>
 /* PostGIS */
 #include <liblwgeom.h>
 #include <liblwgeom_internal.h>

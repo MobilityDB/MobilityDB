@@ -251,11 +251,7 @@ tspatial_typmod_in(ArrayType *arr, int is_point, int is_geodetic)
     if (geometry_type_from_string(s[1], &geometry_type, &hasZ, &hasM) == LW_FAILURE)
       ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
         errmsg("Invalid geometry type modifier: %s", s[1])));
-#if POSTGRESQL_VERSION_NUMBER >= 150000
     srid = pg_strtoint32(s[2]);
-#else
-    srid = pg_atoi(s[2], sizeof(int32), '\0');
-#endif /* POSTGRESQL_VERSION_NUMBER >= 150000 */
     srid = clamp_srid(srid);
     has_geo = has_srid = true;
   }
@@ -267,11 +263,7 @@ tspatial_typmod_in(ArrayType *arr, int is_point, int is_geodetic)
     {
       if (geometry_type_from_string(s[1], &geometry_type, &hasZ, &hasM) == LW_FAILURE)
       {
-#if POSTGRESQL_VERSION_NUMBER >= 150000
         srid = pg_strtoint32(s[1]);
-#else
-        srid = pg_atoi(s[1], sizeof(int32), '\0');
-#endif /* POSTGRESQL_VERSION_NUMBER >= 150000 */
         srid = clamp_srid(srid);
         has_srid = true;
       }
@@ -283,11 +275,7 @@ tspatial_typmod_in(ArrayType *arr, int is_point, int is_geodetic)
       if (geometry_type_from_string(s[0], &geometry_type, &hasZ, &hasM) == LW_FAILURE)
         ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
             errmsg("Invalid geometry type modifier: %s", s[0])));
-#if POSTGRESQL_VERSION_NUMBER >= 150000
       srid = pg_strtoint32(s[1]);
-#else
-      srid = pg_atoi(s[1], sizeof(int32), '\0');
-#endif /* POSTGRESQL_VERSION_NUMBER >= 150000 */
       srid = clamp_srid(srid);
       has_geo = has_srid = true;
     }
@@ -302,11 +290,7 @@ tspatial_typmod_in(ArrayType *arr, int is_point, int is_geodetic)
       has_geo = true;
     else
     {
-#if POSTGRESQL_VERSION_NUMBER >= 150000
       srid = pg_strtoint32(s[0]);
-#else
-      srid = pg_atoi(s[0], sizeof(int32), '\0');
-#endif /* POSTGRESQL_VERSION_NUMBER >= 150000 */
       srid = clamp_srid(srid);
       has_srid = true;
     }

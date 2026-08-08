@@ -91,7 +91,7 @@ constructor_families:
       ret: tbool
       sym: Tsequenceset_constructor_gaps
       strict: false
-      pre: '-- The function is not strict
+      pre: '-- The functions are not strict
 
         '
     - sig: "tintSeqSetGaps(tint[], maxt interval DEFAULT NULL,\n    maxdist float DEFAULT NULL)"

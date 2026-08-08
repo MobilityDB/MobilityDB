@@ -51,7 +51,7 @@ CREATE CAST (tnpoint AS stbox) WITH FUNCTION stbox(tnpoint);
 CREATE FUNCTION expandSpace(tnpoint, float)
   RETURNS stbox
   AS 'SELECT @extschema@.expandSpace($1::stbox, $2)'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE STRICT;
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
  * Contains

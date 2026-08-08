@@ -510,23 +510,22 @@ tinterrel_tspatial_base(const Temporal *temp, Datum base, bool tinter,
 Temporal *
 tinterrel_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter)
 {
-  VALIDATE_TGEO(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
-    /* Ensure the validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_tgeo_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
 
   /* tintersects is tdwithin with a zero distance and tdisjoint is its
-   * negation (as in the static case, geog_intersects =
-   * geog_dwithin(., ., 0.0)). For geodetic coordinates the planar
+   * negation (as in the static case, geo_intersects =
+   * geo_dwithin(., ., 0.0)). For geodetic coordinates the planar
    * intersects below is not applicable; route through the
    * geodetic-capable tdwithin kernel. */
   if (MEOS_FLAGS_GET_GEODETIC(temp->flags))
   {
-    Temporal *dw = tdwithin_tgeo_geo(temp, gs, 0.0);
-    if (! dw || tinter)
-      return dw;
-    Temporal *result = tnot_tbool(dw);
-    pfree(dw);
+    Temporal *res = tdwithin_tgeo_geo(temp, gs, 0.0);
+    if (! res || tinter)
+      return res;
+    Temporal *result = tnot_tbool(res);
+    pfree(res);
     return result;
   }
 
@@ -569,7 +568,6 @@ Temporal *
 tinterrel_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2,
   bool tinter)
 {
-  VALIDATE_TSPATIAL(temp1, NULL); VALIDATE_TSPATIAL(temp2, NULL);
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tspatial_tspatial(temp1, temp2))
     return NULL;
@@ -628,7 +626,6 @@ Temporal *
 tspatialrel_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
  varfunc func, bool invert)
 {
-  VALIDATE_TSPATIAL(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
       /* The validity function ensures that both have the same geodetic flag */
@@ -680,7 +677,6 @@ Temporal *
 tspatialrel_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
   varfunc func)
 {
-  VALIDATE_TGEO(temp1, NULL); VALIDATE_TGEO(temp2, NULL);
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tgeo_tgeo(temp1, temp2) ||
       /* The validity function ensures that both have the same geodetic flag */
@@ -718,7 +714,6 @@ tspatialrel_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
 Temporal *
 tcontains_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
 {
-  VALIDATE_TSPATIAL(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
       ! ensure_not_geodetic_geo(gs) || ! ensure_has_not_Z_geo(gs) ||
@@ -828,7 +823,12 @@ tcontains_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 Temporal *
 tcovers_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
 {
-  VALIDATE_TSPATIAL(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
+      ! ensure_not_geodetic_geo(gs) || ! ensure_has_not_Z_geo(gs) ||
+      ! ensure_has_not_Z(temp->temptype, temp->flags))
+    return NULL;
+
   /* Temporal point case: a geometry covers a moving point when the point lies
    * in the closed geometry (interior together with boundary), which is exactly
    * the temporal intersects relationship. This routes through the native
@@ -1553,7 +1553,6 @@ tdwithin_tspatial_spatial(const Temporal *temp, Datum base, Datum dist,
 Temporal *
 tdwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
 {
-  VALIDATE_TSPATIAL(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
   /* Ensure the validity of the arguments. ensure_valid_tspatial_geo
    * already enforces that the temporal geo and the geometry have the
    * same geodetic flag, so geodetic coordinates are supported here the
@@ -1702,7 +1701,6 @@ Temporal *
 tdwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
   double dist)
 {
-  VALIDATE_TGEO(temp1, NULL); VALIDATE_TGEO(temp2, NULL);
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tgeo_tgeo(temp1, temp2) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
