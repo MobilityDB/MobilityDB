@@ -42,11 +42,21 @@ endif()
 #-------------------------------------
 
 # Find PostgreSQL
-set(PG_MIN_MAJOR_VERSION "14")
-set(PG_MAX_MAJOR_VERSION "18")
+# Minimum supported version is 16. Older versions (14, 15) carry an
+# accumulating maintenance burden (per-version conditional code, allocator
+# differences exposed by the PG14/15 backend) that no longer pays off;
+# PostgreSQL 14 reaches end-of-life on 2026-11-12. The build fails clearly
+# here rather than letting the host pretend to be supported and crashing
+# later in fixtures.
+set(PG_MIN_MAJOR_VERSION "16")
+set(PG_MAX_MAJOR_VERSION "19")
 find_package(POSTGRESQL ${PG_MIN_MAJOR_VERSION} REQUIRED)
-if(NOT POSTGRES_VERSION VERSION_LESS PG_MAX_MAJOR_VERSION)
-  message(FATAL_ERROR "Not supporting PostgreSQL ${POSTGRESQL_VERSION}")
+if(POSTGRESQL_VERSION_MAJOR VERSION_LESS PG_MIN_MAJOR_VERSION OR
+   POSTGRESQL_VERSION_MAJOR VERSION_GREATER PG_MAX_MAJOR_VERSION)
+  message(FATAL_ERROR
+    "MobilityDB requires PostgreSQL ${PG_MIN_MAJOR_VERSION} to "
+    "${PG_MAX_MAJOR_VERSION}. Found ${POSTGRESQL_VERSION_STRING} at "
+    "${POSTGRESQL_PG_CONFIG}.")
 endif()
 
 include_directories(SYSTEM ${POSTGRESQL_INCLUDE_DIR})
