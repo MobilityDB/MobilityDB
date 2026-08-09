@@ -1323,10 +1323,10 @@ spanarr_sort_size(Span *spans, int count)
 Span *
 spanset_split_n_spans(const SpanSet *ss, int span_count, int *count)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(count, NULL);
   /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
   *count = 0;
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(ss, NULL);
   if (! ensure_positive(span_count))
     return NULL;
@@ -1374,10 +1374,10 @@ spanset_split_n_spans(const SpanSet *ss, int span_count, int *count)
 Span *
 spanset_split_each_n_spans(const SpanSet *ss, int elems_per_span, int *count)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(count, NULL);
   /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
   *count = 0;
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(ss, NULL);
   if (! ensure_positive(elems_per_span))
     return NULL;

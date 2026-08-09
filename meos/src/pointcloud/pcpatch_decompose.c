@@ -29,6 +29,9 @@
 #include <assert.h>
 /* PostgreSQL */
 #include <postgres.h>
+/* pgPointCloud */
+#include "pc_api.h"
+#include "pc_api_internal.h"   /* for pc_patch_uncompressed_make / _add_point */
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>             /* for MEOS_FLAGS_GET_Z */
@@ -36,9 +39,6 @@
 #include "pointcloud/pgsql_compat.h"
 #include "pointcloud/meos_schema_hook.h"
 #include "geo/tgeo_spatialfuncs.h"     /* for geopoint_make */
-/* pgPointCloud */
-#include "pc_api.h"
-#include "pc_api_internal.h"   /* for pc_patch_uncompressed_make / _add_point */
 
 /*****************************************************************************/
 

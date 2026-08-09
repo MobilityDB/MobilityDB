@@ -51,13 +51,15 @@
 #include "temporal/temporal.h"
 #include "temporal/type_util.h"
 #include "pointcloud/pcpoint.h"
+
 /*****************************************************************************
  * Constructor functions
  *****************************************************************************/
 
 /**
  * @ingroup meos_pointcloud_constructor
- * @brief Return a temporal pgpointcloud point instant from a pgpointcloud point and a timestamptz
+ * @brief Return a temporal pgpointcloud point instant from a pgpointcloud
+ * point and a timestamptz
  * @param[in] pt Value
  * @param[in] t Timestamp
  * @csqlfn #Tinstant_constructor()
@@ -72,8 +74,8 @@ tpcpointinst_make(const Pcpoint *pt, TimestampTz t)
 
 /**
  * @ingroup meos_pointcloud_constructor
- * @brief Return a temporal pgpointcloud point discrete sequence from a pgpointcloud point value and a
- * timestamptz set
+ * @brief Return a temporal pgpointcloud point discrete sequence from a
+ * pgpointcloud point value and a timestamptz set
  * @param[in] pt Value
  * @param[in] s Set
  * @csqlfn #Tsequence_from_base_tstzset()
@@ -88,8 +90,8 @@ tpcpointseq_from_base_tstzset(const Pcpoint *pt, const Set *s)
 
 /**
  * @ingroup meos_pointcloud_constructor
- * @brief Return a temporal pgpointcloud point sequence from a pgpointcloud point value and a timestamptz
- * span
+ * @brief Return a temporal pgpointcloud point sequence from a pgpointcloud
+ * point value and a timestamptz span
  * @param[in] pt Value
  * @param[in] sp Span
  * @csqlfn #Tsequence_from_base_tstzspan()
@@ -104,8 +106,8 @@ tpcpointseq_from_base_tstzspan(const Pcpoint *pt, const Span *sp)
 
 /**
  * @ingroup meos_pointcloud_constructor
- * @brief Return a temporal pgpointcloud point sequence set from a pgpointcloud point value and a
- * timestamptz span set
+ * @brief Return a temporal pgpointcloud point sequence set from a pgpointcloud
+ * point value and a timestamptz span set
  * @param[in] pt Value
  * @param[in] ss Span set
  * @csqlfn #Tsequenceset_from_base_tstzspanset()
@@ -114,8 +116,7 @@ TSequenceSet *
 tpcpointseqset_from_base_tstzspanset(const Pcpoint *pt, const SpanSet *ss)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(pt, NULL);
-  VALIDATE_TSTZSPANSET(ss, NULL);
+  VALIDATE_NOT_NULL(pt, NULL); VALIDATE_TSTZSPANSET(ss, NULL);
   /* Delegate to the generic tsequenceset constructor, with STEP interpolation */
   return tsequenceset_from_base_tstzspanset(PointerGetDatum(pt),T_TPCPOINT, ss,
     STEP);
@@ -123,8 +124,8 @@ tpcpointseqset_from_base_tstzspanset(const Pcpoint *pt, const SpanSet *ss)
 
 /**
  * @ingroup meos_pointcloud_constructor
- * @brief Return a temporal pgpointcloud point from a pgpointcloud point and the time frame of
- * another temporal value
+ * @brief Return a temporal pgpointcloud point from a pgpointcloud point and
+ * the time frame of another temporal value
  * @param[in] pt Value
  * @param[in] temp Temporal value
  */
@@ -192,7 +193,8 @@ tpcpoint_value_n(const Temporal *temp, int n, Pcpoint **result)
 
 /**
  * @ingroup meos_pointcloud_accessor
- * @brief Return an array of copies of base values of a temporal pgpointcloud point
+ * @brief Return an array of copies of base values of a temporal pgpointcloud
+ * point
  * @param[in] temp Temporal value
  * @param[out] count Number of values in the output array
  * @csqlfn #Temporal_valueset()
@@ -240,7 +242,8 @@ tpcpoint_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
 
 /**
  * @ingroup meos_pointcloud_restrict
- * @brief Return a temporal pgpointcloud point restricted to a specific pgpointcloud point value
+ * @brief Return a temporal pgpointcloud point restricted to a pgpointcloud
+ * point value
  * @param[in] temp Temporal value
  * @param[in] pt pgpointcloud point value
  * @csqlfn #Temporal_at_value()
@@ -250,14 +253,15 @@ tpcpoint_at_value(const Temporal *temp, const Pcpoint *pt)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TPCPOINT(temp, NULL); VALIDATE_NOT_NULL(pt, NULL);
-  /* Restrict the temporal pgpointcloud point to the instants where it equals the given pt */
+  /* Restrict the temporal pgpointcloud point to the instants where it equals
+   * the given pt */
   return temporal_restrict_value(temp, PointerGetDatum(pt), REST_AT);
 }
 
 /**
  * @ingroup meos_pointcloud_restrict
- * @brief Return a temporal pgpointcloud point restricted to the complement of a specific
- * pgpointcloud point value
+ * @brief Return a temporal pgpointcloud point restricted to the complement of
+ * a pgpointcloud point value
  * @param[in] temp Temporal value
  * @param[in] pt pgpointcloud point value
  * @csqlfn #Temporal_minus_value()
@@ -267,8 +271,8 @@ tpcpoint_minus_value(const Temporal *temp, const Pcpoint *pt)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TPCPOINT(temp, NULL); VALIDATE_NOT_NULL(pt, NULL);
-  /* Restrict the temporal pgpointcloud point to the instants where it does not equal the
-   * given pt */
+  /* Restrict the temporal pgpointcloud point to the instants where it does
+   * not equal the given pt */
   return temporal_restrict_value(temp, PointerGetDatum(pt), REST_MINUS);
 }
 

@@ -68,7 +68,7 @@
 static Temporal *
 tcbuffer_valid_typmod(Temporal *temp, int32_t typmod)
 {
-  int32 srid = tspatial_srid(temp);
+  int32_t srid = tspatial_srid(temp);
   uint8 subtype = temp->subtype;
   uint8 typmod_subtype = TYPMOD_GET_TEMPSUBTYPE(typmod);
   int32 typmod_srid = TYPMOD_GET_SRID(typmod);

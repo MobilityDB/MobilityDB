@@ -40,17 +40,17 @@
  * helpers below pick the adjacent resolution and delegate.
  */
 
+/* C */
 #include <string.h>
-
+/* H3 */
+#include <h3api.h>
+/* MEOS */
 #include <meos.h>
 #include <meos_cellindex.h>
 #include <meos_h3.h>
-#include <h3api.h>
-
 #include "temporal/temporal.h"
 #include "temporal/meos_catalog.h"
 #include "temporal/lifting.h"
-
 #include "h3/h3_generated.h"
 #include "h3/th3index_internal.h"
 
@@ -102,6 +102,7 @@ h3_cell_to_center_child_next_meos(H3Index cell)
 Temporal *
 th3index_cell_to_parent(const Temporal *temp, int32 resolution)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TH3INDEX(temp, NULL);
   return tcellindex_cell_to_parent(temp, resolution);
 }
@@ -118,6 +119,7 @@ th3index_cell_to_parent(const Temporal *temp, int32 resolution)
 Temporal *
 th3index_cell_to_parent_next(const Temporal *temp)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TH3INDEX(temp, NULL);
 
   LiftedFunctionInfo lfinfo;
@@ -144,6 +146,7 @@ th3index_cell_to_parent_next(const Temporal *temp)
 Temporal *
 th3index_cell_to_center_child(const Temporal *temp, int32 resolution)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TH3INDEX(temp, NULL);
 
   LiftedFunctionInfo lfinfo;
@@ -171,6 +174,7 @@ th3index_cell_to_center_child(const Temporal *temp, int32 resolution)
 Temporal *
 th3index_cell_to_center_child_next(const Temporal *temp)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TH3INDEX(temp, NULL);
 
   LiftedFunctionInfo lfinfo;
@@ -198,6 +202,7 @@ th3index_cell_to_center_child_next(const Temporal *temp)
 Temporal *
 th3index_cell_to_child_pos(const Temporal *temp, int32 parent_res)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TH3INDEX(temp, NULL);
 
   LiftedFunctionInfo lfinfo;
@@ -230,8 +235,8 @@ Temporal *
 th3index_child_pos_to_cell(const Temporal *child_pos, const Temporal *parent,
   int32 child_res)
 {
-  VALIDATE_TBIGINT(child_pos, NULL);
-  VALIDATE_TH3INDEX(parent, NULL);
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(child_pos, NULL); VALIDATE_TH3INDEX(parent, NULL);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));

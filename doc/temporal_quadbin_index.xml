@@ -13,14 +13,14 @@
 
 	<para>The temporal QUADBIN cell index type <varname>tquadbin</varname> represents the movement of objects as a sequence of QUADBIN square cell identifiers. <ulink url="https://docs.carto.com/data-and-analysis/analytics-toolbox-for-bigquery/key-concepts/spatial-indexes#quadbin">CARTO's QUADBIN</ulink> is a hierarchical square grid system built on the slippy-map (web-mercator) tile scheme: a single world cell at resolution 0 subdivides into four equal children at every finer resolution (up to 26). Each cell has a 64-bit integer identifier that encodes a header tag, the resolution, and the tile coordinates of the cell.</para>
 
-	<para>The <varname>tquadbin</varname> type shares its on-disk representation with <varname>tbigint</varname>: both store a temporal 64-bit integer. The distinct SQL type exists purely to let the type-checker reject quadbin-specific functions when applied to arbitrary bigint trajectories (and vice-versa). Casts to / from <varname>tbigint</varname> are <emphasis>explicit</emphasis> (<varname>AS ASSIGNMENT</varname>) and binary-coercion only — zero-cost at runtime but requiring an explicit <varname>::</varname> in SQL.</para>
+	<para>The <varname>tquadbin</varname> type shares its on-disk representation with <varname>tbigint</varname>: both store a temporal 64-bit integer. The distinct SQL type exists purely to let the type-checker reject quadbin-specific functions when applied to arbitrary bigint trajectories (and vice-versa). Casts to / from <varname>tbigint</varname> are <emphasis>explicit</emphasis> (<varname>AS ASSIGNMENT</varname>) and binary-coercion only, zero-cost at runtime but requiring an explicit <varname>::</varname> in SQL.</para>
 
-	<para>As with other temporal types, <varname>tquadbin</varname> has four subtypes: <varname>Instant</varname>, discrete-sequence, continuous-sequence with step interpolation (QUADBIN cells are discrete — linear interpolation is meaningless), and <varname>SequenceSet</varname>.</para>
+	<para>As with other temporal types, <varname>tquadbin</varname> has four subtypes: <varname>Instant</varname>, discrete-sequence, continuous-sequence with step interpolation (QUADBIN cells are discrete, linear interpolation is meaningless), and <varname>SequenceSet</varname>.</para>
 
 
 	<sect1 xml:id="tquadbin_inout">
 		<title>Input and Output</title>
-		<para>A <varname>tquadbin</varname> value is entered using the standard temporal syntax with the underlying 64-bit QUADBIN cell identifier. The input parser accepts the canonical hexadecimal form, with an optional <varname>0x</varname> prefix, in either letter case, as the CARTO reference implementation reads it. Hexadecimal is idiomatic in the QUADBIN ecosystem and is what the output function emits — all examples below use it. For reference, the hex value <varname>480fffffffffffff</varname> used in the examples is the resolution-0 world cell, equal to the decimal value <varname>5192650370358181887</varname>.</para>
+		<para>A <varname>tquadbin</varname> value is entered using the standard temporal syntax with the underlying 64-bit QUADBIN cell identifier. The input parser accepts the canonical hexadecimal form, with an optional <varname>0x</varname> prefix, in either letter case, as the CARTO reference implementation reads it. Hexadecimal is idiomatic in the QUADBIN ecosystem and is what the output function emits, all examples below use it. For reference, the hex value <varname>480fffffffffffff</varname> used in the examples is the resolution-0 world cell, equal to the decimal value <varname>5192650370358181887</varname>.</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tquadbin '480fffffffffffff@2001-01-01';
 SELECT tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}';
@@ -52,7 +52,7 @@ SELECT tquadbinFromMFJSON(asMFJSON(tquadbin '480fffffffffffff@2001-01-01'));
 	<sect1 xml:id="tquadbin_conversions">
 		<title>Conversions</title>
 
-		<para>A <varname>tquadbin</varname> value shares the same on-disk representation as <varname>tbigint</varname>. The binary-coercion cast between them is <emphasis>explicit</emphasis> — requiring <varname>::</varname> — so quadbin-specific functions cannot be silently called on arbitrary bigint trajectories.</para>
+		<para>A <varname>tquadbin</varname> value shares the same on-disk representation as <varname>tbigint</varname>. The binary-coercion cast between them is <emphasis>explicit</emphasis>, requiring <varname>::</varname>, so quadbin-specific functions cannot be silently called on arbitrary bigint trajectories.</para>
 
 		<itemizedlist>
 			<listitem xml:id="tquadbin_tbigint">
@@ -323,7 +323,7 @@ SELECT quadbinTileToCell(524, 343, 10) = quadbin '48a6227affffffff';
 
 			<listitem xml:id="tquadbin_quadbin_cell_to_tile">
 				<indexterm significance="normal"><primary><varname>quadbinCellToTile</varname></primary></indexterm>
-				<para>Decompose a cell back into its tile coordinate triple, returned as an integer array <varname>{x, y, z}</varname> — the inverse of <varname>quadbinTileToCell</varname></para>
+				<para>Decompose a cell back into its tile coordinate triple, returned as an integer array <varname>{x, y, z}</varname>, the inverse of <varname>quadbinTileToCell</varname></para>
 				<para><varname>quadbinCellToTile(quadbin) → integer[]</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT quadbinCellToTile(quadbin '480fffffffffffff');

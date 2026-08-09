@@ -1001,7 +1001,7 @@ ensure_not_empty(const GSERIALIZED *gs)
 bool
 ensure_valid_stbox_geo(const STBox *box, const GSERIALIZED *gs)
 {
-  assert(box); assert(gs);
+  VALIDATE_NOT_NULL(box, false); VALIDATE_NOT_NULL(gs, false);
   if (! ensure_has_X(T_STBOX, box->flags) || gserialized_is_empty(gs) ||
       ! ensure_same_srid(box->srid, gserialized_get_srid(gs)) ||
       ! ensure_same_geodetic_stbox_geo(box, gs))
@@ -1018,7 +1018,7 @@ ensure_valid_stbox_geo(const STBox *box, const GSERIALIZED *gs)
 bool
 ensure_valid_tspatial_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  assert(temp); assert(gs); assert(tspatial_type(temp->temptype));
+  VALIDATE_TSPATIAL(temp, false); VALIDATE_NOT_NULL(gs, false);
   if (! ensure_same_srid(tspatial_srid(temp), gserialized_get_srid(gs)) ||
       ! ensure_same_geodetic_tspatial_geo(temp, gs))
     return false;
@@ -1031,7 +1031,7 @@ ensure_valid_tspatial_geo(const Temporal *temp, const GSERIALIZED *gs)
 bool
 ensure_valid_spatial_stbox_stbox(const STBox *box1, const STBox *box2)
 {
-  assert(box1); assert(box2);
+  VALIDATE_NOT_NULL(box1, false); VALIDATE_NOT_NULL(box2, false);
   if (! ensure_has_X(T_STBOX, box1->flags) ||
       ! ensure_has_X(T_STBOX, box2->flags) ||
       ! ensure_same_srid(stbox_srid(box1), stbox_srid(box2)) ||
@@ -1059,7 +1059,7 @@ ensure_valid_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 bool
 ensure_valid_tgeo_stbox(const Temporal *temp, const STBox *box)
 {
-  assert(temp); assert(box); assert(tgeo_type_all(temp->temptype));
+  VALIDATE_TGEO(temp, false); VALIDATE_NOT_NULL(box, false);
   if (! ensure_has_X(T_STBOX, box->flags) ||
       ! ensure_same_srid(tspatial_srid(temp), stbox_srid(box)) ||
       ! ensure_same_geodetic(temp->flags, box->flags))
@@ -1073,8 +1073,7 @@ ensure_valid_tgeo_stbox(const Temporal *temp, const STBox *box)
 bool
 ensure_valid_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 {
-  assert(temp1); assert(temp2); assert(tgeo_type_all(temp1->temptype));
-  assert(tgeo_type_all(temp2->temptype));
+  VALIDATE_TGEO(temp1, false); VALIDATE_TGEO(temp2, false); 
   if (! ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)) &&
       ! ensure_same_geodetic(temp1->flags, temp2->flags))
     return false;
@@ -1088,8 +1087,7 @@ ensure_valid_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 bool
 ensure_valid_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
 {
-  assert(temp1); assert(temp1); assert(tspatial_type(temp1->temptype));
-  assert(tspatial_type(temp2->temptype));
+  VALIDATE_TSPATIAL(temp1, false); VALIDATE_TSPATIAL(temp2, false);
   if (! ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)) ||
       ! ensure_same_geodetic(temp1->flags, temp2->flags))
     return false;
@@ -1211,6 +1209,7 @@ tgeom_tgeog(const Temporal *temp, bool oper)
 Temporal *
 tgeometry_to_tgeography(const Temporal *temp)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TGEOM(temp, NULL);
   return tgeom_tgeog(temp, TGEOM_TO_TGEOG);
 }
@@ -1411,6 +1410,7 @@ tgeo_tpoint(const Temporal *temp, bool oper)
 Temporal *
 tgeometry_to_tgeompoint(const Temporal *temp)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TGEOMETRY(temp, NULL);
   return tgeo_tpoint(temp, TGEO_TO_TPOINT);
 }
@@ -1438,6 +1438,7 @@ tgeography_to_tgeogpoint(const Temporal *temp)
 Temporal *
 tgeompoint_to_tgeometry(const Temporal *temp)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TGEOMPOINT(temp, NULL);
   return tgeom_tgeog(temp, TPOINT_TO_TGEO);
 }
@@ -1815,13 +1816,14 @@ tgeo_centroid(const Temporal *temp)
  * @note PostGIS function: @p ST_ClusterKMeans(PG_FUNCTION_ARGS)
  */
 int *
-geo_cluster_kmeans(const GSERIALIZED **geoms, uint32_t n, uint32_t k, int *count)
+geo_cluster_kmeans(const GSERIALIZED **geoms, uint32_t n, uint32_t k,
+  int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(geoms, NULL); 
+  *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(count, NULL);
-  /* The out parameter is defined even when a later check fails */
-  *count = 0;
-  VALIDATE_NOT_NULL(geoms, NULL);
   if (! ensure_positive(n) || ! ensure_positive(k))
     return NULL;
   if (n < k)
@@ -1865,12 +1867,12 @@ uint32_t *
 geo_cluster_dbscan(const GSERIALIZED **geoms, uint32_t ngeoms,
   double tolerance, int minpoints, int *count)
 {
-  /* Ensure validity of arguments */
-  if (! ensure_not_null(count))
-    return NULL;
   /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL); 
   *count = 0;
-  if (! ensure_not_null(geoms))
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(geoms, NULL);
+  if (! ensure_positive(ngeoms))
     return NULL;
   if (tolerance < 0)
   {
@@ -1931,18 +1933,18 @@ GSERIALIZED **
 geo_cluster_intersecting(const GSERIALIZED **geoms, uint32_t ngeoms,
   int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL); 
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(geoms, NULL);
+  if (! ensure_positive(ngeoms))
+    return NULL;
+
   int is3d = 0;
   uint32_t nclusters, i, j;
   int32_t srid = SRID_UNKNOWN;
   bool gotsrid = false;
-
-  /* Ensure validity of arguments */
-  if (! ensure_not_null(count))
-    return NULL;
-  /* The out parameter is defined even when a later check fails */
-  *count = 0;
-  if (! ensure_not_null(geoms) || ngeoms == 0)
-    return NULL;
 
   /* TODO short-circuit for one element? */
 
@@ -2015,12 +2017,12 @@ GSERIALIZED **
 geo_cluster_within(const GSERIALIZED **geoms, uint32_t ngeoms,
   double tolerance, int *count)
 {
-  /* Ensure validity of arguments */
-  if (! ensure_not_null(count))
-    return NULL;
   /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL); 
   *count = 0;
-  if (! ensure_not_null(geoms) || ngeoms == 0)
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(geoms, NULL);
+  if (! ensure_positive(ngeoms))
     return NULL;
   if (tolerance < 0)
   {

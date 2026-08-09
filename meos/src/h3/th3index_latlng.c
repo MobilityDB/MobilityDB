@@ -43,21 +43,20 @@
  * (SRID 4326, planar-tagged) overloads are provided.
  */
 
+/* C */
 #include <math.h>
 #include <string.h>
-
+/* PostGIS */
 #include <liblwgeom.h>
-
+/* MEOS */
 #include <meos.h>
 #include <meos_cellindex.h>
 #include <meos_h3.h>
-
 #include "geo/tgeo_spatialfuncs.h"
 #include "meos_internal_geo.h"
 #include "temporal/temporal.h"
 #include "temporal/meos_catalog.h"
 #include "temporal/lifting.h"
-
 #include "h3/h3index.h"
 #include "h3/th3index_internal.h"
 
@@ -68,13 +67,15 @@
 /**
  * @ingroup meos_h3_conversion
  * @brief Single H3 cell covering a POINT geometry at the given resolution
- * @param[in] point      The POINT geometry.
+ * @param[in] point Point geometry.
  * @param[in] resolution H3 resolution (0..15).
  * @csqlfn #Geo_point_to_h3index()
  */
 H3Index
 geo_to_h3index_cell(const GSERIALIZED *point, int32 resolution)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(point,  (H3Index) 0);
   if (! ensure_srid_is_latlong(gserialized_get_srid(point)))
     return (H3Index) 0;
   const POINT2D *p = GSERIALIZED_POINT2D_P(point);
@@ -337,8 +338,7 @@ tpointseqset_densify_to_th3index(const TSequenceSet *ss, int32 resolution)
 /**
  * @brief Subtype-dispatching wrapper used by both tgeompoint and
  * tgeogpoint entrypoints.
- *
- * Every path validates the lon/lat SRID through `geo_to_h3index_cell`
+ * @details Every path validates the lon/lat SRID through `geo_to_h3index_cell`
  * (the instant adapter, the non-densify branch, and the first lookup of
  * the densify walker), so non lon/lat input is rejected before any cell
  * is produced and the dispatcher itself needs no separate guard.
@@ -377,6 +377,7 @@ tpoint_to_th3index_dense(const Temporal *temp, int32 resolution)
 Temporal *
 tgeompoint_to_th3index(const Temporal *temp, int32 resolution)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TGEOMPOINT(temp, NULL);
   return tpoint_to_th3index_dense(temp, resolution);
 }
@@ -395,6 +396,7 @@ tgeompoint_to_th3index(const Temporal *temp, int32 resolution)
 Temporal *
 tgeogpoint_to_th3index(const Temporal *temp, int32 resolution)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TGEOGPOINT(temp, NULL);
   return tpoint_to_th3index_dense(temp, resolution);
 }
@@ -411,6 +413,7 @@ tgeogpoint_to_th3index(const Temporal *temp, int32 resolution)
 Temporal *
 th3index_to_tgeogpoint(const Temporal *temp)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TH3INDEX(temp, NULL);
   return tcellindex_cell_to_point(temp);
 }
@@ -433,6 +436,7 @@ th3index_to_tgeogpoint(const Temporal *temp)
 Temporal *
 th3index_to_tgeompoint(const Temporal *temp)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TH3INDEX(temp, NULL);
 
   LiftedFunctionInfo lfinfo;
@@ -460,6 +464,7 @@ th3index_to_tgeompoint(const Temporal *temp)
 Temporal *
 th3index_cell_to_boundary(const Temporal *temp)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TH3INDEX(temp, NULL);
   return tcellindex_cell_to_boundary(temp);
 }

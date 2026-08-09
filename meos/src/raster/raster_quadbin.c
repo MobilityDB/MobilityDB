@@ -61,7 +61,6 @@
 #include "temporal/temporal.h"
 #include "temporal/tinstant.h"
 #include "temporal/tsequence.h"
-/* Raster */
 #include "raster/raquet.h"
 #include "raster/raster_quadbin.h"
 
@@ -320,6 +319,7 @@ read_pixel(const uint8_t *pixels, int col, int row, int width,
  * silently dropped; NULL is returned when no instants survive.
  * @param[in] pixels Row-major pixel bytes (all bands interleaved or
  * single-band depending on the Raquet producer)
+ * @param[in] traj Input tgeompoint trajectory (SRID 4326)
  * @param[in] pixels_size Number of bytes available at @p pixels
  * @param[in] width Tile width in pixels (typically 256)
  * @param[in] height Tile height in pixels (typically 256)
@@ -327,14 +327,14 @@ read_pixel(const uint8_t *pixels, int col, int row, int width,
  * @param[in] pixtype Pixel data type
  * @param[in] nodata Nodata sentinel value
  * @param[in] has_nodata Whether nodata filtering is active
- * @param[in] traj Input tgeompoint trajectory (SRID 4326)
  * @return tfloat instant set, or NULL
  */
 Temporal *
-raster_tile_value_quadbin(const uint8_t *pixels, size_t pixels_size,
-  uint16_t width, uint16_t height, uint64 quadbin, MeosPixType pixtype,
-  double nodata, bool has_nodata, const Temporal *traj)
+raster_tile_value_quadbin(const Temporal *traj, const uint8_t *pixels,
+  size_t pixels_size, uint16_t width, uint16_t height, uint64 quadbin,
+  MeosPixType pixtype, double nodata, bool has_nodata)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(pixels, NULL);
   size_t need = (size_t) width * height * raquet_pixtype_size(pixtype);
   if (pixels_size < need)
@@ -423,6 +423,7 @@ Temporal *
 raster_value(const Temporal *traj, const STBox *box, raster_sample_fn sample,
   void *ctx)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(traj, NULL); VALIDATE_NOT_NULL((void *) sample, NULL);
 
   /* Iterate over trajectory instants */
@@ -495,6 +496,7 @@ Temporal *
 raster_at_value(const Temporal *traj, const STBox *box,
   raster_sample_fn sample, void *ctx, const Span *vspan)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(traj, NULL); VALIDATE_NOT_NULL((void *) sample, NULL);
   VALIDATE_NOT_NULL(vspan, NULL);
 
@@ -534,6 +536,7 @@ Temporal *
 raster_minus_value(const Temporal *traj, const STBox *box,
   raster_sample_fn sample, void *ctx, const Span *vspan)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(traj, NULL); VALIDATE_NOT_NULL((void *) sample, NULL);
   VALIDATE_NOT_NULL(vspan, NULL);
 
@@ -569,6 +572,7 @@ int
 eraster_value(const Temporal *traj, const STBox *box,
   raster_sample_fn sample, void *ctx, const Span *vspan)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(traj, -1); VALIDATE_NOT_NULL((void *) sample, -1);
   VALIDATE_NOT_NULL(vspan, -1);
 
@@ -601,6 +605,7 @@ int
 araster_value(const Temporal *traj, const STBox *box,
   raster_sample_fn sample, void *ctx, const Span *vspan)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(traj, -1); VALIDATE_NOT_NULL((void *) sample, -1);
   VALIDATE_NOT_NULL(vspan, -1);
 

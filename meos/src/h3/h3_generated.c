@@ -40,207 +40,233 @@
  */
 
 #include "h3/h3_generated.h"
+
+/* H3 */
 #include <h3api.h>
+/* MEOS */
 #include <meos.h>
 
-/* Extracted from h3-pg/h3/src/binding/edge.c :: h3_are_neighbor_cells */
-/* Returns whether or not the provided H3 cell indexes are neighbors. */
-bool h3_are_neighbor_cells_meos(H3Index origin, H3Index destination)
+/*****************************************************************************/
+
+/**
+ * @brief Return whether or not the provided H3 cell indexes are neighbors
+ * @note Extracted from h3-pg/h3/src/binding/edge.c :: h3_are_neighbor_cells
+ */
+bool
+h3_are_neighbor_cells_meos(H3Index origin, H3Index destination)
 {
   int neighboring = {0};
-
   if ((areNeighborCells(origin, destination, &neighboring)) != E_SUCCESS)
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, "h3 library error");
-
   return neighboring;
 }
 
-/* Extracted from h3-pg/h3/src/binding/edge.c :: h3_cells_to_directed_edge */
-/* Returns a unidirectional edge H3 index based on the provided origin and destination. */
-H3Index h3_cells_to_directed_edge_meos(H3Index origin, H3Index destination)
+/**
+ * @brief Return a unidirectional edge H3 index based on the provided origin
+ * and destination
+ * @note Extracted from h3-pg/h3/src/binding/edge.c :: h3_cells_to_directed_edge
+ */
+H3Index
+h3_cells_to_directed_edge_meos(H3Index origin, H3Index destination)
 {
   H3Index edge = {0};
-
   if ((cellsToDirectedEdge(origin, destination, &edge)) != E_SUCCESS)
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, "h3 library error");
-
   return edge;
 }
 
-/* Extracted from h3-pg/h3/src/binding/edge.c :: h3_is_valid_directed_edge */
-/* Determines if the provided H3Index is a valid unidirectional edge index. */
-bool h3_is_valid_directed_edge_meos(H3Index edge)
+/**
+ * @brief Return true if the provided H3Index is a valid unidirectional edge index
+ * @note Extracted from h3-pg/h3/src/binding/edge.c :: h3_is_valid_directed_edge
+ */
+bool
+h3_is_valid_directed_edge_meos(H3Index edge)
 {
-  int valid = isValidDirectedEdge(edge);
-
-  return valid;
+  return isValidDirectedEdge(edge);
 }
 
-/* Extracted from h3-pg/h3/src/binding/edge.c :: h3_get_directed_edge_origin */
-/* Returns the origin hexagon from the unidirectional edge H3Index. */
-H3Index h3_get_directed_edge_origin_meos(H3Index edge)
+/**
+ * @brief Return the origin hexagon from the unidirectional edge H3Index.
+ * @note Extracted from h3-pg/h3/src/binding/edge.c :: h3_get_directed_edge_origin
+ */
+H3Index
+h3_get_directed_edge_origin_meos(H3Index edge)
 {
   H3Index origin = {0};
-
   if ((getDirectedEdgeOrigin(edge, &origin)) != E_SUCCESS)
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, "h3 library error");
-
   return origin;
 }
 
-/* Extracted from h3-pg/h3/src/binding/edge.c :: h3_get_directed_edge_destination */
-/* Returns the destination hexagon from the unidirectional edge H3Index. */
-H3Index h3_get_directed_edge_destination_meos(H3Index edge)
+/**
+ * @brief Return the destination hexagon from the unidirectional edge H3Index.
+ * @note Extracted from h3-pg/h3/src/binding/edge.c :: h3_get_directed_edge_destination
+ */
+H3Index
+h3_get_directed_edge_destination_meos(H3Index edge)
 {
   H3Index destination = {0};
-
   if ((getDirectedEdgeDestination(edge, &destination)) != E_SUCCESS)
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, "h3 library error");
-
   return destination;
 }
 
-/* Extracted from h3-pg/h3/src/binding/hierarchy.c :: h3_cell_to_parent */
-/* Returns the parent (coarser) index containing given index */
-H3Index h3_cell_to_parent_meos(H3Index origin, int32 resolution)
+/**
+ * @brief Return the parent (coarser) index containing given index
+ * @note Extracted from h3-pg/h3/src/binding/hierarchy.c :: h3_cell_to_parent
+ */
+H3Index
+h3_cell_to_parent_meos(H3Index origin, int32 resolution)
 {
   H3Index parent = {0};
-
   if ((cellToParent(origin, resolution, &parent)) != E_SUCCESS)
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, "h3 library error");
-
   return parent;
 }
 
-/* Extracted from h3-pg/h3/src/binding/hierarchy.c :: h3_cell_to_center_child */
-/* Returns the center child (finer) index contained by input index at given resolution */
-H3Index h3_cell_to_center_child_meos(H3Index origin, int32 resolution)
+/**
+ * @brief Return the center child (finer) index contained by input index at
+ * given resolution
+ * @note Extracted from h3-pg/h3/src/binding/hierarchy.c :: h3_cell_to_center_child
+ */
+H3Index
+h3_cell_to_center_child_meos(H3Index origin, int32 resolution)
 {
   H3Index child = {0};
-
   if ((cellToCenterChild(origin, resolution, &child)) != E_SUCCESS)
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, "h3 library error");
-
   return child;
 }
 
-/* Extracted from h3-pg/h3/src/binding/hierarchy.c :: h3_cell_to_child_pos */
-int64 h3_cell_to_child_pos_meos(H3Index child, int32 parentRes)
+/**
+ * @brief Return
+ * @note Extracted from h3-pg/h3/src/binding/hierarchy.c :: h3_cell_to_child_pos
+ */
+int64
+h3_cell_to_child_pos_meos(H3Index child, int32 parentRes)
 {
   int64_t childPos = {0};
-
   if ((cellToChildPos(child, parentRes, &childPos)) != E_SUCCESS)
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, "h3 library error");
-
   return childPos;
 }
 
-/* Extracted from h3-pg/h3/src/binding/hierarchy.c :: h3_child_pos_to_cell */
-H3Index h3_child_pos_to_cell_meos(int64 childPos, H3Index parent, int32 childRes)
+/**
+ * @brief Return
+ * @note Extracted from h3-pg/h3/src/binding/hierarchy.c :: h3_child_pos_to_cell
+ */
+H3Index
+h3_child_pos_to_cell_meos(int64 childPos, H3Index parent, int32 childRes)
 {
   H3Index child = {0};
-
   if ((childPosToCell(childPos, parent, childRes, &child)) != E_SUCCESS)
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, "h3 library error");
-
   return child;
 }
 
-/* Extracted from h3-pg/h3/src/binding/inspection.c :: h3_get_resolution */
-/* Returns the resolution of the index */
-int32 h3_get_resolution_meos(H3Index hex)
+/**
+ * @brief Return the resolution of the index
+ * @note Extracted from h3-pg/h3/src/binding/inspection.c :: h3_get_resolution
+ */
+int32
+h3_get_resolution_meos(H3Index hex)
 {
-  int32_t resolution = getResolution(hex);
-
-  return resolution;
+  return getResolution(hex);
 }
 
-/* Extracted from h3-pg/h3/src/binding/inspection.c :: h3_get_base_cell_number */
-/* Returns the base cell number of the index */
-int32 h3_get_base_cell_number_meos(H3Index hex)
+/**
+ * @brief Return the base cell number of the index
+ * @note Extracted from h3-pg/h3/src/binding/inspection.c :: h3_get_base_cell_number
+ */
+int32
+h3_get_base_cell_number_meos(H3Index hex)
 {
-  int32_t result = getBaseCellNumber(hex);
-
-  return result;
+  return getBaseCellNumber(hex);
 }
 
-/* Extracted from h3-pg/h3/src/binding/inspection.c :: h3_is_valid_cell */
-/* Returns true if this is a valid H3 index */
-bool h3_is_valid_cell_meos(H3Index hex)
+/**
+ * @brief Return true if this is a valid H3 index
+ * @note Extracted from h3-pg/h3/src/binding/inspection.c :: h3_is_valid_cell
+ */
+bool
+h3_is_valid_cell_meos(H3Index hex)
 {
-  bool result = isValidCell(hex);
-
-  return result;
+  return isValidCell(hex);
 }
 
-/* Extracted from h3-pg/h3/src/binding/inspection.c :: h3_is_res_class_iii */
-/* Returns true if this index has a resolution with Class III orientation */
-bool h3_is_res_class_iii_meos(H3Index hex)
+/**
+ * @brief Return true if this index has a resolution with Class III orientation
+ * @note Extracted from h3-pg/h3/src/binding/inspection.c :: h3_is_res_class_iii
+ */
+bool
+h3_is_res_class_iii_meos(H3Index hex)
 {
-  bool result = isResClassIII(hex);
-
-  return result;
+  return isResClassIII(hex);
 }
 
-/* Extracted from h3-pg/h3/src/binding/inspection.c :: h3_is_pentagon */
-/* Returns true if this hex represents a pentagonal cell */
-bool h3_is_pentagon_meos(H3Index hex)
+/**
+ * @brief Return true if this hex represents a pentagonal cell
+ * @note Extracted from h3-pg/h3/src/binding/inspection.c :: h3_is_pentagon
+ */
+bool
+h3_is_pentagon_meos(H3Index hex)
 {
-  bool result = isPentagon(hex);
-
-  return result;
+  return isPentagon(hex);
 }
 
-/* Extracted from h3-pg/h3/src/binding/miscellaneous.c :: h3_get_num_cells */
-/* Number of unique H3 indexes at the given resolution */
-int64 h3_get_num_cells_meos(int32 resolution)
+/**
+ * @brief Return the number of unique H3 indexes at the given resolution
+ * @note Extracted from h3-pg/h3/src/binding/miscellaneous.c :: h3_get_num_cells
+ */
+int64
+h3_get_num_cells_meos(int32 resolution)
 {
   int64_t cells = {0};
-
   if ((getNumCells(resolution, &cells)) != E_SUCCESS)
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, "h3 library error");
-
   return cells;
 }
 
-/* Extracted from h3-pg/h3/src/binding/traversal.c :: h3_grid_distance */
-/*
- * Returns the distance in grid cells between the two indexes.
- *
- * Returns a negative number if finding the distance failed.
+/**
+ * @brief Return the distance in grid cells between the two indexes.
+ * @details Return a negative number if finding the distance failed.
  * Finding the distance can fail because the two indexes are not comparable
  * (different resolutions), too far apart, or are separated by pentagonal
  * distortion. This is the same set of limitations as the local IJ coordinate
  * space functions.
+ * @note Extracted from h3-pg/h3/src/binding/traversal.c :: h3_grid_distance
  */
-int64 h3_grid_distance_meos(H3Index originIndex, H3Index h3Index)
+int64
+h3_grid_distance_meos(H3Index originIndex, H3Index h3Index)
 {
   int64_t distance = {0};
-
   if ((gridDistance(originIndex, h3Index, &distance)) != E_SUCCESS)
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, "h3 library error");
-
   return distance;
 }
 
-/* Extracted from h3-pg/h3/src/binding/vertex.c :: h3_cell_to_vertex */
-/* Returns a single vertex for a given cell, as an H3 index */
-H3Index h3_cell_to_vertex_meos(H3Index cell, int32 vertexNum)
+/**
+ * @brief Return a single vertex for a given cell, as an H3 index
+ * @note Extracted from h3-pg/h3/src/binding/vertex.c :: h3_cell_to_vertex
+ */
+H3Index
+h3_cell_to_vertex_meos(H3Index cell, int32 vertexNum)
 {
   H3Index vertex = {0};
-
   if ((cellToVertex(cell, vertexNum, &vertex)) != E_SUCCESS)
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, "h3 library error");
-
   return vertex;
 }
 
-/* Extracted from h3-pg/h3/src/binding/vertex.c :: h3_is_valid_vertex */
-/* Whether the input is a valid H3 vertex */
-bool h3_is_valid_vertex_meos(H3Index vertex)
+/**
+ * @brief Return true if the input is a valid H3 vertex
+ * @note Extracted from h3-pg/h3/src/binding/vertex.c :: h3_is_valid_vertex
+ */
+bool
+h3_is_valid_vertex_meos(H3Index vertex)
 {
-  bool is_valid = isValidVertex(vertex);
-
-  return is_valid;
+  return isValidVertex(vertex);
 }
+
+/*****************************************************************************/
 

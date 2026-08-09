@@ -34,6 +34,8 @@
 
 #include "stringbuffer.h"
 
+/*****************************************************************************/
+
 /**
  * If necessary, expand the stringbuffer_t internal buffer to accommodate the
  * specified additional size.  (Static in upstream stringbuffer.c; reproduced

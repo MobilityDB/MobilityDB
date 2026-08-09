@@ -37,17 +37,17 @@
  * `_meos` helpers in `h3_generated.c`.
  */
 
+/* C */
 #include <string.h>
-
+/* H3 */
+#include <h3api.h>
+/* MEOS */
 #include <meos.h>
 #include <meos_h3.h>
-#include <h3api.h>
-
 #include "geo/tgeo_spatialfuncs.h"
 #include "temporal/temporal.h"
 #include "temporal/meos_catalog.h"
 #include "temporal/lifting.h"
-
 #include "h3/th3index_internal.h"
 
 /*****************************************************************************
@@ -83,6 +83,7 @@ h3_vertex_to_gs_point(H3Index vertex)
 Temporal *
 th3index_cell_to_vertex(const Temporal *temp, int32 vertex_num)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TH3INDEX(temp, NULL);
 
   LiftedFunctionInfo lfinfo;
@@ -111,6 +112,7 @@ th3index_cell_to_vertex(const Temporal *temp, int32 vertex_num)
 Temporal *
 th3index_vertex_to_latlng(const Temporal *temp)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TH3INDEX(temp, NULL);
 
   LiftedFunctionInfo lfinfo;
@@ -138,6 +140,7 @@ th3index_vertex_to_latlng(const Temporal *temp)
 Temporal *
 th3index_is_valid_vertex(const Temporal *temp)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TH3INDEX(temp, NULL);
 
   LiftedFunctionInfo lfinfo;

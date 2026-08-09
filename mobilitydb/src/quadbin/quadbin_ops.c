@@ -62,12 +62,9 @@
 #include "geo/tgeo_spatialfuncs.h"
 #include "temporal/set.h"
 #include "temporal/span.h"
-#include "quadbin/quadbin_meos.h"
+#include "quadbin/quadbin.h"
 /* MobilityDB */
 #include "pg_geo/postgis.h"
-
-#define PG_GETARG_QUADBIN(n) DatumGetQuadbin(PG_GETARG_DATUM(n))
-#define PG_RETURN_QUADBIN(x) PG_RETURN_DATUM(QuadbinGetDatum(x))
 
 /*****************************************************************************
  * Resolution

@@ -11,7 +11,7 @@
 <chapter xml:id="trgeometry">
 	<title>Geometrías rígidas temporales</title>
 
-	<para>Una geometría rígida temporal (<varname>trgeometry</varname>) es una geometría de referencia 2D estática —normalmente un polígono que describe la forma de un cuerpo en movimiento— emparejada con una pose temporal (<varname>tpose</varname>) que describe cómo esa geometría se traslada y rota a lo largo del tiempo. La geometría materializada en el instante <varname>t</varname> es la geometría de referencia rotada y trasladada de acuerdo con la pose interpolada en <varname>t</varname>.</para>
+	<para>Una geometría rígida temporal (<varname>trgeometry</varname>) es una geometría de referencia 2D estática, normalmente un polígono que describe la forma de un cuerpo en movimiento— emparejada con una pose temporal (<varname>tpose</varname>) que describe cómo esa geometría se traslada y rota a lo largo del tiempo. La geometría materializada en el instante <varname>t</varname> es la geometría de referencia rotada y trasladada de acuerdo con la pose interpolada en <varname>t</varname>.</para>
 
 	<para>Esta es la representación natural para objetos en movimiento cuya <emphasis>forma</emphasis> importa, no solo su posición. El ejemplo motivador es el tráfico marítimo AIS, donde el casco de cada barco (un pentágono derivado de los desplazamientos de antena <varname>A</varname>, <varname>B</varname>, <varname>C</varname>, <varname>D</varname>) sigue una trayectoria de pose definida por informes de latitud/longitud y rumbo. La geometría materializada en cualquier instante es el contorno real del barco en ese momento.</para>
 
@@ -501,7 +501,7 @@ SELECT temporalTime(atStbox(
 			<listitem xml:id="trgeometry_tdistance">
 				<indexterm significance="normal"><primary><varname>&lt;-&gt;</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tDistance</varname></primary></indexterm>
-				<para>Devuelve la distancia temporal entre dos trgeometries</para>
+				<para>Devuelve la distancia temporal entre dos geometrías rígidas temporales</para>
 				<para><varname>{geometry,trgeometry} &lt;-&gt; {geometry,trgeometry} → tfloat</varname></para>
 				<para><varname>tDistance({geometry,trgeometry}, {geometry,trgeometry}) → tfloat</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -521,7 +521,7 @@ SELECT asText(tDistance(
 			<listitem xml:id="trgeometry_nad">
 				<indexterm significance="normal"><primary><varname>|=|</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>nearestApproachDistance</varname></primary></indexterm>
-				<para>Devuelve la distancia más pequeña entre dos trgeometries sobre su dominio temporal compartido</para>
+				<para>Devuelve la distancia más pequeña entre dos geometrías rígidas temporales sobre su dominio temporal compartido</para>
 				<para><varname>{geometry,trgeometry,stbox} |=| {geometry,trgeometry,stbox} → float</varname></para>
 				<para><varname>nearestApproachDistance({geometry,trgeometry,stbox}, {geometry,trgeometry,stbox}) → float</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -614,13 +614,13 @@ SELECT dynTimeWarpPath(
 	<sect1 xml:id="trgeometry_comparisons">
 		<title>Comparaciones</title>
 
-		<para>Los operadores de igualdad y de siempre / alguna vez comparan dos trgeometries sobre la geometría materializada: tanto la forma de referencia como la trayectoria de pose deben coincidir en cada instante compartido.</para>
+		<para>Los operadores de igualdad y de siempre / alguna vez comparan dos geometrías rígidas temporales sobre la geometría materializada: tanto la forma de referencia como la trayectoria de pose deben coincidir en cada instante compartido.</para>
 
 		<itemizedlist>
 			<listitem xml:id="trgeometry_eq">
 				<indexterm significance="normal"><primary><varname>=</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>&lt;&gt;</varname></primary></indexterm>
-				<para>Probar la (des)igualdad exacta de dos trgeometries</para>
+				<para>Probar la (des)igualdad exacta de dos geometrías rígidas temporales</para>
 				<para><varname>trgeometry = trgeometry → boolean</varname></para>
 				<para><varname>trgeometry &lt;&gt; trgeometry → boolean</varname></para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -770,12 +770,12 @@ SELECT splitNSpans(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 		<title>Agregaciones</title>
 
 		<itemizedlist>
-			<listitem xml:id="trgeometry_tcount">
-				<indexterm significance="normal"><primary><varname>tcount</varname></primary></indexterm>
-				<para>Número de trgeometries solapadas en cada instante, equivalente a <varname>tcount</varname> sobre la tpose subyacente</para>
-				<para><varname>tcount(trgeometry) → tint</varname></para>
+			<listitem xml:id="trgeometry_tCount">
+				<indexterm significance="normal"><primary><varname>tCount</varname></primary></indexterm>
+				<para>Número de geometrías rígidas temporales solapadas en cada instante, equivalente a <varname>tCount</varname> sobre la tpose subyacente</para>
+				<para><varname>tCount(trgeometry) → tint</varname></para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tcount(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+SELECT tCount(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]');
 -- {[1@2001-01-01, 1@2001-01-02]}
 </programlisting>
@@ -783,7 +783,7 @@ SELECT tcount(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 
 			<listitem xml:id="trgeometry_extent">
 				<indexterm significance="normal"><primary><varname>extent</varname></primary></indexterm>
-				<para>Caja delimitadora agregada de una columna de trgeometries</para>
+				<para>Caja delimitadora agregada de una columna de geometrías rígidas temporales</para>
 				<para><varname>extent(trgeometry) → stbox</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT extent(temp) FROM tbl_trgeometry;
@@ -811,9 +811,9 @@ SELECT asText(merge(
 		<para>Hay tres tipos de índices disponibles sobre columnas <varname>trgeometry</varname>. Cada uno utiliza la caja delimitadora espaciotemporal de la geometría materializada y admite consultas topológicas, de posición y de distancia KNN.</para>
 
 		<itemizedlist>
-			<listitem><para><varname>GIST(temp)</varname> — GiST de árbol R.</para></listitem>
-			<listitem><para><varname>SPGIST(temp trgeometry_quadtree_ops)</varname> — SP-GiST de árbol cuádruple.</para></listitem>
-			<listitem><para><varname>SPGIST(temp trgeometry_kdtree_ops)</varname> — SP-GiST de árbol kd.</para></listitem>
+			<listitem><para><varname>GIST(temp)</varname>, GiST de árbol R.</para></listitem>
+			<listitem><para><varname>SPGIST(temp trgeometry_quadtree_ops)</varname>, SP-GiST de árbol cuádruple.</para></listitem>
+			<listitem><para><varname>SPGIST(temp trgeometry_kdtree_ops)</varname>, SP-GiST de árbol kd.</para></listitem>
 		</itemizedlist>
 
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -843,9 +843,9 @@ LIMIT 10;
 			<title>Cuándo usar trgeometry frente a tpose frente a tgeometry</title>
 			<para>Tres tipos temporales abarcan el espacio de diseño de cuerpo rígido / forma arbitraria. Elija el tipo más estrecho que se ajuste a la carga de trabajo: los tipos más estrechos pagan menos almacenamiento y producen cajas delimitadoras más nítidas para el índice espacial.</para>
 			<itemizedlist>
-				<listitem><para><varname>tpose</varname> — solo posición y orientación temporal; el cuerpo se trata como un punto con un rumbo. Úselo cuando la forma sea irrelevante para la consulta (seguimiento cinemático, sustitutos de colisión basados solo en el rumbo).</para></listitem>
-				<listitem><para><varname>trgeometry</varname> — una única forma de referencia estática que se traslada y rota a lo largo del tiempo según una pose temporal. Úselo cuando la forma <emphasis>importa</emphasis> pero es rígida: barcos, vehículos, drones con geometría fija, zonas de exclusión que se ajustan al cuerpo. La geometría de referencia se almacena una vez por fila, no por instante, de modo que el almacenamiento está dominado por la <varname>tpose</varname> subyacente.</para></listitem>
-				<listitem><para><varname>tgeometry</varname> — geometría arbitraria temporal cuya forma misma varía a lo largo del tiempo. Úselo cuando la forma no sea rígida: franjas de viento de tormentas, plumas en expansión, polígonos en evolución.</para></listitem>
+				<listitem><para><varname>tpose</varname>, solo posición y orientación temporal; el cuerpo se trata como un punto con un rumbo. Úselo cuando la forma sea irrelevante para la consulta (seguimiento cinemático, sustitutos de colisión basados solo en el rumbo).</para></listitem>
+				<listitem><para><varname>trgeometry</varname>, una única forma de referencia estática que se traslada y rota a lo largo del tiempo según una pose temporal. Úselo cuando la forma <emphasis>importa</emphasis> pero es rígida: barcos, vehículos, drones con geometría fija, zonas de exclusión que se ajustan al cuerpo. La geometría de referencia se almacena una vez por fila, no por instante, de modo que el almacenamiento está dominado por la <varname>tpose</varname> subyacente.</para></listitem>
+				<listitem><para><varname>tgeometry</varname>, geometría arbitraria temporal cuya forma misma varía a lo largo del tiempo. Úselo cuando la forma no sea rígida: franjas de viento de tormentas, plumas en expansión, polígonos en evolución.</para></listitem>
 			</itemizedlist>
 			<para>Una <varname>trgeometry</varname> se puede proyectar a su <varname>tpose</varname> subyacente (trayectoria del centroide) o a una <varname>tgeometry</varname> totalmente materializada mediante las conversiones de <xref linkend="trgeometry_conversions"/>. La dirección inversa (elevar una <varname>tgeometry</varname> de vuelta a una <varname>trgeometry</varname>) no está en general bien definida, ya que los cambios de forma arbitrarios no se factorizan limpiamente en rotación + traslación de una referencia fija.</para>
 		</sect2>

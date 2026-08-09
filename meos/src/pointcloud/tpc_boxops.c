@@ -38,6 +38,7 @@
 #include "pointcloud/meos_schema_hook.h"
 #include "pointcloud/pcpoint.h"
 #include "pointcloud/pcpatch.h"
+#include "pointcloud/tpcbox.h"
 
 /*****************************************************************************
  * Single-instant → TPCBox
@@ -50,6 +51,7 @@
 static void
 pcpoint_fill_tpcbox_spatial(const Pcpoint *pt, TPCBox *box)
 {
+  assert(pt); assert(box);
   PCSCHEMA *schema = meos_pc_schema(pt->pcid);
   PCPOINT pcpt;
   pcpt.readonly = 1;
@@ -80,6 +82,7 @@ pcpoint_fill_tpcbox_spatial(const Pcpoint *pt, TPCBox *box)
 static void
 pcpatch_fill_tpcbox_spatial(const Pcpatch *pa, TPCBox *box)
 {
+  assert(pa); assert(box);
   PCSCHEMA *schema = meos_pc_schema(pa->pcid);
   /* PCBOUNDS field order is {xmin, xmax, ymin, ymax} — see
    * pointcloud-pg/lib/pc_api.h. Read by index, not by guess. */
@@ -334,8 +337,8 @@ tpcbox_set_stbox(const TPCBox *src, STBox *dst)
 double
 nad_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
-  assert(box1); assert(box2);
-  if (box1->pcid != box2->pcid)
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tpcbox_tpcbox(box1, box2))
     return DBL_MAX;
   STBox sbox1, sbox2;
   tpcbox_set_stbox(box1, &sbox1);

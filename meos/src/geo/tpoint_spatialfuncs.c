@@ -196,6 +196,7 @@ tpoint_get_coord(const Temporal *temp, int coord)
 Temporal *
 tpoint_get_x(const Temporal *temp)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TPOINT(temp, NULL);
   return tpoint_get_coord(temp, 0);
 }
@@ -209,6 +210,7 @@ tpoint_get_x(const Temporal *temp)
 Temporal *
 tpoint_get_y(const Temporal *temp)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TPOINT(temp, NULL);
   return tpoint_get_coord(temp, 1);
 }
@@ -222,6 +224,7 @@ tpoint_get_y(const Temporal *temp)
 Temporal *
 tpoint_get_z(const Temporal *temp)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TPOINT(temp, NULL);
   return tpoint_get_coord(temp, 2);
 }
@@ -2229,10 +2232,9 @@ MvtGeom
 tpoint_as_mvtgeom(const Temporal *temp, const STBox *bounds, int32_t extent,
   int32_t buffer, bool clip_geom)
 {
-  MvtGeom result = {NULL, NULL, 0};
   /* Ensure the validity of the arguments */
+  MvtGeom result = {NULL, NULL, 0};
   VALIDATE_TPOINT(temp, result); VALIDATE_NOT_NULL(bounds, result);
-
   if (bounds->xmax - bounds->xmin <= 0 || bounds->ymax - bounds->ymin <= 0)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
@@ -3207,9 +3209,6 @@ bearing_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 
 /*****************************************************************************/
 
-/* Defined in liblwgeom_internal.h */
-#define PGIS_FP_TOLERANCE 1e-12
-
 /**
  * @brief Calculate the distance between two geography points given as GEOS
  * geometries
@@ -3239,7 +3238,7 @@ geog_distance_geos(const GEOSGeometry *pt1, const GEOSGeometry *pt2)
   if ( s.a == s.b )
     return distance;
   /* Below tolerance, actual distance isn't of interest */
-  else if ( distance < 0.95 * PGIS_FP_TOLERANCE )
+  else if ( distance < 0.95 * FP_TOLERANCE )
     return distance;
   /* Close or greater than tolerance, get the real answer to be sure */
   else
@@ -3709,18 +3708,24 @@ tpointseq_discstep_find_splits(const TSequence *seq, int *count)
   return bitarr;
 }
 
+/**
+ * @brief Initialize a GBOX with a point
+ */
+static void gbox_init_point2d(const POINT2D *p, GBOX *gbox)
+{
+  gbox->xmin = gbox->xmax = p->x;
+  gbox->ymin = gbox->ymax = p->y;
+}
+
+/**
+ * @brief Enlarge a GBOX with a point
+ */
 static void gbox_merge_point2d(const POINT2D *p, GBOX *gbox)
 {
   if ( gbox->xmin > p->x ) gbox->xmin = p->x;
   if ( gbox->ymin > p->y ) gbox->ymin = p->y;
   if ( gbox->xmax < p->x ) gbox->xmax = p->x;
   if ( gbox->ymax < p->y ) gbox->ymax = p->y;
-}
-
-static void gbox_init_point2d(const POINT2D *p, GBOX *gbox)
-{
-  gbox->xmin = gbox->xmax = p->x;
-  gbox->ymin = gbox->ymax = p->y;
 }
 
 /**

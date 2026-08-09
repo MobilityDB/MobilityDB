@@ -1104,10 +1104,10 @@ tsequenceset_split_n_spans(const TSequenceSet *ss, int span_count, int *count)
 Span *
 temporal_split_n_spans(const Temporal *temp, int span_count, int *count)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(count, NULL);
   /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
   *count = 0;
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL);
   if (! ensure_positive(span_count))
     return NULL;
@@ -1277,10 +1277,10 @@ Span *
 temporal_split_each_n_spans(const Temporal *temp, int elems_per_span,
   int *count)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(count, NULL);
   /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
   *count = 0;
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL);
   if (! ensure_positive(elems_per_span))
     return NULL;
@@ -1679,10 +1679,10 @@ tnumberseqset_split_n_tboxes(const TSequenceSet *ss, int box_count, int *count)
 TBox *
 tnumber_split_n_tboxes(const Temporal *temp, int box_count, int *count)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(count, NULL);
   /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
   *count = 0;
+  /* Ensure the validity of the arguments */
   VALIDATE_TNUMBER(temp, NULL);
   if (! ensure_positive(box_count))
     return NULL;
@@ -1852,10 +1852,10 @@ tnumberseqset_split_each_n_tboxes(const TSequenceSet *ss, int elems_per_box,
 TBox *
 tnumber_split_each_n_tboxes(const Temporal *temp, int elems_per_box, int *count)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(count, NULL);
   /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
   *count = 0;
+  /* Ensure the validity of the arguments */
   VALIDATE_TNUMBER(temp, NULL);
   if (! ensure_positive(elems_per_box))
     return NULL;

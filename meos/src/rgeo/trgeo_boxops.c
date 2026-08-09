@@ -363,12 +363,14 @@ trgeo_seq_cont_split_n_iter(const TSequence *seq,
 STBox *
 trgeometry_split_n_stboxes(const Temporal *temp, int box_count, int *count)
 {
-  assert(temp); assert(count);
-  assert(temp->temptype == T_TRGEOMETRY);
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL); 
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TRGEOMETRY(temp, NULL);
   if (! ensure_positive(box_count))
     return NULL;
-  /* The out parameter is defined even when a later check fails */
-  *count = 0;
+
   const GSERIALIZED *geom = trgeo_geom_p(temp);
   switch (temp->subtype)
   {
@@ -514,12 +516,14 @@ STBox *
 trgeometry_split_each_n_stboxes(const Temporal *temp, int elems_per_box,
   int *count)
 {
-  assert(temp); assert(count);
-  assert(temp->temptype == T_TRGEOMETRY);
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL); 
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TRGEOMETRY(temp, NULL);
   if (! ensure_positive(elems_per_box))
     return NULL;
-  /* The out parameter is defined even when a later check fails */
-  *count = 0;
+
   const GSERIALIZED *geom = trgeo_geom_p(temp);
   switch (temp->subtype)
   {

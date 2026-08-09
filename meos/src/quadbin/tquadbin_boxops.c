@@ -51,7 +51,6 @@
 #include <string.h>
 /* PostgreSQL */
 #include <utils/timestamp.h>
-
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
@@ -59,7 +58,6 @@
 #include <meos_quadbin.h>
 #include "temporal/span.h"
 #include "quadbin/quadbin.h"
-#include "quadbin/quadbin_meos.h"
 
 /*****************************************************************************
  * Static helper: convert a single quadbin cell to a planar STBox (XY only,
@@ -75,6 +73,7 @@
 static void
 tquadbin_cell_set_stbox(Quadbin cell, STBox *box)
 {
+  assert(box);
   double xmin, ymin, xmax, ymax;
   quadbin_cell_to_bounding_box(cell, &xmin, &ymin, &xmax, &ymax);
   box->xmin = xmin;
@@ -92,7 +91,6 @@ tquadbin_cell_set_stbox(Quadbin cell, STBox *box)
 }
 
 /**
- * @ingroup meos_internal_box_conversion
  * @brief Return in the last argument a spatiotemporal box constructed from a
  * single quadbin cell (the planar X/Y box of the cell, no T dimension)
  * @param[in] cell Quadbin cell index (must be a valid, non-zero cell)
@@ -154,6 +152,9 @@ quadbin_timestamptz_to_stbox(Quadbin cell, TimestampTz t)
 STBox *
 quadbin_tstzspan_to_stbox(Quadbin cell, const Span *s)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, NULL);
+
   STBox box;
   if (! quadbin_set_stbox(cell, &box))
     return NULL;
@@ -162,7 +163,6 @@ quadbin_tstzspan_to_stbox(Quadbin cell, const Span *s)
 }
 
 /**
- * @ingroup meos_internal_box_conversion
  * @brief Return in the last argument a spatiotemporal box constructed from an
  * array of quadbin cells (the planar X/Y union, no T dimension)
  * @param[in] values Quadbin cell Datums

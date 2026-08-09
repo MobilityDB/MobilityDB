@@ -51,13 +51,11 @@
 /* C */
 #include <float.h>
 #include <string.h>
-
 /* H3 */
 #include <h3api.h>
-
 /* PostgreSQL */
+#include <postgres.h>
 #include <utils/timestamp.h>
-
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
@@ -173,6 +171,8 @@ h3index_timestamptz_to_stbox(H3Index cell, TimestampTz t)
 STBox *
 h3index_tstzspan_to_stbox(H3Index cell, const Span *s)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, NULL);
   STBox box;
   if (! h3index_set_stbox(cell, &box))
     return NULL;
@@ -254,6 +254,7 @@ th3indexinstarr_set_stbox(TInstant **instants, int count, STBox *box)
 void
 th3indexseq_expand_stbox(const TSequence *seq, const TInstant *inst)
 {
+  assert(seq); assert(inst);
   STBox box;
   th3indexinst_set_stbox(inst, &box);
   stbox_expand(&box, (STBox *) TSEQUENCE_BBOX_PTR(seq));

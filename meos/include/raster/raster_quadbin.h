@@ -39,12 +39,7 @@
 #include <meos.h>
 #include <meos_raster.h>
 
-extern Temporal *raster_tile_value_quadbin(const uint8_t *pixels,
-  size_t pixels_size, uint16_t width, uint16_t height, uint64 quadbin,
-  MeosPixType pixtype, double nodata, bool has_nodata, const Temporal *traj);
-
-extern uint64 *trajectory_quadbins(const Temporal *traj, uint32_t zoom,
-  int *count);
+/*****************************************************************************/
 
 extern bool raster_quadbin_from_bounds(double origin_x, double origin_y,
   double pixel_w, double pixel_h, int xsize, int ysize, uint64 *result);
@@ -53,5 +48,7 @@ extern void raster_quadbin_bounds(uint64 cell, double *xmin, double *ymin,
   double *xmax, double *ymax);
 
 extern uint32_t raster_quadbin_zoom(uint64 cell);
+
+/*****************************************************************************/
 
 #endif /* __RASTER_QUADBIN_H__ */

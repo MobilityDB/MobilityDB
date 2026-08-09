@@ -61,7 +61,7 @@
 #include "pointcloud/pcpatch.h"
 
 /*****************************************************************************
- * Validity helpers
+ * Validity functions
  *
  * Declared in pcpoint.h / pcpatch.h; defined here rather than next to
  * @p ensure_same_pcid_* in pcpoint.c / pcpatch.c because @p SET_VAL_N
@@ -80,6 +80,7 @@
 bool
 ensure_valid_pcpointset_pcpoint(const Set *s, const Pcpoint *pt)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_PCPOINTSET(s, false); VALIDATE_NOT_NULL(pt, false);
   if (s->count == 0)
     return true;
@@ -94,6 +95,7 @@ ensure_valid_pcpointset_pcpoint(const Set *s, const Pcpoint *pt)
 bool
 ensure_valid_pcpatchset_pcpatch(const Set *s, const Pcpatch *pa)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_PCPATCHSET(s, false); VALIDATE_NOT_NULL(pa, false);
   if (s->count == 0)
     return true;
@@ -103,7 +105,7 @@ ensure_valid_pcpatchset_pcpatch(const Set *s, const Pcpatch *pa)
 }
 
 /*****************************************************************************
- * Input / output — pcpoint sets
+ * Input/output
  *****************************************************************************/
 
 /**
@@ -115,6 +117,7 @@ ensure_valid_pcpatchset_pcpatch(const Set *s, const Pcpatch *pa)
 Set *
 pcpointset_in(const char *str)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(str, NULL);
   return set_parse(&str, T_PCPOINTSET);
 }
@@ -130,6 +133,7 @@ pcpointset_in(const char *str)
 char *
 pcpointset_out(const Set *s, int maxdd)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_PCPOINTSET(s, NULL);
   return set_out(s, maxdd);
 }
@@ -148,6 +152,7 @@ pcpointset_out(const Set *s, int maxdd)
 Set *
 pcpointset_make(Pcpoint **values, int count)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(values, NULL);
   if (! ensure_positive(count))
     return NULL;
@@ -172,6 +177,7 @@ pcpointset_make(Pcpoint **values, int count)
 Set *
 pcpoint_to_set(const Pcpoint *pt)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(pt, NULL);
   return value_set(PointerGetDatum(pt), T_PCPOINT);
 }
@@ -190,6 +196,7 @@ pcpoint_to_set(const Pcpoint *pt)
 Pcpoint *
 pcpointset_start_value(const Set *s)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_PCPOINTSET(s, NULL);
   return (Pcpoint *) DatumGetPointer(datum_copy(SET_VAL_N(s, 0),
     s->basetype));
@@ -205,6 +212,7 @@ pcpointset_start_value(const Set *s)
 Pcpoint *
 pcpointset_end_value(const Set *s)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_PCPOINTSET(s, NULL);
   return (Pcpoint *) DatumGetPointer(datum_copy(SET_VAL_N(s, s->count - 1),
     s->basetype));
@@ -222,6 +230,7 @@ pcpointset_end_value(const Set *s)
 bool
 pcpointset_value_n(const Set *s, int n, Pcpoint **result)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_PCPOINTSET(s, false); VALIDATE_NOT_NULL(result, false);
   if (n < 1 || n > s->count)
     return false;
@@ -241,6 +250,7 @@ pcpointset_value_n(const Set *s, int n, Pcpoint **result)
 Pcpoint **
 pcpointset_values(const Set *s, int *count)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_PCPOINTSET(s, NULL); VALIDATE_NOT_NULL(count, NULL);
   Pcpoint **result = palloc(sizeof(Pcpoint *) * s->count);
   for (int i = 0; i < s->count; i++)
@@ -262,6 +272,7 @@ pcpointset_values(const Set *s, int *count)
 bool
 contains_set_pcpoint(const Set *s, Pcpoint *pt)
 {
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_pcpointset_pcpoint(s, pt))
     return false;
   return contains_set_value(s, PointerGetDatum(pt));
@@ -275,6 +286,7 @@ contains_set_pcpoint(const Set *s, Pcpoint *pt)
 bool
 contained_pcpoint_set(const Pcpoint *pt, const Set *s)
 {
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_pcpointset_pcpoint(s, pt))
     return false;
   return contained_value_set(PointerGetDatum(pt), s);
@@ -288,6 +300,7 @@ contained_pcpoint_set(const Pcpoint *pt, const Set *s)
 Set *
 union_set_pcpoint(const Set *s, const Pcpoint *pt)
 {
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_pcpointset_pcpoint(s, pt))
     return NULL;
   return union_set_value(s, PointerGetDatum(pt));
@@ -301,6 +314,9 @@ union_set_pcpoint(const Set *s, const Pcpoint *pt)
 Set *
 union_pcpoint_set(const Pcpoint *pt, const Set *s)
 {
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_pcpointset_pcpoint(s, pt))
+    return NULL;
   return union_set_pcpoint(s, pt);
 }
 
@@ -312,6 +328,7 @@ union_pcpoint_set(const Pcpoint *pt, const Set *s)
 Set *
 intersection_set_pcpoint(const Set *s, const Pcpoint *pt)
 {
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_pcpointset_pcpoint(s, pt))
     return NULL;
   return intersection_set_value(s, PointerGetDatum(pt));
@@ -325,6 +342,9 @@ intersection_set_pcpoint(const Set *s, const Pcpoint *pt)
 Set *
 intersection_pcpoint_set(const Pcpoint *pt, const Set *s)
 {
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_pcpointset_pcpoint(s, pt))
+    return NULL;
   return intersection_set_pcpoint(s, pt);
 }
 
@@ -336,6 +356,7 @@ intersection_pcpoint_set(const Pcpoint *pt, const Set *s)
 Set *
 minus_pcpoint_set(const Pcpoint *pt, const Set *s)
 {
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_pcpointset_pcpoint(s, pt))
     return NULL;
   return minus_value_set(PointerGetDatum(pt), s);
@@ -349,6 +370,7 @@ minus_pcpoint_set(const Pcpoint *pt, const Set *s)
 Set *
 minus_set_pcpoint(const Set *s, const Pcpoint *pt)
 {
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_pcpointset_pcpoint(s, pt))
     return NULL;
   return minus_set_value(s, PointerGetDatum(pt));
@@ -367,6 +389,7 @@ minus_set_pcpoint(const Set *s, const Pcpoint *pt)
 Set *
 pcpoint_union_transfn(Set *state, const Pcpoint *pt)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(pt, NULL);
   if (state && ! ensure_set_isof_type(state, T_PCPOINTSET))
     return NULL;
@@ -385,6 +408,7 @@ pcpoint_union_transfn(Set *state, const Pcpoint *pt)
 Set *
 pcpatchset_in(const char *str)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(str, NULL);
   return set_parse(&str, T_PCPATCHSET);
 }
@@ -397,6 +421,7 @@ pcpatchset_in(const char *str)
 char *
 pcpatchset_out(const Set *s, int maxdd)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_PCPATCHSET(s, NULL);
   return set_out(s, maxdd);
 }
@@ -413,6 +438,7 @@ pcpatchset_out(const Set *s, int maxdd)
 Set *
 pcpatchset_make(Pcpatch **values, int count)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(values, NULL);
   if (! ensure_positive(count))
     return NULL;
@@ -435,6 +461,7 @@ pcpatchset_make(Pcpatch **values, int count)
 Set *
 pcpatch_to_set(const Pcpatch *pa)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(pa, NULL);
   return value_set(PointerGetDatum(pa), T_PCPATCH);
 }
@@ -453,6 +480,7 @@ pcpatch_to_set(const Pcpatch *pa)
 Pcpatch *
 pcpatchset_start_value(const Set *s)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_PCPATCHSET(s, NULL);
   return (Pcpatch *) DatumGetPointer(datum_copy(SET_VAL_N(s, 0),
     s->basetype));
@@ -468,6 +496,7 @@ pcpatchset_start_value(const Set *s)
 Pcpatch *
 pcpatchset_end_value(const Set *s)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_PCPATCHSET(s, NULL);
   return (Pcpatch *) DatumGetPointer(datum_copy(SET_VAL_N(s, s->count - 1),
     s->basetype));
@@ -485,6 +514,7 @@ pcpatchset_end_value(const Set *s)
 bool
 pcpatchset_value_n(const Set *s, int n, Pcpatch **result)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_PCPATCHSET(s, false); VALIDATE_NOT_NULL(result, false);
   if (n < 1 || n > s->count)
     return false;
@@ -504,6 +534,7 @@ pcpatchset_value_n(const Set *s, int n, Pcpatch **result)
 Pcpatch **
 pcpatchset_values(const Set *s, int *count)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_PCPATCHSET(s, NULL); VALIDATE_NOT_NULL(count, NULL);
   Pcpatch **result = palloc(sizeof(Pcpatch *) * s->count);
   for (int i = 0; i < s->count; i++)
@@ -525,6 +556,7 @@ pcpatchset_values(const Set *s, int *count)
 bool
 contains_set_pcpatch(const Set *s, Pcpatch *pa)
 {
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_pcpatchset_pcpatch(s, pa))
     return false;
   return contains_set_value(s, PointerGetDatum(pa));
@@ -538,6 +570,7 @@ contains_set_pcpatch(const Set *s, Pcpatch *pa)
 bool
 contained_pcpatch_set(const Pcpatch *pa, const Set *s)
 {
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_pcpatchset_pcpatch(s, pa))
     return false;
   return contained_value_set(PointerGetDatum(pa), s);
@@ -551,6 +584,7 @@ contained_pcpatch_set(const Pcpatch *pa, const Set *s)
 Set *
 union_set_pcpatch(const Set *s, const Pcpatch *pa)
 {
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_pcpatchset_pcpatch(s, pa))
     return NULL;
   return union_set_value(s, PointerGetDatum(pa));
@@ -564,6 +598,9 @@ union_set_pcpatch(const Set *s, const Pcpatch *pa)
 Set *
 union_pcpatch_set(const Pcpatch *pa, const Set *s)
 {
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_pcpatchset_pcpatch(s, pa))
+    return NULL;
   return union_set_pcpatch(s, pa);
 }
 
@@ -575,6 +612,7 @@ union_pcpatch_set(const Pcpatch *pa, const Set *s)
 Set *
 intersection_set_pcpatch(const Set *s, const Pcpatch *pa)
 {
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_pcpatchset_pcpatch(s, pa))
     return NULL;
   return intersection_set_value(s, PointerGetDatum(pa));
@@ -588,6 +626,9 @@ intersection_set_pcpatch(const Set *s, const Pcpatch *pa)
 Set *
 intersection_pcpatch_set(const Pcpatch *pa, const Set *s)
 {
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_pcpatchset_pcpatch(s, pa))
+    return NULL;
   return intersection_set_pcpatch(s, pa);
 }
 
@@ -599,6 +640,7 @@ intersection_pcpatch_set(const Pcpatch *pa, const Set *s)
 Set *
 minus_pcpatch_set(const Pcpatch *pa, const Set *s)
 {
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_pcpatchset_pcpatch(s, pa))
     return NULL;
   return minus_value_set(PointerGetDatum(pa), s);
@@ -612,13 +654,14 @@ minus_pcpatch_set(const Pcpatch *pa, const Set *s)
 Set *
 minus_set_pcpatch(const Set *s, const Pcpatch *pa)
 {
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_pcpatchset_pcpatch(s, pa))
     return NULL;
   return minus_set_value(s, PointerGetDatum(pa));
 }
 
 /*****************************************************************************
- * Aggregate — pcpatch union
+ * Aggregate functions
  *****************************************************************************/
 
 /**
@@ -630,6 +673,7 @@ minus_set_pcpatch(const Set *s, const Pcpatch *pa)
 Set *
 pcpatch_union_transfn(Set *state, const Pcpatch *pa)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(pa, NULL);
   if (state && ! ensure_set_isof_type(state, T_PCPATCHSET))
     return NULL;

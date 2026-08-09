@@ -55,7 +55,7 @@
 #include <string.h>
 /* PostgreSQL */
 #include <postgres.h>
-#include "utils/timestamp.h"
+#include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
@@ -71,7 +71,7 @@
 #define TPCBOX_MAXLEN  512
 
 /*****************************************************************************
- * Validity
+ * Validity functions
  *****************************************************************************/
 
 /**
@@ -112,6 +112,22 @@ ensure_same_srid_tpcbox(const TPCBox *box1, const TPCBox *box2)
   return true;
 }
 
+/**
+ * @brief Return true if two temporal pointcloud boxes are valid for operations
+ * @param[in] temp1,temp2 Temporal value
+ */
+bool
+ensure_valid_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPCBOX(box1, false); VALIDATE_TPCBOX(box2, false);
+  if (! ensure_same_pcid_tpcbox(box1, box2) ||
+      ! ensure_same_srid_tpcbox(box1, box2))
+    return false;
+  return true;
+}
+
+
 /*****************************************************************************
  * Input / output
  *
@@ -119,96 +135,6 @@ ensure_same_srid_tpcbox(const TPCBox *box1, const TPCBox *box2)
  * through lexical scan; the PG recv/send path uses the same byte layout
  * as the in-memory struct (fixed size = @c sizeof(TPCBox)).
  *****************************************************************************/
-
-/**
- * @ingroup meos_pointcloud_box_inout
- * @brief Return the text representation of a TPCBox.
- * @details Examples (commas optional inside the parenthesised groups):
- * @code
- * TPCBOX(X((10, 20), (30, 40)), 1)
- * SRID=4326;TPCBOX(Z((10, 20, 30), (40, 50, 60)), 1)
- * TPCBOX(XT(((10, 20), (30, 40)), [2024-01-01, 2024-01-02]), 1)
- * TPCBOX(T([2024-01-01, 2024-01-02]), 1)
- * GEODTPCBOX(ZT(((10, 20, 30), (40, 50, 60)), [2024-01-01, 2024-01-02]), 1)
- * @endcode
- * @csqlfn #Tpcbox_out()
- */
-char *
-tpcbox_out(const TPCBox *box, int maxdd)
-{
-  VALIDATE_TPCBOX(box, NULL);
-  if (! ensure_not_negative(maxdd))
-    return NULL;
-
-  char *xmin = NULL, *xmax = NULL, *ymin = NULL, *ymax = NULL, *zmin = NULL,
-    *zmax = NULL, *period = NULL;
-  bool hasx = MEOS_FLAGS_GET_X(box->flags);
-  bool hasz = MEOS_FLAGS_GET_Z(box->flags);
-  bool hast = MEOS_FLAGS_GET_T(box->flags);
-  bool geodetic = MEOS_FLAGS_GET_GEODETIC(box->flags);
-
-  char *str = palloc(TPCBOX_MAXLEN);
-  /* SRID is emitted as a prefix, matching the sibling (GEOD)STBOX text form */
-  char srid[18];
-  if (hasx && box->srid > 0)
-    snprintf(srid, sizeof(srid), "SRID=%d;", box->srid);
-  else
-    srid[0] = '\0';
-  const char *boxtype = geodetic ? "GEODTPCBOX" : "TPCBOX";
-  if (hast)
-    period = span_out(&box->period, maxdd);
-
-  if (hasx && hast)
-  {
-    xmin = float8_out(box->xmin, maxdd);
-    xmax = float8_out(box->xmax, maxdd);
-    ymin = float8_out(box->ymin, maxdd);
-    ymax = float8_out(box->ymax, maxdd);
-    if (hasz)
-    {
-      zmin = float8_out(box->zmin, maxdd);
-      zmax = float8_out(box->zmax, maxdd);
-      snprintf(str, TPCBOX_MAXLEN,
-        "%s%s(ZT(((%s,%s,%s),(%s,%s,%s)),%s), %u)",
-        srid, boxtype, xmin, ymin, zmin, xmax, ymax, zmax, period, box->pcid);
-    }
-    else
-      snprintf(str, TPCBOX_MAXLEN, "%s%s(XT(((%s,%s),(%s,%s)),%s), %u)",
-        srid, boxtype, xmin, ymin, xmax, ymax, period, box->pcid);
-  }
-  else if (hasx)
-  {
-    xmin = float8_out(box->xmin, maxdd);
-    xmax = float8_out(box->xmax, maxdd);
-    ymin = float8_out(box->ymin, maxdd);
-    ymax = float8_out(box->ymax, maxdd);
-    if (hasz)
-    {
-      zmin = float8_out(box->zmin, maxdd);
-      zmax = float8_out(box->zmax, maxdd);
-      snprintf(str, TPCBOX_MAXLEN, "%s%s(Z((%s,%s,%s),(%s,%s,%s)), %u)",
-        srid, boxtype, xmin, ymin, zmin, xmax, ymax, zmax, box->pcid);
-    }
-    else
-      snprintf(str, TPCBOX_MAXLEN, "%s%s(X((%s,%s),(%s,%s)), %u)",
-        srid, boxtype, xmin, ymin, xmax, ymax, box->pcid);
-  }
-  else /* hast */
-    snprintf(str, TPCBOX_MAXLEN, "%s%s(T(%s), %u)", srid, boxtype, period,
-      box->pcid);
-
-  if (hasx)
-  {
-    pfree(xmin); pfree(xmax); pfree(ymin); pfree(ymax);
-    if (hasz)
-    {
-      pfree(zmin); pfree(zmax);
-    }
-  }
-  if (hast)
-    pfree(period);
-  return str;
-}
 
 /**
  * @brief Parse a TPCBox from its Well-Known Text (WKT) representation
@@ -220,6 +146,7 @@ tpcbox_out(const TPCBox *box, int maxdd)
 TPCBox *
 tpcbox_parse(const char **str)
 {
+  assert(str);
   const char *type_str = meostype_name(T_TPCBOX);
   /* Get the SRID if it is given */
   int32_t srid;
@@ -318,12 +245,100 @@ tpcbox_parse(const char **str)
 TPCBox *
 tpcbox_in(const char *str)
 {
-  if (! str)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "Null input string");
-    return NULL;
-  }
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(str, NULL);
   return tpcbox_parse(&str);
+}
+
+/**
+ * @ingroup meos_pointcloud_box_inout
+ * @brief Return the text representation of a TPCBox.
+ * @details Examples (commas optional inside the parenthesised groups):
+ * @code
+ * TPCBOX(X((10, 20), (30, 40)), 1)
+ * SRID=4326;TPCBOX(Z((10, 20, 30), (40, 50, 60)), 1)
+ * TPCBOX(XT(((10, 20), (30, 40)), [2024-01-01, 2024-01-02]), 1)
+ * TPCBOX(T([2024-01-01, 2024-01-02]), 1)
+ * GEODTPCBOX(ZT(((10, 20, 30), (40, 50, 60)), [2024-01-01, 2024-01-02]), 1)
+ * @endcode
+ * @csqlfn #Tpcbox_out()
+ */
+char *
+tpcbox_out(const TPCBox *box, int maxdd)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPCBOX(box, NULL);
+  if (! ensure_not_negative(maxdd))
+    return NULL;
+
+  char *xmin = NULL, *xmax = NULL, *ymin = NULL, *ymax = NULL, *zmin = NULL,
+    *zmax = NULL, *period = NULL;
+  bool hasx = MEOS_FLAGS_GET_X(box->flags);
+  bool hasz = MEOS_FLAGS_GET_Z(box->flags);
+  bool hast = MEOS_FLAGS_GET_T(box->flags);
+  bool geodetic = MEOS_FLAGS_GET_GEODETIC(box->flags);
+
+  char *str = palloc(TPCBOX_MAXLEN);
+  /* SRID is emitted as a prefix, matching the sibling (GEOD)STBOX text form */
+  char srid[18];
+  if (hasx && box->srid > 0)
+    snprintf(srid, sizeof(srid), "SRID=%d;", box->srid);
+  else
+    srid[0] = '\0';
+  const char *boxtype = geodetic ? "GEODTPCBOX" : "TPCBOX";
+  if (hast)
+    period = span_out(&box->period, maxdd);
+
+  if (hasx && hast)
+  {
+    xmin = float8_out(box->xmin, maxdd);
+    xmax = float8_out(box->xmax, maxdd);
+    ymin = float8_out(box->ymin, maxdd);
+    ymax = float8_out(box->ymax, maxdd);
+    if (hasz)
+    {
+      zmin = float8_out(box->zmin, maxdd);
+      zmax = float8_out(box->zmax, maxdd);
+      snprintf(str, TPCBOX_MAXLEN,
+        "%s%s(ZT(((%s,%s,%s),(%s,%s,%s)),%s), %u)",
+        srid, boxtype, xmin, ymin, zmin, xmax, ymax, zmax, period, box->pcid);
+    }
+    else
+      snprintf(str, TPCBOX_MAXLEN, "%s%s(XT(((%s,%s),(%s,%s)),%s), %u)",
+        srid, boxtype, xmin, ymin, xmax, ymax, period, box->pcid);
+  }
+  else if (hasx)
+  {
+    xmin = float8_out(box->xmin, maxdd);
+    xmax = float8_out(box->xmax, maxdd);
+    ymin = float8_out(box->ymin, maxdd);
+    ymax = float8_out(box->ymax, maxdd);
+    if (hasz)
+    {
+      zmin = float8_out(box->zmin, maxdd);
+      zmax = float8_out(box->zmax, maxdd);
+      snprintf(str, TPCBOX_MAXLEN, "%s%s(Z((%s,%s,%s),(%s,%s,%s)), %u)",
+        srid, boxtype, xmin, ymin, zmin, xmax, ymax, zmax, box->pcid);
+    }
+    else
+      snprintf(str, TPCBOX_MAXLEN, "%s%s(X((%s,%s),(%s,%s)), %u)",
+        srid, boxtype, xmin, ymin, xmax, ymax, box->pcid);
+  }
+  else /* hast */
+    snprintf(str, TPCBOX_MAXLEN, "%s%s(T(%s), %u)", srid, boxtype, period,
+      box->pcid);
+
+  if (hasx)
+  {
+    pfree(xmin); pfree(xmax); pfree(ymin); pfree(ymax);
+    if (hasz)
+    {
+      pfree(zmin); pfree(zmax);
+    }
+  }
+  if (hast)
+    pfree(period);
+  return str;
 }
 
 /*****************************************************************************
@@ -380,6 +395,7 @@ tpcbox_make(bool hasx, bool hasz, bool hast, bool geodetic,
 TPCBox *
 tpcbox_copy(const TPCBox *box)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TPCBOX(box, NULL);
   TPCBox *result = palloc(sizeof(TPCBox));
   memcpy(result, box, sizeof(TPCBox));
@@ -404,6 +420,7 @@ tpcbox_copy(const TPCBox *box)
 TPCBox *
 pcpatch_to_tpcbox(const Pcpatch *pa, int32_t srid)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(pa, NULL);
   Span empty_period;
   memset(&empty_period, 0, sizeof(Span));
@@ -429,31 +446,51 @@ pcpatch_to_tpcbox(const Pcpatch *pa, int32_t srid)
  * @brief Return @p true if a TPCBox has its X dimension set
  * @csqlfn #Tpcbox_hasx()
  */
-bool tpcbox_hasx(const TPCBox *box)
-{ VALIDATE_TPCBOX(box, false); return stbox_hasx((const STBox *) box); }
+bool
+tpcbox_hasx(const TPCBox *box)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPCBOX(box, false);
+  return stbox_hasx((const STBox *) box);
+}
 
 /**
  * @ingroup meos_pointcloud_box_accessor
  * @brief Return @p true if a TPCBox has its Z dimension set
  * @csqlfn #Tpcbox_hasz()
  */
-bool tpcbox_hasz(const TPCBox *box)
-{ VALIDATE_TPCBOX(box, false); return stbox_hasz((const STBox *) box); }
+bool
+tpcbox_hasz(const TPCBox *box)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPCBOX(box, false);
+  return stbox_hasz((const STBox *) box);
+}
 
 /**
  * @ingroup meos_pointcloud_box_accessor
  * @brief Return @p true if a TPCBox has its T (time) dimension set
  * @csqlfn #Tpcbox_hast()
  */
-bool tpcbox_hast(const TPCBox *box)
-{ VALIDATE_TPCBOX(box, false); return stbox_hast((const STBox *) box); }
+bool
+tpcbox_hast(const TPCBox *box)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPCBOX(box, false);
+  return stbox_hast((const STBox *) box);
+}
 
 /**
  * @ingroup meos_pointcloud_box_accessor
  * @brief Return @p true if a TPCBox is in a geographic SRID
  */
-bool tpcbox_geodetic(const TPCBox *box)
-{ VALIDATE_TPCBOX(box, false); return stbox_isgeodetic((const STBox *) box); }
+bool
+tpcbox_geodetic(const TPCBox *box)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPCBOX(box, false);
+  return stbox_isgeodetic((const STBox *) box);
+}
 
 /**
  * @ingroup meos_pointcloud_box_accessor
@@ -466,6 +503,7 @@ bool tpcbox_geodetic(const TPCBox *box)
 bool
 tpcbox_xmin(const TPCBox *box, double *result)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TPCBOX(box, false); VALIDATE_NOT_NULL(result, false);
   return stbox_xmin((const STBox *) box, result);
 }
@@ -481,6 +519,7 @@ tpcbox_xmin(const TPCBox *box, double *result)
 bool
 tpcbox_xmax(const TPCBox *box, double *result)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TPCBOX(box, false); VALIDATE_NOT_NULL(result, false);
   return stbox_xmax((const STBox *) box, result);
 }
@@ -496,6 +535,7 @@ tpcbox_xmax(const TPCBox *box, double *result)
 bool
 tpcbox_ymin(const TPCBox *box, double *result)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TPCBOX(box, false); VALIDATE_NOT_NULL(result, false);
   return stbox_ymin((const STBox *) box, result);
 }
@@ -511,6 +551,7 @@ tpcbox_ymin(const TPCBox *box, double *result)
 bool
 tpcbox_ymax(const TPCBox *box, double *result)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TPCBOX(box, false); VALIDATE_NOT_NULL(result, false);
   return stbox_ymax((const STBox *) box, result);
 }
@@ -526,6 +567,7 @@ tpcbox_ymax(const TPCBox *box, double *result)
 bool
 tpcbox_zmin(const TPCBox *box, double *result)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TPCBOX(box, false); VALIDATE_NOT_NULL(result, false);
   return stbox_zmin((const STBox *) box, result);
 }
@@ -541,6 +583,7 @@ tpcbox_zmin(const TPCBox *box, double *result)
 bool
 tpcbox_zmax(const TPCBox *box, double *result)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TPCBOX(box, false); VALIDATE_NOT_NULL(result, false);
   return stbox_zmax((const STBox *) box, result);
 }
@@ -556,6 +599,7 @@ tpcbox_zmax(const TPCBox *box, double *result)
 bool
 tpcbox_tmin(const TPCBox *box, TimestampTz *result)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TPCBOX(box, false); VALIDATE_NOT_NULL(result, false);
   return stbox_tmin((const STBox *) box, result);
 }
@@ -572,6 +616,7 @@ tpcbox_tmin(const TPCBox *box, TimestampTz *result)
 bool
 tpcbox_tmin_inc(const TPCBox *box, bool *result)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TPCBOX(box, false); VALIDATE_NOT_NULL(result, false);
   return stbox_tmin_inc((const STBox *) box, result);
 }
@@ -587,6 +632,7 @@ tpcbox_tmin_inc(const TPCBox *box, bool *result)
 bool
 tpcbox_tmax(const TPCBox *box, TimestampTz *result)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TPCBOX(box, false); VALIDATE_NOT_NULL(result, false);
   return stbox_tmax((const STBox *) box, result);
 }
@@ -603,6 +649,7 @@ tpcbox_tmax(const TPCBox *box, TimestampTz *result)
 bool
 tpcbox_tmax_inc(const TPCBox *box, bool *result)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TPCBOX(box, false); VALIDATE_NOT_NULL(result, false);
   return stbox_tmax_inc((const STBox *) box, result);
 }
@@ -614,7 +661,11 @@ tpcbox_tmax_inc(const TPCBox *box, bool *result)
  */
 int32_t
 tpcbox_srid(const TPCBox *box)
-{ VALIDATE_TPCBOX(box, 0); return box->srid; }
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPCBOX(box, 0);
+  return box->srid;
+}
 
 /**
  * @ingroup meos_pointcloud_box_accessor
@@ -623,7 +674,11 @@ tpcbox_srid(const TPCBox *box)
  */
 uint32_t
 tpcbox_pcid(const TPCBox *box)
-{ VALIDATE_TPCBOX(box, 0); return box->pcid; }
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPCBOX(box, 0);
+  return box->pcid;
+}
 
 /**
  * @ingroup meos_pointcloud_box_conversion
@@ -636,6 +691,7 @@ tpcbox_pcid(const TPCBox *box)
 STBox *
 tpcbox_to_stbox(const TPCBox *box)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TPCBOX(box, NULL);
   STBox *result = palloc(sizeof(STBox));
   result->period = box->period;
@@ -651,11 +707,10 @@ tpcbox_to_stbox(const TPCBox *box)
 }
 
 /*****************************************************************************
- * Transformation — expand
+ * Transformation
  *****************************************************************************/
 
 /**
- * @ingroup meos_pointcloud_box_transf
  * @brief Expand box2 in place to include box1.
  * @pre Callers must ensure pcid/SRID compatibility first.
  */
@@ -694,9 +749,11 @@ tpcbox_expand(const TPCBox *box1, TPCBox *box2)
 TPCBox *
 tpcbox_round(const TPCBox *box, int maxdd)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TPCBOX(box, NULL);
   if (! ensure_not_negative(maxdd))
     return NULL;
+
   TPCBox *result = tpcbox_copy(box);
   if (MEOS_FLAGS_GET_X(box->flags))
   {
@@ -716,14 +773,15 @@ tpcbox_round(const TPCBox *box, int maxdd)
 /**
  * @ingroup meos_pointcloud_box_transf
  * @brief Return a tpcbox with the SRID overwritten.
- * @details Does not transform coordinates; just stamps the new SRID on
- *   the result.  For coordinate reprojection, project the underlying
- *   tpcpoint first, then take its bbox.
+ * @details Does not transform coordinates; just stamps the new SRID on the
+ * result.  For coordinate reprojection, project the underlying tpcpoint first,
+ * then take its bbox.
  * @csqlfn #Tpcbox_set_srid()
  */
 TPCBox *
 tpcbox_set_srid(const TPCBox *box, int32_t srid)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TPCBOX(box, NULL);
   TPCBox *result = tpcbox_copy(box);
   result->srid = srid;
@@ -745,9 +803,8 @@ tpcbox_set_srid(const TPCBox *box, int32_t srid)
 TPCBox *
 union_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2, bool strict)
 {
-  VALIDATE_TPCBOX(box1, NULL); VALIDATE_TPCBOX(box2, NULL);
-  if (! ensure_same_pcid_tpcbox(box1, box2) ||
-      ! ensure_same_srid_tpcbox(box1, box2))
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tpcbox_tpcbox(box1, box2))
     return NULL;
   if (MEOS_FLAGS_GET_X(box1->flags) != MEOS_FLAGS_GET_X(box2->flags) ||
       MEOS_FLAGS_GET_Z(box1->flags) != MEOS_FLAGS_GET_Z(box2->flags) ||
@@ -777,9 +834,6 @@ bool
 inter_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2, TPCBox *result)
 {
   assert(box1); assert(box2); assert(result);
-  if (! ensure_same_pcid_tpcbox(box1, box2) ||
-      ! ensure_same_srid_tpcbox(box1, box2))
-    return false;
   bool hasx = MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags);
   bool hasz = MEOS_FLAGS_GET_Z(box1->flags) && MEOS_FLAGS_GET_Z(box2->flags);
   bool hast = MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags);
@@ -826,7 +880,9 @@ inter_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2, TPCBox *result)
 TPCBox *
 intersection_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
-  VALIDATE_TPCBOX(box1, NULL); VALIDATE_TPCBOX(box2, NULL);
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tpcbox_tpcbox(box1, box2))
+    return NULL;
   TPCBox tmp;
   if (! inter_tpcbox_tpcbox(box1, box2, &tmp))
     return NULL;
@@ -862,8 +918,10 @@ tpcbox_shared_dims(const TPCBox *box1, const TPCBox *box2,
 bool
 contains_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
-  VALIDATE_TPCBOX(box1, false); VALIDATE_TPCBOX(box2, false);
-  if (! ensure_same_pcid_tpcbox(box1, box2)) return false;
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tpcbox_tpcbox(box1, box2))
+    return NULL;
+
   bool hasx, hasz, hast;
   tpcbox_shared_dims(box1, box2, &hasx, &hasz, &hast);
   /* box2 must have at least the dimensions box1 requires */
@@ -903,8 +961,10 @@ contained_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 bool
 overlaps_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
-  VALIDATE_TPCBOX(box1, false); VALIDATE_TPCBOX(box2, false);
-  if (! ensure_same_pcid_tpcbox(box1, box2)) return false;
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tpcbox_tpcbox(box1, box2))
+    return NULL;
+
   bool hasx, hasz, hast;
   tpcbox_shared_dims(box1, box2, &hasx, &hasz, &hast);
   if (hasx)
@@ -940,8 +1000,10 @@ same_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 bool
 adjacent_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
-  VALIDATE_TPCBOX(box1, false); VALIDATE_TPCBOX(box2, false);
-  if (! ensure_same_pcid_tpcbox(box1, box2)) return false;
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tpcbox_tpcbox(box1, box2))
+    return NULL;
+
   /* Adjacent = their intersection is empty (no interior overlap) AND
    * their expansion-union shares a boundary. Simplest correct
    * implementation: touch on at least one face of a shared dimension
@@ -986,6 +1048,7 @@ tpcbox_cmp(const TPCBox *box1, const TPCBox *box2)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(box1, false); VALIDATE_NOT_NULL(box2, false);
+
   if (box1->pcid != box2->pcid)
     return (box1->pcid < box2->pcid) ? -1 : 1;
   if (box1->srid != box2->srid)
@@ -1017,7 +1080,9 @@ tpcbox_cmp(const TPCBox *box1, const TPCBox *box2)
  * @csqlfn #Tpcbox_eq()
  */
 bool tpcbox_eq(const TPCBox *box1, const TPCBox *box2)
-{ return tpcbox_cmp(box1, box2) == 0; }
+{
+  return tpcbox_cmp(box1, box2) == 0;
+}
 
 /**
  * @ingroup meos_pointcloud_box_comp
@@ -1025,7 +1090,9 @@ bool tpcbox_eq(const TPCBox *box1, const TPCBox *box2)
  * @csqlfn #Tpcbox_ne()
  */
 bool tpcbox_ne(const TPCBox *box1, const TPCBox *box2)
-{ return tpcbox_cmp(box1, box2) != 0; }
+{
+  return tpcbox_cmp(box1, box2) != 0;
+}
 
 /**
  * @ingroup meos_pointcloud_box_comp
@@ -1033,7 +1100,9 @@ bool tpcbox_ne(const TPCBox *box1, const TPCBox *box2)
  * @csqlfn #Tpcbox_lt()
  */
 bool tpcbox_lt(const TPCBox *box1, const TPCBox *box2)
-{ return tpcbox_cmp(box1, box2) <  0; }
+{
+  return tpcbox_cmp(box1, box2) <  0;
+}
 
 /**
  * @ingroup meos_pointcloud_box_comp
@@ -1041,7 +1110,9 @@ bool tpcbox_lt(const TPCBox *box1, const TPCBox *box2)
  * @csqlfn #Tpcbox_le()
  */
 bool tpcbox_le(const TPCBox *box1, const TPCBox *box2)
-{ return tpcbox_cmp(box1, box2) <= 0; }
+{
+  return tpcbox_cmp(box1, box2) <= 0;
+}
 
 /**
  * @ingroup meos_pointcloud_box_comp
@@ -1049,7 +1120,9 @@ bool tpcbox_le(const TPCBox *box1, const TPCBox *box2)
  * @csqlfn #Tpcbox_gt()
  */
 bool tpcbox_gt(const TPCBox *box1, const TPCBox *box2)
-{ return tpcbox_cmp(box1, box2) >  0; }
+{
+  return tpcbox_cmp(box1, box2) >  0;
+}
 
 /**
  * @ingroup meos_pointcloud_box_comp
@@ -1057,16 +1130,12 @@ bool tpcbox_gt(const TPCBox *box1, const TPCBox *box2)
  * @csqlfn #Tpcbox_ge()
  */
 bool tpcbox_ge(const TPCBox *box1, const TPCBox *box2)
-{ return tpcbox_cmp(box1, box2) >= 0; }
+{
+  return tpcbox_cmp(box1, box2) >= 0;
+}
 
 /*****************************************************************************
- * Position predicates
- *
- * Strict / overlap variants across X / Y / Z / time. A predicate only
- * evaluates on dimensions both operands carry — if either box lacks X,
- * left/right/overleft/overright are all false, etc. This mirrors how
- * stbox's position operators behave, and is what the GiST operator
- * class expects.
+ * Position functions
  *****************************************************************************/
 
 /* X axis */
@@ -1080,9 +1149,10 @@ bool tpcbox_ge(const TPCBox *box1, const TPCBox *box2)
 bool
 left_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
-  VALIDATE_TPCBOX(box1, false); VALIDATE_TPCBOX(box2, false);
-  if (! ensure_same_pcid_tpcbox(box1, box2)) return false;
-  if (! MEOS_FLAGS_GET_X(box1->flags) || ! MEOS_FLAGS_GET_X(box2->flags))
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tpcbox_tpcbox(box1, box2) ||
+      ! ensure_has_X(T_TPCBOX, box1->flags) ||
+      ! ensure_has_X(T_TPCBOX, box2->flags))
     return false;
   return (box1->xmax < box2->xmin);
 }
@@ -1095,9 +1165,10 @@ left_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 bool
 overleft_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
-  VALIDATE_TPCBOX(box1, false); VALIDATE_TPCBOX(box2, false);
-  if (! ensure_same_pcid_tpcbox(box1, box2)) return false;
-  if (! MEOS_FLAGS_GET_X(box1->flags) || ! MEOS_FLAGS_GET_X(box2->flags))
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tpcbox_tpcbox(box1, box2) ||
+      ! ensure_has_X(T_TPCBOX, box1->flags) ||
+      ! ensure_has_X(T_TPCBOX, box2->flags))
     return false;
   return (box1->xmax <= box2->xmax);
 }
@@ -1110,9 +1181,10 @@ overleft_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 bool
 right_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
-  VALIDATE_TPCBOX(box1, false); VALIDATE_TPCBOX(box2, false);
-  if (! ensure_same_pcid_tpcbox(box1, box2)) return false;
-  if (! MEOS_FLAGS_GET_X(box1->flags) || ! MEOS_FLAGS_GET_X(box2->flags))
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tpcbox_tpcbox(box1, box2) ||
+      ! ensure_has_X(T_TPCBOX, box1->flags) ||
+      ! ensure_has_X(T_TPCBOX, box2->flags))
     return false;
   return (box1->xmin > box2->xmax);
 }
@@ -1125,9 +1197,10 @@ right_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 bool
 overright_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
-  VALIDATE_TPCBOX(box1, false); VALIDATE_TPCBOX(box2, false);
-  if (! ensure_same_pcid_tpcbox(box1, box2)) return false;
-  if (! MEOS_FLAGS_GET_X(box1->flags) || ! MEOS_FLAGS_GET_X(box2->flags))
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tpcbox_tpcbox(box1, box2) ||
+      ! ensure_has_X(T_TPCBOX, box1->flags) ||
+      ! ensure_has_X(T_TPCBOX, box2->flags))
     return false;
   return (box1->xmin >= box2->xmin);
 }
@@ -1142,9 +1215,10 @@ overright_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 bool
 below_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
-  VALIDATE_TPCBOX(box1, false); VALIDATE_TPCBOX(box2, false);
-  if (! ensure_same_pcid_tpcbox(box1, box2)) return false;
-  if (! MEOS_FLAGS_GET_X(box1->flags) || ! MEOS_FLAGS_GET_X(box2->flags))
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tpcbox_tpcbox(box1, box2) ||
+      ! ensure_has_X(T_TPCBOX, box1->flags) ||
+      ! ensure_has_X(T_TPCBOX, box2->flags))
     return false;
   return (box1->ymax < box2->ymin);
 }
@@ -1157,9 +1231,10 @@ below_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 bool
 overbelow_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
-  VALIDATE_TPCBOX(box1, false); VALIDATE_TPCBOX(box2, false);
-  if (! ensure_same_pcid_tpcbox(box1, box2)) return false;
-  if (! MEOS_FLAGS_GET_X(box1->flags) || ! MEOS_FLAGS_GET_X(box2->flags))
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tpcbox_tpcbox(box1, box2) ||
+      ! ensure_has_X(T_TPCBOX, box1->flags) ||
+      ! ensure_has_X(T_TPCBOX, box2->flags))
     return false;
   return (box1->ymax <= box2->ymax);
 }
@@ -1172,9 +1247,10 @@ overbelow_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 bool
 above_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
-  VALIDATE_TPCBOX(box1, false); VALIDATE_TPCBOX(box2, false);
-  if (! ensure_same_pcid_tpcbox(box1, box2)) return false;
-  if (! MEOS_FLAGS_GET_X(box1->flags) || ! MEOS_FLAGS_GET_X(box2->flags))
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tpcbox_tpcbox(box1, box2) ||
+      ! ensure_has_X(T_TPCBOX, box1->flags) ||
+      ! ensure_has_X(T_TPCBOX, box2->flags))
     return false;
   return (box1->ymin > box2->ymax);
 }
@@ -1187,9 +1263,10 @@ above_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 bool
 overabove_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
-  VALIDATE_TPCBOX(box1, false); VALIDATE_TPCBOX(box2, false);
-  if (! ensure_same_pcid_tpcbox(box1, box2)) return false;
-  if (! MEOS_FLAGS_GET_X(box1->flags) || ! MEOS_FLAGS_GET_X(box2->flags))
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tpcbox_tpcbox(box1, box2) ||
+      ! ensure_has_X(T_TPCBOX, box1->flags) ||
+      ! ensure_has_X(T_TPCBOX, box2->flags))
     return false;
   return (box1->ymin >= box2->ymin);
 }
@@ -1205,9 +1282,10 @@ overabove_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 bool
 front_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
-  VALIDATE_TPCBOX(box1, false); VALIDATE_TPCBOX(box2, false);
-  if (! ensure_same_pcid_tpcbox(box1, box2)) return false;
-  if (! MEOS_FLAGS_GET_Z(box1->flags) || ! MEOS_FLAGS_GET_Z(box2->flags))
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tpcbox_tpcbox(box1, box2) ||
+      ! ensure_has_Z(T_TPCBOX, box1->flags) ||
+      ! ensure_has_Z(T_TPCBOX, box2->flags))
     return false;
   return (box1->zmax < box2->zmin);
 }
@@ -1220,9 +1298,10 @@ front_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 bool
 overfront_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
-  VALIDATE_TPCBOX(box1, false); VALIDATE_TPCBOX(box2, false);
-  if (! ensure_same_pcid_tpcbox(box1, box2)) return false;
-  if (! MEOS_FLAGS_GET_Z(box1->flags) || ! MEOS_FLAGS_GET_Z(box2->flags))
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tpcbox_tpcbox(box1, box2) ||
+      ! ensure_has_Z(T_TPCBOX, box1->flags) ||
+      ! ensure_has_Z(T_TPCBOX, box2->flags))
     return false;
   return (box1->zmax <= box2->zmax);
 }
@@ -1235,9 +1314,10 @@ overfront_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 bool
 back_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
-  VALIDATE_TPCBOX(box1, false); VALIDATE_TPCBOX(box2, false);
-  if (! ensure_same_pcid_tpcbox(box1, box2)) return false;
-  if (! MEOS_FLAGS_GET_Z(box1->flags) || ! MEOS_FLAGS_GET_Z(box2->flags))
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tpcbox_tpcbox(box1, box2) ||
+      ! ensure_has_Z(T_TPCBOX, box1->flags) ||
+      ! ensure_has_Z(T_TPCBOX, box2->flags))
     return false;
   return (box1->zmin > box2->zmax);
 }
@@ -1250,9 +1330,10 @@ back_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 bool
 overback_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
-  VALIDATE_TPCBOX(box1, false); VALIDATE_TPCBOX(box2, false);
-  if (! ensure_same_pcid_tpcbox(box1, box2)) return false;
-  if (! MEOS_FLAGS_GET_Z(box1->flags) || ! MEOS_FLAGS_GET_Z(box2->flags))
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tpcbox_tpcbox(box1, box2) ||
+      ! ensure_has_Z(T_TPCBOX, box1->flags) ||
+      ! ensure_has_Z(T_TPCBOX, box2->flags))
     return false;
   return (box1->zmin >= box2->zmin);
 }
@@ -1268,9 +1349,10 @@ overback_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 bool
 before_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
-  VALIDATE_TPCBOX(box1, false); VALIDATE_TPCBOX(box2, false);
-  if (! ensure_same_pcid_tpcbox(box1, box2)) return false;
-  if (! MEOS_FLAGS_GET_T(box1->flags) || ! MEOS_FLAGS_GET_T(box2->flags))
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tpcbox_tpcbox(box1, box2) ||
+      ! ensure_has_T(T_TPCBOX, box1->flags) ||
+      ! ensure_has_T(T_TPCBOX, box2->flags))
     return false;
   return (DatumGetTimestampTz(box1->period.upper) <
           DatumGetTimestampTz(box2->period.lower));
@@ -1284,9 +1366,10 @@ before_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 bool
 overbefore_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
-  VALIDATE_TPCBOX(box1, false); VALIDATE_TPCBOX(box2, false);
-  if (! ensure_same_pcid_tpcbox(box1, box2)) return false;
-  if (! MEOS_FLAGS_GET_T(box1->flags) || ! MEOS_FLAGS_GET_T(box2->flags))
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tpcbox_tpcbox(box1, box2) ||
+      ! ensure_has_T(T_TPCBOX, box1->flags) ||
+      ! ensure_has_T(T_TPCBOX, box2->flags))
     return false;
   return (DatumGetTimestampTz(box1->period.upper) <=
           DatumGetTimestampTz(box2->period.upper));
@@ -1300,9 +1383,10 @@ overbefore_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 bool
 after_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
-  VALIDATE_TPCBOX(box1, false); VALIDATE_TPCBOX(box2, false);
-  if (! ensure_same_pcid_tpcbox(box1, box2)) return false;
-  if (! MEOS_FLAGS_GET_T(box1->flags) || ! MEOS_FLAGS_GET_T(box2->flags))
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tpcbox_tpcbox(box1, box2) ||
+      ! ensure_has_T(T_TPCBOX, box1->flags) ||
+      ! ensure_has_T(T_TPCBOX, box2->flags))
     return false;
   return (DatumGetTimestampTz(box1->period.lower) >
           DatumGetTimestampTz(box2->period.upper));
@@ -1316,9 +1400,10 @@ after_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 bool
 overafter_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
-  VALIDATE_TPCBOX(box1, false); VALIDATE_TPCBOX(box2, false);
-  if (! ensure_same_pcid_tpcbox(box1, box2)) return false;
-  if (! MEOS_FLAGS_GET_T(box1->flags) || ! MEOS_FLAGS_GET_T(box2->flags))
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tpcbox_tpcbox(box1, box2) ||
+      ! ensure_has_T(T_TPCBOX, box1->flags) ||
+      ! ensure_has_T(T_TPCBOX, box2->flags))
     return false;
   return (DatumGetTimestampTz(box1->period.lower) >=
           DatumGetTimestampTz(box2->period.lower));

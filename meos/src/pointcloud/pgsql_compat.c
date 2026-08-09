@@ -467,7 +467,7 @@ pc_patch_dimensional_deserialize(const SERIALIZED_PATCH *serpatch,
     PCBYTES *pcb = &(patch->bytes[i]);
     PCDIMENSION *dim = schema->dims[i];
     pc_bytes_deserialize(buf, dim, pcb,
-                         true /*readonly*/, false /*flipendian*/);
+      true /*readonly*/, false /*flipendian*/);
     pcb->npoints = npoints;
     buf += pc_bytes_serialized_size(pcb);
   }
@@ -544,6 +544,6 @@ meos_pc_patch_deserialize(const SERIALIZED_PATCH *serpatch,
   return NULL;
 }
 
-#endif /* !PC_API_HAS_SERIALIZE */
-
 /*****************************************************************************/
+
+#endif /* !PC_API_HAS_SERIALIZE */

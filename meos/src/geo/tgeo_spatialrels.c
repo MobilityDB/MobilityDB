@@ -637,6 +637,7 @@ ea_contains_tgeo_geo_common(const Temporal *temp, const GSERIALIZED *gs, bool ev
       ! ensure_not_geodetic_geo(gs) || ! ensure_has_not_Z_geo(gs) ||
       ! ensure_has_not_Z(temp->temptype, temp->flags))
     return -1;
+
   char p[10] = "T********";
   int result = ever ?
     spatialrel_tgeo_geo(temp, gs, PointerGetDatum(&p),
@@ -1335,7 +1336,7 @@ aintersects_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 int
 ea_touches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_tpoint_geo(temp, gs) || gserialized_is_empty(gs) ||
       /* The validity function ensures that both have the same geodetic flag */
       ! ensure_not_geodetic(temp->flags) || ! ensure_has_not_Z_geo(gs) ||
@@ -2121,7 +2122,7 @@ tgeoarr_tgeoarr_init(const Temporal **arr1, int count1, const Temporal **arr2,
     VALIDATE_TGEO(arr1[i], false);
   for (int j = 0; j < count2; j++)
     VALIDATE_TGEO(arr2[j], false);
-  int32 srid = tspatial_srid(arr1[0]);
+  int32_t srid = tspatial_srid(arr1[0]);
   int16 flags = arr1[0]->flags;
   for (int i = 1; i < count1; i++)
     if (! ensure_same_srid(tspatial_srid(arr1[i]), srid) ||

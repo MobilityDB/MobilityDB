@@ -100,7 +100,7 @@ pcpatch_meaningful_size(const Pcpatch *pa)
 }
 
 /*****************************************************************************
- * Validity helpers
+ * Validity functions
  *****************************************************************************/
 
 /**
@@ -187,11 +187,8 @@ pcpatch_parse(const char **str, bool end)
 Pcpatch *
 pcpatch_hex_in(const char *str)
 {
-  if (! str)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "Null input string");
-    return NULL;
-  }
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(str, NULL);
   return pcpatch_parse(&str, true);
 }
 
@@ -209,9 +206,11 @@ pcpatch_hex_in(const char *str)
 char *
 pcpatch_hex_out(const Pcpatch *pa, int maxdd)
 {
-  (void) maxdd;
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(pa, NULL);
+  if (! ensure_positive(maxdd))
+    return NULL;
+
   size_t byte_len = VARSIZE(pa);
   size_t meaningful = pcpatch_meaningful_size(pa);
   size_t hex_len = byte_len * 2;
@@ -347,21 +346,27 @@ pcpatch_cmp(const Pcpatch *pa1, const Pcpatch *pa2)
  * @brief Return true if two pcpatch values are equal
  */
 bool pcpatch_eq(const Pcpatch *pa1, const Pcpatch *pa2)
-{ return pcpatch_cmp(pa1, pa2) == 0; }
+{
+  return pcpatch_cmp(pa1, pa2) == 0;
+}
 
 /**
  * @ingroup meos_pointcloud_base_comp
  * @brief Return true if two pcpatch values differ
  */
 bool pcpatch_ne(const Pcpatch *pa1, const Pcpatch *pa2)
-{ return pcpatch_cmp(pa1, pa2) != 0; }
+{
+  return pcpatch_cmp(pa1, pa2) != 0;
+}
 
 /**
  * @ingroup meos_pointcloud_base_comp
  * @brief Return true if the first pcpatch precedes the second in total order
  */
 bool pcpatch_lt(const Pcpatch *pa1, const Pcpatch *pa2)
-{ return pcpatch_cmp(pa1, pa2) <  0; }
+{
+  return pcpatch_cmp(pa1, pa2) <  0;
+}
 
 /**
  * @ingroup meos_pointcloud_base_comp
@@ -369,7 +374,9 @@ bool pcpatch_lt(const Pcpatch *pa1, const Pcpatch *pa2)
  *   in total order
  */
 bool pcpatch_le(const Pcpatch *pa1, const Pcpatch *pa2)
-{ return pcpatch_cmp(pa1, pa2) <= 0; }
+{
+  return pcpatch_cmp(pa1, pa2) <= 0;
+}
 
 /**
  * @ingroup meos_pointcloud_base_comp
@@ -384,6 +391,8 @@ bool pcpatch_gt(const Pcpatch *pa1, const Pcpatch *pa2)
  *   in total order
  */
 bool pcpatch_ge(const Pcpatch *pa1, const Pcpatch *pa2)
-{ return pcpatch_cmp(pa1, pa2) >= 0; }
+{
+  return pcpatch_cmp(pa1, pa2) >= 0;
+}
 
 /*****************************************************************************/

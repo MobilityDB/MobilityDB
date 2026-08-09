@@ -717,8 +717,7 @@ Pose_set_srid(PG_FUNCTION_ARGS)
 {
   Pose *pose = PG_GETARG_POSE_P(0);
   int32_t srid = PG_GETARG_INT32(1);
-  Pose *result = pose_copy(pose);
-  pose_set_srid(result, srid);
+  Pose *result = pose_set_srid(pose, srid);
   PG_RETURN_POSE_P(result);
 }
 

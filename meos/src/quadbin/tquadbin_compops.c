@@ -33,7 +33,7 @@
  *
  * Analogue of `meos/src/h3/th3index_compops.c`. Every ever /
  * always / temporal comparison flavour for tquadbin is mirrored
- * from the th3index pattern, with the bare-cell operand carried as
+ * from the th3index pattern, with the base-cell operand carried as
  * `Quadbin` (int64).
  *
  * For QUADBIN cells, equality / inequality is exactly int64 bit-equality —
@@ -56,17 +56,15 @@
 #include "temporal/temporal.h"
 #include "temporal/temporal_compops.h"
 #include "temporal/type_util.h"
-/* tquadbin */
 #include "quadbin/tquadbin.h"
 #include "quadbin/quadbin.h"
-#include "quadbin/quadbin_meos.h"   /* DatumGetQuadbin / QuadbinGetDatum */
 
 /*****************************************************************************
  * Internal dispatchers
  *****************************************************************************/
 
 /**
- * @brief Return `true` if a temporal QUADBIN cell and a bare QUADBIN cell satisfy
+ * @brief Return `true` if a temporal QUADBIN cell and a base QUADBIN cell satisfy
  * the ever/always comparison.
  * @param[in] temp Temporal QUADBIN cell
  * @param[in] cell Bare QUADBIN cell
@@ -77,6 +75,8 @@ static int
 eacomp_tquadbin_quadbin(const Temporal *temp, Quadbin cell,
   Datum (*func)(Datum, Datum, MeosType), bool ever)
 {
+  /* Ensure the validity of the arguments */
+  assert(func);
   if (! ensure_valid_tquadbin_quadbin(temp, cell))
     return -1;
   return eacomp_temporal_base(temp, QuadbinGetDatum(cell), func, ever);
@@ -90,6 +90,8 @@ static int
 eacomp_tquadbin_tquadbin(const Temporal *temp1, const Temporal *temp2,
   Datum (*func)(Datum, Datum, MeosType), bool ever)
 {
+  /* Ensure the validity of the arguments */
+  assert(func);
   if (! ensure_valid_tquadbin_tquadbin(temp1, temp2))
     return -1;
   return eacomp_temporal_temporal(temp1, temp2, func, ever);
@@ -101,7 +103,8 @@ eacomp_tquadbin_tquadbin(const Temporal *temp1, const Temporal *temp2,
 
 /**
  * @ingroup meos_quadbin_comp_ever
- * @brief Return `true` if a temporal QUADBIN cell is ever equal to a bare QUADBIN cell.
+ * @brief Return `true` if a temporal QUADBIN cell is ever equal to a base
+ * QUADBIN cell.
  */
 int
 ever_eq_tquadbin_quadbin(const Temporal *temp, Quadbin cell)
@@ -111,7 +114,8 @@ ever_eq_tquadbin_quadbin(const Temporal *temp, Quadbin cell)
 
 /**
  * @ingroup meos_quadbin_comp_ever
- * @brief Return `true` if a bare QUADBIN cell is ever equal to a temporal QUADBIN cell.
+ * @brief Return `true` if a base QUADBIN cell is ever equal to a temporal
+ * QUADBIN cell.
  */
 int
 ever_eq_quadbin_tquadbin(Quadbin cell, const Temporal *temp)
@@ -121,7 +125,7 @@ ever_eq_quadbin_tquadbin(Quadbin cell, const Temporal *temp)
 
 /**
  * @ingroup meos_quadbin_comp_ever
- * @brief Return `true` if a temporal QUADBIN cell is ever not equal to a bare
+ * @brief Return `true` if a temporal QUADBIN cell is ever not equal to a base
  * QUADBIN cell.
  */
 int
@@ -132,7 +136,7 @@ ever_ne_tquadbin_quadbin(const Temporal *temp, Quadbin cell)
 
 /**
  * @ingroup meos_quadbin_comp_ever
- * @brief Return `true` if a bare QUADBIN cell is ever not equal to a temporal
+ * @brief Return `true` if a base QUADBIN cell is ever not equal to a temporal
  * QUADBIN cell.
  */
 int
@@ -143,7 +147,7 @@ ever_ne_quadbin_tquadbin(Quadbin cell, const Temporal *temp)
 
 /**
  * @ingroup meos_quadbin_comp_ever
- * @brief Return `true` if a temporal QUADBIN cell is always equal to a bare
+ * @brief Return `true` if a temporal QUADBIN cell is always equal to a base
  * QUADBIN cell.
  */
 int
@@ -154,7 +158,7 @@ always_eq_tquadbin_quadbin(const Temporal *temp, Quadbin cell)
 
 /**
  * @ingroup meos_quadbin_comp_ever
- * @brief Return `true` if a bare QUADBIN cell is always equal to a temporal
+ * @brief Return `true` if a base QUADBIN cell is always equal to a temporal
  * QUADBIN cell.
  */
 int
@@ -165,7 +169,7 @@ always_eq_quadbin_tquadbin(Quadbin cell, const Temporal *temp)
 
 /**
  * @ingroup meos_quadbin_comp_ever
- * @brief Return `true` if a temporal QUADBIN cell is always not equal to a bare
+ * @brief Return `true` if a temporal QUADBIN cell is always not equal to a base
  * QUADBIN cell.
  */
 int
@@ -176,7 +180,7 @@ always_ne_tquadbin_quadbin(const Temporal *temp, Quadbin cell)
 
 /**
  * @ingroup meos_quadbin_comp_ever
- * @brief Return `true` if a bare QUADBIN cell is always not equal to a temporal
+ * @brief Return `true` if a base QUADBIN cell is always not equal to a temporal
  * QUADBIN cell.
  */
 int
@@ -240,13 +244,15 @@ always_ne_tquadbin_tquadbin(const Temporal *temp1, const Temporal *temp2)
 
 /**
  * @brief Internal dispatcher for per-instant temporal comparisons against a
- * bare QUADBIN cell. Equality / inequality are commutative, so the (cell, temp)
+ * base QUADBIN cell. Equality / inequality are commutative, so the (cell, temp)
  * and (temp, cell) entry points share a single implementation.
  */
 static Temporal *
 tcomp_tquadbin_quadbin(const Temporal *temp, Quadbin cell,
   Datum (*func)(Datum, Datum, MeosType))
 {
+  /* Ensure the validity of the arguments */
+  assert(func);
   if (! ensure_valid_tquadbin_quadbin(temp, cell))
     return NULL;
   return tcomp_temporal_base(temp, QuadbinGetDatum(cell), func);
@@ -256,6 +262,8 @@ static Temporal *
 tcomp_quadbin_tquadbin(Quadbin cell, const Temporal *temp,
   Datum (*func)(Datum, Datum, MeosType))
 {
+  /* Ensure the validity of the arguments */
+  assert(func);
   if (! ensure_valid_tquadbin_quadbin(temp, cell))
     return NULL;
   return tcomp_temporal_base(temp, QuadbinGetDatum(cell), func);
@@ -264,7 +272,7 @@ tcomp_quadbin_tquadbin(Quadbin cell, const Temporal *temp,
 /**
  * @ingroup meos_quadbin_comp_temp
  * @brief Return the temporal equality between a temporal QUADBIN cell and a
- * bare QUADBIN cell.
+ * base QUADBIN cell.
  */
 Temporal *
 teq_tquadbin_quadbin(const Temporal *temp, Quadbin cell)
@@ -274,7 +282,7 @@ teq_tquadbin_quadbin(const Temporal *temp, Quadbin cell)
 
 /**
  * @ingroup meos_quadbin_comp_temp
- * @brief Return the temporal equality between a bare QUADBIN cell and a
+ * @brief Return the temporal equality between a base QUADBIN cell and a
  * temporal QUADBIN cell.
  */
 Temporal *
@@ -286,7 +294,7 @@ teq_quadbin_tquadbin(Quadbin cell, const Temporal *temp)
 /**
  * @ingroup meos_quadbin_comp_temp
  * @brief Return the temporal inequality between a temporal QUADBIN cell and a
- * bare QUADBIN cell.
+ * base QUADBIN cell.
  */
 Temporal *
 tne_tquadbin_quadbin(const Temporal *temp, Quadbin cell)
@@ -296,7 +304,7 @@ tne_tquadbin_quadbin(const Temporal *temp, Quadbin cell)
 
 /**
  * @ingroup meos_quadbin_comp_temp
- * @brief Return the temporal inequality between a bare QUADBIN cell and a
+ * @brief Return the temporal inequality between a base QUADBIN cell and a
  * temporal QUADBIN cell.
  */
 Temporal *

@@ -477,8 +477,7 @@ Cbuffer_set_srid(PG_FUNCTION_ARGS)
 {
   Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
   int32_t srid = PG_GETARG_INT32(1);
-  Cbuffer *result = cbuffer_copy(cb);
-  cbuffer_set_srid(result, srid);
+  Cbuffer *result = cbuffer_set_srid(cb, srid);
   PG_RETURN_CBUFFER_P(result);
 }
 

@@ -109,6 +109,10 @@ extern Datum datum_pose_round(Datum pose, Datum size);
 extern Pose *pose_transf_pj(const Pose *pose, int32_t srid_to,
   const LWPROJ *pj);
 
+/* Spatial reference system functions */
+
+extern void pose_set_srid_int(Pose *pose, int32_t srid);
+
 /* Distance */
 
 extern Datum pose_distance(Datum pose1, Datum pose2);

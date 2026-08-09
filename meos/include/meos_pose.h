@@ -42,7 +42,7 @@
 #include <meos_internal_geo.h>
 
 /*****************************************************************************
- * Struct definitions
+ * Definitions
  *****************************************************************************/
 
 /**
@@ -149,7 +149,7 @@ extern Pose **posearr_round(const Pose **posearr, int count, int maxdd);
 
 /* Spatial reference system functions */
 
-extern void pose_set_srid(Pose *pose, int32_t srid);
+extern Pose *pose_set_srid(const Pose *pose, int32_t srid);
 extern int32_t pose_srid(const Pose *pose);
 extern Pose *pose_transform(const Pose *pose, int32_t srid);
 extern Pose *pose_transform_pipeline(const Pose *pose, const char *pipelinestr, int32_t srid, bool is_forward);

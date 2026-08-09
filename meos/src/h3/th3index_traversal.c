@@ -39,18 +39,18 @@
  * can feed the result straight into a `tgeompoint`.
  */
 
+/* C */
 #include <string.h>
-
+/* H3 */
+#include <h3api.h>
+/* MEOS */
 #include <meos.h>
 #include <meos_h3.h>
-#include <h3api.h>
-
 #include "geo/tgeo_spatialfuncs.h"
 #include "meos_internal_geo.h"
 #include "temporal/temporal.h"
 #include "temporal/meos_catalog.h"
 #include "temporal/lifting.h"
-
 #include "h3/th3index_internal.h"
 
 /*****************************************************************************
@@ -101,16 +101,15 @@ h3_local_ij_to_cell_meos(H3Index origin, const GSERIALIZED *coord)
  * @ingroup meos_h3_traversal
  * @brief Return the temporal grid-hop distance between two temporal H3
  * cells.
- *
- * Shared with the `<->` operator on th3index (grid-hop distance,
+ * @details Shared with the `<->` operator on th3index (grid-hop distance,
  * not the arithmetic distance that tnumber's `<->` would give).
  * @csqlfn #Th3index_grid_distance()
  */
 Temporal *
 th3index_grid_distance(const Temporal *origin, const Temporal *dest)
 {
-  VALIDATE_TH3INDEX(origin, NULL);
-  VALIDATE_TH3INDEX(dest, NULL);
+  /* Ensure the validity of the arguments */
+  VALIDATE_TH3INDEX(origin, NULL); VALIDATE_TH3INDEX(dest, NULL);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -138,8 +137,8 @@ th3index_grid_distance(const Temporal *origin, const Temporal *dest)
 Temporal *
 th3index_cell_to_local_ij(const Temporal *origin, const Temporal *cell)
 {
-  VALIDATE_TH3INDEX(origin, NULL);
-  VALIDATE_TH3INDEX(cell, NULL);
+  /* Ensure the validity of the arguments */
+  VALIDATE_TH3INDEX(origin, NULL); VALIDATE_TH3INDEX(cell, NULL);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -167,8 +166,8 @@ th3index_cell_to_local_ij(const Temporal *origin, const Temporal *cell)
 Temporal *
 th3index_local_ij_to_cell(const Temporal *origin, const Temporal *coord)
 {
-  VALIDATE_TH3INDEX(origin, NULL);
-  VALIDATE_TGEOMPOINT(coord, NULL);
+  /* Ensure the validity of the arguments */
+  VALIDATE_TH3INDEX(origin, NULL); VALIDATE_TGEOMPOINT(coord, NULL);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));

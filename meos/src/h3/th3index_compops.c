@@ -1,4 +1,4 @@
-/*****************************************************************************
+  /*****************************************************************************
  *
  * This MobilityDB code is provided under The PostgreSQL License.
  * Copyright (c) 2016-2025, Université libre de Bruxelles and MobilityDB
@@ -59,7 +59,6 @@
 #include "temporal/temporal.h"
 #include "temporal/temporal_compops.h"
 #include "temporal/type_util.h"
-/* th3index */
 #include "h3/th3index.h"
 #include "h3/h3index.h"
 
@@ -79,6 +78,7 @@ static int
 eacomp_th3index_h3index(const Temporal *temp, H3Index cell,
   Datum (*func)(Datum, Datum, MeosType), bool ever)
 {
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_th3index_h3index(temp, cell))
     return -1;
   return eacomp_temporal_base(temp, H3IndexGetDatum(cell), func, ever);
@@ -92,6 +92,7 @@ static int
 eacomp_th3index_th3index(const Temporal *temp1, const Temporal *temp2,
   Datum (*func)(Datum, Datum, MeosType), bool ever)
 {
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_th3index_th3index(temp1, temp2))
     return -1;
   return eacomp_temporal_temporal(temp1, temp2, func, ever);
@@ -261,15 +262,20 @@ static Temporal *
 tcomp_th3index_h3index(const Temporal *temp, H3Index cell,
   Datum (*func)(Datum, Datum, MeosType))
 {
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_th3index_h3index(temp, cell))
     return NULL;
   return tcomp_temporal_base(temp, H3IndexGetDatum(cell), func);
 }
 
+/**
+ * @brief
+ */
 static Temporal *
 tcomp_h3index_th3index(H3Index cell, const Temporal *temp,
   Datum (*func)(Datum, Datum, MeosType))
 {
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_th3index_h3index(temp, cell))
     return NULL;
   return tcomp_temporal_base(temp, H3IndexGetDatum(cell), func);
@@ -332,6 +338,7 @@ tne_h3index_th3index(H3Index cell, const Temporal *temp)
 Temporal *
 teq_th3index_th3index(const Temporal *temp1, const Temporal *temp2)
 {
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_th3index_th3index(temp1, temp2))
     return NULL;
   return tcomp_temporal_temporal(temp1, temp2, &datum2_eq);
@@ -346,6 +353,7 @@ teq_th3index_th3index(const Temporal *temp1, const Temporal *temp2)
 Temporal *
 tne_th3index_th3index(const Temporal *temp1, const Temporal *temp2)
 {
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_th3index_th3index(temp1, temp2))
     return NULL;
   return tcomp_temporal_temporal(temp1, temp2, &datum2_ne);

@@ -19,6 +19,10 @@
 #include <meos_pointcloud.h>
 #include "temporal/temporal.h"
 
+/*****************************************************************************/
+
+extern void tpcbox_expand(const TPCBox *box1, TPCBox *box2);
+
 extern void tpointcloudinst_set_tpcbox(const TInstant *inst, TPCBox *box);
 extern void tpointcloudinstarr_set_tpcbox(TInstant **instants, int count,
   bool lower_inc, bool upper_inc, interpType interp, TPCBox *box);
@@ -57,5 +61,7 @@ extern double nad_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2);
 extern double nad_tpointcloud_tpcbox(const Temporal *temp, const TPCBox *box);
 extern double nad_tpointcloud_tpointcloud(const Temporal *temp1,
   const Temporal *temp2);
+
+/*****************************************************************************/
 
 #endif /* __TPC_BOXOPS_H__ */

@@ -74,7 +74,7 @@
   #include "pose/tpose_boxops.h"
 #endif
 #if QUADBIN
-  #include "quadbin/quadbin_meos.h"
+  #include "quadbin/quadbin.h"
   #include "quadbin/tquadbin_boxops.h"
 #endif
 #if RGEO
@@ -96,7 +96,7 @@ extern void ll2cart(const POINT2D *g, POINT3D *p);
  *****************************************************************************/
 
 /**
- * @ingroup meos_geo_box_transf
+ * @ingroup meos_internal_geo_box_transf
  * @brief Return the second spatiotemporal box expanded with the first one
  * @param[in] box1 Spatiotemporal box
  * @param[in,out] box2 Spatiotemporal box
@@ -107,6 +107,7 @@ void
 stbox_expand(const STBox *box1, STBox *box2)
 {
   assert(box1); assert(box2);
+  
   if (MEOS_FLAGS_GET_X(box2->flags))
   {
     box2->xmin = Min(box1->xmin, box2->xmin);
@@ -337,11 +338,13 @@ stbox_as_hexwkb(const STBox *box, uint8_t variant, size_t *size_out)
  * @csqlfn #Stbox_constructor_x()
  */
 STBox *
-stbox_make(bool hasx, bool hasz, bool geodetic, int32 srid, double xmin,
+stbox_make(bool hasx, bool hasz, bool geodetic, int32_t srid, double xmin,
   double xmax, double ymin, double ymax, double zmin, double zmax,
   const Span *s)
 {
   /* Ensure the validity of the arguments */
+  if (srid == SRID_INVALID)
+    return NULL;
 #if MEOS
   if (s && s->spantype != T_TSTZSPAN)
     return NULL;
@@ -371,7 +374,7 @@ stbox_make(bool hasx, bool hasz, bool geodetic, int32 srid, double xmin,
  * @note This function is equivalent to #stbox_make without memory allocation
  */
 void
-stbox_set(bool hasx, bool hasz, bool geodetic, int32 srid, double xmin,
+stbox_set(bool hasx, bool hasz, bool geodetic, int32_t srid, double xmin,
   double xmax, double ymin, double ymax, double zmin, double zmax,
   const Span *s, STBox *result)
 {
@@ -546,6 +549,7 @@ stbox_to_gbox(const STBox *box)
   VALIDATE_NOT_NULL(box, NULL);
   if (! ensure_has_X(T_STBOX, box->flags))
     return NULL;
+
   GBOX *result = palloc(sizeof(GBOX));
   stbox_set_gbox(box, result);
   return result;
@@ -1138,7 +1142,6 @@ bool
 stbox_xmin(const STBox *box, double *result)
 {
   /* Ensure the validity of the arguments */
-
   VALIDATE_NOT_NULL(box, false); VALIDATE_NOT_NULL(result, false);
   if (! MEOS_FLAGS_GET_X(box->flags))
     return false;
@@ -1790,8 +1793,7 @@ stbox_stbox_flags(const STBox *box1, const STBox *box2, bool *hasx,
 /**
  * @brief Verify the conditions and set the ouput variables with the values of
  * the flags of the boxes
- *
- * Mixing 2D/3D is enabled to compute, for example, 2.5D operations
+ * @brief Mixing 2D/3D is enabled to compute, for example, 2.5D operations
  * @param[in] box1,box2 Input boxes
  * @param[out] hasx,hasz,hast,geodetic Boolean variables
  */
@@ -2388,10 +2390,10 @@ intersection_stbox_stbox(const STBox *box1, const STBox *box2)
 STBox *
 stbox_quad_split(const STBox *box, int *count)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(count, NULL);
   /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL); 
   *count = 0;
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(box, NULL);
   if (! ensure_has_X(T_STBOX, box->flags))
     return NULL;

@@ -13,14 +13,14 @@
 
 	<para>El tipo de índice de celda QUADBIN temporal <varname>tquadbin</varname> representa el movimiento de los objetos como una secuencia de identificadores de celdas cuadradas QUADBIN. <ulink url="https://docs.carto.com/data-and-analysis/analytics-toolbox-for-bigquery/key-concepts/spatial-indexes#quadbin">QUADBIN de CARTO</ulink> es un sistema de cuadrícula cuadrada jerárquica construido sobre el esquema de teselas slippy-map (web-mercator): una única celda mundial en la resolución 0 se subdivide en cuatro hijos iguales en cada resolución más fina (hasta la resolución 26). Cada celda tiene un identificador entero de 64 bits que codifica una etiqueta de cabecera, la resolución y las coordenadas de tesela de la celda.</para>
 
-	<para>El tipo <varname>tquadbin</varname> comparte su representación en disco con <varname>tbigint</varname>: ambos almacenan un entero temporal de 64 bits. El tipo SQL distinto existe únicamente para que el verificador de tipos rechace las funciones específicas de QUADBIN cuando se aplican a trayectorias <varname>tbigint</varname> arbitrarias (y viceversa). Las conversiones desde y hacia <varname>tbigint</varname> son <emphasis>explícitas</emphasis> (<varname>AS ASSIGNMENT</varname>) y de coerción binaria solamente — sin coste en tiempo de ejecución pero requieren un <varname>::</varname> explícito en SQL.</para>
+	<para>El tipo <varname>tquadbin</varname> comparte su representación en disco con <varname>tbigint</varname>: ambos almacenan un entero temporal de 64 bits. El tipo SQL distinto existe únicamente para que el verificador de tipos rechace las funciones específicas de QUADBIN cuando se aplican a trayectorias <varname>tbigint</varname> arbitrarias (y viceversa). Las conversiones desde y hacia <varname>tbigint</varname> son <emphasis>explícitas</emphasis> (<varname>AS ASSIGNMENT</varname>) y de coerción binaria solamente, sin coste en tiempo de ejecución pero requieren un <varname>::</varname> explícito en SQL.</para>
 
-	<para>Como con otros tipos temporales, <varname>tquadbin</varname> tiene cuatro subtipos: <varname>Instant</varname>, secuencia discreta, secuencia continua con interpolación de pasos (las celdas QUADBIN son discretas — la interpolación lineal carece de sentido), y <varname>SequenceSet</varname>.</para>
+	<para>Como con otros tipos temporales, <varname>tquadbin</varname> tiene cuatro subtipos: <varname>Instant</varname>, secuencia discreta, secuencia continua con interpolación de pasos (las celdas QUADBIN son discretas, la interpolación lineal carece de sentido), y <varname>SequenceSet</varname>.</para>
 
 
 	<sect1 xml:id="tquadbin_inout">
 		<title>Entrada y Salida</title>
-		<para>Un valor <varname>tquadbin</varname> se introduce utilizando la sintaxis temporal estándar con el identificador de celda QUADBIN de 64 bits subyacente. El analizador acepta la forma hexadecimal canónica, con un prefijo <varname>0x</varname> opcional, en cualquiera de las dos cajas de letra, tal como la lee la implementación de referencia de CARTO. El hexadecimal es idiomático en el ecosistema QUADBIN y es lo que emite la función de salida — todos los ejemplos siguientes lo usan. Como referencia, el valor hexadecimal <varname>480fffffffffffff</varname> empleado en los ejemplos es la celda mundial de resolución 0, igual al valor decimal <varname>5192650370358181887</varname>.</para>
+		<para>Un valor <varname>tquadbin</varname> se introduce utilizando la sintaxis temporal estándar con el identificador de celda QUADBIN de 64 bits subyacente. El analizador acepta la forma hexadecimal canónica, con un prefijo <varname>0x</varname> opcional, en cualquiera de las dos cajas de letra, tal como la lee la implementación de referencia de CARTO. El hexadecimal es idiomático en el ecosistema QUADBIN y es lo que emite la función de salida, todos los ejemplos siguientes lo usan. Como referencia, el valor hexadecimal <varname>480fffffffffffff</varname> empleado en los ejemplos es la celda mundial de resolución 0, igual al valor decimal <varname>5192650370358181887</varname>.</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tquadbin '480fffffffffffff@2001-01-01';
 SELECT tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}';
@@ -52,7 +52,7 @@ SELECT tquadbinFromMFJSON(asMFJSON(tquadbin '480fffffffffffff@2001-01-01'));
 	<sect1 xml:id="tquadbin_conversions">
 		<title>Conversiones</title>
 
-		<para>Un valor <varname>tquadbin</varname> comparte la misma representación en disco que <varname>tbigint</varname>. La conversión por coerción binaria entre ellos es <emphasis>explícita</emphasis> — requiere <varname>::</varname> — para que las funciones específicas de QUADBIN no puedan ser invocadas silenciosamente sobre trayectorias <varname>tbigint</varname> arbitrarias.</para>
+		<para>Un valor <varname>tquadbin</varname> comparte la misma representación en disco que <varname>tbigint</varname>. La conversión por coerción binaria entre ellos es <emphasis>explícita</emphasis>, requiere <varname>::</varname>, para que las funciones específicas de QUADBIN no puedan ser invocadas silenciosamente sobre trayectorias <varname>tbigint</varname> arbitrarias.</para>
 
 		<itemizedlist>
 			<listitem xml:id="tquadbin_tbigint">
@@ -323,7 +323,7 @@ SELECT quadbinTileToCell(524, 343, 10) = quadbin '48a6227affffffff';
 
 			<listitem xml:id="tquadbin_quadbin_cell_to_tile">
 				<indexterm significance="normal"><primary><varname>quadbinCellToTile</varname></primary></indexterm>
-				<para>Descompone una celda en su triple de coordenadas de tesela, devuelto como un arreglo de enteros <varname>{x, y, z}</varname> — la inversa de <varname>quadbinTileToCell</varname></para>
+				<para>Descompone una celda en su triple de coordenadas de tesela, devuelto como un arreglo de enteros <varname>{x, y, z}</varname>, la inversa de <varname>quadbinTileToCell</varname></para>
 				<para><varname>quadbinCellToTile(quadbin) → integer[]</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT quadbinCellToTile(quadbin '480fffffffffffff');

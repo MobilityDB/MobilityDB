@@ -171,12 +171,12 @@ spatial_set_srid(Datum d, MeosType basetype, int32_t srid)
       return true;
 #if CBUFFER
     case T_CBUFFER:
-      cbuffer_set_srid(DatumGetCbufferP(d), srid);
+      cbuffer_set_srid_int(DatumGetCbufferP(d), srid);
       return true;
 #endif
 #if POSE || RGEO
     case T_POSE:
-      pose_set_srid(DatumGetPoseP(d), srid);
+      pose_set_srid_int(DatumGetPoseP(d), srid);
       return true;
 #endif
 #if H3

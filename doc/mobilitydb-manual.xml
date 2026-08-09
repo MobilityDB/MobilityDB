@@ -131,9 +131,9 @@
 	&temporal_spatial_p2;
 	&temporal_types_analytics;
 	&temporal_types_aggregation;
-	&temporal_poses;
 	&temporal_network_points;
 	&temporal_circular_buffers;
+	&temporal_poses;
 	&temporal_rigid_geometries;
 	&temporal_jsonb;
 	&temporal_h3_index;
@@ -143,8 +143,6 @@
 	&reference;
 	&portable_sql;
 	&data_generator;
-<!--
 	<index />
--->
 
 </book>

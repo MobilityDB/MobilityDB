@@ -137,7 +137,7 @@ Tpcbox_constructor_2d(PG_FUNCTION_ARGS)
   double xmax = PG_GETARG_FLOAT8(2);
   double ymax = PG_GETARG_FLOAT8(3);
   int32 pcid = PG_GETARG_INT32(4);
-  int32 srid = PG_GETARG_INT32(5);
+  int32_t srid = PG_GETARG_INT32(5);
   PG_RETURN_TPCBOX_P(tpcbox_make(true, false, false, false,
     srid, (uint32_t) pcid, xmin, xmax, ymin, ymax, 0.0, 0.0, NULL));
 }
@@ -159,7 +159,7 @@ Tpcbox_constructor_3d(PG_FUNCTION_ARGS)
   double ymax = PG_GETARG_FLOAT8(4);
   double zmax = PG_GETARG_FLOAT8(5);
   int32 pcid = PG_GETARG_INT32(6);
-  int32 srid = PG_GETARG_INT32(7);
+  int32_t srid = PG_GETARG_INT32(7);
   PG_RETURN_TPCBOX_P(tpcbox_make(true, true, false, false,
     srid, (uint32_t) pcid, xmin, xmax, ymin, ymax, zmin, zmax, NULL));
 }
@@ -196,7 +196,7 @@ Tpcbox_constructor_xt(PG_FUNCTION_ARGS)
   double ymax = PG_GETARG_FLOAT8(3);
   Span *period = PG_GETARG_SPAN_P(4);
   int32 pcid = PG_GETARG_INT32(5);
-  int32 srid = PG_GETARG_INT32(6);
+  int32_t srid = PG_GETARG_INT32(6);
   PG_RETURN_TPCBOX_P(tpcbox_make(true, false, true, false,
     srid, (uint32_t) pcid, xmin, xmax, ymin, ymax, 0.0, 0.0, period));
 }
@@ -219,7 +219,7 @@ Tpcbox_constructor_zt(PG_FUNCTION_ARGS)
   double zmax = PG_GETARG_FLOAT8(5);
   Span *period = PG_GETARG_SPAN_P(6);
   int32 pcid = PG_GETARG_INT32(7);
-  int32 srid = PG_GETARG_INT32(8);
+  int32_t srid = PG_GETARG_INT32(8);
   PG_RETURN_TPCBOX_P(tpcbox_make(true, true, true, false,
     srid, (uint32_t) pcid, xmin, xmax, ymin, ymax, zmin, zmax, period));
 }
@@ -259,7 +259,7 @@ Datum
 Pcpatch_to_tpcbox_srid(PG_FUNCTION_ARGS)
 {
   Pcpatch *pa = PG_GETARG_PCPATCH_P(0);
-  int32 srid = PG_GETARG_INT32(1);
+  int32_t srid = PG_GETARG_INT32(1);
   TPCBox *result = pcpatch_to_tpcbox(pa, srid);
   PG_FREE_IF_COPY(pa, 0);
   PG_RETURN_TPCBOX_P(result);
@@ -530,7 +530,7 @@ Datum
 Tpcbox_set_srid(PG_FUNCTION_ARGS)
 {
   TPCBox *box = PG_GETARG_TPCBOX_P(0);
-  int32 srid = PG_GETARG_INT32(1);
+  int32_t srid = PG_GETARG_INT32(1);
   TPCBox *result = tpcbox_set_srid(box, srid);
   if (! result) PG_RETURN_NULL();
   PG_RETURN_TPCBOX_P(result);

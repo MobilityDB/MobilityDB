@@ -13,14 +13,14 @@
 
 	<para>El tipo de índice de celda H3 temporal <varname>th3index</varname> representa el movimiento de los objetos como una secuencia de identificadores de celdas hexagonales H3. <ulink url="https://h3geo.org/">H3 de Uber</ulink> es un sistema de cuadrícula global discreta que tesela la esfera en 122 celdas base en la resolución 0 y subdivide cada celda en 7 hijos en cada resolución más fina (hasta la resolución 15). Cada celda tiene un identificador entero de 64 bits que codifica la celda base, la resolución y la posición jerárquica.</para>
 
-	<para>El tipo <varname>th3index</varname> comparte su representación en disco con <varname>tbigint</varname>: ambos almacenan un entero temporal de 64 bits. El tipo SQL distinto existe únicamente para que el verificador de tipos rechace las funciones específicas de H3 cuando se aplican a trayectorias <varname>tbigint</varname> arbitrarias (y viceversa). Las conversiones desde y hacia <varname>tbigint</varname> son <emphasis>explícitas</emphasis> (<varname>AS ASSIGNMENT</varname>) y de coerción binaria solamente — sin coste en tiempo de ejecución pero requieren un <varname>::</varname> explícito en SQL.</para>
+	<para>El tipo <varname>th3index</varname> comparte su representación en disco con <varname>tbigint</varname>: ambos almacenan un entero temporal de 64 bits. El tipo SQL distinto existe únicamente para que el verificador de tipos rechace las funciones específicas de H3 cuando se aplican a trayectorias <varname>tbigint</varname> arbitrarias (y viceversa). Las conversiones desde y hacia <varname>tbigint</varname> son <emphasis>explícitas</emphasis> (<varname>AS ASSIGNMENT</varname>) y de coerción binaria solamente, sin coste en tiempo de ejecución pero requieren un <varname>::</varname> explícito en SQL.</para>
 
-	<para>Como con otros tipos temporales, <varname>th3index</varname> tiene cuatro subtipos: <varname>Instant</varname>, secuencia discreta, secuencia continua con interpolación de pasos (las celdas H3 son discretas — la interpolación lineal carece de sentido), y <varname>SequenceSet</varname>.</para>
+	<para>Como con otros tipos temporales, <varname>th3index</varname> tiene cuatro subtipos: <varname>Instant</varname>, secuencia discreta, secuencia continua con interpolación de pasos (las celdas H3 son discretas, la interpolación lineal carece de sentido), y <varname>SequenceSet</varname>.</para>
 
 
 	<sect1 xml:id="th3_inout">
 		<title>Entrada y Salida</title>
-		<para>Un valor <varname>th3index</varname> se introduce utilizando la sintaxis temporal estándar con el identificador de celda H3 de 64 bits subyacente. El analizador acepta la forma hexadecimal canónica (la que produce la CLI de H3 y <varname>h3_cell_to_string</varname> en el proyecto original), con un prefijo <varname>0x</varname> opcional, tal como la lee la propia biblioteca H3. El hexadecimal es idiomático en el ecosistema H3 y es lo que emite la función de salida — todos los ejemplos siguientes lo usan.</para>
+		<para>Un valor <varname>th3index</varname> se introduce utilizando la sintaxis temporal estándar con el identificador de celda H3 de 64 bits subyacente. El analizador acepta la forma hexadecimal canónica (la que produce la CLI de H3 y <varname>h3_cell_to_string</varname> en el proyecto original), con un prefijo <varname>0x</varname> opcional, tal como la lee la propia biblioteca H3. El hexadecimal es idiomático en el ecosistema H3 y es lo que emite la función de salida, todos los ejemplos siguientes lo usan.</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT th3index '831c02fffffffff@2001-01-01';
 SELECT th3index '{831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02}';
@@ -46,7 +46,7 @@ SELECT th3indexFromHexWKB(asHexWKB(th3index '831c02fffffffff@2001-01-01'));
 	<sect1 xml:id="th3_conversions">
 		<title>Conversiones</title>
 
-		<para>Un valor <varname>th3index</varname> comparte la misma representación en disco que <varname>tbigint</varname>. La conversión por coerción binaria entre ellos es <emphasis>explícita</emphasis> — requiere <varname>::</varname> — para que las funciones específicas de H3 no puedan ser invocadas silenciosamente sobre trayectorias <varname>tbigint</varname> arbitrarias.</para>
+		<para>Un valor <varname>th3index</varname> comparte la misma representación en disco que <varname>tbigint</varname>. La conversión por coerción binaria entre ellos es <emphasis>explícita</emphasis>, requiere <varname>::</varname>, para que las funciones específicas de H3 no puedan ser invocadas silenciosamente sobre trayectorias <varname>tbigint</varname> arbitrarias.</para>
 
 		<itemizedlist>
 			<listitem xml:id="th3_tbigint">
@@ -104,7 +104,7 @@ SELECT geoToH3IndexSet(geometry 'SRID=4326;Point(4.35 50.85)', 7);
 
 			<listitem xml:id="th3_ever_eq_set">
 				<indexterm significance="normal"><primary><varname>eEq</varname></primary></indexterm>
-				<para>Devuelve si una trayectoria H3 temporal toma alguna vez una de las celdas de un conjunto de celdas. Combinada con <varname>geoToH3IndexSet</varname> responde si un viaje pasa alguna vez por una región, sin materializar la geometría de la trayectoria — el prefiltro robusto y conservador para el predicado exacto <varname>eIntersects(geometry,th3index)</varname>.</para>
+				<para>Devuelve si una trayectoria H3 temporal toma alguna vez una de las celdas de un conjunto de celdas. Combinada con <varname>geoToH3IndexSet</varname> responde si un viaje pasa alguna vez por una región, sin materializar la geometría de la trayectoria, el prefiltro robusto y conservador para el predicado exacto <varname>eIntersects(geometry,th3index)</varname>.</para>
 				<para><varname>eEq(h3indexset,th3index) → boolean</varname></para>
 				<para><varname>h3indexset ?= th3index → boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -325,7 +325,7 @@ SELECT ST_NPoints(getValue(th3CellToBoundary(th3index '871fa44a8ffffff@2001-01-0
 
 	<sect1 xml:id="th3_edges">
 		<title>Aristas Dirigidas</title>
-		<para>Las aristas dirigidas H3 son a su vez identificadores de 64 bits (codificados de manera diferente a los identificadores de celda — <varname>isValidDirectedEdge</varname> los distingue). El tipo <varname>th3index</varname> de MobilityDB transporta las aristas dirigidas por convención: el mismo tipo, interpretado a través de las funciones de acceso específicas de las aristas.</para>
+		<para>Las aristas dirigidas H3 son a su vez identificadores de 64 bits (codificados de manera diferente a los identificadores de celda, <varname>isValidDirectedEdge</varname> los distingue). El tipo <varname>th3index</varname> de MobilityDB transporta las aristas dirigidas por convención: el mismo tipo, interpretado a través de las funciones de acceso específicas de las aristas.</para>
 		<itemizedlist>
 			<listitem xml:id="th3_h3_are_neighbor_cells">
 				<indexterm significance="normal"><primary><varname>th3AreNeighborCells</varname></primary></indexterm>
@@ -670,7 +670,7 @@ SELECT th3index '871fa44a8ffffff@2001-01-01' #&gt;&gt;
 
 	<sect1 xml:id="th3_set_returning">
 		<title>Funciones que devuelven conjuntos</title>
-		<para>Las siguientes funciones estáticas devuelven un <varname>h3indexset</varname> (o <varname>intset</varname> para <varname>h3GetIcosahedronFaces</varname>) — el tipo compañero de colección finita de <varname>h3index</varname>. Operan sobre un <varname>h3index</varname> estático (o un <varname>h3indexset</varname>) y no están elevadas a <varname>th3index</varname>; el levantamiento temporal está diferido a la espera de una primitiva <varname>tset&lt;T&gt;</varname>.</para>
+		<para>Las siguientes funciones estáticas devuelven un <varname>h3indexset</varname> (o <varname>intset</varname> para <varname>h3GetIcosahedronFaces</varname>), el tipo compañero de colección finita de <varname>h3index</varname>. Operan sobre un <varname>h3index</varname> estático (o un <varname>h3indexset</varname>) y no están elevadas a <varname>th3index</varname>; el levantamiento temporal está diferido a la espera de una primitiva <varname>tset&lt;T&gt;</varname>.</para>
 
 		<itemizedlist>
 			<listitem xml:id="th3_h3_grid_disk">
@@ -719,7 +719,7 @@ SELECT h3CellToChildren(h3index '831c02fffffffff', 4);
 
 			<listitem xml:id="th3_h3_compact_cells">
 				<indexterm significance="normal"><primary><varname>h3CompactCells</varname></primary></indexterm>
-				<para>Representación compactada de un conjunto de celdas — las celdas más finas se fusionan en su padre cuando el conjunto hexagonal completo de hermanas está presente.</para>
+				<para>Representación compactada de un conjunto de celdas, las celdas más finas se fusionan en su padre cuando el conjunto hexagonal completo de hermanas está presente.</para>
 				<para><varname>h3CompactCells(h3indexset) → h3indexset</varname></para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT h3CompactCells(h3CellToChildren(h3index '831c02fffffffff', 4));
@@ -729,7 +729,7 @@ SELECT h3CompactCells(h3CellToChildren(h3index '831c02fffffffff', 4));
 
 			<listitem xml:id="th3_h3_uncompact_cells">
 				<indexterm significance="normal"><primary><varname>h3UncompactCells</varname></primary></indexterm>
-				<para>Representación descompactada a la resolución dada — la inversa de <varname>h3CompactCells</varname>.</para>
+				<para>Representación descompactada a la resolución dada, la inversa de <varname>h3CompactCells</varname>.</para>
 				<para><varname>h3UncompactCells(h3indexset, integer) → h3indexset</varname></para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT numValues(h3UncompactCells(
@@ -775,7 +775,7 @@ SELECT h3GetIcosahedronFaces(h3index '831c02fffffffff');
 	<sect1 xml:id="th3_spatialrels">
 		<title>Relaciones Espaciales</title>
 
-		<para>Las relaciones espaciales evalúan un argumento <varname>th3index</varname> a través de la geometría de frontera de celda en cada instante —la huella hexagonal de cada celda, devuelta por <varname>th3CellToBoundary</varname>— y luego aplican la relación correspondiente de los tipos geométricos temporales. Cada relación tiene tres formas cuantificadas: la forma <emphasis>alguna vez</emphasis> con prefijo <varname>e</varname> devuelve <varname>true</varname> cuando la relación se cumple en algún instante, la forma <emphasis>siempre</emphasis> con prefijo <varname>a</varname> cuando se cumple en todos los instantes, y la forma <emphasis>temporal</emphasis> con prefijo <varname>t</varname> devuelve un <varname>tbool</varname> con el resultado instante a instante. Todas las formas aceptan los tres órdenes de argumentos <varname>(geometry, th3index)</varname>, <varname>(th3index, geometry)</varname> y <varname>(th3index, th3index)</varname>.</para>
+		<para>Las relaciones espaciales evalúan un argumento <varname>th3index</varname> a través de la geometría de frontera de celda en cada instante,la huella hexagonal de cada celda, devuelta por <varname>th3CellToBoundary</varname>— y luego aplican la relación correspondiente de los tipos geométricos temporales. Cada relación tiene tres formas cuantificadas: la forma <emphasis>alguna vez</emphasis> con prefijo <varname>e</varname> devuelve <varname>true</varname> cuando la relación se cumple en algún instante, la forma <emphasis>siempre</emphasis> con prefijo <varname>a</varname> cuando se cumple en todos los instantes, y la forma <emphasis>temporal</emphasis> con prefijo <varname>t</varname> devuelve un <varname>tbool</varname> con el resultado instante a instante. Todas las formas aceptan los tres órdenes de argumentos <varname>(geometry, th3index)</varname>, <varname>(th3index, geometry)</varname> y <varname>(th3index, th3index)</varname>.</para>
 
 		<itemizedlist>
 			<listitem xml:id="th3_rel_contains">
