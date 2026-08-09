@@ -40,18 +40,18 @@
  * string at every instant.
  */
 
+/* C */
 #include <string.h>
-
+/* H3 */
+#include <h3api.h>
+/* MEOS */
 #include <meos.h>
 #include <meos_h3.h>
-#include <h3api.h>
-
 #include "geo/tgeo_spatialfuncs.h"
 #include "meos_internal_geo.h"
 #include "temporal/temporal.h"
 #include "temporal/meos_catalog.h"
 #include "temporal/lifting.h"
-
 #include "h3/th3index_internal.h"
 
 /*****************************************************************************
@@ -178,11 +178,10 @@ h3_gs_great_circle_distance_meos(const GSERIALIZED *a, const GSERIALIZED *b,
 Temporal *
 th3index_cell_area(const Temporal *temp, const char *unit)
 {
-  VALIDATE_TH3INDEX(temp, NULL);
-  VALIDATE_NOT_NULL(unit, NULL);
+  /* Ensure the validity of the arguments */
+  VALIDATE_TH3INDEX(temp, NULL); VALIDATE_NOT_NULL(unit, NULL);
 
   H3Unit u = h3_unit_from_cstring(unit);
-
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &datum_h3_cell_area;
@@ -209,11 +208,10 @@ th3index_cell_area(const Temporal *temp, const char *unit)
 Temporal *
 th3index_edge_length(const Temporal *temp, const char *unit)
 {
-  VALIDATE_TH3INDEX(temp, NULL);
-  VALIDATE_NOT_NULL(unit, NULL);
+  /* Ensure the validity of the arguments */
+  VALIDATE_TH3INDEX(temp, NULL); VALIDATE_NOT_NULL(unit, NULL);
 
   H3Unit u = h3_unit_from_cstring(unit);
-
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &datum_h3_edge_length;
@@ -247,12 +245,11 @@ Temporal *
 tgeogpoint_great_circle_distance(const Temporal *a, const Temporal *b,
   const char *unit)
 {
-  VALIDATE_TGEOGPOINT(a, NULL);
-  VALIDATE_TGEOGPOINT(b, NULL);
+  /* Ensure the validity of the arguments */
+  VALIDATE_TGEOGPOINT(a, NULL); VALIDATE_TGEOGPOINT(b, NULL);
   VALIDATE_NOT_NULL(unit, NULL);
 
   H3Unit u = h3_unit_from_cstring(unit);
-
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &datum_h3_great_circle_distance;

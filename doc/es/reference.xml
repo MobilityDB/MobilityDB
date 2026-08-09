@@ -773,7 +773,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttype_valueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Devuelve el valor en una marca de tiempo</para>
+					<para><link linkend="ttypeValueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Devuelve el valor en una marca de tiempo</para>
 				</listitem>
 
 				<listitem>
@@ -933,7 +933,7 @@
 			<title>Accessores</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="talpha_valueSet"><varname>valueSet</varname></link>: Devuelve el conjunto de valores de un número temporal</para>
+					<para><link linkend="talphaValueSet"><varname>valueSet</varname></link>: Devuelve el conjunto de valores de un número temporal</para>
 				</listitem>
 
 				<listitem>
@@ -1662,7 +1662,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tpose_valueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Devuelve el valor en una marca de tiempo</para>
+						<para><link linkend="tposeValueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Devuelve el valor en una marca de tiempo</para>
 					</listitem>
 
 					<listitem>
@@ -1912,7 +1912,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpoint_valueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Devuelve el valor en una marca de tiempo</para>
+						<para><link linkend="tnpointValueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Devuelve el valor en una marca de tiempo</para>
 					</listitem>
 
 					<listitem>
@@ -2216,7 +2216,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tcbuffer_valueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Devuelve el valor en una marca de tiempo</para>
+						<para><link linkend="tcbufferValueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Devuelve el valor en una marca de tiempo</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -2528,11 +2528,11 @@
 			<title>Operadores de distancia</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="trgeometry_tdistance"><varname>&lt;-&gt;</varname>, <varname>tDistance</varname></link>: Devuelve la distancia temporal entre dos trgeometries</para>
+					<para><link linkend="trgeometry_tdistance"><varname>&lt;-&gt;</varname>, <varname>tDistance</varname></link>: Devuelve la distancia temporal entre dos geometrías rígidas temporales</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="trgeometry_nad"><varname>|=|</varname>, <varname>nearestApproachDistance</varname></link>: Devuelve la menor distancia entre dos trgeometries a lo largo de su dominio temporal compartido</para>
+					<para><link linkend="trgeometry_nad"><varname>|=|</varname>, <varname>nearestApproachDistance</varname></link>: Devuelve la menor distancia entre dos geometrías rígidas temporales a lo largo de su dominio temporal compartido</para>
 				</listitem>
 
 				<listitem>
@@ -2562,7 +2562,7 @@
 			<title>Comparaciones</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="trgeometry_eq"><varname>=</varname>, <varname>&lt;&gt;</varname></link>: Prueba la (des)igualdad exacta de dos trgeometries</para>
+					<para><link linkend="trgeometry_eq"><varname>=</varname>, <varname>&lt;&gt;</varname></link>: Prueba la (des)igualdad exacta de dos geometrías rígidas temporales</para>
 				</listitem>
 
 				<listitem>
@@ -2614,15 +2614,15 @@
 			<title>Agregaciones</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="trgeometry_tcount"><varname>tCount</varname></link>: Número de trgeometries que se solapan en cada instante</para>
+					<para><link linkend="trgeometry_tCount"><varname>tCount</varname></link>: Número de geometrías rígidas temporales que se solapan en cada instante</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="trgeometry_extent"><varname>extent</varname></link>: Cuadro delimitador agregado de una columna de trgeometries</para>
+					<para><link linkend="trgeometry_extent"><varname>extent</varname></link>: Cuadro delimitador agregado de una columna de geometrías rígidas temporales</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="trgeometry_merge"><varname>merge</varname>, <varname>mergeAgg</varname></link>: Combina dos trgeometries con la misma geometría de referencia en un conjunto de secuencias</para>
+					<para><link linkend="trgeometry_merge"><varname>merge</varname>, <varname>mergeAgg</varname></link>: Combina dos o más geometrías rígidas temporales con la misma geometría de referencia en una sola</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -2698,7 +2698,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tjsonb_valueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Devuelve el valor en una marca de tiempo</para>
+					<para><link linkend="tjsonbValueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Devuelve el valor en una marca de tiempo</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -2869,7 +2869,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="th3_valueN"><varname>valueN</varname></link>: Devuelve el n-ésimo identificador de celda H3 distinto</para>
+					<para><link linkend="th3ValueN"><varname>valueN</varname></link>: Devuelve el n-ésimo identificador de celda H3 distinto</para>
 				</listitem>
 
 				<listitem>
@@ -2877,7 +2877,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="th3_valueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Devuelve el identificador de celda H3 en un instante dado</para>
+					<para><link linkend="th3ValueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Devuelve el identificador de celda H3 en un instante dado</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -3198,7 +3198,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tquadbin_valueN"><varname>valueN</varname></link>: Devuelve la enésima celda distinta</para>
+					<para><link linkend="tquadbinValueN"><varname>valueN</varname></link>: Devuelve la enésima celda distinta</para>
 				</listitem>
 
 				<listitem>
@@ -3206,7 +3206,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tquadbin_valueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Devuelve la celda en una marca de tiempo</para>
+					<para><link linkend="tquadbinValueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Devuelve la celda en una marca de tiempo</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -3782,7 +3782,7 @@
 					<para><link linkend="tpcpoint_extent"><varname>extent</varname></link>: Agregación de cuadro delimitador sobre valores tpcpoint, tpcpatch o tpcbox</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tpcpoint_tcount"><varname>tcount</varname>, <varname>wcount</varname></link>: Conteo temporal y conteo de ventana</para>
+					<para><link linkend="tpcpoint_tCount"><varname>tCount</varname>, <varname>wCount</varname></link>: Conteo temporal y conteo de ventana</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tpcpatch_tnpoints"><varname>tnpoints</varname></link>: Recuento de puntos por instante del pcpatch sumado entre filas</para>
@@ -3858,7 +3858,7 @@
 			<title>Operador de Muestreo</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="raster_value"><varname>raster_value</varname></link>: Muestrear una banda de ráster en cada instante de una trayectoria</para>
+					<para><link linkend="rasterValue"><varname>rasterValue</varname></link>: Muestrear una banda de ráster en cada instante de una trayectoria</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -3867,11 +3867,11 @@
 			<title>Muestreo Raquet / QUADBIN</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="trajectory_quadbins"><varname>trajectory_quadbins</varname></link>: Devolver las celdas QUADBIN distintas en un nivel de zoom cubiertas por una trayectoria</para>
+					<para><link linkend="trajectory_quadbins"><varname>quadbins</varname></link>: Devolver las celdas QUADBIN distintas en un nivel de zoom cubiertas por una trayectoria</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="raster_tile_value_quadbin"><varname>raster_tile_value_quadbin</varname></link>: Muestrear un chip ráster de Raquet a lo largo de una trayectoria usando una celda QUADBIN para la georreferenciación</para>
+					<para><link linkend="rasterTileValueQuadbin"><varname>rasterTileValueQuadbin</varname></link>: Muestrear un chip ráster de Raquet a lo largo de una trayectoria usando una celda QUADBIN para la georreferenciación</para>
 				</listitem>
 
 				<listitem>
@@ -3879,15 +3879,15 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="raquet_read"><varname>raquet_read</varname></link>: Decodificar un archivo ráster en memoria en una tesela ráster Raquet mediante GDAL</para>
+					<para><link linkend="raquetRead"><varname>raquetRead</varname></link>: Decodificar un archivo ráster en memoria en una tesela ráster Raquet mediante GDAL</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="raster_tile_value"><varname>raster_tile_value</varname></link>: Muestrear una tesela ráster raquet a lo largo de una trayectoria</para>
+					<para><link linkend="rasterTileValue"><varname>rasterTileValue</varname></link>: Muestrear una tesela ráster raquet a lo largo de una trayectoria</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="raster_tile_value_array"><varname>raster_tile_value</varname></link>: Muestrear un arreglo de teselas ráster raquet a lo largo de una trayectoria, conservando la resolución más fina donde se solapan</para>
+					<para><link linkend="rasterTileValueArray"><varname>rasterTileValue</varname></link>: Muestrear un arreglo de teselas ráster raquet a lo largo de una trayectoria, conservando la resolución más fina donde se solapan</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

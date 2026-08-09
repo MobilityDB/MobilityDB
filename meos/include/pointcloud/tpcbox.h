@@ -30,6 +30,12 @@
 
 /*****************************************************************************/
 
+/* Validity functions */
+
+extern bool ensure_valid_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2);
+
+/* Input/output functions */
+
 extern TPCBox *tpcbox_parse(const char **str);
 
 /*****************************************************************************/

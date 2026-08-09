@@ -37,16 +37,15 @@
  * `unary_scalar` shape.
  */
 
+/* C */
 #include <string.h>
-
+/* MEOS */
 #include <meos.h>
 #include <meos_cellindex.h>
 #include <meos_h3.h>
-
 #include "temporal/temporal.h"
 #include "temporal/meos_catalog.h"
 #include "temporal/lifting.h"
-
 #include "h3/th3index_internal.h"
 
 /*****************************************************************************
@@ -61,6 +60,7 @@
 Temporal *
 th3index_get_resolution(const Temporal *temp)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TH3INDEX(temp, NULL);
   return tcellindex_get_resolution(temp);
 }
@@ -77,6 +77,7 @@ th3index_get_resolution(const Temporal *temp)
 Temporal *
 th3index_get_base_cell_number(const Temporal *temp)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TH3INDEX(temp, NULL);
 
   LiftedFunctionInfo lfinfo;
@@ -104,6 +105,7 @@ th3index_get_base_cell_number(const Temporal *temp)
 Temporal *
 th3index_is_valid_cell(const Temporal *temp)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TH3INDEX(temp, NULL);
   return tcellindex_is_valid_cell(temp);
 }
@@ -121,6 +123,7 @@ th3index_is_valid_cell(const Temporal *temp)
 Temporal *
 th3index_is_res_class_iii(const Temporal *temp)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TH3INDEX(temp, NULL);
 
   LiftedFunctionInfo lfinfo;
@@ -148,6 +151,7 @@ th3index_is_res_class_iii(const Temporal *temp)
 Temporal *
 th3index_is_pentagon(const Temporal *temp)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TH3INDEX(temp, NULL);
 
   LiftedFunctionInfo lfinfo;

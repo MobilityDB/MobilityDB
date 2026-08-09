@@ -40,7 +40,7 @@
 
 /**
  * @brief Return a palloc'd 2D geometry point for the position in @p pt, or
- *   NULL when the schema lacks X or Y dimensions.
+ * NULL when the schema lacks X or Y dimensions.
  */
 static GSERIALIZED *
 pcpoint_to_geompoint2d(const Pcpoint *pt)
@@ -77,7 +77,7 @@ tpointcloudinst_pcpoint(const Temporal *temp)
 
 /**
  * @brief Return the temporal geometry point instant equivalent to a
- *   temporal pointcloud instant
+ * temporal pointcloud instant
  */
 static TInstant *
 tpointcloudinst_to_tgeompointinst(const TInstant *inst, PCSCHEMA *schema)
@@ -99,7 +99,7 @@ tpointcloudinst_to_tgeompointinst(const TInstant *inst, PCSCHEMA *schema)
 
 /**
  * @brief Return the temporal geometry point sequence equivalent to a
- *   temporal pointcloud sequence
+ * temporal pointcloud sequence
  */
 static TSequence *
 tpointcloudseq_to_tgeompointseq(const TSequence *seq, PCSCHEMA *schema)
@@ -123,11 +123,10 @@ tpointcloudseq_to_tgeompointseq(const TSequence *seq, PCSCHEMA *schema)
 
 /**
  * @brief Return the temporal geometry point sequence set equivalent to a
- *   temporal pointcloud sequence set
+ * temporal pointcloud sequence set
  */
 static TSequenceSet *
-tpointcloudseqset_to_tgeompointseqset(const TSequenceSet *ss,
-  PCSCHEMA *schema)
+tpointcloudseqset_to_tgeompointseqset(const TSequenceSet *ss, PCSCHEMA *schema)
 {
   TSequence **seqs = palloc(sizeof(TSequence *) * ss->count);
   int n = 0;
@@ -144,8 +143,8 @@ tpointcloudseqset_to_tgeompointseqset(const TSequenceSet *ss,
 /**
  * @ingroup meos_pointcloud_conversion
  * @brief Return a temporal pointcloud value projected onto a temporal
- *   geometry point by extracting X/Y/[Z] from each instant's pcpoint via
- *   the schema cache
+ * geometry point by extracting X/Y/[Z] from each instant's pcpoint via
+ * the schema cache
  * @param[in] temp Temporal pointcloud value
  * @return NULL if the pcid schema cannot be resolved
  * @csqlfn #Tpcpoint_to_tgeompoint()
@@ -153,6 +152,7 @@ tpointcloudseqset_to_tgeompointseqset(const TSequenceSet *ss,
 Temporal *
 tpointcloud_to_tgeompoint(const Temporal *temp)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TPCPOINT(temp, NULL);
   const Pcpoint *first =
     (const Pcpoint *) DatumGetPointer(temporal_start_value(temp));
@@ -187,8 +187,8 @@ tpointcloud_to_tgeompoint(const Temporal *temp)
 bool
 eintersects_tpcpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  VALIDATE_NOT_NULL(temp, false);
-  VALIDATE_NOT_NULL(gs, false);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(temp, false); VALIDATE_NOT_NULL(gs, false);
   GSERIALIZED *probe = pcpoint_to_geompoint2d(tpointcloudinst_pcpoint(temp));
   if (!probe)
     return false;
@@ -209,8 +209,8 @@ eintersects_tpcpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 double
 nad_tpcpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  VALIDATE_NOT_NULL(temp, DBL_MAX);
-  VALIDATE_NOT_NULL(gs, DBL_MAX);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(temp, DBL_MAX); VALIDATE_NOT_NULL(gs, DBL_MAX);
   GSERIALIZED *probe = pcpoint_to_geompoint2d(tpointcloudinst_pcpoint(temp));
   if (!probe)
     return DBL_MAX;

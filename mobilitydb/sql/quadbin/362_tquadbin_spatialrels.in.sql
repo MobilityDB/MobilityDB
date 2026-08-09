@@ -81,12 +81,12 @@ CREATE FUNCTION eContains(tquadbin, tquadbin)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.eContains(@extschema@.tquadbinCellToBoundary($1)::@extschema@.tgeometry,
-                          @extschema@.tquadbinCellToBoundary($2)::@extschema@.tgeometry) $$;
+    @extschema@.tquadbinCellToBoundary($2)::@extschema@.tgeometry) $$;
 CREATE FUNCTION aContains(tquadbin, tquadbin)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.aContains(@extschema@.tquadbinCellToBoundary($1)::@extschema@.tgeometry,
-                          @extschema@.tquadbinCellToBoundary($2)::@extschema@.tgeometry) $$;
+    @extschema@.tquadbinCellToBoundary($2)::@extschema@.tgeometry) $$;
 
 /*****************************************************************************
  * Ever/always covers
@@ -114,12 +114,12 @@ CREATE FUNCTION eCovers(tquadbin, tquadbin)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.eCovers(@extschema@.tquadbinCellToBoundary($1)::@extschema@.tgeometry,
-                        @extschema@.tquadbinCellToBoundary($2)::@extschema@.tgeometry) $$;
+    @extschema@.tquadbinCellToBoundary($2)::@extschema@.tgeometry) $$;
 CREATE FUNCTION aCovers(tquadbin, tquadbin)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.aCovers(@extschema@.tquadbinCellToBoundary($1)::@extschema@.tgeometry,
-                        @extschema@.tquadbinCellToBoundary($2)::@extschema@.tgeometry) $$;
+    @extschema@.tquadbinCellToBoundary($2)::@extschema@.tgeometry) $$;
 
 /*****************************************************************************
  * Ever/always disjoint
@@ -152,7 +152,7 @@ CREATE FUNCTION aDisjoint(tquadbin, tquadbin)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.aDisjoint(@extschema@.tquadbinCellToBoundary($1)::@extschema@.tgeometry,
-                          @extschema@.tquadbinCellToBoundary($2)::@extschema@.tgeometry) $$;
+    @extschema@.tquadbinCellToBoundary($2)::@extschema@.tgeometry) $$;
 
 /*****************************************************************************
  * Ever/always intersects
@@ -187,7 +187,7 @@ CREATE FUNCTION aIntersects(tquadbin, tquadbin)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.aIntersects(@extschema@.tquadbinCellToBoundary($1)::@extschema@.tgeometry,
-                            @extschema@.tquadbinCellToBoundary($2)::@extschema@.tgeometry) $$;
+    @extschema@.tquadbinCellToBoundary($2)::@extschema@.tgeometry) $$;
 
 /*****************************************************************************
  * Ever/always touches
@@ -215,12 +215,12 @@ CREATE FUNCTION eTouches(tquadbin, tquadbin)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.eTouches(@extschema@.tquadbinCellToBoundary($1)::@extschema@.tgeometry,
-                         @extschema@.tquadbinCellToBoundary($2)::@extschema@.tgeometry) $$;
+    @extschema@.tquadbinCellToBoundary($2)::@extschema@.tgeometry) $$;
 CREATE FUNCTION aTouches(tquadbin, tquadbin)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.aTouches(@extschema@.tquadbinCellToBoundary($1)::@extschema@.tgeometry,
-                         @extschema@.tquadbinCellToBoundary($2)::@extschema@.tgeometry) $$;
+    @extschema@.tquadbinCellToBoundary($2)::@extschema@.tgeometry) $$;
 
 /*****************************************************************************
  * Ever/always dwithin
@@ -255,6 +255,6 @@ CREATE FUNCTION aDwithin(tquadbin, tquadbin, dist float)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.aDwithin(@extschema@.tquadbinCellToBoundary($1)::@extschema@.tgeometry,
-                         @extschema@.tquadbinCellToBoundary($2)::@extschema@.tgeometry, $3) $$;
+    @extschema@.tquadbinCellToBoundary($2)::@extschema@.tgeometry, $3) $$;
 
 /*****************************************************************************/

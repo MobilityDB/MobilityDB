@@ -110,6 +110,7 @@ raquet_pixtype_size(MeosPixType pixtype)
 MeosPixType
 raquet_pixtype_from_string(const char *str)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(str, MEOS_PT_UINT8);
   if (strcmp(str, "UINT8") == 0)   return MEOS_PT_UINT8;
   if (strcmp(str, "INT16") == 0)   return MEOS_PT_INT16;
@@ -136,6 +137,7 @@ raquet_pixtype_from_string(const char *str)
 Raquet *
 raquet_in(const char *str)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(str, NULL);
   return DatumGetRaquetP(type_from_hexwkb(str, strlen(str), T_RAQUET));
 }
@@ -150,6 +152,7 @@ raquet_in(const char *str)
 char *
 raquet_out(const Raquet *rq)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(rq, NULL);
   size_t size;
   return (char *) datum_as_wkb(RaquetPGetDatum(rq), T_RAQUET,
@@ -166,6 +169,7 @@ raquet_out(const Raquet *rq)
 Raquet *
 raquet_from_wkb(const uint8_t *wkb, size_t size)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(wkb, NULL);
   return DatumGetRaquetP(type_from_wkb(wkb, size, T_RAQUET));
 }
@@ -180,6 +184,7 @@ raquet_from_wkb(const uint8_t *wkb, size_t size)
 Raquet *
 raquet_from_hexwkb(const char *hexwkb)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(hexwkb, NULL);
   return DatumGetRaquetP(type_from_hexwkb(hexwkb, strlen(hexwkb), T_RAQUET));
 }
@@ -195,6 +200,7 @@ raquet_from_hexwkb(const char *hexwkb)
 uint8_t *
 raquet_as_wkb(const Raquet *rq, uint8_t variant, size_t *size_out)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(rq, NULL); VALIDATE_NOT_NULL(size_out, NULL);
   return datum_as_wkb(RaquetPGetDatum(rq), T_RAQUET, variant, size_out);
 }
@@ -211,6 +217,7 @@ raquet_as_wkb(const Raquet *rq, uint8_t variant, size_t *size_out)
 char *
 raquet_as_hexwkb(const Raquet *rq, uint8_t variant, size_t *size_out)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(rq, NULL); VALIDATE_NOT_NULL(size_out, NULL);
   return (char *) datum_as_wkb(RaquetPGetDatum(rq), T_RAQUET,
     variant | (uint8_t) WKB_HEX, size_out);
@@ -239,6 +246,7 @@ Raquet *
 raquet_make(uint64 quadbin, int32 width, int32 height, MeosPixType pixtype,
   double nodata, bool has_nodata, const uint8_t *pixels, size_t pixels_size)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(pixels, NULL);
   if (! ensure_valid_pixtype((uint8) pixtype))
     return NULL;
@@ -291,6 +299,7 @@ raquet_make(uint64 quadbin, int32 width, int32 height, MeosPixType pixtype,
 Raquet *
 raquet_copy(const Raquet *rq)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(rq, NULL);
   Raquet *result = palloc(VARSIZE(rq));
   memcpy(result, rq, VARSIZE(rq));
@@ -309,6 +318,7 @@ raquet_copy(const Raquet *rq)
 uint64
 raquet_quadbin(const Raquet *rq)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(rq, 0);
   return rq->quadbin;
 }
@@ -321,6 +331,7 @@ raquet_quadbin(const Raquet *rq)
 int
 raquet_width(const Raquet *rq)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(rq, -1);
   return (int) rq->width;
 }
@@ -333,6 +344,7 @@ raquet_width(const Raquet *rq)
 int
 raquet_height(const Raquet *rq)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(rq, -1);
   return (int) rq->height;
 }
@@ -345,6 +357,7 @@ raquet_height(const Raquet *rq)
 double
 raquet_nodata(const Raquet *rq)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(rq, 0.0);
   return rq->nodata;
 }
@@ -361,6 +374,7 @@ raquet_nodata(const Raquet *rq)
 char *
 raquet_pixtype(const Raquet *rq)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(rq, NULL);
   switch ((MeosPixType) rq->pixtype)
   {
@@ -438,6 +452,7 @@ raquet_set_stbox(const Raquet *rq, STBox *box)
 STBox *
 raquet_to_stbox(const Raquet *rq)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(rq, NULL);
   STBox box;
   raquet_set_stbox(rq, &box);
@@ -460,6 +475,7 @@ raquet_cmp(const Raquet *rq1, const Raquet *rq2)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(rq1, false); VALIDATE_NOT_NULL(rq2, false);
+
   if (rq1->quadbin != rq2->quadbin)
     return (rq1->quadbin < rq2->quadbin) ? -1 : 1;
   if (rq1->pixtype != rq2->pixtype)
@@ -482,8 +498,6 @@ raquet_cmp(const Raquet *rq1, const Raquet *rq2)
 bool
 raquet_eq(const Raquet *rq1, const Raquet *rq2)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(rq1, false); VALIDATE_NOT_NULL(rq2, false);
   return raquet_cmp(rq1, rq2) == 0;
 }
 
@@ -558,10 +572,12 @@ raquet_gt(const Raquet *rq1, const Raquet *rq2)
  * @brief Return the 32-bit hash of a Raquet tile
  * @param[in] rq Raquet tile
  * @csqlfn #Raquet_hash()
+ * @return On error return @p INT_MAX
  */
 uint32
 raquet_hash(const Raquet *rq)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(rq, INT_MAX);
   return hash_any(((const unsigned char *) rq) + VARHDRSZ,
     (int) raquet_meaningful_size(rq));
@@ -573,10 +589,12 @@ raquet_hash(const Raquet *rq)
  * @param[in] rq Raquet tile
  * @param[in] seed Seed
  * @csqlfn #Raquet_hash_extended()
+ * @return On error return @p LONG_MAX
  */
 uint64
 raquet_hash_extended(const Raquet *rq, uint64 seed)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(rq, LONG_MAX);
   return hash_any_extended(((const unsigned char *) rq) + VARHDRSZ,
     (int) raquet_meaningful_size(rq), seed);
@@ -590,17 +608,18 @@ raquet_hash_extended(const Raquet *rq, uint64 seed)
  * @ingroup meos_raster
  * @brief Return the values of a Raquet tile sampled at the instants of a
  * trajectory
- * @param[in] rq Raquet tile
  * @param[in] traj Trajectory (temporal geometry point)
+ * @param[in] rq Raquet tile
  * @csqlfn #Raster_tile_value()
  */
 Temporal *
-raster_tile_value(const Raquet *rq, const Temporal *traj)
+raster_tile_value(const Temporal *traj, const Raquet *rq)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(rq, NULL); VALIDATE_NOT_NULL(traj, NULL);
-  return raster_tile_value_quadbin(rq->pixels, raquet_pixels_size(rq),
+  return raster_tile_value_quadbin(traj, rq->pixels, raquet_pixels_size(rq),
     rq->width, rq->height, rq->quadbin, (MeosPixType) rq->pixtype, rq->nodata,
-    rq->has_nodata, traj);
+    rq->has_nodata);
 }
 
 /**
@@ -621,8 +640,9 @@ raster_tile_value(const Raquet *rq, const Temporal *traj)
  * @csqlfn #Raster_tile_value_array()
  */
 Temporal *
-raster_tile_value_array(const Raquet **rqarr, int count, const Temporal *traj)
+raster_tile_value_array(const Temporal *traj, const Raquet **rqarr, int count)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(rqarr, NULL); VALIDATE_NOT_NULL(traj, NULL);
   if (! ensure_positive(count))
     return NULL;
@@ -640,7 +660,7 @@ raster_tile_value_array(const Raquet **rqarr, int count, const Temporal *traj)
   {
     if (rqarr[i] == NULL)
       continue;
-    Temporal *sampled = raster_tile_value(rqarr[i], traj);
+    Temporal *sampled = raster_tile_value(traj, rqarr[i]);
     if (sampled == NULL)
       continue;
     int zoom = (int) raster_quadbin_zoom(rqarr[i]->quadbin);

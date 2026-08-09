@@ -135,7 +135,7 @@ extern Cbuffer **cbufferarr_round(const Cbuffer **cbarr, int count, int maxdd);
 
 /* Spatial reference system functions */
 
-extern void cbuffer_set_srid(Cbuffer *cb, int32_t srid);
+extern Cbuffer *cbuffer_set_srid(const Cbuffer *cb, int32_t srid);
 extern int32_t cbuffer_srid(const Cbuffer *cb);
 extern Cbuffer *cbuffer_transform(const Cbuffer *cb, int32_t srid);
 extern Cbuffer *cbuffer_transform_pipeline(const Cbuffer *cb, const char *pipelinestr, int32_t srid, bool is_forward);

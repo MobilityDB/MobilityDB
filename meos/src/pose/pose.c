@@ -71,6 +71,7 @@
 bool
 ensure_valid_pose_geo(const Pose *pose, const GSERIALIZED *gs)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(pose, false); VALIDATE_NOT_NULL(gs, false); 
   if (gserialized_is_empty(gs) ||
       ! ensure_same_srid(pose_srid(pose), gserialized_get_srid(gs)) ||
@@ -85,6 +86,7 @@ ensure_valid_pose_geo(const Pose *pose, const GSERIALIZED *gs)
 bool
 ensure_valid_pose_stbox(const Pose *pose, const STBox *box)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(pose, false); VALIDATE_NOT_NULL(box, false);
   if (! ensure_has_X(T_STBOX, box->flags) ||
       ! ensure_same_srid(pose_srid(pose), box->srid))
@@ -98,6 +100,7 @@ ensure_valid_pose_stbox(const Pose *pose, const STBox *box)
 bool
 ensure_valid_pose_pose(const Pose *pose1, const Pose *pose2)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(pose1, false); VALIDATE_NOT_NULL(pose2, false); 
   if (! ensure_same_srid(pose_srid(pose1), pose_srid(pose2)) ||
       MEOS_FLAGS_GET_Z(pose1->flags) != MEOS_FLAGS_GET_Z(pose2->flags))
@@ -407,6 +410,7 @@ ensure_unit_norm(double W, double X, double Y, double Z)
 Pose *
 pose_parse(const char **str, bool end)
 {
+  assert(str);
   Pose *result;
   const char *type_str = meostype_name(T_POSE);
 
@@ -638,6 +642,7 @@ pose_as_text(const Pose *pose, int maxdd)
 char *
 pose_as_ewkt(const Pose *pose, int maxdd)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(pose, NULL);
   return spatialbase_as_ewkt(PointerGetDatum(pose), T_POSE, maxdd);
 }
@@ -740,7 +745,7 @@ pose_make_2d(double x, double y, double theta, bool geodetic, int32_t srid)
   MEOS_FLAGS_SET_X(result->flags, true);
   MEOS_FLAGS_SET_Z(result->flags, false);
   MEOS_FLAGS_SET_GEODETIC(result->flags, geodetic);
-  pose_set_srid(result, srid);
+  pose_set_srid_int(result, srid);
   result->data[0] = x;
   result->data[1] = y;
   result->data[2] = theta;
@@ -756,7 +761,7 @@ pose_make_2d(double x, double y, double theta, bool geodetic, int32_t srid)
 Pose *
 pose_make_point2d(const GSERIALIZED *gs, double theta)
 {
-  /* Ensure validity of parameters */
+  /* Ensure the validity of parameters */
   VALIDATE_NOT_NULL(gs, NULL);
   if (! ensure_valid_rotation(theta) || ! ensure_not_empty(gs) ||
       ! ensure_has_not_Z_geo(gs) || ! ensure_has_not_M_geo(gs))
@@ -774,7 +779,7 @@ pose_make_point2d(const GSERIALIZED *gs, double theta)
   MEOS_FLAGS_SET_X(result->flags, true);
   MEOS_FLAGS_SET_Z(result->flags, false);
   MEOS_FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(gs->gflags));
-  pose_set_srid(result, gserialized_get_srid(gs));
+  pose_set_srid_int(result, gserialized_get_srid(gs));
   result->data[0] = coordarr[0];
   result->data[1] = coordarr[1];
   result->data[2] = theta;
@@ -818,7 +823,7 @@ pose_make_3d(double x, double y, double z, double W, double X, double Y,
   MEOS_FLAGS_SET_X(result->flags, true);
   MEOS_FLAGS_SET_Z(result->flags, true);
   MEOS_FLAGS_SET_GEODETIC(result->flags, geodetic);
-  pose_set_srid(result, srid);
+  pose_set_srid_int(result, srid);
   result->data[0] = x;
   result->data[1] = y;
   result->data[2] = z;
@@ -839,7 +844,7 @@ Pose *
 pose_make_point3d(const GSERIALIZED *gs, double W, double X, double Y,
   double Z)
 {
-  /* Ensure validity of parameters */
+  /* Ensure the validity of parameters */
   VALIDATE_NOT_NULL(gs, NULL);
   if (! ensure_unit_norm(W, X, Y, Z) || ! ensure_not_empty(gs) ||
       ! ensure_has_Z_geo(gs) || ! ensure_has_not_M_geo(gs))
@@ -862,7 +867,7 @@ pose_make_point3d(const GSERIALIZED *gs, double W, double X, double Y,
   MEOS_FLAGS_SET_X(result->flags, true);
   MEOS_FLAGS_SET_Z(result->flags, true);
   MEOS_FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(gs->gflags));
-  pose_set_srid(result, gserialized_get_srid(gs));
+  pose_set_srid_int(result, gserialized_get_srid(gs));
   result->data[0] = coordarr[0];
   result->data[1] = coordarr[1];
   result->data[2] = coordarr[2];
@@ -951,7 +956,7 @@ datum_pose_geopoint(Datum pose)
 GSERIALIZED *
 posearr_points(Pose **posearr, int count)
 {
-  VALIDATE_NOT_NULL(posearr, NULL); assert(count > 1);
+  assert(posearr); assert(count > 1);
   GSERIALIZED **geoms = palloc(sizeof(GSERIALIZED *) * count);
   /* SRID of the first element of the array */
   int32_t srid = pose_srid(posearr[0]);
@@ -1036,10 +1041,10 @@ datum_pose_roll(Datum pose)
 double *
 pose_orientation(const Pose *pose, int *count)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(count, NULL);
   /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
   *count = 0;
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(pose, NULL);
   if (! ensure_has_Z(T_POSE, pose->flags))
     return NULL;
@@ -1067,7 +1072,9 @@ pose_orientation(const Pose *pose, int *count)
 double
 pose_yaw(const Pose *pose)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(pose, DBL_MAX);
+
   if (! MEOS_FLAGS_GET_Z(pose->flags))
     return pose->data[2];
   double W = pose->data[3], X = pose->data[4];
@@ -1089,7 +1096,9 @@ pose_yaw(const Pose *pose)
 double
 pose_pitch(const Pose *pose)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(pose, DBL_MAX);
+
   if (! MEOS_FLAGS_GET_Z(pose->flags))
     return 0.0;
   double W = pose->data[3], X = pose->data[4];
@@ -1112,7 +1121,9 @@ pose_pitch(const Pose *pose)
 double
 pose_roll(const Pose *pose)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(pose, DBL_MAX);
+
   if (! MEOS_FLAGS_GET_Z(pose->flags))
     return 0.0;
   double W = pose->data[3], X = pose->data[4];
@@ -1137,8 +1148,9 @@ pose_roll(const Pose *pose)
 double
 pose_angular_distance(const Pose *pose1, const Pose *pose2)
 {
-  VALIDATE_NOT_NULL(pose1, DBL_MAX); VALIDATE_NOT_NULL(pose2, DBL_MAX);
-  if (MEOS_FLAGS_GET_Z(pose1->flags) != MEOS_FLAGS_GET_Z(pose2->flags))
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_pose_pose(pose1, pose2) ||
+      MEOS_FLAGS_GET_Z(pose1->flags) != MEOS_FLAGS_GET_Z(pose2->flags))
   {
     meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
       "Cannot compute the angular distance between a 2D and a 3D pose");
@@ -1213,6 +1225,7 @@ pose_apply_point4d(const Pose *pose,
 GSERIALIZED *
 pose_apply_geo(const Pose *pose, const GSERIALIZED *body)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(pose, NULL); VALIDATE_NOT_NULL(body, NULL);
   if (gserialized_is_empty(body))
   {
@@ -1417,7 +1430,7 @@ pose_srid(const Pose *pose)
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(pose, SRID_INVALID);
 
-  int32 srid = 0;
+  int32_t srid = 0;
   srid = (pose->srid[0] << 16);
   srid = srid | (pose->srid[1] << 8);
   srid = srid | (pose->srid[2]);
@@ -1433,24 +1446,42 @@ pose_srid(const Pose *pose)
 }
 
 /**
- * @ingroup meos_pose_base_srid
- * @brief Set the SRID
+ * @ingroup meos_internal_pose_base_srid
+ * @brief Set the coordinates of a pose to an SRID
  * @param[in] pose Pose
  * @param[in] srid SRID
  * @csqlfn #Pose_set_srid()
  */
 void
-pose_set_srid(Pose *pose, int32_t srid)
+pose_set_srid_int(Pose *pose, int32_t srid)
 {
   assert(pose);
   /* 0 is our internal unknown value.
    * We'll map back and forth here for now */
   if (srid == SRID_UNKNOWN)
     srid = 0;
-
   pose->srid[0] = (srid & 0x001F0000) >> 16;
   pose->srid[1] = (srid & 0x0000FF00) >> 8;
   pose->srid[2] = (srid & 0x000000FF);
+}
+
+/**
+ * @ingroup meos_pose_base_srid
+ * @brief Return a pose with the coordinates set to an SRID
+ * @param[in] pose Pose
+ * @param[in] srid SRID
+ * @csqlfn #Pose_set_srid()
+ */
+Pose *
+pose_set_srid(const Pose *pose, int32_t srid)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pose, NULL);
+  if (srid == SRID_INVALID)
+    return NULL;
+  Pose *result = pose_copy(pose);
+  pose_set_srid_int(result, srid);
+  return result;
 }
 
 /*****************************************************************************/
@@ -1591,6 +1622,7 @@ pose_orientation_apply_frame_change(int32_t srid_from, int32_t srid_to,
 Pose *
 pose_transf_pj(const Pose *pose, int32_t srid_to, const LWPROJ *pj)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(pose, NULL); VALIDATE_NOT_NULL(pj, NULL);
   /* Copy the pose to transform its point in place */
   Pose *result = pose_copy(pose);
@@ -1619,7 +1651,7 @@ pose_transf_pj(const Pose *pose, int32_t srid_to, const LWPROJ *pj)
   /* The result's SRID must match the target frame so downstream code
    * (and the orientation correction below, which dispatches on the
    * source/target SRID pair) sees the right value. */
-  pose_set_srid(result, srid_to);
+  pose_set_srid_int(result, srid_to);
 
   /* Apply the orientation correction. For the
    * geographic ↔ ECEF case the rotation depends on the lat/lon of the
@@ -1670,11 +1702,10 @@ pose_transf_pj(const Pose *pose, int32_t srid_to, const LWPROJ *pj)
 Pose *
 pose_transform(const Pose *pose, int32_t srid_to)
 {
-  int32_t srid_from;
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(pose, NULL);
-  if (! ensure_srid_known(srid_to) ||
-      ! ensure_srid_known(srid_from = pose_srid(pose)))
+  int32_t srid_from = pose_srid(pose);
+  if (! ensure_srid_known(srid_from) || ! ensure_srid_known(srid_to))
     return NULL;
     
   /* Input and output SRIDs are equal, noop */
@@ -1750,7 +1781,6 @@ pose_distance(Datum pose1, Datum pose2)
 double
 distance_pose_pose(const Pose *pose1, const Pose *pose2)
 {
-  VALIDATE_NOT_NULL(pose1, -1.0); VALIDATE_NOT_NULL(pose2, -1.0);
   /* Ensure the validity of the arguments */
   if (! ensure_valid_pose_pose(pose1, pose2))
     return -1.0;
@@ -1781,7 +1811,6 @@ datum_pose_distance(Datum pose1, Datum pose2)
 double
 distance_pose_geo(const Pose *pose, const GSERIALIZED *gs)
 {
-  VALIDATE_NOT_NULL(pose, -1.0); VALIDATE_NOT_NULL(gs, -1.0);
   /* Ensure the validity of the arguments */
   if (! ensure_valid_pose_geo(pose, gs) || gserialized_is_empty(gs))
     return -1.0;
@@ -1801,7 +1830,6 @@ distance_pose_geo(const Pose *pose, const GSERIALIZED *gs)
 double
 distance_pose_stbox(const Pose *pose, const STBox *box)
 {
-  VALIDATE_NOT_NULL(pose, -1.0); VALIDATE_NOT_NULL(box, -1.0);
   /* Ensure the validity of the arguments */
   if (! ensure_valid_pose_stbox(pose, box))
     return -1.0;
@@ -1920,7 +1948,7 @@ pose_cmp(const Pose *pose1, const Pose *pose2)
   if (hasz1 != hasz2)
     return (hasz1 ? 1 : -1);
 
-  int32 srid1 = pose_srid(pose1),
+  int32_t srid1 = pose_srid(pose1),
         srid2 = pose_srid(pose2);
   if (srid1 < srid2)
     return -1;

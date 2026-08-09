@@ -26,45 +26,40 @@ CREATE EXTENSION mobilitydb CASCADE;
 		<title>Sampling Operator</title>
 
 		<itemizedlist>
-			<listitem xml:id="raster_value">
-				<indexterm significance="normal"><primary><varname>raster_value</varname></primary></indexterm>
+			<listitem xml:id="rasterValue">
+				<indexterm significance="normal"><primary><varname>rasterValue</varname></primary></indexterm>
 				<para>Sample a raster band at each instant of a trajectory</para>
-				<para><varname>raster_value(raster,tgeompoint,band integer DEFAULT 1) → tfloat</varname></para>
+				<para><varname>rasterValue(tgeompoint,raster,band integer DEFAULT 1) → tfloat</varname></para>
 				<para>Evaluates pixel <varname>band</varname> at every instant of <varname>traj</varname> using bilinear-nearest sampling (<varname>ST_Value</varname> with <varname>resample=false</varname>). Returns an instant-set <varname>tfloat</varname> whose values are rounded to four decimal places. Returns <varname>NULL</varname> when no instant intersects the raster.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
--- Build a 3×3 synthetic elevation raster (SRID 4326, 1° pixels)
+-- Build a 3x3 synthetic elevation raster (SRID 4326, 1 degree pixels)
 WITH rast AS (
-  SELECT ST_SetValues(
-    ST_AddBand(
-      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
-      '32BF'::text, 0.0::float8, NULL::float8),
-    1, 1, 1,
+  SELECT ST_SetValues(ST_AddBand(
+    ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326), 32BF'::text,
+      '0.0::float8, NULL::float8), 1, 1, 1,
     ARRAY[[10.0::float4, 20.0::float4, 30.0::float4],
           [40.0::float4, 50.0::float4, 60.0::float4],
           [70.0::float4, 80.0::float4, 90.0::float4]]) AS r
 )
-SELECT raster_value(r,
-  tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2000-01-01 00:00:00+00,
-                          POINT(2.5 2.5)@2000-01-02 00:00:00+00,
-                          POINT(0.5 0.5)@2000-01-03 00:00:00+00]')::text
+SELECT rasterValue(tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2000-01-01,
+  POINT(2.5 2.5)@2000-01-02, POINT(0.5 0.5)@2000-01-03]', r)::text
 FROM rast;
--- {10@2000-01-01 00:00:00+00, 30@2000-01-02 00:00:00+00, 70@2000-01-03 00:00:00+00}
+-- {10@2000-01-01, 30@2000-01-02, 70@2000-01-03}
 </programlisting>
-				<para>Applied to the BerlinMOD trajectory dataset with a terrain elevation raster:</para>
+				<para>Applied to a trajectory dataset with a terrain elevation raster:</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Elevation profile per trip (requires a loaded elevation raster)
-SELECT tripid, raster_value(elev, trip4326) AS elevation
+SELECT tripid, rasterValue(trip, elev) AS elevation
 FROM trips, elevation_raster;
 
 -- Average elevation per trip
-SELECT tripid, avgValue(raster_value(elev, trip4326)) AS mean_elev
+SELECT tripid, avgValue(rasterValue(trip, elev)) AS mean_elev
 FROM trips, elevation_raster;
 
 -- Trips that crossed terrain above 200 m
 SELECT tripid
 FROM trips, elevation_raster
-WHERE atSpan(raster_value(elev, trip4326),
-             floatspan '[200, 9999]') IS NOT NULL;
+WHERE atSpan(rasterValue(trip, elev), floatspan '[200, 9999]') IS NOT NULL;
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -73,66 +68,58 @@ WHERE atSpan(raster_value(elev, trip4326),
 	<sect1 xml:id="raquet_quadbin">
 		<title>Raquet / QUADBIN Sampling</title>
 
-		<para><ulink url="https://github.com/CartoDB/raquet">Raquet</ulink> is a cloud-native raster format that stores raster tiles as rows in an Apache Parquet file. Each row holds the pixel bytes for one Web-Mercator tile together with its <ulink url="https://docs.carto.com/data-and-analysis/analytics-toolbox-for-bigquery/sql-reference/quadbin">QUADBIN</ulink> cell identifier — a 64-bit integer that encodes the tile's zoom level and Morton-interleaved x/y coordinates. No separate spatial metadata is required: the bounding box and pixel-to-coordinate mapping are fully determined by the QUADBIN value.</para>
+		<para><ulink url="https://github.com/CartoDB/raquet">Raquet</ulink> is a cloud-native raster format that stores raster tiles as rows in an Apache Parquet file. Each row holds the pixel bytes for one Web-Mercator tile together with its <ulink url="https://docs.carto.com/data-and-analysis/analytics-toolbox-for-bigquery/sql-reference/quadbin">QUADBIN</ulink> cell identifier, a 64-bit integer that encodes the tile's zoom level and Morton-interleaved x/y coordinates. No separate spatial metadata is required: the bounding box and pixel-to-coordinate mapping are fully determined by the QUADBIN value.</para>
 
 		<para>The typical query pattern joins a trajectory against a Raquet table in two steps:</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Step 1: identify which tiles the trajectory overlaps
 SELECT DISTINCT q
-FROM unnest(trajectory_quadbins(traj, 8)) AS q;
+FROM unnest(trajectoryQuadbins(traj, 8)) AS q;
 
 -- Step 2: sample each matching tile
-SELECT raster_tile_value_quadbin(
-    band_data, width, height, quadbin, 'FLOAT32', nodata, true, traj)
+SELECT raster_tileValueQuadbin(traj, band_data, width, height, quadbin, 'FLOAT32',
+  nodata, true)
 FROM elevation_raquet
-WHERE quadbin = ANY(trajectory_quadbins(traj, 8));
+WHERE quadbin = ANY(trajectoryQuadbins(traj, 8));
 </programlisting>
 
 		<itemizedlist>
 			<listitem xml:id="trajectory_quadbins">
-				<indexterm significance="normal"><primary><varname>trajectory_quadbins</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>quadbins</varname></primary></indexterm>
 				<para>Return the distinct QUADBIN cells at a zoom level covered by a trajectory</para>
-				<para><varname>trajectory_quadbins(tgeompoint,integer) → bigint[]</varname></para>
+				<para><varname>trajectoryQuadbins(tgeompoint,integer) → bigint[]</varname></para>
 				<para>Returns the set of unique QUADBIN cells (deduplicated) whose Web-Mercator tile envelopes contain at least one instant of <varname>traj</varname>. The result is suitable as a WHERE-clause join key against a Raquet table. <varname>zoom</varname> must be in [0, 15].</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Three instants spanning three tiles at zoom 3
-SELECT trajectory_quadbins(
-  tgeompointFromText('SRID=4326;{Point(-60 45)@2024-01-01,
-                                  Point(0 45)@2024-01-02,
-                                  Point(60 45)@2024-01-03}'), 3);
+SELECT trajectoryQuadbins(tgeompoint 'SRID=4326;{Point(-60 45)@2024-01-01,
+  Point(0 45)@2024-01-02, Point(60 45)@2024-01-03}', 3);
 -- {5202501994543054848,5203346419473186816,5203416788217364480}
 
 -- Count of Raquet tiles a ship trajectory overlaps at zoom 8
-SELECT array_length(trajectory_quadbins(trip4326, 8), 1) AS tile_count
+SELECT array_length(trajectoryQuadbins(trip, 8), 1) AS tile_count
 FROM trips
 ORDER BY tile_count DESC;
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="raster_tile_value_quadbin">
-				<indexterm significance="normal"><primary><varname>raster_tile_value_quadbin</varname></primary></indexterm>
+			<listitem xml:id="rasterTileValueQuadbin">
+				<indexterm significance="normal"><primary><varname>rasterTileValueQuadbin</varname></primary></indexterm>
 				<para>Sample a Raquet raster chip along a trajectory using a QUADBIN cell for georeferencing</para>
-				<para><varname>raster_tile_value_quadbin(bytea,integer,integer,bigint,text,float8,boolean,tgeompoint) → tfloat</varname></para>
+				<para><varname>rasterTileValueQuadbin(tgeompoint,bytea,integer,integer,bigint,text,float8,boolean) → tfloat</varname></para>
 				<para>Evaluates a row-major single-band pixel array at each instant of <varname>traj</varname> (SRID 4326). The tile georeferencing (bounding box, pixel-to-coordinate mapping) is derived from <varname>quadbin</varname> alone via the Web-Mercator slippy-tile transform. The <varname>pixtype</varname> argument must be one of <varname>UINT8</varname>, <varname>INT16</varname>, <varname>INT32</varname>, <varname>FLOAT32</varname>, or <varname>FLOAT64</varname>. When <varname>has_nodata</varname> is true, instants whose pixel equals <varname>nodata</varname> are silently dropped. Returns <varname>NULL</varname> when no instant survives.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Sample elevation tiles from a Raquet Parquet table
 -- for all ship trajectories
-SELECT t.tripid,
-       raster_tile_value_quadbin(
-           r.band_data, r.width, r.height, r.quadbin,
-           'FLOAT32', r.nodata, true, t.trip4326)
+SELECT t.tripid, rasterTileValueQuadbin(t.trip, r.band_data, r.width, r.height,
+  r.quadbin, 'FLOAT32', r.nodata, true)
 FROM trips t
-JOIN elevation_raquet r
-  ON r.quadbin = ANY(trajectory_quadbins(t.trip4326, 8));
+JOIN elevation_raquet r ON r.quadbin = ANY(trajectoryQuadbins(t.trip, 8));
 
 -- Average sea-surface temperature per trajectory
-SELECT t.tripid,
-       avgValue(raster_tile_value_quadbin(
-           r.band_data, 256, 256, r.quadbin,
-           'INT16', -9999, true, t.trip4326)) AS mean_sst
+SELECT t.tripid, avgValue(rasterTileValueQuadbin(t.trip, 
+  r.band_data, 256, 256, r.quadbin, 'INT16', -9999, true)) AS mean_sst
 FROM trips t
-JOIN sst_raquet r
-  ON r.quadbin = ANY(trajectory_quadbins(t.trip4326, 6));
+JOIN sst_raquet r ON r.quadbin = ANY(trajectoryQuadbins(t.trip, 6));
 </programlisting>
 			</listitem>
 
@@ -140,7 +127,7 @@ JOIN sst_raquet r
 				<indexterm significance="normal"><primary><varname>raquet</varname></primary></indexterm>
 				<para>Construct a Raquet raster tile from its pixel bytes, dimensions, QUADBIN cell and pixel type</para>
 				<para><varname>raquet(bytea,integer,integer,bigint,text,float8) → raquet</varname></para>
-				<para>Packages a row-major single-band <varname>pixels</varname> array of <varname>width</varname> × <varname>height</varname> pixels of type <varname>pixtype</varname> (one of <varname>UINT8</varname>, <varname>INT16</varname>, <varname>INT32</varname>, <varname>FLOAT32</varname>, or <varname>FLOAT64</varname>), georeferenced by the <varname>quadbin</varname> cell, into a single self-describing <varname>raquet</varname> value. The <varname>nodata</varname> argument is optional; when omitted (<varname>NULL</varname>) the tile carries no nodata sentinel. An error is raised when the <varname>pixels</varname> array is smaller than <varname>width</varname> × <varname>height</varname> × the pixel size. A <varname>raquet</varname> is a GDAL-free, variable-length value with a portable Hex-WKB text and binary representation, distinct from and coexisting with the PostGIS <varname>raster</varname> type used by <link linkend="raster_value"><varname>raster_value</varname></link>.</para>
+				<para>Packages a row-major single-band <varname>pixels</varname> array of <varname>width</varname> × <varname>height</varname> pixels of type <varname>pixtype</varname> (one of <varname>UINT8</varname>, <varname>INT16</varname>, <varname>INT32</varname>, <varname>FLOAT32</varname>, or <varname>FLOAT64</varname>), georeferenced by the <varname>quadbin</varname> cell, into a single self-describing <varname>raquet</varname> value. The <varname>nodata</varname> argument is optional; when omitted (<varname>NULL</varname>) the tile carries no nodata sentinel. An error is raised when the <varname>pixels</varname> array is smaller than <varname>width</varname> × <varname>height</varname> × the pixel size. A <varname>raquet</varname> is a GDAL-free, variable-length value with a portable Hex-WKB text and binary representation, distinct from and coexisting with the PostGIS <varname>raster</varname> type used by <link linkend="rasterValue"><varname>rasterValue</varname></link>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Package the loose tile columns of a Raquet table into raquet values
 SELECT raquet(band_data, width, height, quadbin, 'FLOAT32', nodata) AS tile
@@ -151,48 +138,45 @@ SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'UINT8');
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="raquet_read">
-				<indexterm significance="normal"><primary><varname>raquet_read</varname></primary></indexterm>
+			<listitem xml:id="raquetRead">
+				<indexterm significance="normal"><primary><varname>raquetRead</varname></primary></indexterm>
 				<para>Decode an in-memory raster file into a Raquet raster tile via GDAL</para>
-				<para><varname>raquet_read(bytea,bigint) → raquet</varname></para>
-				<para>Reads the bytes of <varname>rasterfile</varname> — a raster in any format GDAL supports (GeoTIFF, PNG, …) — through GDAL's <varname>/vsimem/</varname> virtual filesystem, and packs its first band, row-major, into a single self-describing <varname>raquet</varname> value georeferenced by the <varname>quadbin</varname> cell. The band data type must be one of <varname>Byte</varname>, <varname>Int16</varname>, <varname>Int32</varname>, <varname>Float32</varname>, or <varname>Float64</varname>; the band nodata value, when set, is carried into the tile. Because the file is supplied as bytes, no server-side file access is required. GDAL performs the decode, so the raster's format driver must be permitted by PostGIS's <varname>postgis.gdal_enabled_drivers</varname> setting (which disables all drivers by default); enable it with, for example, <varname>SET postgis.gdal_enabled_drivers = 'ENABLE_ALL'</varname>. This is the ingest counterpart of the <link linkend="raquet"><varname>raquet</varname></link> constructor, which builds a tile from already-decoded pixel bytes.</para>
+				<para><varname>raquetRead(bytea,bigint) → raquet</varname></para>
+				<para>Reads the bytes of <varname>rasterfile</varname>, a raster in any format GDAL supports (GeoTIFF, PNG, …), through GDAL's <varname>/vsimem/</varname> virtual filesystem, and packs its first band, row-major, into a single self-describing <varname>raquet</varname> value georeferenced by the <varname>quadbin</varname> cell. The band data type must be one of <varname>Byte</varname>, <varname>Int16</varname>, <varname>Int32</varname>, <varname>Float32</varname>, or <varname>Float64</varname>; the band nodata value, when set, is carried into the tile. Because the file is supplied as bytes, no server-side file access is required. GDAL performs the decode, so the raster's format driver must be permitted by PostGIS's <varname>postgis.gdal_enabled_drivers</varname> setting (which disables all drivers by default); enable it with, for example, <varname>SET postgis.gdal_enabled_drivers = 'ENABLE_ALL'</varname>. This is the ingest counterpart of the <link linkend="raquet"><varname>raquet</varname></link> constructor, which builds a tile from already-decoded pixel bytes.</para>
 				<para>When <varname>quadbin</varname> is omitted or <varname>NULL</varname>, the tile identifier is derived from the raster's georeferencing: the raster must carry an <varname>EPSG:3857</varname> (Web-Mercator) spatial reference and an axis-aligned geotransform describing a single QUADBIN tile. A raster with no spatial reference, one that is not in <varname>EPSG:3857</varname>, or a geotransform that is rotated or not aligned to the tile grid raises an error rather than being coerced.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Decode a GeoTIFF stored in a bytea column into a raquet tile
-SELECT raquet_read(file_bytes, quadbin) AS tile
+SELECT raquetRead(file_bytes, quadbin) AS tile
 FROM elevation_files;
 -- Derive the QUADBIN cell from an EPSG:3857 GeoTIFF's georeferencing
-SELECT raquet_read(file_bytes) AS tile
+SELECT raquetRead(file_bytes) AS tile
 FROM elevation_files;
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="raster_tile_value">
-				<indexterm significance="normal"><primary><varname>raster_tile_value</varname></primary></indexterm>
+			<listitem xml:id="rasterTileValue">
+				<indexterm significance="normal"><primary><varname>rasterTileValue</varname></primary></indexterm>
 				<para>Sample a <varname>raquet</varname> raster tile along a trajectory</para>
-				<para><varname>raster_tile_value(raquet,tgeompoint) → tfloat</varname></para>
-				<para>Evaluates the tile at each instant of <varname>traj</varname> (SRID 4326), returning the sampled pixel values as a <varname>tfloat</varname>. This is the typed equivalent of <link linkend="raster_tile_value_quadbin"><varname>raster_tile_value_quadbin</varname></link>: the dimensions, QUADBIN cell, pixel type and nodata handling are taken from the <varname>raquet</varname> value instead of from separate arguments. Returns <varname>NULL</varname> when no instant falls inside the tile or survives nodata filtering.</para>
+				<para><varname>rasterTileValue(tgeompoint,raquet) → tfloat</varname></para>
+				<para>Evaluates the tile at each instant of <varname>traj</varname> (SRID 4326), returning the sampled pixel values as a <varname>tfloat</varname>. This is the typed equivalent of <link linkend="rasterTileValueQuadbin"><varname>rasterTileValueQuadbin</varname></link>: the dimensions, QUADBIN cell, pixel type and nodata handling are taken from the <varname>raquet</varname> value instead of from separate arguments. Returns <varname>NULL</varname> when no instant falls inside the tile or survives nodata filtering.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Sample pre-packaged raquet tiles along ship trajectories
-SELECT t.tripid, raster_tile_value(r.tile, t.trip4326)
-FROM trips t
-JOIN elevation_tiles r
-  ON r.quadbin = ANY(trajectory_quadbins(t.trip4326, 8));
+SELECT t.tripid, rasterTileValue(t.trip, r.tile)
+FROM trips t JOIN elevation_tiles r ON r.quadbin = ANY(trajectoryQuadbins(t.trip, 8));
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="raster_tile_value_array">
-				<indexterm significance="normal"><primary><varname>raster_tile_value</varname></primary></indexterm>
+			<listitem xml:id="rasterTileValueArray">
+				<indexterm significance="normal"><primary><varname>rasterTileValue</varname></primary></indexterm>
 				<para>Sample an array of <varname>raquet</varname> raster tiles along a trajectory</para>
-				<para><varname>raster_tile_value(raquet[],tgeompoint) → tfloat</varname></para>
+				<para><varname>rasterTileValue(tgeompoint,raquet[]) → tfloat</varname></para>
 				<para>Evaluates every tile of <varname>rast</varname> at each instant of <varname>traj</varname> (SRID 4326) and returns the sampled pixel values as a single <varname>tfloat</varname>. A trajectory that leaves one tile is covered by several of them, each contributing the instants that fall inside it. Tiles of one zoom level partition the plane, so they contribute disjoint instants. Tiles of different zoom levels overlap, and where two of them sample the same instant the value of the tile of higher zoom is kept, that being the one carrying the finer resolution. Returns <varname>NULL</varname> when no instant falls inside a tile or survives nodata filtering.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Sample a trajectory across every tile it crosses, in one value
-SELECT t.tripid, raster_tile_value(array_agg(r.tile), t.trip4326)
+SELECT t.tripid, rasterTileValue(t.trip, array_agg(r.tile))
 FROM trips t
-JOIN elevation_tiles r
-  ON r.quadbin = ANY(trajectory_quadbins(t.trip4326, 8))
-GROUP BY t.tripid, t.trip4326;
+JOIN elevation_tiles r ON r.quadbin = ANY(trajectoryQuadbins(t.trip, 8))
+GROUP BY t.tripid, t.trip;
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -201,7 +185,7 @@ GROUP BY t.tripid, t.trip4326;
 	<sect1 xml:id="raquet_accessors">
 		<title>Raquet Accessors and Comparison</title>
 
-		<para>A <varname>raquet</varname> value is self-describing: the accessors below read back the georeferencing and layout it carries, so a tile packaged with the <link linkend="raquet"><varname>raquet</varname></link> constructor or decoded with <link linkend="raquet_read"><varname>raquet_read</varname></link> can be inspected without keeping the loose columns it was built from.</para>
+		<para>A <varname>raquet</varname> value is self-describing: the accessors below read back the georeferencing and layout it carries, so a tile packaged with the <link linkend="raquet"><varname>raquet</varname></link> constructor or decoded with <link linkend="raquetRead"><varname>raquetRead</varname></link> can be inspected without keeping the loose columns it was built from.</para>
 
 		<para>Tiles also support the full set of comparison operators. The ordering is total and is defined on the QUADBIN cell first, then the pixel type, the width, the height, and finally the pixel bytes; it is meant for indexing and deduplication rather than for a spatial interpretation. A default btree operator class makes <varname>ORDER BY</varname>, <varname>DISTINCT</varname> and merge joins work on <varname>raquet</varname> columns, and a default hash operator class enables hash joins and hash aggregation.</para>
 
@@ -290,7 +274,7 @@ SELECT extent(stbox(tile)) FROM elevation_tiles;
 -- Tiles a trajectory passes through, at whatever zoom levels the table holds
 SELECT t.tripid, r.tile
 FROM trips t, elevation_tiles r
-WHERE stbox(r.tile) &amp;&amp; stbox(t.trip4326);
+WHERE stbox(r.tile) &amp;&amp; stbox(t.trip);
 </programlisting>
 			</listitem>
 
@@ -320,14 +304,14 @@ SELECT DISTINCT tile FROM elevation_tiles;
 	<sect1 xml:id="raster_restriction">
 		<title>Restriction and Predicate Operators</title>
 
-		<para>The following SQL-defined operators compose <varname>raster_value</varname> with the standard MobilityDB temporal restriction and predicate functions. They accept an optional <varname>band</varname> argument (default 1) and call <varname>raster_value</varname> exactly once per invocation.</para>
+		<para>The following SQL-defined operators compose <varname>rasterValue</varname> with the standard MobilityDB temporal restriction and predicate functions. They accept an optional <varname>band</varname> argument (default 1) and call <varname>rasterValue</varname> exactly once per invocation.</para>
 
 		<itemizedlist>
 			<listitem xml:id="atRasterValue">
 				<indexterm significance="normal"><primary><varname>atRasterValue</varname></primary></indexterm>
 				<para>Return the instants of a trajectory where the sampled raster value falls inside a float range</para>
 				<para><varname>atRasterValue(tgeompoint,raster,floatspan,band integer DEFAULT 1) → tgeompoint</varname></para>
-				<para>Evaluates <varname>raster_value</varname> at every instant of <varname>traj</varname> and returns the sub-trajectory restricted to the times when the pixel value lies within <varname>vspan</varname>. Returns <varname>NULL</varname> when no instant satisfies the condition.</para>
+				<para>Evaluates <varname>rasterValue</varname> at every instant of <varname>traj</varname> and returns the sub-trajectory restricted to the times when the pixel value lies within <varname>vspan</varname>. Returns <varname>NULL</varname> when no instant satisfies the condition.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 WITH rast AS (
   SELECT ST_SetValues(
@@ -339,13 +323,10 @@ WITH rast AS (
           [40.0::float4, 50.0::float4, 60.0::float4],
           [70.0::float4, 80.0::float4, 90.0::float4]]) AS r
 )
-SELECT asText(atRasterValue(
-  tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2000-01-01,
-                          POINT(1.5 1.5)@2000-01-02,
-                          POINT(0.5 0.5)@2000-01-03]',
-  r, floatspan '[40, 90]'))
+SELECT asText(atRasterValue(tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2000-01-01,
+  POINT(1.5 1.5)@2000-01-02, POINT(0.5 0.5)@2000-01-03]', r, floatspan '[40, 90]'))
 FROM rast;
--- {[POINT(1.5 1.5)@2000-01-02 00:00:00+00], [POINT(0.5 0.5)@2000-01-03 00:00:00+00]}
+-- {[POINT(1.5 1.5)@2000-01-02], [POINT(0.5 0.5)@2000-01-03]}
 </programlisting>
 			</listitem>
 
@@ -364,26 +345,26 @@ FROM trips, elevation_raster;
 			<listitem xml:id="eRasterValue">
 				<indexterm significance="normal"><primary><varname>eRasterValue</varname></primary></indexterm>
 				<para>Return true if the trajectory ever samples a raster pixel value inside a float range</para>
-				<para><varname>eRasterValue(raster,tgeompoint,floatspan,band integer DEFAULT 1) → boolean</varname></para>
+				<para><varname>eRasterValue(tgeompoint,raster,floatspan,band integer DEFAULT 1) → boolean</varname></para>
 				<para>Returns <varname>true</varname> when at least one in-extent instant of <varname>traj</varname> samples a pixel value within <varname>vspan</varname>, <varname>false</varname> otherwise. Returns <varname>NULL</varname> only when the input is <varname>NULL</varname>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Trips that ever crossed terrain above 200 m
 SELECT tripid
 FROM trips, elevation_raster
-WHERE eRasterValue(elev_raster, trip4326, floatspan '[200, 9999]');
+WHERE eRasterValue(trip, elev_raster, floatspan '[200, 9999]');
 </programlisting>
 			</listitem>
 
 			<listitem xml:id="aRasterValue">
 				<indexterm significance="normal"><primary><varname>aRasterValue</varname></primary></indexterm>
 				<para>Return true if every in-raster-extent instant of the trajectory samples a pixel value inside a float range</para>
-				<para><varname>aRasterValue(raster,tgeompoint,floatspan,band integer DEFAULT 1) → boolean</varname></para>
+				<para><varname>aRasterValue(tgeompoint,raster,floatspan,band integer DEFAULT 1) → boolean</varname></para>
 				<para>Returns <varname>true</varname> when every in-extent instant of <varname>traj</varname> samples a pixel value within <varname>vspan</varname>, <varname>false</varname> when at least one does not. Returns <varname>NULL</varname> only when the input is <varname>NULL</varname>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Trips that stayed entirely below 100 m elevation
 SELECT tripid
 FROM trips, elevation_raster
-WHERE aRasterValue(elev_raster, trip4326, floatspan '[0, 100]');
+WHERE aRasterValue(trip, elev_raster, floatspan '[0, 100]');
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -404,15 +385,15 @@ sudo make install
 	<sect1 xml:id="raster_roadmap">
 		<title>Production Roadmap</title>
 
-		<para>The two paths described in this chapter serve different purposes and are both maintained. The <varname>raquet</varname> path is a self-contained MEOS value type: it carries its pixels and its QUADBIN georeferencing in a single value and needs no PostgreSQL to evaluate, so it is available to every language binding derived from MEOS. The PostGIS <varname>raster</varname> path offers the far richer raster processing of the <varname>postgis_raster</varname> extension — map algebra, statistics, resampling, clipping, conversion to polygons — inside PostgreSQL only.</para>
+		<para>The two paths described in this chapter serve different purposes and are both maintained. The <varname>raquet</varname> path is a self-contained MEOS value type: it carries its pixels and its QUADBIN georeferencing in a single value and needs no PostgreSQL to evaluate, so it is available to every language binding derived from MEOS. The PostGIS <varname>raster</varname> path offers the far richer raster processing of the <varname>postgis_raster</varname> extension, map algebra, statistics, resampling, clipping, conversion to polygons, inside PostgreSQL only.</para>
 
 		<para>Neither path replaces the other. Work on the <varname>raquet</varname> path extends what a cloud-native tile can do along a trajectory; it is not an attempt to reimplement raster processing.</para>
 
 		<para>The extensions below require a general raster data model, that is, arbitrary spatial reference systems, arbitrary affine georeferencing and several bands per tile. A <varname>raquet</varname> value is a single-band tile whose extent and pixel grid follow from its QUADBIN cell, so these lie outside that model and remain available through the PostGIS <varname>raster</varname> path:</para>
 		<itemizedlist>
-			<listitem><para><emphasis>Multi-band tiles</emphasis> — one <varname>tfloat</varname> per band for multi-spectral imagery such as RGB or multi-channel satellite scenes.</para></listitem>
-			<listitem><para><emphasis>Arbitrary spatial reference systems</emphasis> — tiles outside the Web-Mercator grid, and reprojection between reference systems.</para></listitem>
-			<listitem><para><emphasis>Raster processing</emphasis> — map algebra, summary statistics, resampling, and conversion to polygons, together with clipping a tile to a region, such as the extent a set of trajectories visits over a time interval.</para></listitem>
+			<listitem><para><emphasis>Multi-band tiles</emphasis>, one <varname>tfloat</varname> per band for multi-spectral imagery such as RGB or multi-channel satellite scenes.</para></listitem>
+			<listitem><para><emphasis>Arbitrary spatial reference systems</emphasis>, tiles outside the Web-Mercator grid, and reprojection between reference systems.</para></listitem>
+			<listitem><para><emphasis>Raster processing</emphasis>, map algebra, summary statistics, resampling, and conversion to polygons, together with clipping a tile to a region, such as the extent a set of trajectories visits over a time interval.</para></listitem>
 		</itemizedlist>
 	</sect1>
 </chapter>

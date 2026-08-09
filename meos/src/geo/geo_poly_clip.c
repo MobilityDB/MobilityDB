@@ -20,8 +20,7 @@
 /**
  * @file
  * @brief Polygon Boolean clipping for temporal-point spatial functions.
- *
- * Thin trivial-cases layer over the Clipper2 adapter
+ * @details Thin trivial-cases layer over the Clipper2 adapter
  * (@c clipper2_clip_poly_poly in @c clip_clipper2.cpp). The empty-input
  * and bbox-disjoint short-circuits handled here are the same ones the
  * legacy Martinez implementation used; they let the SQL wrappers avoid
@@ -59,13 +58,12 @@ _Static_assert(CL_XOR          == MEOS_CLIP_XOR,
 
 /**
  * @brief Clip the two polygons using the given Boolean operation.
- *
  * @param subj  Subject geometry (POLYGON or MULTIPOLYGON, 2D)
  * @param clip  Clipping geometry (POLYGON or MULTIPOLYGON, 2D)
  * @param oper  Operation selector (#CL_INTERSECTION, #CL_UNION,
- *              #CL_DIFFERENCE, #CL_XOR)
+ * #CL_DIFFERENCE, #CL_XOR)
  * @return Newly-allocated GSERIALIZED holding the result, or @c NULL on
- *         empty result. Caller owns the result.
+ * empty result. Caller owns the result.
  *
  * 3D rejection, geography rejection, SRID-mismatch and type-validity
  * checks are performed by the SQL wrapper layer

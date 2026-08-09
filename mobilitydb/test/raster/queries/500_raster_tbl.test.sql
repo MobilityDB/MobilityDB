@@ -134,19 +134,21 @@ DROP INDEX tbl_raquet_quadtree_idx;
 -- The array form samples the trajectory from every tile at once, so it covers
 -- at least as many instants as any single tile does
 WITH traj AS (
-  SELECT tgeompoint 'SRID=4326;{Point(10.0 20.0)@2024-01-01, Point(40.0 50.0)@2024-01-02, Point(70.0 30.0)@2024-01-03}' AS t
+  SELECT tgeompoint 'SRID=4326;{Point(10.0 20.0)@2024-01-01,
+    Point(40.0 50.0)@2024-01-02, Point(70.0 30.0)@2024-01-03}' AS t
 )
-SELECT COALESCE(numInstants(rasterTileValue(array_agg(r.tile), traj.t)), 0) >=
-       COALESCE(MAX(numInstants(rasterTileValue(r.tile, traj.t))), 0)
+SELECT COALESCE(numInstants(rasterTileValue(traj.t, array_agg(r.tile))), 0) >=
+       COALESCE(MAX(numInstants(rasterTileValue(traj.t, r.tile))), 0)
 FROM tbl_raquet r, traj
 WHERE r.tile IS NOT NULL
 GROUP BY traj.t;
 
 -- The result never holds more instants than the trajectory has
 WITH traj AS (
-  SELECT tgeompoint 'SRID=4326;{Point(10.0 20.0)@2024-01-01, Point(40.0 50.0)@2024-01-02, Point(70.0 30.0)@2024-01-03}' AS t
+  SELECT tgeompoint 'SRID=4326;{Point(10.0 20.0)@2024-01-01,
+    Point(40.0 50.0)@2024-01-02, Point(70.0 30.0)@2024-01-03}' AS t
 )
-SELECT COALESCE(numInstants(rasterTileValue(array_agg(r.tile), traj.t)), 0) <= 3
+SELECT COALESCE(numInstants(rasterTileValue(traj.t, array_agg(r.tile))), 0) <= 3
 FROM tbl_raquet r, traj
 WHERE r.tile IS NOT NULL
 GROUP BY traj.t;
@@ -154,14 +156,15 @@ GROUP BY traj.t;
 -- Restricting the array to the tiles whose footprint meets the trajectory
 -- gives the same result as passing every tile
 WITH traj AS (
-  SELECT tgeompoint 'SRID=4326;{Point(10.0 20.0)@2024-01-01, Point(40.0 50.0)@2024-01-02, Point(70.0 30.0)@2024-01-03}' AS t
+  SELECT tgeompoint 'SRID=4326;{Point(10.0 20.0)@2024-01-01,
+    Point(40.0 50.0)@2024-01-02, Point(70.0 30.0)@2024-01-03}' AS t
 )
-SELECT rasterTileValue(
-         (SELECT array_agg(tile) FROM tbl_raquet WHERE tile IS NOT NULL), traj.t)::text
+SELECT rasterTileValue(traj.t,
+         (SELECT array_agg(tile) FROM tbl_raquet WHERE tile IS NOT NULL))::text
        IS NOT DISTINCT FROM
-       rasterTileValue(
+       rasterTileValue(traj.t,
          (SELECT array_agg(tile) FROM tbl_raquet
-          WHERE tile IS NOT NULL AND stbox(tile) && stbox(traj.t)), traj.t)::text
+          WHERE tile IS NOT NULL AND stbox(tile) && stbox(traj.t)))::text
 FROM traj;
 
 -------------------------------------------------------------------------------

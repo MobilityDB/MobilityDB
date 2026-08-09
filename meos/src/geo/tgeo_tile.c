@@ -502,7 +502,7 @@ stbox_tile_state_make(const Temporal *temp, const STBox *box, double xsize,
 void
 stbox_tile_state_set(double x, double y, double z, TimestampTz t, double xsize,
   double ysize, double zsize, int64 tunits, bool hasx, bool hasz, bool hast,
-  int32 srid, STBox *result)
+  int32_t srid, STBox *result)
 {
   assert(hasx || hast);
 
@@ -663,13 +663,12 @@ stbox_space_time_tiles(const STBox *bounds, double xsize, double ysize,
   double zsize, const Interval *duration, const GSERIALIZED *sorigin,
   TimestampTz torigin, bool border_inc, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  *count = 0;
   /* Ensure the validity of the arguments
    * Since we pass by default Point(0 0 0) as origin independently of the input
    * STBox, we test the same spatial dimensionality only for STBox Z */
-  VALIDATE_NOT_NULL(count, NULL);
-  /* The out parameter is defined even when a later check fails */
-  *count = 0;
-  VALIDATE_NOT_NULL(bounds, NULL);
+  VALIDATE_NOT_NULL(count, NULL); VALIDATE_NOT_NULL(bounds, NULL);
   if (! ensure_has_X(T_STBOX, bounds->flags) ||
       ! ensure_not_geodetic(bounds->flags) ||
       ! ensure_not_negative_datum(Float8GetDatum(xsize), T_FLOAT8) ||
@@ -685,7 +684,7 @@ stbox_space_time_tiles(const STBox *bounds, double xsize, double ysize,
       return NULL;
   if (sorigin)
   {    
-    int32 srid = bounds->srid;
+    int32_t srid = bounds->srid;
     int32 gs_srid = gserialized_get_srid(sorigin);
     if (gs_srid != SRID_UNKNOWN && ! ensure_same_srid(srid, gs_srid))
       return NULL;
@@ -837,7 +836,7 @@ stbox_space_time_tile(const GSERIALIZED *point, TimestampTz t,
   double xmin = 0, ymin = 0, zmin = 0;
   bool hasz = false;
   int64 tunits = hast ? interval_units(duration) : 0;
-  int32 srid = hasx ? gserialized_get_srid(point) : SRID_UNKNOWN;
+  int32_t srid = hasx ? gserialized_get_srid(point) : SRID_UNKNOWN;
   int32 gs_srid = hasx ? gserialized_get_srid(sorigin) : SRID_UNKNOWN;
   if (gs_srid != SRID_UNKNOWN && ! ensure_same_srid(srid, gs_srid))
     return NULL;
@@ -956,11 +955,10 @@ tgeo_space_time_boxes(const Temporal *temp, double xsize, double ysize,
   double zsize, const Interval *duration, const GSERIALIZED *sorigin,
   TimestampTz torigin, bool bitmatrix, bool border_inc, int *count)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(count, NULL);
   /* The out parameter is defined even when a later check fails */
   *count = 0;
-  VALIDATE_TGEO(temp, NULL);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(count, NULL); VALIDATE_TGEO(temp, NULL);
   if ((xsize > 0 && ! ensure_not_null((void *) sorigin)) ||
       (xsize > 0 && ! ensure_positive_datum(xsize, T_FLOAT8)) ||
       (xsize > 0 && ! ensure_positive_datum(ysize, T_FLOAT8)) ||
@@ -1269,11 +1267,10 @@ tgeo_space_time_tile_init(const Temporal *temp, double xsize, double ysize,
   double zsize, const Interval *duration, const GSERIALIZED *sorigin,
   TimestampTz torigin, bool bitmatrix, bool border_inc, int *ntiles)
 {
-  /* Ensure parameter validity */
-  VALIDATE_NOT_NULL(ntiles, NULL);
   /* The out parameter is defined even when a later check fails */
   *ntiles = 0;
-  VALIDATE_TGEO(temp, NULL);
+  /* Ensure parameter validity */
+  VALIDATE_NOT_NULL(ntiles, NULL); VALIDATE_TGEO(temp, NULL);
   if ((xsize && ! ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8)) ||
       (xsize && ! ensure_positive_datum(Float8GetDatum(ysize), T_FLOAT8)) ||
       (xsize && ! ensure_positive_datum(Float8GetDatum(zsize), T_FLOAT8)) ||

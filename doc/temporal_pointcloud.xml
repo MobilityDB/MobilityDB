@@ -88,7 +88,7 @@ INSERT INTO scans VALUES (1,
 		<sect2 xml:id="tpointcloud_quickstart_query">
 			<title>Query with the bbox surface</title>
 
-			<para>Every tpcpoint and tpcpatch carries a <varname>tpcbox</varname> (mirror of <varname>stbox</varname> + <varname>pcid</varname>) computed at construction time. The bbox-level operator surface — topological (<varname>&amp;&amp;</varname>, <varname>@&gt;</varname>, <varname>&lt;@</varname>, <varname>~=</varname>, <varname>-|-</varname>), directional on X/Y/Z/time, and KNN distance <varname>|=|</varname> — works between any pair of (<varname>tpcbox</varname>, <varname>tpcpoint</varname>, <varname>tpcpatch</varname>):</para>
+			<para>Every tpcpoint and tpcpatch carries a <varname>tpcbox</varname> (mirror of <varname>stbox</varname> + <varname>pcid</varname>) computed at construction time. The bbox-level operator surface, topological (<varname>&amp;&amp;</varname>, <varname>@&gt;</varname>, <varname>&lt;@</varname>, <varname>~=</varname>, <varname>-|-</varname>), directional on X/Y/Z/time, and KNN distance <varname>|=|</varname>, works between any pair of (<varname>tpcbox</varname>, <varname>tpcpoint</varname>, <varname>tpcpatch</varname>):</para>
 			<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- rows whose track ever entered a 3D-temporal box
 SELECT id FROM scans
@@ -110,7 +110,7 @@ ORDER BY traj |=| my_box LIMIT 5;
 CREATE INDEX scans_traj_gist ON scans USING gist(traj);
 CREATE INDEX scans_full_spgist ON scans USING spgist(full_scan);
 </programlisting>
-			<para>The SP-GiST opclasses store an <varname>stbox</varname> internally and recover the <varname>pcid</varname> filter at recheck time, so a column with mixed pcids returns a slightly larger candidate set for recheck — a non-issue when each table holds values of a single schema, which the typmod recipe in <link linkend="tpointcloud_quickstart_construct">Build base and temporal values</link> enforces.</para>
+			<para>The SP-GiST opclasses store an <varname>stbox</varname> internally and recover the <varname>pcid</varname> filter at recheck time, so a column with mixed pcids returns a slightly larger candidate set for recheck, a non-issue when each table holds values of a single schema, which the typmod recipe in <link linkend="tpointcloud_quickstart_construct">Build base and temporal values</link> enforces.</para>
 		</sect2>
 
 		<sect2 xml:id="tpointcloud_quickstart_aggregate">
@@ -121,12 +121,12 @@ CREATE INDEX scans_full_spgist ON scans USING spgist(full_scan);
 SELECT extent(traj) FROM scans;
 
 -- count of active tracks at each timestamp (tint)
-SELECT tcount(traj) FROM scans;
+SELECT tCount(traj) FROM scans;
 
 -- merge per-source instants into a single tpcpoint
 SELECT id, merge(traj) FROM scans GROUP BY id;
 </programlisting>
-			<para><varname>extent</varname> rejects mixed pcids (the bbox dimensions would be uninterpretable across schemas); <varname>merge</varname> and <varname>tcount</varname> follow the same rules as their non-pointcloud counterparts.</para>
+			<para><varname>extent</varname> rejects mixed pcids (the bbox dimensions would be uninterpretable across schemas); <varname>merge</varname> and <varname>tCount</varname> follow the same rules as their non-pointcloud counterparts.</para>
 		</sect2>
 
 		<sect2 xml:id="tpointcloud_quickstart_perpoint">
@@ -140,7 +140,7 @@ SELECT id, t, point FROM scans, points(full_scan);
 -- total points across every instant of every track
 SELECT id, numPoints(full_scan) FROM scans;
 </programlisting>
-			<para>Per-point <emphasis>filtering</emphasis> — building a new patch from a subset of the original's points — is provided by <link linkend="tpcpatch_atTpcboxFine"><varname>atTpcboxFine</varname></link> / <varname>minusTpcboxFine</varname> (against a <varname>tpcbox</varname>) and <link linkend="tpcpatch_atGeometry"><varname>atGeometry</varname></link> / <varname>minusGeometry</varname> (against a 2D geometry); see <link linkend="tpcpatch_perpoint_roadmap">Per-point operations</link> for the granularity matrix.</para>
+			<para>Per-point <emphasis>filtering</emphasis>, building a new patch from a subset of the original's points, is provided by <link linkend="tpcpatch_atTpcboxFine"><varname>atTpcboxFine</varname></link> / <varname>minusTpcboxFine</varname> (against a <varname>tpcbox</varname>) and <link linkend="tpcpatch_atGeometry"><varname>atGeometry</varname></link> / <varname>minusGeometry</varname> (against a 2D geometry); see <link linkend="tpcpatch_perpoint_roadmap">Per-point operations</link> for the granularity matrix.</para>
 		</sect2>
 
 		<sect2 xml:id="tpointcloud_quickstart_next">
@@ -270,7 +270,7 @@ SELECT numValues(set(ARRAY[PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]),
 	<sect1 xml:id="tpcbox">
 		<title>Bounding Box <varname>tpcbox</varname></title>
 
-		<para>The <varname>tpcbox</varname> type is the spatiotemporal bounding box for the temporal point-cloud types. It mirrors the structure of <varname>stbox</varname> (see <xref linkend="box_types" />) — same X/Y/Z/T axes, same flag bits for which dimensions are present — and adds a single field: the <varname>pcid</varname>. Two <varname>tpcbox</varname> values with different <varname>pcid</varname> values are never considered to overlap, contain, equal, or be adjacent to each other, regardless of their geometric or temporal extent.</para>
+		<para>The <varname>tpcbox</varname> type is the spatiotemporal bounding box for the temporal point-cloud types. It mirrors the structure of <varname>stbox</varname> (see <xref linkend="box_types" />), same X/Y/Z/T axes, same flag bits for which dimensions are present, and adds a single field: the <varname>pcid</varname>. Two <varname>tpcbox</varname> values with different <varname>pcid</varname> values are never considered to overlap, contain, equal, or be adjacent to each other, regardless of their geometric or temporal extent.</para>
 
 		<para>Carrying the <varname>pcid</varname> through bounding-box arithmetic guarantees that bounding-box pruning never drops a row whose schema differs from the query's schema, and never returns a hit across mismatched schemas.</para>
 
@@ -405,7 +405,7 @@ SELECT round(tpcbox(0.123456, 1.234567, 2.345678, 3.456789, 1, 0), 2);
 
 				<listitem xml:id="tpcbox_setSRID">
 					<indexterm significance="normal"><primary><varname>setSRID</varname></primary></indexterm>
-					<para>Return a tpcbox with the SRID overwritten. Does not reproject coordinates — for that, project the underlying tpcpoint first and take the bbox of the result</para>
+					<para>Return a tpcbox with the SRID overwritten. Does not reproject coordinates, for that, project the underlying tpcpoint first and take the bbox of the result</para>
 					<para><varname>setSRID(tpcbox,integer) → tpcbox</varname></para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT SRID(setSRID(tpcbox(0, 0, 10, 10, 1, 0), 4326));
@@ -604,7 +604,7 @@ SELECT tpcbox(0, 0, 2, 2) &lt; tpcbox(5, 5, 7, 7);
 	<sect1 xml:id="tpcpoint">
 		<title>Temporal Type <varname>tpcpoint</varname></title>
 
-		<para>A <varname>tpcpoint</varname> is the lifting of <varname>pcpoint</varname> through MobilityDB's temporal machinery. It supports the same three subtypes as the other temporal types — instant, sequence (with discrete or step interpolation), and sequence set. All instants in a single <varname>tpcpoint</varname> value must share the same <varname>pcid</varname>; the constructor enforces this.</para>
+		<para>A <varname>tpcpoint</varname> is the lifting of <varname>pcpoint</varname> through MobilityDB's temporal machinery. It supports the same three subtypes as the other temporal types, instant, sequence (with discrete or step interpolation), and sequence set. All instants in a single <varname>tpcpoint</varname> value must share the same <varname>pcid</varname>; the constructor enforces this.</para>
 
 		<para>The bounding box of a <varname>tpcpoint</varname> is a <varname>tpcbox</varname>, computed at construction time from the X/Y/Z dimensions of the underlying <varname>pcpoint</varname> values together with the timestamps of the instants.</para>
 
@@ -1129,7 +1129,7 @@ SELECT round((tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz) |=|
 		</sect2>
 
 		<sect2 xml:id="tpcpoint_btree_ordering">
-			<title>B-tree ordering — what <varname>ORDER BY tpcpoint</varname> means</title>
+			<title>B-tree ordering, what <varname>ORDER BY tpcpoint</varname> means</title>
 
 			<para>The <varname>tpcpoint_btree_ops</varname> opclass produces a total order over <varname>tpcpoint</varname> values, but the order is byte-wise on the underlying <varname>pcpoint</varname> serialisation, not geometric. The same caveats that apply to <link linkend="tpcpatch_btree"><varname>tpcpatch</varname>'s B-tree</link> apply here:</para>
 
@@ -1138,7 +1138,7 @@ SELECT round((tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz) |=|
 					<para><emphasis role="bold"><varname>pcid</varname> is the primary discriminator.</emphasis> Points with smaller <varname>pcid</varname> sort before points with larger <varname>pcid</varname>, regardless of coordinates. Mixing pcids in a single column groups rows by schema first when ordering.</para>
 				</listitem>
 				<listitem>
-					<para><emphasis role="bold">Within a single <varname>pcid</varname>, ordering follows the schema's on-disk dimension layout</emphasis> — typically X, Y, Z encoded as int32 (after applying the schema's per-dimension scale). Two points whose Euclidean distance is small can sort far apart if their X dimensions differ, since X is compared first.</para>
+					<para><emphasis role="bold">Within a single <varname>pcid</varname>, ordering follows the schema's on-disk dimension layout</emphasis>, typically X, Y, Z encoded as int32 (after applying the schema's per-dimension scale). Two points whose Euclidean distance is small can sort far apart if their X dimensions differ, since X is compared first.</para>
 				</listitem>
 				<listitem>
 					<para><emphasis role="bold">Equality is exact-bytes equality.</emphasis> Two pcpoints with the same dimension values in the same schema are equal; the same coordinate set encoded in a schema with different scale or dimension order is not.</para>
@@ -1150,7 +1150,7 @@ SELECT round((tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz) |=|
 
 		<sect2 xml:id="tpcpoint_spatialrels">
 			<title>Spatial relationships</title>
-			<para>Evaluated by projecting the tpcpoint to a <varname>tgeompoint</varname> via the schema cache and delegating to the corresponding tgeompoint relation. Each function is wired in three argument orders: <varname>(geometry, tpcpoint)</varname>, <varname>(tpcpoint, geometry)</varname>, and <varname>(tpcpoint, tpcpoint)</varname>. tpcpatch is intentionally out of scope — patch-level intersection would require per-point decompression and a different design.</para>
+			<para>Evaluated by projecting the tpcpoint to a <varname>tgeompoint</varname> via the schema cache and delegating to the corresponding tgeompoint relation. Each function is wired in three argument orders: <varname>(geometry, tpcpoint)</varname>, <varname>(tpcpoint, geometry)</varname>, and <varname>(tpcpoint, tpcpoint)</varname>. tpcpatch is intentionally out of scope, patch-level intersection would require per-point decompression and a different design.</para>
 			<itemizedlist>
 				<listitem xml:id="tpcpoint_intersects">
 					<indexterm significance="normal"><primary><varname>eIntersects</varname></primary></indexterm>
@@ -1224,7 +1224,7 @@ SELECT aDwithin(tpcpointSeq(ARRAY[
 	<sect1 xml:id="tpcpatch">
 		<title>Temporal Type <varname>tpcpatch</varname></title>
 
-		<para>A <varname>tpcpatch</varname> is the lifting of <varname>pcpatch</varname>. It mirrors <varname>tpcpoint</varname> in every regard — same subtypes, same accessors, same casts and operators — except that each instant carries an entire compressed batch of points instead of a single point. The bounding box is again a <varname>tpcbox</varname>, computed in O(1) per instant from the patch's embedded <varname>PCBOUNDS</varname>.</para>
+		<para>A <varname>tpcpatch</varname> is the lifting of <varname>pcpatch</varname>. It mirrors <varname>tpcpoint</varname> in every regard, same subtypes, same accessors, same casts and operators, except that each instant carries an entire compressed batch of points instead of a single point. The bounding box is again a <varname>tpcbox</varname>, computed in O(1) per instant from the patch's embedded <varname>PCBOUNDS</varname>.</para>
 
 		<sect2 xml:id="tpcpatch_constructors">
 			<title>Constructors</title>
@@ -1287,7 +1287,7 @@ SELECT startNumPoints(tpcpatch(PC_Patch(PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0])
 
 				<listitem xml:id="tpcpatch_total_numpoints">
 					<indexterm significance="normal"><primary><varname>numPoints</varname></primary></indexterm>
-					<para>Return the total number of points across every instant's patch. Read directly from each patch's header — no decompression.</para>
+					<para>Return the total number of points across every instant's patch. Read directly from each patch's header, no decompression.</para>
 					<para><varname>numPoints(tpcpatch) → bigint</varname></para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT numPoints(tpcpatchSeq(ARRAY[
@@ -1302,7 +1302,7 @@ SELECT numPoints(tpcpatchSeq(ARRAY[
 
 				<listitem xml:id="tpcpatch_points">
 					<indexterm significance="normal"><primary><varname>points</varname></primary></indexterm>
-					<para>Set-returning function: emits one row per (instant timestamp, point) by walking each instant's patch and decomposing it through pgPointCloud's in-memory C API. Useful for joining a tpcpatch column against per-point predicates that the bbox-level operators can't express. Cost is O(total points) — one per-instant decompression plus one row emission per point.</para>
+					<para>Set-returning function: emits one row per (instant timestamp, point) by walking each instant's patch and decomposing it through pgPointCloud's in-memory C API. Useful for joining a tpcpatch column against per-point predicates that the bbox-level operators can't express. Cost is O(total points), one per-instant decompression plus one row emission per point.</para>
 					<para><varname>points(tpcpatch) → setof (t timestamptz, point pcpoint)</varname></para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT t, point FROM points(tpcpatch(
@@ -1401,7 +1401,7 @@ SELECT numInstants(minusTpcbox(tpcpatchSeq(ARRAY[
 				<listitem xml:id="tpcpatch_atTpcboxFine">
 					<indexterm significance="normal"><primary><varname>atTpcboxFine</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>minusTpcboxFine</varname></primary></indexterm>
-					<para>Per-point variant of the previous: each surviving instant carries a freshly-built pcpatch holding only the points inside (or outside, for minus) the tpcbox in 2D — and 3D when the box has a Z dimension. Instants whose patch filters to zero points are dropped. Slower than the coarse variant because every patch is decompressed and rebuilt; use when you need point-level fidelity.</para>
+					<para>Per-point variant of the previous: each surviving instant carries a freshly-built pcpatch holding only the points inside (or outside, for minus) the tpcbox in 2D, and 3D when the box has a Z dimension. Instants whose patch filters to zero points are dropped. Slower than the coarse variant because every patch is decompressed and rebuilt; use when you need point-level fidelity.</para>
 					<para><varname>atTpcboxFine(tpcpatch,tpcbox,border_inc bool=TRUE) → tpcpatch</varname></para>
 					<para><varname>minusTpcboxFine(tpcpatch,tpcbox,border_inc bool=TRUE) → tpcpatch</varname></para>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -1666,7 +1666,7 @@ SELECT tEq(tpcpatchSeq(ARRAY[
 		</sect2>
 
 		<sect2 xml:id="tpcpatch_btree">
-			<title>B-tree ordering — what <varname>ORDER BY tpcpatch</varname> means</title>
+			<title>B-tree ordering, what <varname>ORDER BY tpcpatch</varname> means</title>
 
 			<para>The <varname>tpcpatch_btree_ops</varname> opclass produces a total order over <varname>tpcpatch</varname> values, but the order is not spatial. The comparator on the underlying <varname>pcpatch</varname> is byte-wise (<function>memcmp</function> over the meaningful varlena bytes); the temporal-level comparator is the lexicographic combination of per-instant timestamps and per-instant <varname>pcpatch</varname> byte order. The observable consequences:</para>
 
@@ -1675,7 +1675,7 @@ SELECT tEq(tpcpatchSeq(ARRAY[
 					<para><emphasis role="bold"><varname>pcid</varname> is the primary discriminator.</emphasis> A patch with a smaller <varname>pcid</varname> sorts before one with a larger <varname>pcid</varname>, regardless of point coordinates, count, or compression. This makes <varname>ORDER BY</varname> on a mixed-pcid column group rows by schema first, which is sometimes useful as a coarse-grained "chunk by source schema" pass.</para>
 				</listitem>
 				<listitem>
-					<para><emphasis role="bold">Within a single <varname>pcid</varname>, ordering follows the on-disk byte layout</emphasis>: <varname>compression</varname> scheme, then <varname>npoints</varname>, then the 2D <varname>PCBOUNDS</varname> (xmin, xmax, ymin, ymax), then the compressed <varname>data</varname> payload. This is well-defined and stable for a given pgPointCloud release, but it is <emphasis>not</emphasis> a geometric or spatial ordering — two patches whose bounding boxes overlap in 3D space can sort arbitrarily relative to each other if their compression scheme or point count differs.</para>
+					<para><emphasis role="bold">Within a single <varname>pcid</varname>, ordering follows the on-disk byte layout</emphasis>: <varname>compression</varname> scheme, then <varname>npoints</varname>, then the 2D <varname>PCBOUNDS</varname> (xmin, xmax, ymin, ymax), then the compressed <varname>data</varname> payload. This is well-defined and stable for a given pgPointCloud release, but it is <emphasis>not</emphasis> a geometric or spatial ordering, two patches whose bounding boxes overlap in 3D space can sort arbitrarily relative to each other if their compression scheme or point count differs.</para>
 				</listitem>
 				<listitem>
 					<para><emphasis role="bold">Equality is exact-bytes equality</emphasis> over the meaningful bytes (the trailing zero-padding pgPointCloud's varlena reserves is excluded). Two patches built from the same point set in the same order, with the same compression, are equal; reordering the points or changing compression makes them unequal.</para>
@@ -1692,16 +1692,16 @@ SELECT tEq(tpcpatchSeq(ARRAY[
 
 			<itemizedlist>
 				<listitem>
-					<para><emphasis role="bold">Patch-level — supported.</emphasis> Each instant's patch is treated as opaque and is kept or dropped as a whole, using only the 4-double <varname>PCBOUNDS</varname> header (xmin / xmax / ymin / ymax) and the instant's timestamp. This is the granularity of <link linkend="tpcpatch_atTpcbox"><varname>atTpcbox</varname> / <varname>minusTpcbox</varname></link> and the bounding-box operators in <xref linkend="tpcpatch_bbox_ops" />, and of the bbox-driven <varname>tpcbox</varname> aggregate. No payload decompression happens; queries are O(number of instants).</para>
+					<para><emphasis role="bold">Patch-level, supported.</emphasis> Each instant's patch is treated as opaque and is kept or dropped as a whole, using only the 4-double <varname>PCBOUNDS</varname> header (xmin / xmax / ymin / ymax) and the instant's timestamp. This is the granularity of <link linkend="tpcpatch_atTpcbox"><varname>atTpcbox</varname> / <varname>minusTpcbox</varname></link> and the bounding-box operators in <xref linkend="tpcpatch_bbox_ops" />, and of the bbox-driven <varname>tpcbox</varname> aggregate. No payload decompression happens; queries are O(number of instants).</para>
 					<para>Because <varname>PCBOUNDS</varname> is 2D, the Z dimension of any <varname>tpcbox</varname> argument is ignored at this granularity even when the underlying schema has a Z dimension.</para>
 				</listitem>
 
 				<listitem>
-					<para><emphasis role="bold">Per-point inspection — supported.</emphasis> The <link linkend="tpcpatch_points"><varname>points</varname></link> set-returning function emits one row per (instant timestamp, point) by decomposing each instant's patch through pgPointCloud's in-memory C API. Cost is O(total points) — one per-instant decompression plus one row emission per point.</para>
+					<para><emphasis role="bold">Per-point inspection, supported.</emphasis> The <link linkend="tpcpatch_points"><varname>points</varname></link> set-returning function emits one row per (instant timestamp, point) by decomposing each instant's patch through pgPointCloud's in-memory C API. Cost is O(total points), one per-instant decompression plus one row emission per point.</para>
 				</listitem>
 
 				<listitem>
-					<para><emphasis role="bold">Per-point filtering / construction — supported.</emphasis> <link linkend="tpcpatch_atTpcboxFine"><varname>atTpcboxFine</varname> / <varname>minusTpcboxFine</varname></link>, <link linkend="tpcpatch_atGeometry"><varname>atGeometry</varname> / <varname>minusGeometry</varname></link>, and <link linkend="tpcpatch_eIntersects"><varname>eIntersects(tpcpatch, geometry)</varname></link> walk every point of every instant in C, applying their predicate against the actual point coordinates rather than just the patch bounding box. Surviving instants carry a freshly-built patch holding only the points that passed; instants whose patches filter to zero points are dropped.</para>
+					<para><emphasis role="bold">Per-point filtering / construction, supported.</emphasis> <link linkend="tpcpatch_atTpcboxFine"><varname>atTpcboxFine</varname> / <varname>minusTpcboxFine</varname></link>, <link linkend="tpcpatch_atGeometry"><varname>atGeometry</varname> / <varname>minusGeometry</varname></link>, and <link linkend="tpcpatch_eIntersects"><varname>eIntersects(tpcpatch, geometry)</varname></link> walk every point of every instant in C, applying their predicate against the actual point coordinates rather than just the patch bounding box. Surviving instants carry a freshly-built patch holding only the points that passed; instants whose patches filter to zero points are dropped.</para>
 				</listitem>
 			</itemizedlist>
 
@@ -1724,7 +1724,7 @@ CREATE INDEX ON my_table USING spgist(my_tpcpoint_column);
 CREATE INDEX ON my_table USING spgist(my_tpcpoint_column tpcpoint_kdtree_ops);
 </programlisting>
 
-		<para>SP-GiST opclasses store an <varname>stbox</varname> internally (the <varname>pcid</varname> filter is recovered by the operator's recheck), so a query against an index on a column whose values mix multiple <varname>pcid</varname>s will return a slightly larger set of candidate rows for recheck — a non-issue when each table holds values of a single schema, which is the common case.</para>
+		<para>SP-GiST opclasses store an <varname>stbox</varname> internally (the <varname>pcid</varname> filter is recovered by the operator's recheck), so a query against an index on a column whose values mix multiple <varname>pcid</varname>s will return a slightly larger set of candidate rows for recheck, a non-issue when each table holds values of a single schema, which is the common case.</para>
 	</sect1>
 
 	<sect1 xml:id="tpointcloud_aggregations">
@@ -1732,7 +1732,7 @@ CREATE INDEX ON my_table USING spgist(my_tpcpoint_column tpcpoint_kdtree_ops);
 		<itemizedlist>
 			<listitem xml:id="tpcpoint_extent">
 				<indexterm significance="normal"><primary><varname>extent</varname></primary></indexterm>
-				<para>Bounding-box aggregate over a column of tpcpoint, tpcpatch, or tpcbox values. Returns the smallest tpcbox containing every input. Aggregating across distinct pcids raises an error — the bbox would be uninterpretable since dimensions are pcid-relative.</para>
+				<para>Bounding-box aggregate over a column of tpcpoint, tpcpatch, or tpcbox values. Returns the smallest tpcbox containing every input. Aggregating across distinct pcids raises an error, the bbox would be uninterpretable since dimensions are pcid-relative.</para>
 				<para><varname>extent(tpcpoint) → tpcbox</varname></para>
 				<para><varname>extent(tpcpatch) → tpcbox</varname></para>
 				<para><varname>extent(tpcbox) → tpcbox</varname></para>
@@ -1744,12 +1744,12 @@ SELECT extent(v) FROM (VALUES
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="tpcpoint_tcount">
-				<indexterm significance="normal"><primary><varname>tcount</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>wcount</varname></primary></indexterm>
+			<listitem xml:id="tpcpoint_tCount">
+				<indexterm significance="normal"><primary><varname>tCount</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>wCount</varname></primary></indexterm>
 				<para>Temporal count and window count of overlapping rows at each timestamp. Result is a tint. All input rows must share the same temporal subtype (instant / sequence / sequence set).</para>
-				<para><varname>tcount(tpcpoint) → tint</varname>, <varname>tcount(tpcpatch) → tint</varname></para>
-				<para><varname>wcount(tpcpoint,interval) → tint</varname>, <varname>wcount(tpcpatch,interval) → tint</varname></para>
+				<para><varname>tCount(tpcpoint) → tint</varname>, <varname>tCount(tpcpatch) → tint</varname></para>
+				<para><varname>wCount(tpcpoint,interval) → tint</varname>, <varname>wCount(tpcpatch,interval) → tint</varname></para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tCount(v) FROM (VALUES
   (tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz)),
@@ -1764,7 +1764,7 @@ SELECT wCount(v, interval '1 day') FROM (VALUES
 
 			<listitem xml:id="tpcpatch_tnpoints">
 				<indexterm significance="normal"><primary><varname>tnpoints</varname></primary></indexterm>
-				<para>Per-instant pcpatch point count, summed across rows. Distinct from <varname>tcount(tpcpatch)</varname>, which counts the number of patches (always 1 per instant). <varname>tnpoints</varname> reads as "how many points were in the cloud at time t", the natural primitive for ingest-QC and density-over-time dashboards.</para>
+				<para>Per-instant pcpatch point count, summed across rows. Distinct from <varname>tCount(tpcpatch)</varname>, which counts the number of patches (always 1 per instant). <varname>tnpoints</varname> reads as "how many points were in the cloud at time t", the natural primitive for ingest-QC and density-over-time dashboards.</para>
 				<para><varname>tnpoints(tpcpatch) → tint</varname></para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tnpoints(v) FROM (VALUES
@@ -1776,7 +1776,7 @@ SELECT tnpoints(v) FROM (VALUES
 
 			<listitem xml:id="tpcpatch_tdensity">
 				<indexterm significance="normal"><primary><varname>tdensity</varname></primary></indexterm>
-				<para>Per-instant point density (<varname>numPoints / xy-bbox-area</varname>) summed across rows. Each pcpatch carries the inline <varname>PCBOUNDS</varname> (xmin / xmax / ymin / ymax) so the bbox-area term is read directly — no recomputation. A 1-point or co-linear patch yields <varname>+Infinity</varname> for that instant; filter with <varname>isfinite()</varname> in downstream queries if needed.</para>
+				<para>Per-instant point density (<varname>numPoints / xy-bbox-area</varname>) summed across rows. Each pcpatch carries the inline <varname>PCBOUNDS</varname> (xmin / xmax / ymin / ymax) so the bbox-area term is read directly, no recomputation. A 1-point or co-linear patch yields <varname>+Infinity</varname> for that instant; filter with <varname>isfinite()</varname> in downstream queries if needed.</para>
 				<para><varname>tdensity(tpcpatch) → tfloat</varname></para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Each patch holds 2 points over a 1x1 xy-bbox.
@@ -1826,11 +1826,11 @@ SELECT numInstants(appendInstant(v ORDER BY startTimestamp(v))) FROM (VALUES
 
 		<para>Both <varname>tpcpoint</varname> and <varname>tpcpatch</varname> support standard MobilityDB binary I/O through <varname>asBinary</varname> / <varname>tpcpointFromBinary</varname> / <varname>tpcpatchFromBinary</varname>, and through PostgreSQL's <varname>COPY ... (FORMAT BINARY)</varname>. The encoding embeds the <varname>pcid</varname> of each value alongside the dimension payload, so the binary blob is unambiguous about which schema the values were written under.</para>
 
-		<para>Whenever the encoding backend has the schema XML for a given <varname>pcid</varname> registered in its MEOS-level schema cache (which the PG extension populates lazily on first use, scanning <varname>pointcloud_formats</varname>), the encoder additionally embeds the schema XML in the WKB blob. The <varname>MEOS_WKB_PCSCHEMAFLAG</varname> bit (0x80) in the temporal-flags byte signals this. A receiver that does not yet know the <varname>pcid</varname> — for example, a different cluster after a <varname>pg_dump --format=binary</varname> — automatically parses and registers the embedded schema, so the import succeeds without an out-of-band schema preload step.</para>
+		<para>Whenever the encoding backend has the schema XML for a given <varname>pcid</varname> registered in its MEOS-level schema cache (which the PG extension populates lazily on first use, scanning <varname>pointcloud_formats</varname>), the encoder additionally embeds the schema XML in the WKB blob. The <varname>MEOS_WKB_PCSCHEMAFLAG</varname> bit (0x80) in the temporal-flags byte signals this. A receiver that does not yet know the <varname>pcid</varname>, for example, a different cluster after a <varname>pg_dump --format=binary</varname>, automatically parses and registers the embedded schema, so the import succeeds without an out-of-band schema preload step.</para>
 
 		<para>If the encoding backend has only a parsed <varname>PCSCHEMA</varname> (no source XML) for a <varname>pcid</varname>, the schema bit is left clear and the blob is portable only between backends that share the same <varname>pointcloud_formats</varname> catalog. This matches the behaviour of the prior, schema-less encoding and is the fallback path when the cache was populated by hand from a standalone-MEOS program.</para>
 
-		<para>The receiver also needs <varname>mobilitydb_init</varname> to have run — automatic in any backend that has loaded the <varname>mobilitydb</varname> extension, since the function-info module installs the XML-parse hook there.</para>
+		<para>The receiver also needs <varname>mobilitydb_init</varname> to have run, automatic in any backend that has loaded the <varname>mobilitydb</varname> extension, since the function-info module installs the XML-parse hook there.</para>
 	</sect1>
 
 	<sect1 xml:id="tpointcloud_astext">
@@ -1883,7 +1883,7 @@ SELECT asMFJSON(tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz));
 			</listitem>
 			<listitem xml:id="tpcpatch_mfjson">
 				<indexterm significance="normal"><primary><varname>asMFJSON</varname></primary></indexterm>
-				<para>For <varname>tpcpatch</varname>, the type tag is <varname>"MovingPCPatch"</varname> and each instant emits a small object <varname>{"pcid":N, "npoints":N, "bounds":[xmin,xmax,ymin,ymax]}</varname>. The compressed point payload is intentionally not in the JSON — use <varname>asBinary</varname> / <varname>asHexWKB</varname> for round-trip.</para>
+				<para>For <varname>tpcpatch</varname>, the type tag is <varname>"MovingPCPatch"</varname> and each instant emits a small object <varname>{"pcid":N, "npoints":N, "bounds":[xmin,xmax,ymin,ymax]}</varname>. The compressed point payload is intentionally not in the JSON, use <varname>asBinary</varname> / <varname>asHexWKB</varname> for round-trip.</para>
 				<para><varname>asMFJSON(tpcpatch, options int=0, flags int=0, maxdecimaldigits int=15) → text</varname></para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asMFJSON(tpcpatch(pcpatch(1, pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz));
@@ -1892,8 +1892,8 @@ SELECT asMFJSON(tpcpatch(pcpatch(1, pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)), '
 </programlisting>
 			</listitem>
 		</itemizedlist>
-		<para>When <varname>options</varname> is set to 1 the output also includes a <varname>"bbox"</varname> key — for <varname>tpcpoint</varname> / <varname>tpcpatch</varname> this is a TPCBox JSON object that adds a <varname>"pcid"</varname> field next to the standard stbox-shaped <varname>"bbox"</varname> array.</para>
-		<para><emphasis>MF-JSON is output-only for <varname>tpcpoint</varname> / <varname>tpcpatch</varname>.</emphasis> The JSON form does not carry the schema (pcid + dim layout) for tpcpoint, and is a per-instant summary that drops the per-point payload for tpcpatch — so a reverse parser cannot reconstruct the original value. For lossless round-trip use <varname>asBinary</varname> / <varname>tpcpointFromBinary</varname> / <varname>tpcpatchFromBinary</varname>, or <varname>asHexWKB</varname> / <varname>tpcpointFromHexWKB</varname> / <varname>tpcpatchFromHexWKB</varname>.</para>
+		<para>When <varname>options</varname> is set to 1 the output also includes a <varname>"bbox"</varname> key, for <varname>tpcpoint</varname> / <varname>tpcpatch</varname> this is a TPCBox JSON object that adds a <varname>"pcid"</varname> field next to the standard stbox-shaped <varname>"bbox"</varname> array.</para>
+		<para><emphasis>MF-JSON is output-only for <varname>tpcpoint</varname> / <varname>tpcpatch</varname>.</emphasis> The JSON form does not carry the schema (pcid + dim layout) for tpcpoint, and is a per-instant summary that drops the per-point payload for tpcpatch, so a reverse parser cannot reconstruct the original value. For lossless round-trip use <varname>asBinary</varname> / <varname>tpcpointFromBinary</varname> / <varname>tpcpatchFromBinary</varname>, or <varname>asHexWKB</varname> / <varname>tpcpointFromHexWKB</varname> / <varname>tpcpatchFromHexWKB</varname>.</para>
 	</sect1>
 
 	<sect1 xml:id="tpointcloud_pdal_plugin">
@@ -1926,20 +1926,20 @@ sudo cmake --install build]]></programlisting>
 
 		<sect2 xml:id="tpointcloud_pdal_writer">
 			<title><varname>writers.tpcpatch</varname></title>
-			<para>Receives a <classname>PointView</classname> with a configurable time dimension, groups points by timestamp into per-instant <varname>pcpatch</varname> values, then dispatches an <code>INSERT</code>, <code>UPDATE</code>, append-merge, or upsert against a <varname>tpcpatch</varname> column using MobilityDB's <function>tpcpatch(pcpatch, timestamptz)</function> + <function>tpcpatchSeq(pcpatch[])</function> constructors. Encode is delegated to pgPointCloud's <function>pc_patch_to_wkb</function> with optional <function>pc_patch_compress</function>. Schema scale / offset is applied symmetrically — values flow as their semantic units (metres, degrees, …) through PDAL even when the schema stores them as scaled int32.</para>
+			<para>Receives a <classname>PointView</classname> with a configurable time dimension, groups points by timestamp into per-instant <varname>pcpatch</varname> values, then dispatches an <code>INSERT</code>, <code>UPDATE</code>, append-merge, or upsert against a <varname>tpcpatch</varname> column using MobilityDB's <function>tpcpatch(pcpatch, timestamptz)</function> + <function>tpcpatchSeq(pcpatch[])</function> constructors. Encode is delegated to pgPointCloud's <function>pc_patch_to_wkb</function> with optional <function>pc_patch_compress</function>. Schema scale / offset is applied symmetrically, values flow as their semantic units (metres, degrees, …) through PDAL even when the schema stores them as scaled int32.</para>
 
 			<para>Options:</para>
 			<itemizedlist>
-				<listitem><para><varname>connection</varname> (positional) — libpq connection string.</para></listitem>
-				<listitem><para><varname>table</varname> (positional) — destination table name.</para></listitem>
-				<listitem><para><varname>column</varname> — <varname>tpcpatch</varname> column name (default <varname>traj</varname>).</para></listitem>
-				<listitem><para><varname>pcid</varname> (required) — entry in <varname>pointcloud_formats</varname> whose schema the input dimensions must match.</para></listitem>
-				<listitem><para><varname>id_column</varname>, <varname>id_value</varname> — identify the target row for any non-<varname>insert</varname> mode.</para></listitem>
-				<listitem><para><varname>mode</varname> — <varname>insert</varname> (default — new row per pipeline run), <varname>update</varname> (overwrite the row identified by <varname>id_column</varname> = <varname>id_value</varname>), <varname>append</varname> (concatenate via <varname>merge()</varname> onto the existing row), or <varname>upsert</varname> (insert if absent, append if present). <varname>append</varname> / <varname>update</varname> raise a clear "matched no row" error if <varname>id_value</varname> is not found, so silent zero-row writes cannot happen.</para></listitem>
-				<listitem><para><varname>time_dim</varname> — name of the source time dimension (default <varname>time_t</varname>; set to <varname>GpsTime</varname> to consume LAS timestamps directly without a <varname>filters.assign</varname> stage).</para></listitem>
-				<listitem><para><varname>time_format</varname> — interpretation of <varname>time_dim</varname>: <varname>unix_microseconds</varname> (default), <varname>unix_seconds</varname>, or <varname>gps_adjusted</varname> (LAS-1.4 Adjusted GPS Standard Time — the writer applies the GPS-Unix epoch shift and 2024 leap-second offset).</para></listitem>
-				<listitem><para><varname>compression</varname> — <varname>none</varname> (default), <varname>dimensional</varname>, or <varname>laz</varname>. MobilityDB normalises <varname>tpcpatch</varname> on-disk storage to <varname>PC_NONE</varname>, so the option only affects libpq transport size — typical reduction is ~3x for <varname>dimensional</varname> on dim-redundant data.</para></listitem>
-				<listitem><para><varname>flush_threshold</varname> (default 1024) — number of completed per-instant patches buffered in memory before issuing an INSERT/append. Honoured for <varname>mode=append</varname>/<varname>upsert</varname>; <varname>mode=insert</varname>/<varname>update</varname> defer to a single tail-flush since each pipeline run produces a single row.</para></listitem>
+				<listitem><para><varname>connection</varname> (positional), libpq connection string.</para></listitem>
+				<listitem><para><varname>table</varname> (positional), destination table name.</para></listitem>
+				<listitem><para><varname>column</varname>, <varname>tpcpatch</varname> column name (default <varname>traj</varname>).</para></listitem>
+				<listitem><para><varname>pcid</varname> (required), entry in <varname>pointcloud_formats</varname> whose schema the input dimensions must match.</para></listitem>
+				<listitem><para><varname>id_column</varname>, <varname>id_value</varname>, identify the target row for any non-<varname>insert</varname> mode.</para></listitem>
+				<listitem><para><varname>mode</varname>, <varname>insert</varname> (default, new row per pipeline run), <varname>update</varname> (overwrite the row identified by <varname>id_column</varname> = <varname>id_value</varname>), <varname>append</varname> (concatenate via <varname>merge()</varname> onto the existing row), or <varname>upsert</varname> (insert if absent, append if present). <varname>append</varname> / <varname>update</varname> raise a clear "matched no row" error if <varname>id_value</varname> is not found, so silent zero-row writes cannot happen.</para></listitem>
+				<listitem><para><varname>time_dim</varname>, name of the source time dimension (default <varname>time_t</varname>; set to <varname>GpsTime</varname> to consume LAS timestamps directly without a <varname>filters.assign</varname> stage).</para></listitem>
+				<listitem><para><varname>time_format</varname>, interpretation of <varname>time_dim</varname>: <varname>unix_microseconds</varname> (default), <varname>unix_seconds</varname>, or <varname>gps_adjusted</varname> (LAS-1.4 Adjusted GPS Standard Time, the writer applies the GPS-Unix epoch shift and 2024 leap-second offset).</para></listitem>
+				<listitem><para><varname>compression</varname>, <varname>none</varname> (default), <varname>dimensional</varname>, or <varname>laz</varname>. MobilityDB normalises <varname>tpcpatch</varname> on-disk storage to <varname>PC_NONE</varname>, so the option only affects libpq transport size, typical reduction is ~3x for <varname>dimensional</varname> on dim-redundant data.</para></listitem>
+				<listitem><para><varname>flush_threshold</varname> (default 1024), number of completed per-instant patches buffered in memory before issuing an INSERT/append. Honoured for <varname>mode=append</varname>/<varname>upsert</varname>; <varname>mode=insert</varname>/<varname>update</varname> defer to a single tail-flush since each pipeline run produces a single row.</para></listitem>
 			</itemizedlist>
 
 			<para>The writer emits periodic <code>Info</code>-level progress lines via PDAL's logger and a final summary in <function>done()</function>: total points / patches written, destination column, pcid, compression, and mode. Visible at <code>pdal pipeline -v 5</code>.</para>
@@ -1972,19 +1972,19 @@ sudo cmake --install build]]></programlisting>
 
 		<itemizedlist>
 			<listitem>
-				<para><varname>pcpatch_to_pcd(pcpatch) → bytea</varname> and <varname>pcpatch_from_pcd(bytea, pcid) → pcpatch</varname> — round-trip through PCL's PCD wire format. Round-trip preserves all dim values bit-exactly.</para>
+				<para><varname>pcpatch_to_pcd(pcpatch) → bytea</varname> and <varname>pcpatch_from_pcd(bytea, pcid) → pcpatch</varname>, round-trip through PCL's PCD wire format. Round-trip preserves all dim values bit-exactly.</para>
 			</listitem>
 			<listitem>
-				<para><varname>pcpatch_voxel_grid(pcpatch, leaf double precision) → pcpatch</varname> — VoxelGrid down-sampling, leaf in the schema's spatial units. Preserves Intensity / RGB.</para>
+				<para><varname>pcpatch_voxel_grid(pcpatch, leaf double precision) → pcpatch</varname>, VoxelGrid down-sampling, leaf in the schema's spatial units. Preserves Intensity / RGB.</para>
 			</listitem>
 			<listitem>
-				<para><varname>pcpatch_sor(pcpatch, k integer DEFAULT 50, stddev_mul double precision DEFAULT 1.0) → pcpatch</varname> — Statistical Outlier Removal. Drops points whose mean distance to their k nearest neighbours falls outside (mean ± stddev_mul × stddev). Preserves Intensity / RGB.</para>
+				<para><varname>pcpatch_sor(pcpatch, k integer DEFAULT 50, stddev_mul double precision DEFAULT 1.0) → pcpatch</varname>, Statistical Outlier Removal. Drops points whose mean distance to their k nearest neighbours falls outside (mean ± stddev_mul × stddev). Preserves Intensity / RGB.</para>
 			</listitem>
 			<listitem>
-				<para><varname>pcpatch_icp(source pcpatch, target pcpatch, max_iter int DEFAULT 50, max_corr double DEFAULT 1.0) → double[]</varname> and <varname>pcpatch_gicp(...)</varname> with the same signature — IterativeClosestPoint and GeneralizedICP rigid registration. Both return an 8-element double array <varname>[tx, ty, tz, qw, qx, qy, qz, fitness]</varname> composable into a MobilityDB pose via <function>pose_make_3d</function>. GICP's Mahalanobis cost over per-point local covariances is markedly more robust than ICP on non-planar / vegetated surfaces (road-corridor scans, photogrammetric heritage facades).</para>
+				<para><varname>pcpatch_icp(source pcpatch, target pcpatch, max_iter int DEFAULT 50, max_corr double DEFAULT 1.0) → double[]</varname> and <varname>pcpatch_gicp(...)</varname> with the same signature, IterativeClosestPoint and GeneralizedICP rigid registration. Both return an 8-element double array <varname>[tx, ty, tz, qw, qx, qy, qz, fitness]</varname> composable into a MobilityDB pose via <function>pose_make_3d</function>. GICP's Mahalanobis cost over per-point local covariances is markedly more robust than ICP on non-planar / vegetated surfaces (road-corridor scans, photogrammetric heritage facades).</para>
 			</listitem>
 			<listitem>
-				<para><varname>pcpatch_normals(pcpatch, k int DEFAULT 10) → double[]</varname> — per-point surface normal + curvature via PCL's <classname>NormalEstimation&lt;PointXYZ, Normal&gt;</classname> over the <varname>k</varname> nearest neighbours. Returns a flat array of length <varname>4 × npoints</varname> laid out as <varname>[nx_0, ny_0, nz_0, curv_0, nx_1, ny_1, nz_1, curv_1, …]</varname>. Use cases: oriented-surface change detection across repeat surveys, Potree <option>--normal</option> export, photogrammetric mesh seeding. For very large patches (>50 k points) consider down-sampling with <varname>pcpatch_voxel_grid</varname> first.</para>
+				<para><varname>pcpatch_normals(pcpatch, k int DEFAULT 10) → double[]</varname>, per-point surface normal + curvature via PCL's <classname>NormalEstimation&lt;PointXYZ, Normal&gt;</classname> over the <varname>k</varname> nearest neighbours. Returns a flat array of length <varname>4 × npoints</varname> laid out as <varname>[nx_0, ny_0, nz_0, curv_0, nx_1, ny_1, nz_1, curv_1, …]</varname>. Use cases: oriented-surface change detection across repeat surveys, Potree <option>--normal</option> export, photogrammetric mesh seeding. For very large patches (>50 k points) consider down-sampling with <varname>pcpatch_voxel_grid</varname> first.</para>
 			</listitem>
 		</itemizedlist>
 

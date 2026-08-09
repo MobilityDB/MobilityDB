@@ -79,6 +79,7 @@ ensure_has_geom(int16 flags)
 bool
 ensure_valid_trgeo_stbox(const Temporal *temp, const STBox *box)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, false); VALIDATE_NOT_NULL(box, false);
   if (! ensure_has_X(T_STBOX, box->flags) ||
       ! ensure_same_srid(tspatial_srid(temp), stbox_srid(box)) ||
@@ -93,6 +94,7 @@ ensure_valid_trgeo_stbox(const Temporal *temp, const STBox *box)
 bool
 ensure_valid_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, false); VALIDATE_NOT_NULL(gs, false);
   if (! ensure_same_srid(tspatial_srid(temp), gserialized_get_srid(gs)) ||
       ! ensure_same_dimensionality_tspatial_geo(temp, gs))
@@ -106,6 +108,7 @@ ensure_valid_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 bool
 ensure_valid_trgeo_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp1, false); VALIDATE_TPOINT(temp2, false);
   if (! ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)) ||
       ! ensure_same_dimensionality(temp1->flags, temp2->flags))
@@ -119,6 +122,7 @@ ensure_valid_trgeo_tpoint(const Temporal *temp1, const Temporal *temp2)
 bool
 ensure_valid_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp1, false); VALIDATE_TRGEOMETRY(temp2, false);
   if (! ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)) ||
       ! ensure_same_dimensionality(temp1->flags, temp2->flags))
@@ -342,11 +346,7 @@ trgeometry_geom(const Temporal *temp)
 TInstant *
 geo_tposeinst_to_trgeo(const GSERIALIZED *gs, const TInstant *inst)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_TPOSE(inst, NULL); VALIDATE_NOT_NULL(gs, NULL);
-  if (! ensure_not_empty(gs) || ! ensure_has_not_M_geo(gs))
-    return NULL;
-
+  assert(inst); assert(gs);
   return trgeometryinst_make(gs, DatumGetPoseP(tinstant_value_p(inst)), inst->t);
 }
 
@@ -360,11 +360,7 @@ geo_tposeinst_to_trgeo(const GSERIALIZED *gs, const TInstant *inst)
 TSequence *
 geo_tposeseq_to_trgeo(const GSERIALIZED *gs, const TSequence *seq)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_TPOSE(seq, NULL); VALIDATE_NOT_NULL(gs, NULL);
-  if (! ensure_not_empty(gs) || ! ensure_has_not_M_geo(gs))
-    return NULL;
-
+  assert(seq); assert(gs);
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
     instants[i] = geo_tposeinst_to_trgeo(gs, TSEQUENCE_INST_N(seq, i));
@@ -383,11 +379,7 @@ geo_tposeseq_to_trgeo(const GSERIALIZED *gs, const TSequence *seq)
 TSequenceSet *
 geo_tposeseqset_to_trgeo(const GSERIALIZED *gs, const TSequenceSet *ss)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_TPOSE(ss, NULL); VALIDATE_NOT_NULL(gs, NULL);
-  if (! ensure_not_empty(gs) || ! ensure_has_not_M_geo(gs))
-    return NULL;
-
+  assert(ss); assert(gs);
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
     sequences[i] = geo_tposeseq_to_trgeo(gs, TSEQUENCESET_SEQ_N(ss, i));
@@ -758,7 +750,6 @@ TSequence *
 trgeometry_end_sequence(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-
   VALIDATE_TRGEOMETRY(temp, NULL);
   if (! ensure_continuous(temp))
     return NULL;
@@ -784,7 +775,6 @@ TSequence *
 trgeometry_sequence_n(const Temporal *temp, int n)
 {
   /* Ensure the validity of the arguments */
-
   VALIDATE_TRGEOMETRY(temp, NULL);
   if (! ensure_continuous(temp) || ! ensure_positive(n))
     return NULL;
@@ -818,10 +808,10 @@ trgeometry_sequence_n(const Temporal *temp, int n)
 TSequence **
 trgeometry_sequences(const Temporal *temp, int *count)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(count, NULL);
   /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL); 
   *count = 0;
+  /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
   if (! ensure_continuous(temp))
     return NULL;
@@ -851,6 +841,7 @@ trgeometry_sequences(const Temporal *temp, int *count)
 Set *
 trgeometry_points(const Temporal *temp)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
   Temporal *tpose = trgeometry_to_tpose(temp);
   if (! tpose)
@@ -869,6 +860,7 @@ trgeometry_points(const Temporal *temp)
 Temporal *
 trgeometry_rotation(const Temporal *temp)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
   Temporal *tpose = trgeometry_to_tpose(temp);
   if (! tpose)
@@ -889,12 +881,14 @@ trgeometry_rotation(const Temporal *temp)
 TSequence **
 trgeometry_segments(const Temporal *temp, int *count)
 {
-  VALIDATE_NOT_NULL(count, NULL);
   /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL); 
   *count = 0;
+  /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
   if (! ensure_continuous(temp))
     return NULL;
+
   const GSERIALIZED *geo = trgeo_geom_p(temp);
   Temporal *tpose = trgeometry_to_tpose(temp);
   if (! tpose)

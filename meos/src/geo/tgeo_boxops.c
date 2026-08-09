@@ -539,6 +539,8 @@ tgeoseqset_stboxes(const TSequenceSet *ss, int *count)
 STBox *
 tgeo_stboxes(const Temporal *temp, int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_TSPATIAL(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
 
@@ -778,11 +780,10 @@ tgeoseqset_split_n_stboxes(const TSequenceSet *ss, int box_count, int *count)
 STBox *
 tgeo_split_n_stboxes(const Temporal *temp, int box_count, int *count)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(count, NULL);
   /* The out parameter is defined even when a later check fails */
   *count = 0;
-  VALIDATE_TSPATIAL(temp, NULL);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(count, NULL); VALIDATE_TSPATIAL(temp, NULL);
   if (! ensure_positive(box_count))
     return NULL;
 
@@ -954,11 +955,10 @@ tgeoseqset_split_each_n_stboxes(const TSequenceSet *ss, int elems_per_box,
 STBox *
 tgeo_split_each_n_stboxes(const Temporal *temp, int elems_per_box, int *count)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(count, NULL);
   /* The out parameter is defined even when a later check fails */
   *count = 0;
-  VALIDATE_TSPATIAL(temp, NULL);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(count, NULL); VALIDATE_TSPATIAL(temp, NULL);
   if (! ensure_positive(elems_per_box))
     return NULL;
 
@@ -1176,11 +1176,10 @@ geo_gboxes(const GSERIALIZED *gs, int *count)
 STBox *
 geo_stboxes(const GSERIALIZED *gs, int *count)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(count, NULL);
   /* The out parameter is defined even when a later check fails */
   *count = 0;
-  VALIDATE_NOT_NULL(gs, NULL);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(count, NULL); VALIDATE_NOT_NULL(gs, NULL);
   if (! ensure_not_empty(gs) || ! ensure_mline_type(gs))
     return NULL;
   
@@ -1427,11 +1426,10 @@ geo_split_n_gboxes(const GSERIALIZED *gs, int box_count, int *count)
 STBox *
 geo_split_n_stboxes(const GSERIALIZED *gs, int box_count, int *count)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(count, NULL);
   /* The out parameter is defined even when a later check fails */
   *count = 0;
-  VALIDATE_NOT_NULL(gs, NULL);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(count, NULL); VALIDATE_NOT_NULL(gs, NULL);
   if (! ensure_not_empty(gs) || ! ensure_positive(box_count) ||
       ! ensure_mline_type(gs))
     return NULL;
@@ -1616,11 +1614,10 @@ geo_split_each_n_gboxes(const GSERIALIZED *gs, int elems_per_box, int *count)
 STBox *
 geo_split_each_n_stboxes(const GSERIALIZED *gs, int elems_per_box, int *count)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(count, NULL);
   /* The out parameter is defined even when a later check fails */
   *count = 0;
-  VALIDATE_NOT_NULL(gs, NULL);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(count, NULL); VALIDATE_NOT_NULL(gs, NULL);
   if (! ensure_not_empty(gs) || ! ensure_positive(elems_per_box) || 
       ! ensure_mline_type(gs))
     return NULL;
@@ -1648,6 +1645,10 @@ bool
 boxop_tspatial_stbox(const Temporal *temp, const STBox *box,
   bool (*func)(const STBox *, const STBox *), bool inverted)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSPATIAL(temp, false); 
+  VALIDATE_NOT_NULL(func, false); 
+
   STBox box1;
   tspatial_set_stbox(temp, &box1);
   return inverted ? func(box, &box1) : func(&box1, box);

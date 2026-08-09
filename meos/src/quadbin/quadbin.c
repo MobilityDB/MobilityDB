@@ -62,7 +62,174 @@
 #include <postgres.h>
 /* MEOS */
 #include <meos.h>
+#include <meos_internal.h>
+#include <pgtypes.h>
 #include "temporal/meos_catalog.h"
+#include "quadbin/quadbin.h"
+
+/*****************************************************************************
+ * Input/output
+ *****************************************************************************/
+
+/**
+ * @brief Parse a string into a quadbin cell. See header for the accepted
+ * input shapes.
+ */
+Quadbin
+quadbin_parse(const char *str)
+{
+  assert(str);
+
+  /* Strip leading whitespace. */
+  while (*str && isspace((unsigned char) *str))
+    str++;
+
+  /* Skip an optional "0x" / "0X" hex prefix; the canonical quadbin
+   * output is unprefixed lowercase hex. */
+  if (str[0] == '0' && (str[1] == 'x' || str[1] == 'X'))
+    str += 2;
+
+  Quadbin cell = quadbin_string_to_index(str);
+
+  /* Reject anything that does not encode a valid quadbin cell. */
+  if (! quadbin_is_valid_cell(cell))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "quadbin value \"%s\" does not encode a valid quadbin cell", str);
+    return (Quadbin) 0;
+  }
+
+  return cell;
+}
+
+/**
+ * @ingroup meos_quadbin_base_inout
+ * @brief Return a quadbin from its string representation.
+ * @param[in] str String
+ * @csqlfn #Quadbin_in()
+ */
+Quadbin
+quadbin_in(const char *str)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(str, NULL);
+  // return quadbin_parse(&str, true); // TODO
+  return quadbin_parse(str);
+}
+
+/*****************************************************************************
+ * Comparison / ordering
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_quadbin_base_comp
+ * @brief Return true if two quadbin values are equal
+ * @csqlfn #Quadbin_eq()
+ */
+bool
+quadbin_eq(Quadbin a, Quadbin b)
+{
+  return a == b;
+}
+
+/**
+ * @ingroup meos_quadbin_base_comp
+ * @brief Return true if two quadbin values are not equal
+ * @csqlfn #Quadbin_ne()
+ */
+bool
+quadbin_ne(Quadbin a, Quadbin b)
+{
+  return a != b;
+}
+
+/**
+ * @ingroup meos_quadbin_base_comp
+ * @brief Return true if the first quadbin is less than the second
+ * @csqlfn #Quadbin_lt()
+ */
+bool
+quadbin_lt(Quadbin a, Quadbin b)
+{
+  return a < b;
+}
+
+/**
+ * @ingroup meos_quadbin_base_comp
+ * @brief Return true if the first quadbin is less than or equal to
+ * the second
+ * @csqlfn #Quadbin_le()
+ */
+bool
+quadbin_le(Quadbin a, Quadbin b)
+{
+  return a <= b;
+}
+
+/**
+ * @ingroup meos_quadbin_base_comp
+ * @brief Return true if the first quadbin is greater than the second
+ * @csqlfn #Quadbin_gt()
+ */
+bool
+quadbin_gt(Quadbin a, Quadbin b)
+{
+  return a > b;
+}
+
+/**
+ * @ingroup meos_quadbin_base_comp
+ * @brief Return true if the first quadbin is greater than or equal
+ * to the second
+ * @csqlfn #Quadbin_ge()
+ */
+bool
+quadbin_ge(Quadbin a, Quadbin b)
+{
+  return a >= b;
+}
+
+/**
+ * @ingroup meos_quadbin_base_comp
+ * @brief Return -1 / 0 / 1 depending on whether the first quadbin is
+ * less than, equal to, or greater than the second
+ * @csqlfn #Quadbin_cmp()
+ */
+int
+quadbin_cmp(Quadbin a, Quadbin b)
+{
+  return (a < b) ? -1 : (a > b) ? 1 : 0;
+}
+
+/*****************************************************************************
+ * Hashing
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_quadbin_base_accessor
+ * @brief Return the 32-bit hash value of a quadbin — matches the result
+ * `hashint8` would produce on the same bit pattern.
+ * @csqlfn #Quadbin_hash()
+ */
+uint32
+quadbin_hash(Quadbin cell)
+{
+  return int64_hash((int64) cell);
+}
+
+/**
+ * @ingroup meos_quadbin_base_accessor
+ * @brief Return the 64-bit hash value of a quadbin using a seed — matches
+ * the result `hashint8extended` would produce on the same bit pattern.
+ * @param[in] cell Quadbin cell
+ * @param[in] seed Seed
+ * @csqlfn #Quadbin_hash_extended()
+ */
+uint64
+quadbin_hash_extended(Quadbin cell, uint64 seed)
+{
+  return int64_hash_extended((int64) cell, seed);
+}
 
 /*****************************************************************************
  * Bit-layout constants (verbatim from quadbin-py)
@@ -128,6 +295,10 @@ quadbin_tile_to_cell(uint32_t x, uint32_t y, uint32_t z)
 void
 quadbin_cell_to_tile(Quadbin cell, uint32_t *x, uint32_t *y, uint32_t *z)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(x, NULL); VALIDATE_NOT_NULL(y, NULL);
+  VALIDATE_NOT_NULL(z, NULL);
+
   uint32_t zz = (cell >> 52) & 31;
   uint64_t q = (cell & QUADBIN_FOOTER) << 12;
   uint64_t xx = q;
@@ -239,6 +410,9 @@ Quadbin *
 quadbin_cell_to_children(Quadbin cell, uint32_t children_resolution,
   int *count)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(count, NULL);
+
   uint32_t resolution = (cell >> 52) & 0x1F;
   if (children_resolution > QUADBIN_MAX_RESOLUTION ||
       children_resolution <= resolution)
@@ -273,6 +447,9 @@ quadbin_cell_to_children(Quadbin cell, uint32_t children_resolution,
 Quadbin
 quadbin_cell_sibling(Quadbin cell, const char *direction)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(direction, NULL);
+
   uint32_t x, y, z;
   quadbin_cell_to_tile(cell, &x, &y, &z);
   if (strcmp(direction, "up") == 0)
@@ -303,6 +480,9 @@ quadbin_cell_sibling(Quadbin cell, const char *direction)
 Quadbin *
 quadbin_k_ring(Quadbin cell, int k, int *count)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(count, NULL);
+
   uint32_t x, y, z;
   quadbin_cell_to_tile(cell, &x, &y, &z);
   int side = 2 * k + 1;
@@ -369,6 +549,9 @@ quadbin_point_to_cell(double longitude, double latitude, uint32_t resolution)
 void
 quadbin_cell_to_point(Quadbin cell, double *longitude, double *latitude)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(longitude, NULL); VALIDATE_NOT_NULL(latitude, NULL);
+
   uint32_t x, y, z;
   quadbin_cell_to_tile(cell, &x, &y, &z);
   double n = (double) (UINT64_C(1) << z);
@@ -393,6 +576,10 @@ void
 quadbin_cell_to_bounding_box(Quadbin cell, double *xmin, double *ymin,
   double *xmax, double *ymax)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(xmin, NULL); VALIDATE_NOT_NULL(ymin, NULL);
+  VALIDATE_NOT_NULL(xmax, NULL); VALIDATE_NOT_NULL(ymax, NULL);
+
   uint32_t x, y, z;
   quadbin_cell_to_tile(cell, &x, &y, &z);
   double n = (double) (UINT64_C(1) << z);
@@ -488,6 +675,8 @@ quadbin_index_to_string(Quadbin index)
 Quadbin
 quadbin_string_to_index(const char *str)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(str, NULL);
   return (Quadbin) strtoull(str, NULL, 16);
 }
 

@@ -40,17 +40,18 @@
  * `cell_boundary_to_gs` helper declared in `th3index_internal.h`.
  */
 
-#include <string.h>
+#include "h3/th3index_internal.h"
 
+/* C */
+#include <string.h>
+/* H3 */
+#include <h3api.h>
+/* MEOS */
 #include <meos.h>
 #include <meos_h3.h>
-#include <h3api.h>
-
 #include "temporal/temporal.h"
 #include "temporal/meos_catalog.h"
 #include "temporal/lifting.h"
-
-#include "h3/th3index_internal.h"
 
 /*****************************************************************************
  * Static adapter — directed edge → polygon boundary
@@ -89,8 +90,8 @@ h3_directed_edge_to_gs_boundary(H3Index edge)
 Temporal *
 th3index_are_neighbor_cells(const Temporal *origin, const Temporal *dest)
 {
-  VALIDATE_TH3INDEX(origin, NULL);
-  VALIDATE_TH3INDEX(dest, NULL);
+  /* Ensure the validity of the arguments */
+  VALIDATE_TH3INDEX(origin, NULL); VALIDATE_TH3INDEX(dest, NULL);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -117,8 +118,8 @@ th3index_are_neighbor_cells(const Temporal *origin, const Temporal *dest)
 Temporal *
 th3index_cells_to_directed_edge(const Temporal *origin, const Temporal *dest)
 {
-  VALIDATE_TH3INDEX(origin, NULL);
-  VALIDATE_TH3INDEX(dest, NULL);
+  /* Ensure the validity of the arguments */
+  VALIDATE_TH3INDEX(origin, NULL); VALIDATE_TH3INDEX(dest, NULL);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -146,6 +147,7 @@ th3index_cells_to_directed_edge(const Temporal *origin, const Temporal *dest)
 Temporal *
 th3index_is_valid_directed_edge(const Temporal *edge)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TH3INDEX(edge, NULL);
 
   LiftedFunctionInfo lfinfo;
@@ -172,6 +174,7 @@ th3index_is_valid_directed_edge(const Temporal *edge)
 Temporal *
 th3index_get_directed_edge_origin(const Temporal *edge)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TH3INDEX(edge, NULL);
 
   LiftedFunctionInfo lfinfo;
@@ -198,6 +201,7 @@ th3index_get_directed_edge_origin(const Temporal *edge)
 Temporal *
 th3index_get_directed_edge_destination(const Temporal *edge)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TH3INDEX(edge, NULL);
 
   LiftedFunctionInfo lfinfo;
@@ -227,6 +231,7 @@ th3index_get_directed_edge_destination(const Temporal *edge)
 Temporal *
 th3index_directed_edge_to_boundary(const Temporal *edge)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TH3INDEX(edge, NULL);
 
   LiftedFunctionInfo lfinfo;

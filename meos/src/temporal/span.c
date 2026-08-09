@@ -1537,9 +1537,8 @@ set_spans(const Set *s, int *count)
 Span *
 set_split_n_spans(const Set *s, int span_count, int *count)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(count, NULL);
   /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
   *count = 0;
   VALIDATE_NOT_NULL(s, NULL);
   if (! ensure_set_spantype(s->settype))
@@ -1589,9 +1588,8 @@ set_split_n_spans(const Set *s, int span_count, int *count)
 Span *
 set_split_each_n_spans(const Set *s, int elems_per_span, int *count)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(count, NULL);
   /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
   *count = 0;
   VALIDATE_NOT_NULL(s, NULL);
   if (! ensure_set_spantype(s->settype))

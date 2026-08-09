@@ -13,22 +13,18 @@
  *   for the design rationale.
  */
 
+/* PostgreSQL */
 #include <postgres.h>
 #if ! MEOS
   #include <utils/memutils.h>  /* TopMemoryContext */
 #endif
-/* pc_api.h gives the full PCSCHEMA struct definition; it lives in
- * pointcloud-pg/lib/ which is in this target's include path. */
+/* pgPointcloud */
 #include "pc_api.h"
+/* PostGIS */
+#include <liblwgeom.h>
+/* MEOS */
 #include <meos.h>
-/* SRID_INVALID lives in PostGIS liblwgeom.h, which is not in this
- * CMake target's include path.  Define the sentinel locally. */
-#ifndef SRID_INVALID
-#define SRID_INVALID (-1)
-#endif
 #include "pointcloud/meos_schema_hook.h"
-/* pgpointcloud — pc_install_default_handlers */
-#include "pc_api.h"
 
 /*****************************************************************************
  * Cache state

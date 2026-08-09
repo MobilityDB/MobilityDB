@@ -215,7 +215,7 @@ tinstant_out(const TInstant *inst, int maxdd)
 TInstant *
 tinstant_make(Datum value, MeosType temptype, TimestampTz t)
 {
-  /* Ensure validity of arguments */
+  /* Ensure the validity of the arguments */
   int32_t tspatial_srid;
   // TODO Should we bypass the tests on tnpoint ?
   if (tspatial_type(temptype) && temptype != T_TNPOINT)

@@ -49,17 +49,20 @@
  * of those cells.
  */
 
+/* C */
 #include <math.h>
+/* MEOS */
 #include <postgres.h>
+/* H3 */
 #include <h3api.h>
+/* PostGIS */
 #include <liblwgeom.h>
-
+/* MEOS */
 #include <meos.h>
 #include <meos_geo.h>
 #include <meos_h3.h>
 #include <meos_internal.h>
 #include <meos_internal_geo.h>
-
 #include "h3/h3index.h"
 #include "geo/tgeo_spatialfuncs.h"  /* ensure_srid_is_latlong */
 #include "temporal/temporal.h"  /* ORDER macro for set_make_free */
@@ -461,15 +464,15 @@ lwgeom_to_cells_into(const LWGEOM *geom, int32 resolution, h3_buf *out)
  * produced, or on libh3 error.  The returned Set is owned by the caller
  * and freed via @ref free.
  *
- * @param[in] gs         The geometry.
+ * @param[in] gs Geometry
  * @param[in] resolution H3 resolution (0..15).
  * @csqlfn #Geo_to_h3indexset()
  */
 Set *
 geo_to_h3index_set(const GSERIALIZED *gs, int32 resolution)
 {
-  if (gs == NULL)
-    return NULL;
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(gs, NULL);
   if (resolution < 0 || resolution > 15)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
@@ -505,8 +508,9 @@ geo_to_h3index_set(const GSERIALIZED *gs, int32 resolution)
 int
 ever_eq_h3indexset_th3index(const Set *cells, const Temporal *th3idx)
 {
-  if (cells == NULL || th3idx == NULL)
-    return -1;
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(cells, -1); VALIDATE_NOT_NULL(th3idx, -1);
+
   int count = 0;
   H3Index *vals = th3index_values(th3idx, &count);
   if (vals == NULL)

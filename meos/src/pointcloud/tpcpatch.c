@@ -58,7 +58,8 @@
 
 /**
  * @ingroup meos_pointcloud_constructor
- * @brief Return a temporal pgpointcloud patch instant from a pgpointcloud patch and a timestamptz
+ * @brief Return a temporal pgpointcloud patch instant from a pgpointcloud
+ * patch and a timestamptz
  * @param[in] pa Value
  * @param[in] t Timestamp
  * @csqlfn #Tinstant_constructor()
@@ -73,8 +74,8 @@ tpcpatchinst_make(const Pcpatch *pa, TimestampTz t)
 
 /**
  * @ingroup meos_pointcloud_constructor
- * @brief Return a temporal pgpointcloud patch discrete sequence from a pgpointcloud patch value and a
- * timestamptz set
+ * @brief Return a temporal pgpointcloud patch discrete sequence from a
+ * pgpointcloud patch value and a timestamptz set
  * @param[in] pa Value
  * @param[in] s Set
  * @csqlfn #Tsequence_from_base_tstzset()
@@ -89,8 +90,8 @@ tpcpatchseq_from_base_tstzset(const Pcpatch *pa, const Set *s)
 
 /**
  * @ingroup meos_pointcloud_constructor
- * @brief Return a temporal pgpointcloud patch sequence from a pgpointcloud patch value and a timestamptz
- * span
+ * @brief Return a temporal pgpointcloud patch sequence from a pgpointcloud
+ * patch value and a timestamptz span
  * @param[in] pa Value
  * @param[in] sp Span
  * @csqlfn #Tsequence_from_base_tstzspan()
@@ -100,13 +101,14 @@ tpcpatchseq_from_base_tstzspan(const Pcpatch *pa, const Span *sp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(pa, NULL); VALIDATE_TSTZSPAN(sp, NULL);
-  return tsequence_from_base_tstzspan(PointerGetDatum(pa), T_TPCPATCH, sp, STEP);
+  return tsequence_from_base_tstzspan(PointerGetDatum(pa), T_TPCPATCH, sp,
+    STEP);
 }
 
 /**
  * @ingroup meos_pointcloud_constructor
- * @brief Return a temporal pgpointcloud patch sequence set from a pgpointcloud patch value and a
- * timestamptz span set
+ * @brief Return a temporal pgpointcloud patch sequence set from a pgpointcloud
+ * patch value and a timestamptz span set
  * @param[in] pa Value
  * @param[in] ss Span set
  * @csqlfn #Tsequenceset_from_base_tstzspanset()
@@ -124,8 +126,8 @@ tpcpatchseqset_from_base_tstzspanset(const Pcpatch *pa, const SpanSet *ss)
 
 /**
  * @ingroup meos_pointcloud_constructor
- * @brief Return a temporal pgpointcloud patch from a pgpointcloud patch and the time frame of
- * another temporal value
+ * @brief Return a temporal pgpointcloud patch from a pgpointcloud patch and
+ * the time frame of another temporal value
  * @param[in] pa Value
  * @param[in] temp Temporal value
  */
@@ -193,7 +195,8 @@ tpcpatch_value_n(const Temporal *temp, int n, Pcpatch **result)
 
 /**
  * @ingroup meos_pointcloud_accessor
- * @brief Return an array of copies of base values of a temporal pgpointcloud patch
+ * @brief Return an array of copies of base values of a temporal pgpointcloud
+ * patch
  * @param[in] temp Temporal value
  * @param[out] count Number of values in the output array
  * @csqlfn #Temporal_valueset()
@@ -241,7 +244,8 @@ tpcpatch_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
 
 /**
  * @ingroup meos_pointcloud_restrict
- * @brief Return a temporal pgpointcloud patch restricted to a specific pgpointcloud patch value
+ * @brief Return a temporal pgpointcloud patch restricted to a pgpointcloud
+ * patch value
  * @param[in] temp Temporal value
  * @param[in] pa pgpointcloud patch value
  * @csqlfn #Temporal_at_value()
@@ -251,14 +255,15 @@ tpcpatch_at_value(const Temporal *temp, const Pcpatch *pa)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TPCPATCH(temp, NULL); VALIDATE_NOT_NULL(pa, NULL);
-  /* Restrict the temporal pgpointcloud patch to the instants where it equals the given pa */
+  /* Restrict the temporal pgpointcloud patch to the instants where it equals
+   * the given pa */
   return temporal_restrict_value(temp, PointerGetDatum(pa), REST_AT);
 }
 
 /**
  * @ingroup meos_pointcloud_restrict
- * @brief Return a temporal pgpointcloud patch restricted to the complement of a specific
- * pgpointcloud patch value
+ * @brief Return a temporal pgpointcloud patch restricted to the complement of
+ * a pgpointcloud patch value
  * @param[in] temp Temporal value
  * @param[in] pa pgpointcloud patch value
  * @csqlfn #Temporal_minus_value()
@@ -268,10 +273,9 @@ tpcpatch_minus_value(const Temporal *temp, const Pcpatch *pa)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TPCPATCH(temp, NULL); VALIDATE_NOT_NULL(pa, NULL);
-  /* Restrict the temporal pgpointcloud patch to the instants where it does not equal the
-   * given pa */
+  /* Restrict the temporal pgpointcloud patch to the instants where it does not
+   * equal the given pa */
   return temporal_restrict_value(temp, PointerGetDatum(pa), REST_MINUS);
 }
 
 /*****************************************************************************/
-

@@ -793,8 +793,7 @@ tcontains_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 Temporal *
 tcontains_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 {
-  return tspatialrel_tgeo_tgeo(temp1, temp2,
-    (varfunc) &datum_geom_contains);
+  return tspatialrel_tgeo_tgeo(temp1, temp2, (varfunc) &datum_geom_contains);
 }
 
 /*****************************************************************************
@@ -881,8 +880,7 @@ tcovers_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 Temporal *
 tcovers_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 {
-  return tspatialrel_tgeo_tgeo(temp1, temp2,
-    (varfunc) &datum_geo_covers2d);
+  return tspatialrel_tgeo_tgeo(temp1, temp2, (varfunc) &datum_geo_covers2d);
 }
 
 /*****************************************************************************
@@ -1068,8 +1066,7 @@ ttouches_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
 Temporal *
 ttouches_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 {
-  return tspatialrel_tgeo_tgeo(temp1, temp2,
-    (varfunc) &datum_geom_touches);
+  return tspatialrel_tgeo_tgeo(temp1, temp2, (varfunc) &datum_geom_touches);
 }
 
 /*****************************************************************************
@@ -1698,8 +1695,7 @@ tdwithin_tspatial_tspatial(const Temporal *sync1, const Temporal *sync2,
  * the quadatric equation for each pair of segments of the temporal points
  */
 Temporal *
-tdwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
-  double dist)
+tdwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tgeo_tgeo(temp1, temp2) ||

@@ -831,19 +831,35 @@ cbuffer_srid(const Cbuffer *cb)
 }
 
 /**
- * @ingroup meos_cbuffer_base_srid
  * @brief Set the coordinates of a circular buffer to an SRID
  * @param[in] cb Circular buffer
  * @param[in] srid SRID
  * @csqlfn #Cbuffer_set_srid()
  */
 void
-cbuffer_set_srid(Cbuffer *cb, int32_t srid)
+cbuffer_set_srid_int(Cbuffer *cb, int32_t srid)
+{
+  assert(cb); assert(srid != SRID_INVALID);
+  cb->srid = srid;
+}
+
+/**
+ * @ingroup meos_cbuffer_base_srid
+ * @brief Return a circular buffer with the coordinates set to an SRID
+ * @param[in] cb Circular buffer
+ * @param[in] srid SRID
+ * @csqlfn #Cbuffer_set_srid()
+ */
+Cbuffer *
+cbuffer_set_srid(const Cbuffer *cb, int32_t srid)
 {
   /* Ensure the validity of the arguments */
-  assert(cb);
-  cb->srid = srid;
-  return;
+  VALIDATE_NOT_NULL(cb, NULL);
+  if (srid == SRID_INVALID)
+    return NULL;
+  Cbuffer *result = cbuffer_copy(cb);
+  result->srid = srid;
+  return result;
 }
 
 /*****************************************************************************/
@@ -948,9 +964,8 @@ cbuffer_transform_pipeline(const Cbuffer *cb, const char *pipeline,
 double
 cbuffer_distance(const Cbuffer *cb1, const Cbuffer *cb2)
 {
-  double result = Max(hypot(cb2->x - cb1->x, cb2->y - cb1->y) -
+  return Max(hypot(cb2->x - cb1->x, cb2->y - cb1->y) -
     cb1->radius - cb2->radius, 0);
-  return result;
 }
 
 /**
@@ -1515,8 +1530,8 @@ cbuffer_hash_extended(const Cbuffer *cb, uint64 seed)
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(cb, LONG_MAX);
   /* PostGIS currently does not provide an extended hash function, */
-  return DatumGetUInt64(hash_any_extended(
-    (unsigned char *) VARDATA_ANY(cb), VARSIZE_ANY_EXHDR(cb), seed));
+  return DatumGetUInt64(hash_any_extended((unsigned char *) VARDATA_ANY(cb),
+    VARSIZE_ANY_EXHDR(cb), seed));
 }
 
 /*****************************************************************************/

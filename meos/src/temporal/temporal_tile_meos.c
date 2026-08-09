@@ -120,7 +120,7 @@ TBox *
 tintbox_value_time_tiles(const TBox *box, int vsize, const Interval *duration,
   int vorigin, TimestampTz torigin, int *count)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(box, NULL); VALIDATE_NOT_NULL(count, NULL);
   return tbox_value_time_tiles(box, Int32GetDatum(vsize), duration,
     Int32GetDatum(vorigin), torigin, count);
@@ -141,7 +141,7 @@ TBox *
 tfloatbox_value_time_tiles(const TBox *box, double vsize,
   const Interval *duration, double vorigin, TimestampTz torigin, int *count)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(box, NULL); VALIDATE_NOT_NULL(count, NULL);
   return tbox_value_time_tiles(box, Float8GetDatum(vsize), duration,
     Float8GetDatum(vorigin), torigin, count);
@@ -691,12 +691,13 @@ Temporal **
 temporal_time_split(const Temporal *temp, const Interval *duration,
   TimestampTz torigin, TimestampTz **bins, int *count)
 {
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
-      ! ensure_positive_duration(duration))
-    return NULL;
   /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
   *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(temp, NULL);  
+  if (! ensure_positive_duration(duration))
+    return NULL;
 
   Span s;
   temporal_set_tstzspan(temp, &s);
@@ -1343,12 +1344,13 @@ Temporal **
 tint_value_split(const Temporal *temp, int size, int origin, int **bins,
   int *count)
 {
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
-      ! ensure_temporal_isof_type(temp, T_TINT) || ! ensure_positive(size))
-    return NULL;
   /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
   *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TINT(temp, NULL); VALIDATE_NOT_NULL(bins, NULL);
+  if (! ensure_positive(size))
+    return NULL;
 
   Datum *datum_bins;
   Temporal **result = tnumber_value_split(temp, Int32GetDatum(size),
@@ -1378,13 +1380,13 @@ Temporal **
 tfloat_value_split(const Temporal *temp, double size, double origin,
   double **bins, int *count)
 {
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
-      ! ensure_temporal_isof_type(temp, T_TFLOAT) ||
-      ! ensure_positive_datum(Float8GetDatum(size), T_FLOAT8))
-    return NULL;
   /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
   *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TFLOAT(temp, NULL); VALIDATE_NOT_NULL(bins, NULL);
+  if (! ensure_positive(size))
+    return NULL;
 
   Datum *datum_bins;
   Temporal **result = tnumber_value_split(temp, Float8GetDatum(size),
@@ -1418,13 +1420,13 @@ tint_value_time_split(const Temporal *temp, int size, const Interval *duration,
   int vorigin, TimestampTz torigin, int **value_bins,
   TimestampTz **time_bins, int *count)
 {
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
-      ! ensure_temporal_isof_type(temp, T_TINT) || ! ensure_positive(size) ||
-      ! ensure_positive_duration(duration))
-    return NULL;
   /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
   *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TINT(temp, NULL); VALIDATE_NOT_NULL(duration, NULL);
+  if (! ensure_positive(size) || ! ensure_positive_duration(duration))
+    return NULL;
 
   Datum *datum_bins;
   Temporal **result = tnumber_value_time_split(temp, Int32GetDatum(size),
@@ -1462,14 +1464,13 @@ tfloat_value_time_split(const Temporal *temp, double size,
   const Interval *duration, double vorigin, TimestampTz torigin,
   double **value_bins, TimestampTz **time_bins, int *count)
 {
-  /* Ensure validity of the arguments */
-  if (! ensure_not_null((void *) temp) || ! ensure_not_null((void *) count) ||
-      ! ensure_temporal_isof_type(temp, T_TFLOAT) ||
-      ! ensure_positive_datum(Float8GetDatum(size), T_FLOAT8) ||
-      ! ensure_positive_duration(duration))
-    return NULL;
   /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
   *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TFLOAT(temp, NULL); VALIDATE_NOT_NULL(duration, NULL);
+  if (! ensure_positive(size) || ! ensure_positive_duration(duration))
+    return NULL;
 
   Datum *datum_bins;
   Temporal **result = tnumber_value_time_split(temp, Float8GetDatum(size),

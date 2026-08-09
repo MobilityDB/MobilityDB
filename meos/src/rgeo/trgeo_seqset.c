@@ -224,8 +224,7 @@ trgeoseqset_make_exp(const GSERIALIZED *geom, TSequence **sequences,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(geom, NULL); VALIDATE_NOT_NULL(sequences, NULL);
-  if (! ensure_positive(count) ||
-      ! ensure_valid_tseqarr(sequences, count))
+  if (! ensure_positive(count) || ! ensure_valid_tseqarr(sequences, count))
     return NULL;
   return trgeoseqset_make1_exp(geom, sequences, count, maxcount, normalize);
 }

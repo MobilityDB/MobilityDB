@@ -2506,11 +2506,11 @@
 			<title>Distance Operations</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="trgeometry_tdistance"><varname>&lt;-&gt;</varname>, <varname>tDistance</varname></link>: Return the temporal distance between two trgeometries</para>
+					<para><link linkend="trgeometry_tdistance"><varname>&lt;-&gt;</varname>, <varname>tDistance</varname></link>: Return the temporal distance between two temporal rigid geometries</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="trgeometry_nad"><varname>|=|</varname>, <varname>nearestApproachDistance</varname></link>: Return the smallest distance between two trgeometries over their shared time domain</para>
+					<para><link linkend="trgeometry_nad"><varname>|=|</varname>, <varname>nearestApproachDistance</varname></link>: Return the smallest distance between two temporal rigid geometries over their shared time domain</para>
 				</listitem>
 
 				<listitem>
@@ -2540,7 +2540,7 @@
 			<title>Comparisons</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="trgeometry_eq"><varname>=</varname>, <varname>&lt;&gt;</varname></link>: Test exact (in)equality of two trgeometries</para>
+					<para><link linkend="trgeometry_eq"><varname>=</varname>, <varname>&lt;&gt;</varname></link>: Test exact (in)equality of two temporal rigid geometries</para>
 				</listitem>
 
 				<listitem>
@@ -2592,18 +2592,104 @@
 			<title>Aggregations</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="trgeometry_tcount"><varname>tCount</varname></link>: Number of overlapping trgeometries at each instant</para>
+					<para><link linkend="trgeometry_tCount"><varname>tCount</varname></link>: Number of overlapping temporal rigid geometries at each instant</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="trgeometry_extent"><varname>extent</varname></link>: Aggregate bounding box of a column of trgeometries</para>
+					<para><link linkend="trgeometry_extent"><varname>extent</varname></link>: Aggregate bounding box of a column of temporal rigid geometries</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="trgeometry_merge"><varname>merge</varname>, <varname>mergeAgg</varname></link>: Combine two trgeometries with the same reference geometry into a sequence-set</para>
+					<para><link linkend="trgeometry_merge"><varname>merge</varname>, <varname>mergeAgg</varname></link>: Combine two or more temporal rigid geometries with the same reference geometry into a single one</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
+
+		<sect2>
+			<title>OGC GeoPose v1.0 Support</title>
+			<sect3>
+				<title>JSON Input and Output</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="pose_geopose_funcs"><varname>asGeoPose</varname>, <varname>poseFromGeoPose</varname></link>: Convert to or from the OGC GeoPose v1.0 JSON encoding (Basic-Quaternion or Basic-YPR conformance class)</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Quaternion Renormalization</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="poseNormalize"><varname>poseNormalize</varname></link>: Return a pose whose orientation quaternion has been transformed to a unit norm</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+		</sect2>
+
+			<sect3>
+				<title>Euler-Angle Accessors</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="pose_yaw_pitch_roll"><varname>yaw</varname>, <varname>pitch</varname>, <varname>roll</varname></link>: Return the yaw, pitch, or roll angle of a (temporal) pose, in radians, under the ZYX intrinsic Tait-Bryan convention required by the OGC GeoPose Basic-YPR conformance class</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Frame Metadata Registry</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="geopose_frame_srid"><varname>geopose_frame_srid</varname></link>: Return the SRID for a frame, or <varname>NULL</varname> if the frame is parametric (LTP, BODY)</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="geopose_frame_name"><varname>geopose_frame_name</varname></link>: Return the human-readable name of a frame</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="geopose_frame_is_geographic"><varname>geopose_frame_is_geographic</varname></link>: Return <varname>true</varname> for lat/lon/h frames, <varname>false</varname> for Cartesian or projected</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Body and World Rigid Transform</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="applyPose"><varname>applyPose</varname></link>: Applies the rigid-body transform encoded by a pose (the OGC GeoPose <emphasis>body to world</emphasis> mapping) to a body-frame geometry, producing the corresponding world-frame geometry</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Cross-SRID Frame Transforms</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="transform"><varname>transform</varname></link>: Transform a pose to an SRID</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Temporal JSON I/O</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="pose_geopose_funcs"><varname>asGeoPose</varname>, <varname>tposeFromGeoPose</varname></link>: Convert a temporal pose to or from a TemporalGeoPose JSON envelope</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
+				<title>Speed and Angular Speed</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="pose_geopose_funcs"><varname>speed</varname></link>: Return the speed of a temporal pose as a step-interpolated temporal float</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="pose_geopose_funcs"><varname>angularSpeed</varname></link>: Return the angular speed of a temporal pose as a step-interpolated temporal float (radians per unit time)</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
 	</sect1>
 
 	<sect1>
@@ -3760,7 +3846,7 @@
 					<para><link linkend="tpcpoint_extent"><varname>extent</varname></link>: Bounding-box aggregate over tpcpoint, tpcpatch, or tpcbox values</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tpcpoint_tcount"><varname>tcount</varname>, <varname>wcount</varname></link>: Temporal count and window count</para>
+					<para><link linkend="tpcpoint_tCount"><varname>tCount</varname>, <varname>wCount</varname></link>: Temporal count and window count</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tpcpatch_tnpoints"><varname>tnpoints</varname></link>: Per-instant pcpatch point count summed across rows</para>
@@ -3836,7 +3922,7 @@
 			<title>Sampling Operator</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="raster_value"><varname>raster_value</varname></link>: Sample a raster band at each instant of a trajectory</para>
+					<para><link linkend="rasterValue"><varname>rasterValue</varname></link>: Sample a raster band at each instant of a trajectory</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -3845,11 +3931,11 @@
 			<title>Raquet / QUADBIN Sampling</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="trajectory_quadbins"><varname>trajectory_quadbins</varname></link>: Return the distinct QUADBIN cells at a zoom level covered by a trajectory</para>
+					<para><link linkend="trajectory_quadbins"><varname>quadbins</varname></link>: Return the distinct QUADBIN cells at a zoom level covered by a trajectory</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="raster_tile_value_quadbin"><varname>raster_tile_value_quadbin</varname></link>: Sample a Raquet raster chip along a trajectory using a QUADBIN cell for georeferencing</para>
+					<para><link linkend="rasterTileValueQuadbin"><varname>rasterTileValueQuadbin</varname></link>: Sample a Raquet raster chip along a trajectory using a QUADBIN cell for georeferencing</para>
 				</listitem>
 
 				<listitem>
@@ -3857,15 +3943,15 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="raquet_read"><varname>raquet_read</varname></link>: Decode an in-memory raster file into a Raquet raster tile via GDAL</para>
+					<para><link linkend="raquetRead"><varname>raquetRead</varname></link>: Decode an in-memory raster file into a Raquet raster tile via GDAL</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="raster_tile_value"><varname>raster_tile_value</varname></link>: Sample a Raquet raster tile along a trajectory</para>
+					<para><link linkend="rasterTileValue"><varname>rasterTileValue</varname></link>: Sample a Raquet raster tile along a trajectory</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="raster_tile_value_array"><varname>raster_tile_value</varname></link>: Sample an array of Raquet raster tiles along a trajectory, keeping the finer resolution where tiles overlap</para>
+					<para><link linkend="rasterTileValueArray"><varname>rasterTileValue</varname></link>: Sample an array of Raquet raster tiles along a trajectory, keeping the finer resolution where tiles overlap</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

@@ -62,11 +62,6 @@ extern double circ_tree_distance_tree_internal(const CIRC_NODE* n1,
   const CIRC_NODE* n2, double threshold, double* min_dist, double* max_dist,
   GEOGRAPHIC_POINT* closest1, GEOGRAPHIC_POINT* closest2);
 
-/* Floating-point tolerance — matches the convention in tpoint_geom_clip.c */
-#ifndef FP_TOLERANCE
-#define FP_TOLERANCE 1e-12
-#endif
-
 /*****************************************************************************
  * Analytic distance engine (shared with the tcbuffer family)
  *
@@ -2337,7 +2332,7 @@ static bool
 nad_tpoint_geo_analytic(const Temporal *temp, const GSERIALIZED *gs,
   double *result)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   assert(temp); assert(gs); assert(result);
   assert(tpoint_type(temp->temptype));
 
@@ -2401,7 +2396,7 @@ tpointseq_shortestline(const TSequence *seq, const GeoDistGeom *g,
 static GSERIALIZED *
 shortestline_tpoint_geo_analytic(const Temporal *temp, const GSERIALIZED *gs)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   assert(temp); assert(gs); assert(tpoint_type(temp->temptype));
 
   GeoDistGeom g;
@@ -2480,7 +2475,7 @@ static bool
 nai_tpoint_geo_analytic(const Temporal *temp, const GSERIALIZED *gs,
   TimestampTz *result)
 {
-  /* Ensure validity of the arguments */
+  /* Ensure the validity of the arguments */
   assert(temp); assert(gs); assert(result);
   assert(tpoint_type(temp->temptype));
 
@@ -3292,8 +3287,9 @@ mindistance_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
     VALIDATE_TGEO(arr1[i], DBL_MAX);
   for (int j = 0; j < count2; j++)
     VALIDATE_TGEO(arr2[j], DBL_MAX);
+
   /* Soundness gate: all inputs share SRID, dimensionality, geodetic flag */
-  int32 srid = tspatial_srid(arr1[0]);
+  int32_t srid = tspatial_srid(arr1[0]);
   int16 flags = arr1[0]->flags;
   for (int i = 1; i < count1; i++)
     if (! ensure_same_srid(tspatial_srid(arr1[i]), srid) ||

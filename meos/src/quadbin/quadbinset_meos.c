@@ -31,9 +31,7 @@
  * @file
  * @brief MEOS implementations of the set-returning quadbin functions,
  * returning `quadbinset`.
- *
- * Shape of every function below:
- *
+ * @details Shape of every function below:
  *   1. Ask the quadbin kernel for the cell array (palloc'd).
  *   2. Pack the array into a Datum array.
  *   3. `set_make_free` the Datum array — the constructor copies into its
@@ -43,13 +41,14 @@
 
 #include "quadbin/quadbinset_meos.h"
 
+/* PostgreSQL */
 #include <postgres.h>
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-
-#include "quadbin/quadbin_meos.h"
 #include "temporal/meos_catalog.h"
 #include "temporal/temporal.h"  /* ORDER */
+#include "quadbin/quadbin.h"
 
 /*****************************************************************************
  * Internal helpers
@@ -80,12 +79,12 @@ quadbinset_from_buffer(Quadbin *cells, int count)
 
 /*****************************************************************************
  * Grid traversal
- * @csqlfn #Quadbin_grid_disk()
  *****************************************************************************/
 
 /**
  * @ingroup meos_quadbin_accessor
  * @brief Return the set of QUADBIN cells within grid distance k of an origin cell
+ * @csqlfn #Quadbin_grid_disk()
  */
 Set *
 quadbin_grid_disk(Quadbin origin, int k)
@@ -103,12 +102,12 @@ quadbin_grid_disk(Quadbin origin, int k)
 
 /*****************************************************************************
  * Hierarchy
- * @csqlfn #Quadbin_cell_to_children()
  *****************************************************************************/
 
 /**
  * @ingroup meos_quadbin_accessor
  * @brief Return the set of children of a QUADBIN cell at a finer resolution
+ * @csqlfn #Quadbin_cell_to_children()
  */
 Set *
 quadbin_cell_to_children_set(Quadbin origin, int children_resolution)

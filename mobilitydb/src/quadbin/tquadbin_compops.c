@@ -45,14 +45,8 @@
 #include <meos_quadbin.h>
 #include "temporal/temporal.h"
 #include "quadbin/quadbin.h"
-#include "quadbin/quadbin_meos.h"   /* DatumGetQuadbin / QuadbinGetDatum */
 /* MobilityDB */
 #include "pg_temporal/temporal.h"
-
-/* PG_GETARG_QUADBIN / PG_RETURN_QUADBIN are defined locally in
- * `quadbin.c`; replicate here so we can use them in the comparison
- * wrappers without cross-file include. */
-#define PG_GETARG_QUADBIN(n) DatumGetQuadbin(PG_GETARG_DATUM(n))
 
 /*****************************************************************************
  * Shared helpers

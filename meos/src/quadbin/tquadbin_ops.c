@@ -42,39 +42,49 @@
 #include "quadbin/quadbin.h"
 #include "quadbin/tquadbin.h"
 
+/* C */
+#include <string.h>
 /* PostgreSQL */
 #include <postgres.h>
 /* PostGIS */
 #include <liblwgeom.h>
 /* MEOS */
-#include <string.h>
 #include <meos.h>
 #include <meos_geo.h>
 #include <meos_internal.h>
 #include <meos_quadbin.h>
-#include "geo/tgeo_spatialfuncs.h"
-#include "temporal/meos_catalog.h"
 #include <pgtypes.h>
+#include "temporal/meos_catalog.h"
 #include "temporal/tcellindex.h"
 #include "temporal/temporal.h"
 #include "temporal/lifting.h"
+#include "geo/tgeo_spatialfuncs.h"
 
 /*****************************************************************************
  * Datum-convention static-cell wrappers
  *****************************************************************************/
 
+/**
+ * @brief
+ */
 static Datum
 datum_quadbin_get_resolution(Datum d)
 {
   return Int32GetDatum((int32) quadbin_get_resolution((Quadbin) DatumGetInt64(d)));
 }
 
+/**
+ * @brief
+ */
 static Datum
 datum_quadbin_is_valid_cell(Datum d)
 {
   return BoolGetDatum(quadbin_is_valid_cell((Quadbin) DatumGetInt64(d)));
 }
 
+/**
+ * @brief
+ */
 static Datum
 datum_quadbin_cell_to_parent(Datum cell_d, Datum res_d)
 {
@@ -83,6 +93,9 @@ datum_quadbin_cell_to_parent(Datum cell_d, Datum res_d)
   return Int64GetDatum((int64) parent);
 }
 
+/**
+ * @brief
+ */
 static Datum
 datum_quadbin_cell_to_point(Datum d)
 {
@@ -95,6 +108,9 @@ datum_quadbin_cell_to_point(Datum d)
   return PointerGetDatum(gs);
 }
 
+/**
+ * @brief
+ */
 static Datum
 datum_quadbin_cell_to_boundary(Datum d)
 {
@@ -116,6 +132,21 @@ datum_quadbin_cell_to_boundary(Datum d)
   return PointerGetDatum(gs);
 }
 
+/**
+ * @brief
+ */
+static Datum
+datum_quadbin_cell_to_quadkey(Datum d)
+{
+  char *str = quadbin_cell_to_quadkey((Quadbin) DatumGetInt64(d));
+  text *result = cstring_to_text(str);
+  pfree(str);
+  return PointerGetDatum(result);
+}
+
+/**
+ * @brief
+ */
 static Datum
 datum_quadbin_cell_area(Datum d)
 {
@@ -154,15 +185,6 @@ const DggsCellOps quadbin_cellops =
  * exposes only the operations shared by every DGGS.
  *****************************************************************************/
 
-static Datum
-datum_quadbin_cell_to_quadkey(Datum d)
-{
-  char *str = quadbin_cell_to_quadkey((Quadbin) DatumGetInt64(d));
-  text *result = cstring_to_text(str);
-  pfree(str);
-  return PointerGetDatum(result);
-}
-
 /**
  * @ingroup meos_cellindex
  * @brief Return the temporal quadkey (ttext) of a temporal quadbin cell.
@@ -171,6 +193,7 @@ datum_quadbin_cell_to_quadkey(Datum d)
 Temporal *
 tquadbin_cell_to_quadkey(const Temporal *temp)
 {
+  /* Ensure the validity of the parameters */
   VALIDATE_TQUADBIN(temp, NULL);
 
   LiftedFunctionInfo lfinfo;

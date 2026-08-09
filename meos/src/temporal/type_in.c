@@ -42,13 +42,6 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#if H3
-#include <h3api.h>
-#include "h3/h3index.h"
-#endif
-#if QUADBIN
-#include "quadbin/quadbin_meos.h"
-#endif
 #include <meos_internal_geo.h>
 #include "temporal/set.h"
 #include "temporal/span.h"
@@ -58,6 +51,10 @@
 #include "geo/tgeo_spatialfuncs.h"
 #if CBUFFER
   #include "cbuffer/cbuffer.h"
+#endif
+#if H3
+  #include <h3api.h>
+  #include "h3/h3index.h"
 #endif
 #if JSON
 #include <meos_json.h>
@@ -76,6 +73,10 @@
 #if POSE
   #include <meos_pose.h>
   #include "pose/pose.h"
+#endif
+#if QUADBIN
+  #include <meos_quadbin.h>
+  #include "quadbin/quadbin.h"
 #endif
 #if RGEO
   #include <meos_rgeo.h>

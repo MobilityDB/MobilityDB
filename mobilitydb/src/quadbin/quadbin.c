@@ -39,14 +39,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_quadbin.h>
-#include "quadbin/quadbin_meos.h"
-
-/* DatumGetQuadbin / QuadbinGetDatum live in quadbin/quadbin_meos.h.
- * PG_GETARG_QUADBIN / PG_RETURN_QUADBIN are the fmgr-layer
- * conveniences defined locally here because fmgr.h is a
- * MobilityDB-side dependency. */
-#define PG_GETARG_QUADBIN(n) DatumGetQuadbin(PG_GETARG_DATUM(n))
-#define PG_RETURN_QUADBIN(x) PG_RETURN_DATUM(QuadbinGetDatum(x))
+#include "quadbin/quadbin.h"
 
 /*****************************************************************************
  * Input / output
@@ -63,7 +56,7 @@ Datum
 Quadbin_in(PG_FUNCTION_ARGS)
 {
   const char *str = PG_GETARG_CSTRING(0);
-  PG_RETURN_QUADBIN(quadbin_parse(str));
+  PG_RETURN_QUADBIN(quadbin_in(str));
 }
 
 PGDLLEXPORT Datum Quadbin_out(PG_FUNCTION_ARGS);

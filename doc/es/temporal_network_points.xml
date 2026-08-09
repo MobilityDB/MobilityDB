@@ -404,7 +404,7 @@ SELECT tgeompoint '[POINT(23.057077727326 28.7666335767956)@2001-01-01,
 
 	<sect1 xml:id="tnpoint_mfjson">
 		<title>Entrada y Salida MF-JSON</title>
-		<para>Un punto de red temporal se escribe y se lee en Moving-Features JSON. Cada instante representa su punto de red como <varname>{"route":&lt;route&gt;,"position":&lt;position&gt;}</varname> — el id de ruta como un número JSON y la posición como un float en <varname>[0, 1]</varname> — coincidiendo con la superficie de accesores SQL (<varname>route</varname>, <varname>getPosition</varname>).</para>
+		<para>Un punto de red temporal se escribe y se lee en Moving-Features JSON. Cada instante representa su punto de red como <varname>{"route":&lt;route&gt;,"position":&lt;position&gt;}</varname>, el id de ruta como un número JSON y la posición como un float en <varname>[0, 1]</varname>, coincidiendo con la superficie de accesores SQL (<varname>route</varname>, <varname>getPosition</varname>).</para>
 		<itemizedlist>
 			<listitem xml:id="tnpoint_asMFJSON">
 				<indexterm significance="normal"><primary><varname>asMFJSON</varname></primary></indexterm>

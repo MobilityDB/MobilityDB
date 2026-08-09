@@ -176,8 +176,7 @@ tpoint_force2d(const Temporal *temp)
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &point_force2d;
   lfinfo.numparam = 1;
-  int32 srid = tspatial_srid(temp);
-  lfinfo.param[0] = Int32GetDatum(srid);
+  lfinfo.param[0] = Int32GetDatum(tspatial_srid(temp));
   lfinfo.argtype[0] = temp->temptype;
   lfinfo.restype = T_TGEOMPOINT;
   /* Dropping the Z dimension is affine: linear input -> linear output */
@@ -333,7 +332,6 @@ tpointseq_timestamp_at_value(const TSequence *seq, Datum value,
 /*
  * Region codes for the Cohen-Sutherland algorithm for 3D line clipping
  */
-
 const int INSIDE  = 0;  /* 000000 */
 const int LEFT    = 1;  /* 000001 */
 const int RIGHT   = 2;  /* 000010 */

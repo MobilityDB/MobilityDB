@@ -42,4 +42,19 @@
 #include <meos.h>
 #include <meos_quadbin.h>
 
+/*****************************************************************************
+ * fmgr macros
+ *****************************************************************************/
+
+#define DatumGetQuadbin(X)   ((Quadbin) DatumGetInt64(X))
+#define QuadbinGetDatum(X)   Int64GetDatum((int64) (X))
+#define PG_GETARG_QUADBIN(n) DatumGetQuadbin(PG_GETARG_DATUM(n))
+#define PG_RETURN_QUADBIN(x) PG_RETURN_DATUM(QuadbinGetDatum(x))
+
+/*****************************************************************************/
+
+extern Quadbin quadbin_parse(const char *str);
+
+/*****************************************************************************/
+
 #endif /* __QUADBIN_H__ */

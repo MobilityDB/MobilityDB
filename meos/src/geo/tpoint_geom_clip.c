@@ -438,7 +438,7 @@ point_on_segment(double px, double py, double x1, double y1, double x2,
  */
 static inline int
 point_in_polygon_impl(double x, double y, Edge **edges, int nedges,
-  const RTree *rtree, int32 srid, double xmax)
+  const RTree *rtree, int32_t srid, double xmax)
 {
   int inside = 0;
   int n = nedges;
@@ -761,7 +761,7 @@ float8_qsort_cmp(const void *a1, const void *a2)
 static void
 intervals_from_polygons(const POINT2D *a, const POINT2D *b, Edge **edges,
   int nedges, Edge **all_edges, int all_nedges, const RTree *rtree,
-  int32 srid, double xmax)
+  int32_t srid, double xmax)
 {
   assert(a); assert(b); assert(edges); assert(nedges >= 0);
 
@@ -2208,7 +2208,7 @@ point_edge_dist2(double px, double py, const Edge *e)
  */
 static bool
 point_geom_within(double px, double py, Edge **edges, int nedges,
-  double dist, const RTree *rtree, int32 srid, double xmax)
+  double dist, const RTree *rtree, int32_t srid, double xmax)
 {
   const double d2 = dist * dist;
   if (rtree)
@@ -2359,7 +2359,7 @@ within_roots_from_edge(double ax, double ay, double rx, double ry,
 static void
 intervals_within_edges(const POINT2D *a, const POINT2D *b, Edge **sel_edges,
   int sel_nedges, Edge **all_edges, int all_nedges, double dist,
-  const RTree *rtree, int32 srid, double xmax)
+  const RTree *rtree, int32_t srid, double xmax)
 {
   events->count = 0;
   const double ax = a->x, ay = a->y;
@@ -2441,7 +2441,7 @@ intervals_within_edges(const POINT2D *a, const POINT2D *b, Edge **sel_edges,
  */
 static void
 tpointinst_dwithin_edges(const TInstant *inst, Edge **edges, int nedges,
-  double dist, const RTree *rtree, int32 srid, double xmax)
+  double dist, const RTree *rtree, int32_t srid, double xmax)
 {
   assert(inst); assert(edges); assert(nedges > 0);
   assert(inst->temptype == T_TGEOMPOINT);

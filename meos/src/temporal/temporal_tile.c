@@ -434,9 +434,9 @@ Span *
 span_bins(const Span *s, Datum size, Datum origin, int *count)
 {
   assert(s); assert(count);
-  assert(numspan_type(s->spantype) || timespan_type(s->spantype));
   /* The out parameter is defined even when a later check fails */
   *count = 0;
+  assert(numspan_type(s->spantype) || timespan_type(s->spantype));
   if ((numspan_type(s->spantype) && 
         ! ensure_not_negative_datum(size, s->basetype)) ||
       (timespan_type(s->spantype) && 
@@ -483,9 +483,9 @@ Span *
 spanset_bins(const SpanSet *ss, Datum size, Datum origin, int *count)
 {
   assert(ss); assert(count);
-  assert(numspan_type(ss->spantype) || timespan_type(ss->spantype));
   /* The out parameter is defined even when a later check fails */
   *count = 0;
+  assert(numspan_type(ss->spantype) || timespan_type(ss->spantype));
   if ((numspan_type(ss->spantype) && 
         ! ensure_not_negative_datum(size, ss->basetype)) ||
       (timespan_type(ss->spantype) && 
@@ -547,10 +547,10 @@ Span *
 temporal_time_bins(const Temporal *temp, const Interval *duration,
   TimestampTz torigin, int *count)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(count, NULL);
   /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
   *count = 0;
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL); VALIDATE_NOT_NULL(duration, NULL);
   if (! ensure_positive_duration(duration))
     return NULL;
@@ -592,8 +592,11 @@ Span *
 tnumber_value_bins(const Temporal *temp, Datum vsize, Datum vorigin,
   int *count)
 {
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(temp, NULL);
 
   /* Set bounding box */
   Span bounds;
@@ -875,10 +878,10 @@ TboxGridState *
 tnumber_value_time_tile_init(const Temporal *temp, Datum vsize,
   const Interval *duration, Datum vorigin, TimestampTz torigin, int *ntiles)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(ntiles, NULL);
   /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(ntiles, NULL);
   *ntiles = 0;
+  /* Ensure the validity of the arguments */
   VALIDATE_TNUMBER(temp, NULL);
   if (! ensure_not_negative_datum(vsize, temptype_basetype(temp->temptype)) ||
       (duration && ! ensure_positive_duration(duration)))
@@ -911,8 +914,7 @@ TBox *
 tnumber_value_time_boxes(const Temporal *temp, Datum vsize,
   const Interval *duration, Datum vorigin, TimestampTz torigin, int *count)
 {
-  VALIDATE_TNUMBER(temp, NULL);
-  assert(count);
+  assert(temp); assert(count);
   /* The out parameter is defined even when a later check fails */
   *count = 0;
 

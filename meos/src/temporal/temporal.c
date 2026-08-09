@@ -2576,10 +2576,10 @@ temporal_sequences(const Temporal *temp, int *count)
 TSequence **
 temporal_segments(const Temporal *temp, int *count)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(count, NULL);
   /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
   *count = 0;
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL);
 
   assert(temptype_subtype(temp->subtype));

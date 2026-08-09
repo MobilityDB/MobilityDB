@@ -215,11 +215,8 @@ pcpoint_parse(const char **str, bool end)
 Pcpoint *
 pcpoint_hex_in(const char *str)
 {
-  if (! str)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "Null input string");
-    return NULL;
-  }
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(str, NULL);
   return pcpoint_parse(&str, true);
 }
 
@@ -239,9 +236,11 @@ pcpoint_hex_in(const char *str)
 char *
 pcpoint_hex_out(const Pcpoint *pt, int maxdd)
 {
-  (void) maxdd;
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(pt, NULL);
+  if (! ensure_positive(maxdd))
+    return NULL;
+
   size_t byte_len = VARSIZE(pt);
   size_t meaningful = pcpoint_meaningful_size(pt);
   size_t hex_len = byte_len * 2;
@@ -355,9 +354,9 @@ pcpoint_hash_extended(const Pcpoint *pt, uint64 seed)
  * @brief Compare two pcpoints byte-wise
  * @return -1 / 0 / 1
  * @note Compares only the meaningful-prefix bytes — pgpointcloud's
- *   struct-tail padding is skipped (see the padding comment above).
- *   Two pcpoints that disagree only on those padding bytes now compare
- *   equal, making Set dedup and B-tree equality deterministic.
+ * struct-tail padding is skipped (see the padding comment above).
+ * Two pcpoints that disagree only on those padding bytes now compare
+ * equal, making Set dedup and B-tree equality deterministic.
  * @csqlfn #Pcpoint_cmp()
  */
 int
@@ -379,44 +378,54 @@ pcpoint_cmp(const Pcpoint *pt1, const Pcpoint *pt2)
  * @brief Return true if two pcpoints are equal
  */
 bool pcpoint_eq(const Pcpoint *pt1, const Pcpoint *pt2)
-{ return pcpoint_cmp(pt1, pt2) == 0; }
+{
+  return pcpoint_cmp(pt1, pt2) == 0;
+}
 
 /**
  * @ingroup meos_pointcloud_base_comp
  * @brief Return true if two pcpoints differ
  */
 bool pcpoint_ne(const Pcpoint *pt1, const Pcpoint *pt2)
-{ return pcpoint_cmp(pt1, pt2) != 0; }
+{
+  return pcpoint_cmp(pt1, pt2) != 0;
+}
 
 /**
  * @ingroup meos_pointcloud_base_comp
- * @brief Return true if the first pcpoint precedes the second in total order
+ * @brief Return true if the first pcpoint precedes the second one
  */
 bool pcpoint_lt(const Pcpoint *pt1, const Pcpoint *pt2)
-{ return pcpoint_cmp(pt1, pt2) <  0; }
+{
+  return pcpoint_cmp(pt1, pt2) <  0;
+}
 
 /**
  * @ingroup meos_pointcloud_base_comp
- * @brief Return true if the first pcpoint precedes or equals the second
- *   in total order
+ * @brief Return true if the first pcpoint precedes or equals the second one
  */
 bool pcpoint_le(const Pcpoint *pt1, const Pcpoint *pt2)
-{ return pcpoint_cmp(pt1, pt2) <= 0; }
+{
+  return pcpoint_cmp(pt1, pt2) <= 0;
+}
 
 /**
  * @ingroup meos_pointcloud_base_comp
  * @brief Return true if the first pcpoint follows the second in total order
  */
 bool pcpoint_gt(const Pcpoint *pt1, const Pcpoint *pt2)
-{ return pcpoint_cmp(pt1, pt2) >  0; }
+{
+  return pcpoint_cmp(pt1, pt2) >  0;
+}
 
 /**
  * @ingroup meos_pointcloud_base_comp
- * @brief Return true if the first pcpoint follows or equals the second
- *   in total order
+ * @brief Return true if the first pcpoint follows or equals the second one
  */
 bool pcpoint_ge(const Pcpoint *pt1, const Pcpoint *pt2)
-{ return pcpoint_cmp(pt1, pt2) >= 0; }
+{
+  return pcpoint_cmp(pt1, pt2) >= 0;
+}
 
 /*****************************************************************************
  * Schema-aware accessors
@@ -551,8 +560,7 @@ pcpoint_to_tpcbox(const Pcpoint *pt, PCSCHEMA *schema)
     return NULL;
   return tpcbox_make(/* hasx */ true, /* hasz */ has_z,
     /* hast */ false, /* geodetic */ false,
-    (int32_t) schema->srid, pt->pcid,
-    x, x, y, y, z, z, NULL);
+    (int32_t) schema->srid, pt->pcid, x, x, y, y, z, z, NULL);
 }
 
 /*****************************************************************************/

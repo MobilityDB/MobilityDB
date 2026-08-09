@@ -645,7 +645,6 @@ tgeoseqset_from_base_tstzspanset(const GSERIALIZED *gs, const SpanSet *ss,
     interp);
 }
 
-
 /*****************************************************************************/
 
 /**

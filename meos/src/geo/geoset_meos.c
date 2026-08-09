@@ -220,7 +220,7 @@ GSERIALIZED **
 geoset_values(const Set *s, int *count)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_GEOSET(s, NULL);
+  VALIDATE_GEOSET(s, NULL); VALIDATE_NOT_NULL(count, NULL);
   GSERIALIZED **result = palloc(sizeof(GSERIALIZED *) * s->count);
   for (int i = 0; i < s->count; i++)
     result[i] = DatumGetGserializedP(datum_copy(SET_VAL_N(s, i), s->basetype));

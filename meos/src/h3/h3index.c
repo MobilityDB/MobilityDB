@@ -51,26 +51,352 @@
 
 #include "h3/h3index.h"
 
+/* C */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include <errno.h>
 #include <inttypes.h>
-
+/* PostgreSQL */
 #include <postgres.h>
-
+/* H3 */
+#include <h3api.h>
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-#include <h3api.h>
-#include "h3/h3_generated.h"
-#include "h3/th3index_internal.h"
+#include <pgtypes.h>
 #include "temporal/temporal.h"
 #include "temporal/type_inout.h"
-#include <pgtypes.h>
+#include "h3/h3_generated.h"
+#include "h3/th3index_internal.h"
 
 /*****************************************************************************
- * Parsing
+ * Datum wrappers for inspection
+ *****************************************************************************/
+
+/**
+ * @brief 
+ */
+Datum
+datum_h3_get_resolution(Datum d)
+{
+  return Int32GetDatum(h3_get_resolution_meos(DatumGetH3Index(d)));
+}
+
+/**
+ * @brief 
+ */
+Datum
+datum_h3_get_base_cell_number(Datum d)
+{
+  return Int32GetDatum(h3_get_base_cell_number_meos(DatumGetH3Index(d)));
+}
+
+/**
+ * @brief 
+ */
+Datum
+datum_h3_is_valid_cell(Datum d)
+{
+  return BoolGetDatum(h3_is_valid_cell_meos(DatumGetH3Index(d)));
+}
+
+/**
+ * @brief 
+ */
+Datum
+datum_h3_is_res_class_iii(Datum d)
+{
+  return BoolGetDatum(h3_is_res_class_iii_meos(DatumGetH3Index(d)));
+}
+
+/**
+ * @brief 
+ */
+Datum
+datum_h3_is_pentagon(Datum d)
+{
+  return BoolGetDatum(h3_is_pentagon_meos(DatumGetH3Index(d)));
+}
+
+/*****************************************************************************
+ * Datum wrappers for hierarchy
+ *
+ * The (h3, resolution) forms are 2-arg Datum functions so they can be
+ * plugged into `tfunc_temporal` with `numparam = 1`.
+ *****************************************************************************/
+
+/**
+ * @brief 
+ */
+Datum
+datum_h3_cell_to_parent(Datum cell_d, Datum res_d)
+{
+  return H3IndexGetDatum(h3_cell_to_parent_meos(DatumGetH3Index(cell_d),
+    DatumGetInt32(res_d)));
+}
+
+/**
+ * @brief 
+ */
+Datum
+datum_h3_cell_to_parent_next(Datum cell_d)
+{
+  return H3IndexGetDatum(h3_cell_to_parent_next_meos(DatumGetH3Index(cell_d)));
+}
+
+/**
+ * @brief 
+ */
+Datum
+datum_h3_cell_to_center_child(Datum cell_d, Datum res_d)
+{
+  return H3IndexGetDatum(h3_cell_to_center_child_meos(DatumGetH3Index(cell_d),
+    DatumGetInt32(res_d)));
+}
+
+/**
+ * @brief 
+ */
+Datum
+datum_h3_cell_to_center_child_next(Datum cell_d)
+{
+  return H3IndexGetDatum(h3_cell_to_center_child_next_meos(
+    DatumGetH3Index(cell_d)));
+}
+
+/**
+ * @brief 
+ */
+Datum
+datum_h3_cell_to_child_pos(Datum cell_d, Datum parent_res_d)
+{
+  /* Return is a position index (int64), not a cell — plain
+   * Int64GetDatum is correct here. */
+  return Int64GetDatum(h3_cell_to_child_pos_meos(DatumGetH3Index(cell_d),
+    DatumGetInt32(parent_res_d)));
+}
+
+/**
+ * @brief 
+ */
+Datum
+datum_h3_child_pos_to_cell(Datum pos_d, Datum parent_d, Datum child_res_d)
+{
+  /* pos_d carries a plain int64 child position. */
+  return H3IndexGetDatum(h3_child_pos_to_cell_meos(DatumGetInt64(pos_d),
+    DatumGetH3Index(parent_d), DatumGetInt32(child_res_d)));
+}
+
+/*****************************************************************************
+ * Datum wrappers for directed edges
+ *****************************************************************************/
+
+/**
+ * @brief 
+ */
+Datum
+datum_h3_are_neighbor_cells(Datum origin_d, Datum dest_d)
+{
+  return BoolGetDatum(h3_are_neighbor_cells_meos(DatumGetH3Index(origin_d),
+    DatumGetH3Index(dest_d)));
+}
+
+/**
+ * @brief 
+ */
+Datum
+datum_h3_cells_to_directed_edge(Datum origin_d, Datum dest_d)
+{
+  return H3IndexGetDatum(h3_cells_to_directed_edge_meos(
+    DatumGetH3Index(origin_d), DatumGetH3Index(dest_d)));
+}
+
+/**
+ * @brief 
+ */
+Datum
+datum_h3_is_valid_directed_edge(Datum d)
+{
+  return BoolGetDatum(h3_is_valid_directed_edge_meos(DatumGetH3Index(d)));
+}
+
+/**
+ * @brief 
+ */
+Datum
+datum_h3_get_directed_edge_origin(Datum d)
+{
+  return H3IndexGetDatum(h3_get_directed_edge_origin_meos(DatumGetH3Index(d)));
+}
+
+/**
+ * @brief 
+ */
+Datum
+datum_h3_get_directed_edge_destination(Datum d)
+{
+  return H3IndexGetDatum(h3_get_directed_edge_destination_meos(
+    DatumGetH3Index(d)));
+}
+
+/**
+ * @brief 
+ */
+Datum
+datum_h3_directed_edge_to_boundary(Datum d)
+{
+  GSERIALIZED *gs = h3_directed_edge_to_gs_boundary(DatumGetH3Index(d));
+  return PointerGetDatum(gs);
+}
+
+/*****************************************************************************
+ * Datum wrappers for vertices
+ *****************************************************************************/
+
+/**
+ * @brief 
+ */
+Datum
+datum_h3_cell_to_vertex(Datum cell_d, Datum vnum_d)
+{
+  return H3IndexGetDatum(h3_cell_to_vertex_meos(DatumGetH3Index(cell_d),
+    DatumGetInt32(vnum_d)));
+}
+
+/**
+ * @brief 
+ */
+Datum
+datum_h3_vertex_to_latlng(Datum d)
+{
+  GSERIALIZED *gs = h3_vertex_to_gs_point(DatumGetH3Index(d));
+  return PointerGetDatum(gs);
+}
+
+/**
+ * @brief 
+ */
+Datum
+datum_h3_is_valid_vertex(Datum d)
+{
+  return BoolGetDatum(h3_is_valid_vertex_meos(DatumGetH3Index(d)));
+}
+
+/*****************************************************************************
+ * Datum wrappers for grid traversal
+ *****************************************************************************/
+
+/**
+ * @brief 
+ */
+Datum
+datum_h3_grid_distance(Datum origin_d, Datum dest_d)
+{
+  /* Return is a hop count (int64), not a cell. */
+  return Int64GetDatum(h3_grid_distance_meos(DatumGetH3Index(origin_d),
+    DatumGetH3Index(dest_d)));
+}
+
+/**
+ * @brief 
+ */
+Datum
+datum_h3_cell_to_local_ij(Datum origin_d, Datum cell_d)
+{
+  GSERIALIZED *gs = h3_cell_to_local_ij_meos(DatumGetH3Index(origin_d),
+    DatumGetH3Index(cell_d));
+  return PointerGetDatum(gs);
+}
+
+/**
+ * @brief 
+ */
+Datum
+datum_h3_local_ij_to_cell(Datum origin_d, Datum coord_d)
+{
+  const GSERIALIZED *coord = (GSERIALIZED *) DatumGetPointer(coord_d);
+  return H3IndexGetDatum(h3_local_ij_to_cell_meos(
+    DatumGetH3Index(origin_d), coord));
+}
+
+/*****************************************************************************
+ * Datum wrappers for lat/lng conversions
+ *****************************************************************************/
+
+/**
+ * @brief 
+ */
+Datum
+datum_h3_latlng_to_cell(Datum point_d, Datum res_d)
+{
+  const GSERIALIZED *point = (GSERIALIZED *) DatumGetPointer(point_d);
+  return H3IndexGetDatum(geo_to_h3index_cell(point,
+    DatumGetInt32(res_d)));
+}
+
+/**
+ * @brief 
+ */
+Datum
+datum_h3_cell_to_latlng(Datum d)
+{
+  GSERIALIZED *gs = h3_cell_to_geompoint(DatumGetH3Index(d));
+  return PointerGetDatum(gs);
+}
+
+/**
+ * @brief 
+ */
+Datum
+datum_h3_cell_to_boundary(Datum d)
+{
+  GSERIALIZED *gs = h3_cell_to_geom(DatumGetH3Index(d));
+  return PointerGetDatum(gs);
+}
+
+/*****************************************************************************
+ * Datum wrappers for metrics
+ *
+ * These take the unit as an auxiliary parameter (H3Unit enum stored
+ * in an Int32 datum — no temporal unit support).
+ *****************************************************************************/
+
+/**
+ * @brief 
+ */
+Datum
+datum_h3_cell_area(Datum cell_d, Datum unit_d)
+{
+  return Float8GetDatum(h3_cell_area_meos(DatumGetH3Index(cell_d),
+    (H3Unit) DatumGetInt32(unit_d)));
+}
+
+/**
+ * @brief 
+ */
+Datum
+datum_h3_edge_length(Datum edge_d, Datum unit_d)
+{
+  return Float8GetDatum(h3_edge_length_meos(DatumGetH3Index(edge_d),
+    (H3Unit) DatumGetInt32(unit_d)));
+}
+
+/**
+ * @brief 
+ */
+Datum
+datum_h3_great_circle_distance(Datum a_d, Datum b_d, Datum unit_d)
+{
+  const GSERIALIZED *a = (GSERIALIZED *) DatumGetPointer(a_d);
+  const GSERIALIZED *b = (GSERIALIZED *) DatumGetPointer(b_d);
+  return Float8GetDatum(h3_gs_great_circle_distance_meos(a, b,
+    (H3Unit) DatumGetInt32(unit_d)));
+}
+
+/*****************************************************************************
+ * Input/output functions
  *****************************************************************************/
 
 /**
@@ -89,12 +415,8 @@ h3index_in(const char *str)
 H3Index
 meos_h3index_in(const char *str)
 {
-  if (str == NULL)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "h3index input must not be null");
-    return (H3Index) 0;
-  }
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(str, (H3Index) 0);
 
   /* Delegate to libh3, exactly as the h3-pg extension's input function
    * does, so both extensions parse the same representation (hexadecimal,
@@ -110,9 +432,7 @@ meos_h3index_in(const char *str)
   return cell;
 }
 
-/*****************************************************************************
- * Output
- *****************************************************************************/
+/*****************************************************************************/
 
 /**
  * @ingroup meos_h3_base_inout
@@ -377,336 +697,6 @@ uint32
 meos_h3index_hash(H3Index cell)
 {
   return int64_hash((int64) cell);
-}
-
-/*****************************************************************************
- * Datum wrappers for inspection
- *****************************************************************************/
-
-/**
- * @brief 
- */
-Datum
-datum_h3_get_resolution(Datum d)
-{
-  return Int32GetDatum(h3_get_resolution_meos(DatumGetH3Index(d)));
-}
-
-/**
- * @brief 
- */
-Datum
-datum_h3_get_base_cell_number(Datum d)
-{
-  return Int32GetDatum(h3_get_base_cell_number_meos(DatumGetH3Index(d)));
-}
-
-Datum
-datum_h3_is_valid_cell(Datum d)
-{
-  return BoolGetDatum(h3_is_valid_cell_meos(DatumGetH3Index(d)));
-}
-
-/**
- * @brief 
- */
-Datum
-datum_h3_is_res_class_iii(Datum d)
-{
-  return BoolGetDatum(h3_is_res_class_iii_meos(DatumGetH3Index(d)));
-}
-
-/**
- * @brief 
- */
-Datum
-datum_h3_is_pentagon(Datum d)
-{
-  return BoolGetDatum(h3_is_pentagon_meos(DatumGetH3Index(d)));
-}
-
-/*****************************************************************************
- * Datum wrappers for hierarchy
- *
- * The (h3, resolution) forms are 2-arg Datum functions so they can be
- * plugged into `tfunc_temporal` with `numparam = 1`.
- *****************************************************************************/
-
-/**
- * @brief 
- */
-Datum
-datum_h3_cell_to_parent(Datum cell_d, Datum res_d)
-{
-  return H3IndexGetDatum(h3_cell_to_parent_meos(
-    DatumGetH3Index(cell_d), DatumGetInt32(res_d)));
-}
-
-/**
- * @brief 
- */
-Datum
-datum_h3_cell_to_parent_next(Datum cell_d)
-{
-  return H3IndexGetDatum(h3_cell_to_parent_next_meos(
-    DatumGetH3Index(cell_d)));
-}
-
-/**
- * @brief 
- */
-Datum
-datum_h3_cell_to_center_child(Datum cell_d, Datum res_d)
-{
-  return H3IndexGetDatum(h3_cell_to_center_child_meos(
-    DatumGetH3Index(cell_d), DatumGetInt32(res_d)));
-}
-
-/**
- * @brief 
- */
-Datum
-datum_h3_cell_to_center_child_next(Datum cell_d)
-{
-  return H3IndexGetDatum(h3_cell_to_center_child_next_meos(
-    DatumGetH3Index(cell_d)));
-}
-
-/**
- * @brief 
- */
-Datum
-datum_h3_cell_to_child_pos(Datum cell_d, Datum parent_res_d)
-{
-  /* Return is a position index (int64), not a cell — plain
-   * Int64GetDatum is correct here. */
-  return Int64GetDatum(h3_cell_to_child_pos_meos(
-    DatumGetH3Index(cell_d), DatumGetInt32(parent_res_d)));
-}
-
-/**
- * @brief 
- */
-Datum
-datum_h3_child_pos_to_cell(Datum pos_d, Datum parent_d, Datum child_res_d)
-{
-  /* pos_d carries a plain int64 child position. */
-  return H3IndexGetDatum(h3_child_pos_to_cell_meos(
-    DatumGetInt64(pos_d),
-    DatumGetH3Index(parent_d),
-    DatumGetInt32(child_res_d)));
-}
-
-/*****************************************************************************
- * Datum wrappers for directed edges
- *****************************************************************************/
-
-/**
- * @brief 
- */
-Datum
-datum_h3_are_neighbor_cells(Datum origin_d, Datum dest_d)
-{
-  return BoolGetDatum(h3_are_neighbor_cells_meos(
-    DatumGetH3Index(origin_d),
-    DatumGetH3Index(dest_d)));
-}
-
-/**
- * @brief 
- */
-Datum
-datum_h3_cells_to_directed_edge(Datum origin_d, Datum dest_d)
-{
-  return H3IndexGetDatum(h3_cells_to_directed_edge_meos(
-    DatumGetH3Index(origin_d),
-    DatumGetH3Index(dest_d)));
-}
-
-/**
- * @brief 
- */
-Datum
-datum_h3_is_valid_directed_edge(Datum d)
-{
-  return BoolGetDatum(h3_is_valid_directed_edge_meos(
-    DatumGetH3Index(d)));
-}
-
-/**
- * @brief 
- */
-Datum
-datum_h3_get_directed_edge_origin(Datum d)
-{
-  return H3IndexGetDatum(h3_get_directed_edge_origin_meos(
-    DatumGetH3Index(d)));
-}
-
-/**
- * @brief 
- */
-Datum
-datum_h3_get_directed_edge_destination(Datum d)
-{
-  return H3IndexGetDatum(h3_get_directed_edge_destination_meos(
-    DatumGetH3Index(d)));
-}
-
-/**
- * @brief 
- */
-Datum
-datum_h3_directed_edge_to_boundary(Datum d)
-{
-  GSERIALIZED *gs = h3_directed_edge_to_gs_boundary(DatumGetH3Index(d));
-  return PointerGetDatum(gs);
-}
-
-/*****************************************************************************
- * Datum wrappers for vertices
- *****************************************************************************/
-
-/**
- * @brief 
- */
-Datum
-datum_h3_cell_to_vertex(Datum cell_d, Datum vnum_d)
-{
-  return H3IndexGetDatum(h3_cell_to_vertex_meos(
-    DatumGetH3Index(cell_d), DatumGetInt32(vnum_d)));
-}
-
-/**
- * @brief 
- */
-Datum
-datum_h3_vertex_to_latlng(Datum d)
-{
-  GSERIALIZED *gs = h3_vertex_to_gs_point(DatumGetH3Index(d));
-  return PointerGetDatum(gs);
-}
-
-/**
- * @brief 
- */
-Datum
-datum_h3_is_valid_vertex(Datum d)
-{
-  return BoolGetDatum(h3_is_valid_vertex_meos(DatumGetH3Index(d)));
-}
-
-/*****************************************************************************
- * Datum wrappers for grid traversal
- *****************************************************************************/
-
-/**
- * @brief 
- */
-Datum
-datum_h3_grid_distance(Datum origin_d, Datum dest_d)
-{
-  /* Return is a hop count (int64), not a cell. */
-  return Int64GetDatum(h3_grid_distance_meos(
-    DatumGetH3Index(origin_d),
-    DatumGetH3Index(dest_d)));
-}
-
-/**
- * @brief 
- */
-Datum
-datum_h3_cell_to_local_ij(Datum origin_d, Datum cell_d)
-{
-  GSERIALIZED *gs = h3_cell_to_local_ij_meos(
-    DatumGetH3Index(origin_d),
-    DatumGetH3Index(cell_d));
-  return PointerGetDatum(gs);
-}
-
-/**
- * @brief 
- */
-Datum
-datum_h3_local_ij_to_cell(Datum origin_d, Datum coord_d)
-{
-  const GSERIALIZED *coord = (GSERIALIZED *) DatumGetPointer(coord_d);
-  return H3IndexGetDatum(h3_local_ij_to_cell_meos(
-    DatumGetH3Index(origin_d), coord));
-}
-
-/*****************************************************************************
- * Datum wrappers for lat/lng conversions
- *****************************************************************************/
-
-/**
- * @brief 
- */
-Datum
-datum_h3_latlng_to_cell(Datum point_d, Datum res_d)
-{
-  const GSERIALIZED *point = (GSERIALIZED *) DatumGetPointer(point_d);
-  return H3IndexGetDatum(geo_to_h3index_cell(point,
-    DatumGetInt32(res_d)));
-}
-
-/**
- * @brief 
- */
-Datum
-datum_h3_cell_to_latlng(Datum d)
-{
-  GSERIALIZED *gs = h3_cell_to_geompoint(DatumGetH3Index(d));
-  return PointerGetDatum(gs);
-}
-
-/**
- * @brief 
- */
-Datum
-datum_h3_cell_to_boundary(Datum d)
-{
-  GSERIALIZED *gs = h3_cell_to_geom(DatumGetH3Index(d));
-  return PointerGetDatum(gs);
-}
-
-/*****************************************************************************
- * Datum wrappers for metrics
- *
- * These take the unit as an auxiliary parameter (H3Unit enum stored
- * in an Int32 datum — no temporal unit support).
- *****************************************************************************/
-
-/**
- * @brief 
- */
-Datum
-datum_h3_cell_area(Datum cell_d, Datum unit_d)
-{
-  return Float8GetDatum(h3_cell_area_meos(DatumGetH3Index(cell_d),
-    (H3Unit) DatumGetInt32(unit_d)));
-}
-
-/**
- * @brief 
- */
-Datum
-datum_h3_edge_length(Datum edge_d, Datum unit_d)
-{
-  return Float8GetDatum(h3_edge_length_meos(DatumGetH3Index(edge_d),
-    (H3Unit) DatumGetInt32(unit_d)));
-}
-
-/**
- * @brief 
- */
-Datum
-datum_h3_great_circle_distance(Datum a_d, Datum b_d, Datum unit_d)
-{
-  const GSERIALIZED *a = (GSERIALIZED *) DatumGetPointer(a_d);
-  const GSERIALIZED *b = (GSERIALIZED *) DatumGetPointer(b_d);
-  return Float8GetDatum(h3_gs_great_circle_distance_meos(a, b,
-    (H3Unit) DatumGetInt32(unit_d)));
 }
 
 /*****************************************************************************/

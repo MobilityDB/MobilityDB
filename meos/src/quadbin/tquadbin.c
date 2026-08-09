@@ -53,20 +53,19 @@
 
 #include "quadbin/tquadbin.h"
 
+/* C */
 #include <assert.h>
 #include <string.h>
-
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include <meos_quadbin.h>
-
 #include "temporal/temporal.h"
 #include "temporal/lifting.h"
 #include "temporal/meos_catalog.h"
 #include "temporal/type_parser.h"
 #include "temporal/type_util.h"
 #include "quadbin/quadbin.h"
-#include "quadbin/quadbin_meos.h"
 
 /*****************************************************************************
  * Validators
@@ -85,8 +84,8 @@
 bool
 ensure_valid_tquadbin_tquadbin(const Temporal *temp1, const Temporal *temp2)
 {
-  VALIDATE_TQUADBIN(temp1, false);
-  VALIDATE_TQUADBIN(temp2, false);
+  /* Ensure the validity of the arguments */
+  VALIDATE_TQUADBIN(temp1, false); VALIDATE_TQUADBIN(temp2, false);
   return true;
 }
 
@@ -102,6 +101,7 @@ ensure_valid_tquadbin_tquadbin(const Temporal *temp1, const Temporal *temp2)
 bool
 ensure_valid_tquadbin_quadbin(const Temporal *temp, Quadbin cell)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TQUADBIN(temp, false);
   if (cell == (Quadbin) 0)
   {
@@ -118,6 +118,7 @@ ensure_valid_tquadbin_quadbin(const Temporal *temp, Quadbin cell)
 bool
 ensure_valid_tquadbin_tgeompoint(const Temporal *temp1, const Temporal *temp2)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TQUADBIN(temp1, false);
   if (! ensure_not_null((void *) temp2) ||
       ! ensure_temporal_isof_type((Temporal *) temp2, T_TGEOMPOINT))
@@ -149,7 +150,7 @@ tquadbin_in(const char *str)
 }
 
 /**
- * @ingroup meos_quadbin_inout
+ * @ingroup meos_internal_quadbin_inout
  * @brief Parse a temporal quadbin cell instant from its Well-Known Text
  * representation.
  */
@@ -164,7 +165,7 @@ tquadbininst_in(const char *str)
 }
 
 /**
- * @ingroup meos_quadbin_inout
+ * @ingroup meos_internal_quadbin_inout
  * @brief Parse a temporal quadbin cell sequence from its Well-Known Text
  * representation.
  *
@@ -184,7 +185,7 @@ tquadbinseq_in(const char *str, interpType interp)
 }
 
 /**
- * @ingroup meos_quadbin_inout
+ * @ingroup meos_internal_quadbin_inout
  * @brief Parse a temporal quadbin cell sequence set from its Well-Known Text
  * representation.
  */
@@ -200,9 +201,6 @@ tquadbinseqset_in(const char *str)
 
 /*****************************************************************************
  * Constructors
- *
- * These pack a `Quadbin` (uint64) into an `Int64` Datum; the
- * storage is identical to tbigint.
  *****************************************************************************/
 
 /**
@@ -272,7 +270,7 @@ tquadbin_make(Quadbin value, TimestampTz t)
 }
 
 /*****************************************************************************
- * Accessors — hide the Datum-packing convention from the public API.
+ * Accessors
  *****************************************************************************/
 
 /**
@@ -283,6 +281,7 @@ tquadbin_make(Quadbin value, TimestampTz t)
 Quadbin
 tquadbin_start_value(const Temporal *temp)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TQUADBIN(temp, (Quadbin) 0);
   return DatumGetQuadbin(temporal_start_value(temp));
 }
@@ -295,6 +294,7 @@ tquadbin_start_value(const Temporal *temp)
 Quadbin
 tquadbin_end_value(const Temporal *temp)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TQUADBIN(temp, (Quadbin) 0);
   return DatumGetQuadbin(temporal_end_value(temp));
 }
@@ -312,6 +312,7 @@ tquadbin_end_value(const Temporal *temp)
 bool
 tquadbin_value_n(const Temporal *temp, int n, Quadbin *result)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TQUADBIN(temp, false);
   if (! ensure_not_null((void *) result))
     return false;
@@ -334,11 +335,12 @@ tquadbin_value_n(const Temporal *temp, int n, Quadbin *result)
 Quadbin *
 tquadbin_values(const Temporal *temp, int *count)
 {
-  if (! ensure_not_null((void *) count))
-    return NULL;
   /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
   *count = 0;
+  /* Ensure the validity of the arguments */
   VALIDATE_TQUADBIN(temp, NULL);
+
   Datum *datums = temporal_values(temp, count);
   if (datums == NULL)
     return NULL;
@@ -365,6 +367,7 @@ bool
 tquadbin_value_at_timestamptz(const Temporal *temp, TimestampTz t,
   bool strict, Quadbin *result)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TQUADBIN(temp, false);
   if (! ensure_not_null((void *) result))
     return false;
@@ -386,6 +389,9 @@ tquadbin_value_at_timestamptz(const Temporal *temp, TimestampTz t,
  * correct shape and the bbox is recomputed from the new basetype.
  *****************************************************************************/
 
+/**
+ * @brief 
+ */
 static Datum
 datum_quadbin_identity(Datum d)
 {
@@ -400,9 +406,9 @@ datum_quadbin_identity(Datum d)
 Temporal *
 tbigint_to_tquadbin(const Temporal *temp)
 {
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type((Temporal *) temp, T_TBIGINT))
-    return NULL;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, NULL);
+
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) datum_quadbin_identity;
@@ -420,7 +426,9 @@ tbigint_to_tquadbin(const Temporal *temp)
 Temporal *
 tquadbin_to_tbigint(const Temporal *temp)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TQUADBIN(temp, NULL);
+
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) datum_quadbin_identity;
@@ -439,6 +447,9 @@ tquadbin_to_tbigint(const Temporal *temp)
  * symbols so the compops dispatcher can pass them through.
  *****************************************************************************/
 
+/**
+ * @brief 
+ */
 Datum
 datum2_quadbin_eq(Datum d1, Datum d2, MeosType type)
 {
@@ -446,6 +457,9 @@ datum2_quadbin_eq(Datum d1, Datum d2, MeosType type)
   return BoolGetDatum(DatumGetQuadbin(d1) == DatumGetQuadbin(d2));
 }
 
+/**
+ * @brief 
+ */
 Datum
 datum2_quadbin_ne(Datum d1, Datum d2, MeosType type)
 {

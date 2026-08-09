@@ -57,13 +57,15 @@
 #include <ogr_srs_api.h>
 /* PostgreSQL */
 #include <postgres.h>
-/* liblwgeom (vendored) */
-#include <liblwgeom.h>        /* GSERIALIZED, GBOX, gserialized_get_gbox_p */
+/* PostGIS */
+// #include <liblwgeom.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include "temporal/temporal.h"
 #include "raster/raster_quadbin.h"
+
+/*****************************************************************************/
 
 /**
  * @brief Map a GDAL data type to the corresponding Raquet pixel type
@@ -200,6 +202,7 @@ cleanup:
 Raquet *
 raquet_read(const char *path, uint64 quadbin)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(path, NULL);
 
   GDALAllRegister();
@@ -230,6 +233,7 @@ raquet_read(const char *path, uint64 quadbin)
 Raquet *
 raquet_read_bytes(const uint8_t *data, size_t size, uint64 quadbin)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(data, NULL);
 
   GDALAllRegister();
@@ -392,13 +396,14 @@ cleanup:
  * @ingroup meos_raster
  * @brief Return the values of a raster band sampled at the instants of a
  * trajectory, reading the raster through GDAL
+ * @param[in] traj Trajectory (SRID matching the raster)
  * @param[in] path Path to a GDAL-readable raster file
  * @param[in] band Band number (1-based)
- * @param[in] traj Trajectory (SRID matching the raster)
  */
 Temporal *
-raster_value_gdal(const char *path, int band, const Temporal *traj)
+raster_value_gdal(const Temporal *traj, const char *path, int band)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(path, NULL); VALIDATE_NOT_NULL(traj, NULL);
 
   GDALDatasetH ds;
@@ -416,15 +421,16 @@ raster_value_gdal(const char *path, int band, const Temporal *traj)
  * @ingroup meos_raster
  * @brief Return the instants of a trajectory where the raster pixel value,
  * read through GDAL, falls inside a float span
+ * @param[in] traj Trajectory (SRID matching the raster)
  * @param[in] path Path to a GDAL-readable raster file
  * @param[in] band Band number (1-based)
- * @param[in] traj Trajectory (SRID matching the raster)
  * @param[in] vspan Float value range (inclusive bounds)
  */
 Temporal *
-raster_at_value_gdal(const char *path, int band, const Temporal *traj,
+raster_at_value_gdal(const Temporal *traj, const char *path, int band,
   const Span *vspan)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(path, NULL); VALIDATE_NOT_NULL(traj, NULL);
   VALIDATE_NOT_NULL(vspan, NULL);
 
@@ -443,15 +449,16 @@ raster_at_value_gdal(const char *path, int band, const Temporal *traj,
  * @ingroup meos_raster
  * @brief Return the instants of a trajectory where the raster pixel value,
  * read through GDAL, falls outside a float span
+ * @param[in] traj Trajectory (SRID matching the raster)
  * @param[in] path Path to a GDAL-readable raster file
  * @param[in] band Band number (1-based)
- * @param[in] traj Trajectory (SRID matching the raster)
  * @param[in] vspan Float value range to exclude
  */
 Temporal *
-raster_minus_value_gdal(const char *path, int band, const Temporal *traj,
+raster_minus_value_gdal(const Temporal *traj, const char *path, int band,
   const Span *vspan)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(path, NULL); VALIDATE_NOT_NULL(traj, NULL);
   VALIDATE_NOT_NULL(vspan, NULL);
 
@@ -478,9 +485,10 @@ raster_minus_value_gdal(const char *path, int band, const Temporal *traj,
  * not, and -1 on error
  */
 int
-eraster_value_gdal(const char *path, int band, const Temporal *traj,
+eraster_value_gdal(const Temporal *traj, const char *path, int band,
   const Span *vspan)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(path, -1); VALIDATE_NOT_NULL(traj, -1);
   VALIDATE_NOT_NULL(vspan, -1);
 
@@ -507,9 +515,10 @@ eraster_value_gdal(const char *path, int band, const Temporal *traj,
  * on error
  */
 int
-araster_value_gdal(const char *path, int band, const Temporal *traj,
+araster_value_gdal(const Temporal *traj, const char *path, int band,
   const Span *vspan)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(path, -1); VALIDATE_NOT_NULL(traj, -1);
   VALIDATE_NOT_NULL(vspan, -1);
 

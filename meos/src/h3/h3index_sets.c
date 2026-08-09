@@ -31,9 +31,7 @@
  * @file
  * @brief MEOS implementations of the nine set-returning h3-pg
  * functions, returning `h3indexset` / `intset`.
- *
- * Shape of every function below:
- *
+ * @details Shape of every function below:
  *   1. Ask libh3 for the output buffer size (where applicable).
  *   2. `palloc` the buffer.
  *   3. Call the libh3 fill function.
@@ -47,13 +45,14 @@
 
 #include "h3/h3index_sets.h"
 
+/* PostgreSQL */
 #include <postgres.h>
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-
-#include "h3/h3index.h"
 #include "temporal/meos_catalog.h"
 #include "temporal/temporal.h"  /* ORDER / SET_VAL_N */
+#include "h3/h3index.h"
 
 /*****************************************************************************
  * Internal helpers

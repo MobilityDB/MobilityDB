@@ -50,6 +50,8 @@
 #include <meos.h>
 #include <meos_geo.h>
 
+/*****************************************************************************/
+
 /**
  * @brief Pixel data type for raster chip sampling.
  *
@@ -144,26 +146,28 @@ extern int araster_value(const Temporal *traj, const STBox *box,
  * raster_value/raster_at_value/raster_minus_value/eraster_value/
  * araster_value with a GDALRasterIO-backed sample callback */
 
-extern Temporal *raster_value_gdal(const char *path, int band,
-  const Temporal *traj);
-extern Temporal *raster_at_value_gdal(const char *path, int band,
-  const Temporal *traj, const Span *vspan);
-extern Temporal *raster_minus_value_gdal(const char *path, int band,
-  const Temporal *traj, const Span *vspan);
-extern int eraster_value_gdal(const char *path, int band,
-  const Temporal *traj, const Span *vspan);
-extern int araster_value_gdal(const char *path, int band,
-  const Temporal *traj, const Span *vspan);
+extern Temporal *raster_value_gdal(const Temporal *traj, const char *path,
+  int band);
+extern Temporal *raster_at_value_gdal(const Temporal *traj, const char *path,
+  int band, const Span *vspan);
+extern Temporal *raster_minus_value_gdal(const Temporal *traj,
+  const char *path, int band, const Span *vspan);
+extern int eraster_value_gdal(const Temporal *traj, const char *path, int band,
+  const Span *vspan);
+extern int araster_value_gdal(const Temporal *traj, const char *path, int band,
+  const Span *vspan);
 
-extern Temporal *raster_tile_value_quadbin(const uint8_t *pixels,
-  size_t pixels_size, uint16_t width, uint16_t height, uint64 quadbin,
-  MeosPixType pixtype, double nodata, bool has_nodata, const Temporal *traj);
+extern Temporal *raster_tile_value_quadbin(const Temporal *traj,
+  const uint8_t *pixels, size_t pixels_size, uint16_t width, uint16_t height,
+  uint64 quadbin, MeosPixType pixtype, double nodata, bool has_nodata);
 
-extern Temporal *raster_tile_value(const Raquet *rq, const Temporal *traj);
-extern Temporal *raster_tile_value_array(const Raquet **rqarr, int count,
-  const Temporal *traj);
+extern Temporal *raster_tile_value(const Temporal *traj, const Raquet *rq);
+extern Temporal *raster_tile_value_array(const Temporal *traj,
+  const Raquet **rqarr, int count);
 
 extern uint64 *trajectory_quadbins(const Temporal *traj, uint32_t zoom,
   int *count);
+
+/*****************************************************************************/
 
 #endif /* __MEOS_RASTER_H__ */

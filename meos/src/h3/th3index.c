@@ -30,21 +30,20 @@
 /**
  * @file
  * @brief Type-inheritance boilerplate for `th3index`.
- *
- * This file is the analogue of `meos/src/cbuffer/tcbuffer.c`. Every
+ * @details This file is the analogue of `meos/src/cbuffer/tcbuffer.c`. Every
  * temporal type carries this layer to specialise the generic
  * `Temporal` machinery for its own value type:
  *
- *   * argument validators for every supported operand pair,
- *   * type-specific input parsers that delegate to the generic
+ *   - argument validators for every supported operand pair,
+ *   - type-specific input parsers that delegate to the generic
  *     int-8 parser but tag the result with `T_TH3INDEX`,
- *   * type-specific constructors (`th3index_make`, `th3indexinst_make`,
+ *   - type-specific constructors (`th3index_make`, `th3indexinst_make`,
  *     `th3indexseq_make`, `th3indexseqset_make`),
- *   * type-specific accessors (`th3index_start_value`,
+ *   - type-specific accessors (`th3index_start_value`,
  *     `th3index_end_value`, `th3index_value_n`, `th3index_values`,
  *     `th3index_value_at_timestamptz`) that hide the Datum-packing
  *     convention from callers,
- *   * MEOS-level conversions to and from `tbigint` for callers that
+ *   - MEOS-level conversions to and from `tbigint` for callers that
  *     want the bit-identical representation without a SQL round trip.
  *
  * The lifting-specific Datum wrappers (`datum_h3_*`) live in
@@ -54,13 +53,13 @@
 
 #include "h3/th3index.h"
 
+/* C */
 #include <assert.h>
 #include <string.h>
-
+/* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
 #include <meos_h3.h>
-
 #include "temporal/temporal.h"
 #include "temporal/lifting.h"
 #include "temporal/meos_catalog.h"
@@ -85,8 +84,8 @@
 bool
 ensure_valid_th3index_th3index(const Temporal *temp1, const Temporal *temp2)
 {
-  VALIDATE_TH3INDEX(temp1, false);
-  VALIDATE_TH3INDEX(temp2, false);
+  /* Ensure the validity of the arguments */
+  VALIDATE_TH3INDEX(temp1, false); VALIDATE_TH3INDEX(temp2, false);
   return true;
 }
 
@@ -102,6 +101,7 @@ ensure_valid_th3index_th3index(const Temporal *temp1, const Temporal *temp2)
 bool
 ensure_valid_th3index_h3index(const Temporal *temp, H3Index cell)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TH3INDEX(temp, false);
   if (cell == (H3Index) 0)
   {
@@ -118,11 +118,38 @@ ensure_valid_th3index_h3index(const Temporal *temp, H3Index cell)
 bool
 ensure_valid_th3index_tgeogpoint(const Temporal *temp1, const Temporal *temp2)
 {
-  VALIDATE_TH3INDEX(temp1, false);
-  if (! ensure_not_null((void *) temp2) ||
-      ! ensure_temporal_isof_type((Temporal *) temp2, T_TGEOGPOINT))
-    return false;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TH3INDEX(temp1, false); VALIDATE_TGEOGPOINT(temp2, false);
   return true;
+}
+
+/*****************************************************************************
+ * Comparison-primitive wrappers used by th3index_compops.c
+ *
+ * Equality / inequality for h3 cells is bit equality at the int64
+ * level — the `datum2_eq` / `datum2_ne` used by the generic tbigint
+ * machinery already covers that. We only need thin type-correct
+ * symbols so the compops dispatcher can pass them through.
+ *****************************************************************************/
+
+/**
+ * @brief 
+ */
+Datum
+datum2_h3index_eq(Datum d1, Datum d2, MeosType type)
+{
+  (void) type;
+  return BoolGetDatum(DatumGetH3Index(d1) == DatumGetH3Index(d2));
+}
+
+/**
+ * @brief 
+ */
+Datum
+datum2_h3index_ne(Datum d1, Datum d2, MeosType type)
+{
+  (void) type;
+  return BoolGetDatum(DatumGetH3Index(d1) != DatumGetH3Index(d2));
 }
 
 /*****************************************************************************
@@ -142,8 +169,8 @@ ensure_valid_th3index_tgeogpoint(const Temporal *temp1, const Temporal *temp2)
 Temporal *
 th3index_in(const char *str)
 {
-  if (! ensure_not_null((void *) str))
-    return NULL;
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(str, NULL);
   return temporal_parse(&str, T_TH3INDEX);
 }
 
@@ -155,6 +182,8 @@ th3index_in(const char *str)
 TInstant *
 th3indexinst_in(const char *str)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(str, NULL);
   Temporal *temp = th3index_in(str);
   if (! temp)
     return NULL;
@@ -166,14 +195,16 @@ th3indexinst_in(const char *str)
  * @ingroup meos_h3_inout
  * @brief Parse a temporal H3 cell sequence from its Well-Known Text
  * representation.
- *
- * th3index sequences always carry step interpolation (h3 cells are
+ * @details th3index sequences always carry step interpolation (h3 cells are
  * discrete); the `interp` argument is accepted for signature
  * parity with the generic API and discarded.
  */
 TSequence *
 th3indexseq_in(const char *str, interpType interp)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(str, NULL);
+
   (void) interp;
   Temporal *temp = th3index_in(str);
   if (! temp)
@@ -190,6 +221,9 @@ th3indexseq_in(const char *str, interpType interp)
 TSequenceSet *
 th3indexseqset_in(const char *str)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(str, NULL);
+
   Temporal *temp = th3index_in(str);
   if (! temp)
     return NULL;
@@ -230,9 +264,9 @@ TSequence *
 th3indexseq_make(const H3Index *values, const TimestampTz *times,
   int count, bool lower_inc, bool upper_inc)
 {
-  if (! ensure_not_null((void *) values) ||
-      ! ensure_not_null((void *) times) ||
-      ! ensure_positive(count))
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(values, NULL); VALIDATE_NOT_NULL(times, NULL);
+  if (! ensure_positive(count))
     return NULL;
 
   TInstant **instants = palloc(sizeof(TInstant *) * count);
@@ -256,6 +290,10 @@ th3indexseq_make(const H3Index *values, const TimestampTz *times,
 TSequenceSet *
 th3indexseqset_make(const TSequence **sequences, int count)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(sequences, NULL);
+  if (! ensure_positive(count))
+    return NULL;
   return tsequenceset_make((TSequence **) sequences, count, NORMALIZE);
 }
 
@@ -271,7 +309,7 @@ th3index_make(H3Index value, TimestampTz t)
 }
 
 /*****************************************************************************
- * Accessors — hide the Datum-packing convention from the public API.
+ * Accessors
  *****************************************************************************/
 
 /**
@@ -282,6 +320,7 @@ th3index_make(H3Index value, TimestampTz t)
 H3Index
 th3index_start_value(const Temporal *temp)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TH3INDEX(temp, (H3Index) 0);
   return DatumGetH3Index(temporal_start_value(temp));
 }
@@ -294,6 +333,7 @@ th3index_start_value(const Temporal *temp)
 H3Index
 th3index_end_value(const Temporal *temp)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TH3INDEX(temp, (H3Index) 0);
   return DatumGetH3Index(temporal_end_value(temp));
 }
@@ -311,6 +351,7 @@ th3index_end_value(const Temporal *temp)
 bool
 th3index_value_n(const Temporal *temp, int n, H3Index *result)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TH3INDEX(temp, false);
   if (! ensure_not_null((void *) result))
     return false;
@@ -333,11 +374,12 @@ th3index_value_n(const Temporal *temp, int n, H3Index *result)
 H3Index *
 th3index_values(const Temporal *temp, int *count)
 {
-  if (! ensure_not_null((void *) count))
-    return NULL;
   /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
   *count = 0;
+  /* Ensure the validity of the arguments */
   VALIDATE_TH3INDEX(temp, NULL);
+
   Datum *datums = temporal_values(temp, count);
   if (datums == NULL)
     return NULL;
@@ -364,6 +406,7 @@ bool
 th3index_value_at_timestamptz(const Temporal *temp, TimestampTz t,
   bool strict, H3Index *result)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TH3INDEX(temp, false);
   if (! ensure_not_null((void *) result))
     return false;
@@ -402,9 +445,8 @@ datum_h3index_identity(Datum d)
 Temporal *
 tbigint_to_th3index(const Temporal *temp)
 {
-  if (! ensure_not_null((void *) temp) ||
-      ! ensure_temporal_isof_type((Temporal *) temp, T_TBIGINT))
-    return NULL;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, NULL);
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) datum_h3index_identity;
@@ -422,6 +464,7 @@ tbigint_to_th3index(const Temporal *temp)
 Temporal *
 th3index_to_tbigint(const Temporal *temp)
 {
+  /* Ensure the validity of the arguments */
   VALIDATE_TH3INDEX(temp, NULL);
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -430,35 +473,6 @@ th3index_to_tbigint(const Temporal *temp)
   lfinfo.argtype[0] = T_TH3INDEX;
   lfinfo.restype = T_TBIGINT;
   return tfunc_temporal(temp, &lfinfo);
-}
-
-/*****************************************************************************
- * Comparison-primitive wrappers used by th3index_compops.c
- *
- * Equality / inequality for h3 cells is bit equality at the int64
- * level — the `datum2_eq` / `datum2_ne` used by the generic tbigint
- * machinery already covers that. We only need thin type-correct
- * symbols so the compops dispatcher can pass them through.
- *****************************************************************************/
-
-/**
- * @brief 
- */
-Datum
-datum2_h3index_eq(Datum d1, Datum d2, MeosType type)
-{
-  (void) type;
-  return BoolGetDatum(DatumGetH3Index(d1) == DatumGetH3Index(d2));
-}
-
-/**
- * @brief 
- */
-Datum
-datum2_h3index_ne(Datum d1, Datum d2, MeosType type)
-{
-  (void) type;
-  return BoolGetDatum(DatumGetH3Index(d1) != DatumGetH3Index(d2));
 }
 
 /*****************************************************************************/

@@ -983,7 +983,7 @@ Datum
 Tinstant_value(PG_FUNCTION_ARGS)
 {
   TInstant *inst = PG_GETARG_TINSTANT_P(0);
-  /* Ensure validity of arguments */
+  /* Ensure the validity of the arguments */
   ensure_temporal_isof_subtype((Temporal *) inst, TINSTANT);
 
   Datum result = tinstant_value(inst);
@@ -1177,7 +1177,7 @@ Datum
 Tinstant_timestamptz(PG_FUNCTION_ARGS)
 {
   TInstant *inst = PG_GETARG_TINSTANT_P(0);
-  /* Ensure validity of arguments */
+  /* Ensure the validity of the arguments */
   ensure_temporal_isof_subtype((Temporal *) inst, TINSTANT);
 
   TimestampTz result = inst->t;
