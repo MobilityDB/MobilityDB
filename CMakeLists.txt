@@ -92,6 +92,26 @@ if(MEOS)
   if(WIN32)
     add_definitions(-DWIN32)
   endif()
+
+  # Linkage of the standalone library. ON (the default) keeps the historical
+  # behaviour: a shared libmeos.so/.dylib that consumers resolve at load time.
+  # OFF builds a self-contained static libmeos.a instead, for consumers that
+  # embed MEOS in a single relocatable module and therefore cannot ship a
+  # sidecar shared library next to it — a DuckDB extension, a Python wheel, or
+  # any other plugin distributed as one file. BUILD_SHARED_LIBS is the standard
+  # CMake spelling, so package managers that already drive it (vcpkg maps the
+  # triplet's VCPKG_LIBRARY_LINKAGE onto it) select the right linkage with no
+  # project-specific option. Every add_library() in this tree names its type
+  # explicitly, so this variable only ever reaches the libmeos target below.
+  option(BUILD_SHARED_LIBS "Set ON|OFF (default=ON) to build libmeos as a shared library; OFF builds a self-contained static libmeos" ON)
+  if(NOT BUILD_SHARED_LIBS)
+    # The static libmeos exists to be linked into someone else's shared module,
+    # so every object it carries must be position-independent. The individual
+    # object libraries set this only case by case (liblwgeom, ryu, clipper2,
+    # geo), which is enough for a shared build that links them directly but not
+    # for an archive that is relocated into a downstream .so/.dylib.
+    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+  endif()
 else()
   message(STATUS "MEOS=0: Building MEOS core for MobilityDB (internal API only)")
   add_definitions(-DMEOS=0)

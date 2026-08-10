@@ -8,6 +8,7 @@ on:
       - 'cmake/**'
       - 'meos/**'
       - 'mobilitydb/**'
+      - 'pgtypes/**'
       - 'postgis/**'
       - 'CMakeLists.txt'
     branches-ignore:
@@ -18,6 +19,7 @@ on:
       - 'cmake/**'
       - 'meos/**'
       - 'mobilitydb/**'
+      - 'pgtypes/**'
       - 'postgis/**'
       - 'CMakeLists.txt'
     branches-ignore:
@@ -165,3 +167,82 @@ jobs:
           export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
           export TSAN_OPTIONS="halt_on_error=1 second_deadlock_stack=1"
           ./threaded_test 8 5000
+
+  static:
+    name: Self-contained static library
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libgeos-dev \
+            libproj-dev \
+            libjson-c-dev \
+            libgsl-dev
+
+      # Install into a local prefix rather than /usr/local, so the link test
+      # below cannot silently resolve against a system-installed libmeos.
+      - name: Build the static library
+        run: |
+          cmake -B build -S . -DCMAKE_BUILD_TYPE=Debug -DMEOS=on -DCBUFFER=on -DJSON=on \
+            -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX="$PWD/prefix"
+          cmake --build build -j $(nproc)
+          cmake --install build
+
+      - name: Check that the archive, and only the archive, is installed
+        run: |
+          test -f prefix/lib/libmeos.a || { echo "libmeos.a was not installed"; exit 1; }
+          if ls prefix/lib/libmeos.so* prefix/lib/libmeos.dylib 2>/dev/null | grep -q .; then
+            echo "a shared libmeos was installed by a BUILD_SHARED_LIBS=OFF build"
+            exit 1
+          fi
+
+      # The invariant this job exists to protect: a downstream module that links
+      # the archive must be self-contained. A consumer that ships one loadable
+      # file (a DuckDB extension, a Python wheel) has nowhere to put a sidecar
+      # libmeos, so any residual dependency on one makes the artifact unloadable
+      # on every machine except the one that built it.
+      - name: Link a shared module against the archive and run it
+        run: |
+          cat > module.c <<'EOF'
+          #include <stdio.h>
+          #include <stdlib.h>
+          #include <meos.h>
+          int mod_entry(void);
+          int mod_entry(void)
+          {
+            meos_initialize();
+            Temporal *temp = tint_in("[1@2000-01-01, 3@2000-01-03]");
+            if (! temp) { printf("parse failed\n"); return 1; }
+            char *str = tint_out(temp);
+            printf("%s\n", str);
+            free(str); free(temp);
+            meos_finalize();
+            return 0;
+          }
+          EOF
+          cat > loader.c <<'EOF'
+          #include <stdio.h>
+          #include <dlfcn.h>
+          int main(int argc, char **argv)
+          {
+            void *handle = dlopen(argv[1], RTLD_NOW);
+            if (! handle) { printf("dlopen failed: %s\n", dlerror()); return 1; }
+            int (*entry)(void) = dlsym(handle, "mod_entry");
+            if (! entry) { printf("dlsym failed: %s\n", dlerror()); return 1; }
+            return entry();
+          }
+          EOF
+          export PKG_CONFIG_PATH="$PWD/prefix/lib/pkgconfig"
+          gcc -shared -fPIC -Wall -Werror -o module.so module.c \
+            $(pkg-config --cflags meos) $(pkg-config --static --libs meos)
+          gcc -o loader loader.c -ldl
+          if readelf -d module.so | grep libmeos; then
+            echo "the module still depends on a shared libmeos"
+            exit 1
+          fi
+          ./loader ./module.so
