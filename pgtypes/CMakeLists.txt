@@ -182,20 +182,29 @@ add_subdirectory(utils)
 # Uncomment the following line to see all source files included
 # message(STATUS "PGTYPES_SOURCES ${PGTYPES_SOURCES}")
 
-# Compile the source files
-add_library(pgtypes STATIC ${PGTYPES_SOURCES})
+# Compile the source files once, as an object library, so that the archive
+# below and a self-contained static libmeos (meos/CMakeLists.txt) can both
+# consume the same objects without compiling them twice. The archive keeps the
+# name and the contents it has always had, so every existing consumer — the
+# MobilityDB extension and the shared libmeos — links exactly as before.
+add_library(pgtypes_objects OBJECT ${PGTYPES_SOURCES})
 
 # Create the list of object files
-# set(PGTYPES_OBJECTS "$<TARGET_OBJECTS:pgtypes>")
+set(PGTYPES_OBJECTS "$<TARGET_OBJECTS:pgtypes_objects>")
 
 # Define a static library for pgtypes
-# add_library(pgtypes STATIC ${PGTYPES_OBJECTS})
+add_library(pgtypes STATIC ${PGTYPES_OBJECTS})
 
-target_include_directories(pgtypes PUBLIC "${CMAKE_SOURCE_DIR}/pgtypes")
-target_include_directories(pgtypes PUBLIC "${CMAKE_BINARY_DIR}/pgtypes")
-# The pgtypes sources include the MEOS public headers (meos.h, meos_error.h,
-# meos_tls.h); expose meos/include on the target so they resolve from any
-# pgtypes subdirectory depth (a relative ../../meos/include path only resolved
-# for the depth-2 files and broke the standalone -DMEOS build of the others).
-target_include_directories(pgtypes PUBLIC "${CMAKE_SOURCE_DIR}/meos/include")
+# The include directories go on both targets: the object library needs them to
+# compile the sources, and the archive needs them to carry the same usage
+# requirements to its consumers as it did when it owned the sources.
+foreach(_pgtypes_target pgtypes_objects pgtypes)
+  target_include_directories(${_pgtypes_target} PUBLIC "${CMAKE_SOURCE_DIR}/pgtypes")
+  target_include_directories(${_pgtypes_target} PUBLIC "${CMAKE_BINARY_DIR}/pgtypes")
+  # The pgtypes sources include the MEOS public headers (meos.h, meos_error.h,
+  # meos_tls.h); expose meos/include on the target so they resolve from any
+  # pgtypes subdirectory depth (a relative ../../meos/include path only resolved
+  # for the depth-2 files and broke the standalone -DMEOS build of the others).
+  target_include_directories(${_pgtypes_target} PUBLIC "${CMAKE_SOURCE_DIR}/meos/include")
+endforeach()
 

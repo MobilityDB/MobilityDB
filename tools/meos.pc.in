@@ -9,3 +9,4 @@ Requires:
 Version: @VERSION@
 Cflags: -I${includedir}
 Libs: -L${libdir} -lmeos
+Libs.private: @MEOS_PC_LIBS_PRIVATE@

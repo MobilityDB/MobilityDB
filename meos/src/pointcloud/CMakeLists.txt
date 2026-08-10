@@ -178,16 +178,31 @@ if(POINTCLOUD)
   # each, so no linker hack is required on any platform.
   list(APPEND POINTCLOUD_LIBPC_SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/pc_stringbuffer_shim.c)
-  add_library(pointcloud_libpc STATIC ${POINTCLOUD_LIBPC_SRCS})
-  set_target_properties(pointcloud_libpc PROPERTIES
-    POSITION_INDEPENDENT_CODE ON OUTPUT_NAME pc)
-  target_include_directories(pointcloud_libpc PRIVATE
+  # Compile libpc once as an object library, then assemble the archive from it —
+  # SIBLING-FROM postgis/CMakeLists.txt (liblwgeom/ryu/librtcore OBJECT libraries
+  # collected into POSTGIS_OBJECTS, then `add_library(postgis STATIC …)`). The
+  # object library is what lets a self-contained static libmeos fold these
+  # objects in (meos/CMakeLists.txt): $<TARGET_OBJECTS:…> reads an OBJECT library
+  # from any directory scope, so meos/ reaches them from two levels up.
+  add_library(pointcloud_libpc_objects OBJECT ${POINTCLOUD_LIBPC_SRCS})
+  set_target_properties(pointcloud_libpc_objects PROPERTIES
+    POSITION_INDEPENDENT_CODE ON)
+  target_include_directories(pointcloud_libpc_objects PRIVATE
     ${CMAKE_SOURCE_DIR}/pointcloud-pg/lib)   # holds sources + generated pc_config.h
-  target_link_libraries(pointcloud_libpc PUBLIC LibXml2::LibXml2 ZLIB::ZLIB)
+  # libxml2 and zlib carry the include directories the libpc sources compile
+  # against (pc_schema.c includes <libxml/parser.h>), so the object library needs
+  # them as well as the archive: linking an imported target is how those usage
+  # requirements reach the compile line.
+  target_link_libraries(pointcloud_libpc_objects PUBLIC LibXml2::LibXml2 ZLIB::ZLIB)
   # Vendored upstream pgPointCloud sources that MobilityDB does not maintain or
   # lint; suppress their compiler warnings on this target only, as done for the
   # other vendored libraries (liblwgeom, ryu, libpgcommon).
-  target_compile_options(pointcloud_libpc PRIVATE "-w")
+  target_compile_options(pointcloud_libpc_objects PRIVATE "-w")
+
+  add_library(pointcloud_libpc STATIC $<TARGET_OBJECTS:pointcloud_libpc_objects>)
+  set_target_properties(pointcloud_libpc PROPERTIES
+    POSITION_INDEPENDENT_CODE ON OUTPUT_NAME pc)
+  target_link_libraries(pointcloud_libpc PUBLIC LibXml2::LibXml2 ZLIB::ZLIB)
 
   # Link the core into the MEOS-layer pointcloud shim. lazperf (the PC_LAZPERF
   # / `laz` scheme) stays optional: pc_patch_lazperf.c is compiled into libpc

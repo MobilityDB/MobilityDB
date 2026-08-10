@@ -188,7 +188,7 @@ if(RGEO)
   set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:rgeo>")
 endif()
 
-if(MEOS)
+if(MEOS AND BUILD_SHARED_LIBS)
   # Build as SHARED library for standalone use
   add_library(${MEOS_LIB_NAME} SHARED ${MEOS_OBJECTS})
   message(STATUS "Building MEOS as SHARED library")
@@ -199,6 +199,34 @@ if(MEOS)
       LINK_FLAGS "-Wl,-undefined,dynamic_lookup"
     )
   endif()
+elseif(MEOS)
+  # Build as a SELF-CONTAINED STATIC library for standalone use. A consumer
+  # that embeds MEOS in a single relocatable module cannot ship a sidecar
+  # libmeos next to it, so the archive must carry every in-tree object the
+  # shared library resolves through its own link line — otherwise the consumer
+  # inherits a dangling dependency on a libpgtypes.a/libpostgis.a/libpc.a that
+  # `make install` never installs. Fold those objects in here, exactly as the
+  # optional families above are folded in, so the install produces one archive
+  # and consumers link one library.
+  set(MEOS_STATIC_OBJECTS ${MEOS_OBJECTS})
+  set(MEOS_STATIC_OBJECTS ${MEOS_STATIC_OBJECTS} "$<TARGET_OBJECTS:pgtypes_objects>")
+  set(MEOS_STATIC_OBJECTS ${MEOS_STATIC_OBJECTS} "$<TARGET_OBJECTS:liblwgeom>")
+  set(MEOS_STATIC_OBJECTS ${MEOS_STATIC_OBJECTS} "$<TARGET_OBJECTS:ryu>")
+  if(RASTER)
+    set(MEOS_STATIC_OBJECTS ${MEOS_STATIC_OBJECTS} "$<TARGET_OBJECTS:librtcore>")
+  endif()
+  if(POINTCLOUD)
+    set(MEOS_STATIC_OBJECTS ${MEOS_STATIC_OBJECTS} "$<TARGET_OBJECTS:pointcloud_libpc_objects>")
+  endif()
+  add_library(${MEOS_LIB_NAME} STATIC ${MEOS_STATIC_OBJECTS})
+  message(STATUS "Building MEOS as self-contained STATIC library")
+
+  # The archive is meant to be linked into a downstream shared module. Place it
+  # where the shared library would land (CMAKE_LIBRARY_OUTPUT_DIRECTORY governs
+  # shared libraries only) so the build tree looks the same under either linkage.
+  set_target_properties(${MEOS_LIB_NAME} PROPERTIES
+    POSITION_INDEPENDENT_CODE ON
+    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 else()
   # Build as STATIC library for linking into MobilityDB
   add_library(${MEOS_LIB_NAME} STATIC ${MEOS_OBJECTS})
@@ -463,6 +491,33 @@ if(MEOS)
     set(libdir "$\{exec_prefix\}/${CMAKE_INSTALL_LIBDIR}")
   endif()
   set(VERSION ${MEOS_LIB_VERSION})
+
+  # A shared libmeos records its own dependencies, so `pkg-config --libs meos`
+  # is enough to link against it. A static libmeos cannot: the archive carries
+  # only MEOS's own objects, so every external library it calls into has to
+  # reach the consumer's link line. Publish them as Libs.private, which is what
+  # `pkg-config --static --libs meos` appends. These are spelled as link flags
+  # rather than reused from the find_package results, because those results are
+  # CMake imported target names (GEOS::geos_c) or absolute paths into the build
+  # machine's /usr/lib — neither belongs in an installed .pc file. The enabled
+  # families decide which entries apply, mirroring target_link_libraries above.
+  set(MEOS_PC_LIBS_PRIVATE "")
+  if(NOT BUILD_SHARED_LIBS)
+    set(_meos_pc_libs -lgeos_c -lproj -lgsl -lgslcblas -ljson-c)
+    if(H3)
+      list(APPEND _meos_pc_libs -lh3)
+    endif()
+    if(RASTER)
+      list(APPEND _meos_pc_libs -lgdal)
+    endif()
+    if(POINTCLOUD)
+      list(APPEND _meos_pc_libs -lxml2 -lz)
+    endif()
+    # The clipper2 polygon engine is C++, so a C consumer linking the archive
+    # needs the C++ runtime that a shared libmeos would have pulled in itself.
+    list(APPEND _meos_pc_libs -lstdc++ -lm)
+    string(REPLACE ";" " " MEOS_PC_LIBS_PRIVATE "${_meos_pc_libs}")
+  endif()
 
   configure_file(
     ${CMAKE_SOURCE_DIR}/tools/meos.pc.in
