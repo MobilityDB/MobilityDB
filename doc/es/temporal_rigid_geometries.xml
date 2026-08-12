@@ -17,8 +17,6 @@
 
 	<para>El tipo <varname>trgeometry</varname> se construye sobre <xref linkend="temporal_poses"/>. La mayoría de los operadores de acceso, comparación, topológicos, de posición y de indexación tienen la misma forma que las funciones <varname>tpose</varname> correspondientes; este capítulo cubre la superficie específica de trgeometry: la materialización de pose a forma, el área recorrida, la distancia materializada y las restricciones espaciales sobre la trayectoria del centroide.</para>
 
-	<para>La guía operativa para elegir entre <varname>trgeometry</varname>, <varname>tpose</varname> y <varname>tgeometry</varname>; las convenciones de marco que la implementación impone (forma de referencia solo 2D, una única geometría de referencia compartida por fila, requisito de mismo SRID, semántica de restricción espacial basada en el centroide); los riesgos numéricos que las cargas de trabajo de producción deben anticipar (advertencia de muestreo para <varname>traversedArea</varname> en segmentos de rotación, tolerancia de submuestreo adaptativo en la distancia materializada, rechazo de SRID mixtos); y las convenciones de durabilidad y almacenamiento se recopilan en <xref linkend="trgeometry_production_guidance"/>.</para>
-
 	<sect1 xml:id="trgeometry_inout">
 		<title>Entrada y salida</title>
 
@@ -299,7 +297,7 @@ SELECT ST_AsText(traversedArea(
 -- POLYGON((0 0, 11 0, 11 1, 0 1, 0 0))
 </programlisting>
 				<para>Con <varname>unary_union = false</varname> la función devuelve una GeometryCollection de los polígonos materializados por instante sin disolverlos, lo que resulta útil cuando quien llama desea hacer su propio posprocesamiento.</para>
-				<para><emphasis>Advertencia de muestreo:</emphasis> la implementación muestrea en los instantes de entrada, de modo que los segmentos de traslación pura son exactos, pero la cinta barrida entre dos instantes donde ocurre una rotación se aproxima mediante la envolvente convexa de los dos polígonos extremos. Agregar submuestras intermedias es un refinamiento futuro documentado.</para>
+				<para><emphasis>Advertencia de muestreo:</emphasis> la implementación muestrea en los instantes de entrada, de modo que los segmentos de traslación pura son exactos, pero la cinta barrida entre dos instantes donde ocurre una rotación se aproxima mediante la envolvente convexa de los dos polígonos extremos. Sobremuestrear la <varname>tpose</varname> antes de construir la <varname>trgeometry</varname> ajusta la aproximación.</para>
 			</listitem>
 		</itemizedlist>
 	</sect1>
@@ -835,59 +833,4 @@ LIMIT 10;
 		<para>La variante de árbol kd suele ganar en cargas de trabajo dominadas por consultas KNN con una cota de ordenación ajustada; la variante de árbol cuádruple es más uniforme. El GiST de árbol R es el valor predeterminado seguro para cargas de trabajo mixtas de lectura/escritura.</para>
 	</sect1>
 
-	<sect1 xml:id="trgeometry_production_guidance">
-		<title>Guía de producción</title>
-		<para>Esta sección recoge el conocimiento operativo que las cargas de trabajo de producción necesitan además de la referencia de funciones: cuándo <varname>trgeometry</varname> es el tipo adecuado en relación con sus vecinos (<varname>tpose</varname> y <varname>tgeometry</varname>), las convenciones de marco que la implementación impone y los riesgos numéricos que las cargas de trabajo reales de cuerpos rígidos encuentran. La mayoría de estos se exponen por separado a lo largo del capítulo; el objetivo aquí es disponer de un único lugar donde un nuevo contribuyente pueda leer de principio a fin antes de instrumentar una aplicación.</para>
-
-		<sect2 xml:id="trgeometry_when_to_use">
-			<title>Cuándo usar trgeometry frente a tpose frente a tgeometry</title>
-			<para>Tres tipos temporales abarcan el espacio de diseño de cuerpo rígido / forma arbitraria. Elija el tipo más estrecho que se ajuste a la carga de trabajo: los tipos más estrechos pagan menos almacenamiento y producen cajas delimitadoras más nítidas para el índice espacial.</para>
-			<itemizedlist>
-				<listitem><para><varname>tpose</varname>, solo posición y orientación temporal; el cuerpo se trata como un punto con un rumbo. Úselo cuando la forma sea irrelevante para la consulta (seguimiento cinemático, sustitutos de colisión basados solo en el rumbo).</para></listitem>
-				<listitem><para><varname>trgeometry</varname>, una única forma de referencia estática que se traslada y rota a lo largo del tiempo según una pose temporal. Úselo cuando la forma <emphasis>importa</emphasis> pero es rígida: barcos, vehículos, drones con geometría fija, zonas de exclusión que se ajustan al cuerpo. La geometría de referencia se almacena una vez por fila, no por instante, de modo que el almacenamiento está dominado por la <varname>tpose</varname> subyacente.</para></listitem>
-				<listitem><para><varname>tgeometry</varname>, geometría arbitraria temporal cuya forma misma varía a lo largo del tiempo. Úselo cuando la forma no sea rígida: franjas de viento de tormentas, plumas en expansión, polígonos en evolución.</para></listitem>
-			</itemizedlist>
-			<para>Una <varname>trgeometry</varname> se puede proyectar a su <varname>tpose</varname> subyacente (trayectoria del centroide) o a una <varname>tgeometry</varname> totalmente materializada mediante las conversiones de <xref linkend="trgeometry_conversions"/>. La dirección inversa (elevar una <varname>tgeometry</varname> de vuelta a una <varname>trgeometry</varname>) no está en general bien definida, ya que los cambios de forma arbitrarios no se factorizan limpiamente en rotación + traslación de una referencia fija.</para>
-		</sect2>
-
-		<sect2 xml:id="trgeometry_frame_conventions">
-			<title>Convenciones de marco</title>
-			<itemizedlist>
-				<listitem><para><emphasis>Geometría de referencia solo 2D</emphasis>. La forma de referencia es un polígono 2D o una superficie poliédrica; el componente de rotación de la pose es el ángulo de guiñada (yaw) 2D de <xref linkend="temporal_poses"/>. No hay representación de cuerpo rígido 3D en este tipo; las cargas de trabajo que necesiten orientación 3D completa (cuaternión) sobre una forma 3D deben componer <varname>tpose</varname> con el paso de materialización de forma explícita.</para></listitem>
-				<listitem><para><emphasis>Geometría de referencia única compartida</emphasis>. Cada instante de una <varname>trgeometry</varname> comparte la misma forma de referencia; solo varía la pose. La forma se almacena una vez por fila, no por instante.</para></listitem>
-				<listitem><para><emphasis>Requisito de mismo SRID</emphasis>. La geometría de referencia y la pose temporal deben compartir un SRID; el constructor rechaza las discrepancias con el error estándar de MEOS <varname>ensure_same_srid</varname>. La geometría materializada hereda este SRID.</para></listitem>
-				<listitem><para><emphasis>Semántica de restricción espacial basada en el centroide</emphasis>. <varname>atGeometry</varname>, <varname>minusGeometry</varname>, <varname>atStbox</varname> y <varname>minusStbox</varname> prueban el centroide de la forma materializada contra la región, no la forma materializada en sí. Una trgeometry cuyo centroide se encuentra fuera de una región pero cuyo cuerpo se extiende dentro de la región se <emphasis>excluye</emphasis>. Esto refleja la semántica subyacente de <varname>tpose</varname> (una pose es un punto) y es una decisión de diseño deliberada; las cargas de trabajo que necesiten contención de la forma completa deben materializar primero a <varname>tgeometry</varname>.</para></listitem>
-			</itemizedlist>
-		</sect2>
-
-		<sect2 xml:id="trgeometry_hazards">
-			<title>Riesgos numéricos</title>
-			<para>Cuatro riesgos afectan de forma fiable a las cargas de trabajo reales de cuerpos rígidos. La implementación mitiga cada uno de la siguiente manera:</para>
-			<itemizedlist>
-				<listitem>
-					<para><emphasis>Entradas con SRID mixtos</emphasis>. Construir una <varname>trgeometry</varname> a partir de una geometría de referencia y una <varname>tpose</varname> en SRID diferentes produciría silenciosamente posiciones materializadas erróneas si los SRID no se comprobaran.</para>
-					<para><emphasis>Mitigación</emphasis>: el constructor y cada operador entre tipos pasan por <varname>ensure_same_srid</varname>, que genera un error que nombra ambos SRID. La ruta de error es ruidosa y explícita; no hay transformación implícita.</para>
-				</listitem>
-				<listitem>
-					<para><emphasis>Advertencia de muestreo de traversedArea</emphasis>. La función <varname>traversedArea</varname> muestrea en los instantes de entrada y los conecta con la envolvente convexa de los dos polígonos extremos. Los segmentos de traslación pura son exactos, pero las rotaciones entre instantes se aproximan: para una rotación de 90° entre dos instantes, la cinta barrida es más ancha de lo que captura la envolvente convexa.</para>
-					<para><emphasis>Mitigación</emphasis>: documentado en <xref linkend="trgeometry_traversed_area"/>. Las cargas de trabajo que necesiten cotas ajustadas del área barrida deben sobremuestrear la <varname>tpose</varname> de entrada antes de construir la <varname>trgeometry</varname>; el patrón de <varname>setInterp</varname> + inserción de subinstantes del capítulo de <varname>tpose</varname> es el enfoque estándar. El submuestreo adaptativo dentro de <varname>traversedArea</varname> es un refinamiento futuro documentado.</para>
-				</listitem>
-				<listitem>
-					<para><emphasis>Tolerancia de submuestreo adaptativo en la distancia materializada</emphasis>. Los núcleos de distancia continua (<varname>tDistance</varname>, <varname>nearestApproachDistance</varname>) materializan la forma rígida por cada intervalo entre instantes y emiten marcas intermedias donde la trayectoria de distancia se desvía de una línea recta. El tope de profundidad es de 32 marcas por intervalo y la aproximación interpolada LINEAL entre marcas está acotada por <varname>1e-3</varname> (en unidades del CRS).</para>
-					<para><emphasis>Mitigación</emphasis>: la cota de <varname>1e-3</varname> es una decisión de diseño documentada. Los segmentos de traslación pura convergen en profundidad 0; los segmentos con mucha rotación usan el presupuesto completo de 32 marcas. Las cargas de trabajo que necesiten una precisión más nítida en un operador específico deben preprocesar las poses de entrada a instantes más densos en lugar de confiar en una recursión más ajustada.</para>
-				</listitem>
-				<listitem>
-					<para><emphasis>Sorpresa de la restricción espacial basada en el centroide</emphasis>. <varname>atGeometry(trgeometry, geometry)</varname> prueba el centroide de la pose contra la región, no la forma materializada. Un barco largo cuya popa está en un puerto pero cuya proa ha cruzado el límite del puerto se informará como dentro del puerto mientras su centroide esté dentro.</para>
-					<para><emphasis>Mitigación</emphasis>: documentado como una decisión de diseño de nivel D en <xref linkend="trgeometry_restrictions"/>. Las cargas de trabajo que necesiten semántica de forma completa deben convertir mediante <varname>trgeometry::tgeometry</varname> antes de aplicar la restricción espacial. La conversión materializa un polígono por instante y es, en consecuencia, más costosa.</para>
-				</listitem>
-			</itemizedlist>
-		</sect2>
-
-		<sect2 xml:id="trgeometry_durability">
-			<title>Durabilidad y almacenamiento</title>
-			<para>La representación en disco de una <varname>trgeometry</varname> es el <varname>GSERIALIZED</varname> de referencia seguido de la carga útil de la pose temporal. La disposición de bytes es estable: <varname>asBinary(trgeometry)</varname> / <varname>trgeometryFromBinary(bytea)</varname> realiza un ciclo de ida y vuelta que preserva el valor bit a bit (incluido el SRID de la forma de referencia, las banderas Z y M, y el subtipo de la <varname>tpose</varname> subyacente), y las serializaciones WKB / EWKB / HexEWKB siguen el patrón estándar de PostGIS de bandera de endianidad seguida de carga útil.</para>
-			<para>El par <varname>asMFJSON(trgeometry)</varname> / <varname>trgeometryFromMFJSON(text)</varname> es bidireccional. Cada instante se representa como <varname>{"geometry":&lt;reference-geojson&gt;,"values":[&lt;pose-payload&gt;]}</varname>: la geometría de referencia usa la forma GeoJSON estándar de PostGIS y la carga útil de la pose sigue la disposición de la clase de conformidad OGC GeoPose Basic-YPR (<varname>{"position":...,"quaternion":...}</varname> para 3D / <varname>{"position":...,"rotation":...}</varname> para 2D). La geometría de referencia se emite una vez por instante en el esquema actual; un trabajo futuro de esquema podría elevarla a un encabezado a nivel de capítulo para evitar la repetición por instante en secuencias largas.</para>
-			<para>La salida de <varname>pg_dump</varname> de una tabla que contiene columnas <varname>trgeometry</varname> usa la representación WKT de forma predeterminada; <varname>pg_dump --binary-upgrade</varname> usa la representación WKB. Ambas son estables en el ciclo de ida y vuelta entre actualizaciones de versión mayor de PostgreSQL.</para>
-		</sect2>
-	</sect1>
 </chapter>

@@ -843,7 +843,7 @@ SELECT minusValue(tpose '[Pose(Point(2 2), 0.3)@2001-01-01,
 			<listitem xml:id="tpose_atGeometry">
 				<indexterm significance="normal"><primary><varname>atGeometry</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>minusGeometry</varname></primary></indexterm>
-				<para>TODO Restrict to (the complement of) a geometry</para>
+				<para>Restrict to (the complement of) a geometry</para>
 				<para><varname>atGeometry(tpose,geometry) → tpose</varname></para>
 				<para><varname>minusGeometry(tpose,geometry) → tpose</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -1324,7 +1324,7 @@ FROM geopose_frames ORDER BY frame_id;
 					<programlisting xml:space="preserve" format="linespecific">
 world = R(q) · body + p
 </programlisting>
-					<para>where <varname>(p, q)</varname> are the pose's position and orientation. The static form takes a single pose and a static geometry; the temporal form lifts the per-instant rigid transform of a <varname>tpose</varname> across its instants, producing a <varname>tgeompoint</varname> world-frame trajectory of the body geometry. v1 supports point and multipoint body geometries; lines and polygons are deferred. Linear interpolation of the resulting trajectory is the chord on each segment, which approximates the true rigid-body trajectory (a circular arc under SLERP), the same trade-off MobilityDB already takes for spatial trajectories.</para>
+					<para>where <varname>(p, q)</varname> are the pose's position and orientation. The static form takes a single pose and a static geometry; the temporal form lifts the per-instant rigid transform of a <varname>tpose</varname> across its instants, producing a <varname>tgeompoint</varname> world-frame trajectory of the body geometry. Point and multipoint body geometries are supported; lines and polygons are not. Linear interpolation of the resulting trajectory is the chord on each segment, which approximates the true rigid-body trajectory (a circular arc under SLERP), the same trade-off MobilityDB already takes for spatial trajectories.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- A body sensor offset 1 unit along the body X axis, traced through a
 -- tpose that ends 90 degrees yawed and translated to (10, 20).
