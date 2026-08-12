@@ -65,7 +65,7 @@ Quadbin
 geo_to_quadbin_cell(const GSERIALIZED *point, int32 resolution)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(point, NULL);
+  VALIDATE_NOT_NULL(point, (Quadbin) 0);
 
   if (! ensure_srid_is_latlong(gserialized_get_srid(point)))
     return (Quadbin) 0;
