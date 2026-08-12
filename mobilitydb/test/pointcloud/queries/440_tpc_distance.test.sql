@@ -41,7 +41,7 @@ SELECT (tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]),
        (tpcbox_zt(0, 0, 0, 0, 0, 0,
                   tstzspan '[2099-01-01, 2099-01-02]', 1, 0)) > 1e10;
 
--- Pcid mismatch yields infinity.
+-- Pcid mismatch is an error: values of two schemas cannot be compared.
 SELECT (:p1) |=| (tpcbox_zt(0, 0, 0, 0, 0, 0,
   tstzspan '[2024-01-01, 2024-01-02]', 999, 0)) > 1e10;
 
