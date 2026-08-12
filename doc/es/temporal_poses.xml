@@ -1285,7 +1285,7 @@ SELECT asText(yaw(tpose '[Pose(Point(0 0), 0.0)@2000-01-01,
 		<sect2 xml:id="pose_geopose_frames">
 			<title>Registro de metadatos de marcos</title>
 			<para>El estándar OGC GeoPose v1.0 distingue el <emphasis>marco exterior</emphasis> (la referencia global, por ejemplo, WGS-84 geográfico o ECEF) del <emphasis>marco interior</emphasis> (el marco del cuerpo cuya orientación es el cuaternión de la pose). Las clases de conformidad Basic exigen WGS-84 geográfico como marco exterior y un marco interior implícito de ejes de cuerpo dextrógiros; la clase Advanced admite pilas de marcos con nombre.</para>
-			<para>En MobilityDB, el tipo <varname>pose</varname> codifica el marco exterior de forma implícita mediante su SRID y utiliza el marco interior convencional de ejes de cuerpo dextrógiros. La tabla <varname>geopose_frames</varname> documenta esta correspondencia y siembra un registro paralelo a la tabla <varname>pointcloud_formats</varname> de pgPointCloud, de modo que el soporte futuro de la clase Advanced solo necesite ampliar el catálogo en lugar de rediseñarlo.</para>
+			<para>En MobilityDB, el tipo <varname>pose</varname> codifica el marco exterior de forma implícita mediante su SRID y utiliza el marco interior convencional de ejes de cuerpo dextrógiros. La tabla <varname>geopose_frames</varname> registra esta correspondencia en un catálogo paralelo a la tabla <varname>pointcloud_formats</varname> de pgPointCloud. Las pilas de marcos de la clase Advanced no están admitidas.</para>
 			<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT frame_id, authority, code, name, is_geographic
 FROM geopose_frames ORDER BY frame_id;
@@ -1296,20 +1296,20 @@ FROM geopose_frames ORDER BY frame_id;
 </programlisting>
 			<para>Tres funciones auxiliares SQL proporcionan una interfaz de consulta estable que es independiente de la disposición de la tabla:</para>
 			<itemizedlist>
-				<listitem>
-					<indexterm significance="normal"><primary><varname>geopose_frame_srid</varname></primary></indexterm>
+				<listitem xml:id="pose_geopose_frame_srid">
+					<indexterm significance="normal"><primary><varname>geoPoseFrameSRID</varname></primary></indexterm>
 					<para>Devuelve el SRID de un marco, o <varname>NULL</varname> si el marco es paramétrico (LTP, BODY)</para>
-					<para><varname>geopose_frame_srid(int) → int</varname></para>
+					<para><varname>geoPoseFrameSRID(int) → int</varname></para>
 				</listitem>
-				<listitem>
-					<indexterm significance="normal"><primary><varname>geopose_frame_name</varname></primary></indexterm>
+				<listitem xml:id="pose_geopose_frame_name">
+					<indexterm significance="normal"><primary><varname>geoPoseFrameName</varname></primary></indexterm>
 					<para>Devuelve el nombre legible del marco</para>
-					<para><varname>geopose_frame_name(int) → text</varname></para>
+					<para><varname>geoPoseFrameName(int) → text</varname></para>
 				</listitem>
-				<listitem>
-					<indexterm significance="normal"><primary><varname>geopose_frame_is_geographic</varname></primary></indexterm>
+				<listitem xml:id="pose_geopose_frame_is_geographic">
+					<indexterm significance="normal"><primary><varname>geoPoseFrameIsGeographic</varname></primary></indexterm>
 					<para>Devuelve <varname>true</varname> para los marcos lat/lon/h, <varname>false</varname> para los cartesianos o proyectados</para>
-					<para><varname>geopose_frame_is_geographic(int) → boolean</varname></para>
+					<para><varname>geoPoseFrameIsGeographic(int) → boolean</varname></para>
 				</listitem>
 			</itemizedlist>
 			<para>Los usuarios pueden registrar marcos personalizados insertándolos en <varname>geopose_frames</varname>; el catálogo está marcado como una tabla de configuración, por lo que <varname>pg_dump</varname> preserva las filas del usuario.</para>

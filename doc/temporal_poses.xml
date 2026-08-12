@@ -1283,7 +1283,7 @@ SELECT asText(yaw(tpose '[Pose(Point(0 0), 0.0)@2000-01-01,
 		<sect2 xml:id="pose_geopose_frames">
 			<title>Frame Metadata Registry</title>
 			<para>The OGC GeoPose v1.0 standard distinguishes the <emphasis>outer frame</emphasis> (the global reference, e.g., WGS-84 geographic or ECEF) from the <emphasis>inner frame</emphasis> (the body frame whose orientation is the pose's quaternion). The Basic conformance classes mandate WGS-84 geographic as the outer frame and an implicit right-handed body-axes inner frame; the Advanced class supports stacks of named frames.</para>
-			<para>In MobilityDB the <varname>pose</varname> type encodes the outer frame implicitly via its SRID and uses the conventional right-handed body-axes inner frame. The <varname>geopose_frames</varname> table documents this mapping and seeds a registry parallel to pgPointCloud's <varname>pointcloud_formats</varname>, so that future Advanced-class support only needs to extend the catalog instead of redesigning it.</para>
+			<para>In MobilityDB the <varname>pose</varname> type encodes the outer frame implicitly via its SRID and uses the conventional right-handed body-axes inner frame. The <varname>geopose_frames</varname> table records this mapping in a registry parallel to pgPointCloud's <varname>pointcloud_formats</varname>. Advanced-class frame stacks are not supported.</para>
 			<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT frame_id, authority, code, name, is_geographic
 FROM geopose_frames ORDER BY frame_id;
@@ -1294,20 +1294,20 @@ FROM geopose_frames ORDER BY frame_id;
 </programlisting>
 			<para>Three SQL helpers provide a stable lookup interface that is independent of the table layout:</para>
 			<itemizedlist>
-				<listitem>
-					<indexterm significance="normal"><primary><varname>geopose_frame_srid</varname></primary></indexterm>
+				<listitem xml:id="pose_geopose_frame_srid">
+					<indexterm significance="normal"><primary><varname>geoPoseFrameSRID</varname></primary></indexterm>
 					<para>Return the SRID for a frame, or <varname>NULL</varname> if the frame is parametric (LTP, BODY)</para>
-					<para><varname>geopose_frame_srid(int) → int</varname></para>
+					<para><varname>geoPoseFrameSRID(int) → int</varname></para>
 				</listitem>
-				<listitem>
-					<indexterm significance="normal"><primary><varname>geopose_frame_name</varname></primary></indexterm>
+				<listitem xml:id="pose_geopose_frame_name">
+					<indexterm significance="normal"><primary><varname>geoPoseFrameName</varname></primary></indexterm>
 					<para>Return the human-readable name of a frame</para>
-					<para><varname>geopose_frame_name(int) → text</varname></para>
+					<para><varname>geoPoseFrameName(int) → text</varname></para>
 				</listitem>
-				<listitem>
-					<indexterm significance="normal"><primary><varname>geopose_frame_is_geographic</varname></primary></indexterm>
+				<listitem xml:id="pose_geopose_frame_is_geographic">
+					<indexterm significance="normal"><primary><varname>geoPoseFrameIsGeographic</varname></primary></indexterm>
 					<para>Return <varname>true</varname> for lat/lon/h frames, <varname>false</varname> for Cartesian or projected</para>
-					<para><varname>geopose_frame_is_geographic(int) → boolean</varname></para>
+					<para><varname>geoPoseFrameIsGeographic(int) → boolean</varname></para>
 				</listitem>
 			</itemizedlist>
 			<para>Users can register custom frames by inserting into <varname>geopose_frames</varname>; the catalog is marked as a configuration table so <varname>pg_dump</varname> preserves user rows.</para>
@@ -1316,7 +1316,7 @@ FROM geopose_frames ORDER BY frame_id;
 		<sect2 xml:id="pose_geopose_apply">
 			<title>Body and World Rigid Transform</title>
 			<itemizedlist>
-				<listitem>
+				<listitem xml:id="pose_applyPose">
 					<para>Applies the rigid-body transform encoded by a pose (the OGC GeoPose <emphasis>body to world</emphasis> mapping) to a body-frame geometry, producing the corresponding world-frame geometry</para>
 					<para><varname>applyPose(geometry, pose) → geometry</varname></para>
 					<para><varname>applyPose(geometry, tpose) → tgeompoint</varname></para>

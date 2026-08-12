@@ -773,7 +773,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="ttypeValueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Devuelve el valor en una marca de tiempo</para>
+					<para><link linkend="ttype_valueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Devuelve el valor en una marca de tiempo</para>
 				</listitem>
 
 				<listitem>
@@ -933,7 +933,7 @@
 			<title>Accessores</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="talphaValueSet"><varname>valueSet</varname></link>: Devuelve el conjunto de valores de un número temporal</para>
+					<para><link linkend="talpha_valueSet"><varname>valueSet</varname></link>: Devuelve el conjunto de valores de un número temporal</para>
 				</listitem>
 
 				<listitem>
@@ -1662,7 +1662,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tposeValueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Devuelve el valor en una marca de tiempo</para>
+						<para><link linkend="tpose_valueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Devuelve el valor en una marca de tiempo</para>
 					</listitem>
 
 					<listitem>
@@ -1912,7 +1912,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tnpointValueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Devuelve el valor en una marca de tiempo</para>
+						<para><link linkend="tnpoint_valueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Devuelve el valor en una marca de tiempo</para>
 					</listitem>
 
 					<listitem>
@@ -2216,7 +2216,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="tcbufferValueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Devuelve el valor en una marca de tiempo</para>
+						<para><link linkend="tcbuffer_valueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Devuelve el valor en una marca de tiempo</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -2698,7 +2698,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tjsonbValueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Devuelve el valor en una marca de tiempo</para>
+					<para><link linkend="tjsonb_valueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Devuelve el valor en una marca de tiempo</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -2869,7 +2869,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="th3ValueN"><varname>valueN</varname></link>: Devuelve el n-ésimo identificador de celda H3 distinto</para>
+					<para><link linkend="th3_valueN"><varname>valueN</varname></link>: Devuelve el n-ésimo identificador de celda H3 distinto</para>
 				</listitem>
 
 				<listitem>
@@ -2877,7 +2877,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="th3ValueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Devuelve el identificador de celda H3 en un instante dado</para>
+					<para><link linkend="th3_valueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Devuelve el identificador de celda H3 en un instante dado</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -3198,7 +3198,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tquadbinValueN"><varname>valueN</varname></link>: Devuelve la enésima celda distinta</para>
+					<para><link linkend="tquadbin_valueN"><varname>valueN</varname></link>: Devuelve la enésima celda distinta</para>
 				</listitem>
 
 				<listitem>
@@ -3206,7 +3206,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tquadbinValueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Devuelve la celda en una marca de tiempo</para>
+					<para><link linkend="tquadbin_valueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Devuelve la celda en una marca de tiempo</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
