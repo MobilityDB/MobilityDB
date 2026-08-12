@@ -43,6 +43,7 @@
 #include <meos_internal_geo.h>
 #if POINTCLOUD
   #include <meos_pointcloud.h>
+  #include "pointcloud/tpc_boxops.h"
 #endif
 #include "temporal/temporal.h"
 #include "temporal/type_util.h"
