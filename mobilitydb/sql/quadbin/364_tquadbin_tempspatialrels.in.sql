@@ -52,7 +52,7 @@ CREATE FUNCTION tContains(tquadbin, tquadbin)
   RETURNS tbool
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.tContains(@extschema@.tquadbinCellToBoundary($1)::@extschema@.tgeometry,
-    @extschema@.tquadbinCellToBoundary($2)::@extschema@.tgeometry) $$;
+                          @extschema@.tquadbinCellToBoundary($2)::@extschema@.tgeometry) $$;
 
 CREATE FUNCTION tCovers(geometry, tquadbin)
   RETURNS tbool
@@ -66,7 +66,7 @@ CREATE FUNCTION tCovers(tquadbin, tquadbin)
   RETURNS tbool
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.tCovers(@extschema@.tquadbinCellToBoundary($1)::@extschema@.tgeometry,
-    @extschema@.tquadbinCellToBoundary($2)::@extschema@.tgeometry) $$;
+                        @extschema@.tquadbinCellToBoundary($2)::@extschema@.tgeometry) $$;
 
 CREATE FUNCTION tDisjoint(geometry, tquadbin)
   RETURNS tbool
@@ -80,7 +80,7 @@ CREATE FUNCTION tDisjoint(tquadbin, tquadbin)
   RETURNS tbool
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.tDisjoint(@extschema@.tquadbinCellToBoundary($1)::@extschema@.tgeometry,
-    @extschema@.tquadbinCellToBoundary($2)::@extschema@.tgeometry) $$;
+                          @extschema@.tquadbinCellToBoundary($2)::@extschema@.tgeometry) $$;
 
 CREATE FUNCTION tIntersects(geometry, tquadbin)
   RETURNS tbool
@@ -94,7 +94,7 @@ CREATE FUNCTION tIntersects(tquadbin, tquadbin)
   RETURNS tbool
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.tIntersects(@extschema@.tquadbinCellToBoundary($1)::@extschema@.tgeometry,
-    @extschema@.tquadbinCellToBoundary($2)::@extschema@.tgeometry) $$;
+                            @extschema@.tquadbinCellToBoundary($2)::@extschema@.tgeometry) $$;
 
 CREATE FUNCTION tTouches(geometry, tquadbin)
   RETURNS tbool
@@ -108,7 +108,7 @@ CREATE FUNCTION tTouches(tquadbin, tquadbin)
   RETURNS tbool
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.tTouches(@extschema@.tquadbinCellToBoundary($1)::@extschema@.tgeometry,
-    @extschema@.tquadbinCellToBoundary($2)::@extschema@.tgeometry) $$;
+                         @extschema@.tquadbinCellToBoundary($2)::@extschema@.tgeometry) $$;
 
 CREATE FUNCTION tDwithin(geometry, tquadbin, dist float)
   RETURNS tbool
@@ -122,6 +122,6 @@ CREATE FUNCTION tDwithin(tquadbin, tquadbin, dist float)
   RETURNS tbool
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.tDwithin(@extschema@.tquadbinCellToBoundary($1)::@extschema@.tgeometry,
-    @extschema@.tquadbinCellToBoundary($2)::@extschema@.tgeometry, $3) $$;
+                         @extschema@.tquadbinCellToBoundary($2)::@extschema@.tgeometry, $3) $$;
 
 /*****************************************************************************/
