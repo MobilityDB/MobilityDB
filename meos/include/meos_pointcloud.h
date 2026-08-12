@@ -356,7 +356,6 @@ extern STBox *tpcbox_to_stbox(const TPCBox *box);
 
 /* Transformation */
 
-extern void tpcbox_expand(const TPCBox *box1, TPCBox *box2);
 extern TPCBox *tpcbox_round(const TPCBox *box, int maxdd);
 extern TPCBox *tpcbox_set_srid(const TPCBox *box, int32_t srid);
 
