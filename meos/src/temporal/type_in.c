@@ -1972,18 +1972,13 @@ raquet_from_wkb_state(meos_wkb_parse_state *s)
   uint16_t height = (uint16_t) int32_from_wkb_state(s);
   bool has_nodata = (bool) byte_from_wkb_state(s);
   double nodata = double_from_wkb_state(s);
-  size_t pixsize;
-  switch (pixtype)
+  /* A zero size is the unknown-pixel-type signal of #raquet_pixtype_size */
+  size_t pixsize = raquet_pixtype_size((MeosPixType) pixtype);
+  if (pixsize == 0)
   {
-    case MEOS_PT_UINT8:   pixsize = 1; break;
-    case MEOS_PT_INT16:   pixsize = 2; break;
-    case MEOS_PT_INT32:   pixsize = 4; break;
-    case MEOS_PT_FLOAT32: pixsize = 4; break;
-    case MEOS_PT_FLOAT64: pixsize = 8; break;
-    default:
-      meos_error(ERROR, MEOS_ERR_WKB_INPUT,
-        "Unknown raquet pixel type in WKB: %u", pixtype);
-      return (Datum) 0;
+    meos_error(ERROR, MEOS_ERR_WKB_INPUT,
+      "Unknown raquet pixel type in WKB: %u", pixtype);
+    return (Datum) 0;
   }
   size_t npixels = (size_t) width * height * pixsize;
   /* Check that there is enough data to read the pixel payload */
