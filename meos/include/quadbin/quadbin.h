@@ -55,6 +55,13 @@
 
 extern Quadbin quadbin_parse(const char *str);
 
+extern void quadbin_cell_tile(Quadbin cell, uint32_t *x, uint32_t *y,
+  uint32_t *z);
+extern void quadbin_cell_point(Quadbin cell, double *longitude,
+  double *latitude);
+extern void quadbin_cell_bounding_box(Quadbin cell, double *xmin,
+  double *ymin, double *xmax, double *ymax);
+
 /*****************************************************************************/
 
 #endif /* __QUADBIN_H__ */

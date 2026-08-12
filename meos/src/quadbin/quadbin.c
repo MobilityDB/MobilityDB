@@ -286,19 +286,14 @@ quadbin_tile_to_cell(uint32_t x, uint32_t y, uint32_t z)
 }
 
 /**
- * @ingroup meos_quadbin
  * @brief Return the Web-Mercator tile of a quadbin cell
  * @param[in] cell Quadbin cell
  * @param[out] x,y,z Tile column, row, and zoom
- * @csqlfn #Quadbin_cell_to_tile()
  */
 void
-quadbin_cell_to_tile(Quadbin cell, uint32_t *x, uint32_t *y, uint32_t *z)
+quadbin_cell_tile(Quadbin cell, uint32_t *x, uint32_t *y, uint32_t *z)
 {
-  /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) x) || ! ensure_not_null((void *) y) ||
-      ! ensure_not_null((void *) z))
-    return;
+  assert(x); assert(y); assert(z);
 
   uint32_t zz = (cell >> 52) & 31;
   uint64_t q = (cell & QUADBIN_FOOTER) << 12;
@@ -328,6 +323,24 @@ quadbin_cell_to_tile(Quadbin cell, uint32_t *x, uint32_t *y, uint32_t *z)
 
 /**
  * @ingroup meos_quadbin
+ * @brief Return the Web-Mercator tile of a quadbin cell
+ * @param[in] cell Quadbin cell
+ * @param[out] x,y,z Tile column, row, and zoom
+ * @return On error return @p false
+ * @csqlfn #Quadbin_cell_to_tile()
+ */
+bool
+quadbin_cell_to_tile(Quadbin cell, uint32_t *x, uint32_t *y, uint32_t *z)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(x, false); VALIDATE_NOT_NULL(y, false);
+  VALIDATE_NOT_NULL(z, false);
+  quadbin_cell_tile(cell, x, y, z);
+  return true;
+}
+
+/**
+ * @ingroup meos_quadbin
  * @brief Return the canonical base-4 quadkey string of a quadbin cell
  * @details The quadkey is the slippy-tile identifier: one base-4 digit per
  * zoom level, from coarsest to finest. Digit `d` at a level packs the tile
@@ -341,7 +354,7 @@ char *
 quadbin_cell_to_quadkey(Quadbin cell)
 {
   uint32_t x, y, z;
-  quadbin_cell_to_tile(cell, &x, &y, &z);
+  quadbin_cell_tile(cell, &x, &y, &z);
   char *result = palloc(z + 1);
   for (uint32_t i = 0; i < z; i++)
   {
@@ -452,7 +465,7 @@ quadbin_cell_sibling(Quadbin cell, const char *direction)
   VALIDATE_NOT_NULL(direction, (Quadbin) 0);
 
   uint32_t x, y, z;
-  quadbin_cell_to_tile(cell, &x, &y, &z);
+  quadbin_cell_tile(cell, &x, &y, &z);
   if (strcmp(direction, "up") == 0)
     y -= 1;
   else if (strcmp(direction, "down") == 0)
@@ -485,7 +498,7 @@ quadbin_k_ring(Quadbin cell, int k, int *count)
   VALIDATE_NOT_NULL(count, NULL);
 
   uint32_t x, y, z;
-  quadbin_cell_to_tile(cell, &x, &y, &z);
+  quadbin_cell_tile(cell, &x, &y, &z);
   int side = 2 * k + 1;
   int n = side * side;
   Quadbin *result = palloc(sizeof(Quadbin) * n);
@@ -539,24 +552,20 @@ quadbin_point_to_cell(double longitude, double latitude, uint32_t resolution)
 }
 
 /**
- * @ingroup meos_quadbin
  * @brief Return the lon/lat centroid of a quadbin cell
- * @details Out-parameter helper; the geometry projection quadbinCellToPoint
+ * @details Out-parameter kernel; the geometry projection quadbinCellToPoint
  * is backed by quadbin_cell_to_geompoint in quadbin_geo.c.
  * @param[in] cell Quadbin cell
  * @param[out] longitude Longitude of the centroid
  * @param[out] latitude Latitude of the centroid
  */
 void
-quadbin_cell_to_point(Quadbin cell, double *longitude, double *latitude)
+quadbin_cell_point(Quadbin cell, double *longitude, double *latitude)
 {
-  /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) longitude) ||
-      ! ensure_not_null((void *) latitude))
-    return;
+  assert(longitude); assert(latitude);
 
   uint32_t x, y, z;
-  quadbin_cell_to_tile(cell, &x, &y, &z);
+  quadbin_cell_tile(cell, &x, &y, &z);
   double n = (double) (UINT64_C(1) << z);
   *longitude = (x + 0.5) / n * 360.0 - 180.0;
   double yr = M_PI * (1.0 - 2.0 * (y + 0.5) / n);
@@ -564,9 +573,8 @@ quadbin_cell_to_point(Quadbin cell, double *longitude, double *latitude)
 }
 
 /**
- * @ingroup meos_quadbin
  * @brief Return the lon/lat bounding box (xmin, ymin, xmax, ymax) of a cell
- * @details Out-parameter helper shared by the geometry boundary projection
+ * @details Out-parameter kernel shared by the geometry boundary projection
  * quadbinCellToBoundary (via quadbin_cell_to_geom in quadbin_geo.c) and the
  * stbox(quadbin) cast (via quadbin_set_stbox).
  * @param[in] cell Quadbin cell
@@ -576,16 +584,13 @@ quadbin_cell_to_point(Quadbin cell, double *longitude, double *latitude)
  * @param[out] ymax Maximum Y coordinate
  */
 void
-quadbin_cell_to_bounding_box(Quadbin cell, double *xmin, double *ymin,
+quadbin_cell_bounding_box(Quadbin cell, double *xmin, double *ymin,
   double *xmax, double *ymax)
 {
-  /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) xmin) || ! ensure_not_null((void *) ymin) ||
-      ! ensure_not_null((void *) xmax) || ! ensure_not_null((void *) ymax))
-    return;
+  assert(xmin); assert(ymin); assert(xmax); assert(ymax);
 
   uint32_t x, y, z;
-  quadbin_cell_to_tile(cell, &x, &y, &z);
+  quadbin_cell_tile(cell, &x, &y, &z);
   double n = (double) (UINT64_C(1) << z);
   *xmin = (double) x / n * 360.0 - 180.0;
   *xmax = (double) (x + 1) / n * 360.0 - 180.0;
@@ -605,7 +610,7 @@ double
 quadbin_cell_area(Quadbin cell)
 {
   double xmin, ymin, xmax, ymax;
-  quadbin_cell_to_bounding_box(cell, &xmin, &ymin, &xmax, &ymax);
+  quadbin_cell_bounding_box(cell, &xmin, &ymin, &xmax, &ymax);
   /* Spherical quadrangle area: R^2 * |lon2-lon1| * |sin(lat2)-sin(lat1)| */
   const double R = 6371007.180918475; /* authalic radius (m) */
   double dlon = (xmax - xmin) * M_PI / 180.0;

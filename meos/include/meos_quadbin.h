@@ -125,7 +125,7 @@ extern bool quadbin_is_valid_cell(Quadbin cell);
 /* Tile (z/x/y quadkey) conversion — NO H3 analogue (quadbin-specific) */
 
 extern Quadbin quadbin_tile_to_cell(uint32_t x, uint32_t y, uint32_t z);
-extern void quadbin_cell_to_tile(Quadbin cell, uint32_t *x, uint32_t *y,
+extern bool quadbin_cell_to_tile(Quadbin cell, uint32_t *x, uint32_t *y,
   uint32_t *z);
 
 /* Inspection */
@@ -147,10 +147,6 @@ extern Quadbin *quadbin_k_ring(Quadbin cell, int k, int *count);
 
 extern Quadbin quadbin_point_to_cell(double longitude, double latitude,
   uint32_t resolution);
-extern void quadbin_cell_to_point(Quadbin cell, double *longitude,
-  double *latitude);
-extern void quadbin_cell_to_bounding_box(Quadbin cell, double *xmin,
-  double *ymin, double *xmax, double *ymax);
 
 /* Geometry (lon/lat, SRID 4326) */
 

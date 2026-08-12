@@ -100,7 +100,7 @@ static Datum
 datum_quadbin_cell_to_point(Datum d)
 {
   double lon, lat;
-  quadbin_cell_to_point((Quadbin) DatumGetInt64(d), &lon, &lat);
+  quadbin_cell_point((Quadbin) DatumGetInt64(d), &lon, &lat);
   /* Planar (non-geodetic) lon/lat point, SRID 4326. geopoint_make is
    * available in both the MEOS and the MEOS=OFF extension build, unlike the
    * MEOS-only geompoint_make2d. */
@@ -115,7 +115,7 @@ static Datum
 datum_quadbin_cell_to_boundary(Datum d)
 {
   double xmin, ymin, xmax, ymax;
-  quadbin_cell_to_bounding_box((Quadbin) DatumGetInt64(d), &xmin, &ymin,
+  quadbin_cell_bounding_box((Quadbin) DatumGetInt64(d), &xmin, &ymin,
     &xmax, &ymax);
   POINTARRAY *pa = ptarray_construct_empty(LW_FALSE, LW_FALSE, 5);
   POINT4D pt;
