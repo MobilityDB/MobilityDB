@@ -65,7 +65,7 @@
 #include <meos_internal.h>
 #include <pgtypes.h>
 #include "temporal/meos_catalog.h"
-#include "quadbin/quadbin.h"
+#include "temporal/temporal.h"
 
 /*****************************************************************************
  * Input/output
@@ -112,7 +112,7 @@ Quadbin
 quadbin_in(const char *str)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(str, NULL);
+  VALIDATE_NOT_NULL(str, (Quadbin) 0);
   // return quadbin_parse(&str, true); // TODO
   return quadbin_parse(str);
 }
@@ -296,8 +296,9 @@ void
 quadbin_cell_to_tile(Quadbin cell, uint32_t *x, uint32_t *y, uint32_t *z)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(x, NULL); VALIDATE_NOT_NULL(y, NULL);
-  VALIDATE_NOT_NULL(z, NULL);
+  if (! ensure_not_null((void *) x) || ! ensure_not_null((void *) y) ||
+      ! ensure_not_null((void *) z))
+    return;
 
   uint32_t zz = (cell >> 52) & 31;
   uint64_t q = (cell & QUADBIN_FOOTER) << 12;
@@ -448,7 +449,7 @@ Quadbin
 quadbin_cell_sibling(Quadbin cell, const char *direction)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(direction, NULL);
+  VALIDATE_NOT_NULL(direction, (Quadbin) 0);
 
   uint32_t x, y, z;
   quadbin_cell_to_tile(cell, &x, &y, &z);
@@ -550,7 +551,9 @@ void
 quadbin_cell_to_point(Quadbin cell, double *longitude, double *latitude)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(longitude, NULL); VALIDATE_NOT_NULL(latitude, NULL);
+  if (! ensure_not_null((void *) longitude) ||
+      ! ensure_not_null((void *) latitude))
+    return;
 
   uint32_t x, y, z;
   quadbin_cell_to_tile(cell, &x, &y, &z);
@@ -577,8 +580,9 @@ quadbin_cell_to_bounding_box(Quadbin cell, double *xmin, double *ymin,
   double *xmax, double *ymax)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(xmin, NULL); VALIDATE_NOT_NULL(ymin, NULL);
-  VALIDATE_NOT_NULL(xmax, NULL); VALIDATE_NOT_NULL(ymax, NULL);
+  if (! ensure_not_null((void *) xmin) || ! ensure_not_null((void *) ymin) ||
+      ! ensure_not_null((void *) xmax) || ! ensure_not_null((void *) ymax))
+    return;
 
   uint32_t x, y, z;
   quadbin_cell_to_tile(cell, &x, &y, &z);
@@ -676,7 +680,7 @@ Quadbin
 quadbin_string_to_index(const char *str)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(str, NULL);
+  VALIDATE_NOT_NULL(str, (Quadbin) 0);
   return (Quadbin) strtoull(str, NULL, 16);
 }
 
