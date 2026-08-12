@@ -82,6 +82,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><code>#include &lt;postgres.h&gt;</code><br />
+<code>#include &lt;liblwgeom.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__pose_8h_source.html">meos_pose.h</a>&gt;</code><br />
 </div>
@@ -155,6 +156,8 @@ Functions</h2></td></tr>
 <tr class="memitem:ga1d4ddd734a7ac2a2af70113eea20f354"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__internal__box__constructor_ga1d4ddd734a7ac2a2af70113eea20f354.html#ga1d4ddd734a7ac2a2af70113eea20f354">pose_timestamptz_set_stbox</a> (const <a class="el" href="structPose.html">Pose</a> *pose, <a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a> t, <a class="el" href="structSTBox.html">STBox</a> *box)</td></tr>
 <tr class="memdesc:ga1d4ddd734a7ac2a2af70113eea20f354"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return in the last argument a spatiotemporal box constructed from a pose and a timestamptz.  <a href="group__meos__internal__box__constructor_ga1d4ddd734a7ac2a2af70113eea20f354.html#ga1d4ddd734a7ac2a2af70113eea20f354">More...</a><br /></td></tr>
 <tr class="separator:ga1d4ddd734a7ac2a2af70113eea20f354"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af3a5d5bf22d12321921fe5aca6f09730"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structPose.html">Pose</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pose_8h_af3a5d5bf22d12321921fe5aca6f09730.html#af3a5d5bf22d12321921fe5aca6f09730">pose_transf_pj</a> (const <a class="el" href="structPose.html">Pose</a> *pose, int32_t srid_to, const <a class="el" href="structLWPROJ.html">LWPROJ</a> *pj)</td></tr>
+<tr class="separator:af3a5d5bf22d12321921fe5aca6f09730"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaac048b3eaeb061bb0ec5f550b6ba0907"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__internal__box__constructor_gaac048b3eaeb061bb0ec5f550b6ba0907.html#gaac048b3eaeb061bb0ec5f550b6ba0907">pose_tstzspan_set_stbox</a> (const <a class="el" href="structPose.html">Pose</a> *pose, const <a class="el" href="structSpan.html">Span</a> *p, <a class="el" href="structSTBox.html">STBox</a> *box)</td></tr>
 <tr class="memdesc:gaac048b3eaeb061bb0ec5f550b6ba0907"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return in the last argument a spatiotemporal box constructed from a pose and a timestamptz span.  <a href="group__meos__internal__box__constructor_gaac048b3eaeb061bb0ec5f550b6ba0907.html#gaac048b3eaeb061bb0ec5f550b6ba0907">More...</a><br /></td></tr>
 <tr class="separator:gaac048b3eaeb061bb0ec5f550b6ba0907"><td class="memSeparator" colspan="2">&#160;</td></tr>
