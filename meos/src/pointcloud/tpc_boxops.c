@@ -384,12 +384,13 @@ nad_tpointcloud_tpointcloud(const Temporal *temp1, const Temporal *temp2)
     return nad_tpcbox_tpcbox(&tmp1, &tmp2);
   }
 
-  /* PCID mismatch: the two values live in unrelated coordinate systems */
+  /* Values of different schemas live in unrelated coordinate systems and are
+   * rejected, exactly as the TPCBox path above rejects them */
   const Pcpoint *first1 =
     (const Pcpoint *) DatumGetPointer(temporal_start_value(temp1));
   const Pcpoint *first2 =
     (const Pcpoint *) DatumGetPointer(temporal_start_value(temp2));
-  if (first1->pcid != first2->pcid)
+  if (! ensure_same_pcid_pcpoint(first1, first2))
     return DBL_MAX;
 
   /* Project both values onto their point trajectories and return the

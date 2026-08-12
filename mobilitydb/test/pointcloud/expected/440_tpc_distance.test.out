@@ -40,6 +40,14 @@ SELECT (tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]),
 SELECT (tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz)) |=| (tpcbox_zt(0, 0, 0, 0, 0, 0,
   tstzspan '[2024-01-01, 2024-01-02]', 999, 0)) > 1e10;
 ERROR:  Operation on TPCBox values with different schemas: 1 vs 999
+INSERT INTO pointcloud_formats (pcid, srid, schema)
+SELECT 2, srid, schema FROM pointcloud_formats WHERE pcid = 1;
+INSERT 0 1
+SELECT (tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::timestamptz)) |=| tpcpoint(PC_MakePoint(2, ARRAY[1.0, 1.0, 1.0]::float[]),
+  '2024-01-01'::timestamptz);
+ERROR:  Operation on pcpoint values with different schemas: 1 vs 2
+DELETE FROM pointcloud_formats WHERE pcid = 2;
+DELETE 1
 SELECT round((tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01 00:00:00'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[]), '2024-01-01 00:30:00'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 3.0, 3.0]::float[]), '2024-01-02 00:00:00'::timestamptz)]) |=| tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[10.0, 10.0, 10.0]::float[]), '2024-01-01 00:00:00'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[12.0, 12.0, 12.0]::float[]), '2024-01-02 00:00:00'::timestamptz)]))::numeric, 4);
   round  
 ---------

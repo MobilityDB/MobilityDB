@@ -45,6 +45,16 @@ SELECT (tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]),
 SELECT (:p1) |=| (tpcbox_zt(0, 0, 0, 0, 0, 0,
   tstzspan '[2024-01-01, 2024-01-02]', 999, 0)) > 1e10;
 
+-- The same holds between two temporal pointcloud values. A second schema is
+-- registered as a copy of the first one, as the typmod test does.
+INSERT INTO pointcloud_formats (pcid, srid, schema)
+SELECT 2, srid, schema FROM pointcloud_formats WHERE pcid = 1;
+
+SELECT (:p1) |=| tpcpoint(PC_MakePoint(2, ARRAY[1.0, 1.0, 1.0]::float[]),
+  '2024-01-01'::timestamptz);
+
+DELETE FROM pointcloud_formats WHERE pcid = 2;
+
 -------------------------------------------------------------------------------
 -- Temporal-temporal nearest-approach distance is the minimum of the
 -- SYNCHRONIZED distance between the two values, not the distance between
