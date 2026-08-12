@@ -323,15 +323,16 @@ tpcbox_set_stbox(const TPCBox *src, STBox *dst)
  * Nearest-approach distance
  *
  * Reuses the stbox NAD machinery via the lossy tpcbox→stbox conversion.
- * Returns DBL_MAX on pcid mismatch (the schemas would have to be
- * compatible for the dimensions to mean the same thing).
+ * Boxes of different schemas are rejected by the validity check, since the
+ * schemas would have to be compatible for the dimensions to mean the same
+ * thing, exactly as mixed SRIDs are rejected for the spatial types.
  *****************************************************************************/
 
 /**
  * @ingroup meos_pointcloud_box_dist
  * @brief Return the nearest-approach distance between two TPCBox values
  * @param[in] box1,box2 Bounding boxes
- * @return @p DBL_MAX on pcid mismatch
+ * @return On error or if the time frames do not intersect return infinity
  * @csqlfn #NAD_tpcbox_tpcbox()
  */
 double
