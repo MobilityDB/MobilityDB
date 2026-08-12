@@ -2620,7 +2620,7 @@
 				<title>Quaternion Renormalization</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="poseNormalize"><varname>poseNormalize</varname></link>: Return a pose whose orientation quaternion has been transformed to a unit norm</para>
+						<para><link linkend="pose_normalize"><varname>poseNormalize</varname></link>: Return a pose whose orientation quaternion has been transformed to a unit norm</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -2639,14 +2639,14 @@
 				<title>Frame Metadata Registry</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="geopose_frame_srid"><varname>geopose_frame_srid</varname></link>: Return the SRID for a frame, or <varname>NULL</varname> if the frame is parametric (LTP, BODY)</para>
+						<para><link linkend="pose_geopose_frame_srid"><varname>geoPoseFrameSRID</varname></link>: Return the SRID for a frame, or <varname>NULL</varname> if the frame is parametric (LTP, BODY)</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="geopose_frame_name"><varname>geopose_frame_name</varname></link>: Return the human-readable name of a frame</para>
+						<para><link linkend="pose_geopose_frame_name"><varname>geoPoseFrameName</varname></link>: Return the human-readable name of a frame</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="geopose_frame_is_geographic"><varname>geopose_frame_is_geographic</varname></link>: Return <varname>true</varname> for lat/lon/h frames, <varname>false</varname> for Cartesian or projected</para>
+						<para><link linkend="pose_geopose_frame_is_geographic"><varname>geoPoseFrameIsGeographic</varname></link>: Return <varname>true</varname> for lat/lon/h frames, <varname>false</varname> for Cartesian or projected</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -2655,7 +2655,7 @@
 				<title>Body and World Rigid Transform</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="applyPose"><varname>applyPose</varname></link>: Applies the rigid-body transform encoded by a pose (the OGC GeoPose <emphasis>body to world</emphasis> mapping) to a body-frame geometry, producing the corresponding world-frame geometry</para>
+						<para><link linkend="pose_applyPose"><varname>applyPose</varname></link>: Applies the rigid-body transform encoded by a pose (the OGC GeoPose <emphasis>body to world</emphasis> mapping) to a body-frame geometry, producing the corresponding world-frame geometry</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -2664,7 +2664,7 @@
 				<title>Cross-SRID Frame Transforms</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="transform"><varname>transform</varname></link>: Transform a pose to an SRID</para>
+						<para><link linkend="pose_transform"><varname>transform</varname></link>: Transform a pose to an SRID</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
