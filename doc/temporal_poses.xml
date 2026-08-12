@@ -306,12 +306,26 @@ SELECT asEWKT(setSRID(pose 'Pose(Point(0 0),1)', 4326));
 					<para><varname>transform(pose,integer) → pose</varname></para>
 					<para><varname>transformPipeline(pose,pipeline text,to_srid integer,is_forward bool=true) → pose</varname></para>
 					<para>The <varname>transform</varname> function specifies the transformation with a target SRID. An error is raised when the input pose has an unknown SRID (represented by 0).</para>
+					<para>For a 3D pose the orientation is re-expressed in the basis of the target frame at the pose's point. The correction is defined for the canonical OGC GeoPose pair, WGS-84 geographic (EPSG:4326) ↔ WGS-84 ECEF (EPSG:4978), and takes the standard East-North-Up basis at the geographic point as the rotation pivot. For any other pair of SRIDs, <varname>transform</varname> emits a <varname>NOTICE</varname> and passes the orientation through unchanged. For a 2D pose the angle is intrinsic to the source projection and is passed through unchanged.</para>
 					<para>The <varname>transformPipeline</varname> function specifies the transformation with a defined coordinate transformation pipeline represented with the following string format:</para>
 				<para><varname>urn:ogc:def:coordinateOperation:AUTHORITY::CODE</varname></para>
 				<para>The SRID of the input pose is ignored, and the SRID of the output pose will be set to zero unless a value is provided via the optional <varname>to_srid</varname> parameter. As stated by the last parameter, the pipeline is executed by default in a forward direction; by setting the parameter to false, the pipeline is executed in the inverse direction.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asEWKT(transform(pose 'SRID=4326;Pose(Point(4.35 50.85),1)', 3812), 6);
--- SRID=4326;Pose(POINT(648679.018035 671067.055638),1)
+-- SRID=3812;Pose(POINT(648679.018035 671067.055638),1)
+</programlisting>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- Round-tripping a 3D pose through ECEF and back lands at the input pose
+SELECT asEWKT(round(
+  transform(transform(pose 'SRID=4326;Pose(Point(8 47 0), 1, 0, 0, 0)', 4978),
+            4326), 6));
+-- SRID=4326;Pose(POINT Z (8 47 0),1,0,0,0)
+
+-- At the equator-meridian (lat=lon=0), the body identity quaternion in the
+-- ECEF basis is the canonical East-North-Up to ECEF rotation
+SELECT asEWKT(round(
+  transform(pose 'SRID=4326;Pose(Point(0 0 0), 1, 0, 0, 0)', 4978), 6));
+-- SRID=4978;Pose(POINT Z (6378137 0 0),0.5,-0.5,-0.5,-0.5)
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 WITH test(pose, pipeline) AS (
@@ -491,25 +505,6 @@ SELECT asText(applyPose(ST_Point(1,0),
           Pose(Point(10 20), 1.5707963267948966)@2026-01-02]'));
 -- [POINT(1 0)@2026-01-01, POINT(10 21)@2026-01-02]
 </programlisting>
-			</sect3>
-
-			<sect3 xml:id="pose_geopose_transform">
-				<title>Cross-SRID frame transforms</title>
-				<para>The <varname>transform(pose, srid)</varname> function carries pose values across SRIDs. Workstream #6 of the temporal-GeoPose plan extends the pre-existing <emphasis>position-only</emphasis> behaviour with the orientation correction required when the source and target frames have different bases at the pose's point. v1 implements the canonical OGC GeoPose case — WGS-84 geographic (EPSG:4326) ↔ WGS-84 ECEF (EPSG:4978) — using the standard East-North-Up basis at the geographic point as the rotation pivot. For SRID pairs whose orientation correction is not yet defined, <varname>transform</varname> emits a <varname>NOTICE</varname> and passes the orientation through unchanged.</para>
-				<para>Round-tripping through ECEF and back lands exactly at the input pose:</para>
-				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asEWKT(round(
-  transform(transform(pose 'SRID=4326;Pose(Point(8 47 0), 1, 0, 0, 0)', 4978),
-            4326), 6));
--- SRID=4326;Pose(POINT Z (8 47 0),1,0,0,0)
-
--- At the equator-meridian (lat=lon=0), the body identity quaternion in
--- the ECEF basis becomes the canonical ENU->ECEF rotation:
-SELECT asEWKT(round(
-  transform(pose 'SRID=4326;Pose(Point(0 0 0), 1, 0, 0, 0)', 4978), 6));
--- SRID=4978;Pose(POINT Z (6378137 0 0),0.5,-0.5,-0.5,-0.5)
-</programlisting>
-				<para>The implementation also fixes a pre-existing position-only bug where <varname>transform</varname> did not update the result's SRID field, so the returned pose now carries the target SRID as expected.</para>
 			</sect3>
 
 			<sect3 xml:id="pose_geopose_temporal_io">
@@ -1080,6 +1075,7 @@ SELECT asEWKT(setSRID(tpose '[Pose(Point(0 0),1)@2001-01-01,
 				<para>Transform to a spatial reference identifier</para>
 				<para><varname>transform(tpose,integer) → tpose</varname></para>
 				<para><varname>transformPipeline(tpose,pipeline text,to_srid integer,is_forward bool=true) → tpose</varname></para>
+				<para>Each instant's pose is transformed as the corresponding static pose is, orientation correction included, as described in <xref linkend="pose_transform"/>. The same holds for a <varname>poseset</varname>. A <varname>trgeometry</varname> pairs its poses with a reference geometry that shares their frame, and transformation to another SRID is not supported for it.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asEWKT(transform(tpose 'SRID=4326;Pose(Point(4.35 50.85),1)@2001-01-01', 
   3812));

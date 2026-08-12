@@ -26,6 +26,20 @@
 -- PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 --
 -------------------------------------------------------------------------------
+-- SRID functions
+-------------------------------------------------------------------------------
+
+SELECT SRID(trgeometry
+  'SRID=4326;Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1), 0.5)@2000-01-01');
+
+-- A reference geometry accompanies the poses and shares their frame, so a
+-- transformation to another SRID is not supported
+SELECT transform(trgeometry
+  'SRID=4326;Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1), 0.5)@2000-01-01',
+  3812);
+SELECT transformPipeline(trgeometry
+  'SRID=4326;Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1), 0.5)@2000-01-01',
+  'urn:ogc:def:coordinateOperation:EPSG::16031', 4326);
 
 -------------------------------------------------------------------------------
 -- atGeometry / minusGeometry — restriction by a geometry on the centroid path

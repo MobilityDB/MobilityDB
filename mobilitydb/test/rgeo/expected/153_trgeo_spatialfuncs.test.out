@@ -1,3 +1,18 @@
+SELECT SRID(trgeometry
+  'SRID=4326;Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1), 0.5)@2000-01-01');
+ srid 
+------
+ 4326
+(1 row)
+
+SELECT transform(trgeometry
+  'SRID=4326;Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1), 0.5)@2000-01-01',
+  3812);
+ERROR:  Transformation to another SRID is not supported for type trgeometry
+SELECT transformPipeline(trgeometry
+  'SRID=4326;Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1), 0.5)@2000-01-01',
+  'urn:ogc:def:coordinateOperation:EPSG::16031', 4326);
+ERROR:  Transformation to another SRID is not supported for type trgeometry
 SELECT asText(atGeometry(
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(2 0), 0.0)@2001-01-01',
   geometry 'Polygon((1 -1,3 -1,3 1,1 1,1 -1))'));

@@ -1463,8 +1463,7 @@ pose_set_srid(Pose *pose, int32_t srid)
  * @param[in] pj Information about the transformation
  */
 /* SRIDs whose orientation correction is implemented by
- * pose_orientation_apply_frame_change. Cf. workstream #6 of the
- * temporal-GeoPose plan. */
+ * pose_orientation_apply_frame_change. */
 #define POSE_SRID_WGS84_GEOGRAPHIC 4326   /* lat/lon/h, ENU local frame */
 #define POSE_SRID_WGS84_ECEF       4978   /* X/Y/Z geocentric Cartesian */
 
@@ -1541,11 +1540,9 @@ pose_enu_to_ecef_quaternion(double lat_rad, double lon_rad,
  * @brief Apply the orientation correction for a frame change between two
  * SRIDs. The new orientation @p (q_new) re-expresses the same physical
  * body→world rotation in the *target* frame's basis at the (transformed)
- * point. v1 implements the canonical OGC GeoPose case
- * (WGS-84 geographic ↔ ECEF); for other SRID pairs the orientation is
- * passed through unchanged with a NOTICE — explicit cross-frame
- * orientation maths can land on top of this kernel without changing
- * the call sites.
+ * point. The correction is defined for the canonical OGC GeoPose case
+ * (WGS-84 geographic ↔ ECEF); for any other SRID pair the orientation is
+ * passed through unchanged with a NOTICE.
  */
 static void
 pose_orientation_apply_frame_change(int32_t srid_from, int32_t srid_to,
@@ -1624,7 +1621,7 @@ pose_transf_pj(const Pose *pose, int32_t srid_to, const LWPROJ *pj)
    * source/target SRID pair) sees the right value. */
   pose_set_srid(result, srid_to);
 
-  /* Apply the orientation correction (workstream #6). For the
+  /* Apply the orientation correction. For the
    * geographic ↔ ECEF case the rotation depends on the lat/lon of the
    * source point — compute that from the *input* pose's coordinates,
    * which were lon/lat (degrees) when the source SRID is 4326, or

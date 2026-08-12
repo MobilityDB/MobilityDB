@@ -141,7 +141,7 @@ SELECT pose 'Pose(Point(1 1),0.5)' >= pose 'Pose(Point(2 2),0.5)';
 
 -------------------------------------------------------------------------------/
 
--- Cross-SRID frame transforms (workstream #6). The orientation correction
+-- Cross-SRID frame transforms. The orientation correction
 -- between WGS-84 geographic (4326) and WGS-84 ECEF (4978) is the local
 -- East-North-Up basis change at the point. Round-trip lands at the input.
 SELECT asEWKT(round(transform(transform(pose 'SRID=4326;Pose(Point(8 47 0), 1, 0, 0, 0)', 4978), 4326), 6));

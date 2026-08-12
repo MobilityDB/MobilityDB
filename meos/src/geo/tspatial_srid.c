@@ -518,13 +518,13 @@ point_transf_pj(GSERIALIZED *gs, int32_t srid_to, const LWPROJ *pj)
  * to another SRID
  */
 Datum
-#if CBUFFER
+#if CBUFFER || POSE || RGEO
   datum_transf_pj(Datum d, MeosType basetype, int32_t srid_to,
     const LWPROJ *pj)
 #else
   datum_transf_pj(Datum d, MeosType basetype, int32_t srid_to UNUSED,
     const LWPROJ *pj)
-#endif /* CBUFFER */
+#endif /* CBUFFER || POSE || RGEO */
 {
   assert(spatial_basetype(basetype));
   switch (basetype)
@@ -547,6 +547,10 @@ Datum
     case T_CBUFFER:
       return PointerGetDatum(cbuffer_transf_pj(DatumGetCbufferP(d), srid_to,
         pj));
+#endif
+#if POSE || RGEO
+    case T_POSE:
+      return PointerGetDatum(pose_transf_pj(DatumGetPoseP(d), srid_to, pj));
 #endif
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
@@ -750,6 +754,29 @@ tspatial_transf_pj(const Temporal *temp, int32_t srid_to, const LWPROJ *pj)
   }
 }
 
+#if RGEO
+/**
+ * @brief Ensure that a spatiotemporal value is not a temporal rigid geometry
+ * @details A transformation rebuilds the value from its transformed instants,
+ * while a temporal rigid geometry also carries a reference geometry beside
+ * them, whose frame must agree with that of the poses
+ * @param[in] temp Spatiotemporal value
+ */
+static bool
+ensure_not_trgeometry(const Temporal *temp)
+{
+  assert(temp);
+  if (temp->temptype == T_TRGEOMETRY)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+      "Transformation to another SRID is not supported for type %s",
+      meostype_name(temp->temptype));
+    return false;
+  }
+  return true;
+}
+#endif /* RGEO */
+
 /**
  * @ingroup meos_geo_srid
  * @brief Return a spatiotemporal value transformed to another SRID
@@ -762,6 +789,10 @@ tspatial_transform(const Temporal *temp, int32_t srid_to)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TSPATIAL(temp, NULL);
+#if RGEO
+  if (! ensure_not_trgeometry(temp))
+    return NULL;
+#endif /* RGEO */
   int32_t srid_from = tspatial_srid(temp);
   if (! ensure_srid_known(srid_from) || ! ensure_srid_known(srid_to))
     return NULL;
@@ -799,6 +830,10 @@ tspatial_transform_pipeline(const Temporal *temp, const char *pipeline,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TSPATIAL(temp, NULL); VALIDATE_NOT_NULL(pipeline, NULL);
+#if RGEO
+  if (! ensure_not_trgeometry(temp))
+    return NULL;
+#endif /* RGEO */
   /* srid_to may legitimately be SRID_UNKNOWN for pipeline transformations:
    * the pipeline string itself encodes the destination CRS. So unlike the
    * sibling tspatial_transform path, we do NOT call ensure_srid_known here. */
