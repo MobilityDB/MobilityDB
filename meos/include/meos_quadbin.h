@@ -174,19 +174,6 @@ extern Quadbin quadbin_string_to_index(const char *str);
 
 extern char *quadbin_cell_to_quadkey(Quadbin cell);
 
-/* Static `quadbin` SQL-type I/O (validating parser + ordering / hashing) */
-
-extern Quadbin quadbin_in(const char *str);
-extern bool quadbin_eq(Quadbin a, Quadbin b);
-extern bool quadbin_ne(Quadbin a, Quadbin b);
-extern bool quadbin_lt(Quadbin a, Quadbin b);
-extern bool quadbin_le(Quadbin a, Quadbin b);
-extern bool quadbin_gt(Quadbin a, Quadbin b);
-extern bool quadbin_ge(Quadbin a, Quadbin b);
-extern int quadbin_cmp(Quadbin a, Quadbin b);
-extern uint32_t quadbin_hash(Quadbin cell);
-extern uint64 quadbin_hash_extended(Quadbin cell, uint64 seed);
-
 /* Set-returning static helpers (square subset; return `quadbinset`) */
 extern Set *quadbin_grid_disk(Quadbin origin, int k);
 extern Set *quadbin_cell_to_children_set(Quadbin origin,
