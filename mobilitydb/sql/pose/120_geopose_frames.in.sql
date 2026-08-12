@@ -81,15 +81,15 @@ INSERT INTO geopose_frames(frame_id, authority, code, name, srid, is_geographic,
 
 /* Helper SQL functions to query the registry without exposing the schema. */
 
-CREATE FUNCTION geopose_frame_srid(frame_id integer) RETURNS integer
+CREATE FUNCTION geoPoseFrameSRID(frame_id integer) RETURNS integer
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT srid FROM geopose_frames WHERE geopose_frames.frame_id = $1 $$;
 
-CREATE FUNCTION geopose_frame_name(frame_id integer) RETURNS text
+CREATE FUNCTION geoPoseFrameName(frame_id integer) RETURNS text
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT name FROM geopose_frames WHERE geopose_frames.frame_id = $1 $$;
 
-CREATE FUNCTION geopose_frame_is_geographic(frame_id integer) RETURNS boolean
+CREATE FUNCTION geoPoseFrameIsGeographic(frame_id integer) RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT is_geographic FROM geopose_frames WHERE geopose_frames.frame_id = $1 $$;
 
