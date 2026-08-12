@@ -836,7 +836,7 @@ SELECT minusValue(tpose '[Pose(Point(2 2), 0.3)@2001-01-01,
 			<listitem xml:id="tpose_atGeometry">
 				<indexterm significance="normal"><primary><varname>atGeometry</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>minusGeometry</varname></primary></indexterm>
-				<para>TODO Restringir al (complemento de) una geometría</para>
+				<para>Restringir al (complemento de) una geometría</para>
 				<para><varname>atGeometry(tpose,geometry) → tpose</varname></para>
 				<para><varname>minusGeometry(tpose,geometry) → tpose</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -1321,7 +1321,7 @@ FROM geopose_frames ORDER BY frame_id;
 			<programlisting xml:space="preserve" format="linespecific">
 world = R(q) · body + p
 </programlisting>
-			<para>donde <varname>(p, q)</varname> son la posición y la orientación de la pose. La forma estática toma una única pose y una geometría estática; la forma temporal eleva la transformación rígida por instante de una <varname>tpose</varname> a lo largo de sus instantes, produciendo una trayectoria <varname>tgeompoint</varname> en el marco del mundo de la geometría del cuerpo. La versión v1 admite geometrías de cuerpo de tipo punto y multipunto; las líneas y los polígonos quedan aplazados. La interpolación lineal de la trayectoria resultante es la cuerda de cada segmento, que aproxima la verdadera trayectoria de cuerpo rígido (un arco circular bajo SLERP), la misma concesión que MobilityDB ya adopta para las trayectorias espaciales.</para>
+			<para>donde <varname>(p, q)</varname> son la posición y la orientación de la pose. La forma estática toma una única pose y una geometría estática; la forma temporal eleva la transformación rígida por instante de una <varname>tpose</varname> a lo largo de sus instantes, produciendo una trayectoria <varname>tgeompoint</varname> en el marco del mundo de la geometría del cuerpo. Se admiten geometrías de cuerpo de tipo punto y multipunto; las líneas y los polígonos no. La interpolación lineal de la trayectoria resultante es la cuerda de cada segmento, que aproxima la verdadera trayectoria de cuerpo rígido (un arco circular bajo SLERP), la misma concesión que MobilityDB ya adopta para las trayectorias espaciales.</para>
 			<para><varname>applyPose(geometry, pose) → geometry</varname></para>
 			<para><varname>applyPose(geometry, tpose) → tgeompoint</varname></para>
 			<programlisting language="sql" xml:space="preserve" format="linespecific">
