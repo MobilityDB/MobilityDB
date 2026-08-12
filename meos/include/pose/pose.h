@@ -36,6 +36,8 @@
 
 /* PostgreSQL */
 #include <postgres.h>
+/* PostGIS */
+#include <liblwgeom.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_pose.h>
@@ -104,6 +106,8 @@ extern Datum datum_pose_apply_geo(Datum pose, Datum body);
 /* Transformation functions */
 
 extern Datum datum_pose_round(Datum pose, Datum size);
+extern Pose *pose_transf_pj(const Pose *pose, int32_t srid_to,
+  const LWPROJ *pj);
 
 /* Distance */
 

@@ -16,6 +16,53 @@ SELECT asEWKT(setSRID(tpose 'Pose(Point(1 2),0.5)@2000-01-01', 5676));
  SRID=5676;Pose(POINT(1 2),0.5)@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
+SELECT asEWKT(round(transform(transform(tpose
+  'SRID=4326;Pose(Point(8 47 0), 1, 0, 0, 0)@2000-01-01', 4978), 4326), 6));
+                                asewkt                                 
+-----------------------------------------------------------------------
+ SRID=4326;Pose(POINT Z (8 47 0),1,0,0,0)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asEWKT(round(transform(transform(tpose
+  'SRID=4326;{Pose(Point(8 47 0), 1, 0, 0, 0)@2000-01-01,
+    Pose(Point(9 48 0), 1, 0, 0, 0)@2000-01-02}', 4978), 4326), 6));
+                                                                asewkt                                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+ SRID=4326;{Pose(POINT Z (8 47 0),1,0,0,0)@Sat Jan 01 00:00:00 2000 PST, Pose(POINT Z (9 48 0),1,0,0,0)@Sun Jan 02 00:00:00 2000 PST}
+(1 row)
+
+SELECT asEWKT(round(transform(transform(tpose
+  'SRID=4326;[Pose(Point(8 47 0), 1, 0, 0, 0)@2000-01-01,
+    Pose(Point(9 48 0), 1, 0, 0, 0)@2000-01-02]', 4978), 4326), 6));
+                                                                asewkt                                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+ SRID=4326;[Pose(POINT Z (8 47 0),1,0,0,0)@Sat Jan 01 00:00:00 2000 PST, Pose(POINT Z (9 48 0),1,0,0,0)@Sun Jan 02 00:00:00 2000 PST]
+(1 row)
+
+SELECT asEWKT(round(transform(tpose
+  'SRID=4326;Pose(Point(0 0 0), 1, 0, 0, 0)@2000-01-01', 4978), 6));
+                                        asewkt                                         
+---------------------------------------------------------------------------------------
+ SRID=4978;Pose(POINT Z (6378137 0 0),0.5,-0.5,-0.5,-0.5)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asEWKT(transform(tpose
+  'SRID=4326;Pose(Point(8 47 0), 1, 0, 0, 0)@2000-01-01', 4326));
+                                asewkt                                 
+-----------------------------------------------------------------------
+ SRID=4326;Pose(POINT Z (8 47 0),1,0,0,0)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asEWKT(round(transform(tpose
+  'SRID=4326;Pose(Point(4.35 50.85), 1)@2000-01-01', 3812), 6));
+                                      asewkt                                       
+-----------------------------------------------------------------------------------
+ SRID=3812;Pose(POINT(648679.018035 671067.055638),1)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asEWKT(transform(tpose 'Pose(Point(8 47 0), 1, 0, 0, 0)@2000-01-01',
+  4978));
+ERROR:  The SRID cannot be unknown
 SELECT asText(atGeometry(
   tpose 'Pose(Point(0 0),0)@2000-01-01',
   'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1))'::geometry));

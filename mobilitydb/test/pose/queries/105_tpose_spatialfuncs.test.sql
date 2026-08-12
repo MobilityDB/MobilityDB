@@ -33,6 +33,31 @@ SELECT SRID(tpose 'SRID=5676;Pose(Point(1 2),0.5)@2000-01-01');
 
 SELECT asEWKT(setSRID(tpose 'Pose(Point(1 2),0.5)@2000-01-01', 5676));
 
+-- Frame transformation. Each instant's pose is transformed as the static pose
+-- is, orientation correction included, so a round trip through WGS-84 ECEF
+-- (4978) returns the input.
+SELECT asEWKT(round(transform(transform(tpose
+  'SRID=4326;Pose(Point(8 47 0), 1, 0, 0, 0)@2000-01-01', 4978), 4326), 6));
+SELECT asEWKT(round(transform(transform(tpose
+  'SRID=4326;{Pose(Point(8 47 0), 1, 0, 0, 0)@2000-01-01,
+    Pose(Point(9 48 0), 1, 0, 0, 0)@2000-01-02}', 4978), 4326), 6));
+SELECT asEWKT(round(transform(transform(tpose
+  'SRID=4326;[Pose(Point(8 47 0), 1, 0, 0, 0)@2000-01-01,
+    Pose(Point(9 48 0), 1, 0, 0, 0)@2000-01-02]', 4978), 4326), 6));
+-- At the equator-meridian the body identity quaternion expressed in the ECEF
+-- basis is the canonical East-North-Up to ECEF rotation
+SELECT asEWKT(round(transform(tpose
+  'SRID=4326;Pose(Point(0 0 0), 1, 0, 0, 0)@2000-01-01', 4978), 6));
+-- A same-SRID transformation is a no-op
+SELECT asEWKT(transform(tpose
+  'SRID=4326;Pose(Point(8 47 0), 1, 0, 0, 0)@2000-01-01', 4326));
+-- A 2D pose angle is intrinsic to its projection and is passed through
+SELECT asEWKT(round(transform(tpose
+  'SRID=4326;Pose(Point(4.35 50.85), 1)@2000-01-01', 3812), 6));
+-- An unknown source SRID is an error
+SELECT asEWKT(transform(tpose 'Pose(Point(8 47 0), 1, 0, 0, 0)@2000-01-01',
+  4978));
+
 -------------------------------------------------------------------------------
 -- atGeometry / minusGeometry — instant
 
