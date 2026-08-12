@@ -481,9 +481,9 @@ FROM geopose_frames ORDER BY frame_id;
 </programlisting>
 				<para>Three SQL helpers provide a stable lookup interface for code that doesn't want to hard-code the table layout:</para>
 				<itemizedlist>
-					<listitem><para><varname>geopose_frame_srid(int) → int</varname> — the PostGIS SRID for a frame, or <varname>NULL</varname> if the frame is parametric (LTP, BODY).</para></listitem>
-					<listitem><para><varname>geopose_frame_name(int) → text</varname> — the human-readable name of the frame.</para></listitem>
-					<listitem><para><varname>geopose_frame_is_geographic(int) → boolean</varname> — <varname>true</varname> for lat/lon/h frames, <varname>false</varname> for Cartesian or projected.</para></listitem>
+					<listitem><para><varname>geoPoseFrameSRID(int) → int</varname> — the PostGIS SRID for a frame, or <varname>NULL</varname> if the frame is parametric (LTP, BODY).</para></listitem>
+					<listitem><para><varname>geoPoseFrameName(int) → text</varname> — the human-readable name of the frame.</para></listitem>
+					<listitem><para><varname>geoPoseFrameIsGeographic(int) → boolean</varname> — <varname>true</varname> for lat/lon/h frames, <varname>false</varname> for Cartesian or projected.</para></listitem>
 				</itemizedlist>
 				<para>Users can register custom frames by inserting into <varname>geopose_frames</varname>; the catalog is marked as a configuration table so <varname>pg_dump</varname> preserves user rows.</para>
 			</sect3>
