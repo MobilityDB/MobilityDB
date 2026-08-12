@@ -83,6 +83,11 @@
  * on both axes; QUADBIN tile (x, y, z) covers 2*QB_MERC_MAX / 2^z metres. */
 #define QB_MERC_MAX  20037508.342789244
 
+/* Highest zoom level accepted when covering a trajectory with QUADBIN cells.
+ * The zoom bounds the shift building the tile grid, so it is validated before
+ * use; the value is the documented range of #trajectory_quadbins() */
+#define QB_TRAJECTORY_MAX_ZOOM  15
+
 static const uint64_t QB_B[6] = {
   UINT64_C(0x5555555555555555), UINT64_C(0x3333333333333333),
   UINT64_C(0x0F0F0F0F0F0F0F0F), UINT64_C(0x00FF00FF00FF00FF),
@@ -632,6 +637,18 @@ araster_value(const Temporal *traj, const STBox *box,
 uint64 *
 trajectory_quadbins(const Temporal *traj, uint32_t zoom, int *count)
 {
+  VALIDATE_NOT_NULL(traj, NULL); VALIDATE_NOT_NULL(count, NULL);
+  /* The zoom bounds the shift building the tile grid below. A caller passing a
+   * negative zoom reaches this as a large unsigned value, so the upper test
+   * covers both ends of the documented range */
+  if (zoom > QB_TRAJECTORY_MAX_ZOOM)
+  {
+    *count = 0;
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "zoom level must be between 0 and %d", QB_TRAJECTORY_MAX_ZOOM);
+    return NULL;
+  }
+
   int ninsts;
   const TInstant **insts = temporal_insts_p(traj, &ninsts);
 

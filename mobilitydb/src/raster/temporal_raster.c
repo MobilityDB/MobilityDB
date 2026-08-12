@@ -614,11 +614,6 @@ Trajectory_quadbins(PG_FUNCTION_ARGS)
   Temporal *traj = PG_GETARG_TEMPORAL_P(0);
   int32     zoom = PG_GETARG_INT32(1);
 
-  if (zoom < 0 || zoom > 15)
-    ereport(ERROR,
-      (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-       errmsg("zoom level must be between 0 and 15")));
-
   int       ncells;
   uint64   *cells = trajectory_quadbins(traj, (uint32_t) zoom, &ncells);
 
