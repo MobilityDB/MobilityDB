@@ -75,7 +75,7 @@ tquadbin_cell_set_stbox(Quadbin cell, STBox *box)
 {
   assert(box);
   double xmin, ymin, xmax, ymax;
-  quadbin_cell_to_bounding_box(cell, &xmin, &ymin, &xmax, &ymax);
+  quadbin_cell_bounding_box(cell, &xmin, &ymin, &xmax, &ymax);
   box->xmin = xmin;
   box->xmax = xmax;
   box->ymin = ymin;

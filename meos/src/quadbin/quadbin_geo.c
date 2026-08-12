@@ -87,7 +87,7 @@ GSERIALIZED *
 quadbin_cell_to_geompoint(Quadbin cell)
 {
   double lon, lat;
-  quadbin_cell_to_point(cell, &lon, &lat);
+  quadbin_cell_point(cell, &lon, &lat);
   /* Planar (non-geodetic) lon/lat point */
   return geopoint_make(lon, lat, 0.0, false, false, 4326);
 }
@@ -105,7 +105,7 @@ GSERIALIZED *
 quadbin_cell_to_geom(Quadbin cell)
 {
   double xmin, ymin, xmax, ymax;
-  quadbin_cell_to_bounding_box(cell, &xmin, &ymin, &xmax, &ymax);
+  quadbin_cell_bounding_box(cell, &xmin, &ymin, &xmax, &ymax);
   POINTARRAY *pa = ptarray_construct_empty(LW_FALSE, LW_FALSE, 5);
   POINT4D pt;
   pt.z = 0.0; pt.m = 0.0;
