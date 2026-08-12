@@ -179,8 +179,8 @@ raquet_from_gdal_dataset(GDALDatasetH ds, uint64 quadbin, const char *label)
     goto cleanup;
   }
 
-  result = raquet_make(quadbin, (uint16) xsize, (uint16) ysize, pixtype,
-    nodata, (bool) has_nodata, buf);
+  result = raquet_make(quadbin, xsize, ysize, pixtype,
+    nodata, (bool) has_nodata, buf, nbytes);
 
 cleanup:
   if (buf)

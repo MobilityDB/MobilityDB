@@ -85,8 +85,9 @@ extern char *raquet_as_hexwkb(const Raquet *rq, uint8_t variant, size_t *size_ou
 
 /* Constructor functions for Raquet tiles */
 
-extern Raquet *raquet_make(uint64 quadbin, uint16_t width, uint16_t height,
-  MeosPixType pixtype, double nodata, bool has_nodata, const uint8_t *pixels);
+extern Raquet *raquet_make(uint64 quadbin, int32 width, int32 height,
+  MeosPixType pixtype, double nodata, bool has_nodata, const uint8_t *pixels,
+  size_t pixels_size);
 extern Raquet *raquet_copy(const Raquet *rq);
 extern Raquet *raquet_read(const char *path, uint64 quadbin);
 extern Raquet *raquet_read_bytes(const uint8_t *data, size_t size, uint64 quadbin);

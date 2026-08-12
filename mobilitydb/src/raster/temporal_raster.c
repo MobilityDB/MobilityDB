@@ -509,19 +509,9 @@ Raquet_constructor(PG_FUNCTION_ARGS)
   float8      nodata    = has_nd ? PG_GETARG_FLOAT8(5) : 0.0;
   MeosPixType pixtype   = text_to_pixtype(pixtype_t);
 
-  if (width <= 0 || height <= 0)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The width and height of a raquet tile must be positive")));
-  size_t need = (size_t) width * height * raquet_pixtype_size(pixtype);
-  if ((size_t) VARSIZE_ANY_EXHDR(pxbytea) < need)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("The pixel array has %zu bytes but %zu are required for a "
-        "%d x %d tile", (size_t) VARSIZE_ANY_EXHDR(pxbytea), need, width,
-        height)));
-
   const uint8_t *pixels = (const uint8_t *) VARDATA_ANY(pxbytea);
-  Raquet *result = raquet_make((uint64) quadbin, (uint16_t) width,
-    (uint16_t) height, pixtype, nodata, has_nd, pixels);
+  Raquet *result = raquet_make((uint64) quadbin, width, height, pixtype,
+    nodata, has_nd, pixels, (size_t) VARSIZE_ANY_EXHDR(pxbytea));
   PG_RETURN_RAQUET_P(result);
 }
 

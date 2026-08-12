@@ -1989,7 +1989,7 @@ raquet_from_wkb_state(meos_wkb_parse_state *s)
   /* Check that there is enough data to read the pixel payload */
   wkb_parse_state_check(s, npixels);
   Raquet *result = raquet_make(quadbin, width, height, (MeosPixType) pixtype,
-    nodata, has_nodata, s->pos);
+    nodata, has_nodata, s->pos, npixels);
   s->pos += npixels;
   return PointerGetDatum(result);
 }

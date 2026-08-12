@@ -232,23 +232,44 @@ raquet_as_hexwkb(const Raquet *rq, uint8_t variant, size_t *size_out)
  * @param[in] has_nodata Whether nodata filtering is active
  * @param[in] pixels Row-major packed pixel bytes (`width * height *
  * raquet_pixtype_size(pixtype)` bytes)
+ * @param[in] pixels_size Number of bytes available at @p pixels
  * @csqlfn #Raquet_constructor()
  */
 Raquet *
-raquet_make(uint64 quadbin, uint16 width, uint16 height, MeosPixType pixtype,
-  double nodata, bool has_nodata, const uint8_t *pixels)
+raquet_make(uint64 quadbin, int32 width, int32 height, MeosPixType pixtype,
+  double nodata, bool has_nodata, const uint8_t *pixels, size_t pixels_size)
 {
   VALIDATE_NOT_NULL(pixels, NULL);
   if (! ensure_valid_pixtype((uint8) pixtype))
     return NULL;
-  if (width == 0 || height == 0)
+  /* The dimensions are taken in the type the SQL surface uses and validated
+   * before the narrowing to the uint16 fields below, so that a negative value
+   * is rejected here instead of wrapping to a large positive one */
+  if (width <= 0 || height <= 0)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "The width and height of a raquet tile must be positive");
     return NULL;
   }
+  if (width > UINT16_MAX || height > UINT16_MAX)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The width and height of a raquet tile must be at most %d: %d x %d",
+      UINT16_MAX, width, height);
+    return NULL;
+  }
 
   size_t npixels = (size_t) width * height * raquet_pixtype_size(pixtype);
+  /* The band arrives as a bare pointer, so its length must be given: without it
+   * the memcpy below reads past the end of a buffer shorter than the dimensions
+   * claim. Mirrors the check in #raster_tile_value_quadbin() */
+  if (pixels_size < npixels)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The pixel array has %zu bytes but %zu are required for a %d x %d tile",
+      pixels_size, npixels, width, height);
+    return NULL;
+  }
   size_t size = offsetof(struct Raquet, pixels) + npixels;
   Raquet *result = palloc0(size);
   SET_VARSIZE(result, size);
