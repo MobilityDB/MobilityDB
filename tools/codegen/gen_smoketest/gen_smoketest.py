@@ -883,13 +883,6 @@ TGEOMETRY_CONFIG = dict(
         "re:^tgeoseqset_from_base":  "needs STEP interp on multi-span input",
         "re:^tgeoseq_from_base":     "needs STEP interp on multi-span input",
         "re:^tpoint_from_base":      "needs hand-constructed Temporal input",
-        # Time-tiling functions take an Interval* duration; the canned
-        # interv1 is NULL, which trips assert(xsize > 0 || duration) in
-        # stbox_tile_state_make. They need a real duration to exercise.
-        "stbox_get_space_time_tile": "interv1=NULL triggers assert(xsize>0||duration)",
-        "stbox_get_time_tile":       "interv1=NULL triggers assert(xsize>0||duration)",
-        "stbox_space_time_tiles":    "interv1=NULL triggers assert(xsize>0||duration)",
-        "stbox_time_tiles":          "interv1=NULL triggers assert(xsize>0||duration)",
     },
     common_inputs="""\
   TimestampTz tstz1 = timestamptz_in("2001-01-02", -1);

@@ -645,6 +645,20 @@ stbox_tile_state_get(STboxGridState *state, STBox *box)
 }
 
 /**
+ * @brief Ensure that at least one dimension is given for tiling a
+ * spatiotemporal box
+ */
+static bool
+ensure_one_tile_dimension(double xsize, const Interval *duration)
+{
+  if (xsize > 0 || duration)
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG,
+    "At least one of the arguments xsize or duration must be given");
+  return false;
+}
+
+/**
  * @ingroup meos_geo_tile
  * @brief Return the spatiotemporal grid of a spatiotemporal box
  * @param[in] bounds Bounds
@@ -669,7 +683,8 @@ stbox_space_time_tiles(const STBox *bounds, double xsize, double ysize,
    * Since we pass by default Point(0 0 0) as origin independently of the input
    * STBox, we test the same spatial dimensionality only for STBox Z */
   VALIDATE_NOT_NULL(count, NULL); VALIDATE_NOT_NULL(bounds, NULL);
-  if (! ensure_has_X(T_STBOX, bounds->flags) ||
+  if (! ensure_one_tile_dimension(xsize, duration) ||
+      ! ensure_has_X(T_STBOX, bounds->flags) ||
       ! ensure_not_geodetic(bounds->flags) ||
       ! ensure_not_negative_datum(Float8GetDatum(xsize), T_FLOAT8) ||
       ! ensure_not_negative_datum(Float8GetDatum(ysize), T_FLOAT8) ||
