@@ -428,6 +428,12 @@ extern bool ensure_same_pcid_tpcbox(const TPCBox *box1, const TPCBox *box2);
               ! ensure_temporal_isof_type((Temporal *) (temp), T_TPCPATCH) ) \
            return (ret); \
     } while (0)
+  #define VALIDATE_TPOINTCLOUD(temp, ret) \
+    do { \
+          if (! ensure_not_null((void *) (temp)) || \
+              ! ensure_tpointcloud_temptype(((Temporal *) (temp))->temptype) ) \
+           return (ret); \
+    } while (0)
 #else
   #define VALIDATE_TPCPOINT(temp, ret) \
     do { assert(temp); \
@@ -435,6 +441,9 @@ extern bool ensure_same_pcid_tpcbox(const TPCBox *box1, const TPCBox *box2);
   #define VALIDATE_TPCPATCH(temp, ret) \
     do { assert(temp); \
       assert(((Temporal *) (temp))->temptype == T_TPCPATCH); } while (0)
+  #define VALIDATE_TPOINTCLOUD(temp, ret) \
+    do { assert(temp); \
+      assert(tpointcloud_temptype(((Temporal *) (temp))->temptype)); } while (0)
 #endif
 
 /* Conversion */
