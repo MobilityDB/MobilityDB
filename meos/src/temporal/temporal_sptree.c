@@ -56,6 +56,31 @@
 #include "temporal/temporal_sptree.h"
 
 /*****************************************************************************
+ * k-d split dimensions
+ *
+ * A k-d level stores a box under one bit of its quadrant code, and the search
+ * then narrows the node region on one dimension. The two must be the same
+ * dimension: the tables below give, for each family, the quadrant bit carrying
+ * the dimension that `*node_kdtree_next` narrows at that level.
+ *
+ * The bits are those the matching getQuadrant assigns, and the order is the one
+ * the matching *node_kdtree_next walks, so the two orders being different — as
+ * they are for the spatiotemporal box, whose bits run Z, Y, X, period while its
+ * search narrows X, Y, Z, period — is carried by the table rather than by a
+ * rule. `*node_kdtree_next` is shared with the SP-GiST operator classes, whose
+ * descent is PostgreSQL's, so the order it walks is fixed and this side adapts.
+ *****************************************************************************/
+
+/* lower, upper */
+static const uint8 SPAN_KD_BITS[2] = {1, 0};
+/* span.lower, span.upper, period.lower, period.upper */
+static const uint8 TBOX_KD_BITS[4] = {3, 2, 1, 0};
+/* xmin, xmax, ymin, ymax, zmin, zmax, period.lower, period.upper */
+static const uint8 STBOX_KD_BITS_Z[8] = {3, 2, 5, 4, 7, 6, 1, 0};
+/* xmin, xmax, ymin, ymax, period.lower, period.upper */
+static const uint8 STBOX_KD_BITS[6] = {3, 2, 5, 4, 1, 0};
+
+/*****************************************************************************
  * Family-specific adapters (Span)
  *****************************************************************************/
 
@@ -279,6 +304,7 @@ sptree_create(MeosType bboxtype, SPTreeKind kind)
     sptree->spantype = bboxtype;
     sptree->basetype = spantype_basetype(bboxtype);
     sptree->dims = 2;
+    sptree->kd_bits = SPAN_KD_BITS;
     sptree->nodeboxsize = sizeof(SpanNode);
     sptree->get_quadrant = &span_get_quadrant;
     sptree->nodebox_init = &span_nodebox_init;
@@ -290,6 +316,7 @@ sptree_create(MeosType bboxtype, SPTreeKind kind)
   else if (bboxtype == T_TBOX)
   {
     sptree->dims = 4;
+    sptree->kd_bits = TBOX_KD_BITS;
     sptree->nodeboxsize = sizeof(TboxNode);
     sptree->get_quadrant = &tbox_get_quadrant;
     sptree->nodebox_init = &tbox_nodebox_init;
@@ -482,6 +509,7 @@ sptree_insert(SPTree *sptree, void *box, int id)
   if (sptree->dims < 0)
   {
     sptree->dims = sptree->box_dims(box);
+    sptree->kd_bits = (sptree->dims == 8) ? STBOX_KD_BITS_Z : STBOX_KD_BITS;
     sptree->nchild = (sptree->kind == SPTREE_QUADTREE) ?
       (1 << sptree->dims) : 2;
   }
@@ -490,8 +518,11 @@ sptree_insert(SPTree *sptree, void *box, int id)
   while (*slot != NULL)
   {
     uint8 quadrant = sptree->get_quadrant((*slot)->centroid, box);
+    /* Store the box under the bit of the dimension the search narrows at this
+     * level, so that the region a search descends into is the region the box
+     * was partitioned by */
     int child = (sptree->kind == SPTREE_QUADTREE) ? (int) quadrant :
-      (int) ((quadrant >> (level % sptree->dims)) & 1);
+      (int) ((quadrant >> sptree->kd_bits[level % sptree->dims]) & 1);
     slot = &(*slot)->children[child];
     level++;
   }
