@@ -75,7 +75,7 @@ Datum
 Cbuffer_in(PG_FUNCTION_ARGS)
 {
   const char *str = PG_GETARG_CSTRING(0);
-  PG_RETURN_CBUFFER_P(cbuffer_parse(&str, true));
+  PG_RETURN_CBUFFER_P(cbuffer_in(str));
 }
 
 PGDLLEXPORT Datum Cbuffer_out(PG_FUNCTION_ARGS);

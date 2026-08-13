@@ -43,6 +43,7 @@
 #include <lib/stringinfo.h>
 /* MEOS */
 #include <meos.h>
+#include <meos_geo.h>
 #include <meos_internal.h>
 #include <meos_internal_geo.h>
 #include "temporal/set.h"
@@ -74,7 +75,7 @@ Datum
 Stbox_in(PG_FUNCTION_ARGS)
 {
   const char *str = PG_GETARG_CSTRING(0);
-  PG_RETURN_STBOX_P(stbox_parse(&str));
+  PG_RETURN_STBOX_P(stbox_in(str));
 }
 
 PGDLLEXPORT Datum Stbox_out(PG_FUNCTION_ARGS);
