@@ -28,7 +28,7 @@
 -------------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------
--- eContains
+-- eContains, aContains
 -------------------------------------------------------------------------------
 
 SELECT eContains(geometry 'Point(1 1)', tgeometry 'Point(1 1)@2000-01-01');
@@ -41,6 +41,14 @@ SELECT eContains(geometry 'Linestring(1 1,3 3,1 1)', tgeometry '[Point(4 2)@2000
 SELECT eContains(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))', tgeometry '[Point(0 1)@2000-01-01, Point(4 1)@2000-01-02]');
 SELECT eContains(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))', tgeometry '[Point(1 4)@2000-01-01, Point(4 1)@2000-01-02]');
 
+-- A temporal geometry holding point values never contains a polygon, whichever
+-- side of the polygon its values are on
+SELECT aContains(tgeometry '[Point(2 2)@2000-01-01, Point(2.5 2.5)@2000-01-02]', geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))');
+SELECT aContains(tgeometry '[Point(2 2)@2000-01-01, Point(4 4)@2000-01-02]', geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))');
+-- The polygon does contain the points, in the direction that asks it
+SELECT aContains(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))', tgeometry '[Point(2 2)@2000-01-01, Point(2.5 2.5)@2000-01-02]');
+SELECT aContains(tgeometry '[Polygon((1 1,1 3,3 3,3 1,1 1))@2000-01-01, Polygon((1 1,1 3,3 3,3 1,1 1))@2000-01-02]', geometry 'Point(2 2)');
+
 SELECT eContains(geometry 'Point empty', tgeometry 'Point(1 1)@2000-01-01');
 SELECT eContains(geometry 'Point empty', tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
 SELECT eContains(geometry 'Point empty', tgeometry '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
@@ -52,7 +60,7 @@ SELECT eContains(geometry 'Point(1 1 1)', tgeometry 'Point(1 1)@2000-01-01');
 SELECT eContains(geometry 'Point(1 1)', tgeometry 'Point(1 1 1)@2000-01-01');
 
 -------------------------------------------------------------------------------
--- eCovers
+-- eCovers, aCovers
 -------------------------------------------------------------------------------
 
 SELECT eCovers(geometry 'Point(1 1)', tgeometry 'Point(1 1)@2000-01-01');
@@ -64,6 +72,16 @@ SELECT eCovers(geometry 'Linestring(1 1,3 3)', tgeometry '[Point(4 2)@2000-01-01
 SELECT eCovers(geometry 'Linestring(1 1,3 3,1 1)', tgeometry '[Point(4 2)@2000-01-01, Point(2 4)@2000-01-02]');
 SELECT eCovers(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))', tgeometry '[Point(0 1)@2000-01-01, Point(4 1)@2000-01-02]');
 SELECT eCovers(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))', tgeometry '[Point(1 4)@2000-01-01, Point(4 1)@2000-01-02]');
+
+-- A temporal geometry holding point values never covers a polygon, whichever
+-- side of the polygon its values are on
+SELECT eCovers(tgeometry '[Point(2 2)@2000-01-01, Point(2.5 2.5)@2000-01-02]', geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))');
+SELECT aCovers(tgeometry '[Point(2 2)@2000-01-01, Point(2.5 2.5)@2000-01-02]', geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))');
+SELECT eCovers(tgeometry '[Point(2 2)@2000-01-01, Point(4 4)@2000-01-02]', geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))');
+-- The polygon does cover the points, in the direction that asks it
+SELECT eCovers(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))', tgeometry '[Point(2 2)@2000-01-01, Point(2.5 2.5)@2000-01-02]');
+SELECT eCovers(tgeometry '[Polygon((1 1,1 3,3 3,3 1,1 1))@2000-01-01, Polygon((1 1,1 3,3 3,3 1,1 1))@2000-01-02]', geometry 'Point(2 2)');
+SELECT aCovers(tgeometry '[Polygon((1 1,1 3,3 3,3 1,1 1))@2000-01-01, Polygon((1 1,1 3,3 3,3 1,1 1))@2000-01-02]', geometry 'Point(2 2)');
 
 SELECT eCovers(geometry 'Point empty', tgeometry 'Point(1 1)@2000-01-01');
 SELECT eCovers(geometry 'Point empty', tgeometry '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');

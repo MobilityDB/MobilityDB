@@ -2024,8 +2024,8 @@ geo_is_poly(const GSERIALIZED *gs)
  * must lie in A's closure. Supports the geometry types the clip engine
  * extracts into edges: points, (multi)lines, (multi)polygons with holes,
  * triangles, circular strings, curve polygons, and collections of these.
- * The dispatch mirrors #geom_spatialrel: an empty operand and a
- * (multi)point/(multi)polygon pair are handled by the same native
+ * The dispatch mirrors #geom_spatialrel: an empty operand and a (multi)polygon
+ * covering a (multi)point are handled by the same native
  * #meos_point_in_polygon short-circuit, so only the general case replaces the
  * GEOS covers call.
  * @pre The arguments have the same SRID
@@ -2058,11 +2058,12 @@ geo_covers2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   if (gserialized_get_gbox_p(gs1, &box1) && gserialized_get_gbox_p(gs2, &box2) &&
       gbox_overlaps_2d(&box1, &box2) == LW_FALSE)
     return false;
-  /* A (multi)point/(multi)polygon pair (in either order) is resolved by the
-   * native point-in-polygon test, exactly as #geom_spatialrel does before
-   * delegating to GEOS */
-  if ((geo_is_point(gs1) && geo_is_poly(gs2)) ||
-      (geo_is_poly(gs1) && geo_is_point(gs2)))
+  /* A (multi)polygon covering a (multi)point is resolved by the native
+   * point-in-polygon test, exactly as #geom_spatialrel does before delegating
+   * to GEOS. That test answers in the direction of the polygon, so the reverse
+   * pair, a (multi)point asked to cover a (multi)polygon, keeps the general
+   * path below */
+  if (geo_is_poly(gs1) && geo_is_point(gs2))
     return meos_point_in_polygon(gs1, gs2, COVERS);
 
   /* Extract the edges of both geometries */
