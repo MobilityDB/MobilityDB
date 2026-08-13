@@ -123,7 +123,7 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Restrict a temporal rigid geometry to (the complement of) a geometry. </p>
+<p>Restrict a temporal rigid geometry to (the complement of) a pose. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> rigid geometry </td></tr>
@@ -132,7 +132,9 @@ $(function() {
   </table>
   </dd>
 </dl>
-<dl class="section note"><dt>Note</dt><dd>This function does a bounding box test for the temporal types different from instant. The singleton tests are done in the functions for the specific temporal types. @csqlfn <a class="el" href="mobilitydb_2src_2temporal_2temporal_8c_a773ffa79826e1f7c87abd0202b07c043.html#a773ffa79826e1f7c87abd0202b07c043" title="Return a temporal value restricted to (the complement of) a base value.">Temporal_restrict_value()</a> </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>The base values of a temporal rigid geometry are poses. As the other restrictions do, the function strips the value to its temporal pose, restricts that, and puts the reference geometry back on the result </dd>
+<dd>
+This function does a bounding box test for the temporal types different from instant. The singleton tests are done in the functions for the specific temporal types. @csqlfn <a class="el" href="mobilitydb_2src_2temporal_2temporal_8c_a773ffa79826e1f7c87abd0202b07c043.html#a773ffa79826e1f7c87abd0202b07c043" title="Return a temporal value restricted to (the complement of) a base value.">Temporal_restrict_value()</a> </dd></dl>
 
 </div>
 </div>
