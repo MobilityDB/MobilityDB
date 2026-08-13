@@ -31,7 +31,7 @@ SELECT (tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]), '2024-01-01'::t
 SELECT (tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]),
                  '2024-01-01'::timestamptz)) |=|
        (tpcbox_zt(0, 0, 0, 0, 0, 0,
-                  tstzspan '[2099-01-01, 2099-01-02]', 1, 0)) > 1e10;
+                  tstzspan '[2099-01-01, 2099-01-02]', 1, 0)) IS NULL;
  ?column? 
 ----------
  t

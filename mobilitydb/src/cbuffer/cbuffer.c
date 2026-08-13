@@ -32,6 +32,8 @@
  * @brief Static circular buffer type
  */
 
+/* C */
+#include <float.h>
 /* PostgreSQL */
 #include <postgres.h>
 #include <pgtypes.h>
@@ -393,7 +395,10 @@ Datum
 Cbuffer_radius(PG_FUNCTION_ARGS)
 {
   Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
-  PG_RETURN_FLOAT8(cbuffer_radius(cb));
+  double result = cbuffer_radius(cb);
+  if (result == DBL_MAX)
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(result);
 }
 
 /*****************************************************************************

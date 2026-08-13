@@ -47,6 +47,8 @@
  * directly.
  */
 
+/* C */
+#include <float.h>
 /* PostgreSQL */
 #include <postgres.h>
 #include <fmgr.h>
@@ -427,7 +429,10 @@ NAD_tpcbox_tpcbox(PG_FUNCTION_ARGS)
 {
   TPCBox *box1 = PG_GETARG_TPCBOX_P(0);
   TPCBox *box2 = PG_GETARG_TPCBOX_P(1);
-  PG_RETURN_FLOAT8(nad_tpcbox_tpcbox(box1, box2));
+  double result = nad_tpcbox_tpcbox(box1, box2);
+  if (result == DBL_MAX)
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(result);
 }
 
 PGDLLEXPORT Datum NAD_tpointcloud_tpcbox(PG_FUNCTION_ARGS);
@@ -445,6 +450,8 @@ NAD_tpointcloud_tpcbox(PG_FUNCTION_ARGS)
   TPCBox *box = PG_GETARG_TPCBOX_P(1);
   double result = nad_tpointcloud_tpcbox(temp, box);
   PG_FREE_IF_COPY(temp, 0);
+  if (result == DBL_MAX)
+    PG_RETURN_NULL();
   PG_RETURN_FLOAT8(result);
 }
 
@@ -463,6 +470,8 @@ NAD_tpcbox_tpointcloud(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   double result = nad_tpointcloud_tpcbox(temp, box);
   PG_FREE_IF_COPY(temp, 1);
+  if (result == DBL_MAX)
+    PG_RETURN_NULL();
   PG_RETURN_FLOAT8(result);
 }
 
@@ -482,6 +491,8 @@ NAD_tpointcloud_tpointcloud(PG_FUNCTION_ARGS)
   double result = nad_tpointcloud_tpointcloud(temp1, temp2);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
+  if (result == DBL_MAX)
+    PG_RETURN_NULL();
   PG_RETURN_FLOAT8(result);
 }
 
