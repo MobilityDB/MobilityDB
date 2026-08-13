@@ -1650,6 +1650,14 @@
 					<listitem>
 						<para><link linkend="tpose_valueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Return the value at a timestamp</para>
 					</listitem>
+
+					<listitem>
+						<para><link linkend="tpose_speed"><varname>speed</varname></link>: Return the speed of a temporal pose as a temporal float, the magnitude of the position-component velocity (distance travelled per unit time)</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpose_angular_speed"><varname>angularSpeed</varname></link>: Return the angular speed of a temporal pose as a step-interpolated temporal float (radians per unit time)</para>
+					</listitem>
 				</itemizedlist>
 			</sect3>
 

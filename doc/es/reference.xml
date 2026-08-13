@@ -1664,6 +1664,14 @@
 					<listitem>
 						<para><link linkend="tpose_valueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Devuelve el valor en una marca de tiempo</para>
 					</listitem>
+
+					<listitem>
+						<para><link linkend="tpose_speed"><varname>speed</varname></link>: Devuelve la velocidad de una pose temporal como un flotante temporal, la magnitud de la velocidad de la componente de posición (distancia recorrida por unidad de tiempo)</para>
+					</listitem>
+
+					<listitem>
+						<para><link linkend="tpose_angular_speed"><varname>angularSpeed</varname></link>: Devuelve la velocidad angular de una pose temporal como un flotante temporal con interpolación escalonada (radianes por unidad de tiempo)</para>
+					</listitem>
 				</itemizedlist>
 			</sect3>
 

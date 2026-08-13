@@ -547,34 +547,6 @@ SELECT asGeoPose(tpose '[Pose(Point(8 47), 0)@2026-01-01,
 				</itemizedlist>
 			</sect3>
 
-			<sect3 xml:id="pose_geopose_speed">
-				<title>Speed and angular speed</title>
-				<itemizedlist>
-					<listitem xml:id="tpose_speed">
-						<indexterm significance="normal"><primary><varname>speed</varname></primary></indexterm>
-						<para>Return the speed of a temporal pose as a temporal float — the magnitude of the position-component velocity (distance travelled per unit time). The orientation is not part of this scalar; for angular velocity see <varname>angularSpeed</varname>.</para>
-						<para><varname>speed(tpose) → tfloat</varname></para>
-						<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(speed(tpose '[Pose(Point(0 0), 0)@2000-01-01, Pose(Point(1 1), 0.5)@2000-01-02]'));
--- Interp=Step;[1.6368e-5@2000-01-01, 1.6368e-5@2000-01-02]
--- (sqrt(2) units / 86400 seconds — units depend on the SRID's CRS)
-</programlisting>
-					</listitem>
-
-					<listitem xml:id="tpose_angular_speed">
-						<indexterm significance="normal"><primary><varname>angularSpeed</varname></primary></indexterm>
-						<para>Return the angular speed of a temporal pose as a step-interpolated temporal float (radians per unit time). For 2D poses this is the per-segment shortest-arc theta delta divided by the segment duration; for 3D poses it is the SLERP arc angle <varname>2 · acos(|q1 · q2|)</varname> divided by the segment duration. SLERP is by construction constant-angular-velocity along a segment, so the result is piecewise-constant.</para>
-						<para><varname>angularSpeed(tpose) → tfloat</varname></para>
-						<programlisting language="sql" xml:space="preserve" format="linespecific">
--- 90-degree yaw rotation over one day -> pi/2 rad / 86400 s
-SELECT asText(angularSpeed(tpose
-  '[Pose(Point(0 0 0), 1, 0, 0, 0)@2000-01-01,
-    Pose(Point(0 0 0), 0.7071067811865476, 0, 0, 0.7071067811865475)@2000-01-02]'));
--- Interp=Step;[1.8181e-5@2000-01-01, 1.8181e-5@2000-01-02]
-</programlisting>
-					</listitem>
-				</itemizedlist>
-			</sect3>
 		</sect2>
 	</sect1>
 
@@ -906,6 +878,30 @@ SELECT asText(valueAtTimestamp(tpose
   '[Pose(Point Z(1 1 1), 0.5, 0.5, 0.5, 0.5)@2001-01-01,
     Pose(Point Z(3 3 3), 1, 0, 0, 0)@2001-01-03)', timestamptz '2001-01-02'), 6);
 -- Pose(POINT Z (2 2 2),0.866025,0.288675,0.288675,0.288675)
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tpose_speed">
+				<indexterm significance="normal"><primary><varname>speed</varname></primary></indexterm>
+				<para>Return the speed of a temporal pose as a temporal float — the magnitude of the position-component velocity (distance travelled per unit time). The orientation is not part of this scalar; for angular velocity see <varname>angularSpeed</varname>.</para>
+				<para><varname>speed(tpose) → tfloat</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(speed(tpose '[Pose(Point(0 0), 0)@2000-01-01, Pose(Point(1 1), 0.5)@2000-01-02]'));
+-- Interp=Step;[1.6368e-5@2000-01-01, 1.6368e-5@2000-01-02]
+-- (sqrt(2) units / 86400 seconds — units depend on the SRID's CRS)
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tpose_angular_speed">
+				<indexterm significance="normal"><primary><varname>angularSpeed</varname></primary></indexterm>
+				<para>Return the angular speed of a temporal pose as a step-interpolated temporal float (radians per unit time). For 2D poses this is the per-segment shortest-arc theta delta divided by the segment duration; for 3D poses it is the SLERP arc angle <varname>2 · acos(|q1 · q2|)</varname> divided by the segment duration. SLERP is by construction constant-angular-velocity along a segment, so the result is piecewise-constant.</para>
+				<para><varname>angularSpeed(tpose) → tfloat</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- 90-degree yaw rotation over one day -> pi/2 rad / 86400 s
+SELECT asText(angularSpeed(tpose
+  '[Pose(Point(0 0 0), 1, 0, 0, 0)@2000-01-01,
+    Pose(Point(0 0 0), 0.7071067811865476, 0, 0, 0.7071067811865475)@2000-01-02]'));
+-- Interp=Step;[1.8181e-5@2000-01-01, 1.8181e-5@2000-01-02]
 </programlisting>
 			</listitem>
 		</itemizedlist>
