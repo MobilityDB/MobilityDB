@@ -34,6 +34,7 @@
 
 /* C */
 #include <assert.h>
+#include <float.h>
 /* PostgreSQL */
 #include <postgres.h>
 #include <utils/timestamp.h>
@@ -1562,14 +1563,14 @@ distance_set_bigint(const Set *s, int64 i)
  * @brief Return the distance between a set and a float
  * @param[in] s Set
  * @param[in] d Value
- * @return On error return -1.0
+ * @return On error return @p DBL_MAX
  * @csqlfn #Distance_set_value()
  */
 double
 distance_set_float(const Set *s, double d)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_FLOATSET(s, -1.0);
+  VALIDATE_FLOATSET(s, DBL_MAX);
   return DatumGetFloat8(distance_set_value(s, Float8GetDatum(d)));
 }
 
@@ -1595,14 +1596,14 @@ distance_set_date(const Set *s, DateADT d)
  * double
  * @param[in] s Set
  * @param[in] t Value
- * @return On error return -1.0
+ * @return On error return @p DBL_MAX
  * @csqlfn #Distance_set_value()
  */
 double
 distance_set_timestamptz(const Set *s, TimestampTz t)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TSTZSET(s, -1.0);
+  VALIDATE_TSTZSET(s, DBL_MAX);
   return DatumGetFloat8(distance_set_value(s, TimestampTzGetDatum(t)));
 }
 
@@ -1644,7 +1645,7 @@ distance_bigintset_bigintset(const Set *s1, const Set *s2)
  * @ingroup meos_setspan_dist
  * @brief Return the distance between two float sets
  * @param[in] s1,s2 Sets
- * @return On error return -1.0
+ * @return On error return @p DBL_MAX
  * @csqlfn #Distance_set_set()
  */
 double
@@ -1652,7 +1653,7 @@ distance_floatset_floatset(const Set *s1, const Set *s2)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_set_set(s1, s2) || ! ensure_set_isof_type(s1, T_FLOATSET))
-    return -1.0;
+    return DBL_MAX;
   return DatumGetFloat8(distance_set_set(s1, s2));
 }
 
@@ -1676,7 +1677,7 @@ distance_dateset_dateset(const Set *s1, const Set *s2)
  * @ingroup meos_setspan_dist
  * @brief Return the distance in seconds between two timestamptz sets
  * @param[in] s1,s2 Sets
- * @return On error return -1.0
+ * @return On error return @p DBL_MAX
  * @csqlfn #Distance_set_set()
  */
 double
@@ -1684,7 +1685,7 @@ distance_tstzset_tstzset(const Set *s1, const Set *s2)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_set_set(s1, s2) || ! ensure_set_isof_type(s1, T_TSTZSET))
-    return -1.0;
+    return DBL_MAX;
   return DatumGetFloat8(distance_set_set(s1, s2));
 }
 

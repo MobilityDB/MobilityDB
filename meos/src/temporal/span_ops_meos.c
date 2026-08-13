@@ -1386,14 +1386,14 @@ distance_span_bigint(const Span *s, int64 i)
  * @brief Return the distance between a span and a float
  * @param[in] s Span
  * @param[in] d Value
- * @return On error return -1.0
+ * @return On error return @p DBL_MAX
  * @csqlfn #Distance_span_value()
  */
 double
 distance_span_float(const Span *s, double d)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_FLOATSPAN(s, -1.0);
+  VALIDATE_FLOATSPAN(s, DBL_MAX);
   return distance_span_value(s, Float8GetDatum(d));
 }
 
@@ -1419,14 +1419,14 @@ distance_span_date(const Span *s, DateADT d)
  * double
  * @param[in] s Span
  * @param[in] t Value
- * @return On error return -1.0
+ * @return On error return @p DBL_MAX
  * @csqlfn #Distance_span_value()
  */
 double
 distance_span_timestamptz(const Span *s, TimestampTz t)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TSTZSPAN(s, -1.0);
+  VALIDATE_TSTZSPAN(s, DBL_MAX);
   return distance_span_value(s, TimestampTzGetDatum(t));
 }
 
@@ -1466,14 +1466,14 @@ distance_bigintspan_bigintspan(const Span *s1, const Span *s2)
  * @ingroup meos_setspan_dist
  * @brief Return the distance between two float spans
  * @param[in] s1,s2 Spans
- * @return On error return -1.0
+ * @return On error return @p DBL_MAX
  * @csqlfn #Distance_span_span()
  */
 double
 distance_floatspan_floatspan(const Span *s1, const Span *s2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_FLOATSPAN(s1, -1.0); VALIDATE_FLOATSPAN(s2, -1.0);
+  VALIDATE_FLOATSPAN(s1, DBL_MAX); VALIDATE_FLOATSPAN(s2, DBL_MAX);
   return DatumGetFloat8(distance_span_span(s1, s2));
 }
 
@@ -1496,14 +1496,14 @@ distance_datespan_datespan(const Span *s1, const Span *s2)
  * @ingroup meos_setspan_dist
  * @brief Return the distance in seconds between two timestamptz spans
  * @param[in] s1,s2 Spans
- * @return On error return -1.0
+ * @return On error return @p DBL_MAX
  * @csqlfn #Distance_span_span()
  */
 double
 distance_tstzspan_tstzspan(const Span *s1, const Span *s2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TSTZSPAN(s1, -1.0); VALIDATE_TSTZSPAN(s2, -1.0);
+  VALIDATE_TSTZSPAN(s1, DBL_MAX); VALIDATE_TSTZSPAN(s2, DBL_MAX);
   return DatumGetFloat8(distance_span_span(s1, s2));
 }
 

@@ -76,7 +76,7 @@ SELECT lcssDistance(
   -1.0);
  lcssdistance 
 --------------
-           -1
+             
 (1 row)
 
 SELECT round(averageHausdorffDistance(

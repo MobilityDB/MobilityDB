@@ -1335,16 +1335,16 @@ stbox_tmax_inc(const STBox *box, bool *result)
  * @param[in] box Spatiotemporal box
  * @param[in] spheroid When true, the calculation uses the WGS 84 spheroid,
  * otherwise it uses a faster spherical calculation
- * @return On error, return -1.0
+ * @return On error, return @p DBL_MAX
  * @csqlfn #Stbox_area()
  */
 double
 stbox_area(const STBox *box, bool spheroid)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(box, -1.0); 
+  VALIDATE_NOT_NULL(box, DBL_MAX); 
   if (! ensure_has_X(T_STBOX, box->flags))
-    return -1.0;
+    return DBL_MAX;
 
   if (! MEOS_FLAGS_GET_GEODETIC(box->flags))
     return (box->xmax - box->xmin) * (box->ymax - box->ymin);
@@ -1359,17 +1359,17 @@ stbox_area(const STBox *box, bool spheroid)
  * @ingroup meos_geo_box_accessor
  * @brief Return the volume of a 3D spatiotemporal box
  * @param[in] box Spatiotemporal box
- * @return On error return -1.0
+ * @return On error return @p DBL_MAX
  * @csqlfn #Stbox_volume()
  */
 double
 stbox_volume(const STBox *box)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(box, -1.0); 
+  VALIDATE_NOT_NULL(box, DBL_MAX); 
   if (! ensure_has_X(T_STBOX, box->flags) ||
       ! ensure_has_Z(T_STBOX, box->flags) || ! ensure_not_geodetic(box->flags))
-    return -1.0;
+    return DBL_MAX;
   return (box->xmax - box->xmin) * (box->ymax - box->ymin) * 
     (box->zmax - box->zmin);
 }
@@ -1380,16 +1380,16 @@ stbox_volume(const STBox *box)
  * @param[in] box Spatiotemporal box
  * @param[in] spheroid When true, the calculation uses the WGS 84 spheroid,
  * otherwise it uses a faster spherical calculation
- * @return On error return -1.0
+ * @return On error return @p DBL_MAX
  * @csqlfn #Stbox_perimeter()
  */
 double
 stbox_perimeter(const STBox *box, bool spheroid)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(box, -1.0); 
+  VALIDATE_NOT_NULL(box, DBL_MAX); 
   if (! ensure_has_X(T_STBOX, box->flags))
-    return -1.0;
+    return DBL_MAX;
 
   GSERIALIZED *geo = stbox_geo(box);
   double result = MEOS_FLAGS_GET_GEODETIC(box->flags) ?

@@ -547,14 +547,14 @@ bigintspanset_width(const SpanSet *ss, bool boundspan)
  * @brief Return the width of a float span set
  * @param[in] ss Span
  * @param[in] boundspan True when the potential time gaps are ignored
- * @return On error return -1
+ * @return On error return @p DBL_MAX
  * @csqlfn #Numspanset_width(()
  */
 double
 floatspanset_width(const SpanSet *ss, bool boundspan)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_FLOATSPANSET(ss, -1.0);
+  VALIDATE_FLOATSPANSET(ss, DBL_MAX);
   return DatumGetFloat8(numspanset_width(ss, boundspan));
 }
 

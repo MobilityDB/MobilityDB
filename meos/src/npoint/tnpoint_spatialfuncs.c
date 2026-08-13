@@ -36,6 +36,7 @@
 
 /* C */
 #include <assert.h>
+#include <float.h>
 #include <math.h>
 /* MEOS */
 #include <meos.h>
@@ -259,13 +260,14 @@ tnpointseqset_length(const TSequenceSet *ss)
  * @ingroup meos_npoint_accessor
  * @brief Length traversed by a temporal network point
  * @param[in] temp Temporal point
+ * @return On error return @p DBL_MAX
  * @csqlfn #Tnpoint_length()
  */
 double
 tnpoint_length(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TNPOINT(temp, -1.0);
+  VALIDATE_TNPOINT(temp, DBL_MAX);
 
   assert(temptype_subtype(temp->subtype));
   if (! MEOS_FLAGS_LINEAR_INTERP(temp->flags))

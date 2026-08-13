@@ -33,6 +33,9 @@
  */
 
 /* PostgreSQL */
+/* C */
+#include <float.h>
+/* PostgreSQL */
 #include <postgres.h>
 /* MEOS */
 #include <meos.h>
@@ -82,6 +85,8 @@ Tnpoint_length(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   double result = tnpoint_length(temp);
   PG_FREE_IF_COPY(temp, 0);
+  if (result == DBL_MAX)
+    PG_RETURN_NULL();
   PG_RETURN_FLOAT8(result);
 }
 

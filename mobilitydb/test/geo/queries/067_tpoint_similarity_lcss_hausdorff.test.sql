@@ -90,7 +90,7 @@ SELECT round(lcssDistance(
 -- LCSS distance — error paths (defensive validation)
 -------------------------------------------------------------------------------
 
--- Negative epsilon → returns -1.0
+-- Negative epsilon → returns NULL
 SELECT lcssDistance(
   tgeompoint '[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02]',
   tgeompoint '[Point(0 0)@2000-01-01, Point(1 1)@2000-01-02]',

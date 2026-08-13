@@ -3416,14 +3416,14 @@ temporal_stops(const Temporal *temp, double maxdist,
  * @ingroup meos_temporal_accessor
  * @brief Return the integral (area under the curve) of a temporal number
  * @param[in] temp Temporal value
- * @return On error return -1.0
+ * @return On error return @p DBL_MAX
  * @csqlfn #Tnumber_integral()
  */
 double
 tnumber_integral(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TNUMBER(temp, -1.0);
+  VALIDATE_TNUMBER(temp, DBL_MAX);
 
   assert(temptype_subtype(temp->subtype));
    switch (temp->subtype)

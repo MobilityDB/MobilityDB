@@ -36,6 +36,7 @@
 
 /* C */
 #include <assert.h>
+#include <float.h>
 /* PostgreSQL */
 #include <postgres.h>
 #include <varatt.h>
@@ -169,7 +170,7 @@ tseqarr_normalize(TSequence **sequences, int count, int *newcount)
  * @param[in] value1,value2 Values
  * @param[in] type Type of the values
  * @param[in] flags Flags
- * @return On error return -1.0
+ * @return On error return @p DBL_MAX
  */
 double
 datum_distance(Datum value1, Datum value2, MeosType type, int16 flags)
@@ -187,7 +188,7 @@ datum_distance(Datum value1, Datum value2, MeosType type, int16 flags)
 #endif
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
     "Unknown types for distance between values: %s", meostype_name(type));
-  return -1;
+  return DBL_MAX;
 }
 
 /*****************************************************************************

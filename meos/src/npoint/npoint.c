@@ -1077,14 +1077,14 @@ npoint_route(const Npoint *np)
  * @ingroup meos_npoint_base_accessor
  * @brief Return the position of a network point
  * @param[in] np Network point
- * @return On error return -1.0
+ * @return On error return @p DBL_MAX
  * @csqlfn #Npoint_position()
  */
 double
 npoint_position(const Npoint *np)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(np, -1.0);
+  VALIDATE_NOT_NULL(np, DBL_MAX);
   return np->pos;
 }
 
@@ -1106,13 +1106,14 @@ nsegment_route(const Nsegment *ns)
  * @ingroup meos_npoint_base_accessor
  * @brief Return the start position of a network segment
  * @param[in] ns Network segment
+ * @return On error return @p DBL_MAX
  * @csqlfn #Nsegment_start_position()
  */
 double
 nsegment_start_position(const Nsegment *ns)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(ns, -1.0);
+  VALIDATE_NOT_NULL(ns, DBL_MAX);
   return ns->pos1;
 }
 
@@ -1120,13 +1121,14 @@ nsegment_start_position(const Nsegment *ns)
  * @ingroup meos_npoint_base_accessor
  * @brief Return the end position of a network segment
  * @param[in] ns Network segment
+ * @return On error return @p DBL_MAX
  * @csqlfn #Nsegment_end_position()
  */
 double
 nsegment_end_position(const Nsegment *ns)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(ns, -1.0);
+  VALIDATE_NOT_NULL(ns, DBL_MAX);
   return ns->pos2;
 }
 

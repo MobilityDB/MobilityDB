@@ -971,7 +971,7 @@ cbuffer_distance(const Cbuffer *cb1, const Cbuffer *cb2)
 /**
  * @ingroup meos_cbuffer_base_dist
  * @brief Return the distance between two circular buffers
- * @return On error return -1.0
+ * @return On error return @p DBL_MAX
  * @csqlfn #Distance_cbuffer_cbuffer()
  */
 double
@@ -979,7 +979,7 @@ distance_cbuffer_cbuffer(const Cbuffer *cb1, const Cbuffer *cb2)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_cbuffer_cbuffer(cb1, cb2))
-    return -1.0;
+    return DBL_MAX;
   /* The following function assumes that all validity tests have been done */
   return cbuffer_distance(cb1, cb2);
 }
@@ -1001,7 +1001,7 @@ datum_cbuffer_distance(Datum cb1, Datum cb2)
 /**
  * @ingroup meos_cbuffer_base_dist
  * @brief Return the distance between a circular buffer and a geometry
- * @return On error return -1.0
+ * @return On error return @p DBL_MAX
  * @csqlfn #Distance_cbuffer_geo()
  */
 double
@@ -1009,7 +1009,7 @@ distance_cbuffer_geo(const Cbuffer *cb, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_cbuffer_geo(cb, gs) || gserialized_is_empty(gs))
-    return -1.0;
+    return DBL_MAX;
 
   GSERIALIZED *geo = cbuffer_to_geom(cb);
   double result = geom_distance2d(geo, gs);
@@ -1020,7 +1020,7 @@ distance_cbuffer_geo(const Cbuffer *cb, const GSERIALIZED *gs)
 /**
  * @ingroup meos_cbuffer_base_dist
  * @brief Return the distance between a circular buffer and a spatiotemporal box
- * @return On error return -1.0
+ * @return On error return @p DBL_MAX
  * @csqlfn #Distance_cbuffer_stbox()
  */
 double
@@ -1028,7 +1028,7 @@ distance_cbuffer_stbox(const Cbuffer *cb, const STBox *box)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_cbuffer_stbox(cb, box))
-    return -1.0;
+    return DBL_MAX;
 
   GSERIALIZED *geo1 = cbuffer_to_geom(cb);
   GSERIALIZED *geo2 = stbox_geo(box);
