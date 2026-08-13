@@ -4,3 +4,5 @@ build/
 .cache
 .vscode
 build-ext/
+__pycache__/
+*.py[cod]
