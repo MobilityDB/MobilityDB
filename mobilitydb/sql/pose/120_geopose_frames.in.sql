@@ -77,7 +77,11 @@ INSERT INTO geopose_frames(frame_id, authority, code, name, srid, is_geographic,
   (3, 'OGC',  'LTP',  'Local Tangent Plane (East-North-Up)', NULL, false,
      'Parameterised at runtime by an anchor (lat, lon, h). The outer-frame conversion to ECEF is the standard ENU rotation matrix at the anchor.'),
   (4, 'OGC',  'BODY', 'Right-handed body axes (default inner frame)', NULL, false,
-     'Conventional inner frame: X forward, Y left, Z up. The pose''s quaternion takes vectors from this body frame to the outer frame.');
+     'Conventional inner frame: X forward, Y left, Z up. The pose''s quaternion takes vectors from this body frame to the outer frame.'),
+  (5, '/geopose/1.0', 'LTP-ENU', 'GeoPose outer frame of a Composite Sequence Series', NULL, false,
+     'Authority and id emitted as the outerFrame of a Series. Parameterised by the tangent point of the first pose as ''longitude=<degrees>&latitude=<degrees>&height=<metres>''.'),
+  (6, '/geopose/1.0', 'RotateTranslate', 'GeoPose inner frame of a Composite Sequence Series', NULL, false,
+     'Authority and id emitted for each inner frame of a Series. Parameterised as ''translation=[e, n, u]&rotation=[w, x, y, z]'', the translation in metres in the outer frame and the rotation taking body axes to the outer frame.');
 
 /* Helper SQL functions to query the registry without exposing the schema. */
 

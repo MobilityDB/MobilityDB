@@ -106,6 +106,11 @@ extern Datum datum_pose_apply_geo(Datum pose, Datum body);
 /* Transformation functions */
 
 extern Datum datum_pose_round(Datum pose, Datum size);
+extern void pose_quaternion_mul(double aw, double ax, double ay, double az,
+  double bw, double bx, double by, double bz,
+  double *ow, double *ox, double *oy, double *oz);
+extern void pose_enu_to_ecef_quaternion(double lat_rad, double lon_rad,
+  double *W, double *X, double *Y, double *Z);
 extern Pose *pose_transf_pj(const Pose *pose, int32_t srid_to,
   const LWPROJ *pj);
 

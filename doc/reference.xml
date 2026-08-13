@@ -2682,7 +2682,7 @@
 				<title>Temporal JSON I/O</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="pose_geopose_funcs"><varname>asGeoPose</varname>, <varname>tposeFromGeoPose</varname></link>: Convert a temporal pose to or from a TemporalGeoPose JSON envelope</para>
+						<para><link linkend="pose_geopose_funcs"><varname>asGeoPose</varname>, <varname>tposeFromGeoPose</varname></link>: Convert a temporal pose to or from its OGC GeoPose v1.0 encoding: a Basic document for an instant, a Composite Sequence Series for a sequence</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

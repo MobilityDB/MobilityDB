@@ -1506,8 +1506,8 @@ pose_set_srid(const Pose *pose, int32_t srid)
 /**
  * @brief Compose two unit quaternions: out = a * b (Hamilton convention).
  */
-static void
-quaternion_mul(double aw, double ax, double ay, double az,
+void
+pose_quaternion_mul(double aw, double ax, double ay, double az,
                double bw, double bx, double by, double bz,
                double *ow, double *ox, double *oy, double *oz)
 {
@@ -1527,7 +1527,7 @@ quaternion_mul(double aw, double ax, double ay, double az,
  * Converted to a quaternion via Shepperd's algorithm with the
  * largest-trace branch for numerical stability.
  */
-static void
+void
 pose_enu_to_ecef_quaternion(double lat_rad, double lon_rad,
   double *W, double *X, double *Y, double *Z)
 {
@@ -1600,7 +1600,7 @@ pose_orientation_apply_frame_change(int32_t srid_from, int32_t srid_to,
   {
     double Rw, Rx, Ry, Rz;
     pose_enu_to_ecef_quaternion(lat_rad, lon_rad, &Rw, &Rx, &Ry, &Rz);
-    quaternion_mul(Rw, Rx, Ry, Rz, Win, Xin, Yin, Zin, Wout, Xout, Yout, Zout);
+    pose_quaternion_mul(Rw, Rx, Ry, Rz, Win, Xin, Yin, Zin, Wout, Xout, Yout, Zout);
     return;
   }
 
@@ -1612,7 +1612,7 @@ pose_orientation_apply_frame_change(int32_t srid_from, int32_t srid_to,
     double Rw, Rx, Ry, Rz;
     pose_enu_to_ecef_quaternion(lat_rad, lon_rad, &Rw, &Rx, &Ry, &Rz);
     /* Conjugate of unit quaternion */
-    quaternion_mul(Rw, -Rx, -Ry, -Rz, Win, Xin, Yin, Zin,
+    pose_quaternion_mul(Rw, -Rx, -Ry, -Rz, Win, Xin, Yin, Zin,
       Wout, Xout, Yout, Zout);
     return;
   }

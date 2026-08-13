@@ -342,6 +342,12 @@ typedef int (*tpfunc_temp)(Datum, Datum, Datum, Datum, Datum, TimestampTz,
   #define DatumGetTSequenceSetP(X)   ((TSequenceSet *) PG_DETOAST_DATUM(X))
 #endif /* MEOS */
 
+/* Seconds separating the Unix epoch from the PostgreSQL epoch that a
+ * TimestampTz counts microseconds from. Every conversion between a
+ * TimestampTz and Unix time goes through this one constant, whatever
+ * resolution the target encoding asks for. */
+#define DELTA_UNIX_POSTGRES_EPOCH 946684800
+
 #define PG_GETARG_TEMPORAL_P(X)      ((Temporal *) PG_GETARG_VARLENA_P(X))
 #define PG_GETARG_TINSTANT_P(X)      ((TInstant *) PG_GETARG_VARLENA_P(X))
 #define PG_GETARG_TSEQUENCE_P(X)     ((TSequence *) PG_GETARG_VARLENA_P(X))

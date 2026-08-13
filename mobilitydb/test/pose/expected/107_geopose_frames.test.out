@@ -1,7 +1,7 @@
 SELECT count(*) FROM geopose_frames;
  count 
 -------
-     4
+     6
 (1 row)
 
 SELECT geoPoseFrameSRID(1), geoPoseFrameIsGeographic(1);
@@ -44,6 +44,6 @@ DELETE 1
 SELECT count(*) FROM geopose_frames;
  count 
 -------
-     4
+     6
 (1 row)
 

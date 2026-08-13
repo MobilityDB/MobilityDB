@@ -152,11 +152,11 @@ ERROR:  GeoPose 'quaternion' must carry numeric 'w','x','y','z' members
 SELECT asGeoPose(pose 'Pose(Point(1 1),0.5)', 99, 6);
 ERROR:  Unknown GeoPose conformance class 99 (0 = Basic-Quaternion, 1 = Basic-YPR)
 SELECT asGeoPose(pose 'SRID=5676;Pose(Point(1 1),0.5)', 0, 6);
-ERROR:  GeoPose JSON requires SRID 4326 (WGS-84), got 5676
+ERROR:  GeoPose JSON requires a WGS-84 geographic SRID (4326 or 4979), got 5676
 SELECT asGeoPose(tpose 'Pose(Point(8 47), 0)@2026-01-01', 0, 6);
-                                                                                                                asgeopose                                                                                                                
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {"type":"TemporalGeoPose","version":"1.0","conformance":"Basic-Quaternion","interpolation":"None","instants":[{"position":{"lat":47,"lon":8,"h":0},"quaternion":{"x":0,"y":0,"z":0,"w":1},"validTime":"Thu Jan 01 00:00:00 2026 PST"}]}
+                                               asgeopose                                                
+--------------------------------------------------------------------------------------------------------
+ {"position":{"lat":47,"lon":8,"h":0},"quaternion":{"x":0,"y":0,"z":0,"w":1},"validTime":1767254400000}
 (1 row)
 
 SELECT asText(tposeFromGeoPose(asGeoPose(tpose 'Pose(Point(8 47), 0)@2026-01-01', 0, 6)));
@@ -165,28 +165,35 @@ SELECT asText(tposeFromGeoPose(asGeoPose(tpose 'Pose(Point(8 47), 0)@2026-01-01'
  GeodPose(POINT Z (8 47 0),1,0,0,0)@Thu Jan 01 00:00:00 2026 PST
 (1 row)
 
-SELECT asGeoPose(tpose '[Pose(Point(8 47), 0)@2026-01-01, Pose(Point(9 48), 0.5)@2026-01-02]', 0, 6);
-                                                                                                                                                                                                     asgeopose                                                                                                                                                                                                     
--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {"type":"TemporalGeoPose","version":"1.0","conformance":"Basic-Quaternion","interpolation":"Linear","lower_inc":true,"upper_inc":true,"instants":[{"position":{"lat":47,"lon":8,"h":0},"quaternion":{"x":0,"y":0,"z":0,"w":1},"validTime":"Thu Jan 01 00:00:00 2026 PST"},{"position":{"lat":48,"lon":9,"h":0},"quaternion":{"x":0,"y":0,"z":0.247404,"w":0.968912},"validTime":"Fri Jan 02 00:00:00 2026 PST"}]}
+SELECT asGeoPose(tpose '[Pose(Point(0 0), 0)@2026-01-01, Pose(Point(0 0), 0.5)@2026-01-02]', 0, 6);
+                                                                                                                                                                                                                                                                                                                asgeopose                                                                                                                                                                                                                                                                                                                
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"header":{"poseCount":2,"startInstant":1767254400000,"stopInstant":1767340800000,"transitionModel":{"authority":"/geopose/1.0","id":"interpolate","parameters":"interpolation=Linear"}},"interPoseDuration":86400000,"outerFrame":{"authority":"/geopose/1.0","id":"LTP-ENU","parameters":"longitude=0&latitude=0&height=0&crs=EPSG:4979"},"innerFrameSeries":[{"authority":"/geopose/1.0","id":"RotateTranslate","parameters":"translation=[0, 0, 0]&rotation=[1, 0, 0, 0]"},{"authority":"/geopose/1.0","id":"RotateTranslate","parameters":"translation=[0, 0, 0]&rotation=[0.968912, 0, 0, 0.247404]"}],"trailer":{"poseCount":2}}
 (1 row)
 
-SELECT asText(tposeFromGeoPose(asGeoPose(tpose '[Pose(Point(8 47), 0)@2026-01-01, Pose(Point(9 48), 0.5)@2026-01-02]', 0, 6)));
-                                                                               astext                                                                               
---------------------------------------------------------------------------------------------------------------------------------------------------------------------
- [GeodPose(POINT Z (8 47 0),1,0,0,0)@Thu Jan 01 00:00:00 2026 PST, GeodPose(POINT Z (9 48 0),0.968912386131041,0,0,0.247404098595501)@Fri Jan 02 00:00:00 2026 PST]
+SELECT asText(round(tposeFromGeoPose(asGeoPose(tpose '[Pose(Point(0 0), 0)@2026-01-01, Pose(Point(0 1), 0)@2026-01-02]', 0, 15)), 6));
+                                                              astext                                                              
+----------------------------------------------------------------------------------------------------------------------------------
+ [GeodPose(POINT Z (0 0 0),1,0,0,0)@Thu Jan 01 00:00:00 2026 PST, GeodPose(POINT Z (0 1 0),1,0,0,0)@Fri Jan 02 00:00:00 2026 PST]
 (1 row)
 
-SELECT asGeoPose(tpose '[Pose(Point(8 47 1500), 1, 0, 0, 0)@2026-01-01, Pose(Point(8 47 1500), 0.7071067811865476, 0, 0, 0.7071067811865475)@2026-01-02]', 1, 6);
-                                                                                                                                                                                             asgeopose                                                                                                                                                                                             
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {"type":"TemporalGeoPose","version":"1.0","conformance":"Basic-YPR","interpolation":"Linear","lower_inc":true,"upper_inc":true,"instants":[{"position":{"lat":47,"lon":8,"h":1500},"angles":{"yaw":0,"pitch":0,"roll":0},"validTime":"Thu Jan 01 00:00:00 2026 PST"},{"position":{"lat":47,"lon":8,"h":1500},"angles":{"yaw":90,"pitch":0,"roll":0},"validTime":"Fri Jan 02 00:00:00 2026 PST"}]}
+SELECT asGeoPose(tpose '[Pose(Point(0 0 0), 1, 0, 0, 0)@2026-01-01, Pose(Point(0 0 0), 0.707107, 0, 0, 0.707107)@2026-01-02]', 1, 6);
+                                                                                                                                                                                                                                                                                                                asgeopose                                                                                                                                                                                                                                                                                                                
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"header":{"poseCount":2,"startInstant":1767254400000,"stopInstant":1767340800000,"transitionModel":{"authority":"/geopose/1.0","id":"interpolate","parameters":"interpolation=Linear"}},"interPoseDuration":86400000,"outerFrame":{"authority":"/geopose/1.0","id":"LTP-ENU","parameters":"longitude=0&latitude=0&height=0&crs=EPSG:4979"},"innerFrameSeries":[{"authority":"/geopose/1.0","id":"RotateTranslate","parameters":"translation=[0, 0, 0]&rotation=[1, 0, 0, 0]"},{"authority":"/geopose/1.0","id":"RotateTranslate","parameters":"translation=[0, 0, 0]&rotation=[0.707107, 0, 0, 0.707107]"}],"trailer":{"poseCount":2}}
 (1 row)
 
-SELECT asGeoPose(tpose '{[Pose(Point(8 47), 0)@2026-01-01, Pose(Point(9 48), 0.5)@2026-01-02], [Pose(Point(10 50), 1)@2026-01-04, Pose(Point(11 51), 1.5)@2026-01-05]}', 1, 4);
-                                                                                                                                                                                                                                                                                                                                                       asgeopose                                                                                                                                                                                                                                                                                                                                                        
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {"type":"TemporalGeoPose","version":"1.0","conformance":"Basic-YPR","interpolation":"Linear","sequences":[{"lower_inc":true,"upper_inc":true,"instants":[{"position":{"lat":47,"lon":8,"h":0},"angles":{"yaw":0,"pitch":0,"roll":0},"validTime":"Thu Jan 01 00:00:00 2026 PST"},{"position":{"lat":48,"lon":9,"h":0},"angles":{"yaw":28.65,"pitch":0,"roll":0},"validTime":"Fri Jan 02 00:00:00 2026 PST"}]},{"lower_inc":true,"upper_inc":true,"instants":[{"position":{"lat":50,"lon":10,"h":0},"angles":{"yaw":57.3,"pitch":0,"roll":0},"validTime":"Sun Jan 04 00:00:00 2026 PST"},{"position":{"lat":51,"lon":11,"h":0},"angles":{"yaw":85.94,"pitch":0,"roll":0},"validTime":"Mon Jan 05 00:00:00 2026 PST"}]}]}
+SELECT asGeoPose(tpose '{[Pose(Point(0 0 0), 0.5, 0.5, 0.5, 0.5)@2026-01-01, Pose(Point(0 0 100), 0.5, 0.5, 0.5, 0.5)@2026-01-02], [Pose(Point(0 0 300), 0.5, 0.5, 0.5, 0.5)@2026-01-04, Pose(Point(0 0 600), 0.5, 0.5, 0.5, 0.5)@2026-01-05]}', 1, 4);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        asgeopose                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"header":{"poseCount":4,"startInstant":1767254400000,"stopInstant":1767600000000,"transitionModel":{"authority":"/geopose/1.0","id":"interpolate","parameters":"interpolation=Linear"}},"outerFrame":{"authority":"/geopose/1.0","id":"LTP-ENU","parameters":"longitude=0&latitude=0&height=0&crs=EPSG:4979"},"innerFrameAndTimeSeries":[{"frame":{"authority":"/geopose/1.0","id":"RotateTranslate","parameters":"translation=[0, 0, 0]&rotation=[0.5, 0.5, 0.5, 0.5]"},"validTime":1767254400000},{"frame":{"authority":"/geopose/1.0","id":"RotateTranslate","parameters":"translation=[0, 0, 100]&rotation=[0.5, 0.5, 0.5, 0.5]"},"validTime":1767340800000},{"frame":{"authority":"/geopose/1.0","id":"RotateTranslate","parameters":"translation=[0, 0, 300]&rotation=[0.5, 0.5, 0.5, 0.5]"},"validTime":1767513600000},{"frame":{"authority":"/geopose/1.0","id":"RotateTranslate","parameters":"translation=[0, 0, 600]&rotation=[0.5, 0.5, 0.5, 0.5]"},"validTime":1767600000000}],"trailer":{"poseCount":4}}
+(1 row)
+
+SELECT tposeFromGeoPose(asGeoPose(tpose '[Pose(Point(0 0), 0)@2026-01-01, Pose(Point(0 1), 0)@2026-01-02]', 0, 15)) =
+  tposeFromGeoPose(asGeoPose(tpose '[Pose(Point(0 0), 0)@2026-01-01, Pose(Point(0 1), 0)@2026-01-02]', 0, 6)) AS same;
+ same 
+------
+ f
 (1 row)
 
 SELECT pose '{"position":{"lat":1.0,"lon":1.0,"h":1.0},"quaternion":{"x":0.5,"y":0.5,"z":0.5,"w":0.5}}';
@@ -226,3 +233,321 @@ SELECT asText(tpose '{[Pose(Point(8 47), 0)@2026-01-01, Pose(Point(9 48), 0.5)@2
  {[Pose(POINT(8 47),0)@Thu Jan 01 00:00:00 2026 PST, Pose(POINT(9 48),0.5)@Fri Jan 02 00:00:00 2026 PST], [Pose(POINT(10 50),1)@Sun Jan 04 00:00:00 2026 PST]}
 (1 row)
 
+SELECT asGeoPose(pose 'SRID=4979;Pose(Point(8 47 1500), 1, 0, 0, 0)', 0, 6);
+                                    asgeopose                                    
+---------------------------------------------------------------------------------
+ {"position":{"lat":47,"lon":8,"h":1500},"quaternion":{"x":0,"y":0,"z":0,"w":1}}
+(1 row)
+
+SELECT asGeoPose(pose 'SRID=4979;Pose(Point(8 47 1500), 1, 0, 0, 0)', 0, 6) =
+  asGeoPose(pose 'SRID=4326;Pose(Point(8 47 1500), 1, 0, 0, 0)', 0, 6) AS same;
+ same 
+------
+ t
+(1 row)
+
+SELECT poseFromGeoPose(asGeoPose(
+  pose 'SRID=4979;Pose(Point(8 47 1500), 1, 0, 0, 0)', 0, 15)) =
+  poseFromGeoPose(asGeoPose(
+  pose 'SRID=4326;Pose(Point(8 47 1500), 1, 0, 0, 0)', 0, 15)) AS same;
+ same 
+------
+ t
+(1 row)
+
+SELECT asGeoPose(tpose 'SRID=4979;[Pose(Point(0 0 0), 0.5, 0.5, 0.5, 0.5)@2026-01-01,
+  Pose(Point(0 0 100), 0.5, 0.5, 0.5, 0.5)@2026-01-02]', 0, 6) =
+  asGeoPose(tpose 'SRID=4326;[Pose(Point(0 0 0), 0.5, 0.5, 0.5, 0.5)@2026-01-01,
+  Pose(Point(0 0 100), 0.5, 0.5, 0.5, 0.5)@2026-01-02]', 0, 6) AS same;
+ same 
+------
+ t
+(1 row)
+
+/* Errors */
+-- A projected SRID is not a GeoPose outer frame.
+SELECT asGeoPose(pose 'SRID=5676;Pose(Point(1 1),0.5)', 0, 6);
+ERROR:  GeoPose JSON requires a WGS-84 geographic SRID (4326 or 4979), got 5676
+SELECT asGeoPose(tpose 'SRID=5676;[Pose(Point(1 1),0.5)@2026-01-01,
+  Pose(Point(2 2),0.5)@2026-01-02]', 0, 6);
+ERROR:  GeoPose JSON requires a WGS-84 geographic SRID (4326 or 4979), got 5676
+SELECT asGeoPose(tpose 'Pose(Point(8 47 1500), 1, 0, 0, 0)@2026-01-01', 0, 6);
+                                                 asgeopose                                                 
+-----------------------------------------------------------------------------------------------------------
+ {"position":{"lat":47,"lon":8,"h":1500},"quaternion":{"x":0,"y":0,"z":0,"w":1},"validTime":1767254400000}
+(1 row)
+
+SELECT asGeoPose(tpose 'Pose(Point(8 47 1500), 1, 0, 0, 0)@2026-01-01', 1, 6);
+                                                asgeopose                                                 
+----------------------------------------------------------------------------------------------------------
+ {"position":{"lat":47,"lon":8,"h":1500},"angles":{"yaw":0,"pitch":0,"roll":0},"validTime":1767254400000}
+(1 row)
+
+SELECT asGeoPose(tpose '[Pose(Point(0 0 0), 0.5, 0.5, 0.5, 0.5)@2026-01-01,
+  Pose(Point(0 0 100), 0.5, 0.5, 0.5, 0.5)@2026-01-02,
+  Pose(Point(0 0 300), 0.5, 0.5, 0.5, 0.5)@2026-01-03]', 0, 6);
+                                                                                                                                                                                                                                                                                                                                                                              asgeopose                                                                                                                                                                                                                                                                                                                                                                               
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"header":{"poseCount":3,"startInstant":1767254400000,"stopInstant":1767427200000,"transitionModel":{"authority":"/geopose/1.0","id":"interpolate","parameters":"interpolation=Linear"}},"interPoseDuration":86400000,"outerFrame":{"authority":"/geopose/1.0","id":"LTP-ENU","parameters":"longitude=0&latitude=0&height=0&crs=EPSG:4979"},"innerFrameSeries":[{"authority":"/geopose/1.0","id":"RotateTranslate","parameters":"translation=[0, 0, 0]&rotation=[0.5, 0.5, 0.5, 0.5]"},{"authority":"/geopose/1.0","id":"RotateTranslate","parameters":"translation=[0, 0, 100]&rotation=[0.5, 0.5, 0.5, 0.5]"},{"authority":"/geopose/1.0","id":"RotateTranslate","parameters":"translation=[0, 0, 300]&rotation=[0.5, 0.5, 0.5, 0.5]"}],"trailer":{"poseCount":3}}
+(1 row)
+
+SELECT asGeoPose(tpose '[Pose(Point(0 0 0), 0.5, 0.5, 0.5, 0.5)@2026-01-01,
+  Pose(Point(0 0 100), 0.5, 0.5, 0.5, 0.5)@2026-01-02,
+  Pose(Point(0 0 300), 0.5, 0.5, 0.5, 0.5)@2026-01-05]', 0, 6);
+                                                                                                                                                                                                                                                                                                                                                                                                                         asgeopose                                                                                                                                                                                                                                                                                                                                                                                                                          
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"header":{"poseCount":3,"startInstant":1767254400000,"stopInstant":1767600000000,"transitionModel":{"authority":"/geopose/1.0","id":"interpolate","parameters":"interpolation=Linear"}},"outerFrame":{"authority":"/geopose/1.0","id":"LTP-ENU","parameters":"longitude=0&latitude=0&height=0&crs=EPSG:4979"},"innerFrameAndTimeSeries":[{"frame":{"authority":"/geopose/1.0","id":"RotateTranslate","parameters":"translation=[0, 0, 0]&rotation=[0.5, 0.5, 0.5, 0.5]"},"validTime":1767254400000},{"frame":{"authority":"/geopose/1.0","id":"RotateTranslate","parameters":"translation=[0, 0, 100]&rotation=[0.5, 0.5, 0.5, 0.5]"},"validTime":1767340800000},{"frame":{"authority":"/geopose/1.0","id":"RotateTranslate","parameters":"translation=[0, 0, 300]&rotation=[0.5, 0.5, 0.5, 0.5]"},"validTime":1767600000000}],"trailer":{"poseCount":3}}
+(1 row)
+
+SELECT asGeoPose(tpose '[Pose(Point(0 0 0), 0.5, 0.5, 0.5, 0.5)@2026-01-01,
+  Pose(Point(0 0 100), 0.5, 0.5, 0.5, 0.5)@2026-01-02]', 0, 6) =
+  asGeoPose(tpose '[Pose(Point(0 0 0), 0.5, 0.5, 0.5, 0.5)@2026-01-01,
+  Pose(Point(0 0 100), 0.5, 0.5, 0.5, 0.5)@2026-01-02]', 1, 6) AS same;
+ same 
+------
+ t
+(1 row)
+
+SELECT asGeoPose(tpose '{[Pose(Point(0 0 0), 0.5, 0.5, 0.5, 0.5)@2026-01-01,
+  Pose(Point(0 0 100), 0.5, 0.5, 0.5, 0.5)@2026-01-02],
+  [Pose(Point(0 0 300), 0.5, 0.5, 0.5, 0.5)@2026-01-04]}', 0, 6);
+                                                                                                                                                                                                                                                                                                                                                                                                                         asgeopose                                                                                                                                                                                                                                                                                                                                                                                                                          
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"header":{"poseCount":3,"startInstant":1767254400000,"stopInstant":1767513600000,"transitionModel":{"authority":"/geopose/1.0","id":"interpolate","parameters":"interpolation=Linear"}},"outerFrame":{"authority":"/geopose/1.0","id":"LTP-ENU","parameters":"longitude=0&latitude=0&height=0&crs=EPSG:4979"},"innerFrameAndTimeSeries":[{"frame":{"authority":"/geopose/1.0","id":"RotateTranslate","parameters":"translation=[0, 0, 0]&rotation=[0.5, 0.5, 0.5, 0.5]"},"validTime":1767254400000},{"frame":{"authority":"/geopose/1.0","id":"RotateTranslate","parameters":"translation=[0, 0, 100]&rotation=[0.5, 0.5, 0.5, 0.5]"},"validTime":1767340800000},{"frame":{"authority":"/geopose/1.0","id":"RotateTranslate","parameters":"translation=[0, 0, 300]&rotation=[0.5, 0.5, 0.5, 0.5]"},"validTime":1767513600000}],"trailer":{"poseCount":3}}
+(1 row)
+
+WITH j AS (SELECT asGeoPose(tpose '[Pose(Point(8 47 1500), 1, 0, 0, 0)@2026-01-01,
+  Pose(Point(9 48 1600), 1, 0, 0, 0)@2026-01-02,
+  Pose(Point(10 49 1700), 1, 0, 0, 0)@2026-01-05]', 0, 6)::jsonb AS d)
+SELECT (d->'header'->>'poseCount')::int = jsonb_array_length(d->'innerFrameAndTimeSeries')
+  AND (d->'trailer'->>'poseCount')::int = jsonb_array_length(d->'innerFrameAndTimeSeries')
+FROM j;
+ ?column? 
+----------
+ t
+(1 row)
+
+WITH j AS (SELECT asGeoPose(tpose '[Pose(Point(8 47 1500), 1, 0, 0, 0)@2026-01-01,
+  Pose(Point(9 48 1600), 1, 0, 0, 0)@2026-01-05]', 0, 6)::jsonb AS d)
+SELECT to_timestamp((d->'header'->>'startInstant')::bigint / 1000) AT TIME ZONE 'UTC',
+       to_timestamp((d->'header'->>'stopInstant')::bigint / 1000) AT TIME ZONE 'UTC'
+FROM j;
+         timezone         |         timezone         
+--------------------------+--------------------------
+ Thu Jan 01 08:00:00 2026 | Mon Jan 05 08:00:00 2026
+(1 row)
+
+WITH j AS (SELECT asGeoPose(tpose '[Pose(Point(8 47 1500), 1, 0, 0, 0)@2026-01-01,
+  Pose(Point(9 48 1600), 1, 0, 0, 0)@2026-01-05]', 0, 6)::jsonb AS d)
+SELECT to_timestamp((e->>'validTime')::bigint / 1000) AT TIME ZONE 'UTC'
+FROM j, jsonb_array_elements(d->'innerFrameAndTimeSeries') AS e;
+ timezone 
+----------
+(0 rows)
+
+WITH j AS (SELECT asGeoPose(tpose '[Pose(Point(8 47 1500), 1, 0, 0, 0)@2026-01-01 00:00:00.123456,
+  Pose(Point(9 48 1600), 1, 0, 0, 0)@2026-01-05]', 0, 6)::jsonb AS d)
+SELECT (d->'header'->>'startInstant')::bigint % 1000 AS millisecond_kept FROM j;
+ millisecond_kept 
+------------------
+              123
+(1 row)
+
+SELECT (asGeoPose(tpose '[Pose(Point(8 47 1500), 1, 0, 0, 0)@2026-01-01,
+  Pose(Point(9 48 1600), 1, 0, 0, 0)@2026-01-02]', 0, 6)::jsonb->>'interPoseDuration')::bigint;
+   int8   
+----------
+ 86400000
+(1 row)
+
+WITH j(interp, d) AS (VALUES
+  ('linear', asGeoPose(tpose '[Pose(Point(8 47 1500), 1, 0, 0, 0)@2026-01-01,
+     Pose(Point(9 48 1600), 1, 0, 0, 0)@2026-01-05]', 0, 6)::jsonb),
+  ('step', asGeoPose(tpose 'Interp=Step;[Pose(Point(8 47 1500), 1, 0, 0, 0)@2026-01-01,
+     Pose(Point(9 48 1600), 1, 0, 0, 0)@2026-01-05]', 0, 6)::jsonb),
+  ('discrete', asGeoPose(tpose '{Pose(Point(8 47 1500), 1, 0, 0, 0)@2026-01-01,
+     Pose(Point(9 48 1600), 1, 0, 0, 0)@2026-01-05}', 0, 6)::jsonb))
+SELECT interp,
+  d->'header'->'transitionModel'->>'authority',
+  d->'header'->'transitionModel'->>'id',
+  d->'header'->'transitionModel'->>'parameters'
+FROM j;
+  interp  |   ?column?   |  ?column?   |        ?column?        
+----------+--------------+-------------+------------------------
+ linear   | /geopose/1.0 | interpolate | interpolation=Linear
+ step     | /geopose/1.0 | none        | interpolation=Step
+ discrete | /geopose/1.0 | none        | interpolation=Discrete
+(3 rows)
+
+WITH j AS (SELECT asGeoPose(tpose '[Pose(Point(8 47 1500), 1, 0, 0, 0)@2026-01-01,
+  Pose(Point(9 48 1600), 1, 0, 0, 0)@2026-01-02]', 0, 6)::jsonb AS d)
+SELECT d->'outerFrame'->>'authority', d->'outerFrame'->>'id',
+  d->'outerFrame'->>'parameters'
+FROM j;
+   ?column?   | ?column? |                     ?column?                      
+--------------+----------+---------------------------------------------------
+ /geopose/1.0 | LTP-ENU  | longitude=8&latitude=47&height=1500&crs=EPSG:4979
+(1 row)
+
+WITH j AS (SELECT asGeoPose(tpose '[Pose(Point(8 47 1500), 1, 0, 0, 0)@2026-01-01,
+  Pose(Point(9 48 1600), 1, 0, 0, 0)@2026-01-02]', 0, 6)::jsonb AS d)
+SELECT d->'innerFrameSeries'->0->>'authority', d->'innerFrameSeries'->0->>'id',
+  split_part(d->'innerFrameSeries'->0->>'parameters', '&', 1)
+FROM j;
+   ?column?   |    ?column?     |      split_part       
+--------------+-----------------+-----------------------
+ /geopose/1.0 | RotateTranslate | translation=[0, 0, 0]
+(1 row)
+
+SELECT authority, code FROM geopose_frames WHERE authority = '/geopose/1.0'
+ORDER BY code;
+  authority   |      code       
+--------------+-----------------
+ /geopose/1.0 | LTP-ENU
+ /geopose/1.0 | RotateTranslate
+(2 rows)
+
+SELECT asText(round(tposeFromGeoPose(asGeoPose(
+  tpose 'Pose(Point(8 47 1500), 1, 0, 0, 0)@2026-01-01', 0, 15)), 6));
+                               astext                               
+--------------------------------------------------------------------
+ GeodPose(POINT Z (8 47 1500),1,0,0,0)@Thu Jan 01 00:00:00 2026 PST
+(1 row)
+
+SELECT asText(round(tposeFromGeoPose(asGeoPose(
+  tpose '[Pose(Point(8 47 1500), 1, 0, 0, 0)@2026-01-01,
+    Pose(Point(9 48 1600), 1, 0, 0, 0)@2026-01-02,
+    Pose(Point(10 47 1700), 1, 0, 0, 0)@2026-01-03]', 0, 15)), 6));
+                                                                                                    astext                                                                                                     
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ [GeodPose(POINT Z (8 47 1500),1,0,0,0)@Thu Jan 01 00:00:00 2026 PST, GeodPose(POINT Z (9 48 1600),1,0,0,0)@Fri Jan 02 00:00:00 2026 PST, GeodPose(POINT Z (10 47 1700),1,0,0,0)@Sat Jan 03 00:00:00 2026 PST]
+(1 row)
+
+SELECT asText(round(tposeFromGeoPose(asGeoPose(
+  tpose '[Pose(Point(8 47 1500), 1, 0, 0, 0)@2026-01-01,
+    Pose(Point(9 48 1600), 1, 0, 0, 0)@2026-01-05]', 0, 15)), 6));
+                                                                  astext                                                                  
+------------------------------------------------------------------------------------------------------------------------------------------
+ [GeodPose(POINT Z (8 47 1500),1,0,0,0)@Thu Jan 01 00:00:00 2026 PST, GeodPose(POINT Z (9 48 1600),1,0,0,0)@Mon Jan 05 00:00:00 2026 PST]
+(1 row)
+
+SELECT interp(tposeFromGeoPose(asGeoPose(
+  tpose 'Interp=Step;[Pose(Point(8 47 1500), 1, 0, 0, 0)@2026-01-01,
+    Pose(Point(9 48 1600), 1, 0, 0, 0)@2026-01-02]', 0, 15)));
+ interp 
+--------
+ Step
+(1 row)
+
+SELECT interp(tposeFromGeoPose(asGeoPose(
+  tpose '{Pose(Point(8 47 1500), 1, 0, 0, 0)@2026-01-01,
+    Pose(Point(9 48 1600), 1, 0, 0, 0)@2026-01-02}', 0, 15)));
+  interp  
+----------
+ Discrete
+(1 row)
+
+SELECT asText(round(tposeFromGeoPose(asGeoPose(
+  tpose '{[Pose(Point(8 47 1500), 1, 0, 0, 0)@2026-01-01,
+    Pose(Point(9 48 1600), 1, 0, 0, 0)@2026-01-02],
+   [Pose(Point(10 50 1700), 1, 0, 0, 0)@2026-01-04]}', 0, 15)), 6));
+                                                                                                    astext                                                                                                     
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ [GeodPose(POINT Z (8 47 1500),1,0,0,0)@Thu Jan 01 00:00:00 2026 PST, GeodPose(POINT Z (9 48 1600),1,0,0,0)@Fri Jan 02 00:00:00 2026 PST, GeodPose(POINT Z (10 50 1700),1,0,0,0)@Sun Jan 04 00:00:00 2026 PST]
+(1 row)
+
+SELECT asText(round(tposeFromGeoPose('{
+  "header": {"poseCount": 3, "startInstant": 1630560671429,
+    "stopInstant": 1630560716429,
+    "transitionModel": {"authority": "/geopose/1.0", "id": "none",
+      "parameters": ""}},
+  "outerFrame": {"authority": "/geopose/1.0", "id": "LTP-ENU",
+    "parameters": "longitude=-122.3000000&latitude=47.7000000&height=11.000"},
+  "innerFrameAndTimeSeries": [
+    {"frame": {"authority": "/geopose/1.0", "id": "RotateTranslate",
+      "parameters": "translation=[0.0, 0.0, 0.0]&rotation=[1.0, 0.0, 0.0, 0.0]"},
+     "validTime": 1630560671429},
+    {"frame": {"authority": "/geopose/1.0", "id": "RotateTranslate",
+      "parameters": "translation=[10.0, 20.0, 5.0]&rotation=[1.0, 0.0, 0.0, 0.0]"},
+     "validTime": 1630560693929},
+    {"frame": {"authority": "/geopose/1.0", "id": "RotateTranslate",
+      "parameters": "translation=[20.0, 40.0, 10.0]&rotation=[1.0, 0.0, 0.0, 0.0]"},
+     "validTime": 1630560716429}],
+  "trailer": {"poseCount": 3}}'), 4));
+                                                                                                                          astext                                                                                                                          
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {GeodPose(POINT Z (-122.3 47.7 11),1,0,0,0)@Wed Sep 01 22:31:11.429 2021 PDT, GeodPose(POINT Z (-122.2999 47.7002 16),1,0,0,0)@Wed Sep 01 22:31:33.929 2021 PDT, GeodPose(POINT Z (-122.2997 47.7004 21.0002),1,0,0,0)@Wed Sep 01 22:31:56.429 2021 PDT}
+(1 row)
+
+SELECT asText(round(tposeFromGeoPose('{
+  "header": {"poseCount": 3, "startInstant": 1630560671367,
+    "stopInstant": 1630560673367,
+    "transitionModel": {"authority": "/geopose/1.0", "id": "interpolate",
+      "parameters": ""}},
+  "interPoseDuration": 1000,
+  "outerFrame": {"authority": "/geopose/1.0", "id": "LTP-ENU",
+    "parameters": "longitude=-122.3000000&latitude=47.7000000&height=11.000"},
+  "innerFrameSeries": [
+    {"authority": "/geopose/1.0", "id": "RotateTranslate",
+     "parameters": "translation=[0.0, 0.0, 0.0]&rotation=[1.0, 0.0, 0.0, 0.0]"},
+    {"authority": "/geopose/1.0", "id": "RotateTranslate",
+     "parameters": "translation=[0.5, 0.0, 0.0]&rotation=[1.0, 0.0, 0.0, 0.0]"},
+    {"authority": "/geopose/1.0", "id": "RotateTranslate",
+     "parameters": "translation=[1.0, 0.0, 0.0]&rotation=[1.0, 0.0, 0.0, 0.0]"}],
+  "trailer": {"poseCount": 3}}'), 6));
+                                                                             astext                                                                              
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+ [GeodPose(POINT Z (-122.3 47.7 11),1,0,0,0)@Wed Sep 01 22:31:11.367 2021 PDT, GeodPose(POINT Z (-122.299987 47.7 11),1,0,0,0)@Wed Sep 01 22:31:13.367 2021 PDT]
+(1 row)
+
+SELECT asText(tposeFromGeoPose('{"type":"TemporalGeoPose","version":"1.0",
+  "conformance":"Basic-Quaternion","interpolation":"Linear",
+  "lower_inc":true,"upper_inc":true,"instants":[
+    {"position":{"lat":47,"lon":8,"h":0},"quaternion":{"x":0,"y":0,"z":0,"w":1},
+     "validTime":"2026-01-01 00:00:00+01"},
+    {"position":{"lat":48,"lon":9,"h":0},"quaternion":{"x":0,"y":0,"z":0,"w":1},
+     "validTime":"2026-01-02 00:00:00+01"}]}'));
+                                                               astext                                                               
+------------------------------------------------------------------------------------------------------------------------------------
+ [GeodPose(POINT Z (8 47 0),1,0,0,0)@Wed Dec 31 15:00:00 2025 PST, GeodPose(POINT Z (9 48 0),1,0,0,0)@Thu Jan 01 15:00:00 2026 PST]
+(1 row)
+
+/* Errors */
+-- A Basic document without a validTime is a pose, not a temporal pose.
+SELECT tposeFromGeoPose(
+  '{"position":{"lat":47,"lon":8,"h":0},"quaternion":{"x":0,"y":0,"z":0,"w":1}}');
+ERROR:  A GeoPose Basic document needs a 'validTime' to read as a temporal pose
+SELECT tposeFromGeoPose('{"header": {"poseCount": 1, "startInstant": 0,
+  "stopInstant": 0, "transitionModel": {"authority": "/geopose/1.0",
+  "id": "none", "parameters": ""}},
+  "innerFrameAndTimeSeries": [{"frame": {"authority": "/geopose/1.0",
+    "id": "RotateTranslate", "parameters": "translation=[0, 0, 0]&rotation=[1, 0, 0, 0]"},
+   "validTime": 0}], "trailer": {"poseCount": 1}}');
+ERROR:  GeoPose series 'outerFrame' must be a FrameSpecification object
+SELECT tposeFromGeoPose('{"header": {"poseCount": 1, "startInstant": 0,
+  "stopInstant": 0, "transitionModel": {"authority": "/geopose/1.0",
+  "id": "none", "parameters": ""}},
+  "outerFrame": {"authority": "/geopose/1.0", "id": "LTP-ENU",
+    "parameters": "longitude=0&latitude=0&height=0"},
+  "innerFrameAndTimeSeries": [{"frame": {"authority": "/geopose/1.0",
+    "id": "RotateTranslate", "parameters": "translation=[0, 0, 0]"},
+   "validTime": 0}], "trailer": {"poseCount": 1}}');
+ERROR:  GeoPose series inner frame parameters must carry a 3-element 'translation' and a 4-element 'rotation'
+SELECT tposeFromGeoPose('{"header": {"poseCount": 1, "startInstant": 0,
+  "stopInstant": 0, "transitionModel": {"authority": "/geopose/1.0",
+  "id": "none", "parameters": ""}},
+  "outerFrame": {"authority": "/geopose/1.0", "id": "LTP-ENU",
+    "parameters": "longitude=0&latitude=0&height=0"},
+  "innerFrameAndTimeSeries": [{"frame": {"authority": "/geopose/1.0",
+    "id": "RotateTranslate", "parameters": "translation=[0, 0, 0]&rotation=[1, 0, 0, 0]"}}],
+  "trailer": {"poseCount": 1}}');
+ERROR:  GeoPose Irregular Series element missing required integer 'validTime'
+SELECT tposeFromGeoPose('{"header": {"poseCount": 1, "startInstant": 0,
+  "stopInstant": 0, "transitionModel": {"authority": "/geopose/1.0",
+  "id": "none", "parameters": ""}},
+  "outerFrame": {"authority": "/geopose/1.0", "id": "LTP-ENU",
+    "parameters": "longitude=0&latitude=0&height=0"},
+  "innerFrameSeries": [{"authority": "/geopose/1.0",
+    "id": "RotateTranslate", "parameters": "translation=[0, 0, 0]&rotation=[1, 0, 0, 0]"}],
+  "trailer": {"poseCount": 1}}');
+ERROR:  GeoPose Regular Series missing required integer 'interPoseDuration'

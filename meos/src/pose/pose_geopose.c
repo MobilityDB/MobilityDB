@@ -60,7 +60,16 @@
  * `pitch: 0`, `roll: 0`, and yaw = theta. `theta` is stored in radians
  * internally; the JSON form uses degrees, per the standard.
  *
- * The Advanced GeoPose class (frame stacks, covariance) is not implemented.
+ * A temporal pose is written as an OGC Composite Sequence Series, either
+ * Regular or Irregular. Those classes encode each pose as an inner
+ * `FrameSpecification` holding a translation and a rotation relative to a
+ * single outer LTP-ENU frame, rather than as a Basic pose object, so the
+ * series encoding carries its own geographic-to-topocentric conversion.
+ * The MobilityDB `TemporalGeoPose` envelope, an array of Basic-class
+ * objects each carrying a `validTime`, remains available for reading and
+ * writing but is not an OGC conformance class.
+ *
+ * The Advanced, Chain, Graph and Stream classes are not implemented.
  */
 
 /* C */
@@ -84,10 +93,31 @@
  * Helpers
  *****************************************************************************/
 
-/* OGC GeoPose Basic conformance classes assume a geographic outer frame.
- * SRID 4326 (WGS-84) is the only one we currently expose; SRID 0 is
- * accepted on input and treated as geographic. */
-#define GEOPOSE_GEOGRAPHIC_SRID 4326
+/* Every GeoPose class fixes the outer frame to WGS-84 geographic. Two EPSG
+ * codes name that frame: 4326, which is two-dimensional, and 4979, which is
+ * three-dimensional. Their proj4 definitions are identical
+ * (`+proj=longlat +datum=WGS84 +no_defs`), the codes differing only in a
+ * declared dimensionality that proj4 does not express, so both are accepted
+ * and neither moves a coordinate. SRID 0 is accepted and treated as
+ * geographic.
+ *
+ * A GeoPose position is `{lat, lon, h}`, so 4979 is the code that describes
+ * it, and it is the one the composite outer frame declares. Values keep the
+ * SRID 4326 that the rest of the pose surface uses. */
+#define GEOPOSE_SRID_WGS84_2D 4326
+#define GEOPOSE_SRID_WGS84_3D 4979
+#define GEOPOSE_GEOGRAPHIC_SRID GEOPOSE_SRID_WGS84_2D
+
+/**
+ * @brief Return true if @p srid names the WGS-84 geographic frame the
+ * GeoPose classes require, or is unknown.
+ */
+static bool
+geopose_srid_is_geographic(int32_t srid)
+{
+  return srid == 0 || srid == GEOPOSE_SRID_WGS84_2D ||
+    srid == GEOPOSE_SRID_WGS84_3D;
+}
 
 /**
  * @brief Look up a JSON object member case-insensitively.
@@ -179,8 +209,139 @@ geopose_quaternion_to_ypr(double W, double X, double Y, double Z,
                      1.0 - 2.0 * (Y * Y + Z * Z));
 }
 
+/* Serialization flags: compact, and with '/' left unescaped so that the
+ * emitted authority strings read as the standard writes them. */
+#define GEOPOSE_JSON_FLAGS \
+  (JSON_C_TO_STRING_PLAIN | JSON_C_TO_STRING_NOSLASHESCAPE)
+
 #define GEOPOSE_DEG2RAD(d) ((d) * (M_PI / 180.0))
 #define GEOPOSE_RAD2DEG(r) ((r) * (180.0 / M_PI))
+
+/* String literals for the envelope's `interpolation` and `conformance` */
+static const char *
+geopose_interp_name(interpType interp)
+{
+  switch (interp)
+  {
+    case DISCRETE: return "Discrete";
+    case STEP:     return "Step";
+    case LINEAR:   return "Linear";
+    default:       return "None";
+  }
+}
+
+static interpType
+geopose_interp_from_string(const char *str)
+{
+  if (str == NULL) return INTERP_NONE;
+  if (strcmp(str, "Discrete") == 0) return DISCRETE;
+  if (strcmp(str, "Step")     == 0) return STEP;
+  if (strcmp(str, "Linear")   == 0) return LINEAR;
+  return INTERP_NONE;
+}
+
+/**
+ * @brief Return the value of @p key in a `key=value&key=value` parameter
+ * string, or @p NULL if the key is absent.
+ */
+static const char *
+geopose_param_find(const char *params, const char *key)
+{
+  size_t klen = strlen(key);
+  const char *p = params;
+  while (p != NULL && *p != '\0')
+  {
+    if (pg_strncasecmp(p, key, klen) == 0 && p[klen] == '=')
+      return p + klen + 1;
+    p = strchr(p, '&');
+    if (p != NULL)
+      p++;
+  }
+  return NULL;
+}
+
+/**
+ * @brief Read a bracketed list of @p n numbers, as emitted for the
+ * `translation` and `rotation` parameters.
+ */
+static bool
+geopose_param_list(const char *str, int n, double *out)
+{
+  char *end;
+  if (str == NULL)
+    return false;
+  while (*str == ' ')
+    str++;
+  if (*str != '[')
+    return false;
+  str++;
+  for (int i = 0; i < n; i++)
+  {
+    out[i] = strtod(str, &end);
+    if (end == str)
+      return false;
+    str = end;
+    while (*str == ' ')
+      str++;
+    if (i < n - 1)
+    {
+      if (*str != ',')
+        return false;
+      str++;
+    }
+  }
+  return (*str == ']');
+}
+
+/**
+ * @brief Read a single number parameter, as emitted for the outer frame's
+ * `longitude`, `latitude` and `height`.
+ */
+static bool
+geopose_param_number(const char *str, double *out)
+{
+  char *end;
+  if (str == NULL)
+    return false;
+  *out = strtod(str, &end);
+  return (end != str);
+}
+
+/**
+ * @brief Extract the position and orientation of a pose in the form every
+ * GeoPose encoding needs: longitude, latitude and height in degrees and
+ * metres, and a unit quaternion in Hamilton convention.
+ * @details Every class the standard defines fixes a WGS-84 outer frame, so
+ * this is also where the SRID is checked. A pose with SRID 0 is treated as
+ * geographic.
+ * @return On error return false
+ */
+static bool
+geopose_pose_components(const Pose *pose, double *lon, double *lat, double *h,
+  double *W, double *X, double *Y, double *Z)
+{
+  int32_t srid = pose_srid(pose);
+  if (! geopose_srid_is_geographic(srid))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "GeoPose JSON requires a WGS-84 geographic SRID (4326 or 4979), "
+      "got %d", srid);
+    return false;
+  }
+  bool has_z = MEOS_FLAGS_GET_Z(pose->flags);
+  *lon = pose->data[0];
+  *lat = pose->data[1];
+  *h = has_z ? pose->data[2] : 0.0;
+  if (has_z)
+  {
+    *W = pose->data[3]; *X = pose->data[4];
+    *Y = pose->data[5]; *Z = pose->data[6];
+  }
+  else
+    /* 2D pose: pure yaw rotation about the local vertical. */
+    geopose_ypr_to_quaternion(pose->data[2], 0.0, 0.0, W, X, Y, Z);
+  return true;
+}
 
 /**
  * @brief Build a JSON double with a caller-controlled precision.
@@ -370,40 +531,19 @@ pose_to_geopose_object(const Pose *pose, int conformance, int precision)
       "(0 = Basic-Quaternion, 1 = Basic-YPR)", conformance);
     return NULL;
   }
-  int32_t srid = pose_srid(pose);
-  if (srid != 0 && srid != GEOPOSE_GEOGRAPHIC_SRID)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "GeoPose JSON requires SRID 4326 (WGS-84), got %d", srid);
+  /* Both classes start from a quaternion, and both place the position in
+   * the same geographic outer frame. */
+  double lon, lat, h, W, X, Y, Z;
+  if (! geopose_pose_components(pose, &lon, &lat, &h, &W, &X, &Y, &Z))
     return NULL;
-  }
-  bool has_z = MEOS_FLAGS_GET_Z(pose->flags);
-  /* Position: x is longitude, y is latitude, z (if present) is height. */
-  double lon = pose->data[0];
-  double lat = pose->data[1];
-  double h   = has_z ? pose->data[2] : 0.0;
-
-  /* Orientation. Both classes start from a quaternion: read it from a
-   * 3D pose, or build it from the 2D theta. */
-  double W, X, Y, Z;
-  if (has_z)
-  {
-    W = pose->data[3]; X = pose->data[4];
-    Y = pose->data[5]; Z = pose->data[6];
-  }
-  else
-  {
-    /* 2D pose: pure yaw rotation about Z. */
-    double theta_rad = pose->data[2];
-    geopose_ypr_to_quaternion(theta_rad, 0.0, 0.0, &W, &X, &Y, &Z);
-  }
 
   json_object *root = json_object_new_object();
   json_object *jpos = json_object_new_object();
   json_object_object_add(jpos, "lat", geopose_new_double(lat, precision));
   json_object_object_add(jpos, "lon", geopose_new_double(lon, precision));
-  /* Always emit `h` even for 2D poses so the JSON document is a
-   * complete Basic-class instance. */
+  /* `h` is required, so a 2D pose emits `h: 0`. GeoPose offers no way to
+   * say that a height is unknown, so zero is the convention for a
+   * height-free trajectory; it asserts more than the data holds. */
   json_object_object_add(jpos, "h",   geopose_new_double(h, precision));
   json_object_object_add(root, "position", jpos);
 
@@ -453,11 +593,718 @@ pose_as_geopose(const Pose *pose, int conformance, int precision)
   if (root == NULL)
     return NULL;
 
-  int flags = JSON_C_TO_STRING_PLAIN;
+  int flags = GEOPOSE_JSON_FLAGS;
   const char *raw = json_object_to_json_string_ext(root, flags);
   char *out = pstrdup(raw);
   json_object_put(root);
   return out;
+}
+
+/*****************************************************************************
+ * OGC GeoPose Composite Sequence classes — geodesy
+ *
+ * The Composite Sequence classes do not embed Basic pose objects. Every
+ * inner frame is a FrameSpecification whose `parameters` string carries a
+ * translation and a rotation relative to a single outer frame, which the
+ * standard's examples realize as an LTP-ENU frame anchored at an explicit
+ * tangent point. Emitting a conformant series therefore requires the
+ * geographic-to-topocentric conversion implemented here.
+ *****************************************************************************/
+
+/* WGS-84 defining parameters (EPSG::7030). The GeoPose Basic classes fix
+ * the outer frame to an implicit WGS-84 CRS (Requirements 12 and 14), so
+ * the topocentric conversion is against this ellipsoid. */
+#define GEOPOSE_WGS84_A   6378137.0
+#define GEOPOSE_WGS84_F   (1.0 / 298.257223563)
+#define GEOPOSE_WGS84_E2  (GEOPOSE_WGS84_F * (2.0 - GEOPOSE_WGS84_F))
+
+/**
+ * @brief Convert WGS-84 geographic coordinates to Earth-Centred
+ * Earth-Fixed Cartesian coordinates.
+ */
+static void
+geopose_geodetic_to_ecef(double lat_rad, double lon_rad, double h,
+  double *X, double *Y, double *Z)
+{
+  double s = sin(lat_rad), c = cos(lat_rad);
+  double N = GEOPOSE_WGS84_A / sqrt(1.0 - GEOPOSE_WGS84_E2 * s * s);
+  *X = (N + h) * c * cos(lon_rad);
+  *Y = (N + h) * c * sin(lon_rad);
+  *Z = (N * (1.0 - GEOPOSE_WGS84_E2) + h) * s;
+}
+
+/**
+ * @brief Recover the ellipsoidal height once the latitude is known.
+ * @details Uses whichever of the two equivalent expressions is better
+ * conditioned: @p p / cos φ degenerates at the poles, @p Z / sin φ at the
+ * equator. The switch is at |φ| = 45°, where both are equally conditioned.
+ */
+static double
+geopose_ecef_height(double p, double Z, double lat_rad, double N)
+{
+  double s = sin(lat_rad);
+  if (fabs(s) > M_SQRT1_2)
+    return Z / s - N * (1.0 - GEOPOSE_WGS84_E2);
+  return p / cos(lat_rad) - N;
+}
+
+/**
+ * @brief Convert Earth-Centred Earth-Fixed Cartesian coordinates to WGS-84
+ * geographic coordinates.
+ * @details Fixed-point iteration on (φ, h) seeded with the spherical
+ * approximation. The iteration count is fixed rather than
+ * convergence-tested so that every language binding computes exactly the
+ * same result from the same input, which this project requires of any
+ * value that reaches a serialization.
+ */
+static void
+geopose_ecef_to_geodetic(double X, double Y, double Z,
+  double *lat_rad, double *lon_rad, double *h)
+{
+  double p = sqrt(X * X + Y * Y);
+  if (p == 0.0)
+  {
+    /* On the polar axis the longitude is undefined; report it as zero. */
+    double b = GEOPOSE_WGS84_A * sqrt(1.0 - GEOPOSE_WGS84_E2);
+    *lon_rad = 0.0;
+    *lat_rad = (Z >= 0.0) ? M_PI_2 : -M_PI_2;
+    *h = fabs(Z) - b;
+    return;
+  }
+  *lon_rad = atan2(Y, X);
+  double lat = atan2(Z, p * (1.0 - GEOPOSE_WGS84_E2));
+  double N = GEOPOSE_WGS84_A;
+  for (int i = 0; i < 8; i++)
+  {
+    double s = sin(lat);
+    N = GEOPOSE_WGS84_A / sqrt(1.0 - GEOPOSE_WGS84_E2 * s * s);
+    double height = geopose_ecef_height(p, Z, lat, N);
+    lat = atan2(Z, p * (1.0 - GEOPOSE_WGS84_E2 * N / (N + height)));
+  }
+  double s = sin(lat);
+  N = GEOPOSE_WGS84_A / sqrt(1.0 - GEOPOSE_WGS84_E2 * s * s);
+  *lat_rad = lat;
+  *h = geopose_ecef_height(p, Z, lat, N);
+}
+
+/**
+ * @brief The outer frame of a Composite Sequence: an LTP-ENU frame
+ * anchored at a tangent point, cached with everything the per-instant
+ * conversions need.
+ */
+typedef struct
+{
+  double lat_rad;             /**< Tangent point latitude */
+  double lon_rad;             /**< Tangent point longitude */
+  double h;                   /**< Tangent point ellipsoidal height */
+  double X, Y, Z;             /**< Tangent point in ECEF */
+  double qw, qx, qy, qz;      /**< Rotation ECEF -> this frame's ENU basis */
+} GeoPoseAnchor;
+
+/**
+ * @brief Initialize the outer-frame anchor at a geographic tangent point.
+ * @details @p pose_enu_to_ecef_quaternion returns the quaternion of the
+ * matrix whose rows are the East, North and Up unit vectors expressed in
+ * ECEF, that is the rotation that takes ECEF components to ENU components
+ * at the tangent point. That is exactly what is needed here.
+ */
+static void
+geopose_anchor_set(GeoPoseAnchor *anchor, double lat_rad, double lon_rad,
+  double h)
+{
+  anchor->lat_rad = lat_rad;
+  anchor->lon_rad = lon_rad;
+  anchor->h = h;
+  geopose_geodetic_to_ecef(lat_rad, lon_rad, h, &anchor->X, &anchor->Y,
+    &anchor->Z);
+  pose_enu_to_ecef_quaternion(lat_rad, lon_rad, &anchor->qw, &anchor->qx,
+    &anchor->qy, &anchor->qz);
+}
+
+/**
+ * @brief Return the translation of a geographic point in the anchor's
+ * LTP-ENU frame, in metres.
+ */
+static void
+geopose_anchor_translation(const GeoPoseAnchor *anchor, double lat_rad,
+  double lon_rad, double h, double *e, double *n, double *u)
+{
+  double X, Y, Z;
+  geopose_geodetic_to_ecef(lat_rad, lon_rad, h, &X, &Y, &Z);
+  double dx = X - anchor->X, dy = Y - anchor->Y, dz = Z - anchor->Z;
+  double sl = sin(anchor->lon_rad), cl = cos(anchor->lon_rad);
+  double sp = sin(anchor->lat_rad), cp = cos(anchor->lat_rad);
+  *e = -sl * dx + cl * dy;
+  *n = -sp * cl * dx - sp * sl * dy + cp * dz;
+  *u =  cp * cl * dx + cp * sl * dy + sp * dz;
+}
+
+/**
+ * @brief Return the geographic coordinates of a translation expressed in
+ * the anchor's LTP-ENU frame. Inverse of @p geopose_anchor_translation.
+ */
+static void
+geopose_anchor_position(const GeoPoseAnchor *anchor, double e, double n,
+  double u, double *lat_rad, double *lon_rad, double *h)
+{
+  double sl = sin(anchor->lon_rad), cl = cos(anchor->lon_rad);
+  double sp = sin(anchor->lat_rad), cp = cos(anchor->lat_rad);
+  double X = anchor->X - sl * e - sp * cl * n + cp * cl * u;
+  double Y = anchor->Y + cl * e - sp * sl * n + cp * sl * u;
+  double Z = anchor->Z + cp * n + sp * u;
+  geopose_ecef_to_geodetic(X, Y, Z, lat_rad, lon_rad, h);
+}
+
+/**
+ * @brief Return the rotation that re-expresses an orientation given in the
+ * local ENU basis at (@p lat_rad, @p lon_rad) in the anchor's ENU basis.
+ * @details A Basic-class pose orients its body frame against the ENU basis
+ * at its *own* position, while a Composite Sequence inner frame orients it
+ * against the *outer* frame's basis. The two differ by the convergence of
+ * the two tangent planes, which is this rotation. Ignoring it would place
+ * every pose but the first at a subtly wrong attitude.
+ */
+static void
+geopose_anchor_rotation(const GeoPoseAnchor *anchor, double lat_rad,
+  double lon_rad, double *W, double *X, double *Y, double *Z)
+{
+  double lw, lx, ly, lz;
+  pose_enu_to_ecef_quaternion(lat_rad, lon_rad, &lw, &lx, &ly, &lz);
+  /* q(R_anchorENU<-ECEF) * q(R_ECEF<-localENU), the latter being the
+   * conjugate of the local ENU quaternion since both are unit. */
+  pose_quaternion_mul(anchor->qw, anchor->qx, anchor->qy, anchor->qz,
+    lw, -lx, -ly, -lz, W, X, Y, Z);
+}
+
+/*****************************************************************************
+ * OGC GeoPose Composite Sequence classes — JSON encoding
+ *****************************************************************************/
+
+/* Normative authority and identifier strings, as used by the encoding
+ * examples of OGC 21-056r11 Clause 9.2. */
+#define GEOPOSE_AUTHORITY       "/geopose/1.0"
+#define GEOPOSE_ID_OUTER_FRAME  "LTP-ENU"
+#define GEOPOSE_ID_INNER_FRAME  "RotateTranslate"
+#define GEOPOSE_ID_TM_NONE      "none"
+#define GEOPOSE_ID_TM_INTERP    "interpolate"
+/* Requirement 9 places the content of `parameters` outside the scope of
+ * GeoPose, so the transition model carries the interpolation there, spelled
+ * with the same words the MF-JSON encoding uses in
+ * `meos/src/temporal/type_out.c`. One vocabulary serves both of this
+ * implementation's OGC encodings, and the round trip stays lossless where
+ * the two attested enumeration literals alone would not distinguish step
+ * from discrete interpolation. */
+#define GEOPOSE_TM_PARAM_KEY    "interpolation"
+
+/* A GeoPose_Instant is Unix time in milliseconds: Requirement 10 states it
+ * "shall express Unix Time in seconds multiplied by 1,000, with the unit of
+ * measure in milliseconds", and Annex C.2 that time values are encoded as
+ * integers needing 64 bits. The offset comes from the one epoch constant the
+ * codebase keeps, scaled from its seconds to those milliseconds. */
+#define GEOPOSE_UNIX_EPOCH_OFFSET_MS \
+  (((int64) DELTA_UNIX_POSTGRES_EPOCH) * 1000)
+
+/**
+ * @brief Convert a timestamp to a GeoPose_Instant (Unix milliseconds).
+ * @details Rounds towards negative infinity so that the sub-millisecond
+ * remainder of a pre-2000 timestamp is dropped the same way as that of a
+ * post-2000 one, keeping the mapping monotonic.
+ */
+static int64
+geopose_instant_out(TimestampTz t)
+{
+  int64 us = (int64) t;
+  int64 ms = us / 1000;
+  if (us % 1000 != 0 && us < 0)
+    ms -= 1;
+  return ms + GEOPOSE_UNIX_EPOCH_OFFSET_MS;
+}
+
+/**
+ * @brief Convert a GeoPose_Instant (Unix milliseconds) to a timestamp.
+ */
+static TimestampTz
+geopose_instant_in(int64 instant)
+{
+  return (TimestampTz) ((instant - GEOPOSE_UNIX_EPOCH_OFFSET_MS) * 1000);
+}
+
+/**
+ * @brief Format a double into @p buf with the module's precision
+ * convention: @p precision significant digits, or lossless if negative.
+ */
+static void
+geopose_str_double(char *buf, size_t size, double v, int precision)
+{
+  snprintf(buf, size, "%.*g", (precision < 0) ? 17 : precision, v);
+}
+
+/**
+ * @brief Build a FrameSpecification object. All three members are required
+ * by the schema, so @p parameters is emitted even when empty.
+ */
+static json_object *
+geopose_frame_spec(const char *id, const char *parameters)
+{
+  json_object *res = json_object_new_object();
+  json_object_object_add(res, "authority",
+    json_object_new_string(GEOPOSE_AUTHORITY));
+  json_object_object_add(res, "id", json_object_new_string(id));
+  json_object_object_add(res, "parameters",
+    json_object_new_string(parameters));
+  return res;
+}
+
+/**
+ * @brief Build the TransitionModel for a MobilityDB interpolation.
+ * @details Requirement 35 asks for an instance of the TransitionModel
+ * enumeration, whose literals `interpolate` and `none` are the ones the
+ * encoding examples of the standard attest. Linear interpolation is
+ * `interpolate`; step and discrete interpolation both estimate nothing
+ * between poses and are `none`. The `parameters` string then names the
+ * interpolation exactly, which is what tells those two apart on the way
+ * back in.
+ */
+static json_object *
+geopose_transition_model(interpType interp)
+{
+  char params[64];
+  snprintf(params, sizeof(params), "%s=%s", GEOPOSE_TM_PARAM_KEY,
+    geopose_interp_name(interp));
+  json_object *res = json_object_new_object();
+  json_object_object_add(res, "authority",
+    json_object_new_string(GEOPOSE_AUTHORITY));
+  json_object_object_add(res, "id", json_object_new_string(
+    (interp == LINEAR) ? GEOPOSE_ID_TM_INTERP : GEOPOSE_ID_TM_NONE));
+  json_object_object_add(res, "parameters", json_object_new_string(params));
+  return res;
+}
+
+/**
+ * @brief Recover a MobilityDB interpolation from a TransitionModel object.
+ * @details The `parameters` string is authoritative when it names an
+ * interpolation, since the two enumeration literals cannot distinguish step
+ * from discrete interpolation on their own. A document from another
+ * implementation carries no such name, and then `interpolate` reads as
+ * linear and anything else as discrete.
+ */
+static interpType
+geopose_transition_model_interp(json_object *tm)
+{
+  json_object *jpar = geopose_find_member(tm, "parameters");
+  if (jpar != NULL && json_object_is_type(jpar, json_type_string))
+  {
+    const char *val = geopose_param_find(json_object_get_string(jpar),
+      GEOPOSE_TM_PARAM_KEY);
+    if (val != NULL)
+    {
+      interpType interp = geopose_interp_from_string(val);
+      if (interp != INTERP_NONE)
+        return interp;
+    }
+  }
+  json_object *jid = geopose_find_member(tm, "id");
+  if (jid == NULL || ! json_object_is_type(jid, json_type_string))
+    return LINEAR;
+  return (pg_strcasecmp(json_object_get_string(jid),
+    GEOPOSE_ID_TM_INTERP) == 0) ? LINEAR : DISCRETE;
+}
+
+/**
+ * @brief Build the inner FrameSpecification of a pose relative to the
+ * outer frame, in the `translation=[…]&rotation=[…]` form used by the
+ * encoding examples of the standard.
+ * @details The rotation list is ordered w, x, y, z, the order in which
+ * Requirement 15 lists the components of a GeoPose quaternion.
+ * @return On error return @p NULL
+ */
+static json_object *
+geopose_inner_frame(const GeoPoseAnchor *anchor, const Pose *pose,
+  int precision)
+{
+  double lon, lat, h, W, X, Y, Z;
+  if (! geopose_pose_components(pose, &lon, &lat, &h, &W, &X, &Y, &Z))
+    return NULL;
+  double lat_rad = GEOPOSE_DEG2RAD(lat), lon_rad = GEOPOSE_DEG2RAD(lon);
+
+  double e, n, u;
+  geopose_anchor_translation(anchor, lat_rad, lon_rad, h, &e, &n, &u);
+
+  double rw, rx, ry, rz, qw, qx, qy, qz;
+  geopose_anchor_rotation(anchor, lat_rad, lon_rad, &rw, &rx, &ry, &rz);
+  pose_quaternion_mul(rw, rx, ry, rz, W, X, Y, Z, &qw, &qx, &qy, &qz);
+
+  char be[64], bn[64], bu[64], bw[64], bx[64], by[64], bz[64];
+  geopose_str_double(be, sizeof(be), e, precision);
+  geopose_str_double(bn, sizeof(bn), n, precision);
+  geopose_str_double(bu, sizeof(bu), u, precision);
+  geopose_str_double(bw, sizeof(bw), qw, precision);
+  geopose_str_double(bx, sizeof(bx), qx, precision);
+  geopose_str_double(by, sizeof(by), qy, precision);
+  geopose_str_double(bz, sizeof(bz), qz, precision);
+
+  char params[512];
+  snprintf(params, sizeof(params),
+    "translation=[%s, %s, %s]&rotation=[%s, %s, %s, %s]",
+    be, bn, bu, bw, bx, by, bz);
+  return geopose_frame_spec(GEOPOSE_ID_INNER_FRAME, params);
+}
+
+/**
+ * @brief Build the outer FrameSpecification: the LTP-ENU frame at the
+ * anchor's tangent point.
+ */
+static json_object *
+geopose_outer_frame(const GeoPoseAnchor *anchor, int precision)
+{
+  char blon[64], blat[64], bh[64];
+  geopose_str_double(blon, sizeof(blon), GEOPOSE_RAD2DEG(anchor->lon_rad),
+    precision);
+  geopose_str_double(blat, sizeof(blat), GEOPOSE_RAD2DEG(anchor->lat_rad),
+    precision);
+  geopose_str_double(bh, sizeof(bh), anchor->h, precision);
+  /* The three tangent-point parameters are the ones the encoding examples
+   * of the standard use. `crs` names the geographic CRS they are given in,
+   * which the examples leave implicit: EPSG:4979, the three-dimensional
+   * WGS-84 code, since the tangent point carries a height. */
+  char params[256];
+  snprintf(params, sizeof(params),
+    "longitude=%s&latitude=%s&height=%s&crs=EPSG:%d",
+    blon, blat, bh, GEOPOSE_SRID_WGS84_3D);
+  return geopose_frame_spec(GEOPOSE_ID_OUTER_FRAME, params);
+}
+
+/**
+ * @brief Build a SeriesHeader or SeriesTrailer `poseCount` bearing object.
+ * @details `integrityCheck` is optional in both and is not emitted: the
+ * standard leaves the digest input undefined, so any value this
+ * implementation chose would not be checkable by another one.
+ */
+static json_object *
+geopose_series_trailer(int count)
+{
+  json_object *res = json_object_new_object();
+  json_object_object_add(res, "poseCount", json_object_new_int(count));
+  return res;
+}
+
+static json_object *
+geopose_series_header(int count, TimestampTz start, TimestampTz stop,
+  interpType interp)
+{
+  json_object *res = json_object_new_object();
+  json_object_object_add(res, "poseCount", json_object_new_int(count));
+  json_object_object_add(res, "startInstant",
+    json_object_new_int64(geopose_instant_out(start)));
+  json_object_object_add(res, "stopInstant",
+    json_object_new_int64(geopose_instant_out(stop)));
+  json_object_object_add(res, "transitionModel",
+    geopose_transition_model(interp));
+  return res;
+}
+
+/**
+ * @brief Return the constant inter-pose duration of @p instants in
+ * milliseconds, or -1 if the instants are not equally spaced by a whole
+ * number of milliseconds.
+ * @details A Regular Series states the spacing once, as an integer number
+ * of milliseconds (Requirement 25), and carries no per-pose time. It can
+ * therefore only represent instants that are equally spaced *and* whose
+ * spacing is a whole number of milliseconds; anything else must go out as
+ * an Irregular Series to stay lossless.
+ */
+static int64
+geopose_interpose_duration(const TInstant **instants, int count)
+{
+  if (count < 2)
+    return -1;
+  int64 delta = (int64) instants[1]->t - (int64) instants[0]->t;
+  if (delta <= 0 || delta % 1000 != 0)
+    return -1;
+  for (int i = 2; i < count; i++)
+  {
+    if ((int64) instants[i]->t - (int64) instants[i - 1]->t != delta)
+      return -1;
+  }
+  return delta / 1000;
+}
+
+/**
+ * @brief Build a Composite Sequence Series document for a temporal pose
+ * @param[in] temp Temporal pose
+ * @param[in] regular True to emit a Regular Series, false for an Irregular
+ * one
+ * @param[in] precision Significant digits in the emitted numbers
+ * @return On error return @p NULL
+ */
+static json_object *
+tpose_to_geopose_series(const Temporal *temp, bool regular, int precision)
+{
+  int count;
+  const TInstant **instants = temporal_insts_p(temp, &count);
+  if (instants == NULL)
+    return NULL;
+  int64 duration = geopose_interpose_duration(instants, count);
+  if (regular && duration < 0)
+  {
+    pfree(instants);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "A GeoPose Regular Series requires at least two instants equally "
+      "spaced by a whole number of milliseconds");
+    return NULL;
+  }
+
+  /* Requirements 26 and 31 make the outer frame the first frame of the
+   * series, so the tangent point is the position of the first pose. */
+  double lon, lat, h, W, X, Y, Z;
+  if (! geopose_pose_components(DatumGetPoseP(tinstant_value_p(instants[0])),
+      &lon, &lat, &h, &W, &X, &Y, &Z))
+  {
+    pfree(instants);
+    return NULL;
+  }
+  GeoPoseAnchor anchor;
+  geopose_anchor_set(&anchor, GEOPOSE_DEG2RAD(lat), GEOPOSE_DEG2RAD(lon), h);
+
+  json_object *arr = json_object_new_array();
+  for (int i = 0; i < count; i++)
+  {
+    json_object *frame = geopose_inner_frame(&anchor,
+      DatumGetPoseP(tinstant_value_p(instants[i])), precision);
+    if (frame == NULL)
+    {
+      json_object_put(arr);
+      pfree(instants);
+      return NULL;
+    }
+    if (regular)
+      json_object_array_add(arr, frame);
+    else
+    {
+      json_object *elem = json_object_new_object();
+      json_object_object_add(elem, "frame", frame);
+      json_object_object_add(elem, "validTime",
+        json_object_new_int64(geopose_instant_out(instants[i]->t)));
+      json_object_array_add(arr, elem);
+    }
+  }
+
+  json_object *root = json_object_new_object();
+  json_object_object_add(root, "header", geopose_series_header(count,
+    instants[0]->t, instants[count - 1]->t,
+    MEOS_FLAGS_GET_INTERP(temp->flags)));
+  if (regular)
+    json_object_object_add(root, "interPoseDuration",
+      json_object_new_int64(duration));
+  json_object_object_add(root, "outerFrame",
+    geopose_outer_frame(&anchor, precision));
+  json_object_object_add(root, regular ? "innerFrameSeries" :
+    "innerFrameAndTimeSeries", arr);
+  json_object_object_add(root, "trailer", geopose_series_trailer(count));
+  pfree(instants);
+  return root;
+}
+
+/*****************************************************************************
+ * OGC GeoPose Composite Sequence classes — JSON decoding
+ *****************************************************************************/
+
+/**
+ * @brief Return the `parameters` string of a FrameSpecification object,
+ * checking that the object carries the three members the schema requires.
+ * @return On error return @p NULL
+ */
+static const char *
+geopose_frame_parameters(json_object *frame, const char *what)
+{
+  if (frame == NULL || ! json_object_is_type(frame, json_type_object))
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "GeoPose series %s must be a FrameSpecification object", what);
+    return NULL;
+  }
+  json_object *jpar = geopose_find_member(frame, "parameters");
+  if (jpar == NULL || ! json_object_is_type(jpar, json_type_string))
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "GeoPose series %s missing required 'parameters' string", what);
+    return NULL;
+  }
+  return json_object_get_string(jpar);
+}
+
+/**
+ * @brief Build the outer-frame anchor from a series' `outerFrame` member.
+ * @return On error return false
+ */
+static bool
+geopose_anchor_from_json(json_object *root, GeoPoseAnchor *anchor)
+{
+  const char *params = geopose_frame_parameters(
+    geopose_find_member(root, "outerFrame"), "'outerFrame'");
+  if (params == NULL)
+    return false;
+  double lon, lat, h;
+  if (! geopose_param_number(geopose_param_find(params, "longitude"), &lon) ||
+      ! geopose_param_number(geopose_param_find(params, "latitude"), &lat) ||
+      ! geopose_param_number(geopose_param_find(params, "height"), &h))
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "GeoPose series 'outerFrame' parameters must carry 'longitude', "
+      "'latitude' and 'height'");
+    return false;
+  }
+  geopose_anchor_set(anchor, GEOPOSE_DEG2RAD(lat), GEOPOSE_DEG2RAD(lon), h);
+  return true;
+}
+
+/**
+ * @brief Build the pose of an inner FrameSpecification of a series.
+ * @return On error return @p NULL
+ */
+static Pose *
+geopose_pose_from_inner_frame(const GeoPoseAnchor *anchor, json_object *frame)
+{
+  const char *params = geopose_frame_parameters(frame, "inner frame");
+  if (params == NULL)
+    return NULL;
+  double t[3], r[4];
+  if (! geopose_param_list(geopose_param_find(params, "translation"), 3, t) ||
+      ! geopose_param_list(geopose_param_find(params, "rotation"), 4, r))
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "GeoPose series inner frame parameters must carry a 3-element "
+      "'translation' and a 4-element 'rotation'");
+    return NULL;
+  }
+  double lat_rad, lon_rad, h;
+  geopose_anchor_position(anchor, t[0], t[1], t[2], &lat_rad, &lon_rad, &h);
+  /* Undo the tangent-plane convergence rotation applied on output. */
+  double rw, rx, ry, rz, W, X, Y, Z;
+  geopose_anchor_rotation(anchor, lat_rad, lon_rad, &rw, &rx, &ry, &rz);
+  pose_quaternion_mul(rw, -rx, -ry, -rz, r[0], r[1], r[2], r[3],
+    &W, &X, &Y, &Z);
+  return pose_make_3d(GEOPOSE_RAD2DEG(lon_rad), GEOPOSE_RAD2DEG(lat_rad), h,
+    W, X, Y, Z, true, GEOPOSE_GEOGRAPHIC_SRID);
+}
+
+/**
+ * @brief Build a temporal pose from a Composite Sequence Series document
+ * @details A series carries no bounds inclusivity and no gaps, so it always
+ * reads back as a single closed sequence, or as an instant when the series
+ * holds one pose and interpolates nothing.
+ * @return On error return @p NULL
+ */
+static Temporal *
+tpose_from_geopose_series(json_object *root, json_object *elements,
+  bool regular)
+{
+  GeoPoseAnchor anchor;
+  if (! geopose_anchor_from_json(root, &anchor))
+    return NULL;
+  if (! json_object_is_type(elements, json_type_array))
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "GeoPose series inner frame member must be a JSON array");
+    return NULL;
+  }
+  int count = (int) json_object_array_length(elements);
+  if (count == 0)
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "GeoPose series inner frame array must hold at least one element");
+    return NULL;
+  }
+
+  json_object *header = geopose_find_member(root, "header");
+  if (header == NULL || ! json_object_is_type(header, json_type_object))
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "GeoPose series missing required 'header' object");
+    return NULL;
+  }
+  json_object *jstart = geopose_find_member(header, "startInstant");
+  if (jstart == NULL || ! json_object_is_type(jstart, json_type_int))
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "GeoPose series header missing required integer 'startInstant'");
+    return NULL;
+  }
+  TimestampTz start = geopose_instant_in(json_object_get_int64(jstart));
+  interpType interp = geopose_transition_model_interp(
+    geopose_find_member(header, "transitionModel"));
+
+  /* A Regular Series states the spacing once instead of per pose. */
+  int64 duration = 0;
+  if (regular)
+  {
+    json_object *jdur = geopose_find_member(root, "interPoseDuration");
+    if (jdur == NULL || ! json_object_is_type(jdur, json_type_int))
+    {
+      meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+        "GeoPose Regular Series missing required integer "
+        "'interPoseDuration'");
+      return NULL;
+    }
+    duration = json_object_get_int64(jdur);
+  }
+
+  TInstant **instants = palloc(sizeof(TInstant *) * count);
+  int nfilled = 0;
+  for (int i = 0; i < count; i++)
+  {
+    json_object *elem = json_object_array_get_idx(elements, i);
+    json_object *frame;
+    TimestampTz t;
+    if (regular)
+    {
+      frame = elem;
+      t = start + (TimestampTz) (duration * i * 1000);
+    }
+    else
+    {
+      if (! json_object_is_type(elem, json_type_object))
+      {
+        meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+          "GeoPose Irregular Series element must be a FrameAndTime object");
+        break;
+      }
+      frame = geopose_find_member(elem, "frame");
+      json_object *jt = geopose_find_member(elem, "validTime");
+      if (jt == NULL || ! json_object_is_type(jt, json_type_int))
+      {
+        meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+          "GeoPose Irregular Series element missing required integer "
+          "'validTime'");
+        break;
+      }
+      t = geopose_instant_in(json_object_get_int64(jt));
+    }
+    Pose *pose = geopose_pose_from_inner_frame(&anchor, frame);
+    if (pose == NULL)
+      break;
+    instants[nfilled++] = tinstant_make(PointerGetDatum(pose), T_TPOSE, t);
+    pfree(pose);
+  }
+  if (nfilled < count)
+  {
+    pfree_array((void **) instants, nfilled);
+    return NULL;
+  }
+
+  Temporal *result;
+  if (count == 1 && interp != LINEAR && interp != STEP)
+  {
+    result = (Temporal *) instants[0];
+    pfree(instants);
+  }
+  else
+  {
+    result = (Temporal *) tsequence_make(instants, count, true, true, interp,
+      NORMALIZE);
+    pfree_array((void **) instants, count);
+  }
+  return result;
 }
 
 /*****************************************************************************
@@ -488,84 +1335,50 @@ pose_as_geopose(const Pose *pose, int conformance, int precision)
  *    "quaternion":{"x":0,"y":0,"z":0,"w":1}}
  *****************************************************************************/
 
-/* String literals for the envelope's `interpolation` and `conformance` */
-static const char *
-geopose_interp_name(interpType interp)
-{
-  switch (interp)
-  {
-    case DISCRETE: return "Discrete";
-    case STEP:     return "Step";
-    case LINEAR:   return "Linear";
-    default:       return "None";
-  }
-}
-
-static interpType
-geopose_interp_from_string(const char *str)
-{
-  if (str == NULL) return INTERP_NONE;
-  if (strcmp(str, "Discrete") == 0) return DISCRETE;
-  if (strcmp(str, "Step")     == 0) return STEP;
-  if (strcmp(str, "Linear")   == 0) return LINEAR;
-  return INTERP_NONE;
-}
-
-static const char *
-geopose_conformance_name(int conformance)
-{
-  return (conformance == GEOPOSE_BASIC_YPR) ? "Basic-YPR" : "Basic-Quaternion";
-}
 
 /**
- * @brief Append the per-instant Basic-class object (with `validTime`) to
- * @p instants_array. Returns false on error.
+ * @brief Build the Basic-class document of a single temporal instant.
+ * @details The Basic classes carry no time, so the instant's own is added
+ * under the name `validTime` that the Advanced, Chain, Graph, Series and
+ * Stream classes all use, and with the type they all give it: a
+ * GeoPose_Instant, that is Unix time in integer milliseconds. Every time
+ * this module writes is that same kind, whichever class the document
+ * belongs to.
+ * @return On error return @p NULL
  */
-static bool
-tposeinst_append_geopose(json_object *instants_array, const TInstant *inst,
-  int conformance, int precision)
+static char *
+tposeinst_as_geopose(const TInstant *inst, int conformance, int precision)
 {
   const Pose *pose = DatumGetPoseP(tinstant_value_p(inst));
-  json_object *obj = pose_to_geopose_object(pose, conformance, precision);
-  if (obj == NULL)
-    return false;
-  char *vt = pg_timestamptz_out(inst->t);
-  json_object_object_add(obj, "validTime", json_object_new_string(vt));
-  pfree(vt);
-  json_object_array_add(instants_array, obj);
-  return true;
-}
-
-/**
- * @brief Build the @p instants array for a TSequence.
- */
-static json_object *
-tposeseq_to_instants_array(const TSequence *seq, int conformance, int precision)
-{
-  json_object *arr = json_object_new_array();
-  for (int i = 0; i < seq->count; i++)
-  {
-    if (! tposeinst_append_geopose(arr, TSEQUENCE_INST_N(seq, i),
-        conformance, precision))
-    {
-      json_object_put(arr);
-      return NULL;
-    }
-  }
-  return arr;
+  json_object *root = pose_to_geopose_object(pose, conformance, precision);
+  if (root == NULL)
+    return NULL;
+  json_object_object_add(root, "validTime",
+    json_object_new_int64(geopose_instant_out(inst->t)));
+  char *res = pstrdup(json_object_to_json_string_ext(root,
+    GEOPOSE_JSON_FLAGS));
+  json_object_put(root);
+  return res;
 }
 
 /**
  * @ingroup meos_pose_geopose_accessor
  * @brief Return the OGC GeoPose JSON representation of a temporal pose
- * @details Each instant is emitted as a Basic-class GeoPose object with
- * an added @p validTime member (ISO-8601 timestamptz). The temporal
- * envelope carries the conformance class and interpolation. A
- * @p TSequenceSet emits a top-level @p sequences array; a @p TSequence
- * emits a single @p instants array; a @p TInstant emits an @p instants
- * array with one element.
+ * @details The class follows from the value, not from an argument. A
+ * @p TInstant is a Basic document carrying the instant's @p validTime; a
+ * @p TSequence or @p TSequenceSet is a Composite Sequence Series, the
+ * Regular one when its instants are equally spaced by a whole number of
+ * milliseconds and the Irregular one otherwise. The outer frame of a Series
+ * is the LTP-ENU frame at the first pose and each inner frame is that pose's
+ * translation and rotation relative to it.
+ *
+ * A Series flattens a @p TSequenceSet and drops bounds inclusivity, the
+ * standard's model having neither gaps nor open bounds. @p conformance
+ * chooses the orientation encoding of a Basic document and has no effect on
+ * a Series, whose inner frames carry a quaternion and offer no choice.
  * @param[in] temp Temporal pose
- * @param[in] conformance Conformance class (0 = Basic-Quaternion, 1 = Basic-YPR)
+ * @param[in] conformance Orientation encoding of a Basic document
+ * (0 = Basic-Quaternion, 1 = Basic-YPR)
  * @param[in] precision Significant digits in JSON numbers; -1 = lossless
  * @return On error return @p NULL
  * @csqlfn #Tpose_as_geopose()
@@ -575,74 +1388,27 @@ tpose_as_geopose(const Temporal *temp, int conformance, int precision)
 {
   VALIDATE_TPOSE(temp, NULL);
 
-  json_object *root = json_object_new_object();
-  json_object_object_add(root, "type",
-    json_object_new_string("TemporalGeoPose"));
-  json_object_object_add(root, "version", json_object_new_string("1.0"));
-  json_object_object_add(root, "conformance",
-    json_object_new_string(geopose_conformance_name(conformance)));
-  json_object_object_add(root, "interpolation",
-    json_object_new_string(geopose_interp_name(MEOS_FLAGS_GET_INTERP(temp->flags))));
+  /* The target class follows from the value. A single pose is a Basic
+   * document; a value that evolves over time is a Composite Sequence
+   * Series, Regular when its instants are equally spaced and Irregular
+   * otherwise. */
+  if (temp->subtype == TINSTANT)
+    return tposeinst_as_geopose((const TInstant *) temp, conformance,
+      precision);
 
-  switch (temp->subtype)
-  {
-    case TINSTANT:
-    {
-      json_object *arr = json_object_new_array();
-      if (! tposeinst_append_geopose(arr, (const TInstant *) temp,
-          conformance, precision))
-      {
-        json_object_put(arr);
-        json_object_put(root);
-        return NULL;
-      }
-      json_object_object_add(root, "instants", arr);
-      break;
-    }
-    case TSEQUENCE:
-    {
-      const TSequence *seq = (const TSequence *) temp;
-      json_object *arr = tposeseq_to_instants_array(seq, conformance, precision);
-      if (arr == NULL) { json_object_put(root); return NULL; }
-      json_object_object_add(root, "lower_inc",
-        json_object_new_boolean(seq->period.lower_inc));
-      json_object_object_add(root, "upper_inc",
-        json_object_new_boolean(seq->period.upper_inc));
-      json_object_object_add(root, "instants", arr);
-      break;
-    }
-    default: /* TSEQUENCESET */
-    {
-      const TSequenceSet *ss = (const TSequenceSet *) temp;
-      json_object *seqs = json_object_new_array();
-      for (int i = 0; i < ss->count; i++)
-      {
-        const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
-        json_object *arr = tposeseq_to_instants_array(seq, conformance,
-          precision);
-        if (arr == NULL)
-        {
-          json_object_put(seqs);
-          json_object_put(root);
-          return NULL;
-        }
-        json_object *seqobj = json_object_new_object();
-        json_object_object_add(seqobj, "lower_inc",
-          json_object_new_boolean(seq->period.lower_inc));
-        json_object_object_add(seqobj, "upper_inc",
-          json_object_new_boolean(seq->period.upper_inc));
-        json_object_object_add(seqobj, "instants", arr);
-        json_object_array_add(seqs, seqobj);
-      }
-      json_object_object_add(root, "sequences", seqs);
-      break;
-    }
-  }
-
-  const char *raw = json_object_to_json_string_ext(root, JSON_C_TO_STRING_PLAIN);
-  char *out = pstrdup(raw);
-  json_object_put(root);
-  return out;
+  int count;
+  const TInstant **instants = temporal_insts_p(temp, &count);
+  if (instants == NULL)
+    return NULL;
+  bool regular = (geopose_interpose_duration(instants, count) >= 0);
+  pfree(instants);
+  json_object *series = tpose_to_geopose_series(temp, regular, precision);
+  if (series == NULL)
+    return NULL;
+  char *res = pstrdup(json_object_to_json_string_ext(series,
+    GEOPOSE_JSON_FLAGS));
+  json_object_put(series);
+  return res;
 }
 
 /**
@@ -658,15 +1424,21 @@ tposeinst_from_geopose_object(json_object *obj)
       "TemporalGeoPose 'instants' element must be an object");
     return NULL;
   }
+  /* `validTime` is a GeoPose_Instant, and a datetime string is taken as
+   * well since that is what the MobilityDB envelope holds. */
   json_object *jt = geopose_find_member(obj, "validTime");
-  if (jt == NULL || ! json_object_is_type(jt, json_type_string))
+  TimestampTz t;
+  if (jt != NULL && json_object_is_type(jt, json_type_int))
+    t = geopose_instant_in(json_object_get_int64(jt));
+  else if (jt != NULL && json_object_is_type(jt, json_type_string))
+    t = pg_timestamptz_in(json_object_get_string(jt), -1);
+  else
   {
     meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
-      "TemporalGeoPose instant missing required 'validTime' string");
+      "A GeoPose Basic document needs a 'validTime' to read as a temporal "
+      "pose");
     return NULL;
   }
-  const char *ts = json_object_get_string(jt);
-  TimestampTz t = pg_timestamptz_in(ts, -1);
   Pose *pose = pose_from_geopose_object(obj);
   if (! pose) return NULL;
   TInstant *inst = tinstant_make(PointerGetDatum(pose), T_TPOSE, t);
@@ -714,12 +1486,20 @@ tpose_parse_instants(json_object *instants_arr, TInstant ***out_instants)
 /**
  * @ingroup meos_pose_geopose_accessor
  * @brief Return a temporal pose from its OGC GeoPose JSON representation
- * @details Parses the @p TemporalGeoPose envelope (see @p tpose_as_geopose
- * for the shape). Each instant's payload is auto-detected as
- * Basic-Quaternion or Basic-YPR by the same rule as the static entry
- * point. The interpolation and bounds-inclusion flags come from the
- * envelope; the resulting tpose has SRID 4326.
- * @param[in] json TemporalGeoPose JSON string
+ * @details The document shape is auto-detected:
+ *
+ *   - An OGC Composite Sequence Series, recognized by its
+ *     @p innerFrameAndTimeSeries or @p innerFrameSeries member. The
+ *     interpolation comes from the header's transition model and the
+ *     result is one closed sequence, or an instant for a single
+ *     non-interpolated pose.
+ *   - The MobilityDB @p TemporalGeoPose envelope, whose per-instant
+ *     payload is auto-detected as Basic-Quaternion or Basic-YPR by the
+ *     same rule as the static entry point, and whose interpolation and
+ *     bounds-inclusion flags come from the envelope.
+ *
+ * The resulting temporal pose has SRID 4326.
+ * @param[in] json GeoPose JSON string
  * @return On error return @p NULL
  * @csqlfn #Tpose_from_geopose()
  */
@@ -746,6 +1526,27 @@ tpose_from_geopose(const char *json)
     return NULL;
   }
   json_tokener_free(tok);
+
+  /* A Basic document holds one pose. With a `validTime` it is a temporal
+   * instant, which is what a temporal pose of that subtype writes. */
+  if (geopose_find_member(root, "position") != NULL)
+  {
+    TInstant *inst = tposeinst_from_geopose_object(root);
+    json_object_put(root);
+    return (Temporal *) inst;
+  }
+
+  /* An OGC Composite Sequence Series is recognized by the inner frame
+   * member that its conformance class requires. */
+  json_object *jirr = geopose_find_member(root, "innerFrameAndTimeSeries");
+  json_object *jreg = geopose_find_member(root, "innerFrameSeries");
+  if (jirr != NULL || jreg != NULL)
+  {
+    Temporal *result = tpose_from_geopose_series(root,
+      (jirr != NULL) ? jirr : jreg, jirr == NULL);
+    json_object_put(root);
+    return result;
+  }
 
   /* Optional envelope sanity: known type. */
   json_object *jtype = geopose_find_member(root, "type");

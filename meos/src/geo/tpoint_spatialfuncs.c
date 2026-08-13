@@ -69,13 +69,6 @@
 #include <utils/numeric.h>
 #include <pgtypes.h>
 
-/* Timestamps in PostgreSQL are encoded as MICROseconds since '2000-01-01'
- * while Unix epoch are encoded as MILLIseconds since '1970-01-01'.
- * Therefore the value used for conversions is computed as follows
- * select date_part('epoch', timestamp '2000-01-01' - timestamp '1970-01-01')
- * which results in 946684800 */
-#define DELTA_UNIX_POSTGRES_EPOCH 946684800
-
 /*****************************************************************************
  * Validity functions
  *****************************************************************************/
