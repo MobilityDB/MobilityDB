@@ -118,6 +118,8 @@ h3_grid_disk(H3Index origin, int k)
 Set *
 meos_h3_grid_disk(H3Index origin, int k)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_H3INDEX_CELL(origin, NULL);
   if (k < 0)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
@@ -158,6 +160,8 @@ h3_grid_ring(H3Index origin, int k)
 Set *
 meos_h3_grid_ring(H3Index origin, int k)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_H3INDEX_CELL(origin, NULL);
   if (k < 0)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
@@ -204,6 +208,9 @@ h3_grid_path_cells(H3Index start, H3Index end)
 Set *
 meos_h3_grid_path_cells(H3Index start, H3Index end)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_H3INDEX_CELL(start, NULL);
+  VALIDATE_H3INDEX_CELL(end, NULL);
   int64_t size;
   if (gridPathCellsSize(start, end, &size) != E_SUCCESS)
   {
@@ -242,6 +249,8 @@ h3_cell_to_children(H3Index origin, int childRes)
 Set *
 meos_h3_cell_to_children(H3Index origin, int childRes)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_H3INDEX_CELL(origin, NULL);
   int64_t max;
   if (cellToChildrenSize(origin, childRes, &max) != E_SUCCESS)
   {
@@ -363,6 +372,8 @@ h3_origin_to_directed_edges(H3Index origin)
 Set *
 meos_h3_origin_to_directed_edges(H3Index origin)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_H3INDEX_CELL(origin, NULL);
   /* Always 6 slots; pentagons fill only 5 (one slot is 0). */
   H3Index *edges = palloc0(6 * sizeof(H3Index));
   if (originToDirectedEdges(origin, edges) != E_SUCCESS)
@@ -390,6 +401,8 @@ h3_cell_to_vertexes(H3Index cell)
 Set *
 meos_h3_cell_to_vertexes(H3Index cell)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_H3INDEX_CELL(cell, NULL);
   /* Always 6 slots; pentagons fill only 5 (one slot is 0). */
   H3Index *vertexes = palloc0(6 * sizeof(H3Index));
   if (cellToVertexes(cell, vertexes) != E_SUCCESS)
@@ -421,6 +434,8 @@ h3_get_icosahedron_faces(H3Index cell)
 Set *
 meos_h3_get_icosahedron_faces(H3Index cell)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_H3INDEX_CELL(cell, NULL);
   int maxFaces;
   if (maxFaceCount(cell, &maxFaces) != E_SUCCESS)
   {

@@ -37,6 +37,11 @@ SELECT h3indexset '{0xffffffffffffffffffffffff}';
 -- Characters that are not hexadecimal digits are rejected instead of
 -- being silently ignored
 SELECT h3indexset '{8928308280fffffZZ}';
+-- Short hexadecimal is well formed but denotes no cell, directed edge or
+-- vertex, so it is rejected rather than stored as a value with no location
+SELECT h3indexset '{abc}';
+SELECT h3indexset '{0xabc}';
+SELECT h3indexset '{12345}';
 
 -------------------------------------------------------------------------------
 -- Conversions

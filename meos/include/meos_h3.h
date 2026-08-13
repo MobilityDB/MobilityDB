@@ -64,6 +64,49 @@
     } while (0)
 #endif /* MEOS */
 
+/**
+ * @brief Ensure that an h3index is a valid H3 cell.
+ * @details An h3index is a mode-tagged identifier, so the operation decides
+ * which of the three predicates applies: a cell operation requires a cell, a
+ * directed-edge operation a directed edge, a vertex operation a vertex. The
+ * validity predicates themselves, and the mode-agnostic surfaces (input and
+ * output, comparison, ordering, hashing) take any bit pattern by design and
+ * must not use these macros.
+ * @note Unlike the type-validation macros above, these validate in both
+ * builds rather than asserting in the extension build. A temporal value's
+ * type is settled by the SQL type system before a function sees it, so there
+ * the assertion states a proven invariant, whereas the validity of an
+ * h3index is settled by nothing: the type is provided by the h3 extension,
+ * whose input function and bigint cast admit any 64-bit pattern. The value
+ * is therefore user input at every call, and asserting on user input aborts
+ * the backend instead of reporting the error.
+ */
+#define VALIDATE_H3INDEX_CELL(cell, ret) \
+  do { \
+    if (! ensure_h3index_cell(cell) ) \
+      return (ret); \
+  } while (0)
+
+/**
+ * @brief Ensure that an h3index is a valid H3 directed edge.
+ * Matches the pattern of `VALIDATE_H3INDEX_CELL` above.
+ */
+#define VALIDATE_H3INDEX_DIRECTED_EDGE(edge, ret) \
+  do { \
+    if (! ensure_h3index_directed_edge(edge) ) \
+      return (ret); \
+  } while (0)
+
+/**
+ * @brief Ensure that an h3index is a valid H3 vertex.
+ * Matches the pattern of `VALIDATE_H3INDEX_CELL` above.
+ */
+#define VALIDATE_H3INDEX_VERTEX(vertex, ret) \
+  do { \
+    if (! ensure_h3index_vertex(vertex) ) \
+      return (ret); \
+  } while (0)
+
 /*****************************************************************************
  * Static h3index SQL type — analogue of meos_cbuffer.h's
  * static-cbuffer section.

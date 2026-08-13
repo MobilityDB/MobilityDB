@@ -55,6 +55,18 @@ SELECT h3indexset '{8928308280fffffZZ}';
 ERROR:  invalid h3index input "8928308280fffffZZ": expected hexadecimal digits with an optional "0x" prefix
 LINE 1: SELECT h3indexset '{8928308280fffffZZ}';
                           ^
+SELECT h3indexset '{abc}';
+ERROR:  invalid h3index input "abc": not a valid H3 cell, directed edge or vertex
+LINE 1: SELECT h3indexset '{abc}';
+                          ^
+SELECT h3indexset '{0xabc}';
+ERROR:  invalid h3index input "0xabc": not a valid H3 cell, directed edge or vertex
+LINE 1: SELECT h3indexset '{0xabc}';
+                          ^
+SELECT h3indexset '{12345}';
+ERROR:  invalid h3index input "12345": not a valid H3 cell, directed edge or vertex
+LINE 1: SELECT h3indexset '{12345}';
+                          ^
 SELECT set(h3index '8a2a1072b59ffff');
          set         
 ---------------------

@@ -38,7 +38,8 @@
  * the helpers here are minimal:
  *
  *   * an input parser that reads the canonical hexadecimal cell literal,
- *     with an optional "0x" prefix and at most 16 significant digits,
+ *     with an optional "0x" prefix and at most 16 significant digits, and
+ *     that requires the value to denote a cell, a directed edge or a vertex,
  *   * an output formatter (canonical form is hex, matching h3-pg),
  *   * comparison / ordering / hashing helpers — exposed at the MEOS
  *     layer so MobilityDuck and other consumers can reuse them
@@ -53,7 +54,8 @@
 /* PostgreSQL — for Datum / Int64GetDatum / DatumGetInt64 */
 #include <postgres.h>
 #include <h3api.h>
-/* MEOS — public h3index declarations (I/O, comparison, hashing) */
+/* MEOS — public h3index declarations (I/O, comparison, hashing) and the
+ * `VALIDATE_H3INDEX_*` macros */
 #include <meos_h3.h>
 
 /*****************************************************************************
@@ -75,6 +77,19 @@ extern bool meos_h3index_gt(H3Index a, H3Index b);
 extern bool meos_h3index_ge(H3Index a, H3Index b);
 extern int meos_h3index_cmp(H3Index a, H3Index b);
 extern uint32 meos_h3index_hash(H3Index cell);
+
+/*****************************************************************************
+ * Validators (bodies in h3index.c)
+ *
+ * The per-mode checks behind the `VALIDATE_H3INDEX_*` macros of the public
+ * `meos_h3.h`. Each reports the offending value with the mode the operation
+ * required, since the three modes share the same 64-bit representation and
+ * the error is otherwise indistinguishable from a plain typo.
+ *****************************************************************************/
+
+extern bool ensure_h3index_cell(H3Index cell);
+extern bool ensure_h3index_directed_edge(H3Index edge);
+extern bool ensure_h3index_vertex(H3Index vertex);
 
 /*****************************************************************************
  * Datum packing

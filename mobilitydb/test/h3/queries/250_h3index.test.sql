@@ -33,6 +33,36 @@ SELECT h3index 'not-a-hex-cell';
 SELECT h3index '12345';   -- not a valid H3 cell
 
 -------------------------------------------------------------------------------
+-- Values the h3 extension's parser admits are rejected where they enter a
+-- MobilityDB operation. The operation decides which mode it requires: the
+-- saturated value and the short hexadecimal spellings denote neither a cell
+-- nor a directed edge nor a vertex, so no operation accepts them. The
+-- validity predicates answer false instead of raising, since reporting the
+-- mode of an arbitrary value is what they are for.
+-------------------------------------------------------------------------------
+
+SELECT isValidCell(h3index '622236750694711295');
+SELECT isValidDirectedEdge(h3index '622236750694711295');
+SELECT isValidVertex(h3index '622236750694711295');
+SELECT isValidCell(h3index '12345');
+SELECT isValidCell(h3index '0xabc');
+
+/* Errors */
+SELECT h3GridDisk(h3index '622236750694711295', 1);
+SELECT h3GridDisk(h3index '12345', 1);
+SELECT h3CellToChildren(h3index '0xabc', 6);
+SELECT h3GetIcosahedronFaces(h3index '622236750694711295');
+SELECT h3OriginToDirectedEdges(h3index '12345');
+
+-- Valid cells keep working, at every resolution
+SELECT numValues(h3GridDisk(h3index '831c02fffffffff', 1));
+SELECT numValues(h3GridDisk(h3index '880326b885fffff', 1));
+SELECT numValues(h3GridDisk(h3index '8a2a1072b59ffff', 1));
+SELECT numValues(h3CellToChildren(h3index '831c02fffffffff', 4));
+SELECT numValues(h3CellToVertexes(h3index '880326b885fffff'));
+SELECT numValues(h3OriginToDirectedEdges(h3index '8a2a1072b59ffff'));
+
+-------------------------------------------------------------------------------
 -- Output: canonical hex form (matches h3-pg)
 -------------------------------------------------------------------------------
 

@@ -20,7 +20,7 @@
 
 	<sect1 xml:id="th3_inout">
 		<title>Input and Output</title>
-		<para>A <varname>th3index</varname> value is entered using the standard temporal syntax with the underlying 64-bit H3 cell identifier. The input parser accepts the canonical hexadecimal form (as produced by the H3 CLI and by <varname>h3_cell_to_string</varname> upstream), with an optional <varname>0x</varname> prefix and at most 16 significant digits. Hexadecimal is idiomatic in the H3 ecosystem and is what the output function emits, all examples below use it.</para>
+		<para>A <varname>th3index</varname> value is entered using the standard temporal syntax with the underlying 64-bit H3 cell identifier. The input parser accepts the canonical hexadecimal form (as produced by the H3 CLI and by <varname>h3_cell_to_string</varname> upstream), with an optional <varname>0x</varname> prefix and at most 16 significant digits. The value must also denote something in the H3 indexing system, that is, a cell, a directed edge or a vertex, so that a well-formed hexadecimal literal such as <varname>12345</varname>, which is none of the three, is rejected rather than stored as a value with no location. Hexadecimal is idiomatic in the H3 ecosystem and is what the output function emits, all examples below use it.</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT th3index '831c02fffffffff@2001-01-01';
 SELECT th3index '{831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02}';
