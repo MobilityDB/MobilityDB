@@ -1449,7 +1449,7 @@ tcbuffer_restrict_cbuffer(const Temporal *temp, const Cbuffer *cb, bool atfunc)
  * @brief Return a temporal circular buffer restricted to a circular buffer
  * @param[in] temp Temporal value
  * @param[in] cb Value
- * @csqlfn #Temporal_at_value()
+ * @csqlfn #Tcbuffer_at_cbuffer()
  */
 Temporal *
 tcbuffer_at_cbuffer(const Temporal *temp, const Cbuffer *cb)
@@ -1463,7 +1463,7 @@ tcbuffer_at_cbuffer(const Temporal *temp, const Cbuffer *cb)
  * circular buffer
  * @param[in] temp Temporal value
  * @param[in] cb Value
- * @csqlfn #Temporal_minus_value()
+ * @csqlfn #Tcbuffer_minus_cbuffer()
  */
 Temporal *
 tcbuffer_minus_cbuffer(const Temporal *temp, const Cbuffer *cb)

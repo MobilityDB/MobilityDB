@@ -291,7 +291,7 @@ PG_FUNCTION_INFO_V1(Span_to_spanset);
 /**
  * @ingroup mobilitydb_setspan_conversion
  * @brief Convert a span into a span set
- * @sqlfn instspanset(), floatspanset(), ...
+ * @sqlfn spanset()
  */
 Datum
 Span_to_spanset(PG_FUNCTION_ARGS)

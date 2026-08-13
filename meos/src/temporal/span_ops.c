@@ -187,7 +187,7 @@ contained_value_span(Datum value, const Span *s)
  * @ingroup meos_setspan_topo
  * @brief Return true if the first span is contained in the second one
  * @param[in] s1,s2 Spans
- * @csqlfn #Contained_value_span()
+ * @csqlfn #Contained_span_span()
  */
 bool
 contained_span_span(const Span *s1, const Span *s2)

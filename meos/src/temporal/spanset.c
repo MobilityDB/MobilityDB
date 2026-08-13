@@ -424,7 +424,7 @@ set_to_spanset(const Set *s)
  * @ingroup meos_setspan_conversion
  * @brief Convert a span into a span set
  * @param[in] s Span
- * @csqlfn #Spanset_to_span()
+ * @csqlfn #Span_to_spanset()
  */
 SpanSet *
 span_to_spanset(const Span *s)
@@ -1218,7 +1218,7 @@ numspanset_shift_scale(const SpanSet *ss, Datum shift, Datum width,
  * @param[in] ss Span set
  * @param[in] shift Interval to shift the span set, may be NULL
  * @param[in] duration Interval for the duration of the result, may be NULL
- * @csqlfn #Numspanset_shift(), #Numspanset_scale(), #Numspanset_shift_scale()
+ * @csqlfn #Tstzspanset_shift(), #Tstzspanset_scale(), #Tstzspanset_shift_scale()
  */
 SpanSet *
 tstzspanset_shift_scale(const SpanSet *ss, const Interval *shift,
