@@ -79,8 +79,8 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__rgeo__modif_gac328f7f27e641ba9ccc1f4f98af87842.html#gac328f7f27e641ba9ccc1f4f98af87842">trgeometry_append_tinstant</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__modif_ga8e9c45d57c3d10ad9811a6a87fdb2ed8.html#ga8e9c45d57c3d10ad9811a6a87fdb2ed8">trgeometry_append_tsequence</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__rgeo__modif_gae4b0518761ae198751f50d48f3f2c842.html#gae4b0518761ae198751f50d48f3f2c842">trgeometry_append_tinstant</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__modif_ga6ce48bbc58c003f37d04dfd58accd78d.html#ga6ce48bbc58c003f37d04dfd58accd78d">trgeometry_append_tsequence</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__modif_ga2802ab2d0e94dee0c399a0dae265f399.html#ga2802ab2d0e94dee0c399a0dae265f399">trgeometry_delete_timestamptz</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__modif_gae86eda059a91d324fc087701003584fb.html#gae86eda059a91d324fc087701003584fb">trgeometry_delete_tstzset</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__modif_gab1c585843c296825c992936c26a4b345.html#gab1c585843c296825c992936c26a4b345">trgeometry_delete_tstzspan</a></td></tr>
@@ -89,8 +89,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="gac328f7f27e641ba9ccc1f4f98af87842" name="gac328f7f27e641ba9ccc1f4f98af87842"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gac328f7f27e641ba9ccc1f4f98af87842">&#9670;&#160;</a></span>trgeometry_append_tinstant()</h2>
+<a id="gae4b0518761ae198751f50d48f3f2c842" name="gae4b0518761ae198751f50d48f3f2c842"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gae4b0518761ae198751f50d48f3f2c842">&#9670;&#160;</a></span>trgeometry_append_tinstant()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -128,8 +128,8 @@ $(function() {
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>expand</em>&#160;</td>
+          <td class="paramtype">bool expand&#160;</td>
+          <td class="paramname"><em>UNUSED</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -151,10 +151,8 @@ $(function() {
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>When the temporal value passed as first argument has space for adding the instant, the function returns the temporal value. Otherwise, a NEW temporal value is returned and the input value is freed. </dd></dl>
-<dl class="section note"><dt>Note</dt><dd>Always use the function to overwrite the existing temporal value as in: <div class="fragment"><div class="line">temp = <a class="code hl_function" href="group__meos__temporal__modif_ga8c88be47cfcb1a4c6b0668d6ed5b3672.html#ga8c88be47cfcb1a4c6b0668d6ed5b3672">temporal_append_tinstant</a>(temp, inst, ...);</div>
-<div class="ttc" id="agroup__meos__temporal__modif_ga8c88be47cfcb1a4c6b0668d6ed5b3672_html_ga8c88be47cfcb1a4c6b0668d6ed5b3672"><div class="ttname"><a href="group__meos__temporal__modif_ga8c88be47cfcb1a4c6b0668d6ed5b3672.html#ga8c88be47cfcb1a4c6b0668d6ed5b3672">temporal_append_tinstant</a></div><div class="ttdeci">Temporal * temporal_append_tinstant(Temporal *temp, const TInstant *inst, interpType interp, double maxdist, const Interval *maxt, bool expand)</div><div class="ttdoc">Append an instant to a temporal value.</div><div class="ttdef"><b>Definition:</b> temporal_modif.c:2143</div></div>
-</div><!-- fragment --> </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>A NEW temporal value is always returned, the temporal value passed as first argument is neither modified nor freed </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>The space reserved for additional instants cannot be kept in the result, since the reference geometry is restored by constructing the temporal rigid geometry anew. For this reason the instant is appended to the temporal pose without expansion, which also ensures that the temporal pose is not consumed by <a class="el" href="group__meos__temporal__modif_ga8c88be47cfcb1a4c6b0668d6ed5b3672.html#ga8c88be47cfcb1a4c6b0668d6ed5b3672" title="Append an instant to a temporal value.">temporal_append_tinstant</a> and can be freed below </dd></dl>
 
 </div>
 </div>
