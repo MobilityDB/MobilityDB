@@ -1108,6 +1108,7 @@ ensure_valid_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
  * @param[in] inst Temporal geo instant
  * @param[in] oper True when transforming from geometry to geography,
  * false otherwise
+ * @return On error return `NULL`
  * @sqlop @p ::
  */
 TInstant *
@@ -1120,6 +1121,10 @@ tgeominst_tgeoginst(const TInstant *inst, bool oper)
     res = geom_to_geog(gs);
   else
     res = geog_to_geom(gs);
+  /* The conversion fails, for example, when the coordinate system of a
+   * geometry is not a lon/lat one, which is required for a geography */
+  if (! res)
+    return NULL;
   MeosType temptype;
   if (oper == TGEOMP_TO_TGEOGP)
     temptype = (inst->temptype == T_TGEOMPOINT) ? T_TGEOGPOINT : T_TGEOGRAPHY;
@@ -1132,9 +1137,10 @@ tgeominst_tgeoginst(const TInstant *inst, bool oper)
  * @ingroup meos_internal_geo_conversion
  * @brief Return a temporal geometry/geography transformed from/to a temporal
  * geometry/geography
- * @param[in] seq Temporal geo sequence 
+ * @param[in] seq Temporal geo sequence
  * @param[in] oper True when transforming from geometry to geography,
  * false otherwise
+ * @return On error return `NULL`
  * @sqlop @p ::
  */
 TSequence *
@@ -1143,7 +1149,14 @@ tgeomseq_tgeogseq(const TSequence *seq, bool oper)
   assert(seq); assert(tgeo_type_all(seq->temptype));
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
+  {
     instants[i] = tgeominst_tgeoginst(TSEQUENCE_INST_N(seq, i), oper);
+    if (! instants[i])
+    {
+      pfree_array((void **) instants, i);
+      return NULL;
+    }
+  }
   return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
     seq->period.upper_inc, MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE_NO);
 }
@@ -1155,6 +1168,7 @@ tgeomseq_tgeogseq(const TSequence *seq, bool oper)
  * @param[in] ss Temporal point sequence set
  * @param[in] oper True when transforming from geometry to geography,
  * false otherwise
+ * @return On error return `NULL`
  * @sqlop @p ::
  */
 TSequenceSet *
@@ -1163,8 +1177,14 @@ tgeomseqset_tgeogseqset(const TSequenceSet *ss, bool oper)
   assert(ss); assert(tgeo_type_all(ss->temptype));
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
-    sequences[i] = tgeomseq_tgeogseq(TSEQUENCESET_SEQ_N(ss, i),
-      oper);
+  {
+    sequences[i] = tgeomseq_tgeogseq(TSEQUENCESET_SEQ_N(ss, i), oper);
+    if (! sequences[i])
+    {
+      pfree_array((void **) sequences, i);
+      return NULL;
+    }
+  }
   return tsequenceset_make_free(sequences, ss->count, NORMALIZE_NO);
 }
 
@@ -1204,6 +1224,7 @@ tgeom_tgeog(const Temporal *temp, bool oper)
  * @ingroup meos_geo_conversion
  * @brief Return a temporal geography from a temporal geometry
  * @param[in] temp Temporal geo
+ * @return On error return `NULL`
  * @csqlfn #Tgeometry_to_tgeography()
  */
 Temporal *
@@ -1218,6 +1239,7 @@ tgeometry_to_tgeography(const Temporal *temp)
  * @ingroup meos_geo_conversion
  * @brief Return a temporal geometry from to a temporal geography
  * @param[in] temp Temporal point
+ * @return On error return `NULL`
  * @csqlfn #Tgeography_to_tgeometry()
  */
 Temporal *
