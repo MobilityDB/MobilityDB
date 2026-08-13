@@ -1053,10 +1053,13 @@ trgeometry_set_interp(const Temporal *temp, interpType interp)
 
 /**
  * @ingroup meos_internal_rgeo_restrict
- * @brief Restrict a temporal rigid geometry to (the complement of) a geometry
+ * @brief Restrict a temporal rigid geometry to (the complement of) a pose
  * @param[in] temp Temporal rigid geometry
  * @param[in] value Value
  * @param[in] atfunc True if the restriction is `at`, false for `minus`
+ * @note The base values of a temporal rigid geometry are poses. As the other
+ * restrictions do, the function strips the value to its temporal pose,
+ * restricts that, and puts the reference geometry back on the result
  * @note This function does a bounding box test for the temporal types
  * different from instant. The singleton tests are done in the functions for
  * the specific temporal types.
@@ -1067,8 +1070,9 @@ trgeometry_restrict_value(const Temporal *temp, Datum value, bool atfunc)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
-
-  Temporal *res = temporal_restrict_value(temp, value, atfunc);
+  Temporal *tpose = trgeometry_to_tpose(temp);
+  Temporal *res = temporal_restrict_value(tpose, value, atfunc);
+  pfree(tpose);
   if (! res)
     return NULL;
   Temporal *result = geometry_tpose_to_trgeometry(trgeo_geom_p(temp), res);
@@ -1078,28 +1082,32 @@ trgeometry_restrict_value(const Temporal *temp, Datum value, bool atfunc)
 
 /**
  * @ingroup meos_rgeo_restrict
- * @brief Restrict a temporal rigid geometry to a geometry
+ * @brief Restrict a temporal rigid geometry to a pose
  * @param[in] temp Temporal rigid geometry
- * @param[in] gs Geometry
+ * @param[in] pose Pose
  * @csqlfn #Temporal_at_value()
  */
 Temporal *
-trgeometry_at_value(const Temporal *temp, const GSERIALIZED *gs)
+trgeometry_at_value(const Temporal *temp, const Pose *pose)
 {
-  return trgeometry_restrict_value(temp, PointerGetDatum(gs), REST_AT);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pose, NULL);
+  return trgeometry_restrict_value(temp, PointerGetDatum(pose), REST_AT);
 }
 
 /**
  * @ingroup meos_rgeo_restrict
- * @brief Restrict a temporal rigid geometry to the complement of a geometry
+ * @brief Restrict a temporal rigid geometry to the complement of a pose
  * @param[in] temp Temporal rigid geometry
- * @param[in] gs Geometry
+ * @param[in] pose Pose
  * @csqlfn #Temporal_minus_value()
  */
 Temporal *
-trgeometry_minus_value(const Temporal *temp, const GSERIALIZED *gs)
+trgeometry_minus_value(const Temporal *temp, const Pose *pose)
 {
-  return trgeometry_restrict_value(temp, PointerGetDatum(gs), REST_MINUS);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pose, NULL);
+  return trgeometry_restrict_value(temp, PointerGetDatum(pose), REST_MINUS);
 }
 
 /*****************************************************************************/

@@ -36,7 +36,7 @@
  * temporal (pose) part. This test exercises trgeometry_in() directly on a
  * well-formed value and checks that the result round-trips through
  * trgeometry_out(). It also exercises the restriction of a trgeometry to a
- * set of base values, whose base values are poses.
+ * base value and to a set of base values, whose base values are poses.
  *
  * The program can be built as follows
  * @code
@@ -181,6 +181,63 @@ int main(void)
       printf("OK: trgeometry_at_values(trgeometry, geomset) rejected, "
         "errno %d\n", meos_errno());
     free(bad); free(geomset1);
+    meos_errno_reset();
+
+    /* The singular restrictions take a base value, that is, a pose */
+    Pose *pose1 = pose_in("Pose(Point(10 0),0)");
+    meos_errno_reset();
+    Temporal *at_value = trgeometry_at_value(trgeo3, pose1);
+    if (! at_value)
+    {
+      printf("FAILED: trgeometry_at_value returned NULL, errno %d\n",
+        meos_errno());
+      result = 1;
+    }
+    else
+    {
+      char *at_value_out = trgeometry_as_text(at_value, 6);
+      if (strcmp(at_value_out, at_expected) != 0)
+      {
+        printf("FAILED: trgeometry_at_value: %s != %s\n", at_value_out,
+          at_expected);
+        result = 1;
+      }
+      else
+        printf("OK: trgeometry_at_value(trgeometry, pose): %s\n",
+          at_value_out);
+      free(at_value); free(at_value_out);
+    }
+
+    /* The complement keeps everything else */
+    meos_errno_reset();
+    Temporal *minus_value = trgeometry_minus_value(trgeo3, pose1);
+    if (! minus_value)
+    {
+      printf("FAILED: trgeometry_minus_value returned NULL, errno %d\n",
+        meos_errno());
+      result = 1;
+    }
+    else
+    {
+      char *minus_value_out = trgeometry_as_text(minus_value, 6);
+      printf("OK: trgeometry_minus_value(trgeometry, pose): %s\n",
+        minus_value_out);
+      free(minus_value); free(minus_value_out);
+    }
+
+    /* A temporal value of another type is rejected */
+    Temporal *tpose1 = trgeometry_to_tpose(trgeo3);
+    meos_errno_reset();
+    Temporal *bad_value = trgeometry_at_value(tpose1, pose1);
+    if (bad_value || meos_errno() == 0)
+    {
+      printf("FAILED: trgeometry_at_value accepted a temporal pose\n");
+      result = 1;
+    }
+    else
+      printf("OK: trgeometry_at_value(tpose, pose) rejected, errno %d\n",
+        meos_errno());
+    free(bad_value); free(tpose1); free(pose1);
     meos_errno_reset();
   }
   free(trgeo3); free(poseset1);
