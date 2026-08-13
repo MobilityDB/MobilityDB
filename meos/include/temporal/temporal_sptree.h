@@ -78,6 +78,12 @@ struct SPTree
   size_t nodeboxsize;   /**< Size of an inner node region */
   int dims;             /**< Number of dimensions of the box */
   int nchild;           /**< Number of children per node */
+  const uint8 *kd_bits; /**< For a k-d tree, the quadrant bit carrying each
+                             dimension, in the order @p kdtree_next narrows
+                             them. A level must store a box under the bit of
+                             the dimension its region is then narrowed on, or
+                             the search prunes the subtrees holding the
+                             matches. */
   SPTreeKind kind;      /**< Quad-tree or k-d tree */
   SPNode *root;         /**< Root node, or @p NULL when empty */
   int (*box_dims)(const void *box);  /**< Dimensions of a box, or @p NULL when

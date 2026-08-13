@@ -859,6 +859,124 @@ test_nn_stbox(void)
   sptree_free(sptree);
 }
 
+
+/*****************************************************************************
+ * Selective windows
+ *
+ * A query covering the whole space is accepted by every inner node, so it
+ * never prunes and never exercises the dimension a k-d level splits on. Only a
+ * window narrower than the data does. These cases are deterministic and assert
+ * a non-empty answer, so they cannot pass by matching nothing.
+ *****************************************************************************/
+
+#define SEL_BOXES 200
+
+static void
+selective(const char *label, const SPTree *sptree, const void *query,
+  const bool *truth, int ntruth)
+{
+  MeosArray *result = meos_array_create(sizeof(int));
+  int count = sptree_search(sptree, RTREE_OVERLAPS, query, result);
+  bool *in_index = calloc(SEL_BOXES, sizeof(bool));
+  for (int i = 0; i < count; i++)
+    in_index[*(int *) meos_array_get(result, i)] = true;
+  int missed = 0;
+  for (int i = 0; i < SEL_BOXES; i++)
+    if (truth[i] && ! in_index[i])
+      missed++;
+  char name[128];
+  snprintf(name, sizeof(name), "%s window matches %d, none missed", label,
+    ntruth);
+  check(name, ntruth > 0 && missed == 0);
+  free(in_index);
+  meos_array_destroy(result);
+}
+
+static void
+test_selective_intspan(SPTreeKind kind, const char *kindname)
+{
+  Span *boxes[SEL_BOXES];
+  SPTree *sptree = sptree_create_intspan(kind);
+  for (int i = 0; i < SEL_BOXES; i++)
+  {
+    boxes[i] = intspan_make(i, i + 2, true, false);
+    sptree_insert(sptree, boxes[i], i);
+  }
+  Span *query = intspan_make(10, 40, true, false);
+  bool truth[SEL_BOXES];
+  int n = 0;
+  for (int i = 0; i < SEL_BOXES; i++)
+    if ((truth[i] = overlaps_span_span(boxes[i], query)))
+      n++;
+  char label[64];
+  snprintf(label, sizeof(label), "Integer span %s selective", kindname);
+  selective(label, sptree, query, truth, n);
+  for (int i = 0; i < SEL_BOXES; i++)
+    free(boxes[i]);
+  free(query);
+  sptree_free(sptree);
+}
+
+static void
+test_selective_tbox(SPTreeKind kind, const char *kindname)
+{
+  TBox *boxes[SEL_BOXES];
+  SPTree *sptree = sptree_create_tbox(kind);
+  for (int i = 0; i < SEL_BOXES; i++)
+  {
+    /* One dimension is held constant on purpose: splitting on it separates
+     * nothing, so a level that splits the wrong dimension loses the rows. */
+    Span *t = tstzspan_make(0, 86400000000, true, false);
+    Span *v = floatspan_make(i, i + 2, true, false);
+    boxes[i] = tbox_make(v, t);
+    free(t); free(v);
+    sptree_insert(sptree, boxes[i], i);
+  }
+  Span *qt = tstzspan_make(0, 2 * 86400000000, true, false);
+  Span *qv = floatspan_make(10, 40, true, false);
+  TBox *query = tbox_make(qv, qt);
+  free(qt); free(qv);
+  bool truth[SEL_BOXES];
+  int n = 0;
+  for (int i = 0; i < SEL_BOXES; i++)
+    if ((truth[i] = overlaps_tbox_tbox(boxes[i], query)))
+      n++;
+  char label[64];
+  snprintf(label, sizeof(label), "Temporal box %s selective", kindname);
+  selective(label, sptree, query, truth, n);
+  for (int i = 0; i < SEL_BOXES; i++)
+    free(boxes[i]);
+  free(query);
+  sptree_free(sptree);
+}
+
+static void
+test_selective_stbox(SPTreeKind kind, const char *kindname)
+{
+  STBox *boxes[SEL_BOXES];
+  SPTree *sptree = sptree_create_stbox(kind);
+  Span *t = tstzspan_make(0, 86400000000, true, false);
+  for (int i = 0; i < SEL_BOXES; i++)
+  {
+    boxes[i] = stbox_make(true, false, false, 0, i, i + 1, i, i + 1, 0, 0, t);
+    sptree_insert(sptree, boxes[i], i);
+  }
+  STBox *query = stbox_make(true, false, false, 0, 10, 40, 10, 40, 0, 0, t);
+  free(t);
+  bool truth[SEL_BOXES];
+  int n = 0;
+  for (int i = 0; i < SEL_BOXES; i++)
+    if ((truth[i] = overlaps_stbox_stbox(boxes[i], query)))
+      n++;
+  char label[64];
+  snprintf(label, sizeof(label), "Spatiotemporal box %s selective", kindname);
+  selective(label, sptree, query, truth, n);
+  for (int i = 0; i < SEL_BOXES; i++)
+    free(boxes[i]);
+  free(query);
+  sptree_free(sptree);
+}
+
 int
 main(void)
 {
@@ -878,6 +996,12 @@ main(void)
   test_tpcbox(SPTREE_QUADTREE, "quad-tree");
   test_tpcbox(SPTREE_KDTREE, "k-d tree");
 #endif
+  test_selective_intspan(SPTREE_QUADTREE, "quad-tree");
+  test_selective_intspan(SPTREE_KDTREE, "k-d tree");
+  test_selective_tbox(SPTREE_QUADTREE, "quad-tree");
+  test_selective_tbox(SPTREE_KDTREE, "k-d tree");
+  test_selective_stbox(SPTREE_QUADTREE, "quad-tree");
+  test_selective_stbox(SPTREE_KDTREE, "k-d tree");
   test_mest();
   test_stbox_mest();
   test_nn_floatspan();
