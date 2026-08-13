@@ -1415,6 +1415,21 @@ ea_touches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
   if (! overlaps_stbox_stbox(&box1, &box2))
     return 0;
 
+  /* Touching requires the two to reach a distance of exactly zero, so a
+   * strictly positive exact nearest approach proves them disjoint and neither
+   * quantifier can hold. The paths below build the trajectory of the whole
+   * temporal point and the boundary of the geometry once per pair, and resolve
+   * the intersection natively, which indexes the boundary edges: a profile of
+   * this join spends about three quarters of its samples building that index,
+   * in node_insert and get_axis_stbox. The nearest approach reaches the same
+   * rejection without the boundary and its index. The box test above leaves
+   * the pairs that share an extent, which is where a spatial join spends its
+   * time, and this rejects those among them that never make contact. #ea_touches_tcbuffer_geo carries the same reject with the
+   * same tolerance, and the guards above have already restricted this to
+   * planar 2D operands, which is what the nearest approach requires. */
+  if (nad_tgeo_geo(temp, gs) > 1e-6)
+    return 0;
+
   /* EVER */
   if (ever)
   {
