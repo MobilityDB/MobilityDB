@@ -279,7 +279,13 @@ WHERE stbox(r.tile) &amp;&amp; stbox(t.trip);
 			</listitem>
 
 			<listitem xml:id="raquet_comparison">
-				<indexterm significance="normal"><primary><varname>raquet comparison</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>=</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&lt;&gt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&lt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&lt;=</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&gt;=</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&gt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>cmp</varname></primary></indexterm>
 				<para>Compare two Raquet tiles</para>
 				<para><varname>raquet = raquet → boolean</varname></para>
 				<para><varname>raquet &lt;&gt; raquet → boolean</varname></para>

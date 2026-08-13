@@ -891,6 +891,7 @@ SELECT stbox 'STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])' #&amp;&gt;
 				<indexterm significance="normal"><primary><varname>&gt;</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>&lt;=</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>&gt;=</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>cmp</varname></primary></indexterm>
 				<para>Comparaciones tradicionales</para>
 				<para><varname>box = box → boolean</varname></para>
 				<para><varname>box &lt;&gt; box → boolean</varname></para>
@@ -898,6 +899,9 @@ SELECT stbox 'STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])' #&amp;&gt;
 				<para><varname>box &gt; box → boolean</varname></para>
 				<para><varname>box &lt;= box → boolean</varname></para>
 				<para><varname>box &gt;= box → boolean</varname></para>
+				<para><varname>cmp(tbox,tbox) → int</varname></para>
+				<para><varname>cmp(stbox,stbox) → int</varname></para>
+				<para>La función <varname>cmp</varname> devuelve -1, 0 o 1 según que el primer argumento sea, respectivamente, menor que, igual a o mayor que el segundo.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT tbox 'TBOXINT XT([1,1],[2001-01-01,2001-01-04])' =
   tbox 'TBOXINT XT([2,2],[2001-01-03,2001-01-05])';

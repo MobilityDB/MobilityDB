@@ -969,6 +969,8 @@ FROM test;
 		<itemizedlist>
 			<listitem xml:id="setspan_union">
 				<indexterm significance="normal"><primary><varname>+</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>-</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>*</varname></primary></indexterm>
 				<para>Unión, diferencia o intersección de conjuntos o de rangos</para>
 				<para><varname>set {+, - , *} set → set</varname></para>
 				<para><varname>spans {+, - , *} spans → spans</varname></para>
@@ -1266,6 +1268,7 @@ SELECT dateset '{2001-01-01, 2001-01-03, 2001-01-05}' &lt;-&gt;
 				<indexterm significance="normal"><primary><varname>&gt;</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>&lt;=</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>&gt;=</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>cmp</varname></primary></indexterm>
 				<para>Comparaciones tradicionales</para>
 				<para><varname>set {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} set → boolean</varname></para>
 				<para><varname>spans {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} spans → boolean</varname></para>
@@ -1340,6 +1343,7 @@ SELECT extent(ps) FROM periods;
 			<listitem xml:id="setspan_union_agg">
 				<indexterm significance="normal"><primary><varname>setUnion</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>spanUnion</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>spansetUnion</varname></primary></indexterm>
 				<para>Unión agregada</para>
 				<para><varname>setUnion({value,set}) → set</varname></para>
 				<para><varname>spanUnion(spans) → spanset</varname></para>

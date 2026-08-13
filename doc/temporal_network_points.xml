@@ -359,7 +359,7 @@ SELECT tnpointSeqSet('Npoint(1, 0.2)', tstzspanset '{[2001-01-01, 2001-01-03]}',
 				</listitem>
 
 				<listitem xml:id="tnpointSeq">
-					<indexterm significance="normal"><primary><varname>=</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tnpointSeq</varname></primary></indexterm>
 					<para>Constructor for temporal network points of sequence subtype</para>
 					<para><varname>tnpointSeq(tnpointInst[],interp={'step','linear'},leftInc bool=true,</varname></para>
 					<para><varname>  rightInc bool=true) →tnpointSeq</varname></para>
