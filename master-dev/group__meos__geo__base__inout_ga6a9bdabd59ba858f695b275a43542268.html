@@ -132,10 +132,11 @@ $(function() {
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">box</td><td>Box </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">maxdd</td><td>Maximum number of decimal digits </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">maxdd</td><td>Maximum number of decimal digits</td></tr>
   </table>
   </dd>
 </dl>
+<p>The format is <code><a class="el" href="structBOX3D.html">BOX3D(xmin ymin zmin,xmax ymax zmax)</a></code>, the one PostGIS gives the <code>box3d</code> type it declares, so that a value printed here is read back by a PostgreSQL session and the other way round. As PostGIS does, the Z ordinates are always printed and the SRID never is. PostGIS prints the ordinates with at most <a class="el" href="type__inout_8h_a28e7bebfef9609f69d1a63575a8dd923.html#a28e7bebfef9609f69d1a63575a8dd923">OUT_DEFAULT_DECIMAL_DIGITS</a> decimal digits, which is thus the value of <code>maxdd</code> that reproduces its output character for character </p>
 
 </div>
 </div>

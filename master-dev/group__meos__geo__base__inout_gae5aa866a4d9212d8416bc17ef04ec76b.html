@@ -125,7 +125,7 @@ $(function() {
   </table>
   </dd>
 </dl>
-<p>The format is <code>[SRID=#;]<a class="el" href="structBOX3D.html">BOX3D</a>((xmin,ymin,zmin),(xmax,ymax,zmax))</code>, the inverse of <a class="el" href="group__meos__geo__base__inout_ga6a9bdabd59ba858f695b275a43542268.html#ga6a9bdabd59ba858f695b275a43542268" title="Return the string representation of a PostGIS BOX3D.">box3d_out</a> </p>
+<p>The format is <code><a class="el" href="structBOX3D.html">BOX3D(xmin ymin zmin,xmax ymax zmax)</a></code>, the inverse of <a class="el" href="group__meos__geo__base__inout_ga6a9bdabd59ba858f695b275a43542268.html#ga6a9bdabd59ba858f695b275a43542268" title="Return the string representation of a PostGIS BOX3D.">box3d_out</a> and the one PostGIS gives the <code>box3d</code> type it declares. As PostGIS does, the Z ordinates may be left out, as in <code><a class="el" href="structBOX3D.html">BOX3D(xmin ymin,xmax ymax)</a></code>, in which case they are zero, and the SRID of the result is always unknown </p><dl class="section note"><dt>Note</dt><dd>The format <code>[SRID=#;]<a class="el" href="structBOX3D.html">BOX3D</a>((xmin,ymin,zmin),(xmax,ymax,zmax))</code> written by previous versions of <a class="el" href="group__meos__geo__base__inout_ga6a9bdabd59ba858f695b275a43542268.html#ga6a9bdabd59ba858f695b275a43542268" title="Return the string representation of a PostGIS BOX3D.">box3d_out</a> is still accepted, so that a value stored by them can still be read. The two formats are told apart by the character following <code><a class="el" href="structBOX3D.html">BOX3D</a>(</code>, which is an opening parenthesis in the latter only </dd></dl>
 
 </div>
 </div>
