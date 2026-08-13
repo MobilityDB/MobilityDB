@@ -51,22 +51,22 @@ SELECT jsonbset '{"{\"geom\": \"Point(1 1)\"}", "{\"geom\": \"Point(2 2)\"}", "{
 
 -------------------------------------------------------------------------------
 
-SELECT jsonbset_set(jsonbset '{"{\"speed\": 10}"}', ARRAY['units'], '"km/h"'::jsonb);
-SELECT jsonbset_set(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20}", "{\"speed\": 30}"}', ARRAY['units'], '"km/h"'::jsonb);
+SELECT jsonbsetSet(jsonbset '{"{\"speed\": 10}"}', ARRAY['units'], '"km/h"'::jsonb);
+SELECT jsonbsetSet(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20}", "{\"speed\": 30}"}', ARRAY['units'], '"km/h"'::jsonb);
 
-SELECT jsonbset_insert(jsonbset '{"{\"speed\": 10}"}', ARRAY['units'], '"km/h"'::jsonb);
-SELECT jsonbset_insert(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20}", "{\"speed\": 30}"}', ARRAY['units'], '"km/h"'::jsonb);
+SELECT jsonbsetInsert(jsonbset '{"{\"speed\": 10}"}', ARRAY['units'], '"km/h"'::jsonb);
+SELECT jsonbsetInsert(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20}", "{\"speed\": 30}"}', ARRAY['units'], '"km/h"'::jsonb);
 
 -------------------------------------------------------------------------------
 
-SELECT jsonbset_extract_path(jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY[text 'speed']);
-SELECT jsonbset_extract_path(jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY[text 'speed']);
+SELECT jsonbsetExtractPath(jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY[text 'speed']);
+SELECT jsonbsetExtractPath(jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY[text 'speed']);
 
 /* Null handling */
-SELECT jsonbset_extract_path(jsonbset '{"{\"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY['speed'],'raise_exception');
-SELECT jsonbset_extract_path(jsonbset '{"{\"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY['speed'],'use_json_null');
-SELECT jsonbset_extract_path(jsonbset '{"{\"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY['speed'],'delete_key');
-SELECT jsonbset_extract_path(jsonbset '{"{\"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY['speed'],'return_null');
+SELECT jsonbsetExtractPath(jsonbset '{"{\"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY['speed'],'raise_exception');
+SELECT jsonbsetExtractPath(jsonbset '{"{\"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY['speed'],'use_json_null');
+SELECT jsonbsetExtractPath(jsonbset '{"{\"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY['speed'],'delete_key');
+SELECT jsonbsetExtractPath(jsonbset '{"{\"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY['speed'],'return_null');
 
 SELECT jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}"}' #> ARRAY['speed'];
 SELECT jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}' #> ARRAY['speed'];
@@ -75,14 +75,14 @@ SELECT jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}", "{\"speed\": 20, \"uni
 SELECT jsonbset '{"{\"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}' #> ARRAY['speed'];
 
 
-SELECT jsonbset_extract_path_text(jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY['speed']);
-SELECT jsonbset_extract_path_text(jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY['speed']);
+SELECT jsonbsetExtractPathText(jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY['speed']);
+SELECT jsonbsetExtractPathText(jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY['speed']);
 
 /* Null handling */
-SELECT jsonbset_extract_path_text(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY['units'], 'raise_exception');
-SELECT jsonbset_extract_path_text(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY['units'], 'use_json_null');
-SELECT jsonbset_extract_path_text(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY['units'], 'delete_key');
-SELECT jsonbset_extract_path_text(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY['units'], 'return_null');
+SELECT jsonbsetExtractPathText(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY['units'], 'raise_exception');
+SELECT jsonbsetExtractPathText(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY['units'], 'use_json_null');
+SELECT jsonbsetExtractPathText(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY['units'], 'delete_key');
+SELECT jsonbsetExtractPathText(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY['units'], 'return_null');
 
 SELECT jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}"}' #>> ARRAY['speed'];
 SELECT jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}' #>> ARRAY['speed'];
@@ -90,13 +90,13 @@ SELECT jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}", "{\"speed\": 20, \"uni
 /* Null handling: 'use_json_null' by default */
 SELECT jsonbset '{"{\"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}' #>> ARRAY['speed'];
 
-SELECT jsonbset_extract_path_text('{"{\"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}',
+SELECT jsonbsetExtractPathText('{"{\"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}',
   ARRAY['speed'], 'raise_exception');
-SELECT jsonbset_extract_path_text('{"{\"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}',
+SELECT jsonbsetExtractPathText('{"{\"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}',
   ARRAY['speed'], 'use_json_null');
-SELECT jsonbset_extract_path_text('{"{\"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}',
+SELECT jsonbsetExtractPathText('{"{\"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}',
   ARRAY['speed'], 'delete_key');
-SELECT jsonbset_extract_path_text('{"{\"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}',
+SELECT jsonbsetExtractPathText('{"{\"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}',
   ARRAY['speed'], 'return_null');
 
 -------------------------------------------------------------------------------
@@ -128,12 +128,12 @@ SELECT intset(jsonbset '{"{\"a\":\"xxx\", \"b\":2.5}"}', text 'a');
 SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' ? text 'units';
 SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' ? text 'speed';
 SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' ? text 'xxx';
-SELECT jsonbset_exists(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', text 'speed');
+SELECT jsonbsetExists(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', text 'speed');
 
 SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' ?| ARRAY[text 'units', text 'lights'];
 SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' ?& ARRAY[text 'speed', text 'units'];
-SELECT jsonbset_exists_any(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', ARRAY[text 'speed']);
-SELECT jsonbset_exists_all(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', ARRAY[text 'speed']);
+SELECT jsonbsetExistsAny(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', ARRAY[text 'speed']);
+SELECT jsonbsetExistsAll(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', ARRAY[text 'speed']);
 /* An empty array of keys has no result */
 SELECT jsonbset '{"{\"speed\": 10}"}' ?| ARRAY[]::text[];
 
@@ -146,18 +146,18 @@ SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' @?
 SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' @? '$.speed ? (@ > 15)';
 SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' @? '$.xxx';
 
-SELECT jsonbset_path_exists(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', '$.units');
-SELECT jsonbset_path_exists(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', '$.speed ? (@ > $min)', '{"min": 15}');
-SELECT jsonbset_path_exists_tz(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', '$.units');
+SELECT jsonbsetPathExists(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', '$.units');
+SELECT jsonbsetPathExists(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', '$.speed ? (@ > $min)', '{"min": 15}');
+SELECT jsonbsetPathExistsTz(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', '$.units');
 
 SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' @@ '$.speed > 15';
 SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' @@ '$.speed == 10';
 
-SELECT jsonbset_path_match(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', '$.speed > 15');
-SELECT jsonbset_path_match(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', '$.speed > $min', '{"min": 15}');
-SELECT jsonbset_path_match_tz(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', '$.speed > 15');
+SELECT jsonbsetPathMatch(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', '$.speed > 15');
+SELECT jsonbsetPathMatch(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', '$.speed > $min', '{"min": 15}');
+SELECT jsonbsetPathMatchTz(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', '$.speed > 15');
 
 /* A path matching nothing is unknown, that is, false, for every element */
-SELECT jsonbset_path_match(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', '$.xxx > 15', '{}', false);
+SELECT jsonbsetPathMatch(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', '$.xxx > 15', '{}', false);
 
 -------------------------------------------------------------------------------

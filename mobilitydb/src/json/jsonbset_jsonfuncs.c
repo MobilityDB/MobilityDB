@@ -62,7 +62,7 @@ PG_FUNCTION_INFO_V1(Jsonbset_array_length);
 /**
  * @ingroup mobilitydb_json_json
  * @brief Return the array length of a JSONB set value
- * @sqlfn jsonbset_array_length()
+ * @sqlfn jsonbsetArrayLength()
  */
 Datum
 Jsonbset_array_length(PG_FUNCTION_ARGS)
@@ -82,7 +82,7 @@ Jsonbset_array_length(PG_FUNCTION_ARGS)
 
 /**
  * @brief Extract a field from a JSONB set value
- * @sqlfn jsonbset_object_field(), jsonbset_object_field_text()
+ * @sqlfn jsonbsetObjectField(), jsonbsetObjectFieldText()
  * @sqlop @p ->, @p ->
  */
 Datum
@@ -113,7 +113,7 @@ PG_FUNCTION_INFO_V1(Jsonbset_object_field);
 /**
  * @ingroup mobilitydb_json_json
  * @brief Extract a field from a temporal JSON value as text
- * @sqlfn jsonbset_object_field()
+ * @sqlfn jsonbsetObjectField()
  * @sqlop @p ->
  */
 Datum
@@ -127,7 +127,7 @@ PG_FUNCTION_INFO_V1(Jsonbset_object_field_text);
 /**
  * @ingroup mobilitydb_json_json
  * @brief Extract a field from a temporal JSON value as text
- * @sqlfn jsonbset_object_field_text()
+ * @sqlfn jsonbsetObjectFieldText()
  * @sqlop @p ->>
  */
 Datum
@@ -144,7 +144,7 @@ PG_FUNCTION_INFO_V1(Jsonbset_object_field_opr);
  * JSONB set value
  * @details Implementation of operator "tjsonb -> text" (2-argument version
  * of jsonbset_object_field())
- * @sqlfn jsonbset_object_field_opr()
+ * @sqlfn jsonbsetObjectFieldOpr()
  * @sqlop @p ->
  */
 Datum
@@ -161,7 +161,7 @@ PG_FUNCTION_INFO_V1(Jsonbset_object_field_text_opr);
  * JSONB set value
  * @details Implementation of operator "tjsonb ->> text" (2-argument version
  * of jsonbset_object_field_text())
- * @sqlfn jsonbset_object_field_text_opr()
+ * @sqlfn jsonbsetObjectFieldTextOpr()
  * @sqlop @p ->>
  */
 Datum
@@ -177,7 +177,7 @@ PG_FUNCTION_INFO_V1(Concat_jsonb_jsonbset);
 /**
  * @ingroup mobilitydb_json_json
  * @brief Concat a JSONB value with a JSONB set
- * @sqlfn jsonbset_concat()
+ * @sqlfn jsonbsetConcat()
  * @sqlop @p ||
  */
 Datum
@@ -199,7 +199,7 @@ PG_FUNCTION_INFO_V1(Concat_jsonbset_jsonb);
 /**
  * @ingroup mobilitydb_json_json
  * @brief Concat a JSONB set with a JSONB value
- * @sqlfn jsonbset_concat()
+ * @sqlfn jsonbsetConcat()
  * @sqlop @p ||
  */
 Datum
@@ -223,7 +223,7 @@ PG_FUNCTION_INFO_V1(Jsonbset_delete);
 /**
  * @ingroup mobilitydb_json_json
  * @brief Delete a key or an element array from a JSONB set value
- * @sqlfn jsonbset_delete()
+ * @sqlfn jsonbsetDelete()
  * @sqlop @p -
  */
 Datum
@@ -247,7 +247,7 @@ PG_FUNCTION_INFO_V1(Jsonbset_delete_array);
 /**
  * @ingroup mobilitydb_json_json
  * @brief Delete an array of keys or array elements from a JSONB set value
- * @sqlfn jsonbset_delete_array()
+ * @sqlfn jsonbsetDeleteArray()
  * @sqlop @p -
  */
 Datum
@@ -289,7 +289,7 @@ PG_FUNCTION_INFO_V1(Jsonbset_exists);
  * @ingroup mobilitydb_json_json
  * @brief Return for every value of a JSONB set whether the text string exists
  * as a top-level key or array element within it
- * @sqlfn jsonbset_exists()
+ * @sqlfn jsonbsetExists()
  * @sqlop @p ?
  */
 Datum
@@ -312,7 +312,7 @@ Jsonbset_exists(PG_FUNCTION_ARGS)
 /**
  * @brief Return for every value of a JSONB set whether any or all of the text
  * strings of an array exist as top-level keys or array elements within it
- * @sqlfn jsonbset_exists_any(), jsonbset_exists_all()
+ * @sqlfn jsonbsetExistsAny(), jsonbsetExistsAll()
  */
 Datum
 Jsonbset_exists_array(FunctionCallInfo fcinfo, bool any)
@@ -358,7 +358,7 @@ PG_FUNCTION_INFO_V1(Jsonbset_exists_any);
  * @ingroup mobilitydb_json_json
  * @brief Return for every value of a JSONB set whether any of the text strings
  * of an array exist as top-level keys or array elements within it
- * @sqlfn jsonbset_exists_any()
+ * @sqlfn jsonbsetExistsAny()
  * @sqlop @p ?|
  */
 Datum
@@ -373,7 +373,7 @@ PG_FUNCTION_INFO_V1(Jsonbset_exists_all);
  * @ingroup mobilitydb_json_json
  * @brief Return for every value of a JSONB set whether all of the text strings
  * of an array exist as top-level keys or array elements within it
- * @sqlfn jsonbset_exists_all()
+ * @sqlfn jsonbsetExistsAll()
  * @sqlop @p ?&
  */
 Datum
@@ -389,7 +389,7 @@ PG_FUNCTION_INFO_V1(Jsonbset_delete_index);
 /**
  * @ingroup mobilitydb_json_json
  * @brief Delete a key specified by an index from a JSONB set value
- * @sqlfn jsonbset_delete_index()
+ * @sqlfn jsonbsetDeleteIndex()
  * @sqlop @p -
  */
 Datum
@@ -412,7 +412,7 @@ PG_FUNCTION_INFO_V1(Jsonbset_delete_path);
 /**
  * @ingroup mobilitydb_json_json
  * @brief Delete a path from a JSONB set value
- * @sqlfn jsonbset_delete_path()
+ * @sqlfn jsonbsetDeletePath()
  */
 Datum
 Jsonbset_delete_path(PG_FUNCTION_ARGS)
@@ -449,7 +449,7 @@ Jsonbset_delete_path(PG_FUNCTION_ARGS)
 
 /**
  * @brief Extract an array element from a JSONB set value
- * @sqlfn jsonbset_array_element(), jsonbset_array_element_opr()
+ * @sqlfn jsonbsetArrayElement(), jsonbsetArrayElementOpr()
   * @sqlop ->
 */
 Datum
@@ -479,7 +479,7 @@ PG_FUNCTION_INFO_V1(Jsonbset_array_element);
 /**
  * @ingroup mobilitydb_json_json
  * @brief Extract an array element from a JSONB set value
- * @sqlfn jsonbset_array_element()
+ * @sqlfn jsonbsetArrayElement()
  */
 Datum
 Jsonbset_array_element(PG_FUNCTION_ARGS)
@@ -492,7 +492,7 @@ PG_FUNCTION_INFO_V1(Jsonbset_array_element_opr);
 /**
  * @ingroup mobilitydb_json_json
  * @brief Extract an array element from a JSONB set value
- * @sqlfn jsonbset_array_element_opr()
+ * @sqlfn jsonbsetArrayElementOpr()
  */
 Datum
 Jsonbset_array_element_opr(PG_FUNCTION_ARGS)
@@ -505,7 +505,7 @@ PG_FUNCTION_INFO_V1(Jsonbset_array_element_text);
 /**
  * @ingroup mobilitydb_json_json
  * @brief Extract an array element from a JSONB set value as text
- * @sqlfn jsonbset_array_element_text()
+ * @sqlfn jsonbsetArrayElementText()
  */
 Datum
 Jsonbset_array_element_text(PG_FUNCTION_ARGS)
@@ -518,7 +518,7 @@ PG_FUNCTION_INFO_V1(Jsonbset_array_element_text_opr);
 /**
  * @ingroup mobilitydb_json_json
  * @brief Extract an array element from a JSONB set value as text
- * @sqlfn jsonbset_array_element_text_opr()
+ * @sqlfn jsonbsetArrayElementTextOpr()
  */
 Datum
 Jsonbset_array_element_text_opr(PG_FUNCTION_ARGS)
@@ -586,7 +586,7 @@ PG_FUNCTION_INFO_V1(Jsonbset_extract_path);
 /**
  * @ingroup mobilitydb_json_json
  * @brief Extract a path from a JSONB set value
- * @sqlfn jsonbset_extract_path()
+ * @sqlfn jsonbsetExtractPath()
  */
 Datum
 Jsonbset_extract_path(PG_FUNCTION_ARGS)
@@ -599,7 +599,7 @@ PG_FUNCTION_INFO_V1(Jsonbset_extract_path_text);
 /**
  * @ingroup mobilitydb_json_json
  * @brief Extract a path from a JSONB set value as text
- * @sqlfn jsonbset_extract_path_text()
+ * @sqlfn jsonbsetExtractPathText()
  */
 Datum
 Jsonbset_extract_path_text(PG_FUNCTION_ARGS)
@@ -613,7 +613,7 @@ PG_FUNCTION_INFO_V1(Jsonbset_extract_path_opr);
 /**
  * @ingroup mobilitydb_json_json
  * @brief Extract a path from a JSONB set value
- * @sqlfn jsonbset_extract_path_opr()
+ * @sqlfn jsonbsetExtractPathOpr()
  */
 Datum
 Jsonbset_extract_path_opr(PG_FUNCTION_ARGS)
@@ -626,7 +626,7 @@ PG_FUNCTION_INFO_V1(Jsonbset_extract_path_text_opr);
 /**
  * @ingroup mobilitydb_json_json
  * @brief Extract a path from a JSONB set value as text
- * @sqlfn jsonbset_extract_path_text_opr()
+ * @sqlfn jsonbsetExtractPathTextOpr()
  */
 Datum
 Jsonbset_extract_path_text_opr(PG_FUNCTION_ARGS)
@@ -639,7 +639,7 @@ Jsonbset_extract_path_text_opr(PG_FUNCTION_ARGS)
 /**
  * @brief Replace a value specified by a path with a new value in a temporal
  * JSONB value 
- * @sqlfn jsonbset_set(), jsonbset_set_lax()
+ * @sqlfn jsonbsetSet(), jsonbsetSetLax()
  */
 Datum
 Jsonbset_set_common(FunctionCallInfo fcinfo, bool lax)
@@ -684,7 +684,7 @@ PG_FUNCTION_INFO_V1(Jsonbset_set);
  * @ingroup mobilitydb_json_json
  * @brief Replace a value specified by a path with a new value in a temporal
  * JSONB value
- * @sqlfn jsonbset_set()
+ * @sqlfn jsonbsetSet()
  */
 Datum
 Jsonbset_set(PG_FUNCTION_ARGS)
@@ -698,7 +698,7 @@ PG_FUNCTION_INFO_V1(Jsonbset_set_lax);
  * @ingroup mobilitydb_json_json
  * @brief Replace a value specified by a path with a new value in a temporal
  * JSONB value using the lax mode
- * @sqlfn jsonbset_set_lax()
+ * @sqlfn jsonbsetSetLax()
  */
 Datum
 Jsonbset_set_lax(PG_FUNCTION_ARGS)
@@ -713,7 +713,7 @@ PG_FUNCTION_INFO_V1(Jsonbset_insert);
 /**
  * @ingroup mobilitydb_json_json
  * @brief Insert a path into a JSONB set value
- * @sqlfn jsonbset_insert()
+ * @sqlfn jsonbsetInsert()
  */
 Datum
 Jsonbset_insert(PG_FUNCTION_ARGS)
@@ -841,7 +841,7 @@ PG_FUNCTION_INFO_V1(Jsonbset_strip_nulls);
 /**
  * @ingroup mobilitydb_json_json
  * @brief Return a JSONB set value without nulls
- * @sqlfn jsonbset_strip_nulls()
+ * @sqlfn jsonbsetStripNulls()
  */
 Datum
 Jsonbset_strip_nulls(PG_FUNCTION_ARGS)
@@ -863,7 +863,7 @@ PG_FUNCTION_INFO_V1(Jsonbset_pretty);
 /**
  * @ingroup mobilitydb_json_json
  * @brief Return a JSONB set value without nulls
- * @sqlfn jsonbset_pretty()
+ * @sqlfn jsonbsetPretty()
  */
 Datum
 Jsonbset_pretty(PG_FUNCTION_ARGS)
@@ -884,7 +884,7 @@ Jsonbset_pretty(PG_FUNCTION_ARGS)
 /**
  * @brief Return for every value of a JSONB set whether a JSON path expression
  * returns at least one item for it
- * @sqlfn jsonbset_path_exists(), jsonbset_path_exists_tz()
+ * @sqlfn jsonbsetPathExists(), jsonbsetPathExistsTz()
  */
 Datum
 Jsonbset_path_exists_common(FunctionCallInfo fcinfo, bool tz)
@@ -916,7 +916,7 @@ PG_FUNCTION_INFO_V1(Jsonbset_path_exists);
  * @ingroup mobilitydb_json_json
  * @brief Return true if a JSON path expression returns at least one item for a
  * JSONB set value
- * @sqlfn jsonbset_path_exists()
+ * @sqlfn jsonbsetPathExists()
  */
 Datum
 Jsonbset_path_exists(PG_FUNCTION_ARGS)
@@ -930,7 +930,7 @@ PG_FUNCTION_INFO_V1(Jsonbset_path_exists_tz);
  * @ingroup mobilitydb_json_json
  * @brief Return true if a JSON path expression returns expression at least one
  * item for a JSONB set value
- * @sqlfn jsonbset_path_exists_tz()
+ * @sqlfn jsonbsetPathExistsTz()
  */
 Datum
 Jsonbset_path_exists_tz(PG_FUNCTION_ARGS)
@@ -946,7 +946,7 @@ PG_FUNCTION_INFO_V1(Jsonbset_path_exists_opr);
  * JSONB set value
  * @details Implementation of operator "tjsonb @? jsonpath" (2-argument version
  * of jsonbset_path_exists())
- * @sqlfn jsonbset_path_exists_opr()
+ * @sqlfn jsonbsetPathExistsOpr()
  */
 Datum
 Jsonbset_path_exists_opr(PG_FUNCTION_ARGS)
@@ -959,7 +959,7 @@ Jsonbset_path_exists_opr(PG_FUNCTION_ARGS)
 /**
  * @brief Return the result of a JSON path predicate check for a JSONB set
  * value
- * @sqlfn jsonbset_path_match(), jsonbset_path_match_tz()
+ * @sqlfn jsonbsetPathMatch(), jsonbsetPathMatchTz()
  */
 Datum
 Jsonbset_path_match_common(FunctionCallInfo fcinfo, bool tz)
@@ -991,7 +991,7 @@ PG_FUNCTION_INFO_V1(Jsonbset_path_match);
  * @ingroup mobilitydb_json_json
  * @brief Return the result of a JSON path predicate check for a JSONB set
  * value
- * @sqlfn jsonbset_path_match()
+ * @sqlfn jsonbsetPathMatch()
  */
 Datum
 Jsonbset_path_match(PG_FUNCTION_ARGS)
@@ -1005,7 +1005,7 @@ PG_FUNCTION_INFO_V1(Jsonbset_path_match_tz);
  * @ingroup mobilitydb_json_json
  * @brief Return the result of a JSON path predicate check for a JSONB set
  * value
- * @sqlfn jsonbset_path_match_tz()
+ * @sqlfn jsonbsetPathMatchTz()
  */
 Datum
 Jsonbset_path_match_tz(PG_FUNCTION_ARGS)
@@ -1021,7 +1021,7 @@ PG_FUNCTION_INFO_V1(Jsonbset_path_match_opr);
  * value
  * @details Implementation of operator "tjsonb @@ jsonpath" (2-argument version
  * of jsonbset_path_match())
- * @sqlfn jsonbset_path_match_opr()
+ * @sqlfn jsonbsetPathMatchOpr()
  */
 Datum
 Jsonbset_path_match_opr(PG_FUNCTION_ARGS)
@@ -1034,7 +1034,7 @@ Jsonbset_path_match_opr(PG_FUNCTION_ARGS)
 /**
  * @brief Extract the items specified by a JSON path expression from a
  * JSONB set value as a JSONB array
- * @sqlfn jsonbset_path_query_array(), jsonbset_path_query_array_tz()
+ * @sqlfn jsonbsetPathQueryArray(), jsonbsetPathQueryArrayTz()
  */
 Datum
 Jsonbset_path_query_array_common(FunctionCallInfo fcinfo, bool tz)
@@ -1060,7 +1060,7 @@ PG_FUNCTION_INFO_V1(Jsonbset_path_query_array);
  * @ingroup mobilitydb_json_json
  * @brief Extract the items specified by a JSON path expression from a
  * JSONB set value as a JSONB array
- * @sqlfn jsonbset_path_query_array()
+ * @sqlfn jsonbsetPathQueryArray()
  */
 Datum
 Jsonbset_path_query_array(PG_FUNCTION_ARGS)
@@ -1074,7 +1074,7 @@ PG_FUNCTION_INFO_V1(Jsonbset_path_query_array_tz);
  * @ingroup mobilitydb_json_json
  * @brief Extract the items specified by a JSON path expression from a
  * JSONB set value as a JSONB array
- * @sqlfn jsonbset_path_query_array_tz()
+ * @sqlfn jsonbsetPathQueryArrayTz()
  */
 Datum
 Jsonbset_path_query_array_tz(PG_FUNCTION_ARGS)
@@ -1087,7 +1087,7 @@ Jsonbset_path_query_array_tz(PG_FUNCTION_ARGS)
 /**
  * @brief Extract the first item specified by a JSON path expression from a
  * JSONB set value. If there are no items, return NULL.
- * @sqlfn jsonbset_path_query_first(), jsonbset_path_query_first_tz()
+ * @sqlfn jsonbsetPathQueryFirst(), jsonbsetPathQueryFirstTz()
  */
 Datum
 Jsonbset_path_query_first_common(FunctionCallInfo fcinfo, bool tz)
@@ -1113,7 +1113,7 @@ PG_FUNCTION_INFO_V1(Jsonbset_path_query_first);
  * @ingroup mobilitydb_json_json
  * @brief Extract the first item specified by a JSON path expression from a
  * JSONB set value. If there are no items, return NULL.
- * @sqlfn jsonbset_path_query_first()
+ * @sqlfn jsonbsetPathQueryFirst()
  */
 Datum
 Jsonbset_path_query_first(PG_FUNCTION_ARGS)
@@ -1127,7 +1127,7 @@ PG_FUNCTION_INFO_V1(Jsonbset_path_query_first_tz);
  * @ingroup mobilitydb_json_json
  * @brief Extract the first item specified by a JSON path expression from a
  * JSONB set value. If there are no items, return NULL.
- * @sqlfn jsonbset_path_query_first_tz()
+ * @sqlfn jsonbsetPathQueryFirstTz()
  */
 Datum
 Jsonbset_path_query_first_tz(PG_FUNCTION_ARGS)

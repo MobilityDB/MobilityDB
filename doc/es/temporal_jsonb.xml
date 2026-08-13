@@ -37,19 +37,19 @@ SELECT tjsonb '[{"unit": "km", "speed": 10}@2001-01-01,
 	<sect1 xml:id="jsonbset_jsonb">
 		<title>Operaciones sobre conjuntos JSONB</title>
 
-		<para>Al manipular colecciones JSON de estructura variable, puede ocurrir que un elemento esté definido en algunos de los documentos pero no en todos. PostgreSQL proporciona el <emphasis>modo lax</emphasis> para este propósito, donde el argumento <varname>null_value_treatment</varname> determina el comportamiento en el caso en que una función devuelve un valor NULL. El argumento puede tomar uno de los siguientes valores: <varname>'raise_exception'</varname>, <varname>'use_json_null'</varname>, <varname>'delete_key'</varname>, <varname>'return_target'</varname>, donde <varname>'use_json_null'</varname> es el valor por defecto. En PostgreSQL el modo lax se admite solo para operaciones de <emphasis>actualización</emphasis> (no de <emphasis>consulta</emphasis>) con la función <varname>jsonb_set_lax</varname>. En MobilityDB, hemos mantenido la misma semántica para la función correspondiente <varname>jsonbset_set_lax</varname>, pero habilitamos un comportamiento similar para <emphasis>todas</emphasis> las operaciones JSON que pueden devolver un valor nulo, salvo que reemplazamos el valor <varname>'return_target'</varname> por <varname>'return_null'</varname>, ya que el primero no tiene sentido para operaciones sobre conjuntos. Para operadores como <varname>-></varname>, se utiliza el valor por defecto <varname>'use_json_null'</varname> y no se puede cambiar, mientras que para las funciones correspondientes <varname>jsonbset_object_field</varname>, el último argumento especifica el comportamiento en el caso en que la función devuelve NULL. Ilustramos este comportamiento para la función <varname>jsonbset_object_field</varname> a continuación.</para>
+		<para>Al manipular colecciones JSON de estructura variable, puede ocurrir que un elemento esté definido en algunos de los documentos pero no en todos. PostgreSQL proporciona el <emphasis>modo lax</emphasis> para este propósito, donde el argumento <varname>null_value_treatment</varname> determina el comportamiento en el caso en que una función devuelve un valor NULL. El argumento puede tomar uno de los siguientes valores: <varname>'raise_exception'</varname>, <varname>'use_json_null'</varname>, <varname>'delete_key'</varname>, <varname>'return_target'</varname>, donde <varname>'use_json_null'</varname> es el valor por defecto. En PostgreSQL el modo lax se admite solo para operaciones de <emphasis>actualización</emphasis> (no de <emphasis>consulta</emphasis>) con la función <varname>jsonb_set_lax</varname>. En MobilityDB, hemos mantenido la misma semántica para la función correspondiente <varname>jsonbsetSetLax</varname>, pero habilitamos un comportamiento similar para <emphasis>todas</emphasis> las operaciones JSON que pueden devolver un valor nulo, salvo que reemplazamos el valor <varname>'return_target'</varname> por <varname>'return_null'</varname>, ya que el primero no tiene sentido para operaciones sobre conjuntos. Para operadores como <varname>-></varname>, se utiliza el valor por defecto <varname>'use_json_null'</varname> y no se puede cambiar, mientras que para las funciones correspondientes <varname>jsonbsetObjectField</varname>, el último argumento especifica el comportamiento en el caso en que la función devuelve NULL. Ilustramos este comportamiento para la función <varname>jsonbsetObjectField</varname> a continuación.</para>
 
 		<itemizedlist>
 			<listitem xml:id="jsonbset_object_field">
 				<indexterm significance="normal"><primary><varname>-></varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>->></varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>jsonbset_object_field</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>jsonbset_object_field_text</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>jsonbsetObjectField</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>jsonbsetObjectFieldText</varname></primary></indexterm>
 				<para>Extraer un campo de objeto JSON especificado por una clave</para>
 				<para><varname>{textset,jsonbset} -> text → {textset,jsonbset}</varname></para>
 				<para><varname>jsonbset ->> text → textset</varname></para>
-				<para><varname>jsonbset_object_field(jsonbset,text,null_handle text='use_json_null') → jsonbset</varname></para>
-				<para><varname>jsonbset_object_field_text(jsonbset,text,null_handle text='use_json_null') → textset</varname></para>
+				<para><varname>jsonbsetObjectField(jsonbset,text,null_handle text='use_json_null') → jsonbset</varname></para>
+				<para><varname>jsonbsetObjectFieldText(jsonbset,text,null_handle text='use_json_null') → textset</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT textset '{[{"unit": "km", "speed": 10},
   {"unit": "km", "speed": 20}]}' -> text 'speed';
@@ -61,21 +61,21 @@ SELECT textset '{[{"unit": "km", "speed": 10},
 {"unit": "km"}, {"unit": "km", "speed": 10}]}' -> text 'speed';
 -- {[10, null, 10]}
 </programlisting>
-				<para>Mostramos a continuación el comportamiento de la función <varname>jsonbset_object_field</varname> para los posibles valores del argumento <varname>null_handle</varname>. Todas las funciones JSON que pueden devolver un valor NULL se comportan de forma similar en MobilityDB.</para>
+				<para>Mostramos a continuación el comportamiento de la función <varname>jsonbsetObjectField</varname> para los posibles valores del argumento <varname>null_handle</varname>. Todas las funciones JSON que pueden devolver un valor NULL se comportan de forma similar en MobilityDB.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT jsonbset_object_field(textset '{[{"unit": "km", "speed": 10},
+SELECT jsonbsetObjectField(textset '{[{"unit": "km", "speed": 10},
   {"unit": "km"}, {"unit": "km", "speed": 10}]}', 'speed',
   'raise_exception');
 -- ERROR:  The lifted operation returned NULL
-SELECT jsonbset_object_field(textset '{[{"unit": "km", "speed": 10},
+SELECT jsonbsetObjectField(textset '{[{"unit": "km", "speed": 10},
   {"unit": "km"}, {"unit": "km", "speed": 10}]}', 'speed',
   'use_json_null');
 -- {[10, null, 10]}
-SELECT jsonbset_object_field(textset '{[{"unit": "km", "speed": 10},
+SELECT jsonbsetObjectField(textset '{[{"unit": "km", "speed": 10},
   {"unit": "km"}, {"unit": "km", "speed": 10}]}', 'speed',
   'delete_key');
 -- {[10, 10), [10]}
-SELECT jsonbset_object_field(textset '{[{"unit": "km", "speed": 10},
+SELECT jsonbsetObjectField(textset '{[{"unit": "km", "speed": 10},
   {"unit": "km"}, {"unit": "km", "speed": 10}]}', 'speed',
   'return_null');
 -- NULL
@@ -85,12 +85,12 @@ SELECT jsonbset_object_field(textset '{[{"unit": "km", "speed": 10},
 			<listitem xml:id="jsonbset_extract_path">
 				<indexterm significance="normal"><primary><varname>-></varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>->></varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>jsonbset_extract_path</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>jsonbset_extract_path_text</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>jsonbsetExtractPath</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>jsonbsetExtractPathText</varname></primary></indexterm>
 				<para>Extraer un campo de objeto JSON especificado por una ruta</para>
 				<para><varname>{textset,jsonbset} #> text[] → {textset,jsonbset}</varname></para>
-				<para><varname>jsonbset_extract_path(jsonbset,text[],null_handle text='use_json_null') → jsonbset</varname></para>
-				<para><varname>jsonbset_extract_path_text(jsonbset,text[],null_handle text='use_json_null') → textset</varname></para>
+				<para><varname>jsonbsetExtractPath(jsonbset,text[],null_handle text='use_json_null') → jsonbset</varname></para>
+				<para><varname>jsonbsetExtractPathText(jsonbset,text[],null_handle text='use_json_null') → textset</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT textset '[{"speed": {"unit": "km", "value": 10}},
   {"speed": {"unit": "km", "value": 20}}]' #> ARRAY[text 'speed', 'value'];
@@ -103,16 +103,16 @@ SELECT jsonbset '[{"position":"Point(1 1)", "PoIs":["Grand Place", "La Bourse"]}
 			</listitem>
 
 			<listitem xml:id="jsonbset_array_element">
-				<indexterm significance="normal"><primary><varname>jsonbset_array_element</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>jsonbset_array_element_text</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>jsonbsetArrayElement</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>jsonbsetArrayElementText</varname></primary></indexterm>
 				<para>Extraer un elemento de un arreglo JSON</para>
-				<para><varname>jsonbset_array_element(jsonbset,integer,null_handle text='use_json_null') → jsonbset</varname></para>
-				<para><varname>jsonbset_array_element_text(jsonbset,integer,null_handle text='use_json_null') → jsonbset</varname></para>
+				<para><varname>jsonbsetArrayElement(jsonbset,integer,null_handle text='use_json_null') → jsonbset</varname></para>
+				<para><varname>jsonbsetArrayElementText(jsonbset,integer,null_handle text='use_json_null') → jsonbset</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT jsonbset_array_element(textset '[["Grand Place", "La Bourse"],
+SELECT jsonbsetArrayElement(textset '[["Grand Place", "La Bourse"],
   ["Palais Royal", "Manneken Pis"]]', 0);
 -- ["Grand Place", "Palais Royal"]
-SELECT jsonbset_array_element(jsonbset '[["Grand Place", "La Bourse"],
+SELECT jsonbsetArrayElement(jsonbset '[["Grand Place", "La Bourse"],
   ["Palais Royal", "Manneken Pis"]]', 1);
 -- ["La Bourse", "Manneken Pis"]
 </programlisting>
@@ -216,63 +216,63 @@ SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}'
 
 
 			<listitem xml:id="jsonbset_set">
-				<indexterm significance="normal"><primary><varname>jsonbset_set</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>jsonbset_set_lax</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>jsonbsetSet</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>jsonbsetSetLax</varname></primary></indexterm>
 				<para>Asignación JSONB temporal</para>
-				<para><varname>jsonbset_set(jsonbset,path text[],jsonb,create boolean=true) → jsonbset</varname></para>
-				<para><varname>jsonbset_set_lax(jsonbset,path text[],jsonb,create boolean=true,handle_null text) → jsonbset</varname></para>
+				<para><varname>jsonbsetSet(jsonbset,path text[],jsonb,create boolean=true) → jsonbset</varname></para>
+				<para><varname>jsonbsetSetLax(jsonbset,path text[],jsonb,create boolean=true,handle_null text) → jsonbset</varname></para>
 				<para>Devuelve el valor <varname>jsonbset</varname> con el elemento especificado por la ruta reemplazado por <varname>jsonb</varname>, o añadido si <varname>create</varname> es verdadero y el elemento no existe. Todos los pasos anteriores de la ruta deben existir, o se devuelve el objetivo sin cambios. Como ocurre con los operadores orientados a rutas, los enteros negativos que aparecen en la ruta cuentan desde el final de los arreglos JSON. Si el último paso de la ruta es un índice de arreglo que está fuera de rango, y create_if_missing es verdadero, el nuevo valor se añade al principio del arreglo si el índice es negativo, o al final del arreglo si es positivo.
         </para>
-				<para>La función <varname>jsonbset_set_lax</varname> se comporta de forma idéntica a <varname>jsonbset_set</varname> si el valor dado no es NULL; de lo contrario, se comporta según el valor de <varname>handle_null</varname>, que debe ser uno de <varname>'raise_exception'</varname>, <varname>'use_json_null'</varname>, <varname>'delete_key'</varname> o <varname>'return_source'</varname>. Como se indicó anteriormente, mantuvimos el comportamiento de PostgreSQL para esta función habilitando el valor <varname>'return_source'</varname>, mientras que para todas las demás operaciones de <emphasis>consulta</emphasis>, este valor se ha reemplazado por <varname>'return_null'</varname>.</para>
+				<para>La función <varname>jsonbsetSetLax</varname> se comporta de forma idéntica a <varname>jsonbsetSet</varname> si el valor dado no es NULL; de lo contrario, se comporta según el valor de <varname>handle_null</varname>, que debe ser uno de <varname>'raise_exception'</varname>, <varname>'use_json_null'</varname>, <varname>'delete_key'</varname> o <varname>'return_source'</varname>. Como se indicó anteriormente, mantuvimos el comportamiento de PostgreSQL para esta función habilitando el valor <varname>'return_source'</varname>, mientras que para todas las demás operaciones de <emphasis>consulta</emphasis>, este valor se ha reemplazado por <varname>'return_null'</varname>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT jsonbset_set(jsonbset '[{"speed":10}, {"speed":20}]',
+SELECT jsonbsetSet(jsonbset '[{"speed":10}, {"speed":20}]',
   ARRAY['units'], '"km/h"'::jsonb);
 -- [{"speed": 10, "units": "km/h"}, {"speed": 20, "units": "km/h"}]
-SELECT jsonbset_set(jsonbset '[{"speed":10}, {"speed":20}]',
+SELECT jsonbsetSet(jsonbset '[{"speed":10}, {"speed":20}]',
   ARRAY['units'], '"km/h"'::jsonb, false);
 -- [{"speed": 10}, {"speed": 20}]
-SELECT jsonbset_set(jsonbset '[{"speed": 10, "units": "km/h"},
+SELECT jsonbsetSet(jsonbset '[{"speed": 10, "units": "km/h"},
   {"speed": 20, "units": "km/h"}]', ARRAY['units'], '"mi/h"'::jsonb);
 -- [{"speed": 10, "units": "mi/h"}, {"speed": 20, "units": "mi/h"}]
-SELECT jsonbset_set_lax(jsonbset '[{"speed": 10, "units": "km/h"},
+SELECT jsonbsetSetLax(jsonbset '[{"speed": 10, "units": "km/h"},
   {"speed": 20}]', ARRAY['units'], 'null'::jsonb, true, 'delete_key');
 -- [{"speed": 10, "units": "km/h"}, {"speed": 20}]
 </programlisting>
 			</listitem>
 
 			<listitem xml:id="jsonbset_insert">
-				<indexterm significance="normal"><primary><varname>jsonbset_insert</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>jsonbsetInsert</varname></primary></indexterm>
 				<para>Inserción JSONB temporal</para>
-				<para><varname>jsonbset_insert(jsonbset,path text[],jsonb,after boolean=false) → jsonbset</varname></para>
+				<para><varname>jsonbsetInsert(jsonbset,path text[],jsonb,after boolean=false) → jsonbset</varname></para>
 				<para>Devuelve el valor <varname>jsonbset</varname> con <varname>jsonb</varname> insertado. Si el elemento especificado por la ruta es un elemento de arreglo, el nuevo valor se insertará antes de ese elemento si <varname>after</varname> es falso, o después en caso contrario. Si el elemento especificado por la ruta es un campo de objeto, el nuevo valor se insertará solo si el objeto no contiene ya esa clave. Todos los pasos anteriores de la ruta deben existir, o se devuelve el objetivo sin cambios. Como ocurre con los operadores orientados a rutas, los enteros negativos que aparecen en la ruta cuentan desde el final de los arreglos JSON. Si el último paso de la ruta es un índice de arreglo que está fuera de rango, el nuevo valor se añade al principio del arreglo si el índice es negativo, o al final del arreglo si es positivo.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT jsonbset_insert(jsonbset '[{"speed":10}, {"speed":20}]',
+SELECT jsonbsetInsert(jsonbset '[{"speed":10}, {"speed":20}]',
   ARRAY['units'], '"km/h"'::jsonb);
 -- [{"speed": 10, "units": "km/h"}, {"speed": 20, "units": "km/h"}]
-SELECT jsonbset_insert(jsonbset '[{"speed":10}, {"speed":20}]',
+SELECT jsonbsetInsert(jsonbset '[{"speed":10}, {"speed":20}]',
   ARRAY['units'], '"km/h"'::jsonb, false);
 -- [{"speed": 10}, {"speed": 20}]
-SELECT jsonbset_insert(jsonbset '[{"speed": 10, "units": "km/h"},
+SELECT jsonbsetInsert(jsonbset '[{"speed": 10, "units": "km/h"},
   {"speed": 20, "units": "km/h"}]', ARRAY['units'], '"mi/h"'::jsonb);
 -- [{"speed": 10, "units": "mi/h"}, {"speed": 20, "units": "mi/h"}]
 </programlisting>
 			</listitem>
 
 			<listitem xml:id="jsonbset_strip_nulls">
-				<indexterm significance="normal"><primary><varname>jsonbset_strip_nulls</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>jsonbsetStripNulls</varname></primary></indexterm>
 				<para>Devolver un conjunto JSONB sin nulos</para>
-				<para><varname>jsonbset_strip_nulls(jsonbset,strip_in_arrays bool=false) → jsonbset</varname></para>
+				<para><varname>jsonbsetStripNulls(jsonbset,strip_in_arrays bool=false) → jsonbset</varname></para>
 				<para>El último argumento indica si los elementos de arreglo nulos también se eliminan. Los valores nulos simples nunca se eliminan.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT jsonbset_strip_nulls(textset '[{"speed": 10, "lights": null},
+SELECT jsonbsetStripNulls(textset '[{"speed": 10, "lights": null},
   {"speed": 20, "PoIs": ["Grand Place", "La Bourse", null]}]');
 /* [{"speed": 10},
    {"PoIs": ["Grand Place", "La Bourse", null], "speed": 20}] */
-SELECT jsonbset_strip_nulls(jsonbset '[{"speed": 10, "lights": null},
+SELECT jsonbsetStripNulls(jsonbset '[{"speed": 10, "lights": null},
   {"speed": 20, "PoIs": ["Grand Place", "La Bourse", null]}]', true);
 /* [{"speed": 10},
    {"PoIs": ["Grand Place", "La Bourse"], "speed": 20}] */
-SELECT jsonbset_strip_nulls(jsonbset
+SELECT jsonbsetStripNulls(jsonbset
   '{{"road": "Bvd Gén. Jacques", "category": "primary"},
   {"road": "Bvd de la Cambre", "category": "primary"},
   {"road": "rue de l''Abbaye", "category": null}}');
@@ -282,7 +282,7 @@ SELECT jsonbset_strip_nulls(jsonbset
 </programlisting>
 				<para>Como se muestra a continuación, la función no elimina los valores nulos simples. Para este propósito puede utilizarse la función <varname>minusValue</varname>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT jsonbset_strip_nulls(textset '[{"speed": 10}, null,
+SELECT jsonbsetStripNulls(textset '[{"speed": 10}, null,
   {"speed": 20, "PoIs": ["Grand Place", "La Bourse"]}]');
 /* [{"speed":10}, null,
    {"speed":20,"PoIs":["Grand Place","La Bourse"]}] */
@@ -296,12 +296,12 @@ SELECT minusValues(textset '[{"speed": 10}, null,
 
 			<listitem xml:id="jsonbset_path_exists">
 				<indexterm significance="normal"><primary><varname>@?</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>jsonbset_path_exists</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>jsonbset_path_exists_tz</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>jsonbsetPathExists</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>jsonbsetPathExistsTz</varname></primary></indexterm>
 				<para>¿Devuelve la ruta JSON algún elemento para el conjunto JSONB especificado?</para>
 				<para><varname>jsonbset @? jsonpath → boolean[]</varname></para>
-				<para><varname>jsonbset_path_exists(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]</varname></para>
-				<para><varname>jsonbset_path_exists_tz(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]</varname></para>
+				<para><varname>jsonbsetPathExists(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]</varname></para>
+				<para><varname>jsonbsetPathExistsTz(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]</varname></para>
 				<para>El operador <varname>@?</varname> suprime los siguientes errores: campo de objeto o elemento de arreglo faltante, tipo de elemento JSON inesperado, errores de fecha/hora y numéricos. Las funciones anteriores también pueden suprimir estos tipos de errores estableciendo el último argumento en verdadero. Este comportamiento puede ser útil al buscar en colecciones de documentos JSON de estructura variable.</para>
 				<para>El resultado es un booleano por cada valor del conjunto, en el orden de los valores del conjunto.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -309,7 +309,7 @@ SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}';
 -- {"{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10}"}
 SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' @? '$.units';
 -- {t,f}
-SELECT jsonbset_path_exists(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}',
+SELECT jsonbsetPathExists(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}',
   '$.speed ? (@ &gt; $min)', '{"min": 15}');
 -- {t,f}
 </programlisting>
@@ -317,12 +317,12 @@ SELECT jsonbset_path_exists(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"uni
 
 			<listitem xml:id="jsonbset_path_match">
 				<indexterm significance="normal"><primary><varname>@@</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>jsonbset_path_match</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>jsonbset_path_match_tz</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>jsonbsetPathMatch</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>jsonbsetPathMatchTz</varname></primary></indexterm>
 				<para>Devolver el resultado de una comprobación de predicado de ruta JSON para un conjunto JSONB</para>
 				<para><varname>jsonbset @@ jsonpath → boolean[]</varname></para>
-				<para><varname>jsonbset_path_match(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]</varname></para>
-				<para><varname>jsonbset_path_match_tz(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]</varname></para>
+				<para><varname>jsonbsetPathMatch(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]</varname></para>
+				<para><varname>jsonbsetPathMatchTz(jsonbset,vars jsonb='{}',silent boolean=false) → boolean[]</varname></para>
 				<para>El operador <varname>@@</varname> suprime los siguientes errores: campo de objeto o elemento de arreglo faltante, tipo de elemento JSON inesperado, errores de fecha/hora y numéricos. Las funciones anteriores también pueden suprimir estos tipos de errores estableciendo el último argumento en verdadero. Este comportamiento puede ser útil al buscar en colecciones de documentos JSON de estructura variable.</para>
 				<para>El resultado es un booleano por cada valor del conjunto, en el orden de los valores del conjunto.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -330,26 +330,26 @@ SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}';
 -- {"{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10}"}
 SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' @@ '$.speed &gt; 15';
 -- {t,f}
-SELECT jsonbset_path_match(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}',
+SELECT jsonbsetPathMatch(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}',
   '$.speed &gt; $min', '{"min": 15}');
 -- {t,f}
 </programlisting>
 			</listitem>
 
 			<listitem xml:id="jsonbset_path_query_array">
-				<indexterm significance="normal"><primary><varname>jsonbset_path_query_array</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>jsonbset_path_query_array_tz</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>jsonbsetPathQueryArray</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>jsonbsetPathQueryArrayTz</varname></primary></indexterm>
 				<para>Devolver todos los elementos devueltos por una ruta JSON de un conjunto JSONB, como un arreglo JSON</para>
-				<para><varname>jsonbset_path_query_array(jsonbset,vars jsonb='{}',silent boolean=false) → jsonbset</varname></para>
-				<para><varname>jsonbset_path_query_array_tz(jsonbset,vars jsonb='{}',silent boolean=false) → jsonbset</varname></para>
+				<para><varname>jsonbsetPathQueryArray(jsonbset,vars jsonb='{}',silent boolean=false) → jsonbset</varname></para>
+				<para><varname>jsonbsetPathQueryArrayTz(jsonbset,vars jsonb='{}',silent boolean=false) → jsonbset</varname></para>
 				<para>La función anterior puede suprimir los siguientes errores estableciendo el último argumento en verdadero: campo de objeto o elemento de arreglo faltante, tipo de elemento JSON inesperado, errores de fecha/hora y numéricos. Este comportamiento puede ser útil al buscar en colecciones de documentos JSON de estructura variable.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT jsonbset_path_query_array(jsonbset
+SELECT jsonbsetPathQueryArray(jsonbset
   '[{"speed":10}, {"speed": 20, "units": "km/h"}]',
   '$ ? (@.speed &gt;= $min &amp;&amp; @.speed &lt;= $max)', '{"min":10, "max":30}');
 -- [[{"speed": 10}], [{"speed": 20, "units": "km/h"}]]
 -- TODO, it works without "_tz"
-SELECT jsonbset_path_query_array_tz(jsonbset
+SELECT jsonbsetPathQueryArrayTz(jsonbset
   '[{"cameraId":25, "inspections":["2000-01-03", "2000-01-06", "2000-01-09"]},
    {"cameraId":35, "inspections":["2000-01-04", "2000-01-07", "2000-01-10"]}]',
   '$.inspections ? (@.timestamp_tz() &gt;= $min.timestamp_tz() &amp;&amp;
@@ -359,19 +359,19 @@ SELECT jsonbset_path_query_array_tz(jsonbset
 			</listitem>
 
 			<listitem xml:id="jsonbset_path_query_first">
-				<indexterm significance="normal"><primary><varname>jsonbset_path_query_first</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>jsonbset_path_query_first_tz</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>jsonbsetPathQueryFirst</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>jsonbsetPathQueryFirstTz</varname></primary></indexterm>
 				<para>Devolver el primer elemento devuelto por una ruta JSON de un conjunto JSONB</para>
-				<para><varname>jsonbset_path_query_first(jsonbset,vars jsonb='{}',silent boolean=false) → jsonbset</varname></para>
-				<para><varname>jsonbset_path_query_first_tz(jsonbset,vars jsonb='{}',silent boolean=false) → jsonbset</varname></para>
+				<para><varname>jsonbsetPathQueryFirst(jsonbset,vars jsonb='{}',silent boolean=false) → jsonbset</varname></para>
+				<para><varname>jsonbsetPathQueryFirstTz(jsonbset,vars jsonb='{}',silent boolean=false) → jsonbset</varname></para>
 				<para>Las funciones anteriores pueden suprimir los siguientes errores estableciendo el último argumento en verdadero: campo de objeto o elemento de arreglo faltante, tipo de elemento JSON inesperado, errores de fecha/hora y numéricos. Este comportamiento puede ser útil al buscar en colecciones de documentos JSON de estructura variable.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT jsonbset_path_query_first(jsonbset
+SELECT jsonbsetPathQueryFirst(jsonbset
   '[{"speed":10}, {"speed": 20, "units": "km/h"}]',
   '$.speed ? (@ &gt;= $min &amp;&amp; @ &lt;= $max'), '{"min":10, "max":30}');
 -- [[{"speed": 10}], [{"speed": 20, "units": "km/h"}]]
 -- TODO, it works without "_tz"
-SELECT jsonbset_path_query_array_tz(jsonbset
+SELECT jsonbsetPathQueryArrayTz(jsonbset
   '[{"cameraId":25, "inspections":["2000-01-03", "2000-01-06", "2000-01-09"]},
    {"cameraId":35, "inspections":["2000-01-04", "2000-01-07", "2000-01-10"]}]',
   '$.inspections ? (@.datetime() &gt;= $min.datetime() &amp;&amp; @.datetime() &lt;= $max.datetime())',
@@ -748,21 +748,21 @@ SELECT tjsonb '{[{"unit": "km", "speed": 10}@2001-01-01,
 		que se obtiene aplicando el operador de PostgreSQL <varname>-></varname> en cada instante del valor JSON o JSONB temporal.
 		</para>
 
-		<para>Al manipular colecciones JSON de estructura variable, puede ocurrir que un elemento esté definido en algunos de los documentos pero no en todos. PostgreSQL proporciona el modo lax para este propósito, donde el argumento <varname>null_value_treatment</varname> determina el comportamiento en el caso en que una función devuelve un valor NULL. El argumento puede tomar uno de los siguientes valores: <varname>'raise_exception'</varname>, <varname>'use_json_null'</varname>, <varname>'delete_key'</varname>, <varname>'return_target'</varname>, donde <varname>'use_json_null'</varname> es el valor por defecto. En PostgreSQL el modo lax se admite solo para operaciones de <emphasis>actualización</emphasis> (no de <emphasis>consulta</emphasis>) con la función <varname>jsonb_set_lax</varname>. En MobilityDB, hemos mantenido la misma semántica para la función correspondiente <varname>tjsonb_set_lax</varname>, pero habilitamos un comportamiento similar para <emphasis>todas</emphasis> las operaciones JSON temporales que pueden devolver un valor nulo, salvo que reemplazamos el valor <varname>'return_target'</varname> por <varname>'return_null'</varname>, ya que el primero no tiene sentido para operaciones temporales. Para operadores como <varname>-></varname>, se utiliza el valor por defecto <varname>'use_json_null'</varname> y no se puede cambiar, mientras que para las funciones correspondientes <varname>tjson_object_field</varname> y <varname>tjsonb_object_field</varname>, el último argumento especifica el comportamiento en el caso en que la función devuelve NULL. Ilustramos este comportamiento para la función <varname>tjson_object_field</varname> a continuación.</para>
+		<para>Al manipular colecciones JSON de estructura variable, puede ocurrir que un elemento esté definido en algunos de los documentos pero no en todos. PostgreSQL proporciona el modo lax para este propósito, donde el argumento <varname>null_value_treatment</varname> determina el comportamiento en el caso en que una función devuelve un valor NULL. El argumento puede tomar uno de los siguientes valores: <varname>'raise_exception'</varname>, <varname>'use_json_null'</varname>, <varname>'delete_key'</varname>, <varname>'return_target'</varname>, donde <varname>'use_json_null'</varname> es el valor por defecto. En PostgreSQL el modo lax se admite solo para operaciones de <emphasis>actualización</emphasis> (no de <emphasis>consulta</emphasis>) con la función <varname>jsonb_set_lax</varname>. En MobilityDB, hemos mantenido la misma semántica para la función correspondiente <varname>tjsonbSetLax</varname>, pero habilitamos un comportamiento similar para <emphasis>todas</emphasis> las operaciones JSON temporales que pueden devolver un valor nulo, salvo que reemplazamos el valor <varname>'return_target'</varname> por <varname>'return_null'</varname>, ya que el primero no tiene sentido para operaciones temporales. Para operadores como <varname>-></varname>, se utiliza el valor por defecto <varname>'use_json_null'</varname> y no se puede cambiar, mientras que para las funciones correspondientes <varname>tjsonObjectField</varname> y <varname>tjsonbObjectField</varname>, el último argumento especifica el comportamiento en el caso en que la función devuelve NULL. Ilustramos este comportamiento para la función <varname>tjsonObjectField</varname> a continuación.</para>
 
 		<itemizedlist>
 			<listitem xml:id="tjson_object_field">
 				<indexterm significance="normal"><primary><varname>-></varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>->></varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>tjson_object_field</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>tjsonb_object_field</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>tjsonb_object_field_text</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tjsonObjectField</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tjsonbObjectField</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tjsonbObjectFieldText</varname></primary></indexterm>
 				<para>Extraer un campo de objeto JSON temporal especificado por una clave</para>
 				<para><varname>{ttext,tjsonb} -> text → {ttext,tjsonb}</varname></para>
 				<para><varname>tjsonb ->> text → ttext</varname></para>
-				<para><varname>tjson_object_field(ttext,text,null_handle text='use_json_null') → ttext</varname></para>
-				<para><varname>tjsonb_object_field(tjsonb,text,null_handle text='use_json_null') → tjsonb</varname></para>
-				<para><varname>tjsonb_object_field_text(tjsonb,text,null_handle text='use_json_null') → ttext</varname></para>
+				<para><varname>tjsonObjectField(ttext,text,null_handle text='use_json_null') → ttext</varname></para>
+				<para><varname>tjsonbObjectField(tjsonb,text,null_handle text='use_json_null') → tjsonb</varname></para>
+				<para><varname>tjsonbObjectFieldText(tjsonb,text,null_handle text='use_json_null') → ttext</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT ttext '{[{"unit": "km", "speed": 10}@2001-01-01,
   {"unit": "km", "speed": 20}@2001-01-02]}' -> text 'speed';
@@ -774,21 +774,21 @@ SELECT ttext '{[{"unit": "km", "speed": 10}@2001-01-01,
 {"unit": "km"}@2001-01-02, {"unit": "km", "speed": 10}@2001-01-03]}' -> text 'speed';
 -- {[10@2001-01-01, null@2001-01-02, 10@2001-01-03]}
 </programlisting>
-				<para>Mostramos a continuación el comportamiento de la función <varname>tjson_object_field</varname> para los posibles valores del argumento <varname>null_handle</varname>. Todas las funciones JSON que pueden devolver un valor NULL se comportan de forma similar en MobilityDB.</para>
+				<para>Mostramos a continuación el comportamiento de la función <varname>tjsonObjectField</varname> para los posibles valores del argumento <varname>null_handle</varname>. Todas las funciones JSON que pueden devolver un valor NULL se comportan de forma similar en MobilityDB.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tjson_object_field(ttext '{[{"unit": "km", "speed": 10}@2001-01-01,
+SELECT tjsonObjectField(ttext '{[{"unit": "km", "speed": 10}@2001-01-01,
   {"unit": "km"}@2001-01-02, {"unit": "km", "speed": 10}@2001-01-03]}', 'speed',
   'raise_exception');
 -- ERROR:  The lifted operation returned NULL
-SELECT tjson_object_field(ttext '{[{"unit": "km", "speed": 10}@2001-01-01,
+SELECT tjsonObjectField(ttext '{[{"unit": "km", "speed": 10}@2001-01-01,
   {"unit": "km"}@2001-01-02, {"unit": "km", "speed": 10}@2001-01-03]}', 'speed',
   'use_json_null');
 -- {[10@2001-01-01, null@2001-01-02, 10@2001-01-03]}
-SELECT tjson_object_field(ttext '{[{"unit": "km", "speed": 10}@2001-01-01,
+SELECT tjsonObjectField(ttext '{[{"unit": "km", "speed": 10}@2001-01-01,
   {"unit": "km"}@2001-01-02, {"unit": "km", "speed": 10}@2001-01-03]}', 'speed',
   'delete_key');
 -- {[10@2001-01-01, 10@2001-01-02), [10@2001-01-03]}
-SELECT tjson_object_field(ttext '{[{"unit": "km", "speed": 10}@2001-01-01,
+SELECT tjsonObjectField(ttext '{[{"unit": "km", "speed": 10}@2001-01-01,
   {"unit": "km"}@2001-01-02, {"unit": "km", "speed": 10}@2001-01-03]}', 'speed',
   'return_null');
 -- NULL
@@ -798,14 +798,14 @@ SELECT tjson_object_field(ttext '{[{"unit": "km", "speed": 10}@2001-01-01,
 			<listitem xml:id="tjson_extract_path">
 				<indexterm significance="normal"><primary><varname>-></varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>->></varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>tjson_extract_path</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>tjsonb_extract_path</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>tjsonb_extract_path_text</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tjsonExtractPath</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tjsonbExtractPath</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tjsonbExtractPathText</varname></primary></indexterm>
 				<para>Extraer un campo de objeto JSON temporal especificado por una ruta</para>
 				<para><varname>{ttext,tjsonb} #> text[] → {ttext,tjsonb}</varname></para>
-				<para><varname>tjson_extract_path(ttext,text[],null_handle text='use_json_null') → ttext</varname></para>
-				<para><varname>tjsonb_extract_path(tjsonb,text[],null_handle text='use_json_null') → tjsonb</varname></para>
-				<para><varname>tjsonb_extract_path_text(tjsonb,text[],null_handle text='use_json_null') → ttext</varname></para>
+				<para><varname>tjsonExtractPath(ttext,text[],null_handle text='use_json_null') → ttext</varname></para>
+				<para><varname>tjsonbExtractPath(tjsonb,text[],null_handle text='use_json_null') → tjsonb</varname></para>
+				<para><varname>tjsonbExtractPathText(tjsonb,text[],null_handle text='use_json_null') → ttext</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT ttext '[{"speed": {"unit": "km", "value": 10}}@2001-01-01,
   {"speed": {"unit": "km", "value": 20}}@2001-01-02]' #> ARRAY[text 'speed', 'value'];
@@ -818,18 +818,18 @@ SELECT tjsonb '[{"position":"Point(1 1)", "PoIs":["Grand Place", "La Bourse"]}@2
 			</listitem>
 
 			<listitem xml:id="tjson_array_element">
-				<indexterm significance="normal"><primary><varname>tjson_array_element</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>tjsonb_array_element</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>tjsonb_array_element_text</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tjsonArrayElement</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tjsonbArrayElement</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tjsonbArrayElementText</varname></primary></indexterm>
 				<para>Extraer un elemento de un arreglo JSON temporal</para>
-				<para><varname>tjson_array_element(tjsonb,integer,null_handle text='use_json_null') → tjsonb</varname></para>
-				<para><varname>tjsonb_array_element(tjsonb,integer,null_handle text='use_json_null') → tjsonb</varname></para>
-				<para><varname>tjsonb_array_element_text(tjsonb,integer,null_handle text='use_json_null') → tjsonb</varname></para>
+				<para><varname>tjsonArrayElement(tjsonb,integer,null_handle text='use_json_null') → tjsonb</varname></para>
+				<para><varname>tjsonbArrayElement(tjsonb,integer,null_handle text='use_json_null') → tjsonb</varname></para>
+				<para><varname>tjsonbArrayElementText(tjsonb,integer,null_handle text='use_json_null') → tjsonb</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tjson_array_element(ttext '[["Grand Place", "La Bourse"]@2001-01-01,
+SELECT tjsonArrayElement(ttext '[["Grand Place", "La Bourse"]@2001-01-01,
   ["Palais Royal", "Manneken Pis"]@2001-01-02]', 0);
 -- ["Grand Place"@2001-01-01, "Palais Royal"@2001-01-02]
-SELECT tjsonb_array_element(tjsonb '[["Grand Place", "La Bourse"]@2001-01-01,
+SELECT tjsonbArrayElement(tjsonb '[["Grand Place", "La Bourse"]@2001-01-01,
   ["Palais Royal", "Manneken Pis"]@2001-01-02]', 1);
 -- ["La Bourse"@2001-01-01, "Manneken Pis"@2001-01-02]
 </programlisting>
@@ -955,65 +955,65 @@ SELECT jsonb '{"geom": "Point(1 1)"}' &lt;@ tjsonb '{[{"geom": "Point(1 1)"}@200
 			</listitem>
 
 			<listitem xml:id="tjsonb_set">
-				<indexterm significance="normal"><primary><varname>tjsonb_set</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>tjsonb_set_lax</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tjsonbSet</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tjsonbSetLax</varname></primary></indexterm>
 				<para>Asignación JSONB temporal</para>
-				<para><varname>tjsonb_set(tjsonb,path text[],jsonb,create boolean=true) → tjsonb</varname></para>
-				<para><varname>tjsonb_set_lax(tjsonb,path text[],jsonb,create boolean=true,handle_null text) → tjsonb</varname></para>
+				<para><varname>tjsonbSet(tjsonb,path text[],jsonb,create boolean=true) → tjsonb</varname></para>
+				<para><varname>tjsonbSetLax(tjsonb,path text[],jsonb,create boolean=true,handle_null text) → tjsonb</varname></para>
 				<para>Devuelve el valor <varname>tjsonb</varname> con el elemento especificado por la ruta reemplazado por <varname>jsonb</varname>, o añadido si <varname>create</varname> es verdadero y el elemento no existe. Todos los pasos anteriores de la ruta deben existir, o se devuelve el objetivo sin cambios. Como ocurre con los operadores orientados a rutas, los enteros negativos que aparecen en la ruta cuentan desde el final de los arreglos JSON. Si el último paso de la ruta es un índice de arreglo que está fuera de rango, y create_if_missing es verdadero, el nuevo valor se añade al principio del arreglo si el índice es negativo, o al final del arreglo si es positivo.
         </para>
-				<para>La función <varname>tjsonb_set_lax</varname> se comporta de forma idéntica a <varname>tjsonb_set</varname> si el valor dado no es NULL; de lo contrario, se comporta según el valor de <varname>handle_null</varname>, que debe ser uno de <varname>'raise_exception'</varname>, <varname>'use_json_null'</varname>, <varname>'delete_key'</varname> o <varname>'return_source'</varname>. Como se indicó anteriormente, mantuvimos el comportamiento de PostgreSQL para esta función habilitando el valor <varname>'return_source'</varname>, mientras que para todas las demás operaciones de <emphasis>consulta</emphasis>, este valor se ha reemplazado por <varname>'return_null'</varname>.</para>
+				<para>La función <varname>tjsonbSetLax</varname> se comporta de forma idéntica a <varname>tjsonbSet</varname> si el valor dado no es NULL; de lo contrario, se comporta según el valor de <varname>handle_null</varname>, que debe ser uno de <varname>'raise_exception'</varname>, <varname>'use_json_null'</varname>, <varname>'delete_key'</varname> o <varname>'return_source'</varname>. Como se indicó anteriormente, mantuvimos el comportamiento de PostgreSQL para esta función habilitando el valor <varname>'return_source'</varname>, mientras que para todas las demás operaciones de <emphasis>consulta</emphasis>, este valor se ha reemplazado por <varname>'return_null'</varname>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tjsonb_set(tjsonb '[{"speed":10}@2001-01-01, {"speed":20}@2001-01-02]',
+SELECT tjsonbSet(tjsonb '[{"speed":10}@2001-01-01, {"speed":20}@2001-01-02]',
   ARRAY['units'], '"km/h"'::jsonb);
 -- [{"speed": 10, "units": "km/h"}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-01-02]
-SELECT tjsonb_set(tjsonb '[{"speed":10}@2001-01-01, {"speed":20}@2001-01-02]',
+SELECT tjsonbSet(tjsonb '[{"speed":10}@2001-01-01, {"speed":20}@2001-01-02]',
   ARRAY['units'], '"km/h"'::jsonb, false);
 -- [{"speed": 10}@2001-01-01, {"speed": 20}@2001-01-02]
-SELECT tjsonb_set(tjsonb '[{"speed": 10, "units": "km/h"}@2001-01-01,
+SELECT tjsonbSet(tjsonb '[{"speed": 10, "units": "km/h"}@2001-01-01,
   {"speed": 20, "units": "km/h"}@2001-01-02]', ARRAY['units'], '"mi/h"'::jsonb);
 -- [{"speed": 10, "units": "mi/h"}@2001-01-01, {"speed": 20, "units": "mi/h"}@2001-01-02]
-SELECT tjsonb_set_lax(tjsonb '[{"speed": 10, "units": "km/h"}@2001-01-01,
+SELECT tjsonbSetLax(tjsonb '[{"speed": 10, "units": "km/h"}@2001-01-01,
   {"speed": 20}@2001-01-02]', ARRAY['units'], 'null'::jsonb, true, 'delete_key');
 -- [{"speed": 10, "units": "km/h"}@2001-01-01, {"speed": 20}@2001-01-02]
 </programlisting>
 			</listitem>
 
 			<listitem xml:id="tjsonb_insert">
-				<indexterm significance="normal"><primary><varname>tjsonb_insert</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tjsonbInsert</varname></primary></indexterm>
 				<para>Inserción JSONB temporal</para>
-				<para><varname>tjsonb_insert(tjsonb,path text[],jsonb,after boolean=false) → tjsonb</varname></para>
+				<para><varname>tjsonbInsert(tjsonb,path text[],jsonb,after boolean=false) → tjsonb</varname></para>
 				<para>Devuelve el valor <varname>tjsonb</varname> con <varname>jsonb</varname> insertado. Si el elemento especificado por la ruta es un elemento de arreglo, el nuevo valor se insertará antes de ese elemento si <varname>after</varname> es falso, o después en caso contrario. Si el elemento especificado por la ruta es un campo de objeto, el nuevo valor se insertará solo si el objeto no contiene ya esa clave. Todos los pasos anteriores de la ruta deben existir, o se devuelve el objetivo sin cambios. Como ocurre con los operadores orientados a rutas, los enteros negativos que aparecen en la ruta cuentan desde el final de los arreglos JSON. Si el último paso de la ruta es un índice de arreglo que está fuera de rango, el nuevo valor se añade al principio del arreglo si el índice es negativo, o al final del arreglo si es positivo.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tjsonb_insert(tjsonb '[{"speed":10}@2001-01-01, {"speed":20}@2001-01-02]',
+SELECT tjsonbInsert(tjsonb '[{"speed":10}@2001-01-01, {"speed":20}@2001-01-02]',
   ARRAY['units'], '"km/h"'::jsonb);
 -- [{"speed": 10, "units": "km/h"}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-01-02]
-SELECT tjsonb_insert(tjsonb '[{"speed":10}@2001-01-01, {"speed":20}@2001-01-02]',
+SELECT tjsonbInsert(tjsonb '[{"speed":10}@2001-01-01, {"speed":20}@2001-01-02]',
   ARRAY['units'], '"km/h"'::jsonb, false);
 -- [{"speed": 10}@2001-01-01, {"speed": 20}@2001-01-02]
-SELECT tjsonb_insert(tjsonb '[{"speed": 10, "units": "km/h"}@2001-01-01,
+SELECT tjsonbInsert(tjsonb '[{"speed": 10, "units": "km/h"}@2001-01-01,
   {"speed": 20, "units": "km/h"}@2001-01-02]', ARRAY['units'], '"mi/h"'::jsonb);
 -- [{"speed": 10, "units": "mi/h"}@2001-01-01, {"speed": 20, "units": "mi/h"}@2001-01-02]
 </programlisting>
 			</listitem>
 
 			<listitem xml:id="tjson_strip_nulls">
-				<indexterm significance="normal"><primary><varname>tjson_strip_nulls</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>tjsonb_strip_nulls</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tjsonStripNulls</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tjsonbStripNulls</varname></primary></indexterm>
 				<para>Devolver un valor JSON temporal sin nulos</para>
-				<para><varname>tjson_strip_nulls(ttext,strip_in_arrays bool=false) → ttext</varname></para>
-				<para><varname>tjsonb_strip_nulls(tjsonb,strip_in_arrays bool=false) → tjsonb</varname></para>
+				<para><varname>tjsonStripNulls(ttext,strip_in_arrays bool=false) → ttext</varname></para>
+				<para><varname>tjsonbStripNulls(tjsonb,strip_in_arrays bool=false) → tjsonb</varname></para>
 				<para>El último argumento indica si los elementos de arreglo nulos también se eliminan. Los valores nulos simples nunca se eliminan.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tjson_strip_nulls(ttext '[{"speed": 10, "lights": null}@2001-01-01,
+SELECT tjsonStripNulls(ttext '[{"speed": 10, "lights": null}@2001-01-01,
   {"speed": 20, "PoIs": ["Grand Place", "La Bourse", null]}@2001-01-02]');
 /* [{"speed": 10}@2001-01-01,
    {"PoIs": ["Grand Place", "La Bourse", null], "speed": 20}@2001-01-02] */
-SELECT tjsonb_strip_nulls(tjsonb '[{"speed": 10, "lights": null}@2001-01-01,
+SELECT tjsonbStripNulls(tjsonb '[{"speed": 10, "lights": null}@2001-01-01,
   {"speed": 20, "PoIs": ["Grand Place", "La Bourse", null]}@2001-01-02]', true);
 /* [{"speed": 10}@2001-01-01,
    {"PoIs": ["Grand Place", "La Bourse"], "speed": 20}@2001-01-02] */
-SELECT tjsonb_strip_nulls(tjsonb
+SELECT tjsonbStripNulls(tjsonb
   '{{"road": "Bvd Gén. Jacques", "category": "primary"}@2001-01-01,
   {"road": "Bvd de la Cambre", "category": "primary"}@2001-01-02,
   {"road": "rue de l''Abbaye", "category": null}@2001-01-03}');
@@ -1023,7 +1023,7 @@ SELECT tjsonb_strip_nulls(tjsonb
 </programlisting>
 				<para>Como se muestra a continuación, la función no elimina los valores nulos simples. Para este propósito puede utilizarse la función <varname>minusValue</varname>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tjson_strip_nulls(ttext '[{"speed": 10}@2001-01-01, null@2001-01-02,
+SELECT tjsonStripNulls(ttext '[{"speed": 10}@2001-01-01, null@2001-01-02,
   {"speed": 20, "PoIs": ["Grand Place", "La Bourse"]}@2001-01-03]');
 /* [{"speed":10}@2001-01-01, null@2001-01-02,
    {"speed":20,"PoIs":["Grand Place","La Bourse"]}@2001-01-03] */
@@ -1037,25 +1037,25 @@ SELECT minusValues(ttext '[{"speed": 10}@2001-01-01, null@2001-01-02,
 
 			<listitem xml:id="tjsonb_path_exists">
 				<indexterm significance="normal"><primary><varname>@?</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>tjsonb_path_exists</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>tjsonb_path_exists_tz</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tjsonbPathExists</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tjsonbPathExistsTz</varname></primary></indexterm>
 				<para>¿Devuelve la ruta JSON algún elemento para el valor JSONB temporal especificado?</para>
 				<para><varname>tjsonb @? jsonpath → tbool</varname></para>
-				<para><varname>tjsonb_path_exists(tjsonb,vars jsonb='{}',silent boolean=false) → tbool</varname></para>
-				<para><varname>tjsonb_path_exists_tz(tjsonb,vars jsonb='{}',silent boolean=false) → tbool</varname></para>
+				<para><varname>tjsonbPathExists(tjsonb,vars jsonb='{}',silent boolean=false) → tbool</varname></para>
+				<para><varname>tjsonbPathExistsTz(tjsonb,vars jsonb='{}',silent boolean=false) → tbool</varname></para>
 				<para>El operador <varname>@?</varname> suprime los siguientes errores: campo de objeto o elemento de arreglo faltante, tipo de elemento JSON inesperado, errores de fecha/hora y numéricos. Las funciones anteriores también pueden suprimir estos tipos de errores estableciendo el último argumento en verdadero. Este comportamiento puede ser útil al buscar en colecciones de documentos JSON de estructura variable.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonb '[{"speed":10}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-01-02]' @?
   '$.units ? (@ == "km/h")';
 -- [f@2001-01-01, t@2001-01-02]
-SELECT tjsonb_path_exists(tjsonb
+SELECT tjsonbPathExists(tjsonb
   '{{"road": "Bvd Gén. Jacques", "category": "primary"}@2001-01-01,
   {"road": "Bvd Gén. Jacques", "category": "primary"}@2001-01-02,
   {"road": "Bvd de la Cambre", "category": "residential"}@2001-01-03}',
   '$.category ? (@ == "residential")');
 -- {f@2001-01-01, f@2001-01-02, t@2001-01-03}
 -- TODO, it works without ".datetime()"
-SELECT tjsonb_path_exists_tz(tjsonb
+SELECT tjsonbPathExistsTz(tjsonb
   '[{"speed":10, "cameraId": "25", "lastInspection": "2000-08-01 12:00:00"}@2001-01-01,
     {"speed":20, "cameraId": "35", "lastInspection": "2000-03-01 12:00:00"}@2001-01-02]',
   '$.lastInspection ? (@.datetime() > "2000-06-01".datetime() )');
@@ -1065,25 +1065,25 @@ SELECT tjsonb_path_exists_tz(tjsonb
 
 			<listitem xml:id="tjsonb_path_match">
 				<indexterm significance="normal"><primary><varname>@@</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>tjsonb_path_match</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>tjsonb_path_match_tz</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tjsonbPathMatch</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tjsonbPathMatchTz</varname></primary></indexterm>
 				<para>Devolver el resultado de una comprobación de predicado de ruta JSON para un valor JSONB temporal</para>
 				<para><varname>tjsonb @@ jsonpath → tbool</varname></para>
-				<para><varname>tjsonb_path_match(tjsonb,vars jsonb='{}',silent boolean=false) → tbool</varname></para>
-				<para><varname>tjsonb_path_match_tz(tjsonb,vars jsonb='{}',silent boolean=false) → tbool</varname></para>
+				<para><varname>tjsonbPathMatch(tjsonb,vars jsonb='{}',silent boolean=false) → tbool</varname></para>
+				<para><varname>tjsonbPathMatchTz(tjsonb,vars jsonb='{}',silent boolean=false) → tbool</varname></para>
 				<para>El operador <varname>@@</varname> suprime los siguientes errores: campo de objeto o elemento de arreglo faltante, tipo de elemento JSON inesperado, errores de fecha/hora y numéricos. Las funciones anteriores también pueden suprimir estos tipos de errores estableciendo el último argumento en verdadero. Este comportamiento puede ser útil al buscar en colecciones de documentos JSON de estructura variable.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonb '[{"speed":10}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-01-02]' @@
   '$.units == "km/h"';
 -- [f@2001-01-01, t@2001-01-02]
-SELECT tjsonb_path_match(tjsonb
+SELECT tjsonbPathMatch(tjsonb
   '{{"road": "Bvd Gén. Jacques", "category": "primary"}@2001-01-01,
   {"road": "Bvd Gén. Jacques", "category": "primary"}@2001-01-02,
   {"road": "Bvd de la Cambre", "category": "residential"}@2001-01-03}',
   '$.category == "residential"');
 -- {f@2001-01-01, f@2001-01-02, t@2001-01-03}
 -- TODO, it works without ".datetime()"
-SELECT tjsonb_path_match_tz(tjsonb
+SELECT tjsonbPathMatchTz(tjsonb
   '[{"speed":10, "cameraId": "25", "lastInspection": "2000-08-01 12:00:00"}@2001-01-01,
     {"speed":20, "cameraId": "35", "lastInspection": "2000-03-01 12:00:00"}@2001-01-02]',
   '$.lastInspection.datetime() > "2000-06-01".datetime()');
@@ -1092,19 +1092,19 @@ SELECT tjsonb_path_match_tz(tjsonb
 			</listitem>
 
 			<listitem xml:id="tjsonb_path_query_array">
-				<indexterm significance="normal"><primary><varname>tjsonb_path_query_array</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>tjsonb_path_query_array_tz</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tjsonbPathQueryArray</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tjsonbPathQueryArrayTz</varname></primary></indexterm>
 				<para>Devolver todos los elementos devueltos por una ruta JSON de un valor JSONB temporal, como un arreglo JSON</para>
-				<para><varname>tjsonb_path_query_array(tjsonb,vars jsonb='{}',silent boolean=false) → tjsonb</varname></para>
-				<para><varname>tjsonb_path_query_array_tz(tjsonb,vars jsonb='{}',silent boolean=false) → tjsonb</varname></para>
+				<para><varname>tjsonbPathQueryArray(tjsonb,vars jsonb='{}',silent boolean=false) → tjsonb</varname></para>
+				<para><varname>tjsonbPathQueryArrayTz(tjsonb,vars jsonb='{}',silent boolean=false) → tjsonb</varname></para>
 				<para>La función anterior puede suprimir los siguientes errores estableciendo el último argumento en verdadero: campo de objeto o elemento de arreglo faltante, tipo de elemento JSON inesperado, errores de fecha/hora y numéricos. Este comportamiento puede ser útil al buscar en colecciones de documentos JSON de estructura variable.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tjsonb_path_query_array(tjsonb
+SELECT tjsonbPathQueryArray(tjsonb
   '[{"speed":10}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-01-02]',
   '$ ? (@.speed &gt;= $min &amp;&amp; @.speed &lt;= $max)', '{"min":10, "max":30}');
 -- [[{"speed": 10}]@2001-01-01, [{"speed": 20, "units": "km/h"}]@2001-01-02]
 -- TODO, it works without "_tz"
-SELECT tjsonb_path_query_array_tz(tjsonb
+SELECT tjsonbPathQueryArrayTz(tjsonb
   '[{"cameraId":25, "inspections":["2000-01-03", "2000-01-06", "2000-01-09"]}@2001-01-01,
    {"cameraId":35, "inspections":["2000-01-04", "2000-01-07", "2000-01-10"]}@2001-01-02]',
   '$.inspections ? (@.timestamp_tz() &gt;= $min.timestamp_tz() &amp;&amp;
@@ -1114,19 +1114,19 @@ SELECT tjsonb_path_query_array_tz(tjsonb
 			</listitem>
 
 			<listitem xml:id="tjsonb_path_query_first">
-				<indexterm significance="normal"><primary><varname>tjsonb_path_query_first</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>tjsonb_path_query_first_tz</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tjsonbPathQueryFirst</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tjsonbPathQueryFirstTz</varname></primary></indexterm>
 				<para>Devolver el primer elemento devuelto por una ruta JSON de un valor JSONB temporal</para>
-				<para><varname>tjsonb_path_query_first(tjsonb,vars jsonb='{}',silent boolean=false) → tjsonb</varname></para>
-				<para><varname>tjsonb_path_query_first_tz(tjsonb,vars jsonb='{}',silent boolean=false) → tjsonb</varname></para>
+				<para><varname>tjsonbPathQueryFirst(tjsonb,vars jsonb='{}',silent boolean=false) → tjsonb</varname></para>
+				<para><varname>tjsonbPathQueryFirstTz(tjsonb,vars jsonb='{}',silent boolean=false) → tjsonb</varname></para>
 				<para>Las funciones anteriores pueden suprimir los siguientes errores estableciendo el último argumento en verdadero: campo de objeto o elemento de arreglo faltante, tipo de elemento JSON inesperado, errores de fecha/hora y numéricos. Este comportamiento puede ser útil al buscar en colecciones de documentos JSON de estructura variable.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tjsonb_path_query_first(tjsonb
+SELECT tjsonbPathQueryFirst(tjsonb
   '[{"speed":10}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-01-02]',
   '$.speed ? (@ &gt;= $min &amp;&amp; @ &lt;= $max'), '{"min":10, "max":30}');
 -- [[{"speed": 10}]@2001-01-01, [{"speed": 20, "units": "km/h"}]@2001-01-02]
 -- TODO, it works without "_tz"
-SELECT tjsonb_path_query_array_tz(tjsonb
+SELECT tjsonbPathQueryArrayTz(tjsonb
   '[{"cameraId":25, "inspections":["2000-01-03", "2000-01-06", "2000-01-09"]}@2001-01-01,
    {"cameraId":35, "inspections":["2000-01-04", "2000-01-07", "2000-01-10"]}@2001-01-02]',
   '$.inspections ? (@.datetime() &gt;= $min.datetime() &amp;&amp; @.datetime() &lt;= $max.datetime())',

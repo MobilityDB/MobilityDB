@@ -63,28 +63,28 @@ SELECT tjsonb '{[{"geom": "Point(1 1)"}@2000-01-01, {"geom": "Point(1 1)"}@2000-
 
 -------------------------------------------------------------------------------
 
-SELECT tjsonb_set(tjsonb '"{\"speed\": 10}"@2000-01-01', ARRAY['units'], '"km/h"'::jsonb);
-SELECT tjsonb_set(tjsonb '{{"speed": 10}@2000-01-01, {"speed": 20}@2000-01-02, {"speed": 30}@2000-01-03}', ARRAY['units'], '"km/h"'::jsonb);
-SELECT tjsonb_set(tjsonb '[{"speed": 10}@2000-01-01, {"speed": 20}@2000-01-02, {"speed": 30}@2000-01-03]', ARRAY['units'], '"km/h"'::jsonb);
-SELECT tjsonb_set(tjsonb '{[{"speed": 10}@2000-01-01, {"speed": 20}@2000-01-02, {"speed": 30}@2000-01-03],[{"geom": 30}@2000-01-04, {"speed": 30}@2000-01-05]}', ARRAY['units'], '"km/h"'::jsonb);
+SELECT tjsonbSet(tjsonb '"{\"speed\": 10}"@2000-01-01', ARRAY['units'], '"km/h"'::jsonb);
+SELECT tjsonbSet(tjsonb '{{"speed": 10}@2000-01-01, {"speed": 20}@2000-01-02, {"speed": 30}@2000-01-03}', ARRAY['units'], '"km/h"'::jsonb);
+SELECT tjsonbSet(tjsonb '[{"speed": 10}@2000-01-01, {"speed": 20}@2000-01-02, {"speed": 30}@2000-01-03]', ARRAY['units'], '"km/h"'::jsonb);
+SELECT tjsonbSet(tjsonb '{[{"speed": 10}@2000-01-01, {"speed": 20}@2000-01-02, {"speed": 30}@2000-01-03],[{"geom": 30}@2000-01-04, {"speed": 30}@2000-01-05]}', ARRAY['units'], '"km/h"'::jsonb);
 
-SELECT tjsonb_insert(tjsonb '"{\"speed\": 10}"@2000-01-01', ARRAY['units'], '"km/h"'::jsonb);
-SELECT tjsonb_insert(tjsonb '{{"speed": 10}@2000-01-01, {"speed": 20}@2000-01-02, {"speed": 30}@2000-01-03}', ARRAY['units'], '"km/h"'::jsonb);
-SELECT tjsonb_insert(tjsonb '[{"speed": 10}@2000-01-01, {"speed": 20}@2000-01-02, {"speed": 30}@2000-01-03]', ARRAY['units'], '"km/h"'::jsonb);
-SELECT tjsonb_insert(tjsonb '{[{"speed": 10}@2000-01-01, {"speed": 20}@2000-01-02, {"speed": 30}@2000-01-03],[{"geom": 30}@2000-01-04, {"speed": 30}@2000-01-05]}', ARRAY['units'], '"km/h"'::jsonb);
+SELECT tjsonbInsert(tjsonb '"{\"speed\": 10}"@2000-01-01', ARRAY['units'], '"km/h"'::jsonb);
+SELECT tjsonbInsert(tjsonb '{{"speed": 10}@2000-01-01, {"speed": 20}@2000-01-02, {"speed": 30}@2000-01-03}', ARRAY['units'], '"km/h"'::jsonb);
+SELECT tjsonbInsert(tjsonb '[{"speed": 10}@2000-01-01, {"speed": 20}@2000-01-02, {"speed": 30}@2000-01-03]', ARRAY['units'], '"km/h"'::jsonb);
+SELECT tjsonbInsert(tjsonb '{[{"speed": 10}@2000-01-01, {"speed": 20}@2000-01-02, {"speed": 30}@2000-01-03],[{"geom": 30}@2000-01-04, {"speed": 30}@2000-01-05]}', ARRAY['units'], '"km/h"'::jsonb);
 
 -------------------------------------------------------------------------------
 
-SELECT tjsonb_extract_path(tjsonb '"{\"speed\": 10, \"units\": \"km/h\"}"@2000-01-01', ARRAY['speed']);
-SELECT tjsonb_extract_path(tjsonb '{{"speed": 10, "units": "km/h"}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03}', ARRAY['speed']);
-SELECT tjsonb_extract_path(tjsonb '[{"speed": 10, "units": "km/h"}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03]', ARRAY['speed']);
-SELECT tjsonb_extract_path(tjsonb '{[{"speed": 10}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03],[{"geom": "Point(1 1)", "units": "km/h"}@2000-01-04, {"speed": 30, "units": "km/h"}@2000-01-05]}', ARRAY['speed']);
+SELECT tjsonbExtractPath(tjsonb '"{\"speed\": 10, \"units\": \"km/h\"}"@2000-01-01', ARRAY['speed']);
+SELECT tjsonbExtractPath(tjsonb '{{"speed": 10, "units": "km/h"}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03}', ARRAY['speed']);
+SELECT tjsonbExtractPath(tjsonb '[{"speed": 10, "units": "km/h"}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03]', ARRAY['speed']);
+SELECT tjsonbExtractPath(tjsonb '{[{"speed": 10}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03],[{"geom": "Point(1 1)", "units": "km/h"}@2000-01-04, {"speed": 30, "units": "km/h"}@2000-01-05]}', ARRAY['speed']);
 
 /* Null handling */
-SELECT tjsonb_extract_path(tjsonb '{[{"speed": 10}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03],[{"geom": "Point(1 1)", "units": "km/h"}@2000-01-04, {"speed": 30, "units": "km/h"}@2000-01-05]}', ARRAY['speed'],'raise_exception');
-SELECT tjsonb_extract_path(tjsonb '{[{"speed": 10}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03],[{"geom": "Point(1 1)", "units": "km/h"}@2000-01-04, {"speed": 30, "units": "km/h"}@2000-01-05]}', ARRAY['speed'],'use_json_null');
-SELECT tjsonb_extract_path(tjsonb '{[{"speed": 10}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03],[{"geom": "Point(1 1)", "units": "km/h"}@2000-01-04, {"speed": 30, "units": "km/h"}@2000-01-05]}', ARRAY['speed'],'delete_key');
-SELECT tjsonb_extract_path(tjsonb '{[{"speed": 10}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03],[{"geom": "Point(1 1)", "units": "km/h"}@2000-01-04, {"speed": 30, "units": "km/h"}@2000-01-05]}', ARRAY['speed'],'return_null');
+SELECT tjsonbExtractPath(tjsonb '{[{"speed": 10}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03],[{"geom": "Point(1 1)", "units": "km/h"}@2000-01-04, {"speed": 30, "units": "km/h"}@2000-01-05]}', ARRAY['speed'],'raise_exception');
+SELECT tjsonbExtractPath(tjsonb '{[{"speed": 10}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03],[{"geom": "Point(1 1)", "units": "km/h"}@2000-01-04, {"speed": 30, "units": "km/h"}@2000-01-05]}', ARRAY['speed'],'use_json_null');
+SELECT tjsonbExtractPath(tjsonb '{[{"speed": 10}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03],[{"geom": "Point(1 1)", "units": "km/h"}@2000-01-04, {"speed": 30, "units": "km/h"}@2000-01-05]}', ARRAY['speed'],'delete_key');
+SELECT tjsonbExtractPath(tjsonb '{[{"speed": 10}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03],[{"geom": "Point(1 1)", "units": "km/h"}@2000-01-04, {"speed": 30, "units": "km/h"}@2000-01-05]}', ARRAY['speed'],'return_null');
 
 SELECT tjsonb '"{\"speed\": 10, \"units\": \"km/h\"}"@2000-01-01' #> ARRAY['speed'];
 SELECT tjsonb '{{"speed": 10, "units": "km/h"}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03}' #> ARRAY['speed'];
@@ -94,16 +94,16 @@ SELECT tjsonb '{[{"speed": 10}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-0
 /* Null handling */
 SELECT tjsonb '{[{"speed": 10}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03],[{"speed": "30", "units": "km/h"}@2000-01-04, {"speed": 30, "units": "km/h"}@2000-01-05]}' #> ARRAY['units'];
 
-SELECT tjsonb_extract_path_text(tjsonb '"{\"speed\": 10, \"units\": \"km/h\"}"@2000-01-01', ARRAY['speed']);
-SELECT tjsonb_extract_path_text(tjsonb '{{"speed": 10, "units": "km/h"}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03}', ARRAY['speed']);
-SELECT tjsonb_extract_path_text(tjsonb '[{"speed": 10, "units": "km/h"}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03]', ARRAY['speed']);
-SELECT tjsonb_extract_path_text(tjsonb '{[{"speed": 10}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03],[{"geom": "Point(1 1)", "units": "km/h"}@2000-01-04, {"speed": 30, "units": "km/h"}@2000-01-05]}', ARRAY['speed']);
+SELECT tjsonbExtractPathText(tjsonb '"{\"speed\": 10, \"units\": \"km/h\"}"@2000-01-01', ARRAY['speed']);
+SELECT tjsonbExtractPathText(tjsonb '{{"speed": 10, "units": "km/h"}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03}', ARRAY['speed']);
+SELECT tjsonbExtractPathText(tjsonb '[{"speed": 10, "units": "km/h"}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03]', ARRAY['speed']);
+SELECT tjsonbExtractPathText(tjsonb '{[{"speed": 10}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03],[{"geom": "Point(1 1)", "units": "km/h"}@2000-01-04, {"speed": 30, "units": "km/h"}@2000-01-05]}', ARRAY['speed']);
 
 /* Null handling */
-SELECT tjsonb_extract_path_text(tjsonb '{[{"speed": 10}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03],[{"geom": "Point(1 1)", "units": "km/h"}@2000-01-04, {"speed": 30, "units": "km/h"}@2000-01-05]}', ARRAY['units'], 'raise_exception');
-SELECT tjsonb_extract_path_text(tjsonb '{[{"speed": 10}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03],[{"geom": "Point(1 1)", "units": "km/h"}@2000-01-04, {"speed": 30, "units": "km/h"}@2000-01-05]}', ARRAY['units'], 'use_json_null');
-SELECT tjsonb_extract_path_text(tjsonb '{[{"speed": 10}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03],[{"geom": "Point(1 1)", "units": "km/h"}@2000-01-04, {"speed": 30, "units": "km/h"}@2000-01-05]}', ARRAY['units'], 'delete_key');
-SELECT tjsonb_extract_path_text(tjsonb '{[{"speed": 10}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03],[{"geom": "Point(1 1)", "units": "km/h"}@2000-01-04, {"speed": 30, "units": "km/h"}@2000-01-05]}', ARRAY['units'], 'return_null');
+SELECT tjsonbExtractPathText(tjsonb '{[{"speed": 10}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03],[{"geom": "Point(1 1)", "units": "km/h"}@2000-01-04, {"speed": 30, "units": "km/h"}@2000-01-05]}', ARRAY['units'], 'raise_exception');
+SELECT tjsonbExtractPathText(tjsonb '{[{"speed": 10}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03],[{"geom": "Point(1 1)", "units": "km/h"}@2000-01-04, {"speed": 30, "units": "km/h"}@2000-01-05]}', ARRAY['units'], 'use_json_null');
+SELECT tjsonbExtractPathText(tjsonb '{[{"speed": 10}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03],[{"geom": "Point(1 1)", "units": "km/h"}@2000-01-04, {"speed": 30, "units": "km/h"}@2000-01-05]}', ARRAY['units'], 'delete_key');
+SELECT tjsonbExtractPathText(tjsonb '{[{"speed": 10}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03],[{"geom": "Point(1 1)", "units": "km/h"}@2000-01-04, {"speed": 30, "units": "km/h"}@2000-01-05]}', ARRAY['units'], 'return_null');
 
 SELECT tjsonb '"{\"speed\": 10, \"units\": \"km/h\"}"@2000-01-01' #>> ARRAY['speed'];
 SELECT tjsonb '{{"speed": 10, "units": "km/h"}@2000-01-01, {"speed": 20, "units": "km/h"}@2000-01-02, {"speed": 10, "units": "km/h"}@2000-01-03}' #>> ARRAY['speed'];

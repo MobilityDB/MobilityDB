@@ -56,7 +56,7 @@ PG_FUNCTION_INFO_V1(Tjsonb_exists);
  * @ingroup mobilitydb_temporal_jsonb
  * @brief Return a temporal boolean that states if the text string exist as a
  * top-level key or array element within the JSONB value
- * @sqlfn tjsonb_exists()
+ * @sqlfn tjsonbExists()
  * @sqlop @p ?
  */
 Datum
@@ -74,8 +74,8 @@ Tjsonb_exists(PG_FUNCTION_ARGS)
  * @ingroup mobilitydb_temporal_jsonb
  * @brief Return a temporal boolean indicating if any/all of the given keys
  *        exist as top-level keys or array elements in a temporal JSONB value
- * @sqlfn tjsonb_exists_any()
- * @sqlfn tjsonb_exists_all()
+ * @sqlfn tjsonbExistsAny()
+ * @sqlfn tjsonbExistsAll()
  */
 Datum
 Tjsonb_exists_array(FunctionCallInfo fcinfo, bool any)
@@ -110,7 +110,7 @@ Tjsonb_exists_array(FunctionCallInfo fcinfo, bool any)
  * @ingroup mobilitydb_temporal_jsonb
  * @brief Return true if any of the strings in the text array exist as
  * top-level keys or array elements
- * @sqlfn tjsonb_exists_any()
+ * @sqlfn tjsonbExistsAny()
  * @sqlop @p ?|
  */
 PGDLLEXPORT Datum Tjsonb_exists_any(PG_FUNCTION_ARGS);
@@ -125,7 +125,7 @@ Tjsonb_exists_any(PG_FUNCTION_ARGS)
  * @ingroup mobilitydb_temporal_jsonb
  * @brief Return true if all of the strings in the text array exist as
  * top-level keys or array elements
- * @sqlfn tjsonb_exists_all()
+ * @sqlfn tjsonbExistsAll()
  * @sqlop @p ?|
  */
 PGDLLEXPORT Datum Tjsonb_exists_all(PG_FUNCTION_ARGS);
@@ -141,7 +141,7 @@ Tjsonb_exists_all(PG_FUNCTION_ARGS)
 /**
  * @ingroup mobilitydb_temporal_jsonb
  * @brief Return true if a JSONB value contains a temporal JSONB value
- * @sqlfn tjsonb_contains()
+ * @sqlfn tjsonbContains()
  * @sqlop @p @>
  */
 PGDLLEXPORT Datum Contains_jsonb_tjsonb(PG_FUNCTION_ARGS);
@@ -160,7 +160,7 @@ Contains_jsonb_tjsonb(PG_FUNCTION_ARGS)
 /**
  * @ingroup mobilitydb_temporal_jsonb
  * @brief Return true if a temporal JSONB value contains a JSONB value
- * @sqlfn tjsonb_contains()
+ * @sqlfn tjsonbContains()
  * @sqlop @p @>
  */
 PGDLLEXPORT Datum Contains_tjsonb_jsonb(PG_FUNCTION_ARGS);
@@ -179,7 +179,7 @@ Contains_tjsonb_jsonb(PG_FUNCTION_ARGS)
 /**
  * @ingroup mobilitydb_temporal_jsonb
  * @brief Return true if the first TJSONB value contains the second one
- * @sqlfn tjsonb_contains()
+ * @sqlfn tjsonbContains()
  * @sqlop @p @>
  */
 PGDLLEXPORT Datum Contains_tjsonb_tjsonb(PG_FUNCTION_ARGS);
@@ -200,7 +200,7 @@ Contains_tjsonb_tjsonb(PG_FUNCTION_ARGS)
 /**
  * @ingroup mobilitydb_temporal_jsonb
  * @brief Return true if a JSONB value is contained into a temporal JSONB value
- * @sqlfn tjsonb_contained()
+ * @sqlfn tjsonbContained()
  * @sqlop @p <@
  */
 PGDLLEXPORT Datum Contained_jsonb_tjsonb(PG_FUNCTION_ARGS);
@@ -219,7 +219,7 @@ Contained_jsonb_tjsonb(PG_FUNCTION_ARGS)
 /**
  * @ingroup mobilitydb_temporal_jsonb
  * @brief Return true if a temporal JSONB value is contained into a JSONB value
- * @sqlfn tjsonb_contained()
+ * @sqlfn tjsonbContained()
  * @sqlop @p <@
  */
 PGDLLEXPORT Datum Contained_tjsonb_jsonb(PG_FUNCTION_ARGS);
@@ -238,7 +238,7 @@ Contained_tjsonb_jsonb(PG_FUNCTION_ARGS)
 /**
  * @ingroup mobilitydb_temporal_jsonb
  * @brief Return true if the first TJSONB value is contained into the second one
- * @sqlfn tjsonb_contained()
+ * @sqlfn tjsonbContained()
  * @sqlop @p <@
  */
 PGDLLEXPORT Datum Contained_tjsonb_tjsonb(PG_FUNCTION_ARGS);
