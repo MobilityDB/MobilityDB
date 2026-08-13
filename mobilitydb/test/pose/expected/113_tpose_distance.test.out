@@ -1,3 +1,121 @@
+SELECT round(distance(geometry 'Point(1 0)', pose 'Pose(Point(4 0),0)'), 6);
+ round 
+-------
+     3
+(1 row)
+
+SELECT round(distance(stbox 'STBOX X((1,-1),(3,1))', pose 'Pose(Point(4 0),0)'), 6);
+ round 
+-------
+     1
+(1 row)
+
+SELECT round(distance(pose 'Pose(Point(4 0),0)', geometry 'Point(1 0)'), 6);
+ round 
+-------
+     3
+(1 row)
+
+SELECT round(distance(pose 'Pose(Point(4 0),0)', stbox 'STBOX X((1,-1),(3,1))'), 6);
+ round 
+-------
+     1
+(1 row)
+
+SELECT round(distance(pose 'Pose(Point(0 0),0)', pose 'Pose(Point(3 4),0)'), 6);
+ round 
+-------
+     5
+(1 row)
+
+SELECT round(geometry 'Point(1 0)' <-> pose 'Pose(Point(4 0),0)', 6);
+ round 
+-------
+     3
+(1 row)
+
+SELECT round(stbox 'STBOX X((1,-1),(3,1))' <-> pose 'Pose(Point(4 0),0)', 6);
+ round 
+-------
+     1
+(1 row)
+
+SELECT round(pose 'Pose(Point(4 0),0)' <-> geometry 'Point(1 0)', 6);
+ round 
+-------
+     3
+(1 row)
+
+SELECT round(pose 'Pose(Point(4 0),0)' <-> stbox 'STBOX X((1,-1),(3,1))', 6);
+ round 
+-------
+     1
+(1 row)
+
+SELECT round(pose 'Pose(Point(0 0),0)' <-> pose 'Pose(Point(3 4),0)', 6);
+ round 
+-------
+     5
+(1 row)
+
+SELECT round(pose 'Pose(Point(0 0),0)' <-> pose 'Pose(Point(0 0),0)', 6);
+ round 
+-------
+     0
+(1 row)
+
+SELECT round(pose 'Pose(Point(0 0),0.5)' <-> pose 'Pose(Point(3 4),1.5)', 6);
+ round 
+-------
+     5
+(1 row)
+
+SELECT round(pose 'SRID=5676;Pose(Point(0 0),0)' <-> pose 'SRID=5676;Pose(Point(3 4),0)', 6);
+ round 
+-------
+     5
+(1 row)
+
+SELECT round(pose 'Pose(Point(0 0 0), 1, 0, 0, 0)' <-> pose 'Pose(Point(3 4 12), 1, 0, 0, 0)', 6);
+ round 
+-------
+     5
+(1 row)
+
+SELECT round(geometry 'Point empty' <-> pose 'Pose(Point(4 0),0)', 6);
+ round 
+-------
+      
+(1 row)
+
+SELECT round(pose 'Pose(Point(4 0),0)' <-> geometry 'Point empty', 6);
+ round 
+-------
+      
+(1 row)
+
+SELECT NULL::geometry <-> pose 'Pose(Point(4 0),0)';
+ ?column? 
+----------
+         
+(1 row)
+
+SELECT pose 'Pose(Point(4 0),0)' <-> NULL::stbox;
+ ?column? 
+----------
+         
+(1 row)
+
+SELECT NULL::pose <-> pose 'Pose(Point(4 0),0)';
+ ?column? 
+----------
+         
+(1 row)
+
+SELECT pose 'SRID=5676;Pose(Point(0 0),0)' <-> pose 'Pose(Point(3 4),0)';
+ERROR:  Operation on mixed SRID
+SELECT geometry 'SRID=5676;Point(1 0)' <-> pose 'Pose(Point(4 0),0)';
+ERROR:  Operation on mixed SRID
 SELECT round(tDistance(geometry 'Point(1 0)', tpose '[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]'), 6);
                                               round                                               
 --------------------------------------------------------------------------------------------------

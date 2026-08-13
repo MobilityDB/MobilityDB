@@ -1562,6 +1562,15 @@
 			</sect3>
 
 			<sect3>
+				<title>Distance Operations</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="pose_distance_op"><varname>&lt;-&gt;</varname></link>: Return the distance</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+
+			<sect3>
 				<title>Comparisons</title>
 				<itemizedlist>
 					<listitem>

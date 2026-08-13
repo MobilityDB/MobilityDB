@@ -333,6 +333,34 @@ FROM test;
 			</itemizedlist>
 		</sect2>
 
+		<sect2 xml:id="pose_distance">
+			<title>Operaciones de distancia</title>
+
+			<itemizedlist>
+				<listitem xml:id="pose_distance_op">
+					<indexterm significance="normal"><primary><varname>&lt;-&gt;</varname></primary></indexterm>
+					<para>Devuelve la distancia</para>
+					<para><varname>distance({geo,stbox,pose},pose) → float</varname></para>
+					<para><varname>distance(pose,{geo,stbox,pose}) → float</varname></para>
+					<para><varname>{geo,stbox,pose} &lt;-&gt; pose → float</varname></para>
+					<para>Solo se tiene en cuenta el componente de punto de la pose, la orientación se ignora. La distancia se calcula en dos dimensiones, incluso cuando los argumentos son tridimensionales. El resultado es <varname>NULL</varname> cuando la geometría está vacía.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT round(distance(geometry 'Point(1 0)', pose 'Pose(Point(4 0),0)'), 6);
+-- 3
+SELECT round(distance(stbox 'STBOX X((1,-1),(3,1))', pose 'Pose(Point(4 0),0)'), 6);
+-- 1
+SELECT round(pose 'Pose(Point(0 0),0)' &lt;-&gt; pose 'Pose(Point(3 4),0)', 6);
+-- 5
+SELECT round(pose 'Pose(Point(0 0 0), 1, 0, 0, 0)' &lt;-&gt;
+  pose 'Pose(Point(3 4 12), 1, 0, 0, 0)', 6);
+-- 5
+SELECT round(geometry 'Point empty' &lt;-&gt; pose 'Pose(Point(4 0),0)', 6);
+-- NULL
+</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
 		<sect2 xml:id="pose_comparison">
 			<title>Comparaciones</title>
 
