@@ -129,11 +129,22 @@ extern size_t strtitle_libc(char *dst, size_t dstsize, const char *src,
 extern size_t strupper_libc(char *dst, size_t dstsize, const char *src,
   ssize_t srclen, pg_locale_t locale);
 
-/* GUC settings */
+/*
+ * GUC settings.
+ *
+ * In PostgreSQL these are initialized by the GUC machinery from their boot
+ * value ("C" for lc_monetary/lc_numeric/lc_time) before any SQL executes.
+ * MEOS never runs that machinery, so without an explicit initializer here
+ * these stay NULL and the first newlocale()/_create_locale() call that
+ * consults them (e.g. cache_locale_time(), reached from jsonpath's
+ * .datetime() methods through pg_parse_datetime) fails with
+ * "could not create locale "(null)"". Match the PostgreSQL boot value so
+ * MEOS behaves like a freshly initialized backend.
+ */
 char *locale_messages;
-char *locale_monetary;
-char *locale_numeric;
-char *locale_time;
+char *locale_monetary = "C";
+char *locale_numeric = "C";
+char *locale_time = "C";
 
 int icu_validation_level = WARNING;
 
