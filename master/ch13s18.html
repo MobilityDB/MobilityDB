@@ -40,7 +40,57 @@ world = R(q) · body + p
 SELECT asText(applyPose(ST_Point(1,0), tpose '[Pose(Point(0 0), 0)@2026-01-01,
   Pose(Point(10 20), 1.5707963267948966)@2026-01-02]'));
 -- [POINT(1 0)@2026-01-01, POINT(10 21)@2026-01-02]
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="pose_geopose_temporal_io"></a>Temporal JSON I/O</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpose_geopose_funcs"></a><a class="indexterm" name="id10702"></a><a class="indexterm" name="id10705"></a><p>Convert a temporal pose to or from a TemporalGeoPose JSON envelope</p><p><code class="varname">asGeoPose(tpose,conformance int4=0,maxdecimaldigits int4=-1) → text</code></p><p><code class="varname">tposeFromGeoPose(text) → tpose</code></p><p>Each per-instant payload is a strictly OGC-valid Basic-class GeoPose document plus a <code class="varname">validTime</code> member; the envelope records the conformance class, the interpolation, and (for sequences and sequence sets) the period bounds inclusion. A non-MEOS GeoPose consumer can iterate <code class="varname">instants[]</code> (or each <code class="varname">sequences[].instants[]</code>) and consume each element as a static GeoPose document.</p><p>The envelope shape is</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="pose_geopose_temporal_io"></a>Temporal JSON I/O</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpose_geopose_funcs"></a><a class="indexterm" name="id10702"></a><a class="indexterm" name="id10705"></a><p>Convert a temporal pose to or from its OGC GeoPose v1.0 encoding</p><p><code class="varname">asGeoPose(tpose,conformance int4=0,maxdecimaldigits int4=-1) → text</code></p><p><code class="varname">tposeFromGeoPose(text) → tpose</code></p><p>The conformance class follows from the value. A single instant is a Basic document carrying its <code class="varname">validTime</code>; a sequence or sequence set is a Composite Sequence Series, of the Regular class when the instants are equally spaced by a whole number of milliseconds and of the Irregular class otherwise. The <code class="varname">conformance</code> argument chooses the orientation encoding of a Basic document, as it does for a <code class="varname">pose</code>, and has no effect on a Series, whose inner frames carry a quaternion and offer no such choice.</p><p>A Series states its outer frame once, as the local tangent plane East-North-Up frame at the position of the first pose, and gives each pose as an inner frame holding its translation from that tangent point, in metres, and its rotation relative to that frame's basis. Times are <code class="varname">GeoPose_Instant</code> values, that is Unix time in integer milliseconds, which is what the standard requires of every time position it defines. Sub-millisecond sampling is therefore not carried; the MF-JSON encoding, which the standard behind it types as a datetime string, does carry it.</p><p>The transition model reports the interpolation. Linear interpolation is the standard's <code class="varname">interpolate</code> model and step and discrete interpolation are its <code class="varname">none</code> model; since those two identifiers cannot tell step from discrete apart, the model's <code class="varname">parameters</code> name the interpolation with the same words the MF-JSON encoding uses.</p><pre class="programlisting">
+SELECT asGeoPose(tpose '[Pose(Point(0 0 0), 0.5, 0.5, 0.5, 0.5)@2026-01-01,
+  Pose(Point(0 0 100), 0.5, 0.5, 0.5, 0.5)@2026-01-02,
+  Pose(Point(0 0 300), 0.5, 0.5, 0.5, 0.5)@2026-01-05]', 0, 6);
+-- {
+--  "header": {
+--   "poseCount": 3,
+--   "startInstant": 1767254400000,
+--   "stopInstant": 1767600000000,
+--   "transitionModel": {
+--    "authority": "/geopose/1.0",
+--    "id": "interpolate",
+--    "parameters": "interpolation=Linear"
+--   }
+--  },
+--  "outerFrame": {
+--   "authority": "/geopose/1.0",
+--   "id": "LTP-ENU",
+--   "parameters": "longitude=0&amp;latitude=0&amp;height=0&amp;crs=EPSG:4979"
+--  },
+--  "innerFrameAndTimeSeries": [
+--   {
+--    "frame": {
+--     "authority": "/geopose/1.0",
+--     "id": "RotateTranslate",
+--     "parameters": "translation=[0, 0, 0]&amp;rotation=[0.5, 0.5, 0.5, 0.5]"
+--    },
+--    "validTime": 1767254400000
+--   },
+--   {
+--    "frame": {
+--     "authority": "/geopose/1.0",
+--     "id": "RotateTranslate",
+--     "parameters": "translation=[0, 0, 100]&amp;rotation=[0.5, 0.5, 0.5, 0.5]"
+--    },
+--    "validTime": 1767340800000
+--   },
+--   {
+--    "frame": {
+--     "authority": "/geopose/1.0",
+--     "id": "RotateTranslate",
+--     "parameters": "translation=[0, 0, 300]&amp;rotation=[0.5, 0.5, 0.5, 0.5]"
+--    },
+--    "validTime": 1767600000000
+--   }
+--  ],
+--  "trailer": {
+--   "poseCount": 3
+--  }
+-- }
+</pre><p>A Series has neither gaps nor open bounds, so a sequence set is flattened into a single closed sequence and the bounds inclusion of a sequence is not preserved. Reading also accepts the <code class="varname">TemporalGeoPose</code> envelope that earlier releases wrote, an array of Basic-class objects each with an added <code class="varname">validTime</code>, so that data already stored in that form still loads.</p><p>That envelope's shape is</p><pre class="programlisting">
 {
   "type":          "TemporalGeoPose",
   "version":       "1.0",
