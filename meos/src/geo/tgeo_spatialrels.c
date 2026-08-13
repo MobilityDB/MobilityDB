@@ -1049,7 +1049,17 @@ ea_disjoint_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
   void *ctx = NULL;
   if (! MEOS_FLAGS_GET_GEODETIC(temp->flags) &&
       ! (MEOS_FLAGS_GET_Z(temp->flags) && FLAGS_GET_Z(gs->gflags)))
-    ctx = geo_clip_ctx_make(gs);
+  {
+    /* Only a geometry the clip engine decomposes into edges gets a context.
+     * A context for another type reports the type as unsupported for the
+     * whole relationship, while resolving the composing values one by one
+     * reaches the decomposition only for a value whose box meets the
+     * geometry, and answers from the boxes alone for the values that do not */
+    LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
+    if (geom_clip_supported(lwgeom))
+      ctx = geo_clip_ctx_make(gs);
+    lwgeom_free(lwgeom);
+  }
   datum_func2 func = geo_disjoint_fn_geo(temp->flags, gs->gflags);
   for (int i = 0; i < count; i++)
   {
