@@ -1781,7 +1781,7 @@ pose_distance(Datum pose1, Datum pose2)
  * @ingroup meos_pose_base_dist
  * @brief Return the distance between two poses
  * @return On error return @p DBL_MAX
- * @csqlfn Distance_pose_pose()
+ * @csqlfn #Distance_pose_pose()
  */
 double
 distance_pose_pose(const Pose *pose1, const Pose *pose2)
@@ -1790,7 +1790,8 @@ distance_pose_pose(const Pose *pose1, const Pose *pose2)
   if (! ensure_valid_pose_pose(pose1, pose2))
     return DBL_MAX;
   /* The following function assumes that all validity tests have been done */
-  return pose_distance(PointerGetDatum(pose1), PointerGetDatum(pose2));
+  return DatumGetFloat8(pose_distance(PointerGetDatum(pose1),
+    PointerGetDatum(pose2)));
 }
 
 /**
@@ -1811,7 +1812,7 @@ datum_pose_distance(Datum pose1, Datum pose2)
  * @ingroup meos_pose_base_dist
  * @brief Return the distance between a pose and a geometry
  * @return On error return @p DBL_MAX
- * @csqlfn Distance_pose_geo()
+ * @csqlfn #Distance_pose_geo()
  */
 double
 distance_pose_geo(const Pose *pose, const GSERIALIZED *gs)
@@ -1830,7 +1831,7 @@ distance_pose_geo(const Pose *pose, const GSERIALIZED *gs)
  * @ingroup meos_pose_base_dist
  * @brief Return the distance between a pose and a spatiotemporal box
  * @return On error return @p DBL_MAX
- * @csqlfn Distance_pose_stbox()
+ * @csqlfn #Distance_pose_stbox()
  */
 double
 distance_pose_stbox(const Pose *pose, const STBox *box)

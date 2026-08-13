@@ -28,6 +28,38 @@
 -------------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------
+-- distance
+-------------------------------------------------------------------------------
+
+SELECT round(distance(geometry 'Point(1 0)', pose 'Pose(Point(4 0),0)'), 6);
+SELECT round(distance(stbox 'STBOX X((1,-1),(3,1))', pose 'Pose(Point(4 0),0)'), 6);
+SELECT round(distance(pose 'Pose(Point(4 0),0)', geometry 'Point(1 0)'), 6);
+SELECT round(distance(pose 'Pose(Point(4 0),0)', stbox 'STBOX X((1,-1),(3,1))'), 6);
+SELECT round(distance(pose 'Pose(Point(0 0),0)', pose 'Pose(Point(3 4),0)'), 6);
+
+SELECT round(geometry 'Point(1 0)' <-> pose 'Pose(Point(4 0),0)', 6);
+SELECT round(stbox 'STBOX X((1,-1),(3,1))' <-> pose 'Pose(Point(4 0),0)', 6);
+SELECT round(pose 'Pose(Point(4 0),0)' <-> geometry 'Point(1 0)', 6);
+SELECT round(pose 'Pose(Point(4 0),0)' <-> stbox 'STBOX X((1,-1),(3,1))', 6);
+SELECT round(pose 'Pose(Point(0 0),0)' <-> pose 'Pose(Point(3 4),0)', 6);
+
+SELECT round(pose 'Pose(Point(0 0),0)' <-> pose 'Pose(Point(0 0),0)', 6);
+SELECT round(pose 'Pose(Point(0 0),0.5)' <-> pose 'Pose(Point(3 4),1.5)', 6);
+SELECT round(pose 'SRID=5676;Pose(Point(0 0),0)' <-> pose 'SRID=5676;Pose(Point(3 4),0)', 6);
+SELECT round(pose 'Pose(Point(0 0 0), 1, 0, 0, 0)' <-> pose 'Pose(Point(3 4 12), 1, 0, 0, 0)', 6);
+
+-- Empty geometry and NULL arguments
+SELECT round(geometry 'Point empty' <-> pose 'Pose(Point(4 0),0)', 6);
+SELECT round(pose 'Pose(Point(4 0),0)' <-> geometry 'Point empty', 6);
+SELECT NULL::geometry <-> pose 'Pose(Point(4 0),0)';
+SELECT pose 'Pose(Point(4 0),0)' <-> NULL::stbox;
+SELECT NULL::pose <-> pose 'Pose(Point(4 0),0)';
+
+-- Errors
+SELECT pose 'SRID=5676;Pose(Point(0 0),0)' <-> pose 'Pose(Point(3 4),0)';
+SELECT geometry 'SRID=5676;Point(1 0)' <-> pose 'Pose(Point(4 0),0)';
+
+-------------------------------------------------------------------------------
 -- tDistance
 -------------------------------------------------------------------------------
 

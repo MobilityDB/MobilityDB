@@ -44,6 +44,109 @@
 #include "pg_geo/postgis.h"
 
 /*****************************************************************************
+ * Distance
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Distance_pose_geo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Distance_pose_geo);
+/**
+ * @ingroup mobilitydb_pose_dist
+ * @brief Return the distance between a pose and a geometry
+ * @sqlfn distance()
+ * @sqlop @p <->
+ */
+Datum
+Distance_pose_geo(PG_FUNCTION_ARGS)
+{
+  Pose *pose = PG_GETARG_POSE_P(0);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+  double result = distance_pose_geo(pose, gs);
+  PG_FREE_IF_COPY(gs, 1);
+  if (result == DBL_MAX)
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(result);
+}
+
+PGDLLEXPORT Datum Distance_geo_pose(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Distance_geo_pose);
+/**
+ * @ingroup mobilitydb_pose_dist
+ * @brief Return the distance between a geometry and a pose
+ * @sqlfn distance()
+ * @sqlop @p <->
+ */
+Datum
+Distance_geo_pose(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  Pose *pose = PG_GETARG_POSE_P(1);
+  double result = distance_pose_geo(pose, gs);
+  PG_FREE_IF_COPY(gs, 0);
+  if (result == DBL_MAX)
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(result);
+}
+
+/*****************************************************************************/
+
+PGDLLEXPORT Datum Distance_pose_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Distance_pose_stbox);
+/**
+ * @ingroup mobilitydb_pose_dist
+ * @brief Return the distance between a pose and a spatiotemporal box
+ * @sqlfn distance()
+ * @sqlop @p <->
+ */
+Datum
+Distance_pose_stbox(PG_FUNCTION_ARGS)
+{
+  Pose *pose = PG_GETARG_POSE_P(0);
+  STBox *box = PG_GETARG_STBOX_P(1);
+  double result = distance_pose_stbox(pose, box);
+  if (result == DBL_MAX)
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(result);
+}
+
+PGDLLEXPORT Datum Distance_stbox_pose(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Distance_stbox_pose);
+/**
+ * @ingroup mobilitydb_pose_dist
+ * @brief Return the distance between a spatiotemporal box and a pose
+ * @sqlfn distance()
+ * @sqlop @p <->
+ */
+Datum
+Distance_stbox_pose(PG_FUNCTION_ARGS)
+{
+  STBox *box = PG_GETARG_STBOX_P(0);
+  Pose *pose = PG_GETARG_POSE_P(1);
+  double result = distance_pose_stbox(pose, box);
+  if (result == DBL_MAX)
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(result);
+}
+
+PGDLLEXPORT Datum Distance_pose_pose(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Distance_pose_pose);
+/**
+ * @ingroup mobilitydb_pose_dist
+ * @brief Return the distance between two poses
+ * @sqlfn distance()
+ * @sqlop @p <->
+ */
+Datum
+Distance_pose_pose(PG_FUNCTION_ARGS)
+{
+  Pose *pose1 = PG_GETARG_POSE_P(0);
+  Pose *pose2 = PG_GETARG_POSE_P(1);
+  double result = distance_pose_pose(pose1, pose2);
+  if (result == DBL_MAX)
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(result);
+}
+
+/*****************************************************************************
  * Temporal distance
  *****************************************************************************/
 

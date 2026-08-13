@@ -32,6 +32,66 @@
  * @brief Temporal distance for temporal poses
  */
 
+/*****************************************************************************
+ * Distance functions
+ *****************************************************************************/
+
+CREATE FUNCTION distance(geometry, pose)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Distance_geo_pose'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION distance(stbox, pose)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Distance_stbox_pose'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION distance(pose, geometry)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Distance_pose_geo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION distance(pose, stbox)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Distance_pose_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION distance(pose, pose)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Distance_pose_pose'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR <-> (
+  PROCEDURE = distance,
+  LEFTARG = geometry,
+  RIGHTARG = pose,
+  COMMUTATOR = <->
+);
+CREATE OPERATOR <-> (
+  PROCEDURE = distance,
+  LEFTARG = stbox,
+  RIGHTARG = pose,
+  COMMUTATOR = <->
+);
+CREATE OPERATOR <-> (
+  PROCEDURE = distance,
+  LEFTARG = pose,
+  RIGHTARG = geometry,
+  COMMUTATOR = <->
+);
+CREATE OPERATOR <-> (
+  PROCEDURE = distance,
+  LEFTARG = pose,
+  RIGHTARG = stbox,
+  COMMUTATOR = <->
+);
+CREATE OPERATOR <-> (
+  PROCEDURE = distance,
+  LEFTARG = pose,
+  RIGHTARG = pose,
+  COMMUTATOR = <->
+);
+
+/*****************************************************************************
+ * Temporal distance functions
+ *****************************************************************************/
+
 CREATE FUNCTION tDistance(geometry(Point), tpose)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tdistance_point_tpose'
