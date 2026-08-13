@@ -376,6 +376,28 @@ raquet_pixtype(const Raquet *rq)
   }
 }
 
+/**
+ * @ingroup meos_raster_base_accessor
+ * @brief Return a copy of the pixel bytes of a Raquet tile
+ * @param[in] rq Raquet tile
+ * @param[out] size_out Number of bytes returned
+ * @return On error return @p NULL
+ * @note The bytes are row-major and packed, @p width * @p height pixels of
+ * @p raquet_pixtype_size() bytes each, which is the layout the tile
+ * constructors accept
+ */
+uint8_t *
+raquet_pixels(const Raquet *rq, size_t *size_out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rq, NULL); VALIDATE_NOT_NULL(size_out, NULL);
+  size_t size = raquet_pixels_size(rq);
+  uint8_t *result = palloc(size);
+  memcpy(result, rq->pixels, size);
+  *size_out = size;
+  return result;
+}
+
 /*****************************************************************************
  * Conversion functions
  *****************************************************************************/
