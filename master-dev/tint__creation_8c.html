@@ -107,7 +107,8 @@ Functions</h2></td></tr>
 <li>using the <code>temporal_in(string)</code> function</li>
 <li>using the <code>tinstant_make(value, timestamp)</code> function</li>
 </ul>
-<p >The program can be build as follows </p><div class="fragment"><div class="line">gcc -Wall -g -I/usr/local/include -o tint_creation tint_creation.c -L/usr/local/lib -lmeos</div>
+<p >The program can be build as follows </p><div class="fragment"><div class="line">gcc -Wall -g -I/usr/local/<a class="code hl_function" href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a> -o tint_creation tint_creation.c -L/usr/local/lib -lmeos</div>
+<div class="ttc" id="amobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56_html_a6e1b934a889b7b6fe98de44d12f49c56"><div class="ttname"><a href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a></div><div class="ttdeci">include(AssembleExtensionSql) configure_file(mobilitydb_datagen.in.control $</div><div class="ttdef"><b>Definition:</b> CMakeLists.txt:1</div></div>
 </div><!-- fragment --><p >The output of the program is as follows </p><div class="fragment"><div class="line">Number of instants to generate: 500000</div>
 <div class="line">The generation <span class="keyword">using </span>&#39;<a class="code hl_function" href="group__meos__internal__temporal__inout_ga5a4ce38b22ef011cf88cf45e58381172.html#ga5a4ce38b22ef011cf88cf45e58381172">temporal_in</a><span class="stringliteral">&#39; took 0.389140 seconds</span></div>
 <div class="line"><span class="stringliteral">The generation using &#39;</span><a class="code hl_function" href="group__meos__internal__temporal__constructor_ga2afbcce7cee894ca0a4a953479f3f2d8.html#ga2afbcce7cee894ca0a4a953479f3f2d8">tinstant_make</a>()<span class="stringliteral">&#39; took 0.022794 seconds</span></div>

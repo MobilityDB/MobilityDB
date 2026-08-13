@@ -125,7 +125,8 @@ Functions</h2></td></tr>
 <div class="line">  OVER (PARTITION BY admin1) AS cluster</div>
 <div class="line">FROM geonames</div>
 <div class="line">WHERE fcode = &#39;SCH&#39;;</div>
-</div><!-- fragment --><p >The program can be build as follows </p><div class="fragment"><div class="line">gcc -Wall -g -I/usr/local/include -o geonames_dbscan geonames_dbscan.c -L/usr/local/lib -lmeos</div>
+</div><!-- fragment --><p >The program can be build as follows </p><div class="fragment"><div class="line">gcc -Wall -g -I/usr/local/<a class="code hl_function" href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a> -o geonames_dbscan geonames_dbscan.c -L/usr/local/lib -lmeos</div>
+<div class="ttc" id="amobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56_html_a6e1b934a889b7b6fe98de44d12f49c56"><div class="ttname"><a href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a></div><div class="ttdeci">include(AssembleExtensionSql) configure_file(mobilitydb_datagen.in.control $</div><div class="ttdef"><b>Definition:</b> CMakeLists.txt:1</div></div>
 </div><!-- fragment --><p> The program expects that the file <code>data/US.txt</code> extracted from the ZIP file above is located in the subdirecttory &lsquo;data&amp;rsquo;.</p>
 <div class="fragment"><div class="line">DROP TABLE IF EXISTS geonames_meos;</div>
 <div class="line">CREATE TABLE geonames_meos (</div>

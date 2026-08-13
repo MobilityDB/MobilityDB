@@ -86,6 +86,8 @@ $(function() {
 <code>#include &lt;stdlib.h&gt;</code><br />
 <code>#include &lt;string.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="meos__geo_8h_source.html">meos_geo.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="meos__pose_8h_source.html">meos_pose.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__rgeo_8h_source.html">meos_rgeo.h</a>&gt;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
@@ -95,8 +97,9 @@ Functions</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >A simple program that tests <a class="el" href="group__meos__rgeo__inout_gaf989a8a787c01476f3986e62a41459ad.html#gaf989a8a787c01476f3986e62a41459ad" title="Return a temporal rigid geometry from its Well-Known Text (WKT) representation.">trgeometry_in()</a>, the public MEOS entry point for reading a temporal rigid geometry from its text representation. </p>
-<p >A trgeometry value carries a leading reference geometry ahead of its temporal (pose) part. This test exercises <a class="el" href="group__meos__rgeo__inout_gaf989a8a787c01476f3986e62a41459ad.html#gaf989a8a787c01476f3986e62a41459ad" title="Return a temporal rigid geometry from its Well-Known Text (WKT) representation.">trgeometry_in()</a> directly on a well-formed value and checks that the result round-trips through <a class="el" href="group__meos__rgeo__inout_ga8a53468a7a10539c8408f1d035a58a75.html#ga8a53468a7a10539c8408f1d035a58a75" title="Return the Well-Known Text (WKT) representation of a temporal rigid geometry.">trgeometry_out()</a>.</p>
-<p >The program can be built as follows </p><div class="fragment"><div class="line">gcc -Wall -g -I/usr/local/include -o trgeo_test trgeo_test.c -L/usr/local/lib -lmeos</div>
+<p >A trgeometry value carries a leading reference geometry ahead of its temporal (pose) part. This test exercises <a class="el" href="group__meos__rgeo__inout_gaf989a8a787c01476f3986e62a41459ad.html#gaf989a8a787c01476f3986e62a41459ad" title="Return a temporal rigid geometry from its Well-Known Text (WKT) representation.">trgeometry_in()</a> directly on a well-formed value and checks that the result round-trips through <a class="el" href="group__meos__rgeo__inout_ga8a53468a7a10539c8408f1d035a58a75.html#ga8a53468a7a10539c8408f1d035a58a75" title="Return the Well-Known Text (WKT) representation of a temporal rigid geometry.">trgeometry_out()</a>. It also exercises the restriction of a trgeometry to a set of base values, whose base values are poses.</p>
+<p >The program can be built as follows </p><div class="fragment"><div class="line">gcc -Wall -g -I/usr/local/<a class="code hl_function" href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a> -o trgeo_test trgeo_test.c -L/usr/local/lib -lmeos</div>
+<div class="ttc" id="amobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56_html_a6e1b934a889b7b6fe98de44d12f49c56"><div class="ttname"><a href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a></div><div class="ttdeci">include(AssembleExtensionSql) configure_file(mobilitydb_datagen.in.control $</div><div class="ttdef"><b>Definition:</b> CMakeLists.txt:1</div></div>
 </div><!-- fragment --> </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

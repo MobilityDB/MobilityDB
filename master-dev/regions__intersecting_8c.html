@@ -121,7 +121,8 @@ Functions</h2></td></tr>
 <div class="line">Temp2 AS (</div>
 <div class="line">  SELECT ROW_NUMBER() OVER () AS cluster, ST_Dump(geom) AS rec FROM Temp1 )</div>
 <div class="line">SELECT cluster, (rec).geom FROM Temp2;</div>
-</div><!-- fragment --><p >The program can be build as follows </p><div class="fragment"><div class="line">gcc -Wall -g -I/usr/local/include -o regions_intersecting regions_intersecting.c -L/usr/local/lib -lmeos</div>
+</div><!-- fragment --><p >The program can be build as follows </p><div class="fragment"><div class="line">gcc -Wall -g -I/usr/local/<a class="code hl_function" href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a> -o regions_intersecting regions_intersecting.c -L/usr/local/lib -lmeos</div>
+<div class="ttc" id="amobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56_html_a6e1b934a889b7b6fe98de44d12f49c56"><div class="ttname"><a href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a></div><div class="ttdeci">include(AssembleExtensionSql) configure_file(mobilitydb_datagen.in.control $</div><div class="ttdef"><b>Definition:</b> CMakeLists.txt:1</div></div>
 </div><!-- fragment --><p >The program expects the file <code>data/regions.csv</code> and produces a new file <code>data/regions_new.csv</code> with a new column cluster added to each geometry. This file can be input in PostgreSQL using the following SQL command, after which it can be visualized with QGIS. </p><div class="fragment"><div class="line">DROP TABLE IF EXISTS regions_meos;</div>
 <div class="line">CREATE TABLE regions_meos (</div>
 <div class="line">  regionid <span class="keywordtype">int</span>,</div>

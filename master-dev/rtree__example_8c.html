@@ -139,7 +139,8 @@ Functions</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >A simple program that demonstrates the <a class="el" href="structRTree.html" title="Rtree in-memory index basic structure.">RTree</a> index for searching MEOS bounding boxes: floatspan, tstzspan, tbox, stbox, and temporal types. </p>
 <p >The program tests all bounding box types with OVERLAPS, CONTAINS, and CONTAINED_BY operations, inserting random boxes into the index and verifying search results against a brute-force scan. It also demonstrates the temporal convenience functions (rtree_insert_temporal, rtree_search_temporal) using tfloat sequences.</p>
-<p >The program can be built as follows </p><div class="fragment"><div class="line">gcc -Wall -g -I/usr/local/include -o rtree_example rtree_example.c -L/usr/local/lib -lmeos -lproj</div>
+<p >The program can be built as follows </p><div class="fragment"><div class="line">gcc -Wall -g -I/usr/local/<a class="code hl_function" href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a> -o rtree_example rtree_example.c -L/usr/local/lib -lmeos -lproj</div>
+<div class="ttc" id="amobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56_html_a6e1b934a889b7b6fe98de44d12f49c56"><div class="ttname"><a href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a></div><div class="ttdeci">include(AssembleExtensionSql) configure_file(mobilitydb_datagen.in.control $</div><div class="ttdef"><b>Definition:</b> CMakeLists.txt:1</div></div>
 </div><!-- fragment --> </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

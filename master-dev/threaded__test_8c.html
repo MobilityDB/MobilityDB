@@ -113,9 +113,10 @@ Functions</h2></td></tr>
 <li>meos_errno reads/writes remain isolated per thread;</li>
 <li>the GMT timezone bootstrap (postgres/timezone/localtime.c) is no longer racy under concurrent first-use.</li>
 </ul>
-<p >Build (Linux, after <code>cmake --install</code> to a prefix): </p><div class="fragment"><div class="line">gcc -Wall -g -O2 -I&lt;prefix&gt;/include -pthread \</div>
+<p >Build (Linux, after <code>cmake --install</code> to a prefix): </p><div class="fragment"><div class="line">gcc -Wall -g -O2 -I&lt;prefix&gt;/<a class="code hl_function" href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a> -pthread \</div>
 <div class="line">    -o threaded_test threaded_test.c -L&lt;prefix&gt;/lib -lmeos</div>
 <div class="line">./threaded_test 8 5000   # 8 threads, 5000 iterations each</div>
+<div class="ttc" id="amobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56_html_a6e1b934a889b7b6fe98de44d12f49c56"><div class="ttname"><a href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a></div><div class="ttdeci">include(AssembleExtensionSql) configure_file(mobilitydb_datagen.in.control $</div><div class="ttdef"><b>Definition:</b> CMakeLists.txt:1</div></div>
 </div><!-- fragment --><p >Run under TSan for race detection: rebuild MEOS and the test with <code>-fsanitize=thread</code>. </p>
 </div></div><!-- contents -->
 <!-- start footer part -->

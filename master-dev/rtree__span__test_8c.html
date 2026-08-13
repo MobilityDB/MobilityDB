@@ -115,7 +115,8 @@ Variables</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >A program that tests the in-memory <a class="el" href="structRTree.html" title="Rtree in-memory index basic structure.">RTree</a> index for the numeric span bounding box types, i.e., the indexes built with rtree_create_intspan and rtree_create_floatspan, against an exact brute-force oracle. </p>
 <p >For each span type a set of random spans is inserted, an overlap search is run for a query span, and the candidate id set is compared with the exact set of spans that overlap the query. Two properties are asserted per type: (i) no false negatives: every span overlapping the query is a candidate; (ii) no false positives: every candidate overlaps the query.</p>
-<p >The program can be built as follows </p><div class="fragment"><div class="line">gcc -Wall -g -I/usr/local/include -o rtree_span_test rtree_span_test.c -L/usr/local/lib -lmeos -lm</div>
+<p >The program can be built as follows </p><div class="fragment"><div class="line">gcc -Wall -g -I/usr/local/<a class="code hl_function" href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a> -o rtree_span_test rtree_span_test.c -L/usr/local/lib -lmeos -lm</div>
+<div class="ttc" id="amobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56_html_a6e1b934a889b7b6fe98de44d12f49c56"><div class="ttname"><a href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a></div><div class="ttdeci">include(AssembleExtensionSql) configure_file(mobilitydb_datagen.in.control $</div><div class="ttdef"><b>Definition:</b> CMakeLists.txt:1</div></div>
 </div><!-- fragment --> </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
