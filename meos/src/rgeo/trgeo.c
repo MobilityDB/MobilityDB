@@ -1107,18 +1107,23 @@ trgeometry_minus_value(const Temporal *temp, const GSERIALIZED *gs)
 /**
  * @ingroup meos_internal_rgeo_restrict
  * @brief Restrict a temporal rigid geometry to (the complement of) a set of
- * geometries
+ * poses
  * @param[in] temp Temporal rigid geometry
- * @param[in] s Set of values
+ * @param[in] s Set of poses
  * @param[in] atfunc True if the restriction is `at`, false for `minus`
+ * @note The base values of a temporal rigid geometry are poses. As the other
+ * restrictions do, the function strips the value to its temporal pose,
+ * restricts that, and puts the reference geometry back on the result
  * @csqlfn #Temporal_restrict_values()
  */
 Temporal *
 trgeometry_restrict_values(const Temporal *temp, const Set *s, bool atfunc)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_GEOMSET(s, NULL); 
-  Temporal *res = temporal_restrict_values(temp, s, atfunc);
+  VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_POSESET(s, NULL);
+  Temporal *tpose = trgeometry_to_tpose(temp);
+  Temporal *res = temporal_restrict_values(tpose, s, atfunc);
+  pfree(tpose);
   if (! res)
     return NULL;
   Temporal *result = geometry_tpose_to_trgeometry(trgeo_geom_p(temp), res);
@@ -1128,9 +1133,9 @@ trgeometry_restrict_values(const Temporal *temp, const Set *s, bool atfunc)
 
 /**
  * @ingroup meos_rgeo_restrict
- * @brief Restrict a temporal rigid geometry to a set of geometries
+ * @brief Restrict a temporal rigid geometry to a set of poses
  * @param[in] temp Temporal rigid geometry
- * @param[in] s Set of values
+ * @param[in] s Set of poses
  * @csqlfn #Temporal_at_values()
  */
 Temporal *
@@ -1142,10 +1147,10 @@ trgeometry_at_values(const Temporal *temp, const Set *s)
 /**
  * @ingroup meos_rgeo_restrict
  * @brief Restrict a temporal rigid geometry to the complement of a set of
- * geometries
+ * poses
  * @param[in] temp Temporal rigid geometry
  * @csqlfn #Temporal_minus_values()
- * @param[in] s Set of values
+ * @param[in] s Set of poses
  */
 Temporal *
 trgeometry_minus_values(const Temporal *temp, const Set *s)

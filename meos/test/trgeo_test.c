@@ -35,7 +35,8 @@
  * A trgeometry value carries a leading reference geometry ahead of its
  * temporal (pose) part. This test exercises trgeometry_in() directly on a
  * well-formed value and checks that the result round-trips through
- * trgeometry_out().
+ * trgeometry_out(). It also exercises the restriction of a trgeometry to a
+ * set of base values, whose base values are poses.
  *
  * The program can be built as follows
  * @code
@@ -47,6 +48,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <meos.h>
+#include <meos_geo.h>
+#include <meos_pose.h>
 #include <meos_rgeo.h>
 
 /* Main program */
@@ -102,6 +105,85 @@ int main(void)
     }
     free(trgeo1); free(trgeo1_out);
   }
+
+  /* The base values of a trgeometry are poses, so it is restricted to a set
+   * of poses */
+  static const char *trgeo3_in =
+    "Polygon((0 0,1 0,1 1,0 1,0 0));"
+    "[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02, "
+    "Pose(Point(20 0),0)@2001-01-03]";
+  static const char *at_expected =
+    "POLYGON((0 0,1 0,1 1,0 1,0 0));"
+    "{[Pose(POINT(10 0),0)@2001-01-02 00:00:00+00]}";
+
+  Temporal *trgeo3 = trgeometry_in(trgeo3_in);
+  Set *poseset1 = poseset_in("{\"Pose(Point(10 0),0)\"}");
+  if (! trgeo3 || ! poseset1)
+  {
+    printf("FAILED: could not build the trgeometry and the poseset\n");
+    result = 1;
+  }
+  else
+  {
+    /* Restricting to a pose the value takes keeps the instant at which it
+     * takes it, with the reference geometry back on the result */
+    meos_errno_reset();
+    Temporal *at = trgeometry_at_values(trgeo3, poseset1);
+    if (! at)
+    {
+      printf("FAILED: trgeometry_at_values returned NULL, errno %d\n",
+        meos_errno());
+      result = 1;
+    }
+    else
+    {
+      char *at_out = trgeometry_as_text(at, 6);
+      if (strcmp(at_out, at_expected) != 0)
+      {
+        printf("FAILED: trgeometry_at_values: %s != %s\n", at_out,
+          at_expected);
+        result = 1;
+      }
+      else
+        printf("OK: trgeometry_at_values(trgeometry, poseset): %s\n", at_out);
+      free(at); free(at_out);
+    }
+
+    /* The complement keeps everything else, and the two together give back the
+     * time of the value */
+    meos_errno_reset();
+    Temporal *minus = trgeometry_minus_values(trgeo3, poseset1);
+    if (! minus)
+    {
+      printf("FAILED: trgeometry_minus_values returned NULL, errno %d\n",
+        meos_errno());
+      result = 1;
+    }
+    else
+    {
+      char *minus_out = trgeometry_as_text(minus, 6);
+      printf("OK: trgeometry_minus_values(trgeometry, poseset): %s\n",
+        minus_out);
+      free(minus); free(minus_out);
+    }
+
+    /* A set of another base type is rejected, rather than reaching the
+     * restriction and being rejected there */
+    Set *geomset1 = geomset_in("{\"Point(0 0)\", \"Point(1 1)\"}");
+    meos_errno_reset();
+    Temporal *bad = trgeometry_at_values(trgeo3, geomset1);
+    if (bad || meos_errno() == 0)
+    {
+      printf("FAILED: trgeometry_at_values accepted a geomset\n");
+      result = 1;
+    }
+    else
+      printf("OK: trgeometry_at_values(trgeometry, geomset) rejected, "
+        "errno %d\n", meos_errno());
+    free(bad); free(geomset1);
+    meos_errno_reset();
+  }
+  free(trgeo3); free(poseset1);
 
   /* Finalize MEOS */
   meos_finalize();
