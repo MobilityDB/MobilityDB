@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: raster_sample_fn</title>
+<title>MobilityDB: Raster</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -113,13 +113,13 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__constructor_ga8148a95b3bfb66a65ce6628ba5858c33.html#ga8148a95b3bfb66a65ce6628ba5858c33">raquet_read_bytes</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__conversion_ga9583f4ac71701f0e6cdbebda57e49b68.html#ga9583f4ac71701f0e6cdbebda57e49b68">raquet_to_stbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_gad1d550458722f56daf1b8a64ec557062.html#gad1d550458722f56daf1b8a64ec557062">raquet_width</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos__raster_8h_a26e9c4944333ddf47d33cd090c782e00.html#a26e9c4944333ddf47d33cd090c782e00">Raster</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos__raster_8h_a26e9c4944333ddf47d33cd090c782e00.html#a26e9c4944333ddf47d33cd090c782e00">Raster</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster_gac71dffc1a8a89d59e889e3d5d0e6eb8b.html#gac71dffc1a8a89d59e889e3d5d0e6eb8b">raster_at_value</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster_gaf51244fc65dac809d5dab41025f0990a.html#gaf51244fc65dac809d5dab41025f0990a">raster_at_value_gdal</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster_ga66924998c917345d3b814bcb29d00f63.html#ga66924998c917345d3b814bcb29d00f63">raster_minus_value</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster_ga9efd41ca7120b99502f0e392ce5cce94.html#ga9efd41ca7120b99502f0e392ce5cce94">raster_minus_value_gdal</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_gae78cb7e96c1faeb6c64e3374d186c4af.html#gae78cb7e96c1faeb6c64e3374d186c4af">raster_num_bands</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos__raster_8h_ad1d2107f437db77a74b9e4ae942b1bc6.html#ad1d2107f437db77a74b9e4ae942b1bc6">raster_sample_fn</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos__raster_8h_ad1d2107f437db77a74b9e4ae942b1bc6.html#ad1d2107f437db77a74b9e4ae942b1bc6">raster_sample_fn</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster_ga40c9d67b8d3cda85aba9dbf390f53293.html#ga40c9d67b8d3cda85aba9dbf390f53293">raster_tile_value</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster_ga47799b6d30d305d68a07f44f719a62a2.html#ga47799b6d30d305d68a07f44f719a62a2">raster_tile_value_array</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_ga9d7d1c5f8fca730aacac500c0ba5ad07.html#ga9d7d1c5f8fca730aacac500c0ba5ad07">raster_tile_value_quadbin</a></td></tr>
@@ -130,19 +130,17 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ad1d2107f437db77a74b9e4ae942b1bc6" name="ad1d2107f437db77a74b9e4ae942b1bc6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad1d2107f437db77a74b9e4ae942b1bc6">&#9670;&#160;</a></span>raster_sample_fn</h2>
+<a id="a26e9c4944333ddf47d33cd090c782e00" name="a26e9c4944333ddf47d33cd090c782e00"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a26e9c4944333ddf47d33cd090c782e00">&#9670;&#160;</a></span>Raster</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">typedef bool(* raster_sample_fn) (void *ctx, const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *point, double *value)</td>
+          <td class="memname">typedef struct <a class="el" href="meos__raster_8h_a26e9c4944333ddf47d33cd090c782e00.html#a26e9c4944333ddf47d33cd090c782e00">Raster</a> <a class="el" href="meos__raster_8h_a26e9c4944333ddf47d33cd090c782e00.html#a26e9c4944333ddf47d33cd090c782e00">Raster</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>Callback returning the raster pixel value at a point: return true and set <code>value</code>, or return false when the point lies outside the raster or on a nodata pixel. </p>
 
 </div>
 </div>

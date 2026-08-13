@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: set</title>
+<title>MobilityDB: meos/src/raster/raster_rtcore.c File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,47 +70,34 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="meos_2CMakeLists_8txt.html">CMakeLists.txt</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_0fff62ca9c7e6b49d869dbbeba2dc9ed.html">meos</a></li><li class="navelem"><a class="el" href="dir_0a74bb77045191a48e06cf40aa0b9f46.html">src</a></li><li class="navelem"><a class="el" href="dir_adabb0f6d47e29a63ecfbcfe91d4a89b.html">raster</a></li>  </ul>
 </div>
 </div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#func-members">Functions</a>  </div>
+  <div class="headertitle"><div class="title">raster_rtcore.c File Reference</div></div>
+</div><!--header-->
 <div class="contents">
-<table cellspacing="0" cellpadding="0" border="0">
-  <tr>
-   <td valign="top">
-      <div class="navtab">
-        <table>
-          <tr><td class="navtab"><a class="navtab" href="meos_2CMakeLists_8txt_a58859d93c30e635814dc980ed86e3f84.html#a58859d93c30e635814dc980ed86e3f84">$</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2CMakeLists_8txt_a6f96fe65f3bde4fa88837f9aae8e5d9d.html#a6f96fe65f3bde4fa88837f9aae8e5d9d">endif</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2CMakeLists_8txt_a71ac078c3d5febc13567a505228b8e8b.html#a71ac078c3d5febc13567a505228b8e8b">message</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2CMakeLists_8txt_a50c962d28d1be08c3cf4bcc093e4a883.html#a50c962d28d1be08c3cf4bcc093e4a883">set</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2CMakeLists_8txt_a54ddc37c197e961431b99d0f7c6b170f.html#a54ddc37c197e961431b99d0f7c6b170f">set</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2CMakeLists_8txt_ae21cc36bf0d65014c717a481a3f8a468.html#ae21cc36bf0d65014c717a481a3f8a468">undefined</a></td></tr>
-        </table>
-      </div>
-   </td>
-   <td valign="top" class="mempage">
-<a id="a54ddc37c197e961431b99d0f7c6b170f" name="a54ddc37c197e961431b99d0f7c6b170f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a54ddc37c197e961431b99d0f7c6b170f">&#9670;&#160;</a></span>set() <span class="overload">[2/2]</span></h2>
 
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">$&lt; TARGET_OBJECTS:liblwgeom &gt; set </td>
-          <td>(</td>
-          <td class="paramtype">MEOS_STATIC_OBJECTS ${MEOS_STATIC_OBJECTS} &quot;$&lt;TARGET_OBJECTS:ryu&gt;&quot;&#160;</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-    </td>
-  </tr>
+<p>General functions for the PostGIS raster type, backed by the vendored rt_core library.  
+<a href="#details">More...</a></p>
+<div class="textblock"><code>#include &quot;librtcore.h&quot;</code><br />
+<code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="meos__raster_8h_source.html">meos_raster.h</a>&gt;</code><br />
+<code>#include &quot;temporal/temporal.h&quot;</code><br />
+</div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:gae78cb7e96c1faeb6c64e3374d186c4af"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__raster__base__accessor_gae78cb7e96c1faeb6c64e3374d186c4af.html#gae78cb7e96c1faeb6c64e3374d186c4af">raster_num_bands</a> (const <a class="el" href="meos__raster_8h_a26e9c4944333ddf47d33cd090c782e00.html#a26e9c4944333ddf47d33cd090c782e00">Raster</a> *rast)</td></tr>
+<tr class="memdesc:gae78cb7e96c1faeb6c64e3374d186c4af"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the number of bands of a raster.  <a href="group__meos__raster__base__accessor_gae78cb7e96c1faeb6c64e3374d186c4af.html#gae78cb7e96c1faeb6c64e3374d186c4af">More...</a><br /></td></tr>
+<tr class="separator:gae78cb7e96c1faeb6c64e3374d186c4af"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-</div><!-- contents -->
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p >General functions for the PostGIS raster type, backed by the vendored rt_core library. </p>
+<p >This is the only MEOS source file that includes <code>librtcore.h</code>. A <code>Raster</code> is the serialized on-disk form that PostgreSQL stores for the PostGIS <code>raster</code> type; it is passed through unchanged and deserialized here on demand. </p>
+</div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.5
