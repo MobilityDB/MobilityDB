@@ -200,6 +200,13 @@ box3d_make(double xmin, double xmax, double ymin, double ymax, double zmin,
  * @brief Return the string representation of a PostGIS BOX3D
  * @param[in] box Box
  * @param[in] maxdd Maximum number of decimal digits
+ * @details The format is `BOX3D(xmin ymin zmin,xmax ymax zmax)`, the one
+ * PostGIS gives the @p box3d type it declares, so that a value printed here
+ * is read back by a PostgreSQL session and the other way round. As PostGIS
+ * does, the Z ordinates are always printed and the SRID never is. PostGIS
+ * prints the ordinates with at most #OUT_DEFAULT_DECIMAL_DIGITS decimal
+ * digits, which is thus the value of @p maxdd that reproduces its output
+ * character for character
  */
 char *
 box3d_out(const BOX3D *box, int maxdd)
@@ -209,30 +216,25 @@ box3d_out(const BOX3D *box, int maxdd)
   if (! ensure_not_negative(maxdd))
     return NULL;
 
-  static size_t size = MAX_LEN_BOX3D + 1;
+  /* Six ordinates of at most #OUT_MAX_BYTES_DOUBLE characters each, the
+   * `BOX3D(` prefix, the five separators, the closing parenthesis and the
+   * terminating null all fit in #MAX_LEN_BOX3D + 1 characters */
   char buf[MAX_LEN_BOX3D + 1];
-  char *xmin = NULL, *xmax = NULL, *ymin = NULL, *ymax = NULL, *zmin = NULL,
-    *zmax = NULL;
-
-  char srid[18];
-  if (box->srid > 0)
-    /* SRID_MAXIMUM is defined by PostGIS as 999999 */
-    snprintf(srid, sizeof(srid), "SRID=%d;", box->srid);
-  else
-    srid[0] = '\0';
-
-  xmin = float8_out(box->xmin, maxdd);
-  xmax = float8_out(box->xmax, maxdd);
-  ymin = float8_out(box->ymin, maxdd);
-  ymax = float8_out(box->ymax, maxdd);
-  zmin = float8_out(box->zmin, maxdd);
-  zmax = float8_out(box->zmax, maxdd);
-  snprintf(buf, size, "%sBOX3D((%s,%s,%s),(%s,%s,%s))",
-      srid, xmin, ymin, zmin, xmax, ymax, zmax);
-
-  pfree(xmin); pfree(xmax);
-  pfree(ymin); pfree(ymax);
-  pfree(zmin); pfree(zmax);
+  int len = 6;
+  memcpy(buf, "BOX3D(", 6);
+  len += lwprint_double(box->xmin, maxdd, buf + len);
+  buf[len++] = ' ';
+  len += lwprint_double(box->ymin, maxdd, buf + len);
+  buf[len++] = ' ';
+  len += lwprint_double(box->zmin, maxdd, buf + len);
+  buf[len++] = ',';
+  len += lwprint_double(box->xmax, maxdd, buf + len);
+  buf[len++] = ' ';
+  len += lwprint_double(box->ymax, maxdd, buf + len);
+  buf[len++] = ' ';
+  len += lwprint_double(box->zmax, maxdd, buf + len);
+  buf[len++] = ')';
+  buf[len] = '\0';
   return strdup(buf);
 }
 
@@ -240,8 +242,15 @@ box3d_out(const BOX3D *box, int maxdd)
  * @ingroup meos_geo_base_inout
  * @brief Return a PostGIS BOX3D from its string representation
  * @param[in] str String
- * @details The format is `[SRID=#;]BOX3D((xmin,ymin,zmin),(xmax,ymax,zmax))`,
- * the inverse of #box3d_out
+ * @details The format is `BOX3D(xmin ymin zmin,xmax ymax zmax)`, the inverse
+ * of #box3d_out and the one PostGIS gives the @p box3d type it declares. As
+ * PostGIS does, the Z ordinates may be left out, as in
+ * `BOX3D(xmin ymin,xmax ymax)`, in which case they are zero, and the SRID of
+ * the result is always unknown
+ * @note The format `[SRID=#;]BOX3D((xmin,ymin,zmin),(xmax,ymax,zmax))` written
+ * by previous versions of #box3d_out is still accepted, so that a value stored
+ * by them can still be read. The two formats are told apart by the character
+ * following `BOX3D(`, which is an opening parenthesis in the latter only
  */
 BOX3D *
 box3d_in(const char *str)
@@ -249,6 +258,15 @@ box3d_in(const char *str)
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(str, NULL);
 
+  double xmin, ymin, zmin, xmax, ymax, zmax;
+  /* Format written by PostGIS, with the Z ordinates omitted or not */
+  if (sscanf(str, " BOX3D(%lf %lf %lf ,%lf %lf %lf)",
+      &xmin, &ymin, &zmin, &xmax, &ymax, &zmax) == 6)
+    return box3d_make(xmin, xmax, ymin, ymax, zmin, zmax, SRID_UNKNOWN);
+  if (sscanf(str, " BOX3D(%lf %lf ,%lf %lf)", &xmin, &ymin, &xmax, &ymax) == 4)
+    return box3d_make(xmin, xmax, ymin, ymax, 0.0, 0.0, SRID_UNKNOWN);
+
+  /* Format written by previous versions of #box3d_out */
   int32_t srid = SRID_UNKNOWN;
   const char *ptr = str;
   /* Optional "SRID=#;" prefix */
@@ -264,8 +282,6 @@ box3d_in(const char *str)
     }
     ptr = end + 1;
   }
-
-  double xmin, ymin, zmin, xmax, ymax, zmax;
   if (sscanf(ptr, " BOX3D((%lf,%lf,%lf),(%lf,%lf,%lf))",
       &xmin, &ymin, &zmin, &xmax, &ymax, &zmax) != 6)
   {
