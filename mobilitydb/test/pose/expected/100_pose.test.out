@@ -245,7 +245,7 @@ SELECT pose 'Pose(Point(1 1),0.5)' < pose 'Pose(Point(1 1),0.7)';
 SELECT pose 'Pose(Point(1 1),0.5)' < pose 'Pose(Point(2 2),0.5)';
  ?column? 
 ----------
- f
+ t
 (1 row)
 
 SELECT pose 'Pose(Point(1 1),0.5)' <= pose 'Pose(Point(1 1),0.5)';
@@ -263,7 +263,7 @@ SELECT pose 'Pose(Point(1 1),0.5)' <= pose 'Pose(Point(1 1),0.7)';
 SELECT pose 'Pose(Point(1 1),0.5)' <= pose 'Pose(Point(2 2),0.5)';
  ?column? 
 ----------
- f
+ t
 (1 row)
 
 SELECT pose 'Pose(Point(1 1),0.5)' > pose 'Pose(Point(1 1),0.5)';
@@ -281,7 +281,7 @@ SELECT pose 'Pose(Point(1 1),0.5)' > pose 'Pose(Point(1 1),0.7)';
 SELECT pose 'Pose(Point(1 1),0.5)' > pose 'Pose(Point(2 2),0.5)';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT pose 'Pose(Point(1 1),0.5)' >= pose 'Pose(Point(1 1),0.5)';
@@ -299,7 +299,7 @@ SELECT pose 'Pose(Point(1 1),0.5)' >= pose 'Pose(Point(1 1),0.7)';
 SELECT pose 'Pose(Point(1 1),0.5)' >= pose 'Pose(Point(2 2),0.5)';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT asEWKT(round(transform(transform(pose 'SRID=4326;Pose(Point(8 47 0), 1, 0, 0, 0)', 4978), 4326), 6));

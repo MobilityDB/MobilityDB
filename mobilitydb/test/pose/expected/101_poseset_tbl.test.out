@@ -60,19 +60,19 @@ SELECT MIN(numValues(s)) FROM tbl_poseset2d;
 SELECT round(MIN(rotation(startValue(s))), 6) FROM tbl_poseset2d;
    round   
 -----------
- -0.054275
+ -0.054279
 (1 row)
 
 SELECT round(MIN(rotation(endValue(s))), 6) FROM tbl_poseset2d;
    round   
 -----------
- -0.054279
+ -0.054648
 (1 row)
 
 SELECT round(MIN(rotation(valueN(s, 1))), 6) FROM tbl_poseset2d;
    round   
 -----------
- -0.054275
+ -0.054279
 (1 row)
 
 SELECT MIN(array_length(getValues(s), 1)) FROM tbl_poseset2d;
@@ -100,7 +100,7 @@ SELECT COUNT(*) FROM test2 t1, tbl_poseset2d t2 WHERE t1.k = t2.k AND t1.s <> t2
 SELECT COUNT(*) FROM tbl_poseset2d t1, tbl_poseset2d t2 WHERE cmp(t1.s, t2.s) = -1;
  count 
 -------
-    24
+  4851
 (1 row)
 
 SELECT COUNT(*) FROM tbl_poseset2d t1, tbl_poseset2d t2 WHERE t1.s = t2.s;
@@ -142,7 +142,7 @@ SELECT COUNT(*) FROM tbl_poseset2d t1, tbl_poseset2d t2 WHERE t1.s >= t2.s;
 SELECT MAX(hash(s)) FROM tbl_poseset2d;
     max     
 ------------
- 2141422679
+ 2081505284
 (1 row)
 
 SELECT numValues(setUnion(pose)) FROM tbl_pose2d;
