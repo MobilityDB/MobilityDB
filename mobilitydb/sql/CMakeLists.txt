@@ -13,12 +13,18 @@ configure_file(mobilitydb.in.control ${CMAKE_BINARY_DIR}/mobilitydb.control)
 #
 # and process_file turns the markers into plain SQL comments when the predicate
 # holds, or into a /* ... */ block that comments the body out when it does not.
-# Add a threshold here when a source starts gating on one; thresholds at or
-# below PG_MIN_MAJOR_VERSION are unconditionally satisfied and need no entry.
-set(SQL_VERSION_THRESHOLDS 170000 180000)
-
 macro(process_file f srcdir bindir)
   file(READ ${srcdir}/${f}.in.sql CURR_CONTENTS)
+
+  # The thresholds are the ones the file itself gates on.
+  string(REGEX MATCHALL "#if POSTGRESQL_VERSION_NUMBER [<>=]+ [0-9]+"
+    SQL_VERSION_GATES "${CURR_CONTENTS}")
+  set(SQL_VERSION_THRESHOLDS)
+  foreach(g ${SQL_VERSION_GATES})
+    string(REGEX REPLACE "^.* ([0-9]+)$" "\\1" v "${g}")
+    list(APPEND SQL_VERSION_THRESHOLDS ${v})
+  endforeach()
+  list(REMOVE_DUPLICATES SQL_VERSION_THRESHOLDS)
 
   foreach(v ${SQL_VERSION_THRESHOLDS})
     if(${POSTGRESQL_VERSION_NUMBER} GREATER_EQUAL ${v})
@@ -42,6 +48,16 @@ macro(process_file f srcdir bindir)
     string(REPLACE "#endif //POSTGRESQL_VERSION_NUMBER ${DROP} ${v}"
       "-- endif POSTGRESQL_VERSION_NUMBER ${DROP} ${v} */" CURR_CONTENTS "${CURR_CONTENTS}")
   endforeach()
+
+  # >= and < span every integer comparison, so a marker spelled any other way
+  # is one the loop above left in place, and `#if` is not SQL.
+  string(REGEX MATCH "#(if|endif //)POSTGRESQL_VERSION_NUMBER[^\n]*" LEFTOVER
+    "${CURR_CONTENTS}")
+  if(LEFTOVER)
+    message(FATAL_ERROR
+      "${srcdir}/${f}.in.sql: unhandled version marker '${LEFTOVER}'. "
+      "Gate on '>=' or '<': '> N' is '>= N+1' and '<= N' is '< N+1'.")
+  endif()
 
   file(WRITE ${bindir}/${f}.sql "${CURR_CONTENTS}")
   add_sql_configure_depends(${srcdir}/${f}.in.sql)
