@@ -179,6 +179,21 @@ Temporal *
 tpose_in(const char *str)
 {
   VALIDATE_NOT_NULL(str, NULL);
+  /* A brace opens a GeoPose document and also a sequence set, so unlike a pose
+   * the brace alone does not tell them apart. What follows it does: a JSON
+   * member name is quoted, whereas after the brace the temporal form holds a
+   * sequence or a pose, and a pose reads Pose(...), never quoted.
+   * This rests on the values of this type being unquoted. A type whose values
+   * are text carries a quote after the brace in its temporal form too, so the
+   * test does not carry over to one */
+  if (str[0] == '{')
+  {
+    const char *p = str + 1;
+    while (*p == ' ' || *p == '\t' || *p == '\n' || *p == '\r')
+      p++;
+    if (*p == '"')
+      return tpose_from_geopose(str);
+  }
   return tspatial_parse(&str, T_TPOSE);
 }
 

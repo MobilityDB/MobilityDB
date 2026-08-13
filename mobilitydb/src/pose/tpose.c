@@ -38,6 +38,7 @@
 #include <pgtypes.h>                  /* text_to_cstring / cstring_to_text */
 /* MEOS */
 #include <meos.h>
+#include <meos_pose.h>
 #include "temporal/set.h"
 #include "geo/tspatial_parser.h"
 #include "pose/pose.h"
@@ -78,7 +79,7 @@ Datum
 Tpose_in(PG_FUNCTION_ARGS)
 {
   const char *input = PG_GETARG_CSTRING(0);
-  Temporal *result = tspatial_parse(&input, T_TPOSE);
+  Temporal *result = tpose_in(input);
   PG_RETURN_POINTER(result);
 }
 

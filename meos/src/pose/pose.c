@@ -514,6 +514,11 @@ pose_in(const char *str)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(str, NULL);
+  /* A leading brace marks a GeoPose document: the text form of a pose starts
+   * with POSE or GEODPOSE, so no pose text begins with one. The geometry input
+   * reads GeoJSON the same way */
+  if (str[0] == '{')
+    return pose_from_geopose(str);
   return pose_parse(&str, true);
 }
 

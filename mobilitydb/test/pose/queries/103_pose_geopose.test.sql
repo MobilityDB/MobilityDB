@@ -184,3 +184,23 @@ SELECT asGeoPose(tpose '[Pose(Point(8 47 1500), 1, 0, 0, 0)@2026-01-01, Pose(Poi
 
 -- TSequenceSet -> top-level sequences[].
 SELECT asGeoPose(tpose '{[Pose(Point(8 47), 0)@2026-01-01, Pose(Point(9 48), 0.5)@2026-01-02], [Pose(Point(10 50), 1)@2026-01-04, Pose(Point(11 51), 1.5)@2026-01-05]}', 1, 4);
+
+-------------------------------------------------------------------------------
+-- Reading a GeoPose document as a value of the type
+-------------------------------------------------------------------------------
+
+-- A pose reads a GeoPose document, giving what the explicit conversion gives.
+SELECT pose '{"position":{"lat":1.0,"lon":1.0,"h":1.0},"quaternion":{"x":0.5,"y":0.5,"z":0.5,"w":0.5}}';
+SELECT pose '{"position":{"lat":1.0,"lon":1.0,"h":1.0},"quaternion":{"x":0.5,"y":0.5,"z":0.5,"w":0.5}}' =
+  poseFromGeoPose('{"position":{"lat":1.0,"lon":1.0,"h":1.0},"quaternion":{"x":0.5,"y":0.5,"z":0.5,"w":0.5}}') AS same;
+
+-- The text form of a pose reads as before.
+SELECT pose 'Pose(Point(8 47), 0)';
+
+-- A temporal pose reads a GeoPose document too.
+SELECT asText(tpose (asGeoPose(tpose 'Pose(Point(8 47), 0)@2026-01-01', 0, 6)));
+
+-- A brace opens a sequence set as well, and one still reads as such: neither a
+-- set of instants nor a set of sequences is a GeoPose document.
+SELECT asText(tpose '{Pose(Point(8 47), 0)@2026-01-01, Pose(Point(9 48), 0.5)@2026-01-02}');
+SELECT asText(tpose '{[Pose(Point(8 47), 0)@2026-01-01, Pose(Point(9 48), 0.5)@2026-01-02], [Pose(Point(10 50), 1)@2026-01-04]}');

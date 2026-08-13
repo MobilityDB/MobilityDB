@@ -189,3 +189,40 @@ SELECT asGeoPose(tpose '{[Pose(Point(8 47), 0)@2026-01-01, Pose(Point(9 48), 0.5
  {"type":"TemporalGeoPose","version":"1.0","conformance":"Basic-YPR","interpolation":"Linear","sequences":[{"lower_inc":true,"upper_inc":true,"instants":[{"position":{"lat":47,"lon":8,"h":0},"angles":{"yaw":0,"pitch":0,"roll":0},"validTime":"Thu Jan 01 00:00:00 2026 PST"},{"position":{"lat":48,"lon":9,"h":0},"angles":{"yaw":28.65,"pitch":0,"roll":0},"validTime":"Fri Jan 02 00:00:00 2026 PST"}]},{"lower_inc":true,"upper_inc":true,"instants":[{"position":{"lat":50,"lon":10,"h":0},"angles":{"yaw":57.3,"pitch":0,"roll":0},"validTime":"Sun Jan 04 00:00:00 2026 PST"},{"position":{"lat":51,"lon":11,"h":0},"angles":{"yaw":85.94,"pitch":0,"roll":0},"validTime":"Mon Jan 05 00:00:00 2026 PST"}]}]}
 (1 row)
 
+SELECT pose '{"position":{"lat":1.0,"lon":1.0,"h":1.0},"quaternion":{"x":0.5,"y":0.5,"z":0.5,"w":0.5}}';
+                                               pose                                               
+--------------------------------------------------------------------------------------------------
+ GEODPOSE(01010000A0E6100000000000000000F03F000000000000F03F000000000000F03F, 0.5, 0.5, 0.5, 0.5)
+(1 row)
+
+SELECT pose '{"position":{"lat":1.0,"lon":1.0,"h":1.0},"quaternion":{"x":0.5,"y":0.5,"z":0.5,"w":0.5}}' =
+  poseFromGeoPose('{"position":{"lat":1.0,"lon":1.0,"h":1.0},"quaternion":{"x":0.5,"y":0.5,"z":0.5,"w":0.5}}') AS same;
+ same 
+------
+ t
+(1 row)
+
+SELECT pose 'Pose(Point(8 47), 0)';
+                         pose                         
+------------------------------------------------------
+ POSE (010100000000000000000020400000000000804740, 0)
+(1 row)
+
+SELECT asText(tpose (asGeoPose(tpose 'Pose(Point(8 47), 0)@2026-01-01', 0, 6)));
+                             astext                              
+-----------------------------------------------------------------
+ GeodPose(POINT Z (8 47 0),1,0,0,0)@Thu Jan 01 00:00:00 2026 PST
+(1 row)
+
+SELECT asText(tpose '{Pose(Point(8 47), 0)@2026-01-01, Pose(Point(9 48), 0.5)@2026-01-02}');
+                                                 astext                                                 
+--------------------------------------------------------------------------------------------------------
+ {Pose(POINT(8 47),0)@Thu Jan 01 00:00:00 2026 PST, Pose(POINT(9 48),0.5)@Fri Jan 02 00:00:00 2026 PST}
+(1 row)
+
+SELECT asText(tpose '{[Pose(Point(8 47), 0)@2026-01-01, Pose(Point(9 48), 0.5)@2026-01-02], [Pose(Point(10 50), 1)@2026-01-04]}');
+                                                                            astext                                                                             
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[Pose(POINT(8 47),0)@Thu Jan 01 00:00:00 2026 PST, Pose(POINT(9 48),0.5)@Fri Jan 02 00:00:00 2026 PST], [Pose(POINT(10 50),1)@Sun Jan 04 00:00:00 2026 PST]}
+(1 row)
+
