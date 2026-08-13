@@ -1438,6 +1438,7 @@ tcontseq_to_step(const TSequence *seq)
 int
 tstepseq_to_linear_iter(const TSequence *seq, TSequence **result)
 {
+  assert(temptype_supports_linear(seq->temptype));
   if (seq->count == 1)
   {
     result[0] = tsequence_copy(seq);

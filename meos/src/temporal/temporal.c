@@ -183,10 +183,17 @@ ensure_valid_interp(MeosType temptype, interpType interp)
 }
 
 /**
- * @brief Ensure that the subtype of temporal type is a sequence (set)
+ * @brief Ensure that a temporal value has continuous, that is, step or linear,
+ * interpolation
+ * @details The test excludes temporal instants, which carry no interpolation,
+ * and values with discrete interpolation. Therefore, the value is necessarily
+ * a temporal sequence (set) whose interpolation is either step or linear.
+ * @note This tests the interpolation of the value. Whether the temporal type
+ * is able to carry linear interpolation is a distinct question, tested by
+ * #ensure_valid_interp()
  */
 bool
-ensure_continuous(const Temporal *temp)
+ensure_continuous_interp(const Temporal *temp)
 {
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype != TINSTANT && ! MEOS_FLAGS_DISCRETE_INTERP(temp->flags))
@@ -244,6 +251,11 @@ ensure_linear_interp(int16 flags)
 
 /**
  * @brief Ensure that a temporal value does not have linear interpolation
+ * @details This is a precondition of the calling operation, which enumerates
+ * the discrete values of the temporal value and thus cannot account for the
+ * values taken between two consecutive instants. It does not state that the
+ * temporal type is unable to carry linear interpolation, which is tested by
+ * #ensure_valid_interp()
  */
 bool
 ensure_nonlinear_interp(int16 flags)
@@ -251,7 +263,7 @@ ensure_nonlinear_interp(int16 flags)
   if (! MEOS_FLAGS_LINEAR_INTERP(flags))
     return true;
   meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-    "The temporal value cannot have linear interpolation");
+    "Operation not supported for temporal values with linear interpolation");
   return false;
 }
 
@@ -2431,7 +2443,7 @@ temporal_num_sequences(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, -1);
-  if (! ensure_continuous(temp))
+  if (! ensure_continuous_interp(temp))
     return -1;
   return (temp->subtype == TSEQUENCE) ? 1 : ((TSequenceSet *) temp)->count;
 }
@@ -2449,7 +2461,7 @@ temporal_start_sequence(const Temporal *temp)
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL);
   /* Ensure the validity of the arguments */
-  if (! ensure_continuous(temp))
+  if (! ensure_continuous_interp(temp))
     return NULL;
 
   if (temp->subtype == TSEQUENCE)
@@ -2473,7 +2485,7 @@ temporal_end_sequence(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL);
-  if (! ensure_continuous(temp))
+  if (! ensure_continuous_interp(temp))
     return NULL;
 
   if (temp->subtype == TSEQUENCE)
@@ -2498,7 +2510,7 @@ temporal_sequence_n(const Temporal *temp, int n)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL);
-  if (! ensure_continuous(temp))
+  if (! ensure_continuous_interp(temp))
     return NULL;
 
   if (temp->subtype == TSEQUENCE)
@@ -2529,7 +2541,7 @@ temporal_sequences_p(const Temporal *temp, int *count)
 {
   /* Ensure the validity of the arguments */
   assert(temp); assert(count);
-  if (! ensure_continuous(temp))
+  if (! ensure_continuous_interp(temp))
     return NULL;
 
   if (temp->subtype == TSEQUENCE)

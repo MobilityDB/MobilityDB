@@ -397,7 +397,7 @@ extern bool ensure_not_null(void *ptr);
 extern bool ensure_one_not_null(void *ptr1, void *ptr2);
 extern bool ensure_one_true(bool hasshift, bool haswidth);
 extern bool ensure_valid_interp(MeosType temptype, interpType interp);
-extern bool ensure_continuous(const Temporal *temp);
+extern bool ensure_continuous_interp(const Temporal *temp);
 extern bool ensure_same_interp(const Temporal *temp1, const Temporal *temp2);
 extern bool ensure_same_continuous_interp(int16 flags1, int16 flags2);
 extern bool ensure_linear_interp(int16 flags);
