@@ -336,20 +336,11 @@ trgeo_parse(const char **str, MeosType temptype)
   /* Determine the subtype of the temporal rigid geometry and call the
    * function corresponding to the subtype passing the SRID */
   if (**str != '{' && **str != '[' && **str != '(')
-  {
-    TInstant *inst = trgeoinst_parse(str, temptype, true, &temp_srid, geom);
-    if (! inst)
-      return NULL;
-    result = (Temporal *) inst;
-  }
+    result = (Temporal *) trgeoinst_parse(str, temptype, true, &temp_srid,
+      geom);
   else if (**str == '[' || **str == '(')
-  {
-    TSequence *seq = trgeoseq_cont_parse(str, temptype, interp, true,
+    result = (Temporal *) trgeoseq_cont_parse(str, temptype, interp, true,
       &temp_srid, geom);
-    if (! seq)
-      return NULL;
-    result = (Temporal *) seq;
-  }
   else if (**str == '{')
   {
     bak = *str;
@@ -368,6 +359,9 @@ trgeo_parse(const char **str, MeosType temptype)
         geom);
     }
   }
+  /* The reference geometry is copied into the result */
+  if (geom)
+    pfree(geom);
   return result;
 }
 
