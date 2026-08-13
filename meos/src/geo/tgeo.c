@@ -50,7 +50,7 @@
  * @brief Return a temporal point instant from a point and a timestamptz
  * @param[in] gs Value
  * @param[in] t Timestamp
- * @csqlfn #Tinstant_constructor()
+ * @csqlfn #Tpointinst_constructor()
  */
 TInstant *
 tpointinst_make(const GSERIALIZED *gs, TimestampTz t)
@@ -70,7 +70,7 @@ tpointinst_make(const GSERIALIZED *gs, TimestampTz t)
  * @brief Return a temporal instant geo from a geometry and a timestamptz
  * @param[in] gs Value
  * @param[in] t Timestamp
- * @csqlfn #Tinstant_constructor()
+ * @csqlfn #Tgeoinst_constructor()
  */
 TInstant *
 tgeoinst_make(const GSERIALIZED *gs, TimestampTz t)

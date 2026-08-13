@@ -519,7 +519,7 @@ PG_FUNCTION_INFO_V1(Span_lower_inc);
 /**
  * @ingroup mobilitydb_setspan_accessor
  * @brief Return true if the lower bound of a span is inclusive
- * @sqlfn lower_inc()
+ * @sqlfn lowerInc()
  */
 Datum
 Span_lower_inc(PG_FUNCTION_ARGS)
