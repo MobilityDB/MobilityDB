@@ -172,8 +172,8 @@ extern Temporal *trgeometry_at_geom(const Temporal *temp, const GSERIALIZED *gs)
 extern Temporal *trgeometry_minus_geom(const Temporal *temp, const GSERIALIZED *gs);
 extern Temporal *trgeometry_at_stbox(const Temporal *temp, const STBox *box, bool border_inc);
 extern Temporal *trgeometry_minus_stbox(const Temporal *temp, const STBox *box, bool border_inc);
-extern Temporal *trgeometry_at_value(const Temporal *temp, const GSERIALIZED *gs);
-extern Temporal *trgeometry_minus_value(const Temporal *temp, const GSERIALIZED *gs);
+extern Temporal *trgeometry_at_value(const Temporal *temp, const Pose *pose);
+extern Temporal *trgeometry_minus_value(const Temporal *temp, const Pose *pose);
 extern Temporal *trgeometry_at_values(const Temporal *temp, const Set *s);
 extern Temporal *trgeometry_minus_values(const Temporal *temp, const Set *s);
 extern Temporal *trgeometry_at_timestamptz(const Temporal *temp, TimestampTz t);
