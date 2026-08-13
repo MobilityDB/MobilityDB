@@ -135,7 +135,8 @@ tintbox_value_time_tiles(const TBox *box, int vsize, const Interval *duration,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(box, NULL); VALIDATE_NOT_NULL(count, NULL);
-  if (! ensure_one_tile_dimension((double) vsize, duration))
+  if (! ensure_not_negative_datum(Int32GetDatum(vsize), T_INT4) ||
+      ! ensure_one_tile_dimension((double) vsize, duration))
     return NULL;
   return tbox_value_time_tiles(box, Int32GetDatum(vsize), duration,
     Int32GetDatum(vorigin), torigin, count);
@@ -158,7 +159,8 @@ tfloatbox_value_time_tiles(const TBox *box, double vsize,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(box, NULL); VALIDATE_NOT_NULL(count, NULL);
-  if (! ensure_one_tile_dimension(vsize, duration))
+  if (! ensure_not_negative_datum(Float8GetDatum(vsize), T_FLOAT8) ||
+      ! ensure_one_tile_dimension(vsize, duration))
     return NULL;
   return tbox_value_time_tiles(box, Float8GetDatum(vsize), duration,
     Float8GetDatum(vorigin), torigin, count);
