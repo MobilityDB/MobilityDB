@@ -173,6 +173,45 @@ jobs:
           sudo -u postgres psql -p ${PGPORT} -v ON_ERROR_STOP=1 -d ___mobdb___btgist2___ \
             -c "CREATE EXTENSION mobilitydb CASCADE;" -c "CREATE EXTENSION btree_gist;"
 
+      - name: Check the btree_gist distance types the lint assumes
+        # tools/scripts/check_btree_gist_operators.py carries the list of types
+        # btree_gist defines <-> on, so that it can reject a colliding operator
+        # without a server. Read the list back from the installed extension: a
+        # btree_gist that gains a type is reported here, rather than turning a
+        # previously safe MobilityDB operator into a silent clash.
+        run: |
+          sudo -u postgres psql -p ${PGPORT} -X -A -t -d ___mobdb___btgist1___ \
+            -c "SELECT DISTINCT format_type(o.oprleft, NULL)
+                FROM pg_operator o
+                JOIN pg_depend d ON d.objid = o.oid AND d.deptype = 'e'
+                JOIN pg_extension e ON e.oid = d.refobjid
+                WHERE o.oprname = '<->' AND e.extname = 'btree_gist'
+                ORDER BY 1;" > /tmp/btree_gist_types.actual
+          python3 - <<'PY'
+          import re, sys
+          src = open('tools/scripts/check_btree_gist_operators.py').read()
+          block = re.search(r'BTREE_GIST_DISTANCE_TYPES = \{(.*?)\}', src, re.S).group(1)
+          expected = set(re.findall(r"'([^']+)'", block))
+          alias = {'bigint': 'int8', 'double precision': 'float8', 'integer': 'int4',
+                   'real': 'float4', 'smallint': 'int2',
+                   'time without time zone': 'time',
+                   'timestamp with time zone': 'timestamptz',
+                   'timestamp without time zone': 'timestamp'}
+          actual = set()
+          for line in open('/tmp/btree_gist_types.actual'):
+              name = line.strip()
+              if name:
+                  actual.add(alias.get(name, name))
+          if actual != expected:
+              print('btree_gist <-> types differ from the lint list')
+              print('  only in btree_gist: %s' % sorted(actual - expected))
+              print('  only in the lint:   %s' % sorted(expected - actual))
+              print('Update BTREE_GIST_DISTANCE_TYPES in')
+              print('tools/scripts/check_btree_gist_operators.py to match.')
+              sys.exit(1)
+          print('btree_gist <-> types match the lint list (%d types)' % len(actual))
+          PY
+
       - name: Test
         run: |
           cd build
