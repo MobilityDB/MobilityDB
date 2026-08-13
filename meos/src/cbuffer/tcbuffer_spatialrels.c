@@ -113,9 +113,29 @@ spatialrel_geo_geo_simple(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
 }
 
 /**
+ * @brief Set the quantifier each argument of a spatial relationship carries
+ * over the members of a collection
+ * @details A geometry covers or contains a collection only when it covers or
+ * contains every one of its members, and two geometries are disjoint only
+ * when every pair of their members is disjoint. The remaining relationships
+ * are satisfied by a single member
+ * @param[in] func Spatial relationship function
+ * @param[out] all1,all2 True when the corresponding argument of the
+ * relationship is universally quantified
+ */
+static void
+spatialrel_quantifiers(varfunc func, bool *all1, bool *all2)
+{
+  *all1 = (func == (varfunc) (&datum_geom_disjoint2d));
+  *all2 = *all1 || func == (varfunc) (&datum_geom_covers) ||
+    func == (varfunc) (&datum_geom_contains);
+}
+
+/**
  * @brief Return 1 if two geometries satisfy a spatial relationship
  * @details The function iterates for every member of a collection if one or
- * the two geometries are collections
+ * the two geometries are collections, with the quantifier that the
+ * relationship carries over each of its arguments
  * @param[in] gs1,gs2 Geometry
  * @param[in] param Parameter
  * @param[in] func PostGIS function to be called
@@ -131,19 +151,32 @@ spatialrel_geo_geo(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   int count1, count2;
   GSERIALIZED **elems1 = geo_extract_elements(gs1, &count1);
   GSERIALIZED **elems2 = geo_extract_elements(gs2, &count2);
+  /* The quantifiers apply to the arguments of the relationship, which are the
+   * two geometries in the order they are passed to it */
+  bool allarg1, allarg2;
+  spatialrel_quantifiers(func, &allarg1, &allarg2);
+  bool all1 = invert ? allarg2 : allarg1;
+  bool all2 = invert ? allarg1 : allarg2;
   /* Perform the iterations for the elements in the collections if any */
-  int result = 0;
+  int result = all1 ? 1 : 0;
   for (int i = 0; i < count1; i++)
   {
+    int res = all2 ? 1 : 0;
     for (int j = 0; j < count2; j++)
     {
-      result = spatialrel_geo_geo_simple(elems1[i], elems2[j], param, func,
+      int res1 = spatialrel_geo_geo_simple(elems1[i], elems2[j], param, func,
         numparam, invert);
-      if (result)
+      if (all2 ? ! res1 : res1)
+      {
+        res = res1;
         break;
+      }
     }
-    if (result)
+    if (all1 ? ! res : res)
+    {
+      result = res;
       break;
+    }
   }
   /* Clean up and return */
   pfree_array((void *) elems1, count1);

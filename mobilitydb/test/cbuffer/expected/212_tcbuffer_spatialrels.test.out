@@ -124,6 +124,18 @@ SELECT eContains(tcbuffer '[Cbuffer(Point(1 1),1)@2000-01-01, Cbuffer(Point(2 2)
  t
 (1 row)
 
+SELECT aContains(tcbuffer '[Cbuffer(Point(-5 0),1)@2000-01-01, Cbuffer(Point(5 0),1)@2000-01-02]', geometry 'MultiPoint(0 0,0.5 0.5)');
+ acontains 
+-----------
+ t
+(1 row)
+
+SELECT aContains(tcbuffer '[Cbuffer(Point(-5 0),1)@2000-01-01, Cbuffer(Point(5 0),1)@2000-01-02]', geometry 'MultiPoint(0 0,100 100)');
+ acontains 
+-----------
+ f
+(1 row)
+
 /* Errors */
 SELECT eContains(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', geometry 'SRID=3812;Point(1 1)');
 ERROR:  Operation on mixed SRID
@@ -203,6 +215,36 @@ SELECT aCovers(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))
  acovers 
 ---------
  t
+(1 row)
+
+SELECT eCovers(tcbuffer '[Cbuffer(Point(-5 0),1)@2000-01-01, Cbuffer(Point(5 0),1)@2000-01-02]', geometry 'MultiPoint(0 0,0.5 0.5)');
+ ecovers 
+---------
+ t
+(1 row)
+
+SELECT eCovers(tcbuffer '[Cbuffer(Point(-5 0),1)@2000-01-01, Cbuffer(Point(5 0),1)@2000-01-02]', geometry 'MultiPoint(0 0,100 100)');
+ ecovers 
+---------
+ f
+(1 row)
+
+SELECT eCovers(tcbuffer '[Cbuffer(Point(-5 0),1)@2000-01-01, Cbuffer(Point(5 0),1)@2000-01-02]', geometry 'MultiLinestring((-1 0,1 0),(100 100,101 101))');
+ ecovers 
+---------
+ f
+(1 row)
+
+SELECT eCovers(tcbuffer '[Cbuffer(Point(-5 0),1)@2000-01-01, Cbuffer(Point(5 0),1)@2000-01-02]', geometry 'GeometryCollection(Point(0 0),Linestring(100 100,101 101))');
+ ecovers 
+---------
+ f
+(1 row)
+
+SELECT aCovers(tcbuffer '[Cbuffer(Point(-5 0),1)@2000-01-01, Cbuffer(Point(5 0),1)@2000-01-02]', geometry 'MultiPoint(0 0,100 100)');
+ acovers 
+---------
+ f
 (1 row)
 
 /* Errors */

@@ -66,6 +66,12 @@ SELECT eContains(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0
 SELECT eContains(tcbuffer 'Cbuffer(Point(1 1),1)@2000-01-01', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
 SELECT eContains(tcbuffer '[Cbuffer(Point(1 1),1)@2000-01-01, Cbuffer(Point(2 2),1)@2000-01-02]', tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02]');
 
+-- A multipart geometry is contained only when every one of its parts is. The
+-- disc of radius 1 sweeps the strip between (-5 0) and (5 0), which contains
+-- the parts near the origin and none of the far ones
+SELECT aContains(tcbuffer '[Cbuffer(Point(-5 0),1)@2000-01-01, Cbuffer(Point(5 0),1)@2000-01-02]', geometry 'MultiPoint(0 0,0.5 0.5)');
+SELECT aContains(tcbuffer '[Cbuffer(Point(-5 0),1)@2000-01-01, Cbuffer(Point(5 0),1)@2000-01-02]', geometry 'MultiPoint(0 0,100 100)');
+
 /* Errors */
 SELECT eContains(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', geometry 'SRID=3812;Point(1 1)');
 
@@ -92,6 +98,15 @@ SELECT eCovers(tcbuffer '[Cbuffer(Point(1 1),1)@2000-01-01, Cbuffer(Point(2 2),1
 SELECT eCovers(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tcbuffer 'Cbuffer(Point(4.5 0),0.5)@2000-01-01');
 SELECT eCovers(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tcbuffer '[Cbuffer(Point(0 0),0.5)@2000-01-01, Cbuffer(Point(8 0),0.5)@2000-01-03]');
 SELECT aCovers(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tcbuffer '[Cbuffer(Point(0 0),0.5)@2000-01-01, Cbuffer(Point(3 0),0.5)@2000-01-03]');
+
+-- A multipart geometry is covered only when every one of its parts is. The
+-- disc of radius 1 sweeps the strip between (-5 0) and (5 0), which covers the
+-- parts near the origin and none of the far ones
+SELECT eCovers(tcbuffer '[Cbuffer(Point(-5 0),1)@2000-01-01, Cbuffer(Point(5 0),1)@2000-01-02]', geometry 'MultiPoint(0 0,0.5 0.5)');
+SELECT eCovers(tcbuffer '[Cbuffer(Point(-5 0),1)@2000-01-01, Cbuffer(Point(5 0),1)@2000-01-02]', geometry 'MultiPoint(0 0,100 100)');
+SELECT eCovers(tcbuffer '[Cbuffer(Point(-5 0),1)@2000-01-01, Cbuffer(Point(5 0),1)@2000-01-02]', geometry 'MultiLinestring((-1 0,1 0),(100 100,101 101))');
+SELECT eCovers(tcbuffer '[Cbuffer(Point(-5 0),1)@2000-01-01, Cbuffer(Point(5 0),1)@2000-01-02]', geometry 'GeometryCollection(Point(0 0),Linestring(100 100,101 101))');
+SELECT aCovers(tcbuffer '[Cbuffer(Point(-5 0),1)@2000-01-01, Cbuffer(Point(5 0),1)@2000-01-02]', geometry 'MultiPoint(0 0,100 100)');
 
 /* Errors */
 SELECT eCovers(tcbuffer 'Cbuffer(Point(1 1),1)@2000-01-01', geometry 'SRID=3812;Point(1 1)');
