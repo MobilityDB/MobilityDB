@@ -710,6 +710,31 @@ SELECT asText(valueAtTimestamp(tpose
 -- Pose(POINT Z (2 2 2),0.866025,0.288675,0.288675,0.288675)
 </programlisting>
 			</listitem>
+
+			<listitem xml:id="tpose_speed">
+				<indexterm significance="normal"><primary><varname>speed</varname></primary></indexterm>
+				<para>Devuelve la velocidad de una pose temporal como un flotante temporal: la magnitud de la velocidad de la componente de posición (distancia recorrida por unidad de tiempo). La orientación no es considerada; para la velocidad angular véase <varname>angularSpeed</varname>.</para>
+				<para><varname>speed(tpose) → tfloat</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(speed(tpose '[Pose(Point(0 0), 0)@2000-01-01,
+  Pose(Point(1 1), 0.5)@2000-01-02]'));
+-- Interp=Step;[1.6368e-5@2000-01-01, 1.6368e-5@2000-01-02]
+-- (sqrt(2) units / 86400 seconds, units depend on the SRID's CRS)
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="tpose_angular_speed">
+				<indexterm significance="normal"><primary><varname>angularSpeed</varname></primary></indexterm>
+				<para>Devuelve la velocidad angular de una pose temporal como un flotante temporal con interpolación por pasos (radianes por unidad de tiempo). Para las poses 2D es el delta theta del arco más corto por segmento dividido por la duración del segmento; para las poses 3D es el ángulo de arco de SLERP <varname>2 · acos(|q1 · q2|)</varname> dividido por la duración del segmento. SLERP tiene por construcción velocidad angular constante a lo largo de un segmento, por lo que el resultado es constante a trozos.</para>
+				<para><varname>angularSpeed(tpose) → tfloat</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- 90-degree yaw rotation over one day -> pi/2 rad / 86400 s
+SELECT asText(angularSpeed(tpose
+  '[Pose(Point(0 0 0), 1, 0, 0, 0)@2000-01-01,
+    Pose(Point(0 0 0), 0.7071067811865476, 0, 0, 0.7071067811865475)@2000-01-02]'));
+-- Interp=Step;[1.8181e-5@2000-01-01, 1.8181e-5@2000-01-02]
+</programlisting>
+			</listitem>
 		</itemizedlist>
 	</sect1>
 
@@ -1373,35 +1398,6 @@ SELECT asGeoPose(tpose '[Pose(Point(8 47), 0)@2026-01-01,
 			</itemizedlist>
 		</sect2>
 
-		<sect2 xml:id="pose_geopose_speed">
-			<title>Velocidad y velocidad angular</title>
-			<itemizedlist>
-				<listitem xml:id="tpose_speed">
-					<indexterm significance="normal"><primary><varname>speed</varname></primary></indexterm>
-					<para>Devuelve la velocidad de una pose temporal como un flotante temporal: la magnitud de la velocidad de la componente de posición (distancia recorrida por unidad de tiempo). La orientación no es considerada; para la velocidad angular véase <varname>angularSpeed</varname>.</para>
-					<para><varname>speed(tpose) → tfloat</varname></para>
-					<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(speed(tpose '[Pose(Point(0 0), 0)@2000-01-01,
-  Pose(Point(1 1), 0.5)@2000-01-02]'));
--- Interp=Step;[1.6368e-5@2000-01-01, 1.6368e-5@2000-01-02]
--- (sqrt(2) units / 86400 seconds, units depend on the SRID's CRS)
-</programlisting>
-				</listitem>
-
-				<listitem xml:id="tpose_angular_speed">
-					<indexterm significance="normal"><primary><varname>angularSpeed</varname></primary></indexterm>
-					<para>Devuelve la velocidad angular de una pose temporal como un flotante temporal con interpolación por pasos (radianes por unidad de tiempo). Para las poses 2D es el delta theta del arco más corto por segmento dividido por la duración del segmento; para las poses 3D es el ángulo de arco de SLERP <varname>2 · acos(|q1 · q2|)</varname> dividido por la duración del segmento. SLERP tiene por construcción velocidad angular constante a lo largo de un segmento, por lo que el resultado es constante a trozos.</para>
-					<para><varname>angularSpeed(tpose) → tfloat</varname></para>
-					<programlisting language="sql" xml:space="preserve" format="linespecific">
--- 90-degree yaw rotation over one day -> pi/2 rad / 86400 s
-SELECT asText(angularSpeed(tpose
-  '[Pose(Point(0 0 0), 1, 0, 0, 0)@2000-01-01,
-    Pose(Point(0 0 0), 0.7071067811865476, 0, 0, 0.7071067811865475)@2000-01-02]'));
--- Interp=Step;[1.8181e-5@2000-01-01, 1.8181e-5@2000-01-02]
-</programlisting>
-				</listitem>
-			</itemizedlist>
-		</sect2>
 	</sect1>
 
 </chapter>
