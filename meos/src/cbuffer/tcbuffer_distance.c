@@ -1862,11 +1862,11 @@ tcbufferseg_distance_lb(Datum start1, Datum end1, Datum start2, Datum end2)
   const POINT2D *e2 = cbuffer_point2d_p(ce2);
   double r1 = fmax(cs1->radius, ce1->radius);
   double r2 = fmax(cs2->radius, ce2->radius);
-  double dx = fmax(fmax(fmin(s1->x, e1->x) - fmax(s2->x, e2->x),
-    fmin(s2->x, e2->x) - fmax(s1->x, e1->x)), 0.0);
-  double dy = fmax(fmax(fmin(s1->y, e1->y) - fmax(s2->y, e2->y),
-    fmin(s2->y, e2->y) - fmax(s1->y, e1->y)), 0.0);
-  return sqrt(dx * dx + dy * dy) - r1 - r2;
+  return sqrt(box2d_distance_sqr(
+    fmin(s1->x, e1->x), fmin(s1->y, e1->y),
+    fmax(s1->x, e1->x), fmax(s1->y, e1->y),
+    fmin(s2->x, e2->x), fmin(s2->y, e2->y),
+    fmax(s2->x, e2->x), fmax(s2->y, e2->y))) - r1 - r2;
 }
 
 /**
