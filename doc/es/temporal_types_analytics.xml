@@ -527,9 +527,9 @@ SELECT splitEachNStboxes(tgeogpoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01
 		<figure xml:id="tiling" float="start">
 			<title>Mosaicos multidimensionales para números flotantes temporales.</title>
 			<mediaobject>
-				<imageobject role="html"><imagedata format="SVG" fileref='../images/tiling.svg'/></imageobject>
-				<imageobject role="dblatex"><imagedata scale='75' format="PDF" fileref='../images/tiling.pdf'/></imageobject>
-				<imageobject role="dbtoepub"><imagedata scale='75' format="PDF" fileref='../images/tiling.pdf'/></imageobject>
+				<imageobject><imagedata format="PDF" scale='75' fileref='../images/tiling.pdf'/></imageobject>
+				<imageobject><imagedata format="SVG" scale='75' fileref='../images/tiling.svg'/></imageobject>
+				<imageobject><imagedata format="PNG" scale='75' fileref='../images/tiling.png'/></imageobject>
 			</mediaobject>
 		</figure>
 

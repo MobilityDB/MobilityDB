@@ -43,7 +43,17 @@ jobs:
         run: |
           cd doc
           dblatex -s texstyle.sty -o es/mobilitydb-manual.pdf es/mobilitydb-manual.xml
-          dbtoepub -o es/mobilitydb-manual.epub es/mobilitydb-manual.xml
+          # The Spanish chapters reach the figures as ../images, which an .epub
+          # container has no way to express, so the packager drops every figure.
+          # Build the .epub from a tree where the figures sit beside the
+          # chapters, as they do for English.
+          rm -rf epub-es
+          mkdir epub-es
+          cp es/*.xml epub-es/
+          cp -r images epub-es/images
+          sed -i 's|\.\./images/|images/|g' epub-es/*.xml
+          dbtoepub -o es/mobilitydb-manual.epub epub-es/mobilitydb-manual.xml
+          rm -rf epub-es
           xsltproc --stringparam html.stylesheet "docbook.css" --stringparam chunker.output.encoding "UTF-8" --xinclude -o es/index.html /usr/share/xml/docbook/stylesheet/docbook-xsl/html/chunk.xsl es/mobilitydb-manual.xml
           cp docbook.css es/
 
