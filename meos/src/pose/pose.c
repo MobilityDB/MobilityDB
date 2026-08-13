@@ -1796,14 +1796,16 @@ distance_pose_pose(const Pose *pose1, const Pose *pose2)
 
 /**
  * @ingroup meos_internal_pose_dist
- * @brief Return the distance between two circular buffers
+ * @brief Return the distance between two poses
  * @param[in] pose1,pose2 Poses
  * @note The function assumes that all validity tests have been previously done
  */
 Datum
 datum_pose_distance(Datum pose1, Datum pose2)
 {
-  return Float8GetDatum(pose_distance(pose1, pose2));
+  /* #pose_distance yields the distance already encoded as a Datum, so the
+   * value is passed on rather than encoded a second time */
+  return pose_distance(pose1, pose2);
 }
 
 /*****************************************************************************/
