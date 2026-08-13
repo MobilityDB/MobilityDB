@@ -16,7 +16,7 @@ WITH periods(ps) AS (
   SELECT tstzspanset '{[2001-01-02, 2001-01-06]}' )
 SELECT extent(ps) FROM periods;
 -- [2001-01-01, 2001-01-06]
-</pre></li><li class="listitem"><a name="setspan_union_agg"></a><a class="indexterm" name="id2983"></a><a class="indexterm" name="id2986"></a><p>Aggregate union</p><p><code class="varname">setUnion({value,set}) → set</code></p><p><code class="varname">spanUnion(spans) → spanset</code></p><p><code class="varname">spansetUnion(spansets) → spanset</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="setspan_union_agg"></a><a class="indexterm" name="id2983"></a><a class="indexterm" name="id2986"></a><a class="indexterm" name="id2989"></a><p>Aggregate union</p><p><code class="varname">setUnion({value,set}) → set</code></p><p><code class="varname">spanUnion(spans) → spanset</code></p><p><code class="varname">spansetUnion(spansets) → spanset</code></p><pre class="programlisting">
 WITH times(ts) AS (
   SELECT tstzset '{2001-01-01, 2001-01-03, 2001-01-05}' UNION
   SELECT tstzset '{2001-01-02, 2001-01-04, 2001-01-06}' UNION
@@ -29,7 +29,7 @@ WITH periods(ps) AS (
   SELECT tstzspanset '{[2001-01-07, 2001-01-08]}' )
 SELECT spansetUnion(ps) FROM periods;
 -- {[2001-01-01, 2001-01-04], [2001-01-05, 2001-01-06], [2001-01-07, 2001-01-08]}
-</pre></li><li class="listitem"><a name="setspan_tCount"></a><a class="indexterm" name="id2998"></a><p>Temporal count</p><p><code class="varname">tCount(times) → {tintSeq,tintSeqSet}</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="setspan_tCount"></a><a class="indexterm" name="id3001"></a><p>Temporal count</p><p><code class="varname">tCount(times) → {tintSeq,tintSeqSet}</code></p><pre class="programlisting">
 WITH times(ts) AS (
   SELECT tstzset '{2001-01-01, 2001-01-03, 2001-01-05}' UNION
   SELECT tstzset '{2001-01-02, 2001-01-04, 2001-01-06}' UNION
