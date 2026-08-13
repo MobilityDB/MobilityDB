@@ -17,7 +17,6 @@
 
 	<para>Como con otros tipos temporales, <varname>tquadbin</varname> tiene cuatro subtipos: <varname>Instant</varname>, secuencia discreta, secuencia continua con interpolación de pasos (las celdas QUADBIN son discretas — la interpolación lineal carece de sentido), y <varname>SequenceSet</varname>.</para>
 
-	<para>La guía operativa sobre cuándo elegir <varname>tquadbin</varname> en lugar de <varname>tgeompoint</varname> o <varname>tgeogpoint</varname>; los peligros específicos de QUADBIN que los consumidores deben anticipar (el orden int64 es arbitrario respecto a la geometría de la cuadrícula, la mezcla de resoluciones en las operaciones, el límite de latitud de web-mercator, y el comportamiento en el antimeridiano); y las convenciones de durabilidad y almacenamiento se recogen en <xref linkend="quadbin_operational_notes"/>.</para>
 
 	<sect1 xml:id="tquadbin_inout">
 		<title>Entrada y Salida</title>
@@ -367,7 +366,6 @@ SELECT round(quadbinCellArea(quadbin '48427fffffffffff')::numeric, 0);
 
 	<sect1 xml:id="tquadbin_comparisons">
 		<title>Comparaciones</title>
-		<para>Los operadores de comparación de árbol B (<varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&lt;=</varname>, <varname>&gt;</varname>, <varname>&gt;=</varname>) y el operador hash están definidos sobre <varname>tquadbin</varname> a través de la maquinaria genérica de comparación temporal, ordenando por la secuencia de valores temporal subyacente. Soportan las clases de operadores <varname>tquadbin_btree_ops</varname> y <varname>tquadbin_hash_ops</varname> usadas por GROUP BY, DISTINCT, ORDER BY, y las uniones por mezcla / hash. Como con <varname>tbigint</varname>, el orden int64 de los identificadores QUADBIN no tiene significado geográfico — véase <xref linkend="quadbin_operational_notes"/>.</para>
 	</sect1>
 
 	<sect1 xml:id="tquadbin_aggregations">
@@ -430,48 +428,4 @@ CREATE INDEX ON trips USING hash(cells);        -- usa tquadbin_hash_ops por def
 		</itemizedlist>
 	</sect1>
 
-	<sect1 xml:id="quadbin_operational_notes">
-		<title>Notas operativas</title>
-		<para>Esta sección recoge el conocimiento operativo que los consumidores necesitan además de la referencia de funciones: cuándo <varname>tquadbin</varname> es el tipo adecuado, las convenciones que asume la implementación, y los peligros específicos de QUADBIN que las cargas de trabajo reales deben tener en cuenta. La cuadrícula cuadrada jerárquica QUADBIN tiene algunas propiedades no obvias que la codificación bit a bit en <varname>int64</varname> oculta; esta sección las expone para que no sorprendan a los consumidores.</para>
-
-		<sect2 xml:id="quadbin_when_to_use">
-			<title>Cuándo usar tquadbin</title>
-			<para>Use <varname>tquadbin</varname> cuando el identificador natural de una ubicación discreta a una resolución dada sea una tesela QUADBIN &#x2014; viajes de vehículos agrupados a un nivel de zoom fijo, lecturas de sensores agrupadas por tesela, o eventos asociados a su celda contenedora, especialmente en flujos de trabajo que ya hablan el esquema de teselado slippy-map / web-mercator. El tipo almacena una celda QUADBIN por instante; la resolución puede variar entre instantes de una misma trayectoria pero la mayoría de las cargas de trabajo fijan una resolución por columna.</para>
-			<para>Elija <varname>tgeompoint</varname> / <varname>tgeogpoint</varname> en lugar de <varname>tquadbin</varname> cuando la posición geográfica real (precisión sub-celda) sea el valor de interés. Elija <varname>tbigint</varname> en lugar de <varname>tquadbin</varname> cuando los valores resulten ser enteros de 64 bits pero no lleven semántica QUADBIN &#x2014; las representaciones binarias son idénticas (se convierten sin pérdidas vía <varname>tquadbin :: tbigint</varname> y de vuelta) pero el sistema de tipos SQL usa la distinción para rechazar funciones agnósticas a QUADBIN sobre trayectorias específicas de QUADBIN.</para>
-		</sect2>
-
-		<sect2 xml:id="quadbin_hazards">
-			<title>Peligros específicos de QUADBIN</title>
-			<para>Algunos peligros muerden de forma fiable a las cargas de trabajo que usan celdas QUADBIN. Cada uno es una propiedad de la propia cuadrícula QUADBIN y no una decisión de implementación de MobilityDB; las mitigaciones siguientes explican cómo trabajar con ellos.</para>
-			<itemizedlist>
-				<listitem>
-					<para><emphasis>El orden int64 es arbitrario respecto a la geometría de la cuadrícula</emphasis>. Los identificadores de celda QUADBIN son enteros de 64 bits cuyo patrón de bits codifica una etiqueta de cabecera, la resolución y las coordenadas de tesela. El orden bit a bit de dos celdas no tiene significado de proximidad espacial &#x2014; dos celdas adyacentes en bits pueden estar lejos, y dos celdas espacialmente adyacentes pueden tener patrones de bits diferentes.</para>
-					<para><emphasis>Mitigación</emphasis>: <varname>tquadbin</varname> deliberadamente no tiene tipos complementarios <varname>quadbinspan</varname> / <varname>quadbinspanset</varname> (precedente: <varname>geometry</varname> no tiene <varname>geometryspan</varname>). El filtrado por rango de valores debe pasar por las funciones de inspección <varname>quadbin_*</varname> (resolución, validez, jerarquía) o por la enumeración explícita de conjuntos vía <varname>quadbinset</varname>. El código que asume que <varname>cell_a &lt; cell_b</varname> refleja proximidad espacial producirá resultados erróneos silenciosamente.</para>
-				</listitem>
-				<listitem>
-					<para><emphasis>Mezcla de resoluciones en las operaciones</emphasis>. Las celdas QUADBIN a distintas resoluciones (0&#x2013;26) representan áreas de cobertura diferentes. Mezclar resoluciones en una misma trayectoria es válido pero semánticamente requiere una justificación explícita &#x2014; <varname>quadbinCellToParent(cell, res_mas_gruesa)</varname> engruesa y <varname>quadbinCellToChildren(parent, res_mas_fina)</varname> refina.</para>
-					<para><emphasis>Mitigación</emphasis>: los consumidores deben documentar la invariante de resolución por trayectoria (por ejemplo, "todas las celdas son de resolución 10") y validar las entradas en el límite de ingesta. El accesor <varname>quadbinGetResolution</varname> permite que una restricción CHECK lo imponga.</para>
-				</listitem>
-				<listitem>
-					<para><emphasis>Límite de latitud de web-mercator</emphasis>. QUADBIN hereda la proyección web-mercator, que está definida únicamente entre aproximadamente &#xb1;85,05&#xb0; de latitud. Los puntos fuera de esta banda no tienen celda QUADBIN, y el área de la celda se reduce hacia los polos &#x2014; <varname>quadbinCellArea</varname> devuelve valores progresivamente menores a latitudes más altas para celdas de la misma resolución.</para>
-					<para><emphasis>Mitigación</emphasis>: las cargas de trabajo cercanas a los polos deben recortar o rechazar las latitudes fuera de la banda web-mercator en el límite de ingesta; no confíe en las celdas QUADBIN para la cobertura polar.</para>
-				</listitem>
-				<listitem>
-					<para><emphasis>Comportamiento en el antimeridiano</emphasis>. Las columnas de tesela se envuelven en el antimeridiano (&#xb1;180&#xb0; de longitud). Una trayectoria que cruza el antimeridiano se mueve entre celdas cuyas coordenadas de tesela <varname>x</varname> difieren en el ancho completo de la cuadrícula a ese zoom, aunque sean espacialmente adyacentes.</para>
-					<para><emphasis>Mitigación</emphasis>: las cargas de trabajo que cruzan el antimeridiano deben validar celdas representativas contra la implementación de referencia de QUADBIN y añadir fixtures para los casos límite específicos que la carga de trabajo encuentre.</para>
-				</listitem>
-			</itemizedlist>
-		</sect2>
-
-		<sect2 xml:id="quadbin_durability">
-			<title>Durabilidad y almacenamiento</title>
-			<para>La representación en disco de <varname>tquadbin</varname> es idéntica byte a byte a la de <varname>tbigint</varname> (cada instante lleva un ID de celda QUADBIN de 64 bits más una marca de tiempo). Consecuencias para la planificación del almacenamiento:</para>
-			<itemizedlist>
-				<listitem><para><emphasis>WKT</emphasis> vía <varname>tquadbin_in</varname> y la función de salida temporal. Las celdas se representan como cadenas hexadecimales canónicas (por ejemplo, <varname>'480fffffffffffff'</varname>), que es también la forma aceptada en la entrada. El ciclo de ida y vuelta es estable a nivel de bits.</para></listitem>
-				<listitem><para><emphasis>WKB / EWKB / HexWKB</emphasis> vía el patrón estándar de PostGIS de bandera de endianness seguida de la carga útil. Estable entre versiones mayores de PostgreSQL.</para></listitem>
-				<listitem><para><emphasis>pg_dump</emphasis> usa WKT en modo plano y WKB bajo <varname>--binary-upgrade</varname>; ambos completan el ciclo de ida y vuelta limpiamente.</para></listitem>
-				<listitem><para><emphasis>Conversión cruzada con <varname>tbigint</varname></emphasis>: las conversiones bidireccionales <varname>tquadbin :: tbigint</varname> son reinterpretaciones bit a bit sin coste. Úselas cuando trabaje con vistas seguras por tipo (<varname>tquadbin</varname>) y aptas para aritmética (<varname>tbigint</varname>) de la misma trayectoria en una sola consulta.</para></listitem>
-			</itemizedlist>
-		</sect2>
-	</sect1>
 </chapter>
