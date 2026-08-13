@@ -1008,6 +1008,25 @@ ea_disjoint_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 
   /* EVER */
 
+  /* A temporal geo whose bounding box does not overlap that of the geometry
+   * never meets it, so it is ever disjoint with it. Answering that from the
+   * boxes keeps the pairs the boxes separate off the paths below, which is
+   * what a join over a geometry column pays on most of its pairs, and is the
+   * prefilter #ea_dwithin_tgeo_geo carries before its own native path.
+   * Restricted to planar 2D operands on both sides: this relationship is 2D
+   * for a temporal point, which resolves it through a 2D covers, whereas the
+   * box comparison runs on every dimension the two boxes share and would
+   * answer on a Z separation the relationship ignores. */
+  if (! MEOS_FLAGS_GET_GEODETIC(temp->flags) &&
+      ! MEOS_FLAGS_GET_Z(temp->flags) && ! FLAGS_GET_Z(gs->gflags))
+  {
+    STBox box_temp, box_geom;
+    tspatial_set_stbox(temp, &box_temp);
+    geo_set_stbox(gs, &box_geom);
+    if (! overlaps_stbox_stbox(&box_geom, &box_temp))
+      return 1;
+  }
+
   /* Temporal point case: "ever disjoint" reduces to "not always covered". */
   if (tpoint_type(temp->temptype))
   {
@@ -1189,6 +1208,52 @@ ea_intersects_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
     return INVERT_RESULT(ea_disjoint_tgeo_geo(temp, gs, EVER));
 
   /* EVER */
+
+  /* A temporal geo whose bounding box does not overlap that of the geometry
+   * never meets it. Answering that from the boxes keeps the pairs the boxes
+   * separate off the paths below, which is what a join over a geometry column
+   * pays on most of its pairs, and is the prefilter #ea_dwithin_tgeo_geo
+   * carries before its own native path. Restricted to planar 2D operands on
+   * both sides, as the box comparison runs on every dimension the two boxes
+   * share while the relationship below resolves a 3D pair in 3D. */
+  if (! MEOS_FLAGS_GET_GEODETIC(temp->flags) &&
+      ! MEOS_FLAGS_GET_Z(temp->flags) && ! FLAGS_GET_Z(gs->gflags))
+  {
+    STBox box_temp, box_geom;
+    tspatial_set_stbox(temp, &box_temp);
+    geo_set_stbox(gs, &box_geom);
+    if (! overlaps_stbox_stbox(&box_geom, &box_temp))
+      return 0;
+  }
+
+  /* Native fast path for a temporal geometry point with linear interpolation
+   * against a 2D geometry the clip engine supports. The path below builds the
+   * trajectory of the whole temporal point and hands that geometry to GEOS,
+   * which costs more than the clip engine spends on the temporal Boolean this
+   * projects: the same #tpoint_linear_inter_geom serves #tinterrel_tgeo_geo,
+   * so the projection agrees with the temporal result by construction.
+   * Reducing to the nearest approach instead, as #ea_dwithin_tgeo_geo does for
+   * a strictly positive distance, measures slower here: that reduction earns
+   * its keep from an early exit at the first instant within the distance, and
+   * #nad_tgeo_geo resolves the exact minimum, so at a zero distance it walks
+   * every segment the clip engine walks once. A geometry with a Z dimension
+   * keeps the path below, whose relationship is the 3D one. */
+  if (temp->temptype == T_TGEOMPOINT && temp->subtype != TINSTANT &&
+      MEOS_FLAGS_GET_INTERP(temp->flags) == LINEAR &&
+      ! FLAGS_GET_Z(gs->gflags))
+  {
+    LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
+    bool supported = geom_clip_supported(lwgeom);
+    lwgeom_free(lwgeom);
+    if (supported)
+    {
+      Temporal *inter = tpoint_linear_inter_geom(temp, gs, false);
+      int result = ever_eq_temporal_base(inter, BoolGetDatum(true));
+      pfree(inter);
+      return result;
+    }
+  }
+
   datum_func2 func = geo_intersects_fn_geo(temp->flags, gs->gflags);
   return spatialrel_tgeo_geo(temp, gs, (Datum) NULL, (varfunc) func, 2,
     INVERT_NO, EVER);

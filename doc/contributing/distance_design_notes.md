@@ -132,6 +132,24 @@ uses. Computing them by materialising the full temporal Boolean and projecting
 The running reduction answers the same question and stops as soon as it is
 decided.
 
+**The reduction earns its keep from the early exit, so it needs a threshold to
+exit on.** `eDwithin(d)` has one in `d` and reduces to the nearest approach
+profitably. `eIntersects` has the threshold `0`, but the nearest approach is
+computed exactly, and an exact minimum cannot stop at the first zero — it walks
+every segment to prove no smaller value exists. So `nad ≤ 0` is not the early
+exit the table describes; it is the same full walk wearing a threshold.
+
+The scan that stops at the first crossing is the target shape and no primitive
+implements it for this pair. Until one does, the ever intersects of a temporal
+point resolves through the clip engine and projects, which is the expensive
+form this section warns about and is still the cheapest available: measured on
+the tcbuffer join, the projection runs at 1.16× of the trajectory path it
+replaces and `aDisjoint`, which derives from it, at 2.01×, while the `nad`
+reduction runs at 0.95× and 1.70×. Neither number licenses the projection as
+the design: they measure two ways of walking every segment against each other.
+A scan that stops at the first crossing beats both, and remains the shape this
+relationship wants.
+
 **`disjoint` is the complement of `intersects` with the quantifier swapped:**
 `eDisjoint = ¬aIntersects`, `aDisjoint = ¬eIntersects`,
 `tDisjoint = ¬tIntersects`. A `disjoint` path that does not reduce to a negated
@@ -178,10 +196,31 @@ unknown, which here means no shared instant.
 | --- | --- | --- |
 | fixed-threshold `dwithin(d)`, `intersects` | yes | box distance > `d` ⟹ every point pair is farther than `d` |
 | ordering key for a pair loop | yes | the box distance is a valid lower bound to sort on |
-| `disjoint` prefilter | **no** | a box miss would prove disjointness and prune true rows |
+| `disjoint` as an index condition | **no** | a box miss proves disjointness, so `&&` prunes exactly the true rows |
+| `disjoint` as an early answer inside the function | **yes** | the same box miss that makes it unusable as a prefilter answers the relationship outright |
 | exact `nad`, `minDistance`, `\|=\|` — whole-pair box | **no** | no external threshold exists; the nearest pair can sit just outside the box |
 | exact `nad` — per-segment lower bound vs the running min | **yes** (planar) | the running minimum is a live threshold; a segment whose centre-box-minus-radius lower bound ≥ the running min cannot lower it |
 | `touches` prefilter via exact `nad` | **yes** | contact needs the gap `= 0` exactly; a strictly positive `nad` proves disjoint, so the pair can neither ever nor always touch |
+
+The two `disjoint` rows are the same fact read in opposite directions, and the
+direction is what decides soundness. A box miss proves that the values never
+meet. Fed to an index as `col && stbox(arg)`, that turns into a filter which
+keeps only the pairs whose boxes overlap and therefore drops every pair the
+miss has just proved disjoint — the rows the query wants. Read inside the
+relationship instead, the same miss is a complete answer: ever disjoint is
+true, ever intersects is false, and neither needs the trajectory the paths
+below would build. So the box belongs in the ever intersects and ever disjoint
+branches as an early answer, and never in their `SUPPORT` clause.
+
+A box test compares every dimension the two boxes share, so it answers in the
+dimensionality of the operands rather than of the relationship. That matters
+wherever the two differ: the ever disjoint of a temporal point resolves through
+a 2D covers, so a 3D pair separated in Z alone is *not* disjoint, while their
+boxes do not overlap. An early answer taken from `overlaps_stbox_stbox` would
+contradict the relationship there. Either restrict the early answer to planar
+2D operands, or take the box miss in 2D — the `gserialized_get_gbox_p` plus
+`gbox_overlaps_2d` reject that `geom_spatialrel` and `geo_covers2d` apply — but
+never clear the Z flag by hand.
 
 Soundness of the threshold prune depends on the box enclosing the whole value.
 For `tcbuffer` this holds because the box is **radius-aware** — the extent is
