@@ -522,4 +522,21 @@ WHERE stbox(tile) && stbox 'SRID=4326;STBOX X((0,0),(30,30))';
 
 DROP TABLE test_raquet_tiles;
 
+-------------------------------------------------------------------------------
+-- numBands
+-------------------------------------------------------------------------------
+
+-- A single-band raster reports 1 band; adding a second band reports 2.
+WITH rast1 AS (
+  SELECT ST_AddBand(
+    ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, 0.0::float8, NULL::float8
+  ) AS r
+), rast2 AS (
+  SELECT ST_AddBand(r, '32BF'::text, 0.0::float8, NULL::float8) AS r
+  FROM rast1
+)
+SELECT numBands((SELECT r FROM rast1)) AS num_bands_one,
+       numBands((SELECT r FROM rast2)) AS num_bands_two;
+
 /*****************************************************************************/

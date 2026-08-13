@@ -105,6 +105,14 @@ extern uint8_t *raquet_pixels(const Raquet *rq, size_t *size_out);
 extern uint32 raquet_hash(const Raquet *rq);
 extern uint64 raquet_hash_extended(const Raquet *rq, uint64 seed);
 
+/* Opaque structure to represent a PostGIS raster */
+
+typedef struct Raster Raster;
+
+/* Accessor functions for PostGIS rasters */
+
+extern int raster_num_bands(const Raster *rast);
+
 /* Conversion functions for Raquet tiles */
 
 extern STBox *raquet_to_stbox(const Raquet *rq);

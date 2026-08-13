@@ -299,6 +299,21 @@ CREATE OR REPLACE FUNCTION aRasterValue(traj tgeompoint, rast raster,
   LANGUAGE C STRICT;
 
 /******************************************************************************
+ * numBands
+ *****************************************************************************/
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the number of bands of a raster
+ * @param[in] rast Raster
+ * @csqlfn #numBands()
+ */
+CREATE FUNCTION numBands(raster)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Raster_num_bands'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************
  * Accessors for raquet tiles
  *****************************************************************************/
 

@@ -354,6 +354,27 @@ Araster_value(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
+ * raster_num_bands
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Raster_num_bands(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_num_bands);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the number of bands of a raster
+ * @param[in] rast Raster
+ * @sqlfn numBands()
+ */
+Datum
+Raster_num_bands(PG_FUNCTION_ARGS)
+{
+  Datum rast_datum = PG_GETARG_DATUM(0);
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(rast_datum);
+  int result = raster_num_bands(rast);
+  PG_RETURN_INT32(result);
+}
+
+/*****************************************************************************
  * raster_tile_value_quadbin
  *****************************************************************************/
 
