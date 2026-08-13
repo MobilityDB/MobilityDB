@@ -87,8 +87,6 @@ cmake --build build -j
 sudo cmake --install build      # installs into $PostgreSQL_ROOT/share/extension/
 ```
 
-**Critical gotcha**: SQL aggregation (the `.in.sql` → installed `.sql` step) runs at *configure* time, not build time. Touching a `.in.sql` file alone is insufficient — you must re-run `cmake .` (or `cmake -B build`) to re-aggregate before `make install`.
-
 ### 2.2 The implementation order
 
 The runbook sections build on each other and must be done in order. Each step has a `psql` check that confirms it works before moving to the next.
@@ -112,7 +110,7 @@ The runbook sections build on each other and must be done in order. Each step ha
 After every change, the inner loop is:
 
 ```sh
-cmake -B build -DFOO=ON     # only if you changed CMake or .in.sql files
+cmake -B build -DFOO=ON     # only to change a cmake option
 cmake --build build -j       # rebuild C
 sudo cmake --install build   # install into PG's extension dir
 ctest --test-dir build -R foo --output-on-failure   # run just the foo tests
@@ -138,7 +136,7 @@ These are the errors that cost time the first time you hit them. None of them me
 
 | Error | What it actually means | Fix |
 |---|---|---|
-| `ERROR: type "foo" does not exist` at `CREATE EXTENSION mobilitydb` | The type is registered in `meos_catalog.c` but the SQL `CREATE TYPE foo` didn't make it into the installed `.sql` file. | Re-run `cmake .` to re-aggregate `.in.sql`, then `make install`. |
+| `ERROR: type "foo" does not exist` at `CREATE EXTENSION mobilitydb` | The type is registered in `meos_catalog.c` but the SQL `CREATE TYPE foo` didn't make it into the installed `.sql` file — usually because the new `.in.sql` was never added to its module's `LOCAL_FILES`. | Add it to `LOCAL_FILES`, then `make install`. |
 | `ERROR: function tfoo_to_stbox(tfoo) does not exist` | Same root cause as above, just for a function. | Same fix. |
 | Segfault inside `Temporal_in` / `Temporal_out` for the new type | You forgot to extend one of the bbox dispatch functions in `temporal_boxops.c` (`temporal_bbox_eq`, `tinstant_set_bbox`, etc.). | Grep for `T_TGEOMETRY` in `temporal_boxops.c`; every place it appears, add a parallel `T_TFOO` branch. |
 | GiST index never picked by the planner | Cross-type operators missing from the operator family. The planner only considers the index if the WHERE clause's operator is in the family. | Verify with `\dAo+ tfoo_gist_ops`; add the missing `OPERATOR N` lines to the SQL. |
@@ -176,7 +174,7 @@ Squash + merge. Then **trim aggressively**: drop `doc/`, `.github/`, `tools/`, `
 - Gate behind a CMake option `-DFOO=ON`. Off by default while in-flight; on by default once production-ready.
 - `meos/src/foo/CMakeLists.txt` builds an OBJECT library; link it from the parent.
 - `mobilitydb/src/foo/CMakeLists.txt` ditto for the PG wrappers.
-- Add `mobilitydb/sql/foo/{NN0_*}.in.sql` files; wire into `mobilitydb/sql/foo/CMakeLists.txt::LOCAL_FILES`. **Note**: SQL aggregation runs at *configure* time, not build time — `cmake .` must be re-run after editing `.in.sql`.
+- Add `mobilitydb/sql/foo/{NN0_*}.in.sql` files; wire into `mobilitydb/sql/foo/CMakeLists.txt::LOCAL_FILES`. Pick the `NN0_` prefixes from a range not used by another module: the numeric prefix is what orders the concatenated extension script, so types must sort before the operators over them.
 
 ### 3.2 Static base type `foo`
 
