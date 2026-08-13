@@ -100,6 +100,15 @@ Macros</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:a2dd5371f18dcd778cb3f8b449888a935"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="h3index_8h_a2dd5371f18dcd778cb3f8b449888a935.html#a2dd5371f18dcd778cb3f8b449888a935">ensure_h3index_cell</a> (H3Index cell)</td></tr>
+<tr class="memdesc:a2dd5371f18dcd778cb3f8b449888a935"><td class="mdescLeft">&#160;</td><td class="mdescRight">Ensure that an h3index is a valid H3 cell.  <a href="h3index_8h_a2dd5371f18dcd778cb3f8b449888a935.html#a2dd5371f18dcd778cb3f8b449888a935">More...</a><br /></td></tr>
+<tr class="separator:a2dd5371f18dcd778cb3f8b449888a935"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2a3ff97d37f1b74efb88a457441f4c47"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="h3index_8h_a2a3ff97d37f1b74efb88a457441f4c47.html#a2a3ff97d37f1b74efb88a457441f4c47">ensure_h3index_directed_edge</a> (H3Index edge)</td></tr>
+<tr class="memdesc:a2a3ff97d37f1b74efb88a457441f4c47"><td class="mdescLeft">&#160;</td><td class="mdescRight">Ensure that an h3index is a valid H3 directed edge.  <a href="h3index_8h_a2a3ff97d37f1b74efb88a457441f4c47.html#a2a3ff97d37f1b74efb88a457441f4c47">More...</a><br /></td></tr>
+<tr class="separator:a2a3ff97d37f1b74efb88a457441f4c47"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3f97b9f1d3f5dc4ce61c8325a751ddbc"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="h3index_8h_a3f97b9f1d3f5dc4ce61c8325a751ddbc.html#a3f97b9f1d3f5dc4ce61c8325a751ddbc">ensure_h3index_vertex</a> (H3Index vertex)</td></tr>
+<tr class="memdesc:a3f97b9f1d3f5dc4ce61c8325a751ddbc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Ensure that an h3index is a valid H3 vertex.  <a href="h3index_8h_a3f97b9f1d3f5dc4ce61c8325a751ddbc.html#a3f97b9f1d3f5dc4ce61c8325a751ddbc">More...</a><br /></td></tr>
+<tr class="separator:a3f97b9f1d3f5dc4ce61c8325a751ddbc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a313376640301d935e0e72e2b1a638add"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="h3index_8h_a313376640301d935e0e72e2b1a638add.html#a313376640301d935e0e72e2b1a638add">meos_h3index_cmp</a> (H3Index a, H3Index b)</td></tr>
 <tr class="separator:a313376640301d935e0e72e2b1a638add"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3d939c771734162b88c0021065176fc1"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="h3index_8h_a3d939c771734162b88c0021065176fc1.html#a3d939c771734162b88c0021065176fc1">meos_h3index_eq</a> (H3Index a, H3Index b)</td></tr>
@@ -125,7 +134,7 @@ Functions</h2></td></tr>
 <div class="textblock"><p >Internal helpers for the static <code>h3index</code> SQL type. </p>
 <p >The static h3index type is the analogue of the static <code>cbuffer</code> type — it provides the base value that the temporal <code>th3index</code> type carries through time. Unlike <code>cbuffer</code>, h3index has no compound payload (it is a 64-bit integer cell identifier), so the helpers here are minimal:</p>
 <ul>
-<li>an input parser that reads the canonical hexadecimal cell literal, with an optional "0x" prefix and at most 16 significant digits,</li>
+<li>an input parser that reads the canonical hexadecimal cell literal, with an optional "0x" prefix and at most 16 significant digits, and that requires the value to denote a cell, a directed edge or a vertex,</li>
 <li>an output formatter (canonical form is hex, matching h3-pg),</li>
 <li>comparison / ordering / hashing helpers — exposed at the MEOS layer so MobilityDuck and other consumers can reuse them without re-implementing the int64 bit-compare logic. </li>
 </ul>

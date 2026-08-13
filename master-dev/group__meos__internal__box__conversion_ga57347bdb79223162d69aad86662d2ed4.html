@@ -150,7 +150,9 @@ $(function() {
   </table>
   </dd>
 </dl>
-<dl class="section note"><dt>Note</dt><dd>Mirrors <code>cbuffer_set_stbox</code> / <code>quadbin_set_stbox</code>; the helper the central <code>spatial_set_stbox</code> dispatch calls for an h3index value. </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>Mirrors <code>cbuffer_set_stbox</code> / <code>quadbin_set_stbox</code>; the helper the central <code>spatial_set_stbox</code> dispatch calls for an h3index value. </dd>
+<dd>
+This helper does not require its argument to be a cell, unlike the conversions below. It is the bounding-box hook for every h3index-valued set and temporal value, and those legitimately carry directed edges and vertices: <code>h3_origin_to_directed_edges</code> and <code>h3_cell_to_vertexes</code> both return sets whose elements are not cells. Bounding such a value still reaches <code>cellToBoundary</code>, which is the wrong primitive for those two modes and yields a box that does not describe the value — a defect that predates the per-mode validators and needs a mode-aware box, not a rejection here, since rejecting would break both operations outright. </dd></dl>
 
 </div>
 </div>
