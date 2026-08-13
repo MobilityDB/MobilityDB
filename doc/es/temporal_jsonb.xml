@@ -584,7 +584,7 @@ SELECT tjsonbSeq(ARRAY[tjsonb
 			<listitem xml:id="tjsonbSeqSet">
 				<indexterm significance="normal"><primary><varname>tjsonbSeqSet</varname></primary></indexterm>
 				<para>Constructor de valores JSONB temporales del subtipo conjunto de secuencias</para>
-				<para><varname>tjsonbSeqset(tjsonb[]) → tjsonbSeqSet</varname></para>
+				<para><varname>tjsonbSeqSet(tjsonb[]) → tjsonbSeqSet</varname></para>
 				<para><varname>tjsonbSeqSetGaps(tjsonbInst[],maxt=NULL,maxdist=NULL) → tjsonbSeqSet</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonbSeqSet(ARRAY[tjsonb

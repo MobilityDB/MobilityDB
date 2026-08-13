@@ -852,7 +852,7 @@ SELECT tempBasetype(tgeompoint 'Point(1 1)@2001-01-01');
 			</listitem>
 
 			<listitem xml:id="ttype_interp">
-				<indexterm significance="normal"><primary><varname>interpolation</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>interp</varname></primary></indexterm>
 				<para>Return the interpolation</para>
 				<para><varname>interp(ttype) → {'None','Discrete','Step','Linear'}</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
