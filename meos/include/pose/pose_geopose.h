@@ -45,9 +45,15 @@
  *****************************************************************************/
 
 /**
- * @brief OGC GeoPose conformance classes implemented for the JSON I/O.
- * @details The Advanced class (frame stacks, covariance) is not implemented
- * in this version.
+ * @brief Orientation encodings of an OGC GeoPose Basic document.
+ * @details The two Basic conformance classes differ only in how they carry
+ * the orientation, so one value chooses between them. It is orthogonal to
+ * the target conformance class, which follows from the value being written:
+ * a pose and a single temporal instant are Basic documents, a temporal
+ * sequence is a Composite Sequence Series. A Series carries a quaternion in
+ * every inner frame and offers no such choice.
+ *
+ * The Advanced, Chain, Graph and Stream classes are not implemented.
  */
 typedef enum
 {

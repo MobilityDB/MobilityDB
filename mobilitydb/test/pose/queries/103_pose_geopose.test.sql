@@ -169,21 +169,30 @@ SELECT asGeoPose(pose 'SRID=5676;Pose(Point(1 1),0.5)', 0, 6);
 -- valid OGC GeoPose document; the envelope adds the temporal framing.
 -------------------------------------------------------------------------------
 
--- TInstant tpose -> envelope with interpolation "None" and a single instants[].
+-- TInstant tpose -> a Basic document carrying its validTime.
 SELECT asGeoPose(tpose 'Pose(Point(8 47), 0)@2026-01-01', 0, 6);
 -- Round-trip preserves subtype.
 SELECT asText(tposeFromGeoPose(asGeoPose(tpose 'Pose(Point(8 47), 0)@2026-01-01', 0, 6)));
 
--- 2D linear-interp TSequence -> envelope with instants[].
-SELECT asGeoPose(tpose '[Pose(Point(8 47), 0)@2026-01-01, Pose(Point(9 48), 0.5)@2026-01-02]', 0, 6);
--- Round-trip preserves the underlying pose values to 6 digits.
-SELECT asText(tposeFromGeoPose(asGeoPose(tpose '[Pose(Point(8 47), 0)@2026-01-01, Pose(Point(9 48), 0.5)@2026-01-02]', 0, 6)));
+-- 2D linear-interp TSequence -> a Series. Its inner frames hold a rotation
+-- against the outer frame, so a 2D pose comes back three-dimensional.
+SELECT asGeoPose(tpose '[Pose(Point(0 0), 0)@2026-01-01, Pose(Point(0 0), 0.5)@2026-01-02]', 0, 6);
+-- Round-trip preserves the underlying pose values.
+SELECT asText(round(tposeFromGeoPose(asGeoPose(tpose '[Pose(Point(0 0), 0)@2026-01-01, Pose(Point(0 1), 0)@2026-01-02]', 0, 15)), 6));
 
--- Basic-YPR output of a 3D yaw-only TSequence.
-SELECT asGeoPose(tpose '[Pose(Point(8 47 1500), 1, 0, 0, 0)@2026-01-01, Pose(Point(8 47 1500), 0.7071067811865476, 0, 0, 0.7071067811865475)@2026-01-02]', 1, 6);
+-- A 3D yaw-only TSequence. A Series carries a quaternion whichever
+-- orientation encoding is asked for.
+SELECT asGeoPose(tpose '[Pose(Point(0 0 0), 1, 0, 0, 0)@2026-01-01, Pose(Point(0 0 0), 0.707107, 0, 0, 0.707107)@2026-01-02]', 1, 6);
 
--- TSequenceSet -> top-level sequences[].
-SELECT asGeoPose(tpose '{[Pose(Point(8 47), 0)@2026-01-01, Pose(Point(9 48), 0.5)@2026-01-02], [Pose(Point(10 50), 1)@2026-01-04, Pose(Point(11 51), 1.5)@2026-01-05]}', 1, 4);
+-- TSequenceSet -> one flattened Series.
+SELECT asGeoPose(tpose '{[Pose(Point(0 0 0), 0.5, 0.5, 0.5, 0.5)@2026-01-01, Pose(Point(0 0 100), 0.5, 0.5, 0.5, 0.5)@2026-01-02], [Pose(Point(0 0 300), 0.5, 0.5, 0.5, 0.5)@2026-01-04, Pose(Point(0 0 600), 0.5, 0.5, 0.5, 0.5)@2026-01-05]}', 1, 4);
+
+-- A Series spends its digits on metres from the tangent point rather than on
+-- degrees, so the precision it is written at bounds how well a position far
+-- from that point survives: fifteen digits carry a degree of latitude back
+-- exactly, six do not.
+SELECT tposeFromGeoPose(asGeoPose(tpose '[Pose(Point(0 0), 0)@2026-01-01, Pose(Point(0 1), 0)@2026-01-02]', 0, 15)) =
+  tposeFromGeoPose(asGeoPose(tpose '[Pose(Point(0 0), 0)@2026-01-01, Pose(Point(0 1), 0)@2026-01-02]', 0, 6)) AS same;
 
 -------------------------------------------------------------------------------
 -- Reading a GeoPose document as a value of the type
@@ -204,3 +213,280 @@ SELECT asText(tpose (asGeoPose(tpose 'Pose(Point(8 47), 0)@2026-01-01', 0, 6)));
 -- set of instants nor a set of sequences is a GeoPose document.
 SELECT asText(tpose '{Pose(Point(8 47), 0)@2026-01-01, Pose(Point(9 48), 0.5)@2026-01-02}');
 SELECT asText(tpose '{[Pose(Point(8 47), 0)@2026-01-01, Pose(Point(9 48), 0.5)@2026-01-02], [Pose(Point(10 50), 1)@2026-01-04]}');
+
+-------------------------------------------------------------------------------
+-- Geographic SRIDs accepted at the GeoPose boundary
+--
+-- A Basic document carries no CRS member: the conformance class fixes the
+-- outer frame. EPSG:4326 and EPSG:4979 name the same WGS-84 geographic frame
+-- and share a proj4 definition, so both are accepted and both give the same
+-- bytes.
+-------------------------------------------------------------------------------
+
+SELECT asGeoPose(pose 'SRID=4979;Pose(Point(8 47 1500), 1, 0, 0, 0)', 0, 6);
+
+SELECT asGeoPose(pose 'SRID=4979;Pose(Point(8 47 1500), 1, 0, 0, 0)', 0, 6) =
+  asGeoPose(pose 'SRID=4326;Pose(Point(8 47 1500), 1, 0, 0, 0)', 0, 6) AS same;
+
+SELECT poseFromGeoPose(asGeoPose(
+  pose 'SRID=4979;Pose(Point(8 47 1500), 1, 0, 0, 0)', 0, 15)) =
+  poseFromGeoPose(asGeoPose(
+  pose 'SRID=4326;Pose(Point(8 47 1500), 1, 0, 0, 0)', 0, 15)) AS same;
+
+SELECT asGeoPose(tpose 'SRID=4979;[Pose(Point(0 0 0), 0.5, 0.5, 0.5, 0.5)@2026-01-01,
+  Pose(Point(0 0 100), 0.5, 0.5, 0.5, 0.5)@2026-01-02]', 0, 6) =
+  asGeoPose(tpose 'SRID=4326;[Pose(Point(0 0 0), 0.5, 0.5, 0.5, 0.5)@2026-01-01,
+  Pose(Point(0 0 100), 0.5, 0.5, 0.5, 0.5)@2026-01-02]', 0, 6) AS same;
+
+/* Errors */
+
+-- A projected SRID is not a GeoPose outer frame.
+SELECT asGeoPose(pose 'SRID=5676;Pose(Point(1 1),0.5)', 0, 6);
+SELECT asGeoPose(tpose 'SRID=5676;[Pose(Point(1 1),0.5)@2026-01-01,
+  Pose(Point(2 2),0.5)@2026-01-02]', 0, 6);
+
+-------------------------------------------------------------------------------
+-- The conformance class follows from the value
+--
+-- A single instant is a Basic document carrying its validTime. A sequence is
+-- an OGC Composite Sequence Series: the Regular class when the instants are
+-- equally spaced by a whole number of milliseconds, the Irregular class
+-- otherwise. The equator-meridian anchor used below keeps the ENU basis
+-- exactly representable, so the emitted numbers are stable.
+-------------------------------------------------------------------------------
+
+-- A temporal instant is a Basic document plus validTime.
+SELECT asGeoPose(tpose 'Pose(Point(8 47 1500), 1, 0, 0, 0)@2026-01-01', 0, 6);
+SELECT asGeoPose(tpose 'Pose(Point(8 47 1500), 1, 0, 0, 0)@2026-01-01', 1, 6);
+
+-- Equally spaced instants give a Regular Series: the spacing is stated once
+-- as interPoseDuration and the inner frames carry no time.
+SELECT asGeoPose(tpose '[Pose(Point(0 0 0), 0.5, 0.5, 0.5, 0.5)@2026-01-01,
+  Pose(Point(0 0 100), 0.5, 0.5, 0.5, 0.5)@2026-01-02,
+  Pose(Point(0 0 300), 0.5, 0.5, 0.5, 0.5)@2026-01-03]', 0, 6);
+
+-- Unequally spaced instants give an Irregular Series: every inner frame
+-- carries its own validTime.
+SELECT asGeoPose(tpose '[Pose(Point(0 0 0), 0.5, 0.5, 0.5, 0.5)@2026-01-01,
+  Pose(Point(0 0 100), 0.5, 0.5, 0.5, 0.5)@2026-01-02,
+  Pose(Point(0 0 300), 0.5, 0.5, 0.5, 0.5)@2026-01-05]', 0, 6);
+
+-- A Series carries a quaternion in every inner frame, so the orientation
+-- encoding argument makes no difference to it.
+SELECT asGeoPose(tpose '[Pose(Point(0 0 0), 0.5, 0.5, 0.5, 0.5)@2026-01-01,
+  Pose(Point(0 0 100), 0.5, 0.5, 0.5, 0.5)@2026-01-02]', 0, 6) =
+  asGeoPose(tpose '[Pose(Point(0 0 0), 0.5, 0.5, 0.5, 0.5)@2026-01-01,
+  Pose(Point(0 0 100), 0.5, 0.5, 0.5, 0.5)@2026-01-02]', 1, 6) AS same;
+
+-- A sequence set is a Series too, flattened.
+SELECT asGeoPose(tpose '{[Pose(Point(0 0 0), 0.5, 0.5, 0.5, 0.5)@2026-01-01,
+  Pose(Point(0 0 100), 0.5, 0.5, 0.5, 0.5)@2026-01-02],
+  [Pose(Point(0 0 300), 0.5, 0.5, 0.5, 0.5)@2026-01-04]}', 0, 6);
+
+-------------------------------------------------------------------------------
+-- Series header and trailer
+-------------------------------------------------------------------------------
+
+-- poseCount agrees with the length of the inner frame array in both.
+WITH j AS (SELECT asGeoPose(tpose '[Pose(Point(8 47 1500), 1, 0, 0, 0)@2026-01-01,
+  Pose(Point(9 48 1600), 1, 0, 0, 0)@2026-01-02,
+  Pose(Point(10 49 1700), 1, 0, 0, 0)@2026-01-05]', 0, 6)::jsonb AS d)
+SELECT (d->'header'->>'poseCount')::int = jsonb_array_length(d->'innerFrameAndTimeSeries')
+  AND (d->'trailer'->>'poseCount')::int = jsonb_array_length(d->'innerFrameAndTimeSeries')
+FROM j;
+
+-- startInstant and stopInstant are the temporal extent, in Unix milliseconds.
+WITH j AS (SELECT asGeoPose(tpose '[Pose(Point(8 47 1500), 1, 0, 0, 0)@2026-01-01,
+  Pose(Point(9 48 1600), 1, 0, 0, 0)@2026-01-05]', 0, 6)::jsonb AS d)
+SELECT to_timestamp((d->'header'->>'startInstant')::bigint / 1000) AT TIME ZONE 'UTC',
+       to_timestamp((d->'header'->>'stopInstant')::bigint / 1000) AT TIME ZONE 'UTC'
+FROM j;
+
+-- Each validTime is the instant's Unix time in milliseconds.
+WITH j AS (SELECT asGeoPose(tpose '[Pose(Point(8 47 1500), 1, 0, 0, 0)@2026-01-01,
+  Pose(Point(9 48 1600), 1, 0, 0, 0)@2026-01-05]', 0, 6)::jsonb AS d)
+SELECT to_timestamp((e->>'validTime')::bigint / 1000) AT TIME ZONE 'UTC'
+FROM j, jsonb_array_elements(d->'innerFrameAndTimeSeries') AS e;
+
+-- A millisecond of the extent survives; a microsecond does not.
+WITH j AS (SELECT asGeoPose(tpose '[Pose(Point(8 47 1500), 1, 0, 0, 0)@2026-01-01 00:00:00.123456,
+  Pose(Point(9 48 1600), 1, 0, 0, 0)@2026-01-05]', 0, 6)::jsonb AS d)
+SELECT (d->'header'->>'startInstant')::bigint % 1000 AS millisecond_kept FROM j;
+
+-- interPoseDuration is the spacing in milliseconds.
+SELECT (asGeoPose(tpose '[Pose(Point(8 47 1500), 1, 0, 0, 0)@2026-01-01,
+  Pose(Point(9 48 1600), 1, 0, 0, 0)@2026-01-02]', 0, 6)::jsonb->>'interPoseDuration')::bigint;
+
+-------------------------------------------------------------------------------
+-- Transition model: the interpolation of the temporal value
+-------------------------------------------------------------------------------
+
+WITH j(interp, d) AS (VALUES
+  ('linear', asGeoPose(tpose '[Pose(Point(8 47 1500), 1, 0, 0, 0)@2026-01-01,
+     Pose(Point(9 48 1600), 1, 0, 0, 0)@2026-01-05]', 0, 6)::jsonb),
+  ('step', asGeoPose(tpose 'Interp=Step;[Pose(Point(8 47 1500), 1, 0, 0, 0)@2026-01-01,
+     Pose(Point(9 48 1600), 1, 0, 0, 0)@2026-01-05]', 0, 6)::jsonb),
+  ('discrete', asGeoPose(tpose '{Pose(Point(8 47 1500), 1, 0, 0, 0)@2026-01-01,
+     Pose(Point(9 48 1600), 1, 0, 0, 0)@2026-01-05}', 0, 6)::jsonb))
+SELECT interp,
+  d->'header'->'transitionModel'->>'authority',
+  d->'header'->'transitionModel'->>'id',
+  d->'header'->'transitionModel'->>'parameters'
+FROM j;
+
+-------------------------------------------------------------------------------
+-- Outer and inner frame specifications
+-------------------------------------------------------------------------------
+
+-- The outer frame is the LTP-ENU frame at the tangent point of the first pose.
+WITH j AS (SELECT asGeoPose(tpose '[Pose(Point(8 47 1500), 1, 0, 0, 0)@2026-01-01,
+  Pose(Point(9 48 1600), 1, 0, 0, 0)@2026-01-02]', 0, 6)::jsonb AS d)
+SELECT d->'outerFrame'->>'authority', d->'outerFrame'->>'id',
+  d->'outerFrame'->>'parameters'
+FROM j;
+
+-- The first inner frame sits at the origin of the outer frame.
+WITH j AS (SELECT asGeoPose(tpose '[Pose(Point(8 47 1500), 1, 0, 0, 0)@2026-01-01,
+  Pose(Point(9 48 1600), 1, 0, 0, 0)@2026-01-02]', 0, 6)::jsonb AS d)
+SELECT d->'innerFrameSeries'->0->>'authority', d->'innerFrameSeries'->0->>'id',
+  split_part(d->'innerFrameSeries'->0->>'parameters', '&', 1)
+FROM j;
+
+-- The registry documents the authority and id pairs the encoder emits.
+SELECT authority, code FROM geopose_frames WHERE authority = '/geopose/1.0'
+ORDER BY code;
+
+-------------------------------------------------------------------------------
+-- Round-trip through the conformant form
+-------------------------------------------------------------------------------
+
+-- A temporal instant round-trips through its Basic document.
+SELECT asText(round(tposeFromGeoPose(asGeoPose(
+  tpose 'Pose(Point(8 47 1500), 1, 0, 0, 0)@2026-01-01', 0, 15)), 6));
+
+-- A Regular Series round-trips to the same value, to the emitted precision.
+SELECT asText(round(tposeFromGeoPose(asGeoPose(
+  tpose '[Pose(Point(8 47 1500), 1, 0, 0, 0)@2026-01-01,
+    Pose(Point(9 48 1600), 1, 0, 0, 0)@2026-01-02,
+    Pose(Point(10 47 1700), 1, 0, 0, 0)@2026-01-03]', 0, 15)), 6));
+
+-- An Irregular Series round-trips its uneven spacing too.
+SELECT asText(round(tposeFromGeoPose(asGeoPose(
+  tpose '[Pose(Point(8 47 1500), 1, 0, 0, 0)@2026-01-01,
+    Pose(Point(9 48 1600), 1, 0, 0, 0)@2026-01-05]', 0, 15)), 6));
+
+-- Step interpolation survives the transition model.
+SELECT interp(tposeFromGeoPose(asGeoPose(
+  tpose 'Interp=Step;[Pose(Point(8 47 1500), 1, 0, 0, 0)@2026-01-01,
+    Pose(Point(9 48 1600), 1, 0, 0, 0)@2026-01-02]', 0, 15)));
+
+-- Discrete interpolation does too.
+SELECT interp(tposeFromGeoPose(asGeoPose(
+  tpose '{Pose(Point(8 47 1500), 1, 0, 0, 0)@2026-01-01,
+    Pose(Point(9 48 1600), 1, 0, 0, 0)@2026-01-02}', 0, 15)));
+
+-- A Series has neither gaps nor open bounds, so a sequence set flattens into
+-- one closed sequence.
+SELECT asText(round(tposeFromGeoPose(asGeoPose(
+  tpose '{[Pose(Point(8 47 1500), 1, 0, 0, 0)@2026-01-01,
+    Pose(Point(9 48 1600), 1, 0, 0, 0)@2026-01-02],
+   [Pose(Point(10 50 1700), 1, 0, 0, 0)@2026-01-04]}', 0, 15)), 6));
+
+-- A document written by another implementation reads as well. This is the
+-- Irregular Series example of the standard; its poseCount states the length
+-- of its own inner frame array.
+SELECT asText(round(tposeFromGeoPose('{
+  "header": {"poseCount": 3, "startInstant": 1630560671429,
+    "stopInstant": 1630560716429,
+    "transitionModel": {"authority": "/geopose/1.0", "id": "none",
+      "parameters": ""}},
+  "outerFrame": {"authority": "/geopose/1.0", "id": "LTP-ENU",
+    "parameters": "longitude=-122.3000000&latitude=47.7000000&height=11.000"},
+  "innerFrameAndTimeSeries": [
+    {"frame": {"authority": "/geopose/1.0", "id": "RotateTranslate",
+      "parameters": "translation=[0.0, 0.0, 0.0]&rotation=[1.0, 0.0, 0.0, 0.0]"},
+     "validTime": 1630560671429},
+    {"frame": {"authority": "/geopose/1.0", "id": "RotateTranslate",
+      "parameters": "translation=[10.0, 20.0, 5.0]&rotation=[1.0, 0.0, 0.0, 0.0]"},
+     "validTime": 1630560693929},
+    {"frame": {"authority": "/geopose/1.0", "id": "RotateTranslate",
+      "parameters": "translation=[20.0, 40.0, 10.0]&rotation=[1.0, 0.0, 0.0, 0.0]"},
+     "validTime": 1630560716429}],
+  "trailer": {"poseCount": 3}}'), 4));
+
+-- The Regular Series example reads from its interPoseDuration alone.
+SELECT asText(round(tposeFromGeoPose('{
+  "header": {"poseCount": 3, "startInstant": 1630560671367,
+    "stopInstant": 1630560673367,
+    "transitionModel": {"authority": "/geopose/1.0", "id": "interpolate",
+      "parameters": ""}},
+  "interPoseDuration": 1000,
+  "outerFrame": {"authority": "/geopose/1.0", "id": "LTP-ENU",
+    "parameters": "longitude=-122.3000000&latitude=47.7000000&height=11.000"},
+  "innerFrameSeries": [
+    {"authority": "/geopose/1.0", "id": "RotateTranslate",
+     "parameters": "translation=[0.0, 0.0, 0.0]&rotation=[1.0, 0.0, 0.0, 0.0]"},
+    {"authority": "/geopose/1.0", "id": "RotateTranslate",
+     "parameters": "translation=[0.5, 0.0, 0.0]&rotation=[1.0, 0.0, 0.0, 0.0]"},
+    {"authority": "/geopose/1.0", "id": "RotateTranslate",
+     "parameters": "translation=[1.0, 0.0, 0.0]&rotation=[1.0, 0.0, 0.0, 0.0]"}],
+  "trailer": {"poseCount": 3}}'), 6));
+
+-- A TemporalGeoPose envelope written by an earlier release still reads.
+SELECT asText(tposeFromGeoPose('{"type":"TemporalGeoPose","version":"1.0",
+  "conformance":"Basic-Quaternion","interpolation":"Linear",
+  "lower_inc":true,"upper_inc":true,"instants":[
+    {"position":{"lat":47,"lon":8,"h":0},"quaternion":{"x":0,"y":0,"z":0,"w":1},
+     "validTime":"2026-01-01 00:00:00+01"},
+    {"position":{"lat":48,"lon":9,"h":0},"quaternion":{"x":0,"y":0,"z":0,"w":1},
+     "validTime":"2026-01-02 00:00:00+01"}]}'));
+
+-------------------------------------------------------------------------------
+-- Errors
+-------------------------------------------------------------------------------
+
+/* Errors */
+
+-- A Basic document without a validTime is a pose, not a temporal pose.
+SELECT tposeFromGeoPose(
+  '{"position":{"lat":47,"lon":8,"h":0},"quaternion":{"x":0,"y":0,"z":0,"w":1}}');
+
+-- A series without an outer frame.
+SELECT tposeFromGeoPose('{"header": {"poseCount": 1, "startInstant": 0,
+  "stopInstant": 0, "transitionModel": {"authority": "/geopose/1.0",
+  "id": "none", "parameters": ""}},
+  "innerFrameAndTimeSeries": [{"frame": {"authority": "/geopose/1.0",
+    "id": "RotateTranslate", "parameters": "translation=[0, 0, 0]&rotation=[1, 0, 0, 0]"},
+   "validTime": 0}], "trailer": {"poseCount": 1}}');
+
+-- An inner frame without a rotation.
+SELECT tposeFromGeoPose('{"header": {"poseCount": 1, "startInstant": 0,
+  "stopInstant": 0, "transitionModel": {"authority": "/geopose/1.0",
+  "id": "none", "parameters": ""}},
+  "outerFrame": {"authority": "/geopose/1.0", "id": "LTP-ENU",
+    "parameters": "longitude=0&latitude=0&height=0"},
+  "innerFrameAndTimeSeries": [{"frame": {"authority": "/geopose/1.0",
+    "id": "RotateTranslate", "parameters": "translation=[0, 0, 0]"},
+   "validTime": 0}], "trailer": {"poseCount": 1}}');
+
+-- An Irregular Series element without a validTime.
+SELECT tposeFromGeoPose('{"header": {"poseCount": 1, "startInstant": 0,
+  "stopInstant": 0, "transitionModel": {"authority": "/geopose/1.0",
+  "id": "none", "parameters": ""}},
+  "outerFrame": {"authority": "/geopose/1.0", "id": "LTP-ENU",
+    "parameters": "longitude=0&latitude=0&height=0"},
+  "innerFrameAndTimeSeries": [{"frame": {"authority": "/geopose/1.0",
+    "id": "RotateTranslate", "parameters": "translation=[0, 0, 0]&rotation=[1, 0, 0, 0]"}}],
+  "trailer": {"poseCount": 1}}');
+
+-- A Regular Series without an interPoseDuration.
+SELECT tposeFromGeoPose('{"header": {"poseCount": 1, "startInstant": 0,
+  "stopInstant": 0, "transitionModel": {"authority": "/geopose/1.0",
+  "id": "none", "parameters": ""}},
+  "outerFrame": {"authority": "/geopose/1.0", "id": "LTP-ENU",
+    "parameters": "longitude=0&latitude=0&height=0"},
+  "innerFrameSeries": [{"authority": "/geopose/1.0",
+    "id": "RotateTranslate", "parameters": "translation=[0, 0, 0]&rotation=[1, 0, 0, 0]"}],
+  "trailer": {"poseCount": 1}}');
+
+-------------------------------------------------------------------------------
