@@ -79,6 +79,12 @@
 #include "utils/timestamp.h"
 #include "utils/varlena.h"
 #include "utils/mb/pg_wchar.h"
+#include "utils/palloc.h"  /* MEOS: MemoryContext + MemoryContextSwitchTo (backend build) */
+
+/* MEOS: the vendored memutils.h omits this backend global; declare it locally,
+ * as dynahash.c and pg_locale.c do, so the extension can pin the static
+ * datetime format cache in a persistent context (see executeDateTimeMethod). */
+extern PGDLLIMPORT MemoryContext TopMemoryContext;
 
 #include "pgtypes.h"
 
@@ -2184,7 +2190,23 @@ executeDateTimeMethod(JsonPathExecContext *cxt, JsonPathItem *jsp,
     {
       if (!fmt_txt[i])
       {
+#if ! MEOS
+        /*
+         * In the PostgreSQL extension the first evaluation happens inside a
+         * query whose CurrentMemoryContext is short-lived (typically a
+         * per-tuple context). Allocate in TopMemoryContext so this
+         * function-static cache keeps pointing at live memory once that
+         * context resets; otherwise it dangles while staying non-NULL, and a
+         * later evaluation in the same backend reads a freed pointer as a
+         * text header. The standalone library never resets a context under
+         * the cache. Mirrors the PostgreSQL original.
+         */
+        MemoryContext oldcontext = MemoryContextSwitchTo(TopMemoryContext);
+#endif /* ! MEOS */
         fmt_txt[i] = pg_cstring_to_text(fmt_str[i]);
+#if ! MEOS
+        MemoryContextSwitchTo(oldcontext);
+#endif /* ! MEOS */
       }
       if (pg_parse_datetime(datetime, fmt_txt[i], collid, true, &typid,
         &typmod, &tz, &value))
