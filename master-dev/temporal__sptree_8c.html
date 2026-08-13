@@ -77,7 +77,8 @@ $(function() {
   <div class="summary">
 <a href="#nested-classes">Data Structures</a> &#124;
 <a href="#typedef-members">Typedefs</a> &#124;
-<a href="#func-members">Functions</a>  </div>
+<a href="#func-members">Functions</a> &#124;
+<a href="#var-members">Variables</a>  </div>
   <div class="headertitle"><div class="title">temporal_sptree.c File Reference</div></div>
 </div><!--header-->
 <div class="contents">
@@ -224,6 +225,17 @@ Functions</h2></td></tr>
 <tr class="separator:a20be1124d37234a0832d4fd6828a16a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a81f0d0e52d12efa7f7498643ba1ec012"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="temporal__sptree_8c_a81f0d0e52d12efa7f7498643ba1ec012.html#a81f0d0e52d12efa7f7498643ba1ec012">tbox_quadtree_next</a> (const void *nodebox, const void *<a class="el" href="postgis_8h_a3c50bb0dc24be98daf8640f9e4cc3191.html#a3c50bb0dc24be98daf8640f9e4cc3191">centroid</a>, <a class="el" href="postgres__ext__defs_8in_8h_adde6aaee8457bee49c2a92621fe22b79.html#adde6aaee8457bee49c2a92621fe22b79">uint8</a> quadrant, void *next)</td></tr>
 <tr class="separator:a81f0d0e52d12efa7f7498643ba1ec012"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:a529c99b9bcdfd1b4ee7cd8525698c8cd"><td class="memItemLeft" align="right" valign="top">static const <a class="el" href="postgres__ext__defs_8in_8h_adde6aaee8457bee49c2a92621fe22b79.html#adde6aaee8457bee49c2a92621fe22b79">uint8</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="temporal__sptree_8c_a529c99b9bcdfd1b4ee7cd8525698c8cd.html#a529c99b9bcdfd1b4ee7cd8525698c8cd">SPAN_KD_BITS</a> [2] = {1, 0}</td></tr>
+<tr class="separator:a529c99b9bcdfd1b4ee7cd8525698c8cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afd4a61b78c789d3f8fd40ca49a6cdad4"><td class="memItemLeft" align="right" valign="top">static const <a class="el" href="postgres__ext__defs_8in_8h_adde6aaee8457bee49c2a92621fe22b79.html#adde6aaee8457bee49c2a92621fe22b79">uint8</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="temporal__sptree_8c_afd4a61b78c789d3f8fd40ca49a6cdad4.html#afd4a61b78c789d3f8fd40ca49a6cdad4">STBOX_KD_BITS</a> [6] = {3, 2, 5, 4, 1, 0}</td></tr>
+<tr class="separator:afd4a61b78c789d3f8fd40ca49a6cdad4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3f7c154bcdb77e40edb55a2c3f3a1370"><td class="memItemLeft" align="right" valign="top">static const <a class="el" href="postgres__ext__defs_8in_8h_adde6aaee8457bee49c2a92621fe22b79.html#adde6aaee8457bee49c2a92621fe22b79">uint8</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="temporal__sptree_8c_a3f7c154bcdb77e40edb55a2c3f3a1370.html#a3f7c154bcdb77e40edb55a2c3f3a1370">STBOX_KD_BITS_Z</a> [8] = {3, 2, 5, 4, 7, 6, 1, 0}</td></tr>
+<tr class="separator:a3f7c154bcdb77e40edb55a2c3f3a1370"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2e1e633a18d64f176c4ce6c7a63a8b3c"><td class="memItemLeft" align="right" valign="top">static const <a class="el" href="postgres__ext__defs_8in_8h_adde6aaee8457bee49c2a92621fe22b79.html#adde6aaee8457bee49c2a92621fe22b79">uint8</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="temporal__sptree_8c_a2e1e633a18d64f176c4ce6c7a63a8b3c.html#a2e1e633a18d64f176c4ce6c7a63a8b3c">TBOX_KD_BITS</a> [4] = {3, 2, 1, 0}</td></tr>
+<tr class="separator:a2e1e633a18d64f176c4ce6c7a63a8b3c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >In-memory space-partitioning index (quad-tree and k-d tree) for MEOS bounding boxes, i.e., for <a class="el" href="structSpan.html" title="Structure to represent spans (a.k.a.">Span</a> and <a class="el" href="structTBox.html" title="Structure to represent temporal boxes.">TBox</a>. </p>
