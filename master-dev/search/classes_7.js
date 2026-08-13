@@ -9,5 +9,6 @@ var searchData=
   ['geodistnai_6',['GeoDistNai',['../structGeoDistNai.html',1,'']]],
   ['geodistshortline_7',['GeoDistShortLine',['../structGeoDistShortLine.html',1,'']]],
   ['geodistsortitem_8',['GeoDistSortItem',['../structGeoDistSortItem.html',1,'']]],
-  ['gserialized_9',['GSERIALIZED',['../structGSERIALIZED.html',1,'']]]
+  ['geoposeanchor_9',['GeoPoseAnchor',['../structGeoPoseAnchor.html',1,'']]],
+  ['gserialized_10',['GSERIALIZED',['../structGSERIALIZED.html',1,'']]]
 ];

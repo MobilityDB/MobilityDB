@@ -108,9 +108,14 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return a temporal pose from its OGC GeoPose JSON representation. </p>
-<p >Parses the <code>TemporalGeoPose</code> envelope (see <code>tpose_as_geopose</code> for the shape). Each instant's payload is auto-detected as Basic-Quaternion or Basic-YPR by the same rule as the static entry point. The interpolation and bounds-inclusion flags come from the envelope; the resulting tpose has SRID 4326. </p><dl class="params"><dt>Parameters</dt><dd>
+<p >The document shape is auto-detected:</p>
+<ul>
+<li>An OGC Composite Sequence Series, recognized by its <code>innerFrameAndTimeSeries</code> or <code>innerFrameSeries</code> member. The interpolation comes from the header's transition model and the result is one closed sequence, or an instant for a single non-interpolated pose.</li>
+<li>The MobilityDB <code>TemporalGeoPose</code> envelope, whose per-instant payload is auto-detected as Basic-Quaternion or Basic-YPR by the same rule as the static entry point, and whose interpolation and bounds-inclusion flags come from the envelope.</li>
+</ul>
+<p >The resulting temporal pose has SRID 4326. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">json</td><td>TemporalGeoPose JSON string </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">json</td><td>GeoPose JSON string </td></tr>
   </table>
   </dd>
 </dl>

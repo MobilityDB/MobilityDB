@@ -45,7 +45,7 @@ var searchData=
   ['default_5ftime_5forigin_42',['DEFAULT_TIME_ORIGIN',['../meos_2include_2temporal_2temporal_8h_a35e970642f88ebebae02bafbd9d8fd9d.html#a35e970642f88ebebae02bafbd9d8fd9d',1,'temporal.h']]],
   ['define_5fboxop3_43',['DEFINE_BOXOP3',['../mobilitydb_2src_2pointcloud_2tpc__boxops_8c_a8f831519ee70c8fce30520ff61ce31e6.html#a8f831519ee70c8fce30520ff61ce31e6',1,'tpc_boxops.c']]],
   ['delta_5fdistance_44',['DELTA_DISTANCE',['../08__berlinmod__simplify_8c_a9f27b14f6e9977df2cd8c410212ab3ff.html#a9f27b14f6e9977df2cd8c410212ab3ff',1,'08_berlinmod_simplify.c']]],
-  ['delta_5funix_5fpostgres_5fepoch_45',['DELTA_UNIX_POSTGRES_EPOCH',['../tpoint__spatialfuncs_8c_a9e2e6c0d74336fd387f1805faa853229.html#a9e2e6c0d74336fd387f1805faa853229',1,'tpoint_spatialfuncs.c']]],
+  ['delta_5funix_5fpostgres_5fepoch_45',['DELTA_UNIX_POSTGRES_EPOCH',['../meos_2include_2temporal_2temporal_8h_a9e2e6c0d74336fd387f1805faa853229.html#a9e2e6c0d74336fd387f1805faa853229',1,'temporal.h']]],
   ['discontinuous_46',['DISCONTINUOUS',['../meos_2include_2temporal_2temporal_8h_a04b3107dfcf77825787f00d509bb98d0.html#a04b3107dfcf77825787f00d509bb98d0',1,'temporal.h']]],
   ['double2pgetdatum_47',['Double2PGetDatum',['../meos_2include_2temporal_2temporal_8h_ab26a31953f73bd85a5b5734b77fa31e4.html#ab26a31953f73bd85a5b5734b77fa31e4',1,'temporal.h']]],
   ['double3pgetdatum_48',['Double3PGetDatum',['../meos_2include_2temporal_2temporal_8h_a510bcaed2c65d1111a7492315648df86.html#a510bcaed2c65d1111a7492315648df86',1,'temporal.h']]],
