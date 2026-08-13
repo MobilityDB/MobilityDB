@@ -1960,10 +1960,15 @@ pose_cmp(const Pose *pose1, const Pose *pose2)
   else if (srid1 > srid2)
     return 1;
 
-  if (hasz1)
-    return memcmp(pose1->data, pose2->data, sizeof(double) * 7);
-  else
-    return memcmp(pose1->data, pose2->data, sizeof(double) * 3);
+  int count = hasz1 ? 7 : 3;
+  for (int i = 0; i < count; i++)
+  {
+    if (pose1->data[i] < pose2->data[i])
+      return -1;
+    if (pose1->data[i] > pose2->data[i])
+      return 1;
+  }
+  return 0;
 }
 
 /**

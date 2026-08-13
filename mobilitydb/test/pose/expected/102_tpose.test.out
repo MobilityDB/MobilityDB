@@ -605,19 +605,19 @@ SELECT asText(getValues(tpose 'Pose(Point(1 1), 0.5)@2000-01-01'));
 SELECT asText(getValues(tpose '{Pose(Point(1 1), 0.3)@2000-01-01, Pose(Point(1 1), 0.5)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03}'));
                       astext                      
 --------------------------------------------------
- {"Pose(POINT(1 1),0.5)", "Pose(POINT(1 1),0.3)"}
+ {"Pose(POINT(1 1),0.3)", "Pose(POINT(1 1),0.5)"}
 (1 row)
 
 SELECT asText(getValues(tpose '[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03]'));
                                   astext                                  
 --------------------------------------------------------------------------
- {"Pose(POINT(1 1),0.5)", "Pose(POINT(1 1),0.2)", "Pose(POINT(1 1),0.4)"}
+ {"Pose(POINT(1 1),0.2)", "Pose(POINT(1 1),0.4)", "Pose(POINT(1 1),0.5)"}
 (1 row)
 
 SELECT asText(getValues(tpose '{[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03], [Pose(Point(2 2), 0.6)@2000-01-04, Pose(Point(2 2), 0.6)@2000-01-05]}'));
                                               astext                                              
 --------------------------------------------------------------------------------------------------
- {"Pose(POINT(2 2),0.6)", "Pose(POINT(1 1),0.5)", "Pose(POINT(1 1),0.2)", "Pose(POINT(1 1),0.4)"}
+ {"Pose(POINT(1 1),0.2)", "Pose(POINT(1 1),0.4)", "Pose(POINT(1 1),0.5)", "Pose(POINT(2 2),0.6)"}
 (1 row)
 
 SELECT getTime(tpose 'Pose(Point(1 1), 0.5)@2000-01-01');
@@ -2028,7 +2028,7 @@ SELECT tpose '{Pose(Point(1 1), 0.3)@2000-01-01, Pose(Point(1 1), 0.5)@2000-01-0
 SELECT tpose '{Pose(Point(1 1), 0.3)@2000-01-01, Pose(Point(1 1), 0.5)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03}' < tpose '[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03]';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT tpose '{Pose(Point(1 1), 0.3)@2000-01-01, Pose(Point(1 1), 0.5)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03}' < tpose '{[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03], [Pose(Point(2 2), 0.6)@2000-01-04, Pose(Point(2 2), 0.6)@2000-01-05]}';
@@ -2046,7 +2046,7 @@ SELECT tpose '[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-0
 SELECT tpose '[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03]' < tpose '{Pose(Point(1 1), 0.3)@2000-01-01, Pose(Point(1 1), 0.5)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03}';
  ?column? 
 ----------
- f
+ t
 (1 row)
 
 SELECT tpose '[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03]' < tpose '[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03]';
@@ -2124,7 +2124,7 @@ SELECT tpose '{Pose(Point(1 1), 0.3)@2000-01-01, Pose(Point(1 1), 0.5)@2000-01-0
 SELECT tpose '{Pose(Point(1 1), 0.3)@2000-01-01, Pose(Point(1 1), 0.5)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03}' <= tpose '[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03]';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT tpose '{Pose(Point(1 1), 0.3)@2000-01-01, Pose(Point(1 1), 0.5)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03}' <= tpose '{[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03], [Pose(Point(2 2), 0.6)@2000-01-04, Pose(Point(2 2), 0.6)@2000-01-05]}';
@@ -2142,7 +2142,7 @@ SELECT tpose '[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-0
 SELECT tpose '[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03]' <= tpose '{Pose(Point(1 1), 0.3)@2000-01-01, Pose(Point(1 1), 0.5)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03}';
  ?column? 
 ----------
- f
+ t
 (1 row)
 
 SELECT tpose '[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03]' <= tpose '[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03]';
@@ -2220,7 +2220,7 @@ SELECT tpose '{Pose(Point(1 1), 0.3)@2000-01-01, Pose(Point(1 1), 0.5)@2000-01-0
 SELECT tpose '{Pose(Point(1 1), 0.3)@2000-01-01, Pose(Point(1 1), 0.5)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03}' > tpose '[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03]';
  ?column? 
 ----------
- f
+ t
 (1 row)
 
 SELECT tpose '{Pose(Point(1 1), 0.3)@2000-01-01, Pose(Point(1 1), 0.5)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03}' > tpose '{[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03], [Pose(Point(2 2), 0.6)@2000-01-04, Pose(Point(2 2), 0.6)@2000-01-05]}';
@@ -2238,7 +2238,7 @@ SELECT tpose '[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-0
 SELECT tpose '[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03]' > tpose '{Pose(Point(1 1), 0.3)@2000-01-01, Pose(Point(1 1), 0.5)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03}';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT tpose '[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03]' > tpose '[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03]';
@@ -2316,7 +2316,7 @@ SELECT tpose '{Pose(Point(1 1), 0.3)@2000-01-01, Pose(Point(1 1), 0.5)@2000-01-0
 SELECT tpose '{Pose(Point(1 1), 0.3)@2000-01-01, Pose(Point(1 1), 0.5)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03}' >= tpose '[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03]';
  ?column? 
 ----------
- f
+ t
 (1 row)
 
 SELECT tpose '{Pose(Point(1 1), 0.3)@2000-01-01, Pose(Point(1 1), 0.5)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03}' >= tpose '{[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03], [Pose(Point(2 2), 0.6)@2000-01-04, Pose(Point(2 2), 0.6)@2000-01-05]}';
@@ -2334,7 +2334,7 @@ SELECT tpose '[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-0
 SELECT tpose '[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03]' >= tpose '{Pose(Point(1 1), 0.3)@2000-01-01, Pose(Point(1 1), 0.5)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03}';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT tpose '[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03]' >= tpose '[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03]';
