@@ -79,6 +79,7 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a7535b182c9790acb3db83235a22e9b1f.html#a7535b182c9790acb3db83235a22e9b1f">box2d_distance_sqr</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a9ef778e3a26a89a5171ab4c521f47e44.html#a9ef778e3a26a89a5171ab4c521f47e44">cbuffersegm_edge_crit_in_s</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_ad5a3d28217f20b530086aea4af8f6f64.html#ad5a3d28217f20b530086aea4af8f6f64">cbuffersegm_edge_crit_in_t</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_aa0350d6d94fb10518b9b130741f197b0.html#aa0350d6d94fb10518b9b130741f197b0">cbuffersegm_segm_mindist</a></td></tr>
@@ -194,8 +195,7 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Ray-casting test: true if (x,y) is inside any polygon ring among the segments (even-odd rule over the polygon-ring segments only) </p>
-<p >Return true if a stationary disc (centre <code>cx</code>,<code>cy</code>, radius <code>r</code>) is within <code>dist</code> of the geometry</p>
+<p>Return true if a stationary disc (centre <code>cx</code>,<code>cy</code>, radius <code>r</code>) is within <code>dist</code> of the geometry. </p>
 <p >Byte-identical to the boolean <code>nad(stationary disc) &lt;= dist</code>: the disc is within <code>dist</code> iff its centre lies inside a polygon ring or some boundary edge is within <code>dist</code>. Unlike the running-minimum kernel this is a bounded existence test — the reach is the fixed threshold <code>dist</code>, so an edge whose box is farther than <code>dist</code> cannot qualify and is pruned. Because the per-edge distance uses the same arc/edge kernels, "min over edges &lt;= dist" and "some edge &lt;= dist" agree, so the visit order and pruning do not affect the result. </p>
 
 </div>

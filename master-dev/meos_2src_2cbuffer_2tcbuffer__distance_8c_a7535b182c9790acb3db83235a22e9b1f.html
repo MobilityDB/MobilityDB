@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: TCBUF_CTX_DISC</title>
+<title>MobilityDB: box2d_distance_sqr</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -79,7 +79,7 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a7535b182c9790acb3db83235a22e9b1f.html#a7535b182c9790acb3db83235a22e9b1f">box2d_distance_sqr</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a7535b182c9790acb3db83235a22e9b1f.html#a7535b182c9790acb3db83235a22e9b1f">box2d_distance_sqr</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a9ef778e3a26a89a5171ab4c521f47e44.html#a9ef778e3a26a89a5171ab4c521f47e44">cbuffersegm_edge_crit_in_s</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_ad5a3d28217f20b530086aea4af8f6f64.html#ad5a3d28217f20b530086aea4af8f6f64">cbuffersegm_edge_crit_in_t</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_aa0350d6d94fb10518b9b130741f197b0.html#aa0350d6d94fb10518b9b130741f197b0">cbuffersegm_segm_mindist</a></td></tr>
@@ -101,7 +101,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__cbuffer__dist_ga62655ee42ac3e60b1c37311abec6a421.html#ga62655ee42ac3e60b1c37311abec6a421">shortestline_tcbuffer_geo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a0d78a94f31f4f528363f8d9797345486.html#a0d78a94f31f4f528363f8d9797345486">shortestline_tcbuffer_geo_analytic</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__cbuffer__dist_gabac1839e590edad0b9808d1197c39ac0.html#gabac1839e590edad0b9808d1197c39ac0">shortestline_tcbuffer_tcbuffer</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_ad1cf66426dcd284828e4068b5d26e3a6.html#ad1cf66426dcd284828e4068b5d26e3a6">TCBUF_CTX_DISC</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_ad1cf66426dcd284828e4068b5d26e3a6.html#ad1cf66426dcd284828e4068b5d26e3a6">TCBUF_CTX_DISC</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_ad230bd024095594026f7c398553bcbd3.html#ad230bd024095594026f7c398553bcbd3">TCBUF_CTX_GEO</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_ab53932eaf4985bcde501c10d68c7448c.html#ab53932eaf4985bcde501c10d68c7448c">tcbuffer_add_dist_turnpts</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a2c3f7c240d066117e3764cc2ed638358.html#a2c3f7c240d066117e3764cc2ed638358">tcbuffer_add_within01</a></td></tr>
@@ -143,17 +143,78 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ad1cf66426dcd284828e4068b5d26e3a6" name="ad1cf66426dcd284828e4068b5d26e3a6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad1cf66426dcd284828e4068b5d26e3a6">&#9670;&#160;</a></span>TCBUF_CTX_DISC</h2>
+<a id="a7535b182c9790acb3db83235a22e9b1f" name="a7535b182c9790acb3db83235a22e9b1f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7535b182c9790acb3db83235a22e9b1f">&#9670;&#160;</a></span>box2d_distance_sqr()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">#define TCBUF_CTX_DISC&#160;&#160;&#160;1</td>
+          <td class="memname">static double box2d_distance_sqr </td>
+          <td>(</td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>axmin</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>aymin</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>axmax</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>aymax</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>bxmin</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>bymin</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>bxmax</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>bymax</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
+
+<p>Ray-casting test: true if (x,y) is inside any polygon ring among the segments (even-odd rule over the polygon-ring segments only) </p>
+<p >Return the squared 2D distance between two axis-aligned bounding boxes, 0 when they overlap </p><dl class="section note"><dt>Note</dt><dd>The square is returned so that the callers compare it with a squared distance, as the geometry distance prune does, the square root being monotonic and both compared values non-negative </dd></dl>
 
 </div>
 </div>

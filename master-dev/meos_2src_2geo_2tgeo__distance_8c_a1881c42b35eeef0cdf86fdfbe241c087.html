@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: geodist_geom_edges</title>
+<title>MobilityDB: geodist_edge_radius_prune</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -82,7 +82,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_a7535b182c9790acb3db83235a22e9b1f.html#a7535b182c9790acb3db83235a22e9b1f">box2d_distance_sqr</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_a625bf80e22b2c8973bb71dc2efff89b4.html#a625bf80e22b2c8973bb71dc2efff89b4">circ_tree_distance_tree_internal</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_a8631c67c9c1ed66eeca71632b4f412a5.html#a8631c67c9c1ed66eeca71632b4f412a5">geodist_angle_norm</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_a1881c42b35eeef0cdf86fdfbe241c087.html#a1881c42b35eeef0cdf86fdfbe241c087">geodist_edge_radius_prune</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_a1881c42b35eeef0cdf86fdfbe241c087.html#a1881c42b35eeef0cdf86fdfbe241c087">geodist_edge_radius_prune</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_a681bf67fbbe2bd8c5930bbe94265bc6a.html#a681bf67fbbe2bd8c5930bbe94265bc6a">geodist_geom_arc_contains_angle</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_a3cf8547db2ad7839d9712a7d2d54a3d6.html#a3cf8547db2ad7839d9712a7d2d54a3d6">geodist_geom_arc_set_bbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_a4cd5ec5e7d0958e29198a037b29866ea.html#a4cd5ec5e7d0958e29198a037b29866ea">geodist_geom_build</a></td></tr>
@@ -90,7 +90,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_ae728d69dc0f00e7675903a7e7e151898.html#ae728d69dc0f00e7675903a7e7e151898">geodist_geom_build_rtree</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_a23765c33bb5f5d8c6945b6d80688b8bd.html#a23765c33bb5f5d8c6945b6d80688b8bd">geodist_geom_closest_on_arc</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_a80a69a2515798a4b7a541f757428327b.html#a80a69a2515798a4b7a541f757428327b">geodist_geom_closest_on_edge</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_a7066c6d3ec52eb78d9e0529db72346bb.html#a7066c6d3ec52eb78d9e0529db72346bb">geodist_geom_edges</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_a7066c6d3ec52eb78d9e0529db72346bb.html#a7066c6d3ec52eb78d9e0529db72346bb">geodist_geom_edges</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_a8f40b589a98f6dd4c003dce40ddebaa9.html#a8f40b589a98f6dd4c003dce40ddebaa9">geodist_geom_edges_add_ptarray</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_abdb0937f70bef9392d62ba82588d468a.html#abdb0937f70bef9392d62ba82588d468a">geodist_geom_free</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__distance_8c_aca12df7eac8aee7cb0ab4bafc196824d.html#aca12df7eac8aee7cb0ab4bafc196824d">geodist_geom_morton_cmp</a></td></tr>
@@ -160,47 +160,62 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a7066c6d3ec52eb78d9e0529db72346bb" name="a7066c6d3ec52eb78d9e0529db72346bb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7066c6d3ec52eb78d9e0529db72346bb">&#9670;&#160;</a></span>geodist_geom_edges()</h2>
+<a id="a1881c42b35eeef0cdf86fdfbe241c087" name="a1881c42b35eeef0cdf86fdfbe241c087"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1881c42b35eeef0cdf86fdfbe241c087">&#9670;&#160;</a></span>geodist_edge_radius_prune()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">bool geodist_geom_edges </td>
+          <td class="memname">static bool geodist_edge_radius_prune </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structLWGEOM.html">LWGEOM</a> *&#160;</td>
-          <td class="paramname"><em>lw</em>, </td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>cx1</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>allow_arc</em>, </td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>cy1</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="structGeoDistEdge.html">GeoDistEdge</a> **&#160;</td>
-          <td class="paramname"><em>arr</em>, </td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>cx2</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int *&#160;</td>
-          <td class="paramname"><em>cap</em>, </td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>cy2</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int *&#160;</td>
-          <td class="paramname"><em>cnt</em>, </td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>r1</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">bool *&#160;</td>
-          <td class="paramname"><em>has_poly</em>&#160;</td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>r2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structGeoDistEdge.html">GeoDistEdge</a> *&#160;</td>
+          <td class="paramname"><em>e</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>cur</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -208,10 +223,15 @@ $(function() {
           <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-<p>Recursively collect the boundary segments of a geometry, as straight edges and, when <code>allow_arc</code> is true, as circular-arc edges. </p>
-<p >Returns false for a type that has no exact edge decomposition, that is, a TIN or a polyhedral surface, and for a circular-arc type when <code>allow_arc</code> is false (the caller then falls back to the exact traversed-area path). </p>
+<p>Return true when the exact swept-disc solve against a straight edge cannot improve the running minimum <code>cur</code>. </p>
+<p >The exact distance is at least the distance from the centre segment to the edge minus the larger radius, since min_t dist(centre(t), edge) - r(t) is at most that distance, so a centre-segment distance of at least cur + rmax leaves the solve nothing to find. The axis-aligned swept box expanded by the radius is a loose filter for a round disc, and this rejects the survivors it leaves. A scalar squared segment distance serves here rather than lw_dist2d_seg_seg, which also computes the closest points and is far heavier in this loop. </p>
 
 </div>
 </div>
