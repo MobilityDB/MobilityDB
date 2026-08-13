@@ -154,7 +154,7 @@ SELECT stbox(npoint 'NPoint(1,0.3)', tstzspan '[2001-01-01,2001-01-02]');
 		<sect2 xml:id="npoint_accessor_functions">
 			<title>Accessors</title>
 			<itemizedlist>
-				<listitem xml:id="route">
+				<listitem xml:id="npoint_route">
 					<indexterm significance="normal"><primary><varname>route</varname></primary></indexterm>
 					<para>Return the route identifier</para>
 					<para><varname>route({npoint,nsegment}) → bigint</varname></para>
@@ -166,7 +166,7 @@ SELECT route(nsegment 'Nsegment(76, 0.3, 0.3)');
 </programlisting>
 				</listitem>
 
-				<listitem xml:id="getPosition">
+				<listitem xml:id="npoint_getPosition">
 					<indexterm significance="normal"><primary><varname>getPosition</varname></primary></indexterm>
 					<para>Return the position</para>
 					<para><varname>getPosition(npoint) → float</varname></para>
@@ -176,7 +176,7 @@ SELECT getPosition(npoint 'Npoint(63, 0.3)');
 </programlisting>
 				</listitem>
 
-				<listitem xml:id="startPosition">
+				<listitem xml:id="npoint_startPosition">
 					<indexterm significance="normal"><primary><varname>startPosition</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>endPosition</varname></primary></indexterm>
 					<para>Return the start/end position</para>

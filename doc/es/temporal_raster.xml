@@ -26,7 +26,7 @@ CREATE EXTENSION mobilitydb CASCADE;
 		<title>Operador de Muestreo</title>
 
 		<itemizedlist>
-			<listitem xml:id="rasterValue">
+			<listitem xml:id="raster_rasterValue">
 				<indexterm significance="normal"><primary><varname>rasterValue</varname></primary></indexterm>
 				<para>Muestrear una banda de ráster en cada instante de una trayectoria</para>
 				<para><varname>rasterValue(tgeompoint,raster,band integer DEFAULT 1) → tfloat</varname></para>
@@ -103,7 +103,7 @@ ORDER BY tile_count DESC;
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="rasterTileValueQuadbin">
+			<listitem xml:id="raster_rasterTileValueQuadbin">
 				<indexterm significance="normal"><primary><varname>rasterTileValueQuadbin</varname></primary></indexterm>
 				<para>Muestrear un chip ráster de Raquet a lo largo de una trayectoria usando una celda QUADBIN para la georreferenciación</para>
 				<para><varname>rasterTileValueQuadbin(tgeompoint,bytea,integer,integer,bigint,text,float8,boolean) → tfloat</varname></para>
@@ -128,7 +128,7 @@ JOIN sst_raquet r ON r.quadbin = ANY(trajectoryQuadbins(t.trip, 6));
 				<indexterm significance="normal"><primary><varname>raquet</varname></primary></indexterm>
 				<para>Construir una tesela ráster Raquet a partir de sus bytes de píxeles, dimensiones, celda QUADBIN y tipo de píxel</para>
 				<para><varname>raquet(bytea,integer,integer,bigint,text,float8) → raquet</varname></para>
-				<para>Empaqueta un arreglo de píxeles <varname>pixels</varname> de banda única en orden de fila mayor de <varname>width</varname> × <varname>height</varname> píxeles de tipo <varname>pixtype</varname> (uno de <varname>UINT8</varname>, <varname>INT16</varname>, <varname>INT32</varname>, <varname>FLOAT32</varname> o <varname>FLOAT64</varname>), georreferenciado por la celda <varname>quadbin</varname>, en un único valor <varname>raquet</varname> autodescriptivo. El argumento <varname>nodata</varname> es opcional; cuando se omite (<varname>NULL</varname>) la tesela no lleva valor centinela de nodata. Se genera un error cuando el arreglo <varname>pixels</varname> es menor que <varname>width</varname> × <varname>height</varname> × el tamaño del píxel. Un <varname>raquet</varname> es un valor de longitud variable, libre de GDAL, con una representación portátil en texto Hex-WKB y binaria, distinto de y coexistente con el tipo <varname>raster</varname> de PostGIS usado por <link linkend="rasterValue"><varname>rasterValue</varname></link>.</para>
+				<para>Empaqueta un arreglo de píxeles <varname>pixels</varname> de banda única en orden de fila mayor de <varname>width</varname> × <varname>height</varname> píxeles de tipo <varname>pixtype</varname> (uno de <varname>UINT8</varname>, <varname>INT16</varname>, <varname>INT32</varname>, <varname>FLOAT32</varname> o <varname>FLOAT64</varname>), georreferenciado por la celda <varname>quadbin</varname>, en un único valor <varname>raquet</varname> autodescriptivo. El argumento <varname>nodata</varname> es opcional; cuando se omite (<varname>NULL</varname>) la tesela no lleva valor centinela de nodata. Se genera un error cuando el arreglo <varname>pixels</varname> es menor que <varname>width</varname> × <varname>height</varname> × el tamaño del píxel. Un <varname>raquet</varname> es un valor de longitud variable, libre de GDAL, con una representación portátil en texto Hex-WKB y binaria, distinto de y coexistente con el tipo <varname>raster</varname> de PostGIS usado por <link linkend="raster_rasterValue"><varname>rasterValue</varname></link>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Empaquetar las columnas sueltas de una tabla Raquet en valores raquet
 SELECT raquet(band_data, width, height, quadbin, 'FLOAT32', nodata) AS tile
@@ -155,11 +155,11 @@ FROM elevation_files;
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="rasterTileValue">
+			<listitem xml:id="raster_rasterTileValue">
 				<indexterm significance="normal"><primary><varname>rasterTileValue</varname></primary></indexterm>
 				<para>Muestrear una tesela ráster <varname>raquet</varname> a lo largo de una trayectoria</para>
 				<para><varname>rasterTileValue(tgeompoint,raquet) → tfloat</varname></para>
-				<para>Evalúa la tesela en cada instante de <varname>traj</varname> (SRID 4326), devolviendo los valores de píxel muestreados como un <varname>tfloat</varname>. Es el equivalente tipado de <link linkend="rasterTileValueQuadbin"><varname>rasterTileValueQuadbin</varname></link>: las dimensiones, la celda QUADBIN, el tipo de píxel y el tratamiento de nodata se toman del valor <varname>raquet</varname> en lugar de argumentos separados. Devuelve <varname>NULL</varname> cuando ningún instante cae dentro de la tesela o sobrevive al filtrado de nodata.</para>
+				<para>Evalúa la tesela en cada instante de <varname>traj</varname> (SRID 4326), devolviendo los valores de píxel muestreados como un <varname>tfloat</varname>. Es el equivalente tipado de <link linkend="raster_rasterTileValueQuadbin"><varname>rasterTileValueQuadbin</varname></link>: las dimensiones, la celda QUADBIN, el tipo de píxel y el tratamiento de nodata se toman del valor <varname>raquet</varname> en lugar de argumentos separados. Devuelve <varname>NULL</varname> cuando ningún instante cae dentro de la tesela o sobrevive al filtrado de nodata.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Muestrear teselas raquet preempaquetadas a lo largo de trayectorias de barcos
 SELECT t.tripid, rasterTileValue(t.trip, r.tile)
@@ -168,7 +168,7 @@ JOIN elevation_tiles r ON r.quadbin = ANY(trajectoryQuadbins(t.trip, 8));
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="rasterTileValueArray">
+			<listitem xml:id="raster_rasterTileValueArray">
 				<indexterm significance="normal"><primary><varname>rasterTileValue</varname></primary></indexterm>
 				<para>Muestrear un arreglo de teselas ráster <varname>raquet</varname> a lo largo de una trayectoria</para>
 				<para><varname>rasterTileValue(tgeompoint,raquet[]) → tfloat</varname></para>
@@ -309,7 +309,7 @@ SELECT DISTINCT tile FROM elevation_tiles;
 		<para>Los siguientes operadores definidos en SQL componen <varname>rasterValue</varname> con las funciones estándar de restricción temporal y predicado de MobilityDB. Aceptan un argumento opcional <varname>band</varname> (por defecto 1) e invocan <varname>rasterValue</varname> exactamente una vez por invocación.</para>
 
 		<itemizedlist>
-			<listitem xml:id="atRasterValue">
+			<listitem xml:id="raster_atRasterValue">
 				<indexterm significance="normal"><primary><varname>atRasterValue</varname></primary></indexterm>
 				<para>Devolver los instantes de una trayectoria donde el valor ráster muestreado cae dentro de un rango de flotante</para>
 				<para><varname>atRasterValue(tgeompoint,raster,floatspan,band integer DEFAULT 1) → tgeompoint</varname></para>
@@ -331,7 +331,7 @@ FROM rast;
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="minusRasterValue">
+			<listitem xml:id="raster_minusRasterValue">
 				<indexterm significance="normal"><primary><varname>minusRasterValue</varname></primary></indexterm>
 				<para>Devolver los instantes de una trayectoria donde el valor ráster muestreado cae fuera de un rango de flotante</para>
 				<para><varname>minusRasterValue(tgeompoint,raster,floatspan,band integer DEFAULT 1) → tgeompoint</varname></para>
@@ -343,7 +343,7 @@ FROM trips, elevation_raster;
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="eRasterValue">
+			<listitem xml:id="raster_eRasterValue">
 				<indexterm significance="normal"><primary><varname>eRasterValue</varname></primary></indexterm>
 				<para>Devolver verdadero si la trayectoria alguna vez muestrea un valor de píxel ráster dentro de un rango de flotante</para>
 				<para><varname>eRasterValue(tgeompoint,raster,floatspan,band integer DEFAULT 1) → boolean</varname></para>
@@ -356,7 +356,7 @@ WHERE eRasterValue(trip, elev_raster, floatspan '[200, 9999]');
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="aRasterValue">
+			<listitem xml:id="raster_aRasterValue">
 				<indexterm significance="normal"><primary><varname>aRasterValue</varname></primary></indexterm>
 				<para>Devolver verdadero si cada instante de la trayectoria dentro de la extensión del ráster muestrea un valor de píxel dentro de un rango de flotante</para>
 				<para><varname>aRasterValue(tgeompoint,raster,floatspan,band integer DEFAULT 1) → boolean</varname></para>

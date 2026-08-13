@@ -1169,7 +1169,7 @@ SELECT timestamp '2001-01-01' #&amp;&gt; tstzspan '[2001-01-01, 2001-01-05)';
 			<para>However, when the bounding boxes have a large empty space not covered by the actual values, the index will generate many candidate values that do not satisfy the query predicate, which reduces the efficiency of the index. In these situations, it may be better to represent a value not with a <emphasis>single</emphasis> bounding box, but instead with <emphasis>multiple</emphasis> bounding boxes. This increases considerably the efficiency of the index, provided that the index is able to manage multiple bounding boxes per value. The following functions are used for generating multiple spans from a single set or span set value.</para>
 
 			<itemizedlist>
-				<listitem xml:id="splitNSpans">
+				<listitem xml:id="setspan_splitNSpans">
 					<indexterm significance="normal"><primary><varname>splitNSpans</varname></primary></indexterm>
 					<para>Return an array of N spans obtained by merging the elements of a set or the spans of a spanset</para>
 					<para><varname>splitNSpans(set, integer) → span[]</varname></para>
@@ -1196,12 +1196,12 @@ SELECT splitNSpans(datespanset '{[2000-01-01, 2000-01-04), [2000-01-05, 2000-01-
 </programlisting>
 				</listitem>
 
-				<listitem xml:id="splitEachNSpans">
+				<listitem xml:id="setspan_splitEachNSpans">
 					<indexterm significance="normal"><primary><varname>splitEachNSpans</varname></primary></indexterm>
 					<para>Return an array of spans obtained by merging N consecutive elements of a set or N consecutive spans of a spanset</para>
 					<para><varname>splitEachNSpans(set, integer) → span[]</varname></para>
 					<para><varname>splitEachNSpans(spanset, integer) → span[]</varname></para>
-					<para>The last argument specifies the number of input elements that are merged to produce an output span. If the number of input elements is less than the given number, the resulting array will have one output span per element. Otherwise, the given number of consecutive input elements will be merged into a single output span in the answer. Notice that, contrary to the <link linkend="splitNSpans"><varname>splitNSpans</varname></link> function, the number of spans in the result depends on the number of input elements or spans.</para>
+					<para>The last argument specifies the number of input elements that are merged to produce an output span. If the number of input elements is less than the given number, the resulting array will have one output span per element. Otherwise, the given number of consecutive input elements will be merged into a single output span in the answer. Notice that, contrary to the <link linkend="setspan_splitNSpans"><varname>splitNSpans</varname></link> function, the number of spans in the result depends on the number of input elements or spans.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT splitEachNSpans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', 1);
 /* {"[1, 2)","[2, 3)","[3, 4)","[4, 5)","[5, 6)","[6, 7)","[7, 8)","[8, 9)",

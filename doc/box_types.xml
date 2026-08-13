@@ -310,7 +310,7 @@ SELECT tstzspanset '{(2001-01-01,2001-01-02),(2001-01-03,2001-01-04)}'::stbox;
 		<title>Accessors</title>
 
 		<itemizedlist>
-			<listitem xml:id="hasX">
+			<listitem xml:id="box_hasX">
 				<indexterm significance="normal"><primary><varname>hasX</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>hasZ</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>hasT</varname></primary></indexterm>
@@ -332,7 +332,7 @@ SELECT hasT(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="isGeodetic">
+			<listitem xml:id="stbox_isGeodetic">
 				<indexterm significance="normal"><primary><varname>isGeodetic</varname></primary></indexterm>
 				<para>Is geodetic?</para>
 				<para><varname>isGeodetic(stbox) → boolean</varname></para>
@@ -344,7 +344,7 @@ SELECT isGeodetic(stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01,2001-01-02])
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="xMin">
+			<listitem xml:id="box_xMin">
 				<indexterm significance="normal"><primary><varname>xMin</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>yMin</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>zMin</varname></primary></indexterm>
@@ -367,7 +367,7 @@ SELECT tMin(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 				<para>Notice that for <varname>tbox</varname> the result value for <varname>xMin</varname> and <varname>xMin</varname> is converted to a <varname>float</varname> for the temporal boxes with an integer span.</para>
 			</listitem>
 
-			<listitem xml:id="xMax">
+			<listitem xml:id="box_xMax">
 				<indexterm significance="normal"><primary><varname>xMax</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>yMax</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>zMax</varname></primary></indexterm>
@@ -390,7 +390,7 @@ SELECT tMax(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 				<para>Notice that for <varname>tbox</varname> the result value for <varname>xMin</varname> and <varname>xMin</varname> is converted to a <varname>float</varname> for the temporal boxes with an integer span.</para>
 			</listitem>
 
-			<listitem xml:id="xMinInc">
+			<listitem xml:id="tbox_xMinInc">
 				<indexterm significance="normal"><primary><varname>xMinInc</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tMinInc</varname></primary></indexterm>
 				<para>Is the minimum X/T value inclusive?</para>
@@ -404,7 +404,7 @@ SELECT tMinInc(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="xMaxInc">
+			<listitem xml:id="tbox_xMaxInc">
 				<indexterm significance="normal"><primary><varname>xMaxInc</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tMaxInc</varname></primary></indexterm>
 				<para>Is the maximum X/T value inclusive?</para>
@@ -418,7 +418,7 @@ SELECT tMaxInc(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="area">
+			<listitem xml:id="stbox_area">
 				<indexterm significance="normal"><primary><varname>area</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>perimeter</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>volume</varname></primary></indexterm>
@@ -623,7 +623,7 @@ FROM test;
 		<title>Splitting Operations</title>
 
 		<itemizedlist>
-			<listitem xml:id="quadSplit">
+			<listitem xml:id="stbox_quadSplit">
 				<indexterm significance="normal"><primary><varname>quadSplit</varname></primary></indexterm>
 				<para>Split the bounding box in quadrants or octants &SRF;
 </para>

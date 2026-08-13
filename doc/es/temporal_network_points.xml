@@ -140,7 +140,7 @@ SELECT geometry 'SRID=5676;LINESTRING(406.7 702.6,383.6 845.1)'::nsegment;
 			<title>Accesores</title>
 
 			<itemizedlist>
-				<listitem xml:id="route">
+				<listitem xml:id="npoint_route">
 					<indexterm significance="normal"><primary><varname>route</varname></primary></indexterm>
 					<para>Devuelve el identificador de ruta</para>
 					<para><varname>route({npoint,nsegment}) → bigint</varname></para>
@@ -152,7 +152,7 @@ SELECT route(nsegment 'Nsegment(76, 0.3, 0.3)');
 </programlisting>
 				</listitem>
 
-				<listitem xml:id="getPosition">
+				<listitem xml:id="npoint_getPosition">
 					<indexterm significance="normal"><primary><varname>getPosition</varname></primary></indexterm>
 					<para>Devuelve la posición</para>
 					<para><varname>getPosition(npoint) → float</varname></para>
@@ -162,7 +162,7 @@ SELECT getPosition(npoint 'Npoint(63, 0.3)');
 </programlisting>
 				</listitem>
 
-				<listitem xml:id="startPosition">
+				<listitem xml:id="npoint_startPosition">
 					<indexterm significance="normal"><primary><varname>startPosition</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>endPosition</varname></primary></indexterm>
 					<para>Devuelve la posición inicial/final</para>

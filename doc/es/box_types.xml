@@ -330,7 +330,7 @@ SELECT hasT(stbox 'STBOX X((1.0,2.0),(3.0,4.0))');
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="box_isGeodetic">
+			<listitem xml:id="stbox_isGeodetic">
 				<indexterm significance="normal"><primary><varname>isGeodetic</varname></primary></indexterm>
 				<para>¿Es geodética?</para>
 				<para><varname>isGeodetic(stbox) → boolean</varname></para>
@@ -386,7 +386,7 @@ SELECT tMax(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="box_xMinInc">
+			<listitem xml:id="tbox_xMinInc">
 				<indexterm significance="normal"><primary><varname>xMinInc</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tMinInc</varname></primary></indexterm>
 				<para>Es el mínimo valor X/T inclusivo?</para>
@@ -400,7 +400,7 @@ SELECT tMinInc(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="box_xMaxInc">
+			<listitem xml:id="tbox_xMaxInc">
 				<indexterm significance="normal"><primary><varname>xMaxInc</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tMaxInc</varname></primary></indexterm>
 				<para>Es el máximo valor X/T inclusivo?</para>
@@ -414,7 +414,7 @@ SELECT tMaxInc(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="box_area">
+			<listitem xml:id="stbox_area">
 				<indexterm significance="normal"><primary><varname>area</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>perimeter</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>volume</varname></primary></indexterm>
@@ -621,7 +621,7 @@ FROM test;
 		<title>Operaciones de división</title>
 
 		<itemizedlist>
-			<listitem xml:id="box_quadSplit">
+			<listitem xml:id="stbox_quadSplit">
 				<indexterm significance="normal"><primary><varname>quadSplit</varname></primary></indexterm>
 				<para>Dividir el cuadro delimitador en cuadrantes u octantes &SRF;</para>
 				<para><varname>quadSplit(stbox) → {stbox}</varname></para>

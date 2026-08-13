@@ -79,7 +79,8 @@
 		</figure>
 
 		<itemizedlist>
-			<listitem xml:id="insert">
+			<listitem xml:id="ttype_insert">
+				<indexterm significance="normal"><primary><varname>insert</varname></primary></indexterm>
 				<para>Insertar un valor temporal en otro</para>
 				<para><varname>insert(ttype,ttype,connect=true) → ttype</varname></para>
 				<programlisting language="sql" xml:space="preserve">
@@ -103,7 +104,8 @@ SELECT asText(insert(tgeompoint '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="update">
+			<listitem xml:id="ttype_update">
+				<indexterm significance="normal"><primary><varname>update</varname></primary></indexterm>
 				<para>Actualizar un valor temporal con otro</para>
 				<para><varname>update(ttype,ttype,connect=true) → ttype</varname></para>
 				<programlisting language="sql" xml:space="preserve">
@@ -126,7 +128,8 @@ SELECT asText(update(
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="deleteTime">
+			<listitem xml:id="ttype_deleteTime">
+				<indexterm significance="normal"><primary><varname>deleteTime</varname></primary></indexterm>
 				<para>Eliminar de un valor temporal un valor de tiempo</para>
 				<para><varname>deleteTime(ttype,time,connect=true) → ttype</varname></para>
 				<programlisting language="sql" xml:space="preserve">
@@ -145,7 +148,7 @@ SELECT asText(deleteTime(tgeompoint '{[Point(1 1 1)@2001-01-01,
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="appendInstant">
+			<listitem xml:id="ttype_appendInstant">
 				<indexterm significance="normal"><primary><varname>appendInstant</varname></primary></indexterm>
 				<para>Anexar un instante temporal a un valor temporal</para>
 				<para><varname>appendInstant(ttype,ttypeInst,interp=NULL) → ttype</varname></para>
@@ -214,7 +217,7 @@ SELECT asText(appendInstant(inst, NULL, sqrt(2), '1 day' ORDER BY inst)) FROM te
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="appendSequence">
+			<listitem xml:id="ttype_appendSequence">
 				<indexterm significance="normal"><primary><varname>appendSequence</varname></primary></indexterm>
 				<para>Anexar una secuencia temporal a un valor temporal</para>
 				<para><varname>appendSequence(ttype,ttypeSeq) → {ttypeSeq, ttypeSeqSet}</varname></para>
@@ -241,7 +244,7 @@ SELECT asText(appendSequence(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="merge">
+			<listitem xml:id="ttype_merge">
 				<indexterm significance="normal"><primary><varname>merge</varname></primary></indexterm>
 				<para>Fusionar los valores temporales</para>
 				<para><varname>merge(ttype,ttype) → ttype</varname></para>
@@ -409,7 +412,7 @@ SELECT minusTime(tint '[1@2001-01-01, 1@2001-01-15)',
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="beforeTimestamp">
+			<listitem xml:id="ttype_beforeTimestamp">
 				<indexterm significance="normal"><primary><varname>beforeTimestamp</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>afterTimestamp</varname></primary></indexterm>
 				<para>Mantener los instantes de un valor temporal que son anteriores o posteriores a una marca de tiempo, o iguales a ella</para>

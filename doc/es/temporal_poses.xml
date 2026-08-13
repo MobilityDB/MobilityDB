@@ -903,7 +903,7 @@ SELECT asEWKT(setSRID(tpose '[Pose(Point(0 0),1)@2001-01-01,
 				<para>Transformar a un identificador de referencia espacial</para>
 				<para><varname>transform(tpose,integer) → tpose</varname></para>
 				<para><varname>transformPipeline(tpose,pipeline text,to_srid integer,is_forward bool=true) → tpose</varname></para>
-				<para>La pose de cada instante se transforma igual que la pose estática correspondiente, con la corrección de orientación incluida, como se describe en <xref linkend="pose_transform"/>. Lo mismo ocurre con un <varname>poseset</varname>. Una <varname>trgeometry</varname> asocia sus poses con una geometría de referencia que comparte su marco, y la transformación a otro SRID no está admitida para ese tipo.</para>
+				<para>La pose de cada instante se transforma igual que la pose estática correspondiente, con la corrección de orientación incluida, como se describe para <link linkend="pose_transform"><varname>transform</varname></link>. Lo mismo ocurre con un <varname>poseset</varname>. Una <varname>trgeometry</varname> asocia sus poses con una geometría de referencia que comparte su marco, y la transformación a otro SRID no está admitida para ese tipo.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asEWKT(transform(tpose 'SRID=4326;Pose(Point(4.35 50.85),1)@2001-01-01', 
   3812));
