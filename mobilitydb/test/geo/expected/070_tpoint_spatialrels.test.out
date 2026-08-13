@@ -2208,3 +2208,46 @@ SELECT eIntersects(
  t
 (1 row)
 
+SELECT eIntersects(geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))',
+  tgeompoint '[Point(-3 -3)@2000-01-01, Point(-1 -1)@2000-01-02]');
+ eintersects 
+-------------
+ t
+(1 row)
+
+SELECT eIntersects(geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))',
+  tgeompoint '[Point(-1 -1)@2000-01-01, Point(-3 -3)@2000-01-02]');
+ eintersects 
+-------------
+ t
+(1 row)
+
+SELECT eIntersects(geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))',
+  tgeompoint '[Point(-3 0)@2000-01-01, Point(-1 0)@2000-01-02]');
+ eintersects 
+-------------
+ t
+(1 row)
+
+SELECT eIntersects(geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))',
+  tgeompoint '[Point(-3 -1)@2000-01-01, Point(-1 -1)@2000-01-02, Point(-3 -1)@2000-01-03]');
+ eintersects 
+-------------
+ t
+(1 row)
+
+SELECT tIntersects(geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))',
+  tgeompoint '[Point(-3 -1)@2000-01-01, Point(-1 -1)@2000-01-02, Point(-3 -1)@2000-01-03]');
+                                                             tintersects                                                              
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, t@Sun Jan 02 00:00:00 2000 PST], (f@Sun Jan 02 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT atGeometry(
+  tgeompoint '[Point(-3 -1)@2000-01-01, Point(-1 -1)@2000-01-02, Point(-3 -1)@2000-01-03]',
+  geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))');
+                                 atgeometry                                  
+-----------------------------------------------------------------------------
+ {[0101000000000000000000F0BF000000000000F0BF@Sun Jan 02 00:00:00 2000 PST]}
+(1 row)
+

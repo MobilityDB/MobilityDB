@@ -746,6 +746,34 @@ float8_qsort_cmp(const void *a1, const void *a2)
 }
 
 /**
+ * @brief Return true if a point lies on the boundary of a polygonal component
+ * @details Only the polygon boundary edges are considered, straight
+ * (#EDGE_POLY) and circular (#EDGE_POLYARC). The candidate array filtered by
+ * the box of a segment suffices for a point lying on that segment: a boundary
+ * edge through such a point has a box meeting the segment box, so it is in the
+ * candidates
+ */
+static bool
+point_on_poly_boundary(double px, double py, Edge **edges, int nedges)
+{
+  for (int i = 0; i < nedges; i++)
+  {
+    const Edge *e = edges[i];
+    if (e->etype == EDGE_POLY)
+    {
+      if (point_on_segment(px, py, e->x1, e->y1, e->x2, e->y2))
+        return true;
+    }
+    else if (e->etype == EDGE_POLYARC)
+    {
+      if (point_on_arc(px, py, e))
+        return true;
+    }
+  }
+  return false;
+}
+
+/**
  * @brief Compute the intersection intervals of a trajectory segment with an
  * array of polygon edges
  * @details The ray-casting cannot use the edges filtered by the segment box,
@@ -854,8 +882,11 @@ intervals_from_polygons(const POINT2D *a, const POINT2D *b, Edge **edges,
   }
   events->count = newcount;
 
-  /* Build intervals using midpoint test */
-  for (int i = 0; i < (int) events->count - 1; i++)
+  /* Build intervals using midpoint test, recording for each event whether it
+   * bounds an interval the point spends in the polygon interior */
+  int nevents = (int) events->count;
+  bool *bounded = palloc0(sizeof(bool) * (nevents > 0 ? nevents : 1));
+  for (int i = 0; i < nevents - 1; i++)
   {
     double ta = evtarr[i];
     double tb = evtarr[i + 1];
@@ -872,8 +903,32 @@ intervals_from_polygons(const POINT2D *a, const POINT2D *b, Edge **edges,
       span_set(Float8GetDatum(ta), Float8GetDatum(tb), true, true,
         T_FLOAT8, T_FLOATSPAN, &in);
       meos_array_add(intervals, &in);
+      bounded[i] = bounded[i + 1] = true;
     }
   }
+
+  /* A segment that meets the boundary without entering the interior is in the
+   * closure of the polygon at that instant alone. Such a contact bounds no
+   * interval, so it is emitted as the instantaneous interval that it is */
+  for (int i = 0; i < nevents; i++)
+  {
+    if (bounded[i])
+      continue;
+    double t = evtarr[i];
+    if (t < 0.0)
+      t = 0.0;
+    else if (t > 1.0)
+      t = 1.0;
+    double x = ax + t * rx;
+    double y = ay + t * ry;
+    if (! point_on_poly_boundary(x, y, edges, nedges))
+      continue;
+    Span in;
+    span_set(Float8GetDatum(t), Float8GetDatum(t), true, true,
+      T_FLOAT8, T_FLOATSPAN, &in);
+    meos_array_add(intervals, &in);
+  }
+  pfree(bounded);
   return;
 }
 

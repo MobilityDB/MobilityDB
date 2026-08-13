@@ -583,4 +583,20 @@ SELECT eIntersects(
   tgeompoint '[Point(5 5)@2000-01-01, Point(5 5)@2000-01-02]',
   tgeompoint '[Point(0 0)@2000-01-01, Point(10 10)@2000-01-03]');
 
+-- A trajectory that reaches the boundary of a polygon without entering its
+-- interior meets it at that instant alone
+SELECT eIntersects(geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))',
+  tgeompoint '[Point(-3 -3)@2000-01-01, Point(-1 -1)@2000-01-02]');
+SELECT eIntersects(geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))',
+  tgeompoint '[Point(-1 -1)@2000-01-01, Point(-3 -3)@2000-01-02]');
+SELECT eIntersects(geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))',
+  tgeompoint '[Point(-3 0)@2000-01-01, Point(-1 0)@2000-01-02]');
+SELECT eIntersects(geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))',
+  tgeompoint '[Point(-3 -1)@2000-01-01, Point(-1 -1)@2000-01-02, Point(-3 -1)@2000-01-03]');
+SELECT tIntersects(geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))',
+  tgeompoint '[Point(-3 -1)@2000-01-01, Point(-1 -1)@2000-01-02, Point(-3 -1)@2000-01-03]');
+SELECT atGeometry(
+  tgeompoint '[Point(-3 -1)@2000-01-01, Point(-1 -1)@2000-01-02, Point(-3 -1)@2000-01-03]',
+  geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))');
+
 -------------------------------------------------------------------------------
