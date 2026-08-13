@@ -133,7 +133,7 @@ raster_st_value_sample(void *ctx, const GSERIALIZED *point, double *value)
   fcinfo_val->isnull         = false;   /* reset before every call */
   Datum pixval = FunctionCallInvoke(fcinfo_val);
   if (fcinfo_val->isnull)
-    return false;   /* nodata pixel or geometry outside the pixel grid */
+    return false;   /* nodata pixel, or point outside the raster or the band */
   *value = DatumGetFloat8(pixval);
   return true;
 }
@@ -177,9 +177,11 @@ raster_value_setup(Datum rast_datum, int32 band, STBox *box,
   fcinfo_val->args[0].isnull = false;
   fcinfo_val->args[1].value  = Int32GetDatum(band);
   fcinfo_val->args[1].isnull = false;
-  /* Arg 3 (exclude_nodata) = false — return the nodata sentinel as-is so we
-   * can detect a NULL and skip the instant, matching the SQL STRICT semantics */
-  fcinfo_val->args[3].value  = BoolGetDatum(false);
+  /* Arg 3 (exclude_nodata) = true — ST_Value reports a nodata pixel as NULL,
+   * which #raster_st_value_sample turns into "no value here", as the
+   * #raster_sample_fn contract requires. With false the sentinel comes back as
+   * an ordinary number and is sampled as though it were data */
+  fcinfo_val->args[3].value  = BoolGetDatum(true);
   fcinfo_val->args[3].isnull = false;
   /* Arg 4 (resample) = 'nearest' — PostGIS 3.6+ added this parameter */
   fcinfo_val->args[4].value  = PointerGetDatum(cstring_to_text("nearest"));
