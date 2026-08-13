@@ -48,6 +48,23 @@ SMOKE_DIR = os.path.join(ROOT, "smoke")
 # the library is installed somewhere other than the default prefix.
 HEADERS = os.environ.get("MEOS_INCLUDE_DIR", "/usr/local/include")
 
+# MEOS reads two CSV data files at run time: the spatial_ref_sys table behind
+# every reprojection, and the ways network behind npoint route resolution.
+# Both are installed next to the headers, in <prefix>/share, so the generated
+# test derives them from HEADERS and points MEOS at the very prefix it was
+# generated against instead of the library's compiled-in default path.
+DATA_DIR = os.path.normpath(os.path.join(HEADERS, os.pardir, "share"))
+
+# CSV name -> (file installed in DATA_DIR, MEOS setter). Every suite gets the
+# spatial_ref_sys table, which core MEOS always exports; a config names any
+# further CSV in its "csv_data" key. `meos_set_ways_csv` is only exported when
+# MEOS was built with -DNPOINT=on, so emitting it unconditionally would break
+# the link of every other suite on a build without that family.
+CSV_DATA = {
+    "spatial_ref_sys": ("spatial_ref_sys.csv", "meos_set_spatial_ref_sys_csv"),
+    "ways":            ("ways.csv",            "meos_set_ways_csv"),
+}
+
 EXTERN_RE = re.compile(r"^extern\s+(.*?);\s*$", re.MULTILINE | re.DOTALL)
 SIG_RE    = re.compile(r"^(?P<ret>.*[\s\*])(?P<name>\w+)\s*\((?P<args>.*)\)\s*$",
                        re.DOTALL)
@@ -291,13 +308,29 @@ test_error_handler(int level, int code, const char *msg)
   fprintf(stderr, "[meos warn] %s\\n", msg);
 }}
 
+/**
+ * @brief Point MEOS at a CSV data file shipped with the install prefix
+ * @details A file that is not there — a partial install, or a prefix built
+ * without the family that ships it — leaves the library's compiled-in default
+ * path in place instead of breaking the whole suite.
+ */
+static void
+set_csv_if_present(const char *path, void (*setter)(const char *))
+{{
+  FILE *f = fopen(path, "r");
+  if (! f)
+    return;
+  fclose(f);
+  setter(path);
+}}
+
 int
 main(void)
 {{
   meos_initialize();
   meos_initialize_timezone("UTC");
   meos_initialize_error_handler(test_error_handler);
-
+{csv_setup}
 {common_inputs}
 
   printf("****************************************************************\\n");
@@ -349,10 +382,28 @@ TRGEO_CONFIG = dict(
     },
     override_args={
         "geo_tpose_to_trgeometry":          {1: "tpose1"},
+        # The body-point trajectory follows one POINT of the rigid body; the
+        # default polygon geom1 is rejected ("Only point geometries accepted").
+        "trgeometry_body_point_trajectory": {1: "geom_point1"},
+        # A space-tiling origin must be a point geometry (same rejection).
+        "trgeometry_space_boxes":           {4: "geom_point1"},
+        "trgeometry_space_time_boxes":      {5: "geom_point1"},
+        # Casting to an instant needs an instant-subtype temporal; the default
+        # trgeo_seq1 is a two-instant sequence.
+        "trgeometry_as_tinstant":           {0: "(Temporal *) trgeo_inst1"},
+        # Append is not destructive — it reads its first argument and returns a
+        # fresh value — but what it appends has to start after trgeo_seq1 ends,
+        # otherwise only the increasing-timestamps check is exercised. The
+        # trailing `expand` argument asks the kernel to grow the value in place
+        # and hand back the same allocation, which is the one ownership model
+        # the smoke harness cannot express; append without it.
+        "trgeometry_append_tinstant":       {1: "trgeo_inst3", 5: "false"},
+        "trgeometry_append_tsequence":      {1: "trgeo_tseq2", 2: "false"},
     },
     skip={
+        # The generic emitter would allocate into geom_out_param and never free
+        # it; the cleanup block below calls the function and frees the result.
         "trgeometry_value_n":         "out-param GSERIALIZED ** is exercised manually below",
-        "trgeometry_traversed_area":  "pending union-of-swept-polygons implementation",
         # The temporal-distance kernel for trgeometry is not implemented yet, so
         # every distance / nearest-approach / dwithin wrapper over it aborts.
         "re:^tdistance_trgeometry":    "tdistance_trgeometry not implemented yet",
@@ -360,19 +411,13 @@ TRGEO_CONFIG = dict(
         "re:^nai_trgeometry":          "depends on unimplemented tdistance_trgeometry",
         "re:^shortestline_trgeometry": "depends on unimplemented tdistance_trgeometry",
         "re:^e?dwithin_trgeometry":    "depends on unimplemented tdwithin_trgeosegm",
-        # These need a point-based rigid geometry the polygon default can't supply.
-        "trgeometry_body_point_trajectory": "needs a point-based trgeometry",
-        "trgeometry_space_boxes":           "needs a point-based trgeometry",
-        "trgeometry_space_time_boxes":      "needs a point-based trgeometry",
-        # Casting a multi-instant sequence to a single instant is invalid.
-        "trgeometry_as_tinstant":     "needs an instant-subtype temporal",
-        # A trgeometry's value is a pose+geometry composite, not a plain
-        # geometry, so a geomset does not match it.
-        "trgeometry_restrict_values": "value set type incompatible with trgeometry",
-        # Append consumes its input in place (destructive) and is already
-        # exercised while building trgeo_seq1 in the setup block.
-        "trgeometry_append_tinstant":  "destructive append; exercised in setup",
-        "trgeometry_append_tsequence": "destructive append; exercised in setup",
+        # The function validates its argument as a geomset, but the
+        # temporal_restrict_values() it delegates to rejects every
+        # trgeometry/geomset pair ("Operation on mixed temporal and set types:
+        # trgeometry, geomset") because a trgeometry's base type is not a
+        # geometry. No set value can reach the restriction, so there is nothing
+        # to smoke-test until the base-type mismatch is resolved in MEOS.
+        "trgeometry_restrict_values": "every geomset is rejected as a mixed temporal/set type",
     },
     common_inputs="""\
   TimestampTz tstz1 = timestamptz_in("2001-01-02", -1);
@@ -381,6 +426,9 @@ TRGEO_CONFIG = dict(
   SpanSet *tstzspanset1 = tstzspanset_in("{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04]}");
   Interval *interv1 = NULL;
   GSERIALIZED *geom1 = geom_in("Polygon((0 0,1 0,1 1,0 1,0 0))", -1);
+  /* A point geometry for the body-point and space-tiling surfaces, which
+   * accept only points. */
+  GSERIALIZED *geom_point1 = geom_in("Point(0 0)", -1);
   GSERIALIZED *geom_out_param = NULL;
   Pose *pose1 = pose_in("Pose(Point(0 0), 0.0)");
   STBox *stbox1 = stbox_in("STBOX X((0, 0), (10, 10))");
@@ -394,6 +442,14 @@ TRGEO_CONFIG = dict(
     LINEAR, 0.0, NULL, false);
   TSequence    *trgeo_tseq1    = (TSequence *) trgeo_seq1;
   TSequenceSet *trgeo_tseqset1 = NULL;
+  /* A later instant and a later sequence, so that the append surface performs
+   * a real append instead of tripping the increasing-timestamps check. */
+  TInstant *trgeo_inst3 = trgeometryinst_make(geom1, pose1,
+    timestamptz_in("2001-01-04", -1));
+  TInstant *trgeo_inst4 = trgeometryinst_make(geom1, pose1,
+    timestamptz_in("2001-01-05", -1));
+  TSequence *trgeo_tseq2 = (TSequence *) trgeometry_append_tinstant(
+    (Temporal *) trgeo_inst3, trgeo_inst4, LINEAR, 0.0, NULL, false);
   Temporal *tpoint1 = trgeometry_to_tgeompoint(trgeo_seq1);
   Temporal *tpose1 = trgeometry_to_tpose(trgeo_seq1);
   int n_out = 0;
@@ -408,12 +464,16 @@ TRGEO_CONFIG = dict(
   }
 
   free(trgeo_inst2);
+  free(trgeo_inst3);
+  free(trgeo_inst4);
+  if (trgeo_tseq2) free(trgeo_tseq2);
   if (trgeo_seq1) free(trgeo_seq1);
   if (tpoint1) free(tpoint1);
   if (tpose1) free(tpose1);
   free(stbox1);
   free(pose1);
   free(geom1);
+  free(geom_point1);
   free(tstzspanset1);
   free(tstzset1);
   free(tstzspan1);""",
@@ -470,6 +530,9 @@ TPOSE_CONFIG = dict(
         # tpose_make(tpoint, tradius): a temporal geometry point and a temporal
         # float radius.
         "tpose_make":        {0: "tpoint1", 1: "tfloat1"},
+        # Reprojection needs a pose carrying an explicit source SRID and a real
+        # target SRID (the default int32_t -> 0 is the unknown SRID).
+        "pose_transform":    {0: "pose_srid1", 1: "3857"},
     },
     # A Set * argument to the pose set operations must be a poseset, not the
     # default tstzset.
@@ -479,8 +542,6 @@ TPOSE_CONFIG = dict(
     skip={
         "tpose_value_at_timestamptz":
             "out-param Pose ** has no clean canned site; covered manually",
-        # Reprojection needs a populated spatial_ref_sys CSV (absent standalone).
-        "pose_transform": "reprojection needs spatial_ref_sys CSV",
     },
     common_inputs="""\
   TimestampTz tstz1 = timestamptz_in("2001-01-02", -1);
@@ -491,6 +552,9 @@ TPOSE_CONFIG = dict(
   GSERIALIZED *geom1 = geom_in("Point(0 0)", -1);
   GSERIALIZED *geom_out_param = NULL;
   Pose *pose1 = pose_in("Pose(Point(0 0), 0.0)");
+  /* Reprojection reads the source SRID off the value, so the transform input
+   * carries one explicitly. */
+  Pose *pose_srid1 = pose_in("SRID=4326;Pose(Point(1 2), 0.5)");
   Pose *pose_out_param = NULL;
   GSERIALIZED *geom_pointz1 = geom_in("SRID=5676;Point(0 0 0)", -1);
   Pose *pose3d1 = pose_make_3d(0, 0, 0, 1, 0, 0, 0, false, 5676);
@@ -516,6 +580,7 @@ TPOSE_CONFIG = dict(
   if (tfloat1) free(tfloat1);
   free(stbox1);
   free(pose1);
+  free(pose_srid1);
   free(pose3d1);
   free(poseset1);
   free(geom1);
@@ -572,15 +637,15 @@ TCBUFFER_CONFIG = dict(
         "tcbuffer_make":         {0: "tpoint1", 1: "tfloat1"},
         # tgeometry_to_tcbuffer needs a temporal geometry (a tgeompoint is one).
         "tgeometry_to_tcbuffer": {0: "tpoint1"},
+        # Reprojection needs a buffer carrying an explicit source SRID and a
+        # real target SRID (the default int32_t -> 0 is the unknown SRID).
+        "cbuffer_transform":     {0: "cbuffer_srid1", 1: "3857"},
     },
     # A Set * that must be a tstzset (the default is a cbufferset).
     name_arg_map={
         r"tstzset": {"Set *": "tstzset1"},
     },
     skip={
-        # Reprojection needs a populated spatial_ref_sys CSV (absent standalone).
-        "cbuffer_transform":  "reprojection needs spatial_ref_sys CSV",
-        "tcbuffer_transform": "reprojection needs spatial_ref_sys CSV",
         # Internal "Unknown compare function for type" / "type is not a
         # span type" failures, surfacing real MEOS bugs in the cbuffer
         # spanset path. Skip until fixed.
@@ -589,14 +654,6 @@ TCBUFFER_CONFIG = dict(
         "re:^ttouches_(tcbuffer|cbuffer|geo)_":    "MEOS bug: spanset path issue",
         "re:^tcontains_(tcbuffer|cbuffer|geo)_":   "MEOS bug: spanset path issue",
         "re:^tcovers_(tcbuffer|cbuffer|geo)_":     "MEOS bug: spanset path issue",
-        # The geometry-covers/contains-a-tcbuffer direction is intentionally
-        # only defined for the ALWAYS semantics (the traversed-area test);
-        # the EVER public wrappers assert(! ever). The SQL surface mirrors
-        # this (212_tcbuffer_spatialrels.test.sql never calls the geo,tcbuffer
-        # ever direction). Skip the ever wrappers so the smoke suite does not
-        # abort on a documented-unsupported path.
-        "ecovers_geo_tcbuffer":   "ever geo-covers-tcbuffer intentionally unsupported (assert !ever)",
-        "econtains_geo_tcbuffer": "ever geo-contains-tcbuffer intentionally unsupported (assert !ever)",
     },
     common_inputs="""\
   TimestampTz tstz1 = timestamptz_in("2001-01-02", -1);
@@ -606,6 +663,9 @@ TCBUFFER_CONFIG = dict(
   GSERIALIZED *geom1 = geom_in("Point(0 0)", -1);
   GSERIALIZED *geom_out_param = NULL;
   Cbuffer *cbuffer1 = cbuffer_in("Cbuffer(Point(1 1), 0.5)");
+  /* Reprojection reads the source SRID off the value, so the transform input
+   * carries one explicitly. */
+  Cbuffer *cbuffer_srid1 = cbuffer_in("SRID=4326;Cbuffer(Point(1 2), 0.5)");
   Cbuffer *cbuffer_out_param = NULL;
   Set *cbufferset1 = cbufferset_in("{\\"Cbuffer(Point(1 1), 0.5)\\"}");
   STBox *stbox1 = stbox_in("STBOX X((0, 0), (10, 10))");
@@ -631,6 +691,7 @@ TCBUFFER_CONFIG = dict(
   free(stbox1);
   free(cbufferset1);
   free(cbuffer1);
+  free(cbuffer_srid1);
   free(geom1);
   free(tstzset1);
   free(tstzspanset1);
@@ -674,10 +735,18 @@ TNPOINT_CONFIG = dict(
         "interpType":          "LINEAR",
         "Datum":               "npoint1_datum",
     },
+    # The ways network is the npoint family's own data file; the generated
+    # preamble points MEOS at the copy installed in the prefix.
+    csv_data=["ways"],
     override_args={
         "tdistance_tnpoint_tpoint":     {1: "tpoint1"},
         "nai_tnpoint_tpoint":           {1: "tpoint1"},
         "shortestline_tnpoint_tpoint":  {1: "tpoint1"},
+        # Mapping a geometry onto the network needs a value that lies on a
+        # route of the ways file, in the SRID that file declares.
+        "geompoint_to_npoint":          {0: "geom_ways1"},
+        "geom_to_nsegment":             {0: "geom_ways1"},
+        "tgeompoint_to_tnpoint":        {0: "tpoint_ways1"},
     },
     # A Set * that must be a tstzset (the default is an npointset).
     name_arg_map={
@@ -716,11 +785,6 @@ TNPOINT_CONFIG = dict(
         "re:_set_npoint$":                     "needs ways cache",
         "re:^npointset_":                      "needs ways cache",
         "re:^npoint_to_set$":                  "needs ways cache",
-        # Mapping a geometry onto the network needs the ways cache (and matching
-        # SRID) that the standalone test environment does not populate.
-        "geompoint_to_npoint":                 "needs ways cache",
-        "geom_to_nsegment":                    "needs ways cache",
-        "tgeompoint_to_tnpoint":               "needs ways cache",
     },
     common_inputs="""\
   TimestampTz tstz1 = timestamptz_in("2001-01-02", -1);
@@ -729,6 +793,10 @@ TNPOINT_CONFIG = dict(
   Set *tstzset1 = tstzset_in("{2001-01-02, 2001-01-03}");
   Interval *interv1 = NULL;
   GSERIALIZED *geom1 = geom_in("Point(0 0)", -1);
+  /* A point on a route of the installed ways file, in the SRID that file
+   * declares (get_srid_ways() reports 5676), for the geometry -> network
+   * mappings. */
+  GSERIALIZED *geom_ways1 = geom_in("SRID=5676;Point(2452000 1213000)", -1);
   Npoint *npoint1 = npoint_in("NPoint(1, 0.5)");
   Npoint *npoint_out_param = NULL;
   Nsegment *nsegment1 = nsegment_in("NSegment(1, 0.0, 1.0)");
@@ -747,12 +815,18 @@ TNPOINT_CONFIG = dict(
    * test environment does not populate. */
   Temporal *tpoint1 = tgeompoint_in(
     "[Point(0 0)@2001-01-02, Point(1 1)@2001-01-03]");
+  /* The network counterpart of tpoint1, on a route of the ways file. */
+  Temporal *tpoint_ways1 = tgeompoint_in(
+    "[SRID=5676;Point(2452000 1213000)@2001-01-02, "
+    "SRID=5676;Point(2452000 1213000)@2001-01-03]");
   int n_out = 0;
 """,
     cleanup="""\
   /* tnpoint_inst1 is a VIEW into tnpoint1 (temporal_start_inst); do NOT free */
   if (tnpoint1) free(tnpoint1);
   if (tpoint1) free(tpoint1);
+  if (tpoint_ways1) free(tpoint_ways1);
+  free(geom_ways1);
   free(stbox1);
   free(tstzset1);
   free(npointset1);
@@ -817,6 +891,23 @@ TGEOMETRY_CONFIG = dict(
         "stbox_to_tstzspan":      {0: "stbox_zt1"},
         "stbox_shift_scale_time": {0: "stbox_zt1"},
         "stbox_expand_time":      {0: "stbox_zt1"},
+        # A measure-to-temporal-point conversion reads the timestamps off the
+        # geometry's M coordinate.
+        "geomeas_to_tpoint":      {0: "geom_meas1"},
+        # Scale factors and the false origin are read as point coordinates;
+        # the default polygon geom1 is rejected ("Only point geometries
+        # accepted"). The same holds for every space-tiling origin.
+        "tgeo_scale":             {1: "geom_point1", 2: "geom_point1"},
+        "tgeo_space_boxes":       {4: "geom_point1"},
+        "tgeo_space_time_boxes":  {5: "geom_point1"},
+        "stbox_get_space_tile":   {0: "geom_point1", 4: "geom_point1"},
+        "stbox_space_tiles":      {4: "geom_point1"},
+        # A tgeometry carrying point values is what converts to a tgeompoint.
+        "tgeometry_to_tgeompoint": {0: "tgeo_point1"},
+        # The reverse conversion takes a STEP temporal point: a tgeometry can
+        # never carry linear interpolation (there is no interpolation between
+        # a polygon and a multipoint), so a linear input is correctly refused.
+        "tgeompoint_to_tgeometry": {0: "tpoint_step1"},
     },
     # Name-pattern argument routing: whole families of meos_geo.h functions share
     # a precondition the polygon/tgeometry defaults don't meet.
@@ -839,6 +930,9 @@ TGEOMETRY_CONFIG = dict(
         r"^tpoint": {"GSERIALIZED *": "geom_point1", "Datum": "geom_point1_datum"},
         # SRID setters need a valid (non-unknown) SRID argument.
         r"_set_srid$": {"int32": "5676", "int": "5676", "int32_t": "5676"},
+        # Reprojection needs a real target SRID: the default int32_t -> 0 is
+        # the unknown SRID and is rejected ("The SRID cannot be unknown").
+        r"transform$": {"int32_t": "4326"},
         # Position operators over Z (front/back) need a 3D box and 3D temporal;
         # over T (before/after) need a box carrying a time dimension.
         r"(?:^|_)(?:front|back|overfront|overback)_":
@@ -851,30 +945,24 @@ TGEOMETRY_CONFIG = dict(
         # default canned-inputs don't supply. First-pass skip list;
         # refine as needed.
         "re:AFFINE":     "needs an AFFINE matrix",
-        # Reprojection needs a populated spatial_ref_sys CSV (absent standalone).
-        "re:transform$": "reprojection needs spatial_ref_sys CSV",
-        # Geodetic / geography conversions need geodetic inputs + the SRS CSV.
+        # Geodetic conversions need lon/lat inputs; the canned geometries are
+        # planar (SRID 5676). Feeding a planar temporal geometry to
+        # tgeometry_to_tgeography reports "Only lon/lat coordinate systems are
+        # supported in geography" and then dereferences the rejected value in
+        # tgeomseq_tgeogseq, so this cannot be exercised until MEOS stops on
+        # the error.
         "re:^tgeography_|_to_tgeography$|^tgeogpoint_to|_to_tgeogpoint$":
-            "needs geodetic input / spatial_ref_sys CSV",
-        "geomeas_to_tpoint": "needs an M-dimensional geometry",
-        # These need a point-based temporal / origin the polygon defaults can't
-        # supply; a dedicated point-tgeometry input would be needed to exercise.
-        "tgeo_scale":               "needs a point-based temporal",
-        "tgeo_space_boxes":         "needs a point-based temporal",
-        "tgeo_space_time_boxes":    "needs a point-based temporal",
-        "tgeometry_to_tgeompoint":  "needs a point-based tgeometry",
-        "tgeompoint_to_tgeometry":  "conversion rejects the linear-interp point input",
-        "stbox_get_space_tile":     "needs a point origin geometry",
-        "stbox_space_tiles":        "needs a point origin geometry",
+            "planar canned input crashes in tgeomseq_tgeogseq after the geodetic error",
         "re:GBOX":       "needs a GBOX",
         "re:SkipList":   "needs a SkipList state",
         "re:bitmatrix":  "needs a bitmatrix",
-        # Geographic / SRID-dependent paths need a populated spatial_ref_sys
-        # CSV; skip rather than crash on the standalone test setup.
-        "re:^geog":      "needs spatial_ref_sys CSV",
-        "re:_geog$":     "needs spatial_ref_sys CSV",
-        "re:_geography_": "needs spatial_ref_sys CSV",
-        "re:_to_geography$": "needs spatial_ref_sys CSV",
+        # The geography surface needs lon/lat values; every canned geometry is
+        # planar (SRID 5676) and is refused with "Only lon/lat coordinate
+        # systems are supported in geography".
+        "re:^geog":      "needs a lon/lat geography, not the planar canned geometries",
+        "re:_geog$":     "needs a lon/lat geography, not the planar canned geometries",
+        "re:_geography_": "needs a lon/lat geography, not the planar canned geometries",
+        "re:_to_geography$": "needs a lon/lat geography, not the planar canned geometries",
         # Out-params with non-uniform shape (e.g. GSERIALIZED ***).
         "re:^geo_array_": "out-param triple-pointer not in canned set",
         # Constructors that crash on LINEAR interp default for a span/spanset
@@ -895,6 +983,10 @@ TGEOMETRY_CONFIG = dict(
   GSERIALIZED *geom_point1 = geom_in("SRID=5676;Point(1 1)", -1);
   GSERIALIZED *geom_pointz1 = geom_in("SRID=5676;Point(1 1 1)", -1);
   GSERIALIZED *geom_line1 = geom_in("SRID=5676;Linestring(0 0, 2 2, 4 0)", -1);
+  /* An M-dimensional geometry whose measures are epoch seconds, for the
+   * measure -> temporal point conversion. */
+  GSERIALIZED *geom_meas1 = geom_in(
+    "SRID=5676;Linestring M(0 0 978310800, 1 1 978397200)", -1);
   GSERIALIZED *geom_out_param = NULL;
   Set *geomset1 = geomset_in("{\\"SRID=5676;Point(0 0)\\", \\"SRID=5676;Point(1 1)\\"}");
   STBox *stbox1 = stbox_in("SRID=5676;STBOX X((0, 0), (10, 10))");
@@ -914,6 +1006,13 @@ TGEOMETRY_CONFIG = dict(
     "[SRID=5676;Point(0 0)@2001-01-02, SRID=5676;Point(1 1)@2001-01-03]");
   Temporal *tpoint_z1 = tgeompoint_in(
     "[SRID=5676;Point(0 0 0)@2001-01-02, SRID=5676;Point(1 1 1)@2001-01-03]");
+  /* A tgeometry carrying point values, and the STEP temporal point it
+   * converts to and from. A tgeometry is never linearly interpolated, so the
+   * point-valued literal parses as STEP. */
+  Temporal *tgeo_point1 = tgeometry_in(
+    "[SRID=5676;Point(0 0)@2001-01-02, SRID=5676;Point(1 1)@2001-01-03]");
+  Temporal *tpoint_step1 = tgeompoint_in(
+    "Interp=Step;[SRID=5676;Point(0 0)@2001-01-02, SRID=5676;Point(1 1)@2001-01-03]");
   int n_out = 0;
 """,
     cleanup="""\
@@ -921,6 +1020,8 @@ TGEOMETRY_CONFIG = dict(
   if (tgeo1) free(tgeo1);
   if (tpoint1) free(tpoint1);
   if (tpoint_z1) free(tpoint_z1);
+  if (tgeo_point1) free(tgeo_point1);
+  if (tpoint_step1) free(tpoint_step1);
   free(stbox1);
   free(stbox_zt1);
   free(geomset1);
@@ -929,6 +1030,7 @@ TGEOMETRY_CONFIG = dict(
   free(geom_point1);
   free(geom_pointz1);
   free(geom_line1);
+  free(geom_meas1);
   free(floatspan1);
   free(interv1);
   free(tstzspanset1);
@@ -1095,10 +1197,18 @@ def write_test(name, cfg):
     unused = [v for v in dict.fromkeys(declared)
               if len(re.findall(r"\b" + re.escape(v) + r"\b", code_only)) == 1]
     void_block = "".join(f"  (void) {v};\n" for v in unused)
+    # Every suite gets the spatial_ref_sys table; a config adds the further
+    # CSVs its own family ships.
+    csv_setup = "".join(
+        '  set_csv_if_present("{}",\n    {});\n'.format(
+            os.path.join(DATA_DIR, CSV_DATA[k][0]).replace("\\", "/"),
+            CSV_DATA[k][1])
+        for k in ["spatial_ref_sys"] + list(cfg.get("csv_data", [])))
     head = HEADER_TEMPLATE.format(
         type_label=label, header_relpath=cfg["header"],
         out_basename=out_basename,
         common_inputs=cfg["common_inputs"],
+        csv_setup=csv_setup,
         extra_includes=cfg["extra_includes"],
         pad=pad)
     foot = FOOTER_TEMPLATE.format(cleanup=cfg["cleanup"])
@@ -1113,8 +1223,8 @@ def load_sidecar(path):
     in-file CONFIG dicts, with two ergonomic differences for JSON:
       - common_inputs / cleanup are arrays of lines (no C-newline escaping);
       - override_args integer indices arrive as strings and are restored to int.
-    Everything else (header/out/arg_map/skip/value_returns/extra_includes) is
-    passed straight through to write_test()."""
+    Everything else (header/out/arg_map/skip/value_returns/csv_data/
+    extra_includes) is passed straight through to write_test()."""
     with open(path) as f:
         raw = json.load(f)
     cfg = dict(raw)
@@ -1124,6 +1234,7 @@ def load_sidecar(path):
     cfg.setdefault("arg_map", {})
     cfg.setdefault("skip", {})
     cfg.setdefault("value_returns", [])
+    cfg.setdefault("csv_data", [])
     cfg["override_args"] = {
         fn: {int(k): v for k, v in ov.items()}
         for fn, ov in raw.get("override_args", {}).items()
