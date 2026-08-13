@@ -1538,6 +1538,108 @@ build_edge_rtree(const Edge *edges, int nedges, int32_t srid)
   return rtree;
 }
 
+/*****************************************************************************
+ * Geometry clip context
+ *
+ * Everything the engine derives from a geometry -- its bounding box, its edge
+ * decomposition, and the R-tree indexing those edges -- depends on that
+ * geometry alone. A context keeps that work so that the many operations
+ * resolved against one geometry share it, instead of each rebuilding the
+ * decomposition and the index. The `_ctx` functions below take a context and
+ * the operations named without the suffix build one, use it, and free it, so
+ * a single operation costs exactly what it did before.
+ *****************************************************************************/
+
+/**
+ * @brief Structure keeping the reusable decomposition of a geometry
+ */
+typedef struct
+{
+  STBox box;           /**< Bounding box of the geometry */
+  int32_t srid;        /**< SRID of the geometry */
+  MeosArray *edges;    /**< Edges of the geometry */
+  Edge **edge_ptrs;    /**< Pointers to the edges, as the kernels expect them */
+  int nedges;          /**< Number of edges */
+  RTree *rtree;        /**< Index over the edges, NULL when there are too few
+                            of them to amortize its construction */
+  Edge **cand_edges;   /**< Buffer receiving the edges selected by the index,
+                            NULL when there is no index */
+} GeoClipCtx;
+
+/**
+ * @brief Return the clip context of a geometry, or NULL if the geometry is
+ * empty
+ * @details The context owns the edges of the geometry and, when they are
+ * numerous enough to amortize its construction, an R-tree indexing them
+ * @note At most one context may be alive per thread, since the buffer
+ * collecting the results of an index search is the thread-local
+ * `rtree_results` shared with the clip kernels, created and destroyed with the
+ * index (the same lifetime the operations gave it when each built its own)
+ */
+void *
+geo_clip_ctx_make(const GSERIALIZED *gs)
+{
+  assert(gs);
+  if (gserialized_is_empty(gs))
+    return NULL;
+
+  GeoClipCtx *ctx = palloc0(sizeof(GeoClipCtx));
+  geo_set_stbox(gs, &ctx->box);
+  ctx->srid = gserialized_get_srid(gs);
+  /* Extract the edges */
+  LWGEOM *geom = lwgeom_from_gserialized(gs);
+  ctx->edges = geom_extract_edges(geom);
+  lwgeom_free(geom);
+  ctx->nedges = (int) ctx->edges->count;
+  /* Transform the edge array into an edge pointer array */
+  ctx->edge_ptrs = palloc(sizeof(Edge *) * ctx->nedges);
+  for (int i = 0; i < ctx->nedges; i++)
+    ctx->edge_ptrs[i] = (Edge *) meos_array_get(ctx->edges, i);
+
+  /* Index the edges only when there are enough of them to compensate the
+   * overhead of the tree construction and destruction */
+  if (ctx->nedges > RTREE_MIN_NUMBER_ELEMS)
+  {
+    ctx->rtree = build_edge_rtree(ctx->edges->elems, ctx->nedges, ctx->srid);
+    if (! ctx->rtree)
+    {
+      /* Release what the context holds before reporting the error, which may
+       * not return control here */
+      meos_array_destroy(ctx->edges);
+      pfree(ctx->edge_ptrs); pfree(ctx);
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        "Error when creating R-tree");
+      return NULL;
+    }
+    ctx->cand_edges = palloc(sizeof(Edge *) * ctx->nedges);
+    /* Array for collecting the ids resulting from an R-tree search */
+    rtree_results = meos_array_create(sizeof(int));
+  }
+  return ctx;
+}
+
+/**
+ * @brief Free a clip context built by #geo_clip_ctx_make
+ */
+void
+geo_clip_ctx_free(void *ctxv)
+{
+  if (! ctxv)
+    return;
+  GeoClipCtx *ctx = (GeoClipCtx *) ctxv;
+  if (ctx->rtree)
+  {
+    rtree_free(ctx->rtree);
+    pfree(ctx->cand_edges);
+    meos_array_destroy(rtree_results);
+    rtree_results = NULL;
+  }
+  meos_array_destroy(ctx->edges);
+  pfree(ctx->edge_ptrs);
+  pfree(ctx);
+  return;
+}
+
 /*****************************************************************************/
 
 /**
@@ -1600,15 +1702,97 @@ edges_have_area(Edge **edges, int nedges)
 }
 
 /**
- * @brief Return true if two 2D geometries intersect, computed natively
+ * @brief Return true if a 2D geometry intersects the geometry of a clip
+ * context, computed natively
  * @details Native counterpart of PostGIS `ST_Intersects` for the geometry
  * types the clip engine extracts into edges: two geometries meet when a
  * boundary edge of one crosses a boundary edge of the other, or when a
  * vertex of one lies inside the polygonal interior of the other. Points,
  * (multi)lines, (multi)polygons with holes, triangles, circular strings,
  * curve polygons, and collections of these are supported. The candidate edge
- * pairs are pruned with an R-tree over the second edge set, mirroring
- * #tpoint_linear_inter_geom.
+ * pairs are pruned with the R-tree the context keeps over its edges, mirroring
+ * #tpoint_linear_inter_geom_ctx. Testing many geometries against one geometry
+ * builds that index once, since the context outlives the call
+ * @pre The arguments have the same SRID
+ */
+bool
+geo_intersects2d_ctx(const GSERIALIZED *gs, const void *ctxv)
+{
+  assert(gs); assert(ctxv);
+  const GeoClipCtx *ctx = (const GeoClipCtx *) ctxv;
+  /* An empty geometry intersects nothing, matching PostGIS ST_Intersects.
+   * Callers such as the touches predicates pass the (possibly empty) boundary
+   * of a geometry or trajectory, so the leaf must tolerate empty input. */
+  if (gserialized_is_empty(gs))
+    return false;
+  /* Bounding box test */
+  STBox box;
+  geo_set_stbox(gs, &box);
+  if (! overlaps_stbox_stbox(&box, &ctx->box))
+    return false;
+
+  /* Extract the edges of the geometry given, those of the context geometry
+   * being already extracted and indexed */
+  LWGEOM *lw = lwgeom_from_gserialized(gs);
+  MeosArray *edges = geom_extract_edges(lw);
+  lwgeom_free(lw);
+  int n = (int) edges->count;
+  Edge **ptr = palloc(sizeof(Edge *) * n);
+  for (int i = 0; i < n; i++)
+    ptr[i] = (Edge *) meos_array_get(edges, i);
+
+  bool result = false;
+
+  /* Phase 1: a boundary edge of the geometry crosses a boundary edge of the
+   * context geometry */
+  for (int i = 0; i < n && ! result; i++)
+  {
+    const Edge *e = ptr[i];
+    if (ctx->rtree)
+    {
+      STBox query;
+      stbox_set(true, false, false, ctx->srid, e->xmin, e->xmax, e->ymin,
+        e->ymax, 0, 0, NULL, &query);
+      int nc = rtree_search(ctx->rtree, RTREE_OVERLAPS, &query, rtree_results);
+      for (int j = 0; j < nc; j++)
+        ctx->cand_edges[j] =
+          ctx->edge_ptrs[*(int *) meos_array_get(rtree_results, j)];
+      for (int j = 0; j < nc && ! result; j++)
+        if (edge_intersect(e, ctx->cand_edges[j]))
+          result = true;
+    }
+    else
+    {
+      for (int j = 0; j < ctx->nedges && ! result; j++)
+        if (edge_intersect(e, ctx->edge_ptrs[j]))
+          result = true;
+    }
+  }
+
+  /* Phase 2: containment -- a vertex of one geometry inside the other's
+   * polygonal interior (only meaningful when the other has area) */
+  if (! result && edges_have_area(ctx->edge_ptrs, ctx->nedges))
+    for (int i = 0; i < n && ! result; i++)
+      if (point_in_polygon_impl(ptr[i]->x1, ptr[i]->y1, ctx->edge_ptrs,
+            ctx->nedges, ctx->rtree, ctx->srid, ctx->box.xmax))
+        result = true;
+  if (! result && edges_have_area(ptr, n))
+    for (int i = 0; i < ctx->nedges && ! result; i++)
+      if (point_in_polygon(ctx->edge_ptrs[i]->x1, ctx->edge_ptrs[i]->y1, ptr,
+            n))
+        result = true;
+
+  /* Clean up */
+  meos_array_destroy(edges);
+  pfree(ptr);
+  return result;
+}
+
+/**
+ * @brief Return true if two 2D geometries intersect, computed natively
+ * @details Builds the clip context of the second geometry, which is the one
+ * whose edges are indexed, and resolves the relationship with
+ * #geo_intersects2d_ctx
  * @pre The arguments have the same SRID
  */
 bool
@@ -1620,88 +1804,19 @@ geo_intersects2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
    * of a geometry or trajectory, so the leaf must tolerate empty input. */
   if (gserialized_is_empty(gs1) || gserialized_is_empty(gs2))
     return false;
-  /* Bounding box test */
+  /* Bounding box test, made before extracting the edges of the second
+   * geometry so that a rejected pair does not pay for its decomposition */
   STBox box1, box2;
   geo_set_stbox(gs1, &box1);
   geo_set_stbox(gs2, &box2);
   if (! overlaps_stbox_stbox(&box1, &box2))
     return false;
 
-  /* Extract the edges of both geometries */
-  LWGEOM *lw1 = lwgeom_from_gserialized(gs1);
-  LWGEOM *lw2 = lwgeom_from_gserialized(gs2);
-  MeosArray *edges1 = geom_extract_edges(lw1);
-  MeosArray *edges2 = geom_extract_edges(lw2);
-  lwgeom_free(lw1); lwgeom_free(lw2);
-  int n1 = (int) edges1->count, n2 = (int) edges2->count;
-  Edge **ptr1 = palloc(sizeof(Edge *) * n1);
-  Edge **ptr2 = palloc(sizeof(Edge *) * n2);
-  for (int i = 0; i < n1; i++)
-    ptr1[i] = (Edge *) meos_array_get(edges1, i);
-  for (int i = 0; i < n2; i++)
-    ptr2[i] = (Edge *) meos_array_get(edges2, i);
-
-  bool result = false;
-
-  /* Build an R-tree over the second edge set when it is large enough to
-   * amortise the construction, mirroring #tpoint_linear_inter_geom */
-  int32_t srid2 = gserialized_get_srid(gs2);
-  RTree *rtree = NULL;
-  Edge **cand = NULL;
-  if (n2 > RTREE_MIN_NUMBER_ELEMS)
-  {
-    rtree = build_edge_rtree(edges2->elems, n2, srid2);
-    cand = palloc(sizeof(Edge *) * n2);
-    rtree_results = meos_array_create(sizeof(int));
-  }
-
-  /* Phase 1: a boundary edge of gs1 crosses a boundary edge of gs2 */
-  for (int i = 0; i < n1 && ! result; i++)
-  {
-    const Edge *e1 = ptr1[i];
-    if (rtree)
-    {
-      STBox query;
-      stbox_set(true, false, false, srid2, e1->xmin, e1->xmax, e1->ymin,
-        e1->ymax, 0, 0, NULL, &query);
-      int nc = rtree_search(rtree, RTREE_OVERLAPS, &query, rtree_results);
-      for (int j = 0; j < nc; j++)
-        cand[j] = ptr2[*(int *) meos_array_get(rtree_results, j)];
-      for (int j = 0; j < nc && ! result; j++)
-        if (edge_intersect(e1, cand[j]))
-          result = true;
-    }
-    else
-    {
-      for (int j = 0; j < n2 && ! result; j++)
-        if (edge_intersect(e1, ptr2[j]))
-          result = true;
-    }
-  }
-
-  /* Phase 2: containment -- a vertex of one geometry inside the other's
-   * polygonal interior (only meaningful when the other has area) */
-  if (! result && edges_have_area(ptr2, n2))
-    for (int i = 0; i < n1 && ! result; i++)
-      if (point_in_polygon_impl(ptr1[i]->x1, ptr1[i]->y1, ptr2, n2,
-            rtree, srid2, box2.xmax))
-        result = true;
-  if (! result && edges_have_area(ptr1, n1))
-    for (int i = 0; i < n2 && ! result; i++)
-      if (point_in_polygon(ptr2[i]->x1, ptr2[i]->y1, ptr1, n1))
-        result = true;
-
-  /* Clean up */
-  if (rtree)
-  {
-    rtree_free(rtree);
-    pfree(cand);
-    meos_array_destroy(rtree_results);
-  }
-  meos_array_destroy(edges1);
-  meos_array_destroy(edges2);
-  pfree(ptr1);
-  pfree(ptr2);
+  void *ctx = geo_clip_ctx_make(gs2);
+  if (! ctx)
+    return false;
+  bool result = geo_intersects2d_ctx(gs1, ctx);
+  geo_clip_ctx_free(ctx);
   return result;
 }
 
@@ -1944,31 +2059,29 @@ geo_covers2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 }
 
 /**
- * @brief Return the temporal intersection/intersects of a temporal  geometric
- * point with linear interpolation and a 2D geometry
- * @details The temporal geometric point may be in 2D or 3D and the Z dimension 
- * is also computed
+ * @brief Return the temporal intersection/intersects of a temporal geometric
+ * point with linear interpolation and the geometry of a clip context
+ * @details The temporal geometric point may be in 2D or 3D and the Z dimension
+ * is also computed. Clipping several temporal points against one geometry
+ * extracts and indexes its edges once, since the context outlives the call
  * @note For performance reasons the intersection is computed natively
  * instead of through ST_Intersection
  * @pre The arguments have the same SRID, the geometry is 2D and is not empty.
  * This is verified in #tgeo_restrict_geom
  */
 Temporal *
-tpoint_linear_inter_geom(const Temporal *temp, const GSERIALIZED *gs,
-  bool clip)
+tpoint_linear_inter_geom_ctx(const Temporal *temp, const void *ctxv, bool clip)
 {
-  assert(temp); assert(gs); assert(temp->temptype == T_TGEOMPOINT);
+  assert(temp); assert(ctxv); assert(temp->temptype == T_TGEOMPOINT);
   assert(MEOS_FLAGS_LINEAR_INTERP(temp->flags));
   assert(temp->subtype != TINSTANT);
   assert(! MEOS_FLAGS_GET_GEODETIC(temp->flags));
-  assert(! gserialized_is_empty(gs)); 
+  const GeoClipCtx *ctx = (const GeoClipCtx *) ctxv;
 
   /* Bounding box test */
-  STBox box1, box2;
+  STBox box1;
   tspatial_set_stbox(temp, &box1);
-  /* Non-empty geometries have a bounding box */
-  geo_set_stbox(gs, &box2);
-  if (! overlaps_stbox_stbox(&box1, &box2))
+  if (! overlaps_stbox_stbox(&box1, &ctx->box))
   {
     if (clip)
       return NULL;
@@ -1982,78 +2095,30 @@ tpoint_linear_inter_geom(const Temporal *temp, const GSERIALIZED *gs,
   /* Initialize result to NULL to quickly clean up and return */
   Temporal *result = NULL;
 
-  /* Extract the edges */
-  LWGEOM *geom = lwgeom_from_gserialized(gs);
-  MeosArray *edges = geom_extract_edges(geom);
-  lwgeom_free(geom);
-  /* Create an array of edge pointers */
-  Edge **edge_ptrs = palloc(sizeof(Edge *) * edges->count);
-  /* Transform the edge array into an edge pointer array */
-  for (int i = 0; i < (int) edges->count; i++)
-    edge_ptrs[i] = (Edge *) meos_array_get(edges, i);
-
-  /* R-tree pointer: A NULL pointer passed to function #tpointseq_clip_edges
-   * means that no index is used */
-  RTree *rtree = NULL;
-  /* Array of edge pointers for storing the edges filtered by the R-tree */
-  Edge **cand_edges = NULL;
-  /* Minimum number of edges to use an R-tree index in order to compensate the
-   * overhead of the tree construction and destruction */
-  if (edges->count > RTREE_MIN_NUMBER_ELEMS)
-  {
-    /* Build R-tree */
-    int32_t srid = tspatial_srid(temp);
-    rtree = build_edge_rtree(edges->elems, edges->count, srid);
-    if (! rtree)
-    {
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
-        "Error when creating R-tree");
-      return NULL;
-    }
-    /* Array of edge pointers for storing the edges filtered by the R-tree */
-    cand_edges = palloc(sizeof(Edge *) * edges->count);
-    if (! cand_edges)
-    {
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
-        "Error when creating R-tree");
-      rtree_free(rtree); 
-      return NULL;
-    }
-    /* Array for collecting the ids resulting from an R-tree search */
-    rtree_results = meos_array_create(sizeof(int));
-    if (! rtree_results)
-    {
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
-        "Error when creating R-tree");
-      rtree_free(rtree); 
-      return NULL;
-    }
-  }
-
   /* Initialize the static global arrays accumulating the clipping results */
   events = meos_array_create(sizeof(double));
   intervals = meos_array_create(sizeof(Span));
   periods = meos_array_create(sizeof(Span));
-  
+
   /* Collect the clipping periods */
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
   {
     case TINSTANT:
-      tpointinst_clip_edges((TInstant *) temp, edge_ptrs, edges->count,
-        rtree, cand_edges, box2.xmax);
+      tpointinst_clip_edges((TInstant *) temp, ctx->edge_ptrs, ctx->nedges,
+        ctx->rtree, ctx->cand_edges, ctx->box.xmax);
       break;
     case TSEQUENCE:
-      tpointseq_clip_edges((TSequence *) temp, edge_ptrs, edges->count,
-        rtree, cand_edges, box2.xmax);
+      tpointseq_clip_edges((TSequence *) temp, ctx->edge_ptrs, ctx->nedges,
+        ctx->rtree, ctx->cand_edges, ctx->box.xmax);
       break;
     default: /* TSEQUENCESET */
     {
       /* Loop for each segment */
       TSequenceSet *ss = (TSequenceSet *) temp;
       for (int i = 0; i < ss->count; i++)
-        tpointseq_clip_edges(TSEQUENCESET_SEQ_N(ss, i), edge_ptrs,
-          edges->count, rtree, cand_edges, box2.xmax);
+        tpointseq_clip_edges(TSEQUENCESET_SEQ_N(ss, i), ctx->edge_ptrs,
+          ctx->nedges, ctx->rtree, ctx->cand_edges, ctx->box.xmax);
     }
   }
 
@@ -2096,15 +2161,32 @@ tpoint_linear_inter_geom(const Temporal *temp, const GSERIALIZED *gs,
   
   /* Clean up and return */
 cleanup_return:
-  if (edges->count > RTREE_MIN_NUMBER_ELEMS)
-  {
-    rtree_free(rtree); pfree(cand_edges); meos_array_destroy(rtree_results);
-  }
   meos_array_destroy(events);
   meos_array_destroy(intervals);
   meos_array_destroy(periods);
-  meos_array_destroy(edges); pfree(edge_ptrs);
-  return result;  
+  return result;
+}
+
+/**
+ * @ingroup meos_internal_geo
+ * @brief Return the temporal intersection/intersects of a temporal geometric
+ * point with linear interpolation and a 2D geometry
+ * @details Builds the clip context of the geometry and resolves the
+ * relationship with #tpoint_linear_inter_geom_ctx
+ * @pre The arguments have the same SRID, the geometry is 2D and is not empty.
+ * This is verified in #tgeo_restrict_geom
+ */
+Temporal *
+tpoint_linear_inter_geom(const Temporal *temp, const GSERIALIZED *gs,
+  bool clip)
+{
+  assert(temp); assert(gs); assert(! gserialized_is_empty(gs));
+  void *ctx = geo_clip_ctx_make(gs);
+  if (! ctx)
+    return NULL;
+  Temporal *result = tpoint_linear_inter_geom_ctx(temp, ctx, clip);
+  geo_clip_ctx_free(ctx);
+  return result;
 }
 
 /*****************************************************************************
@@ -2571,34 +2653,35 @@ next_segment:
  * @brief Return a temporal Boolean that states whether a temporal geometric
  * point with linear interpolation is within a distance of a 2D geometry
  * @details Native counterpart of the polygonal-buffer approximation:
- * for a zero distance it is exactly #tpoint_linear_inter_geom (tIntersects),
- * otherwise it solves the per-segment within-distance sub-intervals in closed
- * form. The result is a temporal Boolean defined over the whole time of the
- * temporal point
+ * for a zero distance it is exactly #tpoint_linear_inter_geom_ctx
+ * (tIntersects), otherwise it solves the per-segment within-distance
+ * sub-intervals in closed form. The result is a temporal Boolean defined over
+ * the whole time of the temporal point. Testing several temporal points
+ * against one geometry extracts and indexes its edges once, since the context
+ * outlives the call
  * @pre The arguments have the same SRID, are 2D and planar, and the geometry
  * is not empty and is supported by the clip engine. This is verified by the
  * caller
  */
 Temporal *
-tpoint_linear_dwithin_geom(const Temporal *temp, const GSERIALIZED *gs,
+tpoint_linear_dwithin_geom_ctx(const Temporal *temp, const void *ctxv,
   double dist)
 {
-  assert(temp); assert(gs); assert(temp->temptype == T_TGEOMPOINT);
+  assert(temp); assert(ctxv); assert(temp->temptype == T_TGEOMPOINT);
   assert(MEOS_FLAGS_LINEAR_INTERP(temp->flags));
   assert(temp->subtype != TINSTANT);
   assert(! MEOS_FLAGS_GET_GEODETIC(temp->flags));
-  assert(! gserialized_is_empty(gs));
+  const GeoClipCtx *ctx = (const GeoClipCtx *) ctxv;
 
   /* A zero distance is exactly the temporal intersects relationship */
   if (dist <= 0.0)
-    return tpoint_linear_inter_geom(temp, gs, false);
+    return tpoint_linear_inter_geom_ctx(temp, ctxv, false);
 
   /* Bounding box test: the geometry box expanded by dist must overlap the
    * temporal point box, otherwise the relationship is false throughout */
-  STBox box1, box2, box2e;
+  STBox box1, box2e;
   tspatial_set_stbox(temp, &box1);
-  geo_set_stbox(gs, &box2);
-  stbox_expand_space_set(&box2, dist, &box2e);
+  stbox_expand_space_set(&ctx->box, dist, &box2e);
   bool overlap = overlaps_stbox_stbox(&box1, &box2e);
   if (! overlap)
   {
@@ -2607,31 +2690,6 @@ tpoint_linear_dwithin_geom(const Temporal *temp, const GSERIALIZED *gs,
       BoolGetDatum(false), T_TBOOL, ss, STEP);
     pfree(ss);
     return result;
-  }
-
-  /* Extract the edges */
-  LWGEOM *geom = lwgeom_from_gserialized(gs);
-  MeosArray *edges = geom_extract_edges(geom);
-  lwgeom_free(geom);
-  Edge **edge_ptrs = palloc(sizeof(Edge *) * edges->count);
-  for (int i = 0; i < (int) edges->count; i++)
-    edge_ptrs[i] = (Edge *) meos_array_get(edges, i);
-
-  /* Optional R-tree index for many-edge geometries */
-  RTree *rtree = NULL;
-  Edge **cand_edges = NULL;
-  if (edges->count > RTREE_MIN_NUMBER_ELEMS)
-  {
-    int32_t srid = tspatial_srid(temp);
-    rtree = build_edge_rtree(edges->elems, edges->count, srid);
-    if (! rtree)
-    {
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
-        "Error when creating R-tree");
-      return NULL;
-    }
-    cand_edges = palloc(sizeof(Edge *) * edges->count);
-    rtree_results = meos_array_create(sizeof(int));
   }
 
   /* Initialize the static global arrays accumulating the results */
@@ -2644,15 +2702,15 @@ tpoint_linear_dwithin_geom(const Temporal *temp, const GSERIALIZED *gs,
   switch (temp->subtype)
   {
     case TSEQUENCE:
-      tpointseq_dwithin_edges((TSequence *) temp, edge_ptrs, edges->count,
-        rtree, cand_edges, dist, box2.xmax);
+      tpointseq_dwithin_edges((TSequence *) temp, ctx->edge_ptrs, ctx->nedges,
+        ctx->rtree, ctx->cand_edges, dist, ctx->box.xmax);
       break;
     default: /* TSEQUENCESET */
     {
       TSequenceSet *ss = (TSequenceSet *) temp;
       for (int i = 0; i < ss->count; i++)
-        tpointseq_dwithin_edges(TSEQUENCESET_SEQ_N(ss, i), edge_ptrs,
-          edges->count, rtree, cand_edges, dist, box2.xmax);
+        tpointseq_dwithin_edges(TSEQUENCESET_SEQ_N(ss, i), ctx->edge_ptrs,
+          ctx->nedges, ctx->rtree, ctx->cand_edges, dist, ctx->box.xmax);
     }
   }
 
@@ -2687,14 +2745,32 @@ tpoint_linear_dwithin_geom(const Temporal *temp, const GSERIALIZED *gs,
   }
 
   /* Clean up and return */
-  if (edges->count > RTREE_MIN_NUMBER_ELEMS)
-  {
-    rtree_free(rtree); pfree(cand_edges); meos_array_destroy(rtree_results);
-  }
   meos_array_destroy(events);
   meos_array_destroy(intervals);
   meos_array_destroy(periods);
-  meos_array_destroy(edges); pfree(edge_ptrs);
+  return result;
+}
+
+/**
+ * @ingroup meos_internal_geo
+ * @brief Return a temporal Boolean that states whether a temporal geometric
+ * point with linear interpolation is within a distance of a 2D geometry
+ * @details Builds the clip context of the geometry and resolves the
+ * relationship with #tpoint_linear_dwithin_geom_ctx
+ * @pre The arguments have the same SRID, are 2D and planar, and the geometry
+ * is not empty and is supported by the clip engine. This is verified by the
+ * caller
+ */
+Temporal *
+tpoint_linear_dwithin_geom(const Temporal *temp, const GSERIALIZED *gs,
+  double dist)
+{
+  assert(temp); assert(gs); assert(! gserialized_is_empty(gs));
+  void *ctx = geo_clip_ctx_make(gs);
+  if (! ctx)
+    return NULL;
+  Temporal *result = tpoint_linear_dwithin_geom_ctx(temp, ctx, dist);
+  geo_clip_ctx_free(ctx);
   return result;
 }
 

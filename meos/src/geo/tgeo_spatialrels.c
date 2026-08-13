@@ -1039,16 +1039,30 @@ ea_disjoint_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
   /* Temporal geometry case */
   int count;
   Datum *datumarr = temporal_values_p(temp, &count);
-  datum_func2 func = geo_disjoint_fn_geo(temp->flags, gs->gflags);
   result = 0;
+  /* The planar 2D relationship indexes the edges of the geometry to resolve
+   * one composing value against it. Since the geometry is the same for every
+   * value, its edges are extracted and indexed once, in a clip context the
+   * loop reuses, instead of once per value as calling the relationship
+   * directly would do. The condition selecting the context is the one
+   * #geo_disjoint_fn_geo uses to select the planar 2D relationship */
+  void *ctx = NULL;
+  if (! MEOS_FLAGS_GET_GEODETIC(temp->flags) &&
+      ! (MEOS_FLAGS_GET_Z(temp->flags) && FLAGS_GET_Z(gs->gflags)))
+    ctx = geo_clip_ctx_make(gs);
+  datum_func2 func = geo_disjoint_fn_geo(temp->flags, gs->gflags);
   for (int i = 0; i < count; i++)
   {
-    if (func(datumarr[i], PointerGetDatum(gs)))
+    bool disjoint = ctx ?
+      ! geo_intersects2d_ctx(DatumGetGserializedP(datumarr[i]), ctx) :
+      DatumGetBool(func(datumarr[i], PointerGetDatum(gs)));
+    if (disjoint)
     {
       result = 1;
       break;
     }
   }
+  geo_clip_ctx_free(ctx);
   pfree(datumarr);
   return result;
 }
