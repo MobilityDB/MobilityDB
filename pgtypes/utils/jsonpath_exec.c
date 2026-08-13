@@ -2123,7 +2123,7 @@ executeDateTimeMethod(JsonPathExecContext *cxt, JsonPathItem *jsp,
     template_str = jspGetString(&elem, &template_len);
     template = pg_cstring_to_text_with_len(template_str, template_len);
     if (! pg_parse_datetime(datetime, template, collid, true, &typid,
-        &typmod, &tz, &value))
+        &typmod, &tz, &value, NULL))
       res = jperError;
     else
       res = jperOk;
@@ -2208,8 +2208,16 @@ executeDateTimeMethod(JsonPathExecContext *cxt, JsonPathItem *jsp,
         MemoryContextSwitchTo(oldcontext);
 #endif /* ! MEOS */
       }
+      /*
+       * A picture that does not fit the input is how this loop finds the one
+       * that does, so the failure is reported back through the context
+       * instead of ending the query. Without it the first picture that does
+       * not fit raises, and an input the later pictures describe, such as
+       * "2001-01-01T12:00:00", never reaches them.
+       */
+      Node escontext = {0};
       if (pg_parse_datetime(datetime, fmt_txt[i], collid, true, &typid,
-        &typmod, &tz, &value))
+        &typmod, &tz, &value, &escontext))
       {
         res = jperOk;
         break;

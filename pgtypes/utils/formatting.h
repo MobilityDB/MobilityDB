@@ -17,6 +17,8 @@
 #ifndef _FORMATTING_H_
 #define _FORMATTING_H_
 
+#include "nodes/nodes.h"  /* MEOS: Node, for the parse failure context */
+
 // MEOS force the collation to DEFAULT_COLLATION_OID
 #define PG_GET_COLLATION()  DEFAULT_COLLATION_OID
 
@@ -30,7 +32,8 @@ extern char *asc_toupper(const char *buff, size_t nbytes);
 extern char *asc_initcap(const char *buff, size_t nbytes);
 
 extern bool pg_parse_datetime(text *date_txt, text *fmt, Oid collid,
-  bool strict, Oid *typid, int32 *typmod, int *tz, Datum *result);
+  bool strict, Oid *typid, int32 *typmod, int *tz, Datum *result,
+  Node *escontext);
 extern bool datetime_format_has_tz(const char *fmt_str);
 
 #endif
