@@ -846,7 +846,8 @@ tjsonb_delete_array(const Temporal *temp, text **keys, int count)
 
 /**
  * @ingroup meos_json_json
- * @brief Delete a key from a temporal JSONB value
+ * @brief Return a temporal boolean that states if a key exists as a
+ * top-level key or array element within a temporal JSONB value
  * @param[in] temp Temporal JSONB value
  * @param[in] key Key
  * @csqlfn #Tjsonb_exists()
@@ -869,11 +870,15 @@ tjsonb_exists(const Temporal *temp, const text *key)
 
 /**
  * @ingroup meos_json_json
- * @brief Delete an array of keys from a temporal JSONB value
+ * @brief Return a temporal boolean that states if any or all of the keys in
+ * a text array exist as top-level keys or array elements within a temporal
+ * JSONB value, common to the #tjsonb_exists_any() and #tjsonb_exists_all()
+ * functions
  * @param[in] temp Temporal JSONB value
  * @param[in] keys Keys
  * @param[in] count Number of elements in the input array
  * @param[in] any True for the 'any' semantics, false for the 'all' semantics
+ * @csqlfn #Tjsonb_exists_any(), #Tjsonb_exists_all()
  */
 Temporal *
 tjsonb_exists_array(const Temporal *temp, text **keys, int count, bool any)
@@ -893,6 +898,38 @@ tjsonb_exists_array(const Temporal *temp, text **keys, int count, bool any)
   lfinfo.param[2] = BoolGetDatum(any);
   lfinfo.restype = T_TBOOL;
   return tfunc_temporal(temp, &lfinfo);
+}
+
+/**
+ * @ingroup meos_json_json
+ * @brief Return a temporal boolean that states if any of the keys in a text
+ * array exist as top-level keys or array elements within a temporal JSONB
+ * value
+ * @param[in] temp Temporal JSONB value
+ * @param[in] keys Keys
+ * @param[in] count Number of elements in the input array
+ * @csqlfn #Tjsonb_exists_any()
+ */
+Temporal *
+tjsonb_exists_any(const Temporal *temp, text **keys, int count)
+{
+  return tjsonb_exists_array(temp, keys, count, true);
+}
+
+/**
+ * @ingroup meos_json_json
+ * @brief Return a temporal boolean that states if all of the keys in a text
+ * array exist as top-level keys or array elements within a temporal JSONB
+ * value
+ * @param[in] temp Temporal JSONB value
+ * @param[in] keys Keys
+ * @param[in] count Number of elements in the input array
+ * @csqlfn #Tjsonb_exists_all()
+ */
+Temporal *
+tjsonb_exists_all(const Temporal *temp, text **keys, int count)
+{
+  return tjsonb_exists_array(temp, keys, count, false);
 }
 
 /**
