@@ -36,140 +36,140 @@
  * JSON Functions
  *****************************************************************************/
 
-CREATE FUNCTION tjson_array_length(ttext)
+CREATE FUNCTION tjsonArrayLength(ttext)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Tjson_array_length'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tjsonb_array_length(tjsonb)
+CREATE FUNCTION tjsonbArrayLength(tjsonb)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Tjsonb_array_length'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
 
-CREATE FUNCTION tjson_object_field(ttext, text,
+CREATE FUNCTION tjsonObjectField(ttext, text,
     null_handle text DEFAULT 'use_json_null')
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Tjson_object_field'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tjsonb_object_field(tjsonb, text,
+CREATE FUNCTION tjsonbObjectField(tjsonb, text,
     null_handle text DEFAULT 'use_json_null')
   RETURNS tjsonb
   AS 'MODULE_PATHNAME', 'Tjsonb_object_field'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tjsonb_object_field_text(tjsonb, text,
+CREATE FUNCTION tjsonbObjectFieldText(tjsonb, text,
     null_handle text DEFAULT 'use_json_null')
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Tjsonb_object_field_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tjson_object_field_opr(ttext, text)
+CREATE FUNCTION tjsonObjectFieldOpr(ttext, text)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Tjson_object_field_opr'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tjsonb_object_field_opr(tjsonb, text)
+CREATE FUNCTION tjsonbObjectFieldOpr(tjsonb, text)
   RETURNS tjsonb
   AS 'MODULE_PATHNAME', 'Tjsonb_object_field_opr'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tjsonb_object_field_text_opr(tjsonb, text)
+CREATE FUNCTION tjsonbObjectFieldTextOpr(tjsonb, text)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Tjsonb_object_field_text_opr'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR -> (
-  PROCEDURE = tjson_object_field_opr,
+  PROCEDURE = tjsonObjectFieldOpr,
   LEFTARG   = ttext, RIGHTARG = text
 );
 CREATE OPERATOR -> (
-  PROCEDURE = tjsonb_object_field_opr,
+  PROCEDURE = tjsonbObjectFieldOpr,
   LEFTARG   = tjsonb, RIGHTARG = text
 );
 CREATE OPERATOR ->> (
-  PROCEDURE = tjsonb_object_field_text_opr,
+  PROCEDURE = tjsonbObjectFieldTextOpr,
   LEFTARG   = tjsonb, RIGHTARG = text
 );
 
-CREATE FUNCTION tjson_extract_path(ttext, path text[],
+CREATE FUNCTION tjsonExtractPath(ttext, path text[],
     null_handle text DEFAULT 'use_json_null')
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Tjson_extract_path'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tjsonb_extract_path(tjsonb, path text[],
+CREATE FUNCTION tjsonbExtractPath(tjsonb, path text[],
     null_handle text DEFAULT 'use_json_null')
   RETURNS tjsonb
   AS 'MODULE_PATHNAME', 'Tjsonb_extract_path'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tjsonb_extract_path_text(tjsonb, path text[],
+CREATE FUNCTION tjsonbExtractPathText(tjsonb, path text[],
     null_handle text DEFAULT 'use_json_null')
   RETURNS tjsonb
   AS 'MODULE_PATHNAME', 'Tjsonb_extract_path_text'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tjson_extract_path_opr(ttext, path text[])
+CREATE FUNCTION tjsonExtractPathOpr(ttext, path text[])
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Tjson_extract_path_opr'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tjsonb_extract_path_opr(tjsonb, path text[])
+CREATE FUNCTION tjsonbExtractPathOpr(tjsonb, path text[])
   RETURNS tjsonb
   AS 'MODULE_PATHNAME', 'Tjsonb_extract_path_opr'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tjsonb_extract_path_text_opr(tjsonb, path text[])
+CREATE FUNCTION tjsonbExtractPathTextOpr(tjsonb, path text[])
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Tjsonb_extract_path_text_opr'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #> (
-  PROCEDURE = tjson_extract_path_opr,
+  PROCEDURE = tjsonExtractPathOpr,
   LEFTARG   = ttext, RIGHTARG = text[]
 );
 CREATE OPERATOR #> (
-  PROCEDURE = tjsonb_extract_path_opr,
+  PROCEDURE = tjsonbExtractPathOpr,
   LEFTARG   = tjsonb, RIGHTARG = text[]
 );
 CREATE OPERATOR #>> (
-  PROCEDURE = tjsonb_extract_path_text_opr,
+  PROCEDURE = tjsonbExtractPathTextOpr,
   LEFTARG   = tjsonb, RIGHTARG = text[]
 );
 
-CREATE FUNCTION tjson_array_element(ttext, integer,
+CREATE FUNCTION tjsonArrayElement(ttext, integer,
     null_handle text DEFAULT 'use_json_null')
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Tjson_array_element'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tjsonb_array_element(tjsonb, integer,
+CREATE FUNCTION tjsonbArrayElement(tjsonb, integer,
     null_handle text DEFAULT 'use_json_null')
   RETURNS tjsonb
   AS 'MODULE_PATHNAME', 'Tjsonb_array_element'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tjsonb_array_element_text(tjsonb, integer,
+CREATE FUNCTION tjsonbArrayElementText(tjsonb, integer,
     null_handle text DEFAULT 'use_json_null')
   RETURNS tjsonb
   AS 'MODULE_PATHNAME', 'Tjsonb_array_element_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tjson_array_element_opr(ttext, int)
+CREATE FUNCTION tjsonArrayElementOpr(ttext, int)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Tjson_array_element_opr'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tjsonb_array_element_opr(tjsonb, int)
+CREATE FUNCTION tjsonbArrayElementOpr(tjsonb, int)
   RETURNS tjsonb
   AS 'MODULE_PATHNAME', 'Tjsonb_array_element_opr'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tjsonb_array_element_text_opr(tjsonb, int)
+CREATE FUNCTION tjsonbArrayElementTextOpr(tjsonb, int)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Tjsonb_array_element_text_opr'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR -> (
-  PROCEDURE = tjson_array_element_opr,
+  PROCEDURE = tjsonArrayElementOpr,
   LEFTARG   = ttext, RIGHTARG = int
 );
 CREATE OPERATOR -> (
-  PROCEDURE = tjsonb_array_element_opr,
+  PROCEDURE = tjsonbArrayElementOpr,
   LEFTARG   = tjsonb, RIGHTARG = int
 );
 CREATE OPERATOR ->> (
-  PROCEDURE = tjsonb_array_element_text_opr,
+  PROCEDURE = tjsonbArrayElementTextOpr,
   LEFTARG   = tjsonb, RIGHTARG = int
 );
 
@@ -202,172 +202,172 @@ CREATE FUNCTION ttext(tjsonb, text, null_handle text DEFAULT 'raise_exception')
 
 /*****************************************************************************/
 
-CREATE FUNCTION tjsonb_concat(jsonb, tjsonb)
+CREATE FUNCTION tjsonbConcat(jsonb, tjsonb)
   RETURNS tjsonb
   AS 'MODULE_PATHNAME', 'Concat_jsonb_tjsonb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tjsonb_concat(tjsonb, jsonb)
+CREATE FUNCTION tjsonbConcat(tjsonb, jsonb)
   RETURNS tjsonb
   AS 'MODULE_PATHNAME', 'Concat_tjsonb_jsonb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tjsonb_concat(tjsonb, tjsonb)
+CREATE FUNCTION tjsonbConcat(tjsonb, tjsonb)
   RETURNS tjsonb
   AS 'MODULE_PATHNAME', 'Concat_tjsonb_tjsonb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR || (
-  PROCEDURE = tjsonb_concat,
+  PROCEDURE = tjsonbConcat,
   LEFTARG   = jsonb, RIGHTARG = tjsonb
 );
 CREATE OPERATOR || (
-  PROCEDURE = tjsonb_concat,
+  PROCEDURE = tjsonbConcat,
   LEFTARG   = tjsonb, RIGHTARG = jsonb
 );
 CREATE OPERATOR || (
-  PROCEDURE = tjsonb_concat,
+  PROCEDURE = tjsonbConcat,
   LEFTARG   = tjsonb, RIGHTARG = tjsonb
 );
 
-CREATE FUNCTION tjsonb_delete(tjsonb, text)
+CREATE FUNCTION tjsonbDelete(tjsonb, text)
   RETURNS tjsonb
   AS 'MODULE_PATHNAME', 'Tjsonb_delete'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tjsonb_delete_array(tjsonb, text[])
+CREATE FUNCTION tjsonbDeleteArray(tjsonb, text[])
   RETURNS tjsonb
   AS 'MODULE_PATHNAME', 'Tjsonb_delete_array'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tjsonb_delete_index(tjsonb, integer)
+CREATE FUNCTION tjsonbDeleteIndex(tjsonb, integer)
   RETURNS tjsonb
   AS 'MODULE_PATHNAME', 'Tjsonb_delete_index'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tjsonb_delete_path(tjsonb, path text[])
+CREATE FUNCTION tjsonbDeletePath(tjsonb, path text[])
   RETURNS tjsonb
   AS 'MODULE_PATHNAME', 'Tjsonb_delete_path'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR - (
-  PROCEDURE = tjsonb_delete,
+  PROCEDURE = tjsonbDelete,
   LEFTARG   = tjsonb, RIGHTARG = text
 );
 CREATE OPERATOR - (
-  PROCEDURE = tjsonb_delete_array,
+  PROCEDURE = tjsonbDeleteArray,
   LEFTARG   = tjsonb, RIGHTARG = text[]
 );
 CREATE OPERATOR - (
-  PROCEDURE = tjsonb_delete_index,
+  PROCEDURE = tjsonbDeleteIndex,
   LEFTARG   = tjsonb, RIGHTARG = integer
 );
 CREATE OPERATOR #- (
-  PROCEDURE = tjsonb_delete_path,
+  PROCEDURE = tjsonbDeletePath,
   LEFTARG   = tjsonb, RIGHTARG = text[]
 );
 
 /*****************************************************************************/
 
-CREATE FUNCTION tjsonb_set(tjsonb, path text[], val jsonb,
+CREATE FUNCTION tjsonbSet(tjsonb, path text[], val jsonb,
     create_missing boolean DEFAULT true)
   RETURNS tjsonb
   AS 'MODULE_PATHNAME', 'Tjsonb_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tjsonb_set_lax(tjsonb, path text[], val jsonb,
+CREATE FUNCTION tjsonbSetLax(tjsonb, path text[], val jsonb,
     create_missing boolean DEFAULT true, handle_null text DEFAULT '')
   RETURNS tjsonb
   AS 'MODULE_PATHNAME', 'Tjsonb_set_lax'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tjsonb_insert(tjsonb, path text[], val jsonb,
+CREATE FUNCTION tjsonbInsert(tjsonb, path text[], val jsonb,
     after boolean DEFAULT false)
   RETURNS tjsonb
   AS 'MODULE_PATHNAME', 'Tjsonb_insert'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tjson_strip_nulls(ttext, bool DEFAULT FALSE)
+CREATE FUNCTION tjsonStripNulls(ttext, bool DEFAULT FALSE)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Tjson_strip_nulls'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-  CREATE FUNCTION tjsonb_strip_nulls(tjsonb, bool DEFAULT FALSE)
-RETURNS tjsonb
-AS 'MODULE_PATHNAME', 'Tjsonb_strip_nulls'
-LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tjsonbStripNulls(tjsonb, bool DEFAULT FALSE)
+  RETURNS tjsonb
+  AS 'MODULE_PATHNAME', 'Tjsonb_strip_nulls'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tjsonb_pretty(tjsonb)
+CREATE FUNCTION tjsonbPretty(tjsonb)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Tjsonb_pretty'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
 
-CREATE FUNCTION tjsonb_path_exists(tjsonb, jsonpath, vars jsonb DEFAULT '{}',
+CREATE FUNCTION tjsonbPathExists(tjsonb, jsonpath, vars jsonb DEFAULT '{}',
   silent boolean DEFAULT FALSE)
 RETURNS tbool
 AS 'MODULE_PATHNAME', 'Tjsonb_path_exists'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tjsonb_path_exists_tz(tjsonb, jsonpath,
+CREATE FUNCTION tjsonbPathExistsTz(tjsonb, jsonpath,
   vars jsonb DEFAULT '{}', silent boolean DEFAULT false)
 RETURNS tbool
 AS 'MODULE_PATHNAME', 'Tjsonb_path_exists_tz'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tjsonb_path_exists_opr(tjsonb, jsonpath)
+CREATE FUNCTION tjsonbPathExistsOpr(tjsonb, jsonpath)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tjsonb_path_exists_opr'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @? (
-  PROCEDURE = tjsonb_path_exists_opr,
+  PROCEDURE = tjsonbPathExistsOpr,
   LEFTARG = tjsonb, RIGHTARG = jsonpath
 );
 
-CREATE FUNCTION tjsonb_path_match(tjsonb, jsonpath, vars jsonb DEFAULT '{}',
+CREATE FUNCTION tjsonbPathMatch(tjsonb, jsonpath, vars jsonb DEFAULT '{}',
   silent boolean DEFAULT FALSE)
 RETURNS tbool
 AS 'MODULE_PATHNAME', 'Tjsonb_path_match'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tjsonb_path_match_tz(tjsonb, jsonpath,
+CREATE FUNCTION tjsonbPathMatchTz(tjsonb, jsonpath,
   vars jsonb DEFAULT '{}', silent boolean DEFAULT FALSE)
 RETURNS tbool
 AS 'MODULE_PATHNAME', 'Tjsonb_path_match_tz'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tjsonb_path_match_opr(tjsonb, jsonpath)
+CREATE FUNCTION tjsonbPathMatchOpr(tjsonb, jsonpath)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tjsonb_path_match_opr'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @@ (
-  PROCEDURE = tjsonb_path_match_opr,
+  PROCEDURE = tjsonbPathMatchOpr,
   LEFTARG = tjsonb, RIGHTARG = jsonpath
 );
 
--- CREATE FUNCTION tjsonb_path_query(tjsonb, jsonpath, vars jsonb DEFAULT '{}',
+-- CREATE FUNCTION tjsonbPathQuery(tjsonb, jsonpath, vars jsonb DEFAULT '{}',
   -- silent boolean DEFAULT FALSE)
 -- RETURNS SETOF tjsonb
 -- AS 'MODULE_PATHNAME', 'Tjsonb_path_query'
 -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
--- CREATE FUNCTION tjsonb_path_query_tz(tjsonb, jsonpath,
+-- CREATE FUNCTION tjsonbPathQueryTz(tjsonb, jsonpath,
   -- vars jsonb DEFAULT '{}', silent boolean DEFAULT FALSE)
 -- RETURNS SETOF tjsonb
 -- AS 'MODULE_PATHNAME', 'Tjsonb_path_query_tz'
 -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tjsonb_path_query_array(tjsonb, jsonpath,
+CREATE FUNCTION tjsonbPathQueryArray(tjsonb, jsonpath,
   vars jsonb DEFAULT '{}', silent boolean DEFAULT FALSE)
 RETURNS tjsonb
 AS 'MODULE_PATHNAME', 'Tjsonb_path_query_array'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tjsonb_path_query_array_tz(tjsonb, jsonpath,
+CREATE FUNCTION tjsonbPathQueryArrayTz(tjsonb, jsonpath,
   vars jsonb DEFAULT '{}', silent boolean DEFAULT FALSE)
 RETURNS tjsonb
 AS 'MODULE_PATHNAME', 'Tjsonb_path_query_array_tz'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tjsonb_path_query_first(tjsonb, jsonpath,
+CREATE FUNCTION tjsonbPathQueryFirst(tjsonb, jsonpath,
   vars jsonb DEFAULT '{}', silent boolean DEFAULT FALSE)
 RETURNS tjsonb
 AS 'MODULE_PATHNAME', 'Tjsonb_path_query_first'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tjsonb_path_query_first_tz(tjsonb, jsonpath,
+CREATE FUNCTION tjsonbPathQueryFirstTz(tjsonb, jsonpath,
   vars jsonb DEFAULT '{}', silent boolean DEFAULT FALSE)
 RETURNS tjsonb
 AS 'MODULE_PATHNAME', 'Tjsonb_path_query_first_tz'

@@ -2785,7 +2785,7 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="tjson_object_field"><varname>-></varname>, <varname>->></varname>, <varname>tjson_object_field</varname>, <varname>tjsonb_object_field</varname>, <varname>tjsonb_object_field_text</varname></link>: Extract a field from a temporal JSON value specified by a key</para>
+					<para><link linkend="tjson_object_field"><varname>-></varname>, <varname>->></varname>, <varname>tjsonObjectField</varname>, <varname>tjsonbObjectField</varname>, <varname>tjsonbObjectFieldText</varname></link>: Extract a field from a temporal JSON value specified by a key</para>
 				</listitem>
 
 				<listitem>
@@ -2793,7 +2793,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tjson_array_element"><varname>tjson_array_element</varname>, <varname>tjsonb_array_element</varname>, <varname>tjsonb_array_element_text</varname></link>: Extract an element from temporal JSON array</para>
+					<para><link linkend="tjson_array_element"><varname>tjsonArrayElement</varname>, <varname>tjsonbArrayElement</varname>, <varname>tjsonbArrayElementText</varname></link>: Extract an element from temporal JSON array</para>
 				</listitem>
 
 				<listitem>
@@ -2805,7 +2805,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tjsonb_set"><varname>tjsonb_set</varname>, <varname>tjsonb_set_lax</varname></link>: Temporal JSONB set</para>
+					<para><link linkend="tjsonb_set"><varname>tjsonbSet</varname>, <varname>tjsonbSetLax</varname></link>: Temporal JSONB set</para>
 				</listitem>
 
 				<listitem>
@@ -2822,23 +2822,23 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tjson_strip_nulls"><varname>tjson_strip_nulls</varname>, <varname>tjsonb_strip_nulls</varname></link>: Return a temporal JSON value without nulls</para>
+					<para><link linkend="tjson_strip_nulls"><varname>tjsonStripNulls</varname>, <varname>tjsonbStripNulls</varname></link>: Return a temporal JSON value without nulls</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tjsonb_path_exists"><varname>@?</varname>, <varname>tjsonb_path_exists</varname>, <varname>tjsonb_path_exists_tz</varname></link>: Does the JSON path expression return any item from the JSONB value?</para>
+					<para><link linkend="tjsonb_path_exists"><varname>@?</varname>, <varname>tjsonbPathExists</varname>, <varname>tjsonbPathExistsTz</varname></link>: Does the JSON path expression return any item from the JSONB value?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tjsonb_path_match"><varname>@@</varname>, <varname>tjsonb_path_match</varname>, <varname>tjsonb_path_match_tz</varname></link>: Return the result of a JSON path expression check for a temporal JSONB value.</para>
+					<para><link linkend="tjsonb_path_match"><varname>@@</varname>, <varname>tjsonbPathMatch</varname>, <varname>tjsonbPathMatchTz</varname></link>: Return the result of a JSON path expression check for a temporal JSONB value.</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tjsonb_path_query_array"><varname>tjsonb_path_query</varname>, <varname>tjsonb_path_query_tz</varname></link>: Return all items returned by a JSON path expression from a temporal JSONB value, as a JSON array</para>
+					<para><link linkend="tjsonb_path_query_array"><varname>tjsonbPathQuery</varname>, <varname>tjsonbPathQueryTz</varname></link>: Return all items returned by a JSON path expression from a temporal JSONB value, as a JSON array</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tjsonb_path_query_first"><varname>tjsonb_path_query_first</varname>, <varname>tjsonb_path_query_first_tz</varname></link>: Return the first item returned by a JSON path expression from a temporal JSONB value</para>
+					<para><link linkend="tjsonb_path_query_first"><varname>tjsonbPathQueryFirst</varname>, <varname>tjsonbPathQueryFirstTz</varname></link>: Return the first item returned by a JSON path expression from a temporal JSONB value</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

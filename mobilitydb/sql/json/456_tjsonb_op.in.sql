@@ -36,29 +36,29 @@
  * Exists
  *****************************************************************************/
 
-CREATE FUNCTION tjsonb_exists(tjsonb, text)
+CREATE FUNCTION tjsonbExists(tjsonb, text)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tjsonb_exists'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tjsonb_exists_any(tjsonb, text[])
+CREATE FUNCTION tjsonbExistsAny(tjsonb, text[])
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tjsonb_exists_any'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tjsonb_exists_all(tjsonb, text[])
+CREATE FUNCTION tjsonbExistsAll(tjsonb, text[])
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tjsonb_exists_all'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ? (
-  PROCEDURE = tjsonb_exists,
+  PROCEDURE = tjsonbExists,
   LEFTARG   = tjsonb, RIGHTARG = text
 );
 CREATE OPERATOR ?| (
-  PROCEDURE = tjsonb_exists_any,
+  PROCEDURE = tjsonbExistsAny,
   LEFTARG   = tjsonb, RIGHTARG = text[]
 );
 CREATE OPERATOR ?& (
-  PROCEDURE = tjsonb_exists_all,
+  PROCEDURE = tjsonbExistsAll,
   LEFTARG   = tjsonb, RIGHTARG = text[]
 );
 
@@ -66,31 +66,31 @@ CREATE OPERATOR ?& (
  * Contains
  *****************************************************************************/
 
-CREATE FUNCTION tjsonb_contains(jsonb, tjsonb)
+CREATE FUNCTION tjsonbContains(jsonb, tjsonb)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Contains_jsonb_tjsonb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tjsonb_contains(tjsonb, jsonb)
+CREATE FUNCTION tjsonbContains(tjsonb, jsonb)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Contains_tjsonb_jsonb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tjsonb_contains(tjsonb, tjsonb)
+CREATE FUNCTION tjsonbContains(tjsonb, tjsonb)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Contains_tjsonb_tjsonb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
-  PROCEDURE = tjsonb_contains,
+  PROCEDURE = tjsonbContains,
   LEFTARG   = jsonb, RIGHTARG = tjsonb,
   COMMUTATOR = <@
 );
 CREATE OPERATOR @> (
-  PROCEDURE = tjsonb_contains,
+  PROCEDURE = tjsonbContains,
   LEFTARG   = tjsonb, RIGHTARG = jsonb,
   COMMUTATOR = <@
 );
 CREATE OPERATOR @> (
-  PROCEDURE = tjsonb_contains,
+  PROCEDURE = tjsonbContains,
   LEFTARG   = tjsonb, RIGHTARG = tjsonb,
   COMMUTATOR = <@
 );
@@ -99,31 +99,31 @@ CREATE OPERATOR @> (
  * Contained
  *****************************************************************************/
 
-CREATE FUNCTION tjsonb_contained(jsonb, tjsonb)
+CREATE FUNCTION tjsonbContained(jsonb, tjsonb)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Contained_jsonb_tjsonb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tjsonb_contained(tjsonb, jsonb)
+CREATE FUNCTION tjsonbContained(tjsonb, jsonb)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Contained_tjsonb_jsonb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tjsonb_contained(tjsonb, tjsonb)
+CREATE FUNCTION tjsonbContained(tjsonb, tjsonb)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Contained_tjsonb_tjsonb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
-  PROCEDURE = tjsonb_contained,
+  PROCEDURE = tjsonbContained,
   LEFTARG   = jsonb, RIGHTARG = tjsonb,
   COMMUTATOR = @>
 );
 CREATE OPERATOR <@ (
-  PROCEDURE = tjsonb_contained,
+  PROCEDURE = tjsonbContained,
   LEFTARG   = tjsonb, RIGHTARG = jsonb,
   COMMUTATOR = @>
 );
 CREATE OPERATOR <@ (
-  PROCEDURE = tjsonb_contained,
+  PROCEDURE = tjsonbContained,
   LEFTARG   = tjsonb, RIGHTARG = tjsonb,
   COMMUTATOR = @>
 );

@@ -36,97 +36,97 @@
  * JSONB Functions
  *****************************************************************************/
 
-CREATE FUNCTION jsonbset_array_length(jsonbset)
+CREATE FUNCTION jsonbsetArrayLength(jsonbset)
   RETURNS intset
   AS 'MODULE_PATHNAME', 'Jsonbset_array_length'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
 
-CREATE FUNCTION jsonbset_object_field(jsonbset, text,
+CREATE FUNCTION jsonbsetObjectField(jsonbset, text,
     null_handle text DEFAULT 'use_json_null')
   RETURNS jsonbset
   AS 'MODULE_PATHNAME', 'Jsonbset_object_field'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION jsonbset_object_field_text(jsonbset, text,
+CREATE FUNCTION jsonbsetObjectFieldText(jsonbset, text,
     null_handle text DEFAULT 'use_json_null')
   RETURNS textset
   AS 'MODULE_PATHNAME', 'Jsonbset_object_field_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION jsonbset_object_field_opr(jsonbset, text)
+CREATE FUNCTION jsonbsetObjectFieldOpr(jsonbset, text)
   RETURNS jsonbset
   AS 'MODULE_PATHNAME', 'Jsonbset_object_field_opr'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION jsonbset_object_field_text_opr(jsonbset, text)
+CREATE FUNCTION jsonbsetObjectFieldTextOpr(jsonbset, text)
   RETURNS jsonbset
   AS 'MODULE_PATHNAME', 'Jsonbset_object_field_text_opr'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR -> (
-  PROCEDURE = jsonbset_object_field_opr,
+  PROCEDURE = jsonbsetObjectFieldOpr,
   LEFTARG   = jsonbset, RIGHTARG = text
 );
 CREATE OPERATOR ->> (
-  PROCEDURE = jsonbset_object_field_text_opr,
+  PROCEDURE = jsonbsetObjectFieldTextOpr,
   LEFTARG   = jsonbset, RIGHTARG = text
 );
 
-CREATE FUNCTION jsonbset_extract_path(jsonbset, path text[],
+CREATE FUNCTION jsonbsetExtractPath(jsonbset, path text[],
     null_handle text DEFAULT 'use_json_null')
   RETURNS jsonbset
   AS 'MODULE_PATHNAME', 'Jsonbset_extract_path'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION jsonbset_extract_path_text(jsonbset, path text[],
+CREATE FUNCTION jsonbsetExtractPathText(jsonbset, path text[],
     null_handle text DEFAULT 'use_json_null')
   RETURNS jsonbset
   AS 'MODULE_PATHNAME', 'Jsonbset_extract_path_text'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION jsonbset_extract_path_opr(jsonbset, path text[])
+CREATE FUNCTION jsonbsetExtractPathOpr(jsonbset, path text[])
   RETURNS jsonbset
   AS 'MODULE_PATHNAME', 'Jsonbset_extract_path_opr'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION jsonbset_extract_path_text_opr(jsonbset, path text[])
+CREATE FUNCTION jsonbsetExtractPathTextOpr(jsonbset, path text[])
   RETURNS jsonbset
   AS 'MODULE_PATHNAME', 'Jsonbset_extract_path_text_opr'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR #> (
-  PROCEDURE = jsonbset_extract_path_opr,
+  PROCEDURE = jsonbsetExtractPathOpr,
   LEFTARG   = jsonbset, RIGHTARG = text[]
 );
 CREATE OPERATOR #>> (
-  PROCEDURE = jsonbset_extract_path_text_opr,
+  PROCEDURE = jsonbsetExtractPathTextOpr,
   LEFTARG   = jsonbset, RIGHTARG = text[]
 );
 
-CREATE FUNCTION jsonbset_array_element(jsonbset, integer,
+CREATE FUNCTION jsonbsetArrayElement(jsonbset, integer,
     null_handle text DEFAULT 'use_json_null')
   RETURNS jsonbset
   AS 'MODULE_PATHNAME', 'Jsonbset_array_element'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION jsonbset_array_element_text(jsonbset, integer,
+CREATE FUNCTION jsonbsetArrayElementText(jsonbset, integer,
     null_handle text DEFAULT 'use_json_null')
   RETURNS jsonbset
   AS 'MODULE_PATHNAME', 'Jsonbset_array_element_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION jsonbset_array_element_opr(jsonbset, int)
+CREATE FUNCTION jsonbsetArrayElementOpr(jsonbset, int)
   RETURNS jsonbset
   AS 'MODULE_PATHNAME', 'Jsonbset_array_element_opr'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION jsonbset_array_element_text_opr(jsonbset, int)
+CREATE FUNCTION jsonbsetArrayElementTextOpr(jsonbset, int)
   RETURNS jsonbset
   AS 'MODULE_PATHNAME', 'Jsonbset_array_element_text_opr'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR -> (
-  PROCEDURE = jsonbset_array_element_opr,
+  PROCEDURE = jsonbsetArrayElementOpr,
   LEFTARG   = jsonbset, RIGHTARG = int
 );
 CREATE OPERATOR ->> (
-  PROCEDURE = jsonbset_array_element_text_opr,
+  PROCEDURE = jsonbsetArrayElementTextOpr,
   LEFTARG   = jsonbset, RIGHTARG = int
 );
 
@@ -156,55 +156,55 @@ CREATE FUNCTION textset(jsonbset, text,
 
 /*****************************************************************************/
 
-CREATE FUNCTION jsonbset_concat(jsonb, jsonbset)
+CREATE FUNCTION jsonbsetConcat(jsonb, jsonbset)
   RETURNS jsonbset
   AS 'MODULE_PATHNAME', 'Concat_jsonb_jsonbset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION jsonbset_concat(jsonbset, jsonb)
+CREATE FUNCTION jsonbsetConcat(jsonbset, jsonb)
   RETURNS jsonbset
   AS 'MODULE_PATHNAME', 'Concat_jsonbset_jsonb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR || (
-  PROCEDURE = jsonbset_concat,
+  PROCEDURE = jsonbsetConcat,
   LEFTARG   = jsonb, RIGHTARG = jsonbset
 );
 CREATE OPERATOR || (
-  PROCEDURE = jsonbset_concat,
+  PROCEDURE = jsonbsetConcat,
   LEFTARG   = jsonbset, RIGHTARG = jsonb
 );
 
-CREATE FUNCTION jsonbset_delete(jsonbset, text)
+CREATE FUNCTION jsonbsetDelete(jsonbset, text)
   RETURNS jsonbset
   AS 'MODULE_PATHNAME', 'Jsonbset_delete'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION jsonbset_delete_array(jsonbset, text[])
+CREATE FUNCTION jsonbsetDeleteArray(jsonbset, text[])
   RETURNS jsonbset
   AS 'MODULE_PATHNAME', 'Jsonbset_delete_array'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION jsonbset_delete_index(jsonbset, integer)
+CREATE FUNCTION jsonbsetDeleteIndex(jsonbset, integer)
   RETURNS jsonbset
   AS 'MODULE_PATHNAME', 'Jsonbset_delete_index'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION jsonbset_delete_path(jsonbset, path text[])
+CREATE FUNCTION jsonbsetDeletePath(jsonbset, path text[])
   RETURNS jsonbset
   AS 'MODULE_PATHNAME', 'Jsonbset_delete_path'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR - (
-  PROCEDURE = jsonbset_delete,
+  PROCEDURE = jsonbsetDelete,
   LEFTARG   = jsonbset, RIGHTARG = text
 );
 CREATE OPERATOR - (
-  PROCEDURE = jsonbset_delete_array,
+  PROCEDURE = jsonbsetDeleteArray,
   LEFTARG   = jsonbset, RIGHTARG = text[]
 );
 CREATE OPERATOR - (
-  PROCEDURE = jsonbset_delete_index,
+  PROCEDURE = jsonbsetDeleteIndex,
   LEFTARG   = jsonbset, RIGHTARG = integer
 );
 CREATE OPERATOR #- (
-  PROCEDURE = jsonbset_delete_path,
+  PROCEDURE = jsonbsetDeletePath,
   LEFTARG   = jsonbset, RIGHTARG = text[]
 );
 
@@ -212,123 +212,123 @@ CREATE OPERATOR #- (
  * Exists
  *****************************************************************************/
 
-CREATE FUNCTION jsonbset_exists(jsonbset, text)
+CREATE FUNCTION jsonbsetExists(jsonbset, text)
   RETURNS boolean[]
   AS 'MODULE_PATHNAME', 'Jsonbset_exists'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION jsonbset_exists_any(jsonbset, text[])
+CREATE FUNCTION jsonbsetExistsAny(jsonbset, text[])
   RETURNS boolean[]
   AS 'MODULE_PATHNAME', 'Jsonbset_exists_any'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION jsonbset_exists_all(jsonbset, text[])
+CREATE FUNCTION jsonbsetExistsAll(jsonbset, text[])
   RETURNS boolean[]
   AS 'MODULE_PATHNAME', 'Jsonbset_exists_all'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ? (
-  PROCEDURE = jsonbset_exists,
+  PROCEDURE = jsonbsetExists,
   LEFTARG   = jsonbset, RIGHTARG = text
 );
 CREATE OPERATOR ?| (
-  PROCEDURE = jsonbset_exists_any,
+  PROCEDURE = jsonbsetExistsAny,
   LEFTARG   = jsonbset, RIGHTARG = text[]
 );
 CREATE OPERATOR ?& (
-  PROCEDURE = jsonbset_exists_all,
+  PROCEDURE = jsonbsetExistsAll,
   LEFTARG   = jsonbset, RIGHTARG = text[]
 );
 
 /*****************************************************************************/
 
-CREATE FUNCTION jsonbset_set(jsonbset, path text[], val jsonb,
+CREATE FUNCTION jsonbsetSet(jsonbset, path text[], val jsonb,
     create_missing boolean DEFAULT true)
   RETURNS jsonbset
   AS 'MODULE_PATHNAME', 'Jsonbset_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION jsonbset_set_lax(jsonbset, path text[], val jsonb,
+CREATE FUNCTION jsonbsetSetLax(jsonbset, path text[], val jsonb,
     create_missing boolean DEFAULT true, handle_null text DEFAULT '')
   RETURNS jsonbset
   AS 'MODULE_PATHNAME', 'Jsonbset_set_lax'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION jsonbset_insert(jsonbset, path text[], val jsonb,
+CREATE FUNCTION jsonbsetInsert(jsonbset, path text[], val jsonb,
     after boolean DEFAULT false)
   RETURNS jsonbset
   AS 'MODULE_PATHNAME', 'Jsonbset_insert'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION jsonbset_strip_nulls(jsonbset, bool DEFAULT FALSE)
+CREATE FUNCTION jsonbsetStripNulls(jsonbset, bool DEFAULT FALSE)
 RETURNS jsonbset
 AS 'MODULE_PATHNAME', 'Jsonbset_strip_nulls'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION jsonbset_pretty(jsonbset)
+CREATE FUNCTION jsonbsetPretty(jsonbset)
   RETURNS textset
   AS 'MODULE_PATHNAME', 'Jsonbset_pretty'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
 
-CREATE FUNCTION jsonbset_path_exists(jsonbset, jsonpath, vars jsonb DEFAULT '{}',
+CREATE FUNCTION jsonbsetPathExists(jsonbset, jsonpath, vars jsonb DEFAULT '{}',
   silent boolean DEFAULT FALSE)
 RETURNS boolean[]
 AS 'MODULE_PATHNAME', 'Jsonbset_path_exists'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION jsonbset_path_exists_tz(jsonbset, jsonpath,
+CREATE FUNCTION jsonbsetPathExistsTz(jsonbset, jsonpath,
   vars jsonb DEFAULT '{}', silent boolean DEFAULT false)
 RETURNS boolean[]
 AS 'MODULE_PATHNAME', 'Jsonbset_path_exists_tz'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION jsonbset_path_exists_opr(jsonbset, jsonpath)
+CREATE FUNCTION jsonbsetPathExistsOpr(jsonbset, jsonpath)
   RETURNS boolean[]
   AS 'MODULE_PATHNAME', 'Jsonbset_path_exists_opr'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @? (
-  PROCEDURE = jsonbset_path_exists_opr,
+  PROCEDURE = jsonbsetPathExistsOpr,
   LEFTARG = jsonbset, RIGHTARG = jsonpath
 );
 
-CREATE FUNCTION jsonbset_path_match(jsonbset, jsonpath, vars jsonb DEFAULT '{}',
+CREATE FUNCTION jsonbsetPathMatch(jsonbset, jsonpath, vars jsonb DEFAULT '{}',
   silent boolean DEFAULT FALSE)
 RETURNS boolean[]
 AS 'MODULE_PATHNAME', 'Jsonbset_path_match'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION jsonbset_path_match_tz(jsonbset, jsonpath,
+CREATE FUNCTION jsonbsetPathMatchTz(jsonbset, jsonpath,
   vars jsonb DEFAULT '{}', silent boolean DEFAULT FALSE)
 RETURNS boolean[]
 AS 'MODULE_PATHNAME', 'Jsonbset_path_match_tz'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION jsonbset_path_match_opr(jsonbset, jsonpath)
+CREATE FUNCTION jsonbsetPathMatchOpr(jsonbset, jsonpath)
   RETURNS boolean[]
   AS 'MODULE_PATHNAME', 'Jsonbset_path_match_opr'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @@ (
-  PROCEDURE = jsonbset_path_match_opr,
+  PROCEDURE = jsonbsetPathMatchOpr,
   LEFTARG = jsonbset, RIGHTARG = jsonpath
 );
 
-CREATE FUNCTION jsonbset_path_query_array(jsonbset, jsonpath,
+CREATE FUNCTION jsonbsetPathQueryArray(jsonbset, jsonpath,
   vars jsonb DEFAULT '{}', silent boolean DEFAULT FALSE)
 RETURNS jsonbset
 AS 'MODULE_PATHNAME', 'Jsonbset_path_query_array'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION jsonbset_path_query_array_tz(jsonbset, jsonpath,
+CREATE FUNCTION jsonbsetPathQueryArrayTz(jsonbset, jsonpath,
   vars jsonb DEFAULT '{}', silent boolean DEFAULT FALSE)
 RETURNS jsonbset
 AS 'MODULE_PATHNAME', 'Jsonbset_path_query_array_tz'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION jsonbset_path_query_first(jsonbset, jsonpath,
+CREATE FUNCTION jsonbsetPathQueryFirst(jsonbset, jsonpath,
   vars jsonb DEFAULT '{}', silent boolean DEFAULT FALSE)
 RETURNS jsonbset
 AS 'MODULE_PATHNAME', 'Jsonbset_path_query_first'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION jsonbset_path_query_first_tz(jsonbset, jsonpath,
+CREATE FUNCTION jsonbsetPathQueryFirstTz(jsonbset, jsonpath,
   vars jsonb DEFAULT '{}', silent boolean DEFAULT FALSE)
 RETURNS jsonbset
 AS 'MODULE_PATHNAME', 'Jsonbset_path_query_first_tz'
