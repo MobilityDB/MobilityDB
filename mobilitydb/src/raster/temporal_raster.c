@@ -528,7 +528,7 @@ PG_FUNCTION_INFO_V1(Raquet_read);
  * @param[in] rasterfile Raster file bytes (bytea)
  * @param[in] quadbin CARTO QUADBIN cell (bigint), or NULL to derive it from the
  * raster geotransform and EPSG:3857 spatial reference
- * @sqlfn raquet_read()
+ * @sqlfn raquetRead()
  */
 Datum
 Raquet_read(PG_FUNCTION_ARGS)
@@ -554,7 +554,7 @@ PG_FUNCTION_INFO_V1(Raster_tile_value);
  * @brief Sample a Raquet tile along a tgeompoint trajectory
  * @param[in] rq    Raquet tile
  * @param[in] traj  Trajectory (tgeompoint)
- * @sqlfn raster_tile_value()
+ * @sqlfn rasterTileValue()
  */
 Datum
 Raster_tile_value(PG_FUNCTION_ARGS)
@@ -576,7 +576,7 @@ PG_FUNCTION_INFO_V1(Raster_tile_value_array);
  * @brief Sample an array of Raquet tiles along a tgeompoint trajectory
  * @param[in] rqarr Array of Raquet tiles
  * @param[in] traj  Trajectory (tgeompoint)
- * @sqlfn raster_tile_value()
+ * @sqlfn rasterTileValue()
  */
 Datum
 Raster_tile_value_array(PG_FUNCTION_ARGS)
