@@ -888,7 +888,7 @@ stbox_space_time_tile(const GSERIALIZED *point, TimestampTz t,
  * @param[in] duration Size of the time dimension as an interval
  * @param[in] sorigin Origin for the space dimension
  * @param[in] torigin Origin for the time dimension
- * @csqlfn Stbox_get_space_time_tile()
+ * @csqlfn #Stbox_get_space_time_tile()
  */
 STBox *
 stbox_get_space_time_tile(const GSERIALIZED *point, TimestampTz t,
@@ -905,7 +905,7 @@ stbox_get_space_time_tile(const GSERIALIZED *point, TimestampTz t,
  * @param[in] point Point
  * @param[in] xsize,ysize,zsize Size of the corresponding dimension
  * @param[in] sorigin Origin for the space dimension
- * @csqlfn Stbox_get_space_tile()
+ * @csqlfn #Stbox_get_space_tile()
  */
 STBox *
 stbox_get_space_tile(const GSERIALIZED *point, double xsize, double ysize,
@@ -921,7 +921,7 @@ stbox_get_space_tile(const GSERIALIZED *point, double xsize, double ysize,
  * @param[in] t Timestamp
  * @param[in] duration Size of the time dimension as an interval
  * @param[in] torigin Origin for the time dimension
- * @csqlfn Stbox_get_time_tile()
+ * @csqlfn #Stbox_get_time_tile()
  */
 STBox *
 stbox_get_time_tile(TimestampTz t, const Interval *duration,
