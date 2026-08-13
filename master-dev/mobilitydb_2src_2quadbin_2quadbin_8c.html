@@ -75,7 +75,6 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
-<a href="#define-members">Macros</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">quadbin.c File Reference</div></div>
 </div><!--header-->
@@ -88,15 +87,8 @@ $(function() {
 <code>#include &lt;libpq/pqformat.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__quadbin_8h_source.html">meos_quadbin.h</a>&gt;</code><br />
-<code>#include &quot;<a class="el" href="quadbin__meos_8h_source.html">quadbin/quadbin_meos.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="quadbin_8h_source.html">quadbin/quadbin.h</a>&quot;</code><br />
 </div><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
-Macros</h2></td></tr>
-<tr class="memitem:abda9643db3809a774f82ae4e5f718b39"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mobilitydb_2src_2quadbin_2quadbin_8c_abda9643db3809a774f82ae4e5f718b39.html#abda9643db3809a774f82ae4e5f718b39">PG_GETARG_QUADBIN</a>(n)&#160;&#160;&#160;<a class="el" href="quadbin__meos_8h_a8a1af2a8242f0de8955eece1c095eac4.html#a8a1af2a8242f0de8955eece1c095eac4">DatumGetQuadbin</a>(PG_GETARG_DATUM(n))</td></tr>
-<tr class="separator:abda9643db3809a774f82ae4e5f718b39"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8f9d8470c4b424bf7edff7e139702f45"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mobilitydb_2src_2quadbin_2quadbin_8c_a8f9d8470c4b424bf7edff7e139702f45.html#a8f9d8470c4b424bf7edff7e139702f45">PG_RETURN_QUADBIN</a>(x)&#160;&#160;&#160;PG_RETURN_DATUM(<a class="el" href="quadbin__meos_8h_a553138f8d918e82bee4123b2c9b5e4e4.html#a553138f8d918e82bee4123b2c9b5e4e4">QuadbinGetDatum</a>(x))</td></tr>
-<tr class="separator:a8f9d8470c4b424bf7edff7e139702f45"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:gaef77e1d69c941d275503d3ce831de564"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__quadbin__base__comp_gaef77e1d69c941d275503d3ce831de564.html#gaef77e1d69c941d275503d3ce831de564">Quadbin_cmp</a> (PG_FUNCTION_ARGS)</td></tr>
@@ -118,7 +110,7 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga328c1d76f4cf25ac31f6cb106bc6b2a9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the 64-bit hash value of a quadbin value using a seed @sqlfn hashExtended()  <a href="group__mobilitydb__quadbin__base__accessor_ga328c1d76f4cf25ac31f6cb106bc6b2a9.html#ga328c1d76f4cf25ac31f6cb106bc6b2a9">More...</a><br /></td></tr>
 <tr class="separator:ga328c1d76f4cf25ac31f6cb106bc6b2a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gabf39b251a99bf241e7657934001827e7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__quadbin__base__inout_gabf39b251a99bf241e7657934001827e7.html#gabf39b251a99bf241e7657934001827e7">Quadbin_in</a> (PG_FUNCTION_ARGS)</td></tr>
-<tr class="memdesc:gabf39b251a99bf241e7657934001827e7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parse a quadbin value from its string representation @sqlfn quadbin_in()  <a href="group__mobilitydb__quadbin__base__inout_gabf39b251a99bf241e7657934001827e7.html#gabf39b251a99bf241e7657934001827e7">More...</a><br /></td></tr>
+<tr class="memdesc:gabf39b251a99bf241e7657934001827e7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parse a quadbin value from its string representation @sqlfn <a class="el" href="group__meos__quadbin__base__inout_ga8e7798cb3ae3710c84bc2d4c531d374a.html#ga8e7798cb3ae3710c84bc2d4c531d374a" title="Return a quadbin from its string representation.">quadbin_in()</a>  <a href="group__mobilitydb__quadbin__base__inout_gabf39b251a99bf241e7657934001827e7.html#gabf39b251a99bf241e7657934001827e7">More...</a><br /></td></tr>
 <tr class="separator:gabf39b251a99bf241e7657934001827e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga6991cb9ef3e128e9ca5ffaf05ebf530e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__quadbin__base__accessor_ga6991cb9ef3e128e9ca5ffaf05ebf530e.html#ga6991cb9ef3e128e9ca5ffaf05ebf530e">Quadbin_is_valid_cell</a> (PG_FUNCTION_ARGS)</td></tr>
 <tr class="memdesc:ga6991cb9ef3e128e9ca5ffaf05ebf530e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if the value encodes a valid quadbin cell at a concrete resolution @sqlfn isValidCell()  <a href="group__mobilitydb__quadbin__base__accessor_ga6991cb9ef3e128e9ca5ffaf05ebf530e.html#ga6991cb9ef3e128e9ca5ffaf05ebf530e">More...</a><br /></td></tr>

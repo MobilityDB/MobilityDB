@@ -132,14 +132,14 @@ $(function() {
 <p>Sample a <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> raster chip along a tgeompoint trajectory. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">traj</td><td>Trajectory (tgeompoint, SRID 4326) </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">pixels</td><td>Row-major pixel bytes (bytea) </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">width</td><td>Tile width in pixels </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">height</td><td>Tile height in pixels </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">quadbin</td><td>CARTO QUADBIN cell (bigint) </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">pixtype</td><td>Pixel type name: UINT8 | INT16 | INT32 | FLOAT32 | FLOAT64 </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">pixtype</td><td>Pixel type name: UINT8, INT16, INT32, FLOAT32, FLOAT64 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">nodata</td><td>Nodata sentinel value </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">has_nodata</td><td>Enable nodata filtering </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">traj</td><td>Trajectory (tgeompoint, SRID 4326) @csqlfn <a class="el" href="group__mobilitydb__raster_ga3ec8080fa4f807997c628eba90802da9.html#ga3ec8080fa4f807997c628eba90802da9" title="Sample a Raquet raster chip along a tgeompoint trajectory.">Raster_tile_value_quadbin()</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">has_nodata</td><td>Enable nodata filtering @sqlfn rasterTileValueQuadbin() </td></tr>
   </table>
   </dd>
 </dl>

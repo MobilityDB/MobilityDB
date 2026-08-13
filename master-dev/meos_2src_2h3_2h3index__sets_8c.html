@@ -86,9 +86,9 @@ $(function() {
 <code>#include &lt;postgres.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a>&gt;</code><br />
-<code>#include &quot;<a class="el" href="h3index_8h_source.html">h3/h3index.h</a>&quot;</code><br />
 <code>#include &quot;temporal/meos_catalog.h&quot;</code><br />
 <code>#include &quot;temporal/temporal.h&quot;</code><br />
+<code>#include &quot;<a class="el" href="h3index_8h_source.html">h3/h3index.h</a>&quot;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
@@ -146,8 +146,7 @@ Functions</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >MEOS implementations of the nine set-returning h3-pg functions, returning <code>h3indexset</code> / <code>intset</code>. </p>
-<p >Shape of every function below:</p>
-<ol type="1">
+<p >Shape of every function below:</p><ol type="1">
 <li>Ask libh3 for the output buffer size (where applicable).</li>
 <li><code>palloc</code> the buffer.</li>
 <li>Call the libh3 fill function.</li>

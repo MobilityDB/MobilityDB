@@ -91,12 +91,13 @@ $(function() {
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__raster_8h_source.html">meos_raster.h</a>&gt;</code><br />
-<code>#include &quot;<a class="el" href="stbox_8h_source.html">geo/stbox.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="raquet_8h_source.html">raster/raquet.h</a>&quot;</code><br />
+<code>#include &lt;pgtypes.h&gt;</code><br />
 <code>#include &quot;temporal/span.h&quot;</code><br />
 <code>#include &quot;temporal/tinstant.h&quot;</code><br />
 <code>#include &quot;temporal/tsequence.h&quot;</code><br />
 <code>#include &quot;temporal/type_util.h&quot;</code><br />
+<code>#include &quot;<a class="el" href="stbox_8h_source.html">geo/stbox.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="raquet_8h_source.html">raster/raquet.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="raster__quadbin_8h_source.html">raster/raster_quadbin.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="mobilitydb_2pg__include_2pg__temporal_2temporal_8h_source.html">pg_temporal/temporal.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="mobilitydb_2pg__include_2pg__temporal_2type__util_8h_source.html">pg_temporal/type_util.h</a>&quot;</code><br />
@@ -107,8 +108,6 @@ Functions</h2></td></tr>
 <tr class="memitem:gad92375eb036c11d5d2748962391c3c5b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__raster_gad92375eb036c11d5d2748962391c3c5b.html#gad92375eb036c11d5d2748962391c3c5b">Araster_value</a> (PG_FUNCTION_ARGS)</td></tr>
 <tr class="memdesc:gad92375eb036c11d5d2748962391c3c5b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if every in-raster-extent instant of a trajectory samples a pixel value inside a float range.  <a href="group__mobilitydb__raster_gad92375eb036c11d5d2748962391c3c5b.html#gad92375eb036c11d5d2748962391c3c5b">More...</a><br /></td></tr>
 <tr class="separator:gad92375eb036c11d5d2748962391c3c5b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a958ca6a71a030d615f19a358a6def14d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_af5f2dec97dfaab496adb8b568e1660c1.html#af5f2dec97dfaab496adb8b568e1660c1">text</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="temporal__raster_8c_a958ca6a71a030d615f19a358a6def14d.html#a958ca6a71a030d615f19a358a6def14d">cstring_to_text</a> (const char *s)</td></tr>
-<tr class="separator:a958ca6a71a030d615f19a358a6def14d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gae9c9098c8219a9092c10f057e69f3f06"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__raster_gae9c9098c8219a9092c10f057e69f3f06.html#gae9c9098c8219a9092c10f057e69f3f06">Eraster_value</a> (PG_FUNCTION_ARGS)</td></tr>
 <tr class="memdesc:gae9c9098c8219a9092c10f057e69f3f06"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if a trajectory ever samples a raster pixel value inside a float range.  <a href="group__mobilitydb__raster_gae9c9098c8219a9092c10f057e69f3f06.html#gae9c9098c8219a9092c10f057e69f3f06">More...</a><br /></td></tr>
 <tr class="separator:gae9c9098c8219a9092c10f057e69f3f06"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -206,8 +205,6 @@ Functions</h2></td></tr>
 <tr class="separator:a3044ebe933a3d396571df4b1c83eedfe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aaf591719978f28de933370efdc49276b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="temporal__raster_8c_aaf591719978f28de933370efdc49276b.html#aaf591719978f28de933370efdc49276b">regprocedurein</a> (PG_FUNCTION_ARGS)</td></tr>
 <tr class="separator:aaf591719978f28de933370efdc49276b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af0f4c37c00aa7a827decfc2296327f5b"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="temporal__raster_8c_af0f4c37c00aa7a827decfc2296327f5b.html#af0f4c37c00aa7a827decfc2296327f5b">text_to_cstring</a> (const <a class="el" href="postgres__ext__defs_8in_8h_af5f2dec97dfaab496adb8b568e1660c1.html#af5f2dec97dfaab496adb8b568e1660c1">text</a> *t)</td></tr>
-<tr class="separator:af0f4c37c00aa7a827decfc2296327f5b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a79e095e85106757b7e4da7bad4767f47"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="meos__raster_8h_ab4899fb599b17f4121bb9a377d9dd040.html#ab4899fb599b17f4121bb9a377d9dd040">MeosPixType</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="temporal__raster_8c_a79e095e85106757b7e4da7bad4767f47.html#a79e095e85106757b7e4da7bad4767f47">text_to_pixtype</a> (const <a class="el" href="postgres__ext__defs_8in_8h_af5f2dec97dfaab496adb8b568e1660c1.html#af5f2dec97dfaab496adb8b568e1660c1">text</a> *pt)</td></tr>
 <tr class="memdesc:a79e095e85106757b7e4da7bad4767f47"><td class="mdescLeft">&#160;</td><td class="mdescRight">Map a pixtype name text argument to a MeosPixType code.  <a href="temporal__raster_8c_a79e095e85106757b7e4da7bad4767f47.html#a79e095e85106757b7e4da7bad4767f47">More...</a><br /></td></tr>
 <tr class="separator:a79e095e85106757b7e4da7bad4767f47"><td class="memSeparator" colspan="2">&#160;</td></tr>

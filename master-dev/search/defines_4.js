@@ -20,7 +20,7 @@ var searchData=
   ['datumgetpcpointp_17',['DatumGetPcpointP',['../pcpoint_8h_ab081d4748ab32f43c068acfe31316669.html#ab081d4748ab32f43c068acfe31316669',1,'pcpoint.h']]],
   ['datumgetpointer_18',['DatumGetPointer',['../postgres__ext__defs_8in_8h_a728d1259d508437d9be53bf0b19c89da.html#a728d1259d508437d9be53bf0b19c89da',1,'postgres_ext_defs.in.h']]],
   ['datumgetposep_19',['DatumGetPoseP',['../pose_8h_a2c1fdb9ba7f48d9850b7825010cf8e53.html#a2c1fdb9ba7f48d9850b7825010cf8e53',1,'pose.h']]],
-  ['datumgetquadbin_20',['DatumGetQuadbin',['../quadbin__meos_8h_a8a1af2a8242f0de8955eece1c095eac4.html#a8a1af2a8242f0de8955eece1c095eac4',1,'quadbin_meos.h']]],
+  ['datumgetquadbin_20',['DatumGetQuadbin',['../quadbin_8h_a8a1af2a8242f0de8955eece1c095eac4.html#a8a1af2a8242f0de8955eece1c095eac4',1,'quadbin.h']]],
   ['datumgetraquetp_21',['DatumGetRaquetP',['../raquet_8h_a21c51612be8866d2778223c89de0cad8.html#a21c51612be8866d2778223c89de0cad8',1,'raquet.h']]],
   ['datumgetsetp_22',['DatumGetSetP',['../set_8h_ad48c564f6253fa8d6800e307506ab9a8.html#ad48c564f6253fa8d6800e307506ab9a8',1,'set.h']]],
   ['datumgetskiplistp_23',['DatumGetSkipListP',['../meos_2include_2temporal_2skiplist_8h_a4a923edd15f9b3880af15521bed43c1d.html#a4a923edd15f9b3880af15521bed43c1d',1,'skiplist.h']]],
