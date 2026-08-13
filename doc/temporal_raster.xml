@@ -26,7 +26,7 @@ CREATE EXTENSION mobilitydb CASCADE;
 		<title>Sampling Operator</title>
 
 		<itemizedlist>
-			<listitem xml:id="rasterValue">
+			<listitem xml:id="raster_rasterValue">
 				<indexterm significance="normal"><primary><varname>rasterValue</varname></primary></indexterm>
 				<para>Sample a raster band at each instant of a trajectory</para>
 				<para><varname>rasterValue(tgeompoint,raster,band integer DEFAULT 1) → tfloat</varname></para>
@@ -102,7 +102,7 @@ ORDER BY tile_count DESC;
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="rasterTileValueQuadbin">
+			<listitem xml:id="raster_rasterTileValueQuadbin">
 				<indexterm significance="normal"><primary><varname>rasterTileValueQuadbin</varname></primary></indexterm>
 				<para>Sample a Raquet raster chip along a trajectory using a QUADBIN cell for georeferencing</para>
 				<para><varname>rasterTileValueQuadbin(tgeompoint,bytea,integer,integer,bigint,text,float8,boolean) → tfloat</varname></para>
@@ -127,7 +127,7 @@ JOIN sst_raquet r ON r.quadbin = ANY(trajectoryQuadbins(t.trip, 6));
 				<indexterm significance="normal"><primary><varname>raquet</varname></primary></indexterm>
 				<para>Construct a Raquet raster tile from its pixel bytes, dimensions, QUADBIN cell and pixel type</para>
 				<para><varname>raquet(bytea,integer,integer,bigint,text,float8) → raquet</varname></para>
-				<para>Packages a row-major single-band <varname>pixels</varname> array of <varname>width</varname> × <varname>height</varname> pixels of type <varname>pixtype</varname> (one of <varname>UINT8</varname>, <varname>INT16</varname>, <varname>INT32</varname>, <varname>FLOAT32</varname>, or <varname>FLOAT64</varname>), georeferenced by the <varname>quadbin</varname> cell, into a single self-describing <varname>raquet</varname> value. The <varname>nodata</varname> argument is optional; when omitted (<varname>NULL</varname>) the tile carries no nodata sentinel. An error is raised when the <varname>pixels</varname> array is smaller than <varname>width</varname> × <varname>height</varname> × the pixel size. A <varname>raquet</varname> is a GDAL-free, variable-length value with a portable Hex-WKB text and binary representation, distinct from and coexisting with the PostGIS <varname>raster</varname> type used by <link linkend="rasterValue"><varname>rasterValue</varname></link>.</para>
+				<para>Packages a row-major single-band <varname>pixels</varname> array of <varname>width</varname> × <varname>height</varname> pixels of type <varname>pixtype</varname> (one of <varname>UINT8</varname>, <varname>INT16</varname>, <varname>INT32</varname>, <varname>FLOAT32</varname>, or <varname>FLOAT64</varname>), georeferenced by the <varname>quadbin</varname> cell, into a single self-describing <varname>raquet</varname> value. The <varname>nodata</varname> argument is optional; when omitted (<varname>NULL</varname>) the tile carries no nodata sentinel. An error is raised when the <varname>pixels</varname> array is smaller than <varname>width</varname> × <varname>height</varname> × the pixel size. A <varname>raquet</varname> is a GDAL-free, variable-length value with a portable Hex-WKB text and binary representation, distinct from and coexisting with the PostGIS <varname>raster</varname> type used by <link linkend="raster_rasterValue"><varname>rasterValue</varname></link>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Package the loose tile columns of a Raquet table into raquet values
 SELECT raquet(band_data, width, height, quadbin, 'FLOAT32', nodata) AS tile
@@ -154,11 +154,11 @@ FROM elevation_files;
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="rasterTileValue">
+			<listitem xml:id="raster_rasterTileValue">
 				<indexterm significance="normal"><primary><varname>rasterTileValue</varname></primary></indexterm>
 				<para>Sample a <varname>raquet</varname> raster tile along a trajectory</para>
 				<para><varname>rasterTileValue(tgeompoint,raquet) → tfloat</varname></para>
-				<para>Evaluates the tile at each instant of <varname>traj</varname> (SRID 4326), returning the sampled pixel values as a <varname>tfloat</varname>. This is the typed equivalent of <link linkend="rasterTileValueQuadbin"><varname>rasterTileValueQuadbin</varname></link>: the dimensions, QUADBIN cell, pixel type and nodata handling are taken from the <varname>raquet</varname> value instead of from separate arguments. Returns <varname>NULL</varname> when no instant falls inside the tile or survives nodata filtering.</para>
+				<para>Evaluates the tile at each instant of <varname>traj</varname> (SRID 4326), returning the sampled pixel values as a <varname>tfloat</varname>. This is the typed equivalent of <link linkend="raster_rasterTileValueQuadbin"><varname>rasterTileValueQuadbin</varname></link>: the dimensions, QUADBIN cell, pixel type and nodata handling are taken from the <varname>raquet</varname> value instead of from separate arguments. Returns <varname>NULL</varname> when no instant falls inside the tile or survives nodata filtering.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Sample pre-packaged raquet tiles along ship trajectories
 SELECT t.tripid, rasterTileValue(t.trip, r.tile)
@@ -166,7 +166,7 @@ FROM trips t JOIN elevation_tiles r ON r.quadbin = ANY(trajectoryQuadbins(t.trip
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="rasterTileValueArray">
+			<listitem xml:id="raster_rasterTileValueArray">
 				<indexterm significance="normal"><primary><varname>rasterTileValue</varname></primary></indexterm>
 				<para>Sample an array of <varname>raquet</varname> raster tiles along a trajectory</para>
 				<para><varname>rasterTileValue(tgeompoint,raquet[]) → tfloat</varname></para>
@@ -307,7 +307,7 @@ SELECT DISTINCT tile FROM elevation_tiles;
 		<para>The following SQL-defined operators compose <varname>rasterValue</varname> with the standard MobilityDB temporal restriction and predicate functions. They accept an optional <varname>band</varname> argument (default 1) and call <varname>rasterValue</varname> exactly once per invocation.</para>
 
 		<itemizedlist>
-			<listitem xml:id="atRasterValue">
+			<listitem xml:id="raster_atRasterValue">
 				<indexterm significance="normal"><primary><varname>atRasterValue</varname></primary></indexterm>
 				<para>Return the instants of a trajectory where the sampled raster value falls inside a float range</para>
 				<para><varname>atRasterValue(tgeompoint,raster,floatspan,band integer DEFAULT 1) → tgeompoint</varname></para>
@@ -330,7 +330,7 @@ FROM rast;
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="minusRasterValue">
+			<listitem xml:id="raster_minusRasterValue">
 				<indexterm significance="normal"><primary><varname>minusRasterValue</varname></primary></indexterm>
 				<para>Return the instants of a trajectory where the sampled raster value falls outside a float range</para>
 				<para><varname>minusRasterValue(tgeompoint,raster,floatspan,band integer DEFAULT 1) → tgeompoint</varname></para>
@@ -342,7 +342,7 @@ FROM trips, elevation_raster;
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="eRasterValue">
+			<listitem xml:id="raster_eRasterValue">
 				<indexterm significance="normal"><primary><varname>eRasterValue</varname></primary></indexterm>
 				<para>Return true if the trajectory ever samples a raster pixel value inside a float range</para>
 				<para><varname>eRasterValue(tgeompoint,raster,floatspan,band integer DEFAULT 1) → boolean</varname></para>
@@ -355,7 +355,7 @@ WHERE eRasterValue(trip, elev_raster, floatspan '[200, 9999]');
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="aRasterValue">
+			<listitem xml:id="raster_aRasterValue">
 				<indexterm significance="normal"><primary><varname>aRasterValue</varname></primary></indexterm>
 				<para>Return true if every in-raster-extent instant of the trajectory samples a pixel value inside a float range</para>
 				<para><varname>aRasterValue(tgeompoint,raster,floatspan,band integer DEFAULT 1) → boolean</varname></para>

@@ -703,6 +703,7 @@ SELECT ttextFromHexWKB('01290001040000000000000041414100009C57D3C11C0000');
 
 		<itemizedlist>
 			<listitem xml:id="ttype_const">
+				<indexterm significance="normal"><primary><varname>ttype</varname></primary></indexterm>
 				<para>Constructores para tipos temporales que tienen un valor constante</para>
 				<para>Estos constructores tienen dos argumentos, un tipo base y un tipo de tiempo, donde el último es un valor de <varname>timestamptz</varname>, <varname>tstzset</varname>, <varname>tstzspan</varname> o <varname>tstzspanset</varname> para construir, respectivamente, un valor de subtipo instante, una secuencia con interpolación discreta, una secuencia con interpolación linear o escalonada o un conjunto de secuencias. Las funciones para valores de secuencia o de conjunto de secuencias con tipo de base continuo tienen además un tercer argumento opcional que indica si el valor temporal resultante tiene interpolación lineal o escalonada. Se asume por defecto una interpolación lineal si el argumento no se especifica.</para>
 				<para><varname>ttype(base,timestamptz) → ttypeInst</varname></para>

@@ -1173,7 +1173,7 @@ SELECT timestamp '2001-01-01' #&amp;&gt; tstzspan '[2001-01-01, 2001-01-05)';
 			<para>Sin embargo, cuando los cuadros delimitadores tienen un gran espacio vacío no cubierto por los valores reales, el índice generará muchos valores candidatos que no satisfacen el predicado de la consulta, lo que reduce la eficiencia del índice. En estas situaciones, puede ser mejor representar un valor no con un cuadro delimitador <emphasis>único</emphasis>, sino con <emphasis>múltiples</emphasis> cuadros delimitadores. Esto aumenta considerablemente la eficiencia del índice, siempre que el índice sea capaz de gestionar múltiples cuadros delimitadores por valor. Las siguientes funciones se utilizan para generar múltiples rangos a partir de un único valor de conjunto o conjunto de rangos.</para>
 
 			<itemizedlist>
-				<listitem xml:id="splitNSpans">
+				<listitem xml:id="setspan_splitNSpans">
 					<indexterm significance="normal"><primary><varname>splitNSpans</varname></primary></indexterm>
 					<para>Devuelve una matriz de N rangos obtenida fusionando los elementos de un conjunto o los rangos de un conjunto de rangos</para>
 					<para><varname>splitNSpans(set, integer) → span[]</varname></para>
@@ -1200,12 +1200,12 @@ SELECT splitNSpans(datespanset '{[2000-01-01, 2000-01-04), [2000-01-05, 2000-01-
 </programlisting>
 				</listitem>
 
-				<listitem xml:id="splitEachNSpans">
+				<listitem xml:id="setspan_splitEachNSpans">
 					<indexterm significance="normal"><primary><varname>splitEachNSpans</varname></primary></indexterm>
 					<para>Devuelve una matriz de rangos obtenida fusionando N elementos consecutivos de un conjunto o N rangos consecutivos de un conjunto de rangos</para>
 					<para><varname>splitEachNSpans(set, integer) → span[]</varname></para>
 					<para><varname>splitEachNSpans(spanset, integer) → span[]</varname></para>
-					<para>El último argumento especifica el número de elementos de entrada que se fusionan para producir un rango de salida. Si la cantidad de elementos de entrada es menor que el número especificado, la matriz resultante tendrá un rango de salida por elemento. De lo contrario, la cantidad especificada de elementos de entrada consecutivos se fusionará en un único rango de salida en la respuesta. Observe que, a diferencia de la función <link linkend="splitNSpans"><varname>splitNSpans</varname></link>, el número de rangos en el resultado depende del número de elementos o de rangos de entrada.</para>
+					<para>El último argumento especifica el número de elementos de entrada que se fusionan para producir un rango de salida. Si la cantidad de elementos de entrada es menor que el número especificado, la matriz resultante tendrá un rango de salida por elemento. De lo contrario, la cantidad especificada de elementos de entrada consecutivos se fusionará en un único rango de salida en la respuesta. Observe que, a diferencia de la función <link linkend="setspan_splitNSpans"><varname>splitNSpans</varname></link>, el número de rangos en el resultado depende del número de elementos o de rangos de entrada.</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT splitEachNSpans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', 1);
 /* {"[1, 2)","[2, 3)","[3, 4)","[4, 5)","[5, 6)","[6, 7)","[7, 8)","[8, 9)",

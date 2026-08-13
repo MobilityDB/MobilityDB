@@ -399,10 +399,10 @@
 				<title>Splitting Operations</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="splitNSpans"><varname>splitNSpans</varname></link>: Return an array of N spans obtained by merging the elements of a set or the spans of a spanset</para>
+						<para><link linkend="setspan_splitNSpans"><varname>splitNSpans</varname></link>: Return an array of N spans obtained by merging the elements of a set or the spans of a spanset</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="splitEachNSpans"><varname>splitEachNSpans</varname></link>: Return an array of spans obtained by merging N consecutive elements of a set or N consecutive spans of a spanset</para>
+						<para><link linkend="setspan_splitEachNSpans"><varname>splitEachNSpans</varname></link>: Return an array of spans obtained by merging N consecutive elements of a set or N consecutive spans of a spanset</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -508,31 +508,31 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="hasX"><varname>hasX</varname>, <varname>hasZ</varname>, <varname>hasT</varname></link>: Has X/Z/T dimension?</para>
+					<para><link linkend="box_hasX"><varname>hasX</varname>, <varname>hasZ</varname>, <varname>hasT</varname></link>: Has X/Z/T dimension?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="isGeodetic"><varname>isGeodetic</varname></link>: Is geodetic?</para>
+					<para><link linkend="stbox_isGeodetic"><varname>isGeodetic</varname></link>: Is geodetic?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="xMin"><varname>xMin</varname>, <varname>yMin</varname>, <varname>zMin</varname>, <varname>tMin</varname></link>: Return the minimum X/Y/Z/T value</para>
+					<para><link linkend="box_xMin"><varname>xMin</varname>, <varname>yMin</varname>, <varname>zMin</varname>, <varname>tMin</varname></link>: Return the minimum X/Y/Z/T value</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="xMax"><varname>xMax</varname>, <varname>yMax</varname>, <varname>zMax</varname>, <varname>tMax</varname></link>: Return the maximum X/Y/Z/T value</para>
+					<para><link linkend="box_xMax"><varname>xMax</varname>, <varname>yMax</varname>, <varname>zMax</varname>, <varname>tMax</varname></link>: Return the maximum X/Y/Z/T value</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="xMinInc"><varname>xMinInc</varname>, <varname>tMinInc</varname></link>: Is the minimum X/T value inclusive?</para>
+					<para><link linkend="tbox_xMinInc"><varname>xMinInc</varname>, <varname>tMinInc</varname></link>: Is the minimum X/T value inclusive?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="xMaxInc"><varname>xMaxInc</varname>, <varname>tMaxInc</varname></link>: Is the maximum X/T value inclusive?</para>
+					<para><link linkend="tbox_xMaxInc"><varname>xMaxInc</varname>, <varname>tMaxInc</varname></link>: Is the maximum X/T value inclusive?</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="area"><varname>area</varname>, <varname>volume</varname>, <varname>perimeter</varname></link>: Area, volume, perimeter</para>
+					<para><link linkend="stbox_area"><varname>area</varname>, <varname>volume</varname>, <varname>perimeter</varname></link>: Area, volume, perimeter</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -581,7 +581,7 @@
 			<title>Splitting Operations</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="quadSplit"><varname>quadSplit</varname></link>: Split a bounding box in quadrants or octants</para>
+					<para><link linkend="stbox_quadSplit"><varname>quadSplit</varname></link>: Split a bounding box in quadrants or octants</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -818,31 +818,31 @@
 			<title>Modifications</title>
 			<itemizedlist>
 				<listitem>
-				<para><link linkend="insert"><varname>insert</varname></link>: Insert a temporal value into another one</para>
+				<para><link linkend="ttype_insert"><varname>insert</varname></link>: Insert a temporal value into another one</para>
 				</listitem>
 
 				<listitem>
-				<para><link linkend="update"><varname>update</varname></link>: Update a temporal value with another one</para>
+				<para><link linkend="ttype_update"><varname>update</varname></link>: Update a temporal value with another one</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="deleteTime"><varname>deleteTime</varname></link>: Delete the instants of a temporal value that intersect a time value</para>
+					<para><link linkend="ttype_deleteTime"><varname>deleteTime</varname></link>: Delete the instants of a temporal value that intersect a time value</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="beforeTimestamp"><varname>beforeTimestamp</varname>, <varname>afterTimestamp</varname></link>: Keep the instants of a temporal value that are before/after or equal a timestamp</para>
+					<para><link linkend="ttype_beforeTimestamp"><varname>beforeTimestamp</varname>, <varname>afterTimestamp</varname></link>: Keep the instants of a temporal value that are before/after or equal a timestamp</para>
 				</listitem>
 
 				<listitem>
-				<para><link linkend="appendInstant"><varname>appendInstant</varname>, <varname>appendInstantAgg</varname></link>: Append a temporal instant to a temporal value</para>
+				<para><link linkend="ttype_appendInstant"><varname>appendInstant</varname>, <varname>appendInstantAgg</varname></link>: Append a temporal instant to a temporal value</para>
 				</listitem>
 
 				<listitem>
-				<para><link linkend="appendSequence"><varname>appendSequence</varname>, <varname>appendSequenceAgg</varname></link>: Append a temporal sequence to a temporal value</para>
+				<para><link linkend="ttype_appendSequence"><varname>appendSequence</varname>, <varname>appendSequenceAgg</varname></link>: Append a temporal sequence to a temporal value</para>
 				</listitem>
 
 				<listitem>
-				<para><link linkend="merge"><varname>merge</varname>, <varname>mergeAgg</varname></link>: Merge temporal values</para>
+				<para><link linkend="ttype_merge"><varname>merge</varname>, <varname>mergeAgg</varname></link>: Merge temporal values</para>
 				</listitem>
 
 			</itemizedlist>
@@ -977,7 +977,7 @@
 			<title>Mathematical Operations</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="tAdd"><varname>+</varname>, <varname>-</varname>, <varname>*</varname>, <varname>/</varname></link>: Temporal addition, subtraction, multiplication, and division</para>
+					<para><link linkend="tnumber_tAdd"><varname>+</varname>, <varname>-</varname>, <varname>*</varname>, <varname>/</varname></link>: Temporal addition, subtraction, multiplication, and division</para>
 				</listitem>
 
 				<listitem>
@@ -1368,11 +1368,11 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="bins"><varname>bins</varname></link>: Return a set of bins that cover a value or time span with bins of the same width or duration</para>
+						<para><link linkend="setspan_bins"><varname>bins</varname></link>: Return a set of bins that cover a value or time span with bins of the same width or duration</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="getBin"><varname>getBin</varname></link>: Return the bin that contains a number or a timestamp</para>
+						<para><link linkend="setspan_getBin"><varname>getBin</varname></link>: Return the bin that contains a number or a timestamp</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1382,19 +1382,19 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="valueTimeTiles"><varname>valueTiles</varname>, <varname>timeTiles</varname>, <varname>valueTimeTiles</varname></link>: Return the set of tiles that cover a temporal box with tiles of the same size and/or duration</para>
+						<para><link linkend="tbox_valueTimeTiles"><varname>valueTiles</varname>, <varname>timeTiles</varname>, <varname>valueTimeTiles</varname></link>: Return the set of tiles that cover a temporal box with tiles of the same size and/or duration</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="spaceTimeTiles"><varname>spaceTiles</varname>, <varname>timeTiles</varname>, <varname>spaceTimeTiles</varname></link>: Return the set of tiles that cover a spatiotemporal box with tiles of the same size and/or duration</para>
+						<para><link linkend="stbox_spaceTimeTiles"><varname>spaceTiles</varname>, <varname>timeTiles</varname>, <varname>spaceTimeTiles</varname></link>: Return the set of tiles that cover a spatiotemporal box with tiles of the same size and/or duration</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="getValueTimeTile"><varname>getValueTile</varname>, <varname>getTboxTimeTile</varname>, <varname>getValueTimeTile</varname></link>: Return the temporal tile that covers a value and/or a timestamp</para>
+						<para><link linkend="tbox_getValueTimeTile"><varname>getValueTile</varname>, <varname>getTboxTimeTile</varname>, <varname>getValueTimeTile</varname></link>: Return the temporal tile that covers a value and/or a timestamp</para>
 						</listitem>
 
 					<listitem>
-						<para><link linkend="getSpaceTimeTile"><varname>getSpaceTile</varname>, <varname>getStboxTimeTile</varname>, <varname>getSpaceTimeTile</varname></link>: Return the spatiotemporal tile that covers a point and/or a timestamp</para>
+						<para><link linkend="stbox_getSpaceTimeTile"><varname>getSpaceTile</varname>, <varname>getStboxTimeTile</varname>, <varname>getSpaceTimeTile</varname></link>: Return the spatiotemporal tile that covers a point and/or a timestamp</para>
 						</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1404,15 +1404,15 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="valueTimeBins"><varname>valueBins</varname>, <varname>timeBins</varname></link>: Return an array of value or times spans obtained from the instants or segments of a temporal number with respect to a value or time grid</para>
+						<para><link linkend="tnumber_valueTimeBins"><varname>valueBins</varname>, <varname>timeBins</varname></link>: Return an array of value or times spans obtained from the instants or segments of a temporal number with respect to a value or time grid</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="valueTimeBoxes"><varname>valueBoxes</varname>, <varname>timeBoxes</varname>, <varname>valueTimeBoxes</varname></link>: Return an array of temporal boxes obtained from the instants or segments of a temporal number with respect to a value and/or time grid</para>
+						<para><link linkend="tnumber_valueTimeBoxes"><varname>valueBoxes</varname>, <varname>timeBoxes</varname>, <varname>valueTimeBoxes</varname></link>: Return an array of temporal boxes obtained from the instants or segments of a temporal number with respect to a value and/or time grid</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="spaceTimeBoxes"><varname>spaceBoxes</varname>, <varname>timeBoxes</varname>, <varname>spaceTimeBoxes</varname></link>: Return an array of spatiotemporal boxes obtained from the instants or segments of a temporal point with respect to a space and/or time grid</para>
+						<para><link linkend="tspatial_spaceTimeBoxes"><varname>spaceBoxes</varname>, <varname>timeBoxes</varname>, <varname>spaceTimeBoxes</varname></link>: Return an array of spatiotemporal boxes obtained from the instants or segments of a temporal point with respect to a space and/or time grid</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1422,11 +1422,11 @@
 
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="valueSplit"><varname>valueSplit</varname>, <varname>timeSplit</varname>, <varname>valueTimeSplit</varname></link>: Split a temporal number with respect to value and/or time bins</para>
+						<para><link linkend="tnumber_valueSplit"><varname>valueSplit</varname>, <varname>timeSplit</varname>, <varname>valueTimeSplit</varname></link>: Split a temporal number with respect to value and/or time bins</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="spaceSplit"><varname>spaceSplit</varname>, <varname>spaceTimeSplit</varname></link>: Split a temporal point with respect to a spatial or spatiotemporal grid</para>
+						<para><link linkend="tspatial_spaceSplit"><varname>spaceSplit</varname>, <varname>spaceTimeSplit</varname></link>: Split a temporal point with respect to a spatial or spatiotemporal grid</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -1437,31 +1437,31 @@
 
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="tCount"><varname>tCount</varname></link>: Temporal count</para>
+					<para><link linkend="ttype_tCount"><varname>tCount</varname></link>: Temporal count</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="extent"><varname>extent</varname></link>: Bounding box extent</para>
+					<para><link linkend="ttype_extent"><varname>extent</varname></link>: Bounding box extent</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tAnd"><varname>tAnd</varname>, <varname>tOr</varname></link>: Temporal and, temporal or</para>
+					<para><link linkend="tbool_tAnd"><varname>tAnd</varname>, <varname>tOr</varname></link>: Temporal and, temporal or</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tMin"><varname>tMin</varname>, <varname>tMinAgg</varname>, <varname>tMax</varname>, <varname>tMaxAgg</varname>, <varname>tSum</varname>, <varname>tAvg</varname></link>: Temporal minimum, maximum, sum, and average</para>
+					<para><link linkend="ttype_tMin"><varname>tMin</varname>, <varname>tMinAgg</varname>, <varname>tMax</varname>, <varname>tMaxAgg</varname>, <varname>tSum</varname>, <varname>tAvg</varname></link>: Temporal minimum, maximum, sum, and average</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="wCount"><varname>wCount</varname></link>: Window count</para>
+					<para><link linkend="ttype_wCount"><varname>wCount</varname></link>: Window count</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="wMin"><varname>wMin</varname>, <varname>wMax</varname>, <varname>wSum</varname>, <varname>wAvg</varname></link>: Window minimum, maximum, sum, and average</para>
+					<para><link linkend="tnumber_wMin"><varname>wMin</varname>, <varname>wMax</varname>, <varname>wSum</varname>, <varname>wAvg</varname></link>: Window minimum, maximum, sum, and average</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="tCentroid"><varname>tCentroid</varname></link>: Temporal centroid</para>
+					<para><link linkend="tpoint_tCentroid"><varname>tCentroid</varname></link>: Temporal centroid</para>
 				</listitem>
 
 			</itemizedlist>
@@ -1812,15 +1812,15 @@
 				<title>Accessors</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="route"><varname>route</varname></link>: Return the route identifier</para>
+						<para><link linkend="npoint_route"><varname>route</varname></link>: Return the route identifier</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="getPosition"><varname>getPosition</varname></link>: Return the position fraction</para>
+						<para><link linkend="npoint_getPosition"><varname>getPosition</varname></link>: Return the position fraction</para>
 					</listitem>
 
 					<listitem>
-						<para><link linkend="startPosition"><varname>startPosition</varname>, <varname>endPosition</varname></link>: Return the start or end position</para>
+						<para><link linkend="npoint_startPosition"><varname>startPosition</varname>, <varname>endPosition</varname></link>: Return the start or end position</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -3922,7 +3922,7 @@
 			<title>Sampling Operator</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="rasterValue"><varname>rasterValue</varname></link>: Sample a raster band at each instant of a trajectory</para>
+					<para><link linkend="raster_rasterValue"><varname>rasterValue</varname></link>: Sample a raster band at each instant of a trajectory</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -3935,7 +3935,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="rasterTileValueQuadbin"><varname>rasterTileValueQuadbin</varname></link>: Sample a Raquet raster chip along a trajectory using a QUADBIN cell for georeferencing</para>
+					<para><link linkend="raster_rasterTileValueQuadbin"><varname>rasterTileValueQuadbin</varname></link>: Sample a Raquet raster chip along a trajectory using a QUADBIN cell for georeferencing</para>
 				</listitem>
 
 				<listitem>
@@ -3947,11 +3947,11 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="rasterTileValue"><varname>rasterTileValue</varname></link>: Sample a Raquet raster tile along a trajectory</para>
+					<para><link linkend="raster_rasterTileValue"><varname>rasterTileValue</varname></link>: Sample a Raquet raster tile along a trajectory</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="rasterTileValueArray"><varname>rasterTileValue</varname></link>: Sample an array of Raquet raster tiles along a trajectory, keeping the finer resolution where tiles overlap</para>
+					<para><link linkend="raster_rasterTileValueArray"><varname>rasterTileValue</varname></link>: Sample an array of Raquet raster tiles along a trajectory, keeping the finer resolution where tiles overlap</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -3993,19 +3993,19 @@
 			<title>Restriction and Predicate Operators</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="atRasterValue"><varname>atRasterValue</varname></link>: Return the instants of a trajectory where the sampled raster value falls inside a float range</para>
+					<para><link linkend="raster_atRasterValue"><varname>atRasterValue</varname></link>: Return the instants of a trajectory where the sampled raster value falls inside a float range</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="minusRasterValue"><varname>minusRasterValue</varname></link>: Return the instants of a trajectory where the sampled raster value falls outside a float range</para>
+					<para><link linkend="raster_minusRasterValue"><varname>minusRasterValue</varname></link>: Return the instants of a trajectory where the sampled raster value falls outside a float range</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="eRasterValue"><varname>eRasterValue</varname></link>: Return true if the trajectory ever samples a raster pixel value inside a float range</para>
+					<para><link linkend="raster_eRasterValue"><varname>eRasterValue</varname></link>: Return true if the trajectory ever samples a raster pixel value inside a float range</para>
 				</listitem>
 
 				<listitem>
-					<para><link linkend="aRasterValue"><varname>aRasterValue</varname></link>: Return true if every in-raster-extent instant of the trajectory samples a pixel value inside a float range</para>
+					<para><link linkend="raster_aRasterValue"><varname>aRasterValue</varname></link>: Return true if every in-raster-extent instant of the trajectory samples a pixel value inside a float range</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

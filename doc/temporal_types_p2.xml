@@ -79,7 +79,7 @@
 		</para>
 
 		<itemizedlist>
-			<listitem xml:id="insert">
+			<listitem xml:id="ttype_insert">
 				<indexterm significance="normal"><primary><varname>insert</varname></primary></indexterm>
 				<para>Insert a temporal value into another one</para>
 				<para><varname>insert(ttype,ttype,connect=true) → ttype</varname></para>
@@ -104,7 +104,7 @@ SELECT asText(insert(tgeompoint '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01
 </programlisting>
 				</listitem>
 
-			<listitem xml:id="update">
+			<listitem xml:id="ttype_update">
 				<indexterm significance="normal"><primary><varname>update</varname></primary></indexterm>
 				<para>Update a temporal value with another one</para>
 				<para><varname>update(ttype,ttype,connect=true) → ttype</varname></para>
@@ -128,7 +128,7 @@ SELECT asText(update(
 </programlisting>
 				</listitem>
 
-			<listitem xml:id="deleteTime">
+			<listitem xml:id="ttype_deleteTime">
 				<indexterm significance="normal"><primary><varname>deleteTime</varname></primary></indexterm>
 				<para>Delete the instants of a temporal value that intersect a time value</para>
 				<para><varname>deleteTime(ttype,time,connect=true) → ttype</varname></para>
@@ -148,7 +148,7 @@ SELECT asText(deleteTime(tgeompoint '{[Point(1 1 1)@2001-01-01,
 </programlisting>
 				</listitem>
 
-			<listitem xml:id="appendInstant">
+			<listitem xml:id="ttype_appendInstant">
 				<indexterm significance="normal"><primary><varname>appendInstant</varname></primary></indexterm>
 				<para>Append a temporal instant to a temporal value</para>
 				<para><varname>appendInstant(ttype,ttypeInst,interp=NULL) → ttype</varname></para>
@@ -217,7 +217,7 @@ SELECT asText(appendInstant(inst, NULL, sqrt(2), '1 day' ORDER BY inst)) FROM te
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="appendSequence">
+			<listitem xml:id="ttype_appendSequence">
 				<indexterm significance="normal"><primary><varname>appendSequence</varname></primary></indexterm>
 				<para>Append a temporal sequence to a temporal value</para>
 				<para><varname>appendSequence(ttype,ttypeSeq) → {ttypeSeq,ttypeSeqSet}</varname></para>
@@ -244,7 +244,7 @@ SELECT asText(appendSequence(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="merge">
+			<listitem xml:id="ttype_merge">
 				<indexterm significance="normal"><primary><varname>merge</varname></primary></indexterm>
 				<para>Merge the temporal values</para>
 				<para><varname>merge(ttype,ttype) → ttype</varname></para>
@@ -412,7 +412,7 @@ SELECT minusTime(tint '[1@2001-01-01, 1@2001-01-15)',
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="beforeTimestamp">
+			<listitem xml:id="ttype_beforeTimestamp">
 				<indexterm significance="normal"><primary><varname>beforeTimestamp</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>afterTimestamp</varname></primary></indexterm>
 				<para>Keep the instants of a temporal value that are before/after or equal a timestamp</para>

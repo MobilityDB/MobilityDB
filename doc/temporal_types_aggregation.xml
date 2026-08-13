@@ -32,7 +32,7 @@
 
 		<para>In the examples that follow, we suppose the tables <varname>Department</varname> and <varname>Trip</varname> contain the two tuples introduced in <xref linkend="ttype_examples"/>.</para>
 		<itemizedlist>
-			<listitem xml:id="tCount">
+			<listitem xml:id="ttype_tCount">
 				<indexterm significance="normal"><primary><varname>tCount</varname></primary></indexterm>
 				<para>Temporal count</para>
 				<para><varname>tCount(ttype) → {tintSeq,tintSeqSet}</varname></para>
@@ -42,7 +42,7 @@ SELECT tCount(NoEmps) FROM Department;
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="extent">
+			<listitem xml:id="ttype_extent">
 				<indexterm significance="normal"><primary><varname>extent</varname></primary></indexterm>
 				<para>Bounding box extent</para>
 				<para><varname>extent(temp) → {tstzspan,tbox,stbox}</varname></para>
@@ -54,7 +54,7 @@ SELECT extent(Trip) FROM Trips;
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="tAnd">
+			<listitem xml:id="tbool_tAnd">
 				<indexterm significance="normal"><primary><varname>tAnd</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tOr</varname></primary></indexterm>
 				<para>Temporal and, temporal or</para>
@@ -68,7 +68,7 @@ SELECT tOr(NoEmps #&gt; 6) FROM Department;
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="tMin">
+			<listitem xml:id="ttype_tMin">
 				<indexterm significance="normal"><primary><varname>tMin</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tMax</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tSum</varname></primary></indexterm>
@@ -93,7 +93,7 @@ SELECT tAvg(NoEmps) FROM Department;
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="wCount">
+			<listitem xml:id="ttype_wCount">
 				<indexterm significance="normal"><primary><varname>wCount</varname></primary></indexterm>
 				<para>Window count</para>
 				<para><varname>wCount(tnumber,interval) → {tintSeq,tintSeqSet}</varname></para>
@@ -104,7 +104,7 @@ SELECT wCount(NoEmps, interval '2 days') FROM Department;
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="wMin">
+			<listitem xml:id="tnumber_wMin">
 				<indexterm significance="normal"><primary><varname>wMin</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>wMax</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>wSum</varname></primary></indexterm>
@@ -128,7 +128,7 @@ SELECT round(wAvg(NoEmps, interval '2 days'), 3) FROM Department;
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="tCentroid">
+			<listitem xml:id="tpoint_tCentroid">
 				<indexterm significance="normal"><primary><varname>tCentroid</varname></primary></indexterm>
 				<para>Temporal centroid</para>
 				<para><varname>tCentroid(tgeompoint) → tgeompoint</varname></para>
