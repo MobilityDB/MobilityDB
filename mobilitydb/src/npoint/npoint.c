@@ -48,6 +48,7 @@
 #include <liblwgeom.h>
 /* MEOS */
 #include <meos.h>
+#include <meos_npoint.h>
 #include <meos_internal.h>
 #include "temporal/set.h"
 #include "temporal/span.h"
@@ -140,7 +141,7 @@ Datum
 Npoint_in(PG_FUNCTION_ARGS)
 {
   const char *str = PG_GETARG_CSTRING(0);
-  PG_RETURN_NPOINT_P(npoint_parse(&str, true));
+  PG_RETURN_NPOINT_P(npoint_in(str));
 }
 
 PGDLLEXPORT Datum Npoint_out(PG_FUNCTION_ARGS);

@@ -102,7 +102,7 @@ Datum
 Tcbuffer_in(PG_FUNCTION_ARGS)
 {
   const char *input = PG_GETARG_CSTRING(0);
-  Temporal *result = tspatial_parse(&input, T_TCBUFFER);
+  Temporal *result = tcbuffer_in(input);
   PG_RETURN_TEMPORAL_P(result);
 }
 
