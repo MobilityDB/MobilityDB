@@ -219,7 +219,7 @@ Functions</h2></td></tr>
 <tr class="memdesc:a2ee3c7ebc387865ae73d269b13b020b2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Comparison function for sorting float8 values.  <a href="tpoint__geom__clip_8c_a2ee3c7ebc387865ae73d269b13b020b2.html#a2ee3c7ebc387865ae73d269b13b020b2">More...</a><br /></td></tr>
 <tr class="separator:a2ee3c7ebc387865ae73d269b13b020b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3d32ec974d83f5a47d5241de4bf6b3da"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tpoint__geom__clip_8c_a3d32ec974d83f5a47d5241de4bf6b3da.html#a3d32ec974d83f5a47d5241de4bf6b3da">geo_covers2d</a> (const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *gs1, const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *gs2)</td></tr>
-<tr class="memdesc:a3d32ec974d83f5a47d5241de4bf6b3da"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if the first 2D geometry covers the second, computed natively without GEOS.  <a href="tpoint__geom__clip_8c_a3d32ec974d83f5a47d5241de4bf6b3da.html#a3d32ec974d83f5a47d5241de4bf6b3da">More...</a><br /></td></tr>
+<tr class="memdesc:a3d32ec974d83f5a47d5241de4bf6b3da"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if the first 2D geometry covers the second, computed natively.  <a href="tpoint__geom__clip_8c_a3d32ec974d83f5a47d5241de4bf6b3da.html#a3d32ec974d83f5a47d5241de4bf6b3da">More...</a><br /></td></tr>
 <tr class="separator:a3d32ec974d83f5a47d5241de4bf6b3da"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac7de362b2498565cfd46dcdb17552ad6"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tpoint__geom__clip_8c_ac7de362b2498565cfd46dcdb17552ad6.html#ac7de362b2498565cfd46dcdb17552ad6">geo_intersects2d</a> (const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *gs1, const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *gs2)</td></tr>
 <tr class="memdesc:ac7de362b2498565cfd46dcdb17552ad6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if two 2D geometries intersect, computed natively.  <a href="tpoint__geom__clip_8c_ac7de362b2498565cfd46dcdb17552ad6.html#ac7de362b2498565cfd46dcdb17552ad6">More...</a><br /></td></tr>
@@ -334,7 +334,7 @@ Variables</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >Fast 2D/3D temporal point clipping against 2D geometries. </p>
-<p >Support (multi)point, (multi)line, triangle, (multi)polygons with holes and islands inside holes (recursively), and collection of the above </p><dl class="section note"><dt>Note</dt><dd>Avoid processing in GEOS to improve performance </dd></dl>
+<p >Support (multi)point, (multi)line, triangle, (multi)polygons with holes and islands inside holes (recursively), and collection of the above </p><dl class="section note"><dt>Note</dt><dd>Processing is done natively to improve performance </dd></dl>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
