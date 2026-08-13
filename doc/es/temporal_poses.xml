@@ -282,7 +282,7 @@ SELECT asText(round(pose(ST_Point(1.123456789,1.123456789), 0.123456789), 6));
 					<indexterm significance="normal"><primary><varname>SRID</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>setSRID</varname></primary></indexterm>
 					<para>Devuelve o establece el identificador de referencia espacial</para>
-					<para><varname>srid(pose) → integer</varname></para>
+					<para><varname>SRID(pose) → integer</varname></para>
 					<para><varname>setSRID(pose) → pose</varname></para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT SRID(pose 'Pose(SRID=5676;Point(1 1), 0.3)');
@@ -849,7 +849,7 @@ SELECT asEWKT(points(tpose 'SRID=5676;{Pose(Point(3 3), 0.3)@2001-01-01,
 			</listitem>
 
 			<listitem xml:id="tpose_rotation">
-				<indexterm significance="normal"><primary><varname>points</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>rotation</varname></primary></indexterm>
 				<para>Devuelve la rotación</para>
 				<para><varname>rotation(tpose2d) → tfloat</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">

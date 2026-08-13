@@ -221,7 +221,7 @@ SELECT asEWKT(tgeographyFromMFJSON(text '{"type":"MovingGeometry",
 				<indexterm significance="normal"><primary><varname>tspatialFromEWKB</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tspatialFromHexEWKB</varname></primary></indexterm>
 				<para>Entrar a partir de su representación binaria conocida (WKB), de la representación extendida binaria conocida (EWKB), o de la representación hexadecimal extendida binaria conocida (HexEWKB) &Z_support; &geography_support;</para>
-				<para><varname>tspatialBinary(bytea) → tspatial</varname></para>
+				<para><varname>tspatialFromBinary(bytea) → tspatial</varname></para>
 				<para><varname>tspatialFromEWKB(bytea) → tspatial</varname></para>
 				<para><varname>tspatialFromHexEWKB(text) → tspatial</varname></para>
 				<para>En las funciones anteriores, <varname>tspatial</varname> reemplaza cualquier tipo espacial, como <varname>tgeompoint</varname>, <varname>tgeometry</varname> o <varname>tpose</varname></para>
