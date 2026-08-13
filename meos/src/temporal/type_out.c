@@ -34,9 +34,12 @@
 
 /* C */
 #include <assert.h>
+#include <string.h>
 /* PostgreSQL */
 #include <postgres.h>
+#include <miscadmin.h>
 #include <varatt.h>
+#include <utils/datetime.h>
 #include <utils/timestamp.h>
 #include <utils/varlena.h>
 /* PostGIS */
@@ -513,15 +516,40 @@ temporal_base_as_mfjson_sb(stringbuffer_t *sb, Datum value, MeosType temptype,
 
 /**
  * @brief Write into the buffer a timestamptz in the MF-JSON representation
+ * @note The MF-JSON encoding requires ISO 8601 datetimes. The value is thus
+ * encoded with the ISO date style, whatever the DateStyle setting of the
+ * session is, in the same way as PostgreSQL function @p JsonEncodeDateTime()
+ * forces the date style when encoding a datetime into JSON
  */
 static void
 datetimes_as_mfjson_sb(stringbuffer_t *sb, TimestampTz t)
 {
-  char *tstr = pg_timestamptz_out(t);
-  /* Replace ' ' by 'T' as separator between date and time parts */
-  tstr[10] = 'T';
-  stringbuffer_aprintf(sb, "\"%s\"", tstr);
-  pfree(tstr);
+  struct pg_tm tt;
+  struct pg_tm *tm = &tt;
+  fsec_t fsec;
+  int tz;
+  const char *tzn = NULL;
+  char buf[MAXDATELEN + 1];
+  char *sep;
+
+  if (TIMESTAMP_NOT_FINITE(t))
+    EncodeSpecialTimestamp(t, buf);
+  else if (timestamp2tm(t, &tz, tm, &fsec, &tzn, NULL) == 0)
+  {
+    EncodeDateTime(tm, fsec, true, tz, tzn, USE_ISO_DATES, buf);
+    /* Replace ' ' by 'T' as separator between the date and the time parts.
+     * The ISO date style has no other space, so the separator is found even
+     * for years having more than four digits */
+    sep = strchr(buf, ' ');
+    if (sep)
+      *sep = 'T';
+  }
+  else
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_OUTPUT, "Timestamp out of range");
+    return;
+  }
+  stringbuffer_aprintf(sb, "\"%s\"", buf);
   return;
 }
 
