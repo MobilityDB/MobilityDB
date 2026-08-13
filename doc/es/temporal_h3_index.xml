@@ -296,6 +296,7 @@ SELECT th3GetResolution(th3index(
 
 			<listitem xml:id="th3_h3_cell_to_latlng">
 				<indexterm significance="normal"><primary><varname>th3CellToLatlng</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>th3CellToLatlngTgeompoint</varname></primary></indexterm>
 				<para>Devolver el centroide geodésico temporal de cada celda en una trayectoria. Una sobrecarga planar (SRID 4326) está disponible bajo el nombre <varname>th3CellToLatlngTgeompoint</varname>.</para>
 				<para><varname>th3CellToLatlng(th3index) → tgeogpoint</varname></para>
 				<para><varname>th3CellToLatlngTgeompoint(th3index) → tgeompoint</varname></para>

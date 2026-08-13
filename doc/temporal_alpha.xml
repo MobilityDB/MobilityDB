@@ -46,6 +46,9 @@
 				<indexterm significance="normal"><primary><varname>valueSpan(tnumber)</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>timeSpan(tnumber)</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tbox(tnumber)</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>valueSpan</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>timeSpan</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tbox</varname></primary></indexterm>
 				<para>Convert a temporal number to a span or to a temporal bounding box</para>
 				<para><varname>tnumber::{span,tbox}</varname></para>
 				<para><varname>valueSpan(tnumber) → numspan</varname></para>
@@ -72,6 +75,7 @@ SELECT tfloat '(1@2001-01-01, 3@2001-01-03, 2@2001-01-05]'::tbox;
 			<listitem xml:id="tbool_tint">
 				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tint(tbool)</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tint</varname></primary></indexterm>
 				<para>Convert between a temporal Boolean and a temporal integer</para>
 				<para><varname>tbool::tint</varname></para>
 				<para><varname>tint(tbool) → tint</varname></para>

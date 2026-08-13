@@ -763,6 +763,7 @@ SELECT asText(tposeSeq(ARRAY[tpose 'Pose(Point(1 1), 0.2)@2001-01-01',
 
 			<listitem xml:id="tposeSeqSet">
 				<indexterm significance="normal"><primary><varname>tposeSeqSet</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tposeSeqSetGaps</varname></primary></indexterm>
 				<para>Constructor for temporal poses of sequence set subtype</para>
 				<para><varname>tposeSeqSet(tpose[]) → tposeSeqSet</varname></para>
 				<para><varname>tposeSeqSetGaps(tposeInst[],maxt=NULL,maxdist=NULL,interp='linear') → tposeSeqSet</varname></para>
@@ -973,6 +974,7 @@ SELECT asText(appendSequence(tpose '[Pose(Point(1 1), 0.5)@2001-01-01]', '[Pose(
 
 			<listitem xml:id="tpose_merge">
 				<indexterm significance="normal"><primary><varname>merge</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>mergeAgg</varname></primary></indexterm>
 				<para>Merge the temporal poses</para>
 				<para><varname>merge(tpose,tpose) → tpose</varname></para>
 				<para><varname>merge(tpose[]) → tpose</varname></para>

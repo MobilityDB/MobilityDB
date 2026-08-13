@@ -1782,6 +1782,7 @@ SELECT tdensity(v) FROM (VALUES
 
 			<listitem xml:id="tpcpoint_merge">
 				<indexterm significance="normal"><primary><varname>merge</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>mergeAgg</varname></primary></indexterm>
 				<para>Combina múltiples valores temporales en uno solo con todos los instantes de entrada fusionados en orden temporal. Todas las entradas deben compartir el mismo pcid y subtipo.</para>
 				<para><varname>merge(tpcpoint) → tpcpoint</varname>, <varname>merge(tpcpatch) → tpcpatch</varname></para>
 				<para><varname>mergeAgg(tpcpoint) → tpcpoint</varname>, <varname>mergeAgg(tpcpatch) → tpcpatch</varname></para>
@@ -1796,6 +1797,8 @@ SELECT numInstants(mergeAgg(v)) FROM (VALUES
 			<listitem xml:id="tpcpoint_append">
 				<indexterm significance="normal"><primary><varname>appendInstant</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>appendSequence</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>appendInstantAgg</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>appendSequenceAgg</varname></primary></indexterm>
 				<para>Agregados de construcción en flujo: <varname>appendInstant</varname> ensambla instantes en una secuencia; <varname>appendSequence</varname> ensambla secuencias en un conjunto de secuencias. Útil para cargadores de trayectorias que consumen filas en orden temporal.</para>
 				<para><varname>appendInstant(tpcpoint[,interp,maxt]) → tpcpoint</varname>, <varname>appendInstant(tpcpatch) → tpcpatch</varname></para>
 				<para><varname>appendInstantAgg(tpcpoint[,interp,maxt]) → tpcpoint</varname>, <varname>appendInstantAgg(tpcpatch) → tpcpatch</varname></para>

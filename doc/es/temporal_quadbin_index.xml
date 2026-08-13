@@ -178,6 +178,7 @@ SELECT valueAtTimestamp(tquadbin
 		<itemizedlist>
 			<listitem xml:id="tquadbin_quadbin_get_resolution">
 				<indexterm significance="normal"><primary><varname>quadbinGetResolution</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tquadbinGetResolution</varname></primary></indexterm>
 				<para>Devuelve el nivel de resolución (zoom) (0–26) de una celda. La forma estática devuelve un <varname>integer</varname>; la forma temporal devuelve la resolución de cada celda de una trayectoria como un <varname>tint</varname>.</para>
 				<para><varname>quadbinGetResolution(quadbin) → integer</varname></para>
 				<para><varname>tquadbinGetResolution(tquadbin) → tint</varname></para>
@@ -206,6 +207,7 @@ SELECT isValidCell(tquadbin '480fffffffffffff@2001-01-01');
 		<itemizedlist>
 			<listitem xml:id="tquadbin_quadbin_cell_to_parent">
 				<indexterm significance="normal"><primary><varname>quadbinCellToParent</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tquadbinCellToParent</varname></primary></indexterm>
 				<para>Devuelve la celda padre en la resolución más gruesa dada. La forma estática toma un único <varname>quadbin</varname>; la forma temporal devuelve el padre de cada celda de una trayectoria.</para>
 				<para><varname>quadbinCellToParent(quadbin,integer) → quadbin</varname></para>
 				<para><varname>tquadbinCellToParent(tquadbin,integer) → tquadbin</varname></para>
@@ -269,6 +271,7 @@ SELECT geoToQuadbinCell(geometry 'SRID=4326;POINT(4.35 50.85)', 10)
 
 			<listitem xml:id="tquadbin_quadbin_cell_to_point">
 				<indexterm significance="normal"><primary><varname>quadbinCellToPoint</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tquadbinCellToPoint</varname></primary></indexterm>
 				<para>Devuelve el centroide de una celda como un punto SRID 4326. La forma estática toma un único <varname>quadbin</varname>; la forma temporal devuelve el centroide de cada celda de una trayectoria como un <varname>tgeompoint</varname>.</para>
 				<para><varname>quadbinCellToPoint(quadbin) → geometry</varname></para>
 				<para><varname>tquadbinCellToPoint(tquadbin) → tgeompoint</varname></para>
@@ -284,6 +287,7 @@ SELECT asText(tquadbinCellToPoint(tquadbin
 
 			<listitem xml:id="tquadbin_quadbin_cell_to_boundary">
 				<indexterm significance="normal"><primary><varname>quadbinCellToBoundary</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tquadbinCellToBoundary</varname></primary></indexterm>
 				<para>Devuelve el contorno poligonal cuadrado de una celda como una geometría SRID 4326. La forma estática toma un único <varname>quadbin</varname>; la forma temporal devuelve el contorno de cada celda de una trayectoria como un <varname>tgeometry</varname>.</para>
 				<para><varname>quadbinCellToBoundary(quadbin) → geometry</varname></para>
 				<para><varname>tquadbinCellToBoundary(tquadbin) → tgeometry</varname></para>
@@ -331,6 +335,7 @@ SELECT quadbinCellToTile(quadbin '48a6227affffffff');
 
 			<listitem xml:id="tquadbin_quadbin_cell_to_quadkey">
 				<indexterm significance="normal"><primary><varname>quadbinCellToQuadkey</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tquadbinCellToQuadkey</varname></primary></indexterm>
 				<para>Emite la cadena quadkey en base 4 de una celda (un dígito por nivel de zoom, primero el más significativo; la celda mundial de resolución 0 se corresponde con la cadena vacía). La forma estática toma un único <varname>quadbin</varname>; la forma temporal devuelve el quadkey de cada celda de una trayectoria como un <varname>ttext</varname>.</para>
 				<para><varname>quadbinCellToQuadkey(quadbin) → text</varname></para>
 				<para><varname>tquadbinCellToQuadkey(tquadbin) → ttext</varname></para>
@@ -351,6 +356,7 @@ SELECT quadbinCellToQuadkey(quadbin '48a6227affffffff');
 		<itemizedlist>
 			<listitem xml:id="tquadbin_quadbin_cell_area">
 				<indexterm significance="normal"><primary><varname>quadbinCellArea</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tquadbinCellArea</varname></primary></indexterm>
 				<para>Devuelve el área de una celda sobre la esfera, en metros cuadrados. La forma estática toma un único <varname>quadbin</varname>; la forma temporal devuelve el área de cada celda de una trayectoria como un <varname>tfloat</varname>. El área de la celda se reduce hacia los polos, ya que los cuadrados web-mercator cubren progresivamente menos terreno a latitudes más altas.</para>
 				<para><varname>quadbinCellArea(quadbin) → float8</varname></para>
 				<para><varname>tquadbinCellArea(tquadbin) → tfloat</varname></para>

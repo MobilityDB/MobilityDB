@@ -275,6 +275,7 @@ SELECT floatspansetFromHexWKB(
 				<indexterm significance="normal"><primary><varname>floatset</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>textset</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tstzset</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>set</varname></primary></indexterm>
 				<para>Constructor para tipos de conjunto</para>
 				<para><varname>set(base[]) → set</varname></para>
 				<programlisting language="sql" xml:space="preserve">
@@ -352,6 +353,7 @@ SELECT spanset(timestamptz '2001-01-01 08:00:00');
 
 			<listitem xml:id="set_convert">
 				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>spanset</varname></primary></indexterm>
 				<para>Convertir un valor de conjunto en un valor de conjunto de rangos</para>
 				<para><varname>set::spanset</varname></para>
 				<para><varname>spanset(set) → spanset</varname></para>
@@ -366,6 +368,7 @@ SELECT spanset(tstzset '{2001-01-01 08:00:00, 2001-01-01 08:15:00,
 
 			<listitem xml:id="span_convert">
 				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>spanset</varname></primary></indexterm>
 				<para>Convertir un valor de rango a un valor de conjunto de rangos</para>
 				<para><varname>span::spanset</varname></para>
 				<para><varname>spanset(span) → spanset</varname></para>

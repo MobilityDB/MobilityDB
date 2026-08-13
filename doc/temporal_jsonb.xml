@@ -85,6 +85,8 @@ SELECT jsonbset_object_field(textset '{[{"unit": "km", "speed": 10},
 			<listitem xml:id="jsonbset_extract_path">
 				<indexterm significance="normal"><primary><varname>-></varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>->></varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>jsonbset_extract_path</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>jsonbset_extract_path_text</varname></primary></indexterm>
 				<para>Extract a JSON object field specified by a path</para>
 				<para><varname>{textset,jsonbset} #> text[] → {textset,jsonbset}</varname></para>
 				<para><varname>jsonbset_extract_path(jsonbset,text[],null_handle text='use_json_null') → jsonbset</varname></para>
@@ -583,6 +585,7 @@ SELECT tjsonbSeq(ARRAY[tjsonb
 
 			<listitem xml:id="tjsonbSeqSet">
 				<indexterm significance="normal"><primary><varname>tjsonbSeqSet</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tjsonbSeqSetGaps</varname></primary></indexterm>
 				<para>Constructor for temporal JSONB values of sequence set subtype</para>
 				<para><varname>tjsonbSeqSet(tjsonb[]) → tjsonbSeqSet</varname></para>
 				<para><varname>tjsonbSeqSetGaps(tjsonbInst[],maxt=NULL,maxdist=NULL) → tjsonbSeqSet</varname></para>
@@ -795,6 +798,9 @@ SELECT tjson_object_field(ttext '{[{"unit": "km", "speed": 10}@2001-01-01,
 			<listitem xml:id="tjson_extract_path">
 				<indexterm significance="normal"><primary><varname>-></varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>->></varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tjson_extract_path</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tjsonb_extract_path</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tjsonb_extract_path_text</varname></primary></indexterm>
 				<para>Extract a temporal JSON object field specified by a path</para>
 				<para><varname>{ttext,tjsonb} #> text[] → {ttext,tjsonb}</varname></para>
 				<para><varname>tjson_extract_path(ttext,text[],null_handle text='use_json_null') → ttext</varname></para>

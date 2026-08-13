@@ -317,6 +317,10 @@ SELECT merge(inst) FROM temp;
 				<indexterm significance="normal"><primary><varname>minusValue</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>atValues</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>minusValues</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>atSpan</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>minusSpan</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>atSpanset</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>minusSpanset</varname></primary></indexterm>
 				<para>Restrict to (the complement of) a value or a set of values, or, for a temporal number, a span or a span set of values</para>
 				<para><varname>atValue(ttype,value) → ttype</varname></para>
 				<para><varname>minusValue(ttype,value) → ttype</varname></para>

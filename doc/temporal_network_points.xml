@@ -375,6 +375,7 @@ SELECT tnpointSeq(ARRAY[tnpoint 'Npoint(1, 0.2)@2001-01-01',
 
 				<listitem xml:id="tnpointSeqSet">
 					<indexterm significance="normal"><primary><varname>tnpointSeqSet</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tnpointSeqSetGaps</varname></primary></indexterm>
 					<para>Constructor for temporal network points of sequence set subtype</para>
 					<para><varname>tnpointSeqSet(tnpoint[]) → tnpointSeqSet</varname></para>
 					<para><varname>tnpointSeqSetGaps(tnpointInst[],maxt=NULL,maxdist=NULL,interp='linear') →</varname></para>
@@ -576,6 +577,7 @@ SELECT asText(appendSequence(tnpoint '[Npoint(1, 0.1)@2001-01-01]', '[Npoint(1, 
 
 			<listitem xml:id="tnpoint_merge">
 				<indexterm significance="normal"><primary><varname>merge</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>mergeAgg</varname></primary></indexterm>
 				<para>Merge the temporal network points</para>
 				<para><varname>merge(tnpoint,tnpoint) → tnpoint</varname></para>
 				<para><varname>merge(tnpoint[]) → tnpoint</varname></para>
