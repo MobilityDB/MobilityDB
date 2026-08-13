@@ -860,7 +860,7 @@ nai_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
  * Shortest line: same closed-form minimisation, but tracking the witness
  * (the parameter on the swept-capsule segment that attains the minimum and
  * the nearest point on the geometry edge), so the connecting line can be
- * built without GEOS. The nearest-approach value path above is left
+ * built natively. The nearest-approach value path above is left
  * untouched.
  *****************************************************************************/
 

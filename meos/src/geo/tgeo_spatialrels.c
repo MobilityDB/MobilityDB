@@ -88,7 +88,7 @@ datum_geom_covers(Datum geom1, Datum geom2)
 
 /**
  * @brief Return a Datum true if the first geometry covers the second one,
- * computed natively without GEOS
+ * computed natively
  */
 Datum
 datum_geo_covers2d(Datum geom1, Datum geom2)
@@ -109,7 +109,7 @@ datum_geom_disjoint2d(Datum geom1, Datum geom2)
 
 /**
  * @brief Return a Datum true if two geometries are disjoint in 2D, computed
- * natively without GEOS
+ * natively
  */
 Datum
 datum_geo_disjoint2d(Datum geom1, Datum geom2)
@@ -156,7 +156,7 @@ datum_geom_intersects2d(Datum geom1, Datum geom2)
 
 /**
  * @brief Return a Datum true if two geometries intersect in 2D, computed
- * natively without GEOS
+ * natively
  */
 Datum
 datum_geo_intersects2d(Datum geom1, Datum geom2)
@@ -1760,7 +1760,7 @@ ea_dwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
    * native path below, which resolves every within-distance sub-period of every
    * segment only for the projection to discard all but their existence. The
    * nearest approach is a single running minimum, and
-   * #nad_tpoint_geo_analytic computes it with the same GEOS-free analytic
+   * #nad_tpoint_geo_analytic computes it with the same native analytic
    * engine, so the reduction is cheaper without giving up the native path. A
    * zero distance is left on the paths below, where the ever/always intersects
    * and disjoint relationships are defined in terms of ea_dwithin(., ., 0.0),
