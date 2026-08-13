@@ -1636,6 +1636,12 @@ gserialized_is_poly(const GSERIALIZED* gs)
 /**
  * @brief Return -1, 0, or 1 depending on whether a (multi)point is completely
  * outside, on the boundary, or completely inside a (multi)polygon
+ * @details The function selects the polygon and the point out of the pair
+ * whatever order they arrive in, and always answers in the direction of the
+ * polygon: whether the polygon intersects, contains, or covers the point. That
+ * is the relationship asked for @p INTERSECTS, which is symmetric, in either
+ * order. For @p CONTAINS and @p COVERS the caller must place the polygon
+ * first, since the reverse direction is a different question
  * @note This function is based PostGIS function @p pip_short_circuit bypassing
  * the cache
  */
@@ -1776,11 +1782,16 @@ geom_spatialrel(const GSERIALIZED *gs1, const GSERIALIZED *gs2, spatialRel rel)
 
   /*
    * short-circuit 2: if the geoms are a (multi)point and a (multi)polygon,
-   * call the meos_point_in_polygon function.
+   * call the meos_point_in_polygon function. That function answers in the
+   * direction of the polygon, so it settles INTERSECTS, which is symmetric,
+   * with the pair in either order, and CONTAINS and COVERS only when the
+   * polygon is the first argument. A (multi)point asked to contain or cover a
+   * (multi)polygon is a different question and keeps the general path below.
    */
-  if ((rel == INTERSECTS || rel == CONTAINS || rel == COVERS) && (
-      (gserialized_is_point(gs1) && gserialized_is_poly(gs2)) ||
-      (gserialized_is_poly(gs1) && gserialized_is_point(gs2))))
+  bool poly_point = gserialized_is_poly(gs1) && gserialized_is_point(gs2);
+  if ((rel == INTERSECTS && (poly_point ||
+        (gserialized_is_point(gs1) && gserialized_is_poly(gs2)))) ||
+      ((rel == CONTAINS || rel == COVERS) && poly_point))
     return meos_point_in_polygon(gs1, gs2, rel);
 
   /* Call GEOS function */
