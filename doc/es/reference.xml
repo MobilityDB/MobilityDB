@@ -875,6 +875,10 @@
 				<listitem>
 					<para><link linkend="ttype_atTime"><varname>atTime</varname>, <varname>minusTime</varname></link>: Restringir a (al complemento de) un valor de tiempo</para>
 				</listitem>
+
+				<listitem>
+					<para><link linkend="beforeTimestamp"><varname>beforeTimestamp</varname>, <varname>afterTimestamp</varname></link>: Mantener los instantes de un valor temporal que son anteriores o posteriores a una marca de tiempo, o iguales a ella</para>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 
