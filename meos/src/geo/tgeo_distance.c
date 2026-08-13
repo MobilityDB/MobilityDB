@@ -1142,11 +1142,16 @@ geodist_segm_nad(double cx1, double cy1, double r1, double cx2, double cy2,
         sxmin, symin, sxmax, symax) >= (*best) * (*best))
       return;
   }
-  if (g->has_poly && (geodist_geom_point_inside(cx1, cy1, g) || 
-      geodist_geom_point_inside(cx2, cy2, g)))
+  if (g->has_poly)
   {
-    *best = 0.0;
-    return;
+    bool in1 = geodist_geom_point_inside(cx1, cy1, g);
+    bool in2 = (cx2 == cx1 && cy2 == cy1) ? in1 :
+      geodist_geom_point_inside(cx2, cy2, g);
+    if (in1 || in2)
+    {
+      *best = 0.0;
+      return;
+    }
   }
   /* Bucket bounding-volume hierarchy: skip whole buckets of edges that are
    * farther than the running minimum, then the per-edge prune within a bucket */
@@ -1233,7 +1238,7 @@ geodist_segm_shortestline(double cx1, double cy1, double r1, double cx2,
   /* Bucket bounding-volume hierarchy: skip whole buckets of edges that are
    * farther than the running witness distance, then the per-edge prune within
    * a bucket */
-  for (int b = 0; b < g->nbk; b++)
+  for (int b = 0; b < g->nbk && ! (w->set && w->d <= 0.0); b++)
   {
     const GeoDistBucket *bk = &g->bks[b];
     if (w->set)
@@ -1243,7 +1248,7 @@ geodist_segm_shortestline(double cx1, double cy1, double r1, double cx2,
         continue;
     }
     int elast = bk->start + bk->n;
-    for (int k = bk->start; k < elast; k++)
+    for (int k = bk->start; k < elast && ! (w->set && w->d <= 0.0); k++)
     {
       const GeoDistEdge *e = &g->segs[k];
       if (w->set)
@@ -1334,7 +1339,7 @@ geodist_segm_nai(double cx1, double cy1, double r1, TimestampTz t1, double cx2,
   }
   /* Bucket bounding-volume hierarchy: skip whole buckets of edges that are
    * farther than the running witness distance, then the per-edge prune */
-  for (int b = 0; b < g->nbk; b++)
+  for (int b = 0; b < g->nbk && ! (w->set && w->d <= 0.0); b++)
   {
     const GeoDistBucket *bk = &g->bks[b];
     if (w->set)
@@ -1344,7 +1349,7 @@ geodist_segm_nai(double cx1, double cy1, double r1, TimestampTz t1, double cx2,
         continue;
     }
     int elast = bk->start + bk->n;
-    for (int k = bk->start; k < elast; k++)
+    for (int k = bk->start; k < elast && ! (w->set && w->d <= 0.0); k++)
     {
       const GeoDistEdge *e = &g->segs[k];
       if (w->set)
