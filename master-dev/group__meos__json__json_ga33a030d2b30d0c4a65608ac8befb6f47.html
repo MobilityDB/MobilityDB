@@ -96,6 +96,8 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__json__json_ga2d26ddaff44707fc89be2cbd7f5e5bdd.html#ga2d26ddaff44707fc89be2cbd7f5e5bdd">tjsonb_delete_index</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__json__json_ga9c35b084ce9169d470cef49216e58041.html#ga9c35b084ce9169d470cef49216e58041">tjsonb_delete_path</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__json__json_ga1cf6bcdcdc8445569e07bf717069921f.html#ga1cf6bcdcdc8445569e07bf717069921f">tjsonb_exists</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__json__json_ga9fc16004ca68e548c8126569cedb5bc5.html#ga9fc16004ca68e548c8126569cedb5bc5">tjsonb_exists_all</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__json__json_gac562c71ffe5d00e9dd24da2c9a5b368a.html#gac562c71ffe5d00e9dd24da2c9a5b368a">tjsonb_exists_any</a></td></tr>
           <tr><td class="navtabHL"><a class="navtab" href="group__meos__json__json_ga33a030d2b30d0c4a65608ac8befb6f47.html#ga33a030d2b30d0c4a65608ac8befb6f47">tjsonb_exists_array</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__json__json_gadaafb5cafed1a49c0358ed40381f6c0d.html#gadaafb5cafed1a49c0358ed40381f6c0d">tjsonb_extract_path</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__json__json_gae468c68392fb7cf65dd2de3ae2848f4d.html#gae468c68392fb7cf65dd2de3ae2848f4d">tjsonb_insert</a></td></tr>
@@ -154,13 +156,13 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Delete an array of keys from a temporal JSONB value. </p>
+<p>Return a temporal boolean that states if any or all of the keys in a text array exist as top-level keys or array elements within a temporal JSONB value, common to the <a class="el" href="group__meos__json__json_gac562c71ffe5d00e9dd24da2c9a5b368a.html#gac562c71ffe5d00e9dd24da2c9a5b368a" title="Return a temporal boolean that states if any of the keys in a text array exist as top-level keys or a...">tjsonb_exists_any()</a> and <a class="el" href="group__meos__json__json_ga9fc16004ca68e548c8126569cedb5bc5.html#ga9fc16004ca68e548c8126569cedb5bc5" title="Return a temporal boolean that states if all of the keys in a text array exist as top-level keys or a...">tjsonb_exists_all()</a> functions. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> JSONB value </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">keys</td><td>Keys </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">count</td><td>Number of elements in the input array </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">any</td><td>True for the 'any' semantics, false for the 'all' semantics </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">any</td><td>True for the 'any' semantics, false for the 'all' semantics @csqlfn <a class="el" href="group__mobilitydb__temporal__jsonb_gac9001e14563df69951311df015cb279c.html#gac9001e14563df69951311df015cb279c" title="Return true if any of the strings in the text array exist as top-level keys or array elements @sqlfn ...">Tjsonb_exists_any()</a>, <a class="el" href="group__mobilitydb__temporal__jsonb_ga7014bf5a901409284426650734fc9581.html#ga7014bf5a901409284426650734fc9581" title="Return true if all of the strings in the text array exist as top-level keys or array elements @sqlfn ...">Tjsonb_exists_all()</a> </td></tr>
   </table>
   </dd>
 </dl>
