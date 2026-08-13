@@ -70,12 +70,10 @@ Tjsonb_exists(PG_FUNCTION_ARGS)
   PG_RETURN_TEMPORAL_P(result);
 }
 
-/**
- * @ingroup mobilitydb_temporal_jsonb
- * @brief Return a temporal boolean indicating if any/all of the given keys
- *        exist as top-level keys or array elements in a temporal JSONB value
- * @sqlfn tjsonbExistsAny()
- * @sqlfn tjsonbExistsAll()
+/*
+ * Shared implementation of Tjsonb_exists_any and Tjsonb_exists_all: return a
+ * temporal boolean indicating if any/all of the given keys exist as
+ * top-level keys or array elements in a temporal JSONB value
  */
 Datum
 Tjsonb_exists_array(FunctionCallInfo fcinfo, bool any)
@@ -126,7 +124,7 @@ Tjsonb_exists_any(PG_FUNCTION_ARGS)
  * @brief Return true if all of the strings in the text array exist as
  * top-level keys or array elements
  * @sqlfn tjsonbExistsAll()
- * @sqlop @p ?|
+ * @sqlop @p ?&
  */
 PGDLLEXPORT Datum Tjsonb_exists_all(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tjsonb_exists_all);

@@ -349,6 +349,8 @@ extern Temporal *tjsonb_delete_array(const Temporal *temp, text **keys, int coun
 extern Temporal *tjsonb_delete_index(const Temporal *temp, int idx);
 extern Temporal *tjsonb_delete_path(const Temporal *temp, text **path_elems, int path_len);
 extern Temporal *tjsonb_exists(const Temporal *temp, const text *key);
+extern Temporal *tjsonb_exists_all(const Temporal *temp, text **keys, int count);
+extern Temporal *tjsonb_exists_any(const Temporal *temp, text **keys, int count);
 extern Temporal *tjsonb_exists_array(const Temporal *temp, text **keys, int count, bool any);
 extern Temporal *tjsonb_extract_path(const Temporal *temp, text **path_elems, int path_len, bool astext, nullHandleType null_handle);
 extern Temporal *tjsonb_insert(const Temporal *temp, text **keys, int count, const Jsonb *newjb, bool after);
