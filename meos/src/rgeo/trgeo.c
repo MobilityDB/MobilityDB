@@ -729,7 +729,7 @@ trgeometry_start_sequence(const Temporal *temp)
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
   /* Ensure the validity of the arguments */
-  if (! ensure_continuous(temp))
+  if (! ensure_continuous_interp(temp))
     return NULL;
 
   const TSequence *res_pose = (temp->subtype == TSEQUENCE) ?
@@ -752,7 +752,7 @@ trgeometry_end_sequence(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
-  if (! ensure_continuous(temp))
+  if (! ensure_continuous_interp(temp))
     return NULL;
 
   const TSequence *res_pose = (temp->subtype == TSEQUENCE) ?
@@ -777,7 +777,7 @@ trgeometry_sequence_n(const Temporal *temp, int n)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
-  if (! ensure_continuous(temp) || ! ensure_positive(n))
+  if (! ensure_continuous_interp(temp) || ! ensure_positive(n))
     return NULL;
 
   const TSequence *res_pose;
@@ -814,7 +814,7 @@ trgeometry_sequences(const Temporal *temp, int *count)
   *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
-  if (! ensure_continuous(temp))
+  if (! ensure_continuous_interp(temp))
     return NULL;
 
   const GSERIALIZED *geo = trgeo_geom_p(temp);
@@ -887,7 +887,7 @@ trgeometry_segments(const Temporal *temp, int *count)
   *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
-  if (! ensure_continuous(temp))
+  if (! ensure_continuous_interp(temp))
     return NULL;
 
   const GSERIALIZED *geo = trgeo_geom_p(temp);
