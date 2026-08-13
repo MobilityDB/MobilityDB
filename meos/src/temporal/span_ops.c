@@ -876,7 +876,7 @@ minus_span_span(const Span *s1, const Span *s2)
  * @brief Return the distance between two values as a double for the indexes
  * @param[in] l,r Values
  * @param[in] type Type of the values
- * @return On error return -1
+ * @return On error return @p DBL_MAX
  */
 double
 dist_double_value_value(Datum l, Datum r, MeosType type)
@@ -901,7 +901,7 @@ dist_double_value_value(Datum l, Datum r, MeosType type)
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
         "Unknown types for distance between values: %s",
         meostype_name(type));
-      return -1;
+      return DBL_MAX;
   }
 }
 

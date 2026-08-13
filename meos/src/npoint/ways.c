@@ -135,7 +135,7 @@ route_exists(int64 rid)
  * @brief Access the edge table to return the route length from the
  * corresponding route identifier
  * @param[in] rid Route identifier
- * @return On error return -1.0
+ * @return On error return @p DBL_MAX
  */
 double
 route_length(int64 rid)
@@ -160,7 +160,7 @@ route_length(int64 rid)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Cannot get the length for route " INT64_FORMAT, rid);
-    return -1.0;
+    return DBL_MAX;
   }
   return result;
 }

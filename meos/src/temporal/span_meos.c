@@ -600,14 +600,14 @@ bigintspan_width(const Span *s)
  * @ingroup meos_setspan_accessor
  * @brief Return the width of a float span
  * @param[in] s Span
- * @return On error return -1
+ * @return On error return @p DBL_MAX
  * @csqlfn #Numspan_width()
  */
 double
 floatspan_width(const Span *s)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_FLOATSPAN(s, -1.0);
+  VALIDATE_FLOATSPAN(s, DBL_MAX);
   return DatumGetFloat8(numspan_width(s));
 }
 

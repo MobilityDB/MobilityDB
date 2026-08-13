@@ -2530,7 +2530,7 @@ tinstarr_average_hausdorff_distance(const TInstant **instants1, int count1,
  * @ingroup meos_temporal_analytics_similarity
  * @brief Return the average Hausdorff distance between two temporal values
  * @param[in] temp1,temp2 Temporal values
- * @return On error return -1.0
+ * @return On error return @p DBL_MAX
  * @csqlfn #Temporal_average_hausdorff_distance()
  */
 double
@@ -2539,7 +2539,7 @@ temporal_average_hausdorff_distance(const Temporal *temp1,
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_temporal_temporal(temp1, temp2))
-    return -1.0;
+    return DBL_MAX;
 
   int count1, count2;
   const TInstant **instants1 = temporal_insts_p(temp1, &count1);
@@ -2597,7 +2597,7 @@ tinstarr_lcss_distance(const TInstant **instants1, int count1,
  * temporal values
  * @param[in] temp1,temp2 Temporal values
  * @param[in] epsilon Maximum distance for two instants to match
- * @return On error return -1.0
+ * @return On error return @p DBL_MAX
  * @csqlfn #Temporal_lcss_distance()
  */
 double
@@ -2606,7 +2606,7 @@ temporal_lcss_distance(const Temporal *temp1, const Temporal *temp2,
 {
   /* Ensure the validity of the arguments */
   if (epsilon < 0 || ! ensure_valid_temporal_temporal(temp1, temp2))
-    return -1.0;
+    return DBL_MAX;
 
   int count1, count2;
   const TInstant **instants1 = temporal_insts_p(temp1, &count1);

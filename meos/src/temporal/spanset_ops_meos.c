@@ -34,6 +34,7 @@
 
 /* C */
 #include <assert.h>
+#include <float.h>
 /* PostgreSQL */
 #include <postgres.h>
 #include <utils/timestamp.h>
@@ -1304,14 +1305,14 @@ distance_spanset_bigint(const SpanSet *ss, int64 i)
  * @brief Return the distance between a span set and a float
  * @param[in] ss Span set
  * @param[in] d Value
- * @return On error return -1.0
+ * @return On error return @p DBL_MAX
  * @csqlfn #Distance_spanset_value()
  */
 double
 distance_spanset_float(const SpanSet *ss, double d)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_FLOATSPANSET(ss, -1.0);
+  VALIDATE_FLOATSPANSET(ss, DBL_MAX);
   return DatumGetFloat8(distance_spanset_value(ss, Float8GetDatum(d)));
 }
 
@@ -1337,14 +1338,14 @@ distance_spanset_date(const SpanSet *ss, DateADT d)
  * @brief Return the distance in seconds between a span set and a timestamptz
  * @param[in] ss Span set
  * @param[in] t Value
- * @return On error return -1.0
+ * @return On error return @p DBL_MAX
  * @csqlfn #Distance_spanset_value()
  */
 double
 distance_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TSTZSPANSET(ss, -1.0);
+  VALIDATE_TSTZSPANSET(ss, DBL_MAX);
   return DatumGetFloat8(distance_spanset_value(ss, TimestampTzGetDatum(t)));
 }
 
@@ -1387,14 +1388,14 @@ distance_bigintspanset_bigintspan(const SpanSet *ss, const Span *s)
  * @brief Return the distance between a float span set and a span
  * @param[in] ss Spanset
  * @param[in] s Span
- * @return On error return -1.0
+ * @return On error return @p DBL_MAX
  * @csqlfn #Distance_spanset_span()
  */
 double
 distance_floatspanset_floatspan(const SpanSet *ss, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_FLOATSPANSET(ss, -1.0); VALIDATE_FLOATSPAN(s, -1.0);
+  VALIDATE_FLOATSPANSET(ss, DBL_MAX); VALIDATE_FLOATSPAN(s, DBL_MAX);
   return DatumGetFloat8(distance_spanset_span(ss, s));
 }
 
@@ -1420,14 +1421,14 @@ distance_datespanset_datespan(const SpanSet *ss, const Span *s)
  * span
  * @param[in] ss Spanset
  * @param[in] s Span
- * @return On error return -1.0
+ * @return On error return @p DBL_MAX
  * @csqlfn #Distance_spanset_span()
  */
 double
 distance_tstzspanset_tstzspan(const SpanSet *ss, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TSTZSPANSET(ss, -1.0); VALIDATE_TSTZSPAN(s, -1.0);
+  VALIDATE_TSTZSPANSET(ss, DBL_MAX); VALIDATE_TSTZSPAN(s, DBL_MAX);
   return DatumGetFloat8(distance_spanset_span(ss, s));
 }
 
@@ -1467,14 +1468,14 @@ distance_bigintspanset_bigintspanset(const SpanSet *ss1, const SpanSet *ss2)
  * @ingroup meos_setspan_dist
  * @brief Return the distance between two float span sets
  * @param[in] ss1,ss2 Spanset
- * @return On error return -1.0
+ * @return On error return @p DBL_MAX
  * @csqlfn #Distance_spanset_spanset()
  */
 double
 distance_floatspanset_floatspanset(const SpanSet *ss1, const SpanSet *ss2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_FLOATSPANSET(ss1, -1.0); VALIDATE_FLOATSPANSET(ss2, -1.0);
+  VALIDATE_FLOATSPANSET(ss1, DBL_MAX); VALIDATE_FLOATSPANSET(ss2, DBL_MAX);
   return DatumGetFloat8(distance_spanset_spanset(ss1, ss2));
 }
 
@@ -1497,13 +1498,13 @@ distance_datespanset_datespanset(const SpanSet *ss1, const SpanSet *ss2)
  * @ingroup meos_setspan_dist
  * @brief Return the distance in seconds between two timestamptz span sets
  * @param[in] ss1,ss2 Spanset
- * @return On error return -1.0
+ * @return On error return @p DBL_MAX
  * @csqlfn #Distance_spanset_spanset()
  */
 double
 distance_tstzspanset_tstzspanset(const SpanSet *ss1, const SpanSet *ss2)
 {
-  VALIDATE_TSTZSPANSET(ss1, -1.0); VALIDATE_TSTZSPANSET(ss2, -1.0);
+  VALIDATE_TSTZSPANSET(ss1, DBL_MAX); VALIDATE_TSTZSPANSET(ss2, DBL_MAX);
   return DatumGetFloat8(distance_spanset_spanset(ss1, ss2));
 }
 

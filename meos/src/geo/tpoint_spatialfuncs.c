@@ -2377,14 +2377,14 @@ tpointseqset_length(const TSequenceSet *ss)
  * @ingroup meos_geo_accessor
  * @brief Return the length traversed by a temporal point sequence (set)
  * @param[in] temp Temporal point
- * @return On error return -1.0
+ * @return On error return @p DBL_MAX
  * @csqlfn #Tpoint_length()
  */
 double
 tpoint_length(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TPOINT(temp, -1.0);
+  VALIDATE_TPOINT(temp, DBL_MAX);
 
   assert(temptype_subtype(temp->subtype));
   if (! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
@@ -2399,7 +2399,7 @@ tpoint_length(const Temporal *temp)
  * @ingroup meos_geo_accessor
  * @brief Return the speed of a temporal point sequence (set)
  * @param[in] temp Temporal point
- * @return On error return -1.0
+ * @return On error return @p NULL
  * @csqlfn #Tpoint_speed()
  */
 Temporal *
@@ -3248,7 +3248,7 @@ geog_distance_geos(const GEOSGeometry *pt1, const GEOSGeometry *pt2)
 /**
  * @brief Calculate the length of the diagonal of the minimum rotated rectangle
  * of the input GEOS geometry
- * @return On error return -1.0
+ * @return On error return @p DBL_MAX
  * @note The computation is always done in 2D
  */
 static double
@@ -3301,7 +3301,7 @@ mrr_distance_geos(GEOSGeometry *geom, bool geodetic)
         GEOSGeom_destroy(mrr_geom);
         meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
           "Invalid geometry type for Minimum Rotated Rectangle");
-        return -1.0;
+        return DBL_MAX;
     }
     GEOSGeom_destroy(mrr_geom);
   }

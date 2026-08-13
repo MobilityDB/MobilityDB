@@ -371,14 +371,14 @@ route_geom(int64 rid)
  * @brief Access the edge table to return the route length from the
  * corresponding route identifier
  * @param[in] rid Route identifier
- * @return On error return -1.0
+ * @return On error return @p DBL_MAX
  */
 double
 route_length(int64 rid)
 {
   ways_record rec;
   if (route_lookup(rid, false, &rec) == LW_FAILURE)
-    return -1.0;
+    return DBL_MAX;
   return rec.length;
 }
 

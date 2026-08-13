@@ -872,13 +872,14 @@ trgeometry_dyntimewarp_path(const Temporal *temp1, const Temporal *temp2,
  * @brief Return the length traversed by the centroid of a temporal rigid
  * geometry
  * @param[in] temp Temporal rigid geometry
+ * @return On error return @p DBL_MAX
  * @csqlfn #Trgeometry_length()
  */
 double
 trgeometry_length(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TRGEOMETRY(temp, -1.0);
+  VALIDATE_TRGEOMETRY(temp, DBL_MAX);
 
   Temporal *tpoint = trgeometry_to_tgeompoint(temp);
   double result = tpoint_length(tpoint);

@@ -37,6 +37,8 @@
 
 #include "npoint/tnpoint.h"
 
+/* C */
+#include <float.h>
 /* PostgreSQL */
 #include <postgres.h>
 #include <pgtypes.h>
@@ -565,7 +567,10 @@ Datum
 Npoint_position(PG_FUNCTION_ARGS)
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
-  PG_RETURN_FLOAT8(npoint_position(np));
+  double result = npoint_position(np);
+  if (result == DBL_MAX)
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(result);
 }
 
 PGDLLEXPORT Datum Nsegment_route(PG_FUNCTION_ARGS);
@@ -593,7 +598,10 @@ Datum
 Nsegment_start_position(PG_FUNCTION_ARGS)
 {
   Nsegment *ns = PG_GETARG_NSEGMENT_P(0);
-  PG_RETURN_FLOAT8(nsegment_start_position(ns));
+  double result = nsegment_start_position(ns);
+  if (result == DBL_MAX)
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(result);
 }
 
 PGDLLEXPORT Datum Nsegment_end_position(PG_FUNCTION_ARGS);
@@ -607,7 +615,10 @@ Datum
 Nsegment_end_position(PG_FUNCTION_ARGS)
 {
   Nsegment *ns = PG_GETARG_NSEGMENT_P(0);
-  PG_RETURN_FLOAT8(nsegment_end_position(ns));
+  double result = nsegment_end_position(ns);
+  if (result == DBL_MAX)
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(result);
 }
 
 /*****************************************************************************

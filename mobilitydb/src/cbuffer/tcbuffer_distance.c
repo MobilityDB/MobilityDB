@@ -62,6 +62,8 @@ Distance_cbuffer_geo(PG_FUNCTION_ARGS)
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   double result = distance_cbuffer_geo(cb, gs);
   PG_FREE_IF_COPY(gs, 1);
+  if (result == DBL_MAX)
+    PG_RETURN_NULL();
   PG_RETURN_FLOAT8(result);
 }
 
@@ -80,6 +82,8 @@ Distance_geo_cbuffer(PG_FUNCTION_ARGS)
   Cbuffer *cb = PG_GETARG_CBUFFER_P(1);
   double result = distance_cbuffer_geo(cb, gs);
   PG_FREE_IF_COPY(gs, 0);
+  if (result == DBL_MAX)
+    PG_RETURN_NULL();
   PG_RETURN_FLOAT8(result);
 }
 
@@ -100,6 +104,8 @@ Distance_cbuffer_stbox(PG_FUNCTION_ARGS)
   Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
   STBox *box = PG_GETARG_STBOX_P(1);
   double result = distance_cbuffer_stbox(cb, box);
+  if (result == DBL_MAX)
+    PG_RETURN_NULL();
   PG_RETURN_FLOAT8(result);
 }
 
@@ -118,6 +124,8 @@ Distance_stbox_cbuffer(PG_FUNCTION_ARGS)
   STBox *box = PG_GETARG_STBOX_P(0);
   Cbuffer *cb = PG_GETARG_CBUFFER_P(1);
   double result = distance_cbuffer_stbox(cb, box);
+  if (result == DBL_MAX)
+    PG_RETURN_NULL();
   PG_RETURN_FLOAT8(result);
 }
 
@@ -135,6 +143,8 @@ Distance_cbuffer_cbuffer(PG_FUNCTION_ARGS)
   Cbuffer *cb1 = PG_GETARG_CBUFFER_P(0);
   Cbuffer *cb2 = PG_GETARG_CBUFFER_P(1);
   double result = distance_cbuffer_cbuffer(cb1, cb2);
+  if (result == DBL_MAX)
+    PG_RETURN_NULL();
   PG_RETURN_FLOAT8(result);
 }
 
