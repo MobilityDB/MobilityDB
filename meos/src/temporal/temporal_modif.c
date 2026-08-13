@@ -1742,13 +1742,18 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, double maxdist,
     if (split)
     {
       TSequence *sequences[2];
-      sequences[0] = (seq->count < seq->maxcount) ?
-        tsequence_compact((TSequence *) seq) : seq;
+      /* The compacted sequence is a copy owned by this function, while the
+       * sequence itself belongs to the caller */
+      bool compacted = (seq->count < seq->maxcount);
+      sequences[0] = compacted ? tsequence_compact((TSequence *) seq) : seq;
       /* Arbitrary initialization to 64 elements if in expandable mode */
       sequences[1] = tsequence_make_exp((TInstant **) &inst, 1,
         expand ? 64 : 1, true, true, interp, NORMALIZE_NO);
       TSequenceSet *result = tsequenceset_make_exp(sequences, 2,
         expand ? 64 : 2, NORMALIZE_NO);
+      /* The composing sequences are copied into the result */
+      if (compacted)
+        pfree(sequences[0]);
       pfree(sequences[1]);
       return (Temporal *) result;
     }
