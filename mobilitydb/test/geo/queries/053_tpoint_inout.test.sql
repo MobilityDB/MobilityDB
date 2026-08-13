@@ -188,6 +188,17 @@ SELECT asText(tgeompointFromMFJSON(asMFJSON(tgeompoint '{POINT(1 1)@2000-01-01, 
 SELECT asText(tgeompointFromMFJSON(asMFJSON(tgeompoint '[POINT(1 1)@2000-01-01, POINT(2 2)@2000-01-02]', 1, 3, 15)));
 SELECT asText(tgeompointFromMFJSON(asMFJSON(tgeompoint '{[POINT(1 1)@2000-01-01, POINT(2 2)@2000-01-02], [POINT(3 3)@2000-01-03, POINT(3 3)@2000-01-04]}', 1, 3, 15)));
 
+-- The MF-JSON datetimes are ISO 8601 whatever the DateStyle of the session is
+SET DateStyle TO 'Postgres, MDY';
+SELECT asMFJSON(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]');
+SET DateStyle TO 'SQL, DMY';
+SELECT asMFJSON(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]');
+SET DateStyle TO 'German, DMY';
+SELECT asMFJSON(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]');
+SET DateStyle TO 'ISO, MDY';
+SELECT asMFJSON(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]');
+RESET DateStyle;
+
 /* Errors */
 SELECT asMFJSON(tgeompoint 'SRID=123456;Point(50.813810 4.384260)@2019-01-01 18:00:00.15+02', 4, 2);
 
