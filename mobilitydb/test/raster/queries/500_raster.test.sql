@@ -81,6 +81,26 @@ SELECT raster_value(r,
 )::text AS result
 FROM rast;
 
+-- An instant on a nodata pixel is dropped, as one outside the extent is: the
+-- band declares -9999 as its nodata value and pixel(row=1,col=2) holds it.
+-- POINT(0.5 2.5) → 10; POINT(1.5 2.5) → nodata → dropped; POINT(0.5 0.5) → 70
+WITH rast AS (
+  SELECT ST_SetValues(
+    ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '32BF'::text, 0.0::float8, -9999.0::float8
+    ),
+    1, 1, 1,
+    ARRAY[[10.0::float4, -9999.0::float4, 30.0::float4],
+          [40.0::float4, 50.0::float4, 60.0::float4],
+          [70.0::float4, 80.0::float4, 90.0::float4]]
+  ) AS r
+)
+SELECT raster_value(r,
+  tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2000-01-01 00:00:00+00, POINT(1.5 2.5)@2000-01-02 00:00:00+00, POINT(0.5 0.5)@2000-01-03 00:00:00+00]'
+)::text AS result
+FROM rast;
+
 -- All instants outside the raster → NULL.
 WITH rast AS (
   SELECT ST_SetValues(
