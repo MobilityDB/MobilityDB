@@ -865,6 +865,22 @@ nai_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
+ * @brief Return the squared 2D distance between two axis-aligned bounding
+ * boxes, 0 when they overlap
+ * @note The square is returned so that the callers compare it with a squared
+ * distance, as the geometry distance prune does, the square root being
+ * monotonic and both compared values non-negative
+ */
+static double
+box2d_distance_sqr(double axmin, double aymin, double axmax, double aymax,
+  double bxmin, double bymin, double bxmax, double bymax)
+{
+  double dx = fmax(fmax(axmin - bxmax, bxmin - axmax), 0.0);
+  double dy = fmax(fmax(aymin - bymax, bymin - aymax), 0.0);
+  return dx * dx + dy * dy;
+}
+
+/**
  * @brief Return true if a stationary disc (centre @p cx,@p cy, radius @p r) is
  * within @p dist of the geometry
  * @details Byte-identical to the boolean `nad(stationary disc) <= dist`: the
@@ -892,9 +908,8 @@ tcbuffer_disc_within_dist(double cx, double cy, double r, double dist,
   {
     const GeoDistEdge *ed =
       &g->segs[*(int *) meos_array_get(geodist_pip_results, j)];
-    double edx = fmax(fmax(ed->xmin - sxmax, sxmin - ed->xmax), 0.0);
-    double edy = fmax(fmax(ed->ymin - symax, symin - ed->ymax), 0.0);
-    if (edx * edx + edy * edy > dist2)
+    if (box2d_distance_sqr(ed->xmin, ed->ymin, ed->xmax, ed->ymax, sxmin,
+        symin, sxmax, symax) > dist2)
       continue;
     double m = ed->is_arc ?
       geodist_segm_arc_mindist(cx, cy, cx, cy, r, r, ed) :
@@ -1412,9 +1427,8 @@ tcbufferseg_within_ctx(const Cbuffer *cb1, const Cbuffer *cb2, double dist,
   {
     const GeoDistEdge *ed =
       &ctx->g.segs[*(int *) meos_array_get(geodist_pip_results, j)];
-    double edx = fmax(fmax(ed->xmin - cxmax, cxmin - ed->xmax), 0.0);
-    double edy = fmax(fmax(ed->ymin - cymax, cymin - ed->ymax), 0.0);
-    if (edx * edx + edy * edy > reach2)
+    if (box2d_distance_sqr(ed->xmin, ed->ymin, ed->xmax, ed->ymax, cxmin,
+        cymin, cxmax, cymax) > reach2)
       continue;
     if (ed->is_arc)
       tcbuffersegm_arc_within_roots(cx1, cy1, cx2, cy2, r1, r2, ed, dist, cand,
@@ -1508,9 +1522,8 @@ tcbuffer_disc_signed_boundary(double cx, double cy, double r,
   {
     const GeoDistEdge *ed =
       &g->segs[*(int *) meos_array_get(geodist_pip_results, j)];
-    double edx = fmax(fmax(ed->xmin - cx, cx - ed->xmax), 0.0);
-    double edy = fmax(fmax(ed->ymin - cy, cy - ed->ymax), 0.0);
-    if (edx * edx + edy * edy > reach2)
+    if (box2d_distance_sqr(ed->xmin, ed->ymin, ed->xmax, ed->ymax, cx, cy,
+        cx, cy) > reach2)
       continue;
     double m = ed->is_arc ?
       geodist_segm_arc_mindist(cx, cy, cx, cy, r, r, ed) :
@@ -1619,9 +1632,8 @@ tcbufferseg_sg_roots(const Cbuffer *cb1, const Cbuffer *cb2,
   {
     const GeoDistEdge *ed =
       &ctx->g.segs[*(int *) meos_array_get(geodist_pip_results, j)];
-    double edx = fmax(fmax(ed->xmin - cxmax, cxmin - ed->xmax), 0.0);
-    double edy = fmax(fmax(ed->ymin - cymax, cymin - ed->ymax), 0.0);
-    if (edx * edx + edy * edy > rmax2)
+    if (box2d_distance_sqr(ed->xmin, ed->ymin, ed->xmax, ed->ymax, cxmin,
+        cymin, cxmax, cymax) > rmax2)
       continue;
     if (ed->is_arc)
       tcbuffersegm_arc_within_roots(cx1, cy1, cx2, cy2, r1, r2, ed, 0.0, cand,

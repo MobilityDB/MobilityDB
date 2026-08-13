@@ -1072,6 +1072,51 @@ geodist_seg_seg_dist2(double ax, double ay, double bx, double by, double cx,
 }
 
 /**
+ * @brief Return the squared distance between two axis-aligned boxes, zero when
+ * they overlap
+ *
+ * A box contains what it bounds, so this is a lower bound on the distance
+ * between the two bounded objects: the geometry, one of its edge buckets or one
+ * of its edges on one side, and the box swept by a capsule unit on the other.
+ * A lower bound that reaches the running minimum leaves nothing inside the box
+ * able to improve it, which is what the three prune levels of the two
+ * traversals below test.
+ */
+static double
+box2d_distance_sqr(double axmin, double aymin, double axmax, double aymax,
+  double bxmin, double bymin, double bxmax, double bymax)
+{
+  double dx = fmax(fmax(axmin - bxmax, bxmin - axmax), 0.0);
+  double dy = fmax(fmax(aymin - bymax, bymin - aymax), 0.0);
+  return dx * dx + dy * dy;
+}
+
+/**
+ * @brief Return true when the exact swept-disc solve against a straight edge
+ * cannot improve the running minimum @p cur
+ *
+ * The exact distance is at least the distance from the centre segment to the
+ * edge minus the larger radius, since min_t dist(centre(t), edge) - r(t) is at
+ * most that distance, so a centre-segment distance of at least cur + rmax
+ * leaves the solve nothing to find. The axis-aligned swept box expanded by the
+ * radius is a loose filter for a round disc, and this rejects the survivors it
+ * leaves. A scalar squared segment distance serves here rather than
+ * lw_dist2d_seg_seg, which also computes the closest points and is far heavier
+ * in this loop.
+ */
+static bool
+geodist_edge_radius_prune(double cx1, double cy1, double cx2, double cy2,
+  double r1, double r2, const GeoDistEdge *e, double cur)
+{
+  double rmax = fmax(r1, r2);
+  if (rmax <= 0.0)
+    return false;
+  double thr = cur + rmax;
+  return geodist_seg_seg_dist2(cx1, cy1, cx2, cy2, e->x1, e->y1, e->x2,
+    e->y2) >= thr * thr;
+}
+
+/**
  * @brief Update the running minimum with one swept-capsule unit (the centre
  * moves from c1 to c2 with radius r1 to r2; a stationary disk has c1 == c2)
  */
@@ -1093,9 +1138,8 @@ geodist_segm_nad(double cx1, double cy1, double r1, double cx2, double cy2,
    * a zero lower bound, so it is never wrongly pruned. */
   if (*best != DBL_MAX)
   {
-    double dgx = fmax(fmax(g->xmin - sxmax, sxmin - g->xmax), 0.0);
-    double dgy = fmax(fmax(g->ymin - symax, symin - g->ymax), 0.0);
-    if (dgx * dgx + dgy * dgy >= (*best) * (*best))
+    if (box2d_distance_sqr(g->xmin, g->ymin, g->xmax, g->ymax,
+        sxmin, symin, sxmax, symax) >= (*best) * (*best))
       return;
   }
   if (g->has_poly && (geodist_geom_point_inside(cx1, cy1, g) || 
@@ -1111,9 +1155,8 @@ geodist_segm_nad(double cx1, double cy1, double r1, double cx2, double cy2,
     const GeoDistBucket *bk = &g->bks[b];
     if (*best != DBL_MAX)
     {
-      double dx = fmax(fmax(bk->xmin - sxmax, sxmin - bk->xmax), 0.0);
-      double dy = fmax(fmax(bk->ymin - symax, symin - bk->ymax), 0.0);
-      if (dx * dx + dy * dy >= (*best) * (*best))
+      if (box2d_distance_sqr(bk->xmin, bk->ymin, bk->xmax, bk->ymax,
+          sxmin, symin, sxmax, symax) >= (*best) * (*best))
         continue;
     }
     int e = bk->start + bk->n;
@@ -1122,9 +1165,8 @@ geodist_segm_nad(double cx1, double cy1, double r1, double cx2, double cy2,
       const GeoDistEdge *ed = &g->segs[k];
       if (*best != DBL_MAX)
       {
-        double dx = fmax(fmax(ed->xmin - sxmax, sxmin - ed->xmax), 0.0);
-        double dy = fmax(fmax(ed->ymin - symax, symin - ed->ymax), 0.0);
-        if (dx * dx + dy * dy >= (*best) * (*best))
+        if (box2d_distance_sqr(ed->xmin, ed->ymin, ed->xmax, ed->ymax,
+          sxmin, symin, sxmax, symax) >= (*best) * (*best))
           continue;
       }
       /* Radius-aware tighter prune (moving disc only, straight edges): the
@@ -1135,15 +1177,9 @@ geodist_segm_nad(double cx1, double cy1, double r1, double cx2, double cy2,
        * filter for a round disc; this rejects the many box survivors it leaves.
        * A scalar squared seg-seg distance is used (not lw_dist2d_seg_seg, which
        * also computes closest points and is far heavier in this hot loop). */
-      if (! ed->is_arc && *best != DBL_MAX)
-      {
-        double rmax = fmax(r1, r2);
-        double thr = *best + rmax;
-        if (rmax > 0.0 &&
-            geodist_seg_seg_dist2(cx1, cy1, cx2, cy2, ed->x1, ed->y1,
-              ed->x2, ed->y2) >= thr * thr)
-          continue;
-      }
+      if (! ed->is_arc && *best != DBL_MAX &&
+          geodist_edge_radius_prune(cx1, cy1, cx2, cy2, r1, r2, ed, *best))
+        continue;
       double m = ed->is_arc ?
         geodist_segm_arc_mindist(cx1, cy1, cx2, cy2, r1, r2, ed) :
         geodist_segm_edge_mindist(cx1, cy1, cx2, cy2, r1, r2, ed);
@@ -1174,9 +1210,8 @@ geodist_segm_shortestline(double cx1, double cy1, double r1, double cx2,
    * lower bound), so it is never wrongly pruned. */
   if (w->set)
   {
-    double dgx = fmax(fmax(g->xmin - sxmax, sxmin - g->xmax), 0.0);
-    double dgy = fmax(fmax(g->ymin - symax, symin - g->ymax), 0.0);
-    if (dgx * dgx + dgy * dgy >= w->d * w->d)
+    if (box2d_distance_sqr(g->xmin, g->ymin, g->xmax, g->ymax,
+        sxmin, symin, sxmax, symax) >= w->d * w->d)
       return;
   }
   /* A centre inside a polygon means the swept region overlaps it: the shortest
@@ -1203,9 +1238,8 @@ geodist_segm_shortestline(double cx1, double cy1, double r1, double cx2,
     const GeoDistBucket *bk = &g->bks[b];
     if (w->set)
     {
-      double dx = fmax(fmax(bk->xmin - sxmax, sxmin - bk->xmax), 0.0);
-      double dy = fmax(fmax(bk->ymin - symax, symin - bk->ymax), 0.0);
-      if (dx * dx + dy * dy >= w->d * w->d)
+      if (box2d_distance_sqr(bk->xmin, bk->ymin, bk->xmax, bk->ymax,
+          sxmin, symin, sxmax, symax) >= w->d * w->d)
         continue;
     }
     int elast = bk->start + bk->n;
@@ -1214,9 +1248,8 @@ geodist_segm_shortestline(double cx1, double cy1, double r1, double cx2,
       const GeoDistEdge *e = &g->segs[k];
       if (w->set)
       {
-        double dx = fmax(fmax(e->xmin - sxmax, sxmin - e->xmax), 0.0);
-        double dy = fmax(fmax(e->ymin - symax, symin - e->ymax), 0.0);
-        if (dx * dx + dy * dy >= w->d * w->d)
+        if (box2d_distance_sqr(e->xmin, e->ymin, e->xmax, e->ymax,
+          sxmin, symin, sxmax, symax) >= w->d * w->d)
           continue;
       }
       /* Radius-aware tighter prune (moving disc only, straight edges): skip the
@@ -1224,15 +1257,9 @@ geodist_segm_shortestline(double cx1, double cy1, double r1, double cx2,
        * larger radius already reaches the running minimum. The same lower bound
        * as geodist_segm_nad, valid because it never exceeds the true swept-disc
        * distance, so the witness cannot change. */
-      if (! e->is_arc && w->set)
-      {
-        double rmax = fmax(r1, r2);
-        double thr = w->d + rmax;
-        if (rmax > 0.0 &&
-            geodist_seg_seg_dist2(cx1, cy1, cx2, cy2, e->x1, e->y1,
-              e->x2, e->y2) >= thr * thr)
-          continue;
-      }
+      if (! e->is_arc && w->set &&
+          geodist_edge_radius_prune(cx1, cy1, cx2, cy2, r1, r2, e, w->d))
+        continue;
       double t;
       double m = e->is_arc ?
         geodist_segm_arc_dt(cx1, cy1, cx2, cy2, r1, r2, e, &t) :
@@ -1288,9 +1315,8 @@ geodist_segm_nai(double cx1, double cy1, double r1, TimestampTz t1, double cx2,
    * reaches the running witness distance no edge can improve it */
   if (w->set)
   {
-    double dgx = fmax(fmax(g->xmin - sxmax, sxmin - g->xmax), 0.0);
-    double dgy = fmax(fmax(g->ymin - symax, symin - g->ymax), 0.0);
-    if (dgx * dgx + dgy * dgy >= w->d * w->d)
+    if (box2d_distance_sqr(g->xmin, g->ymin, g->xmax, g->ymax,
+        sxmin, symin, sxmax, symax) >= w->d * w->d)
       return;
   }
   /* A centre inside a polygon means the swept region overlaps it: the nearest
@@ -1313,9 +1339,8 @@ geodist_segm_nai(double cx1, double cy1, double r1, TimestampTz t1, double cx2,
     const GeoDistBucket *bk = &g->bks[b];
     if (w->set)
     {
-      double dx = fmax(fmax(bk->xmin - sxmax, sxmin - bk->xmax), 0.0);
-      double dy = fmax(fmax(bk->ymin - symax, symin - bk->ymax), 0.0);
-      if (dx * dx + dy * dy >= w->d * w->d)
+      if (box2d_distance_sqr(bk->xmin, bk->ymin, bk->xmax, bk->ymax,
+          sxmin, symin, sxmax, symax) >= w->d * w->d)
         continue;
     }
     int elast = bk->start + bk->n;
@@ -1324,9 +1349,8 @@ geodist_segm_nai(double cx1, double cy1, double r1, TimestampTz t1, double cx2,
       const GeoDistEdge *e = &g->segs[k];
       if (w->set)
       {
-        double dx = fmax(fmax(e->xmin - sxmax, sxmin - e->xmax), 0.0);
-        double dy = fmax(fmax(e->ymin - symax, symin - e->ymax), 0.0);
-        if (dx * dx + dy * dy >= w->d * w->d)
+        if (box2d_distance_sqr(e->xmin, e->ymin, e->xmax, e->ymax,
+          sxmin, symin, sxmax, symax) >= w->d * w->d)
           continue;
       }
       /* Radius-aware tighter prune (moving disc only, straight edges): skip the
@@ -1334,15 +1358,9 @@ geodist_segm_nai(double cx1, double cy1, double r1, TimestampTz t1, double cx2,
        * larger radius already reaches the running minimum. The same lower bound
        * as geodist_segm_nad, valid because it never exceeds the true swept-disc
        * distance, so the witness cannot change. */
-      if (! e->is_arc && w->set)
-      {
-        double rmax = fmax(r1, r2);
-        double thr = w->d + rmax;
-        if (rmax > 0.0 &&
-            geodist_seg_seg_dist2(cx1, cy1, cx2, cy2, e->x1, e->y1,
-              e->x2, e->y2) >= thr * thr)
-          continue;
-      }
+      if (! e->is_arc && w->set &&
+          geodist_edge_radius_prune(cx1, cy1, cx2, cy2, r1, r2, e, w->d))
+        continue;
       double tf;
       double m = e->is_arc ?
         geodist_segm_arc_dt(cx1, cy1, cx2, cy2, r1, r2, e, &tf) :
