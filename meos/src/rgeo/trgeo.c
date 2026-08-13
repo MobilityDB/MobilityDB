@@ -1435,17 +1435,18 @@ trgeometry_after_timestamptz(const Temporal *temp, TimestampTz t, bool atfunc)
  * @param[in] maxt Maximum time interval for defining a gap, may be `NULL`
  * @param[in] expand True when reserving space for additional instants
  * @csqlfn #Temporal_append_tinstant()
- * @return When the temporal value passed as first argument has space for 
- * adding the instant, the function returns the temporal value. Otherwise,
- * a NEW temporal value is returned and the input value is freed.
- * @note Always use the function to overwrite the existing temporal value as in: 
- * @code
- * temp = temporal_append_tinstant(temp, inst, ...);
- * @endcode
+ * @return A NEW temporal value is always returned, the temporal value passed
+ * as first argument is neither modified nor freed
+ * @note The space reserved for additional instants cannot be kept in the
+ * result, since the reference geometry is restored by constructing the
+ * temporal rigid geometry anew. For this reason the instant is appended to
+ * the temporal pose without expansion, which also ensures that the temporal
+ * pose is not consumed by #temporal_append_tinstant and can be freed below
  */
 Temporal *
-trgeometry_append_tinstant(Temporal *temp, const TInstant *inst, 
-  interpType interp, double maxdist, const Interval *maxt, bool expand)
+trgeometry_append_tinstant(Temporal *temp, const TInstant *inst,
+  interpType interp, double maxdist, const Interval *maxt,
+  bool expand UNUSED)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_TRGEOMETRY(inst, NULL);
@@ -1456,7 +1457,7 @@ trgeometry_append_tinstant(Temporal *temp, const TInstant *inst,
   Temporal *tpose = trgeometry_to_tpose(temp);
   TInstant *tpose_inst = trgeoinst_tposeinst(inst);
   Temporal *res = temporal_append_tinstant(tpose, tpose_inst, interp, maxdist,
-    maxt, expand);
+    maxt, false);
   if (! res)
   {
     /* temporal_append_tinstant returns NULL without consuming its inputs
@@ -1476,9 +1477,17 @@ trgeometry_append_tinstant(Temporal *temp, const TInstant *inst,
  * @param[in] seq Temporal sequence
  * @param[in] expand True when reserving space for additional sequences
  * @csqlfn #Temporal_append_tsequence()
+ * @return A NEW temporal value is always returned, the temporal value passed
+ * as first argument is neither modified nor freed
+ * @note The space reserved for additional sequences cannot be kept in the
+ * result, since the reference geometry is restored by constructing the
+ * temporal rigid geometry anew. For this reason the sequence is appended to
+ * the temporal pose without expansion, which also ensures that the temporal
+ * pose is not consumed by #temporal_append_tsequence and can be freed below
  */
 Temporal *
-trgeometry_append_tsequence(Temporal *temp, const TSequence *seq, bool expand)
+trgeometry_append_tsequence(Temporal *temp, const TSequence *seq,
+  bool expand UNUSED)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_TRGEOMETRY(seq, NULL);
@@ -1490,7 +1499,7 @@ trgeometry_append_tsequence(Temporal *temp, const TSequence *seq, bool expand)
 
   Temporal *tpose = trgeometry_to_tpose(temp);
   TSequence *tpose_seq = trgeoseq_tposeseq(seq);
-  Temporal *res = temporal_append_tsequence(tpose, tpose_seq, expand);
+  Temporal *res = temporal_append_tsequence(tpose, tpose_seq, false);
   if (! res)
   {
     /* temporal_append_tsequence returns NULL without consuming its inputs;
