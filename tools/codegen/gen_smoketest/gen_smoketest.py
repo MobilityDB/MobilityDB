@@ -149,6 +149,17 @@ def emit_call(fname, ret, args, arg_map, skip_map, override_args,
     ret = cleanup_type(ret)
     decl_ret = ("const " + ret) if is_const_ret else ret
     if ret == "char *":
+        # A string return declared `const char *` is a BORROWED string: MEOS
+        # returns a pointer into static storage (e.g. the geometry type-name
+        # table behind geo_typename, or a catalog enum-name array) or into a
+        # long-lived cache, never a fresh copy the caller owns. A fresh string
+        # is declared `char *`. The declared return type is therefore the
+        # ownership signal, and it is read straight off the header — no
+        # per-function list to maintain as the API grows.
+        if is_const_ret or fname in no_free:
+            return (f"  {{ {decl_ret} r = {call};\n"
+                    f"    printf(\"{fname}: %s\\n\", r ? r : \"NULL\");\n"
+                    f"    /* {fname} returns a borrowed string; do NOT free */ }}\n")
         return (f"  {{ char *r = {call};\n"
                 f"    printf(\"{fname}: %s\\n\", r ? r : \"NULL\");\n"
                 f"    if (r) free(r); }}\n")
@@ -866,8 +877,6 @@ TGEOMETRY_CONFIG = dict(
         "re:_to_geography$": "needs spatial_ref_sys CSV",
         # Out-params with non-uniform shape (e.g. GSERIALIZED ***).
         "re:^geo_array_": "out-param triple-pointer not in canned set",
-        # Returns a static string literal — free()ing it crashes.
-        "geo_typename":   "returns static string; free() is invalid",
         # Constructors that crash on LINEAR interp default for a span/spanset
         # input — the canned tstzspanset has gaps which the kernel rejects.
         # Refining requires per-function interp arg overrides.
