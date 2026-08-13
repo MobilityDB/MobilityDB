@@ -101,9 +101,14 @@ SELECT splitNspans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', 4);
 SELECT splitNspans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', 5);
 SELECT splitNspans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', 6);
 SELECT splitNspans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', 10);
+SELECT splitNspans(bigintset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', 3);
+SELECT splitNspans(floatset '{1.5, 2.5, 3.5, 4.5, 5.5}', 2);
+SELECT splitNspans(dateset '{2000-01-01, 2000-01-03, 2000-01-05, 2000-01-07}', 2);
+SELECT splitNspans(tstzset '{2000-01-01, 2000-01-03, 2000-01-05, 2000-01-07}', 2);
 
 /* Errors */
 SELECT splitNspans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', -1);
+SELECT splitNspans(tstzset '{2000-01-01, 2000-01-03}', 0);
 
 -------------------------------------------------------------------------------
 
@@ -113,6 +118,10 @@ SELECT splitEachNspans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', 3);
 SELECT splitEachNspans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', 4);
 SELECT splitEachNspans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', 5);
 SELECT splitEachNspans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', 6);
+SELECT splitEachNspans(bigintset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', 3);
+SELECT splitEachNspans(floatset '{1.5, 2.5, 3.5, 4.5, 5.5}', 2);
+SELECT splitEachNspans(dateset '{2000-01-01, 2000-01-03, 2000-01-05, 2000-01-07}', 2);
+SELECT splitEachNspans(tstzset '{2000-01-01, 2000-01-03, 2000-01-05, 2000-01-07}', 2);
 
 /* Errors */
 SELECT splitEachNspans(intset '{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}', -1);
