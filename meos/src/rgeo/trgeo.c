@@ -54,6 +54,7 @@
 #include "geo/tspatial_parser.h"
 #include "pose/pose.h"
 #include "rgeo/trgeo_all.h"
+#include "rgeo/trgeo_parser.h"
 #include "rgeo/trgeo_utils.h"
 
 /*****************************************************************************
@@ -146,7 +147,7 @@ trgeometry_in(const char *str)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(str, NULL);
-  return tspatial_parse(&str, T_TRGEOMETRY);
+  return trgeo_parse(&str, T_TRGEOMETRY);
 }
 
 /**
