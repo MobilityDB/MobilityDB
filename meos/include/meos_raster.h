@@ -99,6 +99,7 @@ extern int raquet_width(const Raquet *rq);
 extern int raquet_height(const Raquet *rq);
 extern double raquet_nodata(const Raquet *rq);
 extern char *raquet_pixtype(const Raquet *rq);
+extern uint8_t *raquet_pixels(const Raquet *rq, size_t *size_out);
 extern uint32 raquet_hash(const Raquet *rq);
 extern uint64 raquet_hash_extended(const Raquet *rq, uint64 seed);
 
