@@ -1193,6 +1193,19 @@ tpointcloud_temptype(MeosType type)
 {
   return (type == T_TPCPOINT || type == T_TPCPATCH);
 }
+
+/**
+ * @brief Ensure that a type is a temporal pgpointcloud type
+ */
+bool
+ensure_tpointcloud_temptype(MeosType type)
+{
+  if (tpointcloud_temptype(type))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+    "The temporal value must be a temporal pgpointcloud type");
+  return false;
+}
 #endif
 
 /**

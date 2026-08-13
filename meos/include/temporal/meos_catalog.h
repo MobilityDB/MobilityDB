@@ -258,6 +258,7 @@ extern bool ensure_spatialset_type(MeosType type);
 extern bool pointcloud_basetype(MeosType type);
 extern bool pointcloudset_type(MeosType type);
 extern bool tpointcloud_temptype(MeosType type);
+extern bool ensure_tpointcloud_temptype(MeosType type);
 #endif /* POINTCLOUD */
 
 extern bool span_basetype(MeosType type);

@@ -353,11 +353,14 @@ nad_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
  *   value and a TPCBox
  * @param[in] temp Temporal pointcloud value
  * @param[in] box Bounding box
+ * @return On error or if the time frames do not intersect return infinity
  * @csqlfn #NAD_tpointcloud_tpcbox()
  */
 double
 nad_tpointcloud_tpcbox(const Temporal *temp, const TPCBox *box)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPOINTCLOUD(temp, DBL_MAX); VALIDATE_TPCBOX(box, DBL_MAX);
   TPCBox tmp;
   temporal_set_bbox(temp, &tmp);
   return nad_tpcbox_tpcbox(&tmp, box);
@@ -368,11 +371,15 @@ nad_tpointcloud_tpcbox(const Temporal *temp, const TPCBox *box)
  * @brief Return the nearest-approach distance between two temporal
  *   pointcloud values
  * @param[in] temp1,temp2 Temporal pointcloud values
+ * @return On error or if the time frames do not intersect return infinity
  * @csqlfn #NAD_tpointcloud_tpointcloud()
  */
 double
 nad_tpointcloud_tpointcloud(const Temporal *temp1, const Temporal *temp2)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPOINTCLOUD(temp1, DBL_MAX); VALIDATE_TPOINTCLOUD(temp2, DBL_MAX);
+
   /* Patches are not point trajectories: they have no single-point
    * projection to a tgeompoint, so their nearest-approach distance stays
    * the distance between their bounding boxes, exactly as before. */
