@@ -1665,25 +1665,41 @@ temporal_delete_tstzspanset(const Temporal *temp, const SpanSet *ss,
  ****************************************************************************/
 
 /**
- * @ingroup meos_internal_temporal_modif
+ * @brief Free a temporal value whose ownership has been transferred to an
+ * append function
+ * @param[in] temp Temporal value
+ * @param[in] consume True when the calling function transfers the ownership of
+ * the temporal value
+ * @note In the PostgreSQL build the memory of the input value belongs to the
+ * calling context, which frees it whenever an append function returns a value
+ * different from its input, and thus the value must not be freed here
+ */
+static void
+temporal_append_free(void *temp UNUSED, bool consume UNUSED)
+{
+#if MEOS
+  if (consume)
+    pfree(temp);
+#endif /* MEOS */
+  return;
+}
+
+/**
  * @brief Append an instant to a temporal sequence accounting for potential gaps
  * @param[in,out] seq Temporal sequence
  * @param[in] inst Temporal instant
  * @param[in] maxdist Maximum distance for defining a gap
  * @param[in] maxt Maximum time interval for defining a gap, may be `NULL`
  * @param[in] expand True when reserving space for additional instants
- * @csqlfn #Temporal_append_tinstant()
- * @return When the sequence passed as first argument has space for adding the
- * instant, the function returns the updated sequence. Otherwise, a NEW
- * sequence is returned and the input sequence is freed.
- * @note Always use the function to overwrite the existing sequence as in:
- * @code
- * seq = tsequence_append_tinstant(seq, inst, ...);
- * @endcode
+ * @param[in] consume True when the ownership of the sequence is transferred to
+ * this function, which frees the sequence whenever it returns a new value
+ * @note The sequence is not consumed when it is not an independent value, as
+ * is the case of the last sequence of a temporal sequence set, which is stored
+ * within the sequence set
  */
-Temporal *
-tsequence_append_tinstant(TSequence *seq, const TInstant *inst, double maxdist,
-  const Interval *maxt, bool expand)
+static Temporal *
+tsequence_append_tinstant1(TSequence *seq, const TInstant *inst,
+  double maxdist, const Interval *maxt, bool expand, bool consume)
 {
   assert(seq); assert(inst); assert(seq->temptype == inst->temptype);
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
@@ -1706,7 +1722,9 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, double maxdist,
       if (! ensure_tinstant_same_value(last, inst, basetype))
         return NULL;
       /* Do not add the new instant if new instant is equal to be last one */
-      return (Temporal *) tsequence_copy(seq);
+      TSequence *result = tsequence_copy(seq);
+      temporal_append_free(seq, consume);
+      return (Temporal *) result;
     }
     /* Exclusive upper bound and different value => result is a sequence set */
     else if (interp == LINEAR && ! datum_eq(value1, value, basetype))
@@ -1716,6 +1734,7 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, double maxdist,
       sequences[1] = tinstant_as_tsequence(inst, LINEAR);
       TSequenceSet *result = tsequenceset_make(sequences, 2, NORMALIZE_NO);
       pfree(sequences[1]);
+      temporal_append_free(seq, consume);
       return (Temporal *) result;
     }
   }
@@ -1755,6 +1774,7 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, double maxdist,
       if (compacted)
         pfree(sequences[0]);
       pfree(sequences[1]);
+      temporal_append_free(seq, consume);
       return (Temporal *) result;
     }
   }
@@ -1836,11 +1856,36 @@ tsequence_append_tinstant(TSequence *seq, const TInstant *inst, double maxdist,
   TSequence *result = tsequence_make_exp1(instants, count, maxcount,
     seq->period.lower_inc, true, interp, NORMALIZE_NO, &bbox);
   pfree(instants);
-#if MEOS
-  if (expand)
-    pfree(seq);
-#endif /* MEOS */
+  temporal_append_free(seq, consume);
   return (Temporal *) result;
+}
+
+/**
+ * @ingroup meos_internal_temporal_modif
+ * @brief Append an instant to a temporal sequence accounting for potential gaps
+ * @param[in,out] seq Temporal sequence
+ * @param[in] inst Temporal instant
+ * @param[in] maxdist Maximum distance for defining a gap
+ * @param[in] maxt Maximum time interval for defining a gap, may be `NULL`
+ * @param[in] expand True when reserving space for additional instants
+ * @csqlfn #Temporal_append_tinstant()
+ * @return When the sequence passed as first argument has space for adding the
+ * instant, the function returns the updated sequence. Otherwise, a NEW
+ * sequence is returned and the input sequence is freed.
+ * @note The input sequence is consumed exactly when expandable mode is
+ * requested, so that the calling function must never free it in that mode. In
+ * the PostgreSQL build the input sequence is freed by the calling context
+ * instead
+ * @note Always use the function to overwrite the existing sequence as in:
+ * @code
+ * seq = tsequence_append_tinstant(seq, inst, ...);
+ * @endcode
+ */
+Temporal *
+tsequence_append_tinstant(TSequence *seq, const TInstant *inst, double maxdist,
+  const Interval *maxt, bool expand)
+{
+  return tsequence_append_tinstant1(seq, inst, maxdist, maxt, expand, expand);
 }
 
 /**
@@ -1911,6 +1956,10 @@ tsequence_append_tsequence(const TSequence *seq1, const TSequence *seq2,
  * @return When the sequence set passed as first argument has space for adding
  * the instant, the  function returns the sequence set. Otherwise, a NEW
  * sequence set is returned and the input sequence set is freed.
+ * @note The input sequence set is consumed exactly when expandable mode is
+ * requested, so that the calling function must never free it in that mode. In
+ * the PostgreSQL build the input sequence set is freed by the calling context
+ * instead
  * @note Always use the function to overwrite the existing sequence set as in:
  * @code
  * ss = tsequenceset_append_tinstant(ss, inst, ...);
@@ -1922,10 +1971,14 @@ tsequenceset_append_tinstant(TSequenceSet *ss, const TInstant *inst,
 {
   assert(ss); assert(inst);
   assert(ss->temptype == inst->temptype);
-  /* Append the instant to the last sequence */
+  /* Append the instant to the last sequence. The last sequence is stored
+   * within the sequence set and thus its ownership cannot be transferred */
   TSequence *last = (TSequence *) TSEQUENCESET_SEQ_N(ss, ss->count - 1);
-  Temporal *temp = tsequence_append_tinstant(last, inst, maxdist, maxt,
-    expand);
+  Temporal *temp = tsequence_append_tinstant1(last, inst, maxdist, maxt,
+    expand, false);
+  /* The result is a new value that belongs to this function, unless the
+   * instant has been appended in place to the last sequence */
+  bool newtemp = ((void *) temp != (void *) last);
   /* The result may be a single sequence or a sequence set with 2 sequences */
   TSequence *seq1 = NULL, *seq2 = NULL;
   TSequenceSet *ss1 = NULL;
@@ -1980,6 +2033,8 @@ tsequenceset_append_tinstant(TSequenceSet *ss, const TInstant *inst,
     tsequenceset_expand_bbox(ss, (TSequence *) seq1);
     if (temp->subtype == TSEQUENCESET)
       tsequenceset_expand_bbox(ss, seq2);
+    if (newtemp)
+      pfree(temp);
     return ss;
   }
 
@@ -2000,12 +2055,9 @@ tsequenceset_append_tinstant(TSequenceSet *ss, const TInstant *inst,
   }
   TSequenceSet *result = tsequenceset_make(sequences, nseqs, NORMALIZE_NO);
   pfree(sequences);
-#if MEOS
-  if (expand)
-    pfree(ss);
-#endif /* MEOS */
-  if ((void *) last != (void *) temp)
+  if (newtemp)
     pfree(temp);
+  temporal_append_free(ss, expand);
   return result;
 }
 
@@ -2139,6 +2191,9 @@ tsequenceset_append_tsequence(TSequenceSet *ss, const TSequence *seq,
  * @return When the temporal value passed as first argument has space for
  * adding the instant, the function returns the temporal value. Otherwise,
  * a NEW temporal value is returned and the input value is freed.
+ * @note The input value is consumed exactly when expandable mode is requested,
+ * so that the calling function must never free it in that mode. In the
+ * PostgreSQL build the input value is freed by the calling context instead
  * @note Always use the function to overwrite the existing temporal value as in:
  * @code
  * temp = temporal_append_tinstant(temp, inst, ...);
@@ -2166,7 +2221,19 @@ temporal_append_tinstant(Temporal *temp, const TInstant *inst,
       TSequence *seq = tinstant_as_tsequence((const TInstant *) temp, interp);
       Temporal *result = (Temporal *) tsequence_append_tinstant(seq, inst,
         maxdist, maxt, expand);
-      pfree(seq);
+#if MEOS
+      /* In expandable mode the sequence above is consumed by the function
+       * called and the input value is consumed by this function. When an error
+       * occurs the inputs are not consumed */
+      if (expand && result)
+      {
+        pfree(temp);
+        return result;
+      }
+#endif /* MEOS */
+      /* The sequence above is a value local to this function */
+      if (result != (Temporal *) seq)
+        pfree(seq);
       return result;
     }
     case TSEQUENCE:

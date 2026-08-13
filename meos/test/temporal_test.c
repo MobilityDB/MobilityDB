@@ -1427,10 +1427,12 @@ int main(void)
   /* Temporal *temporal_append_tinstant(Temporal *temp, const TInstant *inst, interpType interp, double maxdist, const Interval *maxt, bool expand); */
   tfloat_start = tfloat_in("[1@20001-01-01, 3@20001-01-03]");
   tfloat_inst = (TInstant *) tfloat_in("4@20001-01-04");
+  /* In expandable mode the temporal value passed as first argument is consumed
+   * by the function and thus it must not be freed below */
   tfloat_result = temporal_append_tinstant(tfloat_start, tfloat_inst, LINEAR, float8_in1, interv1, true);
   char_result = tfloat_out(tfloat_result, 6);
   printf("temporal_append_tinstant(%s, %s): %s\n", tfloat1_out, tfloatinst1_out, char_result);
-  free(tfloat_start); free(tfloat_inst); free(tfloat_result); free(char_result);
+  free(tfloat_inst); free(tfloat_result); free(char_result);
 
   /* Temporal *temporal_append_tsequence(Temporal *temp, const TSequence *seq, bool expand); */
   tfloat_start = tfloat_in("[1@20001-01-01, 3@20001-01-03]");
