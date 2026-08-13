@@ -162,6 +162,9 @@ SELECT jsonbsetPathMatchTz(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"unit
 
 /* .datetime() casts a JSON string to a date/time value for comparison */
 SELECT jsonbsetPathMatch(jsonbset '{"{\"d\": \"2001-01-01\"}", "{\"d\": \"1999-01-01\"}"}', '$.d.datetime() > "2000-06-01".datetime()');
+/* Every datetime comparison in a session parses its format afresh */
+SELECT jsonbsetPathMatchTz(jsonbset '{"{\"d\": \"2001-01-01\"}", "{\"d\": \"1999-01-01\"}"}', '$.d.datetime() > "2000-06-01".datetime()');
+SELECT jsonbsetPathExists(jsonbset '{"{\"d\": \"2001-01-01\"}"}', '$.d.datetime() > "2000-06-01".datetime()');
 
 /* A path matching nothing is unknown, that is, false, for every element */
 SELECT jsonbsetPathMatch(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', '$.xxx > 15', '{}', false);

@@ -78,7 +78,13 @@
 #include "utils/numeric.h"
 #include "utils/pg_locale.h"
 #include "utils/timestamp.h"
+#include "utils/palloc.h"  /* MEOS: MemoryContext + MemoryContextAllocZero (backend build) */
 // #include "varatt.h"
+
+/* MEOS: the vendored memutils.h omits this backend global; declare it locally,
+ * as dynahash.c, pg_locale.c and jsonpath_exec.c do, so the extension can hold
+ * the format picture caches in a persistent context (see DCH_cache_getnew). */
+extern PGDLLIMPORT MemoryContext TopMemoryContext;
 
 #include "pgtypes.h"
 #include "../../meos/include/meos_error.h"
@@ -3744,8 +3750,20 @@ DCH_cache_getnew(const char *str, bool std)
   else
   {
     Assert(DCHCache[n_DCHCache] == NULL);
+    /*
+     * The entry outlives the call: DCHCache and n_DCHCache keep referring to
+     * it so a later parse of the same format picture reuses the parsed nodes.
+     * In the PostgreSQL extension the first parse typically runs in a
+     * per-tuple context, which resets while the entry stays counted, leaving
+     * the pointer dangling and the parsed format garbage. Allocate where the
+     * entry lives as long as the reference does.
+     */
     DCHCache[n_DCHCache] = ent = (DCHCacheEntry *)
+#if MEOS
       palloc0(sizeof(DCHCacheEntry));
+#else
+      MemoryContextAllocZero(TopMemoryContext, sizeof(DCHCacheEntry));
+#endif /* MEOS */
     ent->valid = false;
     strlcpy(ent->str, str, DCH_CACHE_SIZE + 1);
     ent->std = std;
@@ -4756,8 +4774,13 @@ NUM_cache_getnew(const char *str)
   else
   {
     Assert(NUMCache[n_NUMCache] == NULL);
+    /* The entry outlives the call, as for the date/time cache above */
     NUMCache[n_NUMCache] = ent = (NUMCacheEntry *)
+#if MEOS
       palloc0(sizeof(NUMCacheEntry));
+#else
+      MemoryContextAllocZero(TopMemoryContext, sizeof(NUMCacheEntry));
+#endif /* MEOS */
     ent->valid = false;
     strlcpy(ent->str, str, NUM_CACHE_SIZE + 1);
     ent->age = (++NUMCounter);
