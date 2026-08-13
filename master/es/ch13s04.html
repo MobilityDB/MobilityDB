@@ -1,60 +1,56 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Entrada y salida</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.3 Manual de usuario"><link rel="up" href="ch13.html" title="Capítulo 13. Búferes circulares temporales"><link rel="prev" href="ch13s03.html" title="Validez de los búferes circulares temporales"><link rel="next" href="ch13s05.html" title="Constructores"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Entrada y salida</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch13s03.html">Anterior</a> </td><th width="60%" align="center">Capítulo 13. Búferes circulares temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch13s05.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tcbuffer_inout"></a>Entrada y salida</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tcbuffer_asText"></a><a class="indexterm" name="id9377"></a><a class="indexterm" name="id9380"></a><p>Devuelve la representación de texto conocido (Well-Known Text o WKT) o la representación extendida de texto conocido (Extended Well-Known Text o EWKT)</p><p><code class="varname">asText({tcbuffer,tcbuffer[],cbuffer[]}) → {text,text[]}</code></p><p><code class="varname">asEWKT({tcbuffer,tcbuffer[],cbuffer[]}) → {text,text[]}</code></p><pre class="programlisting">
-SELECT asText(tcbuffer 'SRID=4326;[Cbuffer(Point(0 0),1)@2001-01-01,
-  Cbuffer(Point(1 1),2)@2001-01-02)');
--- [Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(1 1),2)@2001-01-02)
-SELECT asText(ARRAY[cbuffer 'Cbuffer(Point(0 0),1)', 'Cbuffer(Point(1 1),2)']);
--- {"Cbuffer(POINT(0 0),1)","Cbuffer(POINT(1 1),2)"}
-SELECT asEWKT(tcbuffer 'SRID=4326;[Cbuffer(Point(0 0),1)@2001-01-01,
-  Cbuffer(Point(1 1),2)@2001-01-02)');
--- SRID=4326;[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(1 1),2)@2001-01-02)
-SELECT asEWKT(ARRAY[cbuffer 'Cbuffer(SRID=5676;Point(0 0),1)',
-  'Cbuffer(SRID=5676;Point(1 1),2)']);
--- {"Cbuffer(SRID=5676;POINT(0 0),1)","Cbuffer(SRID=5676;POINT(1 1),2))"}
-</pre></li><li class="listitem"><a name="tcbuffer_asMFJSON"></a><a class="indexterm" name="id9390"></a><p>Devuelve la representación JSON de características móviles (Moving Features JSON o MF-JSON)</p><p><code class="varname">asMFJSON(tcbuffer) → text</code></p><p>Un búfer circular siempre es planar 2D. Cada valor es un objeto con un miembro <code class="varname">point</code>, un arreglo de coordenadas <code class="varname">[x, y]</code> y un miembro numérico <code class="varname">radius</code>, que reflejan los accesores <code class="varname">point</code> y <code class="varname">radius</code>.</p><pre class="programlisting">
-SELECT asMFJSON(tcbuffer 'Cbuffer(Point(1 2),0.5)@2001-01-01', 3);
-/* {"type":"MovingCircularBuffer","bbox":[[0.5,1.5],[1.5,2.5]],
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Entrada y salida</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.3 Manual de usuario"><link rel="up" href="ch13.html" title="Capítulo 13. Poses temporales"><link rel="prev" href="ch13s03.html" title="Validez de las poses temporales"><link rel="next" href="ch13s05.html" title="Constructores"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Entrada y salida</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch13s03.html">Anterior</a> </td><th width="60%" align="center">Capítulo 13. Poses temporales</th><td width="20%" align="right"> <a accesskey="n" href="ch13s05.html">Siguiente</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tpose_inout"></a>Entrada y salida</h2></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpose_asText"></a><a class="indexterm" name="id9385"></a><a class="indexterm" name="id9388"></a><p>Devuelve la representación de texto conocido (Well-Known Text o WKT) o la representación extendida de texto conocido (Extended Well-Known Text o EWKT)</p><p><code class="varname">asText({tpose,tpose[]}) → {text,text[]}</code></p><p><code class="varname">asEWKT({tpose,tpose[]}) → {text,text[]}</code></p><pre class="programlisting">
+SELECT asText(tpose 'SRID=4326;[Pose(Point(0 0),1)@2001-01-01, 
+  Pose(Point(1 1),2)@2001-01-02)');
+-- [Pose(Point(0 0),1)@2001-01-01, Pose(Point(1 1),2)@2001-01-02)
+SELECT asText(ARRAY[pose 'Pose(Point(0 0),1)', 'Pose(Point(1 1),2)']);
+-- {"Pose(POINT(0 0),1)","Pose(POINT(1 1),2)"}
+SELECT asEWKT(tpose 'SRID=4326;[Pose(Point(0 0),1)@2001-01-01, 
+  Pose(Point(1 1),2)@2001-01-02)');
+-- SRID=4326;[Pose(Point(0 0),1)@2001-01-01, Pose(Point(1 1),2)@2001-01-02)
+SELECT asEWKT(ARRAY[pose 'Pose(SRID=5676;Point(0 0),1)', 
+  'Pose(SRID=5676;Point(1 1),2)']);
+-- {"Pose(SRID=5676;POINT(0 0),1)","Pose(SRID=5676;POINT(1 1),2))"}
+</pre></li><li class="listitem"><a name="tpose_asMFJSON"></a><a class="indexterm" name="id9398"></a><p>Devuelve la representación JSON de características móviles (Moving Features JSON o MF-JSON)</p><p><code class="varname">asMFJSON(tpose) → text</code></p><pre class="programlisting">
+SELECT asMFJSON(tpose 'Pose(Point(1 2),0.5)@2001-01-01', 3);
+/* {"type":"MovingPose","bbox":[[1,2],[1,2]],"period":{"begin":"2001-01-01T00:00:00+01",
+  "end":"2001-01-01T00:00:00+01","lower_inc":true,"upper_inc":true},
+  "values":[{"position":{"lat":2,"lon":1},"rotation":0.5}],
+  "datetimes":["2001-01-01T00:00:00+01"],"interpolation":"None"} */
+SELECT asMFJSON(tpose 'Pose(Point Z(1 2 3),1,0,0,0)@2001-01-01', 3);
+/* {"type":"MovingPose","bbox":[[1,2,3],[1,2,3]],
   "period":{"begin":"2001-01-01T00:00:00+01","end":"2001-01-01T00:00:00+01",
   "lower_inc":true,"upper_inc":true},
-  "values":[{"point":[1,2],"radius":0.5}],
+  "values":[{"position":{"lat":2,"lon":1,"h":3},"quaternion":{"x":0,"y":0,"z":0,"w":1}}],
   "datetimes":["2001-01-01T00:00:00+01"],"interpolation":"None"} */
-SELECT asMFJSON(tcbuffer 'SRID=4326;[Cbuffer(Point(1 1),0.2)@2001-01-01,
-  Cbuffer(Point(2 2),0.4)@2001-01-02)', 3);
-/* {"type":"MovingCircularBuffer","crs":{"type":"Name",
-  "properties":{"name":"EPSG:4326"}},"bbox":[[0.8,0.8],[2.4,2.4]],
-  "period":{"begin":"2001-01-01T00:00:00+01","end":"2001-01-02T00:00:00+01",
-  "lower_inc":true,"upper_inc":false},
-  "values":[{"point":[1,1],"radius":0.2},{"point":[2,2],"radius":0.4}],
-  "datetimes":["2001-01-01T00:00:00+01","2001-01-02T00:00:00+01"],
-  "lower_inc":true,"upper_inc":false,"interpolation":"Linear"} */
-</pre></li><li class="listitem"><a name="tcbuffer_asBinary"></a><a class="indexterm" name="id9404"></a><a class="indexterm" name="id9407"></a><a class="indexterm" name="id9410"></a><p>Devuelve la representación binaria conocida (Well-Known Binary o WKB), la representación extendida binaria conocida (Extended Well-Known Binary o EWKB), o la representación hexadecimal extendida binaria conocida (Extended Well-Known Binary o EWKB)</p><p><code class="varname">asBinary(tcbuffer,endian text='') → bytea</code></p><p><code class="varname">asEWKB(tcbuffer,endian text='') → bytea</code></p><p><code class="varname">asHexEWKB(tcbuffer,endian text='') → text</code></p><p>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</p><pre class="programlisting">
-SELECT asBinary(tcbuffer 'Cbuffer(Point(1 2),1)@2001-01-01');
--- \x013b0001000000000000f03f0000000000000040000000000000f03f009c57d3c11c0000
-SELECT asEWKB(tcbuffer 'SRID=7844;Cbuffer(Point(1 2),1)@2001-01-01');
--- \x013b0041a41e0000000000000000f03f0000000000000040000000000000f03f009c57d3c11c0000
-SELECT asHexEWKB(tcbuffer 'SRID=3812;Cbuffer(Point(1 2),1)@2001-01-01');
--- 013B0041E40E0000000000000000F03F0000000000000040000000000000F03F009C57D3C11C0000
-</pre></li><li class="listitem"><a name="tcbufferFromText"></a><a class="indexterm" name="id9423"></a><a class="indexterm" name="id9426"></a><p>Entrar a partir de la representación de texto conocido (Well-Known Text o WKT) o de la representación extendida de texto conocido (Extended Well-Known Text o EWKT)</p><p><code class="varname">tcbufferFromText(text) → tcbuffer</code></p><p><code class="varname">tcbufferFromEWKT(text) → tcbuffer</code></p><pre class="programlisting">
-SELECT asEWKT(tcbufferFromText(text '[Cbuffer(Point(1 2),1)@2001-01-01,
-  Cbuffer(Point(3 4),2)@2001-01-02]'));
--- [Cbuffer(POINT(1 2),1)@2001-01-01, Cbuffer(POINT(3 4),2)@2001-01-02]
-SELECT asEWKT(tcbufferFromEWKT(text 'SRID=3812;[Cbuffer(Point(1 2),1)@2001-01-01,
-  Cbuffer(Point(3 4),2)@2001-01-02]'));
--- SRID=3812;[Cbuffer(Point(1 2),1)@2001-01-01, Cbuffer(Point(3 4),2)@2001-01-02]
-</pre></li><li class="listitem"><a name="tcbufferFromMFJSON"></a><a class="indexterm" name="id9436"></a><p>Entrar a partir de la representación JSON de características móviles (Moving Features JSON o MF-JSON)</p><p><code class="varname">tcbufferFromMFJSON(text) → tcbuffer</code></p><pre class="programlisting">
-SELECT asEWKT(tcbufferFromMFJSON(asMFJSON(tcbuffer
-  'SRID=3812;Cbuffer(Point(1 2),0.5)@2001-01-01', 3)));
--- SRID=3812;Cbuffer(POINT(1 2),0.5)@2001-01-01
-SELECT asEWKT(tcbufferFromMFJSON(asMFJSON(tcbuffer
-  'SRID=5676;[Cbuffer(Point(1 2),1)@2001-01-01, Cbuffer(Point(3 4),2)@2001-01-02]', 3)));
--- SRID=5676;[Cbuffer(POINT(1 2),1)@2001-01-01, Cbuffer(POINT(3 4),2)@2001-01-02]
-</pre></li><li class="listitem"><a name="tcbufferFromBinary"></a><a class="indexterm" name="id9444"></a><a class="indexterm" name="id9447"></a><a class="indexterm" name="id9450"></a><p>Entrar a partir de la representación binaria conocida (WKB), de la representación extendida binaria conocida (EWKB), o de la representación hexadecimal extendida binaria conocida (HexEWKB)</p><p><code class="varname">tcbufferFromBinary(bytea) → tcbuffer</code></p><p><code class="varname">tcbufferFromEWKB(bytea) → tcbuffer</code></p><p><code class="varname">tcbufferFromHexEWKB(text) → tcbuffer</code></p><pre class="programlisting">
-SELECT asEWKT(tcbufferFromBinary(
-  '\x013b0001000000000000f03f0000000000000040000000000000f03f009c57d3c11c0000'));
--- Cbuffer(POINT(1 2),1)@2001-01-01
-SELECT asEWKT(tcbufferFromEWKB(
-  '\x013b0041a41e0000000000000000f03f0000000000000040000000000000f03f009c57d3c11c0000'));
--- SRID=7844;Cbuffer(Point(1 1),2)@2001-01-01
-SELECT asEWKT(tcbufferFromHexEWKB(
-  '013B0041E40E0000000000000000F03F0000000000000040000000000000F03F009C57D3C11C0000'));
--- SRID=3812;Cbuffer(POINT(1 2),1)@2001-01-01
-</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch13s03.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch13.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch13s05.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Validez de los búferes circulares temporales </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Constructores</td></tr></table></div></body></html>
+</pre></li><li class="listitem"><a name="tpose_asBinary"></a><a class="indexterm" name="id9406"></a><a class="indexterm" name="id9409"></a><a class="indexterm" name="id9412"></a><p>Devuelve la representación binaria conocida (Well-Known Binary o WKB), la representación extendida binaria conocida (Extended Well-Known Binary o EWKB), o la representación hexadecimal extendida binaria conocida (Hexadecimal Extended Well-Known Binary o HexEWKB)</p><p><code class="varname">asBinary(tpose,endian text='') → bytea</code></p><p><code class="varname">asEWKB(tpose,endian text='') → bytea</code></p><p><code class="varname">asHexEWKB(tpose,endian text='') → text</code></p><p>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</p><pre class="programlisting">
+SELECT asBinary(tpose 'Pose(Point(1 2),1)@2001-01-01');
+-- \x013a0001000000000000f03f0000000000000040000000000000f03f009c57d3c11c0000
+SELECT asEWKB(tpose 'SRID=7844;Pose(Point(1 2),1)@2001-01-01');
+-- \x013a0001000000000000f03f0000000000000040000000000000f03f009c57d3c11c0000
+SELECT asHexEWKB(tpose 'SRID=3812;Pose(Point(1 2),1)@2001-01-01');
+-- 013A0001000000000000F03F0000000000000040000000000000F03F009C57D3C11C0000
+</pre></li><li class="listitem"><a name="tposeFromText"></a><a class="indexterm" name="id9425"></a><a class="indexterm" name="id9428"></a><p>Entrada desde la representación de texto conocido (Well-Known Text o WKT) o desde la representación extendida de texto conocido (Extended Well-Known Text o EWKT)</p><p><code class="varname">tposeFromText(text) → tpose</code></p><p><code class="varname">tposeFromEWKT(text) → tpose</code></p><pre class="programlisting">
+SELECT asEWKT(tposeFromText(text '[Pose(Point(1 2),1)@2001-01-01, 
+  Pose(Point(3 4),2)@2001-01-02]'));
+-- [Pose(POINT(1 2),1)@2001-01-01, Pose(POINT(3 4),2)@2001-01-02]
+SELECT asEWKT(tposeFromEWKT(text 'SRID=3812;[Pose(Point(1 2),1)@2001-01-01,
+  Pose(Point(3 4),2)@2001-01-02]'));
+-- SRID=3812;[Pose(Point(1 2),1)@2001-01-01, Pose(Point(3 4),2)@2001-01-02]
+</pre></li><li class="listitem"><a name="tposeFromMFJSON"></a><a class="indexterm" name="id9438"></a><p>Entrada desde la representación JSON de características móviles (Moving Features JSON o MF-JSON)</p><p><code class="varname">tposeFromMFJSON(bytea) → tpose</code></p><pre class="programlisting">
+SELECT asEWKT(tposeFromMFJSON(asMFJSON(tpose 
+  'SRID=3812;Pose(Point(1 2),0.5)@2001-01-01', 3)));
+-- SRID=3812;Pose(POINT(1 2),0.5)@2001-01-01
+SELECT asEWKT(tposeFromMFJSON(asMFJSON(tpose 
+  'SRID=5676;Pose(Point Z(1 2 3),1,0,0,0)@2001-01-01', 3)));
+-- SRID=5676;Pose(POINT Z(1 2 3),1,0,0,0)@2001-01-01
+</pre></li><li class="listitem"><a name="tposeFromBinary"></a><a class="indexterm" name="id9446"></a><a class="indexterm" name="id9449"></a><a class="indexterm" name="id9452"></a><p>Entrada desde la representación binaria conocida (Well-Known Binary o WKB), desde la representación extendida binaria conocida (Extended Well-Known Binary o EWKB), o desde la representación hexadecimal extendida binaria conocida (Hexadecimal Extended Well-Known Binary o HexEWKB)</p><p><code class="varname">tposeFromBinary(bytea) → tpose</code></p><p><code class="varname">tposeFromEWKB(bytea) → tpose</code></p><p><code class="varname">tposeFromHexEWKB(text) → tpose</code></p><pre class="programlisting">
+SELECT asEWKT(tposeFromBinary(
+  '\x013a0001000000000000f03f0000000000000040000000000000f03f009c57d3c11c0000'));
+-- Pose(POINT(1 2),1)@2001-01-01
+SELECT asEWKT(tposeFromEWKB(
+  '\x013a0001000000000000f03f0000000000000040000000000000f03f009c57d3c11c0000'));
+-- SRID=7844;Pose(Point(1 1),2)@2001-01-01
+SELECT asEWKT(tposeFromHexEWKB(
+  '013A0041E40E0000E40E0000000000000000F03F...40000000000000F03F009C57D3C11C0000'));
+-- SRID=3812;Pose(POINT(1 2),1)@2001-01-01
+</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch13s03.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch13.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch13s05.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Validez de las poses temporales </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Constructores</td></tr></table></div></body></html>
