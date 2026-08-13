@@ -220,21 +220,21 @@ SELECT
 FROM rast;
 
 -------------------------------------------------------------------------------
--- trajectoryQuadbins
+-- quadbins
 -------------------------------------------------------------------------------
 
 -- Three distinct longitudes at zoom 3 produce three distinct QUADBIN cells.
-SELECT array_length(trajectoryQuadbins(
+SELECT array_length(quadbins(
   tgeompoint 'SRID=4326;{Point(-60.0 45.0)@2024-01-01,
   Point(0.0 45.0)@2024-01-02, Point(60.0 45.0)@2024-01-03}', 3), 1) AS num_distinct_tiles;
 
 -- Two instants in the same tile → deduplicated to 1 cell.
-SELECT array_length(trajectoryQuadbins(
+SELECT array_length(quadbins(
   tgeompoint 'SRID=4326;{Point(-60.0 45.0)@2024-01-01,
     Point(-61.0 44.0)@2024-01-02}', 3), 1) AS num_distinct_tiles;
 
 -- Invalid zoom level raises an error.
-SELECT trajectoryQuadbins(tgeompoint 'SRID=4326;{Point(0.0 0.0)@2024-01-01}', 16);
+SELECT quadbins(tgeompoint 'SRID=4326;{Point(0.0 0.0)@2024-01-01}', 16);
 
 -------------------------------------------------------------------------------
 -- rasterTileValueQuadbin
