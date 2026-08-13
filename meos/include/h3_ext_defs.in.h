@@ -6,13 +6,27 @@
  * binding surface); the MobilityDB PostgreSQL extension does not, so that
  * both the h3 and mobilitydb extensions can be loaded in the same server.
  * Input reads, and output prints, the canonical hexadecimal cell literal
- * with an optional "0x" prefix and at most 16 significant digits, with no
- * cell-validity check. Comparison / ordering / hashing operate on the
- * uint64 cell identifier; they carry no geographic meaning but are
- * required for ordering, grouping, and hashing. */
+ * with an optional "0x" prefix and at most 16 significant digits. Input
+ * additionally requires the value to denote a cell, a directed edge or a
+ * vertex, the zero sentinel aside, so that no value without a location
+ * enters the type. Comparison / ordering / hashing operate on the uint64
+ * cell identifier; they carry no geographic meaning but are required for
+ * ordering, grouping, and hashing, and so apply to any of the modes. */
 
 extern H3Index h3index_in(const char *str);
 extern char *h3index_out(H3Index cell);
+
+/* Validity predicates. An h3index is a mode-tagged 64-bit identifier: the
+ * same bit pattern is a cell, a directed edge, or a vertex according to its
+ * mode bits, and the three predicates below are the only way to tell which.
+ * They are total functions on the uint64 domain — they answer false rather
+ * than raising, so they accept any bit pattern, including the invalid
+ * sentinel 0. They are what the input function and the per-operation
+ * validators are written in terms of. */
+
+extern bool h3_is_valid_cell(H3Index cell);
+extern bool h3_is_valid_directed_edge(H3Index edge);
+extern bool h3_is_valid_vertex(H3Index vertex);
 extern bool h3index_eq(H3Index a, H3Index b);
 extern bool h3index_ne(H3Index a, H3Index b);
 extern bool h3index_lt(H3Index a, H3Index b);

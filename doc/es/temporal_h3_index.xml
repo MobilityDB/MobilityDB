@@ -20,7 +20,7 @@
 
 	<sect1 xml:id="th3_inout">
 		<title>Entrada y Salida</title>
-		<para>Un valor <varname>th3index</varname> se introduce utilizando la sintaxis temporal estándar con el identificador de celda H3 de 64 bits subyacente. El analizador acepta la forma hexadecimal canónica (la que produce la CLI de H3 y <varname>h3_cell_to_string</varname> en el proyecto original), con un prefijo <varname>0x</varname> opcional y como máximo 16 dígitos significativos. El hexadecimal es idiomático en el ecosistema H3 y es lo que emite la función de salida, todos los ejemplos siguientes lo usan.</para>
+		<para>Un valor <varname>th3index</varname> se introduce utilizando la sintaxis temporal estándar con el identificador de celda H3 de 64 bits subyacente. El analizador acepta la forma hexadecimal canónica (la que produce la CLI de H3 y <varname>h3_cell_to_string</varname> en el proyecto original), con un prefijo <varname>0x</varname> opcional y como máximo 16 dígitos significativos. El valor debe además denotar algo del sistema de indexación H3, es decir, una celda, una arista dirigida o un vértice, de modo que un literal hexadecimal bien formado como <varname>12345</varname>, que no es ninguno de los tres, se rechaza en lugar de almacenarse como un valor sin ubicación. El hexadecimal es idiomático en el ecosistema H3 y es lo que emite la función de salida, todos los ejemplos siguientes lo usan.</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT th3index '831c02fffffffff@2001-01-01';
 SELECT th3index '{831c02fffffffff@2001-01-01, 831c00fffffffff@2001-01-02}';

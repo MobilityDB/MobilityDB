@@ -117,6 +117,15 @@ th3index_cell_set_stbox(H3Index cell, STBox *box)
  * @param[out] box Spatiotemporal box
  * @note Mirrors `cbuffer_set_stbox` / `quadbin_set_stbox`; the helper the
  *   central `spatial_set_stbox` dispatch calls for an h3index value.
+ * @note This helper does not require its argument to be a cell, unlike the
+ *   conversions below. It is the bounding-box hook for every h3index-valued
+ *   set and temporal value, and those legitimately carry directed edges and
+ *   vertices: `h3_origin_to_directed_edges` and `h3_cell_to_vertexes` both
+ *   return sets whose elements are not cells. Bounding such a value still
+ *   reaches `cellToBoundary`, which is the wrong primitive for those two
+ *   modes and yields a box that does not describe the value — a defect that
+ *   predates the per-mode validators and needs a mode-aware box, not a
+ *   rejection here, since rejecting would break both operations outright.
  */
 bool
 h3index_set_stbox(H3Index cell, STBox *box)
@@ -137,6 +146,8 @@ h3index_set_stbox(H3Index cell, STBox *box)
 STBox *
 h3index_to_stbox(H3Index cell)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_H3INDEX_CELL(cell, NULL);
   STBox box;
   if (! h3index_set_stbox(cell, &box))
     return NULL;
@@ -153,6 +164,8 @@ h3index_to_stbox(H3Index cell)
 STBox *
 h3index_timestamptz_to_stbox(H3Index cell, TimestampTz t)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_H3INDEX_CELL(cell, NULL);
   STBox box;
   if (! h3index_set_stbox(cell, &box))
     return NULL;
@@ -173,6 +186,7 @@ h3index_tstzspan_to_stbox(H3Index cell, const Span *s)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(s, NULL);
+  VALIDATE_H3INDEX_CELL(cell, NULL);
   STBox box;
   if (! h3index_set_stbox(cell, &box))
     return NULL;

@@ -72,11 +72,113 @@
 #include "h3/th3index_internal.h"
 
 /*****************************************************************************
+ * Validity predicates
+ *
+ * An h3index is a mode-tagged 64-bit identifier: the mode bits say whether
+ * the value denotes a cell, a directed edge, or a vertex, and the three
+ * predicates below are the only way to tell the modes apart. They are total
+ * functions on the uint64 domain — they answer false rather than raising,
+ * so they accept the invalid sentinel 0 and any other bit pattern, and are
+ * therefore the primitives the input function and the per-mode validators
+ * are written in terms of.
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_h3_base_accessor
+ * @brief Return true if an h3index is a valid H3 cell
+ * @param[in] cell H3 index
+ * @csqlfn #H3index_is_valid_cell()
+ */
+#if MEOS
+bool
+h3_is_valid_cell(H3Index cell)
+{
+  return h3_is_valid_cell_meos(cell);
+}
+#endif
+
+/**
+ * @ingroup meos_h3_base_accessor
+ * @brief Return true if an h3index is a valid H3 directed edge
+ * @param[in] edge H3 index
+ * @csqlfn #H3index_is_valid_directed_edge()
+ */
+#if MEOS
+bool
+h3_is_valid_directed_edge(H3Index edge)
+{
+  return h3_is_valid_directed_edge_meos(edge);
+}
+#endif
+
+/**
+ * @ingroup meos_h3_base_accessor
+ * @brief Return true if an h3index is a valid H3 vertex
+ * @param[in] vertex H3 index
+ * @csqlfn #H3index_is_valid_vertex()
+ */
+#if MEOS
+bool
+h3_is_valid_vertex(H3Index vertex)
+{
+  return h3_is_valid_vertex_meos(vertex);
+}
+#endif
+
+/*****************************************************************************
+ * Validators
+ *
+ * The per-mode checks behind the `VALIDATE_H3INDEX_*` macros. The three
+ * modes share the same 64-bit representation, so the message names the mode
+ * the operation required: without it a mode mismatch is indistinguishable
+ * from a plain typo.
+ *****************************************************************************/
+
+/**
+ * @brief Ensure that an h3index is a valid H3 cell
+ */
+bool
+ensure_h3index_cell(H3Index cell)
+{
+  if (h3_is_valid_cell_meos(cell))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "h3index %" PRIx64 " is not a valid H3 cell", (uint64_t) cell);
+  return false;
+}
+
+/**
+ * @brief Ensure that an h3index is a valid H3 directed edge
+ */
+bool
+ensure_h3index_directed_edge(H3Index edge)
+{
+  if (h3_is_valid_directed_edge_meos(edge))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "h3index %" PRIx64 " is not a valid H3 directed edge", (uint64_t) edge);
+  return false;
+}
+
+/**
+ * @brief Ensure that an h3index is a valid H3 vertex
+ */
+bool
+ensure_h3index_vertex(H3Index vertex)
+{
+  if (h3_is_valid_vertex_meos(vertex))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "h3index %" PRIx64 " is not a valid H3 vertex", (uint64_t) vertex);
+  return false;
+}
+
+/*****************************************************************************
  * Datum wrappers for inspection
  *****************************************************************************/
 
 /**
- * @brief 
+ * @brief
  */
 Datum
 datum_h3_get_resolution(Datum d)
@@ -108,6 +210,8 @@ datum_h3_is_valid_cell(Datum d)
 Datum
 datum_h3_is_res_class_iii(Datum d)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_H3INDEX_CELL(DatumGetH3Index(d), (Datum) 0);
   return BoolGetDatum(h3_is_res_class_iii_meos(DatumGetH3Index(d)));
 }
 
@@ -117,6 +221,8 @@ datum_h3_is_res_class_iii(Datum d)
 Datum
 datum_h3_is_pentagon(Datum d)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_H3INDEX_CELL(DatumGetH3Index(d), (Datum) 0);
   return BoolGetDatum(h3_is_pentagon_meos(DatumGetH3Index(d)));
 }
 
@@ -133,6 +239,8 @@ datum_h3_is_pentagon(Datum d)
 Datum
 datum_h3_cell_to_parent(Datum cell_d, Datum res_d)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_H3INDEX_CELL(DatumGetH3Index(cell_d), (Datum) 0);
   return H3IndexGetDatum(h3_cell_to_parent_meos(DatumGetH3Index(cell_d),
     DatumGetInt32(res_d)));
 }
@@ -143,6 +251,8 @@ datum_h3_cell_to_parent(Datum cell_d, Datum res_d)
 Datum
 datum_h3_cell_to_parent_next(Datum cell_d)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_H3INDEX_CELL(DatumGetH3Index(cell_d), (Datum) 0);
   return H3IndexGetDatum(h3_cell_to_parent_next_meos(DatumGetH3Index(cell_d)));
 }
 
@@ -152,6 +262,8 @@ datum_h3_cell_to_parent_next(Datum cell_d)
 Datum
 datum_h3_cell_to_center_child(Datum cell_d, Datum res_d)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_H3INDEX_CELL(DatumGetH3Index(cell_d), (Datum) 0);
   return H3IndexGetDatum(h3_cell_to_center_child_meos(DatumGetH3Index(cell_d),
     DatumGetInt32(res_d)));
 }
@@ -162,6 +274,8 @@ datum_h3_cell_to_center_child(Datum cell_d, Datum res_d)
 Datum
 datum_h3_cell_to_center_child_next(Datum cell_d)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_H3INDEX_CELL(DatumGetH3Index(cell_d), (Datum) 0);
   return H3IndexGetDatum(h3_cell_to_center_child_next_meos(
     DatumGetH3Index(cell_d)));
 }
@@ -172,6 +286,8 @@ datum_h3_cell_to_center_child_next(Datum cell_d)
 Datum
 datum_h3_cell_to_child_pos(Datum cell_d, Datum parent_res_d)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_H3INDEX_CELL(DatumGetH3Index(cell_d), (Datum) 0);
   /* Return is a position index (int64), not a cell — plain
    * Int64GetDatum is correct here. */
   return Int64GetDatum(h3_cell_to_child_pos_meos(DatumGetH3Index(cell_d),
@@ -184,6 +300,8 @@ datum_h3_cell_to_child_pos(Datum cell_d, Datum parent_res_d)
 Datum
 datum_h3_child_pos_to_cell(Datum pos_d, Datum parent_d, Datum child_res_d)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_H3INDEX_CELL(DatumGetH3Index(parent_d), (Datum) 0);
   /* pos_d carries a plain int64 child position. */
   return H3IndexGetDatum(h3_child_pos_to_cell_meos(DatumGetInt64(pos_d),
     DatumGetH3Index(parent_d), DatumGetInt32(child_res_d)));
@@ -199,6 +317,9 @@ datum_h3_child_pos_to_cell(Datum pos_d, Datum parent_d, Datum child_res_d)
 Datum
 datum_h3_are_neighbor_cells(Datum origin_d, Datum dest_d)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_H3INDEX_CELL(DatumGetH3Index(origin_d), (Datum) 0);
+  VALIDATE_H3INDEX_CELL(DatumGetH3Index(dest_d), (Datum) 0);
   return BoolGetDatum(h3_are_neighbor_cells_meos(DatumGetH3Index(origin_d),
     DatumGetH3Index(dest_d)));
 }
@@ -209,6 +330,9 @@ datum_h3_are_neighbor_cells(Datum origin_d, Datum dest_d)
 Datum
 datum_h3_cells_to_directed_edge(Datum origin_d, Datum dest_d)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_H3INDEX_CELL(DatumGetH3Index(origin_d), (Datum) 0);
+  VALIDATE_H3INDEX_CELL(DatumGetH3Index(dest_d), (Datum) 0);
   return H3IndexGetDatum(h3_cells_to_directed_edge_meos(
     DatumGetH3Index(origin_d), DatumGetH3Index(dest_d)));
 }
@@ -228,6 +352,8 @@ datum_h3_is_valid_directed_edge(Datum d)
 Datum
 datum_h3_get_directed_edge_origin(Datum d)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_H3INDEX_DIRECTED_EDGE(DatumGetH3Index(d), (Datum) 0);
   return H3IndexGetDatum(h3_get_directed_edge_origin_meos(DatumGetH3Index(d)));
 }
 
@@ -237,6 +363,8 @@ datum_h3_get_directed_edge_origin(Datum d)
 Datum
 datum_h3_get_directed_edge_destination(Datum d)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_H3INDEX_DIRECTED_EDGE(DatumGetH3Index(d), (Datum) 0);
   return H3IndexGetDatum(h3_get_directed_edge_destination_meos(
     DatumGetH3Index(d)));
 }
@@ -247,6 +375,8 @@ datum_h3_get_directed_edge_destination(Datum d)
 Datum
 datum_h3_directed_edge_to_boundary(Datum d)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_H3INDEX_DIRECTED_EDGE(DatumGetH3Index(d), (Datum) 0);
   GSERIALIZED *gs = h3_directed_edge_to_gs_boundary(DatumGetH3Index(d));
   return PointerGetDatum(gs);
 }
@@ -261,6 +391,8 @@ datum_h3_directed_edge_to_boundary(Datum d)
 Datum
 datum_h3_cell_to_vertex(Datum cell_d, Datum vnum_d)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_H3INDEX_CELL(DatumGetH3Index(cell_d), (Datum) 0);
   return H3IndexGetDatum(h3_cell_to_vertex_meos(DatumGetH3Index(cell_d),
     DatumGetInt32(vnum_d)));
 }
@@ -271,6 +403,8 @@ datum_h3_cell_to_vertex(Datum cell_d, Datum vnum_d)
 Datum
 datum_h3_vertex_to_latlng(Datum d)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_H3INDEX_VERTEX(DatumGetH3Index(d), (Datum) 0);
   GSERIALIZED *gs = h3_vertex_to_gs_point(DatumGetH3Index(d));
   return PointerGetDatum(gs);
 }
@@ -294,6 +428,9 @@ datum_h3_is_valid_vertex(Datum d)
 Datum
 datum_h3_grid_distance(Datum origin_d, Datum dest_d)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_H3INDEX_CELL(DatumGetH3Index(origin_d), (Datum) 0);
+  VALIDATE_H3INDEX_CELL(DatumGetH3Index(dest_d), (Datum) 0);
   /* Return is a hop count (int64), not a cell. */
   return Int64GetDatum(h3_grid_distance_meos(DatumGetH3Index(origin_d),
     DatumGetH3Index(dest_d)));
@@ -305,6 +442,9 @@ datum_h3_grid_distance(Datum origin_d, Datum dest_d)
 Datum
 datum_h3_cell_to_local_ij(Datum origin_d, Datum cell_d)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_H3INDEX_CELL(DatumGetH3Index(origin_d), (Datum) 0);
+  VALIDATE_H3INDEX_CELL(DatumGetH3Index(cell_d), (Datum) 0);
   GSERIALIZED *gs = h3_cell_to_local_ij_meos(DatumGetH3Index(origin_d),
     DatumGetH3Index(cell_d));
   return PointerGetDatum(gs);
@@ -316,6 +456,8 @@ datum_h3_cell_to_local_ij(Datum origin_d, Datum cell_d)
 Datum
 datum_h3_local_ij_to_cell(Datum origin_d, Datum coord_d)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_H3INDEX_CELL(DatumGetH3Index(origin_d), (Datum) 0);
   const GSERIALIZED *coord = (GSERIALIZED *) DatumGetPointer(coord_d);
   return H3IndexGetDatum(h3_local_ij_to_cell_meos(
     DatumGetH3Index(origin_d), coord));
@@ -342,6 +484,8 @@ datum_h3_latlng_to_cell(Datum point_d, Datum res_d)
 Datum
 datum_h3_cell_to_latlng(Datum d)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_H3INDEX_CELL(DatumGetH3Index(d), (Datum) 0);
   GSERIALIZED *gs = h3_cell_to_geompoint(DatumGetH3Index(d));
   return PointerGetDatum(gs);
 }
@@ -352,6 +496,8 @@ datum_h3_cell_to_latlng(Datum d)
 Datum
 datum_h3_cell_to_boundary(Datum d)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_H3INDEX_CELL(DatumGetH3Index(d), (Datum) 0);
   GSERIALIZED *gs = h3_cell_to_geom(DatumGetH3Index(d));
   return PointerGetDatum(gs);
 }
@@ -369,6 +515,8 @@ datum_h3_cell_to_boundary(Datum d)
 Datum
 datum_h3_cell_area(Datum cell_d, Datum unit_d)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_H3INDEX_CELL(DatumGetH3Index(cell_d), (Datum) 0);
   return Float8GetDatum(h3_cell_area_meos(DatumGetH3Index(cell_d),
     (H3Unit) DatumGetInt32(unit_d)));
 }
@@ -379,6 +527,8 @@ datum_h3_cell_area(Datum cell_d, Datum unit_d)
 Datum
 datum_h3_edge_length(Datum edge_d, Datum unit_d)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_H3INDEX_DIRECTED_EDGE(DatumGetH3Index(edge_d), (Datum) 0);
   return Float8GetDatum(h3_edge_length_meos(DatumGetH3Index(edge_d),
     (H3Unit) DatumGetInt32(unit_d)));
 }
@@ -458,6 +608,24 @@ meos_h3index_in(const char *str)
   {
     meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
       "invalid h3index input \"%s\": h3 error code %u", str, (unsigned) err);
+    return (H3Index) 0;
+  }
+
+  /* The value must denote something in the H3 indexing system. A well-formed
+   * hexadecimal literal is not by itself an h3index: the mode bits and the
+   * digit sequence encode a cell, a directed edge or a vertex, and a literal
+   * such as "abc" or "12345" is none of the three. Accepting it would let a
+   * value with no location enter a spatiotemporal type, where it compares,
+   * groups and indexes as if it were a place. The zero sentinel is admitted
+   * because h3 reserves it as the conventional "no index" marker, which the
+   * validity predicates report as false and which callers test for */
+  if (cell != (H3Index) 0 && ! h3_is_valid_cell_meos(cell) &&
+      ! h3_is_valid_directed_edge_meos(cell) &&
+      ! h3_is_valid_vertex_meos(cell))
+  {
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+      "invalid h3index input \"%s\": not a valid H3 cell, directed edge or "
+      "vertex", str);
     return (H3Index) 0;
   }
   return cell;
