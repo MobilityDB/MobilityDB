@@ -80,7 +80,7 @@ FROM (SELECT unnest(tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]') AS un) t;
 -- 2 | {[2001-01-02, 2001-01-03)}
 SELECT (un).value, (un).time
 FROM (SELECT unnest(tfloat '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]') AS un) t;
--- ERROR:  The temporal value cannot have linear interpolation
+-- ERROR:  Operation not supported for temporal values with linear interpolation
 SELECT ST_AsText((un).value), (un).time
 FROM (SELECT unnest(tgeompoint 'Interp=Step;[Point(1 1)@2001-01-01,
   Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]') AS un) t;
