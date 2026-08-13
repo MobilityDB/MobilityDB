@@ -234,10 +234,15 @@ extern TSequenceSet *tgeoseqset_restrict_stbox(const TSequenceSet *ss, const STB
 
 /* Native temporal-point geometry-clip engine */
 
+extern void *geo_clip_ctx_make(const GSERIALIZED *gs);
+extern void geo_clip_ctx_free(void *ctx);
 extern bool geo_intersects2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
+extern bool geo_intersects2d_ctx(const GSERIALIZED *gs, const void *ctx);
 extern bool geo_covers2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern Temporal *tpoint_linear_inter_geom(const Temporal *temp, const GSERIALIZED *gs, bool clip);
+extern Temporal *tpoint_linear_inter_geom_ctx(const Temporal *temp, const void *ctx, bool clip);
 extern Temporal *tpoint_linear_dwithin_geom(const Temporal *temp, const GSERIALIZED *gs, double dist);
+extern Temporal *tpoint_linear_dwithin_geom_ctx(const Temporal *temp, const void *ctx, double dist);
 extern Temporal *tpoint_linear_distance_geom(const Temporal *temp, const GSERIALIZED *gs);
 extern Temporal *tpoint_linear_restrict_geom(const Temporal *temp, const GSERIALIZED *gs, bool atfunc);
 extern bool geom_clip_supported(const LWGEOM *geom);
