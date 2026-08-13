@@ -49,15 +49,15 @@ SELECT stbox(npoint 'NPoint(1,0.3)', timestamptz '2001-01-01');
 -- STBOX XT(((62.786633,80.143555),(62.786636,80.143562)),[2001-01-01,2001-01-01])
 SELECT stbox(npoint 'NPoint(1,0.3)', tstzspan '[2001-01-01,2001-01-02]');
 -- STBOX XT(((62.786633,80.143555),(62.786636,80.143562)),[2001-01-01,2001-01-02])
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="npoint_accessor_functions"></a>Accessors</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="route"></a><a class="indexterm" name="id8162"></a><p>Return the route identifier</p><p><code class="varname">route({npoint,nsegment}) → bigint</code></p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="npoint_accessor_functions"></a>Accessors</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="npoint_route"></a><a class="indexterm" name="id8162"></a><p>Return the route identifier</p><p><code class="varname">route({npoint,nsegment}) → bigint</code></p><pre class="programlisting">
 SELECT route(npoint 'Npoint(63, 0.3)');
 -- 63
 SELECT route(nsegment 'Nsegment(76, 0.3, 0.3)');
 -- 76
-</pre></li><li class="listitem"><a name="getPosition"></a><a class="indexterm" name="id8170"></a><p>Return the position</p><p><code class="varname">getPosition(npoint) → float</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="npoint_getPosition"></a><a class="indexterm" name="id8170"></a><p>Return the position</p><p><code class="varname">getPosition(npoint) → float</code></p><pre class="programlisting">
 SELECT getPosition(npoint 'Npoint(63, 0.3)');
 -- 0.3
-</pre></li><li class="listitem"><a name="startPosition"></a><a class="indexterm" name="id8178"></a><a class="indexterm" name="id8181"></a><p>Return the start/end position</p><p><code class="varname">startPosition(nsegment) → float</code></p><p><code class="varname">endPosition(nsegment) → float</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="npoint_startPosition"></a><a class="indexterm" name="id8178"></a><a class="indexterm" name="id8181"></a><p>Return the start/end position</p><p><code class="varname">startPosition(nsegment) → float</code></p><p><code class="varname">endPosition(nsegment) → float</code></p><pre class="programlisting">
 SELECT startPosition(nsegment 'Nsegment(76, 0.3, 0.5)');
 -- 0.3
 SELECT endPosition(nsegment 'Nsegment(76, 0.3, 0.5)');
