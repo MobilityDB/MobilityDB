@@ -35,11 +35,11 @@ SELECT (:box_at_origin) |=| (:box_at_origin);
 -- Distance from a point to a box at the same location is zero.
 SELECT (:p1) |=| (:box_at_origin);
 
--- Disjoint time spans yield infinity.
+-- Disjoint time spans yield NULL, as the temporal geo nearest approach does.
 SELECT (tpcpoint(PC_MakePoint(1, ARRAY[0.0, 0.0, 0.0]::float[]),
                  '2024-01-01'::timestamptz)) |=|
        (tpcbox_zt(0, 0, 0, 0, 0, 0,
-                  tstzspan '[2099-01-01, 2099-01-02]', 1, 0)) > 1e10;
+                  tstzspan '[2099-01-01, 2099-01-02]', 1, 0)) IS NULL;
 
 -- Pcid mismatch is an error: values of two schemas cannot be compared.
 SELECT (:p1) |=| (tpcbox_zt(0, 0, 0, 0, 0, 0,

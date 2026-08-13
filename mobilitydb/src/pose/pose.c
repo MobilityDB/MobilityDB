@@ -34,6 +34,7 @@
 
 /* C */
 #include <assert.h>
+#include <float.h>
 #include <math.h>
 /* PostgreSQL */
 #include <postgres.h>
@@ -529,7 +530,10 @@ Datum
 Pose_rotation(PG_FUNCTION_ARGS)
 {
   Pose *pose = PG_GETARG_POSE_P(0);
-  PG_RETURN_FLOAT8(pose_rotation(pose));
+  double result = pose_rotation(pose);
+  if (result == DBL_MAX)
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(result);
 }
 
 PGDLLEXPORT Datum Pose_orientation(PG_FUNCTION_ARGS);
@@ -583,6 +587,8 @@ Pose_yaw(PG_FUNCTION_ARGS)
   Pose *pose = PG_GETARG_POSE_P(0);
   double result = pose_yaw(pose);
   PG_FREE_IF_COPY(pose, 0);
+  if (result == DBL_MAX)
+    PG_RETURN_NULL();
   PG_RETURN_FLOAT8(result);
 }
 
@@ -599,6 +605,8 @@ Pose_pitch(PG_FUNCTION_ARGS)
   Pose *pose = PG_GETARG_POSE_P(0);
   double result = pose_pitch(pose);
   PG_FREE_IF_COPY(pose, 0);
+  if (result == DBL_MAX)
+    PG_RETURN_NULL();
   PG_RETURN_FLOAT8(result);
 }
 
@@ -615,6 +623,8 @@ Pose_roll(PG_FUNCTION_ARGS)
   Pose *pose = PG_GETARG_POSE_P(0);
   double result = pose_roll(pose);
   PG_FREE_IF_COPY(pose, 0);
+  if (result == DBL_MAX)
+    PG_RETURN_NULL();
   PG_RETURN_FLOAT8(result);
 }
 

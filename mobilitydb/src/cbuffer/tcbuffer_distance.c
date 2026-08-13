@@ -384,6 +384,8 @@ NAD_cbuffer_stbox(PG_FUNCTION_ARGS)
   Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
   STBox *box = PG_GETARG_STBOX_P(1);
   double result = nad_cbuffer_stbox(cb, box);
+  if (result == DBL_MAX)
+    PG_RETURN_NULL();
   PG_RETURN_FLOAT8(result);
 }
 

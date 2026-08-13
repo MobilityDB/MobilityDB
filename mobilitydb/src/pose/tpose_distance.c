@@ -360,6 +360,8 @@ NAD_pose_tpose(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   double result = nad_tpose_pose(temp, pose);
   PG_FREE_IF_COPY(temp, 1);
+  if (result == DBL_MAX)
+    PG_RETURN_NULL();
   PG_RETURN_FLOAT8(result);
 }
 
@@ -379,6 +381,8 @@ NAD_tpose_pose(PG_FUNCTION_ARGS)
   Pose *pose = PG_GETARG_POSE_P(1);
   double result = nad_tpose_pose(temp, pose);
   PG_FREE_IF_COPY(temp, 0);
+  if (result == DBL_MAX)
+    PG_RETURN_NULL();
   PG_RETURN_FLOAT8(result);
 }
 

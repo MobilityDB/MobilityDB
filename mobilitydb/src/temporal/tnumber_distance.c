@@ -127,6 +127,8 @@ NAD_number_tnumber(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   double result = nad_tnumber_number(temp, value);
   PG_FREE_IF_COPY(temp, 1);
+  if (result == DBL_MAX)
+    PG_RETURN_NULL();
   PG_RETURN_FLOAT8(result);
 }
 
@@ -146,6 +148,8 @@ NAD_tnumber_number(PG_FUNCTION_ARGS)
   Datum value = PG_GETARG_DATUM(1);
   double result = nad_tnumber_number(temp, value);
   PG_FREE_IF_COPY(temp, 0);
+  if (result == DBL_MAX)
+    PG_RETURN_NULL();
   PG_RETURN_FLOAT8(result);
 }
 
