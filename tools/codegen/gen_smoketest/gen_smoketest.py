@@ -908,6 +908,16 @@ TGEOMETRY_CONFIG = dict(
         # never carry linear interpolation (there is no interpolation between
         # a polygon and a multipoint), so a linear input is correctly refused.
         "tgeompoint_to_tgeometry": {0: "tpoint_step1"},
+        # The geometry/geography conversions read the coordinates as lon/lat,
+        # so they take the geodetic (SRID 4326) inputs: the planar SRID 5676
+        # defaults are refused with "Only lon/lat coordinate systems are
+        # supported in geography". Each direction also fixes the shape of the
+        # values it converts: only a point-valued tgeography becomes a
+        # tgeogpoint, and only a STEP tgeogpoint becomes a tgeography.
+        "tgeometry_to_tgeography":  {0: "tgeo_geod1"},
+        "tgeography_to_tgeometry":  {0: "tgeog1"},
+        "tgeography_to_tgeogpoint": {0: "tgeog_point1"},
+        "tgeogpoint_to_tgeography": {0: "tgeogpoint_step1"},
     },
     # Name-pattern argument routing: whole families of meos_geo.h functions share
     # a precondition the polygon/tgeometry defaults don't meet.
@@ -945,14 +955,6 @@ TGEOMETRY_CONFIG = dict(
         # default canned-inputs don't supply. First-pass skip list;
         # refine as needed.
         "re:AFFINE":     "needs an AFFINE matrix",
-        # Geodetic conversions need lon/lat inputs; the canned geometries are
-        # planar (SRID 5676). Feeding a planar temporal geometry to
-        # tgeometry_to_tgeography reports "Only lon/lat coordinate systems are
-        # supported in geography" and then dereferences the rejected value in
-        # tgeomseq_tgeogseq, so this cannot be exercised until MEOS stops on
-        # the error.
-        "re:^tgeography_|_to_tgeography$|^tgeogpoint_to|_to_tgeogpoint$":
-            "planar canned input crashes in tgeomseq_tgeogseq after the geodetic error",
         "re:GBOX":       "needs a GBOX",
         "re:SkipList":   "needs a SkipList state",
         "re:bitmatrix":  "needs a bitmatrix",
@@ -1013,6 +1015,18 @@ TGEOMETRY_CONFIG = dict(
     "[SRID=5676;Point(0 0)@2001-01-02, SRID=5676;Point(1 1)@2001-01-03]");
   Temporal *tpoint_step1 = tgeompoint_in(
     "Interp=Step;[SRID=5676;Point(0 0)@2001-01-02, SRID=5676;Point(1 1)@2001-01-03]");
+  /* The geodetic (SRID 4326) counterparts of the above, for the conversions
+   * between the geometry and the geography surfaces. The temporal geography
+   * is never linearly interpolated, so its point-valued counterpart is the
+   * STEP temporal geography point. */
+  Temporal *tgeo_geod1 = tgeometry_in(
+    "[SRID=4326;Polygon((0 0,1 0,1 1,0 1,0 0))@2001-01-02, SRID=4326;Polygon((0 0,1 0,1 1,0 1,0 0))@2001-01-03]");
+  Temporal *tgeog1 = tgeography_in(
+    "[SRID=4326;Polygon((0 0,1 0,1 1,0 1,0 0))@2001-01-02, SRID=4326;Polygon((0 0,1 0,1 1,0 1,0 0))@2001-01-03]");
+  Temporal *tgeog_point1 = tgeography_in(
+    "[SRID=4326;Point(0 0)@2001-01-02, SRID=4326;Point(1 1)@2001-01-03]");
+  Temporal *tgeogpoint_step1 = tgeogpoint_in(
+    "Interp=Step;[SRID=4326;Point(0 0)@2001-01-02, SRID=4326;Point(1 1)@2001-01-03]");
   int n_out = 0;
 """,
     cleanup="""\
@@ -1022,6 +1036,10 @@ TGEOMETRY_CONFIG = dict(
   if (tpoint_z1) free(tpoint_z1);
   if (tgeo_point1) free(tgeo_point1);
   if (tpoint_step1) free(tpoint_step1);
+  if (tgeo_geod1) free(tgeo_geod1);
+  if (tgeog1) free(tgeog1);
+  if (tgeog_point1) free(tgeog_point1);
+  if (tgeogpoint_step1) free(tgeogpoint_step1);
   free(stbox1);
   free(stbox_zt1);
   free(geomset1);
