@@ -53,7 +53,7 @@
  * @brief Return true if a JSONB is ever equal to a temporal JSONB
  * @param[in] jb JSONB value
  * @param[in] temp Temporal JSONB
- * @csqlfn #Ever_eq_base_temporal()
+ * @csqlfn #Ever_eq_jsonb_tjsonb()
  */
 int
 ever_eq_jsonb_tjsonb(const Jsonb *jb, const Temporal *temp)
@@ -68,7 +68,7 @@ ever_eq_jsonb_tjsonb(const Jsonb *jb, const Temporal *temp)
  * @brief Return true if a temporal JSONB is ever equal to a JSONB
  * @param[in] temp Temporal JSONB
  * @param[in] jb JSONB value
- * @csqlfn #Ever_eq_temporal_base()
+ * @csqlfn #Ever_eq_tjsonb_jsonb()
  */
 int
 ever_eq_tjsonb_jsonb(const Temporal *temp, const Jsonb *jb)
@@ -83,7 +83,7 @@ ever_eq_tjsonb_jsonb(const Temporal *temp, const Jsonb *jb)
  * @brief Return true if a JSONB is always equal to a temporal JSONB
  * @param[in] jb JSONB
  * @param[in] temp Temporal JSONB
- * @csqlfn #Always_eq_base_temporal()
+ * @csqlfn #Always_eq_jsonb_tjsonb()
  */
 int
 always_eq_jsonb_tjsonb(const Jsonb *jb, const Temporal *temp)
@@ -98,7 +98,7 @@ always_eq_jsonb_tjsonb(const Jsonb *jb, const Temporal *temp)
  * @brief Return true if a temporal JSONB is always equal to a JSONB
  * @param[in] temp Temporal JSONB
  * @param[in] jb JSONB
- * @csqlfn #Always_eq_temporal_base()
+ * @csqlfn #Always_eq_tjsonb_jsonb()
  */
 int
 always_eq_tjsonb_jsonb(const Temporal *temp, const Jsonb *jb)
@@ -165,7 +165,7 @@ always_ne_tjsonb_tjsonb(const Temporal *temp1, const Temporal *temp2)
  * @brief Return true if a JSONB is ever different from a temporal JSONB
  * @param[in] jb JSONB
  * @param[in] temp Temporal JSONB
- * @csqlfn #Ever_ne_base_temporal()
+ * @csqlfn #Ever_ne_jsonb_tjsonb()
  */
 int
 ever_ne_jsonb_tjsonb(const Jsonb *jb, const Temporal *temp)
@@ -180,7 +180,7 @@ ever_ne_jsonb_tjsonb(const Jsonb *jb, const Temporal *temp)
  * @brief Return true if a temporal JSONB is ever different from a JSONB
  * @param[in] temp Temporal JSONB
  * @param[in] jb JSONB
- * @csqlfn #Ever_ne_temporal_base()
+ * @csqlfn #Ever_ne_tjsonb_jsonb()
  */
 int
 ever_ne_tjsonb_jsonb(const Temporal *temp, const Jsonb *jb)
@@ -195,7 +195,7 @@ ever_ne_tjsonb_jsonb(const Temporal *temp, const Jsonb *jb)
  * @brief Return true if a JSONB is always different from a temporal JSONB
  * @param[in] jb JSONB
  * @param[in] temp Temporal JSONB
- * @csqlfn #Always_ne_base_temporal()
+ * @csqlfn #Always_ne_jsonb_tjsonb()
  */
 int
 always_ne_jsonb_tjsonb(const Jsonb *jb, const Temporal *temp)
@@ -210,7 +210,7 @@ always_ne_jsonb_tjsonb(const Jsonb *jb, const Temporal *temp)
  * @brief Return true if a temporal JSONB is always different from a JSONB
  * @param[in] temp Temporal JSONB
  * @param[in] jb JSONB
- * @csqlfn #Always_ne_temporal_base()
+ * @csqlfn #Always_ne_tjsonb_jsonb()
  */
 int
 always_ne_tjsonb_jsonb(const Temporal *temp, const Jsonb *jb)
@@ -229,7 +229,7 @@ always_ne_tjsonb_jsonb(const Temporal *temp, const Jsonb *jb)
  * @brief Return the temporal equality of a JSONB and a temporal JSONB
  * @param[in] jb JSONB
  * @param[in] temp Temporal JSONB
- * @csqlfn #Teq_base_temporal()
+ * @csqlfn #Teq_jsonb_tjsonb()
  */
 Temporal *
 teq_jsonb_tjsonb(const Jsonb *jb, const Temporal *temp)
@@ -244,7 +244,7 @@ teq_jsonb_tjsonb(const Jsonb *jb, const Temporal *temp)
  * @brief Return the temporal equality of a temporal JSONB and a JSONB
  * @param[in] temp Temporal JSONB
  * @param[in] jb JSONB
- * @csqlfn #Teq_temporal_base()
+ * @csqlfn #Teq_tjsonb_jsonb()
  */
 Temporal *
 teq_tjsonb_jsonb(const Temporal *temp, const Jsonb *jb)
@@ -259,7 +259,7 @@ teq_tjsonb_jsonb(const Temporal *temp, const Jsonb *jb)
  * @brief Return the temporal difference of a JSONB and a temporal JSONB
  * @param[in] jb JSONB
  * @param[in] temp Temporal JSONB
- * @csqlfn #Tne_base_temporal()
+ * @csqlfn #Tne_jsonb_tjsonb()
  */
 Temporal *
 tne_jsonb_tjsonb(const Jsonb *jb, const Temporal *temp)
@@ -274,7 +274,7 @@ tne_jsonb_tjsonb(const Jsonb *jb, const Temporal *temp)
  * @brief Return the temporal difference of a temporal JSONB and a JSONB
  * @param[in] temp Temporal JSONB
  * @param[in] jb JSONB
- * @csqlfn #Tne_temporal_base()
+ * @csqlfn #Tne_tjsonb_jsonb()
  */
 Temporal *
 tne_tjsonb_jsonb(const Temporal *temp, const Jsonb *jb)

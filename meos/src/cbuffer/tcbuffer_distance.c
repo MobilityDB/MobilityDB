@@ -1788,7 +1788,7 @@ nad_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
  * and a spatiotemporal box
  * @param[in] temp Temporal circular buffer
  * @param[in] box Spatiotemporal box
- * @csqlfn #NAD_tcbuffer_geo()
+ * @csqlfn #NAD_tcbuffer_stbox()
  */
 double
 nad_tcbuffer_stbox(const Temporal *temp, const STBox *box)
