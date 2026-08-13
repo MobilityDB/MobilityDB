@@ -32,7 +32,7 @@
  * @brief Fast 2D/3D temporal point clipping against 2D geometries
  * @details Support (multi)point, (multi)line, triangle, (multi)polygons with
  * holes and islands inside holes (recursively), and collection of the above
- * @note Avoid processing in GEOS to improve performance
+ * @note Processing is done natively to improve performance
  */
 
 /* C */
@@ -1601,9 +1601,9 @@ edges_have_area(Edge **edges, int nedges)
 
 /**
  * @brief Return true if two 2D geometries intersect, computed natively
- * @details The portable, GEOS-free counterpart of PostGIS `ST_Intersects` for
- * the geometry types the clip engine extracts into edges: two geometries meet
- * when a boundary edge of one crosses a boundary edge of the other, or when a
+ * @details Native counterpart of PostGIS `ST_Intersects` for the geometry
+ * types the clip engine extracts into edges: two geometries meet when a
+ * boundary edge of one crosses a boundary edge of the other, or when a
  * vertex of one lies inside the polygonal interior of the other. Points,
  * (multi)lines, (multi)polygons with holes, triangles, circular strings,
  * curve polygons, and collections of these are supported. The candidate edge
@@ -1706,7 +1706,7 @@ geo_intersects2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 }
 
 /*****************************************************************************
- * Native GEOS-free planar covers predicate
+ * Native planar covers predicate
  *****************************************************************************/
 
 /**
@@ -1846,7 +1846,7 @@ geo_is_poly(const GSERIALIZED *gs)
 
 /**
  * @brief Return true if the first 2D geometry covers the second, computed
- * natively without GEOS
+ * natively
  * @details Geometry A covers geometry B when every point of B lies in the
  * closure of A, that is, B has no point in A's exterior (the DE-9IM
  * `T*****FF*` family). Every vertex of B, and the midpoint of every
@@ -1948,8 +1948,8 @@ geo_covers2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
  * point with linear interpolation and a 2D geometry
  * @details The temporal geometric point may be in 2D or 3D and the Z dimension 
  * is also computed
- * @note For performance reasons we avoid the call to ST_Intersection
- * which delegates the computation to GEOS
+ * @note For performance reasons the intersection is computed natively
+ * instead of through ST_Intersection
  * @pre The arguments have the same SRID, the geometry is 2D and is not empty.
  * This is verified in #tgeo_restrict_geom
  */
@@ -2570,7 +2570,7 @@ next_segment:
  * @ingroup meos_internal_geo
  * @brief Return a temporal Boolean that states whether a temporal geometric
  * point with linear interpolation is within a distance of a 2D geometry
- * @details Native GEOS-free counterpart of the polygonal-buffer approximation:
+ * @details Native counterpart of the polygonal-buffer approximation:
  * for a zero distance it is exactly #tpoint_linear_inter_geom (tIntersects),
  * otherwise it solves the per-segment within-distance sub-intervals in closed
  * form. The result is a temporal Boolean defined over the whole time of the
@@ -2924,7 +2924,7 @@ tpointseq_distance_geom(const TSequence *seq, Edge **edges, int nedges)
  * @ingroup meos_internal_geo
  * @brief Return the temporal float distance between a temporal geometric point
  * with linear interpolation and a 2D geometry
- * @details Native GEOS-free counterpart of the generic distance lifting for a
+ * @details Native counterpart of the generic distance lifting for a
  * non-point geometry operand: the distance to a multi-edge or curved target
  * has an arbitrary number of turning points per segment which the point-only
  * base turning-point function cannot represent. The result is a temporal float
