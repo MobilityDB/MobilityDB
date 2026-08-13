@@ -34,16 +34,19 @@ from dataclasses import dataclass, field
 # A CREATE FUNCTION header can span multiple lines. We only need the name,
 # the parenthesised argument list, and the RETURNS clause — the body (AS ...)
 # is parsed separately to extract the C backing function name.
+# The OR REPLACE form declares a function exactly as the plain form does, so it
+# is matched too. Without it a function written that way gets no phantom, and
+# every @sqlfn reference to it renders as plain text rather than a link.
 CREATE_FN_RE = re.compile(
     r"""
-    ^CREATE\s+FUNCTION\s+
+    ^CREATE\s+(?:OR\s+REPLACE\s+)?FUNCTION\s+
     (?P<name>[A-Za-z_][A-Za-z0-9_]*)   # SQL function name (unquoted)
     \s*\(                              # opening paren
     (?P<args>[^)]*(?:\([^)]*\)[^)]*)*) # arg list, allows one nested paren pair
     \)                                 # closing paren
     \s*
     (?:RETURNS\s+(?P<ret>[A-Za-z0-9_\[\]\s]+?))?  # optional RETURNS clause
-    (?:\s+(?:AS\s+['"]MODULE_PATHNAME['"]\s*,\s*['"](?P<cfn>[A-Za-z_][A-Za-z0-9_]*)['"])|\s+AS\s+\$|\s*;|\s+LANGUAGE)
+    (?:\s+(?:AS\s+['"]MODULE_PATHNAME['"]\s*,\s*['"](?P<cfn>[A-Za-z_][A-Za-z0-9_]*)['"])|\s+AS\s+\$|\s+AS\s+'|\s*;|\s+LANGUAGE)
     """,
     re.VERBOSE | re.IGNORECASE | re.MULTILINE | re.DOTALL,
 )
