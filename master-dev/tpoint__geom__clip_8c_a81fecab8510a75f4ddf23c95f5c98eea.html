@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: RTREE_MIN_NUMBER_ELEMS</title>
+<title>MobilityDB: point_on_poly_boundary</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -135,10 +135,10 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a99eaf08deb874d38b4868083adad8c5c.html#a99eaf08deb874d38b4868083adad8c5c">point_in_polygon_impl</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a2ff43940422a934e45e40eb3a8c13806.html#a2ff43940422a934e45e40eb3a8c13806">point_inter_points_lines</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_ab6bad4700989bcefb8a992dcbb387fb2.html#ab6bad4700989bcefb8a992dcbb387fb2">point_on_arc</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a81fecab8510a75f4ddf23c95f5c98eea.html#a81fecab8510a75f4ddf23c95f5c98eea">point_on_poly_boundary</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="tpoint__geom__clip_8c_a81fecab8510a75f4ddf23c95f5c98eea.html#a81fecab8510a75f4ddf23c95f5c98eea">point_on_poly_boundary</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_aa2f4628979203441083bd84d2c0994b0.html#aa2f4628979203441083bd84d2c0994b0">point_on_segment</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a69d51ea8bc5f58caaf352b093c159eb5.html#a69d51ea8bc5f58caaf352b093c159eb5">point_seg_dist2</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="tpoint__geom__clip_8c_abc1554629b609538e5923536e313ca91.html#abc1554629b609538e5923536e313ca91">RTREE_MIN_NUMBER_ELEMS</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_abc1554629b609538e5923536e313ca91.html#abc1554629b609538e5923536e313ca91">RTREE_MIN_NUMBER_ELEMS</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a1641bd3a1bc3520a3b1c82ca53d32952.html#a1641bd3a1bc3520a3b1c82ca53d32952">rtree_results</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_aed195d063358fd239b0e1a224471688f.html#aed195d063358fd239b0e1a224471688f">segment_within_closure</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo_ga6d0b7c1d80351fa7f166f2d7025454d2.html#ga6d0b7c1d80351fa7f166f2d7025454d2">tpoint_linear_distance_geom</a></td></tr>
@@ -157,17 +157,54 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="abc1554629b609538e5923536e313ca91" name="abc1554629b609538e5923536e313ca91"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abc1554629b609538e5923536e313ca91">&#9670;&#160;</a></span>RTREE_MIN_NUMBER_ELEMS</h2>
+<a id="a81fecab8510a75f4ddf23c95f5c98eea" name="a81fecab8510a75f4ddf23c95f5c98eea"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a81fecab8510a75f4ddf23c95f5c98eea">&#9670;&#160;</a></span>point_on_poly_boundary()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">#define RTREE_MIN_NUMBER_ELEMS&#160;&#160;&#160;100</td>
+          <td class="memname">static bool point_on_poly_boundary </td>
+          <td>(</td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>px</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>py</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structEdge.html">Edge</a> **&#160;</td>
+          <td class="paramname"><em>edges</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>nedges</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
+
+<p>Return true if a point lies on the boundary of a polygonal component. </p>
+<p >Only the polygon boundary edges are considered, straight (<a class="el" href="tpoint__geom__clip_8c_a424a64da753a3cd5e96ab8d0553a04c4.html#a424a64da753a3cd5e96ab8d0553a04c4ac2b75c0f82c27bc927678c4a521652d5">EDGE_POLY</a>) and circular (<a class="el" href="tpoint__geom__clip_8c_a424a64da753a3cd5e96ab8d0553a04c4.html#a424a64da753a3cd5e96ab8d0553a04c4ada7c8777dd6a22e43ecbd871a3a15636">EDGE_POLYARC</a>). The candidate array filtered by the box of a segment suffices for a point lying on that segment: a boundary edge through such a point has a box meeting the segment box, so it is in the candidates </p>
 
 </div>
 </div>
