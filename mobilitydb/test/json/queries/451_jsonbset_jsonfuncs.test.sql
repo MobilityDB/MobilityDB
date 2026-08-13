@@ -165,6 +165,12 @@ SELECT jsonbsetPathMatch(jsonbset '{"{\"d\": \"2001-01-01\"}", "{\"d\": \"1999-0
 /* Every datetime comparison in a session parses its format afresh */
 SELECT jsonbsetPathMatchTz(jsonbset '{"{\"d\": \"2001-01-01\"}", "{\"d\": \"1999-01-01\"}"}', '$.d.datetime() > "2000-06-01".datetime()');
 SELECT jsonbsetPathExists(jsonbset '{"{\"d\": \"2001-01-01\"}"}', '$.d.datetime() > "2000-06-01".datetime()');
+/* Each ISO format is tried in turn, so an input any of them describes parses */
+SELECT jsonbsetPathMatch(jsonbset '{"{\"d\": \"2001-01-01T12:00:00\"}"}', '$.d.datetime() > "2000-06-01".datetime()');
+SELECT jsonbsetPathMatch(jsonbset '{"{\"d\": \"12:30:45\"}"}', '$.d.datetime() > "10:00:00".datetime()');
+/* Errors */
+SELECT jsonbsetPathMatch(jsonbset '{"{\"d\": \"not a date\"}"}', '$.d.datetime() > "2000-06-01".datetime()');
+SELECT jsonbsetPathQueryFirst(jsonbset '{"{\"d\": \"2001-01-01\"}"}', '$.d.datetime("HH24:MI:SS")');
 
 /* A path matching nothing is unknown, that is, false, for every element */
 SELECT jsonbsetPathMatch(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', '$.xxx > 15', '{}', false);
