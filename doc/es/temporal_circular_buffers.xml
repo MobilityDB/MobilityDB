@@ -439,6 +439,7 @@ SELECT asText(tcbufferSeq(ARRAY[tcbuffer 'Cbuffer(Point(1 1), 0.2)@2001-01-01',
 
 			<listitem xml:id="tcbufferSeqSet">
 				<indexterm significance="normal"><primary><varname>tcbufferSeqSet</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tcbufferSeqSetGaps</varname></primary></indexterm>
 				<para>Constructor para búferes circulares temporales de subtipo conjunto de secuencias</para>
 				<para><varname>tcbufferSeqSet(tcbuffer[]) → tcbufferSeqSet</varname></para>
 				<para><varname>tcbufferSeqSetGaps(tcbufferInst[],maxt=NULL,maxdist=NULL,interp='linear') →</varname></para>
@@ -613,6 +614,7 @@ SELECT asText(appendSequence(tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01]', '
 
 			<listitem xml:id="tcbuffer_merge">
 				<indexterm significance="normal"><primary><varname>merge</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>mergeAgg</varname></primary></indexterm>
 				<para>Fusionar los búferes circulares temporales</para>
 				<para><varname>merge(tcbuffer,tcbuffer) → tcbuffer</varname></para>
 				<para><varname>merge(tcbuffer[]) → tcbuffer</varname></para>

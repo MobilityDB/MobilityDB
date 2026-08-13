@@ -170,6 +170,7 @@ SELECT tbox(tstzspan '[2001-01-01,2001-01-02)');
 				<indexterm significance="normal"><primary><varname>geodstboxZ</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>geodstboxT</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>geodstboxZT</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>stbox</varname></primary></indexterm>
 				<para>Constructor for <varname>stbox</varname></para>
 				<para><varname>stboxX(float,float,float,float,srid=0) → stbox</varname></para>
 				<para><varname>stboxZ(float,float,float,float,float,float,srid=0) → stbox</varname></para>
@@ -216,6 +217,9 @@ SELECT stbox(geography 'Linestring(1 1 1,2 2 2)', tstzspan '[2001-01-03,2001-01-
 		<itemizedlist>
 			<listitem xml:id="tbox_convert_to">
 				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>intspan</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>floatspan</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tstzspan</varname></primary></indexterm>
 				<para>Convert a <varname>tbox</varname> to another type</para>
 				<para><varname>tbox::{intspan,floatspan,tstzspan}</varname></para>
 				<para><varname>intspan(tbox) → tbox</varname></para>
@@ -233,6 +237,7 @@ SELECT tbox 'TBOXFLOAT XT((1,2),[2001-01-01,2001-01-02))'::tstzspan;
 
 			<listitem xml:id="tbox_convert_from">
 				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tbox</varname></primary></indexterm>
 				<para>Convert another type to a <varname>tbox</varname></para>
 				<para><varname>{numbers,times,tnumber}::tbox</varname></para>
 				<para><varname>tbox({numbers,times,tnumber}) → tbox</varname></para>
@@ -250,6 +255,11 @@ SELECT tstzspanset '{(2001-01-01,2001-01-02),(2001-01-03,2001-01-04)}'::tbox;
 
 			<listitem xml:id="stbox_convert_to">
 				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>box2d</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>box3d</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>geometry</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>geography</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tstzspan</varname></primary></indexterm>
 				<para>Convert an <varname>stbox</varname> to a another type</para>
 				<para><varname>stbox::{box2d,box3d,geo,tstzspan}</varname></para>
 				<para><varname>box2d(stbox) → box2d</varname></para>
@@ -280,6 +290,7 @@ SELECT stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01,2001-01-03])'::tstzspan
 
 			<listitem xml:id="stbox_convert_from">
 				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>stbox</varname></primary></indexterm>
 				<para>Convert another type to an <varname>stbox</varname></para>
 				<para><varname>{box2d,box3d,geo,time,tgeo}::stbox</varname></para>
 				<para><varname>stbox({box2d,box3d,geo,time,tgeo}) → stbox</varname></para>
@@ -410,6 +421,7 @@ SELECT tMaxInc(stbox 'GEODSTBOX T([2001-01-01,2001-01-03))');
 			<listitem xml:id="area">
 				<indexterm significance="normal"><primary><varname>area</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>perimeter</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>volume</varname></primary></indexterm>
 				<para>Area, volume, perimeter</para>
 				<para><varname>area(stbox, spheroid bool=true) → float</varname></para>
 				<para><varname>volume(stbox) → float</varname></para>
@@ -875,7 +887,6 @@ SELECT stbox 'STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])' #&amp;&gt;
 				<indexterm significance="normal"><primary><varname>&gt;</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>&lt;=</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>&gt;=</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>cmp</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>cmp</varname></primary></indexterm>
 				<para>Traditional comparisons</para>
 				<para><varname>box {=, &lt;&gt;, &lt;, &lt;=, &gt;=} box → boolean</varname></para>

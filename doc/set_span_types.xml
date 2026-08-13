@@ -351,6 +351,7 @@ SELECT spanset(timestamptz '2001-01-01 08:00:00');
 
 			<listitem xml:id="set_convert">
 				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>spanset</varname></primary></indexterm>
 				<para>Convert a set value to a span set value</para>
 				<para><varname>set::spanset</varname></para>
 				<para><varname>spanset(set) → spanset</varname></para>
@@ -595,6 +596,7 @@ SELECT spans(tstzspanset '{[2001-01-01, 2001-01-03), [2001-01-04, 2001-01-04],
 			<listitem xml:id="setspan_startSpan">
 				<indexterm significance="normal"><primary><varname>startSpan</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>endSpan</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>spanN</varname></primary></indexterm>
 				<para>Return the start, end, or n-th span</para>
 				<para><varname>startSpan(spanset) → span</varname></para>
 				<para><varname>endSpan(spanset) → span</varname></para>
@@ -1261,8 +1263,6 @@ SELECT dateset '{2001-01-01, 2001-01-03, 2001-01-05}' &lt;-&gt;
 				<indexterm significance="normal"><primary><varname>&lt;=</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>&gt;=</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>cmp</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>cmp</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>cmp</varname></primary></indexterm>
 				<para>Traditional comparisons</para>
 				<para><varname>set {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} set → boolean</varname></para>
 				<para><varname>spans {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} spans → boolean</varname></para>
@@ -1343,6 +1343,7 @@ SELECT extent(ps) FROM periods;
 			<listitem xml:id="setspan_union_agg">
 				<indexterm significance="normal"><primary><varname>setUnion</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>spanUnion</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>spansetUnion</varname></primary></indexterm>
 				<para>Aggregate union</para>
 				<para><varname>setUnion({value,set}) → set</varname></para>
 				<para><varname>spanUnion(spans) → spanset</varname></para>

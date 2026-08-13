@@ -891,6 +891,7 @@ SELECT getTimestamp(tfloat '1@2001-01-01');
 
 			<listitem xml:id="ttype_getValues">
 				<indexterm significance="normal"><primary><varname>getValues</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>getTime</varname></primary></indexterm>
 				<para>Return the values or the time on which a temporal value is defined</para>
 				<para><varname>getValues(ttype) → baseset</varname></para>
 				<para><varname>getTime(ttype) → tstzspanset</varname></para>

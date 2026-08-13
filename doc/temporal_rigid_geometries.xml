@@ -94,6 +94,8 @@ SELECT asText(trgeometryFromHexEWKB(asHexEWKB(trgeometry 'Polygon((0 0,1 0,1 1,0
 				<indexterm significance="normal"><primary><varname>trgeometryFromText</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>trgeometryFromMFJSON</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>trgeometryFromEWKB</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>trgeometryFromEWKT</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>trgeometryFromHexEWKB</varname></primary></indexterm>
 				<para>Each output format has a companion parser:</para>
 				<para><varname>trgeometryFromText(text) → trgeometry</varname></para>
 				<para><varname>trgeometryFromEWKT(text) → trgeometry</varname></para>
@@ -790,6 +792,7 @@ SELECT extent(temp) FROM tbl_trgeometry;
 
 			<listitem xml:id="trgeometry_merge">
 				<indexterm significance="normal"><primary><varname>merge</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>mergeAgg</varname></primary></indexterm>
 				<para>Combine two trgeometries with the same reference geometry into a single sequence-set</para>
 				<para><varname>merge(trgeometry, trgeometry) → trgeometry</varname></para>
 				<para><varname>mergeAgg(trgeometry) → trgeometry</varname></para>

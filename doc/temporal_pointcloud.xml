@@ -1789,6 +1789,7 @@ SELECT tdensity(v) FROM (VALUES
 
 			<listitem xml:id="tpcpoint_merge">
 				<indexterm significance="normal"><primary><varname>merge</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>mergeAgg</varname></primary></indexterm>
 				<para>Combine multiple temporal values into a single one with all input instants merged in temporal order. All inputs must share the same pcid and subtype.</para>
 				<para><varname>merge(tpcpoint) → tpcpoint</varname>, <varname>merge(tpcpatch) → tpcpatch</varname></para>
 				<para><varname>mergeAgg(tpcpoint) → tpcpoint</varname>, <varname>mergeAgg(tpcpatch) → tpcpatch</varname></para>
@@ -1803,6 +1804,8 @@ SELECT numInstants(mergeAgg(v)) FROM (VALUES
 			<listitem xml:id="tpcpoint_append">
 				<indexterm significance="normal"><primary><varname>appendInstant</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>appendSequence</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>appendInstantAgg</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>appendSequenceAgg</varname></primary></indexterm>
 				<para>Streaming construction aggregates: <varname>appendInstant</varname> assembles instants into a sequence; <varname>appendSequence</varname> assembles sequences into a sequence set. Useful for trajectory loaders that consume rows in time order.</para>
 				<para><varname>appendInstant(tpcpoint[,interp,maxt]) → tpcpoint</varname>, <varname>appendInstant(tpcpatch) → tpcpatch</varname></para>
 				<para><varname>appendInstantAgg(tpcpoint[,interp,maxt]) → tpcpoint</varname>, <varname>appendInstantAgg(tpcpatch) → tpcpatch</varname></para>
