@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: tile_get_fpos</title>
+<title>MobilityDB: ensure_one_tile_dimension</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -82,7 +82,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__tile_8c_a8f8fb937cd78b6a675b6fc09816651de.html#a8f8fb937cd78b6a675b6fc09816651de">bitmatrix_get</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__tile_8c_a0df054ec0543db80a4df8c675b365831.html#a0df054ec0543db80a4df8c675b365831">bitmatrix_make</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__tile_8c_aadb76c7fbcc158642b37e470509eab63.html#aadb76c7fbcc158642b37e470509eab63">bitmatrix_set_cell</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__tile_8c_aa8b4726c610f2e9dd1377742a40d0b37.html#aa8b4726c610f2e9dd1377742a40d0b37">ensure_one_tile_dimension</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2geo_2tgeo__tile_8c_aa8b4726c610f2e9dd1377742a40d0b37.html#aa8b4726c610f2e9dd1377742a40d0b37">ensure_one_tile_dimension</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__tile_8c_ae4b07d6fffbbd58204c29a1ec95e7cfb.html#ae4b07d6fffbbd58204c29a1ec95e7cfb">fastvoxel_bm</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__tile_ga3361055a0f81cebc7e0266de5c0e18ef.html#ga3361055a0f81cebc7e0266de5c0e18ef">stbox_get_space_tile</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__tile_ga7f35fd17a9332d0275d9f5f3eb83f95a.html#ga7f35fd17a9332d0275d9f5f3eb83f95a">stbox_get_space_time_tile</a></td></tr>
@@ -101,7 +101,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__tile_ga204c79bfe97beb33be95b9cf288fafce.html#ga204c79bfe97beb33be95b9cf288fafce">tgeo_space_time_split</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__tile_8c_aa71e654d184e6a730f9b31641b3e07df.html#aa71e654d184e6a730f9b31641b3e07df">tgeo_space_time_tile_init</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__tile_8c_ad8bd41622f159b082384ad8d4eddc957.html#ad8bd41622f159b082384ad8d4eddc957">tile_get_coords</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2geo_2tgeo__tile_8c_a12712eec6f38498543c051ec801521ab.html#a12712eec6f38498543c051ec801521ab">tile_get_fpos</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__tile_8c_a12712eec6f38498543c051ec801521ab.html#a12712eec6f38498543c051ec801521ab">tile_get_fpos</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__tile_8c_a5e0379f7b77bc0832480c7e809f28527.html#a5e0379f7b77bc0832480c7e809f28527">tpoint_set_tiles</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__tile_8c_a62d467d6bc430feb18c6b86add99191b.html#a62d467d6bc430feb18c6b86add99191b">tpointinst_get_coords_fpos</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tgeo__tile_8c_aaaebf1e7b15050dd1bd9028aae09d57c.html#aaaebf1e7b15050dd1bd9028aae09d57c">tpointseq_cont_set_tiles</a></td></tr>
@@ -112,8 +112,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a12712eec6f38498543c051ec801521ab" name="a12712eec6f38498543c051ec801521ab"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a12712eec6f38498543c051ec801521ab">&#9670;&#160;</a></span>tile_get_fpos()</h2>
+<a id="aa8b4726c610f2e9dd1377742a40d0b37" name="aa8b4726c610f2e9dd1377742a40d0b37"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa8b4726c610f2e9dd1377742a40d0b37">&#9670;&#160;</a></span>ensure_one_tile_dimension()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -122,40 +122,16 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static void tile_get_fpos </td>
+          <td class="memname">static bool ensure_one_tile_dimension </td>
           <td>(</td>
           <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>dx</em>, </td>
+          <td class="paramname"><em>xsize</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>dy</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>dz</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a>&#160;</td>
-          <td class="paramname"><em>dt</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const <a class="el" href="structSTboxGridState.html">STboxGridState</a> *&#160;</td>
-          <td class="paramname"><em>state</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *&#160;</td>
-          <td class="paramname"><em>fpos</em>&#160;</td>
+          <td class="paramtype">const <a class="el" href="structInterval.html">Interval</a> *&#160;</td>
+          <td class="paramname"><em>duration</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -170,15 +146,7 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Transform the values in a tile into relative positions in matrix cells. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">dx,dy,dz,dt</td><td>Values in a tile </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">state</td><td>Grid information </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">fpos</td><td>Fractional position of values in their matrix cells (between 0 and 1) </td></tr>
-  </table>
-  </dd>
-</dl>
+<p>Ensure that at least one dimension is given for tiling a spatiotemporal box. </p>
 
 </div>
 </div>
