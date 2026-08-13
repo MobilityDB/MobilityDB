@@ -150,6 +150,9 @@ SELECT jsonbsetPathExists(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units
 SELECT jsonbsetPathExists(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', '$.speed ? (@ > $min)', '{"min": 15}');
 SELECT jsonbsetPathExistsTz(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', '$.units');
 
+/* .datetime() casts a JSON string to a date/time value for comparison */
+SELECT jsonbsetPathExistsTz(jsonbset '{"{\"d\": \"2001-01-01\"}", "{\"d\": \"1999-01-01\"}"}', '$.d.datetime() > "2000-06-01".datetime()');
+
 SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' @@ '$.speed > 15';
 SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' @@ '$.speed == 10';
 

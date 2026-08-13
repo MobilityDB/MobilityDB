@@ -377,6 +377,13 @@ SELECT jsonbsetPathExistsTz(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"uni
  {t,f}
 (1 row)
 
+/* .datetime() casts a JSON string to a date/time value for comparison */
+SELECT jsonbsetPathExistsTz(jsonbset '{"{\"d\": \"2001-01-01\"}", "{\"d\": \"1999-01-01\"}"}', '$.d.datetime() > "2000-06-01".datetime()');
+ jsonbsetpathexiststz 
+----------------------
+ {t,t}
+(1 row)
+
 SELECT jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}' @@ '$.speed > 15';
  ?column? 
 ----------
