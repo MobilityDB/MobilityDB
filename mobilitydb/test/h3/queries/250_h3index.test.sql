@@ -10,7 +10,14 @@
 -- operators, btree + hash opclasses, ASSIGNMENT casts to/from bigint.
 
 -------------------------------------------------------------------------------
--- Input parser: hex (canonical) and decimal both accepted
+-- Input parser
+--
+-- The h3index literal is parsed by the input function of the h3 extension,
+-- which provides the type. It reads hexadecimal, saturates a value wider
+-- than 64 bits, and stops at the first character it cannot read, so the
+-- decimal spelling of a cell yields an unrelated cell. The MobilityDB
+-- parser, which reads the elements of an h3indexset and the values of a
+-- th3index, rejects those spellings instead (see 251 and 270).
 -------------------------------------------------------------------------------
 
 SELECT h3index '8a2a1072b59ffff';

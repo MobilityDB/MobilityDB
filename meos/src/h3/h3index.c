@@ -418,9 +418,40 @@ meos_h3index_in(const char *str)
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(str, (H3Index) 0);
 
-  /* Delegate to libh3, exactly as the h3-pg extension's input function
-   * does, so both extensions parse the same representation (hexadecimal,
-   * with an optional "0x" prefix, no cell-validity check) */
+  /* The accepted input is an optional "0x" or "0X" prefix followed by at
+   * least one and at most 16 significant hexadecimal digits, leading zeros
+   * being insignificant, and nothing else. There is no cell-validity check.
+   * The domain is bounded here rather than inherited from libh3, which
+   * saturates a value wider than 64 bits and stops at the first character it
+   * cannot read: both map strings that differ onto the value of an unrelated
+   * cell, so distinct inputs would compare equal and corrupt joins, grouping
+   * and deduplication. MobilityDB must yield identical results in every
+   * binding, whichever version of libh3 the binding links, hence the check
+   * precedes the delegation. The parsing itself is left to libh3 */
+  const char *p = str;
+  if (p[0] == '0' && (p[1] == 'x' || p[1] == 'X'))
+    p += 2;
+  const char *start = p;
+  while (*p == '0')
+    p++;
+  const char *significant = p;
+  while (isxdigit((unsigned char) *p))
+    p++;
+  if (*p != '\0' || p == start)
+  {
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+      "invalid h3index input \"%s\": expected hexadecimal digits with an "
+      "optional \"0x\" prefix", str);
+    return (H3Index) 0;
+  }
+  if (p - significant > 16)
+  {
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
+      "invalid h3index input \"%s\": at most 16 hexadecimal digits are "
+      "allowed", str);
+    return (H3Index) 0;
+  }
+
   H3Index cell;
   H3Error err;
   if ((err = stringToH3(str, &cell)) != E_SUCCESS)

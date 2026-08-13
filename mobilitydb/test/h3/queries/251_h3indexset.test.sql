@@ -20,14 +20,23 @@ SELECT h3indexset '{8a2a1072b59ffff, 831c02fffffffff, 880326b885fffff}';
 -- Singleton
 SELECT h3indexset '{8a2a1072b59ffff}';
 
--- The h3 library reads a cell literal as hexadecimal, so the decimal
--- spelling of a cell is read as hex, exceeds 64 bits, and reaches the
--- cell lookup as the saturated value
-SELECT h3indexset '{622236750694711295}';
+-- An optional "0x" prefix and insignificant leading zeros are accepted
+SELECT h3indexset '{0x8a2a1072b59ffff}';
+SELECT h3indexset '{0x0000000008a2a1072b59ffff}';
+SELECT h3indexset '{00000008a2a1072b59ffff}';
 
 /* Errors */
 SELECT h3indexset '{0}';                     -- the 0 sentinel is rejected
 SELECT h3indexset '{not-a-cell}';
+-- A cell literal is read as hexadecimal, so the decimal spelling of a cell
+-- has more than 16 significant hexadecimal digits and is rejected instead
+-- of being silently narrowed to another cell
+SELECT h3indexset '{622236750694711295}';
+SELECT h3indexset '{ffffffffffffffffff}';
+SELECT h3indexset '{0xffffffffffffffffffffffff}';
+-- Characters that are not hexadecimal digits are rejected instead of
+-- being silently ignored
+SELECT h3indexset '{8928308280fffffZZ}';
 
 -------------------------------------------------------------------------------
 -- Conversions

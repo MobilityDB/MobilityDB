@@ -37,8 +37,8 @@
  * compound payload (it is a 64-bit integer cell identifier), so
  * the helpers here are minimal:
  *
- *   * an input parser that delegates to the h3 library, which reads the
- *     canonical hexadecimal cell literal with an optional "0x" prefix,
+ *   * an input parser that reads the canonical hexadecimal cell literal,
+ *     with an optional "0x" prefix and at most 16 significant digits,
  *   * an output formatter (canonical form is hex, matching h3-pg),
  *   * comparison / ordering / hashing helpers — exposed at the MEOS
  *     layer so MobilityDuck and other consumers can reuse them
