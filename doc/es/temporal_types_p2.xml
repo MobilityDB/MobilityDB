@@ -485,6 +485,7 @@ SELECT tgeogpoint '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02]' =
 				<indexterm significance="normal"><primary><varname>&gt;</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>&lt;=</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>&gt;=</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>cmp</varname></primary></indexterm>
 					<para>Comparaciones tradicionales</para>
 					<para><varname>ttype {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} ttype → boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">

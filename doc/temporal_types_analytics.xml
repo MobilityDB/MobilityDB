@@ -994,6 +994,7 @@ FROM (SELECT valueTimeSplit(tfloat '[1@2001-02-01, 10@2001-02-10)', 5.0, '5 days
 				<listitem xml:id="tspatial_spaceSplit">
 					<indexterm significance="normal"><primary><varname>spaceSplit</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>timeSplit</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>spaceTimeSplit</varname></primary></indexterm>
 					<para>Split a temporal point with respect to a spatial grid &Z_support;
  &SRF;
 </para>
