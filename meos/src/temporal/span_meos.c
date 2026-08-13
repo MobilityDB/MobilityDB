@@ -554,7 +554,7 @@ span_lower_inc(const Span *s)
  * @ingroup meos_setspan_accessor
  * @brief Return true if the upper bound of a span is inclusive
  * @param[in] s Span
- * @csqlfn #Span_lower_inc()
+ * @csqlfn #Span_upper_inc()
  */
 bool
 span_upper_inc(const Span *s)
