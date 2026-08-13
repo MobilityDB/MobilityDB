@@ -74,29 +74,29 @@ WHERE atSpan(rasterValue(trip, elev), floatspan '[200, 9999]') IS NOT NULL;
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Step 1: identify which tiles the trajectory overlaps
 SELECT DISTINCT q
-FROM unnest(trajectoryQuadbins(traj, 8)) AS q;
+FROM unnest(quadbins(traj, 8)) AS q;
 
 -- Step 2: sample each matching tile
 SELECT raster_tileValueQuadbin(traj, band_data, width, height, quadbin, 'FLOAT32',
   nodata, true)
 FROM elevation_raquet
-WHERE quadbin = ANY(trajectoryQuadbins(traj, 8));
+WHERE quadbin = ANY(quadbins(traj, 8));
 </programlisting>
 
 		<itemizedlist>
-			<listitem xml:id="trajectory_quadbins">
+			<listitem xml:id="raster_quadbins">
 				<indexterm significance="normal"><primary><varname>quadbins</varname></primary></indexterm>
 				<para>Return the distinct QUADBIN cells at a zoom level covered by a trajectory</para>
-				<para><varname>trajectoryQuadbins(tgeompoint,integer) → bigint[]</varname></para>
+				<para><varname>quadbins(tgeompoint,integer) → bigint[]</varname></para>
 				<para>Returns the set of unique QUADBIN cells (deduplicated) whose Web-Mercator tile envelopes contain at least one instant of <varname>traj</varname>. The result is suitable as a WHERE-clause join key against a Raquet table. <varname>zoom</varname> must be in [0, 15].</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Three instants spanning three tiles at zoom 3
-SELECT trajectoryQuadbins(tgeompoint 'SRID=4326;{Point(-60 45)@2024-01-01,
+SELECT quadbins(tgeompoint 'SRID=4326;{Point(-60 45)@2024-01-01,
   Point(0 45)@2024-01-02, Point(60 45)@2024-01-03}', 3);
 -- {5202501994543054848,5203346419473186816,5203416788217364480}
 
 -- Count of Raquet tiles a ship trajectory overlaps at zoom 8
-SELECT array_length(trajectoryQuadbins(trip, 8), 1) AS tile_count
+SELECT array_length(quadbins(trip, 8), 1) AS tile_count
 FROM trips
 ORDER BY tile_count DESC;
 </programlisting>
@@ -113,13 +113,13 @@ ORDER BY tile_count DESC;
 SELECT t.tripid, rasterTileValueQuadbin(t.trip, r.band_data, r.width, r.height,
   r.quadbin, 'FLOAT32', r.nodata, true)
 FROM trips t
-JOIN elevation_raquet r ON r.quadbin = ANY(trajectoryQuadbins(t.trip, 8));
+JOIN elevation_raquet r ON r.quadbin = ANY(quadbins(t.trip, 8));
 
 -- Average sea-surface temperature per trajectory
 SELECT t.tripid, avgValue(rasterTileValueQuadbin(t.trip, 
   r.band_data, 256, 256, r.quadbin, 'INT16', -9999, true)) AS mean_sst
 FROM trips t
-JOIN sst_raquet r ON r.quadbin = ANY(trajectoryQuadbins(t.trip, 6));
+JOIN sst_raquet r ON r.quadbin = ANY(quadbins(t.trip, 6));
 </programlisting>
 			</listitem>
 
@@ -162,7 +162,7 @@ FROM elevation_files;
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Sample pre-packaged raquet tiles along ship trajectories
 SELECT t.tripid, rasterTileValue(t.trip, r.tile)
-FROM trips t JOIN elevation_tiles r ON r.quadbin = ANY(trajectoryQuadbins(t.trip, 8));
+FROM trips t JOIN elevation_tiles r ON r.quadbin = ANY(quadbins(t.trip, 8));
 </programlisting>
 			</listitem>
 
@@ -175,7 +175,7 @@ FROM trips t JOIN elevation_tiles r ON r.quadbin = ANY(trajectoryQuadbins(t.trip
 -- Sample a trajectory across every tile it crosses, in one value
 SELECT t.tripid, rasterTileValue(t.trip, array_agg(r.tile))
 FROM trips t
-JOIN elevation_tiles r ON r.quadbin = ANY(trajectoryQuadbins(t.trip, 8))
+JOIN elevation_tiles r ON r.quadbin = ANY(quadbins(t.trip, 8))
 GROUP BY t.tripid, t.trip;
 </programlisting>
 			</listitem>

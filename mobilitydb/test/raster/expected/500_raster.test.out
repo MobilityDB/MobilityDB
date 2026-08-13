@@ -189,7 +189,7 @@ FROM rast;
  f       | t
 (1 row)
 
-SELECT array_length(trajectoryQuadbins(
+SELECT array_length(quadbins(
   tgeompoint 'SRID=4326;{Point(-60.0 45.0)@2024-01-01,
   Point(0.0 45.0)@2024-01-02, Point(60.0 45.0)@2024-01-03}', 3), 1) AS num_distinct_tiles;
  num_distinct_tiles 
@@ -197,7 +197,7 @@ SELECT array_length(trajectoryQuadbins(
                   3
 (1 row)
 
-SELECT array_length(trajectoryQuadbins(
+SELECT array_length(quadbins(
   tgeompoint 'SRID=4326;{Point(-60.0 45.0)@2024-01-01,
     Point(-61.0 44.0)@2024-01-02}', 3), 1) AS num_distinct_tiles;
  num_distinct_tiles 
@@ -205,7 +205,7 @@ SELECT array_length(trajectoryQuadbins(
                   1
 (1 row)
 
-SELECT trajectoryQuadbins(tgeompoint 'SRID=4326;{Point(0.0 0.0)@2024-01-01}', 16);
+SELECT quadbins(tgeompoint 'SRID=4326;{Point(0.0 0.0)@2024-01-01}', 16);
 ERROR:  zoom level must be between 0 and 15
 SELECT rasterTileValueQuadbin(tgeompoint 'SRID=4326;{Point(45.0 75.0)@2024-01-01,
   Point(135.0 75.0)@2024-01-02, Point(45.0 10.0)@2024-01-03, Point(-45.0 75.0)@2024-01-04}',

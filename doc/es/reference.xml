@@ -3871,7 +3871,7 @@
 			<title>Muestreo Raquet / QUADBIN</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="trajectory_quadbins"><varname>quadbins</varname></link>: Devolver las celdas QUADBIN distintas en un nivel de zoom cubiertas por una trayectoria</para>
+					<para><link linkend="raster_quadbins"><varname>quadbins</varname></link>: Devolver las celdas QUADBIN distintas en un nivel de zoom cubiertas por una trayectoria</para>
 				</listitem>
 
 				<listitem>

@@ -35,7 +35,7 @@
  * Sampling functions:
  *   rasterValue(tgeompoint, raster, band integer DEFAULT 1) → tfloat
  *   rasterTileValueQuadbin(tgeompoint, bytea, ...) → tfloat
- *   trajectoryQuadbins(tgeompoint, integer) → bigint[]
+ *   quadbins(tgeompoint, integer) → bigint[]
  *
  * Restriction functions (SQL-defined, compose the sampling operators):
  *   atRasterValue(tgeompoint, raster, floatspan, band DEFAULT 1) → tgeompoint
@@ -201,7 +201,7 @@ CREATE FUNCTION rasterTileValue(
   LANGUAGE C STRICT;
 
 /******************************************************************************
- * trajectoryQuadbins
+ * quadbins
  *****************************************************************************/
 
 /**
@@ -212,7 +212,7 @@ CREATE FUNCTION rasterTileValue(
  * @param[in] zoom  QUADBIN zoom level (0–15)
  * @csqlfn #Trajectory_quadbins()
  */
-CREATE OR REPLACE FUNCTION trajectoryQuadbins(
+CREATE OR REPLACE FUNCTION quadbins(
     traj  tgeompoint,
     zoom  integer
 ) RETURNS bigint[]

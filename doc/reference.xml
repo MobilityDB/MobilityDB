@@ -3931,7 +3931,7 @@
 			<title>Raquet / QUADBIN Sampling</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="trajectory_quadbins"><varname>quadbins</varname></link>: Return the distinct QUADBIN cells at a zoom level covered by a trajectory</para>
+					<para><link linkend="raster_quadbins"><varname>quadbins</varname></link>: Return the distinct QUADBIN cells at a zoom level covered by a trajectory</para>
 				</listitem>
 
 				<listitem>
