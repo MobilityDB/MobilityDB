@@ -1831,11 +1831,11 @@ tpointseg_distance_lb(Datum start1, Datum end1, Datum start2, Datum end2)
   const POINT2D *e1 = DATUM_POINT2D_P(end1);
   const POINT2D *s2 = DATUM_POINT2D_P(start2);
   const POINT2D *e2 = DATUM_POINT2D_P(end2);
-  double dx = fmax(fmax(fmin(s1->x, e1->x) - fmax(s2->x, e2->x),
-    fmin(s2->x, e2->x) - fmax(s1->x, e1->x)), 0.0);
-  double dy = fmax(fmax(fmin(s1->y, e1->y) - fmax(s2->y, e2->y),
-    fmin(s2->y, e2->y) - fmax(s1->y, e1->y)), 0.0);
-  return sqrt(dx * dx + dy * dy);
+  return sqrt(box2d_distance_sqr(
+    fmin(s1->x, e1->x), fmin(s1->y, e1->y),
+    fmax(s1->x, e1->x), fmax(s1->y, e1->y),
+    fmin(s2->x, e2->x), fmin(s2->y, e2->y),
+    fmax(s2->x, e2->x), fmax(s2->y, e2->y)));
 }
 
 /**
