@@ -68,6 +68,14 @@ jobs:
       - name: Reject <-> operators that btree_gist owns
         run: python3 tools/scripts/check_btree_gist_operators.py
 
+  binding_io_ownership_check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Reject types MEOS parses that MobilityDB does not declare
+        run: python3 tools/scripts/check_binding_io_ownership.py
+
   templatetypes_check:
     runs-on: ubuntu-latest
     steps:
