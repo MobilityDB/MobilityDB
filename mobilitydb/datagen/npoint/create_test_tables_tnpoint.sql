@@ -34,26 +34,29 @@
  * These functions use the random generator for these types that are in the
  * file random_tnpoint.sql. Refer to that file for the meaning of the
  * parameters used in the function calls of this file.
+ *
+ * The road network is materialized on demand by ensure_random_ways() in
+ * random_tnpoint.sql. The identifiers of the generated network points are
+ * taken from the routes of the resulting ways table.
  */
 
 DROP FUNCTION IF EXISTS create_test_tables_npoint();
 CREATE OR REPLACE FUNCTION create_test_tables_npoint(size int DEFAULT 1000)
 RETURNS text AS $$
+DECLARE
+  perc int := size / 4;
+  lown int;
+  highn int;
 BEGIN
 
 -------------------------------------------------------------------------------
 
-DROP TABLE IF EXISTS ways;
-CREATE TABLE ways (
-  gid bigint PRIMARY KEY,
-  the_geom geometry,
-  length float
-);
-INSERT INTO ways(gid, the_geom)
-SELECT k, random_geomlinestring(0, size, 0, size,10)
-FROM generate_series (0, size) AS k;
-UPDATE ways
-SET length = st_length(the_geom);
+/* Materialize the synthetic road network read by every random function below.
+   Creates the table ways only when it is absent — a road network already
+   loaded in the database is left untouched and its routes are used instead. */
+PERFORM ensure_random_ways();
+SELECT min(gid), max(gid) INTO lown, highn FROM ways;
+RAISE NOTICE 'Generating network points on the routes of the table ways with identifiers in [%, %]', lown, highn;
 
 /*
 SELECT gid, st_astext(the_geom)
@@ -67,12 +70,12 @@ LIMIT 2;
 
 DROP TABLE IF EXISTS tbl_npoint;
 CREATE TABLE tbl_npoint AS
-SELECT k, random_npoint(0, size) AS np
+SELECT k, random_npoint(lown, highn) AS np
 FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_nsegment;
 CREATE TABLE tbl_nsegment AS
-SELECT k, random_nsegment(0, size) AS ns
+SELECT k, random_nsegment(lown, highn) AS ns
 FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_npointset;
@@ -80,7 +83,7 @@ CREATE TABLE tbl_npointset AS
 /* Add perc NULL values */
 SELECT k, NULL AS n
 FROM generate_series(1, perc) AS k UNION
-SELECT k, random_npoint_set(1, 100, 5, 10)
+SELECT k, random_npoint_set(lown, highn, 5, 10)
 FROM generate_series(perc+1, size) AS k;
 
 ------------------------------------------------------------------------------
@@ -89,22 +92,22 @@ FROM generate_series(perc+1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_tnpoint_inst;
 CREATE TABLE tbl_tnpoint_inst AS
-SELECT k, random_tnpoint_inst(0, size, '2001-01-01', '2001-12-31') AS inst
+SELECT k, random_tnpoint_inst(lown, highn, '2001-01-01', '2001-12-31') AS inst
 FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_tnpoint_discseq;
 CREATE TABLE tbl_tnpoint_discseq AS
-SELECT k, random_tnpoint_discseq(0, size, '2001-01-01', '2001-12-31', 10, 1, 10) AS seq
+SELECT k, random_tnpoint_discseq(lown, highn, '2001-01-01', '2001-12-31', 10, 1, 10) AS seq
 FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_tnpoint_seq;
 CREATE TABLE tbl_tnpoint_seq AS
-SELECT k, random_tnpoint_seq(0, size, '2001-01-01', '2001-12-31', 10, 1, 10) AS seq
+SELECT k, random_tnpoint_contseq(lown, highn, '2001-01-01', '2001-12-31', 10, 1, 10) AS seq
 FROM generate_series(1, size) k;
 
 DROP TABLE IF EXISTS tbl_tnpoint_seqset;
 CREATE TABLE tbl_tnpoint_seqset AS
-SELECT k, random_tnpoint_seqset(0, size, '2001-01-01', '2001-12-31', 10, 1, 10, 1, 10) AS ss
+SELECT k, random_tnpoint_seqset(lown, highn, '2001-01-01', '2001-12-31', 10, 1, 10, 1, 10) AS ss
 FROM generate_series(1, size) AS k;
 
 DROP TABLE IF EXISTS tbl_tnpoint;

@@ -31,22 +31,49 @@
  * random_tnpoint.sql
  * Basic synthetic data generator functions FOR network point types
  * and temporal network point types.
+ *
+ * All randomly generated values reference the routes of the table ways.
+ * The synthetic road network (100 random linestring routes with identifiers
+ * 1 to 100) is materialized on demand via @ref ensure_random_ways().
  */
 
 ------------------------------------------------------------------------------
 -- Ways table
 ------------------------------------------------------------------------------
 
-DROP TABLE IF EXISTS ways;
-CREATE TABLE ways(
-  gid bigint PRIMARY KEY,
-  the_geom geometry,
-  length float);
-INSERT INTO ways
-SELECT k, random_geom_linestring(0, 100, 0, 100, 10, 2, 10, 0)
-FROM generate_series(1, 100) AS k;
-UPDATE ways
-SET length = ST_Length(the_geom);
+/**
+ * @brief Ensure that the road network table ways exists
+ * @details Creates the table ways with 100 random linestring routes if no
+ *   such table is found in the search path. Idempotent — a real road network,
+ *   such as the one loaded by osm2pgrouting, is left in place. All random
+ *   functions in this file reference the routes of that table.
+ * @return Number of routes of the table ways
+ */
+DROP FUNCTION IF EXISTS ensure_random_ways();
+CREATE FUNCTION ensure_random_ways()
+RETURNS integer AS $$
+DECLARE
+  result integer;
+BEGIN
+  IF to_regclass('ways') IS NULL THEN
+    CREATE TABLE ways(
+      gid bigint PRIMARY KEY,
+      the_geom geometry,
+      length float);
+    INSERT INTO ways
+    SELECT k, random_geom_linestring(0, 100, 0, 100, 10, 2, 10, 0)
+    FROM generate_series(1, 100) AS k;
+    UPDATE ways
+    SET length = ST_Length(the_geom);
+  END IF;
+  SELECT count(*) INTO result FROM ways;
+  RETURN result;
+END;
+$$ LANGUAGE PLPGSQL;
+
+/*
+SELECT ensure_random_ways();
+*/
 
 ------------------------------------------------------------------------------
 -- Static Network Types
@@ -77,6 +104,7 @@ DROP FUNCTION IF EXISTS random_npoint;
 CREATE FUNCTION random_npoint(lown integer, highn integer)
   RETURNS npoint AS $$
 BEGIN
+  PERFORM ensure_random_ways();
   RETURN npoint(random_int(lown, highn), random_fraction());
 END;
 $$ LANGUAGE PLPGSQL STRICT;
@@ -99,6 +127,7 @@ DECLARE
   random2 float;
   tmp float;
 BEGIN
+  PERFORM ensure_random_ways();
   random1 = random_fraction();
   random2 = random_fraction();
   IF random1 > random2 THEN
