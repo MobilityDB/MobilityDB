@@ -55,9 +55,6 @@ extern Temporal *tinterrel_tgeo_geo(const Temporal *temp,
   const GSERIALIZED *gs, bool tinter);
 extern Temporal *tinterrel_tspatial_base(const Temporal *temp, Datum base,
   bool tinter, datum_func2 func);
-
-extern Temporal *tinterrel_tspatial_base(const Temporal *temp,
-  Datum base, bool tinter, datum_func2 func);
 extern Temporal *tinterrel_tspatial_tspatial(const Temporal *temp1,
   const Temporal *temp2, bool tinter);
 
