@@ -55,6 +55,7 @@ mobilitydb/sql/h3/283_th3index_edges.in.sql
 mobilitydb/sql/h3/284_th3index_vertices.in.sql
 mobilitydb/sql/h3/285_th3index_traversal.in.sql
 mobilitydb/sql/h3/286_th3index_metrics.in.sql
+mobilitydb/sql/header.in.sql
 mobilitydb/sql/json/451_jsonbset_jsonfuncs.in.sql
 mobilitydb/sql/json/454_tjsonb_jsonfuncs.in.sql
 mobilitydb/sql/json/456_tjsonb_op.in.sql
