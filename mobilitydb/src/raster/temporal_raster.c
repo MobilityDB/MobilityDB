@@ -195,7 +195,7 @@ PG_FUNCTION_INFO_V1(Raster_value);
  * @param[in] rast Raster
  * @param[in] traj Trajectory
  * @param[in] band Band number (1-based, default 1)
- * @sqlfn #rasterValue()
+ * @sqlfn rasterValue()
  */
 Datum
 Raster_value(PG_FUNCTION_ARGS)
@@ -231,7 +231,7 @@ PG_FUNCTION_INFO_V1(Raster_at_value);
  * @param[in] rast Raster
  * @param[in] vspan Float value range (inclusive bounds)
  * @param[in] band Band number (1-based, default 1)
- * @sqlfn #atRasterValue()
+ * @sqlfn atRasterValue()
  */
 Datum
 Raster_at_value(PG_FUNCTION_ARGS)
@@ -264,7 +264,7 @@ PG_FUNCTION_INFO_V1(Raster_minus_value);
  * @param[in] rast Raster
  * @param[in] vspan Float value range to exclude
  * @param[in] band Band number (1-based, default 1)
- * @sqlfn #minusRasterValue()
+ * @sqlfn minusRasterValue()
  */
 Datum
 Raster_minus_value(PG_FUNCTION_ARGS)
@@ -297,7 +297,7 @@ PG_FUNCTION_INFO_V1(Eraster_value);
  * @param[in] traj Trajectory (SRID matching the raster)
  * @param[in] vspan Float value range
  * @param[in] band Band number (1-based, default 1)
- * @sqlfn #eRasterValue()
+ * @sqlfn eRasterValue()
  */
 Datum
 Eraster_value(PG_FUNCTION_ARGS)
@@ -330,7 +330,7 @@ PG_FUNCTION_INFO_V1(Araster_value);
  * @param[in] traj Trajectory (SRID matching the raster)
  * @param[in] vspan Float value range
  * @param[in] band Band number (1-based, default 1)
- * @sqlfn #aRasterValue()
+ * @sqlfn aRasterValue()
  */
 Datum
 Araster_value(PG_FUNCTION_ARGS)
@@ -626,7 +626,7 @@ PG_FUNCTION_INFO_V1(Trajectory_quadbins);
  * trajectory, for use as a WHERE-clause join key against a Raquet table
  * @param[in] traj  Trajectory (tgeompoint, SRID 4326)
  * @param[in] zoom  QUADBIN zoom level (0–15)
- * @sqlfn #quadbins()
+ * @sqlfn quadbins()
  */
 Datum
 Trajectory_quadbins(PG_FUNCTION_ARGS)

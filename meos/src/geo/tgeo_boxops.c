@@ -1609,7 +1609,7 @@ geo_split_each_n_gboxes(const GSERIALIZED *gs, int elems_per_box, int *count)
  * @param[in] gs (Multi)line
  * @param[in] elems_per_box Number of input segments merged into an output box
  * @param[out] count Number of elements in the output array
- * @csqlfn Geo_split_each_n_stboxes()
+ * @csqlfn #Geo_split_each_n_stboxes()
  */
 STBox *
 geo_split_each_n_stboxes(const GSERIALIZED *gs, int elems_per_box, int *count)
