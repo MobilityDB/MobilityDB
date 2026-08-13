@@ -32,6 +32,8 @@ SELECT th3index '8a2a100d645ffff@2012-01-01 08:00:00';
 /* Errors */
 SELECT th3index 'ABC@2012-01-01 08:00:00';
 SELECT th3index '8a2a100d645ffff@2012-01-01 08:00:00,';
+SELECT th3index 'ffffffffffffffffff@2012-01-01 08:00:00';
+SELECT th3index '8a2a100d645fffZZ@2012-01-01 08:00:00';
 
 -------------------------------------------------------------------------------
 -- Temporal discrete sequence

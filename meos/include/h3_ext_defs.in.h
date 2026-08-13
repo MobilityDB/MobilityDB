@@ -5,9 +5,9 @@
  * PostgreSQL extension. The MEOS library defines them (they are the public
  * binding surface); the MobilityDB PostgreSQL extension does not, so that
  * both the h3 and mobilitydb extensions can be loaded in the same server.
- * Input parses and output prints with libh3's stringToH3 / h3ToString —
- * hexadecimal with an optional "0x" prefix, no cell-validity check —
- * exactly as h3-pg does. Comparison / ordering / hashing operate on the
+ * Input reads, and output prints, the canonical hexadecimal cell literal
+ * with an optional "0x" prefix and at most 16 significant digits, with no
+ * cell-validity check. Comparison / ordering / hashing operate on the
  * uint64 cell identifier; they carry no geographic meaning but are
  * required for ordering, grouping, and hashing. */
 

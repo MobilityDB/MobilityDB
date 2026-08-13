@@ -15,6 +15,14 @@ SELECT th3index '8a2a100d645ffff@2012-01-01 08:00:00,';
 ERROR:  Could not parse th3index value: Extraneous characters at the end
 LINE 1: SELECT th3index '8a2a100d645ffff@2012-01-01 08:00:00,';
                         ^
+SELECT th3index 'ffffffffffffffffff@2012-01-01 08:00:00';
+ERROR:  invalid h3index input "ffffffffffffffffff": at most 16 hexadecimal digits are allowed
+LINE 1: SELECT th3index 'ffffffffffffffffff@2012-01-01 08:00:00';
+                        ^
+SELECT th3index '8a2a100d645fffZZ@2012-01-01 08:00:00';
+ERROR:  invalid h3index input "8a2a100d645fffZZ": expected hexadecimal digits with an optional "0x" prefix
+LINE 1: SELECT th3index '8a2a100d645fffZZ@2012-01-01 08:00:00';
+                        ^
 SELECT th3index ' { 8a2a100d645ffff@2001-01-01 08:00:00 , 8a2a100d6460000@2001-01-01 08:05:00 , 8a2a100d6460001@2001-01-01 08:06:00 } ';
                                                                   th3index                                                                  
 --------------------------------------------------------------------------------------------------------------------------------------------
