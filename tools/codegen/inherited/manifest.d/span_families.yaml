@@ -101,9 +101,7 @@ span_families:
   - {sig: "duration({sp})", ret: "interval", sym: Datespan_duration, only: [date]}
   - {sig: "duration({sp})", ret: "interval", sym: Tstzspan_duration, only: [tstz]}
   - lit: "\n/*****************************************************************************\n * Transformation functions\n *****************************************************************************/\n\n"
-  - {sig: "expand({sp}, {v})", ret: "{sp}", sym: Numspan_expand, only: [int]}
-  - {sig: "expand({sp}, {v})", ret: "{sp}", sym: Numspan_shift, only: [bigint]}
-  - {sig: "expand({sp}, {v})", ret: "{sp}", sym: Numspan_expand, only: [float]}
+  - {sig: "expand({sp}, {v})", ret: "{sp}", sym: Numspan_expand, only: [int, bigint, float]}
   - {sig: "expand(datespan, {v})", ret: "datespan", sym: Numspan_expand, only: [int]}
   - {sig: "expand({sp}, interval)", ret: "{sp}", sym: Tstzspan_expand, only: [tstz]}
   - lit: "\n"

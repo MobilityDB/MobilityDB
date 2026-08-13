@@ -159,6 +159,13 @@ SELECT datespan '(2000-01-01,2000-01-02]';
 -- Transformation functions
 -------------------------------------------------------------------------------
 
+SELECT expand(intspan '[1,1]', 1);
+SELECT expand(intspan '[1,3]', -1);
+SELECT expand(bigintspan '[1,1]', 1);
+SELECT expand(bigintspan '[1,5]', 1);
+SELECT expand(bigintspan '[1,5]', -1);
+SELECT expand(datespan '[2000-01-01,2000-01-02]', 1);
+
 SELECT expand(floatspan '[1,1]', 1);
 SELECT expand(floatspan '[1,2]', 1);
 SELECT expand(floatspan '(1,4]', -1);

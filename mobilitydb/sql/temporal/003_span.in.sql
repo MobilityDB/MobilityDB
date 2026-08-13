@@ -625,7 +625,7 @@ CREATE FUNCTION expand(intspan, integer)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION expand(bigintspan, bigint)
   RETURNS bigintspan
-  AS 'MODULE_PATHNAME', 'Numspan_shift'
+  AS 'MODULE_PATHNAME', 'Numspan_expand'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION expand(floatspan, float)
   RETURNS floatspan
