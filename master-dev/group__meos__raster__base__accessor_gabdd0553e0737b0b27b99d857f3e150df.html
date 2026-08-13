@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: raquet_hash_extended</title>
+<title>MobilityDB: raquet_pixels</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -80,10 +80,10 @@ $(function() {
       <div class="navtab">
         <table>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_gabe96e8bf50b2f1ae7e52888cff4c26c0.html#gabe96e8bf50b2f1ae7e52888cff4c26c0">raquet_hash</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__raster__base__accessor_ga6cb92d8b6e66632470494d2d0d0b4fe4.html#ga6cb92d8b6e66632470494d2d0d0b4fe4">raquet_hash_extended</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_ga6cb92d8b6e66632470494d2d0d0b4fe4.html#ga6cb92d8b6e66632470494d2d0d0b4fe4">raquet_hash_extended</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_ga2ca2fc75183c44687bd597a065203b86.html#ga2ca2fc75183c44687bd597a065203b86">raquet_height</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_ga2766fcf64c97c0d748bb0cf20938081e.html#ga2766fcf64c97c0d748bb0cf20938081e">raquet_nodata</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_gabdd0553e0737b0b27b99d857f3e150df.html#gabdd0553e0737b0b27b99d857f3e150df">raquet_pixels</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__raster__base__accessor_gabdd0553e0737b0b27b99d857f3e150df.html#gabdd0553e0737b0b27b99d857f3e150df">raquet_pixels</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_ga0019e015bac80fc360eed13f38720c3e.html#ga0019e015bac80fc360eed13f38720c3e">raquet_pixtype</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_gaf2aecd92bec93e65dc1cf3f3055efb86.html#gaf2aecd92bec93e65dc1cf3f3055efb86">raquet_pixtype_from_string</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_ga3d753a5a1074d72ee5ab110426852f9d.html#ga3d753a5a1074d72ee5ab110426852f9d">raquet_pixtype_size</a></td></tr>
@@ -95,14 +95,14 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga6cb92d8b6e66632470494d2d0d0b4fe4" name="ga6cb92d8b6e66632470494d2d0d0b4fe4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga6cb92d8b6e66632470494d2d0d0b4fe4">&#9670;&#160;</a></span>raquet_hash_extended()</h2>
+<a id="gabdd0553e0737b0b27b99d857f3e150df" name="gabdd0553e0737b0b27b99d857f3e150df"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gabdd0553e0737b0b27b99d857f3e150df">&#9670;&#160;</a></span>raquet_pixels()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="postgres__ext__defs_8in_8h_abc0f5bc07737e498f287334775dff2b6.html#abc0f5bc07737e498f287334775dff2b6">uint64</a> raquet_hash_extended </td>
+          <td class="memname">uint8_t * raquet_pixels </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structRaquet.html">Raquet</a> *&#160;</td>
           <td class="paramname"><em>rq</em>, </td>
@@ -110,8 +110,8 @@ $(function() {
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_abc0f5bc07737e498f287334775dff2b6.html#abc0f5bc07737e498f287334775dff2b6">uint64</a>&#160;</td>
-          <td class="paramname"><em>seed</em>&#160;</td>
+          <td class="paramtype">size_t *&#160;</td>
+          <td class="paramname"><em>size_out</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -121,14 +121,16 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the 64-bit hash of a <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> tile using a seed. </p>
+<p>Return a copy of the pixel bytes of a <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> tile. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">rq</td><td><a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> tile </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">seed</td><td>Seed @csqlfn <a class="el" href="group__mobilitydb__raster_gae645ce9a83d20613f08838b70aceb67e.html#gae645ce9a83d20613f08838b70aceb67e" title="Return the 64-bit hash of a Raquet tile using a seed @sqlfn hashExtended()">Raquet_hash_extended()</a> </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">size_out</td><td>Number of bytes returned </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section return"><dt>Returns</dt><dd>On error return <code>NULL</code> </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>The bytes are row-major and packed, <code>width</code> * <code>height</code> pixels of <code><a class="el" href="group__meos__raster__base__accessor_ga3d753a5a1074d72ee5ab110426852f9d.html#ga3d753a5a1074d72ee5ab110426852f9d" title="Return the size in bytes of a single pixel of the given type.">raquet_pixtype_size()</a></code> bytes each, which is the layout the tile constructors accept </dd></dl>
 
 </div>
 </div>
