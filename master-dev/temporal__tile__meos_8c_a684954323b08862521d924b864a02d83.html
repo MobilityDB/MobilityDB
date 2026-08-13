@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: tnumber_value_time_split</title>
+<title>MobilityDB: ensure_one_tile_dimension</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -80,7 +80,7 @@ $(function() {
       <div class="navtab">
         <table>
           <tr><td class="navtab"><a class="navtab" href="temporal__tile__meos_8c_a93f10e4281d3ce084036129ad0bc5f8d.html#a93f10e4281d3ce084036129ad0bc5f8d">bin_position</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="temporal__tile__meos_8c_a684954323b08862521d924b864a02d83.html#a684954323b08862521d924b864a02d83">ensure_one_tile_dimension</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="temporal__tile__meos_8c_a684954323b08862521d924b864a02d83.html#a684954323b08862521d924b864a02d83">ensure_one_tile_dimension</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__temporal__analytics__tile_ga438249ceef539f9bbcebd859c8e1d6bd.html#ga438249ceef539f9bbcebd859c8e1d6bd">tbox_value_time_tiles</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__tile__meos_8c_a056976d385a3b3e5f0ee332f927b6095.html#a056976d385a3b3e5f0ee332f927b6095">tcontseq_time_split</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__tile__meos_8c_a340c89253cbe9b040e9ad4b8fa2f9794.html#a340c89253cbe9b040e9ad4b8fa2f9794">tcontseq_time_split_iter</a></td></tr>
@@ -105,7 +105,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__analytics__tile_gaaab3422d42c97ef46885a4ff34b0cfca.html#gaaab3422d42c97ef46885a4ff34b0cfca">tintbox_value_tiles</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__analytics__tile_gaafc964a325c94f1b5b36eddcb5900327.html#gaafc964a325c94f1b5b36eddcb5900327">tintbox_value_time_tiles</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__temporal__tile_ga896a561982058e2f5e77129e6010e34b.html#ga896a561982058e2f5e77129e6010e34b">tnumber_value_split</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="temporal__tile__meos_8c_a97221ed5ae8b0a695248577840752460.html#a97221ed5ae8b0a695248577840752460">tnumber_value_time_split</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="temporal__tile__meos_8c_a97221ed5ae8b0a695248577840752460.html#a97221ed5ae8b0a695248577840752460">tnumber_value_time_split</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__tile__meos_8c_a93e62ea3d74d75e3018f7441630b738f.html#a93e62ea3d74d75e3018f7441630b738f">tnumberinst_value_split</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__tile__meos_8c_a6ffabb8f4df09033444790a0cd5c4f36.html#a6ffabb8f4df09033444790a0cd5c4f36">tnumberseq_cont_value_split</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__tile__meos_8c_ab934d3e8af519f9bdc8798ecfc8566b7.html#ab934d3e8af519f9bdc8798ecfc8566b7">tnumberseq_disc_value_split</a></td></tr>
@@ -117,59 +117,26 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a97221ed5ae8b0a695248577840752460" name="a97221ed5ae8b0a695248577840752460"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a97221ed5ae8b0a695248577840752460">&#9670;&#160;</a></span>tnumber_value_time_split()</h2>
+<a id="a684954323b08862521d924b864a02d83" name="a684954323b08862521d924b864a02d83"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a684954323b08862521d924b864a02d83">&#9670;&#160;</a></span>ensure_one_tile_dimension()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structTemporal.html">Temporal</a> ** tnumber_value_time_split </td>
+          <td class="memname">static bool ensure_one_tile_dimension </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
-          <td class="paramname"><em>temp</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td>
-          <td class="paramname"><em>size</em>, </td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>vsize</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const <a class="el" href="structInterval.html">Interval</a> *&#160;</td>
-          <td class="paramname"><em>duration</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td>
-          <td class="paramname"><em>vorigin</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a>&#160;</td>
-          <td class="paramname"><em>torigin</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> **&#160;</td>
-          <td class="paramname"><em>value_bins</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a> **&#160;</td>
-          <td class="paramname"><em>time_bins</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int *&#160;</td>
-          <td class="paramname"><em>count</em>&#160;</td>
+          <td class="paramname"><em>duration</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -177,9 +144,14 @@ $(function() {
           <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-<p>Return a temporal value split according to a base value and possibly a temporal grid. </p>
+<p>Ensure that at least one dimension is given for tiling a temporal box. </p>
 
 </div>
 </div>
