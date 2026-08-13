@@ -33,9 +33,9 @@
  * trajectories.
  *
  * Sampling functions:
- *   raster_value(raster, tgeompoint, band integer DEFAULT 1) → tfloat
- *   raster_tile_value_quadbin(bytea, ..., tgeompoint) → tfloat
- *   trajectory_quadbins(tgeompoint, integer) → bigint[]
+ *   rasterValue(raster, tgeompoint, band integer DEFAULT 1) → tfloat
+ *   rasterTileValueQuadbin(bytea, ..., tgeompoint) → tfloat
+ *   trajectoryQuadbins(tgeompoint, integer) → bigint[]
  *
  * Restriction functions (SQL-defined, compose the sampling operators):
  *   atRasterValue(tgeompoint, raster, floatspan, band DEFAULT 1) → tgeompoint
@@ -113,7 +113,7 @@ CREATE FUNCTION raquet(
  * geotransform and EPSG:3857 spatial reference
  * @csqlfn #Raquet_read()
  */
-CREATE FUNCTION raquet_read(
+CREATE FUNCTION raquetRead(
     rasterfile bytea,
     quadbin    bigint DEFAULT NULL
 ) RETURNS raquet
@@ -121,7 +121,7 @@ CREATE FUNCTION raquet_read(
   LANGUAGE C IMMUTABLE;
 
 /******************************************************************************
- * raster_value
+ * rasterValue
  *****************************************************************************/
 
 /**
@@ -131,9 +131,9 @@ CREATE FUNCTION raquet_read(
  * @param[in] rast Raster
  * @param[in] traj Trajectory
  * @param[in] band Band number (1-based, default 1)
- * @csqlfn #raster_value()
+ * @csqlfn #rasterValue()
  */
-CREATE OR REPLACE FUNCTION raster_value(
+CREATE OR REPLACE FUNCTION rasterValue(
     rast  raster,
     traj  tgeompoint,
     band  integer DEFAULT 1
@@ -142,7 +142,7 @@ CREATE OR REPLACE FUNCTION raster_value(
   LANGUAGE C STRICT;
 
 /******************************************************************************
- * raster_tile_value_quadbin
+ * rasterTileValueQuadbin
  *****************************************************************************/
 
 /**
@@ -159,7 +159,7 @@ CREATE OR REPLACE FUNCTION raster_value(
  * @param[in] traj      Trajectory (SRID 4326)
  * @csqlfn #Raster_tile_value_quadbin()
  */
-CREATE OR REPLACE FUNCTION raster_tile_value_quadbin(
+CREATE OR REPLACE FUNCTION rasterTileValueQuadbin(
     pixels     bytea,
     width      integer,
     height     integer,
@@ -173,7 +173,7 @@ CREATE OR REPLACE FUNCTION raster_tile_value_quadbin(
   LANGUAGE C STRICT;
 
 /******************************************************************************
- * raster_tile_value
+ * rasterTileValue
  *****************************************************************************/
 
 /**
@@ -183,7 +183,7 @@ CREATE OR REPLACE FUNCTION raster_tile_value_quadbin(
  * @param[in] traj Trajectory
  * @csqlfn #Raster_tile_value()
  */
-CREATE FUNCTION raster_tile_value(
+CREATE FUNCTION rasterTileValue(
     rast raquet,
     traj tgeompoint
 ) RETURNS tfloat
@@ -198,7 +198,7 @@ CREATE FUNCTION raster_tile_value(
  * @param[in] traj Trajectory
  * @csqlfn #Raster_tile_value_array()
  */
-CREATE FUNCTION raster_tile_value(
+CREATE FUNCTION rasterTileValue(
     rast raquet[],
     traj tgeompoint
 ) RETURNS tfloat
@@ -206,7 +206,7 @@ CREATE FUNCTION raster_tile_value(
   LANGUAGE C STRICT;
 
 /******************************************************************************
- * trajectory_quadbins
+ * trajectoryQuadbins
  *****************************************************************************/
 
 /**
@@ -217,7 +217,7 @@ CREATE FUNCTION raster_tile_value(
  * @param[in] zoom  QUADBIN zoom level (0–15)
  * @csqlfn #Trajectory_quadbins()
  */
-CREATE OR REPLACE FUNCTION trajectory_quadbins(
+CREATE OR REPLACE FUNCTION trajectoryQuadbins(
     traj  tgeompoint,
     zoom  integer
 ) RETURNS bigint[]

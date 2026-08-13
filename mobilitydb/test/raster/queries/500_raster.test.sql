@@ -38,7 +38,7 @@ SET datestyle = 'ISO, MDY';
 -- Row 3 (lat 0–1): pixel values 70, 80, 90
 
 -------------------------------------------------------------------------------
--- raster_value — basic usage
+-- rasterValue — basic usage
 -------------------------------------------------------------------------------
 
 -- Three non-collinear instants, all inside the raster.
@@ -57,7 +57,7 @@ WITH rast AS (
           [70.0::float4, 80.0::float4, 90.0::float4]]
   ) AS r
 )
-SELECT raster_value(r,
+SELECT rasterValue(r,
   tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2000-01-01 00:00:00+00, POINT(2.5 2.5)@2000-01-02 00:00:00+00, POINT(0.5 0.5)@2000-01-03 00:00:00+00]'
 )::text AS result
 FROM rast;
@@ -76,7 +76,7 @@ WITH rast AS (
           [70.0::float4, 80.0::float4, 90.0::float4]]
   ) AS r
 )
-SELECT raster_value(r,
+SELECT rasterValue(r,
   tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2000-01-01 00:00:00+00, POINT(5.5 5.5)@2000-01-02 00:00:00+00, POINT(0.5 0.5)@2000-01-03 00:00:00+00]'
 )::text AS result
 FROM rast;
@@ -94,7 +94,7 @@ WITH rast AS (
           [70.0::float4, 80.0::float4, 90.0::float4]]
   ) AS r
 )
-SELECT raster_value(r,
+SELECT rasterValue(r,
   tgeompoint 'SRID=4326;[POINT(5.5 5.5)@2000-01-01 00:00:00+00, POINT(6.5 6.5)@2000-01-02 00:00:00+00]'
 )::text AS result
 FROM rast;
@@ -114,7 +114,7 @@ WITH rast AS (
           [70.0::float4, 80.0::float4, 90.0::float4]]
   ) AS r
 )
-SELECT raster_value(r,
+SELECT rasterValue(r,
   tgeompoint 'SRID=4326;{POINT(1.5 1.5)@2000-01-01 00:00:00+00}'
 )::text AS result
 FROM rast;
@@ -210,12 +210,12 @@ SELECT
 FROM rast;
 
 -------------------------------------------------------------------------------
--- trajectory_quadbins
+-- trajectoryQuadbins
 -------------------------------------------------------------------------------
 
 -- Three distinct longitudes at zoom 3 produce three distinct QUADBIN cells.
 SELECT array_length(
-  trajectory_quadbins(
+  trajectoryQuadbins(
     tgeompointFromText('SRID=4326;{Point(-60.0 45.0)@2024-01-01 00:00:00+00, Point(0.0 45.0)@2024-01-02 00:00:00+00, Point(60.0 45.0)@2024-01-03 00:00:00+00}'),
     3
   ), 1
@@ -223,20 +223,20 @@ SELECT array_length(
 
 -- Two instants in the same tile → deduplicated to 1 cell.
 SELECT array_length(
-  trajectory_quadbins(
+  trajectoryQuadbins(
     tgeompointFromText('SRID=4326;{Point(-60.0 45.0)@2024-01-01 00:00:00+00, Point(-61.0 44.0)@2024-01-02 00:00:00+00}'),
     3
   ), 1
 ) AS num_distinct_tiles;
 
 -- Invalid zoom level raises an error.
-SELECT trajectory_quadbins(
+SELECT trajectoryQuadbins(
   tgeompointFromText('SRID=4326;{Point(0.0 0.0)@2024-01-01 00:00:00+00}'),
   16
 );
 
 -------------------------------------------------------------------------------
--- raster_tile_value_quadbin
+-- rasterTileValueQuadbin
 -------------------------------------------------------------------------------
 
 -- A 2×2 UINT8 chip for tile (x=1, y=0, zoom=1): lon 0°..180°, lat 0°..85°.
@@ -247,7 +247,7 @@ SELECT trajectory_quadbins(
 -- POINT(135 75) → col=1, row=0 → 2
 -- POINT(45  10) → col=0, row=1 → 3
 -- POINT(-45 75) → lon outside 0..180 → dropped
-SELECT raster_tile_value_quadbin(
+SELECT rasterTileValueQuadbin(
   '\x01020304'::bytea,         -- 4 UINT8 pixels: 1,2,3,4
   2::integer,                  -- width
   2::integer,                  -- height
@@ -260,7 +260,7 @@ SELECT raster_tile_value_quadbin(
 -- A pixel array too small for the declared width/height raises an error
 -- rather than sampling past the end of the buffer. Point(45 10) maps to
 -- col=0, row=1 (byte offset 2), which is past the 2 bytes actually supplied.
-SELECT raster_tile_value_quadbin(
+SELECT rasterTileValueQuadbin(
   '\x0102'::bytea,             -- 2 bytes, but a 2x2 UINT8 tile needs 4
   2::integer,                  -- width
   2::integer,                  -- height
@@ -274,19 +274,19 @@ SELECT raster_tile_value_quadbin(
 -- raquet type: construction, WKB round-trip, and typed sampling
 -------------------------------------------------------------------------------
 
--- The typed raster_tile_value(raquet, tgeompoint) yields the same result as the
--- untyped raster_tile_value_quadbin(bytea, ...) path on the same 2×2 chip.
+-- The typed rasterTileValue(raquet, tgeompoint) yields the same result as the
+-- untyped rasterTileValueQuadbin(bytea, ...) path on the same 2×2 chip.
 WITH t AS (
   SELECT tgeompointFromText('SRID=4326;{Point(45.0 75.0)@2024-01-01 00:00:00+00, Point(135.0 75.0)@2024-01-02 00:00:00+00, Point(45.0 10.0)@2024-01-03 00:00:00+00, Point(-45.0 75.0)@2024-01-04 00:00:00+00}') AS traj
 )
-SELECT raster_tile_value(
+SELECT rasterTileValue(
          raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'UINT8'), traj)::text
-     = raster_tile_value_quadbin(
+     = rasterTileValueQuadbin(
          '\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'UINT8', 0.0, false, traj)::text
        AS typed_equals_untyped
 FROM t;
 
--- raster_tile_value(raquet[], tgeompoint) samples a trajectory from every tile
+-- rasterTileValue(raquet[], tgeompoint) samples a trajectory from every tile
 -- covering it. The three tiles below carry the same 2x2 pixel array; what
 -- distinguishes them is the ground they cover:
 --   west  = zoom 1 tile (0,0), lon [-180, 0)
@@ -304,9 +304,9 @@ WITH t AS (
     raquet('\x01020304'::bytea, 2, 2, 5192650370358181888::bigint, 'UINT8') AS west,
     raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'UINT8') AS east
 )
-SELECT raster_tile_value(west, traj)::text AS west_alone,
-       raster_tile_value(east, traj)::text AS east_alone,
-       raster_tile_value(ARRAY[west, east], traj)::text AS merged
+SELECT rasterTileValue(west, traj)::text AS west_alone,
+       rasterTileValue(east, traj)::text AS east_alone,
+       rasterTileValue(ARRAY[west, east], traj)::text AS merged
 FROM t;
 
 -- Tiles of different zoom levels overlap. Where both sample the same instant
@@ -317,9 +317,9 @@ WITH t AS (
     raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'UINT8') AS east,
     raquet('\x01020304'::bytea, 2, 2, 5198279869892395008::bigint, 'UINT8') AS fine
 )
-SELECT raster_tile_value(fine, traj)::text AS fine_alone,
-       raster_tile_value(ARRAY[east, fine], traj)::text AS east_then_fine,
-       raster_tile_value(ARRAY[fine, east], traj)::text AS fine_then_east
+SELECT rasterTileValue(fine, traj)::text AS fine_alone,
+       rasterTileValue(ARRAY[east, fine], traj)::text AS east_then_fine,
+       rasterTileValue(ARRAY[fine, east], traj)::text AS fine_then_east
 FROM t;
 
 -- A one-element array agrees with the scalar form, and an array of tiles that
@@ -329,13 +329,13 @@ WITH t AS (
     raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'UINT8') AS east,
     raquet('\x01020304'::bytea, 2, 2, 5192650370358181888::bigint, 'UINT8') AS west
 )
-SELECT raster_tile_value(ARRAY[east], traj)::text = raster_tile_value(east, traj)::text
+SELECT rasterTileValue(ARRAY[east], traj)::text = rasterTileValue(east, traj)::text
          AS singleton_equals_scalar,
-       raster_tile_value(ARRAY[west], traj) IS NULL AS uncovered_is_null
+       rasterTileValue(ARRAY[west], traj) IS NULL AS uncovered_is_null
 FROM t;
 
 -- An empty array is rejected.
-SELECT raster_tile_value(ARRAY[]::raquet[],
+SELECT rasterTileValue(ARRAY[]::raquet[],
   tgeompoint 'SRID=4326;{Point(45.0 75.0)@2024-01-02 00:00:00+00}');
 
 -- The HexWKB text representation round-trips through the raquet type's input
@@ -361,39 +361,39 @@ SELECT (SELECT rq FROM raquet_toast)::text
        AS toasted_roundtrip_ok;
 
 -------------------------------------------------------------------------------
--- raquet_read: GDAL ingest of an in-memory raster file (bytea)
+-- raquetRead: GDAL ingest of an in-memory raster file (bytea)
 -------------------------------------------------------------------------------
 
--- raquet_read decodes through GDAL, whose drivers PostGIS disables by default
+-- raquetRead decodes through GDAL, whose drivers PostGIS disables by default
 -- (postgis.gdal_enabled_drivers); enable them for the in-memory ingest.
 SET postgis.gdal_enabled_drivers = 'ENABLE_ALL';
 
 -- GDAL decodes a 2 x 2 UINT8 GeoTIFF supplied as bytea (through its /vsimem/
 -- virtual filesystem) into the same raquet tile that the constructor builds
 -- from the identical row-major pixel bytes 01 02 03 04.
-SELECT raquet_read(
+SELECT raquetRead(
          decode('49492a00080000000b000001030001000000020000000101030001000000020000000201030001000000080000000301030001000000010000000601030001000000010000001101040001000000920000001501030001000000010000001601030001000000020000001701040001000000040000001c01030001000000010000005301030001000000010000000000000001020304', 'hex'),
          5193776270265024512::bigint)::text
      = raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'UINT8')::text
        AS gdal_ingest_equals_constructor;
 
 -------------------------------------------------------------------------------
--- raquet_read: derive the QUADBIN cell from the raster georeferencing
+-- raquetRead: derive the QUADBIN cell from the raster georeferencing
 -------------------------------------------------------------------------------
 
 -- Omitting the quadbin argument reads the tile identifier from the raster's
 -- EPSG:3857 geotransform. This GeoTIFF georeferences Web-Mercator tile (1, 0)
--- at zoom 1, whose QUADBIN cell is 5193776270265024512, so raquet_read(bytes)
--- yields the same tile as raquet_read(bytes, 5193776270265024512).
+-- at zoom 1, whose QUADBIN cell is 5193776270265024512, so raquetRead(bytes)
+-- yields the same tile as raquetRead(bytes, 5193776270265024512).
 WITH t(bytes) AS (VALUES (decode('49492a00080000000f0000010300010000000200000001010300010000000200000002010300010000000800000003010300010000000100000006010300010000000100000011010400010000006b0100001501030001000000010000001601030001000000020000001701040001000000040000001c01030001000000010000005301030001000000010000000e830c0003000000c200000082840c0006000000da000000af870300200000000a010000b1870200210000004a0100000000000093107c45f81b634193107c45f81b63410000000000000000000000000000000000000000000000000000000000000000000000000000000093107c45f81b734100000000000000000100010000000700000400000100010001040000010001000204b187190000000108b187070019000608000001008e23000c00000100110f040c000001002923574753203834202f2050736575646f2d4d65726361746f727c5747532038347c0001020304', 'hex')))
-SELECT raquet_read(bytes)::text
-     = raquet_read(bytes, 5193776270265024512::bigint)::text
+SELECT raquetRead(bytes)::text
+     = raquetRead(bytes, 5193776270265024512::bigint)::text
        AS derived_quadbin_equals_explicit
 FROM t;
 
 -- A raster with no Web-Mercator georeferencing has no derivable tile: this
 -- 2 x 2 GeoTIFF carries no geotransform, so omitting the quadbin is an error.
-SELECT raquet_read(
+SELECT raquetRead(
   decode('49492a00080000000b000001030001000000020000000101030001000000020000000201030001000000080000000301030001000000010000000601030001000000010000001101040001000000920000001501030001000000010000001601030001000000020000001701040001000000040000001c01030001000000010000005301030001000000010000000000000001020304', 'hex'));
 
 -------------------------------------------------------------------------------

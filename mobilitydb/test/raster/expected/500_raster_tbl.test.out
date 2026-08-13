@@ -188,8 +188,8 @@ DROP INDEX
 WITH traj AS (
   SELECT tgeompoint 'SRID=4326;{Point(10.0 20.0)@2024-01-01, Point(40.0 50.0)@2024-01-02, Point(70.0 30.0)@2024-01-03}' AS t
 )
-SELECT COALESCE(numInstants(raster_tile_value(array_agg(r.tile), traj.t)), 0) >=
-       COALESCE(MAX(numInstants(raster_tile_value(r.tile, traj.t))), 0)
+SELECT COALESCE(numInstants(rasterTileValue(array_agg(r.tile), traj.t)), 0) >=
+       COALESCE(MAX(numInstants(rasterTileValue(r.tile, traj.t))), 0)
 FROM tbl_raquet r, traj
 WHERE r.tile IS NOT NULL
 GROUP BY traj.t;
@@ -201,7 +201,7 @@ GROUP BY traj.t;
 WITH traj AS (
   SELECT tgeompoint 'SRID=4326;{Point(10.0 20.0)@2024-01-01, Point(40.0 50.0)@2024-01-02, Point(70.0 30.0)@2024-01-03}' AS t
 )
-SELECT COALESCE(numInstants(raster_tile_value(array_agg(r.tile), traj.t)), 0) <= 3
+SELECT COALESCE(numInstants(rasterTileValue(array_agg(r.tile), traj.t)), 0) <= 3
 FROM tbl_raquet r, traj
 WHERE r.tile IS NOT NULL
 GROUP BY traj.t;
@@ -213,10 +213,10 @@ GROUP BY traj.t;
 WITH traj AS (
   SELECT tgeompoint 'SRID=4326;{Point(10.0 20.0)@2024-01-01, Point(40.0 50.0)@2024-01-02, Point(70.0 30.0)@2024-01-03}' AS t
 )
-SELECT raster_tile_value(
+SELECT rasterTileValue(
          (SELECT array_agg(tile) FROM tbl_raquet WHERE tile IS NOT NULL), traj.t)::text
        IS NOT DISTINCT FROM
-       raster_tile_value(
+       rasterTileValue(
          (SELECT array_agg(tile) FROM tbl_raquet
           WHERE tile IS NOT NULL AND stbox(tile) && stbox(traj.t)), traj.t)::text
 FROM traj;

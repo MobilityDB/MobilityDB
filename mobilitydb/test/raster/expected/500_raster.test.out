@@ -14,7 +14,7 @@ WITH rast AS (
           [70.0::float4, 80.0::float4, 90.0::float4]]
   ) AS r
 )
-SELECT raster_value(r,
+SELECT rasterValue(r,
   tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2000-01-01 00:00:00+00, POINT(2.5 2.5)@2000-01-02 00:00:00+00, POINT(0.5 0.5)@2000-01-03 00:00:00+00]'
 )::text AS result
 FROM rast;
@@ -35,7 +35,7 @@ WITH rast AS (
           [70.0::float4, 80.0::float4, 90.0::float4]]
   ) AS r
 )
-SELECT raster_value(r,
+SELECT rasterValue(r,
   tgeompoint 'SRID=4326;[POINT(0.5 2.5)@2000-01-01 00:00:00+00, POINT(5.5 5.5)@2000-01-02 00:00:00+00, POINT(0.5 0.5)@2000-01-03 00:00:00+00]'
 )::text AS result
 FROM rast;
@@ -56,7 +56,7 @@ WITH rast AS (
           [70.0::float4, 80.0::float4, 90.0::float4]]
   ) AS r
 )
-SELECT raster_value(r,
+SELECT rasterValue(r,
   tgeompoint 'SRID=4326;[POINT(5.5 5.5)@2000-01-01 00:00:00+00, POINT(6.5 6.5)@2000-01-02 00:00:00+00]'
 )::text AS result
 FROM rast;
@@ -77,7 +77,7 @@ WITH rast AS (
           [70.0::float4, 80.0::float4, 90.0::float4]]
   ) AS r
 )
-SELECT raster_value(r,
+SELECT rasterValue(r,
   tgeompoint 'SRID=4326;{POINT(1.5 1.5)@2000-01-01 00:00:00+00}'
 )::text AS result
 FROM rast;
@@ -179,7 +179,7 @@ FROM rast;
 (1 row)
 
 SELECT array_length(
-  trajectory_quadbins(
+  trajectoryQuadbins(
     tgeompointFromText('SRID=4326;{Point(-60.0 45.0)@2024-01-01 00:00:00+00, Point(0.0 45.0)@2024-01-02 00:00:00+00, Point(60.0 45.0)@2024-01-03 00:00:00+00}'),
     3
   ), 1
@@ -190,7 +190,7 @@ SELECT array_length(
 (1 row)
 
 SELECT array_length(
-  trajectory_quadbins(
+  trajectoryQuadbins(
     tgeompointFromText('SRID=4326;{Point(-60.0 45.0)@2024-01-01 00:00:00+00, Point(-61.0 44.0)@2024-01-02 00:00:00+00}'),
     3
   ), 1
@@ -200,12 +200,12 @@ SELECT array_length(
                   1
 (1 row)
 
-SELECT trajectory_quadbins(
+SELECT trajectoryQuadbins(
   tgeompointFromText('SRID=4326;{Point(0.0 0.0)@2024-01-01 00:00:00+00}'),
   16
 );
 ERROR:  zoom level must be between 0 and 15
-SELECT raster_tile_value_quadbin(
+SELECT rasterTileValueQuadbin(
   '\x01020304'::bytea,         -- 4 UINT8 pixels: 1,2,3,4
   2::integer,                  -- width
   2::integer,                  -- height
@@ -219,7 +219,7 @@ SELECT raster_tile_value_quadbin(
  {1@2024-01-01 00:00:00+00, 2@2024-01-02 00:00:00+00, 3@2024-01-03 00:00:00+00}
 (1 row)
 
-SELECT raster_tile_value_quadbin(
+SELECT rasterTileValueQuadbin(
   '\x0102'::bytea,             -- 2 bytes, but a 2x2 UINT8 tile needs 4
   2::integer,                  -- width
   2::integer,                  -- height
@@ -232,9 +232,9 @@ ERROR:  The pixel array has 2 bytes but 4 are required for a 2 x 2 tile
 WITH t AS (
   SELECT tgeompointFromText('SRID=4326;{Point(45.0 75.0)@2024-01-01 00:00:00+00, Point(135.0 75.0)@2024-01-02 00:00:00+00, Point(45.0 10.0)@2024-01-03 00:00:00+00, Point(-45.0 75.0)@2024-01-04 00:00:00+00}') AS traj
 )
-SELECT raster_tile_value(
+SELECT rasterTileValue(
          raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'UINT8'), traj)::text
-     = raster_tile_value_quadbin(
+     = rasterTileValueQuadbin(
          '\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'UINT8', 0.0, false, traj)::text
        AS typed_equals_untyped
 FROM t;
@@ -248,9 +248,9 @@ WITH t AS (
     raquet('\x01020304'::bytea, 2, 2, 5192650370358181888::bigint, 'UINT8') AS west,
     raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'UINT8') AS east
 )
-SELECT raster_tile_value(west, traj)::text AS west_alone,
-       raster_tile_value(east, traj)::text AS east_alone,
-       raster_tile_value(ARRAY[west, east], traj)::text AS merged
+SELECT rasterTileValue(west, traj)::text AS west_alone,
+       rasterTileValue(east, traj)::text AS east_alone,
+       rasterTileValue(ARRAY[west, east], traj)::text AS merged
 FROM t;
          west_alone         |                      east_alone                      |                                     merged                                     
 ----------------------------+------------------------------------------------------+--------------------------------------------------------------------------------
@@ -262,9 +262,9 @@ WITH t AS (
     raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'UINT8') AS east,
     raquet('\x01020304'::bytea, 2, 2, 5198279869892395008::bigint, 'UINT8') AS fine
 )
-SELECT raster_tile_value(fine, traj)::text AS fine_alone,
-       raster_tile_value(ARRAY[east, fine], traj)::text AS east_then_fine,
-       raster_tile_value(ARRAY[fine, east], traj)::text AS fine_then_east
+SELECT rasterTileValue(fine, traj)::text AS fine_alone,
+       rasterTileValue(ARRAY[east, fine], traj)::text AS east_then_fine,
+       rasterTileValue(ARRAY[fine, east], traj)::text AS fine_then_east
 FROM t;
          fine_alone         |                    east_then_fine                    |                    fine_then_east                    
 ----------------------------+------------------------------------------------------+------------------------------------------------------
@@ -276,16 +276,16 @@ WITH t AS (
     raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'UINT8') AS east,
     raquet('\x01020304'::bytea, 2, 2, 5192650370358181888::bigint, 'UINT8') AS west
 )
-SELECT raster_tile_value(ARRAY[east], traj)::text = raster_tile_value(east, traj)::text
+SELECT rasterTileValue(ARRAY[east], traj)::text = rasterTileValue(east, traj)::text
          AS singleton_equals_scalar,
-       raster_tile_value(ARRAY[west], traj) IS NULL AS uncovered_is_null
+       rasterTileValue(ARRAY[west], traj) IS NULL AS uncovered_is_null
 FROM t;
  singleton_equals_scalar | uncovered_is_null 
 -------------------------+-------------------
  t                       | t
 (1 row)
 
-SELECT raster_tile_value(ARRAY[]::raquet[],
+SELECT rasterTileValue(ARRAY[]::raquet[],
   tgeompoint 'SRID=4326;{Point(45.0 75.0)@2024-01-02 00:00:00+00}');
 ERROR:  The input array cannot be empty
 SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'UINT8')::text::raquet::text
@@ -315,7 +315,7 @@ SELECT (SELECT rq FROM raquet_toast)::text
 
 SET postgis.gdal_enabled_drivers = 'ENABLE_ALL';
 SET
-SELECT raquet_read(
+SELECT raquetRead(
          decode('49492a00080000000b000001030001000000020000000101030001000000020000000201030001000000080000000301030001000000010000000601030001000000010000001101040001000000920000001501030001000000010000001601030001000000020000001701040001000000040000001c01030001000000010000005301030001000000010000000000000001020304', 'hex'),
          5193776270265024512::bigint)::text
      = raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'UINT8')::text
@@ -326,8 +326,8 @@ SELECT raquet_read(
 (1 row)
 
 WITH t(bytes) AS (VALUES (decode('49492a00080000000f0000010300010000000200000001010300010000000200000002010300010000000800000003010300010000000100000006010300010000000100000011010400010000006b0100001501030001000000010000001601030001000000020000001701040001000000040000001c01030001000000010000005301030001000000010000000e830c0003000000c200000082840c0006000000da000000af870300200000000a010000b1870200210000004a0100000000000093107c45f81b634193107c45f81b63410000000000000000000000000000000000000000000000000000000000000000000000000000000093107c45f81b734100000000000000000100010000000700000400000100010001040000010001000204b187190000000108b187070019000608000001008e23000c00000100110f040c000001002923574753203834202f2050736575646f2d4d65726361746f727c5747532038347c0001020304', 'hex')))
-SELECT raquet_read(bytes)::text
-     = raquet_read(bytes, 5193776270265024512::bigint)::text
+SELECT raquetRead(bytes)::text
+     = raquetRead(bytes, 5193776270265024512::bigint)::text
        AS derived_quadbin_equals_explicit
 FROM t;
  derived_quadbin_equals_explicit 
@@ -335,7 +335,7 @@ FROM t;
  t
 (1 row)
 
-SELECT raquet_read(
+SELECT raquetRead(
   decode('49492a00080000000b000001030001000000020000000101030001000000020000000201030001000000080000000301030001000000010000000601030001000000010000001101040001000000920000001501030001000000010000001601030001000000020000001701040001000000040000001c01030001000000010000005301030001000000010000000000000001020304', 'hex'));
 ERROR:  Raster has no geotransform; cannot derive its QUADBIN cell: in-memory raster
 SELECT quadbin(tile), width(tile), height(tile), pixtype(tile), nodata(tile)
