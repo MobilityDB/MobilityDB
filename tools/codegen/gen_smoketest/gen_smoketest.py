@@ -626,6 +626,23 @@ TPOSE_CONFIG = dict(
         # against a canned pose (variant 0 is plain WKB, no hex encoding)
         # rather than guessed.
         "pose_from_wkb":     {0: "pose_wkb1", 1: "pose_wkb1_size"},
+        # char * string constructors: each needs a literal in the exact format
+        # the parser expects. The WKT ones are hand-written; the hexWKB /
+        # GeoPose / MFJSON ones are pasted verbatim from the corresponding
+        # writer's output on a canned value (pose_as_hexwkb / pose_as_geopose /
+        # tpose_as_geopose / temporal_as_mfjson against local-install), not
+        # guessed.
+        "pose_in":                 {0: "pose_wkt1"},
+        "pose_from_hexwkb":        {0: "pose_hexwkb1"},
+        "pose_from_geopose":       {0: "pose_geopose1"},
+        "tpose_from_geopose":      {0: "tpose_geopose1"},
+        "tpose_from_mfjson":       {0: "tpose_mfjson1"},
+        "tpose_in":                {0: "tpose_wkt1"},
+        "poseset_in":              {0: "poseset_wkt1"},
+        # A PROJ pipeline string; "+proj=noop" is PROJ's identity step, valid
+        # regardless of the source/target SRID. The default int32_t -> 0
+        # target SRID is SRID_UNKNOWN, which ensure_srid_known() rejects.
+        "pose_transform_pipeline": {1: "pipeline1", 2: "4326"},
     },
     # A Set * argument to the pose set operations must be a poseset, not the
     # default tstzset.
@@ -660,6 +677,48 @@ TPOSE_CONFIG = dict(
    * a canned pose rather than guessed. */
   size_t pose_wkb1_size = 0;
   uint8_t *pose_wkb1 = pose_as_wkb(pose1, 0, &pose_wkb1_size);
+  /* char * literals for the pose/tpose string constructors, one per parsed
+   * format. The hexWKB / GeoPose / MFJSON ones are pasted verbatim from the
+   * output of pose_as_hexwkb() / pose_as_geopose() / tpose_as_geopose() /
+   * temporal_as_mfjson() on a canned pose/tpose value against local-install,
+   * not guessed. */
+  char *pose_wkt1 = "Pose(Point(0 0), 0.0)";
+  char *tpose_wkt1 =
+    "[Pose(Point(0 0), 0.0)@2001-01-02, Pose(Point(1 0), 0.5)@2001-01-03]";
+  char *poseset_wkt1 = "{\\"Pose(Point(0 0), 0.0)\\", \\"Pose(Point(1 1), 0.5)\\"}";
+  char *pose_hexwkb1 =
+    "0101000000000000000000000000000000000000000000000000";
+  /* pose_as_geopose() on SRID=4326;GEODPose(Point(2 49), 0.5) -- GeoPose
+   * requires a geodetic pose, so the planar pose1 cannot be used. */
+  char *pose_geopose1 =
+    "{\\"position\\":{\\"lat\\":49,\\"lon\\":2,\\"h\\":0},"
+    "\\"quaternion\\":{\\"x\\":0,\\"y\\":0,\\"z\\":0.247404,\\"w\\":0.968912}}";
+  /* tpose_as_geopose() on a two-instant geodetic tpose sequence. */
+  char *tpose_geopose1 =
+    "{\\"header\\":{\\"poseCount\\":2,\\"startInstant\\":978393600000,"
+    "\\"stopInstant\\":978480000000,\\"transitionModel\\":{\\"authority\\":"
+    "\\"/geopose/1.0\\",\\"id\\":\\"interpolate\\",\\"parameters\\":"
+    "\\"interpolation=Linear\\"}},\\"interPoseDuration\\":86400000,"
+    "\\"outerFrame\\":{\\"authority\\":\\"/geopose/1.0\\",\\"id\\":"
+    "\\"LTP-ENU\\",\\"parameters\\":"
+    "\\"longitude=2&latitude=49&height=0&crs=EPSG:4979\\"},"
+    "\\"innerFrameSeries\\":[{\\"authority\\":\\"/geopose/1.0\\",\\"id\\":"
+    "\\"RotateTranslate\\",\\"parameters\\":\\"translation=[0, 0, 0]&"
+    "rotation=[0.968912, 6.86684e-18, 2.68927e-17, 0.247404]\\"},"
+    "{\\"authority\\":\\"/geopose/1.0\\",\\"id\\":\\"RotateTranslate\\","
+    "\\"parameters\\":\\"translation=[73168.1, 481.903, -418.912]&"
+    "rotation=[0.953354, 0.00169189, 0.00546942, 0.301801]\\"}],"
+    "\\"trailer\\":{\\"poseCount\\":2}}";
+  /* temporal_as_mfjson() on the planar tpose1 sequence built below. */
+  char *tpose_mfjson1 =
+    "{ \\"type\\": \\"MovingPose\\", \\"values\\": [ { \\"position\\": "
+    "{ \\"lat\\": 0, \\"lon\\": 0 }, \\"rotation\\": 0 }, { \\"position\\": "
+    "{ \\"lat\\": 0, \\"lon\\": 1 }, \\"rotation\\": 0.5 } ], \\"datetimes\\": "
+    "[ \\"2001-01-02T00:00:00+00\\", \\"2001-01-03T00:00:00+00\\" ], "
+    "\\"lower_inc\\": true, \\"upper_inc\\": true, "
+    "\\"interpolation\\": \\"Linear\\" }";
+  /* A no-op PROJ pipeline: valid regardless of the source/target SRID. */
+  char *pipeline1 = "+proj=pipeline +step +proj=noop";
 
   /* Build a tpose sequence directly from WKT — public tpose_in parses it. */
   Temporal *tpose1 = tpose_in(
@@ -743,6 +802,20 @@ TCBUFFER_CONFIG = dict(
         # cbuffer_as_wkb() against a canned buffer (variant 0 is plain WKB,
         # no hex encoding) rather than guessed.
         "cbuffer_from_wkb":      {0: "cbuffer_wkb1", 1: "cbuffer_wkb1_size"},
+        # char * string constructors: each needs a literal in the exact format
+        # the parser expects. The WKT ones are hand-written; the hexWKB /
+        # MFJSON ones are pasted verbatim from the corresponding writer's
+        # output on a canned value (cbuffer_as_hexwkb / temporal_as_mfjson
+        # against local-install), not guessed.
+        "cbuffer_in":                {0: "cbuffer_wkt1"},
+        "cbuffer_from_hexwkb":       {0: "cbuffer_hexwkb1"},
+        "cbufferset_in":             {0: "cbufferset_wkt1"},
+        "tcbuffer_in":               {0: "tcbuffer_wkt1"},
+        "tcbuffer_from_mfjson":      {0: "tcbuffer_mfjson1"},
+        # A no-op PROJ pipeline is valid regardless of source/target SRID; the
+        # default int32_t -> 0 target SRID is SRID_UNKNOWN, rejected by
+        # ensure_srid_known().
+        "cbuffer_transform_pipeline": {1: "pipeline1", 2: "4326"},
     },
     # A Set * that must be a tstzset (the default is a cbufferset).
     name_arg_map={
@@ -769,6 +842,26 @@ TCBUFFER_CONFIG = dict(
    * against a canned buffer rather than guessed. */
   size_t cbuffer_wkb1_size = 0;
   uint8_t *cbuffer_wkb1 = cbuffer_as_wkb(cbuffer1, 0, &cbuffer_wkb1_size);
+  /* char * literals for the cbuffer/tcbuffer string constructors, one per
+   * parsed format. The hexWKB / MFJSON ones are pasted verbatim from the
+   * output of cbuffer_as_hexwkb() / temporal_as_mfjson() on a canned value
+   * against local-install, not guessed. */
+  char *cbuffer_wkt1 = "Cbuffer(Point(1 1), 0.5)";
+  char *cbufferset_wkt1 = "{\\"Cbuffer(Point(1 1), 0.5)\\"}";
+  char *tcbuffer_wkt1 =
+    "[Cbuffer(Point(0 0), 0.5)@2001-01-02, Cbuffer(Point(1 0), 0.5)@2001-01-03]";
+  char *cbuffer_hexwkb1 =
+    "0100000000000000F03F000000000000F03F000000000000E03F";
+  /* temporal_as_mfjson() on tcbuffer_wkt1's parsed value. */
+  char *tcbuffer_mfjson1 =
+    "{ \\"type\\": \\"MovingCircularBuffer\\", \\"values\\": [ "
+    "{ \\"point\\": [ 0, 0 ], \\"radius\\": 0.5 }, "
+    "{ \\"point\\": [ 1, 0 ], \\"radius\\": 0.5 } ], \\"datetimes\\": [ "
+    "\\"2001-01-02T00:00:00+00\\", \\"2001-01-03T00:00:00+00\\" ], "
+    "\\"lower_inc\\": true, \\"upper_inc\\": true, "
+    "\\"interpolation\\": \\"Linear\\" }";
+  /* A no-op PROJ pipeline: valid regardless of the source/target SRID. */
+  char *pipeline1 = "+proj=pipeline +step +proj=noop";
 
   Set *tstzset1 = tstzset_in("{2001-01-02, 2001-01-03}");
   Temporal *tfloat1 = tfloat_in("[1@2001-01-02, 2@2001-01-03]");
@@ -863,6 +956,17 @@ TNPOINT_CONFIG = dict(
         # npoint_as_wkb() against a canned network point (variant 0 is plain
         # WKB, no hex encoding) rather than guessed.
         "npoint_from_wkb":              {0: "npoint_wkb1", 1: "npoint_wkb1_size"},
+        # char * string constructors: each needs a literal in the exact
+        # format the parser expects. The WKT ones are hand-written; the
+        # hexWKB / MFJSON ones are pasted verbatim from the output of
+        # npoint_as_hexwkb() / temporal_as_mfjson() on a canned value against
+        # local-install, not guessed.
+        "npoint_in":            {0: "npoint_wkt1"},
+        "npoint_from_hexwkb":   {0: "npoint_hexwkb1"},
+        "nsegment_in":          {0: "nsegment_wkt1"},
+        "npointset_in":         {0: "npointset_wkt1"},
+        "tnpoint_in":           {0: "tnpoint_wkt1"},
+        "tnpoint_from_mfjson":  {0: "tnpoint_mfjson1"},
     },
     # A Set * that must be a tstzset (the default is an npointset).
     name_arg_map={
@@ -897,6 +1001,24 @@ TNPOINT_CONFIG = dict(
    * against a canned network point rather than guessed. */
   size_t npoint_wkb1_size = 0;
   uint8_t *npoint_wkb1 = npoint_as_wkb(npoint1, 0, &npoint_wkb1_size);
+  /* char * literals for the npoint/nsegment/tnpoint string constructors, one
+   * per parsed format. The hexWKB / MFJSON ones are pasted verbatim from the
+   * output of npoint_as_hexwkb() / temporal_as_mfjson() on a canned value
+   * against local-install, not guessed. */
+  char *npoint_wkt1 = "NPoint(1, 0.5)";
+  char *nsegment_wkt1 = "NSegment(1, 0.0, 1.0)";
+  char *npointset_wkt1 = "{\\"NPoint(1, 0.5)\\"}";
+  char *tnpoint_wkt1 =
+    "[NPoint(1, 0.0)@2001-01-02, NPoint(1, 0.5)@2001-01-03]";
+  char *npoint_hexwkb1 = "01010100000000000000000000000000E03F";
+  /* temporal_as_mfjson() on tnpoint_wkt1's parsed value. */
+  char *tnpoint_mfjson1 =
+    "{ \\"type\\": \\"MovingNetworkPoint\\", \\"values\\": [ "
+    "{ \\"route\\": 1, \\"position\\": 0 }, "
+    "{ \\"route\\": 1, \\"position\\": 0.5 } ], \\"datetimes\\": [ "
+    "\\"2001-01-02T00:00:00+00\\", \\"2001-01-03T00:00:00+00\\" ], "
+    "\\"lower_inc\\": true, \\"upper_inc\\": true, "
+    "\\"interpolation\\": \\"Linear\\" }";
 
   Temporal *tnpoint1 = tnpoint_in(
     "[NPoint(1, 0.0)@2001-01-02, NPoint(1, 0.5)@2001-01-03]");
@@ -1069,6 +1191,51 @@ TGEOMETRY_CONFIG = dict(
         # force the interp arg to STEP instead of the arg_map's LINEAR default.
         "tgeoseq_from_base_tstzspan":       {2: "STEP"},
         "tgeoseqset_from_base_tstzspanset": {2: "STEP"},
+        # char * string constructors and writer-side format-selector args:
+        # each needs a literal in the exact shape the parser expects, or (for
+        # a writer arg like an endian/CRS selector) a valid keyword. The WKT
+        # ones are hand-written; the hexWKB / MFJSON ones are pasted verbatim
+        # from the output of the matching *_as_hexwkb() / temporal_as_mfjson()
+        # writer on a canned value against local-install, not guessed.
+        "box3d_in":              {0: "box3d_wkt1"},
+        "gbox_in":               {0: "gbox_wkt1"},
+        "geo_as_ewkb":           {1: "geo_endian1"},
+        # srs (index 3) is an optional CRS string embedded in the GeoJSON
+        # output; NULL is the documented "no CRS" value.
+        "geo_as_geojson":        {3: "NULL"},
+        "geo_as_hexewkb":        {1: "geo_endian1"},
+        "geo_from_geojson":      {0: "geo_geojson1"},
+        "geo_from_text":         {0: "geo_text_wkt1", 1: "5676"},
+        "geom_from_hexewkb":     {0: "geom_wkt1"},
+        "geom_in":               {0: "geom_wkt1", 1: "-1"},
+        # geo_transform_pipeline's pipeline arg is a non-const char * (unlike
+        # its pose/cbuffer/stbox/tspatial siblings); geo_pipeline1 is a
+        # writable array rather than a string-literal pointer in case the
+        # callee ever mutates it in place.
+        "geo_transform_pipeline":     {1: "geo_pipeline1", 2: "4326"},
+        "geom_buffer":                {2: "geom_buffer_params1"},
+        # geom_relate_pattern uppercases any lowercase 't'/'f' IN PLACE in its
+        # pattern argument, so it needs a writable buffer, not a string
+        # literal; geom_relate_pattern1 holds an all-digit DE-9IM pattern so
+        # no in-place write ever happens either way.
+        "geom_relate_pattern":        {2: "geom_relate_pattern1"},
+        "geomset_in":                 {0: "geomset_wkt1"},
+        "spatialset_transform_pipeline": {1: "pipeline1", 2: "4326"},
+        "stbox_from_hexwkb":          {0: "stbox_hexwkb1"},
+        "stbox_in":                   {0: "stbox_wkt1"},
+        "stbox_transform_pipeline":   {1: "pipeline1", 2: "4326"},
+        "tgeogpoint_from_mfjson":     {0: "tgeogpoint_mfjson1"},
+        "tgeogpoint_in":              {0: "tgeogpoint_wkt1"},
+        "tgeography_from_mfjson":     {0: "tgeography_mfjson1"},
+        "tgeography_in":              {0: "tgeography_wkt1"},
+        "tgeometry_from_mfjson":      {0: "tgeometry_mfjson1"},
+        "tgeometry_in":               {0: "tgeometry_wkt1"},
+        "tgeompoint_from_mfjson":     {0: "tgeompoint_mfjson1"},
+        "tgeompoint_in":              {0: "tgeompoint_wkt1"},
+        # tspatial_transform_pipeline does not validate srid_to (the pipeline
+        # string itself encodes the destination CRS), so only its pipeline
+        # arg needs overriding.
+        "tspatial_transform_pipeline": {1: "pipeline1"},
     },
     # Name-pattern argument routing: whole families of meos_geo.h functions share
     # a precondition the polygon/tgeometry defaults don't meet.
@@ -1172,6 +1339,76 @@ TGEOMETRY_CONFIG = dict(
   uint8_t *stbox_wkb1 = stbox_as_wkb(stbox1, 0, &stbox_wkb1_size);
   size_t geo_wkb1_size = 0;
   uint8_t *geo_wkb1 = geo_as_ewkb(geom1, "NDR", &geo_wkb1_size);
+  /* char * literals for the box3d/gbox/geo/stbox/tgeometry-family string
+   * constructors and writer-side format selectors, one per parsed format.
+   * The hexWKB / MFJSON ones are pasted verbatim from the output of the
+   * matching *_as_hexwkb() / temporal_as_mfjson() writer on a canned value
+   * against local-install, not guessed. */
+  char *box3d_wkt1 = "BOX3D(0 0 0,10 10 10)";
+  char *gbox_wkt1 = "GBOX((0,0,0),(10,10,10))";
+  char *geo_endian1 = "NDR";
+  char *geo_geojson1 = "{\\"type\\":\\"Point\\",\\"coordinates\\":[1,1]}";
+  char *geo_text_wkt1 = "Point(1 1)";
+  char *geom_wkt1 = "SRID=5676;Polygon((0 0,1 0,1 1,0 1,0 0))";
+  /* geo_transform_pipeline's pipeline arg is a non-const char *; use a
+   * writable array rather than a string-literal pointer. */
+  char geo_pipeline1[] = "+proj=pipeline +step +proj=noop";
+  char *geom_buffer_params1 = "quad_segs=8";
+  /* geom_relate_pattern uppercases lowercase 't'/'f' in place; an all-digit
+   * DE-9IM pattern in a writable array avoids writing into literal storage
+   * either way. */
+  char geom_relate_pattern1[] = "212101212";
+  char *geomset_wkt1 = "{\\"SRID=5676;Point(0 0)\\", \\"SRID=5676;Point(1 1)\\"}";
+  /* The const-char* pipeline siblings (spatialset/stbox/tspatial) share one
+   * literal; only geo_transform_pipeline needs its own writable copy. */
+  char *pipeline1 = "+proj=pipeline +step +proj=noop";
+  char *stbox_hexwkb1 =
+    "01010000000000000000000000000000244000000000000000000000000000002440";
+  char *stbox_wkt1 = "SRID=5676;STBOX X((0, 0), (10, 10))";
+  char *tgeogpoint_wkt1 =
+    "[SRID=4326;Point(2 49)@2001-01-02, SRID=4326;Point(3 49)@2001-01-03]";
+  char *tgeography_wkt1 =
+    "[SRID=4326;Polygon((0 0,1 0,1 1,0 1,0 0))@2001-01-02, "
+    "SRID=4326;Polygon((0 0,1 0,1 1,0 1,0 0))@2001-01-03]";
+  char *tgeometry_wkt1 =
+    "[SRID=5676;Polygon((0 0,1 0,1 1,0 1,0 0))@2001-01-02, "
+    "SRID=5676;Polygon((0 0,1 0,1 1,0 1,0 0))@2001-01-03]";
+  char *tgeompoint_wkt1 =
+    "[SRID=5676;Point(0 0)@2001-01-02, SRID=5676;Point(1 1)@2001-01-03]";
+  /* temporal_as_mfjson() on tgeompoint_wkt1's parsed value; the same
+   * "MovingPoint" shape (context-disambiguated by the target temptype) also
+   * feeds tgeogpoint_from_mfjson below. */
+  char *tgeompoint_mfjson1 =
+    "{ \\"type\\": \\"MovingPoint\\", \\"coordinates\\": [ [ 0, 0 ], "
+    "[ 1, 1 ] ], \\"datetimes\\": [ \\"2001-01-02T00:00:00+00\\", "
+    "\\"2001-01-03T00:00:00+00\\" ], \\"lower_inc\\": true, "
+    "\\"upper_inc\\": true, \\"interpolation\\": \\"Linear\\" }";
+  /* temporal_as_mfjson() on tgeogpoint_wkt1's parsed value. */
+  char *tgeogpoint_mfjson1 =
+    "{ \\"type\\": \\"MovingPoint\\", \\"coordinates\\": [ [ 2, 49 ], "
+    "[ 3, 49 ] ], \\"datetimes\\": [ \\"2001-01-02T00:00:00+00\\", "
+    "\\"2001-01-03T00:00:00+00\\" ], \\"lower_inc\\": true, "
+    "\\"upper_inc\\": true, \\"interpolation\\": \\"Linear\\" }";
+  /* temporal_as_mfjson() on tgeometry_wkt1's parsed value; the same
+   * "MovingGeometry" shape (context-disambiguated by the target temptype)
+   * also feeds tgeography_from_mfjson below. */
+  char *tgeometry_mfjson1 =
+    "{ \\"type\\": \\"MovingGeometry\\", \\"values\\": [ { \\"type\\": "
+    "\\"Polygon\\", \\"coordinates\\": [ [ [ 0, 0 ], [ 1, 0 ], [ 1, 1 ], "
+    "[ 0, 1 ], [ 0, 0 ] ] ] }, { \\"type\\": \\"Polygon\\", "
+    "\\"coordinates\\": [ [ [ 0, 0 ], [ 1, 0 ], [ 1, 1 ], [ 0, 1 ], "
+    "[ 0, 0 ] ] ] } ], \\"datetimes\\": [ \\"2001-01-02T00:00:00+00\\", "
+    "\\"2001-01-03T00:00:00+00\\" ], \\"lower_inc\\": true, "
+    "\\"upper_inc\\": true, \\"interpolation\\": \\"Step\\" }";
+  /* temporal_as_mfjson() on tgeography_wkt1's parsed value. */
+  char *tgeography_mfjson1 =
+    "{ \\"type\\": \\"MovingGeometry\\", \\"values\\": [ { \\"type\\": "
+    "\\"Polygon\\", \\"coordinates\\": [ [ [ 0, 0 ], [ 1, 0 ], [ 1, 1 ], "
+    "[ 0, 1 ], [ 0, 0 ] ] ] }, { \\"type\\": \\"Polygon\\", "
+    "\\"coordinates\\": [ [ [ 0, 0 ], [ 1, 0 ], [ 1, 1 ], [ 0, 1 ], "
+    "[ 0, 0 ] ] ] } ], \\"datetimes\\": [ \\"2001-01-02T00:00:00+00\\", "
+    "\\"2001-01-03T00:00:00+00\\" ], \\"lower_inc\\": true, "
+    "\\"upper_inc\\": true, \\"interpolation\\": \\"Step\\" }";
 
   Temporal *tgeo1 = tgeometry_in(
     "[SRID=5676;Polygon((0 0,1 0,1 1,0 1,0 0))@2001-01-02, SRID=5676;Polygon((0 0,1 0,1 1,0 1,0 0))@2001-01-03]");
