@@ -847,6 +847,73 @@ node_search(const RTree *rtree, const RTreeNode *node, RTreeSearchOp op,
 }
 
 /**
+ * @brief Report the qualifying entry pairs of two nodes, descending both trees
+ * @details A node does not store its own bounding box, so each node is visited
+ * together with the box its parent holds for it; the roots are visited with a
+ * null box, which prunes nothing. Only one side descends at a time when the
+ * other is a leaf: iterating a leaf's boxes and recursing with that same leaf
+ * would visit its entries once per box.
+ *
+ * Subtrees are pruned by overlap whatever @p op is, since one entry contains or
+ * is contained by another only if their boxes overlap, so a node pair whose
+ * boxes are disjoint holds no qualifying pair below it.
+ * @param[in] rtree1,rtree2 The RTrees being joined
+ * @param[in] node1,node2 The nodes to be joined
+ * @param[in] box1,box2 The boxes the parents hold for @p node1 and @p node2,
+ * `NULL` for a root
+ * @param[in] op The join operation
+ * @param[out] result MeosArray collecting the two ids of each pair
+ */
+static void
+node_join(const RTree *rtree1, const RTreeNode *node1, const void *box1,
+  const RTree *rtree2, const RTreeNode *node2, const void *box2,
+  RTreeSearchOp op, MeosArray *result)
+{
+  if (box1 && box2 && ! rtree1->bbox_overlaps(box1, box2))
+    return;
+
+  bool leaf1 = (node1->node_type == RTREE_LEAF);
+  bool leaf2 = (node2->node_type == RTREE_LEAF);
+  if (leaf1 && leaf2)
+  {
+    for (int i = 0; i < node1->count; ++i)
+    {
+      const void *key = RTREE_NODE_BBOX_N(node1, i);
+      for (int j = 0; j < node2->count; ++j)
+      {
+        if (leaf_consistent(rtree1, key, RTREE_NODE_BBOX_N(node2, j), op))
+        {
+          int id1 = node1->ids[i];
+          int id2 = node2->ids[j];
+          meos_array_add(result, &id1);
+          meos_array_add(result, &id2);
+        }
+      }
+    }
+  }
+  else if (! leaf1 && leaf2)
+  {
+    for (int i = 0; i < node1->count; ++i)
+      node_join(rtree1, node1->nodes[i], RTREE_NODE_BBOX_N(node1, i), rtree2,
+        node2, box2, op, result);
+  }
+  else if (leaf1 && ! leaf2)
+  {
+    for (int j = 0; j < node2->count; ++j)
+      node_join(rtree1, node1, box1, rtree2, node2->nodes[j],
+        RTREE_NODE_BBOX_N(node2, j), op, result);
+  }
+  else
+  {
+    for (int i = 0; i < node1->count; ++i)
+      for (int j = 0; j < node2->count; ++j)
+        node_join(rtree1, node1->nodes[i], RTREE_NODE_BBOX_N(node1, i), rtree2,
+          node2->nodes[j], RTREE_NODE_BBOX_N(node2, j), op, result);
+  }
+  return;
+}
+
+/**
  * @brief Creates an RTree index.
  * @param[in] bboxtype The MeosType of the elements to index.
  * @return RTree initialized.
@@ -1064,6 +1131,38 @@ rtree_search(const RTree *rtree, RTreeSearchOp op, const void *query,
   if (rtree->root)
     node_search(rtree, rtree->root, op, query, result);
   return meos_array_count(result);
+}
+
+/**
+ * @ingroup meos_geo_box_index
+ * @brief Join two RTrees, collecting the ids of every qualifying pair into a
+ * MeosArray
+ * @details Descends both trees at once, skipping the entries of a subtree pair
+ * whose boxes are disjoint, so a join reads far fewer pairs than querying one
+ * tree once per entry of the other.
+ *
+ * The result array is reset before the join. It receives two ids per pair, the
+ * entry of @p rtree1 followed by the entry of @p rtree2, so pair `k` is read
+ * with #meos_array_get at positions `2 * k` and `2 * k + 1`.
+ * @param[in] rtree1,rtree2 The RTrees to join, of the same bounding box type
+ * @param[in] op The join operation: @p RTREE_OVERLAPS pairs entries that
+ * overlap, @p RTREE_CONTAINS pairs entries of @p rtree1 that contain an entry
+ * of @p rtree2, @p RTREE_CONTAINED_BY pairs entries of @p rtree1 contained by
+ * an entry of @p rtree2
+ * @param[out] result MeosArray of int to collect the ids (created by the caller
+ * with `meos_array_create(sizeof(int))`)
+ * @return Number of qualifying pairs, half the number of collected ids
+ */
+int
+rtree_join(const RTree *rtree1, const RTree *rtree2, RTreeSearchOp op,
+  MeosArray *result)
+{
+  assert(rtree1->bboxtype == rtree2->bboxtype);
+  meos_array_reset(result);
+  if (rtree1->root && rtree2->root)
+    node_join(rtree1, rtree1->root, NULL, rtree2, rtree2->root, NULL, op,
+      result);
+  return meos_array_count(result) / 2;
 }
 
 /**

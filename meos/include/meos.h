@@ -371,6 +371,7 @@ extern void rtree_insert(RTree *rtree, void *box, int id);
 extern void rtree_insert_temporal(RTree *rtree, const Temporal *temp, int id);
 extern void rtree_insert_temporal_split(RTree *rtree, const Temporal *temp, int id, int maxboxes);
 extern int rtree_search(const RTree *rtree, RTreeSearchOp op, const void *query, MeosArray *result);
+extern int rtree_join(const RTree *rtree1, const RTree *rtree2, RTreeSearchOp op, MeosArray *result);
 extern int rtree_search_temporal(const RTree *rtree, RTreeSearchOp op, const Temporal *temp, MeosArray *result);
 extern int rtree_search_temporal_dedup(const RTree *rtree, RTreeSearchOp op, const Temporal *temp, int maxboxes, MeosArray *result);
 
