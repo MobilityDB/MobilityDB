@@ -3199,7 +3199,16 @@ setPathObject(JsonbIterator **it, Datum *path_elems, bool *path_nulls,
         {
           meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
             "cannot replace existing key");
-          return; // TODO
+          /* meos_error() may return control to the caller (e.g. under the
+           * no-exit error handler used for host-embedded MEOS). Skip the
+           * value paired with the key already consumed above and keep
+           * draining the object instead of returning mid-iteration, so the
+           * JsonbIterator stays in sync for the caller's subsequent
+           * WJB_END_OBJECT read; an unsynced iterator makes setPath() push
+           * a stray WJB_VALUE with a NULL JsonbValue, which crashes in
+           * appendValue() */ // MEOS
+          (void) JsonbIteratorNext(it, &v, true); // MEOS
+          continue; // MEOS
         }
 
         r = JsonbIteratorNext(it, &v, true);  /* skip value */
