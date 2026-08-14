@@ -877,6 +877,7 @@ extern Span *numspan_shift_scale(const Span *s, Datum shift, Datum width, bool h
 extern SpanSet *numspanset_shift_scale(const SpanSet *ss, Datum shift, Datum width, bool hasshift, bool haswidth);
 extern Set *set_compact(const Set *s);
 extern void span_expand(const Span *s1, Span *s2);
+extern Span *super_union_span_span(const Span *s1, const Span *s2);
 extern SpanSet *spanset_compact(const SpanSet *ss);
 extern TBox *tbox_expand_value(const TBox *box, Datum value, MeosType basetyp);
 extern Set *textcat_textset_text_common(const Set *s, const text *txt, bool invert);

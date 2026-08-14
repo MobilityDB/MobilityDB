@@ -890,7 +890,7 @@ tbox_hast(const TBox *box)
 }
 
 /**
- * @ingroup meos_internal_box_accessor
+ * @ingroup meos_box_accessor
  * @brief Return in the last argument the minimum X value of a temporal box as
  * a double
  * @param[in] box Box
@@ -990,7 +990,7 @@ tbox_xmin_inc(const TBox *box, bool *result)
 }
 
 /**
- * @ingroup meos_internal_box_accessor
+ * @ingroup meos_box_accessor
  * @brief Return in the last argument the maximum X value of a temporal box as
  * a double 
  * @param[in] box Box
