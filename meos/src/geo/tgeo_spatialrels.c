@@ -2207,6 +2207,55 @@ stbox_within_dist_space(const STBox *box1, const STBox *box2, double dist)
 }
 
 /**
+ * @brief Comparison function sorting index pairs lexicographically
+ */
+static int
+pair_cmp(const void *a, const void *b)
+{
+  const int *pa = (const int *) a, *pb = (const int *) b;
+  if (pa[0] != pb[0])
+    return (pa[0] > pb[0]) - (pa[0] < pb[0]);
+  return (pa[1] > pb[1]) - (pa[1] < pb[1]);
+}
+
+/**
+ * @brief Return the index pairs whose boxes overlap, in lexicographic order
+ * @details Indexes both sides and joins the two trees, so the pairs whose
+ * boxes are apart are never visited. The pairs are sorted so that the caller
+ * reports them in the order the pairwise comparison would.
+ * @param[in] bb1,bb2 Bounding boxes of the two sides
+ * @param[in] count1,count2 Number of boxes
+ * @param[out] npairs Number of pairs found
+ * @return Flattened array of @p npairs index pairs, or NULL when none overlap
+ */
+static int *
+setset_box_pairs(const STBox *bb1, int count1, const STBox *bb2, int count2,
+  int *npairs)
+{
+  RTree *rtree1 = rtree_create_stbox();
+  RTree *rtree2 = rtree_create_stbox();
+  for (int i = 0; i < count1; i++)
+    rtree_insert(rtree1, (void *) &bb1[i], i);
+  for (int j = 0; j < count2; j++)
+    rtree_insert(rtree2, (void *) &bb2[j], j);
+
+  MeosArray *found = meos_array_create(sizeof(int));
+  int n = rtree_join(rtree1, rtree2, RTREE_OVERLAPS, found);
+  int *result = NULL;
+  if (n > 0)
+  {
+    result = palloc((size_t) n * 2 * sizeof(int));
+    for (int k = 0; k < 2 * n; k++)
+      result[k] = *(int *) meos_array_get(found, k);
+    qsort(result, (size_t) n, 2 * sizeof(int), pair_cmp);
+  }
+  meos_array_destroy(found);
+  rtree_free(rtree1); rtree_free(rtree2);
+  *npairs = n;
+  return result;
+}
+
+/**
  * @brief Validate two arrays of temporal geos and materialise their STBoxes
  * @details Ensures both arrays are non-empty and that every element is a
  * non-NULL temporal geo sharing the SRID, dimensionality, and geodetic flag of
@@ -2261,6 +2310,126 @@ typedef enum
   SS_EDISJOINT, SS_ADISJOINT,
 } SetSetEAPred;
 
+/* Least number of pairs for which indexing both sides costs less than
+ * comparing every pair of boxes. Building the two trees is linear in the
+ * number of boxes while the comparison is quadratic, so the two meet a little
+ * over ten thousand pairs; the value sits above that, since below it the
+ * comparison is a few milliseconds either way. */
+#define SETSET_INDEX_MIN_PAIRS 100000.0
+
+/**
+ * @brief Return the exact ever/always relationship of a pair
+ * @param[in] temp1,temp2 Temporal geos
+ * @param[in] dist Distance, for the within-distance relationships
+ * @param[in] pred Relationship to apply
+ * @return 1 when the pair satisfies it, 0 when it does not, -1 on error
+ */
+static int
+setset_ea_exact(const Temporal *temp1, const Temporal *temp2, double dist,
+  SetSetEAPred pred)
+{
+  switch (pred)
+  {
+    case SS_EDWITHIN:
+      return ea_dwithin_tgeo_tgeo(temp1, temp2, dist, EVER);
+    case SS_ADWITHIN:
+      return ea_dwithin_tgeo_tgeo(temp1, temp2, dist, ALWAYS);
+    case SS_EINTERSECTS:
+      return ea_intersects_tgeo_tgeo(temp1, temp2, EVER);
+    case SS_AINTERSECTS:
+      return ea_intersects_tgeo_tgeo(temp1, temp2, ALWAYS);
+    case SS_ETOUCHES:
+      return ea_touches_tgeo_tgeo(temp1, temp2, EVER);
+    case SS_ATOUCHES:
+      return ea_touches_tgeo_tgeo(temp1, temp2, ALWAYS);
+    case SS_EDISJOINT:
+      /* Ever disjoint is the negation of always intersects */
+      return INVERT_RESULT(ea_intersects_tgeo_tgeo(temp1, temp2, ALWAYS));
+    default: /* SS_ADISJOINT: always disjoint is the negation of ever
+      intersects */
+      return INVERT_RESULT(ea_intersects_tgeo_tgeo(temp1, temp2, EVER));
+  }
+}
+
+/**
+ * @brief Run an ever/always set-set relationship over the pairs an index
+ * reports, rather than over every pair
+ * @details The relationships divide by what their bounding boxes decide:
+ * - the within-distance relationships need the pairs whose boxes are closer
+ *   than the distance, which is the overlap of the boxes of the first side
+ *   grown by it;
+ * - intersects and touches need the pairs whose boxes overlap, since boxes
+ *   apart can neither intersect nor touch;
+ * - the disjoint relationships report every pair sharing time whose boxes are
+ *   apart in space without an exact test, and test only the pairs whose boxes
+ *   overlap, so they need the pairs overlapping in time and the pairs
+ *   overlapping in space as a subset of them.
+ * @param[in] arr1,arr2 Arrays of temporal geos
+ * @param[in] count1,count2 Number of elements
+ * @param[in] bb1,bb2 Their bounding boxes
+ * @param[in] dist Distance, for the within-distance relationships
+ * @param[in] pred Relationship to apply
+ * @param[in] is_dwithin,is_disjoint Class of @p pred
+ * @param[out] count Number of pairs reported
+ * @return Flattened array of @p count index pairs, or NULL when none qualify
+ */
+static int *
+setset_ea_pairs_indexed(const Temporal **arr1, int count1,
+  const Temporal **arr2, int count2, const STBox *bb1, const STBox *bb2,
+  double dist, SetSetEAPred pred, bool is_dwithin, int *count)
+{
+  /* The within-distance relationships compare the boxes of the first side
+   * grown by the distance, which is what their prefilter tests */
+  STBox *grown = NULL;
+  const STBox *probe = bb1;
+  if (is_dwithin)
+  {
+    grown = palloc((size_t) count1 * sizeof(STBox));
+    for (int i = 0; i < count1; i++)
+    {
+      grown[i] = bb1[i];
+      grown[i].xmin -= dist; grown[i].xmax += dist;
+      grown[i].ymin -= dist; grown[i].ymax += dist;
+      if (MEOS_FLAGS_GET_Z(grown[i].flags))
+      {
+        grown[i].zmin -= dist; grown[i].zmax += dist;
+      }
+    }
+    probe = grown;
+  }
+
+  int nbox;
+  int *boxpairs = setset_box_pairs(probe, count1, bb2, count2, &nbox);
+  if (grown)
+    pfree(grown);
+
+  /* Only the pairs whose boxes qualify can satisfy the relationship */
+  if (nbox == 0)
+  {
+    *count = 0;
+    return NULL;
+  }
+  int *result = palloc((size_t) nbox * 2 * sizeof(int));
+  int nres = 0;
+  for (int k = 0; k < nbox; k++)
+  {
+    int i = boxpairs[2 * k], j = boxpairs[2 * k + 1];
+    if (setset_ea_exact(arr1[i], arr2[j], dist, pred) == 1)
+    {
+      result[2 * nres] = i; result[2 * nres + 1] = j; nres++;
+    }
+  }
+  pfree(boxpairs);
+
+  *count = nres;
+  if (nres == 0)
+  {
+    pfree(result);
+    return NULL;
+  }
+  return result;
+}
+
 /**
  * @brief Generic ever/always set-set spatial join driver
  * @details Runs the exact per-pair predicate selected by @p pred only on the
@@ -2288,6 +2457,23 @@ setset_ea_pairs(const Temporal **arr1, int count1, const Temporal **arr2,
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(arr1[0]->flags);
   bool is_dwithin = (pred == SS_EDWITHIN || pred == SS_ADWITHIN);
   bool is_disjoint = (pred == SS_EDISJOINT || pred == SS_ADISJOINT);
+  /* Above this many pairs, indexing both sides and joining the trees reads
+   * fewer boxes than comparing every pair, and the answer is sized from the
+   * pairs that survive rather than from the number of pairs there could be.
+   *
+   * The geodetic case has no spatial prefilter to index. The disjoint
+   * relationships keep the comparison as well: they report the pairs sharing
+   * time whose boxes are apart, which is most of the pairs sharing time, and
+   * ordering that many pairs costs more than the comparison it replaces. */
+  if (! geodetic && ! is_disjoint &&
+      (double) count1 * (double) count2 >= SETSET_INDEX_MIN_PAIRS)
+  {
+    int *res = setset_ea_pairs_indexed(arr1, count1, arr2, count2, bb1, bb2,
+      dist, pred, is_dwithin, count);
+    pfree(bb1); pfree(bb2);
+    return res;
+  }
+
   int *result = palloc((size_t) count1 * count2 * 2 * sizeof(int));
   int nres = 0;
   for (int i = 0; i < count1; i++)
@@ -2310,30 +2496,7 @@ setset_ea_pairs(const Temporal **arr1, int count1, const Temporal **arr2,
           ! stbox_overlaps_space(&bb1[i], &bb2[j]))
           continue;
       }
-      int r;
-      switch (pred)
-      {
-        case SS_EDWITHIN:
-          r = ea_dwithin_tgeo_tgeo(arr1[i], arr2[j], dist, EVER); break;
-        case SS_ADWITHIN:
-          r = ea_dwithin_tgeo_tgeo(arr1[i], arr2[j], dist, ALWAYS); break;
-        case SS_EINTERSECTS:
-          r = ea_intersects_tgeo_tgeo(arr1[i], arr2[j], EVER); break;
-        case SS_AINTERSECTS:
-          r = ea_intersects_tgeo_tgeo(arr1[i], arr2[j], ALWAYS); break;
-        case SS_ETOUCHES:
-          r = ea_touches_tgeo_tgeo(arr1[i], arr2[j], EVER); break;
-        case SS_ATOUCHES:
-          r = ea_touches_tgeo_tgeo(arr1[i], arr2[j], ALWAYS); break;
-        case SS_EDISJOINT:
-          /* Ever disjoint is the negation of always intersects */
-          r = INVERT_RESULT(ea_intersects_tgeo_tgeo(arr1[i], arr2[j], ALWAYS));
-          break;
-        default: /* SS_ADISJOINT: always disjoint is the negation of ever
-          intersects */
-          r = INVERT_RESULT(ea_intersects_tgeo_tgeo(arr1[i], arr2[j], EVER));
-          break;
-      }
+      int r = setset_ea_exact(arr1[i], arr2[j], dist, pred);
       if (r == 1)
       {
         result[2 * nres] = i; result[2 * nres + 1] = j; nres++;
