@@ -903,11 +903,21 @@ jsonb_to_bool(const Jsonb *jb)
 {
   JsonbValue v;
   if (! JsonbExtractScalar(&((Jsonb *) jb)->root, &v))
+  {
     cannotCastJsonbValue(v.type, "boolean");
+    /* MEOS: meos_error() returns instead of longjmp-ing, so bail with the
+     * sentinel rather than falling through to the numeric conversion */
+    return false;
+  }
   if (v.type == jbvNull)
     return NULL;
   if (v.type != jbvBool)
+  {
     cannotCastJsonbValue(v.type, "boolean");
+    /* MEOS: meos_error() returns instead of longjmp-ing, so bail with the
+     * sentinel rather than falling through to the numeric conversion */
+    return false;
+  }
   return v.val.boolean;
 }
 
@@ -921,11 +931,21 @@ jsonb_to_numeric(const Jsonb *jb)
 {
   JsonbValue v;
   if (! JsonbExtractScalar(&((Jsonb *) jb)->root, &v))
+  {
     cannotCastJsonbValue(v.type, "numeric");
+    /* MEOS: meos_error() returns instead of longjmp-ing, so bail with the
+     * sentinel rather than falling through to the numeric conversion */
+    return NULL;
+  }
   if (v.type == jbvNull)
     return NULL;
   if (v.type != jbvNumeric)
+  {
     cannotCastJsonbValue(v.type, "numeric");
+    /* MEOS: meos_error() returns instead of longjmp-ing, so bail with the
+     * sentinel rather than falling through to the numeric conversion */
+    return NULL;
+  }
   /*
    * v.val.numeric points into jsonb body, so we need to make a copy to
    * return
@@ -944,11 +964,21 @@ jsonb_to_int16(const Jsonb *jb)
 {
   JsonbValue v;
   if (! JsonbExtractScalar(&((Jsonb *) jb)->root, &v))
+  {
     cannotCastJsonbValue(v.type, "smallint");
+    /* MEOS: meos_error() returns instead of longjmp-ing, so bail with the
+     * sentinel rather than falling through to the numeric conversion */
+    return SHRT_MAX;
+  }
   if (v.type == jbvNull)
     return SHRT_MAX;
   if (v.type != jbvNumeric)
+  {
     cannotCastJsonbValue(v.type, "smallint");
+    /* MEOS: meos_error() returns instead of longjmp-ing, so bail with the
+     * sentinel rather than falling through to the numeric conversion */
+    return SHRT_MAX;
+  }
   return numeric_to_int16(v.val.numeric);
 }
 
@@ -962,11 +992,21 @@ jsonb_to_int32(const Jsonb *jb)
 {
   JsonbValue v;
   if (! JsonbExtractScalar(&((Jsonb *) jb)->root, &v))
+  {
     cannotCastJsonbValue(v.type, "integer");
+    /* MEOS: meos_error() returns instead of longjmp-ing, so bail with the
+     * sentinel rather than falling through to the numeric conversion */
+    return INT_MAX;
+  }
   if (v.type == jbvNull)
     return INT_MAX;
   if (v.type != jbvNumeric)
+  {
     cannotCastJsonbValue(v.type, "integer");
+    /* MEOS: meos_error() returns instead of longjmp-ing, so bail with the
+     * sentinel rather than falling through to the numeric conversion */
+    return INT_MAX;
+  }
   return numeric_to_int32(v.val.numeric);
 }
 
@@ -980,11 +1020,21 @@ jsonb_to_int64(const Jsonb *jb)
 {
   JsonbValue v;
   if (! JsonbExtractScalar(&((Jsonb *) jb)->root, &v))
+  {
     cannotCastJsonbValue(v.type, "bigint");
+    /* MEOS: meos_error() returns instead of longjmp-ing, so bail with the
+     * sentinel rather than falling through to the numeric conversion */
+    return LONG_MAX;
+  }
   if (v.type == jbvNull)
     return LONG_MAX;
   if (v.type != jbvNumeric)
+  {
     cannotCastJsonbValue(v.type, "bigint");
+    /* MEOS: meos_error() returns instead of longjmp-ing, so bail with the
+     * sentinel rather than falling through to the numeric conversion */
+    return LONG_MAX;
+  }
   return numeric_to_int64(v.val.numeric);
 }
 
@@ -998,11 +1048,21 @@ jsonb_to_float4(const Jsonb *jb)
 {
   JsonbValue v;
   if (! JsonbExtractScalar(&((Jsonb *) jb)->root, &v))
+  {
     cannotCastJsonbValue(v.type, "real");
+    /* MEOS: meos_error() returns instead of longjmp-ing, so bail with the
+     * sentinel rather than falling through to the numeric conversion */
+    return FLT_MAX;
+  }
   if (v.type == jbvNull)
     return FLT_MAX;
   if (v.type != jbvNumeric)
+  {
     cannotCastJsonbValue(v.type, "real");
+    /* MEOS: meos_error() returns instead of longjmp-ing, so bail with the
+     * sentinel rather than falling through to the numeric conversion */
+    return FLT_MAX;
+  }
   return numeric_to_float4(v.val.numeric);
 }
 
@@ -1016,11 +1076,21 @@ jsonb_to_float8(const Jsonb *jb)
 {
   JsonbValue v;
   if (! JsonbExtractScalar(&((Jsonb *) jb)->root, &v))
+  {
     cannotCastJsonbValue(v.type, "double precision");
+    /* MEOS: meos_error() returns instead of longjmp-ing, so bail with the
+     * sentinel rather than falling through to the numeric conversion */
+    return DBL_MAX;
+  }
   if (v.type == jbvNull)
     return DBL_MAX;
   if (v.type != jbvNumeric)
+  {
     cannotCastJsonbValue(v.type, "double precision");
+    /* MEOS: meos_error() returns instead of longjmp-ing, so bail with the
+     * sentinel rather than falling through to the numeric conversion */
+    return DBL_MAX;
+  }
   return numeric_to_float8(v.val.numeric);
 }
 
