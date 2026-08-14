@@ -198,7 +198,9 @@ cleanup:
  * @param[in] path Path to a GDAL-readable raster file
  * @param[in] quadbin CARTO QUADBIN cell identifying the Web-Mercator tile, or 0
  * to derive it from the raster geotransform and EPSG:3857 spatial reference
- * @csqlfn #Raquet_read()
+ * @note The SQL surface reads the raster from bytes rather than a server-side
+ * path, so the wrapper binds #raquet_read_bytes() and this function carries no
+ * @p csqlfn link
  */
 Raquet *
 raquet_read(const char *path, uint64 quadbin)
@@ -230,6 +232,7 @@ raquet_read(const char *path, uint64 quadbin)
  * @param[in] size Number of bytes in @p data
  * @param[in] quadbin CARTO QUADBIN cell identifying the Web-Mercator tile, or 0
  * to derive it from the raster geotransform and EPSG:3857 spatial reference
+ * @csqlfn #Raquet_read()
  */
 Raquet *
 raquet_read_bytes(const uint8_t *data, size_t size, uint64 quadbin)

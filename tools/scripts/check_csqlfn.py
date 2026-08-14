@@ -135,15 +135,23 @@ def resolve(dirs):
     rows = pg_wrappers(dirs)
     pgnames = {r[0] for r in rows}
     ptr_deleg = {}      # meos_fn -> wrappers binding it via &pointer (authoritative)
+    deleg_of = {}       # wrapper -> the MEOS function it binds, when resolved
     for pg, _sf, _so, dg, how, _f in rows:
         if dg and how == 'ptr':
             ptr_deleg.setdefault(dg, set()).add(pg)
+        if dg:
+            deleg_of[pg] = dg
     auto, review = [], []
     for fn, (f, has) in meos_public(dirs).items():
         if has:
             continue
-        if cap(fn) in pgnames:
-            auto.append((fn, cap(fn), f, 'ownstem'))
+        # A wrapper whose name is the function's own stem binds it, unless the
+        # wrapper resolves to a different MEOS function: raquet_read and
+        # raquet_read_bytes share the stem Raquet_read, which binds the bytes
+        # form, so the name alone would tag the path form that nothing binds
+        stem = cap(fn)
+        if stem in pgnames and deleg_of.get(stem, fn) == fn:
+            auto.append((fn, stem, f, 'ownstem'))
         elif fn in ptr_deleg and len(ptr_deleg[fn]) == 1:
             auto.append((fn, next(iter(ptr_deleg[fn])), f, 'ptr'))
         else:
