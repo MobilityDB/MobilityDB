@@ -56,6 +56,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <meos.h>
+#include <meos_geo.h>
 #include <meos_raster.h>
 
 /* A 3x3 raster with a single 32BF band */
@@ -161,6 +162,29 @@ int main(void)
     bad_hex ? "non-NULL" : "NULL", meos_errno());
   assert(bad_hex == NULL);
   assert(meos_errno() != 0);
+
+  /* The tile dimensions are taken in the type the SQL surface uses and the
+   * range is rejected by the MEOS function, so a caller outside PostgreSQL
+   * gets the same answer as a PostgreSQL one. Passing a value that does not
+   * fit the tile's unsigned 16-bit fields would otherwise sample a tile of a
+   * different size: 65538 a two pixel wide one, -1 a 65535 pixel wide one */
+  Temporal *traj = tgeompoint_in("SRID=4326;{Point(45.0 10.0)@2024-01-01}");
+  assert(traj != NULL);
+  const uint8_t tile_pixels[4] = {1, 2, 3, 4};
+  const int32 bad_dims[][2] = {{65538, 2}, {2, -1}, {0, 2}, {2, 65536}};
+  for (size_t i = 0; i < sizeof(bad_dims) / sizeof(bad_dims[0]); i++)
+  {
+    meos_errno_reset();
+    Temporal *tile = raster_tile_value_quadbin(traj, tile_pixels,
+      sizeof(tile_pixels), bad_dims[i][0], bad_dims[i][1],
+      5193776270265024512ULL, MEOS_PT_UINT8, 0.0, false);
+    printf("raster_tile_value_quadbin(%d x %d): %s, errno %d\n",
+      bad_dims[i][0], bad_dims[i][1], tile ? "non-NULL" : "NULL",
+      meos_errno());
+    assert(tile == NULL);
+    assert(meos_errno() != 0);
+  }
+  free(traj);
 
   meos_finalize();
   printf("raster_test: all assertions passed\n");

@@ -415,30 +415,12 @@ Raster_tile_value_quadbin(PG_FUNCTION_ARGS)
   float8 nodata = PG_GETARG_FLOAT8(6);
   bool has_nd = PG_GETARG_BOOL(7);
 
-  /* The dimensions reach the tile as an unsigned 16-bit width and height, so
-   * a value outside that range is rejected here instead of wrapping to a
-   * different tile than the one asked for */
-  if (width <= 0 || height <= 0)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "The width and height of a raquet tile must be positive");
-    PG_RETURN_NULL();
-  }
-  if (width > UINT16_MAX || height > UINT16_MAX)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "The width and height of a raquet tile must be at most %d: %d x %d",
-      UINT16_MAX, width, height);
-    PG_RETURN_NULL();
-  }
-
   const uint8_t *pixels = (const uint8_t *) VARDATA_ANY(pxbytea);
   size_t pixels_size = (size_t) VARSIZE_ANY_EXHDR(pxbytea);
   MeosPixType pixtype = text_to_pixtype(pixtype_t);
 
   Temporal *result = raster_tile_value_quadbin(traj, pixels, pixels_size,
-    (uint16_t) width, (uint16_t) height, (uint64) quadbin,
-    pixtype, nodata, has_nd);
+    width, height, (uint64) quadbin, pixtype, nodata, has_nd);
 
   PG_FREE_IF_COPY(traj, 0);
   if (result == NULL)
