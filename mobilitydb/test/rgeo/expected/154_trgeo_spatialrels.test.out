@@ -278,6 +278,22 @@ SELECT aIntersects(
  t
 (1 row)
 
+SELECT eIntersects(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
+  geometry 'Polygon((0.5 -1,20 -1,20 2,0.5 2,0.5 -1))');
+ eintersects 
+-------------
+ t
+(1 row)
+
+SELECT aIntersects(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
+  geometry 'Polygon((0.5 -1,20 -1,20 2,0.5 2,0.5 -1))');
+ aintersects 
+-------------
+ t
+(1 row)
+
 SELECT eTouches(
   geometry 'Polygon((5 -1,6 -1,6 2,5 2,5 -1))',
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');
@@ -291,7 +307,7 @@ SELECT aTouches(
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');
  atouches 
 ----------
- t
+ f
 (1 row)
 
 SELECT eTouches(
@@ -307,7 +323,7 @@ SELECT aTouches(
   geometry 'Polygon((5 -1,6 -1,6 2,5 2,5 -1))');
  atouches 
 ----------
- t
+ f
 (1 row)
 
 SELECT eTouches(
