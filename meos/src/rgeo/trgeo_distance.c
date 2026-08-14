@@ -208,6 +208,42 @@ append_tdist_elem(tdist_array *tda, tdist_elem td)
   tda->arr[tda->count++] = td;
 }
 
+/**
+ * @brief Comparator ordering distance elements by their timestamp
+ */
+static int
+tdist_elem_cmp(const void *a, const void *b)
+{
+  TimestampTz ta = ((const tdist_elem *) a)->t;
+  TimestampTz tb = ((const tdist_elem *) b)->t;
+  return (ta < tb) ? -1 : ((ta > tb) ? 1 : 0);
+}
+
+/**
+ * @brief Sort the distance elements by time and drop duplicate timestamps,
+ * keeping the smallest distance so that a coincident kink and extremum collapse
+ * to the true value
+ */
+static void
+tdist_array_sort(tdist_array *tda)
+{
+  if (tda->count < 2)
+    return;
+  qsort(tda->arr, tda->count, sizeof(tdist_elem), &tdist_elem_cmp);
+  uint32_t w = 0;
+  for (uint32_t r = 1; r < tda->count; ++r)
+  {
+    if (tda->arr[r].t == tda->arr[w].t)
+    {
+      if (tda->arr[r].dist < tda->arr[w].dist)
+        tda->arr[w].dist = tda->arr[r].dist;
+    }
+    else
+      tda->arr[++w] = tda->arr[r];
+  }
+  tda->count = w + 1;
+}
+
 /*****************************************************************************
  * V-clip
  *****************************************************************************/
@@ -1611,54 +1647,98 @@ edge_vertex_tpoly_poly(LWPOLY *poly1, Pose *pose_start, Pose *pose_end,
 static void
 compute_dist_tpoly_poly(cfp_elem *cfp, tdist_array *tda)
 {
+  /* Take the distance from the v-clip oracle on the pose stored in the feature
+   * pair: it re-establishes the true closest feature (robust to any
+   * mis-tracking in the walk) and returns zero when the polygons overlap */
+  uint32_t cf_1 = 0, cf_2 = 0;
   double dist;
-  POINT4D ps, pe, qs, qe;
-  LWPOLY *poly1 = (LWPOLY *)cfp->geom_1;
-  LWPOLY *poly2 = (LWPOLY *)cfp->geom_2;
-  uint32_t n1 = poly1->rings[0]->npoints - 1;
-  uint32_t n2 = poly2->rings[0]->npoints - 1;
-  uint32_t v1 = cfp->cf_1 / 2;
-  uint32_t v2 = cfp->cf_2 / 2;
-  getPoint4d_p(poly2->rings[0], v2, &ps);
-  getPoint4d_p(poly1->rings[0], v1, &qs);
-  apply_pose_point4d(&qs, cfp->pose_1);
-  if (cfp->cf_1 % 2 == 0 && cfp->cf_2 % 2 == 0)
-    dist = sqrt((ps.x - qs.x) * (ps.x - qs.x) + (ps.y - qs.y) * (ps.y - qs.y));
-  else if (cfp->cf_2 % 2 == 0) /* cfp->cf_1 % 2 == 1 */
-  {
-    getPoint4d_p(poly1->rings[0], uint_mod_add(v1, 1, n1), &qe);
-    apply_pose_point4d(&qe, cfp->pose_1);
-    double s = 
-      ((ps.x - qs.x) * (qe.x - qs.x) + (ps.y - qs.y) * (qe.y - qs.y)) /
-      ((qe.x - qs.x) * (qe.x - qs.x) + (qe.y - qs.y) * (qe.y - qs.y));
-    if (s <= 0 || s >= 1)
-    {
-      printf("Problem 1, s should be between 0 and 1: s = %lf\n", s);
-      fflush(stdout);
-      return;
-    }
-    double x = qs.x  + (qe.x - qs.x) * s;
-    double y = qs.y  + (qe.y - qs.y) * s;
-    dist = sqrt((ps.x - x) * (ps.x - x) + (ps.y - y) * (ps.y - y));
-  }
-  else /* cfp->cf_1 % 2 == 0 && cfp->cf_2 % 2 == 1 */
-  {
-    getPoint4d_p(poly2->rings[0], uint_mod_add(v2, 1, n2), &pe);
-    double s = 
-      ((qs.x - ps.x) * (pe.x - ps.x) + (qs.y - ps.y) * (pe.y - ps.y)) /
-      ((pe.x - ps.x) * (pe.x - ps.x) + (pe.y - ps.y) * (pe.y - ps.y));
-    if (s <= 0 || s >= 1)
-    {
-      printf("Problem 2, s should be between 0 and 1: s = %lf\n", s);
-      fflush(stdout);
-      return;
-    }
-    double x = ps.x  + (pe.x - ps.x) * s;
-    double y = ps.y  + (pe.y - ps.y) * s;
-    dist = sqrt((qs.x - x) * (qs.x - x) + (qs.y - y) * (qs.y - y));
-  }
+  v_clip_tpoly_tpoly((LWPOLY *) cfp->geom_1, (LWPOLY *) cfp->geom_2,
+    cfp->pose_1, NULL, &cf_1, &cf_2, &dist);
   tdist_elem td = tdist_make(dist, cfp->t);
   append_tdist_elem(tda, td);
+}
+
+/**
+ * @brief Append the interior turning points (local extrema) of the distance
+ * realized by the fixed closest-feature pair of @p cfp_s while the rigid
+ * geometry moves over the temporal segment @p [t_lo,t_hi]
+ * @details The distance of a fixed feature pair is smooth in the ratio, so its
+ * extrema are the roots of its derivative: the derivative is bracketed on a
+ * subdivision and each root refined to machine precision, and the exact
+ * distance there (from the v-clip oracle on the interpolated pose) is emitted
+ * as a turning point of the tfloat.
+ */
+static void
+compute_turnpoints_tpoly_poly(const cfp_elem *cfp_s, const cfp_elem *cfp_e,
+  const Pose *pose_s, const Pose *pose_e, TimestampTz t_lo, TimestampTz t_hi,
+  tdist_array *tda)
+{
+  const LWPOLY *poly1 = (const LWPOLY *) cfp_s->geom_1;
+  const LWPOLY *poly2 = (const LWPOLY *) cfp_s->geom_2;
+  double span = (double) (t_hi - t_lo);
+  if (span <= 0)
+    return;
+  double ga = (double) (cfp_s->t - t_lo) / span;
+  double gb = (double) (cfp_e->t - t_lo) / span;
+  if (gb - ga < MEOS_EPSILON)
+    return;
+
+  /* Distance of the closest feature pair at segment ratio g */
+  #define TP_DIST(g) __extension__ ({ \
+    Pose *_pp = posesegm_interpolate(pose_s, pose_e, (g)); \
+    uint32_t _c1 = 0, _c2 = 0; double _d; \
+    v_clip_tpoly_tpoly(poly1, poly2, _pp, NULL, &_c1, &_c2, &_d); \
+    pfree(_pp); _d; })
+
+  int K = 16;
+  double h = (gb - ga) / (2.0 * K);
+  double gprev = ga + h;
+  double dprev = (TP_DIST(gprev + h) - TP_DIST(gprev - h)) / (2 * h);
+  for (int k = 1; k < K; ++k)
+  {
+    double gcur = ga + (2 * k + 1) * h;
+    double dcur = (TP_DIST(gcur + h) - TP_DIST(gcur - h)) / (2 * h);
+    if (dprev * dcur < 0)
+    {
+      /* Bisect the derivative to locate the extremum */
+      double lo = gprev, hi = gcur, dlo = dprev;
+      for (int it = 0; it < 60 && hi - lo > 1e-15; ++it)
+      {
+        double mid = 0.5 * (lo + hi);
+        double dmid = (TP_DIST(mid + h) - TP_DIST(mid - h)) / (2 * h);
+        if (dlo * dmid <= 0)
+          hi = mid;
+        else
+          lo = mid, dlo = dmid;
+      }
+      double gstar = 0.5 * (lo + hi);
+      tdist_elem td = tdist_make(TP_DIST(gstar),
+        t_lo + (TimestampTz) (span * gstar));
+      append_tdist_elem(tda, td);
+    }
+    gprev = gcur;
+    dprev = dcur;
+  }
+  #undef TP_DIST
+}
+
+/**
+ * @brief Return the index of the segment of @p seq that contains @p t (the
+ * largest @p i with @p INST_N(i)->t <= t, capped at count - 2)
+ */
+static int
+trgeoseq_segment_index(const TSequence *seq, TimestampTz t)
+{
+  int lo = 0, hi = seq->count - 1;
+  while (lo < hi)
+  {
+    int mid = (lo + hi + 1) / 2;
+    if (TSEQUENCE_INST_N(seq, mid)->t <= t)
+      lo = mid;
+    else
+      hi = mid - 1;
+  }
+  return (lo > seq->count - 2) ? seq->count - 2 : lo;
 }
 
 /**
@@ -1770,26 +1850,29 @@ dist2d_trgeoseq_poly(const TSequence *seq, const GSERIALIZED *gs)
     v_clip_tpoly_tpoly(poly1, poly2, pose2, NULL, &next_cfp.cf_1,
       &next_cfp.cf_2, NULL);
     append_cfp_elem(&cfpa, next_cfp);
-    if (next_cfp.cf_1 != cfp.cf_1 || next_cfp.cf_2 != cfp.cf_2)
-    {
-      printf("Problem, cfp changed from (%d, %d) to (%d, %d) at end of temporal segment\n",
-        cfp.cf_1, cfp.cf_2, next_cfp.cf_1, next_cfp.cf_2);
-      fflush(stdout);
-    }
     cfp = next_cfp;
   }
 
-  /* Compute the linear approximation of the distance
-   * given the array of closest features */
+  /* Compute the piecewise-linear distance from the array of closest features:
+   * a point at every closest-feature time (segment ends and transition kinks)
+   * plus the interior extrema of each fixed feature pair */
   tdist_array tda;
   init_tdist_array(&tda, cfpa.count);
   for (uint32_t i = 0; i < cfpa.count - 1; ++i)
   {
-    if (cfpa.arr[i].store)
-      compute_dist_tpoly_poly(&cfpa.arr[i], &tda);
-    // compute_turnpoints_tpoly_point(&cfpa.arr[i], &cfpa.arr[i+1], &tda);
+    compute_dist_tpoly_poly(&cfpa.arr[i], &tda);
+    int s = trgeoseq_segment_index(seq,
+      cfpa.arr[i].t + (cfpa.arr[i + 1].t - cfpa.arr[i].t) / 2);
+    const TInstant *si = TSEQUENCE_INST_N(seq, s);
+    const TInstant *ei = TSEQUENCE_INST_N(seq, s + 1);
+    compute_turnpoints_tpoly_poly(&cfpa.arr[i], &cfpa.arr[i + 1],
+      DatumGetPoseP(tinstant_value_p(si)), DatumGetPoseP(tinstant_value_p(ei)),
+      si->t, ei->t, &tda);
   }
   compute_dist_tpoly_poly(&cfpa.arr[cfpa.count-1], &tda);
+
+  /* Order the distance points by time before building the result */
+  tdist_array_sort(&tda);
 
   /* Create the result tfloat */
   TInstant **instants = palloc(sizeof(TInstant *) * tda.count);
