@@ -643,6 +643,13 @@ TPOSE_CONFIG = dict(
         # regardless of the source/target SRID. The default int32_t -> 0
         # target SRID is SRID_UNKNOWN, which ensure_srid_known() rejects.
         "pose_transform_pipeline": {1: "pipeline1", 2: "4326"},
+        # posearr_round takes a canned array of poses plus its count; the
+        # return is a `Pose **` array of fresh per-element copies with no
+        # `int *` count arg and no `Set *` arg for emit_call's generic
+        # array-return paths to key off, so it is skipped below and covered
+        # by hand in the cleanup block instead (same pattern as trgeo's
+        # trgeometry_value_n).
+        "poseset_make": {0: "posearr1", 1: "2"},
     },
     # A Set * argument to the pose set operations must be a poseset, not the
     # default tstzset.
@@ -650,8 +657,13 @@ TPOSE_CONFIG = dict(
         r"_pose_set$|_set_pose$|^poseset": {"Set *": "poseset1"},
     },
     skip={
-        "tpose_value_at_timestamptz":
-            "out-param Pose ** has no clean canned site; covered manually",
+        # posearr_round's `Pose **` return has neither an `int *` count arg
+        # nor a `Set *` arg for emit_call's generic array-return paths to key
+        # off (its count is a plain `int`), so the generic emitter would only
+        # free the outer array and leak each per-element copy; call it by
+        # hand in the cleanup block instead, matching trgeometry_value_n.
+        "posearr_round":
+            "Pose ** return without int* / Set* cardinality; covered manually",
     },
     common_inputs="""\
   TimestampTz tstz1 = timestamptz_in("2001-01-02", -1);
@@ -662,6 +674,9 @@ TPOSE_CONFIG = dict(
   GSERIALIZED *geom1 = geom_in("Point(0 0)", -1);
   GSERIALIZED *geom_out_param = NULL;
   Pose *pose1 = pose_in("Pose(Point(0 0), 0.0)");
+  /* A second, distinct pose for the array-input constructors below. */
+  Pose *pose2 = pose_in("Pose(Point(1 1), 0.5)");
+  const Pose *posearr1[] = { pose1, pose2 };
   /* Reprojection reads the source SRID off the value, so the transform input
    * carries one explicitly. */
   Pose *pose_srid1 = pose_in("SRID=4326;Pose(Point(1 2), 0.5)");
@@ -730,6 +745,18 @@ TPOSE_CONFIG = dict(
   int n_out = 0;
 """,
     cleanup="""\
+  /* Manually exercise posearr_round (Pose ** return with a plain int count,
+   * no int* / Set* cardinality for the generic array-return path to use). */
+  {
+    Pose **posearr_round_result = posearr_round(posearr1, 2, 2);
+    printf("posearr_round: %s\\n", posearr_round_result ? "OK" : "NULL");
+    if (posearr_round_result) {
+      for (int _i = 0; _i < 2; _i++)
+        if (posearr_round_result[_i]) free(posearr_round_result[_i]);
+      free(posearr_round_result);
+    }
+  }
+
   if (tpose_inst1) free(tpose_inst1);
   if (tpose1) free(tpose1);
   if (tpoint1) free(tpoint1);
@@ -737,6 +764,7 @@ TPOSE_CONFIG = dict(
   free(pose_wkb1);
   free(stbox1);
   free(pose1);
+  free(pose2);
   free(pose_srid1);
   free(pose3d1);
   free(poseset1);
@@ -816,12 +844,25 @@ TCBUFFER_CONFIG = dict(
         # default int32_t -> 0 target SRID is SRID_UNKNOWN, rejected by
         # ensure_srid_known().
         "cbuffer_transform_pipeline": {1: "pipeline1", 2: "4326"},
+        "cbufferarr_to_geom":    {0: "cbufferarr1", 1: "2"},
+        # cbufferset_make takes a non-const Cbuffer **, unlike its
+        # const-qualified array-input siblings; cbufferarr2 is its own
+        # non-const array so passing it needs no pointer-qualifier cast.
+        "cbufferset_make":       {0: "cbufferarr2", 1: "2"},
     },
     # A Set * that must be a tstzset (the default is a cbufferset).
     name_arg_map={
         r"tstzset": {"Set *": "tstzset1"},
     },
-    skip={},
+    skip={
+        # cbufferarr_round's `Cbuffer **` return has neither an `int *` count
+        # arg nor a `Set *` arg for emit_call's generic array-return paths to
+        # key off (its count is a plain `int`), so the generic emitter would
+        # only free the outer array and leak each per-element copy; call it
+        # by hand in the cleanup block instead, matching trgeometry_value_n.
+        "cbufferarr_round":
+            "Cbuffer ** return without int* / Set* cardinality; covered manually",
+    },
     common_inputs="""\
   TimestampTz tstz1 = timestamptz_in("2001-01-02", -1);
   Span *tstzspan1 = tstzspan_in("[2001-01-01, 2001-01-04]");
@@ -830,6 +871,12 @@ TCBUFFER_CONFIG = dict(
   GSERIALIZED *geom1 = geom_in("Point(0 0)", -1);
   GSERIALIZED *geom_out_param = NULL;
   Cbuffer *cbuffer1 = cbuffer_in("Cbuffer(Point(1 1), 0.5)");
+  /* A second, distinct buffer for the array-input constructors below. */
+  Cbuffer *cbuffer2 = cbuffer_in("Cbuffer(Point(2 2), 0.3)");
+  const Cbuffer *cbufferarr1[] = { cbuffer1, cbuffer2 };
+  /* cbufferset_make takes a non-const Cbuffer **, so it gets its own
+   * non-const array rather than reusing cbufferarr1. */
+  Cbuffer *cbufferarr2[] = { cbuffer1, cbuffer2 };
   /* Reprojection reads the source SRID off the value, so the transform input
    * carries one explicitly. */
   Cbuffer *cbuffer_srid1 = cbuffer_in("SRID=4326;Cbuffer(Point(1 2), 0.5)");
@@ -875,6 +922,19 @@ TCBUFFER_CONFIG = dict(
   int n_out = 0;
 """,
     cleanup="""\
+  /* Manually exercise cbufferarr_round (Cbuffer ** return with a plain int
+   * count, no int* / Set* cardinality for the generic array-return path to
+   * use). */
+  {
+    Cbuffer **cbufferarr_round_result = cbufferarr_round(cbufferarr1, 2, 2);
+    printf("cbufferarr_round: %s\\n", cbufferarr_round_result ? "OK" : "NULL");
+    if (cbufferarr_round_result) {
+      for (int _i = 0; _i < 2; _i++)
+        if (cbufferarr_round_result[_i]) free(cbufferarr_round_result[_i]);
+      free(cbufferarr_round_result);
+    }
+  }
+
   /* tcbuffer_inst1 is a VIEW into tcbuffer1 (temporal_start_inst); do NOT free */
   if (tcbuffer1) free(tcbuffer1);
   if (tpoint1) free(tpoint1);
@@ -883,6 +943,7 @@ TCBUFFER_CONFIG = dict(
   free(stbox1);
   free(cbufferset1);
   free(cbuffer1);
+  free(cbuffer2);
   free(cbuffer_srid1);
   free(geom1);
   free(tstzset1);
@@ -967,6 +1028,7 @@ TNPOINT_CONFIG = dict(
         "npointset_in":         {0: "npointset_wkt1"},
         "tnpoint_in":           {0: "tnpoint_wkt1"},
         "tnpoint_from_mfjson":  {0: "tnpoint_mfjson1"},
+        "npointset_make":               {0: "npointarr1", 1: "2"},
     },
     # A Set * that must be a tstzset (the default is an npointset).
     name_arg_map={
@@ -991,6 +1053,9 @@ TNPOINT_CONFIG = dict(
   /* An STBox in the ways SRID, for the tnpoint x stbox operators. */
   STBox *stbox_ways1 = stbox_in("SRID=5676;STBOX X((2451000, 1212000), (2453000, 1214000))");
   Npoint *npoint1 = npoint_in("NPoint(1, 0.5)");
+  /* A second, distinct network point for npointset_make's array input. */
+  Npoint *npoint2 = npoint_in("NPoint(1, 0.8)");
+  Npoint *npointarr1[] = { npoint1, npoint2 };
   Npoint *npoint_out_param = NULL;
   Nsegment *nsegment1 = nsegment_in("NSegment(1, 0.0, 1.0)");
   Set *npointset1 = npointset_in("{\\"NPoint(1, 0.5)\\"}");
@@ -1049,6 +1114,7 @@ TNPOINT_CONFIG = dict(
   free(npointset1);
   free(nsegment1);
   free(npoint1);
+  free(npoint2);
   free(geom1);
   free(tstzspanset1);
   free(tstzspan1);""",
@@ -1099,6 +1165,10 @@ TGEOMETRY_CONFIG = dict(
         "int64":               "1",
         "interpType":          "LINEAR",
         "Datum":               "geom1_datum",
+        # The only public consumer of this type is the tgeoarr_tgeoarr
+        # relationship/distance family below; arr2 (the second array
+        # argument) is overridden per-function, arr1 uses this default.
+        "Temporal * *":        "tgeoarr1",
     },
     override_args={
         # tpointseq_make_coords takes four parallel coordinate/timestamp
@@ -1236,6 +1306,30 @@ TGEOMETRY_CONFIG = dict(
         # string itself encodes the destination CRS), so only its pipeline
         # arg needs overriding.
         "tspatial_transform_pipeline": {1: "pipeline1"},
+        # Input-array double-pointers, paired with a trailing count arg. The
+        # non-const GSERIALIZED ** constructors get their own non-const
+        # array; the const-qualified cluster functions reuse the
+        # const-qualified cgsarr1/cgsarr2 pair.
+        "geo_collect_garray":  {0: "gsarr1", 1: "2"},
+        "geo_makeline_garray": {0: "gsarr1", 1: "2"},
+        "geom_array_union":    {0: "gsarr1", 1: "2"},
+        "geoset_make":         {0: "gsarr1", 1: "2"},
+        "geo_cluster_kmeans":       {0: "cgsarr1", 1: "2", 2: "2"},
+        "geo_cluster_dbscan":       {0: "cgsarr1", 1: "2", 3: "1"},
+        "geo_cluster_intersecting": {0: "cgsarr1", 1: "2"},
+        "geo_cluster_within":       {0: "cgsarr1", 1: "2"},
+        # The two-array temporal-geo relationship/distance family: arr1
+        # (index 0) is routed by the "Temporal * *" arg_map default below;
+        # only arr2 (index 2) needs overriding to the second canned array.
+        "edwithin_tgeoarr_tgeoarr":     {2: "tgeoarr2"},
+        "adwithin_tgeoarr_tgeoarr":     {2: "tgeoarr2"},
+        "eintersects_tgeoarr_tgeoarr":  {2: "tgeoarr2"},
+        "aintersects_tgeoarr_tgeoarr":  {2: "tgeoarr2"},
+        "etouches_tgeoarr_tgeoarr":     {2: "tgeoarr2"},
+        "atouches_tgeoarr_tgeoarr":     {2: "tgeoarr2"},
+        "edisjoint_tgeoarr_tgeoarr":    {2: "tgeoarr2"},
+        "adisjoint_tgeoarr_tgeoarr":    {2: "tgeoarr2"},
+        "mindistance_tgeoarr_tgeoarr":  {2: "tgeoarr2"},
     },
     # Name-pattern argument routing: whole families of meos_geo.h functions share
     # a precondition the polygon/tgeometry defaults don't meet.
@@ -1290,6 +1384,15 @@ TGEOMETRY_CONFIG = dict(
         # kernel-side fix (meos/src/geo/postgis_funcs.c) to use
         # ensure_point_type() like its sibling.
         "geom_azimuth": "hard assert on non-point input, see kernel bug note above",
+        # The temporal variants of the tgeoarr_tgeoarr family take an
+        # additional mandatory `SpanSet ***periods` out-param (VALIDATE_NOT_
+        # NULL'd, so NULL is rejected): a SpanSet ** whose count elements are
+        # each a fresh owned SpanSet*, on top of the `int *` flat-array
+        # return this family already returns. That combination is not one of
+        # emit_call's generic shapes, so these four are called by hand in the
+        # cleanup block instead, matching trgeometry_value_n.
+        "re:^t(dwithin|intersects|touches|disjoint)_tgeoarr_tgeoarr$":
+            "SpanSet *** out-param not a generic emit_call shape; covered manually",
     },
     common_inputs="""\
   TimestampTz tstz1 = timestamptz_in("2001-01-02", -1);
@@ -1439,9 +1542,78 @@ TGEOMETRY_CONFIG = dict(
     "[SRID=4326;Point(0 0)@2001-01-02, SRID=4326;Point(1 1)@2001-01-03]");
   Temporal *tgeogpoint_step1 = tgeogpoint_in(
     "Interp=Step;[SRID=4326;Point(0 0)@2001-01-02, SRID=4326;Point(1 1)@2001-01-03]");
+  /* Input arrays for the array-of-geometry / array-of-temporal-geo
+   * constructors and relationship family below. */
+  GSERIALIZED *garr_g1 = geom_in("SRID=5676;Point(0 0)", -1);
+  GSERIALIZED *garr_g2 = geom_in("SRID=5676;Point(1 1)", -1);
+  GSERIALIZED *gsarr1[] = { garr_g1, garr_g2 };
+  const GSERIALIZED *cgsarr1[] = { garr_g1, garr_g2 };
+  Temporal *tgeoarr_tp1 = tgeompoint_in(
+    "[SRID=5676;Point(0 0)@2001-01-02, SRID=5676;Point(1 1)@2001-01-03]");
+  Temporal *tgeoarr_tp2 = tgeompoint_in(
+    "[SRID=5676;Point(0.5 0.5)@2001-01-02, SRID=5676;Point(2 2)@2001-01-03]");
+  const Temporal *tgeoarr1[] = { tgeoarr_tp1 };
+  const Temporal *tgeoarr2[] = { tgeoarr_tp2 };
   int n_out = 0;
 """,
     cleanup="""\
+  /* Manually exercise the four temporal tgeoarr_tgeoarr relationship
+   * functions: each takes a mandatory `SpanSet ***periods` out-param
+   * (rejected as NULL) whose `count` elements are each a fresh owned
+   * SpanSet*, a shape emit_call's generic array-return paths don't cover. */
+  {
+    int t_count = 0;
+    SpanSet **t_periods = NULL;
+    int *r = tintersects_tgeoarr_tgeoarr(tgeoarr1, 1, tgeoarr2, 1, &t_count,
+      &t_periods);
+    printf("tintersects_tgeoarr_tgeoarr: %s n=%d\\n", r ? "OK" : "NULL", t_count);
+    if (r) free(r);
+    if (t_periods) {
+      for (int _i = 0; _i < t_count; _i++)
+        if (t_periods[_i]) free(t_periods[_i]);
+      free(t_periods);
+    }
+  }
+  {
+    int t_count = 0;
+    SpanSet **t_periods = NULL;
+    int *r = ttouches_tgeoarr_tgeoarr(tgeoarr1, 1, tgeoarr2, 1, &t_count,
+      &t_periods);
+    printf("ttouches_tgeoarr_tgeoarr: %s n=%d\\n", r ? "OK" : "NULL", t_count);
+    if (r) free(r);
+    if (t_periods) {
+      for (int _i = 0; _i < t_count; _i++)
+        if (t_periods[_i]) free(t_periods[_i]);
+      free(t_periods);
+    }
+  }
+  {
+    int t_count = 0;
+    SpanSet **t_periods = NULL;
+    int *r = tdisjoint_tgeoarr_tgeoarr(tgeoarr1, 1, tgeoarr2, 1, &t_count,
+      &t_periods);
+    printf("tdisjoint_tgeoarr_tgeoarr: %s n=%d\\n", r ? "OK" : "NULL", t_count);
+    if (r) free(r);
+    if (t_periods) {
+      for (int _i = 0; _i < t_count; _i++)
+        if (t_periods[_i]) free(t_periods[_i]);
+      free(t_periods);
+    }
+  }
+  {
+    int t_count = 0;
+    SpanSet **t_periods = NULL;
+    int *r = tdwithin_tgeoarr_tgeoarr(tgeoarr1, 1, tgeoarr2, 1, 1.0, &t_count,
+      &t_periods);
+    printf("tdwithin_tgeoarr_tgeoarr: %s n=%d\\n", r ? "OK" : "NULL", t_count);
+    if (r) free(r);
+    if (t_periods) {
+      for (int _i = 0; _i < t_count; _i++)
+        if (t_periods[_i]) free(t_periods[_i]);
+      free(t_periods);
+    }
+  }
+
   if (tgeo_inst1) free(tgeo_inst1);
   if (tgeo1) free(tgeo1);
   if (tpoint1) free(tpoint1);
@@ -1454,6 +1626,10 @@ TGEOMETRY_CONFIG = dict(
   if (tgeogpoint_step1) free(tgeogpoint_step1);
   free(stbox_wkb1);
   free(geo_wkb1);
+  if (tgeoarr_tp1) free(tgeoarr_tp1);
+  if (tgeoarr_tp2) free(tgeoarr_tp2);
+  free(garr_g1);
+  free(garr_g2);
   free(stbox1);
   free(stbox_zt1);
   free(box3d1);
@@ -1538,8 +1714,101 @@ TJSONB_CONFIG = dict(
         "tjson_array_element": {0: "ttext1"},
         "tjson_array_length": {0: "ttext1"},
         "tjson_object_field": {0: "ttext1"},
+        "tjson_extract_path": {0: "ttext1", 1: "path1", 2: "2"},
+        # Input-array double-pointers, paired with a trailing count arg.
+        "json_make":          {0: "keys_vals1", 1: "2"},
+        "json_make_two_arg":  {0: "keys1", 1: "values1", 2: "1"},
+        "jsonb_make":         {0: "keys_vals1", 1: "2"},
+        "json_extract_path":      {0: "json_doc1", 1: "path1", 2: "2"},
+        "json_extract_path_text": {0: "json_doc1", 1: "path1", 2: "2"},
+        "jsonb_exists_array":     {0: "jb_obj1", 1: "keys1", 2: "1"},
+        "jsonb_extract_path":     {0: "jb_obj1", 1: "path1", 2: "2"},
+        "jsonb_extract_path_text": {0: "jb_obj1", 1: "path1", 2: "2"},
+        "jsonb_delete_array":     {0: "jb_obj1", 1: "keys1", 2: "1"},
+        "jsonb_delete_path":      {0: "jb_obj1", 1: "path1", 2: "2"},
+        "jsonb_insert":           {0: "jb_obj1", 1: "path1", 2: "2", 3: "jb1"},
+        "jsonb_set":              {0: "jb_obj1", 1: "path1", 2: "2", 3: "jb1"},
+        "jsonb_set_lax":          {0: "jb_obj1", 1: "path1", 2: "2", 3: "jb1",
+                                    5: "null_handle_text1"},
+        "jsonbset_make":          {0: "jbarr1", 1: "1"},
+        "jsonbset_delete_array":  {0: "jsonbset_obj1", 1: "keys1", 2: "1"},
+        "jsonbset_exists_array":  {0: "jsonbset_obj1", 1: "keys1", 2: "1"},
+        "jsonbset_set":           {0: "jsonbset_obj1", 1: "keys1", 2: "1",
+                                    3: "jb1", 5: "null_handle_text1"},
+        "jsonbset_delete_path":   {0: "jsonbset_obj1", 1: "path1", 2: "2"},
+        "jsonbset_extract_path":  {0: "jsonbset_obj1", 1: "path1", 2: "2"},
+        "jsonbset_insert":        {0: "jsonbset_obj1", 1: "path1", 2: "2",
+                                    3: "jb1"},
+        "tjsonb_delete_array":    {1: "keys1", 2: "1"},
+        "tjsonb_delete_path":     {1: "path1", 2: "2"},
+        "tjsonb_exists_all":      {1: "keys1", 2: "1"},
+        "tjsonb_exists_any":      {1: "keys1", 2: "1"},
+        "tjsonb_exists_array":    {1: "keys1", 2: "1"},
+        "tjsonb_extract_path":    {1: "path1", 2: "2"},
+        "tjsonb_insert":          {1: "keys1", 2: "1", 3: "jb1"},
+        "tjsonb_set":             {1: "keys1", 2: "1", 3: "jb1",
+                                    5: "null_handle_text1"},
     },
-    skip={},
+    skip={
+        # jsonb_make_two_arg (pgtypes/utils/jsonb.c, pg_jsonb_make_two_arg)
+        # converts each `values[i]` text into a fresh C string in its own
+        # `values_str` array, but its cleanup loop only frees `keys_str` and
+        # its elements -- `values_str` and its per-element cstrings are never
+        # freed. Compare the sibling single-array jsonb_make just above it in
+        # the same file, whose cleanup loop correctly frees every element of
+        # its (single, interleaved) `keys_vals_str` array. This is a real
+        # kernel leak, not a harness gap; left skipped and reported rather
+        # than routed around.
+        "jsonb_make_two_arg":
+            "leaks values_str[] in pg_jsonb_make_two_arg (pgtypes/utils/jsonb.c); real kernel bug, reported separately",
+        # json_each / json_each_text / jsonb_each / jsonb_each_text return
+        # the object's keys, but ALSO write each value directly into the
+        # caller-supplied `values` buffer element-by-element
+        # (`values[i] = state->values[i]`, pgtypes/utils/jsonfuncs.c) --
+        # there is no `int *` capacity in, only `int *count` out, so the
+        # caller must pre-size the buffer before knowing the object's key
+        # count. That shape (a pre-sized OUT buffer, not a sized INPUT array)
+        # is not one of emit_call's generic paths; called by hand in the
+        # cleanup block instead, matching trgeometry_value_n.
+        "re:^json_each$|^json_each_text$|^jsonb_each$|^jsonb_each_text$":
+            "pre-sized OUT-param value buffer, not a generic emit_call shape; covered manually",
+        # get_path_all (pgtypes/utils/jsonfuncs.c, behind json_extract_path,
+        # json_extract_path_text, and the lifted tjson_extract_path) leaks
+        # the path-element Datum array it palloc's -- confirmed under
+        # valgrind --leak-check=full (8-20 bytes `definitely lost`, stack
+        # ending in get_path_all). Real kernel leak, not a harness gap; left
+        # skipped and reported rather than routed around. The
+        # jsonb_extract_path{,_text} siblings use a different, unaffected
+        # code path and stay covered above.
+        "json_extract_path":
+            "leaks the path-element array in get_path_all (pgtypes/utils/jsonfuncs.c); real kernel bug, reported separately",
+        "json_extract_path_text":
+            "leaks the path-element array in get_path_all (pgtypes/utils/jsonfuncs.c); real kernel bug, reported separately",
+        "tjson_extract_path":
+            "leaks the path-element array in get_path_all via datum_json_extract_path_text (pgtypes/utils/jsonfuncs.c); real kernel bug, reported separately",
+        # pg_jsonb_insert (pgtypes/utils/jsonfuncs.c) SEGFAULTS -- a NULL
+        # dereference in appendValue(), reached via
+        # setPath()->setPathObject()->meos_pushJsonbValue()->
+        # pushJsonbValueScalar()->appendValue() -- when inserting a new
+        # value after/before a path that resolves to a scalar inside an
+        # object (this suite's canned {"a": {"b": 1}} target with path
+        # ["a","b"]). Confirmed under valgrind (SIGSEGV, "Address 0x0 is not
+        # stack'd, malloc'd or (recently) free'd"). Real kernel crash, not a
+        # harness gap; left skipped and reported rather than routed around.
+        "jsonb_insert":
+            "SIGSEGV in pg_jsonb_insert/setPathObject/appendValue (pgtypes/utils/jsonfuncs.c); real kernel bug, reported separately",
+        # pg_jsonb_set (pgtypes/utils/jsonfuncs.c) palloc0's a `path_nulls`
+        # array on every call and never frees it -- confirmed under valgrind
+        # --leak-check=full, stack ending in pg_jsonb_set. Every caller in
+        # this family funnels through it (jsonb_set directly; jsonb_set_lax
+        # and jsonbset_set via pg_jsonb_set_lax; jsonbset_insert and
+        # tjsonb_insert via datum_jsonb_insert; tjsonb_set via
+        # datum_jsonb_set_lax), so the leak is unconditional and cannot be
+        # routed around with different canned inputs. Real kernel leak, not
+        # a harness gap; left skipped and reported rather than papered over.
+        "re:^jsonb_set$|^jsonb_set_lax$|^jsonbset_set$|^jsonbset_insert$|^tjsonb_insert$|^tjsonb_set$":
+            "leaks path_nulls[] in pg_jsonb_set (pgtypes/utils/jsonfuncs.c); real kernel bug, reported separately",
+    },
     common_inputs="""\
   TimestampTz tstz1 = timestamptz_in("2001-01-02", -1);
   Span *tstzspan1 = tstzspan_in("[2001-01-01, 2001-01-04]");
@@ -1559,6 +1828,29 @@ TJSONB_CONFIG = dict(
   text *txtarr1[] = { txt1 };
   Numeric num1 = NULL;
   Set *jsonbset1 = jsonbset_in("{1, 2, 3}");
+  /* Input arrays for the json_make / *_extract_path / *_delete_array /
+   * *_exists_array / *_set / *_insert family below. */
+  text *key_a1 = text_in("a");
+  text *key_b1 = text_in("b");
+  text *val_11 = text_in("1");
+  text *keys_vals1[] = { key_a1, val_11 };
+  text *keys1[] = { key_a1 };
+  text *values1[] = { val_11 };
+  text *path1[] = { key_a1, key_b1 };
+  text *json_doc1 = text_in("{\\"a\\": {\\"b\\": 1}}");
+  Jsonb *jb_obj1 = jsonb_in("{\\"a\\": {\\"b\\": 1}}");
+  /* A null-value-treatment keyword for jsonb_set_lax / jsonbset_set. */
+  text *null_handle_text1 = text_in("use_json_null");
+  /* A jsonbset of two OBJECTS (not the scalar jsonbset1 above), for the
+   * jsonbset_*_array / *_path family, which need a "a"/"b" key to touch;
+   * built via jsonbset_make() (also under test below) rather than via
+   * jsonbset_in(), whose set-literal escaping for object elements is
+   * fragile to hand-write. */
+  Jsonb *jb_a1 = jsonb_in("{\\"a\\": 1}");
+  Jsonb *jb_b1 = jsonb_in("{\\"b\\": 2}");
+  const Jsonb *jbarr1[] = { jb_a1 };
+  const Jsonb *jbarr2[] = { jb_a1, jb_b1 };
+  Set *jsonbset_obj1 = jsonbset_make(jbarr2, 2);
   int n_out = 0;
   Temporal *tjsonb1 = tjsonb_in(
     "[{\\"a\\": 1}@2001-01-02, {\\"a\\": 2}@2001-01-03]");
@@ -1569,6 +1861,64 @@ TJSONB_CONFIG = dict(
   Temporal *ttext1 = ttext_in("[\\"1\\"@2001-01-02, \\"2\\"@2001-01-03]");
 """,
     cleanup="""\
+  /* Manually exercise json_each / json_each_text / jsonb_each /
+   * jsonb_each_text: each writes its values directly into a caller-supplied
+   * buffer element-by-element with no advance sizing beyond the internal
+   * 256-element cap they document, so the caller pre-sizes a generous stack
+   * buffer rather than being handed one. */
+  {
+    text *values_buf[64];
+    int count = 0;
+    text **keys = json_each(json_doc1, values_buf, &count);
+    printf("json_each: %s n=%d\\n", keys ? "OK" : "NULL", count);
+    if (keys) {
+      for (int _i = 0; _i < count; _i++) {
+        if (keys[_i]) free(keys[_i]);
+        if (values_buf[_i]) free(values_buf[_i]);
+      }
+      free(keys);
+    }
+  }
+  {
+    text *values_buf[64];
+    int count = 0;
+    text **keys = json_each_text(json_doc1, values_buf, &count);
+    printf("json_each_text: %s n=%d\\n", keys ? "OK" : "NULL", count);
+    if (keys) {
+      for (int _i = 0; _i < count; _i++) {
+        if (keys[_i]) free(keys[_i]);
+        if (values_buf[_i]) free(values_buf[_i]);
+      }
+      free(keys);
+    }
+  }
+  {
+    Jsonb *values_buf[64];
+    int count = 0;
+    text **keys = jsonb_each(jb_obj1, values_buf, &count);
+    printf("jsonb_each: %s n=%d\\n", keys ? "OK" : "NULL", count);
+    if (keys) {
+      for (int _i = 0; _i < count; _i++) {
+        if (keys[_i]) free(keys[_i]);
+        if (values_buf[_i]) free(values_buf[_i]);
+      }
+      free(keys);
+    }
+  }
+  {
+    text *values_buf[64];
+    int count = 0;
+    text **keys = jsonb_each_text(jb_obj1, values_buf, &count);
+    printf("jsonb_each_text: %s n=%d\\n", keys ? "OK" : "NULL", count);
+    if (keys) {
+      for (int _i = 0; _i < count; _i++) {
+        if (keys[_i]) free(keys[_i]);
+        if (values_buf[_i]) free(values_buf[_i]);
+      }
+      free(keys);
+    }
+  }
+
   if (tjsonb1) free(tjsonb1);
   free(ttext1);
   free(jp1);
@@ -1576,6 +1926,15 @@ TJSONB_CONFIG = dict(
   free(jb_num1);
   free(txt1);
   free(jsonbset1);
+  free(jsonbset_obj1);
+  free(jb_a1);
+  free(jb_b1);
+  free(jb_obj1);
+  free(json_doc1);
+  free(key_a1);
+  free(key_b1);
+  free(val_11);
+  free(null_handle_text1);
   free(tstzspanset1);
   free(tstzspan1);""",
 )
