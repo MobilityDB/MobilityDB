@@ -961,6 +961,21 @@ tinterrel_tcbuffer_geo_dist(const Temporal *temp, const GSERIALIZED *gs,
   if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
 
+  /* A value composed of discs of a zero radius is a temporal point, whose
+   * conversion is exact, and the temporal point relationships of the geo
+   * family resolve the contact at a zero clearance that the disc kernels below
+   * read from a disc boundary. A strictly positive distance reaches here only
+   * from `tdwithin`, which computes the intersection semantics */
+  if (tcbuffer_is_tpoint(temp))
+  {
+    Temporal *tpoint = tcbuffer_to_tgeompoint(temp);
+    Temporal *result = (dist > 0.0) ?
+      tdwithin_tgeo_geo(tpoint, gs, dist) :
+      tinterrel_tgeo_geo(tpoint, gs, tinter);
+    pfree(tpoint);
+    return result;
+  }
+
   /* Bounding box test, expanding the temporal box by the distance */
   STBox box1, box1_exp, box2;
   tspatial_set_stbox(temp, &box1);

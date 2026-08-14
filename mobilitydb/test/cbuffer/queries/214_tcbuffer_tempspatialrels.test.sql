@@ -350,3 +350,30 @@ SELECT tDwithin(tcbuffer 'Cbuffer(Point(1 1 1),0.5)@2000-01-01', tcbuffer 'Cbuff
 SELECT tDwithin(tcbuffer 'Cbuffer(Point(1 1 1),0.5)@2000-01-01', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', 2);
 
 -------------------------------------------------------------------------------
+-- Discs of a zero radius: the value is a temporal point
+--
+-- A disc of a zero radius is the point at its centre, so the answers below are
+-- those of the temporal point the value converts to. The contact is at a zero
+-- clearance, which is the disc boundary the disc kernels read a touch from
+-------------------------------------------------------------------------------
+
+-- A point running through the position of a point geometry meets it at the
+-- single instant it passes through
+SELECT tIntersects(tcbuffer '[Cbuffer(Point(-3 0),0)@2000-01-01, Cbuffer(Point(3 0),0)@2000-01-03]', geometry 'Point(0 0)');
+SELECT tIntersects(geometry 'Point(0 0)', tcbuffer '[Cbuffer(Point(-3 0),0)@2000-01-01, Cbuffer(Point(3 0),0)@2000-01-03]');
+SELECT tDisjoint(tcbuffer '[Cbuffer(Point(-3 0),0)@2000-01-01, Cbuffer(Point(3 0),0)@2000-01-03]', geometry 'Point(0 0)');
+-- The same point crossing a line, and running along it
+SELECT tIntersects(tcbuffer '[Cbuffer(Point(-3 0),0)@2000-01-01, Cbuffer(Point(3 0),0)@2000-01-03]', geometry 'Linestring(0 -5,0 5)');
+SELECT tIntersects(tcbuffer '[Cbuffer(Point(-3 0),0)@2000-01-01, Cbuffer(Point(3 0),0)@2000-01-03]', geometry 'Linestring(-5 0,5 0)');
+-- Entering and leaving a polygon
+SELECT tIntersects(tcbuffer '[Cbuffer(Point(-3 0),0)@2000-01-01, Cbuffer(Point(3 0),0)@2000-01-03]', geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))');
+SELECT tDisjoint(geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))', tcbuffer '[Cbuffer(Point(-3 0),0)@2000-01-01, Cbuffer(Point(3 0),0)@2000-01-03]');
+-- A point standing still on the position of a point geometry
+SELECT tIntersects(tcbuffer '[Cbuffer(Point(1 1),0)@2000-01-01, Cbuffer(Point(1 1),0)@2000-01-03]', geometry 'Point(1 1)');
+-- Within a distance of a line the point approaches and leaves
+SELECT tDwithin(tcbuffer '[Cbuffer(Point(-3 0),0)@2000-01-01, Cbuffer(Point(3 0),0)@2000-01-03]', geometry 'Linestring(0 -5,0 5)', 2);
+SELECT tDwithin(geometry 'Linestring(0 -5,0 5)', tcbuffer '[Cbuffer(Point(-3 0),0)@2000-01-01, Cbuffer(Point(3 0),0)@2000-01-03]', 2);
+-- A single disc of a strictly positive radius keeps the disc semantics
+SELECT tIntersects(tcbuffer '[Cbuffer(Point(-3 0),0)@2000-01-01, Cbuffer(Point(3 0),0.5)@2000-01-03]', geometry 'Point(0 0)');
+
+-------------------------------------------------------------------------------

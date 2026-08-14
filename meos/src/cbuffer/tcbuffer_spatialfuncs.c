@@ -692,6 +692,31 @@ tcbuffer_traversed_area(const Temporal *temp, bool unary_union)
 }
 
 /**
+ * @brief Return true if every composing circular buffer of a temporal circular
+ * buffer has a zero radius, that is, the value is a temporal point
+ * @details A disc of a zero radius is the point at its centre, so such a value
+ * converts to a temporal geometry point without loss, and the temporal point
+ * of the geo family owns the relationships the disc kernels read from a disc
+ * boundary. The test is exact and applies to the whole value: a value holding
+ * a single disc of a strictly positive radius keeps the disc kernels
+ * @param[in] temp Temporal circular buffer
+ */
+bool
+tcbuffer_is_tpoint(const Temporal *temp)
+{
+  assert(temp); assert(temp->temptype == T_TCBUFFER);
+  int count;
+  const TInstant **instants = temporal_insts_p(temp, &count);
+  bool result = true;
+  for (int i = 0; i < count && result; i++)
+    result = (DatumGetCbufferP(tinstant_value_p(instants[i]))->radius == 0.0);
+  pfree(instants);
+  return result;
+}
+
+/*****************************************************************************/
+
+/**
  * @ingroup meos_cbuffer_accessor
  * @brief Return the convex hull of a temporal circular buffer
  * @param[in] temp Temporal circular buffer
