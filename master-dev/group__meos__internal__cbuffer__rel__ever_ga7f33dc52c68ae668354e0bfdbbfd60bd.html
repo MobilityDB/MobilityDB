@@ -138,7 +138,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return 1 if a temporal circular buffer and a geometry ever touch, 0 if not, and -1 on error or if the geometry is empty. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p >Touching is a contact of the two whose interiors stay disjoint. A disc of a strictly positive radius carries an interior, and the paths below read the disjointness from the position of its centre with respect to the geometry. A disc of radius zero is a point, whose interior is the point itself: it touches the geometry exactly where it lies on the boundary of the geometry, and a value composed of such discs is a temporal point, which reaches that relationship through its own conversion </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> circular buffer </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">gs</td><td>Geometry </td></tr>
