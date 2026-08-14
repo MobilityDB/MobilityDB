@@ -62,7 +62,13 @@ SELECT COUNT(*) FROM tbl_geomset WHERE geomsetFromBinary(asBinary(g)) <> g;
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_geogset WHERE geogsetFromBinary(asBinary(g)) <> g;
+SELECT COUNT(*) FROM tbl_geogset WHERE setSRID(geogsetFromBinary(asBinary(g)), 4326) <> g;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geogset WHERE SRID(geogsetFromBinary(asBinary(g))) <> 0;
  count 
 -------
      0
