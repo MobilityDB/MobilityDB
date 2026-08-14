@@ -3989,6 +3989,10 @@
 				</listitem>
 
 				<listitem>
+					<para><link linkend="raquet_pixels"><varname>pixels</varname></link>: Return the pixel bytes of a Raquet tile</para>
+				</listitem>
+
+				<listitem>
 					<para><link linkend="raquet_to_stbox"><varname>stbox</varname></link>: Convert a Raquet tile into a spatiotemporal box</para>
 				</listitem>
 

@@ -414,6 +414,20 @@ SELECT pixtype(raquet('\x01'::bytea, 1, 1, 5193776270265024512::bigint, 'UINT8')
 SELECT nodata(raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8',
   -9999.0));
 
+-- The pixel bytes are returned in the layout the constructor accepts, so a
+-- tile rebuilt from its own accessors equals the tile it came from.
+SELECT pixels(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint,
+  'UINT8'));
+
+SELECT raquet(pixels(tile), width(tile), height(tile), quadbin(tile),
+         pixtype(tile), nodata(tile)) = tile AS round_trips
+FROM (SELECT raquet('\x0102030405060708'::bytea, 2, 2,
+        5193776270265024512::bigint, 'INT16', -9999.0) AS tile) t;
+
+-- A wider pixel type returns the whole band, not the pixel count.
+SELECT length(pixels(raquet('\x0102030405060708'::bytea, 2, 1,
+  5193776270265024512::bigint, 'FLOAT32')));
+
 -------------------------------------------------------------------------------
 -- raquet comparison
 -------------------------------------------------------------------------------
