@@ -215,6 +215,7 @@ trgeo_wkt_out(const Temporal *temp, int maxdd, bool extended)
   size_t len = strlen(wkt_geom) + strlen(wkt_pose) + 2;
   char *result = palloc(len);
   snprintf(result, len, "%s;%s", wkt_geom, wkt_pose);
+  pfree(wkt_geom); pfree(wkt_pose);
   return result;
 }
 
