@@ -72,7 +72,7 @@
  *   @ingroup meos_json_comp
  *   @brief Temporal comparison functions for temporal JSON
  *
- * @defgroup meos_json_distance Distance functions
+ * @defgroup meos_json_dist Distance functions
  * @ingroup meos_json
  * @brief Distance functions for temporal JSON
  */

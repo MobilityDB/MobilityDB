@@ -41,6 +41,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "temporal/tbox.h"
+#include "temporal/span.h"
 #include "temporal/temporal.h"
 #include "temporal/type_util.h"
 /* MobilityDB */
@@ -125,11 +126,12 @@ NAD_number_tnumber(PG_FUNCTION_ARGS)
 {
   Datum value = PG_GETARG_DATUM(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  double result = nad_tnumber_number(temp, value);
+  MeosType basetype = temptype_basetype(temp->temptype);
+  Datum result = nad_tnumber_number(temp, value);
   PG_FREE_IF_COPY(temp, 1);
-  if (result == DBL_MAX)
+  if (datum_eq(result, distance_sentinel(basetype), basetype))
     PG_RETURN_NULL();
-  PG_RETURN_FLOAT8(result);
+  PG_RETURN_FLOAT8(distance_double(result, basetype));
 }
 
 PGDLLEXPORT Datum NAD_tnumber_number(PG_FUNCTION_ARGS);
@@ -146,11 +148,12 @@ NAD_tnumber_number(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Datum value = PG_GETARG_DATUM(1);
-  double result = nad_tnumber_number(temp, value);
+  MeosType basetype = temptype_basetype(temp->temptype);
+  Datum result = nad_tnumber_number(temp, value);
   PG_FREE_IF_COPY(temp, 0);
-  if (result == DBL_MAX)
+  if (datum_eq(result, distance_sentinel(basetype), basetype))
     PG_RETURN_NULL();
-  PG_RETURN_FLOAT8(result);
+  PG_RETURN_FLOAT8(distance_double(result, basetype));
 }
 
 PGDLLEXPORT Datum NAD_tbox_tbox(PG_FUNCTION_ARGS);
@@ -166,10 +169,11 @@ NAD_tbox_tbox(PG_FUNCTION_ARGS)
 {
   TBox *box1 = PG_GETARG_TBOX_P(0);
   TBox *box2 = PG_GETARG_TBOX_P(1);
-  double result = nad_tbox_tbox(box1, box2);
-  if (result == DBL_MAX)
+  MeosType basetype = box1->span.basetype;
+  Datum result = nad_tbox_tbox(box1, box2);
+  if (datum_eq(result, distance_sentinel(basetype), basetype))
     PG_RETURN_NULL();
-  PG_RETURN_FLOAT8(result);
+  PG_RETURN_FLOAT8(distance_double(result, basetype));
 }
 
 PGDLLEXPORT Datum NAD_tbox_tnumber(PG_FUNCTION_ARGS);
@@ -186,11 +190,12 @@ NAD_tbox_tnumber(PG_FUNCTION_ARGS)
 {
   TBox *box = PG_GETARG_TBOX_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  double result = nad_tnumber_tbox(temp, box);
+  MeosType basetype = temptype_basetype(temp->temptype);
+  Datum result = nad_tnumber_tbox(temp, box);
   PG_FREE_IF_COPY(temp, 1);
-  if (result == DBL_MAX)
+  if (datum_eq(result, distance_sentinel(basetype), basetype))
     PG_RETURN_NULL();
-  PG_RETURN_FLOAT8(result);
+  PG_RETURN_FLOAT8(distance_double(result, basetype));
 }
 
 PGDLLEXPORT Datum NAD_tnumber_tbox(PG_FUNCTION_ARGS);
@@ -207,11 +212,12 @@ NAD_tnumber_tbox(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   TBox *box = PG_GETARG_TBOX_P(1);
-  double result = nad_tnumber_tbox(temp, box);
+  MeosType basetype = temptype_basetype(temp->temptype);
+  Datum result = nad_tnumber_tbox(temp, box);
   PG_FREE_IF_COPY(temp, 0);
-  if (result == DBL_MAX)
+  if (datum_eq(result, distance_sentinel(basetype), basetype))
     PG_RETURN_NULL();
-  PG_RETURN_FLOAT8(result);
+  PG_RETURN_FLOAT8(distance_double(result, basetype));
 }
 
 PGDLLEXPORT Datum NAD_tnumber_tnumber(PG_FUNCTION_ARGS);
@@ -227,12 +233,13 @@ NAD_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  double result = nad_tnumber_tnumber(temp1, temp2);
+  MeosType basetype = temptype_basetype(temp1->temptype);
+  Datum result = nad_tnumber_tnumber(temp1, temp2);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
-  if (result == DBL_MAX)
+  if (datum_eq(result, distance_sentinel(basetype), basetype))
     PG_RETURN_NULL();
-  PG_RETURN_FLOAT8(result);
+  PG_RETURN_FLOAT8(distance_double(result, basetype));
 }
 
 /*****************************************************************************/

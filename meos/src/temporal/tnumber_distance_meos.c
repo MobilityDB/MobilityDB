@@ -103,7 +103,24 @@ nad_tint_int(const Temporal *temp, int i)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TINT(temp, INT_MAX);
-  return (int) nad_tnumber_number(temp, Int32GetDatum(i));
+  return DatumGetInt32(nad_tnumber_number(temp, Int32GetDatum(i)));
+}
+
+/**
+ * @ingroup meos_temporal_dist
+ * @brief Return the nearest approach distance between a temporal number
+ * and a number
+ * @param[in] temp Temporal value
+ * @param[in] i Value
+ * @return On error return @p INT64_MAX
+ * @csqlfn #NAD_tnumber_number()
+ */
+int64
+nad_tbigint_bigint(const Temporal *temp, int64 i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, INT64_MAX);
+  return DatumGetInt64(nad_tnumber_number(temp, Int64GetDatum(i)));
 }
 
 /**
@@ -120,7 +137,7 @@ nad_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, DBL_MAX);
-  return nad_tnumber_number(temp, Float8GetDatum(d));
+  return DatumGetFloat8(nad_tnumber_number(temp, Float8GetDatum(d)));
 }
 
 /**
@@ -138,7 +155,25 @@ nad_tint_tbox(const Temporal *temp, const TBox *box)
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tnumber_numspan(temp, &box->span))
     return INT_MAX;
-  return (int) nad_tnumber_tbox(temp, box);
+  return DatumGetInt32(nad_tnumber_tbox(temp, box));
+}
+
+/**
+ * @ingroup meos_temporal_dist
+ * @brief Return the nearest approach distance between a temporal big integer
+ * and a temporal box
+ * @param[in] temp Temporal value
+ * @param[in] box Temporal box
+ * @return On error return @p INT64_MAX
+ * @csqlfn #NAD_tnumber_tbox()
+ */
+int64
+nad_tbigint_tbox(const Temporal *temp, const TBox *box)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tnumber_numspan(temp, &box->span))
+    return INT64_MAX;
+  return DatumGetInt64(nad_tnumber_tbox(temp, box));
 }
 
 /**
@@ -156,7 +191,7 @@ nad_tfloat_tbox(const Temporal *temp, const TBox *box)
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tnumber_numspan(temp, &box->span))
     return DBL_MAX;
-  return nad_tnumber_tbox(temp, box);
+  return DatumGetFloat8(nad_tnumber_tbox(temp, box));
 }
 
 /**
@@ -173,7 +208,25 @@ nad_tboxint_tboxint(const TBox *box1, const TBox *box2)
       ! ensure_span_isof_type(&box2->span, T_INTSPAN))
     return INT_MAX;
 
-  return (int) nad_tbox_tbox(box1, box2);
+  return DatumGetInt32(nad_tbox_tbox(box1, box2));
+}
+
+/**
+ * @ingroup meos_temporal_dist
+ * @brief Return the nearest approach distance between the big integer temporal
+ * boxes
+ * @param[in] box1,box2 Temporal boxes
+ * @return On error return @p INT64_MAX
+ * @csqlfn #NAD_tbox_tbox()
+ */
+int64
+nad_tboxbigint_tboxbigint(const TBox *box1, const TBox *box2)
+{
+  if (! ensure_span_isof_type(&box1->span, T_BIGINTSPAN) ||
+      ! ensure_span_isof_type(&box2->span, T_BIGINTSPAN))
+    return INT64_MAX;
+
+  return DatumGetInt64(nad_tbox_tbox(box1, box2));
 }
 
 /**
@@ -189,7 +242,7 @@ nad_tboxfloat_tboxfloat(const TBox *box1, const TBox *box2)
   if (! ensure_span_isof_type(&box1->span, T_FLOATSPAN) ||
       ! ensure_span_isof_type(&box2->span, T_FLOATSPAN))
     return DBL_MAX;
-  return nad_tbox_tbox(box1, box2);
+  return DatumGetFloat8(nad_tbox_tbox(box1, box2));
 }
 
 /**
@@ -204,7 +257,23 @@ nad_tint_tint(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TINT(temp1, INT_MAX); VALIDATE_TINT(temp2, INT_MAX);
-    return (int) nad_tnumber_tnumber(temp1, temp2);
+  return DatumGetInt32(nad_tnumber_tnumber(temp1, temp2));
+}
+
+/**
+ * @ingroup meos_temporal_dist
+ * @brief Return the nearest approach distance between two temporal big
+ * integers
+ * @param[in] temp1,temp2 Temporal values
+ * @return On error return @p INT64_MAX
+ * @csqlfn #NAD_tnumber_tnumber()
+ */
+int64
+nad_tbigint_tbigint(const Temporal *temp1, const Temporal *temp2)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp1, INT64_MAX); VALIDATE_TBIGINT(temp2, INT64_MAX);
+  return DatumGetInt64(nad_tnumber_tnumber(temp1, temp2));
 }
 
 /**
@@ -219,7 +288,7 @@ nad_tfloat_tfloat(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp1, DBL_MAX); VALIDATE_TFLOAT(temp2, DBL_MAX);
-    return nad_tnumber_tnumber(temp1, temp2);
+  return DatumGetFloat8(nad_tnumber_tnumber(temp1, temp2));
 }
 
 /*****************************************************************************/

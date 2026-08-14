@@ -1047,7 +1047,8 @@ Tbox_gist_distance(PG_FUNCTION_ARGS)
    * and let the recheck sort things out in the case of leaves. Since the
    * GiST framework expects a double for the distance method, we need to
    * convert the integer distance for temporal integer boxes into a double */
-  double distance = nad_tbox_tbox(key, &query);
+  double distance = distance_double(nad_tbox_tbox(key, &query),
+    key->span.basetype);
   PG_RETURN_FLOAT8(distance);
 }
 
