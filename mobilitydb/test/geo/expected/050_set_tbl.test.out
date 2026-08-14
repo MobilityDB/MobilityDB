@@ -68,6 +68,18 @@ SELECT COUNT(*) FROM tbl_geogset WHERE geogsetFromBinary(asBinary(g)) <> g;
      0
 (1 row)
 
+SELECT COUNT(*) FROM tbl_geomset WHERE geomsetFromEWKB(asEWKB(g)) <> g;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geogset WHERE geogsetFromEWKB(asEWKB(g)) <> g;
+ count 
+-------
+     0
+(1 row)
+
 SELECT COUNT(*) FROM tbl_geomset WHERE geomsetFromHexWKB(asHexWKB(g)) <> g;
  count 
 -------
@@ -75,6 +87,18 @@ SELECT COUNT(*) FROM tbl_geomset WHERE geomsetFromHexWKB(asHexWKB(g)) <> g;
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geogset WHERE geogsetFromHexWKB(asHexWKB(g)) <> g;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geomset WHERE geomsetFromHexWKB(asHexEWKB(g)) <> g;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_geogset WHERE geogsetFromHexWKB(asHexEWKB(g)) <> g;
  count 
 -------
      0

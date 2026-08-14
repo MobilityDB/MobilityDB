@@ -228,6 +228,25 @@ SELECT asHexWKB(floatspanset '{[1, 2], [4, 5]}', 'XDR');
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="setspan_asEWKB">
+				<indexterm significance="normal"><primary><varname>asEWKB</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>asHexEWKB</varname></primary></indexterm>
+				<para>Devuelve la representación binaria extendida conocida (Extended Well-Known Binary o EWKB) o la representación hexadecimal binaria extendida conocida (HexEWKB) de un conjunto espacial</para>
+				<para><varname>asEWKB({geomset,geogset,cbufferset,npointset,poseset,pcpointset,pcpatchset},endian text='') → bytea</varname></para>
+				<para><varname>asHexEWKB({geomset,geogset,cbufferset,npointset,poseset,pcpointset,pcpatchset},endian text='') → text</varname></para>
+				<para>Para <varname>geomset</varname>, <varname>geogset</varname>, <varname>cbufferset</varname>, <varname>npointset</varname> y <varname>poseset</varname> el SRID (cuando se conoce) se incluye una única vez en la cabecera del conjunto, por lo que <varname>asBinary</varname> y <varname>asEWKB</varname>, e igualmente <varname>asHexWKB</varname> y <varname>asHexEWKB</varname>, devuelven los mismos bytes. Para <varname>pcpointset</varname> y <varname>pcpatchset</varname> el esquema, y su SRID, se resuelve fuera de banda a partir del catálogo <varname>pointcloud_formats</varname> en lugar de incluirse en el valor, por lo que las cuatro funciones también devuelven siempre los mismos bytes para estos dos tipos.</para>
+				<programlisting language="sql" xml:space="preserve">
+SELECT asEWKB(geomset 'SRID=4326;{Point(1 1)}');
+-- \x012b0041e6100000010000000101000020e6100000000000000000f03f000000000000f03f
+SELECT asHexEWKB(geomset 'SRID=4326;{Point(1 1)}');
+-- 012B0041E6100000010000000101000020E6100000000000000000F03F000000000000F03F
+SELECT asEWKB(cbufferset 'SRID=4326;{"Cbuffer(Point(1 1),0.5)"}');
+-- \x013a0041e610000001000000000000000000f03f000000000000f03f000000000000e03f
+SELECT asHexEWKB(npointset '{"NPoint(1,0.5)"}');
+-- 01310041E61000000100000041E61000000100000000000000000000000000E03F
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="setspan_FromBinary">
 				<indexterm significance="normal"><primary><varname>settypeFromBinary</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>spantypeFromBinary</varname></primary></indexterm>

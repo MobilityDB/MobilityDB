@@ -43,7 +43,11 @@ DROP TABLE tbl_cbufferset_tmp;
 
 -- Input/output from/to WKB and HexWKB
 
+SELECT COUNT(*) FROM tbl_cbufferset WHERE cbuffersetFromBinary(asBinary(s)) <> s;
+SELECT COUNT(*) FROM tbl_cbufferset WHERE cbuffersetFromBinary(asEWKB(s)) <> s;
+
 SELECT COUNT(*) FROM tbl_cbufferset WHERE cbuffersetFromHexWKB(asHexWKB(s)) <> s;
+SELECT COUNT(*) FROM tbl_cbufferset WHERE cbuffersetFromHexWKB(asHexEWKB(s)) <> s;
 
 -------------------------------------------------------------------------------
 -- Constructor

@@ -45,6 +45,12 @@ SELECT COUNT(*) FROM tbl_npointset WHERE npointsetFromHexWKB(asHexWKB(n)) <> n;
      0
 (1 row)
 
+SELECT COUNT(*) FROM tbl_npointset WHERE npointsetFromHexWKB(asHexEWKB(n)) <> n;
+ count 
+-------
+     0
+(1 row)
+
 SELECT numValues(set(array_agg(DISTINCT np ORDER BY np))) FROM tbl_npoint WHERE np IS NOT NULL;
  numvalues 
 -----------
