@@ -76,7 +76,7 @@ typedef enum
 #else
   #define VALIDATE_GEOMSET(set, ret) \
     do { \
-      assert(temp); \
+      assert(set); \
       assert((set)->settype == T_GEOMSET); \
     } while (0)
 #endif /* MEOS */
@@ -85,7 +85,7 @@ typedef enum
  * @brief Macro ensuring that a set is a geography set
  */
 #if MEOS
-  #define VALIDATE_GEOGSET(set, ret) ( \
+  #define VALIDATE_GEOGSET(set, ret) \
     do { \
           if (! ensure_not_null((void *) (set)) || \
               ! ensure_set_isof_type(set, T_GEOGSET) ) \
@@ -94,7 +94,7 @@ typedef enum
 #else
   #define VALIDATE_GEOGSET(set, ret) \
     do { \
-      assert(temp); \
+      assert(set); \
       assert((set)->settype == T_GEOGSET); \
     } while (0)
 #endif /* MEOS */
@@ -112,8 +112,8 @@ typedef enum
 #else
   #define VALIDATE_GEOSET(set, ret) \
     do { \
-      assert(temp); \
-      assert(geoset_type((set)->settype); \
+      assert(set); \
+      assert(geoset_type((set)->settype)); \
     } while (0)
 #endif /* MEOS */
 
