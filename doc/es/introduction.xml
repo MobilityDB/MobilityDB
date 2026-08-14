@@ -274,6 +274,9 @@ sudo apt-get install cmake gcc libgsl-dev
 sudo dnf install gcc gcc-c++ cmake make postgresql-server-devel postgis \
   geos-devel proj-devel json-c-devel gsl-devel
 </programlisting>
+			<para>
+				Las familias opcionales que habilita <varname>-DALL=ON</varname> requieren dos paquetes adicionales, <varname>gdal-devel</varname> para los operadores de rásteres y <varname>h3-devel</varname> para el tipo de índice H3.
+			</para>
 		</sect2>
 
 		<sect2 xml:id="configuring">

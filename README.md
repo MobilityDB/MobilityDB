@@ -131,6 +131,8 @@ On Fedora and other RPM-based distributions, the same dependencies are installed
 dnf install gcc gcc-c++ cmake make postgresql-server-devel postgis geos-devel proj-devel json-c-devel gsl-devel
 ```
 
+The optional families that `-DALL=ON` enables need two more packages, `gdal-devel` for the raster operators and `h3-devel` for the H3 index type.
+
 Building & Installation
 -----------------------
 
