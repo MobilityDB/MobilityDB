@@ -353,6 +353,17 @@ SELECT asEWKT(tgeography '{Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02,
 SELECT asEWKT(tgeography '[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03]'::tgeometry);
 SELECT asEWKT(tgeography '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02, Point(1.5 1.5)@2000-01-03],[Point(3.5 3.5)@2000-01-04, Point(3.5 3.5)@2000-01-05]}'::tgeometry);
 
+-- A temporal point widened to a temporal geometry keeps its values and its
+-- SRID, including the unknown SRID
+SELECT asEWKT(tgeompoint 'Point(1 1)@2000-01-01'::tgeometry);
+SELECT asEWKT(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}'::tgeometry);
+SELECT asEWKT(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]'::tgeometry);
+SELECT asEWKT(tgeompoint 'SRID=3812;Point(1 1)@2000-01-01'::tgeometry);
+SELECT asEWKT(tgeogpoint 'SRID=4326;Point(1 1)@2000-01-01'::tgeography);
+
+/* Errors */
+SELECT asEWKT(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]'::tgeometry);
+
 --------------------------------------------------------
 
 -- 2D

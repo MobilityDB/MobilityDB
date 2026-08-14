@@ -981,6 +981,39 @@ SELECT asEWKT(tgeography '{[Point(1.5 1.5)@2000-01-01, Point(2.5 2.5)@2000-01-02
  SRID=4326;{[POINT(1.5 1.5)@Sat Jan 01 00:00:00 2000 PST, POINT(2.5 2.5)@Sun Jan 02 00:00:00 2000 PST, POINT(1.5 1.5)@Mon Jan 03 00:00:00 2000 PST], [POINT(3.5 3.5)@Tue Jan 04 00:00:00 2000 PST, POINT(3.5 3.5)@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
+SELECT asEWKT(tgeompoint 'Point(1 1)@2000-01-01'::tgeometry);
+                 asewkt                  
+-----------------------------------------
+ POINT(1 1)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asEWKT(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}'::tgeometry);
+                                                           asewkt                                                            
+-----------------------------------------------------------------------------------------------------------------------------
+ {POINT(1 1)@Sat Jan 01 00:00:00 2000 PST, POINT(2 2)@Sun Jan 02 00:00:00 2000 PST, POINT(1 1)@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT asEWKT(tgeompoint 'Interp=Step;[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]'::tgeometry);
+                                       asewkt                                       
+------------------------------------------------------------------------------------
+ [POINT(1 1)@Sat Jan 01 00:00:00 2000 PST, POINT(2 2)@Sun Jan 02 00:00:00 2000 PST]
+(1 row)
+
+SELECT asEWKT(tgeompoint 'SRID=3812;Point(1 1)@2000-01-01'::tgeometry);
+                      asewkt                       
+---------------------------------------------------
+ SRID=3812;POINT(1 1)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asEWKT(tgeogpoint 'SRID=4326;Point(1 1)@2000-01-01'::tgeography);
+                      asewkt                       
+---------------------------------------------------
+ SRID=4326;POINT(1 1)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+/* Errors */
+SELECT asEWKT(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]'::tgeometry);
+ERROR:  The temporal type cannot have linear interpolation
 SELECT ST_AsText(traversedArea(tgeometry 'Point(1 1)@2000-01-01'));
  st_astext  
 ------------
