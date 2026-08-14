@@ -64,3 +64,25 @@ FROM tbl_pcpatchset WHERE s IS NOT NULL;
 SELECT COUNT(*) FROM tbl_pcpatchset WHERE s IS NULL;
 
 -------------------------------------------------------------------------------
+-- Set types — input/output from/to WKB, EWKB, HexWKB, and HexEWKB.
+-------------------------------------------------------------------------------
+
+SELECT COUNT(*) FROM tbl_pcpointset
+WHERE s IS NOT NULL AND pcpointsetFromBinary(asBinary(s)) <> s;
+SELECT COUNT(*) FROM tbl_pcpointset
+WHERE s IS NOT NULL AND pcpointsetFromBinary(asEWKB(s)) <> s;
+SELECT COUNT(*) FROM tbl_pcpointset
+WHERE s IS NOT NULL AND pcpointsetFromHexWKB(asHexWKB(s)) <> s;
+SELECT COUNT(*) FROM tbl_pcpointset
+WHERE s IS NOT NULL AND pcpointsetFromHexWKB(asHexEWKB(s)) <> s;
+
+SELECT COUNT(*) FROM tbl_pcpatchset
+WHERE s IS NOT NULL AND pcpatchsetFromBinary(asBinary(s)) <> s;
+SELECT COUNT(*) FROM tbl_pcpatchset
+WHERE s IS NOT NULL AND pcpatchsetFromBinary(asEWKB(s)) <> s;
+SELECT COUNT(*) FROM tbl_pcpatchset
+WHERE s IS NOT NULL AND pcpatchsetFromHexWKB(asHexWKB(s)) <> s;
+SELECT COUNT(*) FROM tbl_pcpatchset
+WHERE s IS NOT NULL AND pcpatchsetFromHexWKB(asHexEWKB(s)) <> s;
+
+-------------------------------------------------------------------------------

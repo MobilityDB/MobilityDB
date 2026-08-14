@@ -220,6 +220,25 @@ SELECT asHexWKB(floatspanset '{[1, 2], [4, 5]}', 'XDR');
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="setspan_asEWKB">
+				<indexterm significance="normal"><primary><varname>asEWKB</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>asHexEWKB</varname></primary></indexterm>
+				<para>Return the Extended Well-Known Binary (EWKB) or the Hexadecimal Extended Well-Known Binary (HexEWKB) representation of a spatial set</para>
+				<para><varname>asEWKB({geomset,geogset,cbufferset,npointset,poseset,pcpointset,pcpatchset},endian text='') → bytea</varname></para>
+				<para><varname>asHexEWKB({geomset,geogset,cbufferset,npointset,poseset,pcpointset,pcpatchset},endian text='') → text</varname></para>
+				<para>For <varname>geomset</varname>, <varname>geogset</varname>, <varname>cbufferset</varname>, <varname>npointset</varname>, and <varname>poseset</varname> the SRID (when known) is embedded once in the set header, so <varname>asBinary</varname> and <varname>asEWKB</varname>, and likewise <varname>asHexWKB</varname> and <varname>asHexEWKB</varname>, return the same bytes. For <varname>pcpointset</varname> and <varname>pcpatchset</varname> the schema, and its SRID, is resolved out-of-band from the <varname>pointcloud_formats</varname> catalog rather than embedded in the value, so the four functions always return the same bytes for those two types as well.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asEWKB(geomset 'SRID=4326;{Point(1 1)}');
+-- \x012b0041e6100000010000000101000020e6100000000000000000f03f000000000000f03f
+SELECT asHexEWKB(geomset 'SRID=4326;{Point(1 1)}');
+-- 012B0041E6100000010000000101000020E6100000000000000000F03F000000000000F03F
+SELECT asEWKB(cbufferset 'SRID=4326;{"Cbuffer(Point(1 1),0.5)"}');
+-- \x013a0041e610000001000000000000000000f03f000000000000f03f000000000000e03f
+SELECT asHexEWKB(npointset '{"NPoint(1,0.5)"}');
+-- 01310041E61000000100000041E61000000100000000000000000000000000E03F
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="setspan_FromBinary">
 				<indexterm significance="normal"><primary><varname>settypeFromBinary</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>spantypeFromBinary</varname></primary></indexterm>

@@ -43,7 +43,10 @@ DROP TABLE tbl_poseset2d_tmp;
 
 -- Input/output from/to WKB and HexWKB
 
+SELECT COUNT(*) FROM tbl_poseset2d WHERE posesetFromBinary(asEWKB(s)) <> s;
+
 SELECT COUNT(*) FROM tbl_poseset2d WHERE posesetFromHexWKB(asHexWKB(s)) <> s;
+SELECT COUNT(*) FROM tbl_poseset2d WHERE posesetFromHexWKB(asHexEWKB(s)) <> s;
 
 -------------------------------------------------------------------------------
 -- Constructor

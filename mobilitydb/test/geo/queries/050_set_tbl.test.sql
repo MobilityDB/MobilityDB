@@ -57,9 +57,13 @@ SELECT MAX(length(asEWKT(g))) FROM tbl_geogset;
 
 SELECT COUNT(*) FROM tbl_geomset WHERE geomsetFromBinary(asBinary(g)) <> g;
 SELECT COUNT(*) FROM tbl_geogset WHERE geogsetFromBinary(asBinary(g)) <> g;
+SELECT COUNT(*) FROM tbl_geomset WHERE geomsetFromEWKB(asEWKB(g)) <> g;
+SELECT COUNT(*) FROM tbl_geogset WHERE geogsetFromEWKB(asEWKB(g)) <> g;
 
 SELECT COUNT(*) FROM tbl_geomset WHERE geomsetFromHexWKB(asHexWKB(g)) <> g;
 SELECT COUNT(*) FROM tbl_geogset WHERE geogsetFromHexWKB(asHexWKB(g)) <> g;
+SELECT COUNT(*) FROM tbl_geomset WHERE geomsetFromHexWKB(asHexEWKB(g)) <> g;
+SELECT COUNT(*) FROM tbl_geogset WHERE geogsetFromHexWKB(asHexEWKB(g)) <> g;
 
 -- Coverage
 SELECT asText(geomsetFromHexWKB(asHexWKB(geomset '{"Point(1 1 1)"}')));

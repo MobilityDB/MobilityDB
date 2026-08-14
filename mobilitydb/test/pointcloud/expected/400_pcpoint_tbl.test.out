@@ -54,3 +54,59 @@ SELECT COUNT(*) FROM tbl_pcpatchset WHERE s IS NULL;
     25
 (1 row)
 
+SELECT COUNT(*) FROM tbl_pcpointset
+WHERE s IS NOT NULL AND pcpointsetFromBinary(asBinary(s)) <> s;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_pcpointset
+WHERE s IS NOT NULL AND pcpointsetFromBinary(asEWKB(s)) <> s;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_pcpointset
+WHERE s IS NOT NULL AND pcpointsetFromHexWKB(asHexWKB(s)) <> s;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_pcpointset
+WHERE s IS NOT NULL AND pcpointsetFromHexWKB(asHexEWKB(s)) <> s;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_pcpatchset
+WHERE s IS NOT NULL AND pcpatchsetFromBinary(asBinary(s)) <> s;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_pcpatchset
+WHERE s IS NOT NULL AND pcpatchsetFromBinary(asEWKB(s)) <> s;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_pcpatchset
+WHERE s IS NOT NULL AND pcpatchsetFromHexWKB(asHexWKB(s)) <> s;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_pcpatchset
+WHERE s IS NOT NULL AND pcpatchsetFromHexWKB(asHexEWKB(s)) <> s;
+ count 
+-------
+     0
+(1 row)
+

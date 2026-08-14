@@ -49,6 +49,7 @@ SELECT COUNT(*) FROM tbl_npointset WHERE npointsetFromEWKT(asText(n)) <> n;
 SELECT COUNT(*) FROM tbl_npointset WHERE npointsetFromBinary(asBinary(n)) <> n;
 SELECT COUNT(*) FROM tbl_npointset WHERE npointsetFromEWKB(asEWKB(n)) <> n;
 SELECT COUNT(*) FROM tbl_npointset WHERE npointsetFromHexWKB(asHexWKB(n)) <> n;
+SELECT COUNT(*) FROM tbl_npointset WHERE npointsetFromHexWKB(asHexEWKB(n)) <> n;
 
 -------------------------------------------------------------------------------
 -- Constructor

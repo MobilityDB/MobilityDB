@@ -219,6 +219,25 @@ Spatialset_as_ewkb(PG_FUNCTION_ARGS)
   PG_RETURN_BYTEA_P(result);
 }
 
+PGDLLEXPORT Datum Spatialset_as_hexewkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Spatialset_as_hexewkb);
+/**
+ * @ingroup mobilitydb_geo_inout
+ * @brief Return the ASCII hex-encoded Extended Well-Known Binary (HexEWKB)
+ * representation of a spatial set
+ * @note This will have 'SRID=#;' for spatial sets
+ * @sqlfn asHexEWKB()
+ */
+Datum
+Spatialset_as_hexewkb(PG_FUNCTION_ARGS)
+{
+  /* Ensure that the value is detoasted if necessary */
+  Set *s = PG_GETARG_SET_P(0);
+  text *result = Datum_as_hexwkb(fcinfo, PointerGetDatum(s), s->settype, true);
+  PG_FREE_IF_COPY(s, 0);
+  PG_RETURN_TEXT_P(result);
+}
+
 /*****************************************************************************
  * Conversion functions
  *****************************************************************************/

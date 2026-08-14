@@ -345,9 +345,17 @@ CREATE FUNCTION asBinary(pcpointset, endianenconding text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Set_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asEWKB(pcpointset, endianenconding text DEFAULT '')
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Spatialset_as_ewkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asHexWKB(pcpointset, endianenconding text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Set_as_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asHexEWKB(pcpointset, endianenconding text DEFAULT '')
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Spatialset_as_hexewkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
@@ -712,9 +720,17 @@ CREATE FUNCTION asBinary(pcpatchset, endianenconding text DEFAULT '')
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Set_as_wkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asEWKB(pcpatchset, endianenconding text DEFAULT '')
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Spatialset_as_ewkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asHexWKB(pcpatchset, endianenconding text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Set_as_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asHexEWKB(pcpatchset, endianenconding text DEFAULT '')
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Spatialset_as_hexewkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
