@@ -46,6 +46,7 @@
 #include <meos_rgeo.h>
 #include <meos_internal.h>
 #include "temporal/lifting.h"
+#include "temporal/type_util.h"
 #include "geo/postgis_funcs.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tgeo_spatialrels.h"
@@ -91,6 +92,50 @@ spatialrel_trgeo_trav_geo(const Temporal *temp, const GSERIALIZED *gs,
   }
   pfree(DatumGetPointer(trav));
   return result ? 1 : 0;
+}
+
+/**
+ * @brief Return 1 if the poses of a temporal rigid geometry and a geometry
+ * ever/always satisfy a spatial relationship, 0 if not, and -1 on error or if
+ * the geometry is empty
+ * @details The traversed area collects the reference geometry at each of the
+ * poses the value takes, so the relationship is asked of each of them: the
+ * ever semantics hold where one pose satisfies it, the always semantics where
+ * every pose does. Asking it of the traversed area as a whole answers for the
+ * union of the poses, which is a region the body occupies at no single instant
+ * @param[in] temp Temporal rigid geometry
+ * @param[in] gs Geometry
+ * @param[in] func Spatial relationship function to be called
+ * @param[in] ever True for the ever semantics, false for the always semantics
+ * @return On error return -1
+ */
+static int
+ea_spatialrel_trgeo_poses_geo(const Temporal *temp, const GSERIALIZED *gs,
+  datum_func2 func, bool ever)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
+    return -1;
+
+  GSERIALIZED *trav = trgeometry_traversed_area(temp, UNARY_UNION_NO);
+  Datum geo = PointerGetDatum(gs);
+  int count;
+  GSERIALIZED **poses = geo_extract_elements(trav, &count);
+  /* The vacuous default: false for the ever semantics, true for the always
+   * ones */
+  int result = ever ? 0 : 1;
+  for (int i = 0; i < count; i++)
+  {
+    bool res = DatumGetBool(func(PointerGetDatum(poses[i]), geo));
+    if ((ever && res) || (! ever && ! res))
+    {
+      result = res ? 1 : 0;
+      break;
+    }
+  }
+  pfree_array((void *) poses, count);
+  pfree(trav);
+  return result;
 }
 
 /*****************************************************************************/
@@ -318,14 +363,7 @@ acovers_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp)
 int
 ea_covers_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 {
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
-    return -1;
-  GSERIALIZED *trav = trgeometry_traversed_area(temp, UNARY_UNION_NO);
-  bool result = ever ? geom_relate_pattern(trav, gs, "T********") :
-    geom_covers(trav, gs);
-  pfree(trav);
-  return result ? 1 : 0;
+  return ea_spatialrel_trgeo_poses_geo(temp, gs, &datum_geom_covers, ever);
 }
 
 /**
@@ -398,11 +436,11 @@ ea_disjoint_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
   /* Ensure the validity of the arguments */
   if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
-  int result = ever ?
-    spatialrel_trgeo_trav_geo(temp, gs, (Datum) NULL,
-      (varfunc) &datum_geom_covers, 2, INVERT) :
-    eintersects_trgeometry_geo(temp, gs);
-  return INVERT_RESULT(result);
+  if (ever)
+    return ea_spatialrel_trgeo_poses_geo(temp, gs, &datum_geom_disjoint2d,
+      EVER);
+  /* aDisjoint(trgeo, geo) ≡ NOT eIntersects(trgeo, geo) */
+  return INVERT_RESULT(eintersects_trgeometry_geo(temp, gs));
 }
 /**
  * @ingroup meos_rgeo_rel_ever
