@@ -66,6 +66,8 @@ jobs:
           PGP=5432
           echo "PGPORT=${PGP}" >> $GITHUB_ENV        
 
+      - uses: ./.github/actions/apt-resilient
+
       - name: Add PostgreSQL APT repository
         run: |
           sudo apt-get install curl ca-certificates gnupg

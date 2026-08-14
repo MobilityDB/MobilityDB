@@ -41,6 +41,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: ./.github/actions/apt-resilient
+
       - name: Add the PostgreSQL APT repository
         # Provides libh3-dev and the postgresql-server-dev package that the
         # vendored pgPointCloud build below needs for pg_config.
