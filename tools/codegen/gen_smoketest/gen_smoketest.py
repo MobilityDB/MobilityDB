@@ -239,6 +239,44 @@ def emit_call(fname, ret, args, arg_map, skip_map, override_args,
     if ret in BY_VALUE_SCALAR_TYPES or ret in value_returns:
         return (f"  {{ {outp_pre}{ret} r = {call}; (void) r;\n"
                 f"    printf(\"{fname}: ok\\n\");{outp_post} }}\n")
+    # Opaque heap-pointer typedef return: `Numeric` is `struct NumericData *`
+    # under the covers (a fresh, malloc'd copy per numeric_copy()), so unlike
+    # the BY_VALUE_SCALAR_TYPES above it owns storage that must be freed. The
+    # C type name carries no `*` (it's hidden behind the typedef), so it needs
+    # its own branch rather than falling into the generic "*" in ret path.
+    if ret == "Numeric":
+        return (f"  {{ {outp_pre}Numeric r = {call};\n"
+                f"    printf(\"{fname}: %s\\n\", r ? \"OK\" : \"NULL\");\n"
+                f"    if (r) free(r);{outp_post} }}\n")
+    # Struct-by-value returns that own allocated members (MvtGeom) or parallel
+    # owned arrays (SpaceSplit / SpaceTimeSplit). The struct itself is
+    # returned by value, but its pointer members are fresh allocations the
+    # caller must free -- element-by-element for the array members, since
+    # each element is itself an owned copy.
+    if ret == "MvtGeom":
+        return (f"  {{ {outp_pre}MvtGeom r = {call};\n"
+                f"    printf(\"{fname}: geom=%s n=%d\\n\", r.geom ? \"OK\" : \"NULL\", r.count);\n"
+                f"    if (r.geom) free(r.geom);\n"
+                f"    if (r.times) free(r.times);{outp_post} }}\n")
+    if ret == "SpaceSplit":
+        return (f"  {{ {outp_pre}SpaceSplit r = {call};\n"
+                f"    printf(\"{fname}: n=%d\\n\", r.count);\n"
+                f"    for (int _i = 0; _i < r.count; _i++) {{\n"
+                f"      if (r.fragments && r.fragments[_i]) free(r.fragments[_i]);\n"
+                f"      if (r.bins && r.bins[_i]) free(r.bins[_i]);\n"
+                f"    }}\n"
+                f"    if (r.fragments) free(r.fragments);\n"
+                f"    if (r.bins) free(r.bins);{outp_post} }}\n")
+    if ret == "SpaceTimeSplit":
+        return (f"  {{ {outp_pre}SpaceTimeSplit r = {call};\n"
+                f"    printf(\"{fname}: n=%d\\n\", r.count);\n"
+                f"    for (int _i = 0; _i < r.count; _i++) {{\n"
+                f"      if (r.fragments && r.fragments[_i]) free(r.fragments[_i]);\n"
+                f"      if (r.space_bins && r.space_bins[_i]) free(r.space_bins[_i]);\n"
+                f"    }}\n"
+                f"    if (r.fragments) free(r.fragments);\n"
+                f"    if (r.space_bins) free(r.space_bins);\n"
+                f"    if (r.time_bins) free(r.time_bins);{outp_post} }}\n")
     # Double-pointer returns (T **) need element-by-element free using
     # the n_out count populated by the function's int* arg. The generator
     # only uses this shape when the call signature contains an `int *`
@@ -559,6 +597,7 @@ TPOSE_CONFIG = dict(
         "uint8 *":             "NULL",
         "size_t *":            "&size_out",
         "uint8_t":             "1",
+        "uint64":              "1",
         "int32_t":             "0",
         "interpType":          "LINEAR",
         "Datum":               "pose1_datum",
@@ -583,6 +622,10 @@ TPOSE_CONFIG = dict(
         # Reprojection needs a pose carrying an explicit source SRID and a real
         # target SRID (the default int32_t -> 0 is the unknown SRID).
         "pose_transform":    {0: "pose_srid1", 1: "3857"},
+        # WKB byte-buffer input, paired with its size: built from pose_as_wkb()
+        # against a canned pose (variant 0 is plain WKB, no hex encoding)
+        # rather than guessed.
+        "pose_from_wkb":     {0: "pose_wkb1", 1: "pose_wkb1_size"},
     },
     # A Set * argument to the pose set operations must be a poseset, not the
     # default tstzset.
@@ -613,6 +656,10 @@ TPOSE_CONFIG = dict(
   STBox *stbox1 = stbox_in("STBOX X((0, 0), (10, 10))");
   Datum pose1_datum = (Datum) pose1;
   size_t size_out = 0;
+  /* A WKB byte buffer for pose_from_wkb, generated from pose_as_wkb() against
+   * a canned pose rather than guessed. */
+  size_t pose_wkb1_size = 0;
+  uint8_t *pose_wkb1 = pose_as_wkb(pose1, 0, &pose_wkb1_size);
 
   /* Build a tpose sequence directly from WKT — public tpose_in parses it. */
   Temporal *tpose1 = tpose_in(
@@ -628,6 +675,7 @@ TPOSE_CONFIG = dict(
   if (tpose1) free(tpose1);
   if (tpoint1) free(tpoint1);
   if (tfloat1) free(tfloat1);
+  free(pose_wkb1);
   free(stbox1);
   free(pose1);
   free(pose_srid1);
@@ -673,6 +721,7 @@ TCBUFFER_CONFIG = dict(
         "uint8 *":             "NULL",
         "uint8_t":             "1",
         "uint32":              "0",
+        "uint64":              "1",
         "int32_t":             "0",
         "int32":               "0",
         "interpType":          "LINEAR",
@@ -690,6 +739,10 @@ TCBUFFER_CONFIG = dict(
         # Reprojection needs a buffer carrying an explicit source SRID and a
         # real target SRID (the default int32_t -> 0 is the unknown SRID).
         "cbuffer_transform":     {0: "cbuffer_srid1", 1: "3857"},
+        # WKB byte-buffer input, paired with its size: built from
+        # cbuffer_as_wkb() against a canned buffer (variant 0 is plain WKB,
+        # no hex encoding) rather than guessed.
+        "cbuffer_from_wkb":      {0: "cbuffer_wkb1", 1: "cbuffer_wkb1_size"},
     },
     # A Set * that must be a tstzset (the default is a cbufferset).
     name_arg_map={
@@ -712,6 +765,10 @@ TCBUFFER_CONFIG = dict(
   STBox *stbox1 = stbox_in("STBOX X((0, 0), (10, 10))");
   Datum cbuffer1_datum = (Datum) cbuffer1;
   size_t size_out = 0;
+  /* A WKB byte buffer for cbuffer_from_wkb, generated from cbuffer_as_wkb()
+   * against a canned buffer rather than guessed. */
+  size_t cbuffer_wkb1_size = 0;
+  uint8_t *cbuffer_wkb1 = cbuffer_as_wkb(cbuffer1, 0, &cbuffer_wkb1_size);
 
   Set *tstzset1 = tstzset_in("{2001-01-02, 2001-01-03}");
   Temporal *tfloat1 = tfloat_in("[1@2001-01-02, 2@2001-01-03]");
@@ -729,6 +786,7 @@ TCBUFFER_CONFIG = dict(
   if (tcbuffer1) free(tcbuffer1);
   if (tpoint1) free(tpoint1);
   if (tfloat1) free(tfloat1);
+  free(cbuffer_wkb1);
   free(stbox1);
   free(cbufferset1);
   free(cbuffer1);
@@ -770,6 +828,7 @@ TNPOINT_CONFIG = dict(
         "uint8 *":             "NULL",
         "uint8_t":             "1",
         "uint32":              "0",
+        "uint64":              "1",
         "int32_t":             "0",
         "int32":               "0",
         "int64":               "1",
@@ -800,6 +859,10 @@ TNPOINT_CONFIG = dict(
         "tnpoint_at_stbox":             {1: "stbox_ways1"},
         "tnpoint_minus_stbox":          {1: "stbox_ways1"},
         "nad_tnpoint_stbox":            {1: "stbox_ways1"},
+        # WKB byte-buffer input, paired with its size: built from
+        # npoint_as_wkb() against a canned network point (variant 0 is plain
+        # WKB, no hex encoding) rather than guessed.
+        "npoint_from_wkb":              {0: "npoint_wkb1", 1: "npoint_wkb1_size"},
     },
     # A Set * that must be a tstzset (the default is an npointset).
     name_arg_map={
@@ -830,6 +893,10 @@ TNPOINT_CONFIG = dict(
   STBox *stbox1 = stbox_in("STBOX X((0, 0), (10, 10))");
   Datum npoint1_datum = (Datum) npoint1;
   size_t size_out = 0;
+  /* A WKB byte buffer for npoint_from_wkb, generated from npoint_as_wkb()
+   * against a canned network point rather than guessed. */
+  size_t npoint_wkb1_size = 0;
+  uint8_t *npoint_wkb1 = npoint_as_wkb(npoint1, 0, &npoint_wkb1_size);
 
   Temporal *tnpoint1 = tnpoint_in(
     "[NPoint(1, 0.0)@2001-01-02, NPoint(1, 0.5)@2001-01-03]");
@@ -852,6 +919,7 @@ TNPOINT_CONFIG = dict(
   if (tnpoint1) free(tnpoint1);
   if (tpoint1) free(tpoint1);
   if (tpoint_ways1) free(tpoint_ways1);
+  free(npoint_wkb1);
   free(geom_ways1);
   free(stbox1);
   free(stbox_ways1);
@@ -890,7 +958,11 @@ TGEOMETRY_CONFIG = dict(
         "TimestampTz *":       "&tstz1",
         "bool":                "true",
         "bool *":              "&bool_out",
+        "BOX3D *":             "box3d1",
+        "GBOX *":              "gbox1",
+        "AFFINE *":            "affine1",
         "double":              "1.0",
+        "double *":            "&double_out",
         "int":                 "1",
         "int *":               "&n_out",
         "size_t":              "0",
@@ -899,6 +971,7 @@ TGEOMETRY_CONFIG = dict(
         "uint8_t":             "1",
         "uint32":              "0",
         "uint32_t":            "0",
+        "uint64":              "1",
         "int32_t":             "0",
         "int32":               "0",
         "int64":               "1",
@@ -906,6 +979,22 @@ TGEOMETRY_CONFIG = dict(
         "Datum":               "geom1_datum",
     },
     override_args={
+        # tpointseq_make_coords takes four parallel coordinate/timestamp
+        # arrays plus their shared count, not a single-value out-param;
+        # the generic "double *" -> &double_out mapping above would pass a
+        # single-double address as if it were a count-element array.
+        # geodetic (index 6) must agree with the SRID: the default "bool ->
+        # true" would pair a geodetic flag with the planar SRID 5676, which
+        # geopoint_make() does not itself reject, but the mismatched point it
+        # constructs then trips an invalid read inside
+        # ensure_valid_tinstarr_common(); false matches the planar SRID.
+        "tpointseq_make_coords": {0: "xcoords1", 1: "ycoords1",
+            2: "zcoords1", 3: "times1", 4: "2", 5: "5676", 6: "false"},
+        # WKB byte-buffer inputs, paired with their size: built from the
+        # matching *_as_wkb() writer against a canned value (variant 0 is
+        # plain little/big-native WKB, no hex encoding) rather than guessed.
+        "stbox_from_wkb": {0: "stbox_wkb1", 1: "stbox_wkb1_size"},
+        "geo_from_ewkb":  {0: "geo_wkb1", 1: "geo_wkb1_size", 2: "0"},
         # Elevation restrictions take a 3D temporal point and a float span of
         # elevations (not the default tstzspan); the Z accessor needs 3D.
         "tpoint_at_elevation":    {0: "tpoint_z1", 1: "floatspan1"},
@@ -927,6 +1016,11 @@ TGEOMETRY_CONFIG = dict(
         "tgeo_scale":             {1: "geom_point1", 2: "geom_point1"},
         "tgeo_space_boxes":       {4: "geom_point1"},
         "tgeo_space_time_boxes":  {5: "geom_point1"},
+        "tgeo_space_split":       {4: "geom_point1"},
+        "tgeo_space_time_split":  {5: "geom_point1"},
+        # A zero extent is rejected ("Extent must be greater than 0"); use a
+        # real MVT tile extent/buffer so the split actually allocates.
+        "tpoint_as_mvtgeom":      {2: "4096", 3: "256"},
         "stbox_get_space_tile":   {0: "geom_point1", 4: "geom_point1"},
         "stbox_space_tiles":      {4: "geom_point1"},
         # A tgeometry carrying point values is what converts to a tgeompoint.
@@ -1017,6 +1111,18 @@ TGEOMETRY_CONFIG = dict(
         "re:bitmatrix":  "needs a bitmatrix",
         # Out-params with non-uniform shape (e.g. GSERIALIZED ***).
         "re:^geo_array_": "out-param triple-pointer not in canned set",
+        # geom_azimuth hard-asserts gserialized_get_type(gs1/gs2) ==
+        # POINTTYPE instead of validating gracefully: its sibling
+        # bearing_point_point (same file, meos/src/geo/tpoint_spatialfuncs.c)
+        # calls ensure_point_type(), which returns false through meos_error
+        # on a non-point input, but geom_azimuth's own ensure_valid_geo_geo()
+        # check does not cover the type, so any non-point GSERIALIZED (e.g.
+        # this suite's default polygon) reaches the bare assert() and aborts
+        # the process. Routing this call to point-only canned geometries
+        # would only hide the crash, not fix it; left skipped pending a
+        # kernel-side fix (meos/src/geo/postgis_funcs.c) to use
+        # ensure_point_type() like its sibling.
+        "geom_azimuth": "hard assert on non-point input, see kernel bug note above",
     },
     common_inputs="""\
   TimestampTz tstz1 = timestamptz_in("2001-01-02", -1);
@@ -1046,6 +1152,26 @@ TGEOMETRY_CONFIG = dict(
   Datum geom_point1_datum = (Datum) geom_point1;
   size_t size_out = 0;
   bool bool_out = false;
+  /* Canned PostGIS box / affine-matrix inputs for the box3d, gbox and
+   * tgeo_affine surface. */
+  BOX3D *box3d1 = box3d_in("BOX3D(0 0 0,10 10 10)");
+  GBOX *gbox1 = gbox_in("GBOX((0,0,0),(10,10,10))");
+  /* The identity affine transform (no scale, rotation or translation). */
+  AFFINE affine1_val = {1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0};
+  AFFINE *affine1 = &affine1_val;
+  double double_out = 0.0;
+  /* Parallel coordinate/timestamp arrays for tpointseq_make_coords. */
+  double xcoords1[] = {0.0, 1.0};
+  double ycoords1[] = {0.0, 1.0};
+  double zcoords1[] = {0.0, 1.0};
+  TimestampTz times1[] = { timestamptz_in("2001-01-02", -1),
+    timestamptz_in("2001-01-03", -1) };
+  /* WKB byte buffers for stbox_from_wkb / geo_from_ewkb, generated from the
+   * matching writer against a canned value rather than guessed. */
+  size_t stbox_wkb1_size = 0;
+  uint8_t *stbox_wkb1 = stbox_as_wkb(stbox1, 0, &stbox_wkb1_size);
+  size_t geo_wkb1_size = 0;
+  uint8_t *geo_wkb1 = geo_as_ewkb(geom1, "NDR", &geo_wkb1_size);
 
   Temporal *tgeo1 = tgeometry_in(
     "[SRID=5676;Polygon((0 0,1 0,1 1,0 1,0 0))@2001-01-02, SRID=5676;Polygon((0 0,1 0,1 1,0 1,0 0))@2001-01-03]");
@@ -1089,8 +1215,12 @@ TGEOMETRY_CONFIG = dict(
   if (tgeog1) free(tgeog1);
   if (tgeog_point1) free(tgeog_point1);
   if (tgeogpoint_step1) free(tgeogpoint_step1);
+  free(stbox_wkb1);
+  free(geo_wkb1);
   free(stbox1);
   free(stbox_zt1);
+  free(box3d1);
+  free(gbox1);
   free(geomset1);
   free(tstzset1);
   free(geom1);
@@ -1146,12 +1276,20 @@ TJSONB_CONFIG = dict(
         "float8":          "1.0",
         "interpType":      "LINEAR",
         "nullHandleType":  "NULL_RETURN",
+        "MeosType":        "T_INT4",
     },
+    # null_handle_type_from_string returns a plain C enum by value (no
+    # storage to free); route it through the same call-and-discard path as
+    # BY_VALUE_SCALAR_TYPES.
+    value_returns=["nullHandleType"],
     override_args={
         # ttext_to_tjsonb takes a ttext, not a tjsonb
         "ttext_to_tjsonb": {0: "ttext1"},
         # jsonpath_in needs a jsonpath string, not the jsonb document string
         "jsonpath_in": {0: "jp_str"},
+        # jsonb_to_numeric needs a scalar-numeric jsonb document; the default
+        # jb1 is a JSON object, which JsonbExtractScalar() rejects.
+        "jsonb_to_numeric": {0: "jb_num1"},
         # the sequence/sequence-set parsers need temporal WKT, not a bare
         # jsonb document (temporal_parse() would reject it and the callers
         # assert on the subtype of the resulting non-sequence/NULL).
@@ -1173,6 +1311,9 @@ TJSONB_CONFIG = dict(
   char *jb1_str = "{\\"a\\": 1, \\"b\\": [1, 2, 3]}";
   Jsonb *jb1 = jsonb_in(jb1_str);
   Jsonb *jb_out_param = NULL;
+  /* A scalar-numeric jsonb document, for jsonb_to_numeric (a JSON object like
+   * jb1 has no scalar to extract). */
+  Jsonb *jb_num1 = jsonb_in("123.45");
   char *jp_str = "$.a";
   JsonPath *jp1 = jsonpath_in(jp_str);
   char *tjs_seq_str = "[{\\"a\\": 1}@2001-01-02, {\\"a\\": 2}@2001-01-03]";
@@ -1182,7 +1323,6 @@ TJSONB_CONFIG = dict(
   Numeric num1 = NULL;
   Set *jsonbset1 = jsonbset_in("{1, 2, 3}");
   int n_out = 0;
-
   Temporal *tjsonb1 = tjsonb_in(
     "[{\\"a\\": 1}@2001-01-02, {\\"a\\": 2}@2001-01-03]");
   /* borrowed accessor: points into tjsonb1, no allocation and nothing to free */
@@ -1196,6 +1336,7 @@ TJSONB_CONFIG = dict(
   free(ttext1);
   free(jp1);
   free(jb1);
+  free(jb_num1);
   free(txt1);
   free(jsonbset1);
   free(tstzspanset1);
