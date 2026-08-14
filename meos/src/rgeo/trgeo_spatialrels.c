@@ -957,6 +957,21 @@ ea_dwithin_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2,
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return -1;
 
+  /* When both bodies move continuously the exact temporal distance carries the
+   * answer: the bodies are ever within the distance when its minimum is within
+   * it, and always within the distance when its maximum is */
+  if (MEOS_FLAGS_LINEAR_INTERP(temp1->flags) &&
+      MEOS_FLAGS_LINEAR_INTERP(temp2->flags))
+  {
+    Temporal *dist_temp = tdistance_trgeometry_trgeometry(temp1, temp2);
+    if (! dist_temp)
+      return -1;
+    double bound = DatumGetFloat8(ever ? temporal_min_value(dist_temp) :
+      temporal_max_value(dist_temp));
+    pfree(dist_temp);
+    return (bound <= dist) ? 1 : 0;
+  }
+
   Temporal *sync1, *sync2;
   /* Return NULL if the temporal rigid geometries do not intersect in time
    * The operation is synchronization without adding crossings */
