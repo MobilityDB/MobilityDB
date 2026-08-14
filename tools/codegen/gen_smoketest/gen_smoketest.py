@@ -963,6 +963,11 @@ TGEOMETRY_CONFIG = dict(
         "geog_dwithin":      {0: "geog1", 1: "geog1"},
         "geog_intersects":   {0: "geog1", 1: "geog1"},
         "geog_distance":     {0: "geog1", 1: "geog1"},
+        # A tgeometry sequence/sequence-set can never carry LINEAR
+        # interpolation (there is no interpolation between polygon values);
+        # force the interp arg to STEP instead of the arg_map's LINEAR default.
+        "tgeoseq_from_base_tstzspan":       {2: "STEP"},
+        "tgeoseqset_from_base_tstzspanset": {2: "STEP"},
     },
     # Name-pattern argument routing: whole families of meos_geo.h functions share
     # a precondition the polygon/tgeometry defaults don't meet.
@@ -1005,12 +1010,6 @@ TGEOMETRY_CONFIG = dict(
         "re:bitmatrix":  "needs a bitmatrix",
         # Out-params with non-uniform shape (e.g. GSERIALIZED ***).
         "re:^geo_array_": "out-param triple-pointer not in canned set",
-        # Constructors that crash on LINEAR interp default for a span/spanset
-        # input — the canned tstzspanset has gaps which the kernel rejects.
-        # Refining requires per-function interp arg overrides.
-        "re:^tgeoseqset_from_base":  "needs STEP interp on multi-span input",
-        "re:^tgeoseq_from_base":     "needs STEP interp on multi-span input",
-        "re:^tpoint_from_base":      "needs hand-constructed Temporal input",
     },
     common_inputs="""\
   TimestampTz tstz1 = timestamptz_in("2001-01-02", -1);
