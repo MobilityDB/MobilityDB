@@ -480,6 +480,13 @@ TRGEO_CONFIG = dict(
         # the smoke harness cannot express; append without it.
         "trgeometry_append_tinstant":       {1: "trgeo_inst3", 5: "false"},
         "trgeometry_append_tsequence":      {1: "trgeo_tseq2", 2: "false"},
+        # char * string constructors and interpolation projections. The WKT is
+        # hand-written in the parser format; the MFJSON is pasted verbatim from
+        # temporal_as_mfjson() on a canned trgeometry, not guessed.
+        "trgeometry_in":              {0: "trgeo_wkt1"},
+        "trgeometry_from_mfjson":     {0: "trgeo_mfjson1"},
+        "trgeometry_as_tsequence":    {1: "interp_linear1"},
+        "trgeometry_as_tsequenceset": {1: "interp_linear1"},
     },
     skip={
         # The generic emitter would allocate into geom_out_param and never free
@@ -508,6 +515,12 @@ TRGEO_CONFIG = dict(
   STBox *stbox1 = stbox_in("STBOX X((0, 0), (10, 10))");
   Datum geom1_datum = (Datum) geom1;
 
+  char *trgeo_wkt1 =
+    "Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2000-01-01, Pose(Point(2 0),0)@2000-01-03]";
+  /* temporal_as_mfjson() on a canned trgeometry, pasted verbatim. */
+  char *trgeo_mfjson1 =
+    "{\\"type\\":\\"MovingRigidGeometry\\",\\"geometry\\":{\\"type\\":\\"Polygon\\",\\"coordinates\\":[[[0,0],[1,0],[1,1],[0,1],[0,0]]]},\\"values\\":[{\\"position\\":{\\"lat\\":0,\\"lon\\":0},\\"rotation\\":0},{\\"position\\":{\\"lat\\":0,\\"lon\\":2},\\"rotation\\":0}],\\"datetimes\\":[\\"2000-01-01T00:00:00+01\\",\\"2000-01-03T00:00:00+01\\"],\\"lower_inc\\":true,\\"upper_inc\\":true,\\"interpolation\\":\\"Linear\\"}";
+  char *interp_linear1 = "linear";
   TInstant *trgeo_inst1 = trgeometryinst_make(geom1, pose1, tstz1);
   TInstant *trgeo_inst2 = trgeometryinst_make(geom1, pose1,
     timestamptz_in("2001-01-03", -1));
