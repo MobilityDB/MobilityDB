@@ -61,6 +61,7 @@
 #include "geo/tgeo_spatialfuncs.h"
 #include "pose/pose.h"
 #include "rgeo/trgeo_all.h"
+#include "rgeo/trgeo_utils.h"
 #include "rgeo/trgeo_vclip.h"
 
 /*****************************************************************************
@@ -388,6 +389,62 @@ pose_diff_2d(Pose *pose1, Pose *pose2, double *x, double *y, double *theta)
     *theta = theta_delta;
   else /* (theta_delta < 0 && fabs(theta_delta) >= M_PI) */
     *theta = 2*M_PI + theta_delta;
+}
+
+/**
+ * @brief Interpolate at @p ratio the pose of the first rigid geometry
+ * expressed in the moving frame of the second one
+ * @details A rigid transformation preserves distances, so evaluating the
+ * first polygon at this relative pose against the second polygon taken raw
+ * (static in its own frame) reproduces the exact distance between the two
+ * moving polygons. This lets the moving-vs-static machinery serve the
+ * moving-vs-moving case unchanged: only the pose fed to the first polygon
+ * becomes relative. When @p pose2_s is @p NULL the second geometry is static
+ * and this reduces to @ref pose_interpolate_2d on the first pose.
+ */
+static void
+rel_pose_interpolate_2d(Pose *pose1_s, Pose *pose1_e, Pose *pose2_s,
+  Pose *pose2_e, double ratio, double *x, double *y, double *theta)
+{
+  if (! pose2_s)
+  {
+    pose_interpolate_2d(pose1_s, pose1_e, ratio, x, y, theta);
+    return;
+  }
+  double x1, y1, th1, x2, y2, th2;
+  pose_interpolate_2d(pose1_s, pose1_e, ratio, &x1, &y1, &th1);
+  pose_interpolate_2d(pose2_s, pose2_e, ratio, &x2, &y2, &th2);
+  /* Relative pose = pose2(ratio)^-1 o pose1(ratio):
+   * rotation  = th1 - th2
+   * translation = R(-th2) . (T1 - T2) */
+  double co = cos(th2), si = sin(th2);
+  double ex = x1 - x2, ey = y1 - y2;
+  *x = ex * co + ey * si;
+  *y = - ex * si + ey * co;
+  *theta = th1 - th2;
+  if (*theta > M_PI)
+    *theta -= 2 * M_PI;
+  else if (*theta <= - M_PI)
+    *theta += 2 * M_PI;
+}
+
+/**
+ * @brief Return the pose of the first rigid geometry in the moving frame of
+ * the second one at @p ratio (see @ref rel_pose_interpolate_2d); the caller
+ * owns the result. When @p pose2_s is @p NULL this is
+ * @ref posesegm_interpolate on the first pose.
+ */
+static Pose *
+rel_posesegm_interpolate(Pose *pose1_s, Pose *pose1_e, Pose *pose2_s,
+  Pose *pose2_e, double ratio)
+{
+  if (! pose2_s)
+    return posesegm_interpolate(pose1_s, pose1_e, ratio);
+  double x, y, theta;
+  rel_pose_interpolate_2d(pose1_s, pose1_e, pose2_s, pose2_e, ratio, &x, &y,
+    &theta);
+  return pose_make_2d(x, y, theta, MEOS_FLAGS_GET_GEODETIC(pose1_s->flags),
+    pose_srid(pose1_s));
 }
 
 /**
@@ -963,11 +1020,13 @@ dist2d_trgeoseq_point(const TSequence *seq, const GSERIALIZED *gs)
  */
 static double
 f_tpoly_poly(POINT4D p, POINT4D q, POINT4D r, Pose *poly_pose_s,
-  Pose *poly_pose_e, double ratio, bool solution_kind)
+  Pose *poly_pose_e, Pose *poly2_pose_s, Pose *poly2_pose_e, double ratio,
+  bool solution_kind)
 {
   double dx, dy, dtheta;
   double co, si, qx, qy, rx, ry;
-  pose_interpolate_2d(poly_pose_s, poly_pose_e, ratio, &dx, &dy, &dtheta);
+  rel_pose_interpolate_2d(poly_pose_s, poly_pose_e, poly2_pose_s, poly2_pose_e,
+    ratio, &dx, &dy, &dtheta);
   co = cos(dtheta);
   si = sin(dtheta);
   qx = q.x * co - q.y * si + dx;
@@ -985,8 +1044,8 @@ f_tpoly_poly(POINT4D p, POINT4D q, POINT4D r, Pose *poly_pose_s,
  */
 static double
 solve_s_tpoly_poly(LWPOLY *poly1, Pose *poly_pose_s, Pose *poly_pose_e,
-  LWPOLY *poly2, uint32_t poly1_v, uint32_t poly2_v, double prev_result,
-  bool solution_kind)
+  Pose *poly2_pose_s, Pose *poly2_pose_e, LWPOLY *poly2, uint32_t poly1_v,
+  uint32_t poly2_v, double prev_result, bool solution_kind)
 {
   uint32_t n1 = poly1->rings[0]->npoints - 1;
   POINT4D p, q, r;
@@ -994,7 +1053,11 @@ solve_s_tpoly_poly(LWPOLY *poly1, Pose *poly_pose_s, Pose *poly_pose_e,
   getPoint4d_p(poly1->rings[0], poly1_v, &q);
   getPoint4d_p(poly1->rings[0], uint_mod_add(poly1_v, 1, n1), &r);
 
-  if (fabs(poly_pose_s->data[2] - poly_pose_e->data[2]) < MEOS_EPSILON)
+  /* The closed-form shortcut assumes the second polygon is static; with both
+   * polygons moving the relative motion is not a linear pose segment, so fall
+   * through to the general root find. */
+  if (! poly2_pose_s &&
+      fabs(poly_pose_s->data[2] - poly_pose_e->data[2]) < MEOS_EPSILON)
   {
     apply_pose_point4d(&q, poly_pose_s);
     apply_pose_point4d(&r, poly_pose_s);
@@ -1015,11 +1078,11 @@ solve_s_tpoly_poly(LWPOLY *poly1, Pose *poly_pose_s, Pose *poly_pose_e,
   double tl, tr, t0 = 0; /* Make compiler quiet */
   double vl, vr, v0;
   double ts = prev_result, te = 1;
-  vl = f_tpoly_poly(p, q, r, poly_pose_s, poly_pose_e,
+  vl = f_tpoly_poly(p, q, r, poly_pose_s, poly_pose_e, poly2_pose_s, poly2_pose_e,
     ts, solution_kind);
-  v0 = f_tpoly_poly(p, q, r, poly_pose_s, poly_pose_e,
+  v0 = f_tpoly_poly(p, q, r, poly_pose_s, poly_pose_e, poly2_pose_s, poly2_pose_e,
     (ts + te) / 2, solution_kind);
-  vr = f_tpoly_poly(p, q, r, poly_pose_s, poly_pose_e,
+  vr = f_tpoly_poly(p, q, r, poly_pose_s, poly_pose_e, poly2_pose_s, poly2_pose_e,
     te, solution_kind);
   if (fabs(vl) > MEOS_EPSILON && vl * v0 < 0)
   {
@@ -1041,7 +1104,7 @@ solve_s_tpoly_poly(LWPOLY *poly1, Pose *poly_pose_s, Pose *poly_pose_e,
   {
     ++i;
     t0 = (tl * vr - tr * vl) / (vr - vl);
-    v0 = f_tpoly_poly(p, q, r, poly_pose_s, poly_pose_e,
+    v0 = f_tpoly_poly(p, q, r, poly_pose_s, poly_pose_e, poly2_pose_s, poly2_pose_e,
       t0, solution_kind);
     if (fabs(v0) < MEOS_EPSILON)
       break;
@@ -1058,11 +1121,13 @@ solve_s_tpoly_poly(LWPOLY *poly1, Pose *poly_pose_s, Pose *poly_pose_e,
  */
 static double
 f_poly_tpoly(POINT4D p, POINT4D q, POINT4D r, Pose *poly_pose_s,
-  Pose *poly_pose_e, double ratio, bool solution_kind)
+  Pose *poly_pose_e, Pose *poly2_pose_s, Pose *poly2_pose_e, double ratio,
+  bool solution_kind)
 {
   double dx, dy, dtheta;
   double co, si, px, py;
-  pose_interpolate_2d(poly_pose_s, poly_pose_e, ratio, &dx, &dy, &dtheta);
+  rel_pose_interpolate_2d(poly_pose_s, poly_pose_e, poly2_pose_s, poly2_pose_e,
+    ratio, &dx, &dy, &dtheta);
   co = cos(dtheta);
   si = sin(dtheta);
   px = p.x * co - p.y * si + dx;
@@ -1078,8 +1143,8 @@ f_poly_tpoly(POINT4D p, POINT4D q, POINT4D r, Pose *poly_pose_s,
  */
 static double
 solve_s_poly_tpoly(LWPOLY *poly1, LWPOLY *poly2, Pose *poly_pose_s,
-  Pose *poly_pose_e, uint32_t poly1_v, uint32_t poly2_v, double prev_result, 
-  bool solution_kind)
+  Pose *poly_pose_e, Pose *poly2_pose_s, Pose *poly2_pose_e, uint32_t poly1_v,
+  uint32_t poly2_v, double prev_result, bool solution_kind)
 {
   uint32_t n1 = poly1->rings[0]->npoints - 1;
   POINT4D p, q, r;
@@ -1087,7 +1152,11 @@ solve_s_poly_tpoly(LWPOLY *poly1, LWPOLY *poly2, Pose *poly_pose_s,
   getPoint4d_p(poly1->rings[0], poly1_v, &q);
   getPoint4d_p(poly1->rings[0], uint_mod_add(poly1_v, 1, n1), &r);
 
-  if (fabs(poly_pose_s->data[2] - poly_pose_e->data[2]) < MEOS_EPSILON)
+  /* The closed-form shortcut assumes the second polygon is static; with both
+   * polygons moving the relative motion is not a linear pose segment, so fall
+   * through to the general root find. */
+  if (! poly2_pose_s &&
+      fabs(poly_pose_s->data[2] - poly_pose_e->data[2]) < MEOS_EPSILON)
   {
     apply_pose_point4d(&p, poly_pose_s);
     double result;
@@ -1107,11 +1176,11 @@ solve_s_poly_tpoly(LWPOLY *poly1, LWPOLY *poly2, Pose *poly_pose_s,
   double tl, tr, t0 = 0; /* Make compiler quiet */
   double vl, vr, v0;
   double ts = prev_result, te = 1;
-  vl = f_poly_tpoly(p, q, r, poly_pose_s, poly_pose_e,
+  vl = f_poly_tpoly(p, q, r, poly_pose_s, poly_pose_e, poly2_pose_s, poly2_pose_e,
     ts, solution_kind);
-  v0 = f_poly_tpoly(p, q, r, poly_pose_s, poly_pose_e,
+  v0 = f_poly_tpoly(p, q, r, poly_pose_s, poly_pose_e, poly2_pose_s, poly2_pose_e,
     (ts + te) / 2, solution_kind);
-  vr = f_poly_tpoly(p, q, r, poly_pose_s, poly_pose_e,
+  vr = f_poly_tpoly(p, q, r, poly_pose_s, poly_pose_e, poly2_pose_s, poly2_pose_e,
     te, solution_kind);
   if (fabs(vl) > MEOS_EPSILON && vl * v0 < 0)
   {
@@ -1133,7 +1202,7 @@ solve_s_poly_tpoly(LWPOLY *poly1, LWPOLY *poly2, Pose *poly_pose_s,
   {
     ++i;
     t0 = (tl * vr - tr * vl) / (vr - vl);
-    v0 = f_poly_tpoly(p, q, r, poly_pose_s, poly_pose_e,
+    v0 = f_poly_tpoly(p, q, r, poly_pose_s, poly_pose_e, poly2_pose_s, poly2_pose_e,
       t0, solution_kind);
     if (fabs(v0) < MEOS_EPSILON)
       break;
@@ -1150,6 +1219,7 @@ solve_s_poly_tpoly(LWPOLY *poly1, LWPOLY *poly2, Pose *poly_pose_s,
  */
 static int
 vertex_vertex_tpoly_poly(LWPOLY *poly1, Pose *pose_start, Pose *pose_end,
+  Pose *pose2_start, Pose *pose2_end,
   LWPOLY *poly2, uint32_t *poly1_feature, uint32_t *poly2_feature,
   int *dir1, int *dir2, double *ratio)
 {
@@ -1160,17 +1230,17 @@ vertex_vertex_tpoly_poly(LWPOLY *poly1, Pose *pose_start, Pose *pose_end,
   double ratio_1 = 2, ratio_2 = 2, ratio_3 = 2, ratio_4 = 2;
   /* Detect if vertex of poly2 exits vertex of poly1 -> change poly1_feature */
   if (*dir1 == MEOS_RIGHT || *dir1 == MEOS_ANY)
-    ratio_1 = solve_s_tpoly_poly(poly1, pose_start, pose_end, poly2,
+    ratio_1 = solve_s_tpoly_poly(poly1, pose_start, pose_end, pose2_start, pose2_end, poly2,
       i1, i2, *ratio, MEOS_SOLVE_0);
   if (*dir1 == MEOS_LEFT || *dir1 == MEOS_ANY)
-    ratio_2 = solve_s_tpoly_poly(poly1, pose_start, pose_end, poly2,
+    ratio_2 = solve_s_tpoly_poly(poly1, pose_start, pose_end, pose2_start, pose2_end, poly2,
       uint_mod_sub(i1, 1, n1), i2, *ratio, MEOS_SOLVE_1);
   /* Detect if vertex of poly1 exits vertex of poly2 -> change poly2_feature */
   if (*dir2 == MEOS_RIGHT || *dir2 == MEOS_ANY)
-    ratio_3 = solve_s_poly_tpoly(poly2, poly1, pose_start, pose_end,
+    ratio_3 = solve_s_poly_tpoly(poly2, poly1, pose_start, pose_end, pose2_start, pose2_end,
       i2, i1, *ratio, MEOS_SOLVE_0);
   if (*dir2 == MEOS_LEFT || *dir2 == MEOS_ANY)
-    ratio_4 = solve_s_poly_tpoly(poly2, poly1, pose_start, pose_end,
+    ratio_4 = solve_s_poly_tpoly(poly2, poly1, pose_start, pose_end, pose2_start, pose2_end,
       uint_mod_sub(i2, 1, n2), i1, *ratio, MEOS_SOLVE_1);
 
   // printf("%lf, %lf, %lf, %f\n", ratio_1, ratio_2, ratio_3, ratio_4);
@@ -1221,7 +1291,8 @@ vertex_vertex_tpoly_poly(LWPOLY *poly1, Pose *pose_start, Pose *pose_end,
  */
 static double
 f_parallel_edges_tpoly_poly(LWPOLY *poly1, Pose *poly_pose_s, Pose *poly_pose_e,
-  LWPOLY *poly2, uint32_t poly1_v, uint32_t poly2_v, double ratio)
+  Pose *poly2_pose_s, Pose *poly2_pose_e, LWPOLY *poly2, uint32_t poly1_v,
+  uint32_t poly2_v, double ratio)
 {
   uint32_t n1 = poly1->rings[0]->npoints - 1;
   uint32_t n2 = poly2->rings[0]->npoints - 1;
@@ -1232,7 +1303,8 @@ f_parallel_edges_tpoly_poly(LWPOLY *poly1, Pose *poly_pose_s, Pose *poly_pose_e,
   getPoint4d_p(poly2->rings[0], uint_mod_add(poly2_v, 1, n2), &pe);
   double dx, dy, dtheta;
   double co, si, qsx, qsy, qex, qey;
-  pose_interpolate_2d(poly_pose_s, poly_pose_e, ratio, &dx, &dy, &dtheta);
+  rel_pose_interpolate_2d(poly_pose_s, poly_pose_e, poly2_pose_s, poly2_pose_e,
+    ratio, &dx, &dy, &dtheta);
   co = cos(dtheta);
   si = sin(dtheta);
   qsx = qs.x * co - qs.y * si + dx;
@@ -1247,23 +1319,25 @@ f_parallel_edges_tpoly_poly(LWPOLY *poly1, Pose *poly_pose_s, Pose *poly_pose_e,
  */
 static double
 solve_parallel_edges_tpoly_poly(LWPOLY *poly1, Pose *poly_pose_s,
-  Pose *poly_pose_e, LWPOLY *poly2, uint32_t poly1_v, uint32_t poly2_v,
-  double prev_result)
+  Pose *poly_pose_e, Pose *poly2_pose_s, Pose *poly2_pose_e, LWPOLY *poly2,
+  uint32_t poly1_v, uint32_t poly2_v, double prev_result)
 {
   /* No rotation during movement
-   * Edges do not rotate, so no need to solve this */
-  if (fabs(poly_pose_s->data[2] - poly_pose_e->data[2]) < MEOS_EPSILON)
+   * Edges do not rotate, so no need to solve this. With both polygons moving
+   * the relative rotation is resolved by the general root find below. */
+  if (! poly2_pose_s &&
+      fabs(poly_pose_s->data[2] - poly_pose_e->data[2]) < MEOS_EPSILON)
     return 2;
 
   double tl, tr, t0 = 0; /* Make compiler quiet */
   double vl, vr, v0;
   double ts = prev_result, te = 1;
-  vl = f_parallel_edges_tpoly_poly(poly1, poly_pose_s, poly_pose_e, poly2,
-    poly1_v, poly2_v, ts);
-  v0 = f_parallel_edges_tpoly_poly(poly1, poly_pose_s, poly_pose_e, poly2,
-    poly1_v, poly2_v, (ts + te) / 2);
-  vr = f_parallel_edges_tpoly_poly(poly1, poly_pose_s, poly_pose_e, poly2,
-    poly1_v, poly2_v, te);
+  vl = f_parallel_edges_tpoly_poly(poly1, poly_pose_s, poly_pose_e, poly2_pose_s,
+    poly2_pose_e, poly2, poly1_v, poly2_v, ts);
+  v0 = f_parallel_edges_tpoly_poly(poly1, poly_pose_s, poly_pose_e, poly2_pose_s,
+    poly2_pose_e, poly2, poly1_v, poly2_v, (ts + te) / 2);
+  vr = f_parallel_edges_tpoly_poly(poly1, poly_pose_s, poly_pose_e, poly2_pose_s,
+    poly2_pose_e, poly2, poly1_v, poly2_v, te);
   // printf("%lf, %lf, %lf\n", vl, v0, vr);
   // fflush(stdout);
   if (fabs(vl) > MEOS_EPSILON && vl * v0 < 0)
@@ -1286,8 +1360,8 @@ solve_parallel_edges_tpoly_poly(LWPOLY *poly1, Pose *poly_pose_s,
   {
     ++i;
     t0 = (tl * vr - tr * vl) / (vr - vl);
-    v0 = f_parallel_edges_tpoly_poly(poly1, poly_pose_s, poly_pose_e, poly2,
-      poly1_v, poly2_v, t0);
+    v0 = f_parallel_edges_tpoly_poly(poly1, poly_pose_s, poly_pose_e,
+      poly2_pose_s, poly2_pose_e, poly2, poly1_v, poly2_v, t0);
     if (fabs(v0) < MEOS_EPSILON)
       break;
     if (vl * v0 <= 0)
@@ -1320,6 +1394,7 @@ solve_angle_0_poly_tpoly(LWPOLY *poly1 UNUSED,
  */
 static int
 vertex_edge_tpoly_poly(LWPOLY *poly1, Pose *pose_start, Pose *pose_end,
+  Pose *pose2_start, Pose *pose2_end,
   LWPOLY *poly2, uint32_t *poly1_feature, uint32_t *poly2_feature,
   int *dir1 UNUSED, int *dir2, double *ratio)
 {
@@ -1330,15 +1405,15 @@ vertex_edge_tpoly_poly(LWPOLY *poly1, Pose *pose_start, Pose *pose_end,
   double ratio_1 = 2, ratio_2 = 2, ratio_3 = 2, ratio_4 = 2, ratio_inter;
   /* Detect if vertex of poly1 exits edge of poly2 -> change poly2_feature */
   if (*dir2 == MEOS_RIGHT || *dir2 == MEOS_ANY)
-    ratio_1 = solve_s_poly_tpoly(poly2, poly1, pose_start, pose_end,
+    ratio_1 = solve_s_poly_tpoly(poly2, poly1, pose_start, pose_end, pose2_start, pose2_end,
       i2, i1, *ratio, MEOS_SOLVE_1);
   if (*dir2 == MEOS_LEFT || *dir2 == MEOS_ANY)
-    ratio_2 = solve_s_poly_tpoly(poly2, poly1, pose_start, pose_end,
+    ratio_2 = solve_s_poly_tpoly(poly2, poly1, pose_start, pose_end, pose2_start, pose2_end,
       i2, i1, *ratio, MEOS_SOLVE_0);
   /* Detect parallel edges -> 2 changes in closest features at once */
-  ratio_3 = solve_parallel_edges_tpoly_poly(poly1, pose_start, pose_end, poly2,
+  ratio_3 = solve_parallel_edges_tpoly_poly(poly1, pose_start, pose_end, pose2_start, pose2_end, poly2,
     i1, i2, *ratio);
-  ratio_4 = solve_parallel_edges_tpoly_poly(poly1, pose_start, pose_end, poly2,
+  ratio_4 = solve_parallel_edges_tpoly_poly(poly1, pose_start, pose_end, pose2_start, pose2_end, poly2,
     uint_mod_sub(i1, 1, n1), i2, *ratio);
   /* Detect intersection with the edge */
   ratio_inter = solve_angle_0_poly_tpoly(poly2, poly1, pose_start, pose_end,
@@ -1380,7 +1455,8 @@ vertex_edge_tpoly_poly(LWPOLY *poly1, Pose *pose_start, Pose *pose_end,
     getPoint4d_p(poly1->rings[0], uint_mod_add(i1, 1, n1), &qe);
     getPoint4d_p(poly2->rings[0], i2, &ps);
     getPoint4d_p(poly2->rings[0], uint_mod_add(i2, 1, n2), &pe);
-    Pose *pose = posesegm_interpolate(pose_start, pose_end, ratio_3);
+    Pose *pose = rel_posesegm_interpolate(pose_start, pose_end, pose2_start,
+      pose2_end, ratio_3);
     apply_pose_point4d(&qs, pose);
     apply_pose_point4d(&qe, pose);
     pfree(pose);
@@ -1432,7 +1508,8 @@ vertex_edge_tpoly_poly(LWPOLY *poly1, Pose *pose_start, Pose *pose_end,
     getPoint4d_p(poly1->rings[0], i1, &qe);
     getPoint4d_p(poly2->rings[0], i2, &ps);
     getPoint4d_p(poly2->rings[0], uint_mod_add(i2, 1, n2), &pe);
-    Pose *pose = posesegm_interpolate(pose_start, pose_end, ratio_4);
+    Pose *pose = rel_posesegm_interpolate(pose_start, pose_end, pose2_start,
+      pose2_end, ratio_4);
     apply_pose_point4d(&qs, pose);
     apply_pose_point4d(&qe, pose);
     pfree(pose);
@@ -1483,6 +1560,7 @@ vertex_edge_tpoly_poly(LWPOLY *poly1, Pose *pose_start, Pose *pose_end,
  */
 static int
 edge_vertex_tpoly_poly(LWPOLY *poly1, Pose *pose_start, Pose *pose_end,
+  Pose *pose2_start, Pose *pose2_end,
   LWPOLY *poly2, uint32_t *poly1_feature, uint32_t *poly2_feature,
   int *dir1, int *dir2 UNUSED, double *ratio)
 {
@@ -1493,15 +1571,15 @@ edge_vertex_tpoly_poly(LWPOLY *poly1, Pose *pose_start, Pose *pose_end,
   double ratio_1 = 2, ratio_2 = 2, ratio_3 = 2, ratio_4 = 2, ratio_inter;
   /* Detect if vertex of poly2 exits edge of poly1 -> change poly1_feature */
   if (*dir1 == MEOS_RIGHT || *dir1 == MEOS_ANY)
-    ratio_1 = solve_s_tpoly_poly(poly1, pose_start, pose_end, poly2,
+    ratio_1 = solve_s_tpoly_poly(poly1, pose_start, pose_end, pose2_start, pose2_end, poly2,
       i1, i2, *ratio, MEOS_SOLVE_1);
   if (*dir1 == MEOS_LEFT || *dir1 == MEOS_ANY)
-    ratio_2 = solve_s_tpoly_poly(poly1, pose_start, pose_end, poly2,
+    ratio_2 = solve_s_tpoly_poly(poly1, pose_start, pose_end, pose2_start, pose2_end, poly2,
       i1, i2, *ratio, MEOS_SOLVE_0);
   /* Detect parallel edges -> 2 changes in closest features at once */
-  ratio_3 = solve_parallel_edges_tpoly_poly(poly1, pose_start, pose_end, poly2,
+  ratio_3 = solve_parallel_edges_tpoly_poly(poly1, pose_start, pose_end, pose2_start, pose2_end, poly2,
     i1, i2, *ratio);
-  ratio_4 = solve_parallel_edges_tpoly_poly(poly1, pose_start, pose_end, poly2,
+  ratio_4 = solve_parallel_edges_tpoly_poly(poly1, pose_start, pose_end, pose2_start, pose2_end, poly2,
     i1, uint_mod_sub(i2, 1, n2), *ratio);
   /* Detect intersection with the edge */
   ratio_inter = solve_angle_0_poly_tpoly(poly2, poly1, pose_start, pose_end,
@@ -1543,7 +1621,8 @@ edge_vertex_tpoly_poly(LWPOLY *poly1, Pose *pose_start, Pose *pose_end,
     getPoint4d_p(poly1->rings[0], uint_mod_add(i1, 1, n1), &qe);
     getPoint4d_p(poly2->rings[0], i2, &ps);
     getPoint4d_p(poly2->rings[0], uint_mod_add(i2, 1, n2), &pe);
-    Pose *pose = posesegm_interpolate(pose_start, pose_end, ratio_3);
+    Pose *pose = rel_posesegm_interpolate(pose_start, pose_end, pose2_start,
+      pose2_end, ratio_3);
     apply_pose_point4d(&qs, pose);
     apply_pose_point4d(&qe, pose);
     pfree(pose);
@@ -1595,7 +1674,8 @@ edge_vertex_tpoly_poly(LWPOLY *poly1, Pose *pose_start, Pose *pose_end,
     getPoint4d_p(poly1->rings[0], uint_mod_add(i1, 1, n1), &qe);
     getPoint4d_p(poly2->rings[0], uint_mod_sub(i2, 1, n2), &ps);
     getPoint4d_p(poly2->rings[0], i2, &pe);
-    Pose *pose = posesegm_interpolate(pose_start, pose_end, ratio_4);
+    Pose *pose = rel_posesegm_interpolate(pose_start, pose_end, pose2_start,
+      pose2_end, ratio_4);
     apply_pose_point4d(&qs, pose);
     apply_pose_point4d(&qe, pose);
     pfree(pose);
@@ -1670,8 +1750,8 @@ compute_dist_tpoly_poly(cfp_elem *cfp, tdist_array *tda)
  */
 static void
 compute_turnpoints_tpoly_poly(const cfp_elem *cfp_s, const cfp_elem *cfp_e,
-  const Pose *pose_s, const Pose *pose_e, TimestampTz t_lo, TimestampTz t_hi,
-  tdist_array *tda)
+  Pose *pose_s, Pose *pose_e, Pose *pose2_s, Pose *pose2_e, TimestampTz t_lo,
+  TimestampTz t_hi, tdist_array *tda)
 {
   const LWPOLY *poly1 = (const LWPOLY *) cfp_s->geom_1;
   const LWPOLY *poly2 = (const LWPOLY *) cfp_s->geom_2;
@@ -1683,9 +1763,10 @@ compute_turnpoints_tpoly_poly(const cfp_elem *cfp_s, const cfp_elem *cfp_e,
   if (gb - ga < MEOS_EPSILON)
     return;
 
-  /* Distance of the closest feature pair at segment ratio g */
+  /* Distance of the closest feature pair at segment ratio g, with the first
+   * polygon in the moving frame of the second one */
   #define TP_DIST(g) __extension__ ({ \
-    Pose *_pp = posesegm_interpolate(pose_s, pose_e, (g)); \
+    Pose *_pp = rel_posesegm_interpolate(pose_s, pose_e, pose2_s, pose2_e, (g)); \
     uint32_t _c1 = 0, _c2 = 0; double _d; \
     v_clip_tpoly_tpoly(poly1, poly2, _pp, NULL, &_c1, &_c2, &_d); \
     pfree(_pp); _d; })
@@ -1788,13 +1869,13 @@ dist2d_trgeoseq_poly(const TSequence *seq, const GSERIALIZED *gs)
       // fflush(stdout);
 
       if (cfp.cf_1 % 2 == 0 && cfp.cf_2 % 2 == 0) /* vertex <-> vertex */
-        state = vertex_vertex_tpoly_poly(poly1, pose1, pose2, poly2,
+        state = vertex_vertex_tpoly_poly(poly1, pose1, pose2, NULL, NULL, poly2,
           &cfp.cf_1, &cfp.cf_2, &dir1, &dir2, &ratio);
       else if (cfp.cf_1 % 2 == 0) /* vertex <-> edge */
-        state = vertex_edge_tpoly_poly(poly1, pose1, pose2, poly2,
+        state = vertex_edge_tpoly_poly(poly1, pose1, pose2, NULL, NULL, poly2,
           &cfp.cf_1, &cfp.cf_2, &dir1, &dir2, &ratio);
       else if (cfp.cf_2 % 2 == 0) /* edge <-> vertex */
-        state = edge_vertex_tpoly_poly(poly1, pose1, pose2, poly2,
+        state = edge_vertex_tpoly_poly(poly1, pose1, pose2, NULL, NULL, poly2,
           &cfp.cf_1, &cfp.cf_2, &dir1, &dir2, &ratio);
       else /* edge <-> edge */
       {
@@ -1867,7 +1948,7 @@ dist2d_trgeoseq_poly(const TSequence *seq, const GSERIALIZED *gs)
     const TInstant *ei = TSEQUENCE_INST_N(seq, s + 1);
     compute_turnpoints_tpoly_poly(&cfpa.arr[i], &cfpa.arr[i + 1],
       DatumGetPoseP(tinstant_value_p(si)), DatumGetPoseP(tinstant_value_p(ei)),
-      si->t, ei->t, &tda);
+      NULL, NULL, si->t, ei->t, &tda);
   }
   compute_dist_tpoly_poly(&cfpa.arr[cfpa.count-1], &tda);
 
@@ -1922,6 +2003,171 @@ dist2d_trgeoseqset_geo(const TSequenceSet *ss, const GSERIALIZED *gs)
   for (int i = 0; i < ss->count; i++)
     sequences[i] = dist2d_trgeoseq_geo(TSEQUENCESET_SEQ_N(ss, i), gs);
   return tsequenceset_make_free(sequences, ss->count, NORMALIZE);
+}
+
+/**
+ * @brief Return the temporal distance between two synchronized temporal rigid
+ * geometry instants
+ */
+static TInstant *
+dist2d_trgeoinst_trgeoinst(const TInstant *inst1, const TInstant *inst2,
+  const GSERIALIZED *ref_gs1, const GSERIALIZED *ref_gs2)
+{
+  GSERIALIZED *gs1 = geom_apply_pose(ref_gs1,
+    DatumGetPoseP(tinstant_value_p(inst1)));
+  GSERIALIZED *gs2 = geom_apply_pose(ref_gs2,
+    DatumGetPoseP(tinstant_value_p(inst2)));
+  double dist = geom_distance2d(gs1, gs2);
+  pfree(gs1); pfree(gs2);
+  return tinstant_make(Float8GetDatum(dist), T_TFLOAT, inst1->t);
+}
+
+/**
+ * @brief Return the temporal distance between two synchronized temporal rigid
+ * geometry sequences
+ * @details The two reference polygons both move, so the closest-feature-pair
+ * walk of @ref dist2d_trgeoseq_poly is reused by expressing the first polygon
+ * in the moving frame of the second one (see @ref rel_pose_interpolate_2d):
+ * @ref compute_dist_tpoly_poly and the transition solvers evaluate the first
+ * polygon at that relative pose against the second polygon taken static, which
+ * reproduces the exact distance between the two moving polygons.
+ * @pre The two sequences are synchronized (same timestamps and count)
+ */
+TSequence *
+dist2d_trgeoseq_trgeoseq(const TSequence *seq1, const TSequence *seq2,
+  const GSERIALIZED *ref_gs1, const GSERIALIZED *ref_gs2)
+{
+  /* TODO: check that both polygons are convex */
+  LWPOLY *poly1 = lwgeom_as_lwpoly(lwgeom_from_gserialized(ref_gs1));
+  LWPOLY *poly2 = lwgeom_as_lwpoly(lwgeom_from_gserialized(ref_gs2));
+
+  const TInstant *inst1, *jnst1;
+  Pose *p1s, *p1e, *p2s, *p2e;
+
+  inst1 = TSEQUENCE_INST_N(seq1, 0);
+  jnst1 = TSEQUENCE_INST_N(seq2, 0);
+  p1s = DatumGetPoseP(tinstant_value_p(inst1));
+  p2s = DatumGetPoseP(tinstant_value_p(jnst1));
+
+  /* Seed the closest features in the world frame; feature indices are frame
+   * invariant, so the relative-frame walk below is consistent with them */
+  cfp_array cfpa;
+  init_cfp_array(&cfpa, seq1->count);
+  cfp_elem cfp = cfp_make_zero((LWGEOM *) poly1, (LWGEOM *) poly2,
+    rel_posesegm_interpolate(p1s, p1s, p2s, p2s, 0.0), NULL, inst1->t,
+    MEOS_CFP_STORE);
+  cfp.free_pose_1 = MEOS_CFP_FREE;
+  v_clip_tpoly_tpoly(poly1, poly2, p1s, p2s, &cfp.cf_1, &cfp.cf_2, NULL);
+  append_cfp_elem(&cfpa, cfp);
+  for (int i = 0; i < seq1->count - 1; ++i)
+  {
+    inst1 = TSEQUENCE_INST_N(seq1, i);
+    const TInstant *inst2 = TSEQUENCE_INST_N(seq1, i + 1);
+    jnst1 = TSEQUENCE_INST_N(seq2, i);
+    const TInstant *jnst2 = TSEQUENCE_INST_N(seq2, i + 1);
+    p1s = DatumGetPoseP(tinstant_value_p(inst1));
+    p1e = DatumGetPoseP(tinstant_value_p(inst2));
+    p2s = DatumGetPoseP(tinstant_value_p(jnst1));
+    p2e = DatumGetPoseP(tinstant_value_p(jnst2));
+    double ratio = 0.0;
+    int loop = 0, state, dir1 = MEOS_ANY, dir2 = MEOS_ANY;
+    do
+    {
+      if (cfp.cf_1 % 2 == 0 && cfp.cf_2 % 2 == 0)
+        state = vertex_vertex_tpoly_poly(poly1, p1s, p1e, p2s, p2e, poly2,
+          &cfp.cf_1, &cfp.cf_2, &dir1, &dir2, &ratio);
+      else if (cfp.cf_1 % 2 == 0)
+        state = vertex_edge_tpoly_poly(poly1, p1s, p1e, p2s, p2e, poly2,
+          &cfp.cf_1, &cfp.cf_2, &dir1, &dir2, &ratio);
+      else if (cfp.cf_2 % 2 == 0)
+        state = edge_vertex_tpoly_poly(poly1, p1s, p1e, p2s, p2e, poly2,
+          &cfp.cf_1, &cfp.cf_2, &dir1, &dir2, &ratio);
+      else /* edge <-> edge, unreachable: v-clip resolves ties to vertex-edge */
+      {
+        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "Can't happen");
+        return NULL;
+      }
+
+      if (state == MEOS_CONTINUE)
+      {
+        cfp.t = inst1->t + (inst2->t - inst1->t) * ratio;
+        cfp.pose_1 = rel_posesegm_interpolate(p1s, p1e, p2s, p2e, ratio);
+        cfp.free_pose_1 = MEOS_CFP_FREE;
+        cfp.store = MEOS_CFP_STORE_NO;
+        append_cfp_elem(&cfpa, cfp);
+      }
+
+      if (loop++ == MEOS_MAX_ITERS) break;
+    } while (state == MEOS_CONTINUE);
+
+    if (loop > MEOS_MAX_ITERS)
+    {
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "Temporal distance: Cycle detected, current features: (%d, %d)",
+        cfp.cf_1, cfp.cf_2);
+      return NULL;
+    }
+
+    cfp.pose_1 = rel_posesegm_interpolate(p1s, p1e, p2s, p2e, 1.0);
+    cfp.free_pose_1 = MEOS_CFP_FREE;
+    cfp.t = inst2->t;
+    cfp.store = MEOS_CFP_STORE;
+    cfp_elem next_cfp = cfp;
+    v_clip_tpoly_tpoly(poly1, poly2, p1e, p2e, &next_cfp.cf_1, &next_cfp.cf_2,
+      NULL);
+    append_cfp_elem(&cfpa, next_cfp);
+    cfp = next_cfp;
+  }
+
+  /* Piecewise-linear distance: a point at every closest-feature time plus the
+   * interior extrema of each fixed feature pair, evaluated with the actual
+   * segment poses of both bodies in the relative frame */
+  tdist_array tda;
+  init_tdist_array(&tda, cfpa.count);
+  for (uint32_t i = 0; i < cfpa.count - 1; ++i)
+  {
+    compute_dist_tpoly_poly(&cfpa.arr[i], &tda);
+    int s = trgeoseq_segment_index(seq1,
+      cfpa.arr[i].t + (cfpa.arr[i + 1].t - cfpa.arr[i].t) / 2);
+    const TInstant *s1 = TSEQUENCE_INST_N(seq1, s);
+    const TInstant *e1 = TSEQUENCE_INST_N(seq1, s + 1);
+    const TInstant *s2 = TSEQUENCE_INST_N(seq2, s);
+    const TInstant *e2 = TSEQUENCE_INST_N(seq2, s + 1);
+    compute_turnpoints_tpoly_poly(&cfpa.arr[i], &cfpa.arr[i + 1],
+      DatumGetPoseP(tinstant_value_p(s1)), DatumGetPoseP(tinstant_value_p(e1)),
+      DatumGetPoseP(tinstant_value_p(s2)), DatumGetPoseP(tinstant_value_p(e2)),
+      s1->t, e1->t, &tda);
+  }
+  compute_dist_tpoly_poly(&cfpa.arr[cfpa.count - 1], &tda);
+  tdist_array_sort(&tda);
+
+  TInstant **instants = palloc(sizeof(TInstant *) * tda.count);
+  for (uint32_t i = 0; i < tda.count; ++i)
+    instants[i] = tinstant_make(Float8GetDatum(tda.arr[i].dist), T_TFLOAT,
+      tda.arr[i].t);
+  TSequence *result = tsequence_make_free(instants, tda.count,
+    seq1->period.lower_inc, seq1->period.upper_inc,
+    MEOS_FLAGS_LINEAR_INTERP(seq1->flags), NORMALIZE);
+
+  lwpoly_free(poly1); lwpoly_free(poly2);
+  free_cfp_array(&cfpa); free_tdist_array(&tda);
+  return result;
+}
+
+/**
+ * @brief Return the temporal distance between two synchronized temporal rigid
+ * geometry sequence sets
+ * @pre The two sequence sets are synchronized (same sequence structure)
+ */
+static TSequenceSet *
+dist2d_trgeoseqset_trgeoseqset(const TSequenceSet *ss1, const TSequenceSet *ss2,
+  const GSERIALIZED *ref_gs1, const GSERIALIZED *ref_gs2)
+{
+  TSequence **sequences = palloc(sizeof(TSequence *) * ss1->count);
+  for (int i = 0; i < ss1->count; i++)
+    sequences[i] = dist2d_trgeoseq_trgeoseq(TSEQUENCESET_SEQ_N(ss1, i),
+      TSEQUENCESET_SEQ_N(ss2, i), ref_gs1, ref_gs2);
+  return tsequenceset_make_free(sequences, ss1->count, NORMALIZE);
 }
 
 /**
@@ -1987,17 +2233,44 @@ tdistance_trgeometry_tpoint(const Temporal *temp1 UNUSED,
  * @csqlfn #Tdistance_trgeometry_trgeometry()
  */
 Temporal *
-tdistance_trgeometry_trgeometry(const Temporal *temp1 UNUSED,
-  const Temporal *temp2 UNUSED)
+tdistance_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_trgeo_trgeo(temp1, temp2))
     return NULL;
 
-  /* TODO */
-  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-    "Function %s not implemented yet.", __FUNCTION__);
-  return NULL;
+  if (MEOS_FLAGS_GET_Z(temp1->flags) || MEOS_FLAGS_GET_Z(temp2->flags))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Distance computation in 3D is not currently supported");
+    return NULL;
+  }
+
+  /* The reference geometry of each rigid body is invariant in time; read it
+   * from the originals because synchronization keeps only the temporal pose */
+  const GSERIALIZED *ref_gs1 = trgeo_geom_p(temp1);
+  const GSERIALIZED *ref_gs2 = trgeo_geom_p(temp2);
+
+  /* Synchronize the temporal rigid geometries without adding crossings */
+  Temporal *sync1, *sync2;
+  if (! intersection_temporal_temporal(temp1, temp2, SYNCHRONIZE_NOCROSS,
+    &sync1, &sync2))
+    return NULL;
+
+  Temporal *result;
+  assert(temptype_subtype(sync1->subtype));
+  if (sync1->subtype == TINSTANT)
+    result = (Temporal *) dist2d_trgeoinst_trgeoinst((const TInstant *) sync1,
+      (const TInstant *) sync2, ref_gs1, ref_gs2);
+  else if (sync1->subtype == TSEQUENCE)
+    result = (Temporal *) dist2d_trgeoseq_trgeoseq((const TSequence *) sync1,
+      (const TSequence *) sync2, ref_gs1, ref_gs2);
+  else /* sync1->subtype == TSEQUENCESET */
+    result = (Temporal *) dist2d_trgeoseqset_trgeoseqset(
+      (const TSequenceSet *) sync1, (const TSequenceSet *) sync2, ref_gs1,
+      ref_gs2);
+  pfree(sync1); pfree(sync2);
+  return result;
 }
 
 /*****************************************************************************
