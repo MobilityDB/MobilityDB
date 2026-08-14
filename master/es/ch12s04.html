@@ -26,28 +26,30 @@ SELECT asMFJSON(tcbuffer 'SRID=4326;[Cbuffer(Point(1 1),0.2)@2001-01-01,
   "values":[{"point":[1,1],"radius":0.2},{"point":[2,2],"radius":0.4}],
   "datetimes":["2001-01-01T00:00:00+01","2001-01-02T00:00:00+01"],
   "lower_inc":true,"upper_inc":false,"interpolation":"Linear"} */
-</pre></li><li class="listitem"><a name="tcbuffer_asBinary"></a><a class="indexterm" name="id8422"></a><a class="indexterm" name="id8425"></a><a class="indexterm" name="id8428"></a><p>Devuelve la representación binaria conocida (Well-Known Binary o WKB), la representación extendida binaria conocida (Extended Well-Known Binary o EWKB), o la representación hexadecimal extendida binaria conocida (Extended Well-Known Binary o EWKB)</p><p><code class="varname">asBinary(tcbuffer,endian text='') → bytea</code></p><p><code class="varname">asEWKB(tcbuffer,endian text='') → bytea</code></p><p><code class="varname">asHexEWKB(tcbuffer,endian text='') → text</code></p><p>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcbuffer_asBinary"></a><a class="indexterm" name="id8422"></a><a class="indexterm" name="id8425"></a><a class="indexterm" name="id8428"></a><a class="indexterm" name="id8431"></a><p>Devuelve la representación binaria conocida (Well-Known Binary o WKB), la representación extendida binaria conocida (Extended Well-Known Binary o EWKB), la representación hexadecimal binaria conocida (Hexadecimal Well-Known Binary o HexWKB), o la representación hexadecimal extendida binaria conocida (Hexadecimal Extended Well-Known Binary o HexEWKB)</p><p><code class="varname">asBinary(tcbuffer,endian text='') → bytea</code></p><p><code class="varname">asEWKB(tcbuffer,endian text='') → bytea</code></p><p><code class="varname">asHexWKB(tcbuffer,endian text='') → text</code></p><p><code class="varname">asHexEWKB(tcbuffer,endian text='') → text</code></p><p>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</p><pre class="programlisting">
 SELECT asBinary(tcbuffer 'Cbuffer(Point(1 2),1)@2001-01-01');
 -- \x013b0001000000000000f03f0000000000000040000000000000f03f009c57d3c11c0000
 SELECT asEWKB(tcbuffer 'SRID=7844;Cbuffer(Point(1 2),1)@2001-01-01');
 -- \x013b0041a41e0000000000000000f03f0000000000000040000000000000f03f009c57d3c11c0000
+SELECT asHexWKB(tcbuffer 'Cbuffer(Point(1 2),1)@2001-01-01');
+-- 013B0001000000000000F03F0000000000000040000000000000F03F009C57D3C11C0000
 SELECT asHexEWKB(tcbuffer 'SRID=3812;Cbuffer(Point(1 2),1)@2001-01-01');
 -- 013B0041E40E0000000000000000F03F0000000000000040000000000000F03F009C57D3C11C0000
-</pre></li><li class="listitem"><a name="tcbufferFromText"></a><a class="indexterm" name="id8441"></a><a class="indexterm" name="id8444"></a><p>Entrar a partir de la representación de texto conocido (Well-Known Text o WKT) o de la representación extendida de texto conocido (Extended Well-Known Text o EWKT)</p><p><code class="varname">tcbufferFromText(text) → tcbuffer</code></p><p><code class="varname">tcbufferFromEWKT(text) → tcbuffer</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcbufferFromText"></a><a class="indexterm" name="id8446"></a><a class="indexterm" name="id8449"></a><p>Entrar a partir de la representación de texto conocido (Well-Known Text o WKT) o de la representación extendida de texto conocido (Extended Well-Known Text o EWKT)</p><p><code class="varname">tcbufferFromText(text) → tcbuffer</code></p><p><code class="varname">tcbufferFromEWKT(text) → tcbuffer</code></p><pre class="programlisting">
 SELECT asEWKT(tcbufferFromText(text '[Cbuffer(Point(1 2),1)@2001-01-01,
   Cbuffer(Point(3 4),2)@2001-01-02]'));
 -- [Cbuffer(POINT(1 2),1)@2001-01-01, Cbuffer(POINT(3 4),2)@2001-01-02]
 SELECT asEWKT(tcbufferFromEWKT(text 'SRID=3812;[Cbuffer(Point(1 2),1)@2001-01-01,
   Cbuffer(Point(3 4),2)@2001-01-02]'));
 -- SRID=3812;[Cbuffer(Point(1 2),1)@2001-01-01, Cbuffer(Point(3 4),2)@2001-01-02]
-</pre></li><li class="listitem"><a name="tcbufferFromMFJSON"></a><a class="indexterm" name="id8454"></a><p>Entrar a partir de la representación JSON de características móviles (Moving Features JSON o MF-JSON)</p><p><code class="varname">tcbufferFromMFJSON(text) → tcbuffer</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcbufferFromMFJSON"></a><a class="indexterm" name="id8459"></a><p>Entrar a partir de la representación JSON de características móviles (Moving Features JSON o MF-JSON)</p><p><code class="varname">tcbufferFromMFJSON(text) → tcbuffer</code></p><pre class="programlisting">
 SELECT asEWKT(tcbufferFromMFJSON(asMFJSON(tcbuffer
   'SRID=3812;Cbuffer(Point(1 2),0.5)@2001-01-01', 3)));
 -- SRID=3812;Cbuffer(POINT(1 2),0.5)@2001-01-01
 SELECT asEWKT(tcbufferFromMFJSON(asMFJSON(tcbuffer
   'SRID=5676;[Cbuffer(Point(1 2),1)@2001-01-01, Cbuffer(Point(3 4),2)@2001-01-02]', 3)));
 -- SRID=5676;[Cbuffer(POINT(1 2),1)@2001-01-01, Cbuffer(POINT(3 4),2)@2001-01-02]
-</pre></li><li class="listitem"><a name="tcbufferFromBinary"></a><a class="indexterm" name="id8462"></a><a class="indexterm" name="id8465"></a><a class="indexterm" name="id8468"></a><p>Entrar a partir de la representación binaria conocida (WKB), de la representación extendida binaria conocida (EWKB), o de la representación hexadecimal extendida binaria conocida (HexEWKB)</p><p><code class="varname">tcbufferFromBinary(bytea) → tcbuffer</code></p><p><code class="varname">tcbufferFromEWKB(bytea) → tcbuffer</code></p><p><code class="varname">tcbufferFromHexEWKB(text) → tcbuffer</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcbufferFromBinary"></a><a class="indexterm" name="id8467"></a><a class="indexterm" name="id8470"></a><a class="indexterm" name="id8473"></a><p>Entrar a partir de la representación binaria conocida (WKB), de la representación extendida binaria conocida (EWKB), o de la representación hexadecimal extendida binaria conocida (HexEWKB)</p><p><code class="varname">tcbufferFromBinary(bytea) → tcbuffer</code></p><p><code class="varname">tcbufferFromEWKB(bytea) → tcbuffer</code></p><p><code class="varname">tcbufferFromHexEWKB(text) → tcbuffer</code></p><pre class="programlisting">
 SELECT asEWKT(tcbufferFromBinary(
   '\x013b0001000000000000f03f0000000000000040000000000000f03f009c57d3c11c0000'));
 -- Cbuffer(POINT(1 2),1)@2001-01-01
