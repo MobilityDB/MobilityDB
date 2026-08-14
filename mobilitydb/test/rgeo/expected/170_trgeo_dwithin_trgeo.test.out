@@ -1,0 +1,56 @@
+SELECT eDwithin(
+  trgeometry 'Polygon((-2 -0.5,2 -0.5,2 0.5,-2 0.5,-2 -0.5));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),3.141592653589793)@2001-01-02]',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 3),0)@2001-01-01, Pose(Point(0 3),0)@2001-01-02]', 1.0);
+ edwithin 
+----------
+ t
+(1 row)
+
+SELECT eDwithin(
+  trgeometry 'Polygon((-2 -0.5,2 -0.5,2 0.5,-2 0.5,-2 -0.5));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),3.141592653589793)@2001-01-02]',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 3),0)@2001-01-01, Pose(Point(0 3),0)@2001-01-02]', 0.5);
+ edwithin 
+----------
+ f
+(1 row)
+
+SELECT aDwithin(
+  trgeometry 'Polygon((-2 -0.5,2 -0.5,2 0.5,-2 0.5,-2 -0.5));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),3.141592653589793)@2001-01-02]',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 3),0)@2001-01-01, Pose(Point(0 3),0)@2001-01-02]', 3.0);
+ adwithin 
+----------
+ t
+(1 row)
+
+SELECT aDwithin(
+  trgeometry 'Polygon((-2 -0.5,2 -0.5,2 0.5,-2 0.5,-2 -0.5));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),3.141592653589793)@2001-01-02]',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 3),0)@2001-01-01, Pose(Point(0 3),0)@2001-01-02]', 2.0);
+ adwithin 
+----------
+ f
+(1 row)
+
+SELECT eDwithin(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 3),0)@2001-01-01, Pose(Point(0 3),0)@2001-01-02]',
+  trgeometry 'Polygon((-2 -0.5,2 -0.5,2 0.5,-2 0.5,-2 -0.5));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),3.141592653589793)@2001-01-02]', 1.0);
+ edwithin 
+----------
+ t
+(1 row)
+
+SELECT eDwithin(
+  trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(20 0),0)@2001-01-01, Pose(Point(14 0),0)@2001-01-02]', 2.5);
+ edwithin 
+----------
+ t
+(1 row)
+
+SELECT aDwithin(
+  trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(20 0),0)@2001-01-01, Pose(Point(14 0),0)@2001-01-02]', 2.5);
+ adwithin 
+----------
+ f
+(1 row)
+
