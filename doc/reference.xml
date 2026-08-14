@@ -3937,6 +3937,15 @@
 		</sect2>
 
 		<sect2>
+			<title>Raster Accessors</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="raster_numBands"><varname>numBands</varname></link>: Return the number of bands of a raster</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
 			<title>Raquet / QUADBIN Sampling</title>
 			<itemizedlist>
 				<listitem>

@@ -66,6 +66,33 @@ WHERE atSpan(rasterValue(trip, elev), floatspan '[200, 9999]') IS NOT NULL;
 		</itemizedlist>
 	</sect1>
 
+	<sect1 xml:id="raster_accessors">
+		<title>Accesores de Ráster</title>
+
+		<itemizedlist>
+			<listitem xml:id="raster_numBands">
+				<indexterm significance="normal"><primary><varname>numBands</varname></primary></indexterm>
+				<para>Devolver el número de bandas de un ráster</para>
+				<para><varname>numBands(raster) → integer</varname></para>
+				<para>El número de banda que aceptan <link linkend="raster_rasterValue"><varname>rasterValue</varname></link> y los operadores construidos sobre él va de 1 hasta este valor.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+WITH rast1 AS (
+  SELECT ST_AddBand(
+    ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, 0.0::float8, NULL::float8
+  ) AS r
+), rast2 AS (
+  SELECT ST_AddBand(r, '32BF'::text, 0.0::float8, NULL::float8) AS r
+  FROM rast1
+)
+SELECT numBands((SELECT r FROM rast1)) AS num_bands_one,
+       numBands((SELECT r FROM rast2)) AS num_bands_two;
+-- 1 | 2
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
 	<sect1 xml:id="raquet_quadbin">
 		<title>Muestreo Raquet / QUADBIN</title>
 
