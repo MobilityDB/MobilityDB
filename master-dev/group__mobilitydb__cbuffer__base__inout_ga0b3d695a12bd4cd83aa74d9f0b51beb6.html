@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: Cbuffer_out</title>
+<title>MobilityDB: Cbuffer_from_ewkt</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -84,25 +84,25 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__cbuffer__base__inout_ga3595ec2233e78b87bdaa6bf6c2ae841e.html#ga3595ec2233e78b87bdaa6bf6c2ae841e">Cbuffer_as_hexwkb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__cbuffer__base__inout_ga870e441db37088de5fb4088e64318f57.html#ga870e441db37088de5fb4088e64318f57">Cbuffer_as_text</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__cbuffer__base__inout_ga8eb867ba20c5053270ef1168e6962412.html#ga8eb867ba20c5053270ef1168e6962412">Cbuffer_as_wkb</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__cbuffer__base__inout_ga0b3d695a12bd4cd83aa74d9f0b51beb6.html#ga0b3d695a12bd4cd83aa74d9f0b51beb6">Cbuffer_from_ewkt</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__mobilitydb__cbuffer__base__inout_ga0b3d695a12bd4cd83aa74d9f0b51beb6.html#ga0b3d695a12bd4cd83aa74d9f0b51beb6">Cbuffer_from_ewkt</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__cbuffer__base__inout_ga69f36a9d8d492aa84f1deb68f948ca4b.html#ga69f36a9d8d492aa84f1deb68f948ca4b">Cbuffer_from_hexwkb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__cbuffer__base__inout_gadc32647abe0853043fa394dbcf7898ae.html#gadc32647abe0853043fa394dbcf7898ae">Cbuffer_from_wkb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__cbuffer__base__inout_ga9864e93279c5ae8a3c20a74833c66520.html#ga9864e93279c5ae8a3c20a74833c66520">Cbuffer_in</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__mobilitydb__cbuffer__base__inout_ga484f6c81884c286ba5ffdcbea5012c88.html#ga484f6c81884c286ba5ffdcbea5012c88">Cbuffer_out</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__cbuffer__base__inout_ga484f6c81884c286ba5ffdcbea5012c88.html#ga484f6c81884c286ba5ffdcbea5012c88">Cbuffer_out</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__cbuffer__base__inout_gad51f3558e6941b092d0938edf99384e8.html#gad51f3558e6941b092d0938edf99384e8">Cbuffer_recv</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__cbuffer__base__inout_ga70d9cbba2a2c555dfc3bb0e0184887cf.html#ga70d9cbba2a2c555dfc3bb0e0184887cf">Cbuffer_send</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga484f6c81884c286ba5ffdcbea5012c88" name="ga484f6c81884c286ba5ffdcbea5012c88"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga484f6c81884c286ba5ffdcbea5012c88">&#9670;&#160;</a></span>Cbuffer_out()</h2>
+<a id="ga0b3d695a12bd4cd83aa74d9f0b51beb6" name="ga0b3d695a12bd4cd83aa74d9f0b51beb6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga0b3d695a12bd4cd83aa74d9f0b51beb6">&#9670;&#160;</a></span>Cbuffer_from_ewkt()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> Cbuffer_out </td>
+          <td class="memname"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> Cbuffer_from_ewkt </td>
           <td>(</td>
           <td class="paramtype">PG_FUNCTION_ARGS&#160;</td>
           <td class="paramname"></td><td>)</td>
@@ -111,7 +111,8 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the Well-Known Text (WKT) representation of a circular buffer @sqlfn <a class="el" href="group__meos__cbuffer__base__inout_ga3a72212c49bc2ae8226f0479f580398e.html#ga3a72212c49bc2ae8226f0479f580398e" title="Return the string representation of a circular buffer.">cbuffer_out()</a> </p>
+<p>Return a circular buffer from its Extended Well-Known Text (EWKT) representation. </p>
+<dl class="section note"><dt>Note</dt><dd>This just does the same thing as the SQL function cbuffer_in, except it has to handle a 'text' input. First, unwrap the text into a cstring, then do as cbuffer_in @sqlfn cbufferFromText(), cbufferFromEWKT() </dd></dl>
 
 </div>
 </div>
