@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: cbuffer_traversed_area</title>
+<title>MobilityDB: tcbuffer_is_tpoint</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -79,7 +79,7 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtabHL"><a class="navtab" href="tcbuffer__spatialfuncs_8c_a7d20e2790273323332e43530667474f9.html#a7d20e2790273323332e43530667474f9">cbuffer_traversed_area</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tcbuffer__spatialfuncs_8c_a7d20e2790273323332e43530667474f9.html#a7d20e2790273323332e43530667474f9">cbuffer_traversed_area</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer__spatialfuncs_8c_a0fd62365a04f639af0c4774b245a3d53.html#a0fd62365a04f639af0c4774b245a3d53">cbufferarr_circles</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer__spatialfuncs_8c_a9e3ee55e0b148d82098c9f8899917bdc.html#a9e3ee55e0b148d82098c9f8899917bdc">circle_type</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer__spatialfuncs_8c_af425fbcbb2a57f8435255f3563737fbd.html#af425fbcbb2a57f8435255f3563737fbd">ensure_circle_type</a></td></tr>
@@ -90,7 +90,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tcbuffer__spatialfuncs_8c_ad8290327267bb18b7f28118199edfb9e.html#ad8290327267bb18b7f28118199edfb9e">lwcircle_make</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer__spatialfuncs_8c_a8b94ab832b29cf060375f55ddf5d768c.html#a8b94ab832b29cf060375f55ddf5d768c">lwcircstring_from_lwpointarray</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__cbuffer__accessor_ga64b6b0bf16a5332a1d04a158155c9d4a.html#ga64b6b0bf16a5332a1d04a158155c9d4a">tcbuffer_convex_hull</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="tcbuffer__spatialfuncs_8c_a9d69e0ba0da5b68ab6c58c47c2cf794f.html#a9d69e0ba0da5b68ab6c58c47c2cf794f">tcbuffer_is_tpoint</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="tcbuffer__spatialfuncs_8c_a9d69e0ba0da5b68ab6c58c47c2cf794f.html#a9d69e0ba0da5b68ab6c58c47c2cf794f">tcbuffer_is_tpoint</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__cbuffer__spatial__accessor_ga77464d6383cc622bd19e0deeddec526e.html#ga77464d6383cc622bd19e0deeddec526e">tcbuffer_traversed_area</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__cbuffer__spatial__accessor_ga8e96b56266c89397b3d08a33ba9d19a3.html#ga8e96b56266c89397b3d08a33ba9d19a3">tcbufferinst_traversed_area</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__cbuffer__spatial__accessor_gac71f29a50b462cde53e57a2edd95df9e.html#gac71f29a50b462cde53e57a2edd95df9e">tcbuffersegm_traversed_area</a></td></tr>
@@ -105,26 +105,27 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a7d20e2790273323332e43530667474f9" name="a7d20e2790273323332e43530667474f9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7d20e2790273323332e43530667474f9">&#9670;&#160;</a></span>cbuffer_traversed_area()</h2>
+<a id="a9d69e0ba0da5b68ab6c58c47c2cf794f" name="a9d69e0ba0da5b68ab6c58c47c2cf794f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9d69e0ba0da5b68ab6c58c47c2cf794f">&#9670;&#160;</a></span>tcbuffer_is_tpoint()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> * cbuffer_traversed_area </td>
+          <td class="memname">bool tcbuffer_is_tpoint </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structCbuffer.html">Cbuffer</a> *&#160;</td>
-          <td class="paramname"><em>cb</em></td><td>)</td>
+          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
+          <td class="paramname"><em>temp</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Return the traversed area of a circular buffer. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p>Return true if every composing circular buffer of a temporal circular buffer has a zero radius, that is, the value is a temporal point. </p>
+<p ><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> distance for temporal network points.</p>
+<p >A disc of a zero radius is the point at its centre, so such a value converts to a temporal geometry point without loss, and the temporal point of the geo family owns the relationships the disc kernels read from a disc boundary. The test is exact and applies to the whole value: a value holding a single disc of a strictly positive radius keeps the disc kernels </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">cb</td><td>Circular buffer </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> circular buffer </td></tr>
   </table>
   </dd>
 </dl>
