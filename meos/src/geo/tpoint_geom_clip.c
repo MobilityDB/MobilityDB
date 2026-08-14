@@ -553,6 +553,9 @@ point_in_polygon(double x, double y, Edge **edges, int nedges)
 /**
  * @brief Compute the intersection intervals of a trajectory segment with an
  * array of point edges
+ * @details A segment that does not move carries no direction to solve the
+ * parameter along, and meets a point edge exactly where it stands, for the
+ * whole of its extent
  */
 static void
 intervals_from_points(const POINT2D *a, const POINT2D *b, Edge **edges,
@@ -570,9 +573,26 @@ intervals_from_points(const POINT2D *a, const POINT2D *b, Edge **edges,
     ((fabs(dx) > FP_TOLERANCE) ? 1.0 / dx : 0.0) :
     ((fabs(dy) > FP_TOLERANCE) ? 1.0 / dy : 0.0);
 
+  /* The segment stands still */
   if (inv == 0.0)
+  {
+    for (int i = 0; i < nedges; i++)
+    {
+      const Edge *e = edges[i];
+      if (e->etype != EDGE_POINT)
+        continue;
+      if (fabs(a->x - e->x1) < FP_TOLERANCE &&
+          fabs(a->y - e->y1) < FP_TOLERANCE)
+      {
+        Span in;
+        span_set(Float8GetDatum(0.0), Float8GetDatum(1.0), true, true,
+          T_FLOAT8, T_FLOATSPAN, &in);
+        meos_array_add(intervals, &in);
+      }
+    }
     return;
-  
+  }
+
   /* Iterate through the points */
   for (int i = 0; i < nedges; i++)
   {

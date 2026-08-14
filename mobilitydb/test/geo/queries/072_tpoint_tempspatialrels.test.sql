@@ -146,6 +146,12 @@ SELECT tIntersects(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Po
 SELECT tIntersects(tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]', geometry 'Point(1 1)');
 SELECT tIntersects(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03], [Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}', geometry 'Point(1 1)');
 
+-- A temporal point that stands still meets the point it stands on for the
+-- whole of the time it stands there
+SELECT tIntersects(tgeompoint '[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02]', geometry 'Point(1 1)');
+SELECT tIntersects(tgeompoint '[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02, Point(3 3)@2000-01-03]', geometry 'Point(1 1)');
+SELECT tIntersects(tgeompoint '[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02]', geometry 'Point(2 2)');
+
 SELECT tIntersects(tgeompoint '[Point(0 1)@2000-01-01, Point(2 1)@2000-01-04]', geometry 'Linestring(1 0,1 1,2 1,2 0)');
 SELECT tIntersects(tgeompoint '[Point(0 0)@2000-01-01, Point(1 1)@2000-01-04)', geometry 'Linestring(1 1,2 1)');
 SELECT tIntersects(tgeompoint '[Point(1 1)@2000-01-01, Point(0 0)@2000-01-04)', geometry 'Linestring(0 0,1 1)');
