@@ -1753,10 +1753,14 @@ geo_from_wkb_state(meos_wkb_parse_state *s)
   }
   /* Advance the state by the number of bytes read for the geometry */
   s->pos += (s1.pos - s1.wkb);
-  /* Create the geometry. We cannot call gserialized_from_lwgeom since it does 
+  /* A geography is geodetic and in WGS84 (EPSG:4326) by definition, so default
+   * its SRID to 4326 when the Well-Known Binary carries none */
+  if (s->geodetic && geo->srid == SRID_UNKNOWN)
+    geo->srid = SRID_DEFAULT;
+  /* Create the geometry. We cannot call gserialized_from_lwgeom since it does
    * not set the geodetic flag. Therefore we need to call the corresponding
    * MEOS function for doing this */
-  GSERIALIZED *result = s->geodetic ? 
+  GSERIALIZED *result = s->geodetic ?
     geog_serialize(geo) : geom_serialize(geo);
   lwgeom_free(geo);
   return result;
