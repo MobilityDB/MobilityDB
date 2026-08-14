@@ -361,6 +361,29 @@ SELECT nodata(raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8'
   -9999
 (1 row)
 
+SELECT pixels(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint,
+  'UINT8'));
+   pixels   
+------------
+ \x01020304
+(1 row)
+
+SELECT raquet(pixels(tile), width(tile), height(tile), quadbin(tile),
+         pixtype(tile), nodata(tile)) = tile AS round_trips
+FROM (SELECT raquet('\x0102030405060708'::bytea, 2, 2,
+        5193776270265024512::bigint, 'INT16', -9999.0) AS tile) t;
+ round_trips 
+-------------
+ t
+(1 row)
+
+SELECT length(pixels(raquet('\x0102030405060708'::bytea, 2, 1,
+  5193776270265024512::bigint, 'FLOAT32')));
+ length 
+--------
+      8
+(1 row)
+
 SELECT raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8') =
        raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8') AS eq,
        raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8') <>

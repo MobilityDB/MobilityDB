@@ -399,6 +399,7 @@ raquet_pixtype(const Raquet *rq)
  * @note The bytes are row-major and packed, @p width * @p height pixels of
  * @p raquet_pixtype_size() bytes each, which is the layout the tile
  * constructors accept
+ * @csqlfn #Raquet_pixels()
  */
 uint8_t *
 raquet_pixels(const Raquet *rq, size_t *size_out)

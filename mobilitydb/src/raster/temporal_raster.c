@@ -737,6 +737,27 @@ Raquet_pixtype(PG_FUNCTION_ARGS)
   PG_RETURN_TEXT_P(result);
 }
 
+PGDLLEXPORT Datum Raquet_pixels(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raquet_pixels);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the pixel bytes of a Raquet tile
+ * @sqlfn pixels()
+ */
+Datum
+Raquet_pixels(PG_FUNCTION_ARGS)
+{
+  Raquet *rq = PG_GETARG_RAQUET_P(0);
+  size_t size;
+  uint8_t *pixels = raquet_pixels(rq, &size);
+  bytea *result = palloc(VARHDRSZ + size);
+  SET_VARSIZE(result, VARHDRSZ + size);
+  memcpy(VARDATA(result), pixels, size);
+  pfree(pixels);
+  PG_FREE_IF_COPY(rq, 0);
+  PG_RETURN_BYTEA_P(result);
+}
+
 /*****************************************************************************
  * Raquet type: comparison
  *****************************************************************************/

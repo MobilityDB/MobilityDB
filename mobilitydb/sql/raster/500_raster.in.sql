@@ -337,6 +337,10 @@ CREATE FUNCTION pixtype(raquet)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Raquet_pixtype'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION pixels(raquet)
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Raquet_pixels'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
  * Comparison of raquet tiles
