@@ -139,7 +139,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return -1, 0, or 1 depending on whether a (multi)point is completely outside, on the boundary, or completely inside a (multi)polygon. </p>
-<dl class="section note"><dt>Note</dt><dd>This function is based PostGIS function <code>pip_short_circuit</code> bypassing the cache </dd></dl>
+<p >The function selects the polygon and the point out of the pair whatever order they arrive in, and always answers in the direction of the polygon: whether the polygon intersects, contains, or covers the point. That is the relationship asked for <code>INTERSECTS</code>, which is symmetric, in either order. For <code>CONTAINS</code> and <code>COVERS</code> the caller must place the polygon first, since the reverse direction is a different question </p><dl class="section note"><dt>Note</dt><dd>This function is based PostGIS function <code>pip_short_circuit</code> bypassing the cache </dd></dl>
 
 </div>
 </div>
