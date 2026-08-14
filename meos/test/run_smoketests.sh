@@ -13,10 +13,9 @@
 # project's only floor against memory leaks that the PG infrastructure
 # would otherwise hide.
 #
-# tgeometry_smoketest uses --leak-check=summary (not --leak-check=full)
-# because the PROJ/SQLite3 SRS database lookups generate thousands of
-# "possibly lost" records that exhaust valgrind's internal accounting.
-# MEOS leaks in the tgeometry suite are caught by other means (ASan CI).
+# tgeometry_smoketest runs --leak-check=full: the possibly-lost PROJ/SQLite3
+# SRS-database noise is filtered by meos_smoketest.supp, so the strict check
+# only reports genuine MEOS/liblwgeom leaks.
 
 set -euo pipefail
 
@@ -70,15 +69,15 @@ for suite in "${SUITES[@]}"; do
     -L"$MEOS_BUILD_DIR" -lmeos -lm
   echo "[run]   $suite"
   # Leak-check mode is coupled to what the current base library already fixes:
-  #  - tgeometry: a full check OOMs valgrind on the PROJ/SQLite3 SRS lookups, so
-  #    it always runs summary (its MEOS leaks are caught by ASan CI).
   #  - trgeometry/tpose/tnpoint: build on the temporal pose, whose bbox accessor
   #    leaks are not yet fixed in this base, so they run summary until the pose
   #    leak-fix PRs land; they still surface crashes, invalid memory and new
   #    leaks. Flip them to full once those fixes are in the base.
-  #  - everything else (tcbuffer, ...) is leak-clean and runs the strict full check.
+  #  - everything else (tgeometry, tcbuffer, ...) is leak-clean and runs the
+  #    strict full check; meos_smoketest.supp filters the PROJ/SQLite3 SRS
+  #    possibly-lost noise so it only reports genuine MEOS/liblwgeom leaks.
   case "$suite" in
-    tgeometry_smoketest|trgeometry_test|tpose_smoketest|tnpoint_smoketest)
+    trgeometry_test|tpose_smoketest|tnpoint_smoketest)
       vg_leak="--leak-check=summary" ;;
     *)
       vg_leak="--leak-check=full" ;;
