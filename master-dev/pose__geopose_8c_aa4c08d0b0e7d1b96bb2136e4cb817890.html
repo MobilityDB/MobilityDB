@@ -214,7 +214,8 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Extract the position and orientation of a pose in the form every GeoPose encoding needs: longitude, latitude and height in degrees and metres, and a unit quaternion in Hamilton convention. </p>
-<p >Every class the standard defines fixes a WGS-84 outer frame, so this is also where the SRID is checked. A pose with SRID 0 is treated as geographic. </p><dl class="section return"><dt>Returns</dt><dd>On error return false </dd></dl>
+<p >Every class the standard defines places its pose in a topocentric frame on the surface of the Earth, so this is where the frame of the pose is checked. A pose with SRID 0 is treated as geographic.</p>
+<p >That frame is geographic, which a planar pose does not have: its coordinates measure a plane rather than the ellipsoid, so writing them as a longitude and a latitude would assert something the value does not say. A planar pose is therefore reported here rather than encoded. </p><dl class="section return"><dt>Returns</dt><dd>On error return false </dd></dl>
 
 </div>
 </div>
