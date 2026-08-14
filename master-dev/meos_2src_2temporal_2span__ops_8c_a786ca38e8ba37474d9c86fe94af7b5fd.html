@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: dist_double_value_value</title>
+<title>MobilityDB: distance_sentinel</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -87,7 +87,8 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__setspan__topo_gafbeebf3ce7cfdce6e1987687cb684ae1.html#gafbeebf3ce7cfdce6e1987687cb684ae1">contains_span_span</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__setspan__topo_ga69d595c44704f20b9fbd870e036fe327.html#ga69d595c44704f20b9fbd870e036fe327">contains_span_timestamptz</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__setspan__topo_ga2f3d40bbc4eb6304d40d33258f726bde.html#ga2f3d40bbc4eb6304d40d33258f726bde">contains_span_value</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2temporal_2span__ops_8c_a7a61d8fdb973d88d653a49d4e7729977.html#a7a61d8fdb973d88d653a49d4e7729977">dist_double_value_value</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2span__ops_8c_a7f2d4baee45a171031e37a9acc90df41.html#a7f2d4baee45a171031e37a9acc90df41">distance_double</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2temporal_2span__ops_8c_a786ca38e8ba37474d9c86fe94af7b5fd.html#a786ca38e8ba37474d9c86fe94af7b5fd">distance_sentinel</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__setspan__dist_ga532871c956cb5a0929019d5f4e58173b.html#ga532871c956cb5a0929019d5f4e58173b">distance_span_span</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__setspan__dist_gac62f66bc144f0b11c7b2c469c2932d62.html#gac62f66bc144f0b11c7b2c469c2932d62">distance_span_value</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__setspan__dist_gafa9a514f30cb64c7431aeed9c821a2e1.html#gafa9a514f30cb64c7431aeed9c821a2e1">distance_value_value</a></td></tr>
@@ -126,47 +127,30 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a7a61d8fdb973d88d653a49d4e7729977" name="a7a61d8fdb973d88d653a49d4e7729977"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7a61d8fdb973d88d653a49d4e7729977">&#9670;&#160;</a></span>dist_double_value_value()</h2>
+<a id="a786ca38e8ba37474d9c86fe94af7b5fd" name="a786ca38e8ba37474d9c86fe94af7b5fd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a786ca38e8ba37474d9c86fe94af7b5fd">&#9670;&#160;</a></span>distance_sentinel()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">double dist_double_value_value </td>
+          <td class="memname"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> distance_sentinel </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td>
-          <td class="paramname"><em>l</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td>
-          <td class="paramname"><em>r</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
           <td class="paramtype"><a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a05df1d1fd2c829ee784b125ed34e8401.html#a05df1d1fd2c829ee784b125ed34e8401">MeosType</a>&#160;</td>
-          <td class="paramname"><em>type</em>&#160;</td>
-        </tr>
-        <tr>
+          <td class="paramname"><em>type</em></td><td>)</td>
           <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Return the distance between two values as a double for the indexes. </p>
+<p>Return the value returned on error by the distance functions of a base type. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">l,r</td><td>Values </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">type</td><td>Type of the values </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">type</td><td>Type of the values</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>On error return <code>DBL_MAX</code> </dd></dl>
+<p>The sentinel is the maximum value of the type in which the distance is expressed, so that it sorts after every distance that could be computed in the nearest-neighbor searches performed with the indexes </p>
 
 </div>
 </div>
