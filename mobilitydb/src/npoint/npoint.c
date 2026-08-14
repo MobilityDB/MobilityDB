@@ -346,7 +346,25 @@ Datum
 Npoint_as_hexwkb(PG_FUNCTION_ARGS)
 {
   Npoint *np = PG_GETARG_NPOINT_P(0);
-  PG_RETURN_TEXT_P(Datum_as_hexwkb(fcinfo, PointerGetDatum(np), T_NPOINT, true));
+  PG_RETURN_TEXT_P(Datum_as_hexwkb(fcinfo, PointerGetDatum(np), T_NPOINT,
+    false));
+}
+
+PGDLLEXPORT Datum Npoint_as_hexewkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Npoint_as_hexewkb);
+/**
+ * @ingroup mobilitydb_npoint_base_inout
+ * @brief Return the ASCII hex-encoded Extended Well-Known Binary (HexEWKB)
+ * representation of a network point
+ * @note It is the HexWKB representation prefixed with the SRID
+ * @sqlfn asHexEWKB()
+ */
+Datum
+Npoint_as_hexewkb(PG_FUNCTION_ARGS)
+{
+  Npoint *np = PG_GETARG_NPOINT_P(0);
+  PG_RETURN_TEXT_P(Datum_as_hexwkb(fcinfo, PointerGetDatum(np), T_NPOINT,
+    true));
 }
 
 /*****************************************************************************

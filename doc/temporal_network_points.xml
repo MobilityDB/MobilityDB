@@ -118,14 +118,14 @@ SELECT asEWKT(ARRAY[npoint 'SRID=5676;Npoint(1,0.2)', 'SRID=5676;Npoint(1,0.5)']
 					<para><varname>asEWKB(npoint,endian text='') → bytea</varname></para>
 					<para><varname>asHexWKB(npoint,endian text='') → text</varname></para>
 					<para><varname>asHexEWKB(npoint,endian text='') → text</varname></para>
-					<para>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used. A network point takes its SRID from the underlying route network, so both hexadecimal forms embed it and coincide, while the plain <varname>asBinary</varname> form omits it.</para>
+					<para>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used. A network point takes its SRID from the underlying route network: <varname>asEWKB</varname> and <varname>asHexEWKB</varname> embed it, while the plain <varname>asBinary</varname> and <varname>asHexWKB</varname> forms omit it.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asBinary(npoint 'SRID=5676;Npoint(1,0.5)');
 -- \x01010100000000000000000000000000e03f
 SELECT asEWKB(npoint 'SRID=5676;Npoint(1,0.5)');
 -- \x01412c1600000100000000000000000000000000e03f
 SELECT asHexWKB(npoint 'SRID=5676;Npoint(1,0.5)');
--- 01412C1600000100000000000000000000000000E03F
+-- 01010100000000000000000000000000E03F
 SELECT asHexEWKB(npoint 'SRID=5676;Npoint(1,0.5)');
 -- 01412C1600000100000000000000000000000000E03F
 </programlisting>

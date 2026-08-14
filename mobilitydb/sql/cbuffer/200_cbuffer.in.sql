@@ -138,7 +138,7 @@ CREATE FUNCTION asHexWKB(cbuffer, endianenconding text DEFAULT '')
 
 CREATE FUNCTION asHexEWKB(cbuffer, endianenconding text DEFAULT '')
   RETURNS text
-  AS 'MODULE_PATHNAME', 'Cbuffer_as_hexwkb'
+  AS 'MODULE_PATHNAME', 'Cbuffer_as_hexewkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- GENERATED-REPRESENTATIONS-END cbuffer_base

@@ -33,7 +33,7 @@ SELECT COUNT(*) FROM tbl_cbufferset WHERE cbuffersetFromBinary(asEWKB(s)) <> s;
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_cbufferset WHERE cbuffersetFromHexWKB(asHexWKB(s)) <> s;
+SELECT COUNT(*) FROM tbl_cbufferset WHERE setSRID(cbuffersetFromHexWKB(asHexWKB(s)), 3812) <> s;
  count 
 -------
      0

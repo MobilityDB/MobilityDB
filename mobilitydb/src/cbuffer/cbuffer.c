@@ -294,7 +294,25 @@ Datum
 Cbuffer_as_hexwkb(PG_FUNCTION_ARGS)
 {
   Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
-  PG_RETURN_TEXT_P(Datum_as_hexwkb(fcinfo, PointerGetDatum(cb), T_CBUFFER, true));
+  PG_RETURN_TEXT_P(Datum_as_hexwkb(fcinfo, PointerGetDatum(cb), T_CBUFFER,
+    false));
+}
+
+PGDLLEXPORT Datum Cbuffer_as_hexewkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Cbuffer_as_hexewkb);
+/**
+ * @ingroup mobilitydb_cbuffer_base_inout
+ * @brief Return the ASCII hex-encoded Extended Well-Known Binary (HexEWKB)
+ * representation of a circular buffer
+ * @note It is the HexWKB representation prefixed with the SRID
+ * @sqlfn asHexEWKB()
+ */
+Datum
+Cbuffer_as_hexewkb(PG_FUNCTION_ARGS)
+{
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
+  PG_RETURN_TEXT_P(Datum_as_hexwkb(fcinfo, PointerGetDatum(cb), T_CBUFFER,
+    true));
 }
 
 /*****************************************************************************

@@ -118,14 +118,14 @@ SELECT asEWKT(ARRAY[npoint 'SRID=5676;Npoint(1,0.2)', 'SRID=5676;Npoint(1,0.5)']
 					<para><varname>asEWKB(npoint,endian text='') → bytea</varname></para>
 					<para><varname>asHexWKB(npoint,endian text='') → text</varname></para>
 					<para><varname>asHexEWKB(npoint,endian text='') → text</varname></para>
-					<para>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina. Un punto de red toma su SRID de la red de rutas subyacente, por lo que ambas formas hexadecimales lo incluyen y coinciden, mientras que la forma binaria simple <varname>asBinary</varname> lo omite.</para>
+					<para>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina. Un punto de red toma su SRID de la red de rutas subyacente: <varname>asEWKB</varname> y <varname>asHexEWKB</varname> lo incluyen, mientras que las formas simples <varname>asBinary</varname> y <varname>asHexWKB</varname> lo omiten.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asBinary(npoint 'SRID=5676;Npoint(1,0.5)');
 -- \x01010100000000000000000000000000e03f
 SELECT asEWKB(npoint 'SRID=5676;Npoint(1,0.5)');
 -- \x01412c1600000100000000000000000000000000e03f
 SELECT asHexWKB(npoint 'SRID=5676;Npoint(1,0.5)');
--- 01412C1600000100000000000000000000000000E03F
+-- 01010100000000000000000000000000E03F
 SELECT asHexEWKB(npoint 'SRID=5676;Npoint(1,0.5)');
 -- 01412C1600000100000000000000000000000000E03F
 </programlisting>

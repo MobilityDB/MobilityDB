@@ -3116,13 +3116,15 @@ datum_as_wkb(Datum value, MeosType type, uint8_t variant, size_t *size_out)
 
 /**
  * @brief Return the HexWKB representation of a datum value
+ * @details The output honors the caller's @p variant, in particular whether
+ * @p WKB_EXTENDED (SRID) is set: it is neither added nor removed here.
  */
 char *
 datum_as_hexwkb(Datum value, MeosType type, uint8_t variant, size_t *size)
 {
   /* Create WKB hex string */
-  return (char *) datum_as_wkb(value, type,
-    variant | (uint8_t) WKB_EXTENDED | (uint8_t) WKB_HEX, size);
+  return (char *) datum_as_wkb(value, type, variant | (uint8_t) WKB_HEX,
+    size);
 }
 
 /**
