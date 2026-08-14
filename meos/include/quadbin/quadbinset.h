@@ -45,8 +45,8 @@
  * lift is handled by the tquadbin layer.
  */
 
-#ifndef __QUADBINSET_MEOS_H__
-#define __QUADBINSET_MEOS_H__
+#ifndef __QUADBINSET_H__
+#define __QUADBINSET_H__
 
 /* PostgreSQL */
 #include <postgres.h>
@@ -74,4 +74,4 @@ extern Set *quadbin_grid_disk(Quadbin origin, int k);
 extern Set *quadbin_cell_to_children_set(Quadbin origin,
   int children_resolution);
 
-#endif /* __QUADBINSET_MEOS_H__ */
+#endif /* __QUADBINSET_H__ */

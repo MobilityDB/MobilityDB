@@ -39,7 +39,7 @@
  *   4. Return the Set.
  */
 
-#include "quadbin/quadbinset_meos.h"
+#include "quadbin/quadbinset.h"
 
 /* PostgreSQL */
 #include <postgres.h>

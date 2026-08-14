@@ -1,7 +1,7 @@
 set(QUADBIN_SOURCES
   quadbin.c
   quadbin_geo.c
-  quadbinset_meos.c
+  quadbinset.c
   tquadbin_ops.c
   tquadbin.c
   tquadbin_boxops.c
