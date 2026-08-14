@@ -33,7 +33,6 @@ meos/src/h3/h3index_sets.c	h3_grid_path_cells(H3Index start, H3Index end)	file-s
 meos/src/h3/h3index_sets.c	h3_grid_ring(H3Index origin, int k)	file-scope conditional
 meos/src/h3/h3index_sets.c	h3_origin_to_directed_edges(H3Index origin)	file-scope conditional
 meos/src/h3/h3index_sets.c	h3_uncompact_cells(const Set *cells, int res)	file-scope conditional
-meos/src/json/jsonbset.c	jsonb_union_transfn(Set *state, const Jsonb *jb)	file-scope conditional
 meos/src/npoint/npoint.c	#include <libpq/pqformat.h>	file-scope conditional
 meos/src/pointcloud/schema_hook.c	#include <utils/memutils.h>  /* TopMemoryContext */	file-scope conditional
 meos/src/temporal/doublen.c	double2_make(double a, double b)	file-scope conditional
