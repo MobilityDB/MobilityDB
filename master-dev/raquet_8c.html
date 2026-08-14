@@ -75,7 +75,9 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
-<a href="#func-members">Functions</a>  </div>
+<a href="#nested-classes">Data Structures</a> &#124;
+<a href="#func-members">Functions</a> &#124;
+<a href="#var-members">Variables</a>  </div>
   <div class="headertitle"><div class="title">raquet.c File Reference</div></div>
 </div><!--header-->
 <div class="contents">
@@ -98,6 +100,12 @@ $(function() {
 <code>#include &quot;temporal/temporal.h&quot;</code><br />
 <code>#include &quot;<a class="el" href="type__inout_8h_source.html">temporal/type_inout.h</a>&quot;</code><br />
 </div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
+Data Structures</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpixtype__catalog__struct.html">pixtype_catalog_struct</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Structure to represent a row of the pixel type catalog.  <a href="structpixtype__catalog__struct.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:ae5b71c49b9d1df7bd9d92427e56ad8eb"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="raquet_8c_ae5b71c49b9d1df7bd9d92427e56ad8eb.html#ae5b71c49b9d1df7bd9d92427e56ad8eb">ensure_valid_pixtype</a> (<a class="el" href="postgres__ext__defs_8in_8h_adde6aaee8457bee49c2a92621fe22b79.html#adde6aaee8457bee49c2a92621fe22b79">uint8</a> pixtype)</td></tr>
@@ -109,6 +117,12 @@ Functions</h2></td></tr>
 <tr class="memitem:ab227cef7365d3cc1e8b5d06e0c5adf82"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="raquet_8c_ab227cef7365d3cc1e8b5d06e0c5adf82.html#ab227cef7365d3cc1e8b5d06e0c5adf82">le_uint_store</a> (<a class="el" href="postgres__ext__defs_8in_8h_adde6aaee8457bee49c2a92621fe22b79.html#adde6aaee8457bee49c2a92621fe22b79">uint8</a> *p, <a class="el" href="postgres__ext__defs_8in_8h_abc0f5bc07737e498f287334775dff2b6.html#abc0f5bc07737e498f287334775dff2b6">uint64</a> value, size_t size)</td></tr>
 <tr class="memdesc:ab227cef7365d3cc1e8b5d06e0c5adf82"><td class="mdescLeft">&#160;</td><td class="mdescRight">Store an unsigned integer little-endian in the <code>size</code> bytes at <code>p</code>.  <a href="raquet_8c_ab227cef7365d3cc1e8b5d06e0c5adf82.html#ab227cef7365d3cc1e8b5d06e0c5adf82">More...</a><br /></td></tr>
 <tr class="separator:ab227cef7365d3cc1e8b5d06e0c5adf82"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acf26838535a9eeee3d5462938bfdf03b"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="raquet_8c_acf26838535a9eeee3d5462938bfdf03b.html#acf26838535a9eeee3d5462938bfdf03b">pixtype_known</a> (<a class="el" href="postgres__ext__defs_8in_8h_adde6aaee8457bee49c2a92621fe22b79.html#adde6aaee8457bee49c2a92621fe22b79">uint8</a> pixtype)</td></tr>
+<tr class="memdesc:acf26838535a9eeee3d5462938bfdf03b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true when a pixel type code has a row in the catalog.  <a href="raquet_8c_acf26838535a9eeee3d5462938bfdf03b.html#acf26838535a9eeee3d5462938bfdf03b">More...</a><br /></td></tr>
+<tr class="separator:acf26838535a9eeee3d5462938bfdf03b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ace1d0e282e9230d26ab2cdebb31bc862"><td class="memItemLeft" align="right" valign="top">static char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="raquet_8c_ace1d0e282e9230d26ab2cdebb31bc862.html#ace1d0e282e9230d26ab2cdebb31bc862">pixtype_names</a> (char *buf, size_t size)</td></tr>
+<tr class="memdesc:ace1d0e282e9230d26ab2cdebb31bc862"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write into <code>buf</code> the names of the catalog as an enumeration reading "A, B, or C", which is how the error messages name the types a caller may use.  <a href="raquet_8c_ace1d0e282e9230d26ab2cdebb31bc862.html#ace1d0e282e9230d26ab2cdebb31bc862">More...</a><br /></td></tr>
+<tr class="separator:ace1d0e282e9230d26ab2cdebb31bc862"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga9e953cb1db5f8340ca864740dc1f9716"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__raster__base__inout_ga9e953cb1db5f8340ca864740dc1f9716.html#ga9e953cb1db5f8340ca864740dc1f9716">raquet_as_hexwkb</a> (const <a class="el" href="structRaquet.html">Raquet</a> *rq, uint8_t variant, size_t *size_out)</td></tr>
 <tr class="memdesc:ga9e953cb1db5f8340ca864740dc1f9716"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the ASCII hex-encoded Well-Known Binary (HexWKB) representation of a <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> tile.  <a href="group__meos__raster__base__inout_ga9e953cb1db5f8340ca864740dc1f9716.html#ga9e953cb1db5f8340ca864740dc1f9716">More...</a><br /></td></tr>
 <tr class="separator:ga9e953cb1db5f8340ca864740dc1f9716"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -202,6 +216,12 @@ Functions</h2></td></tr>
 <tr class="memitem:ga47799b6d30d305d68a07f44f719a62a2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTemporal.html">Temporal</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__raster_ga47799b6d30d305d68a07f44f719a62a2.html#ga47799b6d30d305d68a07f44f719a62a2">raster_tile_value_array</a> (const <a class="el" href="structTemporal.html">Temporal</a> *traj, const <a class="el" href="structRaquet.html">Raquet</a> **rqarr, int count)</td></tr>
 <tr class="memdesc:ga47799b6d30d305d68a07f44f719a62a2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the values of an array of <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> tiles sampled at the instants of a trajectory.  <a href="group__meos__raster_ga47799b6d30d305d68a07f44f719a62a2.html#ga47799b6d30d305d68a07f44f719a62a2">More...</a><br /></td></tr>
 <tr class="separator:ga47799b6d30d305d68a07f44f719a62a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:a9be65fb37cf0986911d59c45cd549182"><td class="memItemLeft" align="right" valign="top">static const <a class="el" href="structpixtype__catalog__struct.html">pixtype_catalog_struct</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="raquet_8c_a9be65fb37cf0986911d59c45cd549182.html#a9be65fb37cf0986911d59c45cd549182">MEOS_PIXTYPE_CATALOG</a> []</td></tr>
+<tr class="memdesc:a9be65fb37cf0986911d59c45cd549182"><td class="mdescLeft">&#160;</td><td class="mdescRight">Global constant array containing the pixel data types.  <a href="raquet_8c_a9be65fb37cf0986911d59c45cd549182.html#a9be65fb37cf0986911d59c45cd549182">More...</a><br /></td></tr>
+<tr class="separator:a9be65fb37cf0986911d59c45cd549182"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >General functions for the <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> raster-tile value type. </p>
