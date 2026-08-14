@@ -78,12 +78,12 @@
   #include <meos_quadbin.h>
   #include "quadbin/quadbin.h"
 #endif
+#if RASTER
+  #include <meos_raster.h>
+#endif
 #if RGEO
   #include <meos_rgeo.h>
   #include "rgeo/trgeo.h"
-#endif
-#if RASTER
-  #include <meos_raster.h>
 #endif
 
 #include <utils/jsonb.h>
