@@ -42,14 +42,16 @@ jobs:
             libgeos-dev \
             libproj-dev \
             libjson-c-dev \
-            libgsl-dev
+            libgsl-dev \
+            libgdal-dev
 
       - name: Build
         run: |
           mkdir build
           cd build
-          # Enable the optional types to be able to test them below
-          cmake -DCMAKE_BUILD_TYPE=Debug -DMEOS=on -DCBUFFER=on -DJSON=on -DPOSE=on -DRGEO=on ..
+          # Enable the optional types to be able to test them below. RASTER
+          # requires GDAL, installed above
+          cmake -DCMAKE_BUILD_TYPE=Debug -DMEOS=on -DCBUFFER=on -DJSON=on -DPOSE=on -DRGEO=on -DRASTER=on ..
           make -j $(nproc)
           sudo make install
 
@@ -98,6 +100,12 @@ jobs:
           ./merge_test
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o geo_test geo_test.c -L/usr/local/lib -lmeos
           ./geo_test
+          # The raster input and output functions are the only way a caller
+          # outside PostgreSQL reaches a Raster, so they are exercised here
+          # rather than through the PostgreSQL suite. The RASTER family is
+          # built and installed above.
+          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o raster_test raster_test.c -L/usr/local/lib -lmeos
+          ./raster_test
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o numeric_test numeric_test.c -L/usr/local/lib -lmeos
           ./numeric_test
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o setspan_test setspan_test.c -L/usr/local/lib -lmeos
