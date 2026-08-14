@@ -591,16 +591,25 @@ tsequence_tagg_iter(const TSequence *seq1, const TSequence *seq2,
   TSequence *syncseq1, *syncseq2;
   synchronize_tsequence_tsequence(seq1, seq2, &syncseq1, &syncseq2, crossings);
   TInstant **instants = palloc(sizeof(TInstant *) * syncseq1->count);
-  // MeosType basetype = temptype_basetype(seq1->temptype);
+  MeosType basetype = temptype_basetype(seq1->temptype);
   for (int i = 0; i < syncseq1->count; i++)
   {
     const TInstant *inst1 = TSEQUENCE_INST_N(syncseq1, i);
     const TInstant *inst2 = TSEQUENCE_INST_N(syncseq2, i);
     if (func)
     {
-      Datum value = func(tinstant_value_p(inst1), tinstant_value_p(inst2));
+      Datum value1 = tinstant_value_p(inst1);
+      Datum value2 = tinstant_value_p(inst2);
+      Datum value = func(value1, value2);
       instants[i] = tinstant_make(value, seq1->temptype, inst1->t);
-      // DATUM_FREE(value, basetype); // TODO
+      /* Free the summed value only when func returns a fresh allocation (e.g.
+       * the double3/double4 centroid and sum accumulators). A min/max func
+       * returns one of its by-reference inputs, still owned by seq1/seq2, so it
+       * must not be freed; a by-value base type owns no storage. */
+      if (! basetype_byvalue(basetype) &&
+          DatumGetPointer(value) != DatumGetPointer(value1) &&
+          DatumGetPointer(value) != DatumGetPointer(value2))
+        pfree(DatumGetPointer(value));
     }
     else
     {
