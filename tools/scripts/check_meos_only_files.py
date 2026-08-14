@@ -1,0 +1,251 @@
+#!/usr/bin/env python3
+# SPDX-License-Identifier: PostgreSQL
+#
+# BINDING-HEADER-PARSE-OK: this is a CI source guard under tools/scripts/,
+# not a binding generator. It scans meos/src/**.c and CMakeLists.txt for a
+# build-layout rule and extracts no API surface, exactly as its siblings
+# check_csqlfn.py and check_btree_gist_operators.py scan sources and SQL.
+#
+# Enforce the file-selection rule for MEOS-only code.
+#
+# Why
+# ---
+# `Datum` is a PostgreSQL type that no binding (PyMEOS, JMEOS, GoMEOS,
+# meos-rs, MEOS.NET, MEOS.js) can construct, so it appears only in
+# `meos_internal.h`. Every operation the PG extension implements
+# generically through a single Datum-taking function therefore needs
+# typed instantiations for the public MEOS surface, and those live in
+# `<module>_meos.c` files that CMake compiles only for the MEOS
+# library:
+#
+#   if(MEOS)
+#     list(APPEND <FAM>_SOURCES <module>_meos.c)
+#   endif()
+#
+# The selection is made by the FILE, never by a `#if MEOS` inside a C
+# file: a source that is compiled at all is compiled whole. Two ways
+# to break that, both of which this tool rejects:
+#
+#   * a `*_meos.c` that CMake compiles into the PG extension -- either
+#     because it is listed outside `if(MEOS)`, or because the PG side
+#     calls a function it defines. Content the extension needs is not
+#     MEOS-only and belongs in a file without the `_meos` suffix.
+#
+#   * a `#if MEOS` block at file scope in a shared source. The block
+#     holds the MEOS-only definitions of that module, so it belongs in
+#     the module's `_meos.c` file instead.
+#
+# The late-binding dispatchers are the one exception: they resolve a
+# type at run time over every family, so they carry `#if <FAMILY>`
+# conditionals by construction and are listed in EXEMPT_FILES.
+#
+# Blocks that sit INSIDE a function body are a different animal: they
+# select a PG-specific detail of a shared implementation (an aggregate
+# memory context, an allocation limit) rather than a whole definition,
+# so moving them would duplicate the function. They are reported for
+# the record but do not fail the check.
+#
+# Usage:
+#   python3 tools/scripts/check_meos_only_files.py              # check
+#   python3 tools/scripts/check_meos_only_files.py --report     # list all
+#   python3 tools/scripts/check_meos_only_files.py --rebaseline # regen
+#
+# Run from the repo root.
+"""Check that MEOS-only code is selected by file rather than by `#if MEOS`."""
+
+from __future__ import annotations
+
+import argparse
+import re
+import sys
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parent.parent.parent
+BASELINE_PATH = REPO_ROOT / "tools" / "scripts" / "meos_only_files_baseline.txt"
+
+# The late-binding dispatchers, which need `#if <FAMILY>` by construction.
+# This exempts them from the conditional scan of THIS tool only; it neither
+# skips nor filters any public API function.  # SOURCE-GAP-ACK
+EXEMPT_FILES = {
+    "meos/src/temporal/type_in.c",
+    "meos/src/temporal/type_out.c",
+    "meos/src/temporal/type_util.c",
+}
+
+MEOS_IF = re.compile(r"^#if\s+!?\s*MEOS\b|^#ifn?def\s+MEOS\b")
+# A function definition in the house style: the return type sits on its own
+# line and the name starts at column 0
+FUNC_DEF = re.compile(r"^([a-z_][a-z0-9_]*)\s*\(")
+CMAKE_IF_MEOS = re.compile(r"^\s*if\s*\(\s*MEOS\s*\)")
+CMAKE_ELSE_ENDIF = re.compile(r"^\s*(else|elseif|endif)\s*\(")
+SOURCE_ENTRY = re.compile(r"([A-Za-z0-9_./]+\.c)\b")
+
+
+def strip_code(line: str) -> str:
+    """Return the line without string literals and line comments."""
+    return re.sub(r"//.*|\"(?:\\.|[^\"\\])*\"|'(?:\\.|[^'\\])'", "", line)
+
+
+def strip_comments(text: str) -> str:
+    """Return C source text without its comments.
+
+    A doxygen line such as `@sqlfn intset_in(), floatset_in()` names MEOS
+    functions without calling them, so the comments have to go before the
+    text is searched for callers.
+    """
+    return re.sub(r"/\*.*?\*/|//[^\n]*", "", text, flags=re.DOTALL)
+
+
+def ungated_meos_sources(root: Path) -> list[tuple[str, str]]:
+    """Return the (cmakelists, source) pairs listing a `_meos.c` outside if(MEOS)."""
+    found = []
+    for cml in sorted(root.glob("meos/src/**/CMakeLists.txt")):
+        gated = False
+        for raw in cml.read_text().splitlines():
+            line = raw.split("#", 1)[0]
+            if CMAKE_IF_MEOS.match(line):
+                gated = True
+                continue
+            if CMAKE_ELSE_ENDIF.match(line):
+                gated = False
+                continue
+            if gated:
+                continue
+            for src in SOURCE_ENTRY.findall(line):
+                if src.endswith("_meos.c"):
+                    found.append((cml.relative_to(root).as_posix(), src))
+    return found
+
+
+def meos_only_definitions(path: Path) -> list[str]:
+    """Return the names of the non-static functions defined in a `_meos.c`."""
+    names = []
+    lines = path.read_text().splitlines()
+    for i, line in enumerate(lines):
+        m = FUNC_DEF.match(line)
+        if not m or i == 0:
+            continue
+        prev = lines[i - 1].strip()
+        # the previous line is the return type; a `static` one is not exported
+        if not prev or prev.startswith("static") or prev.endswith((";", ",", "{")):
+            continue
+        if not re.match(r"^[A-Za-z_][A-Za-z0-9_ ]*\**$", prev):
+            continue
+        names.append(m.group(1))
+    return names
+
+
+def conditionals(path: Path) -> tuple[list[int], list[int]]:
+    """Return the (file-scope, in-function) line numbers of MEOS conditionals."""
+    top, inside, depth = [], [], 0
+    for n, line in enumerate(path.read_text().splitlines(), start=1):
+        if MEOS_IF.match(line):
+            (top if depth == 0 else inside).append(n)
+        code = strip_code(line)
+        depth = max(0, depth + code.count("{") - code.count("}"))
+    return top, inside
+
+
+def collect(root: Path) -> tuple[list[str], list[str]]:
+    """Return the (failing, informational) findings, each as one text line."""
+    fail, info = [], []
+
+    for cml, src in ungated_meos_sources(root):
+        fail.append(f"{cml}: {src} is compiled into the PG extension: "
+                    f"list it inside if(MEOS), or drop the _meos suffix")
+
+    # BINDING-HEADER-PARSE-OK: CI source guard, scans .c files for a build
+    # rule; no headers are read and no API surface is extracted
+    pg_sources = strip_comments("\n".join(
+        p.read_text() for p in sorted(root.glob("mobilitydb/src/**/*.c"))))
+    # A name that a shared source defines too has a PG counterpart -- the
+    # npoint family builds ways.c instead of ways_meos.c through the else()
+    # branch -- so a call from the extension resolves there, not here
+    shared = set()
+    for path in sorted(root.glob("meos/src/**/*.c")):
+        if not path.name.endswith("_meos.c"):
+            shared.update(meos_only_definitions(path))
+
+    for path in sorted(root.glob("meos/src/**/*_meos.c")):
+        rel = path.relative_to(root).as_posix()
+        for name in meos_only_definitions(path):
+            if name in shared:
+                continue
+            if re.search(rf"\b{re.escape(name)}\s*\(", pg_sources):
+                fail.append(f"{rel}: {name}() is called from mobilitydb/src: "
+                            f"the PG extension needs it, so it is not MEOS-only")
+        top, _ = conditionals(path)
+        for n in top:
+            fail.append(f"{rel}:{n}: MEOS conditional inside a MEOS-only file")
+
+    for path in sorted(root.glob("meos/src/**/*.c")):
+        rel = path.relative_to(root).as_posix()
+        if rel.endswith("_meos.c") or rel in EXEMPT_FILES:
+            continue
+        top, inside = conditionals(path)
+        for n in top:
+            fail.append(f"{rel}:{n}: file-scope MEOS conditional: "
+                        f"move the definition to the module's _meos.c")
+        for n in inside:
+            info.append(f"{rel}:{n}: MEOS conditional inside a function body")
+
+    return sorted(fail), sorted(info)
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--rebaseline", action="store_true",
+                        help="write the current findings as the new baseline")
+    parser.add_argument("--report", action="store_true",
+                        help="print every finding, baselined ones included")
+    args = parser.parse_args()
+
+    fail, info = collect(REPO_ROOT)
+
+    if args.rebaseline:
+        header = ("# Findings of tools/scripts/check_meos_only_files.py that are\n"
+                  "# grandfathered in. The list only shrinks: a new violation\n"
+                  "# fails the check. Regenerate with --rebaseline after a split.\n")
+        BASELINE_PATH.write_text(header + "\n".join(fail) + "\n")
+        print(f"wrote {len(fail)} findings to "
+              f"{BASELINE_PATH.relative_to(REPO_ROOT)}")
+        return 0
+
+    if args.report:
+        for line in fail:
+            print(f"split needed: {line}")
+        for line in info:
+            print(f"in-function : {line}")
+        print(f"\n{len(fail)} to split, {len(info)} in-function (informational)")
+        return 0
+
+    baseline = set()
+    if BASELINE_PATH.exists():
+        baseline = {ln for ln in BASELINE_PATH.read_text().splitlines()
+                    if ln and not ln.startswith("#")}
+
+    new = [ln for ln in fail if ln not in baseline]
+    if new:
+        print("MEOS-only code must be selected by file, not by #if MEOS:\n")
+        for line in new:
+            print(f"  {line}")
+        print(f"\n{len(new)} new violation(s). Move the definitions into the "
+              f"module's _meos.c (gated by if(MEOS) in CMake), or, when the PG "
+              f"extension needs them, into a file without the _meos suffix.")
+        return 1
+
+    stale = sorted(baseline - set(fail))
+    if stale:
+        print(f"{len(stale)} baselined finding(s) are fixed. "
+              f"Run --rebaseline to shrink the baseline:\n")
+        for line in stale:
+            print(f"  {line}")
+        return 1
+
+    print(f"meos-only-files: clean ({len(baseline)} baselined, "
+          f"{len(info)} in-function conditionals reported by --report).")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

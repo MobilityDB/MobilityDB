@@ -68,6 +68,14 @@ jobs:
       - name: Reject <-> operators that btree_gist owns
         run: python3 tools/scripts/check_btree_gist_operators.py
 
+  meos_only_files_check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Check that MEOS-only code is selected by file, not by #if MEOS
+        run: python3 tools/scripts/check_meos_only_files.py
+
   binding_io_ownership_check:
     runs-on: ubuntu-latest
     steps:
