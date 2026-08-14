@@ -447,13 +447,20 @@ TRGEO_CONFIG = dict(
         # The generic emitter would allocate into geom_out_param and never free
         # it; the cleanup block below calls the function and frees the result.
         "trgeometry_value_n":         "out-param GSERIALIZED ** is exercised manually below",
-        # The temporal-distance kernel for trgeometry is not implemented yet, so
-        # every distance / nearest-approach / dwithin wrapper over it aborts.
-        "re:^tdistance_trgeometry":    "tdistance_trgeometry not implemented yet",
-        "re:^nad_trgeometry":          "depends on unimplemented tdistance_trgeometry",
-        "re:^nai_trgeometry":          "depends on unimplemented tdistance_trgeometry",
-        "re:^shortestline_trgeometry": "depends on unimplemented tdistance_trgeometry",
-        "re:^e?dwithin_trgeometry":    "depends on unimplemented tdwithin_trgeosegm",
+        # The moving-moving temporal-distance kernel (trgeometry against a
+        # temporal point or another trgeometry) is not implemented yet, so its
+        # distance / nearest-approach wrappers abort. The trgeometry-vs-geometry
+        # and trgeometry-vs-spatiotemporal-box variants are implemented and
+        # covered here.
+        "re:^tdistance_trgeometry_(tpoint|trgeometry)$":    "moving-moving trgeometry distance not implemented yet",
+        "re:^nad_trgeometry_(tpoint|trgeometry)$":          "depends on unimplemented moving-moving trgeometry distance",
+        "re:^nai_trgeometry_(tpoint|trgeometry)$":          "depends on unimplemented moving-moving trgeometry distance",
+        "re:^shortestline_trgeometry_(tpoint|trgeometry)$": "depends on unimplemented moving-moving trgeometry distance",
+        # dwithin between two trgeometries delegates to the continuous
+        # turning-point solver tdwithin_trgeosegm, which is a stub; the
+        # trgeometry-vs-geometry variants go through the traversed area and are
+        # covered here.
+        "re:^[ae]?dwithin_trgeometry_trgeometry$": "depends on unimplemented tdwithin_trgeosegm",
         # The function validates its argument as a geomset, but the
         # temporal_restrict_values() it delegates to rejects every
         # trgeometry/geomset pair ("Operation on mixed temporal and set types:
