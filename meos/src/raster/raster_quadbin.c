@@ -332,11 +332,28 @@ read_pixel(const uint8_t *pixels, int col, int row, int width,
  */
 Temporal *
 raster_tile_value_quadbin(const Temporal *traj, const uint8_t *pixels,
-  size_t pixels_size, uint16_t width, uint16_t height, uint64 quadbin,
+  size_t pixels_size, int32 width, int32 height, uint64 quadbin,
   MeosPixType pixtype, double nodata, bool has_nodata)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(pixels, NULL);
+  /* The dimensions are taken in the type the SQL surface uses and validated
+   * before the narrowing to the tile's uint16 fields, so that a value outside
+   * that range is rejected here instead of wrapping to a different tile than
+   * the one asked for */
+  if (width <= 0 || height <= 0)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The width and height of a raquet tile must be positive");
+    return NULL;
+  }
+  if (width > UINT16_MAX || height > UINT16_MAX)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The width and height of a raquet tile must be at most %d: %d x %d",
+      UINT16_MAX, width, height);
+    return NULL;
+  }
   size_t need = (size_t) width * height * raquet_pixtype_size(pixtype);
   if (pixels_size < need)
   {
