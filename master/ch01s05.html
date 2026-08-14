@@ -90,7 +90,9 @@ sudo apt-get install cmake gcc libgsl-dev
 			</p><pre class="programlisting">
 sudo dnf install gcc gcc-c++ cmake make postgresql-server-devel postgis \
   geos-devel proj-devel json-c-devel gsl-devel
-</pre></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="configuring"></a>Configuring</h3></div></div></div><p>
+</pre><p>
+				The optional families enabled by <code class="varname">-DALL=ON</code> need two further packages, <code class="varname">gdal-devel</code> for the raster operators and <code class="varname">h3-devel</code> for the H3 index type.
+			</p></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="configuring"></a>Configuring</h3></div></div></div><p>
 				MobilityDB uses the <code class="varname">cmake</code> system to do the configuration. The build directory must be different from the source directory.
 			</p><p>To create the build directory</p><pre class="programlisting">
 mkdir build

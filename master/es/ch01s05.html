@@ -90,7 +90,9 @@ sudo apt-get install cmake gcc libgsl-dev
 			</p><pre class="programlisting">
 sudo dnf install gcc gcc-c++ cmake make postgresql-server-devel postgis \
   geos-devel proj-devel json-c-devel gsl-devel
-</pre></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="configuring"></a>Configuración</h3></div></div></div><p>
+</pre><p>
+				Las familias opcionales que habilita <code class="varname">-DALL=ON</code> requieren dos paquetes adicionales, <code class="varname">gdal-devel</code> para los operadores de rásteres y <code class="varname">h3-devel</code> para el tipo de índice H3.
+			</p></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="configuring"></a>Configuración</h3></div></div></div><p>
 				MobilityDB usa el sistema <code class="varname">cmake</code> para realizar la configuración. El directorio de compilación deber ser diferente del directorio de origen.
 			</p><p>Para crear el directorio de compilación</p><pre class="programlisting">
 mkdir build
