@@ -823,7 +823,10 @@ tcontseq_delete_timestamptz(const TSequence *seq, TimestampTz t)
     }
   }
   if (ninsts == 0)
+  {
+    pfree(instants);
     return NULL;
+  }
   else if (ninsts == 1)
     lower_inc1 = upper_inc1 = true;
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
@@ -929,7 +932,10 @@ tcontseq_delete_tstzset(const TSequence *seq, const Set *s)
       instants[ninsts++] = (TInstant *) TSEQUENCE_INST_N(seq, j);
   }
   if (ninsts == 0)
+  {
+    pfree(instants);
     return NULL;
+  }
   else if (ninsts == 1)
     lower_inc1 = upper_inc1 = true;
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
@@ -996,7 +1002,10 @@ tcontseq_delete_tstzspan(const TSequence *seq, const Span *s)
     }
   }
   if (ninsts == 0)
+  {
+    pfree(instants);
     return NULL;
+  }
   else if (ninsts == 1)
     lower_inc1 = upper_inc1 = true;
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
@@ -1071,7 +1080,10 @@ tcontseq_delete_tstzspanset(const TSequence *seq, const SpanSet *ss)
     }
   }
   if (ninsts == 0)
+  {
+    pfree(instants);
     return NULL;
+  }
   else if (ninsts == 1)
     lower_inc1 = upper_inc1 = true;
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
