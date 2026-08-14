@@ -267,7 +267,7 @@ representation_families:
     - FromText
     - FromEWKT
     - FromMFJSON
-  - lit: "CREATE FUNCTION tposeFromGeoPose(text)\n  RETURNS tpose\n  AS 'MODULE_PATHNAME', 'Tpose_from_geopose'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n-- conformance:      0 = Basic-Quaternion (default), 1 = Basic-YPR\n-- maxdecimaldigits: significant digits to keep; -1 = lossless\nCREATE FUNCTION asGeoPose(tpose, conformance int4 DEFAULT 0,\n    maxdecimaldigits int4 DEFAULT -1)\n  RETURNS text\n  AS 'MODULE_PATHNAME', 'Tpose_as_geopose'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\nCREATE FUNCTION applyPose(geometry, tpose)\n  RETURNS tgeompoint\n  AS 'MODULE_PATHNAME', 'Tpose_apply_geo'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"
+  - lit: "CREATE FUNCTION tposeFromGeoPose(text)\n  RETURNS tpose\n  AS 'MODULE_PATHNAME', 'Tpose_from_geopose'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n-- conformance:      0 = Basic-Quaternion (default), 1 = Basic-YPR, 2 = Advanced\n-- maxdecimaldigits: significant digits to keep; -1 = lossless\nCREATE FUNCTION asGeoPose(tpose, conformance int4 DEFAULT 0,\n    maxdecimaldigits int4 DEFAULT -1)\n  RETURNS text\n  AS 'MODULE_PATHNAME', 'Tpose_as_geopose'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\nCREATE FUNCTION applyPose(geometry, tpose)\n  RETURNS tgeompoint\n  AS 'MODULE_PATHNAME', 'Tpose_apply_geo'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"
   - ops:
     - FromBinary
     - FromEWKB
@@ -473,7 +473,7 @@ representation_families:
     - FromBinary
     - FromEWKB
     - FromHexEWKB
-  - lit: "/*****************************************************************************\n * OGC GeoPose JSON I/O — Basic-Quaternion + Basic-YPR conformance\n *****************************************************************************/\n\nCREATE FUNCTION poseFromGeoPose(text)\n  RETURNS pose\n  AS 'MODULE_PATHNAME', 'Pose_from_geopose'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n-- conformance: 0 = Basic-Quaternion (default), 1 = Basic-YPR\n-- maxdecimaldigits: significant digits to keep; -1 = lossless\nCREATE FUNCTION asGeoPose(pose, conformance int4 DEFAULT 0,\n    maxdecimaldigits int4 DEFAULT -1)\n  RETURNS text\n  AS 'MODULE_PATHNAME', 'Pose_as_geopose'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\nCREATE FUNCTION applyPose(geometry, pose)\n  RETURNS geometry\n  AS 'MODULE_PATHNAME', 'Pose_apply_geo'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"
+  - lit: "/*****************************************************************************\n * OGC GeoPose JSON I/O — Basic-Quaternion, Basic-YPR and Advanced\n *****************************************************************************/\n\nCREATE FUNCTION poseFromGeoPose(text)\n  RETURNS pose\n  AS 'MODULE_PATHNAME', 'Pose_from_geopose'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n-- conformance: 0 = Basic-Quaternion (default), 1 = Basic-YPR, 2 = Advanced\n-- maxdecimaldigits: significant digits to keep; -1 = lossless\nCREATE FUNCTION asGeoPose(pose, conformance int4 DEFAULT 0,\n    maxdecimaldigits int4 DEFAULT -1)\n  RETURNS text\n  AS 'MODULE_PATHNAME', 'Pose_as_geopose'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\nCREATE FUNCTION applyPose(geometry, pose)\n  RETURNS geometry\n  AS 'MODULE_PATHNAME', 'Pose_apply_geo'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"
   - lit: "/*****************************************************************************/"
   - ops:
     - asText

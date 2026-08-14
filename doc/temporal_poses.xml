@@ -1267,7 +1267,7 @@ CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
 
 	<sect1 xml:id="pose_ogc_geopose">
 		<title>OGC GeoPose v1.0 Support</title>
-		<para>The <varname>pose</varname> type implements the data model behind the <ulink url="https://www.ogc.org/standards/geopose/">OGC GeoPose v1.0 standard</ulink>: a <varname>position</varname> plus an <varname>orientation</varname> in a known reference frame, where the orientation is a unit quaternion in Hamilton convention or, equivalently, a yaw / pitch / roll triple under the ZYX intrinsic Tait-Bryan convention. This section groups the SQL surface that exposes that interoperability, JSON I/O for the standard's Basic conformance classes, an explicit renormalization helper for callers running long compositions, and the Euler-angle accessors that Basic-YPR consumers expect.</para>
+		<para>The <varname>pose</varname> type implements the data model behind the <ulink url="https://www.ogc.org/standards/geopose/">OGC GeoPose v1.0 standard</ulink>: a <varname>position</varname> plus an <varname>orientation</varname> in a known reference frame, where the orientation is a unit quaternion in Hamilton convention or, equivalently, a yaw / pitch / roll triple under the ZYX intrinsic Tait-Bryan convention. This section groups the SQL surface that exposes that interoperability, JSON I/O for the standard's Basic and Advanced conformance classes, an explicit renormalization helper for callers running long compositions, and the Euler-angle accessors that Basic-YPR consumers expect.</para>
 
 		<sect2 xml:id="pose_geopose_io">
 			<title>JSON Input and Output</title>
@@ -1275,21 +1275,24 @@ CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
 				<listitem xml:id="pose_geopose_funcs">
 					<indexterm significance="normal"><primary><varname>asGeoPose</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>poseFromGeoPose</varname></primary></indexterm>
-					<para>Convert to or from the OGC GeoPose v1.0 JSON encoding (Basic-Quaternion or Basic-YPR conformance class)</para>
+					<para>Convert to or from the OGC GeoPose v1.0 JSON encoding (Basic-Quaternion, Basic-YPR or Advanced conformance class)</para>
 					<para><varname>asGeoPose(pose,conformance int4=0,maxdecimaldigits int4=-1) → text</varname></para>
 					<para><varname>poseFromGeoPose(text) → pose</varname></para>
-					<para>The <varname>conformance</varname> argument selects the output class: <varname>0</varname> = Basic-Quaternion (default, lossless), <varname>1</varname> = Basic-YPR (yaw, pitch, roll in degrees, ZYX intrinsic Tait-Bryan). The <varname>maxdecimaldigits</varname> argument is the number of significant digits to keep in the JSON numbers; <varname>-1</varname> uses json-c's lossless default. The input function auto-detects the conformance class from the JSON keys, where a <varname>quaternion</varname> member implies Basic-Quaternion while an <varname>angles</varname> member implies Basic-YPR. The Basic conformance classes mandate a geographic outer frame; the implementation accepts SRID 4326 (or 0, treated as geographic) and rejects projected SRIDs at the conversion boundary.</para>
+					<para>The <varname>conformance</varname> argument selects the output class: <varname>0</varname> = Basic-Quaternion (default, lossless), <varname>1</varname> = Basic-YPR (yaw, pitch, roll in degrees, ZYX intrinsic Tait-Bryan), <varname>2</varname> = Advanced. The <varname>maxdecimaldigits</varname> argument is the number of significant digits to keep in the JSON numbers; <varname>-1</varname> uses json-c's lossless default. The input function auto-detects the conformance class from the JSON keys, where a <varname>frameSpecification</varname> member implies Advanced, a <varname>quaternion</varname> member implies Basic-Quaternion, and an <varname>angles</varname> member implies Basic-YPR.</para>
+					<para>The Basic classes carry the position in a <varname>position</varname> member and leave the frame implicit. The Advanced class has no position member: it names its outer frame explicitly, and the pose sits at the origin of that frame, so the two encodings of one pose read back equal. Every class mandates a geographic outer frame, so the pose must be geodetic; a planar pose is rejected at the conversion boundary, as is a projected SRID.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asGeoPose(pose 'Pose(Point(8 47 1500), 0.7071067811865476, 0, 0,
-  0.7071067811865475)', 0, 6);
+SELECT asGeoPose(pose 'Geodpose(Point(8 47 1500), 0.707107, 0, 0, 0.707107)', 0, 6);
 /* {"position":{"lat":47,"lon":8,"h":1500},"quaternion":{"x":0,"y":0,"z":0.707107,
     "w":0.707107}} */
-SELECT asGeoPose(pose 'Pose(Point(8 47 1500), 0.7071067811865476, 0, 0,
-  0.7071067811865475)', 1, 6);
+SELECT asGeoPose(pose 'Geodpose(Point(8 47 1500), 0.707107, 0, 0, 0.707107)', 1, 6);
 -- {"position":{"lat":47,"lon":8,"h":1500},"angles":{"yaw":90,"pitch":0,"roll":0}}
+SELECT asGeoPose(pose 'Geodpose(Point(8 47 1500), 0.707107, 0, 0, 0.707107)', 2, 6);
+/* {"frameSpecification":{"authority":"/geopose/1.0","id":"LTP-ENU","parameters":
+    "longitude=8&latitude=47&height=1500&crs=EPSG:4979"},
+   "quaternion":{"x":0,"y":0,"z":0.707107,"w":0.707107}} */
 SELECT asEWKT(poseFromGeoPose(
-  '{"position":{"lat":47,"lon":8,"h":1500},"angles":{"yaw":90,"pitch":0,"roll":0}}'));
--- Pose(POINT Z (8 47 1500),0.7071067811865476,0,0,0.7071067811865475)
+  '{"position":{"lat":47,"lon":8,"h":1500},"angles":{"yaw":90,"pitch":0,"roll":0}}'), 6);
+-- SRID=4326;GeodPose(POINT Z (8 47 1500),0.707107,0,0,0.707107)
 </programlisting>
 				</listitem>
 			</itemizedlist>
@@ -1345,7 +1348,7 @@ SELECT asText(yaw(tpose '[Pose(Point(0 0), 0.0)@2000-01-01,
 
 		<sect2 xml:id="pose_geopose_frames">
 			<title>Frame Metadata Registry</title>
-			<para>The OGC GeoPose v1.0 standard distinguishes the <emphasis>outer frame</emphasis> (the global reference, e.g., WGS-84 geographic or ECEF) from the <emphasis>inner frame</emphasis> (the body frame whose orientation is the pose's quaternion). The Basic conformance classes mandate WGS-84 geographic as the outer frame and an implicit right-handed body-axes inner frame; the Advanced class supports stacks of named frames.</para>
+			<para>The OGC GeoPose v1.0 standard distinguishes the <emphasis>outer frame</emphasis> (the global reference, e.g., WGS-84 geographic or ECEF) from the <emphasis>inner frame</emphasis> (the body frame whose orientation is the pose's quaternion). The Basic conformance classes mandate WGS-84 geographic as the outer frame and an implicit right-handed body-axes inner frame; the Advanced class names its outer frame explicitly and places the pose at that frame's origin.</para>
 			<para>In MobilityDB the <varname>pose</varname> type encodes the outer frame implicitly via its SRID and uses the conventional right-handed body-axes inner frame. The <varname>geopose_frames</varname> table records this mapping in a registry parallel to pgPointCloud's <varname>pointcloud_formats</varname>. Advanced-class frame stacks are not supported.</para>
 			<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT frame_id, authority, code, name, is_geographic

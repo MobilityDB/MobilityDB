@@ -56,10 +56,14 @@
 #include <meos_geo.h>
 #include <meos_pose.h>
 
-/* Conformance classes of a Basic document, as the second argument of the
- * functions encoding a pose */
+/* Conformance classes of a single-pose document, as the second argument of
+ * the functions encoding a pose */
 #define BASIC_QUATERNION 0
 #define BASIC_YPR        1
+#define ADVANCED         2
+
+/* The frame an Advanced document names, and the authority naming it */
+#define GEOPOSE_FRAME_ID "LTP-ENU"
 
 /**
  * @brief Report a document and assert that it carries a member
@@ -168,6 +172,74 @@ int main(void)
   out = pose_as_geopose(ident, BASIC_QUATERNION, 6);
   ensure_member("identity quaternion", out, "\"w\":1");
   free(out); free(ident);
+
+  /*--------------------------------------------------------------------------
+   * Advanced, the class that names its outer frame
+   *------------------------------------------------------------------------*/
+
+  meos_errno_reset();
+  Pose *adv = pose_from_geopose(quat_json);
+  assert(adv != NULL);
+  assert(meos_errno() == 0);
+
+  out = pose_as_geopose(adv, ADVANCED, 15);
+  assert(out != NULL);
+  ensure_member("Advanced", out, "\"frameSpecification\"");
+  ensure_member("Advanced", out, "\"quaternion\"");
+  /* The class has no position member: the pose sits at the tangent point of
+   * the frame it names, which is what carries the placement */
+  ensure_no_member("Advanced", out, "\"position\"");
+  ensure_member("Advanced", out, "\"" GEOPOSE_FRAME_ID "\"");
+  ensure_member("Advanced", out, "longitude=8");
+  ensure_member("Advanced", out, "latitude=47");
+  ensure_member("Advanced", out, "height=1500");
+
+  /* It reads back as the pose it was written from */
+  Pose *adv_back = pose_from_geopose(out);
+  assert(adv_back != NULL);
+  assert(meos_errno() == 0);
+  s1 = pose_out(adv, 6);
+  s2 = pose_out(adv_back, 6);
+  printf("Advanced round trip: %s -> %s\n", s1, s2);
+  assert(strcmp(s1, s2) == 0);
+  free(s1); free(s2); free(adv_back); free(out);
+
+  /* The Basic and Advanced documents of one pose say the same thing, the
+   * frame of the Advanced one standing where the position member stood */
+  out = pose_as_geopose(adv, BASIC_QUATERNION, 15);
+  Pose *basic_back = pose_from_geopose(out);
+  assert(basic_back != NULL);
+  s1 = pose_out(adv, 6);
+  s2 = pose_out(basic_back, 6);
+  printf("Basic and Advanced agree: %s == %s\n", s1, s2);
+  assert(strcmp(s1, s2) == 0);
+  free(s1); free(s2); free(basic_back); free(out); free(adv);
+
+  /* A temporal instant written Advanced carries its time, as it does in
+   * every other class that has a validTime. The pose is three-dimensional so
+   * that the round trip below is an equality: a GeoPose position is always
+   * `{lat, lon, h}`, so a two-dimensional pose comes back three-dimensional
+   * whichever class writes it, and it carries the SRID a document reads back
+   * as, an unknown one being geographic on the way out and 4326 on the way
+   * in */
+  meos_errno_reset();
+  Temporal *adv_inst = tpose_in("SRID=4326;"
+    "Geodpose(Point(8 47 1500), 0.707107, 0, 0, 0.707107)@2026-01-01");
+  assert(adv_inst != NULL);
+  out = tpose_as_geopose(adv_inst, ADVANCED, 6);
+  assert(out != NULL);
+  ensure_member("Advanced instant", out, "\"frameSpecification\"");
+  ensure_member("Advanced instant", out, "\"validTime\"");
+  ensure_no_member("Advanced instant", out, "\"position\"");
+
+  /* and reads back as the instant it was written from */
+  Temporal *adv_inst_back = tpose_from_geopose(out);
+  assert(adv_inst_back != NULL);
+  s1 = temporal_out(adv_inst, 6);
+  s2 = temporal_out(adv_inst_back, 6);
+  printf("Advanced instant round trip: %s -> %s\n", s1, s2);
+  assert(strcmp(s1, s2) == 0);
+  free(s1); free(s2); free(adv_inst_back); free(out); free(adv_inst);
 
   /*--------------------------------------------------------------------------
    * A single instant yields a Basic document
@@ -363,6 +435,52 @@ int main(void)
   meos_errno_reset();
   bad = pose_from_geopose("{\"quaternion\":{\"x\":0,\"y\":0,\"z\":0,\"w\":1}}");
   printf("pose_from_geopose(no position): %s, errno %d\n",
+    bad ? "non-NULL" : "NULL", meos_errno());
+  assert(bad == NULL);
+  assert(meos_errno() != 0);
+
+  /* An Advanced document places its pose by the frame it names, so a frame
+   * this implementation cannot place a pose in is reported rather than
+   * guessed at */
+  meos_errno_reset();
+  bad = pose_from_geopose("{\"frameSpecification\":{\"authority\":\"EPSG\","
+    "\"id\":\"4979\",\"parameters\":\"\"},"
+    "\"quaternion\":{\"x\":0,\"y\":0,\"z\":0,\"w\":1}}");
+  printf("pose_from_geopose(unplaceable frame): %s, errno %d\n",
+    bad ? "non-NULL" : "NULL", meos_errno());
+  assert(bad == NULL);
+  assert(meos_errno() != 0);
+
+  /* A coordinate the frame does not carry is an error and not a zero: a pose
+   * defaulted to the origin would be accepted here and refused by every
+   * operation that followed */
+  meos_errno_reset();
+  bad = pose_from_geopose("{\"frameSpecification\":{\"authority\":"
+    "\"/geopose/1.0\",\"id\":\"LTP-ENU\",\"parameters\":\"longitude=8\"},"
+    "\"quaternion\":{\"x\":0,\"y\":0,\"z\":0,\"w\":1}}");
+  printf("pose_from_geopose(frame without a latitude): %s, errno %d\n",
+    bad ? "non-NULL" : "NULL", meos_errno());
+  assert(bad == NULL);
+  assert(meos_errno() != 0);
+
+  /* The frame may name the CRS its tangent point is given in, and a projected
+   * one would place the pose off the ellipsoid the conversion is against */
+  meos_errno_reset();
+  bad = pose_from_geopose("{\"frameSpecification\":{\"authority\":"
+    "\"/geopose/1.0\",\"id\":\"LTP-ENU\",\"parameters\":\"longitude=8&"
+    "latitude=47&height=0&crs=EPSG:3857\"},"
+    "\"quaternion\":{\"x\":0,\"y\":0,\"z\":0,\"w\":1}}");
+  printf("pose_from_geopose(projected frame CRS): %s, errno %d\n",
+    bad ? "non-NULL" : "NULL", meos_errno());
+  assert(bad == NULL);
+  assert(meos_errno() != 0);
+
+  /* An Advanced document still needs its orientation */
+  meos_errno_reset();
+  bad = pose_from_geopose("{\"frameSpecification\":{\"authority\":"
+    "\"/geopose/1.0\",\"id\":\"LTP-ENU\",\"parameters\":\"longitude=8&"
+    "latitude=47&height=0\"}}");
+  printf("pose_from_geopose(Advanced without a quaternion): %s, errno %d\n",
     bad ? "non-NULL" : "NULL", meos_errno());
   assert(bad == NULL);
   assert(meos_errno() != 0);

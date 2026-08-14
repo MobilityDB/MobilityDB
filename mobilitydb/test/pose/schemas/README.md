@@ -9,8 +9,11 @@ MobilityDB implements, retrieved on 2026-08-14 from
 |---|---|
 | `GeoPose.Basic.YPR.Schema.json` | Basic-YPR |
 | `GeoPose.Basic.Quaternion.Schema.json` | Basic-Quaternion |
+| `GeoPose.Advanced.Schema.json` | Advanced |
 | `GeoPose.Composite.Sequence.Series.Regular.Schema.json` | Regular Time Series |
 | `GeoPose.Composite.Sequence.Series.Irregular.Schema.json` | Irregular Time Series |
+| `GeoPose.Composite.Sequence.StreamHeader.Schema.json` | Stream, the document opening one |
+| `GeoPose.Composite.Sequence.StreamElement.Schema.json` | Stream, the document repeated in one |
 
 The schemas are those of OGC GeoPose 1.0 (OGC 21-056r11) and belong to the
 Open Geospatial Consortium, which licenses them for redistribution under the
@@ -21,14 +24,17 @@ are held here unmodified, byte for byte as retrieved, with these digests:
 
     5508d26aed6f…  GeoPose.Basic.YPR.Schema.json
     ce15e01a2ea8…  GeoPose.Basic.Quaternion.Schema.json
+    236887312bee…  GeoPose.Advanced.Schema.json
     2c23b154da01…  GeoPose.Composite.Sequence.Series.Regular.Schema.json
     69f49530f65f…  GeoPose.Composite.Sequence.Series.Irregular.Schema.json
+    ee3b1944912b…  GeoPose.Composite.Sequence.StreamHeader.Schema.json
+    01791c205790…  GeoPose.Composite.Sequence.StreamElement.Schema.json
 
 `tools/scripts/check_geopose_conformance.py` validates against them the GeoPose
 documents that `expected/103_pose_geopose.test.out` holds. Keeping a copy here
 rather than fetching at run time makes the check depend on nothing outside the
 repository, so it gives the same verdict in a network-less build as in CI.
 
-The four remaining conformance classes -- Advanced, Chain, Graph and Stream --
-have schemas at the same place, and belong here as soon as MobilityDB emits a
-document of one of them.
+The two remaining conformance classes, Chain and Graph, have schemas at the
+same place, and belong here as soon as MobilityDB emits a document of one of
+them.

@@ -28,7 +28,7 @@
  *****************************************************************************/
 
 /**
- * @brief OGC GeoPose JSON I/O — Basic-YPR and Basic-Quaternion conformance.
+ * @brief OGC GeoPose JSON I/O — the classes a single pose is written as.
  *
  * Implements the OGC GeoPose v1.0 standard's two Basic conformance classes:
  *
@@ -51,10 +51,26 @@
  * implementation accepts only SRID 4326 inputs (or unknown SRID, treated as
  * geographic) and rejects projected SRIDs with a clear error.
  *
+ * The Advanced class carries the same pose with the frame named explicitly:
+ *
+ *   {
+ *     "frameSpecification": {
+ *       "authority": "/geopose/1.0",
+ *       "id": "LTP-ENU",
+ *       "parameters": "longitude=8&latitude=47&height=1500&crs=EPSG:4979"
+ *     },
+ *     "quaternion": { "x": 0.0, "y": 0.0, "z": 0.7071, "w": 0.7071 }
+ *   }
+ *
+ * The class has no position member, so the pose sits at the tangent point of
+ * the frame it names, which makes the two documents above describe the same
+ * pose and read back equal.
+ *
  * On input the parser auto-detects the conformance class from the keys
- * present (`quaternion` vs `angles`). On output the caller picks the class
- * via `GeoPoseClass`; the default chosen by the SQL surface is
- * Basic-Quaternion since it is lossless for our internal representation.
+ * present (`frameSpecification`, then `quaternion` vs `angles`). On output
+ * the caller picks the class via `GeoPoseClass`; the default chosen by the
+ * SQL surface is Basic-Quaternion since it is lossless for our internal
+ * representation.
  *
  * 2D poses (data = [x, y, theta]) are represented in JSON with `h: 0`,
  * `pitch: 0`, `roll: 0`, and yaw = theta. `theta` is stored in radians
@@ -69,7 +85,9 @@
  * objects each carrying a `validTime`, remains available for reading and
  * writing but is not an OGC conformance class.
  *
- * The Advanced, Chain, Graph and Stream classes are not implemented.
+ * A Stream is written by the two entry points of its own, one for the header
+ * that opens it and one per element. The Chain and Graph classes are not
+ * implemented.
  */
 
 /* C */
@@ -107,6 +125,13 @@
 #define GEOPOSE_SRID_WGS84_2D 4326
 #define GEOPOSE_SRID_WGS84_3D 4979
 #define GEOPOSE_GEOGRAPHIC_SRID GEOPOSE_SRID_WGS84_2D
+
+/* The authority and identifiers naming the two frames, as used by the
+ * encoding examples of OGC 21-056r11 Clause 9.2. The Advanced class names its
+ * outer frame and the composites name both, so these are shared. */
+#define GEOPOSE_AUTHORITY       "/geopose/1.0"
+#define GEOPOSE_ID_OUTER_FRAME  "LTP-ENU"
+#define GEOPOSE_ID_INNER_FRAME  "RotateTranslate"
 
 /**
  * @brief Return true if @p srid names the WGS-84 geographic frame the
@@ -377,6 +402,127 @@ geopose_new_double(double v, int precision)
  *****************************************************************************/
 
 /**
+ * @brief Read the `quaternion` member shared by the Basic-Quaternion and
+ * Advanced classes.
+ * @return On error return false
+ */
+static bool
+geopose_quaternion_from_json(json_object *jq, double *W, double *X, double *Y,
+  double *Z)
+{
+  if (! geopose_get_number(jq, "w", W) || ! geopose_get_number(jq, "x", X) ||
+      ! geopose_get_number(jq, "y", Y) || ! geopose_get_number(jq, "z", Z))
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "GeoPose 'quaternion' must carry numeric 'w','x','y','z' members");
+    return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Return whether a `crs` frame parameter names a WGS-84 geographic
+ * CRS, in the `EPSG:<code>` form the frames of this module carry and the
+ * form the Moving Features encoding names a CRS by.
+ */
+static bool
+geopose_crs_is_geographic(const char *crs)
+{
+  if (pg_strncasecmp(crs, "EPSG:", 5) != 0)
+    return false;
+  char *end;
+  long code = strtol(crs + 5, &end, 10);
+  return (end != crs + 5) && geopose_srid_is_geographic((int32_t) code);
+}
+
+/**
+ * @brief Build a pose from a parsed Advanced-class GeoPose JSON object.
+ * @details An Advanced document names its outer frame explicitly and has no
+ * `position` member, so the pose is placed by the frame: it sits at the
+ * tangent point the frame's `parameters` give. Requirement 9 leaves those
+ * parameters free-form and the standard registers no authority or id, so what
+ * is read here is what this module writes, which is also what the encoding
+ * examples of the standard use.
+ *
+ * A frame this module cannot place a pose in is reported rather than guessed
+ * at, and so is a missing coordinate: a pose whose position defaulted to zero
+ * would be accepted here and refused by every operation that followed.
+ * @return On error return @p NULL
+ */
+static Pose *
+pose_from_geopose_advanced(json_object *frame, json_object *root)
+{
+  if (! json_object_is_type(frame, json_type_object))
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "GeoPose 'frameSpecification' must be a FrameSpecification object");
+    return NULL;
+  }
+  json_object *jauth = geopose_find_member(frame, "authority");
+  json_object *jid = geopose_find_member(frame, "id");
+  json_object *jpar = geopose_find_member(frame, "parameters");
+  if (jauth == NULL || ! json_object_is_type(jauth, json_type_string) ||
+      jid == NULL || ! json_object_is_type(jid, json_type_string) ||
+      jpar == NULL || ! json_object_is_type(jpar, json_type_string))
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "GeoPose 'frameSpecification' requires string 'authority', 'id' and "
+      "'parameters' members");
+    return NULL;
+  }
+
+  const char *auth = json_object_get_string(jauth);
+  const char *id = json_object_get_string(jid);
+  if (strcmp(auth, GEOPOSE_AUTHORITY) != 0 ||
+      pg_strcasecmp(id, GEOPOSE_ID_OUTER_FRAME) != 0)
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "Unsupported GeoPose outer frame '%s'/'%s'; the frame read is "
+      "'%s'/'%s', which carries the position of the pose in its parameters",
+      auth, id, GEOPOSE_AUTHORITY, GEOPOSE_ID_OUTER_FRAME);
+    return NULL;
+  }
+
+  const char *params = json_object_get_string(jpar);
+  double lon, lat, h;
+  if (! geopose_param_number(geopose_param_find(params, "longitude"), &lon) ||
+      ! geopose_param_number(geopose_param_find(params, "latitude"), &lat) ||
+      ! geopose_param_number(geopose_param_find(params, "height"), &h))
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "GeoPose 'frameSpecification' parameters must carry numeric "
+      "'longitude', 'latitude' and 'height'");
+    return NULL;
+  }
+
+  /* The frame may name the CRS its tangent point is given in. A projected one
+   * would place the pose off the ellipsoid the topocentric conversion is
+   * against, so only a geographic CRS is read. */
+  const char *crs = geopose_param_find(params, "crs");
+  if (crs != NULL && ! geopose_crs_is_geographic(crs))
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "GeoPose 'frameSpecification' parameter 'crs' must name a WGS-84 "
+      "geographic CRS as EPSG:%d or EPSG:%d", GEOPOSE_SRID_WGS84_2D,
+      GEOPOSE_SRID_WGS84_3D);
+    return NULL;
+  }
+
+  json_object *jq = geopose_find_member(root, "quaternion");
+  if (jq == NULL || ! json_object_is_type(jq, json_type_object))
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "GeoPose Advanced JSON missing required 'quaternion' object");
+    return NULL;
+  }
+  double W, X, Y, Z;
+  if (! geopose_quaternion_from_json(jq, &W, &X, &Y, &Z))
+    return NULL;
+  return pose_make_3d(lon, lat, h, W, X, Y, Z, true,
+    GEOPOSE_GEOGRAPHIC_SRID);
+}
+
+/**
  * @brief Build a pose from a parsed Basic-class GeoPose JSON object.
  * @details Used internally by @p pose_from_geopose (single-pose entry
  * point) and by the temporal-GeoPose entry points which iterate an
@@ -386,6 +532,12 @@ geopose_new_double(double v, int precision)
 static Pose *
 pose_from_geopose_object(json_object *root)
 {
+  /* An Advanced document names its outer frame explicitly and carries no
+   * `position`, the placement travelling in the frame instead. */
+  json_object *jframe = geopose_find_member(root, "frameSpecification");
+  if (jframe != NULL)
+    return pose_from_geopose_advanced(jframe, root);
+
   /* Position: {lat, lon, h} */
   json_object *jpos = geopose_find_member(root, "position");
   if (jpos == NULL || ! json_object_is_type(jpos, json_type_object))
@@ -413,15 +565,8 @@ pose_from_geopose_object(json_object *root)
   {
     /* Basic-Quaternion */
     double W, X, Y, Z;
-    if (! geopose_get_number(jq, "w", &W) ||
-        ! geopose_get_number(jq, "x", &X) ||
-        ! geopose_get_number(jq, "y", &Y) ||
-        ! geopose_get_number(jq, "z", &Z))
-    {
-      meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
-        "GeoPose 'quaternion' must carry numeric 'w','x','y','z' members");
+    if (! geopose_quaternion_from_json(jq, &W, &X, &Y, &Z))
       return NULL;
-    }
     /* Note: any reasonable client emits a unit quaternion. We keep the
      * input verbatim — the canonicalization/normalization pass is a
      * separate phase. */
@@ -476,15 +621,19 @@ pose_from_geopose_object(json_object *root)
 /**
  * @ingroup meos_pose_base_geopose
  * @brief Return a pose from its OGC GeoPose JSON representation
- * @param[in] json GeoPose JSON string (Basic-YPR or Basic-Quaternion)
+ * @param[in] json GeoPose JSON string (Basic-YPR, Basic-Quaternion or
+ * Advanced)
  * @return On error return @p NULL
  * @details Auto-detects the conformance class from the JSON keys present:
  *
+ *   - `frameSpecification`: Advanced (returns a 3D pose placed at the
+ *     tangent point of the frame, which is where a class with no position
+ *     member of its own carries it).
  *   - `quaternion`: Basic-Quaternion (returns a 3D pose).
  *   - `angles`:     Basic-YPR (returns a 3D pose; or 2D if pitch=roll=0
  *     and h=0, since that is the canonical 2D representation).
  *
- * Position is parsed as `{lat, lon, h}` (degrees, degrees, metres). The
+ * A Basic position is parsed as `{lat, lon, h}` (degrees, degrees, metres). The
  * resulting pose has SRID 4326 (WGS-84). Projected SRIDs are not
  * supported by this entry point — use the WKT/WKB I/O for those.
  * @csqlfn #Pose_from_geopose()
@@ -523,8 +672,12 @@ pose_from_geopose(const char *json)
  * Output — internal helper that builds a single GeoPose object node
  *****************************************************************************/
 
+/* The Advanced class places its pose in an explicit topocentric frame, which
+ * the geodesy section below builds, so its document is assembled there. */
+static json_object *pose_to_geopose_advanced(const Pose *pose, int precision);
+
 /**
- * @brief Build the Basic-class GeoPose JSON object for a single pose.
+ * @brief Build the GeoPose JSON object for a single pose.
  * @details Used internally by @p pose_as_geopose (single-pose entry
  * point) and by the temporal-GeoPose entry points which embed the
  * per-instant object into an envelope's @p instants array. The caller
@@ -534,12 +687,15 @@ pose_from_geopose(const char *json)
 static json_object *
 pose_to_geopose_object(const Pose *pose, int conformance, int precision)
 {
+  if (conformance == GEOPOSE_ADVANCED)
+    return pose_to_geopose_advanced(pose, precision);
+
   if (conformance != GEOPOSE_BASIC_QUATERNION &&
       conformance != GEOPOSE_BASIC_YPR)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Unknown GeoPose conformance class %d "
-      "(0 = Basic-Quaternion, 1 = Basic-YPR)", conformance);
+      "(0 = Basic-Quaternion, 1 = Basic-YPR, 2 = Advanced)", conformance);
     return NULL;
   }
   /* Both classes start from a quaternion, and both place the position in
@@ -587,13 +743,20 @@ pose_to_geopose_object(const Pose *pose, int conformance, int precision)
  * @ingroup meos_pose_base_geopose
  * @brief Return the OGC GeoPose JSON representation of a pose
  * @param[in] pose Pose value
- * @param[in] conformance Conformance class to emit (Basic-Quaternion or Basic-YPR)
+ * @param[in] conformance Conformance class to emit
+ * (0 = Basic-Quaternion, 1 = Basic-YPR, 2 = Advanced)
  * @param[in] precision Decimal places to keep in the JSON numbers; pass
  * a negative value to use json-c's default
  * @return On error return @p NULL
- * @details The Basic conformance classes mandate a geographic outer
+ * @details Every conformance class mandates a geographic outer
  * frame. Poses with SRID 0 are treated as geographic; poses with
  * non-zero non-4326 SRIDs are rejected (use WKT/WKB instead).
+ *
+ * The Basic classes carry the position in a `position` member and leave the
+ * frame implicit; the Advanced class names the frame explicitly and carries
+ * the position in it, the class having no position member of its own. The
+ * frame it names is the one at the pose, so the two documents describe the
+ * same pose and read back equal.
  * @csqlfn #Pose_as_geopose()
  */
 char *
@@ -791,11 +954,8 @@ geopose_anchor_rotation(const GeoPoseAnchor *anchor, double lat_rad,
  * OGC GeoPose Composite Sequence classes — JSON encoding
  *****************************************************************************/
 
-/* Normative authority and identifier strings, as used by the encoding
- * examples of OGC 21-056r11 Clause 9.2. */
-#define GEOPOSE_AUTHORITY       "/geopose/1.0"
-#define GEOPOSE_ID_OUTER_FRAME  "LTP-ENU"
-#define GEOPOSE_ID_INNER_FRAME  "RotateTranslate"
+/* The transition model identifiers, from the same encoding examples as the
+ * frame identifiers above. */
 #define GEOPOSE_ID_TM_NONE      "none"
 #define GEOPOSE_ID_TM_INTERP    "interpolate"
 /* Requirement 9 places the content of `parameters` outside the scope of
@@ -983,6 +1143,39 @@ geopose_outer_frame(const GeoPoseAnchor *anchor, int precision)
     "longitude=%s&latitude=%s&height=%s&crs=EPSG:%d",
     blon, blat, bh, GEOPOSE_SRID_WGS84_3D);
   return geopose_frame_spec(GEOPOSE_ID_OUTER_FRAME, params);
+}
+
+/**
+ * @brief Build the Advanced-class GeoPose JSON object for a single pose.
+ * @details Requirement 17, titled *Expression of outer frame*, makes
+ * `Advanced.frameSpecification` an explicit outer frame, and the class has no
+ * `position` member of its own, so the placement travels in that frame. The
+ * frame written here is the LTP-ENU frame at the pose's own position, which
+ * puts the pose at the origin of the frame it names. Its quaternion is then
+ * the orientation in that frame, unrotated, and the document carries exactly
+ * what the Basic-Quaternion document of the same pose carries.
+ * @return On error return @p NULL
+ */
+static json_object *
+pose_to_geopose_advanced(const Pose *pose, int precision)
+{
+  double lon, lat, h, W, X, Y, Z;
+  if (! geopose_pose_components(pose, &lon, &lat, &h, &W, &X, &Y, &Z))
+    return NULL;
+
+  GeoPoseAnchor anchor;
+  geopose_anchor_set(&anchor, GEOPOSE_DEG2RAD(lat), GEOPOSE_DEG2RAD(lon), h);
+
+  json_object *root = json_object_new_object();
+  json_object_object_add(root, "frameSpecification",
+    geopose_outer_frame(&anchor, precision));
+  json_object *jq = json_object_new_object();
+  json_object_object_add(jq, "x", geopose_new_double(X, precision));
+  json_object_object_add(jq, "y", geopose_new_double(Y, precision));
+  json_object_object_add(jq, "z", geopose_new_double(Z, precision));
+  json_object_object_add(jq, "w", geopose_new_double(W, precision));
+  json_object_object_add(root, "quaternion", jq);
+  return root;
 }
 
 /**
@@ -1362,7 +1555,7 @@ tpose_from_geopose_series(json_object *root, json_object *elements,
 
 
 /**
- * @brief Build the Basic-class document of a single temporal instant.
+ * @brief Build the single-pose document of a temporal instant.
  * @details The Basic classes carry no time, so the instant's own is added
  * under the name `validTime` that the Advanced, Chain, Graph, Series and
  * Stream classes all use, and with the type they all give it: a
@@ -1390,7 +1583,7 @@ tposeinst_as_geopose(const TInstant *inst, int conformance, int precision)
  * @ingroup meos_pose_geopose_accessor
  * @brief Return the OGC GeoPose JSON representation of a temporal pose
  * @details The class follows from the value, not from an argument. A
- * @p TInstant is a Basic document carrying the instant's @p validTime; a
+ * @p TInstant is a single-pose document carrying the instant's @p validTime; a
  * @p TSequence or @p TSequenceSet is a Composite Sequence Series, the
  * Regular one when its instants are equally spaced by a whole number of
  * milliseconds and the Irregular one otherwise. The outer frame of a Series
@@ -1399,11 +1592,11 @@ tposeinst_as_geopose(const TInstant *inst, int conformance, int precision)
  *
  * A Series flattens a @p TSequenceSet and drops bounds inclusivity, the
  * standard's model having neither gaps nor open bounds. @p conformance
- * chooses the orientation encoding of a Basic document and has no effect on
+ * chooses the class of a single-pose document and has no effect on
  * a Series, whose inner frames carry a quaternion and offer no choice.
  * @param[in] temp Temporal pose
- * @param[in] conformance Orientation encoding of a Basic document
- * (0 = Basic-Quaternion, 1 = Basic-YPR)
+ * @param[in] conformance Class of a single-pose document
+ * (0 = Basic-Quaternion, 1 = Basic-YPR, 2 = Advanced)
  * @param[in] precision Significant digits in JSON numbers; -1 = lossless
  * @return On error return @p NULL
  * @csqlfn #Tpose_as_geopose()
@@ -1524,7 +1717,7 @@ tpose_as_geopose_stream_element(const Temporal *temp, const TInstant *inst,
 }
 
 /**
- * @brief Parse one element of an @p instants array (Basic-class object
+ * @brief Parse one element of an @p instants array (single-pose object
  * + @p validTime member) into a TInstant. Returns @p NULL on error.
  */
 static TInstant *
@@ -1547,8 +1740,8 @@ tposeinst_from_geopose_object(json_object *obj)
   else
   {
     meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
-      "A GeoPose Basic document needs a 'validTime' to read as a temporal "
-      "pose");
+      "A single-pose GeoPose document needs a 'validTime' to read as a "
+      "temporal pose");
     return NULL;
   }
   Pose *pose = pose_from_geopose_object(obj);
@@ -1639,9 +1832,13 @@ tpose_from_geopose(const char *json)
   }
   json_tokener_free(tok);
 
-  /* A Basic document holds one pose. With a `validTime` it is a temporal
-   * instant, which is what a temporal pose of that subtype writes. */
-  if (geopose_find_member(root, "position") != NULL)
+  /* A single-pose document holds one pose. With a `validTime` it is a
+   * temporal instant, which is what a temporal pose of that subtype writes.
+   * A Basic document is recognized by its `position` and an Advanced one by
+   * the frame it carries it in; a Series names its outer frame by a member of
+   * its own, so neither is mistaken for the other. */
+  if (geopose_find_member(root, "position") != NULL ||
+      geopose_find_member(root, "frameSpecification") != NULL)
   {
     TInstant *inst = tposeinst_from_geopose_object(root);
     json_object_put(root);

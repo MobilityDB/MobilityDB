@@ -111,7 +111,7 @@ CREATE FUNCTION tposeFromGeoPose(text)
   AS 'MODULE_PATHNAME', 'Tpose_from_geopose'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- conformance:      0 = Basic-Quaternion (default), 1 = Basic-YPR
+-- conformance:      0 = Basic-Quaternion (default), 1 = Basic-YPR, 2 = Advanced
 -- maxdecimaldigits: significant digits to keep; -1 = lossless
 CREATE FUNCTION asGeoPose(tpose, conformance int4 DEFAULT 0,
     maxdecimaldigits int4 DEFAULT -1)
