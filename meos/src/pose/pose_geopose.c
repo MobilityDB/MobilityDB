@@ -311,15 +311,26 @@ geopose_param_number(const char *str, double *out)
  * @brief Extract the position and orientation of a pose in the form every
  * GeoPose encoding needs: longitude, latitude and height in degrees and
  * metres, and a unit quaternion in Hamilton convention.
- * @details Every class the standard defines fixes a WGS-84 outer frame, so
- * this is also where the SRID is checked. A pose with SRID 0 is treated as
- * geographic.
+ * @details Every class the standard defines places its pose in a topocentric
+ * frame on the surface of the Earth, so this is where the frame of the pose
+ * is checked. A pose with SRID 0 is treated as geographic.
+ *
+ * That frame is geographic, which a planar pose does not have: its
+ * coordinates measure a plane rather than the ellipsoid, so writing them as a
+ * longitude and a latitude would assert something the value does not say. A
+ * planar pose is therefore reported here rather than encoded.
  * @return On error return false
  */
 static bool
 geopose_pose_components(const Pose *pose, double *lon, double *lat, double *h,
   double *W, double *X, double *Y, double *Z)
 {
+  if (! MEOS_FLAGS_GET_GEODETIC(pose->flags))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "GeoPose JSON requires a geodetic pose, got a planar one");
+    return false;
+  }
   int32_t srid = pose_srid(pose);
   if (! geopose_srid_is_geographic(srid))
   {

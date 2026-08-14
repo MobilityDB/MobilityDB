@@ -174,7 +174,7 @@ int main(void)
    *------------------------------------------------------------------------*/
 
   meos_errno_reset();
-  Temporal *inst = tpose_in("Pose(Point(8 47), 0)@2026-01-01");
+  Temporal *inst = tpose_in("Geodpose(Point(8 47), 0)@2026-01-01");
   assert(inst != NULL);
   assert(meos_errno() == 0);
   out = tpose_as_geopose(inst, BASIC_QUATERNION, 6);
@@ -191,8 +191,8 @@ int main(void)
    * between its neighbours and the normalisation of the sequence keeps all
    * three: a Series carries as many poses as the value holds */
   meos_errno_reset();
-  Temporal *regular = tpose_in("[Pose(Point(0 0), 0)@2026-01-01, "
-    "Pose(Point(1 0), 0)@2026-01-02, Pose(Point(1 1), 0)@2026-01-03]");
+  Temporal *regular = tpose_in("[Geodpose(Point(0 0), 0)@2026-01-01, "
+    "Geodpose(Point(1 0), 0)@2026-01-02, Geodpose(Point(1 1), 0)@2026-01-03]");
   assert(regular != NULL);
   assert(meos_errno() == 0);
   s1 = temporal_out(regular, 6);
@@ -248,8 +248,8 @@ int main(void)
    *------------------------------------------------------------------------*/
 
   meos_errno_reset();
-  Temporal *irregular = tpose_in("[Pose(Point(0 0), 0)@2026-01-01, "
-    "Pose(Point(1 0), 0)@2026-01-02, Pose(Point(1 1), 0)@2026-01-05]");
+  Temporal *irregular = tpose_in("[Geodpose(Point(0 0), 0)@2026-01-01, "
+    "Geodpose(Point(1 0), 0)@2026-01-02, Geodpose(Point(1 1), 0)@2026-01-05]");
   assert(irregular != NULL);
   assert(meos_errno() == 0);
   s1 = temporal_out(irregular, 6);
@@ -318,9 +318,31 @@ int main(void)
   assert(bad == NULL);
   assert(meos_errno() != 0);
 
+  /* Every class of the standard places its pose in a topocentric frame on
+   * the surface of the Earth, which a planar pose does not have */
+  meos_errno_reset();
+  Pose *planar = pose_in("Pose(Point(1 1),0.5)");
+  assert(planar != NULL);
+  char *flat_json = pose_as_geopose(planar, BASIC_QUATERNION, 6);
+  printf("pose_as_geopose(planar pose): %s, errno %d\n",
+    flat_json ? "non-NULL" : "NULL", meos_errno());
+  assert(flat_json == NULL);
+  assert(meos_errno() != 0);
+  free(planar);
+
+  meos_errno_reset();
+  Temporal *planar_t = tpose_in("Pose(Point(8 47), 0)@2026-01-01");
+  assert(planar_t != NULL);
+  flat_json = tpose_as_geopose(planar_t, BASIC_QUATERNION, 6);
+  printf("tpose_as_geopose(planar pose): %s, errno %d\n",
+    flat_json ? "non-NULL" : "NULL", meos_errno());
+  assert(flat_json == NULL);
+  assert(meos_errno() != 0);
+  free(planar_t);
+
   /* An unknown conformance class */
   meos_errno_reset();
-  Pose *good = pose_in("Pose(Point(1 1),0.5)");
+  Pose *good = pose_in("Geodpose(Point(1 1),0.5)");
   assert(good != NULL);
   char *none = pose_as_geopose(good, 7, 6);
   printf("pose_as_geopose(conformance 7): %s, errno %d\n",
