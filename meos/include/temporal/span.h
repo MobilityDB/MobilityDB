@@ -111,7 +111,7 @@ extern int mi_span_span(const Span *s1, const Span *s2, Span *result);
 extern int mi_span_value(const Span *s, Datum value, Span *result);
 
 extern Datum distance_sentinel(MeosType type);
-extern double dist_double_value_value(Datum l, Datum r, MeosType type);
+extern double distance_double(Datum dist, MeosType type);
 
 /*****************************************************************************/
 

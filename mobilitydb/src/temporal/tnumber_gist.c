@@ -1029,17 +1029,19 @@ Tbox_gist_distance(PG_FUNCTION_ARGS)
   Oid typid = PG_GETARG_OID(3);
   bool *recheck = (bool *) PG_GETARG_POINTER(4);
   TBox *key = (TBox *) DatumGetPointer(entry->key);
-  if (! key)
-    PG_RETURN_NULL();
 
   /* The index is lossy for leaf levels */
-  if (GIST_LEAF(entry))
+  if (key && GIST_LEAF(entry))
     *recheck = true;
 
-  /* Transform the query into a box */
+  /* Transform the query into a box. The distance is unknown when there is no
+   * key or the query is not a box, and the maximum orders those entries after
+   * every candidate whose distance is known. A null cannot be returned here,
+   * as the GiST framework reads the result of its distance method as a
+   * double and rejects a null one */
   TBox query;
-  if (! tnumber_gist_get_tbox(fcinfo, &query, oid_meostype(typid)))
-    PG_RETURN_NULL();
+  if (! key || ! tnumber_gist_get_tbox(fcinfo, &query, oid_meostype(typid)))
+    PG_RETURN_FLOAT8(DBL_MAX);
 
   /* Since we only have boxes we'll return the minimum possible distance,
    * and let the recheck sort things out in the case of leaves. Since the

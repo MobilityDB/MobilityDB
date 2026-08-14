@@ -207,7 +207,7 @@ PG_FUNCTION_INFO_V1(Span_gist_penalty);
  * @brief GiST page split penalty function for spans
  * @details The penalty function has the following goals (in order from most to
  * least important):
- * - Avoid broadening (as determined by dist_double_value_value) the original
+ * - Avoid broadening (as determined by distance_value_value) the original
  *   predicate
  * - Favor adding spans to narrower original predicates
  */
@@ -223,12 +223,14 @@ Span_gist_penalty(PG_FUNCTION_ARGS)
   span_deserialize(orig, &orig_lower, &orig_upper);
   span_deserialize(new, &new_lower, &new_upper);
 
-  /* Calculate extension of original span by calling dist_double_value_value */
+  /* Calculate extension of original span by calling distance_value_value */
   float8 diff = 0.0;
   if (span_bound_cmp(&new_lower, &orig_lower) < 0)
-    diff += dist_double_value_value(orig->lower, new->lower, orig->basetype);
+    diff += distance_double(distance_value_value(orig->lower, new->lower,
+      orig->basetype), orig->basetype);
   if (span_bound_cmp(&new_upper, &orig_upper) > 0)
-    diff += dist_double_value_value(new->upper, orig->upper, new->basetype);
+    diff += distance_double(distance_value_value(new->upper, orig->upper,
+      new->basetype), new->basetype);
   *penalty = (float4) diff;
 
   PG_RETURN_POINTER(penalty);
@@ -347,7 +349,8 @@ span_gist_consider_split(ConsiderSplitContext *context, SpanBound *right_lower,
      * values) and minimal ratio secondarily.  The subtype_diff is
      * used for overlap measure.
      */
-    overlap = (float4) dist_double_value_value(left_upper->val, right_lower->val,
+    overlap = (float4) distance_double(distance_value_value(left_upper->val,
+      right_lower->val, left_upper->basetype),
       left_upper->basetype);
 
     /* If there is no previous selection, select this split */
@@ -656,10 +659,10 @@ span_gist_double_sorting_split(GistEntryVector *entryvec, GIST_SPLITVEC *v)
          * (context.left_upper - upper)
          */
         common_entries[common_entries_count].delta =
-          dist_double_value_value(span->lower, context.right_lower.val,
-            span->basetype) -
-          dist_double_value_value(context.left_upper.val, span->upper,
-            span->basetype);
+          distance_double(distance_value_value(span->lower,
+            context.right_lower.val, span->basetype), span->basetype) -
+          distance_double(distance_value_value(context.left_upper.val,
+            span->upper, span->basetype), span->basetype);
         common_entries_count++;
       }
       else
@@ -784,21 +787,21 @@ Span_gist_distance(PG_FUNCTION_ARGS)
   Oid typid = PG_GETARG_OID(3);
   bool *recheck = (bool *) PG_GETARG_POINTER(4);
   Span *key = (Span *) DatumGetPointer(entry->key);
-  if (! key)
-    PG_RETURN_DATUM((Datum) -1);
 
-  /* The index is not lossy */
-  if (GIST_LEAF(entry))
-    *recheck = false;
-
-  /* Transform the query into a span */
+  /* Transform the query into a span. The distance is unknown when there is no
+   * key or the query is not a span, and the maximum orders those entries after
+   * every candidate whose distance is known */
   Span query;
-  if (! span_gist_get_span(fcinfo, &query, typid))
-    PG_RETURN_DATUM((Datum) -1);
+  if (! key || ! span_gist_get_span(fcinfo, &query, typid))
+    PG_RETURN_FLOAT8(DBL_MAX);
 
-  Datum distance = distance_span_span(key, &query);
+  /* The distance is exact, and it has to be: PostgreSQL requires the ORDER BY
+   * operator of a lossy distance to answer in a float, while the span
+   * operators answer in the base type */
+  *recheck = false;
 
-  PG_RETURN_DATUM(distance);
+  PG_RETURN_FLOAT8(distance_double(distance_span_span(key, &query),
+    key->basetype));
 }
 
 /*****************************************************************************

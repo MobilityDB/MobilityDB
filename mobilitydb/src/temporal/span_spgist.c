@@ -659,7 +659,8 @@ Span_spgist_leaf_consistent(PG_FUNCTION_ARGS)
       Datum value = scankey->sk_argument;
       MeosType type = oid_meostype(scankey->sk_subtype);
       span_spgist_get_span(value, type, &span);
-      distances[i] = distance_span_span(&span, key);
+      distances[i] = distance_double(distance_span_span(&span, key),
+        key->basetype);
     }
   }
 
