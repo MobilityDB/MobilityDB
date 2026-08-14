@@ -100,8 +100,11 @@ typedef struct
  *   In practice any well-formed pcpoint has VARSIZE >= 12 (header +
  *   pcid + at least 1 data byte from the data[1] placeholder) so the
  *   guard only protects against malformed input, not valid values.
+ * @note Exported (not `static`) so that the generic WKB path in
+ *   temporal/type_out.c (`pcpoint_to_wkb_buf`) can zero the same padding
+ *   bytes and stay byte-consistent with the hex-WKB path below.
  */
-static inline size_t
+size_t
 pcpoint_meaningful_size(const Pcpoint *pt)
 {
   size_t sz = VARSIZE(pt);

@@ -42,6 +42,32 @@ SELECT asText(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '20
  t
 (1 row)
 
+SELECT asText(tpcpointFromBinary(asBinary(tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz)))) = asText(tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz));
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT asText(tpcpointFromHexWKB(asHexWKB(tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz)))) = asText(tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz));
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT asHexWKB(tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2024-01-01'::timestamptz)) =
+  asHexWKB(tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz));
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT asBinary(tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2024-01-01'::timestamptz)) =
+  asBinary(tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz));
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT pcid(tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz));
  pcid 
 ------

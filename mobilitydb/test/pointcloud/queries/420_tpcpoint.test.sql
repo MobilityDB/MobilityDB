@@ -72,6 +72,27 @@ SELECT array_length(asText(ARRAY[:inst1, :inst2]), 1);
 SELECT asText(ARRAY[:inst1, :inst2]) = ARRAY[asText(:inst1), asText(:inst2)];
 
 -------------------------------------------------------------------------------
+-- WKB / HexWKB output
+-------------------------------------------------------------------------------
+
+-- Round trip through the generic WKB path.
+SELECT asText(tpcpointFromBinary(asBinary(:inst1))) = asText(:inst1);
+SELECT asText(tpcpointFromHexWKB(asHexWKB(:inst1))) = asText(:inst1);
+
+-- Two independently-constructed byte-equal pcpoints produce identical WKB.
+-- pcpoint() and PC_MakePoint() are different function calls (so the
+-- planner cannot constant-fold one into the other) that build the same
+-- point, which is what exposes pgpointcloud's uninitialized struct-tail
+-- padding (see the note in pointcloud/pcpoint.c): the generic WKB path
+-- (pcpoint_to_wkb_buf in temporal/type_out.c) used to copy that padding
+-- verbatim, so the two calls below could disagree past the meaningful
+-- prefix even though the points they wrap are equal.
+SELECT asHexWKB(tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2024-01-01'::timestamptz)) =
+  asHexWKB(tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz));
+SELECT asBinary(tpcpoint(pcpoint(1, 1.0, 1.0, 1.0), '2024-01-01'::timestamptz)) =
+  asBinary(tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz));
+
+-------------------------------------------------------------------------------
 -- pcid + subtype size
 -------------------------------------------------------------------------------
 
