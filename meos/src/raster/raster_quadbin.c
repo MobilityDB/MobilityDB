@@ -295,6 +295,10 @@ read_pixel(const uint8_t *pixels, int col, int row, int width,
  * Web-Mercator tile coordinates and thus the full georeferencing without any
  * separate metadata. Instants outside the tile extent or on nodata pixels are
  * silently dropped; NULL is returned when no instants survive.
+ * @note The sampling surface is double-valued, whatever the pixel type of the
+ * band: a pixel type belongs here when every value it can hold is exactly
+ * representable in a double, which is what lets a band of any type be sampled
+ * into one temporal float and tiles of different types be read by one query.
  * @param[in] pixels Row-major pixel bytes (all bands interleaved or
  * single-band depending on the Raquet producer), little-endian beyond one byte
  * a pixel
