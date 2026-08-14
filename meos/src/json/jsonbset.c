@@ -348,26 +348,4 @@ minus_set_jsonb(const Set *s, const Jsonb *jb)
   return minus_set_value(s, PointerGetDatum(jb));
 }
 
-/*****************************************************************************
- * Aggregate functions for set types
- *****************************************************************************/
-
-#if MEOS
-/**
- * @ingroup meos_json_set_json
- * @brief Transition function for set union aggregate of JSONB values
- * @param[in,out] state Current aggregate state
- * @param[in] jb Value
- */
-Set *
-jsonb_union_transfn(Set *state, const Jsonb *jb)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(jb, NULL);
-  if (state && ! ensure_set_isof_type(state, T_JSONBSET))
-    return NULL;
-  return value_union_transfn(state, PointerGetDatum(jb), T_JSONB);
-}
-#endif /* MEOS */
-
 /*****************************************************************************/

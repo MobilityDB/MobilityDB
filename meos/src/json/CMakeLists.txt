@@ -8,4 +8,10 @@ set(JSON_SOURCES
   tjsonb_compops.c
 )
 
+if(MEOS)
+  list(APPEND JSON_SOURCES
+  jsonbset_meos.c
+)
+endif()
+
 add_library(json OBJECT ${JSON_SOURCES})
