@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: trgeoseq_segment_index</title>
+<title>MobilityDB: trgeoinst_translate_by_tpoint</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -136,8 +136,8 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__dist_ga383cfcfd9e5b79c1dd59e09637280531.html#ga383cfcfd9e5b79c1dd59e09637280531">tdistance_trgeometry_trgeometry</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__distance_8c_ac1ff3074d3dcde6ee819ba16412215e7.html#ac1ff3074d3dcde6ee819ba16412215e7">TP_DIST</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__distance_8c_ac1ff3074d3dcde6ee819ba16412215e7.html#ac1ff3074d3dcde6ee819ba16412215e7">TP_DIST</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__distance_8c_a8c6c7aff908644fb352b679b33dec1ba.html#a8c6c7aff908644fb352b679b33dec1ba">trgeoinst_translate_by_tpoint</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2rgeo_2trgeo__distance_8c_ae7e728d70dd5e6421291a2ff3b18f73a.html#ae7e728d70dd5e6421291a2ff3b18f73a">trgeoseq_segment_index</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2rgeo_2trgeo__distance_8c_a8c6c7aff908644fb352b679b33dec1ba.html#a8c6c7aff908644fb352b679b33dec1ba">trgeoinst_translate_by_tpoint</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__distance_8c_ae7e728d70dd5e6421291a2ff3b18f73a.html#ae7e728d70dd5e6421291a2ff3b18f73a">trgeoseq_segment_index</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__distance_8c_ac0fa2fc7f874129eda9fd67cb4a683fd.html#ac0fa2fc7f874129eda9fd67cb4a683fd">trgeoseq_translate_by_tpoint</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__distance_8c_a250e892ad873d3b70f31de86d29b0a0d.html#a250e892ad873d3b70f31de86d29b0a0d">trgeoseqset_translate_by_tpoint</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__distance_8c_a7988a233ded638a8d1575b2332778fad.html#a7988a233ded638a8d1575b2332778fad">uint_mod_add</a></td></tr>
@@ -149,8 +149,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ae7e728d70dd5e6421291a2ff3b18f73a" name="ae7e728d70dd5e6421291a2ff3b18f73a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae7e728d70dd5e6421291a2ff3b18f73a">&#9670;&#160;</a></span>trgeoseq_segment_index()</h2>
+<a id="a8c6c7aff908644fb352b679b33dec1ba" name="a8c6c7aff908644fb352b679b33dec1ba"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8c6c7aff908644fb352b679b33dec1ba">&#9670;&#160;</a></span>trgeoinst_translate_by_tpoint()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -159,16 +159,22 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static int trgeoseq_segment_index </td>
+          <td class="memname">static <a class="el" href="structTInstant.html">TInstant</a> * trgeoinst_translate_by_tpoint </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structTSequence.html">TSequence</a> *&#160;</td>
-          <td class="paramname"><em>seq</em>, </td>
+          <td class="paramtype">const <a class="el" href="structTInstant.html">TInstant</a> *&#160;</td>
+          <td class="paramname"><em>pinst</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a>&#160;</td>
-          <td class="paramname"><em>t</em>&#160;</td>
+          <td class="paramtype">const <a class="el" href="structTInstant.html">TInstant</a> *&#160;</td>
+          <td class="paramname"><em>qinst</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
+          <td class="paramname"><em>ref_gs</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -183,7 +189,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Return the index of the segment of <code>seq</code> that contains <code>t</code> (the largest <code>i</code> with <code>INST_N(i)-&gt;t</code> &lt;= t, capped at count - 2) </p>
+<p>Return a temporal rigid geometry instant whose pose is the pose of <code>pinst</code> translated by minus the point value of <code>qinst</code>, keeping <code>ref_gs</code> as its reference geometry. </p>
+<p >A temporal point does not rotate, so subtracting its position from the body pose places the point at the origin while the body pose stays a linear segment: the trgeometry-vs-tgeompoint distance then reduces to the trgeometry-vs-point distance against the origin. </p>
 
 </div>
 </div>
