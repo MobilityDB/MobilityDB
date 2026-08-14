@@ -76,14 +76,20 @@ SELECT asMFJSON(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0),0)@20
 
 			<listitem xml:id="trgeometry_asEWKB">
 				<indexterm significance="normal"><primary><varname>asEWKB</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>asHexWKB</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>asHexEWKB</varname></primary></indexterm>
 				<para>Devuelve la representación extendida binaria conocida (Extended Well-Known Binary o EWKB)</para>
 				<para><varname>asEWKB(trgeometry [, endian text]) → bytea</varname></para>
-				<para>La función complementaria <varname>asHexEWKB</varname> devuelve los mismos bytes como un texto codificado en hexadecimal.</para>
+				<para><varname>asHexWKB(trgeometry [, endian text]) → text</varname></para>
+				<para><varname>asHexEWKB(trgeometry [, endian text]) → text</varname></para>
+				<para>Las funciones complementarias <varname>asHexWKB</varname> y <varname>asHexEWKB</varname> devuelven los mismos bytes como un texto codificado en hexadecimal.</para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT length(asEWKB(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(1 1), 0.5)@2001-01-01'));
 -- 130
 -- The bytes round-trip through the matching input function.
 SELECT asText(trgeometryFromHexEWKB(asHexEWKB(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(1 1), 0.5)@2001-01-01')));
+-- POLYGON((0 0,1 0,1 1,0 1,0 0));Pose(POINT(1 1),0.5)@2001-01-01
+SELECT asText(trgeometryFromHexEWKB(asHexWKB(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(1 1), 0.5)@2001-01-01')));
 -- POLYGON((0 0,1 0,1 1,0 1,0 0));Pose(POINT(1 1),0.5)@2001-01-01
 </programlisting>
 			</listitem>

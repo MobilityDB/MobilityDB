@@ -505,19 +505,23 @@ SELECT asMFJSON(tpose 'Pose(Point Z(1 2 3),1,0,0,0)@2001-01-01', 3);
 			<listitem xml:id="tpose_asBinary">
 				<indexterm significance="normal"><primary><varname>asBinary</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>asEWKB</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>asHexWKB</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>asHexEWKB</varname></primary></indexterm>
-				<para>Devuelve la representación binaria conocida (Well-Known Binary o WKB), la representación extendida binaria conocida (Extended Well-Known Binary o EWKB), o la representación hexadecimal extendida binaria conocida (Hexadecimal Extended Well-Known Binary o HexEWKB)</para>
+				<para>Devuelve la representación binaria conocida (Well-Known Binary o WKB), la representación extendida binaria conocida (Extended Well-Known Binary o EWKB), la representación hexadecimal binaria conocida (Hexadecimal Well-Known Binary o HexWKB), o la representación hexadecimal extendida binaria conocida (Hexadecimal Extended Well-Known Binary o HexEWKB)</para>
 				<para><varname>asBinary(tpose,endian text='') → bytea</varname></para>
 				<para><varname>asEWKB(tpose,endian text='') → bytea</varname></para>
+				<para><varname>asHexWKB(tpose,endian text='') → text</varname></para>
 				<para><varname>asHexEWKB(tpose,endian text='') → text</varname></para>
 				<para>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asBinary(tpose 'Pose(Point(1 2),1)@2001-01-01');
--- \x013a0001000000000000f03f0000000000000040000000000000f03f009c57d3c11c0000
+-- \x0138000101000000000000f03f0000000000000040000000000000f03f009c57d3c11c0000
 SELECT asEWKB(tpose 'SRID=7844;Pose(Point(1 2),1)@2001-01-01');
--- \x013a0001000000000000f03f0000000000000040000000000000f03f009c57d3c11c0000
+-- \x01380041a41e000041a41e0000000000000000f03f0000000000000040000000000000f03f009c57d3c11c0000
+SELECT asHexWKB(tpose 'Pose(Point(1 2),1)@2001-01-01');
+-- 0138000101000000000000F03F0000000000000040000000000000F03F009C57D3C11C0000
 SELECT asHexEWKB(tpose 'SRID=3812;Pose(Point(1 2),1)@2001-01-01');
--- 013A0001000000000000F03F0000000000000040000000000000F03F009C57D3C11C0000
+-- 01380041E40E000041E40E0000000000000000F03F0000000000000040000000000000F03F009C57D3C11C0000
 </programlisting>
 			</listitem>
 
