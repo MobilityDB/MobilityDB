@@ -880,10 +880,10 @@ overafter_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
 
 /**
  * @ingroup meos_setspan_set
- * @brief Return the union of a span set and an integer
- * @param[in] ss Span set
+ * @brief Return the union of an integer and a span set
  * @param[in] i Value
- * @csqlfn #Union_spanset_value()
+ * @param[in] ss Span set
+ * @csqlfn #Union_value_spanset()
  */
 SpanSet *
 union_int_spanset(int i, SpanSet *ss)
@@ -895,10 +895,10 @@ union_int_spanset(int i, SpanSet *ss)
 
 /**
  * @ingroup meos_setspan_set
- * @brief Return the union of a span set and a big integer
- * @param[in] ss Span set
+ * @brief Return the union of a big integer and a span set
  * @param[in] i Value
- * @csqlfn #Union_spanset_value()
+ * @param[in] ss Span set
+ * @csqlfn #Union_value_spanset()
  */
 SpanSet *
 union_bigint_spanset(int64 i, SpanSet *ss)
@@ -910,10 +910,10 @@ union_bigint_spanset(int64 i, SpanSet *ss)
 
 /**
  * @ingroup meos_setspan_set
- * @brief Return the union of a span set and a float
- * @param[in] ss Span set
+ * @brief Return the union of a float and a span set
  * @param[in] d Value
- * @csqlfn #Union_spanset_value()
+ * @param[in] ss Span set
+ * @csqlfn #Union_value_spanset()
  */
 SpanSet *
 union_float_spanset(double d, SpanSet *ss)
@@ -925,10 +925,10 @@ union_float_spanset(double d, SpanSet *ss)
 
 /**
  * @ingroup meos_setspan_set
- * @brief Return the union of a span set and a date
- * @param[in] ss Span set
+ * @brief Return the union of a date and a span set
  * @param[in] d Value
- * @csqlfn #Union_spanset_value()
+ * @param[in] ss Span set
+ * @csqlfn #Union_value_spanset()
  */
 SpanSet *
 union_date_spanset(DateADT d, SpanSet *ss)
@@ -940,10 +940,10 @@ union_date_spanset(DateADT d, SpanSet *ss)
 
 /**
  * @ingroup meos_setspan_set
- * @brief Return the union of a span set and a timestamptz
- * @param[in] ss Span set
+ * @brief Return the union of a timestamptz and a span set
  * @param[in] t Value
- * @csqlfn #Union_spanset_value()
+ * @param[in] ss Span set
+ * @csqlfn #Union_value_spanset()
  */
 SpanSet *
 union_timestamptz_spanset(TimestampTz t, SpanSet *ss)

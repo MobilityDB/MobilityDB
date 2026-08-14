@@ -1085,9 +1085,9 @@ union_set_timestamptz(const Set *s, const TimestampTz t)
 /**
  * @ingroup meos_setspan_set
  * @brief Return the union of an integer and a set
- * @param[in] s Set
  * @param[in] i Value
- * @csqlfn #Union_set_value()
+ * @param[in] s Set
+ * @csqlfn #Union_value_set()
  */
 Set *
 union_int_set(int i, const Set *s)
@@ -1098,9 +1098,9 @@ union_int_set(int i, const Set *s)
 /**
  * @ingroup meos_setspan_set
  * @brief Return the union of a big integer and a set
- * @param[in] s Set
  * @param[in] i Value
- * @csqlfn #Union_set_value()
+ * @param[in] s Set
+ * @csqlfn #Union_value_set()
  */
 Set *
 union_bigint_set(int64 i, const Set *s)
@@ -1111,9 +1111,9 @@ union_bigint_set(int64 i, const Set *s)
 /**
  * @ingroup meos_setspan_set
  * @brief Return the union of a float and a set
- * @param[in] s Set
  * @param[in] d Value
- * @csqlfn #Union_set_value()
+ * @param[in] s Set
+ * @csqlfn #Union_value_set()
  */
 Set *
 union_float_set(double d, const Set *s)
@@ -1124,9 +1124,9 @@ union_float_set(double d, const Set *s)
 /**
  * @ingroup meos_setspan_set
  * @brief Return the union of a text and a set
- * @param[in] s Set
  * @param[in] txt Value
- * @csqlfn #Union_set_value()
+ * @param[in] s Set
+ * @csqlfn #Union_value_set()
  */
 Set *
 union_text_set(const text *txt, const Set *s)
@@ -1137,9 +1137,9 @@ union_text_set(const text *txt, const Set *s)
 /**
  * @ingroup meos_setspan_set
  * @brief Return the union of a date and a set
- * @param[in] s Set
  * @param[in] d Value
- * @csqlfn #Union_set_value()
+ * @param[in] s Set
+ * @csqlfn #Union_value_set()
  */
 Set *
 union_date_set(const DateADT d, const Set *s)
@@ -1150,9 +1150,9 @@ union_date_set(const DateADT d, const Set *s)
 /**
  * @ingroup meos_setspan_set
  * @brief Return the union of a timestamptz and a set
- * @param[in] s Set
  * @param[in] t Value
- * @csqlfn #Union_set_value()
+ * @param[in] s Set
+ * @csqlfn #Union_value_set()
  */
 Set *
 union_timestamptz_set(const TimestampTz t, const Set *s)
@@ -1259,9 +1259,9 @@ intersection_set_timestamptz(const Set *s, TimestampTz t)
 /**
  * @ingroup meos_setspan_set
  * @brief Return the intersection of an integer and a set
- * @param[in] s Set
  * @param[in] i Value
- * @csqlfn #Union_set_value()
+ * @param[in] s Set
+ * @csqlfn #Intersection_value_set()
  */
 Set *
 intersection_int_set(int i, const Set *s)
@@ -1272,9 +1272,9 @@ intersection_int_set(int i, const Set *s)
 /**
  * @ingroup meos_setspan_set
  * @brief Return the intersection of a big integer and a set
- * @param[in] s Set
  * @param[in] i Value
- * @csqlfn #Union_set_value()
+ * @param[in] s Set
+ * @csqlfn #Intersection_value_set()
  */
 Set *
 intersection_bigint_set(int64 i, const Set *s)
@@ -1285,9 +1285,9 @@ intersection_bigint_set(int64 i, const Set *s)
 /**
  * @ingroup meos_setspan_set
  * @brief Return the intersection of a float and a set
- * @param[in] s Set
  * @param[in] d Value
- * @csqlfn #Union_set_value()
+ * @param[in] s Set
+ * @csqlfn #Intersection_value_set()
  */
 Set *
 intersection_float_set(double d, const Set *s)
@@ -1298,9 +1298,9 @@ intersection_float_set(double d, const Set *s)
 /**
  * @ingroup meos_setspan_set
  * @brief Return the intersection of a text and a set
- * @param[in] s Set
  * @param[in] txt Value
- * @csqlfn #Union_set_value()
+ * @param[in] s Set
+ * @csqlfn #Intersection_value_set()
  */
 Set *
 intersection_text_set(const text *txt, const Set *s)
@@ -1311,9 +1311,9 @@ intersection_text_set(const text *txt, const Set *s)
 /**
  * @ingroup meos_setspan_set
  * @brief Return the intersection of a date and a set
- * @param[in] s Set
  * @param[in] d Value
- * @csqlfn #Union_set_value()
+ * @param[in] s Set
+ * @csqlfn #Intersection_value_set()
  */
 Set *
 intersection_date_set(const DateADT d, const Set *s)
@@ -1324,9 +1324,9 @@ intersection_date_set(const DateADT d, const Set *s)
 /**
  * @ingroup meos_setspan_set
  * @brief Return the intersection of a timestamptz and a set
- * @param[in] s Set
  * @param[in] t Value
- * @csqlfn #Union_set_value()
+ * @param[in] s Set
+ * @csqlfn #Intersection_value_set()
  */
 Set *
 intersection_timestamptz_set(const TimestampTz t, const Set *s)

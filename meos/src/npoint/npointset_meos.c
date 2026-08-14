@@ -268,9 +268,9 @@ union_set_npoint(const Set *s, const Npoint *np)
 /**
  * @ingroup meos_npoint_set_setops
  * @brief Return the union of a network point and a set
- * @param[in] s Set
  * @param[in] np Value
- * @csqlfn #Union_set_value()
+ * @param[in] s Set
+ * @csqlfn #Union_value_set()
  */
 Set *
 union_npoint_set(const Npoint *np, const Set *s)
@@ -297,9 +297,9 @@ intersection_set_npoint(const Set *s, const Npoint *np)
 /**
  * @ingroup meos_npoint_set_setops
  * @brief Return the intersection of a network point and a set
- * @param[in] s Set
  * @param[in] np Value
- * @csqlfn #Union_set_value()
+ * @param[in] s Set
+ * @csqlfn #Intersection_value_set()
  */
 Set *
 intersection_npoint_set(const Npoint *np, const Set *s)
