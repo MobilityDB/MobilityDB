@@ -15,6 +15,18 @@ SELECT COUNT(*) FROM tbl_poseset2d t1, tbl_poseset2d_tmp t2 WHERE t1.k = t2.k AN
 
 DROP TABLE tbl_poseset2d_tmp;
 DROP TABLE
+SELECT COUNT(*) FROM tbl_poseset2d WHERE setSRID(posesetFromBinary(asBinary(s)), 3812) <> s;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_poseset2d WHERE SRID(posesetFromBinary(asBinary(s))) <> 0;
+ count 
+-------
+     0
+(1 row)
+
 SELECT COUNT(*) FROM tbl_poseset2d WHERE posesetFromBinary(asEWKB(s)) <> s;
  count 
 -------

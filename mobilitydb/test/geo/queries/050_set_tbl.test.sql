@@ -55,8 +55,12 @@ SELECT MAX(length(asText(g))) FROM tbl_geogset;
 SELECT MAX(length(asEWKT(g))) FROM tbl_geomset;
 SELECT MAX(length(asEWKT(g))) FROM tbl_geogset;
 
+-- asBinary emits plain WKB (no SRID); setSRID reapplies it before comparing
 SELECT COUNT(*) FROM tbl_geomset WHERE geomsetFromBinary(asBinary(g)) <> g;
-SELECT COUNT(*) FROM tbl_geogset WHERE geogsetFromBinary(asBinary(g)) <> g;
+SELECT COUNT(*) FROM tbl_geogset WHERE setSRID(geogsetFromBinary(asBinary(g)), 4326) <> g;
+SELECT COUNT(*) FROM tbl_geogset WHERE SRID(geogsetFromBinary(asBinary(g))) <> 0;
+
+-- asEWKB preserves the SRID
 SELECT COUNT(*) FROM tbl_geomset WHERE geomsetFromEWKB(asEWKB(g)) <> g;
 SELECT COUNT(*) FROM tbl_geogset WHERE geogsetFromEWKB(asEWKB(g)) <> g;
 

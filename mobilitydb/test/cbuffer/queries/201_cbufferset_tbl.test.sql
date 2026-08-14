@@ -43,7 +43,11 @@ DROP TABLE tbl_cbufferset_tmp;
 
 -- Input/output from/to WKB and HexWKB
 
-SELECT COUNT(*) FROM tbl_cbufferset WHERE cbuffersetFromBinary(asBinary(s)) <> s;
+-- asBinary emits plain WKB (no SRID); setSRID reapplies it before comparing
+SELECT COUNT(*) FROM tbl_cbufferset WHERE setSRID(cbuffersetFromBinary(asBinary(s)), 3812) <> s;
+SELECT COUNT(*) FROM tbl_cbufferset WHERE SRID(cbuffersetFromBinary(asBinary(s))) <> 0;
+
+-- asEWKB preserves the SRID
 SELECT COUNT(*) FROM tbl_cbufferset WHERE cbuffersetFromBinary(asEWKB(s)) <> s;
 
 SELECT COUNT(*) FROM tbl_cbufferset WHERE cbuffersetFromHexWKB(asHexWKB(s)) <> s;

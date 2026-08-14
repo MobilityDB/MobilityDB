@@ -15,7 +15,13 @@ SELECT COUNT(*) FROM tbl_cbufferset t1, tbl_cbufferset_tmp t2 WHERE t1.k = t2.k 
 
 DROP TABLE tbl_cbufferset_tmp;
 DROP TABLE
-SELECT COUNT(*) FROM tbl_cbufferset WHERE cbuffersetFromBinary(asBinary(s)) <> s;
+SELECT COUNT(*) FROM tbl_cbufferset WHERE setSRID(cbuffersetFromBinary(asBinary(s)), 3812) <> s;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_cbufferset WHERE SRID(cbuffersetFromBinary(asBinary(s))) <> 0;
  count 
 -------
      0
