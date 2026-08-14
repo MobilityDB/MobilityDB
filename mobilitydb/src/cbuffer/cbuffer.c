@@ -186,6 +186,30 @@ Cbuffer_as_ewkt(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum Cbuffer_from_ewkt(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Cbuffer_from_ewkt);
+/**
+ * @ingroup mobilitydb_cbuffer_base_inout
+ * @brief Return a circular buffer from its Extended Well-Known Text (EWKT)
+ * representation
+ * @note This just does the same thing as the SQL function cbuffer_in, except
+ * it has to handle a 'text' input. First, unwrap the text into a cstring,
+ * then do as cbuffer_in
+ * @sqlfn cbufferFromText(), cbufferFromEWKT()
+ */
+Datum
+Cbuffer_from_ewkt(PG_FUNCTION_ARGS)
+{
+  text *wkt_text = PG_GETARG_TEXT_P(0);
+  char *wkt = text_to_cstring(wkt_text);
+  /* Copy the pointer since it will be advanced during parsing */
+  const char *wkt_ptr = wkt;
+  Cbuffer *result = cbuffer_parse(&wkt_ptr, true);
+  pfree(wkt);
+  PG_FREE_IF_COPY(wkt_text, 0);
+  PG_RETURN_CBUFFER_P(result);
+}
+
 PGDLLEXPORT Datum Cbuffer_from_wkb(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Cbuffer_from_wkb);
 /**
@@ -239,6 +263,23 @@ Cbuffer_as_wkb(PG_FUNCTION_ARGS)
   Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
   PG_RETURN_BYTEA_P(Datum_as_wkb(fcinfo, PointerGetDatum(cb), T_CBUFFER,
     false));
+}
+
+PGDLLEXPORT Datum Cbuffer_as_ewkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Cbuffer_as_ewkb);
+/**
+ * @ingroup mobilitydb_cbuffer_base_inout
+ * @brief Return the Extended Well-Known Binary (EWKB) representation of a
+ * circular buffer
+ * @note It is the WKB representation prefixed with the SRID
+ * @sqlfn asEWKB()
+ */
+Datum
+Cbuffer_as_ewkb(PG_FUNCTION_ARGS)
+{
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
+  PG_RETURN_BYTEA_P(Datum_as_wkb(fcinfo, PointerGetDatum(cb), T_CBUFFER,
+    true));
 }
 
 PGDLLEXPORT Datum Cbuffer_as_hexwkb(PG_FUNCTION_ARGS);

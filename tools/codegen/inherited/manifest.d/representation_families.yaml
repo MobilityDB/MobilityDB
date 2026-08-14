@@ -482,3 +482,42 @@ representation_families:
     - asEWKB
     - asHexWKB
     - asHexEWKB
+- family: cbuffer_base
+  file: mobilitydb/sql/cbuffer/200_cbuffer.in.sql
+  reference: true
+  begin: "\n * Input/output in WKT, WKB and HexWKB representation\n"
+  end: "\n * Constructors\n"
+  temps:
+  - temp: cbuffer
+    maxdd: true
+  syms:
+    FromText: Cbuffer_from_ewkt
+    FromEWKT: Cbuffer_from_ewkt
+    FromBinary: Cbuffer_from_wkb
+    FromEWKB: Cbuffer_from_wkb
+    FromHexEWKB: Cbuffer_from_hexwkb
+    asText: Cbuffer_as_text
+    asEWKT: Cbuffer_as_ewkt
+    asBinary: Cbuffer_as_wkb
+    asEWKB: Cbuffer_as_ewkb
+    asHexWKB: Cbuffer_as_hexwkb
+    asHexEWKB: Cbuffer_as_hexwkb
+  arrsyms:
+    asText: Spatialarr_as_text
+    asEWKT: Spatialarr_as_ewkt
+  blocks:
+  - lit: "/******************************************************************************\n * Input/output in WKT, WKB and HexWKB representation\n ******************************************************************************/"
+  - ops:
+    - FromText
+    - FromEWKT
+    - FromBinary
+    - FromEWKB
+    - FromHexEWKB
+  - lit: "/*****************************************************************************/"
+  - ops:
+    - asText
+    - asEWKT
+    - asBinary
+    - asEWKB
+    - asHexWKB
+    - asHexEWKB

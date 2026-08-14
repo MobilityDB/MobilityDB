@@ -70,7 +70,38 @@ CREATE TYPE cbuffer (
   alignment = double
 );
 
--- Input/output in WKT, WKB and HexWKB representation
+-- GENERATED-REPRESENTATIONS-BEGIN cbuffer_base — tools/codegen/inherited/generate.py from templates/representations.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/representation_families.yaml and re-run.
+/******************************************************************************
+ * Input/output in WKT, WKB and HexWKB representation
+ ******************************************************************************/
+
+CREATE FUNCTION cbufferFromText(text)
+  RETURNS cbuffer
+  AS 'MODULE_PATHNAME', 'Cbuffer_from_ewkt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION cbufferFromEWKT(text)
+  RETURNS cbuffer
+  AS 'MODULE_PATHNAME', 'Cbuffer_from_ewkt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION cbufferFromBinary(bytea)
+  RETURNS cbuffer
+  AS 'MODULE_PATHNAME', 'Cbuffer_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION cbufferFromEWKB(bytea)
+  RETURNS cbuffer
+  AS 'MODULE_PATHNAME', 'Cbuffer_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION cbufferFromHexEWKB(text)
+  RETURNS cbuffer
+  AS 'MODULE_PATHNAME', 'Cbuffer_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************/
 
 CREATE FUNCTION asText(cbuffer, maxdecimaldigits int4 DEFAULT 15)
   RETURNS text
@@ -89,6 +120,28 @@ CREATE FUNCTION asEWKT(cbuffer[], maxdecimaldigits int4 DEFAULT 15)
   RETURNS text[]
   AS 'MODULE_PATHNAME', 'Spatialarr_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asBinary(cbuffer, endianenconding text DEFAULT '')
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Cbuffer_as_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asEWKB(cbuffer, endianenconding text DEFAULT '')
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Cbuffer_as_ewkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asHexWKB(cbuffer, endianenconding text DEFAULT '')
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Cbuffer_as_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asHexEWKB(cbuffer, endianenconding text DEFAULT '')
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Cbuffer_as_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- GENERATED-REPRESENTATIONS-END cbuffer_base
 
 /******************************************************************************
  * Constructors
