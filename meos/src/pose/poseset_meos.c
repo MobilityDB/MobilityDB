@@ -279,9 +279,9 @@ union_set_pose(const Set *s, const Pose *pose)
 /**
  * @ingroup meos_pose_set_setops
  * @brief Return the union of a pose and a set
- * @param[in] s Set
  * @param[in] pose Value
- * @csqlfn #Union_set_value()
+ * @param[in] s Set
+ * @csqlfn #Union_value_set()
  */
 Set *
 union_pose_set(const Pose *pose, const Set *s)
@@ -308,9 +308,9 @@ intersection_set_pose(const Set *s, const Pose *pose)
 /**
  * @ingroup meos_pose_set_setops
  * @brief Return the intersection of a pose and a set
- * @param[in] s Set
  * @param[in] pose Value
- * @csqlfn #Union_set_value()
+ * @param[in] s Set
+ * @csqlfn #Intersection_value_set()
  */
 Set *
 intersection_pose_set(const Pose *pose, const Set *s)

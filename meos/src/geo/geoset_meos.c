@@ -299,9 +299,9 @@ union_set_geo(const Set *s, const GSERIALIZED *gs)
 /**
  * @ingroup meos_geo_set_setops
  * @brief Return the union of a geometry/geography and a set
- * @param[in] s Set
  * @param[in] gs Value
- * @csqlfn #Union_set_value()
+ * @param[in] s Set
+ * @csqlfn #Union_value_set()
  */
 Set *
 union_geo_set(const GSERIALIZED *gs, const Set *s)
@@ -328,9 +328,9 @@ intersection_set_geo(const Set *s, const GSERIALIZED *gs)
 /**
  * @ingroup meos_geo_set_setops
  * @brief Return the intersection of a geometry/geography and a set
- * @param[in] s Set
  * @param[in] gs Value
- * @csqlfn #Union_set_value()
+ * @param[in] s Set
+ * @csqlfn #Intersection_value_set()
  */
 Set *
 intersection_geo_set(const GSERIALIZED *gs, const Set *s)

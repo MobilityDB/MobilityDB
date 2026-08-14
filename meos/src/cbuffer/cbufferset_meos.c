@@ -237,9 +237,9 @@ union_set_cbuffer(const Set *s, const Cbuffer *cb)
 /**
  * @ingroup meos_cbuffer_set_setops
  * @brief Return the union of a circular buffer and a set
- * @param[in] s Set
  * @param[in] cb Value
- * @csqlfn #Union_set_value()
+ * @param[in] s Set
+ * @csqlfn #Union_value_set()
  */
 Set *
 union_cbuffer_set(const Cbuffer *cb, const Set *s)
@@ -266,9 +266,9 @@ intersection_set_cbuffer(const Set *s, const Cbuffer *cb)
 /**
  * @ingroup meos_cbuffer_set_setops
  * @brief Return the intersection of a circular buffer and a set
- * @param[in] s Set
  * @param[in] cb Value
- * @csqlfn #Union_set_value()
+ * @param[in] s Set
+ * @csqlfn #Intersection_value_set()
  */
 Set *
 intersection_cbuffer_set(const Cbuffer *cb, const Set *s)

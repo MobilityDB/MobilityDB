@@ -282,6 +282,7 @@ union_set_jsonb(const Set *s, const Jsonb *jb)
  * @brief Return the union of a JSONB value and a set
  * @param[in] jb Value
  * @param[in] s Set
+ * @csqlfn #Union_value_set()
  */
 Set *
 union_jsonb_set(const Jsonb *jb, const Set *s)
@@ -309,6 +310,7 @@ intersection_set_jsonb(const Set *s, const Jsonb *jb)
  * @brief Return the intersection of a JSONB value and a set
  * @param[in] jb Value
  * @param[in] s Set
+ * @csqlfn #Intersection_value_set()
  */
 Set *
 intersection_jsonb_set(const Jsonb *jb, const Set *s)
