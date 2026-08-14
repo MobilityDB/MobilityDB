@@ -97,6 +97,8 @@ CREATE TYPE nsegment (
   alignment = double
 );
 
+-- GENERATED-REPRESENTATIONS-BEGIN npoint_base — tools/codegen/inherited/generate.py from templates/representations.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/representation_families.yaml and re-run.
 /*****************************************************************************
  * Input/output from (E)WKT, (E)WKB and HexEWKB representation
  *****************************************************************************/
@@ -156,10 +158,17 @@ CREATE FUNCTION asEWKB(npoint, endianenconding text DEFAULT '')
   AS 'MODULE_PATHNAME', 'Npoint_as_ewkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION asHexWKB(npoint, endianenconding text DEFAULT '')
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Npoint_as_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION asHexEWKB(npoint, endianenconding text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Npoint_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- GENERATED-REPRESENTATIONS-END npoint_base
 
 /******************************************************************************
  * Constructors

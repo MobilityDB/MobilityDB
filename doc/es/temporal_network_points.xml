@@ -86,6 +86,85 @@ SELECT npoint 'Npoint(99999999, 1.0)';
 </programlisting>
 		<para>Damos a continuación las funciones y operadores para los tipos de redes estáticas.</para>
 
+		<sect2 xml:id="npoint_inout">
+			<title>Entrada y salida</title>
+
+			<itemizedlist>
+				<listitem xml:id="npoint_asText">
+					<indexterm significance="normal"><primary><varname>asText</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>asEWKT</varname></primary></indexterm>
+					<para>Devuelve la representación de texto conocido (Well-Known Text o WKT) o la representación extendida de texto conocido (Extended Well-Known Text o EWKT)</para>
+					<para><varname>asText({npoint,npoint[]}) → {text,text[]}</varname></para>
+					<para><varname>asEWKT({npoint,npoint[]}) → {text,text[]}</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(npoint 'SRID=5676;Npoint(1,0.5)');
+-- NPoint(1,0.5)
+SELECT asText(ARRAY[npoint 'Npoint(1,0.2)', 'Npoint(1,0.5)']);
+-- {"NPoint(1,0.2)","NPoint(1,0.5)"}
+SELECT asEWKT(npoint 'SRID=5676;Npoint(1,0.5)');
+-- SRID=5676;NPoint(1,0.5)
+SELECT asEWKT(ARRAY[npoint 'SRID=5676;Npoint(1,0.2)', 'SRID=5676;Npoint(1,0.5)']);
+-- {"SRID=5676;NPoint(1,0.2)","SRID=5676;NPoint(1,0.5)"}
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="npoint_asBinary">
+					<indexterm significance="normal"><primary><varname>asBinary</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>asEWKB</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>asHexWKB</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>asHexEWKB</varname></primary></indexterm>
+					<para>Devuelve la representación binaria conocida (Well-Known Binary o WKB), la representación extendida binaria conocida (Extended Well-Known Binary o EWKB), la representación hexadecimal binaria conocida (Hexadecimal Well-Known Binary o HexWKB), o la representación hexadecimal extendida binaria conocida (Hexadecimal Extended Well-Known Binary o HexEWKB)</para>
+					<para><varname>asBinary(npoint,endian text='') → bytea</varname></para>
+					<para><varname>asEWKB(npoint,endian text='') → bytea</varname></para>
+					<para><varname>asHexWKB(npoint,endian text='') → text</varname></para>
+					<para><varname>asHexEWKB(npoint,endian text='') → text</varname></para>
+					<para>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina. Un punto de red toma su SRID de la red de rutas subyacente, por lo que ambas formas hexadecimales lo incluyen y coinciden, mientras que la forma binaria simple <varname>asBinary</varname> lo omite.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asBinary(npoint 'SRID=5676;Npoint(1,0.5)');
+-- \x01010100000000000000000000000000e03f
+SELECT asEWKB(npoint 'SRID=5676;Npoint(1,0.5)');
+-- \x01412c1600000100000000000000000000000000e03f
+SELECT asHexWKB(npoint 'SRID=5676;Npoint(1,0.5)');
+-- 01412C1600000100000000000000000000000000E03F
+SELECT asHexEWKB(npoint 'SRID=5676;Npoint(1,0.5)');
+-- 01412C1600000100000000000000000000000000E03F
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="npointFromText">
+					<indexterm significance="normal"><primary><varname>npointFromText</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>npointFromEWKT</varname></primary></indexterm>
+					<para>Entrada desde la representación de texto conocido (Well-Known Text o WKT) o desde la representación extendida de texto conocido (Extended Well-Known Text o EWKT)</para>
+					<para><varname>npointFromText(text) → npoint</varname></para>
+					<para><varname>npointFromEWKT(text) → npoint</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asEWKT(npointFromText(text 'Npoint(1,0.5)'));
+-- SRID=5676;NPoint(1,0.5)
+SELECT asEWKT(npointFromEWKT(text 'SRID=5676;Npoint(1,0.5)'));
+-- SRID=5676;NPoint(1,0.5)
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="npointFromBinary">
+					<indexterm significance="normal"><primary><varname>npointFromBinary</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>npointFromEWKB</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>npointFromHexEWKB</varname></primary></indexterm>
+					<para>Entrada desde la representación binaria conocida (Well-Known Binary o WKB), desde la representación extendida binaria conocida (Extended Well-Known Binary o EWKB), o desde la representación hexadecimal extendida binaria conocida (Hexadecimal Extended Well-Known Binary o HexEWKB)</para>
+					<para><varname>npointFromBinary(bytea) → npoint</varname></para>
+					<para><varname>npointFromEWKB(bytea) → npoint</varname></para>
+					<para><varname>npointFromHexEWKB(text) → npoint</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asEWKT(npointFromEWKB(
+  '\x01412c1600000100000000000000000000000000e03f'));
+-- SRID=5676;NPoint(1,0.5)
+SELECT asEWKT(npointFromHexEWKB(
+  '01412C1600000100000000000000000000000000E03F'));
+-- SRID=5676;NPoint(1,0.5)
+</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
 		<sect2 xml:id="constructor_functions">
 			<title>Constructores</title>
 

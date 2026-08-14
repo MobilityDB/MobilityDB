@@ -63,7 +63,6 @@ mobilitydb/sql/json/458_tjsonb_compops.in.sql
 mobilitydb/sql/json/460_tjsonb_topops.in.sql
 mobilitydb/sql/json/462_tjsonb_posops.in.sql
 mobilitydb/sql/json/466_tjsonb_indexes.in.sql
-mobilitydb/sql/npoint/300_npoint.in.sql
 mobilitydb/sql/npoint/304_tnpoint_compops.in.sql
 mobilitydb/sql/npoint/306_tnpoint_spatialfuncs.in.sql
 mobilitydb/sql/npoint/307_tnpoint_boxops.in.sql
@@ -89,7 +88,6 @@ mobilitydb/sql/pointcloud/443_tpcpoint_spatialrels.in.sql
 mobilitydb/sql/pointcloud/444_tpcpoint_tempspatialrels.in.sql
 mobilitydb/sql/pointcloud/445_tpcpoint_analytics.in.sql
 mobilitydb/sql/pointcloud/447_tpcpoint_distance.in.sql
-mobilitydb/sql/pose/100_pose.in.sql
 mobilitydb/sql/pose/104_tpose_compops.in.sql
 mobilitydb/sql/pose/105_tpose_spatialfuncs.in.sql
 mobilitydb/sql/pose/107_tpose_boxops.in.sql

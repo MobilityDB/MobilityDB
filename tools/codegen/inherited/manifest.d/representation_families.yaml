@@ -403,3 +403,82 @@ representation_families:
     - - lit: "-- asHexEWKB: extended hex-WKB (WKB_EXTENDED flag, includes SRID) \u2014\n-- mirrors asEWKB() and is consistent with MobilityDuck asHexEWKB."
       - asHexEWKB
   - lit: /*****************************************************************************/
+- family: npoint_base
+  file: mobilitydb/sql/npoint/300_npoint.in.sql
+  reference: true
+  begin: "\n * Input/output from (E)WKT, (E)WKB and HexEWKB representation\n"
+  end: "\n * Constructors\n"
+  temps:
+  - temp: npoint
+    maxdd: true
+  syms:
+    FromText: Npoint_from_ewkt
+    FromEWKT: Npoint_from_ewkt
+    FromBinary: Npoint_from_wkb
+    FromEWKB: Npoint_from_wkb
+    FromHexEWKB: Npoint_from_hexwkb
+    asText: Npoint_as_text
+    asEWKT: Npoint_as_ewkt
+    asBinary: Npoint_as_wkb
+    asEWKB: Npoint_as_ewkb
+    asHexWKB: Npoint_as_hexwkb
+    asHexEWKB: Npoint_as_hexwkb
+  arrsyms:
+    asText: Spatialarr_as_text
+    asEWKT: Spatialarr_as_ewkt
+  blocks:
+  - lit: "/*****************************************************************************\n * Input/output from (E)WKT, (E)WKB and HexEWKB representation\n *****************************************************************************/"
+  - ops:
+    - FromText
+    - FromEWKT
+    - FromBinary
+    - FromEWKB
+    - FromHexEWKB
+  - lit: "/*****************************************************************************/"
+  - ops:
+    - asText
+    - asEWKT
+    - asBinary
+    - asEWKB
+    - asHexWKB
+    - asHexEWKB
+- family: pose_base
+  file: mobilitydb/sql/pose/100_pose.in.sql
+  reference: true
+  begin: "\n * Input/output from (E)WKT, (E)WKB, and HexEWKB\n"
+  end: "\n * Constructors\n"
+  temps:
+  - temp: pose
+    maxdd: true
+  syms:
+    FromText: Pose_from_ewkt
+    FromEWKT: Pose_from_ewkt
+    FromBinary: Pose_from_wkb
+    FromEWKB: Pose_from_wkb
+    FromHexEWKB: Pose_from_hexwkb
+    asText: Pose_as_text
+    asEWKT: Pose_as_ewkt
+    asBinary: Pose_as_wkb
+    asEWKB: Pose_as_ewkb
+    asHexWKB: Pose_as_hexwkb
+    asHexEWKB: Pose_as_hexwkb
+  arrsyms:
+    asText: Spatialarr_as_text
+    asEWKT: Spatialarr_as_ewkt
+  blocks:
+  - lit: "/*****************************************************************************\n * Input/output from (E)WKT, (E)WKB, and HexEWKB\n *****************************************************************************/"
+  - ops:
+    - FromText
+    - FromEWKT
+    - FromBinary
+    - FromEWKB
+    - FromHexEWKB
+  - lit: "/*****************************************************************************\n * OGC GeoPose JSON I/O — Basic-Quaternion + Basic-YPR conformance\n *****************************************************************************/\n\nCREATE FUNCTION poseFromGeoPose(text)\n  RETURNS pose\n  AS 'MODULE_PATHNAME', 'Pose_from_geopose'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n-- conformance: 0 = Basic-Quaternion (default), 1 = Basic-YPR\n-- maxdecimaldigits: significant digits to keep; -1 = lossless\nCREATE FUNCTION asGeoPose(pose, conformance int4 DEFAULT 0,\n    maxdecimaldigits int4 DEFAULT -1)\n  RETURNS text\n  AS 'MODULE_PATHNAME', 'Pose_as_geopose'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\nCREATE FUNCTION applyPose(geometry, pose)\n  RETURNS geometry\n  AS 'MODULE_PATHNAME', 'Pose_apply_geo'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"
+  - lit: "/*****************************************************************************/"
+  - ops:
+    - asText
+    - asEWKT
+    - asBinary
+    - asEWKB
+    - asHexWKB
+    - asHexEWKB
