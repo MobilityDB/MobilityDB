@@ -2026,24 +2026,126 @@ tdistance_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 }
 
 /**
+ * @brief Return a temporal rigid geometry instant whose pose is the pose of
+ * @p pinst translated by minus the point value of @p qinst, keeping @p ref_gs
+ * as its reference geometry
+ * @details A temporal point does not rotate, so subtracting its position from
+ * the body pose places the point at the origin while the body pose stays a
+ * linear segment: the trgeometry-vs-tgeompoint distance then reduces to the
+ * trgeometry-vs-point distance against the origin.
+ */
+static TInstant *
+trgeoinst_translate_by_tpoint(const TInstant *pinst, const TInstant *qinst,
+  const GSERIALIZED *ref_gs)
+{
+  const Pose *pose = DatumGetPoseP(tinstant_value_p(pinst));
+  POINT4D pt;
+  datum_point4d(tinstant_value_p(qinst), &pt);
+  Pose *tpose = pose_make_2d(pose->data[0] - pt.x, pose->data[1] - pt.y,
+    pose->data[2], MEOS_FLAGS_GET_GEODETIC(pose->flags), pose_srid(pose));
+  TInstant *result = trgeometryinst_make(ref_gs, tpose, pinst->t);
+  pfree(tpose);
+  return result;
+}
+
+/**
+ * @brief Return the temporal rigid geometry @p pseq with each pose translated
+ * by minus the corresponding point value of @p qseq
+ * @pre The two sequences are synchronized
+ */
+static TSequence *
+trgeoseq_translate_by_tpoint(const TSequence *pseq, const TSequence *qseq,
+  const GSERIALIZED *ref_gs)
+{
+  TInstant **instants = palloc(sizeof(TInstant *) * pseq->count);
+  for (int i = 0; i < pseq->count; i++)
+    instants[i] = trgeoinst_translate_by_tpoint(TSEQUENCE_INST_N(pseq, i),
+      TSEQUENCE_INST_N(qseq, i), ref_gs);
+  return trgeoseq_make_free(ref_gs, instants, pseq->count,
+    pseq->period.lower_inc, pseq->period.upper_inc,
+    MEOS_FLAGS_LINEAR_INTERP(pseq->flags), NORMALIZE);
+}
+
+/**
+ * @brief Return the temporal rigid geometry @p pss with each pose translated
+ * by minus the corresponding point value of @p qss
+ * @pre The two sequence sets are synchronized
+ */
+static TSequenceSet *
+trgeoseqset_translate_by_tpoint(const TSequenceSet *pss,
+  const TSequenceSet *qss, const GSERIALIZED *ref_gs)
+{
+  TSequence **sequences = palloc(sizeof(TSequence *) * pss->count);
+  for (int i = 0; i < pss->count; i++)
+    sequences[i] = trgeoseq_translate_by_tpoint(TSEQUENCESET_SEQ_N(pss, i),
+      TSEQUENCESET_SEQ_N(qss, i), ref_gs);
+  return trgeoseqset_make_free(ref_gs, sequences, pss->count, NORMALIZE);
+}
+
+/**
  * @ingroup meos_rgeo_dist
- * @brief Return the temporal distance between two
- * temporal rigid geometries.
+ * @brief Return the temporal distance between a temporal rigid geometry and a
+ * temporal geometry point
  * @sqlop @p <->
  * @csqlfn #Tdistance_trgeometry_tpoint()
  */
 Temporal *
-tdistance_trgeometry_tpoint(const Temporal *temp1 UNUSED,
-  const Temporal *temp2 UNUSED)
+tdistance_trgeometry_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_trgeo_tpoint(temp1, temp2))
     return NULL;
 
-  /* TODO */
-  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-    "Function %s not implemented yet.", __FUNCTION__);
-  return NULL;
+  if (MEOS_FLAGS_GET_Z(temp1->flags) || MEOS_FLAGS_GET_Z(temp2->flags))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Distance computation in 3D is not currently supported");
+    return NULL;
+  }
+
+  /* The reference geometry of the rigid body is invariant in time; read it
+   * from the original because synchronization keeps only the temporal pose */
+  const GSERIALIZED *ref_gs = trgeo_geom_p(temp1);
+
+  /* Synchronize the two temporal values without adding crossings */
+  Temporal *sync1, *sync2;
+  if (! intersection_temporal_temporal(temp1, temp2, SYNCHRONIZE_NOCROSS,
+    &sync1, &sync2))
+    return NULL;
+
+  /* Translate the body pose by minus the point so the point sits at the origin,
+   * then reuse the trgeometry-vs-point distance against the origin */
+  GSERIALIZED *origin = geopoint_make(0.0, 0.0, 0.0, false, false,
+    tspatial_srid(temp1));
+  Temporal *result;
+  assert(temptype_subtype(sync1->subtype));
+  if (sync1->subtype == TINSTANT)
+  {
+    TInstant *tinst = trgeoinst_translate_by_tpoint((const TInstant *) sync1,
+      (const TInstant *) sync2, ref_gs);
+    GSERIALIZED *posed = geom_apply_pose(ref_gs,
+      DatumGetPoseP(tinstant_value_p(tinst)));
+    double dist = geom_distance2d(posed, origin);
+    result = (Temporal *) tinstant_make(Float8GetDatum(dist), T_TFLOAT,
+      tinst->t);
+    pfree(posed); pfree(tinst);
+  }
+  else if (sync1->subtype == TSEQUENCE)
+  {
+    TSequence *tseq = trgeoseq_translate_by_tpoint((const TSequence *) sync1,
+      (const TSequence *) sync2, ref_gs);
+    result = tdistance_trgeometry_geo((const Temporal *) tseq, origin);
+    pfree(tseq);
+  }
+  else /* sync1->subtype == TSEQUENCESET */
+  {
+    TSequenceSet *tss = trgeoseqset_translate_by_tpoint(
+      (const TSequenceSet *) sync1, (const TSequenceSet *) sync2, ref_gs);
+    result = tdistance_trgeometry_geo((const Temporal *) tss, origin);
+    pfree(tss);
+  }
+  pfree(sync1); pfree(sync2); pfree(origin);
+  return result;
 }
 
 /**
@@ -2269,7 +2371,7 @@ double
 nad_trgeometry_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_trgeo_tpoint(temp2, temp2))
+  if (! ensure_valid_trgeo_tpoint(temp1, temp2))
     return DBL_MAX;
 
   Temporal *dist = tdistance_trgeometry_tpoint(temp1, temp2);
