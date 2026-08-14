@@ -161,6 +161,7 @@ assvg_line(stringbuffer_t* sb, const LWLINE *line, int relative, int precision)
 
 static void pointArray_svg_arc(stringbuffer_t* sb, const POINTARRAY *pa, int close_ring, int relative,  int precision)
 {
+	(void) close_ring; /* MEOS */
 	uint32_t i; //, end;
 	char sx[OUT_DOUBLE_BUFFER_SIZE];
 	char sy[OUT_DOUBLE_BUFFER_SIZE];

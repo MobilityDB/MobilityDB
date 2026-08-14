@@ -640,6 +640,7 @@ int rt_raster_intersects_algorithm(
 	int hasnodata1, int hasnodata2,
 	double nodata1, double nodata2
 ) {
+	(void) nodata1; (void) nodata2; /* MEOS */
 	int i;
 	int byHeight = 1;
 	uint32_t dimValue;

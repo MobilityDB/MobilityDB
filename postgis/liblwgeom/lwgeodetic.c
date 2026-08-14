@@ -1949,6 +1949,7 @@ static double ptarray_distance_spheroid(const POINTARRAY *pa1, const POINTARRAY 
 */
 double lwgeom_area_sphere(const LWGEOM *lwgeom, const SPHEROID *spheroid)
 {
+	(void) spheroid; /* MEOS */
 	SPHEROID s;
 	spheroid_init(&s, WGS84_RADIUS, WGS84_RADIUS);
 	return lwgeom_area_spheroid(lwgeom, &s);

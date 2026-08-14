@@ -16,7 +16,8 @@ add_library(librtcore OBJECT
 
 target_include_directories(librtcore PRIVATE ${GDAL_INCLUDE_DIR})
 
-# Vendored upstream PostGIS sources that MobilityDB does not maintain or lint;
-# suppress their compiler warnings on this target only, as done for the other
-# vendored libraries (liblwgeom, ryu, pointcloud_libpc).
-target_compile_options(librtcore PRIVATE "-w")
+# rt_core compiles clean under the standard -Wall -Wextra on GCC/clang, so it is
+# linted there like MEOS; MSVC keeps its warnings suppressed pending a second pass.
+if(CMAKE_GENERATOR STREQUAL "Visual Studio 17 2022")
+  target_compile_options(librtcore PRIVATE "/W0")  # MEOS
+endif()
