@@ -135,6 +135,38 @@ int main(void)
   assert(strcmp(str_srid, "BOX3D(1 1 1,5 5 5)") == 0);
   free(str_srid); free(box_srid);
 
+  /* A geometry relationship that GEOS cannot evaluate reports the failure and
+   * answers false. GEOS rejects a collection of mixed dimensions, and under
+   * this handler the relationship returns rather than ending the process, so
+   * the value it gives is the one a language binding reads. A line far from
+   * the collection must not come back as containing it */
+  GSERIALIZED *coll = geom_in(
+    "GeometryCollection(Point(0 0),Linestring(2 2,3 3))", -1);
+  assert(coll != NULL);
+  GSERIALIZED *away = geom_in("Linestring(10 10,20 20)", -1);
+  assert(away != NULL);
+  char patt[10] = "T********";
+  meos_errno_reset();
+  bool rel = geom_relate_pattern(away, coll, patt);
+  int rel_errno = meos_errno();
+  printf("geom_relate_pattern(away, collection): %d, errno %d\n", rel,
+    rel_errno);
+  assert(rel == false);
+  assert(rel_errno != 0);
+  /* A pair GEOS does evaluate keeps its answer: a line through the collection
+   * meets it in their interiors */
+  GSERIALIZED *through = geom_in("Linestring(0 0,3 3)", -1);
+  assert(through != NULL);
+  meos_errno_reset();
+  bool rel_ok = geom_relate_pattern(through, coll, patt);
+  int errno_ok = meos_errno();
+  printf("geom_relate_pattern(through, collection): %d, errno %d\n", rel_ok,
+    errno_ok);
+  assert(rel_ok == true);
+  assert(errno_ok == 0);
+  free(coll); free(away); free(through);
+  meos_errno_reset();
+
   /* A malformed box3d returns NULL and sets the error status */
   meos_errno_reset();
   BOX3D *bad_box3d = box3d_in("BOX3D(1 2 3)");
