@@ -2395,6 +2395,19 @@ ttouches_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
   if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
 
+  /* A value composed of discs of a zero radius is a temporal point, whose
+   * conversion is exact. A disc of a strictly positive radius carries an
+   * interior, and the native path below reads the contact from its boundary; a
+   * point is its own interior, and touches the geometry where it lies on the
+   * boundary of the geometry, which is the temporal point relationship */
+  if (tcbuffer_is_tpoint(temp))
+  {
+    Temporal *tpoint = tcbuffer_to_tgeompoint(temp);
+    Temporal *result = ttouches_tgeo_geo(tpoint, gs);
+    pfree(tpoint);
+    return result;
+  }
+
   /* Bounding box test: a moving disk whose radius-aware bounding box is
    * disjoint from the geometry never reaches it, so it never touches */
   STBox box1, box2;
