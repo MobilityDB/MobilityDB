@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: quadbinset_from_buffer</title>
+<title>MobilityDB: set</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_0fff62ca9c7e6b49d869dbbeba2dc9ed.html">meos</a></li><li class="navelem"><a class="el" href="dir_0a74bb77045191a48e06cf40aa0b9f46.html">src</a></li><li class="navelem"><a class="el" href="dir_57f82183d85390579af16d320cb260f2.html">quadbin</a></li><li class="navelem"><a class="el" href="quadbinset__meos_8c.html">quadbinset_meos.c</a></li>  </ul>
+<li class="navelem"><a class="el" href="meos_2src_2quadbin_2CMakeLists_8txt.html">CMakeLists.txt</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,49 +79,26 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__quadbin__accessor_gaccb34c22921adf9a969363cbf7fcb4c8.html#gaccb34c22921adf9a969363cbf7fcb4c8">quadbin_cell_to_children_set</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__quadbin__accessor_gaa82627f042fe7e5927402378b2cfac49.html#gaa82627f042fe7e5927402378b2cfac49">quadbin_grid_disk</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="quadbinset__meos_8c_a7cef14526f64645baaaf7fff9ba868f1.html#a7cef14526f64645baaaf7fff9ba868f1">quadbinset_from_buffer</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2quadbin_2CMakeLists_8txt_a2039d28fac3534e811b6acae3c6c818e.html#a2039d28fac3534e811b6acae3c6c818e">set</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a7cef14526f64645baaaf7fff9ba868f1" name="a7cef14526f64645baaaf7fff9ba868f1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7cef14526f64645baaaf7fff9ba868f1">&#9670;&#160;</a></span>quadbinset_from_buffer()</h2>
+<a id="a2039d28fac3534e811b6acae3c6c818e" name="a2039d28fac3534e811b6acae3c6c818e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2039d28fac3534e811b6acae3c6c818e">&#9670;&#160;</a></span>set()</h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static <a class="el" href="structSet.html">Set</a> * quadbinset_from_buffer </td>
+          <td class="memname">set </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="meos__quadbin_8h_a62e3d9d99cbf73b81567f1958cb16c4a.html#a62e3d9d99cbf73b81567f1958cb16c4a">Quadbin</a> *&#160;</td>
-          <td class="paramname"><em>cells</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramtype">QUADBIN_SOURCES quadbin.c quadbin_geo.c quadbinset.c tquadbin_ops.c tquadbin.c tquadbin_boxops.c tquadbin_compops.&#160;</td>
+          <td class="paramname"><em>c</em></td><td>)</td>
           <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>count</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
-
-<p>Return a quadbinset from a freshly-allocated Quadbin buffer of size <code>count</code>. </p>
-<p >The input buffer is pfree'd. On empty result, returns NULL after raising a meos_error (set_make requires count &gt;= 1). </p>
 
 </div>
 </div>
