@@ -1372,18 +1372,6 @@ TGEOMETRY_CONFIG = dict(
         "re:bitmatrix":  "needs a bitmatrix",
         # Out-params with non-uniform shape (e.g. GSERIALIZED ***).
         "re:^geo_array_": "out-param triple-pointer not in canned set",
-        # geom_azimuth hard-asserts gserialized_get_type(gs1/gs2) ==
-        # POINTTYPE instead of validating gracefully: its sibling
-        # bearing_point_point (same file, meos/src/geo/tpoint_spatialfuncs.c)
-        # calls ensure_point_type(), which returns false through meos_error
-        # on a non-point input, but geom_azimuth's own ensure_valid_geo_geo()
-        # check does not cover the type, so any non-point GSERIALIZED (e.g.
-        # this suite's default polygon) reaches the bare assert() and aborts
-        # the process. Routing this call to point-only canned geometries
-        # would only hide the crash, not fix it; left skipped pending a
-        # kernel-side fix (meos/src/geo/postgis_funcs.c) to use
-        # ensure_point_type() like its sibling.
-        "geom_azimuth": "hard assert on non-point input, see kernel bug note above",
         # The temporal variants of the tgeoarr_tgeoarr family take an
         # additional mandatory `SpanSet ***periods` out-param (VALIDATE_NOT_
         # NULL'd, so NULL is rejected): a SpanSet ** whose count elements are
@@ -1772,42 +1760,6 @@ TJSONB_CONFIG = dict(
         # cleanup block instead, matching trgeometry_value_n.
         "re:^json_each$|^json_each_text$|^jsonb_each$|^jsonb_each_text$":
             "pre-sized OUT-param value buffer, not a generic emit_call shape; covered manually",
-        # get_path_all (pgtypes/utils/jsonfuncs.c, behind json_extract_path,
-        # json_extract_path_text, and the lifted tjson_extract_path) leaks
-        # the path-element Datum array it palloc's -- confirmed under
-        # valgrind --leak-check=full (8-20 bytes `definitely lost`, stack
-        # ending in get_path_all). Real kernel leak, not a harness gap; left
-        # skipped and reported rather than routed around. The
-        # jsonb_extract_path{,_text} siblings use a different, unaffected
-        # code path and stay covered above.
-        "json_extract_path":
-            "leaks the path-element array in get_path_all (pgtypes/utils/jsonfuncs.c); real kernel bug, reported separately",
-        "json_extract_path_text":
-            "leaks the path-element array in get_path_all (pgtypes/utils/jsonfuncs.c); real kernel bug, reported separately",
-        "tjson_extract_path":
-            "leaks the path-element array in get_path_all via datum_json_extract_path_text (pgtypes/utils/jsonfuncs.c); real kernel bug, reported separately",
-        # pg_jsonb_insert (pgtypes/utils/jsonfuncs.c) SEGFAULTS -- a NULL
-        # dereference in appendValue(), reached via
-        # setPath()->setPathObject()->meos_pushJsonbValue()->
-        # pushJsonbValueScalar()->appendValue() -- when inserting a new
-        # value after/before a path that resolves to a scalar inside an
-        # object (this suite's canned {"a": {"b": 1}} target with path
-        # ["a","b"]). Confirmed under valgrind (SIGSEGV, "Address 0x0 is not
-        # stack'd, malloc'd or (recently) free'd"). Real kernel crash, not a
-        # harness gap; left skipped and reported rather than routed around.
-        "jsonb_insert":
-            "SIGSEGV in pg_jsonb_insert/setPathObject/appendValue (pgtypes/utils/jsonfuncs.c); real kernel bug, reported separately",
-        # pg_jsonb_set (pgtypes/utils/jsonfuncs.c) palloc0's a `path_nulls`
-        # array on every call and never frees it -- confirmed under valgrind
-        # --leak-check=full, stack ending in pg_jsonb_set. Every caller in
-        # this family funnels through it (jsonb_set directly; jsonb_set_lax
-        # and jsonbset_set via pg_jsonb_set_lax; jsonbset_insert and
-        # tjsonb_insert via datum_jsonb_insert; tjsonb_set via
-        # datum_jsonb_set_lax), so the leak is unconditional and cannot be
-        # routed around with different canned inputs. Real kernel leak, not
-        # a harness gap; left skipped and reported rather than papered over.
-        "re:^jsonb_set$|^jsonb_set_lax$|^jsonbset_set$|^jsonbset_insert$|^tjsonb_insert$|^tjsonb_set$":
-            "leaks path_nulls[] in pg_jsonb_set (pgtypes/utils/jsonfuncs.c); real kernel bug, reported separately",
     },
     common_inputs="""\
   TimestampTz tstz1 = timestamptz_in("2001-01-02", -1);
