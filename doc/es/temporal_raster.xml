@@ -13,9 +13,9 @@
 
 	<para>La extensión <ulink url="https://postgis.net/docs/using_raster_dataman.html">ráster de PostGIS</ulink> almacena datos de cobertura en cuadrícula (elevación, temperatura, imágenes satelitales, …) en el tipo <varname>raster</varname>. Cada ráster tiene una o más bandas; una banda contiene un arreglo 2D de valores de píxel, una extensión espacial, un tamaño de píxel y un valor centinela opcional para datos nulos (<varname>nodata</varname>).</para>
 
-	<para>El operador de muestreo de ráster de MobilityDB evalúa una banda de ráster en los instantes de una trayectoria de punto móvil y devuelve un <varname>tfloat</varname>. Los instantes cuya posición cae fuera de la extensión del ráster o sobre un píxel <varname>nodata</varname> se descartan silenciosamente. Los operadores de muestreo son de valor doble sea cual sea el tipo de píxel de la banda, de modo que un tipo de píxel pertenece a la superficie de muestreo cuando todo valor que puede contener es exactamente representable en un número de doble precisión. Eso es lo que permite muestrear una banda de cualquier tipo en un único <varname>tfloat</varname>, y que una columna con teselas de varios tipos de píxel se lea con una sola consulta. Un tipo de píxel también se acepta con el nombre que le da el ráster de PostGIS, de modo que el tipo de banda que informa una llamada a <varname>ST_BandPixelType</varname> (<varname>8BUI</varname>, <varname>16BSI</varname>, <varname>32BF</varname>, …) se pasa a los constructores de teselas tal cual. El ráster de PostGIS no lleva flotantes de 16 bits ni enteros de 64 bits, así que <varname>FLOAT16</varname>, <varname>INT64</varname> y <varname>UINT64</varname> toman la grafía que da su gramática, <varname>16BF</varname>, <varname>64BSI</varname> y <varname>64BUI</varname>. Sus tipos <varname>1BB</varname>, <varname>2BUI</varname> y <varname>4BUI</varname> ocupan menos de un byte por píxel, para lo cual una tesela no tiene representación, y así lo indican. El nombre que informa una tesela es el que la especificación RaQuet da al tipo.
+	<para>El operador de muestreo de ráster de MobilityDB evalúa una banda de ráster en los instantes de una trayectoria de punto móvil y devuelve un <varname>tfloat</varname>. Los instantes cuya posición cae fuera de la extensión del ráster o sobre un píxel <varname>nodata</varname> se descartan silenciosamente. Los operadores de muestreo son de valor doble sea cual sea el tipo de píxel de la banda, de modo que un tipo de píxel pertenece a la superficie de muestreo cuando todo valor que puede contener es exactamente representable en un número de doble precisión. Eso es lo que permite muestrear una banda de cualquier tipo en un único <varname>tfloat</varname>, y que una columna con teselas de varios tipos de píxel se lea con una sola consulta. Un tipo de píxel también se acepta con el nombre que le da el ráster de PostGIS, de modo que el tipo de banda que informa una llamada a <varname>ST_BandPixelType</varname> (<varname>8BUI</varname>, <varname>16BSI</varname>, <varname>32BF</varname>, …) se pasa a los constructores de teselas tal cual. El ráster de PostGIS no lleva flotantes de 16 bits ni enteros de 64 bits, así que <varname>float16</varname>, <varname>int64</varname> y <varname>uint64</varname> toman la grafía que da su gramática, <varname>16BF</varname>, <varname>64BSI</varname> y <varname>64BUI</varname>. Sus tipos <varname>1BB</varname>, <varname>2BUI</varname> y <varname>4BUI</varname> ocupan menos de un byte por píxel, para lo cual una tesela no tiene representación, y así lo indican. El nombre que informa una tesela es el que la especificación RaQuet da al tipo.
 
-Los tipos <varname>UINT64</varname> e <varname>INT64</varname> contienen valores fuera de ese dominio: una tesela de cualquiera de ellos se almacena y se vuelve a leer exactamente, mientras que muestrear un píxel cuyo valor ningún número de doble precisión nombra genera un error en lugar de responder con un valor vecino. Esto permite consultas como <emphasis>¿qué perfil de elevación siguió cada vehículo?</emphasis> o <emphasis>¿qué viajes entraron en una banda de umbral de temperatura?</emphasis></para>
+Los tipos <varname>uint64</varname> e <varname>int64</varname> contienen valores fuera de ese dominio: una tesela de cualquiera de ellos se almacena y se vuelve a leer exactamente, mientras que muestrear un píxel cuyo valor ningún número de doble precisión nombra genera un error en lugar de responder con un valor vecino. Esto permite consultas como <emphasis>¿qué perfil de elevación siguió cada vehículo?</emphasis> o <emphasis>¿qué viajes entraron en una banda de umbral de temperatura?</emphasis></para>
 
 	<para>Para usar los operadores descritos aquí, MobilityDB debe ser compilado con <varname>-DRASTER=ON</varname>. En tal compilación, el archivo <filename>mobilitydb.control</filename> generado declara <varname>requires = 'postgis, postgis_raster'</varname>, por lo que un único <varname>CASCADE</varname> crea la pila completa:</para>
 	<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -108,7 +108,7 @@ FROM unnest(quadbins(traj, 8)) AS q;
 
 -- Step 2: sample each matching tile
 SELECT rasterTileValueQuadbin(traj,
-    band_data, width, height, quadbin, 'FLOAT32', nodata, true)
+    band_data, width, height, quadbin, 'float32', nodata, true)
 FROM elevation_raquet
 WHERE quadbin = ANY(quadbins(traj, 8));
 </programlisting>
@@ -136,18 +136,18 @@ ORDER BY tile_count DESC;
 				<indexterm significance="normal"><primary><varname>rasterTileValueQuadbin</varname></primary></indexterm>
 				<para>Muestrear un chip ráster de Raquet a lo largo de una trayectoria usando una celda QUADBIN para la georreferenciación</para>
 				<para><varname>rasterTileValueQuadbin(tgeompoint,bytea,integer,integer,bigint,text,float8,boolean) → tfloat</varname></para>
-				<para>Evalúa un arreglo de píxeles de banda única en orden de fila mayor en cada instante de <varname>traj</varname> (SRID 4326). La georreferenciación de la tesela (rectángulo delimitador, mapeo de píxel a coordenadas) se deriva únicamente de <varname>quadbin</varname> mediante la transformada de tesela deslizante Web-Mercator. El argumento <varname>pixtype</varname> debe ser uno de <varname>UINT8</varname>, <varname>INT8</varname>, <varname>UINT16</varname>, <varname>INT16</varname>, <varname>UINT32</varname>, <varname>INT32</varname>, <varname>UINT64</varname>, <varname>INT64</varname>, <varname>FLOAT16</varname>, <varname>FLOAT32</varname> o <varname>FLOAT64</varname>. Cuando <varname>has_nodata</varname> es verdadero, los instantes cuyo píxel equivale a <varname>nodata</varname> se descartan silenciosamente. Devuelve <varname>NULL</varname> cuando ningún instante sobrevive.</para>
+				<para>Evalúa un arreglo de píxeles de banda única en orden de fila mayor en cada instante de <varname>traj</varname> (SRID 4326). La georreferenciación de la tesela (rectángulo delimitador, mapeo de píxel a coordenadas) se deriva únicamente de <varname>quadbin</varname> mediante la transformada de tesela deslizante Web-Mercator. El argumento <varname>pixtype</varname> debe ser uno de <varname>uint8</varname>, <varname>int8</varname>, <varname>uint16</varname>, <varname>int16</varname>, <varname>uint32</varname>, <varname>int32</varname>, <varname>uint64</varname>, <varname>int64</varname>, <varname>float16</varname>, <varname>float32</varname> o <varname>float64</varname>. Cuando <varname>has_nodata</varname> es verdadero, los instantes cuyo píxel equivale a <varname>nodata</varname> se descartan silenciosamente. Devuelve <varname>NULL</varname> cuando ningún instante sobrevive.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Sample elevation tiles from a Raquet Parquet table
 -- for all ship trajectories
 SELECT t.tripid, rasterTileValueQuadbin(t.trip
-  r.band_data, r.width, r.height, r.quadbin, 'FLOAT32', r.nodata, true)
+  r.band_data, r.width, r.height, r.quadbin, 'float32', r.nodata, true)
 FROM trips t
 JOIN elevation_raquet r ON r.quadbin = ANY(quadbins(t.trip, 8));
 
 -- Average sea-surface temperature per trajectory
 SELECT t.tripid, avgValue(rasterTileValueQuadbin(t.trip, 
-  r.band_data, 256, 256, r.quadbin, 'INT16', -9999, true)) AS mean_sst
+  r.band_data, 256, 256, r.quadbin, 'int16', -9999, true)) AS mean_sst
 FROM trips t
 JOIN sst_raquet r ON r.quadbin = ANY(quadbins(t.trip, 6));
 </programlisting>
@@ -157,14 +157,14 @@ JOIN sst_raquet r ON r.quadbin = ANY(quadbins(t.trip, 6));
 				<indexterm significance="normal"><primary><varname>raquet</varname></primary></indexterm>
 				<para>Construir una tesela ráster Raquet a partir de sus bytes de píxeles, dimensiones, celda QUADBIN y tipo de píxel</para>
 				<para><varname>raquet(bytea,integer,integer,bigint,text,float8) → raquet</varname></para>
-				<para>Empaqueta un arreglo de píxeles <varname>pixels</varname> de banda única en orden de fila mayor de <varname>width</varname> × <varname>height</varname> píxeles de tipo <varname>pixtype</varname> (uno de <varname>UINT8</varname>, <varname>INT8</varname>, <varname>UINT16</varname>, <varname>INT16</varname>, <varname>UINT32</varname>, <varname>INT32</varname>, <varname>UINT64</varname>, <varname>INT64</varname>, <varname>FLOAT16</varname>, <varname>FLOAT32</varname> o <varname>FLOAT64</varname>), georreferenciado por la celda <varname>quadbin</varname>, en un único valor <varname>raquet</varname> autodescriptivo. El argumento <varname>nodata</varname> es opcional; cuando se omite (<varname>NULL</varname>) la tesela no lleva valor centinela de nodata. Se genera un error cuando el arreglo <varname>pixels</varname> es menor que <varname>width</varname> × <varname>height</varname> × el tamaño del píxel. Los píxeles de más de un byte son little-endian, que es el orden de bytes que les da la especificación RaQuet sea cual sea el orden de bytes del servidor, de modo que una tesela conserva sus valores cuando se lee en otra máquina. Un <varname>raquet</varname> es un valor de longitud variable, libre de GDAL, con una representación portátil en texto Hex-WKB y binaria, distinto de y coexistente con el tipo <varname>raster</varname> de PostGIS usado por <link linkend="raster_rasterValue"><varname>rasterValue</varname></link>.</para>
+				<para>Empaqueta un arreglo de píxeles <varname>pixels</varname> de banda única en orden de fila mayor de <varname>width</varname> × <varname>height</varname> píxeles de tipo <varname>pixtype</varname> (uno de <varname>uint8</varname>, <varname>int8</varname>, <varname>uint16</varname>, <varname>int16</varname>, <varname>uint32</varname>, <varname>int32</varname>, <varname>uint64</varname>, <varname>int64</varname>, <varname>float16</varname>, <varname>float32</varname> o <varname>float64</varname>), georreferenciado por la celda <varname>quadbin</varname>, en un único valor <varname>raquet</varname> autodescriptivo. El argumento <varname>nodata</varname> es opcional; cuando se omite (<varname>NULL</varname>) la tesela no lleva valor centinela de nodata. Se genera un error cuando el arreglo <varname>pixels</varname> es menor que <varname>width</varname> × <varname>height</varname> × el tamaño del píxel. Los píxeles de más de un byte son little-endian, que es el orden de bytes que les da la especificación RaQuet sea cual sea el orden de bytes del servidor, de modo que una tesela conserva sus valores cuando se lee en otra máquina. Un <varname>raquet</varname> es un valor de longitud variable, libre de GDAL, con una representación portátil en texto Hex-WKB y binaria, distinto de y coexistente con el tipo <varname>raster</varname> de PostGIS usado por <link linkend="raster_rasterValue"><varname>rasterValue</varname></link>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Empaquetar las columnas sueltas de una tabla Raquet en valores raquet
-SELECT raquet(band_data, width, height, quadbin, 'FLOAT32', nodata) AS tile
+SELECT raquet(band_data, width, height, quadbin, 'float32', nodata) AS tile
 FROM elevation_raquet;
 
 -- Una tesela UINT8 de 2 x 2 sin nodata
-SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'UINT8');
+SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8');
 </programlisting>
 			</listitem>
 
@@ -243,8 +243,8 @@ GROUP BY t.tripid, t.trip;
 				<para><varname>raquetFromHexWKB(text) → raquet</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT raquetFromHexWKB(asHexWKB(raquet('\x01020304'::bytea, 2, 2,
-  5193776270265024512, 'UINT8')))
-  = raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'UINT8');
+  5193776270265024512, 'uint8')))
+  = raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8');
 -- true
 </programlisting>
 			</listitem>
@@ -264,7 +264,7 @@ SELECT raquetFromHexWKB(asHexWKB(raquet('\x01020304'::bytea, 2, 2,
 				<para>Devolver la celda QUADBIN de una tesela Raquet</para>
 				<para><varname>quadbin(raquet) → bigint</varname></para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT quadbin(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'UINT8'));
+SELECT quadbin(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
 -- 5193776270265024512
 </programlisting>
 			</listitem>
@@ -274,7 +274,7 @@ SELECT quadbin(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'UINT8'));
 				<para>Devolver el ancho en píxeles de una tesela Raquet</para>
 				<para><varname>width(raquet) → integer</varname></para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT width(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'UINT8'));
+SELECT width(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
 -- 2
 </programlisting>
 			</listitem>
@@ -284,7 +284,7 @@ SELECT width(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'UINT8'));
 				<para>Devolver el alto en píxeles de una tesela Raquet</para>
 				<para><varname>height(raquet) → integer</varname></para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT height(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'UINT8'));
+SELECT height(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
 -- 2
 </programlisting>
 			</listitem>
@@ -295,10 +295,10 @@ SELECT height(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'UINT8'));
 				<para><varname>nodata(raquet) → float8</varname></para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT nodata(raquet('\x01020304'::bytea, 2, 2,
-  5193776270265024512, 'UINT8', 255));
+  5193776270265024512, 'uint8', 255));
 -- 255
 -- The sentinel defaults to 0 when the constructor omits it.
-SELECT nodata(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'UINT8'));
+SELECT nodata(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
 -- 0
 </programlisting>
 			</listitem>
@@ -307,11 +307,11 @@ SELECT nodata(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'UINT8'));
 				<indexterm significance="normal"><primary><varname>pixtype</varname></primary></indexterm>
 				<para>Devolver el nombre del tipo de dato de píxel de una tesela Raquet</para>
 				<para><varname>pixtype(raquet) → text</varname></para>
-				<para>El nombre devuelto es el que aceptan los constructores, es decir, uno de <varname>UINT8</varname>, <varname>INT8</varname>, <varname>UINT16</varname>, <varname>INT16</varname>, <varname>UINT32</varname>, <varname>INT32</varname>, <varname>UINT64</varname>, <varname>INT64</varname>, <varname>FLOAT16</varname>, <varname>FLOAT32</varname> o <varname>FLOAT64</varname>. Los constructores leen el nombre sin distinguir mayúsculas de minúsculas, de modo que la grafía en minúsculas que la especificación RaQuet da al campo <varname>type</varname> de una tesela se acepta tal cual; el nombre devuelto aquí conserva las mayúsculas.</para>
+				<para>El nombre devuelto es el que aceptan los constructores, es decir, uno de <varname>uint8</varname>, <varname>int8</varname>, <varname>uint16</varname>, <varname>int16</varname>, <varname>uint32</varname>, <varname>int32</varname>, <varname>uint64</varname>, <varname>int64</varname>, <varname>float16</varname>, <varname>float32</varname> o <varname>float64</varname>. Los constructores leen el nombre sin distinguir mayúsculas de minúsculas, de modo que la grafía en minúsculas que la especificación RaQuet da al campo <varname>type</varname> de una tesela se acepta tal cual; el nombre devuelto aquí conserva las mayúsculas.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Leer la disposición de una tesela empaquetada
 SELECT quadbin(tile), width(tile), height(tile), pixtype(tile), nodata(tile)
-FROM (SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'UINT8') AS tile) t;
+FROM (SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8') AS tile) t;
 -- 5193776270265024512 | 2 | 2 | UINT8 | 0
 </programlisting>
 			</listitem>
@@ -324,7 +324,7 @@ FROM (SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'UINT8') AS 
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- The footprint of a tile covering the north-eastern quadrant at zoom 1
 SELECT round(stbox(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512,
-  'UINT8')), 6);
+  'uint8')), 6);
 -- SRID=4326;STBOX X((0,0),(180,85.051129))
 
 -- Keep the tiles whose footprint overlaps a region of interest
@@ -365,8 +365,8 @@ WHERE stbox(r.tile) &amp;&amp; stbox(t.trip);
 				<para>Las funciones que respaldan estos operadores son <varname>eq</varname>, <varname>ne</varname>, <varname>lt</varname>, <varname>le</varname>, <varname>ge</varname> y <varname>gt</varname>, junto con <varname>cmp(raquet,raquet) → integer</varname>, que devuelve -1, 0 o 1.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Dos teselas con la misma celda, disposición y píxeles son iguales
-SELECT raquet('\x0102'::bytea, 2, 1, 5193776270265024512, 'UINT8') =
-       raquet('\x0102'::bytea, 2, 1, 5193776270265024512, 'UINT8');
+SELECT raquet('\x0102'::bytea, 2, 1, 5193776270265024512, 'uint8') =
+       raquet('\x0102'::bytea, 2, 1, 5193776270265024512, 'uint8');
 -- true
 
 -- Deduplicar teselas, lo que permiten las clases de operadores btree y hash

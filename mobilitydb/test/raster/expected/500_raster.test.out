@@ -385,7 +385,7 @@ FROM (SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint,
         'UINT8') AS tile) t;
        quadbin       | width | height | pixtype | nodata 
 ---------------------+-------+--------+---------+--------
- 5193776270265024512 |     2 |      2 | UINT8   |      0
+ 5193776270265024512 |     2 |      2 | uint8   |      0
 (1 row)
 
 SELECT pixtype(raquet('\x01'::bytea, 1, 1, 5193776270265024512::bigint, 'UINT8')),
@@ -404,7 +404,7 @@ SELECT pixtype(raquet('\x01'::bytea, 1, 1, 5193776270265024512::bigint, 'UINT8')
        pixtype(raquet('\x0102'::bytea, 1, 1, 5193776270265024512::bigint, 'FLOAT16'));
  pixtype | pixtype | pixtype | pixtype | pixtype | pixtype | pixtype | pixtype | pixtype | pixtype | pixtype 
 ---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------
- UINT8   | INT16   | INT32   | FLOAT32 | FLOAT64 | INT8    | UINT16  | UINT32  | INT64   | UINT64  | FLOAT16
+ uint8   | int16   | int32   | float32 | float64 | int8    | uint16  | uint32  | int64   | uint64  | float16
 (1 row)
 
 SELECT raquet('\x0102030405060708'::bytea, 2, 1, 5193776270265024512::bigint,
@@ -422,14 +422,14 @@ SELECT pixtype(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint,
   'uint8'));
  pixtype 
 ---------
- UINT8
+ uint8
 (1 row)
 
 SELECT pixtype(raquet('\x0102030405060708'::bytea, 2, 1,
   5193776270265024512::bigint, 'float32'));
  pixtype 
 ---------
- FLOAT32
+ float32
 (1 row)
 
 SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'uint8')
@@ -449,14 +449,14 @@ SELECT pixtype(raquet('\x01'::bytea, 1, 1, 5193776270265024512::bigint, '8BUI'))
          '64BSI'));
  pixtype | pixtype | pixtype | pixtype | pixtype | pixtype 
 ---------+---------+---------+---------+---------+---------
- UINT8   | INT16   | FLOAT32 | FLOAT64 | FLOAT16 | INT64
+ uint8   | int16   | float32 | float64 | float16 | int64
 (1 row)
 
 SELECT pixtype(raquet('\x01020304'::bytea, 1, 1, 5193776270265024512::bigint,
   ST_BandPixelType(ST_AddBand(ST_MakeEmptyRaster(1, 1, 0, 0, 1), '32BF'), 1)));
  pixtype 
 ---------
- FLOAT32
+ float32
 (1 row)
 
 SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, '8BUI')
@@ -469,7 +469,7 @@ SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, '8BUI')
 SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, '4BUI');
 ERROR:  Pixel type "4BUI" carries less than a byte a pixel, which a Raquet band has no representation for
 SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'uint12');
-ERROR:  Unknown pixel type "uint12": use UINT8, INT16, INT32, FLOAT32, FLOAT64, INT8, UINT16, UINT32, INT64, UINT64, or FLOAT16, or the name PostGIS raster gives one of them
+ERROR:  Unknown pixel type "uint12": use uint8, int16, int32, float32, float64, int8, uint16, uint32, int64, uint64, or float16, or the name PostGIS raster gives one of them
 SELECT nodata(raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8',
   -9999.0));
  nodata 

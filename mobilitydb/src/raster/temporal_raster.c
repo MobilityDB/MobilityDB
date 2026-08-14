@@ -398,7 +398,7 @@ PG_FUNCTION_INFO_V1(Raster_tile_value_quadbin);
  * @param[in] width Tile width in pixels
  * @param[in] height Tile height in pixels
  * @param[in] quadbin CARTO QUADBIN cell (bigint)
- * @param[in] pixtype Pixel type name: UINT8, INT8, UINT16, INT16, UINT32, INT32, UINT64, INT64, FLOAT16, FLOAT32, or FLOAT64
+ * @param[in] pixtype Pixel type name: uint8, int8, uint16, int16, uint32, int32, uint64, int64, float16, float32, or float64
  * @param[in] nodata Nodata sentinel value
  * @param[in] has_nodata  Enable nodata filtering
  * @sqlfn rasterTileValueQuadbin()
@@ -577,7 +577,7 @@ PG_FUNCTION_INFO_V1(Raquet_constructor);
  * @param[in] width    Tile width in pixels
  * @param[in] height   Tile height in pixels
  * @param[in] quadbin  CARTO QUADBIN cell (bigint)
- * @param[in] pixtype  Pixel type name: UINT8, INT8, UINT16, INT16, UINT32, INT32, UINT64, INT64, FLOAT16, FLOAT32, or FLOAT64
+ * @param[in] pixtype  Pixel type name: uint8, int8, uint16, int16, uint32, int32, uint64, int64, float16, float32, or float64
  * @param[in] nodata   Nodata sentinel value (NULL disables nodata filtering)
  * @sqlfn raquet()
  */
