@@ -101,6 +101,130 @@ raquet_pixtype_size(MeosPixType pixtype)
   }
 }
 
+/*****************************************************************************
+ * Pixel payload codec
+ *
+ * A Raquet band is a little-endian byte stream whatever the machine that wrote
+ * it, so that a tile keeps its meaning when it travels between hosts: the WKB
+ * endianness flag describes the scalar header only, and the payload is copied
+ * through verbatim by #raquet_from_wkb_state() and its output counterpart.
+ * The bytes are therefore assembled and taken apart by arithmetic rather than
+ * copied onto a machine-typed variable. That reads the same value on every
+ * host with no compile-time endianness branch, so the path a big-endian
+ * machine takes is the very one the tests exercise on a little-endian one.
+ *****************************************************************************/
+
+/**
+ * @brief Return the unsigned integer of @p size bytes stored little-endian
+ * at @p p
+ */
+static uint64
+le_uint(const uint8 *p, size_t size)
+{
+  uint64 result = 0;
+  for (size_t i = 0; i < size; i++)
+    result |= (uint64) p[i] << (8 * i);
+  return result;
+}
+
+/**
+ * @brief Store an unsigned integer little-endian in the @p size bytes at @p p
+ */
+static void
+le_uint_store(uint8 *p, uint64 value, size_t size)
+{
+  for (size_t i = 0; i < size; i++)
+    p[i] = (uint8) (value >> (8 * i));
+}
+
+/**
+ * @brief Return the value of the pixel at position @p index of a Raquet band
+ * @param[in] pixels Row-major packed pixel bytes
+ * @param[in] index Position of the pixel, that is, `row * width + column`
+ * @param[in] pixtype Pixel data type
+ * @note An unknown pixel type yields zero, as the callers have established the
+ * type when they sized the band
+ */
+double
+raquet_pixel_value(const uint8 *pixels, size_t index, MeosPixType pixtype)
+{
+  const uint8 *p = pixels + index * raquet_pixtype_size(pixtype);
+  switch (pixtype)
+  {
+    case MEOS_PT_UINT8:
+      return (double) (uint8) le_uint(p, 1);
+    case MEOS_PT_INT16:
+    {
+      uint16 bits = (uint16) le_uint(p, 2);
+      int16 value;
+      memcpy(&value, &bits, sizeof(value));
+      return (double) value;
+    }
+    case MEOS_PT_INT32:
+    {
+      uint32 bits = (uint32) le_uint(p, 4);
+      int32 value;
+      memcpy(&value, &bits, sizeof(value));
+      return (double) value;
+    }
+    case MEOS_PT_FLOAT32:
+    {
+      uint32 bits = (uint32) le_uint(p, 4);
+      float value;
+      memcpy(&value, &bits, sizeof(value));
+      return (double) value;
+    }
+    case MEOS_PT_FLOAT64:
+    {
+      uint64 bits = le_uint(p, 8);
+      double value;
+      memcpy(&value, &bits, sizeof(value));
+      return value;
+    }
+    default:
+      return 0.0;
+  }
+}
+
+/**
+ * @brief Rewrite in place a band that a machine has just filled with its own
+ * byte order, so that it is stored little-endian as a Raquet band is
+ * @param[in,out] pixels Row-major packed pixel bytes
+ * @param[in] count Number of pixels
+ * @param[in] pixtype Pixel data type
+ * @note Single-byte and unknown pixel types leave the band untouched
+ */
+void
+raquet_pixels_from_host(uint8 *pixels, size_t count, MeosPixType pixtype)
+{
+  size_t size = raquet_pixtype_size(pixtype);
+  if (size < 2)
+    return;
+  for (size_t i = 0; i < count; i++)
+  {
+    uint8 *p = pixels + i * size;
+    /* Reading through a variable of the very width of the pixel is what makes
+     * this the value the machine meant: a copy onto a wider one would land on
+     * its high-order bytes on a big-endian host */
+    uint64 bits;
+    if (size == 2)
+    {
+      uint16 value;
+      memcpy(&value, p, sizeof(value));
+      bits = value;
+    }
+    else if (size == 4)
+    {
+      uint32 value;
+      memcpy(&value, p, sizeof(value));
+      bits = value;
+    }
+    else
+      memcpy(&bits, p, sizeof(bits));
+    le_uint_store(p, bits, size);
+  }
+}
+
 /**
  * @ingroup meos_raster_base_accessor
  * @brief Return the pixel data type corresponding to a name
@@ -242,7 +366,7 @@ raquet_as_hexwkb(const Raquet *rq, uint8_t variant, size_t *size_out)
  * @param[in] nodata Nodata sentinel value
  * @param[in] has_nodata Whether nodata filtering is active
  * @param[in] pixels Row-major packed pixel bytes (`width * height *
- * raquet_pixtype_size(pixtype)` bytes)
+ * raquet_pixtype_size(pixtype)` bytes), little-endian beyond one byte a pixel
  * @param[in] pixels_size Number of bytes available at @p pixels
  * @csqlfn #Raquet_constructor()
  */

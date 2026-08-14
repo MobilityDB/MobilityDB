@@ -184,6 +184,48 @@ int main(void)
     assert(tile == NULL);
     assert(meos_errno() != 0);
   }
+
+  /* A band is a little-endian byte stream whatever machine wrote it, so the
+   * same bytes name the same value everywhere a binding runs. The tile below
+   * is a single pixel, so the trajectory samples it wherever in the cell it
+   * falls, and the bytes of each type are the ones the specification gives for
+   * the value asserted beside them, which is what ties the decoding to the
+   * byte order of the specification rather than to that of the machine */
+  int zero_count;
+  uint64 *zero_quadbin = trajectory_quadbins(traj, 0, &zero_count);
+  assert(zero_quadbin != NULL && zero_count >= 1);
+  const uint8_t pixel_int16[2] = {0x00, 0x80};
+  const uint8_t pixel_int32[4] = {0x04, 0x03, 0x02, 0x01};
+  const uint8_t pixel_float32[4] = {0x00, 0x00, 0xc0, 0x3f};
+  const uint8_t pixel_float64[8] =
+    {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf8, 0x3f};
+  const struct
+  {
+    const uint8_t *pixels;
+    size_t size;
+    MeosPixType pixtype;
+    double value;
+  } pixel_cases[] = {
+    {pixel_int16,   sizeof(pixel_int16),   MEOS_PT_INT16,   -32768.0},
+    {pixel_int32,   sizeof(pixel_int32),   MEOS_PT_INT32,   16909060.0},
+    {pixel_float32, sizeof(pixel_float32), MEOS_PT_FLOAT32, 1.5},
+    {pixel_float64, sizeof(pixel_float64), MEOS_PT_FLOAT64, 1.5}
+  };
+  for (size_t i = 0; i < sizeof(pixel_cases) / sizeof(pixel_cases[0]); i++)
+  {
+    meos_errno_reset();
+    Temporal *tile = raster_tile_value_quadbin(traj, pixel_cases[i].pixels,
+      pixel_cases[i].size, 1, 1, zero_quadbin[0], pixel_cases[i].pixtype,
+      0.0, false);
+    assert(tile != NULL);
+    assert(meos_errno() == 0);
+    double value = tfloat_start_value(tile);
+    printf("raster_tile_value_quadbin(pixel type %d): %f\n",
+      (int) pixel_cases[i].pixtype, value);
+    assert(value == pixel_cases[i].value);
+    free(tile);
+  }
+  free(zero_quadbin);
   free(traj);
 
   meos_finalize();
