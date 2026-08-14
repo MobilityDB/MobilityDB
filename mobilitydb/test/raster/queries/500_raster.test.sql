@@ -477,6 +477,30 @@ SELECT pixtype(raquet('\x0102030405060708'::bytea, 2, 1,
 SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'uint8')
        = raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'UINT8');
 
+-- A pixel type is also accepted under the name PostGIS raster gives it, so the
+-- band type an ST_BandPixelType call reports passes into the constructor as it
+-- stands. The tile reports the name of the RaQuet specification.
+SELECT pixtype(raquet('\x01'::bytea, 1, 1, 5193776270265024512::bigint, '8BUI')),
+       pixtype(raquet('\x0102'::bytea, 1, 1, 5193776270265024512::bigint, '16BSI')),
+       pixtype(raquet('\x01020304'::bytea, 1, 1, 5193776270265024512::bigint, '32BF')),
+       pixtype(raquet('\x0102030405060708'::bytea, 1, 1, 5193776270265024512::bigint,
+         '64BF')),
+       pixtype(raquet('\x0102'::bytea, 1, 1, 5193776270265024512::bigint, '16BF')),
+       pixtype(raquet('\x0102030405060708'::bytea, 1, 1, 5193776270265024512::bigint,
+         '64BSI'));
+
+-- The band type of a PostGIS raster carries into the constructor unchanged.
+SELECT pixtype(raquet('\x01020304'::bytea, 1, 1, 5193776270265024512::bigint,
+  ST_BandPixelType(ST_AddBand(ST_MakeEmptyRaster(1, 1, 0, 0, 1), '32BF'), 1)));
+
+-- The two spellings name the same tile.
+SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, '8BUI')
+       = raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'UINT8');
+
+-- A PostGIS pixel type of less than a byte a pixel says what a tile cannot do
+-- with it, rather than reporting the name as unknown.
+SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, '4BUI');
+
 -- An unknown name is still rejected, whatever its case.
 SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'uint12');
 
