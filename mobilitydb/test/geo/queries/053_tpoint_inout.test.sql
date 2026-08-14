@@ -207,6 +207,8 @@ SELECT asMFJSON(tgeompoint 'SRID=123456;Point(50.813810 4.384260)@2019-01-01 18:
 SELECT asBinary(tgeompoint 'Point(1 1)@2000-01-01');
 SELECT asBinary(tgeompoint 'Point(1 1)@2000-01-01', 'NDR');
 SELECT asBinary(tgeompoint 'Point(1 1)@2000-01-01', 'XDR');
+-- 3D round trip: Z must survive the plain (non-extended) WKB encoding
+SELECT asText(tgeompointFromBinary(asBinary(tgeompoint 'Point(1 2 3)@2001-01-01')));
 SELECT asHexEWKB(tgeompoint '[Point(1 1)@2000-01-01]');
 SELECT asHexEWKB(tgeompoint '[Point(1 1)@2000-01-01]', 'NDR');
 SELECT asHexEWKB(tgeompoint '[Point(1 1)@2000-01-01]', 'XDR');

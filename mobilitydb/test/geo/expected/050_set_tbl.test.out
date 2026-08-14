@@ -116,6 +116,12 @@ SELECT asText(geomsetFromHexWKB(asHexWKB(geomset '{"Point(1 1 1)"}')));
  {"POINT Z (1 1 1)"}
 (1 row)
 
+SELECT asText(geomsetFromBinary(asBinary(geomset '{"Point(1 1 1)"}')));
+       astext        
+---------------------
+ {"POINT Z (1 1 1)"}
+(1 row)
+
 SELECT asEWKT(ARRAY[geometry 'Point(1 1)', 'SRID=5676;Point(1 1)']);
                 asewkt                 
 ---------------------------------------

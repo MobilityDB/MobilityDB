@@ -71,6 +71,8 @@ SELECT COUNT(*) FROM tbl_geogset WHERE geogsetFromHexWKB(asHexEWKB(g)) <> g;
 
 -- Coverage
 SELECT asText(geomsetFromHexWKB(asHexWKB(geomset '{"Point(1 1 1)"}')));
+-- 3D round trip: Z must survive the plain (non-extended) WKB encoding
+SELECT asText(geomsetFromBinary(asBinary(geomset '{"Point(1 1 1)"}')));
 SELECT asEWKT(ARRAY[geometry 'Point(1 1)', 'SRID=5676;Point(1 1)']);
 
 -------------------------------------------------------------------------------
