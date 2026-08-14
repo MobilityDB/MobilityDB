@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: tbox_to_wkb_buf</title>
+<title>MobilityDB: payload_to_wkb_buf</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -115,7 +115,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__out_8c_a592afcb79525826a9687659a6e2c5fd4.html#a592afcb79525826a9687659a6e2c5fd4">OUT_MAX_DIGS_DOUBLE</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__out_8c_ac5840da3b0d5b6607a5c6aeab4e067bb.html#ac5840da3b0d5b6607a5c6aeab4e067bb">OUT_MAX_DOUBLE_PRECISION</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__out_8c_a95c27a8a79ae819ed6c624b94a653197.html#a95c27a8a79ae819ed6c624b94a653197">OUT_SHOW_DIGS_DOUBLE</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__out_8c_ad5a05e3691934500d32097cf4c613587.html#ad5a05e3691934500d32097cf4c613587">payload_to_wkb_buf</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2temporal_2type__out_8c_ad5a05e3691934500d32097cf4c613587.html#ad5a05e3691934500d32097cf4c613587">payload_to_wkb_buf</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__setspan__inout_ga919197fa50a49c215d178f15738105e9.html#ga919197fa50a49c215d178f15738105e9">set_as_hexwkb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__setspan__inout_ga7a9ad3b49779d8435be055e2b2eaedd3.html#ga7a9ad3b49779d8435be055e2b2eaedd3">set_as_wkb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__out_8c_ab53e19d274fcba602e02bf4d189693f4.html#ab53e19d274fcba602e02bf4d189693f4">set_flags_to_wkb_buf</a></td></tr>
@@ -140,7 +140,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__box__inout_ga6833f673aefb5eebfd08edfc03ff4992.html#ga6833f673aefb5eebfd08edfc03ff4992">tbox_as_hexwkb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__out_8c_af0dc8b3225a8a74a4d933762a97243b6.html#af0dc8b3225a8a74a4d933762a97243b6">tbox_as_mfjson_sb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__box__inout_ga7c0868c84bea513be5517a973fb330a4.html#ga7c0868c84bea513be5517a973fb330a4">tbox_as_wkb</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2temporal_2type__out_8c_ab02df07eb4a9af89aa0c964100e7137b.html#ab02df07eb4a9af89aa0c964100e7137b">tbox_to_wkb_buf</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__out_8c_ab02df07eb4a9af89aa0c964100e7137b.html#ab02df07eb4a9af89aa0c964100e7137b">tbox_to_wkb_buf</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__out_8c_a4fcc2bbd96e991514ca189a61ea25f07.html#a4fcc2bbd96e991514ca189a61ea25f07">tbox_to_wkb_flags_buf</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2type__out_8c_aaa482c1e7a9927270e400f16c8af708e.html#aaa482c1e7a9927270e400f16c8af708e">tbox_to_wkb_size</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__inout_gaad633bf2a66fdc58c1a169e8c275e953.html#gaad633bf2a66fdc58c1a169e8c275e953">temporal_as_hexwkb</a></td></tr>
@@ -174,8 +174,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ab02df07eb4a9af89aa0c964100e7137b" name="ab02df07eb4a9af89aa0c964100e7137b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab02df07eb4a9af89aa0c964100e7137b">&#9670;&#160;</a></span>tbox_to_wkb_buf()</h2>
+<a id="ad5a05e3691934500d32097cf4c613587" name="ad5a05e3691934500d32097cf4c613587"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad5a05e3691934500d32097cf4c613587">&#9670;&#160;</a></span>payload_to_wkb_buf()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -184,10 +184,16 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static uint8_t * tbox_to_wkb_buf </td>
+          <td class="memname">static uint8_t * payload_to_wkb_buf </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structTBox.html">TBox</a> *&#160;</td>
-          <td class="paramname"><em>box</em>, </td>
+          <td class="paramtype">const uint8_t *&#160;</td>
+          <td class="paramname"><em>valptr</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>size</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -214,12 +220,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Write into the buffer a temporal box in the Well-Known Binary (WKB) representation. </p>
-<p >The output is as follows</p><ul>
-<li>Endian byte</li>
-<li>Flag byte stating whether the are a value and/or a time dimensions</li>
-<li>Output the 2 doubles for the value dimension (if there is one) and the 2 timestamps for the time dimension (if there is one) </li>
-</ul>
+<p>Write into the buffer an opaque byte payload in the Well-Known Binary (WKB) representation. </p>
+<p >A payload such as a text string or the pixel array of a <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> tile is a sequence of bytes, not a number, so it carries no byte order and is written in the order it is held whatever endianness is requested. Passing it to <a class="el" href="meos_2src_2temporal_2type__out_8c_aa6c8e02de5ca672fba52c12abda6cb66.html#aa6c8e02de5ca672fba52c12abda6cb66" title="Write into the buffer the bytes of the value in the Well-Known Binary (WKB) representation.">bytes_to_wkb_buf()</a> instead would reverse it as that function reverses a scalar, and the reader, which copies the payload verbatim, would not put it back. </p>
 
 </div>
 </div>
