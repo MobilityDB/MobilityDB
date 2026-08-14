@@ -81,6 +81,20 @@ gdal_to_pixtype(GDALDataType dt, MeosPixType *pixtype)
     case GDT_Int32:   *pixtype = MEOS_PT_INT32;   return true;
     case GDT_Float32: *pixtype = MEOS_PT_FLOAT32; return true;
     case GDT_Float64: *pixtype = MEOS_PT_FLOAT64; return true;
+    case GDT_UInt16:  *pixtype = MEOS_PT_UINT16;  return true;
+    case GDT_UInt32:  *pixtype = MEOS_PT_UINT32;  return true;
+    /* The types GDAL has gained over its releases, each read by the version
+     * that names it */
+#if GDAL_VERSION_NUM >= GDAL_COMPUTE_VERSION(3,7,0)
+    case GDT_Int8:    *pixtype = MEOS_PT_INT8;    return true;
+#endif
+#if GDAL_VERSION_NUM >= GDAL_COMPUTE_VERSION(3,5,0)
+    case GDT_Int64:   *pixtype = MEOS_PT_INT64;   return true;
+    case GDT_UInt64:  *pixtype = MEOS_PT_UINT64;  return true;
+#endif
+#if GDAL_VERSION_NUM >= GDAL_COMPUTE_VERSION(3,11,0)
+    case GDT_Float16: *pixtype = MEOS_PT_FLOAT16; return true;
+#endif
     default:
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
         "Unsupported GDAL raster data type for raquet ingest: %s",

@@ -275,13 +275,16 @@ raster_quadbin_from_bounds(double origin_x, double origin_y, double pixel_w,
  *****************************************************************************/
 
 /**
- * @brief Read a single pixel value at (col, row) from a row-major byte array.
+ * @brief Return in the last argument the pixel value at (col, row) of a
+ * row-major byte array
+ * @return true on success; on failure sets a MEOS error and returns false
  */
-static double
+static bool
 read_pixel(const uint8_t *pixels, int col, int row, int width,
-  MeosPixType pixtype)
+  MeosPixType pixtype, double *result)
 {
-  return raquet_pixel_value(pixels, (size_t) row * width + col, pixtype);
+  return raquet_pixel_value(pixels, (size_t) row * width + col, pixtype,
+    result);
 }
 
 /*****************************************************************************
@@ -384,7 +387,14 @@ raster_tile_value_quadbin(const Temporal *traj, const uint8_t *pixels,
     if (col < 0 || col >= (int) width || row < 0 || row >= (int) height)
       continue;
 
-    double pixval = read_pixel(pixels, col, row, width, pixtype);
+    double pixval;
+    if (! read_pixel(pixels, col, row, width, pixtype, &pixval))
+    {
+      /* The band holds a value the sampling surface cannot carry, so the
+       * result would stand for a number the band does not hold */
+      pfree(insts); pfree(result_insts);
+      return NULL;
+    }
     if (has_nodata && pixval == nodata)
       continue;
 

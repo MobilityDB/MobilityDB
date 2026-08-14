@@ -43,6 +43,7 @@
 /* C */
 #include <assert.h>
 #include <limits.h>
+#include <math.h>
 #include <string.h>
 /* PostgreSQL */
 #include <postgres.h>
@@ -88,6 +89,12 @@ static const pixtype_catalog_struct MEOS_PIXTYPE_CATALOG[] =
   [MEOS_PT_INT32]   = { "INT32",   4 },
   [MEOS_PT_FLOAT32] = { "FLOAT32", 4 },
   [MEOS_PT_FLOAT64] = { "FLOAT64", 8 },
+  [MEOS_PT_INT8]    = { "INT8",    1 },
+  [MEOS_PT_UINT16]  = { "UINT16",  2 },
+  [MEOS_PT_UINT32]  = { "UINT32",  4 },
+  [MEOS_PT_INT64]   = { "INT64",   8 },
+  [MEOS_PT_UINT64]  = { "UINT64",  8 },
+  [MEOS_PT_FLOAT16] = { "FLOAT16", 2 },
 };
 
 /**
@@ -204,51 +211,149 @@ le_uint_store(uint8 *p, uint64 value, size_t size)
 }
 
 /**
- * @brief Return the value of the pixel at position @p index of a Raquet band
+ * @brief Return true when an unsigned integer is exactly representable in a
+ * double, that is, when it is no greater than 2^53
+ * @details A double carries 53 bits of significand, so beyond that the
+ * integers stop being consecutive and a conversion rounds to a neighbour.
+ */
+static bool
+exact_in_double(uint64 value)
+{
+  return value <= (UINT64_C(1) << 53);
+}
+
+/**
+ * @brief Report a pixel that the sampling surface cannot carry and return zero
+ * @details The sampling surface is double-valued, so a 64-bit integer band
+ * holds values that no double names. Such a pixel is reported rather than
+ * rounded to a neighbouring value, which would answer a question the caller
+ * did not ask.
+ */
+static bool
+pixel_out_of_domain(void)
+{
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "Pixel value is not exactly representable in a double precision number, "
+    "which is the value domain of the raster sampling");
+  return false;
+}
+
+/**
+ * @brief Return the value of a 16-bit IEEE half precision number
+ * @param[in] bits The sixteen bits of the number
+ */
+static double
+half_to_double(uint16 bits)
+{
+  int sign = (bits >> 15) & 0x1;
+  int exponent = (bits >> 10) & 0x1F;
+  uint32 mantissa = bits & 0x3FF;
+  double result;
+  if (exponent == 0)
+    /* Zero when the mantissa is zero, a subnormal otherwise, whose exponent is
+     * the one of the smallest normal and whose leading bit is not implied */
+    result = ldexp((double) mantissa, -24);
+  else if (exponent == 0x1F)
+    result = mantissa ? NAN : INFINITY;
+  else
+    /* A normal number carries an implied leading bit */
+    result = ldexp((double) (mantissa | 0x400), exponent - 25);
+  return sign ? -result : result;
+}
+
+/**
+ * @brief Return in the last argument the value of the pixel at position
+ * @p index of a Raquet band
  * @param[in] pixels Row-major packed pixel bytes
  * @param[in] index Position of the pixel, that is, `row * width + column`
  * @param[in] pixtype Pixel data type
- * @note An unknown pixel type yields zero, as the callers have established the
- * type when they sized the band
+ * @param[out] result Value of the pixel
+ * @return true on success; on failure sets a MEOS error and returns false,
+ * which a caller must not read past, since a value the sampling surface cannot
+ * carry has no number to stand for it
  */
-double
-raquet_pixel_value(const uint8 *pixels, size_t index, MeosPixType pixtype)
+bool
+raquet_pixel_value(const uint8 *pixels, size_t index, MeosPixType pixtype,
+  double *result)
 {
   const uint8 *p = pixels + index * raquet_pixtype_size(pixtype);
   switch (pixtype)
   {
     case MEOS_PT_UINT8:
-      return (double) (uint8) le_uint(p, 1);
+      *result = (double) (uint8) le_uint(p, 1);
+      return true;
     case MEOS_PT_INT16:
     {
       uint16 bits = (uint16) le_uint(p, 2);
       int16 value;
       memcpy(&value, &bits, sizeof(value));
-      return (double) value;
+      *result = (double) value;
+      return true;
     }
     case MEOS_PT_INT32:
     {
       uint32 bits = (uint32) le_uint(p, 4);
       int32 value;
       memcpy(&value, &bits, sizeof(value));
-      return (double) value;
+      *result = (double) value;
+      return true;
     }
     case MEOS_PT_FLOAT32:
     {
       uint32 bits = (uint32) le_uint(p, 4);
       float value;
       memcpy(&value, &bits, sizeof(value));
-      return (double) value;
+      *result = (double) value;
+      return true;
     }
     case MEOS_PT_FLOAT64:
     {
       uint64 bits = le_uint(p, 8);
-      double value;
-      memcpy(&value, &bits, sizeof(value));
-      return value;
+      memcpy(result, &bits, sizeof(*result));
+      return true;
     }
+    case MEOS_PT_INT8:
+    {
+      uint8 bits = (uint8) le_uint(p, 1);
+      int8 value;
+      memcpy(&value, &bits, sizeof(value));
+      *result = (double) value;
+      return true;
+    }
+    case MEOS_PT_UINT16:
+      *result = (double) (uint16) le_uint(p, 2);
+      return true;
+    case MEOS_PT_UINT32:
+      *result = (double) (uint32) le_uint(p, 4);
+      return true;
+    case MEOS_PT_INT64:
+    {
+      uint64 bits = le_uint(p, 8);
+      int64 value;
+      memcpy(&value, &bits, sizeof(value));
+      /* The magnitude of the most negative value overflows a positive int64,
+       * so it is taken in unsigned arithmetic */
+      if (! exact_in_double(value < 0 ?
+            (uint64) -(value + 1) + 1 : (uint64) value))
+        return pixel_out_of_domain();
+      *result = (double) value;
+      return true;
+    }
+    case MEOS_PT_UINT64:
+    {
+      uint64 value = le_uint(p, 8);
+      if (! exact_in_double(value))
+        return pixel_out_of_domain();
+      *result = (double) value;
+      return true;
+    }
+    case MEOS_PT_FLOAT16:
+      *result = half_to_double((uint16) le_uint(p, 2));
+      return true;
     default:
-      return 0.0;
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "Unknown raquet pixel type code: %u", (uint8) pixtype);
+      return false;
   }
 }
 
@@ -294,7 +399,7 @@ raquet_pixels_from_host(uint8 *pixels, size_t count, MeosPixType pixtype)
 /**
  * @ingroup meos_raster_base_accessor
  * @brief Return the pixel data type corresponding to a name
- * @param[in] str Pixel type name: UINT8, INT16, INT32, FLOAT32, or FLOAT64
+ * @param[in] str Pixel type name: UINT8, INT8, UINT16, INT16, UINT32, INT32, UINT64, INT64, FLOAT16, FLOAT32, or FLOAT64
  * @note This is the parser counterpart of #raquet_pixtype()
  * @note The name is read without regard to case, so the lower-case spelling
  * the RaQuet specification gives the `type` field of a tile carries straight
@@ -565,7 +670,7 @@ raquet_nodata(const Raquet *rq)
  * @param[in] rq Raquet tile
  * @return On error return @p NULL
  * @note The returned name is the one accepted by the tile constructors, that
- * is, one of UINT8, INT16, INT32, FLOAT32, or FLOAT64
+ * is, one of UINT8, INT8, UINT16, INT16, UINT32, INT32, UINT64, INT64, FLOAT16, FLOAT32, or FLOAT64
  * @csqlfn #Raquet_pixtype()
  */
 char *
