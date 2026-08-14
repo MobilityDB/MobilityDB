@@ -43,15 +43,21 @@ jobs:
             libproj-dev \
             libjson-c-dev \
             libgsl-dev \
-            libgdal-dev
+            libgdal-dev \
+            libh3-dev \
+            libxml2-dev \
+            zlib1g-dev
 
       - name: Build
         run: |
           mkdir build
           cd build
-          # Enable the optional types to be able to test them below. RASTER
-          # requires GDAL, installed above
-          cmake -DCMAKE_BUILD_TYPE=Debug -DMEOS=on -DCBUFFER=on -DJSON=on -DPOSE=on -DRGEO=on -DRASTER=on ..
+          # ALL enables every optional family, so a family added later is
+          # covered here without editing this workflow: the list in
+          # CMakeLists.txt decides, not this line. The families carrying an
+          # external dependency take it from the packages installed above,
+          # H3 from libh3, RASTER from GDAL, POINTCLOUD from libxml2 + zlib.
+          cmake -DCMAKE_BUILD_TYPE=Debug -DMEOS=on -DALL=on ..
           make -j $(nproc)
           sudo make install
 
