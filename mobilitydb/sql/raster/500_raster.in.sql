@@ -179,7 +179,7 @@ CREATE OR REPLACE FUNCTION rasterValue(
  * @param[in] width Tile width in pixels
  * @param[in] height Tile height in pixels
  * @param[in] quadbin CARTO QUADBIN cell identifier
- * @param[in] pixtype Pixel type: UINT8, INT16, INT32, FLOAT32, or FLOAT64
+ * @param[in] pixtype Pixel type: UINT8, INT8, UINT16, INT16, UINT32, INT32, UINT64, INT64, FLOAT16, FLOAT32, or FLOAT64
  * @param[in] nodata Nodata sentinel value
  * @param[in] has_nodata Enable nodata filtering
  */

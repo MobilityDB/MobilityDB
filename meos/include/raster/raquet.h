@@ -93,8 +93,8 @@ extern void raquet_set_stbox(const Raquet *rq, STBox *box);
  * Pixel payload codec
  *****************************************************************************/
 
-extern double raquet_pixel_value(const uint8 *pixels, size_t index,
-  MeosPixType pixtype);
+extern bool raquet_pixel_value(const uint8 *pixels, size_t index,
+  MeosPixType pixtype, double *result);
 extern void raquet_pixels_from_host(uint8 *pixels, size_t count,
   MeosPixType pixtype);
 

@@ -53,10 +53,13 @@
 /*****************************************************************************/
 
 /**
- * @brief Pixel data type for raster chip sampling.
+ * @brief Pixel data type of a Raquet band
  *
- * Values are assigned to be compatible with the corresponding PostGIS
- * rt_pixtype codes where they overlap.
+ * The names are the ones the RaQuet specification gives the `type` field of a
+ * band. The code of a type indexes the pixel type catalog and is what a tile
+ * carries in its header and in its Well-Known Binary representation, so a type
+ * keeps the code it has and a new one takes the next free code. The codes are
+ * MEOS's own: the PostGIS rt_pixtype codes number the types differently.
  */
 typedef enum
 {
@@ -65,6 +68,12 @@ typedef enum
   MEOS_PT_INT32   = 2,   /**< Signed 32-bit integer   */
   MEOS_PT_FLOAT32 = 3,   /**< 32-bit IEEE float       */
   MEOS_PT_FLOAT64 = 4,   /**< 64-bit IEEE double      */
+  MEOS_PT_INT8    = 5,   /**< Signed 8-bit integer    */
+  MEOS_PT_UINT16  = 6,   /**< Unsigned 16-bit integer */
+  MEOS_PT_UINT32  = 7,   /**< Unsigned 32-bit integer */
+  MEOS_PT_INT64   = 8,   /**< Signed 64-bit integer   */
+  MEOS_PT_UINT64  = 9,   /**< Unsigned 64-bit integer */
+  MEOS_PT_FLOAT16 = 10,  /**< 16-bit IEEE half        */
 } MeosPixType;
 
 /* Pixel type utility functions */

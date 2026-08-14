@@ -448,7 +448,24 @@ SELECT pixtype(raquet('\x01'::bytea, 1, 1, 5193776270265024512::bigint, 'UINT8')
        pixtype(raquet('\x01020304'::bytea, 1, 1, 5193776270265024512::bigint, 'INT32')),
        pixtype(raquet('\x01020304'::bytea, 1, 1, 5193776270265024512::bigint, 'FLOAT32')),
        pixtype(raquet('\x0102030405060708'::bytea, 1, 1, 5193776270265024512::bigint,
-         'FLOAT64'));
+         'FLOAT64')),
+       pixtype(raquet('\x01'::bytea, 1, 1, 5193776270265024512::bigint, 'INT8')),
+       pixtype(raquet('\x0102'::bytea, 1, 1, 5193776270265024512::bigint, 'UINT16')),
+       pixtype(raquet('\x01020304'::bytea, 1, 1, 5193776270265024512::bigint, 'UINT32')),
+       pixtype(raquet('\x0102030405060708'::bytea, 1, 1, 5193776270265024512::bigint,
+         'INT64')),
+       pixtype(raquet('\x0102030405060708'::bytea, 1, 1, 5193776270265024512::bigint,
+         'UINT64')),
+       pixtype(raquet('\x0102'::bytea, 1, 1, 5193776270265024512::bigint, 'FLOAT16'));
+
+-- The pixel size of a type is the one the specification gives it, so a band of
+-- one pixel is exactly as many bytes wide.
+SELECT raquet('\x0102030405060708'::bytea, 2, 1, 5193776270265024512::bigint,
+  'UINT32') IS NOT NULL AS uint32_two_pixels,
+       raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint, 'INT8')
+  IS NOT NULL AS int8_two_pixels,
+       raquet('\x0102030405060708'::bytea, 1, 1, 5193776270265024512::bigint,
+  'FLOAT16') IS NOT NULL AS float16_one_pixel_spare_bytes;
 
 -- The pixel type name is read without regard to case, so the lower-case
 -- spelling the RaQuet specification gives a tile's type field is accepted as

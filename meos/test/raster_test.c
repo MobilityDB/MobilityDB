@@ -194,6 +194,14 @@ int main(void)
   int zero_count;
   uint64 *zero_quadbin = trajectory_quadbins(traj, 0, &zero_count);
   assert(zero_quadbin != NULL && zero_count >= 1);
+  const uint8_t pixel_int8[1] = {0xff};
+  const uint8_t pixel_uint16[2] = {0xff, 0xff};
+  const uint8_t pixel_uint32[4] = {0xff, 0xff, 0xff, 0xff};
+  /* 2^53, the largest integer the sampling surface carries exactly */
+  const uint8_t pixel_int64[8] = {0, 0, 0, 0, 0, 0, 0x20, 0x00};
+  const uint8_t pixel_uint64[8] = {0, 0, 0, 0, 0, 0, 0x20, 0x00};
+  /* 1.0 and -2.0 as 16-bit halves */
+  const uint8_t pixel_float16[2] = {0x00, 0x3c};
   const uint8_t pixel_int16[2] = {0x00, 0x80};
   const uint8_t pixel_int32[4] = {0x04, 0x03, 0x02, 0x01};
   const uint8_t pixel_float32[4] = {0x00, 0x00, 0xc0, 0x3f};
@@ -209,7 +217,13 @@ int main(void)
     {pixel_int16,   sizeof(pixel_int16),   MEOS_PT_INT16,   -32768.0},
     {pixel_int32,   sizeof(pixel_int32),   MEOS_PT_INT32,   16909060.0},
     {pixel_float32, sizeof(pixel_float32), MEOS_PT_FLOAT32, 1.5},
-    {pixel_float64, sizeof(pixel_float64), MEOS_PT_FLOAT64, 1.5}
+    {pixel_float64, sizeof(pixel_float64), MEOS_PT_FLOAT64, 1.5},
+    {pixel_int8,    sizeof(pixel_int8),    MEOS_PT_INT8,    -1.0},
+    {pixel_uint16,  sizeof(pixel_uint16),  MEOS_PT_UINT16,  65535.0},
+    {pixel_uint32,  sizeof(pixel_uint32),  MEOS_PT_UINT32,  4294967295.0},
+    {pixel_int64,   sizeof(pixel_int64),   MEOS_PT_INT64,   9007199254740992.0},
+    {pixel_uint64,  sizeof(pixel_uint64),  MEOS_PT_UINT64,  9007199254740992.0},
+    {pixel_float16, sizeof(pixel_float16), MEOS_PT_FLOAT16, 1.0}
   };
   for (size_t i = 0; i < sizeof(pixel_cases) / sizeof(pixel_cases[0]); i++)
   {
@@ -224,6 +238,31 @@ int main(void)
       (int) pixel_cases[i].pixtype, value);
     assert(value == pixel_cases[i].value);
     free(tile);
+  }
+  /* A 64-bit integer band holds values that no double names. Such a pixel is
+   * reported rather than rounded to a neighbour, so that a sampled value is
+   * never a number the band does not hold. The two below are 2^53 + 1, the
+   * first integer a double skips, and 2^63 */
+  const uint8_t over_int64[8] = {0x01, 0, 0, 0, 0, 0, 0x20, 0x00};
+  const uint8_t over_uint64[8] = {0, 0, 0, 0, 0, 0, 0, 0x80};
+  const struct
+  {
+    const uint8_t *pixels;
+    MeosPixType pixtype;
+    const char *label;
+  } domain_cases[] = {
+    {over_int64,  MEOS_PT_INT64,  "INT64 2^53+1"},
+    {over_uint64, MEOS_PT_UINT64, "UINT64 2^63"}
+  };
+  for (size_t i = 0; i < sizeof(domain_cases) / sizeof(domain_cases[0]); i++)
+  {
+    meos_errno_reset();
+    Temporal *tile = raster_tile_value_quadbin(traj, domain_cases[i].pixels, 8,
+      1, 1, zero_quadbin[0], domain_cases[i].pixtype, 0.0, false);
+    printf("raster_tile_value_quadbin(%s): %s, errno %d\n",
+      domain_cases[i].label, tile ? "non-NULL" : "NULL", meos_errno());
+    assert(tile == NULL);
+    assert(meos_errno() != 0);
   }
   free(zero_quadbin);
   free(traj);
