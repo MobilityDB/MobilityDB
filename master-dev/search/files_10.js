@@ -13,8 +13,9 @@ var searchData=
   ['route_5fgeom_2ec_10',['route_geom.c',['../route__geom_8c.html',1,'']]],
   ['route_5flength_2ec_11',['route_length.c',['../route__length_8c.html',1,'']]],
   ['rtree_5fexample_2ec_12',['rtree_example.c',['../rtree__example_8c.html',1,'']]],
-  ['rtree_5fknn_5ftest_2ec_13',['rtree_knn_test.c',['../rtree__knn__test_8c.html',1,'']]],
-  ['rtree_5fmest_5fexample_2ec_14',['rtree_mest_example.c',['../rtree__mest__example_8c.html',1,'']]],
-  ['rtree_5fmest_5ftest_2ec_15',['rtree_mest_test.c',['../rtree__mest__test_8c.html',1,'']]],
-  ['rtree_5fspan_5ftest_2ec_16',['rtree_span_test.c',['../rtree__span__test_8c.html',1,'']]]
+  ['rtree_5fjoin_5ftest_2ec_13',['rtree_join_test.c',['../rtree__join__test_8c.html',1,'']]],
+  ['rtree_5fknn_5ftest_2ec_14',['rtree_knn_test.c',['../rtree__knn__test_8c.html',1,'']]],
+  ['rtree_5fmest_5fexample_2ec_15',['rtree_mest_example.c',['../rtree__mest__example_8c.html',1,'']]],
+  ['rtree_5fmest_5ftest_2ec_16',['rtree_mest_test.c',['../rtree__mest__test_8c.html',1,'']]],
+  ['rtree_5fspan_5ftest_2ec_17',['rtree_span_test.c',['../rtree__span__test_8c.html',1,'']]]
 ];
