@@ -3975,6 +3975,27 @@
 		</sect2>
 
 		<sect2>
+			<title>Raquet Serialization</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="raquet_asBinary"><varname>asBinary</varname></link>: Return the Well-Known Binary (WKB) representation of a Raquet tile</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="raquet_asHexWKB"><varname>asHexWKB</varname></link>: Return the ASCII hex-encoded Well-Known Binary (HexWKB) representation of a Raquet tile</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="raquetFromBinary"><varname>raquetFromBinary</varname></link>: Return a Raquet tile from its Well-Known Binary (WKB) representation</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="raquetFromHexWKB"><varname>raquetFromHexWKB</varname></link>: Return a Raquet tile from its ASCII hex-encoded Well-Known Binary (HexWKB) representation</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
 			<title>Raquet Accessors and Comparison</title>
 			<itemizedlist>
 				<listitem>

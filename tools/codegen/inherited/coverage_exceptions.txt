@@ -106,7 +106,6 @@ mobilitydb/sql/quadbin/359_tquadbin_posops.in.sql
 mobilitydb/sql/quadbin/362_tquadbin_spatialrels.in.sql
 mobilitydb/sql/quadbin/372_tquadbin_gist.in.sql
 mobilitydb/sql/quadbin/373_tquadbin_spgist.in.sql
-mobilitydb/sql/raster/500_raster.in.sql
 mobilitydb/sql/rgeo/154_trgeo_compops.in.sql
 mobilitydb/sql/rgeo/156_trgeo_spatialfuncs.in.sql
 mobilitydb/sql/rgeo/160_trgeo_boxops.in.sql
