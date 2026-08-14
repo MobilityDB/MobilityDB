@@ -541,14 +541,8 @@ ea_intersects_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 {
   if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
-  if (ever)
-    return spatialrel_trgeo_trav_geo(temp, gs, (Datum) NULL,
-      (varfunc) &datum_geom_intersects2d, 2, INVERT_NO);
-  /* aIntersects(trgeo, geo) ≡ NOT eDisjoint(trgeo, geo), and the temporal
-   * value is ever disjoint from the geometry exactly where the geometry does
-   * not cover its traversed area, so the always semantics are that covering */
-  return spatialrel_trgeo_trav_geo(temp, gs, (Datum) NULL,
-    (varfunc) &datum_geom_covers, 2, INVERT);
+  return ea_spatialrel_trgeo_poses_geo(temp, gs, &datum_geom_intersects2d,
+    ever);
 }
 
 /**
@@ -648,8 +642,7 @@ aintersects_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
 int
 etouches_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  return spatialrel_trgeo_trav_geo(temp, gs, (Datum) NULL,
-    (varfunc) &datum_geom_touches, 2, INVERT_NO);
+  return ea_spatialrel_trgeo_poses_geo(temp, gs, &datum_geom_touches, EVER);
 }
 
 /**
@@ -663,8 +656,7 @@ etouches_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 int
 atouches_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  return spatialrel_trgeo_trav_geo(temp, gs, (Datum) NULL,
-    (varfunc) &datum_geom_touches, 2, INVERT_NO);
+  return ea_spatialrel_trgeo_poses_geo(temp, gs, &datum_geom_touches, ALWAYS);
 }
 
 /**

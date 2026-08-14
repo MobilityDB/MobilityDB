@@ -185,6 +185,14 @@ SELECT aIntersects(
 SELECT aIntersects(
   geometry 'Polygon((-1 -1,4 -1,4 4,-1 4,-1 -1))',
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(1 0),0)@2001-01-05]');
+-- A body that overlaps the region at every pose without ever being contained
+-- in it meets it always
+SELECT eIntersects(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
+  geometry 'Polygon((0.5 -1,20 -1,20 2,0.5 2,0.5 -1))');
+SELECT aIntersects(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
+  geometry 'Polygon((0.5 -1,20 -1,20 2,0.5 2,0.5 -1))');
 
 -------------------------------------------------------------------------------
 -- eTouches / aTouches
