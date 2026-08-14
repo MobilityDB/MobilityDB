@@ -1,0 +1,48 @@
+SELECT round(startValue(tDistance(
+  trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  geometry 'Point(5 3)'))::numeric, 6);
+  round   
+----------
+ 3.605551
+(1 row)
+
+SELECT round(nearestApproachDistance(
+  trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  geometry 'Point(5 3)')::numeric, 6);
+  round   
+----------
+ 2.000000
+(1 row)
+
+SELECT round(minValue(tDistance(
+  trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  geometry 'Point(5 3)'))::numeric, 6);
+  round   
+----------
+ 2.000000
+(1 row)
+
+SELECT round(nearestApproachDistance(
+  trgeometry 'Polygon((-2 -0.5,2 -0.5,2 0.5,-2 0.5,-2 -0.5));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),3.141592653589793)@2001-01-02]',
+  geometry 'Point(0 3)')::numeric, 6);
+  round   
+----------
+ 0.938447
+(1 row)
+
+SELECT round(minValue(
+  trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]' <->
+  geometry 'Point(5 3)')::numeric, 6);
+  round   
+----------
+ 2.000000
+(1 row)
+
+SELECT getTimestamp(nearestApproachInstant(
+  trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  geometry 'Point(5 3)')) <@ tstzspan '(2001-01-01, 2001-01-02)';
+ ?column? 
+----------
+ t
+(1 row)
+
