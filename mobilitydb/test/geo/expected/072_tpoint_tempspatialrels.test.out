@@ -420,6 +420,24 @@ SELECT tIntersects(tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, P
  {[t@Sat Jan 01 00:00:00 2000 PST], (f@Sat Jan 01 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST], [f@Tue Jan 04 00:00:00 2000 PST, f@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
+SELECT tIntersects(tgeompoint '[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02]', geometry 'Point(1 1)');
+                            tintersects                             
+--------------------------------------------------------------------
+ {[t@Sat Jan 01 00:00:00 2000 PST, t@Sun Jan 02 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tIntersects(tgeompoint '[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02, Point(3 3)@2000-01-03]', geometry 'Point(1 1)');
+                                                             tintersects                                                              
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[t@Sat Jan 01 00:00:00 2000 PST, t@Sun Jan 02 00:00:00 2000 PST], (f@Sun Jan 02 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tIntersects(tgeompoint '[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02]', geometry 'Point(2 2)');
+                            tintersects                             
+--------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST]}
+(1 row)
+
 SELECT tIntersects(tgeompoint '[Point(0 1)@2000-01-01, Point(2 1)@2000-01-04]', geometry 'Linestring(1 0,1 1,2 1,2 0)');
                                             tintersects                                             
 ----------------------------------------------------------------------------------------------------

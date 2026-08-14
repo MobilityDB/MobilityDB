@@ -159,6 +159,14 @@ SELECT eIntersects(geometry 'Point(1 1)', tgeompoint 'Point(1 1)@2000-01-01');
 SELECT eIntersects(geometry 'Point(1 1)', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
 SELECT eIntersects(geometry 'Point(1 1)', tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03]');
 SELECT eIntersects(geometry 'Point(1 1)', tgeompoint '{[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03],[Point(3 3)@2000-01-04, Point(3 3)@2000-01-05]}');
+-- A temporal point that stands still meets the point it stands on, and no other
+SELECT eIntersects(geometry 'Point(1 1)', tgeompoint '[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02]');
+SELECT eIntersects(geometry 'Point(1 1)', tgeompoint '[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02, Point(1 1)@2000-01-03]');
+SELECT eIntersects(geometry 'MultiPoint(1 1,2 2)', tgeompoint '[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02]');
+SELECT eDisjoint(geometry 'Point(1 1)', tgeompoint '[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02]');
+SELECT eIntersects(geometry 'Point(2 2)', tgeompoint '[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02]');
+-- Standing still for one segment and moving on the next
+SELECT eIntersects(geometry 'Point(1 1)', tgeompoint '[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02, Point(3 3)@2000-01-03]');
 -- Empty
 SELECT eIntersects(geometry 'Point empty', tgeompoint 'Point(1 1)@2000-01-01');
 SELECT eIntersects(geometry 'Point empty', tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02, Point(1 1)@2000-01-03}');
