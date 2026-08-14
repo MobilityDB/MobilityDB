@@ -1,0 +1,147 @@
+#!/usr/bin/env bash
+#-------------------------------------------------------------------------------
+#
+# pre-push - run the project's static-analysis gates locally before a push
+#
+# Mirrors the CI "Cppcheck" job (.github/workflows/cppcheck.yml) so that the
+# same findings that would be annotated on the pull request by
+# github-advanced-security are caught on the developer's machine first. It
+# also runs the meos_error return-or-not contract check
+# (tools/check_meos_error_returns.py) that CI enforces separately.
+#
+# The hook is portable across machines: it discovers a build directory that
+# has a compile_commands.json (any `build*/` produced with
+# -DCMAKE_EXPORT_COMPILE_COMMANDS=ON), and it FAILS OPEN - never blocking the
+# push - whenever it cannot analyse (cppcheck absent, no build directory, not
+# inside the work tree). It therefore only ever blocks on real, attributable
+# findings in the files the push actually changes.
+#
+# Enable it once per clone (it is not active by default, matching git's
+# security model for hooks that ship inside a repository):
+#
+#     git config core.hooksPath .githooks
+#
+# See .githooks/README.md for details.
+#
+# Copyright (c) 2001-2025, PostGIS contributors
+# Copyright (c) 2016-2025, Université libre de Bruxelles (ULB)
+#
+# Permission to use, copy, modify, and distribute this software and its
+# documentation for any purpose, without fee, and without a written agreement
+# is hereby granted, provided that the above copyright notice and this
+# paragraph and the following two paragraphs appear in all copies.
+#
+# IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
+# DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
+# LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
+# EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY OF
+# SUCH DAMAGE.
+#
+# UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
+# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+# FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON AN
+# "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
+# PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+#
+#-------------------------------------------------------------------------------
+
+set -u
+
+root=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
+cd "$root" || exit 0
+
+# First-party C/H files changed on this branch relative to the upstream master
+# tip (fall back to origin/master, then to the local master branch). Vendored
+# trees are excluded exactly as the CI job suppresses them.
+base=$(git merge-base HEAD upstream/master 2>/dev/null \
+     || git merge-base HEAD origin/master 2>/dev/null \
+     || git merge-base HEAD master 2>/dev/null)
+[ -z "$base" ] && exit 0
+
+files=$(git diff --name-only "$base"...HEAD 2>/dev/null \
+  | grep -E '^(meos|mobilitydb)/.*\.(c|h)$' \
+  | grep -vE '/(postgres|postgis|pgtypes|clipper2|pointcloud-pg)/')
+[ -z "$files" ] && exit 0
+
+fail=0
+
+#-- meos_error return-or-not contract (no build needed) ------------------------
+if [ -f tools/check_meos_error_returns.py ] \
+   && command -v python3 >/dev/null 2>&1 \
+   && printf '%s\n' "$files" | grep -qE '\.c$'; then
+  if ! mout=$(python3 tools/check_meos_error_returns.py 2>&1); then
+    echo "pre-push: the meos_error return-or-not contract failed:" >&2
+    printf '%s\n' "$mout" | grep -iE 'FAIL|:[0-9]+ \(in ' | head -20 >&2
+    fail=1
+  fi
+fi
+
+#-- cppcheck (mirror .github/workflows/cppcheck.yml) ---------------------------
+if command -v cppcheck >/dev/null 2>&1 && [ -f cppcheck-mobilitydb.cfg ]; then
+  # Locate (or generate) a compile_commands.json so cppcheck sees the build's
+  # real -I include paths, exactly as the CI --project invocation does.
+  cc=$(ls build*/compile_commands.json 2>/dev/null | head -1)
+  if [ -z "$cc" ]; then
+    bn=$(ls build*/build.ninja 2>/dev/null | head -1)
+    if [ -n "$bn" ] && command -v ninja >/dev/null 2>&1; then
+      bd=$(dirname "$bn")
+      ninja -C "$bd" -t compdb >"$bd/compile_commands.json" 2>/dev/null \
+        && cc="$bd/compile_commands.json"
+    fi
+  fi
+
+  if [ -n "$cc" ]; then
+    # Run WHOLE-PROJECT (no --file-filter): the cross-file checks
+    # (constVariablePointer, "parameter can be declared as pointer to const")
+    # need call-graph visibility that per-file analysis disables. Findings are
+    # scoped to this branch's changed files below, so the whole-project scan
+    # never blocks on pre-existing issues in untouched code.
+    out=$(cppcheck --project="$cc" \
+      --enable=warning,style,performance,portability --inline-suppr \
+      --suppress='*:*/postgres/*'      --suppress='*:postgres/*' \
+      --suppress='*:*/postgis/*'       --suppress='*:postgis/*' \
+      --suppress='*:*/pgtypes/*'       --suppress='*:pgtypes/*' \
+      --suppress='*:*/clipper2/*'      --suppress='*:clipper2/*' \
+      --suppress='*:*/pointcloud-pg/*' --suppress='*:pointcloud-pg/*' \
+      --suppress='missingIncludeSystem' --suppress='unmatchedSuppression' \
+      --library=cppcheck-mobilitydb.cfg -j "$(nproc 2>/dev/null || echo 1)" \
+      2>&1 >/dev/null)
+
+    pat=$(printf '%s\n' $files | sed 's#.*/##' | paste -sd'|')
+    raw=$(printf '%s\n' "$out" \
+      | grep -E "($pat):[0-9]+:" \
+      | grep -E ':(warning|style|performance|portability):')
+    # Keep only findings on lines this branch actually adds/changes, so
+    # pre-existing (or transient, stub-stage) issues in a touched file never
+    # block. This mirrors GitHub code scanning, which annotates new alerts only.
+    hits=""
+    for cf in $files; do
+      bn=$(basename "$cf")
+      added=$(git diff "$base"...HEAD -- "$cf" 2>/dev/null \
+        | awk '/^@@/{ if (match($0,/\+([0-9]+)/,m)) ln=m[1]; next }
+               /^\+/&&!/^\+\+\+/{ print ln; ln++; next } /^ /{ ln++ }' | sort -un)
+      [ -z "$added" ] && continue
+      while IFS= read -r line; do
+        [ -z "$line" ] && continue
+        fl=$(printf '%s' "$line" | sed -nE "s#.*/$bn:([0-9]+):.*#\1#p")
+        [ -z "$fl" ] && continue
+        printf '%s\n' "$added" | grep -qx "$fl" && hits="$hits$line"$'\n'
+      done < <(printf '%s\n' "$raw" | grep -E "/$bn:")
+    done
+    hits=$(printf '%s' "$hits" | sed '/^$/d')
+    if [ -n "$hits" ]; then
+      echo "pre-push: cppcheck found issues on lines this branch adds:" >&2
+      printf '%s\n' "$hits" >&2
+      fail=1
+    fi
+  fi
+fi
+
+if [ "$fail" -ne 0 ]; then
+  echo >&2
+  echo "pre-push: fix the findings above (fold them into the same commit) and push again." >&2
+  echo "pre-push: to bypass in an emergency, run 'git push --no-verify'." >&2
+  exit 1
+fi
+
+exit 0
