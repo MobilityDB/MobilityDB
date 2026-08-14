@@ -158,7 +158,7 @@ CREATE FUNCTION asHexWKB(pose, endianenconding text DEFAULT '')
 
 CREATE FUNCTION asHexEWKB(pose, endianenconding text DEFAULT '')
   RETURNS text
-  AS 'MODULE_PATHNAME', 'Pose_as_hexwkb'
+  AS 'MODULE_PATHNAME', 'Pose_as_hexewkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- GENERATED-REPRESENTATIONS-END pose_base

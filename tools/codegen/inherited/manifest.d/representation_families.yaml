@@ -422,7 +422,7 @@ representation_families:
     asBinary: Npoint_as_wkb
     asEWKB: Npoint_as_ewkb
     asHexWKB: Npoint_as_hexwkb
-    asHexEWKB: Npoint_as_hexwkb
+    asHexEWKB: Npoint_as_hexewkb
   arrsyms:
     asText: Spatialarr_as_text
     asEWKT: Spatialarr_as_ewkt
@@ -461,7 +461,7 @@ representation_families:
     asBinary: Pose_as_wkb
     asEWKB: Pose_as_ewkb
     asHexWKB: Pose_as_hexwkb
-    asHexEWKB: Pose_as_hexwkb
+    asHexEWKB: Pose_as_hexewkb
   arrsyms:
     asText: Spatialarr_as_text
     asEWKT: Spatialarr_as_ewkt
@@ -501,7 +501,7 @@ representation_families:
     asBinary: Cbuffer_as_wkb
     asEWKB: Cbuffer_as_ewkb
     asHexWKB: Cbuffer_as_hexwkb
-    asHexEWKB: Cbuffer_as_hexwkb
+    asHexEWKB: Cbuffer_as_hexewkb
   arrsyms:
     asText: Spatialarr_as_text
     asEWKT: Spatialarr_as_ewkt

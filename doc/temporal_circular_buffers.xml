@@ -78,14 +78,14 @@ SELECT asEWKT(ARRAY[cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.2)', 'Cbuffer(SRID=5
 					<para><varname>asEWKB(cbuffer,endian text='') → bytea</varname></para>
 					<para><varname>asHexWKB(cbuffer,endian text='') → text</varname></para>
 					<para><varname>asHexEWKB(cbuffer,endian text='') → text</varname></para>
-					<para>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used. A circular buffer takes its SRID from its underlying point, so both hexadecimal forms embed it and coincide, while the plain <varname>asBinary</varname> form omits it.</para>
+					<para>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used. A circular buffer takes its SRID from its underlying point: <varname>asEWKB</varname> and <varname>asHexEWKB</varname> embed it, while the plain <varname>asBinary</varname> and <varname>asHexWKB</varname> forms omit it.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asBinary(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)');
 -- \x0100000000000000f03f000000000000f03f000000000000e03f
 SELECT asEWKB(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)');
 -- \x01402c160000000000000000f03f000000000000f03f000000000000e03f
 SELECT asHexWKB(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)');
--- 01402C160000000000000000F03F000000000000F03F000000000000E03F
+-- 0100000000000000F03F000000000000F03F000000000000E03F
 SELECT asHexEWKB(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)');
 -- 01402C160000000000000000F03F000000000000F03F000000000000E03F
 </programlisting>

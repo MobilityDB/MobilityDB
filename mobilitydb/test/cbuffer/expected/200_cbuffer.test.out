@@ -59,9 +59,9 @@ SELECT asEWKB(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)');
 (1 row)
 
 SELECT asHexWKB(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)');
-                           ashexwkb                           
---------------------------------------------------------------
- 01402C160000000000000000F03F000000000000F03F000000000000E03F
+                       ashexwkb                       
+------------------------------------------------------
+ 0100000000000000F03F000000000000F03F000000000000E03F
 (1 row)
 
 SELECT asHexEWKB(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)');
@@ -95,9 +95,9 @@ SELECT asEWKT(cbufferFromEWKB(asEWKB(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)'
 (1 row)
 
 SELECT asEWKT(cbufferFromHexEWKB(asHexWKB(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)')));
-              asewkt               
------------------------------------
- SRID=5676;Cbuffer(POINT(1 1),0.5)
+         asewkt          
+-------------------------
+ Cbuffer(POINT(1 1),0.5)
 (1 row)
 
 SELECT asEWKT(cbufferFromHexEWKB(asHexEWKB(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)')));
@@ -110,7 +110,7 @@ SELECT asHexWKB(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)')
      = asHexEWKB(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)') AS hexwkb_eq_hexewkb;
  hexwkb_eq_hexewkb 
 -------------------
- t
+ f
 (1 row)
 
 SELECT asText(cbuffer('Point(1 1)', 0.5));

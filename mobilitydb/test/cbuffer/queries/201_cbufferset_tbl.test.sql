@@ -50,7 +50,8 @@ SELECT COUNT(*) FROM tbl_cbufferset WHERE SRID(cbuffersetFromBinary(asBinary(s))
 -- asEWKB preserves the SRID
 SELECT COUNT(*) FROM tbl_cbufferset WHERE cbuffersetFromBinary(asEWKB(s)) <> s;
 
-SELECT COUNT(*) FROM tbl_cbufferset WHERE cbuffersetFromHexWKB(asHexWKB(s)) <> s;
+-- asHexWKB emits plain WKB (no SRID); setSRID reapplies it before comparing
+SELECT COUNT(*) FROM tbl_cbufferset WHERE setSRID(cbuffersetFromHexWKB(asHexWKB(s)), 3812) <> s;
 SELECT COUNT(*) FROM tbl_cbufferset WHERE cbuffersetFromHexWKB(asHexEWKB(s)) <> s;
 
 -------------------------------------------------------------------------------

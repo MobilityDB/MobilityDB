@@ -286,7 +286,25 @@ Datum
 Pose_as_hexwkb(PG_FUNCTION_ARGS)
 {
   Pose *pose = PG_GETARG_POSE_P(0);
-  PG_RETURN_TEXT_P(Datum_as_hexwkb(fcinfo, PointerGetDatum(pose), T_POSE, true));
+  PG_RETURN_TEXT_P(Datum_as_hexwkb(fcinfo, PointerGetDatum(pose), T_POSE,
+    false));
+}
+
+PGDLLEXPORT Datum Pose_as_hexewkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pose_as_hexewkb);
+/**
+ * @ingroup mobilitydb_pose_base_inout
+ * @brief Return the ASCII hex-encoded Extended Well-Known Binary (HexEWKB)
+ * representation of a pose
+ * @note It is the HexWKB representation prefixed with the SRID
+ * @sqlfn asHexEWKB()
+ */
+Datum
+Pose_as_hexewkb(PG_FUNCTION_ARGS)
+{
+  Pose *pose = PG_GETARG_POSE_P(0);
+  PG_RETURN_TEXT_P(Datum_as_hexwkb(fcinfo, PointerGetDatum(pose), T_POSE,
+    true));
 }
 
 /*****************************************************************************

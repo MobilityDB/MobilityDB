@@ -111,9 +111,9 @@ SELECT asEWKB(npoint 'SRID=5676;Npoint(1,0.5)');
 (1 row)
 
 SELECT asHexWKB(npoint 'SRID=5676;Npoint(1,0.5)');
-                   ashexwkb                   
-----------------------------------------------
- 01412C1600000100000000000000000000000000E03F
+               ashexwkb               
+--------------------------------------
+ 01010100000000000000000000000000E03F
 (1 row)
 
 SELECT asHexEWKB(npoint 'SRID=5676;Npoint(1,0.5)');

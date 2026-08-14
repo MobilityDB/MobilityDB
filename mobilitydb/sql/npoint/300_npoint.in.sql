@@ -165,7 +165,7 @@ CREATE FUNCTION asHexWKB(npoint, endianenconding text DEFAULT '')
 
 CREATE FUNCTION asHexEWKB(npoint, endianenconding text DEFAULT '')
   RETURNS text
-  AS 'MODULE_PATHNAME', 'Npoint_as_hexwkb'
+  AS 'MODULE_PATHNAME', 'Npoint_as_hexewkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- GENERATED-REPRESENTATIONS-END npoint_base

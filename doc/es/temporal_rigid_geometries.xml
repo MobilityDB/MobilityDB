@@ -82,7 +82,7 @@ SELECT asMFJSON(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0),0)@20
 				<para><varname>asEWKB(trgeometry [, endian text]) → bytea</varname></para>
 				<para><varname>asHexWKB(trgeometry [, endian text]) → text</varname></para>
 				<para><varname>asHexEWKB(trgeometry [, endian text]) → text</varname></para>
-				<para>Las funciones complementarias <varname>asHexWKB</varname> y <varname>asHexEWKB</varname> devuelven los mismos bytes como un texto codificado en hexadecimal.</para>
+				<para>Las funciones complementarias <varname>asHexWKB</varname> y <varname>asHexEWKB</varname> devuelven el texto codificado en hexadecimal de, respectivamente, la representación simple y la que incluye el SRID; ambas coinciden solo cuando el valor no tiene SRID, como en el ejemplo siguiente.</para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT length(asEWKB(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(1 1), 0.5)@2001-01-01'));
 -- 130

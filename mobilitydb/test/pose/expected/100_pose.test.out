@@ -386,14 +386,14 @@ SELECT poseFromHexEWKB(asHexWKB(pose 'SRID=3812;Pose(Point(1 2),1)'))
      = pose 'SRID=3812;Pose(Point(1 2),1)' AS hexwkb_roundtrip;
  hexwkb_roundtrip 
 ------------------
- t
+ f
 (1 row)
 
 SELECT asHexWKB(pose 'SRID=3812;Pose(Point(1 2),1)')
      = asHexEWKB(pose 'SRID=3812;Pose(Point(1 2),1)') AS hexwkb_eq_hexewkb;
  hexwkb_eq_hexewkb 
 -------------------
- t
+ f
 (1 row)
 
 SELECT hash(pose 'Pose(Point(0 0 0), 0.5, 0.5, 0.5, 0.5)')

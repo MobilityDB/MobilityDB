@@ -82,7 +82,7 @@ SELECT asMFJSON(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0),0)@20
 				<para><varname>asEWKB(trgeometry [, endian text]) → bytea</varname></para>
 				<para><varname>asHexWKB(trgeometry [, endian text]) → text</varname></para>
 				<para><varname>asHexEWKB(trgeometry [, endian text]) → text</varname></para>
-				<para>Companion <varname>asHexWKB</varname> and <varname>asHexEWKB</varname> return the same bytes as a hex-encoded text.</para>
+				<para>Companion <varname>asHexWKB</varname> and <varname>asHexEWKB</varname> return the hex-encoded text of, respectively, the plain and the SRID-carrying representation; the two coincide only when the value has no SRID, as in the example below.</para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT length(asEWKB(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(1 1), 0.5)@2001-01-01'));
 -- 130
