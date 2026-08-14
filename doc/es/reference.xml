@@ -3877,6 +3877,15 @@
 		</sect2>
 
 		<sect2>
+			<title>Accesores de Ráster</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="raster_numBands"><varname>numBands</varname></link>: Devolver el número de bandas de un ráster</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
 			<title>Muestreo Raquet / QUADBIN</title>
 			<itemizedlist>
 				<listitem>
