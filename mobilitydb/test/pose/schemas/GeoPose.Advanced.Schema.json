@@ -1,0 +1,63 @@
+{
+  "description": "Advanced: Advanced GeoPose allowing flexible outer frame specification, quaternion orientation, and valid time.",
+  "definitions": {
+    "FrameSpecification": {
+      "type": "object",
+      "properties": {
+        "authority": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "parameters": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "authority",
+        "id",
+        "parameters"
+      ]
+    },
+    "Quaternion": {
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        },
+        "z": {
+          "type": "number"
+        },
+        "w": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "z",
+        "w"
+      ]
+    }
+  },
+  "type": "object",
+  "properties": {
+    "frameSpecification": {
+      "$ref": "#/definitions/FrameSpecification"
+    },
+    "quaternion": {
+      "$ref": "#/definitions/Quaternion"
+    },
+    "validTime": {
+      "type": "integer"
+    }
+  },
+  "required": [
+    "frameSpecification",
+    "quaternion"
+  ]
+}

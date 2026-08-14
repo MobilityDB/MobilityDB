@@ -45,20 +45,25 @@
  *****************************************************************************/
 
 /**
- * @brief Orientation encodings of an OGC GeoPose Basic document.
- * @details The two Basic conformance classes differ only in how they carry
- * the orientation, so one value chooses between them. It is orthogonal to
- * the target conformance class, which follows from the value being written:
- * a pose and a single temporal instant are Basic documents, a temporal
- * sequence is a Composite Sequence Series. A Series carries a quaternion in
- * every inner frame and offers no such choice.
+ * @brief Conformance classes a single pose can be written as.
+ * @details The two Basic classes differ only in how they carry the
+ * orientation. The Advanced class differs in the frame: it names its outer
+ * frame explicitly where the Basic classes leave it implicit, and carries the
+ * position inside that frame, having no member of its own for it.
  *
- * The Advanced, Chain, Graph and Stream classes are not implemented.
+ * The class of a composite follows from the value instead of from this
+ * choice: a temporal sequence is a Composite Sequence Series, Regular or
+ * Irregular as its instants are spaced, and a Stream is written by the two
+ * entry points of its own. A Series carries a quaternion in every inner frame
+ * and offers no orientation choice.
+ *
+ * The Chain and Graph classes are not implemented.
  */
 typedef enum
 {
   GEOPOSE_BASIC_QUATERNION = 0,  /**< {position, quaternion} canonical form */
-  GEOPOSE_BASIC_YPR        = 1   /**< {position, angles} (yaw/pitch/roll) */
+  GEOPOSE_BASIC_YPR        = 1,  /**< {position, angles} (yaw/pitch/roll) */
+  GEOPOSE_ADVANCED         = 2   /**< {frameSpecification, quaternion} */
 } GeoPoseClass;
 
 /*****************************************************************************/

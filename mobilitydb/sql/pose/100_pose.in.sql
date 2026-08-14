@@ -100,7 +100,7 @@ CREATE FUNCTION poseFromHexEWKB(text)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
- * OGC GeoPose JSON I/O — Basic-Quaternion + Basic-YPR conformance
+ * OGC GeoPose JSON I/O — Basic-Quaternion, Basic-YPR and Advanced
  *****************************************************************************/
 
 CREATE FUNCTION poseFromGeoPose(text)
@@ -108,7 +108,7 @@ CREATE FUNCTION poseFromGeoPose(text)
   AS 'MODULE_PATHNAME', 'Pose_from_geopose'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- conformance: 0 = Basic-Quaternion (default), 1 = Basic-YPR
+-- conformance: 0 = Basic-Quaternion (default), 1 = Basic-YPR, 2 = Advanced
 -- maxdecimaldigits: significant digits to keep; -1 = lossless
 CREATE FUNCTION asGeoPose(pose, conformance int4 DEFAULT 0,
     maxdecimaldigits int4 DEFAULT -1)

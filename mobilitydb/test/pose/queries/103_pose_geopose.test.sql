@@ -27,7 +27,7 @@
 --
 -------------------------------------------------------------------------------
 
--- OGC GeoPose v1.0 JSON I/O — Basic-Quaternion + Basic-YPR conformance.
+-- OGC GeoPose v1.0 JSON I/O — Basic-Quaternion, Basic-YPR and Advanced.
 
 -------------------------------------------------------------------------------
 -- Input: Basic-Quaternion conformance class
@@ -503,5 +503,52 @@ SELECT tposeFromGeoPose('{"header": {"poseCount": 1, "startInstant": 0,
   "innerFrameSeries": [{"authority": "/geopose/1.0",
     "id": "RotateTranslate", "parameters": "translation=[0, 0, 0]&rotation=[1, 0, 0, 0]"}],
   "trailer": {"poseCount": 1}}');
+
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- Advanced
+--
+-- The Advanced class names its outer frame explicitly and has no position
+-- member of its own, so the pose sits at the tangent point of the frame.
+-------------------------------------------------------------------------------
+
+SELECT asGeoPose(pose 'SRID=4326;Geodpose(Point(8 47 1500), 0.707107, 0, 0, 0.707107)', 2, 6);
+
+-- The examples the manual shows, so that they are what the implementation
+-- prints rather than what it once printed.
+SELECT asGeoPose(pose 'Geodpose(Point(8 47 1500), 0.707107, 0, 0, 0.707107)', 0, 6);
+SELECT asGeoPose(pose 'Geodpose(Point(8 47 1500), 0.707107, 0, 0, 0.707107)', 1, 6);
+SELECT asGeoPose(pose 'Geodpose(Point(8 47 1500), 0.707107, 0, 0, 0.707107)', 2, 6);
+SELECT asEWKT(poseFromGeoPose(
+  '{"position":{"lat":47,"lon":8,"h":1500},"angles":{"yaw":90,"pitch":0,"roll":0}}'), 6);
+SELECT asEWKT(poseFromGeoPose(
+  '{"frameSpecification":{"authority":"/geopose/1.0","id":"LTP-ENU","parameters":"longitude=8&latitude=47&height=1500&crs=EPSG:4979"},"quaternion":{"x":0,"y":0,"z":0.707107,"w":0.707107}}'), 6);
+
+-- The same pose written Basic and Advanced reads back the same, the frame
+-- standing where the position member stood.
+SELECT poseFromGeoPose(asGeoPose(pose 'SRID=4326;Geodpose(Point(8 47 1500), 0.707107, 0, 0, 0.707107)', 2, 15)) =
+  poseFromGeoPose(asGeoPose(pose 'SRID=4326;Geodpose(Point(8 47 1500), 0.707107, 0, 0, 0.707107)', 0, 15));
+
+-- A temporal instant written Advanced carries its validTime.
+SELECT asGeoPose(tpose 'SRID=4326;Geodpose(Point(8 47 1500), 0.707107, 0, 0, 0.707107)@2026-01-01', 2, 6);
+
+-- A frame no pose can be placed in.
+SELECT poseFromGeoPose('{"frameSpecification":{"authority":"EPSG","id":"4979",
+  "parameters":""},"quaternion":{"x":0,"y":0,"z":0,"w":1}}');
+
+-- A frame missing one of the coordinates that place the pose.
+SELECT poseFromGeoPose('{"frameSpecification":{"authority":"/geopose/1.0",
+  "id":"LTP-ENU","parameters":"longitude=8"},
+  "quaternion":{"x":0,"y":0,"z":0,"w":1}}');
+
+-- A frame whose tangent point is given in a projected CRS.
+SELECT poseFromGeoPose('{"frameSpecification":{"authority":"/geopose/1.0",
+  "id":"LTP-ENU","parameters":"longitude=8&latitude=47&height=0&crs=EPSG:3857"},
+  "quaternion":{"x":0,"y":0,"z":0,"w":1}}');
+
+-- An Advanced document without its orientation.
+SELECT poseFromGeoPose('{"frameSpecification":{"authority":"/geopose/1.0",
+  "id":"LTP-ENU","parameters":"longitude=8&latitude=47&height=0"}}');
 
 -------------------------------------------------------------------------------

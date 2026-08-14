@@ -150,7 +150,7 @@ ERROR:  GeoPose JSON requires either a 'quaternion' object (Basic-Quaternion) or
 SELECT poseFromGeoPose('{"position":{"lat":0,"lon":0,"h":0},"quaternion":{"x":0,"y":0,"z":0}}');
 ERROR:  GeoPose 'quaternion' must carry numeric 'w','x','y','z' members
 SELECT asGeoPose(pose 'Geodpose(Point(1 1),0.5)', 99, 6);
-ERROR:  Unknown GeoPose conformance class 99 (0 = Basic-Quaternion, 1 = Basic-YPR)
+ERROR:  Unknown GeoPose conformance class 99 (0 = Basic-Quaternion, 1 = Basic-YPR, 2 = Advanced)
 SELECT asGeoPose(pose 'SRID=5676;Geodpose(Point(1 1),0.5)', 0, 6);
 ERROR:  GeoPose JSON requires a WGS-84 geographic SRID (4326 or 4979), got 5676
 SELECT asGeoPose(tpose 'Geodpose(Point(8 47), 0)@2026-01-01', 0, 6);
@@ -532,7 +532,7 @@ SELECT asText(tposeFromGeoPose('{"type":"TemporalGeoPose","version":"1.0",
 -- A Basic document without a validTime is a pose, not a temporal pose.
 SELECT tposeFromGeoPose(
   '{"position":{"lat":47,"lon":8,"h":0},"quaternion":{"x":0,"y":0,"z":0,"w":1}}');
-ERROR:  A GeoPose Basic document needs a 'validTime' to read as a temporal pose
+ERROR:  A single-pose GeoPose document needs a 'validTime' to read as a temporal pose
 SELECT tposeFromGeoPose('{"header": {"poseCount": 1, "startInstant": 0,
   "stopInstant": 0, "transitionModel": {"authority": "/geopose/1.0",
   "id": "none", "parameters": ""}},
@@ -567,3 +567,68 @@ SELECT tposeFromGeoPose('{"header": {"poseCount": 1, "startInstant": 0,
     "id": "RotateTranslate", "parameters": "translation=[0, 0, 0]&rotation=[1, 0, 0, 0]"}],
   "trailer": {"poseCount": 1}}');
 ERROR:  GeoPose Regular Series missing required integer 'interPoseDuration'
+SELECT asGeoPose(pose 'SRID=4326;Geodpose(Point(8 47 1500), 0.707107, 0, 0, 0.707107)', 2, 6);
+                                                                                        asgeopose                                                                                         
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"frameSpecification":{"authority":"/geopose/1.0","id":"LTP-ENU","parameters":"longitude=8&latitude=47&height=1500&crs=EPSG:4979"},"quaternion":{"x":0,"y":0,"z":0.707107,"w":0.707107}}
+(1 row)
+
+SELECT asGeoPose(pose 'Geodpose(Point(8 47 1500), 0.707107, 0, 0, 0.707107)', 0, 6);
+                                           asgeopose                                           
+-----------------------------------------------------------------------------------------------
+ {"position":{"lat":47,"lon":8,"h":1500},"quaternion":{"x":0,"y":0,"z":0.707107,"w":0.707107}}
+(1 row)
+
+SELECT asGeoPose(pose 'Geodpose(Point(8 47 1500), 0.707107, 0, 0, 0.707107)', 1, 6);
+                                    asgeopose                                    
+---------------------------------------------------------------------------------
+ {"position":{"lat":47,"lon":8,"h":1500},"angles":{"yaw":90,"pitch":0,"roll":0}}
+(1 row)
+
+SELECT asGeoPose(pose 'Geodpose(Point(8 47 1500), 0.707107, 0, 0, 0.707107)', 2, 6);
+                                                                                        asgeopose                                                                                         
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"frameSpecification":{"authority":"/geopose/1.0","id":"LTP-ENU","parameters":"longitude=8&latitude=47&height=1500&crs=EPSG:4979"},"quaternion":{"x":0,"y":0,"z":0.707107,"w":0.707107}}
+(1 row)
+
+SELECT asEWKT(poseFromGeoPose(
+  '{"position":{"lat":47,"lon":8,"h":1500},"angles":{"yaw":90,"pitch":0,"roll":0}}'), 6);
+                            asewkt                             
+---------------------------------------------------------------
+ SRID=4326;GeodPose(POINT Z (8 47 1500),0.707107,0,0,0.707107)
+(1 row)
+
+SELECT asEWKT(poseFromGeoPose(
+  '{"frameSpecification":{"authority":"/geopose/1.0","id":"LTP-ENU","parameters":"longitude=8&latitude=47&height=1500&crs=EPSG:4979"},"quaternion":{"x":0,"y":0,"z":0.707107,"w":0.707107}}'), 6);
+                            asewkt                             
+---------------------------------------------------------------
+ SRID=4326;GeodPose(POINT Z (8 47 1500),0.707107,0,0,0.707107)
+(1 row)
+
+SELECT poseFromGeoPose(asGeoPose(pose 'SRID=4326;Geodpose(Point(8 47 1500), 0.707107, 0, 0, 0.707107)', 2, 15)) =
+  poseFromGeoPose(asGeoPose(pose 'SRID=4326;Geodpose(Point(8 47 1500), 0.707107, 0, 0, 0.707107)', 0, 15));
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT asGeoPose(tpose 'SRID=4326;Geodpose(Point(8 47 1500), 0.707107, 0, 0, 0.707107)@2026-01-01', 2, 6);
+                                                                                                     asgeopose                                                                                                      
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"frameSpecification":{"authority":"/geopose/1.0","id":"LTP-ENU","parameters":"longitude=8&latitude=47&height=1500&crs=EPSG:4979"},"quaternion":{"x":0,"y":0,"z":0.707107,"w":0.707107},"validTime":1767254400000}
+(1 row)
+
+SELECT poseFromGeoPose('{"frameSpecification":{"authority":"EPSG","id":"4979",
+  "parameters":""},"quaternion":{"x":0,"y":0,"z":0,"w":1}}');
+ERROR:  Unsupported GeoPose outer frame 'EPSG'/'4979'; the frame read is '/geopose/1.0'/'LTP-ENU', which carries the position of the pose in its parameters
+SELECT poseFromGeoPose('{"frameSpecification":{"authority":"/geopose/1.0",
+  "id":"LTP-ENU","parameters":"longitude=8"},
+  "quaternion":{"x":0,"y":0,"z":0,"w":1}}');
+ERROR:  GeoPose 'frameSpecification' parameters must carry numeric 'longitude', 'latitude' and 'height'
+SELECT poseFromGeoPose('{"frameSpecification":{"authority":"/geopose/1.0",
+  "id":"LTP-ENU","parameters":"longitude=8&latitude=47&height=0&crs=EPSG:3857"},
+  "quaternion":{"x":0,"y":0,"z":0,"w":1}}');
+ERROR:  GeoPose 'frameSpecification' parameter 'crs' must name a WGS-84 geographic CRS as EPSG:4326 or EPSG:4979
+SELECT poseFromGeoPose('{"frameSpecification":{"authority":"/geopose/1.0",
+  "id":"LTP-ENU","parameters":"longitude=8&latitude=47&height=0"}}');
+ERROR:  GeoPose Advanced JSON missing required 'quaternion' object

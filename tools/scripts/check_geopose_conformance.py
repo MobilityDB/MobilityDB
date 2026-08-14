@@ -6,10 +6,10 @@
 #
 """Validate the emitted GeoPose documents against the normative OGC schemas.
 
-MobilityDB implements four of the eight conformance classes of OGC GeoPose
-v1.0 (OGC 21-056r11): Basic-YPR, Basic-Quaternion, and the Regular and
-Irregular Composite Sequence Series.  Each class has a normative JSON schema,
-published under
+MobilityDB implements six of the eight conformance classes of OGC GeoPose
+v1.0 (OGC 21-056r11): Basic-YPR, Basic-Quaternion, Advanced, the Regular and
+Irregular Composite Sequence Series, and the Stream.  Each class has a
+normative JSON schema, published under
 
     https://schemas.opengis.net/geopose/1.0/schemata/
 
@@ -67,6 +67,11 @@ CLASSES = [
         'GeoPose.Composite.Sequence.StreamElement.Schema.json'),
     ('outerFrame', 'Stream header',
         'GeoPose.Composite.Sequence.StreamHeader.Schema.json'),
+    # An Advanced document carries its position inside the frame it names, so
+    # `frameSpecification` is what distinguishes it from a Basic one; both
+    # carry a quaternion, so this comes first.
+    ('frameSpecification', 'Advanced',
+        'GeoPose.Advanced.Schema.json'),
     ('quaternion', 'Basic-Quaternion',
         'GeoPose.Basic.Quaternion.Schema.json'),
     ('angles', 'Basic-YPR',
@@ -79,7 +84,7 @@ CLASSES = [
 # producer, which a query is not -- so they are validated wherever they appear
 # rather than demanded here; `meos/test/geopose_test.c` is what exercises them.
 REQUIRED = ('Regular Series', 'Irregular Series', 'Basic-Quaternion',
-    'Basic-YPR')
+    'Basic-YPR', 'Advanced')
 
 TYPES = {
     'object': dict,
