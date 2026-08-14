@@ -1517,7 +1517,11 @@ temporal_from_mfjson(const char *mfjson, MeosType temptype)
   json_object_put(poObj);
 #if RGEO
   if (temptype_orig == T_TRGEOMETRY && temptype == T_TPOSE)
-    return geometry_tpose_to_trgeometry(gs, result);
+  {
+    Temporal *trgeo = geometry_tpose_to_trgeometry(gs, result);
+    pfree(gs); pfree(result);
+    return trgeo;
+  }
 #endif /* RGEO */
   return result;
 }
