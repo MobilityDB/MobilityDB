@@ -54,6 +54,12 @@ rt_band_from_wkb(
 		rterror("rt_band_from_wkb: Out of memory allocating rt_band during WKB parsing");
 		return NULL;
 	}
+	/* MEOS: the band is allocated uninitialized, and every error path below
+	 * destroys it before all of its fields have been read from the WKB.
+	 * rt_band_destroy() branches on `offline` and dereferences `data` to
+	 * decide what to release, so a malformed WKB would otherwise release two
+	 * indeterminate pointers */
+	memset(band, 0, sizeof (struct rt_band_t));
 	band->ownsdata = 0; /* assume we don't own data */
 
 	if (end - *ptr < 1) {
