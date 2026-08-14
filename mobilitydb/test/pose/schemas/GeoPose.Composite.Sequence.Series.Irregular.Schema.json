@@ -1,0 +1,131 @@
+{
+  "description": "Irregular Series: Irregular GeoPose time series with variable inter-pose duration.",
+  "definitions": {
+    "FrameAndTime": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "frame": {
+          "$ref": "#/definitions/FrameSpecification"
+        },
+        "validTime": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "frame"
+      ]
+    },
+    "FrameSpecification": {
+      "type": "object",
+      "properties": {
+        "authority": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "parameters": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "authority",
+        "id",
+        "parameters"
+      ]
+    },
+    "SeriesHeader": {
+      "type": "object",
+      "properties": {
+        "poseCount": {
+          "type": "integer"
+        },
+        "integrityCheck": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "startInstant": {
+          "type": "integer"
+        },
+        "stopInstant": {
+          "type": "integer"
+        },
+        "transitionModel": {
+          "$ref": "#/definitions/TransitionModel"
+        }
+      },
+      "required": [
+        "poseCount",
+        "startInstant",
+        "stopInstant",
+        "transitionModel"
+      ]
+    },
+    "SeriesTrailer": {
+      "type": "object",
+      "properties": {
+        "poseCount": {
+          "type": "integer"
+        },
+        "integrityCheck": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "poseCount"
+      ]
+    },
+    "TransitionModel": {
+      "type": "object",
+      "properties": {
+        "authority": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "parameters": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "authority",
+        "id",
+        "parameters"
+      ]
+    }
+  },
+  "type": "object",
+  "properties": {
+    "header": {
+      "$ref": "#/definitions/SeriesHeader"
+    },
+    "outerFrame": {
+      "$ref": "#/definitions/FrameSpecification"
+    },
+    "innerFrameAndTimeSeries": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/FrameAndTime"
+      },
+      "minItems": 1
+    },
+    "trailer": {
+      "$ref": "#/definitions/SeriesTrailer"
+    }
+  },
+  "required": [
+    "header",
+    "outerFrame",
+    "innerFrameAndTimeSeries",
+    "trailer"
+  ]
+}

@@ -1,0 +1,140 @@
+{
+  "description": "Regular Series: Regular GeoPose time series with constant inter-pose duration.",
+  "definitions": {
+    "FrameSpecification": {
+      "type": "object",
+      "properties": {
+        "authority": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "parameters": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "authority",
+        "id",
+        "parameters"
+      ]
+    },
+    "FrameSpecification-1": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "authority": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "parameters": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "authority",
+        "id",
+        "parameters"
+      ]
+    },
+    "SeriesHeader": {
+      "type": "object",
+      "properties": {
+        "poseCount": {
+          "type": "integer"
+        },
+        "integrityCheck": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "startInstant": {
+          "type": "integer"
+        },
+        "stopInstant": {
+          "type": "integer"
+        },
+        "transitionModel": {
+          "$ref": "#/definitions/TransitionModel"
+        }
+      },
+      "required": [
+        "poseCount",
+        "startInstant",
+        "stopInstant",
+        "transitionModel"
+      ]
+    },
+    "SeriesTrailer": {
+      "type": "object",
+      "properties": {
+        "poseCount": {
+          "type": "integer"
+        },
+        "integrityCheck": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "poseCount"
+      ]
+    },
+    "TransitionModel": {
+      "type": "object",
+      "properties": {
+        "authority": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "parameters": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "authority",
+        "id",
+        "parameters"
+      ]
+    }
+  },
+  "type": "object",
+  "properties": {
+    "header": {
+      "$ref": "#/definitions/SeriesHeader"
+    },
+    "interPoseDuration": {
+      "type": "integer"
+    },
+    "outerFrame": {
+      "$ref": "#/definitions/FrameSpecification"
+    },
+    "innerFrameSeries": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/FrameSpecification-1"
+      },
+      "minItems": 1
+    },
+    "trailer": {
+      "$ref": "#/definitions/SeriesTrailer"
+    }
+  },
+  "required": [
+    "header",
+    "interPoseDuration",
+    "outerFrame",
+    "innerFrameSeries",
+    "trailer"
+  ]
+}
