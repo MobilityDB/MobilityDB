@@ -76,26 +76,39 @@
 typedef struct
 {
   const char *name;   /**< Name the constructors accept and #raquet_pixtype() returns */
+  const char *pgname; /**< Name PostGIS raster gives the type, also accepted */
   size_t size;        /**< Size in bytes of a single pixel */
 } pixtype_catalog_struct;
 
 /**
  * @brief Global constant array containing the pixel data types
+ * @details The name is the one the RaQuet specification gives the type, and is
+ * what a tile reports. The PostGIS name is the spelling `ST_BandPixelType`
+ * returns for the same type, accepted so that the band type of a PostGIS
+ * raster passes into the constructors as it stands. PostGIS raster carries no
+ * 16-bit float and no 64-bit integer, so those three take the spelling its
+ * grammar gives them.
  */
 static const pixtype_catalog_struct MEOS_PIXTYPE_CATALOG[] =
 {
-  [MEOS_PT_UINT8]   = { "UINT8",   1 },
-  [MEOS_PT_INT16]   = { "INT16",   2 },
-  [MEOS_PT_INT32]   = { "INT32",   4 },
-  [MEOS_PT_FLOAT32] = { "FLOAT32", 4 },
-  [MEOS_PT_FLOAT64] = { "FLOAT64", 8 },
-  [MEOS_PT_INT8]    = { "INT8",    1 },
-  [MEOS_PT_UINT16]  = { "UINT16",  2 },
-  [MEOS_PT_UINT32]  = { "UINT32",  4 },
-  [MEOS_PT_INT64]   = { "INT64",   8 },
-  [MEOS_PT_UINT64]  = { "UINT64",  8 },
-  [MEOS_PT_FLOAT16] = { "FLOAT16", 2 },
+  [MEOS_PT_UINT8]   = { "UINT8",   "8BUI",  1 },
+  [MEOS_PT_INT16]   = { "INT16",   "16BSI", 2 },
+  [MEOS_PT_INT32]   = { "INT32",   "32BSI", 4 },
+  [MEOS_PT_FLOAT32] = { "FLOAT32", "32BF",  4 },
+  [MEOS_PT_FLOAT64] = { "FLOAT64", "64BF",  8 },
+  [MEOS_PT_INT8]    = { "INT8",    "8BSI",  1 },
+  [MEOS_PT_UINT16]  = { "UINT16",  "16BUI", 2 },
+  [MEOS_PT_UINT32]  = { "UINT32",  "32BUI", 4 },
+  [MEOS_PT_INT64]   = { "INT64",   "64BSI", 8 },
+  [MEOS_PT_UINT64]  = { "UINT64",  "64BUI", 8 },
+  [MEOS_PT_FLOAT16] = { "FLOAT16", "16BF",  2 },
 };
+
+/**
+ * @brief Names of the PostGIS raster pixel types that carry less than a byte a
+ * pixel, for which a Raquet band has no representation
+ */
+static const char *MEOS_PIXTYPE_SUBBYTE[] = { "1BB", "2BUI", "4BUI" };
 
 /**
  * @brief Return true when a pixel type code has a row in the catalog
@@ -405,6 +418,10 @@ raquet_pixels_from_host(uint8 *pixels, size_t count, MeosPixType pixtype)
  * the RaQuet specification gives the `type` field of a tile carries straight
  * through from a file into the constructors. The name #raquet_pixtype()
  * returns keeps the upper case the SQL surface documents
+ * @note The name PostGIS raster gives a pixel type is accepted for the same
+ * type, so the band type an `ST_BandPixelType` call reports carries into the
+ * constructors as it stands. The types PostGIS carries in less than a byte a
+ * pixel say that a Raquet band has no representation for them
  */
 MeosPixType
 raquet_pixtype_from_string(const char *str)
@@ -414,14 +431,29 @@ raquet_pixtype_from_string(const char *str)
   size_t n = sizeof(MEOS_PIXTYPE_CATALOG) / sizeof(pixtype_catalog_struct);
   for (size_t i = 0; i < n; i++)
   {
-    if (MEOS_PIXTYPE_CATALOG[i].name &&
-        pg_strcasecmp(str, MEOS_PIXTYPE_CATALOG[i].name) == 0)
+    if (! MEOS_PIXTYPE_CATALOG[i].name)
+      continue;
+    if (pg_strcasecmp(str, MEOS_PIXTYPE_CATALOG[i].name) == 0 ||
+        pg_strcasecmp(str, MEOS_PIXTYPE_CATALOG[i].pgname) == 0)
       return (MeosPixType) i;
+  }
+  /* A pixel type PostGIS raster carries in less than a byte names itself, so
+   * that the answer is the reason rather than the name being unknown */
+  size_t nsub = sizeof(MEOS_PIXTYPE_SUBBYTE) / sizeof(MEOS_PIXTYPE_SUBBYTE[0]);
+  for (size_t i = 0; i < nsub; i++)
+  {
+    if (pg_strcasecmp(str, MEOS_PIXTYPE_SUBBYTE[i]) == 0)
+    {
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "Pixel type \"%s\" carries less than a byte a pixel, which a Raquet "
+        "band has no representation for", str);
+      return MEOS_PT_UINT8; /* make compiler quiet */
+    }
   }
   char names[128];
   meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-    "Unknown pixel type \"%s\": use %s", str,
-    pixtype_names(names, sizeof(names)));
+    "Unknown pixel type \"%s\": use %s, or the name PostGIS raster gives one "
+    "of them", str, pixtype_names(names, sizeof(names)));
   return MEOS_PT_UINT8; /* make compiler quiet */
 }
 
