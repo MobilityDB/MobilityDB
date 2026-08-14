@@ -1118,12 +1118,14 @@ tpointseq_clip_edges(const TSequence *seq, Edge **edges, int nedges,
     intervals_from_arcs(a, b, sel_edges, sel_nedges);
     intervals_from_polygons(a, b, sel_edges, sel_nedges, edges, nedges, rtree,
       srid, xmax);
+    /* The array is declared before the jump below, which would otherwise skip
+     * its initializer while `next_segment` reads it */
+    Span *intervarr = NULL;
     if (intervals->count == 0)
       goto next_segment;
 
     /* Normalize the intervals */
     int count;
-    Span *intervarr = NULL;
     if (intervals->count > 1)
       intervarr = spanarr_normalize(intervals->elems, intervals->count,
         ORDER_NO, &count);
@@ -2664,13 +2666,15 @@ tpointseq_dwithin_edges(const TSequence *seq, Edge **edges, int nedges,
     intervals->count = 0;
     intervals_within_edges(a, b, sel_edges, sel_nedges, edges, nedges, dist,
       rtree, srid, xmax);
+    /* The array is declared before the jump below, which would otherwise skip
+     * its initializer while `next_segment` reads it */
+    Span *intervarr = NULL;
     if (intervals->count == 0)
       goto next_segment;
 
     /* Normalize the intervals (sort: the midpoint intervals and the isolated
      * within points are appended in two separate passes, not globally sorted) */
     int count;
-    Span *intervarr = NULL;
     if (intervals->count > 1)
       intervarr = spanarr_normalize(intervals->elems, intervals->count,
         ORDER, &count);
