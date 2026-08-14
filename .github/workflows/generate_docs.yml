@@ -25,6 +25,8 @@ jobs:
           sparse-checkout: doc
 
       # Install dblatex
+      - uses: ./.github/actions/apt-resilient
+
       - name: Install dependencies
         run: |
           sudo apt-get update

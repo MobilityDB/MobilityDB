@@ -29,6 +29,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: ./.github/actions/apt-resilient
+
       - name: Install dependencies
         run: |
           sudo apt-get update

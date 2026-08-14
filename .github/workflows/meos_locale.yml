@@ -45,6 +45,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: ./.github/actions/apt-resilient
+
       - name: Install build deps and de_DE.UTF-8 locale
         run: |
           sudo apt-get update
