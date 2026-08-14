@@ -1714,7 +1714,7 @@ GEOS2POSTGIS(GEOSGeom geom, char want3d)
  * @brief Transform two @p GSERIALIZED geometries into @p GEOSGeometry and
  * call the GEOS function passed as argument
  */
-static char
+static bool
 meos_call_geos2(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   char (*func)(GEOSContextHandle_t ctx, const GEOSGeometry *geos1,
     const GEOSGeometry *geos2))
@@ -1727,7 +1727,7 @@ meos_call_geos2(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
       "First argument geometry could not be converted to GEOS");
-    return 2;
+    return false;
   }
   GEOSGeometry *geos2 = POSTGIS2GEOS(gs2);
   if (! geos2)
@@ -1735,16 +1735,24 @@ meos_call_geos2(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
     GEOSGeom_destroy_r(ctx, geos1);
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
       "Second argument geometry could not be converted to GEOS");
-    return 2;
+    return false;
   }
 
   char result = func(ctx, geos1, geos2);
 
   GEOSGeom_destroy_r(ctx, geos1); GEOSGeom_destroy_r(ctx, geos2);
+  /* GEOS reports a failure as 2, which is the relationship reporting nothing.
+   * The answer is false, the one every other failure of these functions gives;
+   * an error handler that returns, which is the handler a language binding
+   * installs, would otherwise read a relationship that was never evaluated as
+   * holding */
   if (result == 2)
+  {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
       "GEOS returned error");
-  return result;
+    return false;
+  }
+  return (bool) result;
 }
 
 /**
@@ -1800,13 +1808,13 @@ geom_spatialrel(const GSERIALIZED *gs1, const GSERIALIZED *gs2, spatialRel rel)
   switch (rel)
   {
     case INTERSECTS:
-      return (bool) meos_call_geos2(gs1, gs2, &GEOSIntersects_r);
+      return meos_call_geos2(gs1, gs2, &GEOSIntersects_r);
     case CONTAINS:
-      return (bool) meos_call_geos2(gs1, gs2, &GEOSContains_r);
+      return meos_call_geos2(gs1, gs2, &GEOSContains_r);
     case TOUCHES:
-      return (bool) meos_call_geos2(gs1, gs2, &GEOSTouches_r);
+      return meos_call_geos2(gs1, gs2, &GEOSTouches_r);
     case COVERS:
-      return (bool) meos_call_geos2(gs1, gs2, &GEOSCovers_r);
+      return meos_call_geos2(gs1, gs2, &GEOSCovers_r);
     default:
       /* keep compiler quiet */
       return false;
@@ -1938,9 +1946,14 @@ geom_relate_pattern(const GSERIALIZED *gs1, const GSERIALIZED *gs2, char *p)
   GEOSGeom_destroy_r(ctx, geos1);
   GEOSGeom_destroy_r(ctx, geos2);
 
+  /* GEOS reports a failure as 2, which is the pattern reporting nothing. The
+   * answer is false, the one every other failure of this function gives */
   if (result == 2)
+  {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
       "GEOSRelatePattern returned error");
+    return false;
+  }
   return (bool) result;
 }
 
