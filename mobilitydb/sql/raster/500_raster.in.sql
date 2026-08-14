@@ -106,7 +106,6 @@ CREATE FUNCTION raquet(pixels bytea, width integer, height integer,
  * @param[in] rasterfile Raster file bytes in any GDAL-supported format
  * @param[in] quadbin CARTO QUADBIN cell, or NULL to derive it from the raster
  * geotransform and EPSG:3857 spatial reference
- * @csqlfn #Raquet_read()
  */
 CREATE FUNCTION raquetRead(
     rasterfile bytea,
@@ -126,7 +125,6 @@ CREATE FUNCTION raquetRead(
  * @param[in] traj Trajectory
  * @param[in] rast Raster
  * @param[in] band Band number (1-based, default 1)
- * @csqlfn #rasterValue()
  */
 CREATE OR REPLACE FUNCTION rasterValue(
     traj  tgeompoint,
@@ -152,7 +150,6 @@ CREATE OR REPLACE FUNCTION rasterValue(
  * @param[in] pixtype Pixel type: UINT8, INT16, INT32, FLOAT32, or FLOAT64
  * @param[in] nodata Nodata sentinel value
  * @param[in] has_nodata Enable nodata filtering
- * @csqlfn #Raster_tile_value_quadbin()
  */
 CREATE OR REPLACE FUNCTION rasterTileValueQuadbin(
     traj       tgeompoint,
@@ -176,7 +173,6 @@ CREATE OR REPLACE FUNCTION rasterTileValueQuadbin(
  * @brief Sample a raquet raster tile at the instants of a trajectory
  * @param[in] traj Trajectory
  * @param[in] rast Raquet tile
- * @csqlfn #Raster_tile_value()
  */
 CREATE FUNCTION rasterTileValue(
     traj tgeompoint,
@@ -191,7 +187,6 @@ CREATE FUNCTION rasterTileValue(
  * trajectory, keeping the value of the tile of highest zoom where tiles overlap
  * @param[in] traj Trajectory
  * @param[in] rast Array of raquet tiles
- * @csqlfn #Raster_tile_value_array()
  */
 CREATE FUNCTION rasterTileValue(
     traj tgeompoint,
@@ -210,7 +205,6 @@ CREATE FUNCTION rasterTileValue(
  * trajectory, suitable as a WHERE-clause join key against a Raquet table
  * @param[in] traj Trajectory (SRID 4326)
  * @param[in] zoom  QUADBIN zoom level (0–15)
- * @csqlfn #Trajectory_quadbins()
  */
 CREATE OR REPLACE FUNCTION quadbins(
     traj  tgeompoint,
@@ -231,7 +225,6 @@ CREATE OR REPLACE FUNCTION quadbins(
  * @param[in] rast Raster
  * @param[in] vspan Float value range (inclusive bounds)
  * @param[in] band Band number (1-based, default 1)
- * @csqlfn #atRasterValue()
  */
 CREATE OR REPLACE FUNCTION atRasterValue(traj tgeompoint, rast raster,
     vspan floatspan, band integer DEFAULT 1)
@@ -251,7 +244,6 @@ CREATE OR REPLACE FUNCTION atRasterValue(traj tgeompoint, rast raster,
  * @param[in] rast Raster
  * @param[in] vspan Float value range to exclude
  * @param[in] band Band number (1-based, default 1)
- * @csqlfn #minusRasterValue()
  */
 CREATE OR REPLACE FUNCTION minusRasterValue(traj tgeompoint, rast raster,
     vspan floatspan, band integer DEFAULT 1)
@@ -271,7 +263,6 @@ CREATE OR REPLACE FUNCTION minusRasterValue(traj tgeompoint, rast raster,
  * @param[in] rast Raster
  * @param[in] vspan Float value range
  * @param[in] band Band number (1-based, default 1)
- * @csqlfn #eRasterValue()
  */
 CREATE OR REPLACE FUNCTION eRasterValue(traj tgeompoint, rast raster,
     vspan floatspan, band integer DEFAULT 1)
@@ -291,7 +282,6 @@ CREATE OR REPLACE FUNCTION eRasterValue(traj tgeompoint, rast raster,
  * @param[in] rast Raster
  * @param[in] vspan Float value range
  * @param[in] band Band number (1-based, default 1)
- * @csqlfn #aRasterValue()
  */
 CREATE OR REPLACE FUNCTION aRasterValue(traj tgeompoint, rast raster,
     vspan floatspan, band integer DEFAULT 1) RETURNS boolean
@@ -306,7 +296,6 @@ CREATE OR REPLACE FUNCTION aRasterValue(traj tgeompoint, rast raster,
  * @ingroup mobilitydb_raster
  * @brief Return the number of bands of a raster
  * @param[in] rast Raster
- * @csqlfn #numBands()
  */
 CREATE FUNCTION numBands(raster)
   RETURNS integer
