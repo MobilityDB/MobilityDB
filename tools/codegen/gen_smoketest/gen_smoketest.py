@@ -1707,6 +1707,7 @@ TJSONB_CONFIG = dict(
         "json_make":          {0: "keys_vals1", 1: "2"},
         "json_make_two_arg":  {0: "keys1", 1: "values1", 2: "1"},
         "jsonb_make":         {0: "keys_vals1", 1: "2"},
+        "jsonb_make_two_arg": {0: "keys1", 1: "values1", 2: "1"},
         "json_extract_path":      {0: "json_doc1", 1: "path1", 2: "2"},
         "json_extract_path_text": {0: "json_doc1", 1: "path1", 2: "2"},
         "jsonb_exists_array":     {0: "jb_obj1", 1: "keys1", 2: "1"},
@@ -1738,17 +1739,6 @@ TJSONB_CONFIG = dict(
                                     5: "null_handle_text1"},
     },
     skip={
-        # jsonb_make_two_arg (pgtypes/utils/jsonb.c, pg_jsonb_make_two_arg)
-        # converts each `values[i]` text into a fresh C string in its own
-        # `values_str` array, but its cleanup loop only frees `keys_str` and
-        # its elements -- `values_str` and its per-element cstrings are never
-        # freed. Compare the sibling single-array jsonb_make just above it in
-        # the same file, whose cleanup loop correctly frees every element of
-        # its (single, interleaved) `keys_vals_str` array. This is a real
-        # kernel leak, not a harness gap; left skipped and reported rather
-        # than routed around.
-        "jsonb_make_two_arg":
-            "leaks values_str[] in pg_jsonb_make_two_arg (pgtypes/utils/jsonb.c); real kernel bug, reported separately",
         # json_each / json_each_text / jsonb_each / jsonb_each_text return
         # the object's keys, but ALSO write each value directly into the
         # caller-supplied `values` buffer element-by-element
