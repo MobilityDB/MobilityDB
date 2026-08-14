@@ -227,13 +227,17 @@ def main() -> int:
             print(f"  {line}")
         return 1
 
+    # A baseline that lists findings the tree no longer has is out of date,
+    # not broken: the invariant this check enforces is that no NEW finding
+    # appears. Reporting it as a failure would redden every pull request
+    # whose branch predates the last shrink, for housekeeping it did not do,
+    # so it is a notice and the shrink happens with the next --rebaseline.
     stale = sorted(baseline - set(findings))
     if stale:
-        print(f"{len(stale)} baselined finding(s) are fixed. "
-              f"Run --rebaseline to shrink the baseline:\n")
+        print(f"{len(stale)} baselined finding(s) no longer occur. "
+              f"Run --rebaseline after a fix to shrink the baseline:\n")
         for line in stale:
             print(f"  {line}")
-        return 1
 
     print(f"error-sentinels: clean ({len(baseline)} baselined).")
     return 0
