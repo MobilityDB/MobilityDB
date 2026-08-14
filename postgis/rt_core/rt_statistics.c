@@ -339,6 +339,7 @@ rt_band_get_summary_stats(
 			z++;
 		}
 	}
+	(void) j; /* MEOS */
 
 	RASTER_DEBUG(3, "sampling complete");
 
