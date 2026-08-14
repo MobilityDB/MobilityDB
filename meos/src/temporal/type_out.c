@@ -1341,15 +1341,20 @@ npoint_to_wkb_size(const Npoint *np, uint8_t variant, bool component)
  * in the Well-Known Binary (WKB) representation
  *
  * The encoding is intentionally minimal: the entire varlena body
- * (i.e. pcid + payload) is written length-prefixed, with the
- * trailing struct padding trimmed. The schema for the @c pcid is
- * resolved out-of-band (pgpointcloud's @c pointcloud_formats catalog,
- * via the @c meos_pc_schema_fn hook installed at backend startup),
- * so it is not embedded in the WKB. This makes the encoding fine for
- * @c COPY @c BINARY round-trips inside a database, but assumes the
- * receiver can resolve @c pcid against the same catalog. Cross-cluster
- * portability is a separate concern handled by an optional schema-
- * embedding flag bit (not yet implemented).
+ * (i.e. pcid + payload) is written length-prefixed. The full length is
+ * kept even for a pcpoint, whose trailing bytes are pgpointcloud's
+ * struct-tail padding (see the note in pointcloud/pcpoint.c): shrinking
+ * the length would make @c pcvarlena_from_wkb_state (type_in.c) allocate
+ * a varlena pgpointcloud's own point deserializer no longer recognizes.
+ * @c pcpoint_to_wkb_buf writes that padding as zeros instead, mirroring
+ * @c pcpoint_hex_out, so two byte-equal pcpoints always agree on their
+ * WKB. The schema for the @c pcid is resolved out-of-band (pgpointcloud's
+ * @c pointcloud_formats catalog, via the @c meos_pc_schema_fn hook
+ * installed at backend startup), so it is not embedded in the WKB. This
+ * makes the encoding fine for @c COPY @c BINARY round-trips inside a
+ * database, but assumes the receiver can resolve @c pcid against the
+ * same catalog. Cross-cluster portability is a separate concern handled
+ * by an optional schema-embedding flag bit (not yet implemented).
  */
 static size_t
 pcpoint_to_wkb_size(const Pcpoint *pt, uint8_t variant)
@@ -2206,15 +2211,30 @@ opaque_bytes_to_wkb_buf(const uint8_t *src, size_t body_len, uint8_t *buf,
  * Binary (WKB) representation: int32 body length + body bytes.
  *
  * The body comprises everything after the varlena header: pcid +
- * dimension payload, with the pgpointcloud tail padding trimmed.
+ * dimension payload. The trailing bytes past the meaningful prefix are
+ * pgpointcloud's struct-tail padding, which its constructor leaves
+ * uninitialized (see the note in pointcloud/pcpoint.c). They are
+ * written as zeros — mirroring @c pcpoint_hex_out — instead of copied
+ * verbatim, so that two pcpoints holding the same point always produce
+ * the same WKB. The full body length is still written, matching what
+ * @c pcvarlena_from_wkb_state (type_in.c) needs to rebuild a varlena of
+ * the size pgpointcloud's own deserializer expects.
  */
 static uint8_t *
 pcpoint_to_wkb_buf(const Pcpoint *pt, uint8_t *buf, uint8_t variant)
 {
   size_t body_len = VARSIZE(pt) - VARHDRSZ;
+  size_t meaningful_len = pcpoint_meaningful_size(pt) - VARHDRSZ;
+  assert(meaningful_len <= body_len);
   buf = int32_to_wkb_buf((int32) body_len, buf, variant);
-  return opaque_bytes_to_wkb_buf((const uint8_t *) VARDATA(pt), body_len,
+  buf = opaque_bytes_to_wkb_buf((const uint8_t *) VARDATA(pt), meaningful_len,
     buf, variant);
+  for (size_t i = meaningful_len; i < body_len; i++)
+  {
+    uint8_t zero = 0;
+    buf = opaque_bytes_to_wkb_buf(&zero, 1, buf, variant);
+  }
+  return buf;
 }
 static uint8_t *
 pcpatch_to_wkb_buf(const Pcpatch *pa, uint8_t *buf, uint8_t variant)
