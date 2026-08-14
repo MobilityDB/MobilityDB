@@ -46,6 +46,88 @@ SELECT cbuffer 'Cbuffer(Point(1 1), -2.0)';
 </programlisting>
 		<para>A continuación damos las funciones y operadores para el tipo de búfer circular.</para>
 
+		<sect2 xml:id="cbuffer_inout">
+			<title>Entrada y salida</title>
+
+			<itemizedlist>
+				<listitem xml:id="cbuffer_asText">
+					<indexterm significance="normal"><primary><varname>asText</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>asEWKT</varname></primary></indexterm>
+					<para>Devuelve la representación de texto conocido (Well-Known Text o WKT) o la representación extendida de texto conocido (Extended Well-Known Text o EWKT)</para>
+					<para><varname>asText({cbuffer,cbuffer[]}) → {text,text[]}</varname></para>
+					<para><varname>asEWKT({cbuffer,cbuffer[]}) → {text,text[]}</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(cbuffer 'Cbuffer(Point(1 1), 0.5)');
+-- Cbuffer(POINT(1 1),0.5)
+SELECT asText(ARRAY[cbuffer 'Cbuffer(Point(1 1),0.2)', 'Cbuffer(Point(1 1),0.5)']);
+-- {"Cbuffer(POINT(1 1),0.2)","Cbuffer(POINT(1 1),0.5)"}
+SELECT asEWKT(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)');
+-- SRID=5676;Cbuffer(POINT(1 1),0.5)
+SELECT asEWKT(ARRAY[cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.2)', 'Cbuffer(SRID=5676;Point(1 1),0.5)']);
+-- {"SRID=5676;Cbuffer(POINT(1 1),0.2)","SRID=5676;Cbuffer(POINT(1 1),0.5)"}
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="cbuffer_asBinary">
+					<indexterm significance="normal"><primary><varname>asBinary</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>asEWKB</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>asHexWKB</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>asHexEWKB</varname></primary></indexterm>
+					<para>Devuelve la representación binaria conocida (Well-Known Binary o WKB), la representación extendida binaria conocida (Extended Well-Known Binary o EWKB), la representación hexadecimal binaria conocida (Hexadecimal Well-Known Binary o HexWKB), o la representación hexadecimal extendida binaria conocida (Hexadecimal Extended Well-Known Binary o HexEWKB)</para>
+					<para><varname>asBinary(cbuffer,endian text='') → bytea</varname></para>
+					<para><varname>asEWKB(cbuffer,endian text='') → bytea</varname></para>
+					<para><varname>asHexWKB(cbuffer,endian text='') → text</varname></para>
+					<para><varname>asHexEWKB(cbuffer,endian text='') → text</varname></para>
+					<para>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina. Un búfer circular toma su SRID de su punto subyacente, por lo que ambas formas hexadecimales lo incluyen y coinciden, mientras que la forma binaria simple <varname>asBinary</varname> lo omite.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asBinary(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)');
+-- \x0100000000000000f03f000000000000f03f000000000000e03f
+SELECT asEWKB(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)');
+-- \x01402c160000000000000000f03f000000000000f03f000000000000e03f
+SELECT asHexWKB(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)');
+-- 01402C160000000000000000F03F000000000000F03F000000000000E03F
+SELECT asHexEWKB(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)');
+-- 01402C160000000000000000F03F000000000000F03F000000000000E03F
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="cbufferFromText">
+					<indexterm significance="normal"><primary><varname>cbufferFromText</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>cbufferFromEWKT</varname></primary></indexterm>
+					<para>Entrada desde la representación de texto conocido (Well-Known Text o WKT) o desde la representación extendida de texto conocido (Extended Well-Known Text o EWKT)</para>
+					<para><varname>cbufferFromText(text) → cbuffer</varname></para>
+					<para><varname>cbufferFromEWKT(text) → cbuffer</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(cbufferFromText(text 'Cbuffer(Point(1 1),0.5)'));
+-- Cbuffer(POINT(1 1),0.5)
+SELECT asEWKT(cbufferFromEWKT(text 'SRID=5676;Cbuffer(Point(1 1),0.5)'));
+-- SRID=5676;Cbuffer(POINT(1 1),0.5)
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="cbufferFromBinary">
+					<indexterm significance="normal"><primary><varname>cbufferFromBinary</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>cbufferFromEWKB</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>cbufferFromHexEWKB</varname></primary></indexterm>
+					<para>Entrada desde la representación binaria conocida (Well-Known Binary o WKB), desde la representación extendida binaria conocida (Extended Well-Known Binary o EWKB), o desde la representación hexadecimal extendida binaria conocida (Hexadecimal Extended Well-Known Binary o HexEWKB)</para>
+					<para><varname>cbufferFromBinary(bytea) → cbuffer</varname></para>
+					<para><varname>cbufferFromEWKB(bytea) → cbuffer</varname></para>
+					<para><varname>cbufferFromHexEWKB(text) → cbuffer</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asEWKT(cbufferFromBinary(
+  '\x0100000000000000f03f000000000000f03f000000000000e03f'));
+-- Cbuffer(POINT(1 1),0.5)
+SELECT asEWKT(cbufferFromEWKB(
+  '\x01402c160000000000000000f03f000000000000f03f000000000000e03f'));
+-- SRID=5676;Cbuffer(POINT(1 1),0.5)
+SELECT asEWKT(cbufferFromHexEWKB(
+  '01402C160000000000000000F03F000000000000F03F000000000000E03F'));
+-- SRID=5676;Cbuffer(POINT(1 1),0.5)
+</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
 		<sect2 xml:id="cbuffer_constructors">
 			<title>Constructores</title>
 			<itemizedlist>

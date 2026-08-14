@@ -2005,8 +2005,11 @@ cbuffer_to_wkb_buf(const Cbuffer *cb, uint8_t *buf, uint8_t variant,
   {
     /* Write the endian flag (byte) */
     buf = endian_to_wkb_buf(buf, variant);
-    /* Write the SRID flag */
-    uint8_t wkb_flags = (uint8_t) MEOS_WKB_SRIDFLAG;
+    /* Write the SRID flag, set only when the SRID will follow (matching the
+     * npoint/pose/h3index readers, which trust the flag bit to decide
+     * whether to consume the SRID bytes) */
+    uint8_t wkb_flags = spatial_wkb_needs_srid(cb->srid, variant) ?
+      (uint8_t) MEOS_WKB_SRIDFLAG : 0;
     buf = bytes_to_wkb_buf(&wkb_flags, MEOS_WKB_BYTE_SIZE, buf, variant);
     /* Write the SRID */
     if (spatial_wkb_needs_srid(cb->srid, variant))
@@ -2026,8 +2029,7 @@ cbuffer_to_wkb_buf(const Cbuffer *cb, uint8_t *buf, uint8_t variant,
  * representation
  * @details endian flag, SRID flag, optional SRID (WGS84, extended variant
  * only), then the cell id (int8). The SRID flag bit is set only when the SRID
- * is actually written — matching the npoint/pose readers (and unlike the
- * unconditional cbuffer flag).
+ * is actually written — matching the npoint/pose/cbuffer readers.
  */
 static uint8_t *
 h3index_to_wkb_buf(Datum value, uint8_t *buf, uint8_t variant)

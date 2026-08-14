@@ -43,6 +43,26 @@ SELECT cbuffer 'Cbuffer(Point(1 1),-1.5)';
 SELECT cbuffer 'Cbuffer(Point(1 1),0.5)xxx';
 
 -------------------------------------------------------------------------------
+-- Input/output in WKT, WKB and HexWKB representation
+-------------------------------------------------------------------------------
+
+SELECT asEWKT(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)');
+SELECT asBinary(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)');
+SELECT asEWKB(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)');
+SELECT asHexWKB(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)');
+SELECT asHexEWKB(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)');
+
+SELECT asText(cbufferFromText(asText(cbuffer 'Cbuffer(Point(1 1),0.5)')));
+SELECT asEWKT(cbufferFromEWKT(asEWKT(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)')));
+SELECT asEWKT(cbufferFromBinary(asBinary(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)')));
+SELECT asEWKT(cbufferFromEWKB(asEWKB(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)')));
+SELECT asEWKT(cbufferFromHexEWKB(asHexWKB(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)')));
+SELECT asEWKT(cbufferFromHexEWKB(asHexEWKB(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)')));
+
+SELECT asHexWKB(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)')
+     = asHexEWKB(cbuffer 'Cbuffer(SRID=5676;Point(1 1),0.5)') AS hexwkb_eq_hexewkb;
+
+-------------------------------------------------------------------------------
 -- Constructors
 -------------------------------------------------------------------------------
 
