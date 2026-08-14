@@ -1497,9 +1497,33 @@ aintersects_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
+ * @brief Return true if every composing circular buffer of a temporal circular
+ * buffer has a zero radius, that is, the value is a temporal point
+ */
+static bool
+tcbuffer_is_tpoint(const Temporal *temp)
+{
+  assert(temp); assert(temp->temptype == T_TCBUFFER);
+  int count;
+  const TInstant **instants = temporal_insts_p(temp, &count);
+  bool result = true;
+  for (int i = 0; i < count && result; i++)
+    result = (DatumGetCbufferP(tinstant_value_p(instants[i]))->radius == 0.0);
+  pfree(instants);
+  return result;
+}
+
+/**
  * @ingroup meos_internal_cbuffer_rel_ever
  * @brief Return 1 if a temporal circular buffer and a geometry ever touch,
  * 0 if not, and -1 on error or if the geometry is empty
+ * @details Touching is a contact of the two whose interiors stay disjoint. A
+ * disc of a strictly positive radius carries an interior, and the paths below
+ * read the disjointness from the position of its centre with respect to the
+ * geometry. A disc of radius zero is a point, whose interior is the point
+ * itself: it touches the geometry exactly where it lies on the boundary of the
+ * geometry, and a value composed of such discs is a temporal point, which
+ * reaches that relationship through its own conversion
  * @param[in] temp Temporal circular buffer
  * @param[in] gs Geometry
  * @param[in] ever True for the ever semantics, false for the always semantics
@@ -1511,6 +1535,18 @@ ea_touches_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
+
+  /* A value composed of discs of a zero radius is a temporal point, whose
+   * conversion is exact, and the temporal point relationship resolves the
+   * contact with the boundary of the geometry that the paths below read from
+   * a disc boundary */
+  if (tcbuffer_is_tpoint(temp))
+  {
+    Temporal *tpoint = tcbuffer_to_tgeompoint(temp);
+    int result = ea_touches_tpoint_geo(tpoint, gs, ever);
+    pfree(tpoint);
+    return result;
+  }
 
   /* Bounding box test: a moving disk whose radius-aware bounding box is
    * disjoint from the geometry never reaches it, so it cannot touch. This is a
