@@ -1835,6 +1835,36 @@ bytes_to_wkb_buf(uint8_t *valptr, size_t size, uint8_t *buf, uint8_t variant)
 }
 
 /**
+ * @brief Write into the buffer an opaque byte payload in the Well-Known Binary
+ * (WKB) representation
+ * @details A payload such as a text string or the pixel array of a Raquet tile
+ * is a sequence of bytes, not a number, so it carries no byte order and is
+ * written in the order it is held whatever endianness is requested. Passing it
+ * to #bytes_to_wkb_buf() instead would reverse it as that function reverses a
+ * scalar, and the reader, which copies the payload verbatim, would not put it
+ * back.
+ */
+static uint8_t *
+payload_to_wkb_buf(const uint8_t *valptr, size_t size, uint8_t *buf,
+  uint8_t variant)
+{
+  if (variant & WKB_HEX)
+  {
+    for (size_t i = 0; i < size; i++)
+    {
+      uint8_t b = valptr[i];
+      /* Top four bits to 0-F */
+      buf[2*i] = HEXCHR[b >> 4];
+      /* Bottom four bits to 0-F */
+      buf[2*i + 1] = HEXCHR[b & 0x0F];
+    }
+    return buf + (2 * size);
+  }
+  memcpy(buf, valptr, size);
+  return buf + size;
+}
+
+/**
  * @brief Generic function to write a typed value to WKB buffer with size checking
  */
 static inline uint8_t *
@@ -1959,26 +1989,8 @@ text_to_wkb_buf(const text *txt, uint8_t *buf, uint8_t variant)
   /* Write the size first (this gets proper endian handling) */
   buf = int64_to_wkb_buf(size, buf, variant);
 
-  /* Write the text data - needs special handling to avoid swapping */
-  if (variant & WKB_HEX)
-  {
-    /* Convert to hex without swapping byte order */
-    for (size_t i = 0; i < size; i++)
-    {
-      uint8_t b = str[i];
-      /* Top four bits to 0-F */
-      buf[2*i] = HEXCHR[b >> 4];
-      /* Bottom four bits to 0-F */
-      buf[2*i + 1] = HEXCHR[b & 0x0F];
-    }
-    return buf + (2 * size);
-  }
-  else
-  {
-    /* Binary - direct copy without swapping */
-    memcpy(buf, str, size);
-    return buf + size;
-  }
+  /* Write the text data, which carries no byte order of its own */
+  return payload_to_wkb_buf((const uint8_t *) str, size, buf, variant);
 }
 
 /**
@@ -2248,8 +2260,8 @@ raquet_to_wkb_buf(const Raquet *rq, uint8_t *buf, uint8_t variant,
   buf = bytes_to_wkb_buf(&has_nodata, MEOS_WKB_BYTE_SIZE, buf, variant);
   buf = double_to_wkb_buf(rq->nodata, buf, variant);
   /* Write the row-major packed pixel bytes */
-  buf = bytes_to_wkb_buf((uint8_t *) rq->pixels, raquet_pixels_size(rq), buf,
-    variant);
+  buf = payload_to_wkb_buf((const uint8_t *) rq->pixels, raquet_pixels_size(rq),
+    buf, variant);
   return buf;
 }
 #endif /* RASTER */
