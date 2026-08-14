@@ -115,13 +115,13 @@ $(function() {
 <p>Return the pixel data type corresponding to a name. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">str</td><td>Pixel type name: UINT8, INT8, UINT16, INT16, UINT32, INT32, UINT64, INT64, FLOAT16, FLOAT32, or FLOAT64 </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">str</td><td>Pixel type name: uint8, int8, uint16, int16, uint32, int32, uint64, int64, float16, float32, or float64 </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section note"><dt>Note</dt><dd>This is the parser counterpart of <a class="el" href="group__meos__raster__base__accessor_ga0019e015bac80fc360eed13f38720c3e.html#ga0019e015bac80fc360eed13f38720c3e" title="Return the name of the pixel data type of a Raquet tile.">raquet_pixtype()</a> </dd>
 <dd>
-The name is read without regard to case, so the lower-case spelling the RaQuet specification gives the <code>type</code> field of a tile carries straight through from a file into the constructors. The name <a class="el" href="group__meos__raster__base__accessor_ga0019e015bac80fc360eed13f38720c3e.html#ga0019e015bac80fc360eed13f38720c3e" title="Return the name of the pixel data type of a Raquet tile.">raquet_pixtype()</a> returns keeps the upper case the SQL surface documents </dd>
+The name is read without regard to case, so a name written either way carries into the constructors. The name <a class="el" href="group__meos__raster__base__accessor_ga0019e015bac80fc360eed13f38720c3e.html#ga0019e015bac80fc360eed13f38720c3e" title="Return the name of the pixel data type of a Raquet tile.">raquet_pixtype()</a> returns is the one the RaQuet specification writes, in lower case, so it compares equal to the <code>type</code> field of the tile a file holds </dd>
 <dd>
 The name PostGIS raster gives a pixel type is accepted for the same type, so the band type an <code>ST_BandPixelType</code> call reports carries into the constructors as it stands. The types PostGIS carries in less than a byte a pixel say that a <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> band has no representation for them </dd></dl>
 
