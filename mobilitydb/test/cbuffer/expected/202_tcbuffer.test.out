@@ -322,6 +322,54 @@ SELECT asText(tcbufferFromHexEWKB(asHexEWKB(tcbuffer 'Interp=Step;{[Cbuffer(Poin
  Interp=Step;{[Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST], [Cbuffer(POINT(2 2),0.6)@Tue Jan 04 00:00:00 2000 PST, Cbuffer(POINT(2 2),0.6)@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
+SELECT asText(tcbufferFromHexEWKB(asHexWKB(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01')));
+                        astext                        
+------------------------------------------------------
+ Cbuffer(POINT(1 1),0.5)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(tcbufferFromHexEWKB(asHexWKB(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}')));
+                                                                               astext                                                                               
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {Cbuffer(POINT(1 1),0.3)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT asText(tcbufferFromHexEWKB(asHexWKB(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]')));
+                                                                               astext                                                                               
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ [Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(tcbufferFromHexEWKB(asHexWKB(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}')));
+                                                                                                                                       astext                                                                                                                                       
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST], [Cbuffer(POINT(2 2),0.6)@Tue Jan 04 00:00:00 2000 PST, Cbuffer(POINT(2 2),0.6)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(tcbufferFromHexEWKB(asHexWKB(tcbuffer 'Interp=Step;[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]')));
+                                                                                     astext                                                                                     
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Interp=Step;[Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(tcbufferFromHexEWKB(asHexWKB(tcbuffer 'Interp=Step;{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05] }')));
+                                                                                                                                             astext                                                                                                                                             
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Interp=Step;{[Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST], [Cbuffer(POINT(2 2),0.6)@Tue Jan 04 00:00:00 2000 PST, Cbuffer(POINT(2 2),0.6)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(tcbufferFromHexEWKB(asHexWKB(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01', 'NDR')));
+                        astext                        
+------------------------------------------------------
+ Cbuffer(POINT(1 1),0.5)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(tcbufferFromHexEWKB(asHexWKB(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01', 'XDR')));
+                        astext                        
+------------------------------------------------------
+ Cbuffer(POINT(1 1),0.5)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
 SELECT asMFJSON(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01');
                                                                asmfjson                                                                
 ---------------------------------------------------------------------------------------------------------------------------------------

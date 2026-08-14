@@ -157,9 +157,14 @@ CREATE FUNCTION asEWKB(trgeometry, endianenconding text DEFAULT '')
   AS 'MODULE_PATHNAME', 'Tspatial_as_ewkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asHexEWKB(trgeometry, endianenconding text DEFAULT '')
+CREATE FUNCTION asHexWKB(trgeometry, endianenconding text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_as_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asHexEWKB(trgeometry, endianenconding text DEFAULT '')
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Tspatial_as_hexewkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- GENERATED-REPRESENTATIONS-END rgeo

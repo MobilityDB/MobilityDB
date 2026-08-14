@@ -430,6 +430,54 @@ SELECT asText(trgeometryFromHexEWKB(asHexEWKB(trgeometry 'Interp=Step;Polygon((1
  POLYGON((1 1,2 2,3 1,1 1));Interp=Step;{[Pose(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Pose(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Pose(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST], [Pose(POINT(2 2),0.6)@Tue Jan 04 00:00:00 2000 PST, Pose(POINT(2 2),0.6)@Wed Jan 05 00:00:00 2000 PST]}
 (1 row)
 
+SELECT asText(trgeometryFromHexEWKB(asHexWKB(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1), 0.5)@2000-01-01')));
+                                    astext                                    
+------------------------------------------------------------------------------
+ POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(1 1),0.5)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(trgeometryFromHexEWKB(asHexWKB(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{Pose(Point(1 1), 0.3)@2000-01-01, Pose(Point(1 1), 0.5)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03}')));
+                                                                                        astext                                                                                        
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((1 1,2 2,3 1,1 1));{Pose(POINT(1 1),0.3)@Sat Jan 01 00:00:00 2000 PST, Pose(POINT(1 1),0.5)@Sun Jan 02 00:00:00 2000 PST, Pose(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST}
+(1 row)
+
+SELECT asText(trgeometryFromHexEWKB(asHexWKB(trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03]')));
+                                                                                        astext                                                                                        
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((1 1,2 2,3 1,1 1));[Pose(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Pose(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Pose(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(trgeometryFromHexEWKB(asHexWKB(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03], [Pose(Point(2 2), 0.6)@2000-01-04, Pose(Point(2 2), 0.6)@2000-01-05]}')));
+                                                                                                                                             astext                                                                                                                                             
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((1 1,2 2,3 1,1 1));{[Pose(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Pose(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Pose(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST], [Pose(POINT(2 2),0.6)@Tue Jan 04 00:00:00 2000 PST, Pose(POINT(2 2),0.6)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(trgeometryFromHexEWKB(asHexWKB(trgeometry 'Interp=Step;Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03]')));
+                                                                                              astext                                                                                              
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((1 1,2 2,3 1,1 1));Interp=Step;[Pose(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Pose(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Pose(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(trgeometryFromHexEWKB(asHexWKB(trgeometry 'Interp=Step;Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03], [Pose(Point(2 2), 0.6)@2000-01-04, Pose(Point(2 2), 0.6)@2000-01-05]}')));
+                                                                                                                                                   astext                                                                                                                                                   
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((1 1,2 2,3 1,1 1));Interp=Step;{[Pose(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Pose(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Pose(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST], [Pose(POINT(2 2),0.6)@Tue Jan 04 00:00:00 2000 PST, Pose(POINT(2 2),0.6)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(trgeometryFromHexEWKB(asHexWKB(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1), 0.5)@2000-01-01', 'NDR')));
+                                    astext                                    
+------------------------------------------------------------------------------
+ POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(1 1),0.5)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(trgeometryFromHexEWKB(asHexWKB(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1), 0.5)@2000-01-01', 'XDR')));
+                                    astext                                    
+------------------------------------------------------------------------------
+ POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(1 1),0.5)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
 SELECT asText(trgeometry('Polygon((1 1,2 2,3 1,1 1))', tpose(pose 'Pose(Point(1 1),0)', timestamp '2012-01-01')));
                                    astext                                   
 ----------------------------------------------------------------------------

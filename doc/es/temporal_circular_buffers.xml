@@ -319,10 +319,12 @@ SELECT asMFJSON(tcbuffer 'SRID=4326;[Cbuffer(Point(1 1),0.2)@2001-01-01,
 			<listitem xml:id="tcbuffer_asBinary">
 				<indexterm significance="normal"><primary><varname>asBinary</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>asEWKB</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>asHexWKB</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>asHexEWKB</varname></primary></indexterm>
-				<para>Devuelve la representación binaria conocida (Well-Known Binary o WKB), la representación extendida binaria conocida (Extended Well-Known Binary o EWKB), o la representación hexadecimal extendida binaria conocida (Extended Well-Known Binary o EWKB)</para>
+				<para>Devuelve la representación binaria conocida (Well-Known Binary o WKB), la representación extendida binaria conocida (Extended Well-Known Binary o EWKB), la representación hexadecimal binaria conocida (Hexadecimal Well-Known Binary o HexWKB), o la representación hexadecimal extendida binaria conocida (Hexadecimal Extended Well-Known Binary o HexEWKB)</para>
 				<para><varname>asBinary(tcbuffer,endian text='') → bytea</varname></para>
 				<para><varname>asEWKB(tcbuffer,endian text='') → bytea</varname></para>
+				<para><varname>asHexWKB(tcbuffer,endian text='') → text</varname></para>
 				<para><varname>asHexEWKB(tcbuffer,endian text='') → text</varname></para>
 				<para>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -330,6 +332,8 @@ SELECT asBinary(tcbuffer 'Cbuffer(Point(1 2),1)@2001-01-01');
 -- \x013b0001000000000000f03f0000000000000040000000000000f03f009c57d3c11c0000
 SELECT asEWKB(tcbuffer 'SRID=7844;Cbuffer(Point(1 2),1)@2001-01-01');
 -- \x013b0041a41e0000000000000000f03f0000000000000040000000000000f03f009c57d3c11c0000
+SELECT asHexWKB(tcbuffer 'Cbuffer(Point(1 2),1)@2001-01-01');
+-- 013B0001000000000000F03F0000000000000040000000000000F03F009C57D3C11C0000
 SELECT asHexEWKB(tcbuffer 'SRID=3812;Cbuffer(Point(1 2),1)@2001-01-01');
 -- 013B0041E40E0000000000000000F03F0000000000000040000000000000F03F009C57D3C11C0000
 </programlisting>
