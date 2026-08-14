@@ -373,7 +373,21 @@ SELECT tIntersects(tcbuffer '[Cbuffer(Point(1 1),0)@2000-01-01, Cbuffer(Point(1 
 -- Within a distance of a line the point approaches and leaves
 SELECT tDwithin(tcbuffer '[Cbuffer(Point(-3 0),0)@2000-01-01, Cbuffer(Point(3 0),0)@2000-01-03]', geometry 'Linestring(0 -5,0 5)', 2);
 SELECT tDwithin(geometry 'Linestring(0 -5,0 5)', tcbuffer '[Cbuffer(Point(-3 0),0)@2000-01-01, Cbuffer(Point(3 0),0)@2000-01-03]', 2);
+-- A point touches a geometry where it lies on the boundary of the geometry,
+-- so it touches a polygon it crosses at the two boundary crossings
+SELECT tTouches(tcbuffer '[Cbuffer(Point(-3 0),0)@2000-01-01, Cbuffer(Point(3 0),0)@2000-01-03]', geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))');
+SELECT tTouches(geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))', tcbuffer '[Cbuffer(Point(-3 0),0)@2000-01-01, Cbuffer(Point(3 0),0)@2000-01-03]');
+-- A geometry whose boundary is empty is touched nowhere, even at the instant
+-- the point passes through it
+SELECT tTouches(tcbuffer '[Cbuffer(Point(-3 0),0)@2000-01-01, Cbuffer(Point(3 0),0)@2000-01-03]', geometry 'Point(0 0)');
+SELECT tTouches(tcbuffer '[Cbuffer(Point(-3 0),0)@2000-01-01, Cbuffer(Point(3 0),0)@2000-01-03]', geometry 'MultiPoint(0 0,1 1)');
+-- The boundary of a line is its two end points, which a point crossing the
+-- line never reaches
+SELECT tTouches(tcbuffer '[Cbuffer(Point(-3 0),0)@2000-01-01, Cbuffer(Point(3 0),0)@2000-01-03]', geometry 'Linestring(0 -5,0 5)');
+-- A point reaching an end point of the line touches it there
+SELECT tTouches(tcbuffer '[Cbuffer(Point(-3 0),0)@2000-01-01, Cbuffer(Point(5 0),0)@2000-01-03]', geometry 'Linestring(-5 0,5 0)');
 -- A single disc of a strictly positive radius keeps the disc semantics
 SELECT tIntersects(tcbuffer '[Cbuffer(Point(-3 0),0)@2000-01-01, Cbuffer(Point(3 0),0.5)@2000-01-03]', geometry 'Point(0 0)');
+SELECT tTouches(tcbuffer '[Cbuffer(Point(-3 0),0)@2000-01-01, Cbuffer(Point(3 0),0.5)@2000-01-03]', geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))');
 
 -------------------------------------------------------------------------------
