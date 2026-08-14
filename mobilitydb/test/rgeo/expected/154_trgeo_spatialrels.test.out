@@ -155,7 +155,7 @@ SELECT aIntersects(
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');
  aintersects 
 -------------
- t
+ f
 (1 row)
 
 SELECT eIntersects(
@@ -171,7 +171,7 @@ SELECT aIntersects(
   geometry 'Polygon((-1 -1,2 -1,2 2,-1 2,-1 -1))');
  aintersects 
 -------------
- t
+ f
 (1 row)
 
 SELECT eIntersects(
@@ -185,6 +185,38 @@ SELECT eIntersects(
 SELECT aIntersects(
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');
+ aintersects 
+-------------
+ t
+(1 row)
+
+SELECT eIntersects(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(20 20),0)@2001-01-01, Pose(Point(30 30),0)@2001-01-05]',
+  geometry 'Polygon((-1 -1,2 -1,2 2,-1 2,-1 -1))');
+ eintersects 
+-------------
+ f
+(1 row)
+
+SELECT aIntersects(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(20 20),0)@2001-01-01, Pose(Point(30 30),0)@2001-01-05]',
+  geometry 'Polygon((-1 -1,2 -1,2 2,-1 2,-1 -1))');
+ aintersects 
+-------------
+ f
+(1 row)
+
+SELECT aIntersects(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(1 0),0)@2001-01-05]',
+  geometry 'Polygon((-1 -1,4 -1,4 4,-1 4,-1 -1))');
+ aintersects 
+-------------
+ t
+(1 row)
+
+SELECT aIntersects(
+  geometry 'Polygon((-1 -1,4 -1,4 4,-1 4,-1 -1))',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(1 0),0)@2001-01-05]');
  aintersects 
 -------------
  t

@@ -142,6 +142,21 @@ SELECT aIntersects(
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');
 
+-- A body that never reaches the geometry does not always intersect it, and one
+-- that stays within the geometry throughout does
+SELECT eIntersects(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(20 20),0)@2001-01-01, Pose(Point(30 30),0)@2001-01-05]',
+  geometry 'Polygon((-1 -1,2 -1,2 2,-1 2,-1 -1))');
+SELECT aIntersects(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(20 20),0)@2001-01-01, Pose(Point(30 30),0)@2001-01-05]',
+  geometry 'Polygon((-1 -1,2 -1,2 2,-1 2,-1 -1))');
+SELECT aIntersects(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(1 0),0)@2001-01-05]',
+  geometry 'Polygon((-1 -1,4 -1,4 4,-1 4,-1 -1))');
+SELECT aIntersects(
+  geometry 'Polygon((-1 -1,4 -1,4 4,-1 4,-1 -1))',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(1 0),0)@2001-01-05]');
+
 -------------------------------------------------------------------------------
 -- eTouches / aTouches
 -------------------------------------------------------------------------------
