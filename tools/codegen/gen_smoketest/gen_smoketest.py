@@ -688,16 +688,7 @@ TCBUFFER_CONFIG = dict(
     name_arg_map={
         r"tstzset": {"Set *": "tstzset1"},
     },
-    skip={
-        # Internal "Unknown compare function for type" / "type is not a
-        # span type" failures, surfacing real MEOS bugs in the cbuffer
-        # spanset path. Skip until fixed.
-        "re:^tdisjoint_(tcbuffer|cbuffer|geo)_":   "MEOS bug: Unknown compare function for type",
-        "re:^tintersects_(tcbuffer|cbuffer|geo)_": "MEOS bug: type is not a span type",
-        "re:^ttouches_(tcbuffer|cbuffer|geo)_":    "MEOS bug: spanset path issue",
-        "re:^tcontains_(tcbuffer|cbuffer|geo)_":   "MEOS bug: spanset path issue",
-        "re:^tcovers_(tcbuffer|cbuffer|geo)_":     "MEOS bug: spanset path issue",
-    },
+    skip={},
     common_inputs="""\
   TimestampTz tstz1 = timestamptz_in("2001-01-02", -1);
   Span *tstzspan1 = tstzspan_in("[2001-01-01, 2001-01-04]");
