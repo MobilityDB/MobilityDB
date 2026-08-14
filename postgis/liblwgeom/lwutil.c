@@ -465,7 +465,12 @@ struct geomtype_struct geomtype_struct_array[] =
 * We could also count on PgSQL sending us *lower* case inputs, as it seems to do that
 * regardless of the case the user provides for the type arguments.
 */
-const char dumb_upper_map[128] = "................................................0123456789.......ABCDEFGHIJKLMNOPQRSTUVWXYZ......ABCDEFGHIJKLMNOPQRSTUVWXYZ.....";
+/* MEOS: the bound is left implicit so that the string keeps its terminator.
+ * The map holds one entry per code point 0 to 127, which is what dumb_toupper
+ * below indexes and the only thing anything reads; a [128] bound drops the
+ * terminating NUL, which GCC 15 reports as
+ * -Wunterminated-string-initialization. */
+const char dumb_upper_map[] = "................................................0123456789.......ABCDEFGHIJKLMNOPQRSTUVWXYZ......ABCDEFGHIJKLMNOPQRSTUVWXYZ.....";
 
 static char dumb_toupper(int in)
 {
