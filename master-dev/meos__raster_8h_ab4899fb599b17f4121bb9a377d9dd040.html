@@ -146,8 +146,8 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Pixel data type for raster chip sampling. </p>
-<p >Values are assigned to be compatible with the corresponding PostGIS rt_pixtype codes where they overlap. </p>
+<p>Pixel data type of a <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> band. </p>
+<p >The names are the ones the RaQuet specification gives the <code>type</code> field of a band. The code of a type indexes the pixel type catalog and is what a tile carries in its header and in its Well-Known Binary representation, so a type keeps the code it has and a new one takes the next free code. The codes are MEOS's own: the PostGIS rt_pixtype codes number the types differently. </p>
 <table class="fieldtable">
 <tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="ab4899fb599b17f4121bb9a377d9dd040a70464f92213043b481bb96b966b33548" name="ab4899fb599b17f4121bb9a377d9dd040a70464f92213043b481bb96b966b33548"></a>MEOS_PT_UINT8&#160;</td><td class="fielddoc"><p >Unsigned 8-bit integer <br  />
  </p>
@@ -162,6 +162,21 @@ $(function() {
  </p>
 </td></tr>
 <tr><td class="fieldname"><a id="ab4899fb599b17f4121bb9a377d9dd040a6636e9ae52b78030e5bcedbc35b377d9" name="ab4899fb599b17f4121bb9a377d9dd040a6636e9ae52b78030e5bcedbc35b377d9"></a>MEOS_PT_FLOAT64&#160;</td><td class="fielddoc"><p >64-bit IEEE double <br  />
+ </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ab4899fb599b17f4121bb9a377d9dd040a286607fe5e9b879fc66f7f069a0965f9" name="ab4899fb599b17f4121bb9a377d9dd040a286607fe5e9b879fc66f7f069a0965f9"></a>MEOS_PT_INT8&#160;</td><td class="fielddoc"><p >Signed 8-bit integer <br  />
+ </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ab4899fb599b17f4121bb9a377d9dd040a5a1e21cb7055651785bd3da119e94ad9" name="ab4899fb599b17f4121bb9a377d9dd040a5a1e21cb7055651785bd3da119e94ad9"></a>MEOS_PT_UINT16&#160;</td><td class="fielddoc"><p >Unsigned 16-bit integer. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ab4899fb599b17f4121bb9a377d9dd040a3c3a59508c37232113c67a554e98be95" name="ab4899fb599b17f4121bb9a377d9dd040a3c3a59508c37232113c67a554e98be95"></a>MEOS_PT_UINT32&#160;</td><td class="fielddoc"><p >Unsigned 32-bit integer. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ab4899fb599b17f4121bb9a377d9dd040aeda7d37120bd5a2189a8cfe06ae42c8c" name="ab4899fb599b17f4121bb9a377d9dd040aeda7d37120bd5a2189a8cfe06ae42c8c"></a>MEOS_PT_INT64&#160;</td><td class="fielddoc"><p >Signed 64-bit integer <br  />
+ </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ab4899fb599b17f4121bb9a377d9dd040aafb549a5cce93981d6c233d11d494cea" name="ab4899fb599b17f4121bb9a377d9dd040aafb549a5cce93981d6c233d11d494cea"></a>MEOS_PT_UINT64&#160;</td><td class="fielddoc"><p >Unsigned 64-bit integer. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ab4899fb599b17f4121bb9a377d9dd040a7ef840bd89e24e94c6f3dee069dcb28f" name="ab4899fb599b17f4121bb9a377d9dd040a7ef840bd89e24e94c6f3dee069dcb28f"></a>MEOS_PT_FLOAT16&#160;</td><td class="fielddoc"><p >16-bit IEEE half <br  />
  </p>
 </td></tr>
 </table>

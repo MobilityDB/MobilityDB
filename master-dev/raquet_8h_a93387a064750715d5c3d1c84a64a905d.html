@@ -83,7 +83,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="raquet_8h_a9cd60884e106ad44e5f23e137336e8c8.html#a9cd60884e106ad44e5f23e137336e8c8">PG_GETARG_RAQUET_P</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raquet_8h_a01c3177bf5a6e161fc600d5c13c2335c.html#a01c3177bf5a6e161fc600d5c13c2335c">PG_RETURN_RAQUET_P</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raquet_8h_a02f7e1759c910823c55b79589fb9acf5.html#a02f7e1759c910823c55b79589fb9acf5">raquet_meaningful_size</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="raquet_8h_ad31117dde7c41726affa3b3fc079bc32.html#ad31117dde7c41726affa3b3fc079bc32">raquet_pixel_value</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="raquet_8h_a93387a064750715d5c3d1c84a64a905d.html#a93387a064750715d5c3d1c84a64a905d">raquet_pixel_value</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raquet_8h_a1aa2621eb75bb670bd68c47bf0ece696.html#a1aa2621eb75bb670bd68c47bf0ece696">raquet_pixels_from_host</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raquet_8h_aa13f5e344f329eb555a2494e21740044.html#aa13f5e344f329eb555a2494e21740044">raquet_pixels_size</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__box__conversion_ga876744309b4ccbaf1afb25d559b056ff.html#ga876744309b4ccbaf1afb25d559b056ff">raquet_set_stbox</a></td></tr>
@@ -92,14 +92,14 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ad31117dde7c41726affa3b3fc079bc32" name="ad31117dde7c41726affa3b3fc079bc32"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad31117dde7c41726affa3b3fc079bc32">&#9670;&#160;</a></span>raquet_pixel_value()</h2>
+<a id="a93387a064750715d5c3d1c84a64a905d" name="a93387a064750715d5c3d1c84a64a905d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a93387a064750715d5c3d1c84a64a905d">&#9670;&#160;</a></span>raquet_pixel_value()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">double raquet_pixel_value </td>
+          <td class="memname">bool raquet_pixel_value </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="postgres__ext__defs_8in_8h_adde6aaee8457bee49c2a92621fe22b79.html#adde6aaee8457bee49c2a92621fe22b79">uint8</a> *&#160;</td>
           <td class="paramname"><em>pixels</em>, </td>
@@ -114,7 +114,13 @@ $(function() {
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype"><a class="el" href="meos__raster_8h_ab4899fb599b17f4121bb9a377d9dd040.html#ab4899fb599b17f4121bb9a377d9dd040">MeosPixType</a>&#160;</td>
-          <td class="paramname"><em>pixtype</em>&#160;</td>
+          <td class="paramname"><em>pixtype</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double *&#160;</td>
+          <td class="paramname"><em>result</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -124,16 +130,17 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the value of the pixel at position <code>index</code> of a <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> band. </p>
+<p>Return in the last argument the value of the pixel at position <code>index</code> of a <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> band. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">pixels</td><td>Row-major packed pixel bytes </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">index</td><td>Position of the pixel, that is, <code>row * width + column</code> </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">pixtype</td><td>Pixel data type </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">result</td><td>Value of the pixel </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section note"><dt>Note</dt><dd>An unknown pixel type yields zero, as the callers have established the type when they sized the band </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>true on success; on failure sets a MEOS error and returns false, which a caller must not read past, since a value the sampling surface cannot carry has no number to stand for it </dd></dl>
 
 </div>
 </div>
