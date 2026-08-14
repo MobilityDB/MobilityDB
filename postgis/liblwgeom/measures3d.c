@@ -103,7 +103,9 @@ create_v_line(const LWGEOM *lwgeom, double x, double y, int32_t srid)
 	lwpoints[0] = lwpoint_make3dz(srid, x, y, gbox.zmin);
 	lwpoints[1] = lwpoint_make3dz(srid, x, y, gbox.zmax);
 
-	return (LWGEOM *)lwline_from_ptarray(srid, 2, lwpoints);
+	LWGEOM *result = (LWGEOM *)lwline_from_ptarray(srid, 2, lwpoints);
+	lwpoint_free(lwpoints[0]); lwpoint_free(lwpoints[1]); // MEOS
+	return result;
 }
 
 LWGEOM *
@@ -223,6 +225,7 @@ lw_dist3d_distanceline(const LWGEOM *lw1, const LWGEOM *lw2, int32_t srid, int m
 		lwpoints[1] = lwpoint_make3dz(srid, x2, y2, z2);
 
 		result = (LWGEOM *)lwline_from_ptarray(srid, 2, lwpoints);
+		lwpoint_free(lwpoints[0]); lwpoint_free(lwpoints[1]); // MEOS
 	}
 
 	return result;
