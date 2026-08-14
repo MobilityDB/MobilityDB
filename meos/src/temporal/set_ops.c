@@ -663,7 +663,8 @@ distance_set_value(const Set *s, Datum value)
  * @ingroup meos_internal_setspan_dist
  * @brief Return the distance between two sets
  * @param[in] s1,s2 Sets
- * @return On error return -1.0
+ * @return On error return the sentinel of the base type given by
+ * #distance_sentinel()
  * @csqlfn #Distance_set_set()
  */
 Datum
