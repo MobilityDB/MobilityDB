@@ -235,6 +235,27 @@ SELECT aTouches(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0)
 -- The disc stays away from the ring
 SELECT eTouches(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tcbuffer '[Cbuffer(Point(10 0),1)@2000-01-01, Cbuffer(Point(10 10),1)@2000-01-03]');
 
+-- A temporal circular buffer whose discs have a zero radius is a temporal
+-- point, and touches a geometry wherever that point does: crossing a polygon
+-- meets its boundary, crossing the interior of a line does not touch it, and
+-- ending on a vertex or on a tangency to an arc does touch
+SELECT eTouches(tcbuffer '[Cbuffer(Point(-5 0),0)@2000-01-01, Cbuffer(Point(5 0),0)@2000-01-02]', geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))');
+SELECT eTouches(tcbuffer '[Cbuffer(Point(-5 0),0)@2000-01-01, Cbuffer(Point(5 0),0)@2000-01-02]', geometry 'Linestring(-1 -1,1 1)');
+SELECT eTouches(tcbuffer '[Cbuffer(Point(-3 -3),0)@2000-01-01, Cbuffer(Point(-1 -1),0)@2000-01-02]', geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))');
+SELECT eTouches(tcbuffer '[Cbuffer(Point(-1 -1),0)@2000-01-01, Cbuffer(Point(-1 1),0)@2000-01-02]', geometry 'CurvePolygon(CircularString(-1 0,0 1,1 0,0 -1,-1 0))');
+SELECT aTouches(tcbuffer '[Cbuffer(Point(-5 0),0)@2000-01-01, Cbuffer(Point(5 0),0)@2000-01-02]', geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))');
+-- Running along an edge of the polygon touches it at every instant
+SELECT aTouches(tcbuffer '[Cbuffer(Point(-1 -1),0)@2000-01-01, Cbuffer(Point(-1 1),0)@2000-01-02]', geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))');
+SELECT aTouches(tcbuffer '[Cbuffer(Point(-1 -1),0)@2000-01-01, Cbuffer(Point(-1 1),0)@2000-01-02]', geometry 'Triangle((-1 -1,-1 1,1 1,-1 -1))');
+-- the same four relationships asked of the trajectory as a temporal point
+SELECT eTouches(tgeompoint '[Point(-5 0)@2000-01-01, Point(5 0)@2000-01-02]', geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))');
+SELECT eTouches(tgeompoint '[Point(-5 0)@2000-01-01, Point(5 0)@2000-01-02]', geometry 'Linestring(-1 -1,1 1)');
+SELECT eTouches(tgeompoint '[Point(-3 -3)@2000-01-01, Point(-1 -1)@2000-01-02]', geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))');
+SELECT eTouches(tgeompoint '[Point(-1 -1)@2000-01-01, Point(-1 1)@2000-01-02]', geometry 'CurvePolygon(CircularString(-1 0,0 1,1 0,0 -1,-1 0))');
+SELECT aTouches(tgeompoint '[Point(-5 0)@2000-01-01, Point(5 0)@2000-01-02]', geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))');
+SELECT aTouches(tgeompoint '[Point(-1 -1)@2000-01-01, Point(-1 1)@2000-01-02]', geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))');
+SELECT aTouches(tgeompoint '[Point(-1 -1)@2000-01-01, Point(-1 1)@2000-01-02]', geometry 'Triangle((-1 -1,-1 1,1 1,-1 -1))');
+
 /* Errors */
 SELECT eTouches(geometry 'SRID=3812;Point(1 1)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01');
 SELECT eTouches(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', geometry 'SRID=3812;Point(1 1)');
