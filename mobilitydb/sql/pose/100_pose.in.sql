@@ -68,6 +68,8 @@ CREATE TYPE pose (
   alignment = double
 );
 
+-- GENERATED-REPRESENTATIONS-BEGIN pose_base — tools/codegen/inherited/generate.py from templates/representations.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/representation_families.yaml and re-run.
 /*****************************************************************************
  * Input/output from (E)WKT, (E)WKB, and HexEWKB
  *****************************************************************************/
@@ -149,10 +151,17 @@ CREATE FUNCTION asEWKB(pose, endianenconding text DEFAULT '')
   AS 'MODULE_PATHNAME', 'Pose_as_ewkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION asHexWKB(pose, endianenconding text DEFAULT '')
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Pose_as_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION asHexEWKB(pose, endianenconding text DEFAULT '')
   RETURNS text
   AS 'MODULE_PATHNAME', 'Pose_as_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- GENERATED-REPRESENTATIONS-END pose_base
 
 /******************************************************************************
  * Constructors

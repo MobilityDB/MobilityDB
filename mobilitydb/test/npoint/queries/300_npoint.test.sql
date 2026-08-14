@@ -63,12 +63,14 @@ SELECT asText(npoint 'SRID=5676;Npoint(1,0.5)');
 SELECT asEWKT(npoint 'SRID=5676;Npoint(1,0.5)');
 SELECT asBinary(npoint 'SRID=5676;Npoint(1,0.5)');
 SELECT asEWKB(npoint 'SRID=5676;Npoint(1,0.5)');
+SELECT asHexWKB(npoint 'SRID=5676;Npoint(1,0.5)');
 SELECT asHexEWKB(npoint 'SRID=5676;Npoint(1,0.5)');
 
 SELECT npointFromText(asText(npoint 'SRID=5676;Npoint(1,0.5)'));
 SELECT npointFromEWKT(asEWKT(npoint 'SRID=5676;Npoint(1,0.5)'));
 SELECT npointFromBinary(asBinary(npoint 'SRID=5676;Npoint(1,0.5)'));
 SELECT npointFromEWKB(asEWKB(npoint 'SRID=5676;Npoint(1,0.5)'));
+SELECT npointFromHexEWKB(asHexWKB(npoint 'SRID=5676;Npoint(1,0.5)'));
 SELECT npointFromHexEWKB(asHexEWKB(npoint 'SRID=5676;Npoint(1,0.5)'));
 
 -------------------------------------------------------------------------------
