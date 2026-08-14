@@ -180,6 +180,10 @@ raquet_from_gdal_dataset(GDALDatasetH ds, uint64 quadbin, const char *label)
       "GDAL failed to read raster band for raquet ingest: %s", label);
     goto cleanup;
   }
+  /* GDAL hands over the band in the byte order of this machine, while a Raquet
+   * band is little-endian wherever it was made, so that the tile keeps its
+   * meaning once it is serialized and read on another host */
+  raquet_pixels_from_host(buf, (size_t) xsize * ysize, pixtype);
 
   result = raquet_make(quadbin, xsize, ysize, pixtype,
     nodata, (bool) has_nodata, buf, nbytes);

@@ -276,34 +276,12 @@ raster_quadbin_from_bounds(double origin_x, double origin_y, double pixel_w,
 
 /**
  * @brief Read a single pixel value at (col, row) from a row-major byte array.
- *
- * Pixel stride = sizeof(pixtype); no alignment assumptions (uses memcpy).
  */
 static double
 read_pixel(const uint8_t *pixels, int col, int row, int width,
   MeosPixType pixtype)
 {
-  const uint8_t *p;
-  switch (pixtype)
-  {
-    case MEOS_PT_UINT8:
-      p = pixels + (row * width + col);
-      { uint8_t v; memcpy(&v, p, 1); return (double) v; }
-    case MEOS_PT_INT16:
-      p = pixels + (row * width + col) * 2;
-      { int16_t v; memcpy(&v, p, 2); return (double) v; }
-    case MEOS_PT_INT32:
-      p = pixels + (row * width + col) * 4;
-      { int32_t v; memcpy(&v, p, 4); return (double) v; }
-    case MEOS_PT_FLOAT32:
-      p = pixels + (row * width + col) * 4;
-      { float v; memcpy(&v, p, 4); return (double) v; }
-    case MEOS_PT_FLOAT64:
-      p = pixels + (row * width + col) * 8;
-      { double v; memcpy(&v, p, 8); return v; }
-    default:
-      return 0.0;
-  }
+  return raquet_pixel_value(pixels, (size_t) row * width + col, pixtype);
 }
 
 /*****************************************************************************
@@ -318,7 +296,8 @@ read_pixel(const uint8_t *pixels, int col, int row, int width,
  * separate metadata. Instants outside the tile extent or on nodata pixels are
  * silently dropped; NULL is returned when no instants survive.
  * @param[in] pixels Row-major pixel bytes (all bands interleaved or
- * single-band depending on the Raquet producer)
+ * single-band depending on the Raquet producer), little-endian beyond one byte
+ * a pixel
  * @param[in] traj Input tgeompoint trajectory (SRID 4326)
  * @param[in] pixels_size Number of bytes available at @p pixels
  * @param[in] width Tile width in pixels (typically 256)
