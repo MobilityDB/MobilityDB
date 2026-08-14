@@ -86,6 +86,26 @@ SELECT aCovers(
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');
 
+-- A pose covers what lies within it, including a point of its boundary, and
+-- covers no region larger than itself
+SELECT eCovers(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-05]',
+  geometry 'Point(0 0)');
+SELECT aCovers(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-05]',
+  geometry 'Point(0 0)');
+SELECT eCovers(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-05]',
+  geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))');
+-- A body sliding along the x axis covers a point on its path at one pose and
+-- not at every one
+SELECT eCovers(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
+  geometry 'Point(4.5 0.5)');
+SELECT aCovers(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
+  geometry 'Point(4.5 0.5)');
+
 -------------------------------------------------------------------------------
 -- eDisjoint / aDisjoint
 -------------------------------------------------------------------------------
@@ -113,6 +133,15 @@ SELECT eDisjoint(
 SELECT aDisjoint(
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0),0)@2001-01-01',
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(10 10),0)@2001-01-01');
+
+-- A body standing on a line meets it at every pose, and one that starts away
+-- from a region is disjoint from it at some pose
+SELECT eDisjoint(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-05]',
+  geometry 'Linestring(0 -5,0 5)');
+SELECT eDisjoint(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(-5 0),0)@2001-01-01, Pose(Point(5 0),0)@2001-01-05]',
+  geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))');
 
 -------------------------------------------------------------------------------
 -- eIntersects / aIntersects
