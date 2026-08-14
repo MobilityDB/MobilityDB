@@ -175,11 +175,21 @@ def add_tag(meos_dir_glob, fn, pg):
     return False
 
 
+def families():
+    """Every family directory under mobilitydb/src, discovered not listed.
+
+    A hardcoded subset silently drops a family: json, quadbin and raster were
+    absent, so the gaps in them went unreported however often the check ran.
+    Reading the directory keeps a family added later covered on its first run.
+    """
+    src = f'{ROOT}/mobilitydb/src'
+    return sorted(d for d in os.listdir(src) if os.path.isdir(f'{src}/{d}'))
+
+
 def main():
     """Dispatch on the mode argument and report the @csqlfn coverage."""
     mode = sys.argv[1] if len(sys.argv) > 1 else '--gaps'
-    dirs = sys.argv[2:] or ['temporal', 'geo', 'cbuffer', 'npoint', 'pose', 'rgeo',
-                            'h3', 'pointcloud']
+    dirs = sys.argv[2:] or families()
     rows, auto, review = resolve(dirs)
     if mode == '--table':
         for pg, sf, so, dg, _how, _f in sorted(rows):
