@@ -106,6 +106,8 @@ jobs:
           # built and installed above.
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o raster_test raster_test.c -L/usr/local/lib -lmeos
           ./raster_test
+          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o geopose_test geopose_test.c -L/usr/local/lib -lmeos
+          ./geopose_test
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o numeric_test numeric_test.c -L/usr/local/lib -lmeos
           ./numeric_test
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o setspan_test setspan_test.c -L/usr/local/lib -lmeos
