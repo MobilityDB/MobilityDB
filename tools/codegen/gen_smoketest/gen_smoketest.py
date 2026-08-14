@@ -781,6 +781,18 @@ TNPOINT_CONFIG = dict(
         "geompoint_to_npoint":          {0: "geom_ways1"},
         "geom_to_nsegment":             {0: "geom_ways1"},
         "tgeompoint_to_tnpoint":        {0: "tpoint_ways1"},
+        # Crossing a temporal network point with a geometry or a box needs the
+        # operand in the network SRID (5676), the same as the geometry -> network
+        # mappings above.
+        "tnpoint_at_geom":              {1: "geom_ways1"},
+        "tnpoint_minus_geom":           {1: "geom_ways1"},
+        "tdistance_tnpoint_geo":        {1: "geom_ways1"},
+        "nad_tnpoint_geo":              {1: "geom_ways1"},
+        "nai_tnpoint_geo":              {1: "geom_ways1"},
+        "shortestline_tnpoint_geo":     {1: "geom_ways1"},
+        "tnpoint_at_stbox":             {1: "stbox_ways1"},
+        "tnpoint_minus_stbox":          {1: "stbox_ways1"},
+        "nad_tnpoint_stbox":            {1: "stbox_ways1"},
     },
     # A Set * that must be a tstzset (the default is an npointset).
     name_arg_map={
@@ -790,36 +802,7 @@ TNPOINT_CONFIG = dict(
     # NOT a fresh allocation — freeing it corrupts the cache (use-after-free
     # cascades through every later route lookup).
     no_free={"route_geom"},
-    skip={
-        # The MEOS ways cache is empty in a standalone test (it is
-        # populated only at runtime in the PG-extension build, via
-        # routes loaded from the database). Anything that materialises
-        # a route geometry hits a NULL deref. The patterns below cover
-        # the route-dependent surface of meos_npoint.h:
-        #
-        #   *_to_geom / *_to_geompoint / *_to_stbox / *_to_set
-        #   *_set_stbox
-        #   *_at_geom / *_at_stbox / *_minus_geom / *_minus_stbox
-        #   distance / nearest-approach / shortestline / trajectory /
-        #   points / routes / same  (all need geometry materialisation)
-        #
-        # Anything else (string I/O, equality, hashing, basic accessors)
-        # runs without the cache.
-        "re:_to_(geom|geompoint|stbox|set)$":  "needs ways cache",
-        "re:_set_stbox$":                      "needs ways cache",
-        "re:_at_(geom|stbox)$":                "needs ways cache",
-        "re:_minus_(geom|stbox)$":             "needs ways cache",
-        "re:^tdistance_tnpoint":               "needs ways cache",
-        "re:^nad_tnpoint":                     "needs ways cache",
-        "re:^nai_tnpoint":                     "needs ways cache",
-        "re:^shortestline_tnpoint":            "needs ways cache",
-        "re:^tnpoint_(trajectory|points|routes|stops)$":  "needs ways cache",
-        "re:^npoint_same$":                    "needs ways cache",
-        "re:_npoint_set$":                     "needs ways cache",
-        "re:_set_npoint$":                     "needs ways cache",
-        "re:^npointset_":                      "needs ways cache",
-        "re:^npoint_to_set$":                  "needs ways cache",
-    },
+    skip={},
     common_inputs="""\
   TimestampTz tstz1 = timestamptz_in("2001-01-02", -1);
   Span *tstzspan1 = tstzspan_in("[2001-01-01, 2001-01-04]");
@@ -831,6 +814,8 @@ TNPOINT_CONFIG = dict(
    * declares (get_srid_ways() reports 5676), for the geometry -> network
    * mappings. */
   GSERIALIZED *geom_ways1 = geom_in("SRID=5676;Point(2452000 1213000)", -1);
+  /* An STBox in the ways SRID, for the tnpoint x stbox operators. */
+  STBox *stbox_ways1 = stbox_in("SRID=5676;STBOX X((2451000, 1212000), (2453000, 1214000))");
   Npoint *npoint1 = npoint_in("NPoint(1, 0.5)");
   Npoint *npoint_out_param = NULL;
   Nsegment *nsegment1 = nsegment_in("NSegment(1, 0.0, 1.0)");
@@ -862,6 +847,7 @@ TNPOINT_CONFIG = dict(
   if (tpoint_ways1) free(tpoint_ways1);
   free(geom_ways1);
   free(stbox1);
+  free(stbox_ways1);
   free(tstzset1);
   free(npointset1);
   free(nsegment1);
