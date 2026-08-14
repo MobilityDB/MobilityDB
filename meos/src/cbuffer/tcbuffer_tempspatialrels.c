@@ -1155,6 +1155,19 @@ tcontains_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp)
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_geo(temp, gs))
     return NULL;
+
+  /* A value composed of discs of a zero radius is a temporal point, whose
+   * conversion is exact. A geometry contains a moving point where the point
+   * lies in its open interior, which the paths below read from the clearance
+   * of a disc that has none */
+  if (tcbuffer_is_tpoint(temp))
+  {
+    Temporal *tpoint = tcbuffer_to_tgeompoint(temp);
+    Temporal *result = tcontains_geo_tgeo(gs, tpoint);
+    pfree(tpoint);
+    return result;
+  }
+
   Temporal *res = tcontains_geo_tcbuffer_native(temp, gs, true);
   if (res)
     return res;
@@ -1270,6 +1283,19 @@ tcovers_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp)
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_geo(temp, gs))
     return NULL;
+
+  /* A value composed of discs of a zero radius is a temporal point, whose
+   * conversion is exact. A geometry covers a moving point where the point lies
+   * in the closed geometry, which the paths below read from the clearance of a
+   * disc that has none */
+  if (tcbuffer_is_tpoint(temp))
+  {
+    Temporal *tpoint = tcbuffer_to_tgeompoint(temp);
+    Temporal *result = tcovers_geo_tgeo(gs, tpoint);
+    pfree(tpoint);
+    return result;
+  }
+
   Temporal *res = tcontains_geo_tcbuffer_native(temp, gs, false);
   if (res)
     return res;
