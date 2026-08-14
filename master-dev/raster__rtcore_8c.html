@@ -83,6 +83,7 @@ $(function() {
 <p>General functions for the PostGIS raster type, backed by the vendored rt_core library.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;librtcore.h&quot;</code><br />
+<code>#include &lt;string.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__raster_8h_source.html">meos_raster.h</a>&gt;</code><br />
@@ -90,9 +91,27 @@ $(function() {
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:ga03638f058878a307b0b9b0d389d81bd0"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__raster__base__inout_ga03638f058878a307b0b9b0d389d81bd0.html#ga03638f058878a307b0b9b0d389d81bd0">raster_as_hexwkb</a> (const <a class="el" href="meos__raster_8h_a26e9c4944333ddf47d33cd090c782e00.html#a26e9c4944333ddf47d33cd090c782e00">Raster</a> *rast, size_t *size_out)</td></tr>
+<tr class="memdesc:ga03638f058878a307b0b9b0d389d81bd0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the ASCII hex-encoded Well-Known Binary (HexWKB) representation of a raster.  <a href="group__meos__raster__base__inout_ga03638f058878a307b0b9b0d389d81bd0.html#ga03638f058878a307b0b9b0d389d81bd0">More...</a><br /></td></tr>
+<tr class="separator:ga03638f058878a307b0b9b0d389d81bd0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga0dc253d86dbd6f10ee23d91d50f13370"><td class="memItemLeft" align="right" valign="top">uint8_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__raster__base__inout_ga0dc253d86dbd6f10ee23d91d50f13370.html#ga0dc253d86dbd6f10ee23d91d50f13370">raster_as_wkb</a> (const <a class="el" href="meos__raster_8h_a26e9c4944333ddf47d33cd090c782e00.html#a26e9c4944333ddf47d33cd090c782e00">Raster</a> *rast, size_t *size_out)</td></tr>
+<tr class="memdesc:ga0dc253d86dbd6f10ee23d91d50f13370"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the Well-Known Binary (WKB) representation of a raster.  <a href="group__meos__raster__base__inout_ga0dc253d86dbd6f10ee23d91d50f13370.html#ga0dc253d86dbd6f10ee23d91d50f13370">More...</a><br /></td></tr>
+<tr class="separator:ga0dc253d86dbd6f10ee23d91d50f13370"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab04b7f222fb7c11b980f4d9ef970ab5f"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="raster__rtcore_8c_ab04b7f222fb7c11b980f4d9ef970ab5f.html#ab04b7f222fb7c11b980f4d9ef970ab5f">raster_destroy</a> (rt_raster raster)</td></tr>
+<tr class="memdesc:ab04b7f222fb7c11b980f4d9ef970ab5f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destroy an rt_core raster together with its bands.  <a href="raster__rtcore_8c_ab04b7f222fb7c11b980f4d9ef970ab5f.html#ab04b7f222fb7c11b980f4d9ef970ab5f">More...</a><br /></td></tr>
+<tr class="separator:ab04b7f222fb7c11b980f4d9ef970ab5f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga9b5d1de0f561b8c12fce98f51a0bef7a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="meos__raster_8h_a26e9c4944333ddf47d33cd090c782e00.html#a26e9c4944333ddf47d33cd090c782e00">Raster</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__raster__base__inout_ga9b5d1de0f561b8c12fce98f51a0bef7a.html#ga9b5d1de0f561b8c12fce98f51a0bef7a">raster_from_hexwkb</a> (const char *hexwkb)</td></tr>
+<tr class="memdesc:ga9b5d1de0f561b8c12fce98f51a0bef7a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a raster from its ASCII hex-encoded Well-Known Binary (HexWKB) representation.  <a href="group__meos__raster__base__inout_ga9b5d1de0f561b8c12fce98f51a0bef7a.html#ga9b5d1de0f561b8c12fce98f51a0bef7a">More...</a><br /></td></tr>
+<tr class="separator:ga9b5d1de0f561b8c12fce98f51a0bef7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga3831135f93b2dca3f28bcc8c0599477c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="meos__raster_8h_a26e9c4944333ddf47d33cd090c782e00.html#a26e9c4944333ddf47d33cd090c782e00">Raster</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__raster__base__inout_ga3831135f93b2dca3f28bcc8c0599477c.html#ga3831135f93b2dca3f28bcc8c0599477c">raster_from_wkb</a> (const uint8_t *wkb, size_t size)</td></tr>
+<tr class="memdesc:ga3831135f93b2dca3f28bcc8c0599477c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a raster from its Well-Known Binary (WKB) representation.  <a href="group__meos__raster__base__inout_ga3831135f93b2dca3f28bcc8c0599477c.html#ga3831135f93b2dca3f28bcc8c0599477c">More...</a><br /></td></tr>
+<tr class="separator:ga3831135f93b2dca3f28bcc8c0599477c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gae78cb7e96c1faeb6c64e3374d186c4af"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__raster__base__accessor_gae78cb7e96c1faeb6c64e3374d186c4af.html#gae78cb7e96c1faeb6c64e3374d186c4af">raster_num_bands</a> (const <a class="el" href="meos__raster_8h_a26e9c4944333ddf47d33cd090c782e00.html#a26e9c4944333ddf47d33cd090c782e00">Raster</a> *rast)</td></tr>
 <tr class="memdesc:gae78cb7e96c1faeb6c64e3374d186c4af"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the number of bands of a raster.  <a href="group__meos__raster__base__accessor_gae78cb7e96c1faeb6c64e3374d186c4af.html#gae78cb7e96c1faeb6c64e3374d186c4af">More...</a><br /></td></tr>
 <tr class="separator:gae78cb7e96c1faeb6c64e3374d186c4af"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acddad7b88e284ca51f32c3285c2d7c94"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="meos__raster_8h_a26e9c4944333ddf47d33cd090c782e00.html#a26e9c4944333ddf47d33cd090c782e00">Raster</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="raster__rtcore_8c_acddad7b88e284ca51f32c3285c2d7c94.html#acddad7b88e284ca51f32c3285c2d7c94">raster_serialize_destroy</a> (rt_raster raster)</td></tr>
+<tr class="memdesc:acddad7b88e284ca51f32c3285c2d7c94"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the serialized form of an rt_core raster, destroying the raster.  <a href="raster__rtcore_8c_acddad7b88e284ca51f32c3285c2d7c94.html#acddad7b88e284ca51f32c3285c2d7c94">More...</a><br /></td></tr>
+<tr class="separator:acddad7b88e284ca51f32c3285c2d7c94"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >General functions for the PostGIS raster type, backed by the vendored rt_core library. </p>
