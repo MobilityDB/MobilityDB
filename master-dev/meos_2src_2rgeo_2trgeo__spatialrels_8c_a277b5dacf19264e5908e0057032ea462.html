@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: ea_contains_geo_trgeo</title>
+<title>MobilityDB: ea_spatialrel_trgeo_poses_geo</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -89,7 +89,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__rel__ever_ga2aff18250933a233373b7fd1f327007f.html#ga2aff18250933a233373b7fd1f327007f">aintersects_trgeometry_geo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__rel__ever_ga0e7fcc6132e116dc5ceb944f13cf1832.html#ga0e7fcc6132e116dc5ceb944f13cf1832">aintersects_trgeometry_trgeometry</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__rel__ever_gac66ed7a664464f169a1290a5e710e47d.html#gac66ed7a664464f169a1290a5e710e47d">atouches_trgeometry_geo</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2rgeo_2trgeo__spatialrels_8c_a829f3d866dad66d381587dcffc639a70.html#a829f3d866dad66d381587dcffc639a70">ea_contains_geo_trgeo</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__spatialrels_8c_a829f3d866dad66d381587dcffc639a70.html#a829f3d866dad66d381587dcffc639a70">ea_contains_geo_trgeo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__spatialrels_8c_a2533cd3ca2ef93cc9eb12f60943d26de.html#a2533cd3ca2ef93cc9eb12f60943d26de">ea_contains_trgeo_geo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__spatialrels_8c_a598867cbb49abe37d26bf0910582e904.html#a598867cbb49abe37d26bf0910582e904">ea_contains_trgeo_trgeo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__spatialrels_8c_afa036c6a6f20638914169768db815d07.html#afa036c6a6f20638914169768db815d07">ea_covers_geo_trgeo</a></td></tr>
@@ -108,7 +108,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__spatialrels_8c_aef4af47f52d871a15612358d28f87bc6.html#aef4af47f52d871a15612358d28f87bc6">ea_intersects_geo_trgeo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__spatialrels_8c_af1114fb1d03a9dfad6cfd5370f5c5638.html#af1114fb1d03a9dfad6cfd5370f5c5638">ea_intersects_trgeo_geo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__spatialrels_8c_a5981270cf6b0dad77103e1abe94ae60f.html#a5981270cf6b0dad77103e1abe94ae60f">ea_intersects_trgeo_trgeo</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__spatialrels_8c_a277b5dacf19264e5908e0057032ea462.html#a277b5dacf19264e5908e0057032ea462">ea_spatialrel_trgeo_poses_geo</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2rgeo_2trgeo__spatialrels_8c_a277b5dacf19264e5908e0057032ea462.html#a277b5dacf19264e5908e0057032ea462">ea_spatialrel_trgeo_poses_geo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__spatialrels_8c_ac091757133d1ec004f9f6a141a377a2f.html#ac091757133d1ec004f9f6a141a377a2f">ea_touches_geo_trgeo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__spatialrels_8c_a921f0293a74817f6ead72f3363910bb8.html#a921f0293a74817f6ead72f3363910bb8">ea_touches_trgeo_geo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__spatialrels_8c_a7173b3c24eda80437fbe774b40ce5f4f.html#a7173b3c24eda80437fbe774b40ce5f4f">ea_touches_trgeo_trgeo</a></td></tr>
@@ -128,23 +128,32 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a829f3d866dad66d381587dcffc639a70" name="a829f3d866dad66d381587dcffc639a70"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a829f3d866dad66d381587dcffc639a70">&#9670;&#160;</a></span>ea_contains_geo_trgeo()</h2>
+<a id="a277b5dacf19264e5908e0057032ea462" name="a277b5dacf19264e5908e0057032ea462"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a277b5dacf19264e5908e0057032ea462">&#9670;&#160;</a></span>ea_spatialrel_trgeo_poses_geo()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">int ea_contains_geo_trgeo </td>
+          <td class="memname">static int ea_spatialrel_trgeo_poses_geo </td>
           <td>(</td>
+          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
+          <td class="paramname"><em>temp</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
           <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
           <td class="paramname"><em>gs</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
-          <td class="paramname"><em>temp</em>, </td>
+          <td class="paramtype"><a class="el" href="meos__internal_8h_ab1980f05b1867926cafa7e8f5eb87769.html#ab1980f05b1867926cafa7e8f5eb87769">datum_func2</a>&#160;</td>
+          <td class="paramname"><em>func</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -158,18 +167,24 @@ $(function() {
           <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-<p>Return 1 if a geometry ever contains a temporal rigid geometry, 0 if not, and -1 on error or if the geometry is empty. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p>Return 1 if the poses of a temporal rigid geometry and a geometry ever/always satisfy a spatial relationship, 0 if not, and -1 on error or if the geometry is empty. </p>
+<p >The traversed area collects the reference geometry at each of the poses the value takes, so the relationship is asked of each of them: the ever semantics hold where one pose satisfies it, the always semantics where every pose does. Asking it of the traversed area as a whole answers for the union of the poses, which is a region the body occupies at no single instant </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">gs</td><td>Geometry </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> rigid geometry </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">gs</td><td>Geometry </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">func</td><td>Spatial relationship function to be called </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ever</td><td>True for the ever semantics, false for the always semantics </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section note"><dt>Note</dt><dd>The function tests whether the traversed area intersects the interior of the geometry. Please refer to the documentation of the ST_Contains and ST_Relate functions <a href="https://postgis.net/docs/ST_Relate.html">https://postgis.net/docs/ST_Relate.html</a> <a href="https://postgis.net/docs/ST_Contains.html">https://postgis.net/docs/ST_Contains.html</a> </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>On error return -1 </dd></dl>
 
 </div>
 </div>
