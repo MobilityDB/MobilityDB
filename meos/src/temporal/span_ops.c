@@ -899,33 +899,34 @@ distance_sentinel(MeosType type)
 }
 
 /**
- * @brief Return the distance between two values as a double for the indexes
- * @param[in] l,r Values
- * @param[in] type Type of the values
+ * @brief Return a distance of a base type as a double for the indexes
+ * @param[in] dist Distance between two values of the base type
+ * @param[in] type Base type of the values the distance was computed on
  * @return On error return @p DBL_MAX
+ * @details The distance functions answer in the type of the distance, which
+ * is the base type for the numbers, the number of days for the dates, and the
+ * number of seconds for the timestamptz values. The nearest neighbor searches
+ * rank their candidates with a double whatever that type is, so the value is
+ * converted here instead of being computed a second time
  */
 double
-dist_double_value_value(Datum l, Datum r, MeosType type)
+distance_double(Datum dist, MeosType type)
 {
-  assert(span_basetype(type));
   switch (type)
   {
     case T_INT4:
-      return Float8GetDatum((double) abs(DatumGetInt32(l) - DatumGetInt32(r)));
-    case T_INT8:
-      return Float8GetDatum((double) llabs(DatumGetInt64(l) - DatumGetInt64(r)));
-    case T_FLOAT8:
-      return Float8GetDatum(fabs(DatumGetFloat8(l) - DatumGetFloat8(r)));
     case T_DATE:
-      /* Distance in days if the base type is DateADT */
-      return Float8GetDatum((double) abs(DatumGetDateADT(l) - DatumGetDateADT(r)));
+      /* The distance between dates is expressed in days */
+      return (double) DatumGetInt32(dist);
+    case T_INT8:
+      return (double) DatumGetInt64(dist);
+    case T_FLOAT8:
     case T_TIMESTAMPTZ:
-      /* Distance in seconds if the base type is TimestampTz */
-      return Float8GetDatum((llabs((DatumGetTimestampTz(l) -
-        DatumGetTimestampTz(r)))) / USECS_PER_SEC);
+      /* The distance between timestamptz values is expressed in seconds */
+      return DatumGetFloat8(dist);
     default:
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-        "Unknown types for distance between values: %s",
+        "Unknown distance type for conversion to double: %s",
         meostype_name(type));
       return DBL_MAX;
   }
