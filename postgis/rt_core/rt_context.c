@@ -103,6 +103,7 @@ default_rt_info_handler(const char *fmt, va_list ap) {
 }
 
 char * default_rt_options(const char* varname) {
+	(void) varname; /* MEOS */
 	return NULL;
 }
 

@@ -62,6 +62,7 @@ static int rt_util_gdal_progress_func(
 {
 	(void)dfComplete;
 	(void)pszMessage;
+	(void)pProgressArg; /* MEOS */
 
 	if (_lwgeom_interrupt_requested)
 	{

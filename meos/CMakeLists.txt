@@ -112,9 +112,8 @@ add_subdirectory("src")
 
 # Must be after add_library
 if(CMAKE_GENERATOR STREQUAL "Unix Makefiles" OR CMAKE_GENERATOR STREQUAL "Ninja")
-  # Disable all warnings on embeded code from PostgreSQL and PostGIS
-  target_compile_options(liblwgeom PRIVATE "-w")
-  target_compile_options(ryu PRIVATE "-w")
+  # liblwgeom and ryu compile clean under the standard -Wall -Wextra, so they
+  # are linted like MEOS instead of being silenced. /* MEOS */
 elseif(CMAKE_GENERATOR STREQUAL "Visual Studio 17 2022")
   # Disable all warnings on embedded code from PostgreSQL and PostGIS
   target_compile_options(liblwgeom PRIVATE "/W0")
