@@ -109,6 +109,13 @@ extern uint64 raquet_hash_extended(const Raquet *rq, uint64 seed);
 
 typedef struct Raster Raster;
 
+/* Input and output functions for PostGIS rasters */
+
+extern Raster *raster_from_wkb(const uint8_t *wkb, size_t size);
+extern Raster *raster_from_hexwkb(const char *hexwkb);
+extern uint8_t *raster_as_wkb(const Raster *rast, size_t *size_out);
+extern char *raster_as_hexwkb(const Raster *rast, size_t *size_out);
+
 /* Accessor functions for PostGIS rasters */
 
 extern int raster_num_bands(const Raster *rast);
