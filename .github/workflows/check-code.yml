@@ -76,6 +76,14 @@ jobs:
       - name: Check that MEOS-only code is selected by file, not by #if MEOS
         run: python3 tools/scripts/check_meos_only_files.py
 
+  error_sentinels_check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Check that every error sentinel is the maximum of the return type
+        run: python3 tools/scripts/check_error_sentinels.py
+
   binding_io_ownership_check:
     runs-on: ubuntu-latest
     steps:
