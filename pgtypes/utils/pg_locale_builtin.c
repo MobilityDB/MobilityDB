@@ -133,7 +133,22 @@ meos_create_pg_locale_builtin(Oid collid)
 
   if (collid == DEFAULT_COLLATION_OID)
   {
+    /*
+     * @p database_locale is the UTF-8 builtin locale, which the builtin
+     * provider only accepts on a UTF-8 database. A database in any other
+     * encoding — SQL_ASCII is what initdb chooses when it runs under the C
+     * locale — takes the plain "C" builtin instead. Both are deterministic and
+     * both compare with memcmp, so text ordering and text hashes keep the same
+     * values on either locale; only the ctype semantics change, and "C" is the
+     * correct ctype for a database that is not UTF-8. Validating
+     * @p database_locale against such a database instead reports
+     * 'encoding "SQL_ASCII" does not match locale "C.UTF-8"' and every
+     * operation on a text value fails.
+     */
     locstr = database_locale;
+    int required_encoding = meos_builtin_locale_encoding(locstr);
+    if (required_encoding >= 0 && required_encoding != GetDatabaseEncoding())
+      locstr = "C";
   }
   else
   {
