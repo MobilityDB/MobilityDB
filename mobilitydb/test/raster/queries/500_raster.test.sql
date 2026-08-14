@@ -266,6 +266,20 @@ SELECT rasterTileValueQuadbin(tgeompoint 'SRID=4326;{Point(45.0 10.0)@2024-01-01
   5193776270265024512::bigint, -- quadbin_tile_to_cell(1,0,1)
   'UINT8', 0.0, false);
 
+-- The dimensions reach the tile as an unsigned 16-bit width and height. A
+-- value outside that range raises an error rather than wrapping to a tile of
+-- another size: 65538 would otherwise sample a 2 pixel wide tile, and -1 a
+-- 65535 pixel wide one.
+SELECT rasterTileValueQuadbin(tgeompoint 'SRID=4326;{Point(45.0 10.0)@2024-01-01}',
+  '\x01020304'::bytea, 65538::integer, 2::integer,
+  5193776270265024512::bigint, 'UINT8', 0.0, false);
+SELECT rasterTileValueQuadbin(tgeompoint 'SRID=4326;{Point(45.0 10.0)@2024-01-01}',
+  '\x01020304'::bytea, 2::integer, -1::integer,
+  5193776270265024512::bigint, 'UINT8', 0.0, false);
+SELECT rasterTileValueQuadbin(tgeompoint 'SRID=4326;{Point(45.0 10.0)@2024-01-01}',
+  '\x01020304'::bytea, 0::integer, 2::integer,
+  5193776270265024512::bigint, 'UINT8', 0.0, false);
+
 -------------------------------------------------------------------------------
 -- raquet type: construction, WKB round-trip, and typed sampling
 -------------------------------------------------------------------------------

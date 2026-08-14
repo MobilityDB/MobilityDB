@@ -226,6 +226,18 @@ SELECT rasterTileValueQuadbin(tgeompoint 'SRID=4326;{Point(45.0 10.0)@2024-01-01
   5193776270265024512::bigint, -- quadbin_tile_to_cell(1,0,1)
   'UINT8', 0.0, false);
 ERROR:  The pixel array has 2 bytes but 4 are required for a 2 x 2 tile
+SELECT rasterTileValueQuadbin(tgeompoint 'SRID=4326;{Point(45.0 10.0)@2024-01-01}',
+  '\x01020304'::bytea, 65538::integer, 2::integer,
+  5193776270265024512::bigint, 'UINT8', 0.0, false);
+ERROR:  The width and height of a raquet tile must be at most 65535: 65538 x 2
+SELECT rasterTileValueQuadbin(tgeompoint 'SRID=4326;{Point(45.0 10.0)@2024-01-01}',
+  '\x01020304'::bytea, 2::integer, -1::integer,
+  5193776270265024512::bigint, 'UINT8', 0.0, false);
+ERROR:  The width and height of a raquet tile must be positive
+SELECT rasterTileValueQuadbin(tgeompoint 'SRID=4326;{Point(45.0 10.0)@2024-01-01}',
+  '\x01020304'::bytea, 0::integer, 2::integer,
+  5193776270265024512::bigint, 'UINT8', 0.0, false);
+ERROR:  The width and height of a raquet tile must be positive
 WITH t(traj) AS (
   SELECT tgeompoint 'SRID=4326;{Point(45.0 75.0)@2024-01-01, Point(135.0 75.0)@2024-01-02, Point(45.0 10.0)@2024-01-03, Point(-45.0 75.0)@2024-01-04}' )
 SELECT rasterTileValue(traj,
