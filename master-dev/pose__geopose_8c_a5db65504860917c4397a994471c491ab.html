@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: tpose_to_geopose_series</title>
+<title>MobilityDB: pose_from_geopose_advanced</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -133,7 +133,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="pose__geopose_8c_a50c76c5472c9854048509ced854dafc2.html#a50c76c5472c9854048509ced854dafc2">geopose_ypr_to_quaternion</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__geopose_ga2612cb1c904490cfe57729f3f4b7a80d.html#ga2612cb1c904490cfe57729f3f4b7a80d">pose_as_geopose</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__geopose_ga2c6aeab3635ad3d3437d3d7b01abe4b0.html#ga2c6aeab3635ad3d3437d3d7b01abe4b0">pose_from_geopose</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="pose__geopose_8c_a5db65504860917c4397a994471c491ab.html#a5db65504860917c4397a994471c491ab">pose_from_geopose_advanced</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="pose__geopose_8c_a5db65504860917c4397a994471c491ab.html#a5db65504860917c4397a994471c491ab">pose_from_geopose_advanced</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pose__geopose_8c_a863b1f9809d0a86116fafc79773e5b09.html#a863b1f9809d0a86116fafc79773e5b09">pose_from_geopose_object</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pose__geopose_8c_a24638c08b3aefd5efe8edb8597daa526.html#a24638c08b3aefd5efe8edb8597daa526">pose_to_geopose_advanced</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pose__geopose_8c_a1890910253e425784a8ae497fff473c9.html#a1890910253e425784a8ae497fff473c9">pose_to_geopose_object</a></td></tr>
@@ -143,15 +143,15 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__geopose__accessor_ga6645db4832cba4a8f2abaf7cf0770013.html#ga6645db4832cba4a8f2abaf7cf0770013">tpose_from_geopose</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pose__geopose_8c_a7b1dddc712790682ba6eea6ec69cc1c0.html#a7b1dddc712790682ba6eea6ec69cc1c0">tpose_from_geopose_series</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pose__geopose_8c_a359b9f5d52fb1ecffc778ceb114dc2e9.html#a359b9f5d52fb1ecffc778ceb114dc2e9">tpose_parse_instants</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="pose__geopose_8c_a6345ff318182076b103ec4a41e47be6b.html#a6345ff318182076b103ec4a41e47be6b">tpose_to_geopose_series</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="pose__geopose_8c_a6345ff318182076b103ec4a41e47be6b.html#a6345ff318182076b103ec4a41e47be6b">tpose_to_geopose_series</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pose__geopose_8c_a12c4d565aefc5d627c89227a876390e4.html#a12c4d565aefc5d627c89227a876390e4">tposeinst_as_geopose</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pose__geopose_8c_a22d3f350db5c2b71185d56ca88baf48a.html#a22d3f350db5c2b71185d56ca88baf48a">tposeinst_from_geopose_object</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a6345ff318182076b103ec4a41e47be6b" name="a6345ff318182076b103ec4a41e47be6b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6345ff318182076b103ec4a41e47be6b">&#9670;&#160;</a></span>tpose_to_geopose_series()</h2>
+<a id="a5db65504860917c4397a994471c491ab" name="a5db65504860917c4397a994471c491ab"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5db65504860917c4397a994471c491ab">&#9670;&#160;</a></span>pose_from_geopose_advanced()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -160,22 +160,16 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static json_object * tpose_to_geopose_series </td>
+          <td class="memname">static <a class="el" href="structPose.html">Pose</a> * pose_from_geopose_advanced </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
-          <td class="paramname"><em>temp</em>, </td>
+          <td class="paramtype">json_object *&#160;</td>
+          <td class="paramname"><em>frame</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>regular</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>precision</em>&#160;</td>
+          <td class="paramtype">json_object *&#160;</td>
+          <td class="paramname"><em>root</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -190,16 +184,9 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Build a Composite Sequence Series document for a temporal pose. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> pose </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">regular</td><td>True to emit a Regular Series, false for an Irregular one </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">precision</td><td>Significant digits in the emitted numbers </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>On error return <code>NULL</code> </dd></dl>
+<p>Build a pose from a parsed Advanced-class GeoPose JSON object. </p>
+<p >An Advanced document names its outer frame explicitly and has no <code>position</code> member, so the pose is placed by the frame: it sits at the tangent point the frame's <code>parameters</code> give. Requirement 9 leaves those parameters free-form and the standard registers no authority or id, so what is read here is what this module writes, which is also what the encoding examples of the standard use.</p>
+<p >A frame this module cannot place a pose in is reported rather than guessed at, and so is a missing coordinate: a pose whose position defaulted to zero would be accepted here and refused by every operation that followed. </p><dl class="section return"><dt>Returns</dt><dd>On error return <code>NULL</code> </dd></dl>
 
 </div>
 </div>

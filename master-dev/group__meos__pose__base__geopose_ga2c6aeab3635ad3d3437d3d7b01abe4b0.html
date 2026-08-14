@@ -112,17 +112,18 @@ $(function() {
 <p>Return a pose from its OGC GeoPose JSON representation. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">json</td><td>GeoPose JSON string (Basic-YPR or Basic-Quaternion) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">json</td><td>GeoPose JSON string (Basic-YPR, Basic-Quaternion or Advanced) </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>On error return <code>NULL</code> </dd></dl>
 <p>Auto-detects the conformance class from the JSON keys present:</p>
 <ul>
+<li><code>frameSpecification</code>: Advanced (returns a 3D pose placed at the tangent point of the frame, which is where a class with no position member of its own carries it).</li>
 <li><code>quaternion</code>: Basic-Quaternion (returns a 3D pose).</li>
 <li><code>angles</code>: Basic-YPR (returns a 3D pose; or 2D if pitch=roll=0 and h=0, since that is the canonical 2D representation).</li>
 </ul>
-<p >Position is parsed as <code>{lat, lon, h}</code> (degrees, degrees, metres). The resulting pose has SRID 4326 (WGS-84). Projected SRIDs are not supported by this entry point — use the WKT/WKB I/O for those. @csqlfn <a class="el" href="group__mobilitydb__pose__base__inout_gaf9447e2f1f334b9b4c723bd56ab95c5a.html#gaf9447e2f1f334b9b4c723bd56ab95c5a" title="Return a pose from its OGC GeoPose JSON representation.">Pose_from_geopose()</a> </p>
+<p >A Basic position is parsed as <code>{lat, lon, h}</code> (degrees, degrees, metres). The resulting pose has SRID 4326 (WGS-84). Projected SRIDs are not supported by this entry point — use the WKT/WKB I/O for those. @csqlfn <a class="el" href="group__mobilitydb__pose__base__inout_gaf9447e2f1f334b9b4c723bd56ab95c5a.html#gaf9447e2f1f334b9b4c723bd56ab95c5a" title="Return a pose from its OGC GeoPose JSON representation.">Pose_from_geopose()</a> </p>
 
 </div>
 </div>

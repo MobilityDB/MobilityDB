@@ -129,13 +129,14 @@ $(function() {
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">pose</td><td><a class="el" href="structPose.html" title="Basic functions for static pose objects.">Pose</a> value </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">conformance</td><td>Conformance class to emit (Basic-Quaternion or Basic-YPR) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">conformance</td><td>Conformance class to emit (0 = Basic-Quaternion, 1 = Basic-YPR, 2 = Advanced) </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">precision</td><td>Decimal places to keep in the JSON numbers; pass a negative value to use json-c's default </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>On error return <code>NULL</code> </dd></dl>
-<p>The Basic conformance classes mandate a geographic outer frame. Poses with SRID 0 are treated as geographic; poses with non-zero non-4326 SRIDs are rejected (use WKT/WKB instead). @csqlfn <a class="el" href="group__mobilitydb__pose__base__inout_ga96cce7011af4011740e00f790ecacec3.html#ga96cce7011af4011740e00f790ecacec3" title="Return the OGC GeoPose JSON representation of a pose.">Pose_as_geopose()</a> </p>
+<p>Every conformance class mandates a geographic outer frame. Poses with SRID 0 are treated as geographic; poses with non-zero non-4326 SRIDs are rejected (use WKT/WKB instead).</p>
+<p >The Basic classes carry the position in a <code>position</code> member and leave the frame implicit; the Advanced class names the frame explicitly and carries the position in it, the class having no position member of its own. The frame it names is the one at the pose, so the two documents describe the same pose and read back equal. @csqlfn <a class="el" href="group__mobilitydb__pose__base__inout_ga96cce7011af4011740e00f790ecacec3.html#ga96cce7011af4011740e00f790ecacec3" title="Return the OGC GeoPose JSON representation of a pose.">Pose_as_geopose()</a> </p>
 
 </div>
 </div>

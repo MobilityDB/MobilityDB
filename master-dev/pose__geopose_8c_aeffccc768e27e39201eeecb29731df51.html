@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: tpose_to_geopose_series</title>
+<title>MobilityDB: geopose_crs_is_geographic</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -86,7 +86,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="pose__geopose_8c_ab6bc31dbf13e57f5bd8505a940eeaaa2.html#ab6bc31dbf13e57f5bd8505a940eeaaa2">geopose_anchor_set</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pose__geopose_8c_a8ec599cd19b3628880626dd727ee509f.html#a8ec599cd19b3628880626dd727ee509f">geopose_anchor_translation</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pose__geopose_8c_aa784c2bec35eff6ca564a6835b76f793.html#aa784c2bec35eff6ca564a6835b76f793">GEOPOSE_AUTHORITY</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="pose__geopose_8c_aeffccc768e27e39201eeecb29731df51.html#aeffccc768e27e39201eeecb29731df51">geopose_crs_is_geographic</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="pose__geopose_8c_aeffccc768e27e39201eeecb29731df51.html#aeffccc768e27e39201eeecb29731df51">geopose_crs_is_geographic</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pose__geopose_8c_a2e2a45e6a35b10562668f2aecd50b270.html#a2e2a45e6a35b10562668f2aecd50b270">GEOPOSE_DEG2RAD</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pose__geopose_8c_a4ea8b393488e31645f0a0cc10a22fe29.html#a4ea8b393488e31645f0a0cc10a22fe29">geopose_ecef_height</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pose__geopose_8c_a8a2e20c17acc8740c72b2eda8ca3a4ff.html#a8a2e20c17acc8740c72b2eda8ca3a4ff">geopose_ecef_to_geodetic</a></td></tr>
@@ -143,15 +143,15 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__geopose__accessor_ga6645db4832cba4a8f2abaf7cf0770013.html#ga6645db4832cba4a8f2abaf7cf0770013">tpose_from_geopose</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pose__geopose_8c_a7b1dddc712790682ba6eea6ec69cc1c0.html#a7b1dddc712790682ba6eea6ec69cc1c0">tpose_from_geopose_series</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pose__geopose_8c_a359b9f5d52fb1ecffc778ceb114dc2e9.html#a359b9f5d52fb1ecffc778ceb114dc2e9">tpose_parse_instants</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="pose__geopose_8c_a6345ff318182076b103ec4a41e47be6b.html#a6345ff318182076b103ec4a41e47be6b">tpose_to_geopose_series</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="pose__geopose_8c_a6345ff318182076b103ec4a41e47be6b.html#a6345ff318182076b103ec4a41e47be6b">tpose_to_geopose_series</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pose__geopose_8c_a12c4d565aefc5d627c89227a876390e4.html#a12c4d565aefc5d627c89227a876390e4">tposeinst_as_geopose</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pose__geopose_8c_a22d3f350db5c2b71185d56ca88baf48a.html#a22d3f350db5c2b71185d56ca88baf48a">tposeinst_from_geopose_object</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a6345ff318182076b103ec4a41e47be6b" name="a6345ff318182076b103ec4a41e47be6b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6345ff318182076b103ec4a41e47be6b">&#9670;&#160;</a></span>tpose_to_geopose_series()</h2>
+<a id="aeffccc768e27e39201eeecb29731df51" name="aeffccc768e27e39201eeecb29731df51"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aeffccc768e27e39201eeecb29731df51">&#9670;&#160;</a></span>geopose_crs_is_geographic()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -160,27 +160,11 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static json_object * tpose_to_geopose_series </td>
+          <td class="memname">static bool geopose_crs_is_geographic </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
-          <td class="paramname"><em>temp</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>crs</em></td><td>)</td>
           <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>regular</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>precision</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
   </td>
@@ -190,16 +174,7 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Build a Composite Sequence Series document for a temporal pose. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> pose </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">regular</td><td>True to emit a Regular Series, false for an Irregular one </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">precision</td><td>Significant digits in the emitted numbers </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>On error return <code>NULL</code> </dd></dl>
+<p>Return whether a <code>crs</code> frame parameter names a WGS-84 geographic CRS, in the <code>EPSG:&lt;code&gt;</code> form the frames of this module carry and the form the Moving Features encoding names a CRS by. </p>
 
 </div>
 </div>

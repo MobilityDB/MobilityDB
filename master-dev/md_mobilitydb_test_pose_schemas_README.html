@@ -82,16 +82,25 @@ $(function() {
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone"><code>GeoPose.Basic.Quaternion.Schema.json</code>   </td><td class="markdownTableBodyNone">Basic-Quaternion    </td></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone"><code>GeoPose.Composite.Sequence.Series.Regular.Schema.json</code>   </td><td class="markdownTableBodyNone">Regular Time Series    </td></tr>
+<td class="markdownTableBodyNone"><code>GeoPose.Advanced.Schema.json</code>   </td><td class="markdownTableBodyNone">Advanced    </td></tr>
 <tr class="markdownTableRowEven">
-<td class="markdownTableBodyNone"><code>GeoPose.Composite.Sequence.Series.Irregular.Schema.json</code>   </td><td class="markdownTableBodyNone">Irregular Time Series   </td></tr>
+<td class="markdownTableBodyNone"><code>GeoPose.Composite.Sequence.Series.Regular.Schema.json</code>   </td><td class="markdownTableBodyNone">Regular Time Series    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><code>GeoPose.Composite.Sequence.Series.Irregular.Schema.json</code>   </td><td class="markdownTableBodyNone">Irregular Time Series    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><code>GeoPose.Composite.Sequence.StreamHeader.Schema.json</code>   </td><td class="markdownTableBodyNone">Stream, the document opening one    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><code>GeoPose.Composite.Sequence.StreamElement.Schema.json</code>   </td><td class="markdownTableBodyNone">Stream, the document repeated in one   </td></tr>
 </table>
 <p >The schemas are those of OGC GeoPose 1.0 (OGC 21-056r11) and belong to the Open Geospatial Consortium, which licenses them for redistribution under the OGC Software Notice reproduced in <code>LICENSE</code> beside them, as <code>clipper2</code> and <code>h3-pg</code> carry the notice of what they vendor. That notice asks for the copyright to be retained and for any modification to be declared, so the files are held here unmodified, byte for byte as retrieved, with these digests: </p><pre class="fragment">5508d26aed6f…  GeoPose.Basic.YPR.Schema.json
 ce15e01a2ea8…  GeoPose.Basic.Quaternion.Schema.json
+236887312bee…  GeoPose.Advanced.Schema.json
 2c23b154da01…  GeoPose.Composite.Sequence.Series.Regular.Schema.json
 69f49530f65f…  GeoPose.Composite.Sequence.Series.Irregular.Schema.json
+ee3b1944912b…  GeoPose.Composite.Sequence.StreamHeader.Schema.json
+01791c205790…  GeoPose.Composite.Sequence.StreamElement.Schema.json
 </pre><p> <code>tools/scripts/check_geopose_conformance.py</code> validates against them the GeoPose documents that <code>expected/103_pose_geopose.test.out</code> holds. Keeping a copy here rather than fetching at run time makes the check depend on nothing outside the repository, so it gives the same verdict in a network-less build as in CI.</p>
-<p >The four remaining conformance classes &ndash; Advanced, Chain, Graph and Stream &ndash; have schemas at the same place, and belong here as soon as MobilityDB emits a document of one of them. </p>
+<p >The two remaining conformance classes, Chain and Graph, have schemas at the same place, and belong here as soon as MobilityDB emits a document of one of them. </p>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 <!-- start footer part -->
