@@ -938,6 +938,31 @@ TGEOMETRY_CONFIG = dict(
         "tgeography_to_tgeometry":  {0: "tgeog1"},
         "tgeography_to_tgeogpoint": {0: "tgeog_point1"},
         "tgeogpoint_to_tgeography": {0: "tgeogpoint_step1"},
+        # The geog_* surface needs real lon/lat literals: every canned
+        # geometry above is planar (SRID 5676) and is refused with "Only
+        # lon/lat coordinate systems are supported in geography".
+        "geog_in":           {0: '"SRID=4326;Point(2 49)"', 1: "-1"},
+        # WKB encoding of geog_in("SRID=4326;Point(2 49)", -1) via
+        # geo_as_hexewkb(g, "NDR"), pasted here so the constructor test does
+        # not depend on a working geog_in call.
+        "geog_from_hexewkb": {0: '"0101000020E610000000000000000000400000000000804840"'},
+        "geogset_in":        {0: '"{\\"SRID=4326;Point(2 49)\\", \\"SRID=4326;Point(3 49)\\"}"'},
+        # geogpoint_make{2d,3dz} take a raw SRID int; force a real geodetic one.
+        "geogpoint_make2d":  {0: "4326"},
+        "geogpoint_make3dz": {0: "4326"},
+        # geom_to_geog reads its geometry's coordinates as lon/lat; give it a
+        # planar geometry that actually carries lon/lat coordinates.
+        "geom_to_geog":      {0: "geom_lonlat1"},
+        # geog_to_geom and every geog_* accessor/predicate need a real
+        # lon/lat geography, not the planar canned geometries.
+        "geog_to_geom":      {0: "geog1"},
+        "geog_area":         {0: "geog1"},
+        "geog_centroid":     {0: "geog1"},
+        "geog_length":       {0: "geog1"},
+        "geog_perimeter":    {0: "geog1"},
+        "geog_dwithin":      {0: "geog1", 1: "geog1"},
+        "geog_intersects":   {0: "geog1", 1: "geog1"},
+        "geog_distance":     {0: "geog1", 1: "geog1"},
     },
     # Name-pattern argument routing: whole families of meos_geo.h functions share
     # a precondition the polygon/tgeometry defaults don't meet.
@@ -978,13 +1003,6 @@ TGEOMETRY_CONFIG = dict(
         "re:GBOX":       "needs a GBOX",
         "re:SkipList":   "needs a SkipList state",
         "re:bitmatrix":  "needs a bitmatrix",
-        # The geography surface needs lon/lat values; every canned geometry is
-        # planar (SRID 5676) and is refused with "Only lon/lat coordinate
-        # systems are supported in geography".
-        "re:^geog":      "needs a lon/lat geography, not the planar canned geometries",
-        "re:_geog$":     "needs a lon/lat geography, not the planar canned geometries",
-        "re:_geography_": "needs a lon/lat geography, not the planar canned geometries",
-        "re:_to_geography$": "needs a lon/lat geography, not the planar canned geometries",
         # Out-params with non-uniform shape (e.g. GSERIALIZED ***).
         "re:^geo_array_": "out-param triple-pointer not in canned set",
         # Constructors that crash on LINEAR interp default for a span/spanset
@@ -1010,6 +1028,11 @@ TGEOMETRY_CONFIG = dict(
   GSERIALIZED *geom_meas1 = geom_in(
     "SRID=5676;Linestring M(0 0 978310800, 1 1 978397200)", -1);
   GSERIALIZED *geom_out_param = NULL;
+  /* Real lon/lat inputs for the geog_* surface: every geometry above uses
+   * the planar SRID 5676, which geography rejects ("Only lon/lat coordinate
+   * systems are supported in geography"). */
+  GSERIALIZED *geom_lonlat1 = geom_in("SRID=4326;Point(2 49)", -1);
+  GSERIALIZED *geog1 = geog_in("SRID=4326;Polygon((2 49,3 49,3 50,2 50,2 49))", -1);
   Set *geomset1 = geomset_in("{\\"SRID=5676;Point(0 0)\\", \\"SRID=5676;Point(1 1)\\"}");
   STBox *stbox1 = stbox_in("SRID=5676;STBOX X((0, 0), (10, 10))");
   STBox *stbox_zt1 = stbox_in("SRID=5676;STBOX ZT(((0,0,0),(10,10,10)),[2001-01-01, 2001-01-02])");
@@ -1065,6 +1088,8 @@ TGEOMETRY_CONFIG = dict(
   free(geomset1);
   free(tstzset1);
   free(geom1);
+  free(geom_lonlat1);
+  free(geog1);
   free(geom_point1);
   free(geom_pointz1);
   free(geom_line1);
