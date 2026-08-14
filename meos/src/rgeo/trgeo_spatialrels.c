@@ -506,10 +506,11 @@ ea_intersects_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
   if (ever)
     return spatialrel_trgeo_trav_geo(temp, gs, (Datum) NULL,
       (varfunc) &datum_geom_intersects2d, 2, INVERT_NO);
-  /* aIntersects(trgeo, geo) ≡ NOT eDisjoint(trgeo, geo) */
-  int result = spatialrel_trgeo_trav_geo(temp, gs, (Datum) NULL,
+  /* aIntersects(trgeo, geo) ≡ NOT eDisjoint(trgeo, geo), and the temporal
+   * value is ever disjoint from the geometry exactly where the geometry does
+   * not cover its traversed area, so the always semantics are that covering */
+  return spatialrel_trgeo_trav_geo(temp, gs, (Datum) NULL,
     (varfunc) &datum_geom_covers, 2, INVERT);
-  return INVERT_RESULT(result);
 }
 
 /**
