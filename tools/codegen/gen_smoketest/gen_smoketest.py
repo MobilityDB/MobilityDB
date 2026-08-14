@@ -100,12 +100,17 @@ def parse_args(arg_block: str):
         parts.append("".join(cur).strip())
     out = []
     for p in parts:
+        # Recorded ahead of cleanup_type(), which strips `const` from the
+        # type text -- emit_call's out-param detection needs to tell a
+        # `const T **` (an input array) apart from a `T **` (a candidate
+        # out-param) after that qualifier is gone.
+        is_const = bool(re.search(r"\bconst\b", p))
         m = re.match(r"^(.*?)([\*\s])(\w+)$", p.strip())
         if not m:
-            out.append((cleanup_type(p), ""))
+            out.append((cleanup_type(p), "", is_const))
             continue
         ty = (m.group(1) + m.group(2)).strip()
-        out.append((cleanup_type(ty), m.group(3)))
+        out.append((cleanup_type(ty), m.group(3), is_const))
     return out
 
 
@@ -119,6 +124,21 @@ def parse_args(arg_block: str):
 GLOBAL_SKIP = {
     "re:_(transfn|combinefn|finalfn)$":
         "aggregate state-handoff pattern incompatible with smoke-test ownership model",
+}
+
+
+# By-value scalar RETURN types: a fixed, whole-repo set (not a per-config
+# opt-in) of C types that are always passed by value, so a result owns no
+# storage and there is nothing to free -- call and discard. Struct-by-value
+# and opaque-handle returns (Numeric, MvtGeom, SpaceSplit, SpaceTimeSplit,
+# nullHandleType) are deliberately excluded: those come back as pointers or
+# aggregate types under the covers and stay in the unmapped-return skip path.
+BY_VALUE_SCALAR_TYPES = {
+    "int8_t", "int16_t", "int32_t", "int64_t",
+    "uint8_t", "uint16_t", "uint32_t", "uint64_t",
+    "int16", "int32", "int64",
+    "uint16", "uint32", "uint64",
+    "float4", "float8", "size_t",
 }
 
 
@@ -150,15 +170,38 @@ def emit_call(fname, ret, args, arg_map, skip_map, override_args,
                 eff_arg_map.update(tymap)
     call_args = []
     overrides = override_args.get(fname, {})
-    for i, (ty, _name) in enumerate(args):
+    # Out-param double-pointer args: a NON-const `T **` that is the LAST
+    # parameter is the single-object accessor shape used throughout MEOS
+    # (`bool foo_value_n(..., T **result)`, `bool foo_value_at_timestamptz(
+    # ..., T **value)`) -- declare a local `T *out_pN = NULL` ahead of the
+    # call, pass `&out_pN`, and free it after. A `T **` that instead pairs
+    # with a following element count (`T **values, int count`) is an INPUT
+    # ARRAY, not an out-param, and that count always comes right after it —
+    # so it is never the last parameter — which is what keeps constructors
+    # like `trgeometryseq_make(..., TInstant **instants, int count, ...)`
+    # out of this path. A `const T **` is always an input array regardless
+    # of position and is left alone the same way.
+    outparam_decls = []
+    outparam_frees = []
+    n_args = len(args)
+    for i, (ty, _name, is_const) in enumerate(args):
         if i in overrides:
             call_args.append(overrides[i])
+            continue
+        if not is_const and ty.count("*") == 2 and i == n_args - 1:
+            elt = ty.replace("*", "").strip() + " *"  # 'Foo * *' -> 'Foo *'
+            var = f"out_p{len(outparam_decls)}" if outparam_decls else "out_p"
+            outparam_decls.append(f"{elt}{var} = NULL; ")
+            outparam_frees.append(f" if ({var}) free({var});")
+            call_args.append(f"&{var}")
             continue
         v = eff_arg_map.get(ty)
         if v is None:
             return f"  /* SKIP {fname}: unmapped arg type '{ty}' */\n"
         call_args.append(v)
     call = f"{fname}({', '.join(call_args)})"
+    outp_pre = "".join(outparam_decls)
+    outp_post = "".join(outparam_frees)
     # Preserve a `const` return qualifier in the declared result variable so a
     # function like `const GSERIALIZED *route_geom(...)` does not trip
     # -Wdiscarded-qualifiers when its result is assigned.
@@ -174,66 +217,66 @@ def emit_call(fname, ret, args, arg_map, skip_map, override_args,
         # ownership signal, and it is read straight off the header — no
         # per-function list to maintain as the API grows.
         if is_const_ret or fname in no_free:
-            return (f"  {{ {decl_ret} r = {call};\n"
+            return (f"  {{ {outp_pre}{decl_ret} r = {call};\n"
                     f"    printf(\"{fname}: %s\\n\", r ? r : \"NULL\");\n"
-                    f"    /* {fname} returns a borrowed string; do NOT free */ }}\n")
-        return (f"  {{ char *r = {call};\n"
+                    f"    /* {fname} returns a borrowed string; do NOT free */{outp_post} }}\n")
+        return (f"  {{ {outp_pre}char *r = {call};\n"
                 f"    printf(\"{fname}: %s\\n\", r ? r : \"NULL\");\n"
-                f"    if (r) free(r); }}\n")
+                f"    if (r) free(r);{outp_post} }}\n")
     if ret == "bool":
-        return (f"  {{ bool r = {call};\n"
-                f"    printf(\"{fname}: %d\\n\", (int) r); }}\n")
+        return (f"  {{ {outp_pre}bool r = {call};\n"
+                f"    printf(\"{fname}: %d\\n\", (int) r);{outp_post} }}\n")
     if ret == "int":
-        return (f"  {{ int r = {call};\n"
-                f"    printf(\"{fname}: %d\\n\", r); }}\n")
+        return (f"  {{ {outp_pre}int r = {call};\n"
+                f"    printf(\"{fname}: %d\\n\", r);{outp_post} }}\n")
     if ret == "double":
-        return (f"  {{ double r = {call};\n"
-                f"    printf(\"{fname}: %.6f\\n\", r); }}\n")
-    # By-value scalar returns the CONFIG declares (e.g. a cell index like
-    # Quadbin = uint64, or a uint32_t resolution): call and discard — a value
-    # return owns no storage, so there is nothing to free. Opt-in per config
-    # (default empty) so the existing suites' output is unchanged.
-    if ret in value_returns:
-        return (f"  {{ {ret} r = {call}; (void) r;\n"
-                f"    printf(\"{fname}: ok\\n\"); }}\n")
+        return (f"  {{ {outp_pre}double r = {call};\n"
+                f"    printf(\"{fname}: %.6f\\n\", r);{outp_post} }}\n")
+    # By-value scalar returns: either the fixed whole-repo set above, or a
+    # type a config opts into via value_returns (e.g. a cell index like
+    # Quadbin = uint64). A value return owns no storage, so there is nothing
+    # to free.
+    if ret in BY_VALUE_SCALAR_TYPES or ret in value_returns:
+        return (f"  {{ {outp_pre}{ret} r = {call}; (void) r;\n"
+                f"    printf(\"{fname}: ok\\n\");{outp_post} }}\n")
     # Double-pointer returns (T **) need element-by-element free using
     # the n_out count populated by the function's int* arg. The generator
     # only uses this shape when the call signature contains an `int *`
     # argument that we mapped to &n_out — that's our witness for "array".
-    has_count_out = any(t == "int *" for (t, _n) in args)
+    has_count_out = any(t == "int *" for (t, _n, _c) in args)
     if ret.count("*") == 2 and has_count_out:
         elt = ret.replace(" *", "*")[:-1].strip()  # 'TInstant ** ' → 'TInstant *'
-        return (f"  {{ {ret} r = {call};\n"
+        return (f"  {{ {outp_pre}{ret} r = {call};\n"
                 f"    printf(\"{fname}: %s n=%d\\n\", r ? \"OK\" : \"NULL\", n_out);\n"
                 f"    if (r) {{\n"
                 f"      for (int _i = 0; _i < n_out; _i++) if (r[_i]) free(r[_i]);\n"
                 f"      free(r);\n"
-                f"    }} }}\n")
+                f"    }}{outp_post} }}\n")
     # A (T **) return without an int* count is the *set_values accessor shape:
     # an array of set_num_values(s) owned copies. Use the set argument's
     # cardinality to free the elements as well as the array.
     if ret.count("*") == 2:
-        set_arg = next((call_args[i] for i, (t, _n) in enumerate(args)
+        set_arg = next((call_args[i] for i, (t, _n, _c) in enumerate(args)
                         if cleanup_type(t) == "Set *"), None)
         if set_arg:
-            return (f"  {{ {ret} r = {call};\n"
+            return (f"  {{ {outp_pre}{ret} r = {call};\n"
                     f"    printf(\"{fname}: %s\\n\", r ? \"OK\" : \"NULL\");\n"
                     f"    if (r) {{\n"
                     f"      int _n = set_num_values({set_arg});\n"
                     f"      for (int _i = 0; _i < _n; _i++) if (r[_i]) free(r[_i]);\n"
                     f"      free(r);\n"
-                    f"    }} }}\n")
+                    f"    }}{outp_post} }}\n")
     if "*" in ret:
         # no_free: the function returns a borrowed pointer (e.g. a view into
         # the MEOS ways cache) that the caller must NOT free.
         if fname in no_free:
-            return (f"  {{ {decl_ret} r = {call};\n"
+            return (f"  {{ {outp_pre}{decl_ret} r = {call};\n"
                     f"    printf(\"{fname}: %s\\n\", r ? \"OK\" : \"NULL\");\n"
-                    f"    /* {fname} returns a borrowed pointer; do NOT free */ }}\n")
+                    f"    /* {fname} returns a borrowed pointer; do NOT free */{outp_post} }}\n")
         free_r = "free((void *) r)" if is_const_ret else "free(r)"
-        return (f"  {{ {decl_ret} r = {call};\n"
+        return (f"  {{ {outp_pre}{decl_ret} r = {call};\n"
                 f"    printf(\"{fname}: %s\\n\", r ? \"OK\" : \"NULL\");\n"
-                f"    if (r) {free_r}; }}\n")
+                f"    if (r) {free_r};{outp_post} }}\n")
     return f"  /* SKIP {fname}: unmapped return type '{ret}' */\n"
 
 
