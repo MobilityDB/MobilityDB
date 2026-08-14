@@ -60,6 +60,78 @@
 #include "temporal/type_inout.h"
 
 /*****************************************************************************
+ * Pixel type catalog
+ *
+ * One row per pixel data type, indexed by its ::MeosPixType code, so that the
+ * name and the size of a type are stated once and read from here rather than
+ * repeated. The code indexes the catalog and is what a tile carries in its
+ * header and in its Well-Known Binary representation, so a row keeps the index
+ * it has.
+ *****************************************************************************/
+
+/**
+ * @brief Structure to represent a row of the pixel type catalog
+ */
+typedef struct
+{
+  const char *name;   /**< Name the constructors accept and #raquet_pixtype() returns */
+  size_t size;        /**< Size in bytes of a single pixel */
+} pixtype_catalog_struct;
+
+/**
+ * @brief Global constant array containing the pixel data types
+ */
+static const pixtype_catalog_struct MEOS_PIXTYPE_CATALOG[] =
+{
+  [MEOS_PT_UINT8]   = { "UINT8",   1 },
+  [MEOS_PT_INT16]   = { "INT16",   2 },
+  [MEOS_PT_INT32]   = { "INT32",   4 },
+  [MEOS_PT_FLOAT32] = { "FLOAT32", 4 },
+  [MEOS_PT_FLOAT64] = { "FLOAT64", 8 },
+};
+
+/**
+ * @brief Return true when a pixel type code has a row in the catalog
+ */
+static bool
+pixtype_known(uint8 pixtype)
+{
+  size_t n = sizeof(MEOS_PIXTYPE_CATALOG) / sizeof(pixtype_catalog_struct);
+  return (size_t) pixtype < n && MEOS_PIXTYPE_CATALOG[pixtype].name;
+}
+
+/**
+ * @brief Write into @p buf the names of the catalog as an enumeration reading
+ * "A, B, or C", which is how the error messages name the types a caller may use
+ * @param[out] buf Buffer receiving the enumeration
+ * @param[in] size Size of @p buf
+ */
+static char *
+pixtype_names(char *buf, size_t size)
+{
+  size_t n = sizeof(MEOS_PIXTYPE_CATALOG) / sizeof(pixtype_catalog_struct);
+  size_t last = 0;
+  for (size_t i = 0; i < n; i++)
+  {
+    if (MEOS_PIXTYPE_CATALOG[i].name)
+      last = i;
+  }
+  size_t pos = 0;
+  buf[0] = '\0';
+  for (size_t i = 0; i < n; i++)
+  {
+    if (! MEOS_PIXTYPE_CATALOG[i].name)
+      continue;
+    int len = snprintf(buf + pos, size - pos, "%s%s",
+      pos ? (i == last ? ", or " : ", ") : "", MEOS_PIXTYPE_CATALOG[i].name);
+    if (len < 0 || pos + (size_t) len >= size)
+      break;
+    pos += (size_t) len;
+  }
+  return buf;
+}
+
+/*****************************************************************************
  * Validity functions
  *****************************************************************************/
 
@@ -69,7 +141,7 @@
 static bool
 ensure_valid_pixtype(uint8 pixtype)
 {
-  if (pixtype > (uint8) MEOS_PT_FLOAT64)
+  if (! pixtype_known(pixtype))
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Unknown raquet pixel type code: %u", pixtype);
@@ -86,19 +158,13 @@ ensure_valid_pixtype(uint8 pixtype)
  * @ingroup meos_raster_base_accessor
  * @brief Return the size in bytes of a single pixel of the given type
  * @param[in] pixtype Pixel data type
+ * @return On error return 0
  */
 size_t
 raquet_pixtype_size(MeosPixType pixtype)
 {
-  switch (pixtype)
-  {
-    case MEOS_PT_UINT8:   return 1;
-    case MEOS_PT_INT16:   return 2;
-    case MEOS_PT_INT32:   return 4;
-    case MEOS_PT_FLOAT32: return 4;
-    case MEOS_PT_FLOAT64: return 8;
-    default:              return 0;
-  }
+  return pixtype_known((uint8) pixtype) ?
+    MEOS_PIXTYPE_CATALOG[pixtype].size : 0;
 }
 
 /*****************************************************************************
@@ -240,14 +306,17 @@ raquet_pixtype_from_string(const char *str)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(str, MEOS_PT_UINT8);
-  if (pg_strcasecmp(str, "UINT8") == 0)   return MEOS_PT_UINT8;
-  if (pg_strcasecmp(str, "INT16") == 0)   return MEOS_PT_INT16;
-  if (pg_strcasecmp(str, "INT32") == 0)   return MEOS_PT_INT32;
-  if (pg_strcasecmp(str, "FLOAT32") == 0) return MEOS_PT_FLOAT32;
-  if (pg_strcasecmp(str, "FLOAT64") == 0) return MEOS_PT_FLOAT64;
+  size_t n = sizeof(MEOS_PIXTYPE_CATALOG) / sizeof(pixtype_catalog_struct);
+  for (size_t i = 0; i < n; i++)
+  {
+    if (MEOS_PIXTYPE_CATALOG[i].name &&
+        pg_strcasecmp(str, MEOS_PIXTYPE_CATALOG[i].name) == 0)
+      return (MeosPixType) i;
+  }
+  char names[128];
   meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-    "Unknown pixel type \"%s\": use UINT8, INT16, INT32, FLOAT32, or FLOAT64",
-    str);
+    "Unknown pixel type \"%s\": use %s", str,
+    pixtype_names(names, sizeof(names)));
   return MEOS_PT_UINT8; /* make compiler quiet */
 }
 
@@ -504,18 +573,9 @@ raquet_pixtype(const Raquet *rq)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(rq, NULL);
-  switch ((MeosPixType) rq->pixtype)
-  {
-    case MEOS_PT_UINT8:   return pstrdup("UINT8");
-    case MEOS_PT_INT16:   return pstrdup("INT16");
-    case MEOS_PT_INT32:   return pstrdup("INT32");
-    case MEOS_PT_FLOAT32: return pstrdup("FLOAT32");
-    case MEOS_PT_FLOAT64: return pstrdup("FLOAT64");
-    default:
-      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-        "Unknown raquet pixel type code: %u", rq->pixtype);
-      return NULL;
-  }
+  if (! ensure_valid_pixtype(rq->pixtype))
+    return NULL;
+  return pstrdup(MEOS_PIXTYPE_CATALOG[rq->pixtype].name);
 }
 
 /**
@@ -737,6 +797,8 @@ raquet_hash_extended(const Raquet *rq, uint64 seed)
  * @ingroup meos_raster
  * @brief Return the values of a Raquet tile sampled at the instants of a
  * trajectory
+ * @note The sampling surface is double-valued whatever the pixel type of the
+ * band, as #raster_tile_value_quadbin() describes
  * @param[in] traj Trajectory (temporal geometry point)
  * @param[in] rq Raquet tile
  * @csqlfn #Raster_tile_value()
