@@ -214,6 +214,7 @@ typedef enum
     do { \
       assert(temp); \
       assert((temp)->temptype == T_TGEOGPOINT); \
+      (void) (temp); \
     } while (0)
 #endif /* MEOS */
 
