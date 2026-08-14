@@ -1,0 +1,47 @@
+{
+  "description": "Stream Element: The repeated information streamed at irregular times.",
+  "definitions": {
+    "FrameAndTime": {
+      "type": "object",
+      "properties": {
+        "frame": {
+          "$ref": "#/definitions/FrameSpecification"
+        },
+        "validTime": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "frame"
+      ]
+    },
+    "FrameSpecification": {
+      "type": "object",
+      "properties": {
+        "authority": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "parameters": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "authority",
+        "id",
+        "parameters"
+      ]
+    }
+  },
+  "type": "object",
+  "properties": {
+    "streamElement": {
+      "$ref": "#/definitions/FrameAndTime"
+    }
+  },
+  "required": [
+    "streamElement"
+  ]
+}

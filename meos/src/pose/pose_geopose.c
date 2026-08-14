@@ -986,6 +986,25 @@ geopose_outer_frame(const GeoPoseAnchor *anchor, int precision)
 }
 
 /**
+ * @brief Set the tangent point of a composite from the pose of its first
+ * instant.
+ * @details Requirements 26 and 31 make the outer frame the first frame of a
+ * series, and Requirement 34 the first frame of a stream, so one instant
+ * fixes the frame that every later pose is expressed against.
+ * @return On error return false
+ */
+static bool
+geopose_anchor_from_instant(const TInstant *inst, GeoPoseAnchor *anchor)
+{
+  double lon, lat, h, W, X, Y, Z;
+  if (! geopose_pose_components(DatumGetPoseP(tinstant_value_p(inst)),
+      &lon, &lat, &h, &W, &X, &Y, &Z))
+    return false;
+  geopose_anchor_set(anchor, GEOPOSE_DEG2RAD(lat), GEOPOSE_DEG2RAD(lon), h);
+  return true;
+}
+
+/**
  * @brief Build a SeriesHeader or SeriesTrailer `poseCount` bearing object.
  * @details `integrityCheck` is optional in both and is not emitted: the
  * standard leaves the digest input undefined, so any value this
@@ -1065,17 +1084,12 @@ tpose_to_geopose_series(const Temporal *temp, bool regular, int precision)
     return NULL;
   }
 
-  /* Requirements 26 and 31 make the outer frame the first frame of the
-   * series, so the tangent point is the position of the first pose. */
-  double lon, lat, h, W, X, Y, Z;
-  if (! geopose_pose_components(DatumGetPoseP(tinstant_value_p(instants[0])),
-      &lon, &lat, &h, &W, &X, &Y, &Z))
+  GeoPoseAnchor anchor;
+  if (! geopose_anchor_from_instant(instants[0], &anchor))
   {
     pfree(instants);
     return NULL;
   }
-  GeoPoseAnchor anchor;
-  geopose_anchor_set(&anchor, GEOPOSE_DEG2RAD(lat), GEOPOSE_DEG2RAD(lon), h);
 
   json_object *arr = json_object_new_array();
   for (int i = 0; i < count; i++)
@@ -1419,6 +1433,93 @@ tpose_as_geopose(const Temporal *temp, int conformance, int precision)
   char *res = pstrdup(json_object_to_json_string_ext(series,
     GEOPOSE_JSON_FLAGS));
   json_object_put(series);
+  return res;
+}
+
+/**
+ * @ingroup meos_pose_base_geopose
+ * @brief Return the OGC GeoPose StreamHeader of a temporal pose
+ * @details A Stream is the open-ended member of the Composite Sequence
+ * classes: it carries the same frames as an Irregular Series but states
+ * neither how many poses there are nor when they end, since more may
+ * arrive. The standard splits it into two documents, and this is the one
+ * that "appears once at the beginning of a stream": the transition model
+ * of Requirement 35 and, per Requirement 34, the outer frame that every
+ * element is expressed against.
+ *
+ * The frame is anchored at the first pose of @p temp, so a producer that
+ * accumulates its value with @p temporal_append_tinstant writes the header
+ * from the same value it goes on to stream, and the elements it emits speak
+ * of the same tangent point.
+ * @param[in] temp Temporal pose
+ * @param[in] precision Significant digits in JSON numbers; -1 = lossless
+ * @return On error return @p NULL
+ */
+char *
+tpose_as_geopose_stream_header(const Temporal *temp, int precision)
+{
+  VALIDATE_TPOSE(temp, NULL);
+
+  const TInstant *first = (const TInstant *) temporal_start_instant(temp);
+  if (first == NULL)
+    return NULL;
+  GeoPoseAnchor anchor;
+  if (! geopose_anchor_from_instant(first, &anchor))
+    return NULL;
+
+  json_object *root = json_object_new_object();
+  json_object_object_add(root, "transitionModel",
+    geopose_transition_model(MEOS_FLAGS_GET_INTERP(temp->flags)));
+  json_object_object_add(root, "outerFrame",
+    geopose_outer_frame(&anchor, precision));
+  char *res = pstrdup(json_object_to_json_string_ext(root,
+    GEOPOSE_JSON_FLAGS));
+  json_object_put(root);
+  return res;
+}
+
+/**
+ * @ingroup meos_pose_base_geopose
+ * @brief Return the OGC GeoPose StreamElement of one instant of a temporal
+ * pose
+ * @details This is "the repeated information streamed at irregular times":
+ * the inner frame of @p inst and the instant it is valid at, wrapped as
+ * Requirement 36 asks. The frame is relative to the outer frame of the
+ * stream, which @p temp anchors at its first pose, so the same value that
+ * produced the header produces every element and the two agree.
+ * @param[in] temp Temporal pose the stream is written from
+ * @param[in] inst Instant to write
+ * @param[in] precision Significant digits in JSON numbers; -1 = lossless
+ * @return On error return @p NULL
+ */
+char *
+tpose_as_geopose_stream_element(const Temporal *temp, const TInstant *inst,
+  int precision)
+{
+  VALIDATE_TPOSE(temp, NULL);
+  VALIDATE_NOT_NULL(inst, NULL);
+
+  const TInstant *first = (const TInstant *) temporal_start_instant(temp);
+  if (first == NULL)
+    return NULL;
+  GeoPoseAnchor anchor;
+  if (! geopose_anchor_from_instant(first, &anchor))
+    return NULL;
+
+  json_object *frame = geopose_inner_frame(&anchor,
+    DatumGetPoseP(tinstant_value_p(inst)), precision);
+  if (frame == NULL)
+    return NULL;
+  json_object *fat = json_object_new_object();
+  json_object_object_add(fat, "frame", frame);
+  json_object_object_add(fat, "validTime",
+    json_object_new_int64(geopose_instant_out(inst->t)));
+
+  json_object *root = json_object_new_object();
+  json_object_object_add(root, "streamElement", fat);
+  char *res = pstrdup(json_object_to_json_string_ext(root,
+    GEOPOSE_JSON_FLAGS));
+  json_object_put(root);
   return res;
 }
 
