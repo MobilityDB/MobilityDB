@@ -158,7 +158,7 @@ $(function() {
     <tr><td class="paramdir">[in]</td><td class="paramname">pixtype</td><td>Pixel data type </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">nodata</td><td>Nodata sentinel value </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">has_nodata</td><td>Whether nodata filtering is active </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">pixels</td><td>Row-major packed pixel bytes (<code>width * height * raquet_pixtype_size(pixtype)</code> bytes) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">pixels</td><td>Row-major packed pixel bytes (<code>width * height * raquet_pixtype_size(pixtype)</code> bytes), little-endian beyond one byte a pixel </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">pixels_size</td><td>Number of bytes available at <code>pixels</code> @csqlfn <a class="el" href="group__mobilitydb__raster_ga6a95f22d8299853655968ce213ff9610.html#ga6a95f22d8299853655968ce213ff9610" title="Construct a Raquet tile from a QUADBIN cell, dimensions, a pixel type name and a row-major packed pix...">Raquet_constructor()</a> </td></tr>
   </table>
   </dd>

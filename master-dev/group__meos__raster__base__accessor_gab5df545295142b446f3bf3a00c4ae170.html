@@ -167,7 +167,7 @@ $(function() {
 <p>Sample a <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> raster chip along a tgeompoint trajectory. </p>
 <p >The chip is identified by its QUADBIN cell, which encodes the Web-Mercator tile coordinates and thus the full georeferencing without any separate metadata. Instants outside the tile extent or on nodata pixels are silently dropped; NULL is returned when no instants survive. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">pixels</td><td>Row-major pixel bytes (all bands interleaved or single-band depending on the <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> producer) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">pixels</td><td>Row-major pixel bytes (all bands interleaved or single-band depending on the <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> producer), little-endian beyond one byte a pixel </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">traj</td><td>Input tgeompoint trajectory (SRID 4326) </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">pixels_size</td><td>Number of bytes available at <code>pixels</code> </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">width</td><td>Tile width in pixels (typically 256) </td></tr>

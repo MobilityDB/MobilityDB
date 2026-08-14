@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: ensure_valid_pixtype</title>
+<title>MobilityDB: raquet_pixels_from_host</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -79,7 +79,7 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtabHL"><a class="navtab" href="raquet_8c_ae5b71c49b9d1df7bd9d92427e56ad8eb.html#ae5b71c49b9d1df7bd9d92427e56ad8eb">ensure_valid_pixtype</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="raquet_8c_ae5b71c49b9d1df7bd9d92427e56ad8eb.html#ae5b71c49b9d1df7bd9d92427e56ad8eb">ensure_valid_pixtype</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raquet_8c_a0d6be4c7a65613a98b1622f06dadf337.html#a0d6be4c7a65613a98b1622f06dadf337">le_uint</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raquet_8c_ab227cef7365d3cc1e8b5d06e0c5adf82.html#ab227cef7365d3cc1e8b5d06e0c5adf82">le_uint_store</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__inout_ga9e953cb1db5f8340ca864740dc1f9716.html#ga9e953cb1db5f8340ca864740dc1f9716">raquet_as_hexwkb</a></td></tr>
@@ -103,7 +103,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__inout_gac203849245423dc1db6a22f7086eeb9f.html#gac203849245423dc1db6a22f7086eeb9f">raquet_out</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raquet_8c_ad31117dde7c41726affa3b3fc079bc32.html#ad31117dde7c41726affa3b3fc079bc32">raquet_pixel_value</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_gabdd0553e0737b0b27b99d857f3e150df.html#gabdd0553e0737b0b27b99d857f3e150df">raquet_pixels</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="raquet_8c_a1aa2621eb75bb670bd68c47bf0ece696.html#a1aa2621eb75bb670bd68c47bf0ece696">raquet_pixels_from_host</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="raquet_8c_a1aa2621eb75bb670bd68c47bf0ece696.html#a1aa2621eb75bb670bd68c47bf0ece696">raquet_pixels_from_host</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_ga0019e015bac80fc360eed13f38720c3e.html#ga0019e015bac80fc360eed13f38720c3e">raquet_pixtype</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_gaf2aecd92bec93e65dc1cf3f3055efb86.html#gaf2aecd92bec93e65dc1cf3f3055efb86">raquet_pixtype_from_string</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_ga3d753a5a1074d72ee5ab110426852f9d.html#ga3d753a5a1074d72ee5ab110426852f9d">raquet_pixtype_size</a></td></tr>
@@ -117,31 +117,48 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ae5b71c49b9d1df7bd9d92427e56ad8eb" name="ae5b71c49b9d1df7bd9d92427e56ad8eb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae5b71c49b9d1df7bd9d92427e56ad8eb">&#9670;&#160;</a></span>ensure_valid_pixtype()</h2>
+<a id="a1aa2621eb75bb670bd68c47bf0ece696" name="a1aa2621eb75bb670bd68c47bf0ece696"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1aa2621eb75bb670bd68c47bf0ece696">&#9670;&#160;</a></span>raquet_pixels_from_host()</h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static bool ensure_valid_pixtype </td>
+          <td class="memname">void raquet_pixels_from_host </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_adde6aaee8457bee49c2a92621fe22b79.html#adde6aaee8457bee49c2a92621fe22b79">uint8</a>&#160;</td>
-          <td class="paramname"><em>pixtype</em></td><td>)</td>
+          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_adde6aaee8457bee49c2a92621fe22b79.html#adde6aaee8457bee49c2a92621fe22b79">uint8</a> *&#160;</td>
+          <td class="paramname"><em>pixels</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>count</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="meos__raster_8h_ab4899fb599b17f4121bb9a377d9dd040.html#ab4899fb599b17f4121bb9a377d9dd040">MeosPixType</a>&#160;</td>
+          <td class="paramname"><em>pixtype</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
-<p>Ensure that a pixel type code is one of the supported values. </p>
+<p>Rewrite in place a band that a machine has just filled with its own byte order, so that it is stored little-endian as a <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> band is. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">pixels</td><td>Row-major packed pixel bytes </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">count</td><td>Number of pixels </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">pixtype</td><td>Pixel data type </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section note"><dt>Note</dt><dd>Single-byte and unknown pixel types leave the band untouched </dd></dl>
 
 </div>
 </div>
