@@ -450,6 +450,19 @@ SELECT pixtype(raquet('\x01'::bytea, 1, 1, 5193776270265024512::bigint, 'UINT8')
        pixtype(raquet('\x0102030405060708'::bytea, 1, 1, 5193776270265024512::bigint,
          'FLOAT64'));
 
+-- The pixel type name is read without regard to case, so the lower-case
+-- spelling the RaQuet specification gives a tile's type field is accepted as
+-- it stands. The name reported back keeps the documented upper case.
+SELECT pixtype(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint,
+  'uint8'));
+SELECT pixtype(raquet('\x0102030405060708'::bytea, 2, 1,
+  5193776270265024512::bigint, 'float32'));
+SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'uint8')
+       = raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'UINT8');
+
+-- An unknown name is still rejected, whatever its case.
+SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'uint12');
+
 -- The nodata sentinel supplied to the constructor is the one reported back.
 SELECT nodata(raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8',
   -9999.0));

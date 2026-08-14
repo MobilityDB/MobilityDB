@@ -106,17 +106,21 @@ raquet_pixtype_size(MeosPixType pixtype)
  * @brief Return the pixel data type corresponding to a name
  * @param[in] str Pixel type name: UINT8, INT16, INT32, FLOAT32, or FLOAT64
  * @note This is the parser counterpart of #raquet_pixtype()
+ * @note The name is read without regard to case, so the lower-case spelling
+ * the RaQuet specification gives the `type` field of a tile carries straight
+ * through from a file into the constructors. The name #raquet_pixtype()
+ * returns keeps the upper case the SQL surface documents
  */
 MeosPixType
 raquet_pixtype_from_string(const char *str)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(str, MEOS_PT_UINT8);
-  if (strcmp(str, "UINT8") == 0)   return MEOS_PT_UINT8;
-  if (strcmp(str, "INT16") == 0)   return MEOS_PT_INT16;
-  if (strcmp(str, "INT32") == 0)   return MEOS_PT_INT32;
-  if (strcmp(str, "FLOAT32") == 0) return MEOS_PT_FLOAT32;
-  if (strcmp(str, "FLOAT64") == 0) return MEOS_PT_FLOAT64;
+  if (pg_strcasecmp(str, "UINT8") == 0)   return MEOS_PT_UINT8;
+  if (pg_strcasecmp(str, "INT16") == 0)   return MEOS_PT_INT16;
+  if (pg_strcasecmp(str, "INT32") == 0)   return MEOS_PT_INT32;
+  if (pg_strcasecmp(str, "FLOAT32") == 0) return MEOS_PT_FLOAT32;
+  if (pg_strcasecmp(str, "FLOAT64") == 0) return MEOS_PT_FLOAT64;
   meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
     "Unknown pixel type \"%s\": use UINT8, INT16, INT32, FLOAT32, or FLOAT64",
     str);
