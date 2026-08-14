@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['n_0',['n',['../structTpcpatchPointsState_acc3c456811ea146c046e1771575beeef.html#acc3c456811ea146c046e1771575beeef',1,'TpcpatchPointsState::n()'],['../structGeoDistGeom_a05f85d51df9b509863e30f71f9b31f4c.html#a05f85d51df9b509863e30f71f9b31f4c',1,'GeoDistGeom::n()'],['../structGeoDistBucket_a563c25ee9e8106c1d02efabdd67eb5af.html#a563c25ee9e8106c1d02efabdd67eb5af',1,'GeoDistBucket::n()']]],
+  ['n_0',['n',['../structTpcpatchPointsState_acc3c456811ea146c046e1771575beeef.html#acc3c456811ea146c046e1771575beeef',1,'TpcpatchPointsState::n()'],['../structDistGeom_a13ad8a5a7a83b73f9be2eef15b4c8a0d.html#a13ad8a5a7a83b73f9be2eef15b4c8a0d',1,'DistGeom::n()'],['../structDistBucket_af83e39f4b21ffd9f83758dc215274d59.html#af83e39f4b21ffd9f83758dc215274d59',1,'DistBucket::n()']]],
   ['n_5ffree_1',['n_free',['../allocator__test_8c_a29d9718621d0aa5a45a3bac854b5f96a.html#a29d9718621d0aa5a45a3bac854b5f96a',1,'allocator_test.c']]],
   ['n_5finst_2',['n_inst',['../structtrip__t_a7d7a43dd96dcc61522618315b2711a54.html#a7d7a43dd96dcc61522618315b2711a54',1,'trip_t::n_inst()'],['../structtrip__record_a13260e63673e014ea9d0f5afaefe73a9.html#a13260e63673e014ea9d0f5afaefe73a9',1,'trip_record::n_inst()']]],
   ['n_5fmalloc_3',['n_malloc',['../allocator__test_8c_a418d1c914bf60d962a691a62692fab82.html#a418d1c914bf60d962a691a62692fab82',1,'allocator_test.c']]],
@@ -118,7 +118,7 @@ var searchData=
   ['nai_5ftcbuffer_5fgeo_5fanalytic_115',['nai_tcbuffer_geo_analytic',['../meos_2src_2cbuffer_2tcbuffer__distance_8c_aa11312e9a48ec3c359ff831b3b45007a.html#aa11312e9a48ec3c359ff831b3b45007a',1,'tcbuffer_distance.c']]],
   ['nai_5ftcbuffer_5ftcbuffer_116',['NAI_tcbuffer_tcbuffer',['../group__mobilitydb__cbuffer__dist_ga90fb1106af926d2faae6a906f3f1a738.html#ga90fb1106af926d2faae6a906f3f1a738',1,'tcbuffer_distance.c']]],
   ['nai_5ftcbuffer_5ftcbuffer_117',['nai_tcbuffer_tcbuffer',['../group__meos__cbuffer__dist_gad05451cf8c3051e86d4dddb688ceecb6.html#gad05451cf8c3051e86d4dddb688ceecb6',1,'nai_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2):&#160;tcbuffer_distance.c'],['../group__meos__cbuffer__dist_gad05451cf8c3051e86d4dddb688ceecb6.html#gad05451cf8c3051e86d4dddb688ceecb6',1,'nai_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2):&#160;tcbuffer_distance.c']]],
-  ['nai_5ftcbufferseq_118',['nai_tcbufferseq',['../meos_2src_2cbuffer_2tcbuffer__distance_8c_abbc2f7b8a63fdd35a5fab74fb88aba56.html#abbc2f7b8a63fdd35a5fab74fb88aba56',1,'tcbuffer_distance.c']]],
+  ['nai_5ftcbufferseq_118',['nai_tcbufferseq',['../meos_2src_2cbuffer_2tcbuffer__distance_8c_ab020cd6c31419e39a19b7940a9f9b12c.html#ab020cd6c31419e39a19b7940a9f9b12c',1,'tcbuffer_distance.c']]],
   ['nai_5ftgeo_5fgeo_119',['NAI_tgeo_geo',['../group__mobilitydb__geo__dist_ga79854caf96e54010b8e4689146a11723.html#ga79854caf96e54010b8e4689146a11723',1,'tgeo_distance.c']]],
   ['nai_5ftgeo_5fgeo_120',['nai_tgeo_geo',['../group__meos__geo__distance_gaee747786a54087bcc8924f32b2d4287c.html#gaee747786a54087bcc8924f32b2d4287c',1,'nai_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs):&#160;tgeo_distance.c'],['../group__meos__geo__distance_gaee747786a54087bcc8924f32b2d4287c.html#gaee747786a54087bcc8924f32b2d4287c',1,'nai_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs):&#160;tgeo_distance.c']]],
   ['nai_5ftgeo_5ftgeo_121',['NAI_tgeo_tgeo',['../group__mobilitydb__geo__dist_ga60779ce0d29f9c095e5c3fad7f87dd48.html#ga60779ce0d29f9c095e5c3fad7f87dd48',1,'tgeo_distance.c']]],
@@ -154,7 +154,7 @@ var searchData=
   ['namestrcmp_151',['namestrcmp',['../mobilitydb_2src_2temporal_2meos__catalog_8c_a69abbf281e160ede6aa5ecb8fa95ffdc.html#a69abbf281e160ede6aa5ecb8fa95ffdc',1,'meos_catalog.c']]],
   ['nargs_152',['nargs',['../structIndexableFunction_a7a9ba75a3a983d0b2f80195326e3f96b.html#a7a9ba75a3a983d0b2f80195326e3f96b',1,'IndexableFunction']]],
   ['nbins_153',['nbins',['../structSpanBinState_a349567708657738c8931649bc0e35b50.html#a349567708657738c8931649bc0e35b50',1,'SpanBinState']]],
-  ['nbk_154',['nbk',['../structGeoDistGeom_ae2c554f9362008223f5f27edd5df8d5a.html#ae2c554f9362008223f5f27edd5df8d5a',1,'GeoDistGeom']]],
+  ['nbk_154',['nbk',['../structDistGeom_a27433e1c638af181da5965ae067abe68.html#a27433e1c638af181da5965ae067abe68',1,'DistGeom']]],
   ['nchild_155',['nchild',['../structSPTree_a7528380177853718d42d145d66ac36e6.html#a7528380177853718d42d145d66ac36e6',1,'SPTree']]],
   ['nd_5fbox_156',['ND_BOX',['../tspatial__analyze_8h_af815388cbbe239a2be56c40e5b39a266.html#af815388cbbe239a2be56c40e5b39a266',1,'tspatial_analyze.h']]],
   ['nd_5fbox_5fabove_157',['nd_box_above',['../tspatial__selfuncs_8c_aab83fadb639ccbee52ba517c27432b31.html#aab83fadb639ccbee52ba517c27432b31',1,'tspatial_selfuncs.c']]],

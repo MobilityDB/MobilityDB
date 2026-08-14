@@ -18,7 +18,7 @@ var searchData=
   ['bd_15',['bd',['../structTgeoarrPair_a1fee3c3a71562837a64145a613e64e4d.html#a1fee3c3a71562837a64145a613e64e4d',1,'TgeoarrPair']]],
   ['bfac_16',['bfac',['../structAFFINE_a57ad0d85a7707e8209ad2f96c37269ee.html#a57ad0d85a7707e8209ad2f96c37269ee',1,'AFFINE']]],
   ['bins_17',['bins',['../structSpaceSplit_ab8bea97af4eea4b3c790f6297c13c006.html#ab8bea97af4eea4b3c790f6297c13c006',1,'SpaceSplit']]],
-  ['bks_18',['bks',['../structGeoDistGeom_a431911fba587bc8e0fb87b4938f12b25.html#a431911fba587bc8e0fb87b4938f12b25',1,'GeoDistGeom']]],
+  ['bks_18',['bks',['../structDistGeom_aa0ca30f402a0bbf76664c998b4478da6.html#aa0ca30f402a0bbf76664c998b4478da6',1,'DistGeom']]],
   ['bm_19',['bm',['../structSTboxGridState_a28bff399f8d06e682b52b3fed83c6ea3.html#a28bff399f8d06e682b52b3fed83c6ea3',1,'STboxGridState']]],
   ['border_5finc_20',['border_inc',['../structPcpointInTpcboxArgs_aa13ca093933b696c5639a82d2107b250.html#aa13ca093933b696c5639a82d2107b250',1,'PcpointInTpcboxArgs']]],
   ['bottom_21',['BOTTOM',['../tgeo__restrict_8c_a95369c5b8afe2eec95c1dd3e1bdb9f58.html#a95369c5b8afe2eec95c1dd3e1bdb9f58',1,'tgeo_restrict.c']]],

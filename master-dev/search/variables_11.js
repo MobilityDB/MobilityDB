@@ -40,8 +40,8 @@ var searchData=
   ['projection_37',['projection',['../structstruct__PROJSRSCacheItem_ad65e38be086f744a4112fee03107d4a0.html#ad65e38be086f744a4112fee03107d4a0',1,'struct_PROJSRSCacheItem']]],
   ['projsrscachecount_38',['PROJSRSCacheCount',['../structstruct__MEOSPROJSRSCache_aead855d5d0c1d78f1ffd430c6a411482.html#aead855d5d0c1d78f1ffd430c6a411482',1,'struct_MEOSPROJSRSCache']]],
   ['pts_39',['pts',['../structTpcpatchPointsState_a714247f92da3ea5fe2c783609c9d17f4.html#a714247f92da3ea5fe2c783609c9d17f4',1,'TpcpatchPointsState']]],
-  ['px_40',['px',['../structGeoDistShortLine_ab9b1e8d31a51048813fde7dad3f98a90.html#ab9b1e8d31a51048813fde7dad3f98a90',1,'GeoDistShortLine']]],
+  ['px_40',['px',['../structDistShortLine_a7b766ce92a73d0c22229e8a636f38606.html#a7b766ce92a73d0c22229e8a636f38606',1,'DistShortLine']]],
   ['px_5flocal_41',['px_local',['../structEndpointEdgeState_a91b860be04aea7ac9d5cd5c65173183e.html#a91b860be04aea7ac9d5cd5c65173183e',1,'EndpointEdgeState']]],
-  ['py_42',['py',['../structGeoDistShortLine_a5c62e3aa99a8cb40bb1c057e855005b5.html#a5c62e3aa99a8cb40bb1c057e855005b5',1,'GeoDistShortLine']]],
+  ['py_42',['py',['../structDistShortLine_a93c56227720ed2f98097b6bd2d917ccd.html#a93c56227720ed2f98097b6bd2d917ccd',1,'DistShortLine']]],
   ['py_5flocal_43',['py_local',['../structEndpointEdgeState_ab85ece499ccf297e32b7be5c877399e5.html#ab85ece499ccf297e32b7be5c877399e5',1,'EndpointEdgeState']]]
 ];

@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['n_0',['n',['../structGeoDistGeom_a05f85d51df9b509863e30f71f9b31f4c.html#a05f85d51df9b509863e30f71f9b31f4c',1,'GeoDistGeom::n()'],['../structTpcpatchPointsState_acc3c456811ea146c046e1771575beeef.html#acc3c456811ea146c046e1771575beeef',1,'TpcpatchPointsState::n()'],['../structGeoDistBucket_a563c25ee9e8106c1d02efabdd67eb5af.html#a563c25ee9e8106c1d02efabdd67eb5af',1,'GeoDistBucket::n()']]],
+  ['n_0',['n',['../structDistGeom_a13ad8a5a7a83b73f9be2eef15b4c8a0d.html#a13ad8a5a7a83b73f9be2eef15b4c8a0d',1,'DistGeom::n()'],['../structTpcpatchPointsState_acc3c456811ea146c046e1771575beeef.html#acc3c456811ea146c046e1771575beeef',1,'TpcpatchPointsState::n()'],['../structDistBucket_af83e39f4b21ffd9f83758dc215274d59.html#af83e39f4b21ffd9f83758dc215274d59',1,'DistBucket::n()']]],
   ['n_5ffree_1',['n_free',['../allocator__test_8c_a29d9718621d0aa5a45a3bac854b5f96a.html#a29d9718621d0aa5a45a3bac854b5f96a',1,'allocator_test.c']]],
   ['n_5finst_2',['n_inst',['../structtrip__record_a13260e63673e014ea9d0f5afaefe73a9.html#a13260e63673e014ea9d0f5afaefe73a9',1,'trip_record::n_inst()'],['../structtrip__t_a7d7a43dd96dcc61522618315b2711a54.html#a7d7a43dd96dcc61522618315b2711a54',1,'trip_t::n_inst()']]],
   ['n_5fmalloc_3',['n_malloc',['../allocator__test_8c_a418d1c914bf60d962a691a62692fab82.html#a418d1c914bf60d962a691a62692fab82',1,'allocator_test.c']]],
@@ -8,7 +8,7 @@ var searchData=
   ['name_5',['name',['../structcommune__record_a4d877b3b3fca064a8dea98a102e6b14f.html#a4d877b3b3fca064a8dea98a102e6b14f',1,'commune_record::name()'],['../structregion__record_a0819a9825334d0af7936976c47d33658.html#a0819a9825334d0af7936976c47d33658',1,'region_record::name()'],['../structSPHEROID_afc491fd4746b3593ff8424c1018c1db5.html#afc491fd4746b3593ff8424c1018c1db5',1,'SPHEROID::name()']]],
   ['nargs_6',['nargs',['../structIndexableFunction_a7a9ba75a3a983d0b2f80195326e3f96b.html#a7a9ba75a3a983d0b2f80195326e3f96b',1,'IndexableFunction']]],
   ['nbins_7',['nbins',['../structSpanBinState_a349567708657738c8931649bc0e35b50.html#a349567708657738c8931649bc0e35b50',1,'SpanBinState']]],
-  ['nbk_8',['nbk',['../structGeoDistGeom_ae2c554f9362008223f5f27edd5df8d5a.html#ae2c554f9362008223f5f27edd5df8d5a',1,'GeoDistGeom']]],
+  ['nbk_8',['nbk',['../structDistGeom_a27433e1c638af181da5965ae067abe68.html#a27433e1c638af181da5965ae067abe68',1,'DistGeom']]],
   ['nchild_9',['nchild',['../structSPTree_a7528380177853718d42d145d66ac36e6.html#a7528380177853718d42d145d66ac36e6',1,'SPTree']]],
   ['ndims_10',['ndims',['../structND__STATS__T_ae37cd6d8f2750e790f7ef01b3261dbb4.html#ae37cd6d8f2750e790f7ef01b3261dbb4',1,'ND_STATS_T::ndims()'],['../structBitMatrix_a0f6064b517de8b659f9b8ffd808e2254.html#a0f6064b517de8b659f9b8ffd808e2254',1,'BitMatrix::ndims()']]],
   ['nedges_11',['nedges',['../structGeoClipCtx_a19abc18d84b2e256e82dfeeae4507a74.html#a19abc18d84b2e256e82dfeeae4507a74',1,'GeoClipCtx']]],

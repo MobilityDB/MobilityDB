@@ -5,7 +5,7 @@ var searchData=
   ['h3_5fcellops_2',['h3_cellops',['../th3index__ops_8c_a43a79b979fc9f06250f1a93b3ec1bf93.html#a43a79b979fc9f06250f1a93b3ec1bf93',1,'th3index_ops.c']]],
   ['has_5fm_3',['has_m',['../structwkb__parse__state_a251d9d5dda4e1edeb26a3b272de01373.html#a251d9d5dda4e1edeb26a3b272de01373',1,'wkb_parse_state']]],
   ['has_5fnodata_4',['has_nodata',['../structRaquet_a337b2e723e68954960e8963687ea7ac5.html#a337b2e723e68954960e8963687ea7ac5',1,'Raquet::has_nodata()'],['../structRasterValueGdalCtx_a1079289cc6e8c6df1d5699075e3b4b0c.html#a1079289cc6e8c6df1d5699075e3b4b0c',1,'RasterValueGdalCtx::has_nodata()']]],
-  ['has_5fpoly_5',['has_poly',['../structGeoDistGeom_af3418c16c54b7b06edca6584489a658c.html#af3418c16c54b7b06edca6584489a658c',1,'GeoDistGeom']]],
+  ['has_5fpoly_5',['has_poly',['../structDistGeom_af5ad5a5828596ed4ff33b8e3559bc3a3.html#af5ad5a5828596ed4ff33b8e3559bc3a3',1,'DistGeom']]],
   ['has_5fsrid_6',['has_srid',['../structmeos__wkb__parse__state_aea6f2f74948f64e4102c7a977cf58851.html#aea6f2f74948f64e4102c7a977cf58851',1,'meos_wkb_parse_state::has_srid()'],['../structwkb__parse__state_a6c260a8a91ed5126819955c0babe12ae.html#a6c260a8a91ed5126819955c0babe12ae',1,'wkb_parse_state::has_srid()']]],
   ['has_5fz_7',['has_z',['../structwkb__parse__state_a0089d14289f64fbbc403829daee85424.html#a0089d14289f64fbbc403829daee85424',1,'wkb_parse_state']]],
   ['hash_8',['hash',['../structTemporalAnalyzeExtraData_a398c8f74f4dd4d6c8f79f7b0eabfe057.html#a398c8f74f4dd4d6c8f79f7b0eabfe057',1,'TemporalAnalyzeExtraData']]],
