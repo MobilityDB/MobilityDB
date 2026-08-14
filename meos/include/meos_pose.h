@@ -114,6 +114,8 @@ extern Pose *pose_from_geopose(const char *json);
 extern char *pose_as_geopose(const Pose *pose, int conformance, int precision);
 extern Temporal *tpose_from_geopose(const char *json);
 extern char *tpose_as_geopose(const Temporal *temp, int conformance, int precision);
+extern char *tpose_as_geopose_stream_header(const Temporal *temp, int precision);
+extern char *tpose_as_geopose_stream_element(const Temporal *temp, const TInstant *inst, int precision);
 extern GSERIALIZED *pose_apply_geo(const Pose *pose, const GSERIALIZED *body);
 extern Temporal *tpose_apply_geo(const Temporal *temp, const GSERIALIZED *body);
 

@@ -286,6 +286,55 @@ int main(void)
   free(s1); free(again); free(out); free(irregular_back); free(irregular);
 
   /*--------------------------------------------------------------------------
+   * A stream is written a piece at a time
+   *------------------------------------------------------------------------*/
+
+  /* A Stream is the open-ended member of the Composite Sequence classes. The
+   * standard splits it into two documents: a header that appears once, and an
+   * element repeated for every pose that arrives. A producer accumulating its
+   * value writes the header from that value and an element per instant, so
+   * both speak of the same outer frame. */
+  meos_errno_reset();
+  Temporal *stream = tpose_in("[Geodpose(Point(0 0), 0)@2026-01-01, "
+    "Geodpose(Point(1 0), 0)@2026-01-02, Geodpose(Point(1 1), 0)@2026-01-05]");
+  assert(stream != NULL);
+  assert(meos_errno() == 0);
+
+  char *sh = tpose_as_geopose_stream_header(stream, 6);
+  assert(sh != NULL);
+  ensure_member("Stream header", sh, "\"transitionModel\"");
+  ensure_member("Stream header", sh, "\"outerFrame\"");
+  /* The header states neither how many poses there are nor when they end:
+   * more may arrive, which is what distinguishes a stream from a series. */
+  ensure_no_member("Stream header", sh, "\"poseCount\"");
+  ensure_no_member("Stream header", sh, "\"stopInstant\"");
+  ensure_no_member("Stream header", sh, "\"trailer\"");
+
+  /* Every instant yields an element carrying its frame and its time */
+  int ninsts = temporal_num_instants(stream);
+  assert(ninsts == 3);
+  for (int i = 0; i < ninsts; i++)
+  {
+    TInstant *inst = temporal_instant_n(stream, i + 1);
+    assert(inst != NULL);
+    char *se = tpose_as_geopose_stream_element(stream, inst, 6);
+    assert(se != NULL);
+    ensure_member("Stream element", se, "\"streamElement\"");
+    ensure_member("Stream element", se, "\"frame\"");
+    ensure_member("Stream element", se, "\"validTime\"");
+    free(se); free(inst);
+  }
+
+  /* The first element sits at the tangent point the header anchors, so its
+   * frame is the identity translation */
+  TInstant *first = temporal_instant_n(stream, 1);
+  char *se1 = tpose_as_geopose_stream_element(stream, first, 6);
+  printf("Stream first element: %s\n", se1);
+  assert(strstr(se1, "translation=[0, 0, 0]") != NULL);
+  free(se1); free(first);
+  free(sh); free(stream);
+
+  /*--------------------------------------------------------------------------
    * The error paths
    *------------------------------------------------------------------------*/
 
@@ -317,6 +366,27 @@ int main(void)
     bad ? "non-NULL" : "NULL", meos_errno());
   assert(bad == NULL);
   assert(meos_errno() != 0);
+
+  /* A stream is anchored by the value it is written from, so a planar value
+   * has no frame to anchor and neither document can be written */
+  meos_errno_reset();
+  Temporal *planar_s = tpose_in("[Pose(Point(0 0), 0)@2026-01-01, "
+    "Pose(Point(1 0), 0)@2026-01-02]");
+  assert(planar_s != NULL);
+  char *bad_sh = tpose_as_geopose_stream_header(planar_s, 6);
+  printf("stream header(planar value): %s, errno %d\n",
+    bad_sh ? "non-NULL" : "NULL", meos_errno());
+  assert(bad_sh == NULL);
+  assert(meos_errno() != 0);
+
+  meos_errno_reset();
+  TInstant *planar_i = temporal_instant_n(planar_s, 1);
+  char *bad_se = tpose_as_geopose_stream_element(planar_s, planar_i, 6);
+  printf("stream element(planar value): %s, errno %d\n",
+    bad_se ? "non-NULL" : "NULL", meos_errno());
+  assert(bad_se == NULL);
+  assert(meos_errno() != 0);
+  free(planar_i); free(planar_s);
 
   /* Every class of the standard places its pose in a topocentric frame on
    * the surface of the Earth, which a planar pose does not have */

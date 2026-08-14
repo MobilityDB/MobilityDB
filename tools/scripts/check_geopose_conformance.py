@@ -59,11 +59,27 @@ CLASSES = [
         'GeoPose.Composite.Sequence.Series.Regular.Schema.json'),
     ('innerFrameAndTimeSeries', 'Irregular Series',
         'GeoPose.Composite.Sequence.Series.Irregular.Schema.json'),
+    # A stream is written as two documents: the header once, then one element
+    # per pose. `outerFrame` comes after the two Series members because a
+    # Series carries an outer frame as well, and its own member names it more
+    # precisely; a stream header is what is left holding only an outer frame.
+    ('streamElement', 'Stream element',
+        'GeoPose.Composite.Sequence.StreamElement.Schema.json'),
+    ('outerFrame', 'Stream header',
+        'GeoPose.Composite.Sequence.StreamHeader.Schema.json'),
     ('quaternion', 'Basic-Quaternion',
         'GeoPose.Basic.Quaternion.Schema.json'),
     ('angles', 'Basic-YPR',
         'GeoPose.Basic.YPR.Schema.json'),
 ]
+
+# The classes the SQL surface writes, and which the expected output therefore
+# has to contain for this check to mean anything. The two stream documents are
+# written through the C API alone -- a stream is emitted a piece at a time by a
+# producer, which a query is not -- so they are validated wherever they appear
+# rather than demanded here; `meos/test/geopose_test.c` is what exercises them.
+REQUIRED = ('Regular Series', 'Irregular Series', 'Basic-Quaternion',
+    'Basic-YPR')
 
 TYPES = {
     'object': dict,
@@ -206,7 +222,7 @@ def main():
             os.path.relpath(EXPECTED, ROOT))
         return 1
 
-    missing = [name for _, name, _ in CLASSES if name not in seen]
+    missing = [name for name in REQUIRED if name not in seen]
     if missing:
         print('check_geopose_conformance: no document emitted for %s' %
             ', '.join(missing))
