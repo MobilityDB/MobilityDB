@@ -386,8 +386,20 @@ SELECT tTouches(tcbuffer '[Cbuffer(Point(-3 0),0)@2000-01-01, Cbuffer(Point(3 0)
 SELECT tTouches(tcbuffer '[Cbuffer(Point(-3 0),0)@2000-01-01, Cbuffer(Point(3 0),0)@2000-01-03]', geometry 'Linestring(0 -5,0 5)');
 -- A point reaching an end point of the line touches it there
 SELECT tTouches(tcbuffer '[Cbuffer(Point(-3 0),0)@2000-01-01, Cbuffer(Point(5 0),0)@2000-01-03]', geometry 'Linestring(-5 0,5 0)');
+-- A geometry contains a point where the point lies in its open interior, and
+-- covers it where the point lies in the closed geometry, so the two differ at
+-- the boundary crossings
+SELECT tContains(geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))', tcbuffer '[Cbuffer(Point(-3 0),0)@2000-01-01, Cbuffer(Point(3 0),0)@2000-01-03]');
+SELECT tCovers(geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))', tcbuffer '[Cbuffer(Point(-3 0),0)@2000-01-01, Cbuffer(Point(3 0),0)@2000-01-03]');
+-- A geometry whose boundary is empty contains the point wherever it covers it
+SELECT tContains(geometry 'Point(0 0)', tcbuffer '[Cbuffer(Point(-3 0),0)@2000-01-01, Cbuffer(Point(3 0),0)@2000-01-03]');
+SELECT tCovers(geometry 'Point(0 0)', tcbuffer '[Cbuffer(Point(-3 0),0)@2000-01-01, Cbuffer(Point(3 0),0)@2000-01-03]');
+-- A line covers the point it carries, and contains it away from its end points
+SELECT tCovers(geometry 'Linestring(-5 0,5 0)', tcbuffer '[Cbuffer(Point(-3 0),0)@2000-01-01, Cbuffer(Point(3 0),0)@2000-01-03]');
+SELECT tContains(geometry 'Linestring(-5 0,5 0)', tcbuffer '[Cbuffer(Point(-3 0),0)@2000-01-01, Cbuffer(Point(5 0),0)@2000-01-03]');
 -- A single disc of a strictly positive radius keeps the disc semantics
 SELECT tIntersects(tcbuffer '[Cbuffer(Point(-3 0),0)@2000-01-01, Cbuffer(Point(3 0),0.5)@2000-01-03]', geometry 'Point(0 0)');
+SELECT tContains(geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))', tcbuffer '[Cbuffer(Point(-3 0),0)@2000-01-01, Cbuffer(Point(3 0),0.5)@2000-01-03]');
 SELECT tTouches(tcbuffer '[Cbuffer(Point(-3 0),0)@2000-01-01, Cbuffer(Point(3 0),0.5)@2000-01-03]', geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))');
 
 -------------------------------------------------------------------------------
