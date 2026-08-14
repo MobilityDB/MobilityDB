@@ -1462,7 +1462,7 @@ tgeompoint_to_tgeometry(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEOMPOINT(temp, NULL);
-  return tgeom_tgeog(temp, TPOINT_TO_TGEO);
+  return tgeo_tpoint(temp, TPOINT_TO_TGEO);
 }
 
 /**
