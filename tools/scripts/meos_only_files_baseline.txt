@@ -1,0 +1,74 @@
+# Findings of tools/scripts/check_meos_only_files.py that are
+# grandfathered in. The list only shrinks: a new violation
+# fails the check. Regenerate with --rebaseline after a split.
+meos/src/geo/postgis_funcs.c:66: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/geo/tgeo_spatialfuncs.c:790: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/geo/tspatial.c:353: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/geo/tspatial_transform_meos.c:213: MEOS conditional inside a MEOS-only file
+meos/src/geo/tspatial_transform_meos.c:236: MEOS conditional inside a MEOS-only file
+meos/src/geo/tspatial_transform_meos.c:30: MEOS conditional inside a MEOS-only file
+meos/src/geo/tspatial_transform_meos.c:36: MEOS conditional inside a MEOS-only file
+meos/src/geo/tspatial_transform_meos.c:653: MEOS conditional inside a MEOS-only file
+meos/src/geo/tspatial_transform_meos.c:676: MEOS conditional inside a MEOS-only file
+meos/src/geo/tspatial_transform_meos.c:97: MEOS conditional inside a MEOS-only file
+meos/src/h3/h3index.c:106: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/h3/h3index.c:120: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/h3/h3index.c:558: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/h3/h3index.c:643: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/h3/h3index.c:753: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/h3/h3index.c:771: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/h3/h3index.c:789: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/h3/h3index.c:808: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/h3/h3index.c:826: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/h3/h3index.c:845: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/h3/h3index.c:864: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/h3/h3index.c:888: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/h3/h3index.c:92: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/h3/h3index_sets.c:111: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/h3/h3index_sets.c:153: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/h3/h3index_sets.c:201: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/h3/h3index_sets.c:242: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/h3/h3index_sets.c:278: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/h3/h3index_sets.c:315: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/h3/h3index_sets.c:365: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/h3/h3index_sets.c:394: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/h3/h3index_sets.c:427: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/json/jsonbset.c:353: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/npoint/npoint.c:48: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/pointcloud/schema_hook.c:18: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/quadbin/CMakeLists.txt: quadbinset_meos.c is compiled into the PG extension: list it inside if(MEOS), or drop the _meos suffix
+meos/src/quadbin/quadbinset_meos.c: quadbin_cell_to_children_set() is called from mobilitydb/src: the PG extension needs it, so it is not MEOS-only
+meos/src/quadbin/quadbinset_meos.c: quadbin_grid_disk() is called from mobilitydb/src: the PG extension needs it, so it is not MEOS-only
+meos/src/temporal/doublen.c:131: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/temporal/doublen.c:202: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/temporal/doublen.c:63: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/temporal/error.c:153: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/temporal/error.c:226: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/temporal/error.c:42: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/temporal/error.c:68: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/temporal/meos.c:137: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/temporal/meos.c:186: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/temporal/meos.c:215: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/temporal/meos.c:82: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/temporal/meos_catalog.c:1083: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/temporal/meos_catalog.c:1285: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/temporal/meos_catalog.c:1331: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/temporal/meos_catalog.c:1402: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/temporal/meos_catalog.c:811: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/temporal/meos_catalog.c:869: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/temporal/meos_catalog.c:904: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/temporal/set.c:804: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/temporal/skiplist.c:186: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/temporal/skiplist.c:413: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/temporal/skiplist.c:49: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/temporal/skiplist.c:575: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/temporal/skiplist.c:60: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/temporal/skiplist.c:762: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/temporal/spanset.c:1068: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/temporal/temporal.c:1643: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/temporal/temporal.c:284: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/temporal/temporal.c:343: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/temporal/temporal_aggfuncs.c:62: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/temporal/temporal_boxops.c:695: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/temporal/tsequence.c:1253: file-scope MEOS conditional: move the definition to the module's _meos.c
+meos/src/temporal/tsequenceset.c:1400: file-scope MEOS conditional: move the definition to the module's _meos.c
