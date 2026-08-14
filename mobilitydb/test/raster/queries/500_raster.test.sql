@@ -407,6 +407,32 @@ SELECT raquetRead(
   decode('49492a00080000000b000001030001000000020000000101030001000000020000000201030001000000080000000301030001000000010000000601030001000000010000001101040001000000920000001501030001000000010000001601030001000000020000001701040001000000040000001c01030001000000010000005301030001000000010000000000000001020304', 'hex'));
 
 -------------------------------------------------------------------------------
+-- raquet (Hex)WKB round trip
+--
+-- The tile carries its pixels and its QUADBIN georeferencing in one value, so
+-- it round-trips through a portable byte string with no spatial extension
+-- involved, exactly as the sibling h3index cell does.
+-------------------------------------------------------------------------------
+
+SELECT raquetFromBinary(asBinary(raquet('\x01020304'::bytea, 2, 2,
+         5193776270265024512::bigint, 'UINT8')))
+       = raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'UINT8');
+
+SELECT raquetFromHexWKB(asHexWKB(raquet('\x0102030405060708'::bytea, 2, 2,
+         5193776270265024512::bigint, 'INT16', -9999.0)))
+       = raquet('\x0102030405060708'::bytea, 2, 2, 5193776270265024512::bigint,
+         'INT16', -9999.0);
+
+-- The endianness argument is accepted on both output forms.
+SELECT raquetFromBinary(asBinary(raquet('\x01020304'::bytea, 2, 2,
+         5193776270265024512::bigint, 'UINT8'), 'XDR'))
+       = raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'UINT8');
+
+SELECT raquetFromHexWKB(asHexWKB(raquet('\x01020304'::bytea, 2, 2,
+         5193776270265024512::bigint, 'UINT8'), 'NDR'))
+       = raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'UINT8');
+
+-------------------------------------------------------------------------------
 -- raquet accessors
 -------------------------------------------------------------------------------
 

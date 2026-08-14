@@ -211,6 +211,44 @@ GROUP BY t.tripid, t.trip;
 		</itemizedlist>
 	</sect1>
 
+	<sect1 xml:id="raquet_serialization">
+		<title>Serialización de Raquet</title>
+
+		<para>Las funciones <varname>asBinary</varname> y <varname>asHexWKB</varname> serializan un valor <varname>raquet</varname>, y <link linkend="raquetFromBinary"><varname>raquetFromBinary</varname></link> y <link linkend="raquetFromHexWKB"><varname>raquetFromHexWKB</varname></link> lo reconstruyen. Una tesela lleva sus píxeles y su georreferenciación QUADBIN en un único valor, de modo que hace un viaje de ida y vuelta a través de una cadena de bytes portable sin intervención de ninguna extensión espacial, y la forma hexadecimal permite que una columna de teselas haga ese viaje mediante un <varname>COPY</varname> basado en texto. Ambas funciones de salida aceptan un argumento opcional de ordenación de bytes, <varname>NDR</varname> para little-endian o <varname>XDR</varname> para big-endian, cuyo valor predeterminado es la ordenación del servidor.</para>
+
+		<itemizedlist>
+			<listitem xml:id="raquet_asBinary">
+				<indexterm significance="normal"><primary><varname>asBinary</varname></primary></indexterm>
+				<para>Devolver la representación Well-Known Binary (WKB) de una tesela Raquet</para>
+				<para><varname>asBinary(raquet,endianencoding text DEFAULT '') → bytea</varname></para>
+			</listitem>
+
+			<listitem xml:id="raquet_asHexWKB">
+				<indexterm significance="normal"><primary><varname>asHexWKB</varname></primary></indexterm>
+				<para>Devolver la representación Well-Known Binary codificada en hexadecimal ASCII (HexWKB) de una tesela Raquet</para>
+				<para><varname>asHexWKB(raquet,endianencoding text DEFAULT '') → text</varname></para>
+			</listitem>
+
+			<listitem xml:id="raquetFromBinary">
+				<indexterm significance="normal"><primary><varname>raquetFromBinary</varname></primary></indexterm>
+				<para>Devolver una tesela Raquet a partir de su representación Well-Known Binary (WKB)</para>
+				<para><varname>raquetFromBinary(bytea) → raquet</varname></para>
+			</listitem>
+
+			<listitem xml:id="raquetFromHexWKB">
+				<indexterm significance="normal"><primary><varname>raquetFromHexWKB</varname></primary></indexterm>
+				<para>Devolver una tesela Raquet a partir de su representación Well-Known Binary codificada en hexadecimal ASCII (HexWKB)</para>
+				<para><varname>raquetFromHexWKB(text) → raquet</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT raquetFromHexWKB(asHexWKB(raquet('\x01020304'::bytea, 2, 2,
+  5193776270265024512, 'UINT8')))
+  = raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'UINT8');
+-- true
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
 	<sect1 xml:id="raquet_accessors">
 		<title>Accesores y Comparación de Raquet</title>
 

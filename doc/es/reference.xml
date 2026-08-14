@@ -3915,6 +3915,27 @@
 		</sect2>
 
 		<sect2>
+			<title>Serialización de Raquet</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="raquet_asBinary"><varname>asBinary</varname></link>: Devolver la representación Well-Known Binary (WKB) de una tesela Raquet</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="raquet_asHexWKB"><varname>asHexWKB</varname></link>: Devolver la representación Well-Known Binary codificada en hexadecimal ASCII (HexWKB) de una tesela Raquet</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="raquetFromBinary"><varname>raquetFromBinary</varname></link>: Devolver una tesela Raquet a partir de su representación Well-Known Binary (WKB)</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="raquetFromHexWKB"><varname>raquetFromHexWKB</varname></link>: Devolver una tesela Raquet a partir de su representación Well-Known Binary codificada en hexadecimal ASCII (HexWKB)</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2>
 			<title>Accesores y Comparación de Raquet</title>
 			<itemizedlist>
 				<listitem>

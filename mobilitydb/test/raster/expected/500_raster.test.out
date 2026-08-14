@@ -347,6 +347,39 @@ FROM t;
 SELECT raquetRead(
   decode('49492a00080000000b000001030001000000020000000101030001000000020000000201030001000000080000000301030001000000010000000601030001000000010000001101040001000000920000001501030001000000010000001601030001000000020000001701040001000000040000001c01030001000000010000005301030001000000010000000000000001020304', 'hex'));
 ERROR:  Raster has no geotransform; cannot derive its QUADBIN cell: in-memory raster
+SELECT raquetFromBinary(asBinary(raquet('\x01020304'::bytea, 2, 2,
+         5193776270265024512::bigint, 'UINT8')))
+       = raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'UINT8');
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT raquetFromHexWKB(asHexWKB(raquet('\x0102030405060708'::bytea, 2, 2,
+         5193776270265024512::bigint, 'INT16', -9999.0)))
+       = raquet('\x0102030405060708'::bytea, 2, 2, 5193776270265024512::bigint,
+         'INT16', -9999.0);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT raquetFromBinary(asBinary(raquet('\x01020304'::bytea, 2, 2,
+         5193776270265024512::bigint, 'UINT8'), 'XDR'))
+       = raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'UINT8');
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT raquetFromHexWKB(asHexWKB(raquet('\x01020304'::bytea, 2, 2,
+         5193776270265024512::bigint, 'UINT8'), 'NDR'))
+       = raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'UINT8');
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT quadbin(tile), width(tile), height(tile), pixtype(tile), nodata(tile)
 FROM (SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint,
         'UINT8') AS tile) t;

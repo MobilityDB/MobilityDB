@@ -209,6 +209,44 @@ GROUP BY t.tripid, t.trip;
 		</itemizedlist>
 	</sect1>
 
+	<sect1 xml:id="raquet_serialization">
+		<title>Raquet Serialization</title>
+
+		<para>The functions <varname>asBinary</varname> and <varname>asHexWKB</varname> serialize a <varname>raquet</varname> value, and <link linkend="raquetFromBinary"><varname>raquetFromBinary</varname></link> and <link linkend="raquetFromHexWKB"><varname>raquetFromHexWKB</varname></link> reconstruct it. A tile carries its pixels and its QUADBIN georeferencing in one value, so it round-trips through a portable byte string with no spatial extension involved, and the hexadecimal form lets a tile column round-trip through a text-based <varname>COPY</varname>. Both output functions accept an optional endianness argument, <varname>NDR</varname> for little-endian or <varname>XDR</varname> for big-endian, defaulting to the endianness of the server.</para>
+
+		<itemizedlist>
+			<listitem xml:id="raquet_asBinary">
+				<indexterm significance="normal"><primary><varname>asBinary</varname></primary></indexterm>
+				<para>Return the Well-Known Binary (WKB) representation of a Raquet tile</para>
+				<para><varname>asBinary(raquet,endianencoding text DEFAULT '') → bytea</varname></para>
+			</listitem>
+
+			<listitem xml:id="raquet_asHexWKB">
+				<indexterm significance="normal"><primary><varname>asHexWKB</varname></primary></indexterm>
+				<para>Return the ASCII hex-encoded Well-Known Binary (HexWKB) representation of a Raquet tile</para>
+				<para><varname>asHexWKB(raquet,endianencoding text DEFAULT '') → text</varname></para>
+			</listitem>
+
+			<listitem xml:id="raquetFromBinary">
+				<indexterm significance="normal"><primary><varname>raquetFromBinary</varname></primary></indexterm>
+				<para>Return a Raquet tile from its Well-Known Binary (WKB) representation</para>
+				<para><varname>raquetFromBinary(bytea) → raquet</varname></para>
+			</listitem>
+
+			<listitem xml:id="raquetFromHexWKB">
+				<indexterm significance="normal"><primary><varname>raquetFromHexWKB</varname></primary></indexterm>
+				<para>Return a Raquet tile from its ASCII hex-encoded Well-Known Binary (HexWKB) representation</para>
+				<para><varname>raquetFromHexWKB(text) → raquet</varname></para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT raquetFromHexWKB(asHexWKB(raquet('\x01020304'::bytea, 2, 2,
+  5193776270265024512, 'UINT8')))
+  = raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'UINT8');
+-- true
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
 	<sect1 xml:id="raquet_accessors">
 		<title>Raquet Accessors and Comparison</title>
 

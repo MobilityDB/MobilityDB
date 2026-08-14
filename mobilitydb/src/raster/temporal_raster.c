@@ -498,6 +498,75 @@ Raquet_send(PG_FUNCTION_ARGS)
   PG_RETURN_BYTEA_P(result);
 }
 
+PGDLLEXPORT Datum Raquet_from_wkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raquet_from_wkb);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a Raquet tile from its Well-Known Binary (WKB) representation
+ * @sqlfn raquetFromBinary()
+ */
+Datum
+Raquet_from_wkb(PG_FUNCTION_ARGS)
+{
+  bytea *bytea_wkb = PG_GETARG_BYTEA_P(0);
+  uint8_t *wkb = (uint8_t *) VARDATA(bytea_wkb);
+  Raquet *result = raquet_from_wkb(wkb, VARSIZE(bytea_wkb) - VARHDRSZ);
+  PG_FREE_IF_COPY(bytea_wkb, 0);
+  PG_RETURN_RAQUET_P(result);
+}
+
+PGDLLEXPORT Datum Raquet_from_hexwkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raquet_from_hexwkb);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a Raquet tile from its ASCII hex-encoded Well-Known Binary
+ * (HexWKB) representation
+ * @sqlfn raquetFromHexWKB()
+ */
+Datum
+Raquet_from_hexwkb(PG_FUNCTION_ARGS)
+{
+  text *hexwkb_text = PG_GETARG_TEXT_P(0);
+  char *hexwkb = text_to_cstring(hexwkb_text);
+  Raquet *result = raquet_from_hexwkb(hexwkb);
+  pfree(hexwkb);
+  PG_FREE_IF_COPY(hexwkb_text, 0);
+  PG_RETURN_RAQUET_P(result);
+}
+
+PGDLLEXPORT Datum Raquet_as_wkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raquet_as_wkb);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the Well-Known Binary (WKB) representation of a Raquet tile
+ * @sqlfn asBinary()
+ */
+Datum
+Raquet_as_wkb(PG_FUNCTION_ARGS)
+{
+  Raquet *rq = PG_GETARG_RAQUET_P(0);
+  bytea *result = Datum_as_wkb(fcinfo, RaquetPGetDatum(rq), T_RAQUET, false);
+  PG_FREE_IF_COPY(rq, 0);
+  PG_RETURN_BYTEA_P(result);
+}
+
+PGDLLEXPORT Datum Raquet_as_hexwkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raquet_as_hexwkb);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the ASCII hex-encoded Well-Known Binary (HexWKB)
+ * representation of a Raquet tile
+ * @sqlfn asHexWKB()
+ */
+Datum
+Raquet_as_hexwkb(PG_FUNCTION_ARGS)
+{
+  Raquet *rq = PG_GETARG_RAQUET_P(0);
+  text *result = Datum_as_hexwkb(fcinfo, RaquetPGetDatum(rq), T_RAQUET, false);
+  PG_FREE_IF_COPY(rq, 0);
+  PG_RETURN_TEXT_P(result);
+}
+
 PGDLLEXPORT Datum Raquet_constructor(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Raquet_constructor);
 /**

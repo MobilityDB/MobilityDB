@@ -521,3 +521,22 @@ representation_families:
     - asEWKB
     - asHexWKB
     - asHexEWKB
+- family: raquet_base
+  file: mobilitydb/sql/raster/500_raster.in.sql
+  reference: true
+  begin: "\n * Well-Known Binary representations\n"
+  end: "\n * raquet constructor\n"
+  temps:
+  - temp: raquet
+  syms:
+    FromBinary: Raquet_from_wkb
+    FromHexWKB: Raquet_from_hexwkb
+    asBinary: Raquet_as_wkb
+    asHexWKB: Raquet_as_hexwkb
+  blocks:
+  - lit: "/******************************************************************************\n * Well-Known Binary representations\n *\n * The tile carries its pixels and its QUADBIN georeferencing in one value, so\n * these round-trip a tile through a portable byte string with no spatial\n * extension involved, as the sibling h3index cell does.\n ******************************************************************************/"
+  - ops:
+    - FromBinary
+    - FromHexWKB
+    - asBinary
+    - asHexWKB

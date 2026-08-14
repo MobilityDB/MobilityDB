@@ -90,6 +90,38 @@ CREATE TYPE raquet (
   alignment = double
 );
 
+-- GENERATED-REPRESENTATIONS-BEGIN raquet_base — tools/codegen/inherited/generate.py from templates/representations.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/representation_families.yaml and re-run.
+/******************************************************************************
+ * Well-Known Binary representations
+ *
+ * The tile carries its pixels and its QUADBIN georeferencing in one value, so
+ * these round-trip a tile through a portable byte string with no spatial
+ * extension involved, as the sibling h3index cell does.
+ ******************************************************************************/
+
+CREATE FUNCTION raquetFromBinary(bytea)
+  RETURNS raquet
+  AS 'MODULE_PATHNAME', 'Raquet_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION raquetFromHexWKB(text)
+  RETURNS raquet
+  AS 'MODULE_PATHNAME', 'Raquet_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asBinary(raquet, endianenconding text DEFAULT '')
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Raquet_as_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asHexWKB(raquet, endianenconding text DEFAULT '')
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Raquet_as_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- GENERATED-REPRESENTATIONS-END raquet_base
+
 /******************************************************************************
  * raquet constructor
  ******************************************************************************/
