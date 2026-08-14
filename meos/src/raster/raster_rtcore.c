@@ -229,6 +229,7 @@ raster_as_hexwkb(const Raster *rast, size_t *size_out)
  * @brief Return the number of bands of a raster
  * @param[in] rast Raster
  * @return On error, return -1
+ * @csqlfn #Raster_num_bands()
  */
 int
 raster_num_bands(const Raster *rast)

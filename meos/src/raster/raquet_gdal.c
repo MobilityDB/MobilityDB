@@ -198,6 +198,7 @@ cleanup:
  * @param[in] path Path to a GDAL-readable raster file
  * @param[in] quadbin CARTO QUADBIN cell identifying the Web-Mercator tile, or 0
  * to derive it from the raster geotransform and EPSG:3857 spatial reference
+ * @csqlfn #Raquet_read()
  */
 Raquet *
 raquet_read(const char *path, uint64 quadbin)

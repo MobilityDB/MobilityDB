@@ -328,6 +328,7 @@ read_pixel(const uint8_t *pixels, int col, int row, int width,
  * @param[in] nodata Nodata sentinel value
  * @param[in] has_nodata Whether nodata filtering is active
  * @return tfloat instant set, or NULL
+ * @csqlfn #Raster_tile_value_quadbin()
  */
 Temporal *
 raster_tile_value_quadbin(const Temporal *traj, const uint8_t *pixels,
@@ -638,6 +639,7 @@ araster_value(const Temporal *traj, const STBox *box,
  * @param[in] zoom Raquet zoom level (0–15)
  * @param[out] count Number of distinct cells returned
  * @return Palloc'd array of QUADBIN cell identifiers
+ * @csqlfn #Trajectory_quadbins()
  */
 uint64 *
 trajectory_quadbins(const Temporal *traj, uint32_t zoom, int *count)
