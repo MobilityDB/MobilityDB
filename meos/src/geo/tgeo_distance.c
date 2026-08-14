@@ -1718,7 +1718,7 @@ tpointsegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
 /*****************************************************************************/
 
 /**
- * @ingroup meos_geo_distance
+ * @ingroup meos_geo_dist
  * @brief Return the temporal distance between a temporal geo and a
  * geometry/geography
  * @param[in] temp Temporal geo
@@ -1769,7 +1769,7 @@ tdistance_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 }
 
 /**
- * @ingroup meos_geo_distance
+ * @ingroup meos_geo_dist
  * @brief Return the temporal distance between two temporal geos
  * @param[in] temp1,temp2 Temporal geos
  * @csqlfn #Tdistance_tgeo_tgeo()
@@ -2532,7 +2532,7 @@ nai_tpoint_geo_analytic(const Temporal *temp, const GSERIALIZED *gs,
 /*****************************************************************************/
 
 /**
- * @ingroup meos_geo_distance
+ * @ingroup meos_geo_dist
  * @brief Return the nearest approach instant between a temporal geo and
  * a geometry/geography
  * @param[in] temp Temporal geo
@@ -2586,7 +2586,7 @@ nai_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 }
 
 /**
- * @ingroup meos_geo_distance
+ * @ingroup meos_geo_dist
  * @brief Return the nearest approach instant between two temporal geos
  * @param[in] temp1,temp2 Temporal geos
  * @csqlfn #NAI_tgeo_tgeo()
@@ -2640,7 +2640,7 @@ nai_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @ingroup meos_geo_distance
+ * @ingroup meos_geo_dist
  * @brief Return the nearest approach distance between a temporal geo
  * and a geometry/geography
  * @param[in] temp Temporal geo
@@ -2680,7 +2680,7 @@ nad_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 }
 
 /**
- * @ingroup meos_geo_distance
+ * @ingroup meos_geo_dist
  * @brief Return the nearest approach distance between a spatiotemporal box
  * and a geometry/geography
  * @param[in] box Spatiotemporal box/geography
@@ -2705,7 +2705,7 @@ nad_stbox_geo(const STBox *box, const GSERIALIZED *gs)
 }
 
 /**
- * @ingroup meos_geo_distance
+ * @ingroup meos_geo_dist
  * @brief Return the nearest approach distance between two spatiotemporal
  * boxes
  * @param[in] box1,box2 Spatiotemporal boxes
@@ -2732,7 +2732,7 @@ nad_stbox_stbox(const STBox *box1, const STBox *box2)
 }
 
 /**
- * @ingroup meos_geo_distance
+ * @ingroup meos_geo_dist
  * @brief Return the nearest approach distance between a temporal geo
  * and a spatiotemporal box
  * @param[in] temp Temporal geo
@@ -2780,7 +2780,7 @@ nad_tgeo_stbox(const Temporal *temp, const STBox *box)
 }
 
 /**
- * @ingroup meos_geo_distance
+ * @ingroup meos_geo_dist
  * @brief Return the nearest approach distance between two temporal geos
  * @param[in] temp1,temp2 Temporal geos
  * @csqlfn #NAD_tgeo_tgeo()
@@ -2858,7 +2858,7 @@ geography_shortestline_internal(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
 /*****************************************************************************/
 
 /**
- * @ingroup meos_geo_distance
+ * @ingroup meos_geo_dist
  * @brief Return the line connecting the nearest approach point between a
  * temporal geo and a geometry/geography
  * @param[in] temp Temporal value
@@ -2904,7 +2904,7 @@ shortestline_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 }
 
 /**
- * @ingroup meos_geo_distance
+ * @ingroup meos_geo_dist
  * @brief Return the line connecting the nearest approach point between two
  * temporal geos
  * @param[in] temp1,temp2 Temporal values
@@ -2961,7 +2961,7 @@ shortestline_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @ingroup meos_geo_distance
+ * @ingroup meos_geo_dist
  * @brief Return the spatial-only minimum distance between two spatiotemporal
  * boxes, ignoring the time dimension entirely
  * @param[in] box1,box2 Spatiotemporal boxes
@@ -3189,7 +3189,7 @@ mindist_tpoint_tpoint_threshold(const Temporal *temp1, const Temporal *temp2,
 }
 
 /**
- * @ingroup meos_geo_distance
+ * @ingroup meos_geo_dist
  * @brief Return the exact minimum spatial distance between two temporal
  * geos, ignoring time
  * @details Computes
@@ -3280,7 +3280,7 @@ tgeoarr_pair_cmp(const void *a, const void *b)
 }
 
 /**
- * @ingroup meos_geo_distance
+ * @ingroup meos_geo_dist
  * @brief Return the minimum spatial distance between two arrays of temporal
  * geos
  * @details Computes the same value as

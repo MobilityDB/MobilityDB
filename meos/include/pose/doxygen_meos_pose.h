@@ -68,7 +68,7 @@
  *   @ingroup meos_pose_comp
  *   @brief Temporal comparison functions for temporal poses
  *
- * @defgroup meos_pose_distance Distance functions
+ * @defgroup meos_pose_dist Distance functions
  * @ingroup meos_pose
  * @brief Distance functions for temporal poses
  *

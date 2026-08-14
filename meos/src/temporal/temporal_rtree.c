@@ -45,6 +45,8 @@
   #include <meos_pointcloud.h>
   #include "pointcloud/tpc_boxops.h"
 #endif
+#include "temporal/span.h"
+#include "temporal/tbox.h"
 #include "temporal/temporal.h"
 #include "temporal/type_util.h"
 #include "temporal/temporal_rtree.h"
@@ -1382,7 +1384,8 @@ static double
 rtree_bbox_distance(const RTree *rtree, const void *query, const void *box)
 {
   if (rtree->bboxtype == T_TBOX)
-    return nad_tbox_tbox((const TBox *) query, (const TBox *) box);
+    return distance_double(nad_tbox_tbox((const TBox *) query,
+      (const TBox *) box), ((const TBox *) query)->span.basetype);
   if (rtree->bboxtype == T_STBOX)
     return nad_stbox_stbox((const STBox *) query, (const STBox *) box);
 #if POINTCLOUD

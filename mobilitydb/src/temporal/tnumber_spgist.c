@@ -694,7 +694,8 @@ Tbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
       Datum value = scankey->sk_argument;
       MeosType type = oid_meostype(scankey->sk_subtype);
       tnumber_spgist_get_tbox(value, type, &box);
-      distances[i] = nad_tbox_tbox(&box, key);
+      distances[i] = distance_double(nad_tbox_tbox(&box, key),
+        key->span.basetype);
     }
     /* Recheck is necessary when computing distance with bounding boxes */
     out->recheckDistances = true;

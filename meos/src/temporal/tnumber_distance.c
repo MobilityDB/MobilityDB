@@ -176,9 +176,8 @@ tdistance_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
  * and a number
  * @param[in] temp Temporal value
  * @param[in] value Value
- * @note The function returns a double for both integer and float numbers
  */
-double
+Datum
 nad_tnumber_number(const Temporal *temp, Datum value)
 {
   assert(temp); assert(tnumber_type(temp->temptype));
@@ -193,7 +192,8 @@ nad_tnumber_number(const Temporal *temp, Datum value)
  * @ingroup meos_internal_temporal_dist
  * @brief Return the nearest approach distance between the temporal boxes
  * @param[in] box1,box2 Temporal boxes
- * @return On error return infinity
+ * @return On error return the sentinel of the base type given by
+ * #distance_sentinel()
  * @note Function called when using indexes for k-nearest neighbor queries for
  * temporal numbers. Therefore, it must satisfy the following conditions
  * (1) the actual distance is always greater than or equal to the estimated
@@ -201,25 +201,24 @@ nad_tnumber_number(const Temporal *temp, Datum value)
  * estimated distance.
  * https://www.postgresql.org/message-id/CA%2BTgmoauhLf6R07sAUzQiRcstF5KfRw7nwiWn4VZgiSF8MaQaw%40mail.gmail.com
  * @csqlfn #NAD_tbox_tbox()
- * @note The function returns a double for both integer and float boxes
  */
-double
+Datum
 nad_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   /* Ensure the validity of the arguments */
   assert(box1); assert(box2);
+  MeosType basetype = box1->span.basetype;
   if (! ensure_has_X(T_TBOX, box1->flags) ||
       ! ensure_has_X(T_TBOX, box2->flags) ||
       ! ensure_same_span_type(&box1->span, &box2->span))
-    return DBL_MAX;
+    return distance_sentinel(basetype);
 
-  /* If the boxes do not intersect in the time dimension return infinity */
+  /* If the boxes do not intersect in the time dimension return the sentinel */
   bool hast = MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags);
   if (hast && ! overlaps_span_span(&box1->period, &box2->period))
-    return DBL_MAX;
+    return distance_sentinel(basetype);
 
-  Datum res = distance_span_span(&box1->span, &box2->span);
-  return datum_double(res, spantype_basetype(box1->span.spantype));
+  return distance_span_span(&box1->span, &box2->span);
 }
 
 /**
@@ -228,11 +227,11 @@ nad_tbox_tbox(const TBox *box1, const TBox *box2)
  * and a temporal box
  * @param[in] temp Temporal value
  * @param[in] box Temporal box
- * @return On error or if the time frames do not overlap return infinity
+ * @return On error or if the time frames do not overlap return the
+ * sentinel of the base type given by #distance_sentinel()
  * @csqlfn #NAD_tnumber_tbox()
- * @note The function returns a double for both integer and float numbers
  */
-double
+Datum
 nad_tnumber_tbox(const Temporal *temp, const TBox *box)
 {
   assert(temp); assert(box); assert(MEOS_FLAGS_GET_X(box->flags));
@@ -245,7 +244,7 @@ nad_tnumber_tbox(const Temporal *temp, const TBox *box)
   {
     temporal_set_tstzspan(temp, &p);
     if (! inter_span_span(&p, &box->period, &inter))
-    return DBL_MAX;
+      return distance_sentinel(temptype_basetype(temp->temptype));
   }
 
   /* Project the temporal number to the timespan of the box (if any) */
@@ -258,7 +257,7 @@ nad_tnumber_tbox(const Temporal *temp, const TBox *box)
   {
     if (hast)
       pfree(temp1);
-    return 0.0;
+    return (Datum) 0;
   }
 
   /* Get the minimum distance between the values of the boxes */
@@ -268,30 +267,30 @@ nad_tnumber_tbox(const Temporal *temp, const TBox *box)
   if (hast)
     pfree(temp1);
 
-  return datum_double(res, temptype_basetype(temp->temptype));
+  return res;
 }
 
 /**
  * @ingroup meos_internal_temporal_dist
  * @brief Return the nearest approach distance between two temporal numbers
  * @param[in] temp1,temp2 Temporal boxes
- * @return On error or when the time frames do not intersect return infinity
- * @note The function returns a double for both integer and float numbers
+ * @return On error or when the time frames do not intersect return the
+ * sentinel of the base type given by #distance_sentinel()
  */
-double
+Datum
 nad_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
 {
   assert(temp1); assert(temp2);
   assert(temp1->temptype == temp2->temptype);
   assert(tnumber_type(temp1->temptype));
   Temporal *dist = tdistance_tnumber_tnumber(temp1, temp2);
-  /* If the boxes do not intersect in the time dimension return infinity */
+  /* If the boxes do not intersect in the time dimension return the sentinel */
   if (dist == NULL)
-    return DBL_MAX;
+    return distance_sentinel(temptype_basetype(temp1->temptype));
 
   Datum res = temporal_min_value(dist);
   pfree(dist);
-  return datum_double(res, temptype_basetype(temp1->temptype));
+  return res;
 }
 
 /*****************************************************************************/
