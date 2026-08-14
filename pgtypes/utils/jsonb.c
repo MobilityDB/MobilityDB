@@ -799,8 +799,13 @@ pg_jsonb_make_two_arg(text **keys, text **values, int count)
   state.res = meos_pushJsonbValue(&state.parseState, WJB_END_OBJECT, NULL);
   Jsonb *result = JsonbValueToJsonb(state.res);
   for (int i = 0; i < count; ++i)
+  {
     pfree(keys_str[i]);
+    if (values_str[i]) /* MEOS */
+      pfree(values_str[i]); /* MEOS */
+  }
   pfree(keys_str);
+  pfree(values_str); /* MEOS */
   return result;
 }
 
