@@ -35,6 +35,7 @@
 /* C */
 #include <assert.h>
 #include <float.h>
+#include <limits.h>
 #include <math.h>
 /* PostgreSQL */
 #include <postgres.h>
@@ -873,6 +874,31 @@ minus_span_span(const Span *s1, const Span *s2)
  ******************************************************************************/
 
 /**
+ * @brief Return the value returned on error by the distance functions of a
+ * base type
+ * @param[in] type Type of the values
+ * @details The sentinel is the maximum value of the type in which the distance
+ * is expressed, so that it sorts after every distance that could be computed
+ * in the nearest-neighbor searches performed with the indexes
+ */
+Datum
+distance_sentinel(MeosType type)
+{
+  switch (type)
+  {
+    case T_INT4:
+    case T_DATE:
+      /* The distance between dates is expressed in days */
+      return Int32GetDatum(INT_MAX);
+    case T_INT8:
+      return Int64GetDatum(INT64_MAX);
+    default:
+      /* The distance between timestamptz values is expressed in seconds */
+      return Float8GetDatum(DBL_MAX);
+  }
+}
+
+/**
  * @brief Return the distance between two values as a double for the indexes
  * @param[in] l,r Values
  * @param[in] type Type of the values
@@ -910,7 +936,8 @@ dist_double_value_value(Datum l, Datum r, MeosType type)
  * @brief Return the distance between two values
  * @param[in] l,r Values
  * @param[in] type Type of the values
- * @return On error return -1
+ * @return On error return the sentinel of the base type given by
+ * #distance_sentinel()
  */
 Datum
 distance_value_value(Datum l, Datum r, MeosType type)
@@ -935,7 +962,7 @@ distance_value_value(Datum l, Datum r, MeosType type)
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
         "Unknown types for distance between values: %s",
         meostype_name(type));
-      return (Datum) -1;
+      return distance_sentinel(type);
   }
 }
 
@@ -972,7 +999,8 @@ distance_span_value(const Span *s, Datum value)
  * @ingroup meos_internal_setspan_dist
  * @brief Return the distance between two spans as a double
  * @param[in] s1,s2 Spans
- * @return On error return -1
+ * @return On error return the sentinel of the base type given by
+ * #distance_sentinel()
  * @csqlfn #Distance_span_span()
  */
 Datum
