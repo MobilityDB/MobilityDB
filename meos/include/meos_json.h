@@ -283,11 +283,8 @@ extern Temporal *tjsonb_in(const char *str);
 extern char *tjsonb_out(const Temporal *temp);
 
 // Internal
-extern TInstant *tjsonbinst_from_mfjson(json_object *mfjson);
 extern TInstant *tjsonbinst_in(const char *str);
-extern TSequence *tjsonbseq_from_mfjson(json_object *mfjson);
 extern TSequence *tjsonbseq_in(const char *str, interpType interp);
-extern TSequenceSet *tjsonbseqset_from_mfjson(json_object *mfjson);
 extern TSequenceSet *tjsonbseqset_in(const char *str);
 
 /*****************************************************************************

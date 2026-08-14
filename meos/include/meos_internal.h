@@ -1083,6 +1083,9 @@ extern TSequence *ttextseq_from_mfjson(json_object *mfjson);
 extern TSequence *ttextseq_in(const char *str, interpType interp);
 extern TSequenceSet *ttextseqset_from_mfjson(json_object *mfjson);
 extern TSequenceSet *ttextseqset_in(const char *str);
+extern TInstant *tjsonbinst_from_mfjson(json_object *mfjson);
+extern TSequence *tjsonbseq_from_mfjson(json_object *mfjson);
+extern TSequenceSet *tjsonbseqset_from_mfjson(json_object *mfjson);
 extern Temporal *temporal_from_mfjson(const char *mfjson, MeosType temptype);
 
 /*****************************************************************************/
