@@ -111,9 +111,9 @@ Requirements
 ------------
 
 *   Linux (other UNIX-like systems may work, but remain untested)
-*   CMake >= 3.7
+*   CMake >= 3.12
 *   A C++17 compiler (e.g. GCC >= 7, Clang >= 5, MSVC >= 19.14) — required since the polygon Boolean engine was migrated to vendored Clipper2
-*   PostgreSQL >= 14
+*   PostgreSQL 16 to 19 (the build stops with an explicit error outside that range)
 *   PostGIS >= 3.0
 *   GEOS >= 3.8
 *   PROJ4 >= 6.1
@@ -124,6 +124,11 @@ Requirements
 For example, you can build the following command to install all MobilityDB build dependencies for Debian-based systems using PostgreSQL 16 and PostGIS 3:
 ```bash
 apt install build-essential cmake postgresql-server-dev-16 libgeos-dev libproj-dev libjson-c-dev libgsl-dev
+```
+
+On Fedora and other RPM-based distributions, the same dependencies are installed with the distribution packages, which already carry a supported PostgreSQL and PostGIS:
+```bash
+dnf install gcc gcc-c++ cmake make postgresql-server-devel postgis geos-devel proj-devel json-c-devel gsl-devel
 ```
 
 Building & Installation

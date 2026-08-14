@@ -225,7 +225,7 @@ CREATE EXTENSION mobilitydb CASCADE;
 				<listitem><para><filename>CMake</filename> cross-platform build system.</para></listitem>
 				<listitem><para>C compiler <filename>gcc</filename> or <filename>clang</filename>. Other ANSI C compilers can be used but may cause problems compiling some dependencies.</para></listitem>
 				<listitem><para>GNU Make (<filename>gmake</filename> or <filename>make</filename>) version 3.1 or higher. For many systems, GNU make is the default version of make. Check the version by invoking <filename>make -v</filename>.</para></listitem>
-				<listitem><para>PostgreSQL version 12 or higher. PostgreSQL is available from <ulink url="http://www.postgresql.org">http://www.postgresql.org</ulink>.</para></listitem>
+				<listitem><para>PostgreSQL version 16 to 19. Outside that range the configuration stops with an explicit error. PostgreSQL is available from <ulink url="http://www.postgresql.org">http://www.postgresql.org</ulink>.</para></listitem>
 				<listitem><para>PostGIS version 3 or higher. PostGIS is available from <ulink url="https://postgis.net/">https://postgis.net/</ulink>.</para></listitem>
 				<listitem><para>GNU Scientific Library (GSL). GSL is available from <ulink url="https://www.gnu.org/software/gsl/">https://www.gnu.org/software/gsl/</ulink>. GSL is used for the random number generators.</para></listitem>
 			</itemizedlist>
@@ -252,7 +252,7 @@ CREATE EXTENSION mobilitydb CASCADE;
 			</itemizedlist>
 
 			<para>
-				<emphasis role="bold">Example: Installing dependencies on Linux</emphasis>
+				<emphasis role="bold">Example: Installing dependencies on Debian-based distributions</emphasis>
 			</para>
 
 			<para>Database dependencies</para>
@@ -262,6 +262,18 @@ sudo apt-get install postgresql-16 postgresql-server-dev-16 postgresql-16-postgi
 			<para>Build dependencies</para>
 			<programlisting language="bash" xml:space="preserve" format="linespecific">
 sudo apt-get install cmake gcc libgsl-dev
+</programlisting>
+
+			<para>
+				<emphasis role="bold">Example: Installing dependencies on RPM-based distributions</emphasis>
+			</para>
+
+			<para>
+				On Fedora, Red Hat Enterprise Linux, and their derivatives the distribution packages carry a supported PostgreSQL and PostGIS, so a single command covers both the database and the build dependencies.
+			</para>
+			<programlisting language="bash" xml:space="preserve" format="linespecific">
+sudo dnf install gcc gcc-c++ cmake make postgresql-server-devel postgis \
+  geos-devel proj-devel json-c-devel gsl-devel
 </programlisting>
 		</sect2>
 
