@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: geopose_quaternion_to_ypr</title>
+<title>MobilityDB: geopose_anchor_from_instant</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -79,7 +79,7 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="pose__geopose_8c_ac09675e386b7fdb20bdc8d55f30cf6d0.html#ac09675e386b7fdb20bdc8d55f30cf6d0">geopose_anchor_from_instant</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="pose__geopose_8c_ac09675e386b7fdb20bdc8d55f30cf6d0.html#ac09675e386b7fdb20bdc8d55f30cf6d0">geopose_anchor_from_instant</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pose__geopose_8c_a50a70974a0b17debd2c92a1ea130e4b3.html#a50a70974a0b17debd2c92a1ea130e4b3">geopose_anchor_from_json</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pose__geopose_8c_a07b46b4aca0c962ee19989c8c8a3150f.html#a07b46b4aca0c962ee19989c8c8a3150f">geopose_anchor_position</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pose__geopose_8c_a2e0ff3893134f01e54b1004bccc60bf7.html#a2e0ff3893134f01e54b1004bccc60bf7">geopose_anchor_rotation</a></td></tr>
@@ -113,7 +113,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="pose__geopose_8c_ac46671748336f612fb07d49764476829.html#ac46671748336f612fb07d49764476829">geopose_param_number</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pose__geopose_8c_aa4c08d0b0e7d1b96bb2136e4cb817890.html#aa4c08d0b0e7d1b96bb2136e4cb817890">geopose_pose_components</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pose__geopose_8c_ae06e699b2695fa978b1bf61c4cf5c1ba.html#ae06e699b2695fa978b1bf61c4cf5c1ba">geopose_pose_from_inner_frame</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="pose__geopose_8c_aaa1f96e388a9a269dc15542c0ef59c31.html#aaa1f96e388a9a269dc15542c0ef59c31">geopose_quaternion_to_ypr</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="pose__geopose_8c_aaa1f96e388a9a269dc15542c0ef59c31.html#aaa1f96e388a9a269dc15542c0ef59c31">geopose_quaternion_to_ypr</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pose__geopose_8c_a0934b443cc9df11fdf64163b03e62eea.html#a0934b443cc9df11fdf64163b03e62eea">GEOPOSE_RAD2DEG</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pose__geopose_8c_a664e170aaa0829276f2a2476bd5e02e0.html#a664e170aaa0829276f2a2476bd5e02e0">geopose_series_header</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pose__geopose_8c_a2dd5adabd8b966d3a7276b7611484438.html#a2dd5adabd8b966d3a7276b7611484438">geopose_series_trailer</a></td></tr>
@@ -146,8 +146,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="aaa1f96e388a9a269dc15542c0ef59c31" name="aaa1f96e388a9a269dc15542c0ef59c31"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aaa1f96e388a9a269dc15542c0ef59c31">&#9670;&#160;</a></span>geopose_quaternion_to_ypr()</h2>
+<a id="ac09675e386b7fdb20bdc8d55f30cf6d0" name="ac09675e386b7fdb20bdc8d55f30cf6d0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac09675e386b7fdb20bdc8d55f30cf6d0">&#9670;&#160;</a></span>geopose_anchor_from_instant()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -156,46 +156,16 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static void geopose_quaternion_to_ypr </td>
+          <td class="memname">static bool geopose_anchor_from_instant </td>
           <td>(</td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>W</em>, </td>
+          <td class="paramtype">const <a class="el" href="structTInstant.html">TInstant</a> *&#160;</td>
+          <td class="paramname"><em>inst</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>X</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>Y</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>Z</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *&#160;</td>
-          <td class="paramname"><em>yaw_rad</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *&#160;</td>
-          <td class="paramname"><em>pitch_rad</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *&#160;</td>
-          <td class="paramname"><em>roll_rad</em>&#160;</td>
+          <td class="paramtype"><a class="el" href="structGeoPoseAnchor.html">GeoPoseAnchor</a> *&#160;</td>
+          <td class="paramname"><em>anchor</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -210,8 +180,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Convert a unit quaternion (W, X, Y, Z, Hamilton convention) to (yaw, pitch, roll) in radians, ZYX intrinsic Tait-Bryan convention. </p>
-<p >The pitch term is clamped to [-1, 1] before <code>asin</code> to absorb the small numeric drift <code>|q| - 1 = O(1e-15)</code> that long quaternion compositions can introduce. </p>
+<p><a class="el" href="structSet.html" title="Structure to represent sets of values.">Set</a> the tangent point of a composite from the pose of its first instant. </p>
+<p >Requirements 26 and 31 make the outer frame the first frame of a series, and Requirement 34 the first frame of a stream, so one instant fixes the frame that every later pose is expressed against. </p><dl class="section return"><dt>Returns</dt><dd>On error return false </dd></dl>
 
 </div>
 </div>
