@@ -42,6 +42,12 @@
 
 /*****************************************************************************/
 
+/* Degenerate value functions */
+
+extern bool tcbuffer_is_tpoint(const Temporal *temp);
+
+/*****************************************************************************/
+
 /* Traversed area functions */
 
 extern GSERIALIZED *tcbufferinst_traversed_area(const TInstant *inst);

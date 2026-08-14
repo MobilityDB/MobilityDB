@@ -1497,23 +1497,6 @@ aintersects_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @brief Return true if every composing circular buffer of a temporal circular
- * buffer has a zero radius, that is, the value is a temporal point
- */
-static bool
-tcbuffer_is_tpoint(const Temporal *temp)
-{
-  assert(temp); assert(temp->temptype == T_TCBUFFER);
-  int count;
-  const TInstant **instants = temporal_insts_p(temp, &count);
-  bool result = true;
-  for (int i = 0; i < count && result; i++)
-    result = (DatumGetCbufferP(tinstant_value_p(instants[i]))->radius == 0.0);
-  pfree(instants);
-  return result;
-}
-
-/**
  * @ingroup meos_internal_cbuffer_rel_ever
  * @brief Return 1 if a temporal circular buffer and a geometry ever touch,
  * 0 if not, and -1 on error or if the geometry is empty

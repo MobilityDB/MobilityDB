@@ -1119,3 +1119,69 @@ SELECT tDwithin(tcbuffer 'Cbuffer(Point(1 1 1),0.5)@2000-01-01', tcbuffer 'Cbuff
 ERROR:  The geometry cannot have Z dimension
 LINE 1: SELECT tDwithin(tcbuffer 'Cbuffer(Point(1 1 1),0.5)@2000-01-...
                                  ^
+SELECT tIntersects(tcbuffer '[Cbuffer(Point(-3 0),0)@2000-01-01, Cbuffer(Point(3 0),0)@2000-01-03]', geometry 'Point(0 0)');
+                                                             tintersects                                                              
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, t@Sun Jan 02 00:00:00 2000 PST], (f@Sun Jan 02 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tIntersects(geometry 'Point(0 0)', tcbuffer '[Cbuffer(Point(-3 0),0)@2000-01-01, Cbuffer(Point(3 0),0)@2000-01-03]');
+                                                             tintersects                                                              
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, t@Sun Jan 02 00:00:00 2000 PST], (f@Sun Jan 02 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tDisjoint(tcbuffer '[Cbuffer(Point(-3 0),0)@2000-01-01, Cbuffer(Point(3 0),0)@2000-01-03]', geometry 'Point(0 0)');
+                                                              tdisjoint                                                               
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[t@Sat Jan 01 00:00:00 2000 PST, f@Sun Jan 02 00:00:00 2000 PST], (t@Sun Jan 02 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tIntersects(tcbuffer '[Cbuffer(Point(-3 0),0)@2000-01-01, Cbuffer(Point(3 0),0)@2000-01-03]', geometry 'Linestring(0 -5,0 5)');
+                                                             tintersects                                                              
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, t@Sun Jan 02 00:00:00 2000 PST], (f@Sun Jan 02 00:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tIntersects(tcbuffer '[Cbuffer(Point(-3 0),0)@2000-01-01, Cbuffer(Point(3 0),0)@2000-01-03]', geometry 'Linestring(-5 0,5 0)');
+                            tintersects                             
+--------------------------------------------------------------------
+ {[t@Sat Jan 01 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tIntersects(tcbuffer '[Cbuffer(Point(-3 0),0)@2000-01-01, Cbuffer(Point(3 0),0)@2000-01-03]', geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))');
+                                                                             tintersects                                                                              
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, t@Sat Jan 01 16:00:00 2000 PST, t@Sun Jan 02 08:00:00 2000 PST], (f@Sun Jan 02 08:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tDisjoint(geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))', tcbuffer '[Cbuffer(Point(-3 0),0)@2000-01-01, Cbuffer(Point(3 0),0)@2000-01-03]');
+                                                                              tdisjoint                                                                               
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[t@Sat Jan 01 00:00:00 2000 PST, f@Sat Jan 01 16:00:00 2000 PST, f@Sun Jan 02 08:00:00 2000 PST], (t@Sun Jan 02 08:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tIntersects(tcbuffer '[Cbuffer(Point(1 1),0)@2000-01-01, Cbuffer(Point(1 1),0)@2000-01-03]', geometry 'Point(1 1)');
+                            tintersects                             
+--------------------------------------------------------------------
+ {[t@Sat Jan 01 00:00:00 2000 PST, t@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tDwithin(tcbuffer '[Cbuffer(Point(-3 0),0)@2000-01-01, Cbuffer(Point(3 0),0)@2000-01-03]', geometry 'Linestring(0 -5,0 5)', 2);
+                                                                               tdwithin                                                                               
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, t@Sat Jan 01 08:00:00 2000 PST, t@Sun Jan 02 16:00:00 2000 PST], (f@Sun Jan 02 16:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tDwithin(geometry 'Linestring(0 -5,0 5)', tcbuffer '[Cbuffer(Point(-3 0),0)@2000-01-01, Cbuffer(Point(3 0),0)@2000-01-03]', 2);
+                                                                               tdwithin                                                                               
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, t@Sat Jan 01 08:00:00 2000 PST, t@Sun Jan 02 16:00:00 2000 PST], (f@Sun Jan 02 16:00:00 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tIntersects(tcbuffer '[Cbuffer(Point(-3 0),0)@2000-01-01, Cbuffer(Point(3 0),0.5)@2000-01-03]', geometry 'Point(0 0)');
+                                                                                        tintersects                                                                                        
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Sat Jan 01 00:00:00 2000 PST, t@Sat Jan 01 22:09:13.846154 2000 PST, t@Sun Jan 02 02:10:54.545455 2000 PST], (f@Sun Jan 02 02:10:54.545455 2000 PST, f@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
