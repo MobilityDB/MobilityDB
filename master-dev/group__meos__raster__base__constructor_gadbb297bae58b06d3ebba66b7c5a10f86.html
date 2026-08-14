@@ -117,10 +117,11 @@ $(function() {
 <p >GDAL decodes the file (any format it supports) and the first raster band is packed row-major into a <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> chip identified by <code>quadbin</code>. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">path</td><td>Path to a GDAL-readable raster file </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">quadbin</td><td>CARTO QUADBIN cell identifying the Web-Mercator tile, or 0 to derive it from the raster geotransform and EPSG:3857 spatial reference @csqlfn <a class="el" href="group__mobilitydb__raster_gadd3326aa667969a105ab781f6f4e19ff.html#gadd3326aa667969a105ab781f6f4e19ff" title="Return a Raquet tile decoded from an in-memory raster file via GDAL.">Raquet_read()</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">quadbin</td><td>CARTO QUADBIN cell identifying the Web-Mercator tile, or 0 to derive it from the raster geotransform and EPSG:3857 spatial reference </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section note"><dt>Note</dt><dd>The SQL surface reads the raster from bytes rather than a server-side path, so the wrapper binds <a class="el" href="group__meos__raster__base__constructor_ga8148a95b3bfb66a65ce6628ba5858c33.html#ga8148a95b3bfb66a65ce6628ba5858c33" title="Return a Raquet tile decoded from an in-memory raster file via GDAL.">raquet_read_bytes()</a> and this function carries no <code>csqlfn</code> link </dd></dl>
 
 </div>
 </div>
