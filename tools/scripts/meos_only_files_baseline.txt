@@ -36,9 +36,6 @@ meos/src/h3/h3index_sets.c:427: file-scope MEOS conditional: move the definition
 meos/src/json/jsonbset.c:353: file-scope MEOS conditional: move the definition to the module's _meos.c
 meos/src/npoint/npoint.c:48: file-scope MEOS conditional: move the definition to the module's _meos.c
 meos/src/pointcloud/schema_hook.c:18: file-scope MEOS conditional: move the definition to the module's _meos.c
-meos/src/quadbin/CMakeLists.txt: quadbinset_meos.c is compiled into the PG extension: list it inside if(MEOS), or drop the _meos suffix
-meos/src/quadbin/quadbinset_meos.c: quadbin_cell_to_children_set() is called from mobilitydb/src: the PG extension needs it, so it is not MEOS-only
-meos/src/quadbin/quadbinset_meos.c: quadbin_grid_disk() is called from mobilitydb/src: the PG extension needs it, so it is not MEOS-only
 meos/src/temporal/doublen.c:131: file-scope MEOS conditional: move the definition to the module's _meos.c
 meos/src/temporal/doublen.c:202: file-scope MEOS conditional: move the definition to the module's _meos.c
 meos/src/temporal/doublen.c:63: file-scope MEOS conditional: move the definition to the module's _meos.c

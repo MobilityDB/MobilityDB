@@ -69,15 +69,6 @@ meos/src/temporal/set_meos.c:469: bigintset_start_value() validates with LONG_MA
 meos/src/temporal/set_meos.c:561: bigintset_end_value() returns int64 but documents INT_MAX, expected INT64_MAX
 meos/src/temporal/set_meos.c:561: bigintset_end_value() validates with LONG_MAX, which is 32 bits on LLP64 Windows: use INT64_MAX
 meos/src/temporal/set_ops.c:186: contains_set_value() returns bool but validates with NULL, expected false
-meos/src/temporal/set_ops_meos.c:1538: distance_set_int() returns int but documents -1, expected INT_MAX
-meos/src/temporal/set_ops_meos.c:1538: distance_set_int() returns int but validates with -1, expected INT_MAX
-meos/src/temporal/set_ops_meos.c:1554: distance_set_bigint() returns int64 but documents -1, expected INT64_MAX
-meos/src/temporal/set_ops_meos.c:1554: distance_set_bigint() returns int64 but validates with -1, expected INT64_MAX
-meos/src/temporal/set_ops_meos.c:1586: distance_set_date() returns int but documents -1, expected INT_MAX
-meos/src/temporal/set_ops_meos.c:1586: distance_set_date() returns int but validates with -1, expected INT_MAX
-meos/src/temporal/set_ops_meos.c:1620: distance_intset_intset() returns int but documents -1, expected INT_MAX
-meos/src/temporal/set_ops_meos.c:1636: distance_bigintset_bigintset() returns int64 but documents -1, expected INT64_MAX
-meos/src/temporal/set_ops_meos.c:1668: distance_dateset_dateset() returns int but documents -1, expected INT_MAX
 meos/src/temporal/span.c:1467: timestamptz_shift() returns TimestampTz but documents `DT_NOEND`, expected DT_NOEND
 meos/src/temporal/span_meos.c:410: bigintspan_lower() documents LONG_MAX, which is 32 bits on LLP64 Windows: use INT64_MAX
 meos/src/temporal/span_meos.c:410: bigintspan_lower() validates with LONG_MAX, which is 32 bits on LLP64 Windows: use INT64_MAX
@@ -87,18 +78,6 @@ meos/src/temporal/span_meos.c:577: intspan_width() returns int but documents -1,
 meos/src/temporal/span_meos.c:577: intspan_width() returns int but validates with -1, expected INT_MAX
 meos/src/temporal/span_meos.c:592: bigintspan_width() returns int64 but documents -1, expected INT64_MAX
 meos/src/temporal/span_meos.c:592: bigintspan_width() returns int64 but validates with -1, expected INT64_MAX
-meos/src/temporal/span_ops_meos.c:1361: distance_span_int() returns int but documents -1, expected INT_MAX
-meos/src/temporal/span_ops_meos.c:1361: distance_span_int() returns int but validates with -1, expected INT_MAX
-meos/src/temporal/span_ops_meos.c:1377: distance_span_bigint() returns int64 but documents -1, expected INT64_MAX
-meos/src/temporal/span_ops_meos.c:1377: distance_span_bigint() returns int64 but validates with -1, expected INT64_MAX
-meos/src/temporal/span_ops_meos.c:1409: distance_span_date() returns int but documents -1, expected INT_MAX
-meos/src/temporal/span_ops_meos.c:1409: distance_span_date() returns int but validates with -1, expected INT_MAX
-meos/src/temporal/span_ops_meos.c:1443: distance_intspan_intspan() returns int but documents -1, expected INT_MAX
-meos/src/temporal/span_ops_meos.c:1443: distance_intspan_intspan() returns int but validates with -1, expected INT_MAX
-meos/src/temporal/span_ops_meos.c:1458: distance_bigintspan_bigintspan() returns int64 but documents -1, expected INT64_MAX
-meos/src/temporal/span_ops_meos.c:1458: distance_bigintspan_bigintspan() returns int64 but validates with -1, expected INT64_MAX
-meos/src/temporal/span_ops_meos.c:1488: distance_datespan_datespan() returns int but documents -1, expected INT_MAX
-meos/src/temporal/span_ops_meos.c:1488: distance_datespan_datespan() returns int but validates with -1, expected INT_MAX
 meos/src/temporal/spanset.c:519: spanset_mem_size() returns int but documents -1, expected INT_MAX
 meos/src/temporal/spanset.c:519: spanset_mem_size() returns int but validates with -1, expected INT_MAX
 meos/src/temporal/spanset.c:574: spanset_lower_inc() returns bool but validates with NULL, expected false
@@ -119,24 +98,6 @@ meos/src/temporal/spanset_meos.c:538: bigintspanset_width() returns int64 but do
 meos/src/temporal/spanset_meos.c:538: bigintspanset_width() returns int64 but validates with -1, expected INT64_MAX
 meos/src/temporal/spanset_ops.c:697: overright_spanset_value() returns bool but validates with NULL, expected false
 meos/src/temporal/spanset_ops.c:80: contains_spanset_timestamptz() returns bool but validates with NULL, expected false
-meos/src/temporal/spanset_ops_meos.c:1280: distance_spanset_int() returns int but documents -1, expected INT_MAX
-meos/src/temporal/spanset_ops_meos.c:1280: distance_spanset_int() returns int but validates with -1, expected INT_MAX
-meos/src/temporal/spanset_ops_meos.c:1296: distance_spanset_bigint() returns int64 but documents -1, expected INT64_MAX
-meos/src/temporal/spanset_ops_meos.c:1296: distance_spanset_bigint() returns int64 but validates with -1, expected INT64_MAX
-meos/src/temporal/spanset_ops_meos.c:1329: distance_spanset_date() returns int but documents -1, expected INT_MAX
-meos/src/temporal/spanset_ops_meos.c:1329: distance_spanset_date() returns int but validates with -1, expected INT_MAX
-meos/src/temporal/spanset_ops_meos.c:1363: distance_intspanset_intspan() returns int but documents -1, expected INT_MAX
-meos/src/temporal/spanset_ops_meos.c:1363: distance_intspanset_intspan() returns int but validates with -1, expected INT_MAX
-meos/src/temporal/spanset_ops_meos.c:1379: distance_bigintspanset_bigintspan() returns int64 but documents -1, expected INT64_MAX
-meos/src/temporal/spanset_ops_meos.c:1379: distance_bigintspanset_bigintspan() returns int64 but validates with -1, expected INT64_MAX
-meos/src/temporal/spanset_ops_meos.c:1411: distance_datespanset_datespan() returns int but documents -1, expected INT_MAX
-meos/src/temporal/spanset_ops_meos.c:1411: distance_datespanset_datespan() returns int but validates with -1, expected INT_MAX
-meos/src/temporal/spanset_ops_meos.c:1445: distance_intspanset_intspanset() returns int but documents -1, expected INT_MAX
-meos/src/temporal/spanset_ops_meos.c:1445: distance_intspanset_intspanset() returns int but validates with -1, expected INT_MAX
-meos/src/temporal/spanset_ops_meos.c:1460: distance_bigintspanset_bigintspanset() returns int64 but documents -1, expected INT64_MAX
-meos/src/temporal/spanset_ops_meos.c:1460: distance_bigintspanset_bigintspanset() returns int64 but validates with -1, expected INT64_MAX
-meos/src/temporal/spanset_ops_meos.c:1490: distance_datespanset_datespanset() returns int but documents -1, expected INT_MAX
-meos/src/temporal/spanset_ops_meos.c:1490: distance_datespanset_datespanset() returns int but validates with -1, expected INT_MAX
 meos/src/temporal/tbox.c:170: tbox_make() returns TBox * but documents `NULL`, expected NULL
 meos/src/temporal/temporal.c:2283: temporal_value_n() returns bool but validates with NULL, expected false
 meos/src/temporal/temporal.c:2442: temporal_num_sequences() returns int but documents -1, expected INT_MAX
