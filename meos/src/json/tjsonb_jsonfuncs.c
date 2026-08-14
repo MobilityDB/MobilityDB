@@ -717,6 +717,7 @@ contains_tjsonb_tjsonb(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp Temporal JSON value
  * @param[in] idx Index
  * @param[in] null_handle States the null value treatment
+ * @csqlfn #Tjson_array_element()
  */
 Temporal *
 tjson_array_element(const Temporal *temp, int idx, nullHandleType null_handle)
@@ -742,6 +743,7 @@ tjson_array_element(const Temporal *temp, int idx, nullHandleType null_handle)
  * @param[in] idx Index
  * @param[in] astext True when the output is a temporal text
  * @param[in] null_handle States the null value treatment
+ * @csqlfn #Tjsonb_array_element()
  */
 Temporal *
 tjsonb_array_element(const Temporal *temp, int idx, bool astext,
@@ -946,6 +948,7 @@ tjsonb_exists_all(const Temporal *temp, text **keys, int count)
  * @param[in] null_handle States the null value treatment, which must be one of
  * 'raise_exception', 'use_json_null', 'delete_key', or 'return_target'
  * @param[in] lax True when the lax mode is used
+ * @csqlfn #Tjsonb_set()
  */
 Temporal *
 tjsonb_set(const Temporal *temp, text **keys, int count, const Jsonb *newjb,
@@ -1383,6 +1386,7 @@ tjsonb_delete_path(const Temporal *temp, text **path_elems, int path_len)
  * @param[in] path_elems Keys
  * @param[in] path_len Number of elements in the input array
  * @param[in] null_handle States the null value treatment
+ * @csqlfn #Tjson_extract_path()
  */
 Temporal *
 tjson_extract_path(const Temporal *temp, text **path_elems, int path_len,
@@ -1413,6 +1417,7 @@ tjson_extract_path(const Temporal *temp, text **path_elems, int path_len,
  * @param[in] path_len Number of elements in the input array
  * @param[in] astext True when the output is a temporal text
  * @param[in] null_handle States the null value treatment
+ * @csqlfn #Tjsonb_extract_path()
  */
 Temporal *
 tjsonb_extract_path(const Temporal *temp, text **path_elems, int path_len,
@@ -1497,6 +1502,7 @@ tjsonb_insert(const Temporal *temp, text **path_elems, int path_len,
  * numeric errors, when false, no errors are suppressed
  * @param[in] tz When true, support comparisons of date/time values that
  * require timezone-aware conversions, false otherwise
+ * @csqlfn #Tjsonb_path_exists()
  */
 Temporal *
 tjsonb_path_exists(const Temporal *temp, const JsonPath *jp, const Jsonb *vars,
@@ -1533,6 +1539,7 @@ tjsonb_path_exists(const Temporal *temp, const JsonPath *jp, const Jsonb *vars,
  * numeric errors, when false, no errors are suppressed
  * @param[in] tz When true, support comparisons of date/time values that
  * require timezone-aware conversions, false otherwise
+ * @csqlfn #Tjsonb_path_match()
  */
 Temporal *
 tjsonb_path_match(const Temporal *temp, const JsonPath *jp, const Jsonb *vars,
@@ -1568,6 +1575,7 @@ tjsonb_path_match(const Temporal *temp, const JsonPath *jp, const Jsonb *vars,
  * numeric errors, when false, no errors are suppressed
  * @param[in] tz When true, support comparisons of date/time values that
  * require timezone-aware conversions, false otherwise
+ * @csqlfn #Tjsonb_path_query_array()
  */
 Temporal *
 tjsonb_path_query_array(const Temporal *temp, const JsonPath *jp,
@@ -1604,6 +1612,7 @@ tjsonb_path_query_array(const Temporal *temp, const JsonPath *jp,
  * numeric errors, when false, no errors are suppressed
  * @param[in] tz When true, support comparisons of date/time values that
  * require timezone-aware conversions, false otherwise
+ * @csqlfn #Tjsonb_path_query_first()
  */
 Temporal *
 tjsonb_path_query_first(const Temporal *temp, const JsonPath *jp,

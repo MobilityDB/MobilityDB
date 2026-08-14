@@ -146,6 +146,7 @@ concat_jsonbset_jsonb(const Set *set, const Jsonb *jb, bool invert)
  * @param[in] idx Index
  * @param[in] astext True when the output is a text set
  * @param[in] null_handle States the null value treatment
+ * @csqlfn #Jsonbset_array_element()
  */
 Set *
 jsonbset_array_element(const Set *set, int idx, bool astext,
@@ -314,6 +315,7 @@ jsonbset_exists_array(const Set *set, text **keys, int count, bool any,
  * @param[in] null_handle States the null value treatment, which must be one of
  * 'raise_exception', 'use_json_null', 'delete_key', or 'return_target'
  * @param[in] lax True when the lax mode is used
+ * @csqlfn #Jsonbset_set()
  */
 Set *
 jsonbset_set(const Set *set, text **keys, int count, const Jsonb *newjb,
@@ -522,6 +524,7 @@ jsonbset_delete_path(const Set *set, text **path_elems, int path_len)
  * @param[in] path_len Number of elements in the input array
  * @param[in] astext True when the output is a text set
  * @param[in] null_handle States the null value treatment
+ * @csqlfn #Jsonbset_extract_path()
  */
 Set *
 jsonbset_extract_path(const Set *set, text **path_elems, int path_len,
@@ -679,6 +682,7 @@ jsonbset_path_match(const Set *set, const JsonPath *jp, const Jsonb *vars,
  * numeric errors, when false, no errors are suppressed
  * @param[in] tz When true, support comparisons of date/time values that
  * require timezone-aware conversions, false otherwise
+ * @csqlfn #Jsonbset_path_query_array()
  */
 Set *
 jsonbset_path_query_array(const Set *set, const JsonPath *jp,
@@ -714,6 +718,7 @@ jsonbset_path_query_array(const Set *set, const JsonPath *jp,
  * numeric errors, when false, no errors are suppressed
  * @param[in] tz When true, support comparisons of date/time values that
  * require timezone-aware conversions, false otherwise
+ * @csqlfn #Jsonbset_path_query_first()
  */
 Set *
 jsonbset_path_query_first(const Set *set, const JsonPath *jp,
