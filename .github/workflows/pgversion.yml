@@ -132,20 +132,25 @@ jobs:
           export PATH=/usr/lib/postgresql/${{ matrix.psql }}/bin:$PATH
           mkdir build
           cd build
-          # The coverage/test build enables ALL present families so the suite
-          # exercises cross-family behaviour. Families are plug&play
-          # independent in code; only the test build turns them all on.
-          # H3 depends on libh3, POINTCLOUD on pgPointCloud's libpc.a, and RASTER
-          # on PostGIS raster — all installed/built/located above only on coverage builds.
+          # The coverage build takes ALL, which enables every family from the
+          # list in CMakeLists.txt, so a family added later is exercised by the
+          # suite without editing this workflow. Its dependencies are installed
+          # and located above, on this build only: H3 needs libh3, POINTCLOUD
+          # pgPointCloud's libpc.a, RASTER PostGIS raster. The libh3 paths stay
+          # pinned because the pgdg package layout differs between releases.
           # The same build checks the assertions (CASSERT=ON), so that the
           # preconditions the internal functions trust are verified over the
           # whole surface. It is the only job that both compiles every family
           # and runs the regression suite; the others keep a release build,
           # where the assertions are compiled out.
+          #
+          # The version builds take the families that need no package of their
+          # own, and cover PostgreSQL 16 to 19. They cannot take ALL until
+          # apt.postgresql.org carries h3 and pointcloud for every version in
+          # the matrix, which it does for 16 to 18 but not yet for 19, and
+          # MobilityDB requires those extensions when their family is on.
           cmake -DCMAKE_BUILD_TYPE=Release -DWITH_COVERAGE=${{ matrix.coverage }} \
-            -DCBUFFER=ON -DNPOINT=ON -DPOSE=ON -DRGEO=ON -DQUADBIN=ON \
-            ${{ matrix.coverage == '1' && '-DPOINTCLOUD=ON -DCASSERT=ON' || '' }} \
-            ${{ matrix.coverage == '1' && format('-DH3=ON -DH3_INCLUDE_DIR={0} -DH3_LIBRARY={1} -DRASTER=ON', env.H3_INCLUDE_DIR, env.H3_LIBRARY) || '' }} \
+            ${{ matrix.coverage == '1' && format('-DALL=ON -DCASSERT=ON -DH3_INCLUDE_DIR={0} -DH3_LIBRARY={1}', env.H3_INCLUDE_DIR, env.H3_LIBRARY) || '-DCBUFFER=ON -DNPOINT=ON -DPOSE=ON -DRGEO=ON -DQUADBIN=ON' }} \
             ..
 
       - name: Build
