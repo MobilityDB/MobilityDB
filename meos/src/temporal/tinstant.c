@@ -216,15 +216,14 @@ TInstant *
 tinstant_make(Datum value, MeosType temptype, TimestampTz t)
 {
   /* Ensure the validity of the arguments */
-  int32_t tspatial_srid;
   // TODO Should we bypass the tests on tnpoint ?
   if (tspatial_type(temptype) && temptype != T_TNPOINT)
   {
     MeosType basetype = temptype_basetype(temptype);
-    tspatial_srid = spatial_srid(value, basetype);
+    int32_t srid = spatial_srid(value, basetype);
     /* Ensure that the SRID is geodetic for geography */
-    if (tgeodetic_type(temptype) && tspatial_srid != SRID_UNKNOWN && 
-        ! ensure_srid_is_latlong(tspatial_srid))
+    if (tgeodetic_type(temptype) && srid != SRID_UNKNOWN &&
+        ! ensure_srid_is_latlong(srid))
       return NULL;
     /* Ensure that a geometry/geography is not empty */
     if (tgeo_type_all(temptype) && 

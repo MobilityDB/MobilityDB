@@ -222,7 +222,7 @@ extern Set *union_set_pose(const Set *s, const Pose *pose);
  *****************************************************************************/
 
 extern Temporal *tpose_from_mfjson(const char *str);
-Temporal *tpose_in(const char *str);
+extern Temporal *tpose_in(const char *str);
 
 /*****************************************************************************
  * Constructor functions

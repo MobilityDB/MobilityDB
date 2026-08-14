@@ -696,7 +696,7 @@ extern Temporal **tpoint_make_simple(const Temporal *temp, int *count);
 
 /* SRID functions */
 
-int32_t tspatial_srid(const Temporal *temp);
+extern int32_t tspatial_srid(const Temporal *temp);
 extern Temporal *tspatial_set_srid(const Temporal *temp, int32_t srid);
 extern Temporal *tspatial_transform(const Temporal *temp, int32_t srid);
 extern Temporal *tspatial_transform_pipeline(const Temporal *temp, const char *pipelinestr, int32_t srid, bool is_forward);
