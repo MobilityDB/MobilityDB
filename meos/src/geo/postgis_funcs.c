@@ -1220,12 +1220,9 @@ geom_azimuth(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double *result)
   /* The Z dimension is not verified: the azimuth is computed from the 2D
    * coordinates of the points, as PostGIS does */
   if (! ensure_valid_geo_geo(gs1, gs2) || ! ensure_not_null(result) ||
+      ! ensure_point_type(gs1) || ! ensure_point_type(gs2) ||
       gserialized_is_empty(gs1) || gserialized_is_empty(gs2))
     return false;
-
-  assert(gserialized_get_type(gs1) == POINTTYPE);
-  assert(gserialized_get_type(gs2) == POINTTYPE);
-  assert(! gserialized_is_empty(gs1)); assert(! gserialized_is_empty(gs2));
 
   POINT2D p1, p2;
 
