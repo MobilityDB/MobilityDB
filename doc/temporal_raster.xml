@@ -303,7 +303,7 @@ SELECT nodata(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'UINT8'));
 				<indexterm significance="normal"><primary><varname>pixtype</varname></primary></indexterm>
 				<para>Return the name of the pixel data type of a Raquet tile</para>
 				<para><varname>pixtype(raquet) → text</varname></para>
-				<para>The returned name is the one the constructors accept, that is, one of <varname>UINT8</varname>, <varname>INT16</varname>, <varname>INT32</varname>, <varname>FLOAT32</varname>, or <varname>FLOAT64</varname>.</para>
+				<para>The returned name is the one the constructors accept, that is, one of <varname>UINT8</varname>, <varname>INT16</varname>, <varname>INT32</varname>, <varname>FLOAT32</varname>, or <varname>FLOAT64</varname>. The constructors read the name without regard to case, so the lower-case spelling the RaQuet specification gives a tile's <varname>type</varname> field is accepted as it stands; the name returned here keeps the upper case.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Read back the layout of a packaged tile
 SELECT quadbin(tile), width(tile), height(tile), pixtype(tile), nodata(tile)

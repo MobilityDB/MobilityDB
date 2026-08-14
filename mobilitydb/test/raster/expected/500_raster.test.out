@@ -399,6 +399,29 @@ SELECT pixtype(raquet('\x01'::bytea, 1, 1, 5193776270265024512::bigint, 'UINT8')
  UINT8   | INT16   | INT32   | FLOAT32 | FLOAT64
 (1 row)
 
+SELECT pixtype(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint,
+  'uint8'));
+ pixtype 
+---------
+ UINT8
+(1 row)
+
+SELECT pixtype(raquet('\x0102030405060708'::bytea, 2, 1,
+  5193776270265024512::bigint, 'float32'));
+ pixtype 
+---------
+ FLOAT32
+(1 row)
+
+SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'uint8')
+       = raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'UINT8');
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'uint12');
+ERROR:  Unknown pixel type "uint12": use UINT8, INT16, INT32, FLOAT32, or FLOAT64
 SELECT nodata(raquet('\x0102'::bytea, 2, 1, 5193776270265024512::bigint, 'UINT8',
   -9999.0));
  nodata 
