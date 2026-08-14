@@ -143,7 +143,14 @@ BY_VALUE_SCALAR_TYPES = {
 
 
 def emit_call(fname, ret, args, arg_map, skip_map, override_args,
-              no_free=(), value_returns=(), name_arg_map=None):
+              no_free=(), value_returns=(), name_arg_map=None, manual=()):
+    # Manually-covered: the generic emitter cannot express this call shape, and
+    # the config exercises the function by hand in its cleanup block, so emit
+    # nothing here. A SKIP line would misread as an untested function; the
+    # explanatory comment lives beside each entry in the config's `manual` list.
+    for k in manual:
+        if (k.startswith("re:") and re.search(k[3:], fname)) or k == fname:
+            return ""
     # Direct-name skip
     if fname in skip_map:
         return f"  /* SKIP {fname}: {skip_map[fname]} */\n"
@@ -655,15 +662,13 @@ TPOSE_CONFIG = dict(
     name_arg_map={
         r"_pose_set$|_set_pose$|^poseset": {"Set *": "poseset1"},
     },
-    skip={
-        # posearr_round's `Pose **` return has neither an `int *` count arg
-        # nor a `Set *` arg for emit_call's generic array-return paths to key
-        # off (its count is a plain `int`), so the generic emitter would only
-        # free the outer array and leak each per-element copy; call it by
-        # hand in the cleanup block instead, matching trgeometry_value_n.
-        "posearr_round":
-            "Pose ** return without int* / Set* cardinality; covered manually",
-    },
+    skip={},
+    # posearr_round's `Pose **` return has neither an `int *` count arg nor a
+    # `Set *` arg for emit_call's generic array-return paths to key off (its
+    # count is a plain `int`), so the generic emitter would only free the outer
+    # array and leak each per-element copy; it is exercised by hand in the
+    # cleanup block instead, matching trgeometry_value_n.
+    manual=["posearr_round"],
     common_inputs="""\
   TimestampTz tstz1 = timestamptz_in("2001-01-02", -1);
   Span *tstzspan1 = tstzspan_in("[2001-01-01, 2001-01-04]");
@@ -853,15 +858,13 @@ TCBUFFER_CONFIG = dict(
     name_arg_map={
         r"tstzset": {"Set *": "tstzset1"},
     },
-    skip={
-        # cbufferarr_round's `Cbuffer **` return has neither an `int *` count
-        # arg nor a `Set *` arg for emit_call's generic array-return paths to
-        # key off (its count is a plain `int`), so the generic emitter would
-        # only free the outer array and leak each per-element copy; call it
-        # by hand in the cleanup block instead, matching trgeometry_value_n.
-        "cbufferarr_round":
-            "Cbuffer ** return without int* / Set* cardinality; covered manually",
-    },
+    skip={},
+    # cbufferarr_round's `Cbuffer **` return has neither an `int *` count arg
+    # nor a `Set *` arg for emit_call's generic array-return paths to key off
+    # (its count is a plain `int`), so the generic emitter would only free the
+    # outer array and leak each per-element copy; it is exercised by hand in the
+    # cleanup block instead, matching trgeometry_value_n.
+    manual=["cbufferarr_round"],
     common_inputs="""\
   TimestampTz tstz1 = timestamptz_in("2001-01-02", -1);
   Span *tstzspan1 = tstzspan_in("[2001-01-01, 2001-01-04]");
@@ -1371,16 +1374,15 @@ TGEOMETRY_CONFIG = dict(
         "re:bitmatrix":  "needs a bitmatrix",
         # Out-params with non-uniform shape (e.g. GSERIALIZED ***).
         "re:^geo_array_": "out-param triple-pointer not in canned set",
-        # The temporal variants of the tgeoarr_tgeoarr family take an
-        # additional mandatory `SpanSet ***periods` out-param (VALIDATE_NOT_
-        # NULL'd, so NULL is rejected): a SpanSet ** whose count elements are
-        # each a fresh owned SpanSet*, on top of the `int *` flat-array
-        # return this family already returns. That combination is not one of
-        # emit_call's generic shapes, so these four are called by hand in the
-        # cleanup block instead, matching trgeometry_value_n.
-        "re:^t(dwithin|intersects|touches|disjoint)_tgeoarr_tgeoarr$":
-            "SpanSet *** out-param not a generic emit_call shape; covered manually",
     },
+    # The temporal variants of the tgeoarr_tgeoarr family take an additional
+    # mandatory `SpanSet ***periods` out-param (VALIDATE_NOT_NULL'd, so NULL is
+    # rejected): a SpanSet ** whose count elements are each a fresh owned
+    # SpanSet*, on top of the `int *` flat-array return this family already
+    # returns. That combination is not one of emit_call's generic shapes, so
+    # these four are exercised by hand in the cleanup block instead, matching
+    # trgeometry_value_n.
+    manual=[r"re:^t(dwithin|intersects|touches|disjoint)_tgeoarr_tgeoarr$"],
     common_inputs="""\
   TimestampTz tstz1 = timestamptz_in("2001-01-02", -1);
   Span *tstzspan1 = tstzspan_in("[2001-01-01, 2001-01-04]");
@@ -1737,19 +1739,16 @@ TJSONB_CONFIG = dict(
         "tjsonb_set":             {1: "keys1", 2: "1", 3: "jb1",
                                     5: "null_handle_text1"},
     },
-    skip={
-        # json_each / json_each_text / jsonb_each / jsonb_each_text return
-        # the object's keys, but ALSO write each value directly into the
-        # caller-supplied `values` buffer element-by-element
-        # (`values[i] = state->values[i]`, pgtypes/utils/jsonfuncs.c) --
-        # there is no `int *` capacity in, only `int *count` out, so the
-        # caller must pre-size the buffer before knowing the object's key
-        # count. That shape (a pre-sized OUT buffer, not a sized INPUT array)
-        # is not one of emit_call's generic paths; called by hand in the
-        # cleanup block instead, matching trgeometry_value_n.
-        "re:^json_each$|^json_each_text$|^jsonb_each$|^jsonb_each_text$":
-            "pre-sized OUT-param value buffer, not a generic emit_call shape; covered manually",
-    },
+    skip={},
+    # json_each / json_each_text / jsonb_each / jsonb_each_text return the
+    # object's keys, but ALSO write each value directly into the caller-supplied
+    # `values` buffer element-by-element (`values[i] = state->values[i]`,
+    # pgtypes/utils/jsonfuncs.c) -- there is no `int *` capacity in, only
+    # `int *count` out, so the caller must pre-size the buffer before knowing the
+    # object's key count. That shape (a pre-sized OUT buffer, not a sized INPUT
+    # array) is not one of emit_call's generic paths; it is exercised by hand in
+    # the cleanup block instead, matching trgeometry_value_n.
+    manual=[r"re:^json_each$|^json_each_text$|^jsonb_each$|^jsonb_each_text$"],
     common_inputs="""\
   TimestampTz tstz1 = timestamptz_in("2001-01-02", -1);
   Span *tstzspan1 = tstzspan_in("[2001-01-01, 2001-01-04]");
@@ -1928,7 +1927,8 @@ def write_test(name, cfg):
                              cfg["override_args"],
                              cfg.get("no_free", ()),
                              cfg.get("value_returns", ()),
-                             cfg.get("name_arg_map", {}))
+                             cfg.get("name_arg_map", {}),
+                             cfg.get("manual", ()))
                    for fname, ret, args in decls)
     # A common-input variable that a given type's surface never consumes is
     # acknowledged with (void), the same idiom emit_call uses for by-value
@@ -1980,6 +1980,7 @@ def load_sidecar(path):
     cfg.setdefault("extra_includes", "")
     cfg.setdefault("arg_map", {})
     cfg.setdefault("skip", {})
+    cfg.setdefault("manual", ())
     cfg.setdefault("value_returns", [])
     cfg.setdefault("csv_data", [])
     cfg["override_args"] = {
