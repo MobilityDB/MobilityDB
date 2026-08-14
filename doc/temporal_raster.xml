@@ -13,9 +13,9 @@
 
 	<para>The <ulink url="https://postgis.net/docs/using_raster_dataman.html">PostGIS raster</ulink> extension stores gridded coverage data (elevation, temperature, satellite imagery, …) in the <varname>raster</varname> type. Each raster has one or more bands; a band holds a 2D array of pixel values, a spatial extent, a pixel size, and an optional nodata sentinel value.</para>
 
-	<para>MobilityDB's raster sampling operator evaluates a raster band at the instants of a moving-point trajectory and returns a <varname>tfloat</varname>. Instants whose position falls outside the raster extent or on a nodata pixel are silently dropped. The sampling operators are double-valued whatever the pixel type of the band, so a pixel type belongs to the sampling surface when every value it can hold is exactly representable in a double precision number. That is what lets a band of any type be sampled into one <varname>tfloat</varname>, and a column holding tiles of several pixel types be read by a single query. A pixel type is also accepted under the name PostGIS raster gives it, so the band type an <varname>ST_BandPixelType</varname> call reports (<varname>8BUI</varname>, <varname>16BSI</varname>, <varname>32BF</varname>, …) passes into the tile constructors as it stands. PostGIS raster carries no 16-bit float and no 64-bit integer, so <varname>FLOAT16</varname>, <varname>INT64</varname> and <varname>UINT64</varname> take the spelling its grammar gives them, <varname>16BF</varname>, <varname>64BSI</varname> and <varname>64BUI</varname>. Its <varname>1BB</varname>, <varname>2BUI</varname> and <varname>4BUI</varname> types carry less than a byte a pixel, which a tile has no representation for, and say so. The name a tile reports is the one the RaQuet specification gives the type.
+	<para>MobilityDB's raster sampling operator evaluates a raster band at the instants of a moving-point trajectory and returns a <varname>tfloat</varname>. Instants whose position falls outside the raster extent or on a nodata pixel are silently dropped. The sampling operators are double-valued whatever the pixel type of the band, so a pixel type belongs to the sampling surface when every value it can hold is exactly representable in a double precision number. That is what lets a band of any type be sampled into one <varname>tfloat</varname>, and a column holding tiles of several pixel types be read by a single query. A pixel type is also accepted under the name PostGIS raster gives it, so the band type an <varname>ST_BandPixelType</varname> call reports (<varname>8BUI</varname>, <varname>16BSI</varname>, <varname>32BF</varname>, …) passes into the tile constructors as it stands. PostGIS raster carries no 16-bit float and no 64-bit integer, so <varname>float16</varname>, <varname>int64</varname> and <varname>uint64</varname> take the spelling its grammar gives them, <varname>16BF</varname>, <varname>64BSI</varname> and <varname>64BUI</varname>. Its <varname>1BB</varname>, <varname>2BUI</varname> and <varname>4BUI</varname> types carry less than a byte a pixel, which a tile has no representation for, and say so. The name a tile reports is the one the RaQuet specification gives the type.
 
-The types <varname>UINT64</varname> and <varname>INT64</varname> hold values beyond that domain: a tile of either is stored and read back exactly, while sampling a pixel whose value no double precision number names raises an error rather than answering with a neighbouring value. This enables queries such as <emphasis>what elevation profile did each vehicle follow?</emphasis> or <emphasis>which trips entered a temperature threshold band?</emphasis></para>
+The types <varname>uint64</varname> and <varname>int64</varname> hold values beyond that domain: a tile of either is stored and read back exactly, while sampling a pixel whose value no double precision number names raises an error rather than answering with a neighbouring value. This enables queries such as <emphasis>what elevation profile did each vehicle follow?</emphasis> or <emphasis>which trips entered a temperature threshold band?</emphasis></para>
 
 	<para>To use the operators described here, MobilityDB must be built with <varname>-DRASTER=ON</varname>. On such a build the generated <filename>mobilitydb.control</filename> declares <varname>requires = 'postgis, postgis_raster'</varname>, so a single <varname>CASCADE</varname> creates the full stack:</para>
 	<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -106,7 +106,7 @@ SELECT DISTINCT q
 FROM unnest(quadbins(traj, 8)) AS q;
 
 -- Step 2: sample each matching tile
-SELECT raster_tileValueQuadbin(traj, band_data, width, height, quadbin, 'FLOAT32',
+SELECT raster_tileValueQuadbin(traj, band_data, width, height, quadbin, 'float32',
   nodata, true)
 FROM elevation_raquet
 WHERE quadbin = ANY(quadbins(traj, 8));
@@ -135,18 +135,18 @@ ORDER BY tile_count DESC;
 				<indexterm significance="normal"><primary><varname>rasterTileValueQuadbin</varname></primary></indexterm>
 				<para>Sample a Raquet raster chip along a trajectory using a QUADBIN cell for georeferencing</para>
 				<para><varname>rasterTileValueQuadbin(tgeompoint,bytea,integer,integer,bigint,text,float8,boolean) → tfloat</varname></para>
-				<para>Evaluates a row-major single-band pixel array at each instant of <varname>traj</varname> (SRID 4326). The tile georeferencing (bounding box, pixel-to-coordinate mapping) is derived from <varname>quadbin</varname> alone via the Web-Mercator slippy-tile transform. The <varname>pixtype</varname> argument must be one of <varname>UINT8</varname>, <varname>INT8</varname>, <varname>UINT16</varname>, <varname>INT16</varname>, <varname>UINT32</varname>, <varname>INT32</varname>, <varname>UINT64</varname>, <varname>INT64</varname>, <varname>FLOAT16</varname>, <varname>FLOAT32</varname>, or <varname>FLOAT64</varname>. When <varname>has_nodata</varname> is true, instants whose pixel equals <varname>nodata</varname> are silently dropped. Returns <varname>NULL</varname> when no instant survives.</para>
+				<para>Evaluates a row-major single-band pixel array at each instant of <varname>traj</varname> (SRID 4326). The tile georeferencing (bounding box, pixel-to-coordinate mapping) is derived from <varname>quadbin</varname> alone via the Web-Mercator slippy-tile transform. The <varname>pixtype</varname> argument must be one of <varname>uint8</varname>, <varname>int8</varname>, <varname>uint16</varname>, <varname>int16</varname>, <varname>uint32</varname>, <varname>int32</varname>, <varname>uint64</varname>, <varname>int64</varname>, <varname>float16</varname>, <varname>float32</varname>, or <varname>float64</varname>. When <varname>has_nodata</varname> is true, instants whose pixel equals <varname>nodata</varname> are silently dropped. Returns <varname>NULL</varname> when no instant survives.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Sample elevation tiles from a Raquet Parquet table
 -- for all ship trajectories
 SELECT t.tripid, rasterTileValueQuadbin(t.trip, r.band_data, r.width, r.height,
-  r.quadbin, 'FLOAT32', r.nodata, true)
+  r.quadbin, 'float32', r.nodata, true)
 FROM trips t
 JOIN elevation_raquet r ON r.quadbin = ANY(quadbins(t.trip, 8));
 
 -- Average sea-surface temperature per trajectory
 SELECT t.tripid, avgValue(rasterTileValueQuadbin(t.trip, 
-  r.band_data, 256, 256, r.quadbin, 'INT16', -9999, true)) AS mean_sst
+  r.band_data, 256, 256, r.quadbin, 'int16', -9999, true)) AS mean_sst
 FROM trips t
 JOIN sst_raquet r ON r.quadbin = ANY(quadbins(t.trip, 6));
 </programlisting>
@@ -156,14 +156,14 @@ JOIN sst_raquet r ON r.quadbin = ANY(quadbins(t.trip, 6));
 				<indexterm significance="normal"><primary><varname>raquet</varname></primary></indexterm>
 				<para>Construct a Raquet raster tile from its pixel bytes, dimensions, QUADBIN cell and pixel type</para>
 				<para><varname>raquet(bytea,integer,integer,bigint,text,float8) → raquet</varname></para>
-				<para>Packages a row-major single-band <varname>pixels</varname> array of <varname>width</varname> × <varname>height</varname> pixels of type <varname>pixtype</varname> (one of <varname>UINT8</varname>, <varname>INT8</varname>, <varname>UINT16</varname>, <varname>INT16</varname>, <varname>UINT32</varname>, <varname>INT32</varname>, <varname>UINT64</varname>, <varname>INT64</varname>, <varname>FLOAT16</varname>, <varname>FLOAT32</varname>, or <varname>FLOAT64</varname>), georeferenced by the <varname>quadbin</varname> cell, into a single self-describing <varname>raquet</varname> value. The <varname>nodata</varname> argument is optional; when omitted (<varname>NULL</varname>) the tile carries no nodata sentinel. An error is raised when the <varname>pixels</varname> array is smaller than <varname>width</varname> × <varname>height</varname> × the pixel size. Pixels of more than one byte are little-endian, which is the byte order the RaQuet specification gives them whatever the byte order of the server, so that a tile keeps its values when it is read on another machine. A <varname>raquet</varname> is a GDAL-free, variable-length value with a portable Hex-WKB text and binary representation, distinct from and coexisting with the PostGIS <varname>raster</varname> type used by <link linkend="raster_rasterValue"><varname>rasterValue</varname></link>.</para>
+				<para>Packages a row-major single-band <varname>pixels</varname> array of <varname>width</varname> × <varname>height</varname> pixels of type <varname>pixtype</varname> (one of <varname>uint8</varname>, <varname>int8</varname>, <varname>uint16</varname>, <varname>int16</varname>, <varname>uint32</varname>, <varname>int32</varname>, <varname>uint64</varname>, <varname>int64</varname>, <varname>float16</varname>, <varname>float32</varname>, or <varname>float64</varname>), georeferenced by the <varname>quadbin</varname> cell, into a single self-describing <varname>raquet</varname> value. The <varname>nodata</varname> argument is optional; when omitted (<varname>NULL</varname>) the tile carries no nodata sentinel. An error is raised when the <varname>pixels</varname> array is smaller than <varname>width</varname> × <varname>height</varname> × the pixel size. Pixels of more than one byte are little-endian, which is the byte order the RaQuet specification gives them whatever the byte order of the server, so that a tile keeps its values when it is read on another machine. A <varname>raquet</varname> is a GDAL-free, variable-length value with a portable Hex-WKB text and binary representation, distinct from and coexisting with the PostGIS <varname>raster</varname> type used by <link linkend="raster_rasterValue"><varname>rasterValue</varname></link>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Package the loose tile columns of a Raquet table into raquet values
-SELECT raquet(band_data, width, height, quadbin, 'FLOAT32', nodata) AS tile
+SELECT raquet(band_data, width, height, quadbin, 'float32', nodata) AS tile
 FROM elevation_raquet;
 
 -- A 2 x 2 UINT8 tile with no nodata
-SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'UINT8');
+SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8');
 </programlisting>
 			</listitem>
 
@@ -241,8 +241,8 @@ GROUP BY t.tripid, t.trip;
 				<para><varname>raquetFromHexWKB(text) → raquet</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT raquetFromHexWKB(asHexWKB(raquet('\x01020304'::bytea, 2, 2,
-  5193776270265024512, 'UINT8')))
-  = raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'UINT8');
+  5193776270265024512, 'uint8')))
+  = raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8');
 -- true
 </programlisting>
 			</listitem>
@@ -262,7 +262,7 @@ SELECT raquetFromHexWKB(asHexWKB(raquet('\x01020304'::bytea, 2, 2,
 				<para>Return the QUADBIN cell of a Raquet tile</para>
 				<para><varname>quadbin(raquet) → bigint</varname></para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT quadbin(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'UINT8'));
+SELECT quadbin(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
 -- 5193776270265024512
 </programlisting>
 			</listitem>
@@ -272,7 +272,7 @@ SELECT quadbin(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'UINT8'));
 				<para>Return the width in pixels of a Raquet tile</para>
 				<para><varname>width(raquet) → integer</varname></para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT width(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'UINT8'));
+SELECT width(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
 -- 2
 </programlisting>
 			</listitem>
@@ -282,7 +282,7 @@ SELECT width(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'UINT8'));
 				<para>Return the height in pixels of a Raquet tile</para>
 				<para><varname>height(raquet) → integer</varname></para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT height(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'UINT8'));
+SELECT height(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
 -- 2
 </programlisting>
 			</listitem>
@@ -293,10 +293,10 @@ SELECT height(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'UINT8'));
 				<para><varname>nodata(raquet) → float8</varname></para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT nodata(raquet('\x01020304'::bytea, 2, 2,
-  5193776270265024512, 'UINT8', 255));
+  5193776270265024512, 'uint8', 255));
 -- 255
 -- The sentinel defaults to 0 when the constructor omits it.
-SELECT nodata(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'UINT8'));
+SELECT nodata(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
 -- 0
 </programlisting>
 			</listitem>
@@ -305,11 +305,11 @@ SELECT nodata(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'UINT8'));
 				<indexterm significance="normal"><primary><varname>pixtype</varname></primary></indexterm>
 				<para>Return the name of the pixel data type of a Raquet tile</para>
 				<para><varname>pixtype(raquet) → text</varname></para>
-				<para>The returned name is the one the constructors accept, that is, one of <varname>UINT8</varname>, <varname>INT8</varname>, <varname>UINT16</varname>, <varname>INT16</varname>, <varname>UINT32</varname>, <varname>INT32</varname>, <varname>UINT64</varname>, <varname>INT64</varname>, <varname>FLOAT16</varname>, <varname>FLOAT32</varname>, or <varname>FLOAT64</varname>. The constructors read the name without regard to case, so the lower-case spelling the RaQuet specification gives a tile's <varname>type</varname> field is accepted as it stands; the name returned here keeps the upper case.</para>
+				<para>The returned name is the one the constructors accept, that is, one of <varname>uint8</varname>, <varname>int8</varname>, <varname>uint16</varname>, <varname>int16</varname>, <varname>uint32</varname>, <varname>int32</varname>, <varname>uint64</varname>, <varname>int64</varname>, <varname>float16</varname>, <varname>float32</varname>, or <varname>float64</varname>. The constructors read the name without regard to case, so the lower-case spelling the RaQuet specification gives a tile's <varname>type</varname> field is accepted as it stands; the name returned here keeps the upper case.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Read back the layout of a packaged tile
 SELECT quadbin(tile), width(tile), height(tile), pixtype(tile), nodata(tile)
-FROM (SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'UINT8') AS tile) t;
+FROM (SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8') AS tile) t;
 -- 5193776270265024512 | 2 | 2 | UINT8 | 0
 </programlisting>
 			</listitem>
@@ -320,7 +320,7 @@ FROM (SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'UINT8') AS 
 				<para><varname>pixels(raquet) → bytea</varname></para>
 				<para>The bytes are row-major and packed, <varname>width</varname> × <varname>height</varname> pixels of the size of <varname>pixtype</varname> each, little-endian when a pixel is wider than one byte, which is the layout the constructors accept. A tile therefore round trips through its own accessors.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT pixels(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'UINT8'));
+SELECT pixels(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
 -- \x01020304
 </programlisting>
 			</listitem>
@@ -333,7 +333,7 @@ SELECT pixels(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'UINT8'));
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- The footprint of a tile covering the north-eastern quadrant at zoom 1
 SELECT round(stbox(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512,
-  'UINT8')), 6);
+  'uint8')), 6);
 -- SRID=4326;STBOX X((0,0),(180,85.051129))
 
 -- Keep the tiles whose footprint overlaps a region of interest
@@ -374,8 +374,8 @@ WHERE stbox(r.tile) &amp;&amp; stbox(t.trip);
 				<para>The functions backing these operators are <varname>eq</varname>, <varname>ne</varname>, <varname>lt</varname>, <varname>le</varname>, <varname>ge</varname> and <varname>gt</varname>, together with <varname>cmp(raquet,raquet) → integer</varname>, which returns -1, 0, or 1.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Two tiles with the same cell, layout and pixels are equal
-SELECT raquet('\x0102'::bytea, 2, 1, 5193776270265024512, 'UINT8') =
-       raquet('\x0102'::bytea, 2, 1, 5193776270265024512, 'UINT8');
+SELECT raquet('\x0102'::bytea, 2, 1, 5193776270265024512, 'uint8') =
+       raquet('\x0102'::bytea, 2, 1, 5193776270265024512, 'uint8');
 -- true
 
 -- Deduplicate tiles, which the btree and hash operator classes support

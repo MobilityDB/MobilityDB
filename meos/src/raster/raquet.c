@@ -91,17 +91,17 @@ typedef struct
  */
 static const pixtype_catalog_struct MEOS_PIXTYPE_CATALOG[] =
 {
-  [MEOS_PT_UINT8]   = { "UINT8",   "8BUI",  1 },
-  [MEOS_PT_INT16]   = { "INT16",   "16BSI", 2 },
-  [MEOS_PT_INT32]   = { "INT32",   "32BSI", 4 },
-  [MEOS_PT_FLOAT32] = { "FLOAT32", "32BF",  4 },
-  [MEOS_PT_FLOAT64] = { "FLOAT64", "64BF",  8 },
-  [MEOS_PT_INT8]    = { "INT8",    "8BSI",  1 },
-  [MEOS_PT_UINT16]  = { "UINT16",  "16BUI", 2 },
-  [MEOS_PT_UINT32]  = { "UINT32",  "32BUI", 4 },
-  [MEOS_PT_INT64]   = { "INT64",   "64BSI", 8 },
-  [MEOS_PT_UINT64]  = { "UINT64",  "64BUI", 8 },
-  [MEOS_PT_FLOAT16] = { "FLOAT16", "16BF",  2 },
+  [MEOS_PT_UINT8]   = { "uint8",   "8BUI",  1 },
+  [MEOS_PT_INT16]   = { "int16",   "16BSI", 2 },
+  [MEOS_PT_INT32]   = { "int32",   "32BSI", 4 },
+  [MEOS_PT_FLOAT32] = { "float32", "32BF",  4 },
+  [MEOS_PT_FLOAT64] = { "float64", "64BF",  8 },
+  [MEOS_PT_INT8]    = { "int8",    "8BSI",  1 },
+  [MEOS_PT_UINT16]  = { "uint16",  "16BUI", 2 },
+  [MEOS_PT_UINT32]  = { "uint32",  "32BUI", 4 },
+  [MEOS_PT_INT64]   = { "int64",   "64BSI", 8 },
+  [MEOS_PT_UINT64]  = { "uint64",  "64BUI", 8 },
+  [MEOS_PT_FLOAT16] = { "float16", "16BF",  2 },
 };
 
 /**
@@ -412,12 +412,12 @@ raquet_pixels_from_host(uint8 *pixels, size_t count, MeosPixType pixtype)
 /**
  * @ingroup meos_raster_base_accessor
  * @brief Return the pixel data type corresponding to a name
- * @param[in] str Pixel type name: UINT8, INT8, UINT16, INT16, UINT32, INT32, UINT64, INT64, FLOAT16, FLOAT32, or FLOAT64
+ * @param[in] str Pixel type name: uint8, int8, uint16, int16, uint32, int32, uint64, int64, float16, float32, or float64
  * @note This is the parser counterpart of #raquet_pixtype()
- * @note The name is read without regard to case, so the lower-case spelling
- * the RaQuet specification gives the `type` field of a tile carries straight
- * through from a file into the constructors. The name #raquet_pixtype()
- * returns keeps the upper case the SQL surface documents
+ * @note The name is read without regard to case, so a name written either way
+ * carries into the constructors. The name #raquet_pixtype() returns is the one
+ * the RaQuet specification writes, in lower case, so it compares equal to the
+ * `type` field of the tile a file holds
  * @note The name PostGIS raster gives a pixel type is accepted for the same
  * type, so the band type an `ST_BandPixelType` call reports carries into the
  * constructors as it stands. The types PostGIS carries in less than a byte a
@@ -701,8 +701,10 @@ raquet_nodata(const Raquet *rq)
  * @brief Return the name of the pixel data type of a Raquet tile
  * @param[in] rq Raquet tile
  * @return On error return @p NULL
- * @note The returned name is the one accepted by the tile constructors, that
- * is, one of UINT8, INT8, UINT16, INT16, UINT32, INT32, UINT64, INT64, FLOAT16, FLOAT32, or FLOAT64
+ * @note The returned name is the one the RaQuet specification writes for the
+ * type, that is, one of uint8, int8, uint16, int16, uint32, int32, uint64,
+ * int64, float16, float32, or float64, so it compares equal to the `type`
+ * field of the tile a RaQuet file holds
  * @csqlfn #Raquet_pixtype()
  */
 char *
