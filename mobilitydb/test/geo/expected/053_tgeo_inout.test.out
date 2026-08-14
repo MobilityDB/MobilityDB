@@ -682,6 +682,12 @@ SELECT asBinary(tgeometry 'Point(1 1)@2000-01-01', 'XDR');
  \x00003c0100000000013ff00000000000003ff000000000000000000006b49d2000
 (1 row)
 
+SELECT asText(tgeometryFromBinary(asBinary(tgeometry 'Point(1 2 3)@2001-01-01')));
+                    astext                    
+----------------------------------------------
+ POINT Z (1 2 3)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
 SELECT asHexEWKB(tgeometry '[Point(1 1)@2000-01-01]');
                                   ashexewkb                                   
 ------------------------------------------------------------------------------

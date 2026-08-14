@@ -1247,8 +1247,11 @@ spatial_wkb_needs_srid(int32_t srid, uint8_t variant)
 static size_t
 geo_to_wkb_size(const GSERIALIZED *gs, uint8_t variant)
 {
+  /* On the non-extended path emit ISO WKB so the Z and M ordinates are encoded
+   * without the SRID; the extended path already carries both. */
+  uint8_t v = (variant & WKB_EXTENDED) ? variant : (variant | (uint8_t) WKB_ISO);
   LWGEOM *geo = lwgeom_from_gserialized(gs);
-  size_t result = lwgeom_to_wkb_size(geo, variant);
+  size_t result = lwgeom_to_wkb_size(geo, v);
   lwgeom_free(geo);
   return result;
 }
@@ -2005,8 +2008,11 @@ text_to_wkb_buf(const text *txt, uint8_t *buf, uint8_t variant)
 static uint8_t *
 geo_to_wkb_buf(const GSERIALIZED *gs, uint8_t *buf, uint8_t variant)
 {
+  /* On the non-extended path emit ISO WKB so the Z and M ordinates are encoded
+   * without the SRID; the extended path already carries both. */
+  uint8_t v = (variant & WKB_EXTENDED) ? variant : (variant | (uint8_t) WKB_ISO);
   LWGEOM *geo = lwgeom_from_gserialized(gs);
-  buf = lwgeom_to_wkb_buf(geo, buf, variant);
+  buf = lwgeom_to_wkb_buf(geo, buf, v);
   lwgeom_free(geo);
   return buf;
 }
