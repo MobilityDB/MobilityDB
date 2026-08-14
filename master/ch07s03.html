@@ -40,7 +40,7 @@ SELECT asMFJSON(tgeompoint 'SRID=4326;
  <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
 </p><p><code class="varname">asBinary(tspatial,endian text='') → bytea</code></p><p><code class="varname">asEWKB(tspatial,endian text='') → bytea</code></p><p><code class="varname">asHexEWKB(tspatial,endian text='') → text</code></p><p>The result is encoded using either the little-endian (NDR) or the big-endian (XDR) encoding. If no encoding is specified, then the encoding of the machine is used.</p><pre class="programlisting">
 SELECT asBinary(tgeompoint 'Point(1 2 3)@2001-01-01');
--- \x012e0011000000000000f03f00000000000000400000000000000840009c57d3c11c0000
+-- \x012e001101e9030000000000000000f03f00000000000000400000000000000840009c57d3c11c0000
 SELECT asEWKB(tgeogpoint 'SRID=7844;Point(1 2 3)@2001-01-01');
 -- \x012f0071a41e0000000000000000f03f00000000000000400000000000000840009c57d3c11c0000
 SELECT asHexEWKB(tgeompoint 'SRID=3812;Point(1 2 3)@2001-01-01');
