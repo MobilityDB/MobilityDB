@@ -99,7 +99,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__base__inout_gaa35aedec07d95b3e5964c18649a23d26.html#gaa35aedec07d95b3e5964c18649a23d26">pcpoint_hex_out</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__base__comp_gad892b4bd9038d7177545fbaeba48407b.html#gad892b4bd9038d7177545fbaeba48407b">pcpoint_le</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__base__comp_ga470eabcc40fa0540df67e05739cb86f8.html#ga470eabcc40fa0540df67e05739cb86f8">pcpoint_lt</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="pcpoint_8c_adac30419017076facf39f6c3065fac32.html#adac30419017076facf39f6c3065fac32">pcpoint_meaningful_size</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="pcpoint_8c_a43c35797e376a0c5953a39fb240a190a.html#a43c35797e376a0c5953a39fb240a190a">pcpoint_meaningful_size</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__base__comp_gabf725c3bc46fbd2a0aa6348b5dc89c6c.html#gabf725c3bc46fbd2a0aa6348b5dc89c6c">pcpoint_ne</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pcpoint_8c_adbaa898278f48241121e05da167a1a80.html#adbaa898278f48241121e05da167a1a80">pcpoint_parse</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pcpoint_8c_a37751cbb57e038e6baf0e13bb4ab44c4.html#a37751cbb57e038e6baf0e13bb4ab44c4">PCPOINT_TAIL_PADDING</a></td></tr>
@@ -108,32 +108,26 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="adac30419017076facf39f6c3065fac32" name="adac30419017076facf39f6c3065fac32"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#adac30419017076facf39f6c3065fac32">&#9670;&#160;</a></span>pcpoint_meaningful_size()</h2>
+<a id="a43c35797e376a0c5953a39fb240a190a" name="a43c35797e376a0c5953a39fb240a190a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a43c35797e376a0c5953a39fb240a190a">&#9670;&#160;</a></span>pcpoint_meaningful_size()</h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static size_t pcpoint_meaningful_size </td>
+          <td class="memname">size_t pcpoint_meaningful_size </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structPcpoint.html">Pcpoint</a> *&#160;</td>
           <td class="paramname"><em>pt</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
 <p>Return the meaningful byte length of a pcpoint — i.e. </p>
-<p >VARSIZE minus pgpointcloud's struct-tail padding. </p><dl class="section note"><dt>Note</dt><dd>Guards against degenerate tiny values: if the computed length would dip below the header + pcid (8 bytes), fall back to VARSIZE. In practice any well-formed pcpoint has VARSIZE &gt;= 12 (header + pcid + at least 1 data byte from the data[1] placeholder) so the guard only protects against malformed input, not valid values. </dd></dl>
+<p >VARSIZE minus pgpointcloud's struct-tail padding. </p><dl class="section note"><dt>Note</dt><dd>Guards against degenerate tiny values: if the computed length would dip below the header + pcid (8 bytes), fall back to VARSIZE. In practice any well-formed pcpoint has VARSIZE &gt;= 12 (header + pcid + at least 1 data byte from the data[1] placeholder) so the guard only protects against malformed input, not valid values. </dd>
+<dd>
+Exported (not <code>static</code>) so that the generic WKB path in temporal/type_out.c (<code>pcpoint_to_wkb_buf</code>) can zero the same padding bytes and stay byte-consistent with the hex-WKB path below. </dd></dl>
 
 </div>
 </div>
