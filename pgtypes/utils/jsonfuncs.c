@@ -853,7 +853,14 @@ get_path_all(text *js, text **path_elems, int path_len, bool as_text)
       ipath[i] = INT_MIN;
   }
 
-  return get_worker(js, tpath, ipath, path_len, as_text);
+  text *result = get_worker(js, tpath, ipath, path_len, as_text);
+  /* get_worker() does not take ownership of tpath/ipath (no memory context
+   * to reclaim them in standalone MEOS): free the per-element cstrings and
+   * both arrays here */ // MEOS
+  for (int i = 0; i < path_len; i++)
+    pfree(tpath[i]); // MEOS
+  pfree(tpath); pfree(ipath); // MEOS
+  return result;
 }
 
 /**
@@ -2789,6 +2796,7 @@ pg_jsonb_set(const Jsonb *jb, text **path_elems, int path_len,
     &st, 0, &newval, create ? JB_PATH_CREATE : JB_PATH_REPLACE);
 
   assert(res != NULL);
+  pfree(path_nulls); // MEOS
   return JsonbValueToJsonb(res);
 }
 
