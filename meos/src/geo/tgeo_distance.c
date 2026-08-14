@@ -81,7 +81,7 @@ extern double circ_tree_distance_tree_internal(const CIRC_NODE* n1,
  * larger values, so the minimum over the candidates is exact.
  */
 static double
-geodist_minfun(double A, double B, double C, double R0, double DR, double lo,
+dist_minfun(double A, double B, double C, double R0, double DR, double lo,
   double hi)
 {
   double cand[6];
@@ -132,8 +132,8 @@ geodist_minfun(double A, double B, double C, double R0, double DR, double lo,
  * it as needed. A single-point array contributes one degenerate segment.
  */
 static void
-geodist_geom_edges_add_ptarray(const POINTARRAY *pa, bool is_poly,
-  GeoDistEdge **arr, int *cap, int *cnt)
+dist_geom_edges_add_ptarray(const POINTARRAY *pa, bool is_poly,
+  DistEdge **arr, int *cap, int *cnt)
 {
   if (! pa || pa->npoints == 0)
     return;
@@ -146,11 +146,11 @@ geodist_geom_edges_add_ptarray(const POINTARRAY *pa, bool is_poly,
     if (*cnt == *cap)
     {
       int newcap = (*cap == 0) ? 64 : *cap * 2;
-      *arr = (*arr == NULL) ? palloc(sizeof(GeoDistEdge) * newcap) :
-        repalloc(*arr, sizeof(GeoDistEdge) * newcap);
+      *arr = (*arr == NULL) ? palloc(sizeof(DistEdge) * newcap) :
+        repalloc(*arr, sizeof(DistEdge) * newcap);
       *cap = newcap;
     }
-    GeoDistEdge *s = &(*arr)[(*cnt)++];
+    DistEdge *s = &(*arr)[(*cnt)++];
     s->x1 = a->x; s->y1 = a->y; s->x2 = b->x; s->y2 = b->y;
     s->xmin = fmin(a->x, b->x); s->xmax = fmax(a->x, b->x);
     s->ymin = fmin(a->y, b->y); s->ymax = fmax(a->y, b->y);
@@ -163,7 +163,7 @@ geodist_geom_edges_add_ptarray(const POINTARRAY *pa, bool is_poly,
  * @brief Normalise an angle to [0, 2*pi)
  */
 static double
-geodist_angle_norm(double a)
+dist_angle_norm(double a)
 {
   const double TWOPI = 2.0 * M_PI;
   double r = fmod(a, TWOPI);
@@ -174,12 +174,12 @@ geodist_angle_norm(double a)
  * @brief True if the angle @p phi lies within the arc's angular span
  */
 static bool
-geodist_geom_arc_contains_angle(const GeoDistEdge *e, double phi)
+dist_geom_arc_contains_angle(const DistEdge *e, double phi)
 {
   double sweep = e->accw ?
-    geodist_angle_norm(e->at1 - e->at0) : geodist_angle_norm(e->at0 - e->at1);
+    dist_angle_norm(e->at1 - e->at0) : dist_angle_norm(e->at0 - e->at1);
   double off = e->accw ?
-    geodist_angle_norm(phi - e->at0) : geodist_angle_norm(e->at0 - phi);
+    dist_angle_norm(phi - e->at0) : dist_angle_norm(e->at0 - phi);
   return off <= sweep + FP_TOLERANCE;
 }
 
@@ -189,7 +189,7 @@ geodist_geom_arc_contains_angle(const GeoDistEdge *e, double phi)
  * arc's angular span, so the bucket hierarchy never prunes away the arc bulge
  */
 static void
-geodist_geom_arc_set_bbox(GeoDistEdge *e)
+dist_geom_arc_set_bbox(DistEdge *e)
 {
   double xmin = fmin(e->x1, e->x2), xmax = fmax(e->x1, e->x2);
   double ymin = fmin(e->y1, e->y2), ymax = fmax(e->y1, e->y2);
@@ -197,7 +197,7 @@ geodist_geom_arc_set_bbox(GeoDistEdge *e)
   const double ex[4] = {e->acx + e->arad, e->acx, e->acx - e->arad, e->acx};
   const double ey[4] = {e->acy, e->acy + e->arad, e->acy, e->acy - e->arad};
   for (int k = 0; k < 4; k++)
-    if (geodist_geom_arc_contains_angle(e, ang[k]))
+    if (dist_geom_arc_contains_angle(e, ang[k]))
     {
       if (ex[k] < xmin) xmin = ex[k];
       if (ex[k] > xmax) xmax = ex[k];
@@ -214,16 +214,16 @@ geodist_geom_arc_set_bbox(GeoDistEdge *e)
  * circumcentre construction of the native clip engine (#tpoint_geom_clip.c).
  */
 static void
-geodist_segs_add_arc(double ax, double ay, double bx, double by, double cx,
-  double cy, bool is_poly, GeoDistEdge **arr, int *cap, int *cnt)
+dist_segs_add_arc(double ax, double ay, double bx, double by, double cx,
+  double cy, bool is_poly, DistEdge **arr, int *cap, int *cnt)
 {
   if (*cnt + 2 > *cap)
   {
     int newcap = (*cap == 0) ? 64 : *cap * 2;
     while (*cnt + 2 > newcap)
       newcap *= 2;
-    *arr = (*arr == NULL) ? palloc(sizeof(GeoDistEdge) * newcap) :
-      repalloc(*arr, sizeof(GeoDistEdge) * newcap);
+    *arr = (*arr == NULL) ? palloc(sizeof(DistEdge) * newcap) :
+      repalloc(*arr, sizeof(DistEdge) * newcap);
     *cap = newcap;
   }
   /* Twice the signed area of triangle ABC; zero => collinear */
@@ -235,7 +235,7 @@ geodist_segs_add_arc(double ax, double ay, double bx, double by, double cx,
     {
       double p1x = seg == 0 ? ax : bx, p1y = seg == 0 ? ay : by;
       double p2x = seg == 0 ? bx : cx, p2y = seg == 0 ? by : cy;
-      GeoDistEdge *s = &(*arr)[(*cnt)++];
+      DistEdge *s = &(*arr)[(*cnt)++];
       s->x1 = p1x; s->y1 = p1y; s->x2 = p2x; s->y2 = p2y;
       s->xmin = fmin(p1x, p2x); s->xmax = fmax(p1x, p2x);
       s->ymin = fmin(p1y, p2y); s->ymax = fmax(p1y, p2y);
@@ -244,7 +244,7 @@ geodist_segs_add_arc(double ax, double ay, double bx, double by, double cx,
     return;
   }
   double a2 = ax * ax + ay * ay, b2 = bx * bx + by * by, c2 = cx * cx + cy * cy;
-  GeoDistEdge *s = &(*arr)[(*cnt)++];
+  DistEdge *s = &(*arr)[(*cnt)++];
   s->acx = (a2 * (by - cy) + b2 * (cy - ay) + c2 * (ay - by)) / d;
   s->acy = (a2 * (cx - bx) + b2 * (ax - cx) + c2 * (bx - ax)) / d;
   s->arad = hypot(ax - s->acx, ay - s->acy);
@@ -253,7 +253,7 @@ geodist_segs_add_arc(double ax, double ay, double bx, double by, double cx,
   s->at1 = atan2(cy - s->acy, cx - s->acx);
   s->accw = ((bx - ax) * (cy - ay) - (by - ay) * (cx - ax)) > 0.0;
   s->is_poly = is_poly; s->is_arc = true;
-  geodist_geom_arc_set_bbox(s);
+  dist_geom_arc_set_bbox(s);
 }
 
 /**
@@ -261,8 +261,8 @@ geodist_segs_add_arc(double ax, double ay, double bx, double by, double cx,
  * groups) to the segment array
  */
 static void
-geodist_segs_add_circstring(const LWCIRCSTRING *circ, bool is_poly,
-  GeoDistEdge **arr, int *cap, int *cnt)
+dist_segs_add_circstring(const LWCIRCSTRING *circ, bool is_poly,
+  DistEdge **arr, int *cap, int *cnt)
 {
   const POINTARRAY *pa = circ->points;
   int np = (int) pa->npoints;
@@ -271,7 +271,7 @@ geodist_segs_add_circstring(const LWCIRCSTRING *circ, bool is_poly,
     const POINT2D *a = getPoint2d_cp(pa, i);
     const POINT2D *b = getPoint2d_cp(pa, i + 1);
     const POINT2D *c = getPoint2d_cp(pa, i + 2);
-    geodist_segs_add_arc(a->x, a->y, b->x, b->y, c->x, c->y, is_poly, arr, cap,
+    dist_segs_add_arc(a->x, a->y, b->x, b->y, c->x, c->y, is_poly, arr, cap,
       cnt);
   }
 }
@@ -283,26 +283,26 @@ geodist_segs_add_circstring(const LWCIRCSTRING *circ, bool is_poly,
  * consume arc edges (@p allow_arc is false), so the exact path is used.
  */
 static bool
-geodist_segs_add_curvepoly_ring(const LWGEOM *ring, bool allow_arc,
-  GeoDistEdge **arr, int *cap, int *cnt)
+dist_segs_add_curvepoly_ring(const LWGEOM *ring, bool allow_arc,
+  DistEdge **arr, int *cap, int *cnt)
 {
   switch (ring->type)
   {
     case LINETYPE:
-      geodist_geom_edges_add_ptarray(lwgeom_as_lwline(ring)->points, true, arr, cap,
+      dist_geom_edges_add_ptarray(lwgeom_as_lwline(ring)->points, true, arr, cap,
         cnt);
       return true;
     case CIRCSTRINGTYPE:
       if (! allow_arc)
         return false;
-      geodist_segs_add_circstring(lwgeom_as_lwcircstring(ring), true, arr, cap,
+      dist_segs_add_circstring(lwgeom_as_lwcircstring(ring), true, arr, cap,
         cnt);
       return true;
     case COMPOUNDTYPE:
     {
       const LWCOLLECTION *c = lwgeom_as_lwcollection(ring);
       for (uint32_t i = 0; i < c->ngeoms; i++)
-        if (! geodist_segs_add_curvepoly_ring(c->geoms[i], allow_arc, arr, cap,
+        if (! dist_segs_add_curvepoly_ring(c->geoms[i], allow_arc, arr, cap,
               cnt))
           return false;
       return true;
@@ -320,13 +320,13 @@ geodist_segs_add_curvepoly_ring(const LWGEOM *ring, bool allow_arc,
  * (the caller then falls back to the exact traversed-area path).
  */
 bool
-geodist_geom_edges(const LWGEOM *lw, bool allow_arc, GeoDistEdge **arr,
+dist_geom_edges(const LWGEOM *lw, bool allow_arc, DistEdge **arr,
   int *cap, int *cnt, bool *has_poly)
 {
   switch (lw->type)
   {
     case POINTTYPE:
-      geodist_geom_edges_add_ptarray(lwgeom_as_lwpoint(lw)->point, false, arr, cap,
+      dist_geom_edges_add_ptarray(lwgeom_as_lwpoint(lw)->point, false, arr, cap,
         cnt);
       return true;
     case CIRCSTRINGTYPE:
@@ -334,15 +334,15 @@ geodist_geom_edges(const LWGEOM *lw, bool allow_arc, GeoDistEdge **arr,
        * nearest-approach distance). Otherwise fall back to the exact path. */
       if (! allow_arc)
         return false;
-      geodist_segs_add_circstring(lwgeom_as_lwcircstring(lw), false, arr, cap,
+      dist_segs_add_circstring(lwgeom_as_lwcircstring(lw), false, arr, cap,
         cnt);
       return true;
     case LINETYPE:
-      geodist_geom_edges_add_ptarray(lwgeom_as_lwline(lw)->points, false, arr, cap,
+      dist_geom_edges_add_ptarray(lwgeom_as_lwline(lw)->points, false, arr, cap,
         cnt);
       return true;
     case TRIANGLETYPE:
-      geodist_geom_edges_add_ptarray(lwgeom_as_lwtriangle(lw)->points, true, arr,
+      dist_geom_edges_add_ptarray(lwgeom_as_lwtriangle(lw)->points, true, arr,
         cap, cnt);
       *has_poly = true;
       return true;
@@ -350,7 +350,7 @@ geodist_geom_edges(const LWGEOM *lw, bool allow_arc, GeoDistEdge **arr,
     {
       const LWPOLY *p = lwgeom_as_lwpoly(lw);
       for (uint32_t i = 0; i < p->nrings; i++)
-        geodist_geom_edges_add_ptarray(p->rings[i], true, arr, cap, cnt);
+        dist_geom_edges_add_ptarray(p->rings[i], true, arr, cap, cnt);
       if (p->nrings > 0)
         *has_poly = true;
       return true;
@@ -359,11 +359,11 @@ geodist_geom_edges(const LWGEOM *lw, bool allow_arc, GeoDistEdge **arr,
     {
       /* A curve polygon is bounded by rings that are line strings, circular
        * strings, or compound curves. Decompose each ring with polygon (region)
-       * semantics so the arc-aware even-odd test in #geodist_geom_point_inside
+       * semantics so the arc-aware even-odd test in #dist_geom_point_inside
        * treats it as a boundary. */
       const LWCURVEPOLY *cp = lwgeom_as_lwcurvepoly(lw);
       for (uint32_t i = 0; i < cp->nrings; i++)
-        if (! geodist_segs_add_curvepoly_ring(cp->rings[i], allow_arc, arr,
+        if (! dist_segs_add_curvepoly_ring(cp->rings[i], allow_arc, arr,
               cap, cnt))
           return false;
       if (cp->nrings > 0)
@@ -386,7 +386,7 @@ geodist_geom_edges(const LWGEOM *lw, bool allow_arc, GeoDistEdge **arr,
     {
       const LWCOLLECTION *c = lwgeom_as_lwcollection(lw);
       for (uint32_t i = 0; i < c->ngeoms; i++)
-        if (! geodist_geom_edges(c->geoms[i], allow_arc, arr, cap, cnt, has_poly))
+        if (! dist_geom_edges(c->geoms[i], allow_arc, arr, cap, cnt, has_poly))
           return false;
       return true;
     }
@@ -405,7 +405,7 @@ geodist_geom_edges(const LWGEOM *lw, bool allow_arc, GeoDistEdge **arr,
  * line, and standalone (1D) arc edges (not @p is_poly) contribute nothing.
  */
 static void
-geodist_poly_seg_raycross(const GeoDistEdge *s, double x, double y,
+dist_poly_seg_raycross(const DistEdge *s, double x, double y,
   bool *inside)
 {
   if (! s->is_poly)
@@ -429,7 +429,7 @@ geodist_poly_seg_raycross(const GeoDistEdge *s, double x, double y,
       const double xi = xhit[k];
       if (xi <= x)
         continue;
-      if (! geodist_geom_arc_contains_angle(s, atan2(dyc, xi - s->acx)))
+      if (! dist_geom_arc_contains_angle(s, atan2(dyc, xi - s->acx)))
         continue;
       /* Half-open ownership, mirroring the straight-edge rule: a crossing at an
        * arc endpoint (a ring junction on the ray) is owned by this edge only if
@@ -464,8 +464,8 @@ geodist_poly_seg_raycross(const GeoDistEdge *s, double x, double y,
  * centre moves from (cx1,cy1) to (cx2,cy2) and the radius from r1 to r2
  */
 double
-geodist_segm_edge_mindist(double cx1, double cy1, double cx2, double cy2,
-  double r1, double r2, const GeoDistEdge *e)
+dist_segm_edge_mindist(double cx1, double cy1, double cx2, double cy2,
+  double r1, double r2, const DistEdge *e)
 {
   const double dcx = cx2 - cx1, dcy = cy2 - cy1;
   const double dr = r2 - r1;
@@ -479,7 +479,7 @@ geodist_segm_edge_mindist(double cx1, double cy1, double cx2, double cy2,
     double A = dcx * dcx + dcy * dcy;
     double B = 2.0 * ((cx1 - ax) * dcx + (cy1 - ay) * dcy);
     double C = (cx1 - ax) * (cx1 - ax) + (cy1 - ay) * (cy1 - ay);
-    return geodist_minfun(A, B, C, r1, dr, 0.0, 1.0);
+    return dist_minfun(A, B, C, r1, dr, 0.0, 1.0);
   }
 
   /* Projection parameter s(t) = (s0 + s1 t) / l2, split [0,1] at s=0, s=1 */
@@ -531,7 +531,7 @@ geodist_segm_edge_mindist(double cx1, double cy1, double cx2, double cy2,
       B = 2.0 * k0 * k1 / l2;
       C = k0 * k0 / l2;
     }
-    double m = geodist_minfun(A, B, C, r1, dr, lo, hi);
+    double m = dist_minfun(A, B, C, r1, dr, lo, hi);
     if (m < best) best = m;
   }
   return best;
@@ -547,14 +547,14 @@ geodist_segm_edge_mindist(double cx1, double cy1, double cx2, double cy2,
  * | sqrt(Q(t)) - R | - r(t); its minimisers over t are the interval endpoints,
  * the circle crossings sqrt(Q)=R (kinks of the absolute value), and the
  * stationary points, whose squared equation (Q')^2 = 4 dr^2 Q is independent
- * of the sign branch and of R (identical to #geodist_minfun). Where phi(t) is
+ * of the sign branch and of R (identical to #dist_minfun). Where phi(t) is
  * outside the span the nearest arc point is an endpoint, covered by the two
  * endpoint point-distance minimisations. Taking the minimum over the
  * angle-gated on-span candidates and the two endpoint candidates is exact.
  */
 double
-geodist_segm_arc_mindist(double cx1, double cy1, double cx2, double cy2,
-  double r1, double r2, const GeoDistEdge *e)
+dist_segm_arc_mindist(double cx1, double cy1, double cx2, double cy2,
+  double r1, double r2, const DistEdge *e)
 {
   const double dcx = cx2 - cx1, dcy = cy2 - cy1;
   const double dr = r2 - r1;
@@ -616,7 +616,7 @@ geodist_segm_arc_mindist(double cx1, double cy1, double cx2, double cy2,
     double q = A * t * t + B * t + C;
     if (q < 0.0) q = 0.0;
     double cpx = cx1 + dcx * t, cpy = cy1 + dcy * t;
-    if (! geodist_geom_arc_contains_angle(e, atan2(cpy - py, cpx - px)))
+    if (! dist_geom_arc_contains_angle(e, atan2(cpy - py, cpx - px)))
       continue;
     double f = fabs(sqrt(q) - R) - (r1 + dr * t);
     if (f < best) best = f;
@@ -631,18 +631,18 @@ geodist_segm_arc_mindist(double cx1, double cy1, double cx2, double cy2,
     double Ae = A;
     double Be = 2.0 * ((cx1 - ex) * dcx + (cy1 - ey) * dcy);
     double Ce = (cx1 - ex) * (cx1 - ex) + (cy1 - ey) * (cy1 - ey);
-    double m = geodist_minfun(Ae, Be, Ce, r1, dr, 0.0, 1.0);
+    double m = dist_minfun(Ae, Be, Ce, r1, dr, 0.0, 1.0);
     if (m < best) best = m;
   }
   return best;
 }
 
 /**
- * @brief Like #geodist_minfun but also returns the argument that attains the
+ * @brief Like #dist_minfun but also returns the argument that attains the
  * minimum (clamped into [lo,hi])
  */
 static double
-geodist_minfun_w(double A, double B, double C, double R0, double DR, double lo,
+dist_minfun_w(double A, double B, double C, double R0, double DR, double lo,
   double hi, double *argt)
 {
   double cand[6];
@@ -687,11 +687,11 @@ geodist_minfun_w(double A, double B, double C, double R0, double DR, double lo,
 
 /**
  * @brief Minimum of [ dist(c(t), edge) - r(t) ] for t in [0,1] together
- * with the argument t that attains it (mirrors #geodist_segm_edge_mindist)
+ * with the argument t that attains it (mirrors #dist_segm_edge_mindist)
  */
 static double
-geodist_segm_edge_dt(double cx1, double cy1, double cx2, double cy2, double r1,
-  double r2, const GeoDistEdge *e, double *out_t)
+dist_segm_edge_dt(double cx1, double cy1, double cx2, double cy2, double r1,
+  double r2, const DistEdge *e, double *out_t)
 {
   const double dcx = cx2 - cx1, dcy = cy2 - cy1;
   const double dr = r2 - r1;
@@ -703,7 +703,7 @@ geodist_segm_edge_dt(double cx1, double cy1, double cx2, double cy2, double r1,
     double A = dcx * dcx + dcy * dcy;
     double B = 2.0 * ((cx1 - ax) * dcx + (cy1 - ay) * dcy);
     double C = (cx1 - ax) * (cx1 - ax) + (cy1 - ay) * (cy1 - ay);
-    return geodist_minfun_w(A, B, C, r1, dr, 0.0, 1.0, out_t);
+    return dist_minfun_w(A, B, C, r1, dr, 0.0, 1.0, out_t);
   }
   const double s0 = (cx1 - ax) * ux + (cy1 - ay) * uy;
   const double s1 = dcx * ux + dcy * uy;
@@ -749,7 +749,7 @@ geodist_segm_edge_dt(double cx1, double cy1, double cx2, double cy2, double r1,
       C = k0 * k0 / l2;
     }
     double rt;
-    double m = geodist_minfun_w(A, B, C, r1, dr, lo, hi, &rt);
+    double m = dist_minfun_w(A, B, C, r1, dr, lo, hi, &rt);
     if (m < best) { best = m; bt = rt; }
   }
   *out_t = bt;
@@ -757,12 +757,12 @@ geodist_segm_edge_dt(double cx1, double cy1, double cx2, double cy2, double r1,
 }
 
 /**
- * @brief Like #geodist_segm_arc_mindist but also returns the argument t that
- * attains the minimum (mirrors #geodist_segm_edge_dt for arc edges)
+ * @brief Like #dist_segm_arc_mindist but also returns the argument t that
+ * attains the minimum (mirrors #dist_segm_edge_dt for arc edges)
  */
 static double
-geodist_segm_arc_dt(double cx1, double cy1, double cx2, double cy2, double r1,
-  double r2, const GeoDistEdge *e, double *out_t)
+dist_segm_arc_dt(double cx1, double cy1, double cx2, double cy2, double r1,
+  double r2, const DistEdge *e, double *out_t)
 {
   const double dcx = cx2 - cx1, dcy = cy2 - cy1;
   const double dr = r2 - r1;
@@ -824,7 +824,7 @@ geodist_segm_arc_dt(double cx1, double cy1, double cx2, double cy2, double r1,
     double q = A * t * t + B * t + C;
     if (q < 0.0) q = 0.0;
     double cpx = cx1 + dcx * t, cpy = cy1 + dcy * t;
-    if (! geodist_geom_arc_contains_angle(e, atan2(cpy - py, cpx - px)))
+    if (! dist_geom_arc_contains_angle(e, atan2(cpy - py, cpx - px)))
       continue;
     double f = fabs(sqrt(q) - R) - (r1 + dr * t);
     if (f < best) { best = f; bt = t; }
@@ -837,7 +837,7 @@ geodist_segm_arc_dt(double cx1, double cy1, double cx2, double cy2, double r1,
     double Be = 2.0 * ((cx1 - ex) * dcx + (cy1 - ey) * dcy);
     double Ce = (cx1 - ex) * (cx1 - ex) + (cy1 - ey) * (cy1 - ey);
     double rt;
-    double m = geodist_minfun_w(A, Be, Ce, r1, dr, 0.0, 1.0, &rt);
+    double m = dist_minfun_w(A, Be, Ce, r1, dr, 0.0, 1.0, &rt);
     if (m < best) { best = m; bt = rt; }
   }
   *out_t = bt;
@@ -848,7 +848,7 @@ geodist_segm_arc_dt(double cx1, double cy1, double cx2, double cy2, double r1,
  * @brief Closest point on edge @p e to (px,py)
  */
 static void
-geodist_geom_closest_on_edge(double px, double py, const GeoDistEdge *e,
+dist_geom_closest_on_edge(double px, double py, const DistEdge *e,
   double *qx, double *qy)
 {
   double ux = e->x2 - e->x1, uy = e->y2 - e->y1;
@@ -867,12 +867,12 @@ geodist_geom_closest_on_edge(double px, double py, const GeoDistEdge *e,
  * arc endpoint
  */
 static void
-geodist_geom_closest_on_arc(double px, double py, const GeoDistEdge *e,
+dist_geom_closest_on_arc(double px, double py, const DistEdge *e,
   double *qx, double *qy)
 {
   double vx = px - e->acx, vy = py - e->acy;
   double vl = hypot(vx, vy);
-  if (vl > FP_TOLERANCE && geodist_geom_arc_contains_angle(e, atan2(vy, vx)))
+  if (vl > FP_TOLERANCE && dist_geom_arc_contains_angle(e, atan2(vy, vx)))
   {
     *qx = e->acx + vx * (e->arad / vl);
     *qy = e->acy + vy * (e->arad / vl);
@@ -895,13 +895,13 @@ typedef struct
 {
   uint32_t key;
   int idx;
-} GeoDistSortItem;
+} DistSortItem;
 
 /**
  * @brief Spread the low 16 bits of @p v with one zero bit between each
  */
 static uint32_t
-geodist_geom_morton_part(uint32_t v)
+dist_geom_morton_part(uint32_t v)
 {
   v &= 0x0000ffff;
   v = (v | (v << 8)) & 0x00ff00ff;
@@ -912,13 +912,13 @@ geodist_geom_morton_part(uint32_t v)
 }
 
 /**
- * @brief Order GeoDistSortItem by Morton key
+ * @brief Order DistSortItem by Morton key
  */
 static int
-geodist_geom_morton_cmp(const void *a, const void *b)
+dist_geom_morton_cmp(const void *a, const void *b)
 {
-  uint32_t ka = ((const GeoDistSortItem *) a)->key;
-  uint32_t kb = ((const GeoDistSortItem *) b)->key;
+  uint32_t ka = ((const DistSortItem *) a)->key;
+  uint32_t kb = ((const DistSortItem *) b)->key;
   return (ka > kb) - (ka < kb);
 }
 
@@ -930,28 +930,28 @@ geodist_geom_morton_cmp(const void *a, const void *b)
  * roughly O(sqrt(edges) + matches) — the geometry's overall bounding box is too
  * coarse for large coastal polygons, but the bucket boxes are tight.
  */
-static GeoDistBucket *
-geodist_geom_build_buckets(GeoDistEdge *segs, int n, double gxmin,
+static DistBucket *
+dist_geom_build_buckets(DistEdge *segs, int n, double gxmin,
   double gymin, double gxmax, double gymax, int *nbk_out)
 {
   double sx = (gxmax > gxmin) ? 65535.0 / (gxmax - gxmin) : 0.0;
   double sy = (gymax > gymin) ? 65535.0 / (gymax - gymin) : 0.0;
-  GeoDistSortItem *items = palloc(sizeof(GeoDistSortItem) * n);
+  DistSortItem *items = palloc(sizeof(DistSortItem) * n);
   for (int i = 0; i < n; i++)
   {
     double cx = 0.5 * (segs[i].xmin + segs[i].xmax);
     double cy = 0.5 * (segs[i].ymin + segs[i].ymax);
     uint32_t ix = (uint32_t) ((cx - gxmin) * sx);
     uint32_t iy = (uint32_t) ((cy - gymin) * sy);
-    items[i].key = geodist_geom_morton_part(ix) | (geodist_geom_morton_part(iy) << 1);
+    items[i].key = dist_geom_morton_part(ix) | (dist_geom_morton_part(iy) << 1);
     items[i].idx = i;
   }
-  qsort(items, n, sizeof(GeoDistSortItem), geodist_geom_morton_cmp);
+  qsort(items, n, sizeof(DistSortItem), dist_geom_morton_cmp);
   /* Apply the resulting permutation to the segments through one scratch pass.
    * Sorting the lightweight key/index handles above (rather than the segments
    * themselves) keeps qsort from copying the ~128-byte edge payloads on every
    * swap, which dominated the bucket build for large polygons. */
-  GeoDistEdge *sorted = palloc(sizeof(GeoDistEdge) * n);
+  DistEdge *sorted = palloc(sizeof(DistEdge) * n);
   for (int i = 0; i < n; i++)
     sorted[i] = segs[items[i].idx];
   for (int i = 0; i < n; i++)
@@ -962,7 +962,7 @@ geodist_geom_build_buckets(GeoDistEdge *segs, int n, double gxmin,
   int bsize = (int) ceil(sqrt((double) n));
   if (bsize < 1) bsize = 1;
   int nbk = (n + bsize - 1) / bsize;
-  GeoDistBucket *bks = palloc(sizeof(GeoDistBucket) * nbk);
+  DistBucket *bks = palloc(sizeof(DistBucket) * nbk);
   for (int b = 0; b < nbk; b++)
   {
     int s = b * bsize, e = s + bsize;
@@ -990,7 +990,7 @@ geodist_geom_build_buckets(GeoDistEdge *segs, int n, double gxmin,
  * (the same create-with-rtree / destroy-with-rtree lifetime as rtree_results in
  * tpoint_geom_clip.c). MEOS_TLS keeps concurrent threads from sharing it.
  */
-MEOS_TLS MeosArray *geodist_pip_results = NULL;
+MEOS_TLS MeosArray *dist_pip_results = NULL;
 
 /**
  * @brief Ray-casting interior test
@@ -1002,28 +1002,28 @@ MEOS_TLS MeosArray *geodist_pip_results = NULL;
  * order-independent, so the result matches.
  */
 bool
-geodist_geom_point_inside(double x, double y, const GeoDistGeom *g)
+dist_geom_point_inside(double x, double y, const DistGeom *g)
 {
   bool inside = false;
   if (g->rtree)
   {
     STBox query;
     stbox_set(true, false, false, 0, x, g->xmax, y, y, 0, 0, NULL, &query);
-    int nc = rtree_search(g->rtree, RTREE_OVERLAPS, &query, geodist_pip_results);
+    int nc = rtree_search(g->rtree, RTREE_OVERLAPS, &query, dist_pip_results);
     for (int j = 0; j < nc; j++)
-      geodist_poly_seg_raycross(
-        &g->segs[*(int *) meos_array_get(geodist_pip_results, j)], x, y,
+      dist_poly_seg_raycross(
+        &g->segs[*(int *) meos_array_get(dist_pip_results, j)], x, y,
         &inside);
     return inside;
   }
   for (int b = 0; b < g->nbk; b++)
   {
-    const GeoDistBucket *bk = &g->bks[b];
+    const DistBucket *bk = &g->bks[b];
     if (y < bk->ymin || y > bk->ymax || bk->xmax < x)
       continue;
     int e = bk->start + bk->n;
     for (int i = bk->start; i < e; i++)
-      geodist_poly_seg_raycross(&g->segs[i], x, y, &inside);
+      dist_poly_seg_raycross(&g->segs[i], x, y, &inside);
   }
   return inside;
 }
@@ -1032,7 +1032,7 @@ geodist_geom_point_inside(double x, double y, const GeoDistGeom *g)
  * @brief Squared distance from a point to a 2D segment
  */
 static inline double
-geodist_pt_seg_dist2(double px, double py, double ax, double ay, double bx,
+dist_pt_seg_dist2(double px, double py, double ax, double ay, double bx,
   double by)
 {
   double abx = bx - ax, aby = by - ay;
@@ -1049,7 +1049,7 @@ geodist_pt_seg_dist2(double px, double py, double ax, double ay, double bx,
  * prune (no closest-point bookkeeping)
  */
 static inline double
-geodist_seg_seg_dist2(double ax, double ay, double bx, double by, double cx,
+dist_seg_seg_dist2(double ax, double ay, double bx, double by, double cx,
   double cy, double dx, double dy)
 {
   /* Conservative crossing test (orientation signs, no division): a touch or
@@ -1063,11 +1063,11 @@ geodist_seg_seg_dist2(double ax, double ay, double bx, double by, double cx,
   if (((d1 <= 0.0 && d2 >= 0.0) || (d1 >= 0.0 && d2 <= 0.0)) &&
       ((d3 <= 0.0 && d4 >= 0.0) || (d3 >= 0.0 && d4 <= 0.0)))
     return 0.0;
-  double m = geodist_pt_seg_dist2(ax, ay, cx, cy, dx, dy);
+  double m = dist_pt_seg_dist2(ax, ay, cx, cy, dx, dy);
   double v;
-  v = geodist_pt_seg_dist2(bx, by, cx, cy, dx, dy); if (v < m) m = v;
-  v = geodist_pt_seg_dist2(cx, cy, ax, ay, bx, by); if (v < m) m = v;
-  v = geodist_pt_seg_dist2(dx, dy, ax, ay, bx, by); if (v < m) m = v;
+  v = dist_pt_seg_dist2(bx, by, cx, cy, dx, dy); if (v < m) m = v;
+  v = dist_pt_seg_dist2(cx, cy, ax, ay, bx, by); if (v < m) m = v;
+  v = dist_pt_seg_dist2(dx, dy, ax, ay, bx, by); if (v < m) m = v;
   return m;
 }
 
@@ -1105,14 +1105,14 @@ box2d_distance_sqr(double axmin, double aymin, double axmax, double aymax,
  * in this loop.
  */
 static bool
-geodist_edge_radius_prune(double cx1, double cy1, double cx2, double cy2,
-  double r1, double r2, const GeoDistEdge *e, double cur)
+dist_edge_radius_prune(double cx1, double cy1, double cx2, double cy2,
+  double r1, double r2, const DistEdge *e, double cur)
 {
   double rmax = fmax(r1, r2);
   if (rmax <= 0.0)
     return false;
   double thr = cur + rmax;
-  return geodist_seg_seg_dist2(cx1, cy1, cx2, cy2, e->x1, e->y1, e->x2,
+  return dist_seg_seg_dist2(cx1, cy1, cx2, cy2, e->x1, e->y1, e->x2,
     e->y2) >= thr * thr;
 }
 
@@ -1121,8 +1121,8 @@ geodist_edge_radius_prune(double cx1, double cy1, double cx2, double cy2,
  * moves from c1 to c2 with radius r1 to r2; a stationary disk has c1 == c2)
  */
 void
-geodist_segm_nad(double cx1, double cy1, double r1, double cx2, double cy2,
-  double r2, const GeoDistGeom *g, double *best)
+dist_segm_nad(double cx1, double cy1, double r1, double cx2, double cy2,
+  double r2, const DistGeom *g, double *best)
 {
   double sxmin = fmin(cx1 - r1, cx2 - r2);
   double sxmax = fmax(cx1 + r1, cx2 + r2);
@@ -1144,9 +1144,9 @@ geodist_segm_nad(double cx1, double cy1, double r1, double cx2, double cy2,
   }
   if (g->has_poly)
   {
-    bool in1 = geodist_geom_point_inside(cx1, cy1, g);
+    bool in1 = dist_geom_point_inside(cx1, cy1, g);
     bool in2 = (cx2 == cx1 && cy2 == cy1) ? in1 :
-      geodist_geom_point_inside(cx2, cy2, g);
+      dist_geom_point_inside(cx2, cy2, g);
     if (in1 || in2)
     {
       *best = 0.0;
@@ -1157,7 +1157,7 @@ geodist_segm_nad(double cx1, double cy1, double r1, double cx2, double cy2,
    * farther than the running minimum, then the per-edge prune within a bucket */
   for (int b = 0; b < g->nbk && *best > 0.0; b++)
   {
-    const GeoDistBucket *bk = &g->bks[b];
+    const DistBucket *bk = &g->bks[b];
     if (*best != DBL_MAX)
     {
       if (box2d_distance_sqr(bk->xmin, bk->ymin, bk->xmax, bk->ymax,
@@ -1167,7 +1167,7 @@ geodist_segm_nad(double cx1, double cy1, double r1, double cx2, double cy2,
     int e = bk->start + bk->n;
     for (int k = bk->start; k < e && *best > 0.0; k++)
     {
-      const GeoDistEdge *ed = &g->segs[k];
+      const DistEdge *ed = &g->segs[k];
       if (*best != DBL_MAX)
       {
         if (box2d_distance_sqr(ed->xmin, ed->ymin, ed->xmax, ed->ymax,
@@ -1183,11 +1183,11 @@ geodist_segm_nad(double cx1, double cy1, double r1, double cx2, double cy2,
        * A scalar squared seg-seg distance is used (not lw_dist2d_seg_seg, which
        * also computes closest points and is far heavier in this hot loop). */
       if (! ed->is_arc && *best != DBL_MAX &&
-          geodist_edge_radius_prune(cx1, cy1, cx2, cy2, r1, r2, ed, *best))
+          dist_edge_radius_prune(cx1, cy1, cx2, cy2, r1, r2, ed, *best))
         continue;
       double m = ed->is_arc ?
-        geodist_segm_arc_mindist(cx1, cy1, cx2, cy2, r1, r2, ed) :
-        geodist_segm_edge_mindist(cx1, cy1, cx2, cy2, r1, r2, ed);
+        dist_segm_arc_mindist(cx1, cy1, cx2, cy2, r1, r2, ed) :
+        dist_segm_edge_mindist(cx1, cy1, cx2, cy2, r1, r2, ed);
       if (m < *best) *best = m;
     }
   }
@@ -1199,8 +1199,8 @@ geodist_segm_nad(double cx1, double cy1, double r1, double cx2, double cy2,
  * c2 with radius r1 to r2; a stationary disk has c1 == c2)
  */
 void
-geodist_segm_shortestline(double cx1, double cy1, double r1, double cx2,
-  double cy2, double r2, const GeoDistGeom *g, GeoDistShortLine *w)
+dist_segm_shortestline(double cx1, double cy1, double r1, double cx2,
+  double cy2, double r2, const DistGeom *g, DistShortLine *w)
 {
   if (w->set && w->d <= 0.0)
     return;
@@ -1224,9 +1224,9 @@ geodist_segm_shortestline(double cx1, double cy1, double r1, double cx2,
    * nearest-approach interior short-circuit) */
   if (g->has_poly)
   {
-    bool in1 = geodist_geom_point_inside(cx1, cy1, g);
+    bool in1 = dist_geom_point_inside(cx1, cy1, g);
     bool in2 = (cx2 == cx1 && cy2 == cy1) ? in1 :
-      geodist_geom_point_inside(cx2, cy2, g);
+      dist_geom_point_inside(cx2, cy2, g);
     if (in1 || in2)
     {
       double ix = in1 ? cx1 : cx2, iy = in1 ? cy1 : cy2;
@@ -1240,7 +1240,7 @@ geodist_segm_shortestline(double cx1, double cy1, double r1, double cx2,
    * a bucket */
   for (int b = 0; b < g->nbk && ! (w->set && w->d <= 0.0); b++)
   {
-    const GeoDistBucket *bk = &g->bks[b];
+    const DistBucket *bk = &g->bks[b];
     if (w->set)
     {
       if (box2d_distance_sqr(bk->xmin, bk->ymin, bk->xmax, bk->ymax,
@@ -1250,7 +1250,7 @@ geodist_segm_shortestline(double cx1, double cy1, double r1, double cx2,
     int elast = bk->start + bk->n;
     for (int k = bk->start; k < elast && ! (w->set && w->d <= 0.0); k++)
     {
-      const GeoDistEdge *e = &g->segs[k];
+      const DistEdge *e = &g->segs[k];
       if (w->set)
       {
         if (box2d_distance_sqr(e->xmin, e->ymin, e->xmax, e->ymax,
@@ -1260,15 +1260,15 @@ geodist_segm_shortestline(double cx1, double cy1, double r1, double cx2,
       /* Radius-aware tighter prune (moving disc only, straight edges): skip the
        * exact per-edge solve when the centre-segment-to-edge distance minus the
        * larger radius already reaches the running minimum. The same lower bound
-       * as geodist_segm_nad, valid because it never exceeds the true swept-disc
+       * as dist_segm_nad, valid because it never exceeds the true swept-disc
        * distance, so the witness cannot change. */
       if (! e->is_arc && w->set &&
-          geodist_edge_radius_prune(cx1, cy1, cx2, cy2, r1, r2, e, w->d))
+          dist_edge_radius_prune(cx1, cy1, cx2, cy2, r1, r2, e, w->d))
         continue;
       double t;
       double m = e->is_arc ?
-        geodist_segm_arc_dt(cx1, cy1, cx2, cy2, r1, r2, e, &t) :
-        geodist_segm_edge_dt(cx1, cy1, cx2, cy2, r1, r2, e, &t);
+        dist_segm_arc_dt(cx1, cy1, cx2, cy2, r1, r2, e, &t) :
+        dist_segm_edge_dt(cx1, cy1, cx2, cy2, r1, r2, e, &t);
       if (! w->set || m < w->d)
       {
         double ccx = cx1 + (cx2 - cx1) * t;
@@ -1276,9 +1276,9 @@ geodist_segm_shortestline(double cx1, double cy1, double r1, double cx2,
         double rr = r1 + (r2 - r1) * t;
         double qx, qy;
         if (e->is_arc)
-          geodist_geom_closest_on_arc(ccx, ccy, e, &qx, &qy);
+          dist_geom_closest_on_arc(ccx, ccy, e, &qx, &qy);
         else
-          geodist_geom_closest_on_edge(ccx, ccy, e, &qx, &qy);
+          dist_geom_closest_on_edge(ccx, ccy, e, &qx, &qy);
         double vx = qx - ccx, vy = qy - ccy;
         double vl = sqrt(vx * vx + vy * vy);
         double pxp, pyp;
@@ -1303,11 +1303,11 @@ geodist_segm_shortestline(double cx1, double cy1, double r1, double cx2,
  * @brief Update the witness with one swept-capsule unit against the geometry,
  * pruned by the bucket bounding-volume hierarchy (the centre moves from c1 to
  * c2 with radius r1 to r2 over the time span t1 to t2; a stationary disc has
- * c1 == c2 and t1 == t2), mirroring #geodist_segm_shortestline
+ * c1 == c2 and t1 == t2), mirroring #dist_segm_shortestline
  */
 void
-geodist_segm_nai(double cx1, double cy1, double r1, TimestampTz t1, double cx2,
-  double cy2, double r2, TimestampTz t2, const GeoDistGeom *g, GeoDistNai *w)
+dist_segm_nai(double cx1, double cy1, double r1, TimestampTz t1, double cx2,
+  double cy2, double r2, TimestampTz t2, const DistGeom *g, DistNai *w)
 {
   if (w->set && w->d <= 0.0)
     return;
@@ -1328,9 +1328,9 @@ geodist_segm_nai(double cx1, double cy1, double r1, TimestampTz t1, double cx2,
    * approach distance is zero, recorded at the earliest inside endpoint */
   if (g->has_poly)
   {
-    bool in1 = geodist_geom_point_inside(cx1, cy1, g);
+    bool in1 = dist_geom_point_inside(cx1, cy1, g);
     bool in2 = (cx2 == cx1 && cy2 == cy1) ? in1 :
-      geodist_geom_point_inside(cx2, cy2, g);
+      dist_geom_point_inside(cx2, cy2, g);
     if (in1 || in2)
     {
       w->d = 0.0; w->t = in1 ? t1 : t2; w->set = true;
@@ -1341,7 +1341,7 @@ geodist_segm_nai(double cx1, double cy1, double r1, TimestampTz t1, double cx2,
    * farther than the running witness distance, then the per-edge prune */
   for (int b = 0; b < g->nbk && ! (w->set && w->d <= 0.0); b++)
   {
-    const GeoDistBucket *bk = &g->bks[b];
+    const DistBucket *bk = &g->bks[b];
     if (w->set)
     {
       if (box2d_distance_sqr(bk->xmin, bk->ymin, bk->xmax, bk->ymax,
@@ -1351,7 +1351,7 @@ geodist_segm_nai(double cx1, double cy1, double r1, TimestampTz t1, double cx2,
     int elast = bk->start + bk->n;
     for (int k = bk->start; k < elast && ! (w->set && w->d <= 0.0); k++)
     {
-      const GeoDistEdge *e = &g->segs[k];
+      const DistEdge *e = &g->segs[k];
       if (w->set)
       {
         if (box2d_distance_sqr(e->xmin, e->ymin, e->xmax, e->ymax,
@@ -1361,15 +1361,15 @@ geodist_segm_nai(double cx1, double cy1, double r1, TimestampTz t1, double cx2,
       /* Radius-aware tighter prune (moving disc only, straight edges): skip the
        * exact per-edge solve when the centre-segment-to-edge distance minus the
        * larger radius already reaches the running minimum. The same lower bound
-       * as geodist_segm_nad, valid because it never exceeds the true swept-disc
+       * as dist_segm_nad, valid because it never exceeds the true swept-disc
        * distance, so the witness cannot change. */
       if (! e->is_arc && w->set &&
-          geodist_edge_radius_prune(cx1, cy1, cx2, cy2, r1, r2, e, w->d))
+          dist_edge_radius_prune(cx1, cy1, cx2, cy2, r1, r2, e, w->d))
         continue;
       double tf;
       double m = e->is_arc ?
-        geodist_segm_arc_dt(cx1, cy1, cx2, cy2, r1, r2, e, &tf) :
-        geodist_segm_edge_dt(cx1, cy1, cx2, cy2, r1, r2, e, &tf);
+        dist_segm_arc_dt(cx1, cy1, cx2, cy2, r1, r2, e, &tf) :
+        dist_segm_edge_dt(cx1, cy1, cx2, cy2, r1, r2, e, &tf);
       /* Strict improvement keeps the earliest timestamp among equal minima
        * (the units are visited in time order) */
       if (! w->set || m < w->d)
@@ -1392,7 +1392,7 @@ geodist_segm_nai(double cx1, double cy1, double r1, TimestampTz t1, double cx2,
  * SRID
  */
 RTree *
-geodist_geom_build_rtree(const GeoDistEdge *segs, int n)
+dist_geom_build_rtree(const DistEdge *segs, int n)
 {
   RTree *rt = rtree_create_stbox();
   for (int k = 0; k < n; k++)
@@ -2268,13 +2268,13 @@ nai_tpointseqset_linear_geo(const TSequenceSet *ss, const LWGEOM *geo)
  * arcs, or otherwise unsupported), so the caller falls back
  */
 bool
-geodist_geom_build(const GSERIALIZED *gs, GeoDistGeom *g)
+dist_geom_build(const GSERIALIZED *gs, DistGeom *g)
 {
   LWGEOM *lw = lwgeom_from_gserialized(gs);
-  GeoDistEdge *segs = NULL;
+  DistEdge *segs = NULL;
   int cap = 0, n = 0;
   bool has_poly = false;
-  bool ok = geodist_geom_edges(lw, true, &segs, &cap, &n, &has_poly);
+  bool ok = dist_geom_edges(lw, true, &segs, &cap, &n, &has_poly);
   lwgeom_free(lw);
   if (! ok || n == 0)
   {
@@ -2290,7 +2290,7 @@ geodist_geom_build(const GSERIALIZED *gs, GeoDistGeom *g)
     if (segs[k].ymax > gymax) gymax = segs[k].ymax;
   }
   int nbk = 0;
-  GeoDistBucket *bks = geodist_geom_build_buckets(segs, n, gxmin, gymin, gxmax,
+  DistBucket *bks = dist_geom_build_buckets(segs, n, gxmin, gymin, gxmax,
     gymax, &nbk);
   g->segs = segs; g->n = n; g->has_poly = has_poly;
   g->xmin = gxmin; g->ymin = gymin; g->xmax = gxmax; g->ymax = gymax;
@@ -2302,7 +2302,7 @@ geodist_geom_build(const GSERIALIZED *gs, GeoDistGeom *g)
  * @brief Free the segments and bucket hierarchy of a geometry decomposition
  */
 void
-geodist_geom_free(GeoDistGeom *g)
+dist_geom_free(DistGeom *g)
 {
   if (g->bks) pfree((void *) g->bks);
   if (g->segs) pfree((void *) g->segs);
@@ -2324,7 +2324,7 @@ tgeoinst_point2d(const TInstant *inst)
  * feeding each segment as a radius-0 disc
  */
 static void
-tgeoseq_nad(const TSequence *seq, const GeoDistGeom *g, double *best)
+tgeoseq_nad(const TSequence *seq, const DistGeom *g, double *best)
 {
   bool linear = MEOS_FLAGS_LINEAR_INTERP(seq->flags);
   if (seq->count == 1 || ! linear)
@@ -2332,7 +2332,7 @@ tgeoseq_nad(const TSequence *seq, const GeoDistGeom *g, double *best)
     for (int i = 0; i < seq->count && *best > 0.0; i++)
     {
       const POINT2D *p = tgeoinst_point2d(TSEQUENCE_INST_N(seq, i));
-      geodist_segm_nad(p->x, p->y, 0.0, p->x, p->y, 0.0, g, best);
+      dist_segm_nad(p->x, p->y, 0.0, p->x, p->y, 0.0, g, best);
     }
     return;
   }
@@ -2342,7 +2342,7 @@ tgeoseq_nad(const TSequence *seq, const GeoDistGeom *g, double *best)
     const TInstant *i2 = TSEQUENCE_INST_N(seq, i);
     const POINT2D *p1 = tgeoinst_point2d(i1);
     const POINT2D *p2 = tgeoinst_point2d(i2);
-    geodist_segm_nad(p1->x, p1->y, 0.0, p2->x, p2->y, 0.0, g, best);
+    dist_segm_nad(p1->x, p1->y, 0.0, p2->x, p2->y, 0.0, g, best);
     i1 = i2;
   }
 }
@@ -2359,15 +2359,15 @@ nad_tpoint_geo_analytic(const Temporal *temp, const GSERIALIZED *gs,
   assert(temp); assert(gs); assert(result);
   assert(tpoint_type(temp->temptype));
 
-  GeoDistGeom g;
-  if (! geodist_geom_build(gs, &g))
+  DistGeom g;
+  if (! dist_geom_build(gs, &g))
     return false;
   double best = DBL_MAX;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
   {
     const POINT2D *p = tgeoinst_point2d((TInstant *) temp);
-    geodist_segm_nad(p->x, p->y, 0.0, p->x, p->y, 0.0, &g, &best);
+    dist_segm_nad(p->x, p->y, 0.0, p->x, p->y, 0.0, &g, &best);
   }
   else if (temp->subtype == TSEQUENCE)
     tgeoseq_nad((TSequence *) temp, &g, &best);
@@ -2377,7 +2377,7 @@ nad_tpoint_geo_analytic(const Temporal *temp, const GSERIALIZED *gs,
     for (int i = 0; i < ss->count && best > 0.0; i++)
       tgeoseq_nad(TSEQUENCESET_SEQ_N(ss, i), &g, &best);
   }
-  geodist_geom_free(&g);
+  dist_geom_free(&g);
   *result = best < 0.0 ? 0.0 : best;
   return true;
 }
@@ -2388,8 +2388,8 @@ nad_tpoint_geo_analytic(const Temporal *temp, const GSERIALIZED *gs,
  * @brief Update the shortest-line witness with one temporal point sequence
  */
 static void
-tpointseq_shortestline(const TSequence *seq, const GeoDistGeom *g,
-  GeoDistShortLine *w)
+tpointseq_shortestline(const TSequence *seq, const DistGeom *g,
+  DistShortLine *w)
 {
   bool linear = MEOS_FLAGS_LINEAR_INTERP(seq->flags);
   if (seq->count == 1 || ! linear)
@@ -2397,7 +2397,7 @@ tpointseq_shortestline(const TSequence *seq, const GeoDistGeom *g,
     for (int i = 0; i < seq->count && ! (w->set && w->d <= 0.0); i++)
     {
       const POINT2D *p = tgeoinst_point2d(TSEQUENCE_INST_N(seq, i));
-      geodist_segm_shortestline(p->x, p->y, 0.0, p->x, p->y, 0.0, g, w);
+      dist_segm_shortestline(p->x, p->y, 0.0, p->x, p->y, 0.0, g, w);
     }
     return;
   }
@@ -2407,7 +2407,7 @@ tpointseq_shortestline(const TSequence *seq, const GeoDistGeom *g,
     const TInstant *i2 = TSEQUENCE_INST_N(seq, i);
     const POINT2D *p1 = tgeoinst_point2d(i1);
     const POINT2D *p2 = tgeoinst_point2d(i2);
-    geodist_segm_shortestline(p1->x, p1->y, 0.0, p2->x, p2->y, 0.0, g, w);
+    dist_segm_shortestline(p1->x, p1->y, 0.0, p2->x, p2->y, 0.0, g, w);
     i1 = i2;
   }
 }
@@ -2422,17 +2422,17 @@ shortestline_tpoint_geo_analytic(const Temporal *temp, const GSERIALIZED *gs)
   /* Ensure the validity of the arguments */
   assert(temp); assert(gs); assert(tpoint_type(temp->temptype));
 
-  GeoDistGeom g;
-  if (! geodist_geom_build(gs, &g))
+  DistGeom g;
+  if (! dist_geom_build(gs, &g))
     return NULL;
-  GeoDistShortLine w;
+  DistShortLine w;
   w.d = DBL_MAX; w.set = false;
   w.px = w.py = w.qx = w.qy = 0.0;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
   {
     const POINT2D *p = tgeoinst_point2d((TInstant *) temp);
-    geodist_segm_shortestline(p->x, p->y, 0.0, p->x, p->y, 0.0, &g, &w);
+    dist_segm_shortestline(p->x, p->y, 0.0, p->x, p->y, 0.0, &g, &w);
   }
   else if (temp->subtype == TSEQUENCE)
     tpointseq_shortestline((TSequence *) temp, &g, &w);
@@ -2442,7 +2442,7 @@ shortestline_tpoint_geo_analytic(const Temporal *temp, const GSERIALIZED *gs)
     for (int i = 0; i < ss->count && ! (w.set && w.d <= 0.0); i++)
       tpointseq_shortestline(TSEQUENCESET_SEQ_N(ss, i), &g, &w);
   }
-  geodist_geom_free(&g);
+  dist_geom_free(&g);
   if (! w.set)
     return NULL;
   int32_t srid = gserialized_get_srid(gs);
@@ -2466,7 +2466,7 @@ shortestline_tpoint_geo_analytic(const Temporal *temp, const GSERIALIZED *gs)
  * sequence
  */
 static void
-tgeoseq_nai(const TSequence *seq, const GeoDistGeom *g, GeoDistNai *w)
+tgeoseq_nai(const TSequence *seq, const DistGeom *g, DistNai *w)
 {
   bool linear = MEOS_FLAGS_LINEAR_INTERP(seq->flags);
   if (seq->count == 1 || ! linear)
@@ -2475,7 +2475,7 @@ tgeoseq_nai(const TSequence *seq, const GeoDistGeom *g, GeoDistNai *w)
     {
       const TInstant *inst = TSEQUENCE_INST_N(seq, i);
       const POINT2D *p = tgeoinst_point2d(inst);
-      geodist_segm_nai(p->x, p->y, 0.0, inst->t, p->x, p->y, 0.0, inst->t, g, w);
+      dist_segm_nai(p->x, p->y, 0.0, inst->t, p->x, p->y, 0.0, inst->t, g, w);
     }
     return;
   }
@@ -2485,7 +2485,7 @@ tgeoseq_nai(const TSequence *seq, const GeoDistGeom *g, GeoDistNai *w)
     const TInstant *i2 = TSEQUENCE_INST_N(seq, i);
     const POINT2D *p1 = tgeoinst_point2d(i1);
     const POINT2D *p2 = tgeoinst_point2d(i2);
-    geodist_segm_nai(p1->x, p1->y, 0.0, i1->t, p2->x, p2->y, 0.0, i2->t, g, w);
+    dist_segm_nai(p1->x, p1->y, 0.0, i1->t, p2->x, p2->y, 0.0, i2->t, g, w);
     i1 = i2;
   }
 }
@@ -2502,17 +2502,17 @@ nai_tpoint_geo_analytic(const Temporal *temp, const GSERIALIZED *gs,
   assert(temp); assert(gs); assert(result);
   assert(tpoint_type(temp->temptype));
 
-  GeoDistGeom g;
-  if (! geodist_geom_build(gs, &g))
+  DistGeom g;
+  if (! dist_geom_build(gs, &g))
     return false;
-  GeoDistNai w;
+  DistNai w;
   w.d = DBL_MAX; w.t = 0; w.set = false;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
   {
     const TInstant *inst = (TInstant *) temp;
     const POINT2D *p = tgeoinst_point2d(inst);
-    geodist_segm_nai(p->x, p->y, 0.0, inst->t, p->x, p->y, 0.0, inst->t, &g, &w);
+    dist_segm_nai(p->x, p->y, 0.0, inst->t, p->x, p->y, 0.0, inst->t, &g, &w);
   }
   else if (temp->subtype == TSEQUENCE)
     tgeoseq_nai((TSequence *) temp, &g, &w);
@@ -2522,7 +2522,7 @@ nai_tpoint_geo_analytic(const Temporal *temp, const GSERIALIZED *gs,
     for (int i = 0; i < ss->count && ! (w.set && w.d <= 0.0); i++)
       tgeoseq_nai(TSEQUENCESET_SEQ_N(ss, i), &g, &w);
   }
-  geodist_geom_free(&g);
+  dist_geom_free(&g);
   if (! w.set)
     return false;
   *result = w.t;

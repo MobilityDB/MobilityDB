@@ -99,7 +99,7 @@ typedef struct
   bool is_arc;
   double acx, acy, arad, at0, at1;
   bool accw;
-} GeoDistEdge;
+} DistEdge;
 
 /**
  * @brief Witness of the nearest approach: the point @p (px,py) on the
@@ -110,7 +110,7 @@ typedef struct
   double d;
   double px, py, qx, qy;
   bool set;
-} GeoDistShortLine;
+} DistShortLine;
 
 /**
  * @brief A spatially-local group of consecutive segments with its bounding box
@@ -119,7 +119,7 @@ typedef struct
 {
   int start, n;                  /**< Range [start, start+n) in the segments */
   double xmin, ymin, xmax, ymax; /**< Bounding box of the bucket */
-} GeoDistBucket;
+} DistBucket;
 
 /**
  * @brief Geometry context over the boundary segments and its overall bounding
@@ -130,14 +130,14 @@ typedef struct
  */
 typedef struct
 {
-  const GeoDistEdge *segs;
+  const DistEdge *segs;
   int n;
   bool has_poly;
   double xmin, ymin, xmax, ymax; /**< Overall geometry bounding box */
-  const GeoDistBucket *bks; /**< Morton bucket BVH (nad path), or NULL */
+  const DistBucket *bks; /**< Morton bucket BVH (nad path), or NULL */
   int nbk;
   RTree *rtree; /**< Generic R-tree (relationship path), or NULL */
-} GeoDistGeom;
+} DistGeom;
 
 /**
  * @brief Running witness for the nearest approach instant: the minimum
@@ -148,25 +148,25 @@ typedef struct
   double d;        /**< signed minimum disc-to-geometry distance (< 0: overlap) */
   TimestampTz t;   /**< timestamp attaining the minimum */
   bool set;        /**< whether a candidate has been recorded */
-} GeoDistNai;
+} DistNai;
 
-extern bool geodist_geom_build(const GSERIALIZED *gs, GeoDistGeom *g);
-extern void geodist_geom_free(GeoDistGeom *g);
-extern bool geodist_geom_edges(const LWGEOM *lw, bool allow_arc, GeoDistEdge **arr, int *cap,
+extern bool dist_geom_build(const GSERIALIZED *gs, DistGeom *g);
+extern void dist_geom_free(DistGeom *g);
+extern bool dist_geom_edges(const LWGEOM *lw, bool allow_arc, DistEdge **arr, int *cap,
   int *cnt, bool *has_poly);
-extern double geodist_segm_edge_mindist(double cx1, double cy1, double cx2, double cy2,
-  double r1, double r2, const GeoDistEdge *e);
-extern double geodist_segm_arc_mindist(double cx1, double cy1, double cx2, double cy2,
-  double r1, double r2, const GeoDistEdge *e);
-extern MEOS_TLS MeosArray *geodist_pip_results;
-extern bool geodist_geom_point_inside(double x, double y, const GeoDistGeom *g);
-extern void geodist_segm_nad(double cx1, double cy1, double r1, double cx2, double cy2,
-  double r2, const GeoDistGeom *g, double *best);
-extern void geodist_segm_shortestline(double cx1, double cy1, double r1, double cx2,
-  double cy2, double r2, const GeoDistGeom *g, GeoDistShortLine *w);
-extern void geodist_segm_nai(double cx1, double cy1, double r1, TimestampTz t1, double cx2,
-  double cy2, double r2, TimestampTz t2, const GeoDistGeom *g, GeoDistNai *w);
-extern RTree * geodist_geom_build_rtree(const GeoDistEdge *segs, int n);
+extern double dist_segm_edge_mindist(double cx1, double cy1, double cx2, double cy2,
+  double r1, double r2, const DistEdge *e);
+extern double dist_segm_arc_mindist(double cx1, double cy1, double cx2, double cy2,
+  double r1, double r2, const DistEdge *e);
+extern MEOS_TLS MeosArray *dist_pip_results;
+extern bool dist_geom_point_inside(double x, double y, const DistGeom *g);
+extern void dist_segm_nad(double cx1, double cy1, double r1, double cx2, double cy2,
+  double r2, const DistGeom *g, double *best);
+extern void dist_segm_shortestline(double cx1, double cy1, double r1, double cx2,
+  double cy2, double r2, const DistGeom *g, DistShortLine *w);
+extern void dist_segm_nai(double cx1, double cy1, double r1, TimestampTz t1, double cx2,
+  double cy2, double r2, TimestampTz t2, const DistGeom *g, DistNai *w);
+extern RTree * dist_geom_build_rtree(const DistEdge *segs, int n);
 
 /*****************************************************************************/
 
