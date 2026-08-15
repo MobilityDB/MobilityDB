@@ -322,6 +322,7 @@ pcpatch_hash_extended(const Pcpatch *pa, uint64 seed)
  * @ingroup meos_pointcloud_base_comp
  * @brief Compare two pcpatch values byte-wise
  * @return -1 / 0 / 1
+ * @return On error return @p INT_MAX
  * @note Compares only the meaningful-prefix bytes — pgpointcloud's
  *   struct-tail padding is skipped so two pcpatches that disagree only
  *   on those padding bytes compare equal.
@@ -331,7 +332,7 @@ int
 pcpatch_cmp(const Pcpatch *pa1, const Pcpatch *pa2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(pa1, false); VALIDATE_NOT_NULL(pa2, false);
+  VALIDATE_NOT_NULL(pa1, INT_MAX); VALIDATE_NOT_NULL(pa2, INT_MAX);
   size_t sz1 = pcpatch_meaningful_size(pa1);
   size_t sz2 = pcpatch_meaningful_size(pa2);
   size_t minsz = (sz1 < sz2) ? sz1 : sz2;

@@ -1201,13 +1201,14 @@ npoint_ne(const Npoint *np1, const Npoint *np2)
  * @brief Return -1, 0, or 1 depending on whether the first network point
  * is less than, equal to, or greater than the second one
  * @param[in] np1,np2 Network points
+ * @return On error return @p INT_MAX
  * @csqlfn #Npoint_cmp()
  */
 int
 npoint_cmp(const Npoint *np1, const Npoint *np2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(np1, false); VALIDATE_NOT_NULL(np2, false);
+  VALIDATE_NOT_NULL(np1, INT_MAX); VALIDATE_NOT_NULL(np2, INT_MAX);
 
   if (np1->rid < np2->rid)
     return -1;
@@ -1306,13 +1307,14 @@ nsegment_ne(const Nsegment *ns1, const Nsegment *ns2)
  * @brief Return -1, 0, or 1 depending on whether the first network segment
  * is less than, equal to, or greater than the second one
  * @param[in] ns1,ns2 Network segments
+ * @return On error return @p INT_MAX
  * @csqlfn #Nsegment_cmp()
  */
 int
 nsegment_cmp(const Nsegment *ns1, const Nsegment *ns2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(ns1, false); VALIDATE_NOT_NULL(ns2, false);
+  VALIDATE_NOT_NULL(ns1, INT_MAX); VALIDATE_NOT_NULL(ns2, INT_MAX);
 
   if (ns1->rid < ns2->rid)
     return -1;

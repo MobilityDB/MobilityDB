@@ -1402,13 +1402,14 @@ cbuffer_nsame(const Cbuffer *cb1, const Cbuffer *cb2)
  * @brief Return -1, 0, or 1 depending on whether the first buffer
  * is less than, equal to, or greater than the second one
  * @param[in] cb1,cb2 Circular buffers
+ * @return On error return @p INT_MAX
  * @csqlfn #Cbuffer_cmp()
  */
 int
 cbuffer_cmp(const Cbuffer *cb1, const Cbuffer *cb2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(cb1, false); VALIDATE_NOT_NULL(cb2, false);
+  VALIDATE_NOT_NULL(cb1, INT_MAX); VALIDATE_NOT_NULL(cb2, INT_MAX);
 
   /* Compare SRID */
   if (cb1->srid < cb2->srid)
