@@ -120,8 +120,14 @@ def normalize(token: str) -> str:
     return ALIASES.get(token, token)
 
 
-def scan(path: Path, rel: str) -> list[str]:
-    """Return the sentinel findings of one source file."""
+def scan(path: Path, rel: str) -> list[tuple[str, str]]:
+    """Return the sentinel findings of one source file.
+
+    Each finding is a stable key and the text a reader sees. The key names the
+    file, the function and the sentinel, never the line: an edit anywhere above
+    a finding moves its line, and a baseline keyed by line would read every
+    finding below an inserted line as new.
+    """
     findings = []
     lines = path.read_text().splitlines()
     for i, line in enumerate(lines):
@@ -171,24 +177,27 @@ def scan(path: Path, rel: str) -> list[str]:
         for raw, where in ((validated_raw, "validates with"),
                            (documented_raw, "documents")):
             if raw in NON_PORTABLE:
-                findings.append(f"{rel}:{i + 1}: {name}() {where} {raw}, which "
-                                f"is 32 bits on LLP64 Windows: use INT64_MAX")
+                findings.append((f"{rel}\t{name}\t{where} {raw}",
+                                 f"{rel}:{i + 1}: {name}() {where} {raw}, which "
+                                 f"is 32 bits on LLP64 Windows: use INT64_MAX"))
 
         if validated is not None and validated != want:
-            findings.append(f"{rel}:{i + 1}: {name}() returns {rettype} but "
-                            f"validates with {validated}, expected {want}")
+            findings.append((f"{rel}\t{name}\tvalidates with {validated}",
+                             f"{rel}:{i + 1}: {name}() returns {rettype} but "
+                             f"validates with {validated}, expected {want}"))
         if documented is not None and documented != want:
-            findings.append(f"{rel}:{i + 1}: {name}() returns {rettype} but "
-                            f"documents {documented}, expected {want}")
+            findings.append((f"{rel}\t{name}\tdocuments {documented}",
+                             f"{rel}:{i + 1}: {name}() returns {rettype} but "
+                             f"documents {documented}, expected {want}"))
     return findings
 
 
-def collect(root: Path) -> list[str]:
+def collect(root: Path) -> list[tuple[str, str]]:
     """Return every sentinel finding under meos/src."""
     findings = []
     for path in sorted(root.glob("meos/src/**/*.c")):
         findings.extend(scan(path, path.relative_to(root).as_posix()))
-    return sorted(findings)
+    return sorted(findings, key=lambda f: f[1])
 
 
 def main() -> int:
@@ -203,15 +212,17 @@ def main() -> int:
 
     if args.rebaseline:
         header = ("# Findings of tools/scripts/check_error_sentinels.py that are\n"
-                  "# grandfathered in. The list only shrinks: a new mismatch\n"
-                  "# fails the check. Regenerate with --rebaseline after a fix.\n")
-        BASELINE_PATH.write_text(header + "\n".join(findings) + "\n")
+                  "# grandfathered in, keyed by file, function and sentinel so that\n"
+                  "# an edit above a finding does not read as a new one. The list only\n"
+                  "# shrinks: a new mismatch fails the check. Regenerate with\n"
+                  "# --rebaseline after a fix.\n")
+        BASELINE_PATH.write_text(header + "\n".join(k for k, _ in findings) + "\n")
         print(f"wrote {len(findings)} findings to "
               f"{BASELINE_PATH.relative_to(REPO_ROOT)}")
         return 0
 
     if args.report:
-        for line in findings:
+        for _, line in findings:
             print(line)
         print(f"\n{len(findings)} sentinel mismatch(es)")
         return 0
@@ -221,7 +232,7 @@ def main() -> int:
         baseline = {ln for ln in BASELINE_PATH.read_text().splitlines()
                     if ln and not ln.startswith("#")}
 
-    new = [ln for ln in findings if ln not in baseline]
+    new = [text for key, text in findings if key not in baseline]
     if new:
         print("An error sentinel must be the maximum of the return type "
               "(int INT_MAX, int64 INT64_MAX, double DBL_MAX, pointer NULL):\n")
@@ -234,7 +245,7 @@ def main() -> int:
     # appears. Reporting it as a failure would redden every pull request
     # whose branch predates the last shrink, for housekeeping it did not do,
     # so it is a notice and the shrink happens with the next --rebaseline.
-    stale = sorted(baseline - set(findings))
+    stale = sorted(baseline - {key for key, _ in findings})
     if stale:
         print(f"{len(stale)} baselined finding(s) no longer occur. "
               f"Run --rebaseline after a fix to shrink the baseline:\n")

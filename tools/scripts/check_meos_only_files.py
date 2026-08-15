@@ -135,6 +135,27 @@ def meos_only_definitions(path: Path) -> list[str]:
     return names
 
 
+def anchor(path: Path, n: int) -> str:
+    """Return what the conditional at line n guards, as a stable name for it.
+
+    A line number moves with any edit above it, so the baseline names the first
+    thing the block declares instead; that survives the file growing elsewhere.
+    """
+    lines = path.read_text().splitlines()
+    window = lines[n:n + 10]
+    # the declarator names the block; the line before it holds the return type
+    # alone, which several blocks in a file share
+    for ln in window:
+        text = ln.strip()
+        if re.match(r"^[A-Za-z_][A-Za-z0-9_]*\s*\(", text):
+            return text[:70]
+    for ln in window:
+        text = ln.strip()
+        if text and not text.startswith(("*", "/*", "//")):
+            return text[:70]
+    return f"line {n}"
+
+
 def conditionals(path: Path) -> tuple[list[int], list[int]]:
     """Return the (file-scope, in-function) line numbers of MEOS conditionals."""
     top, inside, depth = [], [], 0
@@ -151,8 +172,9 @@ def collect(root: Path) -> tuple[list[str], list[str]]:
     fail, info = [], []
 
     for cml, src in ungated_meos_sources(root):
-        fail.append(f"{cml}: {src} is compiled into the PG extension: "
-                    f"list it inside if(MEOS), or drop the _meos suffix")
+        fail.append((f"{cml}\t{src}\tungated",
+                     f"{cml}: {src} is compiled into the PG extension: "
+                     f"list it inside if(MEOS), or drop the _meos suffix"))
 
     # BINDING-HEADER-PARSE-OK: CI source guard, scans .c files for a build
     # rule; no headers are read and no API surface is extracted
@@ -172,11 +194,13 @@ def collect(root: Path) -> tuple[list[str], list[str]]:
             if name in shared:
                 continue
             if re.search(rf"\b{re.escape(name)}\s*\(", pg_sources):
-                fail.append(f"{rel}: {name}() is called from mobilitydb/src: "
-                            f"the PG extension needs it, so it is not MEOS-only")
+                fail.append((f"{rel}\t{name}\tcalled from the extension",
+                             f"{rel}: {name}() is called from mobilitydb/src: "
+                             f"the PG extension needs it, so it is not MEOS-only"))
         top, _ = conditionals(path)
         for n in top:
-            fail.append(f"{rel}:{n}: MEOS conditional inside a MEOS-only file")
+            fail.append((f"{rel}\t{anchor(path, n)}\tconditional in a MEOS-only file",
+                         f"{rel}:{n}: MEOS conditional inside a MEOS-only file"))
 
     for path in sorted(root.glob("meos/src/**/*.c")):
         rel = path.relative_to(root).as_posix()
@@ -184,8 +208,9 @@ def collect(root: Path) -> tuple[list[str], list[str]]:
             continue
         top, inside = conditionals(path)
         for n in top:
-            fail.append(f"{rel}:{n}: file-scope MEOS conditional: "
-                        f"move the definition to the module's _meos.c")
+            fail.append((f"{rel}\t{anchor(path, n)}\tfile-scope conditional",
+                         f"{rel}:{n}: file-scope MEOS conditional: "
+                         f"move the definition to the module's _meos.c"))
         for n in inside:
             info.append(f"{rel}:{n}: MEOS conditional inside a function body")
 
@@ -206,13 +231,13 @@ def main() -> int:
         header = ("# Findings of tools/scripts/check_meos_only_files.py that are\n"
                   "# grandfathered in. The list only shrinks: a new violation\n"
                   "# fails the check. Regenerate with --rebaseline after a split.\n")
-        BASELINE_PATH.write_text(header + "\n".join(fail) + "\n")
+        BASELINE_PATH.write_text(header + "\n".join(k for k, _ in fail) + "\n")
         print(f"wrote {len(fail)} findings to "
               f"{BASELINE_PATH.relative_to(REPO_ROOT)}")
         return 0
 
     if args.report:
-        for line in fail:
+        for _, line in fail:
             print(f"split needed: {line}")
         for line in info:
             print(f"in-function : {line}")
@@ -224,7 +249,7 @@ def main() -> int:
         baseline = {ln for ln in BASELINE_PATH.read_text().splitlines()
                     if ln and not ln.startswith("#")}
 
-    new = [ln for ln in fail if ln not in baseline]
+    new = [text for key, text in fail if key not in baseline]
     if new:
         print("MEOS-only code must be selected by file, not by #if MEOS:\n")
         for line in new:
@@ -239,7 +264,7 @@ def main() -> int:
     # appears. Reporting it as a failure would redden every pull request
     # whose branch predates the last shrink, for housekeeping it did not do,
     # so it is a notice and the shrink happens with the next --rebaseline.
-    stale = sorted(baseline - set(fail))
+    stale = sorted(baseline - {key for key, _ in fail})
     if stale:
         print(f"{len(stale)} baselined finding(s) no longer occur. "
               f"Run --rebaseline after a split to shrink the baseline:\n")

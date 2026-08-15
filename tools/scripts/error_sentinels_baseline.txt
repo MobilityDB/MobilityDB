@@ -1,144 +1,146 @@
 # Findings of tools/scripts/check_error_sentinels.py that are
-# grandfathered in. The list only shrinks: a new mismatch
-# fails the check. Regenerate with --rebaseline after a fix.
-meos/src/cbuffer/cbuffer.c:1408: cbuffer_cmp() returns int but validates with false, expected INT_MAX
-meos/src/cbuffer/cbuffer.c:1500: cbuffer_hash() returns uint32 but validates with INT_MAX, expected UINT32_MAX
-meos/src/cbuffer/tcbuffer_spatialrels.c:147: spatialrel_geo_geo() returns int but documents -1, expected INT_MAX
-meos/src/geo/postgis_funcs.c:1490: geo_num_points() returns int but documents -1, expected INT_MAX
-meos/src/geo/postgis_funcs.c:1490: geo_num_points() returns int but validates with -1, expected INT_MAX
-meos/src/geo/postgis_funcs.c:1509: geo_num_geos() returns int but documents -1, expected INT_MAX
-meos/src/geo/postgis_funcs.c:1509: geo_num_geos() returns int but validates with -1, expected INT_MAX
-meos/src/geo/postgis_funcs.c:2578: geo_equals() returns int but validates with -1, expected INT_MAX
-meos/src/geo/postgis_funcs.c:4740: line_locate_point() returns double but documents -1, expected DBL_MAX
-meos/src/geo/postgis_funcs.c:4877: line_numpoints() returns int but documents -1, expected INT_MAX
-meos/src/geo/postgis_funcs.c:4877: line_numpoints() returns int but validates with -1, expected INT_MAX
-meos/src/geo/postgis_funcs.c:543: geo_is_empty() returns bool but validates with NULL, expected false
-meos/src/geo/stbox.c:2191: before_stbox_stbox() returns bool but validates with NULL, expected false
-meos/src/geo/stbox.c:2209: overbefore_stbox_stbox() returns bool but validates with NULL, expected false
-meos/src/geo/stbox.c:2226: after_stbox_stbox() returns bool but validates with NULL, expected false
-meos/src/geo/stbox.c:2244: overafter_stbox_stbox() returns bool but validates with NULL, expected false
-meos/src/geo/stbox.c:2499: stbox_cmp() returns int but validates with false, expected INT_MAX
-meos/src/geo/stbox.c:2626: stbox_hash() returns uint32 but documents INT_MAX, expected UINT32_MAX
-meos/src/geo/stbox.c:2626: stbox_hash() returns uint32 but validates with INT_MAX, expected UINT32_MAX
-meos/src/geo/tgeo_compops.c:63: eacomp_tgeo_geo() returns int but validates with -1, expected INT_MAX
-meos/src/geo/tgeo_compops.c:81: eacomp_tgeo_tgeo() returns int but validates with -1, expected INT_MAX
-meos/src/geo/tgeo_distance.c:2970: stbox_spatial_distance() returns double but validates with false, expected DBL_MAX
-meos/src/geo/tgeo_spatialfuncs.c:1115: tgeominst_tgeoginst() returns TInstant * but documents `NULL`, expected NULL
-meos/src/geo/tgeo_spatialfuncs.c:1147: tgeomseq_tgeogseq() returns TSequence * but documents `NULL`, expected NULL
-meos/src/geo/tgeo_spatialfuncs.c:1175: tgeomseqset_tgeogseqset() returns TSequenceSet * but documents `NULL`, expected NULL
-meos/src/geo/tgeo_spatialfuncs.c:1205: tgeom_tgeog() returns Temporal * but documents `NULL`, expected NULL
-meos/src/geo/tgeo_spatialfuncs.c:1231: tgeometry_to_tgeography() returns Temporal * but documents `NULL`, expected NULL
-meos/src/geo/tgeo_spatialfuncs.c:1246: tgeography_to_tgeometry() returns Temporal * but documents `NULL`, expected NULL
-meos/src/geo/tgeo_spatialfuncs.c:1406: tgeo_tpoint() returns Temporal * but documents `NULL`, expected NULL
-meos/src/geo/tgeo_spatialfuncs.c:1752: tgeo_convex_hull() returns GSERIALIZED * but documents `NULL`, expected NULL
-meos/src/geo/tgeo_spatialrels.c:435: spatialrel_tgeo_tgeo() returns int but documents -1, expected INT_MAX
-meos/src/geo/tpoint_spatialfuncs.c:1422: tpoint_tfloat_to_geomeas() returns bool but validates with NULL, expected false
-meos/src/geo/tspatial_tempspatialrels.c:595: tspatialrel_tspatial_base() returns Temporal * but documents `NULL`, expected NULL
-meos/src/geo/tspatial_tempspatialrels.c:651: tspatialrel_tspatial_tspatial() returns Temporal * but documents `NULL`, expected NULL
-meos/src/npoint/npoint.c:1207: npoint_cmp() returns int but validates with false, expected INT_MAX
-meos/src/npoint/npoint.c:1312: nsegment_cmp() returns int but validates with false, expected INT_MAX
-meos/src/npoint/npoint.c:1397: npoint_hash() returns uint32 but validates with INT_MAX, expected UINT32_MAX
-meos/src/npoint/tnpoint.c:833: tnpoint_route() returns int64 but documents INT_MAX, expected INT64_MAX
-meos/src/npoint/tnpoint_compops.c:57: eacomp_tnpoint_npoint() returns int but validates with -1, expected INT_MAX
-meos/src/npoint/tnpoint_compops.c:74: eacomp_tnpoint_tnpoint() returns int but validates with -1, expected INT_MAX
-meos/src/npoint/tnpoint_routeops.c:107: overlaps_rid_tnpoint_bigintset() returns bool but validates with NULL, expected false
-meos/src/npoint/tnpoint_routeops.c:123: contains_rid_tnpoint_bigintset() returns bool but validates with NULL, expected false
-meos/src/npoint/tnpoint_routeops.c:151: same_rid_tnpoint_bigintset() returns bool but validates with NULL, expected false
-meos/src/npoint/tnpoint_routeops.c:61: contains_rid_tnpoint_bigint() returns bool but validates with NULL, expected false
-meos/src/npoint/tnpoint_routeops.c:88: same_rid_tnpoint_bigint() returns bool but validates with NULL, expected false
-meos/src/npoint/tnpoint_spatialfuncs.c:203: npoint_same() returns bool but validates with NULL, expected false
-meos/src/pointcloud/pcpatch.c:295: pcpatch_hash() returns uint32 but validates with INT_MAX, expected UINT32_MAX
-meos/src/pointcloud/pcpatch.c:331: pcpatch_cmp() returns int but validates with false, expected INT_MAX
-meos/src/pointcloud/pcpoint.c:325: pcpoint_hash() returns uint32 but validates with INT_MAX, expected UINT32_MAX
-meos/src/pointcloud/pcpoint.c:366: pcpoint_cmp() returns int but validates with false, expected INT_MAX
-meos/src/pointcloud/tpcbox.c:1047: tpcbox_cmp() returns int but validates with false, expected INT_MAX
-meos/src/pose/pose.c:1865: pose_eq() returns bool but validates with NULL, expected false
-meos/src/pose/pose.c:1907: pose_same() returns bool but validates with NULL, expected false
-meos/src/pose/pose.c:1949: pose_cmp() returns int but validates with false, expected INT_MAX
-meos/src/pose/pose.c:2048: pose_hash() returns uint32 but validates with INT_MAX, expected UINT32_MAX
-meos/src/raster/raquet.c:653: raquet_quadbin() returns uint64 but validates with 0, expected UINT64_MAX
-meos/src/raster/raquet.c:666: raquet_width() returns int but validates with -1, expected INT_MAX
-meos/src/raster/raquet.c:679: raquet_height() returns int but validates with -1, expected INT_MAX
-meos/src/raster/raquet.c:692: raquet_nodata() returns double but validates with 0.0, expected DBL_MAX
-meos/src/raster/raquet.c:802: raquet_cmp() returns int but validates with false, expected INT_MAX
-meos/src/raster/raquet.c:906: raquet_hash() returns uint32 but documents INT_MAX, expected UINT32_MAX
-meos/src/raster/raquet.c:906: raquet_hash() returns uint32 but validates with INT_MAX, expected UINT32_MAX
-meos/src/raster/raquet_gdal.c:510: eraster_value_gdal() returns int but validates with -1, expected INT_MAX
-meos/src/raster/raquet_gdal.c:540: araster_value_gdal() returns int but validates with -1, expected INT_MAX
-meos/src/raster/raster_quadbin.c:583: eraster_value() returns int but validates with -1, expected INT_MAX
-meos/src/raster/raster_quadbin.c:616: araster_value() returns int but validates with -1, expected INT_MAX
-meos/src/raster/raster_rtcore.c:235: raster_num_bands() returns int but validates with -1, expected INT_MAX
-meos/src/rgeo/trgeo_spatialrels.c:72: spatialrel_trgeo_trav_geo() returns int but documents -1, expected INT_MAX
-meos/src/temporal/set.c:1250: set_hash() returns uint32 but validates with INT_MAX, expected UINT32_MAX
-meos/src/temporal/set.c:672: set_mem_size() returns int but validates with -1, expected INT_MAX
-meos/src/temporal/set.c:686: set_num_values() returns int but documents -1, expected INT_MAX
-meos/src/temporal/set.c:686: set_num_values() returns int but validates with -1, expected INT_MAX
-meos/src/temporal/set_meos.c:469: bigintset_start_value() returns int64 but documents INT_MAX, expected INT64_MAX
-meos/src/temporal/set_meos.c:561: bigintset_end_value() returns int64 but documents INT_MAX, expected INT64_MAX
-meos/src/temporal/set_ops.c:186: contains_set_value() returns bool but validates with NULL, expected false
-meos/src/temporal/span.c:1467: timestamptz_shift() returns TimestampTz but documents `DT_NOEND`, expected DT_NOEND
-meos/src/temporal/span.c:1747: span_hash() returns uint32 but documents INT_MAX, expected UINT32_MAX
-meos/src/temporal/span.c:1747: span_hash() returns uint32 but validates with INT_MAX, expected UINT32_MAX
-meos/src/temporal/span_meos.c:577: intspan_width() returns int but documents -1, expected INT_MAX
-meos/src/temporal/span_meos.c:577: intspan_width() returns int but validates with -1, expected INT_MAX
-meos/src/temporal/span_meos.c:592: bigintspan_width() returns int64 but documents -1, expected INT64_MAX
-meos/src/temporal/span_meos.c:592: bigintspan_width() returns int64 but validates with -1, expected INT64_MAX
-meos/src/temporal/spanset.c:1546: spanset_hash() returns uint32 but documents INT_MAX, expected UINT32_MAX
-meos/src/temporal/spanset.c:1546: spanset_hash() returns uint32 but validates with INT_MAX, expected UINT32_MAX
-meos/src/temporal/spanset.c:519: spanset_mem_size() returns int but documents -1, expected INT_MAX
-meos/src/temporal/spanset.c:519: spanset_mem_size() returns int but validates with -1, expected INT_MAX
-meos/src/temporal/spanset.c:574: spanset_lower_inc() returns bool but validates with NULL, expected false
-meos/src/temporal/spanset.c:588: spanset_upper_inc() returns bool but validates with NULL, expected false
-meos/src/temporal/spanset.c:690: datespanset_num_dates() returns int but documents -1, expected INT_MAX
-meos/src/temporal/spanset.c:690: datespanset_num_dates() returns int but validates with -1, expected INT_MAX
-meos/src/temporal/spanset.c:788: tstzspanset_num_timestamps() returns int but documents -1, expected INT_MAX
-meos/src/temporal/spanset.c:788: tstzspanset_num_timestamps() returns int but validates with -1, expected INT_MAX
-meos/src/temporal/spanset.c:948: spanset_num_spans() returns int but documents -1, expected INT_MAX
-meos/src/temporal/spanset.c:948: spanset_num_spans() returns int but validates with -1, expected INT_MAX
-meos/src/temporal/spanset_meos.c:522: intspanset_width() returns int but documents -1, expected INT_MAX
-meos/src/temporal/spanset_meos.c:522: intspanset_width() returns int but validates with -1, expected INT_MAX
-meos/src/temporal/spanset_meos.c:538: bigintspanset_width() returns int64 but documents -1, expected INT64_MAX
-meos/src/temporal/spanset_meos.c:538: bigintspanset_width() returns int64 but validates with -1, expected INT64_MAX
-meos/src/temporal/spanset_ops.c:697: overright_spanset_value() returns bool but validates with NULL, expected false
-meos/src/temporal/spanset_ops.c:80: contains_spanset_timestamptz() returns bool but validates with NULL, expected false
-meos/src/temporal/tbox.c:170: tbox_make() returns TBox * but documents `NULL`, expected NULL
-meos/src/temporal/tbox.c:2022: tbox_hash() returns uint32 but documents INT_MAX, expected UINT32_MAX
-meos/src/temporal/tbox.c:2022: tbox_hash() returns uint32 but validates with INT_MAX, expected UINT32_MAX
-meos/src/temporal/temporal.c:2283: temporal_value_n() returns bool but validates with NULL, expected false
-meos/src/temporal/temporal.c:2442: temporal_num_sequences() returns int but documents -1, expected INT_MAX
-meos/src/temporal/temporal.c:2442: temporal_num_sequences() returns int but validates with -1, expected INT_MAX
-meos/src/temporal/temporal.c:2667: temporal_num_instants() returns int but documents -1, expected INT_MAX
-meos/src/temporal/temporal.c:2667: temporal_num_instants() returns int but validates with -1, expected INT_MAX
-meos/src/temporal/temporal.c:2875: temporal_num_timestamps() returns int but documents -1, expected INT_MAX
-meos/src/temporal/temporal.c:2875: temporal_num_timestamps() returns int but validates with -1, expected INT_MAX
-meos/src/temporal/temporal.c:2953: temporal_timestamptz_n() returns bool but validates with NULL, expected false
-meos/src/temporal/temporal.c:3731: temporal_hash() returns uint32 but documents INT_MAX, expected UINT32_MAX
-meos/src/temporal/temporal.c:3731: temporal_hash() returns uint32 but validates with INT_MAX, expected UINT32_MAX
-meos/src/temporal/temporal_analytics.c:1773: temporal_hausdorff_distance() returns double but documents `DBL_MAX`, expected DBL_MAX
-meos/src/temporal/temporal_boxops_meos.c:101: contains_temporal_temporal() returns bool but validates with NULL, expected false
-meos/src/temporal/temporal_boxops_meos.c:119: contained_tstzspan_temporal() returns bool but validates with NULL, expected false
-meos/src/temporal/temporal_boxops_meos.c:135: contained_temporal_tstzspan() returns bool but validates with NULL, expected false
-meos/src/temporal/temporal_boxops_meos.c:150: contained_temporal_temporal() returns bool but validates with NULL, expected false
-meos/src/temporal/temporal_boxops_meos.c:168: overlaps_tstzspan_temporal() returns bool but validates with NULL, expected false
-meos/src/temporal/temporal_boxops_meos.c:184: overlaps_temporal_tstzspan() returns bool but validates with NULL, expected false
-meos/src/temporal/temporal_boxops_meos.c:198: overlaps_temporal_temporal() returns bool but validates with NULL, expected false
-meos/src/temporal/temporal_boxops_meos.c:216: same_tstzspan_temporal() returns bool but validates with NULL, expected false
-meos/src/temporal/temporal_boxops_meos.c:232: same_temporal_tstzspan() returns bool but validates with NULL, expected false
-meos/src/temporal/temporal_boxops_meos.c:246: same_temporal_temporal() returns bool but validates with NULL, expected false
-meos/src/temporal/temporal_boxops_meos.c:264: adjacent_tstzspan_temporal() returns bool but validates with NULL, expected false
-meos/src/temporal/temporal_boxops_meos.c:280: adjacent_temporal_tstzspan() returns bool but validates with NULL, expected false
-meos/src/temporal/temporal_boxops_meos.c:294: adjacent_temporal_temporal() returns bool but validates with NULL, expected false
-meos/src/temporal/temporal_boxops_meos.c:70: contains_tstzspan_temporal() returns bool but validates with NULL, expected false
-meos/src/temporal/temporal_boxops_meos.c:86: contains_temporal_tstzspan() returns bool but validates with NULL, expected false
-meos/src/temporal/temporal_posops_meos.c:105: overafter_tstzspan_temporal() returns bool but validates with NULL, expected false
-meos/src/temporal/temporal_posops_meos.c:123: before_temporal_tstzspan() returns bool but validates with NULL, expected false
-meos/src/temporal/temporal_posops_meos.c:138: overbefore_temporal_tstzspan() returns bool but validates with NULL, expected false
-meos/src/temporal/temporal_posops_meos.c:153: after_temporal_tstzspan() returns bool but validates with NULL, expected false
-meos/src/temporal/temporal_posops_meos.c:168: overafter_temporal_tstzspan() returns bool but validates with NULL, expected false
-meos/src/temporal/temporal_posops_meos.c:60: before_tstzspan_temporal() returns bool but validates with NULL, expected false
-meos/src/temporal/temporal_posops_meos.c:75: overbefore_tstzspan_temporal() returns bool but validates with NULL, expected false
-meos/src/temporal/temporal_posops_meos.c:90: after_tstzspan_temporal() returns bool but validates with NULL, expected false
-meos/src/temporal/temporal_tile.c:127: bigint_get_bin() returns int64 but documents INT_MAX, expected INT64_MAX
-meos/src/temporal/tinstant.c:661: tinstant_hash() returns uint32 but documents INT_MAX, expected UINT32_MAX
-meos/src/temporal/tinstant.c:661: tinstant_hash() returns uint32 but validates with INT_MAX, expected UINT32_MAX
-meos/src/temporal/type_util.c:525: datum_hash() returns uint32 but documents INT_MAX, expected UINT32_MAX
+# grandfathered in, keyed by file, function and sentinel so that
+# an edit above a finding does not read as a new one. The list only
+# shrinks: a new mismatch fails the check. Regenerate with
+# --rebaseline after a fix.
+meos/src/cbuffer/cbuffer.c	cbuffer_cmp	validates with false
+meos/src/cbuffer/cbuffer.c	cbuffer_hash	validates with INT_MAX
+meos/src/cbuffer/tcbuffer_spatialrels.c	spatialrel_geo_geo	documents -1
+meos/src/geo/postgis_funcs.c	geo_num_points	documents -1
+meos/src/geo/postgis_funcs.c	geo_num_points	validates with -1
+meos/src/geo/postgis_funcs.c	geo_num_geos	documents -1
+meos/src/geo/postgis_funcs.c	geo_num_geos	validates with -1
+meos/src/geo/postgis_funcs.c	geo_equals	validates with -1
+meos/src/geo/postgis_funcs.c	line_locate_point	documents -1
+meos/src/geo/postgis_funcs.c	line_numpoints	documents -1
+meos/src/geo/postgis_funcs.c	line_numpoints	validates with -1
+meos/src/geo/postgis_funcs.c	geo_is_empty	validates with NULL
+meos/src/geo/stbox.c	before_stbox_stbox	validates with NULL
+meos/src/geo/stbox.c	overbefore_stbox_stbox	validates with NULL
+meos/src/geo/stbox.c	after_stbox_stbox	validates with NULL
+meos/src/geo/stbox.c	overafter_stbox_stbox	validates with NULL
+meos/src/geo/stbox.c	stbox_cmp	validates with false
+meos/src/geo/stbox.c	stbox_hash	documents INT_MAX
+meos/src/geo/stbox.c	stbox_hash	validates with INT_MAX
+meos/src/geo/tgeo_compops.c	eacomp_tgeo_geo	validates with -1
+meos/src/geo/tgeo_compops.c	eacomp_tgeo_tgeo	validates with -1
+meos/src/geo/tgeo_distance.c	stbox_spatial_distance	validates with false
+meos/src/geo/tgeo_spatialfuncs.c	tgeominst_tgeoginst	documents `NULL`
+meos/src/geo/tgeo_spatialfuncs.c	tgeomseq_tgeogseq	documents `NULL`
+meos/src/geo/tgeo_spatialfuncs.c	tgeomseqset_tgeogseqset	documents `NULL`
+meos/src/geo/tgeo_spatialfuncs.c	tgeom_tgeog	documents `NULL`
+meos/src/geo/tgeo_spatialfuncs.c	tgeometry_to_tgeography	documents `NULL`
+meos/src/geo/tgeo_spatialfuncs.c	tgeography_to_tgeometry	documents `NULL`
+meos/src/geo/tgeo_spatialfuncs.c	tgeo_tpoint	documents `NULL`
+meos/src/geo/tgeo_spatialfuncs.c	tgeo_convex_hull	documents `NULL`
+meos/src/geo/tgeo_spatialrels.c	spatialrel_tgeo_tgeo	documents -1
+meos/src/geo/tpoint_spatialfuncs.c	tpoint_tfloat_to_geomeas	validates with NULL
+meos/src/geo/tspatial_tempspatialrels.c	tspatialrel_tspatial_base	documents `NULL`
+meos/src/geo/tspatial_tempspatialrels.c	tspatialrel_tspatial_tspatial	documents `NULL`
+meos/src/npoint/npoint.c	npoint_cmp	validates with false
+meos/src/npoint/npoint.c	nsegment_cmp	validates with false
+meos/src/npoint/npoint.c	npoint_hash	validates with INT_MAX
+meos/src/npoint/tnpoint.c	tnpoint_route	documents INT_MAX
+meos/src/npoint/tnpoint_compops.c	eacomp_tnpoint_npoint	validates with -1
+meos/src/npoint/tnpoint_compops.c	eacomp_tnpoint_tnpoint	validates with -1
+meos/src/npoint/tnpoint_routeops.c	overlaps_rid_tnpoint_bigintset	validates with NULL
+meos/src/npoint/tnpoint_routeops.c	contains_rid_tnpoint_bigintset	validates with NULL
+meos/src/npoint/tnpoint_routeops.c	same_rid_tnpoint_bigintset	validates with NULL
+meos/src/npoint/tnpoint_routeops.c	contains_rid_tnpoint_bigint	validates with NULL
+meos/src/npoint/tnpoint_routeops.c	same_rid_tnpoint_bigint	validates with NULL
+meos/src/npoint/tnpoint_spatialfuncs.c	npoint_same	validates with NULL
+meos/src/pointcloud/pcpatch.c	pcpatch_hash	validates with INT_MAX
+meos/src/pointcloud/pcpatch.c	pcpatch_cmp	validates with false
+meos/src/pointcloud/pcpoint.c	pcpoint_hash	validates with INT_MAX
+meos/src/pointcloud/pcpoint.c	pcpoint_cmp	validates with false
+meos/src/pointcloud/tpcbox.c	tpcbox_cmp	validates with false
+meos/src/pose/pose.c	pose_eq	validates with NULL
+meos/src/pose/pose.c	pose_same	validates with NULL
+meos/src/pose/pose.c	pose_cmp	validates with false
+meos/src/pose/pose.c	pose_hash	validates with INT_MAX
+meos/src/raster/raquet.c	raquet_quadbin	validates with 0
+meos/src/raster/raquet.c	raquet_width	validates with -1
+meos/src/raster/raquet.c	raquet_height	validates with -1
+meos/src/raster/raquet.c	raquet_nodata	validates with 0.0
+meos/src/raster/raquet.c	raquet_cmp	validates with false
+meos/src/raster/raquet.c	raquet_hash	documents INT_MAX
+meos/src/raster/raquet.c	raquet_hash	validates with INT_MAX
+meos/src/raster/raquet_gdal.c	eraster_value_gdal	validates with -1
+meos/src/raster/raquet_gdal.c	araster_value_gdal	validates with -1
+meos/src/raster/raster_quadbin.c	eraster_value	validates with -1
+meos/src/raster/raster_quadbin.c	araster_value	validates with -1
+meos/src/raster/raster_rtcore.c	raster_num_bands	validates with -1
+meos/src/rgeo/trgeo_spatialrels.c	spatialrel_trgeo_trav_geo	documents -1
+meos/src/temporal/set.c	set_hash	validates with INT_MAX
+meos/src/temporal/set.c	set_mem_size	validates with -1
+meos/src/temporal/set.c	set_num_values	documents -1
+meos/src/temporal/set.c	set_num_values	validates with -1
+meos/src/temporal/set_meos.c	bigintset_start_value	documents INT_MAX
+meos/src/temporal/set_meos.c	bigintset_end_value	documents INT_MAX
+meos/src/temporal/set_ops.c	contains_set_value	validates with NULL
+meos/src/temporal/span.c	timestamptz_shift	documents `DT_NOEND`
+meos/src/temporal/span.c	span_hash	documents INT_MAX
+meos/src/temporal/span.c	span_hash	validates with INT_MAX
+meos/src/temporal/span_meos.c	intspan_width	documents -1
+meos/src/temporal/span_meos.c	intspan_width	validates with -1
+meos/src/temporal/span_meos.c	bigintspan_width	documents -1
+meos/src/temporal/span_meos.c	bigintspan_width	validates with -1
+meos/src/temporal/spanset.c	spanset_hash	documents INT_MAX
+meos/src/temporal/spanset.c	spanset_hash	validates with INT_MAX
+meos/src/temporal/spanset.c	spanset_mem_size	documents -1
+meos/src/temporal/spanset.c	spanset_mem_size	validates with -1
+meos/src/temporal/spanset.c	spanset_lower_inc	validates with NULL
+meos/src/temporal/spanset.c	spanset_upper_inc	validates with NULL
+meos/src/temporal/spanset.c	datespanset_num_dates	documents -1
+meos/src/temporal/spanset.c	datespanset_num_dates	validates with -1
+meos/src/temporal/spanset.c	tstzspanset_num_timestamps	documents -1
+meos/src/temporal/spanset.c	tstzspanset_num_timestamps	validates with -1
+meos/src/temporal/spanset.c	spanset_num_spans	documents -1
+meos/src/temporal/spanset.c	spanset_num_spans	validates with -1
+meos/src/temporal/spanset_meos.c	intspanset_width	documents -1
+meos/src/temporal/spanset_meos.c	intspanset_width	validates with -1
+meos/src/temporal/spanset_meos.c	bigintspanset_width	documents -1
+meos/src/temporal/spanset_meos.c	bigintspanset_width	validates with -1
+meos/src/temporal/spanset_ops.c	overright_spanset_value	validates with NULL
+meos/src/temporal/spanset_ops.c	contains_spanset_timestamptz	validates with NULL
+meos/src/temporal/tbox.c	tbox_make	documents `NULL`
+meos/src/temporal/tbox.c	tbox_hash	documents INT_MAX
+meos/src/temporal/tbox.c	tbox_hash	validates with INT_MAX
+meos/src/temporal/temporal.c	temporal_value_n	validates with NULL
+meos/src/temporal/temporal.c	temporal_num_sequences	documents -1
+meos/src/temporal/temporal.c	temporal_num_sequences	validates with -1
+meos/src/temporal/temporal.c	temporal_num_instants	documents -1
+meos/src/temporal/temporal.c	temporal_num_instants	validates with -1
+meos/src/temporal/temporal.c	temporal_num_timestamps	documents -1
+meos/src/temporal/temporal.c	temporal_num_timestamps	validates with -1
+meos/src/temporal/temporal.c	temporal_timestamptz_n	validates with NULL
+meos/src/temporal/temporal.c	temporal_hash	documents INT_MAX
+meos/src/temporal/temporal.c	temporal_hash	validates with INT_MAX
+meos/src/temporal/temporal_analytics.c	temporal_hausdorff_distance	documents `DBL_MAX`
+meos/src/temporal/temporal_boxops_meos.c	contains_temporal_temporal	validates with NULL
+meos/src/temporal/temporal_boxops_meos.c	contained_tstzspan_temporal	validates with NULL
+meos/src/temporal/temporal_boxops_meos.c	contained_temporal_tstzspan	validates with NULL
+meos/src/temporal/temporal_boxops_meos.c	contained_temporal_temporal	validates with NULL
+meos/src/temporal/temporal_boxops_meos.c	overlaps_tstzspan_temporal	validates with NULL
+meos/src/temporal/temporal_boxops_meos.c	overlaps_temporal_tstzspan	validates with NULL
+meos/src/temporal/temporal_boxops_meos.c	overlaps_temporal_temporal	validates with NULL
+meos/src/temporal/temporal_boxops_meos.c	same_tstzspan_temporal	validates with NULL
+meos/src/temporal/temporal_boxops_meos.c	same_temporal_tstzspan	validates with NULL
+meos/src/temporal/temporal_boxops_meos.c	same_temporal_temporal	validates with NULL
+meos/src/temporal/temporal_boxops_meos.c	adjacent_tstzspan_temporal	validates with NULL
+meos/src/temporal/temporal_boxops_meos.c	adjacent_temporal_tstzspan	validates with NULL
+meos/src/temporal/temporal_boxops_meos.c	adjacent_temporal_temporal	validates with NULL
+meos/src/temporal/temporal_boxops_meos.c	contains_tstzspan_temporal	validates with NULL
+meos/src/temporal/temporal_boxops_meos.c	contains_temporal_tstzspan	validates with NULL
+meos/src/temporal/temporal_posops_meos.c	overafter_tstzspan_temporal	validates with NULL
+meos/src/temporal/temporal_posops_meos.c	before_temporal_tstzspan	validates with NULL
+meos/src/temporal/temporal_posops_meos.c	overbefore_temporal_tstzspan	validates with NULL
+meos/src/temporal/temporal_posops_meos.c	after_temporal_tstzspan	validates with NULL
+meos/src/temporal/temporal_posops_meos.c	overafter_temporal_tstzspan	validates with NULL
+meos/src/temporal/temporal_posops_meos.c	before_tstzspan_temporal	validates with NULL
+meos/src/temporal/temporal_posops_meos.c	overbefore_tstzspan_temporal	validates with NULL
+meos/src/temporal/temporal_posops_meos.c	after_tstzspan_temporal	validates with NULL
+meos/src/temporal/temporal_tile.c	bigint_get_bin	documents INT_MAX
+meos/src/temporal/tinstant.c	tinstant_hash	documents INT_MAX
+meos/src/temporal/tinstant.c	tinstant_hash	validates with INT_MAX
+meos/src/temporal/type_util.c	datum_hash	documents INT_MAX
