@@ -626,7 +626,6 @@ extern Temporal *tgeompoint_from_mfjson(const char *str);
 extern Temporal *tgeompoint_in(const char *str);
 extern char *tspatial_as_ewkt(const Temporal *temp, int maxdd);
 extern char *tspatial_as_text(const Temporal *temp, int maxdd);
-extern char *tspatial_out(const Temporal *temp, int maxdd);
 
 /* Constructor functions */
 
