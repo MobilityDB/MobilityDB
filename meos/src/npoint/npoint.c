@@ -1394,12 +1394,13 @@ nsegment_ge(const Nsegment *ns1, const Nsegment *ns2)
  * @ingroup meos_npoint_base_accessor
  * @brief Return the 32-bit hash value of a network point
  * @param[in] np Network point
+ * @return On error return @p UINT32_MAX
  */
 uint32
 npoint_hash(const Npoint *np)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(np, INT_MAX);
+  VALIDATE_NOT_NULL(np, UINT32_MAX);
 
   /* Compute hashes of value and position */
   uint32 rid_hash = int64_hash(np->rid);

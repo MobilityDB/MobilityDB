@@ -654,14 +654,14 @@ tinstant_cmp(const TInstant *inst1, const TInstant *inst2)
  * @ingroup meos_internal_temporal_accessor
  * @brief Return the 32-bit hash of a temporal instant
  * @param[in] inst Temporal instant
- * @return On error return @p INT_MAX
+ * @return On error return @p UINT32_MAX
  * @csqlfn #Temporal_hash()
  */
 uint32
 tinstant_hash(const TInstant *inst)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(inst, INT_MAX);
+  VALIDATE_NOT_NULL(inst, UINT32_MAX);
 
   MeosType basetype = temptype_basetype(inst->temptype);
   /* Apply the hash function to the base type */

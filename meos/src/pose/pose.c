@@ -2043,13 +2043,14 @@ void hashlittle2(const void *key, size_t length, uint32_t *pc, uint32_t *pb);
  * @ingroup meos_pose_base_accessor
  * @brief Return the 32-bit hash value of a pose
  * @param[in] pose Pose
+ * @return On error return @p UINT32_MAX
  * @csqlfn #Pose_hash()
  */
 uint32
 pose_hash(const Pose *pose)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(pose, INT_MAX);
+  VALIDATE_NOT_NULL(pose, UINT32_MAX);
 
   /* Use same code as gserialized2_hash */
   int32_t hval;

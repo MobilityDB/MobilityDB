@@ -289,13 +289,14 @@ uint32_t pcpatch_npoints(const Pcpatch *pa)
 /**
  * @ingroup meos_pointcloud_base_accessor
  * @brief Return the 32-bit hash of a pcpatch
+ * @return On error return @p UINT32_MAX
  * @csqlfn #Pcpatch_hash()
  */
 uint32
 pcpatch_hash(const Pcpatch *pa)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(pa, INT_MAX);
+  VALIDATE_NOT_NULL(pa, UINT32_MAX);
   return hash_any((const unsigned char *) pa,
     (int) pcpatch_meaningful_size(pa));
 }

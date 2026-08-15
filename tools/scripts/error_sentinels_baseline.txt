@@ -3,30 +3,4 @@
 # an edit above a finding does not read as a new one. The list only
 # shrinks: a new mismatch fails the check. Regenerate with
 # --rebaseline after a fix.
-meos/src/cbuffer/cbuffer.c	cbuffer_hash	validates with INT_MAX
-meos/src/geo/stbox.c	stbox_hash	documents INT_MAX
-meos/src/geo/stbox.c	stbox_hash	validates with INT_MAX
-meos/src/npoint/npoint.c	npoint_hash	validates with INT_MAX
-meos/src/npoint/tnpoint.c	tnpoint_route	documents INT_MAX
-meos/src/pointcloud/pcpatch.c	pcpatch_hash	validates with INT_MAX
-meos/src/pointcloud/pcpoint.c	pcpoint_hash	validates with INT_MAX
-meos/src/pose/pose.c	pose_hash	validates with INT_MAX
-meos/src/raster/raquet.c	raquet_quadbin	validates with 0
-meos/src/raster/raquet.c	raquet_nodata	validates with 0.0
-meos/src/raster/raquet.c	raquet_hash	documents INT_MAX
-meos/src/raster/raquet.c	raquet_hash	validates with INT_MAX
-meos/src/temporal/set.c	set_hash	validates with INT_MAX
-meos/src/temporal/set_meos.c	bigintset_start_value	documents INT_MAX
-meos/src/temporal/set_meos.c	bigintset_end_value	documents INT_MAX
-meos/src/temporal/span.c	span_hash	documents INT_MAX
-meos/src/temporal/span.c	span_hash	validates with INT_MAX
-meos/src/temporal/spanset.c	spanset_hash	documents INT_MAX
-meos/src/temporal/spanset.c	spanset_hash	validates with INT_MAX
-meos/src/temporal/tbox.c	tbox_hash	documents INT_MAX
-meos/src/temporal/tbox.c	tbox_hash	validates with INT_MAX
-meos/src/temporal/temporal.c	temporal_hash	documents INT_MAX
-meos/src/temporal/temporal.c	temporal_hash	validates with INT_MAX
-meos/src/temporal/temporal_tile.c	bigint_get_bin	documents INT_MAX
-meos/src/temporal/tinstant.c	tinstant_hash	documents INT_MAX
-meos/src/temporal/tinstant.c	tinstant_hash	validates with INT_MAX
-meos/src/temporal/type_util.c	datum_hash	documents INT_MAX
+

@@ -1244,13 +1244,14 @@ set_ge(const Set *s1, const Set *s2)
  * @ingroup meos_setspan_accessor
  * @brief Return the 32-bit hash of a set
  * @param[in] s Set
+ * @return On error return @p UINT32_MAX
  * @csqlfn #Set_hash()
  */
 uint32
 set_hash(const Set *s)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(s, INT_MAX);
+  VALIDATE_NOT_NULL(s, UINT32_MAX);
   uint32 result = 1;
   for (int i = 0; i < s->count; i++)
   {

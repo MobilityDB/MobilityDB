@@ -462,7 +462,7 @@ intset_start_value(const Set *s)
  * @ingroup meos_setspan_accessor
  * @brief Return the start value of a big integer set
  * @param[in] s Set
- * @return On error return @p INT_MAX
+ * @return On error return @p INT64_MAX
  * @csqlfn #Set_start_value()
  */
 int64
@@ -554,7 +554,7 @@ intset_end_value(const Set *s)
  * @ingroup meos_setspan_accessor
  * @brief Return the end value of a big integer set
  * @param[in] s Set
- * @return On error return @p INT_MAX
+ * @return On error return @p INT64_MAX
  * @csqlfn #Set_end_value()
  */
 int64

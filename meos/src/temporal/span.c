@@ -1740,14 +1740,14 @@ span_gt(const Span *s1, const Span *s2)
  * @ingroup meos_setspan_accessor
  * @brief Return the 32-bit hash of a span
  * @param[in] s Span
- * @return On error return @p INT_MAX
+ * @return On error return @p UINT32_MAX
  * @csqlfn #Span_hash()
  */
 uint32
 span_hash(const Span *s)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(s, INT_MAX);
+  VALIDATE_NOT_NULL(s, UINT32_MAX);
 
   /* Create flags from the lower_inc and upper_inc values */
   char flags = '\0';

@@ -3724,14 +3724,14 @@ temporal_gt(const Temporal *temp1, const Temporal *temp2)
  * @ingroup meos_temporal_accessor
  * @brief Return the 32-bit hash value of a temporal value
  * @param[in] temp Temporal value
- * @return On error return @p INT_MAX
+ * @return On error return @p UINT32_MAX
  * @csqlfn #Temporal_hash()
  */
 uint32
 temporal_hash(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(temp, INT_MAX);
+  VALIDATE_NOT_NULL(temp, UINT32_MAX);
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
