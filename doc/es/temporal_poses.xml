@@ -1279,7 +1279,7 @@ SELECT asGeoPose(pose 'Geodpose(Point(8 47 1500), 0.707107, 0, 0, 0.707107)', 1,
 -- {"position":{"lat":47,"lon":8,"h":1500},"angles":{"yaw":90,"pitch":0,"roll":0}}
 SELECT asGeoPose(pose 'Geodpose(Point(8 47 1500), 0.707107, 0, 0, 0.707107)', 2, 6);
 /* {"frameSpecification":{"authority":"/geopose/1.0","id":"LTP-ENU","parameters":
-    "longitude=8&latitude=47&height=1500&crs=EPSG:4979"},
+    "longitude=8&amp;latitude=47&amp;height=1500&amp;crs=EPSG:4979"},
    "quaternion":{"x":0,"y":0,"z":0.707107,"w":0.707107}} */
 SELECT asEWKT(poseFromGeoPose(
   '{"position":{"lat":47,"lon":8,"h":1500},"angles":{"yaw":90,"pitch":0,"roll":0}}'), 6);

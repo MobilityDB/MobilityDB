@@ -22,7 +22,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          sparse-checkout: doc
+          # The job builds the manual from doc/ and runs the local apt-resilient action, which is
+          # read from the checkout: both paths belong in the sparse set.
+          sparse-checkout: |
+            doc
+            .github
 
       # Install dblatex
       - uses: ./.github/actions/apt-resilient
