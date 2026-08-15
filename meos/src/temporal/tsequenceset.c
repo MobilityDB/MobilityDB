@@ -60,6 +60,7 @@
 #include <utils/jsonb.h>
 #include <utils/numeric.h>
 #include <pgtypes.h>
+#include <pg_interval.h>
 
 /*****************************************************************************
  * General functions

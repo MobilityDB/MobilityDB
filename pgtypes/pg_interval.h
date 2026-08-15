@@ -48,7 +48,13 @@ typedef struct NumericData *Numeric;
 
 extern Interval *add_interval_interval(const Interval *interv1, const Interval *interv2);
 extern Interval *div_interval_float8(const Interval *interv, float8 factor);
+/* interval_cmp, interval_in and interval_out carry the names of the
+ * SQL-callable functions of the backend, so they are built only for the
+ * standalone library; the extension build reaches them through the
+ * pg_-prefixed twins declared in pgtypes.h */
+#if MEOS
 extern int32 interval_cmp(const Interval *interv1, const Interval *interv2);
+#endif /* MEOS */
 extern Interval *interval_copy(const Interval *interv);
 extern bool interval_eq(const Interval *interv1, const Interval *interv2);
 extern Numeric interval_extract(const Interval *interv, const text *units);
@@ -56,7 +62,9 @@ extern bool interval_ge(const Interval *interv1, const Interval *interv2);
 extern bool interval_gt(const Interval *interv1, const Interval *interv2);
 extern uint32 interval_hash(const Interval *interv);
 extern uint64 interval_hash_extended(const Interval *interv, uint64 seed);
+#if MEOS
 extern Interval *interval_in(const char *str, int32 typmod);
+#endif /* MEOS */
 extern bool interval_is_finite(const Interval *interv);
 extern Interval *interval_justify_days(const Interval *interv);
 extern Interval *interval_justify_hours(const Interval *interv);
@@ -67,7 +75,9 @@ extern bool interval_lt(const Interval *interv1, const Interval *interv2);
 extern Interval *interval_make(int32 years, int32 months, int32 weeks, int32 days, int32 hours, int32 mins, float8 secs);
 extern bool interval_ne(const Interval *interv1, const Interval *interv2);
 extern Interval *interval_negate(const Interval *interv);
+#if MEOS
 extern char *interval_out(const Interval *interv);
+#endif /* MEOS */
 extern float8 interval_part(const Interval *interv, const text *units);
 extern Interval *interval_scale(const Interval *interv, int32 typmod);
 extern Interval *interval_smaller(const Interval *interv1, const Interval *interv2);

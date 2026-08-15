@@ -691,15 +691,18 @@ extern Timestamp timestamptz_to_timestamp(TimestampTz tstz);
 
 /* Functions for intervals */
 
-extern Interval *add_interval_interval(const Interval *interv1, const Interval *interv2);
-extern Interval *div_interval_float8(const Interval *interv, float8 factor);
-extern Numeric interval_extract(const Interval *interv, const text *units);
-extern bool interval_is_finite(const Interval *interv);
-extern Interval *interval_make(int32 years, int32 months, int32 weeks, int32 days, int32 hours, int32 mins, float8 secs);
-extern Interval *interval_negate(const Interval *interv);
-extern Interval *minus_interval_interval(const Interval *interv1, const Interval *interv2);
-extern Interval *mul_float8_interval(float8 factor, const Interval *interv);
-extern Interval *mul_interval_float8(const Interval *interv, float8 factor);
+/* The interval functions that carry no pg_ prefix are declared once, in the
+ * public pg_interval.h. A second declaration here leaves the catalog
+ * attributing a function to whichever copy it reads first, which is how
+ * interval_make came to be attributed to this header while interval_in,
+ * interval_out and interval_cmp are attributed to pg_interval.h, putting
+ * interval_make out of reach of a binding that projects the public header.
+ * This header does not include pg_interval.h: the extension build compiles
+ * against the backend, whose SQL-callable interval_cmp, interval_in and
+ * interval_out carry the same names with a Datum signature, so the unprefixed
+ * declarations must stay out of every translation unit that sees them. The
+ * pg_-prefixed twins below are what the extension build uses. */
+
 extern int32 pg_interval_cmp(const Interval *interv1, const Interval *interv2);
 extern bool pg_interval_eq(const Interval *interv1, const Interval *interv2);
 extern bool pg_interval_ge(const Interval *interv1, const Interval *interv2);

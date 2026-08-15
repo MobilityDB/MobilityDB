@@ -65,10 +65,6 @@
 #include "pg_temporal/type_util.h"
 #include "pg_geo/tspatial.h"
 
-/* To avoid including fmgrprotos.h */
-extern PGDLLEXPORT Datum timestamp_mi(PG_FUNCTION_ARGS);
-extern PGDLLEXPORT Datum interval_cmp(PG_FUNCTION_ARGS);
-
 /*
  * This is required in a SINGLE file for builds against PostgreSQL
  */
