@@ -694,10 +694,12 @@ SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01
 				<indexterm significance="normal"><primary><varname>&gt;&gt;</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>&amp;&lt;</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>&amp;&gt;</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&lt;&lt;/</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>/&gt;&gt;</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>&lt;&lt;#</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>#&gt;&gt;</varname></primary></indexterm>
 				<para>Operadores de posición espacial y temporal</para>
-				<para>El conjunto completo <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname>, <varname>&amp;&gt;</varname>, <varname>&lt;&lt;|</varname>, <varname>&amp;&lt;|</varname>, <varname>|&gt;&gt;</varname>, <varname>|&amp;&gt;</varname>, <varname>&lt;&lt;#</varname>, <varname>&amp;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>#&amp;&gt;</varname> acepta <varname>trgeometry</varname> en cualquiera de los lados.</para>
+				<para>El conjunto completo <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname>, <varname>&amp;&gt;</varname>, <varname>&lt;&lt;|</varname>, <varname>&amp;&lt;|</varname>, <varname>|&gt;&gt;</varname>, <varname>|&amp;&gt;</varname>, <varname>&lt;&lt;/</varname>, <varname>&amp;&lt;/</varname>, <varname>/&gt;&gt;</varname>, <varname>/&amp;&gt;</varname>, <varname>&lt;&lt;#</varname>, <varname>&amp;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>#&amp;&gt;</varname> acepta <varname>trgeometry</varname> en cualquiera de los lados. Los operadores <varname>&lt;&lt;/</varname>, <varname>&amp;&lt;/</varname>, <varname>/&gt;&gt;</varname> y <varname>/&amp;&gt;</varname> comparan el eje Z y requieren que ambos argumentos tengan dimensión Z.</para>
 							<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01,
   Pose(Point(3 0),0)@2001-01-02]' &lt;&lt; stbox 'STBOX X((5,5),(6,6))';
@@ -705,6 +707,14 @@ SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01
 SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01,
   Pose(Point(3 0),0)@2001-01-02]' &lt;&lt;# tstzspan '[2001-01-03, 2001-01-04]';
 -- true
+SELECT trgeometry 'Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));
+  [Pose(Point(0 0 0),1,0,0,0)@2001-01-01, Pose(Point(3 0 0),1,0,0,0)@2001-01-02]'
+  &lt;&lt;/ stbox 'STBOX Z((5,5,5),(6,6,6))';
+-- true
+SELECT trgeometry 'Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));
+  [Pose(Point(0 0 0),1,0,0,0)@2001-01-01, Pose(Point(3 0 0),1,0,0,0)@2001-01-02]'
+  /&amp;&gt; stbox 'STBOX Z((5,5,5),(6,6,6))';
+-- false
 </programlisting>
 			</listitem>
 		</itemizedlist>
