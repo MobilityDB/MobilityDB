@@ -692,9 +692,9 @@ SELECT asText(round(tcbuffer '{[Cbuffer(Point(1 1.123456789),0.123456789)@2001-0
 				<para><varname>appendSequence(tcbuffer,tcbufferSeq) → tcbuffer</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(appendInstant(tcbuffer 'Cbuffer(Point(1 1), 0.1)@2001-01-01', 'Cbuffer(Point(2 2), 0.2)@2001-01-02'));
--- [Cbuffer(POINT(1 1),0.1)@2001-01-01 00:00:00+01, Cbuffer(POINT(2 2),0.2)@2001-01-02 00:00:00+01]
+-- [Cbuffer(POINT(1 1),0.1)@2001-01-01, Cbuffer(POINT(2 2),0.2)@2001-01-02]
 SELECT asText(appendSequence(tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01]', '[Cbuffer(Point(2 2), 0.2)@2001-01-02]'));
--- {[Cbuffer(POINT(1 1),0.1)@2001-01-01 00:00:00+01], [Cbuffer(POINT(2 2),0.2)@2001-01-02 00:00:00+01]}
+-- {[Cbuffer(POINT(1 1),0.1)@2001-01-01], [Cbuffer(POINT(2 2),0.2)@2001-01-02]}
 </programlisting>
 			</listitem>
 
@@ -708,15 +708,15 @@ SELECT asText(appendSequence(tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01]', '
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(merge(tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01, Cbuffer(Point(1 1), 0.3)@2001-01-03]',
   '[Cbuffer(Point(1 1), 0.3)@2001-01-03, Cbuffer(Point(1 1), 0.5)@2001-01-05]'));
--- [Cbuffer(POINT(1 1),0.1)@2001-01-01 00:00:00+01, Cbuffer(POINT(1 1),0.5)@2001-01-05 00:00:00+01]
+-- [Cbuffer(POINT(1 1),0.1)@2001-01-01, Cbuffer(POINT(1 1),0.5)@2001-01-05]
 SELECT asText(merge(ARRAY[tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01, Cbuffer(Point(1 1), 0.2)@2001-01-02]',
   '[Cbuffer(Point(1 1), 0.2)@2001-01-02, Cbuffer(Point(1 1), 0.3)@2001-01-03]']));
--- [Cbuffer(POINT(1 1),0.1)@2001-01-01 00:00:00+01, Cbuffer(POINT(1 1),0.3)@2001-01-03 00:00:00+01]
+-- [Cbuffer(POINT(1 1),0.1)@2001-01-01, Cbuffer(POINT(1 1),0.3)@2001-01-03]
 WITH temp(inst) AS (
   SELECT tcbuffer 'Cbuffer(Point(1 1), 0.1)@2001-01-01' UNION
   SELECT tcbuffer 'Cbuffer(Point(2 2), 0.2)@2001-01-02' )
 SELECT asText(mergeAgg(inst)) FROM temp;
--- {Cbuffer(POINT(1 1),0.1)@2001-01-01 00:00:00+01, Cbuffer(POINT(2 2),0.2)@2001-01-02 00:00:00+01}
+-- {Cbuffer(POINT(1 1),0.1)@2001-01-01, Cbuffer(POINT(2 2),0.2)@2001-01-02}
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -786,7 +786,7 @@ SELECT ST_AsText(traversedArea(tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(centroid(tcbuffer '[Cbuffer(Point(1 1), 0.5)@2001-01-01,
   Cbuffer(Point(3 3), 0.5)@2001-01-03]'));
--- [POINT(1 1)@2001-01-01 00:00:00+01, POINT(3 3)@2001-01-03 00:00:00+01]
+-- [POINT(1 1)@2001-01-01, POINT(3 3)@2001-01-03]
 </programlisting>
 			</listitem>
 
@@ -866,14 +866,14 @@ SELECT ST_AsText(shortestLine(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
   Cbuffer(Point(1 1), 0.5)@2001-01-03]' &lt;-&gt; cbuffer 'Cbuffer(Point(1 1), 0.2)';
--- [2.34988300875063@2001-01-02 00:00:00+01, 2.34988300875063@2001-01-03 00:00:00+01]
+-- [2.34988300875063@2001-01-02, 2.34988300875063@2001-01-03]
 SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
   Cbuffer(Point(1 1), 0.5)@2001-01-03]' &lt;-&gt; geometry 'Point(50 50)';
--- [25.0496666945044@2001-01-01 00:00:00+01, 26.4085688426232@2001-01-03 00:00:00+01]
+-- [25.0496666945044@2001-01-01, 26.4085688426232@2001-01-03]
 SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
   Cbuffer(Point(1 1), 0.5)@2001-01-03]' &lt;-&gt;
   tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-04]'
--- [2.34988300875063@2001-01-02 00:00:00+01, 2.34988300875063@2001-01-03 00:00:00+01]
+-- [2.34988300875063@2001-01-02, 2.34988300875063@2001-01-03]
 </programlisting>
 			</listitem>
 
@@ -949,7 +949,7 @@ SELECT asText(minusGeometry(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(atStbox(tcbuffer '[Cbuffer(Point(1 1), 0.5)@2000-01-01,
   Cbuffer(Point(3 3), 0.5)@2000-01-03]', stbox 'STBOX X((0,0),(2,2))'));
--- {[Cbuffer(POINT(1 1),0.5)@2000-01-01 00:00:00+01, Cbuffer(POINT(2 2),0.5)@2000-01-02 00:00:00+01)}
+-- {[Cbuffer(POINT(1 1),0.5)@2000-01-01, Cbuffer(POINT(2 2),0.5)@2000-01-02)}
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -1131,7 +1131,7 @@ SELECT eIntersects(tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01,
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tDisjoint(geometry 'Polygon((0 0,0 50,50 50,50 0,0 0))',
   tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01, Cbuffer(Point(1 1), 0.3)@2001-01-03)');
--- {[t@2001-01-01 00:00:00+01, t@2001-01-03 00:00:00+01)}
+-- {[t@2001-01-01, t@2001-01-03)}
 SELECT tDwithin(tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
   Cbuffer(Point(1 1), 0.5)@2001-01-03)', tcbuffer '[Cbuffer(Point(1 1), 0.5)@2001-01-01, 
   Cbuffer(Point(1 1), 0.3)@2001-01-03)', 1);
@@ -1225,7 +1225,7 @@ SELECT asText(minTimeDeltaSimplify(tcbuffer
 SELECT asText(douglasPeuckerSimplify(tcbuffer '[Cbuffer(Point(1 1),0.5)@2000-01-01,
   Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(3 1),0.5)@2000-01-03,
   Cbuffer(Point(4 4),0.5)@2000-01-04]', 2.0));
--- {Cbuffer(POINT(1 1),0.5)@2000-01-01 00:00:00+01, Cbuffer(POINT(4 4),0.5)@2000-01-04 00:00:00+01}
+-- {Cbuffer(POINT(1 1),0.5)@2000-01-01, Cbuffer(POINT(4 4),0.5)@2000-01-04}
 </programlisting>
 			</listitem>
 		</itemizedlist>

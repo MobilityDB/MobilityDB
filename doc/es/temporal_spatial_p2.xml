@@ -122,7 +122,7 @@ SELECT astext(minusElevation(tgeompoint '[Point(1 1 1)@2001-01-01,
 SELECT SRID(tgeompoint 'Point(0 0)@2001-01-01');
 -- 0
 SELECT asEWKT(setSRID(tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02)', 4326));
--- SRID=4326;[POINT(0 0)@2001-01-01 00:00:00+00, POINT(1 1)@2001-01-02 00:00:00+00)
+-- SRID=4326;[POINT(0 0)@2001-01-01, POINT(1 1)@2001-01-02)
 </programlisting>
 				</listitem>
 
@@ -138,7 +138,7 @@ SELECT asEWKT(setSRID(tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02)
 				<para>El SRID del punto temporal de entrada se ignora y el SRID del punto temporal de salida se establecerá en cero a menos que se proporcione un valor a través del parámetro opcional <varname>to_srid</varname>. Como se indica en el último parámetro, la canalización se ejecuta de forma predeterminada en dirección hacia adelante; al establecer el parámetro en falso, la canalización se ejecuta en la dirección inversa.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT asEWKT(transform(tgeompoint 'SRID=4326;Point(4.35 50.85)@2001-01-01', 3812));
--- SRID=3812;POINT(648679.018035303 671067.055638114)@2001-01-01 00:00:00+00
+-- SRID=3812;POINT(648679.018035303 671067.055638114)@2001-01-01
 </programlisting>
 				<programlisting language="sql" xml:space="preserve">
 WITH test(tgeo, pipeline) AS (

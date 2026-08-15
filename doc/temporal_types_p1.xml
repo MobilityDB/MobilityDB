@@ -74,12 +74,12 @@ SELECT tfloat '{[17@2018-01-01 08:00:00, 17.5@2018-01-01 08:05:00],
 			Continuous sequence values are converted into <emphasis>normal form</emphasis> so that equivalent values have identical representations. For this, consecutive instant values are merged when possible. For step interpolation, three consecutive instant values can be merged into two if they have the same value. For linear interpolation, three consecutive instant values can be merged into two if the linear functions defining the evolution of values are the same. Examples of transformation into normal form are as follows.
 			<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tint '[1@2001-01-01, 2@2001-01-03, 2@2001-01-04, 2@2001-01-05)';
--- [1@2001-01-01 00:00:00+00, 2@2001-01-03 00:00:00+00, 2@2001-01-05 00:00:00+00)
+-- [1@2001-01-01, 2@2001-01-03, 2@2001-01-05)
 SELECT asText(tgeompoint '[Point(1 1)@2001-01-01 08:00:00, Point(1 1)@2001-01-01 08:05:00,
   Point(1 1)@2001-01-01 08:10:00)');
 -- [Point(1 1)@2001-01-01 08:00:00, Point(1 1)@2001-01-01 08:10:00)
 SELECT tfloat '[1@2001-01-01, 2@2001-01-03, 3@2001-01-05]';
--- [1@2001-01-01 00:00:00+00, 3@2001-01-05 00:00:00+00]
+-- [1@2001-01-01, 3@2001-01-05]
 SELECT asText(tgeompoint '[Point(1 1)@2001-01-01 08:00:00, Point(2 2)@2001-01-01 08:05:00,
   Point(3 3)@2001-01-01 08:10:00]');
 -- [Point(1 1)@2001-01-01 08:00:00, Point(3 3)@2001-01-01 08:10:00]
@@ -1189,7 +1189,7 @@ SELECT segmentMinDuration(tfloat '[1@2001-01-01, 0@2001-01-03, -1@2001-01-04,
 -- {[t@2001-01-01, t@2001-01-06)}
 SELECT segmentMaxDuration(tfloat '[1@2001-01-01, 0@2001-01-03, -1@2001-01-04,
   -1@2001-01-06]', '1 day');
--- {[f@2001-01-01 00:00:00+01, f@2001-01-06 00:00:00+01)}
+-- {[f@2001-01-01, f@2001-01-06)}
 SELECT segmentMaxDuration(tfloat '[1@2001-01-01, 0@2001-01-03, -1@2001-01-04,
   -1@2001-01-06]', '1 day', false);
 -- {[f@2001-01-01, t@2001-01-03, f@2001-01-04, f@2001-01-06)}
@@ -1217,7 +1217,7 @@ SELECT asText(shiftTime(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-
 SELECT scaleTime(tint '1@2001-01-01', '1 day');
 -- 1@2001-01-01
 SELECT scaleTime(tint '{1@2001-01-01, 2@2001-01-03, 1@2001-01-05}', '1 day');
--- {1@2001-01-01 00:00:00+01, 2@2001-01-01 12:00:00+01, 1@2001-01-02 00:00:00+01}
+-- {1@2001-01-01, 2@2001-01-01 12:00:00+01, 1@2001-01-02}
 SELECT scaleTime(tfloat '[1@2001-01-01, 2@2001-01-03]', '1 day');
 -- [1@2001-01-01, 2@2001-01-02]
 SELECT asText(scaleTime(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02,
@@ -1230,7 +1230,7 @@ SELECT scaleTime(tint '1@2001-01-01', '-1 day');
 SELECT shiftScaleTime(tint '1@2001-01-01', '1 day', '1 day');
 -- 1@2001-01-02
 SELECT shiftScaleTime(tint '{1@2001-01-01, 2@2001-01-03, 1@2001-01-05}', '1 day','1 day');
--- {1@2001-01-02 00:00:00+01, 2@2001-01-02 12:00:00+01, 1@2001-01-03 00:00:00+01}
+-- {1@2001-01-02, 2@2001-01-02 12:00:00+01, 1@2001-01-03}
 SELECT shiftScaleTime(tfloat '[1@2001-01-01, 2@2001-01-03]', '1 day', '1 day');
 -- [1@2001-01-02, 2@2001-01-03]
 SELECT asText(shiftScaleTime(tgeometry '{[Point(1 1)@2001-01-01, 
