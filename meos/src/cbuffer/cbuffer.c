@@ -1505,13 +1505,14 @@ cbuffer_ge(const Cbuffer *cb1, const Cbuffer *cb2)
  * @ingroup meos_cbuffer_base_accessor
  * @brief Return the 32-bit hash value of a circular buffer
  * @param[in] cb Circular buffer
+ * @return On error return @p UINT32_MAX
  * @csqlfn #Cbuffer_hash()
  */
 uint32
 cbuffer_hash(const Cbuffer *cb)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(cb, INT_MAX);
+  VALIDATE_NOT_NULL(cb, UINT32_MAX);
 
   /* Compute hashes of the coordinates and the radius */
   uint32 x_hash = float8_hash(cb->x);

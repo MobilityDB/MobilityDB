@@ -826,7 +826,7 @@ tnpointinst_route(const TInstant *inst)
 /**
  * @ingroup meos_npoint_accessor
  * @brief Return the single route of a temporal network point
- * @return On error return @p INT_MAX
+ * @return On error return @p INT64_MAX
  * @csqlfn #Tnpoint_route()
  */
 int64

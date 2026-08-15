@@ -2015,14 +2015,14 @@ tbox_gt(const TBox *box1, const TBox *box2)
  * @ingroup meos_box_accessor
  * @brief Return the 32-bit hash of a temporal box
  * @param[in] box Temporal box
- * @return On error return @p INT_MAX
+ * @return On error return @p UINT32_MAX
  * @csqlfn #Tbox_hash()
  */
 uint32
 tbox_hash(const TBox *box)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(box, INT_MAX);
+  VALIDATE_NOT_NULL(box, UINT32_MAX);
 
   /* Determine the dimensions of the temporal box */
   bool hasx = MEOS_FLAGS_GET_X(box->flags);

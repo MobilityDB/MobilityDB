@@ -42,6 +42,7 @@
 
 /* C */
 #include <assert.h>
+#include <float.h>
 #include <limits.h>
 #include <math.h>
 #include <string.h>
@@ -647,13 +648,14 @@ raquet_copy(const Raquet *rq)
 /**
  * @ingroup meos_raster_base_accessor
  * @brief Return the QUADBIN cell of a Raquet tile
+ * @return On error return @p UINT64_MAX
  * @csqlfn #Raquet_quadbin()
  */
 uint64
 raquet_quadbin(const Raquet *rq)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(rq, 0);
+  VALIDATE_NOT_NULL(rq, UINT64_MAX);
   return rq->quadbin;
 }
 
@@ -686,13 +688,14 @@ raquet_height(const Raquet *rq)
 /**
  * @ingroup meos_raster_base_accessor
  * @brief Return the nodata sentinel value of a Raquet tile
+ * @return On error return @p DBL_MAX
  * @csqlfn #Raquet_nodata()
  */
 double
 raquet_nodata(const Raquet *rq)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(rq, 0.0);
+  VALIDATE_NOT_NULL(rq, DBL_MAX);
   return rq->nodata;
 }
 
@@ -901,13 +904,13 @@ raquet_gt(const Raquet *rq1, const Raquet *rq2)
  * @brief Return the 32-bit hash of a Raquet tile
  * @param[in] rq Raquet tile
  * @csqlfn #Raquet_hash()
- * @return On error return @p INT_MAX
+ * @return On error return @p UINT32_MAX
  */
 uint32
 raquet_hash(const Raquet *rq)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(rq, INT_MAX);
+  VALIDATE_NOT_NULL(rq, UINT32_MAX);
   return hash_any(((const unsigned char *) rq) + VARHDRSZ,
     (int) raquet_meaningful_size(rq));
 }

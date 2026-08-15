@@ -121,7 +121,7 @@ int_get_bin(int value, int size, int origin)
  * @param[in] value Input value
  * @param[in] size Size of the bins
  * @param[in] origin Origin of the bins
- * @return On error return @p INT_MAX
+ * @return On error return @p INT64_MAX
  */
 int64
 bigint_get_bin(int64 value, int64 size, int64 origin)

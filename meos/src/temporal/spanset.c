@@ -1539,14 +1539,14 @@ spanset_gt(const SpanSet *ss1, const SpanSet *ss2)
  * @ingroup meos_setspan_accessor
  * @brief Return the 32-bit hash value of a span set
  * @param[in] ss Span set
- * @return On error return @p INT_MAX
+ * @return On error return @p UINT32_MAX
  * @csqlfn #Spanset_hash()
  */
 uint32
 spanset_hash(const SpanSet *ss)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(ss, INT_MAX);
+  VALIDATE_NOT_NULL(ss, UINT32_MAX);
   uint32 result = 1;
   for (int i = 0; i < ss->count; i++)
   {

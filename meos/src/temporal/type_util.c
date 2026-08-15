@@ -519,7 +519,7 @@ datum_div(Datum l, Datum r, MeosType type)
  * @brief Return the 32-bit hash of a value
  * @param[in] d Value
  * @param[in] type Type of the value
- * @return On error return @p INT_MAX
+ * @return On error return @p UINT32_MAX
  */
 uint32
 datum_hash(Datum d, MeosType type)

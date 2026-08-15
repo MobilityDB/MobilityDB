@@ -319,13 +319,14 @@ pcpoint_get_pcid(const Pcpoint *pt)
  * @note Hashes only the meaningful-prefix bytes — pgpointcloud's
  *   struct-tail padding is skipped because it holds uninitialized heap
  *   bytes that differ between otherwise-identical values.
+ * @return On error return @p UINT32_MAX
  * @csqlfn #Pcpoint_hash()
  */
 uint32
 pcpoint_hash(const Pcpoint *pt)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(pt, INT_MAX);
+  VALIDATE_NOT_NULL(pt, UINT32_MAX);
   return hash_any((const unsigned char *) pt,
     (int) pcpoint_meaningful_size(pt));
 }

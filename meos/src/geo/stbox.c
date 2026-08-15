@@ -2619,7 +2619,7 @@ stbox_gt(const STBox *box1, const STBox *box2)
  * @ingroup meos_geo_box_accessor
  * @brief Return the 32-bit hash value of a spatiotemporal box
  * @param[in] box Spatiotemporal box
- * @return On error return @p INT_MAX
+ * @return On error return @p UINT32_MAX
  * @sqlfn hash()
  * @csqlfn #Stbox_hash()
  */
@@ -2627,7 +2627,7 @@ uint32
 stbox_hash(const STBox *box)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(box, INT_MAX);
+  VALIDATE_NOT_NULL(box, UINT32_MAX);
 
   /* Determine the dimensions of the spatiotemporal box */
   bool hasx = MEOS_FLAGS_GET_X(box->flags);
