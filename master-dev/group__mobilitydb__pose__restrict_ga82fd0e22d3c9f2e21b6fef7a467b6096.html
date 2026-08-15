@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: tpose_restrict_elevation</title>
+<title>MobilityDB: Tpose_at_elevation</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_0fff62ca9c7e6b49d869dbbeba2dc9ed.html">meos</a></li><li class="navelem"><a class="el" href="dir_87ff05107218c94eb54c7d49f556ada2.html">include</a></li><li class="navelem"><a class="el" href="dir_a27399877e2d6912f981d21b84c72a8a.html">pose</a></li><li class="navelem"><a class="el" href="tpose__spatialfuncs_8h.html">tpose_spatialfuncs.h</a></li>  </ul>
+<li class="navelem"><a class="el" href="group__mobilitydb__pose__restrict.html">Restriction functions</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,45 +79,41 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtabHL"><a class="navtab" href="tpose__spatialfuncs_8h_a3e53edb2f719f2c30b973411ef8f7e57.html#a3e53edb2f719f2c30b973411ef8f7e57">tpose_restrict_elevation</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__internal__pose__restrict_ga1c0c1575789e36a3f6d7940ba311462d.html#ga1c0c1575789e36a3f6d7940ba311462d">tpose_restrict_geom</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__internal__pose__restrict_ga598a06318d8a900e7a737f7d0ad73c92.html#ga598a06318d8a900e7a737f7d0ad73c92">tpose_restrict_stbox</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__accessor_ga5db30881d28e8e1a817aff6bb2c413e0.html#ga5db30881d28e8e1a817aff6bb2c413e0">tpose_trajectory</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__mobilitydb__pose__restrict_ga82fd0e22d3c9f2e21b6fef7a467b6096.html#ga82fd0e22d3c9f2e21b6fef7a467b6096">Tpose_at_elevation</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pose__restrict_ga58187b1b8126308585ad2e22b0a96003.html#ga58187b1b8126308585ad2e22b0a96003">Tpose_at_geom</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pose__restrict_ga1807c6f3d3bdfd3d8262693f53183ee2.html#ga1807c6f3d3bdfd3d8262693f53183ee2">Tpose_at_stbox</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pose__restrict_ga18f4edbee1cb1f846efa08958fde391e.html#ga18f4edbee1cb1f846efa08958fde391e">Tpose_minus_elevation</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pose__restrict_ga17aae52f5ed07be01027bf74120af06e.html#ga17aae52f5ed07be01027bf74120af06e">Tpose_minus_geom</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pose__restrict_gac19338e302eaf721189e918a7473cf4a.html#gac19338e302eaf721189e918a7473cf4a">Tpose_minus_stbox</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a3e53edb2f719f2c30b973411ef8f7e57" name="a3e53edb2f719f2c30b973411ef8f7e57"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3e53edb2f719f2c30b973411ef8f7e57">&#9670;&#160;</a></span>tpose_restrict_elevation()</h2>
+<a id="ga82fd0e22d3c9f2e21b6fef7a467b6096" name="ga82fd0e22d3c9f2e21b6fef7a467b6096"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga82fd0e22d3c9f2e21b6fef7a467b6096">&#9670;&#160;</a></span>Tpose_at_elevation()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structTemporal.html">Temporal</a> * tpose_restrict_elevation </td>
+          <td class="memname"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> Tpose_at_elevation </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
-          <td class="paramname"><em>temp</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramtype">PG_FUNCTION_ARGS&#160;</td>
+          <td class="paramname"></td><td>)</td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="structSpan.html">Span</a> *&#160;</td>
-          <td class="paramname"><em>s</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>atfunc</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
+
+<p>Return a temporal pose restricted to an elevation span @sqlfn atElevation() </p>
 
 </div>
 </div>
