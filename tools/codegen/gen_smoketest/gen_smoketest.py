@@ -122,8 +122,10 @@ def parse_args(arg_block: str):
 # functions need PG's aggregate framework (or a manual state-handoff
 # pattern) to exercise correctly; the smoke test is the wrong harness.
 GLOBAL_SKIP = {
-    "re:_(transfn|combinefn|finalfn)$":
-        "aggregate state-handoff pattern incompatible with smoke-test ownership model",
+    # transfn and finalfn are emitted by emit_aggregate; a combinefn merges two
+    # independent transition states, which the single-input harness cannot seed.
+    "re:_combinefn$":
+        "aggregate combine step needs two independent transition states",
 }
 
 
@@ -142,8 +144,73 @@ BY_VALUE_SCALAR_TYPES = {
 }
 
 
+# State types a MEOS aggregate threads through its transition/final functions.
+AGG_STATE_TYPES = ("SkipList *", "Set *", "Span *", "SpanSet *", "TBox *", "STBox *")
+
+
+def emit_aggregate(fname, ret, args, eff_arg_map, sig_by_name):
+    """Emit the multi-call sequence for an aggregate transition/final function,
+    or return None when this is not a handleable aggregate (leaving it to the
+    normal skip machinery).
+
+    A `State *X_transfn(State *st, value...)` folds a value into a transition
+    state; a `Result *X_finalfn(State *st)` turns that state into the aggregate.
+    The generic one-call harness cannot express the handoff, so the whole
+    sequence is emitted: seed a NULL state, accumulate a canned value (twice for
+    a transfn, to exercise the grow/merge path), then free the state (transfn)
+    or finalize into a result and free that (finalfn). A SkipList state is
+    released with skiplist_free; the first-class box/set/span states with free.
+    A finalfn builds its state with the paired `_transfn` derived by name."""
+    def canned(value_args):
+        out = []
+        for ty, _name, _is_const in value_args:
+            v = eff_arg_map.get(ty)
+            if v is None:
+                return None
+            out.append(v)
+        return out
+
+    def free_state(state_ty, var):
+        return (f"skiplist_free({var})" if state_ty.startswith("SkipList")
+                else f"free({var})")
+
+    if not args:
+        return None
+    state_ty = args[0][0].strip()
+    if state_ty not in AGG_STATE_TYPES:
+        return None
+    if fname.endswith("_transfn") and ret.strip() == state_ty:
+        vals = canned(args[1:])
+        if vals is None:
+            return None
+        tail = (", " + ", ".join(vals)) if vals else ""
+        return (f"  {{ {state_ty}st = NULL;\n"
+                f"    st = {fname}(st{tail});\n"
+                f"    st = {fname}(st{tail});\n"
+                f"    if (st) {free_state(state_ty, 'st')}; }}\n")
+    if fname.endswith("_finalfn") and sig_by_name:
+        transfn = fname[:-len("_finalfn")] + "_transfn"
+        tsig = sig_by_name.get(transfn)
+        if not tsig:
+            return None
+        _tret, targs = tsig
+        if not targs or targs[0][0].strip() != state_ty:
+            return None
+        vals = canned(targs[1:])
+        if vals is None:
+            return None
+        tail = (", " + ", ".join(vals)) if vals else ""
+        decl_ret = ret if ret.endswith("*") else ret + " "
+        return (f"  {{ {state_ty}st = NULL;\n"
+                f"    st = {transfn}(st{tail});\n"
+                f"    {decl_ret}r = {fname}(st);\n"
+                f"    if (r) free(r); }}\n")
+    return None
+
+
 def emit_call(fname, ret, args, arg_map, skip_map, override_args,
-              no_free=(), value_returns=(), name_arg_map=None, manual=()):
+              no_free=(), value_returns=(), name_arg_map=None, manual=(),
+              sig_by_name=None):
     # Manually-covered: the generic emitter cannot express this call shape, and
     # the config exercises the function by hand in its cleanup block, so emit
     # nothing here. A SKIP line would misread as an untested function; the
@@ -158,11 +225,6 @@ def emit_call(fname, ret, args, arg_map, skip_map, override_args,
     for k, v in skip_map.items():
         if k.startswith("re:") and re.search(k[3:], fname):
             return f"  /* SKIP {fname}: {v} */\n"
-    # Global regex-pattern skip (applied after per-config so a config can
-    # explicitly override by listing the function in its own skip map).
-    for k, v in GLOBAL_SKIP.items():
-        if k.startswith("re:") and re.search(k[3:], fname):
-            return f"  /* SKIP {fname}: {v} */\n"
     # Name-pattern arg routing: a whole family of functions (e.g. every
     # `tpoint_*`) shares a precondition on an argument type (its `Temporal *`
     # must be a temporal point), so a single regex remaps that C type to the
@@ -175,6 +237,16 @@ def emit_call(fname, ret, args, arg_map, skip_map, override_args,
                 if eff_arg_map is arg_map:
                     eff_arg_map = dict(arg_map)
                 eff_arg_map.update(tymap)
+    # Aggregate transition/final functions need a multi-call state handoff that
+    # the single-call harness cannot express; emit the whole sequence here.
+    agg = emit_aggregate(fname, ret, args, eff_arg_map, sig_by_name)
+    if agg is not None:
+        return agg
+    # Global regex-pattern skip (applied after per-config so a config can
+    # explicitly override by listing the function in its own skip map).
+    for k, v in GLOBAL_SKIP.items():
+        if k.startswith("re:") and re.search(k[3:], fname):
+            return f"  /* SKIP {fname}: {v} */\n"
     call_args = []
     overrides = override_args.get(fname, {})
     # Out-param double-pointer args: a NON-const `T **` that is the LAST
@@ -1922,13 +1994,17 @@ def write_test(name, cfg):
         args = parse_args(sigm.group("args"))
         decls.append((fname, ret, args))
 
+    # A finalfn builds its transition state with the paired transfn, looked up
+    # by signature from every declaration this suite parses.
+    sig_by_name = {fname: (ret, args) for fname, ret, args in decls}
     body = "".join(emit_call(fname, ret, args,
                              cfg["arg_map"], cfg["skip"],
                              cfg["override_args"],
                              cfg.get("no_free", ()),
                              cfg.get("value_returns", ()),
                              cfg.get("name_arg_map", {}),
-                             cfg.get("manual", ()))
+                             cfg.get("manual", ()),
+                             sig_by_name)
                    for fname, ret, args in decls)
     # A common-input variable that a given type's surface never consumes is
     # acknowledged with (void), the same idiom emit_call uses for by-value
