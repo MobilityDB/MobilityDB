@@ -645,6 +645,38 @@ SELECT round(tcbuffer '[Cbuffer(Point(0 0), 1)@2000-01-01, Cbuffer(Point(141.421
      0
 (1 row)
 
+SELECT round(nearestApproachDistance(tcbuffer 'Cbuffer(Point(0 0), 0.5)@2000-01-01', cbuffer 'Cbuffer(Point(1 1), 0.7)')::numeric, 6);
+  round   
+----------
+ 0.214214
+(1 row)
+
+SELECT round(nearestApproachDistance(cbuffer 'Cbuffer(Point(1 1), 0.7)', tcbuffer 'Cbuffer(Point(0 0), 0.5)@2000-01-01')::numeric, 6);
+  round   
+----------
+ 0.214214
+(1 row)
+
+SELECT nearestApproachDistance(tcbuffer 'Cbuffer(Point(0 0), 0.5)@2000-01-01', cbuffer 'Cbuffer(Point(1 1), 0.7)')
+     = nearestApproachDistance(cbuffer 'Cbuffer(Point(1 1), 0.7)', tcbuffer 'Cbuffer(Point(0 0), 0.5)@2000-01-01');
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT nearestApproachDistance(tcbuffer 'Cbuffer(Point(0 0), 0.5)@2000-01-01', cbuffer 'Cbuffer(Point(1 1), 0.7)')
+     = minDistance(tcbuffer 'Cbuffer(Point(0 0), 0.5)@2000-01-01', cbuffer 'Cbuffer(Point(1 1), 0.7)');
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT round(nearestApproachDistance(tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(4 0), 0.5)@2000-01-05]', cbuffer 'Cbuffer(Point(4 9), 0.7)')::numeric, 6);
+  round   
+----------
+ 7.800000
+(1 row)
+
 SELECT geometrytype(shortestLine(tcbuffer 'Cbuffer(Point(0 0), 1)@2000-01-01', geometry 'Polygon((5 5,5 8,8 8,8 5,5 5))'));
  geometrytype 
 --------------

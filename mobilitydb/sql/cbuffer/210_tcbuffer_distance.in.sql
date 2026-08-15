@@ -202,8 +202,8 @@ CREATE FUNCTION nearestApproachDistance(tcbuffer, stbox)
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION nearestApproachDistance(tcbuffer, cbuffer)
   RETURNS float
-  AS 'SELECT @extschema@.nearestApproachDistance($1, geometry($2))'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
+  AS 'MODULE_PATHNAME', 'NAD_tcbuffer_cbuffer'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION nearestApproachDistance(tcbuffer, tcbuffer)
   RETURNS float
   AS 'MODULE_PATHNAME', 'NAD_tcbuffer_tcbuffer'
