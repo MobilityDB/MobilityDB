@@ -489,6 +489,68 @@ SELECT abs(a - b) < 1e-3 FROM d;
  t
 (1 row)
 
+SELECT asText(nearestApproachInstant(geometry 'Point(2 3)', tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(4 0), 0.5)@2000-01-05]'));
+                        astext                        
+------------------------------------------------------
+ Cbuffer(POINT(2 0),0.5)@Mon Jan 03 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(nearestApproachInstant(stbox 'STBOX X((5,2),(7,4))', tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(4 0), 0.5)@2000-01-05]'));
+                        astext                        
+------------------------------------------------------
+ Cbuffer(POINT(4 0),0.5)@Wed Jan 05 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(nearestApproachInstant(cbuffer 'Cbuffer(Point(4 9), 0.7)', tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(4 0), 0.5)@2000-01-05]'));
+                        astext                        
+------------------------------------------------------
+ Cbuffer(POINT(4 0),0.5)@Wed Jan 05 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(nearestApproachInstant(tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(4 0), 0.5)@2000-01-05]', geometry 'Point(2 3)'));
+                        astext                        
+------------------------------------------------------
+ Cbuffer(POINT(2 0),0.5)@Mon Jan 03 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(nearestApproachInstant(tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(4 0), 0.5)@2000-01-05]', stbox 'STBOX X((5,2),(7,4))'));
+                        astext                        
+------------------------------------------------------
+ Cbuffer(POINT(4 0),0.5)@Wed Jan 05 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(nearestApproachInstant(tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(4 0), 0.5)@2000-01-05]', cbuffer 'Cbuffer(Point(4 9), 0.7)'));
+                        astext                        
+------------------------------------------------------
+ Cbuffer(POINT(4 0),0.5)@Wed Jan 05 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(nearestApproachInstant(
+  tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(4 0), 0.5)@2000-01-05]',
+  tcbuffer '[Cbuffer(Point(0 9), 0.5)@2000-01-01, Cbuffer(Point(4 1), 0.5)@2000-01-05]'));
+                        astext                        
+------------------------------------------------------
+ Cbuffer(POINT(4 0),0.5)@Wed Jan 05 00:00:00 2000 PST
+(1 row)
+
+WITH d(a, b) AS (
+  SELECT nearestApproachDistance(nearestApproachInstant(t, p), p),
+         nearestApproachDistance(t, p)
+  FROM (SELECT tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(4 0), 0.5)@2000-01-05]' AS t,
+               cbuffer 'Cbuffer(Point(4 9), 0.7)' AS p) v)
+SELECT a = b FROM d;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT nearestApproachInstant(tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(4 0), 0.5)@2000-01-05]', cbuffer 'Cbuffer(Point(4 9), 0.7)')
+     = nearestApproachInstant(cbuffer 'Cbuffer(Point(4 9), 0.7)', tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(4 0), 0.5)@2000-01-05]');
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT round(tcbuffer 'Cbuffer(Point(0 0), 1)@2000-01-01' |=| geometry 'Polygon((5 5,5 8,8 8,8 5,5 5))', 6);
   round   
 ----------

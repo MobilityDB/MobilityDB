@@ -158,8 +158,8 @@ CREATE FUNCTION nearestApproachInstant(stbox, tpose)
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION nearestApproachInstant(pose, tpose)
   RETURNS tpose
-  AS 'SELECT @extschema@.nearestApproachInstant(geometry($1), $2)'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
+  AS 'MODULE_PATHNAME', 'NAI_pose_tpose'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION nearestApproachInstant(tpose, geometry)
   RETURNS tpose
   AS 'MODULE_PATHNAME', 'NAI_tpose_geo'
@@ -170,8 +170,8 @@ CREATE FUNCTION nearestApproachInstant(tpose, stbox)
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION nearestApproachInstant(tpose, pose)
   RETURNS tpose
-  AS 'SELECT @extschema@.nearestApproachInstant($1, geometry($2))'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
+  AS 'MODULE_PATHNAME', 'NAI_tpose_pose'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION nearestApproachInstant(tpose, tpose)
   RETURNS tpose
   AS 'MODULE_PATHNAME', 'NAI_tpose_tpose'

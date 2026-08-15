@@ -224,6 +224,36 @@ WITH d(a, b) AS (
 SELECT abs(a - b) < 1e-3 FROM d;
 
 -------------------------------------------------------------------------------
+-- nearestApproachInstant
+-------------------------------------------------------------------------------
+
+-- Every overload, against a buffer sweeping from (0 0) to (4 0). Each probe is
+-- placed so that a single instant attains the minimum.
+SELECT asText(nearestApproachInstant(geometry 'Point(2 3)', tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(4 0), 0.5)@2000-01-05]'));
+SELECT asText(nearestApproachInstant(stbox 'STBOX X((5,2),(7,4))', tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(4 0), 0.5)@2000-01-05]'));
+SELECT asText(nearestApproachInstant(cbuffer 'Cbuffer(Point(4 9), 0.7)', tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(4 0), 0.5)@2000-01-05]'));
+SELECT asText(nearestApproachInstant(tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(4 0), 0.5)@2000-01-05]', geometry 'Point(2 3)'));
+SELECT asText(nearestApproachInstant(tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(4 0), 0.5)@2000-01-05]', stbox 'STBOX X((5,2),(7,4))'));
+SELECT asText(nearestApproachInstant(tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(4 0), 0.5)@2000-01-05]', cbuffer 'Cbuffer(Point(4 9), 0.7)'));
+SELECT asText(nearestApproachInstant(
+  tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(4 0), 0.5)@2000-01-05]',
+  tcbuffer '[Cbuffer(Point(0 9), 0.5)@2000-01-01, Cbuffer(Point(4 1), 0.5)@2000-01-05]'));
+
+-- The instant answers the same minimisation the distance reports, so measuring
+-- the distance at the instant it names gives the distance itself. Taken on the
+-- centreline against the circle's defining vertices, the buffer probe would
+-- instead name x = 3.3, the probe radius subtracted along x.
+WITH d(a, b) AS (
+  SELECT nearestApproachDistance(nearestApproachInstant(t, p), p),
+         nearestApproachDistance(t, p)
+  FROM (SELECT tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(4 0), 0.5)@2000-01-05]' AS t,
+               cbuffer 'Cbuffer(Point(4 9), 0.7)' AS p) v)
+SELECT a = b FROM d;
+-- The two argument orders name the same instant
+SELECT nearestApproachInstant(tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(4 0), 0.5)@2000-01-05]', cbuffer 'Cbuffer(Point(4 9), 0.7)')
+     = nearestApproachInstant(cbuffer 'Cbuffer(Point(4 9), 0.7)', tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(4 0), 0.5)@2000-01-05]');
+
+-------------------------------------------------------------------------------
 
 
 -- Analytic nearest approach distance (|=| and nearestApproachDistance):

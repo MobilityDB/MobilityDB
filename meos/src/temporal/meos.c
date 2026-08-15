@@ -620,6 +620,55 @@ meos_get_intervalstyle(void)
 
 /*****************************************************************************/
 
+/*****************************************************************************
+ * liblwgeom message handlers
+ *****************************************************************************/
+
+/* Bound for a formatted liblwgeom message, matching liblwgeom's own
+ * LW_MSG_MAXLEN, which is file-scope in lwutil.c and so not shared. */
+#define MEOS_LW_MSG_MAXLEN 256
+
+/**
+ * @brief Report a liblwgeom error through the MEOS error channel
+ * @details liblwgeom reports through a handler the embedder installs, and a
+ * PostgreSQL backend installs one in @c mobilitydb_init that raises. A
+ * standalone MEOS program installs none, so liblwgeom keeps its own default,
+ * which writes the message to @c stderr and ends the process — the message
+ * reaches the caller with no error code, and a host that meant to catch it
+ * never gets the chance.
+ * @note This handler does NOT return. liblwgeom's callers continue as though
+ * the value were valid — @c bytes_from_hexbytes reads on after reporting an
+ * odd-length string — so returning would hand them uninitialised memory. The
+ * host's own handler decides what happens first: one that raises (an exception,
+ * a longjmp) never comes back here, which is the case this exists to serve. One
+ * that returns leaves no way to honour liblwgeom's contract except to end the
+ * process, exactly as its own default does.
+ */
+static void
+meos_lwerror_handler(const char *fmt, va_list ap)
+{
+  char msg[MEOS_LW_MSG_MAXLEN + 1];
+  vsnprintf(msg, sizeof(msg), fmt, ap);
+  msg[MEOS_LW_MSG_MAXLEN] = '\0';
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "%s", msg);
+  exit(EXIT_FAILURE);
+}
+
+/**
+ * @brief Report a liblwgeom notice through the MEOS error channel
+ * @details A notice is advisory, so this handler returns as liblwgeom expects.
+ */
+static void
+meos_lwnotice_handler(const char *fmt, va_list ap)
+{
+  char msg[MEOS_LW_MSG_MAXLEN + 1];
+  vsnprintf(msg, sizeof(msg), fmt, ap);
+  msg[MEOS_LW_MSG_MAXLEN] = '\0';
+  meos_error(WARNING, MEOS_ERR_INVALID_ARG_VALUE, "%s", msg);
+}
+
+/*****************************************************************************/
+
 extern void init_database_collation(void);
 
 /**
@@ -632,6 +681,11 @@ meos_initialize(void)
   /* Install the default (libc) allocator before anything else can allocate */
   meos_initialize_allocator(NULL, NULL, NULL);
   meos_initialize_error_handler(NULL);
+  /* Route liblwgeom's messages into the MEOS error channel, symmetric with the
+   * PG backend's mobilitydb_init. The allocators stay liblwgeom's own: a
+   * backend passes palloc, a standalone program keeps malloc. */
+  lwgeom_set_handlers(NULL, NULL, NULL, meos_lwerror_handler,
+    meos_lwnotice_handler);
   meos_initialize_timezone(NULL);
   /* Initialize collation */
   meos_initialize_collation();
