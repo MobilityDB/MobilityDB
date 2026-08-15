@@ -319,6 +319,7 @@ tposeseq_make(const TSequence *seq1, const TSequence *seq2)
   }
   TSequence *result = tsequence_make(instants, seq1->count,
     seq1->period.lower_inc, seq1->period.upper_inc, interp, NORMALIZE);
+  pfree_array((void **) instants, seq1->count);
   return result;
 }
 
