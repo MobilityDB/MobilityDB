@@ -220,11 +220,11 @@ SELECT geometry 'SRID=5676;LINESTRING(406.7 702.6,383.6 845.1)'::nsegment;
 					<para><varname>stbox(npoint,{timestamptz,tstzspan}) → stbox</varname></para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT stbox(npoint 'NPoint(1,0.3)');
--- STBOX X((48.711754,20.92568),(48.711758,20.925682))
+-- SRID=5676;STBOX X((62.786633,80.143556),(62.786633,80.143556))
 SELECT stbox(npoint 'NPoint(1,0.3)', timestamptz '2001-01-01');
--- STBOX XT(((62.786633,80.143555),(62.786636,80.143562)),[2001-01-01,2001-01-01])
+-- SRID=5676;STBOX XT(((62.786633,80.143556),(62.786633,80.143556)),[2001-01-01, 2001-01-01])
 SELECT stbox(npoint 'NPoint(1,0.3)', tstzspan '[2001-01-01,2001-01-02]');
--- STBOX XT(((62.786633,80.143555),(62.786636,80.143562)),[2001-01-01,2001-01-02])
+-- SRID=5676;STBOX XT(((62.786633,80.143556),(62.786633,80.143556)),[2001-01-01, 2001-01-02])
 </programlisting>
 				</listitem>
 			</itemizedlist>
