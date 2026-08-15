@@ -917,13 +917,13 @@ raquet_hash(const Raquet *rq)
  * @param[in] rq Raquet tile
  * @param[in] seed Seed
  * @csqlfn #Raquet_hash_extended()
- * @return On error return @p LONG_MAX
+ * @return On error return @p UINT64_MAX
  */
 uint64
 raquet_hash_extended(const Raquet *rq, uint64 seed)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(rq, LONG_MAX);
+  VALIDATE_NOT_NULL(rq, UINT64_MAX);
   return hash_any_extended(((const unsigned char *) rq) + VARHDRSZ,
     (int) raquet_meaningful_size(rq), seed);
 }

@@ -403,14 +403,14 @@ intspan_lower(const Span *s)
  * @ingroup meos_setspan_accessor
  * @brief Return the lower bound of an integer span
  * @param[in] s Span
- * @return On error return LONG_MAX
+ * @return On error return INT64_MAX
  * @csqlfn #Span_lower()
  */
 int64
 bigintspan_lower(const Span *s)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_BIGINTSPAN(s, LONG_MAX);
+  VALIDATE_BIGINTSPAN(s, INT64_MAX);
   return DatumGetInt64(s->lower);
 }
 
@@ -480,14 +480,14 @@ intspan_upper(const Span *s)
  * @ingroup meos_setspan_accessor
  * @brief Return the upper bound of an integer span
  * @param[in] s Span
- * @return On error return LONG_MAX
+ * @return On error return INT64_MAX
  * @csqlfn #Span_upper()
  */
 int64
 bigintspan_upper(const Span *s)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_BIGINTSPAN(s, LONG_MAX);
+  VALIDATE_BIGINTSPAN(s, INT64_MAX);
   return Int64GetDatum(s->upper);
 }
 

@@ -339,7 +339,7 @@ uint64
 pcpoint_hash_extended(const Pcpoint *pt, uint64 seed)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(pt, LONG_MAX);
+  VALIDATE_NOT_NULL(pt, UINT64_MAX);
   return hash_any_extended((const unsigned char *) pt,
     (int) pcpoint_meaningful_size(pt), seed);
 }

@@ -680,14 +680,14 @@ tinstant_hash(const TInstant *inst)
  * @brief Return the 64-bit hash of a temporal instant using a seed
  * @param[in] inst Temporal instant
  * @param[in] seed Seed
- * @return On error return @p LONG_MAX
+ * @return On error return @p UINT64_MAX
  * @csqlfn #Temporal_hash_extended()
  */
 uint64
 tinstant_hash_extended(const TInstant *inst, uint64 seed)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(inst, LONG_MAX);
+  VALIDATE_NOT_NULL(inst, UINT64_MAX);
 
   MeosType basetype = temptype_basetype(inst->temptype);
   /* Apply the hash function to the base type */

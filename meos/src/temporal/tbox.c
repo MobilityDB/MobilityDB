@@ -2047,14 +2047,14 @@ tbox_hash(const TBox *box)
  * @brief Return the 64-bit hash of a temporal box using a seed
  * @param[in] box Temporal box
  * @param[in] seed Seed
- * @return On error return @p LONG_MAX
+ * @return On error return @p UINT64_MAX
  * @csqlfn #Tbox_hash_extended()
  */
 uint64
 tbox_hash_extended(const TBox *box, uint64 seed)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(box, LONG_MAX);
+  VALIDATE_NOT_NULL(box, UINT64_MAX);
 
   /* Determine the dimensions of the temporal box */
   bool hasx = MEOS_FLAGS_GET_X(box->flags);

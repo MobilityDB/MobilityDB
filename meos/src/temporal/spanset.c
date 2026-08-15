@@ -1561,14 +1561,14 @@ spanset_hash(const SpanSet *ss)
  * @brief Return the 64-bit hash value of a span set using a seed
  * @param[in] ss Span set
  * @param[in] seed Seed
- * @return On error return @p INT_MAX
+ * @return On error return @p UINT64_MAX
  * @csqlfn #Spanset_hash_extended()
  */
 uint64
 spanset_hash_extended(const SpanSet *ss, uint64 seed)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(ss, LONG_MAX);
+  VALIDATE_NOT_NULL(ss, UINT64_MAX);
   uint64 result = 1;
   for (int i = 0; i < ss->count; i++)
   {

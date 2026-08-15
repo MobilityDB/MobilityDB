@@ -71,6 +71,8 @@ EXPECTED = {
     "int": "INT_MAX",
     "int32": "INT_MAX",
     "int64": "INT64_MAX",
+    "uint32": "UINT32_MAX",
+    "uint64": "UINT64_MAX",
     "double": "DBL_MAX",
     "float8": "DBL_MAX",
     "bool": "false",

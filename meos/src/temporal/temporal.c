@@ -3750,14 +3750,14 @@ temporal_hash(const Temporal *temp)
  * @brief Return the 64-bit hash value of a temporal value using a seed
  * @param[in] temp Temporal value
  * @param[in] seed Seed
- * @return On error return @p LONG_MAX
+ * @return On error return @p UINT64_MAX
  * @csqlfn #Temporal_hash_extended()
  */
 uint64
 temporal_hash_extended(const Temporal *temp, uint64 seed)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(temp, LONG_MAX);
+  VALIDATE_NOT_NULL(temp, UINT64_MAX);
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)

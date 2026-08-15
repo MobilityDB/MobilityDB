@@ -584,7 +584,7 @@ datum_hash(Datum d, MeosType type)
  * @param[in] d Value
  * @param[in] type Type of the value
  * @param[in] seed Seed
- * @return On error return @p INT_MAX
+ * @return On error return @p UINT64_MAX
  */
 uint64
 datum_hash_extended(Datum d, MeosType type, uint64 seed)

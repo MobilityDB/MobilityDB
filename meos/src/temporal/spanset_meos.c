@@ -375,14 +375,14 @@ intspanset_lower(const SpanSet *ss)
  * @ingroup meos_setspan_accessor
  * @brief Return the lower bound of an integer span set
  * @param[in] ss Span set
- * @return On error return LONG_MAX
+ * @return On error return INT64_MAX
  * @csqlfn #Spanset_lower()
  */
 int64
 bigintspanset_lower(const SpanSet *ss)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_BIGINTSPANSET(ss, LONG_MAX);
+  VALIDATE_BIGINTSPANSET(ss, INT64_MAX);
   return DatumGetInt64(ss->elems[0].lower);
 }
 
@@ -452,14 +452,14 @@ intspanset_upper(const SpanSet *ss)
  * @ingroup meos_setspan_accessor
  * @brief Return the upper bound of an integer span set
  * @param[in] ss Span set
- * @return On error return LONG_MAX
+ * @return On error return INT64_MAX
  * @csqlfn #Spanset_upper()
  */
 int64
 bigintspanset_upper(const SpanSet *ss)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_BIGINTSPANSET(ss, LONG_MAX);
+  VALIDATE_BIGINTSPANSET(ss, INT64_MAX);
   return Int64GetDatum(ss->elems[ss->count - 1].upper);
 }
 

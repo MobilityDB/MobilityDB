@@ -1069,7 +1069,7 @@ int64
 npoint_route(const Npoint *np)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(np, LONG_MAX);
+  VALIDATE_NOT_NULL(np, INT64_MAX);
   return np->rid;
 }
 
@@ -1098,7 +1098,7 @@ int64
 nsegment_route(const Nsegment *ns)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(ns, LONG_MAX);
+  VALIDATE_NOT_NULL(ns, INT64_MAX);
   return ns->rid;
 }
 
@@ -1420,7 +1420,7 @@ uint64
 npoint_hash_extended(const Npoint *np, uint64 seed)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(np, LONG_MAX);
+  VALIDATE_NOT_NULL(np, UINT64_MAX);
 
   /* Compute hashes of value and position */
   uint64 rid_hash = int64_hash_extended(np->rid, seed);
