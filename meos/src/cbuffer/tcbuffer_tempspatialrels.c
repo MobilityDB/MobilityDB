@@ -1239,6 +1239,21 @@ tcontains_covers_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   if (! ensure_valid_tcbuffer_tcbuffer(temp1, temp2))
     return NULL;
 
+  /* Two values composed of discs of a zero radius are temporal points, whose
+   * conversion is exact. The disc kernel below reads the containment from the
+   * clearance of the two disc boundaries, which a disc of a zero radius does
+   * not carry: a point contains and covers the point it coincides with */
+  if (tcbuffer_is_tpoint(temp1) && tcbuffer_is_tpoint(temp2))
+  {
+    Temporal *tpoint1 = tcbuffer_to_tgeompoint(temp1);
+    Temporal *tpoint2 = tcbuffer_to_tgeompoint(temp2);
+    Temporal *result = strict ?
+      tcontains_tgeo_tgeo(tpoint1, tpoint2) :
+      tcovers_tgeo_tgeo(tpoint1, tpoint2);
+    pfree(tpoint1); pfree(tpoint2);
+    return result;
+  }
+
   Temporal *sync1, *sync2;
   /* Synchronization without adding crossings; NULL when they share no time */
   if (! intersection_temporal_temporal(temp1, temp2, SYNCHRONIZE_NOCROSS,
@@ -2522,6 +2537,23 @@ ttouches_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
 Temporal *
 ttouches_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 {
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tcbuffer_tcbuffer(temp1, temp2))
+    return NULL;
+
+  /* Two values composed of discs of a zero radius are temporal points, whose
+   * conversion is exact. The disc kernel below reads a touch from the two disc
+   * boundaries meeting at the sum of the radii, which a pair of coinciding
+   * points meets at a zero distance while their interiors coincide */
+  if (tcbuffer_is_tpoint(temp1) && tcbuffer_is_tpoint(temp2))
+  {
+    Temporal *tpoint1 = tcbuffer_to_tgeompoint(temp1);
+    Temporal *tpoint2 = tcbuffer_to_tgeompoint(temp2);
+    Temporal *result = ttouches_tgeo_tgeo(tpoint1, tpoint2);
+    pfree(tpoint1); pfree(tpoint2);
+    return result;
+  }
+
   return tspatialrel_tcbuffer_tcbuffer(temp1, temp2, &datum_cbuffer_touches);
 }
 

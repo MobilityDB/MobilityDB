@@ -397,6 +397,21 @@ SELECT tCovers(geometry 'Point(0 0)', tcbuffer '[Cbuffer(Point(-3 0),0)@2000-01-
 -- A line covers the point it carries, and contains it away from its end points
 SELECT tCovers(geometry 'Linestring(-5 0,5 0)', tcbuffer '[Cbuffer(Point(-3 0),0)@2000-01-01, Cbuffer(Point(3 0),0)@2000-01-03]');
 SELECT tContains(geometry 'Linestring(-5 0,5 0)', tcbuffer '[Cbuffer(Point(-3 0),0)@2000-01-01, Cbuffer(Point(5 0),0)@2000-01-03]');
+-- Two points that coincide do not touch, since their interiors coincide,
+-- while each contains and covers the other
+SELECT tTouches(tcbuffer 'Cbuffer(Point(0 0),0)@2000-01-01', tcbuffer 'Cbuffer(Point(0 0),0)@2000-01-01');
+SELECT tContains(tcbuffer 'Cbuffer(Point(0 0),0)@2000-01-01', tcbuffer 'Cbuffer(Point(0 0),0)@2000-01-01');
+SELECT tCovers(tcbuffer 'Cbuffer(Point(0 0),0)@2000-01-01', tcbuffer 'Cbuffer(Point(0 0),0)@2000-01-01');
+SELECT tTouches(tcbuffer 'Cbuffer(Point(0 0),0)@2000-01-01', tcbuffer 'Cbuffer(Point(5 5),0)@2000-01-01');
+SELECT tContains(tcbuffer 'Cbuffer(Point(0 0),0)@2000-01-01', tcbuffer 'Cbuffer(Point(5 5),0)@2000-01-01');
+-- Two points crossing meet at a single instant, which they contain and cover
+-- each other at and touch at nowhere
+SELECT tTouches(tcbuffer '[Cbuffer(Point(-3 0),0)@2000-01-01, Cbuffer(Point(3 0),0)@2000-01-03]', tcbuffer '[Cbuffer(Point(0 -3),0)@2000-01-01, Cbuffer(Point(0 3),0)@2000-01-03]');
+SELECT tContains(tcbuffer '[Cbuffer(Point(-3 0),0)@2000-01-01, Cbuffer(Point(3 0),0)@2000-01-03]', tcbuffer '[Cbuffer(Point(0 -3),0)@2000-01-01, Cbuffer(Point(0 3),0)@2000-01-03]');
+SELECT tCovers(tcbuffer '[Cbuffer(Point(-3 0),0)@2000-01-01, Cbuffer(Point(3 0),0)@2000-01-03]', tcbuffer '[Cbuffer(Point(0 -3),0)@2000-01-01, Cbuffer(Point(0 3),0)@2000-01-03]');
+-- Discs of a strictly positive radius keep the disc kernels
+SELECT tTouches(tcbuffer 'Cbuffer(Point(0 0),1)@2000-01-01', tcbuffer 'Cbuffer(Point(2 0),1)@2000-01-01');
+SELECT tCovers(tcbuffer 'Cbuffer(Point(0 0),2)@2000-01-01', tcbuffer 'Cbuffer(Point(0 0),1)@2000-01-01');
 -- A single disc of a strictly positive radius keeps the disc semantics
 SELECT tIntersects(tcbuffer '[Cbuffer(Point(-3 0),0)@2000-01-01, Cbuffer(Point(3 0),0.5)@2000-01-03]', geometry 'Point(0 0)');
 SELECT tContains(geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))', tcbuffer '[Cbuffer(Point(-3 0),0)@2000-01-01, Cbuffer(Point(3 0),0.5)@2000-01-03]');
