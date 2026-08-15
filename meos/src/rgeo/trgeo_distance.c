@@ -596,26 +596,42 @@ compute_turnpoints_tpoly_point(const cfp_elem *cfp_s, const cfp_elem *cfp_e,
     v_clip_tpoly_point(poly, point, _pp, &_c, &_d); \
     pfree(_pp); _d; })
 
-  int K = 16;
-  double h = (gb - ga) / (2.0 * K);
-  double gprev = ga + h;
-  double dprev = (TP_DIST(gprev + h) - TP_DIST(gprev - h)) / (2 * h);
-  for (int k = 1; k < K; ++k)
+  /* Locate the interior turning points (local minima and maxima) of the
+   * distance over [ga, gb]. The distance is smooth within a fixed feature
+   * pair, but it drops to a flat zero over any sub-interval where the bodies
+   * overlap, so a plain derivative-sign-change bracket misses that minimum: a
+   * run of zero-derivative samples inside the plateau separates the falling
+   * and rising samples. Track the slope sign (falling / flat / rising) on a
+   * uniform subdivision and emit a turning point at every falling->rising and
+   * falling->flat and flat->rising transition (a minimum, including a plateau
+   * boundary) and every rising->falling and rising->flat and flat->falling
+   * transition (a maximum), refining each by golden section on the value. */
+  int M = 64;
+  double step = (gb - ga) / M;
+  double d0 = TP_DIST(ga), d1 = TP_DIST(ga + step);
+  double gprev = ga + step, dprev = d1;
+  int sprev = (d1 > d0 + MEOS_EPSILON) ? 1 : (d1 < d0 - MEOS_EPSILON ? -1 : 0);
+  for (int k = 2; k <= M; ++k)
   {
-    double gcur = ga + (2 * k + 1) * h;
-    double dcur = (TP_DIST(gcur + h) - TP_DIST(gcur - h)) / (2 * h);
-    if (dprev * dcur < 0)
+    double gcur = ga + step * k, dcur = TP_DIST(gcur);
+    int scur = (dcur > dprev + MEOS_EPSILON) ? 1 :
+      (dcur < dprev - MEOS_EPSILON ? -1 : 0);
+    bool is_min = (sprev < 0 && scur >= 0) || (sprev == 0 && scur > 0);
+    bool is_max = (sprev > 0 && scur <= 0) || (sprev == 0 && scur < 0);
+    if (is_min || is_max)
     {
-      /* Bisect the derivative to locate the extremum */
-      double lo = gprev, hi = gcur, dlo = dprev;
+      /* Golden-section refine the extremum in [gprev, gcur] */
+      const double gr = 0.6180339887498949;
+      double lo = gprev, hi = gcur;
+      double gc = hi - gr * (hi - lo), ge = lo + gr * (hi - lo);
+      double fc = TP_DIST(gc), fe = TP_DIST(ge);
       for (int it = 0; it < 60 && hi - lo > 1e-15; ++it)
       {
-        double mid = 0.5 * (lo + hi);
-        double dmid = (TP_DIST(mid + h) - TP_DIST(mid - h)) / (2 * h);
-        if (dlo * dmid <= 0)
-          hi = mid;
+        bool pick_left = is_min ? (fc < fe) : (fc > fe);
+        if (pick_left)
+        { hi = ge; ge = gc; fe = fc; gc = hi - gr * (hi - lo); fc = TP_DIST(gc); }
         else
-          lo = mid, dlo = dmid;
+        { lo = gc; gc = ge; fc = fe; ge = lo + gr * (hi - lo); fe = TP_DIST(ge); }
       }
       double gstar = 0.5 * (lo + hi);
       tdist_elem td = tdist_make(TP_DIST(gstar),
@@ -624,6 +640,7 @@ compute_turnpoints_tpoly_point(const cfp_elem *cfp_s, const cfp_elem *cfp_e,
     }
     gprev = gcur;
     dprev = dcur;
+    sprev = scur;
   }
   #undef TP_DIST
 }
@@ -1591,26 +1608,42 @@ compute_turnpoints_tpoly_poly(const cfp_elem *cfp_s, const cfp_elem *cfp_e,
     v_clip_tpoly_tpoly(poly1, poly2, _pp, NULL, &_c1, &_c2, &_d); \
     pfree(_pp); _d; })
 
-  int K = 16;
-  double h = (gb - ga) / (2.0 * K);
-  double gprev = ga + h;
-  double dprev = (TP_DIST(gprev + h) - TP_DIST(gprev - h)) / (2 * h);
-  for (int k = 1; k < K; ++k)
+  /* Locate the interior turning points (local minima and maxima) of the
+   * distance over [ga, gb]. The distance is smooth within a fixed feature
+   * pair, but it drops to a flat zero over any sub-interval where the bodies
+   * overlap, so a plain derivative-sign-change bracket misses that minimum: a
+   * run of zero-derivative samples inside the plateau separates the falling
+   * and rising samples. Track the slope sign (falling / flat / rising) on a
+   * uniform subdivision and emit a turning point at every falling->rising and
+   * falling->flat and flat->rising transition (a minimum, including a plateau
+   * boundary) and every rising->falling and rising->flat and flat->falling
+   * transition (a maximum), refining each by golden section on the value. */
+  int M = 64;
+  double step = (gb - ga) / M;
+  double d0 = TP_DIST(ga), d1 = TP_DIST(ga + step);
+  double gprev = ga + step, dprev = d1;
+  int sprev = (d1 > d0 + MEOS_EPSILON) ? 1 : (d1 < d0 - MEOS_EPSILON ? -1 : 0);
+  for (int k = 2; k <= M; ++k)
   {
-    double gcur = ga + (2 * k + 1) * h;
-    double dcur = (TP_DIST(gcur + h) - TP_DIST(gcur - h)) / (2 * h);
-    if (dprev * dcur < 0)
+    double gcur = ga + step * k, dcur = TP_DIST(gcur);
+    int scur = (dcur > dprev + MEOS_EPSILON) ? 1 :
+      (dcur < dprev - MEOS_EPSILON ? -1 : 0);
+    bool is_min = (sprev < 0 && scur >= 0) || (sprev == 0 && scur > 0);
+    bool is_max = (sprev > 0 && scur <= 0) || (sprev == 0 && scur < 0);
+    if (is_min || is_max)
     {
-      /* Bisect the derivative to locate the extremum */
-      double lo = gprev, hi = gcur, dlo = dprev;
+      /* Golden-section refine the extremum in [gprev, gcur] */
+      const double gr = 0.6180339887498949;
+      double lo = gprev, hi = gcur;
+      double gc = hi - gr * (hi - lo), ge = lo + gr * (hi - lo);
+      double fc = TP_DIST(gc), fe = TP_DIST(ge);
       for (int it = 0; it < 60 && hi - lo > 1e-15; ++it)
       {
-        double mid = 0.5 * (lo + hi);
-        double dmid = (TP_DIST(mid + h) - TP_DIST(mid - h)) / (2 * h);
-        if (dlo * dmid <= 0)
-          hi = mid;
+        bool pick_left = is_min ? (fc < fe) : (fc > fe);
+        if (pick_left)
+        { hi = ge; ge = gc; fe = fc; gc = hi - gr * (hi - lo); fc = TP_DIST(gc); }
         else
-          lo = mid, dlo = dmid;
+        { lo = gc; gc = ge; fc = fe; ge = lo + gr * (hi - lo); fe = TP_DIST(ge); }
       }
       double gstar = 0.5 * (lo + hi);
       tdist_elem td = tdist_make(TP_DIST(gstar),
@@ -1619,6 +1652,7 @@ compute_turnpoints_tpoly_poly(const cfp_elem *cfp_s, const cfp_elem *cfp_e,
     }
     gprev = gcur;
     dprev = dcur;
+    sprev = scur;
   }
   #undef TP_DIST
 }
