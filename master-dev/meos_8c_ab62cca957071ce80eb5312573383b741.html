@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: proj_finalize</title>
+<title>MobilityDB: meos_lwnotice_handler</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -121,11 +121,11 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__setup_gafc68cec9996f8934343c9d9a2174e14b.html#gafc68cec9996f8934343c9d9a2174e14b">meos_initialize</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_8c_a320821924d47f491453383968a806faa.html#a320821924d47f491453383968a806faa">MEOS_LW_MSG_MAXLEN</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_8c_a12f1e57c0013148af6f8107fc1ac6e51.html#a12f1e57c0013148af6f8107fc1ac6e51">meos_lwerror_handler</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_8c_ab62cca957071ce80eb5312573383b741.html#ab62cca957071ce80eb5312573383b741">meos_lwnotice_handler</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_8c_ab62cca957071ce80eb5312573383b741.html#ab62cca957071ce80eb5312573383b741">meos_lwnotice_handler</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_8c_ae1854fb656fd11bc29e3305ce5868f71.html#ae1854fb656fd11bc29e3305ce5868f71">MEOS_PJ_CONTEXT</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__setup_ga3298919e87e1827b68ac074b2bd65866.html#ga3298919e87e1827b68ac074b2bd65866">meos_set_datestyle</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__setup_ga497788e4d514f24789558b11980ab553.html#ga497788e4d514f24789558b11980ab553">meos_set_intervalstyle</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_8c_ae80edd4cdb1a2f5833491effeb1cf54a.html#ae80edd4cdb1a2f5833491effeb1cf54a">proj_finalize</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_8c_ae80edd4cdb1a2f5833491effeb1cf54a.html#ae80edd4cdb1a2f5833491effeb1cf54a">proj_finalize</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_8c_afb4ea3ec36162407424522d39c0c4f6c.html#afb4ea3ec36162407424522d39c0c4f6c">proj_get_context</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_8c_a98576dd698e254d2b8b341fb15da84cf.html#a98576dd698e254d2b8b341fb15da84cf">proj_initialize</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_8c_a78c61a21bb91d32b8db57956c75f234f.html#a78c61a21bb91d32b8db57956c75f234f">split_to_stringlist</a></td></tr>
@@ -138,8 +138,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ae80edd4cdb1a2f5833491effeb1cf54a" name="ae80edd4cdb1a2f5833491effeb1cf54a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae80edd4cdb1a2f5833491effeb1cf54a">&#9670;&#160;</a></span>proj_finalize()</h2>
+<a id="ab62cca957071ce80eb5312573383b741" name="ab62cca957071ce80eb5312573383b741"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab62cca957071ce80eb5312573383b741">&#9670;&#160;</a></span>meos_lwnotice_handler()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -148,11 +148,21 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static void proj_finalize </td>
+          <td class="memname">static void meos_lwnotice_handler </td>
           <td>(</td>
-          <td class="paramtype">void&#160;</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>fmt</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">va_list&#160;</td>
+          <td class="paramname"><em>ap</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
   </td>
@@ -162,7 +172,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Finalize the PROJ library. </p>
+<p>Report a liblwgeom notice through the MEOS error channel. </p>
+<p >A notice is advisory, so this handler returns as liblwgeom expects. </p>
 
 </div>
 </div>
