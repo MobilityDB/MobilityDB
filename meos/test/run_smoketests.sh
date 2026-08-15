@@ -29,6 +29,7 @@ SUITES=(
   tcbuffer_smoketest
   tnpoint_smoketest
   tgeometry_smoketest
+  tjsonb_smoketest
 )
 
 # Self-contained family suites: a family drops meos/test/smoke/<family>.json and
