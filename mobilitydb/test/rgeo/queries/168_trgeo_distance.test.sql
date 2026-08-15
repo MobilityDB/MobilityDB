@@ -75,6 +75,16 @@ SELECT round(minValue(tDistance(
   trgeometry 'Polygon((0 0,3 0,3 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),3.141592653589793)@2001-01-02]',
   geometry 'Polygon((1.5 1.5,2.5 1.5,2.5 2.5,1.5 2.5,1.5 1.5))'))::numeric, 6);
 
+-- Two convex polygons whose closest features are a facing pair of edges: the
+-- distance handles the edge-edge closest-feature state and reports their
+-- separation
+SELECT round(nearestApproachDistance(
+  trgeometry 'Polygon((2 2,2 1,4 0,4 4,2 2));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-02]',
+  geometry 'Polygon((5 0,2 1,1 1,5 0))')::numeric, 6);
+SELECT round(minValue(tDistance(
+  trgeometry 'Polygon((2 2,2 1,4 0,4 4,2 2));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-02]',
+  geometry 'Polygon((5 0,2 1,1 1,5 0))'))::numeric, 6);
+
 -- The distance operator agrees with the function
 SELECT round(minValue(
   trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]' <->

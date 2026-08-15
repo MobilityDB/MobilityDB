@@ -70,6 +70,22 @@ SELECT round(minValue(tDistance(
  0.000000
 (1 row)
 
+SELECT round(nearestApproachDistance(
+  trgeometry 'Polygon((2 2,2 1,4 0,4 4,2 2));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-02]',
+  geometry 'Polygon((5 0,2 1,1 1,5 0))')::numeric, 6);
+  round   
+----------
+ 0.000000
+(1 row)
+
+SELECT round(minValue(tDistance(
+  trgeometry 'Polygon((2 2,2 1,4 0,4 4,2 2));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-02]',
+  geometry 'Polygon((5 0,2 1,1 1,5 0))'))::numeric, 6);
+  round   
+----------
+ 0.000000
+(1 row)
+
 SELECT round(minValue(
   trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]' <->
   geometry 'Polygon((5 3,6 3,6 4,5 4,5 3))')::numeric, 6);
