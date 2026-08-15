@@ -4,26 +4,12 @@
 # shrinks: a new mismatch fails the check. Regenerate with
 # --rebaseline after a fix.
 meos/src/cbuffer/cbuffer.c	cbuffer_hash	validates with INT_MAX
-meos/src/geo/postgis_funcs.c	geo_is_empty	validates with NULL
-meos/src/geo/stbox.c	before_stbox_stbox	validates with NULL
-meos/src/geo/stbox.c	overbefore_stbox_stbox	validates with NULL
-meos/src/geo/stbox.c	after_stbox_stbox	validates with NULL
-meos/src/geo/stbox.c	overafter_stbox_stbox	validates with NULL
 meos/src/geo/stbox.c	stbox_hash	documents INT_MAX
 meos/src/geo/stbox.c	stbox_hash	validates with INT_MAX
-meos/src/geo/tpoint_spatialfuncs.c	tpoint_tfloat_to_geomeas	validates with NULL
 meos/src/npoint/npoint.c	npoint_hash	validates with INT_MAX
 meos/src/npoint/tnpoint.c	tnpoint_route	documents INT_MAX
-meos/src/npoint/tnpoint_routeops.c	overlaps_rid_tnpoint_bigintset	validates with NULL
-meos/src/npoint/tnpoint_routeops.c	contains_rid_tnpoint_bigintset	validates with NULL
-meos/src/npoint/tnpoint_routeops.c	same_rid_tnpoint_bigintset	validates with NULL
-meos/src/npoint/tnpoint_routeops.c	contains_rid_tnpoint_bigint	validates with NULL
-meos/src/npoint/tnpoint_routeops.c	same_rid_tnpoint_bigint	validates with NULL
-meos/src/npoint/tnpoint_spatialfuncs.c	npoint_same	validates with NULL
 meos/src/pointcloud/pcpatch.c	pcpatch_hash	validates with INT_MAX
 meos/src/pointcloud/pcpoint.c	pcpoint_hash	validates with INT_MAX
-meos/src/pose/pose.c	pose_eq	validates with NULL
-meos/src/pose/pose.c	pose_same	validates with NULL
 meos/src/pose/pose.c	pose_hash	validates with INT_MAX
 meos/src/raster/raquet.c	raquet_quadbin	validates with 0
 meos/src/raster/raquet.c	raquet_nodata	validates with 0.0
@@ -32,44 +18,14 @@ meos/src/raster/raquet.c	raquet_hash	validates with INT_MAX
 meos/src/temporal/set.c	set_hash	validates with INT_MAX
 meos/src/temporal/set_meos.c	bigintset_start_value	documents INT_MAX
 meos/src/temporal/set_meos.c	bigintset_end_value	documents INT_MAX
-meos/src/temporal/set_ops.c	contains_set_value	validates with NULL
 meos/src/temporal/span.c	span_hash	documents INT_MAX
 meos/src/temporal/span.c	span_hash	validates with INT_MAX
 meos/src/temporal/spanset.c	spanset_hash	documents INT_MAX
 meos/src/temporal/spanset.c	spanset_hash	validates with INT_MAX
-meos/src/temporal/spanset.c	spanset_lower_inc	validates with NULL
-meos/src/temporal/spanset.c	spanset_upper_inc	validates with NULL
-meos/src/temporal/spanset_ops.c	overright_spanset_value	validates with NULL
-meos/src/temporal/spanset_ops.c	contains_spanset_timestamptz	validates with NULL
 meos/src/temporal/tbox.c	tbox_hash	documents INT_MAX
 meos/src/temporal/tbox.c	tbox_hash	validates with INT_MAX
-meos/src/temporal/temporal.c	temporal_value_n	validates with NULL
-meos/src/temporal/temporal.c	temporal_timestamptz_n	validates with NULL
 meos/src/temporal/temporal.c	temporal_hash	documents INT_MAX
 meos/src/temporal/temporal.c	temporal_hash	validates with INT_MAX
-meos/src/temporal/temporal_boxops_meos.c	contains_temporal_temporal	validates with NULL
-meos/src/temporal/temporal_boxops_meos.c	contained_tstzspan_temporal	validates with NULL
-meos/src/temporal/temporal_boxops_meos.c	contained_temporal_tstzspan	validates with NULL
-meos/src/temporal/temporal_boxops_meos.c	contained_temporal_temporal	validates with NULL
-meos/src/temporal/temporal_boxops_meos.c	overlaps_tstzspan_temporal	validates with NULL
-meos/src/temporal/temporal_boxops_meos.c	overlaps_temporal_tstzspan	validates with NULL
-meos/src/temporal/temporal_boxops_meos.c	overlaps_temporal_temporal	validates with NULL
-meos/src/temporal/temporal_boxops_meos.c	same_tstzspan_temporal	validates with NULL
-meos/src/temporal/temporal_boxops_meos.c	same_temporal_tstzspan	validates with NULL
-meos/src/temporal/temporal_boxops_meos.c	same_temporal_temporal	validates with NULL
-meos/src/temporal/temporal_boxops_meos.c	adjacent_tstzspan_temporal	validates with NULL
-meos/src/temporal/temporal_boxops_meos.c	adjacent_temporal_tstzspan	validates with NULL
-meos/src/temporal/temporal_boxops_meos.c	adjacent_temporal_temporal	validates with NULL
-meos/src/temporal/temporal_boxops_meos.c	contains_tstzspan_temporal	validates with NULL
-meos/src/temporal/temporal_boxops_meos.c	contains_temporal_tstzspan	validates with NULL
-meos/src/temporal/temporal_posops_meos.c	overafter_tstzspan_temporal	validates with NULL
-meos/src/temporal/temporal_posops_meos.c	before_temporal_tstzspan	validates with NULL
-meos/src/temporal/temporal_posops_meos.c	overbefore_temporal_tstzspan	validates with NULL
-meos/src/temporal/temporal_posops_meos.c	after_temporal_tstzspan	validates with NULL
-meos/src/temporal/temporal_posops_meos.c	overafter_temporal_tstzspan	validates with NULL
-meos/src/temporal/temporal_posops_meos.c	before_tstzspan_temporal	validates with NULL
-meos/src/temporal/temporal_posops_meos.c	overbefore_tstzspan_temporal	validates with NULL
-meos/src/temporal/temporal_posops_meos.c	after_tstzspan_temporal	validates with NULL
 meos/src/temporal/temporal_tile.c	bigint_get_bin	documents INT_MAX
 meos/src/temporal/tinstant.c	tinstant_hash	documents INT_MAX
 meos/src/temporal/tinstant.c	tinstant_hash	validates with INT_MAX

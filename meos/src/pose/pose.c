@@ -1865,7 +1865,7 @@ bool
 pose_eq(const Pose *pose1, const Pose *pose2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(pose1, NULL); VALIDATE_NOT_NULL(pose2, NULL);
+  VALIDATE_NOT_NULL(pose1, false); VALIDATE_NOT_NULL(pose2, false);
 
   if (MEOS_FLAGS_GET_Z(pose1->flags) != MEOS_FLAGS_GET_Z(pose2->flags) ||
       pose_srid(pose1) != pose_srid(pose2))
@@ -1907,7 +1907,7 @@ bool
 pose_same(const Pose *pose1, const Pose *pose2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(pose1, NULL); VALIDATE_NOT_NULL(pose2, NULL);
+  VALIDATE_NOT_NULL(pose1, false); VALIDATE_NOT_NULL(pose2, false);
 
   if (MEOS_FLAGS_GET_Z(pose1->flags) != MEOS_FLAGS_GET_Z(pose2->flags) ||
       pose_srid(pose1) != pose_srid(pose2))

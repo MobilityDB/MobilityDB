@@ -186,7 +186,7 @@ bool
 contains_set_value(const Set *s, Datum value)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(s, NULL);
+  VALIDATE_NOT_NULL(s, false);
   /* Bound test */
   if (! contains_bound_set_value(s, value))
     return false;

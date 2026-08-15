@@ -80,7 +80,7 @@ bool
 contains_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TSTZSPANSET(ss, NULL);
+  VALIDATE_TSTZSPANSET(ss, false);
   return contains_spanset_value(ss, TimestampTzGetDatum(t));
 }
 
@@ -696,7 +696,7 @@ overright_span_spanset(const Span *s, const SpanSet *ss)
 bool
 overright_spanset_value(const SpanSet *ss, Datum value)
 {
-  VALIDATE_NOT_NULL(ss, NULL);
+  VALIDATE_NOT_NULL(ss, false);
   return overright_span_value(SPANSET_SP_N(ss, 0), value);
 }
 

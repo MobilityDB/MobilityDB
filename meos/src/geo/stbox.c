@@ -2191,7 +2191,7 @@ bool
 before_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(box1, NULL); VALIDATE_NOT_NULL(box2, NULL);
+  VALIDATE_NOT_NULL(box1, false); VALIDATE_NOT_NULL(box2, false);
   if (! ensure_has_T(T_STBOX, box1->flags) ||
       ! ensure_has_T(T_STBOX, box2->flags))
     return false;
@@ -2209,7 +2209,7 @@ bool
 overbefore_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(box1, NULL); VALIDATE_NOT_NULL(box2, NULL);
+  VALIDATE_NOT_NULL(box1, false); VALIDATE_NOT_NULL(box2, false);
   if (! ensure_has_T(T_STBOX, box1->flags) ||
       ! ensure_has_T(T_STBOX, box2->flags))
     return false;
@@ -2226,7 +2226,7 @@ bool
 after_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(box1, NULL); VALIDATE_NOT_NULL(box2, NULL);
+  VALIDATE_NOT_NULL(box1, false); VALIDATE_NOT_NULL(box2, false);
   if (! ensure_has_T(T_STBOX, box1->flags) ||
       ! ensure_has_T(T_STBOX, box2->flags))
     return false;
@@ -2244,7 +2244,7 @@ bool
 overafter_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(box1, NULL); VALIDATE_NOT_NULL(box2, NULL);
+  VALIDATE_NOT_NULL(box1, false); VALIDATE_NOT_NULL(box2, false);
   if (! ensure_has_T(T_STBOX, box1->flags) ||
       ! ensure_has_T(T_STBOX, box2->flags))
     return false;
