@@ -221,18 +221,34 @@ GROUP BY t.tripid, t.trip;
 				<indexterm significance="normal"><primary><varname>asBinary</varname></primary></indexterm>
 				<para>Return the Well-Known Binary (WKB) representation of a Raquet tile</para>
 				<para><varname>asBinary(raquet,endianencoding text DEFAULT '') → bytea</varname></para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT length(asBinary(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512,
+  'uint8')));
+-- 31
+</programlisting>
 			</listitem>
 
 			<listitem xml:id="raquet_asHexWKB">
 				<indexterm significance="normal"><primary><varname>asHexWKB</varname></primary></indexterm>
 				<para>Return the ASCII hex-encoded Well-Known Binary (HexWKB) representation of a Raquet tile</para>
 				<para><varname>asHexWKB(raquet,endianencoding text DEFAULT '') → text</varname></para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT length(asHexWKB(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512,
+  'uint8')));
+-- 62
+</programlisting>
 			</listitem>
 
 			<listitem xml:id="raquetFromBinary">
 				<indexterm significance="normal"><primary><varname>raquetFromBinary</varname></primary></indexterm>
 				<para>Return a Raquet tile from its Well-Known Binary (WKB) representation</para>
 				<para><varname>raquetFromBinary(bytea) → raquet</varname></para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT raquetFromBinary(asBinary(raquet('\x01020304'::bytea, 2, 2,
+  5193776270265024512, 'uint8')))
+  = raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8');
+-- true
+</programlisting>
 			</listitem>
 
 			<listitem xml:id="raquetFromHexWKB">
