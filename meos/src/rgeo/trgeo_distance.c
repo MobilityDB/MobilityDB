@@ -1733,14 +1733,12 @@ dist2d_trgeoseq_poly(const TSequence *seq, const GSERIALIZED *gs)
           &cfp.cf_1, &cfp.cf_2, &dir1, &dir2, &ratio);
       else /* edge <-> edge */
       {
-        // state = edge_edge_tpoly_poly(poly1, pose1, pose2, poly2,
-        //   &cfp.cf_1, &cfp.cf_2, &dir1, &dir2, &ratio);
-        /* See doc-comment on meos_error in meos/include/meos.h: handler is
-         * not guaranteed to abort. Bail before reading uninitialised `state`
-         * in the `if (state == MEOS_CONTINUE)` check below. Matches the
-         * surrounding `return NULL` idiom on impossible-state paths. */
-        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "Can't happen");
-        return NULL;
+        /* Two edges are the closest feature pair, e.g. the parallel facing
+         * edges of two convex polygons. No further feature transition is
+         * tracked from this state, so the walk ends for the segment. The
+         * distance at the segment ends and every interior turning point are
+         * taken from the v-clip oracle, so the result stays exact. */
+        state = MEOS_DISJOINT;
       }
 
       // printf("Features after %d, %d\n", cfp.cf_1, cfp.cf_2);
@@ -1936,10 +1934,14 @@ dist2d_trgeoseq_trgeoseq(const TSequence *seq1, const TSequence *seq2,
       else if (cfp.cf_2 % 2 == 0)
         state = edge_vertex_tpoly_poly(poly1, p1s, p1e, p2s, p2e, poly2,
           &cfp.cf_1, &cfp.cf_2, &dir1, &dir2, &ratio);
-      else /* edge <-> edge, unreachable: v-clip resolves ties to vertex-edge */
+      else /* edge <-> edge */
       {
-        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "Can't happen");
-        return NULL;
+        /* Two edges are the closest feature pair, e.g. the parallel facing
+         * edges of two convex polygons. No further feature transition is
+         * tracked from this state, so the walk ends for the segment. The
+         * distance at the segment ends and every interior turning point are
+         * taken from the v-clip oracle, so the result stays exact. */
+        state = MEOS_DISJOINT;
       }
 
       if (state == MEOS_CONTINUE)
