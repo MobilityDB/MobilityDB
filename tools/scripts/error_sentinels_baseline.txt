@@ -2,6 +2,7 @@
 # grandfathered in. The list only shrinks: a new mismatch
 # fails the check. Regenerate with --rebaseline after a fix.
 meos/src/cbuffer/cbuffer.c:1408: cbuffer_cmp() returns int but validates with false, expected INT_MAX
+meos/src/cbuffer/cbuffer.c:1500: cbuffer_hash() returns uint32 but validates with INT_MAX, expected UINT32_MAX
 meos/src/cbuffer/tcbuffer_spatialrels.c:147: spatialrel_geo_geo() returns int but documents -1, expected INT_MAX
 meos/src/geo/postgis_funcs.c:1490: geo_num_points() returns int but documents -1, expected INT_MAX
 meos/src/geo/postgis_funcs.c:1490: geo_num_points() returns int but validates with -1, expected INT_MAX
@@ -17,6 +18,8 @@ meos/src/geo/stbox.c:2209: overbefore_stbox_stbox() returns bool but validates w
 meos/src/geo/stbox.c:2226: after_stbox_stbox() returns bool but validates with NULL, expected false
 meos/src/geo/stbox.c:2244: overafter_stbox_stbox() returns bool but validates with NULL, expected false
 meos/src/geo/stbox.c:2499: stbox_cmp() returns int but validates with false, expected INT_MAX
+meos/src/geo/stbox.c:2626: stbox_hash() returns uint32 but documents INT_MAX, expected UINT32_MAX
+meos/src/geo/stbox.c:2626: stbox_hash() returns uint32 but validates with INT_MAX, expected UINT32_MAX
 meos/src/geo/tgeo_compops.c:63: eacomp_tgeo_geo() returns int but validates with -1, expected INT_MAX
 meos/src/geo/tgeo_compops.c:81: eacomp_tgeo_tgeo() returns int but validates with -1, expected INT_MAX
 meos/src/geo/tgeo_distance.c:2970: stbox_spatial_distance() returns double but validates with false, expected DBL_MAX
@@ -32,10 +35,9 @@ meos/src/geo/tgeo_spatialrels.c:435: spatialrel_tgeo_tgeo() returns int but docu
 meos/src/geo/tpoint_spatialfuncs.c:1422: tpoint_tfloat_to_geomeas() returns bool but validates with NULL, expected false
 meos/src/geo/tspatial_tempspatialrels.c:595: tspatialrel_tspatial_base() returns Temporal * but documents `NULL`, expected NULL
 meos/src/geo/tspatial_tempspatialrels.c:651: tspatialrel_tspatial_tspatial() returns Temporal * but documents `NULL`, expected NULL
-meos/src/npoint/npoint.c:1069: npoint_route() validates with LONG_MAX, which is 32 bits on LLP64 Windows: use INT64_MAX
-meos/src/npoint/npoint.c:1098: nsegment_route() validates with LONG_MAX, which is 32 bits on LLP64 Windows: use INT64_MAX
 meos/src/npoint/npoint.c:1207: npoint_cmp() returns int but validates with false, expected INT_MAX
 meos/src/npoint/npoint.c:1312: nsegment_cmp() returns int but validates with false, expected INT_MAX
+meos/src/npoint/npoint.c:1397: npoint_hash() returns uint32 but validates with INT_MAX, expected UINT32_MAX
 meos/src/npoint/tnpoint.c:833: tnpoint_route() returns int64 but documents INT_MAX, expected INT64_MAX
 meos/src/npoint/tnpoint_compops.c:57: eacomp_tnpoint_npoint() returns int but validates with -1, expected INT_MAX
 meos/src/npoint/tnpoint_compops.c:74: eacomp_tnpoint_tnpoint() returns int but validates with -1, expected INT_MAX
@@ -45,39 +47,44 @@ meos/src/npoint/tnpoint_routeops.c:151: same_rid_tnpoint_bigintset() returns boo
 meos/src/npoint/tnpoint_routeops.c:61: contains_rid_tnpoint_bigint() returns bool but validates with NULL, expected false
 meos/src/npoint/tnpoint_routeops.c:88: same_rid_tnpoint_bigint() returns bool but validates with NULL, expected false
 meos/src/npoint/tnpoint_spatialfuncs.c:203: npoint_same() returns bool but validates with NULL, expected false
+meos/src/pointcloud/pcpatch.c:295: pcpatch_hash() returns uint32 but validates with INT_MAX, expected UINT32_MAX
 meos/src/pointcloud/pcpatch.c:331: pcpatch_cmp() returns int but validates with false, expected INT_MAX
+meos/src/pointcloud/pcpoint.c:325: pcpoint_hash() returns uint32 but validates with INT_MAX, expected UINT32_MAX
 meos/src/pointcloud/pcpoint.c:366: pcpoint_cmp() returns int but validates with false, expected INT_MAX
 meos/src/pointcloud/tpcbox.c:1047: tpcbox_cmp() returns int but validates with false, expected INT_MAX
 meos/src/pose/pose.c:1865: pose_eq() returns bool but validates with NULL, expected false
 meos/src/pose/pose.c:1907: pose_same() returns bool but validates with NULL, expected false
 meos/src/pose/pose.c:1949: pose_cmp() returns int but validates with false, expected INT_MAX
+meos/src/pose/pose.c:2048: pose_hash() returns uint32 but validates with INT_MAX, expected UINT32_MAX
+meos/src/raster/raquet.c:653: raquet_quadbin() returns uint64 but validates with 0, expected UINT64_MAX
 meos/src/raster/raquet.c:666: raquet_width() returns int but validates with -1, expected INT_MAX
 meos/src/raster/raquet.c:679: raquet_height() returns int but validates with -1, expected INT_MAX
 meos/src/raster/raquet.c:692: raquet_nodata() returns double but validates with 0.0, expected DBL_MAX
 meos/src/raster/raquet.c:802: raquet_cmp() returns int but validates with false, expected INT_MAX
+meos/src/raster/raquet.c:906: raquet_hash() returns uint32 but documents INT_MAX, expected UINT32_MAX
+meos/src/raster/raquet.c:906: raquet_hash() returns uint32 but validates with INT_MAX, expected UINT32_MAX
 meos/src/raster/raquet_gdal.c:510: eraster_value_gdal() returns int but validates with -1, expected INT_MAX
 meos/src/raster/raquet_gdal.c:540: araster_value_gdal() returns int but validates with -1, expected INT_MAX
 meos/src/raster/raster_quadbin.c:583: eraster_value() returns int but validates with -1, expected INT_MAX
 meos/src/raster/raster_quadbin.c:616: araster_value() returns int but validates with -1, expected INT_MAX
 meos/src/raster/raster_rtcore.c:235: raster_num_bands() returns int but validates with -1, expected INT_MAX
 meos/src/rgeo/trgeo_spatialrels.c:72: spatialrel_trgeo_trav_geo() returns int but documents -1, expected INT_MAX
+meos/src/temporal/set.c:1250: set_hash() returns uint32 but validates with INT_MAX, expected UINT32_MAX
 meos/src/temporal/set.c:672: set_mem_size() returns int but validates with -1, expected INT_MAX
 meos/src/temporal/set.c:686: set_num_values() returns int but documents -1, expected INT_MAX
 meos/src/temporal/set.c:686: set_num_values() returns int but validates with -1, expected INT_MAX
 meos/src/temporal/set_meos.c:469: bigintset_start_value() returns int64 but documents INT_MAX, expected INT64_MAX
-meos/src/temporal/set_meos.c:469: bigintset_start_value() validates with LONG_MAX, which is 32 bits on LLP64 Windows: use INT64_MAX
 meos/src/temporal/set_meos.c:561: bigintset_end_value() returns int64 but documents INT_MAX, expected INT64_MAX
-meos/src/temporal/set_meos.c:561: bigintset_end_value() validates with LONG_MAX, which is 32 bits on LLP64 Windows: use INT64_MAX
 meos/src/temporal/set_ops.c:186: contains_set_value() returns bool but validates with NULL, expected false
 meos/src/temporal/span.c:1467: timestamptz_shift() returns TimestampTz but documents `DT_NOEND`, expected DT_NOEND
-meos/src/temporal/span_meos.c:410: bigintspan_lower() documents LONG_MAX, which is 32 bits on LLP64 Windows: use INT64_MAX
-meos/src/temporal/span_meos.c:410: bigintspan_lower() validates with LONG_MAX, which is 32 bits on LLP64 Windows: use INT64_MAX
-meos/src/temporal/span_meos.c:487: bigintspan_upper() documents LONG_MAX, which is 32 bits on LLP64 Windows: use INT64_MAX
-meos/src/temporal/span_meos.c:487: bigintspan_upper() validates with LONG_MAX, which is 32 bits on LLP64 Windows: use INT64_MAX
+meos/src/temporal/span.c:1747: span_hash() returns uint32 but documents INT_MAX, expected UINT32_MAX
+meos/src/temporal/span.c:1747: span_hash() returns uint32 but validates with INT_MAX, expected UINT32_MAX
 meos/src/temporal/span_meos.c:577: intspan_width() returns int but documents -1, expected INT_MAX
 meos/src/temporal/span_meos.c:577: intspan_width() returns int but validates with -1, expected INT_MAX
 meos/src/temporal/span_meos.c:592: bigintspan_width() returns int64 but documents -1, expected INT64_MAX
 meos/src/temporal/span_meos.c:592: bigintspan_width() returns int64 but validates with -1, expected INT64_MAX
+meos/src/temporal/spanset.c:1546: spanset_hash() returns uint32 but documents INT_MAX, expected UINT32_MAX
+meos/src/temporal/spanset.c:1546: spanset_hash() returns uint32 but validates with INT_MAX, expected UINT32_MAX
 meos/src/temporal/spanset.c:519: spanset_mem_size() returns int but documents -1, expected INT_MAX
 meos/src/temporal/spanset.c:519: spanset_mem_size() returns int but validates with -1, expected INT_MAX
 meos/src/temporal/spanset.c:574: spanset_lower_inc() returns bool but validates with NULL, expected false
@@ -88,10 +95,6 @@ meos/src/temporal/spanset.c:788: tstzspanset_num_timestamps() returns int but do
 meos/src/temporal/spanset.c:788: tstzspanset_num_timestamps() returns int but validates with -1, expected INT_MAX
 meos/src/temporal/spanset.c:948: spanset_num_spans() returns int but documents -1, expected INT_MAX
 meos/src/temporal/spanset.c:948: spanset_num_spans() returns int but validates with -1, expected INT_MAX
-meos/src/temporal/spanset_meos.c:382: bigintspanset_lower() documents LONG_MAX, which is 32 bits on LLP64 Windows: use INT64_MAX
-meos/src/temporal/spanset_meos.c:382: bigintspanset_lower() validates with LONG_MAX, which is 32 bits on LLP64 Windows: use INT64_MAX
-meos/src/temporal/spanset_meos.c:459: bigintspanset_upper() documents LONG_MAX, which is 32 bits on LLP64 Windows: use INT64_MAX
-meos/src/temporal/spanset_meos.c:459: bigintspanset_upper() validates with LONG_MAX, which is 32 bits on LLP64 Windows: use INT64_MAX
 meos/src/temporal/spanset_meos.c:522: intspanset_width() returns int but documents -1, expected INT_MAX
 meos/src/temporal/spanset_meos.c:522: intspanset_width() returns int but validates with -1, expected INT_MAX
 meos/src/temporal/spanset_meos.c:538: bigintspanset_width() returns int64 but documents -1, expected INT64_MAX
@@ -99,6 +102,8 @@ meos/src/temporal/spanset_meos.c:538: bigintspanset_width() returns int64 but va
 meos/src/temporal/spanset_ops.c:697: overright_spanset_value() returns bool but validates with NULL, expected false
 meos/src/temporal/spanset_ops.c:80: contains_spanset_timestamptz() returns bool but validates with NULL, expected false
 meos/src/temporal/tbox.c:170: tbox_make() returns TBox * but documents `NULL`, expected NULL
+meos/src/temporal/tbox.c:2022: tbox_hash() returns uint32 but documents INT_MAX, expected UINT32_MAX
+meos/src/temporal/tbox.c:2022: tbox_hash() returns uint32 but validates with INT_MAX, expected UINT32_MAX
 meos/src/temporal/temporal.c:2283: temporal_value_n() returns bool but validates with NULL, expected false
 meos/src/temporal/temporal.c:2442: temporal_num_sequences() returns int but documents -1, expected INT_MAX
 meos/src/temporal/temporal.c:2442: temporal_num_sequences() returns int but validates with -1, expected INT_MAX
@@ -107,6 +112,8 @@ meos/src/temporal/temporal.c:2667: temporal_num_instants() returns int but valid
 meos/src/temporal/temporal.c:2875: temporal_num_timestamps() returns int but documents -1, expected INT_MAX
 meos/src/temporal/temporal.c:2875: temporal_num_timestamps() returns int but validates with -1, expected INT_MAX
 meos/src/temporal/temporal.c:2953: temporal_timestamptz_n() returns bool but validates with NULL, expected false
+meos/src/temporal/temporal.c:3731: temporal_hash() returns uint32 but documents INT_MAX, expected UINT32_MAX
+meos/src/temporal/temporal.c:3731: temporal_hash() returns uint32 but validates with INT_MAX, expected UINT32_MAX
 meos/src/temporal/temporal_analytics.c:1773: temporal_hausdorff_distance() returns double but documents `DBL_MAX`, expected DBL_MAX
 meos/src/temporal/temporal_boxops_meos.c:101: contains_temporal_temporal() returns bool but validates with NULL, expected false
 meos/src/temporal/temporal_boxops_meos.c:119: contained_tstzspan_temporal() returns bool but validates with NULL, expected false
@@ -132,3 +139,6 @@ meos/src/temporal/temporal_posops_meos.c:60: before_tstzspan_temporal() returns 
 meos/src/temporal/temporal_posops_meos.c:75: overbefore_tstzspan_temporal() returns bool but validates with NULL, expected false
 meos/src/temporal/temporal_posops_meos.c:90: after_tstzspan_temporal() returns bool but validates with NULL, expected false
 meos/src/temporal/temporal_tile.c:127: bigint_get_bin() returns int64 but documents INT_MAX, expected INT64_MAX
+meos/src/temporal/tinstant.c:661: tinstant_hash() returns uint32 but documents INT_MAX, expected UINT32_MAX
+meos/src/temporal/tinstant.c:661: tinstant_hash() returns uint32 but validates with INT_MAX, expected UINT32_MAX
+meos/src/temporal/type_util.c:525: datum_hash() returns uint32 but documents INT_MAX, expected UINT32_MAX

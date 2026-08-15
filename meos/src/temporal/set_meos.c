@@ -469,7 +469,7 @@ int64
 bigintset_start_value(const Set *s)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_BIGINTSET(s, LONG_MAX);
+  VALIDATE_BIGINTSET(s, INT64_MAX);
   return DatumGetInt64(SET_VAL_N(s, 0));
 }
 
@@ -561,7 +561,7 @@ int64
 bigintset_end_value(const Set *s)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_BIGINTSET(s, LONG_MAX);
+  VALIDATE_BIGINTSET(s, INT64_MAX);
   return DatumGetInt64(SET_VAL_N(s, s->count - 1));
 }
 

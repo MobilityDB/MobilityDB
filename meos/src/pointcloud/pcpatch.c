@@ -309,7 +309,7 @@ uint64
 pcpatch_hash_extended(const Pcpatch *pa, uint64 seed)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(pa, LONG_MAX);
+  VALIDATE_NOT_NULL(pa, UINT64_MAX);
   return hash_any_extended((const unsigned char *) pa,
     (int) pcpatch_meaningful_size(pa), seed);
 }

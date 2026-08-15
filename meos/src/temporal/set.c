@@ -1271,7 +1271,7 @@ uint64
 set_hash_extended(const Set *s, uint64 seed)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(s, LONG_MAX);
+  VALIDATE_NOT_NULL(s, UINT64_MAX);
   uint64 result = 1;
   for (int i = 0; i < s->count; i++)
   {

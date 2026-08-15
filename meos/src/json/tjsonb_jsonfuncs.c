@@ -1011,7 +1011,7 @@ jsonb_to_alphanum(const Jsonb *jb, const char *key, MeosType resbasetype,
       if (resbasetype == T_INT4)
         return Int32GetDatum(INT_MAX);
       else if (resbasetype == T_INT8)
-        return Int64GetDatum(LONG_MAX);
+        return Int64GetDatum(INT64_MAX);
       else if (resbasetype == T_FLOAT8)
         return Float8GetDatum(DBL_MAX);
       else /* resbasetype = T_TEXT */
@@ -1059,7 +1059,7 @@ jsonb_to_alphanum(const Jsonb *jb, const char *key, MeosType resbasetype,
           if (resbasetype == T_INT4)
             return Int32GetDatum(INT_MAX);
           else if (resbasetype == T_INT8)
-            return Int64GetDatum(LONG_MAX);
+            return Int64GetDatum(INT64_MAX);
           else /* resbasetype == T_FLOAT8 */
             return Float8GetDatum(DBL_MAX);
         }
@@ -1099,7 +1099,7 @@ jsonb_to_alphanum(const Jsonb *jb, const char *key, MeosType resbasetype,
           if (resbasetype == T_INT4)
             return Int32GetDatum(INT_MAX);
           else if (resbasetype == T_INT8)
-            return Int64GetDatum(LONG_MAX);
+            return Int64GetDatum(INT64_MAX);
           else if (resbasetype == T_FLOAT8)
             return Float8GetDatum(DBL_MAX);
           else /* resbasetype == T_TEXT */
@@ -1128,7 +1128,7 @@ jsonb_to_alphanum(const Jsonb *jb, const char *key, MeosType resbasetype,
       if (resbasetype == T_INT4)
         return Int32GetDatum(INT_MAX);
       else if (resbasetype == T_INT8)
-        return Int64GetDatum(LONG_MAX);
+        return Int64GetDatum(INT64_MAX);
       else if (resbasetype == T_FLOAT8)
         return Float8GetDatum(DBL_MAX);
       else /* resbasetype == T_TEXT */

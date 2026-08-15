@@ -1528,7 +1528,7 @@ uint64
 cbuffer_hash_extended(const Cbuffer *cb, uint64 seed)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(cb, LONG_MAX);
+  VALIDATE_NOT_NULL(cb, UINT64_MAX);
   /* PostGIS currently does not provide an extended hash function, */
   return DatumGetUInt64(hash_any_extended((unsigned char *) VARDATA_ANY(cb),
     VARSIZE_ANY_EXHDR(cb), seed));
