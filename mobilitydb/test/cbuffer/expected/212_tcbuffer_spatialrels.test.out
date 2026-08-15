@@ -934,3 +934,57 @@ SELECT eDwithin(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', geometry 'SRID=38
 ERROR:  Operation on mixed SRID
 SELECT eDwithin(tcbuffer 'SRID=3812;Cbuffer(Point(1 1),0.5)@2000-01-01', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', 2);
 ERROR:  Operation on mixed SRID
+SELECT eContains(tcbuffer 'Cbuffer(Point(0 0),1)@2000-01-01', tcbuffer 'Cbuffer(Point(0 0),1)@2000-01-01');
+ econtains 
+-----------
+ t
+(1 row)
+
+SELECT eCovers(tcbuffer 'Cbuffer(Point(0 0),1)@2000-01-01', tcbuffer 'Cbuffer(Point(0 0),1)@2000-01-01');
+ ecovers 
+---------
+ t
+(1 row)
+
+SELECT eContains(tcbuffer 'Cbuffer(Point(0 0),2)@2000-01-01', tcbuffer 'Cbuffer(Point(1 0),1)@2000-01-01');
+ econtains 
+-----------
+ t
+(1 row)
+
+SELECT eContains(tcbuffer 'Cbuffer(Point(0 0),2)@2000-01-01', tcbuffer 'Cbuffer(Point(1.5 0),1)@2000-01-01');
+ econtains 
+-----------
+ f
+(1 row)
+
+SELECT eCovers(tcbuffer 'Cbuffer(Point(0 0),2)@2000-01-01', tcbuffer 'Cbuffer(Point(1.5 0),1)@2000-01-01');
+ ecovers 
+---------
+ f
+(1 row)
+
+SELECT eContains(tcbuffer 'Cbuffer(Point(0 0),1)@2000-01-01', tcbuffer 'Cbuffer(Point(1 0),0)@2000-01-01');
+ econtains 
+-----------
+ f
+(1 row)
+
+SELECT eCovers(tcbuffer 'Cbuffer(Point(0 0),1)@2000-01-01', tcbuffer 'Cbuffer(Point(1 0),0)@2000-01-01');
+ ecovers 
+---------
+ t
+(1 row)
+
+SELECT eContains(tcbuffer 'Cbuffer(Point(0 0),1)@2000-01-01', tcbuffer 'Cbuffer(Point(0.5 0),0)@2000-01-01');
+ econtains 
+-----------
+ t
+(1 row)
+
+SELECT eContains(tcbuffer 'Cbuffer(Point(0 0),0)@2000-01-01', tcbuffer 'Cbuffer(Point(0 0),0)@2000-01-01');
+ econtains 
+-----------
+ t
+(1 row)
+

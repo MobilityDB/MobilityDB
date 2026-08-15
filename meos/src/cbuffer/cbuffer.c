@@ -1063,11 +1063,21 @@ distance_cbuffer_stbox(const Cbuffer *cb, const STBox *box)
 int
 cbuffer_contains(const Cbuffer *cb1, const Cbuffer *cb2)
 {
-  /* The disk (pt2, r2) is contained in the disk (pt1, r1) exactly when its
-   * farthest point from pt1, at distance dist(pt1, pt2) + r2, is strictly
-   * inside (pt1, r1) */
+  /* Containment asks that (pt2, r2) be covered by (pt1, r1) and that their
+   * interiors meet. A disk of a strictly positive radius that is covered has
+   * its interior inside the interior of the covering disk, since a point of an
+   * open set lying on the boundary would carry a neighborhood across it, so
+   * the covering settles the containment. A disk of a zero radius is the point
+   * at its centre, whose interior is the point itself: it is contained in a
+   * disk of a strictly positive radius when it lies strictly inside, and in a
+   * disk of a zero radius when the two coincide */
   double dist = hypot(cb2->x - cb1->x, cb2->y - cb1->y);
-  return (dist + cb2->radius < cb1->radius) ? 1 : 0;
+  if (dist + cb2->radius > cb1->radius)
+    return 0;
+  if (cb2->radius > 0)
+    return 1;
+  return (cb1->radius > 0) ? (dist < cb1->radius ? 1 : 0) :
+    (dist == 0 ? 1 : 0);
 }
 
 /**
