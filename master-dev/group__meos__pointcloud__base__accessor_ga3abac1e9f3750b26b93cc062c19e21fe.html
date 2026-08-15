@@ -111,7 +111,8 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return the 32-bit hash of a pcpoint. </p>
-<dl class="section note"><dt>Note</dt><dd>Hashes only the meaningful-prefix bytes — pgpointcloud's struct-tail padding is skipped because it holds uninitialized heap bytes that differ between otherwise-identical values. @csqlfn <a class="el" href="group__mobilitydb__pointcloud__base__comp_ga0e7f48bd2b5934b7d1fe2d86357ebe9e.html#ga0e7f48bd2b5934b7d1fe2d86357ebe9e" title="Return the 32-bit hash value of a pcpoint @sqlfn hash()">Pcpoint_hash()</a> </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>Hashes only the meaningful-prefix bytes — pgpointcloud's struct-tail padding is skipped because it holds uninitialized heap bytes that differ between otherwise-identical values. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>On error return <code>UINT32_MAX</code> @csqlfn <a class="el" href="group__mobilitydb__pointcloud__base__comp_ga0e7f48bd2b5934b7d1fe2d86357ebe9e.html#ga0e7f48bd2b5934b7d1fe2d86357ebe9e" title="Return the 32-bit hash value of a pcpoint @sqlfn hash()">Pcpoint_hash()</a> </dd></dl>
 
 </div>
 </div>
