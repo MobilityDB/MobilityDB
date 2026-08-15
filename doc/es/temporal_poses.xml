@@ -664,7 +664,7 @@ SELECT asText(tpose(tgeompoint '[POINT(1 1)@2001-01-01, POINT(2 2)@2001-01-02)',
 
 	<sect1 xml:id="tpose_conversions">
 		<title>Conversión de tipos</title>
-		<para>Un valor de pose temporal se puede convertir hacia y desde un punto geométrico temporal. Esto se puede hacer utilizando un <varname>CAST</varname> explícito o utilizando la notación <varname>::</varname>. Se devuelve un valor nulo si alguno de los valores de punto geométrico que lo componen no se puede convertir en un valor <varname>pose</varname>.</para>
+		<para>Un valor de pose temporal se puede convertir hacia y desde un punto temporal, que es un punto geométrico temporal para una pose planar y un punto geográfico temporal para una pose geodésica. Esto se puede hacer utilizando un <varname>CAST</varname> explícito o utilizando la notación <varname>::</varname>. Convertir una pose temporal al tipo de punto temporal del otro marco de referencia genera un error. Se devuelve un valor nulo si alguno de los valores de punto geométrico que lo componen no se puede convertir en un valor <varname>pose</varname>.</para>
 		<itemizedlist>
 			<listitem xml:id="tpose_tgeompoint">
 				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>

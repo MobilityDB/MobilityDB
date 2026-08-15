@@ -2473,6 +2473,10 @@ SELECT pg_typeof(tgeogpoint(tpose '[GeodPose(Point(1 1),0.1)@2000-01-01]'));
  tgeogpoint
 (1 row)
 
+SELECT asText(tgeogpoint(tpose '[Pose(Point(1 1),0.1)@2000-01-01]'));
+ERROR:  Only geodetic coordinates supported
+SELECT asText(tgeompoint(tpose '[GeodPose(Point(1 1),0.1)@2000-01-01]'));
+ERROR:  Only planar coordinates supported
 WITH ais(mmsi, temp) AS (
   SELECT mmsi, tposeSeq(array_agg(tpose(pose(geom, heading), t) ORDER BY t))
   FROM tbl_ais_instant GROUP BY mmsi )
