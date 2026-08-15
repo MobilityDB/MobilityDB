@@ -796,15 +796,14 @@ nai_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
   if (! ensure_valid_tcbuffer_cbuffer(temp, cb))
     return NULL;
 
-  GSERIALIZED *geom = cbuffer_to_geom(cb);
-  Temporal *tpoint = tcbuffer_to_tgeompoint(temp);
-  TInstant *resultgeom = nai_tgeo_geo(tpoint, geom);
-  /* We do not call the function tgeompointinst_tcbufferinst to avoid
-   * roundoff errors. The closest point may be at an exclusive bound. */
-  Datum value;
-  temporal_value_at_timestamptz(temp, resultgeom->t, false, &value);
-  TInstant *result = tinstant_make_free(value, temp->temptype, resultgeom->t);
-  pfree(tpoint); pfree(resultgeom); pfree(geom);
+  /* A static disc is a constant temporal circular buffer, so the nearest
+   * approach instant is the one the two-temporal kernel already computes.
+   * Converting the disc to a geometry instead would measure to the circle's
+   * defining vertices, and dropping the temporal radius would minimise a
+   * different quantity than the nearest approach distance reports. */
+  Temporal *ctemp = tcbuffer_from_base_temp(cb, temp);
+  TInstant *result = nai_tcbuffer_tcbuffer(temp, ctemp);
+  pfree(ctemp);
   return result;
 }
 

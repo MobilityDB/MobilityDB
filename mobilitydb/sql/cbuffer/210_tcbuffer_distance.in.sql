@@ -159,8 +159,8 @@ CREATE FUNCTION nearestApproachInstant(stbox, tcbuffer)
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION nearestApproachInstant(cbuffer, tcbuffer)
   RETURNS tcbuffer
-  AS 'SELECT @extschema@.nearestApproachInstant(geometry($1), $2)'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
+  AS 'MODULE_PATHNAME', 'NAI_cbuffer_tcbuffer'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION nearestApproachInstant(tcbuffer, geometry)
   RETURNS tcbuffer
   AS 'MODULE_PATHNAME', 'NAI_tcbuffer_geo'
@@ -171,8 +171,8 @@ CREATE FUNCTION nearestApproachInstant(tcbuffer, stbox)
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION nearestApproachInstant(tcbuffer, cbuffer)
   RETURNS tcbuffer
-  AS 'SELECT @extschema@.nearestApproachInstant($1, geometry($2))'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
+  AS 'MODULE_PATHNAME', 'NAI_tcbuffer_cbuffer'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION nearestApproachInstant(tcbuffer, tcbuffer)
   RETURNS tcbuffer
   AS 'MODULE_PATHNAME', 'NAI_tcbuffer_tcbuffer'

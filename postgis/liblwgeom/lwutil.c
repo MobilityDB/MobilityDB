@@ -163,8 +163,14 @@ lwgeom_set_handlers(lwallocator allocator, lwreallocator reallocator,
 	if ( reallocator ) lwrealloc_var = reallocator;
 	if ( freeor ) lwfree_var = freeor;
 
-	if ( errorreporter ) lwerror_var = errorreporter;
-	if ( noticereporter ) lwnotice_var = noticereporter;
+	/* MEOS: the reporters are process-wide policy that every host thread
+	 * installs through meos_initialize, so publish them atomically, the same
+	 * release/acquire pair MEOS uses for its own error handler. The allocators
+	 * keep plain assignment: a host chooses those before it starts threads. */
+	if ( errorreporter )
+		__atomic_store_n(&lwerror_var, errorreporter, __ATOMIC_RELEASE);
+	if ( noticereporter )
+		__atomic_store_n(&lwnotice_var, noticereporter, __ATOMIC_RELEASE);
 }
 
 void
@@ -181,7 +187,8 @@ lwnotice(const char *fmt, ...)
 	va_start(ap, fmt);
 
 	/* Call the supplied function */
-	(*lwnotice_var)(fmt, ap);
+	/* MEOS: paired with the release store in lwgeom_set_handlers */
+	(*__atomic_load_n(&lwnotice_var, __ATOMIC_ACQUIRE))(fmt, ap);
 
 	va_end(ap);
 }
@@ -194,7 +201,8 @@ lwerror(const char *fmt, ...)
 	va_start(ap, fmt);
 
 	/* Call the supplied function */
-	(*lwerror_var)(fmt, ap);
+	/* MEOS: paired with the release store in lwgeom_set_handlers */
+	(*__atomic_load_n(&lwerror_var, __ATOMIC_ACQUIRE))(fmt, ap);
 
 	va_end(ap);
 }

@@ -321,6 +321,8 @@ NAI_cbuffer_tcbuffer(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   TInstant *result = nai_tcbuffer_cbuffer(temp, cb);
   PG_FREE_IF_COPY(temp, 1);
+  if (! result)
+    PG_RETURN_NULL();
   PG_RETURN_TINSTANT_P(result);
 }
 
@@ -339,6 +341,8 @@ NAI_tcbuffer_cbuffer(PG_FUNCTION_ARGS)
   Cbuffer *cb = PG_GETARG_CBUFFER_P(1);
   TInstant *result = nai_tcbuffer_cbuffer(temp, cb);
   PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
   PG_RETURN_TINSTANT_P(result);
 }
 
