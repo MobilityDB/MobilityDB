@@ -631,7 +631,7 @@ SELECT setInterp(tnpoint '{[NPoint(1,0.1)@2001-01-01], [NPoint(1,0.2)@2001-01-02
 				<para><varname>round(tnpoint,integer) → tnpoint</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT round(tnpoint '{[NPoint(1,0.123456789)@2001-01-01, NPoint(1,0.5)@2001-01-02)}', 6);
--- {[NPoint(1,0.123457)@2001-01-01 00:00:00+01, NPoint(1,0.5)@2001-01-02 00:00:00+01)}
+-- {[NPoint(1,0.123457)@2001-01-01, NPoint(1,0.5)@2001-01-02)}
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -648,9 +648,9 @@ SELECT round(tnpoint '{[NPoint(1,0.123456789)@2001-01-01, NPoint(1,0.5)@2001-01-
 				<para><varname>appendSequence(tnpoint,tnpointSeq) → tnpoint</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(appendInstant(tnpoint 'Npoint(1, 0.1)@2001-01-01', 'Npoint(1, 0.2)@2001-01-02'));
--- [NPoint(1,0.1)@2001-01-01 00:00:00+01, NPoint(1,0.2)@2001-01-02 00:00:00+01]
+-- [NPoint(1,0.1)@2001-01-01, NPoint(1,0.2)@2001-01-02]
 SELECT asText(appendSequence(tnpoint '[Npoint(1, 0.1)@2001-01-01]', '[Npoint(1, 0.2)@2001-01-02]'));
--- {[NPoint(1,0.1)@2001-01-01 00:00:00+01], [NPoint(1,0.2)@2001-01-02 00:00:00+01]}
+-- {[NPoint(1,0.1)@2001-01-01], [NPoint(1,0.2)@2001-01-02]}
 </programlisting>
 			</listitem>
 
@@ -664,16 +664,16 @@ SELECT asText(appendSequence(tnpoint '[Npoint(1, 0.1)@2001-01-01]', '[Npoint(1, 
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(merge(tnpoint '[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.3)@2001-01-03]',
   '[Npoint(1, 0.3)@2001-01-03, Npoint(1, 0.5)@2001-01-05]'));
--- [NPoint(1,0.1)@2001-01-01 00:00:00+01, NPoint(1,0.5)@2001-01-05 00:00:00+01]
+-- [NPoint(1,0.1)@2001-01-01, NPoint(1,0.5)@2001-01-05]
 SELECT asText(merge(ARRAY[tnpoint '[Npoint(1, 0.1)@2001-01-01, Npoint(1, 0.2)@2001-01-02]',
   '[Npoint(1, 0.2)@2001-01-02, Npoint(1, 0.3)@2001-01-03]']));
--- [NPoint(1,0.1)@2001-01-01 00:00:00+01, NPoint(1,0.3)@2001-01-03 00:00:00+01]
+-- [NPoint(1,0.1)@2001-01-01, NPoint(1,0.3)@2001-01-03]
 WITH temp(inst) AS (
   SELECT tnpoint 'Npoint(1, 0.1)@2001-01-01' UNION
   SELECT tnpoint 'Npoint(1, 0.2)@2001-01-02' UNION
   SELECT tnpoint 'Npoint(1, 0.3)@2001-01-03' )
 SELECT asText(mergeAgg(inst)) FROM temp;
--- {NPoint(1,0.1)@2001-01-01 00:00:00+01, NPoint(1,0.2)@2001-01-02 00:00:00+01, NPoint(1,0.3)@2001-01-03 00:00:00+01}
+-- {NPoint(1,0.1)@2001-01-01, NPoint(1,0.2)@2001-01-02, NPoint(1,0.3)@2001-01-03}
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -778,13 +778,13 @@ SELECT ST_AsText(shortestLine(tnpoint '[NPoint(2, 0.3)@2001-01-01,
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-03]' &lt;-&gt;
   npoint 'NPoint(1, 0.2)';
--- [2.34988300875063@2001-01-02 00:00:00+01, 2.34988300875063@2001-01-03 00:00:00+01]
+-- [2.34988300875063@2001-01-02, 2.34988300875063@2001-01-03]
 SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-03]' &lt;-&gt;
   geometry 'Point(50 50)';
--- [25.0496666945044@2001-01-01 00:00:00+01, 26.4085688426232@2001-01-03 00:00:00+01]
+-- [25.0496666945044@2001-01-01, 26.4085688426232@2001-01-03]
 SELECT tnpoint '[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-03]' &lt;-&gt;
   tnpoint '[NPoint(1, 0.3)@2001-01-02, NPoint(1, 0.5)@2001-01-04]'
--- [2.34988300875063@2001-01-02 00:00:00+01, 2.34988300875063@2001-01-03 00:00:00+01]
+-- [2.34988300875063@2001-01-02, 2.34988300875063@2001-01-03]
 </programlisting>
 			</listitem>
 		</itemizedlist>

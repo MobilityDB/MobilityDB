@@ -73,7 +73,7 @@ SELECT stbox 'SRID=4326;GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))';
 					<para>El argumento <varname>maxdecdigits</varname> se puede utilizar para definir el número máximo de decimales para la salida de los valores de coma flotante (por defecto 15).</para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT asText(tbox 'TBOXFLOAT XT([1.123456789,2.123456789),[2001-01-01,2001-01-02))', 3);
--- TBOXFLOAT XT([1.123, 2.123),[2001-01-01 00:00:00+01, 2001-01-02 00:00:00+01))
+-- TBOXFLOAT XT([1.123, 2.123),[2001-01-01, 2001-01-02))
 SELECT asText(stbox 'STBOX Z((1.55,1.55,1.55),(2.55,2.55,2.55))', 0);
 -- STBOX Z((2,2,2),(3,3,3))
 </programlisting>
