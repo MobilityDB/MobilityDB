@@ -2537,7 +2537,7 @@ nai_tpoint_geo_analytic(const Temporal *temp, const GSERIALIZED *gs,
  * a geometry/geography
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry/geography
- * @csqlfn #NAI_tgeo_geo()
+ * @csqlfn #NAI_tgeo_geo() #NAI_geo_tgeo()
  */
 TInstant *
 nai_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)

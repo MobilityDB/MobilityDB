@@ -750,7 +750,7 @@ nai_tcbuffer_geo_analytic(const Temporal *temp, const GSERIALIZED *gs,
  * and a geometry
  * @param[in] temp Temporal circular buffer
  * @param[in] gs Geometry
- * @csqlfn #NAI_tcbuffer_geo()
+ * @csqlfn #NAI_tcbuffer_geo() #NAI_geo_tcbuffer()
  */
 TInstant *
 nai_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
@@ -787,7 +787,7 @@ nai_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
  * temporal circular buffer
  * @param[in] temp Temporal circular buffer
  * @param[in] cb Circular buffer
- * @csqlfn #NAI_tcbuffer_cbuffer()
+ * @csqlfn #NAI_tcbuffer_cbuffer() #NAI_cbuffer_tcbuffer()
  */
 TInstant *
 nai_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)

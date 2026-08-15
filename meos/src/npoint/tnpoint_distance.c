@@ -137,7 +137,7 @@ tdistance_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
  * and a geometry
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
- * @csqlfn #NAI_tnpoint_geo()
+ * @csqlfn #NAI_tnpoint_geo() #NAI_geo_tnpoint()
  */
 TInstant *
 nai_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
@@ -163,7 +163,7 @@ nai_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
  * temporal network point
  * @param[in] temp Temporal point
  * @param[in] np Network point
- * @csqlfn #NAI_tnpoint_npoint()
+ * @csqlfn #NAI_tnpoint_npoint() #NAI_npoint_tnpoint()
  */
 TInstant *
 nai_tnpoint_npoint(const Temporal *temp, const Npoint *np)
