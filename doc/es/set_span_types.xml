@@ -859,7 +859,7 @@ SELECT round(floatspanset '{[1.123456789, 2.123456789],[3.123456789,4.123456789]
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="floatspanset_degrees">
+			<listitem xml:id="floatsetspan_degrees">
 				<indexterm significance="normal"><primary><varname>degrees</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>radians</varname></primary></indexterm>
 				<para>Convertir a grados o radianes</para>
