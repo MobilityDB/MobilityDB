@@ -37,7 +37,7 @@ SELECT stbox 'SRID=4326;GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))';
 				Damos a continuación las funciones de entrada y salida de tipos de cuadro delimitador en formato textual (Well-Known Text o WKT) y binario (Well-Known Binary o WKB).
 			</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="box_asText"></a><a class="indexterm" name="id2601"></a><p>Devuelve la representación textual conocida (Well-Known Text o WKT)</p><p><code class="varname">asText(box,maxdecdigits=15) → text</code></p><p>El argumento <code class="varname">maxdecdigits</code> se puede utilizar para definir el número máximo de decimales para la salida de los valores de coma flotante (por defecto 15).</p><pre class="programlisting">
 SELECT asText(tbox 'TBOXFLOAT XT([1.123456789,2.123456789),[2001-01-01,2001-01-02))', 3);
--- TBOXFLOAT XT([1.123, 2.123),[2001-01-01 00:00:00+01, 2001-01-02 00:00:00+01))
+-- TBOXFLOAT XT([1.123, 2.123),[2001-01-01, 2001-01-02))
 SELECT asText(stbox 'STBOX Z((1.55,1.55,1.55),(2.55,2.55,2.55))', 0);
 -- STBOX Z((2,2,2),(3,3,3))
 </pre></li><li class="listitem"><a name="box_asBinary"></a><a class="indexterm" name="id2611"></a><a class="indexterm" name="id2614"></a><p>Devuelve la representación binaria conocida (Well-Known Binary o WKB) o la representación hexadecimal binaria conocida (HexWKB)</p><p><code class="varname">asBinary(box,endian text='') → bytea</code></p><p><code class="varname">asHexWKB(box,endian text='') → text</code></p><p>El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</p><pre class="programlisting">

@@ -14,7 +14,7 @@ SELECT eIntersects(
 </pre></li><li class="listitem"><p><a name="tpose_tspatialrels"></a>Spatiotemporal relationships</p><pre class="programlisting">
 SELECT tContains(geometry 'Polygon((0 0,0 50,50 50,50 0,0 0))',
   tgeompoint(tpose '[Pose(Point(1 1),0.1)@2001-01-01, Pose(Point(1 1),0.3)@2001-01-03)'));
--- {[t@2001-01-01 00:00:00+01, t@2001-01-03 00:00:00+01)}
+-- {[t@2001-01-01, t@2001-01-03)}
 SELECT tDisjoint(geometry(pose 'Pose(Point(2 2), 0.0)'),
   tgeompoint(tpose '[Pose(Point(1 1),0.1)@2001-01-01, Pose(Point(1 1),0.3)@2001-01-03)'));
 -- [t@2001-01-01, t@2001-01-03)

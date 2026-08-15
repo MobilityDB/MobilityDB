@@ -37,7 +37,7 @@ SELECT asText(shiftTime(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-
 SELECT scaleTime(tint '1@2001-01-01', '1 day');
 -- 1@2001-01-01
 SELECT scaleTime(tint '{1@2001-01-01, 2@2001-01-03, 1@2001-01-05}', '1 day');
--- {1@2001-01-01 00:00:00+01, 2@2001-01-01 12:00:00+01, 1@2001-01-02 00:00:00+01}
+-- {1@2001-01-01, 2@2001-01-01 12:00:00+01, 1@2001-01-02}
 SELECT scaleTime(tfloat '[1@2001-01-01, 2@2001-01-03]', '1 day');
 -- [1@2001-01-01, 2@2001-01-02]
 SELECT asText(scaleTime(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02,
@@ -50,7 +50,7 @@ SELECT scaleTime(tint '1@2001-01-01', '-1 day');
 SELECT shiftScaleTime(tint '1@2001-01-01', '1 day', '1 day');
 -- 1@2001-01-02
 SELECT shiftScaleTime(tint '{1@2001-01-01, 2@2001-01-03, 1@2001-01-05}', '1 day','1 day');
--- {1@2001-01-02 00:00:00+01, 2@2001-01-02 12:00:00+01, 1@2001-01-03 00:00:00+01}
+-- {1@2001-01-02, 2@2001-01-02 12:00:00+01, 1@2001-01-03}
 SELECT shiftScaleTime(tfloat '[1@2001-01-01, 2@2001-01-03]', '1 day', '1 day');
 -- [1@2001-01-02, 2@2001-01-03]
 SELECT asText(shiftScaleTime(tgeometry '{[Point(1 1)@2001-01-01, 
@@ -65,7 +65,7 @@ SELECT segmentMinDuration(tfloat '[1@2001-01-01, 0@2001-01-03, -1@2001-01-04, -1
 SELECT segmentMinDuration(tfloat '[1@2001-01-01, 0@2001-01-03, -1@2001-01-04, -1@2001-01-06]', '1 day', false);
 -- {[t@2001-01-01, t@2001-01-06)}
 SELECT segmentMaxDuration(tfloat '[1@2001-01-01, 0@2001-01-03, -1@2001-01-04, -1@2001-01-06]', '1 day');
--- {[f@2001-01-01 00:00:00+01, f@2001-01-06 00:00:00+01)}
+-- {[f@2001-01-01, f@2001-01-06)}
 SELECT segmentMaxDuration(tfloat '[1@2001-01-01, 0@2001-01-03, -1@2001-01-04, -1@2001-01-06]', '1 day', false);
 -- {[f@2001-01-01, t@2001-01-03, f@2001-01-04, f@2001-01-06)}
 </pre>&lt;/listitem&gt;</span></li><li class="listitem"><a name="ttype_unnest"></a><a class="indexterm" name="id4078"></a><p>Transformar un valor temporal no lineal en un conjunto de filas, cada una es una pareja compuesta de un valor de base y un conjunto de períodos durante el cual el valor temporal tiene el valor de base <span class="inlinemediaobject"><img src="../images/srf.svg" width="13"></span>

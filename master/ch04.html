@@ -43,12 +43,12 @@ SELECT tfloat '{[17@2018-01-01 08:00:00, 17.5@2018-01-01 08:05:00],
 			Continuous sequence values are converted into <span class="emphasis"><em>normal form</em></span> so that equivalent values have identical representations. For this, consecutive instant values are merged when possible. For step interpolation, three consecutive instant values can be merged into two if they have the same value. For linear interpolation, three consecutive instant values can be merged into two if the linear functions defining the evolution of values are the same. Examples of transformation into normal form are as follows.
 			</p><pre class="programlisting">
 SELECT tint '[1@2001-01-01, 2@2001-01-03, 2@2001-01-04, 2@2001-01-05)';
--- [1@2001-01-01 00:00:00+00, 2@2001-01-03 00:00:00+00, 2@2001-01-05 00:00:00+00)
+-- [1@2001-01-01, 2@2001-01-03, 2@2001-01-05)
 SELECT asText(tgeompoint '[Point(1 1)@2001-01-01 08:00:00, Point(1 1)@2001-01-01 08:05:00,
   Point(1 1)@2001-01-01 08:10:00)');
 -- [Point(1 1)@2001-01-01 08:00:00, Point(1 1)@2001-01-01 08:10:00)
 SELECT tfloat '[1@2001-01-01, 2@2001-01-03, 3@2001-01-05]';
--- [1@2001-01-01 00:00:00+00, 3@2001-01-05 00:00:00+00]
+-- [1@2001-01-01, 3@2001-01-05]
 SELECT asText(tgeompoint '[Point(1 1)@2001-01-01 08:00:00, Point(2 2)@2001-01-01 08:05:00,
   Point(3 3)@2001-01-01 08:10:00]');
 -- [Point(1 1)@2001-01-01 08:00:00, Point(3 3)@2001-01-01 08:10:00]

@@ -4,12 +4,12 @@
 SELECT SRID(tgeompoint 'Point(0 0)@2001-01-01');
 -- 0
 SELECT asEWKT(setSRID(tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02)', 4326));
--- SRID=4326;[POINT(0 0)@2001-01-01 00:00:00+00, POINT(1 1)@2001-01-02 00:00:00+00)
+-- SRID=4326;[POINT(0 0)@2001-01-01, POINT(1 1)@2001-01-02)
 </pre></li><li class="listitem"><a name="tgeo_transform"></a><a class="indexterm" name="id5913"></a><a class="indexterm" name="id5916"></a><p>Transformar a una referencia espacial diferente <span class="inlinemediaobject"><img src="../images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="../images/world.svg" width="13"></span>
 </p><p><code class="varname">transform(tgeo,to_srid integer) → tgeo</code></p><p><code class="varname">transformPipeline(tgeo,pipeline text,to_srid integer,is_forward bool=true) → tgeo</code></p><p>La función <code class="varname">transform</code> especifica la transformación con un SRID de destino. Se genera un error cuando el punto temporal tiene un SRID desconocido (representado por 0).</p><p>La función <code class="varname">transformPipeline</code> especifica la transformación con una canalización de transformación de coordenadas definida representada con el siguiente formato:</p><p><code class="varname">urn:ogc:def:coordinateOperation:AUTHORITY::CODE</code></p><p>El SRID del punto temporal de entrada se ignora y el SRID del punto temporal de salida se establecerá en cero a menos que se proporcione un valor a través del parámetro opcional <code class="varname">to_srid</code>. Como se indica en el último parámetro, la canalización se ejecuta de forma predeterminada en dirección hacia adelante; al establecer el parámetro en falso, la canalización se ejecuta en la dirección inversa.</p><pre class="programlisting">
 SELECT asEWKT(transform(tgeompoint 'SRID=4326;Point(4.35 50.85)@2001-01-01', 3812));
--- SRID=3812;POINT(648679.018035303 671067.055638114)@2001-01-01 00:00:00+00
+-- SRID=3812;POINT(648679.018035303 671067.055638114)@2001-01-01
 </pre><pre class="programlisting">
 WITH test(tgeo, pipeline) AS (
   SELECT tgeogpoint 'SRID=4326;{Point(4.3525 50.846667 100.0)@2001-01-01,

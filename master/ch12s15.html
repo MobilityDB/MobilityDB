@@ -12,7 +12,7 @@ SELECT eIntersects(tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01,
 </pre></li><li class="listitem"><a name="tcbuffer_tspatialrels"></a><a class="indexterm" name="id9740"></a><a class="indexterm" name="id9743"></a><a class="indexterm" name="id9746"></a><a class="indexterm" name="id9749"></a><a class="indexterm" name="id9752"></a><p>The <span class="emphasis"><em>temporal</em></span> relationships compute the topological or distance relationship at each instant and result in a <code class="varname">tbool</code>. Examples are the <code class="varname">tIntersects</code> and <code class="varname">tDwithin</code> functions.</p><p><code class="varname">tContains(geometry,tcbuffer) → boolean</code></p><p><code class="varname">tDisjoint({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → boolean</code></p><p><code class="varname">tDwithin({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer},float) → boolean</code></p><p><code class="varname">tIntersects({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → boolean</code></p><p><code class="varname">tTouches({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → boolean</code></p><pre class="programlisting">
 SELECT tDisjoint(geometry 'Polygon((0 0,0 50,50 50,50 0,0 0))',
   tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01, Cbuffer(Point(1 1), 0.3)@2001-01-03)');
--- {[t@2001-01-01 00:00:00+01, t@2001-01-03 00:00:00+01)}
+-- {[t@2001-01-01, t@2001-01-03)}
 SELECT tDwithin(tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
   Cbuffer(Point(1 1), 0.5)@2001-01-03)', tcbuffer '[Cbuffer(Point(1 1), 0.5)@2001-01-01, 
   Cbuffer(Point(1 1), 0.3)@2001-01-03)', 1);

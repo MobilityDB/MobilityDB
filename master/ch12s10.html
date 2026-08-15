@@ -26,7 +26,7 @@ SELECT ST_AsText(traversedArea(tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
 </pre></li><li class="listitem"><a name="tcbuffer_centroid"></a><a class="indexterm" name="id9465"></a><p>Return the temporal geometric point given by the centers of a temporal circular buffer</p><p><code class="varname">centroid(tcbuffer) → tgeompoint</code></p><pre class="programlisting">
 SELECT asText(centroid(tcbuffer '[Cbuffer(Point(1 1), 0.5)@2001-01-01,
   Cbuffer(Point(3 3), 0.5)@2001-01-03]'));
--- [POINT(1 1)@2001-01-01 00:00:00+01, POINT(3 3)@2001-01-03 00:00:00+01]
+-- [POINT(1 1)@2001-01-01, POINT(3 3)@2001-01-03]
 </pre></li><li class="listitem"><a name="tcbuffer_convexHull"></a><a class="indexterm" name="id9473"></a><p>Return the convex hull of the area traversed by the temporal circular buffer</p><p><code class="varname">convexHull(tcbuffer) → geometry</code></p><p>The convex hull is computed on the linearized traversed area: the circular arcs bounding the swept region are first stroked into straight segments and the hull is then computed with GEOS. The result is therefore a linear <code class="varname">POLYGON</code> that approximates the circular boundary, not a curved <code class="varname">CURVEDPOLYGON</code>. Use <code class="varname">traversedArea</code> to obtain the exact curved swept region.</p><pre class="programlisting">
 SELECT ST_GeometryType(convexHull(tcbuffer
   '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(4 0), 1)@2001-01-02]'));
