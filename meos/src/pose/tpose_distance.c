@@ -201,7 +201,7 @@ nai_tpose_tpose(const Temporal *temp1, const Temporal *temp2)
  * and a geometry
  * @param[in] temp Temporal pose
  * @param[in] gs Geometry
- * @csqlfn #NAD_tpose_geo()
+ * @csqlfn #NAD_tpose_geo() #NAD_geo_tpose()
  */
 double
 nad_tpose_geo(const Temporal *temp, const GSERIALIZED *gs)
@@ -217,12 +217,12 @@ nad_tpose_geo(const Temporal *temp, const GSERIALIZED *gs)
 }
 
 /**
- * @ingroup meos_cbuffer_dist
+ * @ingroup meos_pose_dist
  * @brief Return the nearest approach distance of a temporal pose and a
  * spatiotemporal box
  * @param[in] temp Temporal pose
  * @param[in] box Spatiotemporal box
- * @csqlfn #NAD_tpose_geo()
+ * @csqlfn #NAD_tpose_stbox() #NAD_stbox_tpose()
  */
 double
 nad_tpose_stbox(const Temporal *temp, const STBox *box)
@@ -244,7 +244,7 @@ nad_tpose_stbox(const Temporal *temp, const STBox *box)
  * and a pose
  * @param[in] temp Temporal pose
  * @param[in] pose Pose
- * @csqlfn #NAD_tpose_pose()
+ * @csqlfn #NAD_tpose_pose() #NAD_pose_tpose()
  */
 double
 nad_tpose_pose(const Temporal *temp, const Pose *pose)

@@ -220,7 +220,7 @@ nai_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
  * and a geometry
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
- * @csqlfn #NAD_tnpoint_geo()
+ * @csqlfn #NAD_tnpoint_geo() #NAD_geo_tnpoint()
  */
 double
 nad_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
@@ -241,7 +241,7 @@ nad_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
  * and a spatiotemporal box
  * @param[in] temp Temporal point
  * @param[in] box Spatiotemporal box
- * @csqlfn #NAD_tnpoint_stbox()
+ * @csqlfn #NAD_tnpoint_stbox() #NAD_stbox_tnpoint()
  */
 double
 nad_tnpoint_stbox(const Temporal *temp, const STBox *box)
@@ -264,7 +264,7 @@ nad_tnpoint_stbox(const Temporal *temp, const STBox *box)
  * and a network point
  * @param[in] temp Temporal point
  * @param[in] np Network point
- * @csqlfn #NAD_tnpoint_npoint()
+ * @csqlfn #NAD_tnpoint_npoint() #NAD_npoint_tnpoint()
  */
 double
 nad_tnpoint_npoint(const Temporal *temp, const Npoint *np)

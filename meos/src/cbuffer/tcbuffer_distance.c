@@ -1782,7 +1782,7 @@ nad_cbuffer_stbox(const Cbuffer *cb, const STBox *box)
  * and a geometry
  * @param[in] temp Temporal circular buffer
  * @param[in] gs Geometry
- * @csqlfn #NAD_tcbuffer_geo()
+ * @csqlfn #NAD_tcbuffer_geo() #NAD_geo_tcbuffer()
  */
 double
 nad_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
@@ -1800,7 +1800,7 @@ nad_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
  * and a spatiotemporal box
  * @param[in] temp Temporal circular buffer
  * @param[in] box Spatiotemporal box
- * @csqlfn #NAD_tcbuffer_stbox()
+ * @csqlfn #NAD_tcbuffer_stbox() #NAD_stbox_tcbuffer()
  */
 double
 nad_tcbuffer_stbox(const Temporal *temp, const STBox *box)
@@ -1822,7 +1822,7 @@ nad_tcbuffer_stbox(const Temporal *temp, const STBox *box)
  * and a circular buffer
  * @param[in] temp Temporal circular buffer
  * @param[in] cb Circular buffer
- * @csqlfn #NAD_tcbuffer_cbuffer()
+ * @csqlfn #NAD_tcbuffer_cbuffer() #NAD_cbuffer_tcbuffer()
  */
 double
 nad_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)

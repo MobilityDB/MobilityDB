@@ -229,7 +229,7 @@ nad_tbox_tbox(const TBox *box1, const TBox *box2)
  * @param[in] box Temporal box
  * @return On error or if the time frames do not overlap return the
  * sentinel of the base type given by #distance_sentinel()
- * @csqlfn #NAD_tnumber_tbox()
+ * @csqlfn #NAD_tnumber_tbox() #NAD_tbox_tnumber()
  */
 Datum
 nad_tnumber_tbox(const Temporal *temp, const TBox *box)

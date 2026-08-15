@@ -2645,7 +2645,7 @@ nai_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
  * and a geometry/geography
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry/geography
- * @csqlfn #NAD_tgeo_geo()
+ * @csqlfn #NAD_tgeo_geo() #NAD_geo_tgeo()
  * @return On error return infinity
  */
 double
@@ -2685,7 +2685,7 @@ nad_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
  * and a geometry/geography
  * @param[in] box Spatiotemporal box/geography
  * @param[in] gs Geometry
- * @csqlfn #NAD_stbox_geo()
+ * @csqlfn #NAD_stbox_geo() #NAD_geo_stbox()
  * @return On error return infinity
  */
 double
@@ -2710,7 +2710,7 @@ nad_stbox_geo(const STBox *box, const GSERIALIZED *gs)
  * boxes
  * @param[in] box1,box2 Spatiotemporal boxes
  * @return On error or if the time frames do not intersect return infinity
- * @csqlfn #NAD_stbox_stbox ()
+ * @csqlfn #NAD_stbox_stbox()
  */
 double
 nad_stbox_stbox(const STBox *box1, const STBox *box2)
@@ -2738,7 +2738,7 @@ nad_stbox_stbox(const STBox *box1, const STBox *box2)
  * @param[in] temp Temporal geo
  * @param[in] box Spatiotemporal box
  * @return On error or if the time frames do not intersect return infinity
- * @csqlfn #NAD_tgeo_stbox()
+ * @csqlfn #NAD_tgeo_stbox() #NAD_stbox_tgeo()
  */
 double
 nad_tgeo_stbox(const Temporal *temp, const STBox *box)
