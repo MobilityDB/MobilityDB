@@ -558,7 +558,11 @@ set_parse(const char **str, MeosType settype)
       spatial_set_srid(values[i], basetype, set_srid);
   }
   result = set_make(values, array->count, basetype, ORDER);
-  if (meostype_length(basetype) < 0)
+  /* set_make copies each value into the set, so the parsed values are ours to
+   * free. A by-reference base type (varlena or fixed-length like npoint) owns
+   * a heap allocation per element; a by-value type stores the value inline in
+   * the Datum and only the array needs freeing. */
+  if (! basetype_byvalue(basetype))
     pfree_array((void **) values, array->count);
   else
     pfree(values);
