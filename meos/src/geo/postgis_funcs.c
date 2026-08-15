@@ -1045,6 +1045,35 @@ geom_distance2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 
 /**
  * @ingroup meos_geo_base_dist
+ * @brief Return the maximum distance between two geometries
+ * @details The maximum distance is the distance between the two points, one
+ * on each geometry, that are farthest from each other
+ * @param[in] gs1,gs2 Geometries
+ * @note PostGIS function: @p ST_MaxDistance(PG_FUNCTION_ARGS)
+ * @note A geometry carrying a circular arc is not supported, since the
+ * underlying computation implements the maximum only for straight edges
+ * @return On error, on empty geometries, or on a geometry carrying a circular
+ * arc return DBL_MAX
+ */
+double
+geom_max_distance2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_geo_geo(gs1, gs2) || ! ensure_not_geodetic_geo(gs1) ||
+      gserialized_is_empty(gs1) || gserialized_is_empty(gs2))
+    return DBL_MAX;
+
+  LWGEOM *geom1 = lwgeom_from_gserialized(gs1);
+  LWGEOM *geom2 = lwgeom_from_gserialized(gs2);
+  double maxdist = (lwgeom_has_arc(geom1) || lwgeom_has_arc(geom2)) ?
+    DBL_MAX : lwgeom_maxdistance2d(geom1, geom2);
+  lwgeom_free(geom1);
+  lwgeom_free(geom2);
+  return maxdist;
+}
+
+/**
+ * @ingroup meos_geo_base_dist
  * @brief Return the 3D distance between two geometries
  * @param[in] gs1,gs2 Geometries
  * @note PostGIS function: @p ST_3DDistance(PG_FUNCTION_ARGS)

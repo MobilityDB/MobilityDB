@@ -32,6 +32,8 @@
  * @brief Spatial functions for temporal circular buffers
  */
 
+/* C */
+#include <float.h>
 /* PostgreSQL */
 #include <postgres.h>
 #include <utils/float.h>
@@ -711,6 +713,53 @@ tcbuffer_is_tpoint(const Temporal *temp)
   for (int i = 0; i < count && result; i++)
     result = (DatumGetCbufferP(tinstant_value_p(instants[i]))->radius == 0.0);
   pfree(instants);
+  return result;
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Return 1 if a circular buffer covers a geometry, 0 if not, and -1
+ * when the relationship cannot be read from the distances
+ * @details The disc covers the geometry when every point of the geometry lies
+ * in the closed disc, that is, when the point of the geometry farthest from
+ * the centre is at most the radius away. The maximum distance is not defined
+ * for a geometry carrying a circular arc, which the caller answers by its own
+ * path
+ * @param[in] cb Circular buffer
+ * @param[in] gs Geometry
+ */
+int
+cbuffer_covers_geo(const Cbuffer *cb, const GSERIALIZED *gs)
+{
+  GSERIALIZED *centre = cbuffer_point(cb);
+  double maxdist = geom_max_distance2d(centre, gs);
+  pfree(centre);
+  if (maxdist == DBL_MAX)
+    return -1;
+  return (maxdist <= cb->radius) ? 1 : 0;
+}
+
+/**
+ * @brief Return 1 if a circular buffer contains a geometry, 0 if not, and -1
+ * when the relationship cannot be read from the distances
+ * @details Containment asks that the geometry be covered and that the two
+ * interiors meet. A covered geometry that reaches the interior of the disc at
+ * any of its points meets it, since the interior is open, so the containment
+ * fails only for a geometry that lies entirely on the boundary circle, which
+ * is where its nearest point is at the radius
+ * @param[in] cb Circular buffer
+ * @param[in] gs Geometry
+ */
+int
+cbuffer_contains_geo(const Cbuffer *cb, const GSERIALIZED *gs)
+{
+  GSERIALIZED *centre = cbuffer_point(cb);
+  double maxdist = geom_max_distance2d(centre, gs);
+  int result = (maxdist == DBL_MAX) ? -1 :
+    ((maxdist <= cb->radius && geom_distance2d(centre, gs) < cb->radius) ?
+      1 : 0);
+  pfree(centre);
   return result;
 }
 

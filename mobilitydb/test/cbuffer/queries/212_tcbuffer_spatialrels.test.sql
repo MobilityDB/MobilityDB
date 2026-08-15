@@ -346,3 +346,25 @@ SELECT eContains(tcbuffer 'Cbuffer(Point(0 0),1)@2000-01-01', tcbuffer 'Cbuffer(
 SELECT eContains(tcbuffer 'Cbuffer(Point(0 0),0)@2000-01-01', tcbuffer 'Cbuffer(Point(0 0),0)@2000-01-01');
 
 -------------------------------------------------------------------------------
+-- The containment of a geometry by the disc is read from the distances of the
+-- geometry to the centre, so a geometry meeting the circle is covered
+-------------------------------------------------------------------------------
+
+-- A point on the circle is covered, and intersects, and is not contained
+SELECT eIntersects(tcbuffer 'Cbuffer(Point(0 0),1)@2000-01-01', geometry 'Point(1 0)');
+SELECT eCovers(tcbuffer 'Cbuffer(Point(0 0),1)@2000-01-01', geometry 'Point(1 0)');
+SELECT eContains(tcbuffer 'Cbuffer(Point(0 0),1)@2000-01-01', geometry 'Point(1 0)');
+-- The same holds where the circle meets an axis other than the one the
+-- rendered disc carries a vertex on
+SELECT eCovers(tcbuffer 'Cbuffer(Point(0 0),1)@2000-01-01', geometry 'Point(0 1)');
+-- A point strictly inside is covered and contained, one outside neither
+SELECT eCovers(tcbuffer 'Cbuffer(Point(0 0),1)@2000-01-01', geometry 'Point(0.5 0)');
+SELECT eContains(tcbuffer 'Cbuffer(Point(0 0),1)@2000-01-01', geometry 'Point(0.5 0)');
+SELECT eCovers(tcbuffer 'Cbuffer(Point(0 0),1)@2000-01-01', geometry 'Point(1.5 0)');
+-- A segment whose far end meets the circle is covered and not contained
+SELECT eCovers(tcbuffer 'Cbuffer(Point(0 0),1)@2000-01-01', geometry 'Linestring(0 0,1 0)');
+SELECT eContains(tcbuffer 'Cbuffer(Point(0 0),1)@2000-01-01', geometry 'Linestring(0 0,1 0)');
+-- A geometry carrying a circular arc keeps the path that renders the disc
+SELECT eCovers(tcbuffer 'Cbuffer(Point(0 0),5)@2000-01-01', geometry 'CircularString(1 0, 0 1, -1 0)');
+
+-------------------------------------------------------------------------------

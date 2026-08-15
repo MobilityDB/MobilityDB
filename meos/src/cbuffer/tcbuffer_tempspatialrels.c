@@ -79,8 +79,23 @@ static Datum
 tcbufferinst_geo_rel(const TInstant *inst, const GSERIALIZED *gs, bool invert,
   datum_func2 func)
 {
-  GSERIALIZED *disc =
-    cbuffer_to_geom(DatumGetCbufferP(tinstant_value_p(inst)));
+  const Cbuffer *cb = DatumGetCbufferP(tinstant_value_p(inst));
+  /* The containment of a geometry by the disc is read from the distances of
+   * the geometry to the centre, which are exact for a circular arc, where a
+   * relationship of the rendered disc is read from a polygonal approximation
+   * of it */
+  if (! invert)
+  {
+    int res = -1;
+    if (func == &datum_geom_contains)
+      res = cbuffer_contains_geo(cb, gs);
+    else if (func == &datum_geom_covers)
+      res = cbuffer_covers_geo(cb, gs);
+    if (res >= 0)
+      return BoolGetDatum(res > 0);
+  }
+
+  GSERIALIZED *disc = cbuffer_to_geom(cb);
   int result = spatialrel_geo_geo(disc, gs, (Datum) NULL, (varfunc) func, 2,
     invert);
   pfree(disc);
