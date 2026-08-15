@@ -802,6 +802,14 @@ SELECT h3GetIcosahedronFaces(h3index '831c02fffffffff');
 				<indexterm significance="normal"><primary><varname>tContains</varname></primary></indexterm>
 				<para>Whether one footprint contains the other (interiors only)</para>
 				<para><varname>eContains, aContains, tContains</varname></para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT eContains(geometry 'SRID=4326;Polygon((-123 37,-123 38,-122 38,-122 37,-123 37))',
+  th3index '[8828308281fffff@2001-01-01, 8828308283fffff@2001-01-02]');
+-- true
+SELECT tContains(geometry 'SRID=4326;Polygon((-123 37,-123 38,-122 38,-122 37,-123 37))',
+  th3index '[8828308281fffff@2001-01-01, 8828308283fffff@2001-01-02]');
+-- [t@2001-01-01, t@2001-01-02]
+</programlisting>
 			</listitem>
 			<listitem xml:id="th3_rel_covers">
 				<indexterm significance="normal"><primary><varname>eCovers</varname></primary></indexterm>
@@ -809,6 +817,14 @@ SELECT h3GetIcosahedronFaces(h3index '831c02fffffffff');
 				<indexterm significance="normal"><primary><varname>tCovers</varname></primary></indexterm>
 				<para>Whether one footprint covers the other (boundary included)</para>
 				<para><varname>eCovers, aCovers, tCovers</varname></para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT eCovers(geometry 'SRID=4326;Polygon((-123 37,-123 38,-122 38,-122 37,-123 37))',
+  th3index '[8828308281fffff@2001-01-01, 8828308283fffff@2001-01-02]');
+-- true
+SELECT tCovers(geometry 'SRID=4326;Polygon((-123 37,-123 38,-122 38,-122 37,-123 37))',
+  th3index '[8828308281fffff@2001-01-01, 8828308283fffff@2001-01-02]');
+-- [t@2001-01-01, t@2001-01-02]
+</programlisting>
 			</listitem>
 			<listitem xml:id="th3_rel_disjoint">
 				<indexterm significance="normal"><primary><varname>eDisjoint</varname></primary></indexterm>
@@ -816,6 +832,14 @@ SELECT h3GetIcosahedronFaces(h3index '831c02fffffffff');
 				<indexterm significance="normal"><primary><varname>tDisjoint</varname></primary></indexterm>
 				<para>Whether the footprints share no point</para>
 				<para><varname>eDisjoint, aDisjoint, tDisjoint</varname></para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT eDisjoint(th3index '[8828308281fffff@2001-01-01, 8828308283fffff@2001-01-02]',
+  th3index '[88283082b3fffff@2001-01-01, 88283082b1fffff@2001-01-02]');
+-- true
+SELECT tDisjoint(th3index '[8828308281fffff@2001-01-01, 8828308283fffff@2001-01-02]',
+  th3index '[88283082b3fffff@2001-01-01, 88283082b1fffff@2001-01-02]');
+-- [t@2001-01-01, t@2001-01-02]
+</programlisting>
 			</listitem>
 			<listitem xml:id="th3_rel_intersects">
 				<indexterm significance="normal"><primary><varname>eIntersects</varname></primary></indexterm>
@@ -823,6 +847,14 @@ SELECT h3GetIcosahedronFaces(h3index '831c02fffffffff');
 				<indexterm significance="normal"><primary><varname>tIntersects</varname></primary></indexterm>
 				<para>Whether the footprints share at least one point</para>
 				<para><varname>eIntersects, aIntersects, tIntersects</varname></para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT eIntersects(th3index '[8828308281fffff@2001-01-01, 8828308283fffff@2001-01-02]',
+  th3index '[8828308281fffff@2001-01-01, 88283082b1fffff@2001-01-02]');
+-- true
+SELECT tIntersects(th3index '[8828308281fffff@2001-01-01, 8828308283fffff@2001-01-02]',
+  th3index '[8828308281fffff@2001-01-01, 88283082b1fffff@2001-01-02]');
+-- [t@2001-01-01, f@2001-01-02]
+</programlisting>
 			</listitem>
 			<listitem xml:id="th3_rel_touches">
 				<indexterm significance="normal"><primary><varname>eTouches</varname></primary></indexterm>
@@ -830,6 +862,14 @@ SELECT h3GetIcosahedronFaces(h3index '831c02fffffffff');
 				<indexterm significance="normal"><primary><varname>tTouches</varname></primary></indexterm>
 				<para>Whether the footprints share a boundary point but no interior point</para>
 				<para><varname>eTouches, aTouches, tTouches</varname></para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT eTouches(th3index '[8828308281fffff@2001-01-01, 8828308283fffff@2001-01-02]',
+  th3index '[8828308283fffff@2001-01-01, 8828308285fffff@2001-01-02]');
+-- true
+SELECT tTouches(th3index '[8828308281fffff@2001-01-01, 8828308283fffff@2001-01-02]',
+  th3index '[8828308283fffff@2001-01-01, 8828308285fffff@2001-01-02]');
+-- [t@2001-01-01, f@2001-01-02]
+</programlisting>
 			</listitem>
 			<listitem xml:id="th3_rel_dwithin">
 				<indexterm significance="normal"><primary><varname>eDwithin</varname></primary></indexterm>
@@ -837,6 +877,14 @@ SELECT h3GetIcosahedronFaces(h3index '831c02fffffffff');
 				<indexterm significance="normal"><primary><varname>tDwithin</varname></primary></indexterm>
 				<para>Whether the footprints lie within a given distance, passed as the third argument</para>
 				<para><varname>eDwithin, aDwithin, tDwithin (…, dist float)</varname></para>
+							<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT eDwithin(th3index '[8828308281fffff@2001-01-01, 8828308283fffff@2001-01-02]',
+  th3index '[88283082b3fffff@2001-01-01, 88283082b1fffff@2001-01-02]', 5000);
+-- true
+SELECT tDwithin(th3index '[8828308281fffff@2001-01-01, 8828308283fffff@2001-01-02]',
+  th3index '[88283082b3fffff@2001-01-01, 88283082b1fffff@2001-01-02]', 5000);
+-- [t@2001-01-01, t@2001-01-02]
+</programlisting>
 			</listitem>
 		</itemizedlist>
 

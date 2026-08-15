@@ -371,7 +371,7 @@ WITH b AS (SELECT tpcbox(0, 0, 10, 10, 1, 0) AS b)
 					<para><varname>tmax(tpcbox) → timestamptz</varname></para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tmin(tpcbox_t(tstzspan '[2024-01-01, 2024-01-02]', 1));
--- 2024-01-01 00:00:00+00
+-- 2024-01-01
 </programlisting>
 				</listitem>
 
