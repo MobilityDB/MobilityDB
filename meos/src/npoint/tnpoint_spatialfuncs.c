@@ -203,7 +203,7 @@ bool
 npoint_same(const Npoint *np1, const Npoint *np2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(np1, NULL); VALIDATE_NOT_NULL(np2, NULL);
+  VALIDATE_NOT_NULL(np1, false); VALIDATE_NOT_NULL(np2, false);
 
   /* Equal route identifier and same position */
   if (np1->rid == np2->rid && fabs(np1->pos - np2->pos) > MEOS_EPSILON)

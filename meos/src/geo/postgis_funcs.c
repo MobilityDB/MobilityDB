@@ -544,7 +544,7 @@ bool
 geo_is_empty(const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(gs, NULL);
+  VALIDATE_NOT_NULL(gs, false);
   return gserialized_is_empty(gs);
 }
 

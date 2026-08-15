@@ -1423,9 +1423,9 @@ tpoint_tfloat_to_geomeas(const Temporal *tpoint, const Temporal *meas,
   bool segmentize, GSERIALIZED **result)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TPOINT(tpoint, NULL);
+  VALIDATE_TPOINT(tpoint, false);
   if (meas)
-    VALIDATE_TFLOAT(meas, NULL);
+    VALIDATE_TFLOAT(meas, false);
 
   Temporal *sync1, *sync2;
   if (meas)

@@ -2283,7 +2283,7 @@ bool
 temporal_value_n(const Temporal *temp, int n, Datum *result)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(temp, NULL); VALIDATE_NOT_NULL(result, NULL);
+  VALIDATE_NOT_NULL(temp, false); VALIDATE_NOT_NULL(result, false);
   if (! ensure_positive(n))
     return false;
 
@@ -2953,7 +2953,7 @@ bool
 temporal_timestamptz_n(const Temporal *temp, int n, TimestampTz *result)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(temp, NULL); VALIDATE_NOT_NULL(result, NULL);
+  VALIDATE_NOT_NULL(temp, false); VALIDATE_NOT_NULL(result, false);
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)

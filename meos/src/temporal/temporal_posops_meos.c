@@ -60,7 +60,7 @@ bool
 before_tstzspan_temporal(const Span *s, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(temp, NULL); VALIDATE_TSTZSPAN(s, NULL);
+  VALIDATE_NOT_NULL(temp, false); VALIDATE_TSTZSPAN(s, false);
   return boxop_temporal_tstzspan(temp, s, &left_span_span, INVERT);
 }
 
@@ -75,7 +75,7 @@ bool
 overbefore_tstzspan_temporal(const Span *s, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(temp, NULL); VALIDATE_TSTZSPAN(s, NULL);
+  VALIDATE_NOT_NULL(temp, false); VALIDATE_TSTZSPAN(s, false);
   return boxop_temporal_tstzspan(temp, s, &overleft_span_span, INVERT);
 }
 
@@ -90,7 +90,7 @@ bool
 after_tstzspan_temporal(const Span *s, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(temp, NULL); VALIDATE_TSTZSPAN(s, NULL);
+  VALIDATE_NOT_NULL(temp, false); VALIDATE_TSTZSPAN(s, false);
   return boxop_temporal_tstzspan(temp, s, &right_span_span, INVERT);
 }
 
@@ -105,7 +105,7 @@ bool
 overafter_tstzspan_temporal(const Span *s, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(temp, NULL); VALIDATE_TSTZSPAN(s, NULL);
+  VALIDATE_NOT_NULL(temp, false); VALIDATE_TSTZSPAN(s, false);
   return boxop_temporal_tstzspan(temp, s, &overright_span_span, INVERT);
 }
 
@@ -123,7 +123,7 @@ bool
 before_temporal_tstzspan(const Temporal *temp, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(temp, NULL); VALIDATE_TSTZSPAN(s, NULL);
+  VALIDATE_NOT_NULL(temp, false); VALIDATE_TSTZSPAN(s, false);
   return boxop_temporal_tstzspan(temp, s, &left_span_span, INVERT_NO);
 }
 
@@ -138,7 +138,7 @@ bool
 overbefore_temporal_tstzspan(const Temporal *temp, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(temp, NULL); VALIDATE_TSTZSPAN(s, NULL);
+  VALIDATE_NOT_NULL(temp, false); VALIDATE_TSTZSPAN(s, false);
   return boxop_temporal_tstzspan(temp, s, &overleft_span_span, INVERT_NO);
 }
 
@@ -153,7 +153,7 @@ bool
 after_temporal_tstzspan(const Temporal *temp, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(temp, NULL); VALIDATE_TSTZSPAN(s, NULL);
+  VALIDATE_NOT_NULL(temp, false); VALIDATE_TSTZSPAN(s, false);
   return boxop_temporal_tstzspan(temp, s, &right_span_span, INVERT_NO);
 }
 
@@ -168,7 +168,7 @@ bool
 overafter_temporal_tstzspan(const Temporal *temp, const Span *s)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(temp, NULL); VALIDATE_TSTZSPAN(s, NULL);
+  VALIDATE_NOT_NULL(temp, false); VALIDATE_TSTZSPAN(s, false);
   return boxop_temporal_tstzspan(temp, s, &overright_span_span, INVERT_NO);
 }
 

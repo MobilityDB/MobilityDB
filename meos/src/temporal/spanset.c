@@ -574,7 +574,7 @@ bool
 spanset_lower_inc(const SpanSet *ss)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(ss, NULL);
+  VALIDATE_NOT_NULL(ss, false);
   return ss->elems[0].lower_inc;
 }
 
@@ -588,7 +588,7 @@ bool
 spanset_upper_inc(const SpanSet *ss)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(ss, NULL);
+  VALIDATE_NOT_NULL(ss, false);
   return ss->elems[ss->count - 1].upper_inc;
 }
 

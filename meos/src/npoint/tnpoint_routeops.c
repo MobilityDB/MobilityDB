@@ -62,7 +62,7 @@ contains_rid_tnpoint_bigint(const Temporal *temp, int64 rid,
   bool invert UNUSED)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TNPOINT(temp, NULL);
+  VALIDATE_TNPOINT(temp, false);
   Set *routes = tnpoint_routes(temp);
   bool result = contains_set_value(routes, Int64GetDatum(rid));
   pfree(routes);
@@ -89,7 +89,7 @@ same_rid_tnpoint_bigint(const Temporal *temp, int64 rid,
   bool invert UNUSED)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TNPOINT(temp, NULL);
+  VALIDATE_TNPOINT(temp, false);
   Set *routes = tnpoint_routes(temp);
   bool result = (routes->count == 1) &&
     (DatumGetInt64(SET_VAL_N(routes, 0)) == rid);
@@ -108,7 +108,7 @@ overlaps_rid_tnpoint_bigintset(const Temporal *temp, const Set *s,
   bool invert UNUSED)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TNPOINT(temp, NULL); VALIDATE_BIGINTSET(s, NULL);
+  VALIDATE_TNPOINT(temp, false); VALIDATE_BIGINTSET(s, false);
   Set *routes = tnpoint_routes(temp);
   bool result = overlaps_set_set(routes, s);
   pfree(routes);
@@ -124,7 +124,7 @@ contains_rid_tnpoint_bigintset(const Temporal *temp, const Set *s,
   bool invert)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TNPOINT(temp, NULL); VALIDATE_BIGINTSET(s, NULL);
+  VALIDATE_TNPOINT(temp, false); VALIDATE_BIGINTSET(s, false);
   Set *routes = tnpoint_routes(temp);
   bool result = invert ? contains_set_set(s, routes) :
     contains_set_set(routes, s);
@@ -152,7 +152,7 @@ same_rid_tnpoint_bigintset(const Temporal *temp, const Set *s,
   bool invert UNUSED)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TNPOINT(temp, NULL); VALIDATE_BIGINTSET(s, NULL);
+  VALIDATE_TNPOINT(temp, false); VALIDATE_BIGINTSET(s, false);
   Set *routes = tnpoint_routes(temp);
   bool result = set_eq(routes, s);
   pfree(routes);
