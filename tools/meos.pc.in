@@ -7,6 +7,6 @@ Name: MEOS
 Description: Mobility Engine, Open Source - C API
 Requires:
 Version: @VERSION@
-Cflags: -I${includedir}
+Cflags: -I${includedir} @MEOS_PC_CFLAGS@
 Libs: -L${libdir} -lmeos
 Libs.private: @MEOS_PC_LIBS_PRIVATE@
