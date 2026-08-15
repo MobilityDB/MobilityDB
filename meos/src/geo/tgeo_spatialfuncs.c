@@ -453,6 +453,7 @@ pose_flags(Pose *pose)
   int16 result = 0; /* Set all flags to false */
   MEOS_FLAGS_SET_X(result, true);
   MEOS_FLAGS_SET_Z(result, MEOS_FLAGS_GET_Z(pose->flags));
+  MEOS_FLAGS_SET_GEODETIC(result, MEOS_FLAGS_GET_GEODETIC(pose->flags));
   return result;
 }
 #endif /* POSE || RGEO */

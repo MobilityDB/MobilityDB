@@ -40,9 +40,11 @@
 #include <meos.h>
 #include <meos_pose.h>
 #include "temporal/set.h"
+#include "geo/tgeo_spatialfuncs.h"
 #include "geo/tspatial_parser.h"
 #include "pose/pose.h"
 /* MobilityDB */
+#include "pg_temporal/meos_catalog.h"
 #include "pg_geo/tspatial.h"
 #include "pg_geo/postgis.h"
 
@@ -137,6 +139,20 @@ Datum
 Tpose_to_tpoint(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  /* A pose carries its own reference frame, so the pose decides the type of the
+   * point: a planar pose yields a temporal geometry point and a geodetic one a
+   * temporal geography point. Both conversions share this function, so the frame
+   * of the argument must agree with the type the caller asked for — converting
+   * to the other one returns a value whose declared type contradicts its
+   * coordinates, which every operator dispatching on that type then misreads */
+  MeosType restype = oid_meostype(get_fn_expr_rettype(fcinfo->flinfo));
+  bool valid = (restype == T_TGEOGPOINT) ?
+    ensure_geodetic(temp->flags) : ensure_not_geodetic(temp->flags);
+  if (! valid)
+  {
+    PG_FREE_IF_COPY(temp, 0);
+    PG_RETURN_NULL();
+  }
   Temporal *result = tpose_to_tpoint(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_POINTER(result);
