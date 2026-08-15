@@ -516,6 +516,29 @@ if(MEOS)
     string(REPLACE ";" " " MEOS_PC_LIBS_PRIVATE "${_meos_pc_libs}")
   endif()
 
+  # The public headers gate declarations on the family macros -- meos.h alone
+  # carries #if MEOS, #if POINTCLOUD and #if JSON blocks -- so a consumer that
+  # compiles without them sees a different API than the library exports: a
+  # declaration it cannot link, or a function it cannot see. Nothing else in the
+  # installed tree records which families the library was built with, leaving
+  # every consumer to hand-maintain its own list of -D flags and guess.
+  #
+  # These are the RESOLVED per-family values, not the ALL alias: ALL selects the
+  # families at configure time and is never passed to a compiler, so a consumer
+  # given -DALL=1 still evaluates #if POINTCLOUD as false and silently loses the
+  # family. Each family is emitted with its value, 1 and 0 alike, mirroring the
+  # add_definitions() pairs in the top-level CMakeLists, so that the installed
+  # library describes its own feature set.
+  set(_meos_pc_cflags -DMEOS=1)
+  foreach(_family CBUFFER H3 JSON NPOINT POINTCLOUD POSE QUADBIN RASTER RGEO)
+    if(${_family})
+      list(APPEND _meos_pc_cflags -D${_family}=1)
+    else()
+      list(APPEND _meos_pc_cflags -D${_family}=0)
+    endif()
+  endforeach()
+  string(REPLACE ";" " " MEOS_PC_CFLAGS "${_meos_pc_cflags}")
+
   configure_file(
     ${CMAKE_SOURCE_DIR}/tools/meos.pc.in
     ${CMAKE_BINARY_DIR}/meos.pc
