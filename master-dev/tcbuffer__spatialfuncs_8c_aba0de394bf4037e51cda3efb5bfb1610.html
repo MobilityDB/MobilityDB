@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: geoarr_sort</title>
+<title>MobilityDB: cbuffer_covers_geo</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -80,13 +80,13 @@ $(function() {
       <div class="navtab">
         <table>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer__spatialfuncs_8c_a1533d7e590e7b421f44ff2c02d575ba6.html#a1533d7e590e7b421f44ff2c02d575ba6">cbuffer_contains_geo</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="tcbuffer__spatialfuncs_8c_aba0de394bf4037e51cda3efb5bfb1610.html#aba0de394bf4037e51cda3efb5bfb1610">cbuffer_covers_geo</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="tcbuffer__spatialfuncs_8c_aba0de394bf4037e51cda3efb5bfb1610.html#aba0de394bf4037e51cda3efb5bfb1610">cbuffer_covers_geo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer__spatialfuncs_8c_a7d20e2790273323332e43530667474f9.html#a7d20e2790273323332e43530667474f9">cbuffer_traversed_area</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer__spatialfuncs_8c_a0fd62365a04f639af0c4774b245a3d53.html#a0fd62365a04f639af0c4774b245a3d53">cbufferarr_circles</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer__spatialfuncs_8c_a9e3ee55e0b148d82098c9f8899917bdc.html#a9e3ee55e0b148d82098c9f8899917bdc">circle_type</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer__spatialfuncs_8c_af425fbcbb2a57f8435255f3563737fbd.html#af425fbcbb2a57f8435255f3563737fbd">ensure_circle_type</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer__spatialfuncs_8c_a9e5d512904633cad9fa46ad21443e3c4.html#a9e5d512904633cad9fa46ad21443e3c4">geoarr_remove_duplicates</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="tcbuffer__spatialfuncs_8c_ac86ec7553cfc08c01271c3365bd342c8.html#ac86ec7553cfc08c01271c3365bd342c8">geoarr_sort</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tcbuffer__spatialfuncs_8c_ac86ec7553cfc08c01271c3365bd342c8.html#ac86ec7553cfc08c01271c3365bd342c8">geoarr_sort</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer__spatialfuncs_8c_ab5bd14e9715519099296e151dce900c8.html#ab5bd14e9715519099296e151dce900c8">geoarr_sort_cmp</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer__spatialfuncs_8c_a9a5f5bd1c5e8190a96d22dde6f593d5b.html#a9a5f5bd1c5e8190a96d22dde6f593d5b">geocircle_make</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer__spatialfuncs_8c_ad8290327267bb18b7f28118199edfb9e.html#ad8290327267bb18b7f28118199edfb9e">lwcircle_make</a></td></tr>
@@ -107,26 +107,23 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ac86ec7553cfc08c01271c3365bd342c8" name="ac86ec7553cfc08c01271c3365bd342c8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac86ec7553cfc08c01271c3365bd342c8">&#9670;&#160;</a></span>geoarr_sort()</h2>
+<a id="aba0de394bf4037e51cda3efb5bfb1610" name="aba0de394bf4037e51cda3efb5bfb1610"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aba0de394bf4037e51cda3efb5bfb1610">&#9670;&#160;</a></span>cbuffer_covers_geo()</h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static void geoarr_sort </td>
+          <td class="memname">int cbuffer_covers_geo </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> **&#160;</td>
-          <td class="paramname"><em>geoms</em>, </td>
+          <td class="paramtype">const <a class="el" href="structCbuffer.html">Cbuffer</a> *&#160;</td>
+          <td class="paramname"><em>cb</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>count</em>&#160;</td>
+          <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
+          <td class="paramname"><em>gs</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -134,14 +131,16 @@ $(function() {
           <td></td><td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
-<p>Sort function for trapezoids. </p>
+<p>Return 1 if a circular buffer covers a geometry, 0 if not, and -1 when the relationship cannot be read from the distances. </p>
+<p >The disc covers the geometry when every point of the geometry lies in the closed disc, that is, when the point of the geometry farthest from the centre is at most the radius away. The maximum distance is not defined for a geometry carrying a circular arc, which the caller answers by its own path </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">cb</td><td>Circular buffer </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">gs</td><td>Geometry </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

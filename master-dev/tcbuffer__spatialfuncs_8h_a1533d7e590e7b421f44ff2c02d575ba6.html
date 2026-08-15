@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: tcbuffer_is_tpoint</title>
+<title>MobilityDB: cbuffer_contains_geo</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -79,9 +79,9 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="tcbuffer__spatialfuncs_8h_a1533d7e590e7b421f44ff2c02d575ba6.html#a1533d7e590e7b421f44ff2c02d575ba6">cbuffer_contains_geo</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="tcbuffer__spatialfuncs_8h_a1533d7e590e7b421f44ff2c02d575ba6.html#a1533d7e590e7b421f44ff2c02d575ba6">cbuffer_contains_geo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tcbuffer__spatialfuncs_8h_aba0de394bf4037e51cda3efb5bfb1610.html#aba0de394bf4037e51cda3efb5bfb1610">cbuffer_covers_geo</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="tcbuffer__spatialfuncs_8h_a9d69e0ba0da5b68ab6c58c47c2cf794f.html#a9d69e0ba0da5b68ab6c58c47c2cf794f">tcbuffer_is_tpoint</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tcbuffer__spatialfuncs_8h_a9d69e0ba0da5b68ab6c58c47c2cf794f.html#a9d69e0ba0da5b68ab6c58c47c2cf794f">tcbuffer_is_tpoint</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__cbuffer__restrict_ga305db10161ae34cc30de5a906954daa8.html#ga305db10161ae34cc30de5a906954daa8">tcbuffer_restrict_cbuffer</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__cbuffer__restrict_ga994c61a211ac8ba20ad6ff703eb2366b.html#ga994c61a211ac8ba20ad6ff703eb2366b">tcbuffer_restrict_geom</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__cbuffer__restrict_gaf5289f0255a41af9b021dd88daf25a88.html#gaf5289f0255a41af9b021dd88daf25a88">tcbuffer_restrict_stbox</a></td></tr>
@@ -93,27 +93,37 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a9d69e0ba0da5b68ab6c58c47c2cf794f" name="a9d69e0ba0da5b68ab6c58c47c2cf794f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9d69e0ba0da5b68ab6c58c47c2cf794f">&#9670;&#160;</a></span>tcbuffer_is_tpoint()</h2>
+<a id="a1533d7e590e7b421f44ff2c02d575ba6" name="a1533d7e590e7b421f44ff2c02d575ba6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1533d7e590e7b421f44ff2c02d575ba6">&#9670;&#160;</a></span>cbuffer_contains_geo()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool tcbuffer_is_tpoint </td>
+          <td class="memname">int cbuffer_contains_geo </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
-          <td class="paramname"><em>temp</em></td><td>)</td>
+          <td class="paramtype">const <a class="el" href="structCbuffer.html">Cbuffer</a> *&#160;</td>
+          <td class="paramname"><em>cb</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
+          <td class="paramname"><em>gs</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> distance for temporal network points. </p>
-<p ><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> distance for temporal network points.</p>
-<p >A disc of a zero radius is the point at its centre, so such a value converts to a temporal geometry point without loss, and the temporal point of the geo family owns the relationships the disc kernels read from a disc boundary. The test is exact and applies to the whole value: a value holding a single disc of a strictly positive radius keeps the disc kernels </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Return 1 if a circular buffer contains a geometry, 0 if not, and -1 when the relationship cannot be read from the distances. </p>
+<p >Containment asks that the geometry be covered and that the two interiors meet. A covered geometry that reaches the interior of the disc at any of its points meets it, since the interior is open, so the containment fails only for a geometry that lies entirely on the boundary circle, which is where its nearest point is at the radius </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> circular buffer </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">cb</td><td>Circular buffer </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">gs</td><td>Geometry </td></tr>
   </table>
   </dd>
 </dl>

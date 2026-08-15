@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: geom_distance2d</title>
+<title>MobilityDB: cbuffer_covers_geo</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="group__meos__geo__base__dist.html">Distance functions</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_0fff62ca9c7e6b49d869dbbeba2dc9ed.html">meos</a></li><li class="navelem"><a class="el" href="dir_87ff05107218c94eb54c7d49f556ada2.html">include</a></li><li class="navelem"><a class="el" href="dir_be2efa63d111b5a5ed5e676378ec1b9d.html">cbuffer</a></li><li class="navelem"><a class="el" href="tcbuffer__spatialfuncs_8h.html">tcbuffer_spatialfuncs.h</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,31 +79,37 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__dist_ga35d1d28657e234a6e5ccde66094ac174.html#ga35d1d28657e234a6e5ccde66094ac174">geog_distance</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__base__dist_ga7417a0868b790ee5da24ec21d21a666b.html#ga7417a0868b790ee5da24ec21d21a666b">geom_distance2d</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__dist_ga1ebd4c85f45199832e7470f932ca75af.html#ga1ebd4c85f45199832e7470f932ca75af">geom_distance3d</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__dist_ga0c18770aa69b48590ce60b2d104a8848.html#ga0c18770aa69b48590ce60b2d104a8848">geom_max_distance2d</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tcbuffer__spatialfuncs_8h_a1533d7e590e7b421f44ff2c02d575ba6.html#a1533d7e590e7b421f44ff2c02d575ba6">cbuffer_contains_geo</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="tcbuffer__spatialfuncs_8h_aba0de394bf4037e51cda3efb5bfb1610.html#aba0de394bf4037e51cda3efb5bfb1610">cbuffer_covers_geo</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tcbuffer__spatialfuncs_8h_a9d69e0ba0da5b68ab6c58c47c2cf794f.html#a9d69e0ba0da5b68ab6c58c47c2cf794f">tcbuffer_is_tpoint</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__internal__cbuffer__restrict_ga305db10161ae34cc30de5a906954daa8.html#ga305db10161ae34cc30de5a906954daa8">tcbuffer_restrict_cbuffer</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__internal__cbuffer__restrict_ga994c61a211ac8ba20ad6ff703eb2366b.html#ga994c61a211ac8ba20ad6ff703eb2366b">tcbuffer_restrict_geom</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__internal__cbuffer__restrict_gaf5289f0255a41af9b021dd88daf25a88.html#gaf5289f0255a41af9b021dd88daf25a88">tcbuffer_restrict_stbox</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__internal__cbuffer__spatial__accessor_ga8e96b56266c89397b3d08a33ba9d19a3.html#ga8e96b56266c89397b3d08a33ba9d19a3">tcbufferinst_traversed_area</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__internal__cbuffer__spatial__accessor_gac71f29a50b462cde53e57a2edd95df9e.html#gac71f29a50b462cde53e57a2edd95df9e">tcbuffersegm_traversed_area</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__internal__cbuffer__spatial__accessor_ga8efca35339a33eedc65c66bcb5744b0e.html#ga8efca35339a33eedc65c66bcb5744b0e">tcbufferseq_traversed_area</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__internal__cbuffer__spatial__accessor_gad2525139d6bcf8eb9908a84f99c329dd.html#gad2525139d6bcf8eb9908a84f99c329dd">tcbufferseqset_traversed_area</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga7417a0868b790ee5da24ec21d21a666b" name="ga7417a0868b790ee5da24ec21d21a666b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga7417a0868b790ee5da24ec21d21a666b">&#9670;&#160;</a></span>geom_distance2d()</h2>
+<a id="aba0de394bf4037e51cda3efb5bfb1610" name="aba0de394bf4037e51cda3efb5bfb1610"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aba0de394bf4037e51cda3efb5bfb1610">&#9670;&#160;</a></span>cbuffer_covers_geo()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">double geom_distance2d </td>
+          <td class="memname">int cbuffer_covers_geo </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
-          <td class="paramname"><em>gs1</em>, </td>
+          <td class="paramtype">const <a class="el" href="structCbuffer.html">Cbuffer</a> *&#160;</td>
+          <td class="paramname"><em>cb</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
-          <td class="paramname"><em>gs2</em>&#160;</td>
+          <td class="paramname"><em>gs</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -113,15 +119,14 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the distance between two geometries. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p>Return 1 if a circular buffer covers a geometry, 0 if not, and -1 when the relationship cannot be read from the distances. </p>
+<p >The disc covers the geometry when every point of the geometry lies in the closed disc, that is, when the point of the geometry farthest from the centre is at most the radius away. The maximum distance is not defined for a geometry carrying a circular arc, which the caller answers by its own path </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">gs1,gs2</td><td>Geometries </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">cb</td><td>Circular buffer </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">gs</td><td>Geometry </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section note"><dt>Note</dt><dd>PostGIS function: <code><a class="el" href="postgis_8h_ae0e8cfe0a76b7fbf10e588831c7de796.html#ae0e8cfe0a76b7fbf10e588831c7de796">ST_Distance(PG_FUNCTION_ARGS)</a></code> </dd></dl>
-<dl class="section return"><dt>Returns</dt><dd>On error or empty geometries return DBL_MAX </dd></dl>
 
 </div>
 </div>

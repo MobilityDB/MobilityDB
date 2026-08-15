@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: geom_distance2d</title>
+<title>MobilityDB: geom_max_distance2d</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -80,21 +80,21 @@ $(function() {
       <div class="navtab">
         <table>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__dist_ga35d1d28657e234a6e5ccde66094ac174.html#ga35d1d28657e234a6e5ccde66094ac174">geog_distance</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__base__dist_ga7417a0868b790ee5da24ec21d21a666b.html#ga7417a0868b790ee5da24ec21d21a666b">geom_distance2d</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__dist_ga7417a0868b790ee5da24ec21d21a666b.html#ga7417a0868b790ee5da24ec21d21a666b">geom_distance2d</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__dist_ga1ebd4c85f45199832e7470f932ca75af.html#ga1ebd4c85f45199832e7470f932ca75af">geom_distance3d</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__dist_ga0c18770aa69b48590ce60b2d104a8848.html#ga0c18770aa69b48590ce60b2d104a8848">geom_max_distance2d</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__base__dist_ga0c18770aa69b48590ce60b2d104a8848.html#ga0c18770aa69b48590ce60b2d104a8848">geom_max_distance2d</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga7417a0868b790ee5da24ec21d21a666b" name="ga7417a0868b790ee5da24ec21d21a666b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga7417a0868b790ee5da24ec21d21a666b">&#9670;&#160;</a></span>geom_distance2d()</h2>
+<a id="ga0c18770aa69b48590ce60b2d104a8848" name="ga0c18770aa69b48590ce60b2d104a8848"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga0c18770aa69b48590ce60b2d104a8848">&#9670;&#160;</a></span>geom_max_distance2d()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">double geom_distance2d </td>
+          <td class="memname">double geom_max_distance2d </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
           <td class="paramname"><em>gs1</em>, </td>
@@ -113,15 +113,17 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the distance between two geometries. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p>Return the maximum distance between two geometries. </p>
+<p >The maximum distance is the distance between the two points, one on each geometry, that are farthest from each other </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">gs1,gs2</td><td>Geometries </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section note"><dt>Note</dt><dd>PostGIS function: <code><a class="el" href="postgis_8h_ae0e8cfe0a76b7fbf10e588831c7de796.html#ae0e8cfe0a76b7fbf10e588831c7de796">ST_Distance(PG_FUNCTION_ARGS)</a></code> </dd></dl>
-<dl class="section return"><dt>Returns</dt><dd>On error or empty geometries return DBL_MAX </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>PostGIS function: <code>ST_MaxDistance(PG_FUNCTION_ARGS)</code> </dd>
+<dd>
+A geometry carrying a circular arc is not supported, since the underlying computation implements the maximum only for straight edges </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>On error, on empty geometries, or on a geometry carrying a circular arc return DBL_MAX </dd></dl>
 
 </div>
 </div>
