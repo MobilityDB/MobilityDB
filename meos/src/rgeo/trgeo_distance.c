@@ -2334,7 +2334,7 @@ nai_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
  * @ingroup meos_rgeo_dist
  * @brief Return the nearest approach distance between a temporal rigid
  * geometry and a geometry
- * @sqlop @p |=|
+ * @csqlfn #NAD_trgeometry_geo() #NAD_geo_trgeometry()
  */
 double
 nad_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
@@ -2353,7 +2353,7 @@ nad_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @ingroup meos_rgeo_dist
  * @brief Return the nearest approach distance between a temporal rigid
  * geometry and a spatiotemporal box
- * @sqlop @p |=|
+ * @csqlfn #NAD_trgeometry_stbox() #NAD_stbox_trgeometry()
  */
 double
 nad_trgeometry_stbox(const Temporal *temp, const STBox *box)
@@ -2389,7 +2389,6 @@ nad_trgeometry_stbox(const Temporal *temp, const STBox *box)
  * @ingroup meos_rgeo_dist
  * @brief Return the nearest approach distance between a spatiotemporal box and
  * a temporal rigid geometry
- * @sqlop @p |=|
  */
 double
 nad_stbox_trgeometry(const STBox *box, const Temporal *temp)
@@ -2399,9 +2398,9 @@ nad_stbox_trgeometry(const STBox *box, const Temporal *temp)
 
 /**
  * @ingroup meos_rgeo_dist
- * @brief Return the nearest approach distance between two temporal rigid
- * geometries
- * @sqlop @p |=|
+ * @brief Return the nearest approach distance between a temporal rigid
+ * geometry and a temporal point
+ * @csqlfn #NAD_trgeometry_tpoint() #NAD_tpoint_trgeometry()
  */
 double
 nad_trgeometry_tpoint(const Temporal *temp1, const Temporal *temp2)
@@ -2423,13 +2422,13 @@ nad_trgeometry_tpoint(const Temporal *temp1, const Temporal *temp2)
  * @ingroup meos_rgeo_dist
  * @brief Return the nearest approach distance between two temporal rigid
  * geometries
- * @sqlop @p |=|
+ * @csqlfn #NAD_trgeometry_trgeometry()
  */
 double
 nad_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_trgeo_trgeo(temp2, temp2))
+  if (! ensure_valid_trgeo_trgeo(temp1, temp2))
     return DBL_MAX;
 
   Temporal *dist = tdistance_trgeometry_trgeometry(temp1, temp2);
