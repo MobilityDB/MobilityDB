@@ -2493,13 +2493,14 @@ stbox_ne(const STBox *box1, const STBox *box2)
  * @brief Return -1, 0, or 1 depending on whether the first spatiotemporal
  * box is less than, equal to, or greater than the second one
  * @param[in] box1,box2 Spatiotemporal boxes
+ * @return On error return @p INT_MAX
  * @csqlfn #Stbox_cmp()
  */
 int
 stbox_cmp(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(box1, false); VALIDATE_NOT_NULL(box2, false);
+  VALIDATE_NOT_NULL(box1, INT_MAX); VALIDATE_NOT_NULL(box2, INT_MAX);
 
   /* Compare the SRID */
   if (box1->srid < box2->srid)

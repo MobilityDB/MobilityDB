@@ -1041,13 +1041,14 @@ adjacent_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
  * @details Order: pcid, srid, flags, period, then spatial bounds.
  *   Deterministic; suitable for B-tree.
  * @return -1, 0, or 1
+ * @return On error return @p INT_MAX
  * @csqlfn #Tpcbox_cmp()
  */
 int
 tpcbox_cmp(const TPCBox *box1, const TPCBox *box2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(box1, false); VALIDATE_NOT_NULL(box2, false);
+  VALIDATE_NOT_NULL(box1, INT_MAX); VALIDATE_NOT_NULL(box2, INT_MAX);
 
   if (box1->pcid != box2->pcid)
     return (box1->pcid < box2->pcid) ? -1 : 1;

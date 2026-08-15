@@ -3,7 +3,6 @@
 # an edit above a finding does not read as a new one. The list only
 # shrinks: a new mismatch fails the check. Regenerate with
 # --rebaseline after a fix.
-meos/src/cbuffer/cbuffer.c	cbuffer_cmp	validates with false
 meos/src/cbuffer/cbuffer.c	cbuffer_hash	validates with INT_MAX
 meos/src/cbuffer/tcbuffer_spatialrels.c	spatialrel_geo_geo	documents -1
 meos/src/geo/postgis_funcs.c	geo_num_points	documents -1
@@ -19,12 +18,10 @@ meos/src/geo/stbox.c	before_stbox_stbox	validates with NULL
 meos/src/geo/stbox.c	overbefore_stbox_stbox	validates with NULL
 meos/src/geo/stbox.c	after_stbox_stbox	validates with NULL
 meos/src/geo/stbox.c	overafter_stbox_stbox	validates with NULL
-meos/src/geo/stbox.c	stbox_cmp	validates with false
 meos/src/geo/stbox.c	stbox_hash	documents INT_MAX
 meos/src/geo/stbox.c	stbox_hash	validates with INT_MAX
 meos/src/geo/tgeo_compops.c	eacomp_tgeo_geo	validates with -1
 meos/src/geo/tgeo_compops.c	eacomp_tgeo_tgeo	validates with -1
-meos/src/geo/tgeo_distance.c	stbox_spatial_distance	validates with false
 meos/src/geo/tgeo_spatialfuncs.c	tgeominst_tgeoginst	documents `NULL`
 meos/src/geo/tgeo_spatialfuncs.c	tgeomseq_tgeogseq	documents `NULL`
 meos/src/geo/tgeo_spatialfuncs.c	tgeomseqset_tgeogseqset	documents `NULL`
@@ -37,8 +34,6 @@ meos/src/geo/tgeo_spatialrels.c	spatialrel_tgeo_tgeo	documents -1
 meos/src/geo/tpoint_spatialfuncs.c	tpoint_tfloat_to_geomeas	validates with NULL
 meos/src/geo/tspatial_tempspatialrels.c	tspatialrel_tspatial_base	documents `NULL`
 meos/src/geo/tspatial_tempspatialrels.c	tspatialrel_tspatial_tspatial	documents `NULL`
-meos/src/npoint/npoint.c	npoint_cmp	validates with false
-meos/src/npoint/npoint.c	nsegment_cmp	validates with false
 meos/src/npoint/npoint.c	npoint_hash	validates with INT_MAX
 meos/src/npoint/tnpoint.c	tnpoint_route	documents INT_MAX
 meos/src/npoint/tnpoint_compops.c	eacomp_tnpoint_npoint	validates with -1
@@ -50,19 +45,14 @@ meos/src/npoint/tnpoint_routeops.c	contains_rid_tnpoint_bigint	validates with NU
 meos/src/npoint/tnpoint_routeops.c	same_rid_tnpoint_bigint	validates with NULL
 meos/src/npoint/tnpoint_spatialfuncs.c	npoint_same	validates with NULL
 meos/src/pointcloud/pcpatch.c	pcpatch_hash	validates with INT_MAX
-meos/src/pointcloud/pcpatch.c	pcpatch_cmp	validates with false
 meos/src/pointcloud/pcpoint.c	pcpoint_hash	validates with INT_MAX
-meos/src/pointcloud/pcpoint.c	pcpoint_cmp	validates with false
-meos/src/pointcloud/tpcbox.c	tpcbox_cmp	validates with false
 meos/src/pose/pose.c	pose_eq	validates with NULL
 meos/src/pose/pose.c	pose_same	validates with NULL
-meos/src/pose/pose.c	pose_cmp	validates with false
 meos/src/pose/pose.c	pose_hash	validates with INT_MAX
 meos/src/raster/raquet.c	raquet_quadbin	validates with 0
 meos/src/raster/raquet.c	raquet_width	validates with -1
 meos/src/raster/raquet.c	raquet_height	validates with -1
 meos/src/raster/raquet.c	raquet_nodata	validates with 0.0
-meos/src/raster/raquet.c	raquet_cmp	validates with false
 meos/src/raster/raquet.c	raquet_hash	documents INT_MAX
 meos/src/raster/raquet.c	raquet_hash	validates with INT_MAX
 meos/src/raster/raquet_gdal.c	eraster_value_gdal	validates with -1

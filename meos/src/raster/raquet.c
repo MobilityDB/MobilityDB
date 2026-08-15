@@ -796,13 +796,14 @@ raquet_to_stbox(const Raquet *rq)
  * @brief Return -1, 0, or 1 depending on whether the first Raquet tile is
  * less than, equal to, or greater than the second one
  * @param[in] rq1,rq2 Raquet tiles
+ * @return On error return @p INT_MAX
  * @csqlfn #Raquet_cmp()
  */
 int
 raquet_cmp(const Raquet *rq1, const Raquet *rq2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(rq1, false); VALIDATE_NOT_NULL(rq2, false);
+  VALIDATE_NOT_NULL(rq1, INT_MAX); VALIDATE_NOT_NULL(rq2, INT_MAX);
 
   if (rq1->quadbin != rq2->quadbin)
     return (rq1->quadbin < rq2->quadbin) ? -1 : 1;

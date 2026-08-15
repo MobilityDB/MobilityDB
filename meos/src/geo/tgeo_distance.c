@@ -2965,12 +2965,13 @@ shortestline_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
  * @brief Return the spatial-only minimum distance between two spatiotemporal
  * boxes, ignoring the time dimension entirely
  * @param[in] box1,box2 Spatiotemporal boxes
+ * @return On error return @p DBL_MAX
  */
 double
 stbox_spatial_distance(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(box1, false); VALIDATE_NOT_NULL(box2, false);
+  VALIDATE_NOT_NULL(box1, DBL_MAX); VALIDATE_NOT_NULL(box2, DBL_MAX);
 
   /* Spatial extents overlap → exact minimum is 0 (some pair of points
    * inside the joined extent has zero distance). Every spatial axis must be

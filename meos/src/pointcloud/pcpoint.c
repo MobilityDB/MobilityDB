@@ -356,6 +356,7 @@ pcpoint_hash_extended(const Pcpoint *pt, uint64 seed)
  * @ingroup meos_pointcloud_base_comp
  * @brief Compare two pcpoints byte-wise
  * @return -1 / 0 / 1
+ * @return On error return @p INT_MAX
  * @note Compares only the meaningful-prefix bytes — pgpointcloud's
  * struct-tail padding is skipped (see the padding comment above).
  * Two pcpoints that disagree only on those padding bytes now compare
@@ -366,7 +367,7 @@ int
 pcpoint_cmp(const Pcpoint *pt1, const Pcpoint *pt2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(pt1, false); VALIDATE_NOT_NULL(pt2, false);
+  VALIDATE_NOT_NULL(pt1, INT_MAX); VALIDATE_NOT_NULL(pt2, INT_MAX);
   size_t sz1 = pcpoint_meaningful_size(pt1);
   size_t sz2 = pcpoint_meaningful_size(pt2);
   size_t minsz = (sz1 < sz2) ? sz1 : sz2;

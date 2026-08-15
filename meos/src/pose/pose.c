@@ -1943,13 +1943,14 @@ pose_nsame(const Pose *pose1, const Pose *pose2)
  * @brief Return -1, 0, or 1 depending on whether the first pose
  * is less than, equal to, or greater than the second one
  * @param[in] pose1,pose2 Poses
+ * @return On error return @p INT_MAX
  * @csqlfn #Pose_cmp()
  */
 int
 pose_cmp(const Pose *pose1, const Pose *pose2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(pose1, false); VALIDATE_NOT_NULL(pose2, false);
+  VALIDATE_NOT_NULL(pose1, INT_MAX); VALIDATE_NOT_NULL(pose2, INT_MAX);
 
   /* Compare first the dimension, then the SRID,
      then the position, then the orientation */
