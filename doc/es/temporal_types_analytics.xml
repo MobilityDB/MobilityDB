@@ -297,6 +297,31 @@ SELECT dynTimeWarpPath(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03
 		</itemizedlist>
 	</sect1>
 
+	<sect1 xml:id="ttype_kalmanFilter">
+		<title>Filtro de Kalman extendido</title>
+		<itemizedlist>
+			<listitem xml:id="ttype_extendedKalmanFilter">
+				<indexterm significance="normal"><primary><varname>extendedKalmanFilter</varname></primary></indexterm>
+				<para>Devolver un flotante temporal o un punto temporal suavizado, obtenido al filtrar una trayectoria ruidosa con un <ulink url="https://es.wikipedia.org/wiki/Filtro_de_Kalman">filtro de Kalman extendido</ulink> &Z_support;
+</para>
+				<para><varname>extendedKalmanFilter(tfloat, gate float, q float, variance float, to_drop boolean DEFAULT TRUE) → tfloat</varname></para>
+				<para><varname>extendedKalmanFilter(tgeompoint, gate float, q float, variance float, to_drop boolean DEFAULT TRUE) → tgeompoint</varname></para>
+				<para>El filtro modela el movimiento subyacente de un objeto móvil y lo separa del ruido de medición y de los valores atípicos ocasionales. El parámetro <varname>gate</varname> controla el rigor de la detección de atípicos, <varname>q</varname> es la escala del ruido de proceso, <varname>variance</varname> es la varianza del ruido de medición y <varname>to_drop</varname> elige si los atípicos se eliminan (<literal>true</literal>) o se reemplazan por la trayectoria predicha (<literal>false</literal>).</para>
+				<para>Estas funciones están pensadas para trayectorias con al menos tres instantes y se aplican normalmente a valores temporales con interpolación lineal.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asEWKT(extendedKalmanFilter(tgeompoint
+  '[Point(1 1)@2001-01-01, Point(50 50)@2001-01-02, Point(2 2)@2001-01-03]',
+  1e-5, 5e-10, 5e-10, true));
+-- [POINT(1 1)@2001-01-01, POINT(2 2)@2001-01-03]
+SELECT asEWKT(extendedKalmanFilter(tgeompoint
+  '[Point(1 1)@2001-01-01, Point(50 50)@2001-01-02, Point(2 2)@2001-01-03]',
+  1e-5, 5e-10, 5e-10, false));
+-- [POINT(1 1)@2001-01-01, POINT(1 1)@2001-01-02, POINT(2 2)@2001-01-03]
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
 	<sect1 xml:id="ttype_splitting">
 		<title>Operaciones de división</title>
 

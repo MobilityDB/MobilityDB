@@ -1343,6 +1343,24 @@ SELECT asText(yaw(tpose '[Pose(Point(0 0), 0.0)@2000-01-01,
 -- [0@2000-01-01, 0.5@2000-01-02]
 </programlisting>
 				</listitem>
+
+				<listitem xml:id="tpose_yaw_pitch_roll">
+					<indexterm significance="normal"><primary><varname>yaw</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>pitch</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>roll</varname></primary></indexterm>
+					<para>Lift the Euler angle accessors over a temporal pose, returning a temporal float in radians</para>
+					<para><varname>yaw(tpose) → tfloat</varname></para>
+					<para><varname>pitch(tpose) → tfloat</varname></para>
+					<para><varname>roll(tpose) → tfloat</varname></para>
+					<para>The result carries step interpolation, since an angle read from a rotation does not vary linearly between two poses.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT round(yaw(tpose '[Pose(Point(0 0),0.5)@2001-01-01,
+  Pose(Point(1 1),1.5)@2001-01-02]'), 6);
+-- Interp=Step;[0.5@2001-01-01, 1.5@2001-01-02]
+SELECT round(pitch(tpose 'Pose(Point(0 0 0),1,0,0,0)@2001-01-01'), 6);
+-- 0@2001-01-01
+</programlisting>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 
