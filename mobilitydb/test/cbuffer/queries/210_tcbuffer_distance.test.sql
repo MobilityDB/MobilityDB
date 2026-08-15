@@ -271,6 +271,20 @@ SELECT round(nearestApproachDistance(tcbuffer '{Cbuffer(Point(0 0), 1)@2000-01-0
 -- taken, giving 0 rather than the edge-endpoint distance.
 SELECT round(tcbuffer '[Cbuffer(Point(0 0), 1)@2000-01-01, Cbuffer(Point(141.4213562373095 173.20508075688772), 1)@2000-01-02]' |=| geometry 'Linestring(173.20508075688772 0, 0 141.4213562373095)', 6);
 
+-- A circular buffer as the other argument, in both orders. The distance between
+-- two buffers is the distance between their centres less both radii, so centres
+-- sqrt(2) apart with radii 0.5 and 0.7 give sqrt(2) - 0.5 - 0.7 = 0.214214
+-- exactly, the two orders of a commutative operation agree, and minDistance --
+-- which names the same kernel -- agrees with both.
+SELECT round(nearestApproachDistance(tcbuffer 'Cbuffer(Point(0 0), 0.5)@2000-01-01', cbuffer 'Cbuffer(Point(1 1), 0.7)')::numeric, 6);
+SELECT round(nearestApproachDistance(cbuffer 'Cbuffer(Point(1 1), 0.7)', tcbuffer 'Cbuffer(Point(0 0), 0.5)@2000-01-01')::numeric, 6);
+SELECT nearestApproachDistance(tcbuffer 'Cbuffer(Point(0 0), 0.5)@2000-01-01', cbuffer 'Cbuffer(Point(1 1), 0.7)')
+     = nearestApproachDistance(cbuffer 'Cbuffer(Point(1 1), 0.7)', tcbuffer 'Cbuffer(Point(0 0), 0.5)@2000-01-01');
+SELECT nearestApproachDistance(tcbuffer 'Cbuffer(Point(0 0), 0.5)@2000-01-01', cbuffer 'Cbuffer(Point(1 1), 0.7)')
+     = minDistance(tcbuffer 'Cbuffer(Point(0 0), 0.5)@2000-01-01', cbuffer 'Cbuffer(Point(1 1), 0.7)');
+-- A buffer beside the path: the distance is the centre distance less both radii
+SELECT round(nearestApproachDistance(tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(4 0), 0.5)@2000-01-05]', cbuffer 'Cbuffer(Point(4 9), 0.7)')::numeric, 6);
+
 -------------------------------------------------------------------------------
 
 -- Analytic shortestLine: its length equals the nearest-approach distance;
