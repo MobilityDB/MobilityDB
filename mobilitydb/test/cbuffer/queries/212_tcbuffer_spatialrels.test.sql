@@ -324,3 +324,25 @@ SELECT eDwithin(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', geometry 'SRID=38
 SELECT eDwithin(tcbuffer 'SRID=3812;Cbuffer(Point(1 1),0.5)@2000-01-01', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', 2);
 
 -------------------------------------------------------------------------------
+-- Containment of a disc asks that it be covered and that the interiors meet,
+-- so a disc of a strictly positive radius that is covered is contained, and a
+-- disc of a zero radius is the point at its centre
+-------------------------------------------------------------------------------
+
+-- A disc contains itself, and covers itself
+SELECT eContains(tcbuffer 'Cbuffer(Point(0 0),1)@2000-01-01', tcbuffer 'Cbuffer(Point(0 0),1)@2000-01-01');
+SELECT eCovers(tcbuffer 'Cbuffer(Point(0 0),1)@2000-01-01', tcbuffer 'Cbuffer(Point(0 0),1)@2000-01-01');
+-- A disc that meets the boundary of the containing one from inside is contained
+SELECT eContains(tcbuffer 'Cbuffer(Point(0 0),2)@2000-01-01', tcbuffer 'Cbuffer(Point(1 0),1)@2000-01-01');
+-- A disc reaching outside is neither contained nor covered
+SELECT eContains(tcbuffer 'Cbuffer(Point(0 0),2)@2000-01-01', tcbuffer 'Cbuffer(Point(1.5 0),1)@2000-01-01');
+SELECT eCovers(tcbuffer 'Cbuffer(Point(0 0),2)@2000-01-01', tcbuffer 'Cbuffer(Point(1.5 0),1)@2000-01-01');
+-- A point on the boundary is covered but not contained, and one strictly
+-- inside is both
+SELECT eContains(tcbuffer 'Cbuffer(Point(0 0),1)@2000-01-01', tcbuffer 'Cbuffer(Point(1 0),0)@2000-01-01');
+SELECT eCovers(tcbuffer 'Cbuffer(Point(0 0),1)@2000-01-01', tcbuffer 'Cbuffer(Point(1 0),0)@2000-01-01');
+SELECT eContains(tcbuffer 'Cbuffer(Point(0 0),1)@2000-01-01', tcbuffer 'Cbuffer(Point(0.5 0),0)@2000-01-01');
+-- A point contains the point it coincides with
+SELECT eContains(tcbuffer 'Cbuffer(Point(0 0),0)@2000-01-01', tcbuffer 'Cbuffer(Point(0 0),0)@2000-01-01');
+
+-------------------------------------------------------------------------------
