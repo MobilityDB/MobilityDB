@@ -354,7 +354,7 @@ nad_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
  * @param[in] temp Temporal pointcloud value
  * @param[in] box Bounding box
  * @return On error or if the time frames do not intersect return infinity
- * @csqlfn #NAD_tpointcloud_tpcbox()
+ * @csqlfn #NAD_tpointcloud_tpcbox() #NAD_tpcbox_tpointcloud()
  */
 double
 nad_tpointcloud_tpcbox(const Temporal *temp, const TPCBox *box)
