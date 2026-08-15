@@ -1,0 +1,80 @@
+SELECT tContains(NULL::geometry, trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0),0)@2001-01-01');
+ tcontains 
+-----------
+ 
+(1 row)
+
+SELECT tContains(geometry 'Polygon((-1 -1,-1 5,10 5,10 -1,-1 -1))', NULL::trgeometry);
+ tcontains 
+-----------
+ 
+(1 row)
+
+WITH t AS (
+  SELECT trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-03]' AS seq1,
+         trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(2 0),0)@2001-01-01, Pose(Point(2 2),0)@2001-01-03]' AS seq2,
+         geometry 'Polygon((-1 -1,-1 5,10 5,10 -1,-1 -1))' AS big_region,
+         geometry 'Point(50 50)' AS far_point
+)
+SELECT
+  asText(tContains(big_region, seq1)) = asText(tContains(big_region, seq1::tgeometry)) AS tc_geo_rg,
+  asText(tContains(seq1, big_region)) = asText(tContains(seq1::tgeometry, big_region)) AS tc_rg_geo,
+  asText(tContains(seq1, seq2)) = asText(tContains(seq1::tgeometry, seq2::tgeometry)) AS tc_rg_rg,
+  asText(tCovers(big_region, seq1)) = asText(tCovers(big_region, seq1::tgeometry)) AS tcv_geo_rg,
+  asText(tCovers(seq1, big_region)) = asText(tCovers(seq1::tgeometry, big_region)) AS tcv_rg_geo,
+  asText(tCovers(seq1, seq2)) = asText(tCovers(seq1::tgeometry, seq2::tgeometry)) AS tcv_rg_rg,
+  asText(tDisjoint(far_point, seq1)) = asText(tDisjoint(far_point, seq1::tgeometry)) AS tdj_geo_rg,
+  asText(tDisjoint(seq1, far_point)) = asText(tDisjoint(seq1::tgeometry, far_point)) AS tdj_rg_geo,
+  asText(tDisjoint(seq1, seq2)) = asText(tDisjoint(seq1::tgeometry, seq2::tgeometry)) AS tdj_rg_rg,
+  asText(tIntersects(big_region, seq1)) = asText(tIntersects(big_region, seq1::tgeometry)) AS ti_geo_rg,
+  asText(tIntersects(seq1, big_region)) = asText(tIntersects(seq1::tgeometry, big_region)) AS ti_rg_geo,
+  asText(tIntersects(seq1, seq2)) = asText(tIntersects(seq1::tgeometry, seq2::tgeometry)) AS ti_rg_rg,
+  asText(tTouches(big_region, seq1)) = asText(tTouches(big_region, seq1::tgeometry)) AS ttc_geo_rg,
+  asText(tTouches(seq1, big_region)) = asText(tTouches(seq1::tgeometry, big_region)) AS ttc_rg_geo,
+  asText(tTouches(seq1, seq2)) = asText(tTouches(seq1::tgeometry, seq2::tgeometry)) AS ttc_rg_rg,
+  asText(tDwithin(big_region, seq1, 1.0)) = asText(tDwithin(big_region, seq1::tgeometry, 1.0)) AS tdw_geo_rg,
+  asText(tDwithin(seq1, big_region, 1.0)) = asText(tDwithin(seq1::tgeometry, big_region, 1.0)) AS tdw_rg_geo,
+  asText(tDwithin(seq1, seq2, 1.0)) = asText(tDwithin(seq1::tgeometry, seq2::tgeometry, 1.0)) AS tdw_rg_rg
+FROM t;
+ tc_geo_rg | tc_rg_geo | tc_rg_rg | tcv_geo_rg | tcv_rg_geo | tcv_rg_rg | tdj_geo_rg | tdj_rg_geo | tdj_rg_rg | ti_geo_rg | ti_rg_geo | ti_rg_rg | ttc_geo_rg | ttc_rg_geo | ttc_rg_rg | tdw_geo_rg | tdw_rg_geo | tdw_rg_rg 
+-----------+-----------+----------+------------+------------+-----------+------------+------------+-----------+-----------+-----------+----------+------------+------------+-----------+------------+------------+-----------
+ t         | t         | t        | t          | t          | t         | t          | t          | t         | t         | t         | t        | t          | t          | t         | t          | t          | t
+(1 row)
+
+SELECT tContains(geometry 'Polygon((-1 -1,-1 5,10 5,10 -1,-1 -1))',
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-03]');
+                            tcontains                             
+------------------------------------------------------------------
+ [t@Mon Jan 01 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
+SELECT tCovers(geometry 'Polygon((-1 -1,-1 5,10 5,10 -1,-1 -1))',
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-03]');
+                             tcovers                              
+------------------------------------------------------------------
+ [t@Mon Jan 01 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
+SELECT tDisjoint(geometry 'Point(50 50)',
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-03]');
+                            tdisjoint                             
+------------------------------------------------------------------
+ [t@Mon Jan 01 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
+SELECT tIntersects(
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-03]',
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(2 0),0)@2001-01-01, Pose(Point(2 2),0)@2001-01-03]');
+                           tintersects                            
+------------------------------------------------------------------
+ [f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
+SELECT tDwithin(
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-03]',
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(2 0),0)@2001-01-01, Pose(Point(2 2),0)@2001-01-03]', 1.0);
+                             tdwithin                             
+------------------------------------------------------------------
+ [t@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
