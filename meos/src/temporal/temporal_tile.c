@@ -649,7 +649,7 @@ tbox_tile_state_make(const Temporal *temp, const TBox *box, Datum vsize,
   state->ntiles = 1;
   Datum start_bin, end_bin;
   /* Set the value dimension of the state box*/
-  if (datum_double(vsize, box->span.basetype))
+  if (datum_gt(vsize, 0, box->span.basetype))
   {
     /* The given vsize is greater than 0 */
     state->vsize = vsize;

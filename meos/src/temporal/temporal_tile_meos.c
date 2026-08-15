@@ -82,7 +82,7 @@ tbox_value_time_tiles(const TBox *box, Datum vsize, const Interval *duration,
   int nrows = 1, ncols = 1;
   Datum start_bin, end_bin;
   /* Determine the number of value bins */
-  if (datum_double(vsize, box->span.basetype))
+  if (datum_gt(vsize, 0, box->span.basetype))
     nrows = span_num_bins(&box->span, vsize, vorigin, &start_bin, &end_bin);
   /* Determine the number of time bins */
   int64 tunits = duration ? interval_units(duration) : 0;
