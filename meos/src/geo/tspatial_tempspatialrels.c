@@ -702,7 +702,7 @@ tspatialrel_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
  *     tcontains(geo, tpoint) = tintersects(geo, tpoint) &
  *     ~ tintersects(st_boundary(geo), tpoint)
  * @endcode
- *   where `&` and `~` are the temporal `and` and the temporal `or` operators.
+ *   where `&` and `~` are the temporal `and` and the temporal `not` operators.
  *   Notice that `tcontains(tpoint, geo)` is not defined, the `tintersects`
  *   function can be used instead.
  * - For temporal geometries, compute the relationship at each instant using
@@ -807,12 +807,12 @@ tcontains_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
  * @details The temporal covers relationship is computed as follows:
  * - For temporal points
  * @code
- *     tcovers(geo, tpoint) = tintersects(geo, tpoint) &
- *     ~ tintersects(st_boundary(geo), tpoint)
+ *     tcovers(geo, tpoint) = tintersects(geo, tpoint)
  * @endcode
- *   where `&` and `~` are the temporal `and` and the temporal `or` operators.
- *   Notice that `tcovers(tpoint, geo)` is not defined, the `tintersects`
- *   function can be used instead.
+ *   since a geometry covers a point that lies in the closed geometry, that is,
+ *   in its interior together with its boundary. Notice that
+ *   `tcovers(tpoint, geo)` is not defined, the `tintersects` function can be
+ *   used instead.
  * - For temporal geometries, compute the relationship at each instant using
  *   the lifting infrastructure.
  * @param[in] gs Geometry
@@ -836,13 +836,7 @@ tcovers_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
    * general path otherwise (see #tinterrel_tgeo_geo), keeping `tCovers`
    * consistent with `tIntersects` and `~ tDisjoint`. */
   if (tpoint_type(temp->temptype))
-  {
-    if (! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
-        ! ensure_not_geodetic_geo(gs) || ! ensure_has_not_Z_geo(gs) ||
-        ! ensure_has_not_Z(temp->temptype, temp->flags))
-      return NULL;
     return tinterrel_tgeo_geo(temp, gs, TINTERSECTS);
-  }
   return tspatialrel_tgeo_geo(temp, gs, (varfunc) datum_geo_covers2d,
     INVERT);
 }
