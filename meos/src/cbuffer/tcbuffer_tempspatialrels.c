@@ -68,8 +68,57 @@
  *****************************************************************************/
 
 /**
+ * @brief Return the value of a spatial relationship between the disc of a
+ * temporal circular buffer instant and a geometry
+ * @param[in] inst Temporal instant
+ * @param[in] gs Geometry
+ * @param[in] invert True if the arguments should be inverted
+ * @param[in] func Spatial relationship function to be applied
+ */
+static Datum
+tcbufferinst_geo_rel(const TInstant *inst, const GSERIALIZED *gs, bool invert,
+  datum_func2 func)
+{
+  GSERIALIZED *disc =
+    cbuffer_to_geom(DatumGetCbufferP(tinstant_value_p(inst)));
+  int result = spatialrel_geo_geo(disc, gs, (Datum) NULL, (varfunc) func, 2,
+    invert);
+  pfree(disc);
+  return BoolGetDatum(result > 0);
+}
+
+/**
+ * @brief Return a temporal sequence Boolean assembled from the values computed
+ * for the instants of a temporal circular buffer sequence
+ * @details An exclusive upper bound excludes the last instant from the
+ * sequence, so step interpolation carries the value of the previous instant
+ * there
+ * @param[in] instants Instants of the result, freed by the function
+ * @param[in] count Number of instants
+ * @param[in] lower_inc,upper_inc Bounds of the sequence
+ * @param[in] interp Interpolation of the result
+ */
+static TSequence *
+tcbufferseq_geo_rel_seq(TInstant **instants, int count, bool lower_inc,
+  bool upper_inc, interpType interp)
+{
+  if (interp == STEP && count > 1 && ! upper_inc)
+  {
+    TInstant *last = instants[count - 1];
+    instants[count - 1] = tinstant_make(
+      tinstant_value_p(instants[count - 2]), T_TBOOL, last->t);
+    pfree(last);
+  }
+  return tsequence_make_free(instants, count, lower_inc, upper_inc, interp,
+    NORMALIZE);
+}
+
+/**
  * @brief Return a temporal Boolean that states whether a temporal circular
  * buffer and a geometry satisfy a spatial relationship
+ * @details The relationship holds between the disc at each value and the
+ * geometry, the granularity at which the ever and always relationships of this
+ * family read it
  * @param[in] temp Temporal circular buffer
  * @param[in] gs Geometry
  * @param[in] invert True if the arguments should be inverted
@@ -83,14 +132,47 @@ tspatialrel_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
   if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
 
-  Cbuffer *cb = geom_to_cbuffer(gs);
-  if (! cb)
-    return NULL;
+  assert(temptype_subtype(temp->subtype));
+  if (temp->subtype == TINSTANT)
+  {
+    const TInstant *inst = (TInstant *) temp;
+    return (Temporal *) tinstant_make(
+      tcbufferinst_geo_rel(inst, gs, invert, func), T_TBOOL, inst->t);
+  }
 
-  Temporal *result = tspatialrel_tspatial_base(temp, PointerGetDatum(cb),
-    (Datum) NULL, (varfunc) func, 0, invert);
-  pfree(cb);
-  return result;
+  int count;
+  const TInstant **instants = temporal_insts_p(temp, &count);
+  TInstant **res = palloc(sizeof(TInstant *) * count);
+  for (int i = 0; i < count; i++)
+    res[i] = tinstant_make(tcbufferinst_geo_rel(instants[i], gs, invert, func),
+      T_TBOOL, instants[i]->t);
+  pfree(instants);
+
+  /* The result of a relationship is a Boolean, which has no interpolation */
+  interpType interp =
+    (MEOS_FLAGS_GET_INTERP(temp->flags) == DISCRETE) ? DISCRETE : STEP;
+  if (temp->subtype == TSEQUENCE)
+  {
+    const TSequence *seq = (TSequence *) temp;
+    return (Temporal *) tcbufferseq_geo_rel_seq(res, count,
+      seq->period.lower_inc, seq->period.upper_inc, interp);
+  }
+
+  /* TSEQUENCESET */
+  const TSequenceSet *ss = (TSequenceSet *) temp;
+  TSequence **seqs = palloc(sizeof(TSequence *) * ss->count);
+  int k = 0;
+  for (int i = 0; i < ss->count; i++)
+  {
+    const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
+    TInstant **sinsts = palloc(sizeof(TInstant *) * seq->count);
+    for (int j = 0; j < seq->count; j++)
+      sinsts[j] = res[k++];
+    seqs[i] = tcbufferseq_geo_rel_seq(sinsts, seq->count,
+      seq->period.lower_inc, seq->period.upper_inc, interp);
+  }
+  pfree(res);
+  return (Temporal *) tsequenceset_make_free(seqs, ss->count, NORMALIZE);
 }
 
 /**
@@ -1171,7 +1253,7 @@ tcontains_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp)
   Temporal *res = tcontains_geo_tcbuffer_native(temp, gs, true);
   if (res)
     return res;
-  return tspatialrel_tcbuffer_geo(temp, gs, INVERT, &datum_cbuffer_contains);
+  return tspatialrel_tcbuffer_geo(temp, gs, INVERT, &datum_geom_contains);
 }
 
 /**
@@ -1186,7 +1268,7 @@ Temporal *
 tcontains_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   return tspatialrel_tcbuffer_geo(temp, gs, INVERT_NO,
-    &datum_cbuffer_contains);
+    &datum_geom_contains);
 }
 
 /*****************************************************************************/
@@ -1314,7 +1396,7 @@ tcovers_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp)
   Temporal *res = tcontains_geo_tcbuffer_native(temp, gs, false);
   if (res)
     return res;
-  return tspatialrel_tcbuffer_geo(temp, gs, INVERT, &datum_cbuffer_covers);
+  return tspatialrel_tcbuffer_geo(temp, gs, INVERT, &datum_geom_covers);
 }
 
 /**
@@ -1329,7 +1411,7 @@ Temporal *
 tcovers_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   return tspatialrel_tcbuffer_geo(temp, gs, INVERT_NO,
-    &datum_cbuffer_covers);
+    &datum_geom_covers);
 }
 
 /*****************************************************************************/
@@ -2462,7 +2544,7 @@ ttouches_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
    * the traversed-area path. */
   void *ctx = tcbuffer_geo_ctx_make(gs);
   if (! ctx)
-    return tspatialrel_tcbuffer_geo(temp, gs, INVERT_NO, &datum_cbuffer_touches);
+    return tspatialrel_tcbuffer_geo(temp, gs, INVERT_NO, &datum_geom_touches);
 
   Temporal *result = NULL;
   assert(temptype_subtype(temp->subtype));
