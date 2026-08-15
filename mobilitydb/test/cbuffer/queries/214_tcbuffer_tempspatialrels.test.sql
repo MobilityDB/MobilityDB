@@ -418,3 +418,20 @@ SELECT tContains(geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))', tcbuffer '[Cbu
 SELECT tTouches(tcbuffer '[Cbuffer(Point(-3 0),0)@2000-01-01, Cbuffer(Point(3 0),0.5)@2000-01-03]', geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))');
 
 -------------------------------------------------------------------------------
+-- The relationship holds against the geometry, not against a circle enclosing
+-- it: the farthest point of the geometry from the centre of the disc lies off
+-- the line joining the two centres, so a circle enclosing the geometry reaches
+-- outside the disc while the geometry itself does not
+-------------------------------------------------------------------------------
+
+SELECT tCovers(tcbuffer 'Cbuffer(Point(0 0),3.2)@2000-01-01', geometry 'Linestring(3 0,3 1)');
+SELECT tContains(tcbuffer 'Cbuffer(Point(0 0),3.2)@2000-01-01', geometry 'Linestring(3 0,3 1)');
+-- The same value against a disc that the geometry reaches outside of
+SELECT tCovers(tcbuffer 'Cbuffer(Point(0 0),3)@2000-01-01', geometry 'Linestring(3 0,3 1)');
+-- A disc that stops covering the geometry as it moves away
+SELECT tCovers(tcbuffer '{Cbuffer(Point(0 0),3.2)@2000-01-01, Cbuffer(Point(9 9),1)@2000-01-03}', geometry 'Linestring(3 0,3 1)');
+SELECT tCovers(tcbuffer '{[Cbuffer(Point(0 0),3.2)@2000-01-01, Cbuffer(Point(0 0),3.2)@2000-01-02],[Cbuffer(Point(9 9),1)@2000-01-04, Cbuffer(Point(9 9),1)@2000-01-05]}', geometry 'Linestring(3 0,3 1)');
+-- A disc touching a line it is tangent to
+SELECT tTouches(tcbuffer 'Cbuffer(Point(0 0),1)@2000-01-01', geometry 'Linestring(1 -5,1 5)');
+
+-------------------------------------------------------------------------------
