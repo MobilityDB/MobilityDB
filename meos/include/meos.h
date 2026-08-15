@@ -686,7 +686,6 @@ extern TimestampTz tstzspanset_upper(const SpanSet *ss);
  *****************************************************************************/
 
 extern Set *bigintset_shift_scale(const Set *s, int64 shift, int64 width, bool hasshift, bool haswidth);
-extern Span *bigintspan_expand(const Span *s, int64 value);
 extern Span *bigintspan_shift_scale(const Span *s, int64 shift, int64 width, bool hasshift, bool haswidth);
 extern SpanSet *bigintspanset_shift_scale(const SpanSet *ss, int64 shift, int64 width, bool hasshift, bool haswidth);
 extern Set *dateset_shift_scale(const Set *s, int shift, int width, bool hasshift, bool haswidth);
@@ -699,7 +698,6 @@ extern Set *floatset_radians(const Set *s);
 extern Set *floatset_shift_scale(const Set *s, double shift, double width, bool hasshift, bool haswidth);
 extern Span *floatspan_ceil(const Span *s);
 extern Span *floatspan_degrees(const Span *s, bool normalize);
-extern Span *floatspan_expand(const Span *s, double value);
 extern Span *floatspan_floor(const Span *s);
 extern Span *floatspan_radians(const Span *s);
 extern Span *floatspan_round(const Span *s, int maxdd);
@@ -711,7 +709,6 @@ extern SpanSet *floatspanset_radians(const SpanSet *ss);
 extern SpanSet *floatspanset_round(const SpanSet *ss, int maxdd);
 extern SpanSet *floatspanset_shift_scale(const SpanSet *ss, double shift, double width, bool hasshift, bool haswidth);
 extern Set *intset_shift_scale(const Set *s, int shift, int width, bool hasshift, bool haswidth);
-extern Span *intspan_expand(const Span *s, int32 value);
 extern Span *intspan_shift_scale(const Span *s, int shift, int width, bool hasshift, bool haswidth);
 extern SpanSet *intspanset_shift_scale(const SpanSet *ss, int shift, int width, bool hasshift, bool haswidth);
 extern Span *tstzspan_expand(const Span *s, const Interval *interv);
@@ -724,7 +721,6 @@ extern Set *textset_upper(const Set *s);
 extern TimestampTz timestamptz_tprecision(TimestampTz t, const Interval *duration, TimestampTz torigin);
 extern Set *tstzset_shift_scale(const Set *s, const Interval *shift, const Interval *duration);
 extern Set *tstzset_tprecision(const Set *s, const Interval *duration, TimestampTz torigin);
-extern Span *tstzspan_expand(const Span *s, const Interval *interv);
 extern Span *tstzspan_shift_scale(const Span *s, const Interval *shift, const Interval *duration);
 extern Span *tstzspan_tprecision(const Span *s, const Interval *duration, TimestampTz torigin);
 extern SpanSet *tstzspanset_shift_scale(const SpanSet *ss, const Interval *shift, const Interval *duration);
@@ -1262,11 +1258,7 @@ extern TBox *tbox_round(const TBox *box, int maxdd);
 extern TBox *tfloatbox_shift_scale(const TBox *box, double shift, double width, bool hasshift, bool haswidth);
 extern TBox *tintbox_shift_scale(const TBox *box, int shift, int width, bool hasshift, bool haswidth);
 extern TBox *tbox_shift_scale_time(const TBox *box, const Interval *shift, const Interval *duration);
-extern TBox *tfloatbox_expand(const TBox *box, double d);
-extern TBox *tfloatbox_shift_scale(const TBox *box, double shift, double width, bool hasshift, bool haswidth);
-extern TBox *tintbox_expand(const TBox *box, int i);
 extern TBox *tbigintbox_expand(const TBox *box, int64 i);
-extern TBox *tintbox_shift_scale(const TBox *box, int shift, int width, bool hasshift, bool haswidth);
 extern TBox *tbigintbox_shift_scale(const TBox *box, int64 shift, int64 width, bool hasshift, bool haswidth);
 
 /*****************************************************************************

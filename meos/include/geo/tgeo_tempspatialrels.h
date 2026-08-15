@@ -67,9 +67,6 @@ extern int tdwithin_add_solutions(int solutions, TimestampTz lower,
   TimestampTz t1, TimestampTz t2, TInstant **instants, TSequence **result);
 extern Temporal *tdwithin_tspatial_spatial(const Temporal *temp, Datum base,
   Datum dist, datum_func3 func, tpfunc_temp tpfn);
-extern Temporal *tdwithin_tspatial_tspatial(const Temporal *sync1,
-  const Temporal *sync2, Datum dist,
-  datum_func3 func, tpfunc_temp tpfn);
 
 /*****************************************************************************/
 
