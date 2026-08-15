@@ -241,6 +241,17 @@ SELECT length(asHexWKB(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512,
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="raquet_pixels">
+				<indexterm significance="normal"><primary><varname>pixels</varname></primary></indexterm>
+				<para>Devolver los bytes de píxeles de un mosaico Raquet</para>
+				<para><varname>pixels(raquet) → bytea</varname></para>
+				<para>Los bytes están en orden de fila mayor y empaquetados, <varname>width</varname> × <varname>height</varname> píxeles del tamaño de <varname>pixtype</varname> cada uno, en little-endian cuando un píxel ocupa más de un byte, que es la disposición que aceptan los constructores. Por lo tanto, un mosaico se reconstruye a través de sus propios accesores.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT pixels(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
+-- \x01020304
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="raquetFromBinary">
 				<indexterm significance="normal"><primary><varname>raquetFromBinary</varname></primary></indexterm>
 				<para>Devolver una tesela Raquet a partir de su representación Well-Known Binary (WKB)</para>

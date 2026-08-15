@@ -1182,22 +1182,20 @@ FROM Temp;
 
 			<listitem xml:id="tcbuffer_tCentroid">
 				<indexterm significance="normal"><primary><varname>tCentroid</varname></primary></indexterm>
-				<para>TODO Centroide temporal</para>
-				<para><varname>tCentroid(tcbuffer) → tgeompoint</varname></para>
+				<para>Agregar los centros de un conjunto de búferes circulares temporales en su centroide temporal, convirtiendo a <varname>tgeompoint</varname></para>
+				<para><varname>tCentroid(tcbuffer::tgeompoint) → tgeompoint</varname></para>
+				<para>La agregación pertenece al tipo <varname>tgeompoint</varname>: la trayectoria del centro de un búfer circular es un punto temporal, de modo que la conversión alcanza la agregación en lugar de que el tipo búfer lleve su propia copia.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 WITH Temp(temp) AS (
-SELECT tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01,
-  Cbuffer(Point(1 1), 0.3)@2001-01-03)' UNION
-SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01,
-  Cbuffer(Point(1 1), 0.4)@2001-01-03)' UNION
-SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
-  Cbuffer(Point(1 1), 0.5)@2001-01-03)' )
-SELECT astext(tCentroid(Temp))
-FROM Temp;
-/* {[POINT(72.451531682218 76.5231414472853)@2001-01-01,
-   POINT(55.7001249027598 72.9552602410653)@2001-01-03)} */
+  SELECT tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01,
+    Cbuffer(Point(1 1), 0.3)@2001-01-03)' UNION
+  SELECT tcbuffer '[Cbuffer(Point(3 3), 0.2)@2001-01-01,
+    Cbuffer(Point(3 3), 0.4)@2001-01-03)' )
+SELECT asText(tCentroid(temp::tgeompoint)) FROM Temp;
+-- {[POINT(2 2)@2001-01-01, POINT(2 2)@2001-01-03)}
 </programlisting>
 			</listitem>
+
 		</itemizedlist>
 	</sect1>
 
