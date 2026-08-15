@@ -184,10 +184,10 @@ extern Temporal *trgeometry_at_tstzspan(const Temporal *temp, const Span *s);
 extern Temporal *trgeometry_minus_tstzspan(const Temporal *temp, const Span *s);
 extern Temporal *trgeometry_at_tstzspanset(const Temporal *temp, const SpanSet *ss);
 extern Temporal *trgeometry_minus_tstzspanset(const Temporal *temp, const SpanSet *ss);
+extern Temporal *trgeometry_at_elevation(const Temporal *temp, const Span *s);
+extern Temporal *trgeometry_minus_elevation(const Temporal *temp, const Span *s);
 // extern Temporal *trgeometry_at_geo(const Temporal *temp, const GSERIALIZED *gs);
-// extern Temporal *trgeometry_at_elevation(const Temporal *temp, const Span *s);
 // extern Temporal *trgeometry_minus_geo(const Temporal *temp, const GSERIALIZED *gs);
-// extern Temporal *trgeometry_minus_elevation(const Temporal *temp, const Span *s);
 
 /*****************************************************************************
  * Distance functions

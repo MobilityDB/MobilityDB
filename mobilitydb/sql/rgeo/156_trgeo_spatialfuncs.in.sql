@@ -127,4 +127,14 @@ CREATE FUNCTION minusStbox(trgeometry, stbox, bool DEFAULT TRUE)
   AS 'MODULE_PATHNAME', 'Trgeometry_minus_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION atElevation(trgeometry, floatspan)
+  RETURNS trgeometry
+  AS 'MODULE_PATHNAME', 'Trgeometry_at_elevation'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION minusElevation(trgeometry, floatspan)
+  RETURNS trgeometry
+  AS 'MODULE_PATHNAME', 'Trgeometry_minus_elevation'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************/

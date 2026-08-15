@@ -266,9 +266,11 @@ extern Pose **tpose_values(const Temporal *temp, int *count);
  * Restriction functions
  *****************************************************************************/
 
+extern Temporal *tpose_at_elevation(const Temporal *temp, const Span *s);
 extern Temporal *tpose_at_geom(const Temporal *temp, const GSERIALIZED *gs);
 extern Temporal *tpose_at_stbox(const Temporal *temp, const STBox *box, bool border_inc);
 extern Temporal *tpose_at_pose(const Temporal *temp, const Pose *pose);
+extern Temporal *tpose_minus_elevation(const Temporal *temp, const Span *s);
 extern Temporal *tpose_minus_geom(const Temporal *temp, const GSERIALIZED *gs);
 extern Temporal *tpose_minus_pose(const Temporal *temp, const Pose *pose);
 extern Temporal *tpose_minus_stbox(const Temporal *temp, const STBox *box, bool border_inc);

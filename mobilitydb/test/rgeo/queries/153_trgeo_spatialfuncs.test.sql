@@ -95,3 +95,24 @@ SELECT getTime(atStbox(
   stbox 'STBOX T([2001-01-02, 2001-01-04])'));
 
 -------------------------------------------------------------------------------
+-- atElevation restricts to the times the position is within the elevation span
+SELECT getTime(atElevation(
+  trgeometry 'Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01, Pose(Point(0 0 4),1,0,0,0)@2001-01-05]',
+  floatspan '[1, 2]'));
+
+-- minusElevation returns the complement
+SELECT getTime(minusElevation(
+  trgeometry 'Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01, Pose(Point(0 0 4),1,0,0,0)@2001-01-05]',
+  floatspan '[1, 2]'));
+
+-- The reference geometry survives the restriction
+SELECT asText(atElevation(
+  trgeometry 'Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01, Pose(Point(0 0 4),1,0,0,0)@2001-01-05]',
+  floatspan '[1, 2]'));
+
+-- A planar rigid geometry has no elevation
+SELECT atElevation(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(4 0), 0.0)@2001-01-05]',
+  floatspan '[1, 2]');
+
+-------------------------------------------------------------------------------

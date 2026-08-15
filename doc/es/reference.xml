@@ -1728,6 +1728,10 @@
 					<listitem>
 						<para><link linkend="tpose_atGeometry"><varname>atGeometry</varname>, <varname>minusGeometry</varname></link>: Restringe a (el complemento de) una geometría</para>
 					</listitem>
+
+					<listitem>
+						<para><link linkend="tpose_atElevation"><varname>atElevation</varname>, <varname>minusElevation</varname></link>: Restringe a (el complemento de) un span de elevación</para>
+					</listitem>
 				</itemizedlist>
 			</sect3>
 
@@ -2533,6 +2537,10 @@
 
 				<listitem>
 					<para><link linkend="trgeometry_atStbox"><varname>atStbox</varname>, <varname>minusStbox</varname></link>: Restringe una trgeometry a (el complemento de) un cuadro espaciotemporal</para>
+				</listitem>
+
+				<listitem>
+					<para><link linkend="trgeometry_atElevation"><varname>atElevation</varname>, <varname>minusElevation</varname></link>: Restringe una trgeometry a (el complemento de) un span de elevación</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
