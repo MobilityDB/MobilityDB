@@ -1090,7 +1090,21 @@ SELECT splitNSpans(tpcpointSeq(ARRAY[
 					<indexterm significance="normal"><primary><varname>~=</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>-|-</varname></primary></indexterm>
 					<para>Topological predicates: <varname>&amp;&amp;</varname> overlaps, <varname>@&gt;</varname> contains, <varname>&lt;@</varname> contained by, <varname>~=</varname> same, <varname>-|-</varname> adjacent.</para>
-				</listitem>
+								<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tpcbox 'TPCBOX(ZT(((0,0,0),(2,2,2)),[2024-01-01, 2024-01-03]), 1)' &amp;&amp;
+  tpcbox 'TPCBOX(ZT(((1,1,1),(3,3,3)),[2024-01-02, 2024-01-04]), 1)';
+-- true
+SELECT tpcbox 'TPCBOX(ZT(((0,0,0),(4,4,4)),[2024-01-01, 2024-01-04]), 1)' @&gt;
+  tpcbox 'TPCBOX(ZT(((1,1,1),(2,2,2)),[2024-01-02, 2024-01-03]), 1)';
+-- true
+SELECT tpcbox 'TPCBOX(ZT(((0,0,0),(2,2,2)),[2024-01-01, 2024-01-03]), 1)' ~=
+  tpcbox 'TPCBOX(ZT(((0,0,0),(2,2,2)),[2024-01-01, 2024-01-03]), 1)';
+-- true
+SELECT tpcbox 'TPCBOX(ZT(((0,0,0),(2,2,2)),[2024-01-01, 2024-01-02)), 1)' -|-
+  tpcbox 'TPCBOX(ZT(((0,0,0),(2,2,2)),[2024-01-02, 2024-01-03]), 1)';
+-- true
+</programlisting>
+			</listitem>
 				<listitem xml:id="tpcpoint_pos">
 					<indexterm significance="normal"><primary><varname>&lt;&lt;</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>&gt;&gt;</varname></primary></indexterm>
@@ -1101,7 +1115,21 @@ SELECT splitNSpans(tpcpointSeq(ARRAY[
 					<indexterm significance="normal"><primary><varname>&lt;&lt;#</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>#&gt;&gt;</varname></primary></indexterm>
 					<para>Strict directional predicates on the X axis (<varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>), Y axis (<varname>&lt;&lt;|</varname>, <varname>|&gt;&gt;</varname>), Z axis (<varname>&lt;&lt;/</varname>, <varname>/&gt;&gt;</varname>), and time axis (<varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname>), plus their "overlaps-or-X" variants <varname>&amp;&lt;</varname>, <varname>&amp;&gt;</varname>, <varname>&amp;&lt;|</varname>, <varname>|&amp;&gt;</varname>, <varname>&amp;&lt;/</varname>, <varname>/&amp;&gt;</varname>, <varname>&amp;&lt;#</varname>, <varname>#&amp;&gt;</varname>.</para>
-				</listitem>
+								<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tpcbox 'TPCBOX(ZT(((0,0,0),(1,1,1)),[2024-01-01, 2024-01-02]), 1)' &lt;&lt;
+  tpcbox 'TPCBOX(ZT(((5,5,5),(6,6,6)),[2024-01-03, 2024-01-04]), 1)';
+-- true
+SELECT tpcbox 'TPCBOX(ZT(((0,0,0),(1,1,1)),[2024-01-01, 2024-01-02]), 1)' &lt;&lt;|
+  tpcbox 'TPCBOX(ZT(((5,5,5),(6,6,6)),[2024-01-03, 2024-01-04]), 1)';
+-- true
+SELECT tpcbox 'TPCBOX(ZT(((0,0,0),(1,1,1)),[2024-01-01, 2024-01-02]), 1)' &lt;&lt;/
+  tpcbox 'TPCBOX(ZT(((5,5,5),(6,6,6)),[2024-01-03, 2024-01-04]), 1)';
+-- true
+SELECT tpcbox 'TPCBOX(ZT(((0,0,0),(1,1,1)),[2024-01-01, 2024-01-02]), 1)' &lt;&lt;#
+  tpcbox 'TPCBOX(ZT(((5,5,5),(6,6,6)),[2024-01-03, 2024-01-04]), 1)';
+-- true
+</programlisting>
+			</listitem>
 				<listitem xml:id="tpcpoint_knn">
 					<indexterm significance="normal"><primary><varname>|=|</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>nearestApproachDistance</varname></primary></indexterm>
