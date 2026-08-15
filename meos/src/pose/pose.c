@@ -1634,6 +1634,7 @@ pose_transf_pj(const Pose *pose, int32_t srid_to, const LWPROJ *pj)
   GSERIALIZED *gs = pose_to_point(pose);
   if (! point_transf_pj(gs, srid_to, pj))
   {
+    pfree(gs);
     pfree(result);
     return NULL;
   }
@@ -1653,6 +1654,7 @@ pose_transf_pj(const Pose *pose, int32_t srid_to, const LWPROJ *pj)
     result->data[0] = coordarr[0];
     result->data[1] = coordarr[1];
   }
+  pfree(gs);
   /* The result's SRID must match the target frame so downstream code
    * (and the orientation correction below, which dispatches on the
    * source/target SRID pair) sees the right value. */
