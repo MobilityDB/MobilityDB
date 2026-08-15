@@ -239,3 +239,29 @@ SELECT COUNT(*) FROM tbl_tpose2d WHERE minusStbox(temp,
     41
 (1 row)
 
+SELECT asText(atElevation(
+  tpose '[Pose(Point(0 0 0),1,0,0,0)@2000-01-01, Pose(Point(0 0 4),1,0,0,0)@2000-01-05]',
+  floatspan '[1, 2]'));
+                                                           astext                                                           
+----------------------------------------------------------------------------------------------------------------------------
+ {[Pose(POINT Z (0 0 1),1,0,0,0)@Sun Jan 02 00:00:00 2000 PST, Pose(POINT Z (0 0 2),1,0,0,0)@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(minusElevation(
+  tpose '[Pose(Point(0 0 0),1,0,0,0)@2000-01-01, Pose(Point(0 0 4),1,0,0,0)@2000-01-05]',
+  floatspan '[1, 2]'));
+                                                                                                                        astext                                                                                                                        
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[Pose(POINT Z (0 0 0),1,0,0,0)@Sat Jan 01 00:00:00 2000 PST, Pose(POINT Z (0 0 1),1,0,0,0)@Sun Jan 02 00:00:00 2000 PST), (Pose(POINT Z (0 0 2),1,0,0,0)@Mon Jan 03 00:00:00 2000 PST, Pose(POINT Z (0 0 4),1,0,0,0)@Wed Jan 05 00:00:00 2000 PST]}
+(1 row)
+
+SELECT atElevation(
+  tpose '[Pose(Point(0 0 0),1,0,0,0)@2000-01-01, Pose(Point(0 0 4),1,0,0,0)@2000-01-05]',
+  floatspan '[10, 20]');
+ atelevation 
+-------------
+ 
+(1 row)
+
+SELECT atElevation(tpose 'Pose(Point(1 1),0.5)@2000-01-01', floatspan '[1, 2]');
+ERROR:  The tpose must have Z dimension

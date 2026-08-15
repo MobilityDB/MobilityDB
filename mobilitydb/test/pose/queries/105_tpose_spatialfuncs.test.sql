@@ -160,3 +160,22 @@ SELECT COUNT(*) FROM tbl_tpose2d WHERE minusStbox(temp,
   stbox 'SRID=3812;STBOX XT(((-200,-200),(200,200)),[2001-06-01, 2001-12-31])') IS NOT NULL;
 
 -------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-- atElevation / minusElevation
+
+SELECT asText(atElevation(
+  tpose '[Pose(Point(0 0 0),1,0,0,0)@2000-01-01, Pose(Point(0 0 4),1,0,0,0)@2000-01-05]',
+  floatspan '[1, 2]'));
+SELECT asText(minusElevation(
+  tpose '[Pose(Point(0 0 0),1,0,0,0)@2000-01-01, Pose(Point(0 0 4),1,0,0,0)@2000-01-05]',
+  floatspan '[1, 2]'));
+
+-- The elevation span may miss the pose entirely
+SELECT atElevation(
+  tpose '[Pose(Point(0 0 0),1,0,0,0)@2000-01-01, Pose(Point(0 0 4),1,0,0,0)@2000-01-05]',
+  floatspan '[10, 20]');
+
+-- A 2D pose has no elevation
+SELECT atElevation(tpose 'Pose(Point(1 1),0.5)@2000-01-01', floatspan '[1, 2]');
+
+-------------------------------------------------------------------------------

@@ -44,6 +44,8 @@ extern Temporal *trgeo_restrict_geom(const Temporal *temp,
   const GSERIALIZED *gs, bool atfunc);
 extern Temporal *trgeo_restrict_stbox(const Temporal *temp, const STBox *box,
   bool border_inc, bool atfunc);
+extern Temporal *trgeo_restrict_elevation(const Temporal *temp, const Span *s,
+  bool atfunc);
 
 /*****************************************************************************/
 

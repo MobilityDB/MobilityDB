@@ -38,6 +38,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include <meos_pose.h>
+#include "temporal/span.h"
 #include "geo/stbox.h"
 #include "pose/pose.h"
 #include "pose/tpose_spatialfuncs.h"
@@ -157,6 +158,51 @@ inline Datum
 Tpose_minus_stbox(PG_FUNCTION_ARGS)
 {
   return Tpose_restrict_stbox(fcinfo, REST_MINUS);
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Return a temporal pose restricted to (the complement of) an elevation
+ * span
+ */
+static Datum
+Tpose_restrict_elevation(FunctionCallInfo fcinfo, bool atfunc)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Span *s = PG_GETARG_SPAN_P(1);
+  Temporal *result = tpose_restrict_elevation(temp, s, atfunc);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tpose_at_elevation(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpose_at_elevation);
+/**
+ * @ingroup mobilitydb_pose_restrict
+ * @brief Return a temporal pose restricted to an elevation span
+ * @sqlfn atElevation()
+ */
+inline Datum
+Tpose_at_elevation(PG_FUNCTION_ARGS)
+{
+  return Tpose_restrict_elevation(fcinfo, REST_AT);
+}
+
+PGDLLEXPORT Datum Tpose_minus_elevation(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpose_minus_elevation);
+/**
+ * @ingroup mobilitydb_pose_restrict
+ * @brief Return a temporal pose restricted to the complement of an elevation
+ * span
+ * @sqlfn minusElevation()
+ */
+inline Datum
+Tpose_minus_elevation(PG_FUNCTION_ARGS)
+{
+  return Tpose_restrict_elevation(fcinfo, REST_MINUS);
 }
 
 /*****************************************************************************/

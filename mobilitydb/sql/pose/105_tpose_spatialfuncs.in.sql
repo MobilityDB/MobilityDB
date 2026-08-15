@@ -81,6 +81,16 @@ CREATE FUNCTION minusStbox(tpose, stbox, bool DEFAULT TRUE)
   AS 'MODULE_PATHNAME', 'Tpose_minus_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION atElevation(tpose, floatspan)
+  RETURNS tpose
+  AS 'MODULE_PATHNAME', 'Tpose_at_elevation'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION minusElevation(tpose, floatspan)
+  RETURNS tpose
+  AS 'MODULE_PATHNAME', 'Tpose_minus_elevation'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************
  * traversedArea, centroid, convexHull
  *****************************************************************************/

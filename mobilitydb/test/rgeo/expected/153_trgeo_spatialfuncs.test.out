@@ -81,3 +81,31 @@ SELECT getTime(atStbox(
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(4 0), 0.0)@2001-01-05]',
   stbox 'STBOX T([2001-01-02, 2001-01-04])'));
 ERROR:  The stbox must have X dimension
+SELECT getTime(atElevation(
+  trgeometry 'Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01, Pose(Point(0 0 4),1,0,0,0)@2001-01-05]',
+  floatspan '[1, 2]'));
+                            gettime                             
+----------------------------------------------------------------
+ {[Tue Jan 02 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST]}
+(1 row)
+
+SELECT getTime(minusElevation(
+  trgeometry 'Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01, Pose(Point(0 0 4),1,0,0,0)@2001-01-05]',
+  floatspan '[1, 2]'));
+                                                           gettime                                                            
+------------------------------------------------------------------------------------------------------------------------------
+ {[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST), (Wed Jan 03 00:00:00 2001 PST, Fri Jan 05 00:00:00 2001 PST]}
+(1 row)
+
+SELECT asText(atElevation(
+  trgeometry 'Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01, Pose(Point(0 0 4),1,0,0,0)@2001-01-05]',
+  floatspan '[1, 2]'));
+                                                                                 astext                                                                                 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ POLYGON Z ((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));{[Pose(POINT Z (0 0 1),1,0,0,0)@Tue Jan 02 00:00:00 2001 PST, Pose(POINT Z (0 0 2),1,0,0,0)@Wed Jan 03 00:00:00 2001 PST]}
+(1 row)
+
+SELECT atElevation(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(4 0), 0.0)@2001-01-05]',
+  floatspan '[1, 2]');
+ERROR:  The trgeometry must have Z dimension

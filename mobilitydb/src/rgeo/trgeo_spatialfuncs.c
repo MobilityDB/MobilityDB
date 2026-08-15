@@ -41,6 +41,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include <meos_rgeo.h>
+#include "temporal/span.h"
 #include "geo/stbox.h"
 #include "rgeo/trgeo.h"
 #include "rgeo/trgeo_spatialfuncs.h"
@@ -167,6 +168,50 @@ Trgeometry_minus_stbox(PG_FUNCTION_ARGS)
   return Trgeometry_restrict_stbox(fcinfo, REST_MINUS);
 }
 
+/*****************************************************************************/
+
+/**
+ * @brief Return a temporal rigid geometry restricted to (the complement of) an
+ * elevation span
+ */
+static Datum
+Trgeometry_restrict_elevation(FunctionCallInfo fcinfo, bool atfunc)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Span *s = PG_GETARG_SPAN_P(1);
+  Temporal *result = trgeo_restrict_elevation(temp, s, atfunc);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Trgeometry_at_elevation(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Trgeometry_at_elevation);
+/**
+ * @ingroup mobilitydb_rgeo_restrict
+ * @brief Return a temporal rigid geometry restricted to an elevation span
+ * @sqlfn atElevation()
+ */
+inline Datum
+Trgeometry_at_elevation(PG_FUNCTION_ARGS)
+{
+  return Trgeometry_restrict_elevation(fcinfo, REST_AT);
+}
+
+PGDLLEXPORT Datum Trgeometry_minus_elevation(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Trgeometry_minus_elevation);
+/**
+ * @ingroup mobilitydb_rgeo_restrict
+ * @brief Return a temporal rigid geometry restricted to the complement of an
+ * elevation span
+ * @sqlfn minusElevation()
+ */
+inline Datum
+Trgeometry_minus_elevation(PG_FUNCTION_ARGS)
+{
+  return Trgeometry_restrict_elevation(fcinfo, REST_MINUS);
+}
 
 /*****************************************************************************
  * Centroid and convex hull functions

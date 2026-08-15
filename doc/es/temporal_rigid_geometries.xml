@@ -493,6 +493,30 @@ SELECT temporalTime(atStbox(
 </programlisting>
 				<para>Si la STBox solo tiene un componente temporal, la llamada se reduce a <varname>atTime</varname> estándar; si solo tiene un componente espacial, se conserva el dominio temporal.</para>
 			</listitem>
+
+			<listitem xml:id="trgeometry_atElevation">
+				<indexterm significance="normal"><primary><varname>atElevation</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>minusElevation</varname></primary></indexterm>
+				<para>Restringir una trgeometry al (complemento de) un span de elevación</para>
+				<para><varname>atElevation(trgeometry, floatspan) → trgeometry</varname></para>
+				<para><varname>minusElevation(trgeometry, floatspan) → trgeometry</varname></para>
+				<para>La elevación es la de la posición de la pose, no la del cuerpo: un cuerpo se extiende por encima y por debajo de su posición, y el span se evalúa únicamente sobre la posición. La geometría de referencia se conserva en el resultado. La geometría rígida temporal debe tener dimensión Z.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(atElevation(
+  trgeometry 'Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));
+  [Pose(Point(0 0 0),1,0,0,0)@2001-01-01, Pose(Point(0 0 4),1,0,0,0)@2001-01-05]',
+  floatspan '[1, 2]'));
+/* POLYGON Z ((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));
+   {[Pose(POINT Z (0 0 1),1,0,0,0)@2001-01-02,
+   Pose(POINT Z (0 0 2),1,0,0,0)@2001-01-03]} */
+
+SELECT getTime(minusElevation(
+  trgeometry 'Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));
+  [Pose(Point(0 0 0),1,0,0,0)@2001-01-01, Pose(Point(0 0 4),1,0,0,0)@2001-01-05]',
+  floatspan '[1, 2]'));
+-- {[2001-01-01, 2001-01-02), (2001-01-03, 2001-01-05]}
+</programlisting>
+			</listitem>
 		</itemizedlist>
 	</sect1>
 

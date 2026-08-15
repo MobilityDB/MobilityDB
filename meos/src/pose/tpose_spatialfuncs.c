@@ -191,3 +191,65 @@ tpose_minus_stbox(const Temporal *temp, const STBox *box, bool border_inc)
 }
 
 /*****************************************************************************/
+
+/**
+ * @ingroup meos_internal_pose_restrict
+ * @brief Return a temporal pose restricted to (the complement of) an elevation
+ * span
+ * @details The elevation of a pose is the elevation of its position, so the
+ * restriction is taken on the temporal point of the positions and the result
+ * is the temporal pose restricted to the times it keeps
+ * @param[in] temp Temporal pose
+ * @param[in] s Elevation span
+ * @param[in] atfunc True if the restriction is `at`, false for `minus`
+ */
+Temporal *
+tpose_restrict_elevation(const Temporal *temp, const Span *s, bool atfunc)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPOSE(temp, NULL); VALIDATE_NOT_NULL(s, NULL);
+  if (! ensure_has_Z(temp->temptype, temp->flags))
+    return NULL;
+
+  Temporal *tpoint = tpose_to_tpoint(temp);
+  Temporal *res = tgeo_restrict_elevation(tpoint, s, atfunc);
+  Temporal *result = NULL;
+  if (res)
+  {
+    /* We do not call the function tgeompoint_tpose to avoid roundoff errors */
+    SpanSet *ss = temporal_time(res);
+    result = temporal_restrict_tstzspanset(temp, ss, REST_AT);
+    pfree(res); pfree(ss);
+  }
+  pfree(tpoint);
+  return result;
+}
+
+/**
+ * @ingroup meos_pose_restrict
+ * @brief Return a temporal pose restricted to an elevation span
+ * @param[in] temp Temporal pose
+ * @param[in] s Elevation span
+ * @csqlfn #Tpose_at_elevation()
+ */
+Temporal *
+tpose_at_elevation(const Temporal *temp, const Span *s)
+{
+  return tpose_restrict_elevation(temp, s, REST_AT);
+}
+
+/**
+ * @ingroup meos_pose_restrict
+ * @brief Return a temporal pose restricted to the complement of an elevation
+ * span
+ * @param[in] temp Temporal pose
+ * @param[in] s Elevation span
+ * @csqlfn #Tpose_minus_elevation()
+ */
+Temporal *
+tpose_minus_elevation(const Temporal *temp, const Span *s)
+{
+  return tpose_restrict_elevation(temp, s, REST_MINUS);
+}
+
+/*****************************************************************************/

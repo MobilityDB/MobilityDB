@@ -653,6 +653,74 @@ trgeometry_minus_stbox(const Temporal *temp, const STBox *box, bool border_inc)
   return trgeo_restrict_stbox(temp, box, border_inc, REST_MINUS);
 }
 
+/*****************************************************************************
+ * Restriction by elevation
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_internal_rgeo_restrict
+ * @brief Return a temporal rigid geometry restricted to (the complement of) an
+ * elevation span
+ * @details The elevation of a rigid geometry is the elevation of the position
+ * of its pose, so the restriction is taken on the temporal point of the
+ * positions and the result is the temporal rigid geometry restricted to the
+ * times it keeps. The body geometry is not taken into account: a body extends
+ * above and below its position, and the elevation span is tested against the
+ * position alone
+ * @param[in] temp Temporal rigid geometry
+ * @param[in] s Elevation span
+ * @param[in] atfunc True if the restriction is `at`, false for `minus`
+ */
+Temporal *
+trgeo_restrict_elevation(const Temporal *temp, const Span *s, bool atfunc)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_NOT_NULL(s, NULL);
+  if (! ensure_has_Z(temp->temptype, temp->flags))
+    return NULL;
+
+  Temporal *tpoint = trgeometry_to_tgeompoint(temp);
+  Temporal *res = tgeo_restrict_elevation(tpoint, s, atfunc);
+  pfree(tpoint);
+  if (! res)
+    return NULL;
+  /* We restrict the temporal rigid geometry to the times the restricted point
+   * keeps rather than converting the point back, so that the poses and the
+   * reference geometry are preserved exactly */
+  SpanSet *ss = temporal_time(res);
+  pfree(res);
+  Temporal *result = trgeo_restrict_overlap(temp, ss, REST_AT);
+  pfree(ss);
+  return result;
+}
+
+/**
+ * @ingroup meos_rgeo_restrict
+ * @brief Return a temporal rigid geometry restricted to an elevation span
+ * @param[in] temp Temporal rigid geometry
+ * @param[in] s Elevation span
+ * @csqlfn #Trgeometry_at_elevation()
+ */
+Temporal *
+trgeometry_at_elevation(const Temporal *temp, const Span *s)
+{
+  return trgeo_restrict_elevation(temp, s, REST_AT);
+}
+
+/**
+ * @ingroup meos_rgeo_restrict
+ * @brief Return a temporal rigid geometry restricted to the complement of an
+ * elevation span
+ * @param[in] temp Temporal rigid geometry
+ * @param[in] s Elevation span
+ * @csqlfn #Trgeometry_minus_elevation()
+ */
+Temporal *
+trgeometry_minus_elevation(const Temporal *temp, const Span *s)
+{
+  return trgeo_restrict_elevation(temp, s, REST_MINUS);
+}
+
 /**
  * @brief Apply a pose to a body-frame geometry and return the centroid of the
  * world-frame result as a Datum

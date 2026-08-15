@@ -920,6 +920,27 @@ SELECT minusGeometry(tpose '[Pose(Point(2 2), 0.3)@2001-01-01,
    Pose(Point(2 2),0.7)@2001-01-03]} */
 </programlisting>
 			</listitem>
+
+			<listitem xml:id="tpose_atElevation">
+				<indexterm significance="normal"><primary><varname>atElevation</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>minusElevation</varname></primary></indexterm>
+				<para>Restrict to (the complement of) an elevation span</para>
+				<para><varname>atElevation(tpose,floatspan) → tpose</varname></para>
+				<para><varname>minusElevation(tpose,floatspan) → tpose</varname></para>
+				<para>The elevation of a pose is the elevation of its position, so the restriction keeps the times at which that position lies within the span. The temporal pose must have Z dimension.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(atElevation(tpose '[Pose(Point(0 0 0),1,0,0,0)@2001-01-01,
+  Pose(Point(0 0 4),1,0,0,0)@2001-01-05]', floatspan '[1, 2]'));
+/* {[Pose(POINT Z (0 0 1),1,0,0,0)@2001-01-02,
+   Pose(POINT Z (0 0 2),1,0,0,0)@2001-01-03]} */
+SELECT asText(minusElevation(tpose '[Pose(Point(0 0 0),1,0,0,0)@2001-01-01,
+  Pose(Point(0 0 4),1,0,0,0)@2001-01-05]', floatspan '[1, 2]'));
+/* {[Pose(POINT Z (0 0 0),1,0,0,0)@2001-01-01,
+   Pose(POINT Z (0 0 1),1,0,0,0)@2001-01-02),
+   (Pose(POINT Z (0 0 2),1,0,0,0)@2001-01-03,
+   Pose(POINT Z (0 0 4),1,0,0,0)@2001-01-05]} */
+</programlisting>
+			</listitem>
 		</itemizedlist>
 	</sect1>
 
