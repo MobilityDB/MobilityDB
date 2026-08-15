@@ -133,9 +133,8 @@ $(function() {
 
 <p>Return a temporal Boolean that states whether a geometry covers a temporal geometry. </p>
 <p >The temporal covers relationship is computed as follows:</p><ul>
-<li>For temporal points <div class="fragment"><div class="line">tcovers(geo, tpoint) = tintersects(geo, tpoint) &amp;</div>
-<div class="line">~ tintersects(st_boundary(geo), tpoint)</div>
-</div><!-- fragment --> where <code>&amp;</code> and <code>~</code> are the temporal <code>and</code> and the temporal <code>or</code> operators. Notice that <code>tcovers(tpoint, geo)</code> is not defined, the <code>tintersects</code> function can be used instead.</li>
+<li>For temporal points <div class="fragment"><div class="line">tcovers(geo, tpoint) = tintersects(geo, tpoint)</div>
+</div><!-- fragment --> since a geometry covers a point that lies in the closed geometry, that is, in its interior together with its boundary. Notice that <code>tcovers(tpoint, geo)</code> is not defined, the <code>tintersects</code> function can be used instead.</li>
 <li>For temporal geometries, compute the relationship at each instant using the lifting infrastructure. <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">gs</td><td>Geometry </td></tr>
