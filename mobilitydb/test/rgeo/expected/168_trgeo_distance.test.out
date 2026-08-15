@@ -38,6 +38,38 @@ SELECT round(minValue(tDistance(
  0.938447
 (1 row)
 
+SELECT round(nearestApproachDistance(
+  trgeometry 'Polygon((0 0,3 0,3 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),3.141592653589793)@2001-01-02]',
+  geometry 'Point(2 2)')::numeric, 6);
+  round   
+----------
+ 0.000000
+(1 row)
+
+SELECT round(minValue(tDistance(
+  trgeometry 'Polygon((0 0,3 0,3 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),3.141592653589793)@2001-01-02]',
+  geometry 'Point(2 2)'))::numeric, 6);
+  round   
+----------
+ 0.000000
+(1 row)
+
+SELECT round(nearestApproachDistance(
+  trgeometry 'Polygon((0 0,3 0,3 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),3.141592653589793)@2001-01-02]',
+  geometry 'Polygon((1.5 1.5,2.5 1.5,2.5 2.5,1.5 2.5,1.5 1.5))')::numeric, 6);
+  round   
+----------
+ 0.000000
+(1 row)
+
+SELECT round(minValue(tDistance(
+  trgeometry 'Polygon((0 0,3 0,3 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),3.141592653589793)@2001-01-02]',
+  geometry 'Polygon((1.5 1.5,2.5 1.5,2.5 2.5,1.5 2.5,1.5 1.5))'))::numeric, 6);
+  round   
+----------
+ 0.000000
+(1 row)
+
 SELECT round(minValue(
   trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]' <->
   geometry 'Polygon((5 3,6 3,6 4,5 4,5 3))')::numeric, 6);

@@ -59,6 +59,22 @@ SELECT round(minValue(tDistance(
   trgeometry 'Polygon((-2 -0.5,2 -0.5,2 0.5,-2 0.5,-2 -0.5));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),3.141592653589793)@2001-01-02]',
   geometry 'Polygon((0 3,1 3,1 4,0 4,0 3))'))::numeric, 6);
 
+-- A rectangle rotating half a turn about one of its corners sweeps over a fixed
+-- point and over a fixed polygon: the nearest approach is zero, realized over
+-- the sub-interval of the rotation during which the body covers the target
+SELECT round(nearestApproachDistance(
+  trgeometry 'Polygon((0 0,3 0,3 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),3.141592653589793)@2001-01-02]',
+  geometry 'Point(2 2)')::numeric, 6);
+SELECT round(minValue(tDistance(
+  trgeometry 'Polygon((0 0,3 0,3 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),3.141592653589793)@2001-01-02]',
+  geometry 'Point(2 2)'))::numeric, 6);
+SELECT round(nearestApproachDistance(
+  trgeometry 'Polygon((0 0,3 0,3 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),3.141592653589793)@2001-01-02]',
+  geometry 'Polygon((1.5 1.5,2.5 1.5,2.5 2.5,1.5 2.5,1.5 1.5))')::numeric, 6);
+SELECT round(minValue(tDistance(
+  trgeometry 'Polygon((0 0,3 0,3 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),3.141592653589793)@2001-01-02]',
+  geometry 'Polygon((1.5 1.5,2.5 1.5,2.5 2.5,1.5 2.5,1.5 1.5))'))::numeric, 6);
+
 -- The distance operator agrees with the function
 SELECT round(minValue(
   trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]' <->
