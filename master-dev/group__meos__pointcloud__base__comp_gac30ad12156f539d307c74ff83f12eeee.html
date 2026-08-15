@@ -124,7 +124,9 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Compare two pcpoints byte-wise. </p>
-<dl class="section return"><dt>Returns</dt><dd>-1 / 0 / 1 </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>-1 / 0 / 1 </dd>
+<dd>
+On error return <code>INT_MAX</code> </dd></dl>
 <dl class="section note"><dt>Note</dt><dd>Compares only the meaningful-prefix bytes — pgpointcloud's struct-tail padding is skipped (see the padding comment above). Two pcpoints that disagree only on those padding bytes now compare equal, making <a class="el" href="structSet.html" title="Structure to represent sets of values.">Set</a> dedup and B-tree equality deterministic. @csqlfn <a class="el" href="group__mobilitydb__pointcloud__base__comp_gaea4c92d3957b1992e4a70082c7f2a398.html#gaea4c92d3957b1992e4a70082c7f2a398" title="Return -1, 0, or 1 depending on whether the first pcpoint is less than, equal to, or greater than the...">Pcpoint_cmp()</a> </dd></dl>
 
 </div>
