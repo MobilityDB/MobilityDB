@@ -1,0 +1,140 @@
+name: Fedora
+
+# Every other Linux job runs on Ubuntu, which pins one compiler generation and
+# always produces a UTF-8 database. Two classes of defect are invisible from
+# there and both reach users:
+#
+#   1. Diagnostics newer than Ubuntu's GCC. The vendored geometry libraries
+#      compile under the standard warning flags, so a warning class introduced
+#      by a later GCC lands unnoticed.
+#   2. A database whose encoding is not UTF-8. initdb chooses SQL_ASCII when it
+#      runs under the C locale, which a container without a UTF-8 langpack has,
+#      and text values take a different path there.
+#
+# Fedora carries a much newer toolchain and, without a langpack, gives the
+# SQL_ASCII cluster for free. The two jobs below cover one axis each.
+#
+# Fedora packages neither pgPointCloud nor the h3 PostgreSQL extension, so the
+# suite job leaves POINTCLOUD and H3 out: with them on, `CREATE EXTENSION
+# pointcloud` and the h3 cascade fail, test_setup aborts and every test reports
+# Not Run. The build job keeps -DALL=ON because compiling those families needs
+# only their C libraries.
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/fedora.yml'
+      - 'cmake/**'
+      - 'meos/**'
+      - 'mobilitydb/**'
+      - 'pgtypes/**'
+      - 'postgis/**'
+      - 'CMakeLists.txt'
+    branches-ignore:
+      - gh-pages
+  pull_request:
+    paths:
+      - '.github/workflows/fedora.yml'
+      - 'cmake/**'
+      - 'meos/**'
+      - 'mobilitydb/**'
+      - 'pgtypes/**'
+      - 'postgis/**'
+      - 'CMakeLists.txt'
+    branches-ignore:
+      - gh-pages
+
+jobs:
+  fedora-build:
+    name: fedora-build
+    runs-on: ubuntu-24.04
+    container: fedora:44
+
+    steps:
+      - name: Install dependencies
+        run: |
+          dnf -y install gcc gcc-c++ cmake make git tar xz diffutils \
+            postgresql-server-devel postgis \
+            geos-devel proj-devel json-c-devel gsl-devel \
+            gdal-devel h3-devel \
+            autoconf automake libtool libxml2-devel zlib-devel
+          gcc --version | head -1
+
+      - uses: actions/checkout@v4
+
+      # The checkout belongs to another uid inside the container.
+      - name: Trust the checkout
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      # RASTER needs GDAL and H3 needs libh3; -DALL=ON turns both on, so the
+      # families that only need a C library are all compiled here.
+      - name: Configure with every family
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DALL=ON \
+            -DH3_INCLUDE_DIR=/usr/include/h3 -DH3_LIBRARY=/usr/lib64/libh3.so
+
+      - name: Build
+        run: make -C build -j"$(nproc)" 2>&1 | tee build.log
+
+      # A build that fails and a build that is clean both report zero warnings,
+      # so assert the build succeeded before believing the count. The pipe above
+      # hands `tee` the exit status, hence PIPESTATUS.
+      - name: Fail on any compiler warning
+        run: |
+          n=$(grep -c 'warning:' build.log || true)
+          echo "warnings: $n"
+          if [ "$n" -ne 0 ]; then
+            grep -n 'warning:' build.log
+            echo "::error::the build emits $n compiler warning(s) on this toolchain"
+            exit 1
+          fi
+
+  fedora-sqlascii:
+    name: fedora-sqlascii
+    runs-on: ubuntu-24.04
+    container: fedora:44
+
+    steps:
+      # No glibc-langpack-en here on purpose: the image locale stays C, so
+      # initdb builds an SQL_ASCII cluster and the suite exercises the
+      # non-UTF-8 path.
+      - name: Install dependencies
+        run: |
+          dnf -y install gcc gcc-c++ cmake make git tar xz diffutils \
+            postgresql-server postgresql-server-devel postgis \
+            geos-devel proj-devel json-c-devel gsl-devel gdal-devel
+          locale
+
+      - uses: actions/checkout@v4
+
+      - name: Trust the checkout
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      # initdb refuses to run as root, and the suite creates its own cluster,
+      # so the build and the tests belong to an unprivileged user.
+      - name: Create the build user
+        run: |
+          useradd -m builder
+          chown -R builder "$GITHUB_WORKSPACE"
+
+      - name: Configure with the families Fedora can run
+        run: |
+          su builder -c "cmake -S '$GITHUB_WORKSPACE' -B '$GITHUB_WORKSPACE/build' \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCBUFFER=ON -DJSON=ON -DNPOINT=ON -DPOSE=ON -DRGEO=ON \
+            -DQUADBIN=ON -DRASTER=ON"
+
+      - name: Build
+        run: su builder -c "make -C '$GITHUB_WORKSPACE/build' -j$(nproc)"
+
+      - name: Install the extension
+        run: make -C build install
+
+      - name: Report the cluster encoding the suite will use
+        run: |
+          su builder -c "initdb -D /tmp/encprobe" 2>&1 | grep -iE 'locale|encoding' || true
+          rm -rf /tmp/encprobe
+
+      - name: Run the suite
+        run: su builder -c "make -C '$GITHUB_WORKSPACE/build' test"
