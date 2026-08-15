@@ -96,7 +96,7 @@ tdistance_tfloat_float(const Temporal *temp, double d)
  * @param[in] temp Temporal value
  * @param[in] i Value
  * @return On error return INT_MAX
- * @csqlfn #NAD_tnumber_number()
+ * @csqlfn #NAD_tnumber_number() #NAD_number_tnumber()
  */
 int
 nad_tint_int(const Temporal *temp, int i)
@@ -113,7 +113,7 @@ nad_tint_int(const Temporal *temp, int i)
  * @param[in] temp Temporal value
  * @param[in] i Value
  * @return On error return @p INT64_MAX
- * @csqlfn #NAD_tnumber_number()
+ * @csqlfn #NAD_tnumber_number() #NAD_number_tnumber()
  */
 int64
 nad_tbigint_bigint(const Temporal *temp, int64 i)
@@ -130,7 +130,7 @@ nad_tbigint_bigint(const Temporal *temp, int64 i)
  * @param[in] temp Temporal value
  * @param[in] d Value
  * @return On error return DBL_MAX
- * @csqlfn #NAD_tnumber_number()
+ * @csqlfn #NAD_tnumber_number() #NAD_number_tnumber()
  */
 double
 nad_tfloat_float(const Temporal *temp, double d)
