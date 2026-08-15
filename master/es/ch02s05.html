@@ -76,7 +76,7 @@ SELECT round(floatspan '[1.123456789, inf)', 3);
 -- [1.123,Infinity)
 SELECT round(floatspanset '{[1.123456789, 2.123456789],[3.123456789,4.123456789]}', 3);
 -- {[1.123, 2.123], [3.123, 4.123]}
-</pre></li><li class="listitem"><a name="floatspanset_degrees"></a><a class="indexterm" name="id2199"></a><a class="indexterm" name="id2202"></a><p>Convertir a grados o radianes</p><p><code class="varname">degrees({floatset,floatspans}, normalize=false) → {floatset,floatspans}</code></p><p><code class="varname">radians({floatset,floatspans}) → {floatset,floatspans}</code></p><p>El parámetro adicional en la función <code class="varname">degrees</code> puede ser utilizado para normalizar los valores entre 0 y 360 grados.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="floatsetspan_degrees"></a><a class="indexterm" name="id2199"></a><a class="indexterm" name="id2202"></a><p>Convertir a grados o radianes</p><p><code class="varname">degrees({floatset,floatspans}, normalize=false) → {floatset,floatspans}</code></p><p><code class="varname">radians({floatset,floatspans}) → {floatset,floatspans}</code></p><p>El parámetro adicional en la función <code class="varname">degrees</code> puede ser utilizado para normalizar los valores entre 0 y 360 grados.</p><pre class="programlisting">
 SELECT round(degrees(floatset '{0, 0.5, 0.7, 1.0}', true), 3);
 -- {0, 28.648, 40.107, 57.296}
 SELECT round(radians(floatspanset '{[0, 45], [90, 135]}'), 3);
