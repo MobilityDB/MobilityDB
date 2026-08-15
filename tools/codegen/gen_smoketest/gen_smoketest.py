@@ -566,6 +566,14 @@ TRGEO_CONFIG = dict(
         "trgeometry_from_mfjson":     {0: "trgeo_mfjson1"},
         "trgeometry_as_tsequence":    {1: "interp_linear1"},
         "trgeometry_as_tsequenceset": {1: "interp_linear1"},
+        # Array-input constructors: a `TInstant **`/`TSequence **` paired with a
+        # count is an INPUT array the generic emitter leaves unmapped. Feed the
+        # canned, same-geometry, increasing-timestamp instants (and the canned
+        # trgeometry sequence) plus the matching element count; the constructor
+        # copies its inputs, so the returned value is freed by the generic path.
+        "trgeometryseq_make":         {1: "trinstarr1", 2: "2"},
+        "trgeometryseqset_make":      {1: "trseqarr1",  2: "1"},
+        "trgeometryseqset_make_gaps": {1: "trinstarr1", 2: "2"},
     },
     skip={
         # The generic emitter would allocate into geom_out_param and never free
@@ -618,6 +626,12 @@ TRGEO_CONFIG = dict(
     (Temporal *) trgeo_inst3, trgeo_inst4, LINEAR, 0.0, NULL, false);
   Temporal *tpoint1 = trgeometry_to_tgeompoint(trgeo_seq1);
   Temporal *tpose1 = trgeometry_to_tpose(trgeo_seq1);
+  /* Canned input arrays for the array-input constructors: two same-geometry
+   * instants in increasing time, and the canned trgeometry sequence. The
+   * constructors copy their elements, so these stay owned by the blocks that
+   * built them. */
+  TInstant *trinstarr1[] = {trgeo_inst1, trgeo_inst2};
+  TSequence *trseqarr1[] = {trgeo_tseq2};
   int n_out = 0;
 """,
     cleanup="""\
@@ -629,6 +643,7 @@ TRGEO_CONFIG = dict(
     if (out_geom) free(out_geom);
   }
 
+  free(trgeo_inst1);
   free(trgeo_inst2);
   free(trgeo_inst3);
   free(trgeo_inst4);
