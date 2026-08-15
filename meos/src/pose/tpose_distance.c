@@ -119,7 +119,7 @@ tdistance_tpose_tpose(const Temporal *temp1, const Temporal *temp2)
  * geometry
  * @param[in] temp Temporal pose
  * @param[in] gs Geometry
- * @csqlfn #NAI_tpose_geo()
+ * @csqlfn #NAI_tpose_geo() #NAI_geo_tpose()
  */
 TInstant *
 nai_tpose_geo(const Temporal *temp, const GSERIALIZED *gs)
@@ -144,7 +144,7 @@ nai_tpose_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @brief Return the nearest approach instant of a pose and a temporal pose
  * @param[in] temp Temporal pose
  * @param[in] pose Pose
- * @csqlfn #NAI_tpose_pose()
+ * @csqlfn #NAI_tpose_pose() #NAI_pose_tpose()
  */
 TInstant *
 nai_tpose_pose(const Temporal *temp, const Pose *pose)

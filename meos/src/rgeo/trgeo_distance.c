@@ -2240,6 +2240,7 @@ tdistance_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
  * @brief Return the nearest approach instant between a temporal rigid geometry
  * and a geometry
  * @sqlfn nearestApproachInstant()
+ * @csqlfn #NAI_trgeometry_geo() #NAI_geo_trgeometry()
  */
 TInstant *
 nai_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
@@ -2274,6 +2275,7 @@ nai_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @brief Return the nearest approach instant between a temporal rigid
  * geometry and a temporal point
  * @sqlfn nearestApproachInstant()
+ * @csqlfn #NAI_trgeometry_tpoint() #NAI_tpoint_trgeometry()
  */
 TInstant *
 nai_trgeometry_tpoint(const Temporal *temp1, const Temporal *temp2)
@@ -2302,6 +2304,7 @@ nai_trgeometry_tpoint(const Temporal *temp1, const Temporal *temp2)
  * @brief Return the nearest approach instant between two temporal rigid
  * geometries
  * @sqlfn nearestApproachInstant()
+ * @csqlfn #NAI_trgeometry_trgeometry()
  */
 TInstant *
 nai_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
