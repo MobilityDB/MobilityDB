@@ -1653,7 +1653,7 @@ tpose_as_geopose_stream_header(const Temporal *temp, int precision)
 {
   VALIDATE_TPOSE(temp, NULL);
 
-  const TInstant *first = (const TInstant *) temporal_start_instant(temp);
+  const TInstant *first = temporal_start_inst(temp);
   if (first == NULL)
     return NULL;
   GeoPoseAnchor anchor;
@@ -1692,7 +1692,7 @@ tpose_as_geopose_stream_element(const Temporal *temp, const TInstant *inst,
   VALIDATE_TPOSE(temp, NULL);
   VALIDATE_NOT_NULL(inst, NULL);
 
-  const TInstant *first = (const TInstant *) temporal_start_instant(temp);
+  const TInstant *first = temporal_start_inst(temp);
   if (first == NULL)
     return NULL;
   GeoPoseAnchor anchor;
