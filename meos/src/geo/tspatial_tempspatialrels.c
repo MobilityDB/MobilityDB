@@ -1585,6 +1585,13 @@ tdwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
       if (supported)
         return tpoint_linear_dwithin_geom(temp, gs, dist);
     }
+    /* A zero distance is the intersection relationship, which the buffer below
+     * cannot express: the buffer of a geometry of a lower dimension than a
+     * surface by a zero distance is empty, and an empty geometry carries no
+     * relationship */
+    if (dist == 0.0)
+      return tinterrel_tgeo_geo(temp, gs, TINTERSECTS);
+
     GSERIALIZED *buffer = geom_buffer(gs, dist, "");
     Temporal *result = tinterrel_tgeo_geo(temp, buffer, TINTERSECTS);
     pfree(buffer);
