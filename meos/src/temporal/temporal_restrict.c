@@ -268,7 +268,7 @@ temporal_restrict_values(const Temporal *temp, const Set *s, bool atfunc)
 
   /* Singleton set */
   if (s->count == 1)
-    temporal_restrict_value(temp, SET_VAL_N(s, 0), atfunc);
+    return temporal_restrict_value(temp, SET_VAL_N(s, 0), atfunc);
 
   /* Bounding box test */
   interpType interp = MEOS_FLAGS_GET_INTERP(temp->flags);
