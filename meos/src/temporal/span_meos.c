@@ -570,14 +570,14 @@ span_upper_inc(const Span *s)
  * @ingroup meos_setspan_accessor
  * @brief Return the width of an integer span
  * @param[in] s Span
- * @return On error return -1
+ * @return On error return INT_MAX
  * @csqlfn #Numspan_width()
  */
 int
 intspan_width(const Span *s)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_INTSPAN(s, -1);
+  VALIDATE_INTSPAN(s, INT_MAX);
   return Int32GetDatum(numspan_width(s));
 }
 
@@ -585,14 +585,14 @@ intspan_width(const Span *s)
  * @ingroup meos_setspan_accessor
  * @brief Return the width of a big integer span
  * @param[in] s Span
- * @return On error return -1
+ * @return On error return INT64_MAX
  * @csqlfn #Numspan_width()
  */
 int64
 bigintspan_width(const Span *s)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_BIGINTSPAN(s, -1);
+  VALIDATE_BIGINTSPAN(s, INT64_MAX);
   return Int64GetDatum(numspan_width(s));
 }
 

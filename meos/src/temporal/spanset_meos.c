@@ -515,14 +515,14 @@ datespanset_upper(const SpanSet *ss)
  * @brief Return the width of an integer span set
  * @param[in] ss Span
  * @param[in] boundspan True when the potential time gaps are ignored
- * @return On error return -1
+ * @return On error return INT_MAX
  * @csqlfn #Numspanset_width(()
  */
 int
 intspanset_width(const SpanSet *ss, bool boundspan)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_INTSPANSET(ss, -1);
+  VALIDATE_INTSPANSET(ss, INT_MAX);
   return Int32GetDatum(numspanset_width(ss, boundspan));
 }
 
@@ -531,14 +531,14 @@ intspanset_width(const SpanSet *ss, bool boundspan)
  * @brief Return the width of an integer span set
  * @param[in] ss Span
  * @param[in] boundspan True when the potential time gaps are ignored
- * @return On error return -1
+ * @return On error return INT64_MAX
  * @csqlfn #Numspanset_width(()
  */
 int64
 bigintspanset_width(const SpanSet *ss, bool boundspan)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_BIGINTSPANSET(ss, -1);
+  VALIDATE_BIGINTSPANSET(ss, INT64_MAX);
   return Int64GetDatum(numspanset_width(ss, boundspan));
 }
 

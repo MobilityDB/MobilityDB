@@ -235,7 +235,7 @@ int
 raster_num_bands(const Raster *rast)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(rast, -1);
+  VALIDATE_NOT_NULL(rast, INT_MAX);
   rt_raster raster = rt_raster_deserialize((void *) rast, 1);
   if (! raster)
   {

@@ -2435,14 +2435,14 @@ temporal_duration(const Temporal *temp, bool boundspan)
  * @ingroup meos_temporal_accessor
  * @brief Return the number of sequences of a temporal sequence (set)
  * @param[in] temp Temporal value
- * @return On error return -1
+ * @return On error return INT_MAX
  * @csqlfn #Temporal_num_sequences()
  */
 int
 temporal_num_sequences(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(temp, -1);
+  VALIDATE_NOT_NULL(temp, INT_MAX);
   if (! ensure_continuous_interp(temp))
     return -1;
   return (temp->subtype == TSEQUENCE) ? 1 : ((TSequenceSet *) temp)->count;
@@ -2660,14 +2660,14 @@ temporal_upper_inc(const Temporal *temp)
  * @ingroup meos_temporal_accessor
  * @brief Return the number of distinct instants of a temporal value
  * @param[in] temp Temporal value
- * @return On error return -1
+ * @return On error return INT_MAX
  * @csqlfn #Temporal_num_instants()
  */
 int
 temporal_num_instants(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(temp, -1);
+  VALIDATE_NOT_NULL(temp, INT_MAX);
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
@@ -2868,14 +2868,14 @@ temporal_instants(const Temporal *temp, int *count)
  * @ingroup meos_temporal_accessor
  * @brief Return the number of distinct timestamps of a temporal value
  * @param[in] temp Temporal value
- * @return On error return -1
+ * @return On error return INT_MAX
  * @csqlfn #Temporal_num_timestamps()
  */
 int
 temporal_num_timestamps(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(temp, -1);
+  VALIDATE_NOT_NULL(temp, INT_MAX);
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)

@@ -52,6 +52,7 @@
  */
 
 #include <assert.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -128,7 +129,7 @@ int main(void)
   assert(raster_from_hexwkb(NULL) == NULL);
   assert(meos_errno() != 0);
   meos_errno_reset();
-  assert(raster_num_bands(NULL) == -1);
+  assert(raster_num_bands(NULL) == INT_MAX);
   assert(meos_errno() != 0);
   meos_errno_reset();
   assert(raster_as_wkb(NULL, &size) == NULL);

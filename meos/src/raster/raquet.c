@@ -666,7 +666,7 @@ int
 raquet_width(const Raquet *rq)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(rq, -1);
+  VALIDATE_NOT_NULL(rq, INT_MAX);
   return (int) rq->width;
 }
 
@@ -679,7 +679,7 @@ int
 raquet_height(const Raquet *rq)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(rq, -1);
+  VALIDATE_NOT_NULL(rq, INT_MAX);
   return (int) rq->height;
 }
 

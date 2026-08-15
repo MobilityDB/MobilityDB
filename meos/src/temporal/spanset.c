@@ -512,13 +512,13 @@ tstzspanset_to_datespanset(const SpanSet *ss)
  * @ingroup meos_internal_setspan_accessor
  * @brief Return the size in bytes of a span set
  * @param[in] ss Span set
- * @return On error return -1
+ * @return On error return INT_MAX
  * @csqlfn #Spanset_mem_size()
  */
 int
 spanset_mem_size(const SpanSet *ss)
 {
-  VALIDATE_NOT_NULL(ss, -1);
+  VALIDATE_NOT_NULL(ss, INT_MAX);
   return (int) VARSIZE(ss);
 }
 
@@ -683,14 +683,14 @@ tstzspanset_duration(const SpanSet *ss, bool boundspan)
  * @ingroup meos_setspan_accessor
  * @brief Return the number of dates of a span set
  * @param[in] ss Span set
- * @return On error return -1
+ * @return On error return INT_MAX
  * @csqlfn #Datespanset_num_dates()
  */
 int
 datespanset_num_dates(const SpanSet *ss)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_DATESPANSET(ss, -1);
+  VALIDATE_DATESPANSET(ss, INT_MAX);
   /* Date span sets are always canonicalized */
   return ss->count * 2;
 }
@@ -781,14 +781,14 @@ datespanset_dates(const SpanSet *ss)
  * @ingroup meos_setspan_accessor
  * @brief Return the number of timestamps of a span set
  * @param[in] ss Span set
- * @return On error return -1
+ * @return On error return INT_MAX
  * @csqlfn #Tstzspanset_num_timestamps()
  */
 int
 tstzspanset_num_timestamps(const SpanSet *ss)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TSTZSPANSET(ss, -1);
+  VALIDATE_TSTZSPANSET(ss, INT_MAX);
 
   const Span *s = SPANSET_SP_N(ss, 0);
   Datum prev = s->lower;
@@ -941,14 +941,14 @@ tstzspanset_timestamps(const SpanSet *ss)
  * @ingroup meos_setspan_accessor
  * @brief Return the number of spans of a span set
  * @param[in] ss Span set
- * @return On error return -1
+ * @return On error return INT_MAX
  * @csqlfn #Spanset_num_spans()
  */
 int
 spanset_num_spans(const SpanSet *ss)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(ss, -1);
+  VALIDATE_NOT_NULL(ss, INT_MAX);
   return ss->count;
 }
 

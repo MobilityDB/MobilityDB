@@ -94,16 +94,29 @@ NON_PORTABLE = {"LONG_MAX", "ULONG_MAX"}
 # 0 false, -1 unknown -- so -1 is their canonical sentinel, not a maximum.
 # It is out of their value domain, which is what the rule actually asks for.
 PREDICATE = re.compile(
-    r"^(ever|always)_|"
+    r"^(ever|always|eacomp|spatialrel)_|"
+    r"^[ea]raster_value|"
     r"^[ea](contains|covers|coveredby|crosses|disjoint|dwithin|equals|"
     r"intersects|overlaps|touches|within)_")
+# A function that answers a question in an int is three-valued whatever it is
+# called: it says true, false, or unknown, and -1 is its unknown. The name of
+# the family is not always enough to tell, so the documented contract decides
+# as well -- a brief that promises true or false, or a return of 1 and 0.
+PREDICATE_DOC = re.compile(r"@brief Return true if|@return\s+1 if")
+# A locator answers where a value sits in a segment, as a fraction. Its -1.0
+# says the value is not located there, which is an answer and not a failure,
+# and it is already outside the fractions it otherwise returns.
+LOCATOR = re.compile(r"locate")
 # A pointer return: any sentinel other than NULL is wrong
 POINTER = re.compile(r"\*\s*$")
 
 FUNC_DEF = re.compile(r"^([a-z_][a-z0-9_]*)\s*\(")
 RET_TYPE = re.compile(r"^((?:const\s+)?[A-Za-z_][A-Za-z0-9_]*(?:\s*\*+)?)\s*$")
 VALIDATE = re.compile(r"\bVALIDATE_[A-Z0-9_]+\s*\([^,]+,\s*([^)]+?)\s*\)")
-DOC_RETURN = re.compile(r"@return\s+On error return\s+(?:@p\s+)?([^\s,.]+)")
+# The token may be a name or a number, and a number may have a decimal point,
+# so it cannot end at the first dot: -1.0 read as -1 is a different sentinel
+DOC_RETURN = re.compile(r"@return\s+On error return\s+(?:@p\s+)?"
+                        r"(-?\d+\.\d+|-?\d+|[A-Za-z_][A-Za-z0-9_]*)")
 
 
 def sentinel_for(rettype: str) -> str | None:
@@ -139,8 +152,6 @@ def scan(path: Path, rel: str) -> list[tuple[str, str]]:
             continue
         name, rettype = m.group(1), rt.group(1)
         want = sentinel_for(rettype)
-        if want == "INT_MAX" and PREDICATE.match(name):
-            want = "-1"
         if want is None:
             continue
 
@@ -166,6 +177,12 @@ def scan(path: Path, rel: str) -> list[tuple[str, str]]:
         while k < len(lines) and lines[k] != "}":
             body.append(lines[k])
             k += 1
+        if want == "INT_MAX" and (PREDICATE.match(name) or
+                                  PREDICATE_DOC.search("\n".join(doc))):
+            want = "-1"
+        if want == "DBL_MAX" and LOCATOR.search(name):
+            want = "-1.0"
+
         validated = validated_raw = None
         for bl in body:
             v = VALIDATE.search(bl)
