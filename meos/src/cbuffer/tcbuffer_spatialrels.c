@@ -283,6 +283,21 @@ ea_spatialrel_tcbufferinst_geo(const TInstant *inst, const GSERIALIZED *gs,
       iymax, gbox.xmin, gbox.ymin, gbox.xmax, gbox.ymax, &decided))
     return decided;
   const Cbuffer *cb = DatumGetCbufferP(tinstant_value_p(inst));
+  /* The containment of a geometry by the disc is read from the distances of
+   * the geometry to the centre, which are exact for a circular arc, where a
+   * relationship of the rendered disc is read from a polygonal approximation
+   * of it */
+  if (! invert && numparam == 2)
+  {
+    int res = -1;
+    if (func == (varfunc) &datum_geom_contains)
+      res = cbuffer_contains_geo(cb, gs);
+    else if (func == (varfunc) &datum_geom_covers)
+      res = cbuffer_covers_geo(cb, gs);
+    if (res >= 0)
+      return res;
+  }
+
   GSERIALIZED *trav = cbuffer_to_geom(cb);
   int result = spatialrel_geo_geo(trav, gs, param, func, numparam, invert);
   pfree(trav);
