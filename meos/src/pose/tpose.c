@@ -734,6 +734,7 @@ tposeseq_apply_geo(const TSequence *seq, const GSERIALIZED *body)
     }
     instants[i] = tinstant_make(GserializedPGetDatum(world), T_TGEOMPOINT,
       inst->t);
+    pfree(world);
   }
   TSequence *result = tsequence_make(instants, seq->count,
     seq->period.lower_inc, seq->period.upper_inc,
