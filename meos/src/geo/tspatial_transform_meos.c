@@ -681,6 +681,15 @@ lwproj_lookup(int32_t srid_from, int32_t srid_to, LWPROJ **pj)
 int
 spheroid_init_from_srid(int32_t srid, SPHEROID *s)
 {
+  /* Answer the geographic SRIDs in common use from the built-in table, so that
+   * the geodetic surface neither queries PROJ nor reads spatial_ref_sys */
+  double a, rf;
+  if (srid_builtin_ellipsoid(srid, &a, &rf) == LW_SUCCESS)
+  {
+    spheroid_init(s, a, a - a / rf);
+    return LW_SUCCESS;
+  }
+
   LWPROJ *pj;
   if (lwproj_lookup(srid, srid, &pj) == LW_FAILURE)
     return LW_FAILURE;

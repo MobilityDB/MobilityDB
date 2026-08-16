@@ -20,6 +20,7 @@ extern int lwproj_lookup(int32_t srid_from, int32_t srid_to, LWPROJ **pj);
 extern int spheroid_init_from_srid(int32_t srid, SPHEROID *s);
 extern void srid_check_latlong(int32_t srid);
 extern int srid_is_latlong(int32_t srid);
+extern int srid_builtin_ellipsoid(int32_t srid, double *a, double *rf);
 
 /**
  * Builtin SRID values
