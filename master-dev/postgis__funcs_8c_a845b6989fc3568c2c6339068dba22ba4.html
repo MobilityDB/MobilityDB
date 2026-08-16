@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: MAX_LEN_BOX3D</title>
+<title>MobilityDB: itree_pip_touches</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -181,7 +181,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_ae645f786e5b039504f61f38b1308d9bd.html#ae645f786e5b039504f61f38b1308d9bd">itree_pip_contains</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_accc992d99a78b9d2522ad0d8091e637d.html#accc992d99a78b9d2522ad0d8091e637d">itree_pip_covers</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a1c8a6266ace643165708eca25f84315c.html#a1c8a6266ace643165708eca25f84315c">itree_pip_intersects</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a845b6989fc3568c2c6339068dba22ba4.html#a845b6989fc3568c2c6339068dba22ba4">itree_pip_touches</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="postgis__funcs_8c_a845b6989fc3568c2c6339068dba22ba4.html#a845b6989fc3568c2c6339068dba22ba4">itree_pip_touches</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__spatial_ga5a85427fdf2021b563f66e972704f7ad.html#ga5a85427fdf2021b563f66e972704f7ad">line_interpolate_point</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__spatial_gaee7f2a7a0216b5f05d61e65f48d9695e.html#gaee7f2a7a0216b5f05d61e65f48d9695e">line_locate_point</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__accessor_ga595406b9557d51442086687837683870.html#ga595406b9557d51442086687837683870">line_numpoints</a></td></tr>
@@ -194,7 +194,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a301b43eccd82ef3de08cf89af77b78b4.html#a301b43eccd82ef3de08cf89af77b78b4">lwgeom_mec</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a0cfa5b315fec2b75ae6637031a5ca03b.html#a0cfa5b315fec2b75ae6637031a5ca03b">lwgeom_mec_supported_type</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a92facb394f948b753c4f709e8cc02b2d.html#a92facb394f948b753c4f709e8cc02b2d">lwmsurface_boundary</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="postgis__funcs_8c_a3547f02bc4ce55e1e6d8d43626036369.html#a3547f02bc4ce55e1e6d8d43626036369">MAX_LEN_BOX3D</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a3547f02bc4ce55e1e6d8d43626036369.html#a3547f02bc4ce55e1e6d8d43626036369">MAX_LEN_BOX3D</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a3444e9732902eede17476a05b72d2fd5.html#a3444e9732902eede17476a05b72d2fd5">MAX_LEN_GBOX</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a0dfb1180be7c1bff9c1a434ee68fd678.html#a0dfb1180be7c1bff9c1a434ee68fd678">mec_circle2</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a8d855051480d93060c58489b11dc022d.html#a8d855051480d93060c58489b11dc022d">mec_circle3</a></td></tr>
@@ -211,17 +211,33 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a3547f02bc4ce55e1e6d8d43626036369" name="a3547f02bc4ce55e1e6d8d43626036369"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3547f02bc4ce55e1e6d8d43626036369">&#9670;&#160;</a></span>MAX_LEN_BOX3D</h2>
+<a id="a845b6989fc3568c2c6339068dba22ba4" name="a845b6989fc3568c2c6339068dba22ba4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a845b6989fc3568c2c6339068dba22ba4">&#9670;&#160;</a></span>itree_pip_touches()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define MAX_LEN_BOX3D&#160;&#160;&#160;255</td>
+          <td class="memname">bool itree_pip_touches </td>
+          <td>(</td>
+          <td class="paramtype">const IntervalTree *&#160;</td>
+          <td class="paramname"><em>itree</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structLWGEOM.html">LWGEOM</a> *&#160;</td>
+          <td class="paramname"><em>lwpoints</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>A.touches(B) implies that the point/multipoint meets the polygons without any member reaching their interior, that is, at least one member lies on the boundary and none inside. </p>
 
 </div>
 </div>

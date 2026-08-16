@@ -18,5 +18,6 @@ var searchData=
   ['invert_5fresult_15',['INVERT_RESULT',['../tgeo__spatialrels_8h_a4373a420900cc2fe5d2ef975ed868427.html#a4373a420900cc2fe5d2ef975ed868427',1,'tgeo_spatialrels.h']]],
   ['itree_5fpip_5fcontains_16',['itree_pip_contains',['../postgis__funcs_8h_a4c248a979573236a391f86bfc5e1ac85.html#a4c248a979573236a391f86bfc5e1ac85',1,'postgis_funcs.h']]],
   ['itree_5fpip_5fcovers_17',['itree_pip_covers',['../postgis__funcs_8h_a13e8d3499108a98469548f9ee8e01a0d.html#a13e8d3499108a98469548f9ee8e01a0d',1,'postgis_funcs.h']]],
-  ['itree_5fpip_5fintersects_18',['itree_pip_intersects',['../postgis__funcs_8h_abaec5ab87f0c6dd1adcac819139381bd.html#abaec5ab87f0c6dd1adcac819139381bd',1,'postgis_funcs.h']]]
+  ['itree_5fpip_5fintersects_18',['itree_pip_intersects',['../postgis__funcs_8h_abaec5ab87f0c6dd1adcac819139381bd.html#abaec5ab87f0c6dd1adcac819139381bd',1,'postgis_funcs.h']]],
+  ['itree_5fpip_5ftouches_19',['itree_pip_touches',['../postgis__funcs_8h_afc1b81fb51b37b76aadc848540138027.html#afc1b81fb51b37b76aadc848540138027',1,'postgis_funcs.h']]]
 ];
