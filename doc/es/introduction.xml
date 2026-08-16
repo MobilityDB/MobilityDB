@@ -226,7 +226,6 @@ CREATE EXTENSION mobilitydb CASCADE;
 				<listitem><para>GNU Make (<filename>gmake</filename> o <filename>make</filename>) versión 3.1 o superior. Para muchos sistemas, GNU make es la versión predeterminada de make. Verifique la versión invocando <filename>make -v</filename>.</para></listitem>
 				<listitem><para>PostgreSQL versión 16 a 19. Fuera de ese rango, la configuración se detiene con un error explícito. PostgreSQL está disponible en <ulink url="http://www.postgresql.org">http://www.postgresql.org</ulink>.</para></listitem>
 				<listitem><para>PostGIS versión 3 o superior. PostGIS está disponible en <ulink url="https://postgis.net/">https://postgis.net/</ulink>.</para></listitem>
-				<listitem><para>Biblioteca científica GNU (GSL). GSL está disponible en <ulink url="https://www.gnu.org/software/gsl/">https://www.gnu.org/software/gsl/</ulink>. GSL se utiliza para los generadores de números aleatorios.</para></listitem>
 			</itemizedlist>
 			<para>
 				Nótese que PostGIS tiene sus propias dependencias, como Proj, GEOS, LibXML2 o JSON-C y estas bibliotecas también se utilizan en MobilityDB. Consulte <ulink url="http://trac.osgeo.org/postgis/wiki/UsersWikiPostgreSQLPostGIS">http://trac.osgeo.org/postgis/wiki/UsersWikiPostgreSQLPostGIS</ulink> para obtener una matriz de compatibilidad de PostGIS con PostgreSQL, GEOS y Proj.
@@ -260,7 +259,7 @@ sudo apt-get install postgresql-16 postgresql-server-dev-16 postgresql-16-postgi
 </programlisting>
 			<para>Dependencias de construcción</para>
 			<programlisting language="bash" xml:space="preserve">
-sudo apt-get install cmake gcc libgsl-dev
+sudo apt-get install cmake gcc
 </programlisting>
 
 			<para>
@@ -272,7 +271,7 @@ sudo apt-get install cmake gcc libgsl-dev
 			</para>
 			<programlisting language="bash" xml:space="preserve">
 sudo dnf install gcc gcc-c++ cmake make postgresql-server-devel postgis \
-  geos-devel proj-devel json-c-devel gsl-devel
+  geos-devel proj-devel json-c-devel
 </programlisting>
 			<para>
 				Las familias opcionales que habilita <varname>-DALL=ON</varname> requieren dos paquetes adicionales, <varname>gdal-devel</varname> para los operadores de rásteres y <varname>h3-devel</varname> para el tipo de índice H3.

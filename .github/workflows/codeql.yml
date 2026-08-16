@@ -71,7 +71,6 @@ jobs:
             libgeos++-dev \
             libproj-dev \
             libjson-c-dev \
-            libgsl-dev \
             postgresql-16 \
             postgresql-16-postgis-3 \
             postgresql-server-dev-16

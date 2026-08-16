@@ -118,17 +118,16 @@ Requirements
 *   GEOS >= 3.8
 *   PROJ4 >= 6.1
 *   JSON-C
-*   GNU Scientific Library (GSL)
-*   Development files for PostgreSQL, PostGIS, GEOS, PROJ4, JSON-C, GSL
+*   Development files for PostgreSQL, PostGIS, GEOS, PROJ4, JSON-C
 
 For example, you can build the following command to install all MobilityDB build dependencies for Debian-based systems using PostgreSQL 16 and PostGIS 3:
 ```bash
-apt install build-essential cmake postgresql-server-dev-16 libgeos-dev libproj-dev libjson-c-dev libgsl-dev
+apt install build-essential cmake postgresql-server-dev-16 libgeos-dev libproj-dev libjson-c-dev
 ```
 
 On Fedora and other RPM-based distributions, the same dependencies are installed with the distribution packages, which already carry a supported PostgreSQL and PostGIS:
 ```bash
-dnf install gcc gcc-c++ cmake make postgresql-server-devel postgis geos-devel proj-devel json-c-devel gsl-devel
+dnf install gcc gcc-c++ cmake make postgresql-server-devel postgis geos-devel proj-devel json-c-devel
 ```
 
 The optional families that `-DALL=ON` enables need two more packages, `gdal-devel` for the raster operators and `h3-devel` for the H3 index type.

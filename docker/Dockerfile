@@ -11,7 +11,6 @@ RUN apt-get update \
         cmake \
         libproj-dev \
         libjson-c-dev \
-        libgsl-dev \
         libgeos-dev \
         postgresql-server-dev-${PG_MAJOR} \
         libh3-dev \
@@ -50,7 +49,6 @@ RUN apt-get update \
         libh3-1 \
         libproj-dev \
         libjson-c-dev \
-        libgsl-dev \
         libgeos-dev \
     && rm -rf /var/lib/apt/lists/*
 

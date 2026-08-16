@@ -61,7 +61,6 @@ jobs:
             libproj-dev \
             libgdal-dev \
             libjson-c-dev \
-            libgsl-dev \
             libh3-dev \
             postgresql-server-dev-17 \
             autoconf automake libtool libxml2-dev zlib1g-dev

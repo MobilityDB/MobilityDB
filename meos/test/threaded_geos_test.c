@@ -48,7 +48,7 @@
  *   meos_finalize()
  *
  * Verifies that the per-thread GEOS context handle, lwgeom WKT/parser
- * state, GMT bootstrap, GSL state, and meos_errno are all isolated:
+ * state, GMT bootstrap, and meos_errno are all isolated:
  * any sharing between worker threads would produce inconsistent results
  * or a SIGSEGV.
  *

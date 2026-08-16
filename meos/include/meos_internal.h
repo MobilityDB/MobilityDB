@@ -39,9 +39,6 @@
 #include <stddef.h>
 /* JSON-C */
 #include <json-c/json.h>
-/* GSL */
-#include <gsl/gsl_rng.h>
-#include <gsl/gsl_randist.h>
 /* PROJ */
 #include <proj.h>
 /* PostgreSQL */
@@ -786,11 +783,15 @@ typedef Datum (*datum_func5) (Datum, Datum, Datum, Datum, Datum);
 typedef Datum (*datum_func6) (Datum, Datum, Datum, Datum, Datum, Datum);
 
 /*****************************************************************************
- * Internal function accessing the Gnu Scientic Library (GSL)
+ * Internal functions accessing the PostgreSQL pseudo-random number generator
  *****************************************************************************/
 
-extern gsl_rng *gsl_get_generation_rng(void);
-extern gsl_rng *gsl_get_aggregation_rng(void);
+extern pg_prng_state *prng_get_generation_rng(void);
+extern pg_prng_state *prng_get_aggregation_rng(void);
+
+extern double meos_random_double(pg_prng_state *rng);
+extern double meos_random_exponential(pg_prng_state *rng, double mean);
+extern uint32 meos_random_binomial20_half(pg_prng_state *rng);
 
 /*****************************************************************************
  * Generic type functions

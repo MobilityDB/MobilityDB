@@ -59,7 +59,6 @@ jobs:
             libgeos++-dev \
             libproj-dev \
             libjson-c-dev \
-            libgsl-dev \
             postgresql-${PGVER} \
             postgresql-${PGVER}-postgis-${PGIS} \
             postgresql-server-dev-${PGVER}

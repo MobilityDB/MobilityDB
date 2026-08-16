@@ -18,6 +18,7 @@ set(COMMON_SOURCES
 if(NOT PGTYPES_EXT_NO_BACKEND_DUPS)
   list(APPEND COMMON_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/fe_memutils.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/pg_prng.c
     ${CMAKE_CURRENT_SOURCE_DIR}/stringinfo.c
   )
 endif()

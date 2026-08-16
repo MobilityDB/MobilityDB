@@ -276,8 +276,6 @@ if(RASTER)
   # requirement does not propagate through $<TARGET_OBJECTS:pg_raster>.
   target_link_libraries(${MOBILITYDB_LIB_NAME} ${GDAL_LIBRARY})
 endif()
-target_link_libraries(${MOBILITYDB_LIB_NAME} ${GSL_LIBRARY})
-target_link_libraries(${MOBILITYDB_LIB_NAME} ${GSL_CBLAS_LIBRARY})
 if(POINTCLOUD)
   # The pointcloud OBJECT library can't propagate its link requirements
   # directly through $<TARGET_OBJECTS:…>, so we duplicate the libpc.a

@@ -45,6 +45,7 @@
 #include <math.h>
 /* PostgreSQL */
 #include <postgres.h>
+#include <common/pg_prng.h>
 #include <utils/timestamp.h>
 #if MEOS
   #define MaxAllocSize   ((Size) 0x3fffffff) /* 1 gigabyte - 1 */
@@ -90,20 +91,26 @@ ffsl(long int i)
 }
 #endif
 
-static long int
-gsl_random48()
+static uint64
+prng_random64(void)
 {
-  return gsl_rng_get(gsl_get_aggregation_rng());
+  return pg_prng_uint64(prng_get_aggregation_rng());
 }
 
 /**
  * @brief This simulates up to SKIPLIST_MAXLEVEL repeated coin flips without
  * spinning the RNG every time (courtesy of the internet)
+ * @note When the SKIPLIST_MAXLEVEL low bits drawn are all ones, the lowest set
+ * bit of their complement is at position SKIPLIST_MAXLEVEL and thus ffsl()
+ * reports SKIPLIST_MAXLEVEL + 1, one past the highest level that the next
+ * array of an element and the update array of the caller can hold. Clamp the
+ * result so that this draw yields the maximum height instead.
  */
 static int
 random_level()
 {
-  return ffsl(~(gsl_random48() & ((UINT64CONST(1) << SKIPLIST_MAXLEVEL) - 1)));
+  return Min(ffsl(~(prng_random64() &
+    ((UINT64CONST(1) << SKIPLIST_MAXLEVEL) - 1))), SKIPLIST_MAXLEVEL);
 }
 
 /**
