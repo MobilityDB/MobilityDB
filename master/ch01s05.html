@@ -73,7 +73,7 @@ CREATE EXTENSION mobilitydb CASCADE;
 				<span class="bold"><strong>Compilation Dependencies</strong></span>
 			</p><p>
 				To be able to compile MobilityDB, make sure that the following dependencies are met:
-			</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p><code class="filename">CMake</code> cross-platform build system.</p></li><li class="listitem"><p>C compiler <code class="filename">gcc</code> or <code class="filename">clang</code>. Other ANSI C compilers can be used but may cause problems compiling some dependencies.</p></li><li class="listitem"><p>GNU Make (<code class="filename">gmake</code> or <code class="filename">make</code>) version 3.1 or higher. For many systems, GNU make is the default version of make. Check the version by invoking <code class="filename">make -v</code>.</p></li><li class="listitem"><p>PostgreSQL version 16 to 19. Outside that range the configuration stops with an explicit error. PostgreSQL is available from <a class="ulink" href="http://www.postgresql.org" target="_top">http://www.postgresql.org</a>.</p></li><li class="listitem"><p>PostGIS version 3 or higher. PostGIS is available from <a class="ulink" href="https://postgis.net/" target="_top">https://postgis.net/</a>.</p></li><li class="listitem"><p>GNU Scientific Library (GSL). GSL is available from <a class="ulink" href="https://www.gnu.org/software/gsl/" target="_top">https://www.gnu.org/software/gsl/</a>. GSL is used for the random number generators.</p></li></ul></div><p>
+			</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p><code class="filename">CMake</code> cross-platform build system.</p></li><li class="listitem"><p>C compiler <code class="filename">gcc</code> or <code class="filename">clang</code>. Other ANSI C compilers can be used but may cause problems compiling some dependencies.</p></li><li class="listitem"><p>GNU Make (<code class="filename">gmake</code> or <code class="filename">make</code>) version 3.1 or higher. For many systems, GNU make is the default version of make. Check the version by invoking <code class="filename">make -v</code>.</p></li><li class="listitem"><p>PostgreSQL version 16 to 19. Outside that range the configuration stops with an explicit error. PostgreSQL is available from <a class="ulink" href="http://www.postgresql.org" target="_top">http://www.postgresql.org</a>.</p></li><li class="listitem"><p>PostGIS version 3 or higher. PostGIS is available from <a class="ulink" href="https://postgis.net/" target="_top">https://postgis.net/</a>.</p></li></ul></div><p>
 				Notice that PostGIS has its own dependencies such as Proj, GEOS, LibXML2, or JSON-C, and these libraries are also used in MobilityDB. Refer to <a class="ulink" href="http://trac.osgeo.org/postgis/wiki/UsersWikiPostgreSQLPostGIS" target="_top">http://trac.osgeo.org/postgis/wiki/UsersWikiPostgreSQLPostGIS</a> for a support matrix of PostGIS with PostgreSQL, GEOS, and Proj.
 			</p><p>
 				<span class="bold"><strong>Optional Dependencies</strong></span>
@@ -82,14 +82,14 @@ CREATE EXTENSION mobilitydb CASCADE;
 			</p><p>Database dependencies</p><pre class="programlisting">
 sudo apt-get install postgresql-16 postgresql-server-dev-16 postgresql-16-postgis
 </pre><p>Build dependencies</p><pre class="programlisting">
-sudo apt-get install cmake gcc libgsl-dev
+sudo apt-get install cmake gcc
 </pre><p>
 				<span class="bold"><strong>Example: Installing dependencies on RPM-based distributions</strong></span>
 			</p><p>
 				On Fedora, Red Hat Enterprise Linux, and their derivatives the distribution packages carry a supported PostgreSQL and PostGIS, so a single command covers both the database and the build dependencies.
 			</p><pre class="programlisting">
 sudo dnf install gcc gcc-c++ cmake make postgresql-server-devel postgis \
-  geos-devel proj-devel json-c-devel gsl-devel
+  geos-devel proj-devel json-c-devel
 </pre><p>
 				The optional families enabled by <code class="varname">-DALL=ON</code> need two further packages, <code class="varname">gdal-devel</code> for the raster operators and <code class="varname">h3-devel</code> for the H3 index type.
 			</p></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="configuring"></a>Configuring</h3></div></div></div><p>
