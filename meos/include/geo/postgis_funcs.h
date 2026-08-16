@@ -53,6 +53,7 @@
 #define itree_pip_contains meos_itree_pip_contains
 #define itree_pip_covers meos_itree_pip_covers
 #define itree_pip_intersects meos_itree_pip_intersects
+#define itree_pip_touches meos_itree_pip_touches
 
 /*****************************************************************************/
 

@@ -379,6 +379,52 @@ bool itree_pip_covers(const IntervalTree *itree, const LWGEOM *lwpoints)
 }
 
 /**
+ * @brief A.touches(B) implies that the point/multipoint meets the polygons
+ * without any member reaching their interior, that is, at least one member
+ * lies on the boundary and none inside.
+ */
+bool itree_pip_touches(const IntervalTree *itree, const LWGEOM *lwpoints)
+{
+  if (lwgeom_get_type(lwpoints) == POINTTYPE)
+  {
+    return itree_point_in_multipolygon(itree, lwgeom_as_lwpoint(lwpoints)) ==
+      ITREE_BOUNDARY;
+  }
+  else if (lwgeom_get_type(lwpoints) == MULTIPOINTTYPE)
+  {
+    bool found_boundary = false;
+    LWMPOINT *mpoint = lwgeom_as_lwmpoint(lwpoints);
+    for (uint32_t i = 0; i < mpoint->ngeoms; i++)
+    {
+      const LWPOINT *pt = mpoint->geoms[i];
+
+      if (lwpoint_is_empty(pt))
+        continue;
+
+      /*
+       * A member inside the polygons makes the interiors meet, which no later
+       * member can undo, so the answer is settled. A member on the boundary
+       * supplies the required contact, and one outside contributes nothing.
+       */
+      IntervalTreeResult pip_result = itree_point_in_multipolygon(itree, pt);
+
+      if (pip_result == ITREE_INSIDE)
+        return false;
+
+      if (pip_result == ITREE_BOUNDARY)
+        found_boundary = true;
+    }
+    return found_boundary;
+  }
+  else
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "%s got a non-point input", __func__);
+    return false;
+  }
+}
+
+/**
  * @brief A.intersects(B) implies if any member of the point/multipoint
  * is not outside, then they intersect.
  */
@@ -1677,7 +1723,8 @@ meos_point_in_polygon(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   spatialRel rel)
 {
   assert(gs1); assert(gs2);
-  assert(rel == INTERSECTS || rel == CONTAINS || rel == COVERS);
+  assert(rel == INTERSECTS || rel == CONTAINS || rel == COVERS ||
+    rel == TOUCHES);
   const GSERIALIZED *gpoly = gserialized_is_poly(gs1) ? gs1 : gs2;
   const GSERIALIZED *gpoint = gserialized_is_point(gs1) ? gs1 : gs2;
   LWGEOM *poly = lwgeom_from_gserialized(gpoly);
@@ -1688,8 +1735,10 @@ meos_point_in_polygon(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
     result = itree_pip_intersects(itree, point);
   else if (rel == CONTAINS)
     result = itree_pip_contains(itree, point);
-  else /* rel == COVERS */
+  else if (rel == COVERS)
     result = itree_pip_covers(itree, point);
+  else /* rel == TOUCHES */
+    result = itree_pip_touches(itree, point);
   itree_free(itree);
   lwgeom_free(point);
   lwgeom_free(poly);
@@ -1828,6 +1877,16 @@ geom_spatialrel(const GSERIALIZED *gs1, const GSERIALIZED *gs2, spatialRel rel)
         (gserialized_is_point(gs1) && gserialized_is_poly(gs2)))) ||
       ((rel == CONTAINS || rel == COVERS) && poly_point))
     return meos_point_in_polygon(gs1, gs2, rel);
+
+  /*
+   * short-circuit 3: TOUCHES between a (multi)polygon and a (multi)point is
+   * decided by the same point-in-polygon test, since the points touch exactly
+   * when at least one lies on the boundary and none inside. Touching is
+   * symmetric, so either order is accepted.
+   */
+  if (rel == TOUCHES && (poly_point ||
+      (gserialized_is_point(gs1) && gserialized_is_poly(gs2))))
+    return meos_point_in_polygon(gs1, gs2, TOUCHES);
 
   /* Call GEOS function */
   assert(rel == INTERSECTS || rel == CONTAINS || rel == TOUCHES ||
