@@ -29,11 +29,12 @@ var searchData=
   ['spnnentry_26',['SPNNEntry',['../structSPNNEntry.html',1,'']]],
   ['spnode_27',['SPNode',['../structSPNode.html',1,'']]],
   ['sptree_28',['SPTree',['../structSPTree.html',1,'']]],
-  ['stbox_29',['STBox',['../structSTBox.html',1,'']]],
-  ['stboxgridstate_30',['STboxGridState',['../structSTboxGridState.html',1,'']]],
-  ['stboxnode_31',['STboxNode',['../structSTboxNode.html',1,'']]],
-  ['struct_5fmeosprojsrscache_32',['struct_MEOSPROJSRSCache',['../structstruct__MEOSPROJSRSCache.html',1,'']]],
-  ['struct_5fprojsrscacheitem_33',['struct_PROJSRSCacheItem',['../structstruct__PROJSRSCacheItem.html',1,'']]],
-  ['struct_5fwayscache_34',['struct_WaysCache',['../structstruct__WaysCache.html',1,'']]],
-  ['struct_5fwayscacheentry_35',['struct_WaysCacheEntry',['../structstruct__WaysCacheEntry.html',1,'']]]
+  ['srid_5fellipsoid_29',['srid_ellipsoid',['../structsrid__ellipsoid.html',1,'']]],
+  ['stbox_30',['STBox',['../structSTBox.html',1,'']]],
+  ['stboxgridstate_31',['STboxGridState',['../structSTboxGridState.html',1,'']]],
+  ['stboxnode_32',['STboxNode',['../structSTboxNode.html',1,'']]],
+  ['struct_5fmeosprojsrscache_33',['struct_MEOSPROJSRSCache',['../structstruct__MEOSPROJSRSCache.html',1,'']]],
+  ['struct_5fprojsrscacheitem_34',['struct_PROJSRSCacheItem',['../structstruct__PROJSRSCacheItem.html',1,'']]],
+  ['struct_5fwayscache_35',['struct_WaysCache',['../structstruct__WaysCache.html',1,'']]],
+  ['struct_5fwayscacheentry_36',['struct_WaysCacheEntry',['../structstruct__WaysCacheEntry.html',1,'']]]
 ];

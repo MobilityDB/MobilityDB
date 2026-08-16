@@ -75,8 +75,10 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
+<a href="#nested-classes">Data Structures</a> &#124;
 <a href="#define-members">Macros</a> &#124;
-<a href="#func-members">Functions</a>  </div>
+<a href="#func-members">Functions</a> &#124;
+<a href="#var-members">Variables</a>  </div>
   <div class="headertitle"><div class="title">tspatial_srid.c File Reference</div></div>
 </div><!--header-->
 <div class="contents">
@@ -97,6 +99,12 @@ $(function() {
 <code>#include &quot;<a class="el" href="tgeo_8h_source.html">geo/tgeo.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="tgeo__spatialfuncs_8h_source.html">geo/tgeo_spatialfuncs.h</a>&quot;</code><br />
 </div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
+Data Structures</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsrid__ellipsoid.html">srid_ellipsoid</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reference ellipsoid of a geographic (lon/lat) SRID.  <a href="structsrid__ellipsoid.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
 <tr class="memitem:a4ac2438794cb5b5cd9eb4716f2584cad"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tspatial__srid_8c_a4ac2438794cb5b5cd9eb4716f2584cad.html#a4ac2438794cb5b5cd9eb4716f2584cad">MAX_AUTH_SRID_STR</a>&#160;&#160;&#160;12 /* EPSG:999999 */</td></tr>
@@ -131,6 +139,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ga7b1c32591f453b95ce8e150f23f85729"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structSet.html">Set</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__geo__set__srid_ga7b1c32591f453b95ce8e150f23f85729.html#ga7b1c32591f453b95ce8e150f23f85729">spatialset_transform_pipeline</a> (const <a class="el" href="structSet.html">Set</a> *s, const char *pipeline, int32_t srid_to, bool is_forward)</td></tr>
 <tr class="memdesc:ga7b1c32591f453b95ce8e150f23f85729"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a spatial set transformed to another SRID using a pipeline.  <a href="group__meos__geo__set__srid_ga7b1c32591f453b95ce8e150f23f85729.html#ga7b1c32591f453b95ce8e150f23f85729">More...</a><br /></td></tr>
 <tr class="separator:ga7b1c32591f453b95ce8e150f23f85729"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2c9d9e00d425910e3f17d4aeab8bad97"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tspatial__srid_8c_a2c9d9e00d425910e3f17d4aeab8bad97.html#a2c9d9e00d425910e3f17d4aeab8bad97">srid_builtin_ellipsoid</a> (int32_t srid, double *a, double *rf)</td></tr>
+<tr class="memdesc:a2c9d9e00d425910e3f17d4aeab8bad97"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return 1 if the SRID is a geographic coordinate system with a built-in reference ellipsoid, and in that case set the semi-major axis and the inverse flattening, return 0 otherwise.  <a href="tspatial__srid_8c_a2c9d9e00d425910e3f17d4aeab8bad97.html#a2c9d9e00d425910e3f17d4aeab8bad97">More...</a><br /></td></tr>
+<tr class="separator:a2c9d9e00d425910e3f17d4aeab8bad97"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0e90ac60b873a4665a8867c7d1f179d7"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tspatial__srid_8c_a0e90ac60b873a4665a8867c7d1f179d7.html#a0e90ac60b873a4665a8867c7d1f179d7">srid_is_latlong</a> (int32_t srid)</td></tr>
 <tr class="memdesc:a0e90ac60b873a4665a8867c7d1f179d7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return 1 if the SRID is geodetic, return 0 otherwise.  <a href="tspatial__srid_8c_a0e90ac60b873a4665a8867c7d1f179d7.html#a0e90ac60b873a4665a8867c7d1f179d7">More...</a><br /></td></tr>
 <tr class="separator:a0e90ac60b873a4665a8867c7d1f179d7"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -170,6 +181,12 @@ Functions</h2></td></tr>
 <tr class="memitem:aa416dceaba6553d51cc660e3c007e804"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTSequenceSet.html">TSequenceSet</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tspatial__srid_8c_aa416dceaba6553d51cc660e3c007e804.html#aa416dceaba6553d51cc660e3c007e804">tspatialseqset_transf_pj</a> (const <a class="el" href="structTSequenceSet.html">TSequenceSet</a> *ss, int32_t srid_to, const <a class="el" href="structLWPROJ.html">LWPROJ</a> *pj)</td></tr>
 <tr class="memdesc:aa416dceaba6553d51cc660e3c007e804"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a spatiotemporal type transformed to another SRID.  <a href="tspatial__srid_8c_aa416dceaba6553d51cc660e3c007e804.html#aa416dceaba6553d51cc660e3c007e804">More...</a><br /></td></tr>
 <tr class="separator:aa416dceaba6553d51cc660e3c007e804"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:a9130f755a94912c35cc0ea5d0d6bf98c"><td class="memItemLeft" align="right" valign="top">static const <a class="el" href="structsrid__ellipsoid.html">srid_ellipsoid</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tspatial__srid_8c_a9130f755a94912c35cc0ea5d0d6bf98c.html#a9130f755a94912c35cc0ea5d0d6bf98c">MEOS_SRID_ELLIPSOIDS</a> []</td></tr>
+<tr class="memdesc:a9130f755a94912c35cc0ea5d0d6bf98c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reference ellipsoids of the geographic SRIDs in common use, ordered by SRID.  <a href="tspatial__srid_8c_a9130f755a94912c35cc0ea5d0d6bf98c.html#a9130f755a94912c35cc0ea5d0d6bf98c">More...</a><br /></td></tr>
+<tr class="separator:a9130f755a94912c35cc0ea5d0d6bf98c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >SRID functions for spatial types. </p>
