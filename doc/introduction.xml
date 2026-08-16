@@ -227,7 +227,6 @@ CREATE EXTENSION mobilitydb CASCADE;
 				<listitem><para>GNU Make (<filename>gmake</filename> or <filename>make</filename>) version 3.1 or higher. For many systems, GNU make is the default version of make. Check the version by invoking <filename>make -v</filename>.</para></listitem>
 				<listitem><para>PostgreSQL version 16 to 19. Outside that range the configuration stops with an explicit error. PostgreSQL is available from <ulink url="http://www.postgresql.org">http://www.postgresql.org</ulink>.</para></listitem>
 				<listitem><para>PostGIS version 3 or higher. PostGIS is available from <ulink url="https://postgis.net/">https://postgis.net/</ulink>.</para></listitem>
-				<listitem><para>GNU Scientific Library (GSL). GSL is available from <ulink url="https://www.gnu.org/software/gsl/">https://www.gnu.org/software/gsl/</ulink>. GSL is used for the random number generators.</para></listitem>
 			</itemizedlist>
 			<para>
 				Notice that PostGIS has its own dependencies such as Proj, GEOS, LibXML2, or JSON-C, and these libraries are also used in MobilityDB. Refer to <ulink url="http://trac.osgeo.org/postgis/wiki/UsersWikiPostgreSQLPostGIS">http://trac.osgeo.org/postgis/wiki/UsersWikiPostgreSQLPostGIS</ulink> for a support matrix of PostGIS with PostgreSQL, GEOS, and Proj.
@@ -261,7 +260,7 @@ sudo apt-get install postgresql-16 postgresql-server-dev-16 postgresql-16-postgi
 </programlisting>
 			<para>Build dependencies</para>
 			<programlisting language="bash" xml:space="preserve" format="linespecific">
-sudo apt-get install cmake gcc libgsl-dev
+sudo apt-get install cmake gcc
 </programlisting>
 
 			<para>
@@ -273,7 +272,7 @@ sudo apt-get install cmake gcc libgsl-dev
 			</para>
 			<programlisting language="bash" xml:space="preserve" format="linespecific">
 sudo dnf install gcc gcc-c++ cmake make postgresql-server-devel postgis \
-  geos-devel proj-devel json-c-devel gsl-devel
+  geos-devel proj-devel json-c-devel
 </programlisting>
 			<para>
 				The optional families enabled by <varname>-DALL=ON</varname> need two further packages, <varname>gdal-devel</varname> for the raster operators and <varname>h3-devel</varname> for the H3 index type.

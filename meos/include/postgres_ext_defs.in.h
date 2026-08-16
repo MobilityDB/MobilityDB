@@ -18,6 +18,22 @@ typedef unsigned short uint16;
 typedef unsigned int uint32;
 typedef uint64_t uint64;
 
+/* State vector of the PostgreSQL pseudo-random number generator, mirroring the
+ * definition in <common/pg_prng.h>. Its include guard is defined here as well
+ * so that pulling in the PostgreSQL header afterwards does not redefine the
+ * type, exactly as this file does for <postgres.h>. */
+
+#ifndef PG_PRNG_H
+#define PG_PRNG_H
+
+typedef struct pg_prng_state
+{
+  uint64 s0,
+         s1;
+} pg_prng_state;
+
+#endif /* PG_PRNG_H */
+
 typedef int32 DateADT;
 typedef int64 TimeADT;
 typedef int64 Timestamp;

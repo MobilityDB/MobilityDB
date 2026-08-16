@@ -44,7 +44,6 @@ jobs:
             libgeos-dev \
             libproj-dev \
             libjson-c-dev \
-            libgsl-dev \
             libgdal-dev \
             libh3-dev \
             libxml2-dev \
@@ -162,8 +161,7 @@ jobs:
           sudo apt-get install -y \
             libgeos-dev \
             libproj-dev \
-            libjson-c-dev \
-            libgsl-dev
+            libjson-c-dev
 
       # Build MEOS with ThreadSanitizer instrumentation. The shared
       # module is linked with -fsanitize=thread so every load of the
@@ -211,8 +209,7 @@ jobs:
           sudo apt-get install -y \
             libgeos-dev \
             libproj-dev \
-            libjson-c-dev \
-            libgsl-dev
+            libjson-c-dev
 
       # Install into a local prefix rather than /usr/local, so the link test
       # below cannot silently resolve against a system-installed libmeos.

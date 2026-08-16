@@ -802,10 +802,9 @@ meos_full_version(void)
 
   char *result = palloc(MOBDB_VERSION_STR_MAXLEN);
   size_t len = snprintf(result, MOBDB_VERSION_STR_MAXLEN,
-    "%s, %s, %s, GEOS %s, PROJ %s, JSON-C %s, GSL %s",
+    "%s, %s, %s, GEOS %s, PROJ %s, JSON-C %s",
     MOBILITYDB_VERSION_STRING, POSTGRESQL_VERSION_STRING,
-    POSTGIS_VERSION_STRING, geos_vers, proj_vers, json_c_vers,
-    GSL_VERSION_STRING);
+    POSTGIS_VERSION_STRING, geos_vers, proj_vers, json_c_vers);
   result[len] = '\0';
   return result;
 }

@@ -56,7 +56,7 @@ jobs:
         run: |
           dnf -y install gcc gcc-c++ cmake make git tar xz diffutils \
             postgresql-server-devel postgis \
-            geos-devel proj-devel json-c-devel gsl-devel \
+            geos-devel proj-devel json-c-devel \
             gdal-devel h3-devel \
             autoconf automake libtool libxml2-devel zlib-devel
           gcc --version | head -1
@@ -103,7 +103,7 @@ jobs:
         run: |
           dnf -y install gcc gcc-c++ cmake make git tar xz diffutils \
             postgresql-server postgresql-server-devel postgis \
-            geos-devel proj-devel json-c-devel gsl-devel gdal-devel
+            geos-devel proj-devel json-c-devel gdal-devel
           locale
 
       - uses: actions/checkout@v4

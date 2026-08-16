@@ -38,7 +38,6 @@ jobs:
             libgeos-dev \
             libproj-dev \
             libjson-c-dev \
-            libgsl-dev \
             valgrind
 
       - name: Build and install MEOS

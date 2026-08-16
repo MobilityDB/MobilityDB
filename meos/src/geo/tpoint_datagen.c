@@ -257,10 +257,10 @@ create_trip(LWLINE **lines, const double *maxSpeeds, const int *categories,
           /* If the current speed is not considered as a stop, with
            * a probability proportional to 1/maxSpeedEdge apply a
            * deceleration event (p=90%) or a stop event (p=10%) */
-          if (gsl_rng_uniform(gsl_get_generation_rng()) <= P_EVENT_C / 
+          if (pg_prng_double(prng_get_generation_rng()) <= P_EVENT_C / 
             maxSpeedEdge)
           {
-            if (gsl_rng_uniform(gsl_get_generation_rng()) <= P_EVENT_P)
+            if (pg_prng_double(prng_get_generation_rng()) <= P_EVENT_P)
             {
               /* Apply stop event */
               curSpeed = 0.0;
@@ -272,8 +272,8 @@ create_trip(LWLINE **lines, const double *maxSpeeds, const int *categories,
             else
             {
               /* Apply deceleration event */
-              curSpeed = curSpeed * gsl_ran_binomial(gsl_get_generation_rng(), 
-                0.5, 20) / 20.0;
+              curSpeed =
+                meos_random_binomial20_half(prng_get_generation_rng()) / 20.0;
               noDecel++;
               if (verbosity == 3)
                 meos_error(INFO, MEOS_SUCCESS,
@@ -319,7 +319,7 @@ create_trip(LWLINE **lines, const double *maxSpeeds, const int *categories,
         /* If speed is zero add a wait time */
         if (curSpeed < P_EPSILON_SPEED)
         {
-          waitTime = gsl_ran_exponential(gsl_get_generation_rng(),
+          waitTime = meos_random_exponential(prng_get_generation_rng(),
             P_DEST_EXPMU);
           if (waitTime < P_EPSILON)
             waitTime = P_DEST_EXPMU;
@@ -339,10 +339,11 @@ create_trip(LWLINE **lines, const double *maxSpeeds, const int *categories,
             curPos.y = p1.y + ((p2.y - p1.y) * fraction * (k + 1));
             if (disturbData)
             {
-              dx = (2.0 * P_GPS_STEPMAXERR * 
-                gsl_rng_uniform(gsl_get_generation_rng())) - P_GPS_STEPMAXERR;
-              dy = (2.0 * P_GPS_STEPMAXERR * 
-                gsl_rng_uniform(gsl_get_generation_rng())) - P_GPS_STEPMAXERR;
+              dx = (2.0 * P_GPS_STEPMAXERR *
+                pg_prng_double(prng_get_generation_rng())) - P_GPS_STEPMAXERR;
+
+              dy = (2.0 * P_GPS_STEPMAXERR *
+                pg_prng_double(prng_get_generation_rng())) - P_GPS_STEPMAXERR;
               errx += dx;
               erry += dy;
               if (errx > P_GPS_TOTALMAXERR)
@@ -381,11 +382,12 @@ create_trip(LWLINE **lines, const double *maxSpeeds, const int *categories,
     if (curSpeed > P_EPSILON_SPEED && i < noEdges - 1)
     {
       int nextCategory = categories[i + 1];
-      if (gsl_rng_uniform(gsl_get_generation_rng()) <= 
+      if (pg_prng_double(prng_get_generation_rng()) <= 
         P_DEST_STOPPROB[category][nextCategory])
       {
         curSpeed = 0.0;
-        waitTime = gsl_ran_exponential(gsl_get_generation_rng(), P_DEST_EXPMU);
+        waitTime = meos_random_exponential(prng_get_generation_rng(),
+          P_DEST_EXPMU);
         if (waitTime < P_EPSILON)
           waitTime = P_DEST_EXPMU;
         t = t + (int) (waitTime * 1e6); /* microseconds */

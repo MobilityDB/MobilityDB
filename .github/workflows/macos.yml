@@ -40,7 +40,7 @@ jobs:
       - name: Get dependencies from homebrew (cache)
         uses: tecolicom/actions-use-homebrew-tools@v1
         with:
-          tools: postgresql@${{ matrix.psql }} postgis proj gsl
+          tools: postgresql@${{ matrix.psql }} postgis proj
 
       - name: Configure
         run: |

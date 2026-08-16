@@ -63,7 +63,7 @@ extern const char *select_default_timezone(const char *share_path);
  * the temporal-dimension reference frame, the analogue of a geometry's SRID
  * in the spatial dimension. Each thread owns its own so concurrent
  * meos_initialize_timezone() calls cannot race on (or double-free) a shared
- * global. Mirrors the per-thread GEOS/PROJ/GSL contexts in meos.c. */
+ * global. Mirrors the per-thread GEOS/PROJ/PRNG contexts in meos.c. */
 MEOS_TLS pg_tz *session_timezone = NULL;
 
 /* Current log timezone (controlled by log_timezone GUC) */

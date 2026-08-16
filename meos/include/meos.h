@@ -44,6 +44,7 @@
 #include "postgres_int_defs.h"
 #else
 #include <postgres.h>
+#include <common/pg_prng.h>
 #include <utils/date.h>
 #include <utils/timestamp.h>
 #endif

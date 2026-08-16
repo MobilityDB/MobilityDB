@@ -503,12 +503,6 @@ include_directories(SYSTEM ${JSON-C_INCLUDE_DIRS})
 message(STATUS "JSON-C_INCLUDE_DIRS: ${JSON-C_INCLUDE_DIRS}")
 message(STATUS "JSON-C_LIBRARIES: ${JSON-C_LIBRARIES}")
 
-# GSL (GNU Scientific Library) (used for skiplists)
-find_package(GSL REQUIRED)
-include_directories(SYSTEM ${GSL_INCLUDE_DIRS})
-message(STATUS "GSL_VERSION: ${GSL_VERSION}")
-add_definitions(-DGSL_VERSION_STRING="${GSL_VERSION}")
-
 #----------------------------------------------
 # Configure PostGIS with optional dependencies
 #----------------------------------------------

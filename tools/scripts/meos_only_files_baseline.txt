@@ -44,7 +44,7 @@ meos/src/temporal/error.c	meos_errno_set(int err)	file-scope conditional
 meos/src/temporal/error.c	pg_error(int errlevel, const char *errmsg)	file-scope conditional
 meos/src/temporal/meos.c	#define USE_POSTGRES_DATES 0	file-scope conditional
 meos/src/temporal/meos.c	geos_finalize(void)	file-scope conditional
-meos/src/temporal/meos.c	gsl_finalize(void)	file-scope conditional
+meos/src/temporal/meos.c	prng_finalize(void)	file-scope conditional
 meos/src/temporal/meos.c	proj_finalize(void)	file-scope conditional
 meos/src/temporal/meos_catalog.c	ensure_numset_type(MeosType type)	file-scope conditional
 meos/src/temporal/meos_catalog.c	ensure_spatialset_type(MeosType type)	file-scope conditional
@@ -57,7 +57,7 @@ meos/src/temporal/set.c	set_compact(const Set *s)	file-scope conditional
 meos/src/temporal/skiplist.c	#define MaxAllocSize   ((Size) 0x3fffffff) /* 1 gigabyte - 1 */	file-scope conditional
 meos/src/temporal/skiplist.c	datum_func2 func, bool crossings, SkipListType sktype)	file-scope conditional
 meos/src/temporal/skiplist.c	extern FunctionCallInfo fetch_fcinfo();	file-scope conditional
-meos/src/temporal/skiplist.c	line 413	file-scope conditional
+meos/src/temporal/skiplist.c	line 420	file-scope conditional
 meos/src/temporal/skiplist.c	skiplist_elempos(const SkipList *list, void *key, void *value, int cur	file-scope conditional
 meos/src/temporal/skiplist.c	skiplist_keys_values(SkipList *list, void **values)	file-scope conditional
 meos/src/temporal/spanset.c	spanset_compact(const SpanSet *ss)	file-scope conditional

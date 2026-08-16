@@ -34,12 +34,11 @@
  */
 
 /* C */
+#include <math.h>
 #include <string.h>
 /* PostgreSQL */
 #include <postgres.h>
-/* GSL */
-#include <gsl/gsl_rng.h>
-#include <gsl/gsl_randist.h>
+#include <common/pg_prng.h>
 /* Proj */
 #include <proj.h>
 /* GEOS */
@@ -49,46 +48,44 @@
 #include <lwgeom_geos.h>
 /* MEOS */
 #include <meos.h>
+#include <meos_internal.h>
 
 // TODO REMOVE
 extern void json_destroy_tofree();
 
 /***************************************************************************
- * Functions for the Gnu Scientific Library (GSL)
+ * Functions for the PostgreSQL pseudo-random number generator
  ***************************************************************************/
 
 /* Global variables */
 
-static MEOS_TLS bool MEOS_GSL_INITIALIZED = false;
-static MEOS_TLS gsl_rng *MEOS_GENERATION_RNG = NULL;
-static MEOS_TLS gsl_rng *MEOS_AGGREGATION_RNG = NULL;
+static MEOS_TLS bool MEOS_PRNG_INITIALIZED = false;
+static MEOS_TLS pg_prng_state MEOS_GENERATION_RNG;
+static MEOS_TLS pg_prng_state MEOS_AGGREGATION_RNG;
 
 /**
- * @brief Initialize the Gnu Scientific Library
+ * @brief Initialize the PostgreSQL pseudo-random number generators
  */
 static void
-gsl_initialize(void)
+prng_initialize(void)
 {
-  if (! MEOS_GSL_INITIALIZED)
+  if (! MEOS_PRNG_INITIALIZED)
   {
-    gsl_rng_env_setup();
-    MEOS_GENERATION_RNG = gsl_rng_alloc(gsl_rng_default);
-    MEOS_AGGREGATION_RNG = gsl_rng_alloc(gsl_rng_ranlxd1);
-    MEOS_GSL_INITIALIZED = true;
+    pg_prng_seed(&MEOS_GENERATION_RNG, 0);
+    pg_prng_seed(&MEOS_AGGREGATION_RNG, 1);
+    MEOS_PRNG_INITIALIZED = true;
   }
   return;
 }
 
 #if MEOS
 /**
- * @brief Finalize the Gnu Scientific Library
+ * @brief Finalize the PostgreSQL pseudo-random number generators
  */
 static void
-gsl_finalize(void)
+prng_finalize(void)
 {
-  gsl_rng_free(MEOS_GENERATION_RNG);
-  gsl_rng_free(MEOS_AGGREGATION_RNG);
-  MEOS_GSL_INITIALIZED = false;
+  MEOS_PRNG_INITIALIZED = false;
   return;
 }
 #endif /* MEOS */
@@ -96,23 +93,64 @@ gsl_finalize(void)
 /**
  * @brief Get the random generator used by the data generator
  */
-gsl_rng *
-gsl_get_generation_rng(void)
+pg_prng_state *
+prng_get_generation_rng(void)
 {
-  if (! MEOS_GSL_INITIALIZED)
-    gsl_initialize();
-  return MEOS_GENERATION_RNG;
+  if (! MEOS_PRNG_INITIALIZED)
+    prng_initialize();
+  return &MEOS_GENERATION_RNG;
 }
 
 /**
  * @brief Get the random generator used by temporal aggregation
  */
-gsl_rng *
-gsl_get_aggregation_rng(void)
+pg_prng_state *
+prng_get_aggregation_rng(void)
 {
-  if (! MEOS_GSL_INITIALIZED)
-    gsl_initialize();
-  return MEOS_AGGREGATION_RNG;
+  if (! MEOS_PRNG_INITIALIZED)
+    prng_initialize();
+  return &MEOS_AGGREGATION_RNG;
+}
+
+/***************************************************************************/
+
+/**
+ * @brief Generate a uniformly distributed random double in [0, 1).
+ */
+inline double
+meos_random_double(pg_prng_state *rng)
+{
+  return pg_prng_double(rng);
+}
+
+/**
+ * @brief Generate an exponentially distributed random value.
+ *
+ * @param[in] rng Random generator
+ * @param[in] mean Mean of the exponential distribution
+ * @return Random value
+ */
+inline double
+meos_random_exponential(pg_prng_state *rng, double mean)
+{
+  double u = pg_prng_double(rng);
+  return -mean * log1p(-u);
+}
+
+/**
+ * @brief Generate a binomially distributed random value.
+ * @param[in] rng Random generator
+ * @param[in] p Probability of success
+ * @param[in] n Number of trials
+ * @return Number of successes
+ */
+inline uint32
+meos_random_binomial20_half(pg_prng_state *rng)
+{
+  uint32 result = 0;
+  for (int i = 0; i < 20; i++)
+    result += pg_prng_bool(rng);
+  return result;
 }
 
 /***************************************************************************
@@ -693,8 +731,8 @@ meos_initialize(void)
   proj_initialize();
   /* Initialize GEOS */
   geos_initialize();
-  /* Initialize GSL */
-  gsl_initialize();
+  /* Initialize the PostgreSQL pseudo-random number generators */
+  prng_initialize();
 #if POINTCLOUD
   /* Install the bundled libpc.a handlers so standalone MEOS programs
    * touching a pgPointCloud schema-aware path do not dereference a
@@ -728,8 +766,8 @@ meos_finalize(void)
   proj_finalize();
   /* Finalize GEOS */
   geos_finalize();
-  /* Finalize GSL */
-  gsl_finalize();
+  /* Finalize the PostgreSQL pseudo-random number generators */
+  prng_finalize();
   return;
 }
 
