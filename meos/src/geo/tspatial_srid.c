@@ -435,11 +435,75 @@ to_dec(POINT4D *pt)
  *****************************************************************************/
 
 /**
+ * @brief Reference ellipsoid of a geographic (lon/lat) SRID
+ */
+typedef struct
+{
+  int32_t srid;     /**< EPSG code of a geographic coordinate system */
+  double a;         /**< Semi-major axis in metres */
+  double rf;        /**< Inverse flattening */
+} srid_ellipsoid;
+
+/**
+ * @brief Reference ellipsoids of the geographic SRIDs in common use, ordered
+ * by SRID
+ * @note The values are those of the `SPHEROID` clause of the `srtext` column
+ * of the corresponding record of the `spatial_ref_sys` table, so that a lookup
+ * here and a lookup through PROJ agree. Every entry is a geographic coordinate
+ * system, which is what makes the table usable both for obtaining the
+ * ellipsoid and for answering whether the SRID is geodetic. Projected
+ * coordinate systems are deliberately absent: `EPSG:3857` and the like are
+ * defined on an ellipsoid but are not lon/lat, and both functions below must
+ * keep reporting them as not geodetic.
+ */
+static const srid_ellipsoid MEOS_SRID_ELLIPSOIDS[] =
+{
+  {4152, 6378137.0, 298.257222101},      /* NAD83(HARN), GRS 1980 */
+  {4171, 6378137.0, 298.257222101},      /* RGF93, GRS 1980 */
+  {4230, 6378388.0, 297.0},              /* ED50, International 1924 */
+  {4258, 6378137.0, 298.257222101},      /* ETRS89, GRS 1980 */
+  {4267, 6378206.4, 294.9786982138982},  /* NAD27, Clarke 1866 */
+  {4269, 6378137.0, 298.257222101},      /* NAD83, GRS 1980 */
+  {4283, 6378137.0, 298.257222101},      /* GDA94, GRS 1980 */
+  {4322, 6378135.0, 298.26},             /* WGS 72 */
+  {4326, 6378137.0, 298.257223563},      /* WGS 84 */
+  {4617, 6378137.0, 298.257222101},      /* NAD83(CSRS), GRS 1980 */
+  {4674, 6378137.0, 298.257222101},      /* SIRGAS 2000, GRS 1980 */
+  {4759, 6378137.0, 298.257222101},      /* NAD83(NSRS2007), GRS 1980 */
+};
+
+/**
+ * @brief Return 1 if the SRID is a geographic coordinate system with a
+ * built-in reference ellipsoid, and in that case set the semi-major axis and
+ * the inverse flattening, return 0 otherwise
+ */
+int
+srid_builtin_ellipsoid(int32_t srid, double *a, double *rf)
+{
+  for (size_t i = 0; i < sizeof(MEOS_SRID_ELLIPSOIDS) /
+    sizeof(MEOS_SRID_ELLIPSOIDS[0]); i++)
+  {
+    if (MEOS_SRID_ELLIPSOIDS[i].srid == srid)
+    {
+      *a = MEOS_SRID_ELLIPSOIDS[i].a;
+      *rf = MEOS_SRID_ELLIPSOIDS[i].rf;
+      return LW_SUCCESS;
+    }
+  }
+  return LW_FAILURE;
+}
+
+/**
  * @brief Return 1 if the SRID is geodetic, return 0 otherwise
  */
 int
 srid_is_latlong(int32_t srid)
 {
+  /* Every SRID of the built-in table is a geographic coordinate system */
+  double a, rf;
+  if (srid_builtin_ellipsoid(srid, &a, &rf) == LW_SUCCESS)
+    return LW_TRUE;
+
   LWPROJ *pj;
   if (lwproj_lookup(srid, srid, &pj) == LW_FAILURE)
     return LW_FALSE;
