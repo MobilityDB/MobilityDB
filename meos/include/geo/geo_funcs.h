@@ -104,6 +104,8 @@ typedef struct
 extern void arc_set_bbox(Edge *e);
 extern MeosArray *geom_extract_edges(const LWGEOM *geom);
 extern RTree *build_edge_rtree(const Edge *edges, int nedges, int32_t srid);
+extern bool *pointarr_find_splits(const POINT2D **points, int npoints,
+  int *count);
 
 /*****************************************************************************/
 

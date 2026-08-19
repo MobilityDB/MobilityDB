@@ -52,6 +52,7 @@
 #include "temporal/tnumber_mathfuncs.h"
 #include "temporal/tsequence.h"
 #include "temporal/type_util.h"
+#include "geo/geo_funcs.h"
 #include "geo/postgis_funcs.h"
 #include "geo/stbox.h"
 #include "geo/tgeo.h"
@@ -3462,181 +3463,6 @@ tpointseq_stops_iter(const TSequence *seq, double maxdist, int64 mintunits,
 }
 
 /*****************************************************************************
- * Functions computing the intersection of two segments derived from PostGIS
- * The seg2d_intersection function is a modified version of the PostGIS
- * lw_segment_intersects function and also returns the intersection point
- * in case the two segments intersect at equal endpoints.
- * The intersection point is required in tpointseq_linear_find_splits
- * only for this intersection type (MEOS_SEG_TOUCH_END).
- *****************************************************************************/
-
-/*
- * The possible ways a pair of segments can interact.
- * Returned by the function seg2d_intersection
- */
-enum
-{
-  MEOS_SEG_NO_INTERSECTION,  /* Segments do not intersect */
-  MEOS_SEG_OVERLAP,          /* Segments overlap */
-  MEOS_SEG_CROSS,            /* Segments cross */
-  MEOS_SEG_TOUCH_END,        /* Segments touch in two equal enpoints */
-  MEOS_SEG_TOUCH,            /* Segments touch without equal enpoints */
-} MEOS_SEG_INTER_TYPE;
-
-/**
- * @brief Find the *unique* intersection point @p p between two closed
- * collinear segments @p ab and @p cd
- * @details Return @p p and a @p MEOS_SEG_INTER_TYPE value.
- * @note If the segments overlap no point is returned since they
- * can be an infinite number of them.
- * @pre This function is called after verifying that the points are
- * collinear and that their bounding boxes intersect.
- */
-static int
-parseg2d_intersection(const POINT2D *a, const POINT2D *b, const POINT2D *c,
-  const POINT2D *d, POINT2D *p)
-{
-  /* Compute the intersection of the bounding boxes */
-  double xmin = Max(Min(a->x, b->x), Min(c->x, d->x));
-  double xmax = Min(Max(a->x, b->x), Max(c->x, d->x));
-  double ymin = Max(Min(a->y, b->y), Min(c->y, d->y));
-  double ymax = Min(Max(a->y, b->y), Max(c->y, d->y));
-  /* If the intersection of the bounding boxes is not a point */
-  if (xmin < xmax || ymin < ymax )
-    return MEOS_SEG_OVERLAP;
-  /* We are sure that the segments touch each other */
-  if ((b->x == c->x && b->y == c->y) ||
-      (b->x == d->x && b->y == d->y))
-  {
-    p->x = b->x;
-    p->y = b->y;
-    return MEOS_SEG_TOUCH_END;
-  }
-  if ((a->x == c->x && a->y == c->y) ||
-      (a->x == d->x && a->y == d->y))
-  {
-    p->x = a->x;
-    p->y = a->y;
-    return MEOS_SEG_TOUCH_END;
-  }
-  /* We should never arrive here since this function is called after verifying
-   * that the bounding boxes of the segments intersect */
-  return MEOS_SEG_NO_INTERSECTION;
-}
-
-/**
- * @brief Determines the side of segment P where Q lies
- * @details
- * - Return -1  if point Q is left of segment P
- * - Return  1  if point Q is right of segment P
- * - Return  0  if point Q in on segment P
- * @note Function adapted from @p lw_segment_side() to take into account
- * precision errors
- */
-static int
-seg2d_side(const POINT2D *p1, const POINT2D *p2, const POINT2D *q)
-{
-  double side = ( (q->x - p1->x) * (p2->y - p1->y) -
-    (p2->x - p1->x) * (q->y - p1->y) );
-  if (fabs(side) < MEOS_EPSILON)
-    return 0;
-  else
-    return SIGNUM(side);
-}
-
-/**
- * @brief Function derived from file @p lwalgorithm.c since it is declared
- * static
- */
-static bool
-lw_seg_interact(const POINT2D *p1, const POINT2D *p2, const POINT2D *q1,
-  const POINT2D *q2)
-{
-  double minq = FP_MIN(q1->x, q2->x);
-  double maxq = FP_MAX(q1->x, q2->x);
-  double minp = FP_MIN(p1->x, p2->x);
-  double maxp = FP_MAX(p1->x, p2->x);
-
-  if (FP_GT(minp, maxq) || FP_LT(maxp, minq))
-    return false;
-
-  minq = FP_MIN(q1->y, q2->y);
-  maxq = FP_MAX(q1->y, q2->y);
-  minp = FP_MIN(p1->y, p2->y);
-  maxp = FP_MAX(p1->y, p2->y);
-
-  if (FP_GT(minp,maxq) || FP_LT(maxp,minq))
-    return false;
-
-  return true;
-}
-
-/**
- * @brief Find the *unique* intersection point @p p between two closed segments
- * @p ab and @p cd
- * @details Return @p p and a @p MEOS_SEG_INTER_TYPE value.
- * @note Currently, the function only computes @p p if the result value is
- * @p MEOS_SEG_TOUCH_END, since the return value is never used in other cases.
- * @note If the segments overlap no point is returned since they can be an
- * infinite number of them.
- */
-static int
-seg2d_intersection(const POINT2D *a, const POINT2D *b, const POINT2D *c,
-  const POINT2D *d, POINT2D *p)
-{
-  /* assume the following names: p = Segment(a, b), q = Segment(c, d) */
-  int pq1, pq2, qp1, qp2;
-
-  /* No envelope interaction => we are done. */
-  if (! lw_seg_interact(a, b, c, d))
-    return MEOS_SEG_NO_INTERSECTION;
-
-  /* Are the start and end points of q on the same side of p? */
-  pq1 = seg2d_side(a, b, c);
-  pq2 = seg2d_side(a, b, d);
-  if ((pq1 > 0 && pq2 > 0) || (pq1 < 0 && pq2 < 0))
-    return MEOS_SEG_NO_INTERSECTION;
-
-  /* Are the start and end points of p on the same side of q? */
-  qp1 = seg2d_side(c, d, a);
-  qp2 = seg2d_side(c, d, b);
-  if ((qp1 > 0 && qp2 > 0) || (qp1 < 0 && qp2 < 0))
-    return MEOS_SEG_NO_INTERSECTION;
-
-  /* Nobody is on one side or another? Must be colinear. */
-  if (pq1 == 0 && pq2 == 0 && qp1 == 0 && qp2 == 0)
-    return parseg2d_intersection(a, b, c, d, p);
-
-  /* Check if the intersection is an endpoint */
-  if (pq1 == 0 || pq2 == 0 || qp1 == 0 || qp2 == 0)
-  {
-    /* Check for two equal endpoints */
-    if ((b->x == c->x && b->y == c->y) ||
-        (b->x == d->x && b->y == d->y))
-    {
-      p->x = b->x;
-      p->y = b->y;
-      return MEOS_SEG_TOUCH_END;
-    }
-    if ((a->x == c->x && a->y == c->y) ||
-        (a->x == d->x && a->y == d->y))
-    {
-      p->x = a->x;
-      p->y = a->y;
-      return MEOS_SEG_TOUCH_END;
-    }
-
-    /* The intersection is inside one of the segments
-     * note: p is not compute for this type of intersection */
-    return MEOS_SEG_TOUCH;
-  }
-
-  /* Crossing
-   * note: p is not compute for this type of intersection */
-  return MEOS_SEG_CROSS;
-}
-
-/*****************************************************************************
  * Non self-intersecting (a.k.a. simple) functions
  *****************************************************************************/
 
@@ -3702,26 +3528,6 @@ tpointseq_discstep_find_splits(const TSequence *seq, int *count)
 }
 
 /**
- * @brief Initialize a GBOX with a point
- */
-static void gbox_init_point2d(const POINT2D *p, GBOX *gbox)
-{
-  gbox->xmin = gbox->xmax = p->x;
-  gbox->ymin = gbox->ymax = p->y;
-}
-
-/**
- * @brief Enlarge a GBOX with a point
- */
-static void gbox_merge_point2d(const POINT2D *p, GBOX *gbox)
-{
-  if ( gbox->xmin > p->x ) gbox->xmin = p->x;
-  if ( gbox->ymin > p->y ) gbox->ymin = p->y;
-  if ( gbox->xmax < p->x ) gbox->xmax = p->x;
-  if ( gbox->ymax < p->y ) gbox->ymax = p->y;
-}
-
-/**
  * @brief Return a temporal point sequence with linear interpolation split into
  * an array of non self-intersecting fragments
  * @note The function works only on 2D even if the input points are in 3D
@@ -3735,117 +3541,12 @@ static bool *
 tpointseq_linear_find_splits(const TSequence *seq, int *count)
 {
   assert(seq->count >= 2);
- /* points is an array of points in the sequence */
-  const POINT2D **points = palloc0(sizeof(POINT2D *) * seq->count);
-  /* bitarr is an array of bool for collecting the splits */
-  bool *bitarr = palloc0(sizeof(bool) * seq->count);
-  points[0] = DATUM_POINT2D_P(tinstant_value_p(TSEQUENCE_INST_N(seq, 0)));
-  int numsplits = 0;
-  for (int i = 1; i < seq->count; i++)
-  {
+  const POINT2D **points = palloc(sizeof(POINT2D *) * seq->count);
+  for (int i = 0; i < seq->count; i++)
     points[i] = DATUM_POINT2D_P(tinstant_value_p(TSEQUENCE_INST_N(seq, i)));
-    /* If stationary segment we need to split the sequence */
-    if (points[i - 1]->x == points[i]->x && points[i - 1]->y == points[i]->y)
-    {
-      if (i > 1 && ! bitarr[i - 1])
-      {
-        bitarr[i - 1] = true;
-        numsplits++;
-      }
-      if (i < seq->count - 1)
-      {
-        bitarr[i] = true;
-        numsplits++;
-      }
-    }
-  }
-
-  /* Loop for every split due to stationary segments while adding
-   * additional splits due to intersecting segments */
-  int start = 0;
-  while (start < seq->count - 2)
-  {
-    int end = start + 1;
-    while (end < seq->count - 1 && ! bitarr[end])
-      end++;
-    if (end == start + 1)
-    {
-      start = end;
-      continue;
-    }
-    /* Find intersections in the piece defined by start and end in a
-     * breadth-first search */
-    int i = start, j = start + 1;
-    GBOX box;
-    gbox_init_point2d(points[i], &box);
-    gbox_merge_point2d(points[j], &box);
-    while (j < end)
-    {
-      /* Candidate for intersection */
-      POINT2D p = { 0 }; /* make compiler quiet */
-      int intertype = seg2d_intersection(points[i], points[i + 1],
-        points[j], points[j + 1], &p);
-      if (intertype > 0 &&
-        /* Exclude the case when two consecutive segments that
-         * necessarily touch each other in their common point */
-        (intertype != MEOS_SEG_TOUCH_END || j != i + 1 ||
-         p.x != points[j]->x || p.y != points[j]->y))
-      {
-        /* Set the new end */
-        end = j;
-        bitarr[end] = true;
-        numsplits++;
-        break;
-      }
-      if (i < j - 1)
-        i++;
-      else
-      {
-        j++;
-        i = start;
-
-        /* Shortcut */
-        if (!gbox_contains_point2d(&box, points[j]))
-        {
-          while (j < end) {
-            bool out = false;
-            if ( box.xmin > points[j]->x )
-            {
-              box.xmin = points[j]->x;
-              if ( box.xmin > points[j+1]->x )
-                out = true;
-            }
-            else if ( box.xmax < points[j]->x )
-            {
-              box.xmax = points[j]->x;
-              if ( box.xmax < points[j+1]->x )
-                out = true;
-            }
-            if ( box.ymin > points[j]->y )
-            {
-              box.ymin = points[j]->y;
-              if ( box.ymin > points[j+1]->y )
-                out = true;
-            }
-            else if ( box.ymax < points[j]->y )
-            {
-              box.ymax = points[j]->y;
-              if ( box.ymax < points[j+1]->y )
-                out = true;
-            }
-            if ( !out )
-              break;
-            j++;
-          }
-        }
-      }
-    }
-    /* Process the next split */
-    start = end;
-  }
+  bool *result = pointarr_find_splits(points, seq->count, count);
   pfree(points);
-  *count = numsplits;
-  return bitarr;
+  return result;
 }
 
 /*****************************************************************************
