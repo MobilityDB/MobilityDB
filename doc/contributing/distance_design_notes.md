@@ -201,6 +201,10 @@ unknown, which here means no shared instant.
 | exact `nad`, `minDistance`, `\|=\|` — whole-pair box | **no** | no external threshold exists; the nearest pair can sit just outside the box |
 | exact `nad` — per-segment lower bound vs the running min | **yes** (planar) | the running minimum is a live threshold; a segment whose centre-box-minus-radius lower bound ≥ the running min cannot lower it |
 | `touches` prefilter via exact `nad` | **yes** | contact needs the gap `= 0` exactly; a strictly positive `nad` proves disjoint, so the pair can neither ever nor always touch |
+| `always dwithin(d)` — value's radius-aware box inside the geometry box grown by `d` | **no** | `dwithin` is the distance to the NEAREST point of the disc, so a large disc parked on a small geometry is always within it while reaching far outside the grown box |
+| `always` anything — one *unit* whose CENTRE box is farther than `d + rmax` | **yes** | the disc reaches exactly its radius beyond the centre, so that unit holds no instant within `d`, and one unit refutes an `always` |
+| `ever`/`always contains`/`covers` — no unit admits a disc inside the geometry box | **yes** | a disc inside the geometry is inside its box, so its centre lies in that box shrunk by the radius |
+| box restriction (`atStbox`) — value's radius-aware box | sound but **inert** | the restriction reads the CENTRE path, and the widened box of a whole trajectory overlaps nearly everything |
 
 The two `disjoint` rows are the same fact read in opposite directions, and the
 direction is what decides soundness. A box miss proves that the values never
@@ -313,6 +317,105 @@ the same query. Results are unchanged to the last digit: a lower bound that is
 tightened while remaining a lower bound cannot change which edge attains the
 minimum. What is left is the box arithmetic of the bucket level itself; the exact
 solve, which once dominated, now runs a few hundred times per pair.
+
+### Which box, and read against what
+
+The radial reading of the previous subsections is one instance of a rule that
+decides every filter an area-valued family puts in front of a kernel, and
+getting it wrong is sound in one direction and unsound in the other.
+
+**The box of a `tcbuffer` is radius-aware.** It is widened so that it encloses
+the swept discs, which is what a distance or a relationship needs (§3 above). It
+is therefore the wrong box for anything that reads the *centre*, and it is a
+weak box for anything whose threshold the radius already carries.
+
+Three things follow, and each is a filter that pays for itself.
+
+**An `always` relationship is refuted by one unit, and the centre is what
+refutes it.** A disc is within `d` of a set exactly when its centre is within
+`d + r` of it. So a unit whose centre box stands farther than `d + rmax` from the
+geometry box holds no instant within `d`, and one such unit ends the question —
+no kernel, no edge decomposition. Taking units rather than instants keeps this
+independent of which bounds the sequence carries, the interior of a unit always
+belonging to the definition time. `always touches` is the same test at `d = 0`,
+and there it *replaces* the exact `nad` reject: a running minimum over the whole
+value answers whether contact happens anywhere, which is the **ever** question,
+while the always question falls to the first unit that fails to reach.
+
+**The mirror-image filter is unsound, and the temporal point sibling has it.**
+For a point value, always-within-`d` puts every point of the value inside the
+geometry box grown by `d`, so `contains(box_geom ⊕ d, box_temp)` is a valid
+`always` prefilter and the point families use it. It does **not** carry over to a
+disc: `dwithin` is the distance to the *nearest* point of the disc, so a disc of
+radius 100 parked on a point is always within 1 of it while its box exceeds the
+grown box a hundredfold. Copying the sibling's prefilter across the radius
+boundary silently answers false on exactly the pairs that are always within.
+⇒ **Before reusing a point family's box filter for an area family, ask which
+points of the value the relationship constrains. `dwithin` constrains one.**
+
+**Containment adds a fit test the overlap cannot express.** A disc inside the
+geometry is inside the geometry's box, so its centre lies in that box shrunk by
+the radius, and a shrunk box that comes out empty admits no disc at all. A value
+no unit of which admits such a disc is inside the geometry at no instant, so
+neither `ever` nor `always` contains or covers it. The existing overlap test
+cannot see this, the widened box overlapping wherever the discs merely reach.
+
+**A restriction reads the centre, so its filter must too.** `atStbox` and
+`minusStbox` clip the centre path and slice the value to what survives. Filtering
+that with the value's own box is sound and nearly inert: widened by the radius
+and spanning a whole trajectory, it passes almost every pair in a join, and each
+one pays for a conversion and a clip that returns nothing. The per-unit centre
+test settles it instead — and note that the *global* centre extent is not enough
+either, one trajectory box covering most of a region. Per unit is where the test
+bites.
+
+### A witness must measure the distance it reports
+
+A scalar distance and its witness — the shortest line, the nearest approach
+instant — answer the same question, and the witness is wrong whenever its own
+measurement disagrees with the scalar.
+
+For a disc family the trap is the centre. Reducing two temporal circular buffers
+to their centre paths and taking the shortest line between those is a line whose
+length exceeds `nearestApproachDistance` on the same pair by exactly the two
+radii, because it leaves from a centre rather than from a boundary. The line the
+question asks for runs along the line of centres, from the boundary of one disc
+to the boundary of the other, at the instant where the temporal distance is
+least; overlapping or concentric discs meet, and it degenerates to the point
+where the boundary of the first reaches the second.
+
+The same reasoning governs a fallback. When a geometry has no edge decomposition
+the nearest approach distance falls back to the exact traversed area, so the
+nearest approach *instant* must fall back to something that agrees with it —
+the instant of least exact temporal distance — and not to the centre path, whose
+argmin moves away from it as soon as the radius varies.
+
+⇒ **The self-consistency check is cheap and it is the test to write: the length
+of the shortest line equals the nearest approach distance, and the distance at
+the nearest approach instant equals it too.** Both hold by construction when the
+witness is read from the same signed gap as the scalar (§2), and both fail
+loudly when a centre has been substituted for a value.
+
+### Where a zero radius stops being a temporal point
+
+A `tcbuffer` all of whose radii are zero converts to a temporal point without
+loss, and several relationships take that conversion. It is tempting to read the
+delegation as scaffolding to be removed once the disc kernels are complete, but
+the boundary it marks is real: **a disc of zero radius has no interior, and the
+disc kernels read contact and containment from a disc boundary.**
+
+Measured on a 100 by 100 join with every radius set to zero, the delegating path
+and the native disc path agree on `eIntersects`, `eDwithin`, `aDwithin`,
+`eCovers`, `aCovers`, `aContains` and `aTouches`, and part company on
+`eTouches` (12 pairs of 10000) and on every temporal relationship —
+`tIntersects`, `tDisjoint`, `tTouches`, `tContains`, `tCovers` — at roughly 250
+pairs of 10000 each. The split is where it should be: the relationships that
+distinguish an interior from a closure are the ones a zero-radius disc cannot
+answer for itself.
+
+⇒ The delegation is removable exactly where it is redundant, and removing it
+elsewhere is a change of answer, not a cleanup. The measurement, not the shape
+of the code, is what tells the two apart.
 
 ### Why bounded predicates get the box for free and distance does not
 
