@@ -318,6 +318,26 @@ SELECT eDwithin(geometry 'CircularString(5 0, 4 3, 0 5)', tcbuffer '[Cbuffer(Poi
 SELECT aDwithin(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tcbuffer '[Cbuffer(Point(0 0),0.5)@2000-01-01, Cbuffer(Point(3 0),0.5)@2000-01-03]', 1);
 SELECT aDwithin(tcbuffer '[Cbuffer(Point(8 0),0.5)@2000-01-01, Cbuffer(Point(8 8),0.5)@2000-01-03]', geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', 1);
 
+-- A disk far wider than the geometry it sits on. The distance is the one to
+-- the NEAREST point of the disk, so the disk is always within it while its
+-- radius-aware box exceeds the geometry box grown by the distance a
+-- hundredfold; a prefilter demanding that box be CONTAINED in the grown one,
+-- which is what the temporal point families may soundly demand, answers false
+-- here and the answer is true
+SELECT aDwithin(tcbuffer '[Cbuffer(Point(0 0),100)@2000-01-01, Cbuffer(Point(0 0),100)@2000-01-02]', geometry 'Point(0 0)', 1);
+SELECT eDwithin(tcbuffer '[Cbuffer(Point(0 0),100)@2000-01-01, Cbuffer(Point(0 0),100)@2000-01-02]', geometry 'Point(0 0)', 1);
+-- The same with the wide disk in motion, so the test reads a moving unit
+SELECT aDwithin(tcbuffer '[Cbuffer(Point(0 0),100)@2000-01-01, Cbuffer(Point(20 0),100)@2000-01-02]', geometry 'Point(0 0)', 1);
+-- A disk that leaves the neighbourhood is not always within it
+SELECT aDwithin(tcbuffer '[Cbuffer(Point(0 0),100)@2000-01-01, Cbuffer(Point(500 0),100)@2000-01-02]', geometry 'Point(0 0)', 1);
+-- Contact needs the boundary: a geometry strictly inside the disk interior is
+-- met, not touched
+SELECT aTouches(tcbuffer '[Cbuffer(Point(0 0),100)@2000-01-01, Cbuffer(Point(0 0),100)@2000-01-02]', geometry 'Point(0 0)');
+-- A disk wider than the geometry fits in no part of it, so it is covered at no
+-- instant; a narrow one sitting inside is covered throughout
+SELECT eCovers(geometry 'Polygon((-5 -5,-5 5,5 5,5 -5,-5 -5))', tcbuffer '[Cbuffer(Point(0 0),100)@2000-01-01, Cbuffer(Point(0 0),100)@2000-01-02]');
+SELECT aCovers(geometry 'Polygon((-5 -5,-5 5,5 5,5 -5,-5 -5))', tcbuffer '[Cbuffer(Point(0 0),1)@2000-01-01, Cbuffer(Point(0 0),1)@2000-01-02]');
+
 /* Errors */
 SELECT eDwithin(geometry 'SRID=3812;Point(1 1)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', 2);
 SELECT eDwithin(tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01', geometry 'SRID=3812;Point(1 1)', 2);
