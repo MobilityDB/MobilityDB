@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: tcbufferseq_always_contains_native</title>
+<title>MobilityDB: tcbuffer_disk_may_fit_box</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -84,10 +84,10 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__tempspatialrels_8c_a6e5e7c0eb3e3fd057a7b257a0839e2aa.html#a6e5e7c0eb3e3fd057a7b257a0839e2aa">eacontains_tcbuffer_geo_native</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__cbuffer__rel__ever_gafa7304dfcd309f55f04b652e3444f472.html#gafa7304dfcd309f55f04b652e3444f472">eatouches_tcbuffer_geo_native</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__cbuffer__rel__ever_gace29edfcd68a20aef7ee936e8c28cb6a.html#gace29edfcd68a20aef7ee936e8c28cb6a">edisjoint_tcbuffer_geo_native</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__tempspatialrels_8c_a1fcd6e54780f33f8049a502ea2186ba5.html#a1fcd6e54780f33f8049a502ea2186ba5">tcbuffer_disk_may_fit_box</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__tempspatialrels_8c_a1fcd6e54780f33f8049a502ea2186ba5.html#a1fcd6e54780f33f8049a502ea2186ba5">tcbuffer_disk_may_fit_box</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__tempspatialrels_8c_acc3c075e9bbcbb760c71c8825b32e7bb.html#acc3c075e9bbcbb760c71c8825b32e7bb">tcbuffer_touch_union_instant</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__tempspatialrels_8c_ab30afbc83a99baab5b360d61f1b9e91a.html#ab30afbc83a99baab5b360d61f1b9e91a">tcbufferinst_geo_rel</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__tempspatialrels_8c_a40d7c586d28db8f92670f71ba708e550.html#a40d7c586d28db8f92670f71ba708e550">tcbufferseq_always_contains_native</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__tempspatialrels_8c_a40d7c586d28db8f92670f71ba708e550.html#a40d7c586d28db8f92670f71ba708e550">tcbufferseq_always_contains_native</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__tempspatialrels_8c_ab1075a40f38c1098e480d7612bb2cc78.html#ab1075a40f38c1098e480d7612bb2cc78">tcbufferseq_always_touches_native</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__tempspatialrels_8c_a57db8305ef028af7d78e726a1492bb77.html#a57db8305ef028af7d78e726a1492bb77">tcbufferseq_contains_spanset</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__tempspatialrels_8c_ab9859f8c2fc1d43c13a03f78362886d7.html#ab9859f8c2fc1d43c13a03f78362886d7">tcbufferseq_ever_contains_native</a></td></tr>
@@ -161,8 +161,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a40d7c586d28db8f92670f71ba708e550" name="a40d7c586d28db8f92670f71ba708e550"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a40d7c586d28db8f92670f71ba708e550">&#9670;&#160;</a></span>tcbufferseq_always_contains_native()</h2>
+<a id="a1fcd6e54780f33f8049a502ea2186ba5" name="a1fcd6e54780f33f8049a502ea2186ba5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1fcd6e54780f33f8049a502ea2186ba5">&#9670;&#160;</a></span>tcbuffer_disk_may_fit_box()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -171,22 +171,34 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static bool tcbufferseq_always_contains_native </td>
+          <td class="memname">static bool tcbuffer_disk_may_fit_box </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structTSequence.html">TSequence</a> *&#160;</td>
-          <td class="paramname"><em>seq</em>, </td>
+          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
+          <td class="paramname"><em>temp</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const void *&#160;</td>
-          <td class="paramname"><em>ctx</em>, </td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>bxmin</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>strict</em>&#160;</td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>bymin</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>bxmax</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>bymax</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -201,7 +213,9 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Return true if the geometry always contains (<code>strict</code>) or covers a temporal circular buffer sequence, that is, the holding sub-periods cover the whole sequence period. </p>
+<p>Return true when some unit of a temporal circular buffer could have its disk inside the box <code>bxmin</code>, <code>bymin</code>, <code>bxmax</code>, <code>bymax</code>. </p>
+<p >A disk inside a geometry is inside the box of that geometry, so its centre lies in that box shrunk by the radius on every side, and a shrunk box that comes out empty admits no disk at all. Over a unit the centres lie in their own box and the radius is at least the smaller of the two endpoint radii, so testing that centre box against the box shrunk by that smaller radius accepts every disk the unit really holds. A value for which no unit passes is inside the geometry at no instant, which refutes ever contains and ever covers.</p>
+<p >The relaxation is one-sided, so a passing unit proves nothing and the running scan decides it. Reading the radius off the centre this way, instead of comparing the radius-widened box of the value, is what makes the test bite when the disks are large next to the geometry. </p>
 
 </div>
 </div>
