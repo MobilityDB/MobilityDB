@@ -829,6 +829,54 @@ SELECT ST_AsText(shortestLine(tcbuffer '[Cbuffer(Point(0 0), 1)@2000-01-01, Cbuf
  
 (1 row)
 
+SELECT round(nearestApproachDistance(tcbuffer '[Cbuffer(Point(0 0),1)@2000-01-01, Cbuffer(Point(10 0),1)@2000-01-05]', tcbuffer '[Cbuffer(Point(5 6),2)@2000-01-01, Cbuffer(Point(5 6),2)@2000-01-05]')::numeric, 6);
+  round   
+----------
+ 3.000000
+(1 row)
+
+SELECT asText(tdistance(tcbuffer '[Cbuffer(Point(0 0),1)@2000-01-01, Cbuffer(Point(10 0),1)@2000-01-05]', tcbuffer '[Cbuffer(Point(5 6),2)@2000-01-01, Cbuffer(Point(5 6),2)@2000-01-05]'), 6);
+                                                    astext                                                    
+--------------------------------------------------------------------------------------------------------------
+ [4.81025@Sat Jan 01 00:00:00 2000 PST, 3@Mon Jan 03 00:00:00 2000 PST, 4.81025@Wed Jan 05 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(nearestApproachInstant(tcbuffer '[Cbuffer(Point(0 0),1)@2000-01-01, Cbuffer(Point(10 0),1)@2000-01-05]', tcbuffer '[Cbuffer(Point(5 6),2)@2000-01-01, Cbuffer(Point(5 6),2)@2000-01-05]'));
+                       astext                       
+----------------------------------------------------
+ Cbuffer(POINT(5 0),1)@Mon Jan 03 00:00:00 2000 PST
+(1 row)
+
+SELECT round(nearestApproachDistance(tcbuffer '[Cbuffer(Point(0 0),1)@2000-01-01, Cbuffer(Point(10 0),1)@2000-01-05]', tcbuffer '[Cbuffer(Point(5 6),0)@2000-01-01, Cbuffer(Point(5 6),4)@2000-01-05]')::numeric, 6);
+  round   
+----------
+ 2.499091
+(1 row)
+
+SELECT round(nearestApproachDistance(tcbuffer '[Cbuffer(Point(0 0),1)@2000-01-01, Cbuffer(Point(10 0),1)@2000-01-05]', tcbuffer '[Cbuffer(Point(0 6),2)@2000-01-01, Cbuffer(Point(10 6),2)@2000-01-05]')::numeric, 6);
+  round   
+----------
+ 3.000000
+(1 row)
+
+SELECT asText(tdistance(tcbuffer '[Cbuffer(Point(0 0),1)@2000-01-01, Cbuffer(Point(10 0),1)@2000-01-05]', tcbuffer '[Cbuffer(Point(5 0),2)@2000-01-01, Cbuffer(Point(5 0),2)@2000-01-05]'), 6);
+                                                              astext                                                              
+----------------------------------------------------------------------------------------------------------------------------------
+ [2@Sat Jan 01 00:00:00 2000 PST, 0@Sat Jan 01 19:12:00 2000 PST, 0@Tue Jan 04 04:48:00 2000 PST, 2@Wed Jan 05 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(tdistance(tcbuffer '[Cbuffer(Point(0 0),1)@2000-01-01, Cbuffer(Point(10 0),5)@2000-01-05]', cbuffer 'Cbuffer(Point(5 6),0)'), 6);
+                                                           astext                                                           
+----------------------------------------------------------------------------------------------------------------------------
+ [6.81025@Sat Jan 01 00:00:00 2000 PST, 2.499091@Tue Jan 04 01:08:19.323438 2000 PST, 2.81025@Wed Jan 05 00:00:00 2000 PST]
+(1 row)
+
+SELECT round(nearestApproachDistance(tcbuffer '[Cbuffer(Point(0 0),1)@2000-01-01, Cbuffer(Point(10 0),5)@2000-01-05]', cbuffer 'Cbuffer(Point(5 6),0)')::numeric, 6);
+  round   
+----------
+ 2.499091
+(1 row)
+
 SELECT round(ST_Length(shortestLine(tcbuffer 'Cbuffer(Point(4 4), 0.3)@2000-01-01', geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))'))::numeric, 6);
   round   
 ----------
