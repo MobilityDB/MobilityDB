@@ -683,6 +683,10 @@ nai_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
   return result;
 }
 
+/* Defined below, beside the nearest approach distance that shares it */
+static double tcbufferseg_distance_lb(Datum start1, Datum end1,
+  Datum start2, Datum end2);
+
 /**
  * @ingroup meos_cbuffer_dist
  * @brief Return the nearest approach instant of two temporal circular buffers
@@ -695,6 +699,25 @@ nai_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_tcbuffer(temp1, temp2))
     return NULL;
+
+  /* Fast path: the time-synchronous running minimum reports the instant that
+   * attains it, so the nearest approach instant reads off the same walk the
+   * nearest approach distance takes, without materialising the temporal
+   * distance. A finite result is exact; the infinity sentinel (empty or
+   * degenerate overlap) defers to the temporal distance path */
+  if (nad_tcont_tcont_sync_applies(temp1, temp2))
+  {
+    TimestampTz t;
+    double d = nad_tcont_tcont_sync(temp1, temp2, &datum_cbuffer_distance,
+      &tcbuffersegm_distance_turnpt, &tcbufferseg_distance_lb, &t);
+    if (d != DBL_MAX)
+    {
+      /* The closest point may be at an exclusive bound. */
+      Datum value;
+      if (temporal_value_at_timestamptz(temp1, t, false, &value))
+        return tinstant_make_free(value, temp1->temptype, t);
+    }
+  }
 
   Temporal *dist = tdistance_tcbuffer_tcbuffer(temp1, temp2);
   if (dist == NULL)
@@ -2301,12 +2324,20 @@ shortestline_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
    * approach distance. Reading the centres instead answers a different
    * question, one whose line is longer than the distance it is supposed to
    * realise by exactly the two radii. */
-  Temporal *dist = tdistance_tcbuffer_tcbuffer(temp1, temp2);
-  if (! dist)
-    return NULL;
-  const TInstant *min = temporal_min_inst_p((const Temporal *) dist);
-  TimestampTz t = min->t;
-  pfree(dist);
+  TimestampTz t;
+  bool found = false;
+  if (nad_tcont_tcont_sync_applies(temp1, temp2))
+    found = (nad_tcont_tcont_sync(temp1, temp2, &datum_cbuffer_distance,
+      &tcbuffersegm_distance_turnpt, &tcbufferseg_distance_lb, &t) != DBL_MAX);
+  if (! found)
+  {
+    Temporal *dist = tdistance_tcbuffer_tcbuffer(temp1, temp2);
+    if (! dist)
+      return NULL;
+    const TInstant *min = temporal_min_inst_p((const Temporal *) dist);
+    t = min->t;
+    pfree(dist);
+  }
 
   /* The closest point may be at an exclusive bound */
   Datum value1, value2;
