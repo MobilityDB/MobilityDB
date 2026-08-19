@@ -2427,6 +2427,69 @@ eacontains_tcbuffer_ctx_native(const Temporal *temp, const void *ctx,
   return result;
 }
 
+/**
+ * @brief Return true when some unit of a temporal circular buffer could have
+ * its disk inside the box @p bxmin, @p bymin, @p bxmax, @p bymax
+ *
+ * A disk inside a geometry is inside the box of that geometry, so its centre
+ * lies in that box shrunk by the radius on every side, and a shrunk box that
+ * comes out empty admits no disk at all. Over a unit the centres lie in their
+ * own box and the radius is at least the smaller of the two endpoint radii, so
+ * testing that centre box against the box shrunk by that smaller radius accepts
+ * every disk the unit really holds. A value for which no unit passes is inside
+ * the geometry at no instant, which refutes ever contains and ever covers.
+ *
+ * The relaxation is one-sided, so a passing unit proves nothing and the running
+ * scan decides it. Reading the radius off the centre this way, instead of
+ * comparing the radius-widened box of the value, is what makes the test bite
+ * when the disks are large next to the geometry.
+ */
+static bool
+tcbuffer_disk_may_fit_box(const Temporal *temp, double bxmin, double bymin,
+  double bxmax, double bymax)
+{
+  assert(temp); assert(temptype_subtype(temp->subtype));
+  if (temp->subtype == TINSTANT)
+  {
+    const Cbuffer *cb = DatumGetCbufferP(tinstant_value_p((TInstant *) temp));
+    const POINT2D *p = cbuffer_point2d_p(cb);
+    double r = cb->radius;
+    return p->x >= bxmin + r && p->x <= bxmax - r &&
+      p->y >= bymin + r && p->y <= bymax - r;
+  }
+  int nseqs = (temp->subtype == TSEQUENCE) ? 1 :
+    ((TSequenceSet *) temp)->count;
+  for (int s = 0; s < nseqs; s++)
+  {
+    const TSequence *seq = (temp->subtype == TSEQUENCE) ?
+      (const TSequence *) temp :
+      TSEQUENCESET_SEQ_N((const TSequenceSet *) temp, s);
+    const Cbuffer *cb1 = DatumGetCbufferP(
+      tinstant_value_p(TSEQUENCE_INST_N(seq, 0)));
+    const POINT2D *p1 = cbuffer_point2d_p(cb1);
+    if (seq->count == 1)
+    {
+      double r = cb1->radius;
+      if (p1->x >= bxmin + r && p1->x <= bxmax - r &&
+          p1->y >= bymin + r && p1->y <= bymax - r)
+        return true;
+      continue;
+    }
+    for (int i = 1; i < seq->count; i++)
+    {
+      const Cbuffer *cb2 = DatumGetCbufferP(
+        tinstant_value_p(TSEQUENCE_INST_N(seq, i)));
+      const POINT2D *p2 = cbuffer_point2d_p(cb2);
+      double r = fmin(cb1->radius, cb2->radius);
+      if (fmax(p1->x, p2->x) >= bxmin + r && fmin(p1->x, p2->x) <= bxmax - r &&
+          fmax(p1->y, p2->y) >= bymin + r && fmin(p1->y, p2->y) <= bymax - r)
+        return true;
+      cb1 = cb2; p1 = p2;
+    }
+  }
+  return false;
+}
+
 int
 eacontains_tcbuffer_geo_native(const Temporal *temp, const GSERIALIZED *gs,
   bool ever, bool strict)
@@ -2443,6 +2506,17 @@ eacontains_tcbuffer_geo_native(const Temporal *temp, const GSERIALIZED *gs,
   tspatial_set_stbox(temp, &box1);
   geo_set_stbox(gs, &box2);
   if (! overlaps_stbox_stbox(&box1, &box2))
+    return 0;
+
+  /* A disk inside the geometry fits inside the geometry box, which the box
+   * overlap above does not test: the box of the value is widened by the radius,
+   * so it overlaps wherever the disks merely reach the geometry. A value no
+   * unit of which admits a disk inside that box is inside the geometry at no
+   * instant, and neither ever nor always contains or covers it. This spares the
+   * edge decomposition below for a pair whose disks are large next to the
+   * geometry, the common case for a wide buffer over small polygons. */
+  if (! tcbuffer_disk_may_fit_box(temp, box2.xmin, box2.ymin, box2.xmax,
+      box2.ymax))
     return 0;
 
   void *ctx = tcbuffer_geo_ctx_make(gs);
