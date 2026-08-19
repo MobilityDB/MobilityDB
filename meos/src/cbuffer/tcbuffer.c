@@ -571,8 +571,102 @@ tcbuffersegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
  Datum end2, Datum dist UNUSED, TimestampTz lower, TimestampTz upper,
  TimestampTz *t1, TimestampTz *t2)
 {
-  return tcbuffersegm_dwithin_turnpt(start1, end1, start2, end2, (Datum) 0.0,
-    lower, upper, t1, t2);
+  assert(lower < upper); assert(t1); assert(t2);
+  const Cbuffer *sv1 = DatumGetCbufferP(start1);
+  const Cbuffer *ev1 = DatumGetCbufferP(end1);
+  const Cbuffer *sv2 = DatumGetCbufferP(start2);
+  const Cbuffer *ev2 = DatumGetCbufferP(end2);
+  const POINT2D *spt1 = cbuffer_point2d_p(sv1);
+  const POINT2D *ept1 = cbuffer_point2d_p(ev1);
+  const POINT2D *spt2 = cbuffer_point2d_p(sv2);
+  const POINT2D *ept2 = cbuffer_point2d_p(ev2);
+
+  /* The gap read in the fraction f of the period: the centres separate by an
+   * affine vector and the radii sum to an affine scalar */
+  double dx0 = spt1->x - spt2->x;
+  double dy0 = spt1->y - spt2->y;
+  double r0 = sv1->radius + sv2->radius;
+  double dx = (ept1->x - spt1->x) - (ept2->x - spt2->x);
+  double dy = (ept1->y - spt1->y) - (ept2->y - spt2->y);
+  double dr = (ev1->radius - sv1->radius) + (ev2->radius - sv2->radius);
+
+  /* Centres that keep their separation leave an affine gap, whose extrema are
+   * the endpoints the caller already reads */
+  double s = dx * dx + dy * dy;
+  if (s <= FP_TOLERANCE)
+    return 0;
+  double q = dx * dx0 + dy * dy0;
+  double e = dx0 * dx0 + dy0 * dy0;
+
+  /* g(f) = sqrt(e + 2qf + sf^2) - (r0 + dr f), and g'(f) = 0 reads
+   * q + s f = dr sqrt(e + 2qf + sf^2), which squares to the quadratic below */
+  double cand[2];
+  int ncand = 0;
+  if (dr == 0.0)
+    /* A combined radius that does not change leaves the classic closest
+     * approach of the two centres, which is what the temporal point family
+     * reads and what the quadratic below degenerates to. Taking it directly
+     * keeps the two families bit-compatible and keeps the fourth power s^2 out
+     * of a degeneracy test that a segment of small relative motion trips */
+    cand[ncand++] = -q / s;
+  else
+  {
+    double a = s * (s - dr * dr);
+    double b = 2 * q * (s - dr * dr);
+    double c = q * q - dr * dr * e;
+    /* The degeneracy test is relative to the coefficients it sits among, the
+     * absolute one being meaningless against squared coordinates */
+    double scale = fabs(b) + fabs(c);
+    if (fabs(a) <= scale * DBL_EPSILON)
+    {
+      if (fabs(b) > 0.0)
+        cand[ncand++] = -c / b;
+    }
+    else
+    {
+      double delta = b * b - 4 * a * c;
+      if (delta < 0.0)
+        return 0;
+      double sq = sqrt(delta);
+      cand[ncand++] = (-b - sq) / (2 * a);
+      cand[ncand++] = (-b + sq) / (2 * a);
+    }
+  }
+
+  /* The gap is the norm of an affine function minus an affine one, hence
+   * convex, so it holds at most one interior extremum and that extremum is a
+   * minimum lying strictly below both endpoints. Requiring that discards the
+   * companion root the squaring introduces, on which g' has the wrong sign */
+  double gs = sqrt(e) - r0;
+  double ge = hypot(dx0 + dx, dy0 + dy) - (r0 + dr);
+  double best = (gs < ge) ? gs : ge;
+  double fbest = -1.0;
+  for (int i = 0; i < ncand; i++)
+  {
+    double f = cand[i];
+    if (f <= MEOS_EPSILON || f >= 1.0 - MEOS_EPSILON)
+      continue;
+    double g = hypot(dx0 + dx * f, dy0 + dy * f) - (r0 + dr * f);
+    if (g < best)
+    {
+      best = g;
+      fbest = f;
+    }
+  }
+  if (fbest < 0.0)
+    return 0;
+
+  /* A gap that dips below zero is clamped there by the distance itself, so the
+   * value is flat between the two instants at which it reaches zero and the
+   * minimum is no breakpoint of it. Those instants are where the two disks meet,
+   * which is the crossing question, and the dwithin turning point at a zero
+   * distance answers it */
+  if (best < 0.0)
+    return tcbuffersegm_dwithin_turnpt(start1, end1, start2, end2, (Datum) 0.0,
+      lower, upper, t1, t2);
+
+  *t1 = *t2 = lower + (TimestampTz) ((double) (upper - lower) * fbest);
+  return 1;
 }
 
 /*****************************************************************************/
@@ -591,7 +685,7 @@ tcbuffersegm_intersection_value(Datum start, Datum end, Datum value,
   TimestampTz lower, TimestampTz upper, TimestampTz *t1, TimestampTz *t2)
 {
   assert(lower < upper); assert(t1); assert(t2);
-  int result = tcbuffersegm_distance_turnpt(start, end, value, value,
+  int result = tcbuffersegm_dwithin_turnpt(start, end, value, value,
     (Datum) 0.0, lower, upper, t1, t2);
   return result;
 }
@@ -609,7 +703,7 @@ tcbuffersegm_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
   TimestampTz lower, TimestampTz upper, TimestampTz *t1, TimestampTz *t2)
 {
   assert(lower < upper); assert(t1); assert(t2);
-  return tcbuffersegm_distance_turnpt(start1, end1, start2, end2, (Datum) 0.0,
+  return tcbuffersegm_dwithin_turnpt(start1, end1, start2, end2, (Datum) 0.0,
     lower, upper, t1, t2);
 }
 

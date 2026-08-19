@@ -345,6 +345,30 @@ SELECT round(nearestApproachDistance(tcbuffer '[Cbuffer(Point(0 0), 1)@2000-01-0
 SELECT round(ST_Length(shortestLine(tcbuffer '[Cbuffer(Point(0 0), 3)@2000-01-01, Cbuffer(Point(10 0), 3)@2000-01-05]', tcbuffer '[Cbuffer(Point(0 4), 2)@2000-01-01, Cbuffer(Point(10 4), 2)@2000-01-05]'))::numeric, 6);
 -- Operands whose time frames do not meet have no nearest approach
 SELECT ST_AsText(shortestLine(tcbuffer '[Cbuffer(Point(0 0), 1)@2000-01-01, Cbuffer(Point(1 0), 1)@2000-01-02]', tcbuffer '[Cbuffer(Point(0 6), 2)@2000-01-05, Cbuffer(Point(1 6), 2)@2000-01-06]'));
+-- Two moving disks whose closest approach falls INSIDE a segment. One crosses
+-- in front of a stationary one six units away, so the gap dips to 6-1-2 = 3 at
+-- the midpoint while both endpoints stand sqrt(61)-3 = 4.810250 apart. Reading
+-- the endpoints alone reports the larger value and leaves the temporal
+-- distance constant
+SELECT round(nearestApproachDistance(tcbuffer '[Cbuffer(Point(0 0),1)@2000-01-01, Cbuffer(Point(10 0),1)@2000-01-05]', tcbuffer '[Cbuffer(Point(5 6),2)@2000-01-01, Cbuffer(Point(5 6),2)@2000-01-05]')::numeric, 6);
+SELECT asText(tdistance(tcbuffer '[Cbuffer(Point(0 0),1)@2000-01-01, Cbuffer(Point(10 0),1)@2000-01-05]', tcbuffer '[Cbuffer(Point(5 6),2)@2000-01-01, Cbuffer(Point(5 6),2)@2000-01-05]'), 6);
+SELECT asText(nearestApproachInstant(tcbuffer '[Cbuffer(Point(0 0),1)@2000-01-01, Cbuffer(Point(10 0),1)@2000-01-05]', tcbuffer '[Cbuffer(Point(5 6),2)@2000-01-01, Cbuffer(Point(5 6),2)@2000-01-05]'));
+-- A radius growing over the segment moves the minimiser off the midpoint: with
+-- the second radius running 0 to 4 the gap is least at f = 0.761861, where it
+-- measures 2.499091 against 2.810250 read at the endpoint
+SELECT round(nearestApproachDistance(tcbuffer '[Cbuffer(Point(0 0),1)@2000-01-01, Cbuffer(Point(10 0),1)@2000-01-05]', tcbuffer '[Cbuffer(Point(5 6),0)@2000-01-01, Cbuffer(Point(5 6),4)@2000-01-05]')::numeric, 6);
+-- Disks that keep their separation have no interior minimum to find
+SELECT round(nearestApproachDistance(tcbuffer '[Cbuffer(Point(0 0),1)@2000-01-01, Cbuffer(Point(10 0),1)@2000-01-05]', tcbuffer '[Cbuffer(Point(0 6),2)@2000-01-01, Cbuffer(Point(10 6),2)@2000-01-05]')::numeric, 6);
+-- A gap that dips below zero is clamped there by the distance, so the value is
+-- flat between the two instants at which the disks meet and those instants, not
+-- the minimum, are its breakpoints. One disk passes straight through another,
+-- meeting it at f = 0.2 and f = 0.8 of the segment
+SELECT asText(tdistance(tcbuffer '[Cbuffer(Point(0 0),1)@2000-01-01, Cbuffer(Point(10 0),1)@2000-01-05]', tcbuffer '[Cbuffer(Point(5 0),2)@2000-01-01, Cbuffer(Point(5 0),2)@2000-01-05]'), 6);
+-- A static circular buffer asks the same question as a segment that does not
+-- move, so the temporal distance against one carries the same turning point and
+-- agrees with the nearest approach distance of the pair
+SELECT asText(tdistance(tcbuffer '[Cbuffer(Point(0 0),1)@2000-01-01, Cbuffer(Point(10 0),5)@2000-01-05]', cbuffer 'Cbuffer(Point(5 6),0)'), 6);
+SELECT round(nearestApproachDistance(tcbuffer '[Cbuffer(Point(0 0),1)@2000-01-01, Cbuffer(Point(10 0),5)@2000-01-05]', cbuffer 'Cbuffer(Point(5 6),0)')::numeric, 6);
 SELECT round(ST_Length(shortestLine(tcbuffer 'Cbuffer(Point(4 4), 0.3)@2000-01-01', geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))'))::numeric, 6);
 SELECT round(ST_Length(shortestLine(tcbuffer '{[Cbuffer(Point(0 0), 1)@2000-01-01, Cbuffer(Point(4 0), 1)@2000-01-02], [Cbuffer(Point(20 20), 2)@2000-01-03, Cbuffer(Point(25 20), 1)@2000-01-04]}', geometry 'Polygon((-5 -5,-5 15,15 15,15 -5,-5 -5),(0 0,4 0,4 4,0 4,0 0))'))::numeric, 6);
 SELECT round(ST_Length(shortestLine(tcbuffer '{Cbuffer(Point(0 0), 1)@2000-01-01, Cbuffer(Point(8 3), 2)@2000-01-02}', geometry 'Multipolygon(((200 200,200 210,210 210,210 200,200 200)),((9 -1,9 1,12 1,12 -1,9 -1)))'))::numeric, 6);
