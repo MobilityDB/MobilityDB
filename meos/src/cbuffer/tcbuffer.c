@@ -1492,26 +1492,52 @@ tcbuffer_restrict_stbox(const Temporal *temp, const STBox *box,
   if (! ensure_valid_tcbuffer_stbox(temp, box))
     return NULL;
 
-  /* Bounding box test */
+  bool hasx = MEOS_FLAGS_GET_X(box->flags);
+  bool hast = MEOS_FLAGS_GET_T(box->flags);
+  assert(hasx || hast);
+
+  /* A box carrying only the time dimension restricts on the period alone */
+  if (! hasx)
+    return temporal_restrict_tstzspan(temp, &box->period, atfunc);
+
+  /* Bounding box test. The box of the value is radius-aware, so it encloses
+   * the swept disks and a miss proves that no disk ever reaches the box */
   STBox box1;
   tspatial_set_stbox(temp, &box1);
   if (! overlaps_stbox_stbox(&box1, box))
     return atfunc ? NULL : temporal_copy(temp);
 
-  /* Restrict the centre trajectory to the box with the same semantics as
-   * before (for both at and minus), then slice the original buffer to the
-   * sub-periods that survive instead of rebuilding it from its point and
-   * radius projections with tcbuffer_make: restricting the temporal circular
-   * buffer to those periods keeps the radius without reconstructing the value,
-   * and interpolates the same point and radius at any box-boundary crossing. */
-  Temporal *tpoint = tcbuffer_to_tgeompoint(temp);
-  Temporal *tpoint_rest = tgeo_restrict_stbox(tpoint, box, NULL, atfunc);
-  pfree(tpoint);
-  if (! tpoint_rest)
-    return NULL;
-  SpanSet *ss = temporal_time(tpoint_rest);
-  pfree(tpoint_rest);
-  Temporal *result = temporal_restrict_tstzspanset(temp, ss, REST_AT);
+  /* Restrict by the circular disk footprint, not the centre trajectory: the
+   * buffer meets the box exactly when the moving disk intersects it, which is
+   * the same reading the geometry restriction takes, and the space of a box is
+   * a geometry like any other. A disk overlapping the box while its centre
+   * stays outside belongs to the result, and the centre reading drops it. That
+   * is the true time of the (arc-exact) temporal intersects relationship, so
+   * the box restriction reduces to restricting the buffer to that time (`at`)
+   * or to its complement (`minus`), intersected with the period the box
+   * carries. Slicing the buffer by time keeps the radius without rebuilding the
+   * value from its point and radius projections, and interpolates the same
+   * point and radius at any crossing. */
+  GSERIALIZED *geo = stbox_to_geo(box);
+  if (! geo)
+    return atfunc ? NULL : temporal_copy(temp);
+  Temporal *tinter = tinterrel_tcbuffer_geo(temp, geo, TINTERSECTS);
+  pfree(geo);
+  if (! tinter)
+    return atfunc ? NULL : temporal_copy(temp);
+  SpanSet *ss = tbool_when_true(tinter);
+  pfree(tinter);
+  if (! ss)
+    return atfunc ? NULL : temporal_copy(temp);
+  if (hast)
+  {
+    SpanSet *ss1 = intersection_spanset_span(ss, &box->period);
+    pfree(ss);
+    if (! ss1)
+      return atfunc ? NULL : temporal_copy(temp);
+    ss = ss1;
+  }
+  Temporal *result = temporal_restrict_tstzspanset(temp, ss, atfunc);
   pfree(ss);
   return result;
 }

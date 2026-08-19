@@ -441,6 +441,13 @@ SELECT asText(atStbox(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Po
 SELECT asText(atStbox(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}', 'STBOX XT(((0,0),(3,3)),[2000-01-01,2000-01-05])'));
 SELECT asText(atStbox(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01', 'STBOX XT(((0,0),(2,2)),[2000-01-01,2000-01-02])', false));
 SELECT asText(atStbox(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]', 'STBOX XT(((0,0),(2,2)),[2000-01-01,2000-01-02])', false));
+-- The disk reaches the box while its centre stays outside it
+SELECT asText(atStbox(tcbuffer 'Cbuffer(Point(3 1), 1.5)@2000-01-01', 'STBOX XT(((0,0),(2,2)),[2000-01-01,2000-01-02])'));
+SELECT asText(atStbox(tcbuffer '[Cbuffer(Point(3 1), 1.5)@2000-01-01, Cbuffer(Point(3 1), 1.5)@2000-01-02]', 'STBOX XT(((0,0),(2,2)),[2000-01-01,2000-01-02])'));
+-- The same disk against the geometry of that box, which must agree
+SELECT asText(atGeometry(tcbuffer 'Cbuffer(Point(3 1), 1.5)@2000-01-01', geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))'));
+-- A disk that reaches neither the box nor its geometry
+SELECT asText(atStbox(tcbuffer 'Cbuffer(Point(9 9), 0.5)@2000-01-01', 'STBOX XT(((0,0),(2,2)),[2000-01-01,2000-01-02])'));
 
 SELECT asText(minusStbox(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01', 'STBOX XT(((10,10),(20,20)),[2000-01-01,2000-01-02])'));
 SELECT asText(minusStbox(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}', 'STBOX XT(((0,0),(2,2)),[2000-01-01,2000-01-02])'));
@@ -448,6 +455,9 @@ SELECT asText(minusStbox(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer
 SELECT asText(minusStbox(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03], [Cbuffer(Point(2 2), 0.6)@2000-01-04, Cbuffer(Point(2 2), 0.6)@2000-01-05]}', 'STBOX XT(((0,0),(3,3)),[2000-01-01,2000-01-05])'));
 SELECT asText(minusStbox(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01', 'STBOX XT(((0,0),(2,2)),[2000-01-01,2000-01-02])', false));
 SELECT asText(minusStbox(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Point(1 1), 0.4)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03]', 'STBOX XT(((0,0),(2,2)),[2000-01-01,2000-01-02])', false));
+-- The disk reaches the box while its centre stays outside it
+SELECT asText(minusStbox(tcbuffer 'Cbuffer(Point(3 1), 1.5)@2000-01-01', 'STBOX XT(((0,0),(2,2)),[2000-01-01,2000-01-02])'));
+SELECT asText(minusStbox(tcbuffer '[Cbuffer(Point(3 1), 1.5)@2000-01-01, Cbuffer(Point(3 1), 1.5)@2000-01-02]', 'STBOX XT(((0,0),(2,2)),[2000-01-01,2000-01-02])'));
 
 SELECT asText(atTime(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01', timestamptz '2000-01-01'));
 SELECT asText(atTime(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2000-01-01, Cbuffer(Point(1 1), 0.5)@2000-01-02, Cbuffer(Point(1 1), 0.5)@2000-01-03}', timestamptz '2000-01-01'));
