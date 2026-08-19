@@ -771,14 +771,23 @@ nai_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
     return tinstant_make_free(value, temp->temptype, t);
   }
 
-  /* A geometry that has no edge decomposition: fall back to the centreline */
-  Temporal *tpoint = tcbuffer_to_tgeompoint(temp);
-  TInstant *resultgeom = nai_tgeo_geo(tpoint, gs);
+  /* A geometry that has no edge decomposition: take the instant from the exact
+   * temporal distance, which honours the radius through the traversed area, as
+   * the nearest approach distance does on the same geometries. Reading the
+   * centreline instead minimises the distance of the centre, a quantity that
+   * parts from the one the nearest approach reports as soon as the radius
+   * varies, so the instant it returns is one whose distance is not the nearest
+   * approach. */
+  Temporal *dist = tdistance_tcbuffer_geo(temp, gs);
+  if (! dist)
+    return NULL;
+  const TInstant *min = temporal_min_inst_p((const Temporal *) dist);
+  TimestampTz tmin = min->t;
+  pfree(dist);
   Datum value;
-  temporal_value_at_timestamptz(temp, resultgeom->t, false, &value);
-  TInstant *result = tinstant_make_free(value, temp->temptype, resultgeom->t);
-  pfree(tpoint); pfree(resultgeom);
-  return result;
+  if (! temporal_value_at_timestamptz(temp, tmin, false, &value))
+    return NULL;
+  return tinstant_make_free(value, temp->temptype, tmin);
 }
 
 /**
@@ -2417,11 +2426,64 @@ shortestline_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
   if (! ensure_valid_tcbuffer_tcbuffer(temp1, temp2))
     return NULL;
 
-  Temporal *tpoint1 = tcbuffer_to_tgeompoint(temp1);
-  Temporal *tpoint2 = tcbuffer_to_tgeompoint(temp2);
-  GSERIALIZED *result = shortestline_tgeo_tgeo(tpoint1, tpoint2);
-  pfree(tpoint1); pfree(tpoint2);
-  return result;
+  /* The nearest approach of two moving disks is attained at the instant where
+   * the temporal distance is least, that distance honouring both radii and the
+   * turning points. Read the two disks there and the line follows in closed
+   * form: it runs along the line of centres, leaving the boundary of one disk
+   * and reaching the boundary of the other, so its length is the nearest
+   * approach distance. Reading the centres instead answers a different
+   * question, one whose line is longer than the distance it is supposed to
+   * realise by exactly the two radii. */
+  Temporal *dist = tdistance_tcbuffer_tcbuffer(temp1, temp2);
+  if (! dist)
+    return NULL;
+  const TInstant *min = temporal_min_inst_p((const Temporal *) dist);
+  TimestampTz t = min->t;
+  pfree(dist);
+
+  /* The closest point may be at an exclusive bound */
+  Datum value1, value2;
+  if (! temporal_value_at_timestamptz(temp1, t, false, &value1) ||
+      ! temporal_value_at_timestamptz(temp2, t, false, &value2))
+    return NULL;
+  const Cbuffer *cb1 = DatumGetCbufferP(value1);
+  const Cbuffer *cb2 = DatumGetCbufferP(value2);
+  const POINT2D *c1 = cbuffer_point2d_p(cb1);
+  const POINT2D *c2 = cbuffer_point2d_p(cb2);
+  double vx = c2->x - c1->x, vy = c2->y - c1->y;
+  double vl = sqrt(vx * vx + vy * vy);
+  double px, py, qx, qy;
+  if (vl <= MEOS_EPSILON || vl <= cb1->radius + cb2->radius)
+  {
+    /* Concentric or overlapping disks meet, and the line degenerates to the
+     * point where the boundary of the first reaches the second, clamped to the
+     * centre when there is no direction to take */
+    double f = (vl <= MEOS_EPSILON) ? 0.0 : cb1->radius / vl;
+    if (f > 1.0) f = 1.0;
+    px = qx = c1->x + vx * f;
+    py = qy = c1->y + vy * f;
+  }
+  else
+  {
+    px = c1->x + vx * (cb1->radius / vl);
+    py = c1->y + vy * (cb1->radius / vl);
+    qx = c2->x - vx * (cb2->radius / vl);
+    qy = c2->y - vy * (cb2->radius / vl);
+  }
+  int32_t srid = tspatial_srid(temp1);
+  pfree(DatumGetPointer(value1)); pfree(DatumGetPointer(value2));
+
+  POINTARRAY *pa = ptarray_construct(0, 0, 2);
+  POINT4D p4;
+  p4.z = 0.0; p4.m = 0.0;
+  p4.x = px; p4.y = py;
+  ptarray_set_point4d(pa, 0, &p4);
+  p4.x = qx; p4.y = qy;
+  ptarray_set_point4d(pa, 1, &p4);
+  LWLINE *ln = lwline_construct(srid, NULL, pa);
+  GSERIALIZED *line = geo_serialize(lwline_as_lwgeom(ln));
+  lwline_free(ln);
+  return line;
 }
 
 /*****************************************************************************/
