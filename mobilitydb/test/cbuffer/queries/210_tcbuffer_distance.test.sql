@@ -333,6 +333,18 @@ SELECT round(ST_Length(shortestLine(tcbuffer 'Interp=Step;[Cbuffer(Point(0 0), 1
 -- the arc-exact nearest-approach distance (2.544004, 0, 0.356854 respectively)
 SELECT round(ST_Length(shortestLine(tcbuffer 'Cbuffer(Point(3 8), 1)@2000-01-01', geometry 'CircularString(5 0, 0 5, -5 0)'))::numeric, 6);
 SELECT round(ST_Length(shortestLine(tcbuffer 'Cbuffer(Point(0 0), 1)@2000-01-01', geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))'))::numeric, 6);
+
+-- The moving shortest line runs between the two disk boundaries, so its length
+-- is the nearest approach distance of the same pair rather than the distance of
+-- the two centres, which exceeds it by the two radii. The two disks hold a
+-- constant separation, so the length is the same wherever the witness is taken
+-- and the test does not depend on how equal minima are broken
+SELECT round(ST_Length(shortestLine(tcbuffer '[Cbuffer(Point(0 0), 1)@2000-01-01, Cbuffer(Point(10 0), 1)@2000-01-05]', tcbuffer '[Cbuffer(Point(0 6), 2)@2000-01-01, Cbuffer(Point(10 6), 2)@2000-01-05]'))::numeric, 6);
+SELECT round(nearestApproachDistance(tcbuffer '[Cbuffer(Point(0 0), 1)@2000-01-01, Cbuffer(Point(10 0), 1)@2000-01-05]', tcbuffer '[Cbuffer(Point(0 6), 2)@2000-01-01, Cbuffer(Point(10 6), 2)@2000-01-05]')::numeric, 6);
+-- Disks that meet: the line degenerates where the boundary of one reaches the other
+SELECT round(ST_Length(shortestLine(tcbuffer '[Cbuffer(Point(0 0), 3)@2000-01-01, Cbuffer(Point(10 0), 3)@2000-01-05]', tcbuffer '[Cbuffer(Point(0 4), 2)@2000-01-01, Cbuffer(Point(10 4), 2)@2000-01-05]'))::numeric, 6);
+-- Operands whose time frames do not meet have no nearest approach
+SELECT ST_AsText(shortestLine(tcbuffer '[Cbuffer(Point(0 0), 1)@2000-01-01, Cbuffer(Point(1 0), 1)@2000-01-02]', tcbuffer '[Cbuffer(Point(0 6), 2)@2000-01-05, Cbuffer(Point(1 6), 2)@2000-01-06]'));
 SELECT round(ST_Length(shortestLine(tcbuffer 'Cbuffer(Point(4 4), 0.3)@2000-01-01', geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))'))::numeric, 6);
 SELECT round(ST_Length(shortestLine(tcbuffer '{[Cbuffer(Point(0 0), 1)@2000-01-01, Cbuffer(Point(4 0), 1)@2000-01-02], [Cbuffer(Point(20 20), 2)@2000-01-03, Cbuffer(Point(25 20), 1)@2000-01-04]}', geometry 'Polygon((-5 -5,-5 15,15 15,15 -5,-5 -5),(0 0,4 0,4 4,0 4,0 0))'))::numeric, 6);
 SELECT round(ST_Length(shortestLine(tcbuffer '{Cbuffer(Point(0 0), 1)@2000-01-01, Cbuffer(Point(8 3), 2)@2000-01-02}', geometry 'Multipolygon(((200 200,200 210,210 210,210 200,200 200)),((9 -1,9 1,12 1,12 -1,9 -1)))'))::numeric, 6);
