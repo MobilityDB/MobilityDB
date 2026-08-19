@@ -32,6 +32,7 @@
  * @brief Spatial functions for temporal geos
  */
 
+#include "geo/geo_cluster.h"
 #include "geo/tgeo_spatialfuncs.h"
 
 /* PostgreSQL */
@@ -1590,8 +1591,16 @@ geo_cluster_dbscan(const GSERIALIZED **geoms, uint32_t ngeoms,
   for (i = 0; i < ngeoms; i++)
     lwgeoms[i] = lwgeom_from_gserialized(geoms[i]);
 
-  bool success = union_dbscan(lwgeoms, ngeoms, uf, tolerance, minpoints,
-    minpoints > 1 ? &is_in_cluster : NULL);
+  bool success =
+#if GEOS
+    union_dbscan(lwgeoms, ngeoms, uf, tolerance, minpoints,
+      minpoints > 1 ? &is_in_cluster : NULL);
+#else
+    /* The clustering of liblwgeom reaches GEOS only for the index narrowing
+     * the pairs whose distance it computes, which the bounding boxes answer */
+    geo_union_dbscan(lwgeoms, ngeoms, uf, tolerance, (uint32_t) minpoints,
+      minpoints > 1 ? &is_in_cluster : NULL);
+#endif /* GEOS */
 
   for (i = 0; i < ngeoms; i++)
     lwgeom_free(lwgeoms[i]);
@@ -1734,8 +1743,14 @@ geo_cluster_within(const GSERIALIZED **geoms, uint32_t ngeoms,
 
   LWGEOM **lw_results;
   uint32_t nclusters;
-  bool success = cluster_within_distance(lwgeoms, ngeoms, tolerance,
-    &lw_results, &nclusters);
+  bool success =
+#if GEOS
+    cluster_within_distance(lwgeoms, ngeoms, tolerance, &lw_results,
+      &nclusters);
+#else
+    geo_cluster_within_distance(lwgeoms, ngeoms, tolerance, &lw_results,
+      &nclusters);
+#endif /* GEOS */
   /* don't need to destroy items because GeometryCollections have taken ownership */
   pfree(lwgeoms);
 
