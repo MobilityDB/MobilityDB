@@ -1640,6 +1640,30 @@ SELECT asText(atStbox(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer(Po
  {[Cbuffer(POINT(1 1),0.2)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST]}
 (1 row)
 
+SELECT asText(atStbox(tcbuffer 'Cbuffer(Point(3 1), 1.5)@2000-01-01', 'STBOX XT(((0,0),(2,2)),[2000-01-01,2000-01-02])'));
+                        astext                        
+------------------------------------------------------
+ Cbuffer(POINT(3 1),1.5)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(atStbox(tcbuffer '[Cbuffer(Point(3 1), 1.5)@2000-01-01, Cbuffer(Point(3 1), 1.5)@2000-01-02]', 'STBOX XT(((0,0),(2,2)),[2000-01-01,2000-01-02])'));
+                                                     astext                                                     
+----------------------------------------------------------------------------------------------------------------
+ {[Cbuffer(POINT(3 1),1.5)@Sat Jan 01 00:00:00 2000 PST, Cbuffer(POINT(3 1),1.5)@Sun Jan 02 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(atGeometry(tcbuffer 'Cbuffer(Point(3 1), 1.5)@2000-01-01', geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))'));
+                        astext                        
+------------------------------------------------------
+ Cbuffer(POINT(3 1),1.5)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asText(atStbox(tcbuffer 'Cbuffer(Point(9 9), 0.5)@2000-01-01', 'STBOX XT(((0,0),(2,2)),[2000-01-01,2000-01-02])'));
+ astext 
+--------
+ 
+(1 row)
+
 SELECT asText(minusStbox(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01', 'STBOX XT(((10,10),(20,20)),[2000-01-01,2000-01-02])'));
                         astext                        
 ------------------------------------------------------
@@ -1674,6 +1698,18 @@ SELECT asText(minusStbox(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2000-01-01, Cbuffer
                                                      astext                                                     
 ----------------------------------------------------------------------------------------------------------------
  {(Cbuffer(POINT(1 1),0.4)@Sun Jan 02 00:00:00 2000 PST, Cbuffer(POINT(1 1),0.5)@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT asText(minusStbox(tcbuffer 'Cbuffer(Point(3 1), 1.5)@2000-01-01', 'STBOX XT(((0,0),(2,2)),[2000-01-01,2000-01-02])'));
+ astext 
+--------
+ 
+(1 row)
+
+SELECT asText(minusStbox(tcbuffer '[Cbuffer(Point(3 1), 1.5)@2000-01-01, Cbuffer(Point(3 1), 1.5)@2000-01-02]', 'STBOX XT(((0,0),(2,2)),[2000-01-01,2000-01-02])'));
+ astext 
+--------
+ 
 (1 row)
 
 SELECT asText(atTime(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2000-01-01', timestamptz '2000-01-01'));
