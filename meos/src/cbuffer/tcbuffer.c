@@ -1577,6 +1577,71 @@ tcbuffer_minus_cbuffer(const Temporal *temp, const Cbuffer *cb)
  * the upper border is assumed as outside of the box.
  * @csqlfn #Tcbuffer_at_stbox()
  */
+/**
+ * @brief Return true when some unit of a temporal circular buffer can reach the
+ * space of the box @p box
+ *
+ * A disk meets a box exactly when its centre lies within the radius of it, so a
+ * unit whose centre box stands farther than the larger of its two radii from
+ * the box reaches it at no instant. The box of the value cannot express this:
+ * it is widened by the radius and spans the whole trajectory, so it overlaps
+ * wherever the disks reach anywhere, and on a spatial join it passes nearly
+ * every pair into the running relationship below.
+ *
+ * Reading the centre against a radius-widened threshold, rather than a
+ * radius-widened box against the box, keeps the radius from being removed on
+ * both axes at once. The centre box and the radius maximum both
+ * over-approximate the unit, so a value that does reach the box is never
+ * rejected, and the scan is linear in the instants and touches no geometry.
+ */
+static bool
+tcbuffer_may_reach_box(const Temporal *temp, const STBox *box)
+{
+  assert(temp); assert(temptype_subtype(temp->subtype));
+  if (temp->subtype == TINSTANT)
+  {
+    const Cbuffer *cb = DatumGetCbufferP(tinstant_value_p((const TInstant *) temp));
+    const POINT2D *p = cbuffer_point2d_p(cb);
+    double dx = Max(Max(box->xmin - p->x, p->x - box->xmax), 0.0);
+    double dy = Max(Max(box->ymin - p->y, p->y - box->ymax), 0.0);
+    return dx * dx + dy * dy <= cb->radius * cb->radius;
+  }
+  int nseqs = (temp->subtype == TSEQUENCE) ? 1 :
+    ((const TSequenceSet *) temp)->count;
+  for (int s = 0; s < nseqs; s++)
+  {
+    const TSequence *seq = (temp->subtype == TSEQUENCE) ?
+      (const TSequence *) temp :
+      TSEQUENCESET_SEQ_N((const TSequenceSet *) temp, s);
+    const Cbuffer *cb1 = DatumGetCbufferP(
+      tinstant_value_p(TSEQUENCE_INST_N(seq, 0)));
+    const POINT2D *p1 = cbuffer_point2d_p(cb1);
+    for (int i = 1; i <= seq->count - 1; i++)
+    {
+      const Cbuffer *cb2 = DatumGetCbufferP(
+        tinstant_value_p(TSEQUENCE_INST_N(seq, i)));
+      const POINT2D *p2 = cbuffer_point2d_p(cb2);
+      double r = fmax(cb1->radius, cb2->radius);
+      double cxmin = fmin(p1->x, p2->x), cxmax = fmax(p1->x, p2->x);
+      double cymin = fmin(p1->y, p2->y), cymax = fmax(p1->y, p2->y);
+      double dx = Max(Max(box->xmin - cxmax, cxmin - box->xmax), 0.0);
+      double dy = Max(Max(box->ymin - cymax, cymin - box->ymax), 0.0);
+      if (dx * dx + dy * dy <= r * r)
+        return true;
+      cb1 = cb2; p1 = p2;
+    }
+    if (seq->count == 1)
+    {
+      double r = cb1->radius;
+      double dx = Max(Max(box->xmin - p1->x, p1->x - box->xmax), 0.0);
+      double dy = Max(Max(box->ymin - p1->y, p1->y - box->ymax), 0.0);
+      if (dx * dx + dy * dy <= r * r)
+        return true;
+    }
+  }
+  return false;
+}
+
 Temporal *
 tcbuffer_restrict_stbox(const Temporal *temp, const STBox *box,
   bool border_inc UNUSED, bool atfunc)
@@ -1599,6 +1664,13 @@ tcbuffer_restrict_stbox(const Temporal *temp, const STBox *box,
   STBox box1;
   tspatial_set_stbox(temp, &box1);
   if (! overlaps_stbox_stbox(&box1, box))
+    return atfunc ? NULL : temporal_copy(temp);
+
+  /* Per-unit reach test on the centre, which the widened box above cannot
+   * express: a value no unit of which brings a disk within reach of the box
+   * meets it nowhere, and the restriction is settled without the running
+   * relationship below and the decomposition it builds */
+  if (! tcbuffer_may_reach_box(temp, box))
     return atfunc ? NULL : temporal_copy(temp);
 
   /* Restrict by the circular disk footprint, not the centre trajectory: the
