@@ -222,6 +222,73 @@ tcbufferinst_xybox(const TInstant *inst, double *xmin, double *ymin,
 }
 
 /**
+ * @brief Return true when a temporal circular buffer holds a unit every point
+ * of which is farther than @p dist from the box @p bxmin, @p bymin, @p bxmax,
+ * @p bymax, which refutes an always relationship requiring the buffer to stay
+ * within @p dist of what the box bounds
+ *
+ * A disk is within @p dist of a set exactly when its centre is within dist plus
+ * its radius of it, the disk reaching exactly its radius beyond the centre. A
+ * unit whose centre box stands farther than dist plus the larger of its two
+ * radii from the box therefore holds no instant within the distance, and one
+ * such unit refutes the always semantics. Reading the centre against a
+ * radius-widened threshold, rather than reading a radius-widened box against
+ * the distance, keeps the radius from being removed on both axes at once,
+ * exactly as the nearest-approach prune does.
+ *
+ * The centre box and the radius maximum both over-approximate the unit, so a
+ * value that is always within the distance is never refuted. Taking units
+ * rather than instants keeps the test independent of which bounds the sequence
+ * carries, the interior of a unit always belonging to the definition time.
+ */
+static bool
+tcbuffer_escapes_box(const Temporal *temp, double bxmin, double bymin,
+  double bxmax, double bymax, double dist)
+{
+  assert(temp); assert(temptype_subtype(temp->subtype));
+  if (temp->subtype == TINSTANT)
+  {
+    const Cbuffer *cb = DatumGetCbufferP(tinstant_value_p((TInstant *) temp));
+    const POINT2D *p = cbuffer_point2d_p(cb);
+    double thr = dist + cb->radius;
+    return box2d_distance_sqr(p->x, p->y, p->x, p->y, bxmin, bymin, bxmax,
+      bymax) > thr * thr;
+  }
+  int nseqs = (temp->subtype == TSEQUENCE) ? 1 :
+    ((TSequenceSet *) temp)->count;
+  for (int s = 0; s < nseqs; s++)
+  {
+    const TSequence *seq = (temp->subtype == TSEQUENCE) ?
+      (const TSequence *) temp :
+      TSEQUENCESET_SEQ_N((const TSequenceSet *) temp, s);
+    const Cbuffer *cb1 = DatumGetCbufferP(
+      tinstant_value_p(TSEQUENCE_INST_N(seq, 0)));
+    const POINT2D *p1 = cbuffer_point2d_p(cb1);
+    if (seq->count == 1)
+    {
+      double thr = dist + cb1->radius;
+      if (box2d_distance_sqr(p1->x, p1->y, p1->x, p1->y, bxmin, bymin, bxmax,
+          bymax) > thr * thr)
+        return true;
+      continue;
+    }
+    for (int i = 1; i < seq->count; i++)
+    {
+      const Cbuffer *cb2 = DatumGetCbufferP(
+        tinstant_value_p(TSEQUENCE_INST_N(seq, i)));
+      const POINT2D *p2 = cbuffer_point2d_p(cb2);
+      double thr = dist + fmax(cb1->radius, cb2->radius);
+      if (box2d_distance_sqr(fmin(p1->x, p2->x), fmin(p1->y, p2->y),
+          fmax(p1->x, p2->x), fmax(p1->y, p2->y), bxmin, bymin, bxmax,
+          bymax) > thr * thr)
+        return true;
+      cb1 = cb2; p1 = p2;
+    }
+  }
+  return false;
+}
+
+/**
  * @brief Decide a per-segment spatial relationship from bounding boxes alone
  * @details When the swept-capsule box of a segment is disjoint from the
  * geometry box, the two geometries are disjoint, so every supported
@@ -1556,12 +1623,22 @@ ea_touches_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
   if (! overlaps_stbox_stbox(&box1, &box2))
     return 0;
 
-  /* Touch requires the temporal value and the geometry to be at distance
-   * zero; a strictly positive exact nearest-approach distance means they
-   * are disjoint, so they cannot touch under either quantifier. This is
+  /* Touch requires the temporal value and the geometry to be at distance zero,
+   * so a strictly positive exact nearest-approach distance proves them disjoint
+   * and unable to touch. That is the ever question -- whether contact happens
+   * anywhere -- and a running minimum over the whole value is what answers it.
+   * The always question is refuted by a single unit that fails to reach the
+   * geometry, which the centre-against-radius test settles from the geometry
+   * box alone, ahead of the edge decomposition the running scan builds. This is
    * applied only on the geometry path: the cbuffer path turns into a
    * many-vertex disk for which the analytic distance is not a win. */
-  if (nad_tcbuffer_geo(temp, gs) > 1e-6)
+  if (ever)
+  {
+    if (nad_tcbuffer_geo(temp, gs) > 1e-6)
+      return 0;
+  }
+  else if (tcbuffer_escapes_box(temp, box2.xmin, box2.ymin, box2.xmax,
+      box2.ymax, 0.0))
     return 0;
   /* Native path: eTouches/aTouches derive from the exact boundary-contact
    * instants, consistent with ever/always(tTouches). A geometry that has no
@@ -1774,6 +1851,18 @@ ea_dwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
   stbox_expand_space_set(&box_geo, dist, &box_geo_exp);
   bool pass = overlaps_stbox_stbox(&box_temp, &box_geo_exp);
   if (! pass)
+    return 0;
+
+  /* The always semantics are refuted by a single unit that stays farther than
+   * the distance from the geometry, which the centre-against-radius test reads
+   * from the geometry box alone. The overlap test above cannot serve here: a
+   * value always within the distance may still reach far outside the expanded
+   * box, the distance being the one to the NEAREST point of the disk while the
+   * rest of the disk is unconstrained. This reject spares the expanded copy and
+   * the coverage kernel below for a pair that leaves the neighbourhood at any
+   * point, the common case in a spatial join. */
+  if (! ever && tcbuffer_escapes_box(temp, box_geo.xmin, box_geo.ymin,
+      box_geo.xmax, box_geo.ymax, dist))
     return 0;
 
   /* The ever semantics reduce exactly to the native nearest-approach
