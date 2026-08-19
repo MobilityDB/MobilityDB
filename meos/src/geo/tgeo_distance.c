@@ -1092,28 +1092,48 @@ box2d_distance_sqr(double axmin, double aymin, double axmax, double aymax,
 }
 
 /**
- * @brief Return true when the exact swept-disc solve against a straight edge
- * cannot improve the running minimum @p cur
+ * @brief Return the squared distance a centre segment must reach from a
+ * geometry, one of its edge buckets or one of its edges before a swept-capsule
+ * unit of largest radius @p rmax can no longer improve the running minimum
+ * @p best
  *
- * The exact distance is at least the distance from the centre segment to the
- * edge minus the larger radius, since min_t dist(centre(t), edge) - r(t) is at
- * most that distance, so a centre-segment distance of at least cur + rmax
- * leaves the solve nothing to find. The axis-aligned swept box expanded by the
- * radius is a loose filter for a round disc, and this rejects the survivors it
- * leaves. A scalar squared segment distance serves here rather than
- * lw_dist2d_seg_seg, which also computes the closest points and is far heavier
- * in this loop.
+ * Every point of the unit lies within @p rmax of the unit's centre segment, so
+ * the unit's distance to a set is at least that set's distance to the centre
+ * segment minus @p rmax, and a centre distance of at least best + rmax leaves
+ * the exact solve nothing to find. Testing the centre this way is strictly
+ * tighter than growing the centre box by @p rmax on each axis and comparing
+ * against @p best, which is what the three prune levels below did before: the
+ * axis-wise growth subtracts the radius once per axis and so gives away up to
+ * a factor of sqrt(2) radially, because a disc is round and a box is square.
+ * With @p rmax zero -- a temporal point -- the two forms coincide exactly.
+ *
+ * The threshold is squared because every distance it is compared against is a
+ * squared one, and it is computed here rather than at each test because it
+ * changes only when the running minimum does.
+ */
+static inline double
+dist_unit_thr2(double best, double rmax)
+{
+  double thr = best + rmax;
+  return thr * thr;
+}
+
+/**
+ * @brief Return true when the exact swept-disc solve against a straight edge
+ * cannot improve the running minimum behind the squared threshold @p thr2
+ *
+ * This reads the same signed-gap lower bound as #dist_unit_thr2 on the exact
+ * centre segment rather than on its bounding box, so it rejects the survivors
+ * the box levels leave. A scalar squared segment distance serves here rather
+ * than lw_dist2d_seg_seg, which also computes the closest points and is far
+ * heavier in this loop.
  */
 static bool
 dist_edge_radius_prune(double cx1, double cy1, double cx2, double cy2,
-  double r1, double r2, const DistEdge *e, double cur)
+  const DistEdge *e, double thr2)
 {
-  double rmax = fmax(r1, r2);
-  if (rmax <= 0.0)
-    return false;
-  double thr = cur + rmax;
   return dist_seg_seg_dist2(cx1, cy1, cx2, cy2, e->x1, e->y1, e->x2,
-    e->y2) >= thr * thr;
+    e->y2) >= thr2;
 }
 
 /**
@@ -1124,22 +1144,25 @@ void
 dist_segm_nad(double cx1, double cy1, double r1, double cx2, double cy2,
   double r2, const DistGeom *g, double *best)
 {
-  double sxmin = fmin(cx1 - r1, cx2 - r2);
-  double sxmax = fmax(cx1 + r1, cx2 + r2);
-  double symin = fmin(cy1 - r1, cy2 - r2);
-  double symax = fmax(cy1 + r1, cy2 + r2);
-  /* Coarse branch-and-bound prune: the distance between this unit's swept
-   * bounding box and the geometry's overall bounding box is a lower bound on
-   * the unit's nearest approach (a box contains its geometry, so the box-to-box
-   * distance cannot exceed the geometry-to-capsule distance). If that lower
-   * bound already reaches the running minimum, no edge can improve it, so the
-   * point-in-polygon test and the whole per-edge loop are skipped. A segment
-   * whose centre is inside a polygon overlaps the geometry bounding box, giving
-   * a zero lower bound, so it is never wrongly pruned. */
+  double cxmin = fmin(cx1, cx2);
+  double cxmax = fmax(cx1, cx2);
+  double cymin = fmin(cy1, cy2);
+  double cymax = fmax(cy1, cy2);
+  double rmax = fmax(r1, r2);
+  double thr2 = (*best == DBL_MAX) ? 0.0 : dist_unit_thr2(*best, rmax);
+  /* Coarse branch-and-bound prune: the distance between this unit's centre
+   * bounding box and the geometry's overall bounding box, minus the unit's
+   * largest radius, is a lower bound on the unit's nearest approach (a box
+   * contains its geometry, and every point of the unit lies within that radius
+   * of the centre segment). If that lower bound already reaches the running
+   * minimum, no edge can improve it, so the point-in-polygon test and the whole
+   * per-edge loop are skipped. A segment whose centre is inside a polygon
+   * overlaps the geometry bounding box, giving a zero box distance, so it is
+   * never wrongly pruned. */
   if (*best != DBL_MAX)
   {
     if (box2d_distance_sqr(g->xmin, g->ymin, g->xmax, g->ymax,
-        sxmin, symin, sxmax, symax) >= (*best) * (*best))
+        cxmin, cymin, cxmax, cymax) >= thr2)
       return;
   }
   if (g->has_poly)
@@ -1161,7 +1184,7 @@ dist_segm_nad(double cx1, double cy1, double r1, double cx2, double cy2,
     if (*best != DBL_MAX)
     {
       if (box2d_distance_sqr(bk->xmin, bk->ymin, bk->xmax, bk->ymax,
-          sxmin, symin, sxmax, symax) >= (*best) * (*best))
+          cxmin, cymin, cxmax, cymax) >= thr2)
         continue;
     }
     int e = bk->start + bk->n;
@@ -1171,24 +1194,24 @@ dist_segm_nad(double cx1, double cy1, double r1, double cx2, double cy2,
       if (*best != DBL_MAX)
       {
         if (box2d_distance_sqr(ed->xmin, ed->ymin, ed->xmax, ed->ymax,
-          sxmin, symin, sxmax, symax) >= (*best) * (*best))
+          cxmin, cymin, cxmax, cymax) >= thr2)
+          continue;
+        /* The same lower bound read on the exact centre segment instead of its
+         * box, which rejects the survivors the box levels leave. It pays only
+         * for a moving disc against a straight edge: with a zero radius the box
+         * levels are already exact on this bound. */
+        if (! ed->is_arc && rmax > 0.0 &&
+            dist_edge_radius_prune(cx1, cy1, cx2, cy2, ed, thr2))
           continue;
       }
-      /* Radius-aware tighter prune (moving disc only, straight edges): the
-       * exact swept-disc distance is at least the centre-segment-to-edge
-       * distance minus the larger radius (min_t dist(centre(t),edge) - r(t) >=
-       * segdist - rmax), so when segdist >= best + rmax the exact per-edge solve
-       * is skipped. The axis-aligned swept box expanded by the radius is a loose
-       * filter for a round disc; this rejects the many box survivors it leaves.
-       * A scalar squared seg-seg distance is used (not lw_dist2d_seg_seg, which
-       * also computes closest points and is far heavier in this hot loop). */
-      if (! ed->is_arc && *best != DBL_MAX &&
-          dist_edge_radius_prune(cx1, cy1, cx2, cy2, r1, r2, ed, *best))
-        continue;
       double m = ed->is_arc ?
         dist_segm_arc_mindist(cx1, cy1, cx2, cy2, r1, r2, ed) :
         dist_segm_edge_mindist(cx1, cy1, cx2, cy2, r1, r2, ed);
-      if (m < *best) *best = m;
+      if (m < *best)
+      {
+        *best = m;
+        thr2 = dist_unit_thr2(m, rmax);
+      }
     }
   }
 }
@@ -1204,19 +1227,22 @@ dist_segm_shortestline(double cx1, double cy1, double r1, double cx2,
 {
   if (w->set && w->d <= 0.0)
     return;
-  double sxmin = fmin(cx1 - r1, cx2 - r2);
-  double sxmax = fmax(cx1 + r1, cx2 + r2);
-  double symin = fmin(cy1 - r1, cy2 - r2);
-  double symax = fmax(cy1 + r1, cy2 + r2);
-  /* Coarse branch-and-bound prune: the swept bounding box to geometry bounding
-   * box distance is a lower bound on this unit's nearest approach, so once it
-   * reaches the running witness distance no edge can improve the shortest line.
-   * A unit whose centre is inside a polygon overlaps the geometry box (zero
-   * lower bound), so it is never wrongly pruned. */
+  double cxmin = fmin(cx1, cx2);
+  double cxmax = fmax(cx1, cx2);
+  double cymin = fmin(cy1, cy2);
+  double cymax = fmax(cy1, cy2);
+  double rmax = fmax(r1, r2);
+  double thr2 = w->set ? dist_unit_thr2(w->d, rmax) : 0.0;
+  /* Coarse branch-and-bound prune: the centre bounding box to geometry bounding
+   * box distance, minus the unit's largest radius, is a lower bound on this
+   * unit's nearest approach, so once it reaches the running witness distance no
+   * edge can improve the shortest line. A unit whose centre is inside a polygon
+   * overlaps the geometry box (zero box distance), so it is never wrongly
+   * pruned. */
   if (w->set)
   {
     if (box2d_distance_sqr(g->xmin, g->ymin, g->xmax, g->ymax,
-        sxmin, symin, sxmax, symax) >= w->d * w->d)
+        cxmin, cymin, cxmax, cymax) >= thr2)
       return;
   }
   /* A centre inside a polygon means the swept region overlaps it: the shortest
@@ -1244,7 +1270,7 @@ dist_segm_shortestline(double cx1, double cy1, double r1, double cx2,
     if (w->set)
     {
       if (box2d_distance_sqr(bk->xmin, bk->ymin, bk->xmax, bk->ymax,
-          sxmin, symin, sxmax, symax) >= w->d * w->d)
+          cxmin, cymin, cxmax, cymax) >= thr2)
         continue;
     }
     int elast = bk->start + bk->n;
@@ -1254,17 +1280,15 @@ dist_segm_shortestline(double cx1, double cy1, double r1, double cx2,
       if (w->set)
       {
         if (box2d_distance_sqr(e->xmin, e->ymin, e->xmax, e->ymax,
-          sxmin, symin, sxmax, symax) >= w->d * w->d)
+          cxmin, cymin, cxmax, cymax) >= thr2)
+          continue;
+        /* The same lower bound read on the exact centre segment instead of its
+         * box, which rejects the survivors the box levels leave. It pays only
+         * for a moving disc against a straight edge. */
+        if (! e->is_arc && rmax > 0.0 &&
+            dist_edge_radius_prune(cx1, cy1, cx2, cy2, e, thr2))
           continue;
       }
-      /* Radius-aware tighter prune (moving disc only, straight edges): skip the
-       * exact per-edge solve when the centre-segment-to-edge distance minus the
-       * larger radius already reaches the running minimum. The same lower bound
-       * as dist_segm_nad, valid because it never exceeds the true swept-disc
-       * distance, so the witness cannot change. */
-      if (! e->is_arc && w->set &&
-          dist_edge_radius_prune(cx1, cy1, cx2, cy2, r1, r2, e, w->d))
-        continue;
       double t;
       double m = e->is_arc ?
         dist_segm_arc_dt(cx1, cy1, cx2, cy2, r1, r2, e, &t) :
@@ -1294,6 +1318,7 @@ dist_segm_shortestline(double cx1, double cy1, double r1, double cx2,
         }
         w->d = m; w->px = pxp; w->py = pyp; w->qx = qx; w->qy = qy;
         w->set = true;
+        thr2 = dist_unit_thr2(m, rmax);
       }
     }
   }
@@ -1311,17 +1336,20 @@ dist_segm_nai(double cx1, double cy1, double r1, TimestampTz t1, double cx2,
 {
   if (w->set && w->d <= 0.0)
     return;
-  double sxmin = fmin(cx1 - r1, cx2 - r2);
-  double sxmax = fmax(cx1 + r1, cx2 + r2);
-  double symin = fmin(cy1 - r1, cy2 - r2);
-  double symax = fmax(cy1 + r1, cy2 + r2);
-  /* Coarse branch-and-bound prune: the swept bounding box to geometry bounding
-   * box distance is a lower bound on this unit's nearest approach, so once it
-   * reaches the running witness distance no edge can improve it */
+  double cxmin = fmin(cx1, cx2);
+  double cxmax = fmax(cx1, cx2);
+  double cymin = fmin(cy1, cy2);
+  double cymax = fmax(cy1, cy2);
+  double rmax = fmax(r1, r2);
+  double thr2 = w->set ? dist_unit_thr2(w->d, rmax) : 0.0;
+  /* Coarse branch-and-bound prune: the centre bounding box to geometry bounding
+   * box distance, minus the unit's largest radius, is a lower bound on this
+   * unit's nearest approach, so once it reaches the running witness distance no
+   * edge can improve it */
   if (w->set)
   {
     if (box2d_distance_sqr(g->xmin, g->ymin, g->xmax, g->ymax,
-        sxmin, symin, sxmax, symax) >= w->d * w->d)
+        cxmin, cymin, cxmax, cymax) >= thr2)
       return;
   }
   /* A centre inside a polygon means the swept region overlaps it: the nearest
@@ -1345,7 +1373,7 @@ dist_segm_nai(double cx1, double cy1, double r1, TimestampTz t1, double cx2,
     if (w->set)
     {
       if (box2d_distance_sqr(bk->xmin, bk->ymin, bk->xmax, bk->ymax,
-          sxmin, symin, sxmax, symax) >= w->d * w->d)
+          cxmin, cymin, cxmax, cymax) >= thr2)
         continue;
     }
     int elast = bk->start + bk->n;
@@ -1355,17 +1383,15 @@ dist_segm_nai(double cx1, double cy1, double r1, TimestampTz t1, double cx2,
       if (w->set)
       {
         if (box2d_distance_sqr(e->xmin, e->ymin, e->xmax, e->ymax,
-          sxmin, symin, sxmax, symax) >= w->d * w->d)
+          cxmin, cymin, cxmax, cymax) >= thr2)
+          continue;
+        /* The same lower bound read on the exact centre segment instead of its
+         * box, which rejects the survivors the box levels leave. It pays only
+         * for a moving disc against a straight edge. */
+        if (! e->is_arc && rmax > 0.0 &&
+            dist_edge_radius_prune(cx1, cy1, cx2, cy2, e, thr2))
           continue;
       }
-      /* Radius-aware tighter prune (moving disc only, straight edges): skip the
-       * exact per-edge solve when the centre-segment-to-edge distance minus the
-       * larger radius already reaches the running minimum. The same lower bound
-       * as dist_segm_nad, valid because it never exceeds the true swept-disc
-       * distance, so the witness cannot change. */
-      if (! e->is_arc && w->set &&
-          dist_edge_radius_prune(cx1, cy1, cx2, cy2, r1, r2, e, w->d))
-        continue;
       double tf;
       double m = e->is_arc ?
         dist_segm_arc_dt(cx1, cy1, cx2, cy2, r1, r2, e, &tf) :
@@ -1378,6 +1404,7 @@ dist_segm_nai(double cx1, double cy1, double r1, TimestampTz t1, double cx2,
         w->d = m;
         w->t = t1 + (TimestampTz) ((double) (t2 - t1) * tf);
         w->set = true;
+        thr2 = dist_unit_thr2(m, rmax);
         /* Overlap: the distance cannot drop below zero, so stop refining */
         if (m <= 0.0)
           return;
