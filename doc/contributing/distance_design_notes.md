@@ -248,6 +248,72 @@ gap disagrees with a containment kernel built on the approximation. Containment
 is made exact by computing the gap directly (§2), not by pruning an approximate
 kernel.
 
+### The radius is radial, and a box is not
+
+Enclosing the value is where the box has to expand by the radius. Testing it does
+not, and the difference is the whole prune margin for a family whose radius is
+comparable to what it is measured against.
+
+A swept-capsule unit — the disc of one `tcbuffer` segment as its centre moves
+from one instant to the next — carries `rmax = max(r₁, r₂)` as the largest radius
+it ever has. Every point of the unit therefore lies within `rmax` of the unit's
+**centre segment**, so for any set `S`
+
+```
+dist(unit, S) ≥ dist(centre segment, S) − rmax
+```
+
+and a centre distance of at least `best + rmax` proves the unit cannot lower a
+running minimum of `best`. That is the **radial** form of the bound, and the
+comparison it wants is against the threshold, not against the box.
+
+The tempting alternative is to grow the centre's bounding box by `rmax` on each
+axis and compare the grown box against `best` directly. It is sound — the grown
+box does contain the unit — but it subtracts the radius **once per axis**, so a
+separation lying diagonally has the radius taken out of it twice. Radially that
+gives away a factor of up to √2:
+
+```
+axis-wise:  √( max(dx − rmax, 0)² + max(dy − rmax, 0)² )  ≥  best
+radial:     √( dx² + dy² )                                ≥  best + rmax
+```
+
+The radial test is never weaker than the axis-wise one, is strictly stronger
+wherever both axes separate, and with `rmax = 0` — every point family — the two
+coincide exactly. A disc is round and a box is square; expanding a box is how you
+*contain* a disc, and it is not how you *measure* one.
+
+### The three levels of the geometry traversal
+
+Against a plain geometry the nearest approach, the nearest approach instant and
+the shortest line share one traversal. The geometry is decomposed once into
+straight and circular-arc edges, Morton-ordered, and grouped into √n buckets;
+each temporal unit is then filtered through three nested levels before any exact
+solve runs.
+
+| level | test | what a rejection saves |
+| --- | --- | --- |
+| geometry | centre box against the geometry's overall box | the whole unit, point-in-polygon test included |
+| bucket | centre box against the bucket's box | a √n-sized group of edges |
+| edge | centre box against the edge's box, then the exact centre-**segment** to edge distance | one edge's exact solve |
+
+Every one of those tests reads the radial bound above against the same squared
+threshold `(best + rmax)²`, which is recomputed only when the running minimum
+moves, never per edge. The last test replaces the edge's box with the edge
+itself, so it rejects the survivors the box levels leave; it earns its cost only
+for a moving disc, because with `rmax = 0` the box levels already carry the bound
+exactly and the exact solve is no dearer than the test that would skip it.
+
+The levels matter in proportion to the radius. Measured on a 100 × 100 join of
+vessel trajectories against natural-area polygons, where the disc radius averages
+5 km against polygons of comparable size, reading the three box levels radially
+instead of axis-wise makes the whole trio — `nad`, `nai`, `shortestLine` — **five
+times faster** and puts the `tcbuffer` cost below its `tgeompoint` counterpart on
+the same query. Results are unchanged to the last digit: a lower bound that is
+tightened while remaining a lower bound cannot change which edge attains the
+minimum. What is left is the box arithmetic of the bucket level itself; the exact
+solve, which once dominated, now runs a few hundred times per pair.
+
 ### Why bounded predicates get the box for free and distance does not
 
 This is the asymmetry that explains why box filtering is uniform in one half of
