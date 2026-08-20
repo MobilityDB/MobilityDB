@@ -60,6 +60,7 @@
 #include "geo/meos_transform.h"
 #include "geo/postgis_funcs.h"
 #include "geo/tgeo.h"
+#include "geo/geo_funcs.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tspatial.h"
 #include "geo/tspatial_parser.h"

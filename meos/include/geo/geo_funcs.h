@@ -42,6 +42,8 @@
 #ifndef __GEO_FUNCS_H__
 #define __GEO_FUNCS_H__
 
+/* C */
+#include <math.h>
 /* PostgreSQL */
 #include <postgres.h>
 /* PostGIS */
@@ -101,7 +103,39 @@ typedef struct
 
 /*****************************************************************************/
 
+/**
+ * @brief Return an angle brought into the interval [0, 2*pi)
+ */
+static inline double
+angle_normalize(double a)
+{
+  double r = fmod(a, 2 * M_PI);
+  if (r < 0)
+    r += 2 * M_PI;
+  return r;
+}
+
+/*****************************************************************************/
+
 extern void arc_set_bbox(Edge *e);
+extern bool arc_contains_angle(const Edge *e, double phi);
+extern bool point_on_arc(double px, double py, const Edge *e);
+extern bool point_on_segment(double px, double py, double x1, double y1,
+  double x2, double y2);
+extern int point_in_polygon(double x, double y, Edge **edges, int nedges);
+extern IntersectResult linesegm_intersect(double ax, double ay, double rx,
+  double ry, double cx, double cy, double dx, double dy);
+extern int arcsegm_intersect(double ax, double ay, double rx, double ry,
+  const Edge *e, double out[2]);
+extern bool arcarc_intersect(const Edge *e1, const Edge *e2);
+extern bool relate_point_on_boundary(double x, double y, Edge **edges,
+  int nedges);
+extern int relate_point_in_area(double x, double y, Edge **edges, int nedges);
+
+extern LWGEOM *lwcircle_make(double x, double y, double radius,
+  int32_t srid);
+extern GSERIALIZED *geocircle_make(double x, double y, double radius,
+  int32_t srid);
 extern MeosArray *geom_extract_edges(const LWGEOM *geom);
 extern RTree *build_edge_rtree(const Edge *edges, int nedges, int32_t srid);
 extern bool *pointarr_find_splits(const POINT2D **points, int npoints,

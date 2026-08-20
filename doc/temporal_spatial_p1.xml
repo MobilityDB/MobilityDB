@@ -38,6 +38,30 @@
 		</figure>
 	</sect1>
 
+	<sect1 xml:id="geo_funcs">
+		<title>Functions on Geometries</title>
+
+		<para>The functions in this section answer a question about a geometry rather than about a temporal type. A geometry bounded by circular arcs keeps them: the answer is built from the arcs themselves rather than from a polygonal approximation of them.</para>
+
+		<itemizedlist>
+			<listitem xml:id="geo_buffer">
+				<indexterm significance="normal"><primary><varname>Buffer</varname></primary></indexterm>
+				<para>Return the geometry holding every point within a distance of a geometry</para>
+				<para><varname>Buffer(geometry,float,options text='') → geometry</varname></para>
+				<para>The boundary of the result is made of the two offsets of the geometry at the given distance, of the join filling the outer side of each turn, and of the cap closing each end of an open line. A negative distance shrinks an areal geometry and answers an empty geometry for one of any other dimension.</para>
+				<para>The <varname>options</varname> string carries the styles as space-separated <varname>key=value</varname> pairs: <varname>endcap</varname> is one of <varname>round</varname>, <varname>flat</varname> or <varname>square</varname>, <varname>join</varname> one of <varname>round</varname>, <varname>mitre</varname> or <varname>bevel</varname>, and <varname>mitre_limit</varname> the ratio at which a mitre join falls back to a bevel.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_AsText(round(Buffer(geometry 'Point(0 0)', 1), 6));
+-- CURVEPOLYGON(CIRCULARSTRING(-1 0,1 0,-1 0))
+SELECT ST_AsText(round(Buffer(geometry 'Polygon((0 0,10 0,10 10,0 10,0 0))', -1, 'join=mitre'), 6));
+-- CURVEPOLYGON(COMPOUNDCURVE((1 1,9 1),(9 1,9 9),(9 9,1 9),(1 9,1 1)))
+SELECT ST_AsText(round(Buffer(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))', 1), 6));
+-- CURVEPOLYGON(COMPOUNDCURVE(CIRCULARSTRING(-1 0,2 3,5 0),CIRCULARSTRING(5 0,2 -3,-1 0)))
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
 	<sect1 xml:id="tgeo_notation">
 		<title>Notation</title>
 		<para>We presented in <xref linkend="ttype_notation"/> and in <xref linkend="talpha_notation"/> the notation used for defining the signature of the functions and operators for temporal types. We extend next this notations for spatiotemporal types.</para>

@@ -532,6 +532,11 @@ Reading the table:
   hand even though cbuffer's and rgeo's C kernel is generated.
 
 **B. Sections with no template at all** (reserved `positions:` slot, pure hand):
+- The geo base-geometry surface (`geo/049_geo_funcs`): functions whose argument
+  is a `geometry` rather than a temporal type. It belongs to no `subtypes:`
+  track, since the axes project a behaviour across the temporal families and
+  this file has one entry per function, and it is named in
+  `coverage_exceptions.txt`.
 - `distance` (tDistance/nad/nai/shortestLine).
 - `spatialfuncs` (SRID / transform / trajectory / atGeometry / atStbox
   scaffolding — the TSpatial<T>-level Accessors/Transformations/Restrictions/SRS

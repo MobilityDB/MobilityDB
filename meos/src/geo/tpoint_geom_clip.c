@@ -96,7 +96,7 @@ static MEOS_TLS MeosArray *rtree_results = NULL;
  * double rx = bx - ax, ry = by - ay;
  * @endcode
  */
-static inline IntersectResult
+IntersectResult
 linesegm_intersect(double ax, double ay, double rx, double ry,
   double cx, double cy, double dx, double dy)
 {
@@ -170,23 +170,11 @@ linesegm_intersect(double ax, double ay, double rx, double ry,
  *****************************************************************************/
 
 /**
- * @brief Normalize an angle into the range [0, 2*pi)
- */
-static inline double
-angle_normalize(double a)
-{
-  double r = fmod(a, 2 * M_PI);
-  if (r < 0)
-    r += 2 * M_PI;
-  return r;
-}
-
-/**
  * @brief Return true if an angle lies within the angular span of an arc edge
  * @details The span is traversed from #theta0 to #theta1, counterclockwise
  * when #ccw is true and clockwise otherwise
  */
-static bool
+bool
 arc_contains_angle(const Edge *e, double phi)
 {
   double sweep = e->ccw ?
@@ -226,7 +214,7 @@ arc_set_bbox(Edge *e)
 /**
  * @brief Return true if a point is located on an arc edge
  */
-static bool
+bool
 point_on_arc(double px, double py, const Edge *e)
 {
   double d = hypot(px - e->cx, py - e->cy);
@@ -248,7 +236,7 @@ point_on_arc(double px, double py, const Edge *e)
  * @param[out] out Accepted trajectory parameters, ordered as found
  * @return Number of accepted parameters (0, 1, or 2)
  */
-static int
+int
 arcsegm_intersect(double ax, double ay, double rx, double ry, const Edge *e,
   double out[2])
 {
@@ -300,7 +288,7 @@ arcsegm_intersect(double ax, double ay, double rx, double ry, const Edge *e,
  * arcs of equal radius lie on the same circle: they meet iff their angular
  * spans share an endpoint.
  */
-static bool
+bool
 arcarc_intersect(const Edge *e1, const Edge *e2)
 {
   double dx = e2->cx - e1->cx, dy = e2->cy - e1->cy;
@@ -354,7 +342,7 @@ arcarc_intersect(const Edge *e1, const Edge *e2)
 /**
  * @brief Return true if a point is located on a segment
  */
-static bool
+bool
 point_on_segment(double px, double py, double x1, double y1, double x2,
   double y2)
 {
@@ -499,7 +487,7 @@ point_in_polygon_impl(double x, double y, Edge **edges, int nedges,
 /**
  * @brief Return true if a point is located in a polygon, scanning every edge
  */
-static inline int
+int
 point_in_polygon(double x, double y, Edge **edges, int nedges)
 {
   return point_in_polygon_impl(x, y, edges, nedges, NULL, 0, 0.0);

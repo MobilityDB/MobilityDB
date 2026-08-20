@@ -16,6 +16,7 @@ mobilitydb/sql/cbuffer/210_tcbuffer_distance.in.sql
 mobilitydb/sql/cbuffer/212_tcbuffer_spatialrels.in.sql
 mobilitydb/sql/cbuffer/216_tcbuffer_indexes.in.sql
 mobilitydb/sql/cbuffer/217_tcbuffer_analytics.in.sql
+mobilitydb/sql/geo/049_geo_funcs.in.sql
 mobilitydb/sql/geo/051_stbox.in.sql
 mobilitydb/sql/geo/056_tgeo_spatialfuncs.in.sql
 mobilitydb/sql/geo/056_tpoint_spatialfuncs.in.sql

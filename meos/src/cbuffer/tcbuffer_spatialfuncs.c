@@ -42,6 +42,7 @@
 #include <meos_geo.h>
 #include <meos_internal.h>
 #include <meos_internal_geo.h>
+#include "geo/geo_funcs.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "cbuffer/cbuffer.h"
 
@@ -95,41 +96,6 @@ ensure_circle_type(const GSERIALIZED *gs)
 /* The following function is not exported in PostGIS */
 extern LWCIRCSTRING *lwcircstring_from_lwpointarray(int32_t srid,
   uint32_t npoints, LWPOINT **points);
-
-/**
- * @brief Return a circle created from a central point and a radius
- */
-LWGEOM *
-lwcircle_make(double x, double y, double radius, int32_t srid)
-{
-  assert(radius > 0);
-  LWPOINT *points[3];
-  /* Shift the X coordinate of the point by +- radius */
-  points[0] = lwpoint_make2d(srid, x - radius, y);
-  points[1] = lwpoint_make2d(srid, x + radius, y);
-  points[2] = lwpoint_make2d(srid, x - radius, y);
-  /* Construct the circle */
-  LWGEOM *ring = lwcircstring_as_lwgeom(
-    lwcircstring_from_lwpointarray(srid, 3, points));
-  LWCURVEPOLY *result = lwcurvepoly_construct_empty(srid, 0, 0);
-  lwcurvepoly_add_ring(result, ring);
-  /* Clean up and return */
-  lwpoint_free(points[0]); lwpoint_free(points[1]); lwpoint_free(points[2]);
-  /* We cannot lwgeom_free(ring); */
-  return lwcurvepoly_as_lwgeom(result);
-}
-
-/**
- * @brief Return a circle created from a central point and a radius
- */
-GSERIALIZED *
-geocircle_make(double x, double y, double radius, int32_t srid)
-{
-  LWGEOM *res = lwcircle_make(x, y, radius, srid);
-  GSERIALIZED *result = geo_serialize(res);
-  lwgeom_free(res);
-  return result;
-}
 
 /**
  * @brief Return a trapezoid created from two circular buffers
