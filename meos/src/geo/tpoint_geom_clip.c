@@ -1781,6 +1781,22 @@ tpoint_linear_inter_geom(const Temporal *temp, const GSERIALIZED *gs,
   bool clip)
 {
   assert(temp); assert(gs); assert(! gserialized_is_empty(gs));
+  /* Bounding box test, made before building the context so that a rejected
+   * pair does not pay for the decomposition of the geometry */
+  STBox box1, box2;
+  tspatial_set_stbox(temp, &box1);
+  geo_set_stbox(gs, &box2);
+  if (! overlaps_stbox_stbox(&box1, &box2))
+  {
+    if (clip)
+      return NULL;
+    SpanSet *ss = temporal_time(temp);
+    Temporal *result = (Temporal *) tsequenceset_from_base_tstzspanset(
+      BoolGetDatum(false), T_TBOOL, ss, STEP);
+    pfree(ss);
+    return result;
+  }
+
   void *ctx = geo_clip_ctx_make(gs);
   if (! ctx)
     return NULL;
@@ -2368,6 +2384,22 @@ tpoint_linear_dwithin_geom(const Temporal *temp, const GSERIALIZED *gs,
   double dist)
 {
   assert(temp); assert(gs); assert(! gserialized_is_empty(gs));
+  /* Bounding box test, made before building the context so that a rejected
+   * pair does not pay for the decomposition of the geometry. The geometry box
+   * is the one the within region reaches, so it is expanded by the distance */
+  STBox box1, box2, box2e;
+  tspatial_set_stbox(temp, &box1);
+  geo_set_stbox(gs, &box2);
+  stbox_expand_space_set(&box2, (dist > 0.0) ? dist : 0.0, &box2e);
+  if (! overlaps_stbox_stbox(&box1, &box2e))
+  {
+    SpanSet *ss = temporal_time(temp);
+    Temporal *result = (Temporal *) tsequenceset_from_base_tstzspanset(
+      BoolGetDatum(false), T_TBOOL, ss, STEP);
+    pfree(ss);
+    return result;
+  }
+
   void *ctx = geo_clip_ctx_make(gs);
   if (! ctx)
     return NULL;
