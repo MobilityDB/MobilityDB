@@ -65,6 +65,7 @@
 #include "temporal/type_inout.h"
 #include "temporal/type_parser.h"
 #include "temporal/type_util.h"
+#include "geo/geo_funcs.h"
 #include "geo/postgis_funcs.h"
 #include "geo/tgeo.h"
 #include "geo/tgeo_spatialfuncs.h"

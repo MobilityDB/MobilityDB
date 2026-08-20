@@ -41,6 +41,7 @@
 #include <math.h>
 /* PostgreSQL */
 #include "postgres.h"
+#include <pgtypes.h>
 /* PostGIS */
 #include "liblwgeom.h"
 #include "liblwgeom_internal.h"
@@ -804,6 +805,217 @@ pointarr_find_splits(const POINT2D **points, int npoints, int *count)
   }
   *count = numsplits;
   return bitarr;
+}
+
+/*****************************************************************************
+ * Segments and arrays of points
+ *****************************************************************************/
+
+/**
+ * @brief Return -1, 0, or 1 depending on whether the first @p LWPOINT
+ * is less than, equal to, or greater than the second one
+ * @pre The points are not empty and are of the same dimensionality
+ */
+static int
+lwpoint_cmp(const LWPOINT *p, const LWPOINT *q)
+{
+  assert(FLAGS_GET_ZM(p->flags) == FLAGS_GET_ZM(q->flags));
+  POINT4D p4d, q4d;
+  /* We are sure the points are not empty */
+  lwpoint_getPoint4d_p(p, &p4d);
+  lwpoint_getPoint4d_p(q, &q4d);
+  int cmp = pg_float8_cmp(p4d.x, q4d.x);
+  if (cmp != 0)
+    return cmp;
+  cmp = pg_float8_cmp(p4d.y, q4d.y);
+  if (cmp != 0)
+    return cmp;
+  if (FLAGS_GET_Z(p->flags))
+  {
+    cmp = pg_float8_cmp(p4d.z, q4d.z);
+    if (cmp != 0)
+      return cmp;
+  }
+  if (FLAGS_GET_M(p->flags))
+  {
+    cmp = pg_float8_cmp(p4d.m, q4d.m);
+    if (cmp != 0)
+      return cmp;
+  }
+  return 0;
+}
+
+/**
+ * @brief Comparator function for lwpoints
+ */
+static int
+lwpoint_sort_cmp(const LWPOINT **l, const LWPOINT **r)
+{
+  return lwpoint_cmp(*l, *r);
+}
+/**
+ * @brief Sort function for lwpoints
+ */
+static void
+lwpointarr_sort(LWPOINT **points, int count)
+{
+  qsort(points, (size_t) count, sizeof(LWPOINT *),
+    (qsort_comparator) &lwpoint_sort_cmp);
+  return;
+}
+
+/**
+ * @brief Return a long double between 0 and 1 representing the location of the
+ * closest point on the 2D segment to the given point, as a fraction of total
+ * segment length
+ * @note Function derived from the PostGIS function @p closest_point_on_segment
+ */
+long double
+closest_point2d_on_segment_ratio(const POINT2D *p, const POINT2D *A,
+  const POINT2D *B, POINT2D *closest)
+{
+  if (FP_EQUALS(A->x, B->x) && FP_EQUALS(A->y, B->y))
+  {
+    if (closest)
+      *closest = *A;
+    return 0.0;
+  }
+
+  /*
+   * We use comp.graphics.algorithms Frequently Asked Questions method
+   *
+   * (1)          AC dot AB
+   *         r = ----------
+   *              ||AB||^2
+   *  r has the following meaning:
+   *  r=0 P = A
+   *  r=1 P = B
+   *  r<0 P is on the backward extension of AB
+   *  r>1 P is on the forward extension of AB
+   *  0<r<1 P is interior to AB
+   *
+   */
+  long double r = ( (p->x-A->x) * (B->x-A->x) + (p->y-A->y) * (B->y-A->y) ) /
+    ( (B->x-A->x) * (B->x-A->x) + (B->y-A->y) * (B->y-A->y) );
+
+  if (r < 0)
+  {
+    if (closest)
+      *closest = *A;
+    return 0.0;
+  }
+  if (r > 1)
+  {
+    if (closest)
+      *closest = *B;
+    return 1.0;
+  }
+
+  if (closest)
+  {
+    closest->x = (double) (A->x + ( (B->x - A->x) * r ));
+    closest->y = (double) (A->y + ( (B->y - A->y) * r ));
+  }
+  return r;
+}
+
+/**
+ * @brief Return a long double between 0 and 1 representing the location of the
+ * closest point on the 3D segment to the given point, as a fraction of total
+ * segment length
+ * @note Function derived from the PostGIS function @p closest_point_on_segment
+ */
+long double
+closest_point3dz_on_segment_ratio(const POINT3DZ *p, const POINT3DZ *A,
+  const POINT3DZ *B, POINT3DZ *closest)
+{
+  if (FP_EQUALS(A->x, B->x) && FP_EQUALS(A->y, B->y) && FP_EQUALS(A->z, B->z))
+  {
+    *closest = *A;
+    return 0.0;
+  }
+
+  /* Function #closest_point2d_on_segment_ratio explains how r is computed */
+  long double r = ( (p->x-A->x) * (B->x-A->x) + (p->y-A->y) * (B->y-A->y) +
+      (p->z-A->z) * (B->z-A->z) ) /
+    ( (B->x-A->x) * (B->x-A->x) + (B->y-A->y) * (B->y-A->y) +
+      (B->z-A->z) * (B->z-A->z) );
+
+  if (r < 0)
+  {
+    *closest = *A;
+    return 0.0;
+  }
+  if (r > 1)
+  {
+    *closest = *B;
+    return 1.0;
+  }
+
+  closest->x = (double) (A->x + ( (B->x - A->x) * r ));
+  closest->y = (double) (A->y + ( (B->y - A->y) * r ));
+  closest->z = (double) (A->z + ( (B->z - A->z) * r ));
+  return r;
+}
+
+/**
+ * @brief Remove duplicates from an array of LWGEOM points
+ */
+LWGEOM **
+lwpointarr_remove_duplicates(LWGEOM **points, int count, int *newcount)
+{
+  assert(count > 0);
+  LWGEOM **newpoints = palloc(sizeof(LWGEOM *) * count);
+  memcpy(newpoints, points, sizeof(LWGEOM *) * count);
+  lwpointarr_sort((LWPOINT **) newpoints, count);
+  int count1 = 0;
+  for (int i = 1; i < count; i++)
+    if (! lwpoint_same((LWPOINT *) newpoints[count1], (LWPOINT *) newpoints[i]))
+      newpoints[++ count1] = newpoints[i];
+  *newcount = count1 + 1;
+  return newpoints;
+}
+
+/**
+ * @brief Return a trajectory from a set of points
+ * @details The result is either a linestring or a multipoint depending on
+ * whether the interpolation is step/discrete or linear.
+ * @param[in] points Array of points
+ * @param[in] count Number of elements in the input array
+ * @param[in] interp Interpolation
+ * @note The function does not remove duplicate points, that is, repeated
+ * points in a multipoint or consecutive equal points in a line string
+ */
+LWGEOM *
+lwpointarr_make_trajectory(LWGEOM **points, int count, interpType interp)
+{
+  assert(points); assert(count > 0);
+  if (count == 1)
+    return lwpoint_as_lwgeom(lwpoint_clone(lwgeom_as_lwpoint(points[0])));
+
+  LWGEOM *result = (interp == LINEAR) ?
+    (LWGEOM *) lwline_from_lwgeom_array(points[0]->srid, (uint32_t) count,
+      points) :
+    (LWGEOM *) lwcollection_construct(MULTIPOINTTYPE, points[0]->srid,
+      NULL, (uint32_t) count, points);
+  FLAGS_SET_Z(result->flags, FLAGS_GET_Z(points[0]->flags));
+  FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(points[0]->flags));
+  return result;
+}
+
+/**
+ * @brief Ensure the validity of two temporal points
+ */
+bool
+ensure_valid_geo_geo(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(gs1, false); VALIDATE_NOT_NULL(gs2, false);
+  if (! ensure_same_srid(gserialized_get_srid(gs1),
+        gserialized_get_srid(gs2)) ||
+      ! ensure_same_geodetic_geo(gs1, gs2))
+    return false;
+  return true;
 }
 
 /*****************************************************************************

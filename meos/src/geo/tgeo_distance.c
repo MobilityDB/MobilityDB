@@ -32,6 +32,7 @@
  * @brief Temporal distance functions for temporal geos
  */
 
+#include "geo/geo_funcs.h"
 #include "geo/tgeo_distance.h"
 
 /* C */

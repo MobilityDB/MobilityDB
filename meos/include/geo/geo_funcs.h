@@ -132,6 +132,16 @@ extern bool relate_point_on_boundary(double x, double y, Edge **edges,
   int nedges);
 extern int relate_point_in_area(double x, double y, Edge **edges, int nedges);
 
+extern long double closest_point2d_on_segment_ratio(const POINT2D *p,
+  const POINT2D *A, const POINT2D *B, POINT2D *closest);
+extern long double closest_point3dz_on_segment_ratio(const POINT3DZ *p,
+  const POINT3DZ *A, const POINT3DZ *B, POINT3DZ *closest);
+extern LWGEOM **lwpointarr_remove_duplicates(LWGEOM **points, int count,
+  int *newcount);
+extern LWGEOM *lwpointarr_make_trajectory(LWGEOM **points, int count,
+  interpType interp);
+extern bool ensure_valid_geo_geo(const GSERIALIZED *gs1,
+  const GSERIALIZED *gs2);
 extern bool circle_type(const GSERIALIZED *gs);
 extern bool ensure_circle_type(const GSERIALIZED *gs);
 extern LWGEOM *lwcircle_make(double x, double y, double radius,
