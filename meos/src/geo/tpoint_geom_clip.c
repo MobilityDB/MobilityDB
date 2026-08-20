@@ -1782,10 +1782,13 @@ tpoint_linear_inter_geom(const Temporal *temp, const GSERIALIZED *gs,
 {
   assert(temp); assert(gs); assert(! gserialized_is_empty(gs));
   /* Bounding box test, made before building the context so that a rejected
-   * pair does not pay for the decomposition of the geometry */
+   * pair does not pay for the decomposition of the geometry. An empty
+   * geometry has no box to read, and the context declines to build on one,
+   * so the test yields to it rather than reading a box that was never set */
   STBox box1, box2;
   tspatial_set_stbox(temp, &box1);
-  geo_set_stbox(gs, &box2);
+  if (! geo_set_stbox(gs, &box2))
+    return NULL;
   if (! overlaps_stbox_stbox(&box1, &box2))
   {
     if (clip)
@@ -2386,10 +2389,14 @@ tpoint_linear_dwithin_geom(const Temporal *temp, const GSERIALIZED *gs,
   assert(temp); assert(gs); assert(! gserialized_is_empty(gs));
   /* Bounding box test, made before building the context so that a rejected
    * pair does not pay for the decomposition of the geometry. The geometry box
-   * is the one the within region reaches, so it is expanded by the distance */
+   * is the one the within region reaches, so it is expanded by the distance.
+   * An empty geometry has no box to read, and the context declines to build
+   * on one, so the test yields to it rather than reading a box that was
+   * never set */
   STBox box1, box2, box2e;
   tspatial_set_stbox(temp, &box1);
-  geo_set_stbox(gs, &box2);
+  if (! geo_set_stbox(gs, &box2))
+    return NULL;
   stbox_expand_space_set(&box2, (dist > 0.0) ? dist : 0.0, &box2e);
   if (! overlaps_stbox_stbox(&box1, &box2e))
   {
