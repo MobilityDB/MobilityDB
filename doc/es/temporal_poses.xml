@@ -245,21 +245,11 @@ SELECT ST_AsText(point(pose 'Pose(Point(1 1), 0.3)'));
 </programlisting>
 				</listitem>
 
-				<listitem xml:id="pose_rotation">
-					<indexterm significance="normal"><primary><varname>rotation</varname></primary></indexterm>
-					<para>Devuelve la rotación</para>
-					<para><varname>rotation(pose2D) → float</varname></para>
-					<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT rotation(pose 'Pose(Point(1 1), 0.3)');
--- 0.3
-</programlisting>
-				</listitem>
-
 				<listitem xml:id="pose_quaternion">
 					<indexterm significance="normal"><primary><varname>quaternion</varname></primary></indexterm>
 					<para>Devuelve el cuaternión de orientación de una pose 3D</para>
 					<para><varname>quaternion(pose3D) → quaternion</varname></para>
-					<para>Las componentes se devuelven en el orden <varname>W</varname>, <varname>X</varname>, <varname>Y</varname>, <varname>Z</varname>, la convención de Hamilton en la que la pose las almacena. Esta es una de las dos codificaciones de orientación que prescribe el estándar OGC GeoPose v1.0; la otra, yaw / pitch / roll, la proporcionan <link linkend="pose_yaw_pitch_roll"><varname>yaw</varname></link>, <varname>pitch</varname> y <varname>roll</varname>. Una pose 2D no tiene cuaternión y la función emite un error para ella; su orientación es el ángulo único que devuelve <link linkend="pose_rotation"><varname>rotation</varname></link>.</para>
+					<para>Las componentes se devuelven en el orden <varname>W</varname>, <varname>X</varname>, <varname>Y</varname>, <varname>Z</varname>, la convención de Hamilton en la que la pose las almacena. Esta es una de las dos codificaciones de orientación que prescribe el estándar OGC GeoPose v1.0; la otra, yaw / pitch / roll, la proporcionan <link linkend="pose_yaw_pitch_roll"><varname>yaw</varname></link>, <varname>pitch</varname> y <varname>roll</varname>. Una pose 2D no tiene cuaternión y la función emite un error para ella; su orientación es el ángulo único que devuelve <link linkend="pose_yaw_pitch_roll"><varname>yaw</varname></link>.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT quaternion(pose 'Pose(Point Z(1 1 1), 0, 0, 0, 1)');
 -- (0,0,0,1)
@@ -500,7 +490,7 @@ SELECT asEWKT(ARRAY[pose 'Pose(SRID=5676;Point(0 0),1)',
 SELECT asMFJSON(tpose 'Pose(Point(1 2),0.5)@2001-01-01', 3);
 /* {"type":"MovingPose","bbox":[[1,2],[1,2]],"period":{"begin":"2001-01-01T00:00:00+01",
   "end":"2001-01-01T00:00:00+01","lower_inc":true,"upper_inc":true},
-  "values":[{"position":{"lat":2,"lon":1},"rotation":0.5}],
+  "values":[{"position":{"lat":2,"lon":1},"yaw":0.5}],
   "datetimes":["2001-01-01T00:00:00+01"],"interpolation":"None"} */
 SELECT asMFJSON(tpose 'Pose(Point Z(1 2 3),1,0,0,0)@2001-01-01', 3);
 /* {"type":"MovingPose","bbox":[[1,2,3],[1,2,3]],
@@ -723,17 +713,6 @@ SELECT asEWKT(getValues(tpose 'SRID=5676;{[Pose(Point(1 1), 0.3)@2001-01-01,
 SELECT asEWKT(points(tpose 'SRID=5676;{Pose(Point(3 3), 0.3)@2001-01-01, 
   Pose(Point(1 1), 0.5)@2001-01-02}'));
 -- SRID=5676;{Point(1 1), Point(3 3)}
-</programlisting>
-			</listitem>
-
-			<listitem xml:id="tpose_rotation">
-				<indexterm significance="normal"><primary><varname>rotation</varname></primary></indexterm>
-				<para>Devuelve la rotación</para>
-				<para><varname>rotation(tpose2d) → tfloat</varname></para>
-				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT rotation(tpose 'SRID=5676;{[Pose(Point(1 1), 0.3)@2001-01-01,
-  Pose(Point(1 1), 0.3)@2001-01-02)}');
--- {[0.3@2001-01-01, 0.3@2001-01-02)}
 </programlisting>
 			</listitem>
 
@@ -1343,6 +1322,7 @@ SELECT asText(poseNormalize(pose 'Pose(Point(1 1 1), 0.5, 0.5, 0.5, 0.5)'));
 					<para><varname>pitch(pose) → float</varname></para>
 					<para><varname>roll(pose) → float</varname></para>
 					<para>Para una pose 2D, <varname>yaw</varname> devuelve la rotación almacenada <varname>theta</varname>,por convención, el yaw del marco del cuerpo— y <varname>pitch</varname> y <varname>roll</varname> devuelven <varname>0</varname>. Para una pose 3D, los tres valores provienen de la descomposición Tait-Bryan intrínseca ZYX del cuaternión de orientación. El término de pitch <varname>asin</varname> se acota a <varname>[-1, 1]</varname> para absorber la pequeña deriva numérica que pueden introducir las composiciones largas de cuaterniones.</para>
+					<para>Sobre una pose temporal, la interpolación del resultado sigue a la dimensión. Una pose 2D interpola linealmente su ángulo almacenado y ese ángulo es su yaw, de modo que un <varname>tpose</varname> 2D lineal se proyecta en un <varname>tfloat</varname> lineal. Una pose 3D interpola mediante SLERP, cuya descomposición Tait-Bryan no es lineal en el tiempo, de modo que un <varname>tpose</varname> 3D se proyecta en un <varname>tfloat</varname> escalonado: leerlo entre dos instantes devuelve el ángulo del instante de la izquierda en lugar de un ángulo que ninguna pose contiene.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT yaw(pose 'Pose(Point(1 1), 0.5)');
 -- 0.5

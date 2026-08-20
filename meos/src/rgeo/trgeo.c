@@ -854,22 +854,67 @@ trgeometry_points(const Temporal *temp)
 }
 
 /**
- * @ingroup meos_rgeo_accessor
- * @brief Return the rotation of a temporal rigid geometry as a temporal float
- * @param[in] temp Temporal rigid geometry
- * @csqlfn #Trgeometry_rotation()
+ * @brief Lift a temporal-pose accessor through a temporal rigid geometry
+ * @details A rigid geometry carries its orientation in its poses, so every
+ * orientation accessor answers by projecting onto the temporal pose and
+ * asking it. Shared backend for the @p yaw / @p pitch / @p roll accessors
+ * below.
  */
-Temporal *
-trgeometry_rotation(const Temporal *temp)
+static Temporal *
+trgeometry_lift_tpose_accessor(const Temporal *temp,
+  Temporal *(*func)(const Temporal *))
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_TRGEOMETRY(temp, NULL);
   Temporal *tpose = trgeometry_to_tpose(temp);
   if (! tpose)
     return NULL;
-  Temporal *result = tpose_rotation(tpose);
+  Temporal *result = func(tpose);
   pfree(tpose);
   return result;
+}
+
+/**
+ * @ingroup meos_rgeo_accessor
+ * @brief Return the yaw angle of a temporal rigid geometry (radians) as a
+ * temporal float, ZYX intrinsic Tait-Bryan convention
+ * @param[in] temp Temporal rigid geometry
+ * @csqlfn #Trgeometry_yaw()
+ */
+Temporal *
+trgeometry_yaw(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TRGEOMETRY(temp, NULL);
+  return trgeometry_lift_tpose_accessor(temp, &tpose_yaw);
+}
+
+/**
+ * @ingroup meos_rgeo_accessor
+ * @brief Return the pitch angle of a temporal rigid geometry (radians) as a
+ * temporal float, ZYX intrinsic Tait-Bryan convention
+ * @param[in] temp Temporal rigid geometry
+ * @csqlfn #Trgeometry_pitch()
+ */
+Temporal *
+trgeometry_pitch(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TRGEOMETRY(temp, NULL);
+  return trgeometry_lift_tpose_accessor(temp, &tpose_pitch);
+}
+
+/**
+ * @ingroup meos_rgeo_accessor
+ * @brief Return the roll angle of a temporal rigid geometry (radians) as a
+ * temporal float, ZYX intrinsic Tait-Bryan convention
+ * @param[in] temp Temporal rigid geometry
+ * @csqlfn #Trgeometry_roll()
+ */
+Temporal *
+trgeometry_roll(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TRGEOMETRY(temp, NULL);
+  return trgeometry_lift_tpose_accessor(temp, &tpose_roll);
 }
 
 /**

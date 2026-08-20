@@ -265,13 +265,20 @@ SELECT asText(points(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));{Pose(Point(0 0)
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="trgeometry_rotation">
-				<indexterm significance="normal"><primary><varname>rotation</varname></primary></indexterm>
-				<para>Return the rotation angle as a temporal float</para>
-				<para><varname>rotation(trgeometry) → tfloat</varname></para>
+			<listitem xml:id="trgeometry_yaw_pitch_roll">
+				<indexterm significance="normal"><primary><varname>yaw</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>pitch</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>roll</varname></primary></indexterm>
+				<para>Return the yaw, pitch, or roll angle as a temporal float, in radians, under the ZYX intrinsic Tait-Bryan convention required by the OGC GeoPose Basic-YPR conformance class</para>
+				<para><varname>yaw(trgeometry) → tfloat</varname></para>
+				<para><varname>pitch(trgeometry) → tfloat</varname></para>
+				<para><varname>roll(trgeometry) → tfloat</varname></para>
+				<para>A rigid geometry carries its orientation in its poses, so each of these projects onto the temporal pose and asks it, exactly as the <link linkend="pose_yaw_pitch_roll"><varname>tpose</varname></link> accessors of the same name do. A 2D rigid geometry yaws by the stored angle of each pose and neither pitches nor rolls.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(rotation(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(0 0), 1.5)@2001-01-02]'));
--- [0@..., 1.5@...]
+SELECT asText(yaw(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(0 0), 1.5)@2001-01-02]'));
+-- [0@2001-01-01, 1.5@2001-01-02]
+SELECT asText(pitch(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(0 0), 1.5)@2001-01-02]'));
+-- [0@2001-01-01, 0@2001-01-02]
 </programlisting>
 			</listitem>
 

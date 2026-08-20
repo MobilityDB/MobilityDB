@@ -69,7 +69,7 @@ SELECT COUNT(*) FROM tbl_pose2d WHERE pose::poseset IS NOT NULL;
 -------------------------------------------------------------------------------
 -- Transformation functions
 
-SELECT MIN(rotation(startValue(round(s, 3)))) FROM tbl_poseset2d;
+SELECT MIN(yaw(startValue(round(s, 3)))) FROM tbl_poseset2d;
 
 -------------------------------------------------------------------------------
 -- Accessor functions
@@ -77,9 +77,9 @@ SELECT MIN(rotation(startValue(round(s, 3)))) FROM tbl_poseset2d;
 SELECT MAX(memSize(s)) FROM tbl_poseset2d;
 
 SELECT MIN(numValues(s)) FROM tbl_poseset2d;
-SELECT round(MIN(rotation(startValue(s))), 6) FROM tbl_poseset2d;
-SELECT round(MIN(rotation(endValue(s))), 6) FROM tbl_poseset2d;
-SELECT round(MIN(rotation(valueN(s, 1))), 6) FROM tbl_poseset2d;
+SELECT round(MIN(yaw(startValue(s))), 6) FROM tbl_poseset2d;
+SELECT round(MIN(yaw(endValue(s))), 6) FROM tbl_poseset2d;
+SELECT round(MIN(yaw(valueN(s, 1))), 6) FROM tbl_poseset2d;
 SELECT MIN(array_length(getValues(s), 1)) FROM tbl_poseset2d;
 
 -------------------------------------------------------------------------------

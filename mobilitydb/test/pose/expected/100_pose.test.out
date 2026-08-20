@@ -109,10 +109,10 @@ SELECT ST_AsText(point(pose 'Pose(Point(1 1),0.5)'));
  POINT(1 1)
 (1 row)
 
-SELECT rotation(pose 'Pose(Point(1 1),0.5)');
- rotation 
-----------
-      0.5
+SELECT yaw(pose 'Pose(Point(1 1),0.5)');
+ yaw 
+-----
+ 0.5
 (1 row)
 
 SELECT srid(pose 'Pose(SRID=5676;Point(1 1),0.5)');

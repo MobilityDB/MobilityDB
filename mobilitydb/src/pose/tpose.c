@@ -178,24 +178,6 @@ Tpose_points(PG_FUNCTION_ARGS)
   PG_RETURN_SET_P(result);
 }
 
-PGDLLEXPORT Datum Tpose_rotation(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tpose_rotation);
-/**
- * @ingroup mobilitydb_pose_accessor
- * @brief Return the rotation of a temporal 2D pose as a temporal float
- * @sqlfn rotation()
- */
-Datum
-Tpose_rotation(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = tpose_rotation(temp);
-  PG_FREE_IF_COPY(temp, 0);
-  if (! result)
-    PG_RETURN_NULL();
-  PG_RETURN_TEMPORAL_P(result);
-}
-
 PGDLLEXPORT Datum Tpose_yaw(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpose_yaw);
 /**

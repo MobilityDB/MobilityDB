@@ -538,19 +538,57 @@ Trgeometry_points(PG_FUNCTION_ARGS)
   PG_RETURN_SET_P(result);
 }
 
-PGDLLEXPORT Datum Trgeometry_rotation(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Trgeometry_rotation);
+PGDLLEXPORT Datum Trgeometry_yaw(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Trgeometry_yaw);
 /**
  * @ingroup mobilitydb_rgeo_accessor
- * @brief Return the rotation of a temporal rigid geometry as a temporal float
- * @sqlfn rotation()
+ * @brief Return the yaw of a temporal rigid geometry (radians) as a temporal
+ * float
+ * @sqlfn yaw()
  */
 Datum
-Trgeometry_rotation(PG_FUNCTION_ARGS)
+Trgeometry_yaw(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Temporal *result = trgeometry_rotation(temp);
+  Temporal *result = trgeometry_yaw(temp);
   PG_FREE_IF_COPY(temp, 0);
+  if (! result) PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Trgeometry_pitch(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Trgeometry_pitch);
+/**
+ * @ingroup mobilitydb_rgeo_accessor
+ * @brief Return the pitch of a temporal rigid geometry (radians) as a
+ * temporal float
+ * @sqlfn pitch()
+ */
+Datum
+Trgeometry_pitch(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = trgeometry_pitch(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result) PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Trgeometry_roll(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Trgeometry_roll);
+/**
+ * @ingroup mobilitydb_rgeo_accessor
+ * @brief Return the roll of a temporal rigid geometry (radians) as a temporal
+ * float
+ * @sqlfn roll()
+ */
+Datum
+Trgeometry_roll(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = trgeometry_roll(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result) PG_RETURN_NULL();
   PG_RETURN_TEMPORAL_P(result);
 }
 

@@ -315,10 +315,14 @@ SELECT asText(points(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{Pose(Point(1 1), 0.
 SELECT asText(points(trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(2 2), 0.4)@2000-01-02, Pose(Point(3 3), 0.5)@2000-01-03]'));
 SELECT asText(points(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(2 2), 0.4)@2000-01-02], [Pose(Point(3 3), 0.6)@2000-01-04, Pose(Point(3 3), 0.6)@2000-01-05]}'));
 
-SELECT rotation(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1), 0.5)@2000-01-01');
-SELECT rotation(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{Pose(Point(1 1), 0.3)@2000-01-01, Pose(Point(1 1), 0.5)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03}');
-SELECT rotation(trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03]');
-SELECT rotation(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03], [Pose(Point(2 2), 0.6)@2000-01-04, Pose(Point(2 2), 0.6)@2000-01-05]}');
+SELECT yaw(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1), 0.5)@2000-01-01');
+SELECT yaw(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{Pose(Point(1 1), 0.3)@2000-01-01, Pose(Point(1 1), 0.5)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03}');
+SELECT yaw(trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03]');
+SELECT yaw(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03], [Pose(Point(2 2), 0.6)@2000-01-04, Pose(Point(2 2), 0.6)@2000-01-05]}');
+-- A 2D rigid geometry yaws by the stored angle of each pose and neither
+-- pitches nor rolls.
+SELECT pitch(trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02]');
+SELECT roll(trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02]');
 
 SELECT numInstants(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1), 0.5)@2000-01-01');
 SELECT numInstants(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{Pose(Point(1 1), 0.3)@2000-01-01, Pose(Point(1 1), 0.5)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03}');

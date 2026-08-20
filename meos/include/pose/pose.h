@@ -97,7 +97,6 @@ extern Pose *pose_parse(const char **str, bool end);
 
 extern Datum datum_pose_point(Datum pose);
 extern Datum datum_pose_geopoint(Datum pose);
-extern Datum datum_pose_rotation(Datum pose);
 extern Datum datum_pose_yaw(Datum pose);
 extern Datum datum_pose_pitch(Datum pose);
 extern Datum datum_pose_roll(Datum pose);

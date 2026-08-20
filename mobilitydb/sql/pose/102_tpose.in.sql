@@ -257,11 +257,6 @@ CREATE FUNCTION points(tpose)
   AS 'MODULE_PATHNAME', 'Tpose_points'
   LANGUAGE C IMMUTABLE STRICT;
 
-CREATE FUNCTION rotation(tpose)
-  RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Tpose_rotation'
-  LANGUAGE C IMMUTABLE STRICT;
-
 CREATE FUNCTION yaw(tpose)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tpose_yaw'
