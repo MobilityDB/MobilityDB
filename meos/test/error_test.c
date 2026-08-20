@@ -49,6 +49,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <meos.h>
+#include <meos_geo.h>
+#include <meos_pose.h>
 
 /* Main program */
 int main(void)
@@ -147,6 +149,40 @@ int main(void)
   printf("temporal_frechet_path(count NULL): NULL, errno %d\n", meos_errno());
   assert(meos_errno() == MEOS_ERR_INVALID_ARG);
 
+  /* A set operation between a spatial set and a value of another frame is
+   * rejected rather than answered, as every other operation mixing two
+   * spatial reference systems is. The set operations of a spatial set take
+   * the value through the same validity check as the rest of the library */
+  Set *gset = geomset_in("{\"SRID=4326;Point(1 1)\"}");
+  GSERIALIZED *other = geom_in("SRID=3812;Point(1 1)", -1);
+  assert(gset != NULL); assert(other != NULL);
+  meos_errno_reset();
+  assert(contains_set_geo(gset, other) == false);
+  printf("contains_set_geo(mixed SRID): false, errno %d\n", meos_errno());
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
+
+  /* The same holds when the two agree on the SRID but not on whether their
+   * coordinates are planar or geodetic */
+  GSERIALIZED *geodetic = geog_in("SRID=4326;Point(1 1)", -1);
+  assert(geodetic != NULL);
+  meos_errno_reset();
+  assert(contains_set_geo(gset, geodetic) == false);
+  printf("contains_set_geo(mixed planar/geodetic): false, errno %d\n",
+    meos_errno());
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
+
+  Set *pset = poseset_in("{\"SRID=4326;Pose(Point(1 1),0.5)\"}");
+  Pose *pose_other = pose_in("SRID=3812;Pose(Point(1 1),0.5)");
+  assert(pset != NULL); assert(pose_other != NULL);
+  meos_errno_reset();
+  assert(contains_set_pose(pset, pose_other) == false);
+  printf("contains_set_pose(mixed SRID): false, errno %d\n", meos_errno());
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
+
+  meos_errno_reset();
+
+  free(gset); free(other); free(geodetic);
+  free(pset); free(pose_other);
   free(num);
   free(inst); free(seq);
   free(good); free(good_out);
