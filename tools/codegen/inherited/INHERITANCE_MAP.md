@@ -611,24 +611,23 @@ axes are cited by `manifest.d/<axis>.yaml` filename, not by line number.
 
 | class | members | catalog |
 |---|---|---|
-| `Set<T>` (**16**) | intset, bigintset, floatset, textset, dateset, tstzset, geomset, geogset, npointset, poseset, cbufferset, jsonbset, h3indexset, quadbinset, pcpointset, pcpatchset | `MEOS_SETTYPE_CATALOG` :262-280 · `set_type()` :801-808 · `set_basetype()` :787-794 |
+| `Set<T>` (**17**) | intset, bigintset, floatset, textset, dateset, tstzset, geomset, geogset, npointset, poseset, posechainset, cbufferset, jsonbset, h3indexset, quadbinset, pcpointset, pcpatchset | `MEOS_SETTYPE_CATALOG` :262-280 · `set_type()` :801-808 · `set_basetype()` :787-794 |
 | `Span<T>` (**5**) | intspan, bigintspan, floatspan, datespan, tstzspan | `MEOS_SPANTYPE_CATALOG` :287-295 · `span_type()` :982-987 |
 | `SpanSet<T>` (**5**) | intspanset, bigintspanset, floatspanset, datespanset, tstzspanset | `MEOS_SPANSETTYPE_CATALOG` :301-309 · `spanset_type()` :1080-1085 |
 
 Sub-predicates: `spatialset_type()` :909-914 = geomset, geogset, npointset,
-poseset, cbufferset, h3indexset, quadbinset (**7** — the sets that carry a
-bounding box). `pointcloudset_type()` :951-955 = pcpointset, pcpatchset — NOT
+poseset, posechainset, cbufferset, h3indexset, quadbinset (**8** — the sets that
+carry a bounding box). `pointcloudset_type()` :951-955 = pcpointset, pcpatchset — NOT
 `spatialset_type()`: pointcloud sets carry no bounding box (the note at
 :944-948; the TPCBox structure is what carries pointcloud spatial bounds).
 
-### 9.2 WHY the 16-vs-5 asymmetry
+### 9.2 WHY the 17-vs-5 asymmetry
 
 - **Every base type has a set type** because a temporal value is a *function*
   from time to the base domain and `getValues` returns its RANGE as a set
   (§4c row 6) — a family cannot have a temporal type without its base set type.
-  The converse is what `posechain` stands on: it is a base type with no
-  temporal type, so it carries no set type either, and `posechainset` is the
-  catalog slot `tposechain` claims when it arrives.
+  `posechainset` is what `tposechain` needs to answer `getValues`, and it
+  deploys the whole inherited set surface ahead of it.
 - **`Span<T>` needs a total order AND a meaningful contiguous interval** on the
   base domain, so it exists only for `span_basetype()` :963-967 = date, float,
   int, bigint, timestamptz — numbers + time. `span_canon_basetype()` :973-976 =

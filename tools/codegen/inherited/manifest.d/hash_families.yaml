@@ -260,6 +260,19 @@ hash_families:
   - lit: "\n"
   - opcls: poseset
   - lit: "\n"
+
+- family: posechainset
+  file: mobilitydb/sql/posechain/551_posechainset.in.sql
+  reference: true
+  begin: "CREATE FUNCTION hash(posechainset"
+  end: "\n * Operators\n"
+  blocks:
+  - lit: "/******************************************************************************/\n\n"
+  - funcs: posechainset
+  - lit: "\n"
+  - opcls: posechainset
+  - lit: "\n"
+
 - family: quadbinset
   file: mobilitydb/sql/quadbin/351_quadbinset.in.sql
   reference: true

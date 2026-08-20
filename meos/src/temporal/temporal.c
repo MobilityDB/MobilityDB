@@ -68,6 +68,9 @@
 #if POSE
   #include "pose/pose.h"
 #endif
+#if POSECHAIN
+  #include "posechain/posechain.h"
+#endif
 #if RGEO
   #include "rgeo/trgeo.h"
 #endif
@@ -1381,6 +1384,10 @@ round_fn(MeosType basetype)
 #if POSE || RGEO
     case T_POSE:
       return &datum_pose_round;
+#endif
+#if POSECHAIN
+    case T_POSECHAIN:
+      return &datum_posechain_round;
 #endif
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,

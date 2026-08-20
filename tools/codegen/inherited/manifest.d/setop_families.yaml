@@ -186,6 +186,31 @@ setop_families:
   - lit: "\n"
   - setops: intersection
   - lit: "\n"
+
+- family: posechainset
+  file: mobilitydb/sql/posechain/551_posechainset.in.sql
+  reference: true
+  # No `value_returns`: the three wrappers Setop_base_set / Setop_set_base /
+  # Setop_set_set all return a set, so every direction declares the set type,
+  # as the alpha sets of 002_set_ops.in.sql do.
+  begin: "CREATE FUNCTION setUnion(posechain,"
+  whole_file: true
+  pairs: [[posechain, posechainset]]
+  blocks:
+  - lit: "/*****************************************************************************/\n\n"
+  - setfns: union
+  - lit: "\n"
+  - setops: union
+  - lit: "\n/*****************************************************************************/\n\n"
+  - setfns: minus
+  - lit: "\n"
+  - setops: minus
+  - lit: "\n/*****************************************************************************/\n\n"
+  - setfns: intersection
+  - lit: "\n"
+  - setops: intersection
+  - lit: "\n/******************************************************************************/\n"
+
 - family: quadbinset
   file: mobilitydb/sql/quadbin/351_quadbinset.in.sql
   reference: true

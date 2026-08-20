@@ -157,6 +157,10 @@
  * @ingroup meos_api
  * @brief Functions for temporal poses
  *
+ * @defgroup meos_posechain Functions for pose chains
+ * @ingroup meos_api
+ * @brief Functions for pose chains
+ *
  * @defgroup meos_rgeo Functions for temporal rigid geometries
  * @ingroup meos_api
  * @brief Functions for temporal rigid geometries

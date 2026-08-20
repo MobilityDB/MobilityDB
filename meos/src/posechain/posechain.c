@@ -80,6 +80,22 @@ ensure_valid_posechain_posechain(const PoseChain *pc1, const PoseChain *pc2)
   return true;
 }
 
+/**
+ * @brief Return true if a set and a pose chain are valid for set operations
+ * @param[in] s Set
+ * @param[in] pc Value
+ */
+bool
+ensure_valid_posechainset_posechain(const Set *s, const PoseChain *pc)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_POSECHAINSET(s, false); VALIDATE_NOT_NULL(pc, false);
+  if (! ensure_same_srid(spatialset_srid(s), posechain_srid(pc)) ||
+      MEOS_FLAGS_GET_Z(pc->flags) != MEOS_FLAGS_GET_Z(s->flags))
+    return false;
+  return true;
+}
+
 /*****************************************************************************
  * Composition of the links of a chain
  *

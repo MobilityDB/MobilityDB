@@ -1,5 +1,6 @@
 SET(LOCAL_FILES
   550_posechain
+  551_posechainset
   )
 
 foreach (f ${LOCAL_FILES})
