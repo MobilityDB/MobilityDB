@@ -34,6 +34,19 @@
  */
 
 /*****************************************************************************
+ * Oriented envelope (a.k.a minimum rotated rectangle) and convex hull
+ *****************************************************************************/
+
+CREATE FUNCTION OrientedEnvelope(geometry)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Geom_oriented_envelope'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION ConvexHull(geometry)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Geom_convex_hull'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************
  * Buffer
  *****************************************************************************/
 

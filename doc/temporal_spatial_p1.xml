@@ -41,9 +41,35 @@
 	<sect1 xml:id="geo_funcs">
 		<title>Functions on Geometries</title>
 
-		<para>The functions in this section answer a question about a geometry rather than about a temporal type. A geometry bounded by circular arcs keeps them: the answer is built from the arcs themselves rather than from a polygonal approximation of them.</para>
+		<para>The functions in this section answer a question about a geometry rather than about a temporal type. Each states how it reads a geometry bounded by circular arcs, since an answer built from the arcs themselves and an answer built from a polygonal approximation of them are not the same answer.</para>
 
 		<itemizedlist>
+			<listitem xml:id="geo_orientedenvelope">
+				<indexterm significance="normal"><primary><varname>OrientedEnvelope</varname></primary></indexterm>
+				<para>Return the rectangle of minimum area enclosing a geometry</para>
+				<para><varname>OrientedEnvelope(geometry) → geometry</varname></para>
+				<para>The rectangle is at the angle that makes it smallest, which is not in general the angle of the axes. It is answered as a line when the geometry is contained in one and as a point when the geometry is one. A geometry carrying a circular arc is answered by GEOS, which reads the arc as the chain of segments approximating it.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_AsText(round(OrientedEnvelope(geometry 'Polygon((0 0,3 4,-1 7,-4 3,0 0))'), 6));
+-- POLYGON((0 0,3 4,-1 7,-4 3,0 0))
+SELECT ST_AsText(round(OrientedEnvelope(geometry 'Linestring(0 0,10 0)'), 6));
+-- LINESTRING(0 0,10 0)
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="geo_convexhull">
+				<indexterm significance="normal"><primary><varname>ConvexHull</varname></primary></indexterm>
+				<para>Return the smallest convex geometry enclosing a geometry</para>
+				<para><varname>ConvexHull(geometry) → geometry</varname></para>
+				<para>The result is a polygon whose every corner is a point of the geometry, a line when the geometry is contained in one, and a point when the geometry is one. A geometry carrying a circular arc is answered by GEOS, which reads the arc as the chain of segments approximating it.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_AsText(round(ConvexHull(geometry 'Multipoint(0 0,10 0,10 10,0 10,5 5)'), 6));
+-- POLYGON((0 0,0 10,10 10,10 0,0 0))
+SELECT ST_AsText(round(ConvexHull(geometry 'Polygon((0 0,10 0,10 10,5 5,0 10,0 0))'), 6));
+-- POLYGON((0 0,0 10,10 10,10 0,0 0))
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="geo_buffer">
 				<indexterm significance="normal"><primary><varname>Buffer</varname></primary></indexterm>
 				<para>Return the geometry holding every point within a distance of a geometry</para>

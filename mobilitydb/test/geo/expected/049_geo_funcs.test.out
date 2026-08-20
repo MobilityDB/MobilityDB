@@ -1,3 +1,67 @@
+SELECT ST_AsText(round(OrientedEnvelope(geometry 'Point(1 2)'), 6));
+ st_astext  
+------------
+ POINT(1 2)
+(1 row)
+
+SELECT ST_AsText(round(OrientedEnvelope(geometry 'Linestring(0 0,10 0)'), 6));
+      st_astext       
+----------------------
+ LINESTRING(0 0,10 0)
+(1 row)
+
+SELECT ST_AsText(round(OrientedEnvelope(geometry 'Polygon((0 0,10 0,10 5,0 5,0 0))'), 6));
+            st_astext             
+----------------------------------
+ POLYGON((0 0,10 0,10 5,0 5,0 0))
+(1 row)
+
+SELECT ST_AsText(round(OrientedEnvelope(geometry 'Polygon((0 0,3 4,-1 7,-4 3,0 0))'), 6));
+            st_astext             
+----------------------------------
+ POLYGON((0 0,3 4,-1 7,-4 3,0 0))
+(1 row)
+
+SELECT ST_Equals(
+  OrientedEnvelope(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))'),
+  ST_OrientedEnvelope(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))'));
+ st_equals 
+-----------
+ t
+(1 row)
+
+SELECT ST_AsText(round(ConvexHull(geometry 'Point(1 2)'), 6));
+ st_astext  
+------------
+ POINT(1 2)
+(1 row)
+
+SELECT ST_AsText(round(ConvexHull(geometry 'Multipoint(0 0,1 1,2 2)'), 6));
+      st_astext      
+---------------------
+ LINESTRING(0 0,2 2)
+(1 row)
+
+SELECT ST_AsText(round(ConvexHull(geometry 'Multipoint(0 0,10 0,10 10,0 10,5 5)'), 6));
+             st_astext              
+------------------------------------
+ POLYGON((0 0,0 10,10 10,10 0,0 0))
+(1 row)
+
+SELECT ST_AsText(round(ConvexHull(geometry 'Polygon((0 0,10 0,10 10,5 5,0 10,0 0))'), 6));
+             st_astext              
+------------------------------------
+ POLYGON((0 0,0 10,10 10,10 0,0 0))
+(1 row)
+
+SELECT ST_Equals(
+  ConvexHull(geometry 'Circularstring(0 0,2 2,4 0)'),
+  ST_ConvexHull(geometry 'Circularstring(0 0,2 2,4 0)'));
+ st_equals 
+-----------
+ t
+(1 row)
+
 SELECT ST_AsText(round(Buffer(geometry 'Point(0 0)', 1), 6));
                   st_astext                  
 ---------------------------------------------

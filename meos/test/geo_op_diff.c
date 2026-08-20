@@ -143,6 +143,36 @@ area_tolerance(void)
 }
 
 /**
+ * @brief Return the oriented envelope GEOS answers for a geometry
+ */
+static GSERIALIZED *
+geos_oriented_envelope(const GSERIALIZED *gs)
+{
+  GEOSGeometry *input = geos_stroked(gs);
+  if (! input)
+    return NULL;
+  GEOSGeometry *mrr = GEOSMinimumRotatedRectangle(input);
+  GEOSGeom_destroy(input);
+  if (! mrr)
+    return NULL;
+  size_t size;
+  unsigned char *hex = GEOSGeomToHEX_buf(mrr, &size);
+  GEOSGeom_destroy(mrr);
+  if (! hex)
+    return NULL;
+  GSERIALIZED *result = geom_in((const char *) hex, -1);
+  GEOSFree(hex);
+  /* The round trip through GEOS drops the reference system */
+  if (result)
+  {
+    GSERIALIZED *located = geo_set_srid(result, geo_srid(gs));
+    free(result);
+    result = located;
+  }
+  return result;
+}
+
+/**
  * @brief Return true if the symmetric difference of two geometries covers a
  * negligible fraction of the expected area
  */
@@ -299,6 +329,95 @@ boundary_hausdorff_in_tolerance(const GEOSGeometry *actual,
 }
 
 /**
+ * @brief Return true if every coordinate of a geometry is a finite number
+ * @details At coordinates near the range of a double the rotation GEOS applies
+ * to place a rectangle overflows, and it answers a geometry carrying NaN. Such
+ * an answer asserts nothing, so a record it comes from is reported rather than
+ * counted against the native implementation.
+ */
+static bool
+geo_is_finite(const GSERIALIZED *gs)
+{
+  GEOSGeometry *g = geos_stroked(gs);
+  if (! g)
+    return false;
+  double xmin, xmax, ymin, ymax, area;
+  /* The extent is read as well as the area, since the extent of a ring
+   * carrying a NaN vertex is still the extent of the vertices that are not */
+  bool result = GEOSGeom_getXMin(g, &xmin) && GEOSGeom_getXMax(g, &xmax) &&
+    GEOSGeom_getYMin(g, &ymin) && GEOSGeom_getYMax(g, &ymax) &&
+    GEOSArea(g, &area) &&
+    isfinite(xmin) && isfinite(xmax) && isfinite(ymin) && isfinite(ymax) &&
+    isfinite(area);
+  GEOSGeom_destroy(g);
+  return result;
+}
+
+/**
+ * @brief Return true if a rectangle answers the oriented envelope of a geometry
+ * @details The operation asks for a rectangle of minimum area enclosing the
+ * geometry, and that rectangle is not unique: whenever the convex hull has two
+ * supporting directions of equal width the minimum is attained twice, and the
+ * two answers cover different regions. Asserting the region GEOS happens to
+ * return would test which of the tied rectangles an implementation reaches,
+ * which no definition fixes. The two properties the definition does fix are
+ * asserted instead: the answer encloses the geometry, and its area does not
+ * exceed the area of the rectangle GEOS returns.
+ */
+static bool
+envelope_matches(const GSERIALIZED *actual, const GSERIALIZED *expected,
+  const GSERIALIZED *input, char *reason, size_t size)
+{
+  bool e1 = geo_is_empty(actual), e2 = geo_is_empty(expected);
+  if (e1 && e2)
+    return true;
+  if (e1 || e2)
+  {
+    snprintf(reason, size, "one result is empty and the other is not");
+    return false;
+  }
+  /* The two agree outright, which a degenerate rectangle answers as a line or
+   * a point and which no area comparison is defined on */
+  if (geo_equals(actual, expected) == 1)
+    return true;
+  GEOSGeometry *g1 = geos_stroked(actual);
+  GEOSGeometry *g2 = geos_stroked(expected);
+  GEOSGeometry *in = geos_stroked(input);
+  if (! g1 || ! g2 || ! in)
+  {
+    snprintf(reason, size, "a result does not convert to a polygon");
+    if (g1) GEOSGeom_destroy(g1);
+    if (g2) GEOSGeom_destroy(g2);
+    if (in) GEOSGeom_destroy(in);
+    return false;
+  }
+  double a1, a2;
+  bool result = false;
+  if (! GEOSArea(g1, &a1) || ! GEOSArea(g2, &a2))
+    snprintf(reason, size, "the area of a result is not available");
+  else
+  {
+    /* The enclosure is asked for at the scale the coordinates are written at,
+     * since the rectangle is placed by arithmetic on those coordinates */
+    double scale = sqrt(a2 > 0.0 ? a2 : 1.0);
+    GEOSGeometry *grown = GEOSBuffer(g1, scale * EXACT_AREA_DIFFERENCE, 8);
+    if (! grown)
+      snprintf(reason, size, "the answer does not admit a tolerance");
+    else if (GEOSCovers(grown, in) != 1)
+      snprintf(reason, size, "the answer does not enclose the geometry");
+    else if (a1 > a2 * (1.0 + EXACT_AREA_DIFFERENCE))
+      snprintf(reason, size, "the answer covers %g of the area GEOS answers, "
+        "so it is not of minimum area", a2 > 0.0 ? a1 / a2 : a1);
+    else
+      result = true;
+    if (grown)
+      GEOSGeom_destroy(grown);
+  }
+  GEOSGeom_destroy(g1); GEOSGeom_destroy(g2); GEOSGeom_destroy(in);
+  return result;
+}
+
+/**
  * @brief Return true if a buffer matches the one the GEOS suite asserts
  */
 static bool
@@ -335,13 +454,15 @@ buffer_matches(const GSERIALIZED *actual, const GSERIALIZED *expected,
 int
 main(int argc, char **argv)
 {
-  if (argc != 2 || strcmp(argv[1], "buffer"))
+  if (argc != 2 || (strcmp(argv[1], "convexhull") && strcmp(argv[1], "buffer")
+      && strcmp(argv[1], "orientedenvelope")))
   {
     fprintf(stderr,
-      "usage: %s buffer < corpus\n",
-      argv[0]);
+      "usage: %s {convexhull|buffer|orientedenvelope} < corpus\n", argv[0]);
     return 2;
   }
+  bool is_buffer = ! strcmp(argv[1], "buffer");
+  bool is_envelope = ! strcmp(argv[1], "orientedenvelope");
   meos_initialize();
   /* A geometry the native implementation declines raises an error, and the
    * corpus is walked to its end rather than stopped on the first one */
@@ -351,7 +472,7 @@ main(int argc, char **argv)
   char *line = NULL;
   size_t cap = 0;
   ssize_t len;
-  int nchecked = 0, nfailed = 0, nunsupported = 0;
+  int nchecked = 0, nfailed = 0, nunsupported = 0, nnoreference = 0;
   while ((len = getline(&line, &cap, stdin)) > 0)
   {
     if (line[0] == '#' || line[0] == '\n')
@@ -368,19 +489,29 @@ main(int argc, char **argv)
       if (expected_wkt)
         *expected_wkt++ = '\0';
     }
-    if (! arg || ! expected_wkt)
+    if (! is_envelope && (! arg || ! expected_wkt))
       continue;
 
     GSERIALIZED *gs = geom_in(line, -1);
-    GSERIALIZED *expected = geom_in(expected_wkt, -1);
+    /* The GEOS suite asserts no oriented envelope, so GEOS answers it here */
+    GSERIALIZED *expected = is_envelope ? geos_oriented_envelope(gs) :
+      geom_in(expected_wkt, -1);
     if (! gs || ! expected)
     {
       fprintf(stderr, "PARSE %.90s\n", line);
       free(gs); free(expected);
       continue;
     }
-    double distance = atof(arg);
-    GSERIALIZED *actual = geom_buffer_meos(gs, distance, "");
+    if (is_envelope && ! geo_is_finite(expected))
+    {
+      nnoreference++;
+      printf("NOREFERENCE %.90s\n", line);
+      free(gs); free(expected);
+      continue;
+    }
+    double distance = is_buffer ? atof(arg) : 0.0;
+    GSERIALIZED *actual = is_buffer ? geom_buffer_meos(gs, distance, "") :
+      (is_envelope ? geom_oriented_envelope_meos(gs) : geom_convex_hull_meos(gs));
     if (! actual)
     {
       nunsupported++;
@@ -390,14 +521,20 @@ main(int argc, char **argv)
     }
     nchecked++;
     char reason[256] = "the result differs from the assertion";
-    bool ok = buffer_matches(actual, expected, distance, reason,
-      sizeof(reason));
+    bool ok = is_buffer ?
+      buffer_matches(actual, expected, distance, reason, sizeof(reason)) :
+      (is_envelope ?
+        envelope_matches(actual, expected, gs, reason, sizeof(reason)) :
+        geo_equals(actual, expected) == 1);
     if (! ok)
     {
       nfailed++;
       char *wa = geo_as_ewkt(actual, 8), *we = geo_as_ewkt(expected, 8);
       printf("FAIL   in       %.100s\n", line);
-      printf("       distance %g: %s\n", distance, reason);
+      if (is_buffer)
+        printf("       distance %g: %s\n", distance, reason);
+      else if (is_envelope)
+        printf("       %s\n", reason);
       printf("       expected %.100s\n", we);
       printf("       actual   %.100s\n", wa);
       free(wa); free(we);
@@ -405,6 +542,9 @@ main(int argc, char **argv)
     free(actual); free(gs); free(expected);
   }
   free(line);
+  if (nnoreference)
+    printf("%d records carry no reference, GEOS overflowing on their coordinates\n",
+      nnoreference);
   printf("%d of %d checked records pass, %d unsupported\n",
     nchecked - nfailed, nchecked, nunsupported);
   finishGEOS();

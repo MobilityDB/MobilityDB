@@ -25,6 +25,41 @@
 -- AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
 
 -------------------------------------------------------------------------------
+-- Oriented envelope and convex hull
+-- Both are placed on the vertices of a geometry whose every edge is a segment,
+-- which for such a geometry are the whole of it
+-------------------------------------------------------------------------------
+
+-- The envelope of a point is that point, of two points the segment they span
+SELECT ST_AsText(round(OrientedEnvelope(geometry 'Point(1 2)'), 6));
+SELECT ST_AsText(round(OrientedEnvelope(geometry 'Linestring(0 0,10 0)'), 6));
+
+-- A rectangle is its own envelope, whatever angle it is written at
+SELECT ST_AsText(round(OrientedEnvelope(geometry 'Polygon((0 0,10 0,10 5,0 5,0 0))'), 6));
+SELECT ST_AsText(round(OrientedEnvelope(geometry 'Polygon((0 0,3 4,-1 7,-4 3,0 0))'), 6));
+
+-- An arc reaches past the points that define it, so a geometry carrying one
+-- has no native placement yet and is answered by GEOS, as PostGIS answers it
+SELECT ST_Equals(
+  OrientedEnvelope(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))'),
+  ST_OrientedEnvelope(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))'));
+
+-- The hull of a point is that point, and of collinear points their segment
+SELECT ST_AsText(round(ConvexHull(geometry 'Point(1 2)'), 6));
+SELECT ST_AsText(round(ConvexHull(geometry 'Multipoint(0 0,1 1,2 2)'), 6));
+
+-- A point inside the hull of the others does not reach its boundary
+SELECT ST_AsText(round(ConvexHull(geometry 'Multipoint(0 0,10 0,10 10,0 10,5 5)'), 6));
+
+-- The hull of a concave polygon closes over the notch
+SELECT ST_AsText(round(ConvexHull(geometry 'Polygon((0 0,10 0,10 10,5 5,0 10,0 0))'), 6));
+
+-- And the hull of an arc is answered by GEOS for the same reason
+SELECT ST_Equals(
+  ConvexHull(geometry 'Circularstring(0 0,2 2,4 0)'),
+  ST_ConvexHull(geometry 'Circularstring(0 0,2 2,4 0)'));
+
+-------------------------------------------------------------------------------
 -- Buffer
 -- A buffer is bounded by the offsets of the geometry and by the joins and caps
 -- between them, and a circular arc is kept as an arc rather than sampled

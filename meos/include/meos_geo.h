@@ -405,10 +405,13 @@ extern GSERIALIZED *geom_buffer(const GSERIALIZED *gs, double size, const char *
 extern GSERIALIZED *geom_buffer_meos(const GSERIALIZED *gs, double size, const char *params);
 extern GSERIALIZED *geom_centroid(const GSERIALIZED *gs);
 extern GSERIALIZED *geom_convex_hull(const GSERIALIZED *gs);
+extern GSERIALIZED *geom_convex_hull_meos(const GSERIALIZED *gs);
 extern GSERIALIZED *geom_difference2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern GSERIALIZED *geom_intersection2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern GSERIALIZED *geom_intersection2d_coll(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern GSERIALIZED *geom_min_bounding_radius(const GSERIALIZED *geom, double *radius);
+extern GSERIALIZED *geom_oriented_envelope(const GSERIALIZED *gs);
+extern GSERIALIZED *geom_oriented_envelope_meos(const GSERIALIZED *gs);
 extern GSERIALIZED *geom_shortestline2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern GSERIALIZED *geom_shortestline3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern GSERIALIZED *geom_unary_union(const GSERIALIZED *gs, double prec);

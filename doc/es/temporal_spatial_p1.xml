@@ -41,9 +41,35 @@
 	<sect1 xml:id="geo_funcs">
 		<title>Funciones sobre Geometrías</title>
 
-		<para>Las funciones de esta sección responden una pregunta sobre una geometría y no sobre un tipo temporal. Una geometría delimitada por arcos circulares los conserva: la respuesta se construye a partir de los arcos mismos y no de una aproximación poligonal de ellos.</para>
+		<para>Las funciones de esta sección responden una pregunta sobre una geometría y no sobre un tipo temporal. Cada una indica cómo lee una geometría delimitada por arcos circulares, ya que una respuesta construida a partir de los arcos mismos y una construida a partir de una aproximación poligonal de ellos no son la misma respuesta.</para>
 
 		<itemizedlist>
+			<listitem xml:id="geo_orientedenvelope">
+				<indexterm significance="normal"><primary><varname>OrientedEnvelope</varname></primary></indexterm>
+				<para>Devuelve el rectángulo de área mínima que encierra una geometría</para>
+				<para><varname>OrientedEnvelope(geometry) → geometry</varname></para>
+				<para>El rectángulo se orienta en el ángulo que lo hace más pequeño, que en general no es el ángulo de los ejes. Se devuelve como una línea cuando la geometría está contenida en una y como un punto cuando la geometría es uno. Una geometría que lleva un arco circular la responde GEOS, que lee el arco como la cadena de segmentos que lo aproxima.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_AsText(round(OrientedEnvelope(geometry 'Polygon((0 0,3 4,-1 7,-4 3,0 0))'), 6));
+-- POLYGON((0 0,3 4,-1 7,-4 3,0 0))
+SELECT ST_AsText(round(OrientedEnvelope(geometry 'Linestring(0 0,10 0)'), 6));
+-- LINESTRING(0 0,10 0)
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="geo_convexhull">
+				<indexterm significance="normal"><primary><varname>ConvexHull</varname></primary></indexterm>
+				<para>Devuelve la geometría convexa más pequeña que encierra una geometría</para>
+				<para><varname>ConvexHull(geometry) → geometry</varname></para>
+				<para>El resultado es un polígono en el que cada esquina es un punto de la geometría, una línea cuando la geometría está contenida en una y un punto cuando la geometría es uno. Una geometría que lleva un arco circular la responde GEOS, que lee el arco como la cadena de segmentos que lo aproxima.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_AsText(round(ConvexHull(geometry 'Multipoint(0 0,10 0,10 10,0 10,5 5)'), 6));
+-- POLYGON((0 0,0 10,10 10,10 0,0 0))
+SELECT ST_AsText(round(ConvexHull(geometry 'Polygon((0 0,10 0,10 10,5 5,0 10,0 0))'), 6));
+-- POLYGON((0 0,0 10,10 10,10 0,0 0))
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="geo_buffer">
 				<indexterm significance="normal"><primary><varname>Buffer</varname></primary></indexterm>
 				<para>Devuelve la geometría que contiene todos los puntos situados a una distancia dada de una geometría</para>

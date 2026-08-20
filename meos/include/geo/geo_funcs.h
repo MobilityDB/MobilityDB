@@ -119,6 +119,7 @@ angle_normalize(double a)
 
 extern void arc_set_bbox(Edge *e);
 extern bool arc_contains_angle(const Edge *e, double phi);
+extern LWGEOM *meos_oriented_envelope(const LWGEOM *geom);
 extern bool point_on_arc(double px, double py, const Edge *e);
 extern bool point_on_segment(double px, double py, double x1, double y1,
   double x2, double y2);
