@@ -1609,10 +1609,12 @@ pose_quaternion_mul(double aw, double ax, double ay, double az,
 /**
  * @brief Build the unit quaternion representing the rotation from the
  * East-North-Up basis at geographic point (@p lat_rad, @p lon_rad) to the
- * WGS-84 ECEF basis. Standard ENU → ECEF rotation matrix:
- *   [ -sin λ              cos λ              0     ]
- *   [ -sin φ · cos λ     -sin φ · sin λ      cos φ ]
- *   [  cos φ · cos λ      cos φ · sin λ      sin φ ]
+ * WGS-84 ECEF basis. The columns of the matrix are the East, North and Up
+ * axes written in the ECEF basis, which is what carries an ENU vector into
+ * ECEF:
+ *   [ -sin λ     -sin φ · cos λ      cos φ · cos λ ]
+ *   [  cos λ     -sin φ · sin λ      cos φ · sin λ ]
+ *   [    0            cos φ               sin φ    ]
  * Converted to a quaternion via Shepperd's algorithm with the
  * largest-trace branch for numerical stability.
  */
@@ -1623,9 +1625,9 @@ pose_enu_to_ecef_quaternion(double lat_rad, double lon_rad,
   double sl = sin(lon_rad), cl = cos(lon_rad);
   double sp = sin(lat_rad), cp = cos(lat_rad);
   /* Row-major 3x3 matrix R[i][j] (R takes ENU column vectors to ECEF) */
-  double R00 = -sl,        R01 =  cl,        R02 =  0.0;
-  double R10 = -sp * cl,   R11 = -sp * sl,   R12 =  cp;
-  double R20 =  cp * cl,   R21 =  cp * sl,   R22 =  sp;
+  double R00 = -sl,   R01 = -sp * cl,   R02 = cp * cl;
+  double R10 =  cl,   R11 = -sp * sl,   R12 = cp * sl;
+  double R20 =  0.0,  R21 =  cp,        R22 = sp;
   double trace = R00 + R11 + R22;
   if (trace > 0.0)
   {
