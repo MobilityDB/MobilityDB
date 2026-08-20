@@ -169,3 +169,15 @@ SELECT MAX(hash(g)) FROM tbl_geogset;
 SELECT numValues(setUnion(g)) FROM tbl_geom_point WHERE NOT ST_IsEmpty(g);
 
 -------------------------------------------------------------------------------
+-- The value-and-set directions of the difference and the intersection return
+-- a set, which is what the functions behind them build
+-------------------------------------------------------------------------------
+
+SELECT asText(setMinus(geometry 'Point(1 1)', geomset '{"Point(2 2)"}'));
+SELECT asText(setIntersection(geometry 'Point(1 1)', geomset '{"Point(1 1)", "Point(2 2)"}'));
+SELECT asText(setIntersection(geomset '{"Point(1 1)", "Point(2 2)"}', geometry 'Point(1 1)'));
+SELECT asText(setMinus(geography 'Point(1 1)', geogset '{"Point(2 2)"}'));
+SELECT asText(setIntersection(geography 'Point(1 1)', geogset '{"Point(1 1)", "Point(2 2)"}'));
+SELECT asText(setIntersection(geogset '{"Point(1 1)", "Point(2 2)"}', geography 'Point(1 1)'));
+
+-------------------------------------------------------------------------------

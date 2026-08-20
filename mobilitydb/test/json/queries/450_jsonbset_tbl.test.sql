@@ -119,3 +119,12 @@ SELECT MAX(hashExtended(s, 1)) FROM tbl_jsonbset;
 SELECT numValues(setUnion(jb)) FROM tbl_jsonb;
 
 -------------------------------------------------------------------------------
+-- The value-and-set directions of the difference and the intersection return
+-- a set, which is what the functions behind them build
+-------------------------------------------------------------------------------
+
+SELECT setMinus(jsonb '{"a": 1}', jsonbset '{"{\"b\": 2}"}');
+SELECT setIntersection(jsonb '{"a": 1}', jsonbset '{"{\"a\": 1}", "{\"b\": 2}"}');
+SELECT setIntersection(jsonbset '{"{\"a\": 1}", "{\"b\": 2}"}', jsonb '{"a": 1}');
+
+-------------------------------------------------------------------------------

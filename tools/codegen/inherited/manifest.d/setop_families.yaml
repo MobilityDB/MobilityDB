@@ -22,7 +22,6 @@ setop_families:
 - family: geoset
   file: mobilitydb/sql/geo/050_geoset.in.sql
   reference: true
-  value_returns: true
   begin: "CREATE FUNCTION setUnion(geometry,"
   end: "CREATE FUNCTION setDistance("
   pairs: [[geometry, geomset], [geography, geogset]]
@@ -43,7 +42,6 @@ setop_families:
 - family: cbufferset
   file: mobilitydb/sql/cbuffer/201_cbufferset.in.sql
   reference: true
-  value_returns: true
   begin: "CREATE FUNCTION setUnion(cbuffer,"
   end: "CREATE FUNCTION setDistance("
   pairs: [[cbuffer, cbufferset]]
@@ -84,7 +82,6 @@ setop_families:
 - family: jsonbset
   file: mobilitydb/sql/json/450_jsonbset.in.sql
   reference: true
-  value_returns: true
   begin: "CREATE FUNCTION setUnion(jsonb,"
   whole_file: true
   pairs: [[jsonb, jsonbset]]
@@ -105,7 +102,6 @@ setop_families:
 - family: npointset
   file: mobilitydb/sql/npoint/301_npointset.in.sql
   reference: true
-  value_returns: true
   begin: "CREATE FUNCTION setUnion(npoint,"
   end: "CREATE FUNCTION setDistance("
   pairs: [[npoint, npointset]]
@@ -126,7 +122,6 @@ setop_families:
 - family: pcpointset
   file: mobilitydb/sql/pointcloud/400_pcset.in.sql
   reference: true
-  value_returns: true
   begin: "CREATE FUNCTION setUnion(pcpoint,"
   begin_exact: true
   end: "\n * pcpatchset \u2014 Input / output\n"
@@ -147,7 +142,6 @@ setop_families:
 - family: pcpatchset
   file: mobilitydb/sql/pointcloud/400_pcset.in.sql
   reference: true
-  value_returns: true
   begin: "CREATE FUNCTION setUnion(pcpatch,"
   begin_exact: true
   whole_file: true
@@ -168,7 +162,6 @@ setop_families:
 - family: poseset
   file: mobilitydb/sql/pose/101_poseset.in.sql
   reference: true
-  value_returns: true
   begin: "CREATE FUNCTION setUnion(pose,"
   end: "CREATE FUNCTION setDistance("
   pairs: [[pose, poseset]]
@@ -190,9 +183,6 @@ setop_families:
 - family: posechainset
   file: mobilitydb/sql/posechain/551_posechainset.in.sql
   reference: true
-  # No `value_returns`: the three wrappers Setop_base_set / Setop_set_base /
-  # Setop_set_set all return a set, so every direction declares the set type,
-  # as the alpha sets of 002_set_ops.in.sql do.
   begin: "CREATE FUNCTION setUnion(posechain,"
   whole_file: true
   pairs: [[posechain, posechainset]]

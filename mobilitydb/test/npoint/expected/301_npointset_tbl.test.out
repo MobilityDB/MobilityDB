@@ -193,3 +193,21 @@ SELECT numValues(setUnion(np)) FROM tbl_npoint;
        100
 (1 row)
 
+SELECT setMinus(npoint 'Npoint(1,0.5)', npointset '{"Npoint(2,0.5)"}');
+     setminus      
+-------------------
+ {"NPoint(1,0.5)"}
+(1 row)
+
+SELECT setIntersection(npoint 'Npoint(1,0.5)', npointset '{"Npoint(1,0.5)", "Npoint(2,0.5)"}');
+  setintersection  
+-------------------
+ {"NPoint(1,0.5)"}
+(1 row)
+
+SELECT setIntersection(npointset '{"Npoint(1,0.5)", "Npoint(2,0.5)"}', npoint 'Npoint(1,0.5)');
+  setintersection  
+-------------------
+ {"NPoint(1,0.5)"}
+(1 row)
+

@@ -1850,16 +1850,10 @@ def _setops_markers(family: str):
 
 
 # Per operation: the three directions as (signature, RETURNS, backing C symbol)
-# patterns over the family's (value {v}, set {s}) type pair. The RETURNS column is
-# the alpha-set (002_set_ops) spelling, which matches the C wrappers: every
-# direction dispatches through Setop_base_set / Setop_set_base / Setop_set_set
-# (mobilitydb/src/temporal/set_ops.c), all of which PG_RETURN_SET_P. A family
-# with `value_returns: true` instead declares the VALUE type on setMinus(value,
-# set) and on setIntersection(value, set)/(set, value) — geoset, cbufferset,
-# jsonbset, npointset, the pointcloud sets and poseset all do — mislabeling the
-# set datum those wrappers return. The override reproduces the committed
-# declarations verbatim; correcting them is an API-surface change left to its
-# own patch.
+# patterns over the family's (value {v}, set {s}) type pair. Every direction
+# dispatches through Setop_base_set / Setop_set_base / Setop_set_set
+# (mobilitydb/src/temporal/set_ops.c), all of which PG_RETURN_SET_P, so all
+# three declare the set type whatever the family.
 _SETOP_FNS = {
     "union": [
         ("setUnion({v}, {s})", "{s}", "Union_value_set"),
@@ -1889,22 +1883,14 @@ _SETOP_OPERATOR = ("CREATE OPERATOR {op} (\n"
                    ");")
 
 
-# The directions whose RETURNS a `value_returns: true` family declares as the
-# value type: op -> direction indexes into _SETOP_FNS[op].
-_SETOP_VALUE_RETS = {"union": (), "minus": (0,), "intersection": (0, 1)}
-
-
-def _setop_fns(op: str, pairs: list, value_returns: bool = False) -> str:
+def _setop_fns(op: str, pairs: list) -> str:
     """The three CREATE FUNCTIONs of one operation for every (value, set) pair:
     a pair's functions packed, consecutive pairs separated by one blank line."""
     tmpl = (TEMPLATES / "comparisons.sql.tmpl").read_text().rstrip("\n")
-    table = [(sig, "{v}" if value_returns and d in _SETOP_VALUE_RETS[op] else ret,
-              sym)
-             for d, (sig, ret, sym) in enumerate(_SETOP_FNS[op])]
     groups = ["\n".join(tmpl.replace("{SIG}", sig.format(v=v, s=s))
                             .replace("{RET}", ret.format(v=v, s=s))
                             .replace("{SYM}", sym)
-                        for sig, ret, sym in table)
+                        for sig, ret, sym in _SETOP_FNS[op])
               for v, s in pairs]
     return "\n\n".join(groups) + "\n"
 
@@ -1932,8 +1918,7 @@ def render_setops(fam: dict) -> str:
         if "lit" in blk:
             out += blk["lit"]
         elif "setfns" in blk:
-            out += _setop_fns(blk["setfns"], fam["pairs"],
-                              fam.get("value_returns", False))
+            out += _setop_fns(blk["setfns"], fam["pairs"])
         else:
             out += _setop_ops(blk["setops"], fam["pairs"])
     return out

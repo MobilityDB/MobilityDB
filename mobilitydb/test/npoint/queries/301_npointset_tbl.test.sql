@@ -113,3 +113,12 @@ SELECT MAX(hashExtended(n, 1)) FROM tbl_npointset;
 SELECT numValues(setUnion(np)) FROM tbl_npoint;
 
 -------------------------------------------------------------------------------
+-- The value-and-set directions of the difference and the intersection return
+-- a set, which is what the functions behind them build
+-------------------------------------------------------------------------------
+
+SELECT setMinus(npoint 'Npoint(1,0.5)', npointset '{"Npoint(2,0.5)"}');
+SELECT setIntersection(npoint 'Npoint(1,0.5)', npointset '{"Npoint(1,0.5)", "Npoint(2,0.5)"}');
+SELECT setIntersection(npointset '{"Npoint(1,0.5)", "Npoint(2,0.5)"}', npoint 'Npoint(1,0.5)');
+
+-------------------------------------------------------------------------------

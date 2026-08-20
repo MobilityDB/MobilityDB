@@ -112,3 +112,12 @@ SELECT MAX(hash(s)) FROM tbl_poseset2d;
 SELECT numValues(setUnion(pose)) FROM tbl_pose2d;
 
 -------------------------------------------------------------------------------
+-- The value-and-set directions of the difference and the intersection return
+-- a set, which is what the functions behind them build
+-------------------------------------------------------------------------------
+
+SELECT asText(setMinus(pose 'Pose(Point(1 1),0.5)', poseset '{"Pose(Point(2 2),0.5)"}'));
+SELECT asText(setIntersection(pose 'Pose(Point(1 1),0.5)', poseset '{"Pose(Point(1 1),0.5)", "Pose(Point(2 2),0.5)"}'));
+SELECT asText(setIntersection(poseset '{"Pose(Point(1 1),0.5)", "Pose(Point(2 2),0.5)"}', pose 'Pose(Point(1 1),0.5)'));
+
+-------------------------------------------------------------------------------

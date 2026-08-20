@@ -175,3 +175,21 @@ SELECT numValues(setUnion(pose)) FROM tbl_pose2d;
        100
 (1 row)
 
+SELECT asText(setMinus(pose 'Pose(Point(1 1),0.5)', poseset '{"Pose(Point(2 2),0.5)"}'));
+          astext          
+--------------------------
+ {"Pose(POINT(1 1),0.5)"}
+(1 row)
+
+SELECT asText(setIntersection(pose 'Pose(Point(1 1),0.5)', poseset '{"Pose(Point(1 1),0.5)", "Pose(Point(2 2),0.5)"}'));
+          astext          
+--------------------------
+ {"Pose(POINT(1 1),0.5)"}
+(1 row)
+
+SELECT asText(setIntersection(poseset '{"Pose(Point(1 1),0.5)", "Pose(Point(2 2),0.5)"}', pose 'Pose(Point(1 1),0.5)'));
+          astext          
+--------------------------
+ {"Pose(POINT(1 1),0.5)"}
+(1 row)
+
