@@ -57,7 +57,7 @@
  */
 typedef struct SPNode
 {
-  int id;                     /**< Identifier of the box stored at this node */
+  int64 id;                   /**< Identifier of the box stored at this node */
   struct SPNode **children;   /**< Array of @p nchild child pointers */
   char centroid[];            /**< The bounding box of this node */
 } SPNode;

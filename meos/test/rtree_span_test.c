@@ -88,12 +88,12 @@ test_intspan_rtree(void)
   int qlo = random_int(-10000, 10000);
   Span *query = intspan_make(qlo, qlo + 500, true, false);
 
-  MeosArray *result = meos_array_create(sizeof(int));
+  MeosArray *result = meos_array_create(sizeof(int64));
   int count = rtree_search(rtree, RTREE_OVERLAPS, query, result);
 
   bool *in_index = calloc(NUM_SPANS, sizeof(bool));
   for (int i = 0; i < count; i++)
-    in_index[*(int *) meos_array_get(result, i)] = true;
+    in_index[*(int64 *) meos_array_get(result, i)] = true;
 
   printf("Integer span RTree (%d random spans):\n", NUM_SPANS);
 
@@ -134,12 +134,12 @@ test_floatspan_rtree(void)
   double qlo = random_int(-10000, 10000) / 10.0;
   Span *query = floatspan_make(qlo, qlo + 50.0, true, false);
 
-  MeosArray *result = meos_array_create(sizeof(int));
+  MeosArray *result = meos_array_create(sizeof(int64));
   int count = rtree_search(rtree, RTREE_OVERLAPS, query, result);
 
   bool *in_index = calloc(NUM_SPANS, sizeof(bool));
   for (int i = 0; i < count; i++)
-    in_index[*(int *) meos_array_get(result, i)] = true;
+    in_index[*(int64 *) meos_array_get(result, i)] = true;
 
   printf("Float span RTree (%d random spans):\n", NUM_SPANS);
 

@@ -134,9 +134,10 @@ test_stbox_knn(void)
   /* Full drain of the cursor */
   int *seen = calloc(NUM_BOXES, sizeof(int));
   double *cur_dist = malloc(NUM_BOXES * sizeof(double));
-  int *cur_id = malloc(NUM_BOXES * sizeof(int));
+  int64 *cur_id = malloc(NUM_BOXES * sizeof(int64));
   RTreeNNCursor *cursor = rtree_nn_cursor_open(rtree, query);
-  int n = 0, id;
+  int n = 0;
+  int64 id;
   double dist;
   while (rtree_nn_cursor_next(cursor, &id, &dist))
   {
@@ -187,7 +188,7 @@ test_stbox_knn(void)
   RTreeNNCursor *kcursor = rtree_nn_cursor_open(rtree, query);
   for (int i = 0; i < K && early_ok; i++)
   {
-    int kid;
+    int64 kid;
     double kdist;
     if (! rtree_nn_cursor_next(kcursor, &kid, &kdist) ||
         kid != cur_id[i] || fabs(kdist - cur_dist[i]) > EPS)
@@ -237,9 +238,10 @@ test_tbox_knn(void)
 
   int *seen = calloc(NUM_BOXES, sizeof(int));
   double *cur_dist = malloc(NUM_BOXES * sizeof(double));
-  int *cur_id = malloc(NUM_BOXES * sizeof(int));
+  int64 *cur_id = malloc(NUM_BOXES * sizeof(int64));
   RTreeNNCursor *cursor = rtree_nn_cursor_open(rtree, query);
-  int n = 0, id;
+  int n = 0;
+  int64 id;
   double dist;
   while (rtree_nn_cursor_next(cursor, &id, &dist))
   {
