@@ -122,7 +122,7 @@ extract_mpoint(const LWMPOINT *mp, MeosArray *edges)
 static void
 extract_line(const LWLINE *line, MeosArray *edges)
 {
-  emit_ring_edges(line->points, edges, EDGE_LINE);
+  emit_ring_edges(line->points, edges, EDGE_LINESEG);
   return;
 }
 
@@ -146,7 +146,7 @@ static void
 extract_poly(const LWPOLY *poly, MeosArray *edges)
 {
   for (int r = 0; r < (int) poly->nrings; r++)
-    emit_ring_edges(poly->rings[r], edges, EDGE_POLY);
+    emit_ring_edges(poly->rings[r], edges, EDGE_POLYSEG);
   return;
 }
 
@@ -171,7 +171,7 @@ extract_mpoly(const LWMPOLY *mp, MeosArray *edges)
 static void
 extract_triangle(const LWTRIANGLE *tri, MeosArray *edges)
 {
-  emit_ring_edges(tri->points, edges, EDGE_POLY);
+  emit_ring_edges(tri->points, edges, EDGE_POLYSEG);
   return;
 }
 
@@ -237,8 +237,8 @@ emit_arc_edge(const POINT4D *pa, const POINT4D *pb, const POINT4D *pc,
  * from a circular string, emitting them with the given line/arc edge types
  * @details Straight components (collinear point triples) are emitted with
  * @p line_etype and genuine arcs with @p arc_etype. A standalone circular
- * string uses the 1D types (#EDGE_LINE / #EDGE_ARC); a circular string that
- * bounds a curve polygon ring uses the region types (#EDGE_POLY /
+ * string uses the 1D types (#EDGE_LINESEG / #EDGE_LINEARC); a circular string that
+ * bounds a curve polygon ring uses the region types (#EDGE_POLYSEG /
  * #EDGE_POLYARC)
  */
 static void
@@ -265,7 +265,7 @@ emit_circstring_edges(const LWCIRCSTRING *circ, MeosArray *edges,
 static void
 extract_circstring(const LWCIRCSTRING *circ, MeosArray *edges)
 {
-  emit_circstring_edges(circ, edges, EDGE_LINE, EDGE_ARC);
+  emit_circstring_edges(circ, edges, EDGE_LINESEG, EDGE_LINEARC);
   return;
 }
 
@@ -274,7 +274,7 @@ extract_circstring(const LWCIRCSTRING *circ, MeosArray *edges)
  * edges obtained from a ring of a curve polygon
  * @details A ring is a line string, a circular string, or a compound curve
  * chaining both. Every edge is emitted with polygon (region) semantics
- * (#EDGE_POLY / #EDGE_POLYARC) so that the even-odd containment test in
+ * (#EDGE_POLYSEG / #EDGE_POLYARC) so that the even-odd containment test in
  * #point_in_polygon treats it as a boundary rather than a 1D feature
  */
 static void
@@ -283,11 +283,11 @@ extract_curvepoly_ring(const LWGEOM *ring, MeosArray *edges)
   switch (ring->type)
   {
     case LINETYPE:
-      emit_ring_edges(((const LWLINE *) ring)->points, edges, EDGE_POLY);
+      emit_ring_edges(((const LWLINE *) ring)->points, edges, EDGE_POLYSEG);
       break;
 
     case CIRCSTRINGTYPE:
-      emit_circstring_edges((const LWCIRCSTRING *) ring, edges, EDGE_POLY,
+      emit_circstring_edges((const LWCIRCSTRING *) ring, edges, EDGE_POLYSEG,
         EDGE_POLYARC);
       break;
 
