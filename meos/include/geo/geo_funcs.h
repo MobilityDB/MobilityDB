@@ -162,6 +162,15 @@ extern LWGEOM *lwpointarr_make_trajectory(LWGEOM **points, int count,
   interpType interp);
 extern bool ensure_valid_geo_geo(const GSERIALIZED *gs1,
   const GSERIALIZED *gs2);
+extern int geopoint_cmp(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
+extern bool geopoint_eq(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
+extern bool geopoint_same(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
+extern bool same_spatial_dimensionality(int16 flags1, int16 flags2);
+extern bool mline_type(const GSERIALIZED *gs);
+extern GSERIALIZED *geopoint_make(double x, double y, double z, bool hasz,
+  bool geodetic, int32_t srid);
+extern GSERIALIZED **geo_extract_elements(const GSERIALIZED *gs, int *count);
+extern GSERIALIZED *geo_serialize(const LWGEOM *geom);
 extern bool circle_type(const GSERIALIZED *gs);
 extern bool ensure_circle_type(const GSERIALIZED *gs);
 extern LWGEOM *lwcircle_make(double x, double y, double radius,

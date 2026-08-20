@@ -60,9 +60,6 @@
 /* Utility functions */
 
 extern void datum_point4d(Datum value, POINT4D *p);
-extern int geopoint_cmp(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
-extern bool geopoint_eq(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
-extern bool geopoint_same(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern bool datum_point_eq(Datum point1, Datum point2);
 extern bool datum_point_same(Datum point1, Datum point2);
 extern Datum datum2_point_eq(Datum point1, Datum point2);
@@ -71,8 +68,6 @@ extern Datum datum2_point_same(Datum point1, Datum point2);
 extern Datum datum2_point_nsame(Datum point1, Datum point2);
 extern Datum datum2_geom_centroid(Datum geo);
 extern Datum datum2_geog_centroid(Datum geo);
-extern GSERIALIZED **geo_extract_elements(const GSERIALIZED *gs, int *count);
-extern GSERIALIZED *geo_serialize(const LWGEOM *geom);
 
 /* Generic functions */
 
@@ -92,7 +87,6 @@ extern bool ensure_spatial_validity(const Temporal *temp1,
 extern int spheroid_init_from_srid(int32_t srid, SPHEROID *s);
 extern bool ensure_same_geodetic_tspatial_geo(const Temporal *temp,
   const GSERIALIZED *gs);
-extern bool same_spatial_dimensionality(int16 flags1, int16 flags2);
 extern bool same_dimensionality_tspatial_geo(const Temporal *temp,
   const GSERIALIZED *gs);
 extern bool ensure_same_dimensionality_tspatial_geo(const Temporal *temp,
@@ -116,7 +110,6 @@ extern bool ensure_valid_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 extern bool ensure_valid_tpoint_tpoint(const Temporal *temp1,
   const Temporal *temp2);
 
-extern bool mline_type(const GSERIALIZED *gs);
 
 /* Functions for extracting coordinates */
 
@@ -133,8 +126,6 @@ extern int eacomp_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
 /* Functions specializing the PostGIS functions ST_LineInterpolatePoint and
  * ST_LineLocatePoint */
 
-extern GSERIALIZED *geopoint_make(double x, double y, double z, bool hasz,
-  bool geodetic, int32_t srid);
 extern Datum pointsegm_interpolate(Datum start, Datum end,
   long double ratio);
 extern long double pointsegm_locate(Datum start, Datum end, Datum point,
