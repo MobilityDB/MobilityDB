@@ -1,0 +1,43 @@
+name: Check doc reference
+
+# Verifies that the manual's reference appendix is what the chapters project.
+# A reference row's anchor, names and description all belong to the chapter
+# entry it points at, so the appendix is generated rather than maintained
+# beside the chapters, and a hand edit to either side cannot drift unnoticed.
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/check-doc-reference.yml'
+      - 'tools/doc/**'
+      - 'doc/**'
+  pull_request:
+    paths:
+      - '.github/workflows/check-doc-reference.yml'
+      - 'tools/doc/**'
+      - 'doc/**'
+
+permissions:
+  contents: read
+
+jobs:
+  check-doc-reference:
+    name: Reference appendix is up to date
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install libxml2-utils
+        run: sudo apt-get update && sudo apt-get install -y libxml2-utils
+
+      - name: Fail if the appendix is not what the chapters project
+        run: python3 tools/doc/gen_reference.py --check
+
+      - name: Every chapter entry reaches the appendix exactly once
+        run: python3 tools/doc/gen_reference.py --audit
+
+      - name: Both manuals parse with the generated appendix
+        run: |
+          xmllint --noout --noent doc/mobilitydb-manual.xml
+          xmllint --noout --noent doc/es/mobilitydb-manual.xml

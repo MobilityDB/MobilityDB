@@ -1626,12 +1626,16 @@ SELECT eIntersects(tpcpatchSeq(ARRAY[
 			<para>The same bbox operator surface as <xref linkend="tpcpoint_bbox_ops" /> applies to <varname>tpcpatch</varname>. The predicate evaluates against the value's <varname>tpcbox</varname>, computed in O(1) per instant from the patch's embedded <varname>PCBOUNDS</varname>.</para>
 			<itemizedlist>
 				<listitem xml:id="tpcpatch_topo">
+					<indexterm significance="normal"><primary><varname>&amp;&amp;, @&gt;, &lt;@, ~=, -|-</varname></primary></indexterm>
 					<para>Topological predicates: <varname>&amp;&amp;</varname>, <varname>@&gt;</varname>, <varname>&lt;@</varname>, <varname>~=</varname>, <varname>-|-</varname>. See <xref linkend="tpcbox_topo" />.</para>
 				</listitem>
 				<listitem xml:id="tpcpatch_pos">
+					<indexterm significance="normal"><primary><varname>&lt;&lt;, &gt;&gt;, &lt;&lt;|, |&gt;&gt;, &lt;&lt;/, /&gt;&gt;, &lt;&lt;#, #&gt;&gt;</varname></primary></indexterm>
 					<para>Strict directional predicates on the X / Y / Z / time axes (<varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&lt;&lt;|</varname>, <varname>|&gt;&gt;</varname>, <varname>&lt;&lt;/</varname>, <varname>/&gt;&gt;</varname>, <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname>) and their "overlaps-or-X" variants (<varname>&amp;&lt;</varname>, <varname>&amp;&gt;</varname>, <varname>&amp;&lt;|</varname>, <varname>|&amp;&gt;</varname>, <varname>&amp;&lt;/</varname>, <varname>/&amp;&gt;</varname>, <varname>&amp;&lt;#</varname>, <varname>#&amp;&gt;</varname>). See <xref linkend="tpcbox_pos" />.</para>
 				</listitem>
 				<listitem xml:id="tpcpatch_knn">
+					<indexterm significance="normal"><primary><varname>|=|</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>nearestApproachDistance</varname></primary></indexterm>
 					<para>Nearest-approach distance (<varname>|=|</varname>) is KNN-orderable through the GiST opclass.</para>
 					<para><varname>nearestApproachDistance(tpcpatch,tpcbox) → float</varname></para>
 					<para><varname>nearestApproachDistance(tpcpatch,tpcpatch) → float</varname></para>
