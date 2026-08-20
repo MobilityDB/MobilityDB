@@ -849,6 +849,50 @@ geocircle_make(double x, double y, double radius, int32_t srid)
   return result;
 }
 
+/**
+ * @brief Return true if a geometry is a circle
+ * @details A circle is a curve polygon of a single ring, that ring a closed
+ * circular string of three points: the two ends, which are the same point,
+ * and the point opposite them. A ring of any other kind belongs to a curve
+ * polygon that bounds some other shape, and the members it carries are not
+ * the ones a circular string carries, so its kind is read before it is
+ * addressed as one.
+ */
+bool
+circle_type(const GSERIALIZED *gs)
+{
+  if (gserialized_get_type(gs) != CURVEPOLYTYPE)
+    return false;
+  LWGEOM *geo = lwgeom_from_gserialized(gs);
+  bool result = false;
+  if (lwgeom_count_rings(geo) == 1)
+  {
+    LWGEOM *ring = ((LWCURVEPOLY *) geo)->rings[0];
+    if (ring->type == CIRCSTRINGTYPE)
+    {
+      const POINTARRAY *points = ((LWCIRCSTRING *) ring)->points;
+      result = points->npoints == 3 && ptarray_is_closed(points);
+    }
+  }
+  lwgeom_free(geo);
+  return result;
+}
+
+/**
+ * @brief Ensure that the geometry/geography is a circle
+ */
+bool
+ensure_circle_type(const GSERIALIZED *gs)
+{
+  if (! circle_type(gs))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Only circle polygons accepted");
+    return false;
+  }
+  return true;
+}
+
 /*****************************************************************************
  * Point classification
  *****************************************************************************/

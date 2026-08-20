@@ -186,6 +186,24 @@ SELECT ST_AsText(round(cbuffer(geometry 'CurvePolygon(CircularString(2 5, 8 5, 2
  CURVEPOLYGON(CIRCULARSTRING(2 5,8 5,2 5))
 (1 row)
 
+SELECT asText(round(cbuffer(geometry 'CurvePolygon(CircularString(0 -1, 0 1, 0 -1))'), 6));
+        astext         
+-----------------------
+ Cbuffer(POINT(0 0),1)
+(1 row)
+
+SELECT asText(round(cbuffer(geometry 'CurvePolygon(CircularString(0 0, 2 2, 4 0, 2 -2, 0 0))'), 6));
+        astext         
+-----------------------
+ Cbuffer(POINT(2 0),2)
+(1 row)
+
+SELECT asText(round(cbuffer(geometry 'CurvePolygon(CompoundCurve(CircularString(0 0, 2 2, 4 0),(4 0, 0 0)))'), 6));
+        astext         
+-----------------------
+ Cbuffer(POINT(2 0),2)
+(1 row)
+
 SELECT asText(round(cbuffer(geometry 'Linestring(0 0, 10 0)'), 6));
         astext         
 -----------------------

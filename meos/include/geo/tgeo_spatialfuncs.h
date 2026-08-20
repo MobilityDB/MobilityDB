@@ -123,8 +123,6 @@ extern bool ensure_has_M_geo(const GSERIALIZED *gs);
 extern bool ensure_has_not_M_geo(const GSERIALIZED *gs);
 extern bool ensure_point_type(const GSERIALIZED *gs);
 extern bool ensure_mline_type(const GSERIALIZED *gs);
-extern bool circle_type(const GSERIALIZED *gs);
-extern bool ensure_circle_type(const GSERIALIZED *gs);
 extern bool ensure_not_empty(const GSERIALIZED *gs);
 extern bool ensure_valid_stbox_geo(const STBox *box, const GSERIALIZED *gs);
 extern bool ensure_valid_tspatial_geo(const Temporal *temp,

@@ -132,6 +132,8 @@ extern bool relate_point_on_boundary(double x, double y, Edge **edges,
   int nedges);
 extern int relate_point_in_area(double x, double y, Edge **edges, int nedges);
 
+extern bool circle_type(const GSERIALIZED *gs);
+extern bool ensure_circle_type(const GSERIALIZED *gs);
 extern LWGEOM *lwcircle_make(double x, double y, double radius,
   int32_t srid);
 extern GSERIALIZED *geocircle_make(double x, double y, double radius,
