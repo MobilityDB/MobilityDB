@@ -86,4 +86,12 @@ SELECT asGeoPose(tpose '[Pose(Point(8 47), 0)@2026-01-01,
 --    {"position":{"lat":48,"lon":9,"h":0},
 --     "angles":{"yaw":28.65,"pitch":0,"roll":0},
 --     "validTime":"2026-01-02"}]}
+</pre></li><li class="listitem"><a name="tpose_geopose_stream"></a><a class="indexterm" name="id10527"></a><p>Escribe una pose temporal como un Stream de OGC GeoPose</p><p><code class="varname">asGeoPoseStream(tpose,maxdecimaldigits int4=-1) → text</code></p><p>Un stream lleva los marcos de una Serie Irregular sin declarar cuántas poses hay ni cuándo terminan, ya que pueden llegar más. El estándar lo escribe como un <code class="varname">header</code>, que contiene el modelo de transición y el marco exterior, y un arreglo <code class="varname">streamElements</code> con un elemento por pose. El marco exterior es el plano tangente local Este-Norte-Arriba en la posición de la primera pose, de modo que la cabecera y cada elemento hablan de un mismo punto de tangencia.</p><p>La biblioteca C también escribe los dos documentos por partes, mediante <code class="varname">tpose_as_geopose_stream_header</code> y <code class="varname">tpose_as_geopose_stream_element</code>, para un productor que emite poses a medida que llegan. Una consulta devuelve un valor que ya posee entero, que es lo que esta función escribe.</p><pre class="programlisting">
+SELECT asGeoPoseStream(tpose 'Geodpose(Point(0 0 0), 1, 0, 0, 0)@2026-01-01', 6);
+/* {"header":{"transitionModel":{"authority":"/geopose/1.0","id":"none",
+   "parameters":"interpolation=None"},"outerFrame":{"authority":"/geopose/1.0",
+   "id":"LTP-ENU","parameters":"longitude=0&amp;latitude=0&amp;height=0&amp;crs=EPSG:4979"}},
+   "streamElements":[{"streamElement":{"frame":{"authority":"/geopose/1.0",
+   "id":"RotateTranslate","parameters":"translation=[0, 0, 0]&amp;rotation=[1, 0, 0, 0]"},
+   "validTime":1767254400000}}]} */
 </pre></li></ul></div></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch13s17.html">Anterior</a> </td><td width="20%" align="center"><a accesskey="u" href="ch13.html">Subir</a></td><td width="40%" align="right"> <a accesskey="n" href="ch14.html">Siguiente</a></td></tr><tr><td width="40%" align="left" valign="top">Indexación </td><td width="20%" align="center"><a accesskey="h" href="index.html">Inicio</a></td><td width="40%" align="right" valign="top"> Capítulo 14. Geometrías rígidas temporales</td></tr></table></div></body></html>
