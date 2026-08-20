@@ -80,7 +80,7 @@ CREATE OPERATOR ?= (
   LEFTARG = boolean, RIGHTARG = tbool,
   PROCEDURE = eEq,
   NEGATOR = %<>,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR ?= (
   LEFTARG = integer, RIGHTARG = tint,
@@ -104,7 +104,7 @@ CREATE OPERATOR ?= (
   LEFTARG = text, RIGHTARG = ttext,
   PROCEDURE = eEq,
   NEGATOR = %<>,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
 CREATE FUNCTION aEq(boolean, tbool)
@@ -135,7 +135,7 @@ CREATE OPERATOR %= (
   LEFTARG = boolean, RIGHTARG = tbool,
   PROCEDURE = aEq,
   NEGATOR = ?<>,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR %= (
   LEFTARG = integer, RIGHTARG = tint,
@@ -159,7 +159,7 @@ CREATE OPERATOR %= (
   LEFTARG = text, RIGHTARG = ttext,
   PROCEDURE = aEq,
   NEGATOR = ?<>,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
 CREATE FUNCTION eNe(boolean, tbool)
@@ -187,7 +187,7 @@ CREATE OPERATOR ?<> (
   LEFTARG = boolean, RIGHTARG = tbool,
   PROCEDURE = eNe,
   NEGATOR = %=,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR ?<> (
   LEFTARG = integer, RIGHTARG = tint,
@@ -211,7 +211,7 @@ CREATE OPERATOR ?<> (
   LEFTARG = text, RIGHTARG = ttext,
   PROCEDURE = eNe,
   NEGATOR = %=,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
 CREATE FUNCTION aNe(boolean, tbool)
@@ -239,7 +239,7 @@ CREATE OPERATOR %<> (
   LEFTARG = boolean, RIGHTARG = tbool,
   PROCEDURE = aNe,
   NEGATOR = ?=,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR %<> (
   LEFTARG = integer, RIGHTARG = tint,
@@ -263,7 +263,7 @@ CREATE OPERATOR %<> (
   LEFTARG = text, RIGHTARG = ttext,
   PROCEDURE = aNe,
   NEGATOR = ?=,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
 CREATE FUNCTION eLt(integer, tint)
@@ -305,7 +305,7 @@ CREATE OPERATOR ?< (
   LEFTARG = text, RIGHTARG = ttext,
   PROCEDURE = eLt,
   NEGATOR = %>=,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
 CREATE FUNCTION aLt(integer, tint)
@@ -347,7 +347,7 @@ CREATE OPERATOR %< (
   LEFTARG = text, RIGHTARG = ttext,
   PROCEDURE = aLt,
   NEGATOR = ?>=,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
 CREATE FUNCTION eLe(integer, tint)
@@ -389,7 +389,7 @@ CREATE OPERATOR ?<= (
   LEFTARG = text, RIGHTARG = ttext,
   PROCEDURE = eLe,
   NEGATOR = %>,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
 CREATE FUNCTION aLe(integer, tint)
@@ -431,7 +431,7 @@ CREATE OPERATOR %<= (
   LEFTARG = text, RIGHTARG = ttext,
   PROCEDURE = aLe,
   NEGATOR = ?>,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
 CREATE FUNCTION eGt(integer, tint)
@@ -473,7 +473,7 @@ CREATE OPERATOR ?> (
   LEFTARG = text, RIGHTARG = ttext,
   PROCEDURE = eGt,
   NEGATOR = %<=,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
 CREATE FUNCTION aGt(integer, tint)
@@ -515,7 +515,7 @@ CREATE OPERATOR %> (
   LEFTARG = text, RIGHTARG = ttext,
   PROCEDURE = aGt,
   NEGATOR = ?<=,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
 CREATE FUNCTION eGe(integer, tint)
@@ -557,7 +557,7 @@ CREATE OPERATOR ?>= (
   LEFTARG = text, RIGHTARG = ttext,
   PROCEDURE = eGe,
   NEGATOR = %<,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
 CREATE FUNCTION aGe(integer, tint)
@@ -599,7 +599,7 @@ CREATE OPERATOR %>= (
   LEFTARG = text, RIGHTARG = ttext,
   PROCEDURE = aGe,
   NEGATOR = ?<,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
 /*****************************************************************************/
@@ -632,7 +632,7 @@ CREATE OPERATOR ?= (
   LEFTARG = tbool, RIGHTARG = boolean,
   PROCEDURE = eEq,
   NEGATOR = %<>,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR ?= (
   LEFTARG = tint, RIGHTARG = integer,
@@ -656,7 +656,7 @@ CREATE OPERATOR ?= (
   LEFTARG = ttext, RIGHTARG = text,
   PROCEDURE = eEq,
   NEGATOR = %<>,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
 CREATE FUNCTION aEq(tbool, boolean)
@@ -687,7 +687,7 @@ CREATE OPERATOR %= (
   LEFTARG = tbool, RIGHTARG = boolean,
   PROCEDURE = aEq,
   NEGATOR = ?<>,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR %= (
   LEFTARG = tint, RIGHTARG = integer,
@@ -711,7 +711,7 @@ CREATE OPERATOR %= (
   LEFTARG = ttext, RIGHTARG = text,
   PROCEDURE = aEq,
   NEGATOR = ?<>,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
 CREATE FUNCTION eNe(tbool, boolean)
@@ -739,7 +739,7 @@ CREATE OPERATOR ?<> (
   LEFTARG = tbool, RIGHTARG = boolean,
   PROCEDURE = eNe,
   NEGATOR = %=,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR ?<> (
   LEFTARG = tint, RIGHTARG = integer,
@@ -763,7 +763,7 @@ CREATE OPERATOR ?<> (
   LEFTARG = ttext, RIGHTARG = text,
   PROCEDURE = eNe,
   NEGATOR = %=,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
 CREATE FUNCTION aNe(tbool, boolean)
@@ -791,7 +791,7 @@ CREATE OPERATOR %<> (
   LEFTARG = tbool, RIGHTARG = boolean,
   PROCEDURE = aNe,
   NEGATOR = ?=,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR %<> (
   LEFTARG = tint, RIGHTARG = integer,
@@ -815,7 +815,7 @@ CREATE OPERATOR %<> (
   LEFTARG = ttext, RIGHTARG = text,
   PROCEDURE = aNe,
   NEGATOR = ?=,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
 CREATE FUNCTION eLt(tint, integer)
@@ -857,7 +857,7 @@ CREATE OPERATOR ?< (
   LEFTARG = ttext, RIGHTARG = text,
   PROCEDURE = eLt,
   NEGATOR = %>=,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
 CREATE FUNCTION aLt(tint, integer)
@@ -899,7 +899,7 @@ CREATE OPERATOR %< (
   LEFTARG = ttext, RIGHTARG = text,
   PROCEDURE = aLt,
   NEGATOR = ?>=,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
 CREATE FUNCTION eLe(tint, integer)
@@ -941,7 +941,7 @@ CREATE OPERATOR ?<= (
   LEFTARG = ttext, RIGHTARG = text,
   PROCEDURE = eLe,
   NEGATOR = %>,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
 CREATE FUNCTION aLe(tint, integer)
@@ -983,7 +983,7 @@ CREATE OPERATOR %<= (
   LEFTARG = ttext, RIGHTARG = text,
   PROCEDURE = aLe,
   NEGATOR = ?>,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
 CREATE FUNCTION eGt(tint, integer)
@@ -1025,7 +1025,7 @@ CREATE OPERATOR ?> (
   LEFTARG = ttext, RIGHTARG = text,
   PROCEDURE = eGt,
   NEGATOR = %<=,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
 CREATE FUNCTION aGt(tint, integer)
@@ -1067,7 +1067,7 @@ CREATE OPERATOR %> (
   LEFTARG = ttext, RIGHTARG = text,
   PROCEDURE = aGt,
   NEGATOR = ?<=,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
 CREATE FUNCTION eGe(tint, integer)
@@ -1109,7 +1109,7 @@ CREATE OPERATOR ?>= (
   LEFTARG = ttext, RIGHTARG = text,
   PROCEDURE = eGe,
   NEGATOR = %<,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
 CREATE FUNCTION aGe(tint, integer)
@@ -1151,7 +1151,7 @@ CREATE OPERATOR %>= (
   LEFTARG = ttext, RIGHTARG = text,
   PROCEDURE = aGe,
   NEGATOR = ?<,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
 /*****************************************************************************/
@@ -1184,7 +1184,7 @@ CREATE OPERATOR ?= (
   LEFTARG = tbool, RIGHTARG = tbool,
   PROCEDURE = eEq,
   NEGATOR = %<>,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR ?= (
   LEFTARG = tint, RIGHTARG = tint,
@@ -1208,7 +1208,7 @@ CREATE OPERATOR ?= (
   LEFTARG = ttext, RIGHTARG = ttext,
   PROCEDURE = eEq,
   NEGATOR = %<>,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
 CREATE FUNCTION aEq(tbool, tbool)
@@ -1239,7 +1239,7 @@ CREATE OPERATOR %= (
   LEFTARG = tbool, RIGHTARG = tbool,
   PROCEDURE = aEq,
   NEGATOR = ?<>,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR %= (
   LEFTARG = tint, RIGHTARG = tint,
@@ -1263,7 +1263,7 @@ CREATE OPERATOR %= (
   LEFTARG = ttext, RIGHTARG = ttext,
   PROCEDURE = aEq,
   NEGATOR = ?<>,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
 CREATE FUNCTION eNe(tbool, tbool)
@@ -1291,7 +1291,7 @@ CREATE OPERATOR ?<> (
   LEFTARG = tbool, RIGHTARG = tbool,
   PROCEDURE = eNe,
   NEGATOR = %=,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR ?<> (
   LEFTARG = tint, RIGHTARG = tint,
@@ -1315,7 +1315,7 @@ CREATE OPERATOR ?<> (
   LEFTARG = ttext, RIGHTARG = ttext,
   PROCEDURE = eNe,
   NEGATOR = %=,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
 CREATE FUNCTION aNe(tbool, tbool)
@@ -1343,7 +1343,7 @@ CREATE OPERATOR %<> (
   LEFTARG = tbool, RIGHTARG = tbool,
   PROCEDURE = aNe,
   NEGATOR = ?=,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR %<> (
   LEFTARG = tint, RIGHTARG = tint,
@@ -1367,7 +1367,7 @@ CREATE OPERATOR %<> (
   LEFTARG = ttext, RIGHTARG = ttext,
   PROCEDURE = aNe,
   NEGATOR = ?=,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
 CREATE FUNCTION eLt(tint, tint)
@@ -1409,7 +1409,7 @@ CREATE OPERATOR ?< (
   LEFTARG = ttext, RIGHTARG = ttext,
   PROCEDURE = eLt,
   NEGATOR = %>=,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
 CREATE FUNCTION aLt(tint, tint)
@@ -1451,7 +1451,7 @@ CREATE OPERATOR %< (
   LEFTARG = ttext, RIGHTARG = ttext,
   PROCEDURE = aLt,
   NEGATOR = ?>=,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
 CREATE FUNCTION eLe(tint, tint)
@@ -1493,7 +1493,7 @@ CREATE OPERATOR ?<= (
   LEFTARG = ttext, RIGHTARG = ttext,
   PROCEDURE = eLe,
   NEGATOR = %>,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
 CREATE FUNCTION aLe(tint, tint)
@@ -1535,7 +1535,7 @@ CREATE OPERATOR %<= (
   LEFTARG = ttext, RIGHTARG = ttext,
   PROCEDURE = aLe,
   NEGATOR = ?>,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
 CREATE FUNCTION eGt(tint, tint)
@@ -1577,7 +1577,7 @@ CREATE OPERATOR ?> (
   LEFTARG = ttext, RIGHTARG = ttext,
   PROCEDURE = eGt,
   NEGATOR = %<=,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
 CREATE FUNCTION aGt(tint, tint)
@@ -1619,7 +1619,7 @@ CREATE OPERATOR %> (
   LEFTARG = ttext, RIGHTARG = ttext,
   PROCEDURE = aGt,
   NEGATOR = ?<=,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
 CREATE FUNCTION eGe(tint, tint)
@@ -1661,7 +1661,7 @@ CREATE OPERATOR ?>= (
   LEFTARG = ttext, RIGHTARG = ttext,
   PROCEDURE = eGe,
   NEGATOR = %<,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
 CREATE FUNCTION aGe(tint, tint)
@@ -1703,7 +1703,7 @@ CREATE OPERATOR %>= (
   LEFTARG = ttext, RIGHTARG = ttext,
   PROCEDURE = aGe,
   NEGATOR = ?<,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
 /*****************************************************************************

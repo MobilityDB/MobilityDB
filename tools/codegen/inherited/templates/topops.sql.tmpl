@@ -108,13 +108,13 @@ CREATE OPERATOR @> (
   PROCEDURE = contains,
   LEFTARG = tstzspan, RIGHTARG = {TEMP},
   COMMUTATOR = <@,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
 );
 CREATE OPERATOR @> (
   PROCEDURE = contains,
   LEFTARG = {TEMP}, RIGHTARG = tstzspan,
   COMMUTATOR = <@,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
 );
 
 /*****************************************************************************/
@@ -128,7 +128,7 @@ CREATE OPERATOR @> (
   PROCEDURE = contains,
   LEFTARG = stbox, RIGHTARG = {TEMP},
   COMMUTATOR = <@,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+  RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
 );
 
 CREATE FUNCTION contains({TEMP}, stbox)
@@ -144,13 +144,13 @@ CREATE OPERATOR @> (
   PROCEDURE = contains,
   LEFTARG = {TEMP}, RIGHTARG = stbox,
   COMMUTATOR = <@,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+  RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
 );
 CREATE OPERATOR @> (
   PROCEDURE = contains,
   LEFTARG = {TEMP}, RIGHTARG = {TEMP},
   COMMUTATOR = <@,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+  RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
 );
 
 /*****************************************************************************
@@ -170,13 +170,13 @@ CREATE OPERATOR <@ (
   PROCEDURE = contained,
   LEFTARG = tstzspan, RIGHTARG = {TEMP},
   COMMUTATOR = @>,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
 );
 CREATE OPERATOR <@ (
   PROCEDURE = contained,
   LEFTARG = {TEMP}, RIGHTARG = tstzspan,
   COMMUTATOR = @>,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
 );
 
 /*****************************************************************************/
@@ -190,7 +190,7 @@ CREATE OPERATOR <@ (
   PROCEDURE = contained,
   LEFTARG = stbox, RIGHTARG = {TEMP},
   COMMUTATOR = @>,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+  RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
 );
 
 CREATE FUNCTION contained({TEMP}, stbox)
@@ -206,13 +206,13 @@ CREATE OPERATOR <@ (
   PROCEDURE = contained,
   LEFTARG = {TEMP}, RIGHTARG = stbox,
   COMMUTATOR = @>,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+  RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
 );
 CREATE OPERATOR <@ (
   PROCEDURE = contained,
   LEFTARG = {TEMP}, RIGHTARG = {TEMP},
   COMMUTATOR = @>,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+  RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
 );
 
 /*****************************************************************************
@@ -232,13 +232,13 @@ CREATE OPERATOR && (
   PROCEDURE = overlaps,
   LEFTARG = tstzspan, RIGHTARG = {TEMP},
   COMMUTATOR = &&,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
 );
 CREATE OPERATOR && (
   PROCEDURE = overlaps,
   LEFTARG = {TEMP}, RIGHTARG = tstzspan,
   COMMUTATOR = &&,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
 );
 
 /*****************************************************************************/
@@ -252,7 +252,7 @@ CREATE OPERATOR && (
   PROCEDURE = overlaps,
   LEFTARG = stbox, RIGHTARG = {TEMP},
   COMMUTATOR = &&,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+  RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
 );
 
 CREATE FUNCTION overlaps({TEMP}, stbox)
@@ -268,13 +268,13 @@ CREATE OPERATOR && (
   PROCEDURE = overlaps,
   LEFTARG = {TEMP}, RIGHTARG = stbox,
   COMMUTATOR = &&,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+  RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
 );
 CREATE OPERATOR && (
   PROCEDURE = overlaps,
   LEFTARG = {TEMP}, RIGHTARG = {TEMP},
   COMMUTATOR = &&,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+  RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
 );
 
 /*****************************************************************************
@@ -294,13 +294,13 @@ CREATE OPERATOR ~= (
   PROCEDURE = same,
   LEFTARG = tstzspan, RIGHTARG = {TEMP},
   COMMUTATOR = ~=,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
 );
 CREATE OPERATOR ~= (
   PROCEDURE = same,
   LEFTARG = {TEMP}, RIGHTARG = tstzspan,
   COMMUTATOR = ~=,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
 );
 
 /*****************************************************************************/
@@ -314,7 +314,7 @@ CREATE OPERATOR ~= (
   PROCEDURE = same,
   LEFTARG = stbox, RIGHTARG = {TEMP},
   COMMUTATOR = ~=,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+  RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
 );
 
 CREATE FUNCTION same({TEMP}, stbox)
@@ -330,13 +330,13 @@ CREATE OPERATOR ~= (
   PROCEDURE = same,
   LEFTARG = {TEMP}, RIGHTARG = stbox,
   COMMUTATOR = ~=,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+  RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
 );
 CREATE OPERATOR ~= (
   PROCEDURE = same,
   LEFTARG = {TEMP}, RIGHTARG = {TEMP},
   COMMUTATOR = ~=,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+  RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
 );
 
 /*****************************************************************************
@@ -356,13 +356,13 @@ CREATE OPERATOR -|- (
   PROCEDURE = adjacent,
   LEFTARG = tstzspan, RIGHTARG = {TEMP},
   COMMUTATOR = -|-,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
 );
 CREATE OPERATOR -|- (
   PROCEDURE = adjacent,
   LEFTARG = {TEMP}, RIGHTARG = tstzspan,
   COMMUTATOR = -|-,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
 );
 
 /*****************************************************************************/
@@ -376,7 +376,7 @@ CREATE OPERATOR -|- (
   PROCEDURE = adjacent,
   LEFTARG = stbox, RIGHTARG = {TEMP},
   COMMUTATOR = -|-,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+  RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
 );
 
 CREATE FUNCTION adjacent({TEMP}, stbox)
@@ -392,13 +392,13 @@ CREATE OPERATOR -|- (
   PROCEDURE = adjacent,
   LEFTARG = {TEMP}, RIGHTARG = stbox,
   COMMUTATOR = -|-,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+  RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
 );
 CREATE OPERATOR -|- (
   PROCEDURE = adjacent,
   LEFTARG = {TEMP}, RIGHTARG = {TEMP},
   COMMUTATOR = -|-,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+  RESTRICT = {SEL}_sel, JOIN = {SEL}_joinsel
 );
 
 /*****************************************************************************/

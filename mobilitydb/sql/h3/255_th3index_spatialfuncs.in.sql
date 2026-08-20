@@ -126,12 +126,12 @@ CREATE FUNCTION eEq(th3index, h3indexset)
 CREATE OPERATOR ?= (
   LEFTARG = h3indexset, RIGHTARG = th3index,
   PROCEDURE = eEq,
-  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR ?= (
   LEFTARG = th3index, RIGHTARG = h3indexset,
   PROCEDURE = eEq,
-  RESTRICT = tnumber_sel, JOIN = tnumber_joinsel
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
 /******************************************************************************/

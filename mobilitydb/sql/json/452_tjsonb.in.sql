@@ -626,13 +626,13 @@ CREATE OPERATOR < (
   LEFTARG = tjsonb, RIGHTARG = tjsonb,
   PROCEDURE = lt,
   COMMUTATOR = >, NEGATOR = >=,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = tjsonb, RIGHTARG = tjsonb,
   PROCEDURE = le,
   COMMUTATOR = >=, NEGATOR = >,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR = (
   LEFTARG = tjsonb, RIGHTARG = tjsonb,
@@ -650,13 +650,13 @@ CREATE OPERATOR >= (
   LEFTARG = tjsonb, RIGHTARG = tjsonb,
   PROCEDURE = ge,
   COMMUTATOR = <=, NEGATOR = <,
-  RESTRICT = scalargtsel, JOIN = scalargtjoinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR > (
   LEFTARG = tjsonb, RIGHTARG = tjsonb,
   PROCEDURE = gt,
   COMMUTATOR = <, NEGATOR = <=,
-  RESTRICT = scalargtsel, JOIN = scalargtjoinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
 CREATE OPERATOR CLASS tjsonb_btree_ops
