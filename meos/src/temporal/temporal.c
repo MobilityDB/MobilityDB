@@ -797,7 +797,12 @@ meos_full_version(void)
   PJ_INFO pji = proj_info();
   proj_vers = pji.version;
 #endif
+  /* A build carrying no GEOS reports none */
+#if GEOS
   const char *geos_vers = GEOSversion();
+#else
+  const char *geos_vers = "none";
+#endif
   const char *json_c_vers = json_c_version();
 
   char *result = palloc(MOBDB_VERSION_STR_MAXLEN);
