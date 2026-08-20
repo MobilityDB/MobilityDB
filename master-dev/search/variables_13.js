@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['radius_0',['radius',['../structSPHEROID_a2ec41241699a094e4f98928220c045c7.html#a2ec41241699a094e4f98928220c045c7',1,'SPHEROID::radius()'],['../structCircle_a5a0212ba705f57d762bd6b202e3d10ed.html#a5a0212ba705f57d762bd6b202e3d10ed',1,'Circle::radius()'],['../structEdge_aa855ab4dcc07efe8b2ba807bcd8ed978.html#aa855ab4dcc07efe8b2ba807bcd8ed978',1,'Edge::radius()'],['../structCbuffer_a121a38c66ff48003c153580ace3679be.html#a121a38c66ff48003c153580ace3679be',1,'Cbuffer::radius()']]],
+  ['radius_0',['radius',['../structEdge_aa855ab4dcc07efe8b2ba807bcd8ed978.html#aa855ab4dcc07efe8b2ba807bcd8ed978',1,'Edge::radius()'],['../structSPHEROID_a2ec41241699a094e4f98928220c045c7.html#a2ec41241699a094e4f98928220c045c7',1,'SPHEROID::radius()'],['../structCircle_a5a0212ba705f57d762bd6b202e3d10ed.html#a5a0212ba705f57d762bd6b202e3d10ed',1,'Circle::radius()'],['../structCbuffer_a121a38c66ff48003c153580ace3679be.html#a121a38c66ff48003c153580ace3679be',1,'Cbuffer::radius()']]],
   ['range_1',['range',['../structConsiderSplitContext_ab3ac677738b07b65c855008d7fa67595.html#ab3ac677738b07b65c855008d7fa67595',1,'ConsiderSplitContext']]],
   ['raster_5fone_5fband_2',['raster_one_band',['../raster__test_8c_a434341904121bd4c04c0380b35c2553e.html#a434341904121bd4c04c0380b35c2553e',1,'raster_test.c']]],
   ['raster_5ftwo_5fbands_3',['raster_two_bands',['../raster__test_8c_a1bce68de22950aabe861dccd2e131ccf.html#a1bce68de22950aabe861dccd2e131ccf',1,'raster_test.c']]],
