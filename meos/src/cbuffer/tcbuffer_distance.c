@@ -1864,10 +1864,11 @@ cbuffersegm_edge_crit_in_t(double e, double q, double v, double dr2, double r_su
   double diff = v - dr2sq;
   double aa = v * diff;
   double bb = -2.0 * q * diff;
-  double cc = q * q - dr2sq * e;
-  double disc = bb * bb - 4.0 * aa * cc;
+  /* Same reduction as the sibling in s: 4 diff dr2^2 (v e - q^2), which the
+   * Cauchy-Schwarz slack of E and V keeps non-negative */
+  double disc = 4.0 * diff * dr2sq * (v * e - q * q);
   if (disc < 0.0)
-    return;
+    disc = 0.0;
   double sq = sqrt(disc);
   for (int sign = -1; sign <= 1; sign += 2)
   {
@@ -1907,10 +1908,16 @@ cbuffersegm_edge_crit_in_s(double e, double p, double u, double dr1,
   double diff = u - dr1sq;
   double aa = u * diff;
   double bb = 2.0 * p * diff;
-  double cc = p * p - dr1sq * e;
-  double disc = bb * bb - 4.0 * aa * cc;
+  /* The discriminant reduces to 4 diff dr1^2 (u e - p^2), which is never
+   * negative: diff is positive above, and u e - p^2 is the Cauchy-Schwarz
+   * slack of E and U.  Taking it in that form rather than as bb^2 - 4 aa cc
+   * keeps the two products from cancelling: with a radius that holds over the
+   * segment, dr1 is zero and the subtraction of two equal quantities rounds
+   * to a small negative, which reads as no critical point and leaves the
+   * minimum of the segment at whichever endpoint is nearer */
+  double disc = 4.0 * diff * dr1sq * (u * e - p * p);
   if (disc < 0.0)
-    return;
+    disc = 0.0;
   double sq = sqrt(disc);
   for (int sign = -1; sign <= 1; sign += 2)
   {
