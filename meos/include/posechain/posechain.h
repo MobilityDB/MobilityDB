@@ -105,6 +105,17 @@ extern bool ensure_valid_posechainset_posechain(const Set *s,
 extern PoseChain *posechain_parse(const char **str, bool end);
 extern char *posechain_wkt_out(const PoseChain *pc, bool extended, int maxdd);
 
+/* Interpolation functions */
+
+extern bool ensure_same_count_posechain(const PoseChain *pc1,
+  const PoseChain *pc2);
+extern PoseChain *posechainsegm_interpolate(const PoseChain *start,
+  const PoseChain *end, double ratio);
+extern long double posechainsegm_locate(const PoseChain *start,
+  const PoseChain *end, const PoseChain *value);
+extern bool posechain_collinear(const PoseChain *pc1, const PoseChain *pc2,
+  const PoseChain *pc3, double ratio);
+
 /* Transformation functions */
 
 extern Datum datum_posechain_round(Datum pc, Datum size);

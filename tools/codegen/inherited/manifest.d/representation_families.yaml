@@ -281,6 +281,43 @@ representation_families:
     - asEWKB
     - asHexWKB
     - asHexEWKB
+- family: posechain
+  file: mobilitydb/sql/posechain/552_tposechain.in.sql
+  reference: true
+  begin: "\n   * Input/output from (E)WKT, (E)WKB, HexEWKB, and MFJSON representation\n"
+  end: "\n * Constructors\n"
+  temps:
+  - temp: tposechain
+    maxdd: true
+  syms:
+    FromText: Tspatial_from_ewkt
+    FromEWKT: Tspatial_from_ewkt
+    asText: Tspatial_as_text
+    asEWKT: Tspatial_as_ewkt
+    asEWKB: Tspatial_as_ewkb
+    asHexEWKB: Tspatial_as_hexewkb
+  arrsyms:
+    asText: Spatialarr_as_text
+    asEWKT: Spatialarr_as_ewkt
+  blocks:
+  - lit: "/*****************************************************************************\n   * Input/output from (E)WKT, (E)WKB, HexEWKB, and MFJSON representation\n   *****************************************************************************/"
+  - ops:
+    - FromText
+    - FromEWKT
+    - FromMFJSON
+  - ops:
+    - FromBinary
+    - FromEWKB
+    - FromHexEWKB
+  - lit: /*****************************************************************************/
+  - ops:
+    - asText
+    - asEWKT
+    - asMFJSON
+    - asBinary
+    - asEWKB
+    - asHexWKB
+    - asHexEWKB
 - family: pointcloud
   file: mobilitydb/sql/pointcloud/420_tpcpoint.in.sql
   reference: true

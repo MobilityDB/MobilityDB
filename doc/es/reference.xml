@@ -124,7 +124,7 @@
 					<entry><varname>posechainset</varname></entry>
 					<entry><varname/></entry>
 					<entry><varname/></entry>
-					<entry><varname/></entry>
+					<entry><varname>tposechain</varname></entry>
 				</row>
 				<row>
 					<entry><emphasis role="bold"><varname>npoint</varname></emphasis></entry>
@@ -1716,6 +1716,96 @@
 					</listitem>
 					<listitem>
 						<para><link linkend="posechain_same"><varname>~=</varname></link>: Devuelve verdadero si dos cadenas de poses son iguales hasta la tolerancia de la comparación de valores de punto flotante</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+		</sect2>
+		<sect2>
+			<title>Cadenas de poses temporales</title>
+			<sect3>
+				<title>Entrada y salida</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tposechain_asText_temp"><varname>asText</varname>, <varname>asEWKT</varname></link>: Devuelve la representación de texto conocido (WKT) o de texto conocido extendido (EWKT)</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tposechainFromText"><varname>tposechainFromText</varname>, <varname>tposechainFromBinary</varname>, <varname>tposechainFromHexEWKB</varname></link>: Devuelve una cadena de poses temporal a partir de su representación textual o binaria</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tposechain_asMFJSON"><varname>asMFJSON</varname></link>: Devuelve la representación JSON de Moving Features</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+			<sect3>
+				<title>Constructores</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tposechain_constructor"><varname>tposechain</varname></link>: Construye una cadena de poses temporal a partir de una cadena de poses y un valor de tiempo</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+			<sect3>
+				<title>Conversiones</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tposechain_to_tpose"><varname>tpose</varname></link>: Convierte una cadena de poses temporal en una pose temporal</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+			<sect3>
+				<title>Funciones de acceso</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="numLinks"><varname>numLinks</varname></link>: Devuelve el número de eslabones que tiene todo valor de una cadena de poses temporal</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tposechain_getValue"><varname>getValue</varname>, <varname>getValues</varname>, <varname>timeSpan</varname></link>: Devuelve el valor de un instante temporal, el conjunto de valores o el lapso de tiempo</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tposechain_stbox"><varname>stbox</varname></link>: Devuelve la caja espaciotemporal de una cadena de poses temporal</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+			<sect3>
+				<title>Funciones de transformación</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tposechain_round"><varname>round</varname>, <varname>shiftTime</varname></link>: Redondea las coordenadas a un número de decimales, o desplaza el tiempo</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+			<sect3>
+				<title>Sistema de referencia espacial</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tposechain_SRID"><varname>SRID</varname>, <varname>setSRID</varname></link>: Devuelve o establece el identificador de referencia espacial del marco exterior de una cadena de poses temporal</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tposechain_transform"><varname>transform</varname>, <varname>transformPipeline</varname></link>: Transforma a un identificador de referencia espacial</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+			<sect3>
+				<title>Funciones de restricción</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tposechain_atTime"><varname>atTime</varname>, <varname>atValue</varname></link>: Restringe una cadena de poses temporal a un tiempo o a un valor</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+			<sect3>
+				<title>Funciones y operadores de comparación</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tposechain_eq"><varname>eEq</varname></link>: Compara dos cadenas de poses temporales, o una cadena de poses temporal y una cadena de poses</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+			<sect3>
+				<title>Operadores topológicos y de posición</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tposechain_overlaps"><varname>&amp;&amp;</varname>, <varname>&lt;&lt;#</varname></link>: Compara la caja delimitadora de una cadena de poses temporal con otra caja delimitadora</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

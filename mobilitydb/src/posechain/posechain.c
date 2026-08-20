@@ -47,6 +47,7 @@
 #include <meos.h>
 #include <meos_pose.h>
 #include <meos_posechain.h>
+#include "temporal/span.h"
 #include "temporal/type_inout.h"
 #include "temporal/type_util.h"
 #include "geo/stbox.h"
@@ -431,6 +432,37 @@ Posechain_to_stbox(PG_FUNCTION_ARGS)
 {
   PoseChain *pc = PG_GETARG_POSECHAIN_P(0);
   PG_RETURN_STBOX_P(posechain_to_stbox(pc));
+}
+
+PGDLLEXPORT Datum Posechain_timestamptz_to_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Posechain_timestamptz_to_stbox);
+/**
+ * @ingroup mobilitydb_posechain_base_box
+ * @brief Construct a spatiotemporal box from a pose chain and a timestamptz
+ * @sqlfn stbox()
+ */
+Datum
+Posechain_timestamptz_to_stbox(PG_FUNCTION_ARGS)
+{
+  PoseChain *pc = PG_GETARG_POSECHAIN_P(0);
+  TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
+  PG_RETURN_STBOX_P(posechain_timestamptz_to_stbox(pc, t));
+}
+
+PGDLLEXPORT Datum Posechain_tstzspan_to_stbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Posechain_tstzspan_to_stbox);
+/**
+ * @ingroup mobilitydb_posechain_base_box
+ * @brief Construct a spatiotemporal box from a pose chain and a timestamptz
+ * span
+ * @sqlfn stbox()
+ */
+Datum
+Posechain_tstzspan_to_stbox(PG_FUNCTION_ARGS)
+{
+  PoseChain *pc = PG_GETARG_POSECHAIN_P(0);
+  Span *s = PG_GETARG_SPAN_P(1);
+  PG_RETURN_STBOX_P(posechain_tstzspan_to_stbox(pc, s));
 }
 
 /*****************************************************************************

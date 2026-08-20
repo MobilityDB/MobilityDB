@@ -37,8 +37,9 @@ Temporal<T>              temporal_type      = ALL temporal types            (cat
   ├── TNumber<T>         tnumber_type       = tint, tbigint, tfloat          (catalog:1214)
   │     ├── TInt   ├── TBigint  └── TFloat
   └── TSpatial<T>        tspatial_type      = tgeompoint tgeogpoint tnpoint tpose
-        │                                     tcbuffer tgeometry tgeography
-        │                                     trgeometry th3index tquadbin (10) (catalog:1276)
+        │                                     tposechain tcbuffer tgeometry
+        │                                     tgeography trgeometry th3index
+        │                                     tquadbin (11)                    (catalog:1276)
         ├── TGeo<T>      tgeo_type          = tgeometry, tgeography          (catalog:1325)
         │   (all)        tgeo_type_all      = + tgeompoint + tgeogpoint (4)   (catalog:1350)
         │     ├── TGeometry  ├── TGeography
@@ -48,17 +49,30 @@ Temporal<T>              temporal_type      = ALL temporal types            (cat
         │     ├── TH3Index  └── TQuadbin
         ├── TPointcloud  tpointcloud_temptype = tpcpoint, tpcpatch  (#if POINTCLOUD) (catalog:1204)
         │     ├── TPcpoint  └── TPcpatch
-        └── (TSpatial, no intermediate): tcbuffer, tnpoint, tpose, trgeometry
+        └── (TSpatial, no intermediate): tcbuffer, tnpoint, tpose, tposechain,
+                                         trgeometry
 ```
 
-- `tcbuffer`/`tnpoint`/`tpose`/`trgeometry` inherit `Temporal<T>` + `TSpatial<T>`
-  but **not** the `TGeo<T>`/`TPoint<T>`-only surface.
-- **`posechain`** (`mobilitydb/sql/posechain/550_posechain.in.sql`) is a static
-  base type that no temporal type stands on yet, so it inherits nothing from
-  `Temporal<T>`. Its generated surface is the one `representation_families`
-  entry `posechain_base`; the type file, its accessors and its comparisons are
-  hand-written, as `pose_base`'s are. `spatial_basetype()` admits it, so the
-  SRID and bounding-box dispatchers reach it.
+- `tcbuffer`/`tnpoint`/`tpose`/`tposechain`/`trgeometry` inherit `Temporal<T>` +
+  `TSpatial<T>` but **not** the `TGeo<T>`/`TPoint<T>`-only surface.
+- **`posechain`** is a base type carrying a nested chain of reference frames.
+  Its own surface is `550_posechain.in.sql` and its set type is
+  `551_posechainset.in.sql`; the type files, their accessors and their
+  comparisons are hand-written, as `pose_base`'s are, and their generated
+  surface is the `representation_families` entries `posechain_base` and
+  `posechainset_*`. `spatial_basetype()` admits it, so the SRID and
+  bounding-box dispatchers reach it.
+- **`tposechain`** stands on it, so the family deploys the inherited temporal
+  surface: `552_tposechain.in.sql` (the type file, I/O, constructors,
+  conversions, accessors, transformations and restrictions),
+  `554_tposechain_compops.in.sql`, `558_tposechain_topops.in.sql` and
+  `559_tposechain_posops.in.sql`. `553_tposechain_spatialfuncs.in.sql` is
+  hand-written beside its nine siblings and carries the spatial reference
+  system alone — `SRID`, `setSRID`, `transform` and `transformPipeline`, each
+  reading the outer link, which is the only link that names a frame.
+  ⛔ The family carries no distance, no spatial relationships and no index
+  file: a pose chain has no distance function, and the ordering operator waits
+  on the kNN question.
 - **`Tcell<T>`** (`tcellindex_type`, prefix `tcellindex_`) is a real abstract class
   factored via the `DggsCellOps` descriptor (§5a). Its cell families are **discrete**:
   they drop the continuous inherited aspects (distance, tempspatialrels).

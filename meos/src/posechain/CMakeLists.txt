@@ -1,5 +1,8 @@
 set(POSECHAIN_SOURCES
   posechain.c
+  tposechain.c
+  tposechain_boxops.c
+  tposechain_compops.c
 )
 
 if(MEOS)

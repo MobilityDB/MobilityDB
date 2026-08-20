@@ -43,6 +43,12 @@ accessor_families:
     types:
       - {temp: tpose, base: pose, baseset: poseset}
 
+  - family:    posechain
+    file:      mobilitydb/sql/posechain/552_tposechain.in.sql
+    reference: true
+    types:
+      - {temp: tposechain, base: posechain, baseset: posechainset}
+
   # trgeometry stores temporal poses with the reference geometry appended to the
   # bytestream; getValue/getValues expose the raw pose (base pose / poseset), while
   # startValue/endValue/valueN/valueAtTimestamp materialize the geometry (valret) by

@@ -116,7 +116,7 @@
 					<entry><varname>posechainset</varname></entry>
 					<entry><varname/></entry>
 					<entry><varname/></entry>
-					<entry><varname/></entry>
+					<entry><varname>tposechain</varname></entry>
 				</row>
 				<row>
 					<entry><emphasis role="bold"><varname>npoint</varname></emphasis></entry>

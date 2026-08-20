@@ -74,6 +74,27 @@ typedef struct PoseChain PoseChain;
     } while (0)
 #endif
 
+/**
+ * @brief Macro for ensuring that a temporal value is a temporal pose chain
+ * @note The macro works for the Temporal type and its subtypes TInstant,
+ * TSequence, and TSequenceSet
+ */
+#if MEOS
+  #define VALIDATE_TPOSECHAIN(temp, ret) \
+    do { \
+          if (! ensure_not_null((void *) (temp)) || \
+              ! ensure_temporal_isof_type((Temporal *) (temp), \
+                T_TPOSECHAIN) ) \
+           return (ret); \
+    } while (0)
+#else
+  #define VALIDATE_TPOSECHAIN(temp, ret) \
+    do { \
+      assert(temp); \
+      assert(((Temporal *) (temp))->temptype == T_TPOSECHAIN); \
+    } while (0)
+#endif
+
 /******************************************************************************
  * Functions for pose chains
  ******************************************************************************/
@@ -102,6 +123,8 @@ extern Pose *posechain_to_pose(const PoseChain *pc);
 extern Pose *posechain_prefix_pose(const PoseChain *pc, int n);
 extern GSERIALIZED *posechain_to_point(const PoseChain *pc);
 extern STBox *posechain_to_stbox(const PoseChain *pc);
+extern STBox *posechain_timestamptz_to_stbox(const PoseChain *pc, TimestampTz t);
+extern STBox *posechain_tstzspan_to_stbox(const PoseChain *pc, const Span *s);
 
 /* Accessor functions */
 
@@ -171,6 +194,49 @@ extern Set *minus_set_posechain(const Set *s, const PoseChain *pc);
 extern Set *posechain_union_transfn(Set *state, const PoseChain *pc);
 extern Set *union_posechain_set(const PoseChain *pc, const Set *s);
 extern Set *union_set_posechain(const Set *s, const PoseChain *pc);
+
+/******************************************************************************
+ * Functions for temporal pose chains
+ ******************************************************************************/
+
+/* Input and output functions */
+
+extern Temporal *tposechain_in(const char *str);
+extern Temporal *tposechain_from_mfjson(const char *mfjson);
+
+/* Constructor functions */
+
+extern Temporal *tposechain_from_base_temp(const PoseChain *pc, const Temporal *temp);
+
+/* Conversion functions */
+
+extern Temporal *tposechain_to_tpose(const Temporal *temp);
+
+/* Accessor functions */
+
+extern int tposechain_num_links(const Temporal *temp);
+
+/* Ever/always and temporal comparison functions */
+
+extern int always_eq_posechain_tposechain(const PoseChain *posechain, const Temporal *temp);
+extern int always_eq_tposechain_posechain(const Temporal *temp, const PoseChain *posechain);
+extern int always_eq_tposechain_tposechain(const Temporal *temp1, const Temporal *temp2);
+extern int always_ne_posechain_tposechain(const PoseChain *posechain, const Temporal *temp);
+extern int always_ne_tposechain_posechain(const Temporal *temp, const PoseChain *posechain);
+extern int always_ne_tposechain_tposechain(const Temporal *temp1, const Temporal *temp2);
+extern int ever_eq_posechain_tposechain(const PoseChain *posechain, const Temporal *temp);
+extern int ever_eq_tposechain_posechain(const Temporal *temp, const PoseChain *posechain);
+extern int ever_eq_tposechain_tposechain(const Temporal *temp1, const Temporal *temp2);
+extern int ever_ne_posechain_tposechain(const PoseChain *posechain, const Temporal *temp);
+extern int ever_ne_tposechain_posechain(const Temporal *temp, const PoseChain *posechain);
+extern int ever_ne_tposechain_tposechain(const Temporal *temp1, const Temporal *temp2);
+
+/*****************************************************************************/
+
+extern Temporal *teq_posechain_tposechain(const PoseChain *posechain, const Temporal *temp);
+extern Temporal *teq_tposechain_posechain(const Temporal *temp, const PoseChain *posechain);
+extern Temporal *tne_posechain_tposechain(const PoseChain *posechain, const Temporal *temp);
+extern Temporal *tne_tposechain_posechain(const Temporal *temp, const PoseChain *posechain);
 
 /*****************************************************************************/
 
