@@ -258,13 +258,14 @@ SELECT rotation(pose 'Pose(Point(1 1), 0.3)');
 </programlisting>
 				</listitem>
 
-				<listitem xml:id="pose_orientation">
-					<indexterm significance="normal"><primary><varname>orientation</varname></primary></indexterm>
-					<para>Return the orientation</para>
-					<para><varname>orientation(pose3D) → (X,W,Z,T)</varname></para>
+				<listitem xml:id="pose_quaternion">
+					<indexterm significance="normal"><primary><varname>quaternion</varname></primary></indexterm>
+					<para>Return the orientation quaternion of a 3D pose</para>
+					<para><varname>quaternion(pose3D) → quaternion</varname></para>
+					<para>The components are returned in the order <varname>W</varname>, <varname>X</varname>, <varname>Y</varname>, <varname>Z</varname>, the Hamilton convention in which the pose stores them. This is one of the two orientation encodings the OGC GeoPose v1.0 standard prescribes; the other, yaw / pitch / roll, is given by <link linkend="pose_yaw_pitch_roll"><varname>yaw</varname></link>, <varname>pitch</varname> and <varname>roll</varname>. A 2D pose has no quaternion and the function emits an error for it; its orientation is the single angle returned by <link linkend="pose_rotation"><varname>rotation</varname></link>.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT orientation(pose 'Pose(Point Z(1 1 1), 0, 0, 0, 1)');
--- (0, 0, 0, 1)
+SELECT quaternion(pose 'Pose(Point Z(1 1 1), 0, 0, 0, 1)');
+-- (0,0,0,1)
 </programlisting>
 				</listitem>
 			</itemizedlist>

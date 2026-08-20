@@ -1037,14 +1037,19 @@ datum_pose_roll(Datum pose)
 
 /**
  * @ingroup meos_pose_base_accessor
- * @brief Return the orientation of a 3D pose
+ * @brief Return the orientation quaternion of a 3D pose
+ * @details The four components are returned in the order @p W, @p X, @p Y,
+ * @p Z, the Hamilton convention in which the pose stores them. The
+ * yaw / pitch / roll encoding of the same orientation, the other
+ * representation the OGC GeoPose standard prescribes, is returned by
+ * #pose_yaw(), #pose_pitch() and #pose_roll().
  * @param[in] pose Pose
  * @param[out] count Number of elements in the output array
  * @return On error return @p NULL
- * @csqlfn #Pose_orientation()
+ * @csqlfn #Pose_quaternion()
  */
 double *
-pose_orientation(const Pose *pose, int *count)
+pose_quaternion(const Pose *pose, int *count)
 {
   /* The out parameter is defined even when a later check fails */
   VALIDATE_NOT_NULL(count, NULL);

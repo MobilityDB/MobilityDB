@@ -554,15 +554,15 @@ Pose_rotation(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8(result);
 }
 
-PGDLLEXPORT Datum Pose_orientation(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Pose_orientation);
+PGDLLEXPORT Datum Pose_quaternion(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pose_quaternion);
 /**
  * @ingroup mobilitydb_pose_base_accessor
- * @brief Return the orientation of a 3D pose
- * @sqlfn orientation()
+ * @brief Return the orientation quaternion of a 3D pose
+ * @sqlfn quaternion()
  */
 Datum
-Pose_orientation(PG_FUNCTION_ARGS)
+Pose_quaternion(PG_FUNCTION_ARGS)
 {
   /* Define the return type properties */
   TupleDesc tupdesc;
@@ -580,7 +580,7 @@ Pose_orientation(PG_FUNCTION_ARGS)
   Pose *pose = PG_GETARG_POSE_P(0);
   /* Get the array of doubles representing the orientation */
   int count;
-  double *quaternion = pose_orientation(pose, &count);
+  double *quaternion = pose_quaternion(pose, &count);
   /* Create values for the tuple */
   values[0] = Float8GetDatum(quaternion[0]);
   values[1] = Float8GetDatum(quaternion[1]);

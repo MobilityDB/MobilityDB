@@ -128,6 +128,26 @@ SELECT roll(pose 'Pose(Point(0 0 0), 1, 0, 0, 0)');
     0
 (1 row)
 
+SELECT quaternion(pose 'Pose(Point(0 0 0), 1, 0, 0, 0)');
+ quaternion 
+------------
+ (1,0,0,0)
+(1 row)
+
+SELECT quaternion(pose 'Pose(Point Z(1 1 1), 0, 0, 0, 1)');
+ quaternion 
+------------
+ (0,0,0,1)
+(1 row)
+
+SELECT quaternion(pose 'Pose(Point(0 0 0), 0.5, 0.5, 0.5, 0.5)');
+    quaternion     
+-------------------
+ (0.5,0.5,0.5,0.5)
+(1 row)
+
+SELECT quaternion(pose 'Pose(Point(1 1),0.5)');
+ERROR:  The pose must have Z dimension
 SELECT asText(round(pose 'Pose(Point(1.123456789 1.123456789), 0.123456789)', 6));
                  astext                  
 -----------------------------------------

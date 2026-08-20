@@ -1530,7 +1530,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="pose_orientation"><varname>orientation</varname></link>: Return the orientation</para>
+						<para><link linkend="pose_quaternion"><varname>quaternion</varname></link>: Return the orientation quaternion of a 3D pose</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

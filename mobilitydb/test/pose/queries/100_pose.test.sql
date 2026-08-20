@@ -76,6 +76,18 @@ SELECT yaw(pose 'Pose(Point(0 0 0), 1, 0, 0, 0)');
 SELECT pitch(pose 'Pose(Point(0 0 0), 1, 0, 0, 0)');
 SELECT roll(pose 'Pose(Point(0 0 0), 1, 0, 0, 0)');
 
+-- The orientation quaternion of a 3D pose, in the stored (W, X, Y, Z)
+-- Hamilton order. A 2D pose has no quaternion.
+SELECT quaternion(pose 'Pose(Point(0 0 0), 1, 0, 0, 0)');
+SELECT quaternion(pose 'Pose(Point Z(1 1 1), 0, 0, 0, 1)');
+-- A 120-degree turn about (1 1 1). Its components are exactly
+-- representable, so the unit-norm renormalization leaves them alone and
+-- the output carries no libm-dependent trailing digits.
+SELECT quaternion(pose 'Pose(Point(0 0 0), 0.5, 0.5, 0.5, 0.5)');
+\set VERBOSITY terse
+SELECT quaternion(pose 'Pose(Point(1 1),0.5)');
+\set VERBOSITY default
+
 -------------------------------------------------------------------------------
 -- Modification functions
 -------------------------------------------------------------------------------

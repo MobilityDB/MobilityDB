@@ -238,9 +238,9 @@ CREATE TYPE quaternion AS (
   Z float
 );
 
-CREATE FUNCTION orientation(pose)
+CREATE FUNCTION quaternion(pose)
   RETURNS quaternion
-  AS 'MODULE_PATHNAME', 'Pose_orientation'
+  AS 'MODULE_PATHNAME', 'Pose_quaternion'
   LANGUAGE C IMMUTABLE STRICT;
 
 /*****************************************************************************
