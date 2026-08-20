@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: tcbuffer_restrict_stbox</title>
+<title>MobilityDB: tcbuffer_may_reach_box</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -79,21 +79,24 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__internal__cbuffer__restrict_ga6fa2be30d34e36d502f4f7e6692680ee.html#ga6fa2be30d34e36d502f4f7e6692680ee">tcbuffer_may_reach_box</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__cbuffer__restrict_ga305db10161ae34cc30de5a906954daa8.html#ga305db10161ae34cc30de5a906954daa8">tcbuffer_restrict_cbuffer</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__cbuffer__restrict_ga994c61a211ac8ba20ad6ff703eb2366b.html#ga994c61a211ac8ba20ad6ff703eb2366b">tcbuffer_restrict_geom</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__internal__cbuffer__restrict_gaf5289f0255a41af9b021dd88daf25a88.html#gaf5289f0255a41af9b021dd88daf25a88">tcbuffer_restrict_stbox</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="gaf5289f0255a41af9b021dd88daf25a88" name="gaf5289f0255a41af9b021dd88daf25a88"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gaf5289f0255a41af9b021dd88daf25a88">&#9670;&#160;</a></span>tcbuffer_restrict_stbox()</h2>
+<a id="ga6fa2be30d34e36d502f4f7e6692680ee" name="ga6fa2be30d34e36d502f4f7e6692680ee"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga6fa2be30d34e36d502f4f7e6692680ee">&#9670;&#160;</a></span>tcbuffer_may_reach_box()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structTemporal.html">Temporal</a> * tcbuffer_restrict_stbox </td>
+          <td class="memname">static bool tcbuffer_may_reach_box </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
           <td class="paramname"><em>temp</em>, </td>
@@ -102,19 +105,7 @@ $(function() {
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const <a class="el" href="structSTBox.html">STBox</a> *&#160;</td>
-          <td class="paramname"><em>box</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool border_inc&#160;</td>
-          <td class="paramname"><em>UNUSED</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>atfunc</em>&#160;</td>
+          <td class="paramname"><em>box</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -122,6 +113,11 @@ $(function() {
           <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Return a temporal circular buffer restricted to a spatiotemporal box. </p>
@@ -130,10 +126,13 @@ $(function() {
     <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> value </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">box</td><td>Spatiotemporal box </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">atfunc</td><td>True if the restriction is <code>at</code>, false for <code>minus</code> </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">border_inc</td><td>True when the box contains the upper border, otherwise the upper border is assumed as outside of the box. @csqlfn <a class="el" href="group__mobilitydb__geo__restrict_ga52343f565864204f7540eb3aa24b3931.html#ga52343f565864204f7540eb3aa24b3931" title="Return a temporal circular buffer restricted to a spatiotemporal box.">Tcbuffer_at_stbox()</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">border_inc</td><td>True when the box contains the upper border, otherwise the upper border is assumed as outside of the box. @csqlfn <a class="el" href="group__mobilitydb__geo__restrict_ga52343f565864204f7540eb3aa24b3931.html#ga52343f565864204f7540eb3aa24b3931" title="Return a temporal circular buffer restricted to a spatiotemporal box.">Tcbuffer_at_stbox()</a></td></tr>
   </table>
   </dd>
 </dl>
+<p>Return true when some unit of a temporal circular buffer can reach the space of the box <code>box</code> </p>
+<p >A disk meets a box exactly when its centre lies within the radius of it, so a unit whose centre box stands farther than the larger of its two radii from the box reaches it at no instant. The box of the value cannot express this: it is widened by the radius and spans the whole trajectory, so it overlaps wherever the disks reach anywhere, and on a spatial join it passes nearly every pair into the running relationship below.</p>
+<p >Reading the centre against a radius-widened threshold, rather than a radius-widened box against the box, keeps the radius from being removed on both axes at once. The centre box and the radius maximum both over-approximate the unit, so a value that does reach the box is never rejected, and the scan is linear in the instants and touches no geometry. </p>
 
 </div>
 </div>
