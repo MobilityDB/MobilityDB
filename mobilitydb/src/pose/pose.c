@@ -446,6 +446,24 @@ Pose_constructor_point(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum Pose_constructor_point_ypr(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pose_constructor_point_ypr);
+/**
+ * @ingroup mobilitydb_pose_base_constructor
+ * @brief Construct a 3D pose value from a 3D point and a yaw / pitch / roll
+ * triple
+ * @sqlfn pose()
+ */
+Datum
+Pose_constructor_point_ypr(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  double yaw = PG_GETARG_FLOAT8(1);
+  double pitch = PG_GETARG_FLOAT8(2);
+  double roll = PG_GETARG_FLOAT8(3);
+  PG_RETURN_POINTER(pose_make_point3d_ypr(gs, yaw, pitch, roll));
+}
+
 /*****************************************************************************
  * Conversion functions
  *****************************************************************************/
@@ -586,6 +604,43 @@ Pose_quaternion(PG_FUNCTION_ARGS)
   values[1] = Float8GetDatum(quaternion[1]);
   values[2] = Float8GetDatum(quaternion[2]);
   values[3] = Float8GetDatum(quaternion[3]);
+  /* Create a new tuple */
+  tuple = heap_form_tuple(tupdesc, values, nulls);
+  /* Return the tuple */
+  PG_RETURN_DATUM(HeapTupleGetDatum(tuple));
+}
+
+PGDLLEXPORT Datum Pose_ypr(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pose_ypr);
+/**
+ * @ingroup mobilitydb_pose_base_accessor
+ * @brief Return the orientation of a pose as a yaw / pitch / roll triple,
+ * in radians
+ * @sqlfn ypr()
+ */
+Datum
+Pose_ypr(PG_FUNCTION_ARGS)
+{
+  /* Define the return type properties */
+  TupleDesc tupdesc;
+  HeapTuple tuple;
+  Datum values[3];
+  bool nulls[3] = { false, false, false }; // Assume no nulls
+  /* Define the structure of the returned tuple */
+  tupdesc = CreateTemplateTupleDesc(3);
+  TupleDescInitEntry(tupdesc, (AttrNumber) 1, "yaw", FLOAT8OID, -1, 0);
+  TupleDescInitEntry(tupdesc, (AttrNumber) 2, "pitch", FLOAT8OID, -1, 0);
+  TupleDescInitEntry(tupdesc, (AttrNumber) 3, "roll", FLOAT8OID, -1, 0);
+  BlessTupleDesc(tupdesc);
+  /* Get input pose */
+  Pose *pose = PG_GETARG_POSE_P(0);
+  /* Get the array of doubles representing the angles */
+  int count;
+  double *angles = pose_ypr(pose, &count);
+  /* Create values for the tuple */
+  values[0] = Float8GetDatum(angles[0]);
+  values[1] = Float8GetDatum(angles[1]);
+  values[2] = Float8GetDatum(angles[2]);
   /* Create a new tuple */
   tuple = heap_form_tuple(tupdesc, values, nulls);
   /* Return the tuple */

@@ -401,6 +401,63 @@ ensure_unit_norm(double W, double X, double Y, double Z)
 }
 
 /*****************************************************************************
+ * Orientation encodings
+ *
+ * The OGC GeoPose v1.0 standard prescribes two encodings of the same
+ * orientation, a unit quaternion and a yaw / pitch / roll triple, and the
+ * conversion between them has a single home here. Everything that needs
+ * either direction — the accessors, the constructors, and the GeoPose JSON
+ * reader and writer — goes through these two functions.
+ *****************************************************************************/
+
+/**
+ * @brief Convert (yaw, pitch, roll) in radians, ZYX intrinsic Tait-Bryan
+ * convention, to a unit quaternion (W, X, Y, Z) in Hamilton convention
+ * @details ZYX order is the one the OGC GeoPose standard prescribes: yaw
+ * about Z, then pitch about the new Y, then roll about the new X. The
+ * output is unit-norm by construction, modulo float rounding.
+ * @param[in] yaw_rad,pitch_rad,roll_rad Angles in radians
+ * @param[out] W,X,Y,Z Quaternion components
+ */
+void
+pose_ypr_to_quaternion(double yaw_rad, double pitch_rad, double roll_rad,
+  double *W, double *X, double *Y, double *Z)
+{
+  assert(W); assert(X); assert(Y); assert(Z);
+  double cy = cos(yaw_rad   * 0.5), sy = sin(yaw_rad   * 0.5);
+  double cp = cos(pitch_rad * 0.5), sp = sin(pitch_rad * 0.5);
+  double cr = cos(roll_rad  * 0.5), sr = sin(roll_rad  * 0.5);
+  *W = cr * cp * cy + sr * sp * sy;
+  *X = sr * cp * cy - cr * sp * sy;
+  *Y = cr * sp * cy + sr * cp * sy;
+  *Z = cr * cp * sy - sr * sp * cy;
+  return;
+}
+
+/**
+ * @brief Convert a unit quaternion (W, X, Y, Z) in Hamilton convention to
+ * (yaw, pitch, roll) in radians, ZYX intrinsic Tait-Bryan convention
+ * @details The pitch term is clamped to @p [-1, 1] before @p asin to absorb
+ * the small numeric drift @p |q| - 1 that long quaternion compositions can
+ * introduce.
+ * @param[in] W,X,Y,Z Quaternion components
+ * @param[out] yaw_rad,pitch_rad,roll_rad Angles in radians
+ */
+void
+pose_quaternion_to_ypr(double W, double X, double Y, double Z,
+  double *yaw_rad, double *pitch_rad, double *roll_rad)
+{
+  assert(yaw_rad); assert(pitch_rad); assert(roll_rad);
+  double sinp = 2.0 * (W * Y - Z * X);
+  if (sinp >  1.0) sinp =  1.0;
+  if (sinp < -1.0) sinp = -1.0;
+  *pitch_rad = asin(sinp);
+  *roll_rad  = atan2(2.0 * (W * X + Y * Z), 1.0 - 2.0 * (X * X + Y * Y));
+  *yaw_rad   = atan2(2.0 * (W * Z + X * Y), 1.0 - 2.0 * (Y * Y + Z * Z));
+  return;
+}
+
+/*****************************************************************************
  * Input/output functions
  *****************************************************************************/
 
@@ -885,6 +942,41 @@ pose_make_point3d(const GSERIALIZED *gs, double W, double X, double Y,
 
 /**
  * @ingroup meos_pose_base_constructor
+ * @brief Construct a 3D pose value from a 3D point and a yaw / pitch / roll
+ * triple
+ * @details The angles are in radians and are read in the ZYX intrinsic
+ * Tait-Bryan convention the OGC GeoPose Basic-YPR conformance class
+ * prescribes, the same convention #pose_ypr() decomposes into. This is the
+ * inverse of that accessor: a pose built here and decomposed there returns
+ * the angles it was given, modulo the wrap the decomposition applies and
+ * the gimbal-lock degeneracy at @p pitch = ±π/2, where yaw and roll are no
+ * longer separable.
+ * @param[in] gs 3D Point
+ * @param[in] yaw,pitch,roll Angles in radians
+ */
+Pose *
+pose_make_point3d_ypr(const GSERIALIZED *gs, double yaw, double pitch,
+  double roll)
+{
+  /* Ensure the validity of parameters */
+  VALIDATE_NOT_NULL(gs, NULL);
+  if (! ensure_not_empty(gs) || ! ensure_has_Z_geo(gs) ||
+      ! ensure_has_not_M_geo(gs))
+    return NULL;
+  if (! isfinite(yaw) || ! isfinite(pitch) || ! isfinite(roll))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The yaw, pitch and roll angles must be finite");
+    return NULL;
+  }
+
+  double W, X, Y, Z;
+  pose_ypr_to_quaternion(yaw, pitch, roll, &W, &X, &Y, &Z);
+  return pose_make_point3d(gs, W, X, Y, Z);
+}
+
+/**
+ * @ingroup meos_pose_base_constructor
  * @brief Copy a pose value
  * @param[in] pose Pose
  */
@@ -1069,6 +1161,44 @@ pose_quaternion(const Pose *pose, int *count)
 }
 
 /**
+ * @ingroup meos_pose_base_accessor
+ * @brief Return the orientation of a pose as a yaw / pitch / roll triple,
+ * in radians
+ * @details The three angles are returned in the order @p yaw, @p pitch,
+ * @p roll, the ZYX intrinsic Tait-Bryan decomposition the OGC GeoPose
+ * Basic-YPR conformance class prescribes. Unlike #pose_quaternion(), which
+ * reads an encoding only a 3D pose stores, this is defined for both
+ * dimensions: a 2D pose yaws by its stored angle and neither pitches nor
+ * rolls. The angles are in radians, where the GeoPose JSON encoding
+ * writes them in degrees.
+ * @param[in] pose Pose
+ * @param[out] count Number of elements in the output array
+ * @return On error return @p NULL
+ * @csqlfn #Pose_ypr()
+ */
+double *
+pose_ypr(const Pose *pose, int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pose, NULL);
+
+  double *result = palloc(sizeof(double) * 3);
+  if (! MEOS_FLAGS_GET_Z(pose->flags))
+  {
+    result[0] = pose->data[2];
+    result[1] = result[2] = 0.0;
+  }
+  else
+    pose_quaternion_to_ypr(pose->data[3], pose->data[4], pose->data[5],
+      pose->data[6], &result[0], &result[1], &result[2]);
+  *count = 3;
+  return result;
+}
+
+/**
  * @ingroup meos_pose_base_geopose
  * @brief Return the yaw angle of a pose, in radians
  * @details For a 2D pose this is the stored rotation @p theta, which is by
@@ -1087,9 +1217,10 @@ pose_yaw(const Pose *pose)
 
   if (! MEOS_FLAGS_GET_Z(pose->flags))
     return pose->data[2];
-  double W = pose->data[3], X = pose->data[4];
-  double Y = pose->data[5], Z = pose->data[6];
-  return atan2(2.0 * (W * Z + X * Y), 1.0 - 2.0 * (Y * Y + Z * Z));
+  double yaw, pitch, roll;
+  pose_quaternion_to_ypr(pose->data[3], pose->data[4], pose->data[5],
+    pose->data[6], &yaw, &pitch, &roll);
+  return yaw;
 }
 
 /**
@@ -1111,12 +1242,10 @@ pose_pitch(const Pose *pose)
 
   if (! MEOS_FLAGS_GET_Z(pose->flags))
     return 0.0;
-  double W = pose->data[3], X = pose->data[4];
-  double Y = pose->data[5], Z = pose->data[6];
-  double sinp = 2.0 * (W * Y - Z * X);
-  if (sinp >  1.0) sinp =  1.0;
-  if (sinp < -1.0) sinp = -1.0;
-  return asin(sinp);
+  double yaw, pitch, roll;
+  pose_quaternion_to_ypr(pose->data[3], pose->data[4], pose->data[5],
+    pose->data[6], &yaw, &pitch, &roll);
+  return pitch;
 }
 
 /**
@@ -1136,9 +1265,10 @@ pose_roll(const Pose *pose)
 
   if (! MEOS_FLAGS_GET_Z(pose->flags))
     return 0.0;
-  double W = pose->data[3], X = pose->data[4];
-  double Y = pose->data[5], Z = pose->data[6];
-  return atan2(2.0 * (W * X + Y * Z), 1.0 - 2.0 * (X * X + Y * Y));
+  double yaw, pitch, roll;
+  pose_quaternion_to_ypr(pose->data[3], pose->data[4], pose->data[5],
+    pose->data[6], &yaw, &pitch, &roll);
+  return roll;
 }
 
 /**

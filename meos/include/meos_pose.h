@@ -126,6 +126,7 @@ extern Pose *pose_make_2d(double x, double y, double theta, bool geodetic, int32
 extern Pose *pose_make_3d(double x, double y, double z, double W, double X, double Y, double Z, bool geodetic, int32_t srid);
 extern Pose *pose_make_point2d(const GSERIALIZED *gs, double theta);
 extern Pose *pose_make_point3d(const GSERIALIZED *gs, double W, double X, double Y, double Z);
+extern Pose *pose_make_point3d_ypr(const GSERIALIZED *gs, double yaw, double pitch, double roll);
 
 /* Conversion functions */
 
@@ -137,6 +138,7 @@ extern STBox *pose_to_stbox(const Pose *pose);
 extern uint32 pose_hash(const Pose *pose);
 extern uint64 pose_hash_extended(const Pose *pose, uint64 seed);
 extern double *pose_quaternion(const Pose *pose, int *count);
+extern double *pose_ypr(const Pose *pose, int *count);
 extern double pose_rotation(const Pose *pose);
 extern double pose_yaw(const Pose *pose);
 extern double pose_pitch(const Pose *pose);

@@ -188,6 +188,8 @@ SELECT asEWKT(poseFromHexEWKB(
 					<para>Constructor for poses</para>
 					<para><varname>pose(geompoint2D,float) → pose</varname></para>
 					<para><varname>pose(geompoint3D,float,float,float,float) → pose</varname></para>
+					<para><varname>pose(geompoint3D,yaw float,pitch float,roll float) → pose</varname></para>
+					<para>The three-angle form takes the orientation in the other encoding the OGC GeoPose v1.0 standard prescribes, a yaw / pitch / roll triple in radians under the ZYX intrinsic Tait-Bryan convention, and stores the quaternion it denotes. It is the inverse of <link linkend="pose_ypr"><varname>ypr</varname></link>.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(pose(ST_Point(1,1), radians(45)), 6);
 -- Pose(POINT(1 1),0.785398)
@@ -195,6 +197,8 @@ SELECT asEWKT(pose(ST_Point(1,1,3812), radians(45)), 6);
 -- SRID=3812;Pose(POINT(1 1),0.785398)
 SELECT asText(pose(ST_PointZ(1,1,1), 1, 0, 0, 0));
 -- Pose(POINT Z (1 1 1),1,0,0,0)
+SELECT asText(pose(ST_PointZ(1,1,1), radians(90), 0, 0), 6);
+-- Pose(POINT Z (1 1 1),0.707107,0,0,0.707107)
 </programlisting>
 				</listitem>
 			</itemizedlist>
@@ -1363,6 +1367,21 @@ SELECT yaw(pose 'Pose(Point(0 0 0), 0.7071067811865476, 0, 0, 0.7071067811865475
 SELECT asText(yaw(tpose '[Pose(Point(0 0), 0.0)@2000-01-01,
   Pose(Point(1 1), 0.5)@2000-01-02]'));
 -- [0@2000-01-01, 0.5@2000-01-02]
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="pose_ypr">
+					<indexterm significance="normal"><primary><varname>ypr</varname></primary></indexterm>
+					<para>Return the orientation of a pose as a yaw / pitch / roll triple, in radians</para>
+					<para><varname>ypr(pose) → ypr</varname></para>
+					<para>This is the OGC GeoPose Basic-YPR encoding of the orientation, the counterpart of <link linkend="pose_quaternion"><varname>quaternion</varname></link>, and it returns the three angles <link linkend="pose_yaw_pitch_roll"><varname>yaw</varname></link>, <varname>pitch</varname> and <varname>roll</varname> answer one at a time. Unlike <varname>quaternion</varname>, which reads an encoding only a 3D pose stores, it is defined for both dimensions: a 2D pose yaws by its stored angle and neither pitches nor rolls. The angles are in radians, where the GeoPose JSON encoding writes them in degrees.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ypr(pose 'Pose(Point(1 1), 0.5)');
+-- (0.5,0,0)
+SELECT ypr(pose 'Pose(Point Z(1 1 1), 1, 0, 0, 0)');
+-- (0,0,0)
+SELECT ypr(pose 'Pose(Point Z(1 1 1), 0.5, 0.5, 0.5, 0.5)');
+-- (1.5707963267948966,0,1.5707963267948966)
 </programlisting>
 				</listitem>
 

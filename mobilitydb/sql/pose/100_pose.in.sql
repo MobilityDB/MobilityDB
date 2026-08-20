@@ -191,6 +191,14 @@ CREATE FUNCTION pose(geometry, double precision, double precision,
   AS 'MODULE_PATHNAME', 'Pose_constructor_point'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- The OGC GeoPose Basic-YPR encoding of the same orientation: yaw, pitch
+-- and roll in radians, ZYX intrinsic Tait-Bryan.
+CREATE FUNCTION pose(geometry, yaw double precision, pitch double precision,
+    roll double precision)
+  RETURNS pose
+  AS 'MODULE_PATHNAME', 'Pose_constructor_point_ypr'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************
  * Conversions
  *****************************************************************************/
@@ -241,6 +249,17 @@ CREATE TYPE quaternion AS (
 CREATE FUNCTION quaternion(pose)
   RETURNS quaternion
   AS 'MODULE_PATHNAME', 'Pose_quaternion'
+  LANGUAGE C IMMUTABLE STRICT;
+
+CREATE TYPE ypr AS (
+  yaw float,
+  pitch float,
+  roll float
+);
+
+CREATE FUNCTION ypr(pose)
+  RETURNS ypr
+  AS 'MODULE_PATHNAME', 'Pose_ypr'
   LANGUAGE C IMMUTABLE STRICT;
 
 /*****************************************************************************
