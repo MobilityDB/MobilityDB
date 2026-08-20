@@ -402,6 +402,7 @@ extern GSERIALIZED *geo_points(const GSERIALIZED *gs);
 extern GSERIALIZED *geom_array_union(GSERIALIZED **gsarr, int count);
 extern GSERIALIZED *geom_boundary(const GSERIALIZED *gs);
 extern GSERIALIZED *geom_buffer(const GSERIALIZED *gs, double size, const char *params);
+extern GSERIALIZED *geom_buffer_meos(const GSERIALIZED *gs, double size, const char *params);
 extern GSERIALIZED *geom_centroid(const GSERIALIZED *gs);
 extern GSERIALIZED *geom_convex_hull(const GSERIALIZED *gs);
 extern GSERIALIZED *geom_difference2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);

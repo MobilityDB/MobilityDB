@@ -1,4 +1,5 @@
 set(GEO_SOURCES
+  geo_buffer.c
   geo_funcs.c
   geo_round.c
   postgis_funcs.c

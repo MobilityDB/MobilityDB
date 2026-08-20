@@ -1,4 +1,5 @@
 add_library(pg_geo OBJECT
+  geo_funcs.c
   projection_gk.c
   spatialset.c
   stbox.c

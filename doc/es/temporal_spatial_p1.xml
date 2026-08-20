@@ -38,6 +38,30 @@
 		</figure>
 	</sect1>
 
+	<sect1 xml:id="geo_funcs">
+		<title>Funciones sobre Geometrías</title>
+
+		<para>Las funciones de esta sección responden una pregunta sobre una geometría y no sobre un tipo temporal. Una geometría delimitada por arcos circulares los conserva: la respuesta se construye a partir de los arcos mismos y no de una aproximación poligonal de ellos.</para>
+
+		<itemizedlist>
+			<listitem xml:id="geo_buffer">
+				<indexterm significance="normal"><primary><varname>Buffer</varname></primary></indexterm>
+				<para>Devuelve la geometría que contiene todos los puntos situados a una distancia dada de una geometría</para>
+				<para><varname>Buffer(geometry,float,options text='') → geometry</varname></para>
+				<para>La frontera del resultado está formada por los dos desplazamientos de la geometría a la distancia dada, por la unión que rellena el lado exterior de cada giro y por el extremo que cierra cada final de una línea abierta. Una distancia negativa contrae una geometría de área y devuelve una geometría vacía para una de cualquier otra dimensión.</para>
+				<para>La cadena <varname>options</varname> lleva los estilos como pares <varname>clave=valor</varname> separados por espacios: <varname>endcap</varname> es uno de <varname>round</varname>, <varname>flat</varname> o <varname>square</varname>, <varname>join</varname> uno de <varname>round</varname>, <varname>mitre</varname> o <varname>bevel</varname>, y <varname>mitre_limit</varname> la razón a partir de la cual una unión en inglete pasa a ser biselada.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_AsText(round(Buffer(geometry 'Point(0 0)', 1), 6));
+-- CURVEPOLYGON(CIRCULARSTRING(-1 0,1 0,-1 0))
+SELECT ST_AsText(round(Buffer(geometry 'Polygon((0 0,10 0,10 10,0 10,0 0))', -1, 'join=mitre'), 6));
+-- CURVEPOLYGON(COMPOUNDCURVE((1 1,9 1),(9 1,9 9),(9 9,1 9),(1 9,1 1)))
+SELECT ST_AsText(round(Buffer(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))', 1), 6));
+-- CURVEPOLYGON(COMPOUNDCURVE(CIRCULARSTRING(-1 0,2 3,5 0),CIRCULARSTRING(5 0,2 -3,-1 0)))
+</programlisting>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
 	<sect1 xml:id="tgeo_notation">
 		<title>Notación</title>
 		<para>Presentamos en la <xref linkend="ttype_notation"/> y en la <xref linkend="talpha_notation"/> la notación utilizada para definir la firma de las funciones y operadores para tipos temporales. A continuación, ampliamos estas notaciones para tipos espaciotemporales.</para>

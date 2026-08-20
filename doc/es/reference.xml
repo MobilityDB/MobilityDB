@@ -907,6 +907,14 @@
 	<sect1>
 		<title>Temporal Geometry Types</title>
 		<sect2>
+			<title>Funciones sobre Geometrías</title>
+			<itemizedlist>
+				<listitem>
+					<para><link linkend="geo_buffer"><varname>Buffer</varname></link>: Devuelve la geometría que contiene todos los puntos situados a una distancia dada de una geometría</para>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+		<sect2>
 			<title>Entrada y salida</title>
 			<itemizedlist>
 				<listitem>
