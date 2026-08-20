@@ -68,6 +68,15 @@ typedef enum
 } EdgeType;
 
 /**
+ * @brief Tolerance under which two coordinates of an edge are the same point
+ * @details The edge kernels compare coordinates against this value. MEOS owns
+ * it rather than reading the tolerance of a PostGIS internal header, which
+ * two headers of that library define differently, so the value an edge kernel
+ * compares against does not depend on the order a caller includes them in
+ */
+#define MEOS_EDGE_TOLERANCE 1e-12
+
+/**
  * @brief Structure keeping a geometry edge
  */
 typedef struct

@@ -86,7 +86,7 @@ static MEOS_TLS MeosArray *rtree_results = NULL;
  * - 0 <= t0 <= 1
  * - 0 <= t1 <= 1
  * - t0 <= t1
- * - Overlap must satisfy: t1 - t0 > FP_TOLERANCE
+ * - Overlap must satisfy: t1 - t0 > MEOS_EDGE_TOLERANCE
  * @param[in] ax,ay Coordinates of the first point defining the first segment
  * @param[in] rx,ry Vector AB
  * @param[in] cx,cy,dx,dy Coordinates of the points defining the second segment
@@ -109,17 +109,17 @@ linesegm_intersect(double ax, double ay, double rx, double ry,
   double rxs = rx * sy - ry * sx;
 
   /* Collinear / parallel */
-  if (fabs(rxs) < FP_TOLERANCE)
+  if (fabs(rxs) < MEOS_EDGE_TOLERANCE)
   {
     /* Is point C aligned with segment AB? */
     double qpxr = qpx * ry - qpy * rx;
     /* If qpxr != 0: parallel, if qpxr == 0: collinear */
-    if (fabs(qpxr) > FP_TOLERANCE)
+    if (fabs(qpxr) > MEOS_EDGE_TOLERANCE)
       return res;
 
     /* Collinear case */
     double r2 = rx * rx + ry * ry;
-    if (r2 < FP_TOLERANCE)
+    if (r2 < MEOS_EDGE_TOLERANCE)
       return res;
 
     double t0 = (qpx * rx + qpy * ry) / r2;
@@ -135,7 +135,7 @@ linesegm_intersect(double ax, double ay, double rx, double ry,
     if (t0 < 0) t0 = 0;
     if (t1 > 1) t1 = 1;
 
-    if (fabs(t1 - t0) < FP_TOLERANCE)
+    if (fabs(t1 - t0) < MEOS_EDGE_TOLERANCE)
     {
       res.type = INTERSECT_POINT;
       res.t0 = t0;
@@ -152,13 +152,13 @@ linesegm_intersect(double ax, double ay, double rx, double ry,
   double t = (qpx * sy - qpy * sx) / rxs;
   double u = (qpx * ry - qpy * rx) / rxs;
 
-  if (t < -FP_TOLERANCE || t > 1 + FP_TOLERANCE ||
-      u < -FP_TOLERANCE || u > 1 + FP_TOLERANCE)
+  if (t < -MEOS_EDGE_TOLERANCE || t > 1 + MEOS_EDGE_TOLERANCE ||
+      u < -MEOS_EDGE_TOLERANCE || u > 1 + MEOS_EDGE_TOLERANCE)
     return res;
 
   /* Clamp values */
-  if (fabs(t) < FP_TOLERANCE) t = 0;
-  if (fabs(t - 1) < FP_TOLERANCE) t = 1;
+  if (fabs(t) < MEOS_EDGE_TOLERANCE) t = 0;
+  if (fabs(t - 1) < MEOS_EDGE_TOLERANCE) t = 1;
 
   res.type = INTERSECT_POINT;
   res.t0 = t;
@@ -183,7 +183,7 @@ arc_contains_angle(const Edge *e, double phi)
   double off = e->ccw ?
     angle_normalize(phi - e->theta0) :
     angle_normalize(e->theta0 - phi);
-  return off <= sweep + FP_TOLERANCE;
+  return off <= sweep + MEOS_EDGE_TOLERANCE;
 }
 
 /**
@@ -218,7 +218,7 @@ bool
 point_on_arc(double px, double py, const Edge *e)
 {
   double d = hypot(px - e->cx, py - e->cy);
-  if (fabs(d - e->radius) > FP_TOLERANCE)
+  if (fabs(d - e->radius) > MEOS_EDGE_TOLERANCE)
     return false;
   return arc_contains_angle(e, atan2(py - e->cy, px - e->cx));
 }
@@ -242,7 +242,7 @@ arcsegm_intersect(double ax, double ay, double rx, double ry, const Edge *e,
 {
   double aa = rx * rx + ry * ry;
   /* Degenerate (zero-length) trajectory segment */
-  if (aa < FP_TOLERANCE)
+  if (aa < MEOS_EDGE_TOLERANCE)
     return 0;
 
   double wx = ax - e->cx, wy = ay - e->cy;
@@ -250,7 +250,7 @@ arcsegm_intersect(double ax, double ay, double rx, double ry, const Edge *e,
   double cc = wx * wx + wy * wy - e->radius * e->radius;
   double disc = bb * bb - 4 * aa * cc;
   /* No real root */
-  if (disc < -FP_TOLERANCE)
+  if (disc < -MEOS_EDGE_TOLERANCE)
     return 0;
   if (disc < 0)
     disc = 0;
@@ -260,14 +260,14 @@ arcsegm_intersect(double ax, double ay, double rx, double ry, const Edge *e,
   int nroots = 0;
   roots[nroots++] = (-bb - sq) / (2 * aa);
   /* Distinct second root only when the line is not tangent */
-  if (sq > FP_TOLERANCE)
+  if (sq > MEOS_EDGE_TOLERANCE)
     roots[nroots++] = (-bb + sq) / (2 * aa);
 
   int n = 0;
   for (int k = 0; k < nroots; k++)
   {
     double t = roots[k];
-    if (t < -FP_TOLERANCE || t > 1 + FP_TOLERANCE)
+    if (t < -MEOS_EDGE_TOLERANCE || t > 1 + MEOS_EDGE_TOLERANCE)
       continue;
     if (t < 0) t = 0;
     if (t > 1) t = 1;
@@ -296,9 +296,9 @@ arcarc_intersect(const Edge *e1, const Edge *e2)
   double r1 = e1->radius, r2 = e2->radius;
 
   /* Concentric supporting circles */
-  if (d < FP_TOLERANCE)
+  if (d < MEOS_EDGE_TOLERANCE)
   {
-    if (fabs(r1 - r2) > FP_TOLERANCE)
+    if (fabs(r1 - r2) > MEOS_EDGE_TOLERANCE)
       return false;
     /* Same circle: the arcs meet iff their spans share an endpoint angle */
     return arc_contains_angle(e2, e1->theta0) ||
@@ -307,7 +307,7 @@ arcarc_intersect(const Edge *e1, const Edge *e2)
       arc_contains_angle(e1, e2->theta1);
   }
   /* Circles too far apart or one strictly inside the other */
-  if (d > r1 + r2 + FP_TOLERANCE || d < fabs(r1 - r2) - FP_TOLERANCE)
+  if (d > r1 + r2 + MEOS_EDGE_TOLERANCE || d < fabs(r1 - r2) - MEOS_EDGE_TOLERANCE)
     return false;
 
   double a = (d * d + r1 * r1 - r2 * r2) / (2 * d);
@@ -327,7 +327,7 @@ arcarc_intersect(const Edge *e1, const Edge *e2)
         arc_contains_angle(e2, atan2(py - e2->cy, px - e2->cx)))
       return true;
     /* A tangency has a single candidate point */
-    if (h < FP_TOLERANCE)
+    if (h < MEOS_EDGE_TOLERANCE)
       break;
   }
   return false;
@@ -353,25 +353,25 @@ point_on_segment(double px, double py, double x1, double y1, double x2,
   double aby = y2 - y1;
 
   /* Fast bounding-box rejection */
-  if ((px < fmin(x1, x2) - FP_TOLERANCE) ||
-      (px > fmax(x1, x2) + FP_TOLERANCE) ||
-      (py < fmin(y1, y2) - FP_TOLERANCE) ||
-      (py > fmax(y1, y2) + FP_TOLERANCE))
+  if ((px < fmin(x1, x2) - MEOS_EDGE_TOLERANCE) ||
+      (px > fmax(x1, x2) + MEOS_EDGE_TOLERANCE) ||
+      (py < fmin(y1, y2) - MEOS_EDGE_TOLERANCE) ||
+      (py > fmax(y1, y2) + MEOS_EDGE_TOLERANCE))
     return false;
 
   /* Collinearity check via cross product */
   double cross = apx * aby - apy * abx;
-  if (fabs(cross) > FP_TOLERANCE)
+  if (fabs(cross) > MEOS_EDGE_TOLERANCE)
     return false;
 
   /* Projection check via dot product */
   double dot = apx * abx + apy * aby;
-  if (dot < -FP_TOLERANCE)
+  if (dot < -MEOS_EDGE_TOLERANCE)
     return false;
 
   /* Check if P lies between A and B */
   double ab2 = abx * abx + aby * aby;
-  if (dot > ab2 + FP_TOLERANCE)
+  if (dot > ab2 + MEOS_EDGE_TOLERANCE)
     return false;
   return true;
 }
@@ -417,7 +417,7 @@ point_in_polygon_impl(double x, double y, Edge **edges, int nedges,
        * tangentially (h2 ~ 0) does not cross the boundary */
       const double dyc = y - e->cy;
       const double h2 = e->radius * e->radius - dyc * dyc;
-      if (h2 <= FP_TOLERANCE)
+      if (h2 <= MEOS_EDGE_TOLERANCE)
         continue;
       const double h = sqrt(h2);
       const double xhit[2] = {e->cx - h, e->cx + h};
@@ -437,10 +437,10 @@ point_in_polygon_impl(double x, double y, Edge **edges, int nedges,
          * counted once. A crossing at an arc endpoint is owned by this edge
          * only if the arc's interior rises above the ray there; an interior
          * crossing is always transversal and always counted */
-        const bool at_ep0 = fabs(xi - e->x1) < FP_TOLERANCE &&
-          fabs(y - e->y1) < FP_TOLERANCE;
-        const bool at_ep1 = fabs(xi - e->x2) < FP_TOLERANCE &&
-          fabs(y - e->y2) < FP_TOLERANCE;
+        const bool at_ep0 = fabs(xi - e->x1) < MEOS_EDGE_TOLERANCE &&
+          fabs(y - e->y1) < MEOS_EDGE_TOLERANCE;
+        const bool at_ep1 = fabs(xi - e->x2) < MEOS_EDGE_TOLERANCE &&
+          fabs(y - e->y2) < MEOS_EDGE_TOLERANCE;
         if (at_ep0 || at_ep1)
         {
           const double theta_e = at_ep0 ? e->theta0 : e->theta1;
@@ -466,10 +466,10 @@ point_in_polygon_impl(double x, double y, Edge **edges, int nedges,
 
     /* Boundary check */
     const double cross = dx * dyp - dy * dxp;
-    if (fabs(cross) < FP_TOLERANCE)
+    if (fabs(cross) < MEOS_EDGE_TOLERANCE)
     {
       const double dot = dxp * dx + dyp * dy;
-      if (dot >= -FP_TOLERANCE && dot <= (e->length) + FP_TOLERANCE)
+      if (dot >= -MEOS_EDGE_TOLERANCE && dot <= (e->length) + MEOS_EDGE_TOLERANCE)
         return 1;
     }
 
