@@ -194,6 +194,39 @@ emit_arc_edge(const POINT4D *pa, const POINT4D *pb, const POINT4D *pc,
   /* Twice the signed area of the triangle; zero when the points are collinear */
   double d = 2 * (ax * (by - cy) + bx * (cy - ay) + cx * (ay - by));
 
+  /* A circular string returning to the point it starts from is a full circle,
+   * and the three points of one are collinear, so the circumcentre below
+   * cannot be read from them. The middle point is the one opposite, and the
+   * two points split the circle into the two half circles the arcs of an edge
+   * hold exactly. This is the shape #lwcircle_make gives a circle */
+  if (fabs(ax - cx) <= FP_TOLERANCE && fabs(ay - cy) <= FP_TOLERANCE &&
+      (fabs(ax - bx) > FP_TOLERANCE || fabs(ay - by) > FP_TOLERANCE))
+  {
+    double mx = (ax + bx) / 2, my = (ay + by) / 2;
+    double radius = hypot(ax - mx, ay - my);
+    double theta_a = atan2(ay - my, ax - mx);
+    double theta_b = atan2(by - my, bx - mx);
+    const double sx[2] = {ax, bx}, sy[2] = {ay, by};
+    const double ex[2] = {bx, ax}, ey[2] = {by, ay};
+    const double t0[2] = {theta_a, theta_b}, t1[2] = {theta_b, theta_a};
+    for (int i = 0; i < 2; i++)
+    {
+      Edge e;
+      e.cx = mx; e.cy = my; e.radius = radius;
+      e.x1 = sx[i]; e.y1 = sy[i];
+      e.x2 = ex[i]; e.y2 = ey[i];
+      e.theta0 = t0[i]; e.theta1 = t1[i];
+      /* Both halves are traversed the same way, so together they cover the
+       * circle rather than the same half twice */
+      e.ccw = true;
+      e.dx = e.dy = e.length = 0;
+      e.etype = arc_etype;
+      arc_set_bbox(&e);
+      meos_array_add(edges, &e);
+    }
+    return;
+  }
+
   /* Collinear points: emit straight line edges */
   if (fabs(d) < FP_TOLERANCE)
   {
