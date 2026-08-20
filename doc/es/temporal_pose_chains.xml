@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+   ****************************************************************************
+    MobilityDB Manual
+    Copyright(c) MobilityDB Contributors
+
+    This documentation is licensed under a Creative Commons Attribution-Share
+    Alike 3.0 License: https://creativecommons.org/licenses/by-sa/3.0/
+   ****************************************************************************
+-->
+<chapter xml:id="pose_chains">
+	<title>Cadenas de poses</title>
+
+	<para>El tipo <varname>posechain</varname> representa un cuerpo cuyas partes se sitúan unas respecto de otras: una cámara sobre un cardán sobre un vehículo, o un brazo cuyo antebrazo se sitúa respecto del brazo. Una cadena de poses es una lista ordenada de al menos una <varname>pose</varname>. El primer eslabón se expresa en el marco exterior de la cadena, y cada eslabón posterior se expresa en el marco que define el eslabón anterior, de modo que un eslabón indica dónde se sitúa una parte respecto de la parte que la sostiene y no respecto del mundo.</para>
+
+	<para>El estándar <ulink url="https://www.ogc.org/publications/standard/geopose/">OGC GeoPose</ulink> denomina a esta estructura una cadena de transformaciones de marcos, donde cada transformación es un par de marcos de referencia en el que el marco exterior es el dominio y el marco interior es el rango. El estándar establece que un marco interior no puede ser un marco topocéntrico, por lo que una cadena lleva exactamente un marco que nombra un lugar sobre la tierra, en su exterior. De ello se derivan dos propiedades, ambas verificadas: toda la cadena tiene un solo SRID y todos los eslabones tienen la misma dimensión. Solo el eslabón exterior puede ser geodésico y solo el eslabón exterior puede llevar un SRID.</para>
+
+	<para>La composición de todos los eslabones da la pose del marco más interior en el marco exterior de la cadena, que es lo que devuelve la conversión al tipo <varname>pose</varname>. Esa única conversión otorga a una cadena toda la superficie definida para las poses, de modo que el tipo en sí permanece reducido.</para>
+
+	<para>Cuando el marco exterior es geográfico, la posición del eslabón exterior está en grados mientras que la traslación de un eslabón posterior está en metros a lo largo de los ejes locales Este-Norte-Arriba en su marco padre. La composición realiza esa suma en coordenadas geocéntricas y lee de vuelta la posición como geográfica, de modo que una cadena sobre un marco geográfico se compone sobre el elipsoide y no en el plano, y la orientación se vuelve a expresar respecto de la base Este-Norte-Arriba en la posición que alcanza la composición.</para>
+
+	<sect1 xml:id="static_pose_chains">
+		<title>Cadenas de poses estáticas</title>
+
+		<sect2 xml:id="posechain_inout">
+			<title>Entrada y salida</title>
+			<itemizedlist>
+				<listitem xml:id="posechain_asText">
+					<indexterm significance="normal"><primary><varname>asText</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>asEWKT</varname></primary></indexterm>
+					<para>Devuelve la representación en texto conocido (WKT) o en texto conocido extendido (EWKT)</para>
+					<para><varname>asText({posechain,posechain[]}) → {text,text[]}</varname></para>
+					<para><varname>asEWKT({posechain,posechain[]}) → {text,text[]}</varname></para>
+					<para>El eslabón exterior se escribe como una pose que lleva el marco de la cadena, y cada eslabón posterior se escribe sin él.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(posechain 'PoseChain(Pose(Point(0 0),0),Pose(Point(1 0),1))');
+-- PoseChain(Pose(POINT(0 0),0),Pose(POINT(1 0),1))
+SELECT asText(ARRAY[posechain 'PoseChain(Pose(Point(0 0),0))',
+  'PoseChain(Pose(Point(1 1),2))']);
+-- {"PoseChain(Pose(POINT(0 0),0))","PoseChain(Pose(POINT(1 1),2))"}
+SELECT asEWKT(posechain 'SRID=3812;PoseChain(Pose(Point(0 0),0),Pose(Point(1 0),1))');
+-- SRID=3812;PoseChain(Pose(POINT(0 0),0),Pose(POINT(1 0),1))
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="posechain_asBinary">
+					<indexterm significance="normal"><primary><varname>asBinary</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>asEWKB</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>asHexWKB</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>asHexEWKB</varname></primary></indexterm>
+					<para>Devuelve la representación en binario conocido (WKB), en binario conocido extendido (EWKB), en binario conocido hexadecimal (HexWKB) o en binario conocido extendido hexadecimal (HexEWKB)</para>
+					<para><varname>asBinary(posechain,endian text='') → bytea</varname></para>
+					<para><varname>asEWKB(posechain,endian text='') → bytea</varname></para>
+					<para><varname>asHexWKB(posechain,endian text='') → text</varname></para>
+					<para><varname>asHexEWKB(posechain,endian text='') → text</varname></para>
+					<para>La cadena escribe sus indicadores y su único SRID una sola vez, después el número de eslabones y después los valores de cada eslabón en orden. El resultado se codifica utilizando la codificación little-endian (NDR) o big-endian (XDR). Si no se especifica ninguna codificación, se utiliza la codificación de la máquina.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asBinary(posechain 'PoseChain(Pose(Point(1 2),1))');
+-- \x010101000000000000000000f03f0000000000000040000000000000f03f
+SELECT asHexWKB(posechain 'PoseChain(Pose(Point(1 2),1))');
+-- 010101000000000000000000F03F0000000000000040000000000000F03F
+SELECT asHexEWKB(posechain 'SRID=3812;PoseChain(Pose(Point(1 2),1))');
+-- 0141E40E000001000000000000000000F03F0000000000000040000000000000F03F
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="posechainFromText">
+					<indexterm significance="normal"><primary><varname>posechainFromText</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>posechainFromEWKT</varname></primary></indexterm>
+					<para>Entrada desde la representación en texto conocido (WKT) o en texto conocido extendido (EWKT)</para>
+					<para><varname>posechainFromText(text) → posechain</varname></para>
+					<para><varname>posechainFromEWKT(text) → posechain</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asEWKT(posechainFromText('PoseChain(Pose(Point(0 0),0),Pose(Point(1 0),1))'));
+-- PoseChain(Pose(POINT(0 0),0),Pose(POINT(1 0),1))
+SELECT asEWKT(posechainFromEWKT('SRID=3812;PoseChain(Pose(Point(0 0),0))'));
+-- SRID=3812;PoseChain(Pose(POINT(0 0),0))
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="posechainFromBinary">
+					<indexterm significance="normal"><primary><varname>posechainFromBinary</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>posechainFromEWKB</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>posechainFromHexEWKB</varname></primary></indexterm>
+					<para>Entrada desde la representación en binario conocido (WKB), en binario conocido extendido (EWKB) o en binario conocido extendido hexadecimal (HexEWKB)</para>
+					<para><varname>posechainFromBinary(bytea) → posechain</varname></para>
+					<para><varname>posechainFromEWKB(bytea) → posechain</varname></para>
+					<para><varname>posechainFromHexEWKB(text) → posechain</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT posechainFromBinary(asBinary(posechain 'PoseChain(Pose(Point(1 2),0.5))')) =
+  posechain 'PoseChain(Pose(Point(1 2),0.5))';
+-- t
+SELECT posechainFromHexEWKB(asHexEWKB(
+  posechain 'SRID=3812;PoseChain(Pose(Point(1 2),0.5))')) =
+  posechain 'SRID=3812;PoseChain(Pose(Point(1 2),0.5))';
+-- t
+</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="posechain_constructors">
+			<title>Constructores</title>
+			<itemizedlist>
+				<listitem xml:id="posechain_constructor">
+					<indexterm significance="normal"><primary><varname>posechain</varname></primary></indexterm>
+					<para>Construye una cadena de poses a partir de un arreglo de poses ordenadas desde el marco más exterior hacia dentro</para>
+					<para><varname>posechain(pose[]) → posechain</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asEWKT(posechain(ARRAY[pose 'Pose(Point(0 0),0)', pose 'Pose(Point(1 0),0)']));
+-- PoseChain(Pose(POINT(0 0),0),Pose(POINT(1 0),0))
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="posechain_appendPose">
+					<indexterm significance="normal"><primary><varname>appendPose</varname></primary></indexterm>
+					<para>Devuelve una cadena de poses con una pose añadida como su eslabón más interior</para>
+					<para><varname>appendPose(posechain,pose) → posechain</varname></para>
+					<para>La pose se lee en el marco que define el último eslabón de la cadena, por lo que no lleva ni un SRID ni el marcador geodésico.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asEWKT(appendPose(posechain 'PoseChain(Pose(Point(0 0),0))',
+  pose 'Pose(Point(1 0),0)'));
+-- PoseChain(Pose(POINT(0 0),0),Pose(POINT(1 0),0))
+</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="posechain_conversions">
+			<title>Conversión de tipos</title>
+			<itemizedlist>
+				<listitem xml:id="pose_to_posechain">
+					<indexterm significance="normal"><primary><varname>posechain</varname></primary></indexterm>
+					<para>Convierte una pose en una cadena de poses de un solo eslabón</para>
+					<para><varname>posechain(pose) → posechain</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asEWKT(posechain(pose 'SRID=3812;Pose(Point(1 2),0.5)'));
+-- SRID=3812;PoseChain(Pose(POINT(1 2),0.5))
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="posechain_to_pose">
+					<indexterm significance="normal"><primary><varname>pose</varname></primary></indexterm>
+					<para>Devuelve la pose de un marco que define la cadena, leída en el marco exterior de la cadena</para>
+					<para><varname>pose(posechain) → pose</varname></para>
+					<para><varname>pose(posechain,integer) → pose</varname></para>
+					<para>Con un argumento se compone toda la cadena, lo que da la pose de su marco más interior. Con dos se componen los primeros <varname>n</varname> eslabones, lo que da la pose del marco que define el eslabón <varname>n</varname>-ésimo, es decir, dónde se sitúa esa articulación de la cadena.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asEWKT(pose(posechain
+  'PoseChain(Pose(Point(0 0),0),Pose(Point(1 0),0),Pose(Point(1 0),0))'));
+-- Pose(POINT(2 0),0)
+SELECT asEWKT(pose(posechain
+  'PoseChain(Pose(Point(0 0),0),Pose(Point(1 0),0),Pose(Point(1 0),0))', 2));
+-- Pose(POINT(1 0),0)
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="posechain_to_point">
+					<indexterm significance="normal"><primary><varname>point</varname></primary></indexterm>
+					<para>Convierte una cadena de poses en el punto geométrico de su marco más interior</para>
+					<para><varname>point(posechain) → geometry</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_AsText(point(posechain
+  'PoseChain(Pose(Point(0 0),0),Pose(Point(1 0),0))'));
+-- POINT(1 0)
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="posechain_to_stbox">
+					<indexterm significance="normal"><primary><varname>stbox</varname></primary></indexterm>
+					<para>Convierte una cadena de poses en una caja espaciotemporal</para>
+					<para><varname>stbox(posechain) → stbox</varname></para>
+					<para>La caja cubre la posición compuesta de cada prefijo de la cadena y no solo la del conjunto: cada articulación es un lugar, y una ventana de consulta que alcanza el codo pero no la mano alcanza igualmente la cadena.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT stbox(posechain
+  'PoseChain(Pose(Point(0 0),0),Pose(Point(1 0),0),Pose(Point(1 0),0))');
+-- STBOX X((0,0),(2,0))
+</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="posechain_accessors">
+			<title>Accesores</title>
+			<itemizedlist>
+				<listitem xml:id="posechain_numPoses">
+					<indexterm significance="normal"><primary><varname>numPoses</varname></primary></indexterm>
+					<para>Devuelve el número de eslabones de una cadena de poses</para>
+					<para><varname>numPoses(posechain) → integer</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT numPoses(posechain
+  'PoseChain(Pose(Point(0 0),0),Pose(Point(1 0),0),Pose(Point(2 0),0))');
+-- 3
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="posechain_poseN">
+					<indexterm significance="normal"><primary><varname>startPose</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>endPose</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>poseN</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>poses</varname></primary></indexterm>
+					<para>Devuelve los eslabones de una cadena de poses</para>
+					<para><varname>startPose(posechain) → pose</varname></para>
+					<para><varname>endPose(posechain) → pose</varname></para>
+					<para><varname>poseN(posechain,integer) → pose</varname></para>
+					<para><varname>poses(posechain) → pose[]</varname></para>
+					<para>Un eslabón se devuelve tal como está almacenado, es decir, en el marco que define el eslabón anterior. Dónde se sitúa ese marco en el marco exterior de la cadena es lo que responde <varname>pose(posechain,integer)</varname>. La función <varname>poseN</varname> devuelve <varname>NULL</varname> si la cadena tiene menos eslabones que el número dado.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asEWKT(startPose(posechain
+  'SRID=3812;PoseChain(Pose(Point(0 0),0),Pose(Point(1 0),0))'));
+-- SRID=3812;Pose(POINT(0 0),0)
+SELECT asEWKT(endPose(posechain 'PoseChain(Pose(Point(0 0),0),Pose(Point(1 0),0))'));
+-- Pose(POINT(1 0),0)
+SELECT asEWKT(poseN(posechain
+  'PoseChain(Pose(Point(0 0),0),Pose(Point(1 0),0))', 2));
+-- Pose(POINT(1 0),0)
+SELECT asEWKT(poses(posechain 'PoseChain(Pose(Point(0 0),0),Pose(Point(1 0),0))'));
+-- {"Pose(POINT(0 0),0)","Pose(POINT(1 0),0)"}
+</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="posechain_transformations">
+			<title>Transformaciones</title>
+			<itemizedlist>
+				<listitem xml:id="posechain_round">
+					<indexterm significance="normal"><primary><varname>round</varname></primary></indexterm>
+					<para>Redondea los valores de los eslabones de una cadena de poses a un número de decimales</para>
+					<para><varname>round(posechain,integer=0) → posechain</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asEWKT(round(posechain
+  'PoseChain(Pose(Point(1.123456789 2.123456789),0.123456789))', 3));
+-- PoseChain(Pose(POINT(1.123 2.123),0.123))
+</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="posechain_srid">
+			<title>Sistema de referencia espacial</title>
+			<itemizedlist>
+				<listitem xml:id="posechain_SRID">
+					<indexterm significance="normal"><primary><varname>SRID</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>setSRID</varname></primary></indexterm>
+					<para>Devuelve o establece el identificador de referencia espacial del marco exterior de una cadena de poses</para>
+					<para><varname>SRID(posechain) → integer</varname></para>
+					<para><varname>setSRID(posechain,integer) → posechain</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT SRID(posechain 'SRID=3812;PoseChain(Pose(Point(1 2),0))');
+-- 3812
+SELECT asEWKT(setSRID(posechain 'PoseChain(Pose(Point(1 2),0))', 3812));
+-- SRID=3812;PoseChain(Pose(POINT(1 2),0))
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="posechain_transform">
+					<indexterm significance="normal"><primary><varname>transform</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>transformPipeline</varname></primary></indexterm>
+					<para>Transforma a un identificador de referencia espacial</para>
+					<para><varname>transform(posechain,integer) → posechain</varname></para>
+					<para><varname>transformPipeline(posechain,pipeline text,to_srid integer,is_forward bool=true) → posechain</varname></para>
+					<para>Solo el eslabón exterior nombra un marco, por lo que solo se transforma el eslabón exterior: cada uno de los demás eslabones es una transformación rígida leída en los ejes de su marco padre, y un cambio del marco exterior deja esos ejes como estaban. Se genera un error cuando la cadena de entrada tiene un SRID desconocido (representado por 0).</para>
+					<para>Para una cadena tridimensional sobre un marco geográfico, la orientación del eslabón exterior se vuelve a expresar en la base del marco de destino en su punto, exactamente como ocurre con una pose. Para una cadena bidimensional el ángulo es intrínseco a la proyección de origen y se transmite sin cambios.</para>
+					<para>La función <varname>transformPipeline</varname> especifica la transformación con una tubería de transformación de coordenadas definida representada con el siguiente formato de cadena:</para>
+					<para><varname>urn:ogc:def:coordinateOperation:AUTHORITY::CODE</varname></para>
+					<para>El SRID de la cadena de entrada se ignora, y el SRID de la cadena de salida es el que indica el parámetro <varname>to_srid</varname>. Según indica el último parámetro, la tubería se ejecuta de forma predeterminada en sentido directo; si se establece el parámetro en falso, la tubería se ejecuta en sentido inverso.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asEWKT(round(transform(posechain
+  'SRID=4326;PoseChain(Pose(Point(4.35 50.85),1),Pose(Point(10 0),0))', 3812), 6));
+-- SRID=3812;PoseChain(Pose(POINT(648679.018035 671067.055638),1),Pose(POINT(10 0),0))
+SELECT asEWKT(round(transformPipeline(posechain
+  'SRID=4326;PoseChain(Pose(Point(4.35 50.85),1))',
+  'urn:ogc:def:coordinateOperation:EPSG::16031', 4326), 6));
+-- SRID=4326;PoseChain(Pose(POINT(595032.294558 5634012.833372),1))
+</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
+		<sect2 xml:id="posechain_comparison">
+			<title>Comparaciones</title>
+			<itemizedlist>
+				<listitem xml:id="posechain_comparisons">
+					<indexterm significance="normal"><primary><varname>=</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&lt;&gt;</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&lt;</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&gt;</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&lt;=</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>&gt;=</varname></primary></indexterm>
+					<para>Operadores de comparación tradicionales</para>
+					<para><varname>{posechain} {=,&lt;&gt;,&lt;,&gt;,&lt;=,&gt;=} {posechain} → boolean</varname></para>
+					<para>El orden compara la dimensión, después el SRID, después los eslabones en orden y por último el número de eslabones, de modo que una cadena precede a toda cadena que la extiende.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT posechain 'PoseChain(Pose(Point(0 0),0))' =
+  posechain 'PoseChain(Pose(Point(0 0),0))';
+-- t
+SELECT posechain 'PoseChain(Pose(Point(0 0),0))' &lt;
+  posechain 'PoseChain(Pose(Point(0 0),0),Pose(Point(1 0),0))';
+-- t
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="posechain_same">
+					<indexterm significance="normal"><primary><varname>~=</varname></primary></indexterm>
+					<para>Devuelve verdadero si dos cadenas de poses son iguales hasta la tolerancia de la comparación de valores de punto flotante</para>
+					<para><varname>posechain ~= posechain → boolean</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT posechain 'PoseChain(Pose(Point(0 0),0))' ~=
+  posechain 'PoseChain(Pose(Point(0 0),0))';
+-- t
+</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+	</sect1>
+</chapter>

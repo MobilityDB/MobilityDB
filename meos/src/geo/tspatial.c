@@ -60,6 +60,9 @@
   #include "pose/pose.h"
   #include "pose/tpose_boxops.h"
 #endif 
+#if POSECHAIN
+  #include "posechain/posechain.h"
+#endif
 #if RGEO
   #include "pose/pose.h"
   #include "rgeo/trgeo.h"
@@ -106,6 +109,10 @@ spatialbase_as_text(Datum value, MeosType type, int maxdd)
 #if POSE
     case T_POSE:
       return pose_as_text(DatumGetPoseP(value), maxdd);
+#endif
+#if POSECHAIN
+    case T_POSECHAIN:
+      return posechain_as_text(DatumGetPoseChainP(value), maxdd);
 #endif
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,

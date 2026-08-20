@@ -68,6 +68,9 @@
   #include <meos_pose.h>
   #include "pose/pose.h"
 #endif
+#if POSECHAIN
+  #include "posechain/posechain.h"
+#endif
 #if RGEO
   #include "rgeo/trgeo.h"
 #endif
@@ -126,6 +129,10 @@ spatial_srid(Datum d, MeosType basetype)
     case T_POSE:
       return pose_srid(DatumGetPoseP(d));
 #endif
+#if POSECHAIN
+    case T_POSECHAIN:
+      return posechain_srid(DatumGetPoseChainP(d));
+#endif
 #if H3
     case T_H3INDEX:
       /* H3 cells are inherently WGS84 (EPSG:4326) */
@@ -177,6 +184,11 @@ spatial_set_srid(Datum d, MeosType basetype, int32_t srid)
 #if POSE || RGEO
     case T_POSE:
       pose_set_srid_int(DatumGetPoseP(d), srid);
+      return true;
+#endif
+#if POSECHAIN
+    case T_POSECHAIN:
+      posechain_set_srid_int(DatumGetPoseChainP(d), srid);
       return true;
 #endif
 #if H3
@@ -603,6 +615,11 @@ Datum
 #if POSE || RGEO
     case T_POSE:
       return PointerGetDatum(pose_transf_pj(DatumGetPoseP(d), srid_to, pj));
+#endif
+#if POSECHAIN
+    case T_POSECHAIN:
+      return PointerGetDatum(posechain_transf_pj(DatumGetPoseChainP(d),
+        srid_to, pj));
 #endif
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,

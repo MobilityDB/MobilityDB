@@ -112,6 +112,13 @@
 					<entry><varname>tpose</varname>, <varname>trgeometry</varname></entry>
 				</row>
 				<row>
+					<entry><emphasis role="bold"><varname>posechain</varname></emphasis></entry>
+					<entry><varname>posechainset</varname></entry>
+					<entry><varname/></entry>
+					<entry><varname/></entry>
+					<entry><varname/></entry>
+				</row>
+				<row>
 					<entry><emphasis role="bold"><varname>npoint</varname></emphasis></entry>
 					<entry><varname>npointset</varname></entry>
 					<entry><varname/></entry>

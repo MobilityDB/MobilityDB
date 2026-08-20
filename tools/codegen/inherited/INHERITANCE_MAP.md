@@ -53,6 +53,12 @@ Temporal<T>              temporal_type      = ALL temporal types            (cat
 
 - `tcbuffer`/`tnpoint`/`tpose`/`trgeometry` inherit `Temporal<T>` + `TSpatial<T>`
   but **not** the `TGeo<T>`/`TPoint<T>`-only surface.
+- **`posechain`** (`mobilitydb/sql/posechain/550_posechain.in.sql`) is a static
+  base type that no temporal type stands on yet, so it inherits nothing from
+  `Temporal<T>`. Its generated surface is the one `representation_families`
+  entry `posechain_base`; the type file, its accessors and its comparisons are
+  hand-written, as `pose_base`'s are. `spatial_basetype()` admits it, so the
+  SRID and bounding-box dispatchers reach it.
 - **`Tcell<T>`** (`tcellindex_type`, prefix `tcellindex_`) is a real abstract class
   factored via the `DggsCellOps` descriptor (§5a). Its cell families are **discrete**:
   they drop the continuous inherited aspects (distance, tempspatialrels).
@@ -620,6 +626,9 @@ bounding box). `pointcloudset_type()` :951-955 = pcpointset, pcpatchset — NOT
 - **Every base type has a set type** because a temporal value is a *function*
   from time to the base domain and `getValues` returns its RANGE as a set
   (§4c row 6) — a family cannot have a temporal type without its base set type.
+  The converse is what `posechain` stands on: it is a base type with no
+  temporal type, so it carries no set type either, and `posechainset` is the
+  catalog slot `tposechain` claims when it arrives.
 - **`Span<T>` needs a total order AND a meaningful contiguous interval** on the
   base domain, so it exists only for `span_basetype()` :963-967 = date, float,
   int, bigint, timestamptz — numbers + time. `span_canon_basetype()` :973-976 =

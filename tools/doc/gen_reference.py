@@ -57,6 +57,7 @@ LAYOUT = [
      "chapters": ["temporal_types_analytics.xml", "temporal_types_aggregation.xml"]},
     {"title": "Temporal Poses", "chapters": ["temporal_poses.xml"],
      "parts": ["Static Poses", "Temporal Poses", "OGC GeoPose v1.0 Support"]},
+    {"title": "Pose Chains", "chapters": ["temporal_pose_chains.xml"]},
     {"title": "Temporal Network Points", "chapters": ["temporal_network_points.xml"],
      "parts": ["Static Network Types", "Temporal Network Points"]},
     {"title": "Temporal Circular Buffers", "chapters": ["temporal_circular_buffers.xml"],
