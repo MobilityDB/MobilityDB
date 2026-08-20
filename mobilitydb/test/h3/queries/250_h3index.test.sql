@@ -28,9 +28,15 @@ SELECT h3index '622236750694711295';
 SELECT (622236750694711295::bigint::h3index)::bigint = 622236750694711295;
 
 /* Errors */
+-- The message, the position and the hint of the rejection are the h3
+-- extension's, which the suite takes from the environment rather than pinning,
+-- and their wording differs between its releases. The state code is the part
+-- an extension keeps, so the rejection is read from that alone
+\set VERBOSITY sqlstate
 SELECT h3index '0';
 SELECT h3index 'not-a-hex-cell';
 SELECT h3index '12345';   -- not a valid H3 cell
+\set VERBOSITY default
 
 -------------------------------------------------------------------------------
 -- Values the h3 extension's parser admits are rejected where they enter a
