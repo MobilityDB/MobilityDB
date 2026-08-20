@@ -47,49 +47,6 @@
 #include "cbuffer/cbuffer.h"
 
 /*****************************************************************************
- * Utility functions
- *****************************************************************************/
-
-/**
- * @brief Return true if the geometry/geography is a circle
- */
-bool
-circle_type(const GSERIALIZED *gs)
-{
-  if (gserialized_get_type(gs) != CURVEPOLYTYPE)
-    return false;
-  LWGEOM *geo = lwgeom_from_gserialized(gs);
-  if (lwgeom_count_rings(geo) != 1)
-  {
-    pfree(geo); 
-    return false;
-  }
-  LWCURVEPOLY *circle = (LWCURVEPOLY *) geo;
-  LWCIRCSTRING *ring = (LWCIRCSTRING *) circle->rings[0];
-  if (ring->points->npoints != 3 || ! ptarray_is_closed(ring->points))
-  {
-    pfree(geo); 
-    return false;
-  }
-  return true;
-}
-
-/**
- * @brief Ensure that the geometry/geography is a circle
- */
-bool
-ensure_circle_type(const GSERIALIZED *gs)
-{
-  if (! circle_type(gs))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Only circle polygons accepted");
-    return false;
-  }
-  return true;
-}
-
-/*****************************************************************************
  * Traversed area 
  *****************************************************************************/
 

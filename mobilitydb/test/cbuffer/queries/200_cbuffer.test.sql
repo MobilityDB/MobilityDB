@@ -106,6 +106,13 @@ SELECT asText(round((cbuffer 'Cbuffer(Point(1 1),0.2)'::geometry)::cbuffer, 6));
 SELECT asText(round(cbuffer(geometry 'CurvePolygon(CircularString(2 5, 8 5, 2 5))'), 6));
 SELECT ST_AsText(round(cbuffer(geometry 'CurvePolygon(CircularString(2 5, 8 5, 2 5))')::geometry, 6));
 
+-- A circle stands the same way whichever pair of opposite points its ring
+-- names, and a curve polygon that is not a circle converts by the circle that
+-- encloses it
+SELECT asText(round(cbuffer(geometry 'CurvePolygon(CircularString(0 -1, 0 1, 0 -1))'), 6));
+SELECT asText(round(cbuffer(geometry 'CurvePolygon(CircularString(0 0, 2 2, 4 0, 2 -2, 0 0))'), 6));
+SELECT asText(round(cbuffer(geometry 'CurvePolygon(CompoundCurve(CircularString(0 0, 2 2, 4 0),(4 0, 0 0)))'), 6));
+
 -- SELECT geometry 'SRID=5676;Point(610.455019399524 528.508247341961)'::cbuffer;
 
 -- Minimum Enclosing Circle (via geometry::cbuffer cast for non-point geometries)
