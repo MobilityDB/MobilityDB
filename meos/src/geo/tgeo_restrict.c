@@ -2122,7 +2122,7 @@ tgeo_restrict_geom(const Temporal *temp, const GSERIALIZED *gs,
       MEOS_FLAGS_GET_INTERP(temp->flags) == LINEAR)
   {
     LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
-    bool supported = geom_clip_supported(lwgeom);
+    bool supported = geom_meos_supported(lwgeom);
     lwgeom_free(lwgeom);
     if (supported)
       return tpoint_linear_restrict_geom(temp, gs, atfunc);

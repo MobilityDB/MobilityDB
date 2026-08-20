@@ -1042,7 +1042,7 @@ ea_disjoint_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
   result = 0;
   /* The planar 2D relationship indexes the edges of the geometry to resolve
    * one composing value against it. Since the geometry is the same for every
-   * value, its edges are extracted and indexed once, in a clip context the
+   * value, its edges are extracted and indexed once, in a edge context the
    * loop reuses, instead of once per value as calling the relationship
    * directly would do. The condition selecting the context is the one
    * #geo_disjoint_fn_geo uses to select the planar 2D relationship */
@@ -1056,8 +1056,8 @@ ea_disjoint_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
      * reaches the decomposition only for a value whose box meets the
      * geometry, and answers from the boxes alone for the values that do not */
     LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
-    if (geom_clip_supported(lwgeom))
-      ctx = geo_clip_ctx_make(gs);
+    if (geom_meos_supported(lwgeom))
+      ctx = geo_edge_ctx_make(gs);
     lwgeom_free(lwgeom);
   }
   datum_func2 func = geo_disjoint_fn_geo(temp->flags, gs->gflags);
@@ -1072,7 +1072,7 @@ ea_disjoint_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
       break;
     }
   }
-  geo_clip_ctx_free(ctx);
+  geo_edge_ctx_free(ctx);
   pfree(datumarr);
   return result;
 }
@@ -1267,7 +1267,7 @@ ea_intersects_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
       ! FLAGS_GET_Z(gs->gflags))
   {
     LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
-    bool supported = geom_clip_supported(lwgeom);
+    bool supported = geom_meos_supported(lwgeom);
     lwgeom_free(lwgeom);
     if (supported)
     {
@@ -1817,7 +1817,7 @@ ea_dwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
       gserialized_get_type(gs) != POINTTYPE)
   {
     LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
-    bool supported = geom_clip_supported(lwgeom);
+    bool supported = geom_meos_supported(lwgeom);
     lwgeom_free(lwgeom);
     if (supported)
     {

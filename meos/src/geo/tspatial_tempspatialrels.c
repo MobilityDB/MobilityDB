@@ -537,7 +537,7 @@ tinterrel_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter)
       MEOS_FLAGS_GET_INTERP(temp->flags) == LINEAR)
   {
     LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
-    bool supported = geom_clip_supported(lwgeom);
+    bool supported = geom_meos_supported(lwgeom);
     lwgeom_free(lwgeom);
     if (supported)
     {
@@ -1574,7 +1574,7 @@ tdwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
         ! MEOS_FLAGS_GET_Z(temp->flags) && ! FLAGS_GET_Z(gs->gflags))
     {
       LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
-      bool supported = geom_clip_supported(lwgeom);
+      bool supported = geom_meos_supported(lwgeom);
       lwgeom_free(lwgeom);
       if (supported)
         return tpoint_linear_dwithin_geom(temp, gs, dist);
