@@ -193,47 +193,6 @@ geopose_get_number(json_object *obj, const char *name, double *out)
   return true;
 }
 
-/**
- * @brief Convert (yaw, pitch, roll) — radians, ZYX intrinsic Tait-Bryan
- * convention — to a unit quaternion (W, X, Y, Z) in Hamilton convention.
- * @details ZYX order matches the OGC GeoPose spec (yaw about Z, then
- * pitch about new Y, then roll about new X). The output is unit-norm by
- * construction (modulo float rounding).
- */
-static void
-geopose_ypr_to_quaternion(double yaw_rad, double pitch_rad, double roll_rad,
-  double *W, double *X, double *Y, double *Z)
-{
-  double cy = cos(yaw_rad   * 0.5), sy = sin(yaw_rad   * 0.5);
-  double cp = cos(pitch_rad * 0.5), sp = sin(pitch_rad * 0.5);
-  double cr = cos(roll_rad  * 0.5), sr = sin(roll_rad  * 0.5);
-  *W = cr * cp * cy + sr * sp * sy;
-  *X = sr * cp * cy - cr * sp * sy;
-  *Y = cr * sp * cy + sr * cp * sy;
-  *Z = cr * cp * sy - sr * sp * cy;
-}
-
-/**
- * @brief Convert a unit quaternion (W, X, Y, Z, Hamilton convention) to
- * (yaw, pitch, roll) in radians, ZYX intrinsic Tait-Bryan convention.
- * @details The pitch term is clamped to [-1, 1] before `asin` to absorb
- * the small numeric drift `|q| - 1 = O(1e-15)` that long quaternion
- * compositions can introduce.
- */
-static void
-geopose_quaternion_to_ypr(double W, double X, double Y, double Z,
-  double *yaw_rad, double *pitch_rad, double *roll_rad)
-{
-  double sinp = 2.0 * (W * Y - Z * X);
-  if (sinp > 1.0)  sinp = 1.0;
-  if (sinp < -1.0) sinp = -1.0;
-  *pitch_rad = asin(sinp);
-  *roll_rad  = atan2(2.0 * (W * X + Y * Z),
-                     1.0 - 2.0 * (X * X + Y * Y));
-  *yaw_rad   = atan2(2.0 * (W * Z + X * Y),
-                     1.0 - 2.0 * (Y * Y + Z * Z));
-}
-
 /* Serialization flags: compact, and with '/' left unescaped so that the
  * emitted authority strings read as the standard writes them. */
 #define GEOPOSE_JSON_FLAGS \
@@ -375,7 +334,7 @@ geopose_pose_components(const Pose *pose, double *lon, double *lat, double *h,
   }
   else
     /* 2D pose: pure yaw rotation about the local vertical. */
-    geopose_ypr_to_quaternion(pose->data[2], 0.0, 0.0, W, X, Y, Z);
+    pose_ypr_to_quaternion(pose->data[2], 0.0, 0.0, W, X, Y, Z);
   return true;
 }
 
@@ -600,7 +559,7 @@ pose_from_geopose_object(json_object *root)
     else
     {
       double W, X, Y, Z;
-      geopose_ypr_to_quaternion(GEOPOSE_DEG2RAD(yaw_deg),
+      pose_ypr_to_quaternion(GEOPOSE_DEG2RAD(yaw_deg),
         GEOPOSE_DEG2RAD(pitch_deg), GEOPOSE_DEG2RAD(roll_deg),
         &W, &X, &Y, &Z);
       result = pose_make_3d(lon, lat, h, W, X, Y, Z, true,
@@ -726,7 +685,7 @@ pose_to_geopose_object(const Pose *pose, int conformance, int precision)
   else /* GEOPOSE_BASIC_YPR */
   {
     double yaw_rad, pitch_rad, roll_rad;
-    geopose_quaternion_to_ypr(W, X, Y, Z, &yaw_rad, &pitch_rad, &roll_rad);
+    pose_quaternion_to_ypr(W, X, Y, Z, &yaw_rad, &pitch_rad, &roll_rad);
     json_object *ja = json_object_new_object();
     json_object_object_add(ja, "yaw",
       geopose_new_double(GEOPOSE_RAD2DEG(yaw_rad), precision));

@@ -2649,6 +2649,9 @@
 					<listitem>
 						<para><link linkend="pose_yaw_pitch_roll"><varname>yaw</varname>, <varname>pitch</varname>, <varname>roll</varname></link>: Return the yaw, pitch, or roll angle of a (temporal) pose, in radians, under the ZYX intrinsic Tait-Bryan convention required by the OGC GeoPose Basic-YPR conformance class</para>
 					</listitem>
+					<listitem>
+						<para><link linkend="pose_ypr"><varname>ypr</varname></link>: Return the orientation of a pose as a yaw / pitch / roll triple, in radians</para>
+					</listitem>
 				</itemizedlist>
 			</sect3>
 

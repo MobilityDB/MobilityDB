@@ -74,6 +74,35 @@ SELECT pose('Point(1 1)',-1.5);
  POSE (0101000000000000000000F03F000000000000F03F, -1.5)
 (1 row)
 
+SELECT asText(pose(ST_PointZ(1,1,1), 0, 0, 0));
+            astext             
+-------------------------------
+ Pose(POINT Z (1 1 1),1,0,0,0)
+(1 row)
+
+SELECT asText(pose(ST_PointZ(1,1,1), radians(90), 0, 0), 6);
+                   astext                    
+---------------------------------------------
+ Pose(POINT Z (1 1 1),0.707107,0,0,0.707107)
+(1 row)
+
+SELECT asText(pose(ST_PointZ(1,1,1), radians(30), radians(45), radians(60)), 6);
+                         astext                          
+---------------------------------------------------------
+ Pose(POINT Z (1 1 1),0.822363,0.360423,0.43968,0.02226)
+(1 row)
+
+SELECT round(degrees(yaw(pose(ST_PointZ(0,0,0), radians(30), radians(45),
+  radians(60))))::numeric, 6);
+   round   
+-----------
+ 30.000000
+(1 row)
+
+SELECT asText(pose(ST_Point(1,1), 0, 0, 0));
+ERROR:  The geometry must have Z dimension
+SELECT asText(pose(ST_PointZ(1,1,1), 'NaN', 0, 0));
+ERROR:  The yaw, pitch and roll angles must be finite
 SELECT ST_AsText(point(pose 'Pose(Point(1 1),0.5)'));
  st_astext  
 ------------
@@ -148,6 +177,26 @@ SELECT quaternion(pose 'Pose(Point(0 0 0), 0.5, 0.5, 0.5, 0.5)');
 
 SELECT quaternion(pose 'Pose(Point(1 1),0.5)');
 ERROR:  The pose must have Z dimension
+SELECT ypr(pose 'Pose(Point(1 1),0.5)');
+    ypr    
+-----------
+ (0.5,0,0)
+(1 row)
+
+SELECT ypr(pose 'Pose(Point Z(1 1 1), 1, 0, 0, 0)');
+   ypr   
+---------
+ (0,0,0)
+(1 row)
+
+SELECT round(degrees((ypr(pose 'Pose(Point Z(1 1 1), 0.5, 0.5, 0.5, 0.5)')).yaw)::numeric, 6),
+  round(degrees((ypr(pose 'Pose(Point Z(1 1 1), 0.5, 0.5, 0.5, 0.5)')).pitch)::numeric, 6),
+  round(degrees((ypr(pose 'Pose(Point Z(1 1 1), 0.5, 0.5, 0.5, 0.5)')).roll)::numeric, 6);
+   round   |  round   |   round   
+-----------+----------+-----------
+ 90.000000 | 0.000000 | 90.000000
+(1 row)
+
 SELECT asText(round(pose 'Pose(Point(1.123456789 1.123456789), 0.123456789)', 6));
                  astext                  
 -----------------------------------------

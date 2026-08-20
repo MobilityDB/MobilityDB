@@ -707,6 +707,9 @@ TPOSE_CONFIG = dict(
         # point geometry.
         "pose_make_3d":      {3: "1.0", 4: "0.0", 5: "0.0", 6: "0.0"},
         "pose_make_point3d": {0: "geom_pointz1", 1: "1.0", 2: "0.0", 3: "0.0", 4: "0.0"},
+        # The YPR constructor needs the same 3D point; its angles are plain
+        # radians, so the default "double -> 1.0" mapping is already valid.
+        "pose_make_point3d_ypr": {0: "geom_pointz1"},
         # pose_quaternion reads a 3D pose's quaternion.
         "pose_quaternion":   {0: "pose3d1"},
         # tpose_make(tpoint, tradius): a temporal geometry point and a temporal

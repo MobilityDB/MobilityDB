@@ -109,6 +109,10 @@ extern Datum datum_pose_round(Datum pose, Datum size);
 extern void pose_quaternion_mul(double aw, double ax, double ay, double az,
   double bw, double bx, double by, double bz,
   double *ow, double *ox, double *oy, double *oz);
+extern void pose_ypr_to_quaternion(double yaw_rad, double pitch_rad,
+  double roll_rad, double *W, double *X, double *Y, double *Z);
+extern void pose_quaternion_to_ypr(double W, double X, double Y, double Z,
+  double *yaw_rad, double *pitch_rad, double *roll_rad);
 extern void pose_enu_to_ecef_quaternion(double lat_rad, double lon_rad,
   double *W, double *X, double *Y, double *Z);
 extern Pose *pose_transf_pj(const Pose *pose, int32_t srid_to,

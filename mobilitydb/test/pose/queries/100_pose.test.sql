@@ -57,6 +57,20 @@ SELECT pose(geography 'Point(1 1)',1.5);
 \set VERBOSITY default
 SELECT pose('Point(1 1)',-1.5);
 
+-- The Basic-YPR constructor: the orientation given as yaw, pitch and roll
+-- in radians rather than as a quaternion.
+SELECT asText(pose(ST_PointZ(1,1,1), 0, 0, 0));
+SELECT asText(pose(ST_PointZ(1,1,1), radians(90), 0, 0), 6);
+SELECT asText(pose(ST_PointZ(1,1,1), radians(30), radians(45), radians(60)), 6);
+-- It round-trips against the ypr accessor.
+SELECT round(degrees(yaw(pose(ST_PointZ(0,0,0), radians(30), radians(45),
+  radians(60))))::numeric, 6);
+\set VERBOSITY terse
+-- A 2D point has no 3D orientation to carry.
+SELECT asText(pose(ST_Point(1,1), 0, 0, 0));
+SELECT asText(pose(ST_PointZ(1,1,1), 'NaN', 0, 0));
+\set VERBOSITY default
+
 -------------------------------------------------------------------------------
 -- Accessing values
 -------------------------------------------------------------------------------
@@ -87,6 +101,16 @@ SELECT quaternion(pose 'Pose(Point(0 0 0), 0.5, 0.5, 0.5, 0.5)');
 \set VERBOSITY terse
 SELECT quaternion(pose 'Pose(Point(1 1),0.5)');
 \set VERBOSITY default
+
+-- The same orientation in the other GeoPose encoding. Defined for both
+-- dimensions: a 2D pose yaws by its stored angle and neither pitches nor
+-- rolls.
+SELECT ypr(pose 'Pose(Point(1 1),0.5)');
+SELECT ypr(pose 'Pose(Point Z(1 1 1), 1, 0, 0, 0)');
+-- Bounded in degrees: an unbounded pi/2 would drift across libm.
+SELECT round(degrees((ypr(pose 'Pose(Point Z(1 1 1), 0.5, 0.5, 0.5, 0.5)')).yaw)::numeric, 6),
+  round(degrees((ypr(pose 'Pose(Point Z(1 1 1), 0.5, 0.5, 0.5, 0.5)')).pitch)::numeric, 6),
+  round(degrees((ypr(pose 'Pose(Point Z(1 1 1), 0.5, 0.5, 0.5, 0.5)')).roll)::numeric, 6);
 
 -------------------------------------------------------------------------------
 -- Modification functions
