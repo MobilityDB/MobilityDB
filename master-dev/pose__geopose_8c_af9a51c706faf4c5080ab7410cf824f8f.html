@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: pose_from_geopose_object</title>
+<title>MobilityDB: tpose_as_geopose_stream_header</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -134,13 +134,13 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__geopose_ga2612cb1c904490cfe57729f3f4b7a80d.html#ga2612cb1c904490cfe57729f3f4b7a80d">pose_as_geopose</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__geopose_ga2c6aeab3635ad3d3437d3d7b01abe4b0.html#ga2c6aeab3635ad3d3437d3d7b01abe4b0">pose_from_geopose</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pose__geopose_8c_a5db65504860917c4397a994471c491ab.html#a5db65504860917c4397a994471c491ab">pose_from_geopose_advanced</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="pose__geopose_8c_a863b1f9809d0a86116fafc79773e5b09.html#a863b1f9809d0a86116fafc79773e5b09">pose_from_geopose_object</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="pose__geopose_8c_a863b1f9809d0a86116fafc79773e5b09.html#a863b1f9809d0a86116fafc79773e5b09">pose_from_geopose_object</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pose__geopose_8c_a24638c08b3aefd5efe8edb8597daa526.html#a24638c08b3aefd5efe8edb8597daa526">pose_to_geopose_advanced</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pose__geopose_8c_a1890910253e425784a8ae497fff473c9.html#a1890910253e425784a8ae497fff473c9">pose_to_geopose_object</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__geopose__accessor_ga5d1f5abdb64356d3e14cdd7737bbe28b.html#ga5d1f5abdb64356d3e14cdd7737bbe28b">tpose_as_geopose</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__geopose_ga8d09f2ca02849162f5b905e50dd85e82.html#ga8d09f2ca02849162f5b905e50dd85e82">tpose_as_geopose_stream</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__geopose_gae02c37ac519c4920772df78b8a7a0ccc.html#gae02c37ac519c4920772df78b8a7a0ccc">tpose_as_geopose_stream_element</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="pose__geopose_8c_af9a51c706faf4c5080ab7410cf824f8f.html#af9a51c706faf4c5080ab7410cf824f8f">tpose_as_geopose_stream_header</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="pose__geopose_8c_af9a51c706faf4c5080ab7410cf824f8f.html#af9a51c706faf4c5080ab7410cf824f8f">tpose_as_geopose_stream_header</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__geopose__accessor_ga6645db4832cba4a8f2abaf7cf0770013.html#ga6645db4832cba4a8f2abaf7cf0770013">tpose_from_geopose</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pose__geopose_8c_a7b1dddc712790682ba6eea6ec69cc1c0.html#a7b1dddc712790682ba6eea6ec69cc1c0">tpose_from_geopose_series</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pose__geopose_8c_a359b9f5d52fb1ecffc778ceb114dc2e9.html#a359b9f5d52fb1ecffc778ceb114dc2e9">tpose_parse_instants</a></td></tr>
@@ -151,32 +151,31 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a863b1f9809d0a86116fafc79773e5b09" name="a863b1f9809d0a86116fafc79773e5b09"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a863b1f9809d0a86116fafc79773e5b09">&#9670;&#160;</a></span>pose_from_geopose_object()</h2>
+<a id="af9a51c706faf4c5080ab7410cf824f8f" name="af9a51c706faf4c5080ab7410cf824f8f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af9a51c706faf4c5080ab7410cf824f8f">&#9670;&#160;</a></span>tpose_as_geopose_stream_header()</h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static <a class="el" href="structPose.html">Pose</a> * pose_from_geopose_object </td>
+          <td class="memname">char * tpose_as_geopose_stream_header </td>
           <td>(</td>
-          <td class="paramtype">json_object *&#160;</td>
-          <td class="paramname"><em>root</em></td><td>)</td>
+          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
+          <td class="paramname"><em>temp</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>precision</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
-
-<p>Build a pose from a parsed Basic-class GeoPose JSON object. </p>
-<p >Used internally by <code>pose_from_geopose</code> (single-pose entry point) and by the temporal-GeoPose entry points which iterate an envelope's <code>instants</code> array. The caller owns the <code>root</code> and is responsible for releasing it. </p>
 
 </div>
 </div>

@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: tpose_as_geopose_stream_header</title>
+<title>MobilityDB: tpose_as_geopose_stream</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -79,6 +79,7 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__geopose_ga94ca66714e6c9f92dca7b5cddfe26dda.html#ga94ca66714e6c9f92dca7b5cddfe26dda">geopose_stream_header_obj</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__geopose_ga107515f90626286320c25aff8bae7b35.html#ga107515f90626286320c25aff8bae7b35">pose_angular_distance</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__geopose_ga35e0152cab2586184ec03943561134ba.html#ga35e0152cab2586184ec03943561134ba">pose_apply_geo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__geopose_ga2612cb1c904490cfe57729f3f4b7a80d.html#ga2612cb1c904490cfe57729f3f4b7a80d">pose_as_geopose</a></td></tr>
@@ -87,20 +88,20 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__geopose_gafd53d866fa9c7669104fb88dd8496d9f.html#gafd53d866fa9c7669104fb88dd8496d9f">pose_pitch</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__geopose_ga3c10ffe2f8d75138fa01925278618344.html#ga3c10ffe2f8d75138fa01925278618344">pose_roll</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__geopose_gacf71acda83841765a9b85c54c5fcac47.html#gacf71acda83841765a9b85c54c5fcac47">pose_yaw</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__pose__base__geopose_ga8d09f2ca02849162f5b905e50dd85e82.html#ga8d09f2ca02849162f5b905e50dd85e82">tpose_as_geopose_stream</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__geopose_gae02c37ac519c4920772df78b8a7a0ccc.html#gae02c37ac519c4920772df78b8a7a0ccc">tpose_as_geopose_stream_element</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__pose__base__geopose_gaf9a51c706faf4c5080ab7410cf824f8f.html#gaf9a51c706faf4c5080ab7410cf824f8f">tpose_as_geopose_stream_header</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="gaf9a51c706faf4c5080ab7410cf824f8f" name="gaf9a51c706faf4c5080ab7410cf824f8f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gaf9a51c706faf4c5080ab7410cf824f8f">&#9670;&#160;</a></span>tpose_as_geopose_stream_header()</h2>
+<a id="ga8d09f2ca02849162f5b905e50dd85e82" name="ga8d09f2ca02849162f5b905e50dd85e82"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga8d09f2ca02849162f5b905e50dd85e82">&#9670;&#160;</a></span>tpose_as_geopose_stream()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">char * tpose_as_geopose_stream_header </td>
+          <td class="memname">char * tpose_as_geopose_stream </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
           <td class="paramname"><em>temp</em>, </td>
@@ -119,16 +120,16 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the OGC GeoPose StreamHeader of a temporal pose. </p>
-<p >A Stream is the open-ended member of the Composite Sequence classes: it carries the same frames as an Irregular Series but states neither how many poses there are nor when they end, since more may arrive. The standard splits it into two documents, and this is the one that "appears once at the beginning of a stream": the transition model of Requirement 35 and, per Requirement 34, the outer frame that every element is expressed against.</p>
-<p >The frame is anchored at the first pose of <code>temp</code>, so a producer that accumulates its value with <code>temporal_append_tinstant</code> writes the header from the same value it goes on to stream, and the elements it emits speak of the same tangent point. </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Return the OGC GeoPose Stream of a temporal pose. </p>
+<p >A stream written as one document: the <code>StreamHeader</code> that opens it, and every <code>StreamElement</code> it carries, as <code>GeoPose.Composite.Sequence.Stream.Schema.json</code> requires. The two incremental entry points write the same documents a piece at a time, for a producer emitting poses as they arrive; this writes the stream a reader already holds whole, which is what a query returns and what a conformance submission carries.</p>
+<p >The outer frame is anchored at the first pose of <code>temp</code>, so the header and every element speak of one tangent point, exactly as the incremental pair does. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> pose </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">precision</td><td>Significant digits in JSON numbers; -1 = lossless </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>On error return <code>NULL</code> </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>On error return <code>NULL</code> @csqlfn <a class="el" href="group__mobilitydb__pose__inout_ga2e802fd0e608324e8f66b26da510ae8e.html#ga2e802fd0e608324e8f66b26da510ae8e" title="Return the OGC GeoPose Stream of a temporal pose @sqlfn asGeoPoseStream()">Tpose_as_geopose_stream()</a> </dd></dl>
 
 </div>
 </div>
