@@ -301,33 +301,19 @@ makeBboxExpr(Node *arg, Oid argoid, Oid retoid, Oid callingfunc)
   /* Expand function must be in same namespace as the caller */
   char *nspname = get_namespace_name(get_func_namespace(callingfunc));
   char *funcname = NULL; /* make compiler quiet */
+  /* The conversion is named after the bounding box of the class the argument
+   * belongs to, read from the same catalog class predicates that choose the
+   * box type of the index expression. The alpha types reach their `tstzspan`
+   * through `timeSpan`, there being no scalar `span` of a temporal value */
   MeosType argtype = oid_meostype(argoid);
-  if (argtype == T_TBOOL || argtype == T_TTEXT)
-    funcname = "span";
-  else if (argtype == T_INT4 || argtype == T_FLOAT8 ||
-           argtype == T_TINT || argtype == T_TFLOAT)
+  if (talpha_type(argtype))
+    funcname = "timeSpan";
+  else if (tnumber_basetype(argtype) || tnumber_type(argtype))
     funcname = "tbox";
-  else if (argtype == T_GEOMETRY || argtype == T_GEOGRAPHY ||
-      argtype == T_TGEOMPOINT || argtype == T_TGEOGPOINT
-#if CBUFFER
-      || argtype == T_CBUFFER || argtype == T_TCBUFFER
-#endif /* CBUFFER */
-#if NPOINT
-      || argtype == T_NPOINT || argtype == T_TNPOINT
-#endif /* NPOINT */
-#if POSE
-      || argtype == T_TPOSE
-#endif /* POSE */
-#if RGEO
-      || argtype == T_TRGEOMETRY
-#endif /* RGEO */
-#if QUADBIN
-      || argtype == T_TQUADBIN
-#endif /* QUADBIN */
-      )
+  else if (spatial_basetype(argtype) || tspatial_type(argtype))
     funcname = "stbox";
   else
-    elog(ERROR, "Unknown stbox function for type %d", argoid);
+    elog(ERROR, "Unknown bounding box function for type %d", argoid);
   nspfunc = list_make2(makeString(nspname), makeString(funcname));
   funcoid = LookupFuncName(nspfunc, 1, funcargs, noError);
   if (funcoid == InvalidOid)
@@ -517,33 +503,24 @@ Temporal_supportfn(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
       if (strategy == InvalidStrategy)
         PG_RETURN_POINTER((Node *) NULL);
 
-      /* Determine type of right argument of the index support expression
-       * which is a bounding box */
+      /* Determine type of right argument of the index support expression,
+       * which is the bounding box of the class the operand belongs to: a
+       * `tstzspan` for the alpha types, a `tbox` for the numbers and their
+       * value domain, and an `stbox` for the spatial ones and their base
+       * types. The membership is read from the catalog class predicates, so a
+       * family belonging to a class is rewritten by construction and the box
+       * named here is the one its opclass declares an operator against.
+       * The temporal pointcloud types are absent because their box is a
+       * `tpcbox` and no scalar conversion to it exists to build the index
+       * expression from; they keep the default of no rewrite */
       exproid = rightoid;
-      if (righttype == T_TBOOL || righttype == T_TTEXT)
+      if (talpha_type(righttype))
         exproid = meostype_oid(T_TSTZSPAN);
-      else if (righttype == T_INT4 || righttype == T_FLOAT8 ||
-          righttype == T_TINT || righttype == T_TFLOAT || righttype == T_TBOX)
+      else if (tnumber_basetype(righttype) || tnumber_type(righttype) ||
+          righttype == T_TBOX)
         exproid = meostype_oid(T_TBOX);
-      else if (righttype == T_GEOMETRY || righttype == T_GEOGRAPHY ||
-          righttype == T_TGEOMPOINT || righttype == T_TGEOGPOINT ||
-          righttype == T_STBOX
-#if CBUFFER
-          || righttype == T_CBUFFER || righttype == T_TCBUFFER
-#endif /* CBUFFER */
-#if NPOINT
-          || righttype == T_NPOINT || righttype == T_TNPOINT
-#endif /* NPOINT */
-#if POSE
-          || righttype == T_TPOSE
-#endif /* POSE */
-#if RGEO
-          || righttype == T_TRGEOMETRY
-#endif /* RGEO */
-#if QUADBIN
-          || righttype == T_TQUADBIN
-#endif /* QUADBIN */
-          )
+      else if (spatial_basetype(righttype) || tspatial_type(righttype) ||
+          righttype == T_STBOX)
         exproid = meostype_oid(T_STBOX);
       else
         PG_RETURN_POINTER((Node *) NULL);
