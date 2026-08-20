@@ -616,63 +616,9 @@ ensure_spatial_validity(const Temporal *temp1, const Temporal *temp2)
   return true;
 }
 
-/**
- * @brief Ensure that the spatiotemporal argument has geodetic coordinates
- */
-bool
-ensure_geodetic(int16 flags)
-{
-  if ((MEOS_FLAGS_GET_X(flags) || MEOS_FLAGS_GET_Z(flags)) && 
-    MEOS_FLAGS_GET_GEODETIC(flags))
-    return true;
-  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-    "Only geodetic coordinates supported");
-  return false;
-}
 
-/**
- * @brief Ensure that the spatiotemporal argument has planar coordinates
- */
-bool
-ensure_not_geodetic(int16 flags)
-{
-  if ((MEOS_FLAGS_GET_X(flags) || MEOS_FLAGS_GET_Z(flags)) && 
-    ! MEOS_FLAGS_GET_GEODETIC(flags))
-    return true;
-  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-    "Only planar coordinates supported");
-  return false;
-}
 
-/**
- * @brief Ensure that the spatiotemporal argument have the same type of
- * coordinates, either planar or geodetic
- */
-bool
-ensure_same_geodetic(int16 flags1, int16 flags2)
-{
-  if (MEOS_FLAGS_GET_X(flags1) && MEOS_FLAGS_GET_X(flags2) &&
-    MEOS_FLAGS_GET_GEODETIC(flags1) != MEOS_FLAGS_GET_GEODETIC(flags2))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Operation on mixed planar and geodetic coordinates");
-    return false;
-  }
-  return true;
-}
 
-/**
- * @brief Ensure that two geometries/geographies have the same dimensionality
- */
-bool
-ensure_same_geodetic_geo(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
-{
-  if (FLAGS_GET_GEODETIC(gs1->gflags) == FLAGS_GET_GEODETIC(gs2->gflags))
-    return true;
-  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Operation on mixed planar and geodetic coordinates");
-  return false;
-}
 
 /**
  * @brief Ensure that the spatiotemporal argument and the geometry/geography
@@ -690,76 +636,9 @@ ensure_same_geodetic_tspatial_geo(const Temporal *temp, const GSERIALIZED *gs)
   return true;
 }
 
-/**
- * @brief Ensure that the SRID is known
- */
-bool
-ensure_srid_known(int32_t srid)
-{
-  if (srid != SRID_UNKNOWN)
-    return true;
-  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-    "The SRID cannot be unknown");
-  return false;
-}
 
-/**
- * @brief Ensure that the two spatial objects have the same SRID
- */
-bool
-ensure_same_srid(int32_t srid1, int32_t srid2)
-{
-  if (srid1 == srid2)
-    return true;
-  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-    "Operation on mixed SRID");
-  return false;
-}
 
-/**
- * @brief Reconcile the SRID of two spatial components: copy the known SRID onto
- * the one that is unknown, and ensure that two known SRIDs are equal
- * @details This is the single construction-time SRID resolution used by the
- * parsers and the constructors: an unknown (`SRID_UNKNOWN`) component adopts the
- * SRID of the other, while two known but different SRIDs are rejected. By
- * convention @p srid1 is the geometry SRID and @p srid2 the temporal type SRID.
- * @param[in] srid1,srid2 SRIDs to reconcile
- * @param[out] result Common SRID (the known one, or `SRID_UNKNOWN` if both are
- * unknown)
- * @return On error (two different known SRIDs) return false
- */
-bool
-ensure_srid_reconcile(int32_t srid1, int32_t srid2, int32_t *result)
-{
-  if (srid1 == SRID_UNKNOWN)
-    *result = srid2;
-  else if (srid2 == SRID_UNKNOWN || srid2 == srid1)
-    *result = srid1;
-  else
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "SRID of geometry (%d) and temporal type (%d) must correspond", srid1,
-      srid2);
-    return false;
-  }
-  return true;
-}
 
-/**
- * @brief Ensure that two temporal points have the same dimensionality as given
- * by their flags
- */
-bool
-ensure_same_dimensionality(int16 flags1, int16 flags2)
-{
-  if (MEOS_FLAGS_GET_X(flags1) == MEOS_FLAGS_GET_X(flags2) &&
-      MEOS_FLAGS_GET_Z(flags1) == MEOS_FLAGS_GET_Z(flags2) &&
-      MEOS_FLAGS_GET_T(flags1) == MEOS_FLAGS_GET_T(flags2))
-    return true;
-  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-    "The arguments must be of the same dimensionality");
-  return false;
-}
 
 /**
  * @brief Return true if the two temporal points have the same spatial
@@ -774,34 +653,6 @@ same_spatial_dimensionality(int16 flags1, int16 flags2)
   return false;
 }
 
-/**
- * @brief Ensure that two temporal points have the same spatial dimensionality
- * as given by their flags
- */
-bool
-ensure_same_spatial_dimensionality(int16 flags1, int16 flags2)
-{
-  if (same_spatial_dimensionality(flags1, flags2))
-    return true;
-  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-    "Operation on mixed 2D/3D dimensions");
-  return false;
-}
-
-#if MEOS
-/**
- * @brief Ensure that two geometries/geographies have the same dimensionality
- */
-bool
-ensure_same_dimensionality_geo(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
-{
-  if (FLAGS_GET_Z(gs1->gflags) == FLAGS_GET_Z(gs2->gflags))
-    return true;
-  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-    "Operation on mixed 2D/3D dimensions");
-  return false;
-}
-#endif /* MEOS */
 
 /**
  * @brief Return true if a spatiotemporal value and a geometry/geography have
@@ -865,96 +716,12 @@ ensure_same_geodetic_stbox_geo(const STBox *box, const GSERIALIZED *gs)
   return true;
 }
 
-/**
- * @brief Ensure that the geometry/geography has not Z dimension
- */
-bool
-ensure_has_Z_geo(const GSERIALIZED *gs)
-{
-  if (FLAGS_GET_Z(gs->gflags))
-    return true;
-  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-    "The geometry must have Z dimension");
-  return false;
-}
 
-/**
- * @brief Ensure that the geometry/geography has not Z dimension
- */
-bool
-ensure_has_not_Z_geo(const GSERIALIZED *gs)
-{
-  if (! FLAGS_GET_Z(gs->gflags))
-    return true;
-  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-    "The geometry cannot have Z dimension");
-  return false;
-}
 
-/**
- * @brief Ensure that the geometry/geography has M dimension
- */
-bool
-ensure_has_M_geo(const GSERIALIZED *gs)
-{
-  if (FLAGS_GET_M(gs->gflags))
-    return true;
-  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-    "The geometry must have M dimension");
-  return false;
-}
 
-/**
- * @brief Ensure that the geometry/geography has not M dimension
- */
-bool
-ensure_has_not_M_geo(const GSERIALIZED *gs)
-{
-  if (! FLAGS_GET_M(gs->gflags))
-    return true;
-  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-    "The geometry cannot have M dimension");
-  return false;
-}
 
-/**
- * @brief Ensure that the geometry has geodetic coordinates
- */
-bool
-ensure_geodetic_geo(const GSERIALIZED *gs)
-{
-  if (FLAGS_GET_GEODETIC(gs->gflags))
-    return true;
-  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-    "Only geodetic coordinates supported");
-  return false;
-}
 
-/**
- * @brief Ensure that the geometry has planar coordinates
- */
-bool
-ensure_not_geodetic_geo(const GSERIALIZED *gs)
-{
-  if (! FLAGS_GET_GEODETIC(gs->gflags))
-    return true;
-  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-    "Only planar coordinates supported");
-  return false;
-}
 
-/**
- * @brief Ensure that the geometry/geography is a point
- */
-bool
-ensure_point_type(const GSERIALIZED *gs)
-{
-  if (gserialized_get_type(gs) == POINTTYPE)
-    return true;
-  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-    "Only point geometries accepted");
-  return false;
-}
 
 /**
  * @brief Ensure that the geometry/geography is a (multi)line
@@ -968,31 +735,7 @@ mline_type(const GSERIALIZED *gs)
   return false;
 }
 
-/**
- * @brief Ensure that the geometry/geography is a (multi)line
- */
-bool
-ensure_mline_type(const GSERIALIZED *gs)
-{
-  if (mline_type(gs))
-    return true;
-  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-    "Only (multi)line geometries accepted");
-  return false;
-}
 
-/**
- * @brief Ensure that the geometry/geography is not empty
- */
-bool
-ensure_not_empty(const GSERIALIZED *gs)
-{
-  if (! gserialized_is_empty(gs))
-    return true;
-  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-    "Only non-empty geometries accepted");
-  return false;
-}
 
 /*****************************************************************************/
 

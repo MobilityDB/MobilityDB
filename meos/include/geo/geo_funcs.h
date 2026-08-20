@@ -132,6 +132,26 @@ extern bool relate_point_on_boundary(double x, double y, Edge **edges,
   int nedges);
 extern int relate_point_in_area(double x, double y, Edge **edges, int nedges);
 
+extern bool ensure_srid_is_latlong(int32_t srid);
+extern bool ensure_geodetic_geo(const GSERIALIZED *gs);
+extern bool ensure_not_geodetic_geo(const GSERIALIZED *gs);
+extern bool ensure_geodetic(int16 flags);
+extern bool ensure_not_geodetic(int16 flags);
+extern bool ensure_same_geodetic(int16 flags1, int16 flags2);
+extern bool ensure_same_geodetic_geo(const GSERIALIZED *gs1,
+  const GSERIALIZED *gs2);
+extern bool ensure_srid_known(int32_t srid);
+extern bool ensure_same_srid(int32_t srid1, int32_t srid2);
+extern bool ensure_srid_reconcile(int32_t srid1, int32_t srid2, int32_t *result);
+extern bool ensure_same_dimensionality(int16 flags1, int16 flags2);
+extern bool ensure_same_spatial_dimensionality(int16 flags1, int16 flags2);
+extern bool ensure_has_Z_geo(const GSERIALIZED *gs);
+extern bool ensure_has_not_Z_geo(const GSERIALIZED *gs);
+extern bool ensure_has_M_geo(const GSERIALIZED *gs);
+extern bool ensure_has_not_M_geo(const GSERIALIZED *gs);
+extern bool ensure_point_type(const GSERIALIZED *gs);
+extern bool ensure_mline_type(const GSERIALIZED *gs);
+extern bool ensure_not_empty(const GSERIALIZED *gs);
 extern long double closest_point2d_on_segment_ratio(const POINT2D *p,
   const POINT2D *A, const POINT2D *B, POINT2D *closest);
 extern long double closest_point3dz_on_segment_ratio(const POINT3DZ *p,
