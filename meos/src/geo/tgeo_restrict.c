@@ -51,6 +51,7 @@
 #include "temporal/temporal_restrict.h"
 #include "temporal/tsequence.h"
 #include "temporal/type_util.h"
+#include "geo/geo_funcs.h"
 #include "geo/clip_clipper2.h"
 #include "geo/postgis_funcs.h"
 #include "geo/tgeo.h"

@@ -133,8 +133,6 @@ extern bool ensure_valid_tspatial_tspatial(const Temporal *temp1,
 extern bool ensure_valid_spatial_stbox_stbox(const STBox *box1,
   const STBox *box2);
 extern bool ensure_valid_tgeo_stbox(const Temporal *temp, const STBox *box);
-extern bool ensure_valid_geo_geo(const GSERIALIZED *gs1,
-  const GSERIALIZED *gs2);
 extern bool ensure_valid_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern bool ensure_valid_tgeo_tgeo(const Temporal *temp1,
   const Temporal *temp2);
@@ -155,14 +153,6 @@ extern int eacomp_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
 
 /* Functions derived from PostGIS to increase floating-point precision */
 
-extern long double closest_point2d_on_segment_ratio(const POINT2D *p,
-  const POINT2D *A, const POINT2D *B, POINT2D *closest);
-extern long double closest_point3dz_on_segment_ratio(const POINT3DZ *p,
-  const POINT3DZ *A, const POINT3DZ *B, POINT3DZ *closest);
-extern long double closest_point_on_segment_sphere(const POINT4D *p,
-  const POINT4D *A, const POINT4D *B, POINT4D *closest, double *dist);
-extern void interpolate_point4d_spheroid(const POINT4D *p1, const POINT4D *p2,
-  POINT4D *p, const SPHEROID *s, double f);
 
 /* Functions specializing the PostGIS functions ST_LineInterpolatePoint and
  * ST_LineLocatePoint */
@@ -188,13 +178,7 @@ extern bool geopoint_collinear(Datum value1, Datum value2, Datum value3,
 
 /* Trajectory functions */
 
-extern LWGEOM **lwpointarr_remove_duplicates(LWGEOM **points, int count,
-  int *newcount);
-extern LWGEOM *lwpointarr_make_trajectory(LWGEOM **points, int count,
-  interpType interp);
 extern LWLINE *lwline_make(Datum value1, Datum value2);
-extern LWGEOM *lwcoll_from_points_lines(LWGEOM **points, LWGEOM **lines,
-  int npoints, int nlines);
 
 /* Stop function */
 

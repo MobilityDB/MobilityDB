@@ -33,6 +33,7 @@
  * PostGIS functions in order to bypass the function manager in @p fmgr.c
  */
 
+#include "geo/geo_funcs.h"
 #include "geo/postgis_funcs.h"
 
 /* C */
