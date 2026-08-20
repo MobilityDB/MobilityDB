@@ -1548,7 +1548,7 @@
 					</listitem>
 
 					<listitem>
-						<para><link linkend="pose_orientation"><varname>orientation</varname></link>: Devuelve la orientación</para>
+						<para><link linkend="pose_quaternion"><varname>quaternion</varname></link>: Devuelve el cuaternión de orientación de una pose 3D</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

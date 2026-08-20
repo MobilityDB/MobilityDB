@@ -287,9 +287,12 @@ CREATE FUNCTION angularSpeed(tpose)
   AS 'MODULE_PATHNAME', 'Tpose_angular_speed'
   LANGUAGE C IMMUTABLE STRICT;
 
--- CREATE FUNCTION orientation(tpose)
+-- A quaternion is a composite type, not a temporal base type, so the
+-- orientation of a temporal pose has no temporal lift. The temporal
+-- orientation channel is given by yaw / pitch / roll above.
+-- CREATE FUNCTION quaternion(tpose)
   -- RETURNS quaternion[]
-  -- AS 'MODULE_PATHNAME', 'Tpose_orientation'
+  -- AS 'MODULE_PATHNAME', 'Tpose_quaternion'
   -- LANGUAGE C IMMUTABLE STRICT;
 
 /******************************************************************************/

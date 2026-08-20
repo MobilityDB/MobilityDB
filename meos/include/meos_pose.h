@@ -136,7 +136,7 @@ extern STBox *pose_to_stbox(const Pose *pose);
 
 extern uint32 pose_hash(const Pose *pose);
 extern uint64 pose_hash_extended(const Pose *pose, uint64 seed);
-extern double *pose_orientation(const Pose *pose, int *count);
+extern double *pose_quaternion(const Pose *pose, int *count);
 extern double pose_rotation(const Pose *pose);
 extern double pose_yaw(const Pose *pose);
 extern double pose_pitch(const Pose *pose);
@@ -249,7 +249,7 @@ extern Temporal *tpose_to_tpoint(const Temporal *temp);
 
 extern Pose *tpose_end_value(const Temporal *temp);
 extern Set *tpose_points(const Temporal *temp);
-// extern Temporal *tpose_orientation(const Temporal *temp);
+// extern Temporal *tpose_quaternion(const Temporal *temp);
 extern Temporal *tpose_rotation(const Temporal *temp);
 extern Temporal *tpose_yaw(const Temporal *temp);
 extern Temporal *tpose_pitch(const Temporal *temp);
