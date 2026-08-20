@@ -55,6 +55,10 @@ EXPECTED = os.path.join(ROOT, 'mobilitydb', 'test', 'pose', 'expected',
 # this order so that a Series is never mistaken for the Basic document of its
 # inner frames.
 CLASSES = [
+    # A whole stream holds a header and its elements, so its own member names
+    # it before either of theirs is looked for.
+    ('streamElements', 'Stream',
+        'GeoPose.Composite.Sequence.Stream.Schema.json'),
     ('innerFrameSeries', 'Regular Series',
         'GeoPose.Composite.Sequence.Series.Regular.Schema.json'),
     ('innerFrameAndTimeSeries', 'Irregular Series',
@@ -79,12 +83,14 @@ CLASSES = [
 ]
 
 # The classes the SQL surface writes, and which the expected output therefore
-# has to contain for this check to mean anything. The two stream documents are
-# written through the C API alone -- a stream is emitted a piece at a time by a
-# producer, which a query is not -- so they are validated wherever they appear
-# rather than demanded here; `meos/test/geopose_test.c` is what exercises them.
+# has to contain for this check to mean anything. A whole stream is among them:
+# a value a query already holds is written in one piece. The two INCREMENTAL
+# stream documents are written through the C API alone -- those are emitted a
+# piece at a time by a producer, which a query is not -- so they are validated
+# wherever they appear rather than demanded here; `meos/test/geopose_test.c` is
+# what exercises them.
 REQUIRED = ('Regular Series', 'Irregular Series', 'Basic-Quaternion',
-    'Basic-YPR', 'Advanced')
+    'Basic-YPR', 'Advanced', 'Stream')
 
 TYPES = {
     'object': dict,

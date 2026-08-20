@@ -119,6 +119,13 @@ CREATE FUNCTION asGeoPose(tpose, conformance int4 DEFAULT 0,
   AS 'MODULE_PATHNAME', 'Tpose_as_geopose'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- A stream written as one document: the header that opens it and every
+-- element it carries.
+CREATE FUNCTION asGeoPoseStream(tpose, maxdecimaldigits int4 DEFAULT -1)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Tpose_as_geopose_stream'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION applyPose(geometry, tpose)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Tpose_apply_geo'

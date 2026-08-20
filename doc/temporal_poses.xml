@@ -1555,6 +1555,23 @@ SELECT asGeoPose(tpose '[Pose(Point(8 47), 0)@2026-01-01,
 --     "validTime":"2026-01-02"}]}
 </programlisting>
 				</listitem>
+
+				<listitem xml:id="tpose_geopose_stream">
+					<indexterm significance="normal"><primary><varname>asGeoPoseStream</varname></primary></indexterm>
+					<para>Write a temporal pose as an OGC GeoPose Stream</para>
+					<para><varname>asGeoPoseStream(tpose,maxdecimaldigits int4=-1) → text</varname></para>
+					<para>A stream carries the frames of an Irregular Series while stating neither how many poses there are nor when they end, since more may arrive. The standard writes it as a <varname>header</varname>, holding the transition model and the outer frame, and a <varname>streamElements</varname> array holding one element per pose. The outer frame is the local tangent plane East-North-Up frame at the position of the first pose, so the header and every element speak of one tangent point.</para>
+					<para>The C library also writes the two documents a piece at a time, through <varname>tpose_as_geopose_stream_header</varname> and <varname>tpose_as_geopose_stream_element</varname>, for a producer emitting poses as they arrive. A query returns a value it already holds whole, which is what this writes.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asGeoPoseStream(tpose 'Geodpose(Point(0 0 0), 1, 0, 0, 0)@2026-01-01', 6);
+/* {"header":{"transitionModel":{"authority":"/geopose/1.0","id":"none",
+   "parameters":"interpolation=None"},"outerFrame":{"authority":"/geopose/1.0",
+   "id":"LTP-ENU","parameters":"longitude=0&amp;latitude=0&amp;height=0&amp;crs=EPSG:4979"}},
+   "streamElements":[{"streamElement":{"frame":{"authority":"/geopose/1.0",
+   "id":"RotateTranslate","parameters":"translation=[0, 0, 0]&amp;rotation=[1, 0, 0, 0]"},
+   "validTime":1767254400000}}]} */
+</programlisting>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 

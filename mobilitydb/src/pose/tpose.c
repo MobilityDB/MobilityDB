@@ -309,6 +309,26 @@ Tpose_as_geopose(PG_FUNCTION_ARGS)
   PG_RETURN_TEXT_P(result_text);
 }
 
+PGDLLEXPORT Datum Tpose_as_geopose_stream(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpose_as_geopose_stream);
+/**
+ * @ingroup mobilitydb_pose_inout
+ * @brief Return the OGC GeoPose Stream of a temporal pose
+ * @sqlfn asGeoPoseStream()
+ */
+Datum
+Tpose_as_geopose_stream(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  int precision = PG_GETARG_INT32(1);
+  char *result = tpose_as_geopose_stream(temp, precision);
+  PG_FREE_IF_COPY(temp, 0);
+  if (result == NULL) PG_RETURN_NULL();
+  text *result_text = cstring_to_text(result);
+  pfree(result);
+  PG_RETURN_TEXT_P(result_text);
+}
+
 /*****************************************************************************
  * Body-to-world rigid transform (workstream #4)
  *****************************************************************************/

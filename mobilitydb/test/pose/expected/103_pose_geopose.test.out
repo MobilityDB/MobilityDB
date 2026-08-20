@@ -632,3 +632,27 @@ ERROR:  GeoPose 'frameSpecification' parameter 'crs' must name a WGS-84 geograph
 SELECT poseFromGeoPose('{"frameSpecification":{"authority":"/geopose/1.0",
   "id":"LTP-ENU","parameters":"longitude=8&latitude=47&height=0"}}');
 ERROR:  GeoPose Advanced JSON missing required 'quaternion' object
+SELECT asGeoPoseStream(tpose '[Geodpose(Point(0 0 0), 1, 0, 0, 0)@2026-01-01,
+  Geodpose(Point(0 0 0), 0.707107, 0, 0, 0.707107)@2026-01-02]', 6);
+                                                                                                                                                                                                                                                                                                   asgeoposestream                                                                                                                                                                                                                                                                                                   
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"header":{"transitionModel":{"authority":"/geopose/1.0","id":"interpolate","parameters":"interpolation=Linear"},"outerFrame":{"authority":"/geopose/1.0","id":"LTP-ENU","parameters":"longitude=0&latitude=0&height=0&crs=EPSG:4979"}},"streamElements":[{"streamElement":{"frame":{"authority":"/geopose/1.0","id":"RotateTranslate","parameters":"translation=[0, 0, 0]&rotation=[1, 0, 0, 0]"},"validTime":1767254400000}},{"streamElement":{"frame":{"authority":"/geopose/1.0","id":"RotateTranslate","parameters":"translation=[0, 0, 0]&rotation=[0.707107, 0, 0, 0.707107]"},"validTime":1767340800000}}]}
+(1 row)
+
+SELECT asGeoPoseStream(tpose 'Geodpose(Point(0 0 0), 1, 0, 0, 0)@2026-01-01', 6);
+                                                                                                                                                                                                     asgeoposestream                                                                                                                                                                                                     
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"header":{"transitionModel":{"authority":"/geopose/1.0","id":"none","parameters":"interpolation=None"},"outerFrame":{"authority":"/geopose/1.0","id":"LTP-ENU","parameters":"longitude=0&latitude=0&height=0&crs=EPSG:4979"}},"streamElements":[{"streamElement":{"frame":{"authority":"/geopose/1.0","id":"RotateTranslate","parameters":"translation=[0, 0, 0]&rotation=[1, 0, 0, 0]"},"validTime":1767254400000}}]}
+(1 row)
+
+SELECT asGeoPoseStream(tpose 'SRID=4326;[Geodpose(Point(8 47 1500), 1, 0, 0, 0)@2026-01-01,
+  Geodpose(Point(8.001 47 1500), 1, 0, 0, 0)@2026-01-02]', 6)
+  LIKE '{"header":%"streamElements":[{"streamElement":%},{"streamElement":%}]}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT asGeoPoseStream(tpose '[Pose(Point(8 47), 0)@2026-01-01,
+  Pose(Point(9 47), 0)@2026-01-02]', 6);
+ERROR:  GeoPose JSON requires a geodetic pose, got a planar one

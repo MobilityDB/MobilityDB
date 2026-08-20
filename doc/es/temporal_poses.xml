@@ -1477,6 +1477,23 @@ SELECT asGeoPose(tpose '[Pose(Point(8 47), 0)@2026-01-01,
 --     "validTime":"2026-01-02"}]}
 </programlisting>
 				</listitem>
+
+				<listitem xml:id="tpose_geopose_stream">
+					<indexterm significance="normal"><primary><varname>asGeoPoseStream</varname></primary></indexterm>
+					<para>Escribe una pose temporal como un Stream de OGC GeoPose</para>
+					<para><varname>asGeoPoseStream(tpose,maxdecimaldigits int4=-1) → text</varname></para>
+					<para>Un stream lleva los marcos de una Serie Irregular sin declarar cuántas poses hay ni cuándo terminan, ya que pueden llegar más. El estándar lo escribe como un <varname>header</varname>, que contiene el modelo de transición y el marco exterior, y un arreglo <varname>streamElements</varname> con un elemento por pose. El marco exterior es el plano tangente local Este-Norte-Arriba en la posición de la primera pose, de modo que la cabecera y cada elemento hablan de un mismo punto de tangencia.</para>
+					<para>La biblioteca C también escribe los dos documentos por partes, mediante <varname>tpose_as_geopose_stream_header</varname> y <varname>tpose_as_geopose_stream_element</varname>, para un productor que emite poses a medida que llegan. Una consulta devuelve un valor que ya posee entero, que es lo que esta función escribe.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asGeoPoseStream(tpose 'Geodpose(Point(0 0 0), 1, 0, 0, 0)@2026-01-01', 6);
+/* {"header":{"transitionModel":{"authority":"/geopose/1.0","id":"none",
+   "parameters":"interpolation=None"},"outerFrame":{"authority":"/geopose/1.0",
+   "id":"LTP-ENU","parameters":"longitude=0&amp;latitude=0&amp;height=0&amp;crs=EPSG:4979"}},
+   "streamElements":[{"streamElement":{"frame":{"authority":"/geopose/1.0",
+   "id":"RotateTranslate","parameters":"translation=[0, 0, 0]&amp;rotation=[1, 0, 0, 0]"},
+   "validTime":1767254400000}}]} */
+</programlisting>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 

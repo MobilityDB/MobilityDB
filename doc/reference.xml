@@ -1613,6 +1613,9 @@
 					<listitem>
 						<para><link linkend="tpose_geopose_funcs"><varname>asGeoPose</varname>, <varname>tposeFromGeoPose</varname></link>: Convert a temporal pose to or from its OGC GeoPose v1.0 encoding</para>
 					</listitem>
+					<listitem>
+						<para><link linkend="tpose_geopose_stream"><varname>asGeoPoseStream</varname></link>: Write a temporal pose as an OGC GeoPose Stream</para>
+					</listitem>
 				</itemizedlist>
 			</sect3>
 		</sect2>

@@ -404,6 +404,26 @@ int main(void)
   printf("Stream first element: %s\n", se1);
   assert(strstr(se1, "translation=[0, 0, 0]") != NULL);
   free(se1); free(first);
+
+  /* The same stream written whole: one document holding the header and every
+   * element, which is what a reader already holding the value writes and what
+   * a conformance submission carries. */
+  char *sw = tpose_as_geopose_stream(stream, 6);
+  assert(sw != NULL);
+  printf("Stream whole: %s\n", sw);
+  ensure_member("Stream", sw, "\"header\"");
+  ensure_member("Stream", sw, "\"streamElements\"");
+  ensure_member("Stream", sw, "\"transitionModel\"");
+  ensure_member("Stream", sw, "\"outerFrame\"");
+  /* It carries one element per instant, and anchors where the header does */
+  int nelem = 0;
+  for (const char *q = sw; (q = strstr(q, "\"streamElement\"")) != NULL; q++)
+    nelem++;
+  printf("Stream elements: %d of %d instants\n", nelem, ninsts);
+  assert(nelem == ninsts);
+  assert(strstr(sw, "translation=[0, 0, 0]") != NULL);
+  free(sw);
+
   free(sh); free(stream);
 
   /*--------------------------------------------------------------------------
@@ -503,6 +523,13 @@ int main(void)
   printf("stream element(planar value): %s, errno %d\n",
     bad_se ? "non-NULL" : "NULL", meos_errno());
   assert(bad_se == NULL);
+
+  meos_errno_reset();
+  char *bad_sw = tpose_as_geopose_stream(planar_s, 6);
+  printf("stream whole(planar value): %s, errno %d\n",
+    bad_sw ? "non-NULL" : "NULL", meos_errno());
+  assert(bad_sw == NULL);
+  assert(meos_errno() != 0);
   assert(meos_errno() != 0);
   free(planar_i); free(planar_s);
 

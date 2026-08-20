@@ -1602,6 +1602,9 @@
 					<listitem>
 						<para><link linkend="tpose_geopose_funcs"><varname>asGeoPose</varname>, <varname>tposeFromGeoPose</varname></link>: Convierte una pose temporal hacia o desde una envoltura JSON TemporalGeoPose. Cada carga útil por instante es un documento GeoPose de clase Basic estrictamente válido según OGC más un miembro <varname>validTime</varname>; la envoltura registra la clase de conformidad, la interpolación y (para secuencias y conjuntos de secuencias) la inclusión de los límites del período. Un consumidor GeoPose ajeno a MEOS puede iterar sobre <varname>instants[]</varname> (o cada <varname>sequences[].instants[]</varname>) y consumir cada elemento como un documento GeoPose estático.</para>
 					</listitem>
+					<listitem>
+						<para><link linkend="tpose_geopose_stream"><varname>asGeoPoseStream</varname></link>: Escribe una pose temporal como un Stream de OGC GeoPose</para>
+					</listitem>
 				</itemizedlist>
 			</sect3>
 		</sect2>
