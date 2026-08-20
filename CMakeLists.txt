@@ -562,6 +562,12 @@ else()
   # The vendored PostGIS reads the version to decide which GEOS entry points it
   # may call, and answers none of them without the library
   set(POSTGIS_GEOS_VERSION 0)
+  # The vendored PostGIS reads geos_c.h for the types of the entry points that
+  # convert between the two geometry models whether or not the library is
+  # there. This directory stands in for it, holding those types and nothing
+  # else, so no vendored source is edited and a build needs no GEOS headers
+  # installed
+  include_directories(BEFORE SYSTEM ${CMAKE_SOURCE_DIR}/meos/include/geos-none)
 endif()
 message(STATUS "POSTGIS_GEOS_VERSION: ${POSTGIS_GEOS_VERSION}")
 
