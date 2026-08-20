@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: pose_orientation</title>
+<title>MobilityDB: pose_quaternion</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -81,20 +81,20 @@ $(function() {
         <table>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__accessor_ga9a4f570b78355ffbe8b7530a9a6f6377.html#ga9a4f570b78355ffbe8b7530a9a6f6377">pose_hash</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__accessor_gaeeab410e9b6c5dfb3c81531f963a7634.html#gaeeab410e9b6c5dfb3c81531f963a7634">pose_hash_extended</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__pose__base__accessor_ga93a061285d73688b34c33f5482b98a0c.html#ga93a061285d73688b34c33f5482b98a0c">pose_orientation</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__pose__base__accessor_ga2b569b8d4e5468a8713b5883f4ea6e34.html#ga2b569b8d4e5468a8713b5883f4ea6e34">pose_quaternion</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__accessor_gaa63e5cf23996a7b77ee40c71031d9860.html#gaa63e5cf23996a7b77ee40c71031d9860">pose_rotation</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga93a061285d73688b34c33f5482b98a0c" name="ga93a061285d73688b34c33f5482b98a0c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga93a061285d73688b34c33f5482b98a0c">&#9670;&#160;</a></span>pose_orientation()</h2>
+<a id="ga2b569b8d4e5468a8713b5883f4ea6e34" name="ga2b569b8d4e5468a8713b5883f4ea6e34"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga2b569b8d4e5468a8713b5883f4ea6e34">&#9670;&#160;</a></span>pose_quaternion()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">double * pose_orientation </td>
+          <td class="memname">double * pose_quaternion </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structPose.html">Pose</a> *&#160;</td>
           <td class="paramname"><em>pose</em>, </td>
@@ -113,15 +113,15 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the orientation of a 3D pose. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p>Return the orientation quaternion of a 3D pose. </p>
+<p >The four components are returned in the order <code>W</code>, <code>X</code>, <code>Y</code>, <code>Z</code>, the Hamilton convention in which the pose stores them. The yaw / pitch / roll encoding of the same orientation, the other representation the OGC GeoPose standard prescribes, is returned by <a class="el" href="group__meos__pose__base__geopose_gacf71acda83841765a9b85c54c5fcac47.html#gacf71acda83841765a9b85c54c5fcac47" title="Return the yaw angle of a pose, in radians.">pose_yaw()</a>, <a class="el" href="group__meos__pose__base__geopose_gafd53d866fa9c7669104fb88dd8496d9f.html#gafd53d866fa9c7669104fb88dd8496d9f" title="Return the pitch angle of a pose, in radians.">pose_pitch()</a> and <a class="el" href="group__meos__pose__base__geopose_ga3c10ffe2f8d75138fa01925278618344.html#ga3c10ffe2f8d75138fa01925278618344" title="Return the roll angle of a pose, in radians.">pose_roll()</a>. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">pose</td><td><a class="el" href="structPose.html" title="Basic functions for static pose objects.">Pose</a> </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">count</td><td>Number of elements in the output array </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>On error return <code>NULL</code> @csqlfn <a class="el" href="group__mobilitydb__pose__base__accessor_gacc05f81d28a5847e2bbb1069ebfa4879.html#gacc05f81d28a5847e2bbb1069ebfa4879" title="Return the orientation of a 3D pose @sqlfn orientation()">Pose_orientation()</a> </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>On error return <code>NULL</code> @csqlfn <a class="el" href="group__mobilitydb__pose__base__accessor_ga318a90361d6fb4cc81159e908a971bd5.html#ga318a90361d6fb4cc81159e908a971bd5" title="Return the orientation quaternion of a 3D pose @sqlfn quaternion()">Pose_quaternion()</a> </dd></dl>
 
 </div>
 </div>
