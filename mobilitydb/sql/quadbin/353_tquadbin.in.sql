@@ -87,7 +87,7 @@ CREATE TYPE tquadbin (
   typmod_out = temporal_typmod_out,
   storage = extended,
   alignment = double,
-  analyze = temporal_analyze
+  analyze = tspatial_analyze
 );
 
 -- GENERATED-IO-END quadbin

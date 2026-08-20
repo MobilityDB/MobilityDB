@@ -852,15 +852,17 @@ for a spatial family, `tnumber_supportfn` for a number one, and none for an alph
 one — there is no `temporal_supportfn` to name, and the alpha reference `ttext`
 declares none.
 
-Two divergences remain open:
+The `analyze` clause a type declares follows the same class, in its
+`io_families:` entry: every family whose bounding box is an `STBox` — the ten
+`tspatial_type` members and the two pointcloud ones — names `tspatial_analyze`,
+and the alpha families name `temporal_analyze`. `temporal_bbox_size()`
+(`meos/src/temporal/temporal_boxops.c`) is the authority on which box a family
+stores, returning `sizeof(STBox)` for every `tspatial_type`; a family that stores
+an `STBox` and analyses it as a `tstzspan` collects no X statistics at all, and
+its spatial factor then rests on the default however its operators are declared.
 
-- **`tquadbin` declares `analyze = temporal_analyze`**
-  (`quadbin/353_tquadbin.in.sql`) while carrying an `STBox` bounding box — its
-  SP-GiST opclass declares `<<`, `&&` and `~=` against `stbox`
-  (`quadbin/373_tquadbin_spgist.in.sql:56-73`) — and while its operators declare
-  `tspatial_sel`. Its `Tcell<T>` sibling `th3index` declares `tspatial_analyze`
-  (`h3/253_th3index.in.sql`), so no X statistics are collected for `tquadbin` and
-  its spatial factor rests on the default.
+One divergence remains open:
+
 - **`pcpoint` and `pcpatch` are not admitted by `tspatial_sel_type`.** They are
   `pointcloud_basetype`, not `spatial_basetype`, and `spatial_set_stbox()` — whose
   assertion defines the base types the estimator can convert — does not cover
