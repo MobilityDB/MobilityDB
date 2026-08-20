@@ -51,6 +51,29 @@
  */
 typedef struct PoseChain PoseChain;
 
+/*****************************************************************************
+ * Validity macros
+ *****************************************************************************/
+
+/**
+ * @brief Macro for ensuring that the set passed as argument is a pose chain
+ * set
+ */
+#if MEOS
+  #define VALIDATE_POSECHAINSET(set, ret) \
+    do { \
+          if (! ensure_not_null((void *) set) || \
+              ! ensure_set_isof_type((set), T_POSECHAINSET) ) \
+           return (ret); \
+    } while (0)
+#else
+  #define VALIDATE_POSECHAINSET(set, ret) \
+    do { \
+      assert(set); \
+      assert((set)->settype == T_POSECHAINSET); \
+    } while (0)
+#endif
+
 /******************************************************************************
  * Functions for pose chains
  ******************************************************************************/
@@ -113,6 +136,41 @@ extern bool posechain_le(const PoseChain *pc1, const PoseChain *pc2);
 extern bool posechain_gt(const PoseChain *pc1, const PoseChain *pc2);
 extern bool posechain_ge(const PoseChain *pc1, const PoseChain *pc2);
 
+/******************************************************************************
+ * Functions for pose chain sets
+ ******************************************************************************/
+
+/* Input and output functions */
+
+extern Set *posechainset_in(const char *str);
+extern char *posechainset_out(const Set *s, int maxdd);
+
+/* Constructor functions */
+
+extern Set *posechainset_make(const PoseChain **values, int count);
+
+/* Conversion functions */
+
+extern Set *posechain_to_set(const PoseChain *pc);
+
+/* Accessor functions */
+
+extern PoseChain *posechainset_end_value(const Set *s);
+extern PoseChain *posechainset_start_value(const Set *s);
+extern bool posechainset_value_n(const Set *s, int n, PoseChain **result);
+extern PoseChain **posechainset_values(const Set *s, int *count);
+
+/* Set operations */
+
+extern bool contained_posechain_set(const PoseChain *pc, const Set *s);
+extern bool contains_set_posechain(const Set *s, PoseChain *pc);
+extern Set *intersection_posechain_set(const PoseChain *pc, const Set *s);
+extern Set *intersection_set_posechain(const Set *s, const PoseChain *pc);
+extern Set *minus_posechain_set(const PoseChain *pc, const Set *s);
+extern Set *minus_set_posechain(const Set *s, const PoseChain *pc);
+extern Set *posechain_union_transfn(Set *state, const PoseChain *pc);
+extern Set *union_posechain_set(const PoseChain *pc, const Set *s);
+extern Set *union_set_posechain(const Set *s, const PoseChain *pc);
 
 /*****************************************************************************/
 

@@ -2043,6 +2043,29 @@ span_families:
   - {sig: "getValues({vs})", ret: "{v}[]", sym: Set_values}
   - lit: "\n"
 
+- family: posechainset_accessors
+  file: mobilitydb/sql/posechain/551_posechainset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * Accessor functions\n ******************************************************************************/\n"
+  end: "/******************************************************************************\n * SRID\n"
+  order: [posechain]
+  insts:
+    posechain: {v: posechain, vs: posechainset}
+  blocks:
+  - lit: "/******************************************************************************\n * Accessor functions\n ******************************************************************************/\n\n"
+  - {sig: "memSize({vs})", ret: "integer", sym: Set_mem_size}
+  - lit: "\n"
+  - {sig: "numValues({vs})", ret: "integer", sym: Set_num_values}
+  - lit: "\n"
+  - {sig: "startValue({vs})", ret: "{v}", sym: Set_start_value}
+  - lit: "\n"
+  - {sig: "endValue({vs})", ret: "{v}", sym: Set_end_value}
+  - lit: "\n"
+  - {sig: "valueN({vs}, integer)", ret: "{v}", sym: Set_value_n}
+  - lit: "\n"
+  - {sig: "getValues({vs})", ret: "{v}[]", sym: Set_values}
+  - lit: "\n"
+
 - family: cbufferset_accessors
   file: mobilitydb/sql/cbuffer/201_cbufferset.in.sql
   reference: true
@@ -2275,6 +2298,19 @@ span_families:
   - {sig: "round({vs}, integer DEFAULT 0)", ret: "{vs}", sym: Set_round}
   - lit: "\n"
 
+- family: posechainset_transformations
+  file: mobilitydb/sql/posechain/551_posechainset.in.sql
+  reference: true
+  begin: "/*****************************************************************************\n * Transformation functions\n *****************************************************************************/\n"
+  end: "/******************************************************************************\n * Accessor functions"
+  order: [posechain]
+  insts:
+    posechain: {v: posechain, vs: posechainset}
+  blocks:
+  - lit: "/*****************************************************************************\n * Transformation functions\n *****************************************************************************/\n\n"
+  - {sig: "round({vs}, integer DEFAULT 0)", ret: "{vs}", sym: Set_round}
+  - lit: "\n"
+
 - family: poseset_unnest
   file: mobilitydb/sql/pose/101_poseset.in.sql
   reference: true
@@ -2283,6 +2319,19 @@ span_families:
   order: [pose]
   insts:
     pose: {v: pose, vs: poseset}
+  blocks:
+  - lit: "/******************************************************************************\n * Transformation set of values <-> set\n ******************************************************************************/\n\n"
+  - {sig: "unnest({vs})", ret: "SETOF {v}", sym: Set_unnest}
+  - lit: "\n"
+
+- family: posechainset_unnest
+  file: mobilitydb/sql/posechain/551_posechainset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * Transformation set of values <-> set\n ******************************************************************************/\n"
+  end: "/*****************************************************************************/\n\n-- The function is not STRICT"
+  order: [posechain]
+  insts:
+    posechain: {v: posechain, vs: posechainset}
   blocks:
   - lit: "/******************************************************************************\n * Transformation set of values <-> set\n ******************************************************************************/\n\n"
   - {sig: "unnest({vs})", ret: "SETOF {v}", sym: Set_unnest}

@@ -36,6 +36,9 @@ setfamilies:
   - {set: geogset,    base: geography,   ordered: false,                         metric: true,  spatial: true}
   - {set: npointset,  base: npoint,      ordered: false,                         metric: true,  spatial: true}
   - {set: poseset,    base: pose,        ordered: false,                         metric: true,  spatial: true}
+  # A pose chain has no distance function, so posechainset deploys no
+  # setDistance and is not a metric set.
+  - {set: posechainset, base: posechain,  ordered: false,                         metric: false, spatial: true}
   - {set: cbufferset, base: cbuffer,     ordered: false,                         metric: true,  spatial: true}
   # jsonb has no semantic order and 450_jsonbset.in.sql deploys no position
   # operators.

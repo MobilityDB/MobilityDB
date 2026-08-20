@@ -1,0 +1,508 @@
+/*****************************************************************************
+ *
+ * This MobilityDB code is provided under The PostgreSQL License.
+ * Copyright (c) 2016-2026, Université libre de Bruxelles and MobilityDB
+ * contributors
+ *
+ * MobilityDB includes portions of PostGIS version 3 source code released
+ * under the GNU General Public License (GPLv2 or later).
+ * Copyright (c) 2001-2025, PostGIS contributors
+ *
+ * Permission to use, copy, modify, and distribute this software and its
+ * documentation for any purpose, without fee, and without a written
+ * agreement is hereby granted, provided that the above copyright notice and
+ * this paragraph and the following two paragraphs appear in all copies.
+ *
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
+ * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
+ * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
+ * OF SUCH DAMAGE.
+ *
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
+ * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+ *
+ *****************************************************************************/
+
+/**
+ * @file
+ * @brief Functions for sets of pose chains
+ */
+
+/******************************************************************************
+ * Input/Output
+ ******************************************************************************/
+
+CREATE TYPE posechainset;
+
+CREATE FUNCTION posechainset_in(cstring)
+  RETURNS posechainset
+  AS 'MODULE_PATHNAME', 'Set_in'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION posechainset_out(posechainset)
+  RETURNS cstring
+  AS 'MODULE_PATHNAME', 'Set_out'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION posechainset_recv(internal)
+  RETURNS posechainset
+  AS 'MODULE_PATHNAME', 'Set_recv'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION posechainset_send(posechainset)
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Set_send'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE TYPE posechainset (
+  internallength = variable,
+  input = posechainset_in,
+  output = posechainset_out,
+  receive = posechainset_recv,
+  send = posechainset_send,
+  alignment = double,
+  storage = extended
+  -- , analyze = geoset_analyze
+);
+
+/******************************************************************************/
+
+-- Input/output in WKT, WKB, and HexWKB representation
+
+CREATE FUNCTION posechainsetFromText(text)
+  RETURNS posechainset
+  AS 'MODULE_PATHNAME', 'Spatialset_from_ewkt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION posechainsetFromEWKT(text)
+  RETURNS posechainset
+  AS 'MODULE_PATHNAME', 'Spatialset_from_ewkt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION posechainsetFromBinary(bytea)
+  RETURNS posechainset
+  AS 'MODULE_PATHNAME', 'Set_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION posechainsetFromEWKB(bytea)
+  RETURNS posechainset
+  AS 'MODULE_PATHNAME', 'Set_from_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION posechainsetFromHexWKB(text)
+  RETURNS posechainset
+  AS 'MODULE_PATHNAME', 'Set_from_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asText(posechainset, maxdecimaldigits int4 DEFAULT 15)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Spatialset_as_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asEWKT(posechainset, maxdecimaldigits int4 DEFAULT 15)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Spatialset_as_ewkt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION asBinary(posechainset, endianenconding text DEFAULT '')
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Set_as_wkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asEWKB(posechainset, endianenconding text DEFAULT '')
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Spatialset_as_ewkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asHexWKB(posechainset, endianenconding text DEFAULT '')
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Set_as_hexwkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asHexEWKB(posechainset, endianenconding text DEFAULT '')
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Spatialset_as_hexewkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************
+ * Constructors
+ ******************************************************************************/
+
+CREATE FUNCTION set(posechain[])
+  RETURNS posechainset
+  AS 'MODULE_PATHNAME', 'Set_constructor'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************
+ * Conversion functions
+ ******************************************************************************/
+
+CREATE FUNCTION set(posechain)
+  RETURNS posechainset
+  AS 'MODULE_PATHNAME', 'Value_to_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE CAST (posechain AS posechainset) WITH FUNCTION set(posechain);
+
+CREATE FUNCTION stbox(posechainset)
+  RETURNS stbox
+  AS 'MODULE_PATHNAME', 'Spatialset_to_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE CAST (posechainset AS stbox) WITH FUNCTION stbox(posechainset);
+
+/*****************************************************************************
+ * Transformation functions
+ *****************************************************************************/
+
+CREATE FUNCTION round(posechainset, integer DEFAULT 0)
+  RETURNS posechainset
+  AS 'MODULE_PATHNAME', 'Set_round'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************
+ * Accessor functions
+ ******************************************************************************/
+
+CREATE FUNCTION memSize(posechainset)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Set_mem_size'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION numValues(posechainset)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Set_num_values'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION startValue(posechainset)
+  RETURNS posechain
+  AS 'MODULE_PATHNAME', 'Set_start_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION endValue(posechainset)
+  RETURNS posechain
+  AS 'MODULE_PATHNAME', 'Set_end_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION valueN(posechainset, integer)
+  RETURNS posechain
+  AS 'MODULE_PATHNAME', 'Set_value_n'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION getValues(posechainset)
+  RETURNS posechain[]
+  AS 'MODULE_PATHNAME', 'Set_values'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************
+ * SRID
+ ******************************************************************************/
+
+CREATE FUNCTION SRID(posechainset)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Spatialset_srid'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION setSRID(posechainset, integer)
+  RETURNS posechainset
+  AS 'MODULE_PATHNAME', 'Spatialset_set_srid'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION transform(posechainset, integer)
+  RETURNS posechainset
+  AS 'MODULE_PATHNAME', 'Spatialset_transform'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION transformPipeline(posechainset, text, srid integer DEFAULT 0,
+    is_forward boolean DEFAULT true)
+  RETURNS posechainset
+  AS 'MODULE_PATHNAME', 'Spatialset_transform_pipeline'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/******************************************************************************
+ * Transformation set of values <-> set
+ ******************************************************************************/
+
+CREATE FUNCTION unnest(posechainset)
+  RETURNS SETOF posechain
+  AS 'MODULE_PATHNAME', 'Set_unnest'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************/
+
+-- The function is not STRICT
+CREATE FUNCTION set_union_transfn(internal, posechain)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Value_union_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION set_union_transfn(internal, posechainset)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Set_union_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION posechainset_union_finalfn(internal)
+  RETURNS posechainset
+  AS 'MODULE_PATHNAME', 'Set_union_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+CREATE AGGREGATE setUnion(posechain) (
+  SFUNC = set_union_transfn,
+  STYPE = internal,
+  COMBINEFUNC = array_agg_combine,
+  SERIALFUNC = array_agg_serialize,
+  DESERIALFUNC = array_agg_deserialize,
+  FINALFUNC = posechainset_union_finalfn
+);
+CREATE AGGREGATE setUnion(posechainset) (
+  SFUNC = set_union_transfn,
+  STYPE = internal,
+  COMBINEFUNC = array_agg_combine,
+  SERIALFUNC = array_agg_serialize,
+  DESERIALFUNC = array_agg_deserialize,
+  FINALFUNC = posechainset_union_finalfn
+);
+
+/******************************************************************************
+ * Comparison functions and B-tree indexing
+ ******************************************************************************/
+
+CREATE FUNCTION eq(posechainset, posechainset)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Set_eq'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION ne(posechainset, posechainset)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Set_ne'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION lt(posechainset, posechainset)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Set_lt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION le(posechainset, posechainset)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Set_le'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION ge(posechainset, posechainset)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Set_ge'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION gt(posechainset, posechainset)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Set_gt'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION cmp(posechainset, posechainset)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Set_cmp'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR = (
+  LEFTARG = posechainset, RIGHTARG = posechainset,
+  PROCEDURE = eq,
+  COMMUTATOR = =, NEGATOR = <>,
+  RESTRICT = eqsel, JOIN = eqjoinsel
+);
+CREATE OPERATOR <> (
+  LEFTARG = posechainset, RIGHTARG = posechainset,
+  PROCEDURE = ne,
+  COMMUTATOR = <>, NEGATOR = =,
+  RESTRICT = neqsel, JOIN = neqjoinsel
+);
+CREATE OPERATOR < (
+  LEFTARG = posechainset, RIGHTARG = posechainset,
+  PROCEDURE = lt,
+  COMMUTATOR = >, NEGATOR = >=,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR <= (
+  LEFTARG = posechainset, RIGHTARG = posechainset,
+  PROCEDURE = le,
+  COMMUTATOR = >=, NEGATOR = >,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR >= (
+  LEFTARG = posechainset, RIGHTARG = posechainset,
+  PROCEDURE = ge,
+  COMMUTATOR = <=, NEGATOR = <,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR > (
+  LEFTARG = posechainset, RIGHTARG = posechainset,
+  PROCEDURE = gt,
+  COMMUTATOR = <, NEGATOR = <=,
+  RESTRICT = span_sel, JOIN = span_joinsel
+);
+
+CREATE OPERATOR CLASS posechainset_btree_ops
+  DEFAULT FOR TYPE posechainset USING btree AS
+    OPERATOR  1  <,
+    OPERATOR  2  <=,
+    OPERATOR  3  =,
+    OPERATOR  4  >=,
+    OPERATOR  5  >,
+    FUNCTION  1  cmp(posechainset, posechainset);
+
+/******************************************************************************/
+
+CREATE FUNCTION hash(posechainset)
+  RETURNS integer
+  AS 'MODULE_PATHNAME', 'Set_hash'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION hashExtended(posechainset, bigint)
+  RETURNS bigint
+  AS 'MODULE_PATHNAME', 'Set_hash_extended'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR CLASS posechainset_hash_ops
+  DEFAULT FOR TYPE posechainset USING hash AS
+    OPERATOR    1   = ,
+    FUNCTION    1   hash(posechainset),
+    FUNCTION    2   hashExtended(posechainset, bigint);
+
+/******************************************************************************
+ * Operators
+ ******************************************************************************/
+
+CREATE FUNCTION contains(posechainset, posechain)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contains_set_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION contains(posechainset, posechainset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contains_set_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR @> (
+  PROCEDURE = contains,
+  LEFTARG = posechainset, RIGHTARG = posechain,
+  COMMUTATOR = <@
+  -- RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR @> (
+  PROCEDURE = contains,
+  LEFTARG = posechainset, RIGHTARG = posechainset,
+  COMMUTATOR = <@
+  -- RESTRICT = span_sel, JOIN = span_joinsel
+);
+
+/******************************************************************************/
+
+CREATE FUNCTION contained(posechain, posechainset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contained_value_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION contained(posechainset, posechainset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contained_set_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR <@ (
+  PROCEDURE = contained,
+  LEFTARG = posechain, RIGHTARG = posechainset,
+  COMMUTATOR = @>
+  -- RESTRICT = span_sel, JOIN = span_joinsel
+);
+CREATE OPERATOR <@ (
+  PROCEDURE = contained,
+  LEFTARG = posechainset, RIGHTARG = posechainset,
+  COMMUTATOR = @>
+  -- RESTRICT = span_sel, JOIN = span_joinsel
+);
+
+/******************************************************************************/
+
+CREATE FUNCTION overlaps(posechainset, posechainset)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overlaps_set_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR && (
+  PROCEDURE = overlaps,
+  LEFTARG = posechainset, RIGHTARG = posechainset,
+  COMMUTATOR = &&
+  -- RESTRICT = span_sel, JOIN = span_joinsel
+);
+
+/*****************************************************************************/
+
+CREATE FUNCTION setUnion(posechain, posechainset)
+  RETURNS posechainset
+  AS 'MODULE_PATHNAME', 'Union_value_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION setUnion(posechainset, posechain)
+  RETURNS posechainset
+  AS 'MODULE_PATHNAME', 'Union_set_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION setUnion(posechainset, posechainset)
+  RETURNS posechainset
+  AS 'MODULE_PATHNAME', 'Union_set_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR + (
+  PROCEDURE = setUnion,
+  LEFTARG = posechain, RIGHTARG = posechainset,
+  COMMUTATOR = +
+);
+CREATE OPERATOR + (
+  PROCEDURE = setUnion,
+  LEFTARG = posechainset, RIGHTARG = posechain,
+  COMMUTATOR = +
+);
+CREATE OPERATOR + (
+  PROCEDURE = setUnion,
+  LEFTARG = posechainset, RIGHTARG = posechainset,
+  COMMUTATOR = +
+);
+
+/*****************************************************************************/
+
+CREATE FUNCTION setMinus(posechain, posechainset)
+  RETURNS posechainset
+  AS 'MODULE_PATHNAME', 'Minus_value_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION setMinus(posechainset, posechain)
+  RETURNS posechainset
+  AS 'MODULE_PATHNAME', 'Minus_set_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION setMinus(posechainset, posechainset)
+  RETURNS posechainset
+  AS 'MODULE_PATHNAME', 'Minus_set_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR - (
+  PROCEDURE = setMinus,
+  LEFTARG = posechain, RIGHTARG = posechainset
+);
+CREATE OPERATOR - (
+  PROCEDURE = setMinus,
+  LEFTARG = posechainset, RIGHTARG = posechain
+);
+CREATE OPERATOR - (
+  PROCEDURE = setMinus,
+  LEFTARG = posechainset, RIGHTARG = posechainset
+);
+
+/*****************************************************************************/
+
+CREATE FUNCTION setIntersection(posechain, posechainset)
+  RETURNS posechainset
+  AS 'MODULE_PATHNAME', 'Intersection_value_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION setIntersection(posechainset, posechain)
+  RETURNS posechainset
+  AS 'MODULE_PATHNAME', 'Intersection_set_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION setIntersection(posechainset, posechainset)
+  RETURNS posechainset
+  AS 'MODULE_PATHNAME', 'Intersection_set_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR * (
+  PROCEDURE = setIntersection,
+  LEFTARG = posechain, RIGHTARG = posechainset,
+  COMMUTATOR = *
+);
+CREATE OPERATOR * (
+  PROCEDURE = setIntersection,
+  LEFTARG = posechainset, RIGHTARG = posechain,
+  COMMUTATOR = *
+);
+CREATE OPERATOR * (
+  PROCEDURE = setIntersection,
+  LEFTARG = posechainset, RIGHTARG = posechainset,
+  COMMUTATOR = *
+);
+
+/******************************************************************************/

@@ -190,6 +190,29 @@ topop_families:
   - lit: "\n"
   - topops: overlaps
   - lit: "\n"
+
+- family: posechainset
+  file: mobilitydb/sql/posechain/551_posechainset.in.sql
+  reference: true
+  begin: "CREATE FUNCTION contains(posechainset,"
+  end: "CREATE FUNCTION setUnion(posechain,"
+  selectivity: span_comment
+  pairs: [[posechain, posechainset]]
+  blocks:
+  - lit: "/******************************************************************************\n * Operators\n ******************************************************************************/\n\n"
+  - topfns: contains
+  - lit: "\n"
+  - topops: contains
+  - lit: "\n/******************************************************************************/\n\n"
+  - topfns: contained
+  - lit: "\n"
+  - topops: contained
+  - lit: "\n/******************************************************************************/\n\n"
+  - topfns: overlaps
+  - lit: "\n"
+  - topops: overlaps
+  - lit: "\n"
+
 - family: quadbinset
   file: mobilitydb/sql/quadbin/351_quadbinset.in.sql
   reference: true

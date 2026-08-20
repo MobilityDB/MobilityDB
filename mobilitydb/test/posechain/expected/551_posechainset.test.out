@@ -1,0 +1,308 @@
+SELECT asEWKT(posechainset '{"PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))"}');
+                        asewkt                         
+-------------------------------------------------------
+ {"PoseChain(Pose(POINT(0 0),0),Pose(POINT(10 0),0))"}
+(1 row)
+
+SELECT asEWKT(posechainset '{"PoseChain(Pose(Point(0 0), 0))", "PoseChain(Pose(Point(1 0), 0))"}');
+                               asewkt                               
+--------------------------------------------------------------------
+ {"PoseChain(Pose(POINT(0 0),0))", "PoseChain(Pose(POINT(1 0),0))"}
+(1 row)
+
+SELECT asEWKT(posechainset '{"PoseChain(Pose(Point(1 0), 0))", "PoseChain(Pose(Point(0 0), 0))", "PoseChain(Pose(Point(1 0), 0))"}');
+                               asewkt                               
+--------------------------------------------------------------------
+ {"PoseChain(Pose(POINT(0 0),0))", "PoseChain(Pose(POINT(1 0),0))"}
+(1 row)
+
+SELECT asEWKT(posechainset '{"SRID=3812;PoseChain(Pose(Point(1 2 3), 1, 0, 0, 0), Pose(Point(0 0 1), 1, 0, 0, 0))"}');
+                                        asewkt                                        
+--------------------------------------------------------------------------------------
+ SRID=3812;{"PoseChain(Pose(POINT Z (1 2 3),1,0,0,0),Pose(POINT Z (0 0 1),1,0,0,0))"}
+(1 row)
+
+SELECT asEWKT(posechainset '{"SRID=4326;PoseChain(GeodPose(Point(8 47 0), 1, 0, 0, 0))"}');
+                           asewkt                            
+-------------------------------------------------------------
+ SRID=4326;{"PoseChain(GeodPose(POINT Z (8 47 0),1,0,0,0))"}
+(1 row)
+
+SELECT asEWKT(posechainsetFromEWKT(asEWKT(posechainset '{"PoseChain(Pose(Point(1 2), 0.5), Pose(Point(3 0), 0.25))"}')));
+                          asewkt                           
+-----------------------------------------------------------
+ {"PoseChain(Pose(POINT(1 2),0.5),Pose(POINT(3 0),0.25))"}
+(1 row)
+
+SELECT posechainsetFromBinary(asBinary(posechainset '{"PoseChain(Pose(Point(1 2), 0.5))", "PoseChain(Pose(Point(3 0), 0.25))"}')) =
+  posechainset '{"PoseChain(Pose(Point(1 2), 0.5))", "PoseChain(Pose(Point(3 0), 0.25))"}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT posechainsetFromEWKB(asEWKB(posechainset '{"SRID=3812;PoseChain(Pose(Point(1 2 3), 1, 0, 0, 0))"}')) =
+  posechainset '{"SRID=3812;PoseChain(Pose(Point(1 2 3), 1, 0, 0, 0))"}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT posechainsetFromHexWKB(asHexWKB(posechainset '{"PoseChain(Pose(Point(1 2), 0.5))"}')) =
+  posechainset '{"PoseChain(Pose(Point(1 2), 0.5))"}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT posechainset '{"SRID=3812;PoseChain(Pose(Point(0 0), 0))", "SRID=4326;PoseChain(Pose(Point(1 1), 0))"}';
+ERROR:  Operation on mixed SRID
+LINE 1: SELECT posechainset '{"SRID=3812;PoseChain(Pose(Point(0 0), ...
+                            ^
+SELECT posechainset '{"PoseChain(Pose(Point(0 0), 0))", "PoseChain(Pose(Point(1 2 3), 1, 0, 0, 0))"}';
+ERROR:  Operation on mixed 2D/3D dimensions
+LINE 1: SELECT posechainset '{"PoseChain(Pose(Point(0 0), 0))", "Pos...
+                            ^
+SELECT posechainset '{}';
+ERROR:  Could not parse posechain value: Missing prefix 'PoseChain'
+LINE 1: SELECT posechainset '{}';
+                            ^
+SELECT asEWKT(set(posechain 'PoseChain(Pose(Point(1 2), 0.5), Pose(Point(3 0), 0.25))'));
+                          asewkt                           
+-----------------------------------------------------------
+ {"PoseChain(Pose(POINT(1 2),0.5),Pose(POINT(3 0),0.25))"}
+(1 row)
+
+SELECT asEWKT((posechain 'PoseChain(Pose(Point(1 2), 0.5))')::posechainset);
+               asewkt                
+-------------------------------------
+ {"PoseChain(Pose(POINT(1 2),0.5))"}
+(1 row)
+
+SELECT asEWKT(set(ARRAY[posechain 'PoseChain(Pose(Point(0 0), 0))',
+  posechain 'PoseChain(Pose(Point(1 0), 0))']));
+                               asewkt                               
+--------------------------------------------------------------------
+ {"PoseChain(Pose(POINT(0 0),0))", "PoseChain(Pose(POINT(1 0),0))"}
+(1 row)
+
+SELECT round(stbox(posechainset '{"PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))", "PoseChain(Pose(Point(1 5), 0))"}'), 6);
+         round         
+-----------------------
+ STBOX X((0,0),(10,5))
+(1 row)
+
+SELECT round((posechainset '{"PoseChain(Pose(Point(0 0), 0))"}')::stbox, 6);
+        round         
+----------------------
+ STBOX X((0,0),(0,0))
+(1 row)
+
+SELECT asEWKT(round(posechainset '{"PoseChain(Pose(Point(1.123456789 2.123456789), 0.5))"}', 3));
+                   asewkt                    
+---------------------------------------------
+ {"PoseChain(Pose(POINT(1.123 2.123),0.5))"}
+(1 row)
+
+SELECT memSize(posechainset '{"PoseChain(Pose(Point(0 0), 0))"}') > 0;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT numValues(posechainset '{"PoseChain(Pose(Point(0 0), 0))", "PoseChain(Pose(Point(1 0), 0))", "PoseChain(Pose(Point(2 0), 0))"}');
+ numvalues 
+-----------
+         3
+(1 row)
+
+SELECT asEWKT(startValue(posechainset '{"PoseChain(Pose(Point(0 0), 0))", "PoseChain(Pose(Point(1 0), 0))"}'));
+            asewkt             
+-------------------------------
+ PoseChain(Pose(POINT(0 0),0))
+(1 row)
+
+SELECT asEWKT(endValue(posechainset '{"PoseChain(Pose(Point(0 0), 0))", "PoseChain(Pose(Point(1 0), 0))"}'));
+            asewkt             
+-------------------------------
+ PoseChain(Pose(POINT(1 0),0))
+(1 row)
+
+SELECT asEWKT(valueN(posechainset '{"PoseChain(Pose(Point(0 0), 0))", "PoseChain(Pose(Point(1 0), 0))"}', 2));
+            asewkt             
+-------------------------------
+ PoseChain(Pose(POINT(1 0),0))
+(1 row)
+
+SELECT valueN(posechainset '{"PoseChain(Pose(Point(0 0), 0))"}', 99);
+ valuen 
+--------
+ 
+(1 row)
+
+SELECT asEWKT(getValues(posechainset '{"PoseChain(Pose(Point(0 0), 0))", "PoseChain(Pose(Point(1 0), 0))"}'));
+                              asewkt                               
+-------------------------------------------------------------------
+ {"PoseChain(Pose(POINT(0 0),0))","PoseChain(Pose(POINT(1 0),0))"}
+(1 row)
+
+SELECT SRID(posechainset '{"SRID=3812;PoseChain(Pose(Point(1 2), 0.5))"}');
+ srid 
+------
+ 3812
+(1 row)
+
+SELECT SRID(setSRID(posechainset '{"PoseChain(Pose(Point(1 2), 0.5))"}', 3812));
+ srid 
+------
+ 3812
+(1 row)
+
+SELECT asEWKT(round(transform(transform(posechainset '{"SRID=4326;PoseChain(Pose(Point(8 47), 0.5))"}', 3812), 4326), 6));
+                     asewkt                     
+------------------------------------------------
+ SRID=4326;{"PoseChain(Pose(POINT(8 47),0.5))"}
+(1 row)
+
+SELECT COUNT(*) = numValues(posechainset '{"PoseChain(Pose(Point(0 0), 0))", "PoseChain(Pose(Point(1 0), 0))", "PoseChain(Pose(Point(2 0), 0))"}')
+FROM unnest(posechainset '{"PoseChain(Pose(Point(0 0), 0))", "PoseChain(Pose(Point(1 0), 0))", "PoseChain(Pose(Point(2 0), 0))"}');
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT setUnion(v) = posechainset '{"PoseChain(Pose(Point(0 0), 0))", "PoseChain(Pose(Point(1 0), 0))"}'
+FROM (VALUES (posechain 'PoseChain(Pose(Point(0 0), 0))'),
+             (posechain 'PoseChain(Pose(Point(1 0), 0))'),
+             (posechain 'PoseChain(Pose(Point(0 0), 0))')) AS t(v);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT setUnion(s) = posechainset '{"PoseChain(Pose(Point(0 0), 0))", "PoseChain(Pose(Point(1 0), 0))", "PoseChain(Pose(Point(2 0), 0))"}'
+FROM (VALUES (posechainset '{"PoseChain(Pose(Point(0 0), 0))"}'),
+             (posechainset '{"PoseChain(Pose(Point(1 0), 0))", "PoseChain(Pose(Point(2 0), 0))"}'),
+             (posechainset '{"PoseChain(Pose(Point(0 0), 0))"}')) AS t(s);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT posechainset '{"PoseChain(Pose(Point(0 0), 0))"}' = posechainset '{"PoseChain(Pose(Point(0 0), 0))"}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT posechainset '{"PoseChain(Pose(Point(0 0), 0))"}' <> posechainset '{"PoseChain(Pose(Point(1 0), 0))"}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT posechainset '{"PoseChain(Pose(Point(0 0), 0))"}' < posechainset '{"PoseChain(Pose(Point(1 0), 0))"}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT cmp(posechainset '{"PoseChain(Pose(Point(0 0), 0))"}', posechainset '{"PoseChain(Pose(Point(0 0), 0))"}');
+ cmp 
+-----
+   0
+(1 row)
+
+SELECT hash(posechainset '{"PoseChain(Pose(Point(0 0), 0))"}') =
+  hash(posechainset '{"PoseChain(Pose(Point(0 0), 0))"}');
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT hashExtended(posechainset '{"PoseChain(Pose(Point(0 0), 0))"}', 1) =
+  hashExtended(posechainset '{"PoseChain(Pose(Point(0 0), 0))"}', 1);
+ ?column? 
+----------
+ t
+(1 row)
+
+DROP TABLE IF EXISTS tbl_posechainset_test;
+NOTICE:  table "tbl_posechainset_test" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_posechainset_test(k int, s posechainset);
+CREATE TABLE
+INSERT INTO tbl_posechainset_test VALUES
+  (1, posechainset '{"PoseChain(Pose(Point(0 0), 0))"}'),
+  (2, posechainset '{"PoseChain(Pose(Point(1 0), 0))"}'),
+  (3, posechainset '{"PoseChain(Pose(Point(0 0), 0))"}'),
+  (4, posechainset '{"PoseChain(Pose(Point(0 0), 0))", "PoseChain(Pose(Point(1 0), 0))"}');
+INSERT 0 4
+SELECT COUNT(DISTINCT s) FROM tbl_posechainset_test;
+ count 
+-------
+     3
+(1 row)
+
+DROP TABLE tbl_posechainset_test;
+DROP TABLE
+SELECT posechainset '{"PoseChain(Pose(Point(0 0), 0))", "PoseChain(Pose(Point(1 0), 0))"}' @> posechain 'PoseChain(Pose(Point(1 0), 0))';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT posechain 'PoseChain(Pose(Point(1 0), 0))' <@ posechainset '{"PoseChain(Pose(Point(0 0), 0))", "PoseChain(Pose(Point(1 0), 0))"}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT posechainset '{"PoseChain(Pose(Point(0 0), 0))"}' @> posechainset '{"PoseChain(Pose(Point(0 0), 0))"}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT posechainset '{"PoseChain(Pose(Point(0 0), 0))"}' && posechainset '{"PoseChain(Pose(Point(0 0), 0))", "PoseChain(Pose(Point(1 0), 0))"}';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT asEWKT(posechainset '{"PoseChain(Pose(Point(0 0), 0))"}' + posechain 'PoseChain(Pose(Point(1 0), 0))');
+                               asewkt                               
+--------------------------------------------------------------------
+ {"PoseChain(Pose(POINT(0 0),0))", "PoseChain(Pose(POINT(1 0),0))"}
+(1 row)
+
+SELECT asEWKT(posechainset '{"PoseChain(Pose(Point(0 0), 0))"}' + posechainset '{"PoseChain(Pose(Point(1 0), 0))"}');
+                               asewkt                               
+--------------------------------------------------------------------
+ {"PoseChain(Pose(POINT(0 0),0))", "PoseChain(Pose(POINT(1 0),0))"}
+(1 row)
+
+SELECT asEWKT(posechainset '{"PoseChain(Pose(Point(0 0), 0))", "PoseChain(Pose(Point(1 0), 0))"}' - posechain 'PoseChain(Pose(Point(1 0), 0))');
+              asewkt               
+-----------------------------------
+ {"PoseChain(Pose(POINT(0 0),0))"}
+(1 row)
+
+SELECT asEWKT(posechainset '{"PoseChain(Pose(Point(0 0), 0))", "PoseChain(Pose(Point(1 0), 0))"}' * posechainset '{"PoseChain(Pose(Point(1 0), 0))"}');
+              asewkt               
+-----------------------------------
+ {"PoseChain(Pose(POINT(1 0),0))"}
+(1 row)
+
+SELECT asEWKT(posechain 'PoseChain(Pose(Point(1 0), 0))' * posechainset '{"PoseChain(Pose(Point(0 0), 0))", "PoseChain(Pose(Point(1 0), 0))"}');
+              asewkt               
+-----------------------------------
+ {"PoseChain(Pose(POINT(1 0),0))"}
+(1 row)
+
+SELECT posechainset '{"SRID=3812;PoseChain(Pose(Point(0 0), 0))"}' @> posechain 'SRID=4326;PoseChain(Pose(Point(0 0), 0))';
+ ?column? 
+----------
+ f
+(1 row)
+

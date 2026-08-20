@@ -211,6 +211,18 @@ comparison_families:
   - lit: "/******************************************************************************\n * Comparison functions and B-tree indexing\n ******************************************************************************/\n\n"
   - funcs: poseset
   - lit: "\nCREATE OPERATOR = (\n  LEFTARG = poseset, RIGHTARG = poseset,\n  PROCEDURE = eq,\n  COMMUTATOR = =, NEGATOR = <>,\n  RESTRICT = eqsel, JOIN = eqjoinsel\n);\nCREATE OPERATOR <> (\n  LEFTARG = poseset, RIGHTARG = poseset,\n  PROCEDURE = ne,\n  COMMUTATOR = <>, NEGATOR = =,\n  RESTRICT = neqsel, JOIN = neqjoinsel\n);\nCREATE OPERATOR < (\n  LEFTARG = poseset, RIGHTARG = poseset,\n  PROCEDURE = lt,\n  COMMUTATOR = >, NEGATOR = >=,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);\nCREATE OPERATOR <= (\n  LEFTARG = poseset, RIGHTARG = poseset,\n  PROCEDURE = le,\n  COMMUTATOR = >=, NEGATOR = >,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);\nCREATE OPERATOR >= (\n  LEFTARG = poseset, RIGHTARG = poseset,\n  PROCEDURE = ge,\n  COMMUTATOR = <=, NEGATOR = <,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);\nCREATE OPERATOR > (\n  LEFTARG = poseset, RIGHTARG = poseset,\n  PROCEDURE = gt,\n  COMMUTATOR = <, NEGATOR = <=,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);\n\nCREATE OPERATOR CLASS poseset_btree_ops\n  DEFAULT FOR TYPE poseset USING btree AS\n    OPERATOR  1  <,\n    OPERATOR  2  <=,\n    OPERATOR  3  =,\n    OPERATOR  4  >=,\n    OPERATOR  5  >,\n    FUNCTION  1  cmp(poseset, poseset);\n\n"
+
+- family: posechainset
+  file: mobilitydb/sql/posechain/551_posechainset.in.sql
+  reference: true
+  ops: set
+  begin: "\n * Comparison functions and B-tree indexing\n"
+  end: "CREATE FUNCTION hash("
+  blocks:
+  - lit: "/******************************************************************************\n * Comparison functions and B-tree indexing\n ******************************************************************************/\n\n"
+  - funcs: posechainset
+  - lit: "\nCREATE OPERATOR = (\n  LEFTARG = posechainset, RIGHTARG = posechainset,\n  PROCEDURE = eq,\n  COMMUTATOR = =, NEGATOR = <>,\n  RESTRICT = eqsel, JOIN = eqjoinsel\n);\nCREATE OPERATOR <> (\n  LEFTARG = posechainset, RIGHTARG = posechainset,\n  PROCEDURE = ne,\n  COMMUTATOR = <>, NEGATOR = =,\n  RESTRICT = neqsel, JOIN = neqjoinsel\n);\nCREATE OPERATOR < (\n  LEFTARG = posechainset, RIGHTARG = posechainset,\n  PROCEDURE = lt,\n  COMMUTATOR = >, NEGATOR = >=,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);\nCREATE OPERATOR <= (\n  LEFTARG = posechainset, RIGHTARG = posechainset,\n  PROCEDURE = le,\n  COMMUTATOR = >=, NEGATOR = >,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);\nCREATE OPERATOR >= (\n  LEFTARG = posechainset, RIGHTARG = posechainset,\n  PROCEDURE = ge,\n  COMMUTATOR = <=, NEGATOR = <,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);\nCREATE OPERATOR > (\n  LEFTARG = posechainset, RIGHTARG = posechainset,\n  PROCEDURE = gt,\n  COMMUTATOR = <, NEGATOR = <=,\n  RESTRICT = span_sel, JOIN = span_joinsel\n);\n\nCREATE OPERATOR CLASS posechainset_btree_ops\n  DEFAULT FOR TYPE posechainset USING btree AS\n    OPERATOR  1  <,\n    OPERATOR  2  <=,\n    OPERATOR  3  =,\n    OPERATOR  4  >=,\n    OPERATOR  5  >,\n    FUNCTION  1  cmp(posechainset, posechainset);\n\n"
+
 - family: quadbinset
   file: mobilitydb/sql/quadbin/351_quadbinset.in.sql
   reference: true

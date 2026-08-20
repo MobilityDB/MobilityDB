@@ -97,6 +97,8 @@ struct PoseChain
 
 extern bool ensure_valid_posechain_posechain(const PoseChain *pc1,
   const PoseChain *pc2);
+extern bool ensure_valid_posechainset_posechain(const Set *s,
+  const PoseChain *pc);
 
 /* Input/output functions */
 
