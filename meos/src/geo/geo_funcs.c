@@ -73,8 +73,8 @@ emit_ring_edges(const POINTARRAY *pa, MeosArray *edges, EdgeType etype)
     Edge e;
     e.x1 = a.x; e.y1 = a.y;
     e.x2 = b.x; e.y2 = b.y;
-    e.xmin = FP_MIN(e.x1, e.x2); e.xmax = FP_MAX(e.x1, e.x2);
-    e.ymin = FP_MIN(e.y1, e.y2); e.ymax = FP_MAX(e.y1, e.y2);
+    e.xmin = Min(e.x1, e.x2); e.xmax = Max(e.x1, e.x2);
+    e.ymin = Min(e.y1, e.y2); e.ymax = Max(e.y1, e.y2);
     e.dx = e.x2 - e.x1; e.dy = e.y2 - e.y1;
     e.length = e.dx * e.dx + e.dy * e.dy;
     e.etype = etype;
@@ -203,8 +203,8 @@ emit_arc_edge(const POINT4D *pa, const POINT4D *pb, const POINT4D *pc,
       Edge e;
       e.x1 = px[i]; e.y1 = py[i];
       e.x2 = px[i + 1]; e.y2 = py[i + 1];
-      e.xmin = FP_MIN(e.x1, e.x2); e.xmax = FP_MAX(e.x1, e.x2);
-      e.ymin = FP_MIN(e.y1, e.y2); e.ymax = FP_MAX(e.y1, e.y2);
+      e.xmin = Min(e.x1, e.x2); e.xmax = Max(e.x1, e.x2);
+      e.ymin = Min(e.y1, e.y2); e.ymax = Max(e.y1, e.y2);
       e.dx = e.x2 - e.x1; e.dy = e.y2 - e.y1;
       e.length = e.dx * e.dx + e.dy * e.dy;
       e.etype = line_etype;
@@ -583,18 +583,18 @@ static bool
 lw_seg_interact(const POINT2D *p1, const POINT2D *p2, const POINT2D *q1,
   const POINT2D *q2)
 {
-  double minq = FP_MIN(q1->x, q2->x);
-  double maxq = FP_MAX(q1->x, q2->x);
-  double minp = FP_MIN(p1->x, p2->x);
-  double maxp = FP_MAX(p1->x, p2->x);
+  double minq = Min(q1->x, q2->x);
+  double maxq = Max(q1->x, q2->x);
+  double minp = Min(p1->x, p2->x);
+  double maxp = Max(p1->x, p2->x);
 
   if (FP_GT(minp, maxq) || FP_LT(maxp, minq))
     return false;
 
-  minq = FP_MIN(q1->y, q2->y);
-  maxq = FP_MAX(q1->y, q2->y);
-  minp = FP_MIN(p1->y, p2->y);
-  maxp = FP_MAX(p1->y, p2->y);
+  minq = Min(q1->y, q2->y);
+  maxq = Max(q1->y, q2->y);
+  minp = Min(p1->y, p2->y);
+  maxp = Max(p1->y, p2->y);
 
   if (FP_GT(minp,maxq) || FP_LT(maxp,minq))
     return false;

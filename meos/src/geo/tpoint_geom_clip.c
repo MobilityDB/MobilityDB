@@ -194,8 +194,8 @@ arc_contains_angle(const Edge *e, double phi)
 void
 arc_set_bbox(Edge *e)
 {
-  double xmin = FP_MIN(e->x1, e->x2), xmax = FP_MAX(e->x1, e->x2);
-  double ymin = FP_MIN(e->y1, e->y2), ymax = FP_MAX(e->y1, e->y2);
+  double xmin = Min(e->x1, e->x2), xmax = Max(e->x1, e->x2);
+  double ymin = Min(e->y1, e->y2), ymax = Max(e->y1, e->y2);
   const double ang[4] = {0.0, M_PI_2, M_PI, -M_PI_2};
   const double ex[4] = {e->cx + e->radius, e->cx, e->cx - e->radius, e->cx};
   const double ey[4] = {e->cy, e->cy + e->radius, e->cy, e->cy - e->radius};
@@ -579,10 +579,10 @@ intervals_from_lines(const POINT2D *a, const POINT2D *b, Edge **edges,
   const double bx = b->x, by = b->y;
 
   /* Segment bounding box */
-  const double seg_xmin = FP_MIN(ax, bx);
-  const double seg_xmax = FP_MAX(ax, bx);
-  const double seg_ymin = FP_MIN(ay, by);
-  const double seg_ymax = FP_MAX(ay, by);
+  const double seg_xmin = Min(ax, bx);
+  const double seg_xmax = Max(ax, bx);
+  const double seg_ymin = Min(ay, by);
+  const double seg_ymax = Max(ay, by);
   /* Segment vector */
   const double rx = bx - ax;  
   const double ry = by - ay;  
@@ -664,10 +664,10 @@ intervals_from_arcs(const POINT2D *a, const POINT2D *b, Edge **edges,
   const double ax = a->x, ay = a->y;
   const double bx = b->x, by = b->y;
   /* Segment bounding box */
-  const double seg_xmin = FP_MIN(ax, bx);
-  const double seg_xmax = FP_MAX(ax, bx);
-  const double seg_ymin = FP_MIN(ay, by);
-  const double seg_ymax = FP_MAX(ay, by);
+  const double seg_xmin = Min(ax, bx);
+  const double seg_xmax = Max(ax, bx);
+  const double seg_ymin = Min(ay, by);
+  const double seg_ymax = Max(ay, by);
   /* Segment vector */
   const double rx = bx - ax;
   const double ry = by - ay;
@@ -763,10 +763,10 @@ intervals_from_polygons(const POINT2D *a, const POINT2D *b, Edge **edges,
   const double bx = b->x, by = b->y;
 
   /* Segment bounding box */
-  const double seg_xmin = FP_MIN(ax, bx);
-  const double seg_xmax = FP_MAX(ax, bx);
-  const double seg_ymin = FP_MIN(ay, by);
-  const double seg_ymax = FP_MAX(ay, by);
+  const double seg_xmin = Min(ax, bx);
+  const double seg_xmax = Max(ax, bx);
+  const double seg_ymin = Min(ay, by);
+  const double seg_ymax = Max(ay, by);
   /* Segment vector */
   const double rx = bx - ax;
   const double ry = by - ay;
@@ -1040,8 +1040,8 @@ tpointseq_clip_edges(const TSequence *seq, Edge **edges, int nedges,
     {
       /* Build the segment bounding box */
       STBox query;
-      stbox_set(true, false, false, srid, FP_MIN(a->x, b->x),
-        FP_MAX(a->x, b->x), FP_MIN(a->y, b->y), FP_MAX(a->y, b->y),
+      stbox_set(true, false, false, srid, Min(a->x, b->x),
+        Max(a->x, b->x), Min(a->y, b->y), Max(a->y, b->y),
         0, 0, NULL, &query);
       /* Query the R-tree */
       int cand_nedges = rtree_search(rtree, RTREE_OVERLAPS, &query, rtree_results);
@@ -1859,7 +1859,7 @@ point_arc_dist2(double px, double py, const Edge *e)
   const double d1x = px - e->x2, d1y = py - e->y2;
   const double d0 = d0x * d0x + d0y * d0y;
   const double d1 = d1x * d1x + d1y * d1y;
-  return FP_MIN(d0, d1);
+  return Min(d0, d1);
 }
 
 /**
@@ -2053,8 +2053,8 @@ intervals_within_edges(const POINT2D *a, const POINT2D *b, Edge **sel_edges,
   events->count = 0;
   const double ax = a->x, ay = a->y;
   const double rx = b->x - ax, ry = b->y - ay;
-  const double seg_xmin = FP_MIN(a->x, b->x), seg_xmax = FP_MAX(a->x, b->x);
-  const double seg_ymin = FP_MIN(a->y, b->y), seg_ymax = FP_MAX(a->y, b->y);
+  const double seg_xmin = Min(a->x, b->x), seg_xmax = Max(a->x, b->x);
+  const double seg_ymin = Min(a->y, b->y), seg_ymax = Max(a->y, b->y);
 
   /* Gather boundary crossing candidates from the (filtered) edges */
   for (int i = 0; i < sel_nedges; i++)
@@ -2180,9 +2180,9 @@ tpointseq_dwithin_edges(const TSequence *seq, Edge **edges, int nedges,
     if (use_index)
     {
       STBox query;
-      stbox_set(true, false, false, srid, FP_MIN(a->x, b->x) - dist,
-        FP_MAX(a->x, b->x) + dist, FP_MIN(a->y, b->y) - dist,
-        FP_MAX(a->y, b->y) + dist, 0, 0, NULL, &query);
+      stbox_set(true, false, false, srid, Min(a->x, b->x) - dist,
+        Max(a->x, b->x) + dist, Min(a->y, b->y) - dist,
+        Max(a->y, b->y) + dist, 0, 0, NULL, &query);
       int cand_nedges = rtree_search(rtree, RTREE_OVERLAPS, &query,
         rtree_results);
       for (int j = 0; j < cand_nedges; j++)
@@ -2451,7 +2451,7 @@ point_geom_dist(double px, double py, Edge **edges, int nedges)
    * and at two tiny vertical nudges that move the ray off any aligned junction;
    * the nudge is far below any real feature size so a strictly interior or
    * strictly exterior point is unaffected */
-  const double eps = 1e-9 * FP_MAX(1.0, fabs(py));
+  const double eps = 1e-9 * Max(1.0, fabs(py));
   int inside = point_in_polygon(px, py, edges, nedges) +
     point_in_polygon(px, py + eps, edges, nedges) +
     point_in_polygon(px, py - eps, edges, nedges);
