@@ -165,7 +165,7 @@ relationship wants.
 
 ---
 
-## 3. Bounding-box filters: sound, unsound, and automatic
+## 3. What a filter may assume, and what a kernel must deliver
 
 An `stbox` carries a period, `xmin/ymin/zmin/xmax/ymax/zmax`, an SRID, and flags
 recording which dimensions are present.
@@ -414,6 +414,45 @@ the identity holds on every pair for the geometry operand and for the moving
 one, and fails on 9951 of 10000 for the static circular buffer. A fixture file
 whose cases all agree with an approximation leaves the approximation no trace,
 which is why the pairs that separate the two readings are the ones to pin.
+
+### A solve that cannot fail must be written so it cannot cancel
+
+The turning point of a segment is the root of a quadratic, and the guard that
+precedes it decides whether a root exists at all. Where that decision is read
+from a discriminant, the discriminant is usually not an arbitrary quantity: it
+carries a sign the algebra already fixes, and computing it in a form that hides
+the sign turns a proof into a rounding accident.
+
+The critical point of the gap along a segment is the case in hand. Written as
+`bb^2 - 4 aa cc` the discriminant is a difference of two large products;
+reduced, it is `4 diff dr^2 (u e - p^2)`, and every factor is non-negative — the
+guard above it makes `diff` positive, and `u e - p^2` is the Cauchy-Schwarz
+slack of the two vectors. The two forms agree in exact arithmetic. They part in
+floating point exactly where the reduction says the value is zero: when the
+radius **holds constant over the segment** the two products are equal, their
+difference rounds to a small negative, and a negative discriminant reads as no
+critical point. The interior minimum is discarded and the segment answers with
+whichever endpoint is nearer.
+
+A radius that holds is not a corner case for a value whose radius saturates. An
+AIS noise footprint sits at its cap for long stretches, and the pair whose
+closest approach falls inside such a stretch answers a distance it never
+attains: over a 100 by 100 join, 8 of 10000 pairs by as much as 0.013254, one
+answering 11104.032571 where the disks close to 11104.019317 at the instant the
+nearest approach instant itself reports.
+
+⇒ **Where the algebra fixes a sign, compute the form that carries it, and clamp
+what rounding can still produce.** The rule generalises past this quadratic: a
+guard that rejects an impossible value is not defensive, it is a silent
+correctness hazard, because the impossible value arrives only through
+cancellation and the rejection then discards a real answer.
+
+⇒ **The census of the previous section is what surfaces this class.** The defect
+changes a distance by a part in a million; no fixture written by hand would pin
+it, and no eye reading the kernel would see a subtraction of two equal
+quantities as a subtraction of two equal quantities. Only the identity, run
+over a real join, separates the pair that is answered correctly from the pair
+that is answered from an endpoint.
 
 ### Where a zero radius stops being a temporal point
 
