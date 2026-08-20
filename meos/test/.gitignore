@@ -11,3 +11,8 @@
 # Compiled smoke-test binaries and valgrind logs
 /build/
 __pycache__/
+
+# Corpus harvested from the GEOS test suite by relate_harvest_geos.py. The WKT
+# it carries is the GEOS project's test data under the LGPL 2.1, so it is
+# generated on demand rather than tracked.
+/relate_corpus_geos.txt
