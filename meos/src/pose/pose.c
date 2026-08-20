@@ -912,32 +912,13 @@ pose_make_point3d(const GSERIALIZED *gs, double W, double X, double Y,
       ! ensure_has_Z_geo(gs) || ! ensure_has_not_M_geo(gs))
     return NULL;
 
-  /* Ensure a unique representation for the quaternion */
-  if (W < 0.0)
-  {
-    W = -W;
-    X = -X;
-    Y = -Y;
-    Z = -Z;
-  }
-
+  /* The point supplies the position, the frame and the geodetic flag; the
+   * quaternion is renormalized and canonicalized by the constructor that
+   * owns those invariants. */
   const POINT4D *p = (const POINT4D *) GS_POINT_PTR(gs);
-  const double * coordarr = (const double *) p;
-  size_t memsize = DOUBLE_PAD(sizeof(Pose)) + 7 * sizeof(double);
-  Pose *result = palloc0(memsize);
-  SET_VARSIZE(result, memsize);
-  MEOS_FLAGS_SET_X(result->flags, true);
-  MEOS_FLAGS_SET_Z(result->flags, true);
-  MEOS_FLAGS_SET_GEODETIC(result->flags, FLAGS_GET_GEODETIC(gs->gflags));
-  pose_set_srid_int(result, gserialized_get_srid(gs));
-  result->data[0] = coordarr[0];
-  result->data[1] = coordarr[1];
-  result->data[2] = coordarr[2];
-  result->data[3] = W;
-  result->data[4] = X;
-  result->data[5] = Y;
-  result->data[6] = Z;
-  return result;
+  const double *coordarr = (const double *) p;
+  return pose_make_3d(coordarr[0], coordarr[1], coordarr[2], W, X, Y, Z,
+    FLAGS_GET_GEODETIC(gs->gflags), gserialized_get_srid(gs));
 }
 
 /**
