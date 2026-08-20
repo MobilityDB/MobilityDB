@@ -41,9 +41,9 @@ SELECT asEWKT(round(transform(transform(tpose
 
 SELECT asEWKT(round(transform(tpose
   'SRID=4326;Pose(Point(0 0 0), 1, 0, 0, 0)@2000-01-01', 4978), 6));
-                                        asewkt                                         
----------------------------------------------------------------------------------------
- SRID=4978;Pose(POINT Z (6378137 0 0),0.5,-0.5,-0.5,-0.5)@Sat Jan 01 00:00:00 2000 PST
+                                       asewkt                                       
+------------------------------------------------------------------------------------
+ SRID=4978;Pose(POINT Z (6378137 0 0),0.5,0.5,0.5,0.5)@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
 SELECT asEWKT(transform(tpose

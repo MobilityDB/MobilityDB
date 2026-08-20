@@ -187,8 +187,20 @@ SELECT pose 'Pose(Point(1 1),0.5)' >= pose 'Pose(Point(2 2),0.5)';
 -- between WGS-84 geographic (4326) and WGS-84 ECEF (4978) is the local
 -- East-North-Up basis change at the point. Round-trip lands at the input.
 SELECT asEWKT(round(transform(transform(pose 'SRID=4326;Pose(Point(8 47 0), 1, 0, 0, 0)', 4978), 4326), 6));
--- At lat=lon=0 the ENU->ECEF rotation maps body identity to (0.5,-0.5,-0.5,-0.5).
+-- A round trip cannot see the direction of the orientation correction, since an
+-- inverse rotation composed with itself restores the input either way. These
+-- one-way transforms can: at the equator-meridian the East, North and Up axes
+-- point along geocentric +Y, +Z and +X, so a body at rest in the local frame
+-- carries that basis change and no other.
 SELECT asEWKT(round(transform(pose 'SRID=4326;Pose(Point(0 0 0), 1, 0, 0, 0)', 4978), 6));
+-- Away from the equator the rotation and its inverse share a yaw and a pitch
+-- and differ in the sign of the roll, which is 90 degrees less the latitude.
+-- The angles are read rather than the quaternion because they bound their own
+-- precision, which round(pose) cannot do for a quaternion: it renormalizes the
+-- rounded components back to unit length.
+SELECT round(degrees(yaw(transform(pose 'SRID=4326;Pose(Point(0 45 0), 1, 0, 0, 0)', 4978)))::numeric, 6) AS yaw,
+  round(degrees(pitch(transform(pose 'SRID=4326;Pose(Point(0 45 0), 1, 0, 0, 0)', 4978)))::numeric, 6) AS pitch,
+  round(degrees(roll(transform(pose 'SRID=4326;Pose(Point(0 45 0), 1, 0, 0, 0)', 4978)))::numeric, 6) AS roll;
 -- Same-SRID transform is a no-op.
 SELECT asEWKT(transform(pose 'SRID=4326;Pose(Point(8 47 0), 1, 0, 0, 0)', 4326));
 

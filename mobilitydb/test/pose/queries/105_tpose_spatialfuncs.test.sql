@@ -45,7 +45,9 @@ SELECT asEWKT(round(transform(transform(tpose
   'SRID=4326;[Pose(Point(8 47 0), 1, 0, 0, 0)@2000-01-01,
     Pose(Point(9 48 0), 1, 0, 0, 0)@2000-01-02]', 4978), 4326), 6));
 -- At the equator-meridian the body identity quaternion expressed in the ECEF
--- basis is the canonical East-North-Up to ECEF rotation
+-- basis is the canonical East-North-Up to ECEF rotation, which carries East to
+-- geocentric +Y, North to +Z and Up to +X. The round trips above cannot see
+-- that direction; this one-way transform can
 SELECT asEWKT(round(transform(tpose
   'SRID=4326;Pose(Point(0 0 0), 1, 0, 0, 0)@2000-01-01', 4978), 6));
 -- A same-SRID transformation is a no-op

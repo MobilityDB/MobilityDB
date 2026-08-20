@@ -836,10 +836,9 @@ typedef struct
 
 /**
  * @brief Initialize the outer-frame anchor at a geographic tangent point.
- * @details @p pose_enu_to_ecef_quaternion returns the quaternion of the
- * matrix whose rows are the East, North and Up unit vectors expressed in
- * ECEF, that is the rotation that takes ECEF components to ENU components
- * at the tangent point. That is exactly what is needed here.
+ * @details What the anchor holds is the rotation that takes ECEF components
+ * to ENU components at the tangent point, which is the conjugate of the one
+ * @p pose_enu_to_ecef_quaternion builds, both being unit.
  */
 static void
 geopose_anchor_set(GeoPoseAnchor *anchor, double lat_rad, double lon_rad,
@@ -852,6 +851,9 @@ geopose_anchor_set(GeoPoseAnchor *anchor, double lat_rad, double lon_rad,
     &anchor->Z);
   pose_enu_to_ecef_quaternion(lat_rad, lon_rad, &anchor->qw, &anchor->qx,
     &anchor->qy, &anchor->qz);
+  anchor->qx = -anchor->qx;
+  anchor->qy = -anchor->qy;
+  anchor->qz = -anchor->qz;
 }
 
 /**
@@ -903,10 +905,10 @@ geopose_anchor_rotation(const GeoPoseAnchor *anchor, double lat_rad,
 {
   double lw, lx, ly, lz;
   pose_enu_to_ecef_quaternion(lat_rad, lon_rad, &lw, &lx, &ly, &lz);
-  /* q(R_anchorENU<-ECEF) * q(R_ECEF<-localENU), the latter being the
-   * conjugate of the local ENU quaternion since both are unit. */
+  /* q(R_anchorENU<-ECEF) * q(R_ECEF<-localENU), which are what the anchor
+   * holds and what the call above returns. */
   pose_quaternion_mul(anchor->qw, anchor->qx, anchor->qy, anchor->qz,
-    lw, -lx, -ly, -lz, W, X, Y, Z);
+    lw, lx, ly, lz, W, X, Y, Z);
 }
 
 /*****************************************************************************
