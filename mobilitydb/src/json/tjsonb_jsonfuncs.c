@@ -532,7 +532,7 @@ Tjsonb_delete_path(PG_FUNCTION_ARGS)
 /**
  * @brief Extract an array element from a temporal JSON value
  * @sqlfn tjsonArrayElement(), tjsonArrayElementOpr()
- * @sqlop ->
+ * @sqlop @p ->
  */
 Datum
 Tjson_array_element_common(FunctionCallInfo fcinfo)
@@ -585,7 +585,7 @@ Tjson_array_element_opr(PG_FUNCTION_ARGS)
 /**
  * @brief Extract an array element from a temporal JSONB value
  * @sqlfn tjsonbArrayElement(), tjsonbArrayElementOpr()
-  * @sqlop ->
+  * @sqlop @p ->
 */
 Datum
 Tjsonb_array_element_common(FunctionCallInfo fcinfo, bool astext)

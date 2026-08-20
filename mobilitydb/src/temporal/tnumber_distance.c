@@ -119,7 +119,7 @@ PG_FUNCTION_INFO_V1(NAD_number_tnumber);
  * @brief Return the nearest approach distance between a number and a temporal
  * number
  * @sqlfn nearestApproachDistance()
- * @sqlop |=|
+ * @sqlop @p |=|
  */
 Datum
 NAD_number_tnumber(PG_FUNCTION_ARGS)
@@ -141,7 +141,7 @@ PG_FUNCTION_INFO_V1(NAD_tnumber_number);
  * @brief Return the nearest approach distance between a temporal number and a
  * number
  * @sqlfn nearestApproachDistance()
- * @sqlop |=|
+ * @sqlop @p |=|
  */
 Datum
 NAD_tnumber_number(PG_FUNCTION_ARGS)
@@ -162,7 +162,7 @@ PG_FUNCTION_INFO_V1(NAD_tbox_tbox);
  * @ingroup mobilitydb_temporal_dist
  * @brief Return the nearest approach distance between two temporal boxes
  * @sqlfn nearestApproachDistance()
- * @sqlop |=|
+ * @sqlop @p |=|
  */
 Datum
 NAD_tbox_tbox(PG_FUNCTION_ARGS)
@@ -183,7 +183,7 @@ PG_FUNCTION_INFO_V1(NAD_tbox_tnumber);
  * @brief Return the nearest approach distance between a temporal box and a
  * temporal number
  * @sqlfn nearestApproachDistance()
- * @sqlop |=|
+ * @sqlop @p |=|
  */
 Datum
 NAD_tbox_tnumber(PG_FUNCTION_ARGS)
@@ -205,7 +205,7 @@ PG_FUNCTION_INFO_V1(NAD_tnumber_tbox);
  * @brief Return the nearest approach distance between a temporal number and a
  * temporal box
  * @sqlfn nearestApproachDistance()
- * @sqlop |=|
+ * @sqlop @p |=|
  */
 Datum
 NAD_tnumber_tbox(PG_FUNCTION_ARGS)
@@ -226,7 +226,7 @@ PG_FUNCTION_INFO_V1(NAD_tnumber_tnumber);
  * @ingroup mobilitydb_temporal_dist
  * @brief Return the nearest approach distance between two temporal numbers
  * @sqlfn nearestApproachDistance()
- * @sqlop |=|
+ * @sqlop @p |=|
  */
 Datum
 NAD_tnumber_tnumber(PG_FUNCTION_ARGS)

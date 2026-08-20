@@ -464,7 +464,7 @@ PG_FUNCTION_INFO_V1(Overback_tspatial_stbox);
  * @brief Return true if a spatiotemporal value does not extend to the front
  * of a spatiotemporal box
  * @sqlfn overback()
- * @sqlop @ /&>
+ * @sqlop @p /&>
  */
 inline Datum
 Overback_tspatial_stbox(PG_FUNCTION_ARGS)

@@ -450,7 +450,7 @@ Jsonbset_delete_path(PG_FUNCTION_ARGS)
 /**
  * @brief Extract an array element from a JSONB set value
  * @sqlfn jsonbsetArrayElement(), jsonbsetArrayElementOpr()
-  * @sqlop ->
+  * @sqlop @p ->
 */
 Datum
 Jsonbset_array_element_common(FunctionCallInfo fcinfo, bool astext)

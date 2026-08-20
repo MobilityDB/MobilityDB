@@ -368,7 +368,7 @@ PG_FUNCTION_INFO_V1(NAD_geo_tpose);
  * @brief Return the nearest approach distance between a geometry and a
  * temporal pose
  * @sqlfn nearestApproachDistance()
- * @sqlop |=|
+ * @sqlop @p |=|
  */
 Datum
 NAD_geo_tpose(PG_FUNCTION_ARGS)
@@ -390,7 +390,7 @@ PG_FUNCTION_INFO_V1(NAD_tpose_geo);
  * @brief Return the nearest approach distance between a temporal pose and a
  * geometry
  * @sqlfn nearestApproachDistance()
- * @sqlop |=|
+ * @sqlop @p |=|
  */
 Datum
 NAD_tpose_geo(PG_FUNCTION_ARGS)
@@ -458,7 +458,7 @@ PG_FUNCTION_INFO_V1(NAD_pose_tpose);
  * @brief Return the nearest approach distance between a pose and a temporal
  * pose
  * @sqlfn nearestApproachDistance()
- * @sqlop |=|
+ * @sqlop @p |=|
  */
 Datum
 NAD_pose_tpose(PG_FUNCTION_ARGS)
@@ -479,7 +479,7 @@ PG_FUNCTION_INFO_V1(NAD_tpose_pose);
  * @brief Return the nearest approach distance between a temporal pose and a
  * pose
  * @sqlfn nearestApproachDistance()
- * @sqlop |=|
+ * @sqlop @p |=|
  */
 Datum
 NAD_tpose_pose(PG_FUNCTION_ARGS)
@@ -501,7 +501,7 @@ PG_FUNCTION_INFO_V1(NAD_tpose_tpose);
  * @ingroup mobilitydb_pose_dist
  * @brief Return the nearest approach distance between two temporal poses
  * @sqlfn nearestApproachDistance()
- * @sqlop |=|
+ * @sqlop @p |=|
  */
 Datum
 NAD_tpose_tpose(PG_FUNCTION_ARGS)
