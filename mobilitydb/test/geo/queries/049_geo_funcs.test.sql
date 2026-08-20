@@ -60,6 +60,41 @@ SELECT ST_Equals(
   ST_ConvexHull(geometry 'Circularstring(0 0,2 2,4 0)'));
 
 -------------------------------------------------------------------------------
+-- Simple geometries
+-- A geometry is simple when it has no point at which it crosses or touches
+-- itself, which is read from the segments the geometry is made of
+-------------------------------------------------------------------------------
+
+-- A point is always simple, a multipoint is simple when it repeats no point
+SELECT isSimple(geometry 'Point(1 2)');
+SELECT isSimple(geometry 'Multipoint(0 0,1 1)');
+SELECT isSimple(geometry 'Multipoint(0 0,1 1,0 0)');
+
+-- A line that crosses itself is not simple, one that only closes is
+SELECT isSimple(geometry 'Linestring(0 0,10 10,10 0,0 10)');
+SELECT isSimple(geometry 'Linestring(0 0,10 0,10 10,0 0)');
+
+-- Two lines of a multiline may meet at a point that ends both, not elsewhere
+SELECT isSimple(geometry 'Multilinestring((0 0,10 0),(10 0,10 10))');
+SELECT isSimple(geometry 'Multilinestring((0 0,10 0),(5 -5,5 5))');
+
+-- An areal geometry is simple when each of its rings is
+SELECT isSimple(geometry 'Polygon((0 0,10 0,10 10,0 10,0 0))');
+SELECT isSimple(geometry 'Polygon((0 0,10 10,10 0,0 10,0 0))');
+SELECT isSimple(geometry 'Polygon((0 0,10 0,10 10,0 10,0 0),(2 2,4 2,4 4,2 4,2 2))');
+
+-- A collection is simple when each of its components is
+SELECT isSimple(geometry 'Geometrycollection(Point(0 0),Linestring(1 1,2 2))');
+SELECT isSimple(geometry 'Geometrycollection(Point(0 0),Linestring(0 0,10 10,10 0,0 10))');
+
+-- An arc meets itself along an arc rather than at a point, and a geometry
+-- carrying one is answered by GEOS, as PostGIS answers it
+SELECT isSimple(geometry 'Circularstring(0 0,2 2,4 0)') =
+  ST_IsSimple(geometry 'Circularstring(0 0,2 2,4 0)');
+SELECT isSimple(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))') =
+  ST_IsSimple(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))');
+
+-------------------------------------------------------------------------------
 -- Buffer
 -- A buffer is bounded by the offsets of the geometry and by the joins and caps
 -- between them, and a circular arc is kept as an arc rather than sampled

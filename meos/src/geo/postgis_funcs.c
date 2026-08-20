@@ -2288,6 +2288,49 @@ geom_unary_union(const GSERIALIZED *gs, double prec)
 
 /**
  * @ingroup meos_geo_base_spatial
+ * @brief Return true if a geometry has no anomalous point, which is a point
+ * at which it crosses or touches itself
+ * @details A point is always simple, a multipoint is simple when it repeats
+ * no point, a line is simple when it meets itself only where two of its
+ * segments follow one another and, when it closes, at the point where it
+ * closes, and an areal geometry is simple when each of its rings is. The
+ * lines of a multiline may additionally meet at a point that ends both.
+ * @param[in] gs Geometry
+ * @note PostGIS function: @p ST_IsSimple(PG_FUNCTION_ARGS). With respect to
+ * the original function we do not use the @p flags argument.
+ * @csqlfn #Geom_is_simple()
+ */
+bool
+geom_is_simple(const GSERIALIZED *gs)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(gs, false);
+  if (! ensure_not_geodetic_geo(gs))
+    return false;
+
+  LWGEOM *geom = lwgeom_from_gserialized(gs);
+  bool result;
+  if (meos_is_simple(geom, &result))
+  {
+    lwgeom_free(geom);
+    return result;
+  }
+
+  /* A geometry carrying a circular arc meets itself along an arc, which the
+   * segment intersection the answer above rests on does not read */
+  int simple = lwgeom_is_simple(geom);
+  lwgeom_free(geom);
+  if (simple < 0)
+  {
+    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+      "Whether the geometry is simple could not be determined");
+    return false;
+  }
+  return simple != 0;
+}
+
+/**
+ * @ingroup meos_geo_base_spatial
  * @brief Return the rectangle of minimum area enclosing a geometry
  * @param[in] gs Geometry
  * @note PostGIS function: @p ST_OrientedEnvelope(PG_FUNCTION_ARGS)

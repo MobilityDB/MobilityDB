@@ -70,6 +70,21 @@ SELECT ST_AsText(round(ConvexHull(geometry 'Polygon((0 0,10 0,10 10,5 5,0 10,0 0
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="geo_issimple">
+				<indexterm significance="normal"><primary><varname>isSimple</varname></primary></indexterm>
+				<para>Devuelve verdadero si una geometría no tiene ningún punto en el que se cruce o se toque a sí misma</para>
+				<para><varname>isSimple(geometry) → boolean</varname></para>
+				<para>Un punto siempre es simple, un multipunto es simple cuando no repite ningún punto, una línea es simple cuando se encuentra consigo misma solo donde dos de sus segmentos se siguen y, cuando se cierra, en el punto donde se cierra, y una geometría de área es simple cuando cada uno de sus anillos lo es. Además, dos líneas de una multilínea pueden encontrarse en un punto que termina ambas. Una geometría que lleva un arco circular la responde GEOS, ya que tal geometría se encuentra consigo misma a lo largo de un arco y no en un punto.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT isSimple(geometry 'Linestring(0 0,10 10,10 0,0 10)');
+-- false
+SELECT isSimple(geometry 'Linestring(0 0,10 0,10 10,0 0)');
+-- true
+SELECT isSimple(geometry 'Multilinestring((0 0,10 0),(10 0,10 10))');
+-- true
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="geo_buffer">
 				<indexterm significance="normal"><primary><varname>Buffer</varname></primary></indexterm>
 				<para>Devuelve la geometría que contiene todos los puntos situados a una distancia dada de una geometría</para>

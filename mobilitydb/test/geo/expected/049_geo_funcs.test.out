@@ -62,6 +62,92 @@ SELECT ST_Equals(
  t
 (1 row)
 
+SELECT isSimple(geometry 'Point(1 2)');
+ issimple 
+----------
+ t
+(1 row)
+
+SELECT isSimple(geometry 'Multipoint(0 0,1 1)');
+ issimple 
+----------
+ t
+(1 row)
+
+SELECT isSimple(geometry 'Multipoint(0 0,1 1,0 0)');
+ issimple 
+----------
+ f
+(1 row)
+
+SELECT isSimple(geometry 'Linestring(0 0,10 10,10 0,0 10)');
+ issimple 
+----------
+ f
+(1 row)
+
+SELECT isSimple(geometry 'Linestring(0 0,10 0,10 10,0 0)');
+ issimple 
+----------
+ t
+(1 row)
+
+SELECT isSimple(geometry 'Multilinestring((0 0,10 0),(10 0,10 10))');
+ issimple 
+----------
+ t
+(1 row)
+
+SELECT isSimple(geometry 'Multilinestring((0 0,10 0),(5 -5,5 5))');
+ issimple 
+----------
+ f
+(1 row)
+
+SELECT isSimple(geometry 'Polygon((0 0,10 0,10 10,0 10,0 0))');
+ issimple 
+----------
+ t
+(1 row)
+
+SELECT isSimple(geometry 'Polygon((0 0,10 10,10 0,0 10,0 0))');
+ issimple 
+----------
+ f
+(1 row)
+
+SELECT isSimple(geometry 'Polygon((0 0,10 0,10 10,0 10,0 0),(2 2,4 2,4 4,2 4,2 2))');
+ issimple 
+----------
+ t
+(1 row)
+
+SELECT isSimple(geometry 'Geometrycollection(Point(0 0),Linestring(1 1,2 2))');
+ issimple 
+----------
+ t
+(1 row)
+
+SELECT isSimple(geometry 'Geometrycollection(Point(0 0),Linestring(0 0,10 10,10 0,0 10))');
+ issimple 
+----------
+ f
+(1 row)
+
+SELECT isSimple(geometry 'Circularstring(0 0,2 2,4 0)') =
+  ST_IsSimple(geometry 'Circularstring(0 0,2 2,4 0)');
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT isSimple(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))') =
+  ST_IsSimple(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))');
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT ST_AsText(round(Buffer(geometry 'Point(0 0)', 1), 6));
                   st_astext                  
 ---------------------------------------------

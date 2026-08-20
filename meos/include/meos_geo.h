@@ -407,6 +407,7 @@ extern GSERIALIZED *geom_centroid(const GSERIALIZED *gs);
 extern GSERIALIZED *geom_convex_hull(const GSERIALIZED *gs);
 extern GSERIALIZED *geom_convex_hull_meos(const GSERIALIZED *gs);
 extern GSERIALIZED *geom_difference2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
+extern bool geom_is_simple(const GSERIALIZED *gs);
 extern GSERIALIZED *geom_intersection2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern GSERIALIZED *geom_intersection2d_coll(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern GSERIALIZED *geom_min_bounding_radius(const GSERIALIZED *geom, double *radius);
