@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: geo_clip_ctx_make</title>
+<title>MobilityDB: geo_edge_ctx_free</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -92,9 +92,9 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a079459a529cf822ac6987dc4b3b098e6.html#a079459a529cf822ac6987dc4b3b098e6">edges_have_area</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_abcb605f8fc9357124c34daa34d0f7490.html#abcb605f8fc9357124c34daa34d0f7490">events</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a2ee3c7ebc387865ae73d269b13b020b2.html#a2ee3c7ebc387865ae73d269b13b020b2">float8_qsort_cmp</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a09bd1c9f0f17c2fa0c2afd695598fb73.html#a09bd1c9f0f17c2fa0c2afd695598fb73">geo_clip_ctx_free</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="tpoint__geom__clip_8c_a0befe6bf31942fc5405b0d84a3ed8a27.html#a0befe6bf31942fc5405b0d84a3ed8a27">geo_clip_ctx_make</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a3d32ec974d83f5a47d5241de4bf6b3da.html#a3d32ec974d83f5a47d5241de4bf6b3da">geo_covers2d</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="tpoint__geom__clip_8c_a65d72bb98c70fad282756d68604dc8f6.html#a65d72bb98c70fad282756d68604dc8f6">geo_edge_ctx_free</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a2a14b37366acda8c4c698fd59806a20c.html#a2a14b37366acda8c4c698fd59806a20c">geo_edge_ctx_make</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_ac7de362b2498565cfd46dcdb17552ad6.html#ac7de362b2498565cfd46dcdb17552ad6">geo_intersects2d</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a4d47d6aa4598038bd57ece67feb2505a.html#a4d47d6aa4598038bd57ece67feb2505a">geo_intersects2d_ctx</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tpoint__geom__clip_8c_a7b7e2d981f37f69354cb620c4c91444c.html#a7b7e2d981f37f69354cb620c4c91444c">geo_is_point</a></td></tr>
@@ -137,24 +137,23 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a0befe6bf31942fc5405b0d84a3ed8a27" name="a0befe6bf31942fc5405b0d84a3ed8a27"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0befe6bf31942fc5405b0d84a3ed8a27">&#9670;&#160;</a></span>geo_clip_ctx_make()</h2>
+<a id="a65d72bb98c70fad282756d68604dc8f6" name="a65d72bb98c70fad282756d68604dc8f6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a65d72bb98c70fad282756d68604dc8f6">&#9670;&#160;</a></span>geo_edge_ctx_free()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void * geo_clip_ctx_make </td>
+          <td class="memname">void geo_edge_ctx_free </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
-          <td class="paramname"><em>gs</em></td><td>)</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>ctxv</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Return the clip context of a geometry, or NULL if the geometry is empty. </p>
-<p >The context owns the edges of the geometry and, when they are numerous enough to amortize its construction, an R-tree indexing them </p><dl class="section note"><dt>Note</dt><dd>At most one context may be alive per thread, since the buffer collecting the results of an index search is the thread-local <code>rtree_results</code> shared with the clip kernels, created and destroyed with the index (the same lifetime the operations gave it when each built its own) </dd></dl>
+<p>Free an edge context built by <a class="el" href="tpoint__geom__clip_8c_a2a14b37366acda8c4c698fd59806a20c.html#a2a14b37366acda8c4c698fd59806a20c" title="Return the edge context of a geometry, or NULL if the geometry is empty.">geo_edge_ctx_make</a>. </p>
 
 </div>
 </div>

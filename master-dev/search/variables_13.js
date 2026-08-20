@@ -24,7 +24,7 @@ var searchData=
   ['roty_21',['roty',['../projection__gk_8c_af2d270424ed9bf1a5fab2accf380e966.html#af2d270424ed9bf1a5fab2accf380e966',1,'projection_gk.c']]],
   ['rotz_22',['rotz',['../projection__gk_8c_a3bc522161034a64098cc55f6798ecc39.html#a3bc522161034a64098cc55f6798ecc39',1,'projection_gk.c']]],
   ['routes_23',['routes',['../structstruct__WaysCache_a11662000ecd53ae2f3c87db4197273e6.html#a11662000ecd53ae2f3c87db4197273e6',1,'struct_WaysCache']]],
-  ['rtree_24',['rtree',['../structDistGeom_ae886038234a9d1853d0ee548c7af3995.html#ae886038234a9d1853d0ee548c7af3995',1,'DistGeom::rtree()'],['../structGeoClipCtx_abaee06263a34567793e8a5276e36c0ca.html#abaee06263a34567793e8a5276e36c0ca',1,'GeoClipCtx::rtree()'],['../structRTreeNNCursor_a839161bb6ea325f9d2c448f58dbe671c.html#a839161bb6ea325f9d2c448f58dbe671c',1,'RTreeNNCursor::rtree()']]],
+  ['rtree_24',['rtree',['../structDistGeom_ae886038234a9d1853d0ee548c7af3995.html#ae886038234a9d1853d0ee548c7af3995',1,'DistGeom::rtree()'],['../structGeoEdgeCtx_af26f86d51911cc0f93384ece77680712.html#af26f86d51911cc0f93384ece77680712',1,'GeoEdgeCtx::rtree()'],['../structRTreeNNCursor_a839161bb6ea325f9d2c448f58dbe671c.html#a839161bb6ea325f9d2c448f58dbe671c',1,'RTreeNNCursor::rtree()']]],
   ['rtree_5fresults_25',['rtree_results',['../tpoint__geom__clip_8c_a1641bd3a1bc3520a3b1c82ca53d32952.html#a1641bd3a1bc3520a3b1c82ca53d32952',1,'tpoint_geom_clip.c']]],
   ['rtype_26',['rtype',['../structoid__meosoper__entry_ae4af96f03eb63ea3dc196b6eacd78da7.html#ae4af96f03eb63ea3dc196b6eacd78da7',1,'oid_meosoper_entry']]]
 ];

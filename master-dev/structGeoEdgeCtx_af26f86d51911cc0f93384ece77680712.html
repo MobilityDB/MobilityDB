@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: GeoClipCtx::nedges</title>
+<title>MobilityDB: GeoEdgeCtx::rtree</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="structGeoClipCtx.html">GeoClipCtx</a></li>  </ul>
+<li class="navelem"><a class="el" href="structGeoEdgeCtx.html">GeoEdgeCtx</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,30 +79,30 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="structGeoClipCtx_aff62ea1e7a07d156b613041ecad14e6a.html#aff62ea1e7a07d156b613041ecad14e6a">box</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="structGeoClipCtx_aa8aeb0f417c8f4465c0a85ebc49a592c.html#aa8aeb0f417c8f4465c0a85ebc49a592c">cand_edges</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="structGeoClipCtx_ab67d706c8b41a57f242c423959696c20.html#ab67d706c8b41a57f242c423959696c20">edge_ptrs</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="structGeoClipCtx_afc5035d08af20005d60485df287985b3.html#afc5035d08af20005d60485df287985b3">edges</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="structGeoClipCtx_a19abc18d84b2e256e82dfeeae4507a74.html#a19abc18d84b2e256e82dfeeae4507a74">nedges</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="structGeoClipCtx_abaee06263a34567793e8a5276e36c0ca.html#abaee06263a34567793e8a5276e36c0ca">rtree</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="structGeoClipCtx_a406616b711521ce528ca3ab419322bb7.html#a406616b711521ce528ca3ab419322bb7">srid</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="structGeoEdgeCtx_a8973ed837fce16da51fb0575ea71c6f4.html#a8973ed837fce16da51fb0575ea71c6f4">box</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="structGeoEdgeCtx_a2e32af23ed39e8221f8ae0305809d88c.html#a2e32af23ed39e8221f8ae0305809d88c">cand_edges</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="structGeoEdgeCtx_af4430f5e568c1c02fc6406aff8367311.html#af4430f5e568c1c02fc6406aff8367311">edge_ptrs</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="structGeoEdgeCtx_a90df6b6e2a10046c1fabc4912e9fecf6.html#a90df6b6e2a10046c1fabc4912e9fecf6">edges</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="structGeoEdgeCtx_a450bd69df056d9691f632c32bd039c01.html#a450bd69df056d9691f632c32bd039c01">nedges</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="structGeoEdgeCtx_af26f86d51911cc0f93384ece77680712.html#af26f86d51911cc0f93384ece77680712">rtree</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="structGeoEdgeCtx_afb23ccd5f696705e291e6b1956b4a499.html#afb23ccd5f696705e291e6b1956b4a499">srid</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a19abc18d84b2e256e82dfeeae4507a74" name="a19abc18d84b2e256e82dfeeae4507a74"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a19abc18d84b2e256e82dfeeae4507a74">&#9670;&#160;</a></span>nedges</h2>
+<a id="af26f86d51911cc0f93384ece77680712" name="af26f86d51911cc0f93384ece77680712"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af26f86d51911cc0f93384ece77680712">&#9670;&#160;</a></span>rtree</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int GeoClipCtx::nedges</td>
+          <td class="memname"><a class="el" href="structRTree.html">RTree</a>* GeoEdgeCtx::rtree</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Number of edges. </p>
+<p>Index over the edges, NULL when there are too few of them to amortize its construction. </p>
 
 </div>
 </div>
