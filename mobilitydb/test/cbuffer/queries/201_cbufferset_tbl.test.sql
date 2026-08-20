@@ -114,3 +114,12 @@ SELECT MAX(hashExtended(s, 1)) FROM tbl_cbufferset;
 SELECT numValues(setUnion(cb)) FROM tbl_cbuffer;
 
 -------------------------------------------------------------------------------
+-- The value-and-set directions of the difference and the intersection return
+-- a set, which is what the functions behind them build
+-------------------------------------------------------------------------------
+
+SELECT asText(setMinus(cbuffer 'Cbuffer(Point(1 1),0.5)', cbufferset '{"Cbuffer(Point(2 2),0.5)"}'));
+SELECT asText(setIntersection(cbuffer 'Cbuffer(Point(1 1),0.5)', cbufferset '{"Cbuffer(Point(1 1),0.5)", "Cbuffer(Point(2 2),0.5)"}'));
+SELECT asText(setIntersection(cbufferset '{"Cbuffer(Point(1 1),0.5)", "Cbuffer(Point(2 2),0.5)"}', cbuffer 'Cbuffer(Point(1 1),0.5)'));
+
+-------------------------------------------------------------------------------

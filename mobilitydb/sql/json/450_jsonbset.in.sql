@@ -397,7 +397,7 @@ CREATE OPERATOR + (
 /*****************************************************************************/
 
 CREATE FUNCTION setMinus(jsonb, jsonbset)
-  RETURNS jsonb
+  RETURNS jsonbset
   AS 'MODULE_PATHNAME', 'Minus_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION setMinus(jsonbset, jsonb)
@@ -425,11 +425,11 @@ CREATE OPERATOR - (
 /*****************************************************************************/
 
 CREATE FUNCTION setIntersection(jsonb, jsonbset)
-  RETURNS jsonb
+  RETURNS jsonbset
   AS 'MODULE_PATHNAME', 'Intersection_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION setIntersection(jsonbset, jsonb)
-  RETURNS jsonb
+  RETURNS jsonbset
   AS 'MODULE_PATHNAME', 'Intersection_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION setIntersection(jsonbset, jsonbset)

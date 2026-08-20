@@ -223,3 +223,21 @@ SELECT numValues(setUnion(jb)) FROM tbl_jsonb;
        100
 (1 row)
 
+SELECT setMinus(jsonb '{"a": 1}', jsonbset '{"{\"b\": 2}"}');
+    setminus    
+----------------
+ {"{\"a\": 1}"}
+(1 row)
+
+SELECT setIntersection(jsonb '{"a": 1}', jsonbset '{"{\"a\": 1}", "{\"b\": 2}"}');
+ setintersection 
+-----------------
+ 
+(1 row)
+
+SELECT setIntersection(jsonbset '{"{\"a\": 1}", "{\"b\": 2}"}', jsonb '{"a": 1}');
+ setintersection 
+-----------------
+ 
+(1 row)
+

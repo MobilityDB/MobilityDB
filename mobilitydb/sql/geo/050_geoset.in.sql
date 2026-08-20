@@ -798,7 +798,7 @@ CREATE OPERATOR + (
 /*****************************************************************************/
 
 CREATE FUNCTION setMinus(geometry, geomset)
-  RETURNS geometry
+  RETURNS geomset
   AS 'MODULE_PATHNAME', 'Minus_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION setMinus(geomset, geometry)
@@ -811,7 +811,7 @@ CREATE FUNCTION setMinus(geomset, geomset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION setMinus(geography, geogset)
-  RETURNS geography
+  RETURNS geogset
   AS 'MODULE_PATHNAME', 'Minus_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION setMinus(geogset, geography)
@@ -852,11 +852,11 @@ CREATE OPERATOR - (
 /*****************************************************************************/
 
 CREATE FUNCTION setIntersection(geometry, geomset)
-  RETURNS geometry
+  RETURNS geomset
   AS 'MODULE_PATHNAME', 'Intersection_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION setIntersection(geomset, geometry)
-  RETURNS geometry
+  RETURNS geomset
   AS 'MODULE_PATHNAME', 'Intersection_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION setIntersection(geomset, geomset)
@@ -865,11 +865,11 @@ CREATE FUNCTION setIntersection(geomset, geomset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION setIntersection(geography, geogset)
-  RETURNS geography
+  RETURNS geogset
   AS 'MODULE_PATHNAME', 'Intersection_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION setIntersection(geogset, geography)
-  RETURNS geography
+  RETURNS geogset
   AS 'MODULE_PATHNAME', 'Intersection_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION setIntersection(geogset, geogset)

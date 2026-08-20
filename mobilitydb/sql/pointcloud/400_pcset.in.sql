@@ -621,7 +621,7 @@ CREATE OPERATOR + (
 );
 
 CREATE FUNCTION setMinus(pcpoint, pcpointset)
-  RETURNS pcpoint
+  RETURNS pcpointset
   AS 'MODULE_PATHNAME', 'Minus_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION setMinus(pcpointset, pcpoint)
@@ -647,11 +647,11 @@ CREATE OPERATOR - (
 );
 
 CREATE FUNCTION setIntersection(pcpoint, pcpointset)
-  RETURNS pcpoint
+  RETURNS pcpointset
   AS 'MODULE_PATHNAME', 'Intersection_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION setIntersection(pcpointset, pcpoint)
-  RETURNS pcpoint
+  RETURNS pcpointset
   AS 'MODULE_PATHNAME', 'Intersection_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION setIntersection(pcpointset, pcpointset)
@@ -996,7 +996,7 @@ CREATE OPERATOR + (
 );
 
 CREATE FUNCTION setMinus(pcpatch, pcpatchset)
-  RETURNS pcpatch
+  RETURNS pcpatchset
   AS 'MODULE_PATHNAME', 'Minus_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION setMinus(pcpatchset, pcpatch)
@@ -1022,11 +1022,11 @@ CREATE OPERATOR - (
 );
 
 CREATE FUNCTION setIntersection(pcpatch, pcpatchset)
-  RETURNS pcpatch
+  RETURNS pcpatchset
   AS 'MODULE_PATHNAME', 'Intersection_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION setIntersection(pcpatchset, pcpatch)
-  RETURNS pcpatch
+  RETURNS pcpatchset
   AS 'MODULE_PATHNAME', 'Intersection_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION setIntersection(pcpatchset, pcpatchset)

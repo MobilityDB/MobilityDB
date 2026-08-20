@@ -181,3 +181,21 @@ SELECT numValues(setUnion(cb)) FROM tbl_cbuffer;
        100
 (1 row)
 
+SELECT asText(setMinus(cbuffer 'Cbuffer(Point(1 1),0.5)', cbufferset '{"Cbuffer(Point(2 2),0.5)"}'));
+           astext            
+-----------------------------
+ {"Cbuffer(POINT(1 1),0.5)"}
+(1 row)
+
+SELECT asText(setIntersection(cbuffer 'Cbuffer(Point(1 1),0.5)', cbufferset '{"Cbuffer(Point(1 1),0.5)", "Cbuffer(Point(2 2),0.5)"}'));
+           astext            
+-----------------------------
+ {"Cbuffer(POINT(1 1),0.5)"}
+(1 row)
+
+SELECT asText(setIntersection(cbufferset '{"Cbuffer(Point(1 1),0.5)", "Cbuffer(Point(2 2),0.5)"}', cbuffer 'Cbuffer(Point(1 1),0.5)'));
+           astext            
+-----------------------------
+ {"Cbuffer(POINT(1 1),0.5)"}
+(1 row)
+

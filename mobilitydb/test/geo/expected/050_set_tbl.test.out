@@ -387,3 +387,39 @@ SELECT numValues(setUnion(g)) FROM tbl_geom_point WHERE NOT ST_IsEmpty(g);
         99
 (1 row)
 
+SELECT asText(setMinus(geometry 'Point(1 1)', geomset '{"Point(2 2)"}'));
+     astext     
+----------------
+ {"POINT(1 1)"}
+(1 row)
+
+SELECT asText(setIntersection(geometry 'Point(1 1)', geomset '{"Point(1 1)", "Point(2 2)"}'));
+     astext     
+----------------
+ {"POINT(1 1)"}
+(1 row)
+
+SELECT asText(setIntersection(geomset '{"Point(1 1)", "Point(2 2)"}', geometry 'Point(1 1)'));
+     astext     
+----------------
+ {"POINT(1 1)"}
+(1 row)
+
+SELECT asText(setMinus(geography 'Point(1 1)', geogset '{"Point(2 2)"}'));
+     astext     
+----------------
+ {"POINT(1 1)"}
+(1 row)
+
+SELECT asText(setIntersection(geography 'Point(1 1)', geogset '{"Point(1 1)", "Point(2 2)"}'));
+     astext     
+----------------
+ {"POINT(1 1)"}
+(1 row)
+
+SELECT asText(setIntersection(geogset '{"Point(1 1)", "Point(2 2)"}', geography 'Point(1 1)'));
+     astext     
+----------------
+ {"POINT(1 1)"}
+(1 row)
+

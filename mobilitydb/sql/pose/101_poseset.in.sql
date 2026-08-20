@@ -449,7 +449,7 @@ CREATE OPERATOR + (
 /*****************************************************************************/
 
 CREATE FUNCTION setMinus(pose, poseset)
-  RETURNS pose
+  RETURNS poseset
   AS 'MODULE_PATHNAME', 'Minus_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION setMinus(poseset, pose)
@@ -477,11 +477,11 @@ CREATE OPERATOR - (
 /*****************************************************************************/
 
 CREATE FUNCTION setIntersection(pose, poseset)
-  RETURNS pose
+  RETURNS poseset
   AS 'MODULE_PATHNAME', 'Intersection_value_set'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION setIntersection(poseset, pose)
-  RETURNS pose
+  RETURNS poseset
   AS 'MODULE_PATHNAME', 'Intersection_set_value'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION setIntersection(poseset, poseset)
