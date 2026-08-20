@@ -1126,7 +1126,7 @@ next_segment:
 }
 
 /*****************************************************************************
- * Geometry clip context
+ * Geometry edge context
  *
  * Everything the engine derives from a geometry -- its bounding box, its edge
  * decomposition, and the R-tree indexing those edges -- depends on that
@@ -1151,10 +1151,10 @@ typedef struct
                             of them to amortize its construction */
   Edge **cand_edges;   /**< Buffer receiving the edges selected by the index,
                             NULL when there is no index */
-} GeoClipCtx;
+} GeoEdgeCtx;
 
 /**
- * @brief Return the clip context of a geometry, or NULL if the geometry is
+ * @brief Return the edge context of a geometry, or NULL if the geometry is
  * empty
  * @details The context owns the edges of the geometry and, when they are
  * numerous enough to amortize its construction, an R-tree indexing them
@@ -1164,13 +1164,13 @@ typedef struct
  * index (the same lifetime the operations gave it when each built its own)
  */
 void *
-geo_clip_ctx_make(const GSERIALIZED *gs)
+geo_edge_ctx_make(const GSERIALIZED *gs)
 {
   assert(gs);
   if (gserialized_is_empty(gs))
     return NULL;
 
-  GeoClipCtx *ctx = palloc0(sizeof(GeoClipCtx));
+  GeoEdgeCtx *ctx = palloc0(sizeof(GeoEdgeCtx));
   geo_set_stbox(gs, &ctx->box);
   ctx->srid = gserialized_get_srid(gs);
   /* Extract the edges */
@@ -1206,14 +1206,14 @@ geo_clip_ctx_make(const GSERIALIZED *gs)
 }
 
 /**
- * @brief Free a clip context built by #geo_clip_ctx_make
+ * @brief Free an edge context built by #geo_edge_ctx_make
  */
 void
-geo_clip_ctx_free(void *ctxv)
+geo_edge_ctx_free(void *ctxv)
 {
   if (! ctxv)
     return;
-  GeoClipCtx *ctx = (GeoClipCtx *) ctxv;
+  GeoEdgeCtx *ctx = (GeoEdgeCtx *) ctxv;
   if (ctx->rtree)
   {
     rtree_free(ctx->rtree);
@@ -1306,7 +1306,7 @@ bool
 geo_intersects2d_ctx(const GSERIALIZED *gs, const void *ctxv)
 {
   assert(gs); assert(ctxv);
-  const GeoClipCtx *ctx = (const GeoClipCtx *) ctxv;
+  const GeoEdgeCtx *ctx = (const GeoEdgeCtx *) ctxv;
   /* An empty geometry intersects nothing, matching PostGIS ST_Intersects.
    * Callers such as the touches predicates pass the (possibly empty) boundary
    * of a geometry or trajectory, so the leaf must tolerate empty input. */
@@ -1377,7 +1377,7 @@ geo_intersects2d_ctx(const GSERIALIZED *gs, const void *ctxv)
 
 /**
  * @brief Return true if two 2D geometries intersect, computed natively
- * @details Builds the clip context of the second geometry, which is the one
+ * @details Builds the edge context of the second geometry, which is the one
  * whose edges are indexed, and resolves the relationship with
  * #geo_intersects2d_ctx
  * @pre The arguments have the same SRID
@@ -1399,11 +1399,11 @@ geo_intersects2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   if (! overlaps_stbox_stbox(&box1, &box2))
     return false;
 
-  void *ctx = geo_clip_ctx_make(gs2);
+  void *ctx = geo_edge_ctx_make(gs2);
   if (! ctx)
     return false;
   bool result = geo_intersects2d_ctx(gs1, ctx);
-  geo_clip_ctx_free(ctx);
+  geo_edge_ctx_free(ctx);
   return result;
 }
 
@@ -1648,7 +1648,7 @@ geo_covers2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 
 /**
  * @brief Return the temporal intersection/intersects of a temporal geometric
- * point with linear interpolation and the geometry of a clip context
+ * point with linear interpolation and the geometry of a edge context
  * @details The temporal geometric point may be in 2D or 3D and the Z dimension
  * is also computed. Clipping several temporal points against one geometry
  * extracts and indexes its edges once, since the context outlives the call
@@ -1664,7 +1664,7 @@ tpoint_linear_inter_geom_ctx(const Temporal *temp, const void *ctxv, bool clip)
   assert(MEOS_FLAGS_LINEAR_INTERP(temp->flags));
   assert(temp->subtype != TINSTANT);
   assert(! MEOS_FLAGS_GET_GEODETIC(temp->flags));
-  const GeoClipCtx *ctx = (const GeoClipCtx *) ctxv;
+  const GeoEdgeCtx *ctx = (const GeoEdgeCtx *) ctxv;
 
   /* Bounding box test */
   STBox box1;
@@ -1759,7 +1759,7 @@ cleanup_return:
  * @ingroup meos_internal_geo
  * @brief Return the temporal intersection/intersects of a temporal geometric
  * point with linear interpolation and a 2D geometry
- * @details Builds the clip context of the geometry and resolves the
+ * @details Builds the edge context of the geometry and resolves the
  * relationship with #tpoint_linear_inter_geom_ctx
  * @pre The arguments have the same SRID, the geometry is 2D and is not empty.
  * This is verified in #tgeo_restrict_geom
@@ -1788,11 +1788,11 @@ tpoint_linear_inter_geom(const Temporal *temp, const GSERIALIZED *gs,
     return result;
   }
 
-  void *ctx = geo_clip_ctx_make(gs);
+  void *ctx = geo_edge_ctx_make(gs);
   if (! ctx)
     return NULL;
   Temporal *result = tpoint_linear_inter_geom_ctx(temp, ctx, clip);
-  geo_clip_ctx_free(ctx);
+  geo_edge_ctx_free(ctx);
   return result;
 }
 
@@ -2280,7 +2280,7 @@ tpoint_linear_dwithin_geom_ctx(const Temporal *temp, const void *ctxv,
   assert(MEOS_FLAGS_LINEAR_INTERP(temp->flags));
   assert(temp->subtype != TINSTANT);
   assert(! MEOS_FLAGS_GET_GEODETIC(temp->flags));
-  const GeoClipCtx *ctx = (const GeoClipCtx *) ctxv;
+  const GeoEdgeCtx *ctx = (const GeoEdgeCtx *) ctxv;
 
   /* A zero distance is exactly the temporal intersects relationship */
   if (dist <= 0.0)
@@ -2364,7 +2364,7 @@ tpoint_linear_dwithin_geom_ctx(const Temporal *temp, const void *ctxv,
  * @ingroup meos_internal_geo
  * @brief Return a temporal Boolean that states whether a temporal geometric
  * point with linear interpolation is within a distance of a 2D geometry
- * @details Builds the clip context of the geometry and resolves the
+ * @details Builds the edge context of the geometry and resolves the
  * relationship with #tpoint_linear_dwithin_geom_ctx
  * @pre The arguments have the same SRID, are 2D and planar, and the geometry
  * is not empty and is supported by the clip engine. This is verified by the
@@ -2395,11 +2395,11 @@ tpoint_linear_dwithin_geom(const Temporal *temp, const GSERIALIZED *gs,
     return result;
   }
 
-  void *ctx = geo_clip_ctx_make(gs);
+  void *ctx = geo_edge_ctx_make(gs);
   if (! ctx)
     return NULL;
   Temporal *result = tpoint_linear_dwithin_geom_ctx(temp, ctx, dist);
-  geo_clip_ctx_free(ctx);
+  geo_edge_ctx_free(ctx);
   return result;
 }
 

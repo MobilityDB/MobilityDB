@@ -411,14 +411,20 @@ geom_extract_edges(const LWGEOM *geom)
 }
 
 /**
- * @brief Return true if a geometry is composed solely of the types the clip
- * engine can extract into edges
- * @details Mirrors the type dispatch of #geom_extract_edges_iter. Geometries
- * containing any other type (curved polygons, TIN, polyhedral surfaces, ...)
- * are not supported and must be handled by the caller
+ * @brief Return true if a geometry is composed solely of the types the native
+ * implementations can extract into edges
+ * @details Mirrors the type dispatch of #geom_extract_edges_iter, which every
+ * native implementation of a PostGIS function reads its geometry through, so
+ * the predicate answers for all of them: the clip engine, the DE-9IM matrix,
+ * the convex hull, the oriented envelope and the buffer alike. A geometry
+ * holding any other type, a TIN or a polyhedral surface, is uncovered and
+ * belongs to the caller, which either answers it another way or reports that
+ * it is not supported
+ * @note Uncovered never means unrelated: a @p false is the absence of an
+ * answer, not a negative one
  */
 bool
-geom_clip_supported(const LWGEOM *geom)
+geom_meos_supported(const LWGEOM *geom)
 {
   if (! geom)
     return false;
@@ -443,7 +449,7 @@ geom_clip_supported(const LWGEOM *geom)
        * polygons, each validated by the recursive call */
       const LWCOLLECTION *col = (const LWCOLLECTION *) geom;
       for (uint32_t i = 0; i < col->ngeoms; i++)
-        if (! geom_clip_supported(col->geoms[i]))
+        if (! geom_meos_supported(col->geoms[i]))
           return false;
       return true;
     }
@@ -457,7 +463,7 @@ geom_clip_supported(const LWGEOM *geom)
         uint8_t rt = cp->rings[r]->type;
         if (rt != LINETYPE && rt != CIRCSTRINGTYPE && rt != COMPOUNDTYPE)
           return false;
-        if (rt == COMPOUNDTYPE && ! geom_clip_supported(cp->rings[r]))
+        if (rt == COMPOUNDTYPE && ! geom_meos_supported(cp->rings[r]))
           return false;
       }
       return true;
