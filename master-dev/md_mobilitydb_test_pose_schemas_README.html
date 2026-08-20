@@ -92,7 +92,9 @@ $(function() {
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone"><code>GeoPose.Composite.Sequence.StreamElement.Schema.json</code>   </td><td class="markdownTableBodyNone">Stream, the document repeated in one    </td></tr>
 <tr class="markdownTableRowEven">
-<td class="markdownTableBodyNone"><code>GeoPose.Composite.Sequence.Stream.Schema.json</code>   </td><td class="markdownTableBodyNone">Stream, the whole of one as a single document   </td></tr>
+<td class="markdownTableBodyNone"><code>GeoPose.Composite.Sequence.Stream.Schema.json</code>   </td><td class="markdownTableBodyNone">Stream, the whole of one as a single document    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><code>GeoPose.Basic.Strict_Quaternion.Schema.json</code>   </td><td class="markdownTableBodyNone">Basic-Quaternion, the form admitting no other member   </td></tr>
 </table>
 <p >The schemas are those of OGC GeoPose 1.0 (OGC 21-056r11) and belong to the Open Geospatial Consortium, which licenses them for redistribution under the OGC Software Notice reproduced in <code>LICENSE</code> beside them, as <code>clipper2</code> and <code>h3-pg</code> carry the notice of what they vendor. That notice asks for the copyright to be retained and for any modification to be declared, so the files are held here unmodified, byte for byte as retrieved, with these digests: </p><pre class="fragment">5508d26aed6f…  GeoPose.Basic.YPR.Schema.json
 ce15e01a2ea8…  GeoPose.Basic.Quaternion.Schema.json
@@ -102,8 +104,10 @@ ce15e01a2ea8…  GeoPose.Basic.Quaternion.Schema.json
 ee3b1944912b…  GeoPose.Composite.Sequence.StreamHeader.Schema.json
 01791c205790…  GeoPose.Composite.Sequence.StreamElement.Schema.json
 fd24663a1241…  GeoPose.Composite.Sequence.Stream.Schema.json
+06d999a2b309…  GeoPose.Basic.Strict_Quaternion.Schema.json
 </pre><p> <code>tools/scripts/check_geopose_conformance.py</code> validates against them the GeoPose documents that <code>expected/103_pose_geopose.test.out</code> holds. Keeping a copy here rather than fetching at run time makes the check depend on nothing outside the repository, so it gives the same verdict in a network-less build as in CI.</p>
-<p >The two remaining conformance classes, Chain and Graph, have schemas at the same place, and belong here as soon as MobilityDB emits a document of one of them. </p>
+<p >A Basic-Quaternion document carrying only what a static pose has to say satisfies the strict schema as well, which admits <code>position</code> and <code>quaternion</code> and nothing else; a temporal instant additionally carries <code>validTime</code> and satisfies the permissive schema alone. The check therefore holds every Basic-Quaternion document that names no time to the strict schema, so a member added to the static encoding is reported rather than quietly narrowing what MobilityDB can claim. The conformance test suite exercises the permissive form, which is the one a claim is made against.</p>
+<p >Four schemas published at the same place are deliberately absent. <code>GeoPose.Composite.Chain.Schema.json</code> and <code>GeoPose.Composite.Graph.Schema.json</code> describe the two conformance classes MobilityDB does not implement, and belong here as soon as it emits a document of one of them. <code>GeoPose.Basic.Euler.Schema.json</code> describes a flat <code>longitude</code>/<code>latitude</code>/ <code>height</code>/<code>rotations</code> form that is not one of the eight conformance classes and that no MobilityDB encoding produces. <code>GeoPose.Composite.Sequence.Stream.Header.Schema.json</code> requires a single <code>transitionModel</code> typed as a string, where the <code>StreamHeader</code> schema beside it, and the composite <code>Stream</code> schema that embeds one, require an object of <code>authority</code>, <code>id</code> and <code>parameters</code> together with an <code>outerFrame</code>: a header satisfying either fails the other, so the two cannot both describe a conformant document. MobilityDB writes the form the suite and the composite schema agree on, and the contradiction is a question for the working group. </p>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 <!-- start footer part -->

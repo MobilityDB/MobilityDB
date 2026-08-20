@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: rtree_insert</title>
+<title>MobilityDB: rtree_nn_cursor_next</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -79,39 +79,39 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__box__index_gab1e349cb5ea00e3a0cf0a96b5e6e25c1.html#gab1e349cb5ea00e3a0cf0a96b5e6e25c1">rtree_insert</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__box__index_ga9da22fb2521c089da316af05b333d7c1.html#ga9da22fb2521c089da316af05b333d7c1">rtree_insert</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__box__index_ga12c005c8f3517a63d1912223e52b29ad.html#ga12c005c8f3517a63d1912223e52b29ad">rtree_join</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__box__index_gae574d20453a63ce0d0a98ff8253f9979.html#gae574d20453a63ce0d0a98ff8253f9979">rtree_nn_cursor_close</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__box__index_gacaf68fefe89b7303b9014a9665cd5deb.html#gacaf68fefe89b7303b9014a9665cd5deb">rtree_nn_cursor_next</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__box__index_ga2710d751d34537d6847ed6da1ef59867.html#ga2710d751d34537d6847ed6da1ef59867">rtree_nn_cursor_next</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__box__index_gaa0c0a7cc751369700b9500e7190cd771.html#gaa0c0a7cc751369700b9500e7190cd771">rtree_nn_cursor_open</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__box__index_ga558c5fbb382bd9103233b0b8d5875dfa.html#ga558c5fbb382bd9103233b0b8d5875dfa">rtree_search</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="gab1e349cb5ea00e3a0cf0a96b5e6e25c1" name="gab1e349cb5ea00e3a0cf0a96b5e6e25c1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gab1e349cb5ea00e3a0cf0a96b5e6e25c1">&#9670;&#160;</a></span>rtree_insert()</h2>
+<a id="ga2710d751d34537d6847ed6da1ef59867" name="ga2710d751d34537d6847ed6da1ef59867"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga2710d751d34537d6847ed6da1ef59867">&#9670;&#160;</a></span>rtree_nn_cursor_next()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void rtree_insert </td>
+          <td class="memname">bool rtree_nn_cursor_next </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="structRTree.html">RTree</a> *&#160;</td>
-          <td class="paramname"><em>rtree</em>, </td>
+          <td class="paramtype"><a class="el" href="structRTreeNNCursor.html">RTreeNNCursor</a> *&#160;</td>
+          <td class="paramname"><em>cursor</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">void *&#160;</td>
-          <td class="paramname"><em>box</em>, </td>
+          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a7cde0074dfd288f2d70c0e035dacb28a.html#a7cde0074dfd288f2d70c0e035dacb28a">int64</a> *&#160;</td>
+          <td class="paramname"><em>id_out</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>id</em>&#160;</td>
+          <td class="paramtype">double *&#160;</td>
+          <td class="paramname"><em>dist_out</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -121,16 +121,16 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Insert a bounding box into the <a class="el" href="structRTree.html" title="Rtree in-memory index basic structure.">RTree</a> index. </p>
-<dl class="section note"><dt>Note</dt><dd>The parameter <code>id</code> is used for the search function, when a match is found the id will be returned. The bounding box will be copied into the RTRee. </dd></dl>
-<dl class="params"><dt>Parameters</dt><dd>
+<p>Advance a nearest-neighbour cursor to the next closest id. </p>
+<p >Returns the next id in order of increasing distance to the query box. When <code>id_out</code> or <code>dist_out</code> is not <code>NULL</code> it receives the id and its distance. An id whose box has no valid distance to the query (e.g. disjoint time extents for temporal box types) is reported last with an infinite distance. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">rtree</td><td>The <a class="el" href="structRTree.html" title="Rtree in-memory index basic structure.">RTree</a> previously initialized </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">box</td><td>The bounding box to be inserted </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">id</td><td>The id of the box being inserted </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">cursor</td><td>The cursor previously opened with <a class="el" href="group__meos__geo__box__index_gaa0c0a7cc751369700b9500e7190cd771.html#gaa0c0a7cc751369700b9500e7190cd771" title="Open a nearest-neighbour cursor that yields the ids stored in an RTree in order of increasing distanc...">rtree_nn_cursor_open</a> </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">id_out</td><td>Receives the id of the next neighbour, or <code>NULL</code> </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">dist_out</td><td>Receives the distance of the next neighbour, or <code>NULL</code> </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section return"><dt>Returns</dt><dd><code>true</code> if a neighbour was produced, <code>false</code> once exhausted </dd></dl>
 
 </div>
 </div>

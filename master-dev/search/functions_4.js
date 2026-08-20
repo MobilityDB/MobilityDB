@@ -450,6 +450,6 @@ var searchData=
   ['double_5fparse_447',['double_parse',['../type__parser_8h_a4047758078522b31d5945a1e19ead3aa.html#a4047758078522b31d5945a1e19ead3aa',1,'double_parse(const char **str, double *result):&#160;type_parser.c'],['../type__parser_8c_a4047758078522b31d5945a1e19ead3aa.html#a4047758078522b31d5945a1e19ead3aa',1,'double_parse(const char **str, double *result):&#160;type_parser.c']]],
   ['double_5fto_5fwkb_5fbuf_448',['double_to_wkb_buf',['../meos_2src_2temporal_2type__out_8c_af8b072fbdba262ee02af2254383f14c8.html#af8b072fbdba262ee02af2254383f14c8',1,'type_out.c']]],
   ['doublen_5fto_5fpoint_449',['doublen_to_point',['../meos_2src_2geo_2tgeo__aggfuncs_8c_abd8fe5d54051bab4b55ea6371c162b8e.html#abd8fe5d54051bab4b55ea6371c162b8e',1,'tgeo_aggfuncs.c']]],
-  ['drain_450',['drain',['../sptree__test_8c_a767ea5e7d5b83d6a9ee7a65c6054261e.html#a767ea5e7d5b83d6a9ee7a65c6054261e',1,'sptree_test.c']]],
+  ['drain_450',['drain',['../sptree__test_8c_a13aa8d154cc89067e93d06a31913372c.html#a13aa8d154cc89067e93d06a31913372c',1,'sptree_test.c']]],
   ['dwithin_5fcbuffer_5fcbuffer_451',['dwithin_cbuffer_cbuffer',['../group__meos__cbuffer__base__rel_gaa65ef1a77072461ec195c039fc3a4de6.html#gaa65ef1a77072461ec195c039fc3a4de6',1,'dwithin_cbuffer_cbuffer(const Cbuffer *cb1, const Cbuffer *cb2, double dist):&#160;cbuffer.c'],['../group__meos__cbuffer__base__rel_gaa65ef1a77072461ec195c039fc3a4de6.html#gaa65ef1a77072461ec195c039fc3a4de6',1,'dwithin_cbuffer_cbuffer(const Cbuffer *cb1, const Cbuffer *cb2, double dist):&#160;cbuffer.c']]]
 ];

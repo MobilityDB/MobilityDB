@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: check_structural</title>
+<title>MobilityDB: drain</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -80,11 +80,11 @@ $(function() {
       <div class="navtab">
         <table>
           <tr><td class="navtab"><a class="navtab" href="sptree__test_8c_a5290bc0c33578cd6301a815df09493a9.html#a5290bc0c33578cd6301a815df09493a9">check</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="sptree__test_8c_a90b9be304bf3d1a3b2cffe8f39df5f44.html#a90b9be304bf3d1a3b2cffe8f39df5f44">check_metric</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="sptree__test_8c_ae69d38314d754b4c3a8800d0213b973b.html#ae69d38314d754b4c3a8800d0213b973b">check_structural</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="sptree__test_8c_ab30746bf069094794a79608ac9c0f571.html#ab30746bf069094794a79608ac9c0f571">check_metric</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="sptree__test_8c_aa1ae26cdd9e7628e77ae20456352d6a5.html#aa1ae26cdd9e7628e77ae20456352d6a5">check_structural</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="sptree__test_8c_a388caadb5b269f83e0fb792e2994c65a.html#a388caadb5b269f83e0fb792e2994c65a">cmp_double</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="sptree__test_8c_ae8b45c580d349889030d35eb393ad188.html#ae8b45c580d349889030d35eb393ad188">compare</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="sptree__test_8c_a767ea5e7d5b83d6a9ee7a65c6054261e.html#a767ea5e7d5b83d6a9ee7a65c6054261e">drain</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="sptree__test_8c_a13aa8d154cc89067e93d06a31913372c.html#a13aa8d154cc89067e93d06a31913372c">drain</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="sptree__test_8c_a6ebf6899d6c1c8b7b9d09be872c05aae.html#a6ebf6899d6c1c8b7b9d09be872c05aae">EPS</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="sptree__test_8c_a5c7ba59d434acf5dafb8ec5fd28e9a1e.html#a5c7ba59d434acf5dafb8ec5fd28e9a1e">failures</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="sptree__test_8c_a97d832ae23af4f215e801e37e4f94254.html#a97d832ae23af4f215e801e37e4f94254">K</a></td></tr>
@@ -119,8 +119,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ae69d38314d754b4c3a8800d0213b973b" name="ae69d38314d754b4c3a8800d0213b973b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae69d38314d754b4c3a8800d0213b973b">&#9670;&#160;</a></span>check_structural()</h2>
+<a id="a13aa8d154cc89067e93d06a31913372c" name="a13aa8d154cc89067e93d06a31913372c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a13aa8d154cc89067e93d06a31913372c">&#9670;&#160;</a></span>drain()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -129,46 +129,28 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static void check_structural </td>
+          <td class="memname">static int drain </td>
           <td>(</td>
-          <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>label</em>, </td>
+          <td class="paramtype"><a class="el" href="structSPNNCursor.html">SPNNCursor</a> *&#160;</td>
+          <td class="paramname"><em>cursor</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="structSPTree.html">SPTree</a> *&#160;</td>
-          <td class="paramname"><em>sptree</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const void *&#160;</td>
-          <td class="paramname"><em>query</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const int *&#160;</td>
+          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a7cde0074dfd288f2d70c0e035dacb28a.html#a7cde0074dfd288f2d70c0e035dacb28a">int64</a> *&#160;</td>
           <td class="paramname"><em>cur_id</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const double *&#160;</td>
+          <td class="paramtype">double *&#160;</td>
           <td class="paramname"><em>cur_dist</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const int *&#160;</td>
-          <td class="paramname"><em>seen</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>n</em>&#160;</td>
+          <td class="paramtype">int *&#160;</td>
+          <td class="paramname"><em>seen</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
