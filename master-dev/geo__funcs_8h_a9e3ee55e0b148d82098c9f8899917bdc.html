@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: IntersectType</title>
+<title>MobilityDB: circle_type</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -85,12 +85,12 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_abb34fd09ea7c90bf2d751ed0d2b5aa04.html#abb34fd09ea7c90bf2d751ed0d2b5aa04">arcarc_intersect</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a53fc95d283c22d2815c20acefc677ee2.html#a53fc95d283c22d2815c20acefc677ee2">arcsegm_intersect</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a29b3d5684039030d4bf4802d9fa2005a.html#a29b3d5684039030d4bf4802d9fa2005a">build_edge_rtree</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a9e3ee55e0b148d82098c9f8899917bdc.html#a9e3ee55e0b148d82098c9f8899917bdc">circle_type</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="geo__funcs_8h_a9e3ee55e0b148d82098c9f8899917bdc.html#a9e3ee55e0b148d82098c9f8899917bdc">circle_type</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a424a64da753a3cd5e96ab8d0553a04c4.html#a424a64da753a3cd5e96ab8d0553a04c4">EdgeType</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_af425fbcbb2a57f8435255f3563737fbd.html#af425fbcbb2a57f8435255f3563737fbd">ensure_circle_type</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a9a5f5bd1c5e8190a96d22dde6f593d5b.html#a9a5f5bd1c5e8190a96d22dde6f593d5b">geocircle_make</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_ac611242c7cb2e5344500615fdda1c9fc.html#ac611242c7cb2e5344500615fdda1c9fc">geom_extract_edges</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="geo__funcs_8h_a994bab40ad09a41cd92442285329120c.html#a994bab40ad09a41cd92442285329120c">IntersectType</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a994bab40ad09a41cd92442285329120c.html#a994bab40ad09a41cd92442285329120c">IntersectType</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_aa429e8a226e41df58f47f3117db0f090.html#aa429e8a226e41df58f47f3117db0f090">linesegm_intersect</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_ad8290327267bb18b7f28118199edfb9e.html#ad8290327267bb18b7f28118199edfb9e">lwcircle_make</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a510f8313bd5310b2fdacef6db43e7ebe.html#a510f8313bd5310b2fdacef6db43e7ebe">point_in_polygon</a></td></tr>
@@ -103,24 +103,24 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a994bab40ad09a41cd92442285329120c" name="a994bab40ad09a41cd92442285329120c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a994bab40ad09a41cd92442285329120c">&#9670;&#160;</a></span>IntersectType</h2>
+<a id="a9e3ee55e0b148d82098c9f8899917bdc" name="a9e3ee55e0b148d82098c9f8899917bdc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9e3ee55e0b148d82098c9f8899917bdc">&#9670;&#160;</a></span>circle_type()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">enum <a class="el" href="geo__funcs_8h_a994bab40ad09a41cd92442285329120c.html#a994bab40ad09a41cd92442285329120c">IntersectType</a></td>
+          <td class="memname">bool circle_type </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
+          <td class="paramname"><em>gs</em></td><td>)</td>
+          <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Enumeration defining the intersection types. </p>
-<table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a994bab40ad09a41cd92442285329120ca7e9ecaf94a863cd021c6a630d8e70caf" name="a994bab40ad09a41cd92442285329120ca7e9ecaf94a863cd021c6a630d8e70caf"></a>INTERSECT_NONE&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="a994bab40ad09a41cd92442285329120ca7c34cf0e2856ee1ff5882aef7a364dc7" name="a994bab40ad09a41cd92442285329120ca7c34cf0e2856ee1ff5882aef7a364dc7"></a>INTERSECT_POINT&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="a994bab40ad09a41cd92442285329120ca693338feba56baa2448c5e42c2182669" name="a994bab40ad09a41cd92442285329120ca693338feba56baa2448c5e42c2182669"></a>INTERSECT_OVERLAP&#160;</td><td class="fielddoc"></td></tr>
-</table>
+<p>Return true if a geometry is a circle. </p>
+<p >A circle is a curve polygon of a single ring, that ring a closed circular string of three points: the two ends, which are the same point, and the point opposite them. A ring of any other kind belongs to a curve polygon that bounds some other shape, and the members it carries are not the ones a circular string carries, so its kind is read before it is addressed as one. </p>
 
 </div>
 </div>
