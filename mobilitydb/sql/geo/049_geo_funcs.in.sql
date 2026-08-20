@@ -47,6 +47,15 @@ CREATE FUNCTION ConvexHull(geometry)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
+ * Simple geometries
+ *****************************************************************************/
+
+CREATE FUNCTION isSimple(geometry)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Geom_is_simple'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************
  * Buffer
  *****************************************************************************/
 

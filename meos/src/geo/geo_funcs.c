@@ -1435,6 +1435,317 @@ geom_convex_hull_meos(const GSERIALIZED *gs)
 }
 
 /*****************************************************************************
+ * Simple geometries
+ * Implementation of the PostGIS function ST_IsSimple improving its
+ * performance and answering it without GEOS
+ * A geometry is simple when it has no anomalous point, which is a point at
+ * which it crosses or touches itself. A point is always simple, a multipoint
+ * is simple when it repeats no point, a line is simple when it meets itself
+ * only where two of its segments follow one another and, when it closes, at
+ * the point where it closes, and an areal geometry is simple when each of its
+ * rings is. The components of a multipart geometry are answered one by one,
+ * except that the lines of a multiline may meet only at a point that ends
+ * both of them.
+ *****************************************************************************/
+
+/**
+ * @brief Collect the points of a point array, dropping a point that repeats
+ * the one before it
+ * @details A repeated point contributes a segment of no length, which the
+ * standard does not read as the geometry meeting itself
+ * @param[in] pa Point array
+ * @param[out] points Array receiving the points, of at least @p pa->npoints
+ * elements
+ * @return Number of points collected
+ */
+static int
+pointarr_collect(const POINTARRAY *pa, const POINT2D **points)
+{
+  assert(pa); assert(points);
+  int npoints = 0;
+  for (uint32_t i = 0; i < pa->npoints; i++)
+  {
+    const POINT2D *point = getPoint2d_cp(pa, i);
+    if (npoints == 0 ||
+        point->x != points[npoints - 1]->x ||
+        point->y != points[npoints - 1]->y)
+      points[npoints++] = point;
+  }
+  return npoints;
+}
+
+/**
+ * @brief Return true if a sequence of points closes on itself
+ */
+static bool
+pointarr_is_closed(const POINT2D **points, int npoints)
+{
+  assert(points);
+  return npoints > 1 && points[0]->x == points[npoints - 1]->x &&
+    points[0]->y == points[npoints - 1]->y;
+}
+
+/**
+ * @brief Return true if the polyline joining a sequence of points meets itself
+ * nowhere it is not allowed to
+ * @details Two segments that follow one another meet at the point they share,
+ * and the first and the last segment of a closed polyline meet at the point
+ * that closes it. Meeting anywhere else, meeting at more than a point, or an
+ * end of one segment falling inside another, is the geometry crossing or
+ * touching itself.
+ * @param[in] points Array of points, holding no point that repeats the one
+ * before it
+ * @param[in] npoints Number of elements in the array of points
+ */
+static bool
+pointarr_is_simple(const POINT2D **points, int npoints)
+{
+  assert(points);
+  /* A single point and a single segment cannot meet themselves */
+  if (npoints < 3)
+    return true;
+  const bool closed = pointarr_is_closed(points, npoints);
+  const int nsegs = npoints - 1;
+  for (int i = 0; i < nsegs; i++)
+  {
+    for (int j = i + 1; j < nsegs; j++)
+    {
+      POINT2D p = { 0 }; /* make compiler quiet */
+      int intertype = seg2d_intersection(points[i], points[i + 1],
+        points[j], points[j + 1], &p);
+      if (intertype == MEOS_SEG_NO_INTERSECTION)
+        continue;
+      /* Two segments that follow one another meet at the point they share */
+      if (intertype == MEOS_SEG_TOUCH_END && j == i + 1 &&
+          p.x == points[j]->x && p.y == points[j]->y)
+        continue;
+      /* The two ends of a closed polyline meet at the point that closes it */
+      if (intertype == MEOS_SEG_TOUCH_END && closed && i == 0 &&
+          j == nsegs - 1 && p.x == points[0]->x && p.y == points[0]->y)
+        continue;
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * @brief Return true if two polylines meet only at a point that ends both of
+ * them
+ * @details A closed polyline has no end, so a closed one meeting another
+ * polyline anywhere is the pair touching itself.
+ * @param[in] points1,points2 Arrays of points
+ * @param[in] npoints1,npoints2 Number of elements in the arrays of points
+ */
+static bool
+pointarrs_meet_at_ends(const POINT2D **points1, int npoints1,
+  const POINT2D **points2, int npoints2)
+{
+  assert(points1); assert(points2);
+  if (npoints1 < 2 || npoints2 < 2)
+    return true;
+  const bool closed1 = pointarr_is_closed(points1, npoints1);
+  const bool closed2 = pointarr_is_closed(points2, npoints2);
+  for (int i = 0; i < npoints1 - 1; i++)
+  {
+    for (int j = 0; j < npoints2 - 1; j++)
+    {
+      POINT2D p = { 0 }; /* make compiler quiet */
+      int intertype = seg2d_intersection(points1[i], points1[i + 1],
+        points2[j], points2[j + 1], &p);
+      if (intertype == MEOS_SEG_NO_INTERSECTION)
+        continue;
+      /* Meeting along a stretch, or at a point inside either segment, is not
+       * the two ends meeting */
+      if (intertype != MEOS_SEG_TOUCH_END || closed1 || closed2)
+        return false;
+      /* The point ends both polylines, not only the two segments carrying it */
+      if (! ((p.x == points1[0]->x && p.y == points1[0]->y) ||
+             (p.x == points1[npoints1 - 1]->x &&
+              p.y == points1[npoints1 - 1]->y)))
+        return false;
+      if (! ((p.x == points2[0]->x && p.y == points2[0]->y) ||
+             (p.x == points2[npoints2 - 1]->x &&
+              p.y == points2[npoints2 - 1]->y)))
+        return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * @brief Return true if a point array is simple as a polyline of its own
+ */
+static bool
+ptarray_is_simple(const POINTARRAY *pa)
+{
+  assert(pa);
+  if (pa->npoints == 0)
+    return true;
+  const POINT2D **points = palloc(sizeof(POINT2D *) * pa->npoints);
+  int npoints = pointarr_collect(pa, points);
+  bool result = pointarr_is_simple(points, npoints);
+  pfree(points);
+  return result;
+}
+
+/**
+ * @brief Return true if the points of a multipoint are all distinct
+ */
+static bool
+lwmpoint_is_simple(const LWMPOINT *mpoint)
+{
+  assert(mpoint);
+  for (uint32_t i = 0; i < mpoint->ngeoms; i++)
+  {
+    const LWPOINT *point1 = mpoint->geoms[i];
+    if (! point1 || lwpoint_is_empty(point1))
+      continue;
+    POINT2D p1;
+    lwpoint_getPoint2d_p(point1, &p1);
+    for (uint32_t j = i + 1; j < mpoint->ngeoms; j++)
+    {
+      const LWPOINT *point2 = mpoint->geoms[j];
+      if (! point2 || lwpoint_is_empty(point2))
+        continue;
+      POINT2D p2;
+      lwpoint_getPoint2d_p(point2, &p2);
+      if (p1.x == p2.x && p1.y == p2.y)
+        return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * @brief Return true if the lines of a multiline are each simple and meet one
+ * another only where they end
+ */
+static bool
+lwmline_is_simple(const LWMLINE *mline)
+{
+  assert(mline);
+  const POINT2D ***points = palloc0(sizeof(POINT2D **) * mline->ngeoms);
+  int *npoints = palloc0(sizeof(int) * mline->ngeoms);
+  bool result = true;
+  for (uint32_t i = 0; i < mline->ngeoms && result; i++)
+  {
+    const LWLINE *line = mline->geoms[i];
+    if (! line || ! line->points || line->points->npoints == 0)
+      continue;
+    points[i] = palloc(sizeof(POINT2D *) * line->points->npoints);
+    npoints[i] = pointarr_collect(line->points, points[i]);
+    result = pointarr_is_simple(points[i], npoints[i]);
+  }
+  for (uint32_t i = 0; i < mline->ngeoms && result; i++)
+  {
+    if (! points[i])
+      continue;
+    for (uint32_t j = i + 1; j < mline->ngeoms && result; j++)
+    {
+      if (! points[j])
+        continue;
+      result = pointarrs_meet_at_ends(points[i], npoints[i], points[j],
+        npoints[j]);
+    }
+  }
+  for (uint32_t i = 0; i < mline->ngeoms; i++)
+    if (points[i])
+      pfree(points[i]);
+  pfree(points); pfree(npoints);
+  return result;
+}
+
+/**
+ * @brief Return true if every ring of an areal geometry is simple
+ */
+static bool
+lwpoly_is_simple(const LWPOLY *poly)
+{
+  assert(poly);
+  for (uint32_t i = 0; i < poly->nrings; i++)
+    if (poly->rings[i] && ! ptarray_is_simple(poly->rings[i]))
+      return false;
+  return true;
+}
+
+/**
+ * @brief Return true if a geometry has no anomalous point
+ * @details The result is reported in the last argument, the function itself
+ * reporting whether the geometry is covered. A geometry holding a circular
+ * arc is not covered.
+ * @param[in] geom Geometry
+ * @param[out] result True if the geometry is simple
+ * @return True if the geometry is covered
+ */
+bool
+meos_is_simple(const LWGEOM *geom, bool *result)
+{
+  assert(geom); assert(result);
+  if (lwgeom_is_empty(geom))
+  {
+    *result = true;
+    return true;
+  }
+  switch (geom->type)
+  {
+    case POINTTYPE:
+      *result = true;
+      return true;
+    case MULTIPOINTTYPE:
+      *result = lwmpoint_is_simple((const LWMPOINT *) geom);
+      return true;
+    case LINETYPE:
+      *result = ptarray_is_simple(((const LWLINE *) geom)->points);
+      return true;
+    case MULTILINETYPE:
+      *result = lwmline_is_simple((const LWMLINE *) geom);
+      return true;
+    case TRIANGLETYPE:
+      *result = ptarray_is_simple(((const LWTRIANGLE *) geom)->points);
+      return true;
+    case POLYGONTYPE:
+      *result = lwpoly_is_simple((const LWPOLY *) geom);
+      return true;
+    case MULTIPOLYGONTYPE:
+    {
+      const LWMPOLY *mpoly = (const LWMPOLY *) geom;
+      for (uint32_t i = 0; i < mpoly->ngeoms; i++)
+        if (mpoly->geoms[i] && ! lwpoly_is_simple(mpoly->geoms[i]))
+        {
+          *result = false;
+          return true;
+        }
+      *result = true;
+      return true;
+    }
+    case COLLECTIONTYPE:
+    {
+      const LWCOLLECTION *coll = (const LWCOLLECTION *) geom;
+      for (uint32_t i = 0; i < coll->ngeoms; i++)
+      {
+        bool component;
+        if (! coll->geoms[i])
+          continue;
+        if (! meos_is_simple(coll->geoms[i], &component))
+          return false;
+        if (! component)
+        {
+          *result = false;
+          return true;
+        }
+      }
+      *result = true;
+      return true;
+    }
+    default:
+      /* A geometry holding a circular arc meets itself along an arc, which
+       * the segment intersection this rests on does not answer */
+      return false;
+  }
+}
+
+/*****************************************************************************
  * Points, and the geometry a value serializes to
  *****************************************************************************/
 

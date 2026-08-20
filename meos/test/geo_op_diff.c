@@ -54,6 +54,7 @@
  * geo_op_diff convexhull        < convexhull_corpus_geos.txt
  * geo_op_diff buffer            < buffer_corpus_geos.txt
  * geo_op_diff orientedenvelope  < any corpus, whose first field is read
+ * geo_op_diff issimple          < issimple_corpus_geos.txt
  * @endcode
  */
 
@@ -455,14 +456,16 @@ int
 main(int argc, char **argv)
 {
   if (argc != 2 || (strcmp(argv[1], "convexhull") && strcmp(argv[1], "buffer")
-      && strcmp(argv[1], "orientedenvelope")))
+      && strcmp(argv[1], "orientedenvelope") && strcmp(argv[1], "issimple")))
   {
     fprintf(stderr,
-      "usage: %s {convexhull|buffer|orientedenvelope} < corpus\n", argv[0]);
+      "usage: %s {convexhull|buffer|orientedenvelope|issimple} < corpus\n",
+      argv[0]);
     return 2;
   }
   bool is_buffer = ! strcmp(argv[1], "buffer");
   bool is_envelope = ! strcmp(argv[1], "orientedenvelope");
+  bool is_simple = ! strcmp(argv[1], "issimple");
   meos_initialize();
   /* A geometry the native implementation declines raises an error, and the
    * corpus is walked to its end rather than stopped on the first one */
@@ -491,6 +494,41 @@ main(int argc, char **argv)
     }
     if (! is_envelope && (! arg || ! expected_wkt))
       continue;
+
+    /* The assertion of this operation is a truth value, not a geometry */
+    if (is_simple)
+    {
+      meos_errno_reset();
+      GSERIALIZED *gs1 = geom_in(line, -1);
+      if (! gs1)
+      {
+        fprintf(stderr, "PARSE %.90s\n", line);
+        meos_errno_reset();
+        continue;
+      }
+      bool want = ! strcmp(expected_wkt, "true");
+      meos_errno_reset();
+      bool got = geom_is_simple(gs1);
+      if (meos_errno())
+      {
+        meos_errno_reset();
+        nunsupported++;
+        printf("UNSUPPORTED %.90s\n", line);
+      }
+      else
+      {
+        nchecked++;
+        if (got != want)
+        {
+          nfailed++;
+          printf("FAIL   in       %.100s\n", line);
+          printf("       expected %s, actual %s\n", want ? "true" : "false",
+            got ? "true" : "false");
+        }
+      }
+      free(gs1);
+      continue;
+    }
 
     GSERIALIZED *gs = geom_in(line, -1);
     /* The GEOS suite asserts no oriented envelope, so GEOS answers it here */

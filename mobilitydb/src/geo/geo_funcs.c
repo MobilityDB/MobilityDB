@@ -89,6 +89,27 @@ Geom_convex_hull(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
+ * Simple geometries
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Geom_is_simple(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geom_is_simple);
+/**
+ * @ingroup mobilitydb_geo_base_accessor
+ * @brief Return true if a geometry has no anomalous point, which is a point
+ * at which it crosses or touches itself
+ * @sqlfn isSimple()
+ */
+Datum
+Geom_is_simple(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  bool result = geom_is_simple(gs);
+  PG_FREE_IF_COPY(gs, 0);
+  PG_RETURN_BOOL(result);
+}
+
+/*****************************************************************************
  * Buffer
  *****************************************************************************/
 
