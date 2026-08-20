@@ -41,6 +41,7 @@
 #include <math.h>
 /* PostgreSQL */
 #include "postgres.h"
+#include <utils/float.h>
 #include <pgtypes.h>
 /* PostGIS */
 #include "liblwgeom.h"
@@ -48,10 +49,9 @@
 /* MEOS */
 #include "meos.h"
 #include "meos_internal_geo.h"
-#include "temporal/temporal.h"
 #include "geo/geo_funcs.h"
+#include "geo/postgis_funcs.h"
 #include "geo/meos_transform.h"
-#include "geo/tgeo_spatialfuncs.h"
 
 /*****************************************************************************
  * Extract edges from a geometry that can be of type point, line, polygon or
@@ -806,6 +806,192 @@ pointarr_find_splits(const POINT2D **points, int npoints, int *count)
   }
   *count = numsplits;
   return bitarr;
+}
+
+/*****************************************************************************
+ * Points, and the geometry a value serializes to
+ *****************************************************************************/
+
+/**
+ * @brief Return -1, 0, or 1 depending on whether the first point is less than,
+ * equal to, or greater than the second one
+ */
+int
+geopoint_cmp(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
+{
+  if (FLAGS_GET_Z(gs1->gflags))
+  {
+    const POINT3DZ *point1 = GSERIALIZED_POINT3DZ_P(gs1);
+    const POINT3DZ *point2 = GSERIALIZED_POINT3DZ_P(gs2);
+    if (float8_lt(point1->x, point2->x))
+      return -1;
+    if (float8_gt(point1->x, point2->x))
+      return 1;
+    if (float8_lt(point1->y, point2->y))
+      return -1;
+    if (float8_gt(point1->y, point2->y))
+      return 1;
+    if (float8_lt(point1->z, point2->z))
+      return -1;
+    if (float8_gt(point1->z, point2->z))
+      return 1;
+    return 0;
+  }
+  else
+  {
+    const POINT2D *point1 = GSERIALIZED_POINT2D_P(gs1);
+    const POINT2D *point2 = GSERIALIZED_POINT2D_P(gs2);
+    if (float8_lt(point1->x, point2->x))
+      return -1;
+    if (float8_gt(point1->x, point2->x))
+      return 1;
+    if (float8_lt(point1->y, point2->y))
+      return -1;
+    if (float8_gt(point1->y, point2->y))
+      return 1;
+    return 0;
+  }
+}
+/**
+ * @brief Return true if the points are equal
+ * @note This function is called in the iterations over sequences where we
+ * are sure that their SRID and GEODETIC are equal. The function accepts
+ * mixed 2D/3D arguments
+ */
+bool
+geopoint_eq(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
+{
+  // TODO: Currently, activating these lines break tests
+  // assert(gserialized_get_srid(gs1) == gserialized_get_srid(gs2));
+  // assert(FLAGS_GET_GEODETIC(gs1->gflags) == FLAGS_GET_GEODETIC(gs2->gflags));
+  if (FLAGS_GET_Z(gs1->gflags) && FLAGS_GET_Z(gs2->gflags) )
+  {
+    const POINT3DZ *point1 = GSERIALIZED_POINT3DZ_P(gs1);
+    const POINT3DZ *point2 = GSERIALIZED_POINT3DZ_P(gs2);
+    return float8_eq(point1->x, point2->x) &&
+      float8_eq(point1->y, point2->y) && float8_eq(point1->z, point2->z);
+  }
+  else
+  {
+    const POINT2D *point1 = GSERIALIZED_POINT2D_P(gs1);
+    const POINT2D *point2 = GSERIALIZED_POINT2D_P(gs2);
+    return float8_eq(point1->x, point2->x) && float8_eq(point1->y, point2->y);
+  }
+}
+/**
+ * @brief Return true if the points are equal taking into account floating
+ * point imprecision
+ * @note This function is called in the iterations over sequences where we
+ * are sure that their SRID, Z, and GEODETIC are equal
+ */
+bool
+geopoint_same(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
+{
+  assert(gserialized_get_srid(gs1) == gserialized_get_srid(gs2));
+  assert(FLAGS_GET_Z(gs1->gflags) == FLAGS_GET_Z(gs2->gflags));
+  assert(FLAGS_GET_GEODETIC(gs1->gflags) == FLAGS_GET_GEODETIC(gs2->gflags));
+  if (FLAGS_GET_Z(gs1->gflags))
+  {
+    const POINT3DZ *point1 = GSERIALIZED_POINT3DZ_P(gs1);
+    const POINT3DZ *point2 = GSERIALIZED_POINT3DZ_P(gs2);
+    return MEOS_FP_EQ(point1->x, point2->x) &&
+      MEOS_FP_EQ(point1->y, point2->y) && MEOS_FP_EQ(point1->z, point2->z);
+  }
+  else
+  {
+    const POINT2D *point1 = GSERIALIZED_POINT2D_P(gs1);
+    const POINT2D *point2 = GSERIALIZED_POINT2D_P(gs2);
+    return MEOS_FP_EQ(point1->x, point2->x) &&
+      MEOS_FP_EQ(point1->y, point2->y);
+  }
+}
+/**
+ * @brief Return true if the two temporal points have the same spatial
+ * dimensionality as given by their flags
+ */
+bool
+same_spatial_dimensionality(int16 flags1, int16 flags2)
+{
+  if (MEOS_FLAGS_GET_X(flags1) == MEOS_FLAGS_GET_X(flags2) &&
+      MEOS_FLAGS_GET_Z(flags1) == MEOS_FLAGS_GET_Z(flags2))
+    return true;
+  return false;
+}
+/**
+ * @brief Ensure that the geometry/geography is a (multi)line
+ */
+bool
+mline_type(const GSERIALIZED *gs)
+{
+  uint32_t geotype = gserialized_get_type(gs);
+  if (geotype == LINETYPE || geotype == MULTILINETYPE)
+    return true;
+  return false;
+}
+/**
+ * @brief Return a point created from the arguments
+ */
+GSERIALIZED *
+geopoint_make(double x, double y, double z, bool hasz, bool geodetic,
+  int32_t srid)
+{
+  /* The coordinate list, the point array, and the point are in the stack,
+   * since only the serialized result outlives the function */
+  double coords[3] = {x, y, z};
+  lwflags_t flags = 0;
+  FLAGS_SET_Z(flags, hasz);
+  FLAGS_SET_GEODETIC(flags, geodetic);
+  POINTARRAY pa;
+  pa.npoints = pa.maxpoints = 1;
+  pa.flags = flags;
+  pa.serialized_pointlist = (uint8_t *) coords;
+  LWPOINT point;
+  point.bbox = NULL;
+  point.point = &pa;
+  point.srid = srid;
+  point.flags = flags;
+  point.type = POINTTYPE;
+  return geo_serialize((LWGEOM *) &point);
+}
+/**
+ * @brief Extract the first-level elements of a gemetry collection
+ */
+GSERIALIZED **
+geo_extract_elements(const GSERIALIZED *gs, int *count)
+{
+  assert(gs); assert(count);
+  /* Extract the elements of the arguments, if they are collections */
+  LWCOLLECTION *coll;
+  GSERIALIZED **result = NULL;
+  if (geo_is_unitary(gs))
+  {
+    *count = 1;
+    result = palloc(sizeof(LWGEOM *));
+    result[0] = geo_copy(gs);
+  }
+  else
+  {
+    LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
+    coll = lwgeom_as_lwcollection(lwgeom);
+    *count = coll->ngeoms;
+    result = palloc(sizeof(LWGEOM *) * coll->ngeoms);
+    for (uint32_t i = 0; i < coll->ngeoms; i++)
+      result[i] = geo_serialize(coll->geoms[i]);
+    lwgeom_free(lwgeom);
+  }
+  return result;
+}
+/**
+ * @brief Serialize a geometry/geography
+ * @pre It is supposed that the flags such as Z and geodetic have been
+ * set up before by the calling function
+ */
+GSERIALIZED *
+geo_serialize(const LWGEOM *geom)
+{
+  GSERIALIZED *result = FLAGS_GET_GEODETIC(geom->flags) ?
+    geog_serialize((LWGEOM *) geom) : geom_serialize((LWGEOM *) geom);
+  return result;
 }
 
 /*****************************************************************************

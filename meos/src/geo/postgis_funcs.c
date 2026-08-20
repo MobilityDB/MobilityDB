@@ -2572,34 +2572,6 @@ geom_buffer(const GSERIALIZED *gs, double size, const char *params)
 
 /*****************************************************************************/
 
-/**
- * @brief Extract the first-level elements of a gemetry collection
- */
-GSERIALIZED **
-geo_extract_elements(const GSERIALIZED *gs, int *count)
-{
-  assert(gs); assert(count);
-  /* Extract the elements of the arguments, if they are collections */
-  LWCOLLECTION *coll;
-  GSERIALIZED **result = NULL;
-  if (geo_is_unitary(gs))
-  {
-    *count = 1;
-    result = palloc(sizeof(LWGEOM *));
-    result[0] = geo_copy(gs);
-  }
-  else
-  {
-    LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
-    coll = lwgeom_as_lwcollection(lwgeom);
-    *count = coll->ngeoms;
-    result = palloc(sizeof(LWGEOM *) * coll->ngeoms);
-    for (uint32_t i = 0; i < coll->ngeoms; i++)
-      result[i] = geo_serialize(coll->geoms[i]);
-    lwgeom_free(lwgeom);
-  }
-  return result;
-}
 
 /**
  * @ingroup meos_geo_base_spatial
@@ -2767,18 +2739,6 @@ geog_serialize(LWGEOM *lwgeom)
   return result;
 }
 
-/**
- * @brief Serialize a geometry/geography
- * @pre It is supposed that the flags such as Z and geodetic have been
- * set up before by the calling function
- */
-GSERIALIZED *
-geo_serialize(const LWGEOM *geom)
-{
-  GSERIALIZED *result = FLAGS_GET_GEODETIC(geom->flags) ?
-    geog_serialize((LWGEOM *) geom) : geom_serialize((LWGEOM *) geom);
-  return result;
-}
 
 /*****************************************************************************
  * Functions adapted from lwgeom_transform.c
