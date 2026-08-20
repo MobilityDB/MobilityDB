@@ -61,23 +61,23 @@ CREATE OPERATOR <<# (
   LEFTARG = tstzspan, RIGHTARG = trgeometry,
   PROCEDURE = before,
   COMMUTATOR = #>>,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR &<# (
   LEFTARG = tstzspan, RIGHTARG = trgeometry,
   PROCEDURE = overbefore,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR #>> (
   LEFTARG = tstzspan, RIGHTARG = trgeometry,
   PROCEDURE = after,
   COMMUTATOR = <<#,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR #&> (
   LEFTARG = tstzspan, RIGHTARG = trgeometry,
   PROCEDURE = overafter,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
 /*****************************************************************************
@@ -265,23 +265,23 @@ CREATE OPERATOR <<# (
   LEFTARG = trgeometry, RIGHTARG = tstzspan,
   PROCEDURE = before,
   COMMUTATOR = #>>,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR &<# (
   LEFTARG = trgeometry, RIGHTARG = tstzspan,
   PROCEDURE = overbefore,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR #>> (
   LEFTARG = trgeometry, RIGHTARG = tstzspan,
   PROCEDURE = after,
   COMMUTATOR = <<#,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR #&> (
   LEFTARG = trgeometry, RIGHTARG = tstzspan,
   PROCEDURE = overafter,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
 /*****************************************************************************/

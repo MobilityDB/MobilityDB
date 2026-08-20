@@ -464,34 +464,34 @@ CREATE FUNCTION before(tpcpatch, tpcpatch) RETURNS boolean
 
 CREATE OPERATOR <<# (PROCEDURE = before,
   LEFTARG = tstzspan, RIGHTARG = tpcpoint, COMMUTATOR = '#>>',
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel);
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
 CREATE OPERATOR <<# (PROCEDURE = before,
   LEFTARG = tpcpoint, RIGHTARG = tstzspan, COMMUTATOR = '#>>',
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel);
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
 CREATE OPERATOR <<# (PROCEDURE = before,
   LEFTARG = tpcbox, RIGHTARG = tpcpoint, COMMUTATOR = '#>>',
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel);
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
 CREATE OPERATOR <<# (PROCEDURE = before,
   LEFTARG = tpcpoint, RIGHTARG = tpcbox, COMMUTATOR = '#>>',
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel);
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
 CREATE OPERATOR <<# (PROCEDURE = before,
   LEFTARG = tpcpoint, RIGHTARG = tpcpoint, COMMUTATOR = '#>>',
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel);
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
 CREATE OPERATOR <<# (PROCEDURE = before,
   LEFTARG = tstzspan, RIGHTARG = tpcpatch, COMMUTATOR = '#>>',
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel);
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
 CREATE OPERATOR <<# (PROCEDURE = before,
   LEFTARG = tpcpatch, RIGHTARG = tstzspan, COMMUTATOR = '#>>',
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel);
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
 CREATE OPERATOR <<# (PROCEDURE = before,
   LEFTARG = tpcbox, RIGHTARG = tpcpatch, COMMUTATOR = '#>>',
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel);
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
 CREATE OPERATOR <<# (PROCEDURE = before,
   LEFTARG = tpcpatch, RIGHTARG = tpcbox, COMMUTATOR = '#>>',
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel);
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
 CREATE OPERATOR <<# (PROCEDURE = before,
   LEFTARG = tpcpatch, RIGHTARG = tpcpatch, COMMUTATOR = '#>>',
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel);
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
 
 CREATE FUNCTION overbefore(tstzspan, tpcpoint) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_tstzspan_temporal' LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -516,34 +516,34 @@ CREATE FUNCTION overbefore(tpcpatch, tpcpatch) RETURNS boolean
 
 CREATE OPERATOR &<# (PROCEDURE = overbefore,
   LEFTARG = tstzspan, RIGHTARG = tpcpoint,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel);
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
 CREATE OPERATOR &<# (PROCEDURE = overbefore,
   LEFTARG = tpcpoint, RIGHTARG = tstzspan,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel);
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
 CREATE OPERATOR &<# (PROCEDURE = overbefore,
   LEFTARG = tpcbox, RIGHTARG = tpcpoint,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel);
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
 CREATE OPERATOR &<# (PROCEDURE = overbefore,
   LEFTARG = tpcpoint, RIGHTARG = tpcbox,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel);
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
 CREATE OPERATOR &<# (PROCEDURE = overbefore,
   LEFTARG = tpcpoint, RIGHTARG = tpcpoint,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel);
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
 CREATE OPERATOR &<# (PROCEDURE = overbefore,
   LEFTARG = tstzspan, RIGHTARG = tpcpatch,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel);
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
 CREATE OPERATOR &<# (PROCEDURE = overbefore,
   LEFTARG = tpcpatch, RIGHTARG = tstzspan,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel);
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
 CREATE OPERATOR &<# (PROCEDURE = overbefore,
   LEFTARG = tpcbox, RIGHTARG = tpcpatch,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel);
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
 CREATE OPERATOR &<# (PROCEDURE = overbefore,
   LEFTARG = tpcpatch, RIGHTARG = tpcbox,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel);
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
 CREATE OPERATOR &<# (PROCEDURE = overbefore,
   LEFTARG = tpcpatch, RIGHTARG = tpcpatch,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel);
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
 
 /******************************************************************************
  * Strictly after (#>>) and overlaps-or-after (#&>) — time axis
@@ -572,34 +572,34 @@ CREATE FUNCTION after(tpcpatch, tpcpatch) RETURNS boolean
 
 CREATE OPERATOR #>> (PROCEDURE = after,
   LEFTARG = tstzspan, RIGHTARG = tpcpoint, COMMUTATOR = '<<#',
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel);
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
 CREATE OPERATOR #>> (PROCEDURE = after,
   LEFTARG = tpcpoint, RIGHTARG = tstzspan, COMMUTATOR = '<<#',
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel);
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
 CREATE OPERATOR #>> (PROCEDURE = after,
   LEFTARG = tpcbox, RIGHTARG = tpcpoint, COMMUTATOR = '<<#',
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel);
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
 CREATE OPERATOR #>> (PROCEDURE = after,
   LEFTARG = tpcpoint, RIGHTARG = tpcbox, COMMUTATOR = '<<#',
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel);
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
 CREATE OPERATOR #>> (PROCEDURE = after,
   LEFTARG = tpcpoint, RIGHTARG = tpcpoint, COMMUTATOR = '<<#',
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel);
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
 CREATE OPERATOR #>> (PROCEDURE = after,
   LEFTARG = tstzspan, RIGHTARG = tpcpatch, COMMUTATOR = '<<#',
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel);
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
 CREATE OPERATOR #>> (PROCEDURE = after,
   LEFTARG = tpcpatch, RIGHTARG = tstzspan, COMMUTATOR = '<<#',
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel);
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
 CREATE OPERATOR #>> (PROCEDURE = after,
   LEFTARG = tpcbox, RIGHTARG = tpcpatch, COMMUTATOR = '<<#',
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel);
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
 CREATE OPERATOR #>> (PROCEDURE = after,
   LEFTARG = tpcpatch, RIGHTARG = tpcbox, COMMUTATOR = '<<#',
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel);
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
 CREATE OPERATOR #>> (PROCEDURE = after,
   LEFTARG = tpcpatch, RIGHTARG = tpcpatch, COMMUTATOR = '<<#',
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel);
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
 
 CREATE FUNCTION overafter(tstzspan, tpcpoint) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_tstzspan_temporal' LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -624,33 +624,33 @@ CREATE FUNCTION overafter(tpcpatch, tpcpatch) RETURNS boolean
 
 CREATE OPERATOR #&> (PROCEDURE = overafter,
   LEFTARG = tstzspan, RIGHTARG = tpcpoint,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel);
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
 CREATE OPERATOR #&> (PROCEDURE = overafter,
   LEFTARG = tpcpoint, RIGHTARG = tstzspan,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel);
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
 CREATE OPERATOR #&> (PROCEDURE = overafter,
   LEFTARG = tpcbox, RIGHTARG = tpcpoint,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel);
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
 CREATE OPERATOR #&> (PROCEDURE = overafter,
   LEFTARG = tpcpoint, RIGHTARG = tpcbox,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel);
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
 CREATE OPERATOR #&> (PROCEDURE = overafter,
   LEFTARG = tpcpoint, RIGHTARG = tpcpoint,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel);
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
 CREATE OPERATOR #&> (PROCEDURE = overafter,
   LEFTARG = tstzspan, RIGHTARG = tpcpatch,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel);
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
 CREATE OPERATOR #&> (PROCEDURE = overafter,
   LEFTARG = tpcpatch, RIGHTARG = tstzspan,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel);
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
 CREATE OPERATOR #&> (PROCEDURE = overafter,
   LEFTARG = tpcbox, RIGHTARG = tpcpatch,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel);
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
 CREATE OPERATOR #&> (PROCEDURE = overafter,
   LEFTARG = tpcpatch, RIGHTARG = tpcbox,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel);
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
 CREATE OPERATOR #&> (PROCEDURE = overafter,
   LEFTARG = tpcpatch, RIGHTARG = tpcpatch,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel);
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel);
 
 /*****************************************************************************/

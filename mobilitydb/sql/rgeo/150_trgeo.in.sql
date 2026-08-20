@@ -700,13 +700,13 @@ CREATE OPERATOR < (
   LEFTARG = trgeometry, RIGHTARG = trgeometry,
   PROCEDURE = lt,
   COMMUTATOR = >, NEGATOR = >=,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = trgeometry, RIGHTARG = trgeometry,
   PROCEDURE = le,
   COMMUTATOR = >=, NEGATOR = >,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR = (
   LEFTARG = trgeometry, RIGHTARG = trgeometry,
@@ -724,13 +724,13 @@ CREATE OPERATOR >= (
   LEFTARG = trgeometry, RIGHTARG = trgeometry,
   PROCEDURE = ge,
   COMMUTATOR = <=, NEGATOR = <,
-  RESTRICT = scalargtsel, JOIN = scalargtjoinsel
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR > (
   LEFTARG = trgeometry, RIGHTARG = trgeometry,
   PROCEDURE = gt,
   COMMUTATOR = <, NEGATOR = <=,
-  RESTRICT = scalargtsel, JOIN = scalargtjoinsel
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
 CREATE OPERATOR CLASS trgeometry_btree_ops

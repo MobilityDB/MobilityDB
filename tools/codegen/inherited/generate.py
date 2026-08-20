@@ -12,6 +12,7 @@
 #   python tools/codegen/inherited/generate.py --validate   # self-regen reference == committed
 from __future__ import annotations
 import argparse
+import functools
 import pathlib
 import re
 import sys
@@ -92,6 +93,43 @@ def apply_conditionals(text: str, sub: dict) -> str:
     return "".join(out)
 
 
+# The RESTRICT/JOIN estimators of an operator follow the bounding-box class of
+# its TEMPORAL operand — a `tstzspan` for the alpha types, a `tbox` for the
+# numbers, an `stbox` for the spatial and pointcloud ones — and never the class
+# of the other operand, because the estimator multiplies only over the
+# dimensions the box it builds actually carries (INHERITANCE_MAP.md section 10).
+# The membership is read from the catalog class predicates so a family added to
+# a class inherits its estimator pair with no manifest key to keep in step.
+_SELECTIVITY_CLASSES = (
+    ("tspatial", ("tspatial_type", "tpointcloud_temptype")),
+    ("tnumber", ("tnumber_type",)),
+    ("temporal", ("talpha_type",)),
+)
+
+
+@functools.lru_cache(maxsize=None)
+def _selectivity_of_temptype() -> dict:
+    """temp SQL type name -> the estimator family prefix its operators declare."""
+    names = catalog_type_names()
+    out = {}
+    for family, predicates in _SELECTIVITY_CLASSES:
+        for predicate in predicates:
+            for temp in parse_class_members(predicate, names):
+                out.setdefault(temp, family)
+    return out
+
+
+def subtype_selectivity(sub: dict) -> str:
+    """The estimator family prefix of a `subtypes:` entry's temporal type."""
+    temp = sub["temp"]
+    family = _selectivity_of_temptype().get(temp)
+    if family is None:
+        raise SystemExit(f"{temp} belongs to no selectivity class: it is absent "
+                         f"from talpha_type(), tnumber_type(), tspatial_type() "
+                         f"and tpointcloud_temptype()")
+    return family
+
+
 def render(behaviour: str, sub: dict) -> str:
     if behaviour == "compops":
         # compops is not a flat {TOKEN}-substitution template like the other
@@ -138,6 +176,7 @@ def render(behaviour: str, sub: dict) -> str:
                 .replace("{BRIEF}", sub["brief"])
                 .replace("{CV1}", cv1)
                 .replace("{CV2}", cv2)
+                .replace("{SEL}", subtype_selectivity(sub))
                 .replace("{BOUNDARY}", boundary))
     return BANNER.format(tmpl=f"{behaviour}.sql.tmpl") + body
 
@@ -3436,16 +3475,22 @@ def render_compops_body(spec: dict) -> str:
 
 def _compops_spec_from_subtype(sub: dict) -> dict:
     """The one-pair spec for a `subtypes:` family reaching compops via its generic
-    `files:` list — every one of these families shares the shape the old flat
-    template used to hardcode: `tspatial_sel`/`tspatial_joinsel` on every operator,
-    `tspatial_supportfn` on Eq, no ordered comparisons."""
+    `files:` list. The selectivity pair and the Eq support function follow the
+    family's bounding-box class (INHERITANCE_MAP.md section 10), so a spatial
+    subtype gets `tspatial_sel`/`tspatial_joinsel` + `tspatial_supportfn` while an
+    alpha one gets `temporal_sel`/`temporal_joinsel` and no support function —
+    there is no `temporal_supportfn` to name, and the alpha reference (ttext in
+    `030_temporal_compops.in.sql`) declares none. No ordered comparisons."""
+    family = subtype_selectivity(sub)
+    pair = {"base": sub["base"], "temp": sub["temp"],
+            "rest": f"{family}_sel", "join": f"{family}_joinsel"}
+    if family != "temporal":
+        pair["eqsupport"] = f"{family}_supportfn"
     return {
         "brief": sub["brief"],
         "basesym": sub.get("basesym", sub["base"]),
         "tempsym": sub["temp"],
-        "pairs": [{"base": sub["base"], "temp": sub["temp"],
-                   "rest": "tspatial_sel", "join": "tspatial_joinsel",
-                   "eqsupport": "tspatial_supportfn"}],
+        "pairs": [pair],
     }
 
 

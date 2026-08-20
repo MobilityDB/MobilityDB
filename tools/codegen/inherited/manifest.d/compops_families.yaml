@@ -36,8 +36,8 @@ compops_families:
     sym: Tnumber_supportfn
   pairs:
   - temp: tbool
-    rest: scalarltsel
-    join: scalarltjoinsel
+    rest: temporal_sel
+    join: temporal_joinsel
   - temp: tint
     rest: tnumber_sel
     join: tnumber_joinsel
@@ -54,8 +54,8 @@ compops_families:
     eqsupport: tnumber_supportfn
     orderable: true
   - temp: ttext
-    rest: scalarltsel
-    join: scalarltjoinsel
+    rest: temporal_sel
+    join: temporal_joinsel
     orderable: true
 
 - family: tgeo

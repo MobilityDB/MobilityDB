@@ -40,27 +40,25 @@
 CREATE FUNCTION eEq(jsonb, tjsonb)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Ever_eq_jsonb_tjsonb'
-  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?= (
   LEFTARG = jsonb, RIGHTARG = tjsonb,
   PROCEDURE = eEq,
   NEGATOR = %<>,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
 CREATE FUNCTION aEq(jsonb, tjsonb)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Always_eq_jsonb_tjsonb'
-  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR %= (
   LEFTARG = jsonb, RIGHTARG = tjsonb,
   PROCEDURE = aEq,
   NEGATOR = ?<>,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
 CREATE FUNCTION eNe(jsonb, tjsonb)
@@ -72,7 +70,7 @@ CREATE OPERATOR ?<> (
   LEFTARG = jsonb, RIGHTARG = tjsonb,
   PROCEDURE = eNe,
   NEGATOR = %=,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
 CREATE FUNCTION aNe(jsonb, tjsonb)
@@ -84,7 +82,7 @@ CREATE OPERATOR %<> (
   LEFTARG = jsonb, RIGHTARG = tjsonb,
   PROCEDURE = aNe,
   NEGATOR = ?=,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
 /*****************************************************************************/
@@ -92,27 +90,25 @@ CREATE OPERATOR %<> (
 CREATE FUNCTION eEq(tjsonb, jsonb)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Ever_eq_tjsonb_jsonb'
-  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?= (
   LEFTARG = tjsonb, RIGHTARG = jsonb,
   PROCEDURE = eEq,
   NEGATOR = %<>,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
 CREATE FUNCTION aEq(tjsonb, jsonb)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Always_eq_tjsonb_jsonb'
-  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR %= (
   LEFTARG = tjsonb, RIGHTARG = jsonb,
   PROCEDURE = aEq,
   NEGATOR = ?<>,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
 CREATE FUNCTION eNe(tjsonb, jsonb)
@@ -124,7 +120,7 @@ CREATE OPERATOR ?<> (
   LEFTARG = tjsonb, RIGHTARG = jsonb,
   PROCEDURE = eNe,
   NEGATOR = %=,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
 CREATE FUNCTION aNe(tjsonb, jsonb)
@@ -136,7 +132,7 @@ CREATE OPERATOR %<> (
   LEFTARG = tjsonb, RIGHTARG = jsonb,
   PROCEDURE = aNe,
   NEGATOR = ?=,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
 /*****************************************************************************/
@@ -144,27 +140,25 @@ CREATE OPERATOR %<> (
 CREATE FUNCTION eEq(tjsonb, tjsonb)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Ever_eq_tjsonb_tjsonb'
-  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ?= (
   LEFTARG = tjsonb, RIGHTARG = tjsonb,
   PROCEDURE = eEq,
   NEGATOR = %<>,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
 CREATE FUNCTION aEq(tjsonb, tjsonb)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Always_eq_tjsonb_tjsonb'
-  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR %= (
   LEFTARG = tjsonb, RIGHTARG = tjsonb,
   PROCEDURE = aEq,
   NEGATOR = ?<>,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
 CREATE FUNCTION eNe(tjsonb, tjsonb)
@@ -176,7 +170,7 @@ CREATE OPERATOR ?<> (
   LEFTARG = tjsonb, RIGHTARG = tjsonb,
   PROCEDURE = eNe,
   NEGATOR = %=,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
 CREATE FUNCTION aNe(tjsonb, tjsonb)
@@ -188,7 +182,7 @@ CREATE OPERATOR %<> (
   LEFTARG = tjsonb, RIGHTARG = tjsonb,
   PROCEDURE = aNe,
   NEGATOR = ?=,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
 /*****************************************************************************

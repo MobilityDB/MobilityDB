@@ -754,6 +754,131 @@ span operators, e.g. `003_span.in.sql` and the `001_set.in.sql` comparison
 operators), while the `scalar*sel` estimators belong to BASE types (e.g.
 `cbuffer/200_cbuffer.in.sql`).
 
+## 10. Selectivity — which estimator a generated operator declares
+
+### 10.1 The rule: the bounding-box class of the temporal type
+
+Each of the three temporal classes carries a different bounding box, and the box
+is what the RESTRICT/JOIN estimators read. The estimator pair therefore follows
+the **class of the temporal operand's own box**, never the class of the other
+operand and never the class of the dimensions the two share:
+
+| class | catalog predicate | bounding box | RESTRICT / JOIN |
+|---|---|---|---|
+| `Temporal<T>` (talpha) | `talpha_type` | `Span` (tstzspan) | `temporal_sel` / `temporal_joinsel` |
+| `TNumber<T>` | `tnumber_type` | `TBox` (value span + tstzspan) | `tnumber_sel` / `tnumber_joinsel` |
+| `TSpatial<T>` | `tspatial_type` | `STBox` (X/Y/Z + tstzspan + SRID) | `tspatial_sel` / `tspatial_joinsel` |
+| `TPointcloud<T>` | `tpointcloud_temptype` | `TPCBox` (STBox prefix + `pcid`) | `tspatial_sel` / `tspatial_joinsel` |
+| `Set<T>`/`Span<T>`/`SpanSet<T>` | §9.1 | the value domain itself | `span_sel` / `span_joinsel` |
+| base types | — | — | `scalar*sel` / `eqsel` / `neqsel` |
+
+A mixed-class operator does **not** change the estimator. `tgeometry && tstzspan`
+declares `tspatial_sel`, `tint && tstzspan` declares `tnumber_sel`, and both are
+correct, because the dispatcher converts the constant to the class's own box and
+then **multiplies only over the dimensions the box actually carries**
+(`mobilitydb/src/temporal/temporal_selfuncs.c:669-697`):
+
+```c
+selec = 1.0;
+if (MEOS_FLAGS_GET_X(box.flags))   selec *= geo_sel(&vardata, &box, oper);
+if (MEOS_FLAGS_GET_T(box.flags))   selec *= temporal_sel_tstzspan(&vardata, &period, oper);
+```
+
+A `tstzspan` constant yields a box with `T` and no `X`, so the spatial factor is
+skipped and the estimate reduces to exactly what `temporal_sel` would compute.
+`tnumber_sel` behaves the same way through `tnumber_const_to_span_tstzspan`,
+which returns a value span and/or a time span and passes whichever exist. This is
+the selectivity counterpart of the rule that a bounding-box operator compares only
+the dimensions present in both operands.
+
+`TPCBox` adds no fourth estimator pair: its leading fields are byte-identical to
+`STBox` under a `static_assert` (`meos/include/meos_pointcloud.h`), so the
+pointcloud types reuse the spatial pair through the cast. What `TPCBox` adds over
+`STBox` is `pcid`, a schema identifier and not a dimension.
+
+### 10.2 The type-pair gate derives from the catalog class predicates
+
+Before any statistics are consulted, `temporal_oper_sel_family`
+(`mobilitydb/src/temporal/temporal_selfuncs.c`, called once for RESTRICT and once
+for JOIN) asks a per-family predicate whether the operator's two argument types
+belong to the family. A miss returns `DEFAULT_TEMP_SEL`
+(`mobilitydb/pg_include/pg_temporal/temporal_selfuncs.h:54`), a flat `0.0001`
+independent of the query and of the column, so the gate decides whether the
+declared estimator is reached at all.
+
+Each gate is one membership predicate applied to both operands, and the
+membership is **the catalog predicate of §10.1**, never a second list:
+
+| gate | admits |
+|---|---|
+| `temporal_sel_type` | `time_sel_type` ∪ `talpha_type` |
+| `tnumber_sel_type` | `time_sel_type` ∪ `tnumber_basetype` ∪ `numset_type` ∪ `numspan_type` ∪ `T_TBOX` ∪ `tnumber_type` |
+| `tspatial_sel_type` | `time_sel_type` ∪ `spatial_basetype` ∪ `pointcloud_basetype` ∪ `T_STBOX` ∪ `T_TPCBOX` ∪ `tspatial_type` ∪ `tpointcloud_temptype` |
+
+where `time_sel_type` is `timespan_basetype` ∪ `timeset_type` ∪ `timespan_type` ∪
+`timespanset_type`, the time dimension every temporal bounding box carries.
+
+⛔ **A family added to `tspatial_type` (or to any class predicate of §10.1) is
+admitted here by construction. Re-enumerating the members in this file is the
+defect this shape exists to prevent** — a hand list silently stops at the members
+that existed when it was written, and the symptom is not an error but a plan built
+on a constant. The statistics are unaffected and give no warning: every
+`tspatial_type` family declares the same `analyze = tspatial_analyze`, so a
+`tgeometry` column carries `pg_statistic` slots identical to a `tgeompoint` one
+(kinds 102/103/10/11, same-length ND histograms) whether or not the gate reads
+them. One box, one analyze function and one estimator pair serve all ten spatial
+families; the gate must follow the same catalog.
+
+### 10.3 Where each declaration gets its estimator
+
+Every one of the 2219 `CREATE OPERATOR` declarations of `mobilitydb/sql/` names the
+estimator pair of its own temporal operand's class, `=` and `<>` excepted — those
+keep PostgreSQL's `eqsel`/`neqsel`, as `temporal_sel` and `temporal_joinsel` state
+in their own headers. The declaration is generator-derived wherever the surface is
+generated:
+
+| surface | how the pair is chosen |
+|---|---|
+| `topops` / `posops` (`subtypes:` families) | the `{SEL}` token of `templates/{topops,posops}.sql.tmpl`, resolved by `subtype_selectivity()` |
+| `compops` (`subtypes:` families) | `_compops_spec_from_subtype()`, which also picks the Eq support function |
+| `compops` (`compops_families:` entries) | each pair's `rest`/`join` keys |
+| B-tree comparisons | the `lit` blocks of `comparison_families:` / `hash_families:` |
+| the `coverage_exceptions.txt` files | written out, since no template governs them yet |
+
+`subtype_selectivity()` reads the catalog class predicates, so a family added to
+`tspatial_type` renders `tspatial_sel`/`tspatial_joinsel` with no manifest key to
+keep in step. The Eq support function follows the same class: `tspatial_supportfn`
+for a spatial family, `tnumber_supportfn` for a number one, and none for an alpha
+one — there is no `temporal_supportfn` to name, and the alpha reference `ttext`
+declares none.
+
+Two divergences remain open:
+
+- **`tquadbin` declares `analyze = temporal_analyze`**
+  (`quadbin/353_tquadbin.in.sql`) while carrying an `STBox` bounding box — its
+  SP-GiST opclass declares `<<`, `&&` and `~=` against `stbox`
+  (`quadbin/373_tquadbin_spgist.in.sql:56-73`) — and while its operators declare
+  `tspatial_sel`. Its `Tcell<T>` sibling `th3index` declares `tspatial_analyze`
+  (`h3/253_th3index.in.sql`), so no X statistics are collected for `tquadbin` and
+  its spatial factor rests on the default.
+- **`pcpoint` and `pcpatch` are not admitted by `tspatial_sel_type`.** They are
+  `pointcloud_basetype`, not `spatial_basetype`, and `spatial_set_stbox()` — whose
+  assertion defines the base types the estimator can convert — does not cover
+  them: bounding a bare `pcpoint` needs its `PCSCHEMA`, which is reached through
+  the `pcid`. The ever-comparison operators pairing them with `tpcpoint`/`tpcpatch`
+  therefore reach `DEFAULT_TEMP_SEL` even though they name the right family.
+
+### 10.4 The token that carries it
+
+`topops.sql.tmpl` and `posops.sql.tmpl` spell the estimator once, as `{SEL}_sel`
+and `{SEL}_joinsel`, so a family's whole topological and position surface inherits
+one decision instead of repeating it on each of its 81 operator declarations. The
+token resolves through `subtype_selectivity()` to the catalog class the family
+belongs to, which is why the `tstzspan`-operand and `stbox`-operand variants of the
+same predicate now agree: both name the class of the temporal operand, per §10.1,
+where the template previously spelled `temporal_sel` on the first and
+`tspatial_sel` on the second.
+
 ---
 
 ### Legend

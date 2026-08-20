@@ -615,13 +615,13 @@ CREATE OPERATOR < (
   LEFTARG = th3index, RIGHTARG = th3index,
   PROCEDURE = lt,
   COMMUTATOR = >, NEGATOR = >=,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = th3index, RIGHTARG = th3index,
   PROCEDURE = le,
   COMMUTATOR = >=, NEGATOR = >,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR = (
   LEFTARG = th3index, RIGHTARG = th3index,
@@ -639,13 +639,13 @@ CREATE OPERATOR >= (
   LEFTARG = th3index, RIGHTARG = th3index,
   PROCEDURE = ge,
   COMMUTATOR = <=, NEGATOR = <,
-  RESTRICT = scalargtsel, JOIN = scalargtjoinsel
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR > (
   LEFTARG = th3index, RIGHTARG = th3index,
   PROCEDURE = gt,
   COMMUTATOR = <, NEGATOR = <=,
-  RESTRICT = scalargtsel, JOIN = scalargtjoinsel
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
 CREATE OPERATOR CLASS th3index_btree_ops

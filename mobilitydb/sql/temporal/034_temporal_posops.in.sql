@@ -1829,23 +1829,23 @@ CREATE OPERATOR <<# (
   LEFTARG = ttext, RIGHTARG = ttext,
   PROCEDURE = before,
   COMMUTATOR = #>>,
-  RESTRICT = temporal_sel, JOIN = tnumber_joinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR &<# (
   LEFTARG = ttext, RIGHTARG = ttext,
   PROCEDURE = overbefore,
-  RESTRICT = temporal_sel, JOIN = tnumber_joinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR #>> (
   LEFTARG = ttext, RIGHTARG = ttext,
   PROCEDURE = after,
   COMMUTATOR = <<#,
-  RESTRICT = temporal_sel, JOIN = tnumber_joinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR #&> (
   LEFTARG = ttext, RIGHTARG = ttext,
   PROCEDURE = overafter,
-  RESTRICT = temporal_sel, JOIN = tnumber_joinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
 /*****************************************************************************/

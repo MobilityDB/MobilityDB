@@ -30,7 +30,7 @@
 /**
  * @file
  * @brief Functions for selectivity estimation of operators on temporal types
- * whose bounding box is a `tstzspan`, that is, `tbool` and `ttext`
+ * whose bounding box is a `tstzspan`, that is, the `talpha` types
  *
  * The operators currently supported are as follows
  * - B-tree comparison operators: `<`, `<=`, `>`, `>=`
@@ -59,6 +59,11 @@
 #include "pg_temporal/span_selfuncs.h"
 #include "pg_temporal/temporal_selfuncs.h"
 #include "pg_geo/tspatial_selfuncs.h"
+#if POINTCLOUD
+  #include <meos_pointcloud.h>
+  #include "pointcloud/tpcbox.h"
+  #include "pointcloud/tpc_boxops.h"
+#endif
 
 /*****************************************************************************
  * Internal functions computing selectivity
@@ -93,16 +98,21 @@ tnumber_const_to_span_tstzspan(const Node *other, Span **s, Span **p)
 {
   Oid consttypid = ((Const *) other)->consttype;
   MeosType type = oid_meostype(consttypid);
-  Span *span;
-  if (numspan_type(type))
+  Span span;
+  /* A constant of the time domain bounds the time dimension and one of the
+   * number domain bounds the value dimension; either is reduced to its
+   * bounding span by the same converter, whether it is a base value, a set, a
+   * span or a span set */
+  if (time_type(type))
   {
-    span = DatumGetSpanP(((Const *) other)->constvalue);
-    *s = span_copy(span);
+    span_const_to_span(other, &span);
+    *p = span_copy(&span);
   }
-  else if (type == T_TSTZSPAN)
+  else if (span_basetype(type) || set_spantype(type) || span_type(type) ||
+    spanset_type(type))
   {
-    span = DatumGetSpanP(((Const *) other)->constvalue);
-    *p = span_copy(span);
+    span_const_to_span(other, &span);
+    *s = span_copy(&span);
   }
   else if (type == T_TBOX)
   {
@@ -140,14 +150,34 @@ tspatial_const_to_stbox(Node *other, STBox *box)
   Oid consttype = ((Const *) other)->consttype;
   Datum constvalue = ((Const *) other)->constvalue;
   MeosType type = oid_meostype(consttype);
-  if (geo_basetype(type))
-    geo_set_stbox(DatumGetGserializedP(constvalue), box);
-  else if (type == T_TSTZSPAN)
-    tstzspan_set_stbox(DatumGetSpanP(constvalue), box);
+  if (spatial_basetype(type))
+    spatial_set_stbox(constvalue, type, box);
+  else if (time_type(type))
+  {
+    /* A constant of the time domain bounds the time dimension alone, whether
+     * it is a timestamptz, a set, a span or a span set */
+    Span span;
+    span_const_to_span(other, &span);
+    tstzspan_set_stbox(&span, box);
+  }
   else if (type == T_STBOX)
     memcpy(box, DatumGetSTboxP(constvalue), sizeof(STBox));
   else if (tspatial_type(type))
     tspatial_set_stbox(DatumGetTemporalP(constvalue), box);
+#if POINTCLOUD
+  /* A temporal pointcloud value bounds itself with a `TPCBox`, whose leading
+   * fields are those of an `STBox`; the estimator reads the spatial and time
+   * dimensions and the `pcid` the box carries beyond them is recovered by the
+   * operator's own recheck, exactly as the SP-GiST opclasses do. */
+  else if (type == T_TPCBOX)
+    tpcbox_set_stbox(DatumGetTpcboxP(constvalue), box);
+  else if (tpointcloud_temptype(type))
+  {
+    TPCBox tpcbox;
+    temporal_set_bbox(DatumGetTemporalP(constvalue), &tpcbox);
+    tpcbox_set_stbox(&tpcbox, box);
+  }
+#endif /* POINTCLOUD */
   else
   {
     /* Error */
@@ -353,54 +383,92 @@ tspatial_joinsel_default(MeosOper oper)
 /*****************************************************************************/
 
 /**
- * @brief Return the enum value associated to the operator
+ * @brief Return true if the type is a time type, that is, the type of the time
+ * dimension that every temporal bounding box carries
+ */
+static bool
+time_sel_type(MeosType type)
+{
+  return timespan_basetype(type) || timeset_type(type) ||
+    timespan_type(type) || timespanset_type(type);
+}
+
+/**
+ * @brief Return true if the type may be an operand of an operator whose
+ * selectivity is estimated for the `Temporal` family, that is, a time type or
+ * a temporal type whose bounding box is a `tstzspan`
+ */
+static bool
+temporal_sel_type(MeosType type)
+{
+  return time_sel_type(type) || talpha_type(type);
+}
+
+/**
+ * @brief Return true if the type may be an operand of an operator whose
+ * selectivity is estimated for the `TNumber` family, that is, a time type, a
+ * type of the number value domain, or a temporal type whose bounding box is a
+ * `tbox`
+ */
+static bool
+tnumber_sel_type(MeosType type)
+{
+  return time_sel_type(type) || tnumber_basetype(type) ||
+    numset_type(type) || numspan_type(type) || type == T_TBOX ||
+    tnumber_type(type);
+}
+
+/**
+ * @brief Return true if the type may be an operand of an operator whose
+ * selectivity is estimated for the `TSpatial` family, that is, a time type, a
+ * spatial base type, or a temporal type whose bounding box is an `stbox`
+ */
+static bool
+tspatial_sel_type(MeosType type)
+{
+  if (time_sel_type(type) || spatial_basetype(type) || type == T_STBOX ||
+      tspatial_type(type))
+    return true;
+#if POINTCLOUD
+  /* A temporal pointcloud value and its box are estimated for this family
+   * through the `STBox` prefix that a `TPCBox` carries */
+  if (type == T_TPCBOX || tpointcloud_temptype(type))
+    return true;
+#endif /* POINTCLOUD */
+  return false;
+}
+
+/**
+ * @brief Return true if the selectivity of the operator is estimated for the
+ * `Temporal` family
  */
 static bool
 temporal_oper_sel(MeosOper oper UNUSED, MeosType ltype,
   MeosType rtype)
 {
-  if ((timespan_basetype(ltype) || timeset_type(ltype) ||
-        timespan_type(ltype) || timespanset_type(ltype) ||
-        talpha_type(ltype)) &&
-      (timespan_basetype(rtype) || timeset_type(rtype) ||
-        timespan_type(rtype) || timespanset_type(rtype) ||
-        talpha_type(ltype)))
-    return true;
-  return false;
+  return temporal_sel_type(ltype) && temporal_sel_type(rtype);
 }
 
 /**
- * @brief Return the enum value associated to the operator
+ * @brief Return true if the selectivity of the operator is estimated for the
+ * `TNumber` family
  */
 bool
 tnumber_oper_sel(Oid operid UNUSED, MeosType ltype,
   MeosType rtype)
 {
-  if ((timespan_basetype(ltype) || timeset_type(ltype) ||
-        timespan_type(ltype) || timespanset_type(ltype) ||
-        ltype == T_TBOX || temporal_type(ltype)) &&
-      (timespan_basetype(rtype) || timeset_type(rtype) ||
-        timespan_type(rtype) || timespanset_type(rtype) ||
-        rtype == T_TBOX || temporal_type(rtype)))
-    return true;
-  return false;
+  return tnumber_sel_type(ltype) && tnumber_sel_type(rtype);
 }
 
 /**
- * @brief Get the enum value associated to the operator
+ * @brief Return true if the selectivity of the operator is estimated for the
+ * `TSpatial` family
  */
 static bool
 tspatial_oper_sel(Oid operid UNUSED, MeosType ltype,
   MeosType rtype)
 {
-  if ((timespan_basetype(ltype) || timeset_type(ltype) ||
-        timespan_type(ltype) || timespanset_type(ltype) ||
-        geo_basetype(ltype) || ltype == T_STBOX || tpoint_type(ltype)) &&
-      (timespan_basetype(rtype) || timeset_type(rtype) ||
-        timespan_type(rtype) || timespanset_type(rtype) ||
-        geo_basetype(rtype) || rtype == T_STBOX || tpoint_type(rtype)))
-    return true;
-  return false;
+  return tspatial_sel_type(ltype) && tspatial_sel_type(rtype);
 }
 
 /**

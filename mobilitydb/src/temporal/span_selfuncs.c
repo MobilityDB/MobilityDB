@@ -766,9 +766,9 @@ span_sel_hist(VariableStatData *vardata, const Span *constval, MeosOper oper,
  * @brief Transform the constant into a span
  */
 void
-span_const_to_span(Node *other, Span *span)
+span_const_to_span(const Node *other, Span *span)
 {
-  Oid consttype = ((Const *) other)->consttype;
+  Oid consttype = ((const Const *) other)->consttype;
   MeosType type = oid_meostype(consttype);
   assert(span_basetype(type) || set_spantype(type) || span_type(type) ||
     spanset_type(type) || talpha_type(type));
@@ -776,7 +776,7 @@ span_const_to_span(Node *other, Span *span)
   {
     /* The right argument is a set or span base constant. We convert it into
      * a singleton span */
-    Datum value = ((Const *) other)->constvalue;
+    Datum value = ((const Const *) other)->constvalue;
     MeosType spantype = basetype_spantype(type);
     span_set(value, value, true, true, type, spantype, span);
   }
@@ -784,21 +784,21 @@ span_const_to_span(Node *other, Span *span)
   {
     /* The right argument is a set constant. We convert it into
      * its bounding span. */
-    const Set *s = DatumGetSetP(((Const *) other)->constvalue);
+    const Set *s = DatumGetSetP(((const Const *) other)->constvalue);
     set_set_span(s, span);
   }
   else if(span_type(type))
   {
     /* The right argument is a span constant. We convert it into
      * its bounding span. */
-    const Span *s = DatumGetSpanP(((Const *) other)->constvalue);
+    const Span *s = DatumGetSpanP(((const Const *) other)->constvalue);
     memcpy(span, s, sizeof(Span));
   }
   else if (spanset_type(type))
   {
     /* The right argument is a set constant. We convert it into
      * its bounding span. */
-    const SpanSet *s = DatumGetSpanSetP(((Const *) other)->constvalue);
+    const SpanSet *s = DatumGetSpanSetP(((const Const *) other)->constvalue);
     memcpy(span, &s->span, sizeof(Span));
   }
   return;
@@ -837,7 +837,7 @@ span_sel(PlannerInfo *root, Oid operid, List *args, int varRelid)
    * All the span operators are strict, so we can cope with a NULL constant
    * right away.
    */
-  if (((Const *) other)->constisnull)
+  if (((const Const *) other)->constisnull)
   {
     ReleaseVariableStats(vardata);
     return 0.0;

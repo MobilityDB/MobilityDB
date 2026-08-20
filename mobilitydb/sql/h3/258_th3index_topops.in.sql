@@ -85,13 +85,13 @@ CREATE OPERATOR @> (
   PROCEDURE = contains,
   LEFTARG = tstzspan, RIGHTARG = th3index,
   COMMUTATOR = <@,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR @> (
   PROCEDURE = contains,
   LEFTARG = th3index, RIGHTARG = tstzspan,
   COMMUTATOR = <@,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
 /*****************************************************************************/
@@ -147,13 +147,13 @@ CREATE OPERATOR <@ (
   PROCEDURE = contained,
   LEFTARG = tstzspan, RIGHTARG = th3index,
   COMMUTATOR = @>,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR <@ (
   PROCEDURE = contained,
   LEFTARG = th3index, RIGHTARG = tstzspan,
   COMMUTATOR = @>,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
 /*****************************************************************************/
@@ -209,13 +209,13 @@ CREATE OPERATOR && (
   PROCEDURE = overlaps,
   LEFTARG = tstzspan, RIGHTARG = th3index,
   COMMUTATOR = &&,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR && (
   PROCEDURE = overlaps,
   LEFTARG = th3index, RIGHTARG = tstzspan,
   COMMUTATOR = &&,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
 /*****************************************************************************/
@@ -271,13 +271,13 @@ CREATE OPERATOR ~= (
   PROCEDURE = same,
   LEFTARG = tstzspan, RIGHTARG = th3index,
   COMMUTATOR = ~=,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR ~= (
   PROCEDURE = same,
   LEFTARG = th3index, RIGHTARG = tstzspan,
   COMMUTATOR = ~=,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
 /*****************************************************************************/
@@ -333,13 +333,13 @@ CREATE OPERATOR -|- (
   PROCEDURE = adjacent,
   LEFTARG = tstzspan, RIGHTARG = th3index,
   COMMUTATOR = -|-,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR -|- (
   PROCEDURE = adjacent,
   LEFTARG = th3index, RIGHTARG = tstzspan,
   COMMUTATOR = -|-,
-  RESTRICT = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
 /*****************************************************************************/

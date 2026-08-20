@@ -617,13 +617,13 @@ CREATE OPERATOR < (
   LEFTARG = tquadbin, RIGHTARG = tquadbin,
   PROCEDURE = lt,
   COMMUTATOR = >, NEGATOR = >=,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = tquadbin, RIGHTARG = tquadbin,
   PROCEDURE = le,
   COMMUTATOR = >=, NEGATOR = >,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR = (
   LEFTARG = tquadbin, RIGHTARG = tquadbin,
@@ -641,13 +641,13 @@ CREATE OPERATOR >= (
   LEFTARG = tquadbin, RIGHTARG = tquadbin,
   PROCEDURE = ge,
   COMMUTATOR = <=, NEGATOR = <,
-  RESTRICT = scalargtsel, JOIN = scalargtjoinsel
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR > (
   LEFTARG = tquadbin, RIGHTARG = tquadbin,
   PROCEDURE = gt,
   COMMUTATOR = <, NEGATOR = <=,
-  RESTRICT = scalargtsel, JOIN = scalargtjoinsel
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
 CREATE OPERATOR CLASS tquadbin_btree_ops

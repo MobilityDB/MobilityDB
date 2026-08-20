@@ -696,13 +696,13 @@ CREATE OPERATOR < (
   LEFTARG = tcbuffer, RIGHTARG = tcbuffer,
   PROCEDURE = lt,
   COMMUTATOR = >, NEGATOR = >=,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR <= (
   LEFTARG = tcbuffer, RIGHTARG = tcbuffer,
   PROCEDURE = le,
   COMMUTATOR = >=, NEGATOR = >,
-  RESTRICT = scalarltsel, JOIN = scalarltjoinsel
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR = (
   LEFTARG = tcbuffer, RIGHTARG = tcbuffer,
@@ -720,13 +720,13 @@ CREATE OPERATOR >= (
   LEFTARG = tcbuffer, RIGHTARG = tcbuffer,
   PROCEDURE = ge,
   COMMUTATOR = <=, NEGATOR = <,
-  RESTRICT = scalargtsel, JOIN = scalargtjoinsel
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR > (
   LEFTARG = tcbuffer, RIGHTARG = tcbuffer,
   PROCEDURE = gt,
   COMMUTATOR = <, NEGATOR = <=,
-  RESTRICT = scalargtsel, JOIN = scalargtjoinsel
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
 CREATE OPERATOR CLASS tcbuffer_btree_ops
