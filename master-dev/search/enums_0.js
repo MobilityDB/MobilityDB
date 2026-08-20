@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['clipoper_0',['ClipOper',['../geo__poly__clip_8h_aa1cea595734242f263560fceda6f6da4.html#aa1cea595734242f263560fceda6f6da4',1,'geo_poly_clip.h']]],
-  ['compoper_1',['CompOper',['../meos_2include_2temporal_2temporal_8h_ae8ccf22e7a234d746205612bfa9a235a.html#ae8ccf22e7a234d746205612bfa9a235a',1,'temporal.h']]]
+  ['bufferpiecelocation_0',['BufferPieceLocation',['../geo__buffer_8c_ac2cce919c2834205535f719912df8c41.html#ac2cce919c2834205535f719912df8c41',1,'geo_buffer.c']]],
+  ['bufferpiecetype_1',['BufferPieceType',['../geo__buffer_8c_a7f025bd3c76bf034a46da377863da7c0.html#a7f025bd3c76bf034a46da377863da7c0',1,'geo_buffer.c']]]
 ];

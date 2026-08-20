@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['nullhandletype_0',['nullHandleType',['../meos__json_8h_a5119ad52984dc87fea22d7c0f78e7f59.html#a5119ad52984dc87fea22d7c0f78e7f59',1,'meos_json.h']]]
+  ['joinstyle_0',['JoinStyle',['../geo__buffer_8c_a4ae807b1d30d2a3c375f0616740e8b3c.html#a4ae807b1d30d2a3c375f0616740e8b3c',1,'geo_buffer.c']]]
 ];
