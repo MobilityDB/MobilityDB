@@ -124,6 +124,12 @@ SELECT asText(poseNormalize(pose 'Pose(Point(1 1), 0.5)'));
 SELECT asText(poseNormalize(pose 'Pose(Point(1 1 1), 1, 0, 0, 0)'));
 SELECT asText(poseNormalize(pose 'Pose(Point(1 1 1), 0.5, 0.5, 0.5, 0.5)'));
 
+-- Both 3D constructors hold the unit-norm invariant: a quaternion within
+-- the accepted drift is renormalized before it is stored, whether the
+-- position arrives as coordinates or as a point geometry.
+SELECT asText(pose(1, 1, 1, 1.0005, 0, 0, 0), 12);
+SELECT asText(pose(ST_PointZ(1,1,1), 1.0005, 0, 0, 0), 12);
+
 -------------------------------------------------------------------------------
 -- Cast functions 
 -------------------------------------------------------------------------------

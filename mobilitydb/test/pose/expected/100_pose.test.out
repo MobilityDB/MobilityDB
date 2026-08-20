@@ -221,6 +221,18 @@ SELECT asText(poseNormalize(pose 'Pose(Point(1 1 1), 0.5, 0.5, 0.5, 0.5)'));
  Pose(POINT Z (1 1 1),0.5,0.5,0.5,0.5)
 (1 row)
 
+SELECT asText(pose(1, 1, 1, 1.0005, 0, 0, 0), 12);
+            astext             
+-------------------------------
+ Pose(POINT Z (1 1 1),1,0,0,0)
+(1 row)
+
+SELECT asText(pose(ST_PointZ(1,1,1), 1.0005, 0, 0, 0), 12);
+            astext             
+-------------------------------
+ Pose(POINT Z (1 1 1),1,0,0,0)
+(1 row)
+
 SELECT ST_AsText(round(pose 'Pose(Point(1 1),0.2)'::geometry, 6));
  st_astext  
 ------------
