@@ -880,6 +880,40 @@ same predicate now agree: both name the class of the temporal operand, per §10.
 where the template previously spelled `temporal_sel` on the first and
 `tspatial_sel` on the second.
 
+### 10.5 The support function the same token carries
+
+The `SUPPORT` clause of a predicate follows the same class as its estimator, and
+`topops.sql.tmpl` and `posops.sql.tmpl` spell it once as `{SEL}_supportfn`
+beside `{SEL}_sel`. The three entry points are named for their class —
+`temporal_supportfn`, `tnumber_supportfn`, `tspatial_supportfn` — over one
+shared `temporal_supportfn(fcinfo, tempfamily)`, the shape `temporal_selfuncs.c`
+uses for its estimators.
+
+What the support function buys is the index: it rewrites a predicate into the
+bounding-box operator an opclass answers, so the portable spellings of those
+operators — `overlaps` for `&&`, `contains` for `@>`, `before` for `<<#`, the
+table in `doc/portable_sql.xml` — reach the same index as the operator, rather
+than being kept as a filter over a sequential scan.
+
+Three facts bound which declarations carry the clause:
+
+- **A predicate is rewritten under the commuted spelling when its indexed
+  operand is on the right**, the support function putting that operand on the
+  left. The commuting pairs are the ones the operators declare as `COMMUTATOR`:
+  `contains`/`contained`, `before`/`after`, `left`/`right`, `below`/`above`,
+  `front`/`back`, with `overlaps`, `same` and `adjacent` commuting to
+  themselves. ⛔ The eight `over` predicates declare **no** commutator —
+  `s &< v` bounds one side and is no `v` OP `s` — so they keep the predicate as
+  a filter in that operand order instead of rewriting it into a different
+  question.
+- **A family whose opclass does not index a strategy keeps the predicate as a
+  filter**, the operator lookup finding no member. `tpose` and `trgeometry`
+  declare the Z-axis operators while their GiST opclass indexes none of them,
+  so the Z predicates of those two families are filters.
+- **The temporal pointcloud types carry no clause.** Their bounding box is a
+  `TPCBox` and no scalar conversion to it exists to build an index expression
+  from, so a clause there could never fire.
+
 ---
 
 ### Legend

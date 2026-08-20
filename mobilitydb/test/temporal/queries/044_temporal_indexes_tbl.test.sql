@@ -65,7 +65,7 @@ DROP INDEX IF EXISTS tbl_ttext_big_kdtree_idx;
 
 DROP TABLE IF EXISTS test_idxops;
 CREATE TABLE test_idxops(
-  op CHAR(3),
+  op TEXT,
   leftarg TEXT,
   rightarg TEXT,
   no_idx BIGINT,
@@ -334,6 +334,43 @@ INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
 SELECT '#>>', 'ttext', 'tstzspan', COUNT(*) FROM tbl_ttext_big WHERE temp #>> tstzspan '[2001-01-01,2001-02-01]';
 INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
 SELECT '#&>', 'ttext', 'tstzspan', COUNT(*) FROM tbl_ttext_big WHERE temp #&> tstzspan '[2001-01-01,2001-02-01]';
+
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT 'overlaps', 'ttext', 'tstzspan', COUNT(*) FROM tbl_ttext_big WHERE overlaps(temp, tstzspan '[2001-01-01,2001-02-01]');
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT 'overlaps', 'tstzspan', 'ttext', COUNT(*) FROM tbl_ttext_big WHERE overlaps(tstzspan '[2001-01-01,2001-02-01]', temp);
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT 'contains', 'ttext', 'tstzspan', COUNT(*) FROM tbl_ttext_big WHERE contains(temp, tstzspan '[2001-01-01,2001-02-01]');
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT 'contains', 'tstzspan', 'ttext', COUNT(*) FROM tbl_ttext_big WHERE contains(tstzspan '[2001-01-01,2001-02-01]', temp);
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT 'contained', 'ttext', 'tstzspan', COUNT(*) FROM tbl_ttext_big WHERE contained(temp, tstzspan '[2001-01-01,2001-02-01]');
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT 'contained', 'tstzspan', 'ttext', COUNT(*) FROM tbl_ttext_big WHERE contained(tstzspan '[2001-01-01,2001-02-01]', temp);
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT 'same', 'ttext', 'tstzspan', COUNT(*) FROM tbl_ttext_big WHERE same(temp, tstzspan '[2001-01-01,2001-02-01]');
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT 'same', 'tstzspan', 'ttext', COUNT(*) FROM tbl_ttext_big WHERE same(tstzspan '[2001-01-01,2001-02-01]', temp);
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT 'adjacent', 'ttext', 'tstzspan', COUNT(*) FROM tbl_ttext_big WHERE adjacent(temp, tstzspan '[2001-01-01,2001-02-01]');
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT 'adjacent', 'tstzspan', 'ttext', COUNT(*) FROM tbl_ttext_big WHERE adjacent(tstzspan '[2001-01-01,2001-02-01]', temp);
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT 'before', 'ttext', 'tstzspan', COUNT(*) FROM tbl_ttext_big WHERE before(temp, tstzspan '[2001-01-01,2001-02-01]');
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT 'before', 'tstzspan', 'ttext', COUNT(*) FROM tbl_ttext_big WHERE before(tstzspan '[2001-01-01,2001-02-01]', temp);
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT 'overbefore', 'ttext', 'tstzspan', COUNT(*) FROM tbl_ttext_big WHERE overbefore(temp, tstzspan '[2001-01-01,2001-02-01]');
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT 'overbefore', 'tstzspan', 'ttext', COUNT(*) FROM tbl_ttext_big WHERE overbefore(tstzspan '[2001-01-01,2001-02-01]', temp);
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT 'after', 'ttext', 'tstzspan', COUNT(*) FROM tbl_ttext_big WHERE after(temp, tstzspan '[2001-01-01,2001-02-01]');
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT 'after', 'tstzspan', 'ttext', COUNT(*) FROM tbl_ttext_big WHERE after(tstzspan '[2001-01-01,2001-02-01]', temp);
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT 'overafter', 'ttext', 'tstzspan', COUNT(*) FROM tbl_ttext_big WHERE overafter(temp, tstzspan '[2001-01-01,2001-02-01]');
+INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
+SELECT 'overafter', 'tstzspan', 'ttext', COUNT(*) FROM tbl_ttext_big WHERE overafter(tstzspan '[2001-01-01,2001-02-01]', temp);
 
 INSERT INTO test_idxops(op, leftarg, rightarg, no_idx)
 SELECT '<', 'ttext', 'ttext', COUNT(*) FROM tbl_ttext_big WHERE temp < ttext '[AAA@2001-01-01, BBB@2001-02-01]';
@@ -747,6 +784,61 @@ WHERE op = '#>>' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
 UPDATE test_idxops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp #&> tstzspan '[2001-01-01,2001-02-01]' )
 WHERE op = '#&>' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE overlaps(temp, tstzspan '[2001-01-01,2001-02-01]') )
+WHERE op = 'overlaps' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE overlaps(tstzspan '[2001-01-01,2001-02-01]', temp) )
+WHERE op = 'overlaps' AND leftarg = 'tstzspan' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE contains(temp, tstzspan '[2001-01-01,2001-02-01]') )
+WHERE op = 'contains' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE contains(tstzspan '[2001-01-01,2001-02-01]', temp) )
+WHERE op = 'contains' AND leftarg = 'tstzspan' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE contained(temp, tstzspan '[2001-01-01,2001-02-01]') )
+WHERE op = 'contained' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE contained(tstzspan '[2001-01-01,2001-02-01]', temp) )
+WHERE op = 'contained' AND leftarg = 'tstzspan' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE same(temp, tstzspan '[2001-01-01,2001-02-01]') )
+WHERE op = 'same' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE same(tstzspan '[2001-01-01,2001-02-01]', temp) )
+WHERE op = 'same' AND leftarg = 'tstzspan' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE adjacent(temp, tstzspan '[2001-01-01,2001-02-01]') )
+WHERE op = 'adjacent' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE adjacent(tstzspan '[2001-01-01,2001-02-01]', temp) )
+WHERE op = 'adjacent' AND leftarg = 'tstzspan' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE before(temp, tstzspan '[2001-01-01,2001-02-01]') )
+WHERE op = 'before' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE before(tstzspan '[2001-01-01,2001-02-01]', temp) )
+WHERE op = 'before' AND leftarg = 'tstzspan' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE overbefore(temp, tstzspan '[2001-01-01,2001-02-01]') )
+WHERE op = 'overbefore' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE overbefore(tstzspan '[2001-01-01,2001-02-01]', temp) )
+WHERE op = 'overbefore' AND leftarg = 'tstzspan' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE after(temp, tstzspan '[2001-01-01,2001-02-01]') )
+WHERE op = 'after' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE after(tstzspan '[2001-01-01,2001-02-01]', temp) )
+WHERE op = 'after' AND leftarg = 'tstzspan' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE overafter(temp, tstzspan '[2001-01-01,2001-02-01]') )
+WHERE op = 'overafter' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE overafter(tstzspan '[2001-01-01,2001-02-01]', temp) )
+WHERE op = 'overafter' AND leftarg = 'tstzspan' AND rightarg = 'ttext';
 
 UPDATE test_idxops
 SET rtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp < ttext '[AAA@2001-01-01, BBB@2001-02-01]' )
@@ -1188,6 +1280,61 @@ SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp #&> tstzspan 
 WHERE op = '#&>' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
 
 UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE overlaps(temp, tstzspan '[2001-01-01,2001-02-01]') )
+WHERE op = 'overlaps' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE overlaps(tstzspan '[2001-01-01,2001-02-01]', temp) )
+WHERE op = 'overlaps' AND leftarg = 'tstzspan' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE contains(temp, tstzspan '[2001-01-01,2001-02-01]') )
+WHERE op = 'contains' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE contains(tstzspan '[2001-01-01,2001-02-01]', temp) )
+WHERE op = 'contains' AND leftarg = 'tstzspan' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE contained(temp, tstzspan '[2001-01-01,2001-02-01]') )
+WHERE op = 'contained' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE contained(tstzspan '[2001-01-01,2001-02-01]', temp) )
+WHERE op = 'contained' AND leftarg = 'tstzspan' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE same(temp, tstzspan '[2001-01-01,2001-02-01]') )
+WHERE op = 'same' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE same(tstzspan '[2001-01-01,2001-02-01]', temp) )
+WHERE op = 'same' AND leftarg = 'tstzspan' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE adjacent(temp, tstzspan '[2001-01-01,2001-02-01]') )
+WHERE op = 'adjacent' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE adjacent(tstzspan '[2001-01-01,2001-02-01]', temp) )
+WHERE op = 'adjacent' AND leftarg = 'tstzspan' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE before(temp, tstzspan '[2001-01-01,2001-02-01]') )
+WHERE op = 'before' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE before(tstzspan '[2001-01-01,2001-02-01]', temp) )
+WHERE op = 'before' AND leftarg = 'tstzspan' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE overbefore(temp, tstzspan '[2001-01-01,2001-02-01]') )
+WHERE op = 'overbefore' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE overbefore(tstzspan '[2001-01-01,2001-02-01]', temp) )
+WHERE op = 'overbefore' AND leftarg = 'tstzspan' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE after(temp, tstzspan '[2001-01-01,2001-02-01]') )
+WHERE op = 'after' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE after(tstzspan '[2001-01-01,2001-02-01]', temp) )
+WHERE op = 'after' AND leftarg = 'tstzspan' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE overafter(temp, tstzspan '[2001-01-01,2001-02-01]') )
+WHERE op = 'overafter' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE overafter(tstzspan '[2001-01-01,2001-02-01]', temp) )
+WHERE op = 'overafter' AND leftarg = 'tstzspan' AND rightarg = 'ttext';
+
+UPDATE test_idxops
 SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp < ttext '[AAA@2001-01-01, BBB@2001-02-01]' )
 WHERE op = '<' AND leftarg = 'ttext' AND rightarg = 'ttext';
 UPDATE test_idxops
@@ -1614,6 +1761,61 @@ WHERE op = '#>>' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
 UPDATE test_idxops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp #&> tstzspan '[2001-01-01,2001-02-01]' )
 WHERE op = '#&>' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE overlaps(temp, tstzspan '[2001-01-01,2001-02-01]') )
+WHERE op = 'overlaps' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE overlaps(tstzspan '[2001-01-01,2001-02-01]', temp) )
+WHERE op = 'overlaps' AND leftarg = 'tstzspan' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE contains(temp, tstzspan '[2001-01-01,2001-02-01]') )
+WHERE op = 'contains' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE contains(tstzspan '[2001-01-01,2001-02-01]', temp) )
+WHERE op = 'contains' AND leftarg = 'tstzspan' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE contained(temp, tstzspan '[2001-01-01,2001-02-01]') )
+WHERE op = 'contained' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE contained(tstzspan '[2001-01-01,2001-02-01]', temp) )
+WHERE op = 'contained' AND leftarg = 'tstzspan' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE same(temp, tstzspan '[2001-01-01,2001-02-01]') )
+WHERE op = 'same' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE same(tstzspan '[2001-01-01,2001-02-01]', temp) )
+WHERE op = 'same' AND leftarg = 'tstzspan' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE adjacent(temp, tstzspan '[2001-01-01,2001-02-01]') )
+WHERE op = 'adjacent' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE adjacent(tstzspan '[2001-01-01,2001-02-01]', temp) )
+WHERE op = 'adjacent' AND leftarg = 'tstzspan' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE before(temp, tstzspan '[2001-01-01,2001-02-01]') )
+WHERE op = 'before' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE before(tstzspan '[2001-01-01,2001-02-01]', temp) )
+WHERE op = 'before' AND leftarg = 'tstzspan' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE overbefore(temp, tstzspan '[2001-01-01,2001-02-01]') )
+WHERE op = 'overbefore' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE overbefore(tstzspan '[2001-01-01,2001-02-01]', temp) )
+WHERE op = 'overbefore' AND leftarg = 'tstzspan' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE after(temp, tstzspan '[2001-01-01,2001-02-01]') )
+WHERE op = 'after' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE after(tstzspan '[2001-01-01,2001-02-01]', temp) )
+WHERE op = 'after' AND leftarg = 'tstzspan' AND rightarg = 'ttext';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE overafter(temp, tstzspan '[2001-01-01,2001-02-01]') )
+WHERE op = 'overafter' AND leftarg = 'ttext' AND rightarg = 'tstzspan';
+UPDATE test_idxops
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE overafter(tstzspan '[2001-01-01,2001-02-01]', temp) )
+WHERE op = 'overafter' AND leftarg = 'tstzspan' AND rightarg = 'ttext';
 
 UPDATE test_idxops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext_big WHERE temp < ttext '[AAA@2001-01-01, BBB@2001-02-01]' )

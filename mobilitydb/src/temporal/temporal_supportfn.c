@@ -88,13 +88,110 @@ enum TEMPORAL_FUNCTION_IDX
   /* Covers (appended to keep the existing indexes stable) */
   ECOVERS_IDX                    = 13,
   ACOVERS_IDX                    = 14,
+  /* Portable spellings of the bounding-box operators, documented in
+   * doc/portable_sql.xml. Each answers the strategy of the operator it spells,
+   * so the portable form reaches the same index as the operator */
+  OVERLAPS_IDX                   = 15,
+  CONTAINS_IDX                   = 16,
+  CONTAINED_IDX                  = 17,
+  ADJACENT_IDX                   = 18,
+  SAME_IDX                       = 19,
+  BEFORE_IDX                     = 20,
+  OVERBEFORE_IDX                 = 21,
+  AFTER_IDX                      = 22,
+  OVERAFTER_IDX                  = 23,
+  LEFT_IDX                       = 24,
+  OVERLEFT_IDX                   = 25,
+  RIGHT_IDX                      = 26,
+  OVERRIGHT_IDX                  = 27,
+  BELOW_IDX                      = 28,
+  OVERBELOW_IDX                  = 29,
+  ABOVE_IDX                      = 30,
+  OVERABOVE_IDX                  = 31,
+  FRONT_IDX                      = 32,
+  OVERFRONT_IDX                  = 33,
+  BACK_IDX                       = 34,
+  OVERBACK_IDX                   = 35,
 };
 
+/* The predicate that holds when the two operands are exchanged, read from the
+ * COMMUTATOR each operator declares. The support function puts the indexed
+ * operand on the left, so a call whose indexed operand is on the RIGHT is
+ * answered by the commuted predicate: `after(s, v)` is `v` before `s`. A
+ * symmetric predicate commutes to itself. An `over` predicate bounds one side
+ * of an operand and has NO commutator — `s &< v` is no `v` OP `s` — so it is
+ * left at zero and keeps the predicate as a filter rather than rewriting it
+ * into a different question */
+static const uint16_t CommutedIndex[] =
+{
+  [EVER_EQ_IDX]                  = EVER_EQ_IDX,
+  [ALWAYS_EQ_IDX]                = ALWAYS_EQ_IDX,
+  [ECONTAINS_IDX]                = ECONTAINS_IDX,
+  [EDISJOINT_IDX]                = EDISJOINT_IDX,
+  [EINTERSECTS_IDX]              = EINTERSECTS_IDX,
+  [ETOUCHES_IDX]                 = ETOUCHES_IDX,
+  [EDWITHIN_IDX]                 = EDWITHIN_IDX,
+  [ACONTAINS_IDX]                = ACONTAINS_IDX,
+  [ADISJOINT_IDX]                = ADISJOINT_IDX,
+  [AINTERSECTS_IDX]              = AINTERSECTS_IDX,
+  [ATOUCHES_IDX]                 = ATOUCHES_IDX,
+  [ADWITHIN_IDX]                 = ADWITHIN_IDX,
+  [ECOVERS_IDX]                  = ECOVERS_IDX,
+  [ACOVERS_IDX]                  = ACOVERS_IDX,
+  /* Symmetric */
+  [OVERLAPS_IDX]                 = OVERLAPS_IDX,
+  [SAME_IDX]                     = SAME_IDX,
+  [ADJACENT_IDX]                 = ADJACENT_IDX,
+  /* Commuting pairs */
+  [CONTAINS_IDX]                 = CONTAINED_IDX,
+  [CONTAINED_IDX]                = CONTAINS_IDX,
+  [BEFORE_IDX]                   = AFTER_IDX,
+  [AFTER_IDX]                    = BEFORE_IDX,
+  [LEFT_IDX]                     = RIGHT_IDX,
+  [RIGHT_IDX]                    = LEFT_IDX,
+  [BELOW_IDX]                    = ABOVE_IDX,
+  [ABOVE_IDX]                    = BELOW_IDX,
+  [FRONT_IDX]                    = BACK_IDX,
+  [BACK_IDX]                     = FRONT_IDX,
+  /* The `over` predicates declare no COMMUTATOR and stay at zero */
+};
+/* The time-dimension portable predicates, shared by every class because every
+ * temporal bounding box carries a time dimension */
+#define TIME_PORTABLE_STRATEGIES \
+  [OVERLAPS_IDX]                 = RTOverlapStrategyNumber, \
+  [CONTAINS_IDX]                 = RTContainsStrategyNumber, \
+  [CONTAINED_IDX]                = RTContainedByStrategyNumber, \
+  [ADJACENT_IDX]                 = RTAdjacentStrategyNumber, \
+  [SAME_IDX]                     = RTSameStrategyNumber, \
+  [BEFORE_IDX]                   = RTBeforeStrategyNumber, \
+  [OVERBEFORE_IDX]               = RTOverBeforeStrategyNumber, \
+  [AFTER_IDX]                    = RTAfterStrategyNumber, \
+  [OVERAFTER_IDX]                = RTOverAfterStrategyNumber
+
+/* The first-axis portable predicates: the value axis of a `tbox` and the X
+ * axis of an `stbox` are spelled by the same four operators */
+#define AXIS1_PORTABLE_STRATEGIES \
+  [LEFT_IDX]                     = RTLeftStrategyNumber, \
+  [OVERLEFT_IDX]                 = RTOverLeftStrategyNumber, \
+  [RIGHT_IDX]                    = RTRightStrategyNumber, \
+  [OVERRIGHT_IDX]                = RTOverRightStrategyNumber
+
+/* The bounding box of an alpha type is a `tstzspan`, so its portable surface is
+ * the time dimension alone */
+static const int16 TemporalStrategies[] =
+{
+  TIME_PORTABLE_STRATEGIES,
+};
+
+/* The bounding box of a number is a `tbox`, whose dimensions are the value
+ * axis and time */
 static const int16 TNumberStrategies[] =
 {
   /* Ever/always comparison functions */
   [EVER_EQ_IDX]                  = RTOverlapStrategyNumber,
   [ALWAYS_EQ_IDX]                = RTOverlapStrategyNumber,
+  TIME_PORTABLE_STRATEGIES,
+  AXIS1_PORTABLE_STRATEGIES,
 };
 
 static const int16 TSpatialStrategies[] =
@@ -117,6 +214,19 @@ static const int16 TSpatialStrategies[] =
   /* Covers */
   [ECOVERS_IDX]                   = RTOverlapStrategyNumber,
   [ACOVERS_IDX]                   = RTOverlapStrategyNumber,
+  /* The bounding box is an `stbox`, whose dimensions are the three space axes
+   * and time. A family whose opclass does not index an axis simply declines
+   * the rewrite for it, the operator lookup below finding no member */
+  TIME_PORTABLE_STRATEGIES,
+  AXIS1_PORTABLE_STRATEGIES,
+  [BELOW_IDX]                     = RTBelowStrategyNumber,
+  [OVERBELOW_IDX]                 = RTOverBelowStrategyNumber,
+  [ABOVE_IDX]                     = RTAboveStrategyNumber,
+  [OVERABOVE_IDX]                 = RTOverAboveStrategyNumber,
+  [FRONT_IDX]                     = RTFrontStrategyNumber,
+  [OVERFRONT_IDX]                 = RTOverFrontStrategyNumber,
+  [BACK_IDX]                      = RTBackStrategyNumber,
+  [OVERBACK_IDX]                  = RTOverBackStrategyNumber,
 };
 
 /*
@@ -124,8 +234,29 @@ static const int16 TSpatialStrategies[] =
 * so most common functions first. Could be sorted
 * and searched with binary search.
 */
+/* The portable spellings of the time-dimension operators, which every class
+ * carries. Listed here once and reused by the number and spatial tables */
+#define TIME_PORTABLE_FUNCTIONS \
+  {"overlaps", OVERLAPS_IDX, 2, 0}, \
+  {"contains", CONTAINS_IDX, 2, 0}, \
+  {"contained", CONTAINED_IDX, 2, 0}, \
+  {"adjacent", ADJACENT_IDX, 2, 0}, \
+  {"same", SAME_IDX, 2, 0}, \
+  {"before", BEFORE_IDX, 2, 0}, \
+  {"overbefore", OVERBEFORE_IDX, 2, 0}, \
+  {"after", AFTER_IDX, 2, 0}, \
+  {"overafter", OVERAFTER_IDX, 2, 0}
+
+/* The portable spellings of the first-axis operators */
+#define AXIS1_PORTABLE_FUNCTIONS \
+  {"left", LEFT_IDX, 2, 0}, \
+  {"overleft", OVERLEFT_IDX, 2, 0}, \
+  {"right", RIGHT_IDX, 2, 0}, \
+  {"overright", OVERRIGHT_IDX, 2, 0}
+
 static const IndexableFunction TemporalIndexableFunctions[] =
 {
+  TIME_PORTABLE_FUNCTIONS,
   {NULL, 0, 0, 0}
 };
 
@@ -133,6 +264,8 @@ static const IndexableFunction TNumberIndexableFunctions[] = {
   /* Ever/always comparison functions */
   {"eeq", EVER_EQ_IDX, 2, 0},
   {"aeq", ALWAYS_EQ_IDX, 2, 0},
+  TIME_PORTABLE_FUNCTIONS,
+  AXIS1_PORTABLE_FUNCTIONS,
   {NULL, 0, 0, 0}
 };
 
@@ -154,12 +287,25 @@ static const IndexableFunction TSpatialIndexableFunctions[] = {
   {"aintersects", AINTERSECTS_IDX, 2, 0},
   {"atouches", ATOUCHES_IDX, 2, 0},
   {"adwithin", ADWITHIN_IDX, 3, 3},
+  /* Portable spellings of the bounding-box operators */
+  TIME_PORTABLE_FUNCTIONS,
+  AXIS1_PORTABLE_FUNCTIONS,
+  {"below", BELOW_IDX, 2, 0},
+  {"overbelow", OVERBELOW_IDX, 2, 0},
+  {"above", ABOVE_IDX, 2, 0},
+  {"overabove", OVERABOVE_IDX, 2, 0},
+  {"front", FRONT_IDX, 2, 0},
+  {"overfront", OVERFRONT_IDX, 2, 0},
+  {"back", BACK_IDX, 2, 0},
+  {"overback", OVERBACK_IDX, 2, 0},
   {NULL, 0, 0, 0}
 };
 
 static int16
 temporal_get_strategy_by_type(MeosType temptype, uint16_t index)
 {
+  if (talpha_type(temptype))
+    return TemporalStrategies[index];
   if (tnumber_type(temptype))
     return TNumberStrategies[index];
   if (tspatial_type(temptype))
@@ -356,7 +502,7 @@ type_to_bbox(MeosType type)
  * so that we know what index search strategy we want to apply.
  */
 static Datum
-Temporal_supportfn(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
+temporal_supportfn(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
 {
   Node *rawreq = (Node *) PG_GETARG_POINTER(0);
   Node *ret = NULL;
@@ -498,7 +644,14 @@ Temporal_supportfn(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
        * Given the index operator family and the arguments and the desired
        * strategy number we can now lookup the operator we want (usually &&).
        */
-      int16 strategy = temporal_get_strategy_by_type(lefttype, idxfn.index);
+      uint16_t stratindex = idxfn.index;
+      if (req->indexarg == 1)
+      {
+        stratindex = CommutedIndex[idxfn.index];
+        if (stratindex == 0)
+          PG_RETURN_POINTER((Node *) NULL);
+      }
+      int16 strategy = temporal_get_strategy_by_type(lefttype, stratindex);
       /* If no strategy was found for the left argument simply return */
       if (strategy == InvalidStrategy)
         PG_RETURN_POINTER((Node *) NULL);
@@ -514,21 +667,26 @@ Temporal_supportfn(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
        * `tpcbox` and no scalar conversion to it exists to build the index
        * expression from; they keep the default of no rewrite */
       exproid = rightoid;
-      if (talpha_type(righttype))
+      if (bbox_type(righttype))
+        /* Already a bounding box, and the one the operator is declared
+         * against: a time-dimension predicate of a spatial or number family
+         * takes a `tstzspan` on its other side, not that family's own box */
+        ;
+      else if (talpha_type(righttype))
         exproid = meostype_oid(T_TSTZSPAN);
-      else if (tnumber_basetype(righttype) || tnumber_type(righttype) ||
-          righttype == T_TBOX)
+      else if (tnumber_basetype(righttype) || tnumber_type(righttype))
         exproid = meostype_oid(T_TBOX);
-      else if (spatial_basetype(righttype) || tspatial_type(righttype) ||
-          righttype == T_STBOX)
+      else if (spatial_basetype(righttype) || tspatial_type(righttype))
         exproid = meostype_oid(T_STBOX);
       else
         PG_RETURN_POINTER((Node *) NULL);
 
+      /* A support function offers an index path; an opclass that does not
+       * index this strategy — a family whose bounding box carries an axis its
+       * opclass leaves out — simply keeps the predicate as a filter */
       idxoperid = get_opfamily_member(opfamilyoid, leftoid, exproid, strategy);
       if (idxoperid == InvalidOid)
-        elog(ERROR, "no operator found for '%s': opfamily %u type %d",
-          idxfn.fn_name, opfamilyoid, leftoid);
+        PG_RETURN_POINTER((Node *) NULL);
 
       /*
        * For DWithin we need to build a more complex return.
@@ -601,6 +759,17 @@ Temporal_supportfn(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
   PG_RETURN_POINTER(ret);
 }
 
+PGDLLEXPORT Datum Temporal_supportfn(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Temporal_supportfn);
+/**
+ * @brief Support function for temporal alpha types
+ */
+Datum
+Temporal_supportfn(PG_FUNCTION_ARGS)
+{
+  return temporal_supportfn(fcinfo, TEMPORALTYPE);
+}
+
 PGDLLEXPORT Datum Tnumber_supportfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_supportfn);
 /**
@@ -609,7 +778,7 @@ PG_FUNCTION_INFO_V1(Tnumber_supportfn);
 Datum
 Tnumber_supportfn(PG_FUNCTION_ARGS)
 {
-  return Temporal_supportfn(fcinfo, TNUMBERTYPE);
+  return temporal_supportfn(fcinfo, TNUMBERTYPE);
 }
 
 PGDLLEXPORT Datum Tspatial_supportfn(PG_FUNCTION_ARGS);
@@ -620,7 +789,7 @@ PG_FUNCTION_INFO_V1(Tspatial_supportfn);
 Datum
 Tspatial_supportfn(PG_FUNCTION_ARGS)
 {
-  return Temporal_supportfn(fcinfo, TSPATIALTYPE);
+  return temporal_supportfn(fcinfo, TSPATIALTYPE);
 }
 
 /*****************************************************************************/
