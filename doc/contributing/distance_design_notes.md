@@ -384,6 +384,16 @@ to the boundary of the other, at the instant where the temporal distance is
 least; overlapping or concentric discs meet, and it degenerates to the point
 where the boundary of the first reaches the second.
 
+The centre is not the only substitution that breaks the identity. Rendering the
+operands — stroking the static disc into a polygon and materialising the moving
+one as its traversed area, then handing both to a geometry-to-geometry shortest
+line — measures between two polygonal approximations of the pair. Its endpoints
+sit on approximating chords rather than on the two boundaries, and its length
+answers neither the exact question nor the scalar the family reports. The
+rendering also costs more than the closed form it replaces, so the exactness
+carries no price: a static disc is a constant temporal circular buffer, and
+delegating to the two-temporal kernel gives the line directly.
+
 The same reasoning governs a fallback. When a geometry has no edge decomposition
 the nearest approach distance falls back to the exact traversed area, so the
 nearest approach *instant* must fall back to something that agrees with it —
@@ -394,7 +404,16 @@ argmin moves away from it as soon as the radius varies.
 of the shortest line equals the nearest approach distance, and the distance at
 the nearest approach instant equals it too.** Both hold by construction when the
 witness is read from the same signed gap as the scalar (§2), and both fail
-loudly when a centre has been substituted for a value.
+loudly when a centre or a rendering stands in for a value.
+
+Run the check as a census, not as a spot test. Counting the pairs of a real
+join on which the two disagree separates a witness that is wrong everywhere
+from one that is wrong on a configuration the fixtures miss, and it names the
+operand the defect belongs to: over a 100 by 100 join of vessel trajectories,
+the identity holds on every pair for the geometry operand and for the moving
+one, and fails on 9951 of 10000 for the static circular buffer. A fixture file
+whose cases all agree with an approximation leaves the approximation no trace,
+which is why the pairs that separate the two readings are the ones to pin.
 
 ### Where a zero radius stops being a temporal point
 
