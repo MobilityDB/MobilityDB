@@ -561,7 +561,7 @@ node_swap(const RTree *rtree, RTreeNode *node, int i, int j)
   memcpy(RTREE_NODE_BBOX_N(node, j), buf, rtree->bboxsize);
   if (node->node_type == RTREE_LEAF)
   {
-    int tmp = node->ids[i];
+    int64 tmp = node->ids[i];
     node->ids[i] = node->ids[j];
     node->ids[j] = tmp;
   }
@@ -835,7 +835,7 @@ node_search(const RTree *rtree, const RTreeNode *node, RTreeSearchOp op,
     {
       if (leaf_consistent(rtree, RTREE_NODE_BBOX_N(node, i), query, op))
       {
-        int id = node->ids[i];
+        int64 id = node->ids[i];
         meos_array_add(result, &id);
       }
     }
@@ -885,8 +885,8 @@ node_join(const RTree *rtree1, const RTreeNode *node1, const void *box1,
       {
         if (leaf_consistent(rtree1, key, RTREE_NODE_BBOX_N(node2, j), op))
         {
-          int id1 = node1->ids[i];
-          int id2 = node2->ids[j];
+          int64 id1 = node1->ids[i];
+          int64 id2 = node2->ids[j];
           meos_array_add(result, &id1);
           meos_array_add(result, &id2);
         }
@@ -1076,7 +1076,7 @@ rtree_create_tpcbox()
  * @param[in] id The id of the box being inserted
  */
 void
-rtree_insert(RTree *rtree, void *box, int id)
+rtree_insert(RTree *rtree, void *box, int64 id)
 {
   while (1)
   {
@@ -1122,7 +1122,7 @@ rtree_insert(RTree *rtree, void *box, int id)
  * @p RTREE_CONTAINED_BY finds boxes contained by the query
  * @param[in] query The bounding box that serves as query
  * @param[out] result MeosArray of int to collect matching IDs (created by the
- * caller with `meos_array_create(sizeof(int))`)
+ * caller with `meos_array_create(sizeof(int64))`)
  * @return Number of matching IDs
  */
 int
@@ -1152,7 +1152,7 @@ rtree_search(const RTree *rtree, RTreeSearchOp op, const void *query,
  * of @p rtree2, @p RTREE_CONTAINED_BY pairs entries of @p rtree1 contained by
  * an entry of @p rtree2
  * @param[out] result MeosArray of int to collect the ids (created by the caller
- * with `meos_array_create(sizeof(int))`)
+ * with `meos_array_create(sizeof(int64))`)
  * @return Number of qualifying pairs, half the number of collected ids
  */
 int
@@ -1180,7 +1180,7 @@ rtree_join(const RTree *rtree1, const RTree *rtree2, RTreeSearchOp op,
  * @param[in] id The id of the temporal value being inserted
  */
 void
-rtree_insert_temporal(RTree *rtree, const Temporal *temp, int id)
+rtree_insert_temporal(RTree *rtree, const Temporal *temp, int64 id)
 {
   if (! ensure_bbox_temporal_compatible(rtree->bboxtype, temp))
     return;
@@ -1259,7 +1259,7 @@ rtree_search_temporal(const RTree *rtree, RTreeSearchOp op,
  * @see rtree_insert_temporal
  */
 void
-rtree_insert_temporal_split(RTree *rtree, const Temporal *temp, int id,
+rtree_insert_temporal_split(RTree *rtree, const Temporal *temp, int64 id,
   int maxboxes)
 {
   if (! ensure_bbox_temporal_compatible(rtree->bboxtype, temp))
@@ -1296,6 +1296,18 @@ rtree_insert_temporal_split(RTree *rtree, const Temporal *temp, int id,
  * @return Number of distinct matching ids
  * @see rtree_search_temporal
  */
+/**
+ * @brief Order two indexed ids, in the form @p qsort takes
+ * @note `int64_cmp` in type_util.c compares two `int64` values rather than two
+ * pointers to them, so it is not a `qsort` comparator
+ */
+static int
+rtree_id_cmp(const void *a, const void *b)
+{
+  int64 l = *(const int64 *) a, r = *(const int64 *) b;
+  return (l < r) ? -1 : ((l > r) ? 1 : 0);
+}
+
 int
 rtree_search_temporal_dedup(const RTree *rtree, RTreeSearchOp op,
   const Temporal *temp, int maxboxes, MeosArray *result)
@@ -1309,42 +1321,38 @@ rtree_search_temporal_dedup(const RTree *rtree, RTreeSearchOp op,
   if (! boxes)
     return 0;
 
-  /* Accumulate the raw (possibly duplicated) candidate ids of every query
-   * box, tracking the maximum id seen to size the dedup bitset */
-  MeosArray *raw = meos_array_create(sizeof(int));
-  MeosArray *hits = meos_array_create(sizeof(int));
-  int maxid = -1;
+  /* Accumulate the raw (possibly duplicated) candidate ids of every query box */
+  MeosArray *raw = meos_array_create(sizeof(int64));
+  MeosArray *hits = meos_array_create(sizeof(int64));
   for (int i = 0; i < count; i++)
   {
     int nhits = rtree_search(rtree, op,
       (char *) boxes + (size_t) i * rtree->bboxsize, hits);
     for (int j = 0; j < nhits; j++)
     {
-      int id = *(int *) meos_array_get(hits, j);
-      if (id > maxid)
-        maxid = id;
+      int64 id = *(int64 *) meos_array_get(hits, j);
       meos_array_add(raw, &id);
     }
   }
   pfree(boxes);
   meos_array_destroy(hits);
 
-  /* Collapse duplicates with a seen-set sized to the maximum id, mirroring
-   * the bool indexed[] idiom of the rtree example */
+  /* Collapse duplicates by sorting. The memory this costs is proportional to
+   * the NUMBER of candidate ids, never to their magnitude: an id is the
+   * caller's own row identifier, so a set sized to the largest id allocates in
+   * proportion to a value the caller chooses and reaches gigabytes on an
+   * ordinary sparse id space. */
   int nraw = meos_array_count(raw);
-  if (maxid >= 0 && nraw > 0)
+  if (nraw > 0)
   {
-    bool *seen = palloc0((size_t) (maxid + 1) * sizeof(bool));
+    int64 *ids = palloc((size_t) nraw * sizeof(int64));
     for (int i = 0; i < nraw; i++)
-    {
-      int id = *(int *) meos_array_get(raw, i);
-      if (! seen[id])
-      {
-        seen[id] = true;
-        meos_array_add(result, &id);
-      }
-    }
-    pfree(seen);
+      ids[i] = *(int64 *) meos_array_get(raw, i);
+    qsort(ids, (size_t) nraw, sizeof(int64), rtree_id_cmp);
+    for (int i = 0; i < nraw; i++)
+      if (i == 0 || ids[i] != ids[i - 1])
+        meos_array_add(result, &ids[i]);
+    pfree(ids);
   }
   meos_array_destroy(raw);
   return meos_array_count(result);
@@ -1417,7 +1425,7 @@ typedef struct RTreeNNEntry
 {
   double dist;             /**< Distance from the query to the entry's box */
   bool is_leaf_entry;      /**< True for an emittable id, false for a node */
-  int id;                  /**< Leaf id (when @p is_leaf_entry) */
+  int64 id;                /**< Leaf id (when @p is_leaf_entry) */
   const RTreeNode *node;   /**< Tree node to expand (when not @p is_leaf_entry) */
 } RTreeNNEntry;
 
@@ -1551,7 +1559,7 @@ rtree_nn_cursor_open(const RTree *rtree, const void *query)
  * @return @p true if a neighbour was produced, @p false once exhausted
  */
 bool
-rtree_nn_cursor_next(RTreeNNCursor *cursor, int *id_out, double *dist_out)
+rtree_nn_cursor_next(RTreeNNCursor *cursor, int64 *id_out, double *dist_out)
 {
   assert(cursor);
   while (cursor->count > 0)

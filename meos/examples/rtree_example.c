@@ -105,7 +105,7 @@ verify_search(const char *name, const RTree *rtree, RTreeSearchOp op,
   bool *indexed = calloc(NUM_BBOX, sizeof(bool));
   for (int i = 0; i < index_count; i++)
   {
-    int id = *(int *) meos_array_get(ids, i);
+    int64 id = *(int64 *) meos_array_get(ids, i);
     indexed[id] = true;
   }
 
@@ -391,7 +391,7 @@ int main(void)
   printf("RTree index test (%d boxes per type)\n", NUM_BBOX);
 
   /* Create a single MeosArray and reuse it across all searches */
-  MeosArray *ids = meos_array_create(sizeof(int));
+  MeosArray *ids = meos_array_create(sizeof(int64));
   test_floatspan(ids);
   test_tstzspan(ids);
   test_tbox(ids);

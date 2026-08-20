@@ -475,7 +475,7 @@ sptree_create_tpcbox(SPTreeKind kind)
  * @brief Return a new node holding a bounding box
  */
 static SPNode *
-spnode_make(const SPTree *sptree, const void *box, int id)
+spnode_make(const SPTree *sptree, const void *box, int64 id)
 {
   SPNode *node = palloc0(sizeof(SPNode) + sptree->boxsize);
   node->id = id;
@@ -495,7 +495,7 @@ spnode_make(const SPTree *sptree, const void *box, int id)
  * @param[in] id The id associated with the box
  */
 void
-sptree_insert(SPTree *sptree, void *box, int id)
+sptree_insert(SPTree *sptree, void *box, int64 id)
 {
   /* Project the incoming box into the internal box type (TPCBox: STBox) */
   bboxunion proj;
@@ -550,7 +550,7 @@ spnode_search(const SPTree *sptree, const SPNode *node, const void *nodebox,
 {
   if (sptree->leaf_consistent(node->centroid, query, op))
   {
-    int id = node->id;
+    int64 id = node->id;
     meos_array_add(result, &id);
   }
   for (int quadrant = 0; quadrant < sptree->nchild; quadrant++)
@@ -626,7 +626,7 @@ sptree_search(const SPTree *sptree, RTreeSearchOp op, const void *query,
  * @param[in] id The id of the temporal value being inserted
  */
 void
-sptree_insert_temporal(SPTree *sptree, const Temporal *temp, int id)
+sptree_insert_temporal(SPTree *sptree, const Temporal *temp, int64 id)
 {
   if (! ensure_bbox_temporal_compatible(sptree->bboxtype, temp))
     return;
@@ -684,7 +684,7 @@ sptree_search_temporal(const SPTree *sptree, RTreeSearchOp op,
  * @see sptree_insert_temporal
  */
 void
-sptree_insert_temporal_split(SPTree *sptree, const Temporal *temp, int id,
+sptree_insert_temporal_split(SPTree *sptree, const Temporal *temp, int64 id,
   int maxboxes)
 {
   if (! ensure_bbox_temporal_compatible(sptree->bboxtype, temp))
@@ -718,6 +718,16 @@ sptree_insert_temporal_split(SPTree *sptree, const Temporal *temp, int id,
  * @return Number of distinct matching ids
  * @see sptree_search_temporal
  */
+/**
+ * @brief Order two indexed ids, in the form @p qsort takes
+ */
+static int
+sptree_id_cmp(const void *a, const void *b)
+{
+  int64 l = *(const int64 *) a, r = *(const int64 *) b;
+  return (l < r) ? -1 : ((l > r) ? 1 : 0);
+}
+
 int
 sptree_search_temporal_dedup(const SPTree *sptree, RTreeSearchOp op,
   const Temporal *temp, int maxboxes, MeosArray *result)
@@ -731,41 +741,35 @@ sptree_search_temporal_dedup(const SPTree *sptree, RTreeSearchOp op,
   if (! boxes)
     return 0;
 
-  /* Accumulate the raw (possibly duplicated) candidate ids of every query
-   * box, tracking the maximum id seen to size the dedup bitset */
-  MeosArray *raw = meos_array_create(sizeof(int));
-  MeosArray *hits = meos_array_create(sizeof(int));
-  int maxid = -1;
+  /* Accumulate the raw (possibly duplicated) candidate ids of every query box */
+  MeosArray *raw = meos_array_create(sizeof(int64));
+  MeosArray *hits = meos_array_create(sizeof(int64));
   for (int i = 0; i < count; i++)
   {
     int nhits = sptree_search(sptree, op,
       (char *) boxes + (size_t) i * sptree->boxsize, hits);
     for (int j = 0; j < nhits; j++)
     {
-      int id = *(int *) meos_array_get(hits, j);
-      if (id > maxid)
-        maxid = id;
+      int64 id = *(int64 *) meos_array_get(hits, j);
       meos_array_add(raw, &id);
     }
   }
   pfree(boxes);
   meos_array_destroy(hits);
 
-  /* Collapse duplicates with a seen-set sized to the maximum id */
+  /* Collapse duplicates by sorting, so the memory is proportional to the
+   * NUMBER of candidate ids rather than to their magnitude */
   int nraw = meos_array_count(raw);
-  if (maxid >= 0 && nraw > 0)
+  if (nraw > 0)
   {
-    bool *seen = palloc0((size_t) (maxid + 1) * sizeof(bool));
+    int64 *ids = palloc((size_t) nraw * sizeof(int64));
     for (int i = 0; i < nraw; i++)
-    {
-      int id = *(int *) meos_array_get(raw, i);
-      if (! seen[id])
-      {
-        seen[id] = true;
-        meos_array_add(result, &id);
-      }
-    }
-    pfree(seen);
+      ids[i] = *(int64 *) meos_array_get(raw, i);
+    qsort(ids, (size_t) nraw, sizeof(int64), sptree_id_cmp);
+    for (int i = 0; i < nraw; i++)
+      if (i == 0 || ids[i] != ids[i - 1])
+        meos_array_add(result, &ids[i]);
+    pfree(ids);
   }
   meos_array_destroy(raw);
   return meos_array_count(result);
@@ -879,7 +883,7 @@ typedef struct SPNNEntry
 {
   double dist;                 /**< Distance from the query to the entry */
   bool is_emit;                /**< True for an emittable id, false for a node */
-  int id;                      /**< Stored id (when @p is_emit) */
+  int64 id;                    /**< Stored id (when @p is_emit) */
   const SPNode *node;          /**< Tree node to expand (when not @p is_emit) */
   int level;                   /**< Depth of @p node (drives the k-d dimension) */
   char region[SPTREE_NODEBOX_MAXSIZE];  /**< Region covered by @p node */
@@ -1012,7 +1016,7 @@ sptree_nn_cursor_open(const SPTree *sptree, const void *query)
  * @return @p true if a neighbour was produced, @p false once exhausted
  */
 bool
-sptree_nn_cursor_next(SPNNCursor *cursor, int *id_out, double *dist_out)
+sptree_nn_cursor_next(SPNNCursor *cursor, int64 *id_out, double *dist_out)
 {
   assert(cursor);
   const SPTree *sptree = cursor->sptree;

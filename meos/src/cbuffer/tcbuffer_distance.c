@@ -805,7 +805,7 @@ tcbuffer_disc_within_dist(double cx, double cy, double r, double dist,
   for (int j = 0; j < nc; j++)
   {
     const DistEdge *ed =
-      &g->segs[*(int *) meos_array_get(dist_pip_results, j)];
+      &g->segs[*(int64 *) meos_array_get(dist_pip_results, j)];
     if (box2d_distance_sqr(ed->xmin, ed->ymin, ed->xmax, ed->ymax, sxmin,
         symin, sxmax, symax) > dist2)
       continue;
@@ -1054,7 +1054,7 @@ tcbuffer_geo_ctx_make(const GSERIALIZED *gs)
     0, dist_geom_build_rtree(segs, n) };
   /* Scratch buffer for the R-tree candidate ids, created with the R-tree and
    * freed with it in #tcbuffer_geo_ctx_free (see dist_pip_results). */
-  dist_pip_results = meos_array_create(sizeof(int));
+  dist_pip_results = meos_array_create(sizeof(int64));
   return ctx;
 }
 
@@ -1324,7 +1324,7 @@ tcbufferseg_within_ctx(const Cbuffer *cb1, const Cbuffer *cb2, double dist,
   for (int j = 0; j < ncand; j++)
   {
     const DistEdge *ed =
-      &ctx->g.segs[*(int *) meos_array_get(dist_pip_results, j)];
+      &ctx->g.segs[*(int64 *) meos_array_get(dist_pip_results, j)];
     if (box2d_distance_sqr(ed->xmin, ed->ymin, ed->xmax, ed->ymax, cxmin,
         cymin, cxmax, cymax) > reach2)
       continue;
@@ -1419,7 +1419,7 @@ tcbuffer_disc_signed_boundary(double cx, double cy, double r,
   for (int j = 0; j < nc; j++)
   {
     const DistEdge *ed =
-      &g->segs[*(int *) meos_array_get(dist_pip_results, j)];
+      &g->segs[*(int64 *) meos_array_get(dist_pip_results, j)];
     if (box2d_distance_sqr(ed->xmin, ed->ymin, ed->xmax, ed->ymax, cx, cy,
         cx, cy) > reach2)
       continue;
@@ -1529,7 +1529,7 @@ tcbufferseg_sg_roots(const Cbuffer *cb1, const Cbuffer *cb2,
   for (int j = 0; j < ncand; j++)
   {
     const DistEdge *ed =
-      &ctx->g.segs[*(int *) meos_array_get(dist_pip_results, j)];
+      &ctx->g.segs[*(int64 *) meos_array_get(dist_pip_results, j)];
     if (box2d_distance_sqr(ed->xmin, ed->ymin, ed->xmax, ed->ymax, cxmin,
         cymin, cxmax, cymax) > rmax2)
       continue;

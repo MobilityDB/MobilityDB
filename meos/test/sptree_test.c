@@ -101,11 +101,11 @@ static void
 compare(const char *label, const SPTree *sptree, RTreeSearchOp op,
   const void *query, const bool *truth)
 {
-  MeosArray *result = meos_array_create(sizeof(int));
+  MeosArray *result = meos_array_create(sizeof(int64));
   int count = sptree_search(sptree, op, query, result);
   bool *in_index = calloc(NUM_BOXES, sizeof(bool));
   for (int i = 0; i < count; i++)
-    in_index[*(int *) meos_array_get(result, i)] = true;
+    in_index[*(int64 *) meos_array_get(result, i)] = true;
 
   int missed = 0, extra = 0;
   for (int i = 0; i < NUM_BOXES; i++)
@@ -410,9 +410,9 @@ test_mest(void)
   }
   Temporal *query = make_wiggly_tfloat(123456, buf, sizeof(buf));
 
-  MeosArray *single_ids = meos_array_create(sizeof(int));
-  MeosArray *mest_ids = meos_array_create(sizeof(int));
-  MeosArray *deg_ids = meos_array_create(sizeof(int));
+  MeosArray *single_ids = meos_array_create(sizeof(int64));
+  MeosArray *mest_ids = meos_array_create(sizeof(int64));
+  MeosArray *deg_ids = meos_array_create(sizeof(int64));
   int single_count = sptree_search_temporal(single, RTREE_OVERLAPS, query,
     single_ids);
   int mest_count = sptree_search_temporal_dedup(mest, RTREE_OVERLAPS, query,
@@ -426,16 +426,16 @@ test_mest(void)
   int *mest_seen = calloc(NUM_TRIPS, sizeof(int));
   int *deg_seen = calloc(NUM_TRIPS, sizeof(int));
   for (int i = 0; i < single_count; i++)
-    in_single[*(int *) meos_array_get(single_ids, i)] = true;
+    in_single[*(int64 *) meos_array_get(single_ids, i)] = true;
   for (int i = 0; i < mest_count; i++)
   {
-    int id = *(int *) meos_array_get(mest_ids, i);
+    int64 id = *(int64 *) meos_array_get(mest_ids, i);
     in_mest[id] = true;
     mest_seen[id]++;
   }
   for (int i = 0; i < deg_count; i++)
   {
-    int id = *(int *) meos_array_get(deg_ids, i);
+    int64 id = *(int64 *) meos_array_get(deg_ids, i);
     in_deg[id] = true;
     deg_seen[id]++;
   }
@@ -545,9 +545,9 @@ test_stbox_mest(void)
   }
   Temporal *query = make_wiggly_trip(123456, buf, sizeof(buf));
 
-  MeosArray *single_ids = meos_array_create(sizeof(int));
-  MeosArray *mest_ids = meos_array_create(sizeof(int));
-  MeosArray *deg_ids = meos_array_create(sizeof(int));
+  MeosArray *single_ids = meos_array_create(sizeof(int64));
+  MeosArray *mest_ids = meos_array_create(sizeof(int64));
+  MeosArray *deg_ids = meos_array_create(sizeof(int64));
   int single_count = sptree_search_temporal(single, RTREE_OVERLAPS, query,
     single_ids);
   int mest_count = sptree_search_temporal_dedup(mest, RTREE_OVERLAPS, query,
@@ -561,16 +561,16 @@ test_stbox_mest(void)
   int *mest_seen = calloc(NUM_TRIPS, sizeof(int));
   int *deg_seen = calloc(NUM_TRIPS, sizeof(int));
   for (int i = 0; i < single_count; i++)
-    in_single[*(int *) meos_array_get(single_ids, i)] = true;
+    in_single[*(int64 *) meos_array_get(single_ids, i)] = true;
   for (int i = 0; i < mest_count; i++)
   {
-    int id = *(int *) meos_array_get(mest_ids, i);
+    int64 id = *(int64 *) meos_array_get(mest_ids, i);
     in_mest[id] = true;
     mest_seen[id]++;
   }
   for (int i = 0; i < deg_count; i++)
   {
-    int id = *(int *) meos_array_get(deg_ids, i);
+    int64 id = *(int64 *) meos_array_get(deg_ids, i);
     in_deg[id] = true;
     deg_seen[id]++;
   }
@@ -659,9 +659,10 @@ span_gap(double qlo, double qhi, double lo, double hi)
 /* Drain the cursor fully, recording the id and distance sequence and how many
  * times each id is produced */
 static int
-drain(SPNNCursor *cursor, int *cur_id, double *cur_dist, int *seen)
+drain(SPNNCursor *cursor, int64 *cur_id, double *cur_dist, int *seen)
 {
-  int n = 0, id;
+  int n = 0;
+  int64 id;
   double dist;
   while (sptree_nn_cursor_next(cursor, &id, &dist))
   {
@@ -681,7 +682,7 @@ drain(SPNNCursor *cursor, int *cur_id, double *cur_dist, int *seen)
  * the first K results match the full-drain prefix */
 static void
 check_structural(const char *label, SPTree *sptree, const void *query,
-  const int *cur_id, const double *cur_dist, const int *seen, int n)
+  const int64 *cur_id, const double *cur_dist, const int *seen, int n)
 {
   char name[128];
   bool complete = (n == NUM_BOXES);
@@ -702,7 +703,7 @@ check_structural(const char *label, SPTree *sptree, const void *query,
   SPNNCursor *kc = sptree_nn_cursor_open(sptree, query);
   for (int i = 0; i < K && early; i++)
   {
-    int kid;
+    int64 kid;
     double kdist;
     if (! sptree_nn_cursor_next(kc, &kid, &kdist) || kid != cur_id[i] ||
         fabs(kdist - cur_dist[i]) > EPS)
@@ -715,7 +716,7 @@ check_structural(const char *label, SPTree *sptree, const void *query,
 
 /* Additionally check the reported distances against a brute-force oracle */
 static void
-check_metric(const char *label, const int *cur_id, const double *cur_dist,
+check_metric(const char *label, const int64 *cur_id, const double *cur_dist,
   int n, const double *brute)
 {
   char name[128];
@@ -765,7 +766,7 @@ test_nn_floatspan(void)
 
   int *seen = calloc(NUM_BOXES, sizeof(int));
   double *cd = malloc(NUM_BOXES * sizeof(double));
-  int *ci = malloc(NUM_BOXES * sizeof(int));
+  int64 *ci = malloc(NUM_BOXES * sizeof(int64));
   SPNNCursor *cursor = sptree_nn_cursor_open(sptree, query);
   int n = drain(cursor, ci, cd, seen);
   sptree_nn_cursor_close(cursor);
@@ -817,7 +818,7 @@ test_nn_tbox(void)
 
   int *seen = calloc(NUM_BOXES, sizeof(int));
   double *cd = malloc(NUM_BOXES * sizeof(double));
-  int *ci = malloc(NUM_BOXES * sizeof(int));
+  int64 *ci = malloc(NUM_BOXES * sizeof(int64));
   SPNNCursor *cursor = sptree_nn_cursor_open(sptree, query);
   int n = drain(cursor, ci, cd, seen);
   sptree_nn_cursor_close(cursor);
@@ -845,7 +846,7 @@ test_nn_stbox(void)
 
   int *seen = calloc(NUM_BOXES, sizeof(int));
   double *cd = malloc(NUM_BOXES * sizeof(double));
-  int *ci = malloc(NUM_BOXES * sizeof(int));
+  int64 *ci = malloc(NUM_BOXES * sizeof(int64));
   SPNNCursor *cursor = sptree_nn_cursor_open(sptree, query);
   int n = drain(cursor, ci, cd, seen);
   sptree_nn_cursor_close(cursor);
@@ -875,11 +876,11 @@ static void
 selective(const char *label, const SPTree *sptree, const void *query,
   const bool *truth, int ntruth)
 {
-  MeosArray *result = meos_array_create(sizeof(int));
+  MeosArray *result = meos_array_create(sizeof(int64));
   int count = sptree_search(sptree, RTREE_OVERLAPS, query, result);
   bool *in_index = calloc(SEL_BOXES, sizeof(bool));
   for (int i = 0; i < count; i++)
-    in_index[*(int *) meos_array_get(result, i)] = true;
+    in_index[*(int64 *) meos_array_get(result, i)] = true;
   int missed = 0;
   for (int i = 0; i < SEL_BOXES; i++)
     if (truth[i] && ! in_index[i])

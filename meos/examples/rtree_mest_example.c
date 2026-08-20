@@ -231,7 +231,7 @@ int main(void)
   }
 
   /* Result array reused across searches */
-  MeosArray *ids = meos_array_create(sizeof(int));
+  MeosArray *ids = meos_array_create(sizeof(int64));
 
   /* Aggregated totals over all queries */
   long total_truth = 0;
@@ -273,7 +273,7 @@ int main(void)
     int single_fp = 0;
     for (int k = 0; k < single_count; k++)
     {
-      int id = *(int *) meos_array_get(ids, k);
+      int64 id = *(int64 *) meos_array_get(ids, k);
       assert(! seen[id]);
       seen[id] = true;
       if (! truth[id])
@@ -292,7 +292,7 @@ int main(void)
     assert(deg_count == single_count);
     for (int k = 0; k < deg_count; k++)
     {
-      int id = *(int *) meos_array_get(ids, k);
+      int64 id = *(int64 *) meos_array_get(ids, k);
       assert(seen[id]);
     }
 
@@ -308,7 +308,7 @@ int main(void)
       int mest_fp = 0;
       for (int k = 0; k < cand; k++)
       {
-        int id = *(int *) meos_array_get(ids, k);
+        int64 id = *(int64 *) meos_array_get(ids, k);
         /* Invariant (ii): dedup, each id appears at most once */
         assert(! seen[id]);
         seen[id] = true;
