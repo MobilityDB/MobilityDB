@@ -82,6 +82,14 @@ CLASSES = [
         'GeoPose.Basic.YPR.Schema.json'),
 ]
 
+# A Basic-Quaternion document that carries only what a static pose has to say
+# satisfies the standard's stricter schema for the class as well, which admits
+# `position` and `quaternion` and nothing else. A temporal instant additionally
+# carries `validTime` and satisfies the permissive schema alone, so the strict
+# one is demanded of exactly those documents that hold no time.
+STRICT = ('Basic-Quaternion', 'validTime',
+    'GeoPose.Basic.Strict_Quaternion.Schema.json')
+
 # The classes the SQL surface writes, and which the expected output therefore
 # has to contain for this check to mean anything. A whole stream is among them:
 # a value a query already holds is written in one piece. The two INCREMENTAL
@@ -154,6 +162,14 @@ def validate(value, schema, root, path, errors):
                 validate(value[name], sub, root, '%s.%s' % (path, name),
                     errors)
 
+        # `additionalProperties: false` is what makes a schema strict: the
+        # document may carry the members the schema names and no others.
+        if schema.get('additionalProperties') is False:
+            for name in value:
+                if name not in schema.get('properties', {}):
+                    errors.append('%s: carries `%s`, which the schema does '
+                        'not allow' % (path or '(document)', name))
+
     items = schema.get('items')
     if items is not None and isinstance(value, list):
         for i, elem in enumerate(value):
@@ -207,8 +223,18 @@ def main():
         with open(path, encoding='utf-8') as f:
             schemas[name] = json.load(f)
 
+    strict_class, strict_unless, strict_file = STRICT
+    strict_path = os.path.join(SCHEMA_DIR, strict_file)
+    if not os.path.isfile(strict_path):
+        print('check_geopose_conformance: no schema at %s' %
+            os.path.relpath(strict_path, ROOT))
+        return 1
+    with open(strict_path, encoding='utf-8') as f:
+        strict_schema = json.load(f)
+
     total = 0
     failed = 0
+    strict = 0
     seen = {}
     for doc in documents(EXPECTED):
         name, _ = classify(doc)
@@ -218,6 +244,9 @@ def main():
         seen[name] = seen.get(name, 0) + 1
         errors = []
         validate(doc, schemas[name], schemas[name], '', errors)
+        if name == strict_class and strict_unless not in doc:
+            validate(doc, strict_schema, strict_schema, '', errors)
+            strict += 1
         if listing:
             print('  %-18s %s' % (name, 'ok' if not errors else 'INVALID'))
         if errors:
@@ -245,8 +274,10 @@ def main():
         return 1
 
     print('check_geopose_conformance: %d documents conform to the OGC '
-        'GeoPose 1.0 schemas (%s).' % (total,
-        ', '.join('%s %d' % (n, c) for n, c in sorted(seen.items()))))
+        'GeoPose 1.0 schemas (%s); %d of them satisfy the strict %s schema '
+        'as well.' % (total,
+        ', '.join('%s %d' % (n, c) for n, c in sorted(seen.items())),
+        strict, strict_class))
     return 0
 
 

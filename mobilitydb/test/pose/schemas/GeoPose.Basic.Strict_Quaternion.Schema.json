@@ -1,0 +1,61 @@
+{
+  "description": "Basic-Quaternion-Strict: Basic GeoPose using quaternion to specify orientation - no additional properties",
+  "definitions": {
+    "Position": {
+      "type": "object",
+      "properties": {
+        "lat": {
+          "type": "number"
+        },
+        "lon": {
+          "type": "number"
+        },
+        "h": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "lat",
+        "lon",
+        "h"
+      ]
+    },
+    "Quaternion": {
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        },
+        "z": {
+          "type": "number"
+        },
+        "w": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "z",
+        "w"
+      ]
+    }
+  },
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "position": {
+      "$ref": "#/definitions/Position"
+    },
+    "quaternion": {
+      "$ref": "#/definitions/Quaternion"
+    }
+  },
+  "required": [
+    "position",
+    "quaternion"
+  ]
+}
