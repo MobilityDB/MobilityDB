@@ -75,7 +75,9 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
-<a href="#func-members">Functions</a>  </div>
+<a href="#enum-members">Enumerations</a> &#124;
+<a href="#func-members">Functions</a> &#124;
+<a href="#var-members">Variables</a>  </div>
   <div class="headertitle"><div class="title">geo_funcs.c File Reference</div></div>
 </div><!--header-->
 <div class="contents">
@@ -92,6 +94,19 @@ $(function() {
 <code>#include &quot;<a class="el" href="geo__funcs_8h_source.html">geo/geo_funcs.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="tgeo__spatialfuncs_8h_source.html">geo/tgeo_spatialfuncs.h</a>&quot;</code><br />
 </div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="enum-members" name="enum-members"></a>
+Enumerations</h2></td></tr>
+<tr class="memitem:a99fb83031ce9923c84392b4e92f956b5"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">{ <br />
+&#160;&#160;<a class="el" href="geo__funcs_8c_a99fb83031ce9923c84392b4e92f956b5.html#a99fb83031ce9923c84392b4e92f956b5a950bbd180b51437dde60fd432cfeee56">MEOS_SEG_NO_INTERSECTION</a>
+, <a class="el" href="geo__funcs_8c_a99fb83031ce9923c84392b4e92f956b5.html#a99fb83031ce9923c84392b4e92f956b5a74ea4829ef6cd938b9f3160e06b2c066">MEOS_SEG_OVERLAP</a>
+, <a class="el" href="geo__funcs_8c_a99fb83031ce9923c84392b4e92f956b5.html#a99fb83031ce9923c84392b4e92f956b5a2f56729558a32b0aadd1778c4a76006c">MEOS_SEG_CROSS</a>
+, <a class="el" href="geo__funcs_8c_a99fb83031ce9923c84392b4e92f956b5.html#a99fb83031ce9923c84392b4e92f956b5a3e58b2b3a31c85d47481eba9b4be1e03">MEOS_SEG_TOUCH_END</a>
+, <br />
+&#160;&#160;<a class="el" href="geo__funcs_8c_a99fb83031ce9923c84392b4e92f956b5.html#a99fb83031ce9923c84392b4e92f956b5ab90c0ba9e014be15df9a10371dcb1077">MEOS_SEG_TOUCH</a>
+<br />
+ }</td></tr>
+<tr class="separator:a99fb83031ce9923c84392b4e92f956b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:a29b3d5684039030d4bf4802d9fa2005a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structRTree.html">RTree</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="geo__funcs_8c_a29b3d5684039030d4bf4802d9fa2005a.html#a29b3d5684039030d4bf4802d9fa2005a">build_edge_rtree</a> (const <a class="el" href="structEdge.html">Edge</a> *edges, int nedges, int32_t srid)</td></tr>
@@ -136,6 +151,12 @@ Functions</h2></td></tr>
 <tr class="memitem:ac5085c6e5eecbafe3dffd4ecbbf4de6c"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="geo__funcs_8c_ac5085c6e5eecbafe3dffd4ecbbf4de6c.html#ac5085c6e5eecbafe3dffd4ecbbf4de6c">extract_triangle</a> (const <a class="el" href="structLWTRIANGLE.html">LWTRIANGLE</a> *tri, <a class="el" href="structMeosArray.html">MeosArray</a> *edges)</td></tr>
 <tr class="memdesc:ac5085c6e5eecbafe3dffd4ecbbf4de6c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add to the dynamic array in the last argument the edges obtained from a triangle.  <a href="geo__funcs_8c_ac5085c6e5eecbafe3dffd4ecbbf4de6c.html#ac5085c6e5eecbafe3dffd4ecbbf4de6c">More...</a><br /></td></tr>
 <tr class="separator:ac5085c6e5eecbafe3dffd4ecbbf4de6c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ade4c1c4b3dd506a52e2286d3c0a4703a"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="geo__funcs_8c_ade4c1c4b3dd506a52e2286d3c0a4703a.html#ade4c1c4b3dd506a52e2286d3c0a4703a">gbox_init_point2d</a> (const <a class="el" href="structPOINT2D.html">POINT2D</a> *p, <a class="el" href="structGBOX.html">GBOX</a> *gbox)</td></tr>
+<tr class="memdesc:ade4c1c4b3dd506a52e2286d3c0a4703a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize a <a class="el" href="structGBOX.html">GBOX</a> with a point.  <a href="geo__funcs_8c_ade4c1c4b3dd506a52e2286d3c0a4703a.html#ade4c1c4b3dd506a52e2286d3c0a4703a">More...</a><br /></td></tr>
+<tr class="separator:ade4c1c4b3dd506a52e2286d3c0a4703a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6bcabc4e6e699a370f18f68b0ba7dee6"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="geo__funcs_8c_a6bcabc4e6e699a370f18f68b0ba7dee6.html#a6bcabc4e6e699a370f18f68b0ba7dee6">gbox_merge_point2d</a> (const <a class="el" href="structPOINT2D.html">POINT2D</a> *p, <a class="el" href="structGBOX.html">GBOX</a> *gbox)</td></tr>
+<tr class="memdesc:a6bcabc4e6e699a370f18f68b0ba7dee6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enlarge a <a class="el" href="structGBOX.html">GBOX</a> with a point.  <a href="geo__funcs_8c_a6bcabc4e6e699a370f18f68b0ba7dee6.html#a6bcabc4e6e699a370f18f68b0ba7dee6">More...</a><br /></td></tr>
+<tr class="separator:a6bcabc4e6e699a370f18f68b0ba7dee6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac964e0df9c83f81b6360a7ca0eaca98a"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="geo__funcs_8c_ac964e0df9c83f81b6360a7ca0eaca98a.html#ac964e0df9c83f81b6360a7ca0eaca98a">geom_clip_supported</a> (const <a class="el" href="structLWGEOM.html">LWGEOM</a> *geom)</td></tr>
 <tr class="memdesc:ac964e0df9c83f81b6360a7ca0eaca98a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if a geometry is composed solely of the types the clip engine can extract into edges.  <a href="geo__funcs_8c_ac964e0df9c83f81b6360a7ca0eaca98a.html#ac964e0df9c83f81b6360a7ca0eaca98a">More...</a><br /></td></tr>
 <tr class="separator:ac964e0df9c83f81b6360a7ca0eaca98a"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -145,6 +166,26 @@ Functions</h2></td></tr>
 <tr class="memitem:a94ea82fc593e565b37d1a662cc9171a6"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="geo__funcs_8c_a94ea82fc593e565b37d1a662cc9171a6.html#a94ea82fc593e565b37d1a662cc9171a6">geom_extract_edges_iter</a> (const <a class="el" href="structLWGEOM.html">LWGEOM</a> *geom, <a class="el" href="structMeosArray.html">MeosArray</a> *edges)</td></tr>
 <tr class="memdesc:a94ea82fc593e565b37d1a662cc9171a6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the edges of a geometry in a dynamic array (iterator)  <a href="geo__funcs_8c_a94ea82fc593e565b37d1a662cc9171a6.html#a94ea82fc593e565b37d1a662cc9171a6">More...</a><br /></td></tr>
 <tr class="separator:a94ea82fc593e565b37d1a662cc9171a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a70622495f8397a499e5dddc41d43ac3e"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="geo__funcs_8c_a70622495f8397a499e5dddc41d43ac3e.html#a70622495f8397a499e5dddc41d43ac3e">lw_seg_interact</a> (const <a class="el" href="structPOINT2D.html">POINT2D</a> *p1, const <a class="el" href="structPOINT2D.html">POINT2D</a> *p2, const <a class="el" href="structPOINT2D.html">POINT2D</a> *q1, const <a class="el" href="structPOINT2D.html">POINT2D</a> *q2)</td></tr>
+<tr class="memdesc:a70622495f8397a499e5dddc41d43ac3e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Function derived from file <code>lwalgorithm.c</code> since it is declared static.  <a href="geo__funcs_8c_a70622495f8397a499e5dddc41d43ac3e.html#a70622495f8397a499e5dddc41d43ac3e">More...</a><br /></td></tr>
+<tr class="separator:a70622495f8397a499e5dddc41d43ac3e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af2de800661a26aa3f73f9b47023ef628"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="geo__funcs_8c_af2de800661a26aa3f73f9b47023ef628.html#af2de800661a26aa3f73f9b47023ef628">parseg2d_intersection</a> (const <a class="el" href="structPOINT2D.html">POINT2D</a> *a, const <a class="el" href="structPOINT2D.html">POINT2D</a> *b, const <a class="el" href="structPOINT2D.html">POINT2D</a> *c, const <a class="el" href="structPOINT2D.html">POINT2D</a> *d, <a class="el" href="structPOINT2D.html">POINT2D</a> *p)</td></tr>
+<tr class="memdesc:af2de800661a26aa3f73f9b47023ef628"><td class="mdescLeft">&#160;</td><td class="mdescRight">Find the <em>unique</em> intersection point <code>p</code> between two closed collinear segments <code>ab</code> and <code>cd</code>.  <a href="geo__funcs_8c_af2de800661a26aa3f73f9b47023ef628.html#af2de800661a26aa3f73f9b47023ef628">More...</a><br /></td></tr>
+<tr class="separator:af2de800661a26aa3f73f9b47023ef628"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aecc42cfe8cf4803e172f193076c67860"><td class="memItemLeft" align="right" valign="top">bool *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="geo__funcs_8c_aecc42cfe8cf4803e172f193076c67860.html#aecc42cfe8cf4803e172f193076c67860">pointarr_find_splits</a> (const <a class="el" href="structPOINT2D.html">POINT2D</a> **points, int npoints, int *count)</td></tr>
+<tr class="memdesc:aecc42cfe8cf4803e172f193076c67860"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the positions at which a sequence of points must be cut into polylines that neither cross themselves nor repeat a point.  <a href="geo__funcs_8c_aecc42cfe8cf4803e172f193076c67860.html#aecc42cfe8cf4803e172f193076c67860">More...</a><br /></td></tr>
+<tr class="separator:aecc42cfe8cf4803e172f193076c67860"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a097c2ec52eca43f5d054f8e1814a6396"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="geo__funcs_8c_a097c2ec52eca43f5d054f8e1814a6396.html#a097c2ec52eca43f5d054f8e1814a6396">seg2d_intersection</a> (const <a class="el" href="structPOINT2D.html">POINT2D</a> *a, const <a class="el" href="structPOINT2D.html">POINT2D</a> *b, const <a class="el" href="structPOINT2D.html">POINT2D</a> *c, const <a class="el" href="structPOINT2D.html">POINT2D</a> *d, <a class="el" href="structPOINT2D.html">POINT2D</a> *p)</td></tr>
+<tr class="memdesc:a097c2ec52eca43f5d054f8e1814a6396"><td class="mdescLeft">&#160;</td><td class="mdescRight">Find the <em>unique</em> intersection point <code>p</code> between two closed segments <code>ab</code> and <code>cd</code>.  <a href="geo__funcs_8c_a097c2ec52eca43f5d054f8e1814a6396.html#a097c2ec52eca43f5d054f8e1814a6396">More...</a><br /></td></tr>
+<tr class="separator:a097c2ec52eca43f5d054f8e1814a6396"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6d8edc971ce7a559e37852af6047a612"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="geo__funcs_8c_a6d8edc971ce7a559e37852af6047a612.html#a6d8edc971ce7a559e37852af6047a612">seg2d_side</a> (const <a class="el" href="structPOINT2D.html">POINT2D</a> *p1, const <a class="el" href="structPOINT2D.html">POINT2D</a> *p2, const <a class="el" href="structPOINT2D.html">POINT2D</a> *q)</td></tr>
+<tr class="memdesc:a6d8edc971ce7a559e37852af6047a612"><td class="mdescLeft">&#160;</td><td class="mdescRight">Determines the side of segment P where Q lies.  <a href="geo__funcs_8c_a6d8edc971ce7a559e37852af6047a612.html#a6d8edc971ce7a559e37852af6047a612">More...</a><br /></td></tr>
+<tr class="separator:a6d8edc971ce7a559e37852af6047a612"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:ab7683aa676554dd56b6cd0c6a497c2a3"><td class="memItemLeft" align="right" valign="top">enum  { ... } &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="geo__funcs_8c_ab7683aa676554dd56b6cd0c6a497c2a3.html#ab7683aa676554dd56b6cd0c6a497c2a3">MEOS_SEG_INTER_TYPE</a></td></tr>
+<tr class="separator:ab7683aa676554dd56b6cd0c6a497c2a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >Decompose a geometry into the edges a native implementation works on. </p>
