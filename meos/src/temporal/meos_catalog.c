@@ -169,6 +169,7 @@ static const char *MEOS_TYPE_NAMES[] =
   [T_RAQUET] = "raquet",
   [T_POSECHAIN] = "posechain",
   [T_POSECHAINSET] = "posechainset",
+  [T_TPOSECHAIN] = "tposechain",
 };
 
 /**
@@ -288,6 +289,7 @@ static const reltype_catalog_struct MEOS_RELTYPE_CATALOG[] =
   [T_POSESET] = { .settype_basetype = T_POSE },
   [T_POSECHAIN] = { .basetype_settype = T_POSECHAINSET },
   [T_POSECHAINSET] = { .settype_basetype = T_POSECHAIN },
+  [T_TPOSECHAIN] = { .temptype_basetype = T_POSECHAIN },
   [T_TPOSE] = { .temptype_basetype = T_POSE },
   [T_CBUFFER] = { .basetype_settype = T_CBUFFERSET },
   [T_CBUFFERSET] = { .settype_basetype = T_CBUFFER },
@@ -1123,7 +1125,8 @@ temporal_type(MeosType type)
     type == T_TDOUBLE2 || type == T_TDOUBLE3 || type == T_TDOUBLE4 ||
     type == T_TFLOAT || type == T_TINT || type == T_TTEXT ||
     type == T_TGEOMPOINT || type == T_TGEOGPOINT || type == T_TNPOINT ||
-    type == T_TPOSE || type == T_TCBUFFER || type == T_TGEOMETRY ||
+    type == T_TPOSE || type == T_TPOSECHAIN || type == T_TCBUFFER ||
+    type == T_TGEOMETRY ||
     type == T_TGEOGRAPHY || type == T_TRGEOMETRY || type == T_TJSONB ||
     type == T_TBIGINT || type == T_TH3INDEX || type == T_TQUADBIN ||
     type == T_TPCPOINT || type == T_TPCPATCH);
@@ -1140,7 +1143,8 @@ temporal_basetype(MeosType type)
     type == T_DOUBLE2 || type == T_DOUBLE3 || type == T_DOUBLE4 ||
     type == T_FLOAT8 || type == T_INT4 || type == T_INT8 ||
     type == T_TEXT || type == T_GEOMETRY || type == T_GEOGRAPHY ||
-    type == T_NPOINT || type == T_POSE || type == T_CBUFFER ||
+    type == T_NPOINT || type == T_POSE || type == T_POSECHAIN ||
+    type == T_CBUFFER ||
     type == T_JSONB || type == T_H3INDEX || type == T_QUADBIN ||
     type == T_PCPOINT || type == T_PCPATCH);
 }
@@ -1158,7 +1162,8 @@ temptype_supports_linear(MeosType type)
 {
   bool result = (type == T_TDOUBLE2 || type == T_TDOUBLE3 || type == T_TDOUBLE4 ||
     type == T_TFLOAT || type == T_TGEOMPOINT || type == T_TGEOGPOINT ||
-    type == T_TNPOINT || type == T_TPOSE || type == T_TCBUFFER ||
+    type == T_TNPOINT || type == T_TPOSE || type == T_TPOSECHAIN ||
+    type == T_TCBUFFER ||
     type == T_TRGEOMETRY);
   return result;
 }
@@ -1291,7 +1296,8 @@ bool
 tspatial_type(MeosType type)
 {
   return (type == T_TGEOMPOINT || type == T_TGEOGPOINT || type == T_TNPOINT ||
-    type == T_TPOSE || type == T_TCBUFFER || type == T_TGEOMETRY ||
+    type == T_TPOSE || type == T_TPOSECHAIN || type == T_TCBUFFER ||
+    type == T_TGEOMETRY ||
     type == T_TGEOGRAPHY || type == T_TRGEOMETRY || type == T_TH3INDEX ||
     type == T_TQUADBIN);
 }

@@ -144,6 +144,20 @@ subtypes:
     # 112_tpose_spatialrels stays hand-written.
     files: [compops, topops, posops, indexes]
 
+  - temp:  tposechain
+    base:  posechain
+    brief: "temporal pose chains"
+    bin:   550
+    category: tspatial
+    # A pose chain is 3-D-capable exactly as a pose is, so its position
+    # operators carry the front/back (Z) direction as well.
+    front_back: true
+    # A pose chain has no distance function, so the family deploys neither the
+    # ever/always nor the temporal spatial relationships, which every one of
+    # them needs. The index opclasses wait on the same answer: the ordering
+    # operator of a spatial opclass is the nearest approach distance.
+    files: [compops, topops, posops]
+
   - temp:  trgeometry
     # The base-value comparison is against a `geometry` (the resolved geometry at an
     # instant); the C wrapper stem is `geo`, not `geometry`, so basesym overrides it.

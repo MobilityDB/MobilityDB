@@ -466,6 +466,32 @@ stringbuffer_append_char(sb, '}');
 }
 #endif /* POSE */
 
+#if POSECHAIN
+/**
+ * @brief Write into the buffer a pose chain in the MF-JSON representation
+ * @details A chain writes the array of its links, each of them as a pose
+ * writes itself. The order is the order of the chain, from the outer link to
+ * the innermost one, which is what says in whose frame each of them is read.
+ */
+static void
+posechain_as_json_sb(stringbuffer_t *sb, const PoseChain *pc, int precision)
+{
+  assert(precision <= OUT_MAX_DOUBLE_PRECISION);
+  stringbuffer_append_char(sb, '[');
+  int count;
+  Pose **poses = posechain_poses(pc, &count);
+  for (int i = 0; i < count; i++)
+  {
+    if (i > 0)
+      stringbuffer_append_char(sb, ',');
+    pose_as_json_sb(sb, poses[i], precision);
+  }
+  pfree_array((void **) poses, count);
+  stringbuffer_append_char(sb, ']');
+  return;
+}
+#endif /* POSECHAIN */
+
 /**
  * @brief Write into the buffer a base value in the MF-JSON representation
  */
@@ -508,6 +534,11 @@ temporal_base_as_mfjson_sb(stringbuffer_t *sb, Datum value, MeosType temptype,
 #if JSON
     case T_TJSONB:
       jsonb_as_mfjson_sb(sb, DatumGetJsonbP(value));
+      break;
+#endif
+#if POSECHAIN
+    case T_TPOSECHAIN:
+      posechain_as_json_sb(sb, DatumGetPoseChainP(value), precision);
       break;
 #endif
     default: /* Error! */
@@ -714,6 +745,9 @@ bbox_as_mfjson_sb(stringbuffer_t *sb, MeosType temptype, const bboxunion *box,
 #if POSE
     case T_TPOSE:
 #endif
+#if POSECHAIN
+    case T_TPOSECHAIN:
+#endif
 #if RGEO
     case T_TRGEOMETRY:
 #endif
@@ -797,6 +831,11 @@ temptype_as_mfjson_sb(stringbuffer_t *sb, MeosType temptype)
 #if POSE
     case T_TPOSE:
       stringbuffer_append_len(sb, "{\"type\":\"MovingPose\",", 21);
+      break;
+#endif
+#if POSECHAIN
+    case T_TPOSECHAIN:
+      stringbuffer_append_len(sb, "{\"type\":\"MovingPoseChain\",", 26);
       break;
 #endif
 #if QUADBIN

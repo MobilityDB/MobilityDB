@@ -137,6 +137,7 @@ typedef enum
   T_RAQUET         = 81,  /**< Raquet raster tile type (GDAL-free QUADBIN chip) */
   T_POSECHAIN      = 82,  /**< pose chain type, nested reference frames */
   T_POSECHAINSET   = 83,  /**< pose chain set type */
+  T_TPOSECHAIN     = 84,  /**< temporal pose chain type */
   NUM_MEOS_TYPES          /* Dummy value that determines the size of the
                            * lookup array MeosType -> Oid */
 } MeosType;

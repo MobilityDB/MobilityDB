@@ -77,6 +77,11 @@
   #include "pose/tpose.h"
   #include "pose/tpose_spatialfuncs.h"
 #endif
+#if POSECHAIN
+  #include <meos_posechain.h>
+  #include "posechain/posechain.h"
+  #include "posechain/tposechain.h"
+#endif
 #if RGEO
   #include "rgeo/trgeo.h"
 #endif
@@ -154,6 +159,11 @@ datum_collinear(Datum value1, Datum value2, Datum value3, MeosType basetype,
     return pose_collinear(DatumGetPoseP(value1), DatumGetPoseP(value2),
       DatumGetPoseP(value3), ratio);
 #endif
+#if POSECHAIN
+  if (basetype == T_POSECHAIN)
+    return posechain_collinear(DatumGetPoseChainP(value1),
+      DatumGetPoseChainP(value2), DatumGetPoseChainP(value3), ratio);
+#endif
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
     "Unknown collinear function for type: %s", meostype_name(basetype));
   return false;
@@ -226,6 +236,11 @@ datumsegm_locate(Datum value1, Datum value2, Datum value, MeosType basetype)
     return posesegm_locate(DatumGetPoseP(value1), DatumGetPoseP(value2),
       DatumGetPoseP(value));
 #endif
+#if POSECHAIN
+  if (basetype == T_POSECHAIN)
+    return posechainsegm_locate(DatumGetPoseChainP(value1),
+      DatumGetPoseChainP(value2), DatumGetPoseChainP(value));
+#endif
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
     "Unknown locate function for type: %s", meostype_name(basetype));
   return -1.0;
@@ -290,6 +305,11 @@ datumsegm_interpolate(Datum start, Datum end, MeosType temptype,
   else if (temptype == T_TNPOINT)
     return PointerGetDatum(npointsegm_interpolate(DatumGetNpointP(start),
       DatumGetNpointP(end), ratio));
+#endif
+#if POSECHAIN
+  else if (temptype == T_TPOSECHAIN)
+    return PointerGetDatum(posechainsegm_interpolate(
+      DatumGetPoseChainP(start), DatumGetPoseChainP(end), ratio));
 #endif
 #if POSE || RGEO
   else if (temptype == T_TPOSE || temptype == T_TRGEOMETRY)
@@ -1014,6 +1034,11 @@ ensure_valid_tinstarr(TInstant **instants, int count, bool merge,
           ! ensure_same_rid_tnpointinst(instants[i - 1], instants[i]))
         return false;
 #endif /* NPOINT */
+#if POSECHAIN
+      if (instants[i]->temptype == T_TPOSECHAIN &&
+          ! ensure_same_count_tposechaininst(instants[i - 1], instants[i]))
+        return false;
+#endif /* POSECHAIN */
     }
   }
   return true;

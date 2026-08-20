@@ -273,6 +273,26 @@ io_families:
       '
   - stmt: "CREATE TYPE {t} (\n  internallength = variable,\n  input = {t}_in,\n  output = temporal_out,\n  send = temporal_send,\n  receive = {t}_recv,\n  typmod_in = {t}_typmod_in,\n  typmod_out = tspatial_typmod_out,\n  storage = extended,\n  alignment = double,\n  analyze = tspatial_analyze\n);"
   - lit: "\n-- Special cast for enforcing the typmod restrictions\nCREATE FUNCTION tpose(tpose, integer)\n  RETURNS tpose\n  AS 'MODULE_PATHNAME','Tspatial_enforce_typmod'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\nCREATE CAST (tpose AS tpose) WITH FUNCTION tpose(tpose, integer) AS IMPLICIT;\n\n"
+- family: posechain
+  file: mobilitydb/sql/posechain/552_tposechain.in.sql
+  reference: true
+  begin: CREATE TYPE tposechain;
+  end: "  /*****************************************************************************\n   * Input/output from (E)WKT"
+  order:
+  - po
+  insts:
+    po:
+      t: tposechain
+  blocks:
+  - lit: "CREATE TYPE tposechain;\n\n/******************************************************************************\n * Input/output\n ******************************************************************************/\n\nCREATE FUNCTION tposechain_in(cstring, oid, integer)\n  RETURNS tposechain\n  AS 'MODULE_PATHNAME', 'Tposechain_in'\n  LANGUAGE C IMMUTABLE STRICT;\nCREATE FUNCTION temporal_out(tposechain)\n  RETURNS cstring\n  AS 'MODULE_PATHNAME', 'Temporal_out'\n  LANGUAGE C IMMUTABLE STRICT;\nCREATE FUNCTION tposechain_recv(internal, oid, integer)\n  RETURNS tposechain\n  AS 'MODULE_PATHNAME', 'Temporal_recv'\n  LANGUAGE C IMMUTABLE STRICT;\nCREATE FUNCTION temporal_send(tposechain)\n  RETURNS bytea\n  AS 'MODULE_PATHNAME', 'Temporal_send'\n  LANGUAGE C IMMUTABLE STRICT;\n\n"
+  - sig: '{t}_typmod_in(cstring[])'
+    ret: integer
+    sym: Tposechain_typmod_in
+  - lit: '
+
+      '
+  - stmt: "CREATE TYPE {t} (\n  internallength = variable,\n  input = {t}_in,\n  output = temporal_out,\n  send = temporal_send,\n  receive = {t}_recv,\n  typmod_in = {t}_typmod_in,\n  typmod_out = tspatial_typmod_out,\n  storage = extended,\n  alignment = double,\n  analyze = tspatial_analyze\n);"
+  - lit: "\n-- Special cast for enforcing the typmod restrictions\nCREATE FUNCTION tposechain(tposechain, integer)\n  RETURNS tposechain\n  AS 'MODULE_PATHNAME','Tspatial_enforce_typmod'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\nCREATE CAST (tposechain AS tposechain) WITH FUNCTION tposechain(tposechain, integer) AS IMPLICIT;\n\n"
 - family: rgeo
   file: mobilitydb/sql/rgeo/150_trgeo.in.sql
   reference: true

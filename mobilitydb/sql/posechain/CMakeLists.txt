@@ -1,6 +1,11 @@
 SET(LOCAL_FILES
   550_posechain
   551_posechainset
+  552_tposechain
+  553_tposechain_spatialfuncs
+  554_tposechain_compops
+  558_tposechain_topops
+  559_tposechain_posops
   )
 
 foreach (f ${LOCAL_FILES})

@@ -187,13 +187,6 @@ CREATE FUNCTION point(posechain)
   AS 'MODULE_PATHNAME', 'Posechain_to_point'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION stbox(posechain)
-  RETURNS stbox
-  AS 'MODULE_PATHNAME', 'Posechain_to_stbox'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE CAST (posechain AS stbox) WITH FUNCTION stbox(posechain);
-
 /*****************************************************************************
  * Accessors
  *****************************************************************************/

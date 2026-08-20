@@ -1,0 +1,140 @@
+SELECT asEWKT(tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2000-01-01');
+                                     asewkt                                     
+--------------------------------------------------------------------------------
+ PoseChain(Pose(POINT(0 0),0),Pose(POINT(10 0),0))@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asEWKT(tposechain '{PoseChain(Pose(Point(0 0), 0))@2000-01-01, PoseChain(Pose(Point(1 1), 0))@2000-01-02}');
+                                                          asewkt                                                          
+--------------------------------------------------------------------------------------------------------------------------
+ {PoseChain(Pose(POINT(0 0),0))@Sat Jan 01 00:00:00 2000 PST, PoseChain(Pose(POINT(1 1),0))@Sun Jan 02 00:00:00 2000 PST}
+(1 row)
+
+SELECT asEWKT(tposechain '[PoseChain(Pose(Point(0 0), 0))@2000-01-01, PoseChain(Pose(Point(1 1), 0))@2000-01-02]');
+                                                          asewkt                                                          
+--------------------------------------------------------------------------------------------------------------------------
+ [PoseChain(Pose(POINT(0 0),0))@Sat Jan 01 00:00:00 2000 PST, PoseChain(Pose(POINT(1 1),0))@Sun Jan 02 00:00:00 2000 PST]
+(1 row)
+
+SELECT asEWKT(tposechain '{[PoseChain(Pose(Point(0 0), 0))@2000-01-01, PoseChain(Pose(Point(1 1), 0))@2000-01-02], [PoseChain(Pose(Point(2 2), 0))@2000-01-03]}');
+                                                                                          asewkt                                                                                          
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[PoseChain(Pose(POINT(0 0),0))@Sat Jan 01 00:00:00 2000 PST, PoseChain(Pose(POINT(1 1),0))@Sun Jan 02 00:00:00 2000 PST], [PoseChain(Pose(POINT(2 2),0))@Mon Jan 03 00:00:00 2000 PST]}
+(1 row)
+
+SELECT tposechain '[PoseChain(Pose(Point(0 0), 0))@2000-01-01, PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))@2000-01-02]';
+ERROR:  Operation on pose chains of 1 and 2 links
+LINE 1: SELECT tposechain '[PoseChain(Pose(Point(0 0), 0))@2000-01-0...
+                          ^
+SELECT tposechain '{PoseChain(Pose(Point(0 0), 0))@2000-01-01, PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))@2000-01-02}';
+ERROR:  Operation on pose chains of 1 and 2 links
+LINE 1: SELECT tposechain '{PoseChain(Pose(Point(0 0), 0))@2000-01-0...
+                          ^
+SELECT asEWKT(round(valueAtTimestamp(
+  appendInstant(
+    tposechain(posechain(ARRAY[pose(ST_Point(0,0), 0), pose(ST_Point(10,0), 0)]),
+      timestamptz '2000-01-01'),
+    tposechain(posechain(ARRAY[pose(ST_Point(0,0), pi()/2), pose(ST_Point(10,0), 0)]),
+      timestamptz '2000-01-03')),
+  timestamptz '2000-01-02'), 6));
+                          asewkt                          
+----------------------------------------------------------
+ PoseChain(Pose(POINT(0 0),0.785398),Pose(POINT(10 0),0))
+(1 row)
+
+SELECT asEWKT(round(tpose(tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2000-01-01'), 6));
+                      asewkt                      
+--------------------------------------------------
+ Pose(POINT(10 0),0)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asEWKT(round((tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2000-01-01')::tpose, 6));
+                      asewkt                      
+--------------------------------------------------
+ Pose(POINT(10 0),0)@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT numLinks(tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2000-01-01');
+ numlinks 
+----------
+        2
+(1 row)
+
+SELECT tempSubtype(tposechain 'PoseChain(Pose(Point(0 0), 0))@2000-01-01');
+ tempsubtype 
+-------------
+ Instant
+(1 row)
+
+SELECT interp(tposechain '[PoseChain(Pose(Point(0 0), 0))@2000-01-01, PoseChain(Pose(Point(1 1), 0))@2000-01-02]');
+ interp 
+--------
+ Linear
+(1 row)
+
+SELECT asEWKT(getValue(tposechain 'PoseChain(Pose(Point(0 0), 0))@2000-01-01'));
+            asewkt             
+-------------------------------
+ PoseChain(Pose(POINT(0 0),0))
+(1 row)
+
+SELECT numInstants(tposechain '[PoseChain(Pose(Point(0 0), 0))@2000-01-01, PoseChain(Pose(Point(1 1), 0))@2000-01-02]');
+ numinstants 
+-------------
+           2
+(1 row)
+
+SELECT timeSpan(tposechain '[PoseChain(Pose(Point(0 0), 0))@2000-01-01, PoseChain(Pose(Point(1 1), 0))@2000-01-02]');
+                           timespan                           
+--------------------------------------------------------------
+ [Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST]
+(1 row)
+
+SELECT SRID(tposechain 'SRID=3812;PoseChain(Pose(Point(1 2), 0))@2000-01-01');
+ srid 
+------
+ 3812
+(1 row)
+
+SELECT asEWKT(setSRID(tposechain 'PoseChain(Pose(Point(1 2), 0))@2000-01-01', 3812));
+                                asewkt                                
+----------------------------------------------------------------------
+ SRID=3812;PoseChain(Pose(POINT(1 2),0))@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asEWKT(round(transform(tposechain 'SRID=4326;PoseChain(Pose(Point(4.35 50.85), 1), Pose(Point(10 0), 0))@2000-01-01', 3812), 6));
+                                                      asewkt                                                      
+------------------------------------------------------------------------------------------------------------------
+ SRID=3812;PoseChain(Pose(POINT(648679.018035 671067.055638),1),Pose(POINT(10 0),0))@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asEWKT(round(transformPipeline(tposechain 'SRID=4326;PoseChain(Pose(Point(4.35 50.85), 1))@2000-01-01', 'urn:ogc:def:coordinateOperation:EPSG::16031', 4326), 6));
+                                            asewkt                                             
+-----------------------------------------------------------------------------------------------
+ SRID=4326;PoseChain(Pose(POINT(595032.294558 5634012.833372),1))@Sat Jan 01 00:00:00 2000 PST
+(1 row)
+
+SELECT asEWKT(atTime(tposechain '[PoseChain(Pose(Point(0 0), 0))@2000-01-01, PoseChain(Pose(Point(1 1), 0))@2000-01-03]', timestamptz '2000-01-02'));
+                             asewkt                             
+----------------------------------------------------------------
+ PoseChain(Pose(POINT(0.5 0.5),0))@Sun Jan 02 00:00:00 2000 PST
+(1 row)
+
+SELECT asEWKT(atValue(tposechain '{PoseChain(Pose(Point(0 0), 0))@2000-01-01, PoseChain(Pose(Point(1 1), 0))@2000-01-02}', posechain 'PoseChain(Pose(Point(1 1), 0))'));
+                            asewkt                            
+--------------------------------------------------------------
+ {PoseChain(Pose(POINT(1 1),0))@Sun Jan 02 00:00:00 2000 PST}
+(1 row)
+
+SELECT tposechain 'PoseChain(Pose(Point(0 0), 0))@2000-01-01' = tposechain 'PoseChain(Pose(Point(0 0), 0))@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tposechain 'PoseChain(Pose(Point(0 0), 0))@2000-01-01' <> tposechain 'PoseChain(Pose(Point(1 1), 0))@2000-01-01';
+ ?column? 
+----------
+ t
+(1 row)
+

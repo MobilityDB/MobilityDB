@@ -65,6 +65,49 @@ SET pc = NULL
 WHERE k IN (SELECT i FROM generate_series(1, perc) i);
 
 ------------------------------------------------------------------------------
+-- Temporal pose chains
+-- Every value holds the same number of links, which the generators draw once
+-- per value
+------------------------------------------------------------------------------
+
+DROP TABLE IF EXISTS tbl_tposechain2d_inst;
+CREATE TABLE tbl_tposechain2d_inst AS
+SELECT k, random_tposechain2d_inst(-100, 100, -100, 100, radians(-pi()),
+  radians(pi()), '2001-01-01', '2001-12-31', 1, 5, 3812) AS temp
+FROM generate_series(1, size) k;
+
+DROP TABLE IF EXISTS tbl_tposechain2d_discseq;
+CREATE TABLE tbl_tposechain2d_discseq AS
+SELECT k, random_tposechain2d_discseq(-100, 100, -100, 100, radians(-pi()),
+  radians(pi()), '2001-01-01', '2001-12-31', 10, 1, 5, 1, 10, 3812) AS temp
+FROM generate_series(1, size) k;
+
+DROP TABLE IF EXISTS tbl_tposechain2d_seq;
+CREATE TABLE tbl_tposechain2d_seq AS
+SELECT k, random_tposechain2d_contseq(-100, 100, -100, 100, radians(-pi()),
+  radians(pi()), '2001-01-01', '2001-12-31', 10, 1, 5, 1, 10, 3812) AS temp
+FROM generate_series(1, size) k;
+
+DROP TABLE IF EXISTS tbl_tposechain2d_seqset;
+CREATE TABLE tbl_tposechain2d_seqset AS
+SELECT k, random_tposechain2d_seqset(-100, 100, -100, 100, radians(-pi()),
+  radians(pi()), '2001-01-01', '2001-12-31', 10, 1, 5, 1, 10, 1, 10, 3812)
+  AS temp
+FROM generate_series(1, size) k;
+
+DROP TABLE IF EXISTS tbl_tposechain;
+CREATE TABLE tbl_tposechain(k, temp) AS
+SELECT k, temp FROM tbl_tposechain2d_inst UNION ALL
+SELECT k + size, temp FROM tbl_tposechain2d_discseq UNION ALL
+SELECT k + 2 * size, temp FROM tbl_tposechain2d_seq UNION ALL
+SELECT k + 3 * size, temp FROM tbl_tposechain2d_seqset;
+
+/* Add perc NULL values */
+UPDATE tbl_tposechain
+SET temp = NULL
+WHERE k IN (SELECT i FROM generate_series(1, perc) i);
+
+------------------------------------------------------------------------------
 
 RETURN 'The End';
 END;

@@ -798,6 +798,126 @@ datum_posechain_round(Datum pc, Datum size)
 }
 
 /*****************************************************************************
+ * Interpolation functions
+ *
+ * A chain interpolates link by link, each link as a pose does: linearly in
+ * position and along the shortest arc in rotation. Two chains are values of
+ * one temporal chain only when they hold the same number of links, since a
+ * chain that gains a joint is a different structure rather than a later value
+ * of the same one, and that constant count is what makes the link-wise
+ * interpolation definable at all.
+ *****************************************************************************/
+
+/**
+ * @brief Ensure that two pose chains hold the same number of links
+ * @param[in] pc1,pc2 Pose chains
+ */
+bool
+ensure_same_count_posechain(const PoseChain *pc1, const PoseChain *pc2)
+{
+  if (pc1->count != pc2->count)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Operation on pose chains of %d and %d links", pc1->count, pc2->count);
+    return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Return the pose chain interpolated from two pose chains and a ratio
+ * @param[in] start,end Pose chains
+ * @param[in] ratio Value in [0,1] representing the duration of the timestamps
+ * associated to `start` and the result divided by the duration of the
+ * timestamps associated to `start` and `end`
+ * @return On error return @p NULL
+ */
+PoseChain *
+posechainsegm_interpolate(const PoseChain *start, const PoseChain *end,
+  double ratio)
+{
+  if (! ensure_valid_posechain_posechain(start, end) ||
+      ! ensure_same_count_posechain(start, end))
+    return NULL;
+
+  Pose **poses = palloc(sizeof(Pose *) * start->count);
+  for (int i = 0; i < start->count; i++)
+  {
+    Pose *pose1 = posechain_link_pose(start, i, i == 0);
+    Pose *pose2 = posechain_link_pose(end, i, i == 0);
+    poses[i] = posesegm_interpolate(pose1, pose2, ratio);
+    pfree(pose1); pfree(pose2);
+    if (poses[i] == NULL)
+    {
+      pfree_array((void **) poses, i);
+      return NULL;
+    }
+  }
+  PoseChain *result = posechain_make((const Pose **) poses, start->count);
+  pfree_array((void **) poses, start->count);
+  return result;
+}
+
+/**
+ * @brief Return the ratio at which a pose chain sits on the segment defined
+ * by two pose chains
+ * @param[in] start,end Pose chains defining the segment
+ * @param[in] value Pose chain to locate
+ * @details Every link locates at the ratio the whole chain moves through, so
+ * the value sits on the segment only where all of them agree on one ratio.
+ * @note The function returns -1.0 when the value is not on the segment, which
+ * is what the lifting infrastructure reads to decide there is no crossing
+ */
+long double
+posechainsegm_locate(const PoseChain *start, const PoseChain *end,
+  const PoseChain *value)
+{
+  if (! ensure_valid_posechain_posechain(start, end) ||
+      ! ensure_valid_posechain_posechain(start, value) ||
+      ! ensure_same_count_posechain(start, end) ||
+      ! ensure_same_count_posechain(start, value))
+    return -1.0;
+
+  long double result = -1.0;
+  for (int i = 0; i < start->count; i++)
+  {
+    Pose *pose1 = posechain_link_pose(start, i, i == 0);
+    Pose *pose2 = posechain_link_pose(end, i, i == 0);
+    Pose *pose = posechain_link_pose(value, i, i == 0);
+    long double ratio = posesegm_locate(pose1, pose2, pose);
+    pfree(pose1); pfree(pose2); pfree(pose);
+    /* A link that does not move constrains no ratio */
+    if (ratio < 0.0)
+      continue;
+    if (result < 0.0)
+      result = ratio;
+    else if (fabs((double) (result - ratio)) > MEOS_EPSILON)
+      return -1.0;
+  }
+  return result;
+}
+
+/**
+ * @brief Return true if the three pose chains are collinear
+ * @param[in] pc1,pc2,pc3 Pose chains
+ * @param[in] ratio Value in [0,1] representing the duration of the timestamps
+ * associated to `pc1` and `pc2` divided by the duration of the timestamps
+ * associated to `pc1` and `pc3`
+ */
+bool
+posechain_collinear(const PoseChain *pc1, const PoseChain *pc2,
+  const PoseChain *pc3, double ratio)
+{
+  assert(pc1); assert(pc2); assert(pc3);
+  PoseChain *interpolated = posechainsegm_interpolate(pc1, pc3, ratio);
+  if (interpolated == NULL)
+    return false;
+  bool result = posechain_same(pc2, interpolated);
+  pfree(interpolated);
+  return result;
+}
+
+/*****************************************************************************
  * Spatial reference system functions
  *****************************************************************************/
 
