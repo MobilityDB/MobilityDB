@@ -746,7 +746,7 @@ Posearr_round(PG_FUNCTION_ARGS)
 
   Pose **posearr = posearr_extract(array, &count);
   Pose **resarr = posearr_round((const Pose **) posearr, count, maxdd);
-  ArrayType *result = posearr_to_array((const Pose **) resarr, count);
+  ArrayType *result = posearr_to_array(resarr, count, true);
   pfree(posearr);
   PG_FREE_IF_COPY(array, 0);
   PG_RETURN_ARRAYTYPE_P(result);

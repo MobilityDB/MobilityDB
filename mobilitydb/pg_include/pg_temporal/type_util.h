@@ -92,11 +92,12 @@ extern Datum *datumarr_extract(ArrayType *array, int *count);
 extern TimestampTz *timestamparr_extract(ArrayType *array, int *count);
 #if CBUFFER
 extern Cbuffer **cbufferarr_extract(ArrayType *array, int *count);
-extern ArrayType *cbufferarr_to_array(const Cbuffer **cbarr, int count);
+extern ArrayType *cbufferarr_to_array(Cbuffer **cbarr, int count,
+  bool free_all);
 #endif
 #if POSE || RGEO
 extern Pose **posearr_extract(ArrayType *array, int *count);
-extern ArrayType *posearr_to_array(const Pose **posearr, int count);
+extern ArrayType *posearr_to_array(Pose **posearr, int count, bool free_all);
 #endif
 #if RASTER
 extern Raquet **raquetarr_extract(ArrayType *array, int *count);
@@ -110,7 +111,7 @@ extern ArrayType *boolarr_to_array(bool *values, int count);
 extern ArrayType *int64arr_to_array(int64 *longints, int count);
 extern ArrayType *datearr_to_array(DateADT *dates, int count);
 extern ArrayType *tstzarr_to_array(TimestampTz *times, int count);
-extern ArrayType *spanarr_to_array(const Span *spans, int count);
+extern ArrayType *spanarr_to_array(Span *spans, int count);
 extern ArrayType *strarr_to_textarray(char **strarr, int count);
 extern ArrayType *temparr_to_array(Temporal **temporal, int count, bool free_all);
 extern ArrayType *tboxarr_to_array(TBox *boxarr, int count);

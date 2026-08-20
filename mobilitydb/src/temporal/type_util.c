@@ -62,6 +62,7 @@
 #endif
 /* MobilityDB */
 #include "pg_temporal/meos_catalog.h"
+#include "pg_temporal/type_util.h"
 #include "pg_temporal/doublen.h"
 
 extern Datum range_out(PG_FUNCTION_ARGS);
