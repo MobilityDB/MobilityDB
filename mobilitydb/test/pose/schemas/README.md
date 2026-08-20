@@ -14,6 +14,7 @@ MobilityDB implements, retrieved on 2026-08-14 from
 | `GeoPose.Composite.Sequence.Series.Irregular.Schema.json` | Irregular Time Series |
 | `GeoPose.Composite.Sequence.StreamHeader.Schema.json` | Stream, the document opening one |
 | `GeoPose.Composite.Sequence.StreamElement.Schema.json` | Stream, the document repeated in one |
+| `GeoPose.Composite.Sequence.Stream.Schema.json` | Stream, the whole of one as a single document |
 
 The schemas are those of OGC GeoPose 1.0 (OGC 21-056r11) and belong to the
 Open Geospatial Consortium, which licenses them for redistribution under the
@@ -29,6 +30,7 @@ are held here unmodified, byte for byte as retrieved, with these digests:
     69f49530f65f…  GeoPose.Composite.Sequence.Series.Irregular.Schema.json
     ee3b1944912b…  GeoPose.Composite.Sequence.StreamHeader.Schema.json
     01791c205790…  GeoPose.Composite.Sequence.StreamElement.Schema.json
+    fd24663a1241…  GeoPose.Composite.Sequence.Stream.Schema.json
 
 `tools/scripts/check_geopose_conformance.py` validates against them the GeoPose
 documents that `expected/103_pose_geopose.test.out` holds. Keeping a copy here

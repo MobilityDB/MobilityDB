@@ -1,0 +1,106 @@
+{
+  "description": "Stream: GeoPose stream is an open-ended irregular timeseries suitable for streaming from a sensor or information service.",
+  "definitions": {
+    "FrameAndTime": {
+      "type": "object",
+      "properties": {
+        "frame": {
+          "$ref": "#/definitions/FrameSpecification"
+        },
+        "validTime": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "frame"
+      ]
+    },
+    "FrameSpecification": {
+      "type": "object",
+      "properties": {
+        "authority": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "parameters": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "authority",
+        "id",
+        "parameters"
+      ]
+    },
+    "StreamElement": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "streamElement": {
+          "$ref": "#/definitions/FrameAndTime"
+        }
+      },
+      "required": [
+        "streamElement"
+      ]
+    },
+    "StreamHeader": {
+      "type": "object",
+      "properties": {
+        "transitionModel": {
+          "$ref": "#/definitions/TransitionModel"
+        },
+        "outerFrame": {
+          "$ref": "#/definitions/FrameSpecification"
+        }
+      },
+      "required": [
+        "transitionModel",
+        "outerFrame"
+      ]
+    },
+    "TransitionModel": {
+      "type": "object",
+      "properties": {
+        "authority": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "parameters": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "authority",
+        "id",
+        "parameters"
+      ]
+    }
+  },
+  "type": "object",
+  "properties": {
+    "header": {
+      "$ref": "#/definitions/StreamHeader"
+    },
+    "streamElements": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "$ref": "#/definitions/StreamElement"
+      },
+      "minItems": 1
+    }
+  },
+  "required": [
+    "header",
+    "streamElements"
+  ]
+}

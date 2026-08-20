@@ -552,3 +552,28 @@ SELECT poseFromGeoPose('{"frameSpecification":{"authority":"/geopose/1.0",
   "id":"LTP-ENU","parameters":"longitude=8&latitude=47&height=0"}}');
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- OGC GeoPose Stream, written whole
+-------------------------------------------------------------------------------
+
+-- A stream holds the header that opens it and every element it carries. The
+-- tangent point is the equator-meridian, where the frame conversion is exact,
+-- so the document carries no round-off for a libm to disagree about.
+SELECT asGeoPoseStream(tpose '[Geodpose(Point(0 0 0), 1, 0, 0, 0)@2026-01-01,
+  Geodpose(Point(0 0 0), 0.707107, 0, 0, 0.707107)@2026-01-02]', 6);
+
+-- An instant value is a stream of one element, which sits at the tangent
+-- point the header anchors.
+SELECT asGeoPoseStream(tpose 'Geodpose(Point(0 0 0), 1, 0, 0, 0)@2026-01-01', 6);
+
+-- One element per instant, wherever the poses are.
+SELECT asGeoPoseStream(tpose 'SRID=4326;[Geodpose(Point(8 47 1500), 1, 0, 0, 0)@2026-01-01,
+  Geodpose(Point(8.001 47 1500), 1, 0, 0, 0)@2026-01-02]', 6)
+  LIKE '{"header":%"streamElements":[{"streamElement":%},{"streamElement":%}]}';
+
+\set VERBOSITY terse
+-- A planar value has no topocentric frame to anchor.
+SELECT asGeoPoseStream(tpose '[Pose(Point(8 47), 0)@2026-01-01,
+  Pose(Point(9 47), 0)@2026-01-02]', 6);
+\set VERBOSITY default

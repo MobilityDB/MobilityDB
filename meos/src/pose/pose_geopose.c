@@ -1607,6 +1607,39 @@ tpose_as_geopose(const Temporal *temp, int conformance, int precision)
  * @param[in] precision Significant digits in JSON numbers; -1 = lossless
  * @return On error return @p NULL
  */
+static json_object *
+geopose_stream_header_obj(const Temporal *temp, const GeoPoseAnchor *anchor,
+  int precision)
+{
+  json_object *res = json_object_new_object();
+  json_object_object_add(res, "transitionModel",
+    geopose_transition_model(MEOS_FLAGS_GET_INTERP(temp->flags)));
+  json_object_object_add(res, "outerFrame",
+    geopose_outer_frame(anchor, precision));
+  return res;
+}
+
+/**
+ * @brief Build the `StreamElement` of one instant against an anchored outer
+ * frame. Returns @p NULL on error.
+ */
+static json_object *
+geopose_stream_element_obj(const GeoPoseAnchor *anchor, const TInstant *inst,
+  int precision)
+{
+  json_object *frame = geopose_inner_frame(anchor,
+    DatumGetPoseP(tinstant_value_p(inst)), precision);
+  if (frame == NULL)
+    return NULL;
+  json_object *fat = json_object_new_object();
+  json_object_object_add(fat, "frame", frame);
+  json_object_object_add(fat, "validTime",
+    json_object_new_int64(geopose_instant_out(inst->t)));
+  json_object *res = json_object_new_object();
+  json_object_object_add(res, "streamElement", fat);
+  return res;
+}
+
 char *
 tpose_as_geopose_stream_header(const Temporal *temp, int precision)
 {
@@ -1619,11 +1652,7 @@ tpose_as_geopose_stream_header(const Temporal *temp, int precision)
   if (! geopose_anchor_from_instant(first, &anchor))
     return NULL;
 
-  json_object *root = json_object_new_object();
-  json_object_object_add(root, "transitionModel",
-    geopose_transition_model(MEOS_FLAGS_GET_INTERP(temp->flags)));
-  json_object_object_add(root, "outerFrame",
-    geopose_outer_frame(&anchor, precision));
+  json_object *root = geopose_stream_header_obj(temp, &anchor, precision);
   char *res = pstrdup(json_object_to_json_string_ext(root,
     GEOPOSE_JSON_FLAGS));
   json_object_put(root);
@@ -1658,20 +1687,72 @@ tpose_as_geopose_stream_element(const Temporal *temp, const TInstant *inst,
   if (! geopose_anchor_from_instant(first, &anchor))
     return NULL;
 
-  json_object *frame = geopose_inner_frame(&anchor,
-    DatumGetPoseP(tinstant_value_p(inst)), precision);
-  if (frame == NULL)
+  json_object *root = geopose_stream_element_obj(&anchor, inst, precision);
+  if (root == NULL)
     return NULL;
-  json_object *fat = json_object_new_object();
-  json_object_object_add(fat, "frame", frame);
-  json_object_object_add(fat, "validTime",
-    json_object_new_int64(geopose_instant_out(inst->t)));
-
-  json_object *root = json_object_new_object();
-  json_object_object_add(root, "streamElement", fat);
   char *res = pstrdup(json_object_to_json_string_ext(root,
     GEOPOSE_JSON_FLAGS));
   json_object_put(root);
+  return res;
+}
+
+/**
+ * @ingroup meos_pose_base_geopose
+ * @brief Return the OGC GeoPose Stream of a temporal pose
+ * @details A stream written as one document: the `StreamHeader` that opens
+ * it, and every `StreamElement` it carries, as
+ * `GeoPose.Composite.Sequence.Stream.Schema.json` requires. The two
+ * incremental entry points write the same documents a piece at a time, for a
+ * producer emitting poses as they arrive; this writes the stream a reader
+ * already holds whole, which is what a query returns and what a conformance
+ * submission carries.
+ *
+ * The outer frame is anchored at the first pose of @p temp, so the header and
+ * every element speak of one tangent point, exactly as the incremental pair
+ * does.
+ * @param[in] temp Temporal pose
+ * @param[in] precision Significant digits in JSON numbers; -1 = lossless
+ * @return On error return @p NULL
+ * @csqlfn #Tpose_as_geopose_stream()
+ */
+char *
+tpose_as_geopose_stream(const Temporal *temp, int precision)
+{
+  VALIDATE_TPOSE(temp, NULL);
+
+  int count;
+  const TInstant **instants = temporal_insts_p(temp, &count);
+  if (instants == NULL)
+    return NULL;
+  GeoPoseAnchor anchor;
+  if (! geopose_anchor_from_instant(instants[0], &anchor))
+  {
+    pfree(instants);
+    return NULL;
+  }
+
+  json_object *arr = json_object_new_array();
+  for (int i = 0; i < count; i++)
+  {
+    json_object *elem = geopose_stream_element_obj(&anchor, instants[i],
+      precision);
+    if (elem == NULL)
+    {
+      json_object_put(arr);
+      pfree(instants);
+      return NULL;
+    }
+    json_object_array_add(arr, elem);
+  }
+
+  json_object *root = json_object_new_object();
+  json_object_object_add(root, "header",
+    geopose_stream_header_obj(temp, &anchor, precision));
+  json_object_object_add(root, "streamElements", arr);
+  char *res = pstrdup(json_object_to_json_string_ext(root,
+    GEOPOSE_JSON_FLAGS));
+  json_object_put(root);
+  pfree(instants);
   return res;
 }
 
