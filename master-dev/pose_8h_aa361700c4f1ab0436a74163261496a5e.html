@@ -165,7 +165,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Build the unit quaternion representing the rotation from the East-North-Up basis at geographic point (<code>lat_rad</code>, <code>lon_rad</code>) to the WGS-84 ECEF basis. </p>
-<p >Standard ENU → ECEF rotation matrix: [ -sin λ cos λ 0 ] [ -sin φ · cos λ -sin φ · sin λ cos φ ] [ cos φ · cos λ cos φ · sin λ sin φ ] Converted to a quaternion via Shepperd's algorithm with the largest-trace branch for numerical stability. </p>
+<p >The columns of the matrix are the East, North and Up axes written in the ECEF basis, which is what carries an ENU vector into ECEF: [ -sin λ -sin φ · cos λ cos φ · cos λ ] [ cos λ -sin φ · sin λ cos φ · sin λ ] [ 0 cos φ sin φ ] Converted to a quaternion via Shepperd's algorithm with the largest-trace branch for numerical stability. </p>
 
 </div>
 </div>

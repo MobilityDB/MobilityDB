@@ -198,7 +198,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Initialize the outer-frame anchor at a geographic tangent point. </p>
-<p ><code>pose_enu_to_ecef_quaternion</code> returns the quaternion of the matrix whose rows are the East, North and Up unit vectors expressed in ECEF, that is the rotation that takes ECEF components to ENU components at the tangent point. That is exactly what is needed here. </p>
+<p >What the anchor holds is the rotation that takes ECEF components to ENU components at the tangent point, which is the conjugate of the one <code>pose_enu_to_ecef_quaternion</code> builds, both being unit. </p>
 
 </div>
 </div>
