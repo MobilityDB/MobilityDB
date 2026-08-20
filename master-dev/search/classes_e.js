@@ -15,5 +15,6 @@ var searchData=
   ['point4d_12',['POINT4D',['../structPOINT4D.html',1,'']]],
   ['pointarray_13',['POINTARRAY',['../structPOINTARRAY.html',1,'']]],
   ['polypointmovingedgestate_14',['PolypointMovingEdgeState',['../structPolypointMovingEdgeState.html',1,'']]],
-  ['pose_15',['Pose',['../structPose.html',1,'']]]
+  ['pose_15',['Pose',['../structPose.html',1,'']]],
+  ['posechain_16',['PoseChain',['../structPoseChain.html',1,'']]]
 ];
