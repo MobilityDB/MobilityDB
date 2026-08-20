@@ -2288,6 +2288,59 @@ geom_unary_union(const GSERIALIZED *gs, double prec)
 
 /**
  * @ingroup meos_geo_base_spatial
+ * @brief Return the rectangle of minimum area enclosing a geometry
+ * @param[in] gs Geometry
+ * @note PostGIS function: @p ST_OrientedEnvelope(PG_FUNCTION_ARGS)
+ */
+GSERIALIZED *
+geom_oriented_envelope(const GSERIALIZED *gs)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(gs, NULL);
+  if (! ensure_not_geodetic_geo(gs))
+    return NULL;
+
+  /* The rectangle enclosing nothing is nothing */
+  if (gserialized_is_empty(gs))
+    return geo_copy(gs);
+
+  int32_t srid = gserialized_get_srid(gs);
+  GEOSContextHandle_t ctx = geos_get_context();
+
+  GEOSGeometry *geos1 = POSTGIS2GEOS(gs);
+  if (! geos1)
+  {
+    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+      "First argument geometry could not be converted to GEOS");
+    return NULL;
+  }
+
+  GEOSGeometry *geos2 = GEOSMinimumRotatedRectangle_r(ctx, geos1);
+  GEOSGeom_destroy_r(ctx, geos1);
+  if (! geos2)
+  {
+    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+      "GEOS minimumRotatedRectangle() threw an error !");
+    return NULL;
+  }
+
+  GEOSSetSRID_r(ctx, geos2, srid);
+  LWGEOM *lwout = GEOS2LWGEOM(geos2, (uint8_t) gserialized_has_z(gs));
+  GEOSGeom_destroy_r(ctx, geos2);
+  if (! lwout)
+  {
+    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+      "minimumRotatedRectangle() failed to convert GEOS geometry to LWGEOM");
+    return NULL;
+  }
+
+  GSERIALIZED *result = geo_serialize(lwout);
+  lwgeom_free(lwout);
+  return result;
+}
+
+/**
+ * @ingroup meos_geo_base_spatial
  * @brief Return the convex hull of the geometry
  * @param[in] gs Geometry
  * @note PostGIS function: @p ST_ConvexHull(PG_FUNCTION_ARGS). With respect to

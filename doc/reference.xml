@@ -910,6 +910,12 @@
 			<title>Functions on Geometries</title>
 			<itemizedlist>
 				<listitem>
+					<para><link linkend="geo_orientedenvelope"><varname>OrientedEnvelope</varname></link>: Return the rectangle of minimum area enclosing a geometry</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="geo_convexhull"><varname>ConvexHull</varname></link>: Return the smallest convex geometry enclosing a geometry</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="geo_buffer"><varname>Buffer</varname></link>: Return the geometry holding every point within a distance of a geometry</para>
 				</listitem>
 			</itemizedlist>

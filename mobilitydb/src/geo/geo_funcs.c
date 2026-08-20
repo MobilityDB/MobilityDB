@@ -49,6 +49,46 @@
 #include "pg_geo/postgis.h"
 
 /*****************************************************************************
+ * Oriented envelope (a.k.a minimum rotated rectangle) and convex hull
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Geom_oriented_envelope(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geom_oriented_envelope);
+/**
+ * @ingroup mobilitydb_geo_base_spatial
+ * @brief Return the oriented envelope of a geometry
+ * @sqlfn OrientedEnvelope()
+ */
+Datum
+Geom_oriented_envelope(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  GSERIALIZED *result = geom_oriented_envelope_meos(gs);
+  PG_FREE_IF_COPY(gs, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_GSERIALIZED_P(result);
+}
+
+PGDLLEXPORT Datum Geom_convex_hull(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geom_convex_hull);
+/**
+ * @ingroup mobilitydb_geo_base_spatial
+ * @brief Return the convex hull of a geometry
+ * @sqlfn ConvexHull()
+ */
+Datum
+Geom_convex_hull(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  GSERIALIZED *result = geom_convex_hull_meos(gs);
+  PG_FREE_IF_COPY(gs, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_GSERIALIZED_P(result);
+}
+
+/*****************************************************************************
  * Buffer
  *****************************************************************************/
 

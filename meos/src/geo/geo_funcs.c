@@ -809,6 +809,632 @@ pointarr_find_splits(const POINT2D **points, int npoints, int *count)
 }
 
 /*****************************************************************************
+ * Oriented envelope (a.k.a minimum rotated rectangle) and convex hull of a
+ * geometry whose every edge is a segment.
+ *
+ * Both are placed on the vertices of the geometry, which for such a geometry
+ * are the whole of it: a convex hull has a vertex of the input at every corner,
+ * and a rectangle of minimum area has a side flush with an edge of that hull,
+ * so trying the direction of each hull edge finds it exactly.
+ *
+ * A geometry carrying a circular arc is declined rather than answered, since
+ * the arc reaches past the points that define it and a region placed on those
+ * points does not enclose it.
+ *****************************************************************************/
+
+/**
+ * @brief Compare two 2D points lexicographically
+ */
+static int
+point2d_cmp(const void *a, const void *b)
+{
+  const POINT2D *pa = (const POINT2D *) a;
+  const POINT2D *pb = (const POINT2D *) b;
+  if (pa->x < pb->x)
+    return -1;
+  if (pa->x > pb->x)
+    return 1;
+  if (pa->y < pb->y)
+    return -1;
+  if (pa->y > pb->y)
+    return 1;
+  return 0;
+}
+
+/**
+ * @brief Cross product of AB and AC
+ */
+static inline double
+cross_product(const POINT2D *a, const POINT2D *b, const POINT2D *c)
+{
+  return (b->x - a->x) * (c->y - a->y) - (b->y - a->y) * (c->x - a->x);
+}
+
+/**
+ * @brief Add a point to an array
+ */
+static inline void
+add_point(POINT2D *points, uint32_t *npoints, double x, double y)
+{
+  points[*npoints].x = x;
+  points[*npoints].y = y;
+  (*npoints)++;
+}
+
+/**
+ * @brief Add the geometrically relevant points of an edge
+ * @details For a line, only the two endpoints are needed. For an arc, the two
+ * endpoints and every cardinal point of the supporting circle lying on the arc
+ * are added. The latter are essential: an arc may attain its X/Y extrema in
+ * its interior.
+ */
+static void
+add_edge_points(const Edge *e, POINT2D *points, uint32_t *npoints)
+{
+  assert(e); assert(points); assert(npoints);
+  add_point(points, npoints, e->x1, e->y1);
+  if (fabs(e->x2 - e->x1) > FP_TOLERANCE || fabs(e->y2 - e->y1) > FP_TOLERANCE)
+    add_point(points, npoints, e->x2, e->y2);
+}
+
+/**
+ * @brief Compute the convex hull of a set of 2D points
+ * @details The returned hull is not closed.
+ * The implementation uses Andrew's monotone-chain algorithm.
+ */
+static uint32_t
+convex_hull_points(const POINT2D *points, uint32_t npoints, POINT2D **hull)
+{
+  assert(points); assert(hull);
+  *hull = NULL;
+  if (npoints == 0)
+    return 0;
+
+  /* Sort a copy of the points */
+  POINT2D *sorted = palloc(sizeof(POINT2D) * npoints);
+  memcpy(sorted, points, sizeof(POINT2D) * npoints);
+  qsort(sorted, npoints, sizeof(POINT2D), point2d_cmp);
+
+  /* Remove duplicate points */
+  uint32_t n = 0;
+  for (uint32_t i = 0; i < npoints; i++)
+  {
+    if (n == 0 || sorted[i].x != sorted[n - 1].x ||
+        sorted[i].y != sorted[n - 1].y)
+    {
+      sorted[n++] = sorted[i];
+    }
+  }
+
+  /* Point or line */
+  if (n <= 2)
+  {
+    *hull = sorted;
+    return n;
+  }
+
+  /* Maximum size is 2*n */
+  POINT2D *h = palloc(sizeof(POINT2D) * (2 * n));
+  uint32_t nhull = 0;
+
+  /* Lower hull */
+  for (uint32_t i = 0; i < n; i++)
+  {
+    while (nhull >= 2 &&
+      cross_product(&h[nhull - 2], &h[nhull - 1], &sorted[i]) <= 0.0)
+    {
+      nhull--;
+    }
+    h[nhull++] = sorted[i];
+  }
+
+  /* Upper hull */
+  uint32_t lower = nhull;
+  for (int i = (int) n - 2; i >= 0; i--)
+  {
+    while (nhull > lower &&
+        cross_product(&h[nhull - 2], &h[nhull - 1], &sorted[i]) <= 0.0)
+      nhull--;
+    h[nhull++] = sorted[i];
+  }
+
+  /* Last point duplicates the first */
+  nhull--;
+  pfree(sorted);
+
+  *hull = palloc(sizeof(POINT2D) * nhull);
+  memcpy(*hull, h, sizeof(POINT2D) * nhull);
+  pfree(h);
+  return nhull;
+}
+
+/**
+ * @brief Compute the rectangle defined by a given orientation
+ * @details The rectangle axes are:
+ *   u = (ux,uy)
+ *   v = (-uy,ux)
+ * The function computes the bounding rectangle of the supplied
+ * convex-hull points in that coordinate system.
+ */
+static double
+mrr_rectangle_for_direction(const POINT2D *points, uint32_t npoints,
+  double ux, double uy, POINT2D rect[5])
+{
+  double vx = -uy;
+  double vy = ux;
+  double min_u = DBL_MAX;
+  double max_u = -DBL_MAX;
+  double min_v = DBL_MAX;
+  double max_v = -DBL_MAX;
+  for (uint32_t i = 0; i < npoints; i++)
+  {
+    double u = points[i].x * ux + points[i].y * uy;
+    double v = points[i].x * vx + points[i].y * vy;
+    if (u < min_u)
+      min_u = u;
+    if (u > max_u)
+      max_u = u;
+    if (v < min_v)
+      min_v = v;
+    if (v > max_v)
+      max_v = v;
+  }
+
+  double width = max_u - min_u;
+  double height = max_v - min_v;
+  /* Convert the corners back to XY */
+  rect[0].x = min_u * ux + min_v * vx;
+  rect[0].y = min_u * uy + min_v * vy;
+  rect[1].x = max_u * ux + min_v * vx;
+  rect[1].y = max_u * uy + min_v * vy;
+  rect[2].x = max_u * ux + max_v * vx;
+  rect[2].y = max_u * uy + max_v * vy;
+  rect[3].x = min_u * ux + max_v * vx;
+  rect[3].y = min_u * uy + max_v * vy;
+  rect[4] = rect[0];
+  return width * height;
+}
+
+/**
+ * @brief Add candidate rectangle directions generated by an edge
+ * @details For a straight edge, the rectangle orientation only needs the edge
+ * direction. For a circular arc, its tangent direction varies continuously.
+ * The cardinal directions of the supporting circle delimit the intervals over
+ * which the support point changes continuously. We therefore add:
+ *   - the arc endpoint tangent directions
+ *   - the four cardinal tangent directions when they occur on the arc
+ * This keeps the calculation entirely analytic and avoids polygonizing the arc
+ */
+static void
+mrr_add_edge_directions(const Edge *e, double *angles, uint32_t *nangles)
+{
+  if (e->etype != EDGE_LINEARC && e->etype != EDGE_POLYARC)
+  {
+    /* Straight edge */
+    double angle = atan2(e->y2 - e->y1, e->x2 - e->x1);
+    angles[(*nangles)++] = angle;
+    return;
+  }
+
+  /* Circular arc: For CCW traversal the tangent direction at angle theta is:
+   *   (-sin(theta), cos(theta))
+   * We only need orientations, so adding pi is equivalent. */
+  double theta[6];
+  int ntheta = 0;
+  theta[ntheta++] = e->theta0;
+  theta[ntheta++] = e->theta1;
+
+  /* Cardinal points split the circle into analytically simple
+   * support-function intervals */
+  const double cardinal[4] = { 0.0, M_PI_2, M_PI, -M_PI_2 };
+  for (int i = 0; i < 4; i++)
+  {
+    if (arc_contains_angle(e, cardinal[i]))
+      theta[ntheta++] = cardinal[i];
+  }
+  for (int i = 0; i < ntheta; i++)
+  {
+    double angle = theta[i] + (e->ccw ? M_PI_2 : -M_PI_2);
+    /* Rectangle orientation has period pi */
+    angle = fmod(angle, M_PI);
+    if (angle < 0)
+      angle += M_PI;
+    angles[(*nangles)++] = angle;
+  }
+}
+
+/**
+ * @brief Construct a POINT/LINESTRING/POLYGON from a set of points
+ */
+static LWGEOM *
+make_geometry_points(int32_t srid, const POINT2D *points, uint32_t nhull)
+{
+  /* Point */
+  if (nhull == 1)
+    return lwpoint_as_lwgeom(lwpoint_make2d(srid, points[0].x, points[0].y));
+
+  /* Line */
+  if (nhull == 2)
+  {
+    POINTARRAY *pa = ptarray_construct_empty(0, 0, 2);
+    POINT4D p;
+    p.z = 0.0;
+    p.m = 0.0;
+    p.x = points[0].x;
+    p.y = points[0].y;
+    ptarray_append_point(pa, &p, LW_TRUE);
+    p.x = points[1].x;
+    p.y = points[1].y;
+    ptarray_append_point(pa, &p, LW_TRUE);
+    return lwline_as_lwgeom(lwline_construct(srid, NULL, pa));
+  }
+
+  /* Polygon */
+  POINTARRAY *pa = ptarray_construct_empty(0, 0, 5);
+  POINT4D p;
+  p.z = 0.0;
+  p.m = 0.0;
+  for (int i = 0; i < 5; i++)
+  {
+    p.x = points[i].x;
+    p.y = points[i].y;
+    ptarray_append_point(pa, &p, LW_TRUE);
+  }
+  LWPOLY *poly = lwpoly_construct_empty(srid, 0, 0);
+  lwpoly_add_ring(poly, pa);
+  return lwpoly_as_lwgeom(poly);
+}
+
+/**
+ * @brief Order the two vertices of a degenerate hull as they appear in the
+ * geometry
+ * @details PostGIS function @p ST_ConvexHull() reports a two-vertex hull in
+ * the order the vertices occur in its argument, which the sort performed by
+ * #convex_hull_points() loses.
+ */
+static void
+hull_order_as_input(const POINT2D *points, uint32_t npoints, POINT2D *hull)
+{
+  for (uint32_t i = 0; i < npoints; i++)
+  {
+    if (points[i].x == hull[0].x && points[i].y == hull[0].y)
+      return;
+    if (points[i].x == hull[1].x && points[i].y == hull[1].y)
+    {
+      POINT2D tmp = hull[0];
+      hull[0] = hull[1];
+      hull[1] = tmp;
+      return;
+    }
+  }
+}
+
+/**
+ * @brief Construct a POINT/LINESTRING/POLYGON from the vertices of a convex
+ * hull
+ * @details The hull computed by #convex_hull_points() is not closed, so the
+ * polygon ring repeats the first vertex. One and two vertices give a POINT and
+ * a LINESTRING, as PostGIS function @p ST_ConvexHull() does.
+ */
+static LWGEOM *
+make_geometry_hull(int32_t srid, const POINT2D *hull, uint32_t nhull)
+{
+  /* Point and line */
+  if (nhull <= 2)
+    return make_geometry_points(srid, hull, nhull);
+
+  /* Polygon.
+   * #convex_hull_points() delivers the vertices counterclockwise starting at
+   * an arbitrary vertex. PostGIS function @p ST_ConvexHull() reports the ring
+   * clockwise starting at its lowest vertex, so the ring is emitted in that
+   * order to keep both functions textually interchangeable. */
+  uint32_t start = 0;
+  for (uint32_t i = 1; i < nhull; i++)
+  {
+    if (hull[i].y < hull[start].y ||
+        (hull[i].y == hull[start].y && hull[i].x < hull[start].x))
+      start = i;
+  }
+  POINTARRAY *pa = ptarray_construct_empty(0, 0, nhull + 1);
+  POINT4D p;
+  p.z = 0.0;
+  p.m = 0.0;
+  for (uint32_t i = 0; i <= nhull; i++)
+  {
+    /* Walking the counterclockwise vertices backwards gives the clockwise
+     * ring, and the last vertex closes it on the first one */
+    const POINT2D *v = &hull[(start + nhull - i % nhull) % nhull];
+    p.x = v->x;
+    p.y = v->y;
+    ptarray_append_point(pa, &p, LW_TRUE);
+  }
+  LWPOLY *poly = lwpoly_construct_empty(srid, 0, 0);
+  lwpoly_add_ring(poly, pa);
+  return lwpoly_as_lwgeom(poly);
+}
+
+/**
+ * @brief Return the oriented envelop (a.k.a. minimum-area rotated rectangle)
+ * of a geometry
+ * @details Works directly on the exact circular arcs represented by the Edge
+ * structure.
+ */
+LWGEOM *
+meos_oriented_envelope(const LWGEOM *geom)
+{
+  assert(geom);
+  /* The placement below reads the vertices, which are the whole of a
+   * geometry only while every edge of it is a segment */
+  assert(! lwgeom_has_arc(geom));
+
+  /* Empty input */
+  if (lwgeom_is_empty(geom))
+    return lwpoly_as_lwgeom(lwpoly_construct_empty(geom->srid, 0, 0));
+
+  /* Extract the geometry */
+  MeosArray *edge_array = geom_extract_edges(geom);
+  uint32_t nedges = edge_array->count;
+  if (nedges == 0)
+  {
+    meos_array_destroy(edge_array);
+    return lwpoly_as_lwgeom(lwpoly_construct_empty(geom->srid, 0, 0));
+  }
+
+  /* Every edge contributes its two end points */
+  uint32_t maxpoints = 2 * nedges;
+  POINT2D *points = palloc(sizeof(POINT2D) * maxpoints);
+  uint32_t npoints = 0;
+
+  /* Extract the exact extremal points */
+  for (uint32_t i = 0; i < nedges; i++)
+  {
+    const Edge *e = (Edge *) meos_array_get(edge_array, i);
+    add_edge_points(e, points, &npoints);
+  }
+
+  /* We no longer need the edge array for the convex hull */
+  meos_array_destroy(edge_array);
+
+  /* Convex hull */
+  POINT2D *hull = NULL;
+  uint32_t nhull = convex_hull_points(points, npoints, &hull);
+  pfree(points);
+  if (nhull == 0)
+    return lwpoly_as_lwgeom(lwpoly_construct_empty(geom->srid, 0, 0));
+
+  /* Degenerate cases */
+  if (nhull == 1)
+  {
+    POINT2D rect[5];
+    for (int i = 0; i < 5; i++)
+      rect[i] = hull[0];
+    LWGEOM *result = make_geometry_points(geom->srid, rect, nhull);
+    pfree(hull);
+    return result;
+  }
+
+  if (nhull == 2)
+  {
+    POINT2D rect[5];
+    rect[0] = hull[0];
+    rect[1] = hull[1];
+    rect[2] = hull[1];
+    rect[3] = hull[0];
+    rect[4] = hull[0];
+    LWGEOM *result = make_geometry_points(geom->srid, rect, nhull);
+    pfree(hull);
+    return result;
+  }
+
+  /*
+   * Generate candidate orientations.
+   * - For a polygonal convex hull these are simply the hull-edge
+   *   orientations.
+   * - For an arc, its tangent direction changes continuously. We therefore
+   *   inspect the analytically significant tangent directions of the arc.
+   * Because the rectangle orientation is periodic modulo pi, all angles are
+   * normalized to [0,pi).
+   */
+
+  /*
+   * Maximum number of candidate directions. Every hull edge contributes one
+   * direction. The actual Edge array may have more entries than the hull, but
+   * using a generous bound keeps this implementation simple.
+   */
+  uint32_t maxangles = 8 * nedges + 8 * nhull;
+  double *angles = palloc(sizeof(double) * maxangles);
+  uint32_t nangles = 0;
+
+  /*
+   * Re-extract the edges. This is inexpensive compared with the convex-hull
+   * computation and keeps the code independent from any Edge pointer retained
+   * after the first array was freed.
+   */
+  edge_array = geom_extract_edges(geom);
+  nedges = edge_array->count;
+  for (uint32_t i = 0; i < nedges; i++)
+  {
+    const Edge *e = (Edge *) meos_array_get(edge_array, i);
+    /* Only directions which can define a support side need to be considered */
+    mrr_add_edge_directions(e, angles, &nangles);
+  }
+  meos_array_destroy(edge_array);
+
+  /* Also add all convex-hull edge directions.
+   * This is important because the hull itself is the object whose
+   * bounding rectangle is being computed. */
+  for (uint32_t i = 0; i < nhull; i++)
+  {
+    const POINT2D *a = &hull[i];
+    const POINT2D *b = &hull[(i + 1) % nhull];
+    double dx = b->x - a->x;
+    double dy = b->y - a->y;
+    if (hypot(dx, dy) <= FP_TOLERANCE)
+      continue;
+    double angle = atan2(dy, dx);
+    angle = fmod(angle, M_PI);
+    if (angle < 0)
+      angle += M_PI;
+    angles[nangles++] = angle;
+  }
+
+  /* No candidate direction: the hull has no support side to align with */
+  if (nangles == 0)
+  {
+    pfree(angles); pfree(hull);
+    return lwpoly_as_lwgeom(lwpoly_construct_empty(geom->srid, 0, 0));
+  }
+
+  /* Find the minimum-area rectangle. The rectangle of the first direction
+   * seeds the result: a comparison against it is false for every direction
+   * when a coordinate is not a number, and the rectangle must be defined in
+   * that case too. */
+  double best_area = DBL_MAX;
+  POINT2D best_rect[5] = {0};
+  for (uint32_t i = 0; i < nangles; i++)
+  {
+    double angle = angles[i];
+    double ux = cos(angle);
+    double uy = sin(angle);
+    POINT2D rect[5];
+    double area = mrr_rectangle_for_direction(hull, nhull, ux, uy, rect);
+    if (i == 0 || area < best_area)
+    {
+      best_area = area;
+      for (int j = 0; j < 5; j++)
+        best_rect[j] = rect[j];
+    }
+  }
+
+  /* Clean up and return */
+  pfree(angles); pfree(hull);
+  return make_geometry_points(geom->srid, best_rect, 4);
+}
+
+/**
+ * @ingroup meos_geo_base_spatial
+ * @brief Return the oriented envelope (a.k.a. minimum-area rotated rectangle)
+ * of a geometry
+ * @param[in] gs Geometry
+ * @note PostGIS function: @p ST_OrientedEnvelope(PG_FUNCTION_ARGS).
+ * @csqlfn #Geom_oriented_envelope()
+ */
+GSERIALIZED *
+geom_oriented_envelope_meos(const GSERIALIZED *gs)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(gs, NULL);
+  if (! ensure_not_geodetic_geo(gs))
+    return NULL;
+
+  /* A geometry carrying a circular arc has no native placement yet, and the
+   * arc reaches past the points that define it, so it is answered by GEOS */
+  LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
+  if (lwgeom_has_arc(lwgeom))
+  {
+    lwgeom_free(lwgeom);
+    return geom_oriented_envelope(gs);
+  }
+  LWGEOM *res = meos_oriented_envelope(lwgeom);
+  GSERIALIZED *result = geo_serialize(res);
+  lwgeom_free(lwgeom); lwgeom_free(res);
+  return result;
+}
+
+/******************************************************************************/
+
+/**
+ * @brief Return the convex hull of a geometry
+ * @details Works directly on the exact circular arcs represented by the Edge
+ * structure.
+ */
+LWGEOM *
+convex_hull(const LWGEOM *geom)
+{
+  assert(geom);
+  /* The placement below reads the vertices, which are the whole of a
+   * geometry only while every edge of it is a segment */
+  assert(! lwgeom_has_arc(geom));
+
+  /* Empty input */
+  if (lwgeom_is_empty(geom))
+    return lwpoly_as_lwgeom(lwpoly_construct_empty(geom->srid, 0, 0));
+
+  /* Extract the geometry */
+  MeosArray *edge_array = geom_extract_edges(geom);
+  uint32_t nedges = edge_array->count;
+  if (nedges == 0)
+  {
+    meos_array_destroy(edge_array);
+    return lwpoly_as_lwgeom(lwpoly_construct_empty(geom->srid, 0, 0));
+  }
+
+  /* Every edge contributes its two end points */
+  uint32_t maxpoints = 2 * nedges;
+  POINT2D *points = palloc(sizeof(POINT2D) * maxpoints);
+  uint32_t npoints = 0;
+
+  /* Extract the exact extremal points */
+  for (uint32_t i = 0; i < nedges; i++)
+  {
+    const Edge *e = (Edge *) meos_array_get(edge_array, i);
+    add_edge_points(e, points, &npoints);
+  }
+
+  /* We no longer need the edge array for the convex hull */
+  meos_array_destroy(edge_array);
+
+  /* Convex hull */
+  POINT2D *hull = NULL;
+  uint32_t nhull = convex_hull_points(points, npoints, &hull);
+  if (nhull == 0)
+  {
+    pfree(points);
+    return lwpoly_as_lwgeom(lwpoly_construct_empty(geom->srid, 0, 0));
+  }
+  if (nhull == 2)
+    hull_order_as_input(points, npoints, hull);
+  pfree(points);
+
+  LWGEOM *result = make_geometry_hull(geom->srid, hull, nhull);
+  pfree(hull);
+  return result;
+}
+
+/**
+ * @ingroup meos_geo_base_spatial
+ * @brief Return the convex hull of a geometry
+ * @param[in] gs Geometry
+ * @note PostGIS function: @p ST_ConvexHull(PG_FUNCTION_ARGS). With respect to
+ * the original function we do not use the @p prec argument.
+ */
+GSERIALIZED *
+geom_convex_hull_meos(const GSERIALIZED *gs)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(gs, NULL);
+  if (! ensure_not_geodetic_geo(gs))
+    return NULL;
+
+  /* Empty.ConvexHull() == Empty */
+  if (gserialized_is_empty(gs))
+    return geo_copy(gs);
+
+  /* A geometry carrying a circular arc has no native hull yet, and the arc
+   * reaches past the points that define it, so it is answered by GEOS */
+  LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
+  if (lwgeom_has_arc(lwgeom))
+  {
+    lwgeom_free(lwgeom);
+    return geom_convex_hull(gs);
+  }
+  LWGEOM *res = convex_hull(lwgeom);
+  GSERIALIZED *result = geo_serialize(res);
+  lwgeom_free(lwgeom); lwgeom_free(res);
+  return result;
+}
+
+/*****************************************************************************
  * Points, and the geometry a value serializes to
  *****************************************************************************/
 
