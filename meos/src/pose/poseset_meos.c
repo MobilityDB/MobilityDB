@@ -215,20 +215,6 @@ poseset_values(const Set *s, int *count)
  *****************************************************************************/
 
 /**
- * @brief Return true if a set and a pose are valid for set
- * operations
- * @param[in] s Set
- * @param[in] pose Value
- */
-bool
-ensure_valid_set_pose(const Set *s, const Pose *pose)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_POSESET(s, false); VALIDATE_NOT_NULL(pose, false);
-  return true;
-}
-
-/**
  * @ingroup meos_pose_set_setops
  * @brief Return true if a set contains a pose
  * @param[in] s Set
@@ -239,7 +225,7 @@ bool
 contains_set_pose(const Set *s, Pose *pose)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_set_pose(s, pose))
+  if (! ensure_valid_poseset_pose(s, pose))
     return false;
   return contains_set_value(s, PointerGetDatum(pose));
 }
@@ -255,7 +241,7 @@ bool
 contained_pose_set(const Pose *pose, const Set *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_set_pose(s, pose))
+  if (! ensure_valid_poseset_pose(s, pose))
     return false;
   return contained_value_set(PointerGetDatum(pose), s);
 }
@@ -271,7 +257,7 @@ Set *
 union_set_pose(const Set *s, const Pose *pose)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_set_pose(s, pose))
+  if (! ensure_valid_poseset_pose(s, pose))
     return NULL;
   return union_set_value(s, PointerGetDatum(pose));
 }
@@ -300,7 +286,7 @@ Set *
 intersection_set_pose(const Set *s, const Pose *pose)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_set_pose(s, pose))
+  if (! ensure_valid_poseset_pose(s, pose))
     return NULL;
   return intersection_set_value(s, PointerGetDatum(pose));
 }
@@ -329,7 +315,7 @@ Set *
 minus_pose_set(const Pose *pose, const Set *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_set_pose(s, pose))
+  if (! ensure_valid_poseset_pose(s, pose))
     return NULL;
   return minus_value_set(PointerGetDatum(pose), s);
 }
@@ -345,7 +331,7 @@ Set *
 minus_set_pose(const Set *s, const Pose *pose)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_set_pose(s, pose))
+  if (! ensure_valid_poseset_pose(s, pose))
     return NULL;
   return minus_set_value(s, PointerGetDatum(pose));
 }

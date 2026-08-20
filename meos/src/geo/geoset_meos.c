@@ -239,11 +239,13 @@ geoset_values(const Set *s, int *count)
  * @param[in] gs Value
  */
 bool
-ensure_valid_set_geo(const Set *s, const GSERIALIZED *gs)
+ensure_valid_geoset_geo(const Set *s, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_GEOSET(s, false); VALIDATE_NOT_NULL(gs, false);
-  if (! ensure_not_empty(gs))
+  if (! ensure_not_empty(gs) ||
+      ! ensure_same_srid(spatialset_srid(s), geo_srid(gs)) ||
+      ! ensure_same_geodetic_set_geo(s, gs))
     return false;
   return true;
 }
@@ -259,7 +261,7 @@ bool
 contains_set_geo(const Set *s, GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_set_geo(s, gs))
+  if (! ensure_valid_geoset_geo(s, gs))
     return false;
   return contains_set_value(s, PointerGetDatum(gs));
 }
@@ -275,7 +277,7 @@ bool
 contained_geo_set(const GSERIALIZED *gs, const Set *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_set_geo(s, gs))
+  if (! ensure_valid_geoset_geo(s, gs))
     return false;
   return contained_value_set(PointerGetDatum(gs), s);
 }
@@ -291,7 +293,7 @@ Set *
 union_set_geo(const Set *s, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_set_geo(s, gs))
+  if (! ensure_valid_geoset_geo(s, gs))
     return NULL;
   return union_set_value(s, PointerGetDatum(gs));
 }
@@ -320,7 +322,7 @@ Set *
 intersection_set_geo(const Set *s, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_set_geo(s, gs))
+  if (! ensure_valid_geoset_geo(s, gs))
     return NULL;
   return intersection_set_value(s, PointerGetDatum(gs));
 }
@@ -349,7 +351,7 @@ Set *
 minus_geo_set(const GSERIALIZED *gs, const Set *s)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_set_geo(s, gs))
+  if (! ensure_valid_geoset_geo(s, gs))
     return NULL;
   return minus_value_set(PointerGetDatum(gs), s);
 }
@@ -365,7 +367,7 @@ Set *
 minus_set_geo(const Set *s, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_set_geo(s, gs))
+  if (! ensure_valid_geoset_geo(s, gs))
     return NULL;
   return minus_set_value(s, PointerGetDatum(gs));
 }

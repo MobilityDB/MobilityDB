@@ -540,6 +540,24 @@ ensure_same_geodetic_tspatial_geo(const Temporal *temp, const GSERIALIZED *gs)
   return true;
 }
 
+/**
+ * @brief Ensure that a spatial set and a geometry/geography are both planar
+ * or both geodetic
+ * @param[in] s Spatial set
+ * @param[in] gs Geometry/geography
+ */
+bool
+ensure_same_geodetic_set_geo(const Set *s, const GSERIALIZED *gs)
+{
+  if (MEOS_FLAGS_GET_GEODETIC(s->flags) != FLAGS_GET_GEODETIC(gs->gflags))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Operation on mixed planar and geodetic coordinates");
+    return false;
+  }
+  return true;
+}
+
 
 
 
