@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: trgeometry_rotation</title>
+<title>MobilityDB: trgeometry_pitch</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -88,8 +88,9 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__accessor_ga14899603482e34f2cedce30cb704b734.html#ga14899603482e34f2cedce30cb704b734">trgeometry_instant_n</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__accessor_ga2cfdf266e5ac095976454e3fd57348cf.html#ga2cfdf266e5ac095976454e3fd57348cf">trgeometry_instants</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__accessor_ga855cdef5f969a79dc341a9ac014edd6f.html#ga855cdef5f969a79dc341a9ac014edd6f">trgeometry_length</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__rgeo__accessor_gab53e12d63e18f6f1075057d5bdccf111.html#gab53e12d63e18f6f1075057d5bdccf111">trgeometry_pitch</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__accessor_gad05912ad5ee25c6c3730cf347754f2d7.html#gad05912ad5ee25c6c3730cf347754f2d7">trgeometry_points</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__rgeo__accessor_ga636b81f7d383a3b46aee00754193fe61.html#ga636b81f7d383a3b46aee00754193fe61">trgeometry_rotation</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__accessor_ga3f21132faceb17b560a93839c5f3dc0e.html#ga3f21132faceb17b560a93839c5f3dc0e">trgeometry_roll</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__accessor_ga5719b5e96a2716c10c27259bd8e85237.html#ga5719b5e96a2716c10c27259bd8e85237">trgeometry_segments</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__accessor_gaf155c803f0d3fa2b6e5a18be6686172c.html#gaf155c803f0d3fa2b6e5a18be6686172c">trgeometry_sequence_n</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__accessor_ga0516567b52300a13f9a27521c3488998.html#ga0516567b52300a13f9a27521c3488998">trgeometry_sequences</a></td></tr>
@@ -100,18 +101,19 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__accessor_gafad5e1f103acc3df6c73a5f221afbaf2.html#gafad5e1f103acc3df6c73a5f221afbaf2">trgeometry_traversed_area</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__accessor_ga4d830623ee644429203a361e27f7442f.html#ga4d830623ee644429203a361e27f7442f">trgeometry_twcentroid</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__accessor_gacad19f7bd2c5489bb39ac04cc079ad91.html#gacad19f7bd2c5489bb39ac04cc079ad91">trgeometry_value_n</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__accessor_ga3397ad350261a2bdf2ca3403c219cec5.html#ga3397ad350261a2bdf2ca3403c219cec5">trgeometry_yaw</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga636b81f7d383a3b46aee00754193fe61" name="ga636b81f7d383a3b46aee00754193fe61"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga636b81f7d383a3b46aee00754193fe61">&#9670;&#160;</a></span>trgeometry_rotation()</h2>
+<a id="gab53e12d63e18f6f1075057d5bdccf111" name="gab53e12d63e18f6f1075057d5bdccf111"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gab53e12d63e18f6f1075057d5bdccf111">&#9670;&#160;</a></span>trgeometry_pitch()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structTemporal.html">Temporal</a> * trgeometry_rotation </td>
+          <td class="memname"><a class="el" href="structTemporal.html">Temporal</a> * trgeometry_pitch </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
           <td class="paramname"><em>temp</em></td><td>)</td>
@@ -120,10 +122,10 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the rotation of a temporal rigid geometry as a temporal float. </p>
+<p>Return the pitch angle of a temporal rigid geometry (radians) as a temporal float, ZYX intrinsic Tait-Bryan convention. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> rigid geometry @csqlfn <a class="el" href="group__mobilitydb__rgeo__accessor_gacef01f07359c74a8499a5ee58dd56558.html#gacef01f07359c74a8499a5ee58dd56558" title="Return the rotation of a temporal rigid geometry as a temporal float @sqlfn rotation()">Trgeometry_rotation()</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> rigid geometry @csqlfn <a class="el" href="group__mobilitydb__rgeo__accessor_ga198ac889ac05dea0ad30725ca37f9220.html#ga198ac889ac05dea0ad30725ca37f9220" title="Return the pitch of a temporal rigid geometry (radians) as a temporal float @sqlfn pitch()">Trgeometry_pitch()</a> </td></tr>
   </table>
   </dd>
 </dl>
