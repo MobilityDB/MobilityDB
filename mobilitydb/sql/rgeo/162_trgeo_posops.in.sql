@@ -43,18 +43,22 @@
 CREATE FUNCTION before(tstzspan, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_tstzspan_temporal'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overbefore(tstzspan, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_tstzspan_temporal'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION after(tstzspan, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_tstzspan_temporal'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overafter(tstzspan, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_tstzspan_temporal'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -87,66 +91,82 @@ CREATE OPERATOR #&> (
 CREATE FUNCTION left(stbox, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_stbox_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overleft(stbox, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_stbox_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION right(stbox, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_stbox_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overright(stbox, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overright_stbox_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION below(stbox, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Below_stbox_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overbelow(stbox, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbelow_stbox_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION above(stbox, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Above_stbox_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overabove(stbox, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overabove_stbox_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION front(stbox, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Front_stbox_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overfront(stbox, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overfront_stbox_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION back(stbox, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Back_stbox_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overback(stbox, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overback_stbox_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION before(stbox, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_stbox_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overbefore(stbox, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_stbox_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION after(stbox, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_stbox_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overafter(stbox, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_stbox_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -247,18 +267,22 @@ CREATE OPERATOR #&> (
 CREATE FUNCTION before(trgeometry, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_temporal_tstzspan'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overbefore(trgeometry, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_temporal_tstzspan'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION after(trgeometry, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_temporal_tstzspan'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overafter(trgeometry, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_temporal_tstzspan'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
@@ -291,66 +315,82 @@ CREATE OPERATOR #&> (
 CREATE FUNCTION left(trgeometry, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_tspatial_stbox'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overleft(trgeometry, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_tspatial_stbox'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION right(trgeometry, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_tspatial_stbox'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overright(trgeometry, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overright_tspatial_stbox'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION below(trgeometry, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Below_tspatial_stbox'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overbelow(trgeometry, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbelow_tspatial_stbox'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION above(trgeometry, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Above_tspatial_stbox'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overabove(trgeometry, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overabove_tspatial_stbox'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION front(trgeometry, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Front_tspatial_stbox'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overfront(trgeometry, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overfront_tspatial_stbox'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION back(trgeometry, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Back_tspatial_stbox'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overback(trgeometry, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overback_tspatial_stbox'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION before(trgeometry, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_tspatial_stbox'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overbefore(trgeometry, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_tspatial_stbox'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION after(trgeometry, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_tspatial_stbox'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overafter(trgeometry, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_tspatial_stbox'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -449,66 +489,82 @@ CREATE OPERATOR #&> (
 CREATE FUNCTION left(trgeometry, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_tspatial_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overleft(trgeometry, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_tspatial_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION right(trgeometry, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_tspatial_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overright(trgeometry, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overright_tspatial_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION below(trgeometry, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Below_tspatial_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overbelow(trgeometry, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbelow_tspatial_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION above(trgeometry, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Above_tspatial_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overabove(trgeometry, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overabove_tspatial_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION front(trgeometry, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Front_tspatial_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overfront(trgeometry, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overfront_tspatial_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION back(trgeometry, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Back_tspatial_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overback(trgeometry, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overback_tspatial_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION before(trgeometry, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_tspatial_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overbefore(trgeometry, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_tspatial_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION after(trgeometry, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_tspatial_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overafter(trgeometry, trgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_tspatial_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (

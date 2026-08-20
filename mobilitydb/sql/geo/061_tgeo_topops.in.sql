@@ -39,10 +39,12 @@
 CREATE FUNCTION contains(tstzspan, tgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_tstzspan_temporal'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains(tgeometry, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_temporal_tstzspan'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
@@ -63,10 +65,12 @@ CREATE OPERATOR @> (
 CREATE FUNCTION contains(tstzspan, tgeography)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_tstzspan_temporal'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains(tgeography, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_temporal_tstzspan'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
@@ -87,14 +91,17 @@ CREATE OPERATOR @> (
 CREATE FUNCTION contains(stbox, tgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_stbox_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains(tgeometry, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_tspatial_stbox'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains(tgeometry, tgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_tspatial_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
@@ -121,14 +128,17 @@ CREATE OPERATOR @> (
 CREATE FUNCTION contains(stbox, tgeography)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_stbox_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains(tgeography, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_tspatial_stbox'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains(tgeography, tgeography)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_tspatial_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
@@ -157,10 +167,12 @@ CREATE OPERATOR @> (
 CREATE FUNCTION contained(tstzspan, tgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_tstzspan_temporal'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained(tgeometry, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_temporal_tstzspan'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
@@ -181,14 +193,17 @@ CREATE OPERATOR <@ (
 CREATE FUNCTION contained(stbox, tgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_stbox_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained(tgeometry, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_tspatial_stbox'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained(tgeometry, tgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_tspatial_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
@@ -215,10 +230,12 @@ CREATE OPERATOR <@ (
 CREATE FUNCTION contained(tstzspan, tgeography)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_tstzspan_temporal'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained(tgeography, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_temporal_tstzspan'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
@@ -239,14 +256,17 @@ CREATE OPERATOR <@ (
 CREATE FUNCTION contained(stbox, tgeography)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_stbox_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained(tgeography, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_tspatial_stbox'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained(tgeography, tgeography)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_tspatial_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
@@ -275,10 +295,12 @@ CREATE OPERATOR <@ (
 CREATE FUNCTION overlaps(tstzspan, tgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_tstzspan_temporal'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps(tgeometry, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_temporal_tstzspan'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
@@ -299,14 +321,17 @@ CREATE OPERATOR && (
 CREATE FUNCTION overlaps(stbox, tgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_stbox_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps(tgeometry, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_tspatial_stbox'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps(tgeometry, tgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_tspatial_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
@@ -333,10 +358,12 @@ CREATE OPERATOR && (
 CREATE FUNCTION overlaps(tstzspan, tgeography)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_tstzspan_temporal'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps(tgeography, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_temporal_tstzspan'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
@@ -357,14 +384,17 @@ CREATE OPERATOR && (
 CREATE FUNCTION overlaps(stbox, tgeography)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_stbox_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps(tgeography, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_tspatial_stbox'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps(tgeography, tgeography)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_tspatial_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
@@ -393,10 +423,12 @@ CREATE OPERATOR && (
 CREATE FUNCTION same(tstzspan, tgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_tstzspan_temporal'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same(tgeometry, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_temporal_tstzspan'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ~= (
@@ -417,14 +449,17 @@ CREATE OPERATOR ~= (
 CREATE FUNCTION same(stbox, tgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_stbox_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same(tgeometry, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_tspatial_stbox'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same(tgeometry, tgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_tspatial_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ~= (
@@ -451,10 +486,12 @@ CREATE OPERATOR ~= (
 CREATE FUNCTION same(tstzspan, tgeography)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_tstzspan_temporal'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same(tgeography, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_temporal_tstzspan'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ~= (
@@ -475,14 +512,17 @@ CREATE OPERATOR ~= (
 CREATE FUNCTION same(stbox, tgeography)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_stbox_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same(tgeography, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_tspatial_stbox'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same(tgeography, tgeography)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_tspatial_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ~= (
@@ -511,10 +551,12 @@ CREATE OPERATOR ~= (
 CREATE FUNCTION adjacent(tstzspan, tgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_tstzspan_temporal'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent(tgeometry, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_temporal_tstzspan'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR -|- (
@@ -535,14 +577,17 @@ CREATE OPERATOR -|- (
 CREATE FUNCTION adjacent(stbox, tgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_stbox_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent(tgeometry, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_tspatial_stbox'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent(tgeometry, tgeometry)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_tspatial_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR -|- (
@@ -569,10 +614,12 @@ CREATE OPERATOR -|- (
 CREATE FUNCTION adjacent(tstzspan, tgeography)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_tstzspan_temporal'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent(tgeography, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_temporal_tstzspan'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR -|- (
@@ -593,14 +640,17 @@ CREATE OPERATOR -|- (
 CREATE FUNCTION adjacent(stbox, tgeography)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_stbox_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent(tgeography, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_tspatial_stbox'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent(tgeography, tgeography)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_tspatial_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR -|- (

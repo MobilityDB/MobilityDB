@@ -39,10 +39,12 @@
 CREATE FUNCTION contains(tstzspan, tgeompoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_tstzspan_temporal'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains(tgeompoint, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_temporal_tstzspan'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
@@ -63,10 +65,12 @@ CREATE OPERATOR @> (
 CREATE FUNCTION contains(tstzspan, tgeogpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_tstzspan_temporal'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains(tgeogpoint, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_temporal_tstzspan'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
@@ -87,14 +91,17 @@ CREATE OPERATOR @> (
 CREATE FUNCTION contains(stbox, tgeompoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_stbox_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains(tgeompoint, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_tspatial_stbox'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains(tgeompoint, tgeompoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_tspatial_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
@@ -121,14 +128,17 @@ CREATE OPERATOR @> (
 CREATE FUNCTION contains(stbox, tgeogpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_stbox_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains(tgeogpoint, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_tspatial_stbox'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains(tgeogpoint, tgeogpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_tspatial_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
@@ -157,10 +167,12 @@ CREATE OPERATOR @> (
 CREATE FUNCTION contained(tstzspan, tgeompoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_tstzspan_temporal'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained(tgeompoint, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_temporal_tstzspan'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
@@ -181,14 +193,17 @@ CREATE OPERATOR <@ (
 CREATE FUNCTION contained(stbox, tgeompoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_stbox_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained(tgeompoint, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_tspatial_stbox'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained(tgeompoint, tgeompoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_tspatial_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
@@ -215,10 +230,12 @@ CREATE OPERATOR <@ (
 CREATE FUNCTION contained(tstzspan, tgeogpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_tstzspan_temporal'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained(tgeogpoint, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_temporal_tstzspan'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
@@ -239,14 +256,17 @@ CREATE OPERATOR <@ (
 CREATE FUNCTION contained(stbox, tgeogpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_stbox_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained(tgeogpoint, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_tspatial_stbox'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained(tgeogpoint, tgeogpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_tspatial_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
@@ -275,10 +295,12 @@ CREATE OPERATOR <@ (
 CREATE FUNCTION overlaps(tstzspan, tgeompoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_tstzspan_temporal'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps(tgeompoint, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_temporal_tstzspan'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
@@ -299,14 +321,17 @@ CREATE OPERATOR && (
 CREATE FUNCTION overlaps(stbox, tgeompoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_stbox_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps(tgeompoint, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_tspatial_stbox'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps(tgeompoint, tgeompoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_tspatial_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
@@ -333,10 +358,12 @@ CREATE OPERATOR && (
 CREATE FUNCTION overlaps(tstzspan, tgeogpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_tstzspan_temporal'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps(tgeogpoint, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_temporal_tstzspan'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
@@ -357,14 +384,17 @@ CREATE OPERATOR && (
 CREATE FUNCTION overlaps(stbox, tgeogpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_stbox_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps(tgeogpoint, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_tspatial_stbox'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps(tgeogpoint, tgeogpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_tspatial_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
@@ -393,10 +423,12 @@ CREATE OPERATOR && (
 CREATE FUNCTION same(tstzspan, tgeompoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_tstzspan_temporal'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same(tgeompoint, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_temporal_tstzspan'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ~= (
@@ -417,14 +449,17 @@ CREATE OPERATOR ~= (
 CREATE FUNCTION same(stbox, tgeompoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_stbox_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same(tgeompoint, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_tspatial_stbox'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same(tgeompoint, tgeompoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_tspatial_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ~= (
@@ -451,10 +486,12 @@ CREATE OPERATOR ~= (
 CREATE FUNCTION same(tstzspan, tgeogpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_tstzspan_temporal'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same(tgeogpoint, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_temporal_tstzspan'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ~= (
@@ -475,14 +512,17 @@ CREATE OPERATOR ~= (
 CREATE FUNCTION same(stbox, tgeogpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_stbox_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same(tgeogpoint, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_tspatial_stbox'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION same(tgeogpoint, tgeogpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Same_tspatial_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR ~= (
@@ -511,10 +551,12 @@ CREATE OPERATOR ~= (
 CREATE FUNCTION adjacent(tstzspan, tgeompoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_tstzspan_temporal'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent(tgeompoint, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_temporal_tstzspan'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR -|- (
@@ -535,14 +577,17 @@ CREATE OPERATOR -|- (
 CREATE FUNCTION adjacent(stbox, tgeompoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_stbox_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent(tgeompoint, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_tspatial_stbox'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent(tgeompoint, tgeompoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_tspatial_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR -|- (
@@ -569,10 +614,12 @@ CREATE OPERATOR -|- (
 CREATE FUNCTION adjacent(tstzspan, tgeogpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_tstzspan_temporal'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent(tgeogpoint, tstzspan)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_temporal_tstzspan'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR -|- (
@@ -593,14 +640,17 @@ CREATE OPERATOR -|- (
 CREATE FUNCTION adjacent(stbox, tgeogpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_stbox_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent(tgeogpoint, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_tspatial_stbox'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION adjacent(tgeogpoint, tgeogpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adjacent_tspatial_tspatial'
+  SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR -|- (
