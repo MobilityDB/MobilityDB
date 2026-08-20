@@ -142,7 +142,7 @@ SELECT asEWKT(round(
 -- ECEF basis is the canonical East-North-Up to ECEF rotation
 SELECT asEWKT(round(
   transform(pose 'SRID=4326;Pose(Point(0 0 0), 1, 0, 0, 0)', 4978), 6));
--- SRID=4978;Pose(POINT Z (6378137 0 0),0.5,-0.5,-0.5,-0.5)
+-- SRID=4978;Pose(POINT Z (6378137 0 0),0.5,0.5,0.5,0.5)
 </pre><pre class="programlisting">
 WITH test(pose, pipeline) AS (
   SELECT pose 'Pose(SRID=4326;Point(4.3525 50.846667),1)',
