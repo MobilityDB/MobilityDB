@@ -2295,10 +2295,14 @@ shortestline_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
   if (! ensure_valid_tcbuffer_cbuffer(temp, cb))
     return NULL;
 
-  GSERIALIZED *geom = cbuffer_to_geom(cb);
-  GSERIALIZED *trav = tcbuffer_traversed_area(temp, false);
-  GSERIALIZED *result = geom_shortestline2d(trav, geom);
-  pfree(geom); pfree(trav);
+  /* A static disc is a constant temporal circular buffer, so the line is the
+   * one the two-temporal kernel computes in closed form from the two disks.
+   * Rendering the disc and the traversed area as polygons instead measures
+   * between two polygonal approximations, and the line it returns is not the
+   * one realising the nearest approach distance of the same pair. */
+  Temporal *ctemp = tcbuffer_from_base_temp(cb, temp);
+  GSERIALIZED *result = shortestline_tcbuffer_tcbuffer(temp, ctemp);
+  pfree(ctemp);
   return result;
 }
 

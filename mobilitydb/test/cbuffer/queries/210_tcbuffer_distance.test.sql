@@ -315,6 +315,24 @@ SELECT nearestApproachDistance(tcbuffer 'Cbuffer(Point(0 0), 0.5)@2000-01-01', c
 -- A buffer beside the path: the distance is the centre distance less both radii
 SELECT round(nearestApproachDistance(tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(4 0), 0.5)@2000-01-05]', cbuffer 'Cbuffer(Point(4 9), 0.7)')::numeric, 6);
 
+-- The shortest line against a static circular buffer runs between the two disk
+-- boundaries, so its length is the nearest approach distance of the same pair.
+-- Reading the disc and the traversed area as polygons measures between two
+-- polygonal approximations and answers neither. A disk of radius 1 passing a
+-- disk of radius 2 six units away has a nearest approach of 3 at the midpoint,
+-- where the line leaves (5 1) and reaches (5 4)
+SELECT ST_AsText(shortestLine(tcbuffer '[Cbuffer(Point(0 0), 1)@2000-01-01, Cbuffer(Point(10 0), 1)@2000-01-02]', cbuffer 'Cbuffer(Point(5 6), 2)'));
+SELECT round(ST_Length(shortestLine(tcbuffer '[Cbuffer(Point(0 0), 1)@2000-01-01, Cbuffer(Point(10 0), 1)@2000-01-02]', cbuffer 'Cbuffer(Point(5 6), 2)'))::numeric, 6);
+SELECT round(nearestApproachDistance(tcbuffer '[Cbuffer(Point(0 0), 1)@2000-01-01, Cbuffer(Point(10 0), 1)@2000-01-02]', cbuffer 'Cbuffer(Point(5 6), 2)')::numeric, 6);
+-- The two argument orders name the same line
+SELECT ST_AsText(shortestLine(cbuffer 'Cbuffer(Point(5 6), 2)', tcbuffer '[Cbuffer(Point(0 0), 1)@2000-01-01, Cbuffer(Point(10 0), 1)@2000-01-02]'));
+-- Disks that meet: the line degenerates where the boundary of one reaches the other
+SELECT ST_AsText(shortestLine(tcbuffer '[Cbuffer(Point(0 0), 3)@2000-01-01, Cbuffer(Point(10 0), 3)@2000-01-02]', cbuffer 'Cbuffer(Point(5 4), 2)'));
+-- A radius that varies over the segment carries the witness off the midpoint,
+-- as it does for the nearest approach distance the line must realise
+SELECT round(ST_Length(shortestLine(tcbuffer '[Cbuffer(Point(0 0), 1)@2000-01-01, Cbuffer(Point(10 0), 5)@2000-01-05]', cbuffer 'Cbuffer(Point(5 6), 0)'))::numeric, 6);
+SELECT round(nearestApproachDistance(tcbuffer '[Cbuffer(Point(0 0), 1)@2000-01-01, Cbuffer(Point(10 0), 5)@2000-01-05]', cbuffer 'Cbuffer(Point(5 6), 0)')::numeric, 6);
+
 -------------------------------------------------------------------------------
 
 -- Analytic shortestLine: its length equals the nearest-approach distance;
