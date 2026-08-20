@@ -1103,6 +1103,9 @@ SELECT round(tpose '[Pose(Point(1 1), 0.3)@2001-01-01,
 
 		<itemizedlist>
 			<listitem xml:id="tpose_espatialrels">
+				<indexterm significance="normal"><primary><varname>eContains</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>eDisjoint</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>eIntersects</varname></primary></indexterm>
 				<para>Relaciones alguna vez y siempre</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT eContains(geometry 'Polygon((0 0,0 50,50 50,50 0,0 0))',
@@ -1119,6 +1122,9 @@ SELECT eIntersects(
 			</listitem>
 
 			<listitem xml:id="tpose_tspatialrels">
+				<indexterm significance="normal"><primary><varname>tContains</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tDisjoint</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tDwithin</varname></primary></indexterm>
 				<para>Relaciones espaciotemporales</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tContains(geometry 'Polygon((0 0,0 50,50 50,50 0,0 0))',

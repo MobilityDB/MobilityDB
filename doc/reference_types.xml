@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+   ****************************************************************************
+    MobilityDB Manual
+    Copyright(c) MobilityDB Contributors
+
+    This documentation is licensed under a Creative Commons Attribution-Share
+    Alike 3.0 License: https://creativecommons.org/licenses/by-sa/3.0/
+   ****************************************************************************
+-->
+	<sect1>
+		<title>MobilityDB Types</title>
+		<para>MobilityDB defines four <emphasis>template types</emphasis> that act as type constructors over <emphasis>base types</emphasis>. These template types are <varname>set</varname>, <varname>span</varname>, <varname>spanset</varname>, and <varname>temporal</varname>. <xref linkend="templatetypes"/> shows the types defined over these template types. Furthermore, MobilityDB defines two bounding box types, namely, <varname>tbox</varname> and <varname>stbox</varname>.</para>
+
+		<table frame="all" colsep="1" rowsep="1" xml:id="templatetypes">
+			<?dblatex table-width="autowidth.column: 1 2 3 4 5"?>
+			<title>MobilityDB current instantiations of template types</title>
+			<tgroup cols="5" align="left" colsep="1" rowsep="1">
+			<colspec colnum="1" colname="col1"/>
+			<colspec colnum="2" colname="col2"/>
+			<colspec colnum="3" colname="col3"/>
+			<colspec colnum="4" colname="col4"/>
+			<colspec colnum="5" colname="col5"/>
+			<thead>
+				<row>
+					<entry morerows="1"><emphasis role="bold">Base Types</emphasis></entry>
+					<entry namest="col2" nameend="col5" align="center">Template Types</entry>
+				</row>
+				<row>
+					<entry><emphasis role="bold"><varname>set</varname></emphasis></entry>
+					<entry><emphasis role="bold"><varname>span</varname></emphasis></entry>
+					<entry><emphasis role="bold"><varname>spanset</varname></emphasis></entry>
+					<entry><emphasis role="bold"><varname>temporal</varname></emphasis></entry>
+				</row>
+			</thead>
+			<tbody>
+				<row>
+					<entry><emphasis role="bold"><varname>bool</varname></emphasis></entry>
+					<entry><varname/></entry>
+					<entry><varname/></entry>
+					<entry><varname/></entry>
+					<entry><varname>tbool</varname></entry>
+				</row>
+				<row>
+					<entry><emphasis role="bold"><varname>text</varname></emphasis></entry>
+					<entry><varname>textset</varname></entry>
+					<entry><varname/></entry>
+					<entry><varname/></entry>
+					<entry><varname>ttext</varname></entry>
+				</row>
+				<row>
+					<entry><emphasis role="bold"><varname>jsonb</varname></emphasis></entry>
+					<entry><varname>jsonbset</varname></entry>
+					<entry><varname/></entry>
+					<entry><varname/></entry>
+					<entry><varname>tjsonb</varname></entry>
+				</row>
+				<row>
+					<entry><emphasis role="bold"><varname>integer</varname></emphasis></entry>
+					<entry><varname>intset</varname></entry>
+					<entry><varname>intspan</varname></entry>
+					<entry><varname>intspanset</varname></entry>
+					<entry><varname>tint</varname></entry>
+				</row>
+				<row>
+						<entry><emphasis role="bold"><varname>bigint</varname></emphasis></entry>
+						<entry><varname>bigintset</varname></entry>
+						<entry><varname>bigintspan</varname></entry>
+						<entry><varname>bigintspanset</varname></entry>
+						<entry><varname>tbigint</varname></entry>
+				</row>
+				<row>
+					<entry><emphasis role="bold"><varname>float</varname></emphasis></entry>
+					<entry><varname>floatset</varname></entry>
+					<entry><varname>floatspan</varname></entry>
+					<entry><varname>floatspanset</varname></entry>
+					<entry><varname>tfloat</varname></entry>
+				</row>
+				<row>
+					<entry><emphasis role="bold"><varname>date</varname></emphasis></entry>
+					<entry><varname>dateset</varname></entry>
+					<entry><varname>datespan</varname></entry>
+					<entry><varname>datespanset</varname></entry>
+					<entry><varname/></entry>
+				</row>
+				<row>
+					<entry><emphasis role="bold"><varname>timestamptz</varname></emphasis></entry>
+					<entry><varname>tstzset</varname></entry>
+					<entry><varname>tstzspan</varname></entry>
+					<entry><varname>tstzspanset</varname></entry>
+					<entry><varname/></entry>
+				</row>
+				<row>
+					<entry><emphasis role="bold"><varname>geometry</varname></emphasis></entry>
+					<entry><varname>geomset</varname></entry>
+					<entry><varname/></entry>
+					<entry><varname/></entry>
+					<entry><varname>tgeompoint</varname>, <varname>tgeometry</varname></entry>
+				</row>
+				<row>
+					<entry><emphasis role="bold"><varname>geography</varname></emphasis></entry>
+					<entry><varname>geogset</varname></entry>
+					<entry><varname/></entry>
+					<entry><varname/></entry>
+					<entry><varname>tgeogpoint</varname>, <varname>tgeography</varname></entry>
+				</row>
+				<row>
+					<entry><emphasis role="bold"><varname>pose</varname></emphasis></entry>
+					<entry><varname>poseset</varname></entry>
+					<entry><varname/></entry>
+					<entry><varname/></entry>
+					<entry><varname>tpose</varname>, <varname>trgeometry</varname></entry>
+				</row>
+				<row>
+					<entry><emphasis role="bold"><varname>npoint</varname></emphasis></entry>
+					<entry><varname>npointset</varname></entry>
+					<entry><varname/></entry>
+					<entry><varname/></entry>
+					<entry><varname>tnpoint</varname></entry>
+				</row>
+				<row>
+					<entry><emphasis role="bold"><varname>cbuffer</varname></emphasis></entry>
+					<entry><varname>cbufferset</varname></entry>
+					<entry><varname/></entry>
+					<entry><varname/></entry>
+					<entry><varname>tcbuffer</varname></entry>
+				</row>
+				<row>
+					<entry><emphasis role="bold"><varname>h3index</varname></emphasis></entry>
+					<entry><varname>h3indexset</varname></entry>
+					<entry><varname/></entry>
+					<entry><varname/></entry>
+					<entry><varname>th3index</varname></entry>
+				</row>
+				<row>
+					<entry><emphasis role="bold"><varname>quadbin</varname></emphasis></entry>
+					<entry><varname>quadbinset</varname></entry>
+					<entry><varname/></entry>
+					<entry><varname/></entry>
+					<entry><varname>tquadbin</varname></entry>
+				</row>
+				<row>
+					<entry><emphasis role="bold"><varname>pcpoint</varname></emphasis></entry>
+					<entry><varname>pcpointset</varname></entry>
+					<entry><varname/></entry>
+					<entry><varname/></entry>
+					<entry><varname>tpcpoint</varname></entry>
+				</row>
+				<row>
+					<entry><emphasis role="bold"><varname>pcpatch</varname></emphasis></entry>
+					<entry><varname>pcpatchset</varname></entry>
+					<entry><varname/></entry>
+					<entry><varname/></entry>
+					<entry><varname>tpcpatch</varname></entry>
+				</row>
+			</tbody>
+			</tgroup>
+		</table>
+	</sect1>
+

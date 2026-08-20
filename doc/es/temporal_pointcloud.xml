@@ -1620,12 +1620,16 @@ SELECT eIntersects(tpcpatchSeq(ARRAY[
 			<para>La misma superficie de operadores de caja que en <xref linkend="tpcpoint_bbox_ops" /> se aplica a <varname>tpcpatch</varname>. El predicado se evalúa sobre el <varname>tpcbox</varname> del valor, calculado en O(1) por instante a partir del <varname>PCBOUNDS</varname> embebido en el parche.</para>
 			<itemizedlist>
 				<listitem xml:id="tpcpatch_topo">
+					<indexterm significance="normal"><primary><varname>&amp;&amp;, @&gt;, &lt;@, ~=, -|-</varname></primary></indexterm>
 					<para>Predicados topológicos: <varname>&amp;&amp;</varname>, <varname>@&gt;</varname>, <varname>&lt;@</varname>, <varname>~=</varname>, <varname>-|-</varname>. Véase <xref linkend="tpcbox_topo" />.</para>
 				</listitem>
 				<listitem xml:id="tpcpatch_pos">
+					<indexterm significance="normal"><primary><varname>&lt;&lt;, &gt;&gt;, &lt;&lt;|, |&gt;&gt;, &lt;&lt;/, /&gt;&gt;, &lt;&lt;#, #&gt;&gt;</varname></primary></indexterm>
 					<para>Predicados direccionales estrictos sobre los ejes X / Y / Z / tiempo (<varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&lt;&lt;|</varname>, <varname>|&gt;&gt;</varname>, <varname>&lt;&lt;/</varname>, <varname>/&gt;&gt;</varname>, <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname>) y sus variantes «solapa-o-X» (<varname>&amp;&lt;</varname>, <varname>&amp;&gt;</varname>, <varname>&amp;&lt;|</varname>, <varname>|&amp;&gt;</varname>, <varname>&amp;&lt;/</varname>, <varname>/&amp;&gt;</varname>, <varname>&amp;&lt;#</varname>, <varname>#&amp;&gt;</varname>). Véase <xref linkend="tpcbox_pos" />.</para>
 				</listitem>
 				<listitem xml:id="tpcpatch_knn">
+					<indexterm significance="normal"><primary><varname>|=|</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>nearestApproachDistance</varname></primary></indexterm>
 					<para>La distancia de aproximación más cercana (<varname>|=|</varname>) es ordenable KNN a través de la clase de operador GiST.</para>
 					<para><varname>nearestApproachDistance(tpcpatch,tpcbox) → float</varname></para>
 					<para><varname>nearestApproachDistance(tpcpatch,tpcpatch) → float</varname></para>
