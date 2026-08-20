@@ -555,23 +555,6 @@ Pose_point(PG_FUNCTION_ARGS)
   PG_RETURN_DATUM(datum_copy(d, T_GEOMETRY));
 }
 
-PGDLLEXPORT Datum Pose_rotation(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Pose_rotation);
-/**
- * @ingroup mobilitydb_pose_base_accessor
- * @brief Return the rotation of a 2D pose
- * @sqlfn rotation()
- */
-Datum
-Pose_rotation(PG_FUNCTION_ARGS)
-{
-  Pose *pose = PG_GETARG_POSE_P(0);
-  double result = pose_rotation(pose);
-  if (result == DBL_MAX)
-    PG_RETURN_NULL();
-  PG_RETURN_FLOAT8(result);
-}
-
 PGDLLEXPORT Datum Pose_quaternion(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Pose_quaternion);
 /**

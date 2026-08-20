@@ -294,9 +294,9 @@ posesegm_locate(const Pose *start, const Pose *end, const Pose *value)
   }
   else
   {
-    double rotation1 = pose_rotation(start);
-    double rotation2 = pose_rotation(end);
-    double rotation = pose_rotation(value);
+    double rotation1 = pose_yaw(start);
+    double rotation2 = pose_yaw(end);
+    double rotation = pose_yaw(value);
     if (rotation1 != rotation2)
     {
       result2 = floatsegm_locate(rotation1, rotation2, rotation);
@@ -1077,33 +1077,6 @@ posearr_points(Pose **posearr, int count)
 /*****************************************************************************
  * Accessor functions
  *****************************************************************************/
-
-/**
- * @ingroup meos_pose_base_accessor
- * @brief Return the rotation of a 2D pose
- * @param[in] pose Pose
- * @return On error return @p DBL_MAX
- * @csqlfn #Pose_rotation()
- */
-double
-pose_rotation(const Pose *pose)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(pose, DBL_MAX);
-  if (! ensure_has_not_Z(T_POSE, pose->flags))
-    return DBL_MAX;
-
-  return pose->data[2];
-}
-
-/**
- * @brief Convert a pose into a geometry point
- */
-Datum
-datum_pose_rotation(Datum pose)
-{
-  return Float8GetDatum(pose_rotation(DatumGetPoseP(pose)));
-}
 
 /**
  * @brief Datum-typed wrappers for the Euler-angle accessors used by the

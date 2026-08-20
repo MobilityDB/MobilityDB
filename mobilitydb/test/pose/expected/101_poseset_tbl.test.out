@@ -63,7 +63,7 @@ SELECT COUNT(*) FROM tbl_pose2d WHERE pose::poseset IS NOT NULL;
    100
 (1 row)
 
-SELECT MIN(rotation(startValue(round(s, 3)))) FROM tbl_poseset2d;
+SELECT MIN(yaw(startValue(round(s, 3)))) FROM tbl_poseset2d;
   min   
 --------
  -0.054
@@ -81,19 +81,19 @@ SELECT MIN(numValues(s)) FROM tbl_poseset2d;
    1
 (1 row)
 
-SELECT round(MIN(rotation(startValue(s))), 6) FROM tbl_poseset2d;
+SELECT round(MIN(yaw(startValue(s))), 6) FROM tbl_poseset2d;
    round   
 -----------
  -0.054279
 (1 row)
 
-SELECT round(MIN(rotation(endValue(s))), 6) FROM tbl_poseset2d;
+SELECT round(MIN(yaw(endValue(s))), 6) FROM tbl_poseset2d;
    round   
 -----------
  -0.054648
 (1 row)
 
-SELECT round(MIN(rotation(valueN(s, 1))), 6) FROM tbl_poseset2d;
+SELECT round(MIN(yaw(valueN(s, 1))), 6) FROM tbl_poseset2d;
    round   
 -----------
  -0.054279

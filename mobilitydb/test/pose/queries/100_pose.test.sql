@@ -76,7 +76,7 @@ SELECT asText(pose(ST_PointZ(1,1,1), 'NaN', 0, 0));
 -------------------------------------------------------------------------------
 
 SELECT ST_AsText(point(pose 'Pose(Point(1 1),0.5)'));
-SELECT rotation(pose 'Pose(Point(1 1),0.5)');
+SELECT yaw(pose 'Pose(Point(1 1),0.5)');
 SELECT srid(pose 'Pose(SRID=5676;Point(1 1),0.5)');
 
 -- (yaw, pitch, roll) accessors. For a 2D pose the rotation theta is yaw;

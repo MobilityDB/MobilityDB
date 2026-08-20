@@ -861,15 +861,18 @@ parse_mfjson_pose(json_object *mfjson, int32_t srid)
   }
   else
   {
-    json_object *rotation = NULL;
-    rotation = findMemberByName(mfjson, "rotation");
-    if (rotation == NULL)
+    /* The angle of a 2D pose is its yaw. Documents written by MobilityDB
+     * 1.3 name it 'rotation', so both names are read. */
+    json_object *yaw = findMemberByName(mfjson, "yaw");
+    if (yaw == NULL)
+      yaw = findMemberByName(mfjson, "rotation");
+    if (yaw == NULL)
     {
       meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
-        "Unable to find 'rotation' in MFJSON string");
+        "Unable to find 'yaw' in MFJSON string");
       return NULL;
     }
-    z = json_object_get_double(rotation);
+    z = json_object_get_double(yaw);
   }
   Pose *result = hasZ ? pose_make_3d(x, y, z, w_q, x_q, y_q, z_q, false, srid) :
     pose_make_2d(x, y, z, false, srid);

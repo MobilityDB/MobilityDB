@@ -265,13 +265,20 @@ SELECT asText(points(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));{Pose(Point(0 0)
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="trgeometry_rotation">
-				<indexterm significance="normal"><primary><varname>rotation</varname></primary></indexterm>
-				<para>Devuelve el ángulo de rotación como un flotante temporal</para>
-				<para><varname>rotation(trgeometry) → tfloat</varname></para>
+			<listitem xml:id="trgeometry_yaw_pitch_roll">
+				<indexterm significance="normal"><primary><varname>yaw</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>pitch</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>roll</varname></primary></indexterm>
+				<para>Devuelve el ángulo yaw, pitch o roll como un flotante temporal, en radianes, bajo la convención Tait-Bryan intrínseca ZYX que exige la clase de conformidad Basic-YPR de OGC GeoPose</para>
+				<para><varname>yaw(trgeometry) → tfloat</varname></para>
+				<para><varname>pitch(trgeometry) → tfloat</varname></para>
+				<para><varname>roll(trgeometry) → tfloat</varname></para>
+				<para>Una geometría rígida lleva su orientación en sus poses, de modo que cada una de estas funciones se proyecta sobre la pose temporal y se lo pregunta, exactamente como lo hacen los accesores homónimos de <link linkend="pose_yaw_pitch_roll"><varname>tpose</varname></link>. Una geometría rígida 2D gira por el ángulo almacenado de cada pose y no cabecea ni alabea.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(rotation(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(0 0), 1.5)@2001-01-02]'));
--- [0@..., 1.5@...]
+SELECT asText(yaw(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(0 0), 1.5)@2001-01-02]'));
+-- [0@2001-01-01, 1.5@2001-01-02]
+SELECT asText(pitch(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(0 0), 1.5)@2001-01-02]'));
+-- [0@2001-01-01, 0@2001-01-02]
 </programlisting>
 			</listitem>
 

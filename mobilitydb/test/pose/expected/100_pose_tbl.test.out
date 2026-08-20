@@ -21,7 +21,7 @@ SELECT MAX(ST_X(point(pose))) FROM tbl_pose2d;
  99.29531615669725
 (1 row)
 
-SELECT MAX(rotation(pose)) FROM tbl_pose2d;
+SELECT MAX(yaw(pose)) FROM tbl_pose2d;
        max        
 ------------------
  0.05378614038812

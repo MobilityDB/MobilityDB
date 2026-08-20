@@ -1543,9 +1543,6 @@
 						<para><link linkend="pose_point"><varname>point</varname></link>: Devuelve el punto</para>
 					</listitem>
 
-					<listitem>
-						<para><link linkend="pose_rotation"><varname>rotation</varname></link>: Devuelve la rotación</para>
-					</listitem>
 
 					<listitem>
 						<para><link linkend="pose_quaternion"><varname>quaternion</varname></link>: Devuelve el cuaternión de orientación de una pose 3D</para>
@@ -1670,9 +1667,6 @@
 						<para><link linkend="tpose_points"><varname>points</varname></link>: Devuelve los puntos</para>
 					</listitem>
 
-					<listitem>
-						<para><link linkend="tpose_rotation"><varname>rotation</varname></link>: Devuelve la rotación</para>
-					</listitem>
 
 					<listitem>
 						<para><link linkend="tpose_valueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Devuelve el valor en una marca de tiempo</para>
@@ -2459,7 +2453,7 @@
 				</listitem>
 
 				<listitem>
-					<para><link linkend="trgeometry_rotation"><varname>rotation</varname></link>: Devuelve el ángulo de rotación como un flotante temporal</para>
+					<para><link linkend="trgeometry_yaw_pitch_roll"><varname>yaw</varname>, <varname>pitch</varname>, <varname>roll</varname></link>: Devuelve el ángulo yaw, pitch o roll como un flotante temporal, en radianes, bajo la convención Tait-Bryan intrínseca ZYX que exige la clase de conformidad Basic-YPR de OGC GeoPose</para>
 				</listitem>
 
 				<listitem>

@@ -450,7 +450,7 @@ pose_as_json_sb(stringbuffer_t *sb, const Pose *pose, int precision)
     stringbuffer_append_double(sb, pt->y, precision);
     stringbuffer_append_len(sb, ",\"lon\":", 7);
     stringbuffer_append_double(sb, pt->x, precision);
-    stringbuffer_append_len(sb, "},\"rotation\":", 13);
+    stringbuffer_append_len(sb, "},\"yaw\":", 8);
     stringbuffer_append_double(sb, pose->data[2], precision);
   }
 stringbuffer_append_char(sb, '}');

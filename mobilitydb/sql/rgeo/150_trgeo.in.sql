@@ -253,9 +253,19 @@ CREATE FUNCTION points(trgeometry)
   AS 'MODULE_PATHNAME', 'Trgeometry_points'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION rotation(trgeometry)
+CREATE FUNCTION yaw(trgeometry)
   RETURNS tfloat
-  AS 'MODULE_PATHNAME', 'Trgeometry_rotation'
+  AS 'MODULE_PATHNAME', 'Trgeometry_yaw'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION pitch(trgeometry)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Trgeometry_pitch'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION roll(trgeometry)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Trgeometry_roll'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************/

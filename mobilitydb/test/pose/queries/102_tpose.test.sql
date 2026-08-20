@@ -209,6 +209,16 @@ SELECT memSize(tpose '{Pose(Point(1 1), 0.3)@2000-01-01, Pose(Point(1 1), 0.5)@2
 SELECT memSize(tpose '[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03]');
 SELECT memSize(tpose '{[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@2000-01-02, Pose(Point(1 1), 0.5)@2000-01-03], [Pose(Point(2 2), 0.6)@2000-01-04, Pose(Point(2 2), 0.6)@2000-01-05]}');
 
+-- The orientation channel of a temporal pose. A 2D pose interpolates its
+-- stored angle linearly and that angle is its yaw, so a linear 2D temporal
+-- pose projects to a linear temporal float. A 3D pose interpolates by SLERP,
+-- whose Tait-Bryan decomposition is not linear in time, so it projects to a
+-- step function.
+SELECT asText(yaw(tpose '[Pose(Point(0 0), 0.0)@2000-01-01, Pose(Point(1 1), 0.5)@2000-01-02]'));
+SELECT asText(pitch(tpose '[Pose(Point(0 0), 0.0)@2000-01-01, Pose(Point(1 1), 0.5)@2000-01-02]'));
+SELECT asText(roll(tpose '[Pose(Point(0 0), 0.0)@2000-01-01, Pose(Point(1 1), 0.5)@2000-01-02]'));
+SELECT asText(round(yaw(tpose '[Pose(Point Z(0 0 0), 1, 0, 0, 0)@2000-01-01, Pose(Point Z(1 1 1), 0.5, 0.5, 0.5, 0.5)@2000-01-02]'), 6));
+
 SELECT asText(getValue(tpose 'Pose(Point(1 1), 0.5)@2000-01-01'));
 
 SELECT asText(getValues(tpose 'Pose(Point(1 1), 0.5)@2000-01-01'));
@@ -656,6 +666,14 @@ SELECT asText(tgeompoint(tpose '[GeodPose(Point(1 1),0.1)@2000-01-01]'));
 WITH ais(mmsi, temp) AS (
   SELECT mmsi, tposeSeq(array_agg(tpose(pose(geom, heading), t) ORDER BY t))
   FROM tbl_ais_instant GROUP BY mmsi )
+-- The MF-JSON angle of a 2D pose is its yaw; a 3D pose carries a quaternion.
+SELECT asMFJSON(tpose 'SRID=4326;Pose(Point(1 2), 0.5)@2000-01-01');
+SELECT asMFJSON(tpose 'SRID=4326;Pose(Point Z(1 2 3), 1, 0, 0, 0)@2000-01-01');
+-- Both names of the 2D angle are read, so a document written by MobilityDB
+-- 1.3 under the name 'rotation' still parses.
+SELECT asText(tposeFromMFJSON('{"type":"MovingPose","crs":{"type":"Name","properties":{"name":"EPSG:4326"}},"values":[{"position":{"lat":2,"lon":1},"yaw":0.5}],"datetimes":["2000-01-01T00:00:00+00"],"interpolation":"None"}'));
+SELECT asText(tposeFromMFJSON('{"type":"MovingPose","crs":{"type":"Name","properties":{"name":"EPSG:4326"}},"values":[{"position":{"lat":2,"lon":1},"rotation":0.5}],"datetimes":["2000-01-01T00:00:00+00"],"interpolation":"None"}'));
+
 SELECT count(*) FROM ais WHERE asMFJSON(temp)::jsonb IS NULL;
 
 WITH ais(mmsi, temp) AS (

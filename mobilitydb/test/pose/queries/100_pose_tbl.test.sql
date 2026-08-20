@@ -43,7 +43,7 @@ DROP TABLE tbl_pose2d_tmp;
 -------------------------------------------------------------------------------
 
 SELECT MAX(ST_X(point(pose))) FROM tbl_pose2d;
-SELECT MAX(rotation(pose)) FROM tbl_pose2d;
+SELECT MAX(yaw(pose)) FROM tbl_pose2d;
 
 -------------------------------------------------------------------------------
 -- Cast functions

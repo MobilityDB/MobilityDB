@@ -638,6 +638,30 @@ SELECT memSize(tpose '{[Pose(Point(1 1), 0.2)@2000-01-01, Pose(Point(1 1), 0.4)@
      608
 (1 row)
 
+SELECT asText(yaw(tpose '[Pose(Point(0 0), 0.0)@2000-01-01, Pose(Point(1 1), 0.5)@2000-01-02]'));
+                               astext                               
+--------------------------------------------------------------------
+ [0@Sat Jan 01 00:00:00 2000 PST, 0.5@Sun Jan 02 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(pitch(tpose '[Pose(Point(0 0), 0.0)@2000-01-01, Pose(Point(1 1), 0.5)@2000-01-02]'));
+                              astext                              
+------------------------------------------------------------------
+ [0@Sat Jan 01 00:00:00 2000 PST, 0@Sun Jan 02 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(roll(tpose '[Pose(Point(0 0), 0.0)@2000-01-01, Pose(Point(1 1), 0.5)@2000-01-02]'));
+                              astext                              
+------------------------------------------------------------------
+ [0@Sat Jan 01 00:00:00 2000 PST, 0@Sun Jan 02 00:00:00 2000 PST]
+(1 row)
+
+SELECT asText(round(yaw(tpose '[Pose(Point Z(0 0 0), 1, 0, 0, 0)@2000-01-01, Pose(Point Z(1 1 1), 0.5, 0.5, 0.5, 0.5)@2000-01-02]'), 6));
+                                       astext                                        
+-------------------------------------------------------------------------------------
+ Interp=Step;[0@Sat Jan 01 00:00:00 2000 PST, 1.570796@Sun Jan 02 00:00:00 2000 PST]
+(1 row)
+
 SELECT asText(getValue(tpose 'Pose(Point(1 1), 0.5)@2000-01-01'));
         astext        
 ----------------------
@@ -2480,12 +2504,35 @@ ERROR:  Only planar coordinates supported
 WITH ais(mmsi, temp) AS (
   SELECT mmsi, tposeSeq(array_agg(tpose(pose(geom, heading), t) ORDER BY t))
   FROM tbl_ais_instant GROUP BY mmsi )
-SELECT count(*) FROM ais WHERE asMFJSON(temp)::jsonb IS NULL;
- count 
--------
-     0
+-- The MF-JSON angle of a 2D pose is its yaw; a 3D pose carries a quaternion.
+SELECT asMFJSON(tpose 'SRID=4326;Pose(Point(1 2), 0.5)@2000-01-01');
+                                                                                            asmfjson                                                                                             
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingPose","crs":{"type":"Name","properties":{"name":"EPSG:4326"}},"values":[{"position":{"lat":2,"lon":1},"yaw":0.5}],"datetimes":["2000-01-01T00:00:00-08"],"interpolation":"None"}
 (1 row)
 
+SELECT asMFJSON(tpose 'SRID=4326;Pose(Point Z(1 2 3), 1, 0, 0, 0)@2000-01-01');
+                                                                                                              asmfjson                                                                                                              
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"type":"MovingPose","crs":{"type":"Name","properties":{"name":"EPSG:4326"}},"values":[{"position":{"lat":2,"lon":1,"h":3},"quaternion":{"x":0,"y":0,"z":0,"w":1}}],"datetimes":["2000-01-01T00:00:00-08"],"interpolation":"None"}
+(1 row)
+
+SELECT asText(tposeFromMFJSON('{"type":"MovingPose","crs":{"type":"Name","properties":{"name":"EPSG:4326"}},"values":[{"position":{"lat":2,"lon":1},"yaw":0.5}],"datetimes":["2000-01-01T00:00:00+00"],"interpolation":"None"}'));
+                      astext                       
+---------------------------------------------------
+ Pose(POINT(1 2),0.5)@Fri Dec 31 16:00:00 1999 PST
+(1 row)
+
+SELECT asText(tposeFromMFJSON('{"type":"MovingPose","crs":{"type":"Name","properties":{"name":"EPSG:4326"}},"values":[{"position":{"lat":2,"lon":1},"rotation":0.5}],"datetimes":["2000-01-01T00:00:00+00"],"interpolation":"None"}'));
+                      astext                       
+---------------------------------------------------
+ Pose(POINT(1 2),0.5)@Fri Dec 31 16:00:00 1999 PST
+(1 row)
+
+SELECT count(*) FROM ais WHERE asMFJSON(temp)::jsonb IS NULL;
+ERROR:  relation "ais" does not exist
+LINE 1: SELECT count(*) FROM ais WHERE asMFJSON(temp)::jsonb IS NULL...
+                             ^
 WITH ais(mmsi, temp) AS (
   SELECT mmsi, tposeSeq(array_agg(tpose(pose(geom, heading), t) ORDER BY t))
   FROM tbl_ais_instant GROUP BY mmsi )

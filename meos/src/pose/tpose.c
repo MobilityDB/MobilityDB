@@ -519,34 +519,16 @@ tpose_to_tpoint(const Temporal *temp)
  *****************************************************************************/
 
 /**
- * @ingroup meos_pose_accessor
- * @brief Return a the rotation of a temporal pose as a temporal float
- * @param[in] temp Temporal pose
- * @csqlfn #Tpose_rotation()
- */
-Temporal *
-tpose_rotation(const Temporal *temp)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_TPOSE(temp, NULL);
-  if (! ensure_has_not_Z(temp->temptype, temp->flags))
-    return NULL;
-
-  LiftedFunctionInfo lfinfo;
-  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) &datum_pose_rotation;
-  lfinfo.argtype[0] = T_TPOSE;
-  lfinfo.restype = T_TFLOAT;
-  /* Rotation projection is affine: linear input -> linear output */
-  lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
-  Temporal *result = tfunc_temporal(temp, &lfinfo);
-  return result;
-}
-
-/**
  * @brief Lift a pose-to-double Datum function through a temporal pose,
  * returning a temporal float. Shared backend for the @p yaw / @p pitch /
  * @p roll accessors below.
+ * @details The interpolation of the result follows the dimension. A 2D pose
+ * interpolates its stored angle linearly and that angle is its yaw, so the
+ * projection of a linear 2D temporal pose is itself linear, and its pitch and
+ * roll are constant. A 3D pose interpolates by SLERP, whose Tait-Bryan
+ * decomposition is not linear in time, so the projection of a 3D temporal
+ * pose is a step function: reading it between two instants answers the
+ * angle of the instant on the left rather than an angle no pose holds.
  */
 static Temporal *
 tpose_lift_to_tfloat(const Temporal *temp, varfunc func)
@@ -557,6 +539,8 @@ tpose_lift_to_tfloat(const Temporal *temp, varfunc func)
   lfinfo.numparam = 0;
   lfinfo.argtype[0] = T_TPOSE;
   lfinfo.restype = T_TFLOAT;
+  lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags) &&
+    ! MEOS_FLAGS_GET_Z(temp->flags);
   return tfunc_temporal(temp, &lfinfo);
 }
 
