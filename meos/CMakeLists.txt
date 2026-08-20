@@ -431,6 +431,14 @@ if(MEOS)
   install(
     FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_internal_geo.h"
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+  if(NOT GEOS)
+    # The internal geometry header names the GEOS context handle, so a program
+    # reading the installed headers reads geos_c.h as this build did. It is the
+    # stand-in that is installed, so such a program needs no GEOS either
+    install(
+      FILES "${CMAKE_SOURCE_DIR}/meos/include/geos-none/geos_c.h"
+      DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+  endif()
   install(
     FILES "${CMAKE_SOURCE_DIR}/meos/src/geo/spatial_ref_sys.csv"
     DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}")
