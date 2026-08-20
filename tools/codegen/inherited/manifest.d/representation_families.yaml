@@ -482,6 +482,45 @@ representation_families:
     - asEWKB
     - asHexWKB
     - asHexEWKB
+- family: posechain_base
+  file: mobilitydb/sql/posechain/550_posechain.in.sql
+  reference: true
+  begin: "\n * Input/output from (E)WKT, (E)WKB, and HexEWKB\n"
+  end: "\n * Constructors\n"
+  temps:
+  - temp: posechain
+    maxdd: true
+  syms:
+    FromText: Posechain_from_ewkt
+    FromEWKT: Posechain_from_ewkt
+    FromBinary: Posechain_from_wkb
+    FromEWKB: Posechain_from_wkb
+    FromHexEWKB: Posechain_from_hexwkb
+    asText: Posechain_as_text
+    asEWKT: Posechain_as_ewkt
+    asBinary: Posechain_as_wkb
+    asEWKB: Posechain_as_ewkb
+    asHexWKB: Posechain_as_hexwkb
+    asHexEWKB: Posechain_as_hexewkb
+  arrsyms:
+    asText: Spatialarr_as_text
+    asEWKT: Spatialarr_as_ewkt
+  blocks:
+  - lit: "/*****************************************************************************\n * Input/output from (E)WKT, (E)WKB, and HexEWKB\n *****************************************************************************/"
+  - ops:
+    - FromText
+    - FromEWKT
+    - FromBinary
+    - FromEWKB
+    - FromHexEWKB
+  - lit: "/*****************************************************************************/"
+  - ops:
+    - asText
+    - asEWKT
+    - asBinary
+    - asEWKB
+    - asHexWKB
+    - asHexEWKB
 - family: cbuffer_base
   file: mobilitydb/sql/cbuffer/200_cbuffer.in.sql
   reference: true

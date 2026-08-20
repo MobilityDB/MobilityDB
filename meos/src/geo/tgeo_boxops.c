@@ -71,6 +71,9 @@
   #include "pose/pose.h"
   #include "pose/tpose_boxops.h"
 #endif
+#if POSECHAIN
+  #include "posechain/posechain.h"
+#endif
 #if QUADBIN
   #include "quadbin/tquadbin_boxops.h"
 #endif
@@ -390,6 +393,10 @@ spatialarr_set_bbox(const Datum *values, MeosType basetype, int count,
 #if POSE || RGEO
   else if (basetype == T_POSE)
     posearr_set_stbox(values, count, (STBox *) box);
+#endif
+#if POSECHAIN
+  else if (basetype == T_POSECHAIN)
+    posechainarr_set_stbox(values, count, (STBox *) box);
 #endif
 #if QUADBIN
   else if (basetype == T_QUADBIN)

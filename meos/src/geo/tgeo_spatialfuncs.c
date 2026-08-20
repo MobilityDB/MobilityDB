@@ -65,6 +65,9 @@
 #if POSE
   #include "pose/pose.h"
 #endif
+#if POSECHAIN
+  #include "posechain/posechain.h"
+#endif
 #if RGEO
   #include "rgeo/trgeo.h"
 #endif
@@ -340,6 +343,21 @@ pose_flags(Pose *pose)
 }
 #endif /* POSE || RGEO */
 
+#if POSECHAIN
+/**
+ * @brief Get the MEOS flags from a pose chain
+ */
+static int16
+posechain_flags(const PoseChain *pc)
+{
+  int16 result = 0; /* Set all flags to false */
+  MEOS_FLAGS_SET_X(result, true);
+  MEOS_FLAGS_SET_Z(result, MEOS_FLAGS_GET_Z(pc->flags));
+  MEOS_FLAGS_SET_GEODETIC(result, MEOS_FLAGS_GET_GEODETIC(pc->flags));
+  return result;
+}
+#endif /* POSECHAIN */
+
 #if H3
 /**
  * @brief Get the MEOS flags from an H3 cell index
@@ -456,6 +474,10 @@ spatial_flags(Datum d, MeosType basetype)
 #if POSE || RGEO
     case T_POSE:
       return pose_flags(DatumGetPoseP(d));
+#endif
+#if POSECHAIN
+    case T_POSECHAIN:
+      return posechain_flags(DatumGetPoseChainP(d));
 #endif
 #if QUADBIN
     case T_QUADBIN:

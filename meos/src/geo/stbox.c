@@ -73,6 +73,9 @@
   #include "pose/pose.h"
   #include "pose/tpose_boxops.h"
 #endif
+#if POSECHAIN
+  #include "posechain/posechain.h"
+#endif
 #if QUADBIN
   #include "quadbin/quadbin.h"
   #include "quadbin/tquadbin_boxops.h"
@@ -1057,6 +1060,10 @@ spatial_set_stbox(Datum d, MeosType basetype, STBox *result)
 #if POSE || RGEO
     case T_POSE:
       return pose_set_stbox(DatumGetPoseP(d), result);
+#endif
+#if POSECHAIN
+    case T_POSECHAIN:
+      return posechain_set_stbox(DatumGetPoseChainP(d), result);
 #endif
 #if QUADBIN
     case T_QUADBIN:

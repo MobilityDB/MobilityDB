@@ -46,6 +46,7 @@
 #include "temporal/set.h"
 #include "temporal/span.h"
 #include "temporal/tbox.h"
+#include "temporal/type_util.h"
 #include "geo/postgis_funcs.h"
 #include "geo/stbox.h"
 #include "geo/tgeo_spatialfuncs.h"
@@ -73,6 +74,9 @@
 #if POSE
   #include <meos_pose.h>
   #include "pose/pose.h"
+#endif
+#if POSECHAIN
+  #include "posechain/posechain.h"
 #endif
 #if QUADBIN
   #include <meos_quadbin.h>
@@ -273,6 +277,16 @@ basetype_in(const char *str, MeosType type, bool end UNUSED, Datum *result)
       if (! pose)
         return false;
       *result = PointerGetDatum(pose);
+      return true;
+    }
+#endif
+#if POSECHAIN
+    case T_POSECHAIN:
+    {
+      PoseChain *pc = posechain_parse(&str, end);
+      if (! pc)
+        return false;
+      *result = PointerGetDatum(pc);
       return true;
     }
 #endif
@@ -1967,6 +1981,59 @@ pose_from_wkb_state(meos_wkb_parse_state *s)
 }
 #endif /* POSE */
 
+#if POSECHAIN
+/**
+ * @brief Read a pose chain and advance the parse state forward
+ * @details The chain writes its flags and its one SRID once, then the number
+ * of links, then the values of every link in order. An inner link names no
+ * frame of its own, so none of them repeats the SRID
+ */
+PoseChain *
+posechain_from_wkb_state(meos_wkb_parse_state *s)
+{
+  /* Read the flags */
+  uint8_t wkb_flags = (uint8_t) byte_from_wkb_state(s);
+  pose_flags_from_wkb_state(s, wkb_flags);
+  /* Read the SRID, if necessary */
+  int32_t srid = s->has_srid ? int32_from_wkb_state(s) : SRID_UNKNOWN;
+  int count = int32_from_wkb_state(s);
+  if (count < 1)
+  {
+    meos_error(ERROR, MEOS_ERR_WKB_INPUT,
+      "Pose chains require at least one link");
+    return NULL;
+  }
+  Pose **poses = palloc(sizeof(Pose *) * count);
+  for (int i = 0; i < count; i++)
+  {
+    /* Only the outer link carries the frame of the chain */
+    bool geodetic = (i == 0) ? s->geodetic : false;
+    int32_t link_srid = (i == 0) ? srid : SRID_UNKNOWN;
+    if (s->hasz)
+    {
+      double x = double_from_wkb_state(s);
+      double y = double_from_wkb_state(s);
+      double z = double_from_wkb_state(s);
+      double W = double_from_wkb_state(s);
+      double X = double_from_wkb_state(s);
+      double Y = double_from_wkb_state(s);
+      double Z = double_from_wkb_state(s);
+      poses[i] = pose_make_3d(x, y, z, W, X, Y, Z, geodetic, link_srid);
+    }
+    else
+    {
+      double x = double_from_wkb_state(s);
+      double y = double_from_wkb_state(s);
+      double theta = double_from_wkb_state(s);
+      poses[i] = pose_make_2d(x, y, theta, geodetic, link_srid);
+    }
+  }
+  PoseChain *result = posechain_make((const Pose **) poses, count);
+  pfree_array((void **) poses, count);
+  return result;
+}
+#endif /* POSECHAIN */
+
 #if RASTER
 /**
  * @brief Read a Raquet raster tile and advance the parse state forward
@@ -2055,6 +2122,10 @@ base_from_wkb_state(meos_wkb_parse_state *s)
     case T_POSE:
       return PointerGetDatum(pose_from_wkb_state(s));
 #endif /* POSE */
+#if POSECHAIN
+    case T_POSECHAIN:
+      return PointerGetDatum(posechain_from_wkb_state(s));
+#endif /* POSECHAIN */
 #if QUADBIN
     case T_QUADBIN:
       /* quadbin is a uint64 cell id, wire-format identical to int8. */
@@ -2683,6 +2754,10 @@ type_from_wkb(const uint8_t *wkb, size_t size, MeosType type)
   if (type == T_POSE)
     return PointerGetDatum(pose_from_wkb_state(&s));
 #endif /* POSE */
+#if POSECHAIN
+  if (type == T_POSECHAIN)
+    return PointerGetDatum(posechain_from_wkb_state(&s));
+#endif /* POSECHAIN */
 #if RASTER
   if (type == T_RAQUET)
     return raquet_from_wkb_state(&s);

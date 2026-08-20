@@ -79,6 +79,9 @@
 #if POSE
   #include "pose/pose.h"
 #endif
+#if POSECHAIN
+  #include "posechain/posechain.h"
+#endif
 #if QUADBIN
   #include <meos_quadbin.h>
 #endif
@@ -188,6 +191,10 @@ basetype_out(Datum value, MeosType type, int maxdd)
 #if POSE || RGEO
     case T_POSE:
       return pose_out(DatumGetPoseP(value), maxdd);
+#endif
+#if POSECHAIN
+    case T_POSECHAIN:
+      return posechain_out(DatumGetPoseChainP(value), maxdd);
 #endif
 #if QUADBIN
     case T_QUADBIN:
@@ -1396,6 +1403,30 @@ pose_to_wkb_size(const Pose *pose, uint8_t variant, bool component)
 }
 #endif /* POSE */
 
+#if POSECHAIN
+/**
+ * @brief Return the size in bytes of a pose chain in the Well-Known Binary
+ * (WKB) representation
+ */
+static size_t
+posechain_to_wkb_size(const PoseChain *pc, uint8_t variant, bool component)
+{
+  /* Pose chain flags (1 byte) */
+  size_t size = 1;
+  if (! component)
+    /* Endian flag */
+    size += MEOS_WKB_BYTE_SIZE;
+  if (spatial_wkb_needs_srid(posechain_srid(pc), variant))
+    size += MEOS_WKB_INT4_SIZE;
+  /* Number of links */
+  size += MEOS_WKB_INT4_SIZE;
+  /* 2D: 3 double values per link, 3D: 7 double values per link */
+  size += (size_t) posechain_num_poses(pc) * MEOS_WKB_DOUBLE_SIZE *
+    (MEOS_FLAGS_GET_Z(pc->flags) ? 7 : 3);
+  return size;
+}
+#endif /* POSECHAIN */
+
 #if H3
 /**
  * @brief Return the size in bytes of an h3index in the Well-Known Binary
@@ -1473,6 +1504,10 @@ base_to_wkb_size(Datum value, MeosType basetype, uint8_t variant)
     case T_POSE:
       return pose_to_wkb_size(DatumGetPoseP(value), variant, true);
 #endif /* POSE || RGEO */
+#if POSECHAIN
+    case T_POSECHAIN:
+      return posechain_to_wkb_size(DatumGetPoseChainP(value), variant, true);
+#endif /* POSECHAIN */
 #if QUADBIN
     case T_QUADBIN:
       /* quadbin is a uint64 cell id, wire-format identical to int8. */
@@ -1751,6 +1786,10 @@ datum_to_wkb_size(Datum value, MeosType type, uint8_t variant)
   if (type == T_POSE)
     return pose_to_wkb_size(DatumGetPoseP(value), variant, false);
 #endif /* POSE || RGEO */
+#if POSECHAIN
+  if (type == T_POSECHAIN)
+    return posechain_to_wkb_size(DatumGetPoseChainP(value), variant, false);
+#endif /* POSECHAIN */
 #if RASTER
   if (type == T_RAQUET)
     return raquet_to_wkb_size(DatumGetRaquetP(value), false);
@@ -2200,6 +2239,51 @@ pose_to_wkb_buf(const Pose *pose, uint8_t *buf, uint8_t variant,
 }
 #endif /* POSE */
 
+#if POSECHAIN
+/**
+ * @brief Write into the buffer the flags of a pose chain in the Well-Known
+ * Binary (WKB) representation
+ */
+static uint8_t *
+posechain_flags_to_wkb_buf(const PoseChain *pc, uint8_t *buf, uint8_t variant)
+{
+  uint8_t wkb_flags = MEOS_WKB_XFLAG;
+  if (MEOS_FLAGS_GET_Z(pc->flags))
+    wkb_flags |= MEOS_WKB_ZFLAG;
+  if (MEOS_FLAGS_GET_GEODETIC(pc->flags))
+    wkb_flags |= MEOS_WKB_GEODETICFLAG;
+  if (spatial_wkb_needs_srid(posechain_srid(pc), variant))
+    wkb_flags |= MEOS_WKB_SRIDFLAG;
+  return uint8_to_wkb_buf(wkb_flags, buf, variant);
+}
+
+/**
+ * @brief Write into the buffer a pose chain in the Well-Known Binary (WKB)
+ * representation
+ * @details Flags (byte), SRID (int32, if any), number of links (int32), then
+ * 3 doubles per link in two dimensions and 7 in three
+ */
+static uint8_t *
+posechain_to_wkb_buf(const PoseChain *pc, uint8_t *buf, uint8_t variant,
+  bool component)
+{
+  if (! component)
+    /* Write the endian flag (byte) */
+    buf = endian_to_wkb_buf(buf, variant);
+  /* Write the flags (byte) */
+  buf = posechain_flags_to_wkb_buf(pc, buf, variant);
+  int32_t srid = posechain_srid(pc);
+  if (spatial_wkb_needs_srid(srid, variant))
+    buf = int32_to_wkb_buf(srid, buf, variant);
+  int count = posechain_num_poses(pc);
+  buf = int32_to_wkb_buf(count, buf, variant);
+  int nvalues = MEOS_FLAGS_GET_Z(pc->flags) ? 7 : 3;
+  for (int i = 0; i < count * nvalues; i++)
+    buf = double_to_wkb_buf(pc->data[i], buf, variant);
+  return buf;
+}
+#endif /* POSECHAIN */
+
 #if POINTCLOUD
 /**
  * @brief Emit @p body_len bytes from @p src into @p buf, hex-encoding when
@@ -2366,6 +2450,12 @@ base_to_wkb_buf(Datum value, MeosType basetype, uint8_t *buf,
       buf = pose_to_wkb_buf(DatumGetPoseP(value), buf, variant, true);
       break;
 #endif /* POSE || RGEO */
+#if POSECHAIN
+    case T_POSECHAIN:
+      buf = posechain_to_wkb_buf(DatumGetPoseChainP(value), buf, variant,
+        true);
+      break;
+#endif /* POSECHAIN */
 #if QUADBIN
     case T_QUADBIN:
       /* quadbin is a uint64 cell id; wire it as int8. */
@@ -3010,6 +3100,10 @@ datum_to_wkb_buf(Datum value, MeosType type, uint8_t *buf, uint8_t variant)
   else if (type == T_POSE)
     buf = pose_to_wkb_buf(DatumGetPoseP(value), buf, variant, false);
 #endif /* POSE || RGEO */
+#if POSECHAIN
+  else if (type == T_POSECHAIN)
+    buf = posechain_to_wkb_buf(DatumGetPoseChainP(value), buf, variant, false);
+#endif /* POSECHAIN */
 #if RASTER
   else if (type == T_RAQUET)
     buf = raquet_to_wkb_buf(DatumGetRaquetP(value), buf, variant, false);

@@ -120,6 +120,13 @@
 					<entry><varname>tpose</varname>, <varname>trgeometry</varname></entry>
 				</row>
 				<row>
+					<entry><emphasis role="bold"><varname>posechain</varname></emphasis></entry>
+					<entry><varname>posechainset</varname></entry>
+					<entry><varname/></entry>
+					<entry><varname/></entry>
+					<entry><varname/></entry>
+				</row>
+				<row>
 					<entry><emphasis role="bold"><varname>npoint</varname></emphasis></entry>
 					<entry><varname>npointset</varname></entry>
 					<entry><varname/></entry>
@@ -1613,6 +1620,99 @@
 					</listitem>
 					<listitem>
 						<para><link linkend="tpose_geopose_stream"><varname>asGeoPoseStream</varname></link>: Escribe una pose temporal como un Stream de OGC GeoPose</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+		</sect2>
+	</sect1>
+
+	<sect1>
+		<title>Pose Chains</title>
+		<sect2>
+			<title>Cadenas de poses estáticas</title>
+			<sect3>
+				<title>Entrada y salida</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="posechain_asText"><varname>asText</varname>, <varname>asEWKT</varname></link>: Devuelve la representación en texto conocido (WKT) o en texto conocido extendido (EWKT)</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="posechain_asBinary"><varname>asBinary</varname>, <varname>asEWKB</varname>, <varname>asHexWKB</varname>, <varname>asHexEWKB</varname></link>: Devuelve la representación en binario conocido (WKB), en binario conocido extendido (EWKB), en binario conocido hexadecimal (HexWKB) o en binario conocido extendido hexadecimal (HexEWKB)</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="posechainFromText"><varname>posechainFromText</varname>, <varname>posechainFromEWKT</varname></link>: Entrada desde la representación en texto conocido (WKT) o en texto conocido extendido (EWKT)</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="posechainFromBinary"><varname>posechainFromBinary</varname>, <varname>posechainFromEWKB</varname>, <varname>posechainFromHexEWKB</varname></link>: Entrada desde la representación en binario conocido (WKB), en binario conocido extendido (EWKB) o en binario conocido extendido hexadecimal (HexEWKB)</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+			<sect3>
+				<title>Constructores</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="posechain_constructor"><varname>posechain</varname></link>: Construye una cadena de poses a partir de un arreglo de poses ordenadas desde el marco más exterior hacia dentro</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="posechain_appendPose"><varname>appendPose</varname></link>: Devuelve una cadena de poses con una pose añadida como su eslabón más interior</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+			<sect3>
+				<title>Conversión de tipos</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="pose_to_posechain"><varname>posechain</varname></link>: Convierte una pose en una cadena de poses de un solo eslabón</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="posechain_to_pose"><varname>pose</varname></link>: Devuelve la pose de un marco que define la cadena, leída en el marco exterior de la cadena</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="posechain_to_point"><varname>point</varname></link>: Convierte una cadena de poses en el punto geométrico de su marco más interior</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="posechain_to_stbox"><varname>stbox</varname></link>: Convierte una cadena de poses en una caja espaciotemporal</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+			<sect3>
+				<title>Accesores</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="posechain_numPoses"><varname>numPoses</varname></link>: Devuelve el número de eslabones de una cadena de poses</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="posechain_poseN"><varname>startPose</varname>, <varname>endPose</varname>, <varname>poseN</varname>, <varname>poses</varname></link>: Devuelve los eslabones de una cadena de poses</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+			<sect3>
+				<title>Transformaciones</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="posechain_round"><varname>round</varname></link>: Redondea los valores de los eslabones de una cadena de poses a un número de decimales</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+			<sect3>
+				<title>Sistema de referencia espacial</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="posechain_SRID"><varname>SRID</varname>, <varname>setSRID</varname></link>: Devuelve o establece el identificador de referencia espacial del marco exterior de una cadena de poses</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="posechain_transform"><varname>transform</varname>, <varname>transformPipeline</varname></link>: Transforma a un identificador de referencia espacial</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+			<sect3>
+				<title>Comparaciones</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="posechain_comparisons"><varname>=</varname>, <varname>&lt;&gt;</varname>, <varname>&lt;</varname>, <varname>&gt;</varname>, <varname>&lt;=</varname>, <varname>&gt;=</varname></link>: Operadores de comparación tradicionales</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="posechain_same"><varname>~=</varname></link>: Devuelve verdadero si dos cadenas de poses son iguales hasta la tolerancia de la comparación de valores de punto flotante</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
