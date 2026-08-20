@@ -241,7 +241,9 @@ target_include_directories(meos PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 #--------------------------------
 
 target_link_libraries(${MEOS_LIB_NAME} ${JSON-C_LIBRARIES})
-target_link_libraries(${MEOS_LIB_NAME} ${GEOS_LIBRARY})
+if(GEOS)
+  target_link_libraries(${MEOS_LIB_NAME} ${GEOS_LIBRARY})
+endif()
 target_link_libraries(${MEOS_LIB_NAME} ${PROJ_LIBRARIES})
 if(H3)
   target_link_libraries(${MEOS_LIB_NAME} ${H3_LIBRARY})
@@ -291,7 +293,9 @@ endif()
 # Re-list GEOS and PROJ after postgis so they resolve postgis's symbols. The
 # repetition is harmless on platforms where order does not matter (e.g. Linux
 # shared objects).
-target_link_libraries(${MEOS_LIB_NAME} ${GEOS_LIBRARY})
+if(GEOS)
+  target_link_libraries(${MEOS_LIB_NAME} ${GEOS_LIBRARY})
+endif()
 target_link_libraries(${MEOS_LIB_NAME} ${PROJ_LIBRARIES})
 
 #--------------------------------

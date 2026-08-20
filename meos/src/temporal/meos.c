@@ -200,6 +200,8 @@ proj_get_context(void)
  * Functions for the GEOS library
  ***************************************************************************/
 
+#if GEOS
+
 /* Per-thread GEOS context.  Each thread owns its own handle so concurrent
  * callers do not share GEOS state.  MEOS spatial helpers retrieve the
  * handle via geos_get_context() and use the reentrant GEOSXxx_r API. */
@@ -248,6 +250,8 @@ geos_get_context(void)
     geos_initialize();
   return MEOS_GEOS_CONTEXT;
 }
+
+#endif /* GEOS */
 
 /*****************************************************************************/
 #if MEOS
@@ -730,7 +734,9 @@ meos_initialize(void)
   /* Initialize PROJ */
   proj_initialize();
   /* Initialize GEOS */
+#if GEOS
   geos_initialize();
+#endif
   /* Initialize the PostgreSQL pseudo-random number generators */
   prng_initialize();
 #if POINTCLOUD
@@ -765,7 +771,9 @@ meos_finalize(void)
   /* Finalize PROJ */
   proj_finalize();
   /* Finalize GEOS */
+#if GEOS
   geos_finalize();
+#endif
   /* Finalize the PostgreSQL pseudo-random number generators */
   prng_finalize();
   return;
