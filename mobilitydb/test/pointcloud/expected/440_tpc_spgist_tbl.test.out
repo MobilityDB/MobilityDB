@@ -94,6 +94,72 @@ RESET enable_indexscan;
 RESET
 RESET enable_bitmapscan;
 RESET
+CREATE INDEX tbl_tpcpoint_knn_quadtree_idx ON tbl_tpcpoint USING spgist(temp);
+CREATE INDEX
+WITH test AS (
+  SELECT temp |=| tpcbox_zt(200, 200, 200, 210, 210, 210,
+  tstzspan '[2001-06-01, 2001-12-31]', 1, 0) AS distance
+  FROM tbl_tpcpoint ORDER BY 1 LIMIT 3 )
+SELECT round(distance, 6) FROM test;
+   round    
+------------
+ 179.348355
+ 179.369079
+ 189.113301
+(3 rows)
+
+DROP INDEX tbl_tpcpoint_knn_quadtree_idx;
+DROP INDEX
+CREATE INDEX tbl_tpcpoint_knn_kdtree_idx ON tbl_tpcpoint
+  USING spgist(temp tpcpoint_kdtree_ops);
+CREATE INDEX
+WITH test AS (
+  SELECT temp |=| tpcbox_zt(200, 200, 200, 210, 210, 210,
+  tstzspan '[2001-06-01, 2001-12-31]', 1, 0) AS distance
+  FROM tbl_tpcpoint ORDER BY 1 LIMIT 3 )
+SELECT round(distance, 6) FROM test;
+   round    
+------------
+ 179.348355
+ 179.369079
+ 189.113301
+(3 rows)
+
+DROP INDEX tbl_tpcpoint_knn_kdtree_idx;
+DROP INDEX
+CREATE INDEX tbl_tpcpatch_knn_quadtree_idx ON tbl_tpcpatch USING spgist(temp);
+CREATE INDEX
+WITH test AS (
+  SELECT temp |=| tpcbox_xt(200, 200, 210, 210,
+  tstzspan '[2001-06-01, 2001-12-31]', 1, 0) AS distance
+  FROM tbl_tpcpatch ORDER BY 1 LIMIT 3 )
+SELECT round(distance, 6) FROM test;
+   round    
+------------
+ 142.497643
+  142.56829
+  142.95671
+(3 rows)
+
+DROP INDEX tbl_tpcpatch_knn_quadtree_idx;
+DROP INDEX
+CREATE INDEX tbl_tpcpatch_knn_kdtree_idx ON tbl_tpcpatch
+  USING spgist(temp tpcpatch_kdtree_ops);
+CREATE INDEX
+WITH test AS (
+  SELECT temp |=| tpcbox_xt(200, 200, 210, 210,
+  tstzspan '[2001-06-01, 2001-12-31]', 1, 0) AS distance
+  FROM tbl_tpcpatch ORDER BY 1 LIMIT 3 )
+SELECT round(distance, 6) FROM test;
+   round    
+------------
+ 142.497643
+  142.56829
+  142.95671
+(3 rows)
+
+DROP INDEX tbl_tpcpatch_knn_kdtree_idx;
+DROP INDEX
 CREATE TABLE tbl_tpcpoint_big_allthesame AS
   SELECT k, tpcpoint(PC_MakePoint(1, ARRAY[5.0, 5.0, 5.0]::float[]), timeSpan(temp)) AS temp
   FROM tbl_tpcpoint WHERE temp IS NOT NULL;

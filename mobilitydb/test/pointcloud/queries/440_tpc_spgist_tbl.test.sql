@@ -102,6 +102,44 @@ RESET enable_indexscan;
 RESET enable_bitmapscan;
 
 -------------------------------------------------------------------------------
+-- Nearest approach ordering answered by the space-partitioning indexes
+-------------------------------------------------------------------------------
+
+CREATE INDEX tbl_tpcpoint_knn_quadtree_idx ON tbl_tpcpoint USING spgist(temp);
+WITH test AS (
+  SELECT temp |=| tpcbox_zt(200, 200, 200, 210, 210, 210,
+  tstzspan '[2001-06-01, 2001-12-31]', 1, 0) AS distance
+  FROM tbl_tpcpoint ORDER BY 1 LIMIT 3 )
+SELECT round(distance, 6) FROM test;
+DROP INDEX tbl_tpcpoint_knn_quadtree_idx;
+
+CREATE INDEX tbl_tpcpoint_knn_kdtree_idx ON tbl_tpcpoint
+  USING spgist(temp tpcpoint_kdtree_ops);
+WITH test AS (
+  SELECT temp |=| tpcbox_zt(200, 200, 200, 210, 210, 210,
+  tstzspan '[2001-06-01, 2001-12-31]', 1, 0) AS distance
+  FROM tbl_tpcpoint ORDER BY 1 LIMIT 3 )
+SELECT round(distance, 6) FROM test;
+DROP INDEX tbl_tpcpoint_knn_kdtree_idx;
+
+CREATE INDEX tbl_tpcpatch_knn_quadtree_idx ON tbl_tpcpatch USING spgist(temp);
+WITH test AS (
+  SELECT temp |=| tpcbox_xt(200, 200, 210, 210,
+  tstzspan '[2001-06-01, 2001-12-31]', 1, 0) AS distance
+  FROM tbl_tpcpatch ORDER BY 1 LIMIT 3 )
+SELECT round(distance, 6) FROM test;
+DROP INDEX tbl_tpcpatch_knn_quadtree_idx;
+
+CREATE INDEX tbl_tpcpatch_knn_kdtree_idx ON tbl_tpcpatch
+  USING spgist(temp tpcpatch_kdtree_ops);
+WITH test AS (
+  SELECT temp |=| tpcbox_xt(200, 200, 210, 210,
+  tstzspan '[2001-06-01, 2001-12-31]', 1, 0) AS distance
+  FROM tbl_tpcpatch ORDER BY 1 LIMIT 3 )
+SELECT round(distance, 6) FROM test;
+DROP INDEX tbl_tpcpatch_knn_kdtree_idx;
+
+-------------------------------------------------------------------------------
 -- Coverage of all the same and order by logic in SP-GiST indexes
 
 CREATE TABLE tbl_tpcpoint_big_allthesame AS

@@ -149,6 +149,11 @@ SELECT COUNT(*) AS kdtree_front FROM tbl_tpcbox WHERE b <</ tpcbox_zt(0, 0, 0,
   10, 10, 10, tstzspan '[2001-01-01, 2001-12-31]', 1, 0);
 SELECT COUNT(*) AS kdtree_before FROM tbl_tpcbox WHERE b <<# tpcbox_zt(0, 0, 0,
   10, 10, 10, tstzspan '[2001-01-01, 2001-12-31]', 1, 0);
+WITH test AS (
+  SELECT b |=| tpcbox_zt(200, 200, 200, 210, 210, 210,
+  tstzspan '[2001-06-01, 2001-12-31]', 1, 0) AS distance
+  FROM tbl_tpcbox ORDER BY 1 LIMIT 3 )
+SELECT round(distance, 6) FROM test;
 DROP INDEX tbl_tpcbox_kdtree_idx;
 RESET enable_seqscan;
 RESET enable_indexscan;
