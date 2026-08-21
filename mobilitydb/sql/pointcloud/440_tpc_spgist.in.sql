@@ -54,6 +54,8 @@ CREATE OPERATOR CLASS tpcbox_quadtree_ops
   OPERATOR  12   |&> (tpcbox, tpcbox),
   -- adjacent
   OPERATOR  17   -|- (tpcbox, tpcbox),
+  -- nearest approach distance
+  OPERATOR  25   |=| (tpcbox, tpcbox) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28   &<# (tpcbox, tpcbox),
   -- strictly before
@@ -106,6 +108,8 @@ CREATE OPERATOR CLASS tpcbox_kdtree_ops
   OPERATOR  12   |&> (tpcbox, tpcbox),
   -- adjacent
   OPERATOR  17   -|- (tpcbox, tpcbox),
+  -- nearest approach distance
+  OPERATOR  25   |=| (tpcbox, tpcbox) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28   &<# (tpcbox, tpcbox),
   -- strictly before
@@ -194,6 +198,9 @@ CREATE OPERATOR CLASS tpcpoint_quadtree_ops
   OPERATOR  34   />> (tpcpoint, tpcpoint),
   OPERATOR  35   /&> (tpcpoint, tpcbox),
   OPERATOR  35   /&> (tpcpoint, tpcpoint),
+  -- nearest approach distance
+  OPERATOR  25   |=| (tpcpoint, tpcbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25   |=| (tpcpoint, tpcpoint) FOR ORDER BY pg_catalog.float_ops,
   FUNCTION  1    stbox_spgist_config(internal, internal),
   FUNCTION  2    stbox_quadtree_choose(internal, internal),
   FUNCTION  3    stbox_quadtree_picksplit(internal, internal),
@@ -258,6 +265,9 @@ CREATE OPERATOR CLASS tpcpoint_kdtree_ops
   OPERATOR  34   />> (tpcpoint, tpcpoint),
   OPERATOR  35   /&> (tpcpoint, tpcbox),
   OPERATOR  35   /&> (tpcpoint, tpcpoint),
+  -- nearest approach distance
+  OPERATOR  25   |=| (tpcpoint, tpcbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25   |=| (tpcpoint, tpcpoint) FOR ORDER BY pg_catalog.float_ops,
   FUNCTION  1    stbox_spgist_config(internal, internal),
   FUNCTION  2    stbox_kdtree_choose(internal, internal),
   FUNCTION  3    stbox_kdtree_picksplit(internal, internal),
@@ -322,6 +332,9 @@ CREATE OPERATOR CLASS tpcpatch_quadtree_ops
   OPERATOR  34   />> (tpcpatch, tpcpatch),
   OPERATOR  35   /&> (tpcpatch, tpcbox),
   OPERATOR  35   /&> (tpcpatch, tpcpatch),
+  -- nearest approach distance
+  OPERATOR  25   |=| (tpcpatch, tpcbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25   |=| (tpcpatch, tpcpatch) FOR ORDER BY pg_catalog.float_ops,
   FUNCTION  1    stbox_spgist_config(internal, internal),
   FUNCTION  2    stbox_quadtree_choose(internal, internal),
   FUNCTION  3    stbox_quadtree_picksplit(internal, internal),
@@ -386,6 +399,9 @@ CREATE OPERATOR CLASS tpcpatch_kdtree_ops
   OPERATOR  34   />> (tpcpatch, tpcpatch),
   OPERATOR  35   /&> (tpcpatch, tpcbox),
   OPERATOR  35   /&> (tpcpatch, tpcpatch),
+  -- nearest approach distance
+  OPERATOR  25   |=| (tpcpatch, tpcbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25   |=| (tpcpatch, tpcpatch) FOR ORDER BY pg_catalog.float_ops,
   FUNCTION  1    stbox_spgist_config(internal, internal),
   FUNCTION  2    stbox_kdtree_choose(internal, internal),
   FUNCTION  3    stbox_kdtree_picksplit(internal, internal),
