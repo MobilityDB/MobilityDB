@@ -142,10 +142,18 @@ no subtype currently routes `aggfuncs` through the `subtypes:` track. Live templ
 | posops | `posops.sql.tmpl` | **GENERATED** |
 | spatialrels | `spatialrels.c.tmpl` + `spatialrels.sql.tmpl` | **GENERATED** (ever/always) |
 | boxops (C) | `boxops.c.tmpl` | **GENERATED** (box-type axis) |
-| gist / spgist / indexes | `gist/spgist/indexes.sql.tmpl` | **GENERATED** (index infra) |
+| gist / spgist / indexes | `gist/spgist/indexes.sql.tmpl` | **GENERATED** (index infra) — `indexes.sql.tmpl` carries the Z-axis strategies 32-35 under `-- @IF front_back`, the same additive flag `posops.sql.tmpl` uses to declare the Z operators, so a family declares and indexes that axis from one manifest key |
 | aggfuncs | `aggregates.sql.tmpl` | **GENERATED** — whole-file per family via the separate `aggregate_families` axis (§4b), not the `subtypes:` track |
 | spatialfuncs | — | reserved position, **HAND** |
 | distance | — | reserved position, **HAND** |
+
+⛔ **`front_back` reaches BOTH the operator declaration and the operator class.** It is an
+additive flag (`DEFAULT_FALSE_FLAGS` in `generate.py`), so a family opts in and every other
+family omits the block. The three-dimensional spatial families — `tpose`, `tposechain`,
+`trgeometry` — set it; `tgeometry`/`tgeompoint` carry the same strategies as the hand-written
+reference. A family that declares the Z operators without its opclass listing strategies
+32-35 keeps those predicates as a FILTER: the operator resolves, the plan never uses the
+index, and nothing errors — so the omission is invisible without reading `pg_amop`.
 
 **`topops.sql.tmpl`/`posops.sql.tmpl` serve two independent manifest tracks** that
 happen to share a template name: the `topop_families`/`posop_families` axes (§9,

@@ -148,3 +148,96 @@ SELECT round(distance, 6) FROM test;
 DROP INDEX tbl_tpose2d_quadtree_idx;
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- 5. Z-axis position operators on tbl_tpose3d
+-------------------------------------------------------------------------------
+
+ANALYZE tbl_tpose3d;
+
+DROP INDEX IF EXISTS tbl_tpose3d_rtree_idx;
+DROP INDEX IF EXISTS tbl_tpose3d_quadtree_idx;
+DROP INDEX IF EXISTS tbl_tpose3d_kdtree_idx;
+
+DROP TABLE IF EXISTS test_zaxis;
+CREATE TABLE test_zaxis(
+  op TEXT,
+  no_idx BIGINT,
+  rtree_idx BIGINT,
+  quadtree_idx BIGINT,
+  kdtree_idx BIGINT
+);
+
+INSERT INTO test_zaxis(op, no_idx)
+SELECT '<</', COUNT(*) FROM tbl_tpose3d WHERE temp <</ stbox 'SRID=3812;STBOX Z((-50,-50,-50),(50,50,50))';
+INSERT INTO test_zaxis(op, no_idx)
+SELECT '&</', COUNT(*) FROM tbl_tpose3d WHERE temp &</ stbox 'SRID=3812;STBOX Z((-50,-50,-50),(50,50,50))';
+INSERT INTO test_zaxis(op, no_idx)
+SELECT '/>>', COUNT(*) FROM tbl_tpose3d WHERE temp />> stbox 'SRID=3812;STBOX Z((-50,-50,-50),(50,50,50))';
+INSERT INTO test_zaxis(op, no_idx)
+SELECT '/&>', COUNT(*) FROM tbl_tpose3d WHERE temp /&> stbox 'SRID=3812;STBOX Z((-50,-50,-50),(50,50,50))';
+
+CREATE INDEX tbl_tpose3d_rtree_idx ON tbl_tpose3d USING GIST(temp);
+
+UPDATE test_zaxis
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tpose3d WHERE temp <</ stbox 'SRID=3812;STBOX Z((-50,-50,-50),(50,50,50))' )
+WHERE op = '<</';
+UPDATE test_zaxis
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tpose3d WHERE temp &</ stbox 'SRID=3812;STBOX Z((-50,-50,-50),(50,50,50))' )
+WHERE op = '&</';
+UPDATE test_zaxis
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tpose3d WHERE temp />> stbox 'SRID=3812;STBOX Z((-50,-50,-50),(50,50,50))' )
+WHERE op = '/>>';
+UPDATE test_zaxis
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_tpose3d WHERE temp /&> stbox 'SRID=3812;STBOX Z((-50,-50,-50),(50,50,50))' )
+WHERE op = '/&>';
+
+DROP INDEX tbl_tpose3d_rtree_idx;
+
+CREATE INDEX tbl_tpose3d_quadtree_idx ON tbl_tpose3d USING SPGIST(temp);
+
+UPDATE test_zaxis
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tpose3d WHERE temp <</ stbox 'SRID=3812;STBOX Z((-50,-50,-50),(50,50,50))' )
+WHERE op = '<</';
+UPDATE test_zaxis
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tpose3d WHERE temp &</ stbox 'SRID=3812;STBOX Z((-50,-50,-50),(50,50,50))' )
+WHERE op = '&</';
+UPDATE test_zaxis
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tpose3d WHERE temp />> stbox 'SRID=3812;STBOX Z((-50,-50,-50),(50,50,50))' )
+WHERE op = '/>>';
+UPDATE test_zaxis
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_tpose3d WHERE temp /&> stbox 'SRID=3812;STBOX Z((-50,-50,-50),(50,50,50))' )
+WHERE op = '/&>';
+
+DROP INDEX tbl_tpose3d_quadtree_idx;
+
+CREATE INDEX tbl_tpose3d_kdtree_idx ON tbl_tpose3d USING SPGIST(temp tpose_kdtree_ops);
+
+UPDATE test_zaxis
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tpose3d WHERE temp <</ stbox 'SRID=3812;STBOX Z((-50,-50,-50),(50,50,50))' )
+WHERE op = '<</';
+UPDATE test_zaxis
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tpose3d WHERE temp &</ stbox 'SRID=3812;STBOX Z((-50,-50,-50),(50,50,50))' )
+WHERE op = '&</';
+UPDATE test_zaxis
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tpose3d WHERE temp />> stbox 'SRID=3812;STBOX Z((-50,-50,-50),(50,50,50))' )
+WHERE op = '/>>';
+UPDATE test_zaxis
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_tpose3d WHERE temp /&> stbox 'SRID=3812;STBOX Z((-50,-50,-50),(50,50,50))' )
+WHERE op = '/&>';
+
+DROP INDEX tbl_tpose3d_kdtree_idx;
+
+-- the operators that match at least one row: a mismatch test over
+-- predicates that match nothing would hold vacuously
+SELECT count(*) FILTER (WHERE no_idx > 0) AS matching, count(*) AS ops
+FROM test_zaxis;
+
+SELECT * FROM test_zaxis
+WHERE no_idx <> rtree_idx OR no_idx <> quadtree_idx OR no_idx <> kdtree_idx OR
+  no_idx IS NULL OR rtree_idx IS NULL OR quadtree_idx IS NULL OR kdtree_idx IS NULL
+ORDER BY op;
+
+DROP TABLE test_zaxis;
+
+-------------------------------------------------------------------------------

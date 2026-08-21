@@ -110,6 +110,18 @@ CREATE OPERATOR CLASS tpose_rtree_ops
   OPERATOR  31    #&> (tpose, tstzspan),
   OPERATOR  31    #&> (tpose, stbox),
   OPERATOR  31    #&> (tpose, tpose),
+  -- overlaps or front
+  OPERATOR  32    &</ (tpose, stbox),
+  OPERATOR  32    &</ (tpose, tpose),
+  -- strictly front
+  OPERATOR  33    <</ (tpose, stbox),
+  OPERATOR  33    <</ (tpose, tpose),
+  -- strictly back
+  OPERATOR  34    />> (tpose, stbox),
+  OPERATOR  34    />> (tpose, tpose),
+  -- overlaps or back
+  OPERATOR  35    /&> (tpose, stbox),
+  OPERATOR  35    /&> (tpose, tpose),
   -- functions
   FUNCTION  1 tpose_gist_consistent(internal, tpose, smallint, oid, internal),
   FUNCTION  2 stbox_gist_union(internal, internal),
@@ -187,6 +199,18 @@ CREATE OPERATOR CLASS tpose_quadtree_ops
   OPERATOR  31    #&> (tpose, tstzspan),
   OPERATOR  31    #&> (tpose, stbox),
   OPERATOR  31    #&> (tpose, tpose),
+  -- overlaps or front
+  OPERATOR  32    &</ (tpose, stbox),
+  OPERATOR  32    &</ (tpose, tpose),
+  -- strictly front
+  OPERATOR  33    <</ (tpose, stbox),
+  OPERATOR  33    <</ (tpose, tpose),
+  -- strictly back
+  OPERATOR  34    />> (tpose, stbox),
+  OPERATOR  34    />> (tpose, tpose),
+  -- overlaps or back
+  OPERATOR  35    /&> (tpose, stbox),
+  OPERATOR  35    /&> (tpose, tpose),
   -- functions
   FUNCTION  1 stbox_spgist_config(internal, internal),
   FUNCTION  2 stbox_quadtree_choose(internal, internal),
@@ -263,6 +287,18 @@ CREATE OPERATOR CLASS tpose_kdtree_ops
   OPERATOR  31    #&> (tpose, tstzspan),
   OPERATOR  31    #&> (tpose, stbox),
   OPERATOR  31    #&> (tpose, tpose),
+  -- overlaps or front
+  OPERATOR  32    &</ (tpose, stbox),
+  OPERATOR  32    &</ (tpose, tpose),
+  -- strictly front
+  OPERATOR  33    <</ (tpose, stbox),
+  OPERATOR  33    <</ (tpose, tpose),
+  -- strictly back
+  OPERATOR  34    />> (tpose, stbox),
+  OPERATOR  34    />> (tpose, tpose),
+  -- overlaps or back
+  OPERATOR  35    /&> (tpose, stbox),
+  OPERATOR  35    /&> (tpose, tpose),
   -- functions
   FUNCTION  1 stbox_spgist_config(internal, internal),
   FUNCTION  2 stbox_kdtree_choose(internal, internal),

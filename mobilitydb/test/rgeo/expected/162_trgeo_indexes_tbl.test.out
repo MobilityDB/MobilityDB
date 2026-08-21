@@ -228,3 +228,114 @@ ANALYZE tbl_trgeometry_big_allthesame;
 ANALYZE
 DROP TABLE tbl_trgeometry_big_allthesame;
 DROP TABLE
+ANALYZE tbl_trgeometry3d;
+ANALYZE
+DROP INDEX IF EXISTS tbl_trgeometry3d_rtree_idx;
+NOTICE:  index "tbl_trgeometry3d_rtree_idx" does not exist, skipping
+DROP INDEX
+DROP INDEX IF EXISTS tbl_trgeometry3d_quadtree_idx;
+NOTICE:  index "tbl_trgeometry3d_quadtree_idx" does not exist, skipping
+DROP INDEX
+DROP INDEX IF EXISTS tbl_trgeometry3d_kdtree_idx;
+NOTICE:  index "tbl_trgeometry3d_kdtree_idx" does not exist, skipping
+DROP INDEX
+DROP TABLE IF EXISTS test_zaxis;
+NOTICE:  table "test_zaxis" does not exist, skipping
+DROP TABLE
+CREATE TABLE test_zaxis(
+  op TEXT,
+  no_idx BIGINT,
+  rtree_idx BIGINT,
+  quadtree_idx BIGINT,
+  kdtree_idx BIGINT
+);
+CREATE TABLE
+INSERT INTO test_zaxis(op, no_idx)
+SELECT '<</', COUNT(*) FROM tbl_trgeometry3d WHERE temp <</ stbox 'SRID=5676;STBOX Z((-50,-50,-50),(50,50,50))';
+INSERT 0 1
+INSERT INTO test_zaxis(op, no_idx)
+SELECT '&</', COUNT(*) FROM tbl_trgeometry3d WHERE temp &</ stbox 'SRID=5676;STBOX Z((-50,-50,-50),(50,50,50))';
+INSERT 0 1
+INSERT INTO test_zaxis(op, no_idx)
+SELECT '/>>', COUNT(*) FROM tbl_trgeometry3d WHERE temp />> stbox 'SRID=5676;STBOX Z((-50,-50,-50),(50,50,50))';
+INSERT 0 1
+INSERT INTO test_zaxis(op, no_idx)
+SELECT '/&>', COUNT(*) FROM tbl_trgeometry3d WHERE temp /&> stbox 'SRID=5676;STBOX Z((-50,-50,-50),(50,50,50))';
+INSERT 0 1
+CREATE INDEX tbl_trgeometry3d_rtree_idx ON tbl_trgeometry3d USING GIST(temp);
+CREATE INDEX
+UPDATE test_zaxis
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_trgeometry3d WHERE temp <</ stbox 'SRID=5676;STBOX Z((-50,-50,-50),(50,50,50))' )
+WHERE op = '<</';
+UPDATE 1
+UPDATE test_zaxis
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_trgeometry3d WHERE temp &</ stbox 'SRID=5676;STBOX Z((-50,-50,-50),(50,50,50))' )
+WHERE op = '&</';
+UPDATE 1
+UPDATE test_zaxis
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_trgeometry3d WHERE temp />> stbox 'SRID=5676;STBOX Z((-50,-50,-50),(50,50,50))' )
+WHERE op = '/>>';
+UPDATE 1
+UPDATE test_zaxis
+SET rtree_idx = ( SELECT COUNT(*) FROM tbl_trgeometry3d WHERE temp /&> stbox 'SRID=5676;STBOX Z((-50,-50,-50),(50,50,50))' )
+WHERE op = '/&>';
+UPDATE 1
+DROP INDEX tbl_trgeometry3d_rtree_idx;
+DROP INDEX
+CREATE INDEX tbl_trgeometry3d_quadtree_idx ON tbl_trgeometry3d USING SPGIST(temp);
+CREATE INDEX
+UPDATE test_zaxis
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_trgeometry3d WHERE temp <</ stbox 'SRID=5676;STBOX Z((-50,-50,-50),(50,50,50))' )
+WHERE op = '<</';
+UPDATE 1
+UPDATE test_zaxis
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_trgeometry3d WHERE temp &</ stbox 'SRID=5676;STBOX Z((-50,-50,-50),(50,50,50))' )
+WHERE op = '&</';
+UPDATE 1
+UPDATE test_zaxis
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_trgeometry3d WHERE temp />> stbox 'SRID=5676;STBOX Z((-50,-50,-50),(50,50,50))' )
+WHERE op = '/>>';
+UPDATE 1
+UPDATE test_zaxis
+SET quadtree_idx = ( SELECT COUNT(*) FROM tbl_trgeometry3d WHERE temp /&> stbox 'SRID=5676;STBOX Z((-50,-50,-50),(50,50,50))' )
+WHERE op = '/&>';
+UPDATE 1
+DROP INDEX tbl_trgeometry3d_quadtree_idx;
+DROP INDEX
+CREATE INDEX tbl_trgeometry3d_kdtree_idx ON tbl_trgeometry3d USING SPGIST(temp trgeometry_kdtree_ops);
+CREATE INDEX
+UPDATE test_zaxis
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_trgeometry3d WHERE temp <</ stbox 'SRID=5676;STBOX Z((-50,-50,-50),(50,50,50))' )
+WHERE op = '<</';
+UPDATE 1
+UPDATE test_zaxis
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_trgeometry3d WHERE temp &</ stbox 'SRID=5676;STBOX Z((-50,-50,-50),(50,50,50))' )
+WHERE op = '&</';
+UPDATE 1
+UPDATE test_zaxis
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_trgeometry3d WHERE temp />> stbox 'SRID=5676;STBOX Z((-50,-50,-50),(50,50,50))' )
+WHERE op = '/>>';
+UPDATE 1
+UPDATE test_zaxis
+SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_trgeometry3d WHERE temp /&> stbox 'SRID=5676;STBOX Z((-50,-50,-50),(50,50,50))' )
+WHERE op = '/&>';
+UPDATE 1
+DROP INDEX tbl_trgeometry3d_kdtree_idx;
+DROP INDEX
+SELECT count(*) FILTER (WHERE no_idx > 0) AS matching, count(*) AS ops
+FROM test_zaxis;
+ matching | ops 
+----------+-----
+        4 |   4
+(1 row)
+
+SELECT * FROM test_zaxis
+WHERE no_idx <> rtree_idx OR no_idx <> quadtree_idx OR no_idx <> kdtree_idx OR
+  no_idx IS NULL OR rtree_idx IS NULL OR quadtree_idx IS NULL OR kdtree_idx IS NULL
+ORDER BY op;
+ op | no_idx | rtree_idx | quadtree_idx | kdtree_idx 
+----+--------+-----------+--------------+------------
+(0 rows)
+
+DROP TABLE test_zaxis;
+DROP TABLE

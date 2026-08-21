@@ -108,6 +108,20 @@ CREATE OPERATOR CLASS {TEMP}_rtree_ops
   OPERATOR  31    #&> ({TEMP}, tstzspan),
   OPERATOR  31    #&> ({TEMP}, stbox),
   OPERATOR  31    #&> ({TEMP}, {TEMP}),
+-- @IF front_back
+  -- overlaps or front
+  OPERATOR  32    &</ ({TEMP}, stbox),
+  OPERATOR  32    &</ ({TEMP}, {TEMP}),
+  -- strictly front
+  OPERATOR  33    <</ ({TEMP}, stbox),
+  OPERATOR  33    <</ ({TEMP}, {TEMP}),
+  -- strictly back
+  OPERATOR  34    />> ({TEMP}, stbox),
+  OPERATOR  34    />> ({TEMP}, {TEMP}),
+  -- overlaps or back
+  OPERATOR  35    /&> ({TEMP}, stbox),
+  OPERATOR  35    /&> ({TEMP}, {TEMP}),
+-- @ENDIF
   -- functions
   FUNCTION  1 {TEMP}_gist_consistent(internal, {TEMP}, smallint, oid, internal),
   FUNCTION  2 stbox_gist_union(internal, internal),
@@ -185,6 +199,20 @@ CREATE OPERATOR CLASS {TEMP}_quadtree_ops
   OPERATOR  31    #&> ({TEMP}, tstzspan),
   OPERATOR  31    #&> ({TEMP}, stbox),
   OPERATOR  31    #&> ({TEMP}, {TEMP}),
+-- @IF front_back
+  -- overlaps or front
+  OPERATOR  32    &</ ({TEMP}, stbox),
+  OPERATOR  32    &</ ({TEMP}, {TEMP}),
+  -- strictly front
+  OPERATOR  33    <</ ({TEMP}, stbox),
+  OPERATOR  33    <</ ({TEMP}, {TEMP}),
+  -- strictly back
+  OPERATOR  34    />> ({TEMP}, stbox),
+  OPERATOR  34    />> ({TEMP}, {TEMP}),
+  -- overlaps or back
+  OPERATOR  35    /&> ({TEMP}, stbox),
+  OPERATOR  35    /&> ({TEMP}, {TEMP}),
+-- @ENDIF
   -- functions
   FUNCTION  1 stbox_spgist_config(internal, internal),
   FUNCTION  2 stbox_quadtree_choose(internal, internal),
@@ -261,6 +289,20 @@ CREATE OPERATOR CLASS {TEMP}_kdtree_ops
   OPERATOR  31    #&> ({TEMP}, tstzspan),
   OPERATOR  31    #&> ({TEMP}, stbox),
   OPERATOR  31    #&> ({TEMP}, {TEMP}),
+-- @IF front_back
+  -- overlaps or front
+  OPERATOR  32    &</ ({TEMP}, stbox),
+  OPERATOR  32    &</ ({TEMP}, {TEMP}),
+  -- strictly front
+  OPERATOR  33    <</ ({TEMP}, stbox),
+  OPERATOR  33    <</ ({TEMP}, {TEMP}),
+  -- strictly back
+  OPERATOR  34    />> ({TEMP}, stbox),
+  OPERATOR  34    />> ({TEMP}, {TEMP}),
+  -- overlaps or back
+  OPERATOR  35    /&> ({TEMP}, stbox),
+  OPERATOR  35    /&> ({TEMP}, {TEMP}),
+-- @ENDIF
   -- functions
   FUNCTION  1 stbox_spgist_config(internal, internal),
   FUNCTION  2 stbox_kdtree_choose(internal, internal),
