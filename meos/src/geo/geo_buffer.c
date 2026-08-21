@@ -3552,17 +3552,31 @@ buffer_ring(const POINTARRAY *source, double radius, bool outward_left,
     bool convex = outward_left ? turn < -FP_TOLERANCE : turn > FP_TOLERANCE;
 
     POINT2D enter = incoming, leave = outgoing;
+    bool bridge = false;
     if (! convex)
     {
+      /* The two offsets of a vertex the buffered side is concave at cross, and
+       * the crossing is the point the boundary passes through — while it lies
+       * on both of them. The two offset LINES always cross; a crossing further
+       * from the vertex than either segment is long lies beyond an offset's
+       * own end, so neither ever reaches it, and the boundary runs through the
+       * points at the buffer distance from the vertex instead */
       POINT2D crossing;
       if (! buffer_line_intersection(incoming, in_dx, in_dy, outgoing, out_dx,
           out_dy, &crossing))
+        bridge = true;
+      else
       {
-        pfree(points); pfree(nx); pfree(ny);
-        lwgeom_free(lwcompound_as_lwgeom(ring));
-        return NULL;
+        double in_len = hypot(in_dx, in_dy), out_len = hypot(out_dx, out_dy);
+        double ux = crossing.x - points[i].x, uy = crossing.y - points[i].y;
+        double back = -(ux * in_dx + uy * in_dy) / in_len;
+        double ahead = (ux * out_dx + uy * out_dy) / out_len;
+        if (back > in_len + MEOS_EDGE_TOLERANCE ||
+            ahead > out_len + MEOS_EDGE_TOLERANCE)
+          bridge = true;
+        else
+          enter = leave = crossing;
       }
-      enter = leave = crossing;
     }
 
     if (! started)
@@ -3576,28 +3590,14 @@ buffer_ring(const POINTARRAY *source, double radius, bool outward_left,
        * opposite to the segment it comes from has been consumed: the ring is
        * contracted past its own width there and bounds no surface, which the
        * boundary overlay would have to resolve. */
-      if ((enter.x - cursor.x) * in_dx + (enter.y - cursor.y) * in_dy <
-          -FP_TOLERANCE)
-      {
-        pfree(points); pfree(nx); pfree(ny);
-        lwgeom_free(lwcompound_as_lwgeom(ring));
-        return NULL;
-      }
       buffer_add_segment(ring, srid, cursor, enter);
     }
-    if (convex)
+    if (convex || bridge)
       buffer_add_join(ring, srid, points[i], incoming, outgoing, radius,
         join_style, mitre_limit, true);
     cursor = leave;
   }
   /* The offset of the segment closing the ring */
-  if ((first.x - cursor.x) * (points[0].x - points[n - 1].x) +
-      (first.y - cursor.y) * (points[0].y - points[n - 1].y) < -FP_TOLERANCE)
-  {
-    pfree(points); pfree(nx); pfree(ny);
-    lwgeom_free(lwcompound_as_lwgeom(ring));
-    return NULL;
-  }
   buffer_add_segment(ring, srid, cursor, first);
 
   pfree(points); pfree(nx); pfree(ny);
@@ -5117,7 +5117,11 @@ meos_buffer_poly(const LWPOLY *poly, double radius, JoinStyle join_style,
     lwgeom_free(geom);
     return lwpoly_as_lwgeom(lwpoly_construct_empty(srid, 0, 0));
   }
-  return geom;
+  /* A ring turning tighter than the buffer distance carries offsets that run
+   * into one another, and what a crossing encloses lies inside the buffer
+   * rather than on its boundary */
+  return inward ? geom :
+    buffer_ring_resolved(geom, (const LWGEOM *) poly, radius, srid);
 }
 
 /*****************************************************************************
