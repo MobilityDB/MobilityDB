@@ -97,6 +97,7 @@ CREATE OPERATOR CLASS intspan_rtree_ops
   OPERATOR  8     <@ (intspan, intspan),
   OPERATOR  8     <@ (intspan, intspanset),
   -- adjacent
+  OPERATOR  17    -|- (intspan, integer),
   OPERATOR  17    -|- (intspan, intspan),
   OPERATOR  17    -|- (intspan, intspanset),
   -- equals
@@ -160,6 +161,7 @@ CREATE OPERATOR CLASS bigintspan_rtree_ops
   OPERATOR  8     <@ (bigintspan, bigintspan),
   OPERATOR  8     <@ (bigintspan, bigintspanset),
   -- adjacent
+  OPERATOR  17    -|- (bigintspan, bigint),
   OPERATOR  17    -|- (bigintspan, bigintspan),
   OPERATOR  17    -|- (bigintspan, bigintspanset),
   -- equals
@@ -223,6 +225,7 @@ CREATE OPERATOR CLASS floatspan_rtree_ops
   OPERATOR  8     <@ (floatspan, floatspan),
   OPERATOR  8     <@ (floatspan, floatspanset),
   -- adjacent
+  OPERATOR  17    -|- (floatspan, float),
   OPERATOR  17    -|- (floatspan, floatspan),
   OPERATOR  17    -|- (floatspan, floatspanset),
   -- equals
@@ -286,6 +289,7 @@ CREATE OPERATOR CLASS datespan_rtree_ops
   OPERATOR  8     <@ (datespan, datespan),
   OPERATOR  8     <@ (datespan, datespanset),
   -- adjacent
+  OPERATOR  17    -|- (datespan, date),
   OPERATOR  17    -|- (datespan, datespan),
   OPERATOR  17    -|- (datespan, datespanset),
   -- equals
@@ -333,6 +337,7 @@ CREATE OPERATOR CLASS tstzspan_rtree_ops
   OPERATOR  8    <@ (tstzspan, tstzspan),
   OPERATOR  8    <@ (tstzspan, tstzspanset),
   -- adjacent
+  OPERATOR  17    -|- (tstzspan, timestamptz),
   OPERATOR  17    -|- (tstzspan, tstzspan),
   OPERATOR  17    -|- (tstzspan, tstzspanset),
   -- equals
@@ -439,6 +444,7 @@ CREATE OPERATOR CLASS intspan_quadtree_ops
   OPERATOR  8     <@ (intspan, intspan),
   OPERATOR  8     <@ (intspan, intspanset),
   -- adjacent
+  OPERATOR  17    -|- (intspan, integer),
   OPERATOR  17    -|- (intspan, intspan),
   OPERATOR  17    -|- (intspan, intspanset),
   -- equals
@@ -485,6 +491,7 @@ CREATE OPERATOR CLASS bigintspan_quadtree_ops
   OPERATOR  8     <@ (bigintspan, bigintspan),
   OPERATOR  8     <@ (bigintspan, bigintspanset),
   -- adjacent
+  OPERATOR  17    -|- (bigintspan, bigint),
   OPERATOR  17    -|- (bigintspan, bigintspan),
   OPERATOR  17    -|- (bigintspan, bigintspanset),
   -- equals
@@ -531,6 +538,7 @@ CREATE OPERATOR CLASS floatspan_quadtree_ops
   OPERATOR  8     <@ (floatspan, floatspan),
   OPERATOR  8     <@ (floatspan, floatspanset),
   -- adjacent
+  OPERATOR  17    -|- (floatspan, float),
   OPERATOR  17    -|- (floatspan, floatspan),
   OPERATOR  17    -|- (floatspan, floatspanset),
   -- equals
@@ -561,6 +569,7 @@ CREATE OPERATOR CLASS datespan_quadtree_ops
   OPERATOR  8    <@ (datespan, datespan),
   OPERATOR  8    <@ (datespan, datespanset),
   -- adjacent
+  OPERATOR  17    -|- (datespan, date),
   OPERATOR  17    -|- (datespan, datespan),
   OPERATOR  17    -|- (datespan, datespanset),
   -- equals
@@ -607,6 +616,7 @@ CREATE OPERATOR CLASS tstzspan_quadtree_ops
   OPERATOR  8    <@ (tstzspan, tstzspan),
   OPERATOR  8    <@ (tstzspan, tstzspanset),
   -- adjacent
+  OPERATOR  17    -|- (tstzspan, timestamptz),
   OPERATOR  17    -|- (tstzspan, tstzspan),
   OPERATOR  17    -|- (tstzspan, tstzspanset),
   -- equals
@@ -686,6 +696,7 @@ CREATE OPERATOR CLASS intspan_kdtree_ops
   OPERATOR  8     <@ (intspan, intspan),
   OPERATOR  8     <@ (intspan, intspanset),
   -- adjacent
+  OPERATOR  17    -|- (intspan, integer),
   OPERATOR  17    -|- (intspan, intspan),
   OPERATOR  17    -|- (intspan, intspanset),
   -- equals
@@ -732,6 +743,7 @@ CREATE OPERATOR CLASS bigintspan_kdtree_ops
   OPERATOR  8     <@ (bigintspan, bigintspan),
   OPERATOR  8     <@ (bigintspan, bigintspanset),
   -- adjacent
+  OPERATOR  17    -|- (bigintspan, bigint),
   OPERATOR  17    -|- (bigintspan, bigintspan),
   OPERATOR  17    -|- (bigintspan, bigintspanset),
   -- equals
@@ -778,6 +790,7 @@ CREATE OPERATOR CLASS floatspan_kdtree_ops
   OPERATOR  8     <@ (floatspan, floatspan),
   OPERATOR  8     <@ (floatspan, floatspanset),
   -- adjacent
+  OPERATOR  17    -|- (floatspan, float),
   OPERATOR  17    -|- (floatspan, floatspan),
   OPERATOR  17    -|- (floatspan, floatspanset),
   -- equals
@@ -808,6 +821,7 @@ CREATE OPERATOR CLASS datespan_kdtree_ops
   OPERATOR  8    <@ (datespan, datespan),
   OPERATOR  8    <@ (datespan, datespanset),
   -- adjacent
+  OPERATOR  17    -|- (datespan, date),
   OPERATOR  17    -|- (datespan, datespan),
   OPERATOR  17    -|- (datespan, datespanset),
   -- equals
@@ -854,6 +868,7 @@ CREATE OPERATOR CLASS tstzspan_kdtree_ops
   OPERATOR  8    <@ (tstzspan, tstzspan),
   OPERATOR  8    <@ (tstzspan, tstzspanset),
   -- adjacent
+  OPERATOR  17    -|- (tstzspan, timestamptz),
   OPERATOR  17    -|- (tstzspan, tstzspan),
   OPERATOR  17    -|- (tstzspan, tstzspanset),
   -- equals
