@@ -166,4 +166,42 @@ SELECT round(nearestApproachDistance(
   trgeometry 'Polygon((-2 -0.5,2 -0.5,2 0.5,-2 0.5,-2 -0.5));{[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),3.14159265)@2001-01-02],[Pose(Point(0 0),0)@2001-01-03, Pose(Point(5 0),0)@2001-01-04]}',
   geometry 'Polygon((0 3,1 3,1 4,0 4,0 3))')::numeric, 6);
 
+-- A multi-component target: the distance is the minimum over the components, so
+-- the closest component switches while the body translates and the temporal
+-- distance kinks where the two component distances cross
+SELECT round(tDistance(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  geometry 'MultiPoint(0 5,11 5)'), 6);
+SELECT round(tDistance(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  geometry 'MultiPolygon(((0 5,1 5,1 6,0 6,0 5)),((11 5,12 5,12 6,11 6,11 5)))'), 6);
+
+-- A single-component multi geometry answers exactly as the component alone does
+SELECT round(minValue(tDistance(
+  trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  geometry 'MultiPolygon(((5 3,6 3,6 4,5 4,5 3)))'))::numeric, 6);
+SELECT round(minValue(tDistance(
+  trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  geometry 'MultiPoint(5 3)'))::numeric, 6);
+
+-- An empty component contributes no point to be close to and is ignored, as it
+-- is by the geometry-geometry distance
+SELECT round(minValue(tDistance(
+  trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  geometry 'MultiPolygon(((5 3,6 3,6 4,5 4,5 3)),EMPTY)'))::numeric, 6);
+SELECT round(minValue(tDistance(
+  trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  geometry 'MultiPoint(5 3,EMPTY)'))::numeric, 6);
+
+-- A rotating body against a multi-component target, on a sequence set
+SELECT round(minValue(tDistance(
+  trgeometry 'Polygon((-2 -0.5,2 -0.5,2 0.5,-2 0.5,-2 -0.5));{[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),3.14159265)@2001-01-02],[Pose(Point(0 0),0)@2001-01-03, Pose(Point(5 0),0)@2001-01-04]}',
+  geometry 'MultiPolygon(((0 3,1 3,1 4,0 4,0 3)),((8 0,9 0,9 1,8 1,8 0)))'))::numeric, 6);
+
+-- The nearest approach distance and the shortest line agree with the component
+-- that realizes the minimum
+SELECT round(nearestApproachDistance(
+  trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  geometry 'MultiPolygon(((5 3,6 3,6 4,5 4,5 3)),((100 100,101 100,101 101,100 101,100 100)))')::numeric, 6);
+
 -------------------------------------------------------------------------------
