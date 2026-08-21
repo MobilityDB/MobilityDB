@@ -84,6 +84,7 @@
 #if RGEO
   #include "rgeo/trgeo.h"
   #include "rgeo/trgeo_boxops.h"
+  #include "rgeo/trgeo_inst.h"
 #endif
 
 extern void ll2cart(const POINT2D *g, POINT3D *p);
@@ -151,7 +152,9 @@ tspatialinst_set_stbox(const TInstant *inst, STBox *box)
 #endif
 #if RGEO
   else if (inst->temptype == T_TRGEOMETRY)
-    tposeinst_set_stbox(inst, (STBox *) box);
+    /* The value of a rigid geometry is a body placed by a pose, so its box is
+     * the box of that body and not of the position the pose names */
+    trgeoinst_set_stbox(trgeoinst_geom_p(inst), inst, (STBox *) box);
 #endif
   else
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
