@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: buffer_split_segment</title>
+<title>MobilityDB: BUFFER_MITRE_ON_SEGMENTS</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -142,7 +142,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a90a2d51bc6c20391a519fb60b9264a7a.html#a90a2d51bc6c20391a519fb60b9264a7a">buffer_make_segment</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a9efbc7e0563c0cd720a6170dbdfa6fe1.html#a9efbc7e0563c0cd720a6170dbdfa6fe1">buffer_make_single_ring_polygon</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a556e4fbfdb3c97b22b08d720474d72f4.html#a556e4fbfdb3c97b22b08d720474d72f4">buffer_make_surfaces_from_pieces</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_ac45c0e1ea2117e802572ac52344abd74.html#ac45c0e1ea2117e802572ac52344abd74">BUFFER_MITRE_ON_SEGMENTS</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="geo__buffer_8c_ac45c0e1ea2117e802572ac52344abd74.html#ac45c0e1ea2117e802572ac52344abd74">BUFFER_MITRE_ON_SEGMENTS</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a76baf8b53fb554306c75049414485c5f.html#a76baf8b53fb554306c75049414485c5f">buffer_nodes_equal</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a693f6646c059be101110e4caa437178c.html#a693f6646c059be101110e4caa437178c">buffer_normalize_angle</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a615346b614e55995fdc0c03734a1f989.html#a615346b614e55995fdc0c03734a1f989">buffer_normalize_ring_orientation</a></td></tr>
@@ -194,7 +194,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_abf1c73df378fc58a8573301675be1100.html#abf1c73df378fc58a8573301675be1100">buffer_split_pieces</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_acaa0eb2e14a3073292098712c02fff83.html#acaa0eb2e14a3073292098712c02fff83">buffer_split_point_add</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a7a9abb9d238433a85f3bfbfd50771d0c.html#a7a9abb9d238433a85f3bfbfd50771d0c">buffer_split_point_cmp</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="geo__buffer_8c_a40132e2de969cc3e1c09e46e44ce65f2.html#a40132e2de969cc3e1c09e46e44ce65f2">buffer_split_segment</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a40132e2de969cc3e1c09e46e44ce65f2.html#a40132e2de969cc3e1c09e46e44ce65f2">buffer_split_segment</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_ab2b3f9b9cf5c57d7d9641d8432b1361a.html#ab2b3f9b9cf5c57d7d9641d8432b1361a">buffer_union_components</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a1371febf4b1f4683a44e5f33437514f6.html#a1371febf4b1f4683a44e5f33437514f6">buffer_union_crossing</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_ae155be4d88548e58a02dd16478a8c702.html#ae155be4d88548e58a02dd16478a8c702">buffer_values_equal</a></td></tr>
@@ -221,32 +221,23 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a40132e2de969cc3e1c09e46e44ce65f2" name="a40132e2de969cc3e1c09e46e44ce65f2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a40132e2de969cc3e1c09e46e44ce65f2">&#9670;&#160;</a></span>buffer_split_segment()</h2>
+<a id="ac45c0e1ea2117e802572ac52344abd74" name="ac45c0e1ea2117e802572ac52344abd74"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac45c0e1ea2117e802572ac52344abd74">&#9670;&#160;</a></span>BUFFER_MITRE_ON_SEGMENTS</h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static void buffer_split_segment </td>
+          <td class="memname">#define BUFFER_MITRE_ON_SEGMENTS</td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structBufferPiece.html">BufferPiece</a> *&#160;</td>
-          <td class="paramname"><em>piece</em>, </td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">mitre, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="structMeosArray.html">MeosArray</a> *&#160;</td>
-          <td class="paramname"><em>intersections</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structMeosArray.html">MeosArray</a> *&#160;</td>
-          <td class="paramname"><em>result</em>&#160;</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">i&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -254,15 +245,16 @@ $(function() {
           <td></td><td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
-
-<p>Split a linear buffer piece at the supplied intersection nodes. </p>
-
+<b>Value:</b><div class="fragment"><div class="line">  (Min(-(((mitre).x - points[i].x) * <a class="code hl_variable" href="projection__gk_8c_a229d11aff11a7482259d1296b9b70b8a.html#a229d11aff11a7482259d1296b9b70b8a">dx</a>[(i) - 1] +                            \</div>
+<div class="line">         ((mitre).y - points[i].y) * <a class="code hl_variable" href="projection__gk_8c_a9deb6f886b19d50e714d890c3c268efc.html#a9deb6f886b19d50e714d890c3c268efc">dy</a>[(i) - 1]),                            \</div>
+<div class="line">        (((mitre).x - points[i].x) * <a class="code hl_variable" href="projection__gk_8c_a229d11aff11a7482259d1296b9b70b8a.html#a229d11aff11a7482259d1296b9b70b8a">dx</a>[i] +                                  \</div>
+<div class="line">         ((mitre).y - points[i].y) * <a class="code hl_variable" href="projection__gk_8c_a9deb6f886b19d50e714d890c3c268efc.html#a9deb6f886b19d50e714d890c3c268efc">dy</a>[i]))                                  \</div>
+<div class="line">     &lt;= Min(len[(i) - 1], len[i]) + <a class="code hl_define" href="geo__funcs_8h_ad81a6b8a4ab7e8e0204f21bb9b597c23.html#ad81a6b8a4ab7e8e0204f21bb9b597c23">MEOS_EDGE_TOLERANCE</a>)</div>
+<div class="ttc" id="ageo__funcs_8h_ad81a6b8a4ab7e8e0204f21bb9b597c23_html_ad81a6b8a4ab7e8e0204f21bb9b597c23"><div class="ttname"><a href="geo__funcs_8h_ad81a6b8a4ab7e8e0204f21bb9b597c23.html#ad81a6b8a4ab7e8e0204f21bb9b597c23">MEOS_EDGE_TOLERANCE</a></div><div class="ttdeci">#define MEOS_EDGE_TOLERANCE</div><div class="ttdoc">Tolerance under which two coordinates of an edge are the same point.</div><div class="ttdef"><b>Definition:</b> geo_funcs.h:77</div></div>
+<div class="ttc" id="aprojection__gk_8c_a229d11aff11a7482259d1296b9b70b8a_html_a229d11aff11a7482259d1296b9b70b8a"><div class="ttname"><a href="projection__gk_8c_a229d11aff11a7482259d1296b9b70b8a.html#a229d11aff11a7482259d1296b9b70b8a">dx</a></div><div class="ttdeci">double dx</div><div class="ttdef"><b>Definition:</b> projection_gk.c:61</div></div>
+<div class="ttc" id="aprojection__gk_8c_a9deb6f886b19d50e714d890c3c268efc_html_a9deb6f886b19d50e714d890c3c268efc"><div class="ttname"><a href="projection__gk_8c_a9deb6f886b19d50e714d890c3c268efc.html#a9deb6f886b19d50e714d890c3c268efc">dy</a></div><div class="ttdeci">double dy</div><div class="ttdef"><b>Definition:</b> projection_gk.c:62</div></div>
+</div><!-- fragment -->
 </div>
 </div>
     </td>
