@@ -339,8 +339,13 @@ compute_dist2(POINT4D p, POINT4D vs, POINT4D ve)
 TInstant *
 dist2d_trgeoinst_geo(const TInstant *inst, const GSERIALIZED *gs)
 {
-  double dist = geom_distance2d(trgeoinst_geom_p(inst), gs);
-  return tinstant_make(Float8GetDatum(dist), T_FLOAT8, inst->t);
+  /* The reference geometry is the body at the origin; the distance is measured
+   * from the body placed by the pose of the instant */
+  GSERIALIZED *body = pose_apply_geo(DatumGetPoseP(tinstant_value_p(inst)),
+    trgeoinst_geom_p(inst));
+  double dist = geom_distance2d(body, gs);
+  pfree(body);
+  return tinstant_make(Float8GetDatum(dist), T_TFLOAT, inst->t);
 }
 
 /**

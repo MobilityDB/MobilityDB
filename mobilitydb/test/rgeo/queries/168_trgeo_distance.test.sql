@@ -100,6 +100,28 @@ SELECT round(ST_Length(shortestLine(
   trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
   geometry 'Polygon((5 3,6 3,6 4,5 4,5 3))'))::numeric, 6);
 
+-- An instant rigid geometry: the distance is measured from the body placed by
+-- the pose of the instant, and it is answered for every geometry type because
+-- the instant case delegates to the geometry-geometry distance
+SELECT round(minValue(tDistance(
+  trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));Pose(Point(20 10),1.1)@2001-01-01',
+  geometry 'Point(5 3)'))::numeric, 6);
+SELECT round(ST_Distance(valueAtTimestamp(
+  trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));Pose(Point(20 10),1.1)@2001-01-01',
+  '2001-01-01'), geometry 'Point(5 3)')::numeric, 6);
+SELECT round(minValue(tDistance(
+  trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));Pose(Point(20 10),1.1)@2001-01-01',
+  geometry 'Linestring(5 3,6 4)'))::numeric, 6);
+SELECT round(minValue(tDistance(
+  trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));Pose(Point(20 10),1.1)@2001-01-01',
+  geometry 'Polygon((5 3,6 3,6 4,5 4,5 3))'))::numeric, 6);
+SELECT round(minValue(
+  trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));Pose(Point(20 10),1.1)@2001-01-01' <->
+  geometry 'Polygon((5 3,6 3,6 4,5 4,5 3))')::numeric, 6);
+SELECT round(nearestApproachDistance(
+  trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));Pose(Point(20 10),1.1)@2001-01-01',
+  geometry 'Polygon((5 3,6 3,6 4,5 4,5 3))')::numeric, 6);
+
 -- The nearest approach instant of the rotating body lies strictly inside the
 -- motion, not at an endpoint
 SELECT getTimestamp(nearestApproachInstant(
