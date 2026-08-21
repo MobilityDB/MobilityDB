@@ -70,6 +70,10 @@ Temporal<T>              temporal_type      = ALL temporal types            (cat
   hand-written beside its nine siblings and carries the spatial reference
   system alone — `SRID`, `setSRID`, `transform` and `transformPipeline`, each
   reading the outer link, which is the only link that names a frame.
+  `555_tposechain_geopose.in.sql` has no file of its own: the OGC GeoPose
+  Composite Chain entries `asGeoPose(tposechain, …)` and
+  `tposechainFromGeoPose` are a `lit:` block of the `representations` axis, as
+  the pose family's GeoPose entries are.
   ⛔ The family carries no distance, no spatial relationships and no index
   file: a pose chain has no distance function, and the ordering operator waits
   on the kNN question.

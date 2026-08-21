@@ -573,6 +573,34 @@ SELECT asEWKT(round(transformPipeline(tposechain
 			</itemizedlist>
 		</sect2>
 
+		<sect2 xml:id="tposechain_geopose">
+			<title>Cadena compuesta OGC GeoPose</title>
+			<itemizedlist>
+				<listitem xml:id="tposechain_asGeoPose">
+					<indexterm significance="normal"><primary><varname>asGeoPose</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tposechainFromGeoPose</varname></primary></indexterm>
+					<para>Escribe o lee un documento de cadena compuesta OGC GeoPose</para>
+					<para><varname>asGeoPose(tposechain,maxdecimaldigits integer=-1) &#8594; text</varname></para>
+					<para><varname>tposechainFromGeoPose(text) &#8594; tposechain</varname></para>
+					<para>Un documento de cadena es un marco exterior y una secuencia de transformaciones que alcanza un marco interior final, que es lo que contiene una cadena de poses. El documento nombra el marco LTP-ENU tangente en la posición del eslabón exterior y una transformación por eslabón: la primera lleva ese marco tangente al marco propio del eslabón exterior, y cada una posterior es el eslabón tal como se almacena, leído en los ejes de su padre.</para>
+					<para>El documento lleva un único tiempo de validez, por lo que se escribe a partir de un solo instante; <link linkend="tposechain_atTime"><varname>atTime</varname></link> obtiene uno de un valor más largo. Su cadena de marcos contiene al menos dos marcos, por lo que una cadena de un solo eslabón no tiene documento de cadena.</para>
+					<para>La clase de cadena nombra sus dos marcos <varname>/Extrinsic/LTP-ENU</varname> e <varname>/Intrinsic/Translate-Rotate</varname>, mientras que las clases Advanced, Series y Stream nombran esos mismos dos marcos <varname>LTP-ENU</varname> y <varname>RotateTranslate</varname>. Un documento se escribe con el par que usa su propia clase, y cualquiera de los dos pares se acepta al leer.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asGeoPose(tposechain 'SRID=4326;PoseChain(
+  GeodPose(Point Z(-122.3 47.7 11), 1, 0, 0, 0),
+  Pose(Point Z(2 0 0), 1, 0, 0, 0))@2021-04-28 05:36:10.083+00', 6);
+/* {"validTime":1619588170083,"outerFrame":{"authority":"/geopose/1.0",
+   "id":"/Extrinsic/LTP-ENU","parameters":"longitude=-122.3&amp;latitude=47.7&amp;
+   height=11&amp;crs=EPSG:4979"},"frameChain":[{"authority":"/geopose/1.0",
+   "id":"/Intrinsic/Translate-Rotate","parameters":"translation=[0, 0, 0]&amp;
+   rotation=[1, 0, -1.38778e-17, 0]"},{"authority":"/geopose/1.0",
+   "id":"/Intrinsic/Translate-Rotate","parameters":"translation=[2, 0, 0]&amp;
+   rotation=[1, 0, 0, 0]"}]} */
+</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
 		<sect2 xml:id="tposechain_restrictions">
 			<title>Funciones de restricción</title>
 			<itemizedlist>

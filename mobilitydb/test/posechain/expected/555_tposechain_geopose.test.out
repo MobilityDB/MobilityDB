@@ -1,0 +1,46 @@
+SELECT asGeoPose(tposechain 'SRID=4326;PoseChain(GeodPose(Point Z(-122.3 47.7 11), 1, 0, 0, 0),
+  Pose(Point Z(2 0 0), 1, 0, 0, 0))@2021-04-28 05:36:10.083+00', 6);
+                                                                                                                                                                                                                       asgeopose                                                                                                                                                                                                                       
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"validTime":1619588170083,"outerFrame":{"authority":"/geopose/1.0","id":"/Extrinsic/LTP-ENU","parameters":"longitude=-122.3&latitude=47.7&height=11&crs=EPSG:4979"},"frameChain":[{"authority":"/geopose/1.0","id":"/Intrinsic/Translate-Rotate","parameters":"translation=[0, 0, 0]&rotation=[1, 0, -1.38778e-17, 0]"},{"authority":"/geopose/1.0","id":"/Intrinsic/Translate-Rotate","parameters":"translation=[2, 0, 0]&rotation=[1, 0, 0, 0]"}]}
+(1 row)
+
+SELECT asGeoPose(tposechain 'SRID=4326;PoseChain(GeodPose(Point Z(8 47 100), 1, 0, 0, 0),
+  Pose(Point Z(1 0 0), 1, 0, 0, 0), Pose(Point Z(0 3 0), 1, 0, 0, 0))@2021-04-28 05:36:10.083+00', 6);
+                                                                                                                                                                                                                                                                                 asgeopose                                                                                                                                                                                                                                                                                 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {"validTime":1619588170083,"outerFrame":{"authority":"/geopose/1.0","id":"/Extrinsic/LTP-ENU","parameters":"longitude=8&latitude=47&height=100&crs=EPSG:4979"},"frameChain":[{"authority":"/geopose/1.0","id":"/Intrinsic/Translate-Rotate","parameters":"translation=[0, 0, 0]&rotation=[1, 0, 2.77556e-17, 0]"},{"authority":"/geopose/1.0","id":"/Intrinsic/Translate-Rotate","parameters":"translation=[1, 0, 0]&rotation=[1, 0, 0, 0]"},{"authority":"/geopose/1.0","id":"/Intrinsic/Translate-Rotate","parameters":"translation=[0, 3, 0]&rotation=[1, 0, 0, 0]"}]}
+(1 row)
+
+WITH test(doc) AS (
+  SELECT asGeoPose(tposechain 'SRID=4326;PoseChain(GeodPose(Point Z(-122.3 47.7 11), 1, 0, 0, 0),
+    Pose(Point Z(2 0 0), 1, 0, 0, 0))@2021-04-28 05:36:10.083+00', 9) )
+SELECT asEWKT(round(tposechainFromGeoPose(doc), 6)) FROM test;
+                                                             asewkt                                                             
+--------------------------------------------------------------------------------------------------------------------------------
+ SRID=4326;PoseChain(GeodPose(POINT Z (-122.3 47.7 11),1,0,0,0),Pose(POINT Z (2 0 0),1,0,0,0))@Tue Apr 27 22:36:10.083 2021 PDT
+(1 row)
+
+SELECT asEWKT(round(tposechainFromGeoPose(
+  '{"validTime":1619588170083,"outerFrame":{"authority":"/geopose/1.0","id":"LTP-ENU","parameters":"longitude=-122.3&latitude=47.7&height=11&crs=EPSG:4979"},"frameChain":[{"authority":"/geopose/1.0","id":"RotateTranslate","parameters":"translation=[0, 0, 0]&rotation=[1, 0, 0, 0]"},{"authority":"/geopose/1.0","id":"RotateTranslate","parameters":"translation=[2, 0, 0]&rotation=[1, 0, 0, 0]"}]}'), 6));
+                                                             asewkt                                                             
+--------------------------------------------------------------------------------------------------------------------------------
+ SRID=4326;PoseChain(GeodPose(POINT Z (-122.3 47.7 11),1,0,0,0),Pose(POINT Z (2 0 0),1,0,0,0))@Tue Apr 27 22:36:10.083 2021 PDT
+(1 row)
+
+SELECT asGeoPose(tposechain 'SRID=4326;{PoseChain(GeodPose(Point Z(8 47 100), 1, 0, 0, 0),
+  Pose(Point Z(1 0 0), 1, 0, 0, 0))@2021-04-28 05:36:10+00,
+  PoseChain(GeodPose(Point Z(8 48 100), 1, 0, 0, 0),
+  Pose(Point Z(1 0 0), 1, 0, 0, 0))@2021-04-28 05:36:20+00}', 6);
+ERROR:  A GeoPose Chain document carries one valid time, so it is written from a single instant; use atTime to obtain one
+SELECT asGeoPose(tposechain 'SRID=4326;PoseChain(GeodPose(Point Z(8 47 100), 1, 0, 0, 0))@2021-04-28 05:36:10+00', 6);
+ERROR:  A GeoPose Chain frame chain holds at least two frames, and the pose chain holds 1
+SELECT tposechainFromGeoPose(
+  '{"validTime":1619588170083,"outerFrame":{"authority":"/geopose/1.0","id":"/Extrinsic/LTP-ENU","parameters":"longitude=8&latitude=47&height=100"},"frameChain":[{"authority":"/geopose/1.0","id":"/Intrinsic/Translate-Rotate","parameters":"translation=[0, 0, 0]&rotation=[1, 0, 0, 0]"}]}');
+ERROR:  A GeoPose Chain frame chain holds at least two frames, and the document carries 1
+SELECT tposechainFromGeoPose(
+  '{"outerFrame":{"authority":"/geopose/1.0","id":"/Extrinsic/LTP-ENU","parameters":"longitude=8&latitude=47&height=100"},"frameChain":[{"authority":"/geopose/1.0","id":"/Intrinsic/Translate-Rotate","parameters":"translation=[0, 0, 0]&rotation=[1, 0, 0, 0]"},{"authority":"/geopose/1.0","id":"/Intrinsic/Translate-Rotate","parameters":"translation=[1, 0, 0]&rotation=[1, 0, 0, 0]"}]}');
+ERROR:  A GeoPose Chain document carries an integer 'validTime' and an array 'frameChain'
+SELECT tposechainFromGeoPose(
+  '{"validTime":1619588170083,"outerFrame":{"authority":"/geopose/1.0","id":"/Extrinsic/LTP-ENU","parameters":"longitude=8&latitude=47&height=100"},"frameChain":[{"authority":"/geopose/1.0","id":"/Intrinsic/Translate-Rotate","parameters":"translation=[0, 0, 0]&rotation=[1, 0, 0, 0]"},{"authority":"/geopose/1.0","id":"/Intrinsic/Translate-Rotate","parameters":"scale=2"}]}');
+ERROR:  GeoPose Chain frame chain element parameters must carry a 3-element 'translation' and a 4-element 'rotation'

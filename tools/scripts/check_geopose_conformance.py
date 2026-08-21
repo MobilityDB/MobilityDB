@@ -47,9 +47,14 @@ ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 # The normative schemas, retrieved from schemas.opengis.net.
 SCHEMA_DIR = os.path.join(ROOT, 'mobilitydb', 'test', 'pose', 'schemas')
 
-# The expected output holding the emitted documents.
-EXPECTED = os.path.join(ROOT, 'mobilitydb', 'test', 'pose', 'expected',
-    '103_pose_geopose.test.out')
+# The expected outputs holding the emitted documents, one per family that
+# writes a conformance class.
+EXPECTED = [
+    os.path.join(ROOT, 'mobilitydb', 'test', 'pose', 'expected',
+        '103_pose_geopose.test.out'),
+    os.path.join(ROOT, 'mobilitydb', 'test', 'posechain', 'expected',
+        '555_tposechain_geopose.test.out'),
+]
 
 # A document is recognised by the member that only its class carries, tried in
 # this order so that a Series is never mistaken for the Basic document of its
@@ -67,6 +72,11 @@ CLASSES = [
     # per pose. `outerFrame` comes after the two Series members because a
     # Series carries an outer frame as well, and its own member names it more
     # precisely; a stream header is what is left holding only an outer frame.
+    # A Chain names an outer frame as well, so the member holding its own
+    # sequence of transformations comes before the one a stream header is
+    # left holding alone.
+    ('frameChain', 'Chain',
+        'GeoPose.Composite.Chain.Schema.json'),
     ('streamElement', 'Stream element',
         'GeoPose.Composite.Sequence.StreamElement.Schema.json'),
     ('outerFrame', 'Stream header',
@@ -98,7 +108,7 @@ STRICT = ('Basic-Quaternion', 'validTime',
 # wherever they appear rather than demanded here; `meos/test/geopose_test.c` is
 # what exercises them.
 REQUIRED = ('Regular Series', 'Irregular Series', 'Basic-Quaternion',
-    'Basic-YPR', 'Advanced', 'Stream')
+    'Basic-YPR', 'Advanced', 'Stream', 'Chain')
 
 TYPES = {
     'object': dict,
@@ -208,10 +218,11 @@ def documents(path):
 def main():
     listing = '--list' in sys.argv[1:]
 
-    if not os.path.isfile(EXPECTED):
-        print('check_geopose_conformance: no expected output at %s' %
-            os.path.relpath(EXPECTED, ROOT))
-        return 1
+    for path in EXPECTED:
+        if not os.path.isfile(path):
+            print('check_geopose_conformance: no expected output at %s' %
+                os.path.relpath(path, ROOT))
+            return 1
 
     schemas = {}
     for _, name, filename in CLASSES:
@@ -236,7 +247,7 @@ def main():
     failed = 0
     strict = 0
     seen = {}
-    for doc in documents(EXPECTED):
+    for doc in [d for path in EXPECTED for d in documents(path)]:
         name, _ = classify(doc)
         if name is None:
             continue
@@ -259,7 +270,7 @@ def main():
 
     if not total:
         print('check_geopose_conformance: no GeoPose document found in %s' %
-            os.path.relpath(EXPECTED, ROOT))
+            ', '.join(os.path.relpath(p, ROOT) for p in EXPECTED))
         return 1
 
     missing = [name for name in REQUIRED if name not in seen]

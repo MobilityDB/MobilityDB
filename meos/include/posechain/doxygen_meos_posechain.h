@@ -35,6 +35,34 @@
  * @defgroup meos_posechain_set Functions for pose chain sets
  * @ingroup meos_posechain
  * @brief Functions for pose chain sets
+ *
+ * @defgroup meos_posechain_inout Input and output functions
+ * @ingroup meos_posechain
+ * @brief Input and output functions for temporal pose chains
+ *
+ * @defgroup meos_posechain_constructor Constructor functions
+ * @ingroup meos_posechain
+ * @brief Constructor functions for temporal pose chains
+ *
+ * @defgroup meos_posechain_conversion Conversion functions
+ * @ingroup meos_posechain
+ * @brief Conversion functions for temporal pose chains
+ *
+ * @defgroup meos_posechain_accessor Accessor functions
+ * @ingroup meos_posechain
+ * @brief Accessor functions for temporal pose chains
+ *
+ * @defgroup meos_posechain_comp Comparison functions
+ * @ingroup meos_posechain
+ * @brief Comparison functions for temporal pose chains
+ *
+ *   @defgroup meos_posechain_comp_ever Ever and always comparison functions
+ *   @ingroup meos_posechain_comp
+ *   @brief Ever and always comparison functions for temporal pose chains
+ *
+ *   @defgroup meos_posechain_comp_temp Temporal comparison functions
+ *   @ingroup meos_posechain_comp
+ *   @brief Temporal comparison functions for temporal pose chains
  */
 
 /*****************************************************************************/
@@ -63,6 +91,10 @@
  * @defgroup meos_posechain_base_srid Spatial reference system functions
  * @ingroup meos_posechain_base
  * @brief Spatial reference system functions for static pose chains
+ *
+ * @defgroup meos_posechain_base_bbox Bounding box functions
+ * @ingroup meos_posechain_base
+ * @brief Bounding box functions for static pose chains
  *
  * @defgroup meos_posechain_base_comp Comparison functions
  * @ingroup meos_posechain_base

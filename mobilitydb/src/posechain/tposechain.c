@@ -34,6 +34,7 @@
 
 /* PostgreSQL */
 #include <postgres.h>
+#include <pgtypes.h>                  /* text_to_cstring / cstring_to_text */
 #include <fmgr.h>
 #include <utils/array.h>
 /* MEOS */
@@ -141,6 +142,51 @@ Tposechain_num_links(PG_FUNCTION_ARGS)
   int result = tposechain_num_links(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_INT32(result);
+}
+
+/*****************************************************************************
+ * OGC GeoPose Composite Chain input/output
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Tposechain_from_geopose(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tposechain_from_geopose);
+/**
+ * @ingroup mobilitydb_posechain_inout
+ * @brief Return a temporal pose chain from an OGC GeoPose Composite Chain
+ * JSON document
+ * @sqlfn tposechainFromGeoPose()
+ */
+Datum
+Tposechain_from_geopose(PG_FUNCTION_ARGS)
+{
+  text *json_text = PG_GETARG_TEXT_P(0);
+  char *json = text_to_cstring(json_text);
+  Temporal *result = tposechain_from_geopose(json);
+  pfree(json);
+  PG_FREE_IF_COPY(json_text, 0);
+  if (result == NULL) PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tposechain_as_geopose(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tposechain_as_geopose);
+/**
+ * @ingroup mobilitydb_posechain_inout
+ * @brief Return the OGC GeoPose Composite Chain JSON representation of a
+ * temporal pose chain
+ * @sqlfn asGeoPose()
+ */
+Datum
+Tposechain_as_geopose(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  int precision = PG_GETARG_INT32(1);
+  char *result = tposechain_as_geopose(temp, precision);
+  PG_FREE_IF_COPY(temp, 0);
+  if (result == NULL) PG_RETURN_NULL();
+  text *result_text = cstring_to_text(result);
+  pfree(result);
+  PG_RETURN_TEXT_P(result_text);
 }
 
 /*****************************************************************************/
