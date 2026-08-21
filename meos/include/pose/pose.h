@@ -80,6 +80,17 @@ extern bool ensure_valid_pose_stbox(const Pose *pose, const STBox *box);
 extern bool ensure_valid_pose_pose(const Pose *pose1, const Pose *pose2);
 extern bool ensure_valid_poseset_pose(const Set *s, const Pose *pose);
 
+/* Composition functions */
+
+extern void quaternion_rotate_vector(double W, double X, double Y, double Z,
+  double vx, double vy, double vz, double *rx, double *ry, double *rz);
+extern void geodetic_to_ecef(double lon, double lat, double h, double *X,
+  double *Y, double *Z);
+extern void ecef_to_geodetic(double X, double Y, double Z, double *lon,
+  double *lat, double *h);
+extern void pose_compose_values(const double *parent, const double *child,
+  bool hasz, bool geodetic, double *result);
+
 /* Collinear and interpolation functions */
 
 extern bool pose_collinear(const Pose *pose1, const Pose *pose2,

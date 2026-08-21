@@ -50,3 +50,16 @@ SELECT ST_AsText(twCentroid(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Poi
  POINT(1.5 2)
 (1 row)
 
+SELECT asText(round(angularSpeed(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),1)@2001-01-02]'), 9));
+                                              astext                                              
+--------------------------------------------------------------------------------------------------
+ Interp=Step;[0.000011574@Mon Jan 01 00:00:00 2001 PST, 0.000011574@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT asText(angularSpeed(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),1)@2001-01-02]')) =
+  asText(angularSpeed(tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),1)@2001-01-02]'));
+ ?column? 
+----------
+ t
+(1 row)
+

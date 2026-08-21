@@ -1323,6 +1323,23 @@ SELECT asText(poseNormalize(pose 'Pose(Point(1 1 1), 0.5, 0.5, 0.5, 0.5)'));
 -- Pose(POINT Z (1 1 1),0.5,0.5,0.5,0.5)
 </programlisting>
 				</listitem>
+
+				<listitem xml:id="pose_inverse">
+					<indexterm significance="normal"><primary><varname>poseInverse</varname></primary></indexterm>
+					<para>Return the inverse of a pose</para>
+					<para><varname>poseInverse(pose) → pose</varname></para>
+					<para>The inverse reverses the frame relationship: where a pose carries a value from the frame it names into the frame it is expressed in, the inverse carries it back. It is <varname>R_BA = R_AB^T</varname> and <varname>t_BA = −R_AB^T t_AB</varname>, so composing a pose with its inverse gives the identity. This is what expresses a world position in the frame of a vehicle.</para>
+					<para>A pose over a geographic frame has no inverse: the frame it would name is not a frame of the ellipsoid.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asEWKT(round(poseInverse(pose(ST_Point(10,5), pi()/2)), 6));
+-- Pose(POINT(-5 10),-1.570796)
+SELECT asEWKT(round(applyPose(poseInverse(pose(ST_Point(10,5), pi()/2)),
+  pose(ST_Point(10,5), pi()/2)), 6));
+-- Pose(POINT(0 0),0)
+SELECT asEWKT(round(poseInverse(pose 'Pose(Point(1 0 0), 0, 0, 0, 1)'), 6));
+-- Pose(POINT Z (1 0 0),0,0,0,-1)
+</programlisting>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 
@@ -1448,6 +1465,7 @@ SELECT geoPoseFrameIsGeographic(1), geoPoseFrameIsGeographic(2);
 					<para>Applies the rigid-body transform encoded by a pose (the OGC GeoPose <emphasis>body to world</emphasis> mapping) to a body-frame geometry, producing the corresponding world-frame geometry</para>
 					<para><varname>applyPose(geometry, pose) → geometry</varname></para>
 					<para><varname>applyPose(geometry, tpose) → tgeompoint</varname></para>
+					<para><varname>applyPose(pose, pose) → pose</varname></para>
 					<para>The transform is</para>
 					<programlisting xml:space="preserve" format="linespecific">
 world = R(q) · body + p
@@ -1459,6 +1477,20 @@ world = R(q) · body + p
 SELECT asText(applyPose(ST_Point(1,0), tpose '[Pose(Point(0 0), 0)@2026-01-01,
   Pose(Point(10 20), 1.5707963267948966)@2026-01-02]'));
 -- [POINT(1 0)@2026-01-01, POINT(10 21)@2026-01-02]
+</programlisting>
+					<para>A pose names a frame, so it is itself such a body-frame value: applying one pose to another composes the two frame relationships. Writing <varname>P_WV</varname> for the pose of a vehicle in the world and <varname>P_VS</varname> for the pose of a sensor in the vehicle, the pose of the sensor in the world is <varname>P_WS = P_WV ∘ P_VS</varname>. This is the operation a pose chain folds over its links, so a two-link chain composes to what this returns.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- A sensor one unit ahead of a vehicle turned a quarter turn is one unit
+-- North of it, and carries the vehicle's orientation
+SELECT asEWKT(round(applyPose(pose 'Pose(Point(1 0), 0)',
+  pose(ST_Point(0,0), pi()/2)), 6));
+-- Pose(POINT(0 1),1.570796)
+SELECT asEWKT(round(applyPose(pose 'Pose(Point(1 0), 0)',
+  pose(ST_Point(10,5), pi()/2)), 6));
+-- Pose(POINT(10 6),1.570796)
+SELECT asEWKT(round(applyPose(pose 'Pose(Point(1 0 0), 1, 0, 0, 0)',
+  pose 'Pose(Point(0 0 5), 1, 0, 0, 0)'), 6));
+-- Pose(POINT Z (1 0 5),1,0,0,0)
 </programlisting>
 				</listitem>
 			</itemizedlist>

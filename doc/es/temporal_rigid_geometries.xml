@@ -386,6 +386,18 @@ SELECT speed(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="trgeometry_angular_speed">
+				<indexterm significance="normal"><primary><varname>angularSpeed</varname></primary></indexterm>
+				<para>Devuelve la velocidad angular como un flotante temporal</para>
+				<para><varname>angularSpeed(trgeometry) → tfloat</varname></para>
+				<para>La forma de una geometría rígida nunca cambia, por lo que su velocidad angular es la de la pose que la lleva, en radianes por unidad de tiempo.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(angularSpeed(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+  [Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),1)@2001-01-02]'));
+-- Interp=Step;[0.000011574074074@2001-01-01, 0.000011574074074@2001-01-02]
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="trgeometry_twcentroid">
 				<indexterm significance="normal"><primary><varname>twCentroid</varname></primary></indexterm>
 				<para>Devuelve el centroide ponderado en el tiempo de la trayectoria del centroide como una geometría</para>

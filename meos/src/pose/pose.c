@@ -102,9 +102,17 @@ ensure_valid_pose_pose(const Pose *pose1, const Pose *pose2)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(pose1, false); VALIDATE_NOT_NULL(pose2, false); 
-  if (! ensure_same_srid(pose_srid(pose1), pose_srid(pose2)) ||
-      MEOS_FLAGS_GET_Z(pose1->flags) != MEOS_FLAGS_GET_Z(pose2->flags))
+  if (! ensure_same_srid(pose_srid(pose1), pose_srid(pose2)))
     return false;
+  /* The dimension is stated as the SRID is: a rejection carries its reason,
+   * so that a caller reads why the two poses do not go together rather than
+   * only that they do not */
+  if (MEOS_FLAGS_GET_Z(pose1->flags) != MEOS_FLAGS_GET_Z(pose2->flags))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Operation on mixed 2D/3D dimensions");
+    return false;
+  }
   return true;
 }
 
@@ -122,6 +130,196 @@ ensure_valid_poseset_pose(const Set *s, const Pose *pose)
       MEOS_FLAGS_GET_Z(pose->flags) != MEOS_FLAGS_GET_Z(s->flags))
     return false;
   return true;
+}
+
+/*****************************************************************************
+ * Composition of two poses
+ *
+ * A pose names a frame, so composing two of them carries the inner one into
+ * the frame of the outer. A pose chain is the fold of this operation over its
+ * links, so the two share one definition, which lives here because the chain
+ * is built on the pose and not the other way round.
+ *****************************************************************************/
+
+/** Semi-major axis of the WGS-84 ellipsoid, in metres */
+#define WGS84_A       6378137.0
+/** Flattening of the WGS-84 ellipsoid */
+#define WGS84_F       (1.0 / 298.257223563)
+/** First eccentricity squared of the WGS-84 ellipsoid */
+#define WGS84_E2      (WGS84_F * (2.0 - WGS84_F))
+
+/**
+ * @brief Rotate a vector by a unit quaternion
+ * @details Applies v' = v + 2 u x (u x v + w v), where (w, u) is the
+ * quaternion, which is the rotation written without forming the matrix
+ */
+void
+quaternion_rotate_vector(double W, double X, double Y, double Z,
+  double vx, double vy, double vz, double *ox, double *oy, double *oz)
+{
+  /* t = u x v + w v */
+  double tx = Y * vz - Z * vy + W * vx;
+  double ty = Z * vx - X * vz + W * vy;
+  double tz = X * vy - Y * vx + W * vz;
+  /* v' = v + 2 u x t */
+  *ox = vx + 2.0 * (Y * tz - Z * ty);
+  *oy = vy + 2.0 * (Z * tx - X * tz);
+  *oz = vz + 2.0 * (X * ty - Y * tx);
+}
+
+/**
+ * @brief Convert a geographic position into WGS-84 geocentric Cartesian
+ * coordinates
+ * @param[in] lon,lat Longitude and latitude in degrees
+ * @param[in] h Height above the ellipsoid in metres
+ * @param[out] X,Y,Z Geocentric coordinates in metres
+ */
+void
+geodetic_to_ecef(double lon, double lat, double h, double *X, double *Y,
+  double *Z)
+{
+  double lam = lon * (M_PI / 180.0), phi = lat * (M_PI / 180.0);
+  double sphi = sin(phi), cphi = cos(phi);
+  double N = WGS84_A / sqrt(1.0 - WGS84_E2 * sphi * sphi);
+  *X = (N + h) * cphi * cos(lam);
+  *Y = (N + h) * cphi * sin(lam);
+  *Z = (N * (1.0 - WGS84_E2) + h) * sphi;
+}
+
+/**
+ * @brief Convert WGS-84 geocentric Cartesian coordinates into a geographic
+ * position
+ * @details Uses Bowring's formula, whose one pass is exact to well below a
+ * micrometre for any point at terrestrial altitude
+ * @param[in] X,Y,Z Geocentric coordinates in metres
+ * @param[out] lon,lat Longitude and latitude in degrees
+ * @param[out] h Height above the ellipsoid in metres
+ */
+void
+ecef_to_geodetic(double X, double Y, double Z, double *lon, double *lat,
+  double *h)
+{
+  double b = WGS84_A * (1.0 - WGS84_F);
+  double ep2 = WGS84_E2 / (1.0 - WGS84_E2);
+  double p = hypot(X, Y);
+  double lam = atan2(Y, X);
+  double phi;
+  if (p < DBL_EPSILON * WGS84_A)
+    /* On the polar axis, where the parametric latitude is undefined */
+    phi = (Z >= 0.0) ? M_PI_2 : -M_PI_2;
+  else
+  {
+    double theta = atan2(Z * WGS84_A, p * b);
+    double st = sin(theta), ct = cos(theta);
+    phi = atan2(Z + ep2 * b * st * st * st,
+      p - WGS84_E2 * WGS84_A * ct * ct * ct);
+  }
+  double sphi = sin(phi), cphi = cos(phi);
+  double N = WGS84_A / sqrt(1.0 - WGS84_E2 * sphi * sphi);
+  /* Near the poles the height is read along the axis, since p / cos(phi)
+   * loses all of its precision there */
+  *h = (fabs(cphi) > 0.1) ? p / cphi - N : Z / sphi - N * (1.0 - WGS84_E2);
+  *lon = lam * (180.0 / M_PI);
+  *lat = phi * (180.0 / M_PI);
+}
+
+/**
+ * @brief Compose a parent pose with a child pose expressed in the parent's
+ * frame, writing the result in the frame of the parent
+ * @details This is the rigid composition every frame relationship rests on:
+ * a chain folds it from the outside in, and #pose_compose() answers it for
+ * two poses.
+ * @param[in] parent Values of the parent link, already composed
+ * @param[in] child Values of the child link
+ * @param[in] hasz True when the chain is three-dimensional
+ * @param[in] geodetic True when the outer frame of the chain is geographic
+ * @param[out] result Values of the composed link
+ * @details In a projected frame the composition is the ordinary rigid one,
+ * the child's translation rotated by the parent's orientation and added to
+ * the parent's position. In a geographic frame the parent's position is in
+ * degrees while the child's translation is in metres along the local
+ * East-North-Up axes, so the sum is taken in geocentric coordinates, which
+ * is exact and needs no projection.
+ */
+void
+pose_compose_values(const double *parent, const double *child, bool hasz,
+  bool geodetic, double *result)
+{
+  if (! hasz)
+  {
+    /* The orientation of a two-dimensional pose is one angle about the
+     * vertical, so the rotation of the child's translation is planar */
+    double th = parent[2], s = sin(th), c = cos(th);
+    double dx = c * child[0] - s * child[1];
+    double dy = s * child[0] + c * child[1];
+    double theta = th + child[2];
+    /* Wrap into the (-pi, pi] interval the constructor accepts */
+    theta = fmod(theta + M_PI, 2.0 * M_PI);
+    if (theta <= 0.0)
+      theta += 2.0 * M_PI;
+    theta -= M_PI;
+    if (! geodetic)
+    {
+      result[0] = parent[0] + dx;
+      result[1] = parent[1] + dy;
+    }
+    else
+    {
+      /* The offset lies in the tangent plane at the parent, on the
+       * ellipsoid surface */
+      double Rw, Rx, Ry, Rz, ex, ey, ez, px, py, pz, dummy;
+      geodetic_to_ecef(parent[0], parent[1], 0.0, &px, &py, &pz);
+      pose_enu_to_ecef_quaternion(parent[1] * (M_PI / 180.0),
+        parent[0] * (M_PI / 180.0), &Rw, &Rx, &Ry, &Rz);
+      quaternion_rotate_vector(Rw, Rx, Ry, Rz, dx, dy, 0.0, &ex, &ey, &ez);
+      ecef_to_geodetic(px + ex, py + ey, pz + ez, &result[0], &result[1],
+        &dummy);
+    }
+    result[2] = theta;
+    return;
+  }
+
+  /* The body-to-parent rotation of the child, seen from the frame of the
+   * chain, is the parent's rotation followed by the child's */
+  double qw, qx, qy, qz;
+  pose_quaternion_mul(parent[3], parent[4], parent[5], parent[6],
+    child[3], child[4], child[5], child[6], &qw, &qx, &qy, &qz);
+  /* The child's translation is given in the axes of the parent's body */
+  double dx, dy, dz;
+  quaternion_rotate_vector(parent[3], parent[4], parent[5], parent[6],
+    child[0], child[1], child[2], &dx, &dy, &dz);
+
+  if (! geodetic)
+  {
+    result[0] = parent[0] + dx;
+    result[1] = parent[1] + dy;
+    result[2] = parent[2] + dz;
+  }
+  else
+  {
+    /* The parent's orientation is referred to the East-North-Up basis at
+     * the parent's position, so the offset is an ENU vector there. Add it
+     * in geocentric coordinates, then read the position back */
+    double Rw, Rx, Ry, Rz, ex, ey, ez, px, py, pz;
+    geodetic_to_ecef(parent[0], parent[1], parent[2], &px, &py, &pz);
+    pose_enu_to_ecef_quaternion(parent[1] * (M_PI / 180.0),
+      parent[0] * (M_PI / 180.0), &Rw, &Rx, &Ry, &Rz);
+    quaternion_rotate_vector(Rw, Rx, Ry, Rz, dx, dy, dz, &ex, &ey, &ez);
+    ecef_to_geodetic(px + ex, py + ey, pz + ez, &result[0], &result[1],
+      &result[2]);
+    /* The ENU basis has turned between the two positions, so the rotation
+     * is re-expressed against the basis at the position it now has */
+    double Sw, Sx, Sy, Sz, aw, ax, ay, az;
+    pose_enu_to_ecef_quaternion(result[1] * (M_PI / 180.0),
+      result[0] * (M_PI / 180.0), &Sw, &Sx, &Sy, &Sz);
+    /* Take the rotation to the geocentric basis, then back to the new one */
+    pose_quaternion_mul(Rw, Rx, Ry, Rz, qw, qx, qy, qz, &aw, &ax, &ay, &az);
+    pose_quaternion_mul(Sw, -Sx, -Sy, -Sz, aw, ax, ay, az, &qw, &qx, &qy, &qz);
+  }
+  result[3] = qw;
+  result[4] = qx;
+  result[5] = qy;
+  result[6] = qz;
 }
 
 /*****************************************************************************
@@ -1396,6 +1594,80 @@ datum_pose_apply_geo(Datum pose, Datum body)
 /*****************************************************************************
  * Transformation functions
  *****************************************************************************/
+
+/**
+ * @ingroup meos_pose_base_transf
+ * @brief Return the composition of two poses
+ * @details A pose names a frame, so composing carries @p body, which is
+ * expressed in the frame @p frame names, into the frame @p frame itself is
+ * expressed in. Writing @p P_WV for the frame and @p P_VS for the body, the
+ * result is @p P_WS. This is the same operation a pose chain folds over its
+ * links, so a two-link chain composes to what this returns.
+ * @param[in] body Pose expressed in the frame the other one names
+ * @param[in] frame Pose naming that frame
+ * @return On error return @p NULL
+ * @csqlfn #Pose_apply_pose()
+ */
+Pose *
+pose_compose(const Pose *body, const Pose *frame)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_pose_pose(frame, body))
+    return NULL;
+
+  bool hasz = MEOS_FLAGS_GET_Z(frame->flags);
+  bool geodetic = MEOS_FLAGS_GET_GEODETIC(frame->flags);
+  double result[7];
+  pose_compose_values(frame->data, body->data, hasz, geodetic, result);
+  return hasz ?
+    pose_make_3d(result[0], result[1], result[2], result[3], result[4],
+      result[5], result[6], geodetic, pose_srid(frame)) :
+    pose_make_2d(result[0], result[1], result[2], geodetic, pose_srid(frame));
+}
+
+/**
+ * @ingroup meos_pose_base_transf
+ * @brief Return the inverse of a pose
+ * @details The inverse reverses the frame relationship: where @p pose carries
+ * a value from the frame it names into the frame it is expressed in, the
+ * inverse carries it back. It is @p R_BA = R_AB^T and
+ * @p t_BA = −R_AB^T t_AB, so composing a pose with its inverse gives the
+ * identity.
+ * @param[in] pose Pose
+ * @return On error return @p NULL
+ * @csqlfn #Pose_inverse()
+ */
+Pose *
+pose_inverse(const Pose *pose)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pose, NULL);
+  if (MEOS_FLAGS_GET_GEODETIC(pose->flags))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The inverse of a pose over a geographic frame is not defined: the "
+      "frame it would name is not a frame of the ellipsoid");
+    return NULL;
+  }
+
+  if (! MEOS_FLAGS_GET_Z(pose->flags))
+  {
+    /* The rotation of the inverse is the opposite angle, and the position
+     * is the current one carried back through it */
+    double th = -pose->data[2], s = sin(th), c = cos(th);
+    double x = -(c * pose->data[0] - s * pose->data[1]);
+    double y = -(s * pose->data[0] + c * pose->data[1]);
+    return pose_make_2d(x, y, th, false, pose_srid(pose));
+  }
+
+  /* The inverse of a unit quaternion is its conjugate */
+  double W = pose->data[3], X = -pose->data[4];
+  double Y = -pose->data[5], Z = -pose->data[6];
+  double x, y, z;
+  quaternion_rotate_vector(W, X, Y, Z, pose->data[0], pose->data[1],
+    pose->data[2], &x, &y, &z);
+  return pose_make_3d(-x, -y, -z, W, X, Y, Z, false, pose_srid(pose));
+}
 
 /**
  * @ingroup meos_pose_base_geopose

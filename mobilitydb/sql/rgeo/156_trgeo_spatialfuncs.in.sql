@@ -98,6 +98,11 @@ CREATE FUNCTION speed(trgeometry)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Trgeometry_speed'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION angularSpeed(trgeometry)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Trgeometry_angular_speed'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION twCentroid(trgeometry)
   RETURNS geometry
   AS 'MODULE_PATHNAME', 'Trgeometry_twcentroid'

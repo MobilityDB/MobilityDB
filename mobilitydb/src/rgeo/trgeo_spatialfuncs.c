@@ -507,6 +507,25 @@ Trgeometry_speed(PG_FUNCTION_ARGS)
   PG_RETURN_TEMPORAL_P(result);
 }
 
+PGDLLEXPORT Datum Trgeometry_angular_speed(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Trgeometry_angular_speed);
+/**
+ * @ingroup mobilitydb_rgeo_accessor
+ * @brief Return the angular speed of a temporal rigid geometry (radians per
+ * unit time) as a step-interpolated temporal float
+ * @sqlfn angularSpeed()
+ */
+Datum
+Trgeometry_angular_speed(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = trgeometry_angular_speed(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
+}
+
 PGDLLEXPORT Datum Trgeometry_twcentroid(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Trgeometry_twcentroid);
 /**

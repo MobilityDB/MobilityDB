@@ -534,3 +534,106 @@ SELECT poseFromBinary(asBinary(pose 'GeodPose(Point(1 1 1),1,0,0,0)'));
  GEODPOSE(0101000080000000000000F03F000000000000F03F000000000000F03F, 1, 0, 0, 0)
 (1 row)
 
+SELECT asEWKT(round(applyPose(pose 'Pose(Point(1 0), 0)',
+  pose 'Pose(Point(0 0), 0)'), 6));
+       asewkt       
+--------------------
+ Pose(POINT(1 0),0)
+(1 row)
+
+SELECT asEWKT(round(applyPose(pose 'Pose(Point(1 0), 0)',
+  pose(ST_Point(0,0), pi()/2)), 6));
+          asewkt           
+---------------------------
+ Pose(POINT(0 1),1.570796)
+(1 row)
+
+SELECT asEWKT(round(applyPose(pose 'Pose(Point(1 0), 0)',
+  pose(ST_Point(10,5), pi()/2)), 6));
+           asewkt           
+----------------------------
+ Pose(POINT(10 6),1.570796)
+(1 row)
+
+SELECT asEWKT(round(applyPose(pose(ST_Point(0,0), pi()/4),
+  pose(ST_Point(0,0), pi()/4)), 6));
+          asewkt           
+---------------------------
+ Pose(POINT(0 0),1.570796)
+(1 row)
+
+SELECT asEWKT(round(applyPose(pose 'Pose(Point(1 0), 0)',
+  pose(ST_Point(10,5), pi()/2)), 6)) =
+  asEWKT(round(pose(posechain(ARRAY[pose(ST_Point(10,5), pi()/2),
+    pose 'Pose(Point(1 0), 0)'])), 6));
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT asEWKT(round(applyPose(pose 'Pose(Point(1 0 0), 1, 0, 0, 0)',
+  pose 'Pose(Point(0 0 5), 1, 0, 0, 0)'), 6));
+            asewkt             
+-------------------------------
+ Pose(POINT Z (1 0 5),1,0,0,0)
+(1 row)
+
+SELECT applyPose(pose 'SRID=3812;Pose(Point(1 0), 0)',
+  pose 'SRID=4326;Pose(Point(0 0), 0)');
+ERROR:  Operation on mixed SRID
+SELECT applyPose(pose 'Pose(Point(1 0), 0)',
+  pose 'Pose(Point(0 0 1), 1, 0, 0, 0)');
+ERROR:  Operation on mixed 2D/3D dimensions
+SELECT asEWKT(round(poseInverse(pose 'Pose(Point(1 0), 0)'), 6));
+       asewkt        
+---------------------
+ Pose(POINT(-1 0),0)
+(1 row)
+
+SELECT asEWKT(round(poseInverse(pose(ST_Point(0,0), pi()/2)), 6));
+           asewkt           
+----------------------------
+ Pose(POINT(0 0),-1.570796)
+(1 row)
+
+SELECT asEWKT(round(poseInverse(pose(ST_Point(10,5), pi()/2)), 6));
+            asewkt            
+------------------------------
+ Pose(POINT(-5 10),-1.570796)
+(1 row)
+
+SELECT asEWKT(round(applyPose(poseInverse(pose(ST_Point(10,5), pi()/2)),
+  pose(ST_Point(10,5), pi()/2)), 6));
+       asewkt       
+--------------------
+ Pose(POINT(0 0),0)
+(1 row)
+
+SELECT asEWKT(round(applyPose(pose(ST_Point(10,5), pi()/2),
+  poseInverse(pose(ST_Point(10,5), pi()/2))), 6));
+       asewkt       
+--------------------
+ Pose(POINT(0 0),0)
+(1 row)
+
+SELECT asEWKT(round(poseInverse(pose 'Pose(Point(1 0 0), 0, 0, 0, 1)'), 6));
+             asewkt             
+--------------------------------
+ Pose(POINT Z (1 0 0),0,0,0,-1)
+(1 row)
+
+SELECT asEWKT(round(applyPose(poseInverse(pose 'Pose(Point(1 0 0), 0, 0, 0, 1)'),
+  pose 'Pose(Point(1 0 0), 0, 0, 0, 1)'), 6));
+            asewkt             
+-------------------------------
+ Pose(POINT Z (0 0 0),1,0,0,0)
+(1 row)
+
+SELECT asEWKT(round(poseInverse(poseInverse(pose(ST_Point(10,5), pi()/2))), 6));
+           asewkt           
+----------------------------
+ Pose(POINT(10 5),1.570796)
+(1 row)
+
+SELECT poseInverse(pose 'SRID=4326;GeodPose(Point(8 47), 0.5)');
+ERROR:  The inverse of a pose over a geographic frame is not defined: the frame it would name is not a frame of the ellipsoid

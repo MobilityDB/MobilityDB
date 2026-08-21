@@ -1585,6 +1585,9 @@
 					<listitem>
 						<para><link linkend="pose_normalize"><varname>poseNormalize</varname></link>: Return a pose whose orientation quaternion has been transformed to a unit norm</para>
 					</listitem>
+					<listitem>
+						<para><link linkend="pose_inverse"><varname>poseInverse</varname></link>: Return the inverse of a pose</para>
+					</listitem>
 				</itemizedlist>
 			</sect3>
 			<sect3>
@@ -2381,6 +2384,9 @@
 				</listitem>
 				<listitem>
 					<para><link linkend="trgeometry_speed"><varname>speed</varname></link>: Return the speed of the centroid as a temporal float</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="trgeometry_angular_speed"><varname>angularSpeed</varname></link>: Return the angular speed as a temporal float</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="trgeometry_twcentroid"><varname>twCentroid</varname></link>: Return the time-weighted centroid of the centroid trajectory as a geometry</para>

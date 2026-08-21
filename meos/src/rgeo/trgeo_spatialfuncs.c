@@ -994,6 +994,28 @@ trgeometry_speed(const Temporal *temp)
 
 /**
  * @ingroup meos_rgeo_accessor
+ * @brief Return the angular speed of a temporal rigid geometry (radians per
+ * unit time) as a step-interpolated temporal float
+ * @details The shape of a rigid geometry never changes, so its angular speed
+ * is the angular speed of the pose that carries it.
+ * @param[in] temp Temporal rigid geometry
+ * @return On error return @p NULL
+ * @csqlfn #Trgeometry_angular_speed()
+ */
+Temporal *
+trgeometry_angular_speed(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TRGEOMETRY(temp, NULL);
+
+  Temporal *tpose = trgeometry_to_tpose(temp);
+  Temporal *result = tpose_angular_speed(tpose);
+  pfree(tpose);
+  return result;
+}
+
+/**
+ * @ingroup meos_rgeo_accessor
  * @brief Return the time-weighted centroid of the centroid trajectory of a
  * temporal rigid geometry
  * @param[in] temp Temporal rigid geometry
