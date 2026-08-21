@@ -243,7 +243,7 @@ SELECT round(tDistance(
   geometry 'MultiPoint(0 5,11 5)'), 6);
                                                   round                                                  
 ---------------------------------------------------------------------------------------------------------
- [4@Mon Jan 01 00:00:00 2001 PST, 7.385165@Mon Jan 01 12:00:00 2001 PST, 4@Tue Jan 02 00:00:00 2001 PST]
+ [4@Mon Jan 01 00:00:00 2001 PST, 6.403124@Mon Jan 01 12:00:00 2001 PST, 4@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
 SELECT round(tDistance(
@@ -251,7 +251,7 @@ SELECT round(tDistance(
   geometry 'MultiPolygon(((0 5,1 5,1 6,0 6,0 5)),((11 5,12 5,12 6,11 6,11 5)))'), 6);
                                                                         round                                                                        
 -----------------------------------------------------------------------------------------------------------------------------------------------------
- [4@Mon Jan 01 00:00:00 2001 PST, 4@Mon Jan 01 02:24:00.00864 2001 PST, 6.984288@Mon Jan 01 13:25:15.82016 2001 PST, 4@Tue Jan 02 00:00:00 2001 PST]
+ [4@Mon Jan 01 00:00:00 2001 PST, 4@Mon Jan 01 02:24:00.00864 2001 PST, 5.952269@Mon Jan 01 13:25:15.82016 2001 PST, 4@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
 SELECT round(minValue(tDistance(
@@ -372,5 +372,27 @@ SELECT ST_AsText(ST_SnapToGrid(shortestLine(
       st_astext      
 ---------------------
  LINESTRING(2 1,2 3)
+(1 row)
+
+SELECT round(abs(valueAtTimestamp(tDistance(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  geometry 'MultiPoint(0 5,11 5)'), '2001-01-01 12:00')
+  - ST_Distance(valueAtTimestamp(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  '2001-01-01 12:00'), geometry 'MultiPoint(0 5,11 5)'))::numeric, 9);
+    round    
+-------------
+ 0.000000000
+(1 row)
+
+SELECT round(abs(valueAtTimestamp(tDistance(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  geometry 'MultiLinestring((0 5,0 6),(11 5,11 6))'), '2001-01-01 12:00')
+  - ST_Distance(valueAtTimestamp(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  '2001-01-01 12:00'), geometry 'MultiLinestring((0 5,0 6),(11 5,11 6))'))::numeric, 9);
+    round    
+-------------
+ 0.000000000
 (1 row)
 
