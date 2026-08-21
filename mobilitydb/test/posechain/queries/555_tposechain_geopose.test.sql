@@ -80,3 +80,41 @@ SELECT tposechainFromGeoPose(
   '{"validTime":1619588170083,"outerFrame":{"authority":"/geopose/1.0","id":"/Extrinsic/LTP-ENU","parameters":"longitude=8&latitude=47&height=100"},"frameChain":[{"authority":"/geopose/1.0","id":"/Intrinsic/Translate-Rotate","parameters":"translation=[0, 0, 0]&rotation=[1, 0, 0, 0]"},{"authority":"/geopose/1.0","id":"/Intrinsic/Translate-Rotate","parameters":"scale=2"}]}');
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- OGC GeoPose Composite Graph
+-- A graph of frames is a set of pose chains sharing their outermost frame, so
+-- each chain contributes an edge from that frame to its first link and one
+-- between each pair of links after it. The edges carry no transformation,
+-- which lives in the frames they name.
+-------------------------------------------------------------------------------
+
+-- Two limbs off the one topocentric frame
+SELECT asGeoPose(ARRAY[
+  tposechain 'SRID=4326;PoseChain(GeodPose(Point(8 47 100), 1, 0, 0, 0), Pose(Point(1 0 0), 1, 0, 0, 0), Pose(Point(0 1 0), 1, 0, 0, 0))@2000-01-01',
+  tposechain 'SRID=4326;PoseChain(GeodPose(Point(8 47 100), 1, 0, 0, 0), Pose(Point(0 0 1), 1, 0, 0, 0), Pose(Point(2 0 0), 1, 0, 0, 0))@2000-01-01'
+], 6);
+
+-- A path is a graph of one limb
+SELECT asGeoPose(ARRAY[
+  tposechain 'SRID=4326;PoseChain(GeodPose(Point(8 47 100), 1, 0, 0, 0), Pose(Point(1 0 0), 1, 0, 0, 0))@2000-01-01'
+], 6);
+
+-- Errors
+-- A graph carries one valid time, so a value holding several has none to write
+SELECT asGeoPose(ARRAY[
+  tposechain 'SRID=4326;[PoseChain(GeodPose(Point(8 47 100), 1, 0, 0, 0), Pose(Point(1 0 0), 1, 0, 0, 0))@2000-01-01, PoseChain(GeodPose(Point(8 47 100), 1, 0, 0, 0), Pose(Point(2 0 0), 1, 0, 0, 0))@2000-01-02]'
+], 6);
+-- Chains read at different instants name no single valid time
+SELECT asGeoPose(ARRAY[
+  tposechain 'SRID=4326;PoseChain(GeodPose(Point(8 47 100), 1, 0, 0, 0), Pose(Point(1 0 0), 1, 0, 0, 0))@2000-01-01',
+  tposechain 'SRID=4326;PoseChain(GeodPose(Point(8 47 100), 1, 0, 0, 0), Pose(Point(2 0 0), 1, 0, 0, 0))@2000-01-02'
+], 6);
+-- An empty array names no frame at all
+SELECT asGeoPose(ARRAY[]::tposechain[], 6);
+-- A projected frame has no conformant encoding
+SELECT asGeoPose(ARRAY[
+  tposechain 'SRID=3812;PoseChain(Pose(Point(1 2 3), 1, 0, 0, 0), Pose(Point(1 0 0), 1, 0, 0, 0))@2000-01-01'
+], 6);
+
+-------------------------------------------------------------------------------

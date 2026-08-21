@@ -77,6 +77,10 @@ CLASSES = [
     # left holding alone.
     ('frameChain', 'Chain',
         'GeoPose.Composite.Chain.Schema.json'),
+    # A graph names its frames in a list and its edges in another, and no other
+    # class carries either member, so `frameList` identifies it on its own.
+    ('frameList', 'Graph',
+        'GeoPose.Composite.Graph.Schema.json'),
     ('streamElement', 'Stream element',
         'GeoPose.Composite.Sequence.StreamElement.Schema.json'),
     ('outerFrame', 'Stream header',
@@ -108,7 +112,7 @@ STRICT = ('Basic-Quaternion', 'validTime',
 # wherever they appear rather than demanded here; `meos/test/geopose_test.c` is
 # what exercises them.
 REQUIRED = ('Regular Series', 'Irregular Series', 'Basic-Quaternion',
-    'Basic-YPR', 'Advanced', 'Stream', 'Chain')
+    'Basic-YPR', 'Advanced', 'Stream', 'Chain', 'Graph')
 
 TYPES = {
     'object': dict,

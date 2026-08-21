@@ -1,0 +1,72 @@
+{
+  "description": "Graph: An general structure modelling the pose relationship between frames (nodes) and transforms (edges) in a graph structure.",
+  "definitions": {
+    "FrameSpecification": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "authority": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "parameters": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "authority",
+        "id",
+        "parameters"
+      ]
+    },
+    "FrameTransformPair": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "link": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "integer"
+          }
+        }
+      },
+      "required": [
+        "link"
+      ]
+    }
+  },
+  "type": "object",
+  "properties": {
+    "validTime": {
+      "type": "integer"
+    },
+    "frameList": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/FrameSpecification"
+      },
+      "minItems": 2
+    },
+    "transformList": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/FrameTransformPair"
+      },
+      "minItems": 1
+    }
+  },
+  "required": [
+    "validTime",
+    "frameList",
+    "transformList"
+  ]
+}

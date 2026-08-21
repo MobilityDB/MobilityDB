@@ -2135,6 +2135,126 @@ tposechain_as_geopose(const Temporal *temp, int precision)
 }
 
 /**
+ * @ingroup meos_posechain_inout
+ * @brief Return the GeoPose Graph representation of an array of temporal pose
+ * chains
+ * @details A graph of frames is a set of pose chains sharing their outermost
+ * frame. The frame list holds that one topocentric frame followed by the links
+ * of every chain, and the transform list names the parent and the child of
+ * each edge by their position in that list: an edge from the outermost frame
+ * to the first link of a chain, and one between each pair of links after it.
+ * The edges carry no transformation, which lives in the frames they name.
+ * @param[in] temparr Array of temporal pose chains, each of a single instant
+ * @param[in] count Number of elements in the array
+ * @param[in] precision Maximum number of decimal digits
+ * @return On error return @p NULL
+ * @csqlfn #Tposechainarr_as_geopose()
+ */
+char *
+tposechainarr_as_geopose(const Temporal **temparr, int count, int precision)
+{
+  VALIDATE_NOT_NULL(temparr, NULL);
+  if (! ensure_positive(count))
+    return NULL;
+
+  /* A graph carries one valid time, so every chain is read at one instant and
+   * they agree on which */
+  TimestampTz t = 0;
+  for (int i = 0; i < count; i++)
+  {
+    const Temporal *temp = temparr[i];
+    VALIDATE_TPOSECHAIN(temp, NULL);
+    if (temp->subtype != TINSTANT)
+    {
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "A GeoPose Graph document carries one valid time, so it is written "
+        "from single instants; use atTime to obtain one");
+      return NULL;
+    }
+    TimestampTz ti = ((const TInstant *) temp)->t;
+    if (i == 0)
+      t = ti;
+    else if (ti != t)
+    {
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "The pose chains of a GeoPose Graph are read at one instant");
+      return NULL;
+    }
+  }
+
+  /* An inner frame cannot be topocentric, so a graph has ONE topocentric
+   * frame and every chain hangs from it: it is anchored at the outermost link
+   * of the first chain */
+  const PoseChain *first = DatumGetPoseChainP(
+    tinstant_value_p((const TInstant *) temparr[0]));
+  Pose *outer = posechain_pose_n(first, 1);
+  if (outer == NULL)
+    return NULL;
+  GeoPoseAnchor anchor;
+  double lon, lat, h, W, X, Y, Z;
+  if (! geopose_pose_components(outer, &lon, &lat, &h, &W, &X, &Y, &Z))
+  {
+    pfree(outer);
+    return NULL;
+  }
+  geopose_anchor_set(&anchor, GEOPOSE_DEG2RAD(lat), GEOPOSE_DEG2RAD(lon), h);
+  pfree(outer);
+
+  json_object *frames = json_object_new_array();
+  json_object *transforms = json_object_new_array();
+  json_object_array_add(frames,
+    geopose_outer_frame(GEOPOSE_ID_CHAIN_OUTER_FRAME, &anchor, precision));
+
+  /* The topocentric frame occupies position 0 and the links follow it */
+  int next = 1;
+  for (int i = 0; i < count; i++)
+  {
+    const PoseChain *pc = DatumGetPoseChainP(
+      tinstant_value_p((const TInstant *) temparr[i]));
+    int nlinks = posechain_num_poses(pc);
+    int parent = 0;
+    for (int j = 1; j <= nlinks; j++)
+    {
+      Pose *link = posechain_pose_n(pc, j);
+      if (link == NULL)
+      {
+        json_object_put(frames);
+        json_object_put(transforms);
+        return NULL;
+      }
+      /* The outermost link is read against the topocentric frame and every
+       * later one against the link before it */
+      json_object_array_add(frames, (j == 1) ?
+        geopose_inner_frame(GEOPOSE_ID_CHAIN_INNER_FRAME, &anchor, link,
+          precision) :
+        geopose_chain_link_frame(link, precision));
+      pfree(link);
+      json_object *pair = json_object_new_object();
+      json_object *edge = json_object_new_array();
+      json_object_array_add(edge, json_object_new_int(parent));
+      json_object_array_add(edge, json_object_new_int(next));
+      json_object_object_add(pair, "link", edge);
+      json_object_array_add(transforms, pair);
+      parent = next;
+      next++;
+    }
+  }
+
+  /* The frame list holds at least the two frames the class asks for: a pose
+   * chain carries at least one link, so the topocentric frame and the first
+   * link of the first chain already make two */
+  json_object *root = json_object_new_object();
+  json_object_object_add(root, "validTime",
+    json_object_new_int64(geopose_instant_out(t)));
+  json_object_object_add(root, "frameList", frames);
+  json_object_object_add(root, "transformList", transforms);
+  char *result = pstrdup(json_object_to_json_string_ext(root,
+    GEOPOSE_JSON_FLAGS));
+  json_object_put(root);
+  return result;
+}
+
+/**
  * @brief Build the pose of a link read in the axes of the link before it
  * @return On error return @p NULL
  */

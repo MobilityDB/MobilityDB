@@ -44,6 +44,7 @@
 #include "geo/tspatial.h"
 /* MobilityDB */
 #include "pg_temporal/temporal.h"
+#include "pg_temporal/type_util.h"
 #include "pg_geo/postgis.h"
 #include "pg_geo/tspatial.h"
 
@@ -183,6 +184,32 @@ Tposechain_as_geopose(PG_FUNCTION_ARGS)
   int precision = PG_GETARG_INT32(1);
   char *result = tposechain_as_geopose(temp, precision);
   PG_FREE_IF_COPY(temp, 0);
+  if (result == NULL) PG_RETURN_NULL();
+  text *result_text = cstring_to_text(result);
+  pfree(result);
+  PG_RETURN_TEXT_P(result_text);
+}
+
+PGDLLEXPORT Datum Tposechainarr_as_geopose(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tposechainarr_as_geopose);
+/**
+ * @ingroup mobilitydb_posechain_inout
+ * @brief Return the OGC GeoPose Composite Graph JSON representation of an
+ * array of temporal pose chains
+ * @sqlfn asGeoPose()
+ */
+Datum
+Tposechainarr_as_geopose(PG_FUNCTION_ARGS)
+{
+  ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
+  int precision = PG_GETARG_INT32(1);
+  ensure_not_empty_array(array);
+  int count;
+  Temporal **temparr = temparr_extract(array, &count);
+  char *result = tposechainarr_as_geopose((const Temporal **) temparr, count,
+    precision);
+  pfree(temparr);
+  PG_FREE_IF_COPY(array, 0);
   if (result == NULL) PG_RETURN_NULL();
   text *result_text = cstring_to_text(result);
   pfree(result);

@@ -155,6 +155,7 @@ extern PoseChain *posechain_transform_pipeline(const PoseChain *pc, const char *
 
 extern Temporal *tposechain_from_geopose(const char *json);
 extern char *tposechain_as_geopose(const Temporal *temp, int precision);
+extern char *tposechainarr_as_geopose(const Temporal **temparr, int count, int precision);
 
 /* Comparison functions */
 

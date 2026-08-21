@@ -305,7 +305,7 @@ representation_families:
     - FromText
     - FromEWKT
     - FromMFJSON
-  - lit: "CREATE FUNCTION tposechainFromGeoPose(text)\n  RETURNS tposechain\n  AS 'MODULE_PATHNAME', 'Tposechain_from_geopose'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n-- A Composite Chain document carries one valid time, so it is written\n-- from a single instant, and its frame chain holds at least two frames.\n-- maxdecimaldigits: significant digits to keep; -1 = lossless\nCREATE FUNCTION asGeoPose(tposechain, maxdecimaldigits int4 DEFAULT -1)\n  RETURNS text\n  AS 'MODULE_PATHNAME', 'Tposechain_as_geopose'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"
+  - lit: "CREATE FUNCTION tposechainFromGeoPose(text)\n  RETURNS tposechain\n  AS 'MODULE_PATHNAME', 'Tposechain_from_geopose'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n-- A Composite Chain document carries one valid time, so it is written\n-- from a single instant, and its frame chain holds at least two frames.\n-- maxdecimaldigits: significant digits to keep; -1 = lossless\nCREATE FUNCTION asGeoPose(tposechain, maxdecimaldigits int4 DEFAULT -1)\n  RETURNS text\n  AS 'MODULE_PATHNAME', 'Tposechain_as_geopose'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n-- A Composite Graph document is a set of pose chains sharing their outermost\n-- frame, so it is written from chains read at one and the same instant, and\n-- its frame list holds at least two frames.\nCREATE FUNCTION asGeoPose(tposechain[], maxdecimaldigits int4 DEFAULT -1)\n  RETURNS text\n  AS 'MODULE_PATHNAME', 'Tposechainarr_as_geopose'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"
   - ops:
     - FromBinary
     - FromEWKB
