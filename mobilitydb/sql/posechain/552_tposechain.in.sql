@@ -250,9 +250,9 @@ CREATE CAST (tposechain AS tpose) WITH FUNCTION tpose(tposechain);
  ******************************************************************************/
 -- Specific accessors for temporal pose chains
 
-CREATE FUNCTION numLinks(tposechain)
+CREATE FUNCTION numPoses(tposechain)
   RETURNS integer
-  AS 'MODULE_PATHNAME', 'Tposechain_num_links'
+  AS 'MODULE_PATHNAME', 'Tposechain_num_poses'
   LANGUAGE C IMMUTABLE STRICT;
 
 /******************************************************************************/

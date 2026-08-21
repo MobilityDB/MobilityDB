@@ -27,7 +27,7 @@ SELECT COUNT(*) FROM tbl_tposechain WHERE tposechainFromHexEWKB(asHexEWKB(temp))
      0
 (1 row)
 
-SELECT MIN(numLinks(temp)), MAX(numLinks(temp)) FROM tbl_tposechain;
+SELECT MIN(numPoses(temp)), MAX(numPoses(temp)) FROM tbl_tposechain;
  min | max 
 -----+-----
    1 |   5

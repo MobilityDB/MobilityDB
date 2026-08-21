@@ -84,8 +84,8 @@ SELECT asEWKT(round((tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0)
  Pose(POINT(10 0),0)@Sat Jan 01 00:00:00 2000 PST
 (1 row)
 
-SELECT numLinks(tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2000-01-01');
- numlinks 
+SELECT numPoses(tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2000-01-01');
+ numposes 
 ----------
         2
 (1 row)

@@ -213,7 +213,7 @@ WITH temp AS (
   SELECT k, random_tposechain2d_discseq(-100, 100, -100, 100, radians(-pi()),
     radians(pi()), '2001-01-01', '2001-12-31', 10, 1, 5, 1, 10) AS ti
   FROM generate_series(1,10) k )
-SELECT DISTINCT numLinks(ti) IS NOT NULL FROM temp;
+SELECT DISTINCT numPoses(ti) IS NOT NULL FROM temp;
 */
 
 -------------------------------------------------------------------------------

@@ -1756,7 +1756,7 @@
 				<title>Funciones de acceso</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="numLinks"><varname>numLinks</varname></link>: Devuelve el número de eslabones que tiene todo valor de una cadena de poses temporal</para>
+						<para><link linkend="tposechain_numPoses"><varname>numPoses</varname></link>: Devuelve el número de eslabones que tiene todo valor de una cadena de poses temporal</para>
 					</listitem>
 					<listitem>
 						<para><link linkend="tposechain_getValue"><varname>getValue</varname>, <varname>getValues</varname>, <varname>timeSpan</varname></link>: Devuelve el valor de un instante temporal, el conjunto de valores o el lapso de tiempo</para>

@@ -55,6 +55,6 @@ SELECT COUNT(*) FROM tbl_tposechain t1, tbl_posechain t2 WHERE t1.temp %= t2.pc;
 -- The join does span differing counts, so the answers above are false rather
 -- than absent
 SELECT COUNT(*) FROM tbl_tposechain t1, tbl_posechain t2
-WHERE numPoses(t2.pc) <> numLinks(t1.temp);
+WHERE numPoses(t2.pc) <> numPoses(t1.temp);
 
 -------------------------------------------------------------------------------

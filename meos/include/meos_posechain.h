@@ -224,7 +224,7 @@ extern Temporal *tposechain_to_tpose(const Temporal *temp);
 
 /* Accessor functions */
 
-extern int tposechain_num_links(const Temporal *temp);
+extern int tposechain_num_poses(const Temporal *temp);
 
 /* Ever/always and temporal comparison functions */
 

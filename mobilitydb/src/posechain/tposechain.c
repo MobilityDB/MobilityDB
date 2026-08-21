@@ -129,18 +129,18 @@ Tposechain_to_tpose(PG_FUNCTION_ARGS)
  * Accessor functions
  *****************************************************************************/
 
-PGDLLEXPORT Datum Tposechain_num_links(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tposechain_num_links);
+PGDLLEXPORT Datum Tposechain_num_poses(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tposechain_num_poses);
 /**
  * @ingroup mobilitydb_posechain_accessor
  * @brief Return the number of links every value of a temporal pose chain holds
- * @sqlfn numLinks()
+ * @sqlfn numPoses()
  */
 Datum
-Tposechain_num_links(PG_FUNCTION_ARGS)
+Tposechain_num_poses(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  int result = tposechain_num_links(temp);
+  int result = tposechain_num_poses(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_INT32(result);
 }
