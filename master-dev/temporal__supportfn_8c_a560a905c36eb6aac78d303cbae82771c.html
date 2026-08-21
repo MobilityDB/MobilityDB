@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: opFamilyAmOid</title>
+<title>MobilityDB: span_sel_type</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -85,8 +85,8 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="temporal__supportfn_8c_a94e39174ffd78022b6c61b1ad7bed4c0.html#a94e39174ffd78022b6c61b1ad7bed4c0">func_needs_index</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__supportfn_8c_ad506e0d04a149499635a4b52c093920c.html#ad506e0d04a149499635a4b52c093920c">makeBboxExpr</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__supportfn_8c_a57f3ae8e34303c65778a3ee2f4c8c1d4.html#a57f3ae8e34303c65778a3ee2f4c8c1d4">makeExpandExpr</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="temporal__supportfn_8c_a3fea779055d0d1c835c18ceff59af1be.html#a3fea779055d0d1c835c18ceff59af1be">opFamilyAmOid</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="temporal__supportfn_8c_a560a905c36eb6aac78d303cbae82771c.html#a560a905c36eb6aac78d303cbae82771c">span_sel_type</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="temporal__supportfn_8c_a3fea779055d0d1c835c18ceff59af1be.html#a3fea779055d0d1c835c18ceff59af1be">opFamilyAmOid</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="temporal__supportfn_8c_a560a905c36eb6aac78d303cbae82771c.html#a560a905c36eb6aac78d303cbae82771c">span_sel_type</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__supportfn_8c_add681c014739dcbc91b8e12376649032.html#add681c014739dcbc91b8e12376649032">Span_supportfn</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__supportfn_8c_a2408752bcc94534556159522188bc123.html#a2408752bcc94534556159522188bc123">SpanIndexableFunctions</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__supportfn_8c_a10e3bb429e65e7932f656b50df69de66.html#a10e3bb429e65e7932f656b50df69de66">SpanStrategies</a></td></tr>
@@ -109,8 +109,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a3fea779055d0d1c835c18ceff59af1be" name="a3fea779055d0d1c835c18ceff59af1be"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3fea779055d0d1c835c18ceff59af1be">&#9670;&#160;</a></span>opFamilyAmOid()</h2>
+<a id="a560a905c36eb6aac78d303cbae82771c" name="a560a905c36eb6aac78d303cbae82771c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a560a905c36eb6aac78d303cbae82771c">&#9670;&#160;</a></span>span_sel_type()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -119,10 +119,10 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static <a class="el" href="postgres__ext__defs_8in_8h_a545a1e974d4c848ee2e2dcfdd503335f.html#a545a1e974d4c848ee2e2dcfdd503335f">Oid</a> opFamilyAmOid </td>
+          <td class="memname">static bool span_sel_type </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a545a1e974d4c848ee2e2dcfdd503335f.html#a545a1e974d4c848ee2e2dcfdd503335f">Oid</a>&#160;</td>
-          <td class="paramname"><em>opfamilyoid</em></td><td>)</td>
+          <td class="paramtype"><a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a05df1d1fd2c829ee784b125ed34e8401.html#a05df1d1fd2c829ee784b125ed34e8401">MeosType</a>&#160;</td>
+          <td class="paramname"><em>type</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -133,7 +133,7 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>We only add index enhancements for indexes that support range-based searches like the &amp;&amp; operator), so only implementations based on GIST and SPGIST. </p>
+<p>Return true if the type belongs to the value domain, whose types are their own bounding box and answer the operators over themselves. </p>
 
 </div>
 </div>
