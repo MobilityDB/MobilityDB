@@ -20,7 +20,8 @@ var searchData=
   ['rtree_5fexample_2ec_17',['rtree_example.c',['../rtree__example_8c.html',1,'']]],
   ['rtree_5fjoin_5ftest_2ec_18',['rtree_join_test.c',['../rtree__join__test_8c.html',1,'']]],
   ['rtree_5fknn_5ftest_2ec_19',['rtree_knn_test.c',['../rtree__knn__test_8c.html',1,'']]],
-  ['rtree_5fmest_5fexample_2ec_20',['rtree_mest_example.c',['../rtree__mest__example_8c.html',1,'']]],
-  ['rtree_5fmest_5ftest_2ec_21',['rtree_mest_test.c',['../rtree__mest__test_8c.html',1,'']]],
-  ['rtree_5fspan_5ftest_2ec_22',['rtree_span_test.c',['../rtree__span__test_8c.html',1,'']]]
+  ['rtree_5fload_5ftest_2ec_20',['rtree_load_test.c',['../rtree__load__test_8c.html',1,'']]],
+  ['rtree_5fmest_5fexample_2ec_21',['rtree_mest_example.c',['../rtree__mest__example_8c.html',1,'']]],
+  ['rtree_5fmest_5ftest_2ec_22',['rtree_mest_test.c',['../rtree__mest__test_8c.html',1,'']]],
+  ['rtree_5fspan_5ftest_2ec_23',['rtree_span_test.c',['../rtree__span__test_8c.html',1,'']]]
 ];

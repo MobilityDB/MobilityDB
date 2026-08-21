@@ -16,5 +16,6 @@ var searchData=
   ['auth_5fname_13',['auth_name',['../structspatial__ref__sys__record_afcfa1280ade0ad7deabe6e07c40ade53.html#afcfa1280ade0ad7deabe6e07c40ade53',1,'spatial_ref_sys_record']]],
   ['auth_5fsrid_14',['auth_srid',['../structspatial__ref__sys__record_ae6d292653d8650ea73773ea6af11ddde.html#ae6d292653d8650ea73773ea6af11ddde',1,'spatial_ref_sys_record']]],
   ['authtext_15',['authtext',['../structPjStrs_a48986b8e4b0149dd8090156e6906273f.html#a48986b8e4b0149dd8090156e6906273f',1,'PjStrs']]],
-  ['awgs_16',['awgs',['../projection__gk_8c_a31b4e919b8046103adb763536eea8c8d.html#a31b4e919b8046103adb763536eea8c8d',1,'projection_gk.c']]]
+  ['awgs_16',['awgs',['../projection__gk_8c_a31b4e919b8046103adb763536eea8c8d.html#a31b4e919b8046103adb763536eea8c8d',1,'projection_gk.c']]],
+  ['axis_17',['axis',['../structSTRCtx_acdb54c217152bd214a9f969ec1b51530.html#acdb54c217152bd214a9f969ec1b51530',1,'STRCtx']]]
 ];
