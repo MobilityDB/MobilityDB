@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: buffer_edge_normals</title>
+<title>MobilityDB: buffer_node_tolerance</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -126,7 +126,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a2a9d5b2e00b22cc4ffd1f634ce8cbc32.html#a2a9d5b2e00b22cc4ffd1f634ce8cbc32">buffer_curve_points</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a5674eaec1b0b96d7d7efe6c1a7a7aeb8.html#a5674eaec1b0b96d7d7efe6c1a7a7aeb8">buffer_curvepoly_add_ring</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a113358f32b2a0332e3550a1194d285b5.html#a113358f32b2a0332e3550a1194d285b5">buffer_edge_end_tangent</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="geo__buffer_8c_a756e123270d76579d17097ad39b4d97e.html#a756e123270d76579d17097ad39b4d97e">buffer_edge_normals</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a756e123270d76579d17097ad39b4d97e.html#a756e123270d76579d17097ad39b4d97e">buffer_edge_normals</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_aa8273d9662579e9c5371be8019b91c3f.html#aa8273d9662579e9c5371be8019b91c3f">buffer_edge_reverse</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_ad1766d5d9c23d039c7c1ae4d2178217c.html#ad1766d5d9c23d039c7c1ae4d2178217c">buffer_edge_start_tangent</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_afb829c58a0ed0b2d792c0b95225dd8fd.html#afb829c58a0ed0b2d792c0b95225dd8fd">buffer_edges_intersect</a></td></tr>
@@ -143,7 +143,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a9efbc7e0563c0cd720a6170dbdfa6fe1.html#a9efbc7e0563c0cd720a6170dbdfa6fe1">buffer_make_single_ring_polygon</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a556e4fbfdb3c97b22b08d720474d72f4.html#a556e4fbfdb3c97b22b08d720474d72f4">buffer_make_surfaces_from_pieces</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_ac45c0e1ea2117e802572ac52344abd74.html#ac45c0e1ea2117e802572ac52344abd74">BUFFER_MITRE_ON_SEGMENTS</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_af8ddb015bb92bc1f954e5702339da187.html#af8ddb015bb92bc1f954e5702339da187">buffer_node_tolerance</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="geo__buffer_8c_af8ddb015bb92bc1f954e5702339da187.html#af8ddb015bb92bc1f954e5702339da187">buffer_node_tolerance</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a76baf8b53fb554306c75049414485c5f.html#a76baf8b53fb554306c75049414485c5f">buffer_nodes_equal</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a693f6646c059be101110e4caa437178c.html#a693f6646c059be101110e4caa437178c">buffer_normalize_angle</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a615346b614e55995fdc0c03734a1f989.html#a615346b614e55995fdc0c03734a1f989">buffer_normalize_ring_orientation</a></td></tr>
@@ -223,8 +223,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a756e123270d76579d17097ad39b4d97e" name="a756e123270d76579d17097ad39b4d97e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a756e123270d76579d17097ad39b4d97e">&#9670;&#160;</a></span>buffer_edge_normals()</h2>
+<a id="af8ddb015bb92bc1f954e5702339da187" name="af8ddb015bb92bc1f954e5702339da187"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af8ddb015bb92bc1f954e5702339da187">&#9670;&#160;</a></span>buffer_node_tolerance()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -233,22 +233,16 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static bool buffer_edge_normals </td>
+          <td class="memname">static double buffer_node_tolerance </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structEdge.html">Edge</a> *&#160;</td>
-          <td class="paramname"><em>edge</em>, </td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double *&#160;</td>
-          <td class="paramname"><em>nx</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double *&#160;</td>
-          <td class="paramname"><em>ny</em>&#160;</td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>y</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -263,8 +257,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Return the normal direction of a buffer boundary edge. </p>
-<p >The function returns both possible normals because the orientation of an arbitrary buffer boundary cannot be assumed here. </p>
+<p>Return how far apart two computations of ONE boundary node may lie. </p>
+<p >Where two boundaries meet at a shallow angle their crossing is ill-conditioned: moving either curve by the rounding of its own arithmetic moves the crossing by the SQUARE ROOT of that rounding, so two routes to the same node — one boundary's arc against the other's offset, and the mirror of it — answer points that far apart. Deduplicating a node set at the tolerance a coordinate is STORED to therefore keeps one node twice, and the piece between the two copies is a sliver belonging to no boundary. </p>
 
 </div>
 </div>
