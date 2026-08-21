@@ -82,7 +82,14 @@ SELECT tpcbox(2, 2, 8, 8, 1, 0)   <@ tpcbox(0, 0, 10, 10, 1, 0);
 SELECT tpcbox(0, 0, 5, 5, 1, 0)   && tpcbox(3, 3, 10, 10, 1, 0);
 SELECT tpcbox(0, 0, 5, 5, 1, 0)   && tpcbox(50, 50, 60, 60, 1, 0);
 SELECT tpcbox(0, 0, 5, 5, 1, 0)   ~= tpcbox(0, 0, 5, 5, 1, 0);
+
+-- The portable spelling of each operator above answers the same
+SELECT contains(tpcbox(0, 0, 10, 10, 1, 0), tpcbox(2, 2, 8, 8, 1, 0));
+SELECT contained(tpcbox(2, 2, 8, 8, 1, 0), tpcbox(0, 0, 10, 10, 1, 0));
+SELECT overlaps(tpcbox(0, 0, 5, 5, 1, 0), tpcbox(3, 3, 10, 10, 1, 0));
+SELECT same(tpcbox(0, 0, 5, 5, 1, 0), tpcbox(0, 0, 5, 5, 1, 0));
 SELECT tpcbox(0, 0, 5, 5, 1, 0)  -|- tpcbox(5, 0, 10, 5, 1, 0);
+SELECT adjacent(tpcbox(0, 0, 5, 5, 1, 0), tpcbox(5, 0, 10, 5, 1, 0));
 
 -------------------------------------------------------------------------------
 -- Topological predicates — pcid mismatch always returns false
