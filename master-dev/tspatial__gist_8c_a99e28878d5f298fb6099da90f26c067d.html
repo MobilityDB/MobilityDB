@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: stbox_union_gist</title>
+<title>MobilityDB: Tspatial_gist_distance</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -89,62 +89,32 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tspatial__gist_8c_a6af1d0120589beb8fa832b4b45b7e7d4.html#a6af1d0120589beb8fa832b4b45b7e7d4">Stbox_gist_union</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tspatial__gist_8c_a6e444b3d49f98f3599332471b1844624.html#a6e444b3d49f98f3599332471b1844624">stbox_penalty</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tspatial__gist_8c_ae787ffe20dad495773dec67904a91c6f.html#ae787ffe20dad495773dec67904a91c6f">stbox_size</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="tspatial__gist_8c_adfa90c6d9af3f56916077485ad410b4a.html#adfa90c6d9af3f56916077485ad410b4a">stbox_union_gist</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tspatial__gist_8c_adfa90c6d9af3f56916077485ad410b4a.html#adfa90c6d9af3f56916077485ad410b4a">stbox_union_gist</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tspatial__gist_8c_a32b033d53fe1525afc0537ced47b20b7.html#a32b033d53fe1525afc0537ced47b20b7">Tspatial_gist_compress</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="tspatial__gist_8c_a99e28878d5f298fb6099da90f26c067d.html#a99e28878d5f298fb6099da90f26c067d">Tspatial_gist_distance</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="tspatial__gist_8c_a99e28878d5f298fb6099da90f26c067d.html#a99e28878d5f298fb6099da90f26c067d">Tspatial_gist_distance</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tspatial__gist_8c_a531758e259f97d78b4ef6dc7ba0208c1.html#a531758e259f97d78b4ef6dc7ba0208c1">tspatial_gist_get_stbox</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="adfa90c6d9af3f56916077485ad410b4a" name="adfa90c6d9af3f56916077485ad410b4a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#adfa90c6d9af3f56916077485ad410b4a">&#9670;&#160;</a></span>stbox_union_gist()</h2>
+<a id="a99e28878d5f298fb6099da90f26c067d" name="a99e28878d5f298fb6099da90f26c067d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a99e28878d5f298fb6099da90f26c067d">&#9670;&#160;</a></span>Tspatial_gist_distance()</h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static void stbox_union_gist </td>
+          <td class="memname"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> Tspatial_gist_distance </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structSTBox.html">STBox</a> *&#160;</td>
-          <td class="paramname"><em>a</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramtype">PG_FUNCTION_ARGS&#160;</td>
+          <td class="paramname"></td><td>)</td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="structSTBox.html">STBox</a> *&#160;</td>
-          <td class="paramname"><em>b</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structSTBox.html">STBox</a> *&#160;</td>
-          <td class="paramname"><em>new</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
-<p>Calculate the union of two spatiotemporal boxes. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">a,b</td><td>Input boxes </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">new</td><td>Resulting box </td></tr>
-  </table>
-  </dd>
-</dl>
+<p>GiST distance for spatiotemporal values. </p>
+<dl class="section note"><dt>Note</dt><dd>Take in a query and an entry and return the "distance" between them </dd></dl>
 
 </div>
 </div>
