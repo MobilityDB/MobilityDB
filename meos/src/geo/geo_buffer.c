@@ -820,8 +820,10 @@ buffer_areal_collection(const LWGEOM *geom1, const LWGEOM *geom2)
   assert(geom1); assert(geom2);
   int32_t srid = lwgeom_get_srid(geom1);
   LWGEOM **geoms = palloc(sizeof(LWGEOM *) * 2);
-  geoms[0] = lwgeom_clone(geom1);
-  geoms[1] = lwgeom_clone(geom2);
+  /* The caller releases both operands once it holds the answer, and
+   * lwgeom_clone shares their point arrays rather than copying them */
+  geoms[0] = lwgeom_clone_deep(geom1);
+  geoms[1] = lwgeom_clone_deep(geom2);
   LWCOLLECTION *result = lwcollection_construct(MULTISURFACETYPE, srid,
     NULL, 2, geoms);
   return lwcollection_as_lwgeom(result);
@@ -855,10 +857,10 @@ buffer_areal_union_simple(const LWGEOM *geom1, const LWGEOM *geom2,
 
   /* A contains B */
   if (buffer_areal_contains(geom1, geom2))
-    return lwgeom_clone(geom1);
+    return lwgeom_clone_deep(geom1);
   /* B contains A */
   if (buffer_areal_contains(geom2, geom1))
-    return lwgeom_clone(geom2);
+    return lwgeom_clone_deep(geom2);
 
   /* If the boundaries do not intersect, the geometries are disjoint */
   if (! buffer_geometries_intersect(geom1, geom2))
