@@ -29,16 +29,48 @@ CREATE FUNCTION tpcbox_spgist_compress(internal)
 
 CREATE OPERATOR CLASS tpcbox_quadtree_ops
   DEFAULT FOR TYPE tpcbox USING spgist AS
+  -- strictly left
+  OPERATOR  1    << (tpcbox, tpcbox),
+  -- overlaps or left
+  OPERATOR  2    &< (tpcbox, tpcbox),
   -- overlaps
   OPERATOR  3    && (tpcbox, tpcbox),
+  -- overlaps or right
+  OPERATOR  4    &> (tpcbox, tpcbox),
+  -- strictly right
+  OPERATOR  5    >> (tpcbox, tpcbox),
   -- same
   OPERATOR  6    ~= (tpcbox, tpcbox),
   -- contains
   OPERATOR  7    @> (tpcbox, tpcbox),
   -- contained by
   OPERATOR  8    <@ (tpcbox, tpcbox),
+  -- overlaps or below
+  OPERATOR  9    &<| (tpcbox, tpcbox),
+  -- strictly below
+  OPERATOR  10   <<| (tpcbox, tpcbox),
+  -- strictly above
+  OPERATOR  11   |>> (tpcbox, tpcbox),
+  -- overlaps or above
+  OPERATOR  12   |&> (tpcbox, tpcbox),
   -- adjacent
   OPERATOR  17   -|- (tpcbox, tpcbox),
+  -- overlaps or before
+  OPERATOR  28   &<# (tpcbox, tpcbox),
+  -- strictly before
+  OPERATOR  29   <<# (tpcbox, tpcbox),
+  -- strictly after
+  OPERATOR  30   #>> (tpcbox, tpcbox),
+  -- overlaps or after
+  OPERATOR  31   #&> (tpcbox, tpcbox),
+  -- overlaps or front
+  OPERATOR  32   &</ (tpcbox, tpcbox),
+  -- strictly front
+  OPERATOR  33   <</ (tpcbox, tpcbox),
+  -- strictly back
+  OPERATOR  34   />> (tpcbox, tpcbox),
+  -- overlaps or back
+  OPERATOR  35   /&> (tpcbox, tpcbox),
   -- functions
   FUNCTION  1    stbox_spgist_config(internal, internal),
   FUNCTION  2    stbox_quadtree_choose(internal, internal),
@@ -49,16 +81,48 @@ CREATE OPERATOR CLASS tpcbox_quadtree_ops
 
 CREATE OPERATOR CLASS tpcbox_kdtree_ops
   FOR TYPE tpcbox USING spgist AS
+  -- strictly left
+  OPERATOR  1    << (tpcbox, tpcbox),
+  -- overlaps or left
+  OPERATOR  2    &< (tpcbox, tpcbox),
   -- overlaps
   OPERATOR  3    && (tpcbox, tpcbox),
+  -- overlaps or right
+  OPERATOR  4    &> (tpcbox, tpcbox),
+  -- strictly right
+  OPERATOR  5    >> (tpcbox, tpcbox),
   -- same
   OPERATOR  6    ~= (tpcbox, tpcbox),
   -- contains
   OPERATOR  7    @> (tpcbox, tpcbox),
   -- contained by
   OPERATOR  8    <@ (tpcbox, tpcbox),
+  -- overlaps or below
+  OPERATOR  9    &<| (tpcbox, tpcbox),
+  -- strictly below
+  OPERATOR  10   <<| (tpcbox, tpcbox),
+  -- strictly above
+  OPERATOR  11   |>> (tpcbox, tpcbox),
+  -- overlaps or above
+  OPERATOR  12   |&> (tpcbox, tpcbox),
   -- adjacent
   OPERATOR  17   -|- (tpcbox, tpcbox),
+  -- overlaps or before
+  OPERATOR  28   &<# (tpcbox, tpcbox),
+  -- strictly before
+  OPERATOR  29   <<# (tpcbox, tpcbox),
+  -- strictly after
+  OPERATOR  30   #>> (tpcbox, tpcbox),
+  -- overlaps or after
+  OPERATOR  31   #&> (tpcbox, tpcbox),
+  -- overlaps or front
+  OPERATOR  32   &</ (tpcbox, tpcbox),
+  -- strictly front
+  OPERATOR  33   <</ (tpcbox, tpcbox),
+  -- strictly back
+  OPERATOR  34   />> (tpcbox, tpcbox),
+  -- overlaps or back
+  OPERATOR  35   /&> (tpcbox, tpcbox),
   -- functions
   FUNCTION  1    stbox_spgist_config(internal, internal),
   FUNCTION  2    stbox_kdtree_choose(internal, internal),
