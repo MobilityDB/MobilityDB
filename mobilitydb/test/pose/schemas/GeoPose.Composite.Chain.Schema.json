@@ -1,0 +1,67 @@
+{
+  "description": "Chain: An outer frame and a sequence of transformations to a final innermost frame.",
+  "definitions": {
+    "FrameSpecification": {
+      "type": "object",
+      "properties": {
+        "authority": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "parameters": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "authority",
+        "id",
+        "parameters"
+      ]
+    },
+    "FrameSpecification-1": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "authority": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "parameters": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "authority",
+        "id",
+        "parameters"
+      ]
+    }
+  },
+  "type": "object",
+  "properties": {
+    "validTime": {
+      "type": "integer"
+    },
+    "outerFrame": {
+      "$ref": "#/definitions/FrameSpecification"
+    },
+    "frameChain": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/FrameSpecification-1"
+      },
+      "minItems": 2
+    }
+  },
+  "required": [
+    "validTime",
+    "outerFrame",
+    "frameChain"
+  ]
+}

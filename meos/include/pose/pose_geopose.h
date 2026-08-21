@@ -57,7 +57,8 @@
  * entry points of its own. A Series carries a quaternion in every inner frame
  * and offers no orientation choice.
  *
- * The Chain and Graph classes are not implemented.
+ * The Chain class is written from a temporal pose chain, whose links are the
+ * nested frames it names. The Graph class is not implemented.
  */
 typedef enum
 {

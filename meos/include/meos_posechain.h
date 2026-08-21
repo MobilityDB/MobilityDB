@@ -147,6 +147,15 @@ extern PoseChain *posechain_set_srid(const PoseChain *pc, int32_t srid);
 extern PoseChain *posechain_transform(const PoseChain *pc, int32_t srid_to);
 extern PoseChain *posechain_transform_pipeline(const PoseChain *pc, const char *pipeline, int32_t srid_to, bool is_forward);
 
+/*****************************************************************************
+ * Functions for temporal pose chains
+ *****************************************************************************/
+
+/* OGC GeoPose input/output functions for temporal pose chains */
+
+extern Temporal *tposechain_from_geopose(const char *json);
+extern char *tposechain_as_geopose(const Temporal *temp, int precision);
+
 /* Comparison functions */
 
 extern bool posechain_eq(const PoseChain *pc1, const PoseChain *pc2);

@@ -106,6 +106,10 @@
 #include "temporal/type_util.h"     /* pfree_array */
 #include "pose/pose.h"
 #include "pose/pose_geopose.h"
+#if POSECHAIN
+  #include <meos_posechain.h>
+  #include "posechain/posechain.h"
+#endif
 
 /*****************************************************************************
  * Helpers
@@ -132,6 +136,13 @@
 #define GEOPOSE_AUTHORITY       "/geopose/1.0"
 #define GEOPOSE_ID_OUTER_FRAME  "LTP-ENU"
 #define GEOPOSE_ID_INNER_FRAME  "RotateTranslate"
+/* The Chain class names the same two frames differently: its normative
+ * instance writes `/Extrinsic/LTP-ENU` and `/Intrinsic/Translate-Rotate`
+ * where the Advanced, Series and Stream instances write the bare pair above,
+ * under the one authority. A document is written with the pair its own class
+ * uses, and a Chain is read accepting either. */
+#define GEOPOSE_ID_CHAIN_OUTER_FRAME  "/Extrinsic/LTP-ENU"
+#define GEOPOSE_ID_CHAIN_INNER_FRAME  "/Intrinsic/Translate-Rotate"
 
 /**
  * @brief Return true if @p srid names the WGS-84 geographic frame the
@@ -1051,7 +1062,8 @@ geopose_transition_model_interp(json_object *tm)
  * @return On error return @p NULL
  */
 static json_object *
-geopose_inner_frame(const GeoPoseAnchor *anchor, const Pose *pose,
+geopose_inner_frame(const char *id, const GeoPoseAnchor *anchor,
+  const Pose *pose,
   int precision)
 {
   double lon, lat, h, W, X, Y, Z;
@@ -1079,7 +1091,7 @@ geopose_inner_frame(const GeoPoseAnchor *anchor, const Pose *pose,
   snprintf(params, sizeof(params),
     "translation=[%s, %s, %s]&rotation=[%s, %s, %s, %s]",
     be, bn, bu, bw, bx, by, bz);
-  return geopose_frame_spec(GEOPOSE_ID_INNER_FRAME, params);
+  return geopose_frame_spec(id, params);
 }
 
 /**
@@ -1087,7 +1099,8 @@ geopose_inner_frame(const GeoPoseAnchor *anchor, const Pose *pose,
  * anchor's tangent point.
  */
 static json_object *
-geopose_outer_frame(const GeoPoseAnchor *anchor, int precision)
+geopose_outer_frame(const char *id, const GeoPoseAnchor *anchor,
+  int precision)
 {
   char blon[64], blat[64], bh[64];
   geopose_str_double(blon, sizeof(blon), GEOPOSE_RAD2DEG(anchor->lon_rad),
@@ -1103,7 +1116,7 @@ geopose_outer_frame(const GeoPoseAnchor *anchor, int precision)
   snprintf(params, sizeof(params),
     "longitude=%s&latitude=%s&height=%s&crs=EPSG:%d",
     blon, blat, bh, GEOPOSE_SRID_WGS84_3D);
-  return geopose_frame_spec(GEOPOSE_ID_OUTER_FRAME, params);
+  return geopose_frame_spec(id, params);
 }
 
 /**
@@ -1129,7 +1142,7 @@ pose_to_geopose_advanced(const Pose *pose, int precision)
 
   json_object *root = json_object_new_object();
   json_object_object_add(root, "frameSpecification",
-    geopose_outer_frame(&anchor, precision));
+    geopose_outer_frame(GEOPOSE_ID_OUTER_FRAME, &anchor, precision));
   json_object *jq = json_object_new_object();
   json_object_object_add(jq, "x", geopose_new_double(X, precision));
   json_object_object_add(jq, "y", geopose_new_double(Y, precision));
@@ -1248,7 +1261,7 @@ tpose_to_geopose_series(const Temporal *temp, bool regular, int precision)
   json_object *arr = json_object_new_array();
   for (int i = 0; i < count; i++)
   {
-    json_object *frame = geopose_inner_frame(&anchor,
+    json_object *frame = geopose_inner_frame(GEOPOSE_ID_INNER_FRAME, &anchor,
       DatumGetPoseP(tinstant_value_p(instants[i])), precision);
     if (frame == NULL)
     {
@@ -1276,7 +1289,7 @@ tpose_to_geopose_series(const Temporal *temp, bool regular, int precision)
     json_object_object_add(root, "interPoseDuration",
       json_object_new_int64(duration));
   json_object_object_add(root, "outerFrame",
-    geopose_outer_frame(&anchor, precision));
+    geopose_outer_frame(GEOPOSE_ID_OUTER_FRAME, &anchor, precision));
   json_object_object_add(root, regular ? "innerFrameSeries" :
     "innerFrameAndTimeSeries", arr);
   json_object_object_add(root, "trailer", geopose_series_trailer(count));
@@ -1617,7 +1630,7 @@ geopose_stream_header_obj(const Temporal *temp, const GeoPoseAnchor *anchor,
   json_object_object_add(res, "transitionModel",
     geopose_transition_model(MEOS_FLAGS_GET_INTERP(temp->flags)));
   json_object_object_add(res, "outerFrame",
-    geopose_outer_frame(anchor, precision));
+    geopose_outer_frame(GEOPOSE_ID_OUTER_FRAME, anchor, precision));
   return res;
 }
 
@@ -1629,7 +1642,7 @@ static json_object *
 geopose_stream_element_obj(const GeoPoseAnchor *anchor, const TInstant *inst,
   int precision)
 {
-  json_object *frame = geopose_inner_frame(anchor,
+  json_object *frame = geopose_inner_frame(GEOPOSE_ID_INNER_FRAME, anchor,
     DatumGetPoseP(tinstant_value_p(inst)), precision);
   if (frame == NULL)
     return NULL;
@@ -1997,5 +2010,230 @@ tpose_from_geopose(const char *json)
   json_object_put(root);
   return result;
 }
+
+#if POSECHAIN
+/*****************************************************************************
+ * OGC GeoPose Composite Chain class
+ *
+ * A Chain document names an outer frame and a sequence of transformations
+ * reaching a final innermost frame, which is what a pose chain holds: its
+ * outer link is placed in a topocentric frame and every later link is a rigid
+ * transformation read in the axes of the link before it.
+ *****************************************************************************/
+
+/**
+ * @brief Build the FrameSpecification of a link that is read in the axes of
+ * the link before it
+ * @details Only the outer link names a frame, so every later link travels as
+ * the translation and rotation it stores, with no geodesy applied.
+ */
+static json_object *
+geopose_chain_link_frame(const Pose *pose, int precision)
+{
+  bool hasz = MEOS_FLAGS_GET_Z(pose->flags);
+  double x = pose->data[0], y = pose->data[1], z = hasz ? pose->data[2] : 0.0;
+  double W, X, Y, Z;
+  if (hasz)
+  {
+    W = pose->data[3]; X = pose->data[4];
+    Y = pose->data[5]; Z = pose->data[6];
+  }
+  else
+  {
+    /* A planar link turns about the vertical axis by its stored angle */
+    double half = pose->data[2] / 2.0;
+    W = cos(half); X = 0.0; Y = 0.0; Z = sin(half);
+  }
+  char bx[64], by[64], bz[64], bw[64], bqx[64], bqy[64], bqz[64];
+  geopose_str_double(bx, sizeof(bx), x, precision);
+  geopose_str_double(by, sizeof(by), y, precision);
+  geopose_str_double(bz, sizeof(bz), z, precision);
+  geopose_str_double(bw, sizeof(bw), W, precision);
+  geopose_str_double(bqx, sizeof(bqx), X, precision);
+  geopose_str_double(bqy, sizeof(bqy), Y, precision);
+  geopose_str_double(bqz, sizeof(bqz), Z, precision);
+  char params[512];
+  snprintf(params, sizeof(params),
+    "translation=[%s, %s, %s]&rotation=[%s, %s, %s, %s]",
+    bx, by, bz, bw, bqx, bqy, bqz);
+  return geopose_frame_spec(GEOPOSE_ID_CHAIN_INNER_FRAME, params);
+}
+
+/**
+ * @ingroup meos_posechain_inout
+ * @brief Return the OGC GeoPose Composite Chain JSON representation of a
+ * temporal pose chain
+ * @details The document carries the valid time of the instant, the LTP-ENU
+ * frame tangent at the outer link's position, and one transformation per
+ * link. The first of them takes that tangent frame to the outer link's own
+ * frame; each later one is the link as it is stored, read in the axes of its
+ * parent.
+ * @param[in] temp Temporal pose chain holding a single instant
+ * @param[in] precision Maximum number of decimal digits
+ * @return On error return @p NULL
+ * @csqlfn #Tposechain_as_geopose()
+ */
+char *
+tposechain_as_geopose(const Temporal *temp, int precision)
+{
+  VALIDATE_TPOSECHAIN(temp, NULL);
+  if (temp->subtype != TINSTANT)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "A GeoPose Chain document carries one valid time, so it is written "
+      "from a single instant; use atTime to obtain one");
+    return NULL;
+  }
+  const TInstant *inst = (const TInstant *) temp;
+  const PoseChain *pc = DatumGetPoseChainP(tinstant_value_p(inst));
+  int count = posechain_num_poses(pc);
+  if (count < 2)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "A GeoPose Chain frame chain holds at least two frames, and the pose "
+      "chain holds %d", count);
+    return NULL;
+  }
+  Pose *outer = posechain_pose_n(pc, 1);
+  if (outer == NULL)
+    return NULL;
+  GeoPoseAnchor anchor;
+  double lon, lat, h, W, X, Y, Z;
+  if (! geopose_pose_components(outer, &lon, &lat, &h, &W, &X, &Y, &Z))
+  {
+    pfree(outer);
+    return NULL;
+  }
+  geopose_anchor_set(&anchor, GEOPOSE_DEG2RAD(lat), GEOPOSE_DEG2RAD(lon), h);
+
+  json_object *root = json_object_new_object();
+  json_object_object_add(root, "validTime",
+    json_object_new_int64(geopose_instant_out(inst->t)));
+  json_object_object_add(root, "outerFrame",
+    geopose_outer_frame(GEOPOSE_ID_CHAIN_OUTER_FRAME, &anchor, precision));
+  json_object *chain = json_object_new_array();
+  json_object_array_add(chain,
+    geopose_inner_frame(GEOPOSE_ID_CHAIN_INNER_FRAME, &anchor, outer,
+      precision));
+  pfree(outer);
+  for (int i = 2; i <= count; i++)
+  {
+    Pose *link = posechain_pose_n(pc, i);
+    if (link == NULL)
+    {
+      json_object_put(root); json_object_put(chain);
+      return NULL;
+    }
+    json_object_array_add(chain, geopose_chain_link_frame(link, precision));
+    pfree(link);
+  }
+  json_object_object_add(root, "frameChain", chain);
+  char *result = pstrdup(json_object_to_json_string_ext(root,
+    GEOPOSE_JSON_FLAGS));
+  json_object_put(root);
+  return result;
+}
+
+/**
+ * @brief Build the pose of a link read in the axes of the link before it
+ * @return On error return @p NULL
+ */
+static Pose *
+geopose_chain_link_pose(json_object *frame)
+{
+  const char *params = geopose_frame_parameters(frame, "frame chain element");
+  if (params == NULL)
+    return NULL;
+  double t[3], r[4];
+  if (! geopose_param_list(geopose_param_find(params, "translation"), 3, t) ||
+      ! geopose_param_list(geopose_param_find(params, "rotation"), 4, r))
+  {
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "GeoPose Chain frame chain element parameters must carry a 3-element "
+      "'translation' and a 4-element 'rotation'");
+    return NULL;
+  }
+  return pose_make_3d(t[0], t[1], t[2], r[0], r[1], r[2], r[3], false,
+    SRID_UNKNOWN);
+}
+
+/**
+ * @ingroup meos_posechain_inout
+ * @brief Return a temporal pose chain from an OGC GeoPose Composite Chain
+ * JSON document
+ * @param[in] json GeoPose Chain document
+ * @return On error return @p NULL
+ * @csqlfn #Tposechain_from_geopose()
+ */
+Temporal *
+tposechain_from_geopose(const char *json)
+{
+  VALIDATE_NOT_NULL(json, NULL);
+  json_tokener *tok = json_tokener_new();
+  json_object *root = json_tokener_parse_ex(tok, json, -1);
+  enum json_tokener_error err = json_tokener_get_error(tok);
+  json_tokener_free(tok);
+  if (root == NULL || err != json_tokener_success)
+  {
+    if (root != NULL) json_object_put(root);
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "Cannot parse the GeoPose Chain document");
+    return NULL;
+  }
+  json_object *jtime = geopose_find_member(root, "validTime");
+  json_object *jchain = geopose_find_member(root, "frameChain");
+  if (jtime == NULL || ! json_object_is_type(jtime, json_type_int) ||
+      jchain == NULL || ! json_object_is_type(jchain, json_type_array))
+  {
+    json_object_put(root);
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "A GeoPose Chain document carries an integer 'validTime' and an array "
+      "'frameChain'");
+    return NULL;
+  }
+  int count = (int) json_object_array_length(jchain);
+  if (count < 2)
+  {
+    json_object_put(root);
+    meos_error(ERROR, MEOS_ERR_MFJSON_INPUT,
+      "A GeoPose Chain frame chain holds at least two frames, and the "
+      "document carries %d", count);
+    return NULL;
+  }
+  GeoPoseAnchor anchor;
+  if (! geopose_anchor_from_json(root, &anchor))
+  {
+    json_object_put(root);
+    return NULL;
+  }
+  Pose **poses = palloc(sizeof(Pose *) * count);
+  int nposes = 0;
+  bool failed = false;
+  for (int i = 0; i < count; i++)
+  {
+    json_object *frame = json_object_array_get_idx(jchain, i);
+    Pose *pose = (i == 0) ?
+      geopose_pose_from_inner_frame(&anchor, frame) :
+      geopose_chain_link_pose(frame);
+    if (pose == NULL) { failed = true; break; }
+    poses[nposes++] = pose;
+  }
+  Temporal *result = NULL;
+  if (! failed)
+  {
+    PoseChain *pc = posechain_make((const Pose **) poses, count);
+    if (pc != NULL)
+    {
+      result = (Temporal *) tinstant_make_free(PointerGetDatum(pc),
+        T_TPOSECHAIN, geopose_instant_in(json_object_get_int64(jtime)));
+    }
+  }
+  for (int i = 0; i < nposes; i++)
+    pfree(poses[i]);
+  pfree(poses);
+  json_object_put(root);
+  return result;
+}
+#endif /* POSECHAIN */
 
 /*****************************************************************************/

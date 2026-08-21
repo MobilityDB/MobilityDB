@@ -48,10 +48,10 @@ added to the static encoding is reported rather than quietly narrowing what
 MobilityDB can claim. The conformance test suite exercises the permissive form,
 which is the one a claim is made against.
 
-Four schemas published at the same place are deliberately absent.
-`GeoPose.Composite.Chain.Schema.json` and `GeoPose.Composite.Graph.Schema.json`
-describe the two conformance classes MobilityDB does not implement, and belong
-here as soon as it emits a document of one of them.
+Three schemas published at the same place are deliberately absent.
+`GeoPose.Composite.Graph.Schema.json` describes the one conformance class
+MobilityDB does not implement, and belongs here as soon as it emits a document
+of it.
 `GeoPose.Basic.Euler.Schema.json` describes a flat `longitude`/`latitude`/
 `height`/`rotations` form that is not one of the eight conformance classes and
 that no MobilityDB encoding produces. `GeoPose.Composite.Sequence.Stream.Header.Schema.json`

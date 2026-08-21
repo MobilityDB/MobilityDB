@@ -1797,6 +1797,14 @@
 				</itemizedlist>
 			</sect3>
 			<sect3>
+				<title>OGC GeoPose Composite Chain</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tposechain_asGeoPose"><varname>asGeoPose</varname>, <varname>tposechainFromGeoPose</varname></link>: Write or read an OGC GeoPose Composite Chain document</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+			<sect3>
 				<title>Restriction Functions</title>
 				<itemizedlist>
 					<listitem>

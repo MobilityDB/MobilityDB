@@ -106,6 +106,19 @@ CREATE FUNCTION tposechainFromMFJSON(text)
   AS 'MODULE_PATHNAME', 'Temporal_from_mfjson'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION tposechainFromGeoPose(text)
+  RETURNS tposechain
+  AS 'MODULE_PATHNAME', 'Tposechain_from_geopose'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+-- A Composite Chain document carries one valid time, so it is written
+-- from a single instant, and its frame chain holds at least two frames.
+-- maxdecimaldigits: significant digits to keep; -1 = lossless
+CREATE FUNCTION asGeoPose(tposechain, maxdecimaldigits int4 DEFAULT -1)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Tposechain_as_geopose'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION tposechainFromBinary(bytea)
   RETURNS tposechain
   AS 'MODULE_PATHNAME', 'Temporal_from_wkb'
