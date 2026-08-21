@@ -32,6 +32,11 @@
  * @brief Operators for set types
  */
 
+CREATE FUNCTION span_supportfn(internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Span_supportfn'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /******************************************************************************
  * Operators
  ******************************************************************************/
@@ -39,50 +44,62 @@
 CREATE FUNCTION contains(intset, integer)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_value'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains(intset, intset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains(bigintset, bigint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_value'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains(bigintset, bigintset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains(floatset, float)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_value'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains(floatset, floatset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains(textset, text)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_value'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains(textset, textset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains(dateset, date)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_value'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains(dateset, dateset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains(tstzset, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_value'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains(tstzset, tstzset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
@@ -159,50 +176,62 @@ CREATE OPERATOR @> (
 CREATE FUNCTION contained(integer, intset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_value_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained(intset, intset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained(bigint, bigintset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_value_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained(bigintset, bigintset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained(float, floatset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_value_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained(floatset, floatset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained(text, textset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_value_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained(textset, textset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained(date, dateset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_value_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained(dateset, dateset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained(timestamptz, tstzset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_value_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained(tstzset, tstzset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
@@ -279,26 +308,32 @@ CREATE OPERATOR <@ (
 CREATE FUNCTION overlaps(intset, intset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps(bigintset, bigintset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps(floatset, floatset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps(textset, textset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps(dateset, dateset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overlaps(tstzset, tstzset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
@@ -341,74 +376,92 @@ CREATE OPERATOR && (
 CREATE FUNCTION left(integer, intset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_value_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION left(intset, integer)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_set_value'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION left(intset, intset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION left(bigint, bigintset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_value_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION left(bigintset, bigint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_set_value'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION left(bigintset, bigintset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION left(float, floatset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_value_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION left(floatset, float)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_set_value'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION left(floatset, floatset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION left(text, textset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_value_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION left(textset, text)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_set_value'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION left(textset, textset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION before(date, dateset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_value_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION before(dateset, date)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_set_value'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION before(dateset, dateset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION before(timestamptz, tstzset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_value_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION before(tstzset, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_set_value'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION before(tstzset, tstzset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (
@@ -519,74 +572,92 @@ CREATE OPERATOR <<# (
 CREATE FUNCTION right(integer, intset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_value_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION right(intset, integer)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_set_value'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION right(intset, intset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION right(bigint, bigintset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_value_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION right(bigintset, bigint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_set_value'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION right(bigintset, bigintset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION right(float, floatset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_value_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION right(floatset, float)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_set_value'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION right(floatset, floatset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION right(text, textset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_value_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION right(textset, text)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_set_value'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION right(textset, textset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION after(date, dateset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_value_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION after(dateset, date)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_set_value'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION after(dateset, dateset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION after(timestamptz, tstzset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_value_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION after(tstzset, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_set_value'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION after(tstzset, tstzset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR >> (
@@ -697,74 +768,92 @@ CREATE OPERATOR #>> (
 CREATE FUNCTION overleft(integer, intset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_value_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overleft(intset, integer)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_set_value'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overleft(intset, intset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overleft(bigint, bigintset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_value_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overleft(bigintset, bigint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_set_value'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overleft(bigintset, bigintset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overleft(float, floatset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_value_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overleft(floatset, float)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_set_value'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overleft(floatset, floatset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overleft(text, textset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_value_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overleft(textset, text)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_set_value'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overleft(textset, textset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overbefore(date, dateset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_value_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overbefore(dateset, date)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_set_value'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overbefore(dateset, dateset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overbefore(timestamptz, tstzset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_value_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overbefore(tstzset, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_set_value'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overbefore(tstzset, tstzset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR &< (
@@ -860,74 +949,92 @@ CREATE OPERATOR &<# (
 CREATE FUNCTION overright(integer, intset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overright_value_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overright(intset, integer)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overright_set_value'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overright(intset, intset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overright_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overright(bigint, bigintset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overright_value_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overright(bigintset, bigint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overright_set_value'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overright(bigintset, bigintset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overright_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overright(float, floatset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overright_value_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overright(floatset, float)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overright_set_value'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overright(floatset, floatset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overright_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overright(text, textset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overright_value_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overright(textset, text)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overright_set_value'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overright(textset, textset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overright_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overafter(date, dateset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_value_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overafter(dateset, date)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_set_value'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overafter(dateset, dateset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overafter(timestamptz, tstzset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_value_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overafter(tstzset, timestamptz)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_set_value'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overafter(tstzset, tstzset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR &> (

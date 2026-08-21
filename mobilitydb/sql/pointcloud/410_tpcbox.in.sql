@@ -349,51 +349,67 @@ CREATE OPERATOR CLASS tpcbox_btree_ops
 
 CREATE FUNCTION left(tpcbox, tpcbox)
   RETURNS boolean AS 'MODULE_PATHNAME', 'Left_tpcbox_tpcbox'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overleft(tpcbox, tpcbox)
   RETURNS boolean AS 'MODULE_PATHNAME', 'Overleft_tpcbox_tpcbox'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION right(tpcbox, tpcbox)
   RETURNS boolean AS 'MODULE_PATHNAME', 'Right_tpcbox_tpcbox'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overright(tpcbox, tpcbox)
   RETURNS boolean AS 'MODULE_PATHNAME', 'Overright_tpcbox_tpcbox'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION below(tpcbox, tpcbox)
   RETURNS boolean AS 'MODULE_PATHNAME', 'Below_tpcbox_tpcbox'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overbelow(tpcbox, tpcbox)
   RETURNS boolean AS 'MODULE_PATHNAME', 'Overbelow_tpcbox_tpcbox'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION above(tpcbox, tpcbox)
   RETURNS boolean AS 'MODULE_PATHNAME', 'Above_tpcbox_tpcbox'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overabove(tpcbox, tpcbox)
   RETURNS boolean AS 'MODULE_PATHNAME', 'Overabove_tpcbox_tpcbox'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION front(tpcbox, tpcbox)
   RETURNS boolean AS 'MODULE_PATHNAME', 'Front_tpcbox_tpcbox'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overfront(tpcbox, tpcbox)
   RETURNS boolean AS 'MODULE_PATHNAME', 'Overfront_tpcbox_tpcbox'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION back(tpcbox, tpcbox)
   RETURNS boolean AS 'MODULE_PATHNAME', 'Back_tpcbox_tpcbox'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overback(tpcbox, tpcbox)
   RETURNS boolean AS 'MODULE_PATHNAME', 'Overback_tpcbox_tpcbox'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION before(tpcbox, tpcbox)
   RETURNS boolean AS 'MODULE_PATHNAME', 'Before_tpcbox_tpcbox'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overbefore(tpcbox, tpcbox)
   RETURNS boolean AS 'MODULE_PATHNAME', 'Overbefore_tpcbox_tpcbox'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION after(tpcbox, tpcbox)
   RETURNS boolean AS 'MODULE_PATHNAME', 'After_tpcbox_tpcbox'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overafter(tpcbox, tpcbox)
   RETURNS boolean AS 'MODULE_PATHNAME', 'Overafter_tpcbox_tpcbox'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (

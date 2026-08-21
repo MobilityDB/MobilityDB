@@ -156,6 +156,7 @@ typedef enum
   TEMPORALTYPE,
   TNUMBERTYPE,
   TSPATIALTYPE,
+  SPANTYPE,
 } TemporalFamily;
 
 /** Enumeration for the set operations of span and temporal types */

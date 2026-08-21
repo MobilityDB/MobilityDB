@@ -543,10 +543,12 @@ CREATE OPERATOR CLASS pcpointset_hash_ops
 CREATE FUNCTION contains(pcpointset, pcpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_value'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains(pcpointset, pcpointset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
@@ -563,10 +565,12 @@ CREATE OPERATOR @> (
 CREATE FUNCTION contained(pcpoint, pcpointset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_value_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained(pcpointset, pcpointset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
@@ -583,6 +587,7 @@ CREATE OPERATOR <@ (
 CREATE FUNCTION overlaps(pcpointset, pcpointset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (
@@ -918,10 +923,12 @@ CREATE OPERATOR CLASS pcpatchset_hash_ops
 CREATE FUNCTION contains(pcpatchset, pcpatch)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_value'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains(pcpatchset, pcpatchset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
@@ -938,10 +945,12 @@ CREATE OPERATOR @> (
 CREATE FUNCTION contained(pcpatch, pcpatchset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_value_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained(pcpatchset, pcpatchset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
@@ -958,6 +967,7 @@ CREATE OPERATOR <@ (
 CREATE FUNCTION overlaps(pcpatchset, pcpatchset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (

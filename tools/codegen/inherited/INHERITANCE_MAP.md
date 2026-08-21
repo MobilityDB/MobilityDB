@@ -928,6 +928,40 @@ Three facts bound which declarations carry the clause:
   `TPCBox` and no scalar conversion to it exists to build an index expression
   from, so a clause there could never fire.
 
+### 10.6 The value domain is its own bounding box
+
+A set, span, span set or bounding-box type needs no conversion to be indexed: it
+IS the value the opclass stores. Its portable predicates therefore carry a
+fourth entry point, `span_supportfn`, over the same shared
+`temporal_supportfn(fcinfo, tempfamily)` under the `SPANTYPE` family, and the
+box-building step is skipped — the operand is passed through as-is.
+
+`SpanStrategies[]` carries **both** axes, because one array serves types whose
+single dimension is spelled differently: a time span answers the
+`before`/`after` family and a number span the `left`/`right` one. The axis a
+given span does not have simply finds no operator for its strategy and keeps the
+predicate as a filter, so no per-type table is needed.
+
+The gate is `span_sel_type() || bbox_type()`. ⛔ The `bbox_type` half is not
+redundant: `tbox` and `stbox` have GiST opclasses of their own, so a predicate
+written over a bare box is indexable in exactly the same as-is way. Note the
+consequence of the operand being passed through unchanged — for a `tstzspan`
+the `bbox_type` and `span_sel_type` halves would both accept it, which is why
+`bbox_type` is tested second.
+
+The generator attaches the clause through `_with_span_support()`, wired into
+`_spanfile_fns`, `_spanfile_group`, `_topop_fns` and `_posop_fns`. ⛔ It is
+deliberately **not** wired into `comparisons.sql.tmpl`: that template is shared
+by ten other surfaces, and the equality predicates it renders are not the
+portable spellings of a bounding-box operator.
+
+⛔ `span_supportfn(internal)` must be declared **before** the first file that
+uses it in bundle order — the SQL files concatenate in sorted filename order, so
+the declaration lives at the head of `002_set_ops.in.sql`, above the generated
+region rather than inside it. A `CREATE EXTENSION` is the only thing that
+catches a misplacement; the build never parses the bundle.
+
+
 ---
 
 ### Legend

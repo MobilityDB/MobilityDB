@@ -301,10 +301,12 @@ CREATE AGGREGATE setUnion(h3indexset) (
 CREATE FUNCTION contains(h3indexset, h3index)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_value'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains(h3indexset, h3indexset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
@@ -327,10 +329,12 @@ CREATE OPERATOR @> (
 CREATE FUNCTION contained(h3index, h3indexset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_value_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained(h3indexset, h3indexset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
@@ -353,6 +357,7 @@ CREATE OPERATOR <@ (
 CREATE FUNCTION overlaps(h3indexset, h3indexset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (

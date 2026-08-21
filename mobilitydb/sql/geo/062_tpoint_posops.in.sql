@@ -581,18 +581,22 @@ CREATE OPERATOR #&> (
 CREATE FUNCTION left(inst1 tgeompoint, inst2 tgeompoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_tspatial_tspatial'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overleft(inst1 tgeompoint, inst2 tgeompoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_tspatial_tspatial'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION right(inst1 tgeompoint, inst2 tgeompoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_tspatial_tspatial'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overright(inst1 tgeompoint, inst2 tgeompoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overright_tspatial_tspatial'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION below(inst1 tgeompoint, inst2 tgeompoint)
   RETURNS boolean
@@ -633,18 +637,22 @@ CREATE FUNCTION overback(tgeompoint, tgeompoint)
 CREATE FUNCTION before(inst1 tgeompoint, inst2 tgeompoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_tspatial_tspatial'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overbefore(inst1 tgeompoint, inst2 tgeompoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_tspatial_tspatial'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION after(inst1 tgeompoint, inst2 tgeompoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_tspatial_tspatial'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overafter(inst1 tgeompoint, inst2 tgeompoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_tspatial_tspatial'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (

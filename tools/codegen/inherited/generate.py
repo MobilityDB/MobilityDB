@@ -2020,10 +2020,11 @@ def _topop_sel(fam: dict, idx: int) -> str:
 def _topop_fns(op: str, pairs: list) -> str:
     """The predicate's CREATE FUNCTIONs for every (value, set) pair, all packed."""
     tmpl = (TEMPLATES / "comparisons.sql.tmpl").read_text().rstrip("\n")
-    return "\n".join(tmpl.replace("{SIG}", sig.format(v=v, s=s))
-                         .replace("{RET}", "boolean").replace("{SYM}", sym)
-                     for v, s in pairs
-                     for sig, sym in _TOPOP_FNS[op]) + "\n"
+    return _with_span_support(
+        "\n".join(tmpl.replace("{SIG}", sig.format(v=v, s=s))
+                      .replace("{RET}", "boolean").replace("{SYM}", sym)
+                  for v, s in pairs
+                  for sig, sym in _TOPOP_FNS[op]) + "\n")
 
 
 def _topop_ops(op: str, fam: dict) -> str:
@@ -2152,7 +2153,7 @@ def _posop_fns(pos: str, fam: dict) -> str:
                                                  f"{r.format(v=v, s=s)})")
                                .replace("{RET}", "boolean")
                                .replace("{SYM}", f"{name.capitalize()}_{dsym}"))
-    return "\n".join(out) + "\n"
+    return _with_span_support("\n".join(out) + "\n")
 
 
 def _posop_ops(pos: str, fam: dict) -> str:
@@ -2874,6 +2875,28 @@ def _spanfile_sub(text: str, tok: dict) -> str:
     return text
 
 
+# A portable bounding-box predicate over a value-domain type answers the operator
+# its own opclass declares, so it carries the support function that rewrites it
+# into that operator. The clause is inserted into the shared four-line skeleton
+# here rather than added to the skeleton itself, which a dozen other surfaces
+# render and which carries no support function.
+_SPAN_PORTABLE = {"overlaps", "contains", "contained", "adjacent", "same",
+                  "before", "after", "overbefore", "overafter",
+                  "left", "right", "overleft", "overright"}
+
+
+def _with_span_support(text: str) -> str:
+    """Add the value-domain support clause to every portable predicate in the
+    rendered functions, leaving every other declaration untouched."""
+    out = []
+    for decl in text.split("CREATE FUNCTION "):
+        if decl and decl.split("(", 1)[0].strip().lower() in _SPAN_PORTABLE:
+            decl = decl.replace("  LANGUAGE C",
+                                "  SUPPORT span_supportfn\n  LANGUAGE C", 1)
+        out.append(decl)
+    return "CREATE FUNCTION ".join(out)
+
+
 def _spanfile_fns(blk: dict, fam: dict) -> str:
     """One CREATE FUNCTION template emitted per instantiation, packed."""
     tmpl = (TEMPLATES / "comparisons.sql.tmpl").read_text().rstrip("\n")
@@ -2885,7 +2908,7 @@ def _spanfile_fns(blk: dict, fam: dict) -> str:
         out.append(tmpl.replace("{SIG}", _spanfile_sub(spec["sig"], tok))
                        .replace("{RET}", _spanfile_sub(spec["ret"], tok))
                        .replace("{SYM}", spec["sym"]))
-    return "\n".join(out) + "\n"
+    return _with_span_support("\n".join(out) + "\n")
 
 
 def _spanfile_group(blk: dict, fam: dict) -> str:
@@ -2908,7 +2931,7 @@ def _spanfile_group(blk: dict, fam: dict) -> str:
         clusters.append("\n".join(parts))
     # A type's whole cluster precedes the next type's, separated by `sep`
     # (default: packed; the I/O sections separate clusters by one blank line).
-    return (("\n" + blk.get("sep", "")).join(clusters)) + "\n"
+    return _with_span_support((("\n" + blk.get("sep", "")).join(clusters)) + "\n")
 
 
 def _spanfile_stmts(blk: dict, fam: dict) -> str:

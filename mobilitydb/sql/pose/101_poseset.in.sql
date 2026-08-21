@@ -358,10 +358,12 @@ CREATE OPERATOR CLASS poseset_hash_ops
 CREATE FUNCTION contains(poseset, pose)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_value'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains(poseset, poseset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
@@ -382,10 +384,12 @@ CREATE OPERATOR @> (
 CREATE FUNCTION contained(pose, poseset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_value_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained(poseset, poseset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
@@ -406,6 +410,7 @@ CREATE OPERATOR <@ (
 CREATE FUNCTION overlaps(poseset, poseset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (

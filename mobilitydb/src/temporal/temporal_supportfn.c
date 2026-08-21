@@ -176,6 +176,17 @@ static const uint16_t CommutedIndex[] =
   [RIGHT_IDX]                    = RTRightStrategyNumber, \
   [OVERRIGHT_IDX]                = RTOverRightStrategyNumber
 
+/* A value-domain type IS its own bounding box, so a portable predicate over it
+ * answers the operator its own opclass declares, with no conversion. The array
+ * carries both axes: a time span answers the before/after family and a number
+ * span the left/right one, and the axis a given span does not have simply finds
+ * no operator and keeps the predicate as a filter */
+static const int16 SpanStrategies[] =
+{
+  TIME_PORTABLE_STRATEGIES,
+  AXIS1_PORTABLE_STRATEGIES,
+};
+
 /* The bounding box of an alpha type is a `tstzspan`, so its portable surface is
  * the time dimension alone */
 static const int16 TemporalStrategies[] =
@@ -260,6 +271,13 @@ static const IndexableFunction TemporalIndexableFunctions[] =
   {NULL, 0, 0, 0}
 };
 
+static const IndexableFunction SpanIndexableFunctions[] =
+{
+  TIME_PORTABLE_FUNCTIONS,
+  AXIS1_PORTABLE_FUNCTIONS,
+  {NULL, 0, 0, 0}
+};
+
 static const IndexableFunction TNumberIndexableFunctions[] = {
   /* Ever/always comparison functions */
   {"eeq", EVER_EQ_IDX, 2, 0},
@@ -301,9 +319,22 @@ static const IndexableFunction TSpatialIndexableFunctions[] = {
   {NULL, 0, 0, 0}
 };
 
+/**
+ * @brief Return true if the type belongs to the value domain, whose types are
+ * their own bounding box and answer the operators over themselves
+ */
+static bool
+span_sel_type(MeosType type)
+{
+  return span_basetype(type) || set_spantype(type) || span_type(type) ||
+    spanset_type(type);
+}
+
 static int16
 temporal_get_strategy_by_type(MeosType temptype, uint16_t index)
 {
+  if (span_sel_type(temptype) || bbox_type(temptype))
+    return SpanStrategies[index];
   if (talpha_type(temptype))
     return TemporalStrategies[index];
   if (tnumber_type(temptype))
@@ -508,12 +539,18 @@ temporal_supportfn(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
   Node *ret = NULL;
   Oid leftoid, rightoid, operid;
 
+  assert (tempfamily == SPANTYPE || tempfamily == TEMPORALTYPE ||
+    tempfamily == TNUMBERTYPE || tempfamily == TSPATIALTYPE );
+
   /* Return estimated selectivity */
-  assert (tempfamily == TEMPORALTYPE || tempfamily == TNUMBERTYPE ||
-    tempfamily == TSPATIALTYPE );
   if (IsA(rawreq, SupportRequestSelectivity))
   {
     SupportRequestSelectivity *req = (SupportRequestSelectivity *) rawreq;
+    /* A value-domain type is not one of the bounding-box classes the temporal
+     * estimators are written for, and its own operators declare `span_sel`.
+     * The request is declined so the predicate keeps the estimate it has */
+    if (tempfamily == SPANTYPE)
+      PG_RETURN_POINTER((Node *) NULL);
     leftoid = exprType(linitial(req->args));
     rightoid = exprType(lsecond(req->args));
     MeosType ltype = oid_meostype(leftoid);
@@ -569,7 +606,9 @@ temporal_supportfn(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
       IndexableFunction idxfn = {NULL, 0, 0, 0};
       Oid opfamilyoid = req->opfamily; /* Operator family of the index */
       const IndexableFunction *funcarr = NULL;
-      if (tempfamily == TEMPORALTYPE)
+      if (tempfamily == SPANTYPE)
+        funcarr = SpanIndexableFunctions;
+      else if (tempfamily == TEMPORALTYPE)
         funcarr = TemporalIndexableFunctions;
       else if (tempfamily == TNUMBERTYPE)
         funcarr = TNumberIndexableFunctions;
@@ -667,7 +706,7 @@ temporal_supportfn(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
        * `tpcbox` and no scalar conversion to it exists to build the index
        * expression from; they keep the default of no rewrite */
       exproid = rightoid;
-      if (bbox_type(righttype))
+      if (span_sel_type(righttype) || bbox_type(righttype))
         /* Already a bounding box, and the one the operator is declared
          * against: a time-dimension predicate of a spatial or number family
          * takes a `tstzspan` on its other side, not that family's own box */
@@ -726,7 +765,7 @@ temporal_supportfn(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
       {
         Expr *expr;
         FuncExpr *bboxexpr;
-        if (bbox_type(righttype))
+        if (span_sel_type(righttype) || bbox_type(righttype))
           bboxexpr = (FuncExpr *) rightarg;
         else
           bboxexpr = makeBboxExpr(rightarg, rightoid, exproid, funcoid);
@@ -757,6 +796,17 @@ temporal_supportfn(FunctionCallInfo fcinfo, TemporalFamily tempfamily)
   }
 
   PG_RETURN_POINTER(ret);
+}
+
+PGDLLEXPORT Datum Span_supportfn(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Span_supportfn);
+/**
+ * @brief Support function for the value-domain types
+ */
+Datum
+Span_supportfn(PG_FUNCTION_ARGS)
+{
+  return temporal_supportfn(fcinfo, SPANTYPE);
 }
 
 PGDLLEXPORT Datum Temporal_supportfn(PG_FUNCTION_ARGS);
