@@ -1505,3 +1505,57 @@ SELECT hashExtended(tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])', 1);
  2841424149611304447
 (1 row)
 
+DROP INDEX IF EXISTS tbl_tboxfloat_rtree_idx;
+NOTICE:  index "tbl_tboxfloat_rtree_idx" does not exist, skipping
+DROP INDEX
+CREATE INDEX tbl_tboxfloat_rtree_idx ON tbl_tboxfloat USING GIST(b);
+CREATE INDEX
+WITH test AS (
+  SELECT b |=| tbox 'TBOXFLOAT XT([1.0,2.0],[2001-06-01, 2001-07-01])' AS distance
+  FROM tbl_tboxfloat ORDER BY 1 LIMIT 3 )
+SELECT round(distance, 6) FROM test;
+   round   
+-----------
+  3.084295
+ 19.606267
+  25.17485
+(3 rows)
+
+DROP INDEX tbl_tboxfloat_rtree_idx;
+DROP INDEX
+DROP INDEX IF EXISTS tbl_tboxfloat_quadtree_idx;
+NOTICE:  index "tbl_tboxfloat_quadtree_idx" does not exist, skipping
+DROP INDEX
+CREATE INDEX tbl_tboxfloat_quadtree_idx ON tbl_tboxfloat USING SPGIST(b);
+CREATE INDEX
+WITH test AS (
+  SELECT b |=| tbox 'TBOXFLOAT XT([1.0,2.0],[2001-06-01, 2001-07-01])' AS distance
+  FROM tbl_tboxfloat ORDER BY 1 LIMIT 3 )
+SELECT round(distance, 6) FROM test;
+   round   
+-----------
+  3.084295
+ 19.606267
+  25.17485
+(3 rows)
+
+DROP INDEX tbl_tboxfloat_quadtree_idx;
+DROP INDEX
+DROP INDEX IF EXISTS tbl_tboxfloat_kdtree_idx;
+NOTICE:  index "tbl_tboxfloat_kdtree_idx" does not exist, skipping
+DROP INDEX
+CREATE INDEX tbl_tboxfloat_kdtree_idx ON tbl_tboxfloat USING SPGIST(b tbox_kdtree_ops);
+CREATE INDEX
+WITH test AS (
+  SELECT b |=| tbox 'TBOXFLOAT XT([1.0,2.0],[2001-06-01, 2001-07-01])' AS distance
+  FROM tbl_tboxfloat ORDER BY 1 LIMIT 3 )
+SELECT round(distance, 6) FROM test;
+   round   
+-----------
+  3.084295
+ 19.606267
+  25.17485
+(3 rows)
+
+DROP INDEX tbl_tboxfloat_kdtree_idx;
+DROP INDEX

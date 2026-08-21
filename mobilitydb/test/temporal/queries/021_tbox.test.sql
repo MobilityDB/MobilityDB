@@ -462,3 +462,33 @@ SELECT hash(tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])');
 SELECT hashExtended(tbox 'TBOXFLOAT XT([1.0,1.0],[2000-01-02,2000-01-02])', 1);
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- Nearest approach ordering answered by the indexes
+-------------------------------------------------------------------------------
+
+DROP INDEX IF EXISTS tbl_tboxfloat_rtree_idx;
+CREATE INDEX tbl_tboxfloat_rtree_idx ON tbl_tboxfloat USING GIST(b);
+WITH test AS (
+  SELECT b |=| tbox 'TBOXFLOAT XT([1.0,2.0],[2001-06-01, 2001-07-01])' AS distance
+  FROM tbl_tboxfloat ORDER BY 1 LIMIT 3 )
+SELECT round(distance, 6) FROM test;
+DROP INDEX tbl_tboxfloat_rtree_idx;
+
+DROP INDEX IF EXISTS tbl_tboxfloat_quadtree_idx;
+CREATE INDEX tbl_tboxfloat_quadtree_idx ON tbl_tboxfloat USING SPGIST(b);
+WITH test AS (
+  SELECT b |=| tbox 'TBOXFLOAT XT([1.0,2.0],[2001-06-01, 2001-07-01])' AS distance
+  FROM tbl_tboxfloat ORDER BY 1 LIMIT 3 )
+SELECT round(distance, 6) FROM test;
+DROP INDEX tbl_tboxfloat_quadtree_idx;
+
+DROP INDEX IF EXISTS tbl_tboxfloat_kdtree_idx;
+CREATE INDEX tbl_tboxfloat_kdtree_idx ON tbl_tboxfloat USING SPGIST(b tbox_kdtree_ops);
+WITH test AS (
+  SELECT b |=| tbox 'TBOXFLOAT XT([1.0,2.0],[2001-06-01, 2001-07-01])' AS distance
+  FROM tbl_tboxfloat ORDER BY 1 LIMIT 3 )
+SELECT round(distance, 6) FROM test;
+DROP INDEX tbl_tboxfloat_kdtree_idx;
+
+-------------------------------------------------------------------------------
