@@ -819,6 +819,13 @@ Stbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
     const ScanKeyData *scankey = &in->scankeys[i];
     Datum value = scankey->sk_argument;
     MeosType type = oid_meostype(scankey->sk_subtype);
+#if POINTCLOUD
+    /* The leaf value of a point cloud box keeps its bounds and drops the
+     * schema identifier the operator also compares, so the answer is a
+     * superset of the operator's and every strategy is rechecked */
+    if (type == T_TPCBOX)
+      out->recheck = true;
+#endif /* POINTCLOUD */
     tspatial_spgist_get_stbox(value, type, &box);
     result = stbox_index_leaf_consistent(key, &box, strategy);
 
