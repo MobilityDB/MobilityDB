@@ -238,44 +238,49 @@ CREATE OPERATOR * (
  * Topological predicates
  ******************************************************************************/
 
-CREATE FUNCTION tpcbox_contains(tpcbox, tpcbox)
+CREATE FUNCTION contains(tpcbox, tpcbox)
   RETURNS boolean AS 'MODULE_PATHNAME', 'Contains_tpcbox_tpcbox'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tpcbox_contained(tpcbox, tpcbox)
+CREATE FUNCTION contained(tpcbox, tpcbox)
   RETURNS boolean AS 'MODULE_PATHNAME', 'Contained_tpcbox_tpcbox'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tpcbox_overlaps(tpcbox, tpcbox)
+CREATE FUNCTION overlaps(tpcbox, tpcbox)
   RETURNS boolean AS 'MODULE_PATHNAME', 'Overlaps_tpcbox_tpcbox'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tpcbox_same(tpcbox, tpcbox)
+CREATE FUNCTION same(tpcbox, tpcbox)
   RETURNS boolean AS 'MODULE_PATHNAME', 'Same_tpcbox_tpcbox'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tpcbox_adjacent(tpcbox, tpcbox)
+CREATE FUNCTION adjacent(tpcbox, tpcbox)
   RETURNS boolean AS 'MODULE_PATHNAME', 'Adjacent_tpcbox_tpcbox'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
-  PROCEDURE = tpcbox_contains,
+  PROCEDURE = contains,
   LEFTARG = tpcbox, RIGHTARG = tpcbox,
   COMMUTATOR = <@
 );
 CREATE OPERATOR <@ (
-  PROCEDURE = tpcbox_contained,
+  PROCEDURE = contained,
   LEFTARG = tpcbox, RIGHTARG = tpcbox,
   COMMUTATOR = @>
 );
 CREATE OPERATOR && (
-  PROCEDURE = tpcbox_overlaps,
+  PROCEDURE = overlaps,
   LEFTARG = tpcbox, RIGHTARG = tpcbox,
   COMMUTATOR = &&
 );
 CREATE OPERATOR ~= (
-  PROCEDURE = tpcbox_same,
+  PROCEDURE = same,
   LEFTARG = tpcbox, RIGHTARG = tpcbox,
   COMMUTATOR = ~=
 );
 CREATE OPERATOR -|- (
-  PROCEDURE = tpcbox_adjacent,
+  PROCEDURE = adjacent,
   LEFTARG = tpcbox, RIGHTARG = tpcbox,
   COMMUTATOR = -|-
 );

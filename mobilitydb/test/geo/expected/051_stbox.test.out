@@ -1033,6 +1033,36 @@ SELECT stbox 'STBOX Z((1.0,1.0,1.0),(2.0,2.0,2.0))' ~= stbox 'STBOX Z((1.0,1.0,1
  f
 (1 row)
 
+SELECT overlaps(stbox 'STBOX X((1.0,1.0),(2.0,2.0))', stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-01])');
+ overlaps 
+----------
+ t
+(1 row)
+
+SELECT contains(stbox 'STBOX X((1.0,1.0),(2.0,2.0))', stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-01])');
+ contains 
+----------
+ t
+(1 row)
+
+SELECT contained(stbox 'STBOX X((1.0,1.0),(2.0,2.0))', stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-01])');
+ contained 
+-----------
+ f
+(1 row)
+
+SELECT adjacent(stbox 'STBOX X((1.0,1.0),(2.0,2.0))', stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-01])');
+ adjacent 
+----------
+ t
+(1 row)
+
+SELECT same(stbox 'STBOX X((1.0,1.0),(2.0,2.0))', stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2000-01-01,2000-01-01])');
+ same 
+------
+ f
+(1 row)
+
 SELECT stbox 'STBOX Z((0 0 0),(2 2 2))' -|- stbox 'STBOX Z((1 1 1),(3 3 3))';
  ?column? 
 ----------

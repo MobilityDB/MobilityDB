@@ -883,6 +883,36 @@ SELECT tstzspan '[2000-01-01,2000-01-02]'::tbox -|- tstzspan '[2000-01-02, 2000-
  t
 (1 row)
 
+SELECT overlaps(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])');
+ overlaps 
+----------
+ t
+(1 row)
+
+SELECT contains(tbox 'TBOXFLOAT XT([1.0, 2.0],[2000-01-02, 2000-02-01])', tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])');
+ contains 
+----------
+ f
+(1 row)
+
+SELECT contained(tbox 'TBOXFLOAT XT([1.0, 2.0],[2000-01-02, 2000-02-01])', tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])');
+ contained 
+-----------
+ f
+(1 row)
+
+SELECT adjacent(tbox 'TBOXFLOAT XT([1.0, 2.0],[2000-01-02, 2000-02-01])', tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])');
+ adjacent 
+----------
+ t
+(1 row)
+
+SELECT same(tbox 'TBOXFLOAT XT([1.0, 2.0],[2000-01-02, 2000-02-01])', tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])');
+ same 
+------
+ f
+(1 row)
+
 /* Errors */
 SELECT tbox 'TBOXFLOAT X([1,2])' && tbox 'TBOX T([2000-01-01,2000-01-02])';
 ERROR:  The temporal values must have at least one common dimension
