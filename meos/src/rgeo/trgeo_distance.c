@@ -457,6 +457,26 @@ f_tpoint_poly(POINT4D p, POINT4D q, POINT4D r, Pose *poly_pose_s,
 }
 
 /**
+ * @brief Return @p t if it is a closest-feature transition of the segment,
+ * return 2 otherwise
+ * @details A transition counts only when it advances strictly past the
+ * previous one and lies strictly inside the segment. Both the closed-form and
+ * the iterative branch of every solver answer through this function so that
+ * they agree on what a transition is: the iterative branch leaves its root at
+ * the value it was initialized with when the bracket is already narrower than
+ * @p MEOS_EPSILON, which happens once the walk comes within an epsilon of the
+ * segment end, and such a value reenters the walk as a transition at the
+ * segment start.
+ * @param[in] t Candidate ratio
+ * @param[in] prev_result Ratio of the previous transition of the segment
+ */
+static inline double
+transition_ratio(double t, double prev_result)
+{
+  return (t > prev_result + MEOS_EPSILON && t < 1 - MEOS_EPSILON) ? t : 2;
+}
+
+/**
  * @brief
  */
 static double
@@ -492,9 +512,7 @@ solve_s_tpoly_point(LWPOLY *poly, LWPOINT *point, Pose *poly_pose_s,
       result = ((p.x - q.x) * (r.x - q.x) + (p.y - q.y) * (r.y - q.y)) / discr;
     else /* MEOS_SOLVE_1 */
       result = ((p.x - r.x) * (r.x - q.x) + (p.y - r.y) * (r.y - q.y)) / discr;
-    if (result > prev_result + MEOS_EPSILON && result < 1 - MEOS_EPSILON)
-      return result;
-    return 2;
+    return transition_ratio(result, prev_result);
   }
 
   double tl, tr, t0 = 0; /* Make compiler quiet */
@@ -535,7 +553,7 @@ solve_s_tpoly_point(LWPOLY *poly, LWPOINT *point, Pose *poly_pose_s,
     else
       tl = t0, vl = v0;
   }
-  return t0;
+  return transition_ratio(t0, prev_result);
 }
 
 /**
@@ -915,9 +933,7 @@ solve_s_tpoly_poly(LWPOLY *poly1, Pose *poly_pose_s, Pose *poly_pose_e,
       result = ((p.x - q.x) * (r.x - q.x) + (p.y - q.y) * (r.y - q.y)) / discr;
     else /* MEOS_SOLVE_1 */
       result = ((p.x - r.x) * (r.x - q.x) + (p.y - r.y) * (r.y - q.y)) / discr;
-    if (result > prev_result + MEOS_EPSILON && result < 1 - MEOS_EPSILON)
-      return result;
-    return 2;
+    return transition_ratio(result, prev_result);
   }
 
   double tl, tr, t0 = 0; /* Make compiler quiet */
@@ -958,7 +974,7 @@ solve_s_tpoly_poly(LWPOLY *poly1, Pose *poly_pose_s, Pose *poly_pose_e,
     else
       tl = t0, vl = v0;
   }
-  return t0;
+  return transition_ratio(t0, prev_result);
 }
 
 /**
@@ -1013,9 +1029,7 @@ solve_s_poly_tpoly(LWPOLY *poly1, LWPOLY *poly2, Pose *poly_pose_s,
       result = ((p.x - q.x) * (r.x - q.x) + (p.y - q.y) * (r.y - q.y)) / discr;
     else /* MEOS_SOLVE_1 */
       result = ((p.x - r.x) * (r.x - q.x) + (p.y - r.y) * (r.y - q.y)) / discr;
-    if (result > prev_result + MEOS_EPSILON && result < 1 - MEOS_EPSILON)
-      return result;
-    return 2;
+    return transition_ratio(result, prev_result);
   }
 
   double tl, tr, t0 = 0; /* Make compiler quiet */
@@ -1056,7 +1070,7 @@ solve_s_poly_tpoly(LWPOLY *poly1, LWPOLY *poly2, Pose *poly_pose_s,
     else
       tl = t0, vl = v0;
   }
-  return t0;
+  return transition_ratio(t0, prev_result);
 }
 
 /**
@@ -1214,9 +1228,7 @@ solve_parallel_edges_tpoly_poly(LWPOLY *poly1, Pose *poly_pose_s,
     else
       tl = t0, vl = v0;
   }
-  if (fabs(t0 - prev_result) < MEOS_EPSILON)
-    return 2;
-  return t0;
+  return transition_ratio(t0, prev_result);
 }
 
 /**
