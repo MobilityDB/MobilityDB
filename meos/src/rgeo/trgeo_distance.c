@@ -1074,6 +1074,19 @@ solve_s_poly_tpoly(LWPOLY *poly1, LWPOLY *poly2, Pose *poly_pose_s,
 }
 
 /**
+ * @brief Return true if the ring of @p poly describes a segment, that is, two
+ * vertices whose two edges traverse the same points in opposite directions
+ * @details Each vertex of such a ring has ONE adjacent edge, reached either way
+ * round, so the two roots that a vertex-exit test computes for it are the same
+ * event and their coincidence carries no meaning.
+ */
+static inline bool
+ring_is_segment(const LWPOLY *poly)
+{
+  return poly->rings[0]->npoints == 3;
+}
+
+/**
  * @brief Find the next change in closest feature
  */
 static int
@@ -1110,7 +1123,8 @@ vertex_vertex_tpoly_poly(LWPOLY *poly1, Pose *pose_start, Pose *pose_end,
     return MEOS_DISJOINT;
   /* Intersection through vertex */
   else if (((ratio_1 != 2 || ratio_2 != 2) && fabs(ratio_1 - ratio_2) < MEOS_EPSILON)
-        || ((ratio_3 != 2 || ratio_4 != 2) && fabs(ratio_3 - ratio_4) < MEOS_EPSILON))
+        || (! ring_is_segment(poly2) && (ratio_3 != 2 || ratio_4 != 2) &&
+            fabs(ratio_3 - ratio_4) < MEOS_EPSILON))
     return MEOS_INTERSECT;
   /* Go to next closest feature */
   else if (ratio_1 <= ratio_2 && ratio_1 <= ratio_3 && ratio_1 <= ratio_4)
@@ -1932,6 +1946,54 @@ dist2d_trgeoseq_multi(const TSequence *seq, const GSERIALIZED *gs,
   return result;
 }
 
+static GSERIALIZED *
+line_segment_ring(const LWLINE *line, uint32_t i, int32_t srid)
+{
+  POINT4D a, b;
+  getPoint4d_p(line->points, i, &a);
+  getPoint4d_p(line->points, i + 1, &b);
+  POINTARRAY **rings = lwalloc(sizeof(POINTARRAY *));
+  rings[0] = ptarray_construct_empty(0, 0, 3);
+  ptarray_append_point(rings[0], &a, LW_TRUE);
+  ptarray_append_point(rings[0], &b, LW_TRUE);
+  ptarray_append_point(rings[0], &a, LW_TRUE);
+  LWPOLY *poly = lwpoly_construct(srid, NULL, 1, rings);
+  GSERIALIZED *result = geo_serialize((LWGEOM *) poly);
+  lwpoly_free(poly);
+  return result;
+}
+
+static TSequence *
+dist2d_trgeoseq_line(const TSequence *seq, const GSERIALIZED *gs,
+  const GSERIALIZED *ref_gs)
+{
+  LWGEOM *geom = lwgeom_from_gserialized(gs);
+  const LWLINE *line = lwgeom_as_lwline(geom);
+  int32_t srid = gserialized_get_srid(gs);
+  TSequence *result = NULL;
+  for (uint32_t i = 0; i + 1 < line->points->npoints; i++)
+  {
+    GSERIALIZED *ring = line_segment_ring(line, i, srid);
+    TSequence *dist = dist2d_trgeoseq_poly(seq, ring, ref_gs);
+    pfree(ring);
+    if (! dist)
+    {
+      if (result) pfree(result);
+      lwgeom_free(geom);
+      return NULL;
+    }
+    if (! result) result = dist;
+    else
+    {
+      TSequence *min = tfloatseq_min_tfloatseq(result, dist);
+      pfree(result); pfree(dist);
+      result = min;
+    }
+  }
+  lwgeom_free(geom);
+  return result;
+}
+
 /**
  * @brief
  */
@@ -1954,6 +2016,12 @@ dist2d_trgeoseq_geo(const TSequence *seq, const GSERIALIZED *gs,
       break;
     case MULTIPOLYGONTYPE:
       result = dist2d_trgeoseq_multi(seq, gs, ref_gs, &dist2d_trgeoseq_poly);
+      break;
+    case LINETYPE:
+      result = dist2d_trgeoseq_line(seq, gs, ref_gs);
+      break;
+    case MULTILINETYPE:
+      result = dist2d_trgeoseq_multi(seq, gs, ref_gs, &dist2d_trgeoseq_line);
       break;
     default:
       meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
