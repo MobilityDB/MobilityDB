@@ -3652,14 +3652,26 @@ buffer_offset_edge(const Edge *edge, double radius, bool left,
   {
     bool inward = edge->ccw ? left : ! left;
     double r = inward ? edge->radius - radius : edge->radius + radius;
+    /* Offsetting into an arc by more than it turns on carries the offset past
+     * the centre, where it comes out on the far side at the distance it
+     * overshot by and points the other way. That curve is nearer the arc than
+     * the buffer distance, so it bounds nothing and #buffer_ring_resolve
+     * drops it; it is built rather than refused so that the ring it belongs
+     * to is closed and the rest of it can be read */
+    double half = 0.0;
     if (r <= FP_TOLERANCE)
-      return false;
+    {
+      r = -r;
+      half = M_PI;
+      if (r <= FP_TOLERANCE)
+        return false;
+    }
     piece->type = BUFFER_ARC;
     piece->cx = edge->cx;
     piece->cy = edge->cy;
     piece->radius = r;
-    piece->theta1 = edge->theta0;
-    piece->theta2 = edge->theta1;
+    piece->theta1 = edge->theta0 + half;
+    piece->theta2 = edge->theta1 + half;
     piece->ccw = edge->ccw;
     piece->x1 = edge->cx + r * cos(piece->theta1);
     piece->y1 = edge->cy + r * sin(piece->theta1);
@@ -3999,6 +4011,193 @@ buffer_ring_edges_outward_left(const MeosArray *edges)
   return area < 0.0;
 }
 
+/*****************************************************************************
+ * Buffer overlay - resolving an offset that runs into itself
+ * The boundary of a buffer is the set of points at exactly the buffer
+ * distance from the geometry. Offsetting each edge gives a curve every point
+ * of which is that far from the edge it came from, which is not the same
+ * thing: where the geometry turns tighter than the distance, the offset runs
+ * past itself and encloses points nearer the geometry than that. Those parts
+ * belong to no boundary and are dropped, which is what lets a curve be
+ * buffered by more than the radius it turns on
+ *****************************************************************************/
+
+/**
+ * @brief Collect the points at which two edges meet
+ */
+static void
+buffer_collect_edge_intersections(const Edge *e1, const Edge *e2,
+  MeosArray *points)
+{
+  assert(e1); assert(e2); assert(points);
+  bool arc1 = e1->etype == EDGE_POLYARC || e1->etype == EDGE_LINEARC;
+  bool arc2 = e2->etype == EDGE_POLYARC || e2->etype == EDGE_LINEARC;
+  if (! arc1 && ! arc2)
+    buffer_collect_line_line_intersections(e1, e2, points);
+  else if (! arc1)
+    buffer_collect_line_arc_intersections(e1, e2, points);
+  else if (! arc2)
+    buffer_collect_line_arc_intersections(e2, e1, points);
+  else
+    buffer_collect_arc_arc_intersections(e1, e2, points);
+  return;
+}
+
+/**
+ * @brief Return the distance from a point to an edge
+ */
+static double
+buffer_point_edge_distance(double x, double y, const Edge *e)
+{
+  assert(e);
+  double result = Min(hypot(x - e->x1, y - e->y1), hypot(x - e->x2, y - e->y2));
+  if (e->etype == EDGE_POLYARC || e->etype == EDGE_LINEARC)
+  {
+    /* The nearest point of an arc is the one its span holds in the direction
+     * of the point, and an end of it otherwise */
+    if (arc_contains_angle(e, atan2(y - e->cy, x - e->cx)))
+      result = Min(result, fabs(hypot(x - e->cx, y - e->cy) - e->radius));
+    return result;
+  }
+  double dx = e->x2 - e->x1, dy = e->y2 - e->y1;
+  double len2 = dx * dx + dy * dy;
+  if (len2 > 0)
+  {
+    double t = ((x - e->x1) * dx + (y - e->y1) * dy) / len2;
+    if (t > 0 && t < 1)
+      result = Min(result, fabs((x - e->x1) * dy - (y - e->y1) * dx) /
+        sqrt(len2));
+  }
+  return result;
+}
+
+/**
+ * @brief Return the distance from a point to the nearest edge of a geometry
+ */
+static double
+buffer_point_edges_distance(double x, double y, const MeosArray *edges)
+{
+  assert(edges);
+  double result = DBL_MAX;
+  for (uint32_t i = 0; i < edges->count; i++)
+  {
+    const Edge *e = (const Edge *) meos_array_get(edges, i);
+    if (! e || e->etype == EDGE_POINT)
+      continue;
+    double d = buffer_point_edge_distance(x, y, e);
+    if (d < result)
+      result = d;
+  }
+  return result;
+}
+
+/**
+ * @brief Return the boundary of the buffer of a geometry, given a ring of
+ * offsets that may run into itself
+ * @details Every piece of the ring is split where it meets any other piece of
+ * it, which leaves pieces that are wholly on one side of the question, and a
+ * piece is kept when the geometry is the buffer distance away from it rather
+ * than nearer. The pieces kept chain into the rings of the answer
+ * @param[in] raw Ring of offsets, as a geometry bounding a surface
+ * @param[in] edges Edges of the geometry the buffer is taken of
+ * @param[in] radius Buffer distance
+ * @param[in] srid SRID of the answer
+ * @return @p NULL when the pieces kept do not chain into a closed ring
+ */
+static LWGEOM *
+buffer_ring_resolve(const LWGEOM *raw, const MeosArray *edges, double radius,
+  int32_t srid)
+{
+  assert(raw); assert(edges); assert(radius > 0.0);
+  MeosArray *arr = geom_extract_edges(raw);
+  if (! arr)
+    return NULL;
+  uint32_t n = meos_array_count(arr);
+
+  /* Where the ring meets itself */
+  MeosArray *nodes = meos_array_create(sizeof(POINT2D));
+  MeosArray *pieces = meos_array_create(sizeof(BufferPiece));
+  for (uint32_t i = 0; i < n; i++)
+  {
+    const Edge *e1 = (const Edge *) meos_array_get(arr, i);
+    if (! e1 || ! buffer_is_boundary_edge(e1))
+      continue;
+    BufferPiece piece;
+    buffer_piece_from_edge(e1, &piece);
+    meos_array_add(pieces, &piece);
+    for (uint32_t j = i + 1; j < n; j++)
+    {
+      const Edge *e2 = (const Edge *) meos_array_get(arr, j);
+      if (! e2 || ! buffer_is_boundary_edge(e2))
+        continue;
+      MeosArray *points = meos_array_create(sizeof(POINT2D));
+      buffer_collect_edge_intersections(e1, e2, points);
+      for (int k = 0; k < meos_array_count(points); k++)
+      {
+        const POINT2D *p = (const POINT2D *) meos_array_get(points,
+          (uint32_t) k);
+        if (p)
+          buffer_intersections_add(nodes, p->x, p->y);
+      }
+      meos_array_destroy(points);
+    }
+  }
+  meos_array_destroy(arr);
+
+  MeosArray *split = meos_array_create(sizeof(BufferPiece));
+  buffer_split_pieces(pieces, nodes, split);
+
+  /* A piece the geometry comes nearer to than the buffer distance lies inside
+   * the buffer rather than on its boundary. The distance is read at the
+   * middle of the piece, which the splitting above leaves wholly on one side
+   * of the question */
+  double tol = Max(MEOS_EDGE_TOLERANCE, radius * 1.0e-9);
+  MeosArray *keep = meos_array_create(sizeof(BufferPiece));
+  for (int i = 0; i < meos_array_count(split); i++)
+  {
+    BufferPiece *piece = (BufferPiece *) meos_array_get(split, (uint32_t) i);
+    POINT2D mid;
+    if (! piece || ! buffer_piece_midpoint(piece, &mid))
+      continue;
+    if (buffer_point_edges_distance(mid.x, mid.y, edges) >= radius - tol)
+      meos_array_add(keep, piece);
+  }
+
+  LWGEOM *result = (meos_array_count(keep) > 0) ?
+    buffer_make_surfaces_from_pieces(keep, srid) : NULL;
+  meos_array_destroy(keep); meos_array_destroy(split);
+  meos_array_destroy(pieces); meos_array_destroy(nodes);
+  return result;
+}
+
+/**
+ * @brief Return the boundary of a buffer whose ring of offsets runs into
+ * itself, resolved, and the ring itself when it does not
+ * @details Where a geometry turns tighter than the buffer distance its
+ * offsets cross, and the loop the crossing leaves lies inside the buffer
+ * rather than on its boundary. Naming what the crossing leaves is what
+ * #buffer_ring_resolve does, so a ring meeting itself is resolved rather than
+ * reported as not supported
+ * @param[in] raw Ring of offsets, released here
+ * @param[in] input Geometry the buffer is taken of
+ * @param[in] radius Buffer distance
+ * @param[in] srid SRID of the answer
+ */
+static LWGEOM *
+buffer_ring_resolved(LWGEOM *raw, const LWGEOM *input, double radius,
+  int32_t srid)
+{
+  assert(raw); assert(input);
+  if (! buffer_boundary_self_intersects(raw))
+    return raw;
+  MeosArray *edges = geom_extract_edges(input);
+  LWGEOM *result = edges ? buffer_ring_resolve(raw, edges, radius, srid) : NULL;
+  if (edges)
+    meos_array_destroy(edges);
+  lwgeom_free(raw);
+  return result;
+}
+
 /**
  * @brief Buffer a curve, which is a circular string or a compound curve
  * @details The boundary walks the offset of the curve on its left, caps the
@@ -4115,12 +4314,7 @@ meos_buffer_curve(const LWGEOM *geom, double radius, JoinStyle join_style,
   LWCURVEPOLY *curvepoly = lwcurvepoly_construct_empty(srid, 0, 0);
   buffer_curvepoly_add_ring(curvepoly, ring);
   LWGEOM *result = lwcurvepoly_as_lwgeom(curvepoly);
-  if (buffer_boundary_self_intersects(result))
-  {
-    lwgeom_free(result);
-    return NULL;
-  }
-  return result;
+  return buffer_ring_resolved(result, geom, radius, srid);
 }
 
 /**
@@ -4168,12 +4362,8 @@ meos_buffer_curvepoly(const LWCURVEPOLY *curvepoly, double radius,
     buffer_curvepoly_add_ring(result, ring);
   }
   LWGEOM *geom = lwcurvepoly_as_lwgeom(result);
-  if (buffer_boundary_self_intersects(geom))
-  {
-    lwgeom_free(geom);
-    return NULL;
-  }
-  return geom;
+  return buffer_ring_resolved(geom, lwcurvepoly_as_lwgeom(
+    (LWCURVEPOLY *) curvepoly), radius, srid);
 }
 
 /*****************************************************************************
@@ -4573,17 +4763,10 @@ meos_buffer_line_offset(const LWLINE *line, double radius,
   pfree(right);
 
   /* The offsets of two segments meeting at a sharp turn cross on the inner
-   * side, and the loop they leave is not part of the buffer. Naming the
-   * surfaces the crossing bounds takes the boundary overlay, so the geometry
-   * is reported as not supported rather than answered by a ring that bounds
-   * no surface. */
+   * side, and the loop they leave is not part of the buffer */
   LWGEOM *result = lwcurvepoly_as_lwgeom(curvepoly);
-  if (buffer_boundary_self_intersects(result))
-  {
-    lwgeom_free(result);
-    return NULL;
-  }
-  return result;
+  return buffer_ring_resolved(result, lwline_as_lwgeom((LWLINE *) line),
+    radius, srid);
 }
 
 /**
