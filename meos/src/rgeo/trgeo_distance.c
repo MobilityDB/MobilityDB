@@ -843,7 +843,7 @@ dist2d_trgeoseq_point(const TSequence *seq, const GSERIALIZED *gs)
       tda.arr[i].t);
   TSequence *result = tsequence_make_free(instants, tda.count,
     seq->period.lower_inc, seq->period.upper_inc,
-    MEOS_FLAGS_LINEAR_INTERP(seq->flags), NORMALIZE);
+    MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
 
   lwpoly_free(poly);
   lwpoint_free(point);
@@ -1814,7 +1814,7 @@ dist2d_trgeoseq_poly(const TSequence *seq, const GSERIALIZED *gs)
       tda.arr[i].t);
   TSequence *result = tsequence_make_free(instants, tda.count,
     seq->period.lower_inc, seq->period.upper_inc,
-    MEOS_FLAGS_LINEAR_INTERP(seq->flags), NORMALIZE);
+    MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE);
 
   lwpoly_free(poly1); lwpoly_free(poly2);
   free_cfp_array(&cfpa); free_tdist_array(&tda);
@@ -2003,7 +2003,7 @@ dist2d_trgeoseq_trgeoseq(const TSequence *seq1, const TSequence *seq2,
       tda.arr[i].t);
   TSequence *result = tsequence_make_free(instants, tda.count,
     seq1->period.lower_inc, seq1->period.upper_inc,
-    MEOS_FLAGS_LINEAR_INTERP(seq1->flags), NORMALIZE);
+    MEOS_FLAGS_GET_INTERP(seq1->flags), NORMALIZE);
 
   lwpoly_free(poly1); lwpoly_free(poly2);
   free_cfp_array(&cfpa); free_tdist_array(&tda);
@@ -2099,7 +2099,7 @@ trgeoseq_translate_by_tpoint(const TSequence *pseq, const TSequence *qseq,
       TSEQUENCE_INST_N(qseq, i), ref_gs);
   return trgeoseq_make_free(ref_gs, instants, pseq->count,
     pseq->period.lower_inc, pseq->period.upper_inc,
-    MEOS_FLAGS_LINEAR_INTERP(pseq->flags), NORMALIZE);
+    MEOS_FLAGS_GET_INTERP(pseq->flags), NORMALIZE);
 }
 
 /**

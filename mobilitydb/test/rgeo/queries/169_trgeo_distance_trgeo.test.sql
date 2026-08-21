@@ -78,4 +78,9 @@ SELECT round(minValue(
 SELECT getTimestamp(nearestApproachInstant(
   trgeometry 'Polygon((-2 -0.5,2 -0.5,2 0.5,-2 0.5,-2 -0.5));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),3.141592653589793)@2001-01-02]',
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 3),0)@2001-01-01, Pose(Point(0 3),0)@2001-01-02]')) <@ tstzspan '(2001-01-01, 2001-01-02)';
+-- The temporal distance between two moving rigid geometries is linear
+SELECT interp(tDistance(
+  trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(20 0),0)@2001-01-01, Pose(Point(14 0),0)@2001-01-02]'));
+
 -------------------------------------------------------------------------------

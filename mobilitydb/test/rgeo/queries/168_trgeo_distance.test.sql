@@ -106,4 +106,17 @@ SELECT getTimestamp(nearestApproachInstant(
   trgeometry 'Polygon((-2 -0.5,2 -0.5,2 0.5,-2 0.5,-2 -0.5));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),3.141592653589793)@2001-01-02]',
   geometry 'Polygon((0 3,1 3,1 4,0 4,0 3))')) <@ tstzspan '(2001-01-01, 2001-01-02)';
 
+-- The temporal distance of a moving rigid geometry is linear, as it is in every
+-- other spatial family: it has a value at every instant of the motion, not only
+-- at the closest-feature transitions and the interior extrema
+SELECT interp(tDistance(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  geometry 'Point(0 5)'));
+SELECT round(valueAtTimestamp(tDistance(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  geometry 'Point(0 5)'), '2001-01-01 12:00')::numeric, 6);
+SELECT interp(tDistance(
+  trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  geometry 'Polygon((5 3,6 3,6 4,5 4,5 3))'));
+
 -------------------------------------------------------------------------------
