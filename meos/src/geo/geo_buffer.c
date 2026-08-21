@@ -3836,6 +3836,29 @@ buffer_pieces_meet(const BufferPiece *a, const BufferPiece *b, double vx,
 }
 
 /**
+ * @brief Return whether a point of a piece's support lies on the piece itself
+ * @details #buffer_pieces_meet answers where two offsets' SUPPORTS cross — two
+ * whole lines, or two whole circles. A crossing bounds the buffer only where
+ * it falls on the pieces those supports carry; one landing beyond an end
+ * belongs to a part of the support the offset never reaches.
+ */
+static bool
+buffer_piece_holds(const BufferPiece *piece, double x, double y)
+{
+  assert(piece);
+  if (piece->type == BUFFER_ARC)
+    return buffer_arc_contains_angle(piece,
+      atan2(y - piece->cy, x - piece->cx));
+  double dx = piece->x2 - piece->x1, dy = piece->y2 - piece->y1;
+  double length2 = dx * dx + dy * dy;
+  if (length2 <= FP_TOLERANCE)
+    return true;
+  double t = ((x - piece->x1) * dx + (y - piece->y1) * dy) / length2;
+  double tol = MEOS_EDGE_TOLERANCE / sqrt(length2);
+  return t >= -tol && t <= 1.0 + tol;
+}
+
+/**
  * @brief Offset a chain of edges onto one boundary
  * @details Every edge is offset on the given side, and consecutive offsets are
  * joined at the vertex between them: where the chain turns away from the
@@ -3898,10 +3921,19 @@ buffer_offset_edges(const MeosArray *edges, double radius, bool left,
     if (fabs(turn) <= FP_TOLERANCE)
       continue;
     double x, y;
-    if (! buffer_pieces_meet(&pieces[i], &pieces[next], e1->x2, e1->y2, &x, &y))
+    if (! buffer_pieces_meet(&pieces[i], &pieces[next], e1->x2, e1->y2, &x, &y)
+        || ! buffer_piece_holds(&pieces[i], x, y)
+        || ! buffer_piece_holds(&pieces[next], x, y))
     {
-      pfree(pieces); pfree(join);
-      return false;
+      /* The two offsets settle the junction where they cross, and a crossing
+       * of their supports that lies beyond an offset's own end is one neither
+       * ever reaches — as is the case of an offset into a turn tighter than
+       * the buffer distance, which parts from its neighbour instead. What
+       * spans the two is then the points at the buffer distance from the
+       * vertex they turn about, which is the join the other side of a turn is
+       * given */
+      join[i] = true;
+      continue;
     }
     buffer_piece_set_end(&pieces[i], x, y);
     buffer_piece_set_start(&pieces[next], x, y);
