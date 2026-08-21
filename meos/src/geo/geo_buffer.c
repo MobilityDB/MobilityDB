@@ -1762,10 +1762,20 @@ buffer_split_point_add(BufferSplitPoint *points, uint32_t *count,
 {
   assert(points); assert(count); assert(point);
   /* Duplicate parameters correspond either to duplicate intersection
-   * nodes or to an intersection occurring at an existing endpoint */
+   * nodes or to an intersection occurring at an existing endpoint.
+   * The parameter is normalised along the piece, so the SAME node reads a
+   * parameter that differs by the distance between the two copies divided by
+   * the piece's length, which is far above the tolerance a coordinate is
+   * stored to. The points are therefore compared where they lie, at the
+   * tolerance one boundary node is placed to. The piece's own ends are added
+   * first, so a node that is one of them keeps the piece's own geometry and
+   * splits nothing off it */
+  double tol = buffer_node_tolerance(point->x, point->y);
   for (uint32_t i = 0; i < *count; i++)
   {
-    if (fabs(points[i].parameter - parameter) <= FP_TOLERANCE)
+    if (fabs(points[i].parameter - parameter) <= FP_TOLERANCE ||
+        (fabs(points[i].point.x - point->x) <= tol &&
+         fabs(points[i].point.y - point->y) <= tol))
       return;
   }
   if (*count >= capacity)
