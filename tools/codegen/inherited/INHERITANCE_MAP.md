@@ -531,6 +531,11 @@ Reading the table:
   above, for json/tjsonb (`459`) and pointcloud (`435`, one file covering both
   tpcpoint and tpcpatch). cbuffer (207), npoint (307), pose (107) and rgeo (160)
   stay hand.
+- **The point cloud index classes** live in the two files of the family:
+  `439_tpc_gist` and `440_tpc_spgist` hold the classes of `tpcbox` beside those
+  of `tpcpoint` and `tpcpatch`, as `073`/`074` hold the classes of `stbox`
+  beside the temporal spatial ones, and `438_tpc_distance` precedes them so a
+  class names the ordering operator it registers. All three stay hand.
 - The C ever/always spatial-rel **kernel** (`spatialrel_families` axis, §3) is
   generated in the **geo**, **cbuffer** and **rgeo** files (`tgeo_spatialrels.c`,
   `tcbuffer_spatialrels.c`, `trgeo_spatialrels.c`: contains/covers/disjoint/
