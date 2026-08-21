@@ -1,0 +1,49 @@
+SELECT COUNT(*) FROM tbl_tposechain t1, tbl_tposechain t2 WHERE t1.temp && t2.temp;
+ count 
+-------
+   431
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tposechain t1, tbl_tposechain t2 WHERE t1.temp @> t2.temp;
+ count 
+-------
+   406
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tposechain t1, tbl_tposechain t2 WHERE t1.temp <@ t2.temp;
+ count 
+-------
+   406
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tposechain t1, tbl_tposechain t2 WHERE t1.temp ~= t2.temp;
+ count 
+-------
+   399
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tposechain t1, tbl_tposechain t2 WHERE t1.temp -|- t2.temp;
+ count 
+-------
+   132
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tposechain t1, tbl_tposechain t2
+WHERE t1.temp @> t2.temp AND NOT (t1.temp && t2.temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tposechain WHERE NOT (temp @> temp);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tposechain WHERE NOT (temp ~= temp);
+ count 
+-------
+     0
+(1 row)
+
