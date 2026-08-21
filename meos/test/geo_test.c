@@ -135,11 +135,10 @@ int main(void)
   assert(strcmp(str_srid, "BOX3D(1 1 1,5 5 5)") == 0);
   free(str_srid); free(box_srid);
 
-  /* A geometry relationship that GEOS cannot evaluate reports the failure and
-   * answers false. GEOS rejects a collection of mixed dimensions, and under
-   * this handler the relationship returns rather than ending the process, so
-   * the value it gives is the one a language binding reads. A line far from
-   * the collection must not come back as containing it */
+  /* A pattern is matched against the native matrix, which relates a collection
+   * of mixed dimensions like any other geometry, so the answer carries no
+   * error status. A line far from the collection does not meet it, and a line
+   * through it meets it in their interiors */
   GSERIALIZED *coll = geom_in(
     "GeometryCollection(Point(0 0),Linestring(2 2,3 3))", -1);
   assert(coll != NULL);
@@ -152,9 +151,7 @@ int main(void)
   printf("geom_relate_pattern(away, collection): %d, errno %d\n", rel,
     rel_errno);
   assert(rel == false);
-  assert(rel_errno != 0);
-  /* A pair GEOS does evaluate keeps its answer: a line through the collection
-   * meets it in their interiors */
+  assert(rel_errno == 0);
   GSERIALIZED *through = geom_in("Linestring(0 0,3 3)", -1);
   assert(through != NULL);
   meos_errno_reset();
@@ -164,7 +161,19 @@ int main(void)
     errno_ok);
   assert(rel_ok == true);
   assert(errno_ok == 0);
-  free(coll); free(away); free(through);
+  /* A geometry the edge decomposition does not reach reports the failure and
+   * answers false, so the value a language binding reads is the safe one */
+  GSERIALIZED *tin = geom_in(
+    "Tin(((0 0,0 1,1 1,0 0)),((0 0,1 0,1 1,0 0)))", -1);
+  assert(tin != NULL);
+  meos_errno_reset();
+  bool rel_tin = geom_relate_pattern(through, tin, patt);
+  int errno_tin = meos_errno();
+  printf("geom_relate_pattern(line, tin): %d, errno %d\n", rel_tin,
+    errno_tin);
+  assert(rel_tin == false);
+  assert(errno_tin != 0);
+  free(coll); free(away); free(through); free(tin);
   meos_errno_reset();
 
   /* Equality is read from the native DE-9IM matrix, so two circular strings

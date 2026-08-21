@@ -1,7 +1,7 @@
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry WHERE eContains(g, temp);
  count 
 -------
-  1606
+  1605
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry WHERE aContains(g, temp);
@@ -13,7 +13,7 @@ SELECT COUNT(*) FROM tbl_geometry, tbl_tgeometry WHERE aContains(g, temp);
 SELECT COUNT(*) FROM tbl_tgeometry, tbl_geometry WHERE eContains(temp, g);
  count 
 -------
-  1606
+  1605
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeometry, tbl_geometry WHERE aContains(temp, g);
