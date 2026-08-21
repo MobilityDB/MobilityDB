@@ -138,3 +138,21 @@ SELECT tposechain 'PoseChain(Pose(Point(0 0), 0))@2000-01-01' <> tposechain 'Pos
  t
 (1 row)
 
+SELECT stbox(tposechain 'PoseChain(Pose(Point(1 2), 0), Pose(Point(3 4), 0))@2000-01-01');
+                                        stbox                                         
+--------------------------------------------------------------------------------------
+ STBOX XT(((1,2),(4,6)),[Sat Jan 01 00:00:00 2000 PST, Sat Jan 01 00:00:00 2000 PST])
+(1 row)
+
+SELECT stbox(tposechain '{PoseChain(Pose(Point(1 2), 0))@2000-01-01, PoseChain(Pose(Point(5 6), 0))@2000-01-02}');
+                                        stbox                                         
+--------------------------------------------------------------------------------------
+ STBOX XT(((1,2),(5,6)),[Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST])
+(1 row)
+
+SELECT stbox(tposechain '[PoseChain(Pose(Point(1 2), 0))@2000-01-01, PoseChain(Pose(Point(5 6), 0))@2000-01-02]');
+                                        stbox                                         
+--------------------------------------------------------------------------------------
+ STBOX XT(((1,2),(5,6)),[Sat Jan 01 00:00:00 2000 PST, Sun Jan 02 00:00:00 2000 PST])
+(1 row)
+
