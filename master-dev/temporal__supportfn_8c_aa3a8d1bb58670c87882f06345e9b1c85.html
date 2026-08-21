@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: temporal_get_strategy_by_type</title>
+<title>MobilityDB: TIME_PORTABLE_FUNCTIONS</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -87,12 +87,12 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="temporal__supportfn_8c_a57f3ae8e34303c65778a3ee2f4c8c1d4.html#a57f3ae8e34303c65778a3ee2f4c8c1d4">makeExpandExpr</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__supportfn_8c_a3fea779055d0d1c835c18ceff59af1be.html#a3fea779055d0d1c835c18ceff59af1be">opFamilyAmOid</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__supportfn_8c_ad5071cfb49a32468d806562e0fdc9f0e.html#ad5071cfb49a32468d806562e0fdc9f0e">TEMPORAL_FUNCTION_IDX</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="temporal__supportfn_8c_a547ce337eee9c0aa31571b262fcf6393.html#a547ce337eee9c0aa31571b262fcf6393">temporal_get_strategy_by_type</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="temporal__supportfn_8c_a547ce337eee9c0aa31571b262fcf6393.html#a547ce337eee9c0aa31571b262fcf6393">temporal_get_strategy_by_type</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__supportfn_8c_a47f99a7cb968ec794ed104c6797bc7fb.html#a47f99a7cb968ec794ed104c6797bc7fb">temporal_supportfn</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__supportfn_8c_aa171f238e2f0f795475f3a389b801e75.html#aa171f238e2f0f795475f3a389b801e75">Temporal_supportfn</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__supportfn_8c_a234fac74c977494055fe1a1e979f62e9.html#a234fac74c977494055fe1a1e979f62e9">TemporalIndexableFunctions</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__supportfn_8c_a4301edbdafb3871ce119fd63c9df36aa.html#a4301edbdafb3871ce119fd63c9df36aa">TemporalStrategies</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="temporal__supportfn_8c_aa3a8d1bb58670c87882f06345e9b1c85.html#aa3a8d1bb58670c87882f06345e9b1c85">TIME_PORTABLE_FUNCTIONS</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="temporal__supportfn_8c_aa3a8d1bb58670c87882f06345e9b1c85.html#aa3a8d1bb58670c87882f06345e9b1c85">TIME_PORTABLE_FUNCTIONS</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__supportfn_8c_a3479f571afc397d237635fac19b3c672.html#a3479f571afc397d237635fac19b3c672">TIME_PORTABLE_STRATEGIES</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__supportfn_8c_abdad451ea831adc74c90739145761903.html#abdad451ea831adc74c90739145761903">Tnumber_supportfn</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__supportfn_8c_a1c34446963389da7cd6587e4a13fcab4.html#a1c34446963389da7cd6587e4a13fcab4">TNumberIndexableFunctions</a></td></tr>
@@ -105,40 +105,36 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a547ce337eee9c0aa31571b262fcf6393" name="a547ce337eee9c0aa31571b262fcf6393"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a547ce337eee9c0aa31571b262fcf6393">&#9670;&#160;</a></span>temporal_get_strategy_by_type()</h2>
+<a id="aa3a8d1bb58670c87882f06345e9b1c85" name="aa3a8d1bb58670c87882f06345e9b1c85"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa3a8d1bb58670c87882f06345e9b1c85">&#9670;&#160;</a></span>TIME_PORTABLE_FUNCTIONS</h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static <a class="el" href="postgres__ext__defs_8in_8h_a259fa4834387bd68627ddf37bb3ebdb9.html#a259fa4834387bd68627ddf37bb3ebdb9">int16</a> temporal_get_strategy_by_type </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a05df1d1fd2c829ee784b125ed34e8401.html#a05df1d1fd2c829ee784b125ed34e8401">MeosType</a>&#160;</td>
-          <td class="paramname"><em>temptype</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">uint16_t&#160;</td>
-          <td class="paramname"><em>index</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
+          <td class="memname">#define TIME_PORTABLE_FUNCTIONS</td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
-
+<b>Value:</b><div class="fragment"><div class="line">  {<span class="stringliteral">&quot;overlaps&quot;</span>, <a class="code hl_enumvalue" href="temporal__supportfn_8c_ad5071cfb49a32468d806562e0fdc9f0e.html#ad5071cfb49a32468d806562e0fdc9f0ea93fa5d4b3c7b9615603b02100d527707">OVERLAPS_IDX</a>, 2, 0}, \</div>
+<div class="line">  {<span class="stringliteral">&quot;contains&quot;</span>, <a class="code hl_enumvalue" href="temporal__supportfn_8c_ad5071cfb49a32468d806562e0fdc9f0e.html#ad5071cfb49a32468d806562e0fdc9f0ea3f0ef46e1561c5919087f360a201e11b">CONTAINS_IDX</a>, 2, 0}, \</div>
+<div class="line">  {<span class="stringliteral">&quot;contained&quot;</span>, <a class="code hl_enumvalue" href="temporal__supportfn_8c_ad5071cfb49a32468d806562e0fdc9f0e.html#ad5071cfb49a32468d806562e0fdc9f0ea49be039696f7950e01b70c0890acc4ea">CONTAINED_IDX</a>, 2, 0}, \</div>
+<div class="line">  {<span class="stringliteral">&quot;adjacent&quot;</span>, <a class="code hl_enumvalue" href="temporal__supportfn_8c_ad5071cfb49a32468d806562e0fdc9f0e.html#ad5071cfb49a32468d806562e0fdc9f0ea79824fa0467961bbf8379a8f0e0c309a">ADJACENT_IDX</a>, 2, 0}, \</div>
+<div class="line">  {<span class="stringliteral">&quot;same&quot;</span>, <a class="code hl_enumvalue" href="temporal__supportfn_8c_ad5071cfb49a32468d806562e0fdc9f0e.html#ad5071cfb49a32468d806562e0fdc9f0eadac68b146a1466d2c6301c36f78fba61">SAME_IDX</a>, 2, 0}, \</div>
+<div class="line">  {<span class="stringliteral">&quot;before&quot;</span>, <a class="code hl_enumvalue" href="temporal__supportfn_8c_ad5071cfb49a32468d806562e0fdc9f0e.html#ad5071cfb49a32468d806562e0fdc9f0ea778d2d9d7b578d5e60d672b3e7d176a4">BEFORE_IDX</a>, 2, 0}, \</div>
+<div class="line">  {<span class="stringliteral">&quot;overbefore&quot;</span>, <a class="code hl_enumvalue" href="temporal__supportfn_8c_ad5071cfb49a32468d806562e0fdc9f0e.html#ad5071cfb49a32468d806562e0fdc9f0ea1135e2a708aeefb7876ee66b51ef56d6">OVERBEFORE_IDX</a>, 2, 0}, \</div>
+<div class="line">  {<span class="stringliteral">&quot;after&quot;</span>, <a class="code hl_enumvalue" href="temporal__supportfn_8c_ad5071cfb49a32468d806562e0fdc9f0e.html#ad5071cfb49a32468d806562e0fdc9f0eaf7bc215c6af5746407b9bdb30324b00c">AFTER_IDX</a>, 2, 0}, \</div>
+<div class="line">  {<span class="stringliteral">&quot;overafter&quot;</span>, <a class="code hl_enumvalue" href="temporal__supportfn_8c_ad5071cfb49a32468d806562e0fdc9f0e.html#ad5071cfb49a32468d806562e0fdc9f0eaa0d59c3482c57120a9aa36d2137a2ae5">OVERAFTER_IDX</a>, 2, 0}</div>
+<div class="ttc" id="atemporal__supportfn_8c_ad5071cfb49a32468d806562e0fdc9f0e_html_ad5071cfb49a32468d806562e0fdc9f0ea1135e2a708aeefb7876ee66b51ef56d6"><div class="ttname"><a href="temporal__supportfn_8c_ad5071cfb49a32468d806562e0fdc9f0e.html#ad5071cfb49a32468d806562e0fdc9f0ea1135e2a708aeefb7876ee66b51ef56d6">OVERBEFORE_IDX</a></div><div class="ttdeci">@ OVERBEFORE_IDX</div><div class="ttdef"><b>Definition:</b> temporal_supportfn.c:100</div></div>
+<div class="ttc" id="atemporal__supportfn_8c_ad5071cfb49a32468d806562e0fdc9f0e_html_ad5071cfb49a32468d806562e0fdc9f0ea3f0ef46e1561c5919087f360a201e11b"><div class="ttname"><a href="temporal__supportfn_8c_ad5071cfb49a32468d806562e0fdc9f0e.html#ad5071cfb49a32468d806562e0fdc9f0ea3f0ef46e1561c5919087f360a201e11b">CONTAINS_IDX</a></div><div class="ttdeci">@ CONTAINS_IDX</div><div class="ttdef"><b>Definition:</b> temporal_supportfn.c:95</div></div>
+<div class="ttc" id="atemporal__supportfn_8c_ad5071cfb49a32468d806562e0fdc9f0e_html_ad5071cfb49a32468d806562e0fdc9f0ea49be039696f7950e01b70c0890acc4ea"><div class="ttname"><a href="temporal__supportfn_8c_ad5071cfb49a32468d806562e0fdc9f0e.html#ad5071cfb49a32468d806562e0fdc9f0ea49be039696f7950e01b70c0890acc4ea">CONTAINED_IDX</a></div><div class="ttdeci">@ CONTAINED_IDX</div><div class="ttdef"><b>Definition:</b> temporal_supportfn.c:96</div></div>
+<div class="ttc" id="atemporal__supportfn_8c_ad5071cfb49a32468d806562e0fdc9f0e_html_ad5071cfb49a32468d806562e0fdc9f0ea778d2d9d7b578d5e60d672b3e7d176a4"><div class="ttname"><a href="temporal__supportfn_8c_ad5071cfb49a32468d806562e0fdc9f0e.html#ad5071cfb49a32468d806562e0fdc9f0ea778d2d9d7b578d5e60d672b3e7d176a4">BEFORE_IDX</a></div><div class="ttdeci">@ BEFORE_IDX</div><div class="ttdef"><b>Definition:</b> temporal_supportfn.c:99</div></div>
+<div class="ttc" id="atemporal__supportfn_8c_ad5071cfb49a32468d806562e0fdc9f0e_html_ad5071cfb49a32468d806562e0fdc9f0ea79824fa0467961bbf8379a8f0e0c309a"><div class="ttname"><a href="temporal__supportfn_8c_ad5071cfb49a32468d806562e0fdc9f0e.html#ad5071cfb49a32468d806562e0fdc9f0ea79824fa0467961bbf8379a8f0e0c309a">ADJACENT_IDX</a></div><div class="ttdeci">@ ADJACENT_IDX</div><div class="ttdef"><b>Definition:</b> temporal_supportfn.c:97</div></div>
+<div class="ttc" id="atemporal__supportfn_8c_ad5071cfb49a32468d806562e0fdc9f0e_html_ad5071cfb49a32468d806562e0fdc9f0ea93fa5d4b3c7b9615603b02100d527707"><div class="ttname"><a href="temporal__supportfn_8c_ad5071cfb49a32468d806562e0fdc9f0e.html#ad5071cfb49a32468d806562e0fdc9f0ea93fa5d4b3c7b9615603b02100d527707">OVERLAPS_IDX</a></div><div class="ttdeci">@ OVERLAPS_IDX</div><div class="ttdef"><b>Definition:</b> temporal_supportfn.c:94</div></div>
+<div class="ttc" id="atemporal__supportfn_8c_ad5071cfb49a32468d806562e0fdc9f0e_html_ad5071cfb49a32468d806562e0fdc9f0eaa0d59c3482c57120a9aa36d2137a2ae5"><div class="ttname"><a href="temporal__supportfn_8c_ad5071cfb49a32468d806562e0fdc9f0e.html#ad5071cfb49a32468d806562e0fdc9f0eaa0d59c3482c57120a9aa36d2137a2ae5">OVERAFTER_IDX</a></div><div class="ttdeci">@ OVERAFTER_IDX</div><div class="ttdef"><b>Definition:</b> temporal_supportfn.c:102</div></div>
+<div class="ttc" id="atemporal__supportfn_8c_ad5071cfb49a32468d806562e0fdc9f0e_html_ad5071cfb49a32468d806562e0fdc9f0eadac68b146a1466d2c6301c36f78fba61"><div class="ttname"><a href="temporal__supportfn_8c_ad5071cfb49a32468d806562e0fdc9f0e.html#ad5071cfb49a32468d806562e0fdc9f0eadac68b146a1466d2c6301c36f78fba61">SAME_IDX</a></div><div class="ttdeci">@ SAME_IDX</div><div class="ttdef"><b>Definition:</b> temporal_supportfn.c:98</div></div>
+<div class="ttc" id="atemporal__supportfn_8c_ad5071cfb49a32468d806562e0fdc9f0e_html_ad5071cfb49a32468d806562e0fdc9f0eaf7bc215c6af5746407b9bdb30324b00c"><div class="ttname"><a href="temporal__supportfn_8c_ad5071cfb49a32468d806562e0fdc9f0e.html#ad5071cfb49a32468d806562e0fdc9f0eaf7bc215c6af5746407b9bdb30324b00c">AFTER_IDX</a></div><div class="ttdeci">@ AFTER_IDX</div><div class="ttdef"><b>Definition:</b> temporal_supportfn.c:101</div></div>
+</div><!-- fragment -->
 </div>
 </div>
     </td>
