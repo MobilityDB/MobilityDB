@@ -1258,6 +1258,26 @@ buffer_components_relation(const LWGEOM *geom1, const LWGEOM *geom2)
  *****************************************************************************/
 
 /**
+ * @brief Return how far apart two computations of ONE boundary node may lie
+ * @details Where two boundaries meet at a shallow angle their crossing is
+ * ill-conditioned: moving either curve by the rounding of its own arithmetic
+ * moves the crossing by the SQUARE ROOT of that rounding, so two routes to the
+ * same node — one boundary's arc against the other's offset, and the mirror of
+ * it — answer points that far apart. Deduplicating a node set at the tolerance
+ * a coordinate is STORED to therefore keeps one node twice, and the piece
+ * between the two copies is a sliver belonging to no boundary.
+ */
+static double
+buffer_node_tolerance(double x, double y)
+{
+  /* The square root of the double epsilon, scaled by the coordinates, and
+   * never below the tolerance an exactly computed node is placed to */
+  double scale = Max(fabs(x), fabs(y));
+  double tol = 5.0e-8 * Max(scale, 1.0);
+  return Max(tol, MEOS_EDGE_TOLERANCE);
+}
+
+/**
  * @brief Add an intersection point to an array.
  * @details Duplicate points are ignored. This is important because
  * adjacent buffer segments may report the same topological node.
@@ -1270,8 +1290,8 @@ buffer_intersections_add(MeosArray *array, double x, double y)
   for (uint32_t i = 0; i < array->count; i++)
   {
     const POINT2D *point = (POINT2D *) meos_array_get(array, i);
-    if (fabs(point->x - x) <= FP_TOLERANCE && 
-        fabs(point->y - y) <= FP_TOLERANCE)
+    double tol = buffer_node_tolerance(x, y);
+    if (fabs(point->x - x) <= tol && fabs(point->y - y) <= tol)
       return;
   }
   POINT2D new;
@@ -1290,7 +1310,8 @@ buffer_add_intersection_point(MeosArray *points, double x, double y)
   for (uint32_t i = 0; i < points->count; i++)
   {
     const POINT2D *p = (const POINT2D *) meos_array_get(points, i);
-    if (fabs(p->x - x) <= FP_TOLERANCE && fabs(p->y - y) <= FP_TOLERANCE)
+    double tol = buffer_node_tolerance(x, y);
+    if (fabs(p->x - x) <= tol && fabs(p->y - y) <= tol)
       return;
   }
   POINT2D point;
