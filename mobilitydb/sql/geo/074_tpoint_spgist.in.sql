@@ -80,6 +80,12 @@ CREATE OPERATOR CLASS stbox_quadtree_ops
   OPERATOR  17    -|- (stbox, stbox),
   OPERATOR  17    -|- (stbox, tgeompoint),
   OPERATOR  17    -|- (stbox, tgeogpoint),
+  -- nearest approach distance
+  OPERATOR  25    |=| (stbox, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (stbox, tgeompoint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (stbox, tgeogpoint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (stbox, geometry) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (stbox, geography) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# (stbox, stbox),
   OPERATOR  28    &<# (stbox, tgeompoint),
@@ -163,6 +169,12 @@ CREATE OPERATOR CLASS stbox_kdtree_ops
   OPERATOR  17    -|- (stbox, stbox),
   OPERATOR  17    -|- (stbox, tgeompoint),
   OPERATOR  17    -|- (stbox, tgeogpoint),
+  -- nearest approach distance
+  OPERATOR  25    |=| (stbox, stbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (stbox, tgeompoint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (stbox, tgeogpoint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (stbox, geometry) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (stbox, geography) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# (stbox, stbox),
   OPERATOR  28    &<# (stbox, tgeompoint),
