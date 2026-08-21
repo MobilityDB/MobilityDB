@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: set</title>
+<title>MobilityDB: ensure_valid_tposechain_stbox</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="meos_2src_2posechain_2CMakeLists_8txt.html">CMakeLists.txt</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_0fff62ca9c7e6b49d869dbbeba2dc9ed.html">meos</a></li><li class="navelem"><a class="el" href="dir_87ff05107218c94eb54c7d49f556ada2.html">include</a></li><li class="navelem"><a class="el" href="dir_9457815a54cfd7bd4d53ce11fc83d300.html">posechain</a></li><li class="navelem"><a class="el" href="tposechain_8h.html">tposechain.h</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,26 +79,44 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2posechain_2CMakeLists_8txt_a9fdd75a707f07228e86976ad6f55c00f.html#a9fdd75a707f07228e86976ad6f55c00f">set</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tposechain_8h_a11e29826ce8c811623fbfc07969792e4.html#a11e29826ce8c811623fbfc07969792e4">ensure_same_count_tposechaininst</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tposechain_8h_ab15cd4613f52f471dca06778ab82f9b1.html#ab15cd4613f52f471dca06778ab82f9b1">ensure_valid_tposechain_geo</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tposechain_8h_a1b65f03850cef88f7d2c22c4fea3fc8e.html#a1b65f03850cef88f7d2c22c4fea3fc8e">ensure_valid_tposechain_posechain</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="tposechain_8h_a5c85193b805f62e26ec92c005978d428.html#a5c85193b805f62e26ec92c005978d428">ensure_valid_tposechain_stbox</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tposechain_8h_a8b1dd7a220c3b7a41d5c3a993d61c71f.html#a8b1dd7a220c3b7a41d5c3a993d61c71f">ensure_valid_tposechain_tposechain</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tposechain_8h_a9dd1eeb89371af7b4e9f9da0a84536ec.html#a9dd1eeb89371af7b4e9f9da0a84536ec">tposechainsegm_intersection</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tposechain_8h_ac57327b8ff475660b10e559fd615ebe7.html#ac57327b8ff475660b10e559fd615ebe7">tposechainsegm_intersection_value</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a9fdd75a707f07228e86976ad6f55c00f" name="a9fdd75a707f07228e86976ad6f55c00f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9fdd75a707f07228e86976ad6f55c00f">&#9670;&#160;</a></span>set()</h2>
+<a id="a5c85193b805f62e26ec92c005978d428" name="a5c85193b805f62e26ec92c005978d428"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5c85193b805f62e26ec92c005978d428">&#9670;&#160;</a></span>ensure_valid_tposechain_stbox()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">set </td>
+          <td class="memname">bool ensure_valid_tposechain_stbox </td>
           <td>(</td>
-          <td class="paramtype">POSECHAIN_SOURCES posechain.&#160;</td>
-          <td class="paramname"><em>c</em></td><td>)</td>
+          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
+          <td class="paramname"><em>temp</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">const <a class="el" href="structSTBox.html">STBox</a> *&#160;</td>
+          <td class="paramname"><em>box</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Ensure the validity of a temporal pose chain and a spatiotemporal box. </p>
 
 </div>
 </div>
