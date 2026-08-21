@@ -583,10 +583,15 @@ stbox_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
       /* Report that all nodes should be visited */
       out->nNodes = in->nNodes;
       out->nodeNumbers = palloc(sizeof(int) * in->nNodes);
+      if (in->norderbys > 0)
+      {
+        out->traversalValues = palloc(sizeof(void *) * in->nNodes);
+        out->distances = palloc(sizeof(double *) * in->nNodes);
+      }
       for (i = 0; i < in->nNodes; i++)
       {
         out->nodeNumbers[i] = i;
-        if (in->norderbys > 0 && in->nNodes > 0)
+        if (in->norderbys > 0)
         {
           /* Use parent node box as traversalValue */
           old_ctx = MemoryContextSwitchTo(in->traversalMemoryContext);
@@ -597,11 +602,12 @@ stbox_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
           double *distances = palloc0(sizeof(double) * in->norderbys);
           out->distances[i] = distances;
           for (int j = 0; j < in->norderbys; j++)
-            distances[j] = distance_stbox_nodebox(&orderbys[i], nodebox);
-
-          pfree(orderbys);
+            distances[j] = distance_stbox_nodebox(&orderbys[j], nodebox);
         }
       }
+
+      if (in->norderbys > 0)
+        pfree(orderbys);
 
       PG_RETURN_VOID();
     }

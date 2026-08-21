@@ -1984,3 +1984,23 @@ SELECT temp |=| tbigint '[1@2001-06-01, 2@2001-07-01]' FROM tbl_tbigint_big ORDE
 DROP INDEX tbl_tbigint_big_kdtree_idx;
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- A quad-tree node whose children are all the same computes one ordering
+-- distance per ordering key from the parent node box. A table of identical
+-- values is what builds such a node.
+-------------------------------------------------------------------------------
+
+CREATE TABLE tbl_tfloat_allthesame AS
+  SELECT k, tfloat '5.5@2001-01-01' AS temp FROM generate_series(1, 1000) k;
+CREATE INDEX tbl_tfloat_allthesame_quadtree_idx ON tbl_tfloat_allthesame
+  USING SPGIST(temp);
+ANALYZE tbl_tfloat_allthesame;
+
+SET enable_seqscan = off;
+SELECT temp |=| tfloat '1.5@2001-01-01' FROM tbl_tfloat_allthesame ORDER BY 1 LIMIT 3;
+RESET enable_seqscan;
+
+DROP TABLE tbl_tfloat_allthesame;
+
+-------------------------------------------------------------------------------

@@ -973,3 +973,29 @@ ANALYZE tbl_tgeompoint3D_big_allthesame;
 ANALYZE
 DROP TABLE tbl_tgeompoint3D_big_allthesame;
 DROP TABLE
+CREATE TABLE tbl_tgeompoint_allthesame AS
+  SELECT k, tgeompoint 'Point(5 5)@2001-01-01' AS temp
+  FROM generate_series(1, 1000) k;
+SELECT 1000
+CREATE INDEX tbl_tgeompoint_allthesame_quadtree_idx ON tbl_tgeompoint_allthesame
+  USING SPGIST(temp);
+CREATE INDEX
+ANALYZE tbl_tgeompoint_allthesame;
+ANALYZE
+SET enable_seqscan = off;
+SET
+WITH test AS (
+  SELECT temp |=| geometry 'Point(0 0)' AS distance
+  FROM tbl_tgeompoint_allthesame ORDER BY 1 LIMIT 3 )
+SELECT round(distance, 6) FROM test;
+  round   
+----------
+ 7.071068
+ 7.071068
+ 7.071068
+(3 rows)
+
+RESET enable_seqscan;
+RESET
+DROP TABLE tbl_tgeompoint_allthesame;
+DROP TABLE

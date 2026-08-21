@@ -1211,3 +1211,25 @@ ORDER BY op, leftarg, rightarg;
 
 DROP TABLE test_idxops;
 DROP TABLE
+CREATE TABLE tbl_tstzspan_allthesame AS
+  SELECT k, tstzspan '[2001-01-01, 2001-01-02]' AS t FROM generate_series(1, 1000) k;
+SELECT 1000
+CREATE INDEX tbl_tstzspan_allthesame_quadtree_idx ON tbl_tstzspan_allthesame
+  USING SPGIST(t);
+CREATE INDEX
+ANALYZE tbl_tstzspan_allthesame;
+ANALYZE
+SET enable_seqscan = off;
+SET
+SELECT t <-> timestamptz '2001-06-01' FROM tbl_tstzspan_allthesame ORDER BY 1 LIMIT 3;
+ ?column? 
+----------
+ 12956400
+ 12956400
+ 12956400
+(3 rows)
+
+RESET enable_seqscan;
+RESET
+DROP TABLE tbl_tstzspan_allthesame;
+DROP TABLE

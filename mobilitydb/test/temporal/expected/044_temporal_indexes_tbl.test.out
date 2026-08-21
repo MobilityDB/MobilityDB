@@ -2621,3 +2621,25 @@ SELECT temp |=| tbigint '[1@2001-06-01, 2@2001-07-01]' FROM tbl_tbigint_big ORDE
 
 DROP INDEX tbl_tbigint_big_kdtree_idx;
 DROP INDEX
+CREATE TABLE tbl_tfloat_allthesame AS
+  SELECT k, tfloat '5.5@2001-01-01' AS temp FROM generate_series(1, 1000) k;
+SELECT 1000
+CREATE INDEX tbl_tfloat_allthesame_quadtree_idx ON tbl_tfloat_allthesame
+  USING SPGIST(temp);
+CREATE INDEX
+ANALYZE tbl_tfloat_allthesame;
+ANALYZE
+SET enable_seqscan = off;
+SET
+SELECT temp |=| tfloat '1.5@2001-01-01' FROM tbl_tfloat_allthesame ORDER BY 1 LIMIT 3;
+ ?column? 
+----------
+        4
+        4
+        4
+(3 rows)
+
+RESET enable_seqscan;
+RESET
+DROP TABLE tbl_tfloat_allthesame;
+DROP TABLE
