@@ -838,6 +838,75 @@ buffer_union_crossing(const LWGEOM *geom1, const LWGEOM *geom2,
   bool *touching);
 
 /**
+ * @brief Return whether a geometry covers a hole of another one
+ * @details A hole is not part of the surface carrying it, so a geometry that
+ * covers one adds area to it. Where the two boundaries do not cross, one point
+ * of the hole's own ring says where the whole ring lies, and a hole the inner
+ * geometry reaches at all is a hole it contains entirely.
+ */
+static bool
+buffer_covers_hole(const LWGEOM *hole, const LWGEOM *inner)
+{
+  assert(hole); assert(inner);
+  double hx, hy;
+  if (! buffer_areal_representative_point(hole, &hx, &hy))
+    return false;
+  return buffer_areal_contains_point(inner, hx, hy);
+}
+
+/**
+ * @brief Return a surface with every hole another geometry fills removed
+ * @details The union of a surface with one that lies inside it is the surface
+ * itself, except where the inner one covers a hole: the hole belongs to
+ * neither until then, and covering it joins it to the surface around it. The
+ * inner geometry's boundary does not cross the outer one's, so it contains
+ * every hole it reaches, and dropping that hole's ring is the whole of the
+ * union.
+ * @return A deep copy of @p outer carrying only the holes @p inner leaves
+ * empty, and NULL where @p outer is not a surface this understands
+ */
+static LWGEOM *
+buffer_outer_without_filled_holes(const LWGEOM *outer, const LWGEOM *inner,
+  int32_t srid)
+{
+  assert(outer); assert(inner);
+  if (outer->type == MULTISURFACETYPE || outer->type == COLLECTIONTYPE)
+  {
+    const LWCOLLECTION *col = (const LWCOLLECTION *) outer;
+    LWCOLLECTION *result = lwcollection_construct_empty(outer->type, srid,
+      0, 0);
+    for (uint32_t i = 0; i < col->ngeoms; i++)
+    {
+      LWGEOM *part = col->geoms[i] ?
+        buffer_outer_without_filled_holes(col->geoms[i], inner, srid) : NULL;
+      if (! part)
+      {
+        lwgeom_free(lwcollection_as_lwgeom(result));
+        return NULL;
+      }
+      lwcollection_add_lwgeom(result, part);
+    }
+    return lwcollection_as_lwgeom(result);
+  }
+  if (outer->type == CURVEPOLYTYPE)
+  {
+    const LWCURVEPOLY *poly = (const LWCURVEPOLY *) outer;
+    if (poly->nrings == 0)
+      return lwgeom_clone_deep(outer);
+    LWCURVEPOLY *result = lwcurvepoly_construct_empty(srid, 0, 0);
+    lwcurvepoly_add_ring(result, lwgeom_clone_deep(poly->rings[0]));
+    for (uint32_t i = 1; i < poly->nrings; i++)
+    {
+      if (! poly->rings[i] || buffer_covers_hole(poly->rings[i], inner))
+        continue;
+      lwcurvepoly_add_ring(result, lwgeom_clone_deep(poly->rings[i]));
+    }
+    return lwcurvepoly_as_lwgeom(result);
+  }
+  return NULL;
+}
+
+/**
  * @brief Return the union of two areal geometries for the
  * disjoint/containment cases.
  * @details The following cases are handled exactly:
@@ -855,12 +924,19 @@ buffer_areal_union_simple(const LWGEOM *geom1, const LWGEOM *geom2,
   assert(geom1); assert(geom2); assert(touching);
   *touching = false;
 
-  /* A contains B */
+  /* One inside the other: the answer is the outer surface, and the holes of
+   * it that the inner one covers are joined to the surface around them */
+  int32_t srid = lwgeom_get_srid(geom1);
   if (buffer_areal_contains(geom1, geom2))
-    return lwgeom_clone_deep(geom1);
-  /* B contains A */
+  {
+    LWGEOM *filled = buffer_outer_without_filled_holes(geom1, geom2, srid);
+    return filled ? filled : lwgeom_clone_deep(geom1);
+  }
   if (buffer_areal_contains(geom2, geom1))
-    return lwgeom_clone_deep(geom2);
+  {
+    LWGEOM *filled = buffer_outer_without_filled_holes(geom2, geom1, srid);
+    return filled ? filled : lwgeom_clone_deep(geom2);
+  }
 
   /* If the boundaries do not intersect, the geometries are disjoint */
   if (! buffer_geometries_intersect(geom1, geom2))
