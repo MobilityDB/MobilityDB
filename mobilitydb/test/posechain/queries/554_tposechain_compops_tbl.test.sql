@@ -47,11 +47,14 @@ WHERE (t1.temp < t2.temp)::int + (t1.temp = t2.temp)::int + (t1.temp > t2.temp):
 -- Ever and always comparison against a value
 -------------------------------------------------------------------------------
 
--- A comparison reaches the operator only where the two chains hold the same
--- number of links, an operation across differing counts being refused
+-- A chain of another length is simply not equal, so the whole cross join
+-- answers rather than refusing the pairs whose counts differ
+SELECT COUNT(*) FROM tbl_tposechain t1, tbl_posechain t2 WHERE t1.temp ?= t2.pc;
+SELECT COUNT(*) FROM tbl_tposechain t1, tbl_posechain t2 WHERE t1.temp %= t2.pc;
+
+-- The join does span differing counts, so the answers above are false rather
+-- than absent
 SELECT COUNT(*) FROM tbl_tposechain t1, tbl_posechain t2
-WHERE numPoses(t2.pc) = numLinks(t1.temp) AND t1.temp ?= t2.pc;
-SELECT COUNT(*) FROM tbl_tposechain t1, tbl_posechain t2
-WHERE numPoses(t2.pc) = numLinks(t1.temp) AND t1.temp %= t2.pc;
+WHERE numPoses(t2.pc) <> numLinks(t1.temp);
 
 -------------------------------------------------------------------------------

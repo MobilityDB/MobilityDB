@@ -50,6 +50,19 @@ SELECT tposechain '[PoseChain(Pose(Point(0 0), 0))@2000-01-01, PoseChain(Pose(Po
 SELECT tposechain '{PoseChain(Pose(Point(0 0), 0))@2000-01-01, PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))@2000-01-02}';
 
 -------------------------------------------------------------------------------
+-- Comparison against a chain of another length
+-- A chain that holds another number of links is a different value, so a
+-- comparison against it answers false rather than refusing the question.
+-------------------------------------------------------------------------------
+
+SELECT tposechain 'PoseChain(Pose(Point(0 0), 0))@2000-01-01' ?= posechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))';
+SELECT tposechain '[PoseChain(Pose(Point(0 0), 0))@2000-01-01, PoseChain(Pose(Point(1 1), 0))@2000-01-02]' ?= posechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))';
+SELECT tposechain '[PoseChain(Pose(Point(0 0), 0))@2000-01-01, PoseChain(Pose(Point(1 1), 0))@2000-01-02]' %= posechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))';
+SELECT posechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))' ?= tposechain '[PoseChain(Pose(Point(0 0), 0))@2000-01-01, PoseChain(Pose(Point(1 1), 0))@2000-01-02]';
+-- The same chain still compares equal where the lengths agree
+SELECT tposechain '[PoseChain(Pose(Point(0 0), 0))@2000-01-01, PoseChain(Pose(Point(1 1), 0))@2000-01-02]' ?= posechain 'PoseChain(Pose(Point(0 0), 0))';
+
+-------------------------------------------------------------------------------
 -- Interpolation
 -- Every link interpolates as a pose does, linearly in position and along the
 -- shortest arc in rotation.

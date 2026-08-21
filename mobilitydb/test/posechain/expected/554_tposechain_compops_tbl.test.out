@@ -41,17 +41,22 @@ WHERE (t1.temp < t2.temp)::int + (t1.temp = t2.temp)::int + (t1.temp > t2.temp):
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_tposechain t1, tbl_posechain t2
-WHERE numPoses(t2.pc) = numLinks(t1.temp) AND t1.temp ?= t2.pc;
+SELECT COUNT(*) FROM tbl_tposechain t1, tbl_posechain t2 WHERE t1.temp ?= t2.pc;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tposechain t1, tbl_posechain t2 WHERE t1.temp %= t2.pc;
  count 
 -------
      0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tposechain t1, tbl_posechain t2
-WHERE numPoses(t2.pc) = numLinks(t1.temp) AND t1.temp %= t2.pc;
+WHERE numPoses(t2.pc) <> numLinks(t1.temp);
  count 
 -------
-     0
+ 63443
 (1 row)
 
