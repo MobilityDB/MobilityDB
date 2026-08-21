@@ -109,3 +109,15 @@ SELECT tposechain 'PoseChain(Pose(Point(0 0), 0))@2000-01-01' = tposechain 'Pose
 SELECT tposechain 'PoseChain(Pose(Point(0 0), 0))@2000-01-01' <> tposechain 'PoseChain(Pose(Point(1 1), 0))@2000-01-01';
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- Bounding box
+-- The box of a chain covers the composed position of every prefix, so an
+-- instant carries the reach of the whole chain and not only of its last link
+-------------------------------------------------------------------------------
+
+SELECT stbox(tposechain 'PoseChain(Pose(Point(1 2), 0), Pose(Point(3 4), 0))@2000-01-01');
+SELECT stbox(tposechain '{PoseChain(Pose(Point(1 2), 0))@2000-01-01, PoseChain(Pose(Point(5 6), 0))@2000-01-02}');
+SELECT stbox(tposechain '[PoseChain(Pose(Point(1 2), 0))@2000-01-01, PoseChain(Pose(Point(5 6), 0))@2000-01-02]');
+
+-------------------------------------------------------------------------------
