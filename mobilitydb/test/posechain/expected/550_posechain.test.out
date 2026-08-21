@@ -48,6 +48,16 @@ SELECT posechainFromHexEWKB(asHexEWKB(posechain 'SRID=3812;PoseChain(Pose(Point(
  t
 (1 row)
 
+SELECT posechainFromBinary(asBinary(c)) = c AS wkb_roundtrip_identity
+FROM (SELECT posechain(ARRAY[
+    pose(ST_MakePoint(1, 2, 3), 1 / n, 1 / n, 1 / n, 2 / n),
+    pose(ST_MakePoint(4, 5, 6), 1 / m, 1 / m, 2 / m, 3 / m)]) AS c
+  FROM (SELECT sqrt(1 + 1 + 1 + 4) AS n, sqrt(1 + 1 + 4 + 9) AS m) s) t;
+ wkb_roundtrip_identity 
+------------------------
+ t
+(1 row)
+
 SELECT posechain 'PoseChain(Pose(Point(0 0), 0), GeodPose(Point(1 1), 0))';
 ERROR:  Only the first link of a pose chain may be geodetic: link 2 is expressed in the frame the link before it defines
 LINE 1: SELECT posechain 'PoseChain(Pose(Point(0 0), 0), GeodPose(Po...
