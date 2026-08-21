@@ -4608,14 +4608,14 @@ meos_buffer_line_offset(const LWLINE *line, double radius,
   double *dy = palloc(sizeof(double) * (npoints - 1));
   double *nx = palloc(sizeof(double) * (npoints - 1));
   double *ny = palloc(sizeof(double) * (npoints - 1));
+  double *len = palloc(sizeof(double) * (npoints - 1));
   for (uint32_t i = 0; i < npoints - 1; i++)
   {
-    double length;
     dx[i] = points[i + 1].x - points[i].x;
     dy[i] = points[i + 1].y - points[i].y;
-    length = hypot(dx[i], dy[i]);
-    dx[i] /= length;
-    dy[i] /= length;
+    len[i] = hypot(dx[i], dy[i]);
+    dx[i] /= len[i];
+    dy[i] /= len[i];
     nx[i] = -dy[i];
     ny[i] = dx[i];
   }
@@ -4659,6 +4659,17 @@ meos_buffer_line_offset(const LWLINE *line, double radius,
     }
   }
 
+  /* The offsets of the two segments meeting at a vertex cross at the point
+   * their two offset LINES share, and that point bounds the buffer only while
+   * it lies on both offset SEGMENTS. It sits the same distance from the vertex
+   * along each of them, so one comparison against each length answers it */
+#define BUFFER_MITRE_ON_SEGMENTS(mitre, i)                                    \
+  (Min(-(((mitre).x - points[i].x) * dx[(i) - 1] +                            \
+         ((mitre).y - points[i].y) * dy[(i) - 1]),                            \
+        (((mitre).x - points[i].x) * dx[i] +                                  \
+         ((mitre).y - points[i].y) * dy[i]))                                  \
+     <= Min(len[(i) - 1], len[i]) + MEOS_EDGE_TOLERANCE)
+
   /* Construct the outer boundary as a compound curve */
   LWCOMPOUND *ring = lwcompound_construct_empty(srid, 0, 0);
 
@@ -4671,7 +4682,7 @@ meos_buffer_line_offset(const LWLINE *line, double radius,
     /* A left turn leaves the left side concave, so its offset segments cross
      * and the join belongs to the right side, and conversely */
     double turn = buffer_cross(dx[i - 1], dy[i - 1], dx[i], dy[i]);
-    if (turn < -FP_TOLERANCE)
+    if (turn < -FP_TOLERANCE || ! BUFFER_MITRE_ON_SEGMENTS(left[i], i))
     {
       POINT2D p1 = buffer_point_offset(points[i].x, points[i].y, nx[i - 1],
         ny[i - 1], radius);
@@ -4716,7 +4727,7 @@ meos_buffer_line_offset(const LWLINE *line, double radius,
   for (int i = (int) npoints - 2; i > 0; i--)
   {
     double turn = buffer_cross(dx[i - 1], dy[i - 1], dx[i], dy[i]);
-    if (turn > FP_TOLERANCE)
+    if (turn > FP_TOLERANCE || ! BUFFER_MITRE_ON_SEGMENTS(right[i], i))
     {
       POINT2D p1 = buffer_point_offset(points[i].x, points[i].y, -nx[i],
         -ny[i], radius);
@@ -4759,8 +4770,9 @@ meos_buffer_line_offset(const LWLINE *line, double radius,
   LWCURVEPOLY *curvepoly = lwcurvepoly_construct_empty(srid, 0, 0);
   buffer_curvepoly_add_ring(curvepoly, ring);
 
-  pfree(points); pfree(dx); pfree(dy); pfree(nx); pfree(ny); pfree(left);
-  pfree(right);
+  pfree(points); pfree(dx); pfree(dy); pfree(nx); pfree(ny); pfree(len);
+  pfree(left); pfree(right);
+#undef BUFFER_MITRE_ON_SEGMENTS
 
   /* The offsets of two segments meeting at a sharp turn cross on the inner
    * side, and the loop they leave is not part of the buffer */
