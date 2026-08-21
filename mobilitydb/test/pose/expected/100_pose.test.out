@@ -433,6 +433,70 @@ SELECT ST_AsText(applyPose(ST_MakePoint(1,0,0), pose 'Pose(Point(0 0 0), 0.70710
  POINT Z (2.220446049250313e-16 1 0)
 (1 row)
 
+SELECT ST_AsText(applyPose(ST_MakeEnvelope(-2,-1,2,1), pose 'Pose(Point(10 20), 0)'));
+               st_astext               
+---------------------------------------
+ POLYGON((8 19,8 21,12 21,12 19,8 19))
+(1 row)
+
+SELECT ST_AsText(ST_SnapToGrid(applyPose(ST_MakeEnvelope(0,0,2,1),
+  pose(ST_Point(0,0), pi()/2)), 1e-9));
+            st_astext             
+----------------------------------
+ POLYGON((0 0,-1 0,-1 2,0 2,0 0))
+(1 row)
+
+SELECT ST_AsText(applyPose(geometry 'Linestring(0 0,1 0,1 1)', pose 'Pose(Point(5 5), 0)'));
+        st_astext        
+-------------------------
+ LINESTRING(5 5,6 5,6 6)
+(1 row)
+
+SELECT ST_AsText(applyPose(geometry 'Multipoint(0 0,1 1)', pose 'Pose(Point(10 20), 0)'));
+          st_astext          
+-----------------------------
+ MULTIPOINT((10 20),(11 21))
+(1 row)
+
+WITH test(g) AS (SELECT geometry 'Point(1 2)')
+SELECT ST_AsText(applyPose(g, pose 'Pose(Point(10 20), 0)')), ST_AsText(g) FROM test;
+  st_astext   | st_astext  
+--------------+------------
+ POINT(11 22) | POINT(1 2)
+(1 row)
+
+SELECT applyPose(geometry 'Polygon Empty', pose 'Pose(Point(1 1), 0)');
+ERROR:  applyPose: body geometry must not be empty
+SELECT applyPose(geometry 'Point(1 2)', pose 'Pose(Point(1 1 1), 1, 0, 0, 0)');
+ERROR:  applyPose: pose and body geometry must have the same dimensionality
+SELECT asText(applyPose(geometry 'Polygon((0 0,1 0,1 1,0 0))',
+  tpose '[Pose(Point(0 0), 0)@2026-01-01, Pose(Point(10 20), 1)@2026-01-02]'));
+ERROR:  Only point geometries accepted
+SELECT ST_SRID(applyPose(ST_SetSRID(geometry 'Point(1 2)', 4326),
+  pose 'Pose(Point(0 0), 0)'));
+ st_srid 
+---------
+    4326
+(1 row)
+
+SELECT ST_SRID(applyPose(geometry 'Point(1 2)', pose 'SRID=5676;Pose(Point(0 0), 0)'));
+ st_srid 
+---------
+    5676
+(1 row)
+
+SELECT ST_SRID(applyPose(geometry 'Point(1 2)', pose 'Pose(Point(0 0), 0)'));
+ st_srid 
+---------
+       0
+(1 row)
+
+SELECT applyPose(ST_SetSRID(geometry 'Point(1 2)', 4326),
+  pose 'SRID=5676;Pose(Point(0 0), 0)');
+ERROR:  SRID of geometry (4326) and temporal type (5676) must correspond
+SELECT applyPose(ST_SetSRID(geometry 'Point(1 2)', 4326),
+  tpose 'SRID=5676;Pose(Point(0 0), 0)@2000-01-01');
+ERROR:  SRID of geometry (4326) and temporal type (5676) must correspond
 SELECT asEWKT(pose(0::float, 0::float, 0::float, 1.0000005::float, 0::float, 0::float, 0::float, 0));
             asewkt             
 -------------------------------

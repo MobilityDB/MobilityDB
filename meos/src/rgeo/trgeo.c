@@ -447,26 +447,6 @@ geometry_tpose_to_trgeometry(const GSERIALIZED *gs, const Temporal *temp)
  *****************************************************************************/
 
 /**
- * @ingroup meos_internal_rgeo_transf
- * @brief Return a geometry obtained by appling a pose to a geometry
- * @param[in] pose Pose
- * @param[inout] gs Geometry
- */
-GSERIALIZED *
-geom_apply_pose(const GSERIALIZED *gs, const Pose *pose)
-{
-  assert(pose); assert(gs);
-  LWGEOM *geom = lwgeom_from_gserialized(gs);
-  LWGEOM *result_geom = lwgeom_clone_deep(geom);
-  lwgeom_apply_pose(pose, result_geom);
-  if (result_geom->bbox)
-    lwgeom_refresh_bbox(result_geom);
-  GSERIALIZED *result = geo_serialize(result_geom);
-  lwgeom_free(geom); lwgeom_free(result_geom);
-  return result;
-}
-
-/**
  * @ingroup meos_rgeo_accessor
  * @brief Return a copy of the start value of a temporal rigid geometry
  * @param[in] temp Temporal rigid geometry
@@ -492,9 +472,9 @@ trgeometry_start_value(const Temporal *temp)
       pose = tinstant_value_p(
         TSEQUENCE_INST_N(TSEQUENCESET_SEQ_N((TSequenceSet *) temp, 0), 0));
   }
-  /* pose is a borrowed pointer into temp (tinstant_value_p); geom_apply_pose
+  /* pose is a borrowed pointer into temp (tinstant_value_p); pose_apply_geo
    * only reads it, so there is nothing to free here */
-  return geom_apply_pose(trgeo_geom_p(temp), DatumGetPoseP(pose));
+  return pose_apply_geo(DatumGetPoseP(pose), trgeo_geom_p(temp));
 }
 
 /**
@@ -527,9 +507,9 @@ trgeometry_end_value(const Temporal *temp)
       pose = tinstant_value_p(TSEQUENCE_INST_N(seq, seq->count - 1));
     }
   }
-  /* pose is a borrowed pointer into temp (tinstant_value_p); geom_apply_pose
+  /* pose is a borrowed pointer into temp (tinstant_value_p); pose_apply_geo
    * only reads it, so there is nothing to free here */
-  return geom_apply_pose(trgeo_geom_p(temp), DatumGetPoseP(pose));
+  return pose_apply_geo(DatumGetPoseP(pose), trgeo_geom_p(temp));
 }
 
 /**
@@ -572,9 +552,9 @@ trgeometry_value_n(const Temporal *temp, int n, GSERIALIZED **result)
       if (! tsequenceset_value_n_p((TSequenceSet *) temp, n, &pose))
         return false;
   }
-  /* pose is a borrowed pointer into temp; geom_apply_pose only reads it, so
+  /* pose is a borrowed pointer into temp; pose_apply_geo only reads it, so
    * there is nothing to free here */
-  *result = geom_apply_pose(trgeo_geom_p(temp), DatumGetPoseP(pose));
+  *result = pose_apply_geo(DatumGetPoseP(pose), trgeo_geom_p(temp));
   return true;
 }
 
@@ -592,10 +572,10 @@ trgeo_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
   if (found)
   {
     /* Apply pose to reference geometry */
-    GSERIALIZED *gs = geom_apply_pose(trgeo_geom_p(temp), DatumGetPoseP(pose));
+    GSERIALIZED *gs = pose_apply_geo(DatumGetPoseP(pose), trgeo_geom_p(temp));
     *result = PointerGetDatum(gs);
     /* temporal_value_at_timestamptz returns a copy of the pose value (via
-     * datum_copy); it is consumed by geom_apply_pose above and must be freed
+     * datum_copy); it is consumed by pose_apply_geo above and must be freed
      * here, otherwise every distance/comparison kernel that probes a trgeometry
      * value leaks one pose per timestamp. */
     pfree(DatumGetPointer(pose));

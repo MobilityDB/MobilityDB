@@ -138,6 +138,7 @@ extern Datum pose_distance(Datum pose1, Datum pose2);
 
 /* Box functions */
 
+extern void lwgeom_apply_pose(const Pose *pose, LWGEOM *geom);
 extern bool pose_set_stbox(const Pose *pose, STBox *box);
 extern void posearr_set_stbox(const Datum *values, int count, STBox *box);
 extern bool pose_timestamptz_set_stbox(const Pose *pose, TimestampTz t,

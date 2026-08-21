@@ -1470,13 +1470,20 @@ SELECT geoPoseFrameIsGeographic(1), geoPoseFrameIsGeographic(2);
 					<programlisting xml:space="preserve" format="linespecific">
 world = R(q) · body + p
 </programlisting>
-					<para>where <varname>(p, q)</varname> are the pose's position and orientation. The static form takes a single pose and a static geometry; the temporal form lifts the per-instant rigid transform of a <varname>tpose</varname> across its instants, producing a <varname>tgeompoint</varname> world-frame trajectory of the body geometry. Point and multipoint body geometries are supported; lines and polygons are not. Linear interpolation of the resulting trajectory is the chord on each segment, which approximates the true rigid-body trajectory (a circular arc under SLERP), the same trade-off MobilityDB already takes for spatial trajectories.</para>
+					<para>where <varname>(p, q)</varname> are the pose's position and orientation. The static form takes a single pose and a static geometry; the temporal form lifts the per-instant rigid transform of a <varname>tpose</varname> across its instants, producing a <varname>tgeompoint</varname> world-frame trajectory of the body geometry. The static form accepts a body geometry of any type and carries its shape into the pose's frame; the temporal form returns a <varname>tgeompoint</varname>, so its body geometry must be a point. The pose and the body geometry must have the same dimensionality and must agree on their SRID, an unknown one adopting the other. Linear interpolation of the resulting trajectory is the chord on each segment, which approximates the true rigid-body trajectory (a circular arc under SLERP), the same trade-off MobilityDB already takes for spatial trajectories.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- A body sensor offset 1 unit along the body X axis, traced through a
 -- tpose that ends 90 degrees yawed and translated to (10, 20).
 SELECT asText(applyPose(ST_Point(1,0), tpose '[Pose(Point(0 0), 0)@2026-01-01,
   Pose(Point(10 20), 1.5707963267948966)@2026-01-02]'));
 -- [POINT(1 0)@2026-01-01, POINT(10 21)@2026-01-02]
+</programlisting>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- The shape of the body geometry is carried into the pose's frame: a hull
+-- 4 by 2 about the body origin, placed at (10, 20)
+SELECT ST_AsText(applyPose(ST_MakeEnvelope(-2,-1,2,1),
+  pose 'Pose(Point(10 20), 0)'));
+-- POLYGON((8 19,8 21,12 21,12 19,8 19))
 </programlisting>
 					<para>A pose names a frame, so it is itself such a body-frame value: applying one pose to another composes the two frame relationships. Writing <varname>P_WV</varname> for the pose of a vehicle in the world and <varname>P_VS</varname> for the pose of a sensor in the vehicle, the pose of the sensor in the world is <varname>P_WS = P_WV ∘ P_VS</varname>. This is the operation a pose chain folds over its links, so a two-link chain composes to what this returns.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">

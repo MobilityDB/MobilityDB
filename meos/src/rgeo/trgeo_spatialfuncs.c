@@ -215,7 +215,7 @@ segment_overlap_spans(const GSERIALIZED *ref, const Pose *pose1,
   double dy = pose2->data[1] - pose1->data[1];
 
   /* World-posed body at the segment start. */
-  GSERIALIZED *body0_gs = geom_apply_pose(ref, pose1);
+  GSERIALIZED *body0_gs = pose_apply_geo(pose1, ref);
   LWGEOM *body0 = lwgeom_from_gserialized(body0_gs);
 
   /* Critical events: clip-interval endpoints across all body edges. */
@@ -246,7 +246,7 @@ segment_overlap_spans(const GSERIALIZED *ref, const Pose *pose1,
       continue;
     double tm = 0.5 * (ta + tb);
     Pose *posem = posesegm_interpolate(pose1, pose2, tm);
-    GSERIALIZED *bodym = geom_apply_pose(ref, posem);
+    GSERIALIZED *bodym = pose_apply_geo(posem, ref);
     bool ov = geom_intersects2d(bodym, target);
     pfree(bodym);
     pfree(posem);
@@ -298,7 +298,7 @@ static void
 instant_overlap_span(const GSERIALIZED *ref, const Pose *pose, TimestampTz t,
   const GSERIALIZED *target, Span **spans, int *nspans, int *spancap)
 {
-  GSERIALIZED *body = geom_apply_pose(ref, pose);
+  GSERIALIZED *body = pose_apply_geo(pose, ref);
   bool ov = geom_intersects2d(body, target);
   pfree(body);
   if (! ov)
@@ -379,7 +379,7 @@ trgeo_overlap_spanset(const Temporal *temp, const GSERIALIZED *gs,
         {
           const TInstant *inst = TSEQUENCE_INST_N(seq, i);
           const Pose *pose = DatumGetPoseP(tinstant_value_p(inst));
-          GSERIALIZED *body = geom_apply_pose(ref, pose);
+          GSERIALIZED *body = pose_apply_geo(pose, ref);
           bool ov = geom_intersects2d(body, gs);
           pfree(body);
           if (! ov)
@@ -728,8 +728,8 @@ trgeometry_minus_elevation(const Temporal *temp, const Span *s)
 static Datum
 datum_pose_geom_centroid(Datum pose_datum, Datum geom_datum)
 {
-  GSERIALIZED *world_geom = geom_apply_pose(DatumGetGserializedP(geom_datum),
-    DatumGetPoseP(pose_datum));
+  GSERIALIZED *world_geom = pose_apply_geo(DatumGetPoseP(pose_datum),
+    DatumGetGserializedP(geom_datum));
   GSERIALIZED *centroid = geom_centroid(world_geom);
   pfree(world_geom);
   return GserializedPGetDatum(centroid);
@@ -791,7 +791,7 @@ datum_pose_apply_to_geom(Datum pose_datum, Datum geom_datum)
 {
   const Pose *pose = DatumGetPoseP(pose_datum);
   const GSERIALIZED *gs = DatumGetGserializedP(geom_datum);
-  return GserializedPGetDatum(geom_apply_pose(gs, pose));
+  return GserializedPGetDatum(pose_apply_geo(pose, gs));
 }
 
 /**
@@ -1142,7 +1142,7 @@ trgeo_trav_adaptive(const Temporal *temp, const TInstant *inst_a,
  * @note Mirrors the collect-then-union pattern of `tgeo_traversed_area`
  * for general temporal geometries; the trgeometry-specific step is
  * materialising the reference polygon at every emitted sample via
- * `geom_apply_pose`. Sample selection mirrors the adaptive recursive
+ * `pose_apply_geo`. Sample selection mirrors the adaptive recursive
  * bisection in `tdistance_trgeoseq_trgeoseq_linear`: each input instant
  * is emitted; between two consecutive instants the segment is bisected
  * while the rotation magnitude across the half-segment exceeds
@@ -1229,8 +1229,8 @@ trgeometry_to_tgeometry(const Temporal *temp)
   if (temp->subtype == TINSTANT)
   {
     const TInstant *inst = (const TInstant *) temp;
-    GSERIALIZED *poly = geom_apply_pose(ref,
-      DatumGetPoseP(tinstant_value_p(inst)));
+    GSERIALIZED *poly = pose_apply_geo(DatumGetPoseP(tinstant_value_p(inst)),
+      ref);
     TInstant *res = tinstant_make(PointerGetDatum(poly), T_TGEOMETRY,
       inst->t);
     pfree(poly);
@@ -1243,8 +1243,8 @@ trgeometry_to_tgeometry(const Temporal *temp)
     for (int i = 0; i < seq->count; i++)
     {
       const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-      GSERIALIZED *poly = geom_apply_pose(ref,
-        DatumGetPoseP(tinstant_value_p(inst)));
+      GSERIALIZED *poly = pose_apply_geo(DatumGetPoseP(tinstant_value_p(inst)),
+        ref);
       insts[i] = tinstant_make(PointerGetDatum(poly), T_TGEOMETRY,
         inst->t);
       pfree(poly);
@@ -1263,8 +1263,8 @@ trgeometry_to_tgeometry(const Temporal *temp)
     for (int i = 0; i < seq->count; i++)
     {
       const TInstant *inst = TSEQUENCE_INST_N(seq, i);
-      GSERIALIZED *poly = geom_apply_pose(ref,
-        DatumGetPoseP(tinstant_value_p(inst)));
+      GSERIALIZED *poly = pose_apply_geo(DatumGetPoseP(tinstant_value_p(inst)),
+        ref);
       insts[i] = tinstant_make(PointerGetDatum(poly), T_TGEOMETRY,
         inst->t);
       pfree(poly);

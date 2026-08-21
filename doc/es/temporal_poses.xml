@@ -1445,7 +1445,7 @@ SELECT geoPoseFrameIsGeographic(1), geoPoseFrameIsGeographic(2);
 			<programlisting xml:space="preserve" format="linespecific">
 world = R(q) · body + p
 </programlisting>
-			<para>donde <varname>(p, q)</varname> son la posición y la orientación de la pose. La forma estática toma una única pose y una geometría estática; la forma temporal eleva la transformación rígida por instante de una <varname>tpose</varname> a lo largo de sus instantes, produciendo una trayectoria <varname>tgeompoint</varname> en el marco del mundo de la geometría del cuerpo. Se admiten geometrías de cuerpo de tipo punto y multipunto; las líneas y los polígonos no. La interpolación lineal de la trayectoria resultante es la cuerda de cada segmento, que aproxima la verdadera trayectoria de cuerpo rígido (un arco circular bajo SLERP), la misma concesión que MobilityDB ya adopta para las trayectorias espaciales.</para>
+			<para>donde <varname>(p, q)</varname> son la posición y la orientación de la pose. La forma estática toma una única pose y una geometría estática; la forma temporal eleva la transformación rígida por instante de una <varname>tpose</varname> a lo largo de sus instantes, produciendo una trayectoria <varname>tgeompoint</varname> en el marco del mundo de la geometría del cuerpo. La forma estática admite una geometría de cuerpo de cualquier tipo y lleva su forma al marco de la pose; la forma temporal devuelve una <varname>tgeompoint</varname>, por lo que su geometría de cuerpo debe ser un punto. La pose y la geometría del cuerpo deben tener la misma dimensionalidad y deben coincidir en su SRID, adoptando el desconocido el del otro. La interpolación lineal de la trayectoria resultante es la cuerda de cada segmento, que aproxima la verdadera trayectoria de cuerpo rígido (un arco circular bajo SLERP), la misma concesión que MobilityDB ya adopta para las trayectorias espaciales.</para>
 			<para><varname>applyPose(geometry, pose) → geometry</varname></para>
 			<para><varname>applyPose(geometry, tpose) → tgeompoint</varname></para>
 			<para><varname>applyPose(pose, pose) → pose</varname></para>
@@ -1455,6 +1455,13 @@ world = R(q) · body + p
 SELECT asText(applyPose(ST_Point(1,0), tpose '[Pose(Point(0 0), 0)@2026-01-01,
   Pose(Point(10 20), 1.5707963267948966)@2026-01-02]'));
 -- [POINT(1 0)@2026-01-01, POINT(10 21)@2026-01-02]
+</programlisting>
+			<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- La forma de la geometría del cuerpo se lleva al marco de la pose: un casco
+-- de 4 por 2 alrededor del origen del cuerpo, situado en (10, 20)
+SELECT ST_AsText(applyPose(ST_MakeEnvelope(-2,-1,2,1),
+  pose 'Pose(Point(10 20), 0)'));
+-- POLYGON((8 19,8 21,12 21,12 19,8 19))
 </programlisting>
 			<para>Una pose nombra un marco, por lo que ella misma es un valor en el marco del cuerpo: aplicar una pose a otra compone las dos relaciones entre marcos. Escribiendo <varname>P_WV</varname> para la pose de un vehículo en el mundo y <varname>P_VS</varname> para la pose de un sensor en el vehículo, la pose del sensor en el mundo es <varname>P_WS = P_WV ∘ P_VS</varname>. Esta es la operación que una cadena de poses pliega sobre sus eslabones, de modo que una cadena de dos eslabones se compone en lo que esto devuelve.</para>
 			<programlisting language="sql" xml:space="preserve" format="linespecific">
