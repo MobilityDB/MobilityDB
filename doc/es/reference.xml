@@ -345,7 +345,7 @@
 						<para><link linkend="setspan_containedby"><varname>&lt;@</varname></link>: ¿Está el primer valor contenido en el segundo?</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="setspan_adjacent"><varname>-|-</varname></link>: ¿Es el primer valor adyacente al segundo?</para>
+						<para><link linkend="setspan_adjacent"><varname>-|-</varname></link>: ¿Es el primer valor adyacente al segundo? Dos valores son adyacentes cuando se tocan sin solaparse, es decir, cuando comparten una frontera y no tienen ningún valor en común en ella. Para los tipos base continuos <varname>float</varname> y <varname>timestamptz</varname>, un límite compartido es ese contacto. Para los tipos base discretos <varname>int</varname>, <varname>bigint</varname> y <varname>date</varname>, cuyos rangos se almacenan en forma normal, significa valores consecutivos.</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

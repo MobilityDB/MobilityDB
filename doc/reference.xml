@@ -345,7 +345,7 @@
 						<para><link linkend="setspan_containedby"><varname>&lt;@</varname></link>: Is the first value contained by the second one?</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="setspan_adjacent"><varname>-|-</varname></link>: Is the first value adjacent to the second one?</para>
+						<para><link linkend="setspan_adjacent"><varname>-|-</varname></link>: Is the first value adjacent to the second one? Two values are adjacent when they touch without overlapping, that is, when they share a boundary and have no value in common inside it. For the continuous base types <varname>float</varname> and <varname>timestamptz</varname> a shared bound is such a touch. For the discrete base types <varname>int</varname>, <varname>bigint</varname> and <varname>date</varname>, whose spans are stored in normal form, it means consecutive values.</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
