@@ -311,10 +311,12 @@ CREATE OPERATOR CLASS jsonbset_hash_ops
 CREATE FUNCTION contains(jsonbset, jsonb)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_value'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contains(jsonbset, jsonbset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contains_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR @> (
@@ -333,10 +335,12 @@ CREATE OPERATOR @> (
 CREATE FUNCTION contained(jsonb, jsonbset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_value_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION contained(jsonbset, jsonbset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Contained_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <@ (
@@ -355,6 +359,7 @@ CREATE OPERATOR <@ (
 CREATE FUNCTION overlaps(jsonbset, jsonbset)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overlaps_set_set'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR && (

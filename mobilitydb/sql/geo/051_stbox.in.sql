@@ -458,66 +458,82 @@ CREATE OPERATOR -|- (
 CREATE FUNCTION left(stbox, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_stbox_stbox'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overleft(stbox, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overleft_stbox_stbox'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION right(stbox, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Right_stbox_stbox'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overright(stbox, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overright_stbox_stbox'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION below(stbox, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Below_stbox_stbox'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overbelow(stbox, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbelow_stbox_stbox'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION above(stbox, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Above_stbox_stbox'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overabove(stbox, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overabove_stbox_stbox'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION before(stbox, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_stbox_stbox'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overbefore(stbox, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overbefore_stbox_stbox'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION after(stbox, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'After_stbox_stbox'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overafter(stbox, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overafter_stbox_stbox'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION front(stbox, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Front_stbox_stbox'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overfront(stbox, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overfront_stbox_stbox'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION back(stbox, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Back_stbox_stbox'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION overback(stbox, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Overback_stbox_stbox'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR << (

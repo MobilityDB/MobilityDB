@@ -81,6 +81,7 @@ CREATE FUNCTION minusStbox(tnpoint, stbox, bool DEFAULT TRUE)
 CREATE FUNCTION same(npoint, npoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Npoint_same'
+  SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
