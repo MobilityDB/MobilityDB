@@ -204,4 +204,40 @@ SELECT round(nearestApproachDistance(
   trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
   geometry 'MultiPolygon(((5 3,6 3,6 4,5 4,5 3)),((100 100,101 100,101 101,100 101,100 100)))')::numeric, 6);
 
+-- A line target: the distance to a line is the minimum over its segments, each
+-- of which is a convex set whose two vertices share one edge
+SELECT round(minValue(tDistance(
+  trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  geometry 'Linestring(5 3,6 4)'))::numeric, 6);
+-- The closest point of the line is interior to a segment, not an endpoint
+SELECT round(minValue(tDistance(
+  trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  geometry 'Linestring(-5 3,20 3)'))::numeric, 6);
+-- A line of several segments answers as the nearest of its segments does
+SELECT round(minValue(tDistance(
+  trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  geometry 'Linestring(-5 9,4 9,4 3,20 3)'))::numeric, 6);
+SELECT round(minValue(tDistance(
+  trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  geometry 'Linestring(4 3,20 3)'))::numeric, 6);
+-- A rotating body against a line: the nearest approach lies strictly inside
+-- the motion
+SELECT round(nearestApproachDistance(
+  trgeometry 'Polygon((-2 -0.5,2 -0.5,2 0.5,-2 0.5,-2 -0.5));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),3.14159265)@2001-01-02]',
+  geometry 'Linestring(0 3,1 4)')::numeric, 6);
+SELECT getTimestamp(nearestApproachInstant(
+  trgeometry 'Polygon((-2 -0.5,2 -0.5,2 0.5,-2 0.5,-2 -0.5));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),3.14159265)@2001-01-02]',
+  geometry 'Linestring(0 3,1 4)')) <@ tstzspan '(2001-01-01, 2001-01-02)';
+-- A multi-component line, and an empty component that is ignored
+SELECT round(minValue(tDistance(
+  trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  geometry 'MultiLinestring((5 3,6 4),(0 -9,10 -9))'))::numeric, 6);
+SELECT round(minValue(tDistance(
+  trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  geometry 'MultiLinestring((5 3,6 4),EMPTY)'))::numeric, 6);
+-- The shortest line to a line joins the body and the line themselves
+SELECT ST_AsText(ST_SnapToGrid(shortestLine(
+  trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  geometry 'Linestring(-5 3,20 3)'), 0.000001));
+
 -------------------------------------------------------------------------------

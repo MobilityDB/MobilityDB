@@ -302,3 +302,75 @@ SELECT round(nearestApproachDistance(
  2.000000
 (1 row)
 
+SELECT round(minValue(tDistance(
+  trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  geometry 'Linestring(5 3,6 4)'))::numeric, 6);
+  round   
+----------
+ 2.000000
+(1 row)
+
+SELECT round(minValue(tDistance(
+  trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  geometry 'Linestring(-5 3,20 3)'))::numeric, 6);
+  round   
+----------
+ 2.000000
+(1 row)
+
+SELECT round(minValue(tDistance(
+  trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  geometry 'Linestring(-5 9,4 9,4 3,20 3)'))::numeric, 6);
+  round   
+----------
+ 2.000000
+(1 row)
+
+SELECT round(minValue(tDistance(
+  trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  geometry 'Linestring(4 3,20 3)'))::numeric, 6);
+  round   
+----------
+ 2.000000
+(1 row)
+
+SELECT round(nearestApproachDistance(
+  trgeometry 'Polygon((-2 -0.5,2 -0.5,2 0.5,-2 0.5,-2 -0.5));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),3.14159265)@2001-01-02]',
+  geometry 'Linestring(0 3,1 4)')::numeric, 6);
+  round   
+----------
+ 0.938447
+(1 row)
+
+SELECT getTimestamp(nearestApproachInstant(
+  trgeometry 'Polygon((-2 -0.5,2 -0.5,2 0.5,-2 0.5,-2 -0.5));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),3.14159265)@2001-01-02]',
+  geometry 'Linestring(0 3,1 4)')) <@ tstzspan '(2001-01-01, 2001-01-02)';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT round(minValue(tDistance(
+  trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  geometry 'MultiLinestring((5 3,6 4),(0 -9,10 -9))'))::numeric, 6);
+  round   
+----------
+ 2.000000
+(1 row)
+
+SELECT round(minValue(tDistance(
+  trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  geometry 'MultiLinestring((5 3,6 4),EMPTY)'))::numeric, 6);
+  round   
+----------
+ 2.000000
+(1 row)
+
+SELECT ST_AsText(ST_SnapToGrid(shortestLine(
+  trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  geometry 'Linestring(-5 3,20 3)'), 0.000001));
+      st_astext      
+---------------------
+ LINESTRING(2 1,2 3)
+(1 row)
+
