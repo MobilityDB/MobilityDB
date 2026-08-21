@@ -167,6 +167,35 @@ int main(void)
   free(coll); free(away); free(through);
   meos_errno_reset();
 
+  /* Equality is read from the native DE-9IM matrix, so two circular strings
+   * describing the SAME arc through DIFFERENT defining points are equal. The
+   * three points lie on the circle of centre (0 0) and radius 5, which they
+   * determine exactly, so the answer rests on the arcs rather than on the
+   * rounding of a circumcentre. A linearization answers about the chords and
+   * calls the two different */
+  GSERIALIZED *arc1 = geom_in("Circularstring(5 0,4 3,0 5)", -1);
+  GSERIALIZED *arc2 = geom_in("Circularstring(5 0,3 4,0 5)", -1);
+  assert(arc1 != NULL); assert(arc2 != NULL);
+  meos_errno_reset();
+  int arc_eq = geo_equals(arc1, arc2);
+  printf("geo_equals(Circularstring(5 0,4 3,0 5), "
+    "Circularstring(5 0,3 4,0 5)): %d, errno %d\n", arc_eq, meos_errno());
+  assert(arc_eq == 1);
+  assert(meos_errno() == 0);
+  /* The same arc read backwards is the same point set */
+  GSERIALIZED *arc3 = geom_in("Circularstring(0 5,3 4,5 0)", -1);
+  assert(arc3 != NULL);
+  assert(geo_equals(arc1, arc3) == 1);
+  /* A part of that arc is not the whole of it, and a polyline on the three
+   * points is not the arc through them */
+  GSERIALIZED *part = geom_in("Circularstring(5 0,4 3,3 4)", -1);
+  GSERIALIZED *chords = geom_in("Linestring(5 0,4 3,0 5)", -1);
+  assert(part != NULL); assert(chords != NULL);
+  assert(geo_equals(arc1, part) == 0);
+  assert(geo_equals(arc1, chords) == 0);
+  free(arc1); free(arc2); free(arc3); free(part); free(chords);
+  meos_errno_reset();
+
   /* A malformed box3d returns NULL and sets the error status */
   meos_errno_reset();
   BOX3D *bad_box3d = box3d_in("BOX3D(1 2 3)");

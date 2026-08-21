@@ -276,11 +276,11 @@ datum_eq(Datum l, Datum r, MeosType type)
       GSERIALIZED *gs1 = DatumGetGserializedP(l);
       GSERIALIZED *gs2 = DatumGetGserializedP(r);
       /* Fast path: equality of two points reduces to exact coordinate
-       * equality, avoiding a conversion to GEOS. This keeps GEOS out of the
-       * temporal-distance hot path, where the lifting turning-point loop tests
-       * segment constancy via datum_eq. Uses the exact point equality
-       * (datum_point_eq, not the FP-tolerant _same) to preserve the exact
-       * semantics of geo_equals */
+       * equality, avoiding the intersection matrix. This keeps the relate
+       * engine out of the temporal-distance hot path, where the lifting
+       * turning-point loop tests segment constancy via datum_eq. Uses the
+       * exact point equality (datum_point_eq, not the FP-tolerant _same) to
+       * preserve the exact semantics of geo_equals */
       if (gserialized_get_type(gs1) == POINTTYPE &&
           gserialized_get_type(gs2) == POINTTYPE)
         return datum_point_eq(l, r);
