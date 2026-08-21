@@ -734,15 +734,16 @@ tposeseq_apply_geo(const TSequence *seq, const GSERIALIZED *body)
  * temporal pose to a body-frame geometry
  * @details Per instant the rigid-body transform @p R(q_i) · v + p_i is
  * applied to the body geometry; the result is a temporal point with the
- * same subtype and interpolation as the input @p tpose. v1 supports
- * point and multipoint body geometries — the output is a tgeompoint
- * carrying the per-instant transformed point. Linear interpolation of
+ * same subtype and interpolation as the input @p tpose. The output is a
+ * tgeompoint carrying the per-instant transformed point, so the body
+ * geometry must be a point here, unlike in the static
+ * #pose_apply_geo(). Linear interpolation of
  * the resulting trajectory is the chord on each segment, which
  * approximates the true rigid-body trajectory (a circular arc under
  * SLERP); the same linear-interpolation trade-off MobilityDB already
  * uses for spatial trajectories.
  * @param[in] temp Temporal pose
- * @param[in] body Body-frame geometry (POINT or MULTIPOINT)
+ * @param[in] body Body-frame point
  * @return On error return @p NULL
  * @csqlfn #Tpose_apply_geo()
  */

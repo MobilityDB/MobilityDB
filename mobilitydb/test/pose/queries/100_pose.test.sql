@@ -213,6 +213,33 @@ SELECT ST_AsText(applyPose(ST_Point(1,0), pose 'Pose(Point(10 20), 1.57079632679
 SELECT ST_AsText(applyPose(ST_MakePoint(1,0,0), pose 'Pose(Point(10 20 30), 1, 0, 0, 0)'));
 -- 3D 90deg yaw: body X axis rotates to world Y axis (epsilon-clean).
 SELECT ST_AsText(applyPose(ST_MakePoint(1,0,0), pose 'Pose(Point(0 0 0), 0.7071067811865476, 0, 0, 0.7071067811865475)'));
+-- A body geometry of any type is carried into the pose's frame with its
+-- shape unchanged: the transform reaches every coordinate.
+SELECT ST_AsText(applyPose(ST_MakeEnvelope(-2,-1,2,1), pose 'Pose(Point(10 20), 0)'));
+SELECT ST_AsText(ST_SnapToGrid(applyPose(ST_MakeEnvelope(0,0,2,1),
+  pose(ST_Point(0,0), pi()/2)), 1e-9));
+SELECT ST_AsText(applyPose(geometry 'Linestring(0 0,1 0,1 1)', pose 'Pose(Point(5 5), 0)'));
+SELECT ST_AsText(applyPose(geometry 'Multipoint(0 0,1 1)', pose 'Pose(Point(10 20), 0)'));
+-- The transform reads the body geometry, it does not move it
+WITH test(g) AS (SELECT geometry 'Point(1 2)')
+SELECT ST_AsText(applyPose(g, pose 'Pose(Point(10 20), 0)')), ST_AsText(g) FROM test;
+-- A pose and its body geometry must agree on dimensionality, and an empty
+-- body geometry names no point to carry
+SELECT applyPose(geometry 'Polygon Empty', pose 'Pose(Point(1 1), 0)');
+SELECT applyPose(geometry 'Point(1 2)', pose 'Pose(Point(1 1 1), 1, 0, 0, 0)');
+-- The temporal form answers a tgeompoint, so its body geometry is a point
+SELECT asText(applyPose(geometry 'Polygon((0 0,1 0,1 1,0 0))',
+  tpose '[Pose(Point(0 0), 0)@2026-01-01, Pose(Point(10 20), 1)@2026-01-02]'));
+-- The pose names the frame the result is expressed in, so the two SRIDs must
+-- agree; an unknown one adopts the other
+SELECT ST_SRID(applyPose(ST_SetSRID(geometry 'Point(1 2)', 4326),
+  pose 'Pose(Point(0 0), 0)'));
+SELECT ST_SRID(applyPose(geometry 'Point(1 2)', pose 'SRID=5676;Pose(Point(0 0), 0)'));
+SELECT ST_SRID(applyPose(geometry 'Point(1 2)', pose 'Pose(Point(0 0), 0)'));
+SELECT applyPose(ST_SetSRID(geometry 'Point(1 2)', 4326),
+  pose 'SRID=5676;Pose(Point(0 0), 0)');
+SELECT applyPose(ST_SetSRID(geometry 'Point(1 2)', 4326),
+  tpose 'SRID=5676;Pose(Point(0 0), 0)@2000-01-01');
 
 -- Quaternion drift tolerance. Real sensor-fusion clients (IMUs, AR/VR
 -- runtimes, physics engines) deliver quaternions with |q|=1+e where e

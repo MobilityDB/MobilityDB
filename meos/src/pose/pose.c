@@ -52,6 +52,7 @@
 #include "temporal/type_inout.h"
 #include "temporal/type_parser.h"
 #include "temporal/type_util.h"
+#include "geo/geo_funcs.h"
 #include "geo/meos_transform.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tspatial.h"
@@ -1461,43 +1462,83 @@ pose_angular_distance(const Pose *pose1, const Pose *pose2)
 }
 
 /**
- * @brief Apply the rigid-body transform encoded by @p pose to a body-frame
- * point, producing the corresponding world-frame point. The transform is
- *   world = R(q) · body + p
- * with @p R(q) the rotation matrix of the pose's quaternion in Hamilton
- * convention. The expansion below is the textbook
- *   v' = q · v · q*
- * written out as the standard 9-multiply form for v = (bx, by, bz).
+ * @brief Apply an affine transformation to a geometry
+ * @param[in,out] geom Geometry transformed in place
+ * @param[in] a,b,c,d,e,f,g,h,i Rows of the 3x3 linear part
+ * @param[in] xoff,yoff,zoff Translation
  */
 static void
-pose_apply_point4d(const Pose *pose,
-  double bx, double by, double bz,
-  double *wx, double *wy, double *wz)
+lwgeom_affine_transform(LWGEOM *geom,
+  double a, double b, double c,
+  double d, double e, double f,
+  double g, double h, double i,
+  double xoff, double yoff, double zoff)
+{
+  AFFINE affine;
+  affine.afac =  a;
+  affine.bfac =  b;
+  affine.cfac =  c;
+  affine.dfac =  d;
+  affine.efac =  e;
+  affine.ffac =  f;
+  affine.gfac =  g;
+  affine.hfac =  h;
+  affine.ifac =  i;
+  affine.xoff =  xoff;
+  affine.yoff =  yoff;
+  affine.zoff =  zoff;
+  lwgeom_affine(geom, &affine);
+  return;
+}
+
+/**
+ * @brief Apply to a body-frame geometry the rigid-body transform encoded by a
+ * pose, producing the corresponding world-frame geometry
+ * @details The transform is @p world = R(q) · body + p, where (p, q) are the
+ * pose's position and orientation. It is applied to every coordinate of the
+ * geometry, whatever its type, so the shape is carried into the pose's frame
+ * unchanged.
+ * @param[in] pose Pose
+ * @param[in,out] geom Geometry transformed in place
+ */
+void
+lwgeom_apply_pose(const Pose *pose, LWGEOM *geom)
 {
   if (! MEOS_FLAGS_GET_Z(pose->flags))
   {
-    /* 2D pose: rotation by theta about the Z-axis, then translate by
-     * (px, py). Z is preserved (assumes the body geometry's Z is also
-     * the world Z — the canonical 2D-body convention). */
-    double px = pose->data[0], py = pose->data[1];
-    double theta = pose->data[2];
-    double c = cos(theta), s = sin(theta);
-    *wx = px + c * bx - s * by;
-    *wy = py + s * bx + c * by;
-    *wz = bz;
-    return;
+    double a = cos(pose->data[2]);
+    double b = sin(pose->data[2]);
+
+    lwgeom_affine_transform(geom,
+      a, -b, 0,
+      b, a, 0,
+      0, 0, 1,
+      pose->data[0], pose->data[1], 0);
   }
-  /* 3D pose */
-  double px = pose->data[0], py = pose->data[1], pz = pose->data[2];
-  double W = pose->data[3], X = pose->data[4];
-  double Y = pose->data[5], Z = pose->data[6];
-  /* Rotation of (bx, by, bz) by the unit quaternion (W, X, Y, Z). */
-  double xx = X * X, yy = Y * Y, zz = Z * Z;
-  double xy = X * Y, xz = X * Z, yz = Y * Z;
-  double wx_ = W * X, wy_ = W * Y, wz_ = W * Z;
-  *wx = px + bx * (1.0 - 2.0 * (yy + zz)) + by * (2.0 * (xy - wz_)) + bz * (2.0 * (xz + wy_));
-  *wy = py + bx * (2.0 * (xy + wz_)) + by * (1.0 - 2.0 * (xx + zz)) + bz * (2.0 * (yz - wx_));
-  *wz = pz + bx * (2.0 * (xz - wy_)) + by * (2.0 * (yz + wx_)) + bz * (1.0 - 2.0 * (xx + yy));
+  else
+  {
+    double W = pose->data[3];
+    double X = pose->data[4];
+    double Y = pose->data[5];
+    double Z = pose->data[6];
+
+    double a = W*W + X*X - Y*Y - Z*Z;
+    double b = 2*X*Y - 2*W*Z;
+    double c = 2*X*Z + 2*W*Y;
+    double d = 2*X*Y + 2*W*Z;
+    double e = W*W - X*X + Y*Y - Z*Z;
+    double f = 2*Y*Z - 2*W*X;
+    double g = 2*X*Z - 2*W*Y;
+    double h = 2*Y*Z + 2*W*X;
+    double i = W*W - X*X - Y*Y + Z*Z;
+
+    lwgeom_affine_transform(geom,
+      a, b, c,
+      d, e, f,
+      g, h, i,
+      pose->data[0], pose->data[1], pose->data[2]);
+  }
+  return;
 }
 
 /**
@@ -1505,12 +1546,13 @@ pose_apply_point4d(const Pose *pose,
  * @brief Return the world-frame geometry obtained by applying a pose's
  * rigid-body transform to a body-frame geometry
  * @details The transform is @p world = R(q) · body + p where (p, q) are
- * the pose's position and orientation. v1 supports point and multipoint
- * body geometries; lines / polygons are deferred. The body geometry's
- * dimensionality (2D / 3D) must match the pose's; the result inherits
- * the pose's SRID.
+ * the pose's position and orientation. It is applied to every coordinate of
+ * the body geometry, whatever its type, so a shape is carried into the pose's
+ * frame with its form unchanged. The pose and the body geometry must have the
+ * same dimensionality, and their SRIDs must agree; an unknown SRID on either
+ * one adopts the other, and the result carries the SRID they agree on.
  * @param[in] pose Pose
- * @param[in] body Body-frame geometry (POINT or MULTIPOINT)
+ * @param[in] body Body-frame geometry
  * @return On error return @p NULL
  * @csqlfn #Pose_apply_geo()
  */
@@ -1525,56 +1567,29 @@ pose_apply_geo(const Pose *pose, const GSERIALIZED *body)
       "applyPose: body geometry must not be empty");
     return NULL;
   }
-  uint32_t gtype = gserialized_get_type(body);
-  if (gtype != POINTTYPE && gtype != MULTIPOINTTYPE)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "applyPose: body geometry must be a POINT or MULTIPOINT (got geomtype %u)",
-      gtype);
-    return NULL;
-  }
-  bool pose_has_z = MEOS_FLAGS_GET_Z(pose->flags);
-  bool body_has_z = (bool) FLAGS_GET_Z(body->gflags);
-  if (pose_has_z != body_has_z)
+  if (MEOS_FLAGS_GET_Z(pose->flags) != (bool) FLAGS_GET_Z(body->gflags))
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "applyPose: pose and body geometry must have the same dimensionality");
     return NULL;
   }
-  /* Deserialize, walk every POINTARRAY of the body geometry, transform
-   * each POINT4D in place, re-serialize. The shape is preserved. */
+  /* The pose names the frame the result is expressed in, so the two SRIDs must
+   * agree; an unknown one adopts the other */
+  int32_t srid;
+  if (! ensure_srid_reconcile(gserialized_get_srid(body), pose_srid(pose),
+      &srid))
+    return NULL;
+  /* The LWGEOM of a serialized geometry points into its buffer, and the
+   * transform writes the coordinates in place, so the copy is what keeps the
+   * body geometry unchanged */
   LWGEOM *lw = lwgeom_from_gserialized(body);
-  /* Single-geometry walker: POINTTYPE has one POINT4D (no array);
-   * MULTIPOINTTYPE has an array of LWPOINTs. */
-  if (gtype == POINTTYPE)
-  {
-    LWPOINT *p = (LWPOINT *) lw;
-    POINT4D pt;
-    getPoint4d_p(p->point, 0, &pt);
-    double wx, wy, wz;
-    pose_apply_point4d(pose, pt.x, pt.y, pose_has_z ? pt.z : 0.0,
-      &wx, &wy, &wz);
-    pt.x = wx; pt.y = wy; if (pose_has_z) pt.z = wz;
-    ptarray_set_point4d(p->point, 0, &pt);
-  }
-  else /* MULTIPOINTTYPE */
-  {
-    LWMPOINT *mp = (LWMPOINT *) lw;
-    for (uint32_t i = 0; i < mp->ngeoms; i++)
-    {
-      LWPOINT *p = mp->geoms[i];
-      POINT4D pt;
-      getPoint4d_p(p->point, 0, &pt);
-      double wx, wy, wz;
-      pose_apply_point4d(pose, pt.x, pt.y, pose_has_z ? pt.z : 0.0,
-        &wx, &wy, &wz);
-      pt.x = wx; pt.y = wy; if (pose_has_z) pt.z = wz;
-      ptarray_set_point4d(p->point, 0, &pt);
-    }
-  }
-  lwgeom_set_srid(lw, pose_srid(pose));
-  GSERIALIZED *result = geo_serialize(lw);
-  lwgeom_free(lw);
+  LWGEOM *world = lwgeom_clone_deep(lw);
+  lwgeom_apply_pose(pose, world);
+  if (world->bbox)
+    lwgeom_refresh_bbox(world);
+  lwgeom_set_srid(world, srid);
+  GSERIALIZED *result = geo_serialize(world);
+  lwgeom_free(lw); lwgeom_free(world);
   return result;
 }
 

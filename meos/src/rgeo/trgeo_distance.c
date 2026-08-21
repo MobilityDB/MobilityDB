@@ -1865,10 +1865,10 @@ static TInstant *
 dist2d_trgeoinst_trgeoinst(const TInstant *inst1, const TInstant *inst2,
   const GSERIALIZED *ref_gs1, const GSERIALIZED *ref_gs2)
 {
-  GSERIALIZED *gs1 = geom_apply_pose(ref_gs1,
-    DatumGetPoseP(tinstant_value_p(inst1)));
-  GSERIALIZED *gs2 = geom_apply_pose(ref_gs2,
-    DatumGetPoseP(tinstant_value_p(inst2)));
+  GSERIALIZED *gs1 = pose_apply_geo(DatumGetPoseP(tinstant_value_p(inst1)),
+    ref_gs1);
+  GSERIALIZED *gs2 = pose_apply_geo(DatumGetPoseP(tinstant_value_p(inst2)),
+    ref_gs2);
   double dist = geom_distance2d(gs1, gs2);
   pfree(gs1); pfree(gs2);
   return tinstant_make(Float8GetDatum(dist), T_TFLOAT, inst1->t);
@@ -2159,8 +2159,8 @@ tdistance_trgeometry_tpoint(const Temporal *temp1, const Temporal *temp2)
   {
     TInstant *tinst = trgeoinst_translate_by_tpoint((const TInstant *) sync1,
       (const TInstant *) sync2, ref_gs);
-    GSERIALIZED *posed = geom_apply_pose(ref_gs,
-      DatumGetPoseP(tinstant_value_p(tinst)));
+    GSERIALIZED *posed = pose_apply_geo(DatumGetPoseP(tinstant_value_p(tinst)),
+      ref_gs);
     double dist = geom_distance2d(posed, origin);
     result = (Temporal *) tinstant_make(Float8GetDatum(dist), T_TFLOAT,
       tinst->t);
