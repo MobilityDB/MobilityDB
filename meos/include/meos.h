@@ -369,6 +369,7 @@ extern RTree *rtree_create_tpcbox();
 #endif
 extern void rtree_free(RTree *rtree);
 extern void rtree_insert(RTree *rtree, void *box, int64 id);
+extern void rtree_load(RTree *rtree, const void *boxes, const int64 *ids, int count);
 extern void rtree_insert_temporal(RTree *rtree, const Temporal *temp, int64 id);
 extern void rtree_insert_temporal_split(RTree *rtree, const Temporal *temp, int64 id, int maxboxes);
 extern int rtree_search(const RTree *rtree, RTreeSearchOp op, const void *query, MeosArray *result);

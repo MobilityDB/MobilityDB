@@ -137,6 +137,8 @@ jobs:
           ./rtree_mest_test
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o rtree_knn_test rtree_knn_test.c -L/usr/local/lib -lmeos -lm
           ./rtree_knn_test
+          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o rtree_load_test rtree_load_test.c -L/usr/local/lib -lmeos -lm
+          ./rtree_load_test
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o rtree_join_test rtree_join_test.c -L/usr/local/lib -lmeos -lm
           ./rtree_join_test
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o setset_pairs_test setset_pairs_test.c -L/usr/local/lib -lmeos -lm

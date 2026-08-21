@@ -1065,6 +1065,143 @@ rtree_create_tpcbox()
 }
 #endif
 
+/*****************************************************************************
+ * STR bulk load (PROTOTYPE, for measurement)
+ *****************************************************************************/
+
+typedef struct
+{
+  void *box;          /**< bbox of the item (leaf: caller's; inner: owned MBR) */
+  int64 id;           /**< leaf payload */
+  RTreeNode *child;   /**< inner payload */
+} STRItem;
+
+typedef struct { const RTree *tree; int axis; } STRCtx;
+
+static int
+str_cmp(const void *a, const void *b, void *arg)
+{
+  const STRCtx *c = (const STRCtx *) arg;
+  const STRItem *ia = (const STRItem *) a;
+  const STRItem *ib = (const STRItem *) b;
+  double ca = (c->tree->get_axis(ia->box, c->axis, false) +
+               c->tree->get_axis(ia->box, c->axis, true)) / 2.0;
+  double cb = (c->tree->get_axis(ib->box, c->axis, false) +
+               c->tree->get_axis(ib->box, c->axis, true)) / 2.0;
+  return (ca > cb) - (ca < cb);
+}
+
+/**
+ * @brief Pack one level of items into nodes, Sort-Tile-Recursive
+ * @details Sorts on the centre of axis 0, cuts into ceil(sqrt(pages)) slices,
+ * sorts each slice on axis 1, then fills nodes to capacity. The packing order
+ * affects tree QUALITY only; validity comes from each parent box being the
+ * union of its children, computed here whatever the ordering.
+ */
+static RTreeNode **
+str_pack_level(RTree *rtree, STRItem *items, int count, bool leaf, int *nout)
+{
+  int pages = (count + MAXITEMS - 1) / MAXITEMS;
+  int slices = (int) ceil(sqrt((double) pages));
+  if (slices < 1) slices = 1;
+  int per_slice = slices * MAXITEMS;
+
+  STRCtx ctx; ctx.tree = rtree; ctx.axis = 0;
+  qsort_arg(items, (size_t) count, sizeof(STRItem), str_cmp, &ctx);
+
+  RTreeNode **out = palloc(sizeof(RTreeNode *) * (size_t) pages);
+  int nnodes = 0;
+  for (int s = 0; s < count; s += per_slice)
+  {
+    int slen = (count - s < per_slice) ? count - s : per_slice;
+    if (rtree->dims > 1)
+    {
+      ctx.axis = 1;
+      qsort_arg(items + s, (size_t) slen, sizeof(STRItem), str_cmp, &ctx);
+    }
+    for (int p = 0; p < slen; p += MAXITEMS)
+    {
+      int plen = (slen - p < MAXITEMS) ? slen - p : MAXITEMS;
+      RTreeNode *node = node_make(leaf ? RTREE_LEAF : RTREE_INNER, rtree->bboxsize);
+      for (int k = 0; k < plen; k++)
+      {
+        STRItem *it = &items[s + p + k];
+        memcpy(RTREE_NODE_BBOX_N(node, k), it->box, rtree->bboxsize);
+        if (leaf)
+          node->ids[k] = it->id;
+        else
+          node->nodes[k] = it->child;
+      }
+      node->count = plen;
+      out[nnodes++] = node;
+    }
+  }
+  *nout = nnodes;
+  return out;
+}
+
+/**
+ * @ingroup meos_geo_box_index
+ * @brief Build an RTree from all of its entries at once
+ * @details Bottom-up Sort-Tile-Recursive packing. The result answers the same
+ * queries as inserting every entry one by one, but the whole set is known in
+ * advance, so nodes are filled to capacity and no node is ever split.
+ * @param[in] rtree An EMPTY RTree of the appropriate bounding box type
+ * @param[in] boxes Contiguous array of @p count boxes of the tree bbox size
+ * @param[in] ids The id of each box
+ * @param[in] count Number of entries
+ */
+void
+rtree_load(RTree *rtree, const void *boxes, const int64 *ids, int count)
+{
+  if (count <= 0)
+    return;
+
+  /* A box type whose dimension count depends on the data carries -1 until the
+   * first box arrives, which for a tree grown by insertion is the first insert */
+  if (rtree->dims < 0)
+    rtree->dims = 3 + MEOS_FLAGS_GET_Z(((const STBox *) boxes)->flags);
+
+  STRItem *items = palloc(sizeof(STRItem) * (size_t) count);
+  for (int i = 0; i < count; i++)
+  {
+    items[i].box = (void *) ((const char *) boxes + (size_t) i * rtree->bboxsize);
+    items[i].id = ids[i];
+    items[i].child = NULL;
+  }
+
+  int nnodes;
+  RTreeNode **level = str_pack_level(rtree, items, count, true, &nnodes);
+  pfree(items);
+
+  while (nnodes > 1)
+  {
+    STRItem *up = palloc(sizeof(STRItem) * (size_t) nnodes);
+    for (int i = 0; i < nnodes; i++)
+    {
+      void *mbr = palloc0(rtree->bboxsize);
+      memcpy(mbr, RTREE_NODE_BBOX_N(level[i], 0), rtree->bboxsize);
+      for (int k = 1; k < level[i]->count; k++)
+        rtree->bbox_expand(RTREE_NODE_BBOX_N(level[i], k), mbr);
+      up[i].box = mbr; up[i].id = 0; up[i].child = level[i];
+    }
+    int prev = nnodes;
+    RTreeNode **parents = str_pack_level(rtree, up, prev, false, &nnodes);
+    for (int i = 0; i < prev; i++)
+      pfree(up[i].box);
+    pfree(up); pfree(level);
+    level = parents;
+  }
+
+  rtree->root = level[0];
+  memcpy(&rtree->box, RTREE_NODE_BBOX_N(level[0], 0), rtree->bboxsize);
+  for (int k = 1; k < level[0]->count; k++)
+    rtree->bbox_expand(RTREE_NODE_BBOX_N(level[0], k), &rtree->box);
+  pfree(level);
+  return;
+}
+
+
 /**
  * @ingroup meos_geo_box_index
  * @brief Insert a bounding box into the RTree index.
