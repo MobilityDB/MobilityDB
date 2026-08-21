@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: pose_ypr_to_quaternion</title>
+<title>MobilityDB: lwgeom_affine_transform</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -99,7 +99,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2pose_2pose_8c_a33684b864cd606bb1e6381de245b863c.html#a33684b864cd606bb1e6381de245b863c">ensure_valid_rotation</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2pose_2pose_8c_a9992a8c74e84f28924703e3999295b4d.html#a9992a8c74e84f28924703e3999295b4d">geodetic_to_ecef</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2pose_2pose_8c_a28bbffa78951ac929184f31d92a05388.html#a28bbffa78951ac929184f31d92a05388">hashlittle2</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2pose_2pose_8c_ae61ef6ab29207654205247a60b4fb9bd.html#ae61ef6ab29207654205247a60b4fb9bd">lwgeom_affine_transform</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2pose_2pose_8c_ae61ef6ab29207654205247a60b4fb9bd.html#ae61ef6ab29207654205247a60b4fb9bd">lwgeom_affine_transform</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2pose_2pose_8c_a69460d82eff572c817d6acf8f6173ac6.html#a69460d82eff572c817d6acf8f6173ac6">lwgeom_apply_pose</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2pose_2pose_8c_ad4770948beea5778b3c97a819f1ef355.html#ad4770948beea5778b3c97a819f1ef355">MAXPOSELEN</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__geopose_ga107515f90626286320c25aff8bae7b35.html#ga107515f90626286320c25aff8bae7b35">pose_angular_distance</a></td></tr>
@@ -157,7 +157,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2pose_2pose_8c_ae0913db50e90057c66ce95e32436c8ff.html#ae0913db50e90057c66ce95e32436c8ff">pose_wkt_out</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__geopose_gacf71acda83841765a9b85c54c5fcac47.html#gacf71acda83841765a9b85c54c5fcac47">pose_yaw</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__accessor_ga0e9910b3c6cbbd56f300f1375f3c082e.html#ga0e9910b3c6cbbd56f300f1375f3c082e">pose_ypr</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2pose_2pose_8c_a4ef98f33ef4c0d55dba3cf0d6ceebe9e.html#a4ef98f33ef4c0d55dba3cf0d6ceebe9e">pose_ypr_to_quaternion</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2pose_2pose_8c_a4ef98f33ef4c0d55dba3cf0d6ceebe9e.html#a4ef98f33ef4c0d55dba3cf0d6ceebe9e">pose_ypr_to_quaternion</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__pose__conversion_ga54f60759b2b82424e43ec84c5a4d1832.html#ga54f60759b2b82424e43ec84c5a4d1832">posearr_points</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__base__transf_ga4cd991928d44d5932b2d2e9db334fc8a.html#ga4cd991928d44d5932b2d2e9db334fc8a">posearr_round</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2pose_2pose_8c_aa155485dc29c2c72b327cc4fcc22ac3f.html#aa155485dc29c2c72b327cc4fcc22ac3f">posesegm_interpolate</a></td></tr>
@@ -170,53 +170,92 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a4ef98f33ef4c0d55dba3cf0d6ceebe9e" name="a4ef98f33ef4c0d55dba3cf0d6ceebe9e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4ef98f33ef4c0d55dba3cf0d6ceebe9e">&#9670;&#160;</a></span>pose_ypr_to_quaternion()</h2>
+<a id="ae61ef6ab29207654205247a60b4fb9bd" name="ae61ef6ab29207654205247a60b4fb9bd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae61ef6ab29207654205247a60b4fb9bd">&#9670;&#160;</a></span>lwgeom_affine_transform()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void pose_ypr_to_quaternion </td>
+          <td class="memname">static void lwgeom_affine_transform </td>
           <td>(</td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>yaw_rad</em>, </td>
+          <td class="paramtype"><a class="el" href="structLWGEOM.html">LWGEOM</a> *&#160;</td>
+          <td class="paramname"><em>geom</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>pitch_rad</em>, </td>
+          <td class="paramname"><em>a</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>roll_rad</em>, </td>
+          <td class="paramname"><em>b</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double *&#160;</td>
-          <td class="paramname"><em>W</em>, </td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>c</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double *&#160;</td>
-          <td class="paramname"><em>X</em>, </td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>d</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double *&#160;</td>
-          <td class="paramname"><em>Y</em>, </td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>e</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double *&#160;</td>
-          <td class="paramname"><em>Z</em>&#160;</td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>f</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>g</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>h</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>i</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>xoff</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>yoff</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>zoff</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -224,13 +263,19 @@ $(function() {
           <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-<p>Convert (yaw, pitch, roll) in radians, ZYX intrinsic Tait-Bryan convention, to a unit quaternion (W, X, Y, Z) in Hamilton convention. </p>
-<p >ZYX order is the one the OGC GeoPose standard prescribes: yaw about Z, then pitch about the new Y, then roll about the new X. The output is unit-norm by construction, modulo float rounding. </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Apply an affine transformation to a geometry. </p>
+<dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">yaw_rad,pitch_rad,roll_rad</td><td>Angles in radians </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">W,X,Y,Z</td><td>Quaternion components </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">geom</td><td>Geometry transformed in place </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">a,b,c,d,e,f,g,h,i</td><td>Rows of the 3x3 linear part </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xoff,yoff,zoff</td><td>Translation </td></tr>
   </table>
   </dd>
 </dl>

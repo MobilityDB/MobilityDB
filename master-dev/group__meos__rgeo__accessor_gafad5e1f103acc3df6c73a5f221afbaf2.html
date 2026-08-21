@@ -141,7 +141,7 @@ $(function() {
   </table>
   </dd>
 </dl>
-<dl class="section note"><dt>Note</dt><dd>Mirrors the collect-then-union pattern of <code>tgeo_traversed_area</code> for general temporal geometries; the trgeometry-specific step is materialising the reference polygon at every emitted sample via <code>geom_apply_pose</code>. Sample selection mirrors the adaptive recursive bisection in <code>tdistance_trgeoseq_trgeoseq_linear</code>: each input instant is emitted; between two consecutive instants the segment is bisected while the rotation magnitude across the half-segment exceeds <code>TRGEO_TRAVERSED_AREA_ANGLE_TOL</code> and the recursion depth is below <code>TRGEO_TRAVERSED_AREA_MAX_DEPTH</code>. Pure-translation segments terminate at depth 0 with two samples (start and end). The unary union dissolves any redundant overlap between samples. </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>Mirrors the collect-then-union pattern of <code>tgeo_traversed_area</code> for general temporal geometries; the trgeometry-specific step is materialising the reference polygon at every emitted sample via <code>pose_apply_geo</code>. Sample selection mirrors the adaptive recursive bisection in <code>tdistance_trgeoseq_trgeoseq_linear</code>: each input instant is emitted; between two consecutive instants the segment is bisected while the rotation magnitude across the half-segment exceeds <code>TRGEO_TRAVERSED_AREA_ANGLE_TOL</code> and the recursion depth is below <code>TRGEO_TRAVERSED_AREA_MAX_DEPTH</code>. Pure-translation segments terminate at depth 0 with two samples (start and end). The unary union dissolves any redundant overlap between samples. </dd></dl>
 
 </div>
 </div>

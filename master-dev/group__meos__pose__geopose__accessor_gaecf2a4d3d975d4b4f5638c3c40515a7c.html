@@ -118,10 +118,10 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return the world-frame trajectory obtained by applying a temporal pose to a body-frame geometry. </p>
-<p >Per instant the rigid-body transform <code>R(q_i)</code> · v + p_i is applied to the body geometry; the result is a temporal point with the same subtype and interpolation as the input <code>tpose</code>. v1 supports point and multipoint body geometries — the output is a tgeompoint carrying the per-instant transformed point. Linear interpolation of the resulting trajectory is the chord on each segment, which approximates the true rigid-body trajectory (a circular arc under SLERP); the same linear-interpolation trade-off MobilityDB already uses for spatial trajectories. </p><dl class="params"><dt>Parameters</dt><dd>
+<p >Per instant the rigid-body transform <code>R(q_i)</code> · v + p_i is applied to the body geometry; the result is a temporal point with the same subtype and interpolation as the input <code>tpose</code>. The output is a tgeompoint carrying the per-instant transformed point, so the body geometry must be a point here, unlike in the static <a class="el" href="group__meos__pose__base__geopose_ga35e0152cab2586184ec03943561134ba.html#ga35e0152cab2586184ec03943561134ba" title="Return the world-frame geometry obtained by applying a pose&#39;s rigid-body transform to a body-frame ge...">pose_apply_geo()</a>. Linear interpolation of the resulting trajectory is the chord on each segment, which approximates the true rigid-body trajectory (a circular arc under SLERP); the same linear-interpolation trade-off MobilityDB already uses for spatial trajectories. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> pose </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">body</td><td>Body-frame geometry (POINT or MULTIPOINT) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">body</td><td>Body-frame point </td></tr>
   </table>
   </dd>
 </dl>

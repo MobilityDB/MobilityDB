@@ -121,10 +121,10 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return the world-frame geometry obtained by applying a pose's rigid-body transform to a body-frame geometry. </p>
-<p >The transform is <code>world</code> = R(q) · body + p where (p, q) are the pose's position and orientation. v1 supports point and multipoint body geometries; lines / polygons are deferred. The body geometry's dimensionality (2D / 3D) must match the pose's; the result inherits the pose's SRID. </p><dl class="params"><dt>Parameters</dt><dd>
+<p >The transform is <code>world</code> = R(q) · body + p where (p, q) are the pose's position and orientation. It is applied to every coordinate of the body geometry, whatever its type, so a shape is carried into the pose's frame with its form unchanged. The pose and the body geometry must have the same dimensionality, and their SRIDs must agree; an unknown SRID on either one adopts the other, and the result carries the SRID they agree on. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">pose</td><td><a class="el" href="structPose.html" title="Basic functions for static pose objects.">Pose</a> </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">body</td><td>Body-frame geometry (POINT or MULTIPOINT) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">body</td><td>Body-frame geometry </td></tr>
   </table>
   </dd>
 </dl>

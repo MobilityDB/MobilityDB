@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: pose_distance</title>
+<title>MobilityDB: lwgeom_apply_pose</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -93,12 +93,12 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="pose_8h_a0ad2b5ad5f0686dfe9e939d62d8c621e.html#a0ad2b5ad5f0686dfe9e939d62d8c621e">ensure_valid_pose_stbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pose_8h_af06a2c8fd49fad041912887bb67761c3.html#af06a2c8fd49fad041912887bb67761c3">ensure_valid_poseset_pose</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pose_8h_a9992a8c74e84f28924703e3999295b4d.html#a9992a8c74e84f28924703e3999295b4d">geodetic_to_ecef</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="pose_8h_a69460d82eff572c817d6acf8f6173ac6.html#a69460d82eff572c817d6acf8f6173ac6">lwgeom_apply_pose</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="pose_8h_a69460d82eff572c817d6acf8f6173ac6.html#a69460d82eff572c817d6acf8f6173ac6">lwgeom_apply_pose</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pose_8h_a9627d704424d0de29e93eb544844027d.html#a9627d704424d0de29e93eb544844027d">PG_GETARG_POSE_P</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pose_8h_a2d9dff6c94b9bf99dacc7e24ed16b836.html#a2d9dff6c94b9bf99dacc7e24ed16b836">PG_RETURN_POSE_P</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pose_8h_af2037f580678dd30295c29426659713b.html#af2037f580678dd30295c29426659713b">pose_collinear</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pose_8h_a5173800fc567e71a6584dce11e05791e.html#a5173800fc567e71a6584dce11e05791e">pose_compose_values</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="pose_8h_aa4ed76429b0163d63451bd86db48ae42.html#aa4ed76429b0163d63451bd86db48ae42">pose_distance</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="pose_8h_aa4ed76429b0163d63451bd86db48ae42.html#aa4ed76429b0163d63451bd86db48ae42">pose_distance</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pose_8h_aa361700c4f1ab0436a74163261496a5e.html#aa361700c4f1ab0436a74163261496a5e">pose_enu_to_ecef_quaternion</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pose_8h_a63115733ec9818bc7b0358bf46d7ec08.html#a63115733ec9818bc7b0358bf46d7ec08">pose_parse</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="pose_8h_a3a7b67e53d1d053270b0c534e02abc6c.html#a3a7b67e53d1d053270b0c534e02abc6c">pose_quaternion_mul</a></td></tr>
@@ -119,23 +119,23 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="aa4ed76429b0163d63451bd86db48ae42" name="aa4ed76429b0163d63451bd86db48ae42"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa4ed76429b0163d63451bd86db48ae42">&#9670;&#160;</a></span>pose_distance()</h2>
+<a id="a69460d82eff572c817d6acf8f6173ac6" name="a69460d82eff572c817d6acf8f6173ac6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a69460d82eff572c817d6acf8f6173ac6">&#9670;&#160;</a></span>lwgeom_apply_pose()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> pose_distance </td>
+          <td class="memname">void lwgeom_apply_pose </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td>
-          <td class="paramname"><em>pose1</em>, </td>
+          <td class="paramtype">const <a class="el" href="structPose.html">Pose</a> *&#160;</td>
+          <td class="paramname"><em>pose</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td>
-          <td class="paramname"><em>pose2</em>&#160;</td>
+          <td class="paramtype"><a class="el" href="structLWGEOM.html">LWGEOM</a> *&#160;</td>
+          <td class="paramname"><em>geom</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -145,7 +145,14 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the distance between the two poses. </p>
+<p>Apply to a body-frame geometry the rigid-body transform encoded by a pose, producing the corresponding world-frame geometry. </p>
+<p >The transform is <code>world</code> = R(q) · body + p, where (p, q) are the pose's position and orientation. It is applied to every coordinate of the geometry, whatever its type, so the shape is carried into the pose's frame unchanged. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">pose</td><td><a class="el" href="structPose.html" title="Basic functions for static pose objects.">Pose</a> </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">geom</td><td>Geometry transformed in place </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
