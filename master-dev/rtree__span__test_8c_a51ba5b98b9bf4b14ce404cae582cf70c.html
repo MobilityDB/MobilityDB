@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: test_intspan_rtree</title>
+<title>MobilityDB: test_id_width</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -85,14 +85,14 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="rtree__span__test_8c_a80bfdd8adbffe226265cd729655a7268.html#a80bfdd8adbffe226265cd729655a7268">NUM_SPANS</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="rtree__span__test_8c_a636d972bd6309b69b957293ee08e0615.html#a636d972bd6309b69b957293ee08e0615">random_int</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="rtree__span__test_8c_a372a0dd3bca8660350160b33f08f2381.html#a372a0dd3bca8660350160b33f08f2381">test_floatspan_rtree</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="rtree__span__test_8c_a51ba5b98b9bf4b14ce404cae582cf70c.html#a51ba5b98b9bf4b14ce404cae582cf70c">test_id_width</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="rtree__span__test_8c_a091271a3f5bfadb02659a44ce832b213.html#a091271a3f5bfadb02659a44ce832b213">test_intspan_rtree</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="rtree__span__test_8c_a51ba5b98b9bf4b14ce404cae582cf70c.html#a51ba5b98b9bf4b14ce404cae582cf70c">test_id_width</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="rtree__span__test_8c_a091271a3f5bfadb02659a44ce832b213.html#a091271a3f5bfadb02659a44ce832b213">test_intspan_rtree</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a091271a3f5bfadb02659a44ce832b213" name="a091271a3f5bfadb02659a44ce832b213"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a091271a3f5bfadb02659a44ce832b213">&#9670;&#160;</a></span>test_intspan_rtree()</h2>
+<a id="a51ba5b98b9bf4b14ce404cae582cf70c" name="a51ba5b98b9bf4b14ce404cae582cf70c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a51ba5b98b9bf4b14ce404cae582cf70c">&#9670;&#160;</a></span>test_id_width()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -101,7 +101,7 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static void test_intspan_rtree </td>
+          <td class="memname">static void test_id_width </td>
           <td>(</td>
           <td class="paramtype">void&#160;</td>
           <td class="paramname"></td><td>)</td>
@@ -114,6 +114,9 @@ $(function() {
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>Test that an identifier wider than 32 bits survives the index. </p>
+<p >The identifier a caller attaches to a box is an int64. A carrier narrower than that anywhere on the insert path changes the value rather than losing the entry, so the box is still found and only the identifier reported for it is wrong. </p>
 
 </div>
 </div>
