@@ -866,7 +866,10 @@ posechainsegm_interpolate(const PoseChain *start, const PoseChain *end,
  * @details Every link locates at the ratio the whole chain moves through, so
  * the value sits on the segment only where all of them agree on one ratio.
  * @note The function returns -1.0 when the value is not on the segment, which
- * is what the lifting infrastructure reads to decide there is no crossing
+ * is what the lifting infrastructure reads to decide there is no crossing. A
+ * chain holding another number of links is a different structure and so is
+ * never on the segment, while the two chains defining the segment are values
+ * of one temporal chain and must agree on that number
  */
 long double
 posechainsegm_locate(const PoseChain *start, const PoseChain *end,
@@ -874,8 +877,10 @@ posechainsegm_locate(const PoseChain *start, const PoseChain *end,
 {
   if (! ensure_valid_posechain_posechain(start, end) ||
       ! ensure_valid_posechain_posechain(start, value) ||
-      ! ensure_same_count_posechain(start, end) ||
-      ! ensure_same_count_posechain(start, value))
+      ! ensure_same_count_posechain(start, end))
+    return -1.0;
+
+  if (start->count != value->count)
     return -1.0;
 
   long double result = -1.0;

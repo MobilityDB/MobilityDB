@@ -30,6 +30,36 @@ SELECT tposechain '{PoseChain(Pose(Point(0 0), 0))@2000-01-01, PoseChain(Pose(Po
 ERROR:  Operation on pose chains of 1 and 2 links
 LINE 1: SELECT tposechain '{PoseChain(Pose(Point(0 0), 0))@2000-01-0...
                           ^
+SELECT tposechain 'PoseChain(Pose(Point(0 0), 0))@2000-01-01' ?= posechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tposechain '[PoseChain(Pose(Point(0 0), 0))@2000-01-01, PoseChain(Pose(Point(1 1), 0))@2000-01-02]' ?= posechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tposechain '[PoseChain(Pose(Point(0 0), 0))@2000-01-01, PoseChain(Pose(Point(1 1), 0))@2000-01-02]' %= posechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT posechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))' ?= tposechain '[PoseChain(Pose(Point(0 0), 0))@2000-01-01, PoseChain(Pose(Point(1 1), 0))@2000-01-02]';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tposechain '[PoseChain(Pose(Point(0 0), 0))@2000-01-01, PoseChain(Pose(Point(1 1), 0))@2000-01-02]' ?= posechain 'PoseChain(Pose(Point(0 0), 0))';
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT asEWKT(round(valueAtTimestamp(
   appendInstant(
     tposechain(posechain(ARRAY[pose(ST_Point(0,0), 0), pose(ST_Point(10,0), 0)]),
