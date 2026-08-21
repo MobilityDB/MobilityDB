@@ -943,6 +943,13 @@ Three facts bound which declarations carry the clause:
   filter**, the operator lookup finding no member. The Z-axis strategies reach
   the opclass of a three-dimensional family through the `front_back` key of §6,
   so `tpose` and `trgeometry` answer their Z predicates from the index.
+- **An operator the bounding box cannot bound stays a filter by design.** The
+  adjacency of a span SET to a value reads the first and the last span of the
+  set, so it is true at a bound inside the set — `{[1,3), [5,8)} -|- 3` is true
+  while the bounding span `[1,8)` reports no adjacency — and a class listing it
+  would drop rows. Its adjacency to a span and to a span set reads the outer
+  bounds alone, which the key carries, so those two are members; a span, whose
+  key is the value itself, carries all three.
 - **The temporal pointcloud types carry no clause.** Their bounding box is a
   `TPCBox` and no scalar conversion to it exists to build an index expression
   from, so a clause there could never fire.
