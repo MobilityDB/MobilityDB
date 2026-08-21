@@ -367,10 +367,16 @@ arcsegm_intersect(double ax, double ay, double rx, double ry, const Edge *e,
   double bb = 2 * (wx * rx + wy * ry);
   double cc = wx * wx + wy * wy - e->radius * e->radius;
   double disc = bb * bb - 4 * aa * cc;
-  /* No real root */
-  if (disc < -MEOS_EDGE_TOLERANCE)
+  /* The discriminant is the difference of two quantities of like size, so a
+   * segment touching the circle reaches zero only to their rounding. Reading
+   * it against that rounding rather than against zero keeps a touch one root:
+   * against zero it becomes two roots a square root of the rounding apart,
+   * which is a node pair far enough apart to be taken for two, and the sliver
+   * between them is not a piece of any boundary */
+  double eps = 1e-14 * (fabs(bb * bb) + fabs(4 * aa * cc));
+  if (disc < -eps)
     return 0;
-  if (disc < 0)
+  if (disc <= eps)
     disc = 0;
 
   double sq = sqrt(disc);
