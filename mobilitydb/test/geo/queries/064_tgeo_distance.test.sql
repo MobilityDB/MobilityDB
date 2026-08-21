@@ -792,6 +792,17 @@ SELECT ST_AsText(shortestLine(tgeometry '{[Point(0 0)@2000-01-01, Point(2 0)@200
 SELECT ST_AsText(shortestLine(tgeometry '{[Point(0 0)@2000-01-01],(Point(1 1)@2000-01-02, Point(1 1)@2000-01-03)}','{[Point(1 3)@2000-01-01, Point(1 2)@2000-01-03]}'));
 SELECT ST_AsText(shortestLine(tgeometry '{[Point(1 1)@2000-01-01, Point(1 1)@2000-01-02),[Point(0 0)@2000-01-03]}','{[Point(1 3)@2000-01-01, Point(1 2)@2000-01-03]}'));
 SELECT ST_AsText(shortestLine(tgeometry '[Point(2 2)@2000-01-01, Point(1 1)@2000-01-02]', '[Point(4 1)@2000-01-01, Point(2 1)@2000-01-02]'));
+-- Values carrying extent: the line joins the two geometries, not two points.
+-- The line must be asserted by its text, since its LENGTH alone is satisfied by
+-- a line drawn between the wrong two points.
+SELECT ST_AsText(shortestLine(tgeometry '[Polygon((0 0,2 0,2 1,0 1,0 0))@2001-01-01, Polygon((0 0,2 0,2 1,0 1,0 0))@2001-01-02]', tgeometry '[Polygon((5 3,6 3,6 4,5 4,5 3))@2001-01-01, Polygon((5 3,6 3,6 4,5 4,5 3))@2001-01-02]'));
+SELECT ST_AsText(shortestLine(tgeometry '[Polygon((0 0,2 0,2 1,0 1,0 0))@2001-01-01, Polygon((10 0,12 0,12 1,10 1,10 0))@2001-01-02]', tgeometry '[Polygon((5 3,6 3,6 4,5 4,5 3))@2001-01-01, Polygon((5 3,6 3,6 4,5 4,5 3))@2001-01-02]'));
+SELECT ST_AsText(shortestLine(tgeometry '[Linestring(0 0,2 2)@2001-01-01, Linestring(0 0,2 2)@2001-01-02]', tgeometry '[Polygon((5 3,6 3,6 4,5 4,5 3))@2001-01-01, Polygon((5 3,6 3,6 4,5 4,5 3))@2001-01-02]'));
+SELECT ST_AsText(shortestLine(tgeometry '[Polygon((0 0,2 0,2 1,0 1,0 0))@2001-01-01, Polygon((0 0,2 0,2 1,0 1,0 0))@2001-01-02]', tgeometry '[Point(5 3)@2001-01-01, Point(5 3)@2001-01-02]'));
+-- A witness measures the distance it reports
+SELECT ST_Length(shortestLine(tgeometry '[Polygon((0 0,2 0,2 1,0 1,0 0))@2001-01-01, Polygon((0 0,2 0,2 1,0 1,0 0))@2001-01-02]', tgeometry '[Polygon((5 3,6 3,6 4,5 4,5 3))@2001-01-01, Polygon((5 3,6 3,6 4,5 4,5 3))@2001-01-02]')) = nearestApproachDistance(tgeometry '[Polygon((0 0,2 0,2 1,0 1,0 0))@2001-01-01, Polygon((0 0,2 0,2 1,0 1,0 0))@2001-01-02]', tgeometry '[Polygon((5 3,6 3,6 4,5 4,5 3))@2001-01-01, Polygon((5 3,6 3,6 4,5 4,5 3))@2001-01-02]');
+-- The two argument forms answer the same question
+SELECT ST_AsText(shortestLine(tgeometry '[Polygon((0 0,2 0,2 1,0 1,0 0))@2001-01-01, Polygon((0 0,2 0,2 1,0 1,0 0))@2001-01-02]', geometry 'Polygon((5 3,6 3,6 4,5 4,5 3))'));
 -- NULL
 SELECT shortestline(tgeometry '{[Point(2 2)@2001-01-01, Point(2 2)@2001-01-02),[Point(1 1)@2001-01-03, Point(2 2)@2001-01-04]}', tgeometry '[Point(1 1)@2001-01-02, Point(1 1)@2001-01-03)');
 SELECT shortestline(tgeometry '{[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02),[Point(1 1)@2001-01-03, Point(2 2)@2001-01-04]}', tgeometry '{[Point(1 1)@2001-01-02, Point(1 1)@2001-01-03)}');

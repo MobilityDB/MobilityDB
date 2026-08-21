@@ -2975,12 +2975,30 @@ shortestline_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
   Datum value1, value2;
   temporal_value_at_timestamptz(temp1, tmin, false, &value1);
   temporal_value_at_timestamptz(temp2, tmin, false, &value2);
-  LWGEOM *line = (LWGEOM *) lwline_make(value1, value2);
-  GSERIALIZED *result = geo_serialize(line);
+  const GSERIALIZED *gs1 = DatumGetGserializedP(value1);
+  const GSERIALIZED *gs2 = DatumGetGserializedP(value2);
+  GSERIALIZED *result;
+  if (gserialized_get_type(gs1) == POINTTYPE &&
+      gserialized_get_type(gs2) == POINTTYPE)
+  {
+    /* The shortest line between two points is the line joining them, and
+     * building it directly carries a Z that the geodetic shortest line, which
+     * answers on the spheroid and so in two dimensions, would drop */
+    LWGEOM *line = (LWGEOM *) lwline_make(value1, value2);
+    result = geo_serialize(line);
+    lwgeom_free(line);
+  }
+  /* The values of a temporal geometry carry extent, so what joins them is the
+   * shortest line between the two of them, over the dispatch
+   * #shortestline_tgeo_geo makes for the same pair of arguments */
+  else if (MEOS_FLAGS_GET_GEODETIC(temp1->flags))
+    result = geography_shortestline_internal(gs1, gs2, true);
+  else
+    result = MEOS_FLAGS_GET_Z(temp1->flags) ?
+      geom_shortestline3d(gs1, gs2) : geom_shortestline2d(gs1, gs2);
   pfree(DatumGetPointer(value1)); pfree(DatumGetPointer(value2));
   if (dist)
     pfree(dist);
-  lwgeom_free(line);
   return result;
 }
 
