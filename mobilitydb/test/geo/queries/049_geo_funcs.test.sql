@@ -38,11 +38,12 @@ SELECT ST_AsText(round(OrientedEnvelope(geometry 'Linestring(0 0,10 0)'), 6));
 SELECT ST_AsText(round(OrientedEnvelope(geometry 'Polygon((0 0,10 0,10 5,0 5,0 0))'), 6));
 SELECT ST_AsText(round(OrientedEnvelope(geometry 'Polygon((0 0,3 4,-1 7,-4 3,0 0))'), 6));
 
--- An arc reaches past the points that define it, so a geometry carrying one
--- has no native placement yet and is answered by GEOS, as PostGIS answers it
-SELECT ST_Equals(
-  OrientedEnvelope(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))'),
-  ST_OrientedEnvelope(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))'));
+-- An arc reaches past the points that define it, and is enclosed by reading
+-- how far its circle reaches in each direction. The envelope of a circle of
+-- radius 2 is the square of side 4 about it, of area 16; a rectangle placed on
+-- the points of that circle has area 8 and leaves a third of it outside
+SELECT ST_AsText(OrientedEnvelope(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))'));
+SELECT round(ST_Area(OrientedEnvelope(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))'))::numeric, 6);
 
 -- The hull of a point is that point, and of collinear points their segment
 SELECT ST_AsText(round(ConvexHull(geometry 'Point(1 2)'), 6));
@@ -54,10 +55,10 @@ SELECT ST_AsText(round(ConvexHull(geometry 'Multipoint(0 0,10 0,10 10,0 10,5 5)'
 -- The hull of a concave polygon closes over the notch
 SELECT ST_AsText(round(ConvexHull(geometry 'Polygon((0 0,10 0,10 10,5 5,0 10,0 0))'), 6));
 
--- And the hull of an arc is answered by GEOS for the same reason
-SELECT ST_Equals(
-  ConvexHull(geometry 'Circularstring(0 0,2 2,4 0)'),
-  ST_ConvexHull(geometry 'Circularstring(0 0,2 2,4 0)'));
+-- The hull of a geometry carrying an arc carries that arc, where a hull placed
+-- on the three points defining a semicircular arc leaves the whole arc outside
+SELECT ST_AsText(ConvexHull(geometry 'Circularstring(0 0,2 2,4 0)'));
+SELECT ST_AsText(ConvexHull(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))'));
 
 -------------------------------------------------------------------------------
 -- Simple geometries
