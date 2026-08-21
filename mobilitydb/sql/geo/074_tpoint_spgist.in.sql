@@ -432,6 +432,7 @@ CREATE OPERATOR CLASS tgeogpoint_kdtree_ops
   FOR TYPE tgeogpoint USING spgist AS
   -- overlaps
   OPERATOR  3    && (tgeogpoint, tstzspan),
+  OPERATOR  3    && (tgeogpoint, stbox),
   OPERATOR  3    && (tgeogpoint, tgeogpoint),
     -- same
   OPERATOR  6    ~= (tgeogpoint, tstzspan),
