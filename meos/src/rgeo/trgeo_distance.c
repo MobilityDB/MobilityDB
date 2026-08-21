@@ -1905,6 +1905,48 @@ tfloatseq_min_tfloatseq(const TSequence *seq1, const TSequence *seq2)
 }
 
 /**
+ * @brief Return @p dist carrying the distance at each of its instants
+ * @details A fold of per-component distances answers the minimum of two
+ * piecewise-linear curves. Where the two cross, neither component carries a
+ * turning point of its own, so both values come from interpolation; each
+ * interpolation lies above its own convex curve, and the minimum of the two
+ * lies above the distance. Every instant of a folded sequence therefore takes
+ * the distance from the body placed at that instant to the whole geometry,
+ * which is the value a turning point stands for.
+ * @param[in] dist Folded distance sequence, consumed
+ * @param[in] seq Temporal rigid geometry the distance is computed from
+ * @param[in] gs Geometry the distance is computed to
+ * @param[in] ref_gs Reference geometry of @p seq
+ */
+static TSequence *
+dist2d_seq_exact_values(TSequence *dist, const TSequence *seq,
+  const GSERIALIZED *gs, const GSERIALIZED *ref_gs)
+{
+  TInstant **instants = palloc(sizeof(TInstant *) * dist->count);
+  for (int i = 0; i < dist->count; i++)
+  {
+    const TInstant *inst = TSEQUENCE_INST_N(dist, i);
+    Datum pose;
+    /* The folded sequence spans the period of the rigid geometry, so the pose
+     * is there; where a bound makes it absent the folded value stands */
+    if (! tsequence_value_at_timestamptz(seq, inst->t, false, &pose))
+    {
+      instants[i] = tinstant_copy(inst);
+      continue;
+    }
+    GSERIALIZED *body = pose_apply_geo(DatumGetPoseP(pose), ref_gs);
+    instants[i] = tinstant_make(Float8GetDatum(geom_distance2d(body, gs)),
+      T_TFLOAT, inst->t);
+    pfree(body); pfree(DatumGetPointer(pose));
+  }
+  TSequence *result = tsequence_make_free(instants, dist->count,
+    dist->period.lower_inc, dist->period.upper_inc,
+    MEOS_FLAGS_GET_INTERP(dist->flags), NORMALIZE);
+  pfree(dist);
+  return result;
+}
+
+/**
  * @brief Return the temporal distance between a temporal rigid geometry
  * sequence and a multi-component geometry
  * @details The distance to a multi-component geometry is the pointwise minimum
@@ -1916,7 +1958,7 @@ dist2d_trgeoseq_multi(const TSequence *seq, const GSERIALIZED *gs,
   const GSERIALIZED *, const GSERIALIZED *))
 {
   TSequence *result = NULL;
-  int count = geo_num_geos(gs);
+  int count = geo_num_geos(gs), nfolds = 0;
   for (int i = 1; i <= count; i++)
   {
     GSERIALIZED *comp = geo_geo_n(gs, i);
@@ -1941,9 +1983,10 @@ dist2d_trgeoseq_multi(const TSequence *seq, const GSERIALIZED *gs,
       TSequence *min = tfloatseq_min_tfloatseq(result, dist);
       pfree(result); pfree(dist);
       result = min;
+      nfolds++;
     }
   }
-  return result;
+  return nfolds ? dist2d_seq_exact_values(result, seq, gs, ref_gs) : result;
 }
 
 static GSERIALIZED *
@@ -1971,6 +2014,7 @@ dist2d_trgeoseq_line(const TSequence *seq, const GSERIALIZED *gs,
   const LWLINE *line = lwgeom_as_lwline(geom);
   int32_t srid = gserialized_get_srid(gs);
   TSequence *result = NULL;
+  int nfolds = 0;
   for (uint32_t i = 0; i + 1 < line->points->npoints; i++)
   {
     GSERIALIZED *ring = line_segment_ring(line, i, srid);
@@ -1988,10 +2032,11 @@ dist2d_trgeoseq_line(const TSequence *seq, const GSERIALIZED *gs,
       TSequence *min = tfloatseq_min_tfloatseq(result, dist);
       pfree(result); pfree(dist);
       result = min;
+      nfolds++;
     }
   }
   lwgeom_free(geom);
-  return result;
+  return nfolds ? dist2d_seq_exact_values(result, seq, gs, ref_gs) : result;
 }
 
 /**

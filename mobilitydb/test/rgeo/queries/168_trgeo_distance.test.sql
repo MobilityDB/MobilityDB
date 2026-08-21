@@ -240,4 +240,21 @@ SELECT ST_AsText(ST_SnapToGrid(shortestLine(
   trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
   geometry 'Linestring(-5 3,20 3)'), 0.000001));
 
+-- Every turning point of a folded distance carries the distance at that
+-- instant. Where two components cross, neither carries a turning point of its
+-- own, so a minimum taken over their interpolations would sit above the value
+-- the geometry-geometry distance answers there
+SELECT round(abs(valueAtTimestamp(tDistance(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  geometry 'MultiPoint(0 5,11 5)'), '2001-01-01 12:00')
+  - ST_Distance(valueAtTimestamp(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  '2001-01-01 12:00'), geometry 'MultiPoint(0 5,11 5)'))::numeric, 9);
+SELECT round(abs(valueAtTimestamp(tDistance(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  geometry 'MultiLinestring((0 5,0 6),(11 5,11 6))'), '2001-01-01 12:00')
+  - ST_Distance(valueAtTimestamp(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  '2001-01-01 12:00'), geometry 'MultiLinestring((0 5,0 6),(11 5,11 6))'))::numeric, 9);
+
 -------------------------------------------------------------------------------
