@@ -308,6 +308,7 @@ CREATE OPERATOR CLASS tgeography_kdtree_ops
   FOR TYPE tgeography USING spgist AS
   -- overlaps
   OPERATOR  3    && (tgeography, tstzspan),
+  OPERATOR  3    && (tgeography, stbox),
   OPERATOR  3    && (tgeography, tgeography),
     -- same
   OPERATOR  6    ~= (tgeography, tstzspan),
