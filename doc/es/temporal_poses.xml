@@ -1463,6 +1463,19 @@ SELECT ST_AsText(applyPose(ST_MakeEnvelope(-2,-1,2,1),
   pose 'Pose(Point(10 20), 0)'));
 -- POLYGON((8 19,8 21,12 21,12 19,8 19))
 </programlisting>
+			<para>Cualquiera de los dos marcos puede moverse. Aplicar una pose a una <varname>tpose</varname> lleva un cuerpo fijo a través de todo el movimiento de su padre, que es lo que pide un sensor montado sobre un vehículo en movimiento; aplicar una <varname>tpose</varname> a una pose lleva un cuerpo en movimiento a un marco que permanece quieto; y aplicar una <varname>tpose</varname> a una <varname>tpose</varname> compone dos marcos que ambos se mueven, sobre el tiempo que comparten. <varname>poseInverse</varname> se eleva de la misma manera, cambiando el punto de vista sobre un objeto en movimiento durante todo su movimiento.</para>
+			<para><varname>applyPose(pose, tpose) &#8594; tpose</varname></para>
+			<para><varname>applyPose(tpose, pose) &#8594; tpose</varname></para>
+			<para><varname>applyPose(tpose, tpose) &#8594; tpose</varname></para>
+			<para><varname>poseInverse(tpose) &#8594; tpose</varname></para>
+			<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- Un sensor una unidad delante de un cuerpo que termina girado un cuarto de
+-- vuelta en (10, 20) termina una unidad al norte de él
+SELECT asEWKT(round(applyPose(pose 'Pose(Point(1 0), 0)',
+  tpose '[Pose(Point(0 0), 0)@2026-01-01,
+  Pose(Point(10 20), 1.5707963267948966)@2026-01-02]'), 6));
+/* [Pose(POINT(1 0),0)@2026-01-01, Pose(POINT(10 21),1.570796)@2026-01-02] */
+</programlisting>
 			<para>Una pose nombra un marco, por lo que ella misma es un valor en el marco del cuerpo: aplicar una pose a otra compone las dos relaciones entre marcos. Escribiendo <varname>P_WV</varname> para la pose de un vehículo en el mundo y <varname>P_VS</varname> para la pose de un sensor en el vehículo, la pose del sensor en el mundo es <varname>P_WS = P_WV ∘ P_VS</varname>. Esta es la operación que una cadena de poses pliega sobre sus eslabones, de modo que una cadena de dos eslabones se compone en lo que esto devuelve.</para>
 			<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Un sensor una unidad delante de un vehículo girado un cuarto de vuelta

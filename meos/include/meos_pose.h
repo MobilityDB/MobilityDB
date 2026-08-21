@@ -119,6 +119,10 @@ extern char *tpose_as_geopose_stream_element(const Temporal *temp, const TInstan
 extern char *tpose_as_geopose_stream(const Temporal *temp, int precision);
 extern GSERIALIZED *pose_apply_geo(const Pose *pose, const GSERIALIZED *body);
 extern Temporal *tpose_apply_geo(const Temporal *temp, const GSERIALIZED *body);
+extern Temporal *tpose_compose_pose(const Temporal *body, const Pose *frame);
+extern Temporal *pose_compose_tpose(const Pose *body, const Temporal *frame);
+extern Temporal *tpose_compose_tpose(const Temporal *body, const Temporal *frame);
+extern Temporal *tpose_inverse(const Temporal *temp);
 
 /* Constructor functions */
 

@@ -131,6 +131,28 @@ CREATE FUNCTION applyPose(geometry, tpose)
   AS 'MODULE_PATHNAME', 'Tpose_apply_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- A frame that moves carries what it names through the whole of its
+-- movement, and a body that moves is carried into the frame it is read in.
+CREATE FUNCTION applyPose(pose, tpose)
+  RETURNS tpose
+  AS 'MODULE_PATHNAME', 'Pose_apply_tpose'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION applyPose(tpose, pose)
+  RETURNS tpose
+  AS 'MODULE_PATHNAME', 'Tpose_apply_pose'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION applyPose(tpose, tpose)
+  RETURNS tpose
+  AS 'MODULE_PATHNAME', 'Tpose_apply_tpose'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION poseInverse(tpose)
+  RETURNS tpose
+  AS 'MODULE_PATHNAME', 'Tpose_inverse'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION tposeFromBinary(bytea)
   RETURNS tpose
   AS 'MODULE_PATHNAME', 'Temporal_from_wkb'
