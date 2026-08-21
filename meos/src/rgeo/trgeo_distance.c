@@ -55,6 +55,9 @@
 #include "temporal/meos_catalog.h"
 #include "temporal/temporal.h"
 #include "temporal/temporal.h"
+#include "temporal/lifting.h"
+#include "temporal/temporal_aggfuncs.h"
+#include "temporal/tsequence.h"
 #include "temporal/type_util.h"
 #include "geo/postgis_funcs.h"
 #include "geo/tgeo.h"
@@ -1827,6 +1830,97 @@ dist2d_trgeoseq_poly(const TSequence *seq, const GSERIALIZED *gs,
 }
 
 /**
+ * @brief Return 1 if two temporal float segments cross during the period
+ * defined by the output timestamps, return 0 otherwise
+ * @param[in] start1,end1 Values defining the first segment
+ * @param[in] start2,end2 Values defining the second segment
+ * @param[in] param Additional parameter
+ * @param[in] lower,upper Timestamps defining the segments
+ * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
+ * @note This function is passed to the lifting infrastructure when computing
+ * the pointwise minimum of two distances, whose kink is where the two cross
+ * @post As there is a single turning point, `t2` is set to `t1`
+ */
+static int
+tfloatsegm_min_turnpt(Datum start1, Datum end1, Datum start2, Datum end2,
+  Datum param UNUSED, TimestampTz lower, TimestampTz upper, TimestampTz *t1,
+  TimestampTz *t2)
+{
+  return tnumbersegm_intersection(start1, end1, start2, end2, T_FLOAT8, lower,
+    upper, t1, t2);
+}
+
+/**
+ * @brief Return the pointwise minimum of two temporal float sequences
+ * @details The minimum of two piecewise-linear functions is piecewise linear
+ * with an additional kink wherever the two cross, so the lifted minimum is
+ * given the crossing as its turning point
+ * @pre The two sequences have the same period
+ */
+static TSequence *
+tfloatseq_min_tfloatseq(const TSequence *seq1, const TSequence *seq2)
+{
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) &datum_min_float8;
+  lfinfo.numparam = 0;
+  lfinfo.argtype[0] = lfinfo.argtype[1] = T_TFLOAT;
+  lfinfo.restype = T_TFLOAT;
+  lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(seq1->flags) ||
+    MEOS_FLAGS_LINEAR_INTERP(seq2->flags);
+  lfinfo.invert = INVERT_NO;
+  lfinfo.discont = CONTINUOUS;
+  lfinfo.tpfn_temp = lfinfo.reslinear ? &tfloatsegm_min_turnpt : NULL;
+  Temporal *result = tfunc_tcontseq_tcontseq(seq1, seq2, &lfinfo);
+  /* The two sequences share their period and the minimum is continuous, so
+   * the lifted function yields a single sequence */
+  assert(result->subtype == TSEQUENCE);
+  return (TSequence *) result;
+}
+
+/**
+ * @brief Return the temporal distance between a temporal rigid geometry
+ * sequence and a multi-component geometry
+ * @details The distance to a multi-component geometry is the pointwise minimum
+ * of the distances to its components
+ */
+static TSequence *
+dist2d_trgeoseq_multi(const TSequence *seq, const GSERIALIZED *gs,
+  const GSERIALIZED *ref_gs, TSequence *(*distfunc)(const TSequence *,
+  const GSERIALIZED *, const GSERIALIZED *))
+{
+  TSequence *result = NULL;
+  int count = geo_num_geos(gs);
+  for (int i = 1; i <= count; i++)
+  {
+    GSERIALIZED *comp = geo_geo_n(gs, i);
+    /* An empty component contributes no point to be close to */
+    if (gserialized_is_empty(comp))
+    {
+      pfree(comp);
+      continue;
+    }
+    TSequence *dist = distfunc(seq, comp, ref_gs);
+    pfree(comp);
+    if (! dist)
+    {
+      if (result)
+        pfree(result);
+      return NULL;
+    }
+    if (! result)
+      result = dist;
+    else
+    {
+      TSequence *min = tfloatseq_min_tfloatseq(result, dist);
+      pfree(result); pfree(dist);
+      result = min;
+    }
+  }
+  return result;
+}
+
+/**
  * @brief
  */
 TSequence *
@@ -1842,6 +1936,12 @@ dist2d_trgeoseq_geo(const TSequence *seq, const GSERIALIZED *gs,
       break;
     case POLYGONTYPE:
       result = dist2d_trgeoseq_poly(seq, gs, ref_gs);
+      break;
+    case MULTIPOINTTYPE:
+      result = dist2d_trgeoseq_multi(seq, gs, ref_gs, &dist2d_trgeoseq_point);
+      break;
+    case MULTIPOLYGONTYPE:
+      result = dist2d_trgeoseq_multi(seq, gs, ref_gs, &dist2d_trgeoseq_poly);
       break;
     default:
       meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
