@@ -22,12 +22,16 @@ SELECT ST_AsText(round(OrientedEnvelope(geometry 'Polygon((0 0,3 4,-1 7,-4 3,0 0
  POLYGON((0 0,3 4,-1 7,-4 3,0 0))
 (1 row)
 
-SELECT ST_Equals(
-  OrientedEnvelope(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))'),
-  ST_OrientedEnvelope(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))'));
- st_equals 
+SELECT ST_AsText(OrientedEnvelope(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))'));
+            st_astext             
+----------------------------------
+ POLYGON((4 2,0 2,0 -2,4 -2,4 2))
+(1 row)
+
+SELECT round(ST_Area(OrientedEnvelope(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))'))::numeric, 6);
+   round   
 -----------
- t
+ 16.000000
 (1 row)
 
 SELECT ST_AsText(round(ConvexHull(geometry 'Point(1 2)'), 6));
@@ -54,12 +58,16 @@ SELECT ST_AsText(round(ConvexHull(geometry 'Polygon((0 0,10 0,10 10,5 5,0 10,0 0
  POLYGON((0 0,0 10,10 10,10 0,0 0))
 (1 row)
 
-SELECT ST_Equals(
-  ConvexHull(geometry 'Circularstring(0 0,2 2,4 0)'),
-  ST_ConvexHull(geometry 'Circularstring(0 0,2 2,4 0)'));
- st_equals 
------------
- t
+SELECT ST_AsText(ConvexHull(geometry 'Circularstring(0 0,2 2,4 0)'));
+                             st_astext                              
+--------------------------------------------------------------------
+ CURVEPOLYGON(COMPOUNDCURVE((4 0,0 0),CIRCULARSTRING(0 0,2 2,4 0)))
+(1 row)
+
+SELECT ST_AsText(ConvexHull(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))'));
+                                       st_astext                                       
+---------------------------------------------------------------------------------------
+ CURVEPOLYGON(COMPOUNDCURVE(CIRCULARSTRING(4 0,2 -2,0 0),CIRCULARSTRING(0 0,2 2,4 0)))
 (1 row)
 
 SELECT isSimple(geometry 'Point(1 2)');

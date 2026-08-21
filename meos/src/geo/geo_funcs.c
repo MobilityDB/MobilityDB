@@ -1192,6 +1192,607 @@ make_geometry_hull(int32_t srid, const POINT2D *hull, uint32_t nhull)
   return lwpoly_as_lwgeom(poly);
 }
 
+/*****************************************************************************
+ * The convex hull of a geometry carrying circular arcs
+ * The hull of a geometry whose every edge is a segment has a vertex of the
+ * input at every corner, so it is read from the vertices. An arc reaches past
+ * the points that define it, so a hull placed on those points leaves the arc
+ * outside itself. What an arc does carry is a support: in a direction its
+ * angular span holds, the point of its circle furthest that way belongs to
+ * the hull. Reading the hull through its support function answers both the
+ * hull and the rectangle of minimum area enclosing it, exactly and for arcs
+ * as much as for segments
+ *****************************************************************************/
+
+/**
+ * @brief A feature the convex hull of a geometry is supported by, either a
+ * point or the arc of a circle
+ */
+typedef struct
+{
+  double x, y;           /**< The point, or the centre of the circle */
+  double radius;         /**< Zero for a point */
+  double theta0, theta1; /**< Angular span of the arc */
+  bool ccw;              /**< The way the arc is traversed */
+  bool is_arc;           /**< Whether the feature is an arc */
+} HullFeature;
+
+/**
+ * @brief Return true if an angle lies within the angular span of an arc
+ * feature
+ */
+static bool
+hull_arc_holds(const HullFeature *f, double phi)
+{
+  double sweep = f->ccw ?
+    angle_normalize(f->theta1 - f->theta0) :
+    angle_normalize(f->theta0 - f->theta1);
+  double off = f->ccw ?
+    angle_normalize(phi - f->theta0) :
+    angle_normalize(f->theta0 - phi);
+  return off <= sweep + MEOS_EDGE_TOLERANCE;
+}
+
+/**
+ * @brief Return how far a geometry reaches in a direction, and the point of
+ * it that reaches that far
+ * @details The support of a point is its projection on the direction; that of
+ * an arc, in a direction its span holds, is the projection of its centre plus
+ * its radius, reached at the point of the circle that way. A direction the
+ * span does not hold is answered by the ends of the arc, which are features of
+ * their own
+ * @param[in] feats,nfeats Features supporting the hull
+ * @param[in] phi Direction
+ * @param[out] px,py Point reaching that far, ignored when null
+ * @param[out] which Feature reaching that far, ignored when null
+ */
+static double
+hull_support(const HullFeature *feats, int nfeats, double phi, double *px,
+  double *py, int *which)
+{
+  double ux = cos(phi), uy = sin(phi);
+  double result = -DBL_MAX;
+  for (int i = 0; i < nfeats; i++)
+  {
+    const HullFeature *f = &feats[i];
+    double s = f->x * ux + f->y * uy;
+    double cx = f->x, cy = f->y;
+    if (f->is_arc)
+    {
+      if (! hull_arc_holds(f, phi))
+        continue;
+      s += f->radius;
+      cx = f->x + f->radius * ux;
+      cy = f->y + f->radius * uy;
+    }
+    if (s > result)
+    {
+      result = s;
+      if (px) *px = cx;
+      if (py) *py = cy;
+      if (which) *which = i;
+    }
+  }
+  return result;
+}
+
+/**
+ * @brief Add a direction to an array of directions
+ */
+static void
+hull_add_direction(double phi, double *dirs, int *ndirs)
+{
+  dirs[(*ndirs)++] = angle_normalize(phi);
+  return;
+}
+
+/**
+ * @brief Comparator of two directions
+ */
+static int
+hull_direction_cmp(const void *a, const void *b)
+{
+  double x = *(const double *) a, y = *(const double *) b;
+  return (x < y) ? -1 : ((x > y) ? 1 : 0);
+}
+
+/**
+ * @brief Return the directions in which the feature supporting the hull can
+ * change
+ * @details One feature gives way to another where the two reach equally far,
+ * which for features at @p (A,B) apart and of radii differing by @p C is where
+ * `A cos(phi) + B sin(phi) = C`, and an arc enters and leaves the contest at
+ * the ends of its span. Between two consecutive such directions one feature
+ * supports the hull throughout
+ */
+static int
+hull_directions(const HullFeature *feats, int nfeats, double **result)
+{
+  int maxdirs = nfeats * nfeats + 2 * nfeats + 4;
+  double *dirs = palloc(sizeof(double) * maxdirs);
+  int ndirs = 0;
+  for (int i = 0; i < nfeats; i++)
+  {
+    if (feats[i].is_arc)
+    {
+      hull_add_direction(feats[i].theta0, dirs, &ndirs);
+      hull_add_direction(feats[i].theta1, dirs, &ndirs);
+    }
+    for (int j = i + 1; j < nfeats; j++)
+    {
+      double a = feats[i].x - feats[j].x;
+      double b = feats[i].y - feats[j].y;
+      double c = (feats[j].is_arc ? feats[j].radius : 0.0) -
+        (feats[i].is_arc ? feats[i].radius : 0.0);
+      double h = hypot(a, b);
+      if (h <= MEOS_EDGE_TOLERANCE || fabs(c) > h)
+        continue;
+      double ratio = c / h;
+      /* The end of an arc lies on its own circle, so the two features reach
+       * equally far in exactly one direction, the radial one. Reading that
+       * direction from an arc cosine of a ratio a rounding away from one
+       * moves it far enough to leave a sliver between the arc and the point
+       * that ends it, so the ratio is read as the one it is */
+      double base = atan2(b, a);
+      double off = (ratio >= 1.0 - MEOS_EDGE_TOLERANCE) ? 0.0 :
+        ((ratio <= -1.0 + MEOS_EDGE_TOLERANCE) ? M_PI : acos(ratio));
+      hull_add_direction(base + off, dirs, &ndirs);
+      hull_add_direction(base - off, dirs, &ndirs);
+    }
+  }
+  if (ndirs == 0)
+    hull_add_direction(0.0, dirs, &ndirs);
+  qsort(dirs, ndirs, sizeof(double), hull_direction_cmp);
+  /* Remove the directions that repeat the one before them */
+  int nuniq = 0;
+  for (int i = 0; i < ndirs; i++)
+    if (nuniq == 0 || dirs[i] - dirs[nuniq - 1] > MEOS_EDGE_TOLERANCE)
+      dirs[nuniq++] = dirs[i];
+  *result = dirs;
+  return nuniq;
+}
+
+/**
+ * @brief Collect the features supporting the convex hull of a geometry
+ * @details Every edge contributes its two end points and an arc edge
+ * contributes its circle. A point within the hull of the other points never
+ * supports the hull, so the points are reduced to their own hull first, which
+ * is what keeps the number of features small
+ */
+static HullFeature *
+hull_features(const MeosArray *edges, int *nfeats)
+{
+  int nedges = (int) edges->count;
+  uint32_t maxpoints = 2 * (uint32_t) nedges;
+  POINT2D *points = palloc(sizeof(POINT2D) * maxpoints);
+  uint32_t npoints = 0;
+  int narcs = 0;
+  for (int i = 0; i < nedges; i++)
+  {
+    const Edge *e = (Edge *) meos_array_get(edges, i);
+    add_edge_points(e, points, &npoints);
+    if (e->etype == EDGE_LINEARC || e->etype == EDGE_POLYARC)
+      narcs++;
+  }
+
+  POINT2D *hull = NULL;
+  uint32_t nhull = convex_hull_points(points, npoints, &hull);
+  HullFeature *result = palloc(sizeof(HullFeature) *
+    Max((int) nhull + narcs, 1));
+  int n = 0;
+  for (uint32_t i = 0; i < nhull; i++)
+  {
+    result[n].x = hull[i].x; result[n].y = hull[i].y;
+    result[n].radius = 0; result[n].theta0 = result[n].theta1 = 0;
+    result[n].ccw = true; result[n].is_arc = false;
+    n++;
+  }
+  for (int i = 0; i < nedges; i++)
+  {
+    const Edge *e = (Edge *) meos_array_get(edges, i);
+    if (e->etype != EDGE_LINEARC && e->etype != EDGE_POLYARC)
+      continue;
+    result[n].x = e->cx; result[n].y = e->cy; result[n].radius = e->radius;
+    result[n].theta0 = e->theta0; result[n].theta1 = e->theta1;
+    result[n].ccw = e->ccw; result[n].is_arc = true;
+    n++;
+  }
+  if (hull)
+    pfree(hull);
+  pfree(points);
+  *nfeats = n;
+  return result;
+}
+
+/**
+ * @brief One piece of the boundary of the convex hull, a segment or an arc
+ */
+typedef struct
+{
+  double x1, y1;         /**< Point the piece starts from */
+  double xm, ym;         /**< Point halfway along an arc piece */
+  double x2, y2;         /**< Point the piece ends on */
+  bool is_arc;           /**< Whether the piece is an arc */
+} HullBoundary;
+
+/**
+ * @brief Move a point onto the vertex of the geometry it stands for
+ * @details The end of an arc piece is read from the centre and the radius of
+ * its circle, which names the vertex the arc ends on to within the rounding of
+ * that arithmetic. The vertex itself is the point the geometry carries, so the
+ * answer is given in the coordinates of the input rather than in a rounding of
+ * them
+ */
+static void
+hull_snap_to_vertex(const HullFeature *feats, int nfeats, double *x, double *y)
+{
+  for (int i = 0; i < nfeats; i++)
+    if (! feats[i].is_arc &&
+        fabs(feats[i].x - *x) <= MEOS_EDGE_TOLERANCE &&
+        fabs(feats[i].y - *y) <= MEOS_EDGE_TOLERANCE)
+    {
+      *x = feats[i].x;
+      *y = feats[i].y;
+      return;
+    }
+  return;
+}
+
+/**
+ * @brief Return the boundary of the convex hull of a geometry, walked
+ * counterclockwise
+ * @details Between two consecutive directions one feature supports the hull.
+ * A point feature supporting a range of directions is one vertex of the hull;
+ * an arc feature supporting one is the piece of its circle over that range.
+ * Consecutive supports are joined by the segment between the point where one
+ * stops touching the hull and the point where the next starts
+ */
+static HullBoundary *
+hull_boundary(const HullFeature *feats, int nfeats, int *npieces)
+{
+  double *dirs;
+  int ndirs = hull_directions(feats, nfeats, &dirs);
+
+  /* The feature supporting the hull between each direction and the next */
+  int *which = palloc(sizeof(int) * ndirs);
+  for (int k = 0; k < ndirs; k++)
+  {
+    double a = dirs[k];
+    double b = (k + 1 < ndirs) ? dirs[k + 1] : dirs[0] + 2 * M_PI;
+    which[k] = -1;
+    (void) hull_support(feats, nfeats, (a + b) / 2, NULL, NULL, &which[k]);
+  }
+
+  /* One feature may support the hull over several consecutive directions, and
+   * it touches the hull along one piece of it rather than along one piece per
+   * direction, so the walk starts where the support changes */
+  int start = 0;
+  for (int k = 0; k < ndirs; k++)
+    if (which[k] != which[(k + ndirs - 1) % ndirs])
+    {
+      start = k;
+      break;
+    }
+
+  HullBoundary *result = palloc(sizeof(HullBoundary) * (2 * ndirs + 2));
+  int n = 0;
+  double firstx = 0, firsty = 0, prevx = 0, prevy = 0;
+  bool started = false;
+  int k = 0;
+  while (k < ndirs)
+  {
+    int idx = (start + k) % ndirs;
+    if (which[idx] < 0)
+    {
+      k++;
+      continue;
+    }
+    /* The whole run of directions this feature supports */
+    int len = 1;
+    while (k + len < ndirs && which[(start + k + len) % ndirs] == which[idx])
+      len++;
+    double a = dirs[idx];
+    double b = dirs[(start + k + len) % ndirs];
+    double sweep = angle_normalize(b - a);
+    if (sweep <= MEOS_EDGE_TOLERANCE)
+      sweep = 2 * M_PI;
+    const HullFeature *f = &feats[which[idx]];
+    double sx, sy, ex, ey, mx = 0, my = 0;
+    if (! f->is_arc)
+    {
+      sx = ex = f->x;
+      sy = ey = f->y;
+    }
+    else
+    {
+      sx = f->x + f->radius * cos(a);
+      sy = f->y + f->radius * sin(a);
+      ex = f->x + f->radius * cos(a + sweep);
+      ey = f->y + f->radius * sin(a + sweep);
+      mx = f->x + f->radius * cos(a + sweep / 2);
+      my = f->y + f->radius * sin(a + sweep / 2);
+      hull_snap_to_vertex(feats, nfeats, &sx, &sy);
+      hull_snap_to_vertex(feats, nfeats, &ex, &ey);
+    }
+
+    if (! started)
+    {
+      firstx = sx; firsty = sy;
+      started = true;
+    }
+    else if (hypot(sx - prevx, sy - prevy) > MEOS_EDGE_TOLERANCE)
+    {
+      /* The segment joining the previous support to this one */
+      result[n].x1 = prevx; result[n].y1 = prevy;
+      result[n].x2 = sx; result[n].y2 = sy;
+      result[n].is_arc = false;
+      n++;
+    }
+    else
+    {
+      /* The two meet, so the piece starts on the point already reached and
+       * the ring closes on itself rather than within the rounding of two
+       * ways of naming one point */
+      sx = prevx; sy = prevy;
+    }
+    if (f->is_arc && hypot(ex - sx, ey - sy) > MEOS_EDGE_TOLERANCE)
+    {
+      result[n].x1 = sx; result[n].y1 = sy;
+      result[n].xm = mx; result[n].ym = my;
+      result[n].x2 = ex; result[n].y2 = ey;
+      result[n].is_arc = true;
+      n++;
+    }
+    prevx = ex; prevy = ey;
+    k += len;
+  }
+
+  /* Close the ring on the point it starts from */
+  if (started && n > 0)
+  {
+    if (hypot(firstx - prevx, firsty - prevy) > MEOS_EDGE_TOLERANCE)
+    {
+      result[n].x1 = prevx; result[n].y1 = prevy;
+      result[n].x2 = firstx; result[n].y2 = firsty;
+      result[n].is_arc = false;
+      n++;
+    }
+    else
+    {
+      /* The ring ends where it starts up to the rounding of two ways of
+       * naming one point, and is closed on that point */
+      result[n - 1].x2 = firstx;
+      result[n - 1].y2 = firsty;
+    }
+  }
+  /* Every piece starts on the point the one before it ends on, so that the
+   * ring is continuous however the two ways of naming that point round */
+  for (int i = 1; i < n; i++)
+  {
+    result[i].x1 = result[i - 1].x2;
+    result[i].y1 = result[i - 1].y2;
+  }
+  if (n > 0)
+  {
+    result[0].x1 = result[n - 1].x2;
+    result[0].y1 = result[n - 1].y2;
+  }
+  pfree(which); pfree(dirs);
+  *npieces = n;
+  return result;
+}
+
+/**
+ * @brief Return the geometry of a hull boundary, walked clockwise
+ * @details The pieces are walked backwards and each of them reversed, because
+ * the boundary is collected counterclockwise while the ring of a hull is
+ * reported clockwise, the order #make_geometry_hull reports the hull of a
+ * geometry of segments in. Consecutive segments are gathered into one line so
+ * that the ring alternates between a line and an arc
+ */
+static LWGEOM *
+hull_boundary_geometry(int32_t srid, const HullBoundary *pieces, int npieces)
+{
+  LWCOMPOUND *ring = lwcompound_construct_empty(srid, 0, 0);
+  POINTARRAY *line = NULL;
+  POINT4D p;
+  p.z = p.m = 0.0;
+  for (int k = npieces - 1; k >= 0; k--)
+  {
+    const HullBoundary *piece = &pieces[k];
+    /* Reversed, the piece runs from the point it ends on */
+    if (! piece->is_arc)
+    {
+      if (! line)
+      {
+        line = ptarray_construct_empty(0, 0, 4);
+        p.x = piece->x2; p.y = piece->y2;
+        ptarray_append_point(line, &p, LW_TRUE);
+      }
+      p.x = piece->x1; p.y = piece->y1;
+      ptarray_append_point(line, &p, LW_TRUE);
+      continue;
+    }
+    if (line)
+    {
+      lwcompound_add_lwgeom(ring, lwline_as_lwgeom(lwline_construct(srid,
+        NULL, line)));
+      line = NULL;
+    }
+    POINTARRAY *arc = ptarray_construct_empty(0, 0, 3);
+    p.x = piece->x2; p.y = piece->y2;
+    ptarray_append_point(arc, &p, LW_TRUE);
+    p.x = piece->xm; p.y = piece->ym;
+    ptarray_append_point(arc, &p, LW_TRUE);
+    p.x = piece->x1; p.y = piece->y1;
+    ptarray_append_point(arc, &p, LW_TRUE);
+    lwcompound_add_lwgeom(ring, lwcircstring_as_lwgeom(
+      lwcircstring_construct(srid, NULL, arc)));
+  }
+  if (line)
+    lwcompound_add_lwgeom(ring, lwline_as_lwgeom(lwline_construct(srid, NULL,
+      line)));
+
+  LWCURVEPOLY *result = lwcurvepoly_construct_empty(srid, 0, 0);
+  lwcurvepoly_add_ring(result, lwcompound_as_lwgeom(ring));
+  return lwcurvepoly_as_lwgeom(result);
+}
+
+/**
+ * @brief Return the convex hull of a geometry carrying a circular arc
+ */
+static LWGEOM *
+convex_hull_arc(const LWGEOM *geom, const MeosArray *edges)
+{
+  int nfeats = 0;
+  HullFeature *feats = hull_features(edges, &nfeats);
+  int npieces = 0;
+  HullBoundary *pieces = hull_boundary(feats, nfeats, &npieces);
+
+  /* No arc reaches past the points, so the hull is the one they place */
+  bool curved = false;
+  for (int i = 0; i < npieces && ! curved; i++)
+    curved = pieces[i].is_arc;
+  if (! curved)
+  {
+    POINT2D *points = palloc(sizeof(POINT2D) * Max(nfeats, 1));
+    uint32_t npoints = 0;
+    for (int i = 0; i < nfeats; i++)
+      if (! feats[i].is_arc)
+      {
+        points[npoints].x = feats[i].x;
+        points[npoints].y = feats[i].y;
+        npoints++;
+      }
+    POINT2D *hull = NULL;
+    uint32_t nhull = convex_hull_points(points, npoints, &hull);
+    LWGEOM *result = (nhull == 0) ?
+      lwpoly_as_lwgeom(lwpoly_construct_empty(geom->srid, 0, 0)) :
+      make_geometry_hull(geom->srid, hull, nhull);
+    if (hull)
+      pfree(hull);
+    pfree(points); pfree(pieces); pfree(feats);
+    return result;
+  }
+
+  LWGEOM *result = hull_boundary_geometry(geom->srid, pieces, npieces);
+  pfree(pieces); pfree(feats);
+  return result;
+}
+
+/**
+ * @brief Return the area of the rectangle of a given direction enclosing a
+ * geometry, and its corners
+ * @details The rectangle holds every point reaching no further than the
+ * geometry does in each of the four directions, so its sides are the four
+ * supports and its corners the points where they meet
+ */
+static double
+mrr_arc_rectangle(const HullFeature *feats, int nfeats, double phi,
+  POINT2D *rect)
+{
+  double h0 = hull_support(feats, nfeats, phi, NULL, NULL, NULL);
+  double h1 = hull_support(feats, nfeats, phi + M_PI_2, NULL, NULL, NULL);
+  double h2 = hull_support(feats, nfeats, phi + M_PI, NULL, NULL, NULL);
+  double h3 = hull_support(feats, nfeats, phi + 3 * M_PI_2, NULL, NULL, NULL);
+  double width = h0 + h2, height = h1 + h3;
+  if (rect)
+  {
+    double ux = cos(phi), uy = sin(phi);
+    double vx = -uy, vy = ux;
+    const double a[4] = {h0, -h2, -h2, h0};
+    const double b[4] = {h1, h1, -h3, -h3};
+    for (int i = 0; i < 4; i++)
+    {
+      rect[i].x = a[i] * ux + b[i] * vx;
+      rect[i].y = a[i] * uy + b[i] * vy;
+    }
+    rect[4] = rect[0];
+  }
+  return width * height;
+}
+
+/**
+ * @brief Return the rectangle of minimum area enclosing a geometry carrying a
+ * circular arc
+ * @details The area of the enclosing rectangle turns with its direction and
+ * repeats every quarter turn, and it is smooth between two directions in which
+ * the feature supporting the hull changes. Every such direction is tried, and
+ * the smooth stretch after each of them is searched for the direction where
+ * the area is least
+ */
+static LWGEOM *
+mrr_arc(const LWGEOM *geom, const MeosArray *edges)
+{
+  int nfeats = 0;
+  HullFeature *feats = hull_features(edges, &nfeats);
+  double *dirs;
+  int ndirs = hull_directions(feats, nfeats, &dirs);
+
+  /* The directions the support changes in, brought into the quarter turn the
+   * area repeats over, with its two ends */
+  double *cand = palloc(sizeof(double) * (4 * ndirs + 2));
+  int ncand = 0;
+  cand[ncand++] = 0.0;
+  cand[ncand++] = M_PI_2;
+  for (int i = 0; i < ndirs; i++)
+    cand[ncand++] = fmod(dirs[i], M_PI_2);
+  pfree(dirs);
+  qsort(cand, ncand, sizeof(double), hull_direction_cmp);
+
+  double best_area = DBL_MAX, best_phi = 0.0;
+  for (int i = 0; i < ncand; i++)
+  {
+    double area = mrr_arc_rectangle(feats, nfeats, cand[i], NULL);
+    if (area < best_area)
+    {
+      best_area = area;
+      best_phi = cand[i];
+    }
+    if (i + 1 >= ncand || cand[i + 1] - cand[i] <= MEOS_EDGE_TOLERANCE)
+      continue;
+    /* The stretch between two consecutive directions carries no change of
+     * support, so the area is smooth over it and is searched by narrowing the
+     * interval it is least on */
+    double lo = cand[i], hi = cand[i + 1];
+    const double invphi = 0.6180339887498949;
+    double c = hi - (hi - lo) * invphi, d = lo + (hi - lo) * invphi;
+    double fc = mrr_arc_rectangle(feats, nfeats, c, NULL);
+    double fd = mrr_arc_rectangle(feats, nfeats, d, NULL);
+    for (int k = 0; k < 80 && hi - lo > 1e-15; k++)
+    {
+      if (fc < fd)
+      {
+        hi = d; d = c; fd = fc;
+        c = hi - (hi - lo) * invphi;
+        fc = mrr_arc_rectangle(feats, nfeats, c, NULL);
+      }
+      else
+      {
+        lo = c; c = d; fc = fd;
+        d = lo + (hi - lo) * invphi;
+        fd = mrr_arc_rectangle(feats, nfeats, d, NULL);
+      }
+    }
+    double phi = (lo + hi) / 2;
+    area = mrr_arc_rectangle(feats, nfeats, phi, NULL);
+    /* The minimum is attained over a whole stretch of directions whenever the
+     * hull is as wide every way, a circle being the plainest case, so a
+     * direction the support changes in is kept over one the search lands on
+     * unless it is genuinely smaller */
+    if (area < best_area - fabs(best_area) * 1e-12)
+    {
+      best_area = area;
+      best_phi = phi;
+    }
+  }
+
+  POINT2D rect[5];
+  (void) mrr_arc_rectangle(feats, nfeats, best_phi, rect);
+  pfree(cand); pfree(feats);
+  return make_geometry_points(geom->srid, rect, 4);
+}
+
 /**
  * @brief Return the oriented envelop (a.k.a. minimum-area rotated rectangle)
  * of a geometry
@@ -1202,9 +1803,6 @@ LWGEOM *
 meos_oriented_envelope(const LWGEOM *geom)
 {
   assert(geom);
-  /* The placement below reads the vertices, which are the whole of a
-   * geometry only while every edge of it is a segment */
-  assert(! lwgeom_has_arc(geom));
 
   /* Empty input */
   if (lwgeom_is_empty(geom))
@@ -1217,6 +1815,16 @@ meos_oriented_envelope(const LWGEOM *geom)
   {
     meos_array_destroy(edge_array);
     return lwpoly_as_lwgeom(lwpoly_construct_empty(geom->srid, 0, 0));
+  }
+
+  /* The placement below reads the vertices, which are the whole of a geometry
+   * only while every edge of it is a segment. An arc reaches past the points
+   * that define it, and is enclosed by reading how far its circle reaches */
+  if (lwgeom_has_arc(geom))
+  {
+    LWGEOM *result = mrr_arc(geom, edge_array);
+    meos_array_destroy(edge_array);
+    return result;
   }
 
   /* Every edge contributes its two end points */
@@ -1366,14 +1974,7 @@ geom_oriented_envelope_meos(const GSERIALIZED *gs)
   if (! ensure_not_geodetic_geo(gs))
     return NULL;
 
-  /* A geometry carrying a circular arc has no native placement yet, and the
-   * arc reaches past the points that define it, so it is answered by GEOS */
   LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
-  if (lwgeom_has_arc(lwgeom))
-  {
-    lwgeom_free(lwgeom);
-    return geom_oriented_envelope(gs);
-  }
   LWGEOM *res = meos_oriented_envelope(lwgeom);
   GSERIALIZED *result = geo_serialize(res);
   lwgeom_free(lwgeom); lwgeom_free(res);
@@ -1391,9 +1992,6 @@ LWGEOM *
 convex_hull(const LWGEOM *geom)
 {
   assert(geom);
-  /* The placement below reads the vertices, which are the whole of a
-   * geometry only while every edge of it is a segment */
-  assert(! lwgeom_has_arc(geom));
 
   /* Empty input */
   if (lwgeom_is_empty(geom))
@@ -1406,6 +2004,17 @@ convex_hull(const LWGEOM *geom)
   {
     meos_array_destroy(edge_array);
     return lwpoly_as_lwgeom(lwpoly_construct_empty(geom->srid, 0, 0));
+  }
+
+  /* The hull below is placed on the vertices, which are the whole of a
+   * geometry only while every edge of it is a segment. An arc reaches past
+   * the points that define it, and belongs to the hull as the piece of its
+   * circle that no other feature reaches past */
+  if (lwgeom_has_arc(geom))
+  {
+    LWGEOM *result = convex_hull_arc(geom, edge_array);
+    meos_array_destroy(edge_array);
+    return result;
   }
 
   /* Every edge contributes its two end points */
@@ -1459,14 +2068,7 @@ geom_convex_hull_meos(const GSERIALIZED *gs)
   if (gserialized_is_empty(gs))
     return geo_copy(gs);
 
-  /* A geometry carrying a circular arc has no native hull yet, and the arc
-   * reaches past the points that define it, so it is answered by GEOS */
   LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
-  if (lwgeom_has_arc(lwgeom))
-  {
-    lwgeom_free(lwgeom);
-    return geom_convex_hull(gs);
-  }
   LWGEOM *res = convex_hull(lwgeom);
   GSERIALIZED *result = geo_serialize(res);
   lwgeom_free(lwgeom); lwgeom_free(res);
