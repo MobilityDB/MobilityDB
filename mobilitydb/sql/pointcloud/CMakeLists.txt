@@ -1,8 +1,6 @@
 SET(LOCAL_FILES
   400_pcset
   410_tpcbox
-  411_tpcbox_gist
-  412_tpcbox_spgist
   420_tpcpoint
   430_tpcpatch
   433_tpcpoint_compops
@@ -10,9 +8,9 @@ SET(LOCAL_FILES
   435_tpc_boxops
   436_tpc_topops
   437_tpc_posops
-  438_tpc_gist
-  439_tpc_spgist
-  440_tpc_distance
+  438_tpc_distance
+  439_tpc_gist
+  440_tpc_spgist
   441_tpc_aggfuncs
   442_tpcpoint_spatialfuncs
   443_tpcpoint_spatialrels

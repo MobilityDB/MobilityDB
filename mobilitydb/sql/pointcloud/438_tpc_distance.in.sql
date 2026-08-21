@@ -52,36 +52,13 @@ CREATE OPERATOR |=| (PROCEDURE = nearestApproachDistance,
   LEFTARG = tpcpatch, RIGHTARG = tpcpatch, COMMUTATOR = '|=|');
 
 /*****************************************************************************
- * GiST distance — KNN strategy on the existing GiST opclasses
- *
- * ALTER OPERATOR FAMILY adds the |=| operator at strategy 25 (KNN
- * ORDER BY) and registers the tpcbox_gist_distance support function.
+ * GiST distance — the support function the operator classes of the family
+ * register at strategy 25, declared here so the classes that follow name it
  *****************************************************************************/
 
 CREATE FUNCTION tpcbox_gist_distance(internal, tpcbox, smallint, oid, internal)
   RETURNS float8
   AS 'MODULE_PATHNAME', 'Tpcbox_gist_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-ALTER OPERATOR FAMILY tpcbox_rtree_ops USING gist ADD
-  OPERATOR  25  |=| (tpcbox, tpcbox) FOR ORDER BY pg_catalog.float_ops,
-  FUNCTION  8 (tpcbox, tpcbox)
-    tpcbox_gist_distance(internal, tpcbox, smallint, oid, internal);
-
-ALTER OPERATOR FAMILY tpcpoint_rtree_ops USING gist ADD
-  OPERATOR  25  |=| (tpcpoint, tpcbox) FOR ORDER BY pg_catalog.float_ops,
-  OPERATOR  25  |=| (tpcpoint, tpcpoint) FOR ORDER BY pg_catalog.float_ops,
-  FUNCTION  8 (tpcpoint, tpcbox)
-    tpcbox_gist_distance(internal, tpcbox, smallint, oid, internal),
-  FUNCTION  8 (tpcpoint, tpcpoint)
-    tpcbox_gist_distance(internal, tpcbox, smallint, oid, internal);
-
-ALTER OPERATOR FAMILY tpcpatch_rtree_ops USING gist ADD
-  OPERATOR  25  |=| (tpcpatch, tpcbox) FOR ORDER BY pg_catalog.float_ops,
-  OPERATOR  25  |=| (tpcpatch, tpcpatch) FOR ORDER BY pg_catalog.float_ops,
-  FUNCTION  8 (tpcpatch, tpcbox)
-    tpcbox_gist_distance(internal, tpcbox, smallint, oid, internal),
-  FUNCTION  8 (tpcpatch, tpcpatch)
-    tpcbox_gist_distance(internal, tpcbox, smallint, oid, internal);
 
 /*****************************************************************************/

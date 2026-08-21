@@ -13,18 +13,106 @@
  * agreement is hereby granted, provided that the above copyright notice and
  * this paragraph and the following two paragraphs appear in all copies.
  *
+ * IN NO EVENT SHALL UNIVERSITE LIBRE DE BRUXELLES BE LIABLE TO ANY PARTY FOR
+ * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
+ * LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
+ * EVEN IF UNIVERSITE LIBRE DE BRUXELLES HAS BEEN ADVISED OF THE POSSIBILITY
+ * OF SUCH DAMAGE.
+ *
+ * UNIVERSITE LIBRE DE BRUXELLES SPECIFICALLY DISCLAIMS ANY WARRANTIES,
+ * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
+ * AN "AS IS" BASIS, AND UNIVERSITE LIBRE DE BRUXELLES HAS NO OBLIGATIONS TO
+ * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+ *
  *****************************************************************************/
 
 /**
  * @file
- * @brief GiST opclasses on tpcpoint and tpcpatch using TPCBox as the
- *   index key. Mirrors the tgeompoint / tcbuffer rtree opclasses.
- *
- * The GiST support functions consistent / union / penalty / picksplit /
- * same already exist (registered in 411_tpcbox_gist.in.sql for the
- * box-keyed opclass); we only need a fresh compress method that
- * derives a TPCBox from each leaf tpcpoint / tpcpatch.
+ * @brief R-tree GiST indexes for point cloud boxes and temporal point clouds
  */
+
+CREATE FUNCTION tpcbox_gist_consistent(internal, tpcbox, smallint, oid, internal)
+  RETURNS bool
+  AS 'MODULE_PATHNAME', 'Tpcbox_gist_consistent'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tpcbox_gist_union(internal, internal)
+  RETURNS tpcbox
+  AS 'MODULE_PATHNAME', 'Tpcbox_gist_union'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tpcbox_gist_penalty(internal, internal, internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Tpcbox_gist_penalty'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tpcbox_gist_picksplit(internal, internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Tpcbox_gist_picksplit'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tpcbox_gist_same(tpcbox, tpcbox, internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Tpcbox_gist_same'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR CLASS tpcbox_rtree_ops
+  DEFAULT FOR TYPE tpcbox USING gist AS
+  STORAGE tpcbox,
+  -- strictly left
+  OPERATOR  1    << (tpcbox, tpcbox),
+  -- overlaps or left
+  OPERATOR  2    &< (tpcbox, tpcbox),
+  -- overlaps
+  OPERATOR  3    && (tpcbox, tpcbox),
+  -- overlaps or right
+  OPERATOR  4    &> (tpcbox, tpcbox),
+  -- strictly right
+  OPERATOR  5    >> (tpcbox, tpcbox),
+  -- same
+  OPERATOR  6    ~= (tpcbox, tpcbox),
+  -- contains
+  OPERATOR  7    @> (tpcbox, tpcbox),
+  -- contained by
+  OPERATOR  8    <@ (tpcbox, tpcbox),
+  -- overlaps or below
+  OPERATOR  9    &<| (tpcbox, tpcbox),
+  -- strictly below
+  OPERATOR  10    <<| (tpcbox, tpcbox),
+  -- strictly above
+  OPERATOR  11    |>> (tpcbox, tpcbox),
+  -- overlaps or above
+  OPERATOR  12    |&> (tpcbox, tpcbox),
+  -- adjacent
+  OPERATOR  17    -|- (tpcbox, tpcbox),
+  -- overlaps or before
+  OPERATOR  28    &<# (tpcbox, tpcbox),
+  -- strictly before
+  OPERATOR  29    <<# (tpcbox, tpcbox),
+  -- strictly after
+  OPERATOR  30    #>> (tpcbox, tpcbox),
+  -- overlaps or after
+  OPERATOR  31    #&> (tpcbox, tpcbox),
+  -- overlaps or front
+  OPERATOR  32    &</ (tpcbox, tpcbox),
+  -- strictly front
+  OPERATOR  33    <</ (tpcbox, tpcbox),
+  -- strictly back
+  OPERATOR  34    />> (tpcbox, tpcbox),
+  -- overlaps or back
+  OPERATOR  35    /&> (tpcbox, tpcbox),
+  -- nearest approach distance
+  OPERATOR  25   |=| (tpcbox, tpcbox) FOR ORDER BY pg_catalog.float_ops,
+  -- functions
+  FUNCTION  1  tpcbox_gist_consistent(internal, tpcbox, smallint, oid, internal),
+  FUNCTION  2  tpcbox_gist_union(internal, internal),
+  FUNCTION  5  tpcbox_gist_penalty(internal, internal, internal),
+  FUNCTION  6  tpcbox_gist_picksplit(internal, internal),
+  FUNCTION  7  tpcbox_gist_same(tpcbox, tpcbox, internal),
+  FUNCTION  8  tpcbox_gist_distance(internal, tpcbox, smallint, oid, internal);
+
+/*****************************************************************************/
 
 CREATE FUNCTION tpc_gist_compress(internal)
   RETURNS internal
@@ -110,13 +198,20 @@ CREATE OPERATOR CLASS tpcpoint_rtree_ops
   -- overlaps or back
   OPERATOR  35   /&> (tpcpoint, tpcbox),
   OPERATOR  35   /&> (tpcpoint, tpcpoint),
+  -- nearest approach distance
+  OPERATOR  25   |=| (tpcpoint, tpcbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25   |=| (tpcpoint, tpcpoint) FOR ORDER BY pg_catalog.float_ops,
   -- functions
   FUNCTION  1    tpcbox_gist_consistent(internal, tpcbox, smallint, oid, internal),
   FUNCTION  2    tpcbox_gist_union(internal, internal),
   FUNCTION  3    tpc_gist_compress(internal),
   FUNCTION  5    tpcbox_gist_penalty(internal, internal, internal),
   FUNCTION  6    tpcbox_gist_picksplit(internal, internal),
-  FUNCTION  7    tpcbox_gist_same(tpcbox, tpcbox, internal);
+  FUNCTION  7    tpcbox_gist_same(tpcbox, tpcbox, internal),
+  FUNCTION  8 (tpcpoint, tpcbox)
+    tpcbox_gist_distance(internal, tpcbox, smallint, oid, internal),
+  FUNCTION  8 (tpcpoint, tpcpoint)
+    tpcbox_gist_distance(internal, tpcbox, smallint, oid, internal);
 
 /*****************************************************************************
  * tpcpatch
@@ -197,12 +292,19 @@ CREATE OPERATOR CLASS tpcpatch_rtree_ops
   -- overlaps or back
   OPERATOR  35   /&> (tpcpatch, tpcbox),
   OPERATOR  35   /&> (tpcpatch, tpcpatch),
+  -- nearest approach distance
+  OPERATOR  25   |=| (tpcpatch, tpcbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25   |=| (tpcpatch, tpcpatch) FOR ORDER BY pg_catalog.float_ops,
   -- functions
   FUNCTION  1    tpcbox_gist_consistent(internal, tpcbox, smallint, oid, internal),
   FUNCTION  2    tpcbox_gist_union(internal, internal),
   FUNCTION  3    tpc_gist_compress(internal),
   FUNCTION  5    tpcbox_gist_penalty(internal, internal, internal),
   FUNCTION  6    tpcbox_gist_picksplit(internal, internal),
-  FUNCTION  7    tpcbox_gist_same(tpcbox, tpcbox, internal);
+  FUNCTION  7    tpcbox_gist_same(tpcbox, tpcbox, internal),
+  FUNCTION  8 (tpcpatch, tpcbox)
+    tpcbox_gist_distance(internal, tpcbox, smallint, oid, internal),
+  FUNCTION  8 (tpcpatch, tpcpatch)
+    tpcbox_gist_distance(internal, tpcbox, smallint, oid, internal);
 
 /*****************************************************************************/
