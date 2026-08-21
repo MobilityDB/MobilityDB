@@ -147,6 +147,8 @@ extern double pose_angular_distance(const Pose *pose1, const Pose *pose2);
 
 /* Transformation functions */
 
+extern Pose *pose_compose(const Pose *body, const Pose *frame);
+extern Pose *pose_inverse(const Pose *pose);
 extern Pose *pose_normalize(const Pose *pose);
 extern Pose *pose_round(const Pose *pose, int maxdd);
 extern Pose **posearr_round(const Pose **posearr, int count, int maxdd);

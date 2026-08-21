@@ -137,6 +137,7 @@ extern Match *trgeometry_frechet_path(const Temporal *temp1, const Temporal *tem
 extern Match *trgeometry_dyntimewarp_path(const Temporal *temp1, const Temporal *temp2, int *count);
 extern double trgeometry_length(const Temporal *temp);
 extern Temporal *trgeometry_cumulative_length(const Temporal *temp);
+extern Temporal *trgeometry_angular_speed(const Temporal *temp);
 extern Temporal *trgeometry_speed(const Temporal *temp);
 extern GSERIALIZED *trgeometry_twcentroid(const Temporal *temp);
 

@@ -259,3 +259,62 @@ SELECT asText(pose 'GeodPose(Point(1 1 1),1,0,0,0)');
 SELECT pose 'GeodPose(Point(1 1),0.5)';
 SELECT poseFromBinary(asBinary(pose 'GeodPose(Point(1 1),0.5)'));
 SELECT poseFromBinary(asBinary(pose 'GeodPose(Point(1 1 1),1,0,0,0)'));
+
+-------------------------------------------------------------------------------
+-- Composition
+-- applyPose carries a value expressed in the frame a pose names into the frame
+-- that pose is itself expressed in, so applying one pose to another composes
+-- the two frame relationships.
+-------------------------------------------------------------------------------
+
+-- A sensor one metre ahead of a vehicle that sits at the origin unturned
+SELECT asEWKT(round(applyPose(pose 'Pose(Point(1 0), 0)',
+  pose 'Pose(Point(0 0), 0)'), 6));
+-- The same vehicle turned a quarter turn: the sensor is now one metre North
+SELECT asEWKT(round(applyPose(pose 'Pose(Point(1 0), 0)',
+  pose(ST_Point(0,0), pi()/2)), 6));
+-- The vehicle away from the origin as well
+SELECT asEWKT(round(applyPose(pose 'Pose(Point(1 0), 0)',
+  pose(ST_Point(10,5), pi()/2)), 6));
+-- The orientations add
+SELECT asEWKT(round(applyPose(pose(ST_Point(0,0), pi()/4),
+  pose(ST_Point(0,0), pi()/4)), 6));
+-- Composing agrees with the pose chain of the same two links, which is the
+-- same operation folded over a chain
+SELECT asEWKT(round(applyPose(pose 'Pose(Point(1 0), 0)',
+  pose(ST_Point(10,5), pi()/2)), 6)) =
+  asEWKT(round(pose(posechain(ARRAY[pose(ST_Point(10,5), pi()/2),
+    pose 'Pose(Point(1 0), 0)'])), 6));
+-- Three dimensions
+SELECT asEWKT(round(applyPose(pose 'Pose(Point(1 0 0), 1, 0, 0, 0)',
+  pose 'Pose(Point(0 0 5), 1, 0, 0, 0)'), 6));
+-- Mixing the frames of the two poses is an error
+SELECT applyPose(pose 'SRID=3812;Pose(Point(1 0), 0)',
+  pose 'SRID=4326;Pose(Point(0 0), 0)');
+SELECT applyPose(pose 'Pose(Point(1 0), 0)',
+  pose 'Pose(Point(0 0 1), 1, 0, 0, 0)');
+
+-------------------------------------------------------------------------------
+-- Inverse
+-- The inverse reverses the frame relationship, so composing a pose with its
+-- inverse gives the identity.
+-------------------------------------------------------------------------------
+
+SELECT asEWKT(round(poseInverse(pose 'Pose(Point(1 0), 0)'), 6));
+SELECT asEWKT(round(poseInverse(pose(ST_Point(0,0), pi()/2)), 6));
+SELECT asEWKT(round(poseInverse(pose(ST_Point(10,5), pi()/2)), 6));
+-- A pose composed with its inverse is the identity, in both directions
+SELECT asEWKT(round(applyPose(poseInverse(pose(ST_Point(10,5), pi()/2)),
+  pose(ST_Point(10,5), pi()/2)), 6));
+SELECT asEWKT(round(applyPose(pose(ST_Point(10,5), pi()/2),
+  poseInverse(pose(ST_Point(10,5), pi()/2))), 6));
+-- Three dimensions: a half turn about Z, one metre along X
+SELECT asEWKT(round(poseInverse(pose 'Pose(Point(1 0 0), 0, 0, 0, 1)'), 6));
+SELECT asEWKT(round(applyPose(poseInverse(pose 'Pose(Point(1 0 0), 0, 0, 0, 1)'),
+  pose 'Pose(Point(1 0 0), 0, 0, 0, 1)'), 6));
+-- The inverse is its own inverse
+SELECT asEWKT(round(poseInverse(poseInverse(pose(ST_Point(10,5), pi()/2))), 6));
+-- A pose over a geographic frame names no frame of the ellipsoid to reverse
+SELECT poseInverse(pose 'SRID=4326;GeodPose(Point(8 47), 0.5)');
+
+-------------------------------------------------------------------------------

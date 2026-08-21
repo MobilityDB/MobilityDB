@@ -121,6 +121,13 @@ CREATE FUNCTION applyPose(geometry, pose)
   AS 'MODULE_PATHNAME', 'Pose_apply_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- The composition of two poses: the first one carried into the frame the
+-- second one names, that is, P_WS from P_WV and P_VS.
+CREATE FUNCTION applyPose(pose, pose)
+  RETURNS pose
+  AS 'MODULE_PATHNAME', 'Pose_apply_pose'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************/
 
 CREATE FUNCTION asText(pose, maxdecimaldigits int4 DEFAULT 15)
@@ -264,6 +271,11 @@ CREATE FUNCTION ypr(pose)
 CREATE FUNCTION poseNormalize(pose)
   RETURNS pose
   AS 'MODULE_PATHNAME', 'Pose_normalize'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION poseInverse(pose)
+  RETURNS pose
+  AS 'MODULE_PATHNAME', 'Pose_inverse'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION round(pose, integer DEFAULT 0)

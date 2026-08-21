@@ -1582,6 +1582,9 @@
 					<listitem>
 						<para><link linkend="pose_normalize"><varname>poseNormalize</varname></link>: Devuelve una pose cuyo cuaternión de orientación se ha llevado a una norma unitaria</para>
 					</listitem>
+					<listitem>
+						<para><link linkend="pose_inverse"><varname>poseInverse</varname></link>: Devuelve la inversa de una pose</para>
+					</listitem>
 				</itemizedlist>
 			</sect3>
 			<sect3>
@@ -2364,6 +2367,9 @@
 				</listitem>
 				<listitem>
 					<para><link linkend="trgeometry_speed"><varname>speed</varname></link>: Devuelve la velocidad del centroide como un flotante temporal</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="trgeometry_angular_speed"><varname>angularSpeed</varname></link>: Devuelve la velocidad angular como un flotante temporal</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="trgeometry_twcentroid"><varname>twCentroid</varname></link>: Devuelve el centroide ponderado en el tiempo de la trayectoria del centroide como una geometría</para>

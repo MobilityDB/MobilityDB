@@ -1313,6 +1313,23 @@ SELECT asText(poseNormalize(pose 'Pose(Point(1 1 1), 0.5, 0.5, 0.5, 0.5)'));
 -- Pose(POINT Z (1 1 1),0.5,0.5,0.5,0.5)
 </programlisting>
 				</listitem>
+
+				<listitem xml:id="pose_inverse">
+					<indexterm significance="normal"><primary><varname>poseInverse</varname></primary></indexterm>
+					<para>Devuelve la inversa de una pose</para>
+					<para><varname>poseInverse(pose) → pose</varname></para>
+					<para>La inversa invierte la relación entre marcos: donde una pose lleva un valor del marco que nombra al marco en el que ella misma está expresada, la inversa lo lleva de vuelta. Es <varname>R_BA = R_AB^T</varname> y <varname>t_BA = −R_AB^T t_AB</varname>, de modo que componer una pose con su inversa da la identidad. Esto es lo que expresa una posición del mundo en el marco de un vehículo.</para>
+					<para>Una pose sobre un marco geográfico no tiene inversa: el marco que nombraría no es un marco del elipsoide.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asEWKT(round(poseInverse(pose(ST_Point(10,5), pi()/2)), 6));
+-- Pose(POINT(-5 10),-1.570796)
+SELECT asEWKT(round(applyPose(poseInverse(pose(ST_Point(10,5), pi()/2)),
+  pose(ST_Point(10,5), pi()/2)), 6));
+-- Pose(POINT(0 0),0)
+SELECT asEWKT(round(poseInverse(pose 'Pose(Point(1 0 0), 0, 0, 0, 1)'), 6));
+-- Pose(POINT Z (1 0 0),0,0,0,-1)
+</programlisting>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 
@@ -1431,12 +1448,27 @@ world = R(q) · body + p
 			<para>donde <varname>(p, q)</varname> son la posición y la orientación de la pose. La forma estática toma una única pose y una geometría estática; la forma temporal eleva la transformación rígida por instante de una <varname>tpose</varname> a lo largo de sus instantes, produciendo una trayectoria <varname>tgeompoint</varname> en el marco del mundo de la geometría del cuerpo. Se admiten geometrías de cuerpo de tipo punto y multipunto; las líneas y los polígonos no. La interpolación lineal de la trayectoria resultante es la cuerda de cada segmento, que aproxima la verdadera trayectoria de cuerpo rígido (un arco circular bajo SLERP), la misma concesión que MobilityDB ya adopta para las trayectorias espaciales.</para>
 			<para><varname>applyPose(geometry, pose) → geometry</varname></para>
 			<para><varname>applyPose(geometry, tpose) → tgeompoint</varname></para>
+			<para><varname>applyPose(pose, pose) → pose</varname></para>
 			<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- A body sensor offset 1 unit along the body X axis, traced through a
 -- tpose that ends 90 degrees yawed and translated to (10, 20).
 SELECT asText(applyPose(ST_Point(1,0), tpose '[Pose(Point(0 0), 0)@2026-01-01,
   Pose(Point(10 20), 1.5707963267948966)@2026-01-02]'));
 -- [POINT(1 0)@2026-01-01, POINT(10 21)@2026-01-02]
+</programlisting>
+			<para>Una pose nombra un marco, por lo que ella misma es un valor en el marco del cuerpo: aplicar una pose a otra compone las dos relaciones entre marcos. Escribiendo <varname>P_WV</varname> para la pose de un vehículo en el mundo y <varname>P_VS</varname> para la pose de un sensor en el vehículo, la pose del sensor en el mundo es <varname>P_WS = P_WV ∘ P_VS</varname>. Esta es la operación que una cadena de poses pliega sobre sus eslabones, de modo que una cadena de dos eslabones se compone en lo que esto devuelve.</para>
+			<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- Un sensor una unidad delante de un vehículo girado un cuarto de vuelta
+-- queda una unidad al norte de él, y lleva la orientación del vehículo
+SELECT asEWKT(round(applyPose(pose 'Pose(Point(1 0), 0)',
+  pose(ST_Point(0,0), pi()/2)), 6));
+-- Pose(POINT(0 1),1.570796)
+SELECT asEWKT(round(applyPose(pose 'Pose(Point(1 0), 0)',
+  pose(ST_Point(10,5), pi()/2)), 6));
+-- Pose(POINT(10 6),1.570796)
+SELECT asEWKT(round(applyPose(pose 'Pose(Point(1 0 0), 1, 0, 0, 0)',
+  pose 'Pose(Point(0 0 5), 1, 0, 0, 0)'), 6));
+-- Pose(POINT Z (1 0 5),1,0,0,0)
 </programlisting>
 		</sect2>
 

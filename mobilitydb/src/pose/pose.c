@@ -688,6 +688,45 @@ Pose_roll(PG_FUNCTION_ARGS)
  * Transformation functions
  *****************************************************************************/
 
+PGDLLEXPORT Datum Pose_apply_pose(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pose_apply_pose);
+/**
+ * @ingroup mobilitydb_pose_base_transf
+ * @brief Return the composition of two poses, that is, the first one carried
+ * into the frame the second one names
+ * @sqlfn applyPose()
+ */
+Datum
+Pose_apply_pose(PG_FUNCTION_ARGS)
+{
+  Pose *body = PG_GETARG_POSE_P(0);
+  Pose *frame = PG_GETARG_POSE_P(1);
+  Pose *result = pose_compose(body, frame);
+  PG_FREE_IF_COPY(body, 0);
+  PG_FREE_IF_COPY(frame, 1);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POSE_P(result);
+}
+
+PGDLLEXPORT Datum Pose_inverse(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pose_inverse);
+/**
+ * @ingroup mobilitydb_pose_base_transf
+ * @brief Return the inverse of a pose
+ * @sqlfn poseInverse()
+ */
+Datum
+Pose_inverse(PG_FUNCTION_ARGS)
+{
+  Pose *pose = PG_GETARG_POSE_P(0);
+  Pose *result = pose_inverse(pose);
+  PG_FREE_IF_COPY(pose, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POSE_P(result);
+}
+
 PGDLLEXPORT Datum Pose_normalize(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Pose_normalize);
 /**
