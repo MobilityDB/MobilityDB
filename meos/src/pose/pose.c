@@ -575,6 +575,15 @@ ensure_valid_rotation(double theta)
  * exactly unit norm. */
 #define POSE_QUATERNION_NORM_TOLERANCE 1e-3
 
+/* Band within which |q|^2 counts as one, so that pose_make_3d leaves an
+ * already-normalized quaternion untouched and is therefore a fixed point of
+ * itself. Scaling a quaternion to unit norm leaves a residual |q|^2-1 of at
+ * most 3 * DBL_EPSILON, so a band twice that admits every quaternion the
+ * scaling produces while still normalizing every input that carries real
+ * drift: the widest quaternion it passes through is within 4 * DBL_EPSILON
+ * of unit norm. */
+#define POSE_QUATERNION_NORM_EPSILON (8 * DBL_EPSILON)
+
 /**
  * @brief Ensure that a 3D orientation has a unit norm (within
  * @p POSE_QUATERNION_NORM_TOLERANCE of 1)
@@ -1065,9 +1074,18 @@ pose_make_3d(double x, double y, double z, double W, double X, double Y,
    * POSE_QUATERNION_NORM_TOLERANCE. After this step |q|=1 to machine
    * precision regardless of the caller's floating-point hygiene, so
    * cmp/hash byte-equality and SLERP/Euler-decomposition correctness
-   * are independent of input quality. */
-  double inv_norm = 1.0 / sqrt(W * W + X * X + Y * Y + Z * Z);
-  W *= inv_norm; X *= inv_norm; Y *= inv_norm; Z *= inv_norm;
+   * are independent of input quality.
+   * A quaternion that is already of unit norm is left alone: scaling it
+   * rounds every component afresh, so the stored representation would not
+   * be a fixed point of this function and reading back a value written by
+   * it would not return that value. The band is the residual |q|^2-1 that
+   * the scaling itself leaves, measured at no more than 3 * DBL_EPSILON. */
+  double norm2 = W * W + X * X + Y * Y + Z * Z;
+  if (fabs(norm2 - 1.0) > POSE_QUATERNION_NORM_EPSILON)
+  {
+    double inv_norm = 1.0 / sqrt(norm2);
+    W *= inv_norm; X *= inv_norm; Y *= inv_norm; Z *= inv_norm;
+  }
 
   /* Ensure a unique representation for the quaternion (q ↔ -q). */
   if (W < 0.0)

@@ -276,6 +276,16 @@ SELECT hash(pose 'Pose(Point(0 0 0), 0.5, 0.5, 0.5, 0.5)')
      = hash(pose 'Pose(Point(0 0 0), -0.5, -0.5, -0.5, -0.5)') AS hash_canonical;
 SELECT pose 'Pose(Point(0 0 0), 0.5, 0.5, 0.5, 0.5)' ~= pose 'Pose(Point(0 0 0), -0.5, -0.5, -0.5, -0.5)' AS approx_canonical;
 
+-- A pose read back from its binary form is the pose that was written, so the
+-- binary form is lossless and COPY BINARY carries a table unchanged. The
+-- quaternion is (1, 1, 1, 2) scaled to unit norm, one of those whose scaled
+-- components move again when scaled a second time; an exactly representable
+-- quaternion such as (0.5, 0.5, 0.5, 0.5) survives any rescaling and so
+-- cannot tell a lossless round trip from a lossy one.
+SELECT poseFromBinary(asBinary(p)) = p AS wkb_roundtrip_identity
+FROM (SELECT pose(ST_MakePoint(1, 2, 3), 1 / n, 1 / n, 1 / n, 2 / n) AS p
+  FROM (SELECT sqrt(1 + 1 + 1 + 4) AS n) s) t;
+
 -------------------------------------------------------------------------------
 -- Geodetic poses (planar/geodetic support, uniform with the stbox GEODSTBOX form)
 -------------------------------------------------------------------------------

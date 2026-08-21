@@ -562,6 +562,14 @@ SELECT pose 'Pose(Point(0 0 0), 0.5, 0.5, 0.5, 0.5)' ~= pose 'Pose(Point(0 0 0),
  t
 (1 row)
 
+SELECT poseFromBinary(asBinary(p)) = p AS wkb_roundtrip_identity
+FROM (SELECT pose(ST_MakePoint(1, 2, 3), 1 / n, 1 / n, 1 / n, 2 / n) AS p
+  FROM (SELECT sqrt(1 + 1 + 1 + 4) AS n) s) t;
+ wkb_roundtrip_identity 
+------------------------
+ t
+(1 row)
+
 SELECT asText(pose 'GeodPose(Point(1 1),0.5)');
           astext          
 --------------------------

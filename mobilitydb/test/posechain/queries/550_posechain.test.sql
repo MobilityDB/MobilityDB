@@ -51,6 +51,13 @@ SELECT posechainFromBinary(asBinary(posechain 'PoseChain(Pose(Point(1 2), 0.5), 
   posechain 'PoseChain(Pose(Point(1 2), 0.5), Pose(Point(3 0), 0.25))';
 SELECT posechainFromHexEWKB(asHexEWKB(posechain 'SRID=3812;PoseChain(Pose(Point(1 2 3), 1, 0, 0, 0), Pose(Point(0 0 1), 1, 0, 0, 0))')) =
   posechain 'SRID=3812;PoseChain(Pose(Point(1 2 3), 1, 0, 0, 0), Pose(Point(0 0 1), 1, 0, 0, 0))';
+-- The reader rebuilds every link, so a chain whose links carry quaternions
+-- that move when scaled a second time is what shows the binary form lossless
+SELECT posechainFromBinary(asBinary(c)) = c AS wkb_roundtrip_identity
+FROM (SELECT posechain(ARRAY[
+    pose(ST_MakePoint(1, 2, 3), 1 / n, 1 / n, 1 / n, 2 / n),
+    pose(ST_MakePoint(4, 5, 6), 1 / m, 1 / m, 2 / m, 3 / m)]) AS c
+  FROM (SELECT sqrt(1 + 1 + 1 + 4) AS n, sqrt(1 + 1 + 4 + 9) AS m) s) t;
 
 -------------------------------------------------------------------------------
 -- Errors
