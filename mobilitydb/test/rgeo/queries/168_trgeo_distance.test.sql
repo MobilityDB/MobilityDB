@@ -150,4 +150,20 @@ SELECT ST_AsText(shortestLine(
   trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
   geometry 'Point(5 3)'));
 
+-- A rigid geometry given as a sequence set: the reference geometry is stored
+-- once by the sequence set and not by its composing sequences, so it is read
+-- from the temporal value and passed down to every sequence
+SELECT round(minValue(tDistance(
+  trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));{[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02],[Pose(Point(0 0),0)@2001-01-03, Pose(Point(10 0),0)@2001-01-04]}',
+  geometry 'Point(5 3)'))::numeric, 6);
+SELECT round(minValue(tDistance(
+  trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));{[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02],[Pose(Point(0 0),0)@2001-01-03, Pose(Point(10 0),0)@2001-01-04]}',
+  geometry 'Polygon((5 3,6 3,6 4,5 4,5 3))'))::numeric, 6);
+SELECT numSequences(tDistance(
+  trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));{[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02],[Pose(Point(0 0),0)@2001-01-03, Pose(Point(10 0),0)@2001-01-04]}',
+  geometry 'Point(5 3)'));
+SELECT round(nearestApproachDistance(
+  trgeometry 'Polygon((-2 -0.5,2 -0.5,2 0.5,-2 0.5,-2 -0.5));{[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),3.14159265)@2001-01-02],[Pose(Point(0 0),0)@2001-01-03, Pose(Point(5 0),0)@2001-01-04]}',
+  geometry 'Polygon((0 3,1 3,1 4,0 4,0 3))')::numeric, 6);
+
 -------------------------------------------------------------------------------

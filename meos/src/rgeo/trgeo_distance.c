@@ -747,10 +747,10 @@ edge_vertex_tpoly_point(LWPOLY *poly, Pose *pose_start, Pose *pose_end,
  * @brief
  */
 TSequence *
-dist2d_trgeoseq_point(const TSequence *seq, const GSERIALIZED *gs)
+dist2d_trgeoseq_point(const TSequence *seq, const GSERIALIZED *gs,
+  const GSERIALIZED *ref_gs)
 {
   /* TODO: Add check and code for stepwise seq */
-  const GSERIALIZED *ref_gs = trgeoseq_geom_p(seq);
 
   /* TODO: check that polygon is convex */
   LWPOLY *poly = lwgeom_as_lwpoly(lwgeom_from_gserialized(ref_gs));
@@ -1685,10 +1685,10 @@ trgeoseq_segment_index(const TSequence *seq, TimestampTz t)
  * @brief
  */
 TSequence *
-dist2d_trgeoseq_poly(const TSequence *seq, const GSERIALIZED *gs)
+dist2d_trgeoseq_poly(const TSequence *seq, const GSERIALIZED *gs,
+  const GSERIALIZED *ref_gs)
 {
   /* TODO: Add check and code for stepwise seq */
-  const GSERIALIZED *ref_gs = trgeoseq_geom_p(seq);
 
   /* TODO: check that both polygons are convex */
   LWPOLY *poly1 = lwgeom_as_lwpoly(lwgeom_from_gserialized(ref_gs));
@@ -1830,17 +1830,18 @@ dist2d_trgeoseq_poly(const TSequence *seq, const GSERIALIZED *gs)
  * @brief
  */
 TSequence *
-dist2d_trgeoseq_geo(const TSequence *seq, const GSERIALIZED *gs)
+dist2d_trgeoseq_geo(const TSequence *seq, const GSERIALIZED *gs,
+  const GSERIALIZED *ref_gs)
 {
   uint32_t gs_type = gserialized_get_type(gs);
   TSequence *result = NULL;
   switch (gs_type)
   {
     case POINTTYPE:
-      result = dist2d_trgeoseq_point(seq, gs);
+      result = dist2d_trgeoseq_point(seq, gs, ref_gs);
       break;
     case POLYGONTYPE:
-      result = dist2d_trgeoseq_poly(seq, gs);
+      result = dist2d_trgeoseq_poly(seq, gs, ref_gs);
       break;
     default:
       meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
@@ -1854,11 +1855,12 @@ dist2d_trgeoseq_geo(const TSequence *seq, const GSERIALIZED *gs)
  * @brief
  */
 TSequenceSet *
-dist2d_trgeoseqset_geo(const TSequenceSet *ss, const GSERIALIZED *gs)
+dist2d_trgeoseqset_geo(const TSequenceSet *ss, const GSERIALIZED *gs,
+  const GSERIALIZED *ref_gs)
 {
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
-    sequences[i] = dist2d_trgeoseq_geo(TSEQUENCESET_SEQ_N(ss, i), gs);
+    sequences[i] = dist2d_trgeoseq_geo(TSEQUENCESET_SEQ_N(ss, i), gs, ref_gs);
   return tsequenceset_make_free(sequences, ss->count, NORMALIZE);
 }
 
@@ -2054,15 +2056,21 @@ tdistance_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
     return NULL;
   }
 
+  /* The reference geometry of the rigid body is invariant in time; read it
+   * from the temporal value because a sequence set stores it once and not in
+   * each of its composing sequences */
+  const GSERIALIZED *ref_gs = trgeo_geom_p(temp);
+
   Temporal *result;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
     result = (Temporal *) dist2d_trgeoinst_geo((const TInstant *) temp, gs);
   else if (temp->subtype == TSEQUENCE)
-    result = (Temporal *) dist2d_trgeoseq_geo((const TSequence *) temp, gs);
+    result = (Temporal *) dist2d_trgeoseq_geo((const TSequence *) temp, gs,
+      ref_gs);
   else /* temp->subtype == TSEQUENCESET */
     result = (Temporal *) dist2d_trgeoseqset_geo((const TSequenceSet *) temp,
-      gs);
+      gs, ref_gs);
   return result;
 }
 
