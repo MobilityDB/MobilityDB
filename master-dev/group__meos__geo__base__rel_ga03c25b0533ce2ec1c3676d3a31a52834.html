@@ -132,11 +132,11 @@ $(function() {
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">gs1,gs2</td><td>Geometries </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">p</td><td>Pattern </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">p</td><td>Pattern</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section note"><dt>Note</dt><dd>PostGIS function: <code><a class="el" href="postgis_8h_a6f5ca95e4714d17e6c9bd48fc6298cdd.html#a6f5ca95e4714d17e6c9bd48fc6298cdd">relate_pattern(PG_FUNCTION_ARGS)</a></code> Note also the the pattern may be modified in the function </dd></dl>
+<p>The pattern is matched against the native DE-9IM intersection matrix, so a circular arc is met on its own circle rather than on the chords a linearization would put in its place, and an empty operand meets nothing </p><dl class="section note"><dt>Note</dt><dd>PostGIS function: <code><a class="el" href="postgis_8h_a6f5ca95e4714d17e6c9bd48fc6298cdd.html#a6f5ca95e4714d17e6c9bd48fc6298cdd">relate_pattern(PG_FUNCTION_ARGS)</a></code> Note also the the pattern may be modified in the function </dd></dl>
 
 </div>
 </div>

@@ -168,7 +168,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a38854768ea292512f58c42c2456c7816.html#a38854768ea292512f58c42c2456c7816">meos_is_simple</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a78778cbf1e8fa22bdf5127d123fa9581.html#a78778cbf1e8fa22bdf5127d123fa9581">meos_oriented_envelope</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a26c9915acdbe188b513aa2cb7d525362.html#a26c9915acdbe188b513aa2cb7d525362">meos_relate</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a83a046ac9bfa34b48ad2be60a4e23989.html#a83a046ac9bfa34b48ad2be60a4e23989">meos_relate_pattern</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a5b730401413ce3196bcf928b1aefd042.html#a5b730401413ce3196bcf928b1aefd042">meos_relate_pattern</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_ab7683aa676554dd56b6cd0c6a497c2a3.html#ab7683aa676554dd56b6cd0c6a497c2a3">MEOS_SEG_INTER_TYPE</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a747c0d17bba35d32a18939573d9a9ad8.html#a747c0d17bba35d32a18939573d9a9ad8">meos_spatialrel</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_aa728384d19ca3f96812a9fe2f3bec87d.html#aa728384d19ca3f96812a9fe2f3bec87d">mline_type</a></td></tr>
@@ -266,8 +266,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a83a046ac9bfa34b48ad2be60a4e23989" name="a83a046ac9bfa34b48ad2be60a4e23989"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a83a046ac9bfa34b48ad2be60a4e23989">&#9670;&#160;</a></span>meos_relate_pattern()</h2>
+<a id="a5b730401413ce3196bcf928b1aefd042" name="a5b730401413ce3196bcf928b1aefd042"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5b730401413ce3196bcf928b1aefd042">&#9670;&#160;</a></span>meos_relate_pattern()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -288,7 +288,13 @@ $(function() {
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>pattern</em>&#160;</td>
+          <td class="paramname"><em>pattern</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool *&#160;</td>
+          <td class="paramname"><em>result</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -298,7 +304,16 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return true if two geometries satisfy a DE-9IM pattern. </p>
+<p>Return whether two geometries satisfy a DE-9IM pattern. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">g1,g2</td><td>Geometries </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">pattern</td><td>DE-9IM pattern, in the alphabet <a class="el" href="meos_2src_2geo_2geo__funcs_8c_a54d5ce3f27777cbbd4be4ea56f34ef5f.html#a54d5ce3f27777cbbd4be4ea56f34ef5f" title="Return true if a DE-9IM matrix satisfies a pattern.">de9im_match</a> reads </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">result</td><td>True if the geometries satisfy the pattern </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>True if the pair is covered, which is what <a class="el" href="meos_2src_2geo_2geo__funcs_8c_ac19306df3cd4c8276d0cdb104792eabc.html#ac19306df3cd4c8276d0cdb104792eabc" title="Return true if a geometry is composed solely of the types the native implementations can extract into...">geom_meos_supported</a> answers of each geometry. A false return means the pair is outside that coverage, <b>not</b> that the pattern fails, so a caller must answer it another way rather than read <code>result</code> </dd></dl>
 
 </div>
 </div>
