@@ -142,7 +142,7 @@ no subtype currently routes `aggfuncs` through the `subtypes:` track. Live templ
 | posops | `posops.sql.tmpl` | **GENERATED** |
 | spatialrels | `spatialrels.c.tmpl` + `spatialrels.sql.tmpl` | **GENERATED** (ever/always) |
 | boxops (C) | `boxops.c.tmpl` | **GENERATED** (box-type axis) |
-| gist / spgist / indexes | `gist/spgist/indexes.sql.tmpl` | **GENERATED** (index infra) — `indexes.sql.tmpl` carries the Z-axis strategies 32-35 under `-- @IF front_back`, the same additive flag `posops.sql.tmpl` uses to declare the Z operators, so a family declares and indexes that axis from one manifest key |
+| gist / spgist / indexes | `gist/spgist/indexes.sql.tmpl` | **GENERATED** (index infra) — `indexes.sql.tmpl` carries the Z-axis strategies 32-35 under `-- @IF front_back`, the same additive flag `posops.sql.tmpl` uses to declare the Z operators, so a family declares and indexes that axis from one manifest key. It also declares the family's own consistent and distance support functions, `{TEMP}_gist_consistent` and `{TEMP}_gist_distance`, each over the implementation the spatiotemporal families share |
 | aggfuncs | `aggregates.sql.tmpl` | **GENERATED** — whole-file per family via the separate `aggregate_families` axis (§4b), not the `subtypes:` track |
 | spatialfuncs | — | reserved position, **HAND** |
 | distance | — | reserved position, **HAND** |
@@ -933,9 +933,9 @@ Three facts bound which declarations carry the clause:
   a filter in that operand order instead of rewriting it into a different
   question.
 - **A family whose opclass does not index a strategy keeps the predicate as a
-  filter**, the operator lookup finding no member. `tpose` and `trgeometry`
-  declare the Z-axis operators while their GiST opclass indexes none of them,
-  so the Z predicates of those two families are filters.
+  filter**, the operator lookup finding no member. The Z-axis strategies reach
+  the opclass of a three-dimensional family through the `front_back` key of §6,
+  so `tpose` and `trgeometry` answer their Z predicates from the index.
 - **The temporal pointcloud types carry no clause.** Their bounding box is a
   `TPCBox` and no scalar conversion to it exists to build an index expression
   from, so a clause there could never fire.

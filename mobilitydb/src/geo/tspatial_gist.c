@@ -380,14 +380,15 @@ Stbox_gist_same(PG_FUNCTION_ARGS)
  * GiST distance method
  *****************************************************************************/
 
-PGDLLEXPORT Datum Stbox_gist_distance(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Stbox_gist_distance);
 /**
- * @brief GiST distance for spatiotemporal values
- * @note Take in a query and an entry and return the "distance" between them
-*/
-Datum
-Stbox_gist_distance(PG_FUNCTION_ARGS)
+ * @brief Return the distance between the bounding box of an index entry and a
+ * query, in the last argument whether the leaf entries must be rechecked
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] boxcolumn True when the index is built over a column of
+ *   spatiotemporal boxes, so that a leaf key is the value itself
+ */
+static Datum
+stbox_gist_distance(FunctionCallInfo fcinfo, bool boxcolumn)
 {
   GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
   Oid typid = PG_GETARG_OID(3);
@@ -395,23 +396,49 @@ Stbox_gist_distance(PG_FUNCTION_ARGS)
   STBox *key = (STBox *) DatumGetPointer(entry->key);
   if (! key)
     PG_RETURN_FLOAT8(DBL_MAX);
+  MeosType type = oid_meostype(typid);
 
-  /* The index is lossy for leaf levels */
+  /* A leaf key of a column of boxes is the value itself, so its distance to a
+   * query box is the one the operator computes. Every other pairing measures
+   * a bounding box against a value and bounds the distance from below, which
+   * the recheck of the leaf entries settles */
   if (GIST_LEAF(entry))
-    *recheck = true;
+    *recheck = ! (boxcolumn && type == T_STBOX);
 
   /* Transform the query into a box */
   STBox query;
-  if (! tspatial_gist_get_stbox(fcinfo, &query, oid_meostype(typid)))
+  if (! tspatial_gist_get_stbox(fcinfo, &query, type))
     PG_RETURN_FLOAT8(DBL_MAX);
 
-  /* Since we only have boxes we return the minimum possible distance,
-   * and let the recheck sort things out in the case of leaves */
   double distance = nad_stbox_stbox(key, &query);
   if (distance < 0)
     PG_RETURN_FLOAT8(DBL_MAX);
 
   PG_RETURN_FLOAT8(distance);
+}
+
+PGDLLEXPORT Datum Stbox_gist_distance(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Stbox_gist_distance);
+/**
+ * @brief GiST distance for spatiotemporal boxes
+ * @note Take in a query and an entry and return the "distance" between them
+*/
+Datum
+Stbox_gist_distance(PG_FUNCTION_ARGS)
+{
+  return stbox_gist_distance(fcinfo, true);
+}
+
+PGDLLEXPORT Datum Tspatial_gist_distance(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tspatial_gist_distance);
+/**
+ * @brief GiST distance for spatiotemporal values
+ * @note Take in a query and an entry and return the "distance" between them
+*/
+Datum
+Tspatial_gist_distance(PG_FUNCTION_ARGS)
+{
+  return stbox_gist_distance(fcinfo, false);
 }
 
 /*****************************************************************************/

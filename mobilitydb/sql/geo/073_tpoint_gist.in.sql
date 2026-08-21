@@ -137,6 +137,11 @@ CREATE FUNCTION tgeogpoint_gist_consistent(internal, tgeogpoint, smallint, oid, 
   AS 'MODULE_PATHNAME', 'Stbox_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION tgeompoint_gist_distance(internal, tgeompoint, smallint, oid, internal)
+  RETURNS float8
+  AS 'MODULE_PATHNAME', 'Tspatial_gist_distance'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE OPERATOR CLASS tgeompoint_rtree_ops
   DEFAULT FOR TYPE tgeompoint USING gist AS
   STORAGE stbox,
@@ -223,7 +228,12 @@ CREATE OPERATOR CLASS tgeompoint_rtree_ops
   FUNCTION  5  stbox_gist_penalty(internal, internal, internal),
   FUNCTION  6  stbox_gist_picksplit(internal, internal),
   FUNCTION  7  stbox_gist_same(stbox, stbox, internal),
-  FUNCTION  8  stbox_gist_distance(internal, stbox, smallint, oid, internal);
+  FUNCTION  8  tgeompoint_gist_distance(internal, tgeompoint, smallint, oid, internal);
+
+CREATE FUNCTION tgeogpoint_gist_distance(internal, tgeogpoint, smallint, oid, internal)
+  RETURNS float8
+  AS 'MODULE_PATHNAME', 'Tspatial_gist_distance'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR CLASS tgeogpoint_rtree_ops
   DEFAULT FOR TYPE tgeogpoint USING gist AS
@@ -275,6 +285,6 @@ CREATE OPERATOR CLASS tgeogpoint_rtree_ops
   FUNCTION  5  stbox_gist_penalty(internal, internal, internal),
   FUNCTION  6  stbox_gist_picksplit(internal, internal),
   FUNCTION  7  stbox_gist_same(stbox, stbox, internal),
-  FUNCTION  8  stbox_gist_distance(internal, stbox, smallint, oid, internal);
+  FUNCTION  8  tgeogpoint_gist_distance(internal, tgeogpoint, smallint, oid, internal);
 
 /******************************************************************************/

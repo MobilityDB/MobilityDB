@@ -615,6 +615,14 @@ DROP TABLE tbl_stbox_notime;
 -- Nearest approach ordering answered by the space-partitioning indexes
 -------------------------------------------------------------------------------
 
+DROP INDEX IF EXISTS tbl_stbox3d_rtree_idx;
+CREATE INDEX tbl_stbox3d_rtree_idx ON tbl_stbox3d USING GIST(b);
+WITH test AS (
+  SELECT b |=| stbox 'STBOX ZT(((1,1,1),(2,2,2)),[2001-06-01, 2001-07-01])' AS distance
+  FROM tbl_stbox3d ORDER BY 1 LIMIT 3 )
+SELECT round(distance, 6) FROM test;
+DROP INDEX tbl_stbox3d_rtree_idx;
+
 DROP INDEX IF EXISTS tbl_stbox3d_quadtree_idx;
 CREATE INDEX tbl_stbox3d_quadtree_idx ON tbl_stbox3d USING SPGIST(b);
 WITH test AS (

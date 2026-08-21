@@ -41,6 +41,11 @@ CREATE FUNCTION tnpoint_gist_consistent(internal, tnpoint, smallint, oid, intern
   AS 'MODULE_PATHNAME', 'Stbox_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION tnpoint_gist_distance(internal, tnpoint, smallint, oid, internal)
+  RETURNS float8
+  AS 'MODULE_PATHNAME', 'Tspatial_gist_distance'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /******************************************************************************/
 
 CREATE OPERATOR CLASS tnpoint_rtree_ops
@@ -117,7 +122,7 @@ CREATE OPERATOR CLASS tnpoint_rtree_ops
   FUNCTION  5 stbox_gist_penalty(internal, internal, internal),
   FUNCTION  6 stbox_gist_picksplit(internal, internal),
   FUNCTION  7 stbox_gist_same(stbox, stbox, internal),
-  FUNCTION  8 stbox_gist_distance(internal, stbox, smallint, oid, internal);
+  FUNCTION  8 tnpoint_gist_distance(internal, tnpoint, smallint, oid, internal);
 
 /******************************************************************************/
 
