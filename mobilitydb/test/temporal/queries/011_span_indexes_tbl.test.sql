@@ -817,3 +817,23 @@ ORDER BY op, leftarg, rightarg;
 DROP TABLE test_idxops;
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- A quad-tree node whose children are all the same computes one ordering
+-- distance per ordering key from the parent node span. A table of identical
+-- values is what builds such a node.
+-------------------------------------------------------------------------------
+
+CREATE TABLE tbl_tstzspan_allthesame AS
+  SELECT k, tstzspan '[2001-01-01, 2001-01-02]' AS t FROM generate_series(1, 1000) k;
+CREATE INDEX tbl_tstzspan_allthesame_quadtree_idx ON tbl_tstzspan_allthesame
+  USING SPGIST(t);
+ANALYZE tbl_tstzspan_allthesame;
+
+SET enable_seqscan = off;
+SELECT t <-> timestamptz '2001-06-01' FROM tbl_tstzspan_allthesame ORDER BY 1 LIMIT 3;
+RESET enable_seqscan;
+
+DROP TABLE tbl_tstzspan_allthesame;
+
+-------------------------------------------------------------------------------

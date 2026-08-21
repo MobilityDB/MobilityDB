@@ -311,3 +311,27 @@ DROP TABLE tbl_tgeompoint3D_big_allthesame;
 
 -------------------------------------------------------------------------------
 
+
+-------------------------------------------------------------------------------
+-- A quad-tree node whose children are all the same computes one ordering
+-- distance per ordering key from the parent node box. A table of identical
+-- values is what builds such a node.
+-------------------------------------------------------------------------------
+
+CREATE TABLE tbl_tgeompoint_allthesame AS
+  SELECT k, tgeompoint 'Point(5 5)@2001-01-01' AS temp
+  FROM generate_series(1, 1000) k;
+CREATE INDEX tbl_tgeompoint_allthesame_quadtree_idx ON tbl_tgeompoint_allthesame
+  USING SPGIST(temp);
+ANALYZE tbl_tgeompoint_allthesame;
+
+SET enable_seqscan = off;
+WITH test AS (
+  SELECT temp |=| geometry 'Point(0 0)' AS distance
+  FROM tbl_tgeompoint_allthesame ORDER BY 1 LIMIT 3 )
+SELECT round(distance, 6) FROM test;
+RESET enable_seqscan;
+
+DROP TABLE tbl_tgeompoint_allthesame;
+
+-------------------------------------------------------------------------------
