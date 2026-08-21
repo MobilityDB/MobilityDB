@@ -63,7 +63,7 @@ Datum
 Geom_oriented_envelope(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  GSERIALIZED *result = geom_oriented_envelope_meos(gs);
+  GSERIALIZED *result = geom_oriented_envelope(gs);
   PG_FREE_IF_COPY(gs, 0);
   if (! result)
     PG_RETURN_NULL();
@@ -81,7 +81,7 @@ Datum
 Geom_convex_hull(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  GSERIALIZED *result = geom_convex_hull_meos(gs);
+  GSERIALIZED *result = geom_convex_hull(gs);
   PG_FREE_IF_COPY(gs, 0);
   if (! result)
     PG_RETURN_NULL();

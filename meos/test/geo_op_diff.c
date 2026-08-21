@@ -549,7 +549,7 @@ main(int argc, char **argv)
     }
     double distance = is_buffer ? atof(arg) : 0.0;
     GSERIALIZED *actual = is_buffer ? geom_buffer(gs, distance, "") :
-      (is_envelope ? geom_oriented_envelope_meos(gs) : geom_convex_hull_meos(gs));
+      (is_envelope ? geom_oriented_envelope(gs) : geom_convex_hull(gs));
     if (! actual)
     {
       nunsupported++;
