@@ -141,4 +141,13 @@ SELECT interp(tDistance(
   trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
   geometry 'Polygon((5 3,6 3,6 4,5 4,5 3))'));
 
+-- The shortest line joins the body and the geometry themselves, not the two
+-- geometries read as if they were points
+SELECT ST_AsText(shortestLine(
+  trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  geometry 'Polygon((5 3,6 3,6 4,5 4,5 3))'));
+SELECT ST_AsText(shortestLine(
+  trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  geometry 'Point(5 3)'));
+
 -------------------------------------------------------------------------------

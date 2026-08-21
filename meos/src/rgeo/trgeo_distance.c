@@ -2467,13 +2467,13 @@ shortestline_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
     return NULL;
   
   Temporal *dist = tdistance_trgeometry_geo(temp, gs);
+  if (dist == NULL)
+    return NULL;
   const TInstant *inst = temporal_min_inst_p(dist);
   /* Timestamp t may be at an exclusive bound */
   Datum value;
   trgeo_value_at_timestamptz(temp, inst->t, false, &value);
-  LWGEOM *line = (LWGEOM *) lwline_make(value, PointerGetDatum(gs));
-  GSERIALIZED *result = geo_serialize(line);
-  lwgeom_free(line);
+  GSERIALIZED *result = geom_shortestline2d(DatumGetGserializedP(value), gs);
   pfree(DatumGetPointer(value)); pfree(dist);
   return result;
 }
@@ -2500,9 +2500,8 @@ shortestline_trgeometry_tpoint(const Temporal *temp1, const Temporal *temp2)
   Datum value1, value2;
   trgeo_value_at_timestamptz(temp1, inst->t, false, &value1);
   temporal_value_at_timestamptz(temp2, inst->t, false, &value2);
-  LWGEOM *line = (LWGEOM *) lwline_make(value1, value2);
-  GSERIALIZED *result = geo_serialize(line);
-  lwgeom_free(line);
+  GSERIALIZED *result = geom_shortestline2d(DatumGetGserializedP(value1),
+    DatumGetGserializedP(value2));
   pfree(DatumGetPointer(value1)); pfree(DatumGetPointer(value2)); pfree(dist);
   return result;
 }
@@ -2529,9 +2528,8 @@ shortestline_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
   Datum value1, value2;
   trgeo_value_at_timestamptz(temp1, inst->t, false, &value1);
   trgeo_value_at_timestamptz(temp2, inst->t, false, &value2);
-  LWGEOM *line = (LWGEOM *) lwline_make(value1, value2);
-  GSERIALIZED *result = geo_serialize(line);
-  lwgeom_free(line);
+  GSERIALIZED *result = geom_shortestline2d(DatumGetGserializedP(value1),
+    DatumGetGserializedP(value2));
   pfree(DatumGetPointer(value1)); pfree(DatumGetPointer(value2)); pfree(dist);
   return result;
 }
