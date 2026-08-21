@@ -130,7 +130,7 @@ extern LWGEOM *meos_oriented_envelope(const LWGEOM *geom);
 extern bool meos_is_simple(const LWGEOM *geom, bool *result);
 extern bool meos_relate(const LWGEOM *g1, const LWGEOM *g2, char result[10]);
 extern bool meos_relate_pattern(const LWGEOM *g1, const LWGEOM *g2,
-  const char *pattern);
+  const char *pattern, bool *result);
 extern bool meos_spatialrel(const LWGEOM *g1, const LWGEOM *g2, spatialRel rel,
   bool *result);
 extern bool de9im_match(const char matrix[10], const char pattern[10]);

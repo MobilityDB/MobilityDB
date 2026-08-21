@@ -1989,6 +1989,9 @@ geom_disjoint2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
  * by a pattern
  * @param[in] gs1,gs2 Geometries
  * @param[in] p Pattern
+ * @details The pattern is matched against the native DE-9IM intersection
+ * matrix, so a circular arc is met on its own circle rather than on the chords
+ * a linearization would put in its place, and an empty operand meets nothing
  * @note PostGIS function: @p relate_pattern(PG_FUNCTION_ARGS)
  * Note also the the pattern may be modified in the function
  */
@@ -2000,48 +2003,25 @@ geom_relate_pattern(const GSERIALIZED *gs1, const GSERIALIZED *gs2, char *p)
   if (! ensure_valid_geo_geo(gs1, gs2) || ! ensure_not_geodetic_geo(gs1))
     return false;
 
-  /* TODO handle empty */
-
-  GEOSContextHandle_t ctx = geos_get_context();
-
-  GEOSGeometry *geos1 = POSTGIS2GEOS(gs1);
-  if (!geos1)
-  {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-      "First argument geometry could not be converted to GEOS");
-    return false;
-  }
-  GEOSGeometry *geos2 = POSTGIS2GEOS(gs2);
-  if (!geos2)
-  {
-    GEOSGeom_destroy_r(ctx, geos1);
-    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-      "Second argument geometry could not be converted to GEOS");
-    return false;
-  }
-
-  /*
-  ** Need to make sure 't' and 'f' are upper-case before handing to GEOS
-  */
+  /* The pattern alphabet is upper case */
   for (size_t i = 0; i < strlen(p); i++ )
   {
     if ( p[i] == 't' ) p[i] = 'T';
     if ( p[i] == 'f' ) p[i] = 'F';
   }
 
-  char result = GEOSRelatePattern_r(ctx, geos1, geos2, p);
-  GEOSGeom_destroy_r(ctx, geos1);
-  GEOSGeom_destroy_r(ctx, geos2);
-
-  /* GEOS reports a failure as 2, which is the pattern reporting nothing. The
-   * answer is false, the one every other failure of this function gives */
-  if (result == 2)
+  LWGEOM *geom1 = lwgeom_from_gserialized(gs1);
+  LWGEOM *geom2 = lwgeom_from_gserialized(gs2);
+  bool result;
+  bool covered = meos_relate_pattern(geom1, geom2, p, &result);
+  lwgeom_free(geom1); lwgeom_free(geom2);
+  if (! covered)
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-      "GEOSRelatePattern returned error");
+    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+      "The relationship of the geometries is not supported");
     return false;
   }
-  return (bool) result;
+  return result;
 }
 
 /**

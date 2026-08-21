@@ -6373,14 +6373,24 @@ meos_spatialrel(const LWGEOM *g1, const LWGEOM *g2, spatialRel rel,
 }
 
 /**
- * @brief Return true if two geometries satisfy a DE-9IM pattern
+ * @brief Return whether two geometries satisfy a DE-9IM pattern
+ * @param[in] g1,g2 Geometries
+ * @param[in] pattern DE-9IM pattern, in the alphabet #de9im_match reads
+ * @param[out] result True if the geometries satisfy the pattern
+ * @return True if the pair is covered, which is what #geom_meos_supported
+ * answers of each geometry. A false return means the pair is outside that
+ * coverage, @b not that the pattern fails, so a caller must answer it another
+ * way rather than read @p result
  */
 bool
-meos_relate_pattern(const LWGEOM *g1, const LWGEOM *g2, const char *pattern)
+meos_relate_pattern(const LWGEOM *g1, const LWGEOM *g2, const char *pattern,
+  bool *result)
 {
+  assert(result);
   char matrix[10];
   if (! meos_relate(g1, g2, matrix))
     return false;
-  return de9im_match(matrix, pattern);
+  *result = de9im_match(matrix, pattern);
+  return true;
 }
 /*****************************************************************************/
