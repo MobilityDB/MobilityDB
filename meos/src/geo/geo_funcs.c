@@ -1967,7 +1967,7 @@ meos_oriented_envelope(const LWGEOM *geom)
  * @csqlfn #Geom_oriented_envelope()
  */
 GSERIALIZED *
-geom_oriented_envelope_meos(const GSERIALIZED *gs)
+geom_oriented_envelope(const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs, NULL);
@@ -2055,9 +2055,10 @@ convex_hull(const LWGEOM *geom)
  * @param[in] gs Geometry
  * @note PostGIS function: @p ST_ConvexHull(PG_FUNCTION_ARGS). With respect to
  * the original function we do not use the @p prec argument.
+ * @csqlfn #Geom_convex_hull()
  */
 GSERIALIZED *
-geom_convex_hull_meos(const GSERIALIZED *gs)
+geom_convex_hull(const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs, NULL);
