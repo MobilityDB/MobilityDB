@@ -93,6 +93,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__distance_8c_a0ec0f1ce47c060350ef8b5439225c271.html#a0ec0f1ce47c060350ef8b5439225c271">dist2d_trgeoinst_geo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__distance_8c_a04cc0955764d3832dfa8b652e63f510e.html#a04cc0955764d3832dfa8b652e63f510e">dist2d_trgeoinst_trgeoinst</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__distance_8c_a7c9c5e54490bea834a5b4b92a0265efc.html#a7c9c5e54490bea834a5b4b92a0265efc">dist2d_trgeoseq_geo</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__distance_8c_afb8d924f16d66c254ddd83fcae45f11f.html#afb8d924f16d66c254ddd83fcae45f11f">dist2d_trgeoseq_multi</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__distance_8c_a970b24091b7e4d3dfd40d2242f503ee4.html#a970b24091b7e4d3dfd40d2242f503ee4">dist2d_trgeoseq_point</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__distance_8c_a38fbb49a50729d2229c4be8aed4cec8f.html#a38fbb49a50729d2229c4be8aed4cec8f">dist2d_trgeoseq_poly</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__distance_8c_adf249ce80c6ccddd86de870aa923bbdd.html#adf249ce80c6ccddd86de870aa923bbdd">dist2d_trgeoseq_trgeoseq</a></td></tr>
@@ -134,6 +135,8 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__dist_gaab9479cd3e7e4c212268088831a8b7f9.html#gaab9479cd3e7e4c212268088831a8b7f9">tdistance_trgeometry_geo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__dist_ga5621013d1fc75efb518063caa524e0b2.html#ga5621013d1fc75efb518063caa524e0b2">tdistance_trgeometry_tpoint</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__dist_ga383cfcfd9e5b79c1dd59e09637280531.html#ga383cfcfd9e5b79c1dd59e09637280531">tdistance_trgeometry_trgeometry</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__distance_8c_aefb39b2d21ceb0c5de6435afd6e67fd1.html#aefb39b2d21ceb0c5de6435afd6e67fd1">tfloatsegm_min_turnpt</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__distance_8c_a80b52f3ed669b34f4ff625b45ed2f5b6.html#a80b52f3ed669b34f4ff625b45ed2f5b6">tfloatseq_min_tfloatseq</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__distance_8c_ac1ff3074d3dcde6ee819ba16412215e7.html#ac1ff3074d3dcde6ee819ba16412215e7">TP_DIST</a></td></tr>
           <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2rgeo_2trgeo__distance_8c_ac1ff3074d3dcde6ee819ba16412215e7.html#ac1ff3074d3dcde6ee819ba16412215e7">TP_DIST</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__distance_8c_a8c6c7aff908644fb352b679b33dec1ba.html#a8c6c7aff908644fb352b679b33dec1ba">trgeoinst_translate_by_tpoint</a></td></tr>
@@ -169,7 +172,7 @@ $(function() {
 <div class="line">    uint32_t _c1 = 0, _c2 = 0; <span class="keywordtype">double</span> _d; \</div>
 <div class="line">    v_clip_tpoly_tpoly(poly1, poly2, _pp, NULL, &amp;_c1, &amp;_c2, &amp;_d); \</div>
 <div class="line">    pfree(_pp); _d; })</div>
-<div class="ttc" id="ameos_2src_2rgeo_2trgeo__distance_8c_af3e32f238d73c6485b4ce47a1176ba77_html_af3e32f238d73c6485b4ce47a1176ba77"><div class="ttname"><a href="meos_2src_2rgeo_2trgeo__distance_8c_af3e32f238d73c6485b4ce47a1176ba77.html#af3e32f238d73c6485b4ce47a1176ba77">rel_posesegm_interpolate</a></div><div class="ttdeci">static Pose * rel_posesegm_interpolate(Pose *pose1_s, Pose *pose1_e, Pose *pose2_s, Pose *pose2_e, double ratio)</div><div class="ttdoc">Return the pose of the first rigid geometry in the moving frame of the second one at ratio (see rel_p...</div><div class="ttdef"><b>Definition:</b> trgeo_distance.c:422</div></div>
+<div class="ttc" id="ameos_2src_2rgeo_2trgeo__distance_8c_af3e32f238d73c6485b4ce47a1176ba77_html_af3e32f238d73c6485b4ce47a1176ba77"><div class="ttname"><a href="meos_2src_2rgeo_2trgeo__distance_8c_af3e32f238d73c6485b4ce47a1176ba77.html#af3e32f238d73c6485b4ce47a1176ba77">rel_posesegm_interpolate</a></div><div class="ttdeci">static Pose * rel_posesegm_interpolate(Pose *pose1_s, Pose *pose1_e, Pose *pose2_s, Pose *pose2_e, double ratio)</div><div class="ttdoc">Return the pose of the first rigid geometry in the moving frame of the second one at ratio (see rel_p...</div><div class="ttdef"><b>Definition:</b> trgeo_distance.c:425</div></div>
 <div class="ttc" id="astructPose_html"><div class="ttname"><a href="structPose.html">Pose</a></div><div class="ttdoc">Basic functions for static pose objects.</div><div class="ttdef"><b>Definition:</b> pose.h:58</div></div>
 </div><!-- fragment -->
 </div>
