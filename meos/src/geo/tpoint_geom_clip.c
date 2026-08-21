@@ -79,102 +79,126 @@ point_in_polygon_impl(double x, double y, Edge **edges, int nedges,
   const RTree *rtree, int32_t srid, double xmax)
 {
   int inside = 0;
-  int n = nedges;
-  if (rtree)
+  /* The height the ray is cast at. A ray at the height of a vertex meets the
+   * two edges sharing it in the one point they share, and which of the two
+   * owns that crossing is decided by one rule for a segment and another for an
+   * arc: the two can both claim it, counting it twice, or both disclaim it,
+   * counting it not at all, and either way the parity, and with it the answer,
+   * turns over. A boundary point is answered above without casting anything,
+   * so the point here lies off the boundary and the ray may be cast at any
+   * height near its own: it is moved until no vertex sits on it, which leaves
+   * no crossing for two edges to share and no rule to reconcile */
+  double ry = y;
+  double bump = MEOS_EDGE_TOLERANCE * 4.0;
+  for (int attempt = 0; attempt < 8; attempt++)
   {
-    /* Only edges whose bounding box meets the +x ray from (x,y) can cross it
-     * or contain the point; querying the R-tree for those instead of scanning
-     * every edge turns the O(nedges) test into O(log nedges + candidates).
-     * The even-odd parity is order-independent and every excluded edge lies
-     * left of x or off the ray's height, so it can neither cross the +x ray
-     * nor contain the point -- the result is identical to the full scan. */
-    STBox query;
-    double xhi = (x > xmax) ? x : xmax;
-    stbox_set(true, false, false, srid, x, xhi, y, y, 0, 0, NULL, &query);
-    n = rtree_search(rtree, RTREE_OVERLAPS, &query, rtree_results);
-  }
-  for (int i = 0; i < n; i++)
-  {
-    const Edge *restrict e = rtree ?
-      edges[*(int64 *) meos_array_get(rtree_results, i)] : edges[i];
-
-    /* Only polygon boundary edges bound a region. Point, line, and standalone
-     * (1D) arc edges are ignored by the even-odd containment test */
-    if (e->etype == EDGE_POLYARC)
+    bool shared = false;
+    inside = 0;
+    int n = nedges;
+    if (rtree)
     {
-      /* Boundary check */
-      if (point_on_arc(x, y, e))
-        return 1;
-      /* Cast a ray towards +x. The horizontal line at height y meets the
-       * supporting circle at cx +/- sqrt(r^2 - (y - cy)^2); flip the parity
-       * for each crossing that lies strictly to the right of the point and
-       * within the arc's angular span. A ray that only grazes the circle
-       * tangentially (h2 ~ 0) does not cross the boundary */
-      const double dyc = y - e->cy;
-      const double h2 = e->radius * e->radius - dyc * dyc;
-      if (h2 <= MEOS_EDGE_TOLERANCE)
+      /* Only edges whose bounding box meets the +x ray from (x,ry) can cross
+       * it or contain the point; querying the R-tree for those instead of
+       * scanning every edge turns the O(nedges) test into
+       * O(log nedges + candidates). The even-odd parity is order-independent
+       * and every excluded edge lies left of x or off the ray's height, so it
+       * can neither cross the +x ray nor contain the point -- the result is
+       * identical to the full scan. */
+      STBox query;
+      double xhi = (x > xmax) ? x : xmax;
+      stbox_set(true, false, false, srid, x, xhi, ry, ry, 0, 0, NULL, &query);
+      n = rtree_search(rtree, RTREE_OVERLAPS, &query, rtree_results);
+    }
+    for (int i = 0; i < n && ! shared; i++)
+    {
+      const Edge *restrict e = rtree ?
+        edges[*(int64 *) meos_array_get(rtree_results, i)] : edges[i];
+
+      /* Only polygon boundary edges bound a region. Point, line, and
+       * standalone (1D) arc edges are ignored by the even-odd containment
+       * test */
+      if (e->etype != EDGE_POLYARC && e->etype != EDGE_POLYSEG)
         continue;
-      const double h = sqrt(h2);
-      const double xhit[2] = {e->cx - h, e->cx + h};
-      /* Forward traversal direction of the arc in the angle parameter */
-      const double s = e->ccw ? 1.0 : -1.0;
-      for (int k = 0; k < 2; k++)
+
+      /* An end of this edge sits on the ray, so the crossing there is shared
+       * with the edge that follows it round the ring.
+       * How near is near enough is read at the scale of the edge: an arc is
+       * held within its span to an angular tolerance, which at a radius of
+       * r stands for a distance of r times that tolerance, so an end of a
+       * large arc reaches the ray from far further off than an end of a
+       * segment does */
+      double tol = MEOS_EDGE_TOLERANCE;
+      if (e->etype == EDGE_POLYARC && e->radius > 1.0)
+        tol *= e->radius;
+      if (fabs(e->y1 - ry) <= tol || fabs(e->y2 - ry) <= tol)
       {
-        const double xi = xhit[k];
-        if (xi <= x)
-          continue;
-        const double phi = atan2(dyc, xi - e->cx);
-        if (! arc_contains_angle(e, phi))
-          continue;
-        /* Half-open ownership, mirroring the straight-edge
-         * (y1 > y) != (y2 > y) rule below: a crossing shared with a
-         * neighbouring edge (a ring junction lying exactly on the ray) must be
-         * counted once. A crossing at an arc endpoint is owned by this edge
-         * only if the arc's interior rises above the ray there; an interior
-         * crossing is always transversal and always counted */
-        const bool at_ep0 = fabs(xi - e->x1) < MEOS_EDGE_TOLERANCE &&
-          fabs(y - e->y1) < MEOS_EDGE_TOLERANCE;
-        const bool at_ep1 = fabs(xi - e->x2) < MEOS_EDGE_TOLERANCE &&
-          fabs(y - e->y2) < MEOS_EDGE_TOLERANCE;
-        if (at_ep0 || at_ep1)
-        {
-          const double theta_e = at_ep0 ? e->theta0 : e->theta1;
-          const double dtheta_in = at_ep0 ? s : -s;
-          if (dtheta_in * cos(theta_e) <= 0)
-            continue;
-        }
-        inside ^= 1;
+        shared = true;
+        /* The ray has to clear the end by more than that same distance */
+        if (bump < 4.0 * tol)
+          bump = 4.0 * tol;
+        break;
       }
-      continue;
+
+      if (e->etype == EDGE_POLYARC)
+      {
+        /* Boundary check, which reads the point itself rather than the ray */
+        if (point_on_arc(x, y, e))
+          return 1;
+        /* Cast a ray towards +x. The horizontal line at height ry meets the
+         * supporting circle at cx +/- sqrt(r^2 - (ry - cy)^2); flip the parity
+         * for each crossing that lies strictly to the right of the point and
+         * within the arc's angular span. A ray that only grazes the circle
+         * tangentially (h2 ~ 0) does not cross the boundary */
+        const double dyc = ry - e->cy;
+        const double h2 = e->radius * e->radius - dyc * dyc;
+        if (h2 <= MEOS_EDGE_TOLERANCE)
+          continue;
+        const double h = sqrt(h2);
+        const double xhit[2] = {e->cx - h, e->cx + h};
+        for (int k = 0; k < 2; k++)
+        {
+          const double xi = xhit[k];
+          if (xi <= x)
+            continue;
+          const double phi = atan2(dyc, xi - e->cx);
+          if (! arc_contains_angle(e, phi))
+            continue;
+          inside ^= 1;
+        }
+        continue;
+      }
+
+      const double dx  = e->dx;
+      const double dy  = e->dy;
+      const double x1  = e->x1;
+      const double y1  = e->y1;
+
+      const double dxp = x - x1;
+      const double dyp = y - y1;
+
+      /* Boundary check, which reads the point itself rather than the ray */
+      const double cross = dx * dyp - dy * dxp;
+      if (fabs(cross) < MEOS_EDGE_TOLERANCE)
+      {
+        const double dot = dxp * dx + dyp * dy;
+        if (dot >= -MEOS_EDGE_TOLERANCE &&
+            dot <= (e->length) + MEOS_EDGE_TOLERANCE)
+          return 1;
+      }
+
+      /* Ray casting */
+      if ((y1 > ry) != ((y1 + dy) > ry))
+      {
+        const double rhs = dx * (ry - y1);
+        const double lhs = dxp * dy;
+        inside ^= ((dy > 0) ? (rhs > lhs) : (rhs < lhs));
+      }
     }
-
-    if (e->etype != EDGE_POLYSEG)
-      continue;
-
-    const double dx  = e->dx;
-    const double dy  = e->dy;
-    const double x1  = e->x1;
-    const double y1  = e->y1;
-
-    const double dxp = x - x1;
-    const double dyp = y - y1;
-
-    /* Boundary check */
-    const double cross = dx * dyp - dy * dxp;
-    if (fabs(cross) < MEOS_EDGE_TOLERANCE)
-    {
-      const double dot = dxp * dx + dyp * dy;
-      if (dot >= -MEOS_EDGE_TOLERANCE && dot <= (e->length) + MEOS_EDGE_TOLERANCE)
-        return 1;
-    }
-
-    /* Ray casting */
-    if ((y1 > y) != ((y1 + dy) > y))
-    {
-      const double rhs = dx * dyp;
-      const double lhs = dxp * dy;
-      inside ^= ((dy > 0) ? (rhs > lhs) : (rhs < lhs));
-    }
+    if (! shared)
+      return inside;
+    /* Move the ray off the vertex it meets and cast it again */
+    ry = y + bump;
+    bump *= 3.0;
   }
   return inside;
 }
