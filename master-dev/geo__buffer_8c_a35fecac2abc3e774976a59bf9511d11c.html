@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: meos_buffer_mpoint</title>
+<title>MobilityDB: buffer_covers_hole</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -122,7 +122,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a9aa7fc166227907f22c71c043125e135.html#a9aa7fc166227907f22c71c043125e135">buffer_collect_line_line_intersections</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_ab8994696d4b327399bf5417e55d8525f.html#ab8994696d4b327399bf5417e55d8525f">buffer_components_relation</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_aa7aede8ada7a7b7872c9ccd71911d79d.html#aa7aede8ada7a7b7872c9ccd71911d79d">buffer_containment_epsilon</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a35fecac2abc3e774976a59bf9511d11c.html#a35fecac2abc3e774976a59bf9511d11c">buffer_covers_hole</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="geo__buffer_8c_a35fecac2abc3e774976a59bf9511d11c.html#a35fecac2abc3e774976a59bf9511d11c">buffer_covers_hole</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a33e115e16b5c364de7b93353dd703a59.html#a33e115e16b5c364de7b93353dd703a59">buffer_cross</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a2a9d5b2e00b22cc4ffd1f634ce8cbc32.html#a2a9d5b2e00b22cc4ffd1f634ce8cbc32">buffer_curve_points</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a5674eaec1b0b96d7d7efe6c1a7a7aeb8.html#a5674eaec1b0b96d7d7efe6c1a7a7aeb8">buffer_curvepoly_add_ring</a></td></tr>
@@ -215,7 +215,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_af461b9fb26d92f4cfe22fbcf486167cf.html#af461b9fb26d92f4cfe22fbcf486167cf">meos_buffer_line_offset</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_ad4cf5a4d4131d48215f5d2ab4abe5dea.html#ad4cf5a4d4131d48215f5d2ab4abe5dea">meos_buffer_line_split</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a2772aa735cbf0be1b11254c97e6c7b3c.html#a2772aa735cbf0be1b11254c97e6c7b3c">meos_buffer_mline</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="geo__buffer_8c_aba00ba4d4d0b628e6f21673eab8ffa04.html#aba00ba4d4d0b628e6f21673eab8ffa04">meos_buffer_mpoint</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_aba00ba4d4d0b628e6f21673eab8ffa04.html#aba00ba4d4d0b628e6f21673eab8ffa04">meos_buffer_mpoint</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_aa33c768d37f2a67fb19e892ce3684204.html#aa33c768d37f2a67fb19e892ce3684204">meos_buffer_mpoly</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a1e41a97a4cd8b5980e4cf9b774a05ca2.html#a1e41a97a4cd8b5980e4cf9b774a05ca2">meos_buffer_point</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_aedc0a3aa5c7db69d35c8cda5a31364b6.html#aedc0a3aa5c7db69d35c8cda5a31364b6">meos_buffer_poly</a></td></tr>
@@ -225,8 +225,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="aba00ba4d4d0b628e6f21673eab8ffa04" name="aba00ba4d4d0b628e6f21673eab8ffa04"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aba00ba4d4d0b628e6f21673eab8ffa04">&#9670;&#160;</a></span>meos_buffer_mpoint()</h2>
+<a id="a35fecac2abc3e774976a59bf9511d11c" name="a35fecac2abc3e774976a59bf9511d11c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a35fecac2abc3e774976a59bf9511d11c">&#9670;&#160;</a></span>buffer_covers_hole()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -235,16 +235,16 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static <a class="el" href="structLWGEOM.html">LWGEOM</a> * meos_buffer_mpoint </td>
+          <td class="memname">static bool buffer_covers_hole </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structLWMPOINT.html">LWMPOINT</a> *&#160;</td>
-          <td class="paramname"><em>mpoint</em>, </td>
+          <td class="paramtype">const <a class="el" href="structLWGEOM.html">LWGEOM</a> *&#160;</td>
+          <td class="paramname"><em>hole</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>radius</em>&#160;</td>
+          <td class="paramtype">const <a class="el" href="structLWGEOM.html">LWGEOM</a> *&#160;</td>
+          <td class="paramname"><em>inner</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -259,8 +259,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Buffer a MULTIPOINT. </p>
-<p >Every point gives the disc of the buffer distance around it, and two discs merge whenever their points lie closer than twice that distance. </p>
+<p>Return whether a geometry covers a hole of another one. </p>
+<p >A hole is not part of the surface carrying it, so a geometry that covers one adds area to it. Where the two boundaries do not cross, one point of the hole's own ring says where the whole ring lies, and a hole the inner geometry reaches at all is a hole it contains entirely. </p>
 
 </div>
 </div>
