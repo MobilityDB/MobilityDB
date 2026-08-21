@@ -155,6 +155,11 @@ CREATE OPERATOR CLASS tbox_rtree_ops
   OPERATOR  17    -|- (tbox, tint),
   OPERATOR  17    -|- (tbox, tbigint),
   OPERATOR  17    -|- (tbox, tfloat),
+  -- nearest approach distance
+  OPERATOR  25    |=| (tbox, tbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tbox, tint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tbox, tbigint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tbox, tfloat) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tbox, tbox),
   OPERATOR  28    &<# (tbox, tint),
@@ -224,6 +229,11 @@ CREATE OPERATOR CLASS tbool_rtree_ops
   FUNCTION  7  span_gist_same(tstzspan, tstzspan, internal);
 
 /******************************************************************************/
+
+CREATE FUNCTION tint_gist_distance(internal, tint, smallint, oid, internal)
+  RETURNS float8
+  AS 'MODULE_PATHNAME', 'Tnumber_gist_distance'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR CLASS tint_rtree_ops
   DEFAULT FOR TYPE tint USING gist AS
@@ -295,9 +305,14 @@ CREATE OPERATOR CLASS tint_rtree_ops
   FUNCTION  5  tbox_gist_penalty(internal, internal, internal),
   FUNCTION  6  tbox_gist_picksplit(internal, internal),
   FUNCTION  7  tbox_gist_same(tbox, tbox, internal),
-  FUNCTION  8  tbox_gist_distance(internal, tbox, smallint, oid, internal);
+  FUNCTION  8  tint_gist_distance(internal, tint, smallint, oid, internal);
 
 /******************************************************************************/
+
+CREATE FUNCTION tbigint_gist_distance(internal, tbigint, smallint, oid, internal)
+  RETURNS float8
+  AS 'MODULE_PATHNAME', 'Tnumber_gist_distance'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR CLASS tbigint_rtree_ops
   DEFAULT FOR TYPE tbigint USING gist AS
@@ -369,9 +384,14 @@ CREATE OPERATOR CLASS tbigint_rtree_ops
   FUNCTION  5  tbox_gist_penalty(internal, internal, internal),
   FUNCTION  6  tbox_gist_picksplit(internal, internal),
   FUNCTION  7  tbox_gist_same(tbox, tbox, internal),
-  FUNCTION  8  tbox_gist_distance(internal, tbox, smallint, oid, internal);
+  FUNCTION  8  tbigint_gist_distance(internal, tbigint, smallint, oid, internal);
 
 /******************************************************************************/
+
+CREATE FUNCTION tfloat_gist_distance(internal, tfloat, smallint, oid, internal)
+  RETURNS float8
+  AS 'MODULE_PATHNAME', 'Tnumber_gist_distance'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR CLASS tfloat_rtree_ops
   DEFAULT FOR TYPE tfloat USING gist AS
@@ -443,7 +463,7 @@ CREATE OPERATOR CLASS tfloat_rtree_ops
   FUNCTION  5  tbox_gist_penalty(internal, internal, internal),
   FUNCTION  6  tbox_gist_picksplit(internal, internal),
   FUNCTION  7  tbox_gist_same(tbox, tbox, internal),
-  FUNCTION  8  tbox_gist_distance(internal, tbox, smallint, oid, internal);
+  FUNCTION  8  tfloat_gist_distance(internal, tfloat, smallint, oid, internal);
 
 /******************************************************************************/
 

@@ -1016,23 +1016,28 @@ Tbox_gist_same(PG_FUNCTION_ARGS)
  * GiST distance method
  *****************************************************************************/
 
-PGDLLEXPORT Datum Tbox_gist_distance(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tbox_gist_distance);
 /**
- * @brief GiST support distance function that takes in a query and an entry and
- * returns the "distance" between them
-*/
-Datum
-Tbox_gist_distance(PG_FUNCTION_ARGS)
+ * @brief Return the distance between the bounding box of an index entry and a
+ * query, in the last argument whether the leaf entries must be rechecked
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] boxcolumn True when the index is built over a column of temporal
+ *   boxes, so that a leaf key is the value itself
+ */
+static Datum
+tbox_gist_distance(FunctionCallInfo fcinfo, bool boxcolumn)
 {
   GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
   Oid typid = PG_GETARG_OID(3);
   bool *recheck = (bool *) PG_GETARG_POINTER(4);
   TBox *key = (TBox *) DatumGetPointer(entry->key);
+  MeosType type = oid_meostype(typid);
 
-  /* The index is lossy for leaf levels */
+  /* A leaf key of a column of boxes is the value itself, so its distance to a
+   * query box is the one the operator computes. Every other pairing measures a
+   * bounding box against a value and bounds the distance from below, which the
+   * recheck of the leaf entries settles */
   if (key && GIST_LEAF(entry))
-    *recheck = true;
+    *recheck = ! (boxcolumn && type == T_TBOX);
 
   /* Transform the query into a box. The distance is unknown when there is no
    * key or the query is not a box, and the maximum orders those entries after
@@ -1040,7 +1045,7 @@ Tbox_gist_distance(PG_FUNCTION_ARGS)
    * as the GiST framework reads the result of its distance method as a
    * double and rejects a null one */
   TBox query;
-  if (! key || ! tnumber_gist_get_tbox(fcinfo, &query, oid_meostype(typid)))
+  if (! key || ! tnumber_gist_get_tbox(fcinfo, &query, type))
     PG_RETURN_FLOAT8(DBL_MAX);
 
   /* Since we only have boxes we'll return the minimum possible distance,
@@ -1050,6 +1055,30 @@ Tbox_gist_distance(PG_FUNCTION_ARGS)
   double distance = distance_double(nad_tbox_tbox(key, &query),
     key->span.basetype);
   PG_RETURN_FLOAT8(distance);
+}
+
+PGDLLEXPORT Datum Tbox_gist_distance(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbox_gist_distance);
+/**
+ * @brief GiST distance for temporal boxes
+ * @note Take in a query and an entry and return the "distance" between them
+ */
+Datum
+Tbox_gist_distance(PG_FUNCTION_ARGS)
+{
+  return tbox_gist_distance(fcinfo, true);
+}
+
+PGDLLEXPORT Datum Tnumber_gist_distance(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tnumber_gist_distance);
+/**
+ * @brief GiST distance for temporal numbers
+ * @note Take in a query and an entry and return the "distance" between them
+ */
+Datum
+Tnumber_gist_distance(PG_FUNCTION_ARGS)
+{
+  return tbox_gist_distance(fcinfo, false);
 }
 
 /*****************************************************************************/

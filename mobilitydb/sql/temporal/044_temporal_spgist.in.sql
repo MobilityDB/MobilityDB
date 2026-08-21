@@ -108,6 +108,11 @@ CREATE OPERATOR CLASS tbox_quadtree_ops
   OPERATOR  17    -|- (tbox, tint),
   OPERATOR  17    -|- (tbox, tbigint),
   OPERATOR  17    -|- (tbox, tfloat),
+  -- nearest approach distance
+  OPERATOR  25    |=| (tbox, tbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tbox, tint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tbox, tbigint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tbox, tfloat) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tbox, tbox),
   OPERATOR  28    &<# (tbox, tint),
@@ -199,6 +204,11 @@ CREATE OPERATOR CLASS tbox_kdtree_ops
   OPERATOR  17    -|- (tbox, tint),
   OPERATOR  17    -|- (tbox, tbigint),
   OPERATOR  17    -|- (tbox, tfloat),
+  -- nearest approach distance
+  OPERATOR  25    |=| (tbox, tbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tbox, tint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tbox, tbigint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tbox, tfloat) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tbox, tbox),
   OPERATOR  28    &<# (tbox, tint),
