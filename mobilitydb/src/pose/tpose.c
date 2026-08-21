@@ -288,6 +288,80 @@ Tpose_from_geopose(PG_FUNCTION_ARGS)
   PG_RETURN_TEMPORAL_P(result);
 }
 
+PGDLLEXPORT Datum Tpose_apply_pose(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpose_apply_pose);
+/**
+ * @ingroup mobilitydb_pose_transf
+ * @brief Return the composition of a temporal pose with the frame a pose names
+ * @sqlfn applyPose()
+ */
+Datum
+Tpose_apply_pose(PG_FUNCTION_ARGS)
+{
+  Temporal *body = PG_GETARG_TEMPORAL_P(0);
+  Pose *frame = PG_GETARG_POSE_P(1);
+  Temporal *result = tpose_compose_pose(body, frame);
+  PG_FREE_IF_COPY(body, 0);
+  PG_FREE_IF_COPY(frame, 1);
+  if (result == NULL) PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Pose_apply_tpose(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pose_apply_tpose);
+/**
+ * @ingroup mobilitydb_pose_transf
+ * @brief Return the composition of a pose with the frame a temporal pose names
+ * @sqlfn applyPose()
+ */
+Datum
+Pose_apply_tpose(PG_FUNCTION_ARGS)
+{
+  Pose *body = PG_GETARG_POSE_P(0);
+  Temporal *frame = PG_GETARG_TEMPORAL_P(1);
+  Temporal *result = pose_compose_tpose(body, frame);
+  PG_FREE_IF_COPY(body, 0);
+  PG_FREE_IF_COPY(frame, 1);
+  if (result == NULL) PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tpose_apply_tpose(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpose_apply_tpose);
+/**
+ * @ingroup mobilitydb_pose_transf
+ * @brief Return the composition of two temporal poses
+ * @sqlfn applyPose()
+ */
+Datum
+Tpose_apply_tpose(PG_FUNCTION_ARGS)
+{
+  Temporal *body = PG_GETARG_TEMPORAL_P(0);
+  Temporal *frame = PG_GETARG_TEMPORAL_P(1);
+  Temporal *result = tpose_compose_tpose(body, frame);
+  PG_FREE_IF_COPY(body, 0);
+  PG_FREE_IF_COPY(frame, 1);
+  if (result == NULL) PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tpose_inverse(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpose_inverse);
+/**
+ * @ingroup mobilitydb_pose_transf
+ * @brief Return the inverse of a temporal pose
+ * @sqlfn poseInverse()
+ */
+Datum
+Tpose_inverse(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tpose_inverse(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  if (result == NULL) PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
+}
+
 PGDLLEXPORT Datum Tpose_as_geopose(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpose_as_geopose);
 /**

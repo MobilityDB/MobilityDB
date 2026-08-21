@@ -515,6 +515,116 @@ tpose_to_tpoint(const Temporal *temp)
 }
 
 /*****************************************************************************
+ * Composition and inversion lifted over time
+ *****************************************************************************/
+
+/**
+ * @brief Fill the lifted-function descriptor shared by the composition lifts
+ * @details A pose interpolates linearly in position and along the shortest arc
+ * in rotation, and the composition is exact at every instant, so the result
+ * carries the interpolation of its inputs. Between two instants the composed
+ * position is the chord of the arc the rotation sweeps, the trade-off the
+ * temporal point trajectories already take.
+ */
+static void
+tpose_compose_lfinfo(LiftedFunctionInfo *lfinfo, bool linear, bool invert)
+{
+  memset(lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo->func = (varfunc) &datum_pose_compose;
+  lfinfo->numparam = 0;
+  lfinfo->argtype[0] = T_TPOSE;
+  lfinfo->argtype[1] = T_TPOSE;
+  lfinfo->restype = T_TPOSE;
+  lfinfo->reslinear = linear;
+  lfinfo->invert = invert;
+  return;
+}
+
+/**
+ * @ingroup meos_pose_transf
+ * @brief Return the composition of a temporal pose with the frame a pose names
+ * @details The temporal value is the body, expressed in the frame @p frame
+ * names; the result is the body in the frame @p frame is itself expressed in.
+ * @param[in] body Temporal pose expressed in the frame the other one names
+ * @param[in] frame Pose naming that frame
+ * @return On error return @p NULL
+ * @csqlfn #Tpose_apply_pose()
+ */
+Temporal *
+tpose_compose_pose(const Temporal *body, const Pose *frame)
+{
+  VALIDATE_TPOSE(body, NULL); VALIDATE_NOT_NULL(frame, NULL);
+  LiftedFunctionInfo lfinfo;
+  tpose_compose_lfinfo(&lfinfo, MEOS_FLAGS_LINEAR_INTERP(body->flags), false);
+  return tfunc_temporal_base(body, PointerGetDatum(frame), &lfinfo);
+}
+
+/**
+ * @ingroup meos_pose_transf
+ * @brief Return the composition of a pose with the frame a temporal pose names
+ * @details The static value is the body, expressed in the frame the temporal
+ * pose names, so a fixed child of a frame that moves is carried through the
+ * whole movement of its parent.
+ * @param[in] body Pose expressed in the frame the other one names
+ * @param[in] frame Temporal pose naming that frame
+ * @return On error return @p NULL
+ * @csqlfn #Pose_apply_tpose()
+ */
+Temporal *
+pose_compose_tpose(const Pose *body, const Temporal *frame)
+{
+  VALIDATE_NOT_NULL(body, NULL); VALIDATE_TPOSE(frame, NULL);
+  LiftedFunctionInfo lfinfo;
+  tpose_compose_lfinfo(&lfinfo, MEOS_FLAGS_LINEAR_INTERP(frame->flags), true);
+  return tfunc_temporal_base(frame, PointerGetDatum(body), &lfinfo);
+}
+
+/**
+ * @ingroup meos_pose_transf
+ * @brief Return the composition of two temporal poses
+ * @details Both frames move, so the result is defined on the time the two
+ * share.
+ * @param[in] body Temporal pose expressed in the frame the other one names
+ * @param[in] frame Temporal pose naming that frame
+ * @return On error return @p NULL
+ * @csqlfn #Tpose_apply_tpose()
+ */
+Temporal *
+tpose_compose_tpose(const Temporal *body, const Temporal *frame)
+{
+  VALIDATE_TPOSE(body, NULL); VALIDATE_TPOSE(frame, NULL);
+  LiftedFunctionInfo lfinfo;
+  tpose_compose_lfinfo(&lfinfo,
+    MEOS_FLAGS_LINEAR_INTERP(body->flags) &&
+    MEOS_FLAGS_LINEAR_INTERP(frame->flags), false);
+  return tfunc_temporal_temporal(body, frame, &lfinfo);
+}
+
+/**
+ * @ingroup meos_pose_transf
+ * @brief Return the inverse of a temporal pose
+ * @details The inverse of the pose of a body in a frame is the pose of that
+ * frame in the body, so inverting a temporal pose changes the point of view
+ * onto a moving object for the whole of its movement.
+ * @param[in] temp Temporal pose
+ * @return On error return @p NULL
+ * @csqlfn #Tpose_inverse()
+ */
+Temporal *
+tpose_inverse(const Temporal *temp)
+{
+  VALIDATE_TPOSE(temp, NULL);
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) &datum_pose_inverse;
+  lfinfo.numparam = 0;
+  lfinfo.argtype[0] = T_TPOSE;
+  lfinfo.restype = T_TPOSE;
+  lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
+  return tfunc_temporal(temp, &lfinfo);
+}
+
+/*****************************************************************************
  * Accessor functions
  *****************************************************************************/
 

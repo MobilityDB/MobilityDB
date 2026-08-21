@@ -1485,6 +1485,19 @@ SELECT ST_AsText(applyPose(ST_MakeEnvelope(-2,-1,2,1),
   pose 'Pose(Point(10 20), 0)'));
 -- POLYGON((8 19,8 21,12 21,12 19,8 19))
 </programlisting>
+					<para>Either frame may move. Applying a pose to a <varname>tpose</varname> carries a fixed body through the whole movement of its parent, which is what a sensor mounted on a moving vehicle asks for; applying a <varname>tpose</varname> to a pose carries a moving body into a frame that stands still; and applying a <varname>tpose</varname> to a <varname>tpose</varname> composes two frames that both move, over the time they share. <varname>poseInverse</varname> lifts the same way, changing the point of view onto a moving object for the whole of its movement.</para>
+					<para><varname>applyPose(pose, tpose) &#8594; tpose</varname></para>
+					<para><varname>applyPose(tpose, pose) &#8594; tpose</varname></para>
+					<para><varname>applyPose(tpose, tpose) &#8594; tpose</varname></para>
+					<para><varname>poseInverse(tpose) &#8594; tpose</varname></para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- A sensor one unit ahead of a body that ends yawed a quarter turn at
+-- (10, 20) ends one unit north of it
+SELECT asEWKT(round(applyPose(pose 'Pose(Point(1 0), 0)',
+  tpose '[Pose(Point(0 0), 0)@2026-01-01,
+  Pose(Point(10 20), 1.5707963267948966)@2026-01-02]'), 6));
+/* [Pose(POINT(1 0),0)@2026-01-01, Pose(POINT(10 21),1.570796)@2026-01-02] */
+</programlisting>
 					<para>A pose names a frame, so it is itself such a body-frame value: applying one pose to another composes the two frame relationships. Writing <varname>P_WV</varname> for the pose of a vehicle in the world and <varname>P_VS</varname> for the pose of a sensor in the vehicle, the pose of the sensor in the world is <varname>P_WS = P_WV ∘ P_VS</varname>. This is the operation a pose chain folds over its links, so a two-link chain composes to what this returns.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- A sensor one unit ahead of a vehicle turned a quarter turn is one unit

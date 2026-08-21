@@ -345,3 +345,53 @@ SELECT asEWKT(round(poseInverse(poseInverse(pose(ST_Point(10,5), pi()/2))), 6));
 SELECT poseInverse(pose 'SRID=4326;GeodPose(Point(8 47), 0.5)');
 
 -------------------------------------------------------------------------------
+-- Composition and inversion lifted over time
+-- A frame that moves carries what it names through the whole of its movement.
+-------------------------------------------------------------------------------
+
+-- A fixed sensor one unit ahead of a moving body: the body ends at (10,20)
+-- yawed a quarter turn, so the sensor ends one unit north of it.
+SELECT asEWKT(round(applyPose(pose 'Pose(Point(1 0), 0)',
+  tposeSeq(ARRAY[tpose(pose(ST_Point(0,0), 0), timestamptz '2026-01-01'),
+    tpose(pose(ST_Point(10,20), pi()/2), timestamptz '2026-01-02')])), 6));
+
+-- The other order carries the moving body into the fixed frame instead, so
+-- the same unit offset lands east rather than north.
+SELECT asEWKT(round(applyPose(
+  tposeSeq(ARRAY[tpose(pose(ST_Point(0,0), 0), timestamptz '2026-01-01'),
+    tpose(pose(ST_Point(10,20), pi()/2), timestamptz '2026-01-02')]),
+  pose 'Pose(Point(1 0), 0)'), 6));
+
+-- Two moving frames agree with the static body when the body holds still
+SELECT asEWKT(round(applyPose(
+  tpose '[Pose(Point(1 0), 0)@2026-01-01, Pose(Point(1 0), 0)@2026-01-02]',
+  tposeSeq(ARRAY[tpose(pose(ST_Point(0,0), 0), timestamptz '2026-01-01'),
+    tpose(pose(ST_Point(10,20), pi()/2), timestamptz '2026-01-02')])), 6));
+
+-- Two moving frames meet on the time they share
+SELECT asEWKT(round(applyPose(
+  tpose '[Pose(Point(1 0), 0)@2026-01-01, Pose(Point(1 0), 0)@2026-01-03]',
+  tpose '[Pose(Point(0 0), 0)@2026-01-02, Pose(Point(10 20), 0)@2026-01-04]'), 6));
+
+-- The frame seen from the body, for the whole of the movement
+SELECT asEWKT(round(poseInverse(
+  tposeSeq(ARRAY[tpose(pose(ST_Point(0,0), 0), timestamptz '2026-01-01'),
+    tpose(pose(ST_Point(10,20), pi()/2), timestamptz '2026-01-02')])), 6));
+
+-- A temporal pose composed with its own inverse is the identity at every
+-- instant
+SELECT asEWKT(round(applyPose(
+  poseInverse(tpose '[Pose(Point(3 4), 0.5)@2026-01-01, Pose(Point(10 20), 1.2)@2026-01-02]'),
+  tpose '[Pose(Point(3 4), 0.5)@2026-01-01, Pose(Point(10 20), 1.2)@2026-01-02]'), 6));
+
+/* Errors */
+
+-- A temporal pose over a geographic frame names no frame of the ellipsoid to
+-- reverse
+SELECT poseInverse(tpose 'SRID=4326;GeodPose(Point(8 47), 0.5)@2026-01-01');
+
+-- Mixing the dimensions of two frames is an error, lifted as it is static
+SELECT applyPose(pose 'Pose(Point(1 0 0), 1, 0, 0, 0)',
+  tpose '[Pose(Point(0 0), 0)@2026-01-01, Pose(Point(1 1), 0)@2026-01-02]');
+
+-------------------------------------------------------------------------------

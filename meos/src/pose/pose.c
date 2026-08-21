@@ -1262,6 +1262,27 @@ posearr_points(Pose **posearr, int count)
  * @brief Datum-typed wrappers for the Euler-angle accessors used by the
  * temporal lifting infrastructure (tpose -> tfloat).
  */
+/**
+ * @brief Datum-typed wrapper of the composition of two poses, used by the
+ * temporal lifting infrastructure
+ */
+Datum
+datum_pose_compose(Datum body, Datum frame)
+{
+  return PointerGetDatum(pose_compose(DatumGetPoseP(body),
+    DatumGetPoseP(frame)));
+}
+
+/**
+ * @brief Datum-typed wrapper of the inverse of a pose, used by the temporal
+ * lifting infrastructure
+ */
+Datum
+datum_pose_inverse(Datum pose)
+{
+  return PointerGetDatum(pose_inverse(DatumGetPoseP(pose)));
+}
+
 Datum
 datum_pose_yaw(Datum pose)
 {

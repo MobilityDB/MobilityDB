@@ -112,6 +112,8 @@ extern Datum datum_pose_yaw(Datum pose);
 extern Datum datum_pose_pitch(Datum pose);
 extern Datum datum_pose_roll(Datum pose);
 extern Datum datum_pose_apply_geo(Datum pose, Datum body);
+extern Datum datum_pose_compose(Datum body, Datum frame);
+extern Datum datum_pose_inverse(Datum pose);
 
 /* Transformation functions */
 
