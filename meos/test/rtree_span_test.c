@@ -162,6 +162,64 @@ test_floatspan_rtree(void)
   rtree_free(rtree);
 }
 
+/**
+ * @brief Test that an identifier wider than 32 bits survives the index
+ * @details The identifier a caller attaches to a box is an int64. A carrier
+ * narrower than that anywhere on the insert path changes the value rather than
+ * losing the entry, so the box is still found and only the identifier reported
+ * for it is wrong.
+ */
+static void
+test_id_width(void)
+{
+  RTree *rtree = rtree_create_intspan();
+  /* Ids above 2^31, so a 32-bit carrier would report different numbers */
+  const int64 ids[] = {4000000000LL, 4000000001LL, INT64_C(1) << 40};
+  const int nids = (int) (sizeof(ids) / sizeof(ids[0]));
+  Span **spans = malloc(nids * sizeof(Span *));
+  for (int i = 0; i < nids; i++)
+  {
+    spans[i] = intspan_make(i * 10, i * 10 + 5, true, false);
+    rtree_insert(rtree, spans[i], ids[i]);
+  }
+
+  Span *query = intspan_make(-100, 1000, true, false);
+  MeosArray *result = meos_array_create(sizeof(int64));
+  int count = rtree_search(rtree, RTREE_OVERLAPS, query, result);
+
+  printf("Identifier width (%d spans, ids above 2^31):\n", nids);
+  if (count != nids)
+  {
+    printf("  the query returned %d of %d entries\n", count, nids);
+    failures++;
+  }
+  else
+  {
+    for (int i = 0; i < count; i++)
+    {
+      int64 got = *(int64 *) meos_array_get(result, i);
+      bool found = false;
+      for (int k = 0; k < nids; k++)
+        if (ids[k] == got) found = true;
+      if (! found)
+      {
+        printf("  the index reported id %lld, which was never inserted\n",
+          (long long) got);
+        failures++;
+        break;
+      }
+    }
+    if (! failures)
+      printf("  all %d identifiers came back unchanged\n", nids);
+  }
+
+  for (int i = 0; i < nids; i++)
+    free(spans[i]);
+  free(spans); free(query);
+  meos_array_destroy(result);
+  rtree_free(rtree);
+}
+
 int
 main(void)
 {
@@ -170,6 +228,7 @@ main(void)
 
   test_intspan_rtree();
   test_floatspan_rtree();
+  test_id_width();
 
   meos_finalize();
 

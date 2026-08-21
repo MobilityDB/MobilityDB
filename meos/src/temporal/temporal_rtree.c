@@ -727,7 +727,7 @@ node_split(RTree *rtree, RTreeNode *node, void *box, RTreeNode **right_out)
  */
 static void
 node_insert(RTree *rtree, void *node_bounding_box, RTreeNode *node,
-  void *new_box, int id, bool *split)
+  void *new_box, int64 id, bool *split)
 {
   if (node->node_type == RTREE_LEAF)
   {
