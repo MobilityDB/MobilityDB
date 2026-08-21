@@ -128,7 +128,7 @@ Geom_buffer(PG_FUNCTION_ARGS)
   double radius = PG_GETARG_FLOAT8(1);
   text *params_text = PG_GETARG_TEXT_P(2);
   char *params = text_to_cstring(params_text);
-  GSERIALIZED *result = geom_buffer_meos(gs, radius, params);
+  GSERIALIZED *result = geom_buffer(gs, radius, params);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(params_text, 2);
   if (! result)
