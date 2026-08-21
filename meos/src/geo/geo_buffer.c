@@ -4787,8 +4787,17 @@ meos_buffer_mline(const LWMLINE *mline, double radius, JoinStyle join_style,
 
     LWGEOM *buffer = meos_buffer_line((const LWLINE *) component, radius,
       join_style, cap_style, mitre_limit);
-    if (buffer)
-      buffers[count++] = buffer;
+    if (! buffer)
+    {
+      /* A component the buffer does not cover cannot be left out of the
+       * answer: what is left is a geometry smaller than the buffer asked
+       * for, valid and of the right shape and reported by nothing */
+      for (uint32_t j = 0; j < count; j++)
+        lwgeom_free(buffers[j]);
+      pfree(buffers);
+      return NULL;
+    }
+    buffers[count++] = buffer;
   }
 
   /* All components were empty */
@@ -4960,8 +4969,17 @@ meos_buffer_mpoly(const LWMPOLY *mpoly, double radius, JoinStyle join_style,
       continue;
     LWGEOM *buffer = meos_buffer_poly((const LWPOLY *) component, radius,
       join_style, cap_style, mitre_limit, false);
-    if (buffer)
-      buffers[count++] = buffer;
+    if (! buffer)
+    {
+      /* A component the buffer does not cover cannot be left out of the
+       * answer: what is left is a geometry smaller than the buffer asked
+       * for, valid and of the right shape and reported by nothing */
+      for (uint32_t j = 0; j < count; j++)
+        lwgeom_free(buffers[j]);
+      pfree(buffers);
+      return NULL;
+    }
+    buffers[count++] = buffer;
   }
 
   /* All components were empty */
@@ -5027,7 +5045,15 @@ meos_buffer_collection(const LWCOLLECTION *collection, double radius,
       buffer = meos_buffer(component, radius, join_style, cap_style,
         mitre_limit);
     if (! buffer)
-      continue;
+    {
+      /* A component the buffer does not cover cannot be left out of the
+       * answer: what is left is a geometry smaller than the buffer asked
+       * for, valid and of the right shape and reported by nothing */
+      for (uint32_t j = 0; j < count; j++)
+        lwgeom_free(buffers[j]);
+      pfree(buffers);
+      return NULL;
+    }
     /* Grow the output array if necessary */
     if (count == capacity)
     {
