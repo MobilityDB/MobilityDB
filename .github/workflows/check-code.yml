@@ -71,6 +71,14 @@ jobs:
       - name: Reject <-> operators that btree_gist owns
         run: python3 tools/scripts/check_btree_gist_operators.py
 
+  opclass_member_check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Report a bounding-box operator no index of its type answers
+        run: python3 tools/scripts/check_opclass_members.py
+
   meos_only_files_check:
     runs-on: ubuntu-latest
     steps:
