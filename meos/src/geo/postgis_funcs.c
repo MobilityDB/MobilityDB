@@ -2519,6 +2519,9 @@ geom_intersection2d_coll(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
  * @ingroup meos_geo_base_comp
  * @brief Return true if the geometries/geographies are equal, false otherwise
  * @param[in] gs1,gs2 Geometries/geographies
+ * @details The answer is read from the native DE-9IM intersection matrix, so a
+ * circular arc is met on its own circle rather than on the chords a
+ * linearization would put in its place
  * @note PostGIS function: @p ST_Equals(PG_FUNCTION_ARGS)
  */
 int
@@ -2551,43 +2554,26 @@ geo_equals(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 
   /*
    * Short-circuit: if gs1 and gs2 are binary-equivalent, we can return
-   * TRUE.  This is much faster than doing the comparison using GEOS.
+   * TRUE.  This is much faster than computing the intersection matrix.
    */
   if (VARSIZE(gs1) == VARSIZE(gs2) && ! memcmp(gs1, gs2, VARSIZE(gs1)))
       return 1;
 
-  GEOSContextHandle_t ctx = geos_get_context();
-
-  GEOSGeometry *geos1 = POSTGIS2GEOS(gs1);
-  if (! geos1)
+  /* Two geometries are equal where their interiors meet, neither interior
+   * reaches the exterior of the other and neither boundary does, which is the
+   * pattern the standard gives ST_Equals */
+  LWGEOM *geom1 = lwgeom_from_gserialized(gs1);
+  LWGEOM *geom2 = lwgeom_from_gserialized(gs2);
+  char matrix[10];
+  bool covered = meos_relate(geom1, geom2, matrix);
+  lwgeom_free(geom1); lwgeom_free(geom2);
+  if (! covered)
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-      "First argument geometry could not be converted to GEOS");
-    /* Clean up the global context */
+    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+      "Equality of the geometries is not supported");
     return -1;
   }
-
-  GEOSGeometry *geos2 = POSTGIS2GEOS(gs2);
-  if (! geos2)
-  {
-    GEOSGeom_destroy_r(ctx, geos1);
-    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-      "Second argument geometry could not be converted to GEOS");
-    return -1;
-  }
-
-  int result = GEOSEquals_r(ctx, geos1, geos2);
-  GEOSGeom_destroy_r(ctx, geos1);
-  GEOSGeom_destroy_r(ctx, geos2);
-
-  if (result == 2)
-  {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-      "GEOS equals() threw an error !");
-    return -1;
-  }
-
-  return result;
+  return de9im_match(matrix, "T*F**FFF*") ? 1 : 0;
 }
 
 /*****************************************************************************
