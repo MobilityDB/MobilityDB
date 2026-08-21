@@ -1,0 +1,126 @@
+COPY tbl_posechain TO '/tmp/tbl_posechain' (FORMAT BINARY);
+COPY 200
+DROP TABLE IF EXISTS tbl_posechain_tmp;
+NOTICE:  table "tbl_posechain_tmp" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_posechain_tmp AS TABLE tbl_posechain WITH NO DATA;
+CREATE TABLE AS
+COPY tbl_posechain_tmp FROM '/tmp/tbl_posechain' (FORMAT BINARY);
+COPY 200
+SELECT COUNT(*) FROM tbl_posechain t1, tbl_posechain_tmp t2 WHERE t1.k = t2.k AND t1.pc <> t2.pc;
+ count 
+-------
+     0
+(1 row)
+
+DROP TABLE tbl_posechain_tmp;
+DROP TABLE
+SELECT COUNT(*) FROM tbl_posechain WHERE posechainFromEWKT(asEWKT(pc, 17)) <> pc;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_posechain WHERE setSRID(posechainFromText(asText(pc, 17)), 3812) <> pc;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_posechain WHERE SRID(posechainFromText(asText(pc, 17))) <> 0;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_posechain WHERE posechainFromHexEWKB(asHexEWKB(pc)) <> pc;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_posechain WHERE setSRID(posechainFromHexEWKB(asHexWKB(pc)), 3812) <> pc;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_posechain WHERE posechainFromBinary(asEWKB(pc)) <> pc;
+ count 
+-------
+     0
+(1 row)
+
+SELECT MIN(numPoses(pc)), MAX(numPoses(pc)) FROM tbl_posechain;
+ min | max 
+-----+-----
+   1 |   5
+(1 row)
+
+SELECT COUNT(*) FROM tbl_posechain WHERE poseN(pc, 1) IS NOT NULL;
+ count 
+-------
+   199
+(1 row)
+
+SELECT COUNT(*) FROM tbl_posechain WHERE pose(pc) IS NOT NULL;
+ count 
+-------
+   199
+(1 row)
+
+SELECT COUNT(*) FROM tbl_posechain WHERE numPoses(pc) = 1 AND pose(pc) <> poseN(pc, 1);
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_posechain WHERE pose(pc)::geometry IS NOT NULL;
+ count 
+-------
+   199
+(1 row)
+
+SELECT COUNT(*) FROM tbl_posechain WHERE pc::posechainset IS NOT NULL;
+ count 
+-------
+   199
+(1 row)
+
+SELECT COUNT(*) FROM tbl_posechain WHERE stbox(pc) IS NOT NULL;
+ count 
+-------
+   199
+(1 row)
+
+SELECT COUNT(*) FROM tbl_posechain t1, tbl_posechain t2 WHERE t1.pc = t2.pc;
+ count 
+-------
+   199
+(1 row)
+
+SELECT COUNT(*) FROM tbl_posechain t1, tbl_posechain t2 WHERE t1.pc <> t2.pc;
+ count 
+-------
+ 39402
+(1 row)
+
+SELECT COUNT(*) FROM tbl_posechain t1, tbl_posechain t2 WHERE t1.pc < t2.pc;
+ count 
+-------
+ 19701
+(1 row)
+
+SELECT COUNT(*) FROM tbl_posechain t1, tbl_posechain t2 WHERE t1.pc <= t2.pc;
+ count 
+-------
+ 19900
+(1 row)
+
+SELECT COUNT(*) FROM tbl_posechain t1, tbl_posechain t2
+WHERE (t1.pc < t2.pc)::int + (t1.pc = t2.pc)::int + (t1.pc > t2.pc)::int <> 1;
+ count 
+-------
+     0
+(1 row)
+

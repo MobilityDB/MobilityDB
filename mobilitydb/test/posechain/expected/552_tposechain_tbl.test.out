@@ -1,0 +1,99 @@
+COPY tbl_tposechain TO '/tmp/tbl_tposechain' (FORMAT BINARY);
+COPY 400
+DROP TABLE IF EXISTS tbl_tposechain_tmp;
+NOTICE:  table "tbl_tposechain_tmp" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_tposechain_tmp AS TABLE tbl_tposechain WITH NO DATA;
+CREATE TABLE AS
+COPY tbl_tposechain_tmp FROM '/tmp/tbl_tposechain' (FORMAT BINARY);
+COPY 400
+SELECT COUNT(*) FROM tbl_tposechain t1, tbl_tposechain_tmp t2 WHERE t1.k = t2.k AND t1.temp <> t2.temp;
+ count 
+-------
+     0
+(1 row)
+
+DROP TABLE tbl_tposechain_tmp;
+DROP TABLE
+SELECT COUNT(*) FROM tbl_tposechain WHERE tposechainFromEWKT(asEWKT(temp)) <> temp;
+ count 
+-------
+   229
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tposechain WHERE tposechainFromHexEWKB(asHexEWKB(temp)) <> temp;
+ count 
+-------
+     0
+(1 row)
+
+SELECT MIN(numLinks(temp)), MAX(numLinks(temp)) FROM tbl_tposechain;
+ min | max 
+-----+-----
+   1 |   5
+(1 row)
+
+SELECT DISTINCT tempSubtype(temp) FROM tbl_tposechain ORDER BY 1;
+ tempsubtype 
+-------------
+ Instant
+ Sequence
+ SequenceSet
+ 
+(4 rows)
+
+SELECT DISTINCT SRID(temp) FROM tbl_tposechain;
+ srid 
+------
+     
+ 3812
+(2 rows)
+
+SELECT MIN(numInstants(temp)), MAX(numInstants(temp)) FROM tbl_tposechain;
+ min | max 
+-----+-----
+   1 |  76
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tposechain WHERE numPoses(startValue(temp)) <> numPoses(endValue(temp));
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tposechain WHERE stbox(temp) IS NOT NULL;
+ count 
+-------
+   399
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tposechain WHERE tpose(temp) IS NOT NULL;
+ count 
+-------
+   399
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tposechain WHERE atTime(temp, timeSpan(temp)) <> temp;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tposechain WHERE round(temp, 6) IS NOT NULL;
+ count 
+-------
+   399
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tposechain WHERE shiftTime(temp, interval '1 day') <> temp;
+ count 
+-------
+   399
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tposechain WHERE SRID(setSRID(temp, 3812)) <> 3812;
+ count 
+-------
+     0
+(1 row)
+

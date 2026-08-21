@@ -1,0 +1,57 @@
+SELECT COUNT(*) FROM tbl_tposechain t1, tbl_tposechain t2 WHERE t1.temp = t2.temp;
+ count 
+-------
+   399
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tposechain t1, tbl_tposechain t2 WHERE t1.temp <> t2.temp;
+ count  
+--------
+ 158802
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tposechain t1, tbl_tposechain t2 WHERE t1.temp < t2.temp;
+ count 
+-------
+ 79401
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tposechain t1, tbl_tposechain t2 WHERE t1.temp <= t2.temp;
+ count 
+-------
+ 79800
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tposechain t1, tbl_tposechain t2 WHERE t1.temp > t2.temp;
+ count 
+-------
+ 79401
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tposechain t1, tbl_tposechain t2 WHERE t1.temp >= t2.temp;
+ count 
+-------
+ 79800
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tposechain t1, tbl_tposechain t2
+WHERE (t1.temp < t2.temp)::int + (t1.temp = t2.temp)::int + (t1.temp > t2.temp)::int <> 1;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tposechain t1, tbl_posechain t2
+WHERE numPoses(t2.pc) = numLinks(t1.temp) AND t1.temp ?= t2.pc;
+ count 
+-------
+     0
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tposechain t1, tbl_posechain t2
+WHERE numPoses(t2.pc) = numLinks(t1.temp) AND t1.temp %= t2.pc;
+ count 
+-------
+     0
+(1 row)
+
