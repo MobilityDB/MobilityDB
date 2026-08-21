@@ -1040,6 +1040,10 @@ SELECT tstzspan '[2001-01-01, 2001-01-05)' * tstzspan '[2001-01-03, 2001-01-07)'
 			<title>Topological Operations</title>
 			<para>The topological operations available for the set and span types are given next.</para>
 
+			<para>A value, the span containing only that value, and the span set containing only that span denote the same set, and so do a span and the span set containing only it. Every operation gives the same answer for all of these spellings.</para>
+
+			<para>A span set is a union of disjoint spans. The operations <varname>&amp;&amp;</varname>, <varname>@&gt;</varname>, <varname>&lt;@</varname> and <varname>~=</varname> answer on the value itself, so a value that falls in a hole of a span set is not contained in it. The operation <varname>-|-</varname> and the position operations of the next section answer on the <emphasis>bounding span</emphasis> of the value, the smallest span containing it: the holes of a span set are not boundaries of it.</para>
+
 			<itemizedlist>
 				<listitem xml:id="setspan_overlaps">
 					<indexterm significance="normal"><primary><varname>&amp;&amp;</varname></primary></indexterm>
@@ -1088,17 +1092,34 @@ SELECT floatspanset '{[1,2],[3,4]}' &lt;@ floatspan '[1, 6]';
 
 				<listitem xml:id="setspan_adjacent">
 					<indexterm significance="normal"><primary><varname>-|-</varname></primary></indexterm>
-					<para>Is the first value adjacent to the second one?</para>
+					<para>Is the first value adjacent to the second one? Two values are adjacent when they touch without overlapping, that is, when they share a boundary and have no value in common inside it. For the continuous base types <varname>float</varname> and <varname>timestamptz</varname> a shared bound is such a touch. For the discrete base types <varname>int</varname>, <varname>bigint</varname> and <varname>date</varname>, whose spans are stored in normal form, it means consecutive values.</para>
 					<para><varname>spans -|- spans → boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT intspan '[2, 6)' -|- intspan '[6, 7)';
 -- true
-SELECT floatspan '[2, 5)' -|- floatspan '(5, 6)';
+SELECT intspan '[1, 5]' -|- intspan '[6, 10]';
+-- true
+SELECT intspan '[1, 5]' -|- intspan '[5, 10]';
 -- false
+SELECT floatspan '[2, 5)' -|- floatspan '(5, 6)';
+-- true
+SELECT floatspan '[1, 5]' -|- floatspan '[5, 9]';
+-- true
 SELECT floatspanset '{[2, 3],[4, 5)}' -|- floatspan '(5, 6)';
 -- true
 SELECT tstzspanset '{[2001-01-01, 2001-01-02]}' -|- tstzspan '[2001-01-02, 2001-01-03)';
+-- true
+</programlisting>
+					<para>A span set answers as its bounding span, and the three spellings of a value agree:</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT intspanset '{[1,3), [5,8), [10,12)}' -|- 3;
 -- false
+SELECT intspanset '{[1,3), [5,8), [10,12)}' -|- intspan '[3,3]';
+-- false
+SELECT intspanset '{[1,3), [5,8), [10,12)}' -|- intspanset '{[3,3]}';
+-- false
+SELECT intspanset '{[1,3), [5,8), [10,12)}' -|- 12;
+-- true
 </programlisting>
 				</listitem>
 			</itemizedlist>

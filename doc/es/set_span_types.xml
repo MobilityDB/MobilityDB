@@ -1048,6 +1048,10 @@ SELECT tstzspan '[2001-01-01, 2001-01-05)' * tstzspan '[2001-01-03, 2001-01-07)'
 		<sect2>
 			<title>Operaciones topológicas</title>
 			<para>A continuación se presentan los operadores topológicos disponibles para los tipos de conjunto y de rango.</para>
+
+			<para>Un valor, el rango que contiene únicamente ese valor y el conjunto de rangos que contiene únicamente ese rango denotan el mismo conjunto, al igual que un rango y el conjunto de rangos que contiene únicamente a él. Todas las operaciones dan la misma respuesta para todas estas escrituras.</para>
+
+			<para>Un conjunto de rangos es una unión de rangos disjuntos. Las operaciones <varname>&amp;&amp;</varname>, <varname>@&gt;</varname>, <varname>&lt;@</varname> y <varname>~=</varname> responden sobre el valor mismo, por lo que un valor que cae en un hueco de un conjunto de rangos no está contenido en él. La operación <varname>-|-</varname> y las operaciones de posición de la sección siguiente responden sobre la <emphasis>caja delimitadora</emphasis> del valor, el rango más pequeño que lo contiene: los huecos de un conjunto de rangos no son fronteras de él.</para>
 		<itemizedlist>
 				<listitem xml:id="setspan_overlaps">
 					<indexterm significance="normal"><primary><varname>&amp;&amp;</varname></primary></indexterm>
@@ -1097,19 +1101,34 @@ SELECT tstzspan '[2001-02-01, 2001-03-01)' &lt;@ tstzspan '[2001-01-01, 2001-05-
 
 				<listitem xml:id="setspan_adjacent">
 					<indexterm significance="normal"><primary><varname>-|-</varname></primary></indexterm>
-					<para>¿Es el primer valor adyacente al segundo?</para>
+					<para>¿Es el primer valor adyacente al segundo? Dos valores son adyacentes cuando se tocan sin solaparse, es decir, cuando comparten una frontera y no tienen ningún valor en común en ella. Para los tipos base continuos <varname>float</varname> y <varname>timestamptz</varname>, un límite compartido es ese contacto. Para los tipos base discretos <varname>int</varname>, <varname>bigint</varname> y <varname>date</varname>, cuyos rangos se almacenan en forma normal, significa valores consecutivos.</para>
 					<para><varname>spans -|- spans → boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve">
 SELECT intspan '[2, 6)' -|- intspan '[6, 7)';
 -- true
-SELECT floatspan '[2, 5)' -|- floatspan '(5, 6)';
+SELECT intspan '[1, 5]' -|- intspan '[6, 10]';
+-- true
+SELECT intspan '[1, 5]' -|- intspan '[5, 10]';
 -- false
+SELECT floatspan '[2, 5)' -|- floatspan '(5, 6)';
+-- true
+SELECT floatspan '[1, 5]' -|- floatspan '[5, 9]';
+-- true
 SELECT floatspanset '{[2, 3],[4, 5)}' -|- floatspan '(5, 6)';
 -- true
-SELECT tstzspan '[2001-01-01, 2001-01-05)' -|- tstzset '{2001-01-05, 2001-01-07}';
--- true
 SELECT tstzspanset '{[2001-01-01, 2001-01-02]}' -|- tstzspan '[2001-01-02, 2001-01-03)';
+-- true
+</programlisting>
+					<para>Un conjunto de rangos responde como su caja delimitadora, y las tres escrituras de un valor coinciden:</para>
+					<programlisting language="sql" xml:space="preserve">
+SELECT intspanset '{[1,3), [5,8), [10,12)}' -|- 3;
 -- false
+SELECT intspanset '{[1,3), [5,8), [10,12)}' -|- intspan '[3,3]';
+-- false
+SELECT intspanset '{[1,3), [5,8), [10,12)}' -|- intspanset '{[3,3]}';
+-- false
+SELECT intspanset '{[1,3), [5,8), [10,12)}' -|- 12;
+-- true
 </programlisting>
 				</listitem>
 			</itemizedlist>

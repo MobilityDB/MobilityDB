@@ -343,10 +343,11 @@ overlaps_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
 inline bool
 adjacent_spanset_value(const SpanSet *ss, Datum value)
 {
-  /* A span set and a value are adjacent if and only if the first or the last
-   * span is adjacent to the value */
-  return adjacent_span_value(SPANSET_SP_N(ss, 0), value) ||
-         adjacent_span_value(SPANSET_SP_N(ss, ss->count - 1), value);
+  /* A span set is adjacent to a value as its bounding span is: the holes of
+   * the set are not boundaries of it, so a value inside one is no more
+   * adjacent to the set than a value inside a span is adjacent to that span.
+   * This is what the span and the span set forms of the operator answer */
+  return adjacent_span_value(&ss->span, value);
 }
 
 /**
@@ -375,18 +376,8 @@ adjacent_spanset_span(const SpanSet *ss, const Span *s)
   if (! ensure_valid_spanset_span(ss, s))
     return false;
 
-  /* Singleton span set */
-  if (ss->count == 1)
-    return adjacent_span_span(SPANSET_SP_N(ss, 0), s);
-
-  const Span *s1 = SPANSET_SP_N(ss, 0);
-  const Span *s2 = SPANSET_SP_N(ss, ss->count - 1);
-  /*
-   * Two spans A..B and C..D are adjacent if and only if
-   * B is adjacent to C, or D is adjacent to A.
-   */
-  return (s2->upper == s->lower && s2->upper_inc != s->lower_inc) ||
-         (s->upper == s1->lower && s->upper_inc != s1->lower_inc);
+  /* A span set is adjacent to a span as its bounding span is */
+  return adjacent_span_span(&ss->span, s);
 }
 
 /**
@@ -415,22 +406,8 @@ adjacent_spanset_spanset(const SpanSet *ss1, const SpanSet *ss2)
   if (! ensure_valid_spanset_spanset(ss1, ss2))
     return false;
 
-  /* Singleton span set */
-  if (ss1->count == 1)
-    return adjacent_spanset_span(ss2, SPANSET_SP_N(ss1, 0));
-  if (ss2->count == 1)
-    return adjacent_spanset_span(ss1, SPANSET_SP_N(ss2, 0));
-
-  const Span *starts1 = SPANSET_SP_N(ss1, 0);
-  const Span *ends1 = SPANSET_SP_N(ss1, ss1->count - 1);
-  const Span *starts2 = SPANSET_SP_N(ss2, 0);
-  const Span *ends2 = SPANSET_SP_N(ss2, ss2->count - 1);
-  /*
-   * Two spans A..B and C..D are adjacent if and only if
-   * B is adjacent to C, or D is adjacent to A.
-   */
-  return (ends1->upper == starts2->lower && ends1->upper_inc != starts2->lower_inc) ||
-    (ends2->upper == starts1->lower && ends2->upper_inc != starts1->lower_inc);
+  /* Two span sets are adjacent as their bounding spans are */
+  return adjacent_span_span(&ss1->span, &ss2->span);
 }
 
 /*****************************************************************************
