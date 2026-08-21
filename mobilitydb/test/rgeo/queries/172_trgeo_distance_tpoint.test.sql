@@ -65,4 +65,10 @@ SELECT round(minValue(
   trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]' <->
   tgeompoint '[Point(5 3)@2001-01-01, Point(5 3)@2001-01-02]')::numeric, 6);
 
+-- The temporal distance between a moving rigid geometry and a temporal point is
+-- linear
+SELECT interp(tDistance(
+  trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  tgeompoint '[Point(5 3)@2001-01-01, Point(5 3)@2001-01-02]'));
+
 -------------------------------------------------------------------------------
