@@ -378,8 +378,15 @@ arcsegm_intersect(double ax, double ay, double rx, double ry, const Edge *e,
    * it against that rounding rather than against zero keeps a touch one root:
    * against zero it becomes two roots a square root of the rounding apart,
    * which is a node pair far enough apart to be taken for two, and the sliver
-   * between them is not a piece of any boundary */
-  double eps = 1e-14 * (fabs(bb * bb) + fabs(4 * aa * cc));
+   * between them is not a piece of any boundary.
+   * Both terms VANISH where the segment starts on the circle and runs
+   * tangent to it there, which is what the offset of an edge leaving a vertex
+   * does against the round cap about that vertex, so a rounding read from them
+   * alone degenerates to zero and protects nothing. The quantities they are
+   * differences OF do not vanish: cc subtracts two of size radius squared, and
+   * bb is twice a product of size w by the segment direction */
+  double eps = 1e-14 * (fabs(bb * bb) + fabs(4 * aa * cc) +
+    aa * (wx * wx + wy * wy + e->radius * e->radius));
   if (disc < -eps)
     return 0;
   if (disc <= eps)
