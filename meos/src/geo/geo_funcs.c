@@ -6329,11 +6329,330 @@ meos_relate(const LWGEOM *g1, const LWGEOM *g2, char result[10])
 }
 
 /**
+ * @brief Return true if a point lies on the curve an edge draws, whatever
+ * part of a geometry that edge bounds
+ * @details #relate_point_on_boundary answers the same question of an areal
+ * boundary alone, and a shared point is a question about the curves
+ */
+static bool
+relate_point_on_edge(double x, double y, const Edge *e)
+{
+  switch (e->etype)
+  {
+    case EDGE_POINT:
+      return fabs(x - e->x1) <= MEOS_EDGE_TOLERANCE &&
+        fabs(y - e->y1) <= MEOS_EDGE_TOLERANCE;
+    case EDGE_LINEARC:
+    case EDGE_POLYARC:
+      return point_on_arc(x, y, e);
+    default:
+      return point_on_segment(x, y, e->x1, e->y1, e->x2, e->y2);
+  }
+}
+
+/**
+ * @brief Return true if the curves two edges draw meet
+ * @details #relate_any_edge_intersection answers the ISOLATED points at which
+ * they meet, which is nothing where the two run along each other: two equal
+ * segments and two arcs of one circle sharing a span both report no point.
+ * Meeting is the weaker question, so it reads the intersection type rather
+ * than a count
+ */
+static bool
+relate_edges_meet(const Edge *a, const Edge *b)
+{
+  Edge ea = *a, eb = *b;
+  ea.etype = (a->etype == EDGE_POLYARC || a->etype == EDGE_LINEARC) ?
+    EDGE_LINEARC : EDGE_LINESEG;
+  eb.etype = (b->etype == EDGE_POLYARC || b->etype == EDGE_LINEARC) ?
+    EDGE_LINEARC : EDGE_LINESEG;
+  if (ea.etype == EDGE_LINESEG && eb.etype == EDGE_LINESEG)
+  {
+    IntersectResult r = linesegm_intersect(ea.x1, ea.y1, ea.dx, ea.dy,
+      eb.x1, eb.y1, eb.x2, eb.y2);
+    return r.type != INTERSECT_NONE;
+  }
+  if (ea.etype == EDGE_LINEARC && eb.etype == EDGE_LINEARC)
+  {
+    double x[2], y[2];
+    bool overlap = false;
+    int n = relate_arc_arc_points(&ea, &eb, x, y, &overlap);
+    return n > 0 || overlap;
+  }
+  /* A straight segment and a circular arc share no curve, so the isolated
+   * points answer the whole of it */
+  double ix[2], iy[2];
+  return relate_any_edge_intersection(a, b, ix, iy) > 0;
+}
+
+/**
+ * @brief Return true if one point of an edge lies inside the surfaces bounded
+ * by another geometry's edges
+ * @details Read only where no curve of either geometry meets a curve of the
+ * other, which is what makes one point answer for the whole edge: an edge
+ * crossing into a surface would have met its boundary. #point_in_polygon
+ * passes over every edge that bounds no surface, so the array it reads may
+ * mix dimensions
+ */
+static bool
+relate_edge_inside_area(const Edge *e, Edge **other, int nother)
+{
+  double x, y;
+  if (e->etype == EDGE_POINT)
+  {
+    x = e->x1;
+    y = e->y1;
+  }
+  else
+    relate_edge_point(e, 0.5, &x, &y);
+  return point_in_polygon(x, y, other, nother) != 0;
+}
+
+/**
+ * @brief Return true if two geometries share a point, read from their edges
+ * @details Sharing a point is the pattern `FF*FF****` failing, and the matrix
+ * is not needed to decide it. Three questions answer it, each stopping at the
+ * first witness it finds: a point of one geometry standing on a curve or a
+ * point of the other; a curve of one meeting a curve of the other; and, once
+ * no curves meet at all, an edge lying within a surface of the other, where
+ * one point of that edge answers for the whole of it
+ */
+static bool
+relate_edges_intersect(Edge **e1, int n1, Edge **e2, int n2)
+{
+  /* A point of one geometry standing on the other */
+  for (int i = 0; i < n1; i++)
+  {
+    if (e1[i]->etype != EDGE_POINT)
+      continue;
+    for (int j = 0; j < n2; j++)
+      if (relate_point_on_edge(e1[i]->x1, e1[i]->y1, e2[j]))
+        return true;
+  }
+  for (int j = 0; j < n2; j++)
+  {
+    if (e2[j]->etype != EDGE_POINT)
+      continue;
+    for (int i = 0; i < n1; i++)
+      if (relate_point_on_edge(e2[j]->x1, e2[j]->y1, e1[i]))
+        return true;
+  }
+
+  /* Two curves meeting, the bounding boxes deciding which pairs are worth
+   * solving */
+  for (int i = 0; i < n1; i++)
+  {
+    const Edge *a = e1[i];
+    if (a->etype == EDGE_POINT)
+      continue;
+    for (int j = 0; j < n2; j++)
+    {
+      const Edge *b = e2[j];
+      if (b->etype == EDGE_POINT)
+        continue;
+      if (a->xmax < b->xmin - MEOS_EDGE_TOLERANCE ||
+          b->xmax < a->xmin - MEOS_EDGE_TOLERANCE ||
+          a->ymax < b->ymin - MEOS_EDGE_TOLERANCE ||
+          b->ymax < a->ymin - MEOS_EDGE_TOLERANCE)
+        continue;
+      if (relate_edges_meet(a, b))
+        return true;
+    }
+  }
+
+  /* No curve of either geometry meets the other, so each edge lies wholly
+   * inside or wholly outside the surfaces of the other geometry */
+  for (int i = 0; i < n1; i++)
+    if (relate_edge_inside_area(e1[i], e2, n2))
+      return true;
+  for (int j = 0; j < n2; j++)
+    if (relate_edge_inside_area(e2[j], e1, n1))
+      return true;
+  return false;
+}
+
+/**
+ * @brief Return true if a point lies in the point set an edge array draws
+ * @details That is, inside a surface the array bounds, or on one of its
+ * curves or points. #point_in_polygon passes over every edge bounding no
+ * surface, so an array mixing dimensions is read correctly
+ */
+static bool
+relate_point_in_edges(double x, double y, Edge **edges, int nedges)
+{
+  if (point_in_polygon(x, y, edges, nedges) != 0)
+    return true;
+  for (int i = 0; i < nedges; i++)
+    if (relate_point_on_edge(x, y, edges[i]))
+      return true;
+  return false;
+}
+
+/**
+ * @brief Return true if every point an edge array draws lies in another one
+ * @details Each edge is split where the other geometry's edges meet it, which
+ * leaves every piece wholly inside or wholly outside, so one point of a piece
+ * answers for the piece. The parameters an edge is split at come from the
+ * isolated intersection points and from the ends of the other edges that lie
+ * on it, the second of which is what bounds a stretch two edges run along
+ * together, where there is no isolated point to find
+ * ⛔ The edges of an areal geometry draw its BOUNDARY, not its interior, so a
+ * false answer is conclusive while a true one is not: a hole of the first
+ * geometry lying within the second is a piece of the second outside the first
+ * that no edge of the second visits. The caller reads it as a rejection only
+ * @return False if @p e2 draws a point outside what @p e1 draws, which settles
+ * that the second geometry is not covered by the first
+ */
+static bool
+relate_edges_cover(Edge **e1, int n1, Edge **e2, int n2)
+{
+  int maxparams = 2 + 4 * n1;
+  double *params = palloc(sizeof(double) * maxparams);
+  bool result = true;
+  for (int j = 0; j < n2 && result; j++)
+  {
+    const Edge *e = e2[j];
+    if (e->etype == EDGE_POINT)
+    {
+      result = relate_point_in_edges(e->x1, e->y1, e1, n1);
+      continue;
+    }
+    int nparams = 0;
+    params[nparams++] = 0.0;
+    params[nparams++] = 1.0;
+    for (int i = 0; i < n1; i++)
+    {
+      const Edge *o = e1[i];
+      if (e->xmax < o->xmin - MEOS_EDGE_TOLERANCE ||
+          o->xmax < e->xmin - MEOS_EDGE_TOLERANCE ||
+          e->ymax < o->ymin - MEOS_EDGE_TOLERANCE ||
+          o->ymax < e->ymin - MEOS_EDGE_TOLERANCE)
+        continue;
+      double ix[2], iy[2];
+      int nint = relate_any_edge_intersection(e, o, ix, iy);
+      for (int k = 0; k < nint; k++)
+        relate_area_add_parameter(relate_any_edge_parameter(e, ix[k], iy[k]),
+          params, &nparams, maxparams);
+      /* Where the two run along each other no isolated point is found, and
+       * the stretch they share ends at an end of the other edge */
+      if (o->etype != EDGE_POINT)
+      {
+        if (relate_point_on_edge(o->x1, o->y1, e))
+          relate_area_add_parameter(relate_any_edge_parameter(e, o->x1, o->y1),
+            params, &nparams, maxparams);
+        if (relate_point_on_edge(o->x2, o->y2, e))
+          relate_area_add_parameter(relate_any_edge_parameter(e, o->x2, o->y2),
+            params, &nparams, maxparams);
+      }
+    }
+    qsort(params, nparams, sizeof(double), relate_area_parameter_cmp);
+    for (int k = 0; k < nparams - 1 && result; k++)
+    {
+      if (params[k + 1] - params[k] <= MEOS_EDGE_TOLERANCE)
+        continue;
+      double x, y;
+      relate_edge_point(e, (params[k] + params[k + 1]) * 0.5, &x, &y);
+      result = relate_point_in_edges(x, y, e1, n1);
+    }
+  }
+  pfree(params);
+  return result;
+}
+
+/**
+ * @brief Return whether two geometries share a point
+ * @details This is the `INTERSECTS` relationship, which #meos_spatialrel
+ * reads from the DE-9IM matrix as the pattern `FF*FF****` failing. Answering
+ * it from the edges instead stops at the first witness, where the matrix
+ * answers all nine cells whatever the question was
+ * @param[in] g1,g2 Geometries
+ * @param[out] result True if the geometries share a point
+ * @return True if the pair is covered, which is what #geom_meos_supported
+ * answers of each geometry
+ */
+static bool
+meos_intersects(const LWGEOM *g1, const LWGEOM *g2, bool *result)
+{
+  assert(g1); assert(g2); assert(result);
+  if (! geom_meos_supported(g1) || ! geom_meos_supported(g2))
+    return false;
+
+  /* An empty geometry holds no point to share */
+  if (lwgeom_is_empty(g1) || lwgeom_is_empty(g2))
+  {
+    *result = false;
+    return true;
+  }
+
+  MeosArray *a1 = relate_extract_edges(g1);
+  MeosArray *a2 = relate_extract_edges(g2);
+  int n1 = (int) a1->count, n2 = (int) a2->count;
+  Edge **e1 = palloc(sizeof(Edge *) * (n1 ? n1 : 1));
+  Edge **e2 = palloc(sizeof(Edge *) * (n2 ? n2 : 1));
+  for (int i = 0; i < n1; i++)
+    e1[i] = (Edge *) meos_array_get(a1, i);
+  for (int j = 0; j < n2; j++)
+    e2[j] = (Edge *) meos_array_get(a2, j);
+
+  *result = relate_edges_intersect(e1, n1, e2, n2);
+
+  pfree(e1); pfree(e2);
+  meos_array_destroy(a1); meos_array_destroy(a2);
+  return true;
+}
+
+/**
+ * @brief Return whether the second geometry draws a point outside the first
+ * @details `COVERS` and `CONTAINS` both ask that nothing of the second
+ * geometry falls outside the first, and a boundary of the second running
+ * outside the first settles that it does. Reading the edges rejects such a
+ * pair without a matrix, and the pairs that survive are few enough that the
+ * matrix answers them
+ * @param[in] g1,g2 Geometries
+ * @param[out] result False where @p g2 draws a point outside @p g1, which is
+ * conclusive; true where it draws none, which is not
+ * @return True if the pair is covered, which is what #geom_meos_supported
+ * answers of each geometry
+ */
+static bool
+meos_covers_possible(const LWGEOM *g1, const LWGEOM *g2, bool *result)
+{
+  assert(g1); assert(g2); assert(result);
+  if (! geom_meos_supported(g1) || ! geom_meos_supported(g2))
+    return false;
+
+  /* An empty geometry stands in no relationship: it holds no point to lie
+   * within another, and none of the patterns admits an empty second operand */
+  if (lwgeom_is_empty(g1) || lwgeom_is_empty(g2))
+  {
+    *result = false;
+    return true;
+  }
+
+  MeosArray *a1 = relate_extract_edges(g1);
+  MeosArray *a2 = relate_extract_edges(g2);
+  int n1 = (int) a1->count, n2 = (int) a2->count;
+  Edge **e1 = palloc(sizeof(Edge *) * (n1 ? n1 : 1));
+  Edge **e2 = palloc(sizeof(Edge *) * (n2 ? n2 : 1));
+  for (int i = 0; i < n1; i++)
+    e1[i] = (Edge *) meos_array_get(a1, i);
+  for (int j = 0; j < n2; j++)
+    e2[j] = (Edge *) meos_array_get(a2, j);
+
+  *result = relate_edges_cover(e1, n1, e2, n2);
+
+  pfree(e1); pfree(e2);
+  meos_array_destroy(a1); meos_array_destroy(a2);
+  return true;
+}
+
+/**
  * @brief Return whether two geometries stand in one of the spatial
  * relationships MEOS asks for
  * @details Each relationship is the pattern the standard gives it, matched
- * against the DE-9IM matrix, so the four share the one engine and hold the
- * pattern in one place. Two geometries intersect where they are not disjoint;
+ * against the DE-9IM matrix, so they share the one engine and hold the
+ * pattern in one place. Two geometries intersect where they share a point,
+ * which #meos_intersects reads from the edges directly;
  * one contains another where their interiors meet and nothing of the other
  * falls outside; they touch where their interiors do not meet while a boundary
  * meets the other geometry; and one covers another where nothing of the other
@@ -6348,14 +6667,45 @@ meos_spatialrel(const LWGEOM *g1, const LWGEOM *g2, spatialRel rel,
   bool *result)
 {
   assert(g1); assert(g2); assert(result);
+
+  /* Sharing a point is settled by the first witness found, so it is answered
+   * from the edges rather than from a matrix computed whole */
+  if (rel == INTERSECTS)
+    return meos_intersects(g1, g2, result);
+
+  /* Each of the other three relationships asks for a cell of the interior and
+   * boundary rows, so each holds only where the geometries share a point.
+   * Reading that first leaves the matrix to be computed only for a pair that
+   * meets at all */
+  bool meet;
+  if (! meos_intersects(g1, g2, &meet))
+    return false;
+  if (! meet)
+  {
+    *result = false;
+    return true;
+  }
+
+  /* Covering and containing both need the second geometry to keep clear of
+   * the exterior of the first, and a boundary of it running outside settles
+   * that it does not. Few pairs survive that, so the matrix answers those */
+  if (rel == COVERS || rel == CONTAINS)
+  {
+    bool possible;
+    if (! meos_covers_possible(g1, g2, &possible))
+      return false;
+    if (! possible)
+    {
+      *result = false;
+      return true;
+    }
+  }
+
   char m[10];
   if (! meos_relate(g1, g2, m))
     return false;
   switch (rel)
   {
-    case INTERSECTS:
-      *result = ! de9im_match(m, "FF*FF****");
-      return true;
     case CONTAINS:
       *result = de9im_match(m, "T*****FF*");
       return true;
