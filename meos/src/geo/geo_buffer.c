@@ -5616,9 +5616,10 @@ meos_buffer(const LWGEOM *geom, double radius, JoinStyle join_style,
  * @param[in] size Distance
  * @param[in] params Buffer style parameters
  * @note PostGIS function: @p ST_Buffer(PG_FUNCTION_ARGS)
+ * @csqlfn #Geom_buffer()
  */
 GSERIALIZED *
-geom_buffer_meos(const GSERIALIZED *gs, double size, const char *params)
+geom_buffer(const GSERIALIZED *gs, double size, const char *params)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs, NULL); VALIDATE_NOT_NULL(params, NULL);
