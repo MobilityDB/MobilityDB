@@ -463,13 +463,13 @@ SELECT asEWKT(round((tposechain
 		<sect2 xml:id="tposechain_accessors">
 			<title>Accessor Functions</title>
 			<itemizedlist>
-				<listitem xml:id="numLinks">
-					<indexterm significance="normal"><primary><varname>numLinks</varname></primary></indexterm>
+				<listitem xml:id="tposechain_numPoses">
+					<indexterm significance="normal"><primary><varname>numPoses</varname></primary></indexterm>
 					<para>Return the number of links every value of a temporal pose chain holds</para>
-					<para><varname>numLinks(tposechain) → integer</varname></para>
+					<para><varname>numPoses(tposechain) → integer</varname></para>
 					<para>The number is the same at every instant, so one instant answers for the whole value.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT numLinks(tposechain
+SELECT numPoses(tposechain
   'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01');
 -- 2
 </programlisting>

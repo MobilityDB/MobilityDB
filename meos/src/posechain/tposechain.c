@@ -380,7 +380,7 @@ tposechain_to_tpose(const Temporal *temp)
   lfinfo.argtype[0] = temptype_basetype(temp->temptype);
   lfinfo.restype = T_TPOSE;
   lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags) &&
-    tposechain_num_links(temp) == 1;
+    tposechain_num_poses(temp) == 1;
   return tfunc_temporal(temp, &lfinfo);
 }
 
@@ -396,10 +396,10 @@ tposechain_to_tpose(const Temporal *temp)
  * answers for the whole value.
  * @param[in] temp Temporal pose chain
  * @return On error return @p INT_MAX
- * @csqlfn #Tposechain_num_links()
+ * @csqlfn #Tposechain_num_poses()
  */
 int
-tposechain_num_links(const Temporal *temp)
+tposechain_num_poses(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TPOSECHAIN(temp, INT_MAX);

@@ -50,7 +50,7 @@ SELECT COUNT(*) FROM tbl_tposechain WHERE tposechainFromHexEWKB(asHexEWKB(temp))
 -- Accessors
 -------------------------------------------------------------------------------
 
-SELECT MIN(numLinks(temp)), MAX(numLinks(temp)) FROM tbl_tposechain;
+SELECT MIN(numPoses(temp)), MAX(numPoses(temp)) FROM tbl_tposechain;
 SELECT DISTINCT tempSubtype(temp) FROM tbl_tposechain ORDER BY 1;
 SELECT DISTINCT SRID(temp) FROM tbl_tposechain;
 SELECT MIN(numInstants(temp)), MAX(numInstants(temp)) FROM tbl_tposechain;

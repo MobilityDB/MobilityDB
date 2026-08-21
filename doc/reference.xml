@@ -1767,7 +1767,7 @@
 				<title>Accessor Functions</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="numLinks"><varname>numLinks</varname></link>: Return the number of links every value of a temporal pose chain holds</para>
+						<para><link linkend="tposechain_numPoses"><varname>numPoses</varname></link>: Return the number of links every value of a temporal pose chain holds</para>
 					</listitem>
 					<listitem>
 						<para><link linkend="tposechain_getValue"><varname>getValue</varname>, <varname>getValues</varname>, <varname>timeSpan</varname></link>: Return the value of a temporal instant, the set of values, or the time span</para>

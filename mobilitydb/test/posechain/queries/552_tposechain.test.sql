@@ -90,7 +90,7 @@ SELECT asEWKT(round((tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0)
 -- Accessors
 -------------------------------------------------------------------------------
 
-SELECT numLinks(tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2000-01-01');
+SELECT numPoses(tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2000-01-01');
 SELECT tempSubtype(tposechain 'PoseChain(Pose(Point(0 0), 0))@2000-01-01');
 SELECT interp(tposechain '[PoseChain(Pose(Point(0 0), 0))@2000-01-01, PoseChain(Pose(Point(1 1), 0))@2000-01-02]');
 SELECT asEWKT(getValue(tposechain 'PoseChain(Pose(Point(0 0), 0))@2000-01-01'));
