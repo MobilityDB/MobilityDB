@@ -100,7 +100,7 @@ $(function() {
 <p >Conformance classes a single pose can be written as.</p>
 <p >The two Basic classes differ only in how they carry the orientation. The Advanced class differs in the frame: it names its outer frame explicitly where the Basic classes leave it implicit, and carries the position inside that frame, having no member of its own for it.</p>
 <p >The class of a composite follows from the value instead of from this choice: a temporal sequence is a Composite Sequence Series, Regular or Irregular as its instants are spaced, and a Stream is written by the two entry points of its own. A Series carries a quaternion in every inner frame and offers no orientation choice.</p>
-<p >The Chain and Graph classes are not implemented. </p>
+<p >The Chain class is written from a temporal pose chain, whose links are the nested frames it names. The Graph class is not implemented. </p>
 <table class="fieldtable">
 <tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a2f09bcf761a458a01dee8546dfaaa34dafa3a2955e035e19ff979f0a4046707d5" name="a2f09bcf761a458a01dee8546dfaaa34dafa3a2955e035e19ff979f0a4046707d5"></a>GEOPOSE_BASIC_QUATERNION&#160;</td><td class="fielddoc"><p >{position, quaternion} canonical form </p>
 </td></tr>

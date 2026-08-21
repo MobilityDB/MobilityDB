@@ -83,6 +83,7 @@ $(function() {
 <p>General functions for temporal pose chains.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;postgres.h&gt;</code><br />
+<code>#include &lt;pgtypes.h&gt;</code><br />
 <code>#include &lt;fmgr.h&gt;</code><br />
 <code>#include &lt;utils/array.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
@@ -95,6 +96,12 @@ $(function() {
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:a1b8c33368c0e84c2468caae840001f38"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mobilitydb_2src_2posechain_2tposechain_8c_a1b8c33368c0e84c2468caae840001f38.html#a1b8c33368c0e84c2468caae840001f38">Tposechain_as_geopose</a> (PG_FUNCTION_ARGS)</td></tr>
+<tr class="memdesc:a1b8c33368c0e84c2468caae840001f38"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the OGC GeoPose Composite Chain JSON representation of a temporal pose chain @sqlfn asGeoPose()  <a href="mobilitydb_2src_2posechain_2tposechain_8c_a1b8c33368c0e84c2468caae840001f38.html#a1b8c33368c0e84c2468caae840001f38">More...</a><br /></td></tr>
+<tr class="separator:a1b8c33368c0e84c2468caae840001f38"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a68eab608923175a12ac9527d84fa6055"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mobilitydb_2src_2posechain_2tposechain_8c_a68eab608923175a12ac9527d84fa6055.html#a68eab608923175a12ac9527d84fa6055">Tposechain_from_geopose</a> (PG_FUNCTION_ARGS)</td></tr>
+<tr class="memdesc:a68eab608923175a12ac9527d84fa6055"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a temporal pose chain from an OGC GeoPose Composite Chain JSON document @sqlfn tposechainFromGeoPose()  <a href="mobilitydb_2src_2posechain_2tposechain_8c_a68eab608923175a12ac9527d84fa6055.html#a68eab608923175a12ac9527d84fa6055">More...</a><br /></td></tr>
+<tr class="separator:a68eab608923175a12ac9527d84fa6055"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aeb4e479c1f49711bcf20fdda5e8573d8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mobilitydb_2src_2posechain_2tposechain_8c_aeb4e479c1f49711bcf20fdda5e8573d8.html#aeb4e479c1f49711bcf20fdda5e8573d8">Tposechain_in</a> (PG_FUNCTION_ARGS)</td></tr>
 <tr class="memdesc:aeb4e479c1f49711bcf20fdda5e8573d8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generic input function for temporal pose chain objects.  <a href="mobilitydb_2src_2posechain_2tposechain_8c_aeb4e479c1f49711bcf20fdda5e8573d8.html#aeb4e479c1f49711bcf20fdda5e8573d8">More...</a><br /></td></tr>
 <tr class="separator:aeb4e479c1f49711bcf20fdda5e8573d8"><td class="memSeparator" colspan="2">&#160;</td></tr>
