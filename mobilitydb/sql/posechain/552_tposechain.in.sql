@@ -119,6 +119,14 @@ CREATE FUNCTION asGeoPose(tposechain, maxdecimaldigits int4 DEFAULT -1)
   AS 'MODULE_PATHNAME', 'Tposechain_as_geopose'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- A Composite Graph document is a set of pose chains sharing their outermost
+-- frame, so it is written from chains read at one and the same instant, and
+-- its frame list holds at least two frames.
+CREATE FUNCTION asGeoPose(tposechain[], maxdecimaldigits int4 DEFAULT -1)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Tposechainarr_as_geopose'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION tposechainFromBinary(bytea)
   RETURNS tposechain
   AS 'MODULE_PATHNAME', 'Temporal_from_wkb'

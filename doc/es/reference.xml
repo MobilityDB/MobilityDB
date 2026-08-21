@@ -1794,6 +1794,14 @@
 				</itemizedlist>
 			</sect3>
 			<sect3>
+				<title>Grafo compuesto OGC GeoPose</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="tposechainarr_asGeoPose"><varname>asGeoPose</varname></link>: Escribe un documento de grafo compuesto OGC GeoPose</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+			<sect3>
 				<title>Funciones de restricción</title>
 				<itemizedlist>
 					<listitem>
