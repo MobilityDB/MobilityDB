@@ -243,10 +243,6 @@
  * @defgroup meos_geo_box_comp Comparison functions
  * @ingroup meos_geo_box
  * @brief Comparison functions for spatiotemporal boxes
- *
- * @defgroup meos_geo_box_index Index functions
- * @ingroup meos_geo_box
- * @brief In-memory RTree index for spatiotemporal boxes
  */
 
 /*****************************************************************************/

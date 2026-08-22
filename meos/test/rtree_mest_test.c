@@ -144,11 +144,11 @@ int main(void)
   MeosArray *mest_ids = meos_array_create(sizeof(int64));
   MeosArray *deg_ids = meos_array_create(sizeof(int64));
 
-  int single_count = rtree_search_temporal(rtree_single, RTREE_OVERLAPS,
+  int single_count = rtree_search_temporal(rtree_single, INDEX_OVERLAPS,
     query, single_ids);
-  int mest_count = rtree_search_temporal_dedup(rtree_mest, RTREE_OVERLAPS,
+  int mest_count = rtree_search_temporal_dedup(rtree_mest, INDEX_OVERLAPS,
     query, MAX_BOXES, mest_ids);
-  int deg_count = rtree_search_temporal_dedup(rtree_deg, RTREE_OVERLAPS,
+  int deg_count = rtree_search_temporal_dedup(rtree_deg, INDEX_OVERLAPS,
     query, 1, deg_ids);
 
   /* Membership bitsets */
