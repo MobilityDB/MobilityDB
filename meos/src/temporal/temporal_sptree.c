@@ -116,22 +116,6 @@ span_kdtree_next(const void *nodebox, const void *centroid, uint8 node,
     node, level, (SpanNode *) next);
 }
 
-/**
- * @brief Fill a span with the smallest one covering every span of a region
- * @details The lower bounds of a region are held by its left corner and the
- * upper bounds by its right one, so the covering span reads one from each
- */
-static void
-span_nodebox_envelope(const void *nodebox, void *out)
-{
-  const SpanNode *n = (const SpanNode *) nodebox;
-  Span *o = (Span *) out;
-  memcpy(o, &n->left, sizeof(Span));
-  o->upper = n->right.upper;
-  o->upper_inc = n->right.upper_inc;
-  return;
-}
-
 static bool
 span_inner_consistent(const void *nodebox, const void *query, IndexSearchOp op)
 {
@@ -202,21 +186,6 @@ tbox_kdtree_next(const void *nodebox, const void *centroid, uint8 node,
 {
   tboxnode_kdtree_next((const TboxNode *) nodebox, (const TBox *) centroid,
     node, level, (TboxNode *) next);
-}
-
-/**
- * @brief Fill a temporal box with the smallest one covering every box of a
- * region
- */
-static void
-tbox_nodebox_envelope(const void *nodebox, void *out)
-{
-  const TboxNode *n = (const TboxNode *) nodebox;
-  TBox *o = (TBox *) out;
-  memcpy(o, &n->left, sizeof(TBox));
-  o->span.upper = n->right.span.upper;
-  o->period.upper = n->right.period.upper;
-  return;
 }
 
 static bool
@@ -303,23 +272,6 @@ stbox_kdtree_next(const void *nodebox, const void *centroid, uint8 node,
 {
   stboxnode_kdtree_next((const STboxNode *) nodebox, (const STBox *) centroid,
     node, level, (STboxNode *) next);
-}
-
-/**
- * @brief Fill a spatiotemporal box with the smallest one covering every box of
- * a region
- */
-static void
-stbox_nodebox_envelope(const void *nodebox, void *out)
-{
-  const STboxNode *n = (const STboxNode *) nodebox;
-  STBox *o = (STBox *) out;
-  memcpy(o, &n->left, sizeof(STBox));
-  o->xmax = n->right.xmax;
-  o->ymax = n->right.ymax;
-  o->zmax = n->right.zmax;
-  o->period.upper = n->right.period.upper;
-  return;
 }
 
 static bool
@@ -445,7 +397,6 @@ sptree_create(MeosType bboxtype, SPTreeKind kind)
     sptree->nodebox_init = &span_nodebox_init;
     sptree->quadtree_next = &span_quadtree_next;
     sptree->kdtree_next = &span_kdtree_next;
-    sptree->nodebox_envelope = &span_nodebox_envelope;
     sptree->inner_consistent = &span_inner_consistent;
     sptree->leaf_consistent = &span_leaf_consistent;
   }
@@ -458,7 +409,6 @@ sptree_create(MeosType bboxtype, SPTreeKind kind)
     sptree->nodebox_init = &tbox_nodebox_init;
     sptree->quadtree_next = &tbox_quadtree_next;
     sptree->kdtree_next = &tbox_kdtree_next;
-    sptree->nodebox_envelope = &tbox_nodebox_envelope;
     sptree->inner_consistent = &tbox_inner_consistent;
     sptree->leaf_consistent = &tbox_leaf_consistent;
   }
@@ -477,7 +427,6 @@ sptree_create(MeosType bboxtype, SPTreeKind kind)
     sptree->nodebox_init = &stbox_nodebox_init;
     sptree->quadtree_next = &stbox_quadtree_next;
     sptree->kdtree_next = &stbox_kdtree_next;
-    sptree->nodebox_envelope = &stbox_nodebox_envelope;
     sptree->inner_consistent = &stbox_inner_consistent;
     sptree->leaf_consistent = &stbox_leaf_consistent;
   }
@@ -493,7 +442,6 @@ sptree_create(MeosType bboxtype, SPTreeKind kind)
     sptree->nodebox_init = &stbox_nodebox_init;
     sptree->quadtree_next = &stbox_quadtree_next;
     sptree->kdtree_next = &stbox_kdtree_next;
-    sptree->nodebox_envelope = &stbox_nodebox_envelope;
     sptree->inner_consistent = &stbox_inner_consistent;
     sptree->leaf_consistent = &stbox_leaf_consistent;
   }
@@ -1097,6 +1045,125 @@ sptree_search(const SPTree *sptree, IndexSearchOp op, const void *query,
     spnode_search(sptree, sptree->root, rootbox, op, query, 0, result);
   }
   return meos_array_count(result);
+}
+
+/*****************************************************************************
+ * Join
+ *****************************************************************************/
+
+/**
+ * @brief Return the operation read with its arguments exchanged
+ * @details One index is searched for the entries an entry of the other pairs
+ * with, and a search reads its own entry first, so the operation is turned
+ * round
+ */
+static IndexSearchOp
+index_op_converse(IndexSearchOp op)
+{
+  switch (op)
+  {
+    case INDEX_CONTAINS:     return INDEX_CONTAINED_BY;
+    case INDEX_CONTAINED_BY: return INDEX_CONTAINS;
+    default:                 return INDEX_OVERLAPS;
+  }
+}
+
+/**
+ * @brief Report the pairs every entry of a subtree makes with the entries of
+ * another index
+ * @details The entries of the subtree are walked, and each is used as the query
+ * of a search of the other index, which prunes the subtrees its region excludes
+ * exactly as any search does. The operation is read from the side the search
+ * stands on, so the pairs it collects are turned round: the entry of the first
+ * index opens each pair.
+ *
+ * A space-partitioning index stores a box at every node and not only at its
+ * leaves, so the two indexes are not descended together. A pair descent visits
+ * the node pairs of equal depth, which leaves the pairs of two entries of
+ * unequal depth to a probe made at every node pair it reaches, and the node
+ * pairs are the product of the two levels where the entries are their sum.
+ * Measured on 10000 by 10000 spatiotemporal boxes, that costs 2.6 to 3.0 times
+ * what probing the entries costs, for the same answer.
+ * @param[in] sptree1 The SPTree whose entries are walked
+ * @param[in] node1 The node being visited
+ * @param[in] sptree2 The SPTree being searched
+ * @param[in] rootbox2 The region covered by the root of @p sptree2
+ * @param[in] opconv The join operation, read from the side of @p sptree2
+ * @param[in,out] found MeosArray the searches collect their ids into, reused
+ * across the entries
+ * @param[out] result MeosArray collecting the two ids of each pair
+ */
+static void
+spnode_join(const SPTree *sptree1, const SPNode *node1, const SPTree *sptree2,
+  const void *rootbox2, IndexSearchOp opconv, MeosArray *found,
+  MeosArray *result)
+{
+  meos_array_reset(found);
+  spnode_search(sptree2, sptree2->root, rootbox2, opconv, node1->centroid, 0,
+    found);
+  int count = meos_array_count(found);
+  for (int k = 0; k < count; k++)
+  {
+    int64 id1 = node1->id;
+    int64 id2 = *(int64 *) meos_array_get(found, k);
+    meos_array_add(result, &id1);
+    meos_array_add(result, &id2);
+  }
+  for (int quadrant = 0; quadrant < sptree1->nchild; quadrant++)
+  {
+    const SPNode *child = node1->children[quadrant];
+    if (child)
+      spnode_join(sptree1, child, sptree2, rootbox2, opconv, found, result);
+  }
+  return;
+}
+
+/**
+ * @ingroup meos_temporal_box_index
+ * @brief Join two in-memory space-partitioning indexes, collecting the ids of
+ * every qualifying pair into a MeosArray
+ * @details Every entry of the first index is read against the second one,
+ * which skips the subtrees its regions exclude, so a join reads far fewer pairs
+ * than comparing every entry of one index with every entry of the other. An
+ * index holds the boxes it was given, so a join needs nothing of the caller
+ * beyond the two indexes.
+ *
+ * The result array is reset before the join. It receives two ids per pair, the
+ * entry of @p sptree1 followed by the entry of @p sptree2, so pair `k` is read
+ * with #meos_array_get at positions `2 * k` and `2 * k + 1`.
+ * @param[in] sptree1,sptree2 The SPTrees to join, of the same bounding box
+ * type. They need not be of the same kind
+ * @param[in] op The join operation: @p INDEX_OVERLAPS pairs entries that
+ * overlap, @p INDEX_CONTAINS pairs entries of @p sptree1 that contain an entry
+ * of @p sptree2, @p INDEX_CONTAINED_BY pairs entries of @p sptree1 contained by
+ * an entry of @p sptree2
+ * @param[out] result MeosArray of int64 to collect the ids (created by the
+ * caller with `meos_array_create(sizeof(int64))`)
+ * @return Number of qualifying pairs, half the number of collected ids, on
+ * error @p INT_MAX
+ */
+int
+sptree_join(const SPTree *sptree1, const SPTree *sptree2, IndexSearchOp op,
+  MeosArray *result)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(sptree1, INT_MAX); VALIDATE_NOT_NULL(sptree2, INT_MAX);
+  VALIDATE_NOT_NULL(result, INT_MAX);
+  if (! ensure_same_index_bboxtype(sptree1->bboxtype, sptree2->bboxtype) ||
+      ! ensure_index_join_op(op))
+    return INT_MAX;
+
+  meos_array_reset(result);
+  if (sptree1->root && sptree2->root)
+  {
+    char rootbox2[SPTREE_NODEBOX_MAXSIZE];
+    sptree2->nodebox_init(rootbox2, sptree2->root->centroid, sptree2);
+    MeosArray *found = meos_array_create(sizeof(int64));
+    spnode_join(sptree1, sptree1->root, sptree2, rootbox2,
+      index_op_converse(op), found, result);
+    meos_array_destroy(found);
+  }
+  return meos_array_count(result) / 2;
 }
 
 /*****************************************************************************

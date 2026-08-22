@@ -99,9 +99,6 @@ struct SPTree
     uint8 quadrant, void *next);
   void (*kdtree_next)(const void *nodebox, const void *centroid, uint8 node,
     int level, void *next);
-  /** Smallest box covering every box a region holds, which is what a second
-   * region is compared against when two trees are descended together */
-  void (*nodebox_envelope)(const void *nodebox, void *out);
   bool (*inner_consistent)(const void *nodebox, const void *query,
     IndexSearchOp op);
   bool (*leaf_consistent)(const void *key, const void *query, IndexSearchOp op);

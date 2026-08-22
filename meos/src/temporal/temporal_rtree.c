@@ -1006,9 +1006,11 @@ node_search(const RTree *rtree, const RTreeNode *node, IndexSearchOp op,
  * other is a leaf: iterating a leaf's boxes and recursing with that same leaf
  * would visit its entries once per box.
  *
- * Subtrees are pruned by overlap whatever @p op is, since one entry contains or
- * is contained by another only if their boxes overlap, so a node pair whose
- * boxes are disjoint holds no qualifying pair below it.
+ * Subtrees are pruned by overlap, since one entry contains or is contained by
+ * another only if their boxes overlap, so a node pair whose boxes are disjoint
+ * holds no qualifying pair below it. Pruning on overlap is what restricts a
+ * join to the operations an overlap implies, which #ensure_index_join_op holds
+ * the caller to.
  * @param[in] rtree1,rtree2 The RTrees being joined
  * @param[in] node1,node2 The nodes to be joined
  * @param[in] box1,box2 The boxes the parents hold for @p node1 and @p node2,
@@ -1506,13 +1508,20 @@ rtree_search(const RTree *rtree, IndexSearchOp op, const void *query,
  * an entry of @p rtree2
  * @param[out] result MeosArray of int to collect the ids (created by the caller
  * with `meos_array_create(sizeof(int64))`)
- * @return Number of qualifying pairs, half the number of collected ids
+ * @return Number of qualifying pairs, half the number of collected ids, on
+ * error @p INT_MAX
  */
 int
 rtree_join(const RTree *rtree1, const RTree *rtree2, IndexSearchOp op,
   MeosArray *result)
 {
-  assert(rtree1->bboxtype == rtree2->bboxtype);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rtree1, INT_MAX); VALIDATE_NOT_NULL(rtree2, INT_MAX);
+  VALIDATE_NOT_NULL(result, INT_MAX);
+  if (! ensure_same_index_bboxtype(rtree1->bboxtype, rtree2->bboxtype) ||
+      ! ensure_index_join_op(op))
+    return INT_MAX;
+
   meos_array_reset(result);
   if (rtree1->root && rtree2->root)
     node_join(rtree1, rtree1->root, NULL, rtree2, rtree2->root, NULL, op,

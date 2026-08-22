@@ -949,6 +949,8 @@ extern int temporal_bbox_cmp(const void *box1, const void *box2,
   MeosType temptype);
 extern bool ensure_bbox_temporal_compatible(MeosType bboxtype,
   const Temporal *temp);
+extern bool ensure_same_index_bboxtype(MeosType bboxtype1, MeosType bboxtype2);
+extern bool ensure_index_join_op(IndexSearchOp op);
 extern void *bbox_temporal_split_boxes(MeosType bboxtype, size_t boxsize,
   const Temporal *temp, int maxboxes, int *count);
 

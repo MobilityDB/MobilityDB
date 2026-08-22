@@ -211,6 +211,47 @@ ensure_bbox_temporal_compatible(MeosType bboxtype, const Temporal *temp)
 }
 
 /**
+ * @brief Return true if two indexes hold the same bounding box type, report an
+ * error otherwise
+ * @details Shared by the in-memory RTree and SPTree indexes: a join reads the
+ * entries of one index against the entries of the other, so the two hold boxes
+ * of one type
+ * @param[in] bboxtype1,bboxtype2 Bounding box types of the two indexes
+ */
+bool
+ensure_same_index_bboxtype(MeosType bboxtype1, MeosType bboxtype2)
+{
+  if (bboxtype1 == bboxtype2)
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+    "Join of indexes on mixed bounding box types: %s and %s",
+    meostype_name(bboxtype1), meostype_name(bboxtype2));
+  return false;
+}
+
+/**
+ * @brief Return true if an operation pairs the entries of two indexes, report
+ * an error otherwise
+ * @details Shared by the in-memory RTree and SPTree indexes. A join prunes a
+ * pair of subtrees on the overlap of what they cover, which holds only for the
+ * operations an overlap implies: one entry contains, or is contained by,
+ * another only where the two overlap. The operations that order a dimension
+ * pair entries that lie apart, which is what the pruning discards, so a join
+ * refuses them rather than reporting a silently short answer.
+ * @param[in] op Search operation
+ */
+bool
+ensure_index_join_op(IndexSearchOp op)
+{
+  if (op == INDEX_OVERLAPS || op == INDEX_CONTAINS || op == INDEX_CONTAINED_BY)
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "A join answers the operations that compare extents, not the ones that "
+    "order a dimension");
+  return false;
+}
+
+/**
  * @brief Decompose a temporal value into an array of tight per-segment
  * bounding boxes whose element type matches the given bounding box type
  * @details Shared by the in-memory RTree and SPTree indexes. The
