@@ -89,7 +89,7 @@ point_in_polygon_impl(double x, double y, Edge **edges, int nedges,
    * height near its own: it is moved until no vertex sits on it, which leaves
    * no crossing for two edges to share and no rule to reconcile */
   double ry = y;
-  double bump = MEOS_EDGE_TOLERANCE * 4.0;
+  double bump = MEOS_GEOM_TOLERANCE * 4.0;
   for (int attempt = 0; attempt < 8; attempt++)
   {
     bool shared = false;
@@ -127,7 +127,7 @@ point_in_polygon_impl(double x, double y, Edge **edges, int nedges,
        * r stands for a distance of r times that tolerance, so an end of a
        * large arc reaches the ray from far further off than an end of a
        * segment does */
-      double tol = MEOS_EDGE_TOLERANCE;
+      double tol = MEOS_GEOM_TOLERANCE;
       if (e->etype == EDGE_POLYARC && e->radius > 1.0)
         tol *= e->radius;
       if (fabs(e->y1 - ry) <= tol || fabs(e->y2 - ry) <= tol)
@@ -151,7 +151,7 @@ point_in_polygon_impl(double x, double y, Edge **edges, int nedges,
          * tangentially (h2 ~ 0) does not cross the boundary */
         const double dyc = ry - e->cy;
         const double h2 = e->radius * e->radius - dyc * dyc;
-        if (h2 <= MEOS_EDGE_TOLERANCE)
+        if (h2 <= MEOS_GEOM_TOLERANCE)
           continue;
         const double h = sqrt(h2);
         const double xhit[2] = {e->cx - h, e->cx + h};
@@ -178,11 +178,11 @@ point_in_polygon_impl(double x, double y, Edge **edges, int nedges,
 
       /* Boundary check, which reads the point itself rather than the ray */
       const double cross = dx * dyp - dy * dxp;
-      if (fabs(cross) < MEOS_EDGE_TOLERANCE)
+      if (fabs(cross) < MEOS_GEOM_TOLERANCE)
       {
         const double dot = dxp * dx + dyp * dy;
-        if (dot >= -MEOS_EDGE_TOLERANCE &&
-            dot <= (e->length) + MEOS_EDGE_TOLERANCE)
+        if (dot >= -MEOS_GEOM_TOLERANCE &&
+            dot <= (e->length) + MEOS_GEOM_TOLERANCE)
           return 1;
       }
 
@@ -232,8 +232,8 @@ intervals_from_points(const POINT2D *a, const POINT2D *b, Edge **edges,
   /* Improve performance by removing the division inside the loop */
   bool use_x = fabs(dx) >= fabs(dy);
   double inv = use_x ?
-    ((fabs(dx) > FP_TOLERANCE) ? 1.0 / dx : 0.0) :
-    ((fabs(dy) > FP_TOLERANCE) ? 1.0 / dy : 0.0);
+    ((fabs(dx) > MEOS_GEOM_TOLERANCE) ? 1.0 / dx : 0.0) :
+    ((fabs(dy) > MEOS_GEOM_TOLERANCE) ? 1.0 / dy : 0.0);
 
   /* The segment stands still */
   if (inv == 0.0)
@@ -243,8 +243,8 @@ intervals_from_points(const POINT2D *a, const POINT2D *b, Edge **edges,
       const Edge *e = edges[i];
       if (e->etype != EDGE_POINT)
         continue;
-      if (fabs(a->x - e->x1) < FP_TOLERANCE &&
-          fabs(a->y - e->y1) < FP_TOLERANCE)
+      if (fabs(a->x - e->x1) < MEOS_GEOM_TOLERANCE &&
+          fabs(a->y - e->y1) < MEOS_GEOM_TOLERANCE)
       {
         Span in;
         span_set(Float8GetDatum(0.0), Float8GetDatum(1.0), true, true,
@@ -267,13 +267,13 @@ intervals_from_points(const POINT2D *a, const POINT2D *b, Edge **edges,
     /* Solve parameter t */
     double t = use_x ? (e->x1 - a->x) * inv : (e->y1 - a->y) * inv;
     /* Check bounds */
-    if (t < -FP_TOLERANCE || t > 1.0 + FP_TOLERANCE)
+    if (t < -MEOS_GEOM_TOLERANCE || t > 1.0 + MEOS_GEOM_TOLERANCE)
       continue;
 
     /* Reconstruct point and add interval */
     double x = a->x + t * dx;
     double y = a->y + t * dy;
-    if (fabs(x - e->x1) < FP_TOLERANCE && fabs(y - e->y1) < FP_TOLERANCE)
+    if (fabs(x - e->x1) < MEOS_GEOM_TOLERANCE && fabs(y - e->y1) < MEOS_GEOM_TOLERANCE)
     {
       Span in;
       span_set(Float8GetDatum(t), Float8GetDatum(t), true, true,
@@ -354,8 +354,8 @@ intervals_from_lines(const POINT2D *a, const POINT2D *b, Edge **edges,
         continue;
 
       /* Fast bbox check first */
-      if (mx < e->xmin - FP_TOLERANCE || mx > e->xmax + FP_TOLERANCE ||
-          my < e->ymin - FP_TOLERANCE || my > e->ymax + FP_TOLERANCE)
+      if (mx < e->xmin - MEOS_GEOM_TOLERANCE || mx > e->xmax + MEOS_GEOM_TOLERANCE ||
+          my < e->ymin - MEOS_GEOM_TOLERANCE || my > e->ymax + MEOS_GEOM_TOLERANCE)
         continue;
 
       if (point_on_segment(mx, my, e->x1, e->y1, e->x2, e->y2))
@@ -528,7 +528,7 @@ intervals_from_polygons(const POINT2D *a, const POINT2D *b, Edge **edges,
       if (r.type == INTERSECT_POINT)
       {
         double t = r.t0;
-        if (t >= -FP_TOLERANCE && t <= 1.0 + FP_TOLERANCE)
+        if (t >= -MEOS_GEOM_TOLERANCE && t <= 1.0 + MEOS_GEOM_TOLERANCE)
           meos_array_add(events, &t);
       }
     }
@@ -538,7 +538,7 @@ intervals_from_polygons(const POINT2D *a, const POINT2D *b, Edge **edges,
       double t[2];
       int n = arcsegm_intersect(ax, ay, rx, ry, e, t);
       for (int k = 0; k < n; k++)
-        if (t[k] >= -FP_TOLERANCE && t[k] <= 1.0 + FP_TOLERANCE)
+        if (t[k] >= -MEOS_GEOM_TOLERANCE && t[k] <= 1.0 + MEOS_GEOM_TOLERANCE)
           meos_array_add(events, &t[k]);
     }
   }
@@ -557,7 +557,7 @@ intervals_from_polygons(const POINT2D *a, const POINT2D *b, Edge **edges,
   for (int i = 0; i < (int) events->count; i++)
   {
     if (i == 0 ||
-        fabs(evtarr[i] - evtarr[newcount - 1]) > FP_TOLERANCE)
+        fabs(evtarr[i] - evtarr[newcount - 1]) > MEOS_GEOM_TOLERANCE)
     {
       evtarr[newcount++] = evtarr[i];
     }
@@ -572,7 +572,7 @@ intervals_from_polygons(const POINT2D *a, const POINT2D *b, Edge **edges,
   {
     double ta = evtarr[i];
     double tb = evtarr[i + 1];
-    if (tb - ta <= FP_TOLERANCE)
+    if (tb - ta <= MEOS_GEOM_TOLERANCE)
       continue;
 
     /* Midpoint test */
@@ -633,7 +633,7 @@ point_inter_points_lines(const POINT2D *a, Edge **edges, int nedges)
     const Edge *e = edges[i];
     if (e->etype == EDGE_POINT)
     {
-      if (fabs(e->x1 - ax) < FP_TOLERANCE && fabs(e->y1 - ay) < FP_TOLERANCE)
+      if (fabs(e->x1 - ax) < MEOS_GEOM_TOLERANCE && fabs(e->y1 - ay) < MEOS_GEOM_TOLERANCE)
         return true;
     }
     else if (e->etype == EDGE_LINESEG)
@@ -805,14 +805,14 @@ tpointseq_clip_edges(const TSequence *seq, Edge **edges, int nedges,
       Span s;
       double lower = DatumGetFloat8(intervarr[j].lower);
       double upper = DatumGetFloat8(intervarr[j].upper);
-      if (fabs(upper - lower) < FP_TOLERANCE)
+      if (fabs(upper - lower) < MEOS_GEOM_TOLERANCE)
       {
         /* Remove intersection points on exclusive lower and upper bounds */
-        if (! lower_inc && fabs(lower) < FP_TOLERANCE &&
-            fabs(upper) < FP_TOLERANCE)
+        if (! lower_inc && fabs(lower) < MEOS_GEOM_TOLERANCE &&
+            fabs(upper) < MEOS_GEOM_TOLERANCE)
           continue;
-        if (! upper_inc && fabs(lower - 1.0) < FP_TOLERANCE &&
-            fabs(upper - 1.0) < FP_TOLERANCE)
+        if (! upper_inc && fabs(lower - 1.0) < MEOS_GEOM_TOLERANCE &&
+            fabs(upper - 1.0) < MEOS_GEOM_TOLERANCE)
           continue;
 
         /* Interpolate only if 0 < lower/upper < 1 */
@@ -959,8 +959,8 @@ static bool
 edge_intersect(const Edge *e1, const Edge *e2)
 {
   /* Bounding-box reject */
-  if (e1->xmax < e2->xmin - FP_TOLERANCE || e2->xmax < e1->xmin - FP_TOLERANCE ||
-      e1->ymax < e2->ymin - FP_TOLERANCE || e2->ymax < e1->ymin - FP_TOLERANCE)
+  if (e1->xmax < e2->xmin - MEOS_GEOM_TOLERANCE || e2->xmax < e1->xmin - MEOS_GEOM_TOLERANCE ||
+      e1->ymax < e2->ymin - MEOS_GEOM_TOLERANCE || e2->ymax < e1->ymin - MEOS_GEOM_TOLERANCE)
     return false;
 
   bool arc1 = (e1->etype == EDGE_LINEARC || e1->etype == EDGE_POLYARC);
@@ -968,8 +968,8 @@ edge_intersect(const Edge *e1, const Edge *e2)
 
   /* A point edge meets another edge only by lying on it */
   if (e1->etype == EDGE_POINT && e2->etype == EDGE_POINT)
-    return fabs(e1->x1 - e2->x1) < FP_TOLERANCE &&
-      fabs(e1->y1 - e2->y1) < FP_TOLERANCE;
+    return fabs(e1->x1 - e2->x1) < MEOS_GEOM_TOLERANCE &&
+      fabs(e1->y1 - e2->y1) < MEOS_GEOM_TOLERANCE;
   if (e1->etype == EDGE_POINT)
     return arc2 ? point_on_arc(e1->x1, e1->y1, e2) :
       point_on_segment(e1->x1, e1->y1, e2->x1, e2->y1, e2->x2, e2->y2);
@@ -1149,7 +1149,7 @@ edges_contain_point(double px, double py, Edge **edges, int nedges,
     const Edge *e = edges[i];
     if (e->etype == EDGE_POINT)
     {
-      if (fabs(px - e->x1) < FP_TOLERANCE && fabs(py - e->y1) < FP_TOLERANCE)
+      if (fabs(px - e->x1) < MEOS_GEOM_TOLERANCE && fabs(py - e->y1) < MEOS_GEOM_TOLERANCE)
         return true;
     }
     else if (e->etype == EDGE_LINEARC || e->etype == EDGE_POLYARC)
@@ -1211,7 +1211,7 @@ segment_within_closure(const Edge *e, Edge **aedges, int na, bool has_area)
   bool result = true;
   for (int i = 0; i < nt - 1 && result; i++)
   {
-    if (ts[i + 1] - ts[i] < FP_TOLERANCE)
+    if (ts[i + 1] - ts[i] < MEOS_GEOM_TOLERANCE)
       continue;
     double tm = 0.5 * (ts[i] + ts[i + 1]);
     double mx = e->x1 + tm * e->dx, my = e->y1 + tm * e->dy;
@@ -1546,7 +1546,7 @@ point_seg_dist2(double px, double py, double x1, double y1, double x2,
 {
   const double ux = x2 - x1, uy = y2 - y1;
   const double l2 = ux * ux + uy * uy;
-  if (l2 < FP_TOLERANCE)
+  if (l2 < MEOS_GEOM_TOLERANCE)
   {
     const double dx = px - x1, dy = py - y1;
     return dx * dx + dy * dy;
@@ -1628,13 +1628,13 @@ point_geom_within(double px, double py, Edge **edges, int nedges,
     for (int i = 0; i < nc; i++)
       if (point_edge_dist2(px, py,
             edges[*(int64 *) meos_array_get(rtree_results, i)]) <=
-          d2 + FP_TOLERANCE)
+          d2 + MEOS_GEOM_TOLERANCE)
         return true;
   }
   else
   {
     for (int i = 0; i < nedges; i++)
-      if (point_edge_dist2(px, py, edges[i]) <= d2 + FP_TOLERANCE)
+      if (point_edge_dist2(px, py, edges[i]) <= d2 + MEOS_GEOM_TOLERANCE)
         return true;
   }
   return point_in_polygon_impl(px, py, edges, nedges, rtree, srid, xmax) ?
@@ -1648,7 +1648,7 @@ point_geom_within(double px, double py, Edge **edges, int nedges,
 static void
 add_within_root(double t, MeosArray *ev)
 {
-  if (t > -FP_TOLERANCE && t < 1.0 + FP_TOLERANCE)
+  if (t > -MEOS_GEOM_TOLERANCE && t < 1.0 + MEOS_GEOM_TOLERANCE)
   {
     if (t < 0.0) t = 0.0; else if (t > 1.0) t = 1.0;
     meos_array_add(ev, &t);
@@ -1662,9 +1662,9 @@ add_within_root(double t, MeosArray *ev)
 static void
 add_within_quad_roots(double A, double B, double C, MeosArray *ev)
 {
-  if (fabs(A) < FP_TOLERANCE)
+  if (fabs(A) < MEOS_GEOM_TOLERANCE)
   {
-    if (fabs(B) > FP_TOLERANCE)
+    if (fabs(B) > MEOS_GEOM_TOLERANCE)
       add_within_root(-C / B, ev);
     return;
   }
@@ -1715,11 +1715,11 @@ within_roots_from_edge(double ax, double ay, double rx, double ry,
        * perpendicular distance is (k0 + t k1) / sqrt(l2) */
       const double ux = e->x2 - e->x1, uy = e->y2 - e->y1;
       const double l2 = ux * ux + uy * uy;
-      if (l2 > FP_TOLERANCE)
+      if (l2 > MEOS_GEOM_TOLERANCE)
       {
         const double k0 = w0x * uy - w0y * ux;
         const double k1 = rx * uy - ry * ux;
-        if (fabs(k1) > FP_TOLERANCE)
+        if (fabs(k1) > MEOS_GEOM_TOLERANCE)
         {
           const double off = dist * sqrt(l2);
           add_within_root((off - k0) / k1, ev);
@@ -1796,7 +1796,7 @@ intervals_within_edges(const POINT2D *a, const POINT2D *b, Edge **sel_edges,
   int newcount = 0;
   double *ev = (double *) events->elems;
   for (int i = 0; i < (int) events->count; i++)
-    if (i == 0 || fabs(ev[i] - ev[newcount - 1]) > FP_TOLERANCE)
+    if (i == 0 || fabs(ev[i] - ev[newcount - 1]) > MEOS_GEOM_TOLERANCE)
       ev[newcount++] = ev[i];
   events->count = newcount;
 
@@ -1804,7 +1804,7 @@ intervals_within_edges(const POINT2D *a, const POINT2D *b, Edge **sel_edges,
   for (int i = 0; i < (int) events->count - 1; i++)
   {
     const double ta = ev[i], tb = ev[i + 1];
-    if (tb - ta <= FP_TOLERANCE)
+    if (tb - ta <= MEOS_GEOM_TOLERANCE)
       continue;
     const double tm = 0.5 * (ta + tb);
     const double x = ax + tm * rx, y = ay + tm * ry;
@@ -1940,14 +1940,14 @@ tpointseq_dwithin_edges(const TSequence *seq, Edge **edges, int nedges,
       Span s;
       double lower = DatumGetFloat8(intervarr[j].lower);
       double upper = DatumGetFloat8(intervarr[j].upper);
-      if (fabs(upper - lower) < FP_TOLERANCE)
+      if (fabs(upper - lower) < MEOS_GEOM_TOLERANCE)
       {
         /* Remove within points on exclusive lower and upper bounds */
-        if (! lower_inc && fabs(lower) < FP_TOLERANCE &&
-            fabs(upper) < FP_TOLERANCE)
+        if (! lower_inc && fabs(lower) < MEOS_GEOM_TOLERANCE &&
+            fabs(upper) < MEOS_GEOM_TOLERANCE)
           continue;
-        if (! upper_inc && fabs(lower - 1.0) < FP_TOLERANCE &&
-            fabs(upper - 1.0) < FP_TOLERANCE)
+        if (! upper_inc && fabs(lower - 1.0) < MEOS_GEOM_TOLERANCE &&
+            fabs(upper - 1.0) < MEOS_GEOM_TOLERANCE)
           continue;
         TimestampTz t = (lower == 0.0) ?
           inst1->t : inst1->t + (TimestampTz) (duration * lower);
@@ -2161,7 +2161,7 @@ point_geom_dist(double px, double py, Edge **edges, int nedges)
       best = d2;
   }
   /* On (or numerically on) the boundary: distance is zero */
-  if (best <= FP_TOLERANCE)
+  if (best <= MEOS_GEOM_TOLERANCE)
     return 0.0;
   /* Strictly inside a filled polygon: distance is zero. The horizontal-ray
    * even-odd test of #point_in_polygon miscounts when the query height aligns
@@ -2196,7 +2196,7 @@ distance_cands_from_edge(double ax, double ay, double rx, double ry,
 {
   const double A = rx * rx + ry * ry;
   /* Constant (zero-length) trajectory segment: no interior turning point */
-  if (A < FP_TOLERANCE)
+  if (A < MEOS_GEOM_TOLERANCE)
     return;
   switch (e->etype)
   {
@@ -2216,15 +2216,15 @@ distance_cands_from_edge(double ax, double ay, double rx, double ry,
       add_within_root(-(w1x * rx + w1y * ry) / A, ev);
       const double ux = e->x2 - e->x1, uy = e->y2 - e->y1;
       const double l2 = ux * ux + uy * uy;
-      if (l2 > FP_TOLERANCE)
+      if (l2 > MEOS_GEOM_TOLERANCE)
       {
         /* Perpendicular-foot time (moving point on the supporting line) */
         const double k1 = rx * uy - ry * ux;
-        if (fabs(k1) > FP_TOLERANCE)
+        if (fabs(k1) > MEOS_GEOM_TOLERANCE)
           add_within_root(-(w0x * uy - w0y * ux) / k1, ev);
         /* Foot-parameter region boundaries (s = 0 and s = 1) */
         const double ru = rx * ux + ry * uy;
-        if (fabs(ru) > FP_TOLERANCE)
+        if (fabs(ru) > MEOS_GEOM_TOLERANCE)
         {
           const double w0u = w0x * ux + w0y * uy;
           add_within_root(-w0u / ru, ev);
@@ -2254,11 +2254,11 @@ distance_cands_from_edge(double ax, double ay, double rx, double ry,
        * arc endpoints) */
       const double d0x = e->x1 - e->cx, d0y = e->y1 - e->cy;
       const double den0 = rx * d0y - ry * d0x;
-      if (fabs(den0) > FP_TOLERANCE)
+      if (fabs(den0) > MEOS_GEOM_TOLERANCE)
         add_within_root(-(wx * d0y - wy * d0x) / den0, ev);
       const double d1x = e->x2 - e->cx, d1y = e->y2 - e->cy;
       const double den1 = rx * d1y - ry * d1x;
-      if (fabs(den1) > FP_TOLERANCE)
+      if (fabs(den1) > MEOS_GEOM_TOLERANCE)
         add_within_root(-(wx * d1y - wy * d1x) / den1, ev);
       return;
     }
@@ -2319,9 +2319,9 @@ tpointseq_distance_geom(const TSequence *seq, Edge **edges, int nedges)
     for (int k = 0; k < (int) events->count; k++)
     {
       const double p = ev[k];
-      if (p <= FP_TOLERANCE || p >= 1.0 - FP_TOLERANCE)
+      if (p <= MEOS_GEOM_TOLERANCE || p >= 1.0 - MEOS_GEOM_TOLERANCE)
         continue;
-      if (k > 0 && fabs(p - ev[k - 1]) < FP_TOLERANCE)
+      if (k > 0 && fabs(p - ev[k - 1]) < MEOS_GEOM_TOLERANCE)
         continue;
       TimestampTz t = inst1->t + (TimestampTz) (duration * p);
       /* Keep the instants strictly increasing and off the segment endpoints */

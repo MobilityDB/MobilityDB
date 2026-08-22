@@ -201,7 +201,7 @@ buffer_line_intersection(POINT2D p, double rx, double ry, POINT2D q,
 {
   assert(result);
   double denominator = buffer_cross(rx, ry, sx, sy);
-  if (fabs(denominator) <= FP_TOLERANCE)
+  if (fabs(denominator) <= MEOS_GEOM_TOLERANCE)
     return false;
   double qpx = q.x - p.x;
   double qpy = q.y - p.y;
@@ -237,7 +237,7 @@ buffer_make_arc(int32_t srid, double cx, double cy, double radius,
     sweep = angle_normalize(end_angle - start_angle);
   else
     sweep = angle_normalize(start_angle - end_angle);
-  if (sweep <= FP_TOLERANCE)
+  if (sweep <= MEOS_GEOM_TOLERANCE)
     return NULL;
 
   /* A CIRCSTRING arc is represented by three points.
@@ -269,7 +269,7 @@ static void
 buffer_add_segment(LWCOMPOUND *curve, int32_t srid, POINT2D p1, POINT2D p2)
 {
   assert(curve);
-  if (hypot(p2.x - p1.x, p2.y - p1.y) <= FP_TOLERANCE)
+  if (hypot(p2.x - p1.x, p2.y - p1.y) <= MEOS_GEOM_TOLERANCE)
     return;
   LWLINE *line = buffer_make_segment(srid, p1, p2);
   lwcompound_add_lwgeom(curve, lwline_as_lwgeom(line));
@@ -287,7 +287,7 @@ buffer_add_arc(LWCOMPOUND *curve, int32_t srid, double cx, double cy,
   double sweep = ccw ? 
     angle_normalize(end_angle - start_angle) :
     angle_normalize(start_angle - end_angle);
-  if (sweep <= FP_TOLERANCE)
+  if (sweep <= MEOS_GEOM_TOLERANCE)
     return;
 
   /* PostGIS circular strings use three points per arc and an individual
@@ -346,7 +346,7 @@ buffer_add_mitre_join(LWCOMPOUND *curve, int32_t srid, POINT2D vertex,
   double r2y = p2.y - vertex.y;
   double l1 = hypot(r1x, r1y);
   double l2 = hypot(r2x, r2y);
-  if (l1 <= FP_TOLERANCE || l2 <= FP_TOLERANCE)
+  if (l1 <= MEOS_GEOM_TOLERANCE || l2 <= MEOS_GEOM_TOLERANCE)
     return false;
   r1x /= l1;
   r1y /= l1;
@@ -356,7 +356,7 @@ buffer_add_mitre_join(LWCOMPOUND *curve, int32_t srid, POINT2D vertex,
   if (! buffer_line_intersection(p1, r1x, r1y, p2, r2x, r2y, &intersection))
     return false;
   double length = hypot(intersection.x - vertex.x, intersection.y - vertex.y);
-  if (length > radius * mitre_limit + FP_TOLERANCE)
+  if (length > radius * mitre_limit + MEOS_GEOM_TOLERANCE)
     return false;
   buffer_add_segment(curve, srid, p1, intersection);
   buffer_add_segment(curve, srid, intersection, p2);
@@ -1024,7 +1024,7 @@ buffer_boundary_intersection(const Edge *e1, const Edge *e2)
 static inline bool
 buffer_nodes_equal(double x1, double y1, double x2, double y2)
 {
-  return fabs(x1 - x2) <= FP_TOLERANCE && fabs(y1 - y2) <= FP_TOLERANCE;
+  return fabs(x1 - x2) <= MEOS_GEOM_TOLERANCE && fabs(y1 - y2) <= MEOS_GEOM_TOLERANCE;
 }
 
 /**
@@ -1085,11 +1085,11 @@ buffer_segment_parameter(const BufferPiece *piece, double x, double y)
   double dy = piece->y2 - piece->y1;
   if (fabs(dx) >= fabs(dy))
   {
-    if (fabs(dx) <= FP_TOLERANCE)
+    if (fabs(dx) <= MEOS_GEOM_TOLERANCE)
       return 0.0;
     return (x - piece->x1) / dx;
   }
-  if (fabs(dy) <= FP_TOLERANCE)
+  if (fabs(dy) <= MEOS_GEOM_TOLERANCE)
     return 0.0;
   return (y - piece->y1) / dy;
 }
@@ -1132,7 +1132,7 @@ buffer_boundary_representative_point(const LWGEOM *geom, double *x, double *y)
         sweep = angle_normalize(edge->theta1 - edge->theta0);
       else
         sweep = angle_normalize(edge->theta0 - edge->theta1);
-      if (sweep <= FP_TOLERANCE)
+      if (sweep <= MEOS_GEOM_TOLERANCE)
         continue;
       double theta;
       if (edge->ccw)
@@ -1163,10 +1163,10 @@ buffer_containment_epsilon(const LWGEOM *geom)
     double dx = box->xmax - box->xmin;
     double dy = box->ymax - box->ymin;
     double scale = fmax(dx, dy);
-    if (scale > FP_TOLERANCE)
-      return fmax(scale * MEOS_EPSILON, FP_TOLERANCE * 10.0);
+    if (scale > MEOS_GEOM_TOLERANCE)
+      return fmax(scale * MEOS_EPSILON, MEOS_GEOM_TOLERANCE * 10.0);
   }
-  return FP_TOLERANCE * 10.0;
+  return MEOS_GEOM_TOLERANCE * 10.0;
 }
 
 /**
@@ -1184,7 +1184,7 @@ buffer_edge_normals(const Edge *edge, double *nx, double *ny)
     double dx = edge->x2 - edge->x1;
     double dy = edge->y2 - edge->y1;
     double length = hypot(dx, dy);
-    if (length <= FP_TOLERANCE)
+    if (length <= MEOS_GEOM_TOLERANCE)
       return false;
     *nx = -dy / length;
     *ny = dx / length;
@@ -1199,7 +1199,7 @@ buffer_edge_normals(const Edge *edge, double *nx, double *ny)
       sweep = angle_normalize(edge->theta1 - edge->theta0);
     else
       sweep = angle_normalize(edge->theta0 - edge->theta1);
-    if (sweep <= FP_TOLERANCE)
+    if (sweep <= MEOS_GEOM_TOLERANCE)
       return false;
     double theta;
     if (edge->ccw)
@@ -1352,7 +1352,7 @@ buffer_node_tolerance(double x, double y)
    * never below the tolerance an exactly computed node is placed to */
   double scale = Max(fabs(x), fabs(y));
   double tol = 5.0e-8 * Max(scale, 1.0);
-  return Max(tol, MEOS_EDGE_TOLERANCE);
+  return Max(tol, MEOS_GEOM_TOLERANCE);
 }
 
 /**
@@ -1468,9 +1468,9 @@ buffer_collect_arc_arc_intersections(const Edge *e1, const Edge *e2,
   /* Concentric circles.
    * Coincident arcs are not split here. Their common endpoints are
    * already existing boundary nodes and will be handled separately. */
-  if (d < FP_TOLERANCE)
+  if (d < MEOS_GEOM_TOLERANCE)
   {
-    if (fabs(r1 - r2) > FP_TOLERANCE)
+    if (fabs(r1 - r2) > MEOS_GEOM_TOLERANCE)
       return;
 
     /* Same supporting circle. Add common endpoints. */
@@ -1494,7 +1494,7 @@ buffer_collect_arc_arc_intersections(const Edge *e1, const Edge *e2,
   }
 
   /* Circles that cannot intersect */
-  if (d > r1 + r2 + FP_TOLERANCE || d < fabs(r1 - r2) - FP_TOLERANCE)
+  if (d > r1 + r2 + MEOS_GEOM_TOLERANCE || d < fabs(r1 - r2) - MEOS_GEOM_TOLERANCE)
     return;
 
   /* Distance from the first centre to the radical-line foot */
@@ -1522,7 +1522,7 @@ buffer_collect_arc_arc_intersections(const Edge *e1, const Edge *e2,
     if (arc_contains_angle(e1, phi1) && arc_contains_angle(e2, phi2))
       buffer_add_intersection_point(points, x, y);
     /* Tangency gives only one point */
-    if (h <= FP_TOLERANCE)
+    if (h <= MEOS_GEOM_TOLERANCE)
       break;
   }
 }
@@ -1545,7 +1545,7 @@ buffer_angle_on_arc(double theta, double theta0, double theta1, bool ccw)
     sweep = angle_normalize(theta0 - theta1);
     delta = angle_normalize(theta0 - theta);
   }
-  return delta <= sweep + FP_TOLERANCE;
+  return delta <= sweep + MEOS_GEOM_TOLERANCE;
 }
 
 /**
@@ -1570,7 +1570,7 @@ buffer_point_on_arc(const BufferPiece *arc, double x, double y)
 static bool
 buffer_values_equal(double a, double b)
 {
-  return fabs(a - b) <= FP_TOLERANCE;
+  return fabs(a - b) <= MEOS_GEOM_TOLERANCE;
 }
 
 /**
@@ -1649,7 +1649,7 @@ buffer_arc_contains_angle(const BufferPiece *arc, double theta)
     position = buffer_normalize_angle(theta - start);
   else
     position = buffer_normalize_angle(start - theta);
-  return position <= sweep + FP_TOLERANCE;
+  return position <= sweep + MEOS_GEOM_TOLERANCE;
 }
 
 /**
@@ -1789,13 +1789,13 @@ buffer_piece_contains_point(const BufferPiece *piece, POINT2D *point)
     /* Collinearity test */
     double cross = buffer_cross(dx, dy, px, py);
     double scale = fmax(1.0, hypot(dx, dy) * hypot(px, py));
-    if (fabs(cross) > FP_TOLERANCE * scale)
+    if (fabs(cross) > MEOS_GEOM_TOLERANCE * scale)
       return false;
     /* Bounding-box test */
-    if (point->x < fmin(piece->x1, piece->x2) - FP_TOLERANCE ||
-        point->x > fmax(piece->x1, piece->x2) + FP_TOLERANCE ||
-        point->y < fmin(piece->y1, piece->y2) - FP_TOLERANCE ||
-        point->y > fmax(piece->y1, piece->y2) + FP_TOLERANCE)
+    if (point->x < fmin(piece->x1, piece->x2) - MEOS_GEOM_TOLERANCE ||
+        point->x > fmax(piece->x1, piece->x2) + MEOS_GEOM_TOLERANCE ||
+        point->y < fmin(piece->y1, piece->y2) - MEOS_GEOM_TOLERANCE ||
+        point->y > fmax(piece->y1, piece->y2) + MEOS_GEOM_TOLERANCE)
       return false;
     return true;
   }
@@ -1807,7 +1807,7 @@ buffer_piece_contains_point(const BufferPiece *piece, POINT2D *point)
     double distance = hypot(dx, dy);
     /* First check that the point is on the supporting circle */
     if (fabs(distance - piece->radius) >
-        FP_TOLERANCE * fmax(1.0, piece->radius))
+        MEOS_GEOM_TOLERANCE * fmax(1.0, piece->radius))
       return false;
     /* Then check that its angle lies within the finite arc */
     return buffer_point_on_arc(piece, point->x, point->y);
@@ -1851,7 +1851,7 @@ buffer_split_point_add(BufferSplitPoint *points, uint32_t *count,
   double tol = buffer_node_tolerance(point->x, point->y);
   for (uint32_t i = 0; i < *count; i++)
   {
-    if (fabs(points[i].parameter - parameter) <= FP_TOLERANCE ||
+    if (fabs(points[i].parameter - parameter) <= MEOS_GEOM_TOLERANCE ||
         (fabs(points[i].point.x - point->x) <= tol &&
          fabs(points[i].point.y - point->y) <= tol))
       return;
@@ -1887,7 +1887,7 @@ buffer_split_segment(const BufferPiece *piece, const MeosArray *intersections,
       continue;
     double parameter = buffer_segment_parameter(piece, point->x, point->y);
     /* Ignore nodes outside the segment due to numerical noise */
-    if (parameter < -FP_TOLERANCE || parameter > 1.0 + FP_TOLERANCE)
+    if (parameter < -MEOS_GEOM_TOLERANCE || parameter > 1.0 + MEOS_GEOM_TOLERANCE)
       continue;
     if (parameter < 0.0)
       parameter = 0.0;
@@ -1902,7 +1902,7 @@ buffer_split_segment(const BufferPiece *piece, const MeosArray *intersections,
   {
     POINT2D p1 = points[i].point;
     POINT2D p2 = points[i + 1].point;
-    if (hypot(p2.x - p1.x, p2.y - p1.y) <= FP_TOLERANCE)
+    if (hypot(p2.x - p1.x, p2.y - p1.y) <= MEOS_GEOM_TOLERANCE)
       continue;
     BufferPiece split;
     memset(&split, 0, sizeof(BufferPiece));
@@ -1940,7 +1940,7 @@ buffer_split_arc(const BufferPiece *piece, const MeosArray *intersections,
       continue;
     double parameter = buffer_arc_parameter(piece, point);
     /* Ignore nodes outside the finite arc */
-    if (parameter < -FP_TOLERANCE || parameter > sweep + FP_TOLERANCE)
+    if (parameter < -MEOS_GEOM_TOLERANCE || parameter > sweep + MEOS_GEOM_TOLERANCE)
       continue;
     if (parameter < 0.0)
       parameter = 0.0;
@@ -1964,7 +1964,7 @@ buffer_split_arc(const BufferPiece *piece, const MeosArray *intersections,
       theta_end = piece->theta1 - points[i + 1].parameter;
     }
     double sub_sweep = points[i + 1].parameter - points[i].parameter;
-    if (sub_sweep <= FP_TOLERANCE)
+    if (sub_sweep <= MEOS_GEOM_TOLERANCE)
       continue;
 
     /* Use the actual sorted intersection coordinates as endpoints.
@@ -2093,7 +2093,7 @@ buffer_piece_midpoint(const BufferPiece *piece, POINT2D *point)
   if (piece->type == BUFFER_ARC)
   {
     double sweep = buffer_arc_sweep(piece);
-    if (sweep <= FP_TOLERANCE)
+    if (sweep <= MEOS_GEOM_TOLERANCE)
       return false;
     double theta;
     if (piece->ccw)
@@ -2167,7 +2167,7 @@ buffer_piece_side_points(const BufferPiece *piece, double epsilon,
   else if (piece->type == BUFFER_ARC)
   {
     double sweep = buffer_arc_sweep(piece);
-    if (sweep <= FP_TOLERANCE)
+    if (sweep <= MEOS_GEOM_TOLERANCE)
       return false;
     double theta;
     if (piece->ccw)
@@ -2191,7 +2191,7 @@ buffer_piece_side_points(const BufferPiece *piece, double epsilon,
     return false;
   }
   double length = hypot(tx, ty);
-  if (length <= FP_TOLERANCE)
+  if (length <= MEOS_GEOM_TOLERANCE)
     return false;
   tx /= length;
   ty /= length;
@@ -2227,9 +2227,9 @@ buffer_piece_interior_side(const BufferPiece *piece, const LWGEOM *geom)
     scale = piece->radius;
   else
     scale = hypot(dx, dy);
-  if (scale <= FP_TOLERANCE)
+  if (scale <= MEOS_GEOM_TOLERANCE)
     scale = 1.0;
-  double epsilon = fmax(FP_TOLERANCE * 100.0, scale * 1.0e-8);
+  double epsilon = fmax(MEOS_GEOM_TOLERANCE * 100.0, scale * 1.0e-8);
   for (int attempt = 0; attempt < 4; attempt++)
   {
     POINT2D left, right;
@@ -2442,8 +2442,8 @@ buffer_select_union_boundary(const MeosArray *pieces_a, const LWGEOM *geom_b,
 static bool
 buffer_points_equal(POINT2D p1, POINT2D p2)
 {
-  return fabs(p1.x - p2.x) <= FP_TOLERANCE &&
-    fabs(p1.y - p2.y) <= FP_TOLERANCE;
+  return fabs(p1.x - p2.x) <= MEOS_GEOM_TOLERANCE &&
+    fabs(p1.y - p2.y) <= MEOS_GEOM_TOLERANCE;
 }
 
 /**
@@ -3123,7 +3123,7 @@ buffer_normalize_ring_orientation(BufferRingInfo *info, int32_t srid)
   assert(info); assert(info->ring); assert(info->pieces);
   double area =
     buffer_ring_signed_area(info->pieces);
-  if (fabs(area) <= FP_TOLERANCE)
+  if (fabs(area) <= MEOS_GEOM_TOLERANCE)
     return false;
   /* Even depth = shell = CCW
    * Odd depth  = hole  = CW */
@@ -3593,7 +3593,7 @@ buffer_ring(const POINTARRAY *source, double radius, bool outward_left,
     double dx = points[next].x - points[i].x;
     double dy = points[next].y - points[i].y;
     double len = hypot(dx, dy);
-    if (len <= FP_TOLERANCE)
+    if (len <= MEOS_GEOM_TOLERANCE)
     {
       pfree(points); pfree(nx); pfree(ny);
       return NULL;
@@ -3626,7 +3626,7 @@ buffer_ring(const POINTARRAY *source, double radius, bool outward_left,
     double turn = buffer_cross(in_dx, in_dy, out_dx, out_dy);
     /* The buffered side is convex at the vertex when the ring turns away
      * from it, which is a right turn when that side is the left one */
-    bool convex = outward_left ? turn < -FP_TOLERANCE : turn > FP_TOLERANCE;
+    bool convex = outward_left ? turn < -MEOS_GEOM_TOLERANCE : turn > MEOS_GEOM_TOLERANCE;
 
     POINT2D enter = incoming, leave = outgoing;
     bool bridge = false;
@@ -3648,8 +3648,8 @@ buffer_ring(const POINTARRAY *source, double radius, bool outward_left,
         double ux = crossing.x - points[i].x, uy = crossing.y - points[i].y;
         double back = -(ux * in_dx + uy * in_dy) / in_len;
         double ahead = (ux * out_dx + uy * out_dy) / out_len;
-        if (back > in_len + MEOS_EDGE_TOLERANCE ||
-            ahead > out_len + MEOS_EDGE_TOLERANCE)
+        if (back > in_len + MEOS_GEOM_TOLERANCE ||
+            ahead > out_len + MEOS_GEOM_TOLERANCE)
           bridge = true;
         else
           enter = leave = crossing;
@@ -3709,7 +3709,7 @@ buffer_offset_edge(const Edge *edge, double radius, bool left,
   if (edge->etype == EDGE_POLYSEG || edge->etype == EDGE_LINESEG)
   {
     double length = hypot(edge->x2 - edge->x1, edge->y2 - edge->y1);
-    if (length <= FP_TOLERANCE)
+    if (length <= MEOS_GEOM_TOLERANCE)
       return false;
     double nx = -(edge->y2 - edge->y1) / length;
     double ny =  (edge->x2 - edge->x1) / length;
@@ -3736,11 +3736,11 @@ buffer_offset_edge(const Edge *edge, double radius, bool left,
      * drops it; it is built rather than refused so that the ring it belongs
      * to is closed and the rest of it can be read */
     double half = 0.0;
-    if (r <= FP_TOLERANCE)
+    if (r <= MEOS_GEOM_TOLERANCE)
     {
       r = -r;
       half = M_PI;
-      if (r <= FP_TOLERANCE)
+      if (r <= MEOS_GEOM_TOLERANCE)
         return false;
     }
     piece->type = BUFFER_ARC;
@@ -3873,7 +3873,7 @@ buffer_pieces_meet(const BufferPiece *a, const BufferPiece *b, double vx,
     const BufferPiece *arc = a->type == BUFFER_SEGMENT ? b : a;
     double dx = line->x2 - line->x1, dy = line->y2 - line->y1;
     double length = hypot(dx, dy);
-    if (length <= FP_TOLERANCE)
+    if (length <= MEOS_GEOM_TOLERANCE)
       return false;
     dx /= length;
     dy /= length;
@@ -3881,7 +3881,7 @@ buffer_pieces_meet(const BufferPiece *a, const BufferPiece *b, double vx,
     double t = (arc->cx - line->x1) * dx + (arc->cy - line->y1) * dy;
     double px = line->x1 + t * dx, py = line->y1 + t * dy;
     double gap = hypot(arc->cx - px, arc->cy - py);
-    if (gap > arc->radius + FP_TOLERANCE)
+    if (gap > arc->radius + MEOS_GEOM_TOLERANCE)
       return false;
     double half = arc->radius * arc->radius - gap * gap;
     half = half > 0.0 ? sqrt(half) : 0.0;
@@ -3895,9 +3895,9 @@ buffer_pieces_meet(const BufferPiece *a, const BufferPiece *b, double vx,
   /* Two circular supports meet on their radical line */
   double dx = b->cx - a->cx, dy = b->cy - a->cy;
   double distance = hypot(dx, dy);
-  if (distance <= FP_TOLERANCE ||
-      distance > a->radius + b->radius + FP_TOLERANCE ||
-      distance < fabs(a->radius - b->radius) - FP_TOLERANCE)
+  if (distance <= MEOS_GEOM_TOLERANCE ||
+      distance > a->radius + b->radius + MEOS_GEOM_TOLERANCE ||
+      distance < fabs(a->radius - b->radius) - MEOS_GEOM_TOLERANCE)
     return false;
   double along = (distance * distance + a->radius * a->radius -
     b->radius * b->radius) / (2 * distance);
@@ -3928,10 +3928,10 @@ buffer_piece_holds(const BufferPiece *piece, double x, double y)
       atan2(y - piece->cy, x - piece->cx));
   double dx = piece->x2 - piece->x1, dy = piece->y2 - piece->y1;
   double length2 = dx * dx + dy * dy;
-  if (length2 <= FP_TOLERANCE)
+  if (length2 <= MEOS_GEOM_TOLERANCE)
     return true;
   double t = ((x - piece->x1) * dx + (y - piece->y1) * dy) / length2;
-  double tol = MEOS_EDGE_TOLERANCE / sqrt(length2);
+  double tol = MEOS_GEOM_TOLERANCE / sqrt(length2);
   return t >= -tol && t <= 1.0 + tol;
 }
 
@@ -3989,13 +3989,13 @@ buffer_offset_edges(const MeosArray *edges, double radius, bool left,
     double turn = buffer_cross(in_dx, in_dy, out_dx, out_dy);
     /* The buffered side is convex at the vertex when the chain turns away
      * from it, which is a right turn when that side is the left one */
-    if (left ? turn < -FP_TOLERANCE : turn > FP_TOLERANCE)
+    if (left ? turn < -MEOS_GEOM_TOLERANCE : turn > MEOS_GEOM_TOLERANCE)
     {
       join[i] = true;
       continue;
     }
     /* Tangent edges continue into each other */
-    if (fabs(turn) <= FP_TOLERANCE)
+    if (fabs(turn) <= MEOS_GEOM_TOLERANCE)
       continue;
     double x, y;
     if (! buffer_pieces_meet(&pieces[i], &pieces[next], e1->x2, e1->y2, &x, &y)
@@ -4260,7 +4260,7 @@ buffer_ring_resolve(const LWGEOM *raw, const MeosArray *edges, double radius,
    * the buffer rather than on its boundary. The distance is read at the
    * middle of the piece, which the splitting above leaves wholly on one side
    * of the question */
-  double tol = Max(MEOS_EDGE_TOLERANCE, radius * 1.0e-9);
+  double tol = Max(MEOS_GEOM_TOLERANCE, radius * 1.0e-9);
   MeosArray *keep = meos_array_create(sizeof(BufferPiece));
   for (int i = 0; i < meos_array_count(split); i++)
   {
@@ -4661,7 +4661,7 @@ meos_buffer_line_offset(const LWLINE *line, double radius,
   {
     if (nvalid == 0 ||
         hypot(points[i].x - points[nvalid - 1].x,
-              points[i].y - points[nvalid - 1].y) >  FP_TOLERANCE)
+              points[i].y - points[nvalid - 1].y) >  MEOS_GEOM_TOLERANCE)
     {
       points[nvalid++] = points[i];
     }
@@ -4777,7 +4777,7 @@ meos_buffer_line_offset(const LWLINE *line, double radius,
          ((mitre).y - points[i].y) * dy[(i) - 1]),                            \
         (((mitre).x - points[i].x) * dx[i] +                                  \
          ((mitre).y - points[i].y) * dy[i]))                                  \
-     <= Min(len[(i) - 1], len[i]) + MEOS_EDGE_TOLERANCE)
+     <= Min(len[(i) - 1], len[i]) + MEOS_GEOM_TOLERANCE)
 
   /* Construct the outer boundary as a compound curve */
   LWCOMPOUND *ring = lwcompound_construct_empty(srid, 0, 0);
@@ -4791,7 +4791,7 @@ meos_buffer_line_offset(const LWLINE *line, double radius,
     /* A left turn leaves the left side concave, so its offset segments cross
      * and the join belongs to the right side, and conversely */
     double turn = buffer_cross(dx[i - 1], dy[i - 1], dx[i], dy[i]);
-    if (turn < -FP_TOLERANCE || ! BUFFER_MITRE_ON_SEGMENTS(left[i], i))
+    if (turn < -MEOS_GEOM_TOLERANCE || ! BUFFER_MITRE_ON_SEGMENTS(left[i], i))
     {
       POINT2D p1 = buffer_point_offset(points[i].x, points[i].y, nx[i - 1],
         ny[i - 1], radius);
@@ -4836,7 +4836,7 @@ meos_buffer_line_offset(const LWLINE *line, double radius,
   for (int i = (int) npoints - 2; i > 0; i--)
   {
     double turn = buffer_cross(dx[i - 1], dy[i - 1], dx[i], dy[i]);
-    if (turn > FP_TOLERANCE || ! BUFFER_MITRE_ON_SEGMENTS(right[i], i))
+    if (turn > MEOS_GEOM_TOLERANCE || ! BUFFER_MITRE_ON_SEGMENTS(right[i], i))
     {
       POINT2D p1 = buffer_point_offset(points[i].x, points[i].y, -nx[i],
         -ny[i], radius);
@@ -4940,7 +4940,7 @@ meos_buffer_line_split(const LWLINE *line, double radius, JoinStyle join_style,
     getPoint4d_p(line->points, i, &point);
     if (nvalid == 0 ||
         hypot(point.x - points[nvalid - 1].x,
-              point.y - points[nvalid - 1].y) > FP_TOLERANCE)
+              point.y - points[nvalid - 1].y) > MEOS_GEOM_TOLERANCE)
     {
       points[nvalid].x = point.x;
       points[nvalid].y = point.y;
@@ -5147,7 +5147,7 @@ buffer_ring_encloses_no_area(const LWCOMPOUND *ring, int32_t srid)
   MeosArray *pieces = meos_array_create(sizeof(BufferPiece));
   LWGEOM *geom = lwcurvepoly_as_lwgeom(probe);
   bool result = ! buffer_pieces_from_geometry(geom, pieces) ||
-    fabs(buffer_ring_signed_area(pieces)) <= FP_TOLERANCE;
+    fabs(buffer_ring_signed_area(pieces)) <= MEOS_GEOM_TOLERANCE;
   meos_array_destroy(pieces);
   lwgeom_free(geom);
   return result;
@@ -5430,7 +5430,7 @@ buffer_areal_is_degenerate(const LWGEOM *geom)
   {
     const LWPOLY *poly = (const LWPOLY *) geom;
     return poly->nrings == 0 ||
-      fabs(buffer_ring_area(poly->rings[0])) <= FP_TOLERANCE;
+      fabs(buffer_ring_area(poly->rings[0])) <= MEOS_GEOM_TOLERANCE;
   }
   if (geom->type == MULTIPOLYGONTYPE)
   {

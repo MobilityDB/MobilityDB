@@ -45,6 +45,7 @@
 #include "temporal/spanset.h"
 #include "temporal/tnumber_mathfuncs.h"
 #include "temporal/type_util.h"
+#include "geo/geo_funcs.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tgeo_tempspatialrels.h"
 #include "geo/tspatial_parser.h"
@@ -179,7 +180,7 @@ tcbuffersegm_dwithin_turnpt(Datum start1, Datum end1, Datum start2, Datum end2,
   double duration = (double)(upper - lower);
 
   /* Tolerance threshold for floating-point comparison */
-  if (duration <= FP_TOLERANCE)
+  if (duration <= MEOS_GEOM_TOLERANCE)
   {
     *t1 = *t2 = 0;
     return 0;
@@ -207,16 +208,16 @@ tcbuffersegm_dwithin_turnpt(Datum start1, Datum end1, Datum start2, Datum end2,
 
   /* Linear case */
   double d1;
-  if (delta >= -FP_TOLERANCE)
+  if (delta >= -MEOS_GEOM_TOLERANCE)
   {
     double t_cand1, t_cand2;
-    if (a == 0 && fabs(b) >= FP_TOLERANCE)
+    if (a == 0 && fabs(b) >= MEOS_GEOM_TOLERANCE)
     {
       t_cand1 = -c / b;
-      if (t_cand1 >= -FP_TOLERANCE && t_cand1 <= duration + FP_TOLERANCE)
+      if (t_cand1 >= -MEOS_GEOM_TOLERANCE && t_cand1 <= duration + MEOS_GEOM_TOLERANCE)
       {
         d1 = tcbuffersegm_distance_at_time(dx0, dy0, vx, vy, r0, vr, t_cand1);
-        if (fabs(d1 - d) < FP_TOLERANCE) roots[nroots++] = t_cand1;
+        if (fabs(d1 - d) < MEOS_GEOM_TOLERANCE) roots[nroots++] = t_cand1;
       }
     }
     /* Quadratic case */
@@ -225,16 +226,16 @@ tcbuffersegm_dwithin_turnpt(Datum start1, Datum end1, Datum start2, Datum end2,
       double sqrt_delta = sqrt(fmax(0.0, delta));
       t_cand1 = (-b - sqrt_delta) / (2*a);
       t_cand2 = (-b + sqrt_delta) / (2*a);
-      if (t_cand1 >= -FP_TOLERANCE && t_cand1 <= duration + FP_TOLERANCE)
+      if (t_cand1 >= -MEOS_GEOM_TOLERANCE && t_cand1 <= duration + MEOS_GEOM_TOLERANCE)
       {
         d1 = tcbuffersegm_distance_at_time(dx0, dy0, vx, vy, r0, vr, t_cand1);
-        if (fabs(d1 - d) < FP_TOLERANCE) roots[nroots++] = t_cand1;
+        if (fabs(d1 - d) < MEOS_GEOM_TOLERANCE) roots[nroots++] = t_cand1;
       }
-      if (fabs(t_cand2 - t_cand1) > FP_TOLERANCE && t_cand2 >= -FP_TOLERANCE &&
-          t_cand2 <= duration + FP_TOLERANCE)
+      if (fabs(t_cand2 - t_cand1) > MEOS_GEOM_TOLERANCE && t_cand2 >= -MEOS_GEOM_TOLERANCE &&
+          t_cand2 <= duration + MEOS_GEOM_TOLERANCE)
       {
         d1 = tcbuffersegm_distance_at_time(dx0, dy0, vx, vy, r0, vr, t_cand2);
-        if (fabs(d1 - d) < FP_TOLERANCE) roots[nroots++] = t_cand2;
+        if (fabs(d1 - d) < MEOS_GEOM_TOLERANCE) roots[nroots++] = t_cand2;
       }
     }
   }
@@ -249,7 +250,7 @@ tcbuffersegm_dwithin_turnpt(Datum start1, Datum end1, Datum start2, Datum end2,
     TimestampTz t = lower + (TimestampTz) roots[i];
     if (t > lower && t < upper)
     {
-      if (nvalid == 0 || fabs(roots[i] - valid[nvalid - 1]) > FP_TOLERANCE)
+      if (nvalid == 0 || fabs(roots[i] - valid[nvalid - 1]) > MEOS_GEOM_TOLERANCE)
         valid[nvalid++] = roots[i];
     }
   }
@@ -304,7 +305,7 @@ tcbuffersegm_tdwithin_turnpt(Datum start1, Datum end1, Datum start2,
   const POINT2D *spt2 = cbuffer_point2d_p(sv2);
   const POINT2D *ept2 = cbuffer_point2d_p(ev2);
   double duration = (double) (upper - lower);
-  if (duration <= FP_TOLERANCE)
+  if (duration <= MEOS_GEOM_TOLERANCE)
   {
     *t1 = *t2 = 0;
     return 0;
@@ -322,16 +323,16 @@ tcbuffersegm_tdwithin_turnpt(Datum start1, Datum end1, Datum start2,
   double delta = b * b - 4 * a * c;
   double roots[2];
   int nroots = 0;
-  if (delta >= -FP_TOLERANCE)
+  if (delta >= -MEOS_GEOM_TOLERANCE)
   {
     double t_cand1, d1;
-    if (a == 0 && fabs(b) >= FP_TOLERANCE)
+    if (a == 0 && fabs(b) >= MEOS_GEOM_TOLERANCE)
     {
       t_cand1 = -c / b;
-      if (t_cand1 >= -FP_TOLERANCE && t_cand1 <= duration + FP_TOLERANCE)
+      if (t_cand1 >= -MEOS_GEOM_TOLERANCE && t_cand1 <= duration + MEOS_GEOM_TOLERANCE)
       {
         d1 = tcbuffersegm_distance_at_time(dx0, dy0, vx, vy, r0, vr, t_cand1);
-        if (fabs(d1 - d) < FP_TOLERANCE) roots[nroots++] = t_cand1;
+        if (fabs(d1 - d) < MEOS_GEOM_TOLERANCE) roots[nroots++] = t_cand1;
       }
     }
     else
@@ -339,16 +340,16 @@ tcbuffersegm_tdwithin_turnpt(Datum start1, Datum end1, Datum start2,
       double sqrt_delta = sqrt(fmax(0.0, delta));
       t_cand1 = (-b - sqrt_delta) / (2 * a);
       double t_cand2 = (-b + sqrt_delta) / (2 * a);
-      if (t_cand1 >= -FP_TOLERANCE && t_cand1 <= duration + FP_TOLERANCE)
+      if (t_cand1 >= -MEOS_GEOM_TOLERANCE && t_cand1 <= duration + MEOS_GEOM_TOLERANCE)
       {
         d1 = tcbuffersegm_distance_at_time(dx0, dy0, vx, vy, r0, vr, t_cand1);
-        if (fabs(d1 - d) < FP_TOLERANCE) roots[nroots++] = t_cand1;
+        if (fabs(d1 - d) < MEOS_GEOM_TOLERANCE) roots[nroots++] = t_cand1;
       }
-      if (fabs(t_cand2 - t_cand1) > FP_TOLERANCE && t_cand2 >= -FP_TOLERANCE &&
-          t_cand2 <= duration + FP_TOLERANCE)
+      if (fabs(t_cand2 - t_cand1) > MEOS_GEOM_TOLERANCE && t_cand2 >= -MEOS_GEOM_TOLERANCE &&
+          t_cand2 <= duration + MEOS_GEOM_TOLERANCE)
       {
         d1 = tcbuffersegm_distance_at_time(dx0, dy0, vx, vy, r0, vr, t_cand2);
-        if (fabs(d1 - d) < FP_TOLERANCE) roots[nroots++] = t_cand2;
+        if (fabs(d1 - d) < MEOS_GEOM_TOLERANCE) roots[nroots++] = t_cand2;
       }
     }
   }
@@ -358,9 +359,9 @@ tcbuffersegm_tdwithin_turnpt(Datum start1, Datum end1, Datum start2,
   }
   /* Within status at the two segment endpoints */
   bool win_lower = (tcbuffersegm_distance_at_time(dx0, dy0, vx, vy, r0, vr,
-    0.0) <= d + FP_TOLERANCE);
+    0.0) <= d + MEOS_GEOM_TOLERANCE);
   bool win_upper = (tcbuffersegm_distance_at_time(dx0, dy0, vx, vy, r0, vr,
-    duration) <= d + FP_TOLERANCE);
+    duration) <= d + MEOS_GEOM_TOLERANCE);
   double tstart, tend;
   if (nroots == 0)
   {
@@ -395,7 +396,7 @@ tcbuffersegm_tdwithin_turnpt(Datum start1, Datum end1, Datum start2,
     /* Two crossings: within between them */
     tstart = roots[0]; tend = roots[1];
   }
-  if (tend - tstart < FP_TOLERANCE)
+  if (tend - tstart < MEOS_GEOM_TOLERANCE)
   {
     *t1 = *t2 = lower + (TimestampTz) tstart;
     return 1;
@@ -442,7 +443,7 @@ tcbuffersegm_contains_turnpt(Datum start1, Datum end1, Datum start2,
   const POINT2D *spt2 = cbuffer_point2d_p(sv2);
   const POINT2D *ept2 = cbuffer_point2d_p(ev2);
   double duration = (double) (upper - lower);
-  if (duration <= FP_TOLERANCE)
+  if (duration <= MEOS_GEOM_TOLERANCE)
   {
     *t1 = *t2 = 0;
     return 0;
@@ -463,16 +464,16 @@ tcbuffersegm_contains_turnpt(Datum start1, Datum end1, Datum start2,
   double delta = b * b - 4 * a * c;
   double roots[2];
   int nroots = 0;
-  if (delta >= -FP_TOLERANCE)
+  if (delta >= -MEOS_GEOM_TOLERANCE)
   {
     double t_cand1, g1;
-    if (a == 0 && fabs(b) >= FP_TOLERANCE)
+    if (a == 0 && fabs(b) >= MEOS_GEOM_TOLERANCE)
     {
       t_cand1 = -c / b;
-      if (t_cand1 >= -FP_TOLERANCE && t_cand1 <= duration + FP_TOLERANCE)
+      if (t_cand1 >= -MEOS_GEOM_TOLERANCE && t_cand1 <= duration + MEOS_GEOM_TOLERANCE)
       {
         g1 = tcbuffersegm_distance_at_time(dx0, dy0, vx, vy, r0, vr, t_cand1);
-        if (fabs(g1) < FP_TOLERANCE) roots[nroots++] = t_cand1;
+        if (fabs(g1) < MEOS_GEOM_TOLERANCE) roots[nroots++] = t_cand1;
       }
     }
     else
@@ -480,16 +481,16 @@ tcbuffersegm_contains_turnpt(Datum start1, Datum end1, Datum start2,
       double sqrt_delta = sqrt(fmax(0.0, delta));
       t_cand1 = (-b - sqrt_delta) / (2 * a);
       double t_cand2 = (-b + sqrt_delta) / (2 * a);
-      if (t_cand1 >= -FP_TOLERANCE && t_cand1 <= duration + FP_TOLERANCE)
+      if (t_cand1 >= -MEOS_GEOM_TOLERANCE && t_cand1 <= duration + MEOS_GEOM_TOLERANCE)
       {
         g1 = tcbuffersegm_distance_at_time(dx0, dy0, vx, vy, r0, vr, t_cand1);
-        if (fabs(g1) < FP_TOLERANCE) roots[nroots++] = t_cand1;
+        if (fabs(g1) < MEOS_GEOM_TOLERANCE) roots[nroots++] = t_cand1;
       }
-      if (fabs(t_cand2 - t_cand1) > FP_TOLERANCE && t_cand2 >= -FP_TOLERANCE &&
-          t_cand2 <= duration + FP_TOLERANCE)
+      if (fabs(t_cand2 - t_cand1) > MEOS_GEOM_TOLERANCE && t_cand2 >= -MEOS_GEOM_TOLERANCE &&
+          t_cand2 <= duration + MEOS_GEOM_TOLERANCE)
       {
         g1 = tcbuffersegm_distance_at_time(dx0, dy0, vx, vy, r0, vr, t_cand2);
-        if (fabs(g1) < FP_TOLERANCE) roots[nroots++] = t_cand2;
+        if (fabs(g1) < MEOS_GEOM_TOLERANCE) roots[nroots++] = t_cand2;
       }
     }
   }
@@ -503,10 +504,10 @@ tcbuffersegm_contains_turnpt(Datum start1, Datum end1, Datum start2,
   double g_lower = tcbuffersegm_distance_at_time(dx0, dy0, vx, vy, r0, vr, 0.0);
   double g_upper = tcbuffersegm_distance_at_time(dx0, dy0, vx, vy, r0, vr,
     duration);
-  bool in_lower = is_strict ? (g_lower < - FP_TOLERANCE) :
-    (g_lower <= FP_TOLERANCE);
-  bool in_upper = is_strict ? (g_upper < - FP_TOLERANCE) :
-    (g_upper <= FP_TOLERANCE);
+  bool in_lower = is_strict ? (g_lower < - MEOS_GEOM_TOLERANCE) :
+    (g_lower <= MEOS_GEOM_TOLERANCE);
+  bool in_upper = is_strict ? (g_upper < - MEOS_GEOM_TOLERANCE) :
+    (g_upper <= MEOS_GEOM_TOLERANCE);
   double tstart, tend;
   if (nroots == 0)
   {
@@ -544,7 +545,7 @@ tcbuffersegm_contains_turnpt(Datum start1, Datum end1, Datum start2,
   {
     tstart = roots[0]; tend = roots[1];
   }
-  if (tend - tstart < FP_TOLERANCE)
+  if (tend - tstart < MEOS_GEOM_TOLERANCE)
   {
     *t1 = *t2 = lower + (TimestampTz) tstart;
     return 1;
@@ -593,7 +594,7 @@ tcbuffersegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
   /* Centres that keep their separation leave an affine gap, whose extrema are
    * the endpoints the caller already reads */
   double s = dx * dx + dy * dy;
-  if (s <= FP_TOLERANCE)
+  if (s <= MEOS_GEOM_TOLERANCE)
     return 0;
   double q = dx * dx0 + dy * dy0;
   double e = dx0 * dx0 + dy0 * dy0;

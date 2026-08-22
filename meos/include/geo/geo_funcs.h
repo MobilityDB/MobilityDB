@@ -68,13 +68,23 @@ typedef enum
 } EdgeType;
 
 /**
- * @brief Tolerance under which two coordinates of an edge are the same point
- * @details The edge kernels compare coordinates against this value. MEOS owns
- * it rather than reading the tolerance of a PostGIS internal header, which
- * two headers of that library define differently, so the value an edge kernel
- * compares against does not depend on the order a caller includes them in
+ * @brief Tolerance under which planar geometry reads two quantities as the same
+ * @details Coordinates, the parameter along a segment, a determinant and a
+ * duration are all compared against this value. MEOS owns it rather than
+ * reading the tolerance of a PostGIS internal header, which two headers of
+ * that library define differently, so what a kernel compares against does not
+ * depend on the order a caller includes them in. It carries the value
+ * `liblwgeom_internal.h` states for planar work.
+ * @note Distinct from `MEOS_EPSILON`, which reads two modelled quantities as
+ * equal at 1e-06 and is what the `MEOS_FP_*` comparisons are built on. That one
+ * is a fraction of a duration, bounded below by the microsecond a `TimestampTz`
+ * resolves, while this one is the rounding of coordinate arithmetic.
+ * @note `FP_TOLERANCE` survives where MEOS hands a tolerance to PostGIS or runs
+ * a copy of its code, so that those calls keep tracking the value PostGIS means
+ * -- including the smaller one `lwgeodetic.h` states for spherical work.
  */
-#define MEOS_EDGE_TOLERANCE 1e-12
+#define MEOS_GEOM_TOLERANCE 1e-12
+
 
 /**
  * @brief Structure keeping a geometry edge
@@ -160,7 +170,7 @@ geom_ring_is_convex(const POINTARRAY *pa)
     getPoint4d_p(pa, (i + 2) % n, &c);
     double turn = (b.x - a.x) * (c.y - b.y) - (b.y - a.y) * (c.x - b.x);
     /* The tolerance liblwgeom uses for a coordinate comparison */
-    if (fabs(turn) <= 1e-12)
+    if (fabs(turn) <= MEOS_GEOM_TOLERANCE)
       continue;
     int current = turn > 0.0 ? 1 : -1;
     if (sign == 0)
@@ -246,7 +256,7 @@ extern bool *pointarr_find_splits(const POINT2D **points, int npoints,
  * - 0 <= t0 <= 1
  * - 0 <= t1 <= 1
  * - t0 <= t1
- * - Overlap must satisfy: t1 - t0 > MEOS_EDGE_TOLERANCE
+ * - Overlap must satisfy: t1 - t0 > MEOS_GEOM_TOLERANCE
  * @param[in] ax,ay Coordinates of the first point defining the first segment
  * @param[in] rx,ry Vector AB
  * @param[in] cx,cy,dx,dy Coordinates of the points defining the second segment
@@ -269,17 +279,17 @@ linesegm_intersect(double ax, double ay, double rx, double ry,
   double rxs = rx * sy - ry * sx;
 
   /* Collinear / parallel */
-  if (fabs(rxs) < MEOS_EDGE_TOLERANCE)
+  if (fabs(rxs) < MEOS_GEOM_TOLERANCE)
   {
     /* Is point C aligned with segment AB? */
     double qpxr = qpx * ry - qpy * rx;
     /* If qpxr != 0: parallel, if qpxr == 0: collinear */
-    if (fabs(qpxr) > MEOS_EDGE_TOLERANCE)
+    if (fabs(qpxr) > MEOS_GEOM_TOLERANCE)
       return res;
 
     /* Collinear case */
     double r2 = rx * rx + ry * ry;
-    if (r2 < MEOS_EDGE_TOLERANCE)
+    if (r2 < MEOS_GEOM_TOLERANCE)
       return res;
 
     double t0 = (qpx * rx + qpy * ry) / r2;
@@ -295,7 +305,7 @@ linesegm_intersect(double ax, double ay, double rx, double ry,
     if (t0 < 0) t0 = 0;
     if (t1 > 1) t1 = 1;
 
-    if (fabs(t1 - t0) < MEOS_EDGE_TOLERANCE)
+    if (fabs(t1 - t0) < MEOS_GEOM_TOLERANCE)
     {
       res.type = INTERSECT_POINT;
       res.t0 = t0;
@@ -312,13 +322,13 @@ linesegm_intersect(double ax, double ay, double rx, double ry,
   double t = (qpx * sy - qpy * sx) / rxs;
   double u = (qpx * ry - qpy * rx) / rxs;
 
-  if (t < -MEOS_EDGE_TOLERANCE || t > 1 + MEOS_EDGE_TOLERANCE ||
-      u < -MEOS_EDGE_TOLERANCE || u > 1 + MEOS_EDGE_TOLERANCE)
+  if (t < -MEOS_GEOM_TOLERANCE || t > 1 + MEOS_GEOM_TOLERANCE ||
+      u < -MEOS_GEOM_TOLERANCE || u > 1 + MEOS_GEOM_TOLERANCE)
     return res;
 
   /* Clamp values */
-  if (fabs(t) < MEOS_EDGE_TOLERANCE) t = 0;
-  if (fabs(t - 1) < MEOS_EDGE_TOLERANCE) t = 1;
+  if (fabs(t) < MEOS_GEOM_TOLERANCE) t = 0;
+  if (fabs(t - 1) < MEOS_GEOM_TOLERANCE) t = 1;
 
   res.type = INTERSECT_POINT;
   res.t0 = t;
@@ -343,7 +353,7 @@ arc_contains_angle(const Edge *e, double phi)
   double off = e->ccw ?
     angle_normalize(phi - e->theta0) :
     angle_normalize(e->theta0 - phi);
-  return off <= sweep + MEOS_EDGE_TOLERANCE;
+  return off <= sweep + MEOS_GEOM_TOLERANCE;
 }
 
 /**
@@ -378,7 +388,7 @@ static inline bool
 point_on_arc(double px, double py, const Edge *e)
 {
   double d = hypot(px - e->cx, py - e->cy);
-  if (fabs(d - e->radius) > MEOS_EDGE_TOLERANCE)
+  if (fabs(d - e->radius) > MEOS_GEOM_TOLERANCE)
     return false;
   return arc_contains_angle(e, atan2(py - e->cy, px - e->cx));
 }
@@ -402,7 +412,7 @@ arcsegm_intersect(double ax, double ay, double rx, double ry, const Edge *e,
 {
   double aa = rx * rx + ry * ry;
   /* Degenerate (zero-length) trajectory segment */
-  if (aa < MEOS_EDGE_TOLERANCE)
+  if (aa < MEOS_GEOM_TOLERANCE)
     return 0;
 
   double wx = ax - e->cx, wy = ay - e->cy;
@@ -433,14 +443,14 @@ arcsegm_intersect(double ax, double ay, double rx, double ry, const Edge *e,
   int nroots = 0;
   roots[nroots++] = (-bb - sq) / (2 * aa);
   /* Distinct second root only when the line is not tangent */
-  if (sq > MEOS_EDGE_TOLERANCE)
+  if (sq > MEOS_GEOM_TOLERANCE)
     roots[nroots++] = (-bb + sq) / (2 * aa);
 
   int n = 0;
   for (int k = 0; k < nroots; k++)
   {
     double t = roots[k];
-    if (t < -MEOS_EDGE_TOLERANCE || t > 1 + MEOS_EDGE_TOLERANCE)
+    if (t < -MEOS_GEOM_TOLERANCE || t > 1 + MEOS_GEOM_TOLERANCE)
       continue;
     if (t < 0) t = 0;
     if (t > 1) t = 1;
@@ -469,9 +479,9 @@ arcarc_intersect(const Edge *e1, const Edge *e2)
   double r1 = e1->radius, r2 = e2->radius;
 
   /* Concentric supporting circles */
-  if (d < MEOS_EDGE_TOLERANCE)
+  if (d < MEOS_GEOM_TOLERANCE)
   {
-    if (fabs(r1 - r2) > MEOS_EDGE_TOLERANCE)
+    if (fabs(r1 - r2) > MEOS_GEOM_TOLERANCE)
       return false;
     /* Same circle: the arcs meet iff their spans share an endpoint angle */
     return arc_contains_angle(e2, e1->theta0) ||
@@ -480,7 +490,7 @@ arcarc_intersect(const Edge *e1, const Edge *e2)
       arc_contains_angle(e1, e2->theta1);
   }
   /* Circles too far apart or one strictly inside the other */
-  if (d > r1 + r2 + MEOS_EDGE_TOLERANCE || d < fabs(r1 - r2) - MEOS_EDGE_TOLERANCE)
+  if (d > r1 + r2 + MEOS_GEOM_TOLERANCE || d < fabs(r1 - r2) - MEOS_GEOM_TOLERANCE)
     return false;
 
   double a = (d * d + r1 * r1 - r2 * r2) / (2 * d);
@@ -500,7 +510,7 @@ arcarc_intersect(const Edge *e1, const Edge *e2)
         arc_contains_angle(e2, atan2(py - e2->cy, px - e2->cx)))
       return true;
     /* A tangency has a single candidate point */
-    if (h < MEOS_EDGE_TOLERANCE)
+    if (h < MEOS_GEOM_TOLERANCE)
       break;
   }
   return false;
@@ -526,25 +536,25 @@ point_on_segment(double px, double py, double x1, double y1, double x2,
   double aby = y2 - y1;
 
   /* Fast bounding-box rejection */
-  if ((px < fmin(x1, x2) - MEOS_EDGE_TOLERANCE) ||
-      (px > fmax(x1, x2) + MEOS_EDGE_TOLERANCE) ||
-      (py < fmin(y1, y2) - MEOS_EDGE_TOLERANCE) ||
-      (py > fmax(y1, y2) + MEOS_EDGE_TOLERANCE))
+  if ((px < fmin(x1, x2) - MEOS_GEOM_TOLERANCE) ||
+      (px > fmax(x1, x2) + MEOS_GEOM_TOLERANCE) ||
+      (py < fmin(y1, y2) - MEOS_GEOM_TOLERANCE) ||
+      (py > fmax(y1, y2) + MEOS_GEOM_TOLERANCE))
     return false;
 
   /* Collinearity check via cross product */
   double cross = apx * aby - apy * abx;
-  if (fabs(cross) > MEOS_EDGE_TOLERANCE)
+  if (fabs(cross) > MEOS_GEOM_TOLERANCE)
     return false;
 
   /* Projection check via dot product */
   double dot = apx * abx + apy * aby;
-  if (dot < -MEOS_EDGE_TOLERANCE)
+  if (dot < -MEOS_GEOM_TOLERANCE)
     return false;
 
   /* Check if P lies between A and B */
   double ab2 = abx * abx + aby * aby;
-  if (dot > ab2 + MEOS_EDGE_TOLERANCE)
+  if (dot > ab2 + MEOS_GEOM_TOLERANCE)
     return false;
   return true;
 }

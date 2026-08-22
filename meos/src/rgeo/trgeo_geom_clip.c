@@ -57,6 +57,7 @@
  * `doc/rfc/trgeo_geom_clip_design_m2.md` (M2) for derivations.
  */
 
+#include "geo/geo_funcs.h"
 #include "rgeo/trgeo_geom_clip.h"
 
 /* C */
@@ -77,9 +78,6 @@
  *****************************************************************************/
 
 /* Floating-point tolerance — matches the convention in tpoint_geom_clip.c */
-#ifndef FP_TOLERANCE
-#define FP_TOLERANCE 1e-12
-#endif
 
 /* M2: below this absolute angular delta (radians) we use a Taylor
  * closed-form solver; above it we fall back to numerical bisection. */
@@ -112,12 +110,12 @@ double_cmp(const void *a, const void *b)
 
 /**
  * @brief Append a critical t to an events buffer if it lies in [0, 1].
- * Tolerance-aware: out-of-range values within FP_TOLERANCE are clamped.
+ * Tolerance-aware: out-of-range values within MEOS_GEOM_TOLERANCE are clamped.
  */
 static inline void
 push_event(double t, double *events, int *nevents, int cap)
 {
-  if (t < -FP_TOLERANCE || t > 1.0 + FP_TOLERANCE)
+  if (t < -MEOS_GEOM_TOLERANCE || t > 1.0 + MEOS_GEOM_TOLERANCE)
     return;
   if (t < 0.0) t = 0.0;
   if (t > 1.0) t = 1.0;
@@ -137,21 +135,21 @@ segments_intersect(double sax, double say, double sbx, double sby,
   double sx = pbx - pax, sy = pby - pay;
   double rxs = rx * sy - ry * sx;
   double qpx = pax - sax, qpy = pay - say;
-  if (fabs(rxs) < FP_TOLERANCE)
+  if (fabs(rxs) < MEOS_GEOM_TOLERANCE)
   {
     double qpxr = qpx * ry - qpy * rx;
-    if (fabs(qpxr) > FP_TOLERANCE) return false;
+    if (fabs(qpxr) > MEOS_GEOM_TOLERANCE) return false;
     double r2 = rx * rx + ry * ry;
-    if (r2 < FP_TOLERANCE) return false;
+    if (r2 < MEOS_GEOM_TOLERANCE) return false;
     double t0 = (qpx * rx + qpy * ry) / r2;
     double t1 = t0 + (sx * rx + sy * ry) / r2;
     if (t0 > t1) { double tmp = t0; t0 = t1; t1 = tmp; }
-    return (t1 >= -FP_TOLERANCE && t0 <= 1.0 + FP_TOLERANCE);
+    return (t1 >= -MEOS_GEOM_TOLERANCE && t0 <= 1.0 + MEOS_GEOM_TOLERANCE);
   }
   double t = (qpx * sy - qpy * sx) / rxs;
   double u = (qpx * ry - qpy * rx) / rxs;
-  return (t >= -FP_TOLERANCE && t <= 1.0 + FP_TOLERANCE &&
-          u >= -FP_TOLERANCE && u <= 1.0 + FP_TOLERANCE);
+  return (t >= -MEOS_GEOM_TOLERANCE && t <= 1.0 + MEOS_GEOM_TOLERANCE &&
+          u >= -MEOS_GEOM_TOLERANCE && u <= 1.0 + MEOS_GEOM_TOLERANCE);
 }
 
 /**
@@ -203,7 +201,7 @@ segment_intersects_polygon(double sax, double say, double sbx, double sby,
 }
 
 /**
- * @brief Drop near-duplicate values within FP_TOLERANCE.
+ * @brief Drop near-duplicate values within MEOS_GEOM_TOLERANCE.
  * Operates in place on the sorted `events` array.
  */
 static int
@@ -212,7 +210,7 @@ dedup_sorted(double *events, int n)
   int nuniq = 0;
   for (int k = 0; k < n; k++)
   {
-    if (nuniq == 0 || fabs(events[k] - events[nuniq - 1]) > FP_TOLERANCE)
+    if (nuniq == 0 || fabs(events[k] - events[nuniq - 1]) > MEOS_GEOM_TOLERANCE)
       events[nuniq++] = events[k];
   }
   return nuniq;
@@ -239,13 +237,13 @@ walk_events_and_emit(const double *events, int nuniq,
   {
     double t_a = events[k];
     double t_b = events[k + 1];
-    if (t_b - t_a <= FP_TOLERANCE)
+    if (t_b - t_a <= MEOS_GEOM_TOLERANCE)
       continue;
     double t_m = 0.5 * (t_a + t_b);
     if (intersects(t_m, ctx))
     {
       if (nout > 0 &&
-          fabs(DatumGetFloat8(out[nout - 1].upper) - t_a) <= FP_TOLERANCE)
+          fabs(DatumGetFloat8(out[nout - 1].upper) - t_a) <= MEOS_GEOM_TOLERANCE)
         out[nout - 1].upper = Float8GetDatum(t_b);
       else
       {
@@ -281,13 +279,13 @@ solve_m1_endpoint_on_edge(double ax, double ay, double dxd, double dyd,
   double ex = px2 - px1;
   double ey = py2 - py1;
   double det = -ex * dyd + dxd * ey;
-  if (fabs(det) < FP_TOLERANCE)
+  if (fabs(det) < MEOS_GEOM_TOLERANCE)
     return false;
   double rhs_x = px1 - ax;
   double rhs_y = py1 - ay;
   double s = (rhs_x * dyd - dxd * rhs_y) / det;
   double t = (-ex * rhs_y + rhs_x * ey) / det;
-  if (s < -FP_TOLERANCE || s > 1.0 + FP_TOLERANCE)
+  if (s < -MEOS_GEOM_TOLERANCE || s > 1.0 + MEOS_GEOM_TOLERANCE)
     return false;
   *t_out = t;
   return true;
@@ -305,13 +303,13 @@ solve_m1_p_on_movingedge(double px, double py,
   double ux = b1x - a1x;
   double uy = b1y - a1y;
   double det = ux * dyd - dxd * uy;
-  if (fabs(det) < FP_TOLERANCE)
+  if (fabs(det) < MEOS_GEOM_TOLERANCE)
     return false;
   double rhs_x = px - a1x;
   double rhs_y = py - a1y;
   double u = (rhs_x * dyd - dxd * rhs_y) / det;
   double t = (ux * rhs_y - rhs_x * uy) / det;
-  if (u < -FP_TOLERANCE || u > 1.0 + FP_TOLERANCE)
+  if (u < -MEOS_GEOM_TOLERANCE || u > 1.0 + MEOS_GEOM_TOLERANCE)
     return false;
   *t_out = t;
   return true;
@@ -348,8 +346,8 @@ trgeo_geom_clip_polygon(const POINT2D *a1, const POINT2D *b1,
   double dyd_a = a2->y - a1->y;
   double dxd_b = b2->x - b1->x;
   double dyd_b = b2->y - b1->y;
-  if (fabs(dxd_a - dxd_b) > FP_TOLERANCE ||
-      fabs(dyd_a - dyd_b) > FP_TOLERANCE)
+  if (fabs(dxd_a - dxd_b) > MEOS_GEOM_TOLERANCE ||
+      fabs(dyd_a - dyd_b) > MEOS_GEOM_TOLERANCE)
     return -1;
   double dxd = dxd_a, dyd = dyd_a;
 
@@ -564,7 +562,7 @@ solve_m2_numerical(residual_fn f, void *state, double *roots, int max_roots)
   {
     double cur_t = (double) i / TRGEO_GEOM_CLIP_BISECT_BINS;
     double cur_v = f(cur_t, state);
-    if (fabs(cur_v) < FP_TOLERANCE)
+    if (fabs(cur_v) < MEOS_GEOM_TOLERANCE)
     {
       roots[n++] = cur_t;
       prev_t = cur_t;
@@ -579,7 +577,7 @@ solve_m2_numerical(residual_fn f, void *state, double *roots, int max_roots)
       {
         double m = 0.5 * (a + b);
         double fm = f(m, state);
-        if (fabs(fm) < FP_TOLERANCE) { a = b = m; break; }
+        if (fabs(fm) < MEOS_GEOM_TOLERANCE) { a = b = m; break; }
         if ((fa < 0 && fm > 0) || (fa > 0 && fm < 0))
           b = m;
         else { a = m; fa = fm; }
@@ -617,10 +615,10 @@ solve_m2_taylor_endpoint_on_edge(const EndpointEdgeState *s, double *root)
   double ery = s->e2y - s->e1y;
   double a0 = (ex0 - s->e1x) * ery - (ey0 - s->e1y) * erx;
   double a1 = ex_slope * ery - ey_slope * erx;
-  if (fabs(a1) < FP_TOLERANCE)
+  if (fabs(a1) < MEOS_GEOM_TOLERANCE)
     return 0;
   double t = -a0 / a1;
-  if (t < -FP_TOLERANCE || t > 1.0 + FP_TOLERANCE)
+  if (t < -MEOS_GEOM_TOLERANCE || t > 1.0 + MEOS_GEOM_TOLERANCE)
     return 0;
   if (t < 0.0) t = 0.0;
   if (t > 1.0) t = 1.0;
@@ -663,7 +661,7 @@ trgeo_geom_clip_polygon_posed(const POINT2D *p_a_local,
     return -1;
 
   /* Pure-translation fast path: delegate to M1. */
-  if (fabs(th2 - th1) < FP_TOLERANCE)
+  if (fabs(th2 - th1) < MEOS_GEOM_TOLERANCE)
   {
     POINT2D a1, b1, a2, b2;
     double c1 = cos(th1), si1 = sin(th1);

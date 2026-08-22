@@ -43,6 +43,7 @@
 #include "temporal/tinstant.h"
 #include "temporal/tsequence.h"
 #include "temporal/tsequenceset.h"
+#include "geo/geo_funcs.h"
 #include "geo/stbox.h"
 #include "geo/tgeo.h"
 #include "geo/tgeo_distance.h"
@@ -1546,7 +1547,7 @@ tcbufferseg_sg_roots(const Cbuffer *cb1, const Cbuffer *cb2,
   for (int i = 0; i < nc && nout < maxout; i++)
   {
     double t = cand[i];
-    if (t <= 0.0 || t >= 1.0 || (nout > 0 && t - last <= 1e-12))
+    if (t <= 0.0 || t >= 1.0 || (nout > 0 && t - last <= MEOS_GEOM_TOLERANCE))
       continue;
     double cx = cx1 + (cx2 - cx1) * t, cy = cy1 + (cy2 - cy1) * t;
     double r = r1 + (r2 - r1) * t;
@@ -1614,7 +1615,7 @@ tcbuffer_disc_seg_roots(const Cbuffer *cb1, const Cbuffer *cb2,
   double A = a - s * s, B = b - 2 * m * s, C = c - m * m;
   double cand[2];
   int ncand = 0;
-  if (fabs(A) > 1e-12)
+  if (fabs(A) > MEOS_GEOM_TOLERANCE)
   {
     double disc = B * B - 4 * A * C;
     if (disc >= 0)
@@ -1624,7 +1625,7 @@ tcbuffer_disc_seg_roots(const Cbuffer *cb1, const Cbuffer *cb2,
       cand[ncand++] = (-B + sq) / (2 * A);
     }
   }
-  else if (fabs(B) > 1e-12)
+  else if (fabs(B) > MEOS_GEOM_TOLERANCE)
     cand[ncand++] = -C / B;
   int n = 0;
   for (int i = 0; i < ncand && n < maxout; i++)

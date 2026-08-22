@@ -199,8 +199,8 @@ emit_arc_edge(const POINT4D *pa, const POINT4D *pb, const POINT4D *pc,
    * cannot be read from them. The middle point is the one opposite, and the
    * two points split the circle into the two half circles the arcs of an edge
    * hold exactly. This is the shape #lwcircle_make gives a circle */
-  if (fabs(ax - cx) <= FP_TOLERANCE && fabs(ay - cy) <= FP_TOLERANCE &&
-      (fabs(ax - bx) > FP_TOLERANCE || fabs(ay - by) > FP_TOLERANCE))
+  if (fabs(ax - cx) <= MEOS_GEOM_TOLERANCE && fabs(ay - cy) <= MEOS_GEOM_TOLERANCE &&
+      (fabs(ax - bx) > MEOS_GEOM_TOLERANCE || fabs(ay - by) > MEOS_GEOM_TOLERANCE))
   {
     double mx = (ax + bx) / 2, my = (ay + by) / 2;
     double radius = hypot(ax - mx, ay - my);
@@ -228,7 +228,7 @@ emit_arc_edge(const POINT4D *pa, const POINT4D *pb, const POINT4D *pc,
   }
 
   /* Collinear points: emit straight line edges */
-  if (fabs(d) < FP_TOLERANCE)
+  if (fabs(d) < MEOS_GEOM_TOLERANCE)
   {
     const double px[3] = {ax, bx, cx}, py[3] = {ay, by, cy};
     for (int i = 0; i < 2; i++)
@@ -912,7 +912,7 @@ add_edge_points(const Edge *e, POINT2D *points, uint32_t *npoints)
 {
   assert(e); assert(points); assert(npoints);
   add_point(points, npoints, e->x1, e->y1);
-  if (fabs(e->x2 - e->x1) > FP_TOLERANCE || fabs(e->y2 - e->y1) > FP_TOLERANCE)
+  if (fabs(e->x2 - e->x1) > MEOS_GEOM_TOLERANCE || fabs(e->y2 - e->y1) > MEOS_GEOM_TOLERANCE)
     add_point(points, npoints, e->x2, e->y2);
 }
 
@@ -1230,7 +1230,7 @@ hull_arc_holds(const HullFeature *f, double phi)
   double off = f->ccw ?
     angle_normalize(phi - f->theta0) :
     angle_normalize(f->theta0 - phi);
-  return off <= sweep + MEOS_EDGE_TOLERANCE;
+  return off <= sweep + MEOS_GEOM_TOLERANCE;
 }
 
 /**
@@ -1325,7 +1325,7 @@ hull_directions(const HullFeature *feats, int nfeats, double **result)
       double c = (feats[j].is_arc ? feats[j].radius : 0.0) -
         (feats[i].is_arc ? feats[i].radius : 0.0);
       double h = hypot(a, b);
-      if (h <= MEOS_EDGE_TOLERANCE || fabs(c) > h)
+      if (h <= MEOS_GEOM_TOLERANCE || fabs(c) > h)
         continue;
       double ratio = c / h;
       /* The end of an arc lies on its own circle, so the two features reach
@@ -1334,8 +1334,8 @@ hull_directions(const HullFeature *feats, int nfeats, double **result)
        * moves it far enough to leave a sliver between the arc and the point
        * that ends it, so the ratio is read as the one it is */
       double base = atan2(b, a);
-      double off = (ratio >= 1.0 - MEOS_EDGE_TOLERANCE) ? 0.0 :
-        ((ratio <= -1.0 + MEOS_EDGE_TOLERANCE) ? M_PI : acos(ratio));
+      double off = (ratio >= 1.0 - MEOS_GEOM_TOLERANCE) ? 0.0 :
+        ((ratio <= -1.0 + MEOS_GEOM_TOLERANCE) ? M_PI : acos(ratio));
       hull_add_direction(base + off, dirs, &ndirs);
       hull_add_direction(base - off, dirs, &ndirs);
     }
@@ -1346,7 +1346,7 @@ hull_directions(const HullFeature *feats, int nfeats, double **result)
   /* Remove the directions that repeat the one before them */
   int nuniq = 0;
   for (int i = 0; i < ndirs; i++)
-    if (nuniq == 0 || dirs[i] - dirs[nuniq - 1] > MEOS_EDGE_TOLERANCE)
+    if (nuniq == 0 || dirs[i] - dirs[nuniq - 1] > MEOS_GEOM_TOLERANCE)
       dirs[nuniq++] = dirs[i];
   *result = dirs;
   return nuniq;
@@ -1428,8 +1428,8 @@ hull_snap_to_vertex(const HullFeature *feats, int nfeats, double *x, double *y)
 {
   for (int i = 0; i < nfeats; i++)
     if (! feats[i].is_arc &&
-        fabs(feats[i].x - *x) <= MEOS_EDGE_TOLERANCE &&
-        fabs(feats[i].y - *y) <= MEOS_EDGE_TOLERANCE)
+        fabs(feats[i].x - *x) <= MEOS_GEOM_TOLERANCE &&
+        fabs(feats[i].y - *y) <= MEOS_GEOM_TOLERANCE)
     {
       *x = feats[i].x;
       *y = feats[i].y;
@@ -1494,7 +1494,7 @@ hull_boundary(const HullFeature *feats, int nfeats, int *npieces)
     double a = dirs[idx];
     double b = dirs[(start + k + len) % ndirs];
     double sweep = angle_normalize(b - a);
-    if (sweep <= MEOS_EDGE_TOLERANCE)
+    if (sweep <= MEOS_GEOM_TOLERANCE)
       sweep = 2 * M_PI;
     const HullFeature *f = &feats[which[idx]];
     double sx, sy, ex, ey, mx = 0, my = 0;
@@ -1520,7 +1520,7 @@ hull_boundary(const HullFeature *feats, int nfeats, int *npieces)
       firstx = sx; firsty = sy;
       started = true;
     }
-    else if (hypot(sx - prevx, sy - prevy) > MEOS_EDGE_TOLERANCE)
+    else if (hypot(sx - prevx, sy - prevy) > MEOS_GEOM_TOLERANCE)
     {
       /* The segment joining the previous support to this one */
       result[n].x1 = prevx; result[n].y1 = prevy;
@@ -1535,7 +1535,7 @@ hull_boundary(const HullFeature *feats, int nfeats, int *npieces)
        * ways of naming one point */
       sx = prevx; sy = prevy;
     }
-    if (f->is_arc && hypot(ex - sx, ey - sy) > MEOS_EDGE_TOLERANCE)
+    if (f->is_arc && hypot(ex - sx, ey - sy) > MEOS_GEOM_TOLERANCE)
     {
       result[n].x1 = sx; result[n].y1 = sy;
       result[n].xm = mx; result[n].ym = my;
@@ -1550,7 +1550,7 @@ hull_boundary(const HullFeature *feats, int nfeats, int *npieces)
   /* Close the ring on the point it starts from */
   if (started && n > 0)
   {
-    if (hypot(firstx - prevx, firsty - prevy) > MEOS_EDGE_TOLERANCE)
+    if (hypot(firstx - prevx, firsty - prevy) > MEOS_GEOM_TOLERANCE)
     {
       result[n].x1 = prevx; result[n].y1 = prevy;
       result[n].x2 = firstx; result[n].y2 = firsty;
@@ -1749,7 +1749,7 @@ mrr_arc(const LWGEOM *geom, const MeosArray *edges)
       best_area = area;
       best_phi = cand[i];
     }
-    if (i + 1 >= ncand || cand[i + 1] - cand[i] <= MEOS_EDGE_TOLERANCE)
+    if (i + 1 >= ncand || cand[i + 1] - cand[i] <= MEOS_GEOM_TOLERANCE)
       continue;
     /* The stretch between two consecutive directions carries no change of
      * support, so the area is smooth over it and is searched by narrowing the
@@ -1780,7 +1780,7 @@ mrr_arc(const LWGEOM *geom, const MeosArray *edges)
      * hull is as wide every way, a circle being the plainest case, so a
      * direction the support changes in is kept over one the search lands on
      * unless it is genuinely smaller */
-    if (area < best_area - fabs(best_area) * 1e-12)
+    if (area < best_area - fabs(best_area) * MEOS_GEOM_TOLERANCE)
     {
       best_area = area;
       best_phi = phi;
@@ -1916,7 +1916,7 @@ meos_oriented_envelope(const LWGEOM *geom)
     const POINT2D *b = &hull[(i + 1) % nhull];
     double dx = b->x - a->x;
     double dy = b->y - a->y;
-    if (hypot(dx, dy) <= FP_TOLERANCE)
+    if (hypot(dx, dy) <= MEOS_GEOM_TOLERANCE)
       continue;
     double angle = atan2(dy, dx);
     angle = fmod(angle, M_PI);
@@ -3430,7 +3430,7 @@ relate_dimension(const LWGEOM *geom)
 static inline bool
 relate_same_point(double x1, double y1, double x2, double y2)
 {
-  return fabs(x1 - x2) <= MEOS_EDGE_TOLERANCE && fabs(y1 - y2) <= MEOS_EDGE_TOLERANCE;
+  return fabs(x1 - x2) <= MEOS_GEOM_TOLERANCE && fabs(y1 - y2) <= MEOS_GEOM_TOLERANCE;
 }
 
 /**
@@ -3865,7 +3865,7 @@ relate_arc_parameter(const Edge *e, double x, double y)
     sweep = angle_normalize(e->theta0 - e->theta1);
     off = angle_normalize(e->theta0 - phi);
   }
-  if (sweep < MEOS_EDGE_TOLERANCE)
+  if (sweep < MEOS_GEOM_TOLERANCE)
     return 0.0;
   double t = off / sweep;
   if (t < 0.0)
@@ -3906,7 +3906,7 @@ relate_edge_point(const Edge *e, double t, double *x, double *y)
 static void
 relate_add_parameter(double t, double *params, int *nparams, int maxparams)
 {
-  if (t < -MEOS_EDGE_TOLERANCE || t > 1.0 + MEOS_EDGE_TOLERANCE)
+  if (t < -MEOS_GEOM_TOLERANCE || t > 1.0 + MEOS_GEOM_TOLERANCE)
     return;
   if (t < 0.0)
     t = 0.0;
@@ -3918,7 +3918,7 @@ relate_add_parameter(double t, double *params, int *nparams, int maxparams)
    * edges meet. */
   for (int i = 0; i < *nparams; i++)
   {
-    if (fabs(params[i] - t) <= MEOS_EDGE_TOLERANCE)
+    if (fabs(params[i] - t) <= MEOS_GEOM_TOLERANCE)
       return;
   }
   if (*nparams < maxparams)
@@ -3931,9 +3931,9 @@ relate_add_parameter(double t, double *params, int *nparams, int maxparams)
 static bool
 relate_same_circle(const Edge *a, const Edge *b)
 {
-  return fabs(a->cx - b->cx) <= MEOS_EDGE_TOLERANCE &&
-         fabs(a->cy - b->cy) <= MEOS_EDGE_TOLERANCE &&
-         fabs(a->radius - b->radius) <= MEOS_EDGE_TOLERANCE;
+  return fabs(a->cx - b->cx) <= MEOS_GEOM_TOLERANCE &&
+         fabs(a->cy - b->cy) <= MEOS_GEOM_TOLERANCE &&
+         fabs(a->radius - b->radius) <= MEOS_GEOM_TOLERANCE;
 }
 
 /**
@@ -3988,7 +3988,7 @@ relate_arcs_overlap(const Edge *a, const Edge *b)
   {
     for (int j = i + 1; j < np;)
     {
-      if (fabs(p[i] - p[j]) <= MEOS_EDGE_TOLERANCE)
+      if (fabs(p[i] - p[j]) <= MEOS_GEOM_TOLERANCE)
       {
         for (int k = j; k < np - 1; k++)
           p[k] = p[k + 1];
@@ -4004,7 +4004,7 @@ relate_arcs_overlap(const Edge *a, const Edge *b)
   {
     for (int j = i + 1; j < np; j++)
     {
-      if (fabs(p[j] - p[i]) <= MEOS_EDGE_TOLERANCE)
+      if (fabs(p[j] - p[i]) <= MEOS_GEOM_TOLERANCE)
         continue;
       double tm = (p[i] + p[j]) * 0.5;
       double x, y;
@@ -4032,9 +4032,9 @@ relate_arc_arc_points(const Edge *a, const Edge *b, double x[2], double y[2],
   double d = hypot(dx, dy);
 
   /* Coincident supporting circles */
-  if (d <= MEOS_EDGE_TOLERANCE)
+  if (d <= MEOS_GEOM_TOLERANCE)
   {
-    if (fabs(a->radius - b->radius) > MEOS_EDGE_TOLERANCE)
+    if (fabs(a->radius - b->radius) > MEOS_GEOM_TOLERANCE)
       return 0;
     if (relate_arcs_overlap(a, b))
     {
@@ -4060,8 +4060,8 @@ relate_arc_arc_points(const Edge *a, const Edge *b, double x[2], double y[2],
   }
 
   /* Disjoint supporting circles */
-  if (d > a->radius + b->radius + MEOS_EDGE_TOLERANCE ||
-      d < fabs(a->radius - b->radius) - MEOS_EDGE_TOLERANCE)
+  if (d > a->radius + b->radius + MEOS_GEOM_TOLERANCE ||
+      d < fabs(a->radius - b->radius) - MEOS_GEOM_TOLERANCE)
     return 0;
   double aa = (d * d + a->radius * a->radius - b->radius * b->radius) /
     (2.0 * d);
@@ -4093,7 +4093,7 @@ relate_arc_arc_points(const Edge *a, const Edge *b, double x[2], double y[2],
     x[n] = px;
     y[n] = py;
     n++;
-    if (h <= MEOS_EDGE_TOLERANCE)
+    if (h <= MEOS_GEOM_TOLERANCE)
       break;
   }
   return n;
@@ -4242,7 +4242,7 @@ static void
 relate_linear_area_interval(const Edge *line, double t0, double t1,
   Edge **area_edges, int narea, MeosDE9IM *m)
 {
-  if (t1 - t0 <= MEOS_EDGE_TOLERANCE)
+  if (t1 - t0 <= MEOS_GEOM_TOLERANCE)
     return;
   double tm = (t0 + t1) * 0.5;
   double x, y;
@@ -4326,19 +4326,19 @@ relate_intervals_cover(RelateInterval *intervals, int count)
     return false;
   qsort(intervals, (size_t) count, sizeof(RelateInterval),
     relate_interval_cmp);
-  if (intervals[0].t0 > MEOS_EDGE_TOLERANCE)
+  if (intervals[0].t0 > MEOS_GEOM_TOLERANCE)
     return false;
   double reach = intervals[0].t1;
   for (int i = 1; i < count; i++)
   {
-    if (reach >= 1.0 - MEOS_EDGE_TOLERANCE)
+    if (reach >= 1.0 - MEOS_GEOM_TOLERANCE)
       break;
-    if (intervals[i].t0 > reach + MEOS_EDGE_TOLERANCE)
+    if (intervals[i].t0 > reach + MEOS_GEOM_TOLERANCE)
       return false;
     if (intervals[i].t1 > reach)
       reach = intervals[i].t1;
   }
-  return reach >= 1.0 - MEOS_EDGE_TOLERANCE;
+  return reach >= 1.0 - MEOS_GEOM_TOLERANCE;
 }
 
 /**
@@ -4371,7 +4371,7 @@ relate_arc_overlap_ranges(const Edge *a, const Edge *b, RelateInterval *out)
   int count = 0;
   for (int i = 0; i + 1 < np; i++)
   {
-    if (p[i + 1] - p[i] <= MEOS_EDGE_TOLERANCE)
+    if (p[i + 1] - p[i] <= MEOS_GEOM_TOLERANCE)
       continue;
     /* A piece is covered when its midpoint is on the other arc */
     double x, y;
@@ -4712,7 +4712,7 @@ relate_linear_area(const LWGEOM *line_geom, const LWGEOM *area_geom,
       qsort(bparams, nbparams, sizeof(double), relate_area_parameter_cmp);
       for (int k = 0; k < nbparams - 1; k++)
       {
-        if (bparams[k + 1] - bparams[k] <= MEOS_EDGE_TOLERANCE)
+        if (bparams[k + 1] - bparams[k] <= MEOS_GEOM_TOLERANCE)
           continue;
         double x, y;
         relate_area_edge_point(boundary, (bparams[k] + bparams[k + 1]) * 0.5,
@@ -4750,7 +4750,7 @@ relate_linear_area(const LWGEOM *line_geom, const LWGEOM *area_geom,
     int nuniq = 0;
     for (int j = 0; j < nparams; j++)
     {
-      if (nuniq == 0 || fabs(params[j] - params[nuniq - 1]) > MEOS_EDGE_TOLERANCE)
+      if (nuniq == 0 || fabs(params[j] - params[nuniq - 1]) > MEOS_GEOM_TOLERANCE)
       {
         params[nuniq++] = params[j];
       }
@@ -4932,13 +4932,13 @@ relate_area_edge_parameter(const Edge *e, double x, double y)
     double dy = e->y2 - e->y1;
     if (fabs(dx) >= fabs(dy))
     {
-      if (fabs(dx) <= MEOS_EDGE_TOLERANCE)
+      if (fabs(dx) <= MEOS_GEOM_TOLERANCE)
         return 0.0;
       return (x - e->x1) / dx;
     }
     else
     {
-      if (fabs(dy) <= MEOS_EDGE_TOLERANCE)
+      if (fabs(dy) <= MEOS_GEOM_TOLERANCE)
         return 0.0;
       return (y - e->y1) / dy;
     }
@@ -4953,7 +4953,7 @@ static void
 relate_area_add_parameter(double t, double *params, int *nparams,
   int maxparams)
 {
-  if (t < -MEOS_EDGE_TOLERANCE || t > 1.0 + MEOS_EDGE_TOLERANCE)
+  if (t < -MEOS_GEOM_TOLERANCE || t > 1.0 + MEOS_GEOM_TOLERANCE)
     return;
   if (t < 0.0)
     t = 0.0;
@@ -4961,7 +4961,7 @@ relate_area_add_parameter(double t, double *params, int *nparams,
     t = 1.0;
   for (int i = 0; i < *nparams; i++)
   {
-    if (fabs(params[i] - t) <= MEOS_EDGE_TOLERANCE)
+    if (fabs(params[i] - t) <= MEOS_GEOM_TOLERANCE)
       return;
   }
   if (*nparams < maxparams)
@@ -5156,7 +5156,7 @@ relate_area_edge_intervals(const Edge *edge, Edge **other_edges, int nother,
   int nuniq = 0;
   for (int i = 0; i < nparams; i++)
   {
-    if (nuniq == 0 || fabs(params[i] - params[nuniq - 1]) > MEOS_EDGE_TOLERANCE)
+    if (nuniq == 0 || fabs(params[i] - params[nuniq - 1]) > MEOS_GEOM_TOLERANCE)
     {
       params[nuniq++] = params[i];
     }
@@ -5165,7 +5165,7 @@ relate_area_edge_intervals(const Edge *edge, Edge **other_edges, int nother,
   /* Classify each open interval */
   for (int i = 0; i < nuniq - 1; i++)
   {
-    if (params[i + 1] - params[i] <= MEOS_EDGE_TOLERANCE)
+    if (params[i + 1] - params[i] <= MEOS_GEOM_TOLERANCE)
       continue;
     double t = (params[i] + params[i + 1]) * 0.5;
     double x, y;
@@ -5315,7 +5315,7 @@ relate_area_edge_interior_point(const Edge *e, Edge **edges, int nedges,
       }
     }
     double len = hypot(tx, ty);
-    if (len <= MEOS_EDGE_TOLERANCE)
+    if (len <= MEOS_GEOM_TOLERANCE)
       return false;
     tx /= len;
     ty /= len;
@@ -5328,7 +5328,7 @@ relate_area_edge_interior_point(const Edge *e, Edge **edges, int nedges,
     /* The tolerance is deliberately small relative to the edge
      * length. This is only used to obtain an interior witness
      * point; all actual intersections remain exact. */
-    double eps = fmax(MEOS_EDGE_TOLERANCE * 10.0, len * 1e-9);
+    double eps = fmax(MEOS_GEOM_TOLERANCE * 10.0, len * 1e-9);
     double qx = px + eps * nx;
     double qy = py + eps * ny;
     if (relate_point_in_area(qx, qy, edges, nedges) == 0)
@@ -5639,7 +5639,7 @@ relate_clearance(double x, double y, const RelateComp *comps, int ncomp)
     for (int j = 0; j < comps[i].nedges; j++)
     {
       double d = relate_edge_distance(x, y, comps[i].edges[j]);
-      if (d <= MEOS_EDGE_TOLERANCE)
+      if (d <= MEOS_GEOM_TOLERANCE)
         continue;
       if (result < 0 || d < result)
         result = d;
@@ -5709,9 +5709,9 @@ relate_same_portion(const Edge *a, const Edge *b)
   if (a->etype != b->etype)
     return false;
   if (a->etype == EDGE_POLYARC &&
-      (fabs(a->cx - b->cx) > MEOS_EDGE_TOLERANCE ||
-       fabs(a->cy - b->cy) > MEOS_EDGE_TOLERANCE ||
-       fabs(a->radius - b->radius) > MEOS_EDGE_TOLERANCE))
+      (fabs(a->cx - b->cx) > MEOS_GEOM_TOLERANCE ||
+       fabs(a->cy - b->cy) > MEOS_GEOM_TOLERANCE ||
+       fabs(a->radius - b->radius) > MEOS_GEOM_TOLERANCE))
     return false;
   /* The two components may traverse the portion in opposite directions */
   return (relate_same_point(a->x1, a->y1, b->x1, b->y1) &&
@@ -5792,7 +5792,7 @@ relate_union_edges(const LWGEOM *geom)
     for (int k = 0; k < nparams - 1; k++)
     {
       double t0 = params[k], t1 = params[k + 1];
-      if (t1 - t0 <= MEOS_EDGE_TOLERANCE)
+      if (t1 - t0 <= MEOS_GEOM_TOLERANCE)
         continue;
       if (relate_portion_inside_union(e, (t0 + t1) * 0.5, comps, ncomp))
         continue;
@@ -5954,8 +5954,8 @@ relate_any_edge_parameter(const Edge *e, double x, double y)
     return relate_arc_parameter(e, x, y);
   double dx = e->x2 - e->x1, dy = e->y2 - e->y1;
   if (fabs(dx) >= fabs(dy))
-    return fabs(dx) <= MEOS_EDGE_TOLERANCE ? 0.0 : (x - e->x1) / dx;
-  return fabs(dy) <= MEOS_EDGE_TOLERANCE ? 0.0 : (y - e->y1) / dy;
+    return fabs(dx) <= MEOS_GEOM_TOLERANCE ? 0.0 : (x - e->x1) / dx;
+  return fabs(dy) <= MEOS_GEOM_TOLERANCE ? 0.0 : (y - e->y1) / dy;
 }
 
 /**
@@ -6032,7 +6032,7 @@ relate_comp_covered(const LWGEOM *comp, const RelateComp *comps, int ncomp,
     qsort(params, nparams, sizeof(double), relate_area_parameter_cmp);
     for (int k = 0; k < nparams - 1 && result; k++)
     {
-      if (params[k + 1] - params[k] <= MEOS_EDGE_TOLERANCE)
+      if (params[k + 1] - params[k] <= MEOS_GEOM_TOLERANCE)
         continue;
       double x, y;
       relate_edge_point(e, (params[k] + params[k + 1]) * 0.5, &x, &y);
@@ -6340,8 +6340,8 @@ relate_point_on_edge(double x, double y, const Edge *e)
   switch (e->etype)
   {
     case EDGE_POINT:
-      return fabs(x - e->x1) <= MEOS_EDGE_TOLERANCE &&
-        fabs(y - e->y1) <= MEOS_EDGE_TOLERANCE;
+      return fabs(x - e->x1) <= MEOS_GEOM_TOLERANCE &&
+        fabs(y - e->y1) <= MEOS_GEOM_TOLERANCE;
     case EDGE_LINEARC:
     case EDGE_POLYARC:
       return point_on_arc(x, y, e);
@@ -6450,10 +6450,10 @@ relate_edges_intersect(Edge **e1, int n1, Edge **e2, int n2)
       const Edge *b = e2[j];
       if (b->etype == EDGE_POINT)
         continue;
-      if (a->xmax < b->xmin - MEOS_EDGE_TOLERANCE ||
-          b->xmax < a->xmin - MEOS_EDGE_TOLERANCE ||
-          a->ymax < b->ymin - MEOS_EDGE_TOLERANCE ||
-          b->ymax < a->ymin - MEOS_EDGE_TOLERANCE)
+      if (a->xmax < b->xmin - MEOS_GEOM_TOLERANCE ||
+          b->xmax < a->xmin - MEOS_GEOM_TOLERANCE ||
+          a->ymax < b->ymin - MEOS_GEOM_TOLERANCE ||
+          b->ymax < a->ymin - MEOS_GEOM_TOLERANCE)
         continue;
       if (relate_edges_meet(a, b))
         return true;
@@ -6523,10 +6523,10 @@ relate_edges_cover(Edge **e1, int n1, Edge **e2, int n2)
     for (int i = 0; i < n1; i++)
     {
       const Edge *o = e1[i];
-      if (e->xmax < o->xmin - MEOS_EDGE_TOLERANCE ||
-          o->xmax < e->xmin - MEOS_EDGE_TOLERANCE ||
-          e->ymax < o->ymin - MEOS_EDGE_TOLERANCE ||
-          o->ymax < e->ymin - MEOS_EDGE_TOLERANCE)
+      if (e->xmax < o->xmin - MEOS_GEOM_TOLERANCE ||
+          o->xmax < e->xmin - MEOS_GEOM_TOLERANCE ||
+          e->ymax < o->ymin - MEOS_GEOM_TOLERANCE ||
+          o->ymax < e->ymin - MEOS_GEOM_TOLERANCE)
         continue;
       double ix[2], iy[2];
       int nint = relate_any_edge_intersection(e, o, ix, iy);
@@ -6548,7 +6548,7 @@ relate_edges_cover(Edge **e1, int n1, Edge **e2, int n2)
     qsort(params, nparams, sizeof(double), relate_area_parameter_cmp);
     for (int k = 0; k < nparams - 1 && result; k++)
     {
-      if (params[k + 1] - params[k] <= MEOS_EDGE_TOLERANCE)
+      if (params[k + 1] - params[k] <= MEOS_GEOM_TOLERANCE)
         continue;
       double x, y;
       relate_edge_point(e, (params[k] + params[k + 1]) * 0.5, &x, &y);
