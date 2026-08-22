@@ -25,7 +25,7 @@ SELECT bool_and(temp ~= temp) FROM tbl_tpcpoint;
 SELECT bool_and(NOT (temp -|- temp)) FROM tbl_tpcpoint;
  bool_and 
 ----------
- t
+ f
 (1 row)
 
 SELECT bool_and(temp && temp) FROM tbl_tpcpatch;
@@ -55,7 +55,7 @@ SELECT bool_and(temp ~= temp) FROM tbl_tpcpatch;
 SELECT bool_and(NOT (temp -|- temp)) FROM tbl_tpcpatch;
  bool_and 
 ----------
- t
+ f
 (1 row)
 
 SELECT bool_and(tpcbox_zt(-200, -200, -200, 200, 200, 200,

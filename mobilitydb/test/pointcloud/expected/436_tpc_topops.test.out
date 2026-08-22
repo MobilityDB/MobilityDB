@@ -61,7 +61,7 @@ SELECT (tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::t
 SELECT (tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz)) -|- (tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz));
  ?column? 
 ----------
- f
+ t
 (1 row)
 
 SELECT (tpcpatch(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[])]), '2024-01-01'::timestamptz)) && (tpcbox_zt(0, 0, 0, 10, 10, 10, tstzspan '[2024-01-01, 2024-01-31]', 1, 0));

@@ -270,7 +270,7 @@ SELECT numValues(set(ARRAY[PC_MakePoint(1, ARRAY[10.0, 20.0, 30.0]),
 	<sect1 xml:id="tpcbox">
 		<title>Bounding Box <varname>tpcbox</varname></title>
 
-		<para>The <varname>tpcbox</varname> type is the spatiotemporal bounding box for the temporal point-cloud types. It mirrors the structure of <varname>stbox</varname> (see <xref linkend="box_types" />), same X/Y/Z/T axes, same flag bits for which dimensions are present, and adds a single field: the <varname>pcid</varname>. Two <varname>tpcbox</varname> values with different <varname>pcid</varname> values are never considered to overlap, contain, equal, or be adjacent to each other, regardless of their geometric or temporal extent.</para>
+		<para>The <varname>tpcbox</varname> type is the spatiotemporal bounding box for the temporal point-cloud types. It mirrors the structure of <varname>stbox</varname> (see <xref linkend="box_types" />), same X/Y/Z/T axes, same flag bits for which dimensions are present, and adds a single field: the <varname>pcid</varname>. Two <varname>tpcbox</varname> values with different <varname>pcid</varname> values describe different schemas, and an operation between them raises an error instead of comparing their geometric or temporal extent.</para>
 
 		<para>Carrying the <varname>pcid</varname> through bounding-box arithmetic guarantees that bounding-box pruning never drops a row whose schema differs from the query's schema, and never returns a hit across mismatched schemas.</para>
 
@@ -473,13 +473,14 @@ SELECT tpcbox(2, 2, 8, 8, 1, 0) &lt;@ tpcbox(0, 0, 10, 10, 1, 0);
 					<para><varname>tpcbox &amp;&amp; tpcbox → boolean</varname></para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tpcbox(0, 0, 5, 5, 1, 0) &amp;&amp; tpcbox(3, 3, 10, 10, 1, 0);  -- t
-SELECT tpcbox(0, 0, 5, 5, 1, 0) &amp;&amp; tpcbox(0, 0, 5, 5, 2, 0);  -- f (pcid mismatch)
+SELECT tpcbox(0, 0, 5, 5, 1, 0) &amp;&amp; tpcbox(0, 0, 5, 5, 2, 0);
+-- ERROR:  Operation on TPCBox values with different schemas: 1 vs 2
 </programlisting>
 				</listitem>
 
 				<listitem xml:id="tpcbox_same">
 					<indexterm significance="normal"><primary><varname>~=</varname></primary></indexterm>
-					<para>Return true if two tpcboxes are exactly equal</para>
+					<para>Return true if two tpcboxes are equal in the dimensions they share</para>
 					<para><varname>tpcbox ~= tpcbox → boolean</varname></para>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tpcbox(0, 0, 2, 2) ~= tpcbox(0, 0, 2, 2);

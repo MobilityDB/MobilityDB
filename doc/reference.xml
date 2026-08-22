@@ -3362,7 +3362,7 @@
 						<para><link linkend="tpcbox_overlaps"><varname>&amp;&amp;</varname></link>: Return true if two tpcboxes overlap</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tpcbox_same"><varname>~=</varname></link>: Return true if two tpcboxes are exactly equal</para>
+						<para><link linkend="tpcbox_same"><varname>~=</varname></link>: Return true if two tpcboxes are equal in the dimensions they share</para>
 					</listitem>
 					<listitem>
 						<para><link linkend="tpcbox_adjacent"><varname>-|-</varname></link>: Return true if two tpcboxes are adjacent (share a boundary)</para>
