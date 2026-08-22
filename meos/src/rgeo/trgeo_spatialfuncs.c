@@ -768,11 +768,12 @@ trgeometry_convex_hull(const Temporal *temp)
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
 
-  GSERIALIZED *trav = trgeometry_traversed_area(temp, UNARY_UNION_NO);
-  if (! trav)
+  /* The hull of the placements is the hull of everything between them */
+  GSERIALIZED *places = trgeo_placements(temp);
+  if (! places)
     return NULL;
-  GSERIALIZED *result = geom_convex_hull(trav);
-  pfree(trav);
+  GSERIALIZED *result = geom_convex_hull(places);
+  pfree(places);
   return result;
 }
 
@@ -1103,24 +1104,6 @@ trgeo_trav_segment(const Temporal *temp, const TInstant *inst_a,
 }
 
 /**
- * @ingroup meos_rgeo_accessor
- * @brief Return the union of every materialised polygon of a temporal rigid
- * geometry over its time domain
- * @param[in] temp Temporal rigid geometry
- * @param[in] unary_union True to apply a unary spatial union to the per-
- * instant polygons; false to return the raw GeometryCollection
- * @csqlfn #Trgeometry_traversed_area()
- *
- * @note Mirrors the collect-then-union pattern of `tgeo_traversed_area`
- * for general temporal geometries; the trgeometry-specific step is
- * materialising the reference polygon at every emitted sample via
- * `pose_apply_geo`. Every input instant is emitted, and a segment carries
- * as many placements between two of them as its rotation asks for at
- * `TRGEO_TRAVERSED_AREA_ANGLE_TOL` of turn each. A convex body then covers
- * the hull of every consecutive pair, and the unary union dissolves the
- * overlap the hulls share.
- */
-/**
  * @brief Return true if the reference geometry of a temporal rigid geometry is
  * a convex body
  * @details Convexity is a property of the reference geometry, which is one
@@ -1176,10 +1159,20 @@ trgeo_convex_sweep(const GSERIALIZED *a, const GSERIALIZED *b)
   return result;
 }
 
-GSERIALIZED *
-trgeometry_traversed_area(const Temporal *temp, bool unary_union)
+/**
+ * @brief Return the placements a temporal rigid geometry passes through
+ * @details Every input instant contributes its placement, and a segment
+ * carries as many placements between two of them as its rotation asks for at
+ * `TRGEO_TRAVERSED_AREA_ANGLE_TOL` of turn each. The trgeometry-specific step
+ * is materialising the reference geometry at every emitted sample via
+ * `pose_apply_geo`
+ * @param[in] temp Temporal rigid geometry
+ * @param[out] count Number of placements returned
+ * @return On error return @p NULL
+ */
+static GSERIALIZED **
+trgeo_placement_array(const Temporal *temp, int *count)
 {
-  VALIDATE_TRGEOMETRY(temp, NULL);
   int n_insts = 0;
   /* temporal_insts_p returns a pointer-to-array of in-place instants;
    * neither the elements nor the array itself need element-freeing —
@@ -1202,16 +1195,96 @@ trgeometry_traversed_area(const Temporal *temp, bool unary_union)
     trgeo_trav_segment(temp, insts[i], insts[i + 1],
       &geoms, &n_geoms, &cap);
 
+  pfree(insts);
+  *count = n_geoms;
+  return geoms;
+}
+
+/**
+ * @brief Return the geometries of an array as a single value, consuming the
+ * array
+ * @details A single geometry answers for itself; several are gathered into a
+ * collection, which @p unary_union then dissolves into one geometry
+ * @param[in] geoms Array of geometries
+ * @param[in] n_geoms Number of geometries
+ * @param[in] unary_union True to dissolve the collection
+ */
+static GSERIALIZED *
+trgeo_geoms_merge(GSERIALIZED **geoms, int n_geoms, bool unary_union)
+{
+  GSERIALIZED *result;
+  if (n_geoms == 1)
+  {
+    result = geoms[0];
+  }
+  else
+  {
+    GSERIALIZED *coll = geo_collect_garray(geoms, n_geoms);
+    for (int i = 0; i < n_geoms; i++)
+      pfree(geoms[i]);
+    if (unary_union)
+    {
+      result = geom_unary_union(coll, -1);
+      pfree(coll);
+    }
+    else
+      result = coll;
+  }
+  pfree(geoms);
+  return result;
+}
+
+/**
+ * @brief Return the placements a temporal rigid geometry passes through as a
+ * geometry collection
+ * @details The ever/always spatial relationships read the placements one by
+ * one to tell their two quantifiers apart: ever holds where one placement
+ * satisfies the relationship, always where every one does. The area the body
+ * traverses spans several placements at once, so it answers neither
+ * @param[in] temp Temporal rigid geometry
+ * @return On error return @p NULL
+ */
+GSERIALIZED *
+trgeo_placements(const Temporal *temp)
+{
+  VALIDATE_TRGEOMETRY(temp, NULL);
+  int n_geoms = 0;
+  GSERIALIZED **geoms = trgeo_placement_array(temp, &n_geoms);
+  if (! geoms)
+    return NULL;
+  return trgeo_geoms_merge(geoms, n_geoms, UNARY_UNION_NO);
+}
+
+/**
+ * @ingroup meos_rgeo_accessor
+ * @brief Return the union of every materialised polygon of a temporal rigid
+ * geometry over its time domain
+ * @param[in] temp Temporal rigid geometry
+ * @param[in] unary_union True to apply a unary spatial union to the per-
+ * instant polygons; false to return the raw GeometryCollection
+ * @csqlfn #Trgeometry_traversed_area()
+ *
+ * @note Mirrors the collect-then-union pattern of `tgeo_traversed_area`
+ * for general temporal geometries. The placements the body passes through
+ * come from #trgeo_placements(); a convex body then covers the hull of every
+ * consecutive pair, and the unary union dissolves the overlap the hulls share
+ */
+GSERIALIZED *
+trgeometry_traversed_area(const Temporal *temp, bool unary_union)
+{
+  VALIDATE_TRGEOMETRY(temp, NULL);
+  int n_geoms = 0;
+  GSERIALIZED **geoms = trgeo_placement_array(temp, &n_geoms);
+  if (! geoms)
+    return NULL;
+
   /* The samples are the placements the body passes through; the area it
    * traverses is what it covers BETWEEN them as well. A convex body covers
    * the hull of each consecutive pair, which is the case the traversed area
    * is defined for; a body with a concavity keeps the placements alone, as
    * its hull would close a concavity the body never reaches.
-   * Only the united form answers the traversed area. The collection form
-   * enumerates the placements themselves, which the ever/always spatial
-   * relationships read one by one to tell the two quantifiers apart, so a
-   * region spanning several placements would answer `always` for a body that
-   * only ever passes through. */
+   * Only the united form sweeps; the collection form answers the placements
+   * themselves, which #trgeo_placements() gives a caller directly. */
   if (unary_union && n_geoms > 1 && trgeo_ref_is_convex(trgeo_geom_p(temp)))
   {
     GSERIALIZED **swept = palloc(sizeof(GSERIALIZED *) * (n_geoms - 1));
@@ -1234,27 +1307,7 @@ trgeometry_traversed_area(const Temporal *temp, bool unary_union)
       pfree(swept);
   }
 
-  GSERIALIZED *result;
-  if (n_geoms == 1)
-  {
-    result = geoms[0];
-  }
-  else
-  {
-    GSERIALIZED *coll = geo_collect_garray(geoms, n_geoms);
-    for (int i = 0; i < n_geoms; i++)
-      pfree(geoms[i]);
-    if (unary_union)
-    {
-      result = geom_unary_union(coll, -1);
-      pfree(coll);
-    }
-    else
-      result = coll;
-  }
-  pfree(geoms);
-  pfree(insts);
-  return result;
+  return trgeo_geoms_merge(geoms, n_geoms, unary_union);
 }
 
 /*****************************************************************************
