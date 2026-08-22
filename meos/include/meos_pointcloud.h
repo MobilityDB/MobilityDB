@@ -536,6 +536,42 @@ extern Temporal *tne_pcpatch_tpcpatch(const Pcpatch *pa,
 extern Temporal *tne_tpcpatch_pcpatch(const Temporal *temp,
   const Pcpatch *pa);
 
+/* Bounding box topological functions */
+
+extern bool adjacent_tpcbox_tpointcloud(const TPCBox *box,
+  const Temporal *temp);
+extern bool adjacent_tpointcloud_tpcbox(const Temporal *temp,
+  const TPCBox *box);
+extern bool adjacent_tpointcloud_tpointcloud(const Temporal *temp1,
+  const Temporal *temp2);
+
+extern bool contained_tpcbox_tpointcloud(const TPCBox *box,
+  const Temporal *temp);
+extern bool contained_tpointcloud_tpcbox(const Temporal *temp,
+  const TPCBox *box);
+extern bool contained_tpointcloud_tpointcloud(const Temporal *temp1,
+  const Temporal *temp2);
+
+extern bool contains_tpcbox_tpointcloud(const TPCBox *box,
+  const Temporal *temp);
+extern bool contains_tpointcloud_tpcbox(const Temporal *temp,
+  const TPCBox *box);
+extern bool contains_tpointcloud_tpointcloud(const Temporal *temp1,
+  const Temporal *temp2);
+
+extern bool overlaps_tpcbox_tpointcloud(const TPCBox *box,
+  const Temporal *temp);
+extern bool overlaps_tpointcloud_tpcbox(const Temporal *temp,
+  const TPCBox *box);
+extern bool overlaps_tpointcloud_tpointcloud(const Temporal *temp1,
+  const Temporal *temp2);
+
+extern bool same_tpcbox_tpointcloud(const TPCBox *box,
+  const Temporal *temp);
+extern bool same_tpointcloud_tpcbox(const Temporal *temp,
+  const TPCBox *box);
+extern bool same_tpointcloud_tpointcloud(const Temporal *temp1,
+  const Temporal *temp2);
 /*****************************************************************************
  * tpcpoint spatial predicates
  *****************************************************************************/
