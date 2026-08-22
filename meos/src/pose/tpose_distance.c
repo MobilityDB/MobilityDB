@@ -312,7 +312,7 @@ shortestline_tpose_geo(const Temporal *temp, const GSERIALIZED *gs)
  * pose and a temporal pose
  * @param[in] temp Temporal pose
  * @param[in] pose Pose
- * @csqlfn #Shortestline_tpose_pose()
+ * @csqlfn #Shortestline_tpose_pose() #Shortestline_pose_tpose()
  */
 GSERIALIZED *
 shortestline_tpose_pose(const Temporal *temp, const Pose *pose)

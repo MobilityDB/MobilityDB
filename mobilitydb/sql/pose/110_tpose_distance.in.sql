@@ -256,8 +256,8 @@ CREATE FUNCTION shortestLine(stbox, tpose)
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION shortestLine(pose, tpose)
   RETURNS geometry
-  AS 'SELECT @extschema@.shortestLine(geometry($1), $2)'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
+  AS 'MODULE_PATHNAME', 'Shortestline_pose_tpose'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION shortestLine(tpose, geometry)
   RETURNS geometry
   AS 'MODULE_PATHNAME', 'Shortestline_tpose_geo'
@@ -268,8 +268,8 @@ CREATE FUNCTION shortestLine(tpose, stbox)
   LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION shortestLine(tpose, pose)
   RETURNS geometry
-  AS 'SELECT @extschema@.shortestLine($1, geometry($2))'
-  LANGUAGE SQL IMMUTABLE PARALLEL SAFE;
+  AS 'MODULE_PATHNAME', 'Shortestline_tpose_pose'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION shortestLine(tpose, tpose)
   RETURNS geometry
   AS 'MODULE_PATHNAME', 'Shortestline_tpose_tpose'
