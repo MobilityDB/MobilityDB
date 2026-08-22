@@ -1516,7 +1516,7 @@ tdisjoint_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
  * buffer and a circular buffer are disjoint
  * @param[in] temp Temporal circular buffer
  * @param[in] cb Circular buffer
- * @csqlfn #Tdisjoint_tcbuffer_geo()
+ * @csqlfn #Tdisjoint_cbuffer_tcbuffer()
  */
 Temporal *
 tdisjoint_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp)
@@ -1530,7 +1530,7 @@ tdisjoint_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp)
  * buffer and a circular buffer are disjoint
  * @param[in] temp Temporal circular buffer
  * @param[in] cb Circular buffer
- * @csqlfn #Tdisjoint_tcbuffer_geo()
+ * @csqlfn #Tdisjoint_tcbuffer_cbuffer()
  */
 Temporal *
 tdisjoint_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
@@ -2703,7 +2703,7 @@ ttouches_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
  * @brief Return a temporal Boolean that states whether a temporal circular
  * buffer touches another one
  * @param[in] temp1,temp2 Temporal circular buffer
- * @csqlfn #Ttouches_tcbuffer_geo()
+ * @csqlfn #Ttouches_tcbuffer_tcbuffer()
  */
 Temporal *
 ttouches_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
