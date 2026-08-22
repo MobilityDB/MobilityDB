@@ -3541,38 +3541,6 @@ buffer_ring_outward_left(const POINTARRAY *pa)
   return buffer_ring_area(pa) < 0.0;
 }
 
-/**
- * @brief Return true if a polygon ring is convex
- * @details Every vertex of a convex ring turns the same way. Contracting such
- * a ring past its own width leaves nothing, whereas a ring that is not convex
- * may instead fall apart into several surfaces, which only the boundary
- * overlay can name.
- */
-static bool
-buffer_ring_is_convex(const POINTARRAY *pa)
-{
-  assert(pa);
-  if (pa->npoints < 4)
-    return false;
-  uint32_t n = pa->npoints - 1;
-  int sign = 0;
-  for (uint32_t i = 0; i < n; i++)
-  {
-    POINT4D a, b, c;
-    getPoint4d_p(pa, i, &a);
-    getPoint4d_p(pa, (i + 1) % n, &b);
-    getPoint4d_p(pa, (i + 2) % n, &c);
-    double turn = buffer_cross(b.x - a.x, b.y - a.y, c.x - b.x, c.y - b.y);
-    if (fabs(turn) <= FP_TOLERANCE)
-      continue;
-    int current = turn > 0.0 ? 1 : -1;
-    if (sign == 0)
-      sign = current;
-    else if (sign != current)
-      return false;
-  }
-  return sign != 0;
-}
 
 /**
  * @brief Construct the offset of a polygon ring
@@ -4731,7 +4699,7 @@ meos_buffer_line_offset(const LWLINE *line, double radius,
       mitre_limit, srid);
     if (inner)
       buffer_curvepoly_add_ring(result, inner);
-    else if (! buffer_ring_is_convex(ring))
+    else if (! geom_ring_is_convex(ring))
     {
       /* The hole is uncovered rather than absent: contracting a ring that is
        * not convex may leave several holes, which the boundary overlay has to
@@ -5217,7 +5185,7 @@ meos_buffer_poly(const LWPOLY *poly, double radius, JoinStyle join_style,
     join_style, mitre_limit, srid);
   if (! exterior)
     /* A convex ring contracted past its own width leaves nothing */
-    return (inward && buffer_ring_is_convex(poly->rings[0])) ?
+    return (inward && geom_ring_is_convex(poly->rings[0])) ?
       lwpoly_as_lwgeom(lwpoly_construct_empty(srid, 0, 0)) : NULL;
 
   /* Construct the curved polygon */
