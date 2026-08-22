@@ -2776,7 +2776,7 @@ tdwithin_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp, double dist)
  * @param[in] temp Temporal circular buffer
  * @param[in] cb Circular buffer
  * @param[in] dist Distance
- * @csqlfn #Tdwithin_tcbuffer_cbuffer()
+ * @csqlfn #Tdwithin_tcbuffer_cbuffer() #Tdwithin_cbuffer_tcbuffer()
  */
 Temporal *
 tdwithin_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb, double dist)

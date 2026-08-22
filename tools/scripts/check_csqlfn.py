@@ -80,13 +80,27 @@ def pg_wrappers(dirs):
     return rows
 
 
+# The catalog reads a tag reference as '#(\w+)\s*\(\)', so '#Name ()' with a
+# stray space parses there and must parse here too: a checker stricter than the
+# generator reports a gap the generator does not have.
+CSQLFN_REF = re.compile(r'#(\w+)\s*\(\)')
+
+
 def ingroup_block(lines, i):
-    """Scan one @ingroup block; return (name, has_csqlfn, is_binding_api, end)."""
-    has = False
+    """Scan one @ingroup block; return (name, refs, is_binding_api, internal, end)."""
+    refs = set()
+    internal = False
     j = i
+    tag = False
     while j < len(lines) and lines[j].strip() != '*/':
+        if '@ingroup meos_internal' in lines[j]:
+            internal = True
         if '@csqlfn' in lines[j]:
-            has = True
+            tag = True
+        elif re.search(r'@\w', lines[j]):
+            tag = False
+        if tag:
+            refs |= set(CSQLFN_REF.findall(lines[j]))
         j += 1
     k = j + 1
     name = None
@@ -101,7 +115,7 @@ def ingroup_block(lines, i):
         sig = ' '.join(lines[k:k + 4])
         sig = sig[:sig.find(')') + 1] if ')' in sig else sig
         is_api = 'Datum' not in sig  # skip generic Datum workers (not binding API)
-    return name, has, is_api, j
+    return name, refs, is_api, internal, j
 
 
 # Datum-signature functions are the generic Datum workers (one C function
@@ -109,7 +123,7 @@ def ingroup_block(lines, i):
 # @csqlfn link lives on their typed instantiations in *_meos.c, so they are
 # excluded here and the guard does not flag them.
 def meos_public(dirs):
-    """Map meos_fn -> (file, has_csqlfn) for every binding-API MEOS function."""
+    """Map meos_fn -> (file, refs, internal) for every binding-API MEOS function."""
     out = {}
     for d in dirs:
         for path in sorted(glob.glob(f'{ROOT}/meos/src/{d}/**/*.c', recursive=True)):
@@ -117,12 +131,28 @@ def meos_public(dirs):
             i = 0
             while i < len(lines):
                 if '@ingroup meos_' in lines[i]:
-                    name, has, is_api, end = ingroup_block(lines, i)
+                    name, refs, is_api, internal, end = ingroup_block(lines, i)
                     if name and is_api:
-                        out[name] = (os.path.basename(path), has)
+                        out[name] = (os.path.basename(path), refs, internal)
                     i = end
                 i += 1
     return out
+
+
+def sql_bound():
+    """Wrappers a CREATE FUNCTION binds, and the count of name-bound ones skipped.
+
+    `AS 'MODULE_PATHNAME', 'Wrapper'` names its symbol; the bare
+    `AS 'MODULE_PATHNAME'` form takes the SQL name as the symbol, which no
+    wrapper of this convention carries, so those are counted and reported rather
+    than silently dropped.
+    """
+    names, bare = set(), 0
+    for path in glob.glob(f'{ROOT}/mobilitydb/sql/**/*.in.sql', recursive=True):
+        text = read_text(path)
+        names |= set(re.findall(r"MODULE_PATHNAME'\s*,\s*'(\w+)'", text))
+        bare += len(re.findall(r"AS 'MODULE_PATHNAME'\s*$", text, re.M))
+    return names, bare
 
 
 def cap(fn):
@@ -142,8 +172,8 @@ def resolve(dirs):
         if dg:
             deleg_of[pg] = dg
     auto, review = [], []
-    for fn, (f, has) in meos_public(dirs).items():
-        if has:
+    for fn, (f, refs, _internal) in meos_public(dirs).items():
+        if refs:
             continue
         # A wrapper whose name is the function's own stem binds it, unless the
         # wrapper resolves to a different MEOS function: raquet_read and
@@ -194,6 +224,68 @@ def families():
     return sorted(d for d in os.listdir(src) if os.path.isdir(f'{src}/{d}'))
 
 
+def tokens(wrapper):
+    """The lowercase name parts of a wrapper, for the commuted-order test."""
+    return sorted(wrapper.lower().split('_'))
+
+
+def incomplete(dirs):
+    """Return (commuted, mistagged, dispatch, bare) for the tagged MEOS functions.
+
+    A tag must name EVERY wrapper a CREATE FUNCTION binds to the function, since
+    the catalog gives a function the SQL surface of the wrappers its tag names
+    and drops the rest. The three groups differ in what closing them costs:
+
+    commuted  the omitted wrapper is the tagged one with its arguments the other
+              way round -- one operation, one kernel, and the tag simply misses
+              a name. This is the group the check FAILS on.
+    mistagged the tag names a wrapper that binds a DIFFERENT function. Each one
+              is read on its own: a body-resolved delegate cannot see the
+              restrict-at/minus flag dispatch, so this group holds both real
+              mistags and functions whose tag the resolver cannot follow.
+    dispatch  the omitted wrapper reaches the function through a generic
+              dispatcher or from another family. Naming it states that the
+              function serves that SQL surface, which changes what the bindings
+              generate, so it is a decision rather than a correction.
+    """
+    rows = pg_wrappers(dirs)
+    bound, bare = sql_bound()
+    deleg = {pg: dg for pg, _sf, _so, dg, _how, _f in rows if dg}
+    binds = {}
+    for pg, dg in deleg.items():
+        if pg in bound:
+            binds.setdefault(dg, set()).add(pg)
+    public = sorted(meos_public(dirs).items())
+    # A wrapper another function already claims is nobody else's omission. The
+    # commuted npoint comparisons are the case: Ever_eq_npoint_tnpoint passes
+    # &ever_eq_tnpoint_npoint, so the body resolver reads it as the temporal-first
+    # function's, while the npoint-first function of that argument order exists and
+    # claims it. Naming it twice gives two MEOS functions one SQL signature, which
+    # is the per-wrapper attachment the type scope exists to prevent.
+    claimed = {}
+    for fn, (_f, refs, _internal) in public:
+        for pg in refs:
+            claimed.setdefault(pg, set()).add(fn)
+    commuted, mistagged, dispatch = [], [], []
+    for fn, (f, refs, internal) in public:
+        if not refs or internal:
+            continue
+        missing = sorted(pg for pg in binds.get(fn, set()) - refs
+                         if not claimed.get(pg, set()) - {fn})
+        if not missing:
+            continue
+        wrong = sorted(r for r in refs if deleg.get(r, fn) != fn)
+        if wrong:
+            mistagged.append((fn, f, sorted(refs), missing, wrong))
+            continue
+        for pg in missing:
+            if any(tokens(pg) == tokens(r) for r in refs):
+                commuted.append((fn, f, pg))
+            else:
+                dispatch.append((fn, f, pg))
+    return commuted, mistagged, dispatch, bare
+
+
 def main():
     """Dispatch on the mode argument and report the @csqlfn coverage."""
     mode = sys.argv[1] if len(sys.argv) > 1 else '--gaps'
@@ -202,6 +294,21 @@ def main():
     if mode == '--table':
         for pg, sf, so, dg, _how, _f in sorted(rows):
             print(f'{pg:42s} sqlfn={sf:24s} sqlop={so:10s} -> meos:{dg or "-"}')
+    elif mode == '--complete':
+        commuted, mistagged, dispatch, bare = incomplete(dirs)
+        print(f'@csqlfn tags omitting a COMMUTED wrapper: {len(commuted)}')
+        for fn, f, pg in commuted:
+            print(f'  {f:26s} {fn:40s} += #{pg}()')
+        print(f'\ntag names a wrapper of another function (read each): '
+              f'{len(mistagged)}')
+        for fn, f, refs, missing, wrong in mistagged:
+            print(f'  {f:26s} {fn:40s} tag={refs} of={wrong} omits={missing}')
+        print(f'\nreached through a dispatcher or another family (a decision): '
+              f'{len(dispatch)} over {len({fn for fn, _f, _pg in dispatch})} '
+              f'functions')
+        print(f'\n{bare} bare "AS \'MODULE_PATHNAME\'" bindings carry no wrapper '
+              f'symbol and are outside this check')
+        sys.exit(1 if commuted else 0)
     elif mode == '--fix':
         n = 0
         for fn, pg, f, _how in auto:

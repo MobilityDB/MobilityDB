@@ -275,7 +275,7 @@ tcomp_tnpoint_npoint(const Temporal *temp, const Npoint *np,
  * network point
  * @param[in] temp Temporal network point
  * @param[in] np Network point
- * @csqlfn #Teq_tnpoint_npoint()
+ * @csqlfn #Teq_tnpoint_npoint() #Teq_npoint_tnpoint()
  */
 Temporal *
 teq_tnpoint_npoint(const Temporal *temp, const Npoint *np)
@@ -289,7 +289,7 @@ teq_tnpoint_npoint(const Temporal *temp, const Npoint *np)
  * network point
  * @param[in] temp Temporal network point
  * @param[in] np Network point
- * @csqlfn #Tne_tnpoint_npoint()
+ * @csqlfn #Tne_tnpoint_npoint() #Tne_npoint_tnpoint()
  */
 Temporal *
 tne_tnpoint_npoint(const Temporal *temp, const Npoint *np)

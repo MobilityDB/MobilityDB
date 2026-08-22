@@ -88,7 +88,7 @@ tcbuffer_cbuffer_distance_turnpt(Datum start, Datum end, Datum value,
  * @ingroup meos_cbuffer_dist
  * @brief Return the temporal distance between a temporal circular buffer and
  * a circular buffer
- * @csqlfn #Tdistance_tcbuffer_cbuffer()
+ * @csqlfn #Tdistance_tcbuffer_cbuffer() #Tdistance_cbuffer_tcbuffer()
  */
 Temporal *
 tdistance_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
@@ -463,7 +463,7 @@ tdistance_tcbuffer_geo_analytic(const Temporal *temp, const DistGeom *g)
  * with no exact edge decomposition (a TIN or a polyhedral surface) falls
  * back to the bounding-circle approximation, mirroring the other analytic
  * distance kernels of this file.
- * @csqlfn #Tdistance_tcbuffer_geo()
+ * @csqlfn #Tdistance_tcbuffer_geo() #Tdistance_geo_tcbuffer()
  */
 Temporal *
 tdistance_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
@@ -2268,7 +2268,7 @@ mindistance_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
  * geometry and a temporal circular buffer
  * @param[in] temp Temporal circular buffer
  * @param[in] gs Geometry
- * @csqlfn #Shortestline_tcbuffer_geo()
+ * @csqlfn #Shortestline_tcbuffer_geo() #Shortestline_geo_tcbuffer()
  */
 GSERIALIZED *
 shortestline_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
@@ -2294,7 +2294,7 @@ shortestline_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
  * circular buffer and a temporal circular buffer
  * @param[in] temp Temporal circular buffer
  * @param[in] cb Circular buffer
- * @csqlfn #Shortestline_tcbuffer_cbuffer()
+ * @csqlfn #Shortestline_tcbuffer_cbuffer() #Shortestline_cbuffer_tcbuffer()
  */
 GSERIALIZED *
 shortestline_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)

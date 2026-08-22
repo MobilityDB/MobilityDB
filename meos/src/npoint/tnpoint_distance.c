@@ -91,7 +91,7 @@ tdistance_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
  * a network point
  * @param[in] temp Temporal point
  * @param[in] np Network point
- * @csqlfn #Tdistance_tnpoint_npoint()
+ * @csqlfn #Tdistance_tnpoint_npoint() #Tdistance_npoint_tnpoint()
  */
 Temporal *
 tdistance_tnpoint_npoint(const Temporal *temp, const Npoint *np)
@@ -311,7 +311,7 @@ nad_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
  * geometry and a temporal network point
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
- * @csqlfn #Shortestline_tnpoint_geo()
+ * @csqlfn #Shortestline_tnpoint_geo() #Shortestline_geo_tnpoint()
  */
 GSERIALIZED *
 shortestline_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
@@ -332,7 +332,7 @@ shortestline_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
  * network point and a temporal network point
  * @param[in] temp Temporal point
  * @param[in] np Network point
- * @csqlfn #Shortestline_tnpoint_npoint()
+ * @csqlfn #Shortestline_tnpoint_npoint() #Shortestline_npoint_tnpoint()
  */
 GSERIALIZED *
 shortestline_tnpoint_npoint(const Temporal *temp, const Npoint *np)

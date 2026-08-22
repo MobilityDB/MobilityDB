@@ -73,7 +73,7 @@ tdistance_tpose_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @brief Return the temporal distance between a temporal pose and a pose
  * @param[in] temp Temporal pose
  * @param[in] pose Pose
- * @csqlfn #Tdistance_tpose_pose()
+ * @csqlfn #Tdistance_tpose_pose() #Tdistance_pose_tpose()
  */
 Temporal *
 tdistance_tpose_pose(const Temporal *temp, const Pose *pose)
@@ -291,7 +291,7 @@ nad_tpose_tpose(const Temporal *temp1, const Temporal *temp2)
  * geometry and a temporal pose
  * @param[in] temp Temporal pose
  * @param[in] gs Geometry
- * @csqlfn #Shortestline_tpose_geo()
+ * @csqlfn #Shortestline_tpose_geo() #Shortestline_geo_tpose()
  */
 GSERIALIZED *
 shortestline_tpose_geo(const Temporal *temp, const GSERIALIZED *gs)
