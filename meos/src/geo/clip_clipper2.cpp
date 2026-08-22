@@ -34,6 +34,25 @@
  * LWPOLY exterior — this is how Clipper2 represents nested polygon hierarchies.
  *****************************************************************************/
 
+/* PostgreSQL's win32_port.h defines its own `struct stat` (to get a 64-bit
+ * st_size on Windows) after neutralising the UCRT one with
+ *   #define stat microsoft_native_stat ... #include <sys/stat.h>
+ * as its own comment says: "We must pull in sys/stat.h before this part, else
+ * our overrides lose."  That only holds while nothing has already parsed
+ * <sys/stat.h> unmangled.  Since mingw-w64 r302, <wchar.h> includes
+ * <sys/stat.h>, and libstdc++'s <cwchar> pulls in <wchar.h> -- so the Clipper2
+ * headers below would define the UCRT `struct stat` first and win32_port.h
+ * would then redefine it.  Reordering cannot fix this: postgres.h first breaks
+ * std::bind (see below).  Instead run PostgreSQL's own prologue here, ahead of
+ * any C++ header, so the invariant it documents still holds. */
+#ifdef _WIN32
+#define fstat microsoft_native_fstat
+#define stat microsoft_native_stat
+#include <sys/stat.h>
+#undef fstat
+#undef stat
+#endif
+
 /* C++ standard library and Clipper2 must come first: PostgreSQL's
  * win32_port.h on MSYS2/MinGW redefines socket primitives like
  * bind/socket/select as macros, which mangles std::bind and similar
