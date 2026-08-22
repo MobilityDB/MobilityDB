@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: meos_intersects</title>
+<title>MobilityDB: relate_edges_boxes_overlap</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -166,7 +166,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_af958b0911baf74e5b417c26dbc8143d6.html#af958b0911baf74e5b417c26dbc8143d6">make_geometry_hull</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a84a63dfcc5e61e41accb0f451f835b35.html#a84a63dfcc5e61e41accb0f451f835b35">make_geometry_points</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a4220d6c6c61b1c382a737d10b6e15fde.html#a4220d6c6c61b1c382a737d10b6e15fde">meos_covers_possible</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a1da446ea06e5b7e598c71d0acc712454.html#a1da446ea06e5b7e598c71d0acc712454">meos_intersects</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a1da446ea06e5b7e598c71d0acc712454.html#a1da446ea06e5b7e598c71d0acc712454">meos_intersects</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a38854768ea292512f58c42c2456c7816.html#a38854768ea292512f58c42c2456c7816">meos_is_simple</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a78778cbf1e8fa22bdf5127d123fa9581.html#a78778cbf1e8fa22bdf5127d123fa9581">meos_oriented_envelope</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a26c9915acdbe188b513aa2cb7d525362.html#a26c9915acdbe188b513aa2cb7d525362">meos_relate</a></td></tr>
@@ -226,7 +226,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_ad22b0ada94037f883153b630906767fa.html#ad22b0ada94037f883153b630906767fa">relate_edge_point</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_abb75f9b8e523c2c31660ecb3b8c791e0.html#abb75f9b8e523c2c31660ecb3b8c791e0">relate_edge_tangent</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_aaa9f6424ebfae94afc53d87b806e61db.html#aaa9f6424ebfae94afc53d87b806e61db">relate_edges_box</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a99282ffc7b46a8f06f11b5b054fd36e4.html#a99282ffc7b46a8f06f11b5b054fd36e4">relate_edges_boxes_overlap</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a99282ffc7b46a8f06f11b5b054fd36e4.html#a99282ffc7b46a8f06f11b5b054fd36e4">relate_edges_boxes_overlap</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_adf8305e136449e963f6bda81f4d7a250.html#adf8305e136449e963f6bda81f4d7a250">relate_edges_cover</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a500f955a10fef8b1cdefa337e7623535.html#a500f955a10fef8b1cdefa337e7623535">relate_edges_intersect</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a926cc2cd57fda69304cd840cf7506122.html#a926cc2cd57fda69304cd840cf7506122">relate_edges_meet</a></td></tr>
@@ -276,8 +276,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a1da446ea06e5b7e598c71d0acc712454" name="a1da446ea06e5b7e598c71d0acc712454"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1da446ea06e5b7e598c71d0acc712454">&#9670;&#160;</a></span>meos_intersects()</h2>
+<a id="a99282ffc7b46a8f06f11b5b054fd36e4" name="a99282ffc7b46a8f06f11b5b054fd36e4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a99282ffc7b46a8f06f11b5b054fd36e4">&#9670;&#160;</a></span>relate_edges_boxes_overlap()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -286,22 +286,28 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static bool meos_intersects </td>
+          <td class="memname">static bool relate_edges_boxes_overlap </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structLWGEOM.html">LWGEOM</a> *&#160;</td>
-          <td class="paramname"><em>g1</em>, </td>
+          <td class="paramtype"><a class="el" href="structEdge.html">Edge</a> **&#160;</td>
+          <td class="paramname"><em>e1</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="structLWGEOM.html">LWGEOM</a> *&#160;</td>
-          <td class="paramname"><em>g2</em>, </td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>n1</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">bool *&#160;</td>
-          <td class="paramname"><em>result</em>&#160;</td>
+          <td class="paramtype"><a class="el" href="structEdge.html">Edge</a> **&#160;</td>
+          <td class="paramname"><em>e2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>n2</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -316,15 +322,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Return whether two geometries share a point. </p>
-<p >This is the <code>INTERSECTS</code> relationship, which <a class="el" href="meos_2src_2geo_2geo__funcs_8c_a747c0d17bba35d32a18939573d9a9ad8.html#a747c0d17bba35d32a18939573d9a9ad8" title="Return whether two geometries stand in one of the spatial relationships MEOS asks for.">meos_spatialrel</a> reads from the DE-9IM matrix as the pattern <code>FF*FF****</code> failing. Answering it from the edges instead stops at the first witness, where the matrix answers all nine cells whatever the question was </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">g1,g2</td><td>Geometries </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">result</td><td>True if the geometries share a point </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>True if the pair is covered, which is what <a class="el" href="meos_2src_2geo_2geo__funcs_8c_ac19306df3cd4c8276d0cdb104792eabc.html#ac19306df3cd4c8276d0cdb104792eabc" title="Return true if a geometry is composed solely of the types the native implementations can extract into...">geom_meos_supported</a> answers of each geometry </dd></dl>
+<p>Return true if the bounding boxes of two edge arrays overlap. </p>
+<p >Folding the edge boxes of each array costs a pass over each, where the pair of loops it stands in front of costs a pass over one for every edge of the other </p>
 
 </div>
 </div>
