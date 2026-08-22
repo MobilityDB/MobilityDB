@@ -5,6 +5,7 @@ on:
   push:
     paths:
       - '.github/workflows/windows_msys2.yml'
+      - '.github/actions/msys2-toolchain-report/**'
       - 'cmake/**'
       - 'meos/**'
       - 'mobilitydb/**'
@@ -15,6 +16,7 @@ on:
   pull_request:
     paths:
       - '.github/workflows/windows_msys2.yml'
+      - '.github/actions/msys2-toolchain-report/**'
       - 'cmake/**'
       - 'meos/**'
       - 'mobilitydb/**'
@@ -46,6 +48,8 @@ jobs:
             mingw-w64-ucrt-x86_64-ninja
             mingw-w64-ucrt-x86_64-postgresql
             mingw-w64-ucrt-x86_64-postgis
+
+      - uses: ./.github/actions/msys2-toolchain-report
 
       - name: Configure
         run: |
