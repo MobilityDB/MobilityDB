@@ -1752,7 +1752,7 @@ tpointsegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
  * geometry/geography
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry/geography
- * @csqlfn #Tdistance_tgeo_geo()
+ * @csqlfn #Tdistance_tgeo_geo() #Tdistance_geo_tgeo()
  */
 Temporal *
 tdistance_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
@@ -2892,7 +2892,7 @@ geography_shortestline_internal(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
  * temporal geo and a geometry/geography
  * @param[in] temp Temporal value
  * @param[in] gs Geometry/geography
- * @csqlfn #Shortestline_tgeo_geo()
+ * @csqlfn #Shortestline_tgeo_geo() #Shortestline_geo_tgeo()
  */
 GSERIALIZED *
 shortestline_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)

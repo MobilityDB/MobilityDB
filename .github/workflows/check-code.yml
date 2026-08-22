@@ -54,6 +54,8 @@ jobs:
         uses: actions/checkout@v4
       - name: Check @csqlfn derivation links
         run: python3 tools/scripts/check_csqlfn.py --gaps
+      - name: Check every wrapper a @csqlfn tag backs is named
+        run: python3 tools/scripts/check_csqlfn.py --complete
 
   spatialrel_orthogonality_check:
     runs-on: ubuntu-latest

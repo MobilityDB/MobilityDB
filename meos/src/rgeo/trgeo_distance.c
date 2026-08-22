@@ -2265,7 +2265,7 @@ dist2d_trgeoseqset_trgeoseqset(const TSequenceSet *ss1, const TSequenceSet *ss2,
  * @param[in] temp Temporal
  * @param[in] gs Geometry
  * @sqlop @p <->
- * @csqlfn #Tdistance_trgeometry_geo()
+ * @csqlfn #Tdistance_trgeometry_geo() #Tdistance_geo_trgeometry()
  */
 Temporal *
 tdistance_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
@@ -2361,7 +2361,7 @@ trgeoseqset_translate_by_tpoint(const TSequenceSet *pss,
  * @brief Return the temporal distance between a temporal rigid geometry and a
  * temporal geometry point
  * @sqlop @p <->
- * @csqlfn #Tdistance_trgeometry_tpoint()
+ * @csqlfn #Tdistance_trgeometry_tpoint() #Tdistance_tpoint_trgeometry()
  */
 Temporal *
 tdistance_trgeometry_tpoint(const Temporal *temp1, const Temporal *temp2)
@@ -2701,7 +2701,7 @@ nad_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
  * @brief Return the line connecting the nearest approach point between a
  * temporal rigid geometry and a geometry
  * @sqlfn shortestLine()
- * @csqlfn #Shortestline_trgeometry_geo()
+ * @csqlfn #Shortestline_trgeometry_geo() #Shortestline_geo_trgeometry()
  */
 GSERIALIZED *
 shortestline_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
@@ -2727,7 +2727,7 @@ shortestline_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @brief Return the line connecting the nearest approach point between a
  * temporal rigid geometry and a temporal geometry point
  * @sqlfn shortestLine()
- * @csqlfn #Shortestline_trgeometry_tpoint()
+ * @csqlfn #Shortestline_trgeometry_tpoint() #Shortestline_tpoint_trgeometry()
  */
 GSERIALIZED *
 shortestline_trgeometry_tpoint(const Temporal *temp1, const Temporal *temp2)

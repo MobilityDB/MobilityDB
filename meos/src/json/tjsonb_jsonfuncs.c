@@ -668,7 +668,7 @@ concat_tjsonb_tjsonb(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp Temporal JSONB
  * @param[in] jb JSONB
  * @param[in] invert True if the arguments must be inverted
- * @csqlfn #Contains_tjsonb_jsonb()
+ * @csqlfn #Contains_tjsonb_jsonb() #Contains_jsonb_tjsonb()
  */
 Temporal *
 contains_tjsonb_jsonb(const Temporal *temp, const Jsonb *jb, bool invert)

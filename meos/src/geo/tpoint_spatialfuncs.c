@@ -2951,7 +2951,7 @@ bearing_point_point(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
  * @param[in] gs Geometry
  * @param[in] invert True when the result should be inverted
  * @return On empty geometry or on error return NULL
- * @csqlfn #Bearing_tpoint_point()
+ * @csqlfn #Bearing_tpoint_point() #Bearing_point_tpoint()
  */
 Temporal *
 bearing_tpoint_point(const Temporal *temp, const GSERIALIZED *gs, bool invert)
