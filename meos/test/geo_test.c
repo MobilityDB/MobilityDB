@@ -240,6 +240,36 @@ int main(void)
   free(arc1); free(arc2); free(arc3); free(part); free(chords);
   meos_errno_reset();
 
+  /* A relationship of a curved geometry is read on the arc itself. The
+   * polygon below is a circle of centre (49.092934300 -78.568502344) and
+   * radius 17.469913928; the segment's ends lie 1.646e-3 and 5.64 INSIDE it,
+   * so the circle contains and covers the segment. A linearization answers
+   * about the chords it puts in the arc's place, and its chord at that angle
+   * dips about 5e-3 in -- three times the clearance the near end has -- so it
+   * places that end outside and answers neither */
+  GSERIALIZED *circle = geom_in(
+    "Curvepolygon(Circularstring("
+    "66.56284822756567 -78.56850234445656,63.22639155760828 -68.29994457883014,"
+    "54.491434593668544 -61.953626864231325,43.69443400570384 -61.95362686423132,"
+    "34.9594770417641 -68.29994457883012,31.62302037180671 -78.56850234445656,"
+    "34.9594770417641 -88.83706011008299,43.69443400570384 -95.1833778246818,"
+    "54.49143459366854 -95.1833778246818,63.22639155760828 -88.83706011008299,"
+    "66.56284822756567 -78.56850234445656))", -1);
+  GSERIALIZED *inside = geom_in(
+    "Linestring(43.28384893138511 -95.04256998228166,"
+    "50.64080603370938 -90.29607546387359)", -1);
+  assert(circle != NULL); assert(inside != NULL);
+  meos_errno_reset();
+  bool arc_contains = geom_contains(circle, inside);
+  bool arc_covers = geom_covers(circle, inside);
+  printf("geom_contains(circle, segment inside it): %d, "
+    "geom_covers: %d, errno %d\n", arc_contains, arc_covers, meos_errno());
+  assert(arc_contains == true);
+  assert(arc_covers == true);
+  assert(meos_errno() == 0);
+  free(circle); free(inside);
+  meos_errno_reset();
+
   /* A malformed box3d returns NULL and sets the error status */
   meos_errno_reset();
   BOX3D *bad_box3d = box3d_in("BOX3D(1 2 3)");
