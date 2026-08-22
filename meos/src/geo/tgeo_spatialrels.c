@@ -2240,7 +2240,7 @@ setset_box_pairs(const STBox *bb1, int count1, const STBox *bb2, int count2,
     rtree_insert(rtree2, (void *) &bb2[j], j);
 
   MeosArray *found = meos_array_create(sizeof(int64));
-  int n = rtree_join(rtree1, rtree2, RTREE_OVERLAPS, found);
+  int n = rtree_join(rtree1, rtree2, INDEX_OVERLAPS, found);
   int *result = NULL;
   if (n > 0)
   {

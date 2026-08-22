@@ -266,7 +266,7 @@ int main(void)
     total_truth += truth_count;
 
     /* Single-box filter: the probe's single MBR */
-    int single_count = rtree_search_temporal(single, RTREE_OVERLAPS, probe,
+    int single_count = rtree_search_temporal(single, INDEX_OVERLAPS, probe,
       ids);
     for (int i = 0; i < NUM_TRIPS; i++)
       seen[i] = false;
@@ -287,7 +287,7 @@ int main(void)
 
     /* Invariant (iv): the maxboxes <= 1 index reproduces the single-box
      * candidate set exactly */
-    int deg_count = rtree_search_temporal_dedup(degenerate, RTREE_OVERLAPS,
+    int deg_count = rtree_search_temporal_dedup(degenerate, INDEX_OVERLAPS,
       probe, 1, ids);
     assert(deg_count == single_count);
     for (int k = 0; k < deg_count; k++)
@@ -301,7 +301,7 @@ int main(void)
     int prev_count = single_count;
     for (int m = 0; m < NUM_MAXBOXES; m++)
     {
-      int cand = rtree_search_temporal_dedup(mest[m], RTREE_OVERLAPS, probe,
+      int cand = rtree_search_temporal_dedup(mest[m], INDEX_OVERLAPS, probe,
         MAXBOXES[m], ids);
       for (int i = 0; i < NUM_TRIPS; i++)
         seen[i] = false;

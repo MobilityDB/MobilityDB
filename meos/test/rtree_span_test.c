@@ -89,7 +89,7 @@ test_intspan_rtree(void)
   Span *query = intspan_make(qlo, qlo + 500, true, false);
 
   MeosArray *result = meos_array_create(sizeof(int64));
-  int count = rtree_search(rtree, RTREE_OVERLAPS, query, result);
+  int count = rtree_search(rtree, INDEX_OVERLAPS, query, result);
 
   bool *in_index = calloc(NUM_SPANS, sizeof(bool));
   for (int i = 0; i < count; i++)
@@ -135,7 +135,7 @@ test_floatspan_rtree(void)
   Span *query = floatspan_make(qlo, qlo + 50.0, true, false);
 
   MeosArray *result = meos_array_create(sizeof(int64));
-  int count = rtree_search(rtree, RTREE_OVERLAPS, query, result);
+  int count = rtree_search(rtree, INDEX_OVERLAPS, query, result);
 
   bool *in_index = calloc(NUM_SPANS, sizeof(bool));
   for (int i = 0; i < count; i++)
@@ -185,7 +185,7 @@ test_id_width(void)
 
   Span *query = intspan_make(-100, 1000, true, false);
   MeosArray *result = meos_array_create(sizeof(int64));
-  int count = rtree_search(rtree, RTREE_OVERLAPS, query, result);
+  int count = rtree_search(rtree, INDEX_OVERLAPS, query, result);
 
   printf("Identifier width (%d spans, ids above 2^31):\n", nids);
   if (count != nids)

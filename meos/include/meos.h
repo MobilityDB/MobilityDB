@@ -341,14 +341,32 @@ extern void meos_array_destroy_free(MeosArray *array);
 /*****************************************************************************/
 
 /**
- * @brief Enumeration that defines the search operations for an RTree.
+ * @brief Enumeration that defines the search operations of an in-memory index
+ * @details The RTree and the space-partitioning index answer the same
+ * operations, so the operations carry the name of neither.
  */
 typedef enum
 {
-  RTREE_OVERLAPS,      /**< Find stored boxes that overlap the query */
-  RTREE_CONTAINS,      /**< Find stored boxes that contain the query */
-  RTREE_CONTAINED_BY   /**< Find stored boxes contained by the query */
-} RTreeSearchOp;
+  INDEX_OVERLAPS,      /**< Find stored boxes that overlap the query */
+  INDEX_CONTAINS,      /**< Find stored boxes that contain the query */
+  INDEX_CONTAINED_BY,  /**< Find stored boxes contained by the query */
+  INDEX_LEFT,          /**< Find stored boxes strictly left of the query */
+  INDEX_OVERLEFT,      /**< Find stored boxes that do not extend to the right of the query */
+  INDEX_RIGHT,         /**< Find stored boxes strictly right of the query */
+  INDEX_OVERRIGHT,     /**< Find stored boxes that do not extend to the left of the query */
+  INDEX_BELOW,         /**< Find stored boxes strictly below the query */
+  INDEX_OVERBELOW,     /**< Find stored boxes that do not extend above the query */
+  INDEX_ABOVE,         /**< Find stored boxes strictly above the query */
+  INDEX_OVERABOVE,     /**< Find stored boxes that do not extend below the query */
+  INDEX_FRONT,         /**< Find stored boxes strictly in front of the query */
+  INDEX_OVERFRONT,     /**< Find stored boxes that do not extend behind the query */
+  INDEX_BACK,          /**< Find stored boxes strictly behind the query */
+  INDEX_OVERBACK,      /**< Find stored boxes that do not extend in front of the query */
+  INDEX_BEFORE,        /**< Find stored boxes strictly before the query */
+  INDEX_OVERBEFORE,    /**< Find stored boxes that do not extend after the query */
+  INDEX_AFTER,         /**< Find stored boxes strictly after the query */
+  INDEX_OVERAFTER      /**< Find stored boxes that do not extend before the query */
+} IndexSearchOp;
 
 /**
  * Structure for the in-memory Rtree index
@@ -368,14 +386,17 @@ extern RTree *rtree_create_stbox();
 extern RTree *rtree_create_tpcbox();
 #endif
 extern void rtree_free(RTree *rtree);
-extern void rtree_insert(RTree *rtree, void *box, int64 id);
-extern void rtree_load(RTree *rtree, const void *boxes, const int64 *ids, int count);
-extern void rtree_insert_temporal(RTree *rtree, const Temporal *temp, int64 id);
-extern void rtree_insert_temporal_split(RTree *rtree, const Temporal *temp, int64 id, int maxboxes);
-extern int rtree_search(const RTree *rtree, RTreeSearchOp op, const void *query, MeosArray *result);
-extern int rtree_join(const RTree *rtree1, const RTree *rtree2, RTreeSearchOp op, MeosArray *result);
-extern int rtree_search_temporal(const RTree *rtree, RTreeSearchOp op, const Temporal *temp, MeosArray *result);
-extern int rtree_search_temporal_dedup(const RTree *rtree, RTreeSearchOp op, const Temporal *temp, int maxboxes, MeosArray *result);
+extern int rtree_num_entries(const RTree *rtree);
+extern int64 rtree_mem_size(const RTree *rtree);
+extern int rtree_height(const RTree *rtree);
+extern bool rtree_insert(RTree *rtree, void *box, int64 id);
+extern bool rtree_load(RTree *rtree, const void *boxes, const int64 *ids, int count);
+extern bool rtree_insert_temporal(RTree *rtree, const Temporal *temp, int64 id);
+extern bool rtree_insert_temporal_split(RTree *rtree, const Temporal *temp, int64 id, int maxboxes);
+extern int rtree_search(const RTree *rtree, IndexSearchOp op, const void *query, MeosArray *result);
+extern int rtree_join(const RTree *rtree1, const RTree *rtree2, IndexSearchOp op, MeosArray *result);
+extern int rtree_search_temporal(const RTree *rtree, IndexSearchOp op, const Temporal *temp, MeosArray *result);
+extern int rtree_search_temporal_dedup(const RTree *rtree, IndexSearchOp op, const Temporal *temp, int maxboxes, MeosArray *result);
 
 /**
  * Cursor for a nearest-neighbour scan of an in-memory Rtree index
@@ -414,12 +435,16 @@ extern SPTree *sptree_create_stbox(SPTreeKind kind);
 extern SPTree *sptree_create_tpcbox(SPTreeKind kind);
 #endif
 extern void sptree_free(SPTree *sptree);
-extern void sptree_insert(SPTree *sptree, void *box, int64 id);
-extern void sptree_insert_temporal(SPTree *sptree, const Temporal *temp, int64 id);
-extern void sptree_insert_temporal_split(SPTree *sptree, const Temporal *temp, int64 id, int maxboxes);
-extern int sptree_search(const SPTree *sptree, RTreeSearchOp op, const void *query, MeosArray *result);
-extern int sptree_search_temporal(const SPTree *sptree, RTreeSearchOp op, const Temporal *temp, MeosArray *result);
-extern int sptree_search_temporal_dedup(const SPTree *sptree, RTreeSearchOp op, const Temporal *temp, int maxboxes, MeosArray *result);
+extern int sptree_num_entries(const SPTree *sptree);
+extern int64 sptree_mem_size(const SPTree *sptree);
+extern int sptree_height(const SPTree *sptree);
+extern bool sptree_insert(SPTree *sptree, void *box, int64 id);
+extern bool sptree_load(SPTree *sptree, const void *boxes, const int64 *ids, int count);
+extern bool sptree_insert_temporal(SPTree *sptree, const Temporal *temp, int64 id);
+extern bool sptree_insert_temporal_split(SPTree *sptree, const Temporal *temp, int64 id, int maxboxes);
+extern int sptree_search(const SPTree *sptree, IndexSearchOp op, const void *query, MeosArray *result);
+extern int sptree_search_temporal(const SPTree *sptree, IndexSearchOp op, const Temporal *temp, MeosArray *result);
+extern int sptree_search_temporal_dedup(const SPTree *sptree, IndexSearchOp op, const Temporal *temp, int maxboxes, MeosArray *result);
 
 /**
  * Cursor for a nearest-neighbour scan of an in-memory space-partitioning index

@@ -418,6 +418,30 @@
  * @ingroup meos_temporal
  * @brief Index functions for temporal types
  *
+ * @details The in-memory indexes are the R-tree and the space-partitioning
+ * tree. They expose the same operations under the same contract, and differ
+ * only in the tree that is built for it: `rtree_create_*` builds an R-tree,
+ * `sptree_create_*` a quad-tree or a k-d tree according to the kind it is
+ * given.
+ *
+ * - An index is filled by `_insert`, `_insert_temporal` and
+ *   `_insert_temporal_split`, or built from a whole entry set at once by
+ *   `_load`, and the two ways of filling it answer alike. The shape of the
+ *   tree differs, since a build that knows every entry in advance chooses the
+ *   depth rather than following the order the entries arrive in, but the set
+ *   of ids a query returns does not.
+ * - An index is append-only: there is no removal entry point, and an entry
+ *   stays until the index is rebuilt or freed. A caller that has to hide an
+ *   entry filters the ids a search returns.
+ * - `_load` therefore has a second use beyond speed. It leaves the index
+ *   holding exactly the entries it is given, releasing whatever the index
+ *   held, so it is the way an index that has grown stale is rebuilt from the
+ *   entries a caller keeps. Loading no entries leaves an empty index.
+ * - An index that has been loaded is indistinguishable from a freshly created
+ *   one of the same type: the same queries answer the same, and it can be
+ *   filled further by `_insert`.
+ * - `_free` releases the index and everything it holds.
+ *
  * @defgroup meos_temporal_spatial_rel_ever Ever/always spatial relationship functions
  * @ingroup meos_temporal
  * @brief Ever/always spatial relationship functions for temporal types

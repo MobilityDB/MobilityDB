@@ -127,15 +127,15 @@ cmp_pair(const void *a, const void *b)
 
 /* Return true if the pair of boxes satisfies the operation */
 static bool
-oracle(const STBox *box1, const STBox *box2, RTreeSearchOp op)
+oracle(const STBox *box1, const STBox *box2, IndexSearchOp op)
 {
   switch (op)
   {
-    case RTREE_OVERLAPS:
+    case INDEX_OVERLAPS:
       return overlaps_stbox_stbox(box1, box2);
-    case RTREE_CONTAINS:
+    case INDEX_CONTAINS:
       return contains_stbox_stbox(box1, box2);
-    default: /* RTREE_CONTAINED_BY */
+    default: /* INDEX_CONTAINED_BY */
       return contains_stbox_stbox(box2, box1);
   }
 }
@@ -145,7 +145,7 @@ oracle(const STBox *box1, const STBox *box2, RTreeSearchOp op)
  *****************************************************************************/
 
 static void
-test_stbox_join(RTreeSearchOp op, const char *opname, int count1, int count2,
+test_stbox_join(IndexSearchOp op, const char *opname, int count1, int count2,
   double minext1, double maxext1, int hours1, double minext2, double maxext2,
   int hours2)
 {
@@ -259,15 +259,15 @@ test_degenerate(void)
   RTree *empty1 = rtree_create_stbox();
   RTree *empty2 = rtree_create_stbox();
   check("empty joined with empty reports no pair",
-    rtree_join(empty1, empty2, RTREE_OVERLAPS, result) == 0);
+    rtree_join(empty1, empty2, INDEX_OVERLAPS, result) == 0);
 
   RTree *filled = rtree_create_stbox();
   STBox *box = stbox_in("STBOX XT(((0,0),(1,1)),[2000-01-01, 2000-01-02])");
   rtree_insert(filled, box, 0);
   check("empty joined with a filled index reports no pair",
-    rtree_join(empty1, filled, RTREE_OVERLAPS, result) == 0);
+    rtree_join(empty1, filled, INDEX_OVERLAPS, result) == 0);
   check("filled index joined with empty reports no pair",
-    rtree_join(filled, empty1, RTREE_OVERLAPS, result) == 0);
+    rtree_join(filled, empty1, INDEX_OVERLAPS, result) == 0);
 
   /* Two indexes whose boxes are far apart report no pair, and the same two
    * report their single pair once the boxes are made to overlap */
@@ -276,13 +276,13 @@ test_degenerate(void)
     "STBOX XT(((1000,1000),(1001,1001)),[2000-01-01, 2000-01-02])");
   rtree_insert(far, farbox, 0);
   check("indexes that share no box report no pair",
-    rtree_join(filled, far, RTREE_OVERLAPS, result) == 0);
+    rtree_join(filled, far, INDEX_OVERLAPS, result) == 0);
 
   RTree *near = rtree_create_stbox();
   STBox *nearbox = stbox_in(
     "STBOX XT(((0.5,0.5),(2,2)),[2000-01-01, 2000-01-02])");
   rtree_insert(near, nearbox, 7);
-  int n = rtree_join(filled, near, RTREE_OVERLAPS, result);
+  int n = rtree_join(filled, near, INDEX_OVERLAPS, result);
   check("a single overlapping pair is reported once", n == 1);
   check("the reported ids are the inserted ones", n == 1 &&
     *(int64 *) meos_array_get(result, 0) == 0 &&
@@ -295,7 +295,7 @@ test_degenerate(void)
     "STBOX XT(((0,0),(1,1)),[2001-01-01, 2001-01-02])");
   rtree_insert(later, laterbox, 0);
   check("boxes apart in time only are not reported",
-    rtree_join(filled, later, RTREE_OVERLAPS, result) == 0);
+    rtree_join(filled, later, INDEX_OVERLAPS, result) == 0);
 
   meos_array_destroy(result);
   free(box); free(farbox); free(nearbox); free(laterbox);
@@ -315,20 +315,20 @@ main(void)
   /* Comparable extents on both sides for overlaps; for the containment
    * operations the side that must hold the other is given the larger spatial
    * extent and the longer period */
-  test_stbox_join(RTREE_OVERLAPS, "overlaps", NUM_BOXES1, NUM_BOXES2,
+  test_stbox_join(INDEX_OVERLAPS, "overlaps", NUM_BOXES1, NUM_BOXES2,
     1.0, 150.0, 8, 1.0, 150.0, 8);
-  test_stbox_join(RTREE_CONTAINS, "contains", NUM_BOXES1, NUM_BOXES2,
+  test_stbox_join(INDEX_CONTAINS, "contains", NUM_BOXES1, NUM_BOXES2,
     60.0, 150.0, 12, 1.0, 8.0, 1);
-  test_stbox_join(RTREE_CONTAINED_BY, "contained by", NUM_BOXES1, NUM_BOXES2,
+  test_stbox_join(INDEX_CONTAINED_BY, "contained by", NUM_BOXES1, NUM_BOXES2,
     1.0, 8.0, 1, 60.0, 150.0, 12);
 
   /* Trees of equal height descend in step and never meet a leaf on one side
    * while the other still has inner nodes. A side holding at most MAXITEMS
    * boxes is a lone leaf, so pairing it with a taller tree reaches the two
    * branches that descend a single side, in both directions. */
-  test_stbox_join(RTREE_OVERLAPS, "overlaps, taller first", NUM_BOXES1,
+  test_stbox_join(INDEX_OVERLAPS, "overlaps, taller first", NUM_BOXES1,
     NUM_BOXES_LEAF, 1.0, 150.0, 8, 1.0, 150.0, 8);
-  test_stbox_join(RTREE_OVERLAPS, "overlaps, taller second", NUM_BOXES_LEAF,
+  test_stbox_join(INDEX_OVERLAPS, "overlaps, taller second", NUM_BOXES_LEAF,
     NUM_BOXES1, 1.0, 150.0, 8, 1.0, 150.0, 8);
   test_degenerate();
 
