@@ -65,8 +65,8 @@ SELECT asEWKT(round((tposechain
     PoseChain(Pose(Point(0 0), 1.5707963267948966), Pose(Point(10 0), 0))@2001-01-03]')::tpose, 6));
 /* Interp=Step;[Pose(POINT(10 0),0)@2001-01-01,
    Pose(POINT(0 10),1.570796)@2001-01-03] */
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tposechain_accessors"></a>Funciones de acceso</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="numLinks"></a><a class="indexterm" name="id11002"></a><p>Devuelve el número de eslabones que tiene todo valor de una cadena de poses temporal</p><p><code class="varname">numLinks(tposechain) → integer</code></p><p>El número es el mismo en todo instante, por lo que un instante responde por todo el valor.</p><pre class="programlisting">
-SELECT numLinks(tposechain
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tposechain_accessors"></a>Funciones de acceso</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tposechain_numPoses"></a><a class="indexterm" name="id11002"></a><p>Devuelve el número de eslabones que tiene todo valor de una cadena de poses temporal</p><p><code class="varname">numPoses(tposechain) → integer</code></p><p>El número es el mismo en todo instante, por lo que un instante responde por todo el valor.</p><pre class="programlisting">
+SELECT numPoses(tposechain
   'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01');
 -- 2
 </pre></li><li class="listitem"><a name="tposechain_getValue"></a><a class="indexterm" name="id11011"></a><a class="indexterm" name="id11014"></a><a class="indexterm" name="id11017"></a><p>Devuelve el valor de un instante temporal, el conjunto de valores o el lapso de tiempo</p><p><code class="varname">getValue(tposechain) → posechain</code></p><p><code class="varname">getValues(tposechain) → posechainset</code></p><p><code class="varname">timeSpan(tposechain) → tstzspan</code></p><pre class="programlisting">

@@ -65,8 +65,8 @@ SELECT asEWKT(round((tposechain
     PoseChain(Pose(Point(0 0), 1.5707963267948966), Pose(Point(10 0), 0))@2001-01-03]')::tpose, 6));
 /* Interp=Step;[Pose(POINT(10 0),0)@2001-01-01,
    Pose(POINT(0 10),1.570796)@2001-01-03] */
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tposechain_accessors"></a>Accessor Functions</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="numLinks"></a><a class="indexterm" name="id11590"></a><p>Return the number of links every value of a temporal pose chain holds</p><p><code class="varname">numLinks(tposechain) → integer</code></p><p>The number is the same at every instant, so one instant answers for the whole value.</p><pre class="programlisting">
-SELECT numLinks(tposechain
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tposechain_accessors"></a>Accessor Functions</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tposechain_numPoses"></a><a class="indexterm" name="id11590"></a><p>Return the number of links every value of a temporal pose chain holds</p><p><code class="varname">numPoses(tposechain) → integer</code></p><p>The number is the same at every instant, so one instant answers for the whole value.</p><pre class="programlisting">
+SELECT numPoses(tposechain
   'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01');
 -- 2
 </pre></li><li class="listitem"><a name="tposechain_getValue"></a><a class="indexterm" name="id11599"></a><a class="indexterm" name="id11602"></a><a class="indexterm" name="id11605"></a><p>Return the value of a temporal instant, the set of values, or the time span</p><p><code class="varname">getValue(tposechain) → posechain</code></p><p><code class="varname">getValues(tposechain) → posechainset</code></p><p><code class="varname">timeSpan(tposechain) → tstzspan</code></p><pre class="programlisting">
