@@ -40,6 +40,8 @@
 
 /*****************************************************************************/
 
+extern GSERIALIZED *trgeo_placements(const Temporal *temp);
+
 extern Temporal *trgeo_restrict_geom(const Temporal *temp,
   const GSERIALIZED *gs, bool atfunc);
 extern Temporal *trgeo_restrict_stbox(const Temporal *temp, const STBox *box,

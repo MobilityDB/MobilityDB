@@ -58,7 +58,7 @@
  *****************************************************************************/
 
 /**
- * @brief Generic spatial relationship for the traversed area of a temporal
+ * @brief Generic spatial relationship for the placements of a temporal
  * rigid geometry and a geometry
  * @param[in] temp Temporal rigid geometry
  * @param[in] gs Geometry
@@ -78,19 +78,19 @@ spatialrel_trgeo_trav_geo(const Temporal *temp, const GSERIALIZED *gs,
 
   assert(numparam == 2 || numparam == 3);
   Datum geo = PointerGetDatum(gs);
-  Datum trav = PointerGetDatum(trgeometry_traversed_area(temp, UNARY_UNION_NO));
+  Datum places = PointerGetDatum(trgeo_placements(temp));
   Datum result;
   if (numparam == 2)
   {
     datum_func2 func2 = (datum_func2) func;
-    result = invert ? func2(geo, trav) : func2(trav, geo);
+    result = invert ? func2(geo, places) : func2(places, geo);
   }
   else /* numparam == 3 */
   {
     datum_func3 func3 = (datum_func3) func;
-    result = invert ? func3(geo, trav, param) : func3(trav, geo, param);
+    result = invert ? func3(geo, places, param) : func3(places, geo, param);
   }
-  pfree(DatumGetPointer(trav));
+  pfree(DatumGetPointer(places));
   return result ? 1 : 0;
 }
 
@@ -98,10 +98,10 @@ spatialrel_trgeo_trav_geo(const Temporal *temp, const GSERIALIZED *gs,
  * @brief Return 1 if the poses of a temporal rigid geometry and a geometry
  * ever/always satisfy a spatial relationship, 0 if not, and -1 on error or if
  * the geometry is empty
- * @details The traversed area collects the reference geometry at each of the
- * poses the value takes, so the relationship is asked of each of them: the
- * ever semantics hold where one pose satisfies it, the always semantics where
- * every pose does. Asking it of the traversed area as a whole answers for the
+ * @details The placements are the reference geometry at each of the poses the
+ * value takes, so the relationship is asked of each of them: the ever
+ * semantics hold where one pose satisfies it, the always semantics where
+ * every pose does. Asking it of the placements as a whole answers for the
  * union of the poses, which is a region the body occupies at no single instant
  * @param[in] temp Temporal rigid geometry
  * @param[in] gs Geometry
@@ -117,10 +117,10 @@ ea_spatialrel_trgeo_poses_geo(const Temporal *temp, const GSERIALIZED *gs,
   if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
 
-  GSERIALIZED *trav = trgeometry_traversed_area(temp, UNARY_UNION_NO);
+  GSERIALIZED *places = trgeo_placements(temp);
   Datum geo = PointerGetDatum(gs);
   int count;
-  GSERIALIZED **poses = geo_extract_elements(trav, &count);
+  GSERIALIZED **poses = geo_extract_elements(places, &count);
   /* The vacuous default: false for the ever semantics, true for the always
    * ones */
   int result = ever ? 0 : 1;
@@ -134,7 +134,7 @@ ea_spatialrel_trgeo_poses_geo(const Temporal *temp, const GSERIALIZED *gs,
     }
   }
   pfree_array((void *) poses, count);
-  pfree(trav);
+  pfree(places);
   return result;
 }
 
@@ -187,7 +187,7 @@ ea_spatialrel_trgeo_poses_geo(const Temporal *temp, const GSERIALIZED *gs,
  * @param[in] gs Geometry
  * @param[in] temp Temporal rigid geometry
  * @param[in] ever True for the ever semantics, false for the always semantics
- * @note The function tests whether the traversed area intersects the interior
+ * @note The function tests whether the placements intersect the interior
  * of the geometry. Please refer to the documentation of the ST_Contains and
  * ST_Relate functions
  * https://postgis.net/docs/ST_Relate.html
@@ -199,10 +199,10 @@ ea_contains_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
   /* Ensure the validity of the arguments */
   if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
-  GSERIALIZED *trav = trgeometry_traversed_area(temp, UNARY_UNION_NO);
-  bool result = ever ? geom_relate_pattern(gs, trav, "T********") :
-    geom_contains(gs, trav);
-  pfree(trav);
+  GSERIALIZED *places = trgeo_placements(temp);
+  bool result = ever ? geom_relate_pattern(gs, places, "T********") :
+    geom_contains(gs, places);
+  pfree(places);
   return result ? 1 : 0;
 }
 
@@ -212,7 +212,7 @@ ea_contains_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
  * 0 if not, and -1 on error or if the geometry is empty
  * @param[in] gs Geometry
  * @param[in] temp Temporal rigid geometry
- * @note The function tests whether the traversed area is contained in the 
+ * @note The function tests whether the placements are contained in the 
  * geometry
  * https://postgis.net/docs/ST_Relate.html
  * https://postgis.net/docs/ST_Contains.html
@@ -230,7 +230,7 @@ econtains_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp)
  * 0 if not, and -1 on error or if the geometry is empty
  * @param[in] gs Geometry
  * @param[in] temp Temporal rigid geometry
- * @note The function tests whether the traversed area is contained in the 
+ * @note The function tests whether the placements are contained in the 
  * geometry
  * https://postgis.net/docs/ST_Relate.html
  * https://postgis.net/docs/ST_Contains.html
@@ -243,8 +243,8 @@ acontains_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp)
 }
 
 /**
- * @brief Return 1 if the traversed area of a temporal rigid geometry ever
- * contains the traversed area of another, 0 if not, and -1 on error
+ * @brief Return 1 if the placements of a temporal rigid geometry ever
+ * contain the placements of another, 0 if not, and -1 on error
  * @param[in] temp1,temp2 Temporal rigid geometries
  * @param[in] ever True for the ever semantics, false for the always semantics
  */
@@ -253,16 +253,16 @@ ea_contains_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
 {
   if (! ensure_valid_trgeo_trgeo(temp1, temp2))
     return -1;
-  GSERIALIZED *trav1 = trgeometry_traversed_area(temp1, UNARY_UNION_NO);
-  GSERIALIZED *trav2 = trgeometry_traversed_area(temp2, UNARY_UNION_NO);
-  bool result = ever ? geom_relate_pattern(trav1, trav2, "T********") :
-    geom_contains(trav1, trav2);
-  pfree(trav1); pfree(trav2);
+  GSERIALIZED *places1 = trgeo_placements(temp1);
+  GSERIALIZED *places2 = trgeo_placements(temp2);
+  bool result = ever ? geom_relate_pattern(places1, places2, "T********") :
+    geom_contains(places1, places2);
+  pfree(places1); pfree(places2);
   return result ? 1 : 0;
 }
 
 /**
- * @brief Return 1 if the traversed area of a temporal rigid geometry ever or
+ * @brief Return 1 if the placements of a temporal rigid geometry ever or
  * always contains a geometry, 0 if not, and -1 on error or if the geometry
  * is empty
  * @param[in] temp Temporal rigid geometry
@@ -274,10 +274,10 @@ ea_contains_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 {
   if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
-  GSERIALIZED *trav = trgeometry_traversed_area(temp, UNARY_UNION_NO);
-  bool result = ever ? geom_relate_pattern(trav, gs, "T********") :
-    geom_contains(trav, gs);
-  pfree(trav);
+  GSERIALIZED *places = trgeo_placements(temp);
+  bool result = ever ? geom_relate_pattern(places, gs, "T********") :
+    geom_contains(places, gs);
+  pfree(places);
   return result ? 1 : 0;
 }
 
@@ -291,7 +291,7 @@ ea_contains_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
  * @param[in] gs Geometry
  * @param[in] temp Temporal geometry
  * @param[in] ever True for the ever semantics, false for the always semantics
- * @note The function tests whether the traversed area intersects the interior
+ * @note The function tests whether the placements intersect the interior
  * of the geometry. Please refer to the documentation of the ST_Contains and
  * ST_Relate functions
  * https://postgis.net/docs/ST_Relate.html
@@ -303,10 +303,10 @@ ea_covers_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
   /* Ensure the validity of the arguments */
   if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
-  GSERIALIZED *trav = trgeometry_traversed_area(temp, UNARY_UNION_NO);
-  bool result = ever ? geom_relate_pattern(gs, trav, "T********") :
-    geom_covers(gs, trav);
-  pfree(trav);
+  GSERIALIZED *places = trgeo_placements(temp);
+  bool result = ever ? geom_relate_pattern(gs, places, "T********") :
+    geom_covers(gs, places);
+  pfree(places);
   return result ? 1 : 0;
 }
 
@@ -316,7 +316,7 @@ ea_covers_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
  * 0 if not, and -1 on error or if the geometry is empty
  * @param[in] gs Geometry
  * @param[in] temp Temporal geometry
- * @note The function tests whether the traversed area is covered in the 
+ * @note The function tests whether the placements are covered in the 
  * geometry
  * https://postgis.net/docs/ST_Relate.html
  * https://postgis.net/docs/ST_Contains.html
@@ -334,7 +334,7 @@ ecovers_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp)
  * 0 if not, and -1 on error or if the geometry is empty
  * @param[in] gs Geometry
  * @param[in] temp Temporal geometry
- * @note The function tests whether the traversed area is covered in the 
+ * @note The function tests whether the placements are covered in the 
  * geometry
  * https://postgis.net/docs/ST_Relate.html
  * https://postgis.net/docs/ST_Contains.html
@@ -354,7 +354,7 @@ acovers_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp)
  * @param[in] temp Temporal geometry
  * @param[in] gs Geometry
  * @param[in] ever True for the ever semantics, false for the always semantics
- * @note The function tests whether the traversed area intersects the interior
+ * @note The function tests whether the placements intersect the interior
  * of the geometry. Please refer to the documentation of the ST_Contains and
  * ST_Relate functions
  * https://postgis.net/docs/ST_Relate.html
@@ -372,7 +372,7 @@ ea_covers_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
  * and -1 on error or if the geometry is empty
  * @param[in] temp Temporal geometry
  * @param[in] gs Geometry
- * @note The function tests whether the traversed area covers the geometry
+ * @note The function tests whether the placements cover the geometry
  * https://postgis.net/docs/ST_Relate.html
  * https://postgis.net/docs/ST_Contains.html
  * @csqlfn #Ecovers_trgeometry_geo()
@@ -389,7 +389,7 @@ ecovers_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
  * and -1 on error or if the geometry is empty
  * @param[in] temp Temporal geometry
  * @param[in] gs Geometry
- * @note The function tests whether the traversed area covers the geometry
+ * @note The function tests whether the placements cover the geometry
  * https://postgis.net/docs/ST_Relate.html
  * https://postgis.net/docs/ST_Contains.html
  * @csqlfn #Acovers_trgeometry_geo()
@@ -401,8 +401,8 @@ acovers_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 }
 
 /**
- * @brief Return 1 if the traversed area of a temporal rigid geometry ever
- * covers the traversed area of another, 0 if not, and -1 on error
+ * @brief Return 1 if the placements of a temporal rigid geometry ever
+ * cover the placements of another, 0 if not, and -1 on error
  * @param[in] temp1,temp2 Temporal rigid geometries
  * @param[in] ever True for the ever semantics, false for the always semantics
  */
@@ -411,11 +411,11 @@ ea_covers_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
 {
   if (! ensure_valid_trgeo_trgeo(temp1, temp2))
     return -1;
-  GSERIALIZED *trav1 = trgeometry_traversed_area(temp1, UNARY_UNION_NO);
-  GSERIALIZED *trav2 = trgeometry_traversed_area(temp2, UNARY_UNION_NO);
-  bool result = ever ? geom_relate_pattern(trav1, trav2, "T********") :
-    geom_covers(trav1, trav2);
-  pfree(trav1); pfree(trav2);
+  GSERIALIZED *places1 = trgeo_placements(temp1);
+  GSERIALIZED *places2 = trgeo_placements(temp2);
+  bool result = ever ? geom_relate_pattern(places1, places2, "T********") :
+    geom_covers(places1, places2);
+  pfree(places1); pfree(places2);
   return result ? 1 : 0;
 }
 
@@ -486,7 +486,7 @@ ea_disjoint_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
 }
 
 /**
- * @brief Return 1 if the traversed areas of two temporal rigid geometries are
+ * @brief Return 1 if the placements of two temporal rigid geometries are
  * ever or always disjoint, 0 if not, and -1 on error
  * @param[in] temp1,temp2 Temporal rigid geometries
  * @param[in] ever True for the ever semantics, false for the always semantics
@@ -529,7 +529,7 @@ adisjoint_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @brief Return 1 if the traversed area of a temporal rigid geometry ever or
+ * @brief Return 1 if the placements of a temporal rigid geometry ever or
  * always intersects a geometry, 0 if not, and -1 on error or if the geometry
  * is empty
  * @param[in] temp Temporal rigid geometry
@@ -589,7 +589,7 @@ ea_intersects_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
 }
 
 /**
- * @brief Return 1 if the traversed areas of two temporal rigid geometries are
+ * @brief Return 1 if the placements of two temporal rigid geometries are
  * ever or always intersecting, 0 if not, and -1 on error
  * @param[in] temp1,temp2 Temporal rigid geometries
  * @param[in] ever True for the ever semantics, false for the always semantics
@@ -686,7 +686,7 @@ ea_touches_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
 }
 
 /**
- * @brief Return 1 if the traversed areas of two temporal rigid geometries
+ * @brief Return 1 if the placements of two temporal rigid geometries
  * ever touch, 0 if not, and -1 on error
  * @param[in] temp1,temp2 Temporal rigid geometries
  * @param[in] ever True for the ever semantics, false for the always semantics
@@ -696,11 +696,11 @@ ea_touches_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
 {
   if (! ensure_valid_trgeo_trgeo(temp1, temp2))
     return -1;
-  GSERIALIZED *trav1 = trgeometry_traversed_area(temp1, UNARY_UNION_NO);
-  GSERIALIZED *trav2 = trgeometry_traversed_area(temp2, UNARY_UNION_NO);
-  bool result = geom_touches(trav1, trav2);
+  GSERIALIZED *places1 = trgeo_placements(temp1);
+  GSERIALIZED *places2 = trgeo_placements(temp2);
+  bool result = geom_touches(places1, places2);
   (void) ever;
-  pfree(trav1); pfree(trav2);
+  pfree(places1); pfree(places2);
   return result ? 1 : 0;
 }
 
