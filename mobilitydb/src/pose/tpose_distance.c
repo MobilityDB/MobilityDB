@@ -577,6 +577,8 @@ Shortestline_pose_tpose(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   GSERIALIZED *result = shortestline_tpose_pose(temp, pose);
   PG_FREE_IF_COPY(temp, 1);
+  if (! result)
+    PG_RETURN_NULL();
   PG_RETURN_GSERIALIZED_P(result);
 }
 
@@ -584,7 +586,7 @@ PGDLLEXPORT Datum Shortestline_tpose_pose(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Shortestline_tpose_pose);
 /**
  * @ingroup mobilitydb_pose_dist
- * @brief Return the line connecting the nearest approach point between a 
+ * @brief Return the line connecting the nearest approach point between a
  * temporal pose and a pose
  * @sqlfn shortestLine()
  */
@@ -595,6 +597,8 @@ Shortestline_tpose_pose(PG_FUNCTION_ARGS)
   Pose *pose = PG_GETARG_POSE_P(1);
   GSERIALIZED *result = shortestline_tpose_pose(temp, pose);
   PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
   PG_RETURN_GSERIALIZED_P(result);
 }
 
