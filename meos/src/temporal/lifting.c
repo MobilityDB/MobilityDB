@@ -2271,6 +2271,58 @@ eafunc_tdiscstepseq_base(const TSequence *seq, Datum value,
  * discontinuous. When this would be no longer the case, additional functions
  * must be added to take account of the remaining cases
  */
+/**
+ * @brief Apply the lifted function to a value that a segment takes and return
+ * whether the answer for the whole sequence is thereby decided
+ * @param[in] value1 Value that the segment takes
+ * @param[in] value2 Value that the lifted function is applied against
+ * @param[in] lfinfo Information about the lifted function
+ * @param[out] result Answer for the sequence, set when the answer is decided
+ */
+static bool
+eafunc_value_decides(Datum value1, Datum value2, LiftedFunctionInfo *lfinfo,
+  int *result)
+{
+  bool res = DatumGetBool(tfunc_base_base(value1, value2, lfinfo));
+  if (lfinfo->ever && res)
+  {
+    *result = 1;
+    return true;
+  }
+  if (! lfinfo->ever && ! res)
+  {
+    *result = 0;
+    return true;
+  }
+  return false;
+}
+
+/**
+ * @brief Apply the lifted function to the value that a segment takes midway
+ * between two instants of it and return whether the answer is thereby decided
+ * @param[in] startvalue,endvalue Values defining the segment
+ * @param[in] temptype Temporal type
+ * @param[in] lower,upper Timestamps defining the segment
+ * @param[in] t1,t2 Timestamps defining the piece to take a value from
+ * @param[in] value Value that the lifted function is applied against
+ * @param[in] lfinfo Information about the lifted function
+ * @param[out] result Answer for the sequence, set when the answer is decided
+ * @note The midpoint of a piece shorter than two microseconds is a bound of
+ * it, which is as finely as the time type resolves a piece
+ */
+static bool
+eafunc_midpoint_decides(Datum startvalue, Datum endvalue, MeosType temptype,
+  TimestampTz lower, TimestampTz upper, TimestampTz t1, TimestampTz t2,
+  Datum value, LiftedFunctionInfo *lfinfo, int *result)
+{
+  TimestampTz tmid = t1 + (TimestampTz) ((t2 - t1) / 2);
+  Datum midvalue = tsegment_value_at_timestamptz(startvalue, endvalue,
+    temptype, lower, upper, tmid);
+  bool decided = eafunc_value_decides(midvalue, value, lfinfo, result);
+  DATUM_FREE(midvalue, temptype_basetype(temptype));
+  return decided;
+}
+
 static int
 eafunc_tlinearseq_base(const TSequence *seq, Datum value,
   LiftedFunctionInfo *lfinfo)
@@ -2286,30 +2338,31 @@ eafunc_tlinearseq_base(const TSequence *seq, Datum value,
   MeosType basetype = temptype_basetype(seq->temptype);
   TInstant *start = (TInstant *) TSEQUENCE_INST_N(seq, 0);
   Datum startvalue;
-  bool res;
+  int result;
   for (int i = 1; i < seq->count; i++)
   {
-    /* Compute the function at the start instant */
+    /* Compute the function at the start instant, which the segment takes
+     * only when its lower bound is inclusive */
     startvalue = tinstant_value_p(start);
-    if (lower_inc || ! lfinfo->ever)
-    {
-      res = DatumGetBool(tfunc_base_base(startvalue, value, lfinfo));
-      if ((lfinfo->ever && res) || (! lfinfo->ever && ! res))
-        return lfinfo->ever ? 1 : 0;
-    }
-    /* Compute the function at the end instant */
+    if (lower_inc &&
+        eafunc_value_decides(startvalue, value, lfinfo, &result))
+      return result;
+    /* Compute the function at the end instant, which the segment takes only
+     * when its upper bound is inclusive */
     TInstant *end = (TInstant *) TSEQUENCE_INST_N(seq, i);
     Datum endvalue = tinstant_value_p(end);
     bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
-    if (upper_inc || ! lfinfo->ever)
-    {
-      res = DatumGetBool(tfunc_base_base(endvalue, value, lfinfo));
-      if ((lfinfo->ever && res) || (! lfinfo->ever && ! res))
-        return lfinfo->ever ? 1 : 0;
-    }
-    /* Continue if the segment is constant */
+    if (upper_inc &&
+        eafunc_value_decides(endvalue, value, lfinfo, &result))
+      return result;
+    /* A constant segment takes its single value at every instant of it, the
+     * interior included, so a bound it excludes leaves that value taken */
     if (datum_eq(startvalue, endvalue, basetype))
+    {
+      if (eafunc_value_decides(startvalue, value, lfinfo, &result))
+        return result;
       continue;
+    }
     /* Cross-type comparison (e.g. trgeometry vs geometry): skip the
      * segment-locate intersection finder. datumsegm_locate dispatches
      * by the temporal type's basetype (Pose for trgeometry), but the
@@ -2324,30 +2377,31 @@ eafunc_tlinearseq_base(const TSequence *seq, Datum value,
       lower_inc = true;
       continue;
     }
+    /* Determine whether the segment crosses the value. The crossing is
+     * strictly inside the segment, since the function answers 0 when the
+     * value is the one of a bound, so the segment takes the value there
+     * whichever bounds it excludes */
     TimestampTz tpt1, tpt2;
-    /* To avoid floating point imprecission, if the lifted function to
-     * apply is datum2_eq or datum_point_eq, the equality test is computed in
-     * the crossing */
-    bool eqfn = ((lfinfo->func == (varfunc) (&datum2_eq)) ||
-      (lfinfo->func == (varfunc) (&datum2_point_eq)));
-    /* Determine whether there is a crossing and if there is one compute the
-     * value at the crossing */
     int cross = tsegment_intersection_value(startvalue, endvalue, value,
       start->temptype, start->t, end->t, &tpt1, &tpt2);
+    if (cross && eafunc_value_decides(value, value, lfinfo, &result))
+      return result;
+    /* The crossing cuts the segment into pieces on which the lifted function
+     * is constant, the function comparing against a single value and the
+     * segment being linear. One value taken strictly inside a piece therefore
+     * decides that piece, and the midpoint is such a value */
     if (cross)
     {
-      if (eqfn)
-        res = true;
-      else
-      {
-        Datum tpvalue1 = tsegment_value_at_timestamptz(startvalue, endvalue,
-          start->temptype, start->t, end->t, tpt1);
-        res = DatumGetBool(tfunc_base_base(tpvalue1, value, lfinfo));
-        DATUM_FREE(tpvalue1, basetype);
-      }
-      if ((lfinfo->ever && res) || (! lfinfo->ever && ! res))
-        return lfinfo->ever ? 1 : 0;
+      if (eafunc_midpoint_decides(startvalue, endvalue, start->temptype,
+            start->t, end->t, start->t, tpt1, value, lfinfo, &result))
+        return result;
+      if (eafunc_midpoint_decides(startvalue, endvalue, start->temptype,
+            start->t, end->t, tpt1, end->t, value, lfinfo, &result))
+        return result;
     }
+    else if (eafunc_midpoint_decides(startvalue, endvalue, start->temptype,
+               start->t, end->t, start->t, end->t, value, lfinfo, &result))
+      return result;
     start = end;
     lower_inc = true;
   }
