@@ -24,6 +24,7 @@ on:
   push:
     paths:
       - '.github/workflows/meos_utf8_smoke.yml'
+      - '.github/actions/apt-resilient/**'
       - 'cmake/**'
       - 'meos/**'
       - 'pgtypes/**'
@@ -34,6 +35,7 @@ on:
   pull_request:
     paths:
       - '.github/workflows/meos_utf8_smoke.yml'
+      - '.github/actions/apt-resilient/**'
       - 'cmake/**'
       - 'meos/**'
       - 'pgtypes/**'

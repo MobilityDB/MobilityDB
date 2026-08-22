@@ -5,6 +5,7 @@ on:
   push:
     paths:
       - '.github/workflows/meos.yml'
+      - '.github/actions/apt-resilient/**'
       - 'cmake/**'
       - 'meos/**'
       - 'mobilitydb/**'
@@ -17,6 +18,7 @@ on:
   pull_request:
     paths:
       - '.github/workflows/meos.yml'
+      - '.github/actions/apt-resilient/**'
       - 'cmake/**'
       - 'meos/**'
       - 'mobilitydb/**'

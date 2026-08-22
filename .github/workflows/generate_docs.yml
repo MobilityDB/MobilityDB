@@ -7,6 +7,7 @@ on:
   push:
     paths:
       - '.github/workflows/generate_docs.yml'
+      - '.github/actions/apt-resilient/**'
       - 'doc/**'
     branches:
       - 'master'
