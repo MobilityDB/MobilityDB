@@ -244,7 +244,7 @@ PG_FUNCTION_INFO_V1(Tcbuffer_radius);
 /**
  * @ingroup mobilitydb_cbuffer_accessor
  * @brief Return the set of radii of a temporal circular buffer
- * @sqlfn points()
+ * @sqlfn radius()
  */
 Datum
 Tcbuffer_radius(PG_FUNCTION_ARGS)

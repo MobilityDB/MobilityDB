@@ -1397,7 +1397,7 @@ tcbuffer_points(const Temporal *temp)
 /**
  * @ingroup meos_cbuffer_accessor
  * @brief Return the array of radii of a temporal circular buffer
- * @csqlfn #Tcbuffer_points()
+ * @csqlfn #Tcbuffer_radius()
  */
 Set *
 tcbuffer_radius(const Temporal *temp)
