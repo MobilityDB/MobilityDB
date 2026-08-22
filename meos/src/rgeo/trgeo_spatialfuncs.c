@@ -1039,19 +1039,17 @@ trgeometry_twcentroid(const Temporal *temp)
  *****************************************************************************/
 
 /*
- * @brief Adaptive sub-sampling tolerances for trgeometry_traversed_area.
+ * @brief The rotation a single sample interval of trgeometry_traversed_area
+ * may span.
  *
- * Mirrors TRGEO_TDISTANCE_ADAPTIVE_TOL / TRGEO_TDISTANCE_ADAPTIVE_MAX_DEPTH
- * in the trgeometry distance kernel (see meos/src/rgeo/trgeo_distance.c).
- * Pure-translation segments need no sampling: the convex hull of two
- * endpoint polygons equals the swept ribbon. Rotation-heavy segments
- * are bisected while the rotation magnitude across the half-segment
- * exceeds the tolerance (radians). At the default tolerance of 0.05 rad
- * (~2.86°) and a max depth of 5, a 90° rotation produces 32 sub-samples;
- * a 180° rotation hits the depth cap.
+ * A vertex of a turning body travels an arc, and a sample interval spans the
+ * chord of that arc, so the answer follows the body the more closely the less
+ * it turns across one interval. At 0.05 rad (~2.86 deg) a quarter turn is
+ * carried by 31 intermediate placements and a half turn by 62, which is the
+ * most any interval asks for: a rotation is read as the shortest way round,
+ * so it never exceeds pi.
  */
 #define TRGEO_TRAVERSED_AREA_ANGLE_TOL    0.05
-#define TRGEO_TRAVERSED_AREA_MAX_DEPTH    5
 
 /**
  * @brief Append the materialised polygon at timestamp @p t to the running
@@ -1073,62 +1071,38 @@ trgeo_trav_emit_at(const Temporal *temp, TimestampTz t,
 }
 
 /**
- * @brief Recursive bisection for trgeometry_traversed_area: append samples on
- * (t_a, t_b] where the rotation magnitude exceeds the tolerance. Models
- * the same depth-bounded recursion as `trgeo_pair_dist_adaptive` in the
- * distance kernel; the convergence test here is the rotation magnitude
- * across the half-segment, since pure-translation segments need no
- * extra samples (the convex hull of the two endpoint polygons already
- * equals the swept ribbon under unary union).
+ * @brief Append the placements a body passes through on one segment
+ * @details The rotation from one pose to the next decides how many
+ * placements the segment carries: enough that no interval spans more than
+ * `TRGEO_TRAVERSED_AREA_ANGLE_TOL` of turn, which is
+ * `ceil(rotation / tolerance) - 1` intermediate ones. A segment the body
+ * only translates along asks for none, its two placements bounding
+ * everything it covers. The placement at @p inst_a is appended by the
+ * caller, as the previous segment's end or as the first instant.
  */
 static void
-trgeo_trav_adaptive(const Temporal *temp, const TInstant *inst_a,
-  const TInstant *inst_b, int depth, GSERIALIZED ***buf, int *buf_n,
-  int *buf_cap)
+trgeo_trav_segment(const Temporal *temp, const TInstant *inst_a,
+  const TInstant *inst_b, GSERIALIZED ***buf, int *buf_n, int *buf_cap)
 {
   Pose *pose_a = DatumGetPoseP(tinstant_value_p((TInstant *) inst_a));
   Pose *pose_b = DatumGetPoseP(tinstant_value_p((TInstant *) inst_b));
-  /* Angular shortest-path distance between the two pose orientations. */
+  /* The rotation is the shortest way round, so it never exceeds pi */
   double dtheta = pose_b->data[2] - pose_a->data[2];
   const double TWOPI = 2.0 * M_PI;
   while (dtheta > M_PI)  dtheta -= TWOPI;
   while (dtheta < -M_PI) dtheta += TWOPI;
-  double abs_dtheta = fabs(dtheta);
-  if (abs_dtheta < TRGEO_TRAVERSED_AREA_ANGLE_TOL ||
-      depth >= TRGEO_TRAVERSED_AREA_MAX_DEPTH ||
-      inst_b->t - inst_a->t <= 1)
+  int n = (int) ceil(fabs(dtheta) / TRGEO_TRAVERSED_AREA_ANGLE_TOL) - 1;
+  if (n > 0)
   {
-    /* Rotation is small enough across [t_a, t_b] that the convex hull
-     * of the two endpoint polygons covers the swept ribbon. Emit only
-     * t_b (t_a was emitted by the caller as the previous segment's
-     * endpoint or the initial instant). */
-    trgeo_trav_emit_at(temp, inst_b->t, buf, buf_n, buf_cap);
-    return;
+    /* An interval shorter than the timestamp resolution carries no
+     * placement of its own */
+    TimestampTz span = inst_b->t - inst_a->t;
+    if (span > n)
+      for (int i = 1; i <= n; i++)
+        trgeo_trav_emit_at(temp, inst_a->t + (TimestampTz) (span * i / (n + 1)),
+          buf, buf_n, buf_cap);
   }
-  /* Bisect: emit a midpoint sample, then recurse on both halves. */
-  TimestampTz t_m = inst_a->t + (inst_b->t - inst_a->t) / 2;
-  /* Build a virtual midpoint instant on the stack so we can recurse on
-   * the same shape as inst_a / inst_b. trgeo_value_at_timestamptz
-   * gives us a fresh GSERIALIZED for the midpoint pose's materialised
-   * polygon, but we need the underlying Pose to compute dtheta on the
-   * sub-segment. Read it via the public tpose accessor.
-   */
-  Datum dpose_m;
-  Temporal *tpose_t = trgeometry_to_tpose(temp);
-  bool ok = tpose_t &&
-    temporal_value_at_timestamptz(tpose_t, t_m, false, &dpose_m);
-  if (tpose_t) pfree(tpose_t);
-  if (! ok)
-  {
-    /* Fall back to flat sampling at the midpoint and stop. */
-    trgeo_trav_emit_at(temp, t_m, buf, buf_n, buf_cap);
-    trgeo_trav_emit_at(temp, inst_b->t, buf, buf_n, buf_cap);
-    return;
-  }
-  TInstant *inst_m = tinstant_make(dpose_m, T_TPOSE, t_m);
-  trgeo_trav_adaptive(temp, inst_a, inst_m, depth + 1, buf, buf_n, buf_cap);
-  trgeo_trav_adaptive(temp, inst_m, inst_b, depth + 1, buf, buf_n, buf_cap);
-  pfree(inst_m); pfree(DatumGetPointer(dpose_m));
+  trgeo_trav_emit_at(temp, inst_b->t, buf, buf_n, buf_cap);
 }
 
 /**
@@ -1143,14 +1117,11 @@ trgeo_trav_adaptive(const Temporal *temp, const TInstant *inst_a,
  * @note Mirrors the collect-then-union pattern of `tgeo_traversed_area`
  * for general temporal geometries; the trgeometry-specific step is
  * materialising the reference polygon at every emitted sample via
- * `pose_apply_geo`. Sample selection mirrors the adaptive recursive
- * bisection in `tdistance_trgeoseq_trgeoseq_linear`: each input instant
- * is emitted; between two consecutive instants the segment is bisected
- * while the rotation magnitude across the half-segment exceeds
- * `TRGEO_TRAVERSED_AREA_ANGLE_TOL` and the recursion depth is below
- * `TRGEO_TRAVERSED_AREA_MAX_DEPTH`. Pure-translation segments
- * terminate at depth 0 with two samples (start and end). The unary
- * union dissolves any redundant overlap between samples.
+ * `pose_apply_geo`. Every input instant is emitted, and a segment carries
+ * as many placements between two of them as its rotation asks for at
+ * `TRGEO_TRAVERSED_AREA_ANGLE_TOL` of turn each. A convex body then covers
+ * the hull of every consecutive pair, and the unary union dissolves the
+ * overlap the hulls share.
  */
 /**
  * @brief Return true if the reference geometry of a temporal rigid geometry is
@@ -1231,7 +1202,7 @@ trgeometry_traversed_area(const Temporal *temp, bool unary_union)
    * appends samples on (t_m, t_b], reusing the t_a sample emitted by
    * the previous iteration. */
   for (int i = 0; i + 1 < n_insts; i++)
-    trgeo_trav_adaptive(temp, insts[i], insts[i + 1], 0,
+    trgeo_trav_segment(temp, insts[i], insts[i + 1],
       &geoms, &n_geoms, &cap);
 
   /* The samples are the placements the body passes through; the area it
