@@ -1788,51 +1788,6 @@ GEOS2POSTGIS(GEOSGeom geom, char want3d)
 }
 
 /**
- * @brief Transform two @p GSERIALIZED geometries into @p GEOSGeometry and
- * call the GEOS function passed as argument
- */
-static bool
-meos_call_geos2(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
-  char (*func)(GEOSContextHandle_t ctx, const GEOSGeometry *geos1,
-    const GEOSGeometry *geos2))
-{
-  assert(gs1); assert(gs2); assert(func);
-  GEOSContextHandle_t ctx = geos_get_context();
-
-  GEOSGeometry *geos1 = POSTGIS2GEOS(gs1);
-  if (! geos1)
-  {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-      "First argument geometry could not be converted to GEOS");
-    return false;
-  }
-  GEOSGeometry *geos2 = POSTGIS2GEOS(gs2);
-  if (! geos2)
-  {
-    GEOSGeom_destroy_r(ctx, geos1);
-    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-      "Second argument geometry could not be converted to GEOS");
-    return false;
-  }
-
-  char result = func(ctx, geos1, geos2);
-
-  GEOSGeom_destroy_r(ctx, geos1); GEOSGeom_destroy_r(ctx, geos2);
-  /* GEOS reports a failure as 2, which is the relationship reporting nothing.
-   * The answer is false, the one every other failure of these functions gives;
-   * an error handler that returns, which is the handler a language binding
-   * installs, would otherwise read a relationship that was never evaluated as
-   * holding */
-  if (result == 2)
-  {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-      "GEOS returned error");
-    return false;
-  }
-  return (bool) result;
-}
-
-/**
  * @ingroup meos_internal_geo_base_rel
  * @brief Return true if two geometries satisfy a given spatial relationship,
  * where the function called depend on the third argument
@@ -1889,23 +1844,23 @@ geom_spatialrel(const GSERIALIZED *gs1, const GSERIALIZED *gs2, spatialRel rel)
       (gserialized_is_point(gs1) && gserialized_is_poly(gs2))))
     return meos_point_in_polygon(gs1, gs2, TOUCHES);
 
-  /* Call GEOS function */
+  /* The relationship is read from the edges of the two geometries, so a
+   * circular arc is met on its own circle rather than on the chords a
+   * linearization would put in its place */
   assert(rel == INTERSECTS || rel == CONTAINS || rel == TOUCHES ||
     rel == COVERS);
-  switch (rel)
+  LWGEOM *geom1 = lwgeom_from_gserialized(gs1);
+  LWGEOM *geom2 = lwgeom_from_gserialized(gs2);
+  bool result;
+  bool answered = meos_spatialrel(geom1, geom2, rel, &result);
+  lwgeom_free(geom1); lwgeom_free(geom2);
+  if (! answered)
   {
-    case INTERSECTS:
-      return meos_call_geos2(gs1, gs2, &GEOSIntersects_r);
-    case CONTAINS:
-      return meos_call_geos2(gs1, gs2, &GEOSContains_r);
-    case TOUCHES:
-      return meos_call_geos2(gs1, gs2, &GEOSTouches_r);
-    case COVERS:
-      return meos_call_geos2(gs1, gs2, &GEOSCovers_r);
-    default:
-      /* keep compiler quiet */
-      return false;
+    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+      "The spatial relationship of the geometries is not supported");
+    return false;
   }
+  return result;
 }
 
 /**
