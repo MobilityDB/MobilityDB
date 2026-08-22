@@ -3353,7 +3353,7 @@
 						<para><link linkend="tpcbox_overlaps"><varname>&amp;&amp;</varname></link>: Devuelve true si dos tpcboxes se solapan</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tpcbox_same"><varname>~=</varname></link>: Devuelve true si dos tpcboxes son exactamente iguales</para>
+						<para><link linkend="tpcbox_same"><varname>~=</varname></link>: Devuelve true si dos tpcboxes son iguales en las dimensiones que comparten</para>
 					</listitem>
 					<listitem>
 						<para><link linkend="tpcbox_adjacent"><varname>-|-</varname></link>: Devuelve true si dos tpcboxes son adyacentes (comparten un límite)</para>

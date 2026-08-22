@@ -58,6 +58,7 @@
 #include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
+#include <meos_geo.h>
 #include <meos_internal.h>
 #include <meos_pointcloud.h>
 #include <pgtypes.h>
@@ -896,23 +897,8 @@ intersection_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
  *****************************************************************************/
 
 /**
- * @brief Shared dimension check: returns the effective (hasx, hasz, hast)
- * triple for comparing @p box1 vs @p box2 — predicates only make sense on
- * dimensions both boxes carry.
- */
-static inline void
-tpcbox_shared_dims(const TPCBox *box1, const TPCBox *box2,
-  bool *hasx, bool *hasz, bool *hast)
-{
-  *hasx = MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags);
-  *hasz = MEOS_FLAGS_GET_Z(box1->flags) && MEOS_FLAGS_GET_Z(box2->flags);
-  *hast = MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags);
-}
-
-/**
  * @ingroup meos_pointcloud_box_topo
  * @brief Return @p true if the first TPCBox contains the second
- * @details Mismatched pcid yields @p false.
  * @csqlfn #Contains_tpcbox_tpcbox()
  */
 bool
@@ -920,25 +906,9 @@ contains_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tpcbox_tpcbox(box1, box2))
-    return NULL;
+    return false;
 
-  bool hasx, hasz, hast;
-  tpcbox_shared_dims(box1, box2, &hasx, &hasz, &hast);
-  /* box2 must have at least the dimensions box1 requires */
-  if (MEOS_FLAGS_GET_X(box1->flags) && ! MEOS_FLAGS_GET_X(box2->flags))
-    return false;
-  if (MEOS_FLAGS_GET_T(box1->flags) && ! MEOS_FLAGS_GET_T(box2->flags))
-    return false;
-  if (hasx)
-  {
-    if (box2->xmin < box1->xmin || box2->xmax > box1->xmax) return false;
-    if (box2->ymin < box1->ymin || box2->ymax > box1->ymax) return false;
-    if (hasz && (box2->zmin < box1->zmin || box2->zmax > box1->zmax))
-      return false;
-  }
-  if (hast && ! contains_span_span(&box1->period, &box2->period))
-    return false;
-  return true;
+  return contains_stbox_stbox((const STBox *) box1, (const STBox *) box2);
 }
 
 /**
@@ -949,13 +919,16 @@ contains_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 bool
 contained_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
-  return contains_tpcbox_tpcbox(box2, box1);
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tpcbox_tpcbox(box1, box2))
+    return false;
+
+  return contained_stbox_stbox((const STBox *) box1, (const STBox *) box2);
 }
 
 /**
  * @ingroup meos_pointcloud_box_topo
  * @brief Return @p true if two TPCBox values overlap
- * @details Mismatched pcid yields @p false.
  * @csqlfn #Overlaps_tpcbox_tpcbox()
  */
 bool
@@ -963,38 +936,30 @@ overlaps_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tpcbox_tpcbox(box1, box2))
-    return NULL;
-
-  bool hasx, hasz, hast;
-  tpcbox_shared_dims(box1, box2, &hasx, &hasz, &hast);
-  if (hasx)
-  {
-    if (box1->xmax < box2->xmin || box2->xmax < box1->xmin) return false;
-    if (box1->ymax < box2->ymin || box2->ymax < box1->ymin) return false;
-    if (hasz && (box1->zmax < box2->zmin || box2->zmax < box1->zmin))
-      return false;
-  }
-  if (hast && ! overlaps_span_span(&box1->period, &box2->period))
     return false;
-  return true;
+
+  return overlaps_stbox_stbox((const STBox *) box1, (const STBox *) box2);
 }
 
 /**
  * @ingroup meos_pointcloud_box_topo
- * @brief Return @p true if two TPCBox values are exactly equal
- * @details Equivalent to @c tpcbox_eq.  Mismatched pcid yields @p false.
+ * @brief Return @p true if two TPCBox values are equal in the common
+ * dimensions
  * @csqlfn #Same_tpcbox_tpcbox()
  */
 bool
 same_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
-  return tpcbox_eq(box1, box2);
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tpcbox_tpcbox(box1, box2))
+    return false;
+
+  return same_stbox_stbox((const STBox *) box1, (const STBox *) box2);
 }
 
 /**
  * @ingroup meos_pointcloud_box_topo
  * @brief Return @p true if two TPCBox values touch but do not overlap
- * @details Mismatched pcid yields @p false.
  * @csqlfn #Adjacent_tpcbox_tpcbox()
  */
 bool
@@ -1002,30 +967,9 @@ adjacent_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tpcbox_tpcbox(box1, box2))
-    return NULL;
+    return false;
 
-  /* Adjacent = their intersection is empty (no interior overlap) AND
-   * their expansion-union shares a boundary. Simplest correct
-   * implementation: touch on at least one face of a shared dimension
-   * and do not overlap on any other. Use the Span adjacency helper for
-   * the time dimension; hand-coded for spatial. */
-  TPCBox inter;
-  if (inter_tpcbox_tpcbox(box1, box2, &inter))
-    return false; /* overlaps strictly → not adjacent */
-  bool hasx, hasz, hast;
-  tpcbox_shared_dims(box1, box2, &hasx, &hasz, &hast);
-  if (hasx)
-  {
-    if (box1->xmax == box2->xmin || box2->xmax == box1->xmin ||
-        box1->ymax == box2->ymin || box2->ymax == box1->ymin)
-      return true;
-    if (hasz &&
-        (box1->zmax == box2->zmin || box2->zmax == box1->zmin))
-      return true;
-  }
-  if (hast && adjacent_span_span(&box1->period, &box2->period))
-    return true;
-  return false;
+  return adjacent_stbox_stbox((const STBox *) box1, (const STBox *) box2);
 }
 
 /*****************************************************************************
@@ -1144,7 +1088,7 @@ bool tpcbox_ge(const TPCBox *box1, const TPCBox *box2)
 /**
  * @ingroup meos_pointcloud_box_pos
  * @brief Return @p true if box1 is strictly left of box2 (X-axis).
- * @details Returns @p false on pcid mismatch or if either box lacks XY.
+ * @details Returns @p false if either box lacks the X dimension.
  * @csqlfn #Left_tpcbox_tpcbox()
  */
 bool
@@ -1155,7 +1099,8 @@ left_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
       ! ensure_has_X(T_TPCBOX, box1->flags) ||
       ! ensure_has_X(T_TPCBOX, box2->flags))
     return false;
-  return (box1->xmax < box2->xmin);
+
+  return left_stbox_stbox((const STBox *) box1, (const STBox *) box2);
 }
 
 /**
@@ -1171,7 +1116,8 @@ overleft_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
       ! ensure_has_X(T_TPCBOX, box1->flags) ||
       ! ensure_has_X(T_TPCBOX, box2->flags))
     return false;
-  return (box1->xmax <= box2->xmax);
+
+  return overleft_stbox_stbox((const STBox *) box1, (const STBox *) box2);
 }
 
 /**
@@ -1187,7 +1133,8 @@ right_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
       ! ensure_has_X(T_TPCBOX, box1->flags) ||
       ! ensure_has_X(T_TPCBOX, box2->flags))
     return false;
-  return (box1->xmin > box2->xmax);
+
+  return right_stbox_stbox((const STBox *) box1, (const STBox *) box2);
 }
 
 /**
@@ -1203,7 +1150,8 @@ overright_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
       ! ensure_has_X(T_TPCBOX, box1->flags) ||
       ! ensure_has_X(T_TPCBOX, box2->flags))
     return false;
-  return (box1->xmin >= box2->xmin);
+
+  return overright_stbox_stbox((const STBox *) box1, (const STBox *) box2);
 }
 
 /* Y axis */
@@ -1221,7 +1169,8 @@ below_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
       ! ensure_has_X(T_TPCBOX, box1->flags) ||
       ! ensure_has_X(T_TPCBOX, box2->flags))
     return false;
-  return (box1->ymax < box2->ymin);
+
+  return below_stbox_stbox((const STBox *) box1, (const STBox *) box2);
 }
 
 /**
@@ -1237,7 +1186,8 @@ overbelow_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
       ! ensure_has_X(T_TPCBOX, box1->flags) ||
       ! ensure_has_X(T_TPCBOX, box2->flags))
     return false;
-  return (box1->ymax <= box2->ymax);
+
+  return overbelow_stbox_stbox((const STBox *) box1, (const STBox *) box2);
 }
 
 /**
@@ -1253,7 +1203,8 @@ above_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
       ! ensure_has_X(T_TPCBOX, box1->flags) ||
       ! ensure_has_X(T_TPCBOX, box2->flags))
     return false;
-  return (box1->ymin > box2->ymax);
+
+  return above_stbox_stbox((const STBox *) box1, (const STBox *) box2);
 }
 
 /**
@@ -1269,7 +1220,8 @@ overabove_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
       ! ensure_has_X(T_TPCBOX, box1->flags) ||
       ! ensure_has_X(T_TPCBOX, box2->flags))
     return false;
-  return (box1->ymin >= box2->ymin);
+
+  return overabove_stbox_stbox((const STBox *) box1, (const STBox *) box2);
 }
 
 /* Z axis — front/back only meaningful when both boxes have Z */
@@ -1288,7 +1240,8 @@ front_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
       ! ensure_has_Z(T_TPCBOX, box1->flags) ||
       ! ensure_has_Z(T_TPCBOX, box2->flags))
     return false;
-  return (box1->zmax < box2->zmin);
+
+  return front_stbox_stbox((const STBox *) box1, (const STBox *) box2);
 }
 
 /**
@@ -1304,7 +1257,8 @@ overfront_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
       ! ensure_has_Z(T_TPCBOX, box1->flags) ||
       ! ensure_has_Z(T_TPCBOX, box2->flags))
     return false;
-  return (box1->zmax <= box2->zmax);
+
+  return overfront_stbox_stbox((const STBox *) box1, (const STBox *) box2);
 }
 
 /**
@@ -1320,7 +1274,8 @@ back_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
       ! ensure_has_Z(T_TPCBOX, box1->flags) ||
       ! ensure_has_Z(T_TPCBOX, box2->flags))
     return false;
-  return (box1->zmin > box2->zmax);
+
+  return back_stbox_stbox((const STBox *) box1, (const STBox *) box2);
 }
 
 /**
@@ -1336,7 +1291,8 @@ overback_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
       ! ensure_has_Z(T_TPCBOX, box1->flags) ||
       ! ensure_has_Z(T_TPCBOX, box2->flags))
     return false;
-  return (box1->zmin >= box2->zmin);
+
+  return overback_stbox_stbox((const STBox *) box1, (const STBox *) box2);
 }
 
 /* Time axis — before/after only meaningful when both boxes have T */
@@ -1355,8 +1311,8 @@ before_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
       ! ensure_has_T(T_TPCBOX, box1->flags) ||
       ! ensure_has_T(T_TPCBOX, box2->flags))
     return false;
-  return (DatumGetTimestampTz(box1->period.upper) <
-          DatumGetTimestampTz(box2->period.lower));
+
+  return before_stbox_stbox((const STBox *) box1, (const STBox *) box2);
 }
 
 /**
@@ -1372,8 +1328,8 @@ overbefore_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
       ! ensure_has_T(T_TPCBOX, box1->flags) ||
       ! ensure_has_T(T_TPCBOX, box2->flags))
     return false;
-  return (DatumGetTimestampTz(box1->period.upper) <=
-          DatumGetTimestampTz(box2->period.upper));
+
+  return overbefore_stbox_stbox((const STBox *) box1, (const STBox *) box2);
 }
 
 /**
@@ -1389,8 +1345,8 @@ after_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
       ! ensure_has_T(T_TPCBOX, box1->flags) ||
       ! ensure_has_T(T_TPCBOX, box2->flags))
     return false;
-  return (DatumGetTimestampTz(box1->period.lower) >
-          DatumGetTimestampTz(box2->period.upper));
+
+  return after_stbox_stbox((const STBox *) box1, (const STBox *) box2);
 }
 
 /**
@@ -1406,8 +1362,8 @@ overafter_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
       ! ensure_has_T(T_TPCBOX, box1->flags) ||
       ! ensure_has_T(T_TPCBOX, box2->flags))
     return false;
-  return (DatumGetTimestampTz(box1->period.lower) >=
-          DatumGetTimestampTz(box2->period.lower));
+
+  return overafter_stbox_stbox((const STBox *) box1, (const STBox *) box2);
 }
 
 /*****************************************************************************/

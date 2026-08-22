@@ -197,13 +197,13 @@ SELECT same(tpcbox(0, 0, 5, 5, 1, 0), tpcbox(0, 0, 5, 5, 1, 0));
 SELECT tpcbox(0, 0, 5, 5, 1, 0)  -|- tpcbox(5, 0, 10, 5, 1, 0);
  ?column? 
 ----------
- f
+ t
 (1 row)
 
 SELECT adjacent(tpcbox(0, 0, 5, 5, 1, 0), tpcbox(5, 0, 10, 5, 1, 0));
  adjacent 
 ----------
- f
+ t
 (1 row)
 
 SELECT tpcbox(0, 0, 10, 10, 1, 0) @> tpcbox(2, 2, 8, 8, 2, 0);
@@ -211,11 +211,7 @@ ERROR:  Operation on TPCBox values with different schemas: 1 vs 2
 SELECT tpcbox(0, 0, 5, 5, 1, 0)   && tpcbox(0, 0, 5, 5, 2, 0);
 ERROR:  Operation on TPCBox values with different schemas: 1 vs 2
 SELECT tpcbox(0, 0, 5, 5, 1, 0)   ~= tpcbox(0, 0, 5, 5, 2, 0);
- ?column? 
-----------
- f
-(1 row)
-
+ERROR:  Operation on TPCBox values with different schemas: 1 vs 2
 SELECT tpcbox(0, 0, 5, 5, 1, 0) =  tpcbox(0, 0, 5, 5, 1, 0);
  ?column? 
 ----------
