@@ -1443,7 +1443,11 @@ SELECT geoPoseFrameIsGeographic(1), geoPoseFrameIsGeographic(2);
 
 		<sect2 xml:id="pose_geopose_apply">
 			<title>Transformación rígida cuerpo↔mundo</title>
-			<para>La función <varname>applyPose</varname> aplica la transformación de cuerpo rígido codificada por una pose (la correspondencia <emphasis>cuerpo al mundo</emphasis> de OGC GeoPose) a una geometría en el marco del cuerpo, produciendo la geometría correspondiente en el marco del mundo. La transformación es</para>
+			<itemizedlist>
+			<listitem xml:id="pose_applyPose">
+			<indexterm significance="normal"><primary><varname>applyPose</varname></primary></indexterm>
+			<para>Aplica la transformación de cuerpo rígido codificada por una pose (la correspondencia <emphasis>cuerpo al mundo</emphasis> de OGC GeoPose) a una geometría en el marco del cuerpo, produciendo la geometría correspondiente en el marco del mundo</para>
+			<para>La transformación es</para>
 			<programlisting xml:space="preserve" format="linespecific">
 world = R(q) · body + p
 </programlisting>
@@ -1492,6 +1496,8 @@ SELECT asEWKT(round(applyPose(pose 'Pose(Point(1 0 0), 1, 0, 0, 0)',
   pose 'Pose(Point(0 0 5), 1, 0, 0, 0)'), 6));
 -- Pose(POINT Z (1 0 5),1,0,0,0)
 </programlisting>
+			</listitem>
+			</itemizedlist>
 		</sect2>
 
 		<sect2 xml:id="pose_geopose_temporal_io">

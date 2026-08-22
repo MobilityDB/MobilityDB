@@ -1616,6 +1616,14 @@
 				</itemizedlist>
 			</sect3>
 			<sect3>
+				<title>Transformación rígida cuerpo↔mundo</title>
+				<itemizedlist>
+					<listitem>
+						<para><link linkend="pose_applyPose"><varname>applyPose</varname></link>: Aplica la transformación de cuerpo rígido codificada por una pose (la correspondencia <emphasis>cuerpo al mundo</emphasis> de OGC GeoPose) a una geometría en el marco del cuerpo, produciendo la geometría correspondiente en el marco del mundo</para>
+					</listitem>
+				</itemizedlist>
+			</sect3>
+			<sect3>
 				<title>E/S JSON temporal</title>
 				<itemizedlist>
 					<listitem>
