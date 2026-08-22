@@ -5,6 +5,7 @@ on:
   push:
     paths:
       - '.github/workflows/clang.yml'
+      - '.github/actions/apt-resilient/**'
       - 'cmake/**'
       - 'meos/**'
       - 'mobilitydb/**'
@@ -15,6 +16,7 @@ on:
   pull_request:
     paths:
       - '.github/workflows/clang.yml'
+      - '.github/actions/apt-resilient/**'
       - 'cmake/**'
       - 'meos/**'
       - 'mobilitydb/**'

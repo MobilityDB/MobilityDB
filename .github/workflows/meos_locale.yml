@@ -19,6 +19,7 @@ on:
   push:
     paths:
       - '.github/workflows/meos_locale.yml'
+      - '.github/actions/apt-resilient/**'
       - 'cmake/**'
       - 'meos/**'
       - 'pgtypes/**'
@@ -29,6 +30,7 @@ on:
   pull_request:
     paths:
       - '.github/workflows/meos_locale.yml'
+      - '.github/actions/apt-resilient/**'
       - 'cmake/**'
       - 'meos/**'
       - 'pgtypes/**'

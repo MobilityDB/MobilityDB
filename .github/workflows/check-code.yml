@@ -5,6 +5,7 @@ on:
   pull_request:
     paths:
       - '.github/workflows/check-code.yml'
+      - '.github/actions/apt-resilient/**'
       - 'datagen/**'
       - 'doc/**'
       - 'meos/**'

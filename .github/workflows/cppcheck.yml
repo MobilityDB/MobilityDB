@@ -12,6 +12,7 @@ on:
   push:
     paths:
       - '.github/workflows/cppcheck.yml'
+      - '.github/actions/apt-resilient/**'
       - 'cmake/**'
       - 'CMakeLists.txt'
       - 'meos/src/**'
@@ -21,6 +22,7 @@ on:
   pull_request:
     paths:
       - '.github/workflows/cppcheck.yml'
+      - '.github/actions/apt-resilient/**'
       - 'cmake/**'
       - 'CMakeLists.txt'
       - 'meos/src/**'
