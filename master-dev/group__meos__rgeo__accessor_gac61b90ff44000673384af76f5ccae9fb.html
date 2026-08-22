@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: trgeometry_traversed_area</title>
+<title>MobilityDB: trgeo_ref_is_convex</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -79,6 +79,7 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__rgeo__accessor_gac61b90ff44000673384af76f5ccae9fb.html#gac61b90ff44000673384af76f5ccae9fb">trgeo_ref_is_convex</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__accessor_ga73e2e7b2bb582a0711bc8fff1a0c920d.html#ga73e2e7b2bb582a0711bc8fff1a0c920d">trgeometry_angular_speed</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__accessor_ga6ba5d0d649d65cad15b04be45dab476a.html#ga6ba5d0d649d65cad15b04be45dab476a">trgeometry_centroid</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__accessor_ga5b5ed05a56dfd75659d65bf3ae60983e.html#ga5b5ed05a56dfd75659d65bf3ae60983e">trgeometry_convex_hull</a></td></tr>
@@ -99,7 +100,6 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__accessor_ga21342e7ceeda01370927f89eb5049702.html#ga21342e7ceeda01370927f89eb5049702">trgeometry_start_instant</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__accessor_ga87e25398f515489538ba7b93340fe1eb.html#ga87e25398f515489538ba7b93340fe1eb">trgeometry_start_sequence</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__accessor_ga709c675b9c20d131a6e4d51ebdd02850.html#ga709c675b9c20d131a6e4d51ebdd02850">trgeometry_start_value</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__rgeo__accessor_gafad5e1f103acc3df6c73a5f221afbaf2.html#gafad5e1f103acc3df6c73a5f221afbaf2">trgeometry_traversed_area</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__accessor_ga4d830623ee644429203a361e27f7442f.html#ga4d830623ee644429203a361e27f7442f">trgeometry_twcentroid</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__accessor_gacad19f7bd2c5489bb39ac04cc079ad91.html#gacad19f7bd2c5489bb39ac04cc079ad91">trgeometry_value_n</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__accessor_ga3397ad350261a2bdf2ca3403c219cec5.html#ga3397ad350261a2bdf2ca3403c219cec5">trgeometry_yaw</a></td></tr>
@@ -107,30 +107,28 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="gafad5e1f103acc3df6c73a5f221afbaf2" name="gafad5e1f103acc3df6c73a5f221afbaf2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gafad5e1f103acc3df6c73a5f221afbaf2">&#9670;&#160;</a></span>trgeometry_traversed_area()</h2>
+<a id="gac61b90ff44000673384af76f5ccae9fb" name="gac61b90ff44000673384af76f5ccae9fb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gac61b90ff44000673384af76f5ccae9fb">&#9670;&#160;</a></span>trgeo_ref_is_convex()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> * trgeometry_traversed_area </td>
+          <td class="memname">static bool trgeo_ref_is_convex </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
-          <td class="paramname"><em>temp</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
+          <td class="paramname"><em>gs</em></td><td>)</td>
           <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>unary_union</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Return the union of every materialised polygon of a temporal rigid geometry over its time domain. </p>
@@ -141,7 +139,9 @@ $(function() {
   </table>
   </dd>
 </dl>
-<dl class="section note"><dt>Note</dt><dd>Mirrors the collect-then-union pattern of <code>tgeo_traversed_area</code> for general temporal geometries; the trgeometry-specific step is materialising the reference polygon at every emitted sample via <code>pose_apply_geo</code>. Sample selection mirrors the adaptive recursive bisection in <code>tdistance_trgeoseq_trgeoseq_linear</code>: each input instant is emitted; between two consecutive instants the segment is bisected while the rotation magnitude across the half-segment exceeds <code>TRGEO_TRAVERSED_AREA_ANGLE_TOL</code> and the recursion depth is below <code>TRGEO_TRAVERSED_AREA_MAX_DEPTH</code>. Pure-translation segments terminate at depth 0 with two samples (start and end). The unary union dissolves any redundant overlap between samples. </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>Mirrors the collect-then-union pattern of <code>tgeo_traversed_area</code> for general temporal geometries; the trgeometry-specific step is materialising the reference polygon at every emitted sample via <code>pose_apply_geo</code>. Sample selection mirrors the adaptive recursive bisection in <code>tdistance_trgeoseq_trgeoseq_linear</code>: each input instant is emitted; between two consecutive instants the segment is bisected while the rotation magnitude across the half-segment exceeds <code>TRGEO_TRAVERSED_AREA_ANGLE_TOL</code> and the recursion depth is below <code>TRGEO_TRAVERSED_AREA_MAX_DEPTH</code>. Pure-translation segments terminate at depth 0 with two samples (start and end). The unary union dissolves any redundant overlap between samples.</dd></dl>
+<p>Return true if the reference geometry of a temporal rigid geometry is a convex body</p>
+<p >Convexity is a property of the reference geometry, which is one geometry for the whole value, so it is read once rather than per segment. A body carrying an inner ring is not convex. </p>
 
 </div>
 </div>
