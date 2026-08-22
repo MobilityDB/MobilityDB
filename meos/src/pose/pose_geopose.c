@@ -2039,11 +2039,8 @@ geopose_chain_link_frame(const Pose *pose, int precision)
     Y = pose->data[5]; Z = pose->data[6];
   }
   else
-  {
     /* A planar link turns about the vertical axis by its stored angle */
-    double half = pose->data[2] / 2.0;
-    W = cos(half); X = 0.0; Y = 0.0; Z = sin(half);
-  }
+    pose_ypr_to_quaternion(pose->data[2], 0.0, 0.0, &W, &X, &Y, &Z);
   char bx[64], by[64], bz[64], bw[64], bqx[64], bqy[64], bqz[64];
   geopose_str_double(bx, sizeof(bx), x, precision);
   geopose_str_double(by, sizeof(by), y, precision);

@@ -1338,7 +1338,7 @@
 						<para><link linkend="pose_point"><varname>point</varname></link>: Return the point</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="pose_quaternion"><varname>quaternion</varname></link>: Return the orientation quaternion of a 3D pose</para>
+						<para><link linkend="pose_quaternion"><varname>quaternion</varname></link>: Return the orientation quaternion of a pose</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

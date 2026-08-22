@@ -1321,12 +1321,15 @@ datum_pose_roll(Datum pose)
 
 /**
  * @ingroup meos_pose_base_accessor
- * @brief Return the orientation quaternion of a 3D pose
+ * @brief Return the orientation quaternion of a pose
  * @details The four components are returned in the order @p W, @p X, @p Y,
- * @p Z, the Hamilton convention in which the pose stores them. The
- * yaw / pitch / roll encoding of the same orientation, the other
+ * @p Z, the Hamilton convention in which a 3D pose stores them. This is
+ * defined for both dimensions: the orientation of a 2D pose is a turn about
+ * the local vertical by its stored angle, which is the quaternion
+ * @p (cos(theta/2), 0, 0, sin(theta/2)) that the GeoPose encoder writes for
+ * it. The yaw / pitch / roll encoding of the same orientation, the other
  * representation the OGC GeoPose standard prescribes, is returned by
- * #pose_yaw(), #pose_pitch() and #pose_roll().
+ * #pose_ypr().
  * @param[in] pose Pose
  * @param[out] count Number of elements in the output array
  * @return On error return @p NULL
@@ -1340,14 +1343,18 @@ pose_quaternion(const Pose *pose, int *count)
   *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(pose, NULL);
-  if (! ensure_has_Z(T_POSE, pose->flags))
-    return NULL;
 
   double *result = palloc(sizeof(double) * 4);
-  result[0] = pose->data[3];
-  result[1] = pose->data[4];
-  result[2] = pose->data[5];
-  result[3] = pose->data[6];
+  if (! MEOS_FLAGS_GET_Z(pose->flags))
+    pose_ypr_to_quaternion(pose->data[2], 0.0, 0.0, &result[0], &result[1],
+      &result[2], &result[3]);
+  else
+  {
+    result[0] = pose->data[3];
+    result[1] = pose->data[4];
+    result[2] = pose->data[5];
+    result[3] = pose->data[6];
+  }
   *count = 4;
   return result;
 }
@@ -1358,11 +1365,10 @@ pose_quaternion(const Pose *pose, int *count)
  * in radians
  * @details The three angles are returned in the order @p yaw, @p pitch,
  * @p roll, the ZYX intrinsic Tait-Bryan decomposition the OGC GeoPose
- * Basic-YPR conformance class prescribes. Unlike #pose_quaternion(), which
- * reads an encoding only a 3D pose stores, this is defined for both
- * dimensions: a 2D pose yaws by its stored angle and neither pitches nor
- * rolls. The angles are in radians, where the GeoPose JSON encoding
- * writes them in degrees.
+ * Basic-YPR conformance class prescribes. Like #pose_quaternion(), the other
+ * encoding the standard prescribes, this is defined for both dimensions: a
+ * 2D pose yaws by its stored angle and neither pitches nor rolls. The angles
+ * are in radians, where the GeoPose JSON encoding writes them in degrees.
  * @param[in] pose Pose
  * @param[out] count Number of elements in the output array
  * @return On error return @p NULL

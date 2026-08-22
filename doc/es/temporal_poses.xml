@@ -247,12 +247,14 @@ SELECT ST_AsText(point(pose 'Pose(Point(1 1), 0.3)'));
 
 				<listitem xml:id="pose_quaternion">
 					<indexterm significance="normal"><primary><varname>quaternion</varname></primary></indexterm>
-					<para>Devuelve el cuaternión de orientación de una pose 3D</para>
-					<para><varname>quaternion(pose3D) → quaternion</varname></para>
-					<para>Las componentes se devuelven en el orden <varname>W</varname>, <varname>X</varname>, <varname>Y</varname>, <varname>Z</varname>, la convención de Hamilton en la que la pose las almacena. Esta es una de las dos codificaciones de orientación que prescribe el estándar OGC GeoPose v1.0; la otra, yaw / pitch / roll, la proporcionan <link linkend="pose_yaw_pitch_roll"><varname>yaw</varname></link>, <varname>pitch</varname> y <varname>roll</varname>. Una pose 2D no tiene cuaternión y la función emite un error para ella; su orientación es el ángulo único que devuelve <link linkend="pose_yaw_pitch_roll"><varname>yaw</varname></link>.</para>
+					<para>Devuelve el cuaternión de orientación de una pose</para>
+					<para><varname>quaternion(pose) → quaternion</varname></para>
+					<para>Las componentes se devuelven en el orden <varname>W</varname>, <varname>X</varname>, <varname>Y</varname>, <varname>Z</varname>, la convención de Hamilton en la que una pose 3D las almacena. Esta es una de las dos codificaciones de orientación que prescribe el estándar OGC GeoPose v1.0; la otra, yaw / pitch / roll, la proporciona <link linkend="pose_ypr"><varname>ypr</varname></link>. Ambas están definidas para las dos dimensiones: la orientación de una pose 2D es un giro alrededor de la vertical local por su ángulo almacenado, de modo que coloca la mitad de ese ángulo en <varname>W</varname> y <varname>Z</varname> y deja <varname>X</varname> e <varname>Y</varname> en cero. Este es el cuaternión que un documento GeoPose Basic-Quaternion lleva para una pose plana.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT quaternion(pose 'Pose(Point Z(1 1 1), 0, 0, 0, 1)');
 -- (0,0,0,1)
+SELECT quaternion(pose 'Pose(Point(1 1), 0)');
+-- (1,0,0,0)
 </programlisting>
 				</listitem>
 			</itemizedlist>
@@ -1362,7 +1364,7 @@ SELECT yaw(pose 'Pose(Point(0 0 0), 0.7071067811865476, 0, 0, 0.7071067811865475
 					<indexterm significance="normal"><primary><varname>ypr</varname></primary></indexterm>
 					<para>Devuelve la orientación de una pose como una terna yaw / pitch / roll, en radianes</para>
 					<para><varname>ypr(pose) → ypr</varname></para>
-					<para>Esta es la codificación Basic-YPR de la orientación en OGC GeoPose, la contraparte de <link linkend="pose_quaternion"><varname>quaternion</varname></link>, y devuelve los tres ángulos que <link linkend="pose_yaw_pitch_roll"><varname>yaw</varname></link>, <varname>pitch</varname> y <varname>roll</varname> responden de uno en uno. A diferencia de <varname>quaternion</varname>, que lee una codificación que solo almacena una pose 3D, está definida para ambas dimensiones: una pose 2D gira por su ángulo almacenado y no cabecea ni alabea. Los ángulos están en radianes, mientras que la codificación JSON de GeoPose los escribe en grados.</para>
+					<para>Esta es la codificación Basic-YPR de la orientación en OGC GeoPose, la contraparte de <link linkend="pose_quaternion"><varname>quaternion</varname></link>, y devuelve los tres ángulos que <link linkend="pose_yaw_pitch_roll"><varname>yaw</varname></link>, <varname>pitch</varname> y <varname>roll</varname> responden de uno en uno. Al igual que <varname>quaternion</varname>, está definida para ambas dimensiones: una pose 2D gira por su ángulo almacenado y no cabecea ni alabea. Los ángulos están en radianes, mientras que la codificación JSON de GeoPose los escribe en grados.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT ypr(pose 'Pose(Point(1 1), 0.5)');
 -- (0.5,0,0)
