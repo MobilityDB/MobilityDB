@@ -301,6 +301,15 @@ SELECT same(stbox 'STBOX X((1.0,1.0),(2.0,2.0))', stbox 'STBOX XT(((1.0,2.0),(1.
 SELECT stbox 'STBOX Z((0 0 0),(2 2 2))' -|- stbox 'STBOX Z((1 1 1),(3 3 3))';
 SELECT tstzspan '[2000-01-01, 2000-01-02]'::stbox -|- tstzspan '[2000-01-02, 2000-01-03]'::stbox;
 
+-- Adjacency reads every dimension the boxes share and asks one of them to
+-- touch: periods meeting at an excluded bound are adjacent as their spans are,
+-- while a box lying inside another only meets it
+SELECT stbox 'STBOX XT(((1,1),(5,5)),[2000-01-01,2000-01-05))' -|- stbox 'STBOX XT(((1,1),(5,5)),[2000-01-05,2000-01-09])';
+SELECT stbox 'STBOX XT(((1,1),(5,5)),[2000-01-01,2000-01-05])' -|- stbox 'STBOX XT(((5,1),(9,5)),[2000-06-01,2000-06-05])';
+SELECT stbox 'STBOX X((1,1),(5,5))' -|- stbox 'STBOX X((3,3),(3,3))';
+SELECT stbox 'STBOX X((1,1),(5,5))' -|- stbox 'STBOX X((5,1),(9,5))';
+SELECT stbox 'STBOX X((1,1),(5,5))' -|- stbox 'STBOX X((5,5),(9,9))';
+
 /* Errors */
 SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' && stbox 'GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))';
 SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' @> stbox 'GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))';

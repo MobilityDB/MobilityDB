@@ -841,7 +841,7 @@ SELECT stbox 'SRID=5676;STBOX X((1.0,2.0),(1.0,2.0))' -|- tcbuffer 'SRID=5676;Cb
 SELECT stbox 'SRID=5676;STBOX X((1.0,2.0),(1.0,2.0))' -|- tcbuffer 'SRID=5676;{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.7)@2000-01-03}';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT stbox 'SRID=5676;STBOX X((1.0,2.0),(1.0,2.0))' -|- tcbuffer 'SRID=5676;[Cbuffer(Point(1 1),0.4)@2000-01-01, Cbuffer(Point(1 1),0.5)@2000-01-02, Cbuffer(Point(1 1),0.7)@2000-01-03]';
@@ -853,7 +853,7 @@ SELECT stbox 'SRID=5676;STBOX X((1.0,2.0),(1.0,2.0))' -|- tcbuffer 'SRID=5676;[C
 SELECT stbox 'SRID=5676;STBOX X((1.0,2.0),(1.0,2.0))' -|- tcbuffer 'SRID=5676;{[Cbuffer(Point(1 1),0.4)@2000-01-01, Cbuffer(Point(1 1),0.5)@2000-01-02, Cbuffer(Point(1 1),0.7)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01' -|- tstzspan '[2000-01-01,2000-01-02]';
@@ -889,7 +889,7 @@ SELECT tcbuffer 'SRID=5676;Cbuffer(Point(1 1),0.5)@2000-01-01' -|- stbox 'SRID=5
 SELECT tcbuffer 'SRID=5676;{Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.7)@2000-01-03}' -|- stbox 'SRID=5676;STBOX X((1.0,2.0),(1.0,2.0))';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT tcbuffer 'SRID=5676;[Cbuffer(Point(1 1),0.4)@2000-01-01, Cbuffer(Point(1 1),0.5)@2000-01-02, Cbuffer(Point(1 1),0.7)@2000-01-03]' -|- stbox 'SRID=5676;STBOX X((1.0,2.0),(1.0,2.0))';
@@ -901,7 +901,7 @@ SELECT tcbuffer 'SRID=5676;[Cbuffer(Point(1 1),0.4)@2000-01-01, Cbuffer(Point(1 
 SELECT tcbuffer 'SRID=5676;{[Cbuffer(Point(1 1),0.4)@2000-01-01, Cbuffer(Point(1 1),0.5)@2000-01-02, Cbuffer(Point(1 1),0.7)@2000-01-03],[Cbuffer(Point(3 3),0.5)@2000-01-04, Cbuffer(Point(3 3),0.5)@2000-01-05]}' -|- stbox 'SRID=5676;STBOX X((1.0,2.0),(1.0,2.0))';
  ?column? 
 ----------
- t
+ f
 (1 row)
 
 SELECT tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01' -|- tcbuffer 'Cbuffer(Point(1 1),0.5)@2000-01-01';

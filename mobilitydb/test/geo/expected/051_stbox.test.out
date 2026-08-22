@@ -1075,6 +1075,36 @@ SELECT tstzspan '[2000-01-01, 2000-01-02]'::stbox -|- tstzspan '[2000-01-02, 200
  t
 (1 row)
 
+SELECT stbox 'STBOX XT(((1,1),(5,5)),[2000-01-01,2000-01-05))' -|- stbox 'STBOX XT(((1,1),(5,5)),[2000-01-05,2000-01-09])';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT stbox 'STBOX XT(((1,1),(5,5)),[2000-01-01,2000-01-05])' -|- stbox 'STBOX XT(((5,1),(9,5)),[2000-06-01,2000-06-05])';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT stbox 'STBOX X((1,1),(5,5))' -|- stbox 'STBOX X((3,3),(3,3))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT stbox 'STBOX X((1,1),(5,5))' -|- stbox 'STBOX X((5,1),(9,5))';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT stbox 'STBOX X((1,1),(5,5))' -|- stbox 'STBOX X((5,5),(9,9))';
+ ?column? 
+----------
+ t
+(1 row)
+
 /* Errors */
 SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' && stbox 'GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))';
 ERROR:  Operation on mixed planar and geodetic coordinates

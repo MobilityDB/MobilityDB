@@ -86,7 +86,7 @@ SELECT COUNT(*) FROM tbl_trgeometry2d WHERE temp ~= trgeometry 'SRID=5676;Polygo
 SELECT COUNT(*) FROM tbl_trgeometry2d WHERE temp -|- trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));[Pose(Point(0 0), 0.1)@2001-01-01, Pose(Point(50 50), 0.5)@2001-12-31]';
  count 
 -------
-     2
+     0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_trgeometry2d WHERE temp << trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));[Pose(Point(0 0), 0.1)@2001-01-01, Pose(Point(50 50), 0.5)@2001-12-31]';

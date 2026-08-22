@@ -86,7 +86,7 @@ SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp ~= tnpoint '[Npoint(1, 0.2)@2001
 SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp -|- tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-12-31]';
  count 
 -------
-     3
+     0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp << tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-12-31]';
@@ -216,7 +216,7 @@ SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp ~= tnpoint '[Npoint(1, 0.2)@2001
 SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp -|- tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-12-31]';
  count 
 -------
-     3
+     0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp << tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-12-31]';
@@ -322,7 +322,7 @@ SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp ~= tnpoint '[Npoint(1, 0.2)@2001
 SELECT COUNT(*) FROM tbl_tnpoint_big WHERE temp -|- tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.5)@2001-12-31]';
  count 
 -------
-     3
+     0
 (1 row)
 
 DROP INDEX IF EXISTS tbl_tnpoint_big_kdtree_idx;

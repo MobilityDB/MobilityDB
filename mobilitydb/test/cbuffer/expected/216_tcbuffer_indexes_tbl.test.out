@@ -86,7 +86,7 @@ SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp ~= tcbuffer 'SRID=3812;[Cbuffer
 SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp -|- tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
  count 
 -------
-    38
+     0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp << tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
@@ -188,7 +188,7 @@ SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp ~= stbox 'SRID=3812;STBOX XT(((
 SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp -|- stbox 'SRID=3812;STBOX XT(((0,0),(50,50)),[2001-01-01, 2001-12-31])';
  count 
 -------
-    29
+     0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]' <<# temp;
@@ -258,7 +258,7 @@ SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp ~= tcbuffer 'SRID=3812;[Cbuffer
 SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp -|- tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
  count 
 -------
-    38
+     0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp << tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
@@ -360,7 +360,7 @@ SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp ~= stbox 'SRID=3812;STBOX XT(((
 SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp -|- stbox 'SRID=3812;STBOX XT(((0,0),(50,50)),[2001-01-01, 2001-12-31])';
  count 
 -------
-    29
+     0
 (1 row)
 
 DROP INDEX IF EXISTS tbl_tcbuffer_big_quadtree_idx;
@@ -418,7 +418,7 @@ SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp ~= tcbuffer 'SRID=3812;[Cbuffer
 SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp -|- tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
  count 
 -------
-    38
+     0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp << tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
@@ -520,7 +520,7 @@ SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp ~= stbox 'SRID=3812;STBOX XT(((
 SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp -|- stbox 'SRID=3812;STBOX XT(((0,0),(50,50)),[2001-01-01, 2001-12-31])';
  count 
 -------
-    29
+     0
 (1 row)
 
 DROP INDEX IF EXISTS tbl_tcbuffer_big_kdtree_idx;

@@ -1911,6 +1911,24 @@ same_stbox_stbox(const STBox *box1, const STBox *box2)
 }
 
 /**
+ * @brief Return true if two spatial extents meet, that is, if they overlap or
+ * touch at a single coordinate, reporting the latter case
+ * @param[in] min1,max1 Bounds of the first extent
+ * @param[in] min2,max2 Bounds of the second extent
+ * @param[in,out] touch Set to true if the extents touch at a single coordinate
+ */
+static bool
+meet_extent_extent(double min1, double max1, double min2, double max2,
+  bool *touch)
+{
+  if (min1 > max2 || min2 > max1)
+    return false;
+  if (max1 == min2 || max2 == min1)
+    *touch = true;
+  return true;
+}
+
+/**
  * @ingroup meos_geo_box_topo
  * @brief Return true if the spatiotemporal boxes are adjacent
  * @param[in] box1,box2 Spatiotemporal boxes
@@ -1924,32 +1942,31 @@ adjacent_stbox_stbox(const STBox *box1, const STBox *box2)
   if (! topo_stbox_stbox_init(box1, box2, &hasx, &hasz, &hast, &geodetic))
     return false;
 
-  STBox inter;
-  if (! inter_stbox_stbox(box1, box2, &inter))
-    return false;
-
-  /* Boxes are adjacent if they share n dimensions and their intersection is
-   * at most of n-1 dimensions */
-  if (! hasx && hast)
-    return (inter.period.lower == inter.period.upper);
-  if (hasx && ! hast)
+  /* Boxes are adjacent if they meet in every common dimension and touch in at
+   * least one of them. The test is made dimension by dimension so that periods
+   * meeting at an excluded bound are kept: they are adjacent although they do
+   * not intersect */
+  bool touch = false;
+  if (hasx)
   {
-    if (hasz)
-      return (inter.xmin == inter.xmax || inter.ymin == inter.ymax ||
-           inter.zmin == inter.zmax);
-    else
-      return (inter.xmin == inter.xmax || inter.ymin == inter.ymax);
+    if (! meet_extent_extent(box1->xmin, box1->xmax, box2->xmin, box2->xmax,
+          &touch))
+      return false;
+    if (! meet_extent_extent(box1->ymin, box1->ymax, box2->ymin, box2->ymax,
+          &touch))
+      return false;
+    if (hasz && ! meet_extent_extent(box1->zmin, box1->zmax, box2->zmin,
+          box2->zmax, &touch))
+      return false;
   }
-  else
+  if (hast)
   {
-    if (hasz)
-      return (inter.xmin == inter.xmax || inter.ymin == inter.ymax ||
-           inter.zmin == inter.zmax ||
-           inter.period.lower == inter.period.upper);
-    else
-      return (inter.xmin == inter.xmax || inter.ymin == inter.ymax ||
-           inter.period.lower == inter.period.upper);
+    if (adjacent_span_span(&box1->period, &box2->period))
+      touch = true;
+    else if (! overlaps_span_span(&box1->period, &box2->period))
+      return false;
   }
+  return touch;
 }
 
 /*****************************************************************************

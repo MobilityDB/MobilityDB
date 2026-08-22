@@ -25,7 +25,7 @@ SELECT COUNT(*) FROM tbl_tposechain t1, tbl_tposechain t2 WHERE t1.temp ~= t2.te
 SELECT COUNT(*) FROM tbl_tposechain t1, tbl_tposechain t2 WHERE t1.temp -|- t2.temp;
  count 
 -------
-   132
+   116
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tposechain t1, tbl_tposechain t2
