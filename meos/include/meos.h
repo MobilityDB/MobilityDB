@@ -443,6 +443,7 @@ extern bool sptree_load(SPTree *sptree, const void *boxes, const int64 *ids, int
 extern bool sptree_insert_temporal(SPTree *sptree, const Temporal *temp, int64 id);
 extern bool sptree_insert_temporal_split(SPTree *sptree, const Temporal *temp, int64 id, int maxboxes);
 extern int sptree_search(const SPTree *sptree, IndexSearchOp op, const void *query, MeosArray *result);
+extern int sptree_join(const SPTree *sptree1, const SPTree *sptree2, IndexSearchOp op, MeosArray *result);
 extern int sptree_search_temporal(const SPTree *sptree, IndexSearchOp op, const Temporal *temp, MeosArray *result);
 extern int sptree_search_temporal_dedup(const SPTree *sptree, IndexSearchOp op, const Temporal *temp, int maxboxes, MeosArray *result);
 
