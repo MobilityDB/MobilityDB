@@ -200,6 +200,7 @@ var menudata={children:[
 {text:"b",url:"globals_enum.html#index_b"},
 {text:"c",url:"globals_enum.html#index_c"},
 {text:"e",url:"globals_enum.html#index_e"},
+{text:"f",url:"globals_enum.html#index_f"},
 {text:"g",url:"globals_enum.html#index_g"},
 {text:"h",url:"globals_enum.html#index_h"},
 {text:"i",url:"globals_enum.html#index_i"},

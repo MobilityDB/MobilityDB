@@ -222,7 +222,7 @@ $(function() {
 
 <p>Report the qualifying entry pairs of two nodes, descending both trees. </p>
 <p >A node does not store its own bounding box, so each node is visited together with the box its parent holds for it; the roots are visited with a null box, which prunes nothing. Only one side descends at a time when the other is a leaf: iterating a leaf's boxes and recursing with that same leaf would visit its entries once per box.</p>
-<p >Subtrees are pruned by overlap whatever <code>op</code> is, since one entry contains or is contained by another only if their boxes overlap, so a node pair whose boxes are disjoint holds no qualifying pair below it. </p><dl class="params"><dt>Parameters</dt><dd>
+<p >Subtrees are pruned by overlap, since one entry contains or is contained by another only if their boxes overlap, so a node pair whose boxes are disjoint holds no qualifying pair below it. Pruning on overlap is what restricts a join to the operations an overlap implies, which <a class="el" href="meos__internal_8h_a7c7036306a96318589970f88d72f204c.html#a7c7036306a96318589970f88d72f204c" title="Return true if an operation pairs the entries of two indexes, report an error otherwise.">ensure_index_join_op</a> holds the caller to. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">rtree1,rtree2</td><td>The RTrees being joined </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">node1,node2</td><td>The nodes to be joined </td></tr>
