@@ -372,7 +372,7 @@ numspan_timestamptz_to_tbox(const Span *s, TimestampTz t)
  * @brief Return a temporal box from a number span and a timestamptz span
  * @param[in] s Value span
  * @param[in] p Time span
- * @csqlfn #Numspan_timestamptz_to_tbox()
+ * @csqlfn #Numspan_tstzspan_to_tbox()
  */
 TBox *
 numspan_tstzspan_to_tbox(const Span *s, const Span *p)

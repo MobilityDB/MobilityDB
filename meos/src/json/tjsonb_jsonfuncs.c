@@ -505,7 +505,7 @@ datum_text_to_jsonb(Datum txt)
  * @ingroup meos_json_json
  * @brief Return the length of a temporal JSON array
  * @param[in] temp Temporal JSON value
- * @csqlfn #Tjsonb_array_length()
+ * @csqlfn #Tjson_array_length()
  */
 Temporal *
 tjson_array_length(const Temporal *temp)
@@ -619,7 +619,7 @@ tjsonb_object_field(const Temporal *temp, const text *key, bool astext,
  * @param[in] temp Temporal JSONB
  * @param[in] jb JSONB
  * @param[in] invert True if the arguments must be inverted
- * @csqlfn #Concat_tjsonb_tjsonb()
+ * @csqlfn #Concat_tjsonb_jsonb() #Concat_jsonb_tjsonb()
  */
 Temporal *
 concat_tjsonb_jsonb(const Temporal *temp, const Jsonb *jb, bool invert)
