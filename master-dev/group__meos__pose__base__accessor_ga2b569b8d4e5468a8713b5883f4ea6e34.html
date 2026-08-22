@@ -113,15 +113,15 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the orientation quaternion of a 3D pose. </p>
-<p >The four components are returned in the order <code>W</code>, <code>X</code>, <code>Y</code>, <code>Z</code>, the Hamilton convention in which the pose stores them. The yaw / pitch / roll encoding of the same orientation, the other representation the OGC GeoPose standard prescribes, is returned by <a class="el" href="group__meos__pose__base__geopose_gacf71acda83841765a9b85c54c5fcac47.html#gacf71acda83841765a9b85c54c5fcac47" title="Return the yaw angle of a pose, in radians.">pose_yaw()</a>, <a class="el" href="group__meos__pose__base__geopose_gafd53d866fa9c7669104fb88dd8496d9f.html#gafd53d866fa9c7669104fb88dd8496d9f" title="Return the pitch angle of a pose, in radians.">pose_pitch()</a> and <a class="el" href="group__meos__pose__base__geopose_ga3c10ffe2f8d75138fa01925278618344.html#ga3c10ffe2f8d75138fa01925278618344" title="Return the roll angle of a pose, in radians.">pose_roll()</a>. </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Return the orientation quaternion of a pose. </p>
+<p >The four components are returned in the order <code>W</code>, <code>X</code>, <code>Y</code>, <code>Z</code>, the Hamilton convention in which a 3D pose stores them. This is defined for both dimensions: the orientation of a 2D pose is a turn about the local vertical by its stored angle, which is the quaternion <code></code>(cos(theta/2), 0, 0, sin(theta/2)) that the GeoPose encoder writes for it. The yaw / pitch / roll encoding of the same orientation, the other representation the OGC GeoPose standard prescribes, is returned by <a class="el" href="group__meos__pose__base__accessor_ga0e9910b3c6cbbd56f300f1375f3c082e.html#ga0e9910b3c6cbbd56f300f1375f3c082e" title="Return the orientation of a pose as a yaw / pitch / roll triple, in radians.">pose_ypr()</a>. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">pose</td><td><a class="el" href="structPose.html" title="Basic functions for static pose objects.">Pose</a> </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">count</td><td>Number of elements in the output array </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>On error return <code>NULL</code> @csqlfn <a class="el" href="group__mobilitydb__pose__base__accessor_ga318a90361d6fb4cc81159e908a971bd5.html#ga318a90361d6fb4cc81159e908a971bd5" title="Return the orientation quaternion of a 3D pose @sqlfn quaternion()">Pose_quaternion()</a> </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>On error return <code>NULL</code> @csqlfn <a class="el" href="group__mobilitydb__pose__base__accessor_ga318a90361d6fb4cc81159e908a971bd5.html#ga318a90361d6fb4cc81159e908a971bd5" title="Return the orientation quaternion of a pose @sqlfn quaternion()">Pose_quaternion()</a> </dd></dl>
 
 </div>
 </div>
