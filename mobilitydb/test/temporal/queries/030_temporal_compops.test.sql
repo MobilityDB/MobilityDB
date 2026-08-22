@@ -1850,3 +1850,45 @@ SELECT ttext '[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03]' #>= ttext '{[AAA
 SELECT ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}' #>= ttext '{[AAA@2000-01-01, BBB@2000-01-02, AAA@2000-01-03],[CCC@2000-01-04, CCC@2000-01-05]}';
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- The values a linear segment takes are the ones between its bounds together
+-- with each bound that it includes, so a bound the segment excludes answers
+-- for no value, and a comparison holding between the crossings is answered
+-------------------------------------------------------------------------------
+
+-- A bound the segment excludes is not a value the segment takes
+SELECT tfloat '(1@2000-01-01, 5@2000-01-05]' ?= 1.0;
+SELECT tfloat '(1@2000-01-01, 5@2000-01-05]' %<> 1.0;
+SELECT tfloat '[1@2000-01-01, 5@2000-01-05)' ?= 5.0;
+SELECT tfloat '[1@2000-01-01, 5@2000-01-05)' %<> 5.0;
+SELECT tfloat '(1@2000-01-01, 5@2000-01-05)' ?= 1.0;
+SELECT tfloat '(1@2000-01-01, 5@2000-01-05)' %<> 5.0;
+
+-- A segment taking more than one value differs from every single value, and
+-- is always equal to none, whichever bounds it excludes
+SELECT tfloat '(1@2000-01-01, 5@2000-01-05)' ?<> 3.0;
+SELECT tfloat '(1@2000-01-01, 5@2000-01-05)' ?<> 9.0;
+SELECT tfloat '(1@2000-01-01, 5@2000-01-05)' %= 3.0;
+SELECT tfloat '(1@2000-01-01, 5@2000-01-05]' ?<> 5.0;
+SELECT tfloat '[1@2000-01-01, 5@2000-01-05)' ?<> 1.0;
+
+-- A constant segment takes its value at every instant, the interior included
+SELECT tfloat '(3@2000-01-01, 3@2000-01-05)' ?= 3.0;
+SELECT tfloat '(3@2000-01-01, 3@2000-01-05)' %= 3.0;
+SELECT tfloat '(3@2000-01-01, 3@2000-01-05)' ?<> 3.0;
+
+-- The ordered comparisons read the values between the crossings likewise
+SELECT tfloat '(1@2000-01-01, 5@2000-01-05)' ?< 5.0;
+SELECT tfloat '(1@2000-01-01, 5@2000-01-05)' ?> 1.0;
+SELECT tfloat '(1@2000-01-01, 5@2000-01-05)' ?<= 3.0;
+SELECT tfloat '(1@2000-01-01, 5@2000-01-05)' ?>= 3.0;
+SELECT tfloat '(1@2000-01-01, 5@2000-01-05)' %< 9.0;
+SELECT tfloat '(1@2000-01-01, 5@2000-01-05)' %> 0.0;
+
+-- A sequence set answers as its segments do
+SELECT tfloat '{(1@2000-01-01, 5@2000-01-05), [7@2000-01-07, 9@2000-01-09]}' ?= 1.0;
+SELECT tfloat '{(1@2000-01-01, 5@2000-01-05), [7@2000-01-07, 9@2000-01-09]}' ?<> 3.0;
+SELECT tfloat '{(1@2000-01-01, 5@2000-01-05), [7@2000-01-07, 9@2000-01-09]}' %<> 1.0;
+
+-------------------------------------------------------------------------------
