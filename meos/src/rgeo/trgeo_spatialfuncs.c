@@ -55,6 +55,7 @@
 #include <meos_internal.h>
 #include <meos_internal_geo.h>
 #include <meos_rgeo.h>
+#include "geo/geo_funcs.h"
 #include "geo/stbox.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "rgeo/trgeo.h"
@@ -1151,6 +1152,62 @@ trgeo_trav_adaptive(const Temporal *temp, const TInstant *inst_a,
  * terminate at depth 0 with two samples (start and end). The unary
  * union dissolves any redundant overlap between samples.
  */
+/**
+ * @brief Return true if the reference geometry of a temporal rigid geometry is
+ * a convex body
+ * @details Convexity is a property of the reference geometry, which is one
+ * geometry for the whole value, so it is read once rather than per segment.
+ * A body carrying an inner ring is not convex.
+ */
+static bool
+trgeo_ref_is_convex(const GSERIALIZED *gs)
+{
+  LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
+  bool result = false;
+  if (lwgeom->type == POLYGONTYPE && ((LWPOLY *) lwgeom)->nrings == 1)
+    result = geom_ring_is_convex(((LWPOLY *) lwgeom)->rings[0]);
+  lwgeom_free(lwgeom);
+  return result;
+}
+
+/**
+ * @brief Return the region a convex body covers between two of its placements
+ * @details Every point of a convex body travels within the hull of the two
+ * placements, each vertex moving along a straight segment, so that hull is
+ * what the body covers between them. The hull also contains the two
+ * placements it spans, so a sweep replaces them rather than joining them.
+ */
+static GSERIALIZED *
+trgeo_convex_sweep(const GSERIALIZED *a, const GSERIALIZED *b)
+{
+  LWGEOM *lw_a = lwgeom_from_gserialized(a);
+  LWGEOM *lw_b = lwgeom_from_gserialized(b);
+  POINTARRAY *ra = ((LWPOLY *) lw_a)->rings[0];
+  POINTARRAY *rb = ((LWPOLY *) lw_b)->rings[0];
+  POINTARRAY *pa = ptarray_construct_empty(0, 0, ra->npoints + rb->npoints);
+  POINT4D p = {0, 0, 0, 0};
+  for (uint32_t i = 0; i < ra->npoints; i++)
+  {
+    const POINT2D *q = getPoint2d_cp(ra, i);
+    p.x = q->x; p.y = q->y;
+    ptarray_append_point(pa, &p, LW_TRUE);
+  }
+  for (uint32_t i = 0; i < rb->npoints; i++)
+  {
+    const POINT2D *q = getPoint2d_cp(rb, i);
+    p.x = q->x; p.y = q->y;
+    ptarray_append_point(pa, &p, LW_TRUE);
+  }
+  LWGEOM *line = lwline_as_lwgeom(lwline_construct(gserialized_get_srid(a),
+    NULL, pa));
+  GSERIALIZED *gs = geo_serialize(line);
+  lwgeom_free(line);
+  lwgeom_free(lw_a); lwgeom_free(lw_b);
+  GSERIALIZED *result = geom_convex_hull(gs);
+  pfree(gs);
+  return result;
+}
+
 GSERIALIZED *
 trgeometry_traversed_area(const Temporal *temp, bool unary_union)
 {
@@ -1176,6 +1233,38 @@ trgeometry_traversed_area(const Temporal *temp, bool unary_union)
   for (int i = 0; i + 1 < n_insts; i++)
     trgeo_trav_adaptive(temp, insts[i], insts[i + 1], 0,
       &geoms, &n_geoms, &cap);
+
+  /* The samples are the placements the body passes through; the area it
+   * traverses is what it covers BETWEEN them as well. A convex body covers
+   * the hull of each consecutive pair, which is the case the traversed area
+   * is defined for; a body with a concavity keeps the placements alone, as
+   * its hull would close a concavity the body never reaches.
+   * Only the united form answers the traversed area. The collection form
+   * enumerates the placements themselves, which the ever/always spatial
+   * relationships read one by one to tell the two quantifiers apart, so a
+   * region spanning several placements would answer `always` for a body that
+   * only ever passes through. */
+  if (unary_union && n_geoms > 1 && trgeo_ref_is_convex(trgeo_geom_p(temp)))
+  {
+    GSERIALIZED **swept = palloc(sizeof(GSERIALIZED *) * (n_geoms - 1));
+    int n_swept = 0;
+    for (int i = 0; i + 1 < n_geoms; i++)
+    {
+      GSERIALIZED *hull = trgeo_convex_sweep(geoms[i], geoms[i + 1]);
+      if (hull)
+        swept[n_swept++] = hull;
+    }
+    if (n_swept > 0)
+    {
+      for (int i = 0; i < n_geoms; i++)
+        pfree(geoms[i]);
+      pfree(geoms);
+      geoms = swept;
+      n_geoms = n_swept;
+    }
+    else
+      pfree(swept);
+  }
 
   GSERIALIZED *result;
   if (n_geoms == 1)

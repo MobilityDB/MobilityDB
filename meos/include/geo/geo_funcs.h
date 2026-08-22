@@ -135,6 +135,42 @@ extern bool meos_spatialrel(const LWGEOM *g1, const LWGEOM *g2, spatialRel rel,
   bool *result);
 extern bool de9im_match(const char matrix[10], const char pattern[10]);
 extern int point_in_polygon(double x, double y, Edge **edges, int nedges);
+/**
+ * @brief Return true if a polygon ring turns the same way at every vertex,
+ * which is what makes it convex
+ * @details The cross product of two consecutive edges is signed by the turn
+ * they make, so a ring whose turns all carry one sign is convex, and one
+ * change of sign is a vertex the ring is concave at. A ring of fewer than
+ * three distinct vertices bounds no area and is not convex.
+ * @note Defined here so that every caller inlines it, the buffer engine
+ * included, rather than reaching it through a call across files.
+ */
+static inline bool
+geom_ring_is_convex(const POINTARRAY *pa)
+{
+  if (! pa || pa->npoints < 4)
+    return false;
+  uint32_t n = pa->npoints - 1;
+  int sign = 0;
+  for (uint32_t i = 0; i < n; i++)
+  {
+    POINT4D a, b, c;
+    getPoint4d_p(pa, i, &a);
+    getPoint4d_p(pa, (i + 1) % n, &b);
+    getPoint4d_p(pa, (i + 2) % n, &c);
+    double turn = (b.x - a.x) * (c.y - b.y) - (b.y - a.y) * (c.x - b.x);
+    /* The tolerance liblwgeom uses for a coordinate comparison */
+    if (fabs(turn) <= 1e-12)
+      continue;
+    int current = turn > 0.0 ? 1 : -1;
+    if (sign == 0)
+      sign = current;
+    else if (sign != current)
+      return false;
+  }
+  return sign != 0;
+}
+
 extern bool relate_point_on_boundary(double x, double y, Edge **edges,
   int nedges);
 extern int relate_point_in_area(double x, double y, Edge **edges, int nedges);
