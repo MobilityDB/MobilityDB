@@ -50,7 +50,16 @@
  *  (iv)  the ids survive: they are spread beyond 2^31, so a build carrying them
  *        at a narrower width would return different numbers;
  *  (v)   the degenerate counts are handled: loading no entries leaves a tree
- *        that answers nothing, and loading one returns that one.
+ *        that answers nothing, and loading one returns that one;
+ *  (vi)  a load leaves the tree holding exactly the entries it is given,
+ *        whatever it holds when it is called, so an index is rebuilt from the
+ *        entries a caller keeps;
+ *  (vii) the entries a tree holds are released whatever the number given, so a
+ *        load of no entries empties a tree rather than leaving the ones it
+ *        held. This is the case that tells releasing the nodes apart from
+ *        assigning the root over them: wherever entries follow, the two answer
+ *        alike and differ only in what the run leaks, which valgrind reports
+ *        and an assertion cannot.
  *
  * The program can be built as follows
  * @code
@@ -72,6 +81,10 @@
 #define MIN_EXPECTED_HITS 1000
 /* Lowest id, above 2^31 so that a narrower carrier would alter it */
 #define ID_BASE 4000000000LL
+/* Entries a tree holds before it is loaded over */
+#define NUM_SEEDED 8
+/* Lowest seeded id, below every loaded id so that one left behind is visible */
+#define SEED_ID_BASE 1000000000LL
 
 static int
 cmp_int64(const void *a, const void *b)
@@ -87,7 +100,7 @@ static int64 *
 search_sorted(const RTree *rtree, const STBox *query, int *count)
 {
   MeosArray *result = meos_array_create(sizeof(int64));
-  rtree_search(rtree, RTREE_OVERLAPS, query, result);
+  rtree_search(rtree, INDEX_OVERLAPS, query, result);
   *count = meos_array_count(result);
   int64 *ids = malloc(sizeof(int64) * (size_t) (*count ? *count : 1));
   for (int i = 0; i < *count; i++)
@@ -207,12 +220,61 @@ main(void)
     failures++;
   }
   free(s);
+
+  /* (vi) a load leaves the tree holding exactly the entries given, whatever it
+   * holds when it is called. The seeded ids are below every loaded id, so an
+   * entry a rebuild fails to drop appears in the answer instead of hiding
+   * among the ids that are loaded again. */
+  RTree *rebuilt = rtree_create_stbox();
+  for (int i = 0; i < NUM_SEEDED; i++)
+    rtree_insert(rebuilt, &boxes[i], SEED_ID_BASE + (int64) i);
+  rtree_load(rebuilt, boxes, ids, NUM_BOXES);
+  int nrebuilt;
+  int64 *r = search_sorted(rebuilt, whole, &nrebuilt);
+  if (nrebuilt != NUM_BOXES)
+  {
+    printf("rtree_load: a tree holding %d entries answered %d after a load of "
+      "%d entries\n", NUM_SEEDED, nrebuilt, NUM_BOXES);
+    failures++;
+  }
+  else
+  {
+    int64 *want = malloc(sizeof(int64) * NUM_BOXES);
+    memcpy(want, ids, sizeof(int64) * NUM_BOXES);
+    qsort(want, NUM_BOXES, sizeof(int64), cmp_int64);
+    if (memcmp(r, want, sizeof(int64) * NUM_BOXES) != 0)
+    {
+      printf("rtree_load: a tree loaded over the entries it holds answers ids "
+        "it was not loaded with\n");
+      failures++;
+    }
+    free(want);
+  }
+  free(r);
+
+  /* (vii) the entries are released whatever the number given, so an empty
+   * entry set leaves an empty tree rather than the one it held */
+  RTree *emptied = rtree_create_stbox();
+  for (int i = 0; i < NUM_SEEDED; i++)
+    rtree_insert(emptied, &boxes[i], SEED_ID_BASE + (int64) i);
+  rtree_load(emptied, boxes, ids, 0);
+  int nemptied;
+  int64 *m = search_sorted(emptied, whole, &nemptied);
+  if (nemptied != 0)
+  {
+    printf("rtree_load: a tree holding %d entries answered %d after a load of "
+      "no entries\n", NUM_SEEDED, nemptied);
+    failures++;
+  }
+  free(m);
   free(whole);
 
   rtree_free(grown);
   rtree_free(packed);
   rtree_free(empty);
   rtree_free(single);
+  rtree_free(rebuilt);
+  rtree_free(emptied);
   free(boxes);
   free(ids);
 

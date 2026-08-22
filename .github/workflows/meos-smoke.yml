@@ -58,6 +58,18 @@ jobs:
           export MEOS_BUILD_DIR=/usr/local/lib
           ./meos/test/run_smoketests.sh
 
+      # Building an index from a whole entry set releases the nodes the index
+      # holds, which the assertions cannot see and only a leak check reports
+      - name: Run the index builds under valgrind
+        run: |
+          cd meos/test
+          for t in rtree_load_test sptree_load_test; do
+            gcc -Wall -Werror=implicit-function-declaration -g \
+              -I/usr/local/include -o $t $t.c -L/usr/local/lib -lmeos -lm
+            valgrind --leak-check=full --errors-for-leak-kinds=definite \
+              --error-exitcode=1 ./$t
+          done
+
       - name: Upload valgrind logs on failure
         if: failure()
         uses: actions/upload-artifact@v4

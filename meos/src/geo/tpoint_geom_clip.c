@@ -107,7 +107,7 @@ point_in_polygon_impl(double x, double y, Edge **edges, int nedges,
       STBox query;
       double xhi = (x > xmax) ? x : xmax;
       stbox_set(true, false, false, srid, x, xhi, ry, ry, 0, 0, NULL, &query);
-      n = rtree_search(rtree, RTREE_OVERLAPS, &query, rtree_results);
+      n = rtree_search(rtree, INDEX_OVERLAPS, &query, rtree_results);
     }
     for (int i = 0; i < n && ! shared; i++)
     {
@@ -685,7 +685,7 @@ tpointinst_clip_edges(const TInstant *inst, Edge **edges, int nedges,
     stbox_set(true, false, false, srid, a->x, a->x, a->y, a->y, 0, 0, NULL,
       &query);
     /* Query the R-tree */
-    int cand_nedges = rtree_search(rtree, RTREE_OVERLAPS, &query, rtree_results);
+    int cand_nedges = rtree_search(rtree, INDEX_OVERLAPS, &query, rtree_results);
 
     /* Convert the result of an R-tree look up into an edge pointer array */
     for (int j = 0; j < cand_nedges; j++)
@@ -763,7 +763,7 @@ tpointseq_clip_edges(const TSequence *seq, Edge **edges, int nedges,
         Max(a->x, b->x), Min(a->y, b->y), Max(a->y, b->y),
         0, 0, NULL, &query);
       /* Query the R-tree */
-      int cand_nedges = rtree_search(rtree, RTREE_OVERLAPS, &query, rtree_results);
+      int cand_nedges = rtree_search(rtree, INDEX_OVERLAPS, &query, rtree_results);
 
       /* Convert the result of an R-tree look up into an edge pointer array */
       for (int j = 0; j < cand_nedges; j++)
@@ -1059,7 +1059,7 @@ geo_intersects2d_ctx(const GSERIALIZED *gs, const void *ctxv)
       STBox query;
       stbox_set(true, false, false, ctx->srid, e->xmin, e->xmax, e->ymin,
         e->ymax, 0, 0, NULL, &query);
-      int nc = rtree_search(ctx->rtree, RTREE_OVERLAPS, &query, rtree_results);
+      int nc = rtree_search(ctx->rtree, INDEX_OVERLAPS, &query, rtree_results);
       for (int j = 0; j < nc; j++)
         ctx->cand_edges[j] =
           ctx->edge_ptrs[*(int64 *) meos_array_get(rtree_results, j)];
@@ -1624,7 +1624,7 @@ point_geom_within(double px, double py, Edge **edges, int nedges,
     STBox query;
     stbox_set(true, false, false, srid, px - dist, px + dist, py - dist,
       py + dist, 0, 0, NULL, &query);
-    int nc = rtree_search(rtree, RTREE_OVERLAPS, &query, rtree_results);
+    int nc = rtree_search(rtree, INDEX_OVERLAPS, &query, rtree_results);
     for (int i = 0; i < nc; i++)
       if (point_edge_dist2(px, py,
             edges[*(int64 *) meos_array_get(rtree_results, i)]) <=
@@ -1902,7 +1902,7 @@ tpointseq_dwithin_edges(const TSequence *seq, Edge **edges, int nedges,
       stbox_set(true, false, false, srid, Min(a->x, b->x) - dist,
         Max(a->x, b->x) + dist, Min(a->y, b->y) - dist,
         Max(a->y, b->y) + dist, 0, 0, NULL, &query);
-      int cand_nedges = rtree_search(rtree, RTREE_OVERLAPS, &query,
+      int cand_nedges = rtree_search(rtree, INDEX_OVERLAPS, &query,
         rtree_results);
       for (int j = 0; j < cand_nedges; j++)
         cand_edges[j] = edges[*(int64 *) meos_array_get(rtree_results, j)];

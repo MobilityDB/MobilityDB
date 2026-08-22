@@ -35,6 +35,7 @@
 
 /* C */
 #include <stdlib.h>
+#include <limits.h>
 #include <math.h>
 /* MEOS */
 #include <meos.h>
@@ -49,6 +50,7 @@
 #include "temporal/tbox.h"
 #include "temporal/temporal.h"
 #include "temporal/type_util.h"
+#include "geo/geo_funcs.h"
 #include "temporal/temporal_rtree.h"
 
 /*****************************************************************************
@@ -324,6 +326,147 @@ bbox_overlaps_tpcbox(const void *box1, const void *box2)
   return true;
 }
 #endif
+
+/*****************************************************************************
+ * Position of one box with respect to another
+ *
+ * An operation that orders a dimension is answered at a leaf by the operator
+ * of the box type, and at an inner node by the same operator read the other
+ * way round. A node holds every entry of its subtree, so an entry can lie on
+ * one side of the query only when the node itself reaches that side: an entry
+ * left of the query needs a node that is not entirely to its right, and so on
+ * for each pair. The pairing is an involution, which #index_op_dual gives.
+ *****************************************************************************/
+
+/**
+ * @brief Return the operation whose negation, read against a node, tells
+ * whether the subtree can hold an entry satisfying @p op
+ */
+static IndexSearchOp
+index_op_dual(IndexSearchOp op)
+{
+  switch (op)
+  {
+    case INDEX_LEFT:       return INDEX_OVERRIGHT;
+    case INDEX_OVERRIGHT:  return INDEX_LEFT;
+    case INDEX_OVERLEFT:   return INDEX_RIGHT;
+    case INDEX_RIGHT:      return INDEX_OVERLEFT;
+    case INDEX_BELOW:      return INDEX_OVERABOVE;
+    case INDEX_OVERABOVE:  return INDEX_BELOW;
+    case INDEX_OVERBELOW:  return INDEX_ABOVE;
+    case INDEX_ABOVE:      return INDEX_OVERBELOW;
+    case INDEX_FRONT:      return INDEX_OVERBACK;
+    case INDEX_OVERBACK:   return INDEX_FRONT;
+    case INDEX_OVERFRONT:  return INDEX_BACK;
+    case INDEX_BACK:       return INDEX_OVERFRONT;
+    case INDEX_BEFORE:     return INDEX_OVERAFTER;
+    case INDEX_OVERAFTER:  return INDEX_BEFORE;
+    case INDEX_OVERBEFORE: return INDEX_AFTER;
+    case INDEX_AFTER:      return INDEX_OVERBEFORE;
+    default:               return op;
+  }
+}
+
+/**
+ * @brief Return `true` if a span is positioned with respect to another one as
+ * @p op asks, `false` otherwise
+ * @details A span orders one dimension, so only the value operations apply
+ * @param[in] box1,box2 Span values
+ * @param[in] op Position operation
+ */
+static bool
+bbox_position_span(const void *box1, const void *box2, IndexSearchOp op)
+{
+  const Span *s1 = (const Span *) box1;
+  const Span *s2 = (const Span *) box2;
+  switch (op)
+  {
+    case INDEX_LEFT:      return left_span_span(s1, s2);
+    case INDEX_OVERLEFT:  return overleft_span_span(s1, s2);
+    case INDEX_RIGHT:     return right_span_span(s1, s2);
+    case INDEX_OVERRIGHT: return overright_span_span(s1, s2);
+    default:              return false;
+  }
+}
+
+/**
+ * @brief Return `true` if a temporal box is positioned with respect to another
+ * one as @p op asks, `false` otherwise
+ * @details A temporal box orders a value dimension and a time dimension
+ * @param[in] box1,box2 TBox values
+ * @param[in] op Position operation
+ */
+static bool
+bbox_position_tbox(const void *box1, const void *box2, IndexSearchOp op)
+{
+  const TBox *b1 = (const TBox *) box1;
+  const TBox *b2 = (const TBox *) box2;
+  switch (op)
+  {
+    case INDEX_LEFT:       return left_tbox_tbox(b1, b2);
+    case INDEX_OVERLEFT:   return overleft_tbox_tbox(b1, b2);
+    case INDEX_RIGHT:      return right_tbox_tbox(b1, b2);
+    case INDEX_OVERRIGHT:  return overright_tbox_tbox(b1, b2);
+    case INDEX_BEFORE:     return before_tbox_tbox(b1, b2);
+    case INDEX_OVERBEFORE: return overbefore_tbox_tbox(b1, b2);
+    case INDEX_AFTER:      return after_tbox_tbox(b1, b2);
+    case INDEX_OVERAFTER:  return overafter_tbox_tbox(b1, b2);
+    default:               return false;
+  }
+}
+
+/**
+ * @brief Return `true` if a spatiotemporal box is positioned with respect to
+ * another one as @p op asks, `false` otherwise
+ * @param[in] box1,box2 STBox values
+ * @param[in] op Position operation
+ */
+static bool
+bbox_position_stbox(const void *box1, const void *box2, IndexSearchOp op)
+{
+  const STBox *b1 = (const STBox *) box1;
+  const STBox *b2 = (const STBox *) box2;
+  switch (op)
+  {
+    case INDEX_LEFT:       return left_stbox_stbox(b1, b2);
+    case INDEX_OVERLEFT:   return overleft_stbox_stbox(b1, b2);
+    case INDEX_RIGHT:      return right_stbox_stbox(b1, b2);
+    case INDEX_OVERRIGHT:  return overright_stbox_stbox(b1, b2);
+    case INDEX_BELOW:      return below_stbox_stbox(b1, b2);
+    case INDEX_OVERBELOW:  return overbelow_stbox_stbox(b1, b2);
+    case INDEX_ABOVE:      return above_stbox_stbox(b1, b2);
+    case INDEX_OVERABOVE:  return overabove_stbox_stbox(b1, b2);
+    case INDEX_FRONT:      return front_stbox_stbox(b1, b2);
+    case INDEX_OVERFRONT:  return overfront_stbox_stbox(b1, b2);
+    case INDEX_BACK:       return back_stbox_stbox(b1, b2);
+    case INDEX_OVERBACK:   return overback_stbox_stbox(b1, b2);
+    case INDEX_BEFORE:     return before_stbox_stbox(b1, b2);
+    case INDEX_OVERBEFORE: return overbefore_stbox_stbox(b1, b2);
+    case INDEX_AFTER:      return after_stbox_stbox(b1, b2);
+    case INDEX_OVERAFTER:  return overafter_stbox_stbox(b1, b2);
+    default:               return false;
+  }
+}
+
+#if POINTCLOUD
+/**
+ * @brief Return `true` if a TPCBox is positioned with respect to another one
+ * as @p op asks, `false` otherwise
+ * @details A TPCBox carries the same spatial and temporal bounds as an STBox
+ * plus a trailing point cloud identifier, which orders no dimension, so the
+ * position is the one the projected boxes hold
+ * @param[in] box1,box2 TPCBox values
+ * @param[in] op Position operation
+ */
+static bool
+bbox_position_tpcbox(const void *box1, const void *box2, IndexSearchOp op)
+{
+  STBox sbox1, sbox2;
+  tpcbox_set_stbox((const TPCBox *) box1, &sbox1);
+  tpcbox_set_stbox((const TPCBox *) box2, &sbox2);
+  return bbox_position_stbox(&sbox1, &sbox2, op);
+}
+#endif /* POINTCLOUD */
 
 /*****************************************************************************
  * Rtree functions
@@ -780,18 +923,21 @@ node_insert(RTree *rtree, void *node_bounding_box, RTreeNode *node,
  */
 static bool
 leaf_consistent(const RTree *rtree, const void *key, const void *query,
-  RTreeSearchOp op)
+  IndexSearchOp op)
 {
   switch (op)
   {
-    case RTREE_OVERLAPS:
+    case INDEX_OVERLAPS:
       return rtree->bbox_overlaps(key, query);
-    case RTREE_CONTAINS:
+    case INDEX_CONTAINS:
       return rtree->bbox_contains(key, query);
-    case RTREE_CONTAINED_BY:
+    case INDEX_CONTAINED_BY:
       return rtree->bbox_contains(query, key);
+    default:
+      /* An entry satisfies a position operation as the box type answers it */
+      return rtree->bbox_position ?
+        rtree->bbox_position(key, query, op) : false;
   }
-  return false;
 }
 
 /**
@@ -804,17 +950,21 @@ leaf_consistent(const RTree *rtree, const void *key, const void *query,
  */
 static bool
 inner_consistent(const RTree *rtree, const void *key, const void *query,
-  RTreeSearchOp op)
+  IndexSearchOp op)
 {
   switch (op)
   {
-    case RTREE_OVERLAPS:
-    case RTREE_CONTAINED_BY:
+    case INDEX_OVERLAPS:
+    case INDEX_CONTAINED_BY:
       return rtree->bbox_overlaps(key, query);
-    case RTREE_CONTAINS:
+    case INDEX_CONTAINS:
       return rtree->bbox_contains(key, query);
+    default:
+      /* The subtree can hold an entry on one side of the query only when the
+       * node itself reaches that side, which the dual operation denies */
+      return rtree->bbox_position ?
+        ! rtree->bbox_position(key, query, index_op_dual(op)) : false;
   }
-  return false;
 }
 
 /**
@@ -826,7 +976,7 @@ inner_consistent(const RTree *rtree, const void *key, const void *query,
  * @param[out] result MeosArray to collect matching IDs
  */
 static void
-node_search(const RTree *rtree, const RTreeNode *node, RTreeSearchOp op,
+node_search(const RTree *rtree, const RTreeNode *node, IndexSearchOp op,
   const void *query, MeosArray *result)
 {
   for (int i = 0; i < node->count; ++i)
@@ -869,7 +1019,7 @@ node_search(const RTree *rtree, const RTreeNode *node, RTreeSearchOp op,
 static void
 node_join(const RTree *rtree1, const RTreeNode *node1, const void *box1,
   const RTree *rtree2, const RTreeNode *node2, const void *box2,
-  RTreeSearchOp op, MeosArray *result)
+  IndexSearchOp op, MeosArray *result)
 {
   if (box1 && box2 && ! rtree1->bbox_overlaps(box1, box2))
     return;
@@ -937,6 +1087,7 @@ rtree_create(MeosType bboxtype)
     rtree->bbox_expand = &bbox_expand_span;
     rtree->bbox_contains = &bbox_contains_span;
     rtree->bbox_overlaps = &bbox_overlaps_span;
+    rtree->bbox_position = &bbox_position_span;
   }
   else if (bboxtype == T_TBOX)
   {
@@ -945,6 +1096,7 @@ rtree_create(MeosType bboxtype)
     rtree->bbox_expand = &bbox_expand_tbox;
     rtree->bbox_contains = &bbox_contains_tbox;
     rtree->bbox_overlaps = &bbox_overlaps_tbox;
+    rtree->bbox_position = &bbox_position_tbox;
   }
 #if POINTCLOUD
   else if (bboxtype == T_TPCBOX)
@@ -956,6 +1108,7 @@ rtree_create(MeosType bboxtype)
     rtree->bbox_expand = &bbox_expand_tpcbox;
     rtree->bbox_contains = &bbox_contains_tpcbox;
     rtree->bbox_overlaps = &bbox_overlaps_tpcbox;
+    rtree->bbox_position = &bbox_position_tpcbox;
   }
 #endif
   else /* bboxtype == T_STBOX */
@@ -967,6 +1120,7 @@ rtree_create(MeosType bboxtype)
     rtree->bbox_expand = &bbox_expand_stbox;
     rtree->bbox_contains = &bbox_contains_stbox;
     rtree->bbox_overlaps = &bbox_overlaps_stbox;
+    rtree->bbox_position = &bbox_position_stbox;
   }
   rtree->bboxtype = bboxtype;
   rtree->bboxsize = bboxsize;
@@ -1066,8 +1220,12 @@ rtree_create_tpcbox()
 #endif
 
 /*****************************************************************************
- * STR bulk load (PROTOTYPE, for measurement)
+ * Build from a whole entry set
  *****************************************************************************/
+
+/* The build releases the nodes the tree holds, which the recursive release
+ * below it does */
+static void node_free(RTreeNode *node);
 
 typedef struct
 {
@@ -1141,21 +1299,68 @@ str_pack_level(RTree *rtree, STRItem *items, int count, bool leaf, int *nout)
 }
 
 /**
- * @ingroup meos_geo_box_index
+ * @brief Return true if a box may enter or query an RTree, report an error
+ * otherwise
+ * @details A tree holds boxes of one SRID: the first entry fixes it, and a box
+ * of another one is an error rather than a coercion. The check belongs here,
+ * at the entry point, so that every comparison the descent makes can assume it
+ */
+static bool
+ensure_valid_rtree_box(const RTree *rtree, const void *box)
+{
+  if (! rtree->root)
+    return true;
+  if (rtree->bboxtype == T_STBOX)
+    return ensure_same_srid(((const STBox *) rtree->box)->srid,
+      ((const STBox *) box)->srid);
+#if POINTCLOUD
+  if (rtree->bboxtype == T_TPCBOX)
+  {
+    STBox s1, s2;
+    tpcbox_set_stbox((const TPCBox *) rtree->box, &s1);
+    tpcbox_set_stbox((const TPCBox *) box, &s2);
+    return ensure_same_srid(s1.srid, s2.srid);
+  }
+#endif /* POINTCLOUD */
+  return true;
+}
+
+/**
+ * @ingroup meos_temporal_box_index
  * @brief Build an RTree from all of its entries at once
  * @details Bottom-up Sort-Tile-Recursive packing. The result answers the same
  * queries as inserting every entry one by one, but the whole set is known in
  * advance, so nodes are filled to capacity and no node is ever split.
- * @param[in] rtree An EMPTY RTree of the appropriate bounding box type
+ *
+ * The tree ends up holding exactly the entries given, whatever it holds on
+ * entry, so this is both the fast first build and the only way to make an
+ * index smaller: an index has no removal entry point, and a caller that has to
+ * drop entries rebuilds from the ones it keeps. Loading no entries leaves an
+ * empty tree.
+ * @param[in] rtree An RTree of the appropriate bounding box type
  * @param[in] boxes Contiguous array of @p count boxes of the tree bbox size
  * @param[in] ids The id of each box
  * @param[in] count Number of entries
  */
-void
+bool
 rtree_load(RTree *rtree, const void *boxes, const int64 *ids, int count)
 {
+  /* Ensure the validity of the arguments */
+  if (! ensure_not_null((void *) rtree) || ! ensure_not_null((void *) boxes) ||
+      ! ensure_not_null((void *) ids) || ! ensure_valid_rtree_box(rtree, boxes))
+    return false;
+
+  /* The packing assigns the root, so the nodes the tree holds are released
+   * before it does, and are released whatever the number of entries given: an
+   * empty entry set leaves an empty tree rather than the previous one */
+  if (rtree->root)
+  {
+    node_free(rtree->root);
+    rtree->root = NULL;
+  }
+
   if (count <= 0)
-    return;
+    return true;
 
   /* A box type whose dimension count depends on the data carries -1 until the
    * first box arrives, which for a tree grown by insertion is the first insert */
@@ -1198,12 +1403,12 @@ rtree_load(RTree *rtree, const void *boxes, const int64 *ids, int count)
   for (int k = 1; k < level[0]->count; k++)
     rtree->bbox_expand(RTREE_NODE_BBOX_N(level[0], k), &rtree->box);
   pfree(level);
-  return;
+  return true;
 }
 
 
 /**
- * @ingroup meos_geo_box_index
+ * @ingroup meos_temporal_box_index
  * @brief Insert a bounding box into the RTree index.
  * @note The parameter `id` is used for the search function, when a match
  * is found the id will be returned. The bounding box will be copied into the
@@ -1212,9 +1417,14 @@ rtree_load(RTree *rtree, const void *boxes, const int64 *ids, int count)
  * @param[in] box The bounding box to be inserted
  * @param[in] id The id of the box being inserted
  */
-void
+bool
 rtree_insert(RTree *rtree, void *box, int64 id)
 {
+  /* Ensure the validity of the arguments */
+  if (! ensure_not_null((void *) rtree) || ! ensure_not_null((void *) box) ||
+      ! ensure_valid_rtree_box(rtree, box))
+    return false;
+
   while (1)
   {
     if (! rtree->root)
@@ -1230,7 +1440,7 @@ rtree_insert(RTree *rtree, void *box, int64 id)
     if (! split)
     {
       rtree->bbox_expand(box, &rtree->box);
-      return;
+      return true;
     }
     RTreeNode *new_root = node_make(RTREE_INNER, rtree->bboxsize);
     RTreeNode *right;
@@ -1243,29 +1453,35 @@ rtree_insert(RTree *rtree, void *box, int64 id)
     rtree->root = new_root;
     rtree->root->count = 2;
   }
-  return;
+  return true;
 }
 
 /**
- * @ingroup meos_geo_box_index
+ * @ingroup meos_temporal_box_index
  * @brief Search an RTree with a bounding box, collecting matching IDs into
  * a MeosArray
  * @details The result array is reset before the search. After the call,
  * use the returned count and #meos_array_get to read the matching IDs.
  * The same array can be reused across multiple searches without reallocating.
  * @param[in] rtree The RTree to query
- * @param[in] op The search operation: @p RTREE_OVERLAPS finds boxes that
- * overlap the query, @p RTREE_CONTAINS finds boxes that contain the query,
- * @p RTREE_CONTAINED_BY finds boxes contained by the query
+ * @param[in] op The search operation: @p INDEX_OVERLAPS finds boxes that
+ * overlap the query, @p INDEX_CONTAINS finds boxes that contain the query,
+ * @p INDEX_CONTAINED_BY finds boxes contained by the query
  * @param[in] query The bounding box that serves as query
  * @param[out] result MeosArray of int to collect matching IDs (created by the
  * caller with `meos_array_create(sizeof(int64))`)
  * @return Number of matching IDs
  */
 int
-rtree_search(const RTree *rtree, RTreeSearchOp op, const void *query,
+rtree_search(const RTree *rtree, IndexSearchOp op, const void *query,
   MeosArray *result)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rtree, INT_MAX); VALIDATE_NOT_NULL(query, INT_MAX);
+  VALIDATE_NOT_NULL(result, INT_MAX);
+  if (! ensure_valid_rtree_box(rtree, query))
+    return INT_MAX;
+
   meos_array_reset(result);
   if (rtree->root)
     node_search(rtree, rtree->root, op, query, result);
@@ -1273,7 +1489,7 @@ rtree_search(const RTree *rtree, RTreeSearchOp op, const void *query,
 }
 
 /**
- * @ingroup meos_geo_box_index
+ * @ingroup meos_temporal_box_index
  * @brief Join two RTrees, collecting the ids of every qualifying pair into a
  * MeosArray
  * @details Descends both trees at once, skipping the entries of a subtree pair
@@ -1284,16 +1500,16 @@ rtree_search(const RTree *rtree, RTreeSearchOp op, const void *query,
  * entry of @p rtree1 followed by the entry of @p rtree2, so pair `k` is read
  * with #meos_array_get at positions `2 * k` and `2 * k + 1`.
  * @param[in] rtree1,rtree2 The RTrees to join, of the same bounding box type
- * @param[in] op The join operation: @p RTREE_OVERLAPS pairs entries that
- * overlap, @p RTREE_CONTAINS pairs entries of @p rtree1 that contain an entry
- * of @p rtree2, @p RTREE_CONTAINED_BY pairs entries of @p rtree1 contained by
+ * @param[in] op The join operation: @p INDEX_OVERLAPS pairs entries that
+ * overlap, @p INDEX_CONTAINS pairs entries of @p rtree1 that contain an entry
+ * of @p rtree2, @p INDEX_CONTAINED_BY pairs entries of @p rtree1 contained by
  * an entry of @p rtree2
  * @param[out] result MeosArray of int to collect the ids (created by the caller
  * with `meos_array_create(sizeof(int64))`)
  * @return Number of qualifying pairs, half the number of collected ids
  */
 int
-rtree_join(const RTree *rtree1, const RTree *rtree2, RTreeSearchOp op,
+rtree_join(const RTree *rtree1, const RTree *rtree2, IndexSearchOp op,
   MeosArray *result)
 {
   assert(rtree1->bboxtype == rtree2->bboxtype);
@@ -1316,17 +1532,17 @@ rtree_join(const RTree *rtree1, const RTree *rtree2, RTreeSearchOp op,
  * @param[in] temp The temporal value to be inserted
  * @param[in] id The id of the temporal value being inserted
  */
-void
+bool
 rtree_insert_temporal(RTree *rtree, const Temporal *temp, int64 id)
 {
   if (! ensure_bbox_temporal_compatible(rtree->bboxtype, temp))
-    return;
+    return false;
   /* Use a stack buffer large enough for any MEOS bounding box type */
   bboxunion buf;
   memset(&buf, 0, sizeof(buf));
   temporal_set_bbox(temp, &buf);
   rtree_insert(rtree, &buf, id);
-  return;
+  return true;
 }
 
 /**
@@ -1342,7 +1558,7 @@ rtree_insert_temporal(RTree *rtree, const Temporal *temp, int64 id)
  * @return Number of matching IDs
  */
 int
-rtree_search_temporal(const RTree *rtree, RTreeSearchOp op,
+rtree_search_temporal(const RTree *rtree, IndexSearchOp op,
   const Temporal *temp, MeosArray *result)
 {
   if (! ensure_bbox_temporal_compatible(rtree->bboxtype, temp))
@@ -1395,20 +1611,20 @@ rtree_search_temporal(const RTree *rtree, RTreeSearchOp op,
  * values `<= 1` degenerate to the single minimum bounding box
  * @see rtree_insert_temporal
  */
-void
+bool
 rtree_insert_temporal_split(RTree *rtree, const Temporal *temp, int64 id,
   int maxboxes)
 {
   if (! ensure_bbox_temporal_compatible(rtree->bboxtype, temp))
-    return;
+    return false;
   int count;
   void *boxes = bbox_temporal_split_boxes(rtree->bboxtype, rtree->bboxsize, temp, maxboxes, &count);
   if (! boxes)
-    return;
+    return true;
   for (int i = 0; i < count; i++)
     rtree_insert(rtree, (char *) boxes + (size_t) i * rtree->bboxsize, id);
   pfree(boxes);
-  return;
+  return true;
 }
 
 /**
@@ -1446,7 +1662,7 @@ rtree_id_cmp(const void *a, const void *b)
 }
 
 int
-rtree_search_temporal_dedup(const RTree *rtree, RTreeSearchOp op,
+rtree_search_temporal_dedup(const RTree *rtree, IndexSearchOp op,
   const Temporal *temp, int maxboxes, MeosArray *result)
 {
   meos_array_reset(result);
@@ -1641,7 +1857,7 @@ nn_heap_pop(RTreeNNCursor *cursor)
 }
 
 /**
- * @ingroup meos_geo_box_index
+ * @ingroup meos_temporal_box_index
  * @brief Open a nearest-neighbour cursor that yields the ids stored in an
  * RTree in order of increasing distance to a query bounding box
  * @details The cursor performs an incremental best-first traversal: repeated
@@ -1683,7 +1899,7 @@ rtree_nn_cursor_open(const RTree *rtree, const void *query)
 }
 
 /**
- * @ingroup meos_geo_box_index
+ * @ingroup meos_temporal_box_index
  * @brief Advance a nearest-neighbour cursor to the next closest id
  * @details Returns the next id in order of increasing distance to the query
  * box. When @p id_out or @p dist_out is not @p NULL it receives the id and its
@@ -1737,7 +1953,7 @@ rtree_nn_cursor_next(RTreeNNCursor *cursor, int64 *id_out, double *dist_out)
 }
 
 /**
- * @ingroup meos_geo_box_index
+ * @ingroup meos_temporal_box_index
  * @brief Close a nearest-neighbour cursor and free its resources
  * @param[in] cursor The cursor to close; @p NULL is ignored
  */
@@ -1770,6 +1986,97 @@ node_free(RTreeNode *node)
       node_free(node->nodes[i]);
   }
   pfree(node);
+}
+
+/*****************************************************************************
+ * What an index holds
+ *
+ * An RTree is an opaque handle, so the size and the shape of the tree are
+ * reported by the index itself rather than read from its layout. A consumer
+ * accounting for the memory an index holds, or a test asserting that a build
+ * chooses the depth rather than following the order the entries arrive in,
+ * asks here.
+ *****************************************************************************/
+
+/**
+ * @brief Accumulate the entries, the bytes and the depth of a subtree
+ */
+static void
+node_stats(const RTreeNode *node, size_t bboxsize, int level, int *entries,
+  int64 *bytes, int *height)
+{
+  *bytes += (int64) (sizeof(RTreeNode) + bboxsize * MAXITEMS);
+  if (level > *height)
+    *height = level;
+  if (node->node_type == RTREE_LEAF)
+  {
+    *entries += node->count;
+    return;
+  }
+  for (int i = 0; i < node->count; i++)
+    node_stats(node->nodes[i], bboxsize, level + 1, entries, bytes, height);
+  return;
+}
+
+/**
+ * @ingroup meos_temporal_box_index
+ * @brief Return the number of entries an RTree holds
+ * @param[in] rtree The RTree
+ * @return On error return @p INT_MAX
+ */
+int
+rtree_num_entries(const RTree *rtree)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rtree, INT_MAX);
+  if (! rtree->root)
+    return 0;
+  int entries = 0, height = 0;
+  int64 bytes = 0;
+  node_stats(rtree->root, rtree->bboxsize, 1, &entries, &bytes, &height);
+  return entries;
+}
+
+/**
+ * @ingroup meos_temporal_box_index
+ * @brief Return the number of bytes an RTree holds
+ * @details The nodes of the tree and the tree itself, which is what a caller
+ * accounting for the memory of an index reports
+ * @param[in] rtree The RTree
+ * @return On error return @p INT64_MAX
+ */
+int64
+rtree_mem_size(const RTree *rtree)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rtree, INT64_MAX);
+  int64 bytes = (int64) (sizeof(RTree) + rtree->bboxsize);
+  if (rtree->root)
+  {
+    int entries = 0, height = 0;
+    node_stats(rtree->root, rtree->bboxsize, 1, &entries, &bytes, &height);
+  }
+  return bytes;
+}
+
+/**
+ * @ingroup meos_temporal_box_index
+ * @brief Return the number of levels an RTree holds
+ * @details An empty tree has no levels and a tree whose root is a leaf has one
+ * @param[in] rtree The RTree
+ * @return On error return @p INT_MAX
+ */
+int
+rtree_height(const RTree *rtree)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rtree, INT_MAX);
+  if (! rtree->root)
+    return 0;
+  int entries = 0, height = 0;
+  int64 bytes = 0;
+  node_stats(rtree->root, rtree->bboxsize, 1, &entries, &bytes, &height);
+  return height;
 }
 
 /**

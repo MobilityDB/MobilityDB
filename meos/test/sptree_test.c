@@ -98,7 +98,7 @@ random_int(int min, int max)
  * satisfies the operator against the query.
  */
 static void
-compare(const char *label, const SPTree *sptree, RTreeSearchOp op,
+compare(const char *label, const SPTree *sptree, IndexSearchOp op,
   const void *query, const bool *truth)
 {
   MeosArray *result = meos_array_create(sizeof(int64));
@@ -154,9 +154,9 @@ test_intspan(SPTreeKind kind, const char *kindname)
   }
 
   printf("Integer span %s (%d random spans):\n", kindname, NUM_BOXES);
-  compare("  overlaps    ", sptree, RTREE_OVERLAPS, query, ov);
-  compare("  contains    ", sptree, RTREE_CONTAINS, query, co);
-  compare("  contained by", sptree, RTREE_CONTAINED_BY, query, cb);
+  compare("  overlaps    ", sptree, INDEX_OVERLAPS, query, ov);
+  compare("  contains    ", sptree, INDEX_CONTAINS, query, co);
+  compare("  contained by", sptree, INDEX_CONTAINED_BY, query, cb);
 
   for (int i = 0; i < NUM_BOXES; i++)
     free(spans[i]);
@@ -193,9 +193,9 @@ test_floatspan(SPTreeKind kind, const char *kindname)
   }
 
   printf("Float span %s (%d random spans):\n", kindname, NUM_BOXES);
-  compare("  overlaps    ", sptree, RTREE_OVERLAPS, query, ov);
-  compare("  contains    ", sptree, RTREE_CONTAINS, query, co);
-  compare("  contained by", sptree, RTREE_CONTAINED_BY, query, cb);
+  compare("  overlaps    ", sptree, INDEX_OVERLAPS, query, ov);
+  compare("  contains    ", sptree, INDEX_CONTAINS, query, co);
+  compare("  contained by", sptree, INDEX_CONTAINED_BY, query, cb);
 
   for (int i = 0; i < NUM_BOXES; i++)
     free(spans[i]);
@@ -243,9 +243,9 @@ test_tbox(SPTreeKind kind, const char *kindname)
   }
 
   printf("Temporal box %s (%d random boxes):\n", kindname, NUM_BOXES);
-  compare("  overlaps    ", sptree, RTREE_OVERLAPS, query, ov);
-  compare("  contains    ", sptree, RTREE_CONTAINS, query, co);
-  compare("  contained by", sptree, RTREE_CONTAINED_BY, query, cb);
+  compare("  overlaps    ", sptree, INDEX_OVERLAPS, query, ov);
+  compare("  contains    ", sptree, INDEX_CONTAINS, query, co);
+  compare("  contained by", sptree, INDEX_CONTAINED_BY, query, cb);
 
   for (int i = 0; i < NUM_BOXES; i++)
     free(boxes[i]);
@@ -295,9 +295,9 @@ test_stbox(SPTreeKind kind, const char *kindname)
   }
 
   printf("Spatiotemporal box %s (%d random boxes):\n", kindname, NUM_BOXES);
-  compare("  overlaps    ", sptree, RTREE_OVERLAPS, query, ov);
-  compare("  contains    ", sptree, RTREE_CONTAINS, query, co);
-  compare("  contained by", sptree, RTREE_CONTAINED_BY, query, cb);
+  compare("  overlaps    ", sptree, INDEX_OVERLAPS, query, ov);
+  compare("  contains    ", sptree, INDEX_CONTAINS, query, co);
+  compare("  contained by", sptree, INDEX_CONTAINED_BY, query, cb);
 
   for (int i = 0; i < NUM_BOXES; i++)
     free(boxes[i]);
@@ -353,9 +353,9 @@ test_tpcbox(SPTreeKind kind, const char *kindname)
   }
 
   printf("Pointcloud box %s (%d random boxes):\n", kindname, NUM_BOXES);
-  compare("  overlaps    ", sptree, RTREE_OVERLAPS, query, ov);
-  compare("  contains    ", sptree, RTREE_CONTAINS, query, co);
-  compare("  contained by", sptree, RTREE_CONTAINED_BY, query, cb);
+  compare("  overlaps    ", sptree, INDEX_OVERLAPS, query, ov);
+  compare("  contains    ", sptree, INDEX_CONTAINS, query, co);
+  compare("  contained by", sptree, INDEX_CONTAINED_BY, query, cb);
 
   for (int i = 0; i < NUM_BOXES; i++)
     free(boxes[i]);
@@ -413,11 +413,11 @@ test_mest(void)
   MeosArray *single_ids = meos_array_create(sizeof(int64));
   MeosArray *mest_ids = meos_array_create(sizeof(int64));
   MeosArray *deg_ids = meos_array_create(sizeof(int64));
-  int single_count = sptree_search_temporal(single, RTREE_OVERLAPS, query,
+  int single_count = sptree_search_temporal(single, INDEX_OVERLAPS, query,
     single_ids);
-  int mest_count = sptree_search_temporal_dedup(mest, RTREE_OVERLAPS, query,
+  int mest_count = sptree_search_temporal_dedup(mest, INDEX_OVERLAPS, query,
     MAX_BOXES, mest_ids);
-  int deg_count = sptree_search_temporal_dedup(deg, RTREE_OVERLAPS, query, 1,
+  int deg_count = sptree_search_temporal_dedup(deg, INDEX_OVERLAPS, query, 1,
     deg_ids);
 
   bool *in_single = calloc(NUM_TRIPS, sizeof(bool));
@@ -548,11 +548,11 @@ test_stbox_mest(void)
   MeosArray *single_ids = meos_array_create(sizeof(int64));
   MeosArray *mest_ids = meos_array_create(sizeof(int64));
   MeosArray *deg_ids = meos_array_create(sizeof(int64));
-  int single_count = sptree_search_temporal(single, RTREE_OVERLAPS, query,
+  int single_count = sptree_search_temporal(single, INDEX_OVERLAPS, query,
     single_ids);
-  int mest_count = sptree_search_temporal_dedup(mest, RTREE_OVERLAPS, query,
+  int mest_count = sptree_search_temporal_dedup(mest, INDEX_OVERLAPS, query,
     MAX_BOXES, mest_ids);
-  int deg_count = sptree_search_temporal_dedup(deg, RTREE_OVERLAPS, query, 1,
+  int deg_count = sptree_search_temporal_dedup(deg, INDEX_OVERLAPS, query, 1,
     deg_ids);
 
   bool *in_single = calloc(NUM_TRIPS, sizeof(bool));
@@ -877,7 +877,7 @@ selective(const char *label, const SPTree *sptree, const void *query,
   const bool *truth, int ntruth)
 {
   MeosArray *result = meos_array_create(sizeof(int64));
-  int count = sptree_search(sptree, RTREE_OVERLAPS, query, result);
+  int count = sptree_search(sptree, INDEX_OVERLAPS, query, result);
   bool *in_index = calloc(SEL_BOXES, sizeof(bool));
   for (int i = 0; i < count; i++)
     in_index[*(int64 *) meos_array_get(result, i)] = true;

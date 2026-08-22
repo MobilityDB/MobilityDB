@@ -78,7 +78,7 @@ random_int(int min, int max)
  * @param[in] predicate Brute-force predicate matching the search operation
  */
 static void
-verify_search(const char *name, const RTree *rtree, RTreeSearchOp op,
+verify_search(const char *name, const RTree *rtree, IndexSearchOp op,
   const void *query, const char *boxes, size_t bboxsize, MeosArray *ids,
   bool (*predicate)(const void *, const void *))
 {
@@ -181,11 +181,11 @@ test_floatspan(MeosArray *ids)
 
   printf("FLOATSPAN:\n");
   Span *query = floatspan_in("[0, 100]");
-  verify_search("overlaps", rtree, RTREE_OVERLAPS, query,
+  verify_search("overlaps", rtree, INDEX_OVERLAPS, query,
     (char *) boxes, sizeof(Span), ids, overlaps_span_wrapper);
-  verify_search("contains", rtree, RTREE_CONTAINS, query,
+  verify_search("contains", rtree, INDEX_CONTAINS, query,
     (char *) boxes, sizeof(Span), ids, contains_span_wrapper);
-  verify_search("contained by", rtree, RTREE_CONTAINED_BY, query,
+  verify_search("contained by", rtree, INDEX_CONTAINED_BY, query,
     (char *) boxes, sizeof(Span), ids, contained_span_wrapper);
 
   free(query);
@@ -219,11 +219,11 @@ test_tstzspan(MeosArray *ids)
   /* Query covers ~100/1000 = 10% of the time range */
   Span *query = tstzspan_in(
     "[2020-01-01 00:00:00+00, 2020-01-01 01:40:00+00]");
-  verify_search("overlaps", rtree, RTREE_OVERLAPS, query,
+  verify_search("overlaps", rtree, INDEX_OVERLAPS, query,
     (char *) boxes, sizeof(Span), ids, overlaps_span_wrapper);
-  verify_search("contains", rtree, RTREE_CONTAINS, query,
+  verify_search("contains", rtree, INDEX_CONTAINS, query,
     (char *) boxes, sizeof(Span), ids, contains_span_wrapper);
-  verify_search("contained by", rtree, RTREE_CONTAINED_BY, query,
+  verify_search("contained by", rtree, INDEX_CONTAINED_BY, query,
     (char *) boxes, sizeof(Span), ids, contained_span_wrapper);
 
   free(query);
@@ -259,11 +259,11 @@ test_tbox(MeosArray *ids)
   printf("TBOX:\n");
   TBox *query = tbox_in(
     "TBOX XT([0,100],[2020-01-01 00:00:00+00, 2020-01-01 01:40:00+00])");
-  verify_search("overlaps", rtree, RTREE_OVERLAPS, query,
+  verify_search("overlaps", rtree, INDEX_OVERLAPS, query,
     (char *) boxes, sizeof(TBox), ids, overlaps_tbox_wrapper);
-  verify_search("contains", rtree, RTREE_CONTAINS, query,
+  verify_search("contains", rtree, INDEX_CONTAINS, query,
     (char *) boxes, sizeof(TBox), ids, contains_tbox_wrapper);
-  verify_search("contained by", rtree, RTREE_CONTAINED_BY, query,
+  verify_search("contained by", rtree, INDEX_CONTAINED_BY, query,
     (char *) boxes, sizeof(TBox), ids, contained_tbox_wrapper);
 
   free(query);
@@ -302,11 +302,11 @@ test_stbox(MeosArray *ids)
   STBox *query = stbox_in(
     "SRID=25832;STBOX XT(((0 0),(100 100)),"
     "[2020-01-01 00:00:00+00, 2020-01-01 01:40:00+00])");
-  verify_search("overlaps", rtree, RTREE_OVERLAPS, query,
+  verify_search("overlaps", rtree, INDEX_OVERLAPS, query,
     (char *) boxes, sizeof(STBox), ids, overlaps_stbox_wrapper);
-  verify_search("contains", rtree, RTREE_CONTAINS, query,
+  verify_search("contains", rtree, INDEX_CONTAINS, query,
     (char *) boxes, sizeof(STBox), ids, contains_stbox_wrapper);
-  verify_search("contained by", rtree, RTREE_CONTAINED_BY, query,
+  verify_search("contained by", rtree, INDEX_CONTAINED_BY, query,
     (char *) boxes, sizeof(STBox), ids, contained_stbox_wrapper);
 
   free(query);
@@ -356,7 +356,7 @@ test_temporal(MeosArray *ids)
 
   /* Index search via temporal API */
   clock_t t = clock();
-  int index_count = rtree_search_temporal(rtree, RTREE_OVERLAPS, query, ids);
+  int index_count = rtree_search_temporal(rtree, INDEX_OVERLAPS, query, ids);
   double index_time = (double)(clock() - t) / CLOCKS_PER_SEC;
 
   /* Brute-force search */

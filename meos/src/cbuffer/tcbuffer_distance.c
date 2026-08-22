@@ -802,7 +802,7 @@ tcbuffer_disc_within_dist(double cx, double cy, double r, double dist,
   STBox query;
   stbox_set(true, false, false, 0, sxmin - dist, sxmax + dist, symin - dist,
     symax + dist, 0, 0, NULL, &query);
-  int nc = rtree_search(g->rtree, RTREE_OVERLAPS, &query, dist_pip_results);
+  int nc = rtree_search(g->rtree, INDEX_OVERLAPS, &query, dist_pip_results);
   for (int j = 0; j < nc; j++)
   {
     const DistEdge *ed =
@@ -1320,7 +1320,7 @@ tcbufferseg_within_ctx(const Cbuffer *cb1, const Cbuffer *cb2, double dist,
   STBox query;
   stbox_set(true, false, false, 0, cxmin - reach, cxmax + reach, cymin - reach,
     cymax + reach, 0, 0, NULL, &query);
-  int ncand = rtree_search(ctx->g.rtree, RTREE_OVERLAPS, &query,
+  int ncand = rtree_search(ctx->g.rtree, INDEX_OVERLAPS, &query,
     dist_pip_results);
   for (int j = 0; j < ncand; j++)
   {
@@ -1416,7 +1416,7 @@ tcbuffer_disc_signed_boundary(double cx, double cy, double r,
   STBox query;
   stbox_set(true, false, false, 0, cx - reach, cx + reach, cy - reach,
     cy + reach, 0, 0, NULL, &query);
-  int nc = rtree_search(g->rtree, RTREE_OVERLAPS, &query, dist_pip_results);
+  int nc = rtree_search(g->rtree, INDEX_OVERLAPS, &query, dist_pip_results);
   for (int j = 0; j < nc; j++)
   {
     const DistEdge *ed =
@@ -1525,7 +1525,7 @@ tcbufferseg_sg_roots(const Cbuffer *cb1, const Cbuffer *cb2,
   STBox query;
   stbox_set(true, false, false, 0, cxmin - rmax, cxmax + rmax, cymin - rmax,
     cymax + rmax, 0, 0, NULL, &query);
-  int ncand = rtree_search(ctx->g.rtree, RTREE_OVERLAPS, &query,
+  int ncand = rtree_search(ctx->g.rtree, INDEX_OVERLAPS, &query,
     dist_pip_results);
   for (int j = 0; j < ncand; j++)
   {
