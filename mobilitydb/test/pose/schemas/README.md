@@ -15,6 +15,8 @@ MobilityDB implements, retrieved on 2026-08-14 from
 | `GeoPose.Composite.Sequence.StreamHeader.Schema.json` | Stream, the document opening one |
 | `GeoPose.Composite.Sequence.StreamElement.Schema.json` | Stream, the document repeated in one |
 | `GeoPose.Composite.Sequence.Stream.Schema.json` | Stream, the whole of one as a single document |
+| `GeoPose.Composite.Chain.Schema.json` | Chain |
+| `GeoPose.Composite.Graph.Schema.json` | Graph |
 | `GeoPose.Basic.Strict_Quaternion.Schema.json` | Basic-Quaternion, the form admitting no other member |
 
 The schemas are those of OGC GeoPose 1.0 (OGC 21-056r11) and belong to the
@@ -32,10 +34,13 @@ are held here unmodified, byte for byte as retrieved, with these digests:
     ee3b1944912b…  GeoPose.Composite.Sequence.StreamHeader.Schema.json
     01791c205790…  GeoPose.Composite.Sequence.StreamElement.Schema.json
     fd24663a1241…  GeoPose.Composite.Sequence.Stream.Schema.json
+    72ccc4457dbf…  GeoPose.Composite.Chain.Schema.json
+    d498e71da192…  GeoPose.Composite.Graph.Schema.json
     06d999a2b309…  GeoPose.Basic.Strict_Quaternion.Schema.json
 
 `tools/scripts/check_geopose_conformance.py` validates against them the GeoPose
-documents that `expected/103_pose_geopose.test.out` holds. Keeping a copy here
+documents that `pose/expected/103_pose_geopose.test.out` and
+`posechain/expected/555_tposechain_geopose.test.out` hold. Keeping a copy here
 rather than fetching at run time makes the check depend on nothing outside the
 repository, so it gives the same verdict in a network-less build as in CI.
 
@@ -48,10 +53,7 @@ added to the static encoding is reported rather than quietly narrowing what
 MobilityDB can claim. The conformance test suite exercises the permissive form,
 which is the one a claim is made against.
 
-Three schemas published at the same place are deliberately absent.
-`GeoPose.Composite.Graph.Schema.json` describes the one conformance class
-MobilityDB does not implement, and belongs here as soon as it emits a document
-of it.
+Two schemas published at the same place are deliberately absent.
 `GeoPose.Basic.Euler.Schema.json` describes a flat `longitude`/`latitude`/
 `height`/`rotations` form that is not one of the eight conformance classes and
 that no MobilityDB encoding produces. `GeoPose.Composite.Sequence.Stream.Header.Schema.json`
