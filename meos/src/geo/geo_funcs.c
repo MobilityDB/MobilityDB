@@ -6351,6 +6351,45 @@ relate_point_on_edge(double x, double y, const Edge *e)
 }
 
 /**
+ * @brief Return the bounding box of what an edge array draws
+ */
+static void
+relate_edges_box(Edge **edges, int nedges, double box[4])
+{
+  box[0] = box[1] = DBL_MAX;
+  box[2] = box[3] = -DBL_MAX;
+  for (int i = 0; i < nedges; i++)
+  {
+    const Edge *e = edges[i];
+    if (e->xmin < box[0]) box[0] = e->xmin;
+    if (e->ymin < box[1]) box[1] = e->ymin;
+    if (e->xmax > box[2]) box[2] = e->xmax;
+    if (e->ymax > box[3]) box[3] = e->ymax;
+  }
+  return;
+}
+
+/**
+ * @brief Return true if the bounding boxes of two edge arrays overlap
+ * @details Folding the edge boxes of each array costs a pass over each, where
+ * the pair of loops it stands in front of costs a pass over one for every
+ * edge of the other
+ */
+static bool
+relate_edges_boxes_overlap(Edge **e1, int n1, Edge **e2, int n2)
+{
+  if (n1 <= 0 || n2 <= 0)
+    return false;
+  double b1[4], b2[4];
+  relate_edges_box(e1, n1, b1);
+  relate_edges_box(e2, n2, b2);
+  return ! (b1[2] < b2[0] - MEOS_GEOM_TOLERANCE ||
+            b2[2] < b1[0] - MEOS_GEOM_TOLERANCE ||
+            b1[3] < b2[1] - MEOS_GEOM_TOLERANCE ||
+            b2[3] < b1[1] - MEOS_GEOM_TOLERANCE);
+}
+
+/**
  * @brief Return true if the curves two edges draw meet
  * @details #relate_any_edge_intersection answers the ISOLATED points at which
  * they meet, which is nothing where the two run along each other: two equal
@@ -6420,6 +6459,12 @@ relate_edge_inside_area(const Edge *e, Edge **other, int nother)
 static bool
 relate_edges_intersect(Edge **e1, int n1, Edge **e2, int n2)
 {
+  /* Geometries whose bounding boxes stand apart share no point, and reading
+   * that first is what keeps a pair that does not meet from costing a pass
+   * over every edge of one against every edge of the other */
+  if (! relate_edges_boxes_overlap(e1, n1, e2, n2))
+    return false;
+
   /* A point of one geometry standing on the other */
   for (int i = 0; i < n1; i++)
   {
@@ -6506,6 +6551,10 @@ relate_point_in_edges(double x, double y, Edge **edges, int nedges)
 static bool
 relate_edges_cover(Edge **e1, int n1, Edge **e2, int n2)
 {
+  /* Nothing lies within a geometry whose box it stands outside of */
+  if (! relate_edges_boxes_overlap(e1, n1, e2, n2))
+    return false;
+
   int maxparams = 2 + 4 * n1;
   double *params = palloc(sizeof(double) * maxparams);
   bool result = true;
