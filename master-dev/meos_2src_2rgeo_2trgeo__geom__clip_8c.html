@@ -85,7 +85,8 @@ $(function() {
 
 <p>Swept-edge-polygon clip primitive (M1 + M2)  
 <a href="#details">More...</a></p>
-<div class="textblock"><code>#include &quot;<a class="el" href="trgeo__geom__clip_8h_source.html">rgeo/trgeo_geom_clip.h</a>&quot;</code><br />
+<div class="textblock"><code>#include &quot;<a class="el" href="geo__funcs_8h_source.html">geo/geo_funcs.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="trgeo__geom__clip_8h_source.html">rgeo/trgeo_geom_clip.h</a>&quot;</code><br />
 <code>#include &lt;math.h&gt;</code><br />
 <code>#include &lt;stdlib.h&gt;</code><br />
 <code>#include &lt;postgres.h&gt;</code><br />
@@ -108,8 +109,6 @@ Data Structures</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
-<tr class="memitem:a946f0acff4fd16a65859479e9e0b9513"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2rgeo_2trgeo__geom__clip_8c_a946f0acff4fd16a65859479e9e0b9513.html#a946f0acff4fd16a65859479e9e0b9513">FP_TOLERANCE</a>&#160;&#160;&#160;1e-12</td></tr>
-<tr class="separator:a946f0acff4fd16a65859479e9e0b9513"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a09705e2232b15b6501a77a4775ffb8ca"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2rgeo_2trgeo__geom__clip_8c_a09705e2232b15b6501a77a4775ffb8ca.html#a09705e2232b15b6501a77a4775ffb8ca">TRGEO_GEOM_CLIP_BISECT_BINS</a>&#160;&#160;&#160;20</td></tr>
 <tr class="separator:a09705e2232b15b6501a77a4775ffb8ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a28a4f909790358545e21e4c70eb1da4e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2rgeo_2trgeo__geom__clip_8c_a28a4f909790358545e21e4c70eb1da4e.html#a28a4f909790358545e21e4c70eb1da4e">TRGEO_GEOM_CLIP_BISECT_ITERS</a>&#160;&#160;&#160;30</td></tr>
@@ -129,7 +128,7 @@ Functions</h2></td></tr>
 <tr class="memitem:ab972b079d57015089e310e6b5b26a8ff"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2rgeo_2trgeo__geom__clip_8c_ab972b079d57015089e310e6b5b26a8ff.html#ab972b079d57015089e310e6b5b26a8ff">clip_lwgeom_m2_accum</a> (const <a class="el" href="structPOINT2D.html">POINT2D</a> *p_a_local, const <a class="el" href="structPOINT2D.html">POINT2D</a> *p_b_local, const struct <a class="el" href="structPose.html">Pose</a> *pose1, const struct <a class="el" href="structPose.html">Pose</a> *pose2, const <a class="el" href="structLWGEOM.html">LWGEOM</a> *geom, <a class="el" href="structSpan.html">Span</a> **buf, int *cap, int n)</td></tr>
 <tr class="separator:ab972b079d57015089e310e6b5b26a8ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a59c3fec486493dbfd93b8cd4ab31332d"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2rgeo_2trgeo__geom__clip_8c_a59c3fec486493dbfd93b8cd4ab31332d.html#a59c3fec486493dbfd93b8cd4ab31332d">dedup_sorted</a> (double *<a class="el" href="tpoint__geom__clip_8c_abcb605f8fc9357124c34daa34d0f7490.html#abcb605f8fc9357124c34daa34d0f7490">events</a>, int n)</td></tr>
-<tr class="memdesc:a59c3fec486493dbfd93b8cd4ab31332d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Drop near-duplicate values within FP_TOLERANCE.  <a href="meos_2src_2rgeo_2trgeo__geom__clip_8c_a59c3fec486493dbfd93b8cd4ab31332d.html#a59c3fec486493dbfd93b8cd4ab31332d">More...</a><br /></td></tr>
+<tr class="memdesc:a59c3fec486493dbfd93b8cd4ab31332d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Drop near-duplicate values within MEOS_GEOM_TOLERANCE.  <a href="meos_2src_2rgeo_2trgeo__geom__clip_8c_a59c3fec486493dbfd93b8cd4ab31332d.html#a59c3fec486493dbfd93b8cd4ab31332d">More...</a><br /></td></tr>
 <tr class="separator:a59c3fec486493dbfd93b8cd4ab31332d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae27d7f6171f8326005fbe129d2395b48"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2rgeo_2trgeo__geom__clip_8c_ae27d7f6171f8326005fbe129d2395b48.html#ae27d7f6171f8326005fbe129d2395b48">double_cmp</a> (const void *a, const void *b)</td></tr>
 <tr class="separator:ae27d7f6171f8326005fbe129d2395b48"><td class="memSeparator" colspan="2">&#160;</td></tr>

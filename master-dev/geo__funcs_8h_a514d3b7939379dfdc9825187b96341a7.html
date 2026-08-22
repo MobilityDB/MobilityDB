@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: MEOS_EDGE_TOLERANCE</title>
+<title>MobilityDB: MEOS_GEOM_TOLERANCE</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -125,7 +125,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_ad8290327267bb18b7f28118199edfb9e.html#ad8290327267bb18b7f28118199edfb9e">lwcircle_make</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a68271a26cf0484985212bc9986358f63.html#a68271a26cf0484985212bc9986358f63">lwpointarr_make_trajectory</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a8ddc88e891374e0d420e2bfc9318fa2c.html#a8ddc88e891374e0d420e2bfc9318fa2c">lwpointarr_remove_duplicates</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="geo__funcs_8h_ad81a6b8a4ab7e8e0204f21bb9b597c23.html#ad81a6b8a4ab7e8e0204f21bb9b597c23">MEOS_EDGE_TOLERANCE</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="geo__funcs_8h_a514d3b7939379dfdc9825187b96341a7.html#a514d3b7939379dfdc9825187b96341a7">MEOS_GEOM_TOLERANCE</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a38854768ea292512f58c42c2456c7816.html#a38854768ea292512f58c42c2456c7816">meos_is_simple</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a78778cbf1e8fa22bdf5127d123fa9581.html#a78778cbf1e8fa22bdf5127d123fa9581">meos_oriented_envelope</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a26c9915acdbe188b513aa2cb7d525362.html#a26c9915acdbe188b513aa2cb7d525362">meos_relate</a></td></tr>
@@ -143,20 +143,22 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ad81a6b8a4ab7e8e0204f21bb9b597c23" name="ad81a6b8a4ab7e8e0204f21bb9b597c23"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad81a6b8a4ab7e8e0204f21bb9b597c23">&#9670;&#160;</a></span>MEOS_EDGE_TOLERANCE</h2>
+<a id="a514d3b7939379dfdc9825187b96341a7" name="a514d3b7939379dfdc9825187b96341a7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a514d3b7939379dfdc9825187b96341a7">&#9670;&#160;</a></span>MEOS_GEOM_TOLERANCE</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define MEOS_EDGE_TOLERANCE&#160;&#160;&#160;1e-12</td>
+          <td class="memname">#define MEOS_GEOM_TOLERANCE&#160;&#160;&#160;1e-12</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Tolerance under which two coordinates of an edge are the same point. </p>
-<p >The edge kernels compare coordinates against this value. MEOS owns it rather than reading the tolerance of a PostGIS internal header, which two headers of that library define differently, so the value an edge kernel compares against does not depend on the order a caller includes them in </p>
+<p>Tolerance under which planar geometry reads two quantities as the same. </p>
+<p >Coordinates, the parameter along a segment, a determinant and a duration are all compared against this value. MEOS owns it rather than reading the tolerance of a PostGIS internal header, which two headers of that library define differently, so what a kernel compares against does not depend on the order a caller includes them in. It carries the value <code>liblwgeom_internal.h</code> states for planar work. </p><dl class="section note"><dt>Note</dt><dd>Distinct from <code>MEOS_EPSILON</code>, which reads two modelled quantities as equal at 1e-06 and is what the <code>MEOS_FP_*</code> comparisons are built on. That one is a fraction of a duration, bounded below by the microsecond a <code>TimestampTz</code> resolves, while this one is the rounding of coordinate arithmetic. </dd>
+<dd>
+<code>FP_TOLERANCE</code> survives where MEOS hands a tolerance to PostGIS or runs a copy of its code, so that those calls keep tracking the value PostGIS means &ndash; including the smaller one <code>lwgeodetic.h</code> states for spherical work. </dd></dl>
 
 </div>
 </div>
