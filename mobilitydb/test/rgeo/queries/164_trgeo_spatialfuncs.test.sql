@@ -41,6 +41,12 @@ SELECT ST_AsText(round(traversedArea(
 SELECT ST_AsText(round(traversedArea(
   trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2026-01-01, Pose(Point(2 0),0)@2026-01-02]', TRUE), 6));
 
+-- A body that does not interpolate stands at each of its placements and covers
+-- nothing between them, so the united form answers the placements themselves
+-- and not the corridor between them.
+SELECT ST_AsText(round(traversedArea(
+  trgeometry 'Interp=Step;Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2026-01-01, Pose(Point(2 0),0)@2026-01-02]', TRUE), 6));
+
 -- centroid: trajectory of the polygon centroid under rigid-body motion.
 SELECT asText(round(centroid(
   trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2026-01-01, Pose(Point(2 0),0)@2026-01-02]'), 6));

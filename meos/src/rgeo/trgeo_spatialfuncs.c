@@ -1283,9 +1283,14 @@ trgeometry_traversed_area(const Temporal *temp, bool unary_union)
    * the hull of each consecutive pair, which is the case the traversed area
    * is defined for; a body with a concavity keeps the placements alone, as
    * its hull would close a concavity the body never reaches.
+   * A body that does not interpolate covers nothing between its placements:
+   * it holds each of them for the whole of its own interval and then stands
+   * at the next, so the placements ARE the area it traverses and a hull
+   * spanning two of them answers for ground the body never crosses.
    * Only the united form sweeps; the collection form answers the placements
    * themselves, which #trgeo_placements() gives a caller directly. */
-  if (unary_union && n_geoms > 1 && trgeo_ref_is_convex(trgeo_geom_p(temp)))
+  if (unary_union && n_geoms > 1 && MEOS_FLAGS_LINEAR_INTERP(temp->flags) &&
+      trgeo_ref_is_convex(trgeo_geom_p(temp)))
   {
     GSERIALIZED **swept = palloc(sizeof(GSERIALIZED *) * (n_geoms - 1));
     int n_swept = 0;

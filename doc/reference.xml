@@ -1444,6 +1444,9 @@
 						<para><link linkend="tpose_points"><varname>points</varname></link>: Return the points</para>
 					</listitem>
 					<listitem>
+						<para><link linkend="tpose_trajectory"><varname>trajectory</varname></link>: Return the trajectory</para>
+					</listitem>
+					<listitem>
 						<para><link linkend="tpose_valueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Return the value at a timestamp</para>
 					</listitem>
 					<listitem>
