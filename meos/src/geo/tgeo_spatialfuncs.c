@@ -1409,22 +1409,20 @@ tgeo_convex_hull(const Temporal *temp)
  *****************************************************************************/
 
 /**
- * @ingroup meos_geo_accessor
- * @brief Return the traversed area of a temporal geo or the trajectory for
- * a temporal point with discrete or step interpolation
- * @param[in] temp Temporal geo
- * @param[in] unary_union True when the PostGIS ST_UnaryUnion function is
- * applied to the result
- * @csqlfn #Tgeo_traversed_area()
+ * @brief Return the distinct values a temporal value takes, gathered into one
+ * geometry
+ * @details A value that does not interpolate holds each of its values for the
+ * whole of its own interval and covers nothing between them, so the set of
+ * values it takes IS the set of points it occupies. That answers the traversed
+ * area of a temporal geometry and the trajectory of a temporal point alike,
+ * which is why both entries read it rather than one borrowing the other
+ * @param[in] temp Temporal value
+ * @param[in] unary_union True to dissolve the values into one geometry
  */
 GSERIALIZED *
-tgeo_traversed_area(const Temporal *temp, bool unary_union)
+geo_values_collect(const Temporal *temp, bool unary_union)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_TGEO(temp, NULL);
-  if (! ensure_nonlinear_interp(temp->flags))
-    return NULL;
-
+  assert(temp);
   /* Get the array of pointers to the component values */
   int count;
   Datum *values = temporal_values_p(temp, &count);
@@ -1441,6 +1439,39 @@ tgeo_traversed_area(const Temporal *temp, bool unary_union)
   GSERIALIZED *result = geom_unary_union(res, -1);
   pfree(res); 
   return result;
+}
+
+/**
+ * @ingroup meos_geo_accessor
+ * @brief Return the traversed area of a temporal geo that is not a point
+ * @details The values a temporal geo takes are its placements, and it holds
+ * each for the whole of its own interval, so they are also the area it
+ * traverses. A temporal point has no area and answers #tpoint_trajectory()
+ * instead
+ * @note The geodetic case reaches the same planar dissolve as the planar one,
+ * which is a property of this entry that predates the point split and is not
+ * settled by it
+ * @param[in] temp Temporal geo
+ * @param[in] unary_union True when the PostGIS ST_UnaryUnion function is
+ * applied to the result
+ * @csqlfn #Tgeo_traversed_area()
+ */
+GSERIALIZED *
+tgeo_traversed_area(const Temporal *temp, bool unary_union)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TGEO(temp, NULL);
+  /* A temporal point has no area: #tpoint_trajectory() is what answers it,
+   * and it reads #geo_values_collect() directly rather than through here */
+  if (tpoint_type(temp->temptype))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+      "The temporal value must be a temporal geometry or geography");
+    return NULL;
+  }
+  if (! ensure_nonlinear_interp(temp->flags))
+    return NULL;
+  return geo_values_collect(temp, unary_union);
 }
 
 /**

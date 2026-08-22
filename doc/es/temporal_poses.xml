@@ -718,6 +718,21 @@ SELECT asEWKT(points(tpose 'SRID=5676;{Pose(Point(3 3), 0.3)@2001-01-01,
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="tpose_trajectory">
+				<indexterm significance="normal"><primary><varname>trajectory</varname></primary></indexterm>
+				<para>Devuelve la trayectoria</para>
+				<para><varname>trajectory(tpose) → geometry</varname></para>
+				<para>Una pose tiene una posición y una orientación, pero no una extensión, por lo que la geometría que cubre a lo largo del tiempo es la trayectoria de su posición, como para un punto temporal. Una pose que interpola se desplaza por la línea entre dos posiciones consecutivas; una que no interpola permanece en cada una de ellas y no cubre nada entre ellas.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_AsText(trajectory(tpose '[Pose(Point(1 1),0.5)@2000-01-01, 
+  Pose(Point(3 3),0.5)@2000-01-02]'));
+-- LINESTRING(1 1,3 3)
+SELECT ST_AsText(trajectory(tpose 'Interp=Step;[Pose(Point(1 1),0.5)@2000-01-01, 
+  Pose(Point(3 3),0.5)@2000-01-02]'));
+-- MULTIPOINT((1 1),(3 3))
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="tpose_valueAtTimestamp">
 				<indexterm significance="normal"><primary><varname>valueAtTimestamp</varname></primary></indexterm>
 				<para>Devuelve el valor en una marca de tiempo</para>

@@ -265,3 +265,50 @@ SELECT atElevation(
 
 SELECT atElevation(tpose 'Pose(Point(1 1),0.5)@2000-01-01', floatspan '[1, 2]');
 ERROR:  The tpose must have Z dimension
+SELECT ST_AsText(trajectory(tpose '[Pose(Point(1 1),0.5)@2000-01-01,
+  Pose(Point(3 3),0.5)@2000-01-02]'));
+      st_astext      
+---------------------
+ LINESTRING(1 1,3 3)
+(1 row)
+
+SELECT ST_AsText(trajectory(tpose 'Interp=Step;[Pose(Point(1 1),0.5)@2000-01-01,
+  Pose(Point(3 3),0.5)@2000-01-02]'));
+        st_astext        
+-------------------------
+ MULTIPOINT((1 1),(3 3))
+(1 row)
+
+SELECT ST_AsText(trajectory(tpose '{Pose(Point(1 1),0.5)@2000-01-01,
+  Pose(Point(3 3),0.5)@2000-01-02}'));
+        st_astext        
+-------------------------
+ MULTIPOINT((1 1),(3 3))
+(1 row)
+
+SELECT ST_AsText(trajectory(tpose 'Pose(Point(1 1),0.5)@2000-01-01'));
+ st_astext  
+------------
+ POINT(1 1)
+(1 row)
+
+SELECT ST_AsEWKT(trajectory(tpose 'SRID=5676;[Pose(Point(1 1),0)@2000-01-01,
+  Pose(Point(3 3),1)@2000-01-02]'));
+           st_asewkt           
+-------------------------------
+ SRID=5676;LINESTRING(1 1,3 3)
+(1 row)
+
+SELECT ST_AsText(trajectory(tpose '[Pose(Point(1 1 1),1,0,0,0)@2000-01-01,
+  Pose(Point(3 3 3),1,0,0,0)@2000-01-02]'));
+         st_astext          
+----------------------------
+ LINESTRING Z (1 1 1,3 3 3)
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tpose2d WHERE trajectory(temp) IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+

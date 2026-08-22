@@ -775,9 +775,10 @@ tpoint_trajectory(const Temporal *temp, bool unary_union)
   /* Ensure the validity of the arguments */
   VALIDATE_TPOINT(temp, NULL);
 
-  /* Call the traversed area function for discrete or step interpolation */
+  /* A point that does not interpolate stands at each of its values and covers
+   * nothing between them, so the values it takes are its whole trajectory */
   if (! MEOS_FLAGS_LINEAR_INTERP(temp->flags))
-    return tgeo_traversed_area(temp, unary_union);
+    return geo_values_collect(temp, unary_union);
 
   assert(temptype_subtype(temp->subtype));
   /* The TINSTANT case is taken care by the call to #tgeo_traversed_area */

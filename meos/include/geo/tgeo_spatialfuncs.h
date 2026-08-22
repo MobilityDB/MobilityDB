@@ -59,6 +59,8 @@
 
 /* Utility functions */
 
+extern GSERIALIZED *geo_values_collect(const Temporal *temp, bool unary_union);
+
 extern void datum_point4d(Datum value, POINT4D *p);
 extern bool datum_point_eq(Datum point1, Datum point2);
 extern bool datum_point_same(Datum point1, Datum point2);

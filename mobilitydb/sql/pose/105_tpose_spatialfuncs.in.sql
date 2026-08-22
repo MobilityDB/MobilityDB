@@ -92,13 +92,13 @@ CREATE FUNCTION minusElevation(tpose, floatspan)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
- * traversedArea, centroid, convexHull
+ * trajectory, centroid, convexHull
  *****************************************************************************/
 
-CREATE FUNCTION traversedArea(tpose, bool DEFAULT FALSE)
+CREATE FUNCTION trajectory(tpose)
   RETURNS geometry
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE AS
-  $$ SELECT @extschema@.traversedArea($1::@extschema@.tgeompoint::@extschema@.tgeometry, $2) $$;
+  AS 'MODULE_PATHNAME', 'Tpose_trajectory'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION centroid(tpose)
   RETURNS tgeompoint

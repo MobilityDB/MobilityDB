@@ -181,3 +181,24 @@ SELECT atElevation(
 SELECT atElevation(tpose 'Pose(Point(1 1),0.5)@2000-01-01', floatspan '[1, 2]');
 
 -------------------------------------------------------------------------------
+-- trajectory
+
+-- A pose that interpolates moves along the line between its positions
+SELECT ST_AsText(trajectory(tpose '[Pose(Point(1 1),0.5)@2000-01-01,
+  Pose(Point(3 3),0.5)@2000-01-02]'));
+-- One that does not stands at each of them and covers nothing between
+SELECT ST_AsText(trajectory(tpose 'Interp=Step;[Pose(Point(1 1),0.5)@2000-01-01,
+  Pose(Point(3 3),0.5)@2000-01-02]'));
+SELECT ST_AsText(trajectory(tpose '{Pose(Point(1 1),0.5)@2000-01-01,
+  Pose(Point(3 3),0.5)@2000-01-02}'));
+SELECT ST_AsText(trajectory(tpose 'Pose(Point(1 1),0.5)@2000-01-01'));
+-- The orientation is not part of the trajectory, the SRID is carried
+SELECT ST_AsEWKT(trajectory(tpose 'SRID=5676;[Pose(Point(1 1),0)@2000-01-01,
+  Pose(Point(3 3),1)@2000-01-02]'));
+-- A 3D pose has a 3D trajectory
+SELECT ST_AsText(trajectory(tpose '[Pose(Point(1 1 1),1,0,0,0)@2000-01-01,
+  Pose(Point(3 3 3),1,0,0,0)@2000-01-02]'));
+
+SELECT COUNT(*) FROM tbl_tpose2d WHERE trajectory(temp) IS NOT NULL;
+
+-------------------------------------------------------------------------------

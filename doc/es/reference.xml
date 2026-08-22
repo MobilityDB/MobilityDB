@@ -1442,6 +1442,9 @@
 					<para><link linkend="tpose_points"><varname>points</varname></link>: Devuelve los puntos</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="tpose_trajectory"><varname>trajectory</varname></link>: Devuelve la trayectoria</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="tpose_valueAtTimestamp"><varname>valueAtTimestamp</varname></link>: Devuelve el valor en una marca de tiempo</para>
 				</listitem>
 				<listitem>
