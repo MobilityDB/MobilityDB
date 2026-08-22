@@ -1,0 +1,29 @@
+# SPDX-License-Identifier: PostgreSQL
+
+name: Record the MSYS2 toolchain
+description: >
+  Write the versions of the installed MSYS2 packages into the job log, so that a
+  Windows build which fails with no commit behind it can be compared against the
+  last one that succeeded. The Windows workflows install whatever the MSYS2
+  repository currently holds, so two runs minutes apart compile against
+  different headers, and the package set is the only place that difference is
+  visible.
+
+runs:
+  using: composite
+  steps:
+    - name: Record the MSYS2 toolchain
+      shell: msys2 {0}
+      run: |
+        # The digest answers the first question a red Windows build raises --
+        # has the toolchain moved since the run that passed? -- from one line,
+        # without reading the package list. The list follows it, so that a diff
+        # between two runs also names which packages moved.
+        packages=$(pacman -Q | sort)
+        printf 'toolchain-digest: %s\n' \
+          "$(printf '%s\n' "$packages" | sha256sum | cut -c1-16)"
+        printf 'toolchain-packages: %s\n' "$(printf '%s\n' "$packages" | wc -l)"
+        printf 'compiler: %s\n' "$(gcc -dumpversion)"
+        echo '::group::Installed MSYS2 packages'
+        printf '%s\n' "$packages"
+        echo '::endgroup::'

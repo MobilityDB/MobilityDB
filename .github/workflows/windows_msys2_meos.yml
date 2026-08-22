@@ -19,6 +19,7 @@ on:
   push:
     paths:
       - '.github/workflows/windows_msys2_meos.yml'
+      - '.github/actions/msys2-toolchain-report/**'
       - 'cmake/**'
       - 'meos/**'
       - 'pgtypes/**'
@@ -28,6 +29,7 @@ on:
   pull_request:
     paths:
       - '.github/workflows/windows_msys2_meos.yml'
+      - '.github/actions/msys2-toolchain-report/**'
       - 'cmake/**'
       - 'meos/**'
       - 'pgtypes/**'
@@ -61,6 +63,8 @@ jobs:
             mingw-w64-ucrt-x86_64-geos
             mingw-w64-ucrt-x86_64-proj
             mingw-w64-ucrt-x86_64-tzdata
+
+      - uses: ./.github/actions/msys2-toolchain-report
 
       - name: Resolve native timezone data path
         run: |
