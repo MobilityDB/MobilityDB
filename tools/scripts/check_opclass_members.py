@@ -91,19 +91,9 @@ SCALAR_TYPES = {'bigint', 'double precision', 'float', 'float8', 'int',
 # A family answers `tjsonb` containment `@>` and `<@` from its values, after
 # jsonb itself; a bounding box holds the time frame of the value and answers
 # neither, so no operator class can index them.
-#
-# The adjacency of a span set to a value is answered by the bounding span of
-# the set, as its adjacency to a span and to a span set is, so a class can
-# index it.  No class of a span set type lists the member, and the planner has
-# no index to take.
 UNINDEXED_OPERATORS = {
   ('@>', 'tjsonb', 'tjsonb'),
   ('<@', 'tjsonb', 'tjsonb'),
-  ('-|-', 'intspanset', 'integer'),
-  ('-|-', 'bigintspanset', 'bigint'),
-  ('-|-', 'floatspanset', 'float'),
-  ('-|-', 'datespanset', 'date'),
-  ('-|-', 'tstzspanset', 'timestamptz'),
 }
 
 # A type whose values are indexed only through another type's class.  The
