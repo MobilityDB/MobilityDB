@@ -559,7 +559,7 @@ PGDLLEXPORT Datum Pose_quaternion(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Pose_quaternion);
 /**
  * @ingroup mobilitydb_pose_base_accessor
- * @brief Return the orientation quaternion of a 3D pose
+ * @brief Return the orientation quaternion of a pose
  * @sqlfn quaternion()
  */
 Datum

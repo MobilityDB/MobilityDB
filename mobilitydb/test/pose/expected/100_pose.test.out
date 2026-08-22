@@ -175,8 +175,31 @@ SELECT quaternion(pose 'Pose(Point(0 0 0), 0.5, 0.5, 0.5, 0.5)');
  (0.5,0.5,0.5,0.5)
 (1 row)
 
-SELECT quaternion(pose 'Pose(Point(1 1),0.5)');
-ERROR:  The pose must have Z dimension
+SELECT quaternion(pose 'Pose(Point(1 1), 0)');
+ quaternion 
+------------
+ (1,0,0,0)
+(1 row)
+
+SELECT round((quaternion(pose 'Pose(Point(1 1),0.5)')).W::numeric, 6),
+  (quaternion(pose 'Pose(Point(1 1),0.5)')).X,
+  (quaternion(pose 'Pose(Point(1 1),0.5)')).Y,
+  round((quaternion(pose 'Pose(Point(1 1),0.5)')).Z::numeric, 6);
+  round   | x | y |  round   
+----------+---+---+----------
+ 0.968912 | 0 | 0 | 0.247404
+(1 row)
+
+SELECT round(yaw(pose(ST_MakePoint(1, 1, 0),
+  (quaternion(pose 'Pose(Point(1 1),0.5)')).W,
+  (quaternion(pose 'Pose(Point(1 1),0.5)')).X,
+  (quaternion(pose 'Pose(Point(1 1),0.5)')).Y,
+  (quaternion(pose 'Pose(Point(1 1),0.5)')).Z))::numeric, 6) = 0.5;
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT ypr(pose 'Pose(Point(1 1),0.5)');
     ypr    
 -----------

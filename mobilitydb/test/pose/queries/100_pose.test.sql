@@ -90,17 +90,32 @@ SELECT yaw(pose 'Pose(Point(0 0 0), 1, 0, 0, 0)');
 SELECT pitch(pose 'Pose(Point(0 0 0), 1, 0, 0, 0)');
 SELECT roll(pose 'Pose(Point(0 0 0), 1, 0, 0, 0)');
 
--- The orientation quaternion of a 3D pose, in the stored (W, X, Y, Z)
--- Hamilton order. A 2D pose has no quaternion.
+-- The orientation quaternion of a pose, in the (W, X, Y, Z) Hamilton order a
+-- 3D pose stores. Defined for both dimensions: the orientation of a 2D pose
+-- is a turn about the local vertical by its stored angle, which is the
+-- quaternion the GeoPose Basic-Quaternion encoder writes for it.
 SELECT quaternion(pose 'Pose(Point(0 0 0), 1, 0, 0, 0)');
 SELECT quaternion(pose 'Pose(Point Z(1 1 1), 0, 0, 0, 1)');
 -- A 120-degree turn about (1 1 1). Its components are exactly
 -- representable, so the unit-norm renormalization leaves them alone and
 -- the output carries no libm-dependent trailing digits.
 SELECT quaternion(pose 'Pose(Point(0 0 0), 0.5, 0.5, 0.5, 0.5)');
-\set VERBOSITY terse
-SELECT quaternion(pose 'Pose(Point(1 1),0.5)');
-\set VERBOSITY default
+-- An unturned 2D pose carries the identity quaternion exactly.
+SELECT quaternion(pose 'Pose(Point(1 1), 0)');
+-- A turned 2D pose puts half its angle in W and Z and leaves X and Y at
+-- zero, since it neither pitches nor rolls. The two turning components are
+-- bounded because the cosine and sine of a general angle drift across libm.
+SELECT round((quaternion(pose 'Pose(Point(1 1),0.5)')).W::numeric, 6),
+  (quaternion(pose 'Pose(Point(1 1),0.5)')).X,
+  (quaternion(pose 'Pose(Point(1 1),0.5)')).Y,
+  round((quaternion(pose 'Pose(Point(1 1),0.5)')).Z::numeric, 6);
+-- The two encodings answer one orientation: the yaw read back from the
+-- quaternion of a 2D pose is the angle that pose stores.
+SELECT round(yaw(pose(ST_MakePoint(1, 1, 0),
+  (quaternion(pose 'Pose(Point(1 1),0.5)')).W,
+  (quaternion(pose 'Pose(Point(1 1),0.5)')).X,
+  (quaternion(pose 'Pose(Point(1 1),0.5)')).Y,
+  (quaternion(pose 'Pose(Point(1 1),0.5)')).Z))::numeric, 6) = 0.5;
 
 -- The same orientation in the other GeoPose encoding. Defined for both
 -- dimensions: a 2D pose yaws by its stored angle and neither pitches nor
@@ -118,7 +133,7 @@ SELECT round(degrees((ypr(pose 'Pose(Point Z(1 1 1), 0.5, 0.5, 0.5, 0.5)')).yaw)
 
 SELECT asText(round(pose 'Pose(Point(1.123456789 1.123456789), 0.123456789)', 6));
 
--- A 2D pose is returned unchanged (no quaternion to renormalize).
+-- A 2D pose is returned unchanged (it stores no quaternion to renormalize).
 SELECT asText(poseNormalize(pose 'Pose(Point(1 1), 0.5)'));
 -- A unit-norm 3D pose round-trips identically.
 SELECT asText(poseNormalize(pose 'Pose(Point(1 1 1), 1, 0, 0, 0)'));
