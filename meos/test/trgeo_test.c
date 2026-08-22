@@ -44,6 +44,7 @@
  * @endcode
  */
 
+#include <float.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -241,6 +242,77 @@ int main(void)
     meos_errno_reset();
   }
   free(trgeo3); free(poseset1);
+
+  /* The nearest approach distance answers the sentinel of its return type
+   * where the temporal distance underneath it is not computed, rather than
+   * reading a value that is not there. Three inputs reach that: a geometry
+   * whose type the distance does not support, and a three-dimensional body
+   * against a point and against a box, which the planar computation declines */
+  static const char *trgeo4_in =
+    "Polygon((0 0,1 0,1 1,0 1,0 0));"
+    "[Pose(Point(0 0),0)@2001-01-01, Pose(Point(2 0),0)@2001-01-02]";
+  static const char *trgeo5_in =
+    "PolyhedralSurface(((0 0 0,0 1 0,1 1 0,1 0 0,0 0 0)));"
+    "[Pose(Point(0 0 0),1,0,0,0)@2001-01-01, Pose(Point(2 0 0),1,0,0,0)@2001-01-02]";
+
+  Temporal *trgeo4 = trgeometry_in(trgeo4_in);
+  Temporal *trgeo5 = trgeometry_in(trgeo5_in);
+  GSERIALIZED *coll = geom_in("GeometryCollection(Point(9 9))", -1);
+  GSERIALIZED *point3d = geom_in("Point(9 9 9)", -1);
+  GSERIALIZED *point2d = geom_in("Point(9 9)", -1);
+  STBox *box3d = stbox_in("STBOX ZT(((5,5,5),(6,6,6)),[2001-01-01, 2001-01-02])");
+  if (! trgeo4 || ! trgeo5 || ! coll || ! point3d || ! point2d || ! box3d)
+  {
+    printf("FAILED: could not build the nearest approach distance arguments\n");
+    result = 1;
+  }
+  else
+  {
+    meos_errno_reset();
+    if (nad_trgeometry_geo(trgeo4, coll) != DBL_MAX || meos_errno() == 0)
+    {
+      printf("FAILED: nad_trgeometry_geo(trgeometry, collection)\n");
+      result = 1;
+    }
+    else
+      printf("OK: nad_trgeometry_geo(trgeometry, collection) answers the "
+        "sentinel, errno %d\n", meos_errno());
+
+    meos_errno_reset();
+    if (nad_trgeometry_geo(trgeo5, point3d) != DBL_MAX || meos_errno() == 0)
+    {
+      printf("FAILED: nad_trgeometry_geo(3D trgeometry, 3D point)\n");
+      result = 1;
+    }
+    else
+      printf("OK: nad_trgeometry_geo(3D trgeometry, 3D point) answers the "
+        "sentinel, errno %d\n", meos_errno());
+
+    meos_errno_reset();
+    if (nad_trgeometry_stbox(trgeo5, box3d) != DBL_MAX || meos_errno() == 0)
+    {
+      printf("FAILED: nad_trgeometry_stbox(3D trgeometry, 3D box)\n");
+      result = 1;
+    }
+    else
+      printf("OK: nad_trgeometry_stbox(3D trgeometry, 3D box) answers the "
+        "sentinel, errno %d\n", meos_errno());
+
+    /* A computable distance still answers it */
+    meos_errno_reset();
+    double nad = nad_trgeometry_geo(trgeo4, point2d);
+    if (nad == DBL_MAX || meos_errno() != 0)
+    {
+      printf("FAILED: nad_trgeometry_geo(trgeometry, point) answered the "
+        "sentinel, errno %d\n", meos_errno());
+      result = 1;
+    }
+    else
+      printf("OK: nad_trgeometry_geo(trgeometry, point): %g\n", nad);
+    meos_errno_reset();
+  }
+  free(trgeo4); free(trgeo5); free(coll); free(point3d); free(point2d);
+  free(box3d);
 
   /* Finalize MEOS */
   meos_finalize();

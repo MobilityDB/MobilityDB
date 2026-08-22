@@ -2585,6 +2585,9 @@ nad_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
     return DBL_MAX;
 
   Temporal *dist = tdistance_trgeometry_geo(temp, gs);
+  if (dist == NULL)
+    return DBL_MAX;
+
   double result = DatumGetFloat8(temporal_min_value(dist));
   pfree(dist);
   return result;
@@ -2619,6 +2622,14 @@ nad_trgeometry_stbox(const Temporal *temp, const STBox *box)
     (Temporal *) temp;
   /* Compute the result */
   Temporal *dist = tdistance_trgeometry_geo(temp, geo);
+  if (dist == NULL)
+  {
+    pfree(geo);
+    if (hast)
+      pfree(temp1);
+    return DBL_MAX;
+  }
+
   double result = DatumGetFloat8(temporal_min_value(dist));
   pfree(dist); pfree(geo);
   if (hast)
