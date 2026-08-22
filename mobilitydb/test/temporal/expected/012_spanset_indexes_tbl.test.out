@@ -24,10 +24,10 @@ SELECT COUNT(*) FROM tbl_intspanset WHERE i @> 50;
     26
 (1 row)
 
-SELECT COUNT(*) FROM tbl_intspanset WHERE i -|- 50;
+SELECT COUNT(*) FROM tbl_intspanset WHERE i -|- 96;
  count 
 -------
-     0
+    13
 (1 row)
 
 SELECT COUNT(*) FROM tbl_intspanset WHERE i << 15;
@@ -72,10 +72,10 @@ SELECT COUNT(*) FROM tbl_intspanset WHERE i <@ intspan '[45, 55]';
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_intspanset WHERE i -|- intspan '[45, 55]';
+SELECT COUNT(*) FROM tbl_intspanset WHERE i -|- intspan '[96, 105]';
  count 
 -------
-     0
+    13
 (1 row)
 
 SELECT COUNT(*) FROM tbl_intspanset WHERE i << intspan '[15, 25]';
@@ -226,10 +226,10 @@ SELECT COUNT(*) FROM tbl_intspanset WHERE i @> 50;
     26
 (1 row)
 
-SELECT COUNT(*) FROM tbl_intspanset WHERE i -|- 50;
+SELECT COUNT(*) FROM tbl_intspanset WHERE i -|- 96;
  count 
 -------
-     0
+    13
 (1 row)
 
 SELECT COUNT(*) FROM tbl_intspanset WHERE i << 15;
@@ -274,10 +274,10 @@ SELECT COUNT(*) FROM tbl_intspanset WHERE i <@ intspan '[45, 55]';
      0
 (1 row)
 
-SELECT COUNT(*) FROM tbl_intspanset WHERE i -|- intspan '[45, 55]';
+SELECT COUNT(*) FROM tbl_intspanset WHERE i -|- intspan '[96, 105]';
  count 
 -------
-     0
+    13
 (1 row)
 
 SELECT COUNT(*) FROM tbl_intspanset WHERE i << intspan '[15, 25]';
