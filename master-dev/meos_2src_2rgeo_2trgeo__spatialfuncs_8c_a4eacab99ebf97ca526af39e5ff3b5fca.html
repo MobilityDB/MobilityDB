@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: datum_pose_geom_centroid</title>
+<title>MobilityDB: trgeo_geoms_merge</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -81,13 +81,13 @@ $(function() {
         <table>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__spatialfuncs_8c_a8f6669b151a75bccc710d2ed96fa2318.html#a8f6669b151a75bccc710d2ed96fa2318">collect_edge_events_m1</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__spatialfuncs_8c_a6602e2a010ecb8733b9f8ddf62262d35.html#a6602e2a010ecb8733b9f8ddf62262d35">datum_pose_apply_to_geom</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2rgeo_2trgeo__spatialfuncs_8c_a88dd936e6d5bd97344b7300c7babdd3d.html#a88dd936e6d5bd97344b7300c7babdd3d">datum_pose_geom_centroid</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__spatialfuncs_8c_a88dd936e6d5bd97344b7300c7babdd3d.html#a88dd936e6d5bd97344b7300c7babdd3d">datum_pose_geom_centroid</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__spatialfuncs_8c_aecd0ac85ca92de334b1a6e857eca2dc7.html#aecd0ac85ca92de334b1a6e857eca2dc7">instant_overlap_span</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__spatialfuncs_8c_a84c21e9b6b8482b2ec5871cae3dface1.html#a84c21e9b6b8482b2ec5871cae3dface1">lwgeom_has_interior_ring</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__spatialfuncs_8c_ac5bf73503ee0a9cdb9ed30981fae8f6c.html#ac5bf73503ee0a9cdb9ed30981fae8f6c">restrict_double_cmp</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__spatialfuncs_8c_aa7597ffcdbcae0c337130b240b2d02a5.html#aa7597ffcdbcae0c337130b240b2d02a5">segment_overlap_spans</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__spatialfuncs_8c_ae5f97f3eec1ff62d6095478374ad19c8.html#ae5f97f3eec1ff62d6095478374ad19c8">trgeo_convex_sweep</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__spatialfuncs_8c_a4eacab99ebf97ca526af39e5ff3b5fca.html#a4eacab99ebf97ca526af39e5ff3b5fca">trgeo_geoms_merge</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2rgeo_2trgeo__spatialfuncs_8c_a4eacab99ebf97ca526af39e5ff3b5fca.html#a4eacab99ebf97ca526af39e5ff3b5fca">trgeo_geoms_merge</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__spatialfuncs_8c_ace925bb4570f9119a8f5dbf33215c8c9.html#ace925bb4570f9119a8f5dbf33215c8c9">trgeo_overlap_spanset</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__spatialfuncs_8c_a6b68d25743dcc9a88b40e2c267047ea0.html#a6b68d25743dcc9a88b40e2c267047ea0">trgeo_placement_array</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2rgeo_2trgeo__spatialfuncs_8c_a532c40532a123d78728473a0768f81bb.html#a532c40532a123d78728473a0768f81bb">trgeo_placements</a></td></tr>
@@ -124,8 +124,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a88dd936e6d5bd97344b7300c7babdd3d" name="a88dd936e6d5bd97344b7300c7babdd3d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a88dd936e6d5bd97344b7300c7babdd3d">&#9670;&#160;</a></span>datum_pose_geom_centroid()</h2>
+<a id="a4eacab99ebf97ca526af39e5ff3b5fca" name="a4eacab99ebf97ca526af39e5ff3b5fca"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4eacab99ebf97ca526af39e5ff3b5fca">&#9670;&#160;</a></span>trgeo_geoms_merge()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -134,16 +134,22 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static <a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> datum_pose_geom_centroid </td>
+          <td class="memname">static <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> * trgeo_geoms_merge </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td>
-          <td class="paramname"><em>pose_datum</em>, </td>
+          <td class="paramtype"><a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> **&#160;</td>
+          <td class="paramname"><em>geoms</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td>
-          <td class="paramname"><em>geom_datum</em>&#160;</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>n_geoms</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>unary_union</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -158,7 +164,15 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Apply a pose to a body-frame geometry and return the centroid of the world-frame result as a Datum. </p>
+<p>Return the geometries of an array as a single value, consuming the array. </p>
+<p >A single geometry answers for itself; several are gathered into a collection, which <code>unary_union</code> then dissolves into one geometry </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">geoms</td><td>Array of geometries </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">n_geoms</td><td>Number of geometries </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">unary_union</td><td>True to dissolve the collection </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

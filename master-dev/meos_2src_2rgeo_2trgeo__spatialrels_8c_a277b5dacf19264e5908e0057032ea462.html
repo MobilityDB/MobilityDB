@@ -175,7 +175,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return 1 if the poses of a temporal rigid geometry and a geometry ever/always satisfy a spatial relationship, 0 if not, and -1 on error or if the geometry is empty. </p>
-<p >The traversed area collects the reference geometry at each of the poses the value takes, so the relationship is asked of each of them: the ever semantics hold where one pose satisfies it, the always semantics where every pose does. Asking it of the traversed area as a whole answers for the union of the poses, which is a region the body occupies at no single instant </p><dl class="params"><dt>Parameters</dt><dd>
+<p >The placements are the reference geometry at each of the poses the value takes, so the relationship is asked of each of them: the ever semantics hold where one pose satisfies it, the always semantics where every pose does. Asking it of the placements as a whole answers for the union of the poses, which is a region the body occupies at no single instant </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> rigid geometry </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">gs</td><td>Geometry </td></tr>
