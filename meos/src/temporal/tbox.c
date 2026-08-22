@@ -1631,12 +1631,23 @@ adjacent_tbox_tbox(const TBox *box1, const TBox *box2)
   if (! ensure_valid_tbox_tbox(box1, box2, &hasx, &hast))
     return false;
 
-  /* Boxes are adjacent if they are adjacent in at least one dimension */
+  /* Boxes are adjacent if they meet in every common dimension and touch in at
+   * least one of them. A dimension in which the boxes are apart separates them
+   * whatever the remaining dimensions do, so an adjacency in one dimension is
+   * an adjacency of the boxes only when the others at least overlap */
   bool adjx = false, adjt = false;
   if (hasx)
+  {
     adjx = adjacent_span_span(&box1->span, &box2->span);
+    if (! adjx && ! overlaps_span_span(&box1->span, &box2->span))
+      return false;
+  }
   if (hast)
+  {
     adjt = adjacent_span_span(&box1->period, &box2->period);
+    if (! adjt && ! overlaps_span_span(&box1->period, &box2->period))
+      return false;
+  }
   return (adjx || adjt);
 }
 

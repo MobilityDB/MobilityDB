@@ -270,6 +270,14 @@ SELECT tbox 'TBOXFLOAT XT([1.0, 2.0],[2000-01-02, 2000-02-01])' ~= tbox 'TBOXFLO
 
 SELECT tstzspan '[2000-01-01,2000-01-02]'::tbox -|- tstzspan '[2000-01-02, 2000-01-03]'::tbox;
 
+-- Adjacency reads every dimension the boxes share: a value bound they share
+-- while their periods lie apart leaves them apart
+SELECT tbox 'TBOXFLOAT XT([1,5],[2000-01-01,2000-01-05])' -|- tbox 'TBOXFLOAT XT([5,9],[2000-06-01,2000-06-05])';
+SELECT tbox 'TBOXFLOAT XT([1,5],[2000-01-01,2000-01-05])' -|- tbox 'TBOXFLOAT XT([5,9],[2000-01-05,2000-01-09])';
+SELECT tbox 'TBOXFLOAT XT([1,5],[2000-01-01,2000-01-09])' -|- tbox 'TBOXFLOAT XT([5,9],[2000-01-05,2000-01-12])';
+SELECT tbox 'TBOXFLOAT X([1,5])' -|- tbox 'TBOXFLOAT X([5,9])';
+SELECT tbox 'TBOXFLOAT X([1,5])' -|- tbox 'TBOXFLOAT X([3,9])';
+
 -- The portable spelling of each operator above answers the same
 SELECT overlaps(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])');
 SELECT contains(tbox 'TBOXFLOAT XT([1.0, 2.0],[2000-01-02, 2000-02-01])', tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])');

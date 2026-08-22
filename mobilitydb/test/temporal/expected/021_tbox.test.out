@@ -883,6 +883,36 @@ SELECT tstzspan '[2000-01-01,2000-01-02]'::tbox -|- tstzspan '[2000-01-02, 2000-
  t
 (1 row)
 
+SELECT tbox 'TBOXFLOAT XT([1,5],[2000-01-01,2000-01-05])' -|- tbox 'TBOXFLOAT XT([5,9],[2000-06-01,2000-06-05])';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT tbox 'TBOXFLOAT XT([1,5],[2000-01-01,2000-01-05])' -|- tbox 'TBOXFLOAT XT([5,9],[2000-01-05,2000-01-09])';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tbox 'TBOXFLOAT XT([1,5],[2000-01-01,2000-01-09])' -|- tbox 'TBOXFLOAT XT([5,9],[2000-01-05,2000-01-12])';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tbox 'TBOXFLOAT X([1,5])' -|- tbox 'TBOXFLOAT X([5,9])';
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tbox 'TBOXFLOAT X([1,5])' -|- tbox 'TBOXFLOAT X([3,9])';
+ ?column? 
+----------
+ f
+(1 row)
+
 SELECT overlaps(tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])', tbox 'TBOXFLOAT XT([1.0,2.0],[2000-01-01,2000-01-02])');
  overlaps 
 ----------
@@ -945,7 +975,7 @@ SELECT COUNT(*) FROM tbl_tboxint t1, tbl_tboxint t2 WHERE t1.b <@ t2.b;
 SELECT COUNT(*) FROM tbl_tboxint t1, tbl_tboxint t2 WHERE t1.b -|- t2.b;
  count 
 -------
-    98
+     0
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tboxint t1, tbl_tboxint t2 WHERE t1.b ~= t2.b;
