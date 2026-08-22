@@ -41,6 +41,7 @@
 #include <utils/timestamp.h>
 /* PostGIS */
 #include <lwgeodetic_tree.h>
+
 #include <measures.h>
 #include <measures3d.h>
 /* MEOS */
@@ -181,7 +182,7 @@ dist_geom_arc_contains_angle(const DistEdge *e, double phi)
     dist_angle_norm(e->at1 - e->at0) : dist_angle_norm(e->at0 - e->at1);
   double off = e->accw ?
     dist_angle_norm(phi - e->at0) : dist_angle_norm(e->at0 - phi);
-  return off <= sweep + FP_TOLERANCE;
+  return off <= sweep + MEOS_GEOM_TOLERANCE;
 }
 
 /**
@@ -229,7 +230,7 @@ dist_segs_add_arc(double ax, double ay, double bx, double by, double cx,
   }
   /* Twice the signed area of triangle ABC; zero => collinear */
   double d = 2.0 * (ax * (by - cy) + bx * (cy - ay) + cx * (ay - by));
-  if (fabs(d) < FP_TOLERANCE)
+  if (fabs(d) < MEOS_GEOM_TOLERANCE)
   {
     /* Collinear: two straight segments A->B, B->C */
     for (int seg = 0; seg < 2; seg++)
@@ -419,7 +420,7 @@ dist_poly_seg_raycross(const DistEdge *s, double x, double y,
      * ray that only grazes the circle tangentially does not cross. */
     const double dyc = y - s->acy;
     const double h2 = s->arad * s->arad - dyc * dyc;
-    if (h2 <= FP_TOLERANCE)
+    if (h2 <= MEOS_GEOM_TOLERANCE)
       return;
     const double h = sqrt(h2);
     const double xhit[2] = {s->acx - h, s->acx + h};
@@ -436,10 +437,10 @@ dist_poly_seg_raycross(const DistEdge *s, double x, double y,
        * arc endpoint (a ring junction on the ray) is owned by this edge only if
        * the arc interior rises above the ray there; an interior crossing is
        * always transversal and always counted. */
-      const bool at_ep0 = fabs(xi - s->x1) < FP_TOLERANCE && 
-        fabs(y - s->y1) < FP_TOLERANCE;
-      const bool at_ep1 = fabs(xi - s->x2) < FP_TOLERANCE && 
-        fabs(y - s->y2) < FP_TOLERANCE;
+      const bool at_ep0 = fabs(xi - s->x1) < MEOS_GEOM_TOLERANCE && 
+        fabs(y - s->y1) < MEOS_GEOM_TOLERANCE;
+      const bool at_ep1 = fabs(xi - s->x2) < MEOS_GEOM_TOLERANCE && 
+        fabs(y - s->y2) < MEOS_GEOM_TOLERANCE;
       if (at_ep0 || at_ep1)
       {
         const double theta_e = at_ep0 ? s->at0 : s->at1;
@@ -873,7 +874,7 @@ dist_geom_closest_on_arc(double px, double py, const DistEdge *e,
 {
   double vx = px - e->acx, vy = py - e->acy;
   double vl = hypot(vx, vy);
-  if (vl > FP_TOLERANCE && dist_geom_arc_contains_angle(e, atan2(vy, vx)))
+  if (vl > MEOS_GEOM_TOLERANCE && dist_geom_arc_contains_angle(e, atan2(vy, vx)))
   {
     *qx = e->acx + vx * (e->arad / vl);
     *qy = e->acy + vy * (e->arad / vl);
@@ -1307,7 +1308,7 @@ dist_segm_shortestline(double cx1, double cy1, double r1, double cx2,
         double vx = qx - ccx, vy = qy - ccy;
         double vl = sqrt(vx * vx + vy * vy);
         double pxp, pyp;
-        if (vl <= FP_TOLERANCE || m <= 0.0)
+        if (vl <= MEOS_GEOM_TOLERANCE || m <= 0.0)
         {
           /* Overlap or centre on the edge: degenerate line at the contact */
           pxp = qx; pyp = qy;

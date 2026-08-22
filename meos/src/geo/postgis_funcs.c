@@ -4236,7 +4236,7 @@ distance_point2d(POINT2D a, POINT2D b)
 static inline bool
 mec_inside(POINT2D p, Circle c)
 {
-  return distance_point2d(p, c.center) <= c.radius + 1e-12;
+  return distance_point2d(p, c.center) <= c.radius + MEOS_GEOM_TOLERANCE;
 }
 
 /**
@@ -4270,7 +4270,7 @@ mec_circle3(POINT2D a, POINT2D b, POINT2D c)
    * uninitialised — cppcheck flags this as `uninitvar`, and a downstream
    * caller that ignored circ.radius == -1 would read garbage. */
   Circle circ = { .center = {0.0, 0.0}, .radius = 0.0 };
-  if (fabs(G) < 1e-12)
+  if (fabs(G) < MEOS_GEOM_TOLERANCE)
   {
     circ.radius = -1;
     return circ;
