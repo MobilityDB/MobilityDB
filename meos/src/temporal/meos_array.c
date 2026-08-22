@@ -111,7 +111,13 @@ meos_array_create(int elem_size)
      * (e.g. the int ids collected in temporal_rtree.c node_search). */
     array->elem_size = (size_t) elem_size;
   }
-  array->elems = palloc0(array->elem_size * array->capacity);
+  /* The slots are not zeroed: #meos_array_add writes a slot in full before
+   * it raises the count, #meos_array_get refuses an index at or above the
+   * count, and the growth path repallocs without zeroing, so a slot beyond
+   * the count is already uninitialised once the array has grown once. Zeroing
+   * the initial buffer writes bytes no reader ever observes, and the buffer is
+   * MEOS_ARRAY_INITIAL_SIZE slots wide whatever the caller goes on to store */
+  array->elems = palloc(array->elem_size * array->capacity);
   return array;
 }
 
