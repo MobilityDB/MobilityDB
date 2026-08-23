@@ -3146,6 +3146,36 @@ SELECT MAX(numInstants(stops(tgeompoint '{[Point(1 1)@2001-01-01, Point(1 1)@200
    4
 (1 row)
 
+SELECT numInstants(stops(tgeompoint '[Point(0 0)@2001-01-01,
+  Point(10 0)@2001-01-02, Point(5 8.660254)@2001-01-03]', 11.0, '1 day'));
+ numinstants 
+-------------
+           3
+(1 row)
+
+SELECT stops(tgeompoint '[Point(0 0)@2001-01-01,
+  Point(10 0)@2001-01-02, Point(5 8.660254)@2001-01-03]', 9.0, '1 day');
+ stops 
+-------
+ 
+(1 row)
+
+SELECT numInstants(stops(tgeogpoint '[Point(0 60)@2001-01-01,
+  Point(0.0179664 60)@2001-01-02, Point(0.0089832 60.0077795)@2001-01-03]',
+  1100.0, '1 day'));
+ numinstants 
+-------------
+           3
+(1 row)
+
+SELECT stops(tgeogpoint '[Point(0 60)@2001-01-01,
+  Point(0.0179664 60)@2001-01-02, Point(0.0089832 60.0077795)@2001-01-03]',
+  900.0, '1 day');
+ stops 
+-------
+ 
+(1 row)
+
 SELECT tgeompoint 'Point(1 1)@2000-01-01' ?= ST_Point(1,1);
  ?column? 
 ----------
