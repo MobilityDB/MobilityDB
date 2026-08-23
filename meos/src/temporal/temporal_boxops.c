@@ -125,21 +125,19 @@ bbox_max_dims(MeosType bboxtype)
 bool
 temporal_bbox_eq(const void *box1, const void *box2, MeosType temptype)
 {
-  assert(talpha_type(temptype) || tnumber_type(temptype) ||
-    tspatial_type(temptype)
-#if POINTCLOUD
-    || tpointcloud_temptype(temptype)
-#endif
-    );
-  if (talpha_type(temptype))
+  MeosType bboxtype = type_bboxtype(temptype);
+  /* The box a temporal type carries is the one its catalog row
+   * prescribes, so the dispatch below reads that and not the class */
+  assert(bboxtype != T_UNKNOWN);
+  if (bboxtype == T_TSTZSPAN)
     return span_eq((Span *) box1, (Span *) box2);
-  else if (tnumber_type(temptype))
+  else if (bboxtype == T_TBOX)
     return tbox_eq((TBox *) box1, (TBox *) box2);
 #if POINTCLOUD
-  else if (tpointcloud_temptype(temptype))
+  else if (bboxtype == T_TPCBOX)
     return tpcbox_eq((TPCBox *) box1, (TPCBox *) box2);
 #endif
-  else /* tspatial_type(temptype) */
+  else /* T_STBOX */
     // TODO Due to floating point precision the current statement
     // is not equal to the next one.
     // return stbox_eq((STBox *) box1, (STBox *) box2);
@@ -158,21 +156,19 @@ temporal_bbox_eq(const void *box1, const void *box2, MeosType temptype)
 int
 temporal_bbox_cmp(const void *box1, const void *box2, MeosType temptype)
 {
-  assert(talpha_type(temptype) || tnumber_type(temptype) ||
-    tspatial_type(temptype)
-#if POINTCLOUD
-    || tpointcloud_temptype(temptype)
-#endif
-    );
-  if (talpha_type(temptype))
+  MeosType bboxtype = type_bboxtype(temptype);
+  /* The box a temporal type carries is the one its catalog row
+   * prescribes, so the dispatch below reads that and not the class */
+  assert(bboxtype != T_UNKNOWN);
+  if (bboxtype == T_TSTZSPAN)
     return span_cmp((Span *) box1, (Span *) box2);
-  else if (tnumber_type(temptype))
+  else if (bboxtype == T_TBOX)
     return tbox_cmp((TBox *) box1, (TBox *) box2);
 #if POINTCLOUD
-  else if (tpointcloud_temptype(temptype))
+  else if (bboxtype == T_TPCBOX)
     return tpcbox_cmp((TPCBox *) box1, (TPCBox *) box2);
 #endif
-  else /* tspatial_type(temptype) */
+  else /* T_STBOX */
     return stbox_cmp((STBox *) box1, (STBox *) box2);
 }
 
@@ -192,14 +188,8 @@ ensure_bbox_temporal_compatible(MeosType bboxtype, const Temporal *temp)
 {
   assert(temp);
   MeosType temptype = temp->temptype;
-  bool compatible =
-    (talpha_type(temptype) && bboxtype == T_TSTZSPAN) ||
-    (tnumber_type(temptype) && bboxtype == T_TBOX) ||
-    (tspatial_type(temptype) && bboxtype == T_STBOX)
-#if POINTCLOUD
-    || (tpointcloud_temptype(temptype) && bboxtype == T_TPCBOX)
-#endif
-    ;
+  /* The catalog prescribes exactly one box per temporal type */
+  bool compatible = (bboxtype == type_bboxtype(temptype));
   if (! compatible)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
@@ -361,22 +351,20 @@ void
 tinstant_set_bbox(const TInstant *inst, void *box)
 {
   assert(inst); assert(box);
-  assert(talpha_type(inst->temptype) || tnumber_type(inst->temptype) ||
-    tspatial_type(inst->temptype)
-#if POINTCLOUD
-    || tpointcloud_temptype(inst->temptype)
-#endif
-    );
-  if (talpha_type(inst->temptype))
+  MeosType bboxtype = type_bboxtype(inst->temptype);
+  /* The box a temporal type carries is the one its catalog row
+   * prescribes, so the dispatch below reads that and not the class */
+  assert(bboxtype != T_UNKNOWN);
+  if (bboxtype == T_TSTZSPAN)
     span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),
       true, true, T_TIMESTAMPTZ, T_TSTZSPAN, (Span *) box);
-  else if (tnumber_type(inst->temptype))
+  else if (bboxtype == T_TBOX)
     tnumberinst_set_tbox(inst, (TBox *) box);
 #if POINTCLOUD
-  else if (tpointcloud_temptype(inst->temptype))
+  else if (bboxtype == T_TPCBOX)
     tpointcloudinst_set_tpcbox(inst, (TPCBox *) box);
 #endif
-  else /* tspatial_type(inst->temptype) */
+  else /* T_STBOX */
     tspatialinst_set_stbox(inst, (STBox *) box);
   return;
 }
@@ -546,26 +534,23 @@ tinstarr_set_bbox(TInstant **instants, int count, bool lower_inc,
   bool upper_inc, interpType interp, void *box)
 {
   assert(instants); assert(box);
-  assert(talpha_type(instants[0]->temptype) ||
-    tnumber_type(instants[0]->temptype) ||
-    tspatial_type(instants[0]->temptype)
-#if POINTCLOUD
-    || tpointcloud_temptype(instants[0]->temptype)
-#endif
-    );
-  if (talpha_type(instants[0]->temptype))
+  MeosType bboxtype = type_bboxtype(instants[0]->temptype);
+  /* The box a temporal type carries is the one its catalog row
+   * prescribes, so the dispatch below reads that and not the class */
+  assert(bboxtype != T_UNKNOWN);
+  if (bboxtype == T_TSTZSPAN)
     span_set(TimestampTzGetDatum(instants[0]->t),
       TimestampTzGetDatum(instants[count - 1]->t), lower_inc, upper_inc,
       T_TIMESTAMPTZ, T_TSTZSPAN, (Span *) box);
-  else if (tnumber_type(instants[0]->temptype))
+  else if (bboxtype == T_TBOX)
     tnumberinstarr_set_tbox(instants, count, lower_inc, upper_inc,
       interp, (TBox *) box);
 #if POINTCLOUD
-  else if (tpointcloud_temptype(instants[0]->temptype))
+  else if (bboxtype == T_TPCBOX)
     tpointcloudinstarr_set_tpcbox(instants, count, lower_inc, upper_inc,
       interp, (TPCBox *) box);
 #endif
-  else /* tspatial_type(instants[0]->temptype) */
+  else /* T_STBOX */
     tspatialinstarr_set_stbox(instants, count, lower_inc, upper_inc,
       interp, (STBox *) box);
   /* Set the lower_inc and upper_inc bounds of the period at the beginning
@@ -600,23 +585,21 @@ tnumberseq_expand_tbox(TSequence *seq, const TInstant *inst)
 void
 tsequence_expand_bbox(TSequence *seq, const TInstant *inst)
 {
-  assert(talpha_type(seq->temptype) || tnumber_type(seq->temptype) ||
-    tspatial_type(seq->temptype)
-#if POINTCLOUD
-    || tpointcloud_temptype(seq->temptype)
-#endif
-    );
-  if (talpha_type(seq->temptype))
+  MeosType bboxtype = type_bboxtype(seq->temptype);
+  /* The box a temporal type carries is the one its catalog row
+   * prescribes, so the dispatch below reads that and not the class */
+  assert(bboxtype != T_UNKNOWN);
+  if (bboxtype == T_TSTZSPAN)
     span_set(TimestampTzGetDatum(TSEQUENCE_INST_N(seq, 0)->t),
       TimestampTzGetDatum(inst->t), seq->period.lower_inc, true, T_TIMESTAMPTZ,
       T_TSTZSPAN, (Span *) TSEQUENCE_BBOX_PTR(seq));
-  else if (tnumber_type(seq->temptype))
+  else if (bboxtype == T_TBOX)
     tnumberseq_expand_tbox(seq, inst);
 #if POINTCLOUD
-  else if (tpointcloud_temptype(seq->temptype))
+  else if (bboxtype == T_TPCBOX)
     tpointcloudseq_expand_tpcbox(seq, inst);
 #endif
-  else /* tspatial_type(seq->temptype) */
+  else /* T_STBOX */
     tspatialseq_expand_stbox(seq, inst);
   return;
 }
@@ -632,24 +615,22 @@ void
 tsequenceset_expand_bbox(TSequenceSet *ss, const TSequence *seq)
 {
   assert(ss); assert(seq);
-  assert(talpha_type(ss->temptype) || tnumber_type(ss->temptype) ||
-    tspatial_type(ss->temptype)
-#if POINTCLOUD
-    || tpointcloud_temptype(ss->temptype)
-#endif
-    );
-  if (talpha_type(ss->temptype))
+  MeosType bboxtype = type_bboxtype(ss->temptype);
+  /* The box a temporal type carries is the one its catalog row
+   * prescribes, so the dispatch below reads that and not the class */
+  assert(bboxtype != T_UNKNOWN);
+  if (bboxtype == T_TSTZSPAN)
     span_expand(&seq->period, &ss->period);
-  else if (tnumber_type(ss->temptype))
+  else if (bboxtype == T_TBOX)
     tbox_expand((TBox *) TSEQUENCE_BBOX_PTR(seq),
       (TBox *) TSEQUENCE_BBOX_PTR(ss));
 #if POINTCLOUD
-  else if (tpointcloud_temptype(ss->temptype))
+  else if (bboxtype == T_TPCBOX)
     tpcbox_expand((TPCBox *) TSEQUENCE_BBOX_PTR(seq),
       (TPCBox *) TSEQUENCESET_BBOX_PTR(ss));
 #endif
   // TODO Generalize as for tgeogpointseq_expand_stbox
-  else /* tspatial_type(ss->temptype) */
+  else /* T_STBOX */
     stbox_expand((STBox *) TSEQUENCE_BBOX_PTR(seq),
       (STBox *) TSEQUENCE_BBOX_PTR(ss));
   return;
@@ -698,22 +679,19 @@ tnumberseqarr_set_tbox(TSequence **sequences, int count, TBox *box)
 void
 tseqarr_compute_bbox(TSequence **sequences, int count, void *box)
 {
-  assert(talpha_type(sequences[0]->temptype) ||
-    tnumber_type(sequences[0]->temptype) ||
-    tspatial_type(sequences[0]->temptype)
-#if POINTCLOUD
-    || tpointcloud_temptype(sequences[0]->temptype)
-#endif
-    );
-  if (talpha_type(sequences[0]->temptype))
+  MeosType bboxtype = type_bboxtype(sequences[0]->temptype);
+  /* The box a temporal type carries is the one its catalog row
+   * prescribes, so the dispatch below reads that and not the class */
+  assert(bboxtype != T_UNKNOWN);
+  if (bboxtype == T_TSTZSPAN)
     tseqarr_set_tstzspan(sequences, count, (Span *) box);
-  else if (tnumber_type(sequences[0]->temptype))
+  else if (bboxtype == T_TBOX)
     tnumberseqarr_set_tbox(sequences, count, (TBox *) box);
 #if POINTCLOUD
-  else if (tpointcloud_temptype(sequences[0]->temptype))
+  else if (bboxtype == T_TPCBOX)
     tpointcloudseqarr_set_tpcbox(sequences, count, (TPCBox *) box);
 #endif
-  else /* tspatial_type(sequences[0]->temptype) */
+  else /* T_STBOX */
     tspatialseqarr_set_stbox(sequences, count, (STBox *) box);
   return;
 }
