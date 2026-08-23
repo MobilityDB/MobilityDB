@@ -174,17 +174,18 @@ point_in_polygon_impl(double x, double y, Edge **edges, int nedges,
       const double y1  = e->y1;
 
       const double dxp = x - x1;
-      const double dyp = y - y1;
 
-      /* Boundary check, which reads the point itself rather than the ray */
-      const double cross = dx * dyp - dy * dxp;
-      if (fabs(cross) < MEOS_GEOM_TOLERANCE)
-      {
-        const double dot = dxp * dx + dyp * dy;
-        if (dot >= -MEOS_GEOM_TOLERANCE &&
-            dot <= (e->length) + MEOS_GEOM_TOLERANCE)
-          return 1;
-      }
+      /* Boundary check, which reads the point itself rather than the ray. The
+       * test is the one #point_on_segment_within makes, taking the tolerance
+       * the edge carries: a cross product is an AREA, so bounding it by a
+       * distance reads a point as lying on a segment far from it once the
+       * coordinates are large, and reads a point as lying off a short segment
+       * it does lie on. A repeated vertex draws an edge of no length, whose
+       * cross and dot products are BOTH zero wherever the point is, and the
+       * bounding-box rejection the shared test opens with is what keeps such
+       * an edge from claiming every point of the plane as its own */
+      if (point_on_segment_within(x, y, x1, y1, e->x2, e->y2, e->tol))
+        return 1;
 
       /* Ray casting */
       if ((y1 > ry) != ((y1 + dy) > ry))

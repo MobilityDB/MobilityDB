@@ -236,6 +236,26 @@ int main(void)
     free(self);
   }
 
+  /* A repeated vertex draws an edge of no length, and such an edge lies under
+   * every point of the plane unless the test that reads a point against it
+   * rejects the ones its bounding box cannot hold. The witness is a square
+   * that repeats a vertex and is contained in a larger one: the same square
+   * written without the repetition is the control, and answers alike either
+   * way, so what the pair isolates is the degenerate edge and nothing else */
+  GSERIALIZED *outer = geom_in("POLYGON((0 0,0 2,2 2,2 0,0 0))", -1);
+  GSERIALIZED *plain = geom_in("POLYGON((0 0,0 1,1 1,1 0,0 0))", -1);
+  GSERIALIZED *repeated = geom_in("POLYGON((0 0,0 1,0 1,1 1,1 0,0 0))", -1);
+  assert(outer != NULL); assert(plain != NULL); assert(repeated != NULL);
+  meos_errno_reset();
+  int has_plain = geom_contains(outer, plain);
+  int has_repeated = geom_contains(outer, repeated);
+  printf("geom_contains(outer, plain): %d, geom_contains(outer, repeated): "
+    "%d, errno %d\n", has_plain, has_repeated, meos_errno());
+  assert(has_plain == 1);
+  assert(has_repeated == 1);
+  assert(meos_errno() == 0);
+  free(outer); free(plain); free(repeated);
+
   /* Equality is read from the native DE-9IM matrix, so two circular strings
    * describing the SAME arc through DIFFERENT defining points are equal. The
    * three points lie on the circle of centre (0 0) and radius 5, which they
