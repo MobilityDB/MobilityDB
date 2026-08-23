@@ -269,6 +269,49 @@ int main(void)
   free(holed_geo); free(holed_buf);
   meos_errno_reset();
 
+  /* Two computations of one node read as one node when they lie nearer than
+   * the tolerance the buffer allows a node, and that tolerance takes the
+   * square root of the machine epsilon and scales it by the COORDINATES. The
+   * root belongs to the rounding those coordinates carry instead, so the
+   * scaled form bounds a node by 0.318 metres at a projected 6.4e6 and reads
+   * two crossings a centimetre apart as one. The witness is a rectangle with
+   * a notch narrower than that, whose buffer comes back as a surface of a
+   * seventieth of the area it must have -- and a buffer that answers at all
+   * covers the geometry it is taken of. The SAME shape at the origin, where
+   * the two forms agree, is the control: it answers, and it answers a surface
+   * of 703.14, the rounded 32 by 22 rectangle the notch is too narrow to
+   * reach into */
+  const char *notched[] = {
+    "Polygon((0 0,30 0,30 20,15.025 20,15.025 18,14.975 18,14.975 20,"
+      "0 20,0 0))",
+    "Polygon((600000 6360000,600030 6360000,600030 6360020,"
+      "600015.025 6360020,600015.025 6360018,600014.975 6360018,"
+      "600014.975 6360020,600000 6360020,600000 6360000))"
+  };
+  char notched_patt[10] = "T*****FF*";
+  for (int i = 0; i < 2; i++)
+  {
+    GSERIALIZED *g = geom_in(notched[i], -1);
+    assert(g != NULL);
+    meos_errno_reset();
+    GSERIALIZED *b = geom_buffer(g, 1.0, "");
+    /* A buffer that is not answered covers nothing and claims nothing */
+    bool covers = b ? geom_relate_pattern(b, g, notched_patt) : true;
+    printf("geom_buffer(a notched rectangle %s the origin): answered %d, "
+      "covers %d\n", i ? "away from" : "at", b != NULL, b != NULL && covers);
+    /* At the origin the buffer exists, and wherever it exists it covers */
+    if (i == 0)
+    {
+      assert(b != NULL);
+      assert(meos_errno() == 0);
+    }
+    assert(covers == true);
+    if (b)
+      free(b);
+    free(g);
+    meos_errno_reset();
+  }
+
   /* An offset that degenerates at one exact radius: the two offsets of a U
    * meet with no width left where the radius is half the gap between its arms,
    * and the inward offset of an arc lands on the centre where the radius
