@@ -20,8 +20,12 @@
 > (every `.in.sql` under `mobilitydb/sql/` is either named by a manifest entry or
 > listed in `coverage_exceptions.txt`; the exception list is a ratchet that may only
 > shrink), `--classes` (the manifest's `classes:` block matches the live catalog
-> class predicates), and `--gaps` (per behaviour axis, which members of its class the
-> rendered SQL does not yet name — a backlog report, not a gate).
+> class predicates — **17** classes, the temporal ones plus the value-domain `set`,
+> `span`, `spanset` and their catalog sub-predicates), and `--gaps` (per behaviour
+> axis, which members of its class the rendered SQL does not yet name — a backlog
+> report, not a gate; it scores all **21** axes, a value-domain axis against the
+> classes its covered types belong to rather than against every set, so a text or
+> JSONB set is absent from the distance backlog it can never join).
 
 ---
 
@@ -648,11 +652,67 @@ axes are cited by `manifest.d/<axis>.yaml` filename, not by line number.
 | `Span<T>` (**5**) | intspan, bigintspan, floatspan, datespan, tstzspan | `MEOS_SPANTYPE_CATALOG` :287-295 · `span_type()` :982-987 |
 | `SpanSet<T>` (**5**) | intspanset, bigintspanset, floatspanset, datespanset, tstzspanset | `MEOS_SPANSETTYPE_CATALOG` :301-309 · `spanset_type()` :1080-1085 |
 
-Sub-predicates: `spatialset_type()` :909-914 = geomset, geogset, npointset,
-poseset, posechainset, cbufferset, h3indexset, quadbinset (**8** — the sets that
-carry a bounding box). `pointcloudset_type()` :951-955 = pcpointset, pcpatchset — NOT
-`spatialset_type()`: pointcloud sets carry no bounding box (the note at
-:944-948; the TPCBox structure is what carries pointcloud spatial bounds).
+Sub-predicates, all live at master `74c28447cf`: `spatialset_type()` :912 =
+geomset, geogset, npointset, poseset, posechainset, cbufferset, h3indexset,
+quadbinset (**8**). `numset_type()` :818 · `timeset_type()` :845 ·
+`geoset_type()` :889 · `alphanumset_type()` :877 · `pointcloudset_type()` :955 =
+pcpointset, pcpatchset.
+
+⛔ **`spatialset_type()` NAMES SPATIALITY AND CURRENTLY ENCODES BBOX-CARRYING, AND
+THE TWO COME APART.** `set_bbox_size()` (`set.c`) returns `0` for a pointcloud set,
+which is why `pointcloudset_type()` holds them instead — yet the pointcloud family
+publishes `SRID(pcpoint)`, `SRID(pcpatch)`, `SRID(tpcpoint)` and `SRID(tpcbox)`, and
+`SRID(tpcpoint)` binds the GENERIC `Tspatial_srid`, which the committed pointcloud
+expected output records answering and agreeing with `pointcloud_formats`. A type
+carrying an SRID is spatial, so the exclusion charges a BBOX property to a
+SPATIALITY predicate, and 14 dispatch sites carry a second `|| pointcloud_*` clause
+as a result. The three properties the predicate conflates — carries an SRID, has
+schema-derivable flags, stores a bbox — each need their own predicate.
+
+⭐ **THE CELL SETS ARE NOT THE SAME CASE.** `h3indexset`/`quadbinset` sit in
+`spatialset_type()` and declare no `SRID`/`setSRID`/`transform`, and that is
+correct: their specifications IMPOSE the reference system rather than storing one —
+H3 is spherical coordinates with the WGS84/EPSG:4326 authalic radius
+(https://h3geo.org/docs/core-library/overview/) and a quadbin cell is a Bing Maps
+Tile System cell of a map subdivided in the Mercator projection
+(https://docs.carto.com/data-and-analysis/analytics-toolbox-for-bigquery/key-concepts/spatial-indexes).
+`npoint` is the third form of the same exception: the `Npoint` struct
+(`meos_npoint.h:51-55`) declares `rid` and `pos` and no `srid`, the SRID being
+inherited from the `ways` network table.
+
+### 9.1b `SpatialSet<T>` — the subclass surface, derived from `Spatial<T>`
+
+`SpatialSet<T>` = `spatialset_type()` (**8** members). Its surface is the set-lift
+of what a spatial BASE type carries BECAUSE it is spatial — the operations left
+after removing what every value type has (comparisons, `hash`, the set operations,
+ever/always, `asText`/`asBinary`/`asHexWKB`). Counted from the `CREATE FUNCTION`
+declarations under `mobilitydb/sql/`:
+
+| operation | why it is spatial | sets carrying it |
+|---|---|---|
+| `SRID` `setSRID` `transform` `transformPipeline` | identity of the reference system | 5/8 — absent from `npointset`, `h3indexset`, `quadbinset`, whose types IMPOSE or INHERIT the system (§9.1) |
+| `stbox` | the spatial bounding extent | 6/8 — absent from `h3indexset`, `quadbinset` |
+| `asEWKT` `asEWKB` `asHexEWKB` | the SRID-CARRYING representations | 6/8 — the `E` forms mirror their bases |
+| `round` | rounding of COORDINATES | 6/8 — a cell id carries no coordinates to round |
+| `distance` | ⭐ the OVERRIDE, below | 5/8 — absent from `posechainset`, `h3indexset`, `quadbinset` |
+
+⭐ **`distance` IS AN OVERRIDE, NOT AN ADDITION, AND IT IS THE ONE PLACE THE
+SUBCLASS REDEFINES A SUPERCLASS BEHAVIOUR.** `Set<T>` answers the distance of the
+extent that BOUNDS it — `distance_set_value()` builds the set's span and measures to
+that, so a value falling in a gap between elements answers `0`. A spatial set has no
+span, so `distance_spatialset_value()` / `distance_spatialset_spatialset()`
+(`meos/src/geo/tspatial.c`) measure to the set's STBox instead, and
+`distance_set_value()` selects on `spatialset_type()`. The CONTRACT is unchanged:
+this is the same rule PR #2117 settles for a span set, whose adjacency and distance
+answer for its bounding span because *the holes between its spans are not boundaries
+of it* — `distance_spanset_value()` is literally `distance_span_value(&ss->span, …)`.
+⛔ A nearest-ELEMENT distance would CONTRADICT that ruling; it belongs to a
+separate, differently-named operation, never to a redefinition of `setDistance`.
+
+⛔ **THE ONE CELL NO PROPERTY EXPLAINS:** `stbox(h3index)` and `stbox(quadbin)` are
+declared while `stbox(h3indexset)` and `stbox(quadbinset)` are not, though both sets
+are named by `spatialset_type()` and so already store an STBox. A bounding box needs
+no agreement on a datum, so unlike the SRID rows this is a lift gap.
 
 ### 9.2 WHY the 17-vs-5 asymmetry
 
@@ -693,7 +753,7 @@ column names the `manifest.d/` key) · ✗ HAND = hand-maintained.
 | BBox Ops · Topological (:1014) | ✓ GEN | ✓ GEN | ✓ GEN | `manifest.d/topop_families.yaml` · `span_families` (005/009) |
 | BBox Ops · Position (:1082) | ✓ GEN (ordered sets only) | ✓ GEN | ✓ GEN | `manifest.d/posop_families.yaml` · `span_families` (005/009) |
 | BBox Ops · Splitting (:1162) | ✓ GEN (`spans`/`splitNSpans`/`splitEachNSpans` live in `003_span.in.sql`) | ✓ GEN | ✓ GEN | `span_families` (003/007 entries) |
-| Distance (:1219) | ✓ GEN (metric sets only) | ✓ GEN | ✓ GEN | `manifest.d/distance_families.yaml` · `span_families` (005/009) |
+| Distance (:1219) | ✓ GEN (metric sets only) — `--gaps` 10/13, missing `posechainset`, `h3indexset`, `quadbinset`; the denominator is `numset` ∪ `timeset` ∪ `spatialset`, and the spatial families answer through the `SpatialSet<T>` override of §9.1b | ✓ GEN | ✓ GEN | `manifest.d/distance_families.yaml` · `span_families` (005/009) |
 | Comparisons (:1248) | ✓ GEN | ✓ GEN | ✓ GEN | `manifest.d/comparison_families.yaml` (`set` family entries) + `manifest.d/hash_families.yaml` · `span_families` (003/007) |
 | Aggregations (:1306) | ✓ GEN — the `extent` aggregates over sets in `015_span_aggfuncs.in.sql`, `setUnion` in `001_set.in.sql`, and the per-family `setUnion` regions | ✓ GEN | ✓ GEN | `span_families` (015 entry + `set_aggregations` + the per-family `*set_setunion` entries) |
 | Indexing (:1389) | ✓ GEN (span-basetype sets only, §9.2) | ✓ GEN | ✓ GEN | `span_families` (011/012/013 entries) |
