@@ -793,13 +793,8 @@ meos_version(void)
 char *
 meos_full_version(void)
 {
-  const char *proj_vers;
-#if POSTGIS_PROJ_VERSION < 61
-  proj_vers = pj_get_release();
-#else
   PJ_INFO pji = proj_info();
-  proj_vers = pji.version;
-#endif
+  const char *proj_vers = pji.version;
   /* A build carrying no GEOS reports none */
 #if GEOS
   const char *geos_vers = GEOSversion();
