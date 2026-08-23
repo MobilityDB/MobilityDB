@@ -508,6 +508,15 @@ SELECT stbox 'GEODSTBOX ZT(((1.0,2.0,3.0),(1.0,2.0,3.0)),[2001-01-03,2001-01-04]
 SELECT round((tgeompoint 'Point(1 1)@2000-01-01' |=| stbox 'STBOX XT(((2,2),(2,2)),[2000-01-01,2000-01-02])'), 6);
 SELECT round((tgeompoint 'Point(1 1)@2000-01-01' |=| stbox 'STBOX XT(((2,2),(2,2)),[2000-01-02,2000-01-03])'), 6);
 
+-- A box with no period measures the whole temporal point
+SELECT round((tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]' |=| stbox 'STBOX X((5,5),(6,6))'), 6);
+-- A box with a period measures the part of the temporal point inside it
+SELECT round((tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]' |=| stbox 'STBOX XT(((5,5),(6,6)),[2000-01-01, 2000-01-01 12:00])'), 6);
+-- No part of the temporal point is inside the period
+SELECT round((tgeompoint '[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]' |=| stbox 'STBOX XT(((5,5),(6,6)),[2000-02-01, 2000-02-02])'), 6);
+-- The two periods meet while no value of a discrete temporal point is inside
+SELECT round((tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-03}' |=| stbox 'STBOX XT(((5,5),(6,6)),[2000-01-02, 2000-01-02 12:00])'), 6);
+
 /* Errors */
 SELECT round((tgeompoint 'Point(1 1 1)@2000-01-01' |=| stbox 'STBOX XT(((2,2),(2,2)),[2000-01-01,2000-01-02])'), 6);
 SELECT round((tgeogpoint 'Point(1 1)@2000-01-01' |=| stbox 'GEODSTBOX ZT(((2,2,2),(2,2,2)),[2000-01-01,2000-01-02])'), 6);

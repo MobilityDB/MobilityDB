@@ -197,6 +197,7 @@ SELECT tgeometry '(Point(1 1)@2001-01-01, Linestring(3 1,1 1)@2001-01-03]' |=|
 -- 1
 </programlisting>
 				<para>El operador <varname>|=|</varname> se puede utilizar para realizar una búsqueda de vecino más cercano utilizando un índice GiST o SP-GIST (ver la <xref linkend="ttype_indexing" />). Esta función corresponde a la función <varname>ST_DistanceCPA</varname> proporcionada por PostGIS, aunque este última requiere que ambos argumentos sean una trayectoria.</para>
+				<para>Cuando un argumento es una caja espaciotemporal que lleva un período, la distancia se mide desde la parte del valor temporal que está dentro de ese período, y el resultado es <varname>NULL</varname> cuando ninguna parte de él lo está. Una caja que no lleva período mide el valor temporal entero.</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT ST_DistanceCPA(
   tgeompoint '[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-03,

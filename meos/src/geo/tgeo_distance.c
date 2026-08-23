@@ -2781,10 +2781,16 @@ nad_tgeo_stbox(const Temporal *temp, const STBox *box)
   /* Project the temporal geo to the timespan of the box */
   bool hast = MEOS_FLAGS_GET_T(box->flags);
   Span p, inter;
+  Temporal *temp1 = (Temporal *) temp;
   if (hast)
   {
     temporal_set_tstzspan(temp, &p);
     if (! inter_span_span(&p, &box->period, &inter))
+      return DBL_MAX;
+    temp1 = temporal_restrict_tstzspan(temp, &inter, REST_AT);
+    /* The two spans meet while no value of the temporal geo lies inside the
+     * intersection, which a discrete or a step value can do */
+    if (! temp1)
       return DBL_MAX;
   }
 
@@ -2792,13 +2798,10 @@ nad_tgeo_stbox(const Temporal *temp, const STBox *box)
   datum_func2 func = geo_distance_fn(box->flags);
   /* Convert the stbox to a geometry */
   Datum geo = PointerGetDatum(stbox_geo(box));
-  Temporal *temp1 = hast ?
-    temporal_restrict_tstzspan(temp, &inter, REST_AT) :
-    (Temporal *) temp;
   /* Compute the result */
-  Datum traj = tpoint_type(temp->temptype) ? 
-    PointerGetDatum(tpoint_trajectory(temp, UNARY_UNION_NO)) :
-    PointerGetDatum(tgeo_traversed_area(temp, UNARY_UNION_NO));
+  Datum traj = tpoint_type(temp1->temptype) ? 
+    PointerGetDatum(tpoint_trajectory(temp1, UNARY_UNION_NO)) :
+    PointerGetDatum(tgeo_traversed_area(temp1, UNARY_UNION_NO));
   double result = DatumGetFloat8(func(traj, geo));
 
   pfree(DatumGetPointer(traj));

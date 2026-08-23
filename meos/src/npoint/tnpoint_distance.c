@@ -38,6 +38,7 @@
 #include <float.h>
 /* MEOS */
 #include <meos.h>
+#include <meos_internal.h>
 #include <meos_internal_geo.h>
 #include <meos_npoint.h>
 #include "npoint/tnpoint.h"
@@ -251,10 +252,28 @@ nad_tnpoint_stbox(const Temporal *temp, const STBox *box)
       ! ensure_has_X(T_STBOX, box->flags))
     return DBL_MAX;
 
+  /* Project the temporal value to the timespan of the box */
+  bool hast = MEOS_FLAGS_GET_T(box->flags);
+  Span p, inter;
+  Temporal *temp1 = (Temporal *) temp;
+  if (hast)
+  {
+    temporal_set_tstzspan(temp, &p);
+    if (! inter_span_span(&p, &box->period, &inter))
+      return DBL_MAX;
+    temp1 = temporal_restrict_tstzspan(temp, &inter, REST_AT);
+    /* The two spans meet while no value lies inside the intersection, which a
+     * discrete or a step value can do */
+    if (! temp1)
+      return DBL_MAX;
+  }
+
   GSERIALIZED *gs = stbox_geo(box);
-  GSERIALIZED *traj = tnpoint_trajectory(temp);
+  GSERIALIZED *traj = tnpoint_trajectory(temp1);
   double result = geom_distance2d(traj, gs);
   pfree(traj); pfree(gs);
+  if (hast)
+    pfree(temp1);
   return result;
 }
 

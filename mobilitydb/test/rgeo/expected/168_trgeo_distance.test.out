@@ -102,6 +102,22 @@ SELECT round(nearestApproachDistance(
  20.615528
 (1 row)
 
+SELECT round(nearestApproachDistance(
+  trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  stbox 'STBOX XT(((20,20),(21,21)),[2001-01-01, 2001-01-01 12:00])')::numeric, 6);
+   round   
+-----------
+ 23.021729
+(1 row)
+
+SELECT round(nearestApproachDistance(
+  trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  stbox 'STBOX XT(((20,20),(21,21)),[2001-02-01, 2001-02-02])')::numeric, 6);
+ round 
+-------
+      
+(1 row)
+
 SELECT round(ST_Length(shortestLine(
   trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
   geometry 'Polygon((5 3,6 3,6 4,5 4,5 3))'))::numeric, 6);

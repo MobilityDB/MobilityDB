@@ -1708,10 +1708,28 @@ nad_tcbuffer_stbox(const Temporal *temp, const STBox *box)
   if (! ensure_valid_tcbuffer_stbox(temp, box))
     return DBL_MAX;
 
-  GSERIALIZED *trav = tcbuffer_traversed_area(temp, false);
+  /* Project the temporal value to the timespan of the box */
+  bool hast = MEOS_FLAGS_GET_T(box->flags);
+  Span p, inter;
+  Temporal *temp1 = (Temporal *) temp;
+  if (hast)
+  {
+    temporal_set_tstzspan(temp, &p);
+    if (! inter_span_span(&p, &box->period, &inter))
+      return DBL_MAX;
+    temp1 = temporal_restrict_tstzspan(temp, &inter, REST_AT);
+    /* The two spans meet while no value lies inside the intersection, which a
+     * discrete or a step value can do */
+    if (! temp1)
+      return DBL_MAX;
+  }
+
+  GSERIALIZED *trav = tcbuffer_traversed_area(temp1, false);
   GSERIALIZED *geo = stbox_geo(box);
   double result = geom_distance2d(trav, geo);
   pfree(trav); pfree(geo);
+  if (hast)
+    pfree(temp1);
   return result;
 }
 

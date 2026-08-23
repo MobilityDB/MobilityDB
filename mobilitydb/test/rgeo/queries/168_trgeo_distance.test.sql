@@ -95,6 +95,15 @@ SELECT round(nearestApproachDistance(
   trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
   stbox 'STBOX X((20,20),(21,21))')::numeric, 6);
 
+-- A box with a period measures the part of the rigid geometry inside it
+SELECT round(nearestApproachDistance(
+  trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  stbox 'STBOX XT(((20,20),(21,21)),[2001-01-01, 2001-01-01 12:00])')::numeric, 6);
+-- No part of the rigid geometry is inside the period
+SELECT round(nearestApproachDistance(
+  trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
+  stbox 'STBOX XT(((20,20),(21,21)),[2001-02-01, 2001-02-02])')::numeric, 6);
+
 -- The shortest line at the nearest approach has length equal to that distance
 SELECT round(ST_Length(shortestLine(
   trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
