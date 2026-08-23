@@ -78,6 +78,7 @@ emit_ring_edges(const POINTARRAY *pa, MeosArray *edges, EdgeType etype)
     e.dx = e.x2 - e.x1; e.dy = e.y2 - e.y1;
     e.length = e.dx * e.dx + e.dy * e.dy;
     e.etype = etype;
+    edge_set_tolerance(&e);
     meos_array_add(edges, &e);
   }
   return;
@@ -101,6 +102,7 @@ extract_point(const LWPOINT *pt, MeosArray *edges)
   e.y1 = e.y2 = e.ymin = e.ymax = p.y;
   e.dx = e.dy = e.length = 0;
   e.etype = EDGE_POINT;
+  edge_set_tolerance(&e);
   meos_array_add(edges, &e);
   return;
 }
@@ -222,6 +224,7 @@ emit_arc_edge(const POINT4D *pa, const POINT4D *pb, const POINT4D *pc,
       e.dx = e.dy = e.length = 0;
       e.etype = arc_etype;
       arc_set_bbox(&e);
+      edge_set_tolerance(&e);
       meos_array_add(edges, &e);
     }
     return;
@@ -241,6 +244,7 @@ emit_arc_edge(const POINT4D *pa, const POINT4D *pb, const POINT4D *pc,
       e.dx = e.x2 - e.x1; e.dy = e.y2 - e.y1;
       e.length = e.dx * e.dx + e.dy * e.dy;
       e.etype = line_etype;
+      edge_set_tolerance(&e);
       meos_array_add(edges, &e);
     }
     return;
@@ -263,6 +267,7 @@ emit_arc_edge(const POINT4D *pa, const POINT4D *pb, const POINT4D *pc,
   e.dx = e.dy = e.length = 0;
   e.etype = arc_etype;
   arc_set_bbox(&e);
+  edge_set_tolerance(&e);
   meos_array_add(edges, &e);
   return;
 }
@@ -3147,7 +3152,8 @@ relate_point_on_boundary(double x, double y, Edge **edges, int nedges)
     switch (e->etype)
     {
       case EDGE_POLYSEG:
-        if (point_on_segment(x, y, e->x1, e->y1, e->x2, e->y2))
+        if (point_on_segment_within(x, y, e->x1, e->y1, e->x2, e->y2,
+              e->tol))
           return true;
         break;
       case EDGE_POLYARC:
@@ -5325,10 +5331,15 @@ relate_area_edge_interior_point(const Edge *e, Edge **edges, int nedges,
     double nx = -ty;
     double ny =  tx;
 
-    /* The tolerance is deliberately small relative to the edge
-     * length. This is only used to obtain an interior witness
-     * point; all actual intersections remain exact. */
+    /* The witness steps off the edge far enough to leave the band within
+     * which #point_on_segment reads a point as lying on that edge, since
+     * #relate_point_in_area answers boundary before it answers interior and a
+     * witness inside the band would be taken for a boundary point and the
+     * interior would be reported empty. Ten times the band leaves the margin,
+     * and the step stays small relative to the edge so the witness cannot
+     * cross to the far side of the geometry. */
     double eps = fmax(MEOS_GEOM_TOLERANCE * 10.0, len * 1e-9);
+    eps = fmax(eps, 10.0 * coordinate_tolerance(px, py));
     double qx = px + eps * nx;
     double qy = py + eps * ny;
     if (relate_point_in_area(qx, qy, edges, nedges) == 0)

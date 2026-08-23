@@ -176,6 +176,41 @@ int main(void)
   free(coll); free(away); free(through); free(tin);
   meos_errno_reset();
 
+  /* A geometry covers itself, whatever its coordinates are and however short
+   * its edges. Both records below answered otherwise: the first is a five
+   * metre feature in a projected CRS, where the engine split its own edges at
+   * points that are not there and answered 2F2F11212; the second is the
+   * boundary of an H3 cell, whose edges are a few hundredths of a degree, where
+   * the interior went missing and it answered FFFF1FFF2 -- a matrix under which
+   * a cell touches itself and contains nothing. Neither is exotic: the two
+   * cover the ranges every projected dataset and every cell index live in */
+  const char *self_wkt[] = {
+    "POLYGON((509005 6617000,509002.5 6617004.3301270185,"
+      "508997.5 6617004.3301270185,508995 6617000,"
+      "508997.5 6616995.6698729815,509002.5 6616995.6698729815,"
+      "509005 6617000))",
+    "POLYGON((110.56363551525037 -23.502418506349507,"
+      "110.56870217314606 -23.532108271018778,"
+      "110.5941357885684 -23.54380157929298,"
+      "110.61448404730675 -23.525811891613976,"
+      "110.60940975095393 -23.49613923666697,"
+      "110.58399482710622 -23.48443916400023,"
+      "110.56363551525037 -23.502418506349507))"
+  };
+  char covers[10] = "T*****FF*";
+  for (int i = 0; i < 2; i++)
+  {
+    GSERIALIZED *self = geom_in(self_wkt[i], -1);
+    assert(self != NULL);
+    meos_errno_reset();
+    bool self_covers = geom_relate_pattern(self, self, covers);
+    printf("geom_relate_pattern(self %d, self %d, covers): %d, errno %d\n",
+      i, i, self_covers, meos_errno());
+    assert(self_covers == true);
+    assert(meos_errno() == 0);
+    free(self);
+  }
+
   /* Equality is read from the native DE-9IM matrix, so two circular strings
    * describing the SAME arc through DIFFERENT defining points are equal. The
    * three points lie on the circle of centre (0 0) and radius 5, which they

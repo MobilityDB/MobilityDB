@@ -43,6 +43,7 @@
 #define __GEO_FUNCS_H__
 
 /* C */
+#include <float.h>
 #include <math.h>
 /* PostgreSQL */
 #include <postgres.h>
@@ -94,6 +95,8 @@ typedef struct
   double x1, y1, x2, y2;         /**< Coordinates of the start/end 2D points */
   double xmin, ymin, xmax, ymax; /**< Precomputed bounding box of the edge */
   double dx, dy, length;         /**< Precomputed dx, dy, and length */
+  double tol;                    /**< Precomputed #coordinate_tolerance of the
+                                      edge, which its own coordinates fix */
   double cx, cy, radius;         /**< Arc center and radius (an arc only) */
   double theta0, theta1;         /**< Arc start/end angles (an arc only) */
   bool ccw;                      /**< Arc traversed counterclockwise */
@@ -523,40 +526,98 @@ arcarc_intersect(const Edge *e1, const Edge *e2)
  *****************************************************************************/
 
 /**
- * @brief Return true if a point is located on a segment
+ * @brief Return the distance within which two coordinates of this size are the
+ * same point
+ * @details The points a native implementation classifies are CONSTRUCTED: the
+ * midpoint of an edge, the point at a parameter along it, the intersection of
+ * two edges. None of them lands exactly where it should, and the distance it
+ * misses by is not a property of the geometry but of the arithmetic -- a few
+ * units in the last place of the largest coordinate involved. A tolerance
+ * meant to absorb that error is therefore that rounding unit, plus the
+ * absolute distance below which the implementation calls two points equal.
+ */
+static inline double
+coordinate_tolerance(double c1, double c2)
+{
+  return MEOS_GEOM_TOLERANCE + 4.0 * DBL_EPSILON * fmax(fabs(c1), fabs(c2));
+}
+
+/**
+ * @brief Set the tolerance the coordinates of an edge call for
+ * @note Read from the bounding box, so an arc is covered by the extent it
+ * occupies rather than by its two endpoints. Call once the box is set.
+ */
+static inline void
+edge_set_tolerance(Edge *e)
+{
+  e->tol = fmax(coordinate_tolerance(e->xmin, e->xmax),
+    coordinate_tolerance(e->ymin, e->ymax));
+}
+
+/**
+ * @brief Return true if a point lies within a given distance of a segment
+ * @details The tolerance is a DISTANCE. The cross and dot products below are
+ * areas, so each is compared against that distance multiplied by the size of
+ * the segment, which is what makes the test read as "the point lies within the
+ * tolerance of the segment" at every scale.
+ * @note Comparing an area against a distance is what this replaces, and it
+ * fails in both directions: dividing through, the effective perpendicular
+ * band was the tolerance divided by the length of the segment, so it closed
+ * below the representable distance where coordinates are large and opened to
+ * swallow the whole figure where the segment is short. A polygon then failed
+ * to cover itself -- 360 of the 931 h3 cells of the tbl_th3index fixture, and
+ * every one of them at a resolution finer than about 0.03 degrees.
+ * @param[in] px,py Point
+ * @param[in] x1,y1,x2,y2 Endpoints of the segment
+ * @param[in] tol Distance within which the point counts as lying on it, which
+ * an #Edge carries precomputed in its @p tol member
  */
 static inline bool
-point_on_segment(double px, double py, double x1, double y1, double x2,
-  double y2)
+point_on_segment_within(double px, double py, double x1, double y1, double x2,
+  double y2, double tol)
 {
+  /* Fast bounding-box rejection, which is where all but a few calls end */
+  if ((px < fmin(x1, x2) - tol) || (px > fmax(x1, x2) + tol) ||
+      (py < fmin(y1, y2) - tol) || (py > fmax(y1, y2) + tol))
+    return false;
+
   /* Vectors AP and AB */
   double apx = px - x1;
   double apy = py - y1;
   double abx = x2 - x1;
   double aby = y2 - y1;
 
-  /* Fast bounding-box rejection */
-  if ((px < fmin(x1, x2) - MEOS_GEOM_TOLERANCE) ||
-      (px > fmax(x1, x2) + MEOS_GEOM_TOLERANCE) ||
-      (py < fmin(y1, y2) - MEOS_GEOM_TOLERANCE) ||
-      (py > fmax(y1, y2) + MEOS_GEOM_TOLERANCE))
-    return false;
+  /* The tolerance as the area it bounds over a segment of this size */
+  double areatol = tol * (fabs(abx) + fabs(aby));
 
   /* Collinearity check via cross product */
   double cross = apx * aby - apy * abx;
-  if (fabs(cross) > MEOS_GEOM_TOLERANCE)
+  if (fabs(cross) > areatol)
     return false;
 
   /* Projection check via dot product */
   double dot = apx * abx + apy * aby;
-  if (dot < -MEOS_GEOM_TOLERANCE)
+  if (dot < -areatol)
     return false;
 
   /* Check if P lies between A and B */
   double ab2 = abx * abx + aby * aby;
-  if (dot > ab2 + MEOS_GEOM_TOLERANCE)
+  if (dot > ab2 + areatol)
     return false;
   return true;
+}
+
+/**
+ * @brief Return true if a point is located on a segment
+ * @details For a caller holding an #Edge, #point_on_segment_within takes the
+ * tolerance the edge already carries instead of deriving it again.
+ */
+static inline bool
+point_on_segment(double px, double py, double x1, double y1, double x2,
+  double y2)
+{
+  return point_on_segment_within(px, py, x1, y1, x2, y2,
+    fmax(coordinate_tolerance(x1, x2), coordinate_tolerance(y1, y2)));
 }
 
 #endif /* __GEO_FUNCS_H__ */
