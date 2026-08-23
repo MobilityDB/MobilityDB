@@ -497,9 +497,19 @@ SELECT pixtype(raquet('\x01020304'::bytea, 1, 1, 5193776270265024512::bigint,
 SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, '8BUI')
        = raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'UINT8');
 
--- A PostGIS pixel type of less than a byte a pixel says what a tile cannot do
--- with it, rather than reporting the name as unknown.
-SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, '4BUI');
+-- A PostGIS pixel type bounded to less than a byte names a uint8 band, since
+-- PostGIS stores one a byte a pixel.
+SELECT pixtype(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, '1BB')),
+       pixtype(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, '2BUI')),
+       pixtype(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, '4BUI'));
+
+-- The bound is the only thing such a name adds, so the tile is the uint8 one.
+SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, '4BUI')
+       = raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'uint8');
+
+-- A band type ST_BandPixelType reports for such a type carries in as it stands.
+SELECT pixtype(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint,
+  ST_BandPixelType(ST_AddBand(ST_MakeEmptyRaster(1, 1, 0, 0, 1), '4BUI'), 1)));
 
 -- An unknown name is still rejected, whatever its case.
 SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512::bigint, 'uint12');
