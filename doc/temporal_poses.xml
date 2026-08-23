@@ -1054,7 +1054,7 @@ SELECT tpose '[Pose(Point(1 1), 0.3)@2001-01-03,
 			<listitem xml:id="tpose_nearestApproachDistance">
 				<indexterm significance="normal"><primary><varname>|=|</varname></primary></indexterm>
 				<para>Return the smallest distance ever</para>
-				<para><varname>{geo,pose,tpose} |=| {geo,pose,tpose} → float</varname></para>
+				<para><varname>{geo,pose,tpose,stbox} |=| {geo,pose,tpose,stbox} → float</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tpose '[Pose(Point(2 2), 0.3)@2001-01-01, Pose(Point(2 2), 0.7)@2001-01-02]' |=|
   geometry 'Linestring(50 50,55 55)';
