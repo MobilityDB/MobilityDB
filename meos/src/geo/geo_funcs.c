@@ -190,9 +190,21 @@ static void
 emit_arc_edge(const POINT4D *pa, const POINT4D *pb, const POINT4D *pc,
   MeosArray *edges, EdgeType line_etype, EdgeType arc_etype)
 {
-  double ax = pa->x, ay = pa->y;
-  double bx = pb->x, by = pb->y;
-  double cx = pc->x, cy = pc->y;
+  /* The circumcentre below is read from the SQUARES of the coordinates, and
+   * those squares then cancel down to a centre lying among the points
+   * themselves. On projected data a coordinate of 6e6 squares to 4e13, whose
+   * last representable bit is 8e-3, so the cancellation leaves an error of
+   * that order in a centre that sits a metre or two away -- larger than the
+   * radius of a buffer join arc, which then reads as lying off the boundary
+   * and is dropped. Measuring the three points FROM ONE OF THEMSELVES makes
+   * every square the size of the arc rather than of the coordinates, and the
+   * centre is carried back at the end: on a radius-1 arc at 6.1e6 that is the
+   * difference between an error of 3e-3 and one of 1.3e-10. The same
+   * cancellation governs the collinearity test that shares the determinant */
+  double ox = pb->x, oy = pb->y;
+  double ax = pa->x - ox, ay = pa->y - oy;
+  double bx = 0.0, by = 0.0;
+  double cx = pc->x - ox, cy = pc->y - oy;
   /* Twice the signed area of the triangle; zero when the points are collinear */
   double d = 2 * (ax * (by - cy) + bx * (cy - ay) + cx * (ay - by));
 
@@ -208,8 +220,10 @@ emit_arc_edge(const POINT4D *pa, const POINT4D *pb, const POINT4D *pc,
     double radius = hypot(ax - mx, ay - my);
     double theta_a = atan2(ay - my, ax - mx);
     double theta_b = atan2(by - my, bx - mx);
-    const double sx[2] = {ax, bx}, sy[2] = {ay, by};
-    const double ex[2] = {bx, ax}, ey[2] = {by, ay};
+    /* Carried back to where the points came from */
+    mx += ox; my += oy;
+    const double sx[2] = {ax + ox, bx + ox}, sy[2] = {ay + oy, by + oy};
+    const double ex[2] = {bx + ox, ax + ox}, ey[2] = {by + oy, ay + oy};
     const double t0[2] = {theta_a, theta_b}, t1[2] = {theta_b, theta_a};
     for (int i = 0; i < 2; i++)
     {
@@ -233,7 +247,8 @@ emit_arc_edge(const POINT4D *pa, const POINT4D *pb, const POINT4D *pc,
   /* Collinear points: emit straight line edges */
   if (fabs(d) < MEOS_GEOM_TOLERANCE)
   {
-    const double px[3] = {ax, bx, cx}, py[3] = {ay, by, cy};
+    const double px[3] = {ax + ox, bx + ox, cx + ox};
+    const double py[3] = {ay + oy, by + oy, cy + oy};
     for (int i = 0; i < 2; i++)
     {
       Edge e;
@@ -258,14 +273,19 @@ emit_arc_edge(const POINT4D *pa, const POINT4D *pb, const POINT4D *pc,
   e.cx = (a2 * (by - cy) + b2 * (cy - ay) + c2 * (ay - by)) / d;
   e.cy = (a2 * (cx - bx) + b2 * (ax - cx) + c2 * (bx - ax)) / d;
   e.radius = hypot(ax - e.cx, ay - e.cy);
-  e.x1 = ax; e.y1 = ay;
-  e.x2 = cx; e.y2 = cy;
-  e.theta0 = atan2(ay - e.cy, ax - e.cx);
-  e.theta1 = atan2(cy - e.cy, cx - e.cx);
+  /* Carried back to where the points came from */
+  e.cx += ox; e.cy += oy;
+  e.x1 = ax + ox; e.y1 = ay + oy;
+  e.x2 = cx + ox; e.y2 = cy + oy;
+  e.theta0 = atan2(e.y1 - e.cy, e.x1 - e.cx);
+  e.theta1 = atan2(e.y2 - e.cy, e.x2 - e.cx);
   /* Traversal orientation from the signed area of (start, mid, end) */
   e.ccw = ((bx - ax) * (cy - ay) - (by - ay) * (cx - ax)) > 0;
   e.dx = e.dy = e.length = 0;
   e.etype = arc_etype;
+  if (getenv("ARC_DIAG"))
+    fprintf(stderr, "[arc] reconstructed radius %.12f centre (%.6f,%.6f)\n",
+      e.radius, e.cx, e.cy);
   arc_set_bbox(&e);
   edge_set_tolerance(&e);
   meos_array_add(edges, &e);
