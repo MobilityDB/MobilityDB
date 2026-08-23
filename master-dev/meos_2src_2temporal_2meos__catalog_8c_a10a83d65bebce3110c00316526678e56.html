@@ -182,7 +182,8 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return true if the type is a geo set type. </p>
+<p>Return true if the type is a spatial set type. </p>
+<p >A set is spatial when its elements carry an SRID, which is what the operations reading this predicate need: the same-SRID test between two sets and the writing of an SRID into the extended binary form. Carrying a bounding box is a separate property that <code>type_bboxtype</code> answers, and a point cloud set has the first without the second. </p>
 
 </div>
 </div>
