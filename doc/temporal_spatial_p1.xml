@@ -48,12 +48,14 @@
 				<indexterm significance="normal"><primary><varname>OrientedEnvelope</varname></primary></indexterm>
 				<para>Return the rectangle of minimum area enclosing a geometry</para>
 				<para><varname>OrientedEnvelope(geometry) → geometry</varname></para>
-				<para>The rectangle is at the angle that makes it smallest, which is not in general the angle of the axes. It is answered as a line when the geometry is contained in one and as a point when the geometry is one. A geometry carrying a circular arc is answered by GEOS, which reads the arc as the chain of segments approximating it.</para>
+				<para>The rectangle is at the angle that makes it smallest, which is not in general the angle of the axes. It is answered as a line when the geometry is contained in one and as a point when the geometry is one. A geometry carrying a circular arc is answered on the arc itself, the rectangle being placed against the circle the arc lies on rather than against the chain of segments approximating it.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT ST_AsText(round(OrientedEnvelope(geometry 'Polygon((0 0,3 4,-1 7,-4 3,0 0))'), 6));
 -- POLYGON((0 0,3 4,-1 7,-4 3,0 0))
 SELECT ST_AsText(round(OrientedEnvelope(geometry 'Linestring(0 0,10 0)'), 6));
 -- LINESTRING(0 0,10 0)
+SELECT ST_AsText(round(OrientedEnvelope(geometry 'Circularstring(0 0,0.5 0.1,1 0)'), 6));
+-- POLYGON((1 0.1,0 0.1,0 0,1 0,1 0.1))
 </programlisting>
 			</listitem>
 
@@ -61,12 +63,14 @@ SELECT ST_AsText(round(OrientedEnvelope(geometry 'Linestring(0 0,10 0)'), 6));
 				<indexterm significance="normal"><primary><varname>ConvexHull</varname></primary></indexterm>
 				<para>Return the smallest convex geometry enclosing a geometry</para>
 				<para><varname>ConvexHull(geometry) → geometry</varname></para>
-				<para>The result is a polygon whose every corner is a point of the geometry, a line when the geometry is contained in one, and a point when the geometry is one. A geometry carrying a circular arc is answered by GEOS, which reads the arc as the chain of segments approximating it.</para>
+				<para>The result is a polygon whose every corner is a point of the geometry, a line when the geometry is contained in one, and a point when the geometry is one. A geometry carrying a circular arc is answered on the arc itself, so the hull is bounded by the arc and is returned as a curved geometry rather than as a polygon approximating it.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT ST_AsText(round(ConvexHull(geometry 'Multipoint(0 0,10 0,10 10,0 10,5 5)'), 6));
 -- POLYGON((0 0,0 10,10 10,10 0,0 0))
 SELECT ST_AsText(round(ConvexHull(geometry 'Polygon((0 0,10 0,10 10,5 5,0 10,0 0))'), 6));
 -- POLYGON((0 0,0 10,10 10,10 0,0 0))
+SELECT ST_AsText(round(ConvexHull(geometry 'Circularstring(5 0,0 5,-5 0)'), 6));
+-- CURVEPOLYGON(COMPOUNDCURVE((5 0,-5 0),CIRCULARSTRING(-5 0,0 5,5 0)))
 </programlisting>
 			</listitem>
 
@@ -74,7 +78,7 @@ SELECT ST_AsText(round(ConvexHull(geometry 'Polygon((0 0,10 0,10 10,5 5,0 10,0 0
 				<indexterm significance="normal"><primary><varname>isSimple</varname></primary></indexterm>
 				<para>Return true if a geometry has no point at which it crosses or touches itself</para>
 				<para><varname>isSimple(geometry) → boolean</varname></para>
-				<para>A point is always simple, a multipoint is simple when it repeats no point, a line is simple when it meets itself only where two of its segments follow one another and, when it closes, at the point where it closes, and an areal geometry is simple when each of its rings is. Two lines of a multiline may additionally meet at a point that ends both. A geometry carrying a circular arc is answered by GEOS, since such a geometry meets itself along an arc rather than at a point.</para>
+				<para>A point is always simple, a multipoint is simple when it repeats no point, a line is simple when it meets itself only where two of its segments follow one another and, when it closes, at the point where it closes, and an areal geometry is simple when each of its rings is. Two lines of a multiline may additionally meet at a point that ends both. A geometry carrying a circular arc meets itself along an arc rather than at a point, which the segment intersection this rests on does not read, so such a geometry is answered on the chain of segments approximating its arcs.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT isSimple(geometry 'Linestring(0 0,10 10,10 0,0 10)');
 -- false
