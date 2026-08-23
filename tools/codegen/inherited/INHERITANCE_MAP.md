@@ -232,7 +232,7 @@ SQL (§6, `320_tnpoint_spatialrels`).
 | Modifications | `temporal_` | ✓ **GEN** | `modifications.sql.tmpl` + `modification_families`, **13 entries** all `reference: true` (same family set) — appendInstant, insert, update, merge |
 | Restrictions | `temporal_` | ✓ **GEN** | `restrictions.sql.tmpl` + `restriction_families`, **13 entries** all `reference: true` (same family set) — atValue(s)/minusValue(s), atTime/minusTime, atSpan(set), atTbox |
 | **Bounding Box Operators** | `temporal_`/`tnumber_` | ✓ **GEN** | `topops.sql.tmpl` (`&&`,`@>`,`<@`,`~=`,`-\|-`) + `posops.sql.tmpl` (`<<`,`>>`,`&<`,`&>`,`<<#`,`#>>`…), both via the `subtypes:` track (§3), + `boxops.c.tmpl` box types `tstzspan`,`tbox` |
-| Comparisons → Traditional | (btree) | ✓ **GEN** | `comparisons.sql.tmpl` + `comparison_families` (11 temporal-type entries: temporal, geo, tpoint, cbuffer, h3, json, npoint, pose, posechain, quadbin, rgeo) — `=`,`<>`,`<`,`>`,`<=`,`>=` + `cmp` + the `<type>_btree_ops` opclass; `--gaps`: `comparison_families` 17/19, missing tpcpoint, tpcpatch. The hash tail of the same files (`hash`/`hashExtended` + the `<type>_hash_ops` opclass) is `hash_families` — the same 11 entries plus `pointcloud`/`pointcloud_patch`, the latter two each rendering tpcpoint's/tpcpatch's whole comparison+hash section as one entry (pointcloud has no `comparison_families` row of its own); `--gaps`: `hash_families` 19/19, full coverage |
+| Comparisons → Traditional | (btree) | ✓ **GEN** | `comparisons.sql.tmpl` + `comparison_families` (13 temporal-type entries: temporal, geo, tpoint, cbuffer, h3, json, npoint, pointcloud, pointcloud_patch, pose, posechain, quadbin, rgeo) — `=`,`<>`,`<`,`>`,`<=`,`>=` + `cmp` + the `<type>_btree_ops` opclass; `--gaps`: `comparison_families` 19/19, full coverage. The hash tail of the same files (`hash`/`hashExtended` + the `<type>_hash_ops` opclass) is `hash_families` — the same 13 entries. ⛔ Each hash entry's LEADING `lit` is the bare `/****/` divider standing between the B-tree opclass and the hash block, because a region starts at the divider preceding its `begin` anchor: without that divider the hash region reaches back to the comparison banner and the entry has to carry the comparison section too; `--gaps`: `hash_families` 19/19, full coverage |
 | Comparisons → **Ever/Always** | `temporal_` | ✓ **GEN** | `compops.sql.tmpl` + one shared `render_compops_body` engine, fed by two manifest tracks: `compops_families` (multi-pair families — temporal's 5 base types on one generic base/temporal C symbol per op, tgeo/tpoint's geometry+geography pair on one generic geo/tgeo C symbol per op) and the `subtypes:` `compops` behaviour (every one-pair family — cbuffer, jsonb, quadbin, h3index, npoint, pose, trgeometry, pcpoint, pcpatch). `eEq`/`aEq`/`eNe`/`aNe` + `?=`/`%=`/`?<>`/`%<>` (all 3 arg directions); a pair marked `orderable` (temporal's int/bigint/float/text) additionally gets `eLt…aGe` + `?<…%>=`. A `compops_families` `pairs:` entry names only its `temp` type — `base` is never hand-paired alongside it; `render_compops` derives it from `catalog_temptype_basetype()`, read from meos_catalog.c's own `MEOS_RELTYPE_CATALOG[...].temptype_basetype` field, the same table `temptype_basetype()` reads at runtime for these functions' MEOS entry point. This makes a mismatched pair (`temp: tfloat` naming `base: integer`, which would render `tGt(tfloat, integer)` while the C entry point still derives float8 from the temp type alone) unrepresentable — the generator raises if a pair still carries a `base:` key |
 | Comparisons → Temporal | `temporal_` | ✓ **GEN** | same engine as Ever/Always above — renders `tEq`/`tNe`/`tLt`/`tGt`/`tLe`/`tGe` → `#=`/`#<>`/`#<`/`#>`/`#<=`/`#>=` in the same pass, not a separate template |
 | Miscellaneous | `temporal_` | ✗ HAND | |
@@ -598,10 +598,15 @@ its last edit:
   (`tgeompoint`/`tgeogpoint` over `Tpose_to_tpoint`) where `tposechain` answers
   the COMPOSITION of its links (`tpose` over `Tposechain_to_tpose`). A per-family
   conversion is correctly hand-written.
-- `comparison_families` (Traditional comparisons), **17/19**: `tpcpoint`,
-  `tpcpatch`. `hash_families` has no such gap (19/19) — its `pointcloud` /
-  `pointcloud_patch` entries render tpcpoint's and tpcpatch's whole
-  comparison+hash section directly.
+- `comparison_families` and `hash_families` are both **19/19**. ⭐ What the point
+  cloud pair needed was not a template but the LAYOUT its siblings have: the bare
+  `/****/` divider between the B-tree opclass and the hash block. A region starts
+  at the divider preceding its `begin` anchor, so with the two sections sharing
+  one banner the hash entry had to reproduce the comparison section as a literal —
+  and that literal then preserved the section's divergences (`Comparison /
+  B-tree / hash` for the canonical banner, `boolean`/`integer` for `bool`/`int4`,
+  eq-first ordering, a one-line operator head, wider opclass spacing). Adding the
+  divider gives each behaviour one owner and no transcription.
 - `aggregate_families`, **18/19**: `tposechain`. `tempspatialrel_families`,
   **10/13**: `tposechain`, `tpcpoint`, `tpcpatch`.
   ⛔ These two project onto a file the family does NOT have — `tpose` carries

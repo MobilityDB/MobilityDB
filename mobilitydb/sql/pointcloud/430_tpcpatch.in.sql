@@ -649,17 +649,9 @@ CREATE FUNCTION timeSplit(tpcpatch, bin_width interval,
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
- * Comparison / B-tree / hash
+ * Comparison functions and B-tree indexing
  ******************************************************************************/
 
-CREATE FUNCTION eq(tpcpatch, tpcpatch)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_eq'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION ne(tpcpatch, tpcpatch)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Temporal_ne'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION lt(tpcpatch, tpcpatch)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_lt'
@@ -667,6 +659,14 @@ CREATE FUNCTION lt(tpcpatch, tpcpatch)
 CREATE FUNCTION le(tpcpatch, tpcpatch)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_le'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION eq(tpcpatch, tpcpatch)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Temporal_eq'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION ne(tpcpatch, tpcpatch)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Temporal_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ge(tpcpatch, tpcpatch)
   RETURNS boolean
@@ -681,45 +681,53 @@ CREATE FUNCTION cmp(tpcpatch, tpcpatch)
   AS 'MODULE_PATHNAME', 'Temporal_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE OPERATOR = (
-  LEFTARG = tpcpatch, RIGHTARG = tpcpatch, PROCEDURE = eq,
-  COMMUTATOR = =, NEGATOR = <>,
-  RESTRICT = eqsel, JOIN = eqjoinsel
-);
-CREATE OPERATOR <> (
-  LEFTARG = tpcpatch, RIGHTARG = tpcpatch, PROCEDURE = ne,
-  COMMUTATOR = <>, NEGATOR = =,
-  RESTRICT = neqsel, JOIN = neqjoinsel
-);
 CREATE OPERATOR < (
-  LEFTARG = tpcpatch, RIGHTARG = tpcpatch, PROCEDURE = lt,
+  LEFTARG = tpcpatch, RIGHTARG = tpcpatch,
+  PROCEDURE = lt,
   COMMUTATOR = >, NEGATOR = >=,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR <= (
-  LEFTARG = tpcpatch, RIGHTARG = tpcpatch, PROCEDURE = le,
+  LEFTARG = tpcpatch, RIGHTARG = tpcpatch,
+  PROCEDURE = le,
   COMMUTATOR = >=, NEGATOR = >,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
+CREATE OPERATOR = (
+  LEFTARG = tpcpatch, RIGHTARG = tpcpatch,
+  PROCEDURE = eq,
+  COMMUTATOR = =, NEGATOR = <>,
+  RESTRICT = eqsel, JOIN = eqjoinsel
+);
+CREATE OPERATOR <> (
+  LEFTARG = tpcpatch, RIGHTARG = tpcpatch,
+  PROCEDURE = ne,
+  COMMUTATOR = <>, NEGATOR = =,
+  RESTRICT = neqsel, JOIN = neqjoinsel
+);
 CREATE OPERATOR >= (
-  LEFTARG = tpcpatch, RIGHTARG = tpcpatch, PROCEDURE = ge,
+  LEFTARG = tpcpatch, RIGHTARG = tpcpatch,
+  PROCEDURE = ge,
   COMMUTATOR = <=, NEGATOR = <,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR > (
-  LEFTARG = tpcpatch, RIGHTARG = tpcpatch, PROCEDURE = gt,
+  LEFTARG = tpcpatch, RIGHTARG = tpcpatch,
+  PROCEDURE = gt,
   COMMUTATOR = <, NEGATOR = <=,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
 CREATE OPERATOR CLASS tpcpatch_btree_ops
   DEFAULT FOR TYPE tpcpatch USING btree AS
-    OPERATOR  1  <,
-    OPERATOR  2  <=,
-    OPERATOR  3  =,
-    OPERATOR  4  >=,
-    OPERATOR  5  >,
-    FUNCTION  1  cmp(tpcpatch, tpcpatch);
+    OPERATOR  1 <,
+    OPERATOR  2 <=,
+    OPERATOR  3 =,
+    OPERATOR  4 >=,
+    OPERATOR  5 >,
+    FUNCTION  1 cmp(tpcpatch, tpcpatch);
+
+/******************************************************************************/
 
 CREATE FUNCTION hash(tpcpatch)
   RETURNS integer
