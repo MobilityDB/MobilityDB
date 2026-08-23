@@ -4555,6 +4555,107 @@ buffer_union_components(LWGEOM **buffers, uint32_t count, int32_t srid)
   return lwcollection_as_lwgeom(result);
 }
 
+/**
+ * @brief Return the union of the areal components of a geometry
+ * @details The components are dissolved into the surfaces they cover: a pair
+ * whose interiors meet becomes one surface, and a pair that only touches stays
+ * apart, which is what a multisurface asks of its components. The answer
+ * covers the same region the geometry does, read as the fewest surfaces it
+ * takes. It is the dissolve the buffer of a geometry of several components
+ * already performs, answered for a geometry a caller brings
+ * @param[in] geom Geometry
+ * @return The union, or @p NULL when the geometry carries something that is
+ * not a surface, or when the boundary overlay does not cover the topology of
+ * one of the pairs -- a caller that has another way to answer may take it
+ */
+LWGEOM *
+meos_areal_union(const LWGEOM *geom)
+{
+  assert(geom);
+  if (lwgeom_is_empty(geom))
+    return NULL;
+
+  /* One surface is its own union */
+  uint8_t type = geom->type;
+  if (type == POLYGONTYPE || type == CURVEPOLYTYPE || type == TRIANGLETYPE)
+    return lwgeom_clone_deep(geom);
+  if (type != MULTIPOLYGONTYPE && type != MULTISURFACETYPE &&
+      type != COLLECTIONTYPE)
+    return NULL;
+
+  const LWCOLLECTION *coll = (const LWCOLLECTION *) geom;
+  if (coll->ngeoms == 0)
+    return NULL;
+  /* A point or a line has no area to dissolve, and a geometry carrying one is
+   * not what this answers */
+  for (uint32_t i = 0; i < coll->ngeoms; i++)
+  {
+    uint8_t comp = coll->geoms[i]->type;
+    if (comp != POLYGONTYPE && comp != CURVEPOLYTYPE && comp != TRIANGLETYPE)
+      return NULL;
+  }
+  if (coll->ngeoms == 1)
+    return lwgeom_clone_deep(coll->geoms[0]);
+
+  /* #buffer_union_components() owns the geometries it is given */
+  LWGEOM **surfaces = palloc(sizeof(LWGEOM *) * coll->ngeoms);
+  for (uint32_t i = 0; i < coll->ngeoms; i++)
+    surfaces[i] = lwgeom_clone_deep(coll->geoms[i]);
+  LWGEOM *result = buffer_union_components(surfaces, coll->ngeoms,
+    lwgeom_get_srid(geom));
+  pfree(surfaces);
+  if (! result)
+    return NULL;
+
+  /* The collection carries the type its members do: a multisurface is what a
+   * curved surface asks for, while a set of polygons is a multipolygon.
+   * ⛔ The test is the TYPE, not #lwgeom_is_collection(), which answers true
+   * for a CURVEPOLYGON and a COMPOUNDCURVE as well -- their rings and pieces
+   * are sub-geometries -- so reading THEIR members as surfaces turns a curve
+   * polygon into a multisurface holding its own boundary ring */
+  if (result->type == MULTIPOLYGONTYPE || result->type == MULTISURFACETYPE ||
+      result->type == COLLECTIONTYPE)
+  {
+    LWCOLLECTION *res_coll = (LWCOLLECTION *) result;
+    uint8_t collected = MULTIPOLYGONTYPE;
+    for (uint32_t i = 0; i < res_coll->ngeoms; i++)
+    {
+      uint8_t comp = res_coll->geoms[i]->type;
+      if (comp == POLYGONTYPE)
+        continue;
+      if (comp != CURVEPOLYTYPE && comp != TRIANGLETYPE)
+      {
+        /* A member that is not a surface is not an answer this gives */
+        lwgeom_free(result);
+        return NULL;
+      }
+      collected = MULTISURFACETYPE;
+    }
+    res_coll->type = collected;
+  }
+  else if (result->type != POLYGONTYPE && result->type != CURVEPOLYTYPE &&
+    result->type != TRIANGLETYPE)
+  {
+    lwgeom_free(result);
+    return NULL;
+  }
+
+  /* The boundary is welded out of pieces, so a surface comes back as a curve
+   * polygon even where every piece of it is a segment. A caller that gave
+   * polygons is answered with polygons: the conversion reads the pieces of a
+   * ring that carries no arc into one point array and loses nothing */
+  if (! lwgeom_has_arc(result))
+  {
+    LWGEOM *straight = lwgeom_stroke(result, 0);
+    if (straight)
+    {
+      lwgeom_free(result);
+      result = straight;
+    }
+  }
+  return result;
+}
+
 /*****************************************************************************
  * Buffer - POINT
  *****************************************************************************/
