@@ -297,19 +297,22 @@ SELECT ST_AsText(geom(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(5 0)
 	<sect1 xml:id="trgeometry_traversed_area">
 		<title>Traversed Area</title>
 
-		<para>The <varname>traversedArea</varname> function returns the union of every materialised geometry over the trgeometry's time domain, the spatial footprint of the moving body.</para>
+		<para>The <varname>traversedArea</varname> function returns the region the moving body covers over the trgeometry's time domain: the placements it takes, or the union of them when the function is asked for it.</para>
 
 		<itemizedlist>
 			<listitem xml:id="trgeometry_traversedArea_func">
 				<indexterm significance="normal"><primary><varname>traversedArea</varname></primary></indexterm>
-				<para>Return the union of the materialised polygons across the trgeometry's time domain</para>
-				<para><varname>traversedArea(trgeometry [, unary_union boolean = true]) → geometry</varname></para>
+				<para>Return the area traversed by the temporal rigid geometry</para>
+				<para><varname>traversedArea(trgeometry, unary_union=false) → geometry</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT ST_AsText(traversedArea(
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]'));
--- POLYGON((0 0, 11 0, 11 1, 0 1, 0 0))
+-- MULTIPOLYGON(((0 0,1 0,1 1,0 1,0 0)),((10 0,11 0,11 1,10 1,10 0)))
+SELECT ST_AsText(traversedArea(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]', true));
+-- POLYGON((0 0,0 1,11 1,11 0,0 0))
 </programlisting>
-				<para>With <varname>unary_union = false</varname> the function returns a GeometryCollection of the per-instant materialised polygons without dissolving them, useful when the caller wants to do its own post-processing.</para>
+				<para>The argument is false unless it is given, and the function then answers the placements themselves gathered into one geometry, a multipolygon for a body that is a polygon, which is what a caller that does its own post-processing wants. With <varname>unary_union = true</varname> they are dissolved into the region they cover.</para>
 				<para><emphasis>Sampling caveat:</emphasis> the implementation samples at the input instants, so pure-translation segments are exact but the swept ribbon between two instants where a rotation happens is approximated by the convex hull of the two endpoint polygons. Up-sampling the <varname>tpose</varname> before constructing the <varname>trgeometry</varname> tightens the approximation.</para>
 			</listitem>
 		</itemizedlist>

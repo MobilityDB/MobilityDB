@@ -2467,7 +2467,7 @@
 			<title>Traversed Area</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="trgeometry_traversedArea_func"><varname>traversedArea</varname></link>: Return the union of the materialised polygons across the trgeometry's time domain</para>
+					<para><link linkend="trgeometry_traversedArea_func"><varname>traversedArea</varname></link>: Return the area traversed by the temporal rigid geometry</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
