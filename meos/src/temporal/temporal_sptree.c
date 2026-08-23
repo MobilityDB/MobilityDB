@@ -1342,17 +1342,42 @@ sptree_search_temporal_dedup(const SPTree *sptree, IndexSearchOp op,
  *****************************************************************************/
 
 /**
- * @brief Recursively free a node and its children
+ * @brief Free a node and its children
+ * @details The walk carries its own stack. The depth a node reaches is the
+ * order the entries arrived in, so a tree grown from an ordered entry set is a
+ * chain of one node per entry, and a walk that recurses once per level ends the
+ * process on a tree the library itself builds. The stack holds the children
+ * still to visit, whose pointers are read before the node holding them is
+ * released.
  */
 static void
 spnode_free(const SPTree *sptree, SPNode *node)
 {
   if (! node)
     return;
-  for (int i = 0; i < sptree->nchild; i++)
-    spnode_free(sptree, node->children[i]);
-  pfree(node->children);
-  pfree(node);
+
+  size_t cap = 64, top = 0;
+  SPNode **stack = palloc(cap * sizeof(SPNode *));
+  stack[top++] = node;
+  while (top > 0)
+  {
+    SPNode *cur = stack[--top];
+    for (int i = 0; i < sptree->nchild; i++)
+    {
+      SPNode *child = cur->children[i];
+      if (! child)
+        continue;
+      if (top == cap)
+      {
+        cap *= 2;
+        stack = repalloc(stack, cap * sizeof(SPNode *));
+      }
+      stack[top++] = child;
+    }
+    pfree(cur->children);
+    pfree(cur);
+  }
+  pfree(stack);
   return;
 }
 
@@ -1375,13 +1400,43 @@ spnode_stats(const SPTree *sptree, const SPNode *node, int level, int *entries,
 {
   if (! node)
     return;
-  (*entries)++;
-  *bytes += (int64) (sizeof(SPNode) + sptree->boxsize +
-    (size_t) sptree->nchild * sizeof(SPNode *));
-  if (level > *height)
-    *height = level;
-  for (int i = 0; i < sptree->nchild; i++)
-    spnode_stats(sptree, node->children[i], level + 1, entries, bytes, height);
+
+  /* The walk carries its own stack for the reason #spnode_free does: the
+   * height of a tree grown from an ordered entry set is the number of entries,
+   * and a walk that recurses once per level ends the process on it. */
+  typedef struct
+  {
+    const SPNode *node;
+    int level;
+  } SPNodeLevel;
+
+  size_t cap = 64, top = 0;
+  SPNodeLevel *stack = palloc(cap * sizeof(SPNodeLevel));
+  stack[top].node = node;
+  stack[top++].level = level;
+  while (top > 0)
+  {
+    SPNodeLevel cur = stack[--top];
+    (*entries)++;
+    *bytes += (int64) (sizeof(SPNode) + sptree->boxsize +
+      (size_t) sptree->nchild * sizeof(SPNode *));
+    if (cur.level > *height)
+      *height = cur.level;
+    for (int i = 0; i < sptree->nchild; i++)
+    {
+      const SPNode *child = cur.node->children[i];
+      if (! child)
+        continue;
+      if (top == cap)
+      {
+        cap *= 2;
+        stack = repalloc(stack, cap * sizeof(SPNodeLevel));
+      }
+      stack[top].node = child;
+      stack[top++].level = cur.level + 1;
+    }
+  }
+  pfree(stack);
   return;
 }
 
