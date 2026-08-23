@@ -2606,22 +2606,27 @@ nad_trgeometry_stbox(const Temporal *temp, const STBox *box)
   if (! ensure_valid_trgeo_stbox(temp, box))
     return DBL_MAX;
 
-  /* Project the temporal point to the timespan of the box */
+  /* Project the temporal value to the timespan of the box */
   bool hast = MEOS_FLAGS_GET_T(box->flags);
   Span p, inter;
+  Temporal *temp1 = (Temporal *) temp;
   if (hast)
   {
     temporal_set_tstzspan(temp, &p);
     if (! inter_span_span(&p, &box->period, &inter))
       return DBL_MAX;
+    /* The generic temporal restriction drops the reference geometry, so the
+     * rigid geometry restriction is the one that answers a trgeometry */
+    temp1 = trgeometry_restrict_tstzspan(temp, &inter, REST_AT);
+    /* The two spans meet while no value lies inside the intersection, which a
+     * discrete or a step value can do */
+    if (! temp1)
+      return DBL_MAX;
   }
   /* Convert the stbox to a geometry */
   GSERIALIZED *geo = stbox_geo(box);
-  Temporal *temp1 = hast ?
-    temporal_restrict_tstzspan(temp, &inter, REST_AT) :
-    (Temporal *) temp;
   /* Compute the result */
-  Temporal *dist = tdistance_trgeometry_geo(temp, geo);
+  Temporal *dist = tdistance_trgeometry_geo(temp1, geo);
   if (dist == NULL)
   {
     pfree(geo);
