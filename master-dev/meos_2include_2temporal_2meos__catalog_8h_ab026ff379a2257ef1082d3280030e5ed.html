@@ -179,7 +179,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return true if a type is a spatiotemporal type. </p>
-<p >This function is used for features common to all spatiotemporal types, in particular, all of them use the same bounding box @ <a class="el" href="structSTBox.html" title="Structure to represent spatiotemporal boxes.">STBox</a>. Therefore, it is used for the indexes and selectivity functions. </p>
+<p >A temporal type is spatiotemporal when its values carry an SRID, which is what the operations reading this predicate need: the same-SRID and same-dimensionality tests between two values, and the writing of an SRID into the extended binary form. The bounding box is a separate property that <code>type_bboxtype</code> answers — a temporal point cloud is spatiotemporal and bounds itself with a <code><a class="el" href="structTPCBox.html" title="Bounding box for pgpointcloud temporal types.">TPCBox</a></code> rather than an <code><a class="el" href="structSTBox.html" title="Structure to represent spatiotemporal boxes.">STBox</a></code>. </p>
 
 </div>
 </div>

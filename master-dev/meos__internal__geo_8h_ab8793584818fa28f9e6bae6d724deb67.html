@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: proj_get_context</title>
+<title>MobilityDB: meos_proj_get_context</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -103,8 +103,8 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos__internal__geo_8h_a1a90cb7bfee95c7f2ad6722bc5ad5483.html#a1a90cb7bfee95c7f2ad6722bc5ad5483">GserializedPGetDatum</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__box__set_ga425ec24d145b6fd50e0365f2d2d680ac.html#ga425ec24d145b6fd50e0365f2d2d680ac">inter_stbox_stbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos__internal__geo_8h_ae19ecee039e42f3e042bc4667fdaf7d2.html#ae19ecee039e42f3e042bc4667fdaf7d2">LWFLAG_VERSBIT2</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos__internal__geo_8h_ab8793584818fa28f9e6bae6d724deb67.html#ab8793584818fa28f9e6bae6d724deb67">meos_proj_get_context</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__base__transf_gab38a36b6bcf7b6275b79968def83859d.html#gab38a36b6bcf7b6275b79968def83859d">point_round</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos__internal__geo_8h_afb4ea3ec36162407424522d39c0c4f6c.html#afb4ea3ec36162407424522d39c0c4f6c">proj_get_context</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos__internal__geo_8h_adedf281914cd8a8614e4fd9d0658b5a3.html#adedf281914cd8a8614e4fd9d0658b5a3">spatial_set_srid</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__box__conversion_gafd335e25223cf2b9f422bb24d7c2f147.html#gafd335e25223cf2b9f422bb24d7c2f147">spatial_set_stbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos__internal__geo_8h_a772354918ac476ff8ab7fe4a1e60435a.html#a772354918ac476ff8ab7fe4a1e60435a">spatial_srid</a></td></tr>
@@ -193,14 +193,14 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="afb4ea3ec36162407424522d39c0c4f6c" name="afb4ea3ec36162407424522d39c0c4f6c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afb4ea3ec36162407424522d39c0c4f6c">&#9670;&#160;</a></span>proj_get_context()</h2>
+<a id="ab8793584818fa28f9e6bae6d724deb67" name="ab8793584818fa28f9e6bae6d724deb67"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab8793584818fa28f9e6bae6d724deb67">&#9670;&#160;</a></span>meos_proj_get_context()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">PJ_CONTEXT * proj_get_context </td>
+          <td class="memname">PJ_CONTEXT * meos_proj_get_context </td>
           <td>(</td>
           <td class="paramtype">void&#160;</td>
           <td class="paramname"></td><td>)</td>
@@ -209,7 +209,8 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Get the random generator used by temporal aggregation. </p>
+<p>Return the per-thread PROJ context. </p>
+<dl class="section note"><dt>Note</dt><dd>Named with the <code>meos_</code> prefix because PROJ owns the <code>proj_</code> one, where it publishes 26 <code>proj_get_*</code> entry points; the sibling <code>geos_get_context</code> needs no such qualification, GEOS using <code>GEOS</code> instead. </dd></dl>
 
 </div>
 </div>
