@@ -2262,11 +2262,11 @@ span_families:
   - lit: "\n/******************************************************************************\n * Transform a set to a set of values\n ******************************************************************************/\n\n"
   - {sig: "unnest({vs})", ret: "SETOF {v}", sym: Set_unnest}
   - lit: "\n/*****************************************************************************\n * Temporal text concatenation\n *****************************************************************************/\n\n"
-  - {sig: "textset_cat({v}, {vs})", ret: "{vs}", sym: Textcat_text_textset, only: [text]}
-  - {sig: "textset_cat({vs}, {v})", ret: "{vs}", sym: Textcat_textset_text, only: [text]}
+  - {sig: "setConcat({v}, {vs})", ret: "{vs}", sym: Textcat_text_textset, only: [text]}
+  - {sig: "setConcat({vs}, {v})", ret: "{vs}", sym: Textcat_textset_text, only: [text]}
   - lit: "\n"
-  - {stmt: "CREATE OPERATOR || (\n  PROCEDURE = textset_cat,\n  LEFTARG = {v}, RIGHTARG = {vs}\n);", only: [text]}
-  - {stmt: "CREATE OPERATOR || (\n  PROCEDURE = textset_cat,\n  LEFTARG = {vs}, RIGHTARG = {v}\n);", only: [text]}
+  - {stmt: "CREATE OPERATOR || (\n  PROCEDURE = setConcat,\n  LEFTARG = {v}, RIGHTARG = {vs}\n);", only: [text]}
+  - {stmt: "CREATE OPERATOR || (\n  PROCEDURE = setConcat,\n  LEFTARG = {vs}, RIGHTARG = {v}\n);", only: [text]}
   - lit: "\n"
 
 - family: geoset_transformations

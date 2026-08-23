@@ -722,21 +722,21 @@ CREATE FUNCTION unnest(tstzset)
  * Temporal text concatenation
  *****************************************************************************/
 
-CREATE FUNCTION textset_cat(text, textset)
+CREATE FUNCTION setConcat(text, textset)
   RETURNS textset
   AS 'MODULE_PATHNAME', 'Textcat_text_textset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION textset_cat(textset, text)
+CREATE FUNCTION setConcat(textset, text)
   RETURNS textset
   AS 'MODULE_PATHNAME', 'Textcat_textset_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR || (
-  PROCEDURE = textset_cat,
+  PROCEDURE = setConcat,
   LEFTARG = text, RIGHTARG = textset
 );
 CREATE OPERATOR || (
-  PROCEDURE = textset_cat,
+  PROCEDURE = setConcat,
   LEFTARG = textset, RIGHTARG = text
 );
 

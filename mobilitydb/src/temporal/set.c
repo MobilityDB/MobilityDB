@@ -692,7 +692,7 @@ PG_FUNCTION_INFO_V1(Textcat_text_textset);
 /**
  * @ingroup mobilitydb_setspan_transf
  * @brief Return a text value concatenated with a text set
- * @sqlfn textset_cat()
+ * @sqlfn setConcat()
  * @sqlop @p ||
  */
 Datum
@@ -711,7 +711,7 @@ PG_FUNCTION_INFO_V1(Textcat_textset_text);
 /**
  * @ingroup mobilitydb_setspan_transf
  * @brief Return a text set concatenated with a text value
- * @sqlfn textset_cat()
+ * @sqlfn setConcat()
  * @sqlop @p ||
  */
 Datum

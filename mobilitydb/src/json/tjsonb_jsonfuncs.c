@@ -338,7 +338,7 @@ PG_FUNCTION_INFO_V1(Concat_jsonb_tjsonb);
 /**
  * @ingroup mobilitydb_json_json
  * @brief Concat a JSONB value with a temporal JSONB
- * @sqlfn tjsonbConcat()
+ * @sqlfn tConcat()
  * @sqlop @p ||
  */
 Datum
@@ -360,7 +360,7 @@ PG_FUNCTION_INFO_V1(Concat_tjsonb_jsonb);
 /**
  * @ingroup mobilitydb_json_json
  * @brief Concat a temporal JSONB with a JSONB value
- * @sqlfn tjsonbConcat()
+ * @sqlfn tConcat()
  * @sqlop @p ||
  */
 Datum
@@ -382,7 +382,7 @@ PG_FUNCTION_INFO_V1(Concat_tjsonb_tjsonb);
 /**
  * @ingroup mobilitydb_json_json
  * @brief Concat two temporal JSONB values
- * @sqlfn tjsonbConcat()
+ * @sqlfn tConcat()
  * @sqlop @p ||
  */
 Datum

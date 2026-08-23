@@ -15,7 +15,7 @@
 
 	<para>Este capítulo es la referencia canónica, a nivel de todo el ecosistema, de esa correspondencia. Un motor que no acepte un operador dado puede consultarlo aquí y usar la forma de función en su lugar. Por ejemplo, DuckDB no acepta ningún operador que contenga <literal>#</literal> (reserva <literal>#</literal> para las referencias posicionales de columna), de modo que en MobilityDuck las comparaciones temporales (<literal>#=</literal>, …) se escriben <varname>tEq</varname>, … y las pruebas de posición temporal (<literal>&lt;&lt;#</literal>, <literal>#&gt;&gt;</literal>, <literal>&amp;&lt;#</literal>, <literal>#&amp;&gt;</literal>) se escriben <varname>before</varname>, <varname>after</varname>, <varname>overbefore</varname>, <varname>overafter</varname>, mientras que los operadores que sí acepta pueden usarse directamente.</para>
 
-	<para>Las funciones de relación espacial (<varname>eIntersects</varname>, <varname>aIntersects</varname>, <varname>eTouches</varname>, <varname>eDwithin</varname>, …) y las funciones de restricción (<varname>atTime</varname>, <varname>atGeometry</varname>, <varname>atValue</varname>, …) son siempre funciones con nombre (no tienen operador). El comparador de ordenación de árbol B es asimismo la función con nombre <varname>cmp(a, b)</varname>, que devuelve <literal>-1</literal>, <literal>0</literal> o <literal>1</literal> y no tiene operador. Cada operador se corresponde con un nombre simple de la manera siguiente; para los operadores aritméticos y de teoría de conjuntos el nombre de la función lleva el prefijo de la familia de tipos del operando (<varname>set</varname>, <varname>span</varname> o <varname>spanset</varname>, y <varname>t</varname> para los números temporales).</para>
+	<para>Las funciones de relación espacial (<varname>eIntersects</varname>, <varname>aIntersects</varname>, <varname>eTouches</varname>, <varname>eDwithin</varname>, …) y las funciones de restricción (<varname>atTime</varname>, <varname>atGeometry</varname>, <varname>atValue</varname>, …) son siempre funciones con nombre (no tienen operador). El comparador de ordenación de árbol B es asimismo la función con nombre <varname>cmp(a, b)</varname>, que devuelve <literal>-1</literal>, <literal>0</literal> o <literal>1</literal> y no tiene operador. Cada operador se corresponde con un nombre simple de la manera siguiente; para los operadores aritméticos y de teoría de conjuntos el nombre de la función lleva el prefijo de la familia de tipos del operando (<varname>set</varname>, <varname>span</varname> o <varname>spanset</varname>, y <varname>t</varname> para los valores temporales).</para>
 
 	<informaltable frame="all" colsep="1" rowsep="1">
 		<?dblatex table-width="autowidth.column: 1 2 3"?>
@@ -85,6 +85,7 @@
 				<row><entry>Unión (set / span / span set)</entry><entry>+</entry><entry>setUnion / spanUnion / spansetUnion (a, b)</entry></row>
 				<row><entry>Intersección (set / span / span set)</entry><entry>*</entry><entry>setIntersection / spanIntersection / spansetIntersection (a, b)</entry></row>
 				<row><entry>Diferencia (set / span / span set)</entry><entry>-</entry><entry>setMinus / spanMinus / spansetMinus (a, b)</entry></row>
+				<row><entry>Concatenación (set / temporal)</entry><entry>||</entry><entry>setConcat / tConcat (a, b)</entry></row>
 			</tbody>
 		</tgroup>
 	</informaltable>

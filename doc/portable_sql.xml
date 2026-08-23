@@ -15,7 +15,7 @@
 
 	<para>This chapter is the canonical, ecosystem-wide reference for that mapping. An engine that does not accept a given operator can look it up here and use the function form instead. For example, DuckDB does not accept any operator containing <literal>#</literal> (it reserves <literal>#</literal> for positional column references), so on MobilityDuck the temporal comparisons (<literal>#=</literal>, …) are written <varname>tEq</varname>, … and the time-position tests (<literal>&lt;&lt;#</literal>, <literal>#&gt;&gt;</literal>, <literal>&amp;&lt;#</literal>, <literal>#&amp;&gt;</literal>) are written <varname>before</varname>, <varname>after</varname>, <varname>overbefore</varname>, <varname>overafter</varname>, while the operators it does accept may be used directly.</para>
 
-	<para>The spatial-relationship functions (<varname>eIntersects</varname>, <varname>aIntersects</varname>, <varname>eTouches</varname>, <varname>eDwithin</varname>, …) and the restriction functions (<varname>atTime</varname>, <varname>atGeometry</varname>, <varname>atValue</varname>, …) are only ever named functions (they have no operator). The B-tree ordering comparator is likewise the named function <varname>cmp(a, b)</varname>, which returns <literal>-1</literal>, <literal>0</literal> or <literal>1</literal> and has no operator. Every operator maps to a bare name as follows; for the arithmetic and set-theoretic operators the function name carries the operand's type-family prefix (<varname>set</varname>, <varname>span</varname> or <varname>spanset</varname>, and <varname>t</varname> for temporal numbers).</para>
+	<para>The spatial-relationship functions (<varname>eIntersects</varname>, <varname>aIntersects</varname>, <varname>eTouches</varname>, <varname>eDwithin</varname>, …) and the restriction functions (<varname>atTime</varname>, <varname>atGeometry</varname>, <varname>atValue</varname>, …) are only ever named functions (they have no operator). The B-tree ordering comparator is likewise the named function <varname>cmp(a, b)</varname>, which returns <literal>-1</literal>, <literal>0</literal> or <literal>1</literal> and has no operator. Every operator maps to a bare name as follows; for the arithmetic and set-theoretic operators the function name carries the operand's type-family prefix (<varname>set</varname>, <varname>span</varname> or <varname>spanset</varname>, and <varname>t</varname> for temporal values).</para>
 
 	<informaltable frame="all" colsep="1" rowsep="1">
 		<?dblatex table-width="autowidth.column: 1 2 3"?>
@@ -85,6 +85,7 @@
 				<row><entry>Union (set / span / span set)</entry><entry>+</entry><entry>setUnion / spanUnion / spansetUnion (a, b)</entry></row>
 				<row><entry>Intersection (set / span / span set)</entry><entry>*</entry><entry>setIntersection / spanIntersection / spansetIntersection (a, b)</entry></row>
 				<row><entry>Difference (set / span / span set)</entry><entry>-</entry><entry>setMinus / spanMinus / spansetMinus (a, b)</entry></row>
+				<row><entry>Concatenation (set / temporal)</entry><entry>||</entry><entry>setConcat / tConcat (a, b)</entry></row>
 			</tbody>
 		</tgroup>
 	</informaltable>
