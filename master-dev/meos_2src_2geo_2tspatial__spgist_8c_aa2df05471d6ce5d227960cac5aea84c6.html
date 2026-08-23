@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: right8D</title>
+<title>MobilityDB: stbox_index_distance_bound</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -100,8 +100,8 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tspatial__spgist_8c_a7e1950689555f586eeba22c79db27777.html#a7e1950689555f586eeba22c79db27777">overlapKD</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tspatial__spgist_8c_a8e72ba33805054a811dbf660e97a0c5a.html#a8e72ba33805054a811dbf660e97a0c5a">overLeft8D</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tspatial__spgist_8c_ac909f51cf74470b0f4ae6f8710a8c3c9.html#ac909f51cf74470b0f4ae6f8710a8c3c9">overRight8D</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2geo_2tspatial__spgist_8c_ad2509888940cca4b0bdd53372f26ad1a.html#ad2509888940cca4b0bdd53372f26ad1a">right8D</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tspatial__spgist_8c_aa2df05471d6ce5d227960cac5aea84c6.html#aa2df05471d6ce5d227960cac5aea84c6">stbox_index_distance_bound</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tspatial__spgist_8c_ad2509888940cca4b0bdd53372f26ad1a.html#ad2509888940cca4b0bdd53372f26ad1a">right8D</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2geo_2tspatial__spgist_8c_aa2df05471d6ce5d227960cac5aea84c6.html#aa2df05471d6ce5d227960cac5aea84c6">stbox_index_distance_bound</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tspatial__spgist_8c_a7bed40a9c5ccb0a71eac4108f6210d62.html#a7bed40a9c5ccb0a71eac4108f6210d62">stboxnode_copy</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tspatial__spgist_8c_a9f916c7f53942d327849f07e25544d52.html#a9f916c7f53942d327849f07e25544d52">stboxnode_init</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tspatial__spgist_8c_a30a6a27d5b0000bf110b144fa841ede6.html#a30a6a27d5b0000bf110b144fa841ede6">stboxnode_kdtree_next</a></td></tr>
@@ -111,23 +111,29 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ad2509888940cca4b0bdd53372f26ad1a" name="ad2509888940cca4b0bdd53372f26ad1a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad2509888940cca4b0bdd53372f26ad1a">&#9670;&#160;</a></span>right8D()</h2>
+<a id="aa2df05471d6ce5d227960cac5aea84c6" name="aa2df05471d6ce5d227960cac5aea84c6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa2df05471d6ce5d227960cac5aea84c6">&#9670;&#160;</a></span>stbox_index_distance_bound()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool right8D </td>
+          <td class="memname">double stbox_index_distance_bound </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structSTboxNode.html">STboxNode</a> *&#160;</td>
-          <td class="paramname"><em>nodebox</em>, </td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>dist</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const <a class="el" href="structSTBox.html">STBox</a> *&#160;</td>
-          <td class="paramname"><em>query</em>&#160;</td>
+          <td class="paramname"><em>box1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structSTBox.html">STBox</a> *&#160;</td>
+          <td class="paramname"><em>box2</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -137,7 +143,14 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Can any box from a nodebox be to the right of a query? </p>
+<p>Return a distance an index may report for a pair, lowered so that it cannot exceed the distance the ordering operator computes for that pair. </p>
+<p >A kNN index distance is a LOWER BOUND: PostgreSQL orders the scan by it and, where the entry carries a bounding box rather than the value, rechecks the ordering operator and re-sorts. It refuses a recomputed distance below the one the index reported. Index and operator reach the same quantity by different arithmetic — box coordinates here, geometry there — so for an entry whose box IS its value, a single instant say, the two agree to within their rounding and the index can land one unit in the last place above. The margin is eight units in the last place of the larger of the distance and the coordinate magnitude, which covers the four roundings each side accumulates over the axis differences, their squares, the sum and the square root. ⛔ It scales with the COORDINATE magnitude, not with the distance alone: a gap of a metre between coordinates of 1e7 carries the rounding of 1e7, and an absolute margin would be inert there and enormous near the origin. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">dist</td><td>Distance the index computes </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">box1,box2</td><td>Boxes the distance is computed from </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
