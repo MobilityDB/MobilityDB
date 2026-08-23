@@ -163,8 +163,11 @@ static double ptarray_area_spheroid(const POINTARRAY *pa, const SPHEROID *sphero
 	i = geod_polygon_compute(&gd, &poly, 0, 1, &area, 0);
 	if ( i != pa->npoints - 1 )
 	{
+	{
 		lwerror("ptarray_area_spheroid: different number of points %d vs %d",
 				i, pa->npoints - 1);
+		return 0.0; /* MEOS */
+	}
 	}
 	LWDEBUGF(4, "geod_polygon_compute area: %.12g", area);
 	return fabs(area);
@@ -517,7 +520,10 @@ static double ptarray_area_spheroid(const POINTARRAY *pa, const SPHEROID *sphero
 	ptarray_calculate_gbox_cartesian(pa, &gbox2d);
 
 	if ( SIGNUM(gbox2d.ymin) != SIGNUM(gbox2d.ymax) )
+	{
 		lwerror("ptarray_area_spheroid: cannot handle ptarray that crosses equator");
+		return 0.0; /* MEOS */
+	}
 
 	/* Geodetic bbox < 0.0 implies geometry is entirely in southern hemisphere */
 	if ( gbox2d.ymax < 0.0 )

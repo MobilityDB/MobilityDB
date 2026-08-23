@@ -189,13 +189,21 @@ ptarray_from_GEOSCoordSeq(const GEOSCoordSequence* cs, uint8_t want3d)
 
 	LWDEBUG(2, "ptarray_fromGEOSCoordSeq called");
 
-	if (!GEOSCoordSeq_getSize_r(ctx, cs, &size)) lwerror("Exception thrown");
+	if (!GEOSCoordSeq_getSize_r(ctx, cs, &size))
+	{
+		lwerror("Exception thrown");
+		return NULL; /* MEOS */
+	}
 
 	LWDEBUGF(4, " GEOSCoordSeq size: %d", size);
 
 	if (want3d)
 	{
-		if (!GEOSCoordSeq_getDimensions_r(ctx, cs, &dims)) lwerror("Exception thrown");
+		if (!GEOSCoordSeq_getDimensions_r(ctx, cs, &dims))
+		{
+			lwerror("Exception thrown");
+			return NULL; /* MEOS */
+		}
 
 		LWDEBUGF(4, " GEOSCoordSeq dimensions: %d", dims);
 

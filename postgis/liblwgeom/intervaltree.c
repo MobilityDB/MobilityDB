@@ -100,7 +100,10 @@ itree_new_node(IntervalTree *itree)
 {
 	IntervalTreeNode *node = NULL;
 	if (itree->numNodes >= itree->maxNodes)
+	{
 		lwerror("%s ran out of node space", __func__);
+		return NULL; /* MEOS */
+	}
 
 	node = &(itree->nodes[itree->numNodes++]);
 	node->min = FLT_MAX;
@@ -147,6 +150,8 @@ itree_merge_nodes(IntervalTree *itree, uint32_t nodes_remaining)
 		 * the new parent node
 		 */
 		IntervalTreeNode *parent_node = itree_new_node(itree);
+		if (!parent_node) /* MEOS */
+			return 0;
 		for (uint32_t j = children_start; j < children_end; j++)
 		{
 			IntervalTreeNode *child_node = &(itree->nodes[j]);
@@ -190,7 +195,10 @@ itree_add_pointarray(IntervalTree *itree, const POINTARRAY *pa)
 
 	/* EMPTY/unusable ring */
 	if (!pa || pa->npoints < 4)
+	{
 		lwerror("%s called with unusable ring", __func__);
+		return; /* MEOS */
+	}
 
 	/* fill in the leaf nodes */
 	for (uint32_t i = 0; i < pa->npoints-1; i++)
@@ -204,6 +212,8 @@ itree_add_pointarray(IntervalTree *itree, const POINTARRAY *pa)
 
 		/* get a fresh node for each segment of the ring */
 		IntervalTreeNode *node = itree_new_node(itree);
+		if (!node) /* MEOS */
+			return;
 		node->min = FP_MIN(pt1->y, pt2->y);
 		node->max = FP_MAX(pt1->y, pt2->y);
 		node->edgeIndex = i;
@@ -309,7 +319,11 @@ itree_from_multipolygon(const LWMPOLY *mpoly)
 IntervalTree *
 itree_from_lwgeom(const LWGEOM *geom)
 {
-	if (!geom) lwerror("%s called with null geometry", __func__);
+	if (!geom)
+	{
+		lwerror("%s called with null geometry", __func__);
+		return NULL; /* MEOS */
+	}
 	switch(lwgeom_get_type(geom))
 	{
 		case MULTIPOLYGONTYPE:

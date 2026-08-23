@@ -468,7 +468,10 @@ void
 lwgeom_release(LWGEOM *lwgeom)
 {
 	if ( ! lwgeom )
+	{
 		lwerror("lwgeom_release: someone called on 0x0");
+		return; /* MEOS */
+	}
 
 	LWDEBUGF(3, "releasing type %s", lwtype_name(lwgeom->type));
 
@@ -1080,6 +1083,9 @@ lwgeom_is_closed(const LWGEOM *geom)
 		LWCOLLECTION *col = lwgeom_as_lwcollection(geom);
 		uint32_t i;
 		int closed;
+
+		if (!col) /* MEOS */
+			return LW_FALSE;
 		for ( i = 0; i < col->ngeoms; i++ )
 		{
 			closed = lwgeom_is_closed(col->geoms[i]);
@@ -1619,6 +1625,8 @@ void lwgeom_set_srid(LWGEOM *geom, int32_t srid)
 	{
 		/* All the children are set to the same SRID value */
 		LWCOLLECTION *col = lwgeom_as_lwcollection(geom);
+		if (!col) /* MEOS */
+			return;
 		for ( i = 0; i < col->ngeoms; i++ )
 		{
 			lwgeom_set_srid(col->geoms[i], srid);
@@ -2123,7 +2131,10 @@ lwgeom_affine(LWGEOM *geom, const AFFINE *affine)
 			}
 			else
 			{
+			{
 				lwerror("lwgeom_affine: unable to handle type '%s'", lwtype_name(type));
+				return; /* MEOS */
+			}
 			}
 		}
 	}
@@ -2177,7 +2188,10 @@ lwgeom_scale(LWGEOM *geom, const POINT4D *factor)
 			}
 			else
 			{
+			{
 				lwerror("lwgeom_scale: unable to handle type '%s'", lwtype_name(type));
+				return; /* MEOS */
+			}
 			}
 		}
 	}
@@ -2431,7 +2445,10 @@ lwgeom_subdivide_recursive(const LWGEOM *geom,
 	double height = clip.ymax - clip.ymin;
 
 	if ( geom->type == POLYHEDRALSURFACETYPE || geom->type == TINTYPE )
+	{
 		lwerror("%s: unsupported geometry type '%s'", __func__, lwtype_name(geom->type));
+		return; /* MEOS */
+	}
 
 	if ( width == 0.0 && height == 0.0 )
 	{
@@ -2602,7 +2619,10 @@ lwgeom_subdivide_prec(const LWGEOM *geom, uint32_t maxvertices, double gridSize)
 	if ( maxvertices < minmaxvertices )
 	{
 		lwcollection_free(col);
+	{
 		lwerror("%s: cannot subdivide to fewer than %d vertices per output", __func__, minmaxvertices);
+		return NULL; /* MEOS */
+	}
 	}
 
 	lwgeom_subdivide_recursive(geom, lwgeom_dimension(geom), maxvertices, startdepth, col, gridSize);

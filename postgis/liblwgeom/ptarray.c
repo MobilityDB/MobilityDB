@@ -615,7 +615,10 @@ ptarray_merge(POINTARRAY *pa1, POINTARRAY *pa2)
 	size_t ptsize = ptarray_point_size(pa1);
 
 	if (FLAGS_GET_ZM(pa1->flags) != FLAGS_GET_ZM(pa2->flags))
+	{
 		lwerror("ptarray_cat: Mixed dimension");
+		return NULL; /* MEOS */
+	}
 
 	pa = ptarray_construct( FLAGS_GET_Z(pa1->flags),
 	                        FLAGS_GET_M(pa1->flags),
@@ -772,7 +775,10 @@ ptarray_contains_point_partial(const POINTARRAY *pa, const POINT2D *pt, int chec
 	seg1 = getPoint2d_cp(pa, 0);
 	seg2 = getPoint2d_cp(pa, pa->npoints-1);
 	if ( check_closed && ! p2d_same(seg1, seg2) )
+	{
 		lwerror("ptarray_contains_point called on unclosed ring");
+		return LW_OUTSIDE; /* MEOS */
+	}
 
 	for ( i=1; i < pa->npoints; i++ )
 	{
@@ -1819,7 +1825,10 @@ ptarray_arc_length_2d(const POINTARRAY *pts)
 	const POINT2D *a3;
 
 	if ( pts->npoints % 2 != 1 )
+	{
 		lwerror("arc point array with even number of points");
+		return 0.0; /* MEOS */
+	}
 
 	a1 = getPoint2d_cp(pts, 0);
 

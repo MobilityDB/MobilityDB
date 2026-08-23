@@ -37,7 +37,10 @@ static POINTARRAY* ptarray_filterm(POINTARRAY *pa,double min, double max, int re
 	* If this happens it is because the function is used in another context than filterM
 	and we throw an error*/
 	if(!FLAGS_GET_M(pa->flags))
+	{
 		lwerror("missing m-value in function %s\n",__func__);
+		return NULL; /* MEOS */
+	}
 
 	/*Dimensions in input geometry*/
 	int ndims = FLAGS_NDIMS(pa->flags);
@@ -133,7 +136,10 @@ static LWPOLY* lwpoly_filterm(LWPOLY  *poly,double min,double max, int returnm)
 			if (lwpoly_add_ring(poly_res, pa) == LW_FAILURE )
 			{
 				LWDEBUG(2, "Unable to add ring to polygon");
+			{
 				lwerror("Unable to add ring to polygon");
+				return NULL; /* MEOS */
+			}
 			}
 		}
 		else if (i==0)

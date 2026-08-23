@@ -476,7 +476,10 @@ static int lwgeom_write_to_buffer(const LWGEOM *geom, TWKB_GLOBALS *globals, TWK
 
 	/* TYPE/PRECISION BYTE */
 	if ( abs(globals->prec_xy) > 7 )
+	{
 		lwerror("%s: X/Z precision cannot be greater than 7 or less than -7", __func__);
+		return 0; /* MEOS */
+	}
 
 	/* Read the TWKB type number from the geometry */
 	TYPE_PREC_SET_TYPE(type_prec, lwgeom_twkb_type(geom));
@@ -506,10 +509,16 @@ static int lwgeom_write_to_buffer(const LWGEOM *geom, TWKB_GLOBALS *globals, TWK
 		uint8_t flag = 0;
 
 		if ( has_z && ( globals->prec_z > 7 || globals->prec_z < 0 ) )
+		{
 			lwerror("%s: Z precision cannot be negative or greater than 7", __func__);
+			return 0; /* MEOS */
+		}
 
 		if ( has_m && ( globals->prec_m > 7 || globals->prec_m < 0 ) )
+		{
 			lwerror("%s: M precision cannot be negative or greater than 7", __func__);
+			return 0; /* MEOS */
+		}
 
 		HIGHER_DIM_SET_HASZ(flag, has_z);
 		HIGHER_DIM_SET_HASM(flag, has_m);

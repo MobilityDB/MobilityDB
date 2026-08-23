@@ -49,7 +49,11 @@ lwpoly_construct(int32_t srid, GBOX *bbox, uint32_t nrings, POINTARRAY **points)
 	uint32_t i;
 #endif
 
-	if ( nrings < 1 ) lwerror("lwpoly_construct: need at least 1 ring");
+	if ( nrings < 1 )
+	{
+		lwerror("lwpoly_construct: need at least 1 ring");
+		return NULL; /* MEOS */
+	}
 
 	hasz = FLAGS_GET_Z(points[0]->flags);
 	hasm = FLAGS_GET_M(points[0]->flags);
@@ -59,7 +63,10 @@ lwpoly_construct(int32_t srid, GBOX *bbox, uint32_t nrings, POINTARRAY **points)
 	for (i=1; i<nrings; i++)
 	{
 		if ( zm != FLAGS_GET_ZM(points[i]->flags) )
+		{
 			lwerror("lwpoly_construct: mixed dimensioned rings");
+			return NULL; /* MEOS */
+		}
 	}
 #endif
 
@@ -366,9 +373,17 @@ lwpoly_from_lwlines(const LWLINE *shell,
 	LWPOLY *ret;
 
 	if ( shell->points->npoints < 4 )
+	{
 		lwerror("lwpoly_from_lwlines: shell must have at least 4 points");
+		lwfree(rings);
+		return NULL; /* MEOS */
+	}
 	if ( ! ptarray_is_closed_2d(shell->points) )
+	{
 		lwerror("lwpoly_from_lwlines: shell must be closed");
+		lwfree(rings);
+		return NULL; /* MEOS */
+	}
 	rings[0] = ptarray_clone_deep(shell->points);
 
 	for (nrings=1; nrings<=nholes; nrings++)
@@ -376,12 +391,30 @@ lwpoly_from_lwlines(const LWLINE *shell,
 		const LWLINE *hole = holes[nrings-1];
 
 		if ( hole->srid != srid )
+		{
 			lwerror("lwpoly_from_lwlines: mixed SRIDs in input lines");
+			for (uint32_t k = 0; k < nrings; k++)
+				ptarray_free(rings[k]);
+			lwfree(rings);
+			return NULL; /* MEOS */
+		}
 
 		if ( hole->points->npoints < 4 )
+		{
 			lwerror("lwpoly_from_lwlines: holes must have at least 4 points");
+			for (uint32_t k = 0; k < nrings; k++)
+				ptarray_free(rings[k]);
+			lwfree(rings);
+			return NULL; /* MEOS */
+		}
 		if ( ! ptarray_is_closed_2d(hole->points) )
+		{
 			lwerror("lwpoly_from_lwlines: holes must be closed");
+			for (uint32_t k = 0; k < nrings; k++)
+				ptarray_free(rings[k]);
+			lwfree(rings);
+			return NULL; /* MEOS */
+		}
 
 		rings[nrings] = ptarray_clone_deep(hole->points);
 	}
@@ -437,7 +470,10 @@ lwpoly_area(const LWPOLY *poly)
 	uint32_t i;
 
 	if ( ! poly )
+	{
 		lwerror("lwpoly_area called with null polygon pointer!");
+		return 0.0; /* MEOS */
+	}
 
 	for ( i=0; i < poly->nrings; i++ )
 	{

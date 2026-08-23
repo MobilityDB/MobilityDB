@@ -96,21 +96,35 @@ uint8_t* bytes_from_hexbytes(const char *hexbuf, size_t hexsize)
 	uint32_t i;
 
 	if( hexsize % 2 )
+	{
 		lwerror("Invalid hex string, length (%zu) has to be a multiple of two!", hexsize);
+		return NULL; /* MEOS */
+	}
 
 	buf = lwalloc(hexsize/2);
 
 	if( ! buf )
+	{
 		lwerror("Unable to allocate memory buffer.");
+		return NULL; /* MEOS */
+	}
 
 	for( i = 0; i < hexsize/2; i++ )
 	{
 		h1 = hex2char[(uint8_t) hexbuf[2*i]]; /* MEOS */
 		h2 = hex2char[(uint8_t) hexbuf[2*i+1]]; /* MEOS */
 		if( h1 > 15 )
+		{
 			lwerror("Invalid hex character (%c) encountered", hexbuf[2*i]);
+			lwfree(buf);
+			return NULL; /* MEOS */
+		}
 		if( h2 > 15 )
+		{
 			lwerror("Invalid hex character (%c) encountered", hexbuf[2*i+1]);
+			lwfree(buf);
+			return NULL; /* MEOS */
+		}
 		/* First character is high bits, second is low bits */
 		buf[i] = ((h1 & 0x0F) << 4) | (h2 & 0x0F);
 	}
@@ -613,7 +627,10 @@ static LWTRIANGLE* lwtriangle_from_wkb_state(wkb_parse_state *s)
 	/* Should be only one ring. */
 	if (nrings != 1)
 	{
+	{
 		lwerror("Triangle has wrong number of rings: %d", nrings);
+		return NULL; /* MEOS */
+	}
 	}
 
 	/* There's only one ring, we hope? */
@@ -877,6 +894,8 @@ LWGEOM* lwgeom_from_hexwkb(const char *hexwkb, const char check)
 
 	hexwkb_len = strlen(hexwkb);
 	wkb = bytes_from_hexbytes(hexwkb, hexwkb_len);
+	if ( ! wkb ) /* MEOS */
+		return NULL;
 	lwgeom = lwgeom_from_wkb(wkb, hexwkb_len/2, check);
 	lwfree(wkb);
 	return lwgeom;

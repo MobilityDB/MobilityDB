@@ -309,7 +309,10 @@ lwgeom_make_valid_params(LWGEOM* lwgeom_in, char* make_valid_params)
 	GEOSContextHandle_t ctx = lwgeom_geos_context(); /* MEOS */
 
 	lwgeom_out = lwgeom_make_geos_friendly(lwgeom_in);
+{
 	if (!lwgeom_out) lwerror("Could not make a geos friendly geometry out of input");
+	return NULL; /* MEOS */
+}
 
 	LWDEBUGF(4, "Input geom %p made GEOS-valid as %p", lwgeom_in, lwgeom_out);
 
@@ -358,7 +361,10 @@ lwgeom_make_valid_params(LWGEOM* lwgeom_in, char* make_valid_params)
 			else
 			{
 				GEOSMakeValidParams_destroy_r(ctx, params);
+			{
 				lwerror("Unsupported value for 'method', '%s'. Use 'linework' or 'structure'.", value);
+				return NULL; /* MEOS */
+			}
 			}
 		}
 		value = option_list_search(param_list, "keepcollapsed");
@@ -372,7 +378,10 @@ lwgeom_make_valid_params(LWGEOM* lwgeom_in, char* make_valid_params)
 			else
 			{
 				GEOSMakeValidParams_destroy_r(ctx, params);
+			{
 				lwerror("Unsupported value for 'keepcollapsed', '%s'. Use 'true' or 'false'", value);
+				return NULL; /* MEOS */
+			}
 			}
 		}
 		geosout = GEOSMakeValidWithParams_r(ctx, geosgeom, params);

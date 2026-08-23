@@ -202,7 +202,10 @@ integer_to_wkb_buf(const uint32_t ival, uint8_t *buf, uint8_t variant)
 
 	if ( sizeof(int) != WKB_INT_SIZE )
 	{
+	{
 		lwerror("Machine int size is not %d bytes!", WKB_INT_SIZE);
+		return NULL; /* MEOS */
+	}
 	}
 	LWDEBUGF(4, "Writing value '%u'", ival);
 	if ( variant & WKB_HEX )

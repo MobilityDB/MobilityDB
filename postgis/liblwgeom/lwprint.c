@@ -138,6 +138,7 @@ static char * lwdouble_to_dms(double val, const char *pos_dir_symbol, const char
 		/* Sanity check, we don't want to overwrite an entire piece of work and no one should need a 1K-sized
 		* format string anyway. */
 		lwerror("Bad format, exceeds maximum length (%d).", WORK_SIZE);
+		return NULL; /* MEOS */
 	}
 
 	for (index = 0; index < format_length; index++)
@@ -159,6 +160,7 @@ static char * lwdouble_to_dms(double val, const char *pos_dir_symbol, const char
 				if (deg_digits > 0)
 				{
 					lwerror("Bad format, cannot include degrees (DD.DDD) more than once.");
+					return NULL; /* MEOS */
 				}
 				reading_deg = 1;
 				reading_min = 0;
@@ -180,6 +182,7 @@ static char * lwdouble_to_dms(double val, const char *pos_dir_symbol, const char
 				if (min_digits > 0)
 				{
 					lwerror("Bad format, cannot include minutes (MM.MMM) more than once.");
+					return NULL; /* MEOS */
 				}
 				reading_deg = 0;
 				reading_min = 1;
@@ -201,6 +204,7 @@ static char * lwdouble_to_dms(double val, const char *pos_dir_symbol, const char
 				if (sec_digits > 0)
 				{
 					lwerror("Bad format, cannot include seconds (SS.SSS) more than once.");
+					return NULL; /* MEOS */
 				}
 				reading_deg = 0;
 				reading_min = 0;
@@ -222,6 +226,7 @@ static char * lwdouble_to_dms(double val, const char *pos_dir_symbol, const char
 			if (compass_dir_piece >= 0)
 			{
 				lwerror("Bad format, cannot include compass dir (C) more than once.");
+				return NULL; /* MEOS */
 			}
 			/* The compass dir is a piece all by itself.  */
 			compass_dir_piece = current_piece;
@@ -277,6 +282,7 @@ static char * lwdouble_to_dms(double val, const char *pos_dir_symbol, const char
 				else
 				{
 					lwerror("Bad format, invalid high-order byte found first, format string may not be UTF-8.");
+					return NULL; /* MEOS */
 				}
 			}
 			if (multibyte_char_width > 1)
@@ -284,12 +290,14 @@ static char * lwdouble_to_dms(double val, const char *pos_dir_symbol, const char
 				if (index + multibyte_char_width >= format_length)
 				{
 					lwerror("Bad format, UTF-8 character first byte found with insufficient following bytes, format string may not be UTF-8.");
+					return NULL; /* MEOS */
 				}
 				for (following_byte_index = (index + 1); following_byte_index < (index + multibyte_char_width); following_byte_index++)
 				{
 					if ((format[following_byte_index] & 0xC0) != 0x80)
 					{
 						lwerror("Bad format, invalid byte found following leading byte of multibyte character, format string may not be UTF-8.");
+						return NULL; /* MEOS */
 					}
 				}
 			}
@@ -302,11 +310,13 @@ static char * lwdouble_to_dms(double val, const char *pos_dir_symbol, const char
 		if (current_piece >= NUM_PIECES)
 		{
 			lwerror("Internal error, somehow needed more pieces than it should.");
+			return NULL; /* MEOS */
 		}
 	}
 	if (deg_piece < 0)
 	{
 		lwerror("Bad format, degrees (DD.DDD) must be included.");
+		return NULL; /* MEOS */
 	}
 
 	/* Divvy the number up into D, DM, or DMS */
@@ -326,6 +336,7 @@ static char * lwdouble_to_dms(double val, const char *pos_dir_symbol, const char
 		if (0 == min_digits)
 		{
 			lwerror("Bad format, cannot include seconds (SS.SSS) without including minutes (MM.MMM).");
+			return NULL; /* MEOS */
 		}
 		seconds = modf(minutes, &minutes) * 60;
 		if (sec_piece >= 0)
@@ -360,6 +371,7 @@ static char * lwdouble_to_dms(double val, const char *pos_dir_symbol, const char
 	if (deg_digits + deg_dec_digits + 2 > WORK_SIZE)
 	{
 		lwerror("Bad format, degrees (DD.DDD) number of digits was greater than our working limit.");
+		return NULL; /* MEOS */
 	}
 	if(deg_piece >= 0)
 	{
@@ -372,6 +384,7 @@ static char * lwdouble_to_dms(double val, const char *pos_dir_symbol, const char
 		if (min_digits + min_dec_digits + 2 > WORK_SIZE)
 		{
 			lwerror("Bad format, minutes (MM.MMM) number of digits was greater than our working limit.");
+			return NULL; /* MEOS */
 		}
 		snprintf(pieces[min_piece], WORK_SIZE, "%*.*f", min_digits, min_dec_digits, minutes);
 	}
@@ -381,6 +394,7 @@ static char * lwdouble_to_dms(double val, const char *pos_dir_symbol, const char
 		if (sec_digits + sec_dec_digits + 2 > WORK_SIZE)
 		{
 			lwerror("Bad format, seconds (SS.SSS) number of digits was greater than our working limit.");
+			return NULL; /* MEOS */
 		}
 		snprintf(pieces[sec_piece], WORK_SIZE, "%*.*f", sec_digits, sec_dec_digits, seconds);
 	}
@@ -417,6 +431,13 @@ static char * lwdoubles_to_latlon(double lat, double lon, const char * format)
 	/* This is somewhat inefficient as the format is parsed twice. */
 	lat_text = lwdouble_to_dms(lat, "N", "S", format);
 	lon_text = lwdouble_to_dms(lon, "E", "W", format);
+	/* MEOS: a declined format leaves nothing for strlen below to read */
+	if ( ! lat_text || ! lon_text )
+	{
+		if ( lat_text ) lwfree(lat_text);
+		if ( lon_text ) lwfree(lon_text);
+		return NULL;
+	}
 
 	/* lat + lon + a space between + the null terminator. */
 	sz = strlen(lat_text) + strlen(lon_text) + 2;
@@ -440,10 +461,12 @@ char* lwpoint_to_latlon(const LWPOINT * pt, const char *format)
 	if (NULL == pt)
 	{
 		lwerror("Cannot convert a null point into formatted text.");
+		return NULL; /* MEOS */
 	}
 	if (lwgeom_is_empty((LWGEOM *)pt))
 	{
 		lwerror("Cannot convert an empty point into formatted text.");
+		return NULL; /* MEOS */
 	}
 	p = getPoint2d_cp(pt->point, 0);
 	return lwdoubles_to_latlon(p->y, p->x, format);

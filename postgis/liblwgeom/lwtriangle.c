@@ -82,7 +82,10 @@ void lwtriangle_free(LWTRIANGLE  *triangle)
 void printLWTRIANGLE(LWTRIANGLE *triangle)
 {
 	if (triangle->type != TRIANGLETYPE)
+	{
                 lwerror("printLWTRIANGLE called with something else than a Triangle");
+		return; /* MEOS */
+	}
 
 	lwnotice("LWTRIANGLE {");
 	lwnotice("    ndims = %i", (int)FLAGS_NDIMS(triangle->flags));
@@ -156,11 +159,17 @@ lwtriangle_from_lwline(const LWLINE *shell)
 	POINTARRAY *pa;
 
 	if ( shell->points->npoints != 4 )
+	{
 		lwerror("lwtriangle_from_lwline: shell must have exactly 4 points");
+		return NULL; /* MEOS */
+	}
 
 	if (   (!FLAGS_GET_Z(shell->flags) && !ptarray_is_closed_2d(shell->points)) ||
 	        (FLAGS_GET_Z(shell->flags) && !ptarray_is_closed_3d(shell->points)) )
+	{
 		lwerror("lwtriangle_from_lwline: shell must be closed");
+		return NULL; /* MEOS */
+	}
 
 	pa = ptarray_clone_deep(shell->points);
 	ret = lwtriangle_construct(shell->srid, NULL, pa);

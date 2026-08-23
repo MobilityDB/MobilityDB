@@ -678,13 +678,12 @@ meos_get_intervalstyle(void)
  * which writes the message to @c stderr and ends the process — the message
  * reaches the caller with no error code, and a host that meant to catch it
  * never gets the chance.
- * @note This handler does NOT return. liblwgeom's callers continue as though
- * the value were valid — @c bytes_from_hexbytes reads on after reporting an
- * odd-length string — so returning would hand them uninitialised memory. The
- * host's own handler decides what happens first: one that raises (an exception,
- * a longjmp) never comes back here, which is the case this exists to serve. One
- * that returns leaves no way to honour liblwgeom's contract except to end the
- * process, exactly as its own default does.
+ * @note The error reaches the caller the way every other MEOS error does: the
+ * installed error handler decides what follows. The default one ends the
+ * process on @p ERROR, so a standalone program behaves as liblwgeom's own
+ * default does. A host that installed the no-exit handler regains control with
+ * @c meos_errno() set, which is what that handler exists to promise — a foreign
+ * thread in a JVM (JNR-FFI on Spark or JMEOS) keeps its process.
  */
 static void
 meos_lwerror_handler(const char *fmt, va_list ap)
@@ -693,7 +692,6 @@ meos_lwerror_handler(const char *fmt, va_list ap)
   vsnprintf(msg, sizeof(msg), fmt, ap);
   msg[MEOS_LW_MSG_MAXLEN] = '\0';
   meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "%s", msg);
-  exit(EXIT_FAILURE);
 }
 
 /**

@@ -283,7 +283,10 @@ static void tune_areas(EFFECTIVE_AREAS *ea, int avoid_collaps, int set_area, dou
 			ea->res_arealist[current]=FLT_MAX;
 
 		if(ea->res_arealist[current]<check_order_min_area)
+		{
 			lwerror("Oh no, this is a bug. For some reason the minHeap returned our points in the wrong order. Please file a ticket in PostGIS ticket system, or send a mail at the mailing list.Returned area = %lf, and last area = %lf",ea->res_arealist[current],check_order_min_area);
+			return; /* MEOS */
+		}
 
 		check_order_min_area=ea->res_arealist[current];
 

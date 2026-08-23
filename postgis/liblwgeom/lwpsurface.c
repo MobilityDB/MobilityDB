@@ -60,7 +60,10 @@ void printLWPSURFACE(LWPSURFACE *psurf)
 	LWPOLY *patch;
 
 	if (psurf->type != POLYHEDRALSURFACETYPE)
+	{
 		lwerror("printLWPSURFACE called with something else than a POLYHEDRALSURFACE");
+		return; /* MEOS */
+	}
 
 	lwnotice("LWPSURFACE {");
 	lwnotice("    ndims = %i", (int)FLAGS_NDIMS(psurf->flags));

@@ -377,8 +377,11 @@ lwgeom_cluster_kmeans(const LWGEOM **geoms, uint32_t n, uint32_t k, double max_r
 			{
 				out.m = lwpoint_get_m(lwgeom_as_lwpoint(geom));
 				if (out.m <= 0)
+				{
 					lwerror("%s has an input point geometry with weight in M less or equal to 0",
 						__func__);
+					return NULL; /* MEOS */
+				}
 			}
 		}
 		else if (!lwgeom_has_z(geom))
