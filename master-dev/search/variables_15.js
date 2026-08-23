@@ -36,7 +36,7 @@ var searchData=
   ['tnumberindexablefunctions_33',['TNumberIndexableFunctions',['../temporal__supportfn_8c_a1c34446963389da7cd6587e4a13fcab4.html#a1c34446963389da7cd6587e4a13fcab4',1,'temporal_supportfn.c']]],
   ['tnumberstrategies_34',['TNumberStrategies',['../temporal__supportfn_8c_abdad065302e62f8965c5667eca9e28e4.html#abdad065302e62f8965c5667eca9e28e4',1,'temporal_supportfn.c']]],
   ['to_5fsplit_35',['to_split',['../structSpanBinState_a35d340c802ed91ee8e34041914abb177.html#a35d340c802ed91ee8e34041914abb177',1,'SpanBinState']]],
-  ['tol_36',['tol',['../structEdge_ac5d4df36654f4f6b6aa9e298237b0a0d.html#ac5d4df36654f4f6b6aa9e298237b0a0d',1,'Edge']]],
+  ['tol_36',['tol',['../structRelateEdges_ae27994da8903aa602f8bc7919daf714d.html#ae27994da8903aa602f8bc7919daf714d',1,'RelateEdges::tol()'],['../structEdge_ac5d4df36654f4f6b6aa9e298237b0a0d.html#ac5d4df36654f4f6b6aa9e298237b0a0d',1,'Edge::tol()']]],
   ['top_37',['TOP',['../tgeo__restrict_8c_a70b88566f57a524f32d6a3271e47e7b6.html#a70b88566f57a524f32d6a3271e47e7b6',1,'tgeo_restrict.c']]],
   ['totalcount_38',['totalcount',['../structTSequenceSet_a9382517852348dd679b7887855207cf1.html#a9382517852348dd679b7887855207cf1',1,'TSequenceSet']]],
   ['tpfn_5fadaptive_39',['tpfn_adaptive',['../structLiftedFunctionInfo_ad5d90d9681e6d9e1c72aacd1c36b928e.html#ad5d90d9681e6d9e1c72aacd1c36b928e',1,'LiftedFunctionInfo']]],
