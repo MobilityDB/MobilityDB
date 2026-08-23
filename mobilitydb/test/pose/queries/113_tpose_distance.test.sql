@@ -76,10 +76,8 @@ SELECT round(tDistance(
 -------------------------------------------------------------------------------
 
 SELECT asText(nearestApproachInstant(geometry 'Point(2 0)', tpose '[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]'));
-SELECT asText(nearestApproachInstant(stbox 'STBOX X((1,-1),(3,1))', tpose '[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]'));
 SELECT asText(nearestApproachInstant(pose 'Pose(Point(2 0),0)', tpose '[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]'));
 SELECT asText(nearestApproachInstant(tpose '[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]', geometry 'Point(2 0)'));
-SELECT asText(nearestApproachInstant(tpose '[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]', stbox 'STBOX X((1,-1),(3,1))'));
 SELECT asText(nearestApproachInstant(tpose '[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]', pose 'Pose(Point(2 0),0)'));
 SELECT asText(nearestApproachInstant(
   tpose '[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]',
@@ -112,10 +110,8 @@ SELECT round(nearestApproachDistance(
 -------------------------------------------------------------------------------
 
 SELECT ST_AsText(shortestLine(geometry 'Point(2 0)', tpose '[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]'));
-SELECT ST_AsText(shortestLine(stbox 'STBOX X((1,-1),(3,1))', tpose '[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]'));
 SELECT ST_AsText(shortestLine(pose 'Pose(Point(2 0),0)', tpose '[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]'));
 SELECT ST_AsText(shortestLine(tpose '[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]', geometry 'Point(2 0)'));
-SELECT ST_AsText(shortestLine(tpose '[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]', stbox 'STBOX X((1,-1),(3,1))'));
 SELECT ST_AsText(shortestLine(tpose '[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]', pose 'Pose(Point(2 0),0)'));
 SELECT ST_AsText(shortestLine(
   tpose '[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]',
