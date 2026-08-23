@@ -87,13 +87,17 @@ pointcloud_namespace_oid(void)
 }
 
 /**
- * @brief Fetch the XML schema text for a given pcid from
+ * @brief Fetch the XML schema text and the SRID for a given pcid from
  *   @c pointcloud_formats via a direct heap scan.
+ * @details The SRID is a column of that table and appears nowhere in the
+ *   schema XML, so this is the only place it can be read from.
+ * @param[in] pcid pgPointCloud schema identifier
+ * @param[out] srid The SRID the row declares
  * @return palloc'd cstring on hit, NULL on miss.  The memory context
  *   is whatever was current at call time.
  */
 static char *
-fetch_schema_xml(uint32_t pcid)
+fetch_schema_row(uint32_t pcid, int32 *srid)
 {
   Oid nsp_oid = pointcloud_namespace_oid();
   if (nsp_oid == InvalidOid)
@@ -121,10 +125,17 @@ fetch_schema_xml(uint32_t pcid)
     /* indexOK */ false, NULL, 1, key);
 
   char *xml = NULL;
+  /* 0 is what liblwgeom spells SRID_UNKNOWN, whose header this file does not
+   * read, and what a pointcloud_formats row declaring no SRID carries */
+  *srid = 0;
   HeapTuple tuple = systable_getnext(scan);
   if (HeapTupleIsValid(tuple))
   {
     bool isnull;
+    /* srid is the second column (attnum 2) */
+    Datum srid_datum = heap_getattr(tuple, 2, tupDesc, &isnull);
+    if (! isnull)
+      *srid = DatumGetInt32(srid_datum);
     /* schema is the third column (attnum 3) */
     Datum xml_datum = heap_getattr(tuple, 3, tupDesc, &isnull);
     if (! isnull)
@@ -180,7 +191,8 @@ mobilitydb_pc_parse_xml(uint32_t pcid, const char *xml)
 PCSCHEMA *
 mobilitydb_pc_schema(uint32_t pcid)
 {
-  char *xml = fetch_schema_xml(pcid);
+  int32 srid;
+  char *xml = fetch_schema_row(pcid, &srid);
   if (xml == NULL)
     return NULL;
 
@@ -198,8 +210,11 @@ mobilitydb_pc_schema(uint32_t pcid)
       errmsg("Failed to parse pgpointcloud schema XML for pcid=%u", pcid)));
   }
 
-  /* pc_schema_from_xml doesn't populate schema->pcid — wire it up. */
+  /* pc_schema_from_xml populates neither the pcid nor the srid — both are
+   * columns of pointcloud_formats rather than elements of the XML, and the
+   * pgpointcloud loader assigns both after its own fetch. */
   schema->pcid = pcid;
+  schema->srid = (uint32_t) srid;
   /* Register both parsed schema AND XML — the MEOS WKB encoder needs
    * the XML to embed in cross-cluster-portable WKB blobs. */
   meos_pc_schema_register_xml(pcid, schema, xml);
