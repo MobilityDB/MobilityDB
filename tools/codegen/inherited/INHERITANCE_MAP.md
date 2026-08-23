@@ -617,6 +617,21 @@ its last edit:
   `h3indexset`, `quadbinset`, `pcpointset`, `pcpatchset`. `posechainset` is
   deliberate and `setfamilies.yaml` says so in place — a pose chain has no
   distance function, so the set deploys none.
+- `topop_families` and `posop_families`, both **7/13**: `tgeompoint`, `tgeogpoint`,
+  `tgeometry`, `tgeography`, `tpcpoint`, `tpcpatch`.
+  ⛔ THOSE SIX ARE THREE PAIRS, AND THE PAIR IS THE WHOLE REASON. A covered family
+  declares ONE temporal type per file — `108_tpose_topops` names `tpose`, `stbox`
+  and `tstzspan` and nothing else — while each missing file carries TWO:
+  `061/062_tgeo_*` name `tgeometry` AND `tgeography`, `061/062_tpoint_*` name
+  `tgeompoint` AND `tgeogpoint`, and `436/437_tpc_*` name `tpcpoint` AND
+  `tpcpatch` over a `tpcbox` rather than an `stbox`. MEASURED: the tpose render
+  declares 5 operand pairs, the committed geo file 10.
+  ⇒ `render()` substitutes ONE `(base, temp)` pair, so a cloned entry would emit
+  HALF of each of those files and silently drop the other temporal type. Closing
+  this needs the template taught to interleave two temporal types — a generator
+  capability, not a manifest entry — which is the same limit recorded for the
+  three families that stay on `compops_families`.
+
 - The `subtypes:` `spatialrels` behaviour (the ever/always SQL wrapper *file*, as
   opposed to the C kernel above) covers the cast-delegated families (th3index,
   tquadbin, tnpoint); cbuffer/pose/rgeo's own wrapper files (212/112/170) stay
