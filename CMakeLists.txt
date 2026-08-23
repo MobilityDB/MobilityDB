@@ -518,9 +518,18 @@ endif()
 message(STATUS "POSTGIS_GEOS_VERSION: ${POSTGIS_GEOS_VERSION}")
 
 # Proj reprojection library
+# The version is required as a plain check rather than as an argument to
+# find_package: PROJ's own package configuration accepts a requested version
+# only when its major number equals the installed one, so a minimum expressed
+# there would reject every later major release.
 find_package(PROJ REQUIRED)
 include_directories(SYSTEM ${PROJ_INCLUDE_DIRS})
 math(EXPR POSTGIS_PROJ_VERSION "${PROJ_VERSION_MAJOR} * 10 + ${PROJ_VERSION_MINOR}")
+if(POSTGIS_PROJ_VERSION LESS 61)
+  message(FATAL_ERROR "PROJ 6.1 or later is required, ${PROJ_VERSION} found. The "
+    "transform path applies the axis order a visualisation expects through "
+    "proj_normalize_for_visualization(), which PROJ publishes from 6.1.0 on.")
+endif()
 message(STATUS "POSTGIS_PROJ_VERSION: ${POSTGIS_PROJ_VERSION}")
 
 # JSON-C library (used for MF-JSON input/output)
