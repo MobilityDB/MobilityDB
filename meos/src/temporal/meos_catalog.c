@@ -1302,6 +1302,35 @@ ensure_tnumber_basetype(MeosType type)
   return false;
 }
 
+/**
+ * @brief Return true if the type is a temporal type whose base type carries an
+ * order
+ * @details The temporal numbers and `ttext`. `tbool` and `tjsonb` are excluded:
+ * PostgreSQL orders both so that they can be B-tree indexed, and an index
+ * artifact is not a meaning to expose — the minimum of a temporal JSONB value
+ * over time answers nothing. The spatial types are excluded for the same
+ * reason.
+ */
+bool
+torder_type(MeosType type)
+{
+  return (type == T_TINT || type == T_TBIGINT || type == T_TFLOAT ||
+    type == T_TTEXT);
+}
+
+/**
+ * @brief Ensure that a type is a temporal type whose base type carries an order
+ */
+bool
+ensure_torder_type(MeosType type)
+{
+  if (torder_type(type))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+    "The temporal value must be of a type whose base type carries an order");
+  return false;
+}
+
 
 /**
  * @brief Return true if the type is a span number type

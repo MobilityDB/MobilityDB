@@ -2036,7 +2036,8 @@ Temporal *
 tlt_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_temporal_temporal(temp1, temp2))
+  if (! ensure_valid_temporal_temporal(temp1, temp2) ||
+      ! ensure_torder_type(temp1->temptype))
     return NULL;
   return tcomp_temporal_temporal(temp1, temp2, &datum2_lt);
 }
@@ -2155,7 +2156,8 @@ Temporal *
 tle_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_temporal_temporal(temp1, temp2))
+  if (! ensure_valid_temporal_temporal(temp1, temp2) ||
+      ! ensure_torder_type(temp1->temptype))
     return NULL;
   return tcomp_temporal_temporal(temp1, temp2, &datum2_le);
 }
@@ -2268,7 +2270,8 @@ Temporal *
 tgt_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_temporal_temporal(temp1, temp2))
+  if (! ensure_valid_temporal_temporal(temp1, temp2) ||
+      ! ensure_torder_type(temp1->temptype))
     return NULL;
   return tcomp_temporal_temporal(temp1, temp2, &datum2_gt);
 }
@@ -2387,7 +2390,8 @@ Temporal *
 tge_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_temporal_temporal(temp1, temp2))
+  if (! ensure_valid_temporal_temporal(temp1, temp2) ||
+      ! ensure_torder_type(temp1->temptype))
     return NULL;
   return tcomp_temporal_temporal(temp1, temp2, &datum2_ge);
 }

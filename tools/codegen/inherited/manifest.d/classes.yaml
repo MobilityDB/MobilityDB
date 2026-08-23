@@ -38,6 +38,9 @@ classes:
   tnumber:
     predicate: tnumber_type
     members: [tfloat, tint, tbigint]
+  torder:
+    predicate: torder_type
+    members: [tint, tbigint, tfloat, ttext]
   tspatial:
     predicate: tspatial_type
     members: [tgeompoint, tgeogpoint, tnpoint, tpose, tposechain, tcbuffer, tgeometry, tgeography, trgeometry, th3index, tquadbin, tpcpoint, tpcpatch]

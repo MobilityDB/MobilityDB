@@ -293,6 +293,8 @@ extern bool talphanum_type(MeosType type);
 extern bool talpha_type(MeosType type);
 extern bool tnumber_type(MeosType type);
 extern bool ensure_tnumber_type(MeosType type);
+extern bool torder_type(MeosType type);
+extern bool ensure_torder_type(MeosType type);
 extern bool ensure_tnumber_basetype(MeosType type);
 extern bool tnumber_spantype(MeosType type);
 extern bool spatial_basetype(MeosType type);

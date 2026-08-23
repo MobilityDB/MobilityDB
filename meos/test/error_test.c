@@ -202,6 +202,30 @@ int main(void)
   assert(meos_errno() == 0);
   printf("geo_transform(4326 -> 3857): %s\n", geo_as_ewkt(webmerc, 2));
 
+  /* An ordered comparison admits only a temporal type whose base type carries
+   * an order. A geometry has a B-tree order so that it can be indexed, which is
+   * not a meaning to compare over time, so the call declines */
+  meos_errno_reset();
+  Temporal *tpt1 = tgeompoint_in("[Point(1 1)@2000-01-01, Point(2 2)@2000-01-02]");
+  Temporal *tpt2 = tgeompoint_in("[Point(2 2)@2000-01-01, Point(3 3)@2000-01-02]");
+  assert(tpt1 != NULL && tpt2 != NULL && meos_errno() == 0);
+  Temporal *unordered = tlt_temporal_temporal(tpt1, tpt2);
+  printf("tlt_temporal_temporal(tgeompoint, tgeompoint): %s, errno %d\n",
+    unordered ? "answered" : "declined", meos_errno());
+  assert(unordered == NULL);
+  assert(meos_errno() != 0);
+
+  /* The same comparison over a temporal integer answers, so the decline above
+   * discriminates */
+  meos_errno_reset();
+  Temporal *ordered = tlt_temporal_temporal(num, num);
+  assert(ordered != NULL);
+  assert(meos_errno() == 0);
+  printf("tlt_temporal_temporal(tint, tint): answered, errno %d\n",
+    meos_errno());
+  free(ordered);
+  free(tpt1); free(tpt2);
+
   meos_errno_reset();
 
   free(wgs84); free(webmerc);
