@@ -2271,16 +2271,21 @@ set_flags_from_wkb_state(meos_wkb_parse_state *s, uint8_t wkb_flags)
   s->has_srid = false;
   if (wkb_flags & MEOS_WKB_ORDERED)
     s->ordered = true;
-  /* Get the flags */
+  /* The Z and geodetic bits state what a base type derives from its own flags */
   if (spatial_basetype(s->basetype))
   {
     if (wkb_flags & MEOS_WKB_ZFLAG)
       s->hasz = true;
     if (wkb_flags & MEOS_WKB_GEODETICFLAG)
       s->geodetic = true;
-    if (wkb_flags & MEOS_WKB_SRIDFLAG)
-      s->has_srid = true;
   }
+  /* The SRID bit states whether the writer put an SRID on the wire, which the
+   * form is self-describing about: a set of a base type deriving no flags of
+   * its own still carries one when its elements have an SRID. Deciding it here
+   * from anything but the bit desynchronises the reader from
+   * #set_flags_to_wkb_buf and the count is then read from the SRID's bytes. */
+  if (wkb_flags & MEOS_WKB_SRIDFLAG)
+    s->has_srid = true;
   return;
 }
 

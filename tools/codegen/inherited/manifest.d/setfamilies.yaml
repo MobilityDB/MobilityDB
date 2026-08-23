@@ -22,8 +22,9 @@
 #                     time  = <<# #>> &<# #&>  (date + timestamptz)
 #                     omitted when not ordered
 #   metric            true where `<->` / setDistance is deployed today
-#   spatial           true where the set carries a bounding box —
-#                     spatialset_type() (meos_catalog.c:909-914)
+#   spatial           true where the set carries a bounding box. This is NOT
+#                     spatialset_type(), which answers whether the elements
+#                     carry an SRID — a set is spatial without holding a box.
 setfamilies:
   - {set: intset,     base: integer,     ordered: true,  posops_spelling: value, metric: true,  spatial: false}
   - {set: bigintset,  base: bigint,      ordered: true,  posops_spelling: value, metric: true,  spatial: false}
@@ -45,7 +46,8 @@ setfamilies:
   - {set: jsonbset,   base: jsonb,       ordered: false,                         metric: false, spatial: false}
   - {set: h3indexset, base: h3index,     ordered: false,                         metric: false, spatial: true}
   - {set: quadbinset, base: quadbin,     ordered: false,                         metric: false, spatial: true}
-  # pointcloud sets are NOT spatialset_type(): they carry no bounding box —
-  # pointcloudset_type() (meos_catalog.c:950-954) is the separate predicate.
+  # pointcloud sets ARE spatialset_type() — their elements carry an SRID — and
+  # carry no bounding box, which is what this column states: the dimensions of
+  # a pcpoint need the schema XML keyed by pcid, which MEOS cannot read.
   - {set: pcpointset, base: pcpoint,     ordered: false,                         metric: false, spatial: false}
   - {set: pcpatchset, base: pcpatch,     ordered: false,                         metric: false, spatial: false}

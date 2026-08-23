@@ -85,4 +85,29 @@ WHERE s IS NOT NULL AND pcpatchsetFromHexWKB(asHexWKB(s)) <> s;
 SELECT COUNT(*) FROM tbl_pcpatchset
 WHERE s IS NOT NULL AND pcpatchsetFromHexWKB(asHexEWKB(s)) <> s;
 
+-- The extended form carries the SRID the plain one omits, and a round trip
+-- holds either way, so only a comparison of the two forms sees it. The fixture
+-- registers its only schema with SRID 0, where the two forms agree by
+-- definition, so a schema carrying an SRID is what makes the question
+-- answerable.
+SELECT COUNT(*) FROM tbl_pcpointset
+WHERE s IS NOT NULL AND asEWKB(s) = asBinary(s);
+SELECT COUNT(*) FROM tbl_pcpatchset
+WHERE s IS NOT NULL AND asEWKB(s) = asBinary(s);
+
+INSERT INTO pointcloud_formats (pcid, srid, schema)
+SELECT 3, 4326, schema FROM pointcloud_formats WHERE pcid = 1;
+
+-- Of a schema carrying an SRID: the extended form is the four bytes of the
+-- SRID longer, differs from the plain one, and both still round-trip.
+WITH t AS (SELECT set(ARRAY[pcpoint(3, 1.0, 1.0, 1.0),
+  pcpoint(3, 2.0, 2.0, 2.0)]) AS s)
+SELECT asEWKB(s) <> asBinary(s) AS differ,
+  octet_length(asEWKB(s)) - octet_length(asBinary(s)) AS extra_bytes,
+  pcpointsetFromBinary(asEWKB(s)) = s AS ewkb_roundtrips,
+  pcpointsetFromBinary(asBinary(s)) = s AS wkb_roundtrips
+FROM t;
+
+DELETE FROM pointcloud_formats WHERE pcid = 3;
+
 -------------------------------------------------------------------------------

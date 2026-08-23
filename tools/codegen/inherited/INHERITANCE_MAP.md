@@ -652,22 +652,27 @@ axes are cited by `manifest.d/<axis>.yaml` filename, not by line number.
 | `Span<T>` (**5**) | intspan, bigintspan, floatspan, datespan, tstzspan | `MEOS_SPANTYPE_CATALOG` :287-295 · `span_type()` :982-987 |
 | `SpanSet<T>` (**5**) | intspanset, bigintspanset, floatspanset, datespanset, tstzspanset | `MEOS_SPANSETTYPE_CATALOG` :301-309 · `spanset_type()` :1080-1085 |
 
-Sub-predicates, all live at master `74c28447cf`: `spatialset_type()` :912 =
-geomset, geogset, npointset, poseset, posechainset, cbufferset, h3indexset,
-quadbinset (**8**). `numset_type()` :818 · `timeset_type()` :845 ·
-`geoset_type()` :889 · `alphanumset_type()` :877 · `pointcloudset_type()` :955 =
-pcpointset, pcpatchset.
+Sub-predicates: `spatialset_type()` = geomset, geogset, npointset, poseset,
+posechainset, cbufferset, h3indexset, quadbinset, pcpointset, pcpatchset
+(**10**). `numset_type()` · `timeset_type()` · `geoset_type()` ·
+`alphanumset_type()` · `pointcloudset_type()` = pcpointset, pcpatchset, which
+names the two sets whose dimensions need the schema, not a class outside the
+spatial one.
 
-⛔ **`spatialset_type()` NAMES SPATIALITY AND CURRENTLY ENCODES BBOX-CARRYING, AND
-THE TWO COME APART.** `set_bbox_size()` (`set.c`) returns `0` for a pointcloud set,
-which is why `pointcloudset_type()` holds them instead — yet the pointcloud family
-publishes `SRID(pcpoint)`, `SRID(pcpatch)`, `SRID(tpcpoint)` and `SRID(tpcbox)`, and
-`SRID(tpcpoint)` binds the GENERIC `Tspatial_srid`, which the committed pointcloud
-expected output records answering and agreeing with `pointcloud_formats`. A type
-carrying an SRID is spatial, so the exclusion charges a BBOX property to a
-SPATIALITY predicate, and 14 dispatch sites carry a second `|| pointcloud_*` clause
-as a result. The three properties the predicate conflates — carries an SRID, has
-schema-derivable flags, stores a bbox — each need their own predicate.
+⭐ **`spatialset_type()` NAMES SPATIALITY, AND THE BBOX QUESTION IS ANSWERED
+ELSEWHERE.** The two came apart at the pointcloud family: `set_bbox_size()`
+(`set.c`) returns `0` for a pointcloud set, while the family publishes
+`SRID(pcpoint)`, `SRID(pcpatch)`, `SRID(tpcpoint)` and `SRID(tpcbox)`, and
+`SRID(tpcpoint)` binds the GENERIC `Tspatial_srid`. A type carrying an SRID is
+spatial, so a site meaning *stores a box* now reads `type_bboxtype(t) == T_STBOX`
+and the spatial predicate answers only about spatiality. Three properties were
+conflated — carries an SRID, has schema-derivable flags, stores a bbox — and each
+has its own predicate now.
+⛔ The SRID is what a set's EXTENDED binary form writes, so all four sites deciding
+it read one predicate: `set_to_wkb_size`, `set_to_wkb_buf`, `set_flags_to_wkb_buf`
+and, on the reading side, `set_flags_from_wkb_state`, which honours the wire's own
+SRID bit. A reader re-deriving that decision from a base-type predicate reads the
+element count out of the SRID's bytes.
 
 ⭐ **THE CELL SETS ARE NOT THE SAME CASE.** `h3indexset`/`quadbinset` sit in
 `spatialset_type()` and declare no `SRID`/`setSRID`/`transform`, and that is
@@ -682,7 +687,7 @@ inherited from the `ways` network table.
 
 ### 9.1b `SpatialSet<T>` — the subclass surface, derived from `Spatial<T>`
 
-`SpatialSet<T>` = `spatialset_type()` (**8** members). Its surface is the set-lift
+`SpatialSet<T>` = `spatialset_type()` (**10** members). Its surface is the set-lift
 of what a spatial BASE type carries BECAUSE it is spatial — the operations left
 after removing what every value type has (comparisons, `hash`, the set operations,
 ever/always, `asText`/`asBinary`/`asHexWKB`). Counted from the `CREATE FUNCTION`
@@ -813,7 +818,7 @@ flags the per-surface set axes implement as deployment gates.
 | `ordered` | the base has a SEMANTIC total order (int, bigint, float, text, date, timestamptz) — **this flag is what decides whether position operators are emitted at all**; the 10 unordered bases get none |
 | `posops_spelling` | `value` = `<< >> &< &>` (numbers + text) · `time` = `<<# #>> &<# #&>` (date + timestamptz); omitted when not ordered |
 | `metric` | `<->` / `setDistance` is deployed (all ordered bases except text, plus geomset/geogset/npointset/poseset/cbufferset) — the gate of `manifest.d/distance_families.yaml` |
-| `spatial` | the set is `spatialset_type()` (:909-914) — carries a bounding box and the SRS section (§9.3); pcpointset/pcpatchset are `pointcloudset_type()`, not spatial |
+| `spatial` | the set STORES A BOUNDING BOX and carries the SRS section (§9.3). ⛔ NOT `spatialset_type()`, which answers whether the elements carry an SRID: pcpointset/pcpatchset are spatial sets that store no box, so they are `false` here |
 
 Known deployed irregularity the axis does not model: jsonbset has the `<<`/`>>`
 pair (`json/450_jsonbset.in.sql:378-393`, `Left_set_set`/`Right_set_set`)

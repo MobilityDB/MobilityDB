@@ -110,3 +110,34 @@ WHERE s IS NOT NULL AND pcpatchsetFromHexWKB(asHexEWKB(s)) <> s;
      0
 (1 row)
 
+SELECT COUNT(*) FROM tbl_pcpointset
+WHERE s IS NOT NULL AND asEWKB(s) = asBinary(s);
+ count 
+-------
+    75
+(1 row)
+
+SELECT COUNT(*) FROM tbl_pcpatchset
+WHERE s IS NOT NULL AND asEWKB(s) = asBinary(s);
+ count 
+-------
+    75
+(1 row)
+
+INSERT INTO pointcloud_formats (pcid, srid, schema)
+SELECT 3, 4326, schema FROM pointcloud_formats WHERE pcid = 1;
+INSERT 0 1
+WITH t AS (SELECT set(ARRAY[pcpoint(3, 1.0, 1.0, 1.0),
+  pcpoint(3, 2.0, 2.0, 2.0)]) AS s)
+SELECT asEWKB(s) <> asBinary(s) AS differ,
+  octet_length(asEWKB(s)) - octet_length(asBinary(s)) AS extra_bytes,
+  pcpointsetFromBinary(asEWKB(s)) = s AS ewkb_roundtrips,
+  pcpointsetFromBinary(asBinary(s)) = s AS wkb_roundtrips
+FROM t;
+ differ | extra_bytes | ewkb_roundtrips | wkb_roundtrips 
+--------+-------------+-----------------+----------------
+ t      |           4 | t               | t
+(1 row)
+
+DELETE FROM pointcloud_formats WHERE pcid = 3;
+DELETE 1

@@ -407,7 +407,9 @@ spatialarr_as_ewkt(const Datum *spatialarr, MeosType elemtype, int count,
 void
 spatialset_set_stbox(const Set *s, STBox *result)
 {
-  assert(s); assert(result);
+  /* A spatial set carries an SRID; the box it is asked for here is the
+   * separate property the catalog answers, which a point cloud set lacks */
+  assert(s); assert(result); assert(type_bboxtype(s->settype) == T_STBOX);
   memset(result, 0, sizeof(STBox));
   memcpy(result, SET_BBOX_PTR(s), sizeof(STBox));
   return;
@@ -426,7 +428,7 @@ spatialset_set_stbox(const Set *s, STBox *result)
 Datum
 distance_spatialset_value(const Set *s, Datum value)
 {
-  assert(s); assert(spatialset_type(s->settype));
+  assert(s); assert(type_bboxtype(s->settype) == T_STBOX);
   STBox box1, box2;
   spatialset_set_stbox(s, &box1);
   if (! spatial_set_stbox(value, s->basetype, &box2))
@@ -445,7 +447,7 @@ Datum
 distance_spatialset_spatialset(const Set *s1, const Set *s2)
 {
   assert(s1); assert(s2); assert(s1->settype == s2->settype);
-  assert(spatialset_type(s1->settype));
+  assert(type_bboxtype(s1->settype) == T_STBOX);
   STBox box1, box2;
   spatialset_set_stbox(s1, &box1);
   spatialset_set_stbox(s2, &box2);

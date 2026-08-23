@@ -605,12 +605,15 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
      * a temporal point while the original function gets a geometry.
      */
     MeosType type = oid_meostype(stats->attrtypid);
-    assert(spatialset_type(type) || tspatial_type(type)
+    /* The set branch reads a bounding box the set stores, which is the
+     * property the catalog answers and not the spatiality of its elements */
+    assert((set_type(type) && type_bboxtype(type) == T_STBOX) ||
+      tspatial_type(type)
 #if POINTCLOUD
       || tpointcloud_temptype(type)
 #endif
       );
-    if (spatialset_type(type))
+    if (set_type(type))
     {
       /* Get bounding box from spatial set */
       Set *set = DatumGetSetP(datum);
@@ -1188,7 +1191,7 @@ Spatialset_analyze(PG_FUNCTION_ARGS)
   VacAttrStats *stats = (VacAttrStats *) PG_GETARG_POINTER(0);
 
   /* Ensure type has a STBox as a bounding box */
-  assert(spatialset_type(oid_meostype(stats->attrtypid)));
+  assert(type_bboxtype(oid_meostype(stats->attrtypid)) == T_STBOX);
 
   /*
    * Call the standard typanalyze function. It may fail to find needed
