@@ -99,7 +99,7 @@
  * Internal function accessing the PROJ library
  *****************************************************************************/
 
-extern PJ_CONTEXT *proj_get_context(void);
+extern PJ_CONTEXT *meos_proj_get_context(void);
 
 /*****************************************************************************
  * Internal function accessing the GEOS library

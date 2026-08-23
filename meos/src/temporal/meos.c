@@ -186,10 +186,13 @@ proj_finalize(void)
 #endif /* MEOS */
 
 /**
- * @brief Get the random generator used by temporal aggregation
+ * @brief Return the per-thread PROJ context
+ * @note Named with the @p meos_ prefix
+ * because PROJ owns the @p proj_ one, where it publishes 26 @p proj_get_* entry points; the
+ * sibling @p geos_get_context needs no such qualification, GEOS using @p GEOS instead.
  */
 PJ_CONTEXT *
-proj_get_context(void)
+meos_proj_get_context(void)
 {
   if (! MEOS_PJ_CONTEXT)
     proj_initialize();

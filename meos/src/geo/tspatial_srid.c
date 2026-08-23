@@ -560,7 +560,7 @@ point_transf_pj(GSERIALIZED *gs, int32_t srid_to, const LWPROJ *pj)
      * which PROJ states as the reason it replaces the function; MEOS answers
      * from several threads at once, so the text is read from the context */
 #if POSTGIS_PROJ_VERSION >= 80
-    const char *pj_errno_str = proj_context_errno_string(proj_get_context(),
+    const char *pj_errno_str = proj_context_errno_string(meos_proj_get_context(),
       pj_errno_val);
 #else
     const char *pj_errno_str = proj_errno_string(pj_errno_val);
