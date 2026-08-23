@@ -297,19 +297,22 @@ SELECT ST_AsText(geom(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(5 0)
 	<sect1 xml:id="trgeometry_traversed_area">
 		<title>Área recorrida</title>
 
-		<para>La función <varname>traversedArea</varname> devuelve la unión de cada geometría materializada sobre el dominio temporal de la trgeometry: la huella espacial del cuerpo en movimiento.</para>
+		<para>La función <varname>traversedArea</varname> devuelve la región que el cuerpo en movimiento cubre sobre el dominio temporal de la trgeometry: las colocaciones que toma, o la unión de ellas cuando se le pide.</para>
 
 		<itemizedlist>
 			<listitem xml:id="trgeometry_traversedArea_func">
 				<indexterm significance="normal"><primary><varname>traversedArea</varname></primary></indexterm>
-				<para>Devuelve la unión de los polígonos materializados a lo largo del dominio temporal de la trgeometry</para>
-				<para><varname>traversedArea(trgeometry [, unary_union boolean = true]) → geometry</varname></para>
+				<para>Devuelve el área atravesada por la geometría rígida temporal</para>
+				<para><varname>traversedArea(trgeometry, unary_union=false) → geometry</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT ST_AsText(traversedArea(
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]'));
--- POLYGON((0 0, 11 0, 11 1, 0 1, 0 0))
+-- MULTIPOLYGON(((0 0,1 0,1 1,0 1,0 0)),((10 0,11 0,11 1,10 1,10 0)))
+SELECT ST_AsText(traversedArea(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]', true));
+-- POLYGON((0 0,0 1,11 1,11 0,0 0))
 </programlisting>
-				<para>Con <varname>unary_union = false</varname> la función devuelve una GeometryCollection de los polígonos materializados por instante sin disolverlos, lo que resulta útil cuando quien llama desea hacer su propio posprocesamiento.</para>
+				<para>El argumento es falso salvo que se indique, y la función responde entonces las colocaciones mismas reunidas en una geometría, un multipolígono para un cuerpo que es un polígono, que es lo que quiere quien llama y hace su propio posprocesamiento. Con <varname>unary_union = true</varname> se disuelven en la región que cubren.</para>
 				<para><emphasis>Advertencia de muestreo:</emphasis> la implementación muestrea en los instantes de entrada, de modo que los segmentos de traslación pura son exactos, pero la cinta barrida entre dos instantes donde ocurre una rotación se aproxima mediante la envolvente convexa de los dos polígonos extremos. Sobremuestrear la <varname>tpose</varname> antes de construir la <varname>trgeometry</varname> ajusta la aproximación.</para>
 			</listitem>
 		</itemizedlist>

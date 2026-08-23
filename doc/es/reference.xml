@@ -2458,7 +2458,7 @@
 			<title>Área recorrida</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="trgeometry_traversedArea_func"><varname>traversedArea</varname></link>: Devuelve la unión de los polígonos materializados a lo largo del dominio temporal de la trgeometry</para>
+					<para><link linkend="trgeometry_traversedArea_func"><varname>traversedArea</varname></link>: Devuelve el área atravesada por la geometría rígida temporal</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
