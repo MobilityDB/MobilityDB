@@ -739,6 +739,30 @@ SELECT round(nearestApproachDistance(tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01
  7.800000
 (1 row)
 
+SELECT round(nearestApproachDistance(tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(4 0), 0.5)@2000-01-05]', stbox 'STBOX XT(((10,-1),(12,1)),[2000-01-01, 2000-01-03])')::numeric, 6);
+  round   
+----------
+ 7.500000
+(1 row)
+
+SELECT round(nearestApproachDistance(stbox 'STBOX XT(((10,-1),(12,1)),[2000-01-01, 2000-01-03])', tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(4 0), 0.5)@2000-01-05]')::numeric, 6);
+  round   
+----------
+ 7.500000
+(1 row)
+
+SELECT round(nearestApproachDistance(tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(4 0), 0.5)@2000-01-05]', stbox 'STBOX X((10,-1),(12,1))')::numeric, 6);
+  round   
+----------
+ 5.500000
+(1 row)
+
+SELECT round(nearestApproachDistance(tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(4 0), 0.5)@2000-01-05]', stbox 'STBOX XT(((10,-1),(12,1)),[2000-02-01, 2000-02-02])')::numeric, 6);
+ round 
+-------
+      
+(1 row)
+
 SELECT ST_AsText(shortestLine(tcbuffer '[Cbuffer(Point(0 0), 1)@2000-01-01, Cbuffer(Point(10 0), 1)@2000-01-02]', cbuffer 'Cbuffer(Point(5 6), 2)'));
       st_astext      
 ---------------------

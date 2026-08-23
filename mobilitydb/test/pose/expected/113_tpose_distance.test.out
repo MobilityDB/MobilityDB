@@ -228,6 +228,30 @@ SELECT round(nearestApproachDistance(tpose '[Pose(Point(0 0),0)@2000-01-01, Pose
      0
 (1 row)
 
+SELECT round(nearestApproachDistance(tpose '[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]', stbox 'STBOX XT(((10,-1),(12,1)),[2000-01-01, 2000-01-03])'), 6);
+ round 
+-------
+     8
+(1 row)
+
+SELECT round(nearestApproachDistance(stbox 'STBOX XT(((10,-1),(12,1)),[2000-01-01, 2000-01-03])', tpose '[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]'), 6);
+ round 
+-------
+     8
+(1 row)
+
+SELECT round(nearestApproachDistance(tpose '[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]', stbox 'STBOX X((10,-1),(12,1))'), 6);
+ round 
+-------
+     6
+(1 row)
+
+SELECT round(nearestApproachDistance(tpose '[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]', stbox 'STBOX XT(((10,-1),(12,1)),[2000-02-01, 2000-02-02])'), 6);
+ round 
+-------
+      
+(1 row)
+
 SELECT round(nearestApproachDistance(
   tpose '[Pose(Point(0 0),0)@2000-01-01, Pose(Point(4 0),0)@2000-01-05]',
   tpose '[Pose(Point(0 2),0)@2000-01-01, Pose(Point(4 2),0)@2000-01-05]'), 6);
