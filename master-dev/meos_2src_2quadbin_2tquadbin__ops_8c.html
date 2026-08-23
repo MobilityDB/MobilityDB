@@ -127,7 +127,7 @@ Variables</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >Datum-convention wrappers for the quadbin static kernel and the <code>quadbin_cellops</code> descriptor that plugs quadbin into the shared temporal cell-index machinery (<a class="el" href="tcellindex_8c.html" title="Shared temporal lifting for the DGGS cell-index family.">meos/src/temporal/tcellindex.c</a>). </p>
-<p >A quadbin cell is a uint64 carried in a Datum with the int8/bigint convention (Int64GetDatum / DatumGetInt64). The cell centroid is emitted as a planar tgeompoint in the cell's lon/lat (SRID 4326); a Web-Mercator (SRID 3857) emission would set point_srid = 3857 and reproject here. </p>
+<p >A quadbin cell is a uint64 carried in a Datum with the int8/bigint convention (Int64GetDatum / DatumGetInt64), holding the Bing Maps Tile System (quadkey) cell of a map uniformly subdivided in the MERCATOR projection into four squares at each resolution from 0 to 26 (<a href="https://docs.carto.com/data-and-analysis/analytics-toolbox-for-bigquery/key-concepts/spatial-indexes">https://docs.carto.com/data-and-analysis/analytics-toolbox-for-bigquery/key-concepts/spatial-indexes</a>). The cell is defined on that projection, and its centroid is emitted as a planar tgeompoint converted to lon/lat (SRID 4326); a Web-Mercator (SRID 3857) emission, which is the cell's own system, would set point_srid = 3857 and skip that conversion. </p>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
