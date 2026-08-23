@@ -202,29 +202,29 @@ CREATE FUNCTION ttext(tjsonb, text, null_handle text DEFAULT 'raise_exception')
 
 /*****************************************************************************/
 
-CREATE FUNCTION tjsonbConcat(jsonb, tjsonb)
+CREATE FUNCTION tConcat(jsonb, tjsonb)
   RETURNS tjsonb
   AS 'MODULE_PATHNAME', 'Concat_jsonb_tjsonb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tjsonbConcat(tjsonb, jsonb)
+CREATE FUNCTION tConcat(tjsonb, jsonb)
   RETURNS tjsonb
   AS 'MODULE_PATHNAME', 'Concat_tjsonb_jsonb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tjsonbConcat(tjsonb, tjsonb)
+CREATE FUNCTION tConcat(tjsonb, tjsonb)
   RETURNS tjsonb
   AS 'MODULE_PATHNAME', 'Concat_tjsonb_tjsonb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR || (
-  PROCEDURE = tjsonbConcat,
+  PROCEDURE = tConcat,
   LEFTARG   = jsonb, RIGHTARG = tjsonb
 );
 CREATE OPERATOR || (
-  PROCEDURE = tjsonbConcat,
+  PROCEDURE = tConcat,
   LEFTARG   = tjsonb, RIGHTARG = jsonb
 );
 CREATE OPERATOR || (
-  PROCEDURE = tjsonbConcat,
+  PROCEDURE = tConcat,
   LEFTARG   = tjsonb, RIGHTARG = tjsonb
 );
 

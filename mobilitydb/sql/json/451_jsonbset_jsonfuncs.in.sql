@@ -156,21 +156,21 @@ CREATE FUNCTION textset(jsonbset, text,
 
 /*****************************************************************************/
 
-CREATE FUNCTION jsonbsetConcat(jsonb, jsonbset)
+CREATE FUNCTION setConcat(jsonb, jsonbset)
   RETURNS jsonbset
   AS 'MODULE_PATHNAME', 'Concat_jsonb_jsonbset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION jsonbsetConcat(jsonbset, jsonb)
+CREATE FUNCTION setConcat(jsonbset, jsonb)
   RETURNS jsonbset
   AS 'MODULE_PATHNAME', 'Concat_jsonbset_jsonb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR || (
-  PROCEDURE = jsonbsetConcat,
+  PROCEDURE = setConcat,
   LEFTARG   = jsonb, RIGHTARG = jsonbset
 );
 CREATE OPERATOR || (
-  PROCEDURE = jsonbsetConcat,
+  PROCEDURE = setConcat,
   LEFTARG   = jsonbset, RIGHTARG = jsonb
 );
 

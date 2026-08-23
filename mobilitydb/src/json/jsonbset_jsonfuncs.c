@@ -177,7 +177,7 @@ PG_FUNCTION_INFO_V1(Concat_jsonb_jsonbset);
 /**
  * @ingroup mobilitydb_json_json
  * @brief Concat a JSONB value with a JSONB set
- * @sqlfn jsonbsetConcat()
+ * @sqlfn setConcat()
  * @sqlop @p ||
  */
 Datum
@@ -199,7 +199,7 @@ PG_FUNCTION_INFO_V1(Concat_jsonbset_jsonb);
 /**
  * @ingroup mobilitydb_json_json
  * @brief Concat a JSONB set with a JSONB value
- * @sqlfn jsonbsetConcat()
+ * @sqlfn setConcat()
  * @sqlop @p ||
  */
 Datum

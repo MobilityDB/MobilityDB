@@ -36,29 +36,29 @@
  * Temporal text concatenation
  *****************************************************************************/
 
-CREATE FUNCTION ttext_cat(text, ttext)
+CREATE FUNCTION tConcat(text, ttext)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Textcat_text_ttext'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION ttext_cat(ttext, text)
+CREATE FUNCTION tConcat(ttext, text)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Textcat_ttext_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION ttext_cat(ttext, ttext)
+CREATE FUNCTION tConcat(ttext, ttext)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Textcat_ttext_ttext'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR || (
-  PROCEDURE = ttext_cat,
+  PROCEDURE = tConcat,
   LEFTARG = text, RIGHTARG = ttext
 );
 CREATE OPERATOR || (
-  PROCEDURE = ttext_cat,
+  PROCEDURE = tConcat,
   LEFTARG = ttext, RIGHTARG = text
 );
 CREATE OPERATOR || (
-  PROCEDURE = ttext_cat,
+  PROCEDURE = tConcat,
   LEFTARG = ttext, RIGHTARG = ttext
 );
 

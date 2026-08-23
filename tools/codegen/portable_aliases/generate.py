@@ -41,8 +41,8 @@ OP_TO_NAME = {
 # portable under its own name -- documented, not a gap.
 ALREADY_NAMED = {
     "@=": "same_rid", "?@": "contained_rid", "@?": "contains_rid",
-    "@@": "overlaps_rid", "&": "tbool_and", "|": "tbool_or",
-    "~": "tbool_not", "||": "tConcat",
+    "@@": "overlaps_rid", "&": "tAnd", "|": "tOr",
+    "~": "tNot", "||": "setConcat / tConcat",
 }
 
 # Coverage-audit buckets: operators that need no portable rename.

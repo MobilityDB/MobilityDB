@@ -48,7 +48,7 @@ PG_FUNCTION_INFO_V1(Textcat_text_ttext);
 /**
  * @ingroup mobilitydb_temporal_text
  * @brief Return the concatenation of a text and a temporal text
- * @sqlfn textcat()
+ * @sqlfn tConcat()
  * @sqlop @p ||
  */
 Datum
@@ -66,7 +66,7 @@ PG_FUNCTION_INFO_V1(Textcat_ttext_text);
 /**
  * @ingroup mobilitydb_temporal_text
  * @brief Return the concatenation of a temporal text and a text
- * @sqlfn textcat()
+ * @sqlfn tConcat()
  * @sqlop @p ||
  */
 Datum
@@ -84,7 +84,7 @@ PG_FUNCTION_INFO_V1(Textcat_ttext_ttext);
 /**
  * @ingroup mobilitydb_temporal_text
  * @brief Return the concatenation of the two temporal texts
- * @sqlfn textcat()
+ * @sqlfn tConcat()
  * @sqlop @p ||
  */
 Datum
