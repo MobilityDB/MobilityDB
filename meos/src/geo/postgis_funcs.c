@@ -2649,7 +2649,14 @@ geo_transform(const GSERIALIZED *gs, int32_t srid_to)
   /* now we have a geometry, and input/output PJ structs. */
   GSERIALIZED *gs1 = geo_copy(gs);
   LWGEOM *lwgeom = lwgeom_from_gserialized(gs1);
-  lwgeom_transform(lwgeom, pj);
+  if (lwgeom_transform(lwgeom, pj) == LW_FAILURE)
+  {
+    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+      "Coordinate transformation failed");
+    lwgeom_free(lwgeom);
+    pfree(gs1);
+    return NULL;
+  }
   lwgeom->srid = srid_to;
 
   /* Re-compute bbox if input had one (COMPUTE_BBOX TAINTING) */
