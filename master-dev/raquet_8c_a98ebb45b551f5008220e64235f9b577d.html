@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: MEOS_PIXTYPE_SUBBYTE</title>
+<title>MobilityDB: MEOS_PIXTYPE_PG_BYTE_BOUNDED</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -85,7 +85,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="raquet_8c_a0d6be4c7a65613a98b1622f06dadf337.html#a0d6be4c7a65613a98b1622f06dadf337">le_uint</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raquet_8c_ab227cef7365d3cc1e8b5d06e0c5adf82.html#ab227cef7365d3cc1e8b5d06e0c5adf82">le_uint_store</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raquet_8c_a9be65fb37cf0986911d59c45cd549182.html#a9be65fb37cf0986911d59c45cd549182">MEOS_PIXTYPE_CATALOG</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="raquet_8c_ace15edba81f0710e75c0ce8f61913093.html#ace15edba81f0710e75c0ce8f61913093">MEOS_PIXTYPE_SUBBYTE</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="raquet_8c_a98ebb45b551f5008220e64235f9b577d.html#a98ebb45b551f5008220e64235f9b577d">MEOS_PIXTYPE_PG_BYTE_BOUNDED</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raquet_8c_ae4d2f752147e9ed1fa8b9fddaa8b4b9c.html#ae4d2f752147e9ed1fa8b9fddaa8b4b9c">pixel_out_of_domain</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raquet_8c_acf26838535a9eeee3d5462938bfdf03b.html#acf26838535a9eeee3d5462938bfdf03b">pixtype_known</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="raquet_8c_ace1d0e282e9230d26ab2cdebb31bc862.html#ace1d0e282e9230d26ab2cdebb31bc862">pixtype_names</a></td></tr>
@@ -124,8 +124,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ace15edba81f0710e75c0ce8f61913093" name="ace15edba81f0710e75c0ce8f61913093"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ace15edba81f0710e75c0ce8f61913093">&#9670;&#160;</a></span>MEOS_PIXTYPE_SUBBYTE</h2>
+<a id="a98ebb45b551f5008220e64235f9b577d" name="a98ebb45b551f5008220e64235f9b577d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a98ebb45b551f5008220e64235f9b577d">&#9670;&#160;</a></span>MEOS_PIXTYPE_PG_BYTE_BOUNDED</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -134,7 +134,7 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">const char* MEOS_PIXTYPE_SUBBYTE[] = { &quot;1BB&quot;, &quot;2BUI&quot;, &quot;4BUI&quot; }</td>
+          <td class="memname">const char* MEOS_PIXTYPE_PG_BYTE_BOUNDED[] = { &quot;1BB&quot;, &quot;2BUI&quot;, &quot;4BUI&quot; }</td>
         </tr>
       </table>
   </td>
@@ -144,7 +144,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Names of the PostGIS raster pixel types that carry less than a byte a pixel, for which a <a class="el" href="structRaquet.html" title="Structure to represent a Raquet raster tile.">Raquet</a> band has no representation. </p>
+<p>Names of the PostGIS raster pixel types that bound a pixel to less than a byte. </p>
+<p >PostGIS raster stores each of them a byte a pixel, as <code>rt_pixtype_size</code> gives them, in the same case group as <code>8BUI</code>. The bit width in the name bounds the values a pixel may hold and says nothing about how the band is stored, so the bytes of such a band are already those of an unsigned 8-bit band and the constructors read them as <code>uint8</code> </p>
 
 </div>
 </div>
