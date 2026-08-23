@@ -3599,8 +3599,11 @@ def catalog_temptype_basetype() -> dict:
     names = catalog_type_names()
     src = (ROOT / CATALOG_NAMES).read_text()
     out = {}
+    # The field is read wherever it sits in the row: a designated initialiser
+    # names its fields, so their order carries no meaning and a row gaining
+    # another field must not silently empty this map.
     for temp_enum, base_enum in re.findall(
-            r"\[(T_[A-Z0-9_]+)\]\s*=\s*\{\s*\.temptype_basetype\s*=\s*(T_[A-Z0-9_]+)\s*\}",
+            r"\[(T_[A-Z0-9_]+)\]\s*=\s*\{[^}]*?\.temptype_basetype\s*=\s*(T_[A-Z0-9_]+)",
             src):
         base = names[base_enum]
         out[names[temp_enum]] = _CATALOG_BASE_SQL_ALIAS.get(base, base)
