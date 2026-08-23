@@ -84,9 +84,11 @@ $(function() {
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;geo/tspatial.h&quot;</code><br />
 <code>#include &lt;assert.h&gt;</code><br />
+<code>#include &lt;float.h&gt;</code><br />
 <code>#include &lt;postgres.h&gt;</code><br />
 <code>#include &lt;varatt.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="meos__geo_8h_source.html">meos_geo.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal__geo_8h_source.html">meos_internal_geo.h</a>&gt;</code><br />
 <code>#include &quot;<a class="el" href="set_8h_source.html">temporal/set.h</a>&quot;</code><br />
@@ -101,6 +103,12 @@ $(function() {
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:gaabbb67953b4152b092cf7cbafcc4085c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__internal__setspan__dist_gaabbb67953b4152b092cf7cbafcc4085c.html#gaabbb67953b4152b092cf7cbafcc4085c">distance_spatialset_spatialset</a> (const <a class="el" href="structSet.html">Set</a> *s1, const <a class="el" href="structSet.html">Set</a> *s2)</td></tr>
+<tr class="memdesc:gaabbb67953b4152b092cf7cbafcc4085c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the distance between two spatial sets.  <a href="group__meos__internal__setspan__dist_gaabbb67953b4152b092cf7cbafcc4085c.html#gaabbb67953b4152b092cf7cbafcc4085c">More...</a><br /></td></tr>
+<tr class="separator:gaabbb67953b4152b092cf7cbafcc4085c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaba37271311e25a3e9dc87784f163810b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__internal__setspan__dist_gaba37271311e25a3e9dc87784f163810b.html#gaba37271311e25a3e9dc87784f163810b">distance_spatialset_value</a> (const <a class="el" href="structSet.html">Set</a> *s, <a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> value)</td></tr>
+<tr class="memdesc:gaba37271311e25a3e9dc87784f163810b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the distance between a spatial set and a value.  <a href="group__meos__internal__setspan__dist_gaba37271311e25a3e9dc87784f163810b.html#gaba37271311e25a3e9dc87784f163810b">More...</a><br /></td></tr>
+<tr class="separator:gaba37271311e25a3e9dc87784f163810b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gab12d217679db3482467f3befac4d4796"><td class="memItemLeft" align="right" valign="top">char **&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__internal__geo__inout_gab12d217679db3482467f3befac4d4796.html#gab12d217679db3482467f3befac4d4796">spatialarr_as_ewkt</a> (const <a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a> *spatialarr, <a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a05df1d1fd2c829ee784b125ed34e8401.html#a05df1d1fd2c829ee784b125ed34e8401">MeosType</a> elemtype, int count, int maxdd)</td></tr>
 <tr class="memdesc:gab12d217679db3482467f3befac4d4796"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the Extended Well-Known Text (EWKT) representation of an array of spatial values.  <a href="group__meos__internal__geo__inout_gab12d217679db3482467f3befac4d4796.html#gab12d217679db3482467f3befac4d4796">More...</a><br /></td></tr>
 <tr class="separator:gab12d217679db3482467f3befac4d4796"><td class="memSeparator" colspan="2">&#160;</td></tr>
