@@ -667,12 +667,12 @@ SELECT valueTimeTiles(tfloat '[15@2001-01-15, 25@2001-01-25]'::tbox, 2.0, '2 day
 					<indexterm significance="normal"><primary><varname>spaceTimeTiles</varname></primary></indexterm>
 					<para>Devuelve el conjunto de mosaicos que cubre un cuadro delimitador espaciotemporal con mosaicos del mismo tamaño y/o duración &Z_support; &SRF;</para>
 					<para><varname>spaceTiles(stbox,xsize float,[ysize float,zsize float,] </varname></para>
-					<para><varname>  sorigin geompoint='Point(0 0 0)',borderInc bool=true) → {(index,tile)}</varname></para>
+					<para><varname>  sorigin geompoint='Point(0 0 0)',borderInc boolean=true) → {(index,tile)}</varname></para>
 					<para><varname>timeTiles(stbox,duration interval,torigin timestamptz='2000-01-03',</varname></para>
-					<para><varname>  borderInc bool=true) → {(index,tile)}</varname></para>
+					<para><varname>  borderInc boolean=true) → {(index,tile)}</varname></para>
 					<para><varname>spaceTimeTiles(stbox,xsize float,[ysize float,zsize float,]duration interval,</varname></para>
 					<para><varname>  sorigin geompoint='Point(0 0 0)',torigin timestamptz='2000-01-03',</varname></para>
-					<para><varname>  borderInc bool=true) → {(index,tile)}</varname></para>
+					<para><varname>  borderInc boolean=true) → {(index,tile)}</varname></para>
 					<para>Si el origen de las dimensiones espacial y/o de tiempo no se especifican, su valor se establece por defecto en <varname>'Point (0 0 0)'</varname> y en el lunes 3 de enero de 2000, respectivamente. El argumento opcional <varname>borderInc</varname> indica si se incluye el borde superior de la extensión y, por lo tanto, se generan mosaicos adicionales que contienen el borde.</para>
 					<para>En el caso de una malla espacio-temporal, <varname>ysize</varname> y <varname>zsize</varname> son opcionales, se supone que el tamaño de las dimensiones faltantes es igual a <varname>xsize</varname>. El SRID de las coordenadas de los mosaicos está determinado por el del cuadro de entrada y el tamaño se da en las unidades del SRID. Si se especifica el origen de las coordenadas espaciales, que debe ser un punto, su dimensionalidad y SRID deben ser iguales al del cuadro delimitador, de lo contrario se genera un error.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -835,12 +835,12 @@ SELECT valueTimeBoxes(tfloat '[1@2000-01-01, 2@2000-01-02, 1@2000-01-03, 4@2000-
 					<indexterm significance="normal"><primary><varname>spaceTimeBoxes</varname></primary></indexterm>
 					<para>Devuelve una matriz de cuadros espaciotemporales obtenidos a partir de los instantes o segmentos de un punto temporal con respecto a un mosaico espacial y/o temporal &Z_support;</para>
 					<para><varname>spaceBoxes(tgeompoint,xsize float,[ysize float,zsize float,] </varname></para>
-					<para><varname>  sorigin geompoint='Point(0 0 0)',borderInc bool=true) → stbox[]</varname></para>
+					<para><varname>  sorigin geompoint='Point(0 0 0)',borderInc boolean=true) → stbox[]</varname></para>
 					<para><varname>timeBoxes(tgeompoint,duration interval,torigin timestamptz='2000-01-03',</varname></para>
-					<para><varname>  borderInc bool=true) → stbox[]</varname></para>
+					<para><varname>  borderInc boolean=true) → stbox[]</varname></para>
 					<para><varname>spaceTimeBoxes(tgeompoint,xsize float,[ysize float,zsize float,]duration interval,</varname></para>
 					<para><varname>  sorigin geompoint='Point(0 0 0)',torigin timestamptz='2000-01-03',</varname></para>
-					<para><varname>  borderInc bool=true) → stbox[]</varname></para>
+					<para><varname>  borderInc boolean=true) → stbox[]</varname></para>
 					<para>La elección entre instantes o segmentos depende de si la interpolación es discreta o continua. Los argumentos <varname>ysize</varname> y <varname>zsize</varname> son opcionales, se supone que el tamaño de las dimensiones faltantes es igual a <varname>xsize</varname>. El SRID de las coordenadas del mosaico se determina por el punto temporal y los tamaños se dan en las unidades del SRID. Si se proporciona el origen de las coordenadas espaciales, que debe ser un punto, su dimensionalidad y SRID deben ser iguales a los del punto temporal, de lo contrario se genera un error. Si el origen de la dimensión espacial y/o el tiempo no se especifica, su valor se establece por defecto en <varname>'Point(0 0 0)'</varname> y en el lunes 3 de enero de 2000, respectivamente. El argumento opcional <varname>borderInc</varname> indica si se incluye el borde superior de la extensión y, por lo tanto, se generan mosaicos adicionales que contienen el borde.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT spaceBoxes(tgeompoint '{Point(1 1)@2000-01-01, Point(2 2)@2000-01-02,
@@ -965,7 +965,7 @@ FROM (SELECT valueTimeSplit(tfloat '[1@2001-02-01, 10@2001-02-10)', 5.0, '5 days
 					<indexterm significance="normal"><primary><varname>timeSplit</varname></primary></indexterm>
 					<para>Fragmentar un punto temporal con respecto a una malla espacial o espacio-temporal &SRF;</para>
 					<para><varname>spaceSplit(tgeompoint,xsize float,[ysize float,zsize float,]</varname></para>
-					<para><varname>  origin geompoint='Point(0 0 0)',bitmatrix boolean=true,borderInc bool=true) →</varname></para>
+					<para><varname>  origin geompoint='Point(0 0 0)',bitmatrix boolean=true,borderInc boolean=true) →</varname></para>
 					<para><varname>  {(point,tpoint)}</varname></para>
 					<para><varname>timeSplit(tgeompoint,duration interval,torigin timestamptz='2000-01-03',</varname></para>
 					<para><varname>  bitmatrix boolean=true,borderInc boolean=true) → {(point,time,tpoint)}</varname></para>

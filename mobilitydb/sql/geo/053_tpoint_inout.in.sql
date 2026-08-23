@@ -97,47 +97,47 @@ CREATE FUNCTION tgeogpointFromHexEWKB(text)
  * Output
  *****************************************************************************/
 
-CREATE FUNCTION asText(tgeompoint, maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asText(tgeompoint, maxdecimaldigits integer DEFAULT 15)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Tspatial_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asText(tgeompoint[], maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asText(tgeompoint[], maxdecimaldigits integer DEFAULT 15)
   RETURNS text[]
   AS 'MODULE_PATHNAME', 'Spatialarr_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asText(tgeogpoint, maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asText(tgeogpoint, maxdecimaldigits integer DEFAULT 15)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Tspatial_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asText(tgeogpoint[], maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asText(tgeogpoint[], maxdecimaldigits integer DEFAULT 15)
   RETURNS text[]
   AS 'MODULE_PATHNAME', 'Spatialarr_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asText(geometry[], maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asText(geometry[], maxdecimaldigits integer DEFAULT 15)
   RETURNS text[]
   AS 'MODULE_PATHNAME', 'Spatialarr_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asText(geography[], maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asText(geography[], maxdecimaldigits integer DEFAULT 15)
   RETURNS text[]
   AS 'MODULE_PATHNAME', 'Spatialarr_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asEWKT(tgeompoint, maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asEWKT(tgeompoint, maxdecimaldigits integer DEFAULT 15)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Tspatial_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asEWKT(tgeompoint[], maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asEWKT(tgeompoint[], maxdecimaldigits integer DEFAULT 15)
   RETURNS text[]
   AS 'MODULE_PATHNAME', 'Spatialarr_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asEWKT(tgeogpoint, maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asEWKT(tgeogpoint, maxdecimaldigits integer DEFAULT 15)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Tspatial_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asEWKT(tgeogpoint[], maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asEWKT(tgeogpoint[], maxdecimaldigits integer DEFAULT 15)
   RETURNS text[]
   AS 'MODULE_PATHNAME', 'Spatialarr_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -147,31 +147,31 @@ CREATE FUNCTION asEWKT(tgeogpoint[], maxdecimaldigits int4 DEFAULT 15)
 -- back the same asEWKT(geometry) surface with the geo_as_ewkt() kernel. Together
 -- with transform(geometry, integer) this lets one portable generator/suite use
 -- MobilityDB names (asEWKT, transform) instead of PostGIS-only ST_AsEWKT/ST_Transform.
-CREATE FUNCTION asEWKT(geometry, maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asEWKT(geometry, maxdecimaldigits integer DEFAULT 15)
   RETURNS text
   AS 'SELECT @extschema@.ST_AsEWKT($1, $2)'
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asEWKT(geography, maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asEWKT(geography, maxdecimaldigits integer DEFAULT 15)
   RETURNS text
   AS 'SELECT @extschema@.ST_AsEWKT($1, $2)'
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asEWKT(geometry[], maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asEWKT(geometry[], maxdecimaldigits integer DEFAULT 15)
   RETURNS text[]
   AS 'MODULE_PATHNAME', 'Spatialarr_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asEWKT(geography[], maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asEWKT(geography[], maxdecimaldigits integer DEFAULT 15)
   RETURNS text[]
   AS 'MODULE_PATHNAME', 'Spatialarr_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asMFJSON(tgeompoint, options int4 DEFAULT 0,
-    flags int4 DEFAULT 0, maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asMFJSON(tgeompoint, options integer DEFAULT 0,
+    flags integer DEFAULT 0, maxdecimaldigits integer DEFAULT 15)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_as_mfjson'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asMFJSON(tgeogpoint, options int4 DEFAULT 0,
-    flags int4 DEFAULT 0, maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asMFJSON(tgeogpoint, options integer DEFAULT 0,
+    flags integer DEFAULT 0, maxdecimaldigits integer DEFAULT 15)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_as_mfjson'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

@@ -281,11 +281,11 @@ CREATE FUNCTION tjsonbInsert(tjsonb, path text[], val jsonb,
   AS 'MODULE_PATHNAME', 'Tjsonb_insert'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tjsonStripNulls(ttext, bool DEFAULT FALSE)
+CREATE FUNCTION tjsonStripNulls(ttext, boolean DEFAULT FALSE)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Tjson_strip_nulls'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tjsonbStripNulls(tjsonb, bool DEFAULT FALSE)
+CREATE FUNCTION tjsonbStripNulls(tjsonb, boolean DEFAULT FALSE)
   RETURNS tjsonb
   AS 'MODULE_PATHNAME', 'Tjsonb_strip_nulls'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

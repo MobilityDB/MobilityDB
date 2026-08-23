@@ -110,8 +110,8 @@ CREATE FUNCTION poseFromGeoPose(text)
 
 -- conformance: 0 = Basic-Quaternion (default), 1 = Basic-YPR, 2 = Advanced
 -- maxdecimaldigits: significant digits to keep; -1 = lossless
-CREATE FUNCTION asGeoPose(pose, conformance int4 DEFAULT 0,
-    maxdecimaldigits int4 DEFAULT -1)
+CREATE FUNCTION asGeoPose(pose, conformance integer DEFAULT 0,
+    maxdecimaldigits integer DEFAULT -1)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Pose_as_geopose'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -130,20 +130,20 @@ CREATE FUNCTION applyPose(pose, pose)
 
 /*****************************************************************************/
 
-CREATE FUNCTION asText(pose, maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asText(pose, maxdecimaldigits integer DEFAULT 15)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Pose_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asText(pose[], maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asText(pose[], maxdecimaldigits integer DEFAULT 15)
   RETURNS text[]
   AS 'MODULE_PATHNAME', 'Spatialarr_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asEWKT(pose, maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asEWKT(pose, maxdecimaldigits integer DEFAULT 15)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Pose_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asEWKT(pose[], maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asEWKT(pose[], maxdecimaldigits integer DEFAULT 15)
   RETURNS text[]
   AS 'MODULE_PATHNAME', 'Spatialarr_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -353,7 +353,7 @@ CREATE FUNCTION gt(pose, pose)
   AS 'MODULE_PATHNAME', 'Pose_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION cmp(pose, pose)
-  RETURNS int4
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Pose_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 

@@ -76,7 +76,7 @@ CREATE FUNCTION stboxFromHexWKB(text)
   AS 'MODULE_PATHNAME', 'Stbox_from_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asText(stbox, maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asText(stbox, maxdecimaldigits integer DEFAULT 15)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Stbox_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -335,7 +335,7 @@ CREATE FUNCTION tMaxInc(stbox)
   AS 'MODULE_PATHNAME', 'Stbox_tmax_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION area(stbox, spheroid bool DEFAULT true)
+CREATE FUNCTION area(stbox, spheroid boolean DEFAULT true)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Stbox_area'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -343,7 +343,7 @@ CREATE FUNCTION volume(stbox)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Stbox_volume'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION perimeter(stbox, spheroid bool DEFAULT true)
+CREATE FUNCTION perimeter(stbox, spheroid boolean DEFAULT true)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Stbox_perimeter'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -713,7 +713,7 @@ CREATE FUNCTION gt(stbox, stbox)
   AS 'MODULE_PATHNAME', 'Stbox_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION cmp(stbox, stbox)
-  RETURNS int4
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Stbox_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 

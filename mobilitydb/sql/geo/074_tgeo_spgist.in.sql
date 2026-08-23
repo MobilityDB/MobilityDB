@@ -50,7 +50,7 @@ CREATE FUNCTION stbox_quadtree_inner_consistent(internal, internal)
   AS 'MODULE_PATHNAME', 'Stbox_quadtree_inner_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION stbox_spgist_leaf_consistent(internal, internal)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Stbox_spgist_leaf_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tspatial_spgist_compress(internal)

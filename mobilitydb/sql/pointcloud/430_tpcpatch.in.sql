@@ -121,8 +121,8 @@ CREATE FUNCTION asHexWKB(tpcpatch, endianenconding text DEFAULT '')
 -- payload, so a parse-back path is intentionally not exposed. Use
 -- asBinary / tpcpatchFromBinary or asHexWKB / tpcpatchFromHexWKB for
 -- round-trip.
-CREATE FUNCTION asMFJSON(tpcpatch, options int4 DEFAULT 0,
-    flags int4 DEFAULT 0, maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asMFJSON(tpcpatch, options integer DEFAULT 0,
+    flags integer DEFAULT 0, maxdecimaldigits integer DEFAULT 15)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_as_mfjson'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -280,12 +280,12 @@ CREATE FUNCTION duration(tpcpatch, boundspan boolean DEFAULT FALSE)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION lowerInc(tpcpatch)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_lower_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION upperInc(tpcpatch)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_upper_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -498,12 +498,12 @@ CREATE FUNCTION minusTime(tpcpatch, tstzspanset)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION beforeTimestamp(tpcpatch, timestamptz,
-    strict bool DEFAULT TRUE)
+    strict boolean DEFAULT TRUE)
   RETURNS tpcpatch
   AS 'MODULE_PATHNAME', 'Temporal_before_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION afterTimestamp(tpcpatch, timestamptz,
-    strict bool DEFAULT TRUE)
+    strict boolean DEFAULT TRUE)
   RETURNS tpcpatch
   AS 'MODULE_PATHNAME', 'Temporal_after_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

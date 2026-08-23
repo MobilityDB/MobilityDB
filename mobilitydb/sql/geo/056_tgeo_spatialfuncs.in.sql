@@ -127,11 +127,11 @@ CREATE FUNCTION round(tgeography[], integer DEFAULT 0)
   AS 'MODULE_PATHNAME', 'Temporalarr_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION traversedArea(tgeometry, bool DEFAULT FALSE)
+CREATE FUNCTION traversedArea(tgeometry, boolean DEFAULT FALSE)
   RETURNS geometry
   AS 'MODULE_PATHNAME', 'Tgeo_traversed_area'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION traversedArea(tgeography, bool DEFAULT FALSE)
+CREATE FUNCTION traversedArea(tgeography, boolean DEFAULT FALSE)
   RETURNS geography
   AS 'MODULE_PATHNAME', 'Tgeo_traversed_area'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -165,12 +165,12 @@ CREATE FUNCTION minusGeometry(tgeometry, geometry)
   AS 'MODULE_PATHNAME', 'Tgeo_minus_geom'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION atStbox(tgeometry, stbox, borderInc bool DEFAULT TRUE)
+CREATE FUNCTION atStbox(tgeometry, stbox, borderInc boolean DEFAULT TRUE)
   RETURNS tgeometry
   AS 'MODULE_PATHNAME', 'Tgeo_at_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION minusStbox(tgeometry, stbox, borderInc bool DEFAULT TRUE)
+CREATE FUNCTION minusStbox(tgeometry, stbox, borderInc boolean DEFAULT TRUE)
   RETURNS tgeometry
   AS 'MODULE_PATHNAME', 'Tgeo_minus_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

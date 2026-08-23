@@ -33,7 +33,7 @@
  */
 
 CREATE FUNCTION tpcbox_gist_consistent(internal, tpcbox, smallint, oid, internal)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Tpcbox_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 

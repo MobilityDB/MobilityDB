@@ -35,7 +35,7 @@
 /******************************************************************************/
 
 CREATE FUNCTION tjsonb_gist_consistent(internal, tjsonb, smallint, oid, internal)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tjsonb_gist_compress(internal)

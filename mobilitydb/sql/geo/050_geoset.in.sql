@@ -148,20 +148,20 @@ CREATE FUNCTION geogsetFromHexWKB(text)
   AS 'MODULE_PATHNAME', 'Set_from_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asText(geomset, maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asText(geomset, maxdecimaldigits integer DEFAULT 15)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Spatialset_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asEWKT(geomset, maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asEWKT(geomset, maxdecimaldigits integer DEFAULT 15)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Spatialset_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asText(geogset, maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asText(geogset, maxdecimaldigits integer DEFAULT 15)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Spatialset_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asEWKT(geogset, maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asEWKT(geogset, maxdecimaldigits integer DEFAULT 15)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Spatialset_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -433,56 +433,56 @@ CREATE AGGREGATE setUnion(geogset) (
  ******************************************************************************/
 
 CREATE FUNCTION eq(geomset, geomset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Set_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION eq(geogset, geogset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Set_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION ne(geomset, geomset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Set_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ne(geogset, geogset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Set_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION lt(geomset, geomset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Set_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION lt(geogset, geogset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Set_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION le(geomset, geomset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Set_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION le(geogset, geogset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Set_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION ge(geomset, geomset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Set_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ge(geogset, geogset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Set_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION gt(geomset, geomset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Set_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION gt(geogset, geogset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Set_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 

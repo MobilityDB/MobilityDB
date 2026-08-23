@@ -103,10 +103,10 @@ mathfunc_families:
     - {sig: "round(tfloat[], integer DEFAULT 0)", ret: "tfloat[]", sym: "Temporalarr_round"}
   - lit: "\n"
   - fns:
-    - {sig: "degrees(float, bool DEFAULT FALSE)", ret: "float", sym: "Float_degrees"}
+    - {sig: "degrees(float, boolean DEFAULT FALSE)", ret: "float", sym: "Float_degrees"}
   - lit: "\n"
   - fns:
-    - {sig: "degrees(tfloat, bool DEFAULT FALSE)", ret: "tfloat", sym: "Tfloat_degrees"}
+    - {sig: "degrees(tfloat, boolean DEFAULT FALSE)", ret: "tfloat", sym: "Tfloat_degrees"}
   - lit: "\n"
   - fns:
     - {sig: "radians(tfloat)", ret: "tfloat", sym: "Tfloat_radians"}

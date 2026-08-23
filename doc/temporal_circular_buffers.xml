@@ -242,7 +242,7 @@ SELECT asEWKT(setSRID(cbuffer 'Cbuffer(Point(0 0),1)', 4326));
 					<indexterm significance="normal"><primary><varname>transformPipeline</varname></primary></indexterm>
 					<para>Transform to a spatial reference identifier</para>
 					<para><varname>transform(cbuffer,integer) → cbuffer</varname></para>
-					<para><varname>transformPipeline(cbuffer,pipeline text,to_srid integer,is_forward bool=true) → </varname></para>
+					<para><varname>transformPipeline(cbuffer,pipeline text,to_srid integer,is_forward boolean=true) → </varname></para>
 					<para><varname>  cbuffer</varname></para>
 					<para>The <varname>transform</varname> function specifies the transformation with a target SRID. An error is raised when the input circular buffer has an unknown SRID (represented by 0).</para>
 					<para>The <varname>transformPipeline</varname> function specifies the transformation with a defined coordinate transformation pipeline represented with the following string format:</para>
@@ -504,8 +504,8 @@ SELECT asText(tcbuffer('Cbuffer(Point(1 1), 0.2)',
 			<listitem xml:id="tcbufferSeq">
 				<indexterm significance="normal"><primary><varname>tcbufferSeq</varname></primary></indexterm>
 				<para>Constructor for temporal circular buffers of sequence subtype</para>
-				<para><varname>tcbufferSeq(tcbufferInst[],interp='linear',leftInc bool=true,</varname></para>
-				<para><varname>  rightInc bool=true) →tcbufferSeq</varname></para>
+				<para><varname>tcbufferSeq(tcbufferInst[],interp='linear',leftInc boolean=true,</varname></para>
+				<para><varname>  rightInc boolean=true) →tcbufferSeq</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(tcbufferSeq(ARRAY[tcbuffer 'Cbuffer(Point(1 1), 0.3)@2001-01-01',
   'Cbuffer(Point(2 2), 0.5)@2001-01-02', 'Cbuffer(Point(1 1), 0.5)@2001-01-03']));
@@ -746,7 +746,7 @@ SELECT asEWKT(setSRID(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01,
 				<indexterm significance="normal"><primary><varname>transformPipeline</varname></primary></indexterm>
 				<para>Transform to a spatial reference identifier</para>
 				<para><varname>transform(tcbuffer,integer) → tcbuffer</varname></para>
-				<para><varname>transformPipeline(tcbuffer,pipeline text,to_srid integer,is_forward bool=true) →</varname></para>
+				<para><varname>transformPipeline(tcbuffer,pipeline text,to_srid integer,is_forward boolean=true) →</varname></para>
 				<para><varname>  tcbuffer</varname></para>
 				<para>The <varname>transform</varname> function specifies the transformation with a target SRID. An error is raised when the input temporal circular buffer has an unknown SRID (represented by 0).</para>
 				<para>The <varname>transformPipeline</varname> function specifies the transformation with a defined coordinate transformation pipeline represented with the following string format: <varname>urn:ogc:def:coordinateOperation:AUTHORITY::CODE</varname>. The SRID of the input temporal circular buffer is ignored, and the SRID of the output temporal circular buffer will be set to zero unless a value is provided via the optional <varname>to_srid</varname> parameter. As stated by the last parameter, the pipeline is executed by default in a forward direction; by setting the parameter to false, the pipeline is executed in the inverse direction.</para>
@@ -944,8 +944,8 @@ SELECT asText(minusGeometry(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
 				<indexterm significance="normal"><primary><varname>atStbox</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>minusStbox</varname></primary></indexterm>
 				<para>Restrict a temporal circular buffer to (the complement of) a spatiotemporal box</para>
-				<para><varname>atStbox(tcbuffer,stbox,borderInc bool=true) → tcbuffer</varname></para>
-				<para><varname>minusStbox(tcbuffer,stbox,borderInc bool=true) → tcbuffer</varname></para>
+				<para><varname>atStbox(tcbuffer,stbox,borderInc boolean=true) → tcbuffer</varname></para>
+				<para><varname>minusStbox(tcbuffer,stbox,borderInc boolean=true) → tcbuffer</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(atStbox(tcbuffer '[Cbuffer(Point(1 1), 0.5)@2000-01-01,
   Cbuffer(Point(3 3), 0.5)@2000-01-03]', stbox 'STBOX X((0,0),(2,2))'));

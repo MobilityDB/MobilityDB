@@ -14,7 +14,7 @@
 	<sect1 xml:id="ttype_introduction">
 		<title>Introduction</title>
 		<para>
-			MobilityDB provides several temporal types based on PostgreSQL or PostGIS types, namely, <varname>tbool</varname>, <varname>tint</varname>, <varname>tbigint</varname>, <varname>tfloat</varname>, <varname>ttext</varname>, <varname>tgeometry</varname>, <varname>tgeography</varname>, <varname>tgeompoint</varname>, and <varname>tgeogpoint</varname>, which are, respectively, based on the base types <varname>bool</varname>, <varname>integer</varname>, <varname>bigint</varname>, <varname>float</varname>, <varname>text</varname>, <varname>geometry</varname>, and <varname>geography</varname>, where <varname>tgeometry</varname> and <varname>tgeography</varname> accept arbitrary geometries/geographies, while <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> only accept 2D or 3D points with Z dimension. In addition, MobilityDB provides other specific spatial types, namely, <varname>cbuffer</varname> (circular buffer), <varname>npoint</varname> (network point), and <varname>pose</varname>, and its corresponding spatiotemporal types, namely, <varname>tcbuffer</varname>, <varname>tnpoint</varname>, <varname>tpose</varname> and <varname>trgeometry</varname> (temporal rigid geometry). In this chapter and the next one we present the functions and operators available for all temporal types, while the specific functions for the spatiotemporal types will be given in subsequenct chapters.
+			MobilityDB provides several temporal types based on PostgreSQL or PostGIS types, namely, <varname>tbool</varname>, <varname>tint</varname>, <varname>tbigint</varname>, <varname>tfloat</varname>, <varname>ttext</varname>, <varname>tgeometry</varname>, <varname>tgeography</varname>, <varname>tgeompoint</varname>, and <varname>tgeogpoint</varname>, which are, respectively, based on the base types <varname>boolean</varname>, <varname>integer</varname>, <varname>bigint</varname>, <varname>float</varname>, <varname>text</varname>, <varname>geometry</varname>, and <varname>geography</varname>, where <varname>tgeometry</varname> and <varname>tgeography</varname> accept arbitrary geometries/geographies, while <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> only accept 2D or 3D points with Z dimension. In addition, MobilityDB provides other specific spatial types, namely, <varname>cbuffer</varname> (circular buffer), <varname>npoint</varname> (network point), and <varname>pose</varname>, and its corresponding spatiotemporal types, namely, <varname>tcbuffer</varname>, <varname>tnpoint</varname>, <varname>tpose</varname> and <varname>trgeometry</varname> (temporal rigid geometry). In this chapter and the next one we present the functions and operators available for all temporal types, while the specific functions for the spatiotemporal types will be given in subsequenct chapters.
 		</para>
 
 		<para>
@@ -717,8 +717,8 @@ SELECT tgeography('SRID=7844;Point(0 0)', tstzspanset '{[2001-01-01, 2001-01-02]
 				<indexterm significance="normal"><primary><varname>ttypeSeq</varname></primary></indexterm>
 				<para>Constructors for temporal types of sequence subtype</para>
 				<para>These contructors have a first mandatory argument, which is an array of values of the corresponding instant values and additional optional arguments. The second argument states the interpolation. If the argument is not given, it is by default step for discrete base types such as integer, and linear for continuous base types such as float. An error is raised when linear interpolation is stated for temporal values with discrete base types. For continuous sequences, the third and fourth arguments are Boolean values stating, respectively, whether the left and right bounds are inclusive or exclusive. These arguments are assumed to be true by default if they are not specified.</para>
-				<para><varname>ttypeSeq(ttypeInst[],interp={'step','linear'},leftInc bool=true,</varname></para>
-        <para><varname>  rightInc bool=true) → ttypeSeq</varname></para>
+				<para><varname>ttypeSeq(ttypeInst[],interp={'step','linear'},leftInc boolean=true,</varname></para>
+        <para><varname>  rightInc boolean=true) → ttypeSeq</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tboolSeq(ARRAY[tbool 'true@2001-01-01 08:00:00','false@2001-01-01 08:05:00'],
   'discrete');
@@ -845,7 +845,7 @@ SELECT tempSubtype(tint '[1@2001-01-01, 2@2001-01-02, 3@2001-01-03]');
 				<para><varname>tempBasetype(ttype) → text</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tempBasetype(tint '[1@2001-01-01, 2@2001-01-02, 3@2001-01-03]');
--- int4
+-- integer
 SELECT tempBasetype(tgeompoint 'Point(1 1)@2001-01-01');
 -- geometry
 </programlisting>
@@ -991,8 +991,8 @@ SELECT duration(tfloat '{[1@2001-01-01, 2@2001-01-03), [2@2001-01-04, 2@2001-01-
 				<indexterm significance="normal"><primary><varname>lowerInc</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>upperInc</varname></primary></indexterm>
 				<para>Is the start/end instant inclusive?</para>
-				<para><varname>lowerInc(ttype) → bool</varname></para>
-				<para><varname>upperInc(ttype) → bool</varname></para>
+				<para><varname>lowerInc(ttype) → boolean</varname></para>
+				<para><varname>upperInc(ttype) → boolean</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT lowerInc(tint '[1@2001-01-01, 2@2001-01-02)');
 -- true
@@ -1177,8 +1177,8 @@ SELECT setInterp(tgeometry '[Point(1 1)@2001-01-01,
 				<indexterm significance="normal"><primary><varname>segmentMinDuration</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>segmentMaxDuration</varname></primary></indexterm>
 				<para>Return a temporal boolean stating whether each segment of a continuous temporal sequence (set) has, respectively, at least or at most a given duration</para>
-				<para><varname>segmentMinDuration(temp,interval,bool strict=true) → tbool</varname></para>
-				<para><varname>segmentMaxDuration(temp,interval,bool strict=true) → tbool</varname></para>
+				<para><varname>segmentMinDuration(temp,interval,boolean strict=true) → tbool</varname></para>
+				<para><varname>segmentMaxDuration(temp,interval,boolean strict=true) → tbool</varname></para>
 				<para>If <varname>strict</varname> is not specified, the value <varname>true</varname> is assumed by default, and therefore the function checks whether the segment duration is strictly less than or greater than the interval. If the argument is set to <varname>false</varname>, the function checks whether the segment duration is less/greater than or <emphasis>equal to</emphasis> the interval.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT segmentMinDuration(tfloat '[1@2001-01-01, 0@2001-01-03, -1@2001-01-04,

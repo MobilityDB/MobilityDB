@@ -35,7 +35,7 @@
 /******************************************************************************/
 
 CREATE FUNCTION tbox_gist_consistent(internal, tbox, smallint, oid, internal)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Tnumber_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbox_gist_union(internal, internal)
@@ -62,7 +62,7 @@ CREATE FUNCTION tbox_gist_distance(internal, tbox, smallint, oid, internal)
 /******************************************************************************/
 
 CREATE FUNCTION tbool_gist_consistent(internal, tbool, smallint, oid, internal)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbool_gist_compress(internal)
@@ -71,7 +71,7 @@ CREATE FUNCTION tbool_gist_compress(internal)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tint_gist_consistent(internal, tint, smallint, oid, internal)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Tnumber_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tint_gist_compress(internal)
@@ -80,7 +80,7 @@ CREATE FUNCTION tint_gist_compress(internal)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tbigint_gist_consistent(internal, tbigint, smallint, oid, internal)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Tnumber_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tbigint_gist_compress(internal)
@@ -89,7 +89,7 @@ CREATE FUNCTION tbigint_gist_compress(internal)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION tfloat_gist_consistent(internal, tfloat, smallint, oid, internal)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Tnumber_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tfloat_gist_compress(internal)
@@ -98,7 +98,7 @@ CREATE FUNCTION tfloat_gist_compress(internal)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION ttext_gist_consistent(internal, ttext, smallint, oid, internal)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ttext_gist_compress(internal)

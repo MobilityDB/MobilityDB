@@ -64,12 +64,12 @@ CREATE FUNCTION minusGeometry(tnpoint, geometry)
   AS 'MODULE_PATHNAME', 'Tnpoint_minus_geom'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION atStbox(tnpoint, stbox, bool DEFAULT TRUE)
+CREATE FUNCTION atStbox(tnpoint, stbox, boolean DEFAULT TRUE)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Tnpoint_at_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION minusStbox(tnpoint, stbox, bool DEFAULT TRUE)
+CREATE FUNCTION minusStbox(tnpoint, stbox, boolean DEFAULT TRUE)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Tnpoint_minus_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

@@ -38,7 +38,7 @@
  ******************************************************************************/
 
 CREATE FUNCTION span_gist_consistent(internal, intspan, smallint, oid, internal)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_gist_union(internal, internal)
@@ -118,7 +118,7 @@ CREATE OPERATOR CLASS intspan_rtree_ops
 /******************************************************************************/
 
 CREATE FUNCTION span_gist_consistent(internal, bigintspan, smallint, oid, internal)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_gist_same(bigintspan, bigintspan, internal)
@@ -182,7 +182,7 @@ CREATE OPERATOR CLASS bigintspan_rtree_ops
 /******************************************************************************/
 
 CREATE FUNCTION span_gist_consistent(internal, floatspan, smallint, oid, internal)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_gist_same(floatspan, floatspan, internal)
@@ -246,7 +246,7 @@ CREATE OPERATOR CLASS floatspan_rtree_ops
 /******************************************************************************/
 
 CREATE FUNCTION span_gist_consistent(internal, datespan, smallint, oid, internal)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_gist_same(datespan, datespan, internal)
@@ -310,7 +310,7 @@ CREATE OPERATOR CLASS datespan_rtree_ops
 /******************************************************************************/
 
 CREATE FUNCTION span_gist_consistent(internal, tstzspan, smallint, oid, internal)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_gist_same(tstzspan, tstzspan, internal)
@@ -409,7 +409,7 @@ CREATE FUNCTION span_quadtree_inner_consistent(internal, internal)
   AS 'MODULE_PATHNAME', 'Span_quadtree_inner_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_spgist_leaf_consistent(internal, internal)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_spgist_leaf_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 

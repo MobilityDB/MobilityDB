@@ -56,8 +56,8 @@ SELECT asText(minusGeometry(tgeometry 'Linestring(1 1,10 1)@2001-01-01',
 				<indexterm significance="normal"><primary><varname>atStbox</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>minusStbox</varname></primary></indexterm>
 				<para>Restrict to (the complement of) an <varname>stbox</varname> &Z_support;</para>
-				<para><varname>atStbox(tgeom,stbox,borderInc bool=true) → tgeompoint</varname></para>
-				<para><varname>minusStbox(tgeom,stbox,borderInc bool=true) → tgeompoint</varname></para>
+				<para><varname>atStbox(tgeom,stbox,borderInc boolean=true) → tgeompoint</varname></para>
+				<para><varname>minusStbox(tgeom,stbox,borderInc boolean=true) → tgeompoint</varname></para>
 				<para>The third optional argument is used for multidimensional tiling (see <xref linkend="ttype_tiling"/>) to exclude the upper border of the tiles when a temporal value is split in multiple tiles, so that all fragments of the temporal geometry are exclusive.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(atStbox(tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-04)',
@@ -130,7 +130,7 @@ SELECT asEWKT(setSRID(tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02)
 				<indexterm significance="normal"><primary><varname>transformPipeline</varname></primary></indexterm>
 				<para>Transform to a spatial reference identifier &Z_support; &geography_support;</para>
 				<para><varname>transform(tspatial,integer) → tspatial</varname></para>
-				<para><varname>transformPipeline(tspatial,pipeline text,to_srid integer,is_forward bool=true) → tspatial</varname></para>
+				<para><varname>transformPipeline(tspatial,pipeline text,to_srid integer,is_forward boolean=true) → tspatial</varname></para>
 				<para>The <varname>transform</varname> function specifies the transformation with a target SRID. An error is raised when the input temporal point has an unknown SRID (represented by 0).</para>
 				<para>The <varname>transformPipeline</varname> function specifies the transformation with a defined coordinate transformation pipeline represented with the following string format:</para>
 				<para><varname>urn:ogc:def:coordinateOperation:AUTHORITY::CODE</varname></para>

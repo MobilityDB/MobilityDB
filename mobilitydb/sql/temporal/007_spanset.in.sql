@@ -231,7 +231,7 @@ CREATE FUNCTION asText(bigintspanset)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Spanset_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asText(floatspanset, maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asText(floatspanset, maxdecimaldigits integer DEFAULT 15)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Spanset_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -836,7 +836,7 @@ CREATE FUNCTION round(floatspanset, integer DEFAULT 0)
   AS 'MODULE_PATHNAME', 'Floatspanset_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION degrees(floatspanset, bool DEFAULT FALSE)
+CREATE FUNCTION degrees(floatspanset, boolean DEFAULT FALSE)
   RETURNS floatspanset
   AS 'MODULE_PATHNAME', 'Floatspanset_degrees'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -915,128 +915,128 @@ CREATE FUNCTION splitEachNSpans(tstzspanset, integer)
  ******************************************************************************/
 
 CREATE FUNCTION eq(intspanset, intspanset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Spanset_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION eq(bigintspanset, bigintspanset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Spanset_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION eq(floatspanset, floatspanset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Spanset_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION eq(datespanset, datespanset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Spanset_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION eq(tstzspanset, tstzspanset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Spanset_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION ne(intspanset, intspanset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Spanset_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ne(bigintspanset, bigintspanset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Spanset_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ne(floatspanset, floatspanset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Spanset_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ne(datespanset, datespanset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Spanset_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ne(tstzspanset, tstzspanset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Spanset_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION lt(intspanset, intspanset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Spanset_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION lt(bigintspanset, bigintspanset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Spanset_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION lt(floatspanset, floatspanset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Spanset_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION lt(datespanset, datespanset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Spanset_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION lt(tstzspanset, tstzspanset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Spanset_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION le(intspanset, intspanset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Spanset_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION le(bigintspanset, bigintspanset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Spanset_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION le(floatspanset, floatspanset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Spanset_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION le(datespanset, datespanset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Spanset_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION le(tstzspanset, tstzspanset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Spanset_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION ge(intspanset, intspanset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Spanset_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ge(bigintspanset, bigintspanset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Spanset_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ge(floatspanset, floatspanset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Spanset_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ge(datespanset, datespanset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Spanset_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ge(tstzspanset, tstzspanset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Spanset_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION gt(intspanset, intspanset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Spanset_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION gt(bigintspanset, bigintspanset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Spanset_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION gt(floatspanset, floatspanset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Spanset_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION gt(datespanset, datespanset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Spanset_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION gt(tstzspanset, tstzspanset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Spanset_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 

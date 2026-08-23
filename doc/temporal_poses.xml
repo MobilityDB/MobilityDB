@@ -305,7 +305,7 @@ SELECT asEWKT(setSRID(pose 'Pose(Point(0 0),1)', 4326));
 					<indexterm significance="normal"><primary><varname>transformPipeline</varname></primary></indexterm>
 					<para>Transform to a spatial reference identifier</para>
 					<para><varname>transform(pose,integer) → pose</varname></para>
-					<para><varname>transformPipeline(pose,pipeline text,to_srid integer,is_forward bool=true) → pose</varname></para>
+					<para><varname>transformPipeline(pose,pipeline text,to_srid integer,is_forward boolean=true) → pose</varname></para>
 					<para>The <varname>transform</varname> function specifies the transformation with a target SRID. An error is raised when the input pose has an unknown SRID (represented by 0).</para>
 					<para>For a 3D pose the orientation is re-expressed in the basis of the target frame at the pose's point. The correction is defined for the canonical OGC GeoPose pair, WGS-84 geographic (EPSG:4326) ↔ WGS-84 ECEF (EPSG:4978), and takes the standard East-North-Up basis at the geographic point as the rotation pivot. For any other pair of SRIDs, <varname>transform</varname> emits a <varname>NOTICE</varname> and passes the orientation through unchanged. For a 2D pose the angle is intrinsic to the source projection and is passed through unchanged.</para>
 					<para>The <varname>transformPipeline</varname> function specifies the transformation with a defined coordinate transformation pipeline represented with the following string format:</para>
@@ -616,8 +616,8 @@ SELECT asText(tpose('Pose(Point(1 1), 0.2)',
 			<listitem xml:id="tposeSeq">
 				<indexterm significance="normal"><primary><varname>tposeSeq</varname></primary></indexterm>
 				<para>Constructor for temporal poses of sequence subtype</para>
-				<para><varname>tposeSeq(tposeInst[],interp={'step','linear'},leftInc bool=true,</varname></para>
-				<para><varname>  rightInc bool=true) → tposeSeq</varname></para>
+				<para><varname>tposeSeq(tposeInst[],interp={'step','linear'},leftInc boolean=true,</varname></para>
+				<para><varname>  rightInc boolean=true) → tposeSeq</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(tposeSeq(ARRAY[tpose 'Pose(Point(1 1), 0.3)@2001-01-01',
   'Pose(Point(2 2), 0.5)@2001-01-02', 'Pose(Point(1 1), 0.5)@2001-01-03']));
@@ -969,7 +969,7 @@ SELECT asEWKT(setSRID(tpose '[Pose(Point(0 0),1)@2001-01-01,
 				<indexterm significance="normal"><primary><varname>transformPipeline</varname></primary></indexterm>
 				<para>Transform to a spatial reference identifier</para>
 				<para><varname>transform(tpose,integer) → tpose</varname></para>
-				<para><varname>transformPipeline(tpose,pipeline text,to_srid integer,is_forward bool=true) → tpose</varname></para>
+				<para><varname>transformPipeline(tpose,pipeline text,to_srid integer,is_forward boolean=true) → tpose</varname></para>
 				<para>Each instant's pose is transformed as the corresponding static pose is, orientation correction included, as described for <link linkend="pose_transform"><varname>transform</varname></link>. The same holds for a <varname>poseset</varname>. A <varname>trgeometry</varname> pairs its poses with a reference geometry that shares their frame, and transformation to another SRID is not supported for it.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asEWKT(transform(tpose 'SRID=4326;Pose(Point(4.35 50.85),1)@2001-01-01', 
@@ -1304,7 +1304,7 @@ CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
 					<indexterm significance="normal"><primary><varname>asGeoPose</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>poseFromGeoPose</varname></primary></indexterm>
 					<para>Convert to or from the OGC GeoPose v1.0 JSON encoding (Basic-Quaternion, Basic-YPR or Advanced conformance class)</para>
-					<para><varname>asGeoPose(pose,conformance int4=0,maxdecimaldigits int4=-1) → text</varname></para>
+					<para><varname>asGeoPose(pose,conformance integer=0,maxdecimaldigits integer=-1) → text</varname></para>
 					<para><varname>poseFromGeoPose(text) → pose</varname></para>
 					<para>The <varname>conformance</varname> argument selects the output class: <varname>0</varname> = Basic-Quaternion (default, lossless), <varname>1</varname> = Basic-YPR (yaw, pitch, roll in degrees, ZYX intrinsic Tait-Bryan), <varname>2</varname> = Advanced. The <varname>maxdecimaldigits</varname> argument is the number of significant digits to keep in the JSON numbers; <varname>-1</varname> uses json-c's lossless default. The input function auto-detects the conformance class from the JSON keys, where a <varname>frameSpecification</varname> member implies Advanced, a <varname>quaternion</varname> member implies Basic-Quaternion, and an <varname>angles</varname> member implies Basic-YPR.</para>
 					<para>The Basic classes carry the position in a <varname>position</varname> member and leave the frame implicit. The Advanced class has no position member: it names its outer frame explicitly, and the pose sits at the origin of that frame, so the two encodings of one pose read back equal. Every class mandates a geographic outer frame, so the pose must be geodetic; a planar pose is rejected at the conversion boundary, as is a projected SRID.</para>
@@ -1540,7 +1540,7 @@ SELECT asEWKT(round(applyPose(pose 'Pose(Point(1 0 0), 1, 0, 0, 0)',
 					<indexterm significance="normal"><primary><varname>asGeoPose</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>tposeFromGeoPose</varname></primary></indexterm>
 					<para>Convert a temporal pose to or from its OGC GeoPose v1.0 encoding</para>
-					<para><varname>asGeoPose(tpose,conformance int4=0,maxdecimaldigits int4=-1) → text</varname></para>
+					<para><varname>asGeoPose(tpose,conformance integer=0,maxdecimaldigits integer=-1) → text</varname></para>
 					<para><varname>tposeFromGeoPose(text) → tpose</varname></para>
 					<para>The conformance class follows from the value. A single instant is a Basic document carrying its <varname>validTime</varname>; a sequence or sequence set is a Composite Sequence Series, of the Regular class when the instants are equally spaced by a whole number of milliseconds and of the Irregular class otherwise. The <varname>conformance</varname> argument chooses the orientation encoding of a Basic document, as it does for a <varname>pose</varname>, and has no effect on a Series, whose inner frames carry a quaternion and offer no such choice.</para>
 					<para>A Series states its outer frame once, as the local tangent plane East-North-Up frame at the position of the first pose, and gives each pose as an inner frame holding its translation from that tangent point, in metres, and its rotation relative to that frame's basis. Times are <varname>GeoPose_Instant</varname> values, that is Unix time in integer milliseconds, which is what the standard requires of every time position it defines. Sub-millisecond sampling is therefore not carried; the MF-JSON encoding, which the standard behind it types as a datetime string, does carry it.</para>
@@ -1628,7 +1628,7 @@ SELECT asGeoPose(tpose '[Pose(Point(8 47), 0)@2026-01-01,
 				<listitem xml:id="tpose_geopose_stream">
 					<indexterm significance="normal"><primary><varname>asGeoPoseStream</varname></primary></indexterm>
 					<para>Write a temporal pose as an OGC GeoPose Stream</para>
-					<para><varname>asGeoPoseStream(tpose,maxdecimaldigits int4=-1) → text</varname></para>
+					<para><varname>asGeoPoseStream(tpose,maxdecimaldigits integer=-1) → text</varname></para>
 					<para>A stream carries the frames of an Irregular Series while stating neither how many poses there are nor when they end, since more may arrive. The standard writes it as a <varname>header</varname>, holding the transition model and the outer frame, and a <varname>streamElements</varname> array holding one element per pose. The outer frame is the local tangent plane East-North-Up frame at the position of the first pose, so the header and every element speak of one tangent point.</para>
 					<para>The C library also writes the two documents a piece at a time, through <varname>tpose_as_geopose_stream_header</varname> and <varname>tpose_as_geopose_stream_element</varname>, for a producer emitting poses as they arrive. A query returns a value it already holds whole, which is what this writes.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">

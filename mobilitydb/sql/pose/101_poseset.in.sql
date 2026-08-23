@@ -92,11 +92,11 @@ CREATE FUNCTION posesetFromHexWKB(text)
   AS 'MODULE_PATHNAME', 'Set_from_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asText(poseset, maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asText(poseset, maxdecimaldigits integer DEFAULT 15)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Spatialset_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asEWKT(poseset, maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asEWKT(poseset, maxdecimaldigits integer DEFAULT 15)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Spatialset_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -260,27 +260,27 @@ CREATE AGGREGATE setUnion(poseset) (
  ******************************************************************************/
 
 CREATE FUNCTION eq(poseset, poseset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Set_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ne(poseset, poseset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Set_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION lt(poseset, poseset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Set_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION le(poseset, poseset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Set_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ge(poseset, poseset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Set_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION gt(poseset, poseset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Set_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION cmp(poseset, poseset)

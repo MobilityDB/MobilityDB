@@ -137,7 +137,7 @@ CREATE FUNCTION gt(pcpoint, pcpoint)
   AS 'MODULE_PATHNAME', 'Pcpoint_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION cmp(pcpoint, pcpoint)
-  RETURNS int4
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Pcpoint_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -233,7 +233,7 @@ CREATE FUNCTION gt(pcpatch, pcpatch)
   AS 'MODULE_PATHNAME', 'Pcpatch_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION cmp(pcpatch, pcpatch)
-  RETURNS int4
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Pcpatch_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -447,27 +447,27 @@ CREATE AGGREGATE setUnion(pcpointset) (
  ******************************************************************************/
 
 CREATE FUNCTION eq(pcpointset, pcpointset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Set_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ne(pcpointset, pcpointset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Set_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION lt(pcpointset, pcpointset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Set_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION le(pcpointset, pcpointset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Set_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ge(pcpointset, pcpointset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Set_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION gt(pcpointset, pcpointset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Set_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION cmp(pcpointset, pcpointset)
@@ -827,27 +827,27 @@ CREATE AGGREGATE setUnion(pcpatchset) (
  ******************************************************************************/
 
 CREATE FUNCTION eq(pcpatchset, pcpatchset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Set_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ne(pcpatchset, pcpatchset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Set_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION lt(pcpatchset, pcpatchset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Set_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION le(pcpatchset, pcpatchset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Set_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ge(pcpatchset, pcpatchset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Set_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION gt(pcpatchset, pcpatchset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Set_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION cmp(pcpatchset, pcpatchset)

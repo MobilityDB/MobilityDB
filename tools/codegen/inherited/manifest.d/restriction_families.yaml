@@ -62,9 +62,9 @@ restriction_families:
   - lit: "\n"
   - gen: {sig: "minusTime({TEMP}, tstzspanset)", sym: Temporal_minus_tstzspanset}
   - lit: "\n"
-  - gen: {sig: "beforeTimestamp({TEMP}, timestamptz, strict bool DEFAULT TRUE)", sym: Temporal_before_timestamptz}
+  - gen: {sig: "beforeTimestamp({TEMP}, timestamptz, strict boolean DEFAULT TRUE)", sym: Temporal_before_timestamptz}
   - lit: "\n"
-  - gen: {sig: "afterTimestamp({TEMP}, timestamptz, strict bool DEFAULT TRUE)", sym: Temporal_after_timestamptz}
+  - gen: {sig: "afterTimestamp({TEMP}, timestamptz, strict boolean DEFAULT TRUE)", sym: Temporal_after_timestamptz}
   - lit: "\n"
 - family: geo
   file: mobilitydb/sql/geo/052_tgeo.in.sql
@@ -122,12 +122,12 @@ restriction_families:
     - {sig: "minusTime(tgeography, tstzspanset)", ret: tgeography, sym: Temporal_minus_tstzspanset}
   - lit: "\n"
   - fns:
-    - {sig: "beforeTimestamp(tgeometry, timestamptz, strict bool DEFAULT TRUE)", ret: tgeometry, sym: Temporal_before_timestamptz}
-    - {sig: "beforeTimestamp(tgeography, timestamptz, strict bool DEFAULT TRUE)", ret: tgeography, sym: Temporal_before_timestamptz}
+    - {sig: "beforeTimestamp(tgeometry, timestamptz, strict boolean DEFAULT TRUE)", ret: tgeometry, sym: Temporal_before_timestamptz}
+    - {sig: "beforeTimestamp(tgeography, timestamptz, strict boolean DEFAULT TRUE)", ret: tgeography, sym: Temporal_before_timestamptz}
   - lit: "\n"
   - fns:
-    - {sig: "afterTimestamp(tgeometry, timestamptz, strict bool DEFAULT TRUE)", ret: tgeometry, sym: Temporal_after_timestamptz}
-    - {sig: "afterTimestamp(tgeography, timestamptz, strict bool DEFAULT TRUE)", ret: tgeography, sym: Temporal_after_timestamptz}
+    - {sig: "afterTimestamp(tgeometry, timestamptz, strict boolean DEFAULT TRUE)", ret: tgeometry, sym: Temporal_after_timestamptz}
+    - {sig: "afterTimestamp(tgeography, timestamptz, strict boolean DEFAULT TRUE)", ret: tgeography, sym: Temporal_after_timestamptz}
   - lit: "\n"
 - family: tpoint
   file: mobilitydb/sql/geo/052_tpoint.in.sql
@@ -185,12 +185,12 @@ restriction_families:
     - {sig: "minusTime(tgeogpoint, tstzspanset)", ret: tgeogpoint, sym: Temporal_minus_tstzspanset}
   - lit: "\n"
   - fns:
-    - {sig: "beforeTimestamp(tgeompoint, timestamptz, strict bool DEFAULT TRUE)", ret: tgeompoint, sym: Temporal_before_timestamptz}
-    - {sig: "beforeTimestamp(tgeogpoint, timestamptz, strict bool DEFAULT TRUE)", ret: tgeogpoint, sym: Temporal_before_timestamptz}
+    - {sig: "beforeTimestamp(tgeompoint, timestamptz, strict boolean DEFAULT TRUE)", ret: tgeompoint, sym: Temporal_before_timestamptz}
+    - {sig: "beforeTimestamp(tgeogpoint, timestamptz, strict boolean DEFAULT TRUE)", ret: tgeogpoint, sym: Temporal_before_timestamptz}
   - lit: "\n"
   - fns:
-    - {sig: "afterTimestamp(tgeompoint, timestamptz, strict bool DEFAULT TRUE)", ret: tgeompoint, sym: Temporal_after_timestamptz}
-    - {sig: "afterTimestamp(tgeogpoint, timestamptz, strict bool DEFAULT TRUE)", ret: tgeogpoint, sym: Temporal_after_timestamptz}
+    - {sig: "afterTimestamp(tgeompoint, timestamptz, strict boolean DEFAULT TRUE)", ret: tgeompoint, sym: Temporal_after_timestamptz}
+    - {sig: "afterTimestamp(tgeogpoint, timestamptz, strict boolean DEFAULT TRUE)", ret: tgeogpoint, sym: Temporal_after_timestamptz}
   - lit: "\n"
 - family: cbuffer
   file: mobilitydb/sql/cbuffer/202_tcbuffer.in.sql
@@ -230,10 +230,10 @@ restriction_families:
     - {sig: "minusTime(tcbuffer, tstzspanset)", ret: tcbuffer, sym: Temporal_minus_tstzspanset}
   - lit: "\n"
   - fns:
-    - {sig: "beforeTimestamp(tcbuffer, timestamptz, strict bool DEFAULT TRUE)", ret: tcbuffer, sym: Temporal_before_timestamptz}
+    - {sig: "beforeTimestamp(tcbuffer, timestamptz, strict boolean DEFAULT TRUE)", ret: tcbuffer, sym: Temporal_before_timestamptz}
   - lit: "\n"
   - fns:
-    - {sig: "afterTimestamp(tcbuffer, timestamptz, strict bool DEFAULT TRUE)", ret: tcbuffer, sym: Temporal_after_timestamptz}
+    - {sig: "afterTimestamp(tcbuffer, timestamptz, strict boolean DEFAULT TRUE)", ret: tcbuffer, sym: Temporal_after_timestamptz}
   - lit: "\n"
 - family: h3
   file: mobilitydb/sql/h3/253_th3index.in.sql
@@ -259,8 +259,8 @@ restriction_families:
     - {sig: "minusTime(th3index, tstzspanset)", ret: th3index, sym: Temporal_minus_tstzspanset}
   - lit: "\n"
   - fns:
-    - {sig: "beforeTimestamp(th3index, timestamptz, strict bool DEFAULT TRUE)", ret: th3index, sym: Temporal_before_timestamptz}
-    - {sig: "afterTimestamp(th3index, timestamptz, strict bool DEFAULT TRUE)", ret: th3index, sym: Temporal_after_timestamptz}
+    - {sig: "beforeTimestamp(th3index, timestamptz, strict boolean DEFAULT TRUE)", ret: th3index, sym: Temporal_before_timestamptz}
+    - {sig: "afterTimestamp(th3index, timestamptz, strict boolean DEFAULT TRUE)", ret: th3index, sym: Temporal_after_timestamptz}
   - lit: "\n"
 - family: json
   file: mobilitydb/sql/json/452_tjsonb.in.sql
@@ -306,10 +306,10 @@ restriction_families:
     - {sig: "minusTime(tjsonb, tstzspanset)", ret: tjsonb, sym: Temporal_minus_tstzspanset}
   - lit: "\n"
   - fns:
-    - {sig: "beforeTimestamp(tjsonb, timestamptz, strict bool DEFAULT TRUE)", ret: tjsonb, sym: Temporal_before_timestamptz}
+    - {sig: "beforeTimestamp(tjsonb, timestamptz, strict boolean DEFAULT TRUE)", ret: tjsonb, sym: Temporal_before_timestamptz}
   - lit: "\n"
   - fns:
-    - {sig: "afterTimestamp(tjsonb, timestamptz, strict bool DEFAULT TRUE)", ret: tjsonb, sym: Temporal_after_timestamptz}
+    - {sig: "afterTimestamp(tjsonb, timestamptz, strict boolean DEFAULT TRUE)", ret: tjsonb, sym: Temporal_after_timestamptz}
   - lit: "\n"
 - family: npoint
   file: mobilitydb/sql/npoint/302_tnpoint.in.sql
@@ -355,10 +355,10 @@ restriction_families:
     - {sig: "minusTime(tnpoint, tstzspanset)", ret: tnpoint, sym: Temporal_minus_tstzspanset}
   - lit: "\n"
   - fns:
-    - {sig: "beforeTimestamp(tnpoint, timestamptz, strict bool DEFAULT TRUE)", ret: tnpoint, sym: Temporal_before_timestamptz}
+    - {sig: "beforeTimestamp(tnpoint, timestamptz, strict boolean DEFAULT TRUE)", ret: tnpoint, sym: Temporal_before_timestamptz}
   - lit: "\n"
   - fns:
-    - {sig: "afterTimestamp(tnpoint, timestamptz, strict bool DEFAULT TRUE)", ret: tnpoint, sym: Temporal_after_timestamptz}
+    - {sig: "afterTimestamp(tnpoint, timestamptz, strict boolean DEFAULT TRUE)", ret: tnpoint, sym: Temporal_after_timestamptz}
   - lit: "\n"
 - family: tpcpoint
   file: mobilitydb/sql/pointcloud/420_tpcpoint.in.sql
@@ -390,7 +390,7 @@ restriction_families:
     - {sig: "minusTime(tpcpoint, tstzset)", ret: tpcpoint, sym: Temporal_minus_tstzset}
     - {sig: "minusTime(tpcpoint, tstzspan)", ret: tpcpoint, sym: Temporal_minus_tstzspan}
     - {sig: "minusTime(tpcpoint, tstzspanset)", ret: tpcpoint, sym: Temporal_minus_tstzspanset}
-  - lit: "\nCREATE FUNCTION beforeTimestamp(tpcpoint, timestamptz,\n    strict bool DEFAULT TRUE)\n  RETURNS tpcpoint\n  AS 'MODULE_PATHNAME', 'Temporal_before_timestamptz'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION afterTimestamp(tpcpoint, timestamptz,\n    strict bool DEFAULT TRUE)\n  RETURNS tpcpoint\n  AS 'MODULE_PATHNAME', 'Temporal_after_timestamptz'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n/******************************************************************************\n * TPCBox-based restrictions\n ******************************************************************************/\n\n"
+  - lit: "\nCREATE FUNCTION beforeTimestamp(tpcpoint, timestamptz,\n    strict boolean DEFAULT TRUE)\n  RETURNS tpcpoint\n  AS 'MODULE_PATHNAME', 'Temporal_before_timestamptz'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION afterTimestamp(tpcpoint, timestamptz,\n    strict boolean DEFAULT TRUE)\n  RETURNS tpcpoint\n  AS 'MODULE_PATHNAME', 'Temporal_after_timestamptz'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n/******************************************************************************\n * TPCBox-based restrictions\n ******************************************************************************/\n\n"
   - fns:
     - {sig: "atTpcbox(tpcpoint, tpcbox, border_inc boolean DEFAULT TRUE)", ret: tpcpoint, sym: Tpcpoint_at_tpcbox}
   - lit: "\n"
@@ -427,7 +427,7 @@ restriction_families:
     - {sig: "minusTime(tpcpatch, tstzset)", ret: tpcpatch, sym: Temporal_minus_tstzset}
     - {sig: "minusTime(tpcpatch, tstzspan)", ret: tpcpatch, sym: Temporal_minus_tstzspan}
     - {sig: "minusTime(tpcpatch, tstzspanset)", ret: tpcpatch, sym: Temporal_minus_tstzspanset}
-  - lit: "\nCREATE FUNCTION beforeTimestamp(tpcpatch, timestamptz,\n    strict bool DEFAULT TRUE)\n  RETURNS tpcpatch\n  AS 'MODULE_PATHNAME', 'Temporal_before_timestamptz'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION afterTimestamp(tpcpatch, timestamptz,\n    strict bool DEFAULT TRUE)\n  RETURNS tpcpatch\n  AS 'MODULE_PATHNAME', 'Temporal_after_timestamptz'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n/******************************************************************************\n * TPCBox-based restrictions (patch-level / coarse)\n ******************************************************************************/\n\n"
+  - lit: "\nCREATE FUNCTION beforeTimestamp(tpcpatch, timestamptz,\n    strict boolean DEFAULT TRUE)\n  RETURNS tpcpatch\n  AS 'MODULE_PATHNAME', 'Temporal_before_timestamptz'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION afterTimestamp(tpcpatch, timestamptz,\n    strict boolean DEFAULT TRUE)\n  RETURNS tpcpatch\n  AS 'MODULE_PATHNAME', 'Temporal_after_timestamptz'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n/******************************************************************************\n * TPCBox-based restrictions (patch-level / coarse)\n ******************************************************************************/\n\n"
   - fns:
     - {sig: "atTpcbox(tpcpatch, tpcbox, border_inc boolean DEFAULT TRUE)", ret: tpcpatch, sym: Tpcpatch_at_tpcbox}
   - lit: "\n"
@@ -484,10 +484,10 @@ restriction_families:
     - {sig: "minusTime(tpose, tstzspanset)", ret: tpose, sym: Temporal_minus_tstzspanset}
   - lit: "\n"
   - fns:
-    - {sig: "beforeTimestamp(tpose, timestamptz, strict bool DEFAULT TRUE)", ret: tpose, sym: Temporal_before_timestamptz}
+    - {sig: "beforeTimestamp(tpose, timestamptz, strict boolean DEFAULT TRUE)", ret: tpose, sym: Temporal_before_timestamptz}
   - lit: "\n"
   - fns:
-    - {sig: "afterTimestamp(tpose, timestamptz, strict bool DEFAULT TRUE)", ret: tpose, sym: Temporal_after_timestamptz}
+    - {sig: "afterTimestamp(tpose, timestamptz, strict boolean DEFAULT TRUE)", ret: tpose, sym: Temporal_after_timestamptz}
   - lit: "\n"
 - family: posechain
   file: mobilitydb/sql/posechain/552_tposechain.in.sql
@@ -533,10 +533,10 @@ restriction_families:
     - {sig: "minusTime(tposechain, tstzspanset)", ret: tposechain, sym: Temporal_minus_tstzspanset}
   - lit: "\n"
   - fns:
-    - {sig: "beforeTimestamp(tposechain, timestamptz, strict bool DEFAULT TRUE)", ret: tposechain, sym: Temporal_before_timestamptz}
+    - {sig: "beforeTimestamp(tposechain, timestamptz, strict boolean DEFAULT TRUE)", ret: tposechain, sym: Temporal_before_timestamptz}
   - lit: "\n"
   - fns:
-    - {sig: "afterTimestamp(tposechain, timestamptz, strict bool DEFAULT TRUE)", ret: tposechain, sym: Temporal_after_timestamptz}
+    - {sig: "afterTimestamp(tposechain, timestamptz, strict boolean DEFAULT TRUE)", ret: tposechain, sym: Temporal_after_timestamptz}
   - lit: "\n"
 
 - family: quadbin
@@ -563,8 +563,8 @@ restriction_families:
     - {sig: "minusTime(tquadbin, tstzspanset)", ret: tquadbin, sym: Temporal_minus_tstzspanset}
   - lit: "\n"
   - fns:
-    - {sig: "beforeTimestamp(tquadbin, timestamptz, strict bool DEFAULT TRUE)", ret: tquadbin, sym: Temporal_before_timestamptz}
-    - {sig: "afterTimestamp(tquadbin, timestamptz, strict bool DEFAULT TRUE)", ret: tquadbin, sym: Temporal_after_timestamptz}
+    - {sig: "beforeTimestamp(tquadbin, timestamptz, strict boolean DEFAULT TRUE)", ret: tquadbin, sym: Temporal_before_timestamptz}
+    - {sig: "afterTimestamp(tquadbin, timestamptz, strict boolean DEFAULT TRUE)", ret: tquadbin, sym: Temporal_after_timestamptz}
   - lit: "\n"
 - family: rgeo
   file: mobilitydb/sql/rgeo/150_trgeo.in.sql
@@ -598,8 +598,8 @@ restriction_families:
     - {sig: "minusTime(trgeometry, tstzspanset)", ret: trgeometry, sym: Temporal_minus_tstzspanset}
   - lit: "\n"
   - fns:
-    - {sig: "beforeTimestamp(trgeometry, timestamptz, strict bool DEFAULT TRUE)", ret: trgeometry, sym: Temporal_before_timestamptz}
+    - {sig: "beforeTimestamp(trgeometry, timestamptz, strict boolean DEFAULT TRUE)", ret: trgeometry, sym: Temporal_before_timestamptz}
   - lit: "\n"
   - fns:
-    - {sig: "afterTimestamp(trgeometry, timestamptz, strict bool DEFAULT TRUE)", ret: trgeometry, sym: Temporal_after_timestamptz}
+    - {sig: "afterTimestamp(trgeometry, timestamptz, strict boolean DEFAULT TRUE)", ret: trgeometry, sym: Temporal_after_timestamptz}
   - lit: "\n"

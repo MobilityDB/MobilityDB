@@ -901,7 +901,7 @@ def bootstrap_io_type(filetext: str, fam: dict, rendered: str) -> str:
 #   * text form : pointcloud (tpcpoint/tpcpatch) withholds asText/FromText/FromMFJSON
 #     (a base-type capability); such a family simply omits those ops from its sequence.
 # The canonical MISSPELLING `endianenconding text DEFAULT ''` (asBinary/asEWKB/
-# asHexWKB/asHexEWKB) and `maxdecimaldigits int4 DEFAULT 15` (only float/coordinate-
+# asHexWKB/asHexEWKB) and `maxdecimaldigits integer DEFAULT 15` (only float/coordinate-
 # bearing types, per-type via the `maxdd` token) are reproduced verbatim.
 #
 # Region markers for the eventual Phase-2 emit (mirroring _io_markers); Phase-1
@@ -958,10 +958,10 @@ def _repr_mfjson_sig(t: dict, fam: dict) -> str:
     argname = "temp " if fam.get("mfjson_named") else ""
     maxdd = t.get("mfjson_maxdd", t.get("maxdd", False))
     if fam.get("mfjson_oneline"):
-        return f"asMFJSON({argname}{t['temp']}, options int4 DEFAULT 0, flags int4 DEFAULT 0)"
-    sig = (f"asMFJSON({argname}{t['temp']}, options int4 DEFAULT 0,\n"
-           "    flags int4 DEFAULT 0")
-    return sig + (", maxdecimaldigits int4 DEFAULT 15)" if maxdd else ")")
+        return f"asMFJSON({argname}{t['temp']}, options integer DEFAULT 0, flags integer DEFAULT 0)"
+    sig = (f"asMFJSON({argname}{t['temp']}, options integer DEFAULT 0,\n"
+           "    flags integer DEFAULT 0")
+    return sig + (", maxdecimaldigits integer DEFAULT 15)" if maxdd else ")")
 
 
 def _repr_fn(op: str, t: dict, fam: dict, array: bool) -> str:
@@ -978,7 +978,7 @@ def _repr_fn(op: str, t: dict, fam: dict, array: bool) -> str:
     if op in _REPR_ENDIAN_OPS:
         tail = ", endianenconding text DEFAULT ''"
     elif op in _REPR_ARRAY_OPS and t.get("maxdd"):
-        tail = ", maxdecimaldigits int4 DEFAULT 15"
+        tail = ", maxdecimaldigits integer DEFAULT 15"
     else:
         tail = ""
     ttype = t["temp"] + "[]" if array else t["temp"]
@@ -1577,13 +1577,13 @@ def _comparisons_markers(family: str):
 # instead via `ops: set`; a family that deviates otherwise would override via a
 # `funcs` spec, none do today.
 _CMP_OPS = [
-    ("lt", "bool", "Temporal_lt"),
-    ("le", "bool", "Temporal_le"),
-    ("eq", "bool", "Temporal_eq"),
-    ("ne", "bool", "Temporal_ne"),
-    ("ge", "bool", "Temporal_ge"),
-    ("gt", "bool", "Temporal_gt"),
-    ("cmp", "int4", "Temporal_cmp"),
+    ("lt", "boolean", "Temporal_lt"),
+    ("le", "boolean", "Temporal_le"),
+    ("eq", "boolean", "Temporal_eq"),
+    ("ne", "boolean", "Temporal_ne"),
+    ("ge", "boolean", "Temporal_ge"),
+    ("gt", "boolean", "Temporal_gt"),
+    ("cmp", "integer", "Temporal_cmp"),
 ]
 # The base temporal file (022_temporal) spells the same seven functions with
 # RETURNS `boolean` and cmp -> `integer` (the derived families spell `bool`/`int4`),
@@ -1602,12 +1602,12 @@ _BASE_CMP_OPS = [
 # unlike the temporal lt-first order) and with cmp spelled `integer` (the temporal
 # files spell it `int4`) — both reproduced verbatim, never normalized.
 _SET_CMP_OPS = [
-    ("eq", "bool", "Set_eq"),
-    ("ne", "bool", "Set_ne"),
-    ("lt", "bool", "Set_lt"),
-    ("le", "bool", "Set_le"),
-    ("ge", "bool", "Set_ge"),
-    ("gt", "bool", "Set_gt"),
+    ("eq", "boolean", "Set_eq"),
+    ("ne", "boolean", "Set_ne"),
+    ("lt", "boolean", "Set_lt"),
+    ("le", "boolean", "Set_le"),
+    ("ge", "boolean", "Set_ge"),
+    ("gt", "boolean", "Set_gt"),
     ("cmp", "integer", "Set_cmp"),
 ]
 

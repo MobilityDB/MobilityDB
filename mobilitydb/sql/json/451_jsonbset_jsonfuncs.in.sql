@@ -257,7 +257,7 @@ CREATE FUNCTION jsonbsetInsert(jsonbset, path text[], val jsonb,
   AS 'MODULE_PATHNAME', 'Jsonbset_insert'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION jsonbsetStripNulls(jsonbset, bool DEFAULT FALSE)
+CREATE FUNCTION jsonbsetStripNulls(jsonbset, boolean DEFAULT FALSE)
 RETURNS jsonbset
 AS 'MODULE_PATHNAME', 'Jsonbset_strip_nulls'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

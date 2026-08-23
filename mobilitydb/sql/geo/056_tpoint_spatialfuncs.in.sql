@@ -192,12 +192,12 @@ CREATE FUNCTION round(tgeogpoint[], integer DEFAULT 0)
   AS 'MODULE_PATHNAME', 'Temporalarr_round'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION trajectory(tgeompoint, bool DEFAULT FALSE)
+CREATE FUNCTION trajectory(tgeompoint, boolean DEFAULT FALSE)
   RETURNS geometry
   AS 'MODULE_PATHNAME', 'Tpoint_trajectory'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION trajectory(tgeogpoint, bool DEFAULT FALSE)
+CREATE FUNCTION trajectory(tgeogpoint, boolean DEFAULT FALSE)
   RETURNS geography
   AS 'MODULE_PATHNAME', 'Tpoint_trajectory'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -318,7 +318,7 @@ CREATE FUNCTION bearing(tgeogpoint, geography)
 /*****************************************************************************/
 
 CREATE FUNCTION isSimple(tgeompoint)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Tpoint_is_simple'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -338,20 +338,20 @@ CREATE FUNCTION minusGeometry(tgeompoint, geometry)
   AS 'MODULE_PATHNAME', 'Tgeo_minus_geom'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION atStbox(tgeompoint, stbox, borderInc bool DEFAULT TRUE)
+CREATE FUNCTION atStbox(tgeompoint, stbox, borderInc boolean DEFAULT TRUE)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Tgeo_at_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION atStbox(tgeogpoint, stbox, borderInc bool DEFAULT TRUE)
+CREATE FUNCTION atStbox(tgeogpoint, stbox, borderInc boolean DEFAULT TRUE)
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'Tgeo_at_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION minusStbox(tgeompoint, stbox, borderInc bool DEFAULT TRUE)
+CREATE FUNCTION minusStbox(tgeompoint, stbox, borderInc boolean DEFAULT TRUE)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Tgeo_minus_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION minusStbox(tgeogpoint, stbox, borderInc bool DEFAULT TRUE)
+CREATE FUNCTION minusStbox(tgeogpoint, stbox, borderInc boolean DEFAULT TRUE)
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'Tgeo_minus_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

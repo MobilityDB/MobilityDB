@@ -38,7 +38,7 @@
  ******************************************************************************/
 
 CREATE FUNCTION span_gist_consistent(internal, intset, smallint, oid, internal)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_gist_distance(internal, intset, smallint, oid, internal)
@@ -91,7 +91,7 @@ CREATE OPERATOR CLASS intset_rtree_ops
 /******************************************************************************/
 
 CREATE FUNCTION span_gist_consistent(internal, bigintset, smallint, oid, internal)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_gist_distance(internal, bigintset, smallint, oid, internal)
@@ -140,7 +140,7 @@ CREATE OPERATOR CLASS bigintset_rtree_ops
 /******************************************************************************/
 
 CREATE FUNCTION span_gist_consistent(internal, floatset, smallint, oid, internal)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION span_gist_distance(internal, floatset, smallint, oid, internal)
@@ -189,7 +189,7 @@ CREATE OPERATOR CLASS floatset_rtree_ops
 /*****************************************************************************/
 
 CREATE FUNCTION span_gist_consistent(internal, dateset, smallint, oid, internal)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -233,7 +233,7 @@ CREATE OPERATOR CLASS dateset_rtree_ops
 /*****************************************************************************/
 
 CREATE FUNCTION span_gist_consistent(internal, tstzset, smallint, oid, internal)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Span_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -671,7 +671,7 @@ RETURNS internal
 AS 'MODULE_PATHNAME', 'Set_gin_extract_query'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION set_gin_triconsistent(internal, int2, integer, int4, internal, internal, internal)
+CREATE FUNCTION set_gin_triconsistent(internal, int2, integer, integer, internal, internal, internal)
 RETURNS char
 AS 'MODULE_PATHNAME', 'Set_gin_triconsistent'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -694,7 +694,7 @@ CREATE OPERATOR CLASS intset_gin_ops
   -- functions
   FUNCTION   2    set_gin_extract_value(integer, internal),
   FUNCTION   3    set_gin_extract_query(integer, internal, int2, internal, internal, internal, internal),
-  FUNCTION   6    set_gin_triconsistent(internal, int2, integer, int4, internal, internal, internal);
+  FUNCTION   6    set_gin_triconsistent(internal, int2, integer, integer, internal, internal, internal);
 
 /******************************************************************************/
 
@@ -708,7 +708,7 @@ RETURNS internal
 AS 'MODULE_PATHNAME', 'Set_gin_extract_query'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION set_gin_triconsistent(internal, int2, bigint, int4, internal, internal, internal)
+CREATE FUNCTION set_gin_triconsistent(internal, int2, bigint, integer, internal, internal, internal)
 RETURNS char
 AS 'MODULE_PATHNAME', 'Set_gin_triconsistent'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -731,7 +731,7 @@ CREATE OPERATOR CLASS bigintset_gin_ops
   -- functions
   FUNCTION   2    set_gin_extract_value(bigint, internal),
   FUNCTION   3    set_gin_extract_query(bigint, internal, int2, internal, internal, internal, internal),
-  FUNCTION   6    set_gin_triconsistent(internal, int2, bigint, int4, internal, internal, internal);
+  FUNCTION   6    set_gin_triconsistent(internal, int2, bigint, integer, internal, internal, internal);
 
 /******************************************************************************/
 
@@ -745,7 +745,7 @@ RETURNS internal
 AS 'MODULE_PATHNAME', 'Set_gin_extract_query'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION set_gin_triconsistent(internal, int2, date, int4, internal, internal, internal)
+CREATE FUNCTION set_gin_triconsistent(internal, int2, date, integer, internal, internal, internal)
 RETURNS char
 AS 'MODULE_PATHNAME', 'Set_gin_triconsistent'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -768,7 +768,7 @@ CREATE OPERATOR CLASS dateset_gin_ops
   -- functions
   FUNCTION   2    set_gin_extract_value(date, internal),
   FUNCTION   3    set_gin_extract_query(date, internal, int2, internal, internal, internal, internal),
-  FUNCTION   6    set_gin_triconsistent(internal, int2, date, int4, internal, internal, internal);
+  FUNCTION   6    set_gin_triconsistent(internal, int2, date, integer, internal, internal, internal);
 
 /******************************************************************************/
 

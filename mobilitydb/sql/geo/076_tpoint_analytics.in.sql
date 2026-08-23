@@ -204,7 +204,7 @@ CREATE TYPE geom_times AS (
 );
 
 CREATE FUNCTION asMVTGeom(tpoint tgeompoint, bounds stbox,
-  extent int4 DEFAULT 4096, buffer int4 DEFAULT 256, clip bool DEFAULT TRUE)
+  extent integer DEFAULT 4096, buffer integer DEFAULT 256, clip boolean DEFAULT TRUE)
 -- RETURNS tgeompoint
 RETURNS geom_times
 AS 'MODULE_PATHNAME','Tpoint_AsMVTGeom'

@@ -416,8 +416,8 @@ SELECT minusTime(tint '[1@2001-01-01, 1@2001-01-15)',
 				<indexterm significance="normal"><primary><varname>beforeTimestamp</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>afterTimestamp</varname></primary></indexterm>
 				<para>Keep the instants of a temporal value that are before/after or equal a timestamp</para>
-				<para><varname>beforeTimestamp(ttype,timestamptz,strict bool=TRUE) → ttype</varname></para>
-				<para><varname>afterTimestamp(ttype,timestamptz,strict bool=TRUE) → ttype</varname></para>
+				<para><varname>beforeTimestamp(ttype,timestamptz,strict boolean=TRUE) → ttype</varname></para>
+				<para><varname>afterTimestamp(ttype,timestamptz,strict boolean=TRUE) → ttype</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT beforeTimestamp(tint '[1@2001-01-01, 1@2001-01-03]', timestamptz '2001-01-02');
 -- [1@2001-01-01, 1@2001-01-02)

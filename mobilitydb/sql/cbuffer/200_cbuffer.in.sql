@@ -103,20 +103,20 @@ CREATE FUNCTION cbufferFromHexEWKB(text)
 
 /*****************************************************************************/
 
-CREATE FUNCTION asText(cbuffer, maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asText(cbuffer, maxdecimaldigits integer DEFAULT 15)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Cbuffer_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asText(cbuffer[], maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asText(cbuffer[], maxdecimaldigits integer DEFAULT 15)
   RETURNS text[]
   AS 'MODULE_PATHNAME', 'Spatialarr_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asEWKT(cbuffer, maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asEWKT(cbuffer, maxdecimaldigits integer DEFAULT 15)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Cbuffer_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asEWKT(cbuffer[], maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asEWKT(cbuffer[], maxdecimaldigits integer DEFAULT 15)
   RETURNS text[]
   AS 'MODULE_PATHNAME', 'Spatialarr_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -296,7 +296,7 @@ CREATE FUNCTION gt(cbuffer, cbuffer)
   AS 'MODULE_PATHNAME', 'Cbuffer_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION cmp(cbuffer, cbuffer)
-  RETURNS int4
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Cbuffer_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
