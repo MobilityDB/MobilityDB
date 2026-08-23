@@ -214,6 +214,26 @@ point_in_polygon(double x, double y, Edge **edges, int nedges)
 }
 
 /**
+ * @brief Return true if a point is located in a polygon, reading the edges the
+ * ray from it can meet out of an index
+ * @param[in] x,y Point
+ * @param[in] edges,nedges Edges the index is built over, in its own order
+ * @param[in] rtree Index over the boxes of those edges, or @p NULL to scan
+ * @param[in] xmax Greatest x the edges reach, which bounds the ray
+ */
+int
+point_in_polygon_index(double x, double y, Edge **edges, int nedges,
+  const RTree *rtree, double xmax)
+{
+  /* The indexed walk reads its candidates into the per-thread array the clip
+   * context otherwise owns. A caller outside that context finds it empty, and
+   * an empty one is what the search would read through */
+  if (rtree && ! rtree_results)
+    rtree_results = meos_array_create(sizeof(int64));
+  return point_in_polygon_impl(x, y, edges, nedges, rtree, 0, xmax);
+}
+
+/**
  * @brief Compute the intersection intervals of a trajectory segment with an
  * array of point edges
  * @details A segment that does not move carries no direction to solve the

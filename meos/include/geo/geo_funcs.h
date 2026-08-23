@@ -149,6 +149,8 @@ extern bool meos_spatialrel(const LWGEOM *g1, const LWGEOM *g2, spatialRel rel,
   bool *result);
 extern bool de9im_match(const char matrix[10], const char pattern[10]);
 extern int point_in_polygon(double x, double y, Edge **edges, int nedges);
+extern int point_in_polygon_index(double x, double y, Edge **edges,
+  int nedges, const RTree *rtree, double xmax);
 /**
  * @brief Return true if a polygon ring turns the same way at every vertex,
  * which is what makes it convex
