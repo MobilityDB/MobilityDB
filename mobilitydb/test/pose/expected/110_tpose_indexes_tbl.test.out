@@ -264,11 +264,11 @@ WITH test AS (
   SELECT temp |=| stbox 'SRID=3812;STBOX XT(((0,0),(50,50)),[2001-06-01, 2001-07-01])' AS distance
   FROM tbl_tpose2d ORDER BY 1 LIMIT 3 )
 SELECT round(distance, 6) FROM test;
- round 
--------
-     0
-     0
-     0
+   round   
+-----------
+ 13.283949
+ 18.005858
+          
 (3 rows)
 
 DROP INDEX tbl_tpose2d_rtree_idx;
@@ -312,11 +312,11 @@ WITH test AS (
   SELECT temp |=| stbox 'SRID=3812;STBOX XT(((0,0),(50,50)),[2001-06-01, 2001-07-01])' AS distance
   FROM tbl_tpose2d ORDER BY 1 LIMIT 3 )
 SELECT round(distance, 6) FROM test;
- round 
--------
-     0
-     0
-     0
+   round   
+-----------
+ 13.283949
+ 18.005858
+          
 (3 rows)
 
 DROP INDEX tbl_tpose2d_quadtree_idx;

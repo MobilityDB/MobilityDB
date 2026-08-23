@@ -315,6 +315,14 @@ SELECT nearestApproachDistance(tcbuffer 'Cbuffer(Point(0 0), 0.5)@2000-01-01', c
 -- A buffer beside the path: the distance is the centre distance less both radii
 SELECT round(nearestApproachDistance(tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(4 0), 0.5)@2000-01-05]', cbuffer 'Cbuffer(Point(4 9), 0.7)')::numeric, 6);
 
+-- A box carrying a period measures the part of the temporal buffer inside it
+SELECT round(nearestApproachDistance(tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(4 0), 0.5)@2000-01-05]', stbox 'STBOX XT(((10,-1),(12,1)),[2000-01-01, 2000-01-03])')::numeric, 6);
+SELECT round(nearestApproachDistance(stbox 'STBOX XT(((10,-1),(12,1)),[2000-01-01, 2000-01-03])', tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(4 0), 0.5)@2000-01-05]')::numeric, 6);
+-- The same box with no period measures the whole temporal buffer
+SELECT round(nearestApproachDistance(tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(4 0), 0.5)@2000-01-05]', stbox 'STBOX X((10,-1),(12,1))')::numeric, 6);
+-- No part of the temporal buffer is inside the period
+SELECT round(nearestApproachDistance(tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(4 0), 0.5)@2000-01-05]', stbox 'STBOX XT(((10,-1),(12,1)),[2000-02-01, 2000-02-02])')::numeric, 6);
+
 -- The shortest line against a static circular buffer runs between the two disk
 -- boundaries, so its length is the nearest approach distance of the same pair.
 -- Reading the disc and the traversed area as polygons measures between two
