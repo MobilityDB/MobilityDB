@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: fetch_schema_xml</title>
+<title>MobilityDB: fetch_schema_row</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -79,7 +79,7 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtabHL"><a class="navtab" href="schema__cache_8c_ae8dcb8aab16a4e8627eb505e8e1cfa93.html#ae8dcb8aab16a4e8627eb505e8e1cfa93">fetch_schema_xml</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="schema__cache_8c_adf2ef99e01bd0c897d9ce4f7187d0120.html#adf2ef99e01bd0c897d9ce4f7187d0120">fetch_schema_row</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="schema__cache_8c_a00f3ffb8d09b4e902b45929d7e4b9176.html#a00f3ffb8d09b4e902b45929d7e4b9176">mobilitydb_pc_parse_xml</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="schema__cache_8c_a5413d10daad8e7e5a65062dd90d7c72f.html#a5413d10daad8e7e5a65062dd90d7c72f">mobilitydb_pc_schema</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="schema__cache_8c_ab1be377f748c34c1d5662712da1ec79d.html#ab1be377f748c34c1d5662712da1ec79d">pointcloud_namespace_oid</a></td></tr>
@@ -87,8 +87,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ae8dcb8aab16a4e8627eb505e8e1cfa93" name="ae8dcb8aab16a4e8627eb505e8e1cfa93"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae8dcb8aab16a4e8627eb505e8e1cfa93">&#9670;&#160;</a></span>fetch_schema_xml()</h2>
+<a id="adf2ef99e01bd0c897d9ce4f7187d0120" name="adf2ef99e01bd0c897d9ce4f7187d0120"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adf2ef99e01bd0c897d9ce4f7187d0120">&#9670;&#160;</a></span>fetch_schema_row()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -97,11 +97,21 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static char * fetch_schema_xml </td>
+          <td class="memname">static char * fetch_schema_row </td>
           <td>(</td>
           <td class="paramtype">uint32_t&#160;</td>
-          <td class="paramname"><em>pcid</em></td><td>)</td>
+          <td class="paramname"><em>pcid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a43d43196463bde49cb067f5c20ab8481.html#a43d43196463bde49cb067f5c20ab8481">int32</a> *&#160;</td>
+          <td class="paramname"><em>srid</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
   </td>
@@ -111,7 +121,14 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Fetch the XML schema text for a given pcid from <code>pointcloud_formats</code> via a direct heap scan. </p>
+<p>Fetch the XML schema text and the SRID for a given pcid from <code>pointcloud_formats</code> via a direct heap scan. </p>
+<p >The SRID is a column of that table and appears nowhere in the schema XML, so this is the only place it can be read from. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">pcid</td><td>pgPointCloud schema identifier </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">srid</td><td>The SRID the row declares </td></tr>
+  </table>
+  </dd>
+</dl>
 <dl class="section return"><dt>Returns</dt><dd>palloc'd cstring on hit, NULL on miss. The memory context is whatever was current at call time. </dd></dl>
 
 </div>
