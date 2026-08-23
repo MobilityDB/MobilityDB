@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: pointarr_find_splits</title>
+<title>MobilityDB: point_on_segment_within</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -137,8 +137,8 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a510f8313bd5310b2fdacef6db43e7ebe.html#a510f8313bd5310b2fdacef6db43e7ebe">point_in_polygon</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_ab6bad4700989bcefb8a992dcbb387fb2.html#ab6bad4700989bcefb8a992dcbb387fb2">point_on_arc</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_aa2f4628979203441083bd84d2c0994b0.html#aa2f4628979203441083bd84d2c0994b0">point_on_segment</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a8639632d586c3c1cb6acf37a16ed47d8.html#a8639632d586c3c1cb6acf37a16ed47d8">point_on_segment_within</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="geo__funcs_8h_aecc42cfe8cf4803e172f193076c67860.html#aecc42cfe8cf4803e172f193076c67860">pointarr_find_splits</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="geo__funcs_8h_a8639632d586c3c1cb6acf37a16ed47d8.html#a8639632d586c3c1cb6acf37a16ed47d8">point_on_segment_within</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_aecc42cfe8cf4803e172f193076c67860.html#aecc42cfe8cf4803e172f193076c67860">pointarr_find_splits</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a08be10ef2330152347ddb1cbdcedb09b.html#a08be10ef2330152347ddb1cbdcedb09b">relate_point_in_area</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_ae2592a4a4fca991cb150c22827e8ad20.html#ae2592a4a4fca991cb150c22827e8ad20">relate_point_on_boundary</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a67f0abdd38de0a35673d0c13fb8c8941.html#a67f0abdd38de0a35673d0c13fb8c8941">same_spatial_dimensionality</a></td></tr>
@@ -146,29 +146,56 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="aecc42cfe8cf4803e172f193076c67860" name="aecc42cfe8cf4803e172f193076c67860"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aecc42cfe8cf4803e172f193076c67860">&#9670;&#160;</a></span>pointarr_find_splits()</h2>
+<a id="a8639632d586c3c1cb6acf37a16ed47d8" name="a8639632d586c3c1cb6acf37a16ed47d8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8639632d586c3c1cb6acf37a16ed47d8">&#9670;&#160;</a></span>point_on_segment_within()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">bool * pointarr_find_splits </td>
+          <td class="memname">static bool point_on_segment_within </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structPOINT2D.html">POINT2D</a> **&#160;</td>
-          <td class="paramname"><em>points</em>, </td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>px</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>npoints</em>, </td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>py</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int *&#160;</td>
-          <td class="paramname"><em>count</em>&#160;</td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>x1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>y1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>x2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>y2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>tol</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -176,20 +203,24 @@ $(function() {
           <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-<p>Return the positions at which a sequence of points must be cut into polylines that neither cross themselves nor repeat a point. </p>
-<p >The polyline joining the points is cut wherever two of its segments meet outside the endpoint two consecutive segments share, and wherever a point repeats the one before it. Cutting at a returned position keeps that point in both fragments, so the fragments cover the whole polyline. </p><dl class="section note"><dt>Note</dt><dd>The function works only on 2D even if the input points are in 3D </dd></dl>
+<p>Return true if a point lies within a given distance of a segment. </p>
+<p >The tolerance is a DISTANCE. The cross and dot products below are areas, so each is compared against that distance multiplied by the size of the segment, which is what makes the test read as "the point lies within the
+tolerance of the segment" at every scale. </p><dl class="section note"><dt>Note</dt><dd>Comparing an area against a distance is what this replaces, and it fails in both directions: dividing through, the effective perpendicular band was the tolerance divided by the length of the segment, so it closed below the representable distance where coordinates are large and opened to swallow the whole figure where the segment is short. A polygon then failed to cover itself &ndash; 360 of the 931 h3 cells of the tbl_th3index fixture, and every one of them at a resolution finer than about 0.03 degrees. </dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">points</td><td>Array of points </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">npoints</td><td>Number of elements in the array of points </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">count</td><td>Number of positions at which the array must be cut </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">px,py</td><td>Point </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">x1,y1,x2,y2</td><td>Endpoints of the segment </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">tol</td><td>Distance within which the point counts as lying on it, which an <a class="el" href="structEdge.html" title="Structure keeping a geometry edge.">Edge</a> carries precomputed in its <code>tol</code> member </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>Boolean array determining the positions at which the array of points must be cut </dd></dl>
-<dl class="section pre"><dt>Precondition</dt><dd>The array has at least two points </dd></dl>
 
 </div>
 </div>

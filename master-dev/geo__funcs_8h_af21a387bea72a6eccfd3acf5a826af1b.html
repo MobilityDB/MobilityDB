@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: pointarr_find_splits</title>
+<title>MobilityDB: coordinate_tolerance</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -88,7 +88,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a9e3ee55e0b148d82098c9f8899917bdc.html#a9e3ee55e0b148d82098c9f8899917bdc">circle_type</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a7421ea3ef74a6c7d49fa89567c7382f4.html#a7421ea3ef74a6c7d49fa89567c7382f4">closest_point2d_on_segment_ratio</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_af03bf902980a6c21f0c87c493c0fcbdc.html#af03bf902980a6c21f0c87c493c0fcbdc">closest_point3dz_on_segment_ratio</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_af21a387bea72a6eccfd3acf5a826af1b.html#af21a387bea72a6eccfd3acf5a826af1b">coordinate_tolerance</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="geo__funcs_8h_af21a387bea72a6eccfd3acf5a826af1b.html#af21a387bea72a6eccfd3acf5a826af1b">coordinate_tolerance</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a54d5ce3f27777cbbd4be4ea56f34ef5f.html#a54d5ce3f27777cbbd4be4ea56f34ef5f">de9im_match</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_af4428992fd22684ae6c47800270ee44f.html#af4428992fd22684ae6c47800270ee44f">edge_set_tolerance</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a424a64da753a3cd5e96ab8d0553a04c4.html#a424a64da753a3cd5e96ab8d0553a04c4">EdgeType</a></td></tr>
@@ -138,7 +138,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_ab6bad4700989bcefb8a992dcbb387fb2.html#ab6bad4700989bcefb8a992dcbb387fb2">point_on_arc</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_aa2f4628979203441083bd84d2c0994b0.html#aa2f4628979203441083bd84d2c0994b0">point_on_segment</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a8639632d586c3c1cb6acf37a16ed47d8.html#a8639632d586c3c1cb6acf37a16ed47d8">point_on_segment_within</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="geo__funcs_8h_aecc42cfe8cf4803e172f193076c67860.html#aecc42cfe8cf4803e172f193076c67860">pointarr_find_splits</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_aecc42cfe8cf4803e172f193076c67860.html#aecc42cfe8cf4803e172f193076c67860">pointarr_find_splits</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a08be10ef2330152347ddb1cbdcedb09b.html#a08be10ef2330152347ddb1cbdcedb09b">relate_point_in_area</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_ae2592a4a4fca991cb150c22827e8ad20.html#ae2592a4a4fca991cb150c22827e8ad20">relate_point_on_boundary</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a67f0abdd38de0a35673d0c13fb8c8941.html#a67f0abdd38de0a35673d0c13fb8c8941">same_spatial_dimensionality</a></td></tr>
@@ -146,29 +146,26 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="aecc42cfe8cf4803e172f193076c67860" name="aecc42cfe8cf4803e172f193076c67860"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aecc42cfe8cf4803e172f193076c67860">&#9670;&#160;</a></span>pointarr_find_splits()</h2>
+<a id="af21a387bea72a6eccfd3acf5a826af1b" name="af21a387bea72a6eccfd3acf5a826af1b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af21a387bea72a6eccfd3acf5a826af1b">&#9670;&#160;</a></span>coordinate_tolerance()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">bool * pointarr_find_splits </td>
+          <td class="memname">static double coordinate_tolerance </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structPOINT2D.html">POINT2D</a> **&#160;</td>
-          <td class="paramname"><em>points</em>, </td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>c1</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>npoints</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int *&#160;</td>
-          <td class="paramname"><em>count</em>&#160;</td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>c2</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -176,20 +173,15 @@ $(function() {
           <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-<p>Return the positions at which a sequence of points must be cut into polylines that neither cross themselves nor repeat a point. </p>
-<p >The polyline joining the points is cut wherever two of its segments meet outside the endpoint two consecutive segments share, and wherever a point repeats the one before it. Cutting at a returned position keeps that point in both fragments, so the fragments cover the whole polyline. </p><dl class="section note"><dt>Note</dt><dd>The function works only on 2D even if the input points are in 3D </dd></dl>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">points</td><td>Array of points </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">npoints</td><td>Number of elements in the array of points </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">count</td><td>Number of positions at which the array must be cut </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>Boolean array determining the positions at which the array of points must be cut </dd></dl>
-<dl class="section pre"><dt>Precondition</dt><dd>The array has at least two points </dd></dl>
+<p>Return the distance within which two coordinates of this size are the same point. </p>
+<p >The points a native implementation classifies are CONSTRUCTED: the midpoint of an edge, the point at a parameter along it, the intersection of two edges. None of them lands exactly where it should, and the distance it misses by is not a property of the geometry but of the arithmetic &ndash; a few units in the last place of the largest coordinate involved. A tolerance meant to absorb that error is therefore that rounding unit, plus the absolute distance below which the implementation calls two points equal. </p>
 
 </div>
 </div>
