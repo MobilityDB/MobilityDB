@@ -106,10 +106,15 @@ static const pixtype_catalog_struct MEOS_PIXTYPE_CATALOG[] =
 };
 
 /**
- * @brief Names of the PostGIS raster pixel types that carry less than a byte a
- * pixel, for which a Raquet band has no representation
+ * @brief Names of the PostGIS raster pixel types that bound a pixel to less
+ * than a byte
+ * @details PostGIS raster stores each of them a byte a pixel, as
+ * `rt_pixtype_size` gives them, in the same case group as `8BUI`. The bit
+ * width in the name bounds the values a pixel may hold and says nothing about
+ * how the band is stored, so the bytes of such a band are already those of an
+ * unsigned 8-bit band and the constructors read them as `uint8`
  */
-static const char *MEOS_PIXTYPE_SUBBYTE[] = { "1BB", "2BUI", "4BUI" };
+static const char *MEOS_PIXTYPE_PG_BYTE_BOUNDED[] = { "1BB", "2BUI", "4BUI" };
 
 /**
  * @brief Return true when a pixel type code has a row in the catalog
@@ -421,8 +426,8 @@ raquet_pixels_from_host(uint8 *pixels, size_t count, MeosPixType pixtype)
  * `type` field of the tile a file holds
  * @note The name PostGIS raster gives a pixel type is accepted for the same
  * type, so the band type an `ST_BandPixelType` call reports carries into the
- * constructors as it stands. The types PostGIS carries in less than a byte a
- * pixel say that a Raquet band has no representation for them
+ * constructors as it stands. Its `1BB`, `2BUI` and `4BUI` bound a pixel to
+ * less than a byte while occupying one, so they name a `uint8` band
  */
 MeosPixType
 raquet_pixtype_from_string(const char *str)
@@ -438,18 +443,15 @@ raquet_pixtype_from_string(const char *str)
         pg_strcasecmp(str, MEOS_PIXTYPE_CATALOG[i].pgname) == 0)
       return (MeosPixType) i;
   }
-  /* A pixel type PostGIS raster carries in less than a byte names itself, so
-   * that the answer is the reason rather than the name being unknown */
-  size_t nsub = sizeof(MEOS_PIXTYPE_SUBBYTE) / sizeof(MEOS_PIXTYPE_SUBBYTE[0]);
-  for (size_t i = 0; i < nsub; i++)
+  /* A PostGIS pixel type bounded to less than a byte occupies a byte a pixel,
+   * so its band is already the bytes of an unsigned 8-bit band and the bound
+   * is the only thing its name adds */
+  size_t nb = sizeof(MEOS_PIXTYPE_PG_BYTE_BOUNDED) /
+    sizeof(MEOS_PIXTYPE_PG_BYTE_BOUNDED[0]);
+  for (size_t i = 0; i < nb; i++)
   {
-    if (pg_strcasecmp(str, MEOS_PIXTYPE_SUBBYTE[i]) == 0)
-    {
-      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-        "Pixel type \"%s\" carries less than a byte a pixel, which a Raquet "
-        "band has no representation for", str);
-      return MEOS_PT_UINT8; /* make compiler quiet */
-    }
+    if (pg_strcasecmp(str, MEOS_PIXTYPE_PG_BYTE_BOUNDED[i]) == 0)
+      return MEOS_PT_UINT8;
   }
   char names[128];
   meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
