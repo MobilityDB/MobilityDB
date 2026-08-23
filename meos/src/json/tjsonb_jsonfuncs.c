@@ -557,7 +557,7 @@ tjsonb_array_length(const Temporal *temp)
  * @param[in] astext True when the output is a temporal text, otherwise is a
  * jsonb
  * @param[in] null_handle States the null value treatment
- * @csqlfn #Tjsonb_object_field()
+ * @csqlfn #Tjson_object_field()
  */
 Temporal *
 tjson_object_field(const Temporal *temp, const text *key, bool astext,
