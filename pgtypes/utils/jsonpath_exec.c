@@ -87,6 +87,7 @@
 extern PGDLLIMPORT MemoryContext TopMemoryContext;
 
 #include "pgtypes.h"
+#include "pg_int.h"
 
 // #include "catalog/pg_collation_d.h"
 // #include "catalog/pg_type.h"

@@ -75,6 +75,7 @@
 #include <utils/jsonb.h>
 #include <utils/numeric.h>
 #include <pgtypes.h>
+#include <pg_int.h>
 /* Function defined in formatting.c */
 extern bool scanner_isspace(char ch);
 

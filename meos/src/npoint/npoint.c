@@ -60,6 +60,7 @@
 #include <meos_internal.h>
 #include <meos_internal_geo.h>
 #include <pgtypes.h>
+#include <pg_int.h>
 #include "temporal/span.h"
 #include "temporal/tsequence.h"
 #include "temporal/type_inout.h"

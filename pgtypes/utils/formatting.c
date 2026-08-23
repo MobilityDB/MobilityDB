@@ -105,6 +105,7 @@ extern PGDLLIMPORT MemoryContext TopMemoryContext;
   } while (0)
 
 #include "pgtypes.h"
+#include "pg_int.h"
 #include "../../meos/include/meos_error.h"
 
 #ifdef USE_ICU

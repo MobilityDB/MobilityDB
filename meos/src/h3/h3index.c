@@ -66,6 +66,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include <pgtypes.h>
+#include <pg_int.h>
 #include "temporal/temporal.h"
 #include "temporal/type_inout.h"
 #include "h3/h3_generated.h"

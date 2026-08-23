@@ -64,6 +64,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include <pgtypes.h>
+#include <pg_int.h>
 #include "temporal/meos_catalog.h"
 #include "temporal/temporal.h"
 
