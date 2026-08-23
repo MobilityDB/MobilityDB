@@ -414,6 +414,13 @@ stbox_gist_distance(FunctionCallInfo fcinfo, bool boxcolumn)
   if (distance < 0)
     PG_RETURN_FLOAT8(DBL_MAX);
 
+  /* An inner entry, and a leaf entry the executor rechecks, carry a bounding
+   * box rather than the value, so what they report is lowered to stay under
+   * the distance the ordering operator computes. The exact leaf of a column of
+   * boxes reports the operator's own answer and keeps it */
+  if (! GIST_LEAF(entry) || *recheck)
+    distance = stbox_index_distance_bound(distance, key, &query);
+
   PG_RETURN_FLOAT8(distance);
 }
 
