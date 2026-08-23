@@ -42,7 +42,6 @@
 #include <liblwgeom.h>
 #include <liblwgeom_internal.h>
 #include <lwgeodetic.h>
-#include <lwgeom_geos.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
@@ -3005,25 +3004,16 @@ bearing_tpoint_tpoint(const Temporal *temp1, const Temporal *temp2)
 /*****************************************************************************/
 
 /**
- * @brief Calculate the distance between two geography points given as GEOS
- * geometries
+ * @brief Return the distance on the spheroid between two geography points
  */
 static double
-geog_distance_geos(const GEOSGeometry *pt1, const GEOSGeometry *pt2)
+geog_distance_points(const POINT2D *p1, const POINT2D *p2)
 {
-  GEOSContextHandle_t ctx = geos_get_context();
-  /* Skip PostGIS function calls */
-  double x1, y1, x2, y2;
-  GEOSGeomGetX_r(ctx, pt1, &x1);
-  GEOSGeomGetY_r(ctx, pt1, &y1);
-  GEOSGeomGetX_r(ctx, pt2, &x2);
-  GEOSGeomGetY_r(ctx, pt2, &y2);
-
   /* Code taken from ptarray_distance_spheroid function in lwgeodetic.c */
 
   GEOGRAPHIC_POINT g1, g2;
-  geographic_point_init(x1, y1, &g1);
-  geographic_point_init(x2, y2, &g2);
+  geographic_point_init(p1->x, p1->y, &g1);
+  geographic_point_init(p2->x, p2->y, &g2);
 
   SPHEROID s;
   spheroid_init(&s, WGS84_MAJOR_AXIS, WGS84_MINOR_AXIS);
@@ -3041,140 +3031,119 @@ geog_distance_geos(const GEOSGeometry *pt1, const GEOSGeometry *pt2)
 }
 
 /**
- * @brief Calculate the length of the diagonal of the minimum rotated rectangle
- * of the input GEOS geometry
+ * @brief Return the distance between two points, read on the spheroid for
+ * geodetic coordinates and in the plane otherwise
+ */
+static double
+points_distance(const POINT2D *p1, const POINT2D *p2, bool geodetic)
+{
+  return geodetic ? geog_distance_points(p1, p2) :
+    hypot(p2->x - p1->x, p2->y - p1->y);
+}
+
+/**
+ * @brief Return the length of the diagonal of the minimum rotated rectangle
+ * of a set of points
+ * @details The rectangle is the one #meos_oriented_envelope() answers, which
+ * is a point when the set is one point, a line when the set is collinear, and
+ * the rectangle itself otherwise -- the three shapes the diagonal is read from
+ * @param[in] points Points
+ * @param[in] npoints Number of points
+ * @param[in] geodetic True when the coordinates are geodetic, which is read by
+ * the DISTANCE alone: the rectangle is a planar construction either way, since
+ * a rotated rectangle is not a figure a sphere carries
  * @return On error return @p DBL_MAX
  * @note The computation is always done in 2D
  */
 static double
-mrr_distance_geos(GEOSGeometry *geom, bool geodetic)
+mrr_distance(const POINT2D *points, uint32_t npoints, bool geodetic)
 {
-  GEOSContextHandle_t ctx = geos_get_context();
-  double result = 0.0;
-  int numGeoms = GEOSGetNumGeometries_r(ctx, geom);
-  if (numGeoms == 2)
+  assert(points);
+  if (npoints < 2)
+    return 0.0;
+
+  /* The oriented envelope reads a geometry, and the points are a multipoint:
+   * a line would carry the directions of its segments into the candidate
+   * orientations, which a set of points does not have */
+  POINTARRAY *pa = ptarray_construct_empty(0, 0, npoints);
+  POINT4D p;
+  p.z = p.m = 0.0;
+  for (uint32_t i = 0; i < npoints; i++)
   {
-    const GEOSGeometry *pt1 = GEOSGetGeometryN_r(ctx, geom, 0);
-    const GEOSGeometry *pt2 = GEOSGetGeometryN_r(ctx, geom, 1);
-    if (geodetic)
-      result = geog_distance_geos(pt1, pt2);
-    else
-      GEOSDistance_r(ctx, pt1, pt2, &result);
+    p.x = points[i].x;
+    p.y = points[i].y;
+    ptarray_append_point(pa, &p, LW_TRUE);
   }
-  else if (numGeoms > 2)
+  LWGEOM *mpoint = lwmpoint_as_lwgeom(lwmpoint_construct(SRID_UNKNOWN, pa));
+  ptarray_free(pa);
+  LWGEOM *mrr = meos_oriented_envelope(mpoint);
+  lwgeom_free(mpoint);
+  if (! mrr)
+    return DBL_MAX;
+
+  double result;
+  POINT2D p1, p2;
+  switch (mrr->type)
   {
-    GEOSGeometry *mrr_geom = GEOSMinimumRotatedRectangle_r(ctx, geom);
-    GEOSGeometry *pt1, *pt2;
-    switch (GEOSGeomTypeId_r(ctx, mrr_geom))
-    {
-      case GEOS_POINT:
-        result = 0;
-        break;
-      case GEOS_LINESTRING: /* compute length of linestring */
-        if (geodetic)
-        {
-          pt1 = GEOSGeomGetStartPoint_r(ctx, mrr_geom);
-          pt2 = GEOSGeomGetEndPoint_r(ctx, mrr_geom);
-          result = geog_distance_geos(pt1, pt2);
-          GEOSGeom_destroy_r(ctx, pt1);
-          GEOSGeom_destroy_r(ctx, pt2);
-        }
-        else
-          GEOSGeomGetLength_r(ctx, mrr_geom, &result);
-        break;
-      case GEOS_POLYGON: /* compute length of diagonal */
-        pt1 = GEOSGeomGetPointN_r(ctx, GEOSGetExteriorRing_r(ctx, mrr_geom), 0);
-        pt2 = GEOSGeomGetPointN_r(ctx, GEOSGetExteriorRing_r(ctx, mrr_geom), 2);
-        if (geodetic)
-          result = geog_distance_geos(pt1, pt2);
-        else
-          GEOSDistance_r(ctx, pt1, pt2, &result);
-        GEOSGeom_destroy_r(ctx, pt1);
-        GEOSGeom_destroy_r(ctx, pt2);
-        break;
-      default:
-        GEOSGeom_destroy(mrr_geom);
-        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-          "Invalid geometry type for Minimum Rotated Rectangle");
-        return DBL_MAX;
-    }
-    GEOSGeom_destroy(mrr_geom);
+    case POINTTYPE: /* every point of the set is the same point */
+      result = 0.0;
+      break;
+    case LINETYPE: /* the set is collinear: the diagonal is the line itself */
+      p1 = getPoint2d(((LWLINE *) mrr)->points, 0);
+      p2 = getPoint2d(((LWLINE *) mrr)->points, 1);
+      result = points_distance(&p1, &p2, geodetic);
+      break;
+    case POLYGONTYPE: /* the diagonal joins two opposite corners */
+      p1 = getPoint2d(((LWPOLY *) mrr)->rings[0], 0);
+      p2 = getPoint2d(((LWPOLY *) mrr)->rings[0], 2);
+      result = points_distance(&p1, &p2, geodetic);
+      break;
+    default:
+      lwgeom_free(mrr);
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "Invalid geometry type for Minimum Rotated Rectangle");
+      return DBL_MAX;
   }
+  lwgeom_free(mrr);
   return result;
 }
 
 /**
- * @brief Create a GEOS Multipoint geometry from a part (defined by start and
- * end) of a temporal point sequence
+ * @brief Return the points a temporal sequence with a spatial point base type
+ * takes, in the order of its instants
+ * @param[in] seq Temporal sequence
+ * @return On error return @p NULL
  */
-static GEOSGeometry *
-multipoint_make(const TSequence *seq, int start, int end)
+static POINT2D *
+tspatialseq_points(const TSequence *seq)
 {
-  GEOSContextHandle_t ctx = geos_get_context();
-  GEOSGeometry **geoms = palloc(sizeof(GEOSGeometry *) * (end - start + 1));
-  for (int i = 0; i < end - start + 1; ++i)
+  assert(seq);
+  POINT2D *result = palloc(sizeof(POINT2D) * seq->count);
+  for (int i = 0; i < seq->count; i++)
   {
-    const POINT2D *pt = NULL; /* make compiler quiet */
+    Datum value = tinstant_value_p(TSEQUENCE_INST_N(seq, i));
     if (tpoint_type(seq->temptype))
-      pt = GSERIALIZED_POINT2D_P(DatumGetGserializedP(
-        tinstant_value_p(TSEQUENCE_INST_N(seq, start + i))));
+      result[i] = *GSERIALIZED_POINT2D_P(DatumGetGserializedP(value));
 #if CBUFFER
     else if (seq->temptype == T_TCBUFFER)
-      pt = cbuffer_point2d_p(DatumGetCbufferP(
-        tinstant_value_p(TSEQUENCE_INST_N(seq, start + i))));
+      result[i] = *cbuffer_point2d_p(DatumGetCbufferP(value));
 #endif
 #if NPOINT
     else if (seq->temptype == T_TNPOINT)
-      pt = GSERIALIZED_POINT2D_P(npoint_to_geompoint(DatumGetNpointP(
-        tinstant_value_p(TSEQUENCE_INST_N(seq, start + i)))));
+    {
+      GSERIALIZED *gs = npoint_to_geompoint(DatumGetNpointP(value));
+      result[i] = *GSERIALIZED_POINT2D_P(gs);
+      pfree(gs);
+    }
 #endif
     else
     {
+      pfree(result);
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
         "Sequence must have a spatial point base type");
       return NULL;
     }
-    geoms[i] = GEOSGeom_createPointFromXY_r(ctx, pt->x, pt->y);
   }
-  GEOSGeometry *result = GEOSGeom_createCollection_r(ctx, GEOS_MULTIPOINT, geoms, end - start + 1);
-  pfree(geoms);
-  return result;
-}
-
-/**
- * @brief Add the point stored in the given instant to a GEOS multipoint
- * geometry
- */
-static GEOSGeometry *
-multipoint_add_inst_free(GEOSGeometry *geom, const TInstant *inst)
-{
-  GEOSContextHandle_t ctx = geos_get_context();
-  GSERIALIZED *gs = NULL; /* only set (and freed) for the npoint case */
-  const POINT2D *pt = NULL; /* make compiler quiet */
-  if (tpoint_type(inst->temptype))
-    pt = GSERIALIZED_POINT2D_P(DatumGetGserializedP(tinstant_value_p(inst)));
-#if CBUFFER
-  else if (inst->temptype == T_TCBUFFER)
-    pt = cbuffer_point2d_p(DatumGetCbufferP(tinstant_value_p(inst)));
-#endif
-#if NPOINT
-  else if (inst->temptype == T_TNPOINT)
-  {
-    gs = npoint_to_geompoint(DatumGetNpointP(tinstant_value_p(inst)));
-    pt = GSERIALIZED_POINT2D_P(gs);
-  }
-#endif
-  else
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Instant must have a spatial point base type");
-    return NULL;
-  }
-  GEOSGeometry *geom1 = GEOSGeom_createPointFromXY_r(ctx, pt->x, pt->y);
-  GEOSGeometry *result = GEOSUnion_r(ctx, geom, geom1);
-  GEOSGeom_destroy_r(ctx, geom1); GEOSGeom_destroy_r(ctx, geom);
-  if (gs != NULL)
-    pfree(gs);
   return result;
 }
 
@@ -3200,15 +3169,16 @@ tpointseq_stops_iter(const TSequence *seq, double maxdist, int64 mintunits,
 #endif
     );
 
-  /* Use GEOS only for non-scalar input */
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(seq->flags);
-  GEOSGeometry *geom = NULL;
-  GEOSContextHandle_t ctx = geos_get_context();
-  geom = GEOSGeom_createEmptyCollection_r(ctx, GEOS_MULTIPOINT);
+  /* The points the sequence takes, read once: the window the rectangle is
+   * computed for is the slice of them the two indexes below delimit */
+  POINT2D *points = tspatialseq_points(seq);
+  if (! points)
+    return 0;
 
   const TInstant *inst1 = NULL, *inst2 = NULL; /* make compiler quiet */
   int end, start = 0, nseqs = 0;
-  bool is_stopped = false, previously_stopped = false, rebuild_geom = false;
+  bool is_stopped = false, previously_stopped = false;
 
   for (end = 0; end < seq->count; ++end)
   {
@@ -3217,24 +3187,13 @@ tpointseq_stops_iter(const TSequence *seq, double maxdist, int64 mintunits,
 
     while (! is_stopped && end - start > 1 &&
       (int64)(inst2->t - inst1->t) >= mintunits)
-    {
       inst1 = TSEQUENCE_INST_N(seq, ++start);
-      rebuild_geom = true;
-    }
-
-    if (rebuild_geom)
-    {
-      GEOSGeom_destroy_r(ctx, geom);
-      geom = multipoint_make(seq, start, end);
-      rebuild_geom = false;
-    }
-    else
-      geom = multipoint_add_inst_free(geom, inst2);
 
     if (end - start == 0)
       continue;
 
-    is_stopped = mrr_distance_geos(geom, geodetic) <= maxdist;
+    is_stopped = mrr_distance(points + start, (uint32_t) (end - start + 1),
+      geodetic) <= maxdist;
     inst2 = TSEQUENCE_INST_N(seq, end - 1);
     if (! is_stopped && previously_stopped &&
       (int64)(inst2->t - inst1->t) >= mintunits) /* Found a stop */
@@ -3245,11 +3204,10 @@ tpointseq_stops_iter(const TSequence *seq, double maxdist, int64 mintunits,
       result[nseqs++] = tsequence_make(instants, end - start, true, true,
         LINEAR, NORMALIZE_NO);
       start = end;
-      rebuild_geom = true;
     }
     previously_stopped = is_stopped;
   }
-  GEOSGeom_destroy_r(ctx, geom);
+  pfree(points);
 
   inst2 = TSEQUENCE_INST_N(seq, end - 1);
   if (is_stopped && (int64)(inst2->t - inst1->t) >= mintunits)
