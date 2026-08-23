@@ -36,11 +36,13 @@
 
 /* C */
 #include <assert.h>
+#include <float.h>
 /* PostgreSQL */
 #include <postgres.h>
 #include <varatt.h>
 /* MEOS */
 #include <meos.h>
+#include <meos_geo.h>
 #include <meos_internal.h>
 #include <meos_internal_geo.h>
 #include "temporal/set.h"
@@ -410,6 +412,47 @@ spatialset_set_stbox(const Set *s, STBox *result)
   memcpy(result, SET_BBOX_PTR(s), sizeof(STBox));
   return;
 }
+
+/**
+ * @ingroup meos_internal_setspan_dist
+ * @brief Return the distance between a spatial set and a value
+ * @param[in] s Spatial set
+ * @param[in] value Value
+ * @details A set answers the distance of the extent that bounds it, which for
+ * a spatial set is its spatiotemporal box where for a span set it is its
+ * bounding span: the gaps between the elements are not boundaries of the set.
+ * @return On error return @p DBL_MAX
+ */
+Datum
+distance_spatialset_value(const Set *s, Datum value)
+{
+  assert(s); assert(spatialset_type(s->settype));
+  STBox box1, box2;
+  spatialset_set_stbox(s, &box1);
+  if (! spatial_set_stbox(value, s->basetype, &box2))
+    return Float8GetDatum(DBL_MAX);
+  return Float8GetDatum(nad_stbox_stbox(&box1, &box2));
+}
+
+/**
+ * @ingroup meos_internal_setspan_dist
+ * @brief Return the distance between two spatial sets
+ * @param[in] s1,s2 Spatial sets
+ * @details Each set answers for the extent that bounds it, as above.
+ * @return On error return @p DBL_MAX
+ */
+Datum
+distance_spatialset_spatialset(const Set *s1, const Set *s2)
+{
+  assert(s1); assert(s2); assert(s1->settype == s2->settype);
+  assert(spatialset_type(s1->settype));
+  STBox box1, box2;
+  spatialset_set_stbox(s1, &box1);
+  spatialset_set_stbox(s2, &box2);
+  return Float8GetDatum(nad_stbox_stbox(&box1, &box2));
+}
+
+/*****************************************************************************/
 
 /**
  * @ingroup meos_geo_box_conversion

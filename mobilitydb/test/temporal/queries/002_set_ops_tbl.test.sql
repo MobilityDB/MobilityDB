@@ -136,3 +136,12 @@ SELECT MIN(t1.t <-> t2.t) FROM tbl_tstzset t1, tbl_timestamptz t2;
 SELECT MIN(t1.t <-> t2.t) FROM tbl_tstzset t1, tbl_tstzset t2;
 
 -------------------------------------------------------------------------------
+
+-- The named portable form of the <-> operator tested above
+SELECT setDistance(1, intset '{3, 7}');
+SELECT setDistance(intset '{3, 7}', 1);
+SELECT setDistance(intset '{3, 7}', intset '{10, 20}');
+SELECT round(setDistance(1.0, floatset '{3.5, 7.5}')::numeric, 6);
+SELECT setDistance(date '2000-01-01', dateset '{2000-01-05, 2000-01-10}');
+
+-------------------------------------------------------------------------------

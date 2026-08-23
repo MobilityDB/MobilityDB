@@ -442,3 +442,33 @@ SELECT MIN(t1.t <-> t2.t) FROM tbl_tstzset t1, tbl_tstzset t2;
    0
 (1 row)
 
+SELECT setDistance(1, intset '{3, 7}');
+ setdistance 
+-------------
+           2
+(1 row)
+
+SELECT setDistance(intset '{3, 7}', 1);
+ setdistance 
+-------------
+           2
+(1 row)
+
+SELECT setDistance(intset '{3, 7}', intset '{10, 20}');
+ setdistance 
+-------------
+           3
+(1 row)
+
+SELECT round(setDistance(1.0, floatset '{3.5, 7.5}')::numeric, 6);
+  round   
+----------
+ 2.500000
+(1 row)
+
+SELECT setDistance(date '2000-01-01', dateset '{2000-01-05, 2000-01-10}');
+ setdistance 
+-------------
+           4
+(1 row)
+
