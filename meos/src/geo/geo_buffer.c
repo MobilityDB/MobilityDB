@@ -1348,10 +1348,17 @@ buffer_components_relation(const LWGEOM *geom1, const LWGEOM *geom2)
 static double
 buffer_node_tolerance(double x, double y)
 {
-  /* The square root of the double epsilon, scaled by the coordinates, and
-   * never below the tolerance an exactly computed node is placed to */
+  /* The square root belongs to the ROUNDING the coordinates carry, not to the
+   * epsilon alone with the coordinates multiplied in afterwards: an
+   * ill-conditioned crossing moves by the square root of the rounding of its
+   * inputs, and that rounding is `DBL_EPSILON * scale`. Taking the root of the
+   * epsilon and scaling the result multiplies two unrelated magnitudes
+   * together, which at a projected 6.4e6 bounds one node by 0.318 metres --
+   * a third of a buffer of radius 1, so that two crossings a centimetre apart
+   * read as one node and the ring closes around the wrong pieces. The two
+   * forms agree at unit coordinates, where the distinction does not arise */
   double scale = Max(fabs(x), fabs(y));
-  double tol = 5.0e-8 * Max(scale, 1.0);
+  double tol = sqrt(4.0 * DBL_EPSILON * Max(scale, 1.0));
   return Max(tol, MEOS_GEOM_TOLERANCE);
 }
 
