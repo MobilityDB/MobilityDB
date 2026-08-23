@@ -38,7 +38,8 @@
 #include <varatt.h>
 /* MEOS */
 #include <meos.h>
-#include <pgtypes.h>             /* int32_in — NOT utils/builtins.h */
+#include <pgtypes.h>
+#include <pg_int.h>             /* int32_in — NOT utils/builtins.h */
 #include <meos_pointcloud.h>     /* pcpoint_get_pcid, pcpatch_get_pcid */
 #include "temporal/temporal.h"
 #include "pointcloud/pcpoint.h"

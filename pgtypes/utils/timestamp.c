@@ -33,6 +33,7 @@
 #include "utils/jsonb.h"
 
 #include "pgtypes.h"
+#include "pg_int.h"
 #include "../../meos/include/meos_error.h"
 
 extern Numeric int64_div_fast_to_numeric(int64 val1, int log10val2);
