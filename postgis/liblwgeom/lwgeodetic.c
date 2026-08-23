@@ -1647,9 +1647,15 @@ ptarray_segmentize_sphere(const POINTARRAY *pa_in, double max_seg_length)
 
 	/* Just crap out on crazy input */
 	if ( ! pa_in )
+	{
 		lwerror("%s: null input pointarray", __func__);
+		return NULL; /* MEOS */
+	}
 	if ( max_seg_length <= 0.0 )
+	{
 		lwerror("%s: maximum segment length must be positive", __func__);
+		return NULL; /* MEOS */
+	}
 
 	/* Empty starting array */
 	pa_out = ptarray_construct_empty(hasz, hasm, pa_in->npoints);
@@ -3208,7 +3214,10 @@ ptarray_nudge_geodetic(POINTARRAY *pa)
 	static double tolerance = 1e-10;
 
 	if ( ! pa )
+	{
 		lwerror("ptarray_nudge_geodetic called with null input");
+		return LW_FAILURE; /* MEOS */
+	}
 
 	for(i = 0; i < pa->npoints; i++ )
 	{

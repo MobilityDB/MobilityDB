@@ -289,7 +289,10 @@ bytebuffer_append_int(bytebuffer_t *buf, const int val, int swap)
 
 	if ( sizeof(int) != WKB_INT_SIZE )
 	{
+	{
 		lwerror("Machine int size is not %d bytes!", WKB_INT_SIZE);
+		return; /* MEOS */
+	}
 	}
 
 	bytebuffer_makeroom(buf, WKB_INT_SIZE);
@@ -334,7 +337,10 @@ bytebuffer_append_double(bytebuffer_t *buf, const double val, int swap)
 
 	if ( sizeof(double) != WKB_DOUBLE_SIZE )
 	{
+	{
 		lwerror("Machine double size is not %d bytes!", WKB_DOUBLE_SIZE);
+		return; /* MEOS */
+	}
 	}
 
 	bytebuffer_makeroom(buf, WKB_DOUBLE_SIZE);

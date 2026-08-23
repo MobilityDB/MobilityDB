@@ -556,7 +556,10 @@ static void
 rect_node_internal_add_node(RECT_NODE *node, RECT_NODE *add)
 {
 	if (rect_node_is_leaf(node))
+	{
 		lwerror("%s: call on leaf node", __func__);
+		return; /* MEOS */
+	}
 	node->xmin = FP_MIN(node->xmin, add->xmin);
 	node->xmax = FP_MAX(node->xmax, add->xmax);
 	node->ymin = FP_MIN(node->ymin, add->ymin);
@@ -653,7 +656,10 @@ rect_tree_from_ptarray(const POINTARRAY *pa, int geom_type)
 			num_edges = (pa->npoints - 1)/2;
 			break;
 		default:
+		{
 			lwerror("%s: unsupported seg_type - %d", __func__, seg_type);
+			return NULL; /* MEOS */
+		}
 	}
 
 	/* First create a flat list of nodes, one per edge. */
@@ -763,6 +769,11 @@ rect_tree_from_lwpoly(const LWGEOM *lwgeom)
 		}
 	}
 	tree = rect_nodes_merge(nodes, j);
+	if (!tree) /* MEOS */
+	{
+		lwfree(nodes);
+		return NULL;
+	}
 	tree->geom_type = lwgeom->type;
 	lwfree(nodes);
 	return tree;
@@ -808,6 +819,12 @@ rect_tree_from_lwcurvepoly(const LWGEOM *lwgeom)
 
 	tree = rect_nodes_merge(nodes, j);
 
+	if (!tree) /* MEOS */
+	{
+		lwfree(nodes);
+		return NULL;
+	}
+
 	tree->geom_type = lwgeom->type;
 	lwfree(nodes);
 	return tree;
@@ -851,6 +868,12 @@ rect_tree_from_lwcollection(const LWGEOM *lwgeom)
 		qsort(nodes, j, sizeof(RECT_NODE*), rect_node_cmp);
 
 	tree = rect_nodes_merge(nodes, j);
+
+	if (!tree) /* MEOS */
+	{
+		lwfree(nodes);
+		return NULL;
+	}
 
 	tree->geom_type = lwgeom->type;
 	lwfree(nodes);
@@ -1207,7 +1230,10 @@ rect_leaf_node_distance(const RECT_NODE_LEAF *n1, const RECT_NODE_LEAF *n2, RECT
 			break;
 		}
 		default:
+		{
 			lwerror("%s: unsupported segment type", __func__);
+			return 0.0; /* MEOS */
+		}
 	}
 
 	/* If this is a new global minima, save it */

@@ -317,6 +317,9 @@ lwpoint_force_dims(const LWPOINT *point, int hasz, int hasm, double zval, double
 		pdims = ptarray_force_dims(point->point, hasz, hasm, zval, mval);
 		pointout = lwpoint_construct(point->srid, NULL, pdims);
 	}
+	if (!pointout) /* MEOS */
+		return NULL;
+
 	pointout->type = point->type;
 	return pointout;
 }

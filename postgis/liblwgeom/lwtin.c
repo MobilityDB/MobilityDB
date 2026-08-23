@@ -60,7 +60,10 @@ void printLWTIN(LWTIN *tin)
 	LWTRIANGLE *triangle;
 
 	if (tin->type != TINTYPE)
+	{
 		lwerror("printLWTIN called with something else than a TIN");
+		return; /* MEOS */
+	}
 
 	lwnotice("LWTIN {");
 	lwnotice("    ndims = %i", (int)FLAGS_NDIMS(tin->flags));

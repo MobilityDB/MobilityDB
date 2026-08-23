@@ -1001,7 +1001,10 @@ pta_unstroke(const POINTARRAY *points, int32_t srid)
 
 	/* Die on null input */
 	if ( ! points )
+	{
 		lwerror("pta_unstroke called with null pointarray");
+		return NULL; /* MEOS */
+	}
 
 	/* Null on empty input? */
 	if ( points->npoints == 0 )
@@ -1011,7 +1014,10 @@ pta_unstroke(const POINTARRAY *points, int32_t srid)
 	if ( points->npoints < 4 )
 	{
 		/* Return a linestring here*/
+	{
 		lwerror("pta_unstroke needs implementation for npoints < 4");
+		return NULL; /* MEOS */
+	}
 	}
 
 	/* Allocate our result array of vertices that are part of arcs */

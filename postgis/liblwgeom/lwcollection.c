@@ -51,7 +51,10 @@ lwcollection_construct(uint8_t type, int32_t srid, GBOX *bbox, uint32_t ngeoms, 
 	LWDEBUGF(2, "lwcollection_construct called with %d, %d, %p, %d, %p.", type, srid, bbox, ngeoms, geoms);
 
 	if( ! lwtype_is_collection(type) )
+	{
 		lwerror("Non-collection type specified in collection constructor!");
+		return NULL; /* MEOS */
+	}
 
 	hasz = 0;
 	hasm = 0;
@@ -69,7 +72,10 @@ lwcollection_construct(uint8_t type, int32_t srid, GBOX *bbox, uint32_t ngeoms, 
 			LWDEBUGF(3, "lwcollection_construct type=[%d]=%d", i, geoms[i]->type);
 
 			if ( zm != FLAGS_GET_ZM(geoms[i]->flags) )
+			{
 				lwerror("lwcollection_construct: mixed dimension geometries: %d/%d", zm, FLAGS_GET_ZM(geoms[i]->flags));
+				return NULL; /* MEOS */
+			}
 		}
 #endif
 	}

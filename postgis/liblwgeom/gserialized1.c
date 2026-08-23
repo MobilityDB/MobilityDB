@@ -751,7 +751,10 @@ static size_t gserialized1_from_lwpoint(const LWPOINT *point, uint8_t *buf)
 	assert(buf);
 
 	if ( FLAGS_GET_ZM(point->flags) != FLAGS_GET_ZM(point->point->flags) )
+	{
 		lwerror("Dimensions mismatch in lwpoint");
+		return 0; /* MEOS */
+	}
 
 	LWDEBUGF(2, "%s (%p, %p) called", __func__, point, buf);
 
@@ -787,7 +790,10 @@ static size_t gserialized1_from_lwline(const LWLINE *line, uint8_t *buf)
 	LWDEBUGF(2, "%s (%p, %p) called", __func__, line, buf);
 
 	if ( FLAGS_GET_Z(line->flags) != FLAGS_GET_Z(line->points->flags) )
+	{
 		lwerror("Dimensions mismatch in lwline");
+		return 0; /* MEOS */
+	}
 
 	ptsize = ptarray_point_size(line->points);
 
@@ -859,7 +865,10 @@ static size_t gserialized1_from_lwpoly(const LWPOLY *poly, uint8_t *buf)
 		size_t pasize;
 
 		if ( FLAGS_GET_ZM(poly->flags) != FLAGS_GET_ZM(pa->flags) )
+		{
 			lwerror("Dimensions mismatch in lwpoly");
+			return 0; /* MEOS */
+		}
 
 		pasize = (size_t)pa->npoints * ptsize;
 		if ( pa->npoints > 0 )
@@ -882,7 +891,10 @@ static size_t gserialized1_from_lwtriangle(const LWTRIANGLE *triangle, uint8_t *
 	LWDEBUGF(2, "%s (%p, %p) called", __func__, triangle, buf);
 
 	if ( FLAGS_GET_ZM(triangle->flags) != FLAGS_GET_ZM(triangle->points->flags) )
+	{
 		lwerror("Dimensions mismatch in lwtriangle");
+		return 0; /* MEOS */
+	}
 
 	ptsize = ptarray_point_size(triangle->points);
 
@@ -921,7 +933,10 @@ static size_t gserialized1_from_lwcircstring(const LWCIRCSTRING *curve, uint8_t 
 	assert(buf);
 
 	if (FLAGS_GET_ZM(curve->flags) != FLAGS_GET_ZM(curve->points->flags))
+	{
 		lwerror("Dimensions mismatch in lwcircstring");
+		return 0; /* MEOS */
+	}
 
 
 	ptsize = ptarray_point_size(curve->points);
@@ -971,7 +986,10 @@ static size_t gserialized1_from_lwcollection(const LWCOLLECTION *coll, uint8_t *
 	for ( i=0; i<coll->ngeoms; i++ )
 	{
 		if (FLAGS_GET_ZM(coll->flags) != FLAGS_GET_ZM(coll->geoms[i]->flags))
+		{
 			lwerror("Dimensions mismatch in lwcollection");
+			return 0; /* MEOS */
+		}
 		subsize = gserialized1_from_lwgeom_any(coll->geoms[i], loc);
 		loc += subsize;
 	}
@@ -1466,7 +1484,10 @@ LWGEOM* lwgeom_from_gserialized1(const GSERIALIZED *g)
 	lwgeom = lwgeom_from_gserialized1_buffer(data_ptr, lwflags, &size);
 
 	if ( ! lwgeom )
+	{
 		lwerror("%s: unable create geometry", __func__); /* Ooops! */
+		return NULL; /* MEOS */
+	}
 
 	lwgeom->type = lwtype;
 	lwgeom->flags = lwflags;

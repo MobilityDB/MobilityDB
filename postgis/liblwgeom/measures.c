@@ -679,7 +679,10 @@ lw_dist2d_point_curvepoly(LWPOINT *point, LWCURVEPOLY *poly, DISTPTS *dl)
 	const POINT2D *p = getPoint2d_cp(point->point, 0);
 
 	if (dl->mode == DIST_MAX)
+	{
 		lwerror("lw_dist2d_point_curvepoly cannot calculate max distance");
+		return LW_FALSE; /* MEOS */
+	}
 
 	/* Return distance to outer ring if not inside it */
 	if (lwgeom_contains_point(poly->rings[0], p) == LW_OUTSIDE)
@@ -1387,7 +1390,10 @@ lw_dist2d_seg_arc(const POINT2D *A1,
 
 	/* Bail out on crazy modes */
 	if (dl->mode < 0)
+	{
 		lwerror("lw_dist2d_seg_arc does not support maxdistance mode");
+		return LW_FALSE; /* MEOS */
+	}
 
 	/* What if the "arc" is a point? */
 	if (lw_arc_is_pt(B1, B2, B3))
@@ -1528,7 +1534,10 @@ lw_dist2d_pt_arc(const POINT2D *P, const POINT2D *A1, const POINT2D *A2, const P
 	POINT2D X; /* point circle(A) where line from C to P crosses */
 
 	if (dl->mode < 0)
+	{
 		lwerror("lw_dist2d_pt_arc does not support maxdistance mode");
+		return LW_FALSE; /* MEOS */
+	}
 
 	/* What if the arc is a point? */
 	if (lw_arc_is_pt(A1, A2, A3))
@@ -1598,7 +1607,10 @@ lw_dist2d_arc_arc(const POINT2D *A1,
 	int pt_in_arc_A, pt_in_arc_B; /* Test whether potential intersection point is within the arc */
 
 	if (dl->mode != DIST_MIN)
+	{
 		lwerror("lw_dist2d_arc_arc only supports mindistance");
+		return LW_FALSE; /* MEOS */
+	}
 
 	/* TODO: Handle case where arc is closed circle (A1 = A3) */
 

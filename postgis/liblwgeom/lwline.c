@@ -678,11 +678,17 @@ lwline_extend(const LWLINE *line, double distance_forward, double distance_backw
 	bool forward = false, backward = false;
 
 	if (distance_forward < 0 || distance_backward < 0)
+	{
 		lwerror("%s: distances must be non-negative", __func__);
+		return NULL; /* MEOS */
+	}
 
 	if (!line || lwline_is_empty(line) || lwline_count_vertices(line) < 2)
 	{
+	{
 		lwerror("%s: line must have at least two points", __func__);
+		return NULL; /* MEOS */
+	}
 	}
 
 	pa = line->points;
@@ -696,7 +702,10 @@ lwline_extend(const LWLINE *line, double distance_forward, double distance_backw
 		{
 			if (i == pa->npoints - 1)
 			{
+			{
 				lwerror("%s: line must have at least two distinct points", __func__);
+				return NULL; /* MEOS */
+			}
 			}
 			i++;
 			getPoint4d_p(pa, i, &p01);
@@ -715,7 +724,10 @@ lwline_extend(const LWLINE *line, double distance_forward, double distance_backw
 		{
 			if (i == 0)
 			{
+			{
 				lwerror("%s: line must have at least two distinct points", __func__);
+				return NULL; /* MEOS */
+			}
 			}
 			i--;
 			getPoint4d_p(pa, i, &p11);

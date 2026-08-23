@@ -362,7 +362,10 @@ asgeojson_geometry(stringbuffer_t *sb, const LWGEOM *geom, const geojson_opts *o
 	case TINTYPE:
 	case COLLECTIONTYPE:
 		if (opts->isCollectionElement) {
+		{
 			lwerror("GeoJson: geometry not supported.");
+			return; /* MEOS */
+		}
 		}
 		asgeojson_collection(sb, (LWCOLLECTION*)geom, opts);
 		break;

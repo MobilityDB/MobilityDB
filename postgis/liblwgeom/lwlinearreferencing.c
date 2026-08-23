@@ -222,7 +222,10 @@ lwgeom_locate_along(const LWGEOM *lwin, double m, double offset)
 		return NULL;
 
 	if (!lwgeom_has_m(lwin))
+	{
 		lwerror("Input geometry does not have a measure dimension");
+		return NULL; /* MEOS */
+	}
 
 	switch (lwin->type)
 	{
@@ -835,7 +838,10 @@ lwgeom_clip_to_ordinate_range(const LWGEOM *lwin, char ordinate, double from, do
 	}
 
 	if (!lwin)
+	{
 		lwerror("lwgeom_clip_to_ordinate_range: null input geometry!");
+		return NULL; /* MEOS */
+	}
 
 	switch (lwin->type)
 	{
@@ -868,7 +874,10 @@ lwgeom_clip_to_ordinate_range(const LWGEOM *lwin, char ordinate, double from, do
 
 	/* Stop if result is NULL */
 	if (!out_col)
+	{
 		lwerror("lwgeom_clip_to_ordinate_range clipping routine returned NULL");
+		return NULL; /* MEOS */
+	}
 
 	/* Return if we aren't going to offset the result */
 	if (FP_IS_ZERO(offset) || lwgeom_is_empty(lwcollection_as_lwgeom(out_col)))
@@ -894,6 +903,7 @@ lwgeom_clip_to_ordinate_range(const LWGEOM *lwin, char ordinate, double from, do
 			if (!lwoff)
 			{
 				lwerror("lwgeom_offsetcurve returned null");
+				continue; /* MEOS */
 			}
 			lwcollection_add_lwgeom(out_offset, lwoff);
 		}
@@ -911,7 +921,10 @@ LWCOLLECTION *
 lwgeom_locate_between(const LWGEOM *lwin, double from, double to, double offset)
 {
 	if (!lwgeom_has_m(lwin))
+	{
 		lwerror("Input geometry does not have a measure dimension");
+		return NULL; /* MEOS */
+	}
 
 	return lwgeom_clip_to_ordinate_range(lwin, 'M', from, to, offset);
 }
@@ -923,13 +936,22 @@ lwgeom_interpolate_point(const LWGEOM *lwin, const LWPOINT *lwpt)
 	double ret = 0.0;
 
 	if (!lwin)
+	{
 		lwerror("lwgeom_interpolate_point: null input geometry!");
+		return 0.0; /* MEOS */
+	}
 
 	if (!lwgeom_has_m(lwin))
+	{
 		lwerror("Input geometry does not have a measure dimension");
+		return 0.0; /* MEOS */
+	}
 
 	if (lwgeom_is_empty(lwin) || lwpoint_is_empty(lwpt))
+	{
 		lwerror("Input geometry is empty");
+		return 0.0; /* MEOS */
+	}
 
 	switch (lwin->type)
 	{

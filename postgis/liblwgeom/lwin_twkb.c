@@ -83,7 +83,10 @@ static inline void twkb_parse_state_advance(twkb_parse_state *s, size_t next)
 {
 	if( (s->pos + next) > s->twkb_end)
 	{
+	{
 		lwerror("%s: TWKB structure does not match expected size!", __func__);
+		return; /* MEOS */
+	}
 		// lwnotice("TWKB structure does not match expected size!");
 	}
 
@@ -119,7 +122,10 @@ static inline void twkb_parse_state_varint_skip(twkb_parse_state *s)
 	size_t size = varint_size(s->pos, s->twkb_end);
 
 	if ( ! size )
+	{
 		lwerror("%s: no varint to skip", __func__);
+		return; /* MEOS */
+	}
 
 	twkb_parse_state_advance(s, size);
 	return;

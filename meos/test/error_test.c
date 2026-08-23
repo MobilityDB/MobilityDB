@@ -179,8 +179,32 @@ int main(void)
   printf("contains_set_pose(mixed SRID): false, errno %d\n", meos_errno());
   assert(meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
 
+  /* A coordinate transformation PROJ cannot perform is reported by liblwgeom,
+   * whose errors reach the same channel. Under the no-exit handler the caller
+   * keeps its process and reads the failure from meos_errno, which is what a
+   * binding needs from a foreign thread. EPSG:22300 has no operation from
+   * EPSG:4326, so the transformation is declined rather than answered with the
+   * original coordinates relabelled */
+  GSERIALIZED *wgs84 = geom_in("SRID=4326;Point(6 51)", -1);
+  assert(wgs84 != NULL);
+  meos_errno_reset();
+  GSERIALIZED *declined = geo_transform(wgs84, 22300);
+  printf("geo_transform(4326 -> 22300): %s, errno %d\n",
+    declined ? "answered" : "declined", meos_errno());
+  assert(declined == NULL);
+  assert(meos_errno() != 0);
+
+  /* A transformation PROJ can perform still answers, so the decline above
+   * discriminates */
+  meos_errno_reset();
+  GSERIALIZED *webmerc = geo_transform(wgs84, 3857);
+  assert(webmerc != NULL);
+  assert(meos_errno() == 0);
+  printf("geo_transform(4326 -> 3857): %s\n", geo_as_ewkt(webmerc, 2));
+
   meos_errno_reset();
 
+  free(wgs84); free(webmerc);
   free(gset); free(other); free(geodetic);
   free(pset); free(pose_other);
   free(num);

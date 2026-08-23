@@ -130,6 +130,9 @@ calculate_mbc_2(const SUPPORTING_POINTS* support, LWBOUNDINGCIRCLE* mbc)
 {
 	double d1, d2;
 
+	if (!mbc || !mbc->center) /* MEOS */
+		return;
+
 	mbc->center->x = 0.5*(support->p1->x + support->p2->x);
 	mbc->center->y = 0.5*(support->p1->y + support->p2->y);
 

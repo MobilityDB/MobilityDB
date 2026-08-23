@@ -106,7 +106,10 @@ option_list_parse(char* input, char** olist)
 		/* find the key/value separator */
 		val = strchr(key, kvsep);
 		if (!val) {
+		{
 			lwerror("Option string entry '%s' lacks separator '%c'", key, kvsep);
+			return; /* MEOS */
+		}
 		}
 		/* null out the separator */
 		*val = '\0';
@@ -132,7 +135,10 @@ option_list_gdal_parse(char* input, char** olist)
 	char *ptr = input;
 
 	if (!input)
+	{
 		lwerror("Option string is null");
+		return; /* MEOS */
+	}
 	input_sz = strlen(input);
 
 	/* Temporarily hide quoted spaces */
