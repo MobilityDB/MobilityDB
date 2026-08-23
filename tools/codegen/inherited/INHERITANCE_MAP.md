@@ -27,7 +27,7 @@
 > `reference: true` subtype is excluded, matching emit mode, which skips it — that
 > file stays hand-owned under `--validate`. Then `--classes` (the manifest's
 > `classes:` block matches the live catalog
-> class predicates — **17** classes, the temporal ones plus the value-domain `set`,
+> class predicates — **18** classes, the temporal ones plus the value-domain `set`,
 > `span`, `spanset` and their catalog sub-predicates), and `--gaps` (per behaviour
 > axis, which members of its class the rendered SQL does not yet name — a backlog
 > report, not a gate; it scores all **21** axes, a value-domain axis against the
@@ -67,6 +67,13 @@ Temporal<T>              temporal_type      = ALL temporal types            (cat
 
 - `tcbuffer`/`tnpoint`/`tpose`/`tposechain`/`trgeometry` inherit `Temporal<T>` +
   `TSpatial<T>` but **not** the `TGeo<T>`/`TPoint<T>`-only surface.
+- ⭐ **`torder_type` = tint, tbigint, tfloat, ttext — a CROSS-CUTTING class, not a node of the
+  tree above.** It is the whole of `TNumber<T>` plus `TText`, i.e. the temporal types whose base
+  type carries an ORDER, and it is what `#<`/`#<=`/`#>`/`#>=`, `minValue`/`maxValue`,
+  `atMin`/`atMax`/`minusMin`/`minusMax` and `minInstant`/`maxInstant` are declared for — twelve
+  surfaces, the same four members throughout. ⛔ `tbool` and `tjsonb` are OUT although they sit in
+  `talpha_type`, and every spatial member is OUT: PostgreSQL orders those so they can be B-tree
+  indexed, and an index artifact is not a meaning to expose over time.
 - ⭐ **`TSpatial<T>` MEMBERSHIP MEANS THE VALUES CARRY AN SRID — IT OBLIGES NO SRS SURFACE
   AND NO PARTICULAR BOX.** The box is `type_bboxtype` (§10): every member bounds itself with
   an `STBox` except `tpcpoint`/`tpcpatch`, which bound themselves with a `TPCBox`. The SRS
