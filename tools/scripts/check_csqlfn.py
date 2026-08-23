@@ -47,7 +47,32 @@ def meos_defined():
 MEOS = meos_defined()
 
 
-def delegate(body):
+# A wrapper body ends at the first line that is a lone closing brace. Reading
+# on to the next PG_FUNCTION_INFO_V1 swallows any static helper defined in
+# between, and the helper's own call then answers for the wrapper: the last
+# wrapper before Jsonbset_path_match_common resolves to jsonbset_path_match,
+# one operation off, for every group of jsonb wrappers that ends in a helper.
+BODY_END = re.compile(r'^\}$', re.M)
+
+# A wrapper that shares its work with its siblings holds no call of its own:
+# it passes fcinfo and the flag that tells it apart to a static helper of the
+# family, and the helper makes the call. The delegate is the helper's.
+COMMON_CALL = re.compile(r'\b([A-Z][A-Za-z0-9_]*_common)\s*\(\s*fcinfo\b')
+
+
+def function_body(src, name):
+    """The body of the function @p name defined in @p src, or the empty string."""
+    m = re.search(r'^%s\(' % re.escape(name), src, re.M)
+    return wrapper_body(src[m.start():]) if m else ''
+
+
+def wrapper_body(text):
+    """The text up to the lone closing brace that ends the first function."""
+    m = BODY_END.search(text)
+    return text[:m.start()] if m else text
+
+
+def delegate(body, src=''):
     """Return the single MEOS function a PG wrapper binds (&fn pointer first)."""
     for fn in re.findall(r'&([a-z][A-Za-z0-9_]+)\b', body):
         if fn in MEOS:
@@ -58,6 +83,13 @@ def delegate(body):
     m = re.search(r'PG_RETURN_\w+\(\s*([a-z][A-Za-z0-9_]+)\s*\(', body)
     if m and m.group(1) in MEOS:
         return m.group(1), 'ret'
+    m = COMMON_CALL.search(body)
+    if m and src:
+        helper = function_body(src, m.group(1))
+        if helper:
+            fn, _how = delegate(helper)
+            if fn:
+                return fn, 'common'
     return None, None
 
 
@@ -70,10 +102,11 @@ def pg_wrappers(dirs):
             for mt in re.finditer(
                     r'PG_FUNCTION_INFO_V1\((\w+)\);\s*\n(/\*\*.*?\*/)?\s*'
                     r'(.*?)(?=\nPGDLLEXPORT|\nPG_FUNCTION_INFO_V1|\Z)', src, re.S):
-                pg, doc, body = mt.group(1), mt.group(2) or '', mt.group(3) or ''
+                pg, doc = mt.group(1), mt.group(2) or ''
+                body = wrapper_body(mt.group(3) or '')
                 sf = re.search(r'@sqlfn\s+(.+)', doc)
                 so = re.search(r'@sqlop\s+(.+)', doc)
-                dg, how = delegate(body)
+                dg, how = delegate(body, src)
                 rows.append((pg, sf.group(1).strip() if sf else '',
                              so.group(1).strip() if so else '', dg, how,
                              os.path.basename(path)))
