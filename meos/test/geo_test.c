@@ -236,6 +236,40 @@ int main(void)
     free(self);
   }
 
+  /* An offset that degenerates at one exact radius: the two offsets of a U
+   * meet with no width left where the radius is half the gap between its arms,
+   * and the inward offset of an arc lands on the centre where the radius
+   * equals the arc's own. Both bound a buffer that exists on either side of
+   * that radius, so the answer has to exist AT it too, and it has to sit
+   * between its neighbours: a buffer grows with its radius, so the critical
+   * one covers the smaller and is covered by the larger. That sandwich is the
+   * oracle -- a buffer that merely answers proves nothing about its shape */
+  const char *degenerate[] = {
+    "Linestring(0 0,2 0,2 2,0 2)",      /* arms 2 apart, critical radius 1 */
+    "Circularstring(20 0,21 1,22 0)"    /* radius 1, critical radius 1 */
+  };
+  char covers_patt[10] = "T*****FF*";
+  for (int i = 0; i < 2; i++)
+  {
+    GSERIALIZED *g = geom_in(degenerate[i], -1);
+    assert(g != NULL);
+    meos_errno_reset();
+    GSERIALIZED *below = geom_buffer(g, 0.999, "");
+    GSERIALIZED *at = geom_buffer(g, 1.0, "");
+    GSERIALIZED *above = geom_buffer(g, 1.001, "");
+    printf("geom_buffer(%s) below %d at %d above %d, errno %d\n",
+      degenerate[i], below != NULL, at != NULL, above != NULL, meos_errno());
+    assert(below != NULL); assert(at != NULL); assert(above != NULL);
+    assert(meos_errno() == 0);
+    bool grows = geom_relate_pattern(at, below, covers_patt);
+    bool grown = geom_relate_pattern(above, at, covers_patt);
+    printf("  covers(at, below): %d, covers(above, at): %d\n", grows, grown);
+    assert(grows == true);
+    assert(grown == true);
+    free(g); free(below); free(at); free(above);
+    meos_errno_reset();
+  }
+
   /* A repeated vertex draws an edge of no length, and such an edge lies under
    * every point of the plane unless the test that reads a point against it
    * rejects the ones its bounding box cannot hold. The witness is a square

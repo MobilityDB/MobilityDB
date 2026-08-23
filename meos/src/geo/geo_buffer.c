@@ -2852,6 +2852,7 @@ buffer_classify_rings(const MeosArray *rings, int32_t srid,
 
   /* Initialize the ring information and compute one representative
    * point strictly inside every ring */
+  uint32_t kept = 0;
   for (uint32_t i = 0; i < count; i++)
   {
     const BufferRingInfo *ring_info =
@@ -2861,16 +2862,26 @@ buffer_classify_rings(const MeosArray *rings, int32_t srid,
       pfree(info);
       return false;
     }
-    info[i] = *ring_info;
-    info[i].parent = -1;
-    info[i].depth = 0;
-    info[i].shell = -1;
-    if (! buffer_ring_representative_point(info[i].ring, srid,
-        &info[i].x, &info[i].y))
-    {
-      pfree(info);
-      return false;
-    }
+    info[kept] = *ring_info;
+    info[kept].parent = -1;
+    info[kept].depth = 0;
+    info[kept].shell = -1;
+    /* A ring holding no point at all holds no area, which is what a boundary
+     * pinched to zero width leaves behind: where a hole closes exactly, the
+     * ring that bounded it survives the split with its two sides coincident.
+     * Such a ring contributes no surface and no hole, so it is dropped and
+     * the rest of the classification stands. Refusing it instead loses the
+     * whole buffer over a ring that bounds nothing */
+    if (! buffer_ring_representative_point(info[kept].ring, srid,
+        &info[kept].x, &info[kept].y))
+      continue;
+    kept++;
+  }
+  count = kept;
+  if (count == 0)
+  {
+    pfree(info);
+    return true;
   }
 
   /* First determine all pairwise containment relationships.
@@ -3741,7 +3752,19 @@ buffer_offset_edge(const Edge *edge, double radius, bool left,
       r = -r;
       half = M_PI;
       if (r <= MEOS_GEOM_TOLERANCE)
-        return false;
+      {
+        /* Offsetting into an arc by exactly what it turns on carries every
+         * point of the offset onto the centre, so the offset IS that point.
+         * A point bounds nothing, which is the case above one step further,
+         * and it is emitted as a piece of no length for the same reason: the
+         * ring stays closed and #buffer_ring_resolve drops what bounds
+         * nothing. Refusing it loses a buffer that exists on both sides of
+         * this radius */
+        piece->type = BUFFER_SEGMENT;
+        piece->x1 = piece->x2 = edge->cx;
+        piece->y1 = piece->y2 = edge->cy;
+        return true;
+      }
     }
     piece->type = BUFFER_ARC;
     piece->cx = edge->cx;
