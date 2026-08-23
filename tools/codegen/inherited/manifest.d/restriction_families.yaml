@@ -489,6 +489,56 @@ restriction_families:
   - fns:
     - {sig: "afterTimestamp(tpose, timestamptz, strict bool DEFAULT TRUE)", ret: tpose, sym: Temporal_after_timestamptz}
   - lit: "\n"
+- family: posechain
+  file: mobilitydb/sql/posechain/552_tposechain.in.sql
+  reference: true
+  begin: "\n * Restriction Functions\n"
+  end: "\n * Unnest Function\n"
+  blocks:
+  - lit: "/*****************************************************************************\n * Restriction Functions\n *****************************************************************************/\n\n"
+  - fns:
+    - {sig: "atValue(tposechain, posechain)", ret: tposechain, sym: Temporal_at_value}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusValue(tposechain, posechain)", ret: tposechain, sym: Temporal_minus_value}
+  - lit: "\n"
+  - fns:
+    - {sig: "atValues(tposechain, posechainset)", ret: tposechain, sym: Temporal_at_values}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusValues(tposechain, posechainset)", ret: tposechain, sym: Temporal_minus_values}
+  - lit: "\n"
+  - fns:
+    - {sig: "atTime(tposechain, timestamptz)", ret: tposechain, sym: Temporal_at_timestamptz}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusTime(tposechain, timestamptz)", ret: tposechain, sym: Temporal_minus_timestamptz}
+  - lit: "\n"
+  - fns:
+    - {sig: "atTime(tposechain, tstzset)", ret: tposechain, sym: Temporal_at_tstzset}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusTime(tposechain, tstzset)", ret: tposechain, sym: Temporal_minus_tstzset}
+  - lit: "\n"
+  - fns:
+    - {sig: "atTime(tposechain, tstzspan)", ret: tposechain, sym: Temporal_at_tstzspan}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusTime(tposechain, tstzspan)", ret: tposechain, sym: Temporal_minus_tstzspan}
+  - lit: "\n"
+  - fns:
+    - {sig: "atTime(tposechain, tstzspanset)", ret: tposechain, sym: Temporal_at_tstzspanset}
+  - lit: "\n"
+  - fns:
+    - {sig: "minusTime(tposechain, tstzspanset)", ret: tposechain, sym: Temporal_minus_tstzspanset}
+  - lit: "\n"
+  - fns:
+    - {sig: "beforeTimestamp(tposechain, timestamptz, strict bool DEFAULT TRUE)", ret: tposechain, sym: Temporal_before_timestamptz}
+  - lit: "\n"
+  - fns:
+    - {sig: "afterTimestamp(tposechain, timestamptz, strict bool DEFAULT TRUE)", ret: tposechain, sym: Temporal_after_timestamptz}
+  - lit: "\n"
+
 - family: quadbin
   file: mobilitydb/sql/quadbin/353_tquadbin.in.sql
   reference: true

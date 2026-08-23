@@ -102,6 +102,16 @@ comparison_families:
   - lit: "/******************************************************************************\n * Comparison functions and B-tree indexing\n ******************************************************************************/\n\n"
   - funcs: tpose
   - lit: "\nCREATE OPERATOR < (\n  LEFTARG = tpose, RIGHTARG = tpose,\n  PROCEDURE = lt,\n  COMMUTATOR = >, NEGATOR = >=,\n  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel\n);\nCREATE OPERATOR <= (\n  LEFTARG = tpose, RIGHTARG = tpose,\n  PROCEDURE = le,\n  COMMUTATOR = >=, NEGATOR = >,\n  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel\n);\nCREATE OPERATOR = (\n  LEFTARG = tpose, RIGHTARG = tpose,\n  PROCEDURE = eq,\n  COMMUTATOR = =, NEGATOR = <>,\n  RESTRICT = eqsel, JOIN = eqjoinsel\n);\nCREATE OPERATOR <> (\n  LEFTARG = tpose, RIGHTARG = tpose,\n  PROCEDURE = ne,\n  COMMUTATOR = <>, NEGATOR = =,\n  RESTRICT = neqsel, JOIN = neqjoinsel\n);\nCREATE OPERATOR >= (\n  LEFTARG = tpose, RIGHTARG = tpose,\n  PROCEDURE = ge,\n  COMMUTATOR = <=, NEGATOR = <,\n  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel\n);\nCREATE OPERATOR > (\n  LEFTARG = tpose, RIGHTARG = tpose,\n  PROCEDURE = gt,\n  COMMUTATOR = <, NEGATOR = <=,\n  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel\n);\n\nCREATE OPERATOR CLASS tpose_btree_ops\n  DEFAULT FOR TYPE tpose USING btree AS\n    OPERATOR  1 <,\n    OPERATOR  2 <=,\n    OPERATOR  3 =,\n    OPERATOR  4 >=,\n    OPERATOR  5 >,\n    FUNCTION  1 cmp(tpose, tpose);\n\n"
+- family: posechain
+  file: mobilitydb/sql/posechain/552_tposechain.in.sql
+  reference: true
+  begin: "\n * Comparison functions and B-tree indexing\n"
+  end: "CREATE FUNCTION hash("
+  blocks:
+  - lit: "/******************************************************************************\n * Comparison functions and B-tree indexing\n ******************************************************************************/\n\n"
+  - funcs: tposechain
+  - lit: "\nCREATE OPERATOR < (\n  LEFTARG = tposechain, RIGHTARG = tposechain,\n  PROCEDURE = lt,\n  COMMUTATOR = >, NEGATOR = >=,\n  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel\n);\nCREATE OPERATOR <= (\n  LEFTARG = tposechain, RIGHTARG = tposechain,\n  PROCEDURE = le,\n  COMMUTATOR = >=, NEGATOR = >,\n  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel\n);\nCREATE OPERATOR = (\n  LEFTARG = tposechain, RIGHTARG = tposechain,\n  PROCEDURE = eq,\n  COMMUTATOR = =, NEGATOR = <>,\n  RESTRICT = eqsel, JOIN = eqjoinsel\n);\nCREATE OPERATOR <> (\n  LEFTARG = tposechain, RIGHTARG = tposechain,\n  PROCEDURE = ne,\n  COMMUTATOR = <>, NEGATOR = =,\n  RESTRICT = neqsel, JOIN = neqjoinsel\n);\nCREATE OPERATOR >= (\n  LEFTARG = tposechain, RIGHTARG = tposechain,\n  PROCEDURE = ge,\n  COMMUTATOR = <=, NEGATOR = <,\n  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel\n);\nCREATE OPERATOR > (\n  LEFTARG = tposechain, RIGHTARG = tposechain,\n  PROCEDURE = gt,\n  COMMUTATOR = <, NEGATOR = <=,\n  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel\n);\n\nCREATE OPERATOR CLASS tposechain_btree_ops\n  DEFAULT FOR TYPE tposechain USING btree AS\n    OPERATOR  1 <,\n    OPERATOR  2 <=,\n    OPERATOR  3 =,\n    OPERATOR  4 >=,\n    OPERATOR  5 >,\n    FUNCTION  1 cmp(tposechain, tposechain);\n\n"
+
 - family: quadbin
   file: mobilitydb/sql/quadbin/353_tquadbin.in.sql
   reference: true

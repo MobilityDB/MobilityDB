@@ -274,6 +274,44 @@ modification_families:
   - fns:
     - {sig: "merge(tpose[])", ret: "tpose", sym: "Temporal_merge_array"}
   - lit: "\n"
+- family: posechain
+  file: mobilitydb/sql/posechain/552_tposechain.in.sql
+  reference: true
+  begin: "\n * Modification Functions\n"
+  end: "\n * Multidimensional tiling\n"
+  blocks:
+  - lit: "/*****************************************************************************\n * Modification Functions\n *****************************************************************************/\n\n"
+  - fns:
+    - {sig: "insert(tposechain, tposechain, connect boolean DEFAULT TRUE)", ret: "tposechain", sym: "Temporal_insert"}
+  - lit: "\n"
+  - fns:
+    - {sig: "update(tposechain, tposechain, connect boolean DEFAULT TRUE)", ret: "tposechain", sym: "Temporal_update"}
+  - lit: "\n"
+  - fns:
+    - {sig: "deleteTime(tposechain, timestamptz, connect boolean DEFAULT TRUE)", ret: "tposechain", sym: "Temporal_delete_timestamptz"}
+  - lit: "\n"
+  - fns:
+    - {sig: "deleteTime(tposechain, tstzset, connect boolean DEFAULT TRUE)", ret: "tposechain", sym: "Temporal_delete_tstzset"}
+  - lit: "\n"
+  - fns:
+    - {sig: "deleteTime(tposechain, tstzspan, connect boolean DEFAULT TRUE)", ret: "tposechain", sym: "Temporal_delete_tstzspan"}
+  - lit: "\n"
+  - fns:
+    - {sig: "deleteTime(tposechain, tstzspanset, connect boolean DEFAULT TRUE)", ret: "tposechain", sym: "Temporal_delete_tstzspanset"}
+  - lit: "\n"
+  - fns:
+    - {sig: "appendInstant(tposechain, tposechain)", ret: "tposechain", sym: "Temporal_append_tinstant"}
+  - lit: "\n"
+  - fns:
+    - {sig: "appendSequence(tposechain, tposechain)", ret: "tposechain", sym: "Temporal_append_tsequence"}
+  - lit: "\n"
+  - fns:
+    - {sig: "merge(tposechain, tposechain)", ret: "tposechain", sym: "Temporal_merge", pre: "-- The function is not strict\n"}
+  - lit: "\n"
+  - fns:
+    - {sig: "merge(tposechain[])", ret: "tposechain", sym: "Temporal_merge_array"}
+  - lit: "\n"
+
 - family: quadbin
   file: mobilitydb/sql/quadbin/353_tquadbin.in.sql
   reference: true

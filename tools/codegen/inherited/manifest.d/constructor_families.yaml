@@ -365,6 +365,36 @@ constructor_families:
     - seqset
   - ops:
     - seqsetgaps
+- family: posechain
+  file: mobilitydb/sql/posechain/552_tposechain.in.sql
+  reference: true
+  begin: "\n * Constructors\n"
+  end: "\n * Conversions\n"
+  interp: linear
+  span_interp: true
+  gaps_maxdist: true
+  gaps_interp: step
+  pairs:
+  - base: posechain
+    temp: tposechain
+  blocks:
+  - lit: "/******************************************************************************\n * Constructors\n ******************************************************************************/"
+  - ops:
+    - instant
+  - ops:
+    - from_tstzset
+  - ops:
+    - from_tstzspan
+  - ops:
+    - from_tstzspanset
+  - lit: /******************************************************************************/
+  - ops:
+    - seq
+  - ops:
+    - seqset
+  - ops:
+    - seqsetgaps
+
 - family: quadbin
   file: mobilitydb/sql/quadbin/353_tquadbin.in.sql
   reference: true

@@ -96,6 +96,17 @@ tiling_families:
   - fns:
     - {sig: "timeSplit(tpose, bin_width interval,\n    origin timestamptz DEFAULT '2000-01-03')", ret: "setof time_tpose", sym: "Temporal_time_split"}
   - lit: "\n"
+- family: posechain
+  file: mobilitydb/sql/posechain/552_tposechain.in.sql
+  reference: true
+  begin: "\n * Multidimensional tiling\n"
+  end: "\n * Comparison functions and B-tree indexing\n"
+  blocks:
+  - lit: "/******************************************************************************\n * Multidimensional tiling\n ******************************************************************************/\n\nCREATE TYPE time_tposechain AS (\n  time timestamptz,\n  temp tposechain\n);\n\n"
+  - fns:
+    - {sig: "timeSplit(tposechain, bin_width interval,\n    origin timestamptz DEFAULT '2000-01-03')", ret: "setof time_tposechain", sym: "Temporal_time_split"}
+  - lit: "\n"
+
 - family: rgeo
   file: mobilitydb/sql/rgeo/150_trgeo.in.sql
   reference: true
