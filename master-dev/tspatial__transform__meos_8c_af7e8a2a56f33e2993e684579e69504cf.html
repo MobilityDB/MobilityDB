@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: pgstrs_get_entry</title>
+<title>MobilityDB: csv_read_field</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -80,7 +80,7 @@ $(function() {
       <div class="navtab">
         <table>
           <tr><td class="navtab"><a class="navtab" href="tspatial__transform__meos_8c_a2419274daf30937eb20696385ce7a571.html#a2419274daf30937eb20696385ce7a571">AddToMEOSPROJSRSCache</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="tspatial__transform__meos_8c_af7e8a2a56f33e2993e684579e69504cf.html#af7e8a2a56f33e2993e684579e69504cf">csv_read_field</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="tspatial__transform__meos_8c_af7e8a2a56f33e2993e684579e69504cf.html#af7e8a2a56f33e2993e684579e69504cf">csv_read_field</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tspatial__transform__meos_8c_aea0f4d35728086d24c41b92409077308.html#aea0f4d35728086d24c41b92409077308">DeleteFromMEOSPROJSRSCache</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tspatial__transform__meos_8c_a584047d68c1c8f3cde6c13b015e1aef9.html#a584047d68c1c8f3cde6c13b015e1aef9">GetMEOSPROJSRSCache</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tspatial__transform__meos_8c_a372cad15431f84e0913afb0714109da8.html#a372cad15431f84e0913afb0714109da8">GetProjectionFromPROJCache</a></td></tr>
@@ -94,7 +94,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tspatial__transform__meos_8c_a7056eb6017a3f316925dda7aa4298ce8.html#a7056eb6017a3f316925dda7aa4298ce8">MEOS_PROJ_CACHE</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__setup_ga47ce3a65f4d1fea9fc82dbf351fa7edc.html#ga47ce3a65f4d1fea9fc82dbf351fa7edc">meos_set_spatial_ref_sys_csv</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tspatial__transform__meos_8c_ab0bb703c710af522ac54701c9c414d80.html#ab0bb703c710af522ac54701c9c414d80">MEOSPROJSRSCache</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="tspatial__transform__meos_8c_afffbbbfd45e5d3707e1e4857440195fd.html#afffbbbfd45e5d3707e1e4857440195fd">pgstrs_get_entry</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tspatial__transform__meos_8c_afffbbbfd45e5d3707e1e4857440195fd.html#afffbbbfd45e5d3707e1e4857440195fd">pgstrs_get_entry</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tspatial__transform__meos_8c_ab738eaace5267a8d26049a93e12fc6a3.html#ab738eaace5267a8d26049a93e12fc6a3">pjstrs_has_entry</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tspatial__transform__meos_8c_a95fff6adab1fe9804a553c0e6fc5e1f4.html#a95fff6adab1fe9804a553c0e6fc5e1f4">pjstrs_pfree</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tspatial__transform__meos_8c_ad8e31c7538ca2209879225906e91c2e4.html#ad8e31c7538ca2209879225906e91c2e4">PROJ_BACKEND_HASH_SIZE</a></td></tr>
@@ -107,8 +107,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="afffbbbfd45e5d3707e1e4857440195fd" name="afffbbbfd45e5d3707e1e4857440195fd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afffbbbfd45e5d3707e1e4857440195fd">&#9670;&#160;</a></span>pgstrs_get_entry()</h2>
+<a id="af7e8a2a56f33e2993e684579e69504cf" name="af7e8a2a56f33e2993e684579e69504cf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af7e8a2a56f33e2993e684579e69504cf">&#9670;&#160;</a></span>csv_read_field()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -117,16 +117,22 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static char * pgstrs_get_entry </td>
+          <td class="memname">static bool csv_read_field </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structPjStrs.html">PjStrs</a> *&#160;</td>
-          <td class="paramname"><em>strs</em>, </td>
+          <td class="paramtype">char **&#160;</td>
+          <td class="paramname"><em>pos</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>n</em>&#160;</td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>buf</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>bufsize</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -141,7 +147,18 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Return the n-th string of a PROJ strings structure. </p>
+<p>Return the PROJ strings of an SRID either from a CSV file <code>spatial_ref_sys.csv</code> (for MEOS) or from the PostGIS table <code>spatial_ref_sys</code> (for MobilityDB) </p>
+<dl class="section note"><dt>Note</dt><dd>The PostGIS function is copied here since it is declared as <code>static</code></dd></dl>
+<p>Read one comma-separated field into a buffer and advance past it</p>
+<p >A field carrying a comma is quoted and a quote inside such a field is written twice, so a reader that stops at the next comma delivers part of a field: a proj4 string states a datum shift as <code>+towgs84=dx</code>,dy,dz and carries three commas of its own. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">pos</td><td>Position in the row, left after the field's separator </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">buf</td><td>Buffer receiving the field, unquoted and terminated </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">bufsize</td><td>Size of <code>buf</code> </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>True if the field is read, false where it does not fit </dd></dl>
 
 </div>
 </div>
