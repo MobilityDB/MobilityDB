@@ -141,7 +141,7 @@ AS 'MODULE_PATHNAME', 'Temporal_simplify_dp'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- CREATE FUNCTION asMVTGeom(tgeo tgeometry, bounds stbox,
-  -- extent int4 DEFAULT 4096, buffer int4 DEFAULT 256, clip bool DEFAULT TRUE)
+  -- extent integer DEFAULT 4096, buffer integer DEFAULT 256, clip boolean DEFAULT TRUE)
 -- RETURNS geom_times
 -- AS 'MODULE_PATHNAME','Tgeo_AsMVTGeom'
 -- LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

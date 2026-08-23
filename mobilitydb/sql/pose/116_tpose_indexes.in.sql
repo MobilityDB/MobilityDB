@@ -37,7 +37,7 @@
 /******************************************************************************/
 
 CREATE FUNCTION tpose_gist_consistent(internal, tpose, smallint, oid, internal)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Stbox_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 

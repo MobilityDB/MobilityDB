@@ -35,11 +35,11 @@
 /******************************************************************************/
 
 CREATE FUNCTION tgeometry_gist_consistent(internal, tgeometry, smallint, oid, internal)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Stbox_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tgeography_gist_consistent(internal, tgeography, smallint, oid, internal)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Stbox_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 

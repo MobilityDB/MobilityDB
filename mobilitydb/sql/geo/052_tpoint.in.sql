@@ -418,20 +418,20 @@ CREATE FUNCTION duration(tgeogpoint, boundspan boolean DEFAULT FALSE)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION lowerInc(tgeompoint)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_lower_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION lowerInc(tgeogpoint)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_lower_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION upperInc(tgeompoint)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_upper_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION upperInc(tgeogpoint)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_upper_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -749,20 +749,20 @@ CREATE FUNCTION minusTime(tgeogpoint, tstzspanset)
   AS 'MODULE_PATHNAME', 'Temporal_minus_tstzspanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION beforeTimestamp(tgeompoint, timestamptz, strict bool DEFAULT TRUE)
+CREATE FUNCTION beforeTimestamp(tgeompoint, timestamptz, strict boolean DEFAULT TRUE)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Temporal_before_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION beforeTimestamp(tgeogpoint, timestamptz, strict bool DEFAULT TRUE)
+CREATE FUNCTION beforeTimestamp(tgeogpoint, timestamptz, strict boolean DEFAULT TRUE)
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'Temporal_before_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION afterTimestamp(tgeompoint, timestamptz, strict bool DEFAULT TRUE)
+CREATE FUNCTION afterTimestamp(tgeompoint, timestamptz, strict boolean DEFAULT TRUE)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Temporal_after_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION afterTimestamp(tgeogpoint, timestamptz, strict bool DEFAULT TRUE)
+CREATE FUNCTION afterTimestamp(tgeogpoint, timestamptz, strict boolean DEFAULT TRUE)
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'Temporal_after_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -878,31 +878,31 @@ CREATE FUNCTION timeSplit(tgeogpoint, bin_width interval,
  ******************************************************************************/
 
 CREATE FUNCTION lt(tgeompoint, tgeompoint)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION le(tgeompoint, tgeompoint)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION eq(tgeompoint, tgeompoint)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ne(tgeompoint, tgeompoint)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ge(tgeompoint, tgeompoint)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION gt(tgeompoint, tgeompoint)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION cmp(tgeompoint, tgeompoint)
-  RETURNS int4
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -955,31 +955,31 @@ CREATE OPERATOR CLASS tgeompoint_btree_ops
 /******************************************************************************/
 
 CREATE FUNCTION lt(tgeogpoint, tgeogpoint)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION le(tgeogpoint, tgeogpoint)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION eq(tgeogpoint, tgeogpoint)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ne(tgeogpoint, tgeogpoint)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ge(tgeogpoint, tgeogpoint)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION gt(tgeogpoint, tgeogpoint)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION cmp(tgeogpoint, tgeogpoint)
-  RETURNS int4
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 

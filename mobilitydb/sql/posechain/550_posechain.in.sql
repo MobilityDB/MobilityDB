@@ -101,20 +101,20 @@ CREATE FUNCTION posechainFromHexEWKB(text)
 
 /*****************************************************************************/
 
-CREATE FUNCTION asText(posechain, maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asText(posechain, maxdecimaldigits integer DEFAULT 15)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Posechain_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asText(posechain[], maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asText(posechain[], maxdecimaldigits integer DEFAULT 15)
   RETURNS text[]
   AS 'MODULE_PATHNAME', 'Spatialarr_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asEWKT(posechain, maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asEWKT(posechain, maxdecimaldigits integer DEFAULT 15)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Posechain_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asEWKT(posechain[], maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asEWKT(posechain[], maxdecimaldigits integer DEFAULT 15)
   RETURNS text[]
   AS 'MODULE_PATHNAME', 'Spatialarr_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

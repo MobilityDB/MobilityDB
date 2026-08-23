@@ -37,7 +37,7 @@
 /******************************************************************************/
 
 CREATE FUNCTION trgeometry_gist_consistent(internal, trgeometry, smallint, oid, internal)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Stbox_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 

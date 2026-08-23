@@ -886,44 +886,44 @@ CREATE FUNCTION duration(ttext, boundspan boolean DEFAULT FALSE)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION lowerInc(tbool)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_lower_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION lowerInc(tint)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_lower_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION lowerInc(tbigint)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_lower_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION lowerInc(tfloat)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_lower_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION lowerInc(ttext)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_lower_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION upperInc(tbool)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_upper_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION upperInc(tint)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_upper_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION upperInc(tbigint)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_upper_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION upperInc(tfloat)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_upper_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION upperInc(ttext)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_upper_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -2049,44 +2049,44 @@ CREATE FUNCTION minusTime(ttext, tstzspanset)
   AS 'MODULE_PATHNAME', 'Temporal_minus_tstzspanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION beforeTimestamp(tbool, timestamptz, strict bool DEFAULT TRUE)
+CREATE FUNCTION beforeTimestamp(tbool, timestamptz, strict boolean DEFAULT TRUE)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Temporal_before_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION beforeTimestamp(tint, timestamptz, strict bool DEFAULT TRUE)
+CREATE FUNCTION beforeTimestamp(tint, timestamptz, strict boolean DEFAULT TRUE)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Temporal_before_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION beforeTimestamp(tbigint, timestamptz, strict bool DEFAULT TRUE)
+CREATE FUNCTION beforeTimestamp(tbigint, timestamptz, strict boolean DEFAULT TRUE)
   RETURNS tbigint
   AS 'MODULE_PATHNAME', 'Temporal_before_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION beforeTimestamp(tfloat, timestamptz, strict bool DEFAULT TRUE)
+CREATE FUNCTION beforeTimestamp(tfloat, timestamptz, strict boolean DEFAULT TRUE)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Temporal_before_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION beforeTimestamp(ttext, timestamptz, strict bool DEFAULT TRUE)
+CREATE FUNCTION beforeTimestamp(ttext, timestamptz, strict boolean DEFAULT TRUE)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Temporal_before_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION afterTimestamp(tbool, timestamptz, strict bool DEFAULT TRUE)
+CREATE FUNCTION afterTimestamp(tbool, timestamptz, strict boolean DEFAULT TRUE)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Temporal_after_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION afterTimestamp(tint, timestamptz, strict bool DEFAULT TRUE)
+CREATE FUNCTION afterTimestamp(tint, timestamptz, strict boolean DEFAULT TRUE)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Temporal_after_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION afterTimestamp(tbigint, timestamptz, strict bool DEFAULT TRUE)
+CREATE FUNCTION afterTimestamp(tbigint, timestamptz, strict boolean DEFAULT TRUE)
   RETURNS tbigint
   AS 'MODULE_PATHNAME', 'Temporal_after_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION afterTimestamp(tfloat, timestamptz, strict bool DEFAULT TRUE)
+CREATE FUNCTION afterTimestamp(tfloat, timestamptz, strict boolean DEFAULT TRUE)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Temporal_after_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION afterTimestamp(ttext, timestamptz, strict bool DEFAULT TRUE)
+CREATE FUNCTION afterTimestamp(ttext, timestamptz, strict boolean DEFAULT TRUE)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Temporal_after_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -2225,44 +2225,44 @@ CREATE FUNCTION deleteTime(ttext, tstzspanset, connect boolean DEFAULT TRUE)
  * Segment Duration Functions
  *****************************************************************************/
 
-CREATE FUNCTION segmentMinDuration(tbool, interval, bool DEFAULT true)
+CREATE FUNCTION segmentMinDuration(tbool, interval, boolean DEFAULT true)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Temporal_segm_min_duration'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION segmentMinDuration(tint, interval, bool DEFAULT true)
+CREATE FUNCTION segmentMinDuration(tint, interval, boolean DEFAULT true)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Temporal_segm_min_duration'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION segmentMinDuration(tbigint, interval, bool DEFAULT true)
+CREATE FUNCTION segmentMinDuration(tbigint, interval, boolean DEFAULT true)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Temporal_segm_min_duration'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION segmentMinDuration(tfloat, interval, bool DEFAULT true)
+CREATE FUNCTION segmentMinDuration(tfloat, interval, boolean DEFAULT true)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Temporal_segm_min_duration'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION segmentMinDuration(ttext, interval, bool DEFAULT true)
+CREATE FUNCTION segmentMinDuration(ttext, interval, boolean DEFAULT true)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Temporal_segm_min_duration'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION segmentMaxDuration(tbool, interval, bool DEFAULT true)
+CREATE FUNCTION segmentMaxDuration(tbool, interval, boolean DEFAULT true)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Temporal_segm_max_duration'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION segmentMaxDuration(tint, interval, bool DEFAULT true)
+CREATE FUNCTION segmentMaxDuration(tint, interval, boolean DEFAULT true)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Temporal_segm_max_duration'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION segmentMaxDuration(tbigint, interval, bool DEFAULT true)
+CREATE FUNCTION segmentMaxDuration(tbigint, interval, boolean DEFAULT true)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Temporal_segm_max_duration'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION segmentMaxDuration(tfloat, interval, bool DEFAULT true)
+CREATE FUNCTION segmentMaxDuration(tfloat, interval, boolean DEFAULT true)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Temporal_segm_max_duration'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION segmentMaxDuration(ttext, interval, bool DEFAULT true)
+CREATE FUNCTION segmentMaxDuration(ttext, interval, boolean DEFAULT true)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Temporal_segm_max_duration'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

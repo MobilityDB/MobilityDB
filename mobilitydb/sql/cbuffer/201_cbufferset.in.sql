@@ -97,12 +97,12 @@ CREATE FUNCTION asHexEWKB(cbufferset, endianenconding text DEFAULT '')
   AS 'MODULE_PATHNAME', 'Spatialset_as_hexewkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asText(cbufferset, maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asText(cbufferset, maxdecimaldigits integer DEFAULT 15)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Spatialset_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asEWKT(cbufferset, maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asEWKT(cbufferset, maxdecimaldigits integer DEFAULT 15)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Spatialset_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -249,27 +249,27 @@ CREATE AGGREGATE setUnion(cbufferset) (
  ******************************************************************************/
 
 CREATE FUNCTION eq(cbufferset, cbufferset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Set_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ne(cbufferset, cbufferset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Set_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION lt(cbufferset, cbufferset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Set_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION le(cbufferset, cbufferset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Set_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ge(cbufferset, cbufferset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Set_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION gt(cbufferset, cbufferset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Set_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION cmp(cbufferset, cbufferset)

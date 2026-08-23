@@ -213,27 +213,27 @@ CREATE AGGREGATE setUnion(jsonbset) (
  ******************************************************************************/
 
 CREATE FUNCTION eq(jsonbset, jsonbset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Set_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ne(jsonbset, jsonbset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Set_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION lt(jsonbset, jsonbset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Set_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION le(jsonbset, jsonbset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Set_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ge(jsonbset, jsonbset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Set_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION gt(jsonbset, jsonbset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Set_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION cmp(jsonbset, jsonbset)

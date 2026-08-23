@@ -48,7 +48,7 @@
  ******************************************************************************/
 
 CREATE FUNCTION tquadbin_gist_consistent(internal, tquadbin, smallint, oid, internal)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Stbox_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 

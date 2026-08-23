@@ -130,20 +130,20 @@ CREATE FUNCTION npointFromHexEWKB(text)
 
 /*****************************************************************************/
 
-CREATE FUNCTION asText(npoint, maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asText(npoint, maxdecimaldigits integer DEFAULT 15)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Npoint_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asText(npoint[], maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asText(npoint[], maxdecimaldigits integer DEFAULT 15)
   RETURNS text[]
   AS 'MODULE_PATHNAME', 'Spatialarr_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asEWKT(npoint, maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asEWKT(npoint, maxdecimaldigits integer DEFAULT 15)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Npoint_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asEWKT(npoint[], maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asEWKT(npoint[], maxdecimaldigits integer DEFAULT 15)
   RETURNS text[]
   AS 'MODULE_PATHNAME', 'Spatialarr_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -326,7 +326,7 @@ CREATE FUNCTION gt(npoint, npoint)
   AS 'MODULE_PATHNAME', 'Npoint_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION cmp(npoint, npoint)
-  RETURNS int4
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Npoint_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -403,7 +403,7 @@ CREATE FUNCTION gt(nsegment, nsegment)
   AS 'MODULE_PATHNAME', 'Nsegment_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION cmp(nsegment, nsegment)
-  RETURNS int4
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Nsegment_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 

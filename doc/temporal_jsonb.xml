@@ -261,7 +261,7 @@ SELECT jsonbsetInsert(jsonbset '[{"speed": 10, "units": "km/h"},
 			<listitem xml:id="jsonbset_strip_nulls">
 				<indexterm significance="normal"><primary><varname>jsonbsetStripNulls</varname></primary></indexterm>
 				<para>Return a JSONB set without nulls</para>
-				<para><varname>jsonbsetStripNulls(jsonbset,strip_in_arrays bool=false) → jsonbset</varname></para>
+				<para><varname>jsonbsetStripNulls(jsonbset,strip_in_arrays boolean=false) → jsonbset</varname></para>
 				<para>The last argument states whether null array elements are also stripped. Bare null values are never stripped.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT jsonbsetStripNulls(textset '[{"speed": 10, "lights": null},
@@ -571,7 +571,7 @@ SELECT tjsonb('{"vehicleId": 1, "location": "Point(1 1)"}',
 			<listitem xml:id="tjsonbSeq">
 				<indexterm significance="normal"><primary><varname>tjsonbSeq</varname></primary></indexterm>
 				<para>Constructor for temporal JSONB values of sequence subtype</para>
-				<para><varname>tjsonbSeq(tjsonbInst[]},leftInc bool=true,rightInc bool=true) →tjsonbSeq</varname></para>
+				<para><varname>tjsonbSeq(tjsonbInst[]},leftInc boolean=true,rightInc boolean=true) →tjsonbSeq</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonbSeq(ARRAY[tjsonb
   '"{\"vehicleId\": 1, \"location\": \"Point(1 1)\"}"@2001-01-01',
@@ -1001,8 +1001,8 @@ SELECT tjsonbInsert(tjsonb '[{"speed": 10, "units": "km/h"}@2001-01-01,
 				<indexterm significance="normal"><primary><varname>tjsonStripNulls</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tjsonbStripNulls</varname></primary></indexterm>
 				<para>Return a temporal JSON value without nulls</para>
-				<para><varname>tjsonStripNulls(ttext,strip_in_arrays bool=false) → ttext</varname></para>
-				<para><varname>tjsonbStripNulls(tjsonb,strip_in_arrays bool=false) → tjsonb</varname></para>
+				<para><varname>tjsonStripNulls(ttext,strip_in_arrays boolean=false) → ttext</varname></para>
+				<para><varname>tjsonbStripNulls(tjsonb,strip_in_arrays boolean=false) → tjsonb</varname></para>
 				<para>The last argument states whether null array elements are also stripped. Bare null values are never stripped.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tjsonStripNulls(ttext '[{"speed": 10, "lights": null}@2001-01-01,

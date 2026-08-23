@@ -14,7 +14,7 @@
 # and are classified out by omission from the data below, never by a code skip.
 comparison_families:
 # The base temporal file spells the comparison RETURNS boolean and cmp integer
-# (the derived families spell bool/int4), selected by `ops: base`; its five base
+# (the derived families spell boolean/integer), selected by `ops: base`; its five base
 # types cluster type-major with per-type operator/opclass lits whose RESTRICT
 # selectivity varies (temporal_sel for tbool/ttext, tnumber_sel for the numbers).
 - family: temporal

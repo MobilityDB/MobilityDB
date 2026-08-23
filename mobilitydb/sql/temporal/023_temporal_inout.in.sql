@@ -135,11 +135,11 @@ CREATE FUNCTION asText(tbigint[])
   AS 'MODULE_PATHNAME', 'Temporalarr_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asText(tfloat, maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asText(tfloat, maxdecimaldigits integer DEFAULT 15)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asText(tfloat[], maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asText(tfloat[], maxdecimaldigits integer DEFAULT 15)
   RETURNS text[]
   AS 'MODULE_PATHNAME', 'Temporalarr_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -153,28 +153,28 @@ CREATE FUNCTION asText(ttext[])
   AS 'MODULE_PATHNAME', 'Temporalarr_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asMFJSON(temp tbool, options int4 DEFAULT 0,
-    flags int4 DEFAULT 0)
+CREATE FUNCTION asMFJSON(temp tbool, options integer DEFAULT 0,
+    flags integer DEFAULT 0)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_as_mfjson'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asMFJSON(temp tint, options int4 DEFAULT 0,
-    flags int4 DEFAULT 0)
+CREATE FUNCTION asMFJSON(temp tint, options integer DEFAULT 0,
+    flags integer DEFAULT 0)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_as_mfjson'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asMFJSON(temp tbigint, options int4 DEFAULT 0,
-    flags int4 DEFAULT 0)
+CREATE FUNCTION asMFJSON(temp tbigint, options integer DEFAULT 0,
+    flags integer DEFAULT 0)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_as_mfjson'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asMFJSON(temp tfloat, options int4 DEFAULT 0,
-    flags int4 DEFAULT 0, maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asMFJSON(temp tfloat, options integer DEFAULT 0,
+    flags integer DEFAULT 0, maxdecimaldigits integer DEFAULT 15)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_as_mfjson'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asMFJSON(temp ttext, options int4 DEFAULT 0,
-    flags int4 DEFAULT 0)
+CREATE FUNCTION asMFJSON(temp ttext, options integer DEFAULT 0,
+    flags integer DEFAULT 0)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_as_mfjson'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

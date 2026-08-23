@@ -61,7 +61,7 @@ CREATE FUNCTION transformPipeline(tcbuffer, text, srid integer DEFAULT 0,
  * Traversed area
  *****************************************************************************/
 
-CREATE FUNCTION traversedArea(tcbuffer, bool DEFAULT FALSE)
+CREATE FUNCTION traversedArea(tcbuffer, boolean DEFAULT FALSE)
   RETURNS geometry
   AS 'MODULE_PATHNAME', 'Tcbuffer_traversed_area'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -108,12 +108,12 @@ CREATE FUNCTION minusGeometry(tcbuffer, geometry)
   AS 'MODULE_PATHNAME', 'Tcbuffer_minus_geom'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION atStbox(tcbuffer, stbox, bool DEFAULT TRUE)
+CREATE FUNCTION atStbox(tcbuffer, stbox, boolean DEFAULT TRUE)
   RETURNS tcbuffer
   AS 'MODULE_PATHNAME', 'Tcbuffer_at_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION minusStbox(tcbuffer, stbox, bool DEFAULT TRUE)
+CREATE FUNCTION minusStbox(tcbuffer, stbox, boolean DEFAULT TRUE)
   RETURNS tcbuffer
   AS 'MODULE_PATHNAME', 'Tcbuffer_minus_stbox'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

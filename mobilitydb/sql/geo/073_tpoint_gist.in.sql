@@ -33,7 +33,7 @@
  */
 
 CREATE FUNCTION stbox_gist_consistent(internal, stbox, smallint, oid, internal)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Stbox_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -129,11 +129,11 @@ CREATE OPERATOR CLASS stbox_rtree_ops
 /******************************************************************************/
 
 CREATE FUNCTION tgeompoint_gist_consistent(internal, tgeompoint, smallint, oid, internal)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Stbox_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tgeogpoint_gist_consistent(internal, tgeogpoint, smallint, oid, internal)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Stbox_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 

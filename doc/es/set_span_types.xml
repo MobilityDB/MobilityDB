@@ -321,7 +321,7 @@ SELECT set(ARRAY[timestamptz '2001-01-01 08:00:00', '2001-01-03 09:30:00']);
 			<listitem xml:id="span">
 				<indexterm significance="normal"><primary><varname>span</varname></primary></indexterm>
 				<para>Constructor para tipos de rango</para>
-				<para><varname>span(lower base,upper base,leftInc bool=true,rightInc bool=false) → span</varname></para>
+				<para><varname>span(lower base,upper base,leftInc boolean=true,rightInc boolean=false) → span</varname></para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT span(20.5, 25);
 -- [20.5, 25)
@@ -561,7 +561,7 @@ SELECT width(intspanset '{[1,3),[5,7)}', true);
 				<indexterm significance="normal"><primary><varname>duration</varname></primary></indexterm>
 				<para>Devuelve el rango de tiempo</para>
 				<para><varname>duration({datespan,tstzspan}) → interval</varname></para>
-				<para><varname>duration({datespanset,tstzspanset},boundspan bool=false) → interval</varname></para>
+				<para><varname>duration({datespanset,tstzspanset},boundspan boolean=false) → interval</varname></para>
 				<para>Se puede establecer a verdadero un parámetro adicional para calcular la duración en el rango delimitador, ignorando así las posibles brechas de tiempo</para>
 				<programlisting language="sql" xml:space="preserve">
 SELECT duration(datespan '[2001-01-01, 2001-01-03)');
@@ -967,7 +967,7 @@ SELECT asEWKT(setSRID(cbufferset '{"Cbuffer(Point(1 1),0.5)",
 				<indexterm significance="normal"><primary><varname>transformPipeline</varname></primary></indexterm>
 				<para>Transformar a una referencia espacial diferente</para>
 				<para><varname>transform(spatialset,to_srid integer) → spatialset</varname></para>
-				<para><varname>transformPipeline(spatialset,pipeline text,to_srid integer,is_forward bool=true) →</varname></para>
+				<para><varname>transformPipeline(spatialset,pipeline text,to_srid integer,is_forward boolean=true) →</varname></para>
 				<para><varname>  spatialset</varname></para>
 				<para>La función <varname>transform</varname> especifica la transformación con un SRID de destino. Se genera un error cuando el conjunto tiene un SRID desconocido (representado por 0). La función <varname>transformPipeline</varname> especifica la transformación con una canalización de transformación de coordenadas en el siguiente formato:</para>
 				<para><varname>urn:ogc:def:coordinateOperation:AUTHORITY::CODE</varname></para>

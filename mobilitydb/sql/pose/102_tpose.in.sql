@@ -113,15 +113,15 @@ CREATE FUNCTION tposeFromGeoPose(text)
 
 -- conformance:      0 = Basic-Quaternion (default), 1 = Basic-YPR, 2 = Advanced
 -- maxdecimaldigits: significant digits to keep; -1 = lossless
-CREATE FUNCTION asGeoPose(tpose, conformance int4 DEFAULT 0,
-    maxdecimaldigits int4 DEFAULT -1)
+CREATE FUNCTION asGeoPose(tpose, conformance integer DEFAULT 0,
+    maxdecimaldigits integer DEFAULT -1)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Tpose_as_geopose'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- A stream written as one document: the header that opens it and every
 -- element it carries.
-CREATE FUNCTION asGeoPoseStream(tpose, maxdecimaldigits int4 DEFAULT -1)
+CREATE FUNCTION asGeoPoseStream(tpose, maxdecimaldigits integer DEFAULT -1)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Tpose_as_geopose_stream'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -170,26 +170,26 @@ CREATE FUNCTION tposeFromHexEWKB(text)
 
 /*****************************************************************************/
 
-CREATE FUNCTION asText(tpose, maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asText(tpose, maxdecimaldigits integer DEFAULT 15)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Tspatial_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asText(tpose[], maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asText(tpose[], maxdecimaldigits integer DEFAULT 15)
   RETURNS text[]
   AS 'MODULE_PATHNAME', 'Spatialarr_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asEWKT(tpose, maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asEWKT(tpose, maxdecimaldigits integer DEFAULT 15)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Tspatial_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asEWKT(tpose[], maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asEWKT(tpose[], maxdecimaldigits integer DEFAULT 15)
   RETURNS text[]
   AS 'MODULE_PATHNAME', 'Spatialarr_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asMFJSON(tpose, options int4 DEFAULT 0,
-    flags int4 DEFAULT 0, maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asMFJSON(tpose, options integer DEFAULT 0,
+    flags integer DEFAULT 0, maxdecimaldigits integer DEFAULT 15)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_as_mfjson'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -400,12 +400,12 @@ CREATE FUNCTION duration(tpose, boundspan boolean DEFAULT FALSE)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION lowerInc(tpose)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_lower_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION upperInc(tpose)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_upper_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -617,12 +617,12 @@ CREATE FUNCTION minusTime(tpose, tstzspanset)
   AS 'MODULE_PATHNAME', 'Temporal_minus_tstzspanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION beforeTimestamp(tpose, timestamptz, strict bool DEFAULT TRUE)
+CREATE FUNCTION beforeTimestamp(tpose, timestamptz, strict boolean DEFAULT TRUE)
   RETURNS tpose
   AS 'MODULE_PATHNAME', 'Temporal_before_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION afterTimestamp(tpose, timestamptz, strict bool DEFAULT TRUE)
+CREATE FUNCTION afterTimestamp(tpose, timestamptz, strict boolean DEFAULT TRUE)
   RETURNS tpose
   AS 'MODULE_PATHNAME', 'Temporal_after_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -726,31 +726,31 @@ CREATE FUNCTION timeSplit(tpose, bin_width interval,
  ******************************************************************************/
 
 CREATE FUNCTION lt(tpose, tpose)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION le(tpose, tpose)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION eq(tpose, tpose)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ne(tpose, tpose)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ge(tpose, tpose)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION gt(tpose, tpose)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION cmp(tpose, tpose)
-  RETURNS int4
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 

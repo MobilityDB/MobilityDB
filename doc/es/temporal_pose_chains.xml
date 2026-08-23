@@ -259,7 +259,7 @@ SELECT asEWKT(setSRID(posechain 'PoseChain(Pose(Point(1 2),0))', 3812));
 					<indexterm significance="normal"><primary><varname>transformPipeline</varname></primary></indexterm>
 					<para>Transforma a un identificador de referencia espacial</para>
 					<para><varname>transform(posechain,integer) → posechain</varname></para>
-					<para><varname>transformPipeline(posechain,pipeline text,to_srid integer,is_forward bool=true) → posechain</varname></para>
+					<para><varname>transformPipeline(posechain,pipeline text,to_srid integer,is_forward boolean=true) → posechain</varname></para>
 					<para>Solo el eslabón exterior nombra un marco, por lo que solo se transforma el eslabón exterior: cada uno de los demás eslabones es una transformación rígida leída en los ejes de su marco padre, y un cambio del marco exterior deja esos ejes como estaban. Se genera un error cuando la cadena de entrada tiene un SRID desconocido (representado por 0).</para>
 					<para>Para una cadena tridimensional sobre un marco geográfico, la orientación del eslabón exterior se vuelve a expresar en la base del marco de destino en su punto, exactamente como ocurre con una pose. Para una cadena bidimensional el ángulo es intrínseco a la proyección de origen y se transmite sin cambios.</para>
 					<para>La función <varname>transformPipeline</varname> especifica la transformación con una tubería de transformación de coordenadas definida representada con el siguiente formato de cadena:</para>
@@ -557,7 +557,7 @@ SELECT asEWKT(setSRID(tposechain '{PoseChain(Pose(Point(1 2),0))@2001-01-01,
 					<indexterm significance="normal"><primary><varname>transformPipeline</varname></primary></indexterm>
 					<para>Transforma a un identificador de referencia espacial</para>
 					<para><varname>transform(tposechain,integer) &#8594; tposechain</varname></para>
-					<para><varname>transformPipeline(tposechain,pipeline text,to_srid integer,is_forward bool=true) &#8594; tposechain</varname></para>
+					<para><varname>transformPipeline(tposechain,pipeline text,to_srid integer,is_forward boolean=true) &#8594; tposechain</varname></para>
 					<para>La cadena de cada instante se transforma como se transforma la cadena estática correspondiente, es decir, solo se transforma el eslabón exterior, tal como se describe para <link linkend="posechain_transform"><varname>transform</varname></link>.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asEWKT(round(transform(tposechain 'SRID=4326;PoseChain(

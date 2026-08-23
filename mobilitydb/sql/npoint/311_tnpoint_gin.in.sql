@@ -44,7 +44,7 @@ RETURNS internal
 AS 'MODULE_PATHNAME', 'Tnpoint_gin_extract_query'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tnpoint_gin_triconsistent(internal, int2, bigint, int4, internal, internal, internal)
+CREATE FUNCTION tnpoint_gin_triconsistent(internal, int2, bigint, integer, internal, internal, internal)
 RETURNS char
 AS 'MODULE_PATHNAME', 'Set_gin_triconsistent'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -75,6 +75,6 @@ CREATE OPERATOR CLASS tnpoint_gin_ops
   -- functions
   FUNCTION   2    tnpoint_gin_extract_value(bigint, internal),
   FUNCTION   3    tnpoint_gin_extract_query(bigint, internal, int2, internal, internal, internal, internal),
-  FUNCTION   6    tnpoint_gin_triconsistent(internal, int2, bigint, int4, internal, internal, internal);
+  FUNCTION   6    tnpoint_gin_triconsistent(internal, int2, bigint, integer, internal, internal, internal);
 
 /******************************************************************************/

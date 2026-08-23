@@ -122,7 +122,7 @@ CREATE FUNCTION asText(tjsonb[])
 -- CREATE CAST (jsonb AS text) WITH FUNCTION asText(jsonb);
 CREATE CAST (tjsonb AS text) WITH FUNCTION asText(tjsonb);
 
-CREATE FUNCTION asMFJSON(temp tjsonb, options int4 DEFAULT 0, flags int4 DEFAULT 0)
+CREATE FUNCTION asMFJSON(temp tjsonb, options integer DEFAULT 0, flags integer DEFAULT 0)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_as_mfjson'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -282,12 +282,12 @@ CREATE FUNCTION duration(tjsonb, boundspan boolean DEFAULT FALSE)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION lowerInc(tjsonb)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_lower_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION upperInc(tjsonb)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_upper_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -486,12 +486,12 @@ CREATE FUNCTION minusTime(tjsonb, tstzspanset)
   AS 'MODULE_PATHNAME', 'Temporal_minus_tstzspanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION beforeTimestamp(tjsonb, timestamptz, strict bool DEFAULT TRUE)
+CREATE FUNCTION beforeTimestamp(tjsonb, timestamptz, strict boolean DEFAULT TRUE)
   RETURNS tjsonb
   AS 'MODULE_PATHNAME', 'Temporal_before_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION afterTimestamp(tjsonb, timestamptz, strict bool DEFAULT TRUE)
+CREATE FUNCTION afterTimestamp(tjsonb, timestamptz, strict boolean DEFAULT TRUE)
   RETURNS tjsonb
   AS 'MODULE_PATHNAME', 'Temporal_after_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -594,31 +594,31 @@ CREATE FUNCTION timeSplit(tjsonb, bin_width interval,
  *****************************************************************************/
 
 CREATE FUNCTION lt(tjsonb, tjsonb)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION le(tjsonb, tjsonb)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION eq(tjsonb, tjsonb)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ne(tjsonb, tjsonb)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ge(tjsonb, tjsonb)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION gt(tjsonb, tjsonb)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION cmp(tjsonb, tjsonb)
-  RETURNS int4
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 

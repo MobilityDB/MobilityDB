@@ -123,26 +123,26 @@ CREATE FUNCTION tcbufferFromMFJSON(text)
 
 /*****************************************************************************/
 
-CREATE FUNCTION asText(tcbuffer, maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asText(tcbuffer, maxdecimaldigits integer DEFAULT 15)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Tspatial_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asText(tcbuffer[], maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asText(tcbuffer[], maxdecimaldigits integer DEFAULT 15)
   RETURNS text[]
   AS 'MODULE_PATHNAME', 'Spatialarr_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asEWKT(tcbuffer, maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asEWKT(tcbuffer, maxdecimaldigits integer DEFAULT 15)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Tspatial_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asEWKT(tcbuffer[], maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asEWKT(tcbuffer[], maxdecimaldigits integer DEFAULT 15)
   RETURNS text[]
   AS 'MODULE_PATHNAME', 'Spatialarr_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asMFJSON(tcbuffer, options int4 DEFAULT 0,
-    flags int4 DEFAULT 0, maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asMFJSON(tcbuffer, options integer DEFAULT 0,
+    flags integer DEFAULT 0, maxdecimaldigits integer DEFAULT 15)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_as_mfjson'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -343,12 +343,12 @@ CREATE FUNCTION duration(tcbuffer, boundspan boolean DEFAULT FALSE)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION lowerInc(tcbuffer)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_lower_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION upperInc(tcbuffer)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_upper_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -558,12 +558,12 @@ CREATE FUNCTION minusTime(tcbuffer, tstzspanset)
   AS 'MODULE_PATHNAME', 'Temporal_minus_tstzspanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION beforeTimestamp(tcbuffer, timestamptz, strict bool DEFAULT TRUE)
+CREATE FUNCTION beforeTimestamp(tcbuffer, timestamptz, strict boolean DEFAULT TRUE)
   RETURNS tcbuffer
   AS 'MODULE_PATHNAME', 'Temporal_before_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION afterTimestamp(tcbuffer, timestamptz, strict bool DEFAULT TRUE)
+CREATE FUNCTION afterTimestamp(tcbuffer, timestamptz, strict boolean DEFAULT TRUE)
   RETURNS tcbuffer
   AS 'MODULE_PATHNAME', 'Temporal_after_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -664,31 +664,31 @@ CREATE FUNCTION timeSplit(tcbuffer, bin_width interval,
  *****************************************************************************/
 
 CREATE FUNCTION lt(tcbuffer, tcbuffer)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION le(tcbuffer, tcbuffer)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION eq(tcbuffer, tcbuffer)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ne(tcbuffer, tcbuffer)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ge(tcbuffer, tcbuffer)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION gt(tcbuffer, tcbuffer)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION cmp(tcbuffer, tcbuffer)
-  RETURNS int4
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 

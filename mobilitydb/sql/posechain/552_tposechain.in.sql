@@ -114,7 +114,7 @@ CREATE FUNCTION tposechainFromGeoPose(text)
 -- A Composite Chain document carries one valid time, so it is written
 -- from a single instant, and its frame chain holds at least two frames.
 -- maxdecimaldigits: significant digits to keep; -1 = lossless
-CREATE FUNCTION asGeoPose(tposechain, maxdecimaldigits int4 DEFAULT -1)
+CREATE FUNCTION asGeoPose(tposechain, maxdecimaldigits integer DEFAULT -1)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Tposechain_as_geopose'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -122,7 +122,7 @@ CREATE FUNCTION asGeoPose(tposechain, maxdecimaldigits int4 DEFAULT -1)
 -- A Composite Graph document is a set of pose chains sharing their outermost
 -- frame, so it is written from chains read at one and the same instant, and
 -- its frame list holds at least two frames.
-CREATE FUNCTION asGeoPose(tposechain[], maxdecimaldigits int4 DEFAULT -1)
+CREATE FUNCTION asGeoPose(tposechain[], maxdecimaldigits integer DEFAULT -1)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Tposechainarr_as_geopose'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -144,26 +144,26 @@ CREATE FUNCTION tposechainFromHexEWKB(text)
 
 /*****************************************************************************/
 
-CREATE FUNCTION asText(tposechain, maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asText(tposechain, maxdecimaldigits integer DEFAULT 15)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Tspatial_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asText(tposechain[], maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asText(tposechain[], maxdecimaldigits integer DEFAULT 15)
   RETURNS text[]
   AS 'MODULE_PATHNAME', 'Spatialarr_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asEWKT(tposechain, maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asEWKT(tposechain, maxdecimaldigits integer DEFAULT 15)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Tspatial_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asEWKT(tposechain[], maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asEWKT(tposechain[], maxdecimaldigits integer DEFAULT 15)
   RETURNS text[]
   AS 'MODULE_PATHNAME', 'Spatialarr_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asMFJSON(tposechain, options int4 DEFAULT 0,
-    flags int4 DEFAULT 0, maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asMFJSON(tposechain, options integer DEFAULT 0,
+    flags integer DEFAULT 0, maxdecimaldigits integer DEFAULT 15)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Temporal_as_mfjson'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -336,12 +336,12 @@ CREATE FUNCTION duration(tposechain, boundspan boolean DEFAULT FALSE)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION lowerInc(tposechain)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_lower_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION upperInc(tposechain)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_upper_inc'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -553,12 +553,12 @@ CREATE FUNCTION minusTime(tposechain, tstzspanset)
   AS 'MODULE_PATHNAME', 'Temporal_minus_tstzspanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION beforeTimestamp(tposechain, timestamptz, strict bool DEFAULT TRUE)
+CREATE FUNCTION beforeTimestamp(tposechain, timestamptz, strict boolean DEFAULT TRUE)
   RETURNS tposechain
   AS 'MODULE_PATHNAME', 'Temporal_before_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION afterTimestamp(tposechain, timestamptz, strict bool DEFAULT TRUE)
+CREATE FUNCTION afterTimestamp(tposechain, timestamptz, strict boolean DEFAULT TRUE)
   RETURNS tposechain
   AS 'MODULE_PATHNAME', 'Temporal_after_timestamptz'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -662,31 +662,31 @@ CREATE FUNCTION timeSplit(tposechain, bin_width interval,
  ******************************************************************************/
 
 CREATE FUNCTION lt(tposechain, tposechain)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION le(tposechain, tposechain)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION eq(tposechain, tposechain)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ne(tposechain, tposechain)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ge(tposechain, tposechain)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION gt(tposechain, tposechain)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Temporal_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION cmp(tposechain, tposechain)
-  RETURNS int4
+  RETURNS integer
   AS 'MODULE_PATHNAME', 'Temporal_cmp'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 

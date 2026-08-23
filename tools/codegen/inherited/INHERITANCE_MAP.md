@@ -432,7 +432,7 @@ separate `io_repr.sql.tmpl`; the generic block renderer covers both shapes.
 
 EWKT/EWKB are **TSpatial<T>-level**, the `E` = carries the SRID
 ([[ewkt-ewkb-tspatial-srid-representation]]). Conventions to reproduce verbatim:
-`maxdecimaldigits int4 DEFAULT 15` on float/coordinate-bearing types only;
+`maxdecimaldigits integer DEFAULT 15` on float/coordinate-bearing types only;
 `endianenconding text DEFAULT ''` (canonical misspelling) on `asBinary`/`asHexWKB`.
 
 Governed by `templates/representations.sql.tmpl` + `representation_families`,

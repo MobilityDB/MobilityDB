@@ -298,7 +298,7 @@ SELECT asEWKT(setSRID(pose 'Pose(Point(0 0),1)', 4326));
 					<indexterm significance="normal"><primary><varname>transformPipeline</varname></primary></indexterm>
 					<para>Transformar a un identificador de referencia espacial</para>
 					<para><varname>transform(pose,integer) → pose</varname></para>
-					<para><varname>transformPipeline(pose,pipeline text,to_srid integer,is_forward bool=true) → pose</varname></para>
+					<para><varname>transformPipeline(pose,pipeline text,to_srid integer,is_forward boolean=true) → pose</varname></para>
 					<para>La función <varname>transform</varname> especifica la transformación con un SRID de destino. Se genera un error cuando la pose de entrada tiene un SRID desconocido (representado por 0).</para>
 					<para>En una pose 3D, la orientación se reexpresa en la base del marco de destino en el punto de la pose. La corrección está definida para el par canónico de OGC GeoPose, WGS-84 geográfico (EPSG:4326) ↔ WGS-84 ECEF (EPSG:4978), y toma la base estándar Este-Norte-Arriba en el punto geográfico como pivote de rotación. Para cualquier otro par de SRID, <varname>transform</varname> emite un <varname>NOTICE</varname> y deja pasar la orientación sin cambios. En una pose 2D, el ángulo es intrínseco a la proyección de origen y se deja pasar sin cambios.</para>
 					<para>La función <varname>transformPipeline</varname> especifica la transformación con una canalización de transformación de coordenadas definida representada con el siguiente formato de cadena:</para>
@@ -609,8 +609,8 @@ SELECT asText(tpose('Pose(Point(1 1), 0.2)',
 			<listitem xml:id="tposeSeq">
 				<indexterm significance="normal"><primary><varname>tposeSeq</varname></primary></indexterm>
 				<para>Constructor para poses temporales de subtipo secuencia</para>
-				<para><varname>tposeSeq(tposeInst[],interp={'step','linear'},leftInc bool=true,</varname></para>
-				<para><varname>  rightInc bool=true) → tposeSeq</varname></para>
+				<para><varname>tposeSeq(tposeInst[],interp={'step','linear'},leftInc boolean=true,</varname></para>
+				<para><varname>  rightInc boolean=true) → tposeSeq</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(tposeSeq(ARRAY[tpose 'Pose(Point(1 1), 0.3)@2001-01-01',
   'Pose(Point(2 2), 0.5)@2001-01-02', 'Pose(Point(1 1), 0.5)@2001-01-03']));
@@ -960,7 +960,7 @@ SELECT asEWKT(setSRID(tpose '[Pose(Point(0 0),1)@2001-01-01,
 				<indexterm significance="normal"><primary><varname>transformPipeline</varname></primary></indexterm>
 				<para>Transformar a un identificador de referencia espacial</para>
 				<para><varname>transform(tpose,integer) → tpose</varname></para>
-				<para><varname>transformPipeline(tpose,pipeline text,to_srid integer,is_forward bool=true) → tpose</varname></para>
+				<para><varname>transformPipeline(tpose,pipeline text,to_srid integer,is_forward boolean=true) → tpose</varname></para>
 				<para>La pose de cada instante se transforma igual que la pose estática correspondiente, con la corrección de orientación incluida, como se describe para <link linkend="pose_transform"><varname>transform</varname></link>. Lo mismo ocurre con un <varname>poseset</varname>. Una <varname>trgeometry</varname> asocia sus poses con una geometría de referencia que comparte su marco, y la transformación a otro SRID no está admitida para ese tipo.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asEWKT(transform(tpose 'SRID=4326;Pose(Point(4.35 50.85),1)@2001-01-01', 
@@ -1295,7 +1295,7 @@ CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
 					<indexterm significance="normal"><primary><varname>asGeoPose</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>poseFromGeoPose</varname></primary></indexterm>
 					<para>Convertir hacia o desde la codificación JSON de OGC GeoPose v1.0 (clase de conformidad Basic-Quaternion, Basic-YPR o Advanced)</para>
-					<para><varname>asGeoPose(pose,conformance int4=0,maxdecimaldigits int4=-1) → text</varname></para>
+					<para><varname>asGeoPose(pose,conformance integer=0,maxdecimaldigits integer=-1) → text</varname></para>
 					<para><varname>poseFromGeoPose(text) → pose</varname></para>
 					<para>El argumento <varname>conformance</varname> selecciona la clase de salida: <varname>0</varname> = Basic-Quaternion (predeterminado, sin pérdida), <varname>1</varname> = Basic-YPR (yaw, pitch, roll en grados, Tait-Bryan intrínseco ZYX), <varname>2</varname> = Advanced. El argumento <varname>maxdecimaldigits</varname> es el número de dígitos significativos que se conservan en los números JSON; <varname>-1</varname> utiliza el valor predeterminado sin pérdida de json-c. La función de entrada detecta automáticamente la clase de conformidad a partir de las claves JSON, donde el miembro <varname>frameSpecification</varname> implica Advanced, el miembro <varname>quaternion</varname> implica Basic-Quaternion y el miembro <varname>angles</varname> implica Basic-YPR.</para>
 					<para>Las clases Basic llevan la posición en un miembro <varname>position</varname> y dejan el marco implícito. La clase Advanced no tiene miembro de posición: nombra su marco exterior de forma explícita y la pose se sitúa en el origen de ese marco, de modo que las dos codificaciones de una misma pose se releen iguales. Todas las clases exigen un marco exterior geográfico, por lo que la pose debe ser geodésica; una pose planar se rechaza en el límite de la conversión, al igual que un SRID proyectado.</para>
@@ -1522,7 +1522,7 @@ SELECT asEWKT(round(applyPose(pose 'Pose(Point(1 0 0), 1, 0, 0, 0)',
 					<indexterm significance="normal"><primary><varname>asGeoPose</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>tposeFromGeoPose</varname></primary></indexterm>
 					<para>Convierte una pose temporal hacia o desde una envoltura JSON TemporalGeoPose. Cada carga útil por instante es un documento GeoPose de clase Basic estrictamente válido según OGC más un miembro <varname>validTime</varname>; la envoltura registra la clase de conformidad, la interpolación y (para secuencias y conjuntos de secuencias) la inclusión de los límites del período. Un consumidor GeoPose ajeno a MEOS puede iterar sobre <varname>instants[]</varname> (o cada <varname>sequences[].instants[]</varname>) y consumir cada elemento como un documento GeoPose estático.</para>
-					<para><varname>asGeoPose(tpose,conformance int4=0,maxdecimaldigits int4=-1) → text</varname></para>
+					<para><varname>asGeoPose(tpose,conformance integer=0,maxdecimaldigits integer=-1) → text</varname></para>
 					<para><varname>tposeFromGeoPose(text) → tpose</varname></para>
 					<para>La forma de la envoltura es</para>
 					<programlisting xml:space="preserve" format="linespecific">
@@ -1556,7 +1556,7 @@ SELECT asGeoPose(tpose '[Pose(Point(8 47), 0)@2026-01-01,
 				<listitem xml:id="tpose_geopose_stream">
 					<indexterm significance="normal"><primary><varname>asGeoPoseStream</varname></primary></indexterm>
 					<para>Escribe una pose temporal como un Stream de OGC GeoPose</para>
-					<para><varname>asGeoPoseStream(tpose,maxdecimaldigits int4=-1) → text</varname></para>
+					<para><varname>asGeoPoseStream(tpose,maxdecimaldigits integer=-1) → text</varname></para>
 					<para>Un stream lleva los marcos de una Serie Irregular sin declarar cuántas poses hay ni cuándo terminan, ya que pueden llegar más. El estándar lo escribe como un <varname>header</varname>, que contiene el modelo de transición y el marco exterior, y un arreglo <varname>streamElements</varname> con un elemento por pose. El marco exterior es el plano tangente local Este-Norte-Arriba en la posición de la primera pose, de modo que la cabecera y cada elemento hablan de un mismo punto de tangencia.</para>
 					<para>La biblioteca C también escribe los dos documentos por partes, mediante <varname>tpose_as_geopose_stream_header</varname> y <varname>tpose_as_geopose_stream_element</varname>, para un productor que emite poses a medida que llegan. Una consulta devuelve un valor que ya posee entero, que es lo que esta función escribe.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">

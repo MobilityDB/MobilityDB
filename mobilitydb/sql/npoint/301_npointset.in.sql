@@ -92,11 +92,11 @@ CREATE FUNCTION npointsetFromHexWKB(text)
   AS 'MODULE_PATHNAME', 'Set_from_hexwkb'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION asText(npointset, maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asText(npointset, maxdecimaldigits integer DEFAULT 15)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Set_as_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION asEWKT(npointset, maxdecimaldigits int4 DEFAULT 15)
+CREATE FUNCTION asEWKT(npointset, maxdecimaldigits integer DEFAULT 15)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Spatialset_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -238,27 +238,27 @@ CREATE AGGREGATE setUnion(npointset) (
  ******************************************************************************/
 
 CREATE FUNCTION eq(npointset, npointset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Set_eq'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ne(npointset, npointset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Set_ne'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION lt(npointset, npointset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Set_lt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION le(npointset, npointset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Set_le'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION ge(npointset, npointset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Set_ge'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION gt(npointset, npointset)
-  RETURNS bool
+  RETURNS boolean
   AS 'MODULE_PATHNAME', 'Set_gt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION cmp(npointset, npointset)

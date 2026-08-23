@@ -777,9 +777,9 @@ SELECT trgeometry 'Polygon Z((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0));
 				<indexterm significance="normal"><primary><varname>timeBoxes</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>spaceTimeBoxes</varname></primary></indexterm>
 				<para>Devuelve las cajas espaciotemporales de una geometría rígida temporal dividida con respecto a una cuadrícula espacial, temporal o espaciotemporal</para>
-				<para><varname>spaceBoxes(trgeometry, xsize float [, ysize float [, zsize float]], sorigin geometry = 'Point(0 0 0)', bitmatrix bool = true, borderInc bool = true) → stbox[]</varname></para>
-				<para><varname>timeBoxes(trgeometry, interval, torigin timestamptz = '2000-01-03', bitmatrix bool = true, borderInc bool = true) → stbox[]</varname></para>
-				<para><varname>spaceTimeBoxes(trgeometry, xsize float [, ysize float [, zsize float]], interval, sorigin geometry = 'Point(0 0 0)', torigin timestamptz = '2000-01-03', bitmatrix bool = true, borderInc bool = true) → stbox[]</varname></para>
+				<para><varname>spaceBoxes(trgeometry, xsize float [, ysize float [, zsize float]], sorigin geometry = 'Point(0 0 0)', bitmatrix boolean = true, borderInc boolean = true) → stbox[]</varname></para>
+				<para><varname>timeBoxes(trgeometry, interval, torigin timestamptz = '2000-01-03', bitmatrix boolean = true, borderInc boolean = true) → stbox[]</varname></para>
+				<para><varname>spaceTimeBoxes(trgeometry, xsize float [, ysize float [, zsize float]], interval, sorigin geometry = 'Point(0 0 0)', torigin timestamptz = '2000-01-03', bitmatrix boolean = true, borderInc boolean = true) → stbox[]</varname></para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT array_length(spaceBoxes(
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',

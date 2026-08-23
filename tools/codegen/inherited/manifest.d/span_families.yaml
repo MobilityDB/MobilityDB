@@ -37,7 +37,7 @@ span_families:
   - {sig: "{sp}FromHexWKB(text)", ret: "{sp}", sym: Span_from_hexwkb, order: [int, bigint, float, tstz, date]}
   - lit: "\n"
   - {sig: "asText({sp})", ret: "text", sym: Span_as_text, only: [int, bigint]}
-  - {sig: "asText({sp}, maxdecimaldigits int4 DEFAULT 15)", ret: "text", sym: Span_as_text, only: [float]}
+  - {sig: "asText({sp}, maxdecimaldigits integer DEFAULT 15)", ret: "text", sym: Span_as_text, only: [float]}
   - {sig: "asText({sp})", ret: "text", sym: Span_as_text, only: [date, tstz]}
   - lit: "\n"
   - {sig: "asBinary({sp}, endianenconding text DEFAULT '')", ret: "bytea", sym: Span_as_wkb}
@@ -126,7 +126,7 @@ span_families:
   - lit: "\n"
   - {sig: "round(floatspan, {v} DEFAULT 0)", ret: "floatspan", sym: Floatspan_round, only: [int]}
   - lit: "\n"
-  - {sig: "degrees({sp}, bool DEFAULT FALSE)", ret: "{sp}", sym: Floatspan_degrees, only: [float]}
+  - {sig: "degrees({sp}, boolean DEFAULT FALSE)", ret: "{sp}", sym: Floatspan_degrees, only: [float]}
   - {sig: "radians({sp})", ret: "{sp}", sym: Floatspan_radians, only: [float]}
   - lit: "\n/*****************************************************************************\n * Selectivity functions\n *****************************************************************************/\n\n-- Functions span_sel and span_joinsel are defined in the file defining the\n-- set type\n\n-- Functions for debugging the selectivity code\n\n-- Given a table, column, and span returns the estimate of what proportion\n-- of the table would be returned by a query using the given operator.\nCREATE FUNCTION _mobdb_span_sel(tbl regclass, col text, oper regoper,\n    i intspan)\n  RETURNS float\n  AS 'MODULE_PATHNAME'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION _mobdb_span_sel(tbl regclass, col text, oper regoper,\n    b bigintspan)\n  RETURNS float\n  AS 'MODULE_PATHNAME'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION _mobdb_span_sel(tbl regclass, col text, oper regoper,\n    f floatspan)\n  RETURNS float\n  AS 'MODULE_PATHNAME'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION _mobdb_span_sel(tbl regclass, col text, oper regoper,\n    p datespan)\n  RETURNS float\n  AS 'MODULE_PATHNAME'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION _mobdb_span_sel(tbl regclass, col text, oper regoper,\n    p tstzspan)\n  RETURNS float\n  AS 'MODULE_PATHNAME'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n-- Given two tables and columns, returns estimate of the proportion of rows a\n-- given join operator will return relative to the number of rows an\n-- unconstrained table join would return\nCREATE OR REPLACE FUNCTION _mobdb_span_joinsel(tbl1 regclass, col1 text,\n    tbl2 regclass, col2 text, oper regoper)\n  RETURNS float\n  AS 'MODULE_PATHNAME'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n/******************************************************************************\n * Comparison operators\n ******************************************************************************/\n\n"
   - {sig: "eq({sp}, {sp})", ret: "boolean", sym: Span_eq}
@@ -141,7 +141,7 @@ span_families:
   - lit: "\n"
   - {sig: "gt({sp}, {sp})", ret: "boolean", sym: Span_gt}
   - lit: "\n"
-  - {sig: "cmp({sp}, {sp})", ret: "int4", sym: Span_cmp}
+  - {sig: "cmp({sp}, {sp})", ret: "integer", sym: Span_cmp}
   - lit: "\n"
   - {stmt: "CREATE OPERATOR = (\n  PROCEDURE = eq,\n  LEFTARG = {sp}, RIGHTARG = {sp},\n  COMMUTATOR = =, NEGATOR = <>,\n  RESTRICT = eqsel, JOIN = eqjoinsel\n);"}
   - lit: "\n"
@@ -195,7 +195,7 @@ span_families:
   - {sig: "{ss}FromHexWKB(text)", ret: "{ss}", sym: Spanset_from_hexwkb}
   - lit: "\n"
   - {sig: "asText({ss})", ret: "text", sym: Spanset_as_text, only: [int, bigint]}
-  - {sig: "asText({ss}, maxdecimaldigits int4 DEFAULT 15)", ret: "text", sym: Spanset_as_text, only: [float]}
+  - {sig: "asText({ss}, maxdecimaldigits integer DEFAULT 15)", ret: "text", sym: Spanset_as_text, only: [float]}
   - {sig: "asText({ss})", ret: "text", sym: Spanset_as_text, only: [date, tstz]}
   - lit: "\n"
   - {sig: "asBinary({ss}, endianenconding text DEFAULT '')", ret: "bytea", sym: Spanset_as_wkb}
@@ -304,7 +304,7 @@ span_families:
   - lit: "\n"
   - {sig: "round(floatspanset, {v} DEFAULT 0)", ret: "floatspanset", sym: Floatspanset_round, only: [int]}
   - lit: "\n"
-  - {sig: "degrees({ss}, bool DEFAULT FALSE)", ret: "{ss}", sym: Floatspanset_degrees, only: [float]}
+  - {sig: "degrees({ss}, boolean DEFAULT FALSE)", ret: "{ss}", sym: Floatspanset_degrees, only: [float]}
   - {sig: "radians({ss})", ret: "{ss}", sym: Floatspanset_radians, only: [float]}
   - lit: "\n/*****************************************************************************/\n\n"
   - {sig: "spans({ss})", ret: "{sp}[]", sym: Spanset_spans}
@@ -321,17 +321,17 @@ span_families:
   - {sig: "splitEachNSpans(datespanset, {v})", ret: "datespan[]", sym: Spanset_split_each_n_spans, only: [int]}
   - {sig: "splitEachNSpans(tstzspanset, {v})", ret: "tstzspan[]", sym: Spanset_split_each_n_spans, only: [int]}
   - lit: "\n/******************************************************************************\n * Comparison operators\n ******************************************************************************/\n\n"
-  - {sig: "eq({ss}, {ss})", ret: "bool", sym: Spanset_eq}
+  - {sig: "eq({ss}, {ss})", ret: "boolean", sym: Spanset_eq}
   - lit: "\n"
-  - {sig: "ne({ss}, {ss})", ret: "bool", sym: Spanset_ne}
+  - {sig: "ne({ss}, {ss})", ret: "boolean", sym: Spanset_ne}
   - lit: "\n"
-  - {sig: "lt({ss}, {ss})", ret: "bool", sym: Spanset_lt}
+  - {sig: "lt({ss}, {ss})", ret: "boolean", sym: Spanset_lt}
   - lit: "\n"
-  - {sig: "le({ss}, {ss})", ret: "bool", sym: Spanset_le}
+  - {sig: "le({ss}, {ss})", ret: "boolean", sym: Spanset_le}
   - lit: "\n"
-  - {sig: "ge({ss}, {ss})", ret: "bool", sym: Spanset_ge}
+  - {sig: "ge({ss}, {ss})", ret: "boolean", sym: Spanset_ge}
   - lit: "\n"
-  - {sig: "gt({ss}, {ss})", ret: "bool", sym: Spanset_gt}
+  - {sig: "gt({ss}, {ss})", ret: "boolean", sym: Spanset_gt}
   - lit: "\n"
   - {sig: "cmp({ss}, {ss})", ret: "integer", sym: Spanset_cmp}
   - lit: "\n"
@@ -1505,7 +1505,7 @@ span_families:
   blocks:
   - group:
     - {stmt: "/******************************************************************************\n * R-tree GiST indexes\n ******************************************************************************/"}
-    - {stmt: "\nCREATE FUNCTION span_gist_consistent(internal, {sp}, smallint, oid, internal)\n  RETURNS bool\n  AS 'MODULE_PATHNAME', 'Span_gist_consistent'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    - {stmt: "\nCREATE FUNCTION span_gist_consistent(internal, {sp}, smallint, oid, internal)\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Span_gist_consistent'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
     - {sig: "span_gist_union(internal, internal)", ret: "internal", sym: Span_gist_union}
     - {sig: "span_gist_penalty(internal, internal, internal)", ret: "internal", sym: Span_gist_penalty}
     - {sig: "span_gist_picksplit(internal, internal)", ret: "internal", sym: Span_gist_picksplit}
@@ -1523,7 +1523,7 @@ span_families:
     order: [int]
   - lit: "\n"
   - group:
-    - {sig: "span_gist_consistent(internal, {sp}, smallint, oid, internal)", ret: "bool", sym: Span_gist_consistent}
+    - {sig: "span_gist_consistent(internal, {sp}, smallint, oid, internal)", ret: "boolean", sym: Span_gist_consistent}
     - {sig: "span_gist_same({sp}, {sp}, internal)", ret: "internal", sym: Span_gist_same}
     - {sig: "span_gist_distance(internal, {sp}, smallint, oid, internal)", ret: "internal", sym: Span_gist_distance}
     - {stmt: "\n/******************************************************************************/"}
@@ -1533,7 +1533,7 @@ span_families:
   - lit: "\n"
   - group:
     - {stmt: "/******************************************************************************/"}
-    - {stmt: "\nCREATE FUNCTION span_gist_consistent(internal, {sp}, smallint, oid, internal)\n  RETURNS bool\n  AS 'MODULE_PATHNAME', 'Span_gist_consistent'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    - {stmt: "\nCREATE FUNCTION span_gist_consistent(internal, {sp}, smallint, oid, internal)\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Span_gist_consistent'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
     - {sig: "span_gist_same({sp}, {sp}, internal)", ret: "internal", sym: Span_gist_same}
     - {sig: "span_gist_distance(internal, {sp}, smallint, oid, internal)", ret: "internal", sym: Span_gist_distance}
     - {stmt: "\n/******************************************************************************/"}
@@ -1547,7 +1547,7 @@ span_families:
     order: [float]
   - lit: "\n"
   - group:
-    - {sig: "span_gist_consistent(internal, {sp}, smallint, oid, internal)", ret: "bool", sym: Span_gist_consistent}
+    - {sig: "span_gist_consistent(internal, {sp}, smallint, oid, internal)", ret: "boolean", sym: Span_gist_consistent}
     - {sig: "span_gist_same({sp}, {sp}, internal)", ret: "internal", sym: Span_gist_same}
     - {sig: "span_gist_distance(internal, {sp}, smallint, oid, internal)", ret: "internal", sym: Span_gist_distance}
     - {stmt: "\n/******************************************************************************/"}
@@ -1557,7 +1557,7 @@ span_families:
   - lit: "\n"
   - group:
     - {stmt: "/******************************************************************************/"}
-    - {stmt: "\nCREATE FUNCTION span_gist_consistent(internal, {sp}, smallint, oid, internal)\n  RETURNS bool\n  AS 'MODULE_PATHNAME', 'Span_gist_consistent'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    - {stmt: "\nCREATE FUNCTION span_gist_consistent(internal, {sp}, smallint, oid, internal)\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Span_gist_consistent'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
     - {sig: "span_gist_same({sp}, {sp}, internal)", ret: "internal", sym: Span_gist_same}
     - {sig: "span_gist_distance(internal, {sp}, smallint, oid, internal)", ret: "internal", sym: Span_gist_distance}
     - {stmt: "\n/******************************************************************************/"}
@@ -1574,7 +1574,7 @@ span_families:
     - {sig: "span_quadtree_choose(internal, internal)", ret: "void", sym: Span_quadtree_choose}
     - {sig: "span_quadtree_picksplit(internal, internal)", ret: "void", sym: Span_quadtree_picksplit}
     - {sig: "span_quadtree_inner_consistent(internal, internal)", ret: "void", sym: Span_quadtree_inner_consistent}
-    - {sig: "span_spgist_leaf_consistent(internal, internal)", ret: "bool", sym: Span_spgist_leaf_consistent}
+    - {sig: "span_spgist_leaf_consistent(internal, internal)", ret: "boolean", sym: Span_spgist_leaf_consistent}
     - {stmt: "\n/******************************************************************************/"}
     - {stmt: "\nCREATE OPERATOR CLASS {sp}_quadtree_ops\n  DEFAULT FOR TYPE {sp} USING spgist AS\n  -- strictly left\n  OPERATOR  1     << ({sp}, {v}),\n  OPERATOR  1     << ({sp}, {sp}),\n  OPERATOR  1     << ({sp}, {ss}),\n  -- overlaps or left\n  OPERATOR  2     &< ({sp}, {v}),\n  OPERATOR  2     &< ({sp}, {sp}),\n  OPERATOR  2     &< ({sp}, {ss}),\n  -- overlaps\n  OPERATOR  3     && ({sp}, {sp}),\n  OPERATOR  3     && ({sp}, {ss}),\n  -- overlaps or right\n  OPERATOR  4     &> ({sp}, {v}),\n  OPERATOR  4     &> ({sp}, {sp}),\n  OPERATOR  4     &> ({sp}, {ss}),\n  -- strictly right\n  OPERATOR  5     >> ({sp}, {v}),\n  OPERATOR  5     >> ({sp}, {sp}),\n  OPERATOR  5     >> ({sp}, {ss}),\n  -- contains\n  OPERATOR  7     @> ({sp}, {v}),\n  OPERATOR  7     @> ({sp}, {sp}),\n  OPERATOR  7     @> ({sp}, {ss}),\n  -- contained by\n  OPERATOR  8     <@ ({sp}, {sp}),\n  OPERATOR  8     <@ ({sp}, {ss}),\n  -- adjacent\n  OPERATOR  17    -|- ({sp}, {v}),\n  OPERATOR  17    -|- ({sp}, {sp}),\n  OPERATOR  17    -|- ({sp}, {ss}),\n  -- equals\n  OPERATOR  18    = ({sp}, {sp}),\n  -- nearest approach distance\n  OPERATOR  25    <-> ({sp}, {v}) FOR ORDER BY pg_catalog.{v}_ops,\n  OPERATOR  25    <-> ({sp}, {sp}) FOR ORDER BY pg_catalog.{v}_ops,\n  OPERATOR  25    <-> ({sp}, {ss}) FOR ORDER BY pg_catalog.{v}_ops,\n  -- functions\n  FUNCTION  1  {sp}_spgist_config(internal, internal),\n  FUNCTION  2  span_quadtree_choose(internal, internal),\n  FUNCTION  3  span_quadtree_picksplit(internal, internal),\n  FUNCTION  4  span_quadtree_inner_consistent(internal, internal),\n  FUNCTION  5  span_spgist_leaf_consistent(internal, internal);"}
     sep: "\n"
@@ -1650,7 +1650,7 @@ span_families:
     date: {v: date, sp: datespan, ss: datespanset, vs: dateset, rg: daterange, mr: datemultirange}
     tstz: {v: timestamptz, sp: tstzspan, ss: tstzspanset, vs: tstzset, rg: tstzrange, mr: tstzmultirange}
   blocks:
-  - lit: "/******************************************************************************\n * R-tree GiST indexes\n ******************************************************************************/\n\nCREATE FUNCTION span_gist_consistent(internal, intspanset, smallint, oid, internal)\n  RETURNS bool\n  AS 'MODULE_PATHNAME', 'Span_gist_consistent'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION span_gist_consistent(internal, bigintspanset, smallint, oid, internal)\n  RETURNS bool\n  AS 'MODULE_PATHNAME', 'Span_gist_consistent'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION span_gist_consistent(internal, floatspanset, smallint, oid, internal)\n  RETURNS bool\n  AS 'MODULE_PATHNAME', 'Span_gist_consistent'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION span_gist_consistent(internal, datespanset, smallint, oid, internal)\n  RETURNS bool\n  AS 'MODULE_PATHNAME', 'Span_gist_consistent'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION span_gist_consistent(internal, tstzspanset, smallint, oid, internal)\n  RETURNS bool\n  AS 'MODULE_PATHNAME', 'Span_gist_consistent'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION spanset_gist_compress(internal)\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Spanset_gist_compress'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n"
+  - lit: "/******************************************************************************\n * R-tree GiST indexes\n ******************************************************************************/\n\nCREATE FUNCTION span_gist_consistent(internal, intspanset, smallint, oid, internal)\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Span_gist_consistent'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION span_gist_consistent(internal, bigintspanset, smallint, oid, internal)\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Span_gist_consistent'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION span_gist_consistent(internal, floatspanset, smallint, oid, internal)\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Span_gist_consistent'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION span_gist_consistent(internal, datespanset, smallint, oid, internal)\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Span_gist_consistent'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION span_gist_consistent(internal, tstzspanset, smallint, oid, internal)\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Span_gist_consistent'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION spanset_gist_compress(internal)\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Spanset_gist_compress'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n"
   - group:
     - {stmt: "/******************************************************************************/"}
     - {stmt: "\nCREATE OPERATOR CLASS {ss}_rtree_ops\n  DEFAULT FOR TYPE {ss} USING gist AS\n  STORAGE {sp},\n  -- strictly left\n  OPERATOR  1     << ({ss}, {v}),\n  OPERATOR  1     << ({ss}, {sp}),\n  OPERATOR  1     << ({ss}, {ss}),\n  -- overlaps or left\n  OPERATOR  2     &< ({ss}, {v}),\n  OPERATOR  2     &< ({ss}, {sp}),\n  OPERATOR  2     &< ({ss}, {ss}),\n  -- overlaps\n  OPERATOR  3     && ({ss}, {sp}),\n  OPERATOR  3     && ({ss}, {ss}),\n  -- overlaps or right\n  OPERATOR  4     &> ({ss}, {v}),\n  OPERATOR  4     &> ({ss}, {sp}),\n  OPERATOR  4     &> ({ss}, {ss}),\n  -- strictly right\n  OPERATOR  5     >> ({ss}, {v}),\n  OPERATOR  5     >> ({ss}, {sp}),\n  OPERATOR  5     >> ({ss}, {ss}),\n  -- contains\n  OPERATOR  7     @> ({ss}, {v}),\n  OPERATOR  7     @> ({ss}, {sp}),\n  OPERATOR  7     @> ({ss}, {ss}),\n  -- contained by\n  OPERATOR  8     <@ ({ss}, {sp}),\n  OPERATOR  8     <@ ({ss}, {ss}),\n  -- adjacent\n  OPERATOR  17    -|- ({ss}, {v}),\n  OPERATOR  17    -|- ({ss}, {sp}),\n  OPERATOR  17    -|- ({ss}, {ss}),\n  -- equals\n  OPERATOR  18    = ({ss}, {ss}),\n  -- nearest approach distance\n  OPERATOR  25    <-> ({ss}, {v}) FOR ORDER BY pg_catalog.{v}_ops,\n  OPERATOR  25    <-> ({ss}, {sp}) FOR ORDER BY pg_catalog.{v}_ops,\n  OPERATOR  25    <-> ({ss}, {ss}) FOR ORDER BY pg_catalog.{v}_ops,\n  -- functions\n  FUNCTION  1  span_gist_consistent(internal, {ss}, smallint, oid, internal),\n  FUNCTION  2  span_gist_union(internal, internal),\n  FUNCTION  3  spanset_gist_compress(internal),\n  FUNCTION  5  span_gist_penalty(internal, internal, internal),\n  FUNCTION  6  span_gist_picksplit(internal, internal),\n  FUNCTION  7  span_gist_same({sp}, {sp}, internal),\n  FUNCTION  8  span_gist_distance(internal, {sp}, smallint, oid, internal);"}
@@ -1796,7 +1796,7 @@ span_families:
   blocks:
   - group:
     - {stmt: "/******************************************************************************\n * R-tree GiST indexes\n ******************************************************************************/"}
-    - {stmt: "\nCREATE FUNCTION span_gist_consistent(internal, {vs}, smallint, oid, internal)\n  RETURNS bool\n  AS 'MODULE_PATHNAME', 'Span_gist_consistent'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    - {stmt: "\nCREATE FUNCTION span_gist_consistent(internal, {vs}, smallint, oid, internal)\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Span_gist_consistent'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
     - {sig: "span_gist_distance(internal, {vs}, smallint, oid, internal)", ret: "internal", sym: Span_gist_distance}
     - {sig: "set_gist_compress(internal)", ret: "internal", sym: Set_gist_compress}
     - {stmt: "\n/******************************************************************************/"}
@@ -1810,7 +1810,7 @@ span_families:
     order: [int]
   - lit: "\n"
   - group:
-    - {sig: "span_gist_consistent(internal, {vs}, smallint, oid, internal)", ret: "bool", sym: Span_gist_consistent}
+    - {sig: "span_gist_consistent(internal, {vs}, smallint, oid, internal)", ret: "boolean", sym: Span_gist_consistent}
     - {sig: "span_gist_distance(internal, {vs}, smallint, oid, internal)", ret: "internal", sym: Span_gist_distance}
     - {stmt: "\n/******************************************************************************/"}
     - {stmt: "\nCREATE OPERATOR CLASS {vs}_rtree_ops\n  DEFAULT FOR TYPE {vs} USING gist AS\n  STORAGE {sp},\n  -- strictly left\n  OPERATOR  1     << ({vs}, {v}),\n  OPERATOR  1     << ({vs}, {vs}),\n  -- overlaps or left\n  OPERATOR  2     &< ({vs}, {v}),\n  OPERATOR  2     &< ({vs}, {vs}),\n  -- overlaps\n  OPERATOR  3     && ({vs}, {vs}),\n  -- overlaps or right\n  OPERATOR  4     &> ({vs}, {v}),\n  OPERATOR  4     &> ({vs}, {vs}),\n  -- strictly right\n  OPERATOR  5     >> ({vs}, {v}),\n  OPERATOR  5     >> ({vs}, {vs}),\n  -- contains\n  OPERATOR  7     @> ({vs}, {v}),\n  OPERATOR  7     @> ({vs}, {vs}),\n  -- contained by\n  OPERATOR  8     <@ ({vs}, {vs}),\n  -- equals\n  OPERATOR  18    = ({vs}, {vs}),\n  -- nearest approach distance\n  OPERATOR  25    <-> ({vs}, {v}) FOR ORDER BY pg_catalog.integer_ops,\n  OPERATOR  25    <-> ({vs}, {vs}) FOR ORDER BY pg_catalog.integer_ops,\n  -- functions\n  FUNCTION  1  span_gist_consistent(internal, {vs}, smallint, oid, internal),\n  FUNCTION  2  span_gist_union(internal, internal),\n  FUNCTION  3  set_gist_compress(internal),\n  FUNCTION  5  span_gist_penalty(internal, internal, internal),\n  FUNCTION  6  span_gist_picksplit(internal, internal),\n  FUNCTION  7  span_gist_same({sp}, {sp}, internal),\n  FUNCTION  8  span_gist_distance(internal, {vs}, smallint, oid, internal);"}
@@ -1819,7 +1819,7 @@ span_families:
   - lit: "\n"
   - group:
     - {stmt: "/******************************************************************************/"}
-    - {stmt: "\nCREATE FUNCTION span_gist_consistent(internal, {vs}, smallint, oid, internal)\n  RETURNS bool\n  AS 'MODULE_PATHNAME', 'Span_gist_consistent'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    - {stmt: "\nCREATE FUNCTION span_gist_consistent(internal, {vs}, smallint, oid, internal)\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Span_gist_consistent'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
     - {sig: "span_gist_distance(internal, {vs}, smallint, oid, internal)", ret: "internal", sym: Span_gist_distance}
     - {stmt: "\n/******************************************************************************/"}
     sep: "\n"
@@ -1832,7 +1832,7 @@ span_families:
     order: [float]
   - lit: "\n"
   - group:
-    - {sig: "span_gist_consistent(internal, {vs}, smallint, oid, internal)", ret: "bool", sym: Span_gist_consistent}
+    - {sig: "span_gist_consistent(internal, {vs}, smallint, oid, internal)", ret: "boolean", sym: Span_gist_consistent}
     - {stmt: "\n/*****************************************************************************/"}
     - {stmt: "\nCREATE OPERATOR CLASS {vs}_rtree_ops\n  DEFAULT FOR TYPE {vs} USING gist AS\n  STORAGE {sp},\n  -- overlaps\n  OPERATOR  3    && ({vs}, {vs}),\n  -- contains\n  OPERATOR  7    @> ({vs}, {v}),\n  OPERATOR  7    @> ({vs}, {vs}),\n  -- contained by\n  OPERATOR  8    <@ ({vs}, {vs}),\n  -- equals\n  OPERATOR  18    = ({vs}, {vs}),\n  -- nearest approach distance\n  OPERATOR  25    <-> ({vs}, {v}) FOR ORDER BY pg_catalog.integer_ops,\n  OPERATOR  25    <-> ({vs}, {vs}) FOR ORDER BY pg_catalog.integer_ops,\n  -- overlaps or before\n  OPERATOR  28    &<# ({vs}, {v}),\n  OPERATOR  28    &<# ({vs}, {vs}),\n  -- strictly before\n  OPERATOR  29    <<# ({vs}, {v}),\n  OPERATOR  29    <<# ({vs}, {vs}),\n  -- strictly after\n  OPERATOR  30    #>> ({vs}, {v}),\n  OPERATOR  30    #>> ({vs}, {vs}),\n  -- overlaps or after\n  OPERATOR  31    #&> ({vs}, {v}),\n  OPERATOR  31    #&> ({vs}, {vs}),\n  -- functions\n  FUNCTION  1  span_gist_consistent(internal, {vs}, smallint, oid, internal),\n  FUNCTION  2  span_gist_union(internal, internal),\n  FUNCTION  3  set_gist_compress(internal),\n  FUNCTION  5  span_gist_penalty(internal, internal, internal),\n  FUNCTION  6  span_gist_picksplit(internal, internal),\n  FUNCTION  7  span_gist_same({sp}, {sp}, internal);"}
     sep: "\n"
@@ -1840,7 +1840,7 @@ span_families:
   - lit: "\n"
   - group:
     - {stmt: "/*****************************************************************************/"}
-    - {stmt: "\nCREATE FUNCTION span_gist_consistent(internal, {vs}, smallint, oid, internal)\n  RETURNS bool\n  AS 'MODULE_PATHNAME', 'Span_gist_consistent'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    - {stmt: "\nCREATE FUNCTION span_gist_consistent(internal, {vs}, smallint, oid, internal)\n  RETURNS boolean\n  AS 'MODULE_PATHNAME', 'Span_gist_consistent'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
     - {stmt: "\n/*****************************************************************************/"}
     sep: "\n"
     order: [tstz]
@@ -1905,13 +1905,13 @@ span_families:
   - group:
     - {stmt: "CREATE FUNCTION set_gin_extract_value({v}, internal)\nRETURNS internal\nAS 'MODULE_PATHNAME', 'Set_gin_extract_value'\nLANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
     - {stmt: "\nCREATE FUNCTION set_gin_extract_query({v}, internal, int2, internal, internal, internal, internal)\nRETURNS internal\nAS 'MODULE_PATHNAME', 'Set_gin_extract_query'\nLANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
-    - {stmt: "\nCREATE FUNCTION set_gin_triconsistent(internal, int2, {v}, int4, internal, internal, internal)\nRETURNS char\nAS 'MODULE_PATHNAME', 'Set_gin_triconsistent'\nLANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    - {stmt: "\nCREATE FUNCTION set_gin_triconsistent(internal, int2, {v}, integer, internal, internal, internal)\nRETURNS char\nAS 'MODULE_PATHNAME', 'Set_gin_triconsistent'\nLANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
     sep: "\n"
     order: [int]
   - lit: "\n"
   - group:
     - {stmt: "/******************************************************************************/"}
-    - {stmt: "\nCREATE OPERATOR CLASS {vs}_gin_ops\n  DEFAULT FOR TYPE {vs} USING gin AS\n  STORAGE {v},\n  -- overlaps\n  OPERATOR  10    && ({vs}, {vs}),\n  -- contains value\n  OPERATOR  20    @> ({vs}, {v}),\n  -- contains set\n  OPERATOR  21    @> ({vs}, {vs}),\n  -- contained\n  OPERATOR  30    <@ ({vs}, {vs}),\n    -- same\n  OPERATOR  40    = ({vs}, {vs}),\n  -- functions\n  FUNCTION   2    set_gin_extract_value({v}, internal),\n  FUNCTION   3    set_gin_extract_query({v}, internal, int2, internal, internal, internal, internal),\n  FUNCTION   6    set_gin_triconsistent(internal, int2, {v}, int4, internal, internal, internal);"}
+    - {stmt: "\nCREATE OPERATOR CLASS {vs}_gin_ops\n  DEFAULT FOR TYPE {vs} USING gin AS\n  STORAGE {v},\n  -- overlaps\n  OPERATOR  10    && ({vs}, {vs}),\n  -- contains value\n  OPERATOR  20    @> ({vs}, {v}),\n  -- contains set\n  OPERATOR  21    @> ({vs}, {vs}),\n  -- contained\n  OPERATOR  30    <@ ({vs}, {vs}),\n    -- same\n  OPERATOR  40    = ({vs}, {vs}),\n  -- functions\n  FUNCTION   2    set_gin_extract_value({v}, internal),\n  FUNCTION   3    set_gin_extract_query({v}, internal, int2, internal, internal, internal, internal),\n  FUNCTION   6    set_gin_triconsistent(internal, int2, {v}, integer, internal, internal, internal);"}
     - {stmt: "\n/******************************************************************************/"}
     sep: "\n"
     order: [int]
@@ -1919,13 +1919,13 @@ span_families:
   - group:
     - {stmt: "CREATE FUNCTION set_gin_extract_value({v}, internal)\nRETURNS internal\nAS 'MODULE_PATHNAME', 'Set_gin_extract_value'\nLANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
     - {stmt: "\nCREATE FUNCTION set_gin_extract_query({v}, internal, int2, internal, internal, internal, internal)\nRETURNS internal\nAS 'MODULE_PATHNAME', 'Set_gin_extract_query'\nLANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
-    - {stmt: "\nCREATE FUNCTION set_gin_triconsistent(internal, int2, {v}, int4, internal, internal, internal)\nRETURNS char\nAS 'MODULE_PATHNAME', 'Set_gin_triconsistent'\nLANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    - {stmt: "\nCREATE FUNCTION set_gin_triconsistent(internal, int2, {v}, integer, internal, internal, internal)\nRETURNS char\nAS 'MODULE_PATHNAME', 'Set_gin_triconsistent'\nLANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
     sep: "\n"
     order: [bigint]
   - lit: "\n"
   - group:
     - {stmt: "/******************************************************************************/"}
-    - {stmt: "\nCREATE OPERATOR CLASS {vs}_gin_ops\n  DEFAULT FOR TYPE {vs} USING gin AS\n  STORAGE {v},\n  -- overlaps\n  OPERATOR  10    && ({vs}, {vs}),\n  -- contains value\n  OPERATOR  20    @> ({vs}, {v}),\n  -- contains set\n  OPERATOR  21    @> ({vs}, {vs}),\n  -- contained\n  OPERATOR  30    <@ ({vs}, {vs}),\n  -- equal\n  OPERATOR  40    = ({vs}, {vs}),\n  -- functions\n  FUNCTION   2    set_gin_extract_value({v}, internal),\n  FUNCTION   3    set_gin_extract_query({v}, internal, int2, internal, internal, internal, internal),\n  FUNCTION   6    set_gin_triconsistent(internal, int2, {v}, int4, internal, internal, internal);"}
+    - {stmt: "\nCREATE OPERATOR CLASS {vs}_gin_ops\n  DEFAULT FOR TYPE {vs} USING gin AS\n  STORAGE {v},\n  -- overlaps\n  OPERATOR  10    && ({vs}, {vs}),\n  -- contains value\n  OPERATOR  20    @> ({vs}, {v}),\n  -- contains set\n  OPERATOR  21    @> ({vs}, {vs}),\n  -- contained\n  OPERATOR  30    <@ ({vs}, {vs}),\n  -- equal\n  OPERATOR  40    = ({vs}, {vs}),\n  -- functions\n  FUNCTION   2    set_gin_extract_value({v}, internal),\n  FUNCTION   3    set_gin_extract_query({v}, internal, int2, internal, internal, internal, internal),\n  FUNCTION   6    set_gin_triconsistent(internal, int2, {v}, integer, internal, internal, internal);"}
     - {stmt: "\n/******************************************************************************/"}
     sep: "\n"
     order: [bigint]
@@ -1933,13 +1933,13 @@ span_families:
   - group:
     - {stmt: "CREATE FUNCTION set_gin_extract_value({v}, internal)\nRETURNS internal\nAS 'MODULE_PATHNAME', 'Set_gin_extract_value'\nLANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
     - {stmt: "\nCREATE FUNCTION set_gin_extract_query({v}, internal, int2, internal, internal, internal, internal)\nRETURNS internal\nAS 'MODULE_PATHNAME', 'Set_gin_extract_query'\nLANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
-    - {stmt: "\nCREATE FUNCTION set_gin_triconsistent(internal, int2, {v}, int4, internal, internal, internal)\nRETURNS char\nAS 'MODULE_PATHNAME', 'Set_gin_triconsistent'\nLANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
+    - {stmt: "\nCREATE FUNCTION set_gin_triconsistent(internal, int2, {v}, integer, internal, internal, internal)\nRETURNS char\nAS 'MODULE_PATHNAME', 'Set_gin_triconsistent'\nLANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;"}
     sep: "\n"
     order: [date]
   - lit: "\n"
   - group:
     - {stmt: "/******************************************************************************/"}
-    - {stmt: "\nCREATE OPERATOR CLASS {vs}_gin_ops\n  DEFAULT FOR TYPE {vs} USING gin AS\n  STORAGE {v},\n  -- overlaps\n  OPERATOR  10    && ({vs}, {vs}),\n  -- contains value\n  OPERATOR  20    @> ({vs}, {v}),\n  -- contains set\n  OPERATOR  21    @> ({vs}, {vs}),\n  -- contained\n  OPERATOR  30    <@ ({vs}, {vs}),\n    -- same\n  OPERATOR  40    = ({vs}, {vs}),\n  -- functions\n  FUNCTION   2    set_gin_extract_value({v}, internal),\n  FUNCTION   3    set_gin_extract_query({v}, internal, int2, internal, internal, internal, internal),\n  FUNCTION   6    set_gin_triconsistent(internal, int2, {v}, int4, internal, internal, internal);"}
+    - {stmt: "\nCREATE OPERATOR CLASS {vs}_gin_ops\n  DEFAULT FOR TYPE {vs} USING gin AS\n  STORAGE {v},\n  -- overlaps\n  OPERATOR  10    && ({vs}, {vs}),\n  -- contains value\n  OPERATOR  20    @> ({vs}, {v}),\n  -- contains set\n  OPERATOR  21    @> ({vs}, {vs}),\n  -- contained\n  OPERATOR  30    <@ ({vs}, {vs}),\n    -- same\n  OPERATOR  40    = ({vs}, {vs}),\n  -- functions\n  FUNCTION   2    set_gin_extract_value({v}, internal),\n  FUNCTION   3    set_gin_extract_query({v}, internal, int2, internal, internal, internal, internal),\n  FUNCTION   6    set_gin_triconsistent(internal, int2, {v}, integer, internal, internal, internal);"}
     - {stmt: "\n/******************************************************************************/\n"}
     sep: "\n"
     order: [date]
@@ -2253,7 +2253,7 @@ span_families:
   - {sig: "ceil({vs})", ret: "{vs}", sym: Floatset_ceil, only: [float]}
   - lit: "\n"
   - {sig: "round({vs}, integer DEFAULT 0)", ret: "{vs}", sym: Set_round, only: [float]}
-  - {sig: "degrees({vs}, bool DEFAULT FALSE)", ret: "{vs}", sym: Floatset_degrees, only: [float]}
+  - {sig: "degrees({vs}, boolean DEFAULT FALSE)", ret: "{vs}", sym: Floatset_degrees, only: [float]}
   - {sig: "radians({vs})", ret: "{vs}", sym: Floatset_radians, only: [float]}
   - lit: "\n"
   - {sig: "lower({vs})", ret: "{vs}", sym: Textset_lower, only: [text]}
@@ -2743,7 +2743,7 @@ span_families:
   - {sig: "{vs}FromHexWKB(text)", ret: "{vs}", sym: Set_from_hexwkb}
   - lit: "\n"
   - {sig: "asText({vs})", ret: "text", sym: Set_as_text, only: [int, bigint]}
-  - {sig: "asText({vs}, maxdecimaldigits int4 DEFAULT 15)", ret: "text", sym: Set_as_text, only: [float]}
+  - {sig: "asText({vs}, maxdecimaldigits integer DEFAULT 15)", ret: "text", sym: Set_as_text, only: [float]}
   - {sig: "asText({vs})", ret: "text", sym: Set_as_text, only: [text, date, tstz]}
   - lit: "\n"
   - {sig: "asBinary({vs}, endianenconding text DEFAULT '')", ret: "bytea", sym: Set_as_wkb}
@@ -2787,8 +2787,8 @@ span_families:
     sep: "\n"
   - lit: "\n"
   - group:
-    - {sig: "asText({vs}, maxdecimaldigits int4 DEFAULT 15)", ret: "text", sym: Spatialset_as_text}
-    - {sig: "asEWKT({vs}, maxdecimaldigits int4 DEFAULT 15)", ret: "text", sym: Spatialset_as_ewkt}
+    - {sig: "asText({vs}, maxdecimaldigits integer DEFAULT 15)", ret: "text", sym: Spatialset_as_text}
+    - {sig: "asEWKT({vs}, maxdecimaldigits integer DEFAULT 15)", ret: "text", sym: Spatialset_as_ewkt}
     sep: "\n"
   - lit: "\n"
   - group:
@@ -2825,8 +2825,8 @@ span_families:
   - {sig: "{vs}FromEWKB(bytea)", ret: "{vs}", sym: Set_from_wkb}
   - {sig: "{vs}FromHexWKB(text)", ret: "{vs}", sym: Set_from_hexwkb}
   - lit: "\n"
-  - {sig: "asText({vs}, maxdecimaldigits int4 DEFAULT 15)", ret: "text", sym: Spatialset_as_text}
-  - {sig: "asEWKT({vs}, maxdecimaldigits int4 DEFAULT 15)", ret: "text", sym: Spatialset_as_ewkt}
+  - {sig: "asText({vs}, maxdecimaldigits integer DEFAULT 15)", ret: "text", sym: Spatialset_as_text}
+  - {sig: "asEWKT({vs}, maxdecimaldigits integer DEFAULT 15)", ret: "text", sym: Spatialset_as_ewkt}
   - lit: "\n"
   - {sig: "asBinary({vs}, endianenconding text DEFAULT '')", ret: "bytea", sym: Set_as_wkb}
   - {sig: "asEWKB({vs}, endianenconding text DEFAULT '')", ret: "bytea", sym: Spatialset_as_ewkb}
@@ -2860,8 +2860,8 @@ span_families:
   - {sig: "{vs}FromEWKB(bytea)", ret: "{vs}", sym: Set_from_wkb}
   - {sig: "{vs}FromHexWKB(text)", ret: "{vs}", sym: Set_from_hexwkb}
   - lit: "\n"
-  - {sig: "asText({vs}, maxdecimaldigits int4 DEFAULT 15)", ret: "text", sym: Set_as_text}
-  - {sig: "asEWKT({vs}, maxdecimaldigits int4 DEFAULT 15)", ret: "text", sym: Spatialset_as_ewkt}
+  - {sig: "asText({vs}, maxdecimaldigits integer DEFAULT 15)", ret: "text", sym: Set_as_text}
+  - {sig: "asEWKT({vs}, maxdecimaldigits integer DEFAULT 15)", ret: "text", sym: Spatialset_as_ewkt}
   - lit: "\n"
   - {sig: "asBinary({vs}, endianenconding text DEFAULT '')", ret: "bytea", sym: Set_as_wkb}
   - {sig: "asEWKB({vs}, endianenconding text DEFAULT '')", ret: "bytea", sym: Spatialset_as_ewkb}
@@ -2897,9 +2897,9 @@ span_families:
   - {sig: "asHexWKB({vs}, endianenconding text DEFAULT '')", ret: "text", sym: Set_as_hexwkb}
   - {sig: "asHexEWKB({vs}, endianenconding text DEFAULT '')", ret: "text", sym: Spatialset_as_hexewkb}
   - lit: "\n"
-  - {sig: "asText({vs}, maxdecimaldigits int4 DEFAULT 15)", ret: "text", sym: Spatialset_as_text}
+  - {sig: "asText({vs}, maxdecimaldigits integer DEFAULT 15)", ret: "text", sym: Spatialset_as_text}
   - lit: "\n"
-  - {sig: "asEWKT({vs}, maxdecimaldigits int4 DEFAULT 15)", ret: "text", sym: Spatialset_as_ewkt}
+  - {sig: "asEWKT({vs}, maxdecimaldigits integer DEFAULT 15)", ret: "text", sym: Spatialset_as_ewkt}
   - lit: "\n"
 
 - family: jsonbset_io

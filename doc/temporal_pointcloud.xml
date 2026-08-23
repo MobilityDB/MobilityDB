@@ -923,8 +923,8 @@ SELECT numInstants(atTime(tpcpointSeq(ARRAY[
 					<indexterm significance="normal"><primary><varname>atTpcbox</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>minusTpcbox</varname></primary></indexterm>
 					<para>Restrict a tpcpoint to the spatial / temporal extent of a tpcbox, or remove it. Returns NULL when the tpcbox's pcid does not match the tpcpoint's. Internally projects to a tgeompoint via the schema cache, restricts the projection by the equivalent stbox, and lifts the result's time span back onto the original tpcpoint to preserve the full pcpoint values</para>
-					<para><varname>atTpcbox(tpcpoint,tpcbox,border_inc bool=TRUE) → tpcpoint</varname></para>
-					<para><varname>minusTpcbox(tpcpoint,tpcbox,border_inc bool=TRUE) → tpcpoint</varname></para>
+					<para><varname>atTpcbox(tpcpoint,tpcbox,border_inc boolean=TRUE) → tpcpoint</varname></para>
+					<para><varname>minusTpcbox(tpcpoint,tpcbox,border_inc boolean=TRUE) → tpcpoint</varname></para>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT numInstants(atTpcbox(tpcpointSeq(ARRAY[
   tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
@@ -946,8 +946,8 @@ SELECT numInstants(minusTpcbox(tpcpointSeq(ARRAY[
 					<indexterm significance="normal"><primary><varname>beforeTimestamp</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>afterTimestamp</varname></primary></indexterm>
 					<para>Restrict a tpcpoint to the instants before or after a timestamp. The strict flag excludes the instant at the timestamp itself</para>
-					<para><varname>beforeTimestamp(tpcpoint,timestamptz,strict bool=TRUE) → tpcpoint</varname></para>
-					<para><varname>afterTimestamp(tpcpoint,timestamptz,strict bool=TRUE) → tpcpoint</varname></para>
+					<para><varname>beforeTimestamp(tpcpoint,timestamptz,strict boolean=TRUE) → tpcpoint</varname></para>
+					<para><varname>afterTimestamp(tpcpoint,timestamptz,strict boolean=TRUE) → tpcpoint</varname></para>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT timeSpan(beforeTimestamp(tpcpointSeq(ARRAY[
   tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
@@ -971,8 +971,8 @@ SELECT timeSpan(afterTimestamp(tpcpointSeq(ARRAY[
 					<indexterm significance="normal"><primary><varname>insert</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>update</varname></primary></indexterm>
 					<para>Insert a tpcpoint into another one, or update another one with it</para>
-					<para><varname>insert(tpcpoint,tpcpoint,connect bool=TRUE) → tpcpoint</varname></para>
-					<para><varname>update(tpcpoint,tpcpoint,connect bool=TRUE) → tpcpoint</varname></para>
+					<para><varname>insert(tpcpoint,tpcpoint,connect boolean=TRUE) → tpcpoint</varname></para>
+					<para><varname>update(tpcpoint,tpcpoint,connect boolean=TRUE) → tpcpoint</varname></para>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT numInstants(insert(tpcpointSeq(ARRAY[
   tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
@@ -986,10 +986,10 @@ SELECT numInstants(insert(tpcpointSeq(ARRAY[
 				<listitem xml:id="tpcpoint_deleteTime">
 					<indexterm significance="normal"><primary><varname>deleteTime</varname></primary></indexterm>
 					<para>Delete a time selector (timestamp, set, period, or spanset) from a tpcpoint</para>
-					<para><varname>deleteTime(tpcpoint,timestamptz,connect bool=TRUE) → tpcpoint</varname></para>
-					<para><varname>deleteTime(tpcpoint,tstzset,connect bool=TRUE) → tpcpoint</varname></para>
-					<para><varname>deleteTime(tpcpoint,tstzspan,connect bool=TRUE) → tpcpoint</varname></para>
-					<para><varname>deleteTime(tpcpoint,tstzspanset,connect bool=TRUE) → tpcpoint</varname></para>
+					<para><varname>deleteTime(tpcpoint,timestamptz,connect boolean=TRUE) → tpcpoint</varname></para>
+					<para><varname>deleteTime(tpcpoint,tstzset,connect boolean=TRUE) → tpcpoint</varname></para>
+					<para><varname>deleteTime(tpcpoint,tstzspan,connect boolean=TRUE) → tpcpoint</varname></para>
+					<para><varname>deleteTime(tpcpoint,tstzspanset,connect boolean=TRUE) → tpcpoint</varname></para>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Deleting the middle instant splits the sequence into
 -- {[2001-01-01, 2001-01-02), (2001-01-02, 2001-01-03]}; each half stores
@@ -1189,8 +1189,8 @@ SELECT round((tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz) |=|
 					<indexterm significance="normal"><primary><varname>eIntersects</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>aIntersects</varname></primary></indexterm>
 					<para>Ever / always intersects.</para>
-					<para><varname>eIntersects(tpcpoint,geometry) → bool</varname>, <varname>aIntersects(tpcpoint,geometry) → bool</varname></para>
-					<para><varname>eIntersects(tpcpoint,tpcpoint) → bool</varname>, <varname>aIntersects(tpcpoint,tpcpoint) → bool</varname></para>
+					<para><varname>eIntersects(tpcpoint,geometry) → boolean</varname>, <varname>aIntersects(tpcpoint,geometry) → boolean</varname></para>
+					<para><varname>eIntersects(tpcpoint,tpcpoint) → boolean</varname>, <varname>aIntersects(tpcpoint,tpcpoint) → boolean</varname></para>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT eIntersects(tpcpointSeq(ARRAY[
   tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
@@ -1216,8 +1216,8 @@ SELECT eIntersects(tpcpointSeq(ARRAY[
 					<indexterm significance="normal"><primary><varname>eDisjoint</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>aDisjoint</varname></primary></indexterm>
 					<para>Ever / always disjoint.</para>
-					<para><varname>eDisjoint(tpcpoint,geometry) → bool</varname>, <varname>aDisjoint(tpcpoint,geometry) → bool</varname></para>
-					<para><varname>eDisjoint(tpcpoint,tpcpoint) → bool</varname>, <varname>aDisjoint(tpcpoint,tpcpoint) → bool</varname></para>
+					<para><varname>eDisjoint(tpcpoint,geometry) → boolean</varname>, <varname>aDisjoint(tpcpoint,geometry) → boolean</varname></para>
+					<para><varname>eDisjoint(tpcpoint,tpcpoint) → boolean</varname>, <varname>aDisjoint(tpcpoint,tpcpoint) → boolean</varname></para>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT eDisjoint(tpcpointSeq(ARRAY[
   tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
@@ -1235,8 +1235,8 @@ SELECT aDisjoint(tpcpointSeq(ARRAY[
 					<indexterm significance="normal"><primary><varname>eDwithin</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>aDwithin</varname></primary></indexterm>
 					<para>Ever / always within distance.</para>
-					<para><varname>eDwithin(tpcpoint,geometry,float) → bool</varname>, <varname>aDwithin(tpcpoint,geometry,float) → bool</varname></para>
-					<para><varname>eDwithin(tpcpoint,tpcpoint,float) → bool</varname>, <varname>aDwithin(tpcpoint,tpcpoint,float) → bool</varname></para>
+					<para><varname>eDwithin(tpcpoint,geometry,float) → boolean</varname>, <varname>aDwithin(tpcpoint,geometry,float) → boolean</varname></para>
+					<para><varname>eDwithin(tpcpoint,tpcpoint,float) → boolean</varname>, <varname>aDwithin(tpcpoint,tpcpoint,float) → boolean</varname></para>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT eDwithin(tpcpointSeq(ARRAY[
   tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz),
@@ -1414,8 +1414,8 @@ SELECT numInstants(minusValue(tpcpatchSeq(ARRAY[
 					<indexterm significance="normal"><primary><varname>atTpcbox</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>minusTpcbox</varname></primary></indexterm>
 					<para>Restrict a tpcpatch to the instants whose patch passes a coarse PCBOUNDS overlap test against the tpcbox, or remove them. Granularity is patch-level: each surviving instant keeps its pcpatch payload verbatim, with no per-point decompression. Because pgPointCloud's <varname>PCBOUNDS</varname> is 2D, the Z dimension of the box is ignored at this granularity. Returns NULL when the tpcbox's pcid does not match.</para>
-					<para><varname>atTpcbox(tpcpatch,tpcbox,border_inc bool=TRUE) → tpcpatch</varname></para>
-					<para><varname>minusTpcbox(tpcpatch,tpcbox,border_inc bool=TRUE) → tpcpatch</varname></para>
+					<para><varname>atTpcbox(tpcpatch,tpcbox,border_inc boolean=TRUE) → tpcpatch</varname></para>
+					<para><varname>minusTpcbox(tpcpatch,tpcbox,border_inc boolean=TRUE) → tpcpatch</varname></para>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT numInstants(atTpcbox(tpcpatchSeq(ARRAY[
   tpcpatch(pcpatch(1, pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz),
@@ -1435,8 +1435,8 @@ SELECT numInstants(minusTpcbox(tpcpatchSeq(ARRAY[
 					<indexterm significance="normal"><primary><varname>atTpcboxFine</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>minusTpcboxFine</varname></primary></indexterm>
 					<para>Per-point variant of the previous: each surviving instant carries a freshly-built pcpatch holding only the points inside (or outside, for minus) the tpcbox in 2D, and 3D when the box has a Z dimension. Instants whose patch filters to zero points are dropped. Slower than the coarse variant because every patch is decompressed and rebuilt; use when you need point-level fidelity.</para>
-					<para><varname>atTpcboxFine(tpcpatch,tpcbox,border_inc bool=TRUE) → tpcpatch</varname></para>
-					<para><varname>minusTpcboxFine(tpcpatch,tpcbox,border_inc bool=TRUE) → tpcpatch</varname></para>
+					<para><varname>atTpcboxFine(tpcpatch,tpcbox,border_inc boolean=TRUE) → tpcpatch</varname></para>
+					<para><varname>minusTpcboxFine(tpcpatch,tpcbox,border_inc boolean=TRUE) → tpcpatch</varname></para>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT numInstants(atTpcboxFine(tpcpatchSeq(ARRAY[
   tpcpatch(pcpatch(1, pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz),
@@ -1471,8 +1471,8 @@ SELECT numInstants(minusGeometry(tpcpatchSeq(ARRAY[
 					<indexterm significance="normal"><primary><varname>beforeTimestamp</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>afterTimestamp</varname></primary></indexterm>
 					<para>Restrict a tpcpatch to the instants before or after a timestamp. The strict flag excludes the instant at the timestamp itself</para>
-					<para><varname>beforeTimestamp(tpcpatch,timestamptz,strict bool=TRUE) → tpcpatch</varname></para>
-					<para><varname>afterTimestamp(tpcpatch,timestamptz,strict bool=TRUE) → tpcpatch</varname></para>
+					<para><varname>beforeTimestamp(tpcpatch,timestamptz,strict boolean=TRUE) → tpcpatch</varname></para>
+					<para><varname>afterTimestamp(tpcpatch,timestamptz,strict boolean=TRUE) → tpcpatch</varname></para>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT timeSpan(beforeTimestamp(tpcpatchSeq(ARRAY[
   tpcpatch(pcpatch(1, pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz),
@@ -1496,8 +1496,8 @@ SELECT timeSpan(afterTimestamp(tpcpatchSeq(ARRAY[
 					<indexterm significance="normal"><primary><varname>insert</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>update</varname></primary></indexterm>
 					<para>Insert a tpcpatch into another one, or update another one with it</para>
-					<para><varname>insert(tpcpatch,tpcpatch,connect bool=TRUE) → tpcpatch</varname></para>
-					<para><varname>update(tpcpatch,tpcpatch,connect bool=TRUE) → tpcpatch</varname></para>
+					<para><varname>insert(tpcpatch,tpcpatch,connect boolean=TRUE) → tpcpatch</varname></para>
+					<para><varname>update(tpcpatch,tpcpatch,connect boolean=TRUE) → tpcpatch</varname></para>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT numInstants(insert(tpcpatchSeq(ARRAY[
   tpcpatch(pcpatch(1, pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz),
@@ -1511,10 +1511,10 @@ SELECT numInstants(insert(tpcpatchSeq(ARRAY[
 				<listitem xml:id="tpcpatch_deleteTime">
 					<indexterm significance="normal"><primary><varname>deleteTime</varname></primary></indexterm>
 					<para>Delete a time selector (timestamp, set, period, or spanset) from a tpcpatch</para>
-					<para><varname>deleteTime(tpcpatch,timestamptz,connect bool=TRUE) → tpcpatch</varname></para>
-					<para><varname>deleteTime(tpcpatch,tstzset,connect bool=TRUE) → tpcpatch</varname></para>
-					<para><varname>deleteTime(tpcpatch,tstzspan,connect bool=TRUE) → tpcpatch</varname></para>
-					<para><varname>deleteTime(tpcpatch,tstzspanset,connect bool=TRUE) → tpcpatch</varname></para>
+					<para><varname>deleteTime(tpcpatch,timestamptz,connect boolean=TRUE) → tpcpatch</varname></para>
+					<para><varname>deleteTime(tpcpatch,tstzset,connect boolean=TRUE) → tpcpatch</varname></para>
+					<para><varname>deleteTime(tpcpatch,tstzspan,connect boolean=TRUE) → tpcpatch</varname></para>
+					<para><varname>deleteTime(tpcpatch,tstzspanset,connect boolean=TRUE) → tpcpatch</varname></para>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Deleting the middle instant splits the sequence into
 -- {[2001-01-01, 2001-01-02), (2001-01-02, 2001-01-03]}; each half stores
