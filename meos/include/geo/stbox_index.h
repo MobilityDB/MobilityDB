@@ -100,6 +100,8 @@ extern bool before8D(const STboxNode *nodebox, const STBox *query);
 extern bool overBefore8D(const STboxNode *nodebox, const STBox *query);
 extern bool after8D(const STboxNode *nodebox, const STBox *query);
 extern bool overAfter8D(const STboxNode *nodebox, const STBox *query);
+extern double stbox_index_distance_bound(double dist, const STBox *box1,
+  const STBox *box2);
 extern double distance_stbox_nodebox(const STBox *query,
   const STboxNode *nodebox);
 extern void tspatial_spgist_get_stbox(Datum value, MeosType type,

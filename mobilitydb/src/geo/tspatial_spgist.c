@@ -847,7 +847,10 @@ Stbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
       Datum value = scankey->sk_argument;
       MeosType type = oid_meostype(scankey->sk_subtype);
       tspatial_spgist_get_stbox(value, type, &box);
-      distances[i] = nad_stbox_stbox(&box, key);
+      /* A leaf key is a bounding box the executor rechecks, so what it
+       * reports is lowered to stay under the operator's own distance */
+      distances[i] = stbox_index_distance_bound(nad_stbox_stbox(&box, key),
+        &box, key);
     }
   }
 

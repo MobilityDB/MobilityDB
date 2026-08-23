@@ -614,6 +614,44 @@ overAfter8D(const STboxNode *nodebox, const STBox *query)
 }
 
 /**
+ * @brief Return a distance an index may report for a pair, lowered so that it
+ * cannot exceed the distance the ordering operator computes for that pair
+ * @details A kNN index distance is a LOWER BOUND: PostgreSQL orders the scan by
+ * it and, where the entry carries a bounding box rather than the value, rechecks
+ * the ordering operator and re-sorts. It refuses a recomputed distance below the
+ * one the index reported. Index and operator reach the same quantity by
+ * different arithmetic — box coordinates here, geometry there — so for an entry
+ * whose box IS its value, a single instant say, the two agree to within their
+ * rounding and the index can land one unit in the last place above.
+ * The margin is eight units in the last place of the larger of the distance and
+ * the coordinate magnitude, which covers the four roundings each side
+ * accumulates over the axis differences, their squares, the sum and the square
+ * root. ⛔ It scales with the COORDINATE magnitude, not with the distance alone:
+ * a gap of a metre between coordinates of 1e7 carries the rounding of 1e7, and
+ * an absolute margin would be inert there and enormous near the origin.
+ * @param[in] dist Distance the index computes
+ * @param[in] box1,box2 Boxes the distance is computed from
+ */
+double
+stbox_index_distance_bound(double dist, const STBox *box1, const STBox *box2)
+{
+  if (! (dist > 0.0) || dist == DBL_MAX)
+    return dist;
+  double scale = dist;
+  const STBox *boxes[2] = { box1, box2 };
+  for (int i = 0; i < 2; i++)
+  {
+    if (! boxes[i])
+      continue;
+    scale = fmax(scale, fmax(fabs(boxes[i]->xmin), fabs(boxes[i]->xmax)));
+    scale = fmax(scale, fmax(fabs(boxes[i]->ymin), fabs(boxes[i]->ymax)));
+    if (MEOS_FLAGS_GET_Z(boxes[i]->flags))
+      scale = fmax(scale, fmax(fabs(boxes[i]->zmin), fabs(boxes[i]->zmax)));
+  }
+  return fmax(dist - 8 * DBL_EPSILON * scale, 0.0);
+}
+
+/**
  * @brief Return the lower bound for the distance between a query and a nodebox
  * @note The temporal dimension is only taken into account for returning
  * +infinity (which will be translated into NULL) if the boxes do not
@@ -661,7 +699,10 @@ distance_stbox_nodebox(const STBox *query, const STboxNode *nodebox)
       dz = 0;
   }
 
-  return hasz ? hypot3d(dx, dy, dz) : hypot(dx, dy);
+  /* A nodebox is a bound, never a value, so the reported distance is lowered
+   * to stay under the one the ordering operator computes */
+  double dist = hasz ? hypot3d(dx, dy, dz) : hypot(dx, dy);
+  return stbox_index_distance_bound(dist, query, &nodebox->left);
 }
 
 /**
