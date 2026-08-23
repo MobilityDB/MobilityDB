@@ -438,6 +438,39 @@ transformation_families:
     - scaleTime
   - ops:
     - shiftScaleTime
+- family: posechain
+  file: mobilitydb/sql/posechain/552_tposechain.in.sql
+  reference: true
+  begin: "\n * Transformation functions\n"
+  end: "\n * Restriction Functions\n"
+  temps:
+  - tposechain
+  blocks:
+  - lit: "/******************************************************************************\n * Transformation functions\n ******************************************************************************/"
+  - ops:
+    - inst
+    - seq
+    - seqset
+  - ops:
+    - setInterp
+  - fns:
+    - sig: round(tposechain, integer DEFAULT 0)
+      ret: tposechain
+      sym: Temporal_round
+    - sig: round(tposechain[], integer DEFAULT 0)
+      ret: tposechain[]
+      sym: Temporalarr_round
+  - ops:
+    - tsample
+  - ops:
+    - tprecision
+  - ops:
+    - shiftTime
+  - ops:
+    - scaleTime
+  - ops:
+    - shiftScaleTime
+
 - family: h3
   file: mobilitydb/sql/h3/253_th3index.in.sql
   reference: true

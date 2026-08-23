@@ -218,14 +218,14 @@ SQL (§6, `320_tnpoint_spatialrels`).
 | `<sect1>` | MEOS prefix | generated? | canonical generator / notes |
 |---|---|---|---|
 | Input and Output | `temporal_` | ✓ **GEN** | **two sub-families**, both full coverage (`--gaps`: `io_families` 18/18, `representation_families` 18/18): (a) **type I/O** `<type>_in`/`_out`/`_recv`/`_send` — `io_type.sql.tmpl` + `io_families`, **12 entries** (temporal, cbuffer, geo, h3, json, npoint, pointcloud, pointcloud_patch, pose, quadbin, rgeo, tpoint). (b) **canonical representations** — `asText`/`asEWKT`/`asBinary`/`asEWKB`/`asHexWKB`/`asMFJSON` + the `From*` constructors — `representations.sql.tmpl` + `representation_families`, **12 entries** (same family set) |
-| Constructors | `temporal_` | ✓ **GEN** | `constructors.sql.tmpl` + `constructor_families`, **12 entries** all `reference: true` (temporal, cbuffer, geo, h3, json, npoint, pose, quadbin, rgeo, tpcpatch, tpcpoint, tpoint) |
+| Constructors | `temporal_` | ✓ **GEN** | `constructors.sql.tmpl` + `constructor_families`, **13 entries** all `reference: true` (temporal, cbuffer, geo, h3, json, npoint, pose, quadbin, rgeo, tpcpatch, tpcpoint, tpoint) |
 | Conversions | `temporal_` | ◐ PARTIAL | `conversions.sql.tmpl` + `conversion_families`, **8 entries** (temporal, cbuffer, h3, json, npoint, pose, quadbin, rgeo) — `--gaps`: `conversion_families` 15/18, missing tgeography, tpcpoint, tpcpatch. `geo`/`tpoint` have no dedicated entry: their conversion surface is already named as the RETURNS/argument type of other families' declarations (e.g. rgeo's `tgeometry(trgeometry)`) |
 | Accessors | `temporal_` | ✓ **GEN** | `accessors.sql.tmpl` multi-base renderer from base `022_temporal.in.sql` — the value/time/generic set for ALL families (§4c); per-family value shape = manifest `types:` tokens. A few interleaved/positional accessors stay hand per family |
-| Transformations | `temporal_` | ✓ **GEN** | `transformations.sql.tmpl` + `transformation_families`, **12 entries** all `reference: true` (same family set as Constructors) — shiftTime/scaleTime, setInterp, tprecision, tsample |
-| Modifications | `temporal_` | ✓ **GEN** | `modifications.sql.tmpl` + `modification_families`, **12 entries** all `reference: true` (same family set) — appendInstant, insert, update, merge |
-| Restrictions | `temporal_` | ✓ **GEN** | `restrictions.sql.tmpl` + `restriction_families`, **12 entries** all `reference: true` (same family set) — atValue(s)/minusValue(s), atTime/minusTime, atSpan(set), atTbox |
+| Transformations | `temporal_` | ✓ **GEN** | `transformations.sql.tmpl` + `transformation_families`, **13 entries** all `reference: true` (same family set as Constructors) — shiftTime/scaleTime, setInterp, tprecision, tsample |
+| Modifications | `temporal_` | ✓ **GEN** | `modifications.sql.tmpl` + `modification_families`, **13 entries** all `reference: true` (same family set) — appendInstant, insert, update, merge |
+| Restrictions | `temporal_` | ✓ **GEN** | `restrictions.sql.tmpl` + `restriction_families`, **13 entries** all `reference: true` (same family set) — atValue(s)/minusValue(s), atTime/minusTime, atSpan(set), atTbox |
 | **Bounding Box Operators** | `temporal_`/`tnumber_` | ✓ **GEN** | `topops.sql.tmpl` (`&&`,`@>`,`<@`,`~=`,`-\|-`) + `posops.sql.tmpl` (`<<`,`>>`,`&<`,`&>`,`<<#`,`#>>`…), both via the `subtypes:` track (§3), + `boxops.c.tmpl` box types `tstzspan`,`tbox` |
-| Comparisons → Traditional | (btree) | ✓ **GEN** | `comparisons.sql.tmpl` + `comparison_families` (10 temporal-type entries: temporal, geo, tpoint, cbuffer, h3, json, npoint, pose, quadbin, rgeo) — `=`,`<>`,`<`,`>`,`<=`,`>=` + `cmp` + the `<type>_btree_ops` opclass; `--gaps`: `comparison_families` 16/19, missing tposechain, tpcpoint, tpcpatch. The hash tail of the same files (`hash`/`hashExtended` + the `<type>_hash_ops` opclass) is `hash_families` — the same 10 entries plus `posechain` and `pointcloud`/`pointcloud_patch`, the latter two each rendering tpcpoint's/tpcpatch's whole comparison+hash section as one entry (pointcloud has no `comparison_families` row of its own); `--gaps`: `hash_families` 19/19, full coverage |
+| Comparisons → Traditional | (btree) | ✓ **GEN** | `comparisons.sql.tmpl` + `comparison_families` (11 temporal-type entries: temporal, geo, tpoint, cbuffer, h3, json, npoint, pose, posechain, quadbin, rgeo) — `=`,`<>`,`<`,`>`,`<=`,`>=` + `cmp` + the `<type>_btree_ops` opclass; `--gaps`: `comparison_families` 17/19, missing tpcpoint, tpcpatch. The hash tail of the same files (`hash`/`hashExtended` + the `<type>_hash_ops` opclass) is `hash_families` — the same 11 entries plus `pointcloud`/`pointcloud_patch`, the latter two each rendering tpcpoint's/tpcpatch's whole comparison+hash section as one entry (pointcloud has no `comparison_families` row of its own); `--gaps`: `hash_families` 19/19, full coverage |
 | Comparisons → **Ever/Always** | `temporal_` | ✓ **GEN** | `compops.sql.tmpl` + one shared `render_compops_body` engine, fed by two manifest tracks: `compops_families` (multi-pair families — temporal's 5 base types on one generic base/temporal C symbol per op, tgeo/tpoint's geometry+geography pair on one generic geo/tgeo C symbol per op) and the `subtypes:` `compops` behaviour (every one-pair family — cbuffer, jsonb, quadbin, h3index, npoint, pose, trgeometry, pcpoint, pcpatch). `eEq`/`aEq`/`eNe`/`aNe` + `?=`/`%=`/`?<>`/`%<>` (all 3 arg directions); a pair marked `orderable` (temporal's int/bigint/float/text) additionally gets `eLt…aGe` + `?<…%>=`. A `compops_families` `pairs:` entry names only its `temp` type — `base` is never hand-paired alongside it; `render_compops` derives it from `catalog_temptype_basetype()`, read from meos_catalog.c's own `MEOS_RELTYPE_CATALOG[...].temptype_basetype` field, the same table `temptype_basetype()` reads at runtime for these functions' MEOS entry point. This makes a mismatched pair (`temp: tfloat` naming `base: integer`, which would render `tGt(tfloat, integer)` while the C entry point still derives float8 from the temp type alone) unrepresentable — the generator raises if a pair still carries a `base:` key |
 | Comparisons → Temporal | `temporal_` | ✓ **GEN** | same engine as Ever/Always above — renders `tEq`/`tNe`/`tLt`/`tGt`/`tLe`/`tGe` → `#=`/`#<>`/`#<`/`#>`/`#<=`/`#>=` in the same pass, not a separate template |
 | Miscellaneous | `temporal_` | ✗ HAND | |
@@ -284,7 +284,7 @@ Two more reference chapters carry inherited surface:
 | → Indexing | (index) | ✓ **GEN** | GiST/SP-GiST via `gist/spgist/indexes.sql.tmpl` |
 | → Statistics and Selectivity | (selectivity) | ✗ HAND | |
 | `temporal_types_analytics.xml` → Simplification / Reduction / Similarity / Extended Kalman Filter / Splitting | `temporal_`/`tgeo_` | ✗ HAND | analytics; no template |
-| `temporal_types_analytics.xml` → Multidimensional Tiling | `temporal_`/`tgeo_` | ✓ **GEN** | `tiling.sql.tmpl` + `tiling_families`, **17 entries** all `reference: true` (temporal, cbuffer, geo, json, npoint, pose, quadbin, rgeo, th3index, tgeo_tile, tpcpatch, tpcpoint, tpcpoint_tile, tpoint, tpoint_tile, tpose_tile, trgeo_tile) — `--gaps`: 18/18 |
+| `temporal_types_analytics.xml` → Multidimensional Tiling | `temporal_`/`tgeo_` | ✓ **GEN** | `tiling.sql.tmpl` + `tiling_families`, **18 entries** all `reference: true` (temporal, cbuffer, geo, json, npoint, pose, quadbin, rgeo, th3index, tgeo_tile, tpcpatch, tpcpoint, tpcpoint_tile, tpoint, tpoint_tile, tpose_tile, trgeo_tile) — `--gaps`: 18/18 |
 
 ### 4c. Canonical accessor set & order — the inherited value/time surface
 
@@ -575,21 +575,50 @@ Reading the table:
 
 ## 7. The gap (what remains ungoverned)
 
-**A. Behaviours with a template, still not wired for every family:**
-- `spatialrel_families` (the C ever/always kernel): pose (today: geo, cbuffer,
-  rgeo). npoint has no native kernel by design — its ever/always relationships
-  cast-delegate to `tgeometry` at the SQL level instead (§3, §6, `subtypes:`
-  `spatialrels` bullet below), so it needs none.
-- `conversion_families`: tgeography, tpcpoint, tpcpatch (today: 15/18 temporal
-  types, via 8 family entries).
-- `comparison_families` (Traditional comparisons): tpcpoint, tpcpatch (today:
-  16/19 temporal types, via 10 family entries). `hash_families` has no such gap
-  (19/19) — its `pointcloud`/`pointcloud_patch` entries render tpcpoint's/
-  tpcpatch's whole comparison+hash section directly.
+**A. Behaviours with a template, still not wired for every family.** Every count
+below is what `generate.py --gaps` prints today — read it from the tool rather
+than from this paragraph, which is a transcription and can only be as fresh as
+its last edit:
+- `spatialrel_families` (the C ever/always kernel), **3/13**: only `geo`, `cbuffer`
+  and `rgeo` carry one, so every other member of `tspatial_type` reads missing.
+  `tnpoint` needs none by design — its ever/always relationships cast-delegate to
+  `tgeometry` at the SQL level instead (§3, §6, the `subtypes:` `spatialrels`
+  bullet below) — and the pointcloud temptypes, members of this class since
+  `tspatial_type` widened to 13, carry no native kernel either.
+- `conversion_families`, **15/19**: `tposechain`, `tgeography`, `tpcpoint`, `tpcpatch`.
+  ⛔ `tposechain`'s absence here is NOT a template gap and must not be closed by
+  cloning `pose`: the two conversions differ in KIND, `tpose` answering a point
+  (`tgeompoint`/`tgeogpoint` over `Tpose_to_tpoint`) where `tposechain` answers
+  the COMPOSITION of its links (`tpose` over `Tposechain_to_tpose`). A per-family
+  conversion is correctly hand-written.
+- `comparison_families` (Traditional comparisons), **17/19**: `tpcpoint`,
+  `tpcpatch`. `hash_families` has no such gap (19/19) — its `pointcloud` /
+  `pointcloud_patch` entries render tpcpoint's and tpcpatch's whole
+  comparison+hash section directly.
+- `aggregate_families`, **18/19**: `tposechain`. `tempspatialrel_families`,
+  **10/13**: `tposechain`, `tpcpoint`, `tpcpatch`.
+  ⛔ These two project onto a file the family does NOT have — `tpose` carries
+  `111_tpose_aggfuncs.in.sql` and `114_tpose_tempspatialrels.in.sql`, posechain
+  carries neither — so closing them ADDS SURFACE. That is a functional decision
+  for the owner, not a governance one.
+- `distance_families`, **10/15** of the value-domain types: `posechainset`,
+  `h3indexset`, `quadbinset`, `pcpointset`, `pcpatchset`. `posechainset` is
+  deliberate and `setfamilies.yaml` says so in place — a pose chain has no
+  distance function, so the set deploys none.
 - The `subtypes:` `spatialrels` behaviour (the ever/always SQL wrapper *file*, as
   opposed to the C kernel above) covers the cast-delegated families (th3index,
   tquadbin, tnpoint); cbuffer/pose/rgeo's own wrapper files (212/112/170) stay
   hand even though cbuffer's and rgeo's C kernel is generated.
+
+⭐ **THE DISCRIMINATOR THAT DECIDES WHETHER A GAP IS MECHANICAL**, and it is one
+command: take the behaviour's `begin`/`end` markers from the covered sibling's
+manifest entry, cut that section out of BOTH families' `.in.sql`, and compare the
+two with the type tokens renamed. Identical ⇒ the surface is already the template's
+output and a cloned manifest entry is behaviour-neutral, provable by a regeneration
+that moves zero bytes. Different ⇒ the surface is per-family and the entry would
+CHANGE it. Six of `tposechain`'s seven candidate behaviours came out identical and
+were closed that way; `conversion_families` came out different and is the reason
+the bullet above refuses it.
 
 **B. Sections with no template at all** (reserved `positions:` slot, pure hand):
 - The geo base-geometry surface (`geo/049_geo_funcs`): functions whose argument
