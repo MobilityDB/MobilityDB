@@ -1788,6 +1788,94 @@ GEOS2POSTGIS(GEOSGeom geom, char want3d)
 }
 
 /**
+ * @brief Return the type that keeps a pair of geometries from the native engine
+ * @details The native engine answers every type #geom_meos_supported() accepts;
+ * a polyhedral surface and a TIN fall outside it.
+ * @param[in] geom1,geom2 Geometries the operation is asked about
+ */
+static uint8_t
+geo_unsupported_type(const LWGEOM *geom1, const LWGEOM *geom2)
+{
+  return geom_meos_supported(geom1) ? geom2->type : geom1->type;
+}
+
+/**
+ * @brief Report that an operation has no answer for a geometry type
+ * @details GEOS answers a TIN, so a build excluding it names the option that
+ * restores the answer. It has no polyhedral surface of its own — the type
+ * reaches the @p default arm of @p LWGEOM2GEOS, whose @p lwerror terminates
+ * the process rather than returning — so that type is reported the same way in
+ * either build and is never handed to GEOS.
+ * @param[in] what Noun naming the operation
+ * @param[in] type Type the operation has no answer for
+ */
+static void
+geo_error_unsupported_type(const char *what, uint8_t type)
+{
+#if ! GEOS
+  if (type != POLYHEDRALSURFACETYPE)
+  {
+    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+      "The %s of a geometry of type %s is answered by the GEOS library, which "
+      "this build excludes: configure with -DGEOS=ON", what,
+      lwtype_name(type));
+    return;
+  }
+#endif /* ! GEOS */
+  meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+    "The %s of a geometry of type %s is not supported", what,
+    lwtype_name(type));
+  return;
+}
+
+#if GEOS
+/**
+ * @brief Transform two @p GSERIALIZED geometries into @p GEOSGeometry and
+ * call the GEOS function passed as argument
+ */
+static bool
+meos_call_geos2(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
+  char (*func)(GEOSContextHandle_t ctx, const GEOSGeometry *geos1,
+    const GEOSGeometry *geos2))
+{
+  assert(gs1); assert(gs2); assert(func);
+  GEOSContextHandle_t ctx = geos_get_context();
+
+  GEOSGeometry *geos1 = POSTGIS2GEOS(gs1);
+  if (! geos1)
+  {
+    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+      "First argument geometry could not be converted to GEOS");
+    return false;
+  }
+  GEOSGeometry *geos2 = POSTGIS2GEOS(gs2);
+  if (! geos2)
+  {
+    GEOSGeom_destroy_r(ctx, geos1);
+    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+      "Second argument geometry could not be converted to GEOS");
+    return false;
+  }
+
+  char result = func(ctx, geos1, geos2);
+
+  GEOSGeom_destroy_r(ctx, geos1); GEOSGeom_destroy_r(ctx, geos2);
+  /* GEOS reports a failure as 2, which is the relationship reporting nothing.
+   * The answer is false, the one every other failure of these functions gives;
+   * an error handler that returns, which is the handler a language binding
+   * installs, would otherwise read a relationship that was never evaluated as
+   * holding */
+  if (result == 2)
+  {
+    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+      "GEOS returned error");
+    return false;
+  }
+  return (bool) result;
+}
+#endif /* GEOS */
+
+/**
  * @ingroup meos_internal_geo_base_rel
  * @brief Return true if two geometries satisfy a given spatial relationship,
  * where the function called depend on the third argument
@@ -1853,11 +1941,30 @@ geom_spatialrel(const GSERIALIZED *gs1, const GSERIALIZED *gs2, spatialRel rel)
   LWGEOM *geom2 = lwgeom_from_gserialized(gs2);
   bool result;
   bool answered = meos_spatialrel(geom1, geom2, rel, &result);
+  uint8_t badtype = answered ? 0 : geo_unsupported_type(geom1, geom2);
   lwgeom_free(geom1); lwgeom_free(geom2);
   if (! answered)
   {
-    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
-      "The spatial relationship of the geometries is not supported");
+#if GEOS
+    /* A type the edges do not decompose is answered by GEOS, which carries no
+     * polyhedral surface of its own */
+    if (badtype != POLYHEDRALSURFACETYPE)
+      switch (rel)
+      {
+        case INTERSECTS:
+          return meos_call_geos2(gs1, gs2, &GEOSIntersects_r);
+        case CONTAINS:
+          return meos_call_geos2(gs1, gs2, &GEOSContains_r);
+        case TOUCHES:
+          return meos_call_geos2(gs1, gs2, &GEOSTouches_r);
+        case COVERS:
+          return meos_call_geos2(gs1, gs2, &GEOSCovers_r);
+        default:
+          /* keep compiler quiet */
+          return false;
+      }
+#endif /* GEOS */
+    geo_error_unsupported_type("spatial relationship", badtype);
     return false;
   }
   return result;
@@ -1969,11 +2076,44 @@ geom_relate_pattern(const GSERIALIZED *gs1, const GSERIALIZED *gs2, char *p)
   LWGEOM *geom2 = lwgeom_from_gserialized(gs2);
   bool result;
   bool covered = meos_relate_pattern(geom1, geom2, p, &result);
+  uint8_t badtype = covered ? 0 : geo_unsupported_type(geom1, geom2);
   lwgeom_free(geom1); lwgeom_free(geom2);
   if (! covered)
   {
-    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
-      "The relationship of the geometries is not supported");
+#if GEOS
+    if (badtype != POLYHEDRALSURFACETYPE)
+    {
+      GEOSContextHandle_t ctx = geos_get_context();
+      GEOSGeometry *geos1 = POSTGIS2GEOS(gs1);
+      if (! geos1)
+      {
+        meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+          "First argument geometry could not be converted to GEOS");
+        return false;
+      }
+      GEOSGeometry *geos2 = POSTGIS2GEOS(gs2);
+      if (! geos2)
+      {
+        GEOSGeom_destroy_r(ctx, geos1);
+        meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+          "Second argument geometry could not be converted to GEOS");
+        return false;
+      }
+      char georesult = GEOSRelatePattern_r(ctx, geos1, geos2, p);
+      GEOSGeom_destroy_r(ctx, geos1); GEOSGeom_destroy_r(ctx, geos2);
+      /* GEOS reports a failure as 2, which is the pattern reporting nothing.
+       * The answer is false, the one every other failure of this function
+       * gives */
+      if (georesult == 2)
+      {
+        meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+          "GEOSRelatePattern returned error");
+        return false;
+      }
+      return (bool) georesult;
+    }
+#endif /* GEOS */
+    geo_error_unsupported_type("relationship", badtype);
     return false;
   }
   return result;
@@ -2386,11 +2526,41 @@ geo_equals(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   LWGEOM *geom2 = lwgeom_from_gserialized(gs2);
   char matrix[10];
   bool covered = meos_relate(geom1, geom2, matrix);
+  uint8_t badtype = covered ? 0 : geo_unsupported_type(geom1, geom2);
   lwgeom_free(geom1); lwgeom_free(geom2);
   if (! covered)
   {
-    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
-      "Equality of the geometries is not supported");
+#if GEOS
+    if (badtype != POLYHEDRALSURFACETYPE)
+    {
+      GEOSContextHandle_t ctx = geos_get_context();
+      GEOSGeometry *geos1 = POSTGIS2GEOS(gs1);
+      if (! geos1)
+      {
+        meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+          "First argument geometry could not be converted to GEOS");
+        return -1;
+      }
+      GEOSGeometry *geos2 = POSTGIS2GEOS(gs2);
+      if (! geos2)
+      {
+        GEOSGeom_destroy_r(ctx, geos1);
+        meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+          "Second argument geometry could not be converted to GEOS");
+        return -1;
+      }
+      int georesult = GEOSEquals_r(ctx, geos1, geos2);
+      GEOSGeom_destroy_r(ctx, geos1); GEOSGeom_destroy_r(ctx, geos2);
+      if (georesult == 2)
+      {
+        meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
+          "GEOS equals() threw an error !");
+        return -1;
+      }
+      return georesult;
+    }
+#endif /* GEOS */
+    geo_error_unsupported_type("equality", badtype);
     return -1;
   }
   return de9im_match(matrix, "T*F**FFF*") ? 1 : 0;

@@ -161,8 +161,9 @@ int main(void)
     errno_ok);
   assert(rel_ok == true);
   assert(errno_ok == 0);
-  /* A geometry the edge decomposition does not reach reports the failure and
-   * answers false, so the value a language binding reads is the safe one */
+  /* A TIN is outside the edge decomposition and GEOS carries one, so a build
+   * including GEOS answers it and a build excluding GEOS reports the failure
+   * and answers false, the value a language binding reads safely */
   GSERIALIZED *tin = geom_in(
     "Tin(((0 0,0 1,1 1,0 0)),((0 0,1 0,1 1,0 0)))", -1);
   assert(tin != NULL);
@@ -171,9 +172,33 @@ int main(void)
   int errno_tin = meos_errno();
   printf("geom_relate_pattern(line, tin): %d, errno %d\n", rel_tin,
     errno_tin);
-  assert(rel_tin == false);
-  assert(errno_tin != 0);
-  free(coll); free(away); free(through); free(tin);
+  /* The option is read from the library at run time: this file is compiled
+   * against the installed headers, which carry no definition of it, so a
+   * preprocessor test here would describe the test's own build and not the
+   * library's */
+  if (strstr(meos_full_version(), "GEOS none") == NULL)
+    assert(errno_tin == 0);
+  else
+  {
+    assert(rel_tin == false);
+    assert(errno_tin != 0);
+  }
+  /* A polyhedral surface is outside the edge decomposition AND outside GEOS,
+   * whose LWGEOM2GEOS reaches an lwerror that ends the process rather than
+   * returning, so it is reported the same way in either build and reaches
+   * GEOS in neither */
+  GSERIALIZED *phs = geom_in(
+    "PolyhedralSurface Z (((0 0 0,0 1 0,1 1 0,1 0 0,0 0 0)),"
+    "((0 0 0,0 1 0,0 1 1,0 0 1,0 0 0)))", -1);
+  assert(phs != NULL);
+  meos_errno_reset();
+  bool rel_phs = geom_relate_pattern(through, phs, patt);
+  int errno_phs = meos_errno();
+  printf("geom_relate_pattern(line, polyhedral surface): %d, errno %d\n",
+    rel_phs, errno_phs);
+  assert(rel_phs == false);
+  assert(errno_phs != 0);
+  free(coll); free(away); free(through); free(tin); free(phs);
   meos_errno_reset();
 
   /* A geometry covers itself, whatever its coordinates are and however short
