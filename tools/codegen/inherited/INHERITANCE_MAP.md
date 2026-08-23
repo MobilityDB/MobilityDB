@@ -17,9 +17,16 @@
 > **The manifest is split**, one file per axis: `manifest.d/<axis>.yaml` (e.g.
 > `manifest.d/accessor_families.yaml`), loaded and merged by `generate.py`'s
 > `load_manifest()`. **Three machine checks** keep this map honest: `--coverage`
-> (every `.in.sql` under `mobilitydb/sql/` is either named by a manifest entry or
-> listed in `coverage_exceptions.txt`; the exception list is a ratchet that may only
-> shrink), `--classes` (the manifest's `classes:` block matches the live catalog
+> (every `.in.sql` under `mobilitydb/sql/` is either GOVERNED or listed in
+> `coverage_exceptions.txt`; the exception list is a ratchet that may only shrink).
+> ⛔ Governed is wider than NAMED: a `*_families` entry names its path in `file:`,
+> while a `subtypes:` entry names none and emit mode DERIVES the path from the
+> entry's bin plus the behaviour's offset. `manifest_files()` therefore runs that
+> derivation through the same `target_path` the emit loop calls, so the files the
+> subtypes track writes count as governed and may not sit on the exception list; a
+> `reference: true` subtype is excluded, matching emit mode, which skips it — that
+> file stays hand-owned under `--validate`. Then `--classes` (the manifest's
+> `classes:` block matches the live catalog
 > class predicates — **17** classes, the temporal ones plus the value-domain `set`,
 > `span`, `spanset` and their catalog sub-predicates), and `--gaps` (per behaviour
 > axis, which members of its class the rendered SQL does not yet name — a backlog
