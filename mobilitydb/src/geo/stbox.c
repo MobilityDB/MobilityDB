@@ -1565,8 +1565,7 @@ PG_FUNCTION_INFO_V1(Stbox_quad_split);
  * @ingroup mobilitydb_geo_box_transf
  * @brief Return a spatiotemporal box split with respect to its space bounds
  * in four quadrants (2D) or eight octants (3D)
- * @sqlfn stbox_intersection()
- * @sqlop @p *
+ * @sqlfn quadSplit()
  */
 Datum
 Stbox_quad_split(PG_FUNCTION_ARGS)
