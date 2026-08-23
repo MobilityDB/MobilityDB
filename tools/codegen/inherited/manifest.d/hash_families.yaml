@@ -92,6 +92,18 @@ hash_families:
   - lit: "\n"
   - opcls: tpose
   - lit: "\n/******************************************************************************/\n"
+- family: posechain
+  file: mobilitydb/sql/posechain/552_tposechain.in.sql
+  reference: true
+  ops: temporal
+  begin: "CREATE FUNCTION hash(tposechain"
+  whole_file: true
+  blocks:
+  - lit: "/******************************************************************************/\n\n"
+  - funcs: tposechain
+  - lit: "\n"
+  - opcls: tposechain
+  - lit: "\n/******************************************************************************/\n"
 - family: rgeo
   file: mobilitydb/sql/rgeo/150_trgeo.in.sql
   reference: true
