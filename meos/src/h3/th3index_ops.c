@@ -40,7 +40,9 @@
  *
  * An h3 cell is geodetic, so the descriptor emits a tgeogpoint centroid and,
  * through it, a tgeography boundary. The static adapter behind the centroid
- * builds an SRID-4326 point; geography and geometry are distinguished at the
+ * builds an SRID-4326 point, the coordinates the H3 specification carries on a
+ * sphere of the WGS84/EPSG:4326 authalic radius
+ * (https://h3geo.org/docs/core-library/overview/); geography and geometry are distinguished at the
  * lifting layer by `point_temptype`, exactly as the typed th3index conversions
  * distinguish them by their `restype`.
  */

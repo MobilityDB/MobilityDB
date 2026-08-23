@@ -31,8 +31,14 @@
  * @file
  * @brief Bounding box functions for temporal H3 cell indices.
  *
- * H3 cells are geographic hexagons on the WGS84 sphere — always geodetic,
- * always lat/lon. The bounding box of a th3index value is therefore a
+ * An H3 cell is a hexagon of the grid the H3 specification builds on the
+ * planar faces of a sphere-circumscribed icosahedron and projects back onto
+ * the sphere, whose coordinate reference system is spherical coordinates with
+ * the WGS84/EPSG:4326 authalic radius — a sphere, not the WGS84 ellipsoid, so
+ * SRID 4326 names the coordinates this tree emits rather than the model H3
+ * measures on (https://h3geo.org/docs/core-library/overview/). The cells are
+ * therefore always geodetic and always lat/lon, and the bounding box of a
+ * th3index value is a
  * geodetic STBox (X/Y set, GEODETIC flag set, no Z, T set from the time
  * span), matching the pattern of tgeogpoint and tcbuffer.
  *

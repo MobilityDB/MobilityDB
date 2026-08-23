@@ -34,9 +34,14 @@
  * cell-index machinery (meos/src/temporal/tcellindex.c).
  *
  * A quadbin cell is a uint64 carried in a Datum with the int8/bigint
- * convention (Int64GetDatum / DatumGetInt64). The cell centroid is emitted as
- * a planar tgeompoint in the cell's lon/lat (SRID 4326); a Web-Mercator
- * (SRID 3857) emission would set point_srid = 3857 and reproject here.
+ * convention (Int64GetDatum / DatumGetInt64), holding the Bing Maps Tile
+ * System (quadkey) cell of a map uniformly subdivided in the MERCATOR
+ * projection into four squares at each resolution from 0 to 26
+ * (https://docs.carto.com/data-and-analysis/analytics-toolbox-for-bigquery/key-concepts/spatial-indexes).
+ * The cell is defined on that projection, and its centroid is emitted as a
+ * planar tgeompoint converted to lon/lat (SRID 4326); a Web-Mercator
+ * (SRID 3857) emission, which is the cell's own system, would set
+ * point_srid = 3857 and skip that conversion.
  */
 
 #include "quadbin/quadbin.h"
