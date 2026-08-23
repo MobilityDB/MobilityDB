@@ -230,10 +230,8 @@ SELECT abs(a - b) < 1e-3 FROM d;
 -- Every overload, against a buffer sweeping from (0 0) to (4 0). Each probe is
 -- placed so that a single instant attains the minimum.
 SELECT asText(nearestApproachInstant(geometry 'Point(2 3)', tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(4 0), 0.5)@2000-01-05]'));
-SELECT asText(nearestApproachInstant(stbox 'STBOX X((5,2),(7,4))', tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(4 0), 0.5)@2000-01-05]'));
 SELECT asText(nearestApproachInstant(cbuffer 'Cbuffer(Point(4 9), 0.7)', tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(4 0), 0.5)@2000-01-05]'));
 SELECT asText(nearestApproachInstant(tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(4 0), 0.5)@2000-01-05]', geometry 'Point(2 3)'));
-SELECT asText(nearestApproachInstant(tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(4 0), 0.5)@2000-01-05]', stbox 'STBOX X((5,2),(7,4))'));
 SELECT asText(nearestApproachInstant(tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(4 0), 0.5)@2000-01-05]', cbuffer 'Cbuffer(Point(4 9), 0.7)'));
 SELECT asText(nearestApproachInstant(
   tcbuffer '[Cbuffer(Point(0 0), 0.5)@2000-01-01, Cbuffer(Point(4 0), 0.5)@2000-01-05]',
