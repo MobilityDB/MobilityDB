@@ -1940,8 +1940,16 @@ meos_oriented_envelope(const LWGEOM *geom)
   /* Find the minimum-area rectangle. The rectangle of the first direction
    * seeds the result: a comparison against it is false for every direction
    * when a coordinate is not a number, and the rectangle must be defined in
-   * that case too. */
-  double best_area = DBL_MAX;
+   * that case too.
+   * The minimum area does not name ONE rectangle. Every side of a triangle
+   * carries a rectangle of area twice the triangle's, so the three tie exactly
+   * and any point set whose hull has parallel support directions ties as well.
+   * The tied rectangles differ, and they differ in the diagonal a caller reads
+   * as the size of the region, so the shorter diagonal decides the tie: among
+   * the rectangles of least area it is the one that encloses the points most
+   * tightly, and it makes the answer a function of the points rather than of
+   * the order the directions happen to be visited in. */
+  double best_area = DBL_MAX, best_diag = DBL_MAX;
   POINT2D best_rect[5] = {0};
   for (uint32_t i = 0; i < nangles; i++)
   {
@@ -1950,9 +1958,17 @@ meos_oriented_envelope(const LWGEOM *geom)
     double uy = sin(angle);
     POINT2D rect[5];
     double area = mrr_rectangle_for_direction(hull, nhull, ux, uy, rect);
-    if (i == 0 || area < best_area)
+    double diag = hypot(rect[2].x - rect[0].x, rect[2].y - rect[0].y);
+    /* Two areas within a part in a million of each other are one area here:
+     * the rounding of a rotated projection is orders of magnitude smaller than
+     * that, and a set whose rectangles differ by so little is one whose
+     * tightest rectangle is the better answer either way */
+    bool tied = fabs(area - best_area) <=
+      MEOS_EPSILON * fmax(fabs(area), fabs(best_area));
+    if (i == 0 || (tied ? diag < best_diag : area < best_area))
     {
       best_area = area;
+      best_diag = diag;
       for (int j = 0; j < 5; j++)
         best_rect[j] = rect[j];
     }

@@ -240,6 +240,27 @@ int main(void)
   free(arc1); free(arc2); free(arc3); free(part); free(chords);
   meos_errno_reset();
 
+  /* The minimum area does not name ONE rectangle. Every side of an acute
+   * triangle carries a rectangle of area twice the triangle's, so all three
+   * tie: the triangle below has area 35 and each of its three rectangles has
+   * area 70. They are not the same rectangle -- their perimeters are 34,
+   * 33.622 and 33.489 -- and the diagonal a caller reads as the size of the
+   * region differs with them. The tightest is the answer, so that the envelope
+   * is a function of its points rather than of the order in which the
+   * candidate directions are visited */
+  GSERIALIZED *tri = geom_in("Multipoint(0 0,10 0,4 7)", -1);
+  assert(tri != NULL);
+  meos_errno_reset();
+  GSERIALIZED *env = geom_oriented_envelope(tri);
+  assert(env != NULL);
+  double env_perimeter = geom_perimeter(env);
+  printf("geom_oriented_envelope(acute triangle) perimeter: %.6f, errno %d\n",
+    env_perimeter, meos_errno());
+  assert(env_perimeter > 33.48 && env_perimeter < 33.50);
+  assert(meos_errno() == 0);
+  free(tri); free(env);
+  meos_errno_reset();
+
   /* A relationship of a curved geometry is read on the arc itself. The
    * polygon below is a circle of centre (49.092934300 -78.568502344) and
    * radius 17.469913928; the segment's ends lie 1.646e-3 and 5.64 INSIDE it,
