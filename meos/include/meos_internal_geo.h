@@ -137,6 +137,8 @@ extern bool geo_set_stbox(const GSERIALIZED *gs, STBox *result);
 extern void geoarr_set_stbox(const Datum *values, int count, STBox *result);
 extern bool spatial_set_stbox(Datum d, MeosType basetype, STBox *result);
 extern void spatialset_set_stbox(const Set *set, STBox *result);
+extern Datum distance_spatialset_value(const Set *s, Datum value);
+extern Datum distance_spatialset_spatialset(const Set *s1, const Set *s2);
 extern void stbox_set_box3d(const STBox *box, BOX3D *result);
 extern void stbox_set_gbox(const STBox *box, GBOX *result);
 extern void tstzset_set_stbox(const Set *s, STBox *result);

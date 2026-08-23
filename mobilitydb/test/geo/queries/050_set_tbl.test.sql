@@ -181,3 +181,17 @@ SELECT asText(setIntersection(geography 'Point(1 1)', geogset '{"Point(1 1)", "P
 SELECT asText(setIntersection(geogset '{"Point(1 1)", "Point(2 2)"}', geography 'Point(1 1)'));
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- Distance
+-------------------------------------------------------------------------------
+
+SELECT round(setDistance(geometry 'Point(1 1)', geomset '{"Point(4 5)", "Point(10 10)"}')::numeric, 6);
+SELECT round(setDistance(geomset '{"Point(4 5)", "Point(10 10)"}', geometry 'Point(1 1)')::numeric, 6);
+SELECT round(setDistance(geomset '{"Point(1 1)"}', geomset '{"Point(4 5)"}')::numeric, 6);
+SELECT round((geometry 'Point(1 1)' <-> geomset '{"Point(4 5)", "Point(10 10)"}')::numeric, 6);
+
+SELECT round(setDistance(geography 'Point(1 1)', geogset '{"Point(1 1)", "Point(2 2)"}')::numeric, 6);
+SELECT round(setDistance(geogset '{"Point(1 1)", "Point(2 2)"}', geography 'Point(1 1)')::numeric, 6);
+
+-------------------------------------------------------------------------------
