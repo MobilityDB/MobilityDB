@@ -233,12 +233,60 @@ SPI_pstrdup(const char *str)
  * `spatial_ref_sys` (for MobilityDB)
  * @note The PostGIS function is copied here since it is declared as `static`
  */
+/**
+ * @brief Read one comma-separated field into a buffer and advance past it
+ * @details A field carrying a comma is quoted and a quote inside such a field
+ * is written twice, so a reader that stops at the next comma delivers part of
+ * a field: a proj4 string states a datum shift as @p +towgs84=dx,dy,dz and
+ * carries three commas of its own.
+ * @param[in,out] pos Position in the row, left after the field's separator
+ * @param[out] buf Buffer receiving the field, unquoted and terminated
+ * @param[in] bufsize Size of @p buf
+ * @return True if the field is read, false where it does not fit
+ */
+static bool
+csv_read_field(char **pos, char *buf, size_t bufsize)
+{
+  char *p = *pos;
+  size_t n = 0;
+  bool quoted = (*p == '"');
+  if (quoted)
+    p++;
+  while (*p)
+  {
+    if (quoted && *p == '"')
+    {
+      /* A doubled quote stands for one quote, a single one closes the field */
+      if (*(p + 1) != '"')
+      {
+        p++;
+        break;
+      }
+      p++;
+    }
+    else if (! quoted && (*p == ',' || *p == '\n' || *p == '\r'))
+      break;
+    if (n + 1 >= bufsize)
+      return false;
+    buf[n++] = *p++;
+  }
+  buf[n] = '\0';
+  /* Leave the position after the comma that closes the field */
+  while (*p == '\r')
+    p++;
+  if (*p == ',')
+    p++;
+  *pos = p;
+  return true;
+}
+
 #if MEOS
 static PjStrs
 GetProjStringsSPI(int32_t srid)
 {
   char header_buffer[MAX_LEN_HEADER];
   char auth_name[256];
+  char auth_srid_text[256];
   int32_t auth_srid;
   char proj4text[2048];
   char srtext[2048];
@@ -260,20 +308,30 @@ GetProjStringsSPI(int32_t srid)
 
   /* Continue reading the file */
   bool found = false;
-  do
+  char line[MAX_LEN_SRS_RECORD];
+  while (fgets(line, sizeof(line), file))
   {
-    /* Read each line from the file */
-    int read = fscanf(file, "%255[^,^\n],%d,%2047[^,^\n],%2047[^\n]\n",
-      auth_name, &auth_srid, proj4text, srtext);
-
-    if (ferror(file))
+    /* A record longer than the buffer would be read as two, and its halves
+     * parsed as two malformed records, so discard the remainder of the line */
+    size_t linelen = strlen(line);
+    if (linelen == sizeof(line) - 1 && line[linelen - 1] != '\n')
     {
-      printf("Error reading the spatial_ref_sys.csv file");
-      return strs;
+      int c;
+      while ((c = fgetc(file)) != '\n' && c != EOF)
+        ;
+      continue;
     }
 
-    /* Ignore the records with NULL values */
-    if (read == 4 && auth_srid == srid)
+    /* Read each line from the file as the four fields of a record */
+    char *pos = line;
+    if (! csv_read_field(&pos, auth_name, sizeof(auth_name)) ||
+        ! csv_read_field(&pos, auth_srid_text, sizeof(auth_srid_text)) ||
+        ! csv_read_field(&pos, proj4text, sizeof(proj4text)) ||
+        ! csv_read_field(&pos, srtext, sizeof(srtext)))
+      continue;
+    auth_srid = atoi(auth_srid_text);
+
+    if (auth_srid == srid)
     {
       char tmp[MAX_PROJ_LEN];
       snprintf(tmp, MAX_PROJ_LEN, "%s:%d", auth_name, auth_srid);
@@ -283,7 +341,14 @@ GetProjStringsSPI(int32_t srid)
       found = true;
       break;
     }
-  } while (! feof(file));
+  }
+
+  if (ferror(file))
+  {
+    printf("Error reading the spatial_ref_sys.csv file");
+    fclose(file);
+    return strs;
+  }
 
   if (! found)
   {
