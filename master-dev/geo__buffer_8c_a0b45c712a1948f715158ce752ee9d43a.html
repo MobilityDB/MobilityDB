@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: buffer_angle_on_arc</title>
+<title>MobilityDB: meos_areal_union</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -87,7 +87,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_adb9d27f24894ed2c9193f79fc2cc4304.html#adb9d27f24894ed2c9193f79fc2cc4304">buffer_add_round_cap</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a9e63e71fc700b7d70f43be637966901b.html#a9e63e71fc700b7d70f43be637966901b">buffer_add_round_join</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a453b2cdec0ade699629309797172ccca.html#a453b2cdec0ade699629309797172ccca">buffer_add_segment</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="geo__buffer_8c_ac35d544f99aa7a4456faf025409783e9.html#ac35d544f99aa7a4456faf025409783e9">buffer_angle_on_arc</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_ac35d544f99aa7a4456faf025409783e9.html#ac35d544f99aa7a4456faf025409783e9">buffer_angle_on_arc</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a7d8f05fffcfbed963c07d70582f303ce.html#a7d8f05fffcfbed963c07d70582f303ce">buffer_append_piece_to_curve</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a849f1de6185ba1ddad1a932f844ee38b.html#a849f1de6185ba1ddad1a932f844ee38b">buffer_append_point</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a05a820601bb009392eb3b76c5793db24.html#a05a820601bb009392eb3b76c5793db24">buffer_arc_contains_angle</a></td></tr>
@@ -206,7 +206,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a86f08a9480ea92952cca8145ef3d4251.html#a86f08a9480ea92952cca8145ef3d4251">EndCapStyle</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__spatial_gae9d3f52595fdecd5d065416bf56d15c5.html#gae9d3f52595fdecd5d065416bf56d15c5">geom_buffer</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a4ae807b1d30d2a3c375f0616740e8b3c.html#a4ae807b1d30d2a3c375f0616740e8b3c">JoinStyle</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a0b45c712a1948f715158ce752ee9d43a.html#a0b45c712a1948f715158ce752ee9d43a">meos_areal_union</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="geo__buffer_8c_a0b45c712a1948f715158ce752ee9d43a.html#a0b45c712a1948f715158ce752ee9d43a">meos_areal_union</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a6d3af567ff9eb0edbd660d18a8502602.html#a6d3af567ff9eb0edbd660d18a8502602">meos_buffer</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a4f0f13fa3f02750cc85c4d20462bbf33.html#a4f0f13fa3f02750cc85c4d20462bbf33">meos_buffer_collection</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a5470de299f1f5b8f907fa71429830a6d.html#a5470de299f1f5b8f907fa71429830a6d">meos_buffer_curve</a></td></tr>
@@ -225,54 +225,30 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ac35d544f99aa7a4456faf025409783e9" name="ac35d544f99aa7a4456faf025409783e9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac35d544f99aa7a4456faf025409783e9">&#9670;&#160;</a></span>buffer_angle_on_arc()</h2>
+<a id="a0b45c712a1948f715158ce752ee9d43a" name="a0b45c712a1948f715158ce752ee9d43a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0b45c712a1948f715158ce752ee9d43a">&#9670;&#160;</a></span>meos_areal_union()</h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static bool buffer_angle_on_arc </td>
+          <td class="memname"><a class="el" href="structLWGEOM.html">LWGEOM</a> * meos_areal_union </td>
           <td>(</td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>theta</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramtype">const <a class="el" href="structLWGEOM.html">LWGEOM</a> *&#160;</td>
+          <td class="paramname"><em>geom</em></td><td>)</td>
           <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>theta0</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>theta1</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>ccw</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
-<p>Test whether an angle lies on a circular arc. </p>
-<p >The arc is directed from theta0 to theta1 according to ccw. </p>
+<p>Return the union of the areal components of a geometry. </p>
+<p >The components are dissolved into the surfaces they cover: a pair whose interiors meet becomes one surface, and a pair that only touches stays apart, which is what a multisurface asks of its components. The answer covers the same region the geometry does, read as the fewest surfaces it takes. It is the dissolve the buffer of a geometry of several components already performs, answered for a geometry a caller brings </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">geom</td><td>Geometry </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The union, or <code>NULL</code> when the geometry carries something that is not a surface, or when the boundary overlay does not cover the topology of one of the pairs &ndash; a caller that has another way to answer may take it </dd></dl>
 
 </div>
 </div>

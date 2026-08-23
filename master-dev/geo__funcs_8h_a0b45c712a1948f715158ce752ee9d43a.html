@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: coordinate_tolerance</title>
+<title>MobilityDB: meos_areal_union</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -88,7 +88,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a9e3ee55e0b148d82098c9f8899917bdc.html#a9e3ee55e0b148d82098c9f8899917bdc">circle_type</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a7421ea3ef74a6c7d49fa89567c7382f4.html#a7421ea3ef74a6c7d49fa89567c7382f4">closest_point2d_on_segment_ratio</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_af03bf902980a6c21f0c87c493c0fcbdc.html#af03bf902980a6c21f0c87c493c0fcbdc">closest_point3dz_on_segment_ratio</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="geo__funcs_8h_af21a387bea72a6eccfd3acf5a826af1b.html#af21a387bea72a6eccfd3acf5a826af1b">coordinate_tolerance</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_af21a387bea72a6eccfd3acf5a826af1b.html#af21a387bea72a6eccfd3acf5a826af1b">coordinate_tolerance</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a54d5ce3f27777cbbd4be4ea56f34ef5f.html#a54d5ce3f27777cbbd4be4ea56f34ef5f">de9im_match</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_af4428992fd22684ae6c47800270ee44f.html#af4428992fd22684ae6c47800270ee44f">edge_set_tolerance</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a424a64da753a3cd5e96ab8d0553a04c4.html#a424a64da753a3cd5e96ab8d0553a04c4">EdgeType</a></td></tr>
@@ -127,7 +127,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_ad8290327267bb18b7f28118199edfb9e.html#ad8290327267bb18b7f28118199edfb9e">lwcircle_make</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a68271a26cf0484985212bc9986358f63.html#a68271a26cf0484985212bc9986358f63">lwpointarr_make_trajectory</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a8ddc88e891374e0d420e2bfc9318fa2c.html#a8ddc88e891374e0d420e2bfc9318fa2c">lwpointarr_remove_duplicates</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a0b45c712a1948f715158ce752ee9d43a.html#a0b45c712a1948f715158ce752ee9d43a">meos_areal_union</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="geo__funcs_8h_a0b45c712a1948f715158ce752ee9d43a.html#a0b45c712a1948f715158ce752ee9d43a">meos_areal_union</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a514d3b7939379dfdc9825187b96341a7.html#a514d3b7939379dfdc9825187b96341a7">MEOS_GEOM_TOLERANCE</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a38854768ea292512f58c42c2456c7816.html#a38854768ea292512f58c42c2456c7816">meos_is_simple</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a78778cbf1e8fa22bdf5127d123fa9581.html#a78778cbf1e8fa22bdf5127d123fa9581">meos_oriented_envelope</a></td></tr>
@@ -147,42 +147,30 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="af21a387bea72a6eccfd3acf5a826af1b" name="af21a387bea72a6eccfd3acf5a826af1b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af21a387bea72a6eccfd3acf5a826af1b">&#9670;&#160;</a></span>coordinate_tolerance()</h2>
+<a id="a0b45c712a1948f715158ce752ee9d43a" name="a0b45c712a1948f715158ce752ee9d43a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0b45c712a1948f715158ce752ee9d43a">&#9670;&#160;</a></span>meos_areal_union()</h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static double coordinate_tolerance </td>
+          <td class="memname"><a class="el" href="structLWGEOM.html">LWGEOM</a> * meos_areal_union </td>
           <td>(</td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>c1</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramtype">const <a class="el" href="structLWGEOM.html">LWGEOM</a> *&#160;</td>
+          <td class="paramname"><em>geom</em></td><td>)</td>
           <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>c2</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
-<p>Return the distance within which two coordinates of this size are the same point. </p>
-<p >The points a native implementation classifies are CONSTRUCTED: the midpoint of an edge, the point at a parameter along it, the intersection of two edges. None of them lands exactly where it should, and the distance it misses by is not a property of the geometry but of the arithmetic &ndash; a few units in the last place of the largest coordinate involved. A tolerance meant to absorb that error is therefore that rounding unit, plus the absolute distance below which the implementation calls two points equal. </p>
+<p>Return the union of the areal components of a geometry. </p>
+<p >The components are dissolved into the surfaces they cover: a pair whose interiors meet becomes one surface, and a pair that only touches stays apart, which is what a multisurface asks of its components. The answer covers the same region the geometry does, read as the fewest surfaces it takes. It is the dissolve the buffer of a geometry of several components already performs, answered for a geometry a caller brings </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">geom</td><td>Geometry </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The union, or <code>NULL</code> when the geometry carries something that is not a surface, or when the boundary overlay does not cover the topology of one of the pairs &ndash; a caller that has another way to answer may take it </dd></dl>
 
 </div>
 </div>
