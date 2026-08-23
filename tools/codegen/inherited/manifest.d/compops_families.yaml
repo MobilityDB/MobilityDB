@@ -42,21 +42,17 @@ compops_families:
     rest: tnumber_sel
     join: tnumber_joinsel
     eqsupport: tnumber_supportfn
-    orderable: true
   - temp: tbigint
     rest: tnumber_sel
     join: tnumber_joinsel
     eqsupport: tnumber_supportfn
-    orderable: true
   - temp: tfloat
     rest: tnumber_sel
     join: tnumber_joinsel
     eqsupport: tnumber_supportfn
-    orderable: true
   - temp: ttext
     rest: temporal_sel
     join: temporal_joinsel
-    orderable: true
 
 - family: tgeo
   file: mobilitydb/sql/geo/054_tgeo_compops.in.sql

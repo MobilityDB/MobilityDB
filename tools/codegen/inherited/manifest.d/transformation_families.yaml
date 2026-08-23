@@ -25,10 +25,10 @@ transformation_families:
   - ttext
   types:
   - {temp: tbool}
-  - {temp: tint,    base: integer, numeric: true, orderable: true}
-  - {temp: tbigint, base: bigint,  numeric: true, orderable: true}
-  - {temp: tfloat,  base: float,   numeric: true, orderable: true}
-  - {temp: ttext,   orderable: true}
+  - {temp: tint,    base: integer}
+  - {temp: tbigint, base: bigint}
+  - {temp: tfloat,  base: float}
+  - {temp: ttext}
   blocks:
   - lit: "/******************************************************************************\n * Transformation functions\n ******************************************************************************/"
   - ops:
