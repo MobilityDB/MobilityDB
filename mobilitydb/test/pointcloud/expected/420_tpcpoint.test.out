@@ -560,8 +560,26 @@ SELECT SRID(pcpoint(4, 1.0, 1.0, 1.0)) =
  t
 (1 row)
 
+SELECT SRID(tpcpatch(PC_Patch(ARRAY[pcpoint(4, 1.0, 1.0, 1.0)]),
+  '2024-01-01'::timestamptz));
+ srid 
+------
+ 4326
+(1 row)
+
 SELECT set(ARRAY[pcpoint(1, 1.0, 1.0, 1.0), pcpoint(4, 2.0, 2.0, 2.0)]);
 ERROR:  Set elements have different pcpoint schemas: 1 vs 4
+WITH t AS (SELECT tpcpointSeq(ARRAY[
+  tpcpoint(pcpoint(4, 1.0, 1.0, 1.0), '2024-01-01'::timestamptz),
+  tpcpoint(pcpoint(4, 2.0, 2.0, 2.0), '2024-01-02'::timestamptz)]) AS temp)
+SELECT tpcpointFromBinary(asBinary(temp)) = temp AS wkb_roundtrips,
+  SRID(temp) AS srid
+FROM t;
+ wkb_roundtrips | srid 
+----------------+------
+ t              | 4326
+(1 row)
+
 DELETE FROM pointcloud_formats WHERE pcid = 4;
 DELETE 1
 SELECT count(*) FROM unnest(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[]), '2024-01-02'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 3.0, 3.0]::float[]), '2024-01-03'::timestamptz)]));

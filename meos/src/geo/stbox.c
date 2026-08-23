@@ -59,6 +59,12 @@
 #include "geo/tgeo.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tspatial_parser.h"
+#if POINTCLOUD
+  #include "pointcloud/pcpoint.h"
+  #include "pointcloud/pcpatch.h"
+  #include "pointcloud/meos_schema_hook.h"
+  #include "pointcloud/tpc_boxops.h"
+#endif
 #if CBUFFER
   #include "cbuffer/cbuffer.h"
   #include "cbuffer/tcbuffer_boxops.h"
@@ -1039,7 +1045,17 @@ tstzspanset_to_stbox(const SpanSet *ss)
 bool
 spatial_set_stbox(Datum d, MeosType basetype, STBox *result)
 {
+  /* The pgpointcloud base types reach this dispatcher through
+   * pointcloud_basetype(), the base-type counterpart of the temporal
+   * predicate, exactly as they reach #spatial_srid and #spatial_flags: their
+   * box is a TPCBox, whose leading layout is that of an STBox, so the box a
+   * point cloud value bounds itself with projects onto the one asked for
+   * here by dropping the pcid the schema keyed. */
+#if POINTCLOUD
+  assert(spatial_basetype(basetype) || pointcloud_basetype(basetype));
+#else
   assert(spatial_basetype(basetype));
+#endif
   switch (basetype)
   {
     case T_GEOMETRY:
@@ -1068,6 +1084,32 @@ spatial_set_stbox(Datum d, MeosType basetype, STBox *result)
 #if QUADBIN
     case T_QUADBIN:
       return quadbin_set_stbox(DatumGetQuadbin(d), result);
+#endif
+#if POINTCLOUD
+    case T_PCPOINT:
+    {
+      const Pcpoint *pt = DatumGetPcpointP(d);
+      PCSCHEMA *schema = meos_pc_schema(pcpoint_get_pcid(pt));
+      if (! schema)
+        return false;
+      TPCBox *box = pcpoint_to_tpcbox(pt, schema);
+      if (! box)
+        return false;
+      tpcbox_set_stbox(box, result);
+      pfree(box);
+      return true;
+    }
+    case T_PCPATCH:
+    {
+      const Pcpatch *pa = DatumGetPcpatchP(d);
+      TPCBox *box = pcpatch_to_tpcbox(pa,
+        meos_pc_schema_get_srid(pcpatch_get_pcid(pa)));
+      if (! box)
+        return false;
+      tpcbox_set_stbox(box, result);
+      pfree(box);
+      return true;
+    }
 #endif
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,

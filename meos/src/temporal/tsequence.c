@@ -945,16 +945,19 @@ bbox_expand(const void *box1, void *box2, MeosType temptype)
 {
   assert(box1); assert(box2);
   assert(temporal_type(temptype));
-  /* There are only 3 types of bounding boxes: span, tbox, and stbox */
-  if (talpha_type(temptype))
+  /* The box a temporal type carries is the one its catalog row prescribes,
+   * so the dispatch reads that and not the class the type belongs to */
+  MeosType bboxtype = type_bboxtype(temptype);
+  assert(bboxtype != T_UNKNOWN);
+  if (bboxtype == T_TSTZSPAN)
     span_expand((Span *) box1, (Span *) box2);
-  else if (tnumber_type(temptype))
+  else if (bboxtype == T_TBOX)
     tbox_expand((TBox *) box1, (TBox *) box2);
 #if POINTCLOUD
-  else if (tpointcloud_temptype(temptype))
+  else if (bboxtype == T_TPCBOX)
     tpcbox_expand((TPCBox *) box1, (TPCBox *) box2);
 #endif
-  else /* tspatial_type(temptype) */
+  else /* T_STBOX */
     stbox_expand((STBox *) box1, (STBox *) box2);
   return;
 }
