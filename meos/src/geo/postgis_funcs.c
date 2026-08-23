@@ -2209,13 +2209,24 @@ geom_unary_union(const GSERIALIZED *gs, double prec)
     return NULL;
 
   LWGEOM *lwgeom = lwgeom_from_gserialized(gs) ;
-  LWGEOM *lwresult = lwgeom_unaryunion_prec(lwgeom, prec);
-  /* MEOS: PostGIS function #lwgeom_unaryunion_prec only propagates the SRID
-   * and the Z flag. The GEODETIC flag must be set BEFORE serialization, since
-   * the bounding box of a geodetic value is computed on the unit sphere and
-   * occupies 6 floats, while the one of a planar value occupies 2 * ndims
-   * floats */
-  lwgeom_set_geodetic(lwresult, FLAGS_GET_GEODETIC(lwgeom->flags));
+  /* The dissolve of a geometry whose components are surfaces is read from
+   * their boundaries, which keeps a circular arc on its own circle where a
+   * linearization would put the chain of segments approximating it in its
+   * place. A precision model is not something it answers for, and neither is a
+   * geometry carrying a component that is not a surface */
+  LWGEOM *lwresult = (prec < 0) ? meos_areal_union(lwgeom) : NULL;
+  if (! lwresult)
+  {
+    lwresult = lwgeom_unaryunion_prec(lwgeom, prec);
+    /* MEOS: PostGIS function #lwgeom_unaryunion_prec only propagates the SRID
+     * and the Z flag. The GEODETIC flag must be set BEFORE serialization,
+     * since the bounding box of a geodetic value is computed on the unit
+     * sphere and occupies 6 floats, while the one of a planar value occupies
+     * 2 * ndims floats. The answer read from the boundaries needs none of
+     * this: it is built with the flags it carries, and a geodetic geometry
+     * does not reach here */
+    lwgeom_set_geodetic(lwresult, FLAGS_GET_GEODETIC(lwgeom->flags));
+  }
   GSERIALIZED *result = geo_serialize(lwresult);
   lwgeom_free(lwgeom); lwgeom_free(lwresult);
   return result;
