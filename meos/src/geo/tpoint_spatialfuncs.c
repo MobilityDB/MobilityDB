@@ -3042,69 +3042,59 @@ points_distance(const POINT2D *p1, const POINT2D *p2, bool geodetic)
 }
 
 /**
- * @brief Return the length of the diagonal of the minimum rotated rectangle
- * of a set of points
- * @details The rectangle is the one #meos_oriented_envelope() answers, which
- * is a point when the set is one point, a line when the set is collinear, and
- * the rectangle itself otherwise -- the three shapes the diagonal is read from
+ * @brief Return the diameter of a set of points, the greatest distance between
+ * two of them
+ * @details The diameter is the size of the region the points occupy, which is
+ * what #tfloatseq_stops_iter() reads for a temporal float as the difference
+ * between the greatest and the least value it takes. It is the same quantity
+ * here, measured between two points instead of two numbers, and it is realized
+ * by two of the points themselves rather than by a figure built around them
  * @param[in] points Points
  * @param[in] npoints Number of points
- * @param[in] geodetic True when the coordinates are geodetic, which is read by
- * the DISTANCE alone: the rectangle is a planar construction either way, since
- * a rotated rectangle is not a figure a sphere carries
- * @return On error return @p DBL_MAX
+ * @param[in] geodetic True when the coordinates are geodetic, in which case
+ * every distance is read on the spheroid
  * @note The computation is always done in 2D
  */
 static double
-mrr_distance(const POINT2D *points, uint32_t npoints, bool geodetic)
+points_diameter(const POINT2D *points, uint32_t npoints, bool geodetic)
 {
   assert(points);
-  if (npoints < 2)
-    return 0.0;
+  double result = 0.0;
+  for (uint32_t i = 0; i + 1 < npoints; i++)
+    for (uint32_t j = i + 1; j < npoints; j++)
+    {
+      double d = points_distance(&points[i], &points[j], geodetic);
+      if (d > result)
+        result = d;
+    }
+  return result;
+}
 
-  /* The oriented envelope reads a geometry, and the points are a multipoint:
-   * a line would carry the directions of its segments into the candidate
-   * orientations, which a set of points does not have */
-  POINTARRAY *pa = ptarray_construct_empty(0, 0, npoints);
-  POINT4D p;
-  p.z = p.m = 0.0;
+/**
+ * @brief Return the greatest distance between a point and a set of points
+ * @details A set grows by one point at a time as long as the window it
+ * measures keeps its start, and the diameter of the enlarged set is the
+ * greater of the diameter it had and the distance the new point reaches: a
+ * pair that does not involve the new point is one the previous diameter
+ * already answered for. Reading it this way costs the size of the set per
+ * instant, where reading every pair again costs its square
+ * @param[in] points Points
+ * @param[in] npoints Number of points
+ * @param[in] p Point
+ * @param[in] geodetic True when the coordinates are geodetic
+ */
+static double
+point_max_distance(const POINT2D *points, uint32_t npoints, const POINT2D *p,
+  bool geodetic)
+{
+  assert(points); assert(p);
+  double result = 0.0;
   for (uint32_t i = 0; i < npoints; i++)
   {
-    p.x = points[i].x;
-    p.y = points[i].y;
-    ptarray_append_point(pa, &p, LW_TRUE);
+    double d = points_distance(&points[i], p, geodetic);
+    if (d > result)
+      result = d;
   }
-  LWGEOM *mpoint = lwmpoint_as_lwgeom(lwmpoint_construct(SRID_UNKNOWN, pa));
-  ptarray_free(pa);
-  LWGEOM *mrr = meos_oriented_envelope(mpoint);
-  lwgeom_free(mpoint);
-  if (! mrr)
-    return DBL_MAX;
-
-  double result;
-  POINT2D p1, p2;
-  switch (mrr->type)
-  {
-    case POINTTYPE: /* every point of the set is the same point */
-      result = 0.0;
-      break;
-    case LINETYPE: /* the set is collinear: the diagonal is the line itself */
-      p1 = getPoint2d(((LWLINE *) mrr)->points, 0);
-      p2 = getPoint2d(((LWLINE *) mrr)->points, 1);
-      result = points_distance(&p1, &p2, geodetic);
-      break;
-    case POLYGONTYPE: /* the diagonal joins two opposite corners */
-      p1 = getPoint2d(((LWPOLY *) mrr)->rings[0], 0);
-      p2 = getPoint2d(((LWPOLY *) mrr)->rings[0], 2);
-      result = points_distance(&p1, &p2, geodetic);
-      break;
-    default:
-      lwgeom_free(mrr);
-      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-        "Invalid geometry type for Minimum Rotated Rectangle");
-      return DBL_MAX;
-  }
-  lwgeom_free(mrr);
   return result;
 }
 
@@ -3179,6 +3169,9 @@ tpointseq_stops_iter(const TSequence *seq, double maxdist, int64 mintunits,
   const TInstant *inst1 = NULL, *inst2 = NULL; /* make compiler quiet */
   int end, start = 0, nseqs = 0;
   bool is_stopped = false, previously_stopped = false;
+  /* The diameter of the window, and the start it was read for */
+  double diameter = 0.0;
+  int diameter_start = 0;
 
   for (end = 0; end < seq->count; ++end)
   {
@@ -3192,8 +3185,20 @@ tpointseq_stops_iter(const TSequence *seq, double maxdist, int64 mintunits,
     if (end - start == 0)
       continue;
 
-    is_stopped = mrr_distance(points + start, (uint32_t) (end - start + 1),
-      geodetic) <= maxdist;
+    /* A window that keeps its start grows by the instant just reached, and its
+     * diameter grows with it; one that slid is a different set of points */
+    if (start != diameter_start)
+      diameter = points_diameter(points + start, (uint32_t) (end - start + 1),
+        geodetic);
+    else
+    {
+      double reach = point_max_distance(points + start,
+        (uint32_t) (end - start), &points[end], geodetic);
+      if (reach > diameter)
+        diameter = reach;
+    }
+    diameter_start = start;
+    is_stopped = diameter <= maxdist;
     inst2 = TSEQUENCE_INST_N(seq, end - 1);
     if (! is_stopped && previously_stopped &&
       (int64)(inst2->t - inst1->t) >= mintunits) /* Found a stop */
@@ -3204,6 +3209,8 @@ tpointseq_stops_iter(const TSequence *seq, double maxdist, int64 mintunits,
       result[nseqs++] = tsequence_make(instants, end - start, true, true,
         LINEAR, NORMALIZE_NO);
       start = end;
+      diameter = 0.0;
+      diameter_start = end;
     }
     previously_stopped = is_stopped;
   }

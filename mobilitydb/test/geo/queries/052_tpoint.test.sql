@@ -983,6 +983,29 @@ SELECT MAX(numInstants(stops(tgeompoint '[Point(1 1)@2001-01-01, Point(1 1)@2001
 SELECT MAX(numInstants(stops(tgeompoint '{[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03, Point(2 2)@2001-01-04]}', 10.0, '1 min')));
 SELECT MAX(numInstants(stops(tgeompoint '{[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03, Point(2 2)@2001-01-04]}', 10.0, '1 min')));
 
+-- The size of the region is the greatest distance between two of its points.
+-- The three fixes below are the corners of an equilateral triangle of side 10,
+-- so every pair is 10 apart and the region they occupy is 10 across. A
+-- rectangle drawn around them is larger than that -- the one on any side
+-- measures 10 by 8.660254, a diagonal of 13.228757 -- which is the figure and
+-- not the points.
+SELECT numInstants(stops(tgeompoint '[Point(0 0)@2001-01-01,
+  Point(10 0)@2001-01-02, Point(5 8.660254)@2001-01-03]', 11.0, '1 day'));
+-- No pair is within 9, so no stretch of it stays within 9
+SELECT stops(tgeompoint '[Point(0 0)@2001-01-01,
+  Point(10 0)@2001-01-02, Point(5 8.660254)@2001-01-03]', 9.0, '1 day');
+
+-- The same triangle in a geography, with sides of about 1000 m at latitude 60,
+-- where a degree of longitude is half a degree of latitude: the region is
+-- about 1000 m across whatever the shape of the axes, and the distance is
+-- read on the spheroid
+SELECT numInstants(stops(tgeogpoint '[Point(0 60)@2001-01-01,
+  Point(0.0179664 60)@2001-01-02, Point(0.0089832 60.0077795)@2001-01-03]',
+  1100.0, '1 day'));
+SELECT stops(tgeogpoint '[Point(0 60)@2001-01-01,
+  Point(0.0179664 60)@2001-01-02, Point(0.0089832 60.0077795)@2001-01-03]',
+  900.0, '1 day');
+
 -------------------------------------------------------------------------------
 -- Ever/always comparison functions
 -------------------------------------------------------------------------------
