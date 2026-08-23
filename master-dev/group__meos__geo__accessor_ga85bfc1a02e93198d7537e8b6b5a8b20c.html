@@ -132,7 +132,8 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the traversed area of a temporal geo or the trajectory for a temporal point with discrete or step interpolation. </p>
+<p>Return the traversed area of a temporal geo that is not a point. </p>
+<p >The values a temporal geo takes are its placements, and it holds each for the whole of its own interval, so they are also the area it traverses. A temporal point has no area and answers <a class="el" href="group__meos__geo__accessor_gadb6cb9e042e99920726efdbea8933d8c.html#gadb6cb9e042e99920726efdbea8933d8c" title="Return the trajectory of a temporal point.">tpoint_trajectory()</a> instead </p><dl class="section note"><dt>Note</dt><dd>The geodetic case reaches the same planar dissolve as the planar one, which is a property of this entry that predates the point split and is not settled by it </dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> geo </td></tr>
