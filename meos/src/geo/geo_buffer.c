@@ -2442,8 +2442,17 @@ buffer_select_union_boundary(const MeosArray *pieces_a, const LWGEOM *geom_b,
 static bool
 buffer_points_equal(POINT2D p1, POINT2D p2)
 {
-  return fabs(p1.x - p2.x) <= MEOS_GEOM_TOLERANCE &&
-    fabs(p1.y - p2.y) <= MEOS_GEOM_TOLERANCE;
+  /* The two pieces meeting at a node each compute it, and the two results are
+   * one node of the boundary however far apart the arithmetic leaves them.
+   * That is the question #buffer_node_tolerance answers, and the collection of
+   * the intersections and the splitting of the pieces already ask it that way;
+   * chaining asks the same question, so it reads the same tolerance. Bounding
+   * by a coordinate's own storage tolerance instead reads the two copies of
+   * one node as two nodes, and a ring whose pieces are all present fails to
+   * close */
+  double tol = Max(buffer_node_tolerance(p1.x, p1.y),
+    buffer_node_tolerance(p2.x, p2.y));
+  return fabs(p1.x - p2.x) <= tol && fabs(p1.y - p2.y) <= tol;
 }
 
 /**

@@ -236,6 +236,39 @@ int main(void)
     free(self);
   }
 
+  /* A boundary node that two pieces of a buffer meet at is computed twice,
+   * once by each of them, and on projected coordinates the two results sit
+   * apart by far more than a coordinate is stored to. Reading them as two
+   * nodes leaves a ring whose pieces are all present unable to close, and the
+   * buffer of a geometry carrying a hole is refused. The witness is one real
+   * protected area of thirteen vertices and one hole, at coordinates near 9e5
+   * and 6.1e6, whose buffer exists and covers the geometry it is taken of */
+  const char *holed =
+    "MULTIPOLYGON(((898914.9403076661 6122116.964651632,"
+    "892000.0000313906 6128240.709886038,881878.7649123298 6134742.834215,"
+    "895337.2320800173 6149482.958137999,911403.2986009999 6138679.914453,"
+    "898914.9403076661 6122116.964651632),"
+    "(907236.5285999999 6136625.731400001,894477.7245000005 6145526.389400002,"
+    "891484.5062000006 6142245.358900003,893274.0940000005 6139118.099300001,"
+    "900857.8630000008 6128190.306200001,903017.3059000005 6131044.047500003,"
+    "907236.5285999999 6136625.731400001)))";
+  char holed_covers_patt[10] = "T*****FF*";
+  GSERIALIZED *holed_geo = geom_in(holed, -1);
+  assert(holed_geo != NULL);
+  meos_errno_reset();
+  GSERIALIZED *holed_buf = geom_buffer(holed_geo, 1.0, "");
+  printf("geom_buffer(a holed area at projected coordinates): %d, errno %d\n",
+    holed_buf != NULL, meos_errno());
+  assert(holed_buf != NULL);
+  assert(meos_errno() == 0);
+  bool holed_covers = geom_relate_pattern(holed_buf, holed_geo,
+    holed_covers_patt);
+  printf("  it covers the geometry it is taken of: %d\n", holed_covers);
+  assert(holed_covers == true);
+  assert(meos_errno() == 0);
+  free(holed_geo); free(holed_buf);
+  meos_errno_reset();
+
   /* An offset that degenerates at one exact radius: the two offsets of a U
    * meet with no width left where the radius is half the gap between its arms,
    * and the inward offset of an arc lands on the centre where the radius
