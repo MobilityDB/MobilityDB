@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: eafunc_tcontseq_tcontseq_discfn</title>
+<title>MobilityDB: eafunc_midpoint_decides</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -79,9 +79,9 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="lifting_8c_a27655d3b90a4495d24d84be7c218aea8.html#a27655d3b90a4495d24d84be7c218aea8">eafunc_midpoint_decides</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="lifting_8c_a27655d3b90a4495d24d84be7c218aea8.html#a27655d3b90a4495d24d84be7c218aea8">eafunc_midpoint_decides</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="lifting_8c_a4c85f8876c8e98881a01c799d5ec05c4.html#a4c85f8876c8e98881a01c799d5ec05c4">eafunc_tcontseq_tcontseq</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="lifting_8c_a4dddc646143b4eeaad73eac423ea9ed5.html#a4dddc646143b4eeaad73eac423ea9ed5">eafunc_tcontseq_tcontseq_discfn</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="lifting_8c_a4dddc646143b4eeaad73eac423ea9ed5.html#a4dddc646143b4eeaad73eac423ea9ed5">eafunc_tcontseq_tcontseq_discfn</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="lifting_8c_ab73a75348ade0bdec1c88ab57c7fc501.html#ab73a75348ade0bdec1c88ab57c7fc501">eafunc_tcontseq_tdiscseq</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="lifting_8c_abde0a8406b8654a773d39f5de013047e.html#abde0a8406b8654a773d39f5de013047e">eafunc_tcontseq_tinstant</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="lifting_8c_a70fd86681aff34a80c9a041de4dfde99.html#a70fd86681aff34a80c9a041de4dfde99">eafunc_tcontseq_tsequenceset</a></td></tr>
@@ -154,8 +154,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a4dddc646143b4eeaad73eac423ea9ed5" name="a4dddc646143b4eeaad73eac423ea9ed5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4dddc646143b4eeaad73eac423ea9ed5">&#9670;&#160;</a></span>eafunc_tcontseq_tcontseq_discfn()</h2>
+<a id="a27655d3b90a4495d24d84be7c218aea8" name="a27655d3b90a4495d24d84be7c218aea8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a27655d3b90a4495d24d84be7c218aea8">&#9670;&#160;</a></span>eafunc_midpoint_decides()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -164,16 +164,52 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static int eafunc_tcontseq_tcontseq_discfn </td>
+          <td class="memname">static bool eafunc_midpoint_decides </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structTSequence.html">TSequence</a> *&#160;</td>
-          <td class="paramname"><em>seq1</em>, </td>
+          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td>
+          <td class="paramname"><em>startvalue</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="structTSequence.html">TSequence</a> *&#160;</td>
-          <td class="paramname"><em>seq2</em>, </td>
+          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td>
+          <td class="paramname"><em>endvalue</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a05df1d1fd2c829ee784b125ed34e8401.html#a05df1d1fd2c829ee784b125ed34e8401">MeosType</a>&#160;</td>
+          <td class="paramname"><em>temptype</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a>&#160;</td>
+          <td class="paramname"><em>lower</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a>&#160;</td>
+          <td class="paramname"><em>upper</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a>&#160;</td>
+          <td class="paramname"><em>t1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a0cec666f7ba136f78730d20675c0cffe.html#a0cec666f7ba136f78730d20675c0cffe">TimestampTz</a>&#160;</td>
+          <td class="paramname"><em>t2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td>
+          <td class="paramname"><em>value</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -184,8 +220,8 @@ $(function() {
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="structSpan.html">Span</a> *&#160;</td>
-          <td class="paramname"><em>inter</em>&#160;</td>
+          <td class="paramtype">int *&#160;</td>
+          <td class="paramname"><em>result</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -200,16 +236,20 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Synchronize two temporal values and apply to them a lifted function. </p>
-<p >This function is applied for functions with instantaneous discontinuities and when at least one temporal value has linear interpolation </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Apply the lifted function to the value that a segment takes midway between two instants of it and return whether the answer is thereby decided. </p>
+<dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">seq1,seq2</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> values </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">startvalue,endvalue</td><td>Values defining the segment </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">temptype</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> type </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lower,upper</td><td>Timestamps defining the segment </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">t1,t2</td><td>Timestamps defining the piece to take a value from </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">value</td><td>Value that the lifted function is applied against </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lfinfo</td><td>Information about the lifted function </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">inter</td><td>Overlapping period of the two sequences </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">result</td><td>Answer for the sequence, set when the answer is decided </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section note"><dt>Note</dt><dd>The bounding period test in the dispatch function <a class="el" href="lifting_8c_a5f8cd9fb6b1043507e2ce37b705d534d.html#a5f8cd9fb6b1043507e2ce37b705d534d" title="Synchronize two temporal values and apply to them a lifted function.">eafunc_temporal_temporal</a> ensures that the sequences are not disjoint and thus we are sure that we do not need to return -1 in this function </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>The midpoint of a piece shorter than two microseconds is a bound of it, which is as finely as the time type resolves a piece </dd></dl>
 
 </div>
 </div>

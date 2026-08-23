@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: eafunc_tcontseq_tcontseq_discfn</title>
+<title>MobilityDB: eafunc_value_decides</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -81,7 +81,7 @@ $(function() {
         <table>
           <tr><td class="navtab"><a class="navtab" href="lifting_8c_a27655d3b90a4495d24d84be7c218aea8.html#a27655d3b90a4495d24d84be7c218aea8">eafunc_midpoint_decides</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="lifting_8c_a4c85f8876c8e98881a01c799d5ec05c4.html#a4c85f8876c8e98881a01c799d5ec05c4">eafunc_tcontseq_tcontseq</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="lifting_8c_a4dddc646143b4eeaad73eac423ea9ed5.html#a4dddc646143b4eeaad73eac423ea9ed5">eafunc_tcontseq_tcontseq_discfn</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="lifting_8c_a4dddc646143b4eeaad73eac423ea9ed5.html#a4dddc646143b4eeaad73eac423ea9ed5">eafunc_tcontseq_tcontseq_discfn</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="lifting_8c_ab73a75348ade0bdec1c88ab57c7fc501.html#ab73a75348ade0bdec1c88ab57c7fc501">eafunc_tcontseq_tdiscseq</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="lifting_8c_abde0a8406b8654a773d39f5de013047e.html#abde0a8406b8654a773d39f5de013047e">eafunc_tcontseq_tinstant</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="lifting_8c_a70fd86681aff34a80c9a041de4dfde99.html#a70fd86681aff34a80c9a041de4dfde99">eafunc_tcontseq_tsequenceset</a></td></tr>
@@ -105,7 +105,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="lifting_8c_afe32c97cf894b2652a593939571e55f5.html#afe32c97cf894b2652a593939571e55f5">eafunc_tsequenceset_tinstant</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="lifting_8c_a16a1035f91bbb38bf1728b5186565f4f.html#a16a1035f91bbb38bf1728b5186565f4f">eafunc_tsequenceset_tsequenceset</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="lifting_8c_a8dbe7fa30dbdfe3811bb935a7c8e30f2.html#a8dbe7fa30dbdfe3811bb935a7c8e30f2">eafunc_tstepseq_tstepseq</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="lifting_8c_aa4406a90e95c63c433f185107ae30f43.html#aa4406a90e95c63c433f185107ae30f43">eafunc_value_decides</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="lifting_8c_aa4406a90e95c63c433f185107ae30f43.html#aa4406a90e95c63c433f185107ae30f43">eafunc_value_decides</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="lifting_8c_a6062383f8d0ce21baf95117cd172ac3b.html#a6062383f8d0ce21baf95117cd172ac3b">lfinfo_invert_args</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="lifting_8c_afb9c9053a1f45e08c73b1a83b2e4200f.html#afb9c9053a1f45e08c73b1a83b2e4200f">lfunc_base</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="lifting_8c_a229cda2ae3ad8e0d7442268b96597743.html#a229cda2ae3ad8e0d7442268b96597743">lfunc_set</a></td></tr>
@@ -154,8 +154,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a4dddc646143b4eeaad73eac423ea9ed5" name="a4dddc646143b4eeaad73eac423ea9ed5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4dddc646143b4eeaad73eac423ea9ed5">&#9670;&#160;</a></span>eafunc_tcontseq_tcontseq_discfn()</h2>
+<a id="aa4406a90e95c63c433f185107ae30f43" name="aa4406a90e95c63c433f185107ae30f43"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa4406a90e95c63c433f185107ae30f43">&#9670;&#160;</a></span>eafunc_value_decides()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -164,16 +164,16 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static int eafunc_tcontseq_tcontseq_discfn </td>
+          <td class="memname">static bool eafunc_value_decides </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structTSequence.html">TSequence</a> *&#160;</td>
-          <td class="paramname"><em>seq1</em>, </td>
+          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td>
+          <td class="paramname"><em>value1</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="structTSequence.html">TSequence</a> *&#160;</td>
-          <td class="paramname"><em>seq2</em>, </td>
+          <td class="paramtype"><a class="el" href="postgres__ext__defs_8in_8h_a43879eb52e27b2413d7a05056a173ca6.html#a43879eb52e27b2413d7a05056a173ca6">Datum</a>&#160;</td>
+          <td class="paramname"><em>value2</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -184,8 +184,8 @@ $(function() {
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="structSpan.html">Span</a> *&#160;</td>
-          <td class="paramname"><em>inter</em>&#160;</td>
+          <td class="paramtype">int *&#160;</td>
+          <td class="paramname"><em>result</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -200,16 +200,26 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Synchronize two temporal values and apply to them a lifted function. </p>
-<p >This function is applied for functions with instantaneous discontinuities and when at least one temporal value has linear interpolation </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Apply a lifted function to a temporal continuous sequence and a base value. </p>
+<dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">seq1,seq2</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> values </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">seq</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> value </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">value</td><td>Base value </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lfinfo</td><td>Information about the lifted function </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">inter</td><td>Overlapping period of the two sequences </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section note"><dt>Note</dt><dd>The bounding period test in the dispatch function <a class="el" href="lifting_8c_a5f8cd9fb6b1043507e2ce37b705d534d.html#a5f8cd9fb6b1043507e2ce37b705d534d" title="Synchronize two temporal values and apply to them a lifted function.">eafunc_temporal_temporal</a> ensures that the sequences are not disjoint and thus we are sure that we do not need to return -1 in this function </dd></dl>
+<dl class="section pre"><dt>Precondition</dt><dd>The lifted function is discontinuous </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>All ever/always functions currently available, that is, comparisons (=, &lt;, ...) and spatial relationship (contains, intersects, ...), are discontinuous. When this would be no longer the case, additional functions must be added to take account of the remaining cases</dd></dl>
+<p>Apply the lifted function to a value that a segment takes and return whether the answer for the whole sequence is thereby decided </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">value1</td><td>Value that the segment takes </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">value2</td><td>Value that the lifted function is applied against </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lfinfo</td><td>Information about the lifted function </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">result</td><td>Answer for the sequence, set when the answer is decided </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
