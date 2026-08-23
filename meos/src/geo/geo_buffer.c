@@ -4821,9 +4821,32 @@ meos_buffer_line_offset(const LWLINE *line, double radius,
     buffer_curvepoly_add_ring(result, outer);
     LWCOMPOUND *inner = buffer_ring(ring, radius, ! outward, join_style,
       mitre_limit, srid);
+    /* Contracting a ring by more than it encloses carries the contraction
+     * through itself, and it comes back out inverted at the distance it
+     * overshot by. That curve is nearer the line than the buffer distance, so
+     * it bounds nothing and the hole it would stand for is gone rather than
+     * uncovered. The point it holds is what says which of the two it is: an
+     * interior point of a true hole lies further from the line than the
+     * distance, and an interior point of the inverted curve lies nearer */
+    bool inverted = false;
+    if (inner)
+    {
+      double hx, hy;
+      MeosArray *ledges = geom_extract_edges((const LWGEOM *) line);
+      if (ledges && buffer_ring_representative_point(inner, srid, &hx, &hy) &&
+          buffer_point_edges_distance(hx, hy, ledges) <
+            radius - MEOS_GEOM_TOLERANCE)
+      {
+        lwgeom_free(lwcompound_as_lwgeom(inner));
+        inner = NULL;
+        inverted = true;
+      }
+      if (ledges)
+        meos_array_destroy(ledges);
+    }
     if (inner)
       buffer_curvepoly_add_ring(result, inner);
-    else if (! geom_ring_is_convex(ring))
+    else if (! inverted && ! geom_ring_is_convex(ring))
     {
       /* The hole is uncovered rather than absent: contracting a ring that is
        * not convex may leave several holes, which the boundary overlay has to
