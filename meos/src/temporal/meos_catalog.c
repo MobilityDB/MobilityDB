@@ -261,58 +261,58 @@ static const reltype_catalog_struct MEOS_RELTYPE_CATALOG[] =
   [T_BIGINTSPAN] = { .spantype_basetype = T_INT8,
     .spantype_spansettype = T_BIGINTSPANSET },
   [T_BIGINTSPANSET] = { .spansettype_spantype = T_BIGINTSPAN },
-  [T_TBOOL] = { .temptype_basetype = T_BOOL },
-  [T_TDOUBLE2] = { .temptype_basetype = T_DOUBLE2 },
-  [T_TDOUBLE3] = { .temptype_basetype = T_DOUBLE3 },
-  [T_TDOUBLE4] = { .temptype_basetype = T_DOUBLE4 },
+  [T_TBOOL] = { .type_bboxtype = T_TSTZSPAN, .temptype_basetype = T_BOOL },
+  [T_TDOUBLE2] = { .type_bboxtype = T_TSTZSPAN, .temptype_basetype = T_DOUBLE2 },
+  [T_TDOUBLE3] = { .type_bboxtype = T_TSTZSPAN, .temptype_basetype = T_DOUBLE3 },
+  [T_TDOUBLE4] = { .type_bboxtype = T_TSTZSPAN, .temptype_basetype = T_DOUBLE4 },
   [T_TEXT] = { .basetype_settype = T_TEXTSET },
   [T_TEXTSET] = { .settype_basetype = T_TEXT },
-  [T_TFLOAT] = { .temptype_basetype = T_FLOAT8 },
+  [T_TFLOAT] = { .type_bboxtype = T_TBOX, .temptype_basetype = T_FLOAT8 },
   [T_TIMESTAMPTZ] = { .basetype_settype = T_TSTZSET,
     .basetype_spantype = T_TSTZSPAN },
-  [T_TINT] = { .temptype_basetype = T_INT4 },
+  [T_TINT] = { .type_bboxtype = T_TBOX, .temptype_basetype = T_INT4 },
   [T_TSTZSET] = { .settype_basetype = T_TIMESTAMPTZ },
   [T_TSTZSPAN] = { .spantype_basetype = T_TIMESTAMPTZ,
     .spantype_spansettype = T_TSTZSPANSET },
   [T_TSTZSPANSET] = { .spansettype_spantype = T_TSTZSPAN },
-  [T_TTEXT] = { .temptype_basetype = T_TEXT },
+  [T_TTEXT] = { .type_bboxtype = T_TSTZSPAN, .temptype_basetype = T_TEXT },
   [T_GEOMETRY] = { .basetype_settype = T_GEOMSET },
-  [T_GEOMSET] = { .settype_basetype = T_GEOMETRY },
+  [T_GEOMSET] = { .type_bboxtype = T_STBOX, .settype_basetype = T_GEOMETRY },
   [T_GEOGRAPHY] = { .basetype_settype = T_GEOGSET },
-  [T_GEOGSET] = { .settype_basetype = T_GEOGRAPHY },
-  [T_TGEOMPOINT] = { .temptype_basetype = T_GEOMETRY },
-  [T_TGEOGPOINT] = { .temptype_basetype = T_GEOGRAPHY },
+  [T_GEOGSET] = { .type_bboxtype = T_STBOX, .settype_basetype = T_GEOGRAPHY },
+  [T_TGEOMPOINT] = { .type_bboxtype = T_STBOX, .temptype_basetype = T_GEOMETRY },
+  [T_TGEOGPOINT] = { .type_bboxtype = T_STBOX, .temptype_basetype = T_GEOGRAPHY },
   [T_NPOINT] = { .basetype_settype = T_NPOINTSET },
-  [T_NPOINTSET] = { .settype_basetype = T_NPOINT },
-  [T_TNPOINT] = { .temptype_basetype = T_NPOINT },
+  [T_NPOINTSET] = { .type_bboxtype = T_STBOX, .settype_basetype = T_NPOINT },
+  [T_TNPOINT] = { .type_bboxtype = T_STBOX, .temptype_basetype = T_NPOINT },
   [T_POSE] = { .basetype_settype = T_POSESET },
-  [T_POSESET] = { .settype_basetype = T_POSE },
+  [T_POSESET] = { .type_bboxtype = T_STBOX, .settype_basetype = T_POSE },
   [T_POSECHAIN] = { .basetype_settype = T_POSECHAINSET },
-  [T_POSECHAINSET] = { .settype_basetype = T_POSECHAIN },
-  [T_TPOSECHAIN] = { .temptype_basetype = T_POSECHAIN },
-  [T_TPOSE] = { .temptype_basetype = T_POSE },
+  [T_POSECHAINSET] = { .type_bboxtype = T_STBOX, .settype_basetype = T_POSECHAIN },
+  [T_TPOSECHAIN] = { .type_bboxtype = T_STBOX, .temptype_basetype = T_POSECHAIN },
+  [T_TPOSE] = { .type_bboxtype = T_STBOX, .temptype_basetype = T_POSE },
   [T_CBUFFER] = { .basetype_settype = T_CBUFFERSET },
-  [T_CBUFFERSET] = { .settype_basetype = T_CBUFFER },
-  [T_TCBUFFER] = { .temptype_basetype = T_CBUFFER },
-  [T_TGEOMETRY] = { .temptype_basetype = T_GEOMETRY },
-  [T_TGEOGRAPHY] = { .temptype_basetype = T_GEOGRAPHY },
-  [T_TRGEOMETRY] = { .temptype_basetype = T_POSE },
+  [T_CBUFFERSET] = { .type_bboxtype = T_STBOX, .settype_basetype = T_CBUFFER },
+  [T_TCBUFFER] = { .type_bboxtype = T_STBOX, .temptype_basetype = T_CBUFFER },
+  [T_TGEOMETRY] = { .type_bboxtype = T_STBOX, .temptype_basetype = T_GEOMETRY },
+  [T_TGEOGRAPHY] = { .type_bboxtype = T_STBOX, .temptype_basetype = T_GEOGRAPHY },
+  [T_TRGEOMETRY] = { .type_bboxtype = T_STBOX, .temptype_basetype = T_POSE },
   [T_JSONB] = { .basetype_settype = T_JSONBSET },
   [T_JSONBSET] = { .settype_basetype = T_JSONB },
-  [T_TJSONB] = { .temptype_basetype = T_JSONB },
-  [T_TBIGINT] = { .temptype_basetype = T_INT8 },
+  [T_TJSONB] = { .type_bboxtype = T_TSTZSPAN, .temptype_basetype = T_JSONB },
+  [T_TBIGINT] = { .type_bboxtype = T_TBOX, .temptype_basetype = T_INT8 },
   [T_H3INDEX] = { .basetype_settype = T_H3INDEXSET },
-  [T_H3INDEXSET] = { .settype_basetype = T_H3INDEX },
-  [T_TH3INDEX] = { .temptype_basetype = T_H3INDEX },
+  [T_H3INDEXSET] = { .type_bboxtype = T_STBOX, .settype_basetype = T_H3INDEX },
+  [T_TH3INDEX] = { .type_bboxtype = T_STBOX, .temptype_basetype = T_H3INDEX },
   [T_QUADBIN] = { .basetype_settype = T_QUADBINSET },
-  [T_QUADBINSET] = { .settype_basetype = T_QUADBIN },
-  [T_TQUADBIN] = { .temptype_basetype = T_QUADBIN },
+  [T_QUADBINSET] = { .type_bboxtype = T_STBOX, .settype_basetype = T_QUADBIN },
+  [T_TQUADBIN] = { .type_bboxtype = T_STBOX, .temptype_basetype = T_QUADBIN },
   [T_PCPOINT] = { .basetype_settype = T_PCPOINTSET },
   [T_PCPOINTSET] = { .settype_basetype = T_PCPOINT },
-  [T_TPCPOINT] = { .temptype_basetype = T_PCPOINT },
+  [T_TPCPOINT] = { .type_bboxtype = T_TPCBOX, .temptype_basetype = T_PCPOINT },
   [T_PCPATCH] = { .basetype_settype = T_PCPATCHSET },
   [T_PCPATCHSET] = { .settype_basetype = T_PCPATCH },
-  [T_TPCPATCH] = { .temptype_basetype = T_PCPATCH },
+  [T_TPCPATCH] = { .type_bboxtype = T_TPCBOX, .temptype_basetype = T_PCPATCH },
 };
 
 #define TEMPSUBTYPE_STR_MAXLEN 12
@@ -532,6 +532,24 @@ temptype_basetype(MeosType type)
 /*****************************************************************************
  * Catalog functions
  *****************************************************************************/
+
+/**
+ * @brief Return the bounding box type of a set or a temporal type
+ * @details A value carries the bounding box its type prescribes: a span for a
+ * temporal alphanumeric value, a temporal box for a temporal number, a
+ * spatiotemporal box for a spatial set and a temporal spatial value, and a
+ * point cloud box for a temporal point cloud value, whose dimensions live in
+ * the schema its identifier names. A type that carries no bounding box, such
+ * as an alphanumeric or a point cloud SET, answers @p T_UNKNOWN.
+ */
+MeosType
+type_bboxtype(MeosType type)
+{
+  size_t n = sizeof(MEOS_RELTYPE_CATALOG) / sizeof(reltype_catalog_struct);
+  if ((size_t) type < n)
+    return MEOS_RELTYPE_CATALOG[type].type_bboxtype;
+  return T_UNKNOWN;
+}
 
 /**
  * @brief Return the base type from a set type

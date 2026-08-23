@@ -321,22 +321,9 @@ bbox_temporal_split_boxes(MeosType bboxtype UNUSED, size_t boxsize,
 size_t
 temporal_bbox_size(MeosType temptype)
 {
-  assert(talpha_type(temptype) || tnumber_type(temptype) ||
-    tspatial_type(temptype)
-#if POINTCLOUD
-    || tpointcloud_temptype(temptype)
-#endif
-    );
-  if (talpha_type(temptype))
-    return sizeof(Span);
-  else if (tnumber_type(temptype))
-    return sizeof(TBox);
-#if POINTCLOUD
-  else if (tpointcloud_temptype(temptype))
-    return sizeof(TPCBox);
-#endif
-  else /* tspatial_type(temptype) */
-    return sizeof(STBox);
+  MeosType bboxtype = type_bboxtype(temptype);
+  assert(bboxtype != T_UNKNOWN);
+  return bbox_get_size(bboxtype);
 }
 
 /**
