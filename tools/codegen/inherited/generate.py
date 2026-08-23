@@ -3873,7 +3873,19 @@ def report_gaps(mf: dict) -> int:
 
 
 def manifest_files(mf: dict) -> set:
-    """Every mobilitydb/sql path named by a manifest entry, repo-relative."""
+    """Every mobilitydb/sql path the manifest governs, repo-relative.
+
+    A *_families entry names its path outright. A subtypes: entry does not: emit
+    mode DERIVES the path from the entry's bin and the behaviour's offset, so the
+    same derivation runs here, through `target_path` — the function the emit loop
+    itself calls — rather than a second copy free to drift from it. Omitting them
+    understates coverage and disarms the ratchet's `[DONE]` arm for every file the
+    subtypes track writes: such a file IS governed, so listing it as an exception
+    has to fail, and it cannot fail while `covered` does not know the path.
+
+    A `reference: true` subtype is excluded, matching emit mode, which skips it:
+    that file stays hand-owned and `--validate` is what checks its regions.
+    """
     out = set()
     for value in mf.values():
         if not isinstance(value, list):
@@ -3881,6 +3893,12 @@ def manifest_files(mf: dict) -> set:
         for entry in value:
             if isinstance(entry, dict) and entry.get("file"):
                 out.add(entry["file"])
+    positions = mf.get("positions") or {}
+    for sub in mf.get("subtypes") or []:
+        if sub.get("reference"):
+            continue
+        for behaviour in sub.get("files") or []:
+            out.add(str(target_path(behaviour, sub, positions).relative_to(ROOT)))
     return out
 
 
