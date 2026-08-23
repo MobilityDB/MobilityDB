@@ -781,7 +781,11 @@ spatial_basetype(MeosType type)
   return (type == T_GEOMETRY || type == T_GEOGRAPHY || type == T_NPOINT ||
     type == T_POSE || type == T_POSECHAIN || type == T_CBUFFER ||
     type == T_H3INDEX ||
-    type == T_QUADBIN);
+    type == T_QUADBIN
+#if POINTCLOUD
+    || type == T_PCPOINT || type == T_PCPATCH
+#endif
+    );
 }
 
 /*****************************************************************************/
@@ -1315,9 +1319,12 @@ tnumber_spantype(MeosType type)
 
 /**
  * @brief Return true if a type is a spatiotemporal type
- * @details This function is used for features common to all spatiotemporal
- * types, in particular, all of them use the same bounding box @ STBox.
- * Therefore, it is used for the indexes and selectivity functions.
+ * @details A temporal type is spatiotemporal when its values carry an SRID,
+ * which is what the operations reading this predicate need: the same-SRID and
+ * same-dimensionality tests between two values, and the writing of an SRID
+ * into the extended binary form. The bounding box is a separate property that
+ * @p type_bboxtype answers — a temporal point cloud is spatiotemporal and
+ * bounds itself with a @p TPCBox rather than an @p STBox.
  */
 bool
 tspatial_type(MeosType type)
@@ -1326,7 +1333,11 @@ tspatial_type(MeosType type)
     type == T_TPOSE || type == T_TPOSECHAIN || type == T_TCBUFFER ||
     type == T_TGEOMETRY ||
     type == T_TGEOGRAPHY || type == T_TRGEOMETRY || type == T_TH3INDEX ||
-    type == T_TQUADBIN);
+    type == T_TQUADBIN
+#if POINTCLOUD
+    || type == T_TPCPOINT || type == T_TPCPATCH
+#endif
+    );
 }
 
 #if MEOS

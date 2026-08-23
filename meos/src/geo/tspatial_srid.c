@@ -172,6 +172,16 @@ spatial_set_srid(Datum d, MeosType basetype, int32_t srid)
   assert(spatial_basetype(basetype));
   switch (basetype)
   {
+#if POINTCLOUD
+    case T_PCPOINT:
+    case T_PCPATCH:
+      /* A point cloud value holds its SRID by reference: the schema its pcid
+       * names declares it, so there is nothing in the value to set */
+      meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+        "The SRID of a %s is the one its schema declares and cannot be set",
+        meostype_name(basetype));
+      return false;
+#endif
     case T_GEOMETRY:
     case T_GEOGRAPHY:
       gserialized_set_srid(DatumGetGserializedP(d), srid);
@@ -274,12 +284,7 @@ int32_t
 tspatialinst_srid(const TInstant *inst)
 {
   assert(inst);
-#if POINTCLOUD
-  assert(tspatial_type(inst->temptype) ||
-    tpointcloud_temptype(inst->temptype));
-#else
   assert(tspatial_type(inst->temptype));
-#endif
   MeosType basetype = temptype_basetype(inst->temptype);
   return spatial_srid(tinstant_value_p(inst), basetype);
 }
@@ -603,6 +608,16 @@ Datum
   assert(spatial_basetype(basetype));
   switch (basetype)
   {
+#if POINTCLOUD
+    case T_PCPOINT:
+    case T_PCPATCH:
+      /* A point cloud value holds its SRID by reference, so transforming it
+       * would rewrite coordinates the schema its pcid names describes */
+      meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+        "A %s cannot be transformed to another SRID",
+        meostype_name(basetype));
+      return (Datum) 0;
+#endif
     case T_GEOMETRY:
     case T_GEOGRAPHY:
     {

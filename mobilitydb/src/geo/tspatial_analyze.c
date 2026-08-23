@@ -608,11 +608,7 @@ gserialized_compute_stats(VacAttrStats *stats, AnalyzeAttrFetchFunc fetchfunc,
     /* The set branch reads a bounding box the set stores, which is the
      * property the catalog answers and not the spatiality of its elements */
     assert((set_type(type) && type_bboxtype(type) == T_STBOX) ||
-      tspatial_type(type)
-#if POINTCLOUD
-      || tpointcloud_temptype(type)
-#endif
-      );
+      tspatial_type(type));
     if (set_type(type))
     {
       /* Get bounding box from spatial set */

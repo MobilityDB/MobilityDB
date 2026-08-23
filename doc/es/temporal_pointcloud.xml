@@ -676,9 +676,13 @@ SELECT pcid(tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz));
 					<indexterm significance="normal"><primary><varname>SRID</varname></primary></indexterm>
 					<para>Devolver el SRID heredado del esquema</para>
 					<para><varname>SRID(tpcpoint) → integer</varname></para>
+					<para><varname>SRID(tpcpatch) → integer</varname></para>
 									<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- The SRID is that of the schema registered for the pcid.
 SELECT SRID(tpcpoint(pcpoint(1, 1, 1, 1), '2001-01-01'::timestamptz));
+-- 0
+SELECT SRID(tpcpatch(PC_Patch(ARRAY[pcpoint(1, 1, 1, 1)]),
+  '2001-01-01'::timestamptz));
 -- 0
 </programlisting>
 				</listitem>

@@ -40,7 +40,7 @@ classes:
     members: [tfloat, tint, tbigint]
   tspatial:
     predicate: tspatial_type
-    members: [tgeompoint, tgeogpoint, tnpoint, tpose, tposechain, tcbuffer, tgeometry, tgeography, trgeometry, th3index, tquadbin]
+    members: [tgeompoint, tgeogpoint, tnpoint, tpose, tposechain, tcbuffer, tgeometry, tgeography, trgeometry, th3index, tquadbin, tpcpoint, tpcpatch]
   tgeo:
     predicate: tgeo_type
     members: [tgeometry, tgeography]

@@ -238,7 +238,11 @@ temporal_bbox_restrict_set(const Temporal *temp, const Set *s)
     set_set_span(s, &span2);
     return overlaps_span_span(&span1, &span2);
   }
-  if (tspatial_type(temp->temptype) && temp->subtype != TINSTANT)
+  /* The test reads the box the SET stores, so it asks the catalog whether the
+   * set stores one: a spatial set whose elements carry an SRID need not bound
+   * itself with an STBox, and a point cloud set stores no box at all */
+  if (tspatial_type(temp->temptype) && temp->subtype != TINSTANT &&
+      type_bboxtype(s->settype) == T_STBOX)
   {
     STBox box;
     tspatial_set_stbox(temp, &box);

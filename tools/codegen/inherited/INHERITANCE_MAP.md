@@ -43,7 +43,7 @@ Temporal<T>              temporal_type      = ALL temporal types            (cat
   └── TSpatial<T>        tspatial_type      = tgeompoint tgeogpoint tnpoint tpose
         │                                     tposechain tcbuffer tgeometry
         │                                     tgeography trgeometry th3index
-        │                                     tquadbin (11)                    (catalog:1276)
+        │                                     tquadbin tpcpoint tpcpatch (13)
         ├── TGeo<T>      tgeo_type          = tgeometry, tgeography          (catalog:1325)
         │   (all)        tgeo_type_all      = + tgeompoint + tgeogpoint (4)   (catalog:1350)
         │     ├── TGeometry  ├── TGeography
@@ -51,7 +51,8 @@ Temporal<T>              temporal_type      = ALL temporal types            (cat
         ├── Tcell<T>     tcellindex_type    = th3index, tquadbin (2)         (tcellindex.c:66)
         │     │                               both wired via DggsCellOps    (§5a)
         │     ├── TH3Index  └── TQuadbin
-        ├── TPointcloud  tpointcloud_temptype = tpcpoint, tpcpatch  (#if POINTCLOUD) (catalog:1204)
+        ├── TPointcloud  tpointcloud_temptype = tpcpoint, tpcpatch  (#if POINTCLOUD)
+        │     │                               a TSpatial<T> whose box is a TPCBox
         │     ├── TPcpoint  └── TPcpatch
         └── (TSpatial, no intermediate): tcbuffer, tnpoint, tpose, tposechain,
                                          trgeometry
@@ -59,6 +60,22 @@ Temporal<T>              temporal_type      = ALL temporal types            (cat
 
 - `tcbuffer`/`tnpoint`/`tpose`/`tposechain`/`trgeometry` inherit `Temporal<T>` +
   `TSpatial<T>` but **not** the `TGeo<T>`/`TPoint<T>`-only surface.
+- ⭐ **`TSpatial<T>` MEMBERSHIP MEANS THE VALUES CARRY AN SRID — IT OBLIGES NO SRS SURFACE
+  AND NO PARTICULAR BOX.** The box is `type_bboxtype` (§10): every member bounds itself with
+  an `STBox` except `tpcpoint`/`tpcpatch`, which bound themselves with a `TPCBox`. The SRS
+  surface follows from where the reference system LIVES, and the class already spans all
+  three cases:
+
+  | where the SRID lives | families | `SRID` | `setSRID` | `transform` |
+  |---|---|---|---|---|
+  | stored in the value | tgeo, tcbuffer, tpose, tposechain | ✓ | ✓ | ✓ |
+  | inherited from a table | tnpoint (`ways`), tpcpoint/tpcpatch (`pointcloud_formats`) | ✓ | — | — |
+  | imposed by the specification | th3index, tquadbin | — | — | — |
+
+  ⛔ So an absent `setSRID`/`transform` is the PROPERTY of an inherited or imposed reference
+  system, never a parity gap: nothing per value can be set or transformed when the value
+  holds its SRID by reference. `th3index`/`tquadbin` declare NONE of the three and are
+  members, which is what shows membership carries no obligation.
 - **`posechain`** is a base type carrying a nested chain of reference frames.
   Its own surface is `550_posechain.in.sql` and its set type is
   `551_posechainset.in.sql`; the type files, their accessors and their

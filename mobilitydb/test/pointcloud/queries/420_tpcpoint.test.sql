@@ -280,10 +280,26 @@ SELECT SRID(tpcpointSeq(ARRAY[
   tpcpoint(pcpoint(4, 2.0, 2.0, 2.0), '2024-01-02'::timestamptz)]));
 SELECT SRID(pcpoint(4, 1.0, 1.0, 1.0)) =
   (SELECT srid FROM pointcloud_formats WHERE pcid = 4);
+-- a patch reads the SRID of its schema exactly as a point does
+SELECT SRID(tpcpatch(PC_Patch(ARRAY[pcpoint(4, 1.0, 1.0, 1.0)]),
+  '2024-01-01'::timestamptz));
 -- Values of two schemas do not share a set. The schemas decide it before the
 -- SRIDs do: uniformity of pcid is the stricter requirement, since two schemas
 -- may declare one SRID and still lay their dimensions out differently.
 SELECT set(ARRAY[pcpoint(1, 1.0, 1.0, 1.0), pcpoint(4, 2.0, 2.0, 2.0)]);
+
+
+-- The plain binary form omits the SRID and round-trips under a schema that
+-- declares one. The extended form has no SQL surface here: tpcpoint deploys
+-- asBinary and asHexWKB and neither extended spelling, so what a
+-- spatiotemporal value writes into the extended form is not observable from
+-- SQL for this family.
+WITH t AS (SELECT tpcpointSeq(ARRAY[
+  tpcpoint(pcpoint(4, 1.0, 1.0, 1.0), '2024-01-01'::timestamptz),
+  tpcpoint(pcpoint(4, 2.0, 2.0, 2.0), '2024-01-02'::timestamptz)]) AS temp)
+SELECT tpcpointFromBinary(asBinary(temp)) = temp AS wkb_roundtrips,
+  SRID(temp) AS srid
+FROM t;
 
 DELETE FROM pointcloud_formats WHERE pcid = 4;
 

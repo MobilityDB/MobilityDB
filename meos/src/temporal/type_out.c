@@ -2905,6 +2905,13 @@ pcschema_header_to_wkb_size(const Temporal *temp)
   uint32_t pcid = (temp->temptype == T_TPCPOINT)
     ? ((const Pcpoint *) DatumGetPointer(first))->pcid
     : ((const Pcpatch *) DatumGetPointer(first))->pcid;
+  /* ⛔ SIZE AND WRITE MUST OBSERVE ONE CACHE STATE. This runs BEFORE the
+   * subtype size function, which reads the SRID and thereby RESOLVES the
+   * schema, registering its XML. A passive lookup here would then answer NULL
+   * while the writer, running after that resolution, answers with the XML and
+   * emits a header of bytes nobody reserved. Resolve the schema here so both
+   * passes see the same answer, whichever it is. */
+  (void) meos_pc_schema(pcid);
   const char *xml = meos_pc_schema_xml(pcid);
   if (xml == NULL)
     return 0;
