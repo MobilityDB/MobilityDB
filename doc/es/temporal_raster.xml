@@ -334,12 +334,12 @@ SELECT nodata(raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8'));
 				<indexterm significance="normal"><primary><varname>pixtype</varname></primary></indexterm>
 				<para>Devolver el nombre del tipo de dato de píxel de una tesela Raquet</para>
 				<para><varname>pixtype(raquet) → text</varname></para>
-				<para>El nombre devuelto es el que aceptan los constructores, es decir, uno de <varname>uint8</varname>, <varname>int8</varname>, <varname>uint16</varname>, <varname>int16</varname>, <varname>uint32</varname>, <varname>int32</varname>, <varname>uint64</varname>, <varname>int64</varname>, <varname>float16</varname>, <varname>float32</varname> o <varname>float64</varname>. Los constructores leen el nombre sin distinguir mayúsculas de minúsculas, de modo que la grafía en minúsculas que la especificación RaQuet da al campo <varname>type</varname> de una tesela se acepta tal cual; el nombre devuelto aquí conserva las mayúsculas.</para>
+				<para>El nombre devuelto es el que aceptan los constructores, es decir, uno de <varname>uint8</varname>, <varname>int8</varname>, <varname>uint16</varname>, <varname>int16</varname>, <varname>uint32</varname>, <varname>int32</varname>, <varname>uint64</varname>, <varname>int64</varname>, <varname>float16</varname>, <varname>float32</varname> o <varname>float64</varname>. Los constructores leen el nombre sin distinguir mayúsculas de minúsculas, de modo que el nombre que el ráster de PostGIS da a un tipo de píxel pasa a ellos tal cual; el nombre devuelto aquí es la grafía en minúsculas que la especificación RaQuet da al campo <varname>type</varname> de una tesela, por lo que se compara igual a ese campo tal cual.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Leer la disposición de una tesela empaquetada
 SELECT quadbin(tile), width(tile), height(tile), pixtype(tile), nodata(tile)
 FROM (SELECT raquet('\x01020304'::bytea, 2, 2, 5193776270265024512, 'uint8') AS tile) t;
--- 5193776270265024512 | 2 | 2 | UINT8 | 0
+-- 5193776270265024512 | 2 | 2 | uint8 | 0
 </programlisting>
 			</listitem>
 
