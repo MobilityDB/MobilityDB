@@ -19,7 +19,7 @@ classes:
     members: [geomset, geogset]
   spatialset:
     predicate: spatialset_type
-    members: [geomset, geogset, npointset, poseset, posechainset, cbufferset, h3indexset, quadbinset]
+    members: [geomset, geogset, npointset, poseset, posechainset, cbufferset, h3indexset, quadbinset, pcpointset, pcpatchset]
   alphanumset:
     predicate: alphanumset_type
     members: [dateset, floatset, intset, bigintset, textset, tstzset, jsonbset]

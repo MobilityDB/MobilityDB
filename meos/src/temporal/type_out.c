@@ -2526,16 +2526,21 @@ set_flags_to_wkb_buf(const Set *set, uint8_t *buf, uint8_t variant)
 {
   /* Set the flags */
   uint8_t wkb_flags = MEOS_WKB_ORDERED;
+  /* The Z and geodetic bits state what a base type derives from its own flags */
   if (spatial_basetype(set->basetype))
   {
     if (MEOS_FLAGS_GET_Z(set->flags))
       wkb_flags |= MEOS_WKB_ZFLAG;
     if (MEOS_FLAGS_GET_GEODETIC(set->flags))
       wkb_flags |= MEOS_WKB_GEODETICFLAG;
-    if (spatialset_type(set->settype) &&
-        spatial_wkb_needs_srid(spatialset_srid(set), variant))
-      wkb_flags |= MEOS_WKB_SRIDFLAG;
   }
+  /* The SRID bit states what the two sites writing the SRID itself decide,
+   * #set_to_wkb_size and #set_to_wkb_buf, so the three read one predicate: a
+   * set whose elements carry an SRID, which a set of a base type deriving no
+   * flags of its own may still be */
+  if (spatialset_type(set->settype) &&
+      spatial_wkb_needs_srid(spatialset_srid(set), variant))
+    wkb_flags |= MEOS_WKB_SRIDFLAG;
   /* Write the flags */
   return uint8_to_wkb_buf(wkb_flags, buf, variant);
 }

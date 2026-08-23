@@ -924,7 +924,12 @@ ensure_geoset_type(MeosType type)
 #endif /* MEOS */
 
 /**
- * @brief Return true if the type is a geo set type
+ * @brief Return true if the type is a spatial set type
+ * @details A set is spatial when its elements carry an SRID, which is what the
+ * operations reading this predicate need: the same-SRID test between two sets
+ * and the writing of an SRID into the extended binary form. Carrying a bounding
+ * box is a separate property that @p type_bboxtype answers, and a point cloud
+ * set has the first without the second.
  */
 bool
 spatialset_type(MeosType type)
@@ -932,7 +937,11 @@ spatialset_type(MeosType type)
   return (type == T_GEOMSET || type == T_GEOGSET || type == T_NPOINTSET ||
     type == T_POSESET || type == T_POSECHAINSET || type == T_CBUFFERSET ||
     type == T_H3INDEXSET ||
-    type == T_QUADBINSET);
+    type == T_QUADBINSET
+#if POINTCLOUD
+    || type == T_PCPOINTSET || type == T_PCPATCHSET
+#endif
+    );
 }
 
 #if MEOS
