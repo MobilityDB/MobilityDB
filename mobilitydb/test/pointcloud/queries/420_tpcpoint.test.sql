@@ -267,6 +267,26 @@ SELECT SRID(tpcpointSeqSet(ARRAY[tpcpointSeq(ARRAY[:inst1, :inst2])]));
 SELECT SRID(:inst1) = (SELECT srid FROM pointcloud_formats WHERE pcid = 1);
 SELECT SRID(tpcpointSeq(ARRAY[:inst1, :inst2])) = SRID(:inst1);
 
+-- The schema of pcid 1 declares SRID 0, so every equality above holds with
+-- both sides zero and none of them can see an SRID that fails to arrive. A
+-- schema declaring one is what makes them answer about the value.
+INSERT INTO pointcloud_formats (pcid, srid, schema)
+SELECT 4, 4326, schema FROM pointcloud_formats WHERE pcid = 1;
+
+SELECT SRID(pcpoint(4, 1.0, 1.0, 1.0));
+SELECT SRID(tpcpoint(pcpoint(4, 1.0, 1.0, 1.0), '2024-01-01'::timestamptz));
+SELECT SRID(tpcpointSeq(ARRAY[
+  tpcpoint(pcpoint(4, 1.0, 1.0, 1.0), '2024-01-01'::timestamptz),
+  tpcpoint(pcpoint(4, 2.0, 2.0, 2.0), '2024-01-02'::timestamptz)]));
+SELECT SRID(pcpoint(4, 1.0, 1.0, 1.0)) =
+  (SELECT srid FROM pointcloud_formats WHERE pcid = 4);
+-- Values of two schemas do not share a set. The schemas decide it before the
+-- SRIDs do: uniformity of pcid is the stricter requirement, since two schemas
+-- may declare one SRID and still lay their dimensions out differently.
+SELECT set(ARRAY[pcpoint(1, 1.0, 1.0, 1.0), pcpoint(4, 2.0, 2.0, 2.0)]);
+
+DELETE FROM pointcloud_formats WHERE pcid = 4;
+
 -------------------------------------------------------------------------------
 -- Unnest
 -- One row per distinct value, with the span set on which the temporal value

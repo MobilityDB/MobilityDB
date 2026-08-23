@@ -530,6 +530,40 @@ SELECT SRID(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::flo
  t
 (1 row)
 
+INSERT INTO pointcloud_formats (pcid, srid, schema)
+SELECT 4, 4326, schema FROM pointcloud_formats WHERE pcid = 1;
+INSERT 0 1
+SELECT SRID(pcpoint(4, 1.0, 1.0, 1.0));
+ srid 
+------
+ 4326
+(1 row)
+
+SELECT SRID(tpcpoint(pcpoint(4, 1.0, 1.0, 1.0), '2024-01-01'::timestamptz));
+ srid 
+------
+ 4326
+(1 row)
+
+SELECT SRID(tpcpointSeq(ARRAY[
+  tpcpoint(pcpoint(4, 1.0, 1.0, 1.0), '2024-01-01'::timestamptz),
+  tpcpoint(pcpoint(4, 2.0, 2.0, 2.0), '2024-01-02'::timestamptz)]));
+ srid 
+------
+ 4326
+(1 row)
+
+SELECT SRID(pcpoint(4, 1.0, 1.0, 1.0)) =
+  (SELECT srid FROM pointcloud_formats WHERE pcid = 4);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT set(ARRAY[pcpoint(1, 1.0, 1.0, 1.0), pcpoint(4, 2.0, 2.0, 2.0)]);
+ERROR:  Set elements have different pcpoint schemas: 1 vs 4
+DELETE FROM pointcloud_formats WHERE pcid = 4;
+DELETE 1
 SELECT count(*) FROM unnest(tpcpointSeq(ARRAY[tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[]), '2024-01-02'::timestamptz), tpcpoint(PC_MakePoint(1, ARRAY[3.0, 3.0, 3.0]::float[]), '2024-01-03'::timestamptz)]));
  count 
 -------
