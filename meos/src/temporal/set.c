@@ -236,21 +236,12 @@ set_out(const Set *s, int maxdd)
 static size_t
 set_bbox_size(MeosType settype)
 {
-  assert(alphanumset_type(settype) || spatialset_type(settype)
-#if POINTCLOUD
-    || pointcloudset_type(settype)
-#endif
-    );
-  if (alphanumset_type(settype))
-    return 0;
-#if POINTCLOUD
-  /* pcpointset/pcpatchset carry no bbox — schema-dependent dimensions
-   * cannot be extracted at the MEOS layer. TPCBox is the separate
-   * type that carries pointcloud spatial bounds. */
-  if (pointcloudset_type(settype))
-    return 0;
-#endif
-  return sizeof(STBox);
+  /* The bounding box a set carries is the one its type prescribes. A set type
+   * that prescribes none — an alphanumeric set, and a point cloud set whose
+   * schema-dependent dimensions the MEOS layer cannot extract — answers zero,
+   * TPCBox being the separate type that carries point cloud spatial bounds. */
+  MeosType bboxtype = type_bboxtype(settype);
+  return (bboxtype == T_UNKNOWN) ? 0 : bbox_get_size(bboxtype);
 }
 
 #if DEBUG_BUILD

@@ -210,6 +210,8 @@ typedef struct
   MeosType basetype_spantype;    /**< Span type of a base type */
   MeosType spansettype_spantype; /**< Span type of a span set type */
   MeosType spantype_spansettype; /**< Span set type of a span type */
+  MeosType type_bboxtype;        /**< Bounding box type of a set or a
+                                   *  temporal type */
 } reltype_catalog_struct;
 
 /*****************************************************************************/
@@ -268,6 +270,7 @@ extern bool span_basetype(MeosType type);
 extern bool span_canon_basetype(MeosType type);
 extern bool span_type(MeosType type);
 extern bool type_span_bbox(MeosType type);
+extern MeosType type_bboxtype(MeosType type);
 extern bool span_tbox_type(MeosType type);
 extern bool ensure_span_tbox_type(MeosType type);
 extern bool numspan_basetype(MeosType type);
