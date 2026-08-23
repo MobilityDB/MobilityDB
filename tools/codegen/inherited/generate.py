@@ -3771,6 +3771,11 @@ def rendered_temp_types(axis: str, entries: list, candidates: list) -> set:
 # *_families axis of their own to feed, so they stay unmeasured here). A type on
 # the subtypes track counts as covered on the axis its behaviour corresponds to,
 # the same way a *_families entry does.
+# The value-domain classes, in the order the manual's §9 presents them. An axis
+# whose SQL names one of their members is scored against them rather than
+# against the temporal members.
+VALUE_DOMAIN_CLASSES = ("set", "span", "spanset")
+
 SUBTYPE_AXIS_BEHAVIOUR = {
     "compops_families": "compops",
     "topop_families": "topops",
@@ -3807,22 +3812,56 @@ def report_gaps(mf: dict) -> int:
         return 1
     every = [m for m in classes["temporal"]["members"]
              if m not in INTERNAL_TEMP_TYPES]
+    # An axis serving the value domain declares no temporal type at all, so a
+    # temporal-only candidate list finds nothing there and the axis reads as
+    # unmeasured however much SQL it emits -- the set, span and span set
+    # operations are three such axes. Their candidates are the members of the
+    # value-domain classes, which set_type / span_type / spanset_type derive
+    # exactly as temporal_type derives the temporal ones. The retry runs ONLY
+    # where the temporal pass comes back empty, so every axis that measures
+    # today keeps the owner class and the count it reports today.
+    value_domain = [m for name in VALUE_DOMAIN_CLASSES
+                    for m in ((classes.get(name) or {}).get("members") or [])]
     ranked = sorted(classes.items(), key=lambda kv: len(kv[1].get("members") or []))
     subtypes = mf.get("subtypes") or []
     for axis in sorted(AXIS_RENDERERS):
         entries = mf.get(axis) or []
         if not entries and axis not in SUBTYPE_AXIS_BEHAVIOUR:
             continue
+        scored_on = "temporal"
         have = (rendered_temp_types(axis, entries, every)
                 | rendered_subtype_types(axis, subtypes, every))
+        if not have and value_domain:
+            scored_on = "value domain"
+            have = (rendered_temp_types(axis, entries, value_domain)
+                    | rendered_subtype_types(axis, subtypes, value_domain))
         if not have:
             print(f"[   ?] {axis:30} unmeasured - rendering named no type")
             continue
-        owner, members = "temporal", classes["temporal"]["members"]
-        for name, spec in ranked:
-            if have <= set(spec.get("members") or []):
-                owner, members = name, spec["members"]
-                break
+        owner, members = ((scored_on, value_domain) if scored_on == "value domain"
+                          else ("temporal", classes["temporal"]["members"]))
+        if scored_on == "value domain":
+            # The coarse set class is the wrong denominator here: a distance is
+            # defined for a set whose base type carries a metric, so scoring it
+            # against every set reports textset and jsonbset as a backlog they
+            # can never join. The members that CAN carry the behaviour are those
+            # of the narrowest class each covered type belongs to -- which for
+            # an axis covering a whole class returns that class unchanged.
+            picked = []
+            for t in sorted(have):
+                for name, spec in ranked:
+                    if t in (spec.get("members") or []):
+                        if name not in picked:
+                            picked.append(name)
+                        break
+            members = list(dict.fromkeys(
+                m for name in picked for m in classes[name]["members"]))
+            owner = picked[0] if len(picked) == 1 else "value domain"
+        else:
+            for name, spec in ranked:
+                if have <= set(spec.get("members") or []):
+                    owner, members = name, spec["members"]
+                    break
         want = [m for m in members if m not in INTERNAL_TEMP_TYPES]
         missing = [m for m in want if m not in have]
         print(f"[{len(want) - len(missing):2}/{len(want):2}] {axis:30} {owner:12} "
