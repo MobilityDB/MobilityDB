@@ -6,7 +6,7 @@ SELECT tempSubtype(tint '[1@2001-01-01, 2@2001-01-02, 3@2001-01-03]');
 -- Sequence
 </pre></li><li class="listitem"><a name="ttype_tempBasetype"></a><a class="indexterm" name="id4362"></a><p>Return the base type</p><p><code class="varname">tempBasetype(ttype) → text</code></p><pre class="programlisting">
 SELECT tempBasetype(tint '[1@2001-01-01, 2@2001-01-02, 3@2001-01-03]');
--- int4
+-- integer
 SELECT tempBasetype(tgeompoint 'Point(1 1)@2001-01-01');
 -- geometry
 </pre></li><li class="listitem"><a name="ttype_interp"></a><a class="indexterm" name="id4370"></a><p>Return the interpolation</p><p><code class="varname">interp(ttype) → {'None','Discrete','Step','Linear'}</code></p><pre class="programlisting">
@@ -85,7 +85,7 @@ SELECT duration(tfloat '{[1@2001-01-01, 2@2001-01-03), [2@2001-01-04, 2@2001-01-
 SELECT duration(tfloat '{[1@2001-01-01, 2@2001-01-03), [2@2001-01-04, 2@2001-01-05)}',
   true);
 -- 4 days
-</pre></li><li class="listitem"><a name="ttype_lowerInc"></a><a class="indexterm" name="id4449"></a><a class="indexterm" name="id4452"></a><p>Is the start/end instant inclusive?</p><p><code class="varname">lowerInc(ttype) → bool</code></p><p><code class="varname">upperInc(ttype) → bool</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="ttype_lowerInc"></a><a class="indexterm" name="id4449"></a><a class="indexterm" name="id4452"></a><p>Is the start/end instant inclusive?</p><p><code class="varname">lowerInc(ttype) → boolean</code></p><p><code class="varname">upperInc(ttype) → boolean</code></p><pre class="programlisting">
 SELECT lowerInc(tint '[1@2001-01-01, 2@2001-01-02)');
 -- true
 SELECT upperInc(tfloat '{[1@2001-01-01, 2@2001-01-02), (2@2001-01-02, 3@2001-01-03)}');

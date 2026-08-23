@@ -66,7 +66,7 @@ SELECT minusTime(tint '[1@2001-01-01, 1@2001-01-15)',
   tstzspanset '{[2001-01-02, 2001-01-03), [2001-01-04, 2001-01-05)}');
 /* {[1@2001-01-01, 1@2001-01-02), [1@2001-01-03, 1@2001-01-04),
    [1@2001-01-05, 1@2001-01-15)} */
-</pre></li><li class="listitem"><a name="ttype_beforeTimestamp"></a><a class="indexterm" name="id4869"></a><a class="indexterm" name="id4872"></a><p>Keep the instants of a temporal value that are before/after or equal a timestamp</p><p><code class="varname">beforeTimestamp(ttype,timestamptz,strict bool=TRUE) → ttype</code></p><p><code class="varname">afterTimestamp(ttype,timestamptz,strict bool=TRUE) → ttype</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="ttype_beforeTimestamp"></a><a class="indexterm" name="id4869"></a><a class="indexterm" name="id4872"></a><p>Keep the instants of a temporal value that are before/after or equal a timestamp</p><p><code class="varname">beforeTimestamp(ttype,timestamptz,strict boolean=TRUE) → ttype</code></p><p><code class="varname">afterTimestamp(ttype,timestamptz,strict boolean=TRUE) → ttype</code></p><pre class="programlisting">
 SELECT beforeTimestamp(tint '[1@2001-01-01, 1@2001-01-03]', timestamptz '2001-01-02');
 -- [1@2001-01-01, 1@2001-01-02)
 SELECT beforeTimestamp(tint '[1@2001-01-01, 1@2001-01-03]', timestamptz '2001-01-01');

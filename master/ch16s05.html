@@ -16,7 +16,7 @@ SELECT tjsonb('{"vehicleId": 1, "location": "Point(1 1)"}',
      {"location": "Point(1 1)", "vehicleId": 1}@2001-01-02],
     [{"location": "Point(1 1)", "vehicleId": 1}@2001-01-03,
      {"location": "Point(1 1)", "vehicleId": 1}@2001-01-04]} */
-</pre></li><li class="listitem"><a name="tjsonbSeq"></a><a class="indexterm" name="id12928"></a><p>Constructor for temporal JSONB values of sequence subtype</p><p><code class="varname">tjsonbSeq(tjsonbInst[]},leftInc bool=true,rightInc bool=true) →tjsonbSeq</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tjsonbSeq"></a><a class="indexterm" name="id12928"></a><p>Constructor for temporal JSONB values of sequence subtype</p><p><code class="varname">tjsonbSeq(tjsonbInst[]},leftInc boolean=true,rightInc boolean=true) →tjsonbSeq</code></p><pre class="programlisting">
 SELECT tjsonbSeq(ARRAY[tjsonb
   '"{\"vehicleId\": 1, \"location\": \"Point(1 1)\"}"@2001-01-01',
   '"{\"vehicleId\": 1, \"location\": \"Point(2 2)\"}"@2001-01-02',

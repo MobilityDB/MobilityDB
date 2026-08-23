@@ -6,7 +6,7 @@ SELECT tempSubtype(tint '[1@2001-01-01, 2@2001-01-02, 3@2001-01-03]');
 -- Sequence
 </pre></li><li class="listitem"><a name="ttype_tempBasetype"></a><a class="indexterm" name="id3858"></a><p>Devuelve el tipo base</p><p><code class="varname">tempBasetype(ttype) → text</code></p><pre class="programlisting">
 SELECT tempBasetype(tint '[1@2001-01-01, 2@2001-01-02, 3@2001-01-03]');
--- int4
+-- integer
 SELECT tempBasetype(tgeompoint 'Point(1 1)@2001-01-01');
 -- geometry
 </pre></li><li class="listitem"><a name="ttype_interp"></a><a class="indexterm" name="id3866"></a><p>Devuelve la interpolación</p><p><code class="varname">interp(ttype) → {'None','Discrete','Step','Linear'}</code></p><pre class="programlisting">
@@ -31,7 +31,7 @@ SELECT getValue(tint '1@2001-01-01');
 -- 1
 SELECT getTimestamp(tfloat '1@2001-01-01');
 -- 2001-01-01
-</pre></li><li class="listitem"><a name="ttype_getValues"></a><a class="indexterm" name="id3887"></a><a class="indexterm" name="id3890"></a><p>Devuelve los valores o el tiempo en el que se define el valor temporal</p><p><code class="varname">getValues(talpha) → {bool[],spanset,textset}</code></p><p><code class="varname">getTime(ttype) → tstzspanset</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="ttype_getValues"></a><a class="indexterm" name="id3887"></a><a class="indexterm" name="id3890"></a><p>Devuelve los valores o el tiempo en el que se define el valor temporal</p><p><code class="varname">getValues(talpha) → {boolean[],spanset,textset}</code></p><p><code class="varname">getTime(ttype) → tstzspanset</code></p><pre class="programlisting">
 SELECT getValues(tbool '[false@2001-01-01, true@2001-01-02, false@2001-01-03]');
 -- {f,t}
 SELECT getValues(tint '[1@2001-01-01, 3@2001-01-02, 1@2001-01-03]');
@@ -85,7 +85,7 @@ SELECT duration(tfloat '{[1@2001-01-01, 2@2001-01-03), [2@2001-01-04, 2@2001-01-
 SELECT duration(tfloat '{[1@2001-01-01, 2@2001-01-03), [2@2001-01-04, 2@2001-01-05)}',
   true);
 -- 4 days
-</pre></li><li class="listitem"><a name="ttype_lowerInc"></a><a class="indexterm" name="id3945"></a><a class="indexterm" name="id3948"></a><p>¿Es el instante inicial/final inclusivo?</p><p><code class="varname">lowerInc(ttype) → bool</code></p><p><code class="varname">upperInc(ttype) → bool</code></p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="ttype_lowerInc"></a><a class="indexterm" name="id3945"></a><a class="indexterm" name="id3948"></a><p>¿Es el instante inicial/final inclusivo?</p><p><code class="varname">lowerInc(ttype) → boolean</code></p><p><code class="varname">upperInc(ttype) → boolean</code></p><pre class="programlisting">
 SELECT lowerInc(tint '[1@2001-01-01, 2@2001-01-02)');
 -- true
 SELECT upperInc(tfloat '{[1@2001-01-01, 2@2001-01-02), (2@2001-01-02, 3@2001-01-03)}');

@@ -134,7 +134,7 @@ SELECT jsonbsetInsert(jsonbset '[{"speed":10}, {"speed":20}]',
 SELECT jsonbsetInsert(jsonbset '[{"speed": 10, "units": "km/h"},
   {"speed": 20, "units": "km/h"}]', ARRAY['units'], '"mi/h"'::jsonb);
 -- [{"speed": 10, "units": "mi/h"}, {"speed": 20, "units": "mi/h"}]
-</pre></li><li class="listitem"><a name="jsonbset_strip_nulls"></a><a class="indexterm" name="id12737"></a><p>Return a JSONB set without nulls</p><p><code class="varname">jsonbsetStripNulls(jsonbset,strip_in_arrays bool=false) → jsonbset</code></p><p>The last argument states whether null array elements are also stripped. Bare null values are never stripped.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="jsonbset_strip_nulls"></a><a class="indexterm" name="id12737"></a><p>Return a JSONB set without nulls</p><p><code class="varname">jsonbsetStripNulls(jsonbset,strip_in_arrays boolean=false) → jsonbset</code></p><p>The last argument states whether null array elements are also stripped. Bare null values are never stripped.</p><pre class="programlisting">
 SELECT jsonbsetStripNulls(textset '[{"speed": 10, "lights": null},
   {"speed": 20, "PoIs": ["Grand Place", "La Bourse", null]}]');
 /* [{"speed": 10},

@@ -147,7 +147,7 @@ SELECT tjsonbInsert(tjsonb '[{"speed":10}@2001-01-01, {"speed":20}@2001-01-02]',
 SELECT tjsonbInsert(tjsonb '[{"speed": 10, "units": "km/h"}@2001-01-01,
   {"speed": 20, "units": "km/h"}@2001-01-02]', ARRAY['units'], '"mi/h"'::jsonb);
 -- [{"speed": 10, "units": "mi/h"}@2001-01-01, {"speed": 20, "units": "mi/h"}@2001-01-02]
-</pre></li><li class="listitem"><a name="tjson_strip_nulls"></a><a class="indexterm" name="id13257"></a><a class="indexterm" name="id13260"></a><p>Return a temporal JSON value without nulls</p><p><code class="varname">tjsonStripNulls(ttext,strip_in_arrays bool=false) → ttext</code></p><p><code class="varname">tjsonbStripNulls(tjsonb,strip_in_arrays bool=false) → tjsonb</code></p><p>The last argument states whether null array elements are also stripped. Bare null values are never stripped.</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tjson_strip_nulls"></a><a class="indexterm" name="id13257"></a><a class="indexterm" name="id13260"></a><p>Return a temporal JSON value without nulls</p><p><code class="varname">tjsonStripNulls(ttext,strip_in_arrays boolean=false) → ttext</code></p><p><code class="varname">tjsonbStripNulls(tjsonb,strip_in_arrays boolean=false) → tjsonb</code></p><p>The last argument states whether null array elements are also stripped. Bare null values are never stripped.</p><pre class="programlisting">
 SELECT tjsonStripNulls(ttext '[{"speed": 10, "lights": null}@2001-01-01,
   {"speed": 20, "PoIs": ["Grand Place", "La Bourse", null]}@2001-01-02]');
 /* [{"speed": 10}@2001-01-01,
