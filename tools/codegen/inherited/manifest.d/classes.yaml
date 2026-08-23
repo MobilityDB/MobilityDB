@@ -5,6 +5,30 @@
 # block disagrees, so adding a type to a class in MEOS cannot land without
 # the generated surface following it.
 classes:
+  set:
+    predicate: set_type
+    members: [dateset, floatset, intset, bigintset, textset, tstzset, geomset, geogset, npointset, poseset, posechainset, cbufferset, jsonbset, h3indexset, quadbinset, pcpointset, pcpatchset]
+  numset:
+    predicate: numset_type
+    members: [dateset, floatset, intset, bigintset]
+  timeset:
+    predicate: timeset_type
+    members: [dateset, tstzset]
+  geoset:
+    predicate: geoset_type
+    members: [geomset, geogset]
+  spatialset:
+    predicate: spatialset_type
+    members: [geomset, geogset, npointset, poseset, posechainset, cbufferset, h3indexset, quadbinset]
+  alphanumset:
+    predicate: alphanumset_type
+    members: [dateset, floatset, intset, bigintset, textset, tstzset, jsonbset]
+  span:
+    predicate: span_type
+    members: [datespan, floatspan, intspan, bigintspan, tstzspan]
+  spanset:
+    predicate: spanset_type
+    members: [datespanset, floatspanset, intspanset, bigintspanset, tstzspanset]
   temporal:
     predicate: temporal_type
     members: [tbool, tdouble2, tdouble3, tdouble4, tfloat, tint, ttext, tgeompoint, tgeogpoint, tnpoint, tpose, tposechain, tcbuffer, tgeometry, tgeography, trgeometry, tjsonb, tbigint, th3index, tquadbin, tpcpoint, tpcpatch]
