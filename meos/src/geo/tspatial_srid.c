@@ -555,8 +555,18 @@ point_transf_pj(GSERIALIZED *gs, int32_t srid_to, const LWPROJ *pj)
   int pj_errno_val = proj_errno_reset(pj->pj);
   if (pj_errno_val)
   {
+    /* The error text comes from the context the transformation is created in.
+     * proj_errno_string reads a global that another thread may be writing,
+     * which PROJ states as the reason it replaces the function; MEOS answers
+     * from several threads at once, so the text is read from the context */
+#if POSTGIS_PROJ_VERSION >= 80
+    const char *pj_errno_str = proj_context_errno_string(proj_get_context(),
+      pj_errno_val);
+#else
+    const char *pj_errno_str = proj_errno_string(pj_errno_val);
+#endif /* POSTGIS_PROJ_VERSION >= 80 */
     meos_error(ERROR, MEOS_ERR_INVALID_ARG,
-      "Transform: %s (%d)", proj_errno_string(pj_errno_val), pj_errno_val);
+      "Transform: %s (%d)", pj_errno_str, pj_errno_val);
     return false;
   }
   pa_double[0] = (t.xyzt).x;

@@ -38,6 +38,21 @@
  * pulling a MEOS header into vendored liblwgeom. */
 extern PJ_CONTEXT *proj_get_context(void);
 
+/* MEOS */
+/* proj_errno_string reads a global error state, which PROJ documents as the
+ * reason proj_context_errno_string replaces it from 8.0.0 on: the text a
+ * failing transform reports can otherwise come from another thread. The
+ * context is the one the transformation is created in, as above. */
+static const char *
+proj_errno_str(int err)
+{
+#if POSTGIS_PROJ_VERSION >= 80
+  return proj_context_errno_string(proj_get_context(), err);
+#else
+  return proj_errno_string(err);
+#endif /* POSTGIS_PROJ_VERSION >= 80 */
+}
+
 /** convert decimal degrees to radians */
 static void
 to_rad(POINT4D *pt)
@@ -271,7 +286,8 @@ ptarray_transform(POINTARRAY *pa, LWPROJ *pj)
 		int pj_errno_val = proj_errno_reset(pj->pj);
 		if (pj_errno_val)
 		{
-			lwerror("transform: %s (%d)", proj_errno_string(pj_errno_val), pj_errno_val);
+			lwerror("transform: %s (%d)",
+				proj_errno_str(pj_errno_val) /* MEOS */, pj_errno_val);
 			return LW_FAILURE;
 		}
 		pa_double[0] = (t.xyzt).x;
@@ -314,7 +330,8 @@ ptarray_transform(POINTARRAY *pa, LWPROJ *pj)
 		int pj_errno_val = proj_errno_reset(pj->pj);
 		if (pj_errno_val)
 		{
-			lwerror("transform: %s (%d)", proj_errno_string(pj_errno_val), pj_errno_val);
+			lwerror("transform: %s (%d)",
+				proj_errno_str(pj_errno_val) /* MEOS */, pj_errno_val);
 			return LW_FAILURE;
 		}
 	}
