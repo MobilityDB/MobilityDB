@@ -3198,6 +3198,147 @@ relate_point_in_area(double x, double y, Edge **edges, int nedges)
   return point_in_polygon(x, y, edges, nedges) ? 0 : 2;
 }
 
+/* Indexing one edge array costs one insertion per edge, while walking it once
+ * for every edge of the other costs their PRODUCT. The index is built where
+ * that product dwarfs the pass, and a pair small enough for the walk to be the
+ * cheaper of the two keeps it */
+#define RELATE_INDEX_MIN_PAIRS 100000
+
+/**
+ * @brief Return the greatest x an edge array reaches, which is how far a ray
+ * cast from a point to its right runs before it leaves the array behind
+ */
+static double
+relate_edges_xmax(Edge **edges, int nedges)
+{
+  assert(edges);
+  double result = -DBL_MAX;
+  for (int i = 0; i < nedges; i++)
+    if (edges[i]->xmax > result)
+      result = edges[i]->xmax;
+  return result;
+}
+
+/**
+ * @brief Return an index over the bounding boxes of an edge array
+ * @details The boxes carry no SRID of their own: each is compared against
+ * another built the same way, so the value only has to be the same everywhere
+ */
+static RTree *
+relate_edges_index(Edge **edges, int nedges)
+{
+  assert(edges);
+  RTree *rtree = rtree_create_stbox();
+  for (int i = 0; i < nedges; i++)
+  {
+    STBox box;
+    stbox_set(true, false, false, 0, edges[i]->xmin, edges[i]->xmax,
+      edges[i]->ymin, edges[i]->ymax, 0, 0, NULL, &box);
+    rtree_insert(rtree, &box, i);
+  }
+  return rtree;
+}
+
+/**
+ * @brief An edge array together with what a question about one point needs in
+ * order to read only the edges that can answer it
+ * @details The index is absent below the threshold, and every function taking
+ * this reads the whole array in that case, so the answer never depends on
+ * whether the index was built
+ */
+typedef struct
+{
+  Edge **edges;   /**< Edges the array holds */
+  int nedges;     /**< Number of edges */
+  RTree *index;   /**< Index over the edge boxes, NULL below the threshold */
+  double xmax;    /**< Greatest x the edges reach */
+  double tol;     /**< Widest tolerance any of the edges asks for */
+} RelateEdges;
+
+/**
+ * @brief Fill in an edge array together with what reading it selectively needs
+ * @param[out] re Structure to fill in
+ * @param[in] edges,nedges The edges
+ * @param[in] index True to index them, which the caller decides from the size
+ * of BOTH arrays, since it is their product the index removes
+ */
+static void
+relate_edges_init(RelateEdges *re, Edge **edges, int nedges, bool index)
+{
+  re->edges = edges;
+  re->nedges = nedges;
+  re->xmax = relate_edges_xmax(edges, nedges);
+  /* An index query has to admit every edge the scan it replaces would accept,
+   * and the on-edge tests read the tolerance the EDGE carries, which grows
+   * with the size of its coordinates. Padding a query by MEOS_GEOM_TOLERANCE
+   * would therefore drop, at projected coordinates, edges whose own tolerance
+   * is thousands of times that. The widest tolerance in the array is what
+   * makes the index answer what the scan answers at every scale */
+  re->tol = MEOS_GEOM_TOLERANCE;
+  for (int i = 0; i < nedges; i++)
+    if (edges[i]->tol > re->tol)
+      re->tol = edges[i]->tol;
+  re->index = index ? relate_edges_index(edges, nedges) : NULL;
+  return;
+}
+
+/**
+ * @brief Free the index an edge array carries, if it carries one
+ */
+static void
+relate_edges_clear(RelateEdges *re)
+{
+  if (re->index)
+    rtree_free(re->index);
+  re->index = NULL;
+  return;
+}
+
+/**
+ * @brief Return true if a point lies on the boundary an edge array draws,
+ * reading the edges that can carry it out of an index
+ * @details Only an edge whose box holds the point can carry it, and the box is
+ * grown by the tolerance the on-edge tests allow, so the edges the index
+ * answers are the ones the scan finds
+ */
+static bool
+relate_point_on_boundary_index(double x, double y, const RelateEdges *re)
+{
+  if (! re->index)
+    return relate_point_on_boundary(x, y, re->edges, re->nedges);
+  STBox query;
+  stbox_set(true, false, false, 0, x - re->tol, x + re->tol, y - re->tol,
+    y + re->tol, 0, 0, NULL, &query);
+  MeosArray *candidates = meos_array_create(sizeof(int64));
+  int nc = rtree_search(re->index, INDEX_OVERLAPS, &query, candidates);
+  bool result = false;
+  for (int c = 0; c < nc && ! result; c++)
+  {
+    Edge *one = re->edges[*(int64 *) meos_array_get(candidates, c)];
+    result = relate_point_on_boundary(x, y, &one, 1);
+  }
+  meos_array_destroy(candidates);
+  return result;
+}
+
+/**
+ * @brief Return where a point stands with respect to the area an edge array
+ * bounds, reading the edges each question needs out of an index
+ * @details The answer is the one #relate_point_in_area() gives: the index only
+ * decides which edges are asked, and one it leaves out neither carries the
+ * point nor crosses the ray cast from it
+ */
+static int
+relate_point_in_area_index(double x, double y, const RelateEdges *re)
+{
+  if (relate_point_on_boundary_index(x, y, re))
+    return 1;
+  if (! re->index)
+    return point_in_polygon(x, y, re->edges, re->nedges) ? 0 : 2;
+  return point_in_polygon_index(x, y, re->edges, re->nedges, re->index,
+    re->xmax) ? 0 : 2;
+}
+
 /*****************************************************************************
  * DE-9IM / ST_Relate
  *****************************************************************************/
@@ -5105,7 +5246,7 @@ relate_area_edge_intersection(const Edge *a, const Edge *b, double ix[2],
  * as one-dimensional intersections.
  */
 static bool
-relate_area_edge_inside_area(const Edge *edge, Edge **area_edges, int narea)
+relate_area_edge_inside_area(const Edge *edge, const RelateEdges *area)
 {
   double x, y;
   /* Midpoint of a straight boundary edge */
@@ -5119,7 +5260,7 @@ relate_area_edge_inside_area(const Edge *edge, Edge **area_edges, int narea)
     /* Midpoint of the circular arc */
     relate_area_edge_point(edge, 0.5, &x, &y);
   }
-  return relate_point_in_area(x, y, area_edges, narea) == 0;
+  return relate_point_in_area_index(x, y, area) == 0;
 }
 
 /**
@@ -5129,40 +5270,56 @@ relate_area_edge_inside_area(const Edge *edge, Edge **area_edges, int narea)
  * interval, one representative point is sufficient.
  */
 static void
-relate_area_edge_intervals(const Edge *edge, Edge **other_edges, int nother,
+relate_area_edge_intervals(const Edge *edge, const RelateEdges *other,
   MeosDE9IM *m, bool first)
 {
   /* Maximum number of intersections between one edge and one
    * circular/linear boundary edge is two */
-  int maxparams = 2 * nother + 2;
+  int maxparams = 2 * other->nedges + 2;
   double *params = palloc(sizeof(double) * maxparams);
   int nparams = 0;
   params[nparams++] = 0.0;
   params[nparams++] = 1.0;
-  for (int j = 0; j < nother; j++)
+  /* The edges this one can meet are those whose box meets its own, and an index
+   * answers them in the place of a pass over the whole array. A boundary of a
+   * few thousand edges leaves every pair but a handful standing apart, so the
+   * pass is what the walk costs and the index is what removes it */
+  MeosArray *candidates = NULL;
+  int ncand = other->nedges;
+  if (other->index)
   {
-    const Edge *other = other_edges[j];
-    if (! relate_area_boundary_edge(other))
+    STBox query;
+    double pad = fmax(other->tol, edge->tol);
+    stbox_set(true, false, false, 0, edge->xmin - pad, edge->xmax + pad,
+      edge->ymin - pad, edge->ymax + pad, 0, 0, NULL, &query);
+    candidates = meos_array_create(sizeof(int64));
+    ncand = rtree_search(other->index, INDEX_OVERLAPS, &query, candidates);
+  }
+  for (int c = 0; c < ncand; c++)
+  {
+    int j = candidates ? (int) *(int64 *) meos_array_get(candidates, c) : c;
+    const Edge *oedge = other->edges[j];
+    if (! relate_area_boundary_edge(oedge))
       continue;
     double ix[2], iy[2];
-    int n = relate_area_edge_intersection(edge, other, ix, iy);
-    if (n == 2 && relate_area_line_overlap(edge, other))
+    int n = relate_area_edge_intersection(edge, oedge, ix, iy);
+    if (n == 2 && relate_area_line_overlap(edge, oedge))
     {
       /* The two boundary edges overlap over a line. Add the endpoints of the
        * overlapping portion as split parameters. This is mainly needed for the
        * classification of the remaining portions. */
-      if (point_on_segment(other->x1, other->y1, edge->x1, edge->y1,
+      if (point_on_segment(oedge->x1, oedge->y1, edge->x1, edge->y1,
             edge->x2, edge->y2))
       {
-        relate_area_add_parameter(relate_area_edge_parameter(edge, other->x1,
-          other->y1), params, &nparams, maxparams);
+        relate_area_add_parameter(relate_area_edge_parameter(edge, oedge->x1,
+          oedge->y1), params, &nparams, maxparams);
       }
 
-      if (point_on_segment(other->x2, other->y2, edge->x1, edge->y1,
+      if (point_on_segment(oedge->x2, oedge->y2, edge->x1, edge->y1,
             edge->x2, edge->y2))
       {
-        relate_area_add_parameter(relate_area_edge_parameter(edge, other->x2,
-          other->y2), params, &nparams, maxparams);
+        relate_area_add_parameter(relate_area_edge_parameter(edge, oedge->x2,
+          oedge->y2), params, &nparams, maxparams);
       }
       continue;
     }
@@ -5172,6 +5329,9 @@ relate_area_edge_intervals(const Edge *edge, Edge **other_edges, int nother,
       relate_area_add_parameter(t, params, &nparams, maxparams);
     }
   }
+
+  if (candidates)
+    meos_array_destroy(candidates);
 
   qsort(params, nparams, sizeof(double), relate_area_parameter_cmp);
   /* Remove duplicates */
@@ -5192,7 +5352,7 @@ relate_area_edge_intervals(const Edge *edge, Edge **other_edges, int nother,
     double t = (params[i] + params[i + 1]) * 0.5;
     double x, y;
     relate_area_edge_point(edge, t, &x, &y);
-    int loc = relate_point_in_area(x, y, other_edges, nother);
+    int loc = relate_point_in_area_index(x, y, other);
     if (loc == 0)
     {
       /* Boundary(A) ∩ Interior(B) or Interior(A) ∩ Boundary(B) */
@@ -5277,17 +5437,17 @@ relate_area_boundary_points(Edge **aedges, int na, Edge **bedges, int nb,
  * also inside B, proving II = 2.
  */
 static bool
-relate_area_has_vertex_interior(Edge **edges, int nedges, Edge **other_edges,
-  int nother)
+relate_area_has_vertex_interior(const RelateEdges *self,
+  const RelateEdges *other)
 {
-  for (int i = 0; i < nedges; i++)
+  for (int i = 0; i < self->nedges; i++)
   {
-    const Edge *e = edges[i];
+    const Edge *e = self->edges[i];
     if (!relate_area_boundary_edge(e))
       continue;
-    if (relate_point_in_area(e->x1, e->y1, other_edges, nother) == 0)
+    if (relate_point_in_area_index(e->x1, e->y1, other) == 0)
       return true;
-    if (relate_point_in_area(e->x2, e->y2, other_edges, nother) == 0)
+    if (relate_point_in_area_index(e->x2, e->y2, other) == 0)
       return true;
   }
   return false;
@@ -5300,7 +5460,7 @@ relate_area_has_vertex_interior(Edge **edges, int nedges, Edge **other_edges,
  * implementation and works directly with circular boundaries.
  */
 static bool
-relate_area_edge_interior_point(const Edge *e, Edge **edges, int nedges,
+relate_area_edge_interior_point(const Edge *e, const RelateEdges *self,
   double *x, double *y)
 {
   {
@@ -5358,7 +5518,7 @@ relate_area_edge_interior_point(const Edge *e, Edge **edges, int nedges,
     eps = fmax(eps, 10.0 * coordinate_tolerance(px, py));
     double qx = px + eps * nx;
     double qy = py + eps * ny;
-    if (relate_point_in_area(qx, qy, edges, nedges) == 0)
+    if (relate_point_in_area_index(qx, qy, self) == 0)
     {
       *x = qx;
       *y = qy;
@@ -5366,7 +5526,7 @@ relate_area_edge_interior_point(const Edge *e, Edge **edges, int nedges,
     }
     qx = px - eps * nx;
     qy = py - eps * ny;
-    if (relate_point_in_area(qx, qy, edges, nedges) == 0)
+    if (relate_point_in_area_index(qx, qy, self) == 0)
     {
       *x = qx;
       *y = qy;
@@ -5391,15 +5551,15 @@ relate_area_edge_interior_point(const Edge *e, Edge **edges, int nedges,
  * it: 0 for the interior and 2 for the exterior
  */
 static bool
-relate_area_interior_point_located(Edge **edges, int nedges, Edge **other,
-  int nother, int location)
+relate_area_interior_point_located(const RelateEdges *self,
+  const RelateEdges *other, int location)
 {
-  for (int i = 0; i < nedges; i++)
+  for (int i = 0; i < self->nedges; i++)
   {
     double x, y;
-    if (! relate_area_edge_interior_point(edges[i], edges, nedges, &x, &y))
+    if (! relate_area_edge_interior_point(self->edges[i], self, &x, &y))
       continue;
-    if (relate_point_in_area(x, y, other, nother) == location)
+    if (relate_point_in_area_index(x, y, other) == location)
       return true;
   }
   return false;
@@ -5410,40 +5570,40 @@ relate_area_interior_point_located(Edge **edges, int nedges, Edge **other,
  * intersect in dimension 2.
  */
 static bool
-relate_area_interiors_intersect(Edge **aedges, int na, Edge **bedges, int nb)
+relate_area_interiors_intersect(const RelateEdges *a, const RelateEdges *b)
 {
   /* A vertex of either geometry inside the other geometry proves
    * a two-dimensional interior/interior intersection */
-  if (relate_area_has_vertex_interior(aedges, na, bedges, nb))
+  if (relate_area_has_vertex_interior(a, b))
     return true;
-  if (relate_area_has_vertex_interior(bedges, nb, aedges, na))
+  if (relate_area_has_vertex_interior(b, a))
     return true;
 
   /* If a boundary portion of either geometry lies in the interior
    * of the other, the interiors necessarily overlap in area */
-  for (int i = 0; i < na; i++)
+  for (int i = 0; i < a->nedges; i++)
   {
-    const Edge *e = aedges[i];
+    const Edge *e = a->edges[i];
     if (!relate_area_boundary_edge(e))
       continue;
-    if (relate_area_edge_inside_area(e, bedges, nb))
+    if (relate_area_edge_inside_area(e, b))
       return true;
   }
-  for (int i = 0; i < nb; i++)
+  for (int i = 0; i < b->nedges; i++)
   {
-    const Edge *e = bedges[i];
+    const Edge *e = b->edges[i];
     if (!relate_area_boundary_edge(e))
       continue;
-    if (relate_area_edge_inside_area(e, aedges, na))
+    if (relate_area_edge_inside_area(e, a))
       return true;
   }
 
   /* Finally handle coincident boundaries / complete containment
    * where every tested vertex may lie on the other boundary.
    * An interior witness of either geometry inside the other answers it */
-  if (relate_area_interior_point_located(aedges, na, bedges, nb, 0))
+  if (relate_area_interior_point_located(a, b, 0))
     return true;
-  if (relate_area_interior_point_located(bedges, nb, aedges, na, 0))
+  if (relate_area_interior_point_located(b, a, 0))
     return true;
   return false;
 }
@@ -5465,8 +5625,17 @@ relate_area_area(const LWGEOM *g1, const LWGEOM *g2, MeosDE9IM *m)
   for (int i = 0; i < n2; i++)
     e2[i] = (Edge *) meos_array_get(a2, i);
 
+  /* Every question this matrix asks about one point reads one of the two edge
+   * arrays, and asks it once per edge of the other, so an unindexed walk costs
+   * their PRODUCT while indexing each array costs one pass over it. The two
+   * indexes are therefore built ONCE here and read by every step below */
+  RelateEdges re1, re2;
+  bool index = ((int64) n1 * (int64) n2 >= RELATE_INDEX_MIN_PAIRS);
+  relate_edges_init(&re1, e1, n1, index);
+  relate_edges_init(&re2, e2, n2, index);
+
   /* Two-dimensional interior/interior intersection. */
-  if (relate_area_interiors_intersect(e1, n1, e2, n2))
+  if (relate_area_interiors_intersect(&re1, &re2))
   {
     m->ii = 2;
   }
@@ -5478,13 +5647,13 @@ relate_area_area(const LWGEOM *g1, const LWGEOM *g2, MeosDE9IM *m)
   {
     if (!relate_area_boundary_edge(e1[i]))
       continue;
-    relate_area_edge_intervals(e1[i], e2, n2, m, true);
+    relate_area_edge_intervals(e1[i], &re2, m, true);
   }
   for (int i = 0; i < n2; i++)
   {
     if (!relate_area_boundary_edge(e2[i]))
       continue;
-    relate_area_edge_intervals(e2[i], e1, n1, m, false);
+    relate_area_edge_intervals(e2[i], &re1, m, false);
   }
 
   /* Boundary / Boundary.
@@ -5518,9 +5687,9 @@ relate_area_area(const LWGEOM *g1, const LWGEOM *g2, MeosDE9IM *m)
   if (m->ib != -1)
     de9im_add(&m->ie, 2);
 
-  if (relate_area_interior_point_located(e1, n1, e2, n2, 2))
+  if (relate_area_interior_point_located(&re1, &re2, 2))
     de9im_add(&m->ie, 2);
-  if (relate_area_interior_point_located(e2, n2, e1, n1, 2))
+  if (relate_area_interior_point_located(&re2, &re1, 2))
     de9im_add(&m->ei, 2);
 
   /* Exterior / Exterior.
@@ -5528,6 +5697,7 @@ relate_area_area(const LWGEOM *g1, const LWGEOM *g2, MeosDE9IM *m)
    * two-dimensional common exterior. */
   de9im_add(&m->ee, 2);
 
+  relate_edges_clear(&re1); relate_edges_clear(&re2);
   pfree(e1); pfree(e2);
   meos_array_destroy(a1); meos_array_destroy(a2);
   return;
