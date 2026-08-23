@@ -12,10 +12,10 @@ modification_families:
   end: "\n * Segment Duration Functions\n"
   types:
   - {temp: tbool}
-  - {temp: tint,    numeric: true, orderable: true}
-  - {temp: tbigint, numeric: true, orderable: true}
-  - {temp: tfloat,  numeric: true, orderable: true}
-  - {temp: ttext,   orderable: true}
+  - {temp: tint}
+  - {temp: tbigint}
+  - {temp: tfloat}
+  - {temp: ttext}
   blocks:
   - lit: "/*****************************************************************************\n * Modification Functions\n *****************************************************************************/\n\n"
   - gen: {sig: "insert({TEMP}, {TEMP}, connect boolean DEFAULT TRUE)", sym: Temporal_insert}
