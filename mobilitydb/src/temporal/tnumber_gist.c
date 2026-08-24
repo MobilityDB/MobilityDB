@@ -156,18 +156,10 @@ tbox_adjust(void *bbox1, void *bbox2)
 {
   TBox *box1 = (TBox *) bbox1;
   TBox *box2 = (TBox *) bbox2;
-  double xmin = FLOAT8_MIN(DatumGetFloat8(box1->span.lower),
-    DatumGetFloat8(box2->span.lower));
-  double xmax = FLOAT8_MAX(DatumGetFloat8(box1->span.upper),
-    DatumGetFloat8(box2->span.upper));
-  box1->span.lower = Float8GetDatum(xmin);
-  box1->span.upper = Float8GetDatum(xmax);
-  TimestampTz tmin = Min(DatumGetTimestampTz(box1->period.lower),
-    DatumGetTimestampTz(box2->period.lower));
-  TimestampTz tmax = Max(DatumGetTimestampTz(box1->period.upper),
-    DatumGetTimestampTz(box2->period.upper));
-  box1->period.lower = TimestampTzGetDatum(tmin);
-  box1->period.upper = TimestampTzGetDatum(tmax);
+  if (MEOS_FLAGS_GET_X(box1->flags))
+    span_expand(&box2->span, &box1->span);
+  if (MEOS_FLAGS_GET_T(box1->flags))
+    span_expand(&box2->period, &box1->period);
   return;
 }
 
@@ -1000,13 +992,12 @@ Tbox_gist_same(PG_FUNCTION_ARGS)
   TBox *b2 = PG_GETARG_TBOX_P(1);
   bool *result = (bool *) PG_GETARG_POINTER(2);
   if (b1 && b2)
-    *result = FLOAT8_EQ(DatumGetFloat8(b1->span.lower),
-        DatumGetFloat8(b2->span.lower)) &&
-      FLOAT8_EQ(DatumGetFloat8(b1->span.upper),
-        DatumGetFloat8(b2->span.upper)) &&
-      /* Equality test does not require to use DatumGetTimestampTz */
-      (b1->period.lower == b2->period.lower) &&
-      (b1->period.upper == b2->period.upper);
+    /* Each span is compared as a span, so that two keys ending on the same
+     * bound with a different inclusivity are NOT reported as the same */
+    *result = MEOS_FLAGS_GET_X(b1->flags) == MEOS_FLAGS_GET_X(b2->flags) &&
+      MEOS_FLAGS_GET_T(b1->flags) == MEOS_FLAGS_GET_T(b2->flags) &&
+      (! MEOS_FLAGS_GET_X(b1->flags) || span_eq(&b1->span, &b2->span)) &&
+      (! MEOS_FLAGS_GET_T(b1->flags) || span_eq(&b1->period, &b2->period));
   else
     *result = (! b1 && ! b2);
   PG_RETURN_POINTER(result);

@@ -149,12 +149,8 @@ stbox_adjust(void *bbox1, void *bbox2)
   box1->ymax = FLOAT8_MAX(box1->ymax, box2->ymax);
   box1->zmin = FLOAT8_MIN(box1->zmin, box2->zmin);
   box1->zmax = FLOAT8_MAX(box1->zmax, box2->zmax);
-  TimestampTz tmin = Min(DatumGetTimestampTz(box1->period.lower),
-    DatumGetTimestampTz(box2->period.lower));
-  TimestampTz tmax = Max(DatumGetTimestampTz(box1->period.upper),
-    DatumGetTimestampTz(box2->period.upper));
-  box1->period.lower = TimestampTzGetDatum(tmin);
-  box1->period.upper = TimestampTzGetDatum(tmax);
+  if (MEOS_FLAGS_GET_T(box1->flags))
+    span_expand(&box2->period, &box1->period);
   return;
 }
 
@@ -368,9 +364,11 @@ Stbox_gist_same(PG_FUNCTION_ARGS)
     *result = (FLOAT8_EQ(b1->xmin, b2->xmin) && FLOAT8_EQ(b1->ymin, b2->ymin) &&
       FLOAT8_EQ(b1->zmin, b2->zmin) && FLOAT8_EQ(b1->xmax, b2->xmax) &&
       FLOAT8_EQ(b1->ymax, b2->ymax) && FLOAT8_EQ(b1->zmax, b2->zmax) &&
-      /* Equality test does not require to use DatumGetTimestampTz */
-      (b1->period.lower == b2->period.lower) &&
-      (b1->period.upper == b2->period.upper));
+      /* The period is compared as a span, so that two keys ending on the same
+       * instant with a different inclusivity are NOT reported as the same */
+      MEOS_FLAGS_GET_T(b1->flags) == MEOS_FLAGS_GET_T(b2->flags) &&
+      (! MEOS_FLAGS_GET_T(b1->flags) ||
+        span_eq(&b1->period, &b2->period)));
   else
     *result = (b1 == NULL && b2 == NULL);
   PG_RETURN_POINTER(result);
