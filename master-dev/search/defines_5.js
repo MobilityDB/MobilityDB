@@ -1,13 +1,10 @@
 var searchData=
 [
-  ['ea_5fdisjoint_5ftpc_5fgeo_0',['EA_DISJOINT_TPC_GEO',['../mobilitydb_2src_2pointcloud_2tpcpoint_8c_a0e7fa106810c8a3954c8a172e84b951c.html#a0e7fa106810c8a3954c8a172e84b951c',1,'tpcpoint.c']]],
-  ['ea_5fdwithin_5ftpc_5fgeo_1',['EA_DWITHIN_TPC_GEO',['../mobilitydb_2src_2pointcloud_2tpcpoint_8c_ae79e37d58087a4afe366b64ecdf2d145.html#ae79e37d58087a4afe366b64ecdf2d145',1,'tpcpoint.c']]],
-  ['ea_5fintersects_5ftpc_5fgeo_2',['EA_INTERSECTS_TPC_GEO',['../mobilitydb_2src_2pointcloud_2tpcpoint_8c_a7ed3dd6108bde1cc30061ebc34b05249.html#a7ed3dd6108bde1cc30061ebc34b05249',1,'tpcpoint.c']]],
-  ['ekf_5fm_3',['EKF_M',['../meos_2src_2temporal_2temporal__analytics_8c_afdccae2f6ac5625fa693b2646b02a529.html#afdccae2f6ac5625fa693b2646b02a529',1,'temporal_analytics.c']]],
-  ['ekf_5fn_4',['EKF_N',['../meos_2src_2temporal_2temporal__analytics_8c_aa77a36f2da098625f2ef7618b8de7627.html#aa77a36f2da098625f2ef7618b8de7627',1,'temporal_analytics.c']]],
-  ['eps_5',['EPS',['../rtree__knn__test_8c_a6ebf6899d6c1c8b7b9d09be872c05aae.html#a6ebf6899d6c1c8b7b9d09be872c05aae',1,'EPS():&#160;rtree_knn_test.c'],['../sptree__test_8c_a6ebf6899d6c1c8b7b9d09be872c05aae.html#a6ebf6899d6c1c8b7b9d09be872c05aae',1,'EPS():&#160;sptree_test.c']]],
-  ['ever_6',['EVER',['../meos_2include_2temporal_2temporal_8h_a2b912ed39df233b43d7a093814705afb.html#a2b912ed39df233b43d7a093814705afb',1,'temporal.h']]],
-  ['exact_5farea_5fdifference_7',['EXACT_AREA_DIFFERENCE',['../geo__op__diff_8c_af2ddf83148ec419f9371771b49de5772.html#af2ddf83148ec419f9371771b49de5772',1,'geo_op_diff.c']]],
-  ['expand_8',['EXPAND',['../tpoint__expand_8c_a4e1ead0ea3ebe3b9eb9dc9564c524ccc.html#a4e1ead0ea3ebe3b9eb9dc9564c524ccc',1,'tpoint_expand.c']]],
-  ['expand_5fseq_9',['EXPAND_SEQ',['../ttext__expand_8c_accc65d8dc3b6c9d7b9dd81f43f2538bb.html#accc65d8dc3b6c9d7b9dd81f43f2538bb',1,'ttext_expand.c']]]
+  ['ekf_5fm_0',['EKF_M',['../meos_2src_2temporal_2temporal__analytics_8c_afdccae2f6ac5625fa693b2646b02a529.html#afdccae2f6ac5625fa693b2646b02a529',1,'temporal_analytics.c']]],
+  ['ekf_5fn_1',['EKF_N',['../meos_2src_2temporal_2temporal__analytics_8c_aa77a36f2da098625f2ef7618b8de7627.html#aa77a36f2da098625f2ef7618b8de7627',1,'temporal_analytics.c']]],
+  ['eps_2',['EPS',['../rtree__knn__test_8c_a6ebf6899d6c1c8b7b9d09be872c05aae.html#a6ebf6899d6c1c8b7b9d09be872c05aae',1,'EPS():&#160;rtree_knn_test.c'],['../sptree__test_8c_a6ebf6899d6c1c8b7b9d09be872c05aae.html#a6ebf6899d6c1c8b7b9d09be872c05aae',1,'EPS():&#160;sptree_test.c']]],
+  ['ever_3',['EVER',['../meos_2include_2temporal_2temporal_8h_a2b912ed39df233b43d7a093814705afb.html#a2b912ed39df233b43d7a093814705afb',1,'temporal.h']]],
+  ['exact_5farea_5fdifference_4',['EXACT_AREA_DIFFERENCE',['../geo__op__diff_8c_af2ddf83148ec419f9371771b49de5772.html#af2ddf83148ec419f9371771b49de5772',1,'geo_op_diff.c']]],
+  ['expand_5',['EXPAND',['../tpoint__expand_8c_a4e1ead0ea3ebe3b9eb9dc9564c524ccc.html#a4e1ead0ea3ebe3b9eb9dc9564c524ccc',1,'tpoint_expand.c']]],
+  ['expand_5fseq_6',['EXPAND_SEQ',['../ttext__expand_8c_accc65d8dc3b6c9d7b9dd81f43f2538bb.html#accc65d8dc3b6c9d7b9dd81f43f2538bb',1,'ttext_expand.c']]]
 ];
